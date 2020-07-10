@@ -1,249 +1,529 @@
 From: Anup Patel <anup.patel@wdc.com>
-Date: Fri, 10 Jul 2020 13:55:42 +0530
-Subject: [PATCH v13 11/17] RISC-V: KVM: Implement MMU notifiers
+Date: Fri, 10 Jul 2020 13:55:43 +0530
+Subject: [PATCH v13 12/17] RISC-V: KVM: Add timer functionality
 In-Reply-To: <20200710082548.123180-1-anup.patel@wdc.com>
 References: <20200710082548.123180-1-anup.patel@wdc.com>
-Message-ID: <20200710082548.123180-12-anup.patel@wdc.com>
+Message-ID: <20200710082548.123180-13-anup.patel@wdc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This patch implements MMU notifiers for KVM RISC-V so that Guest
-physical address space is in-sync with Host physical address space.
+From: Atish Patra <atish.patra@wdc.com>
 
-This will allow swapping, page migration, etc to work transparently
-with KVM RISC-V.
+The RISC-V hypervisor specification doesn't have any virtual timer
+feature.
 
+Due to this, the guest VCPU timer will be programmed via SBI calls.
+The host will use a separate hrtimer event for each guest VCPU to
+provide timer functionality. We inject a virtual timer interrupt to
+the guest VCPU whenever the guest VCPU hrtimer event expires.
+
+This patch adds guest VCPU timer implementation along with ONE_REG
+interface to access VCPU timer state from user space.
+
+Signed-off-by: Atish Patra <atish.patra@wdc.com>
 Signed-off-by: Anup Patel <anup.patel@wdc.com>
 Acked-by: Paolo Bonzini <pbonzini@redhat.com>
 Reviewed-by: Paolo Bonzini <pbonzini@redhat.com>
-Reviewed-by: Alexander Graf <graf@amazon.com>
+Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
- arch/riscv/include/asm/kvm_host.h |   7 ++
- arch/riscv/kvm/Kconfig            |   1 +
- arch/riscv/kvm/mmu.c              | 129 +++++++++++++++++++++++++++++-
- arch/riscv/kvm/vm.c               |   1 +
- 4 files changed, 137 insertions(+), 1 deletion(-)
+ arch/riscv/include/asm/kvm_host.h       |   7 +
+ arch/riscv/include/asm/kvm_vcpu_timer.h |  44 +++++
+ arch/riscv/include/uapi/asm/kvm.h       |  17 ++
+ arch/riscv/kvm/Makefile                 |   2 +-
+ arch/riscv/kvm/vcpu.c                   |  14 ++
+ arch/riscv/kvm/vcpu_timer.c             | 225 ++++++++++++++++++++++++
+ arch/riscv/kvm/vm.c                     |   2 +-
+ drivers/clocksource/timer-riscv.c       |   8 +
+ include/clocksource/timer-riscv.h       |  16 ++
+ 9 files changed, 333 insertions(+), 2 deletions(-)
+ create mode 100644 arch/riscv/include/asm/kvm_vcpu_timer.h
+ create mode 100644 arch/riscv/kvm/vcpu_timer.c
+ create mode 100644 include/clocksource/timer-riscv.h
 
 diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
-index 9e754c0848b3..24985abbe2e7 100644
+index 24985abbe2e7..0ce8329c84b0 100644
 --- a/arch/riscv/include/asm/kvm_host.h
 +++ b/arch/riscv/include/asm/kvm_host.h
-@@ -200,6 +200,13 @@ static inline void kvm_arch_vcpu_uninit(struct kvm_vcpu *vcpu) {}
- static inline void kvm_arch_sched_in(struct kvm_vcpu *vcpu, int cpu) {}
- static inline void kvm_arch_vcpu_block_finish(struct kvm_vcpu *vcpu) {}
+@@ -12,6 +12,7 @@
+ #include <linux/types.h>
+ #include <linux/kvm.h>
+ #include <linux/kvm_types.h>
++#include <asm/kvm_vcpu_timer.h>
  
-+#define KVM_ARCH_WANT_MMU_NOTIFIER
-+int kvm_unmap_hva_range(struct kvm *kvm,
-+			unsigned long start, unsigned long end);
-+int kvm_set_spte_hva(struct kvm *kvm, unsigned long hva, pte_t pte);
-+int kvm_age_hva(struct kvm *kvm, unsigned long start, unsigned long end);
-+int kvm_test_age_hva(struct kvm *kvm, unsigned long hva);
+ #ifdef CONFIG_64BIT
+ #define KVM_MAX_VCPUS			(1U << 16)
+@@ -66,6 +67,9 @@ struct kvm_arch {
+ 	/* stage2 page table */
+ 	pgd_t *pgd;
+ 	phys_addr_t pgd_phys;
 +
- void __kvm_riscv_hfence_gvma_vmid_gpa(unsigned long gpa, unsigned long vmid);
- void __kvm_riscv_hfence_gvma_vmid(unsigned long vmid);
- void __kvm_riscv_hfence_gvma_gpa(unsigned long gpa);
-diff --git a/arch/riscv/kvm/Kconfig b/arch/riscv/kvm/Kconfig
-index 88edd477b3a8..2356dc52ebb3 100644
---- a/arch/riscv/kvm/Kconfig
-+++ b/arch/riscv/kvm/Kconfig
-@@ -20,6 +20,7 @@ if VIRTUALIZATION
- config KVM
- 	tristate "Kernel-based Virtual Machine (KVM) support (EXPERIMENTAL)"
- 	depends on RISCV_SBI && MMU
-+	select MMU_NOTIFIER
- 	select PREEMPT_NOTIFIERS
- 	select ANON_INODES
- 	select KVM_MMIO
-diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
-index 3d13e15e7555..705c341e68cb 100644
---- a/arch/riscv/kvm/mmu.c
-+++ b/arch/riscv/kvm/mmu.c
-@@ -369,6 +369,38 @@ int stage2_ioremap(struct kvm *kvm, gpa_t gpa, phys_addr_t hpa,
++	/* Guest Timer */
++	struct kvm_guest_timer timer;
+ };
  
+ struct kvm_mmio_decode {
+@@ -178,6 +182,9 @@ struct kvm_vcpu_arch {
+ 	unsigned long irqs_pending;
+ 	unsigned long irqs_pending_mask;
+ 
++	/* VCPU Timer */
++	struct kvm_vcpu_timer timer;
++
+ 	/* MMIO instruction details */
+ 	struct kvm_mmio_decode mmio_decode;
+ 
+diff --git a/arch/riscv/include/asm/kvm_vcpu_timer.h b/arch/riscv/include/asm/kvm_vcpu_timer.h
+new file mode 100644
+index 000000000000..375281eb49e0
+--- /dev/null
++++ b/arch/riscv/include/asm/kvm_vcpu_timer.h
+@@ -0,0 +1,44 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/*
++ * Copyright (C) 2019 Western Digital Corporation or its affiliates.
++ *
++ * Authors:
++ *	Atish Patra <atish.patra@wdc.com>
++ */
++
++#ifndef __KVM_VCPU_RISCV_TIMER_H
++#define __KVM_VCPU_RISCV_TIMER_H
++
++#include <linux/hrtimer.h>
++
++struct kvm_guest_timer {
++	/* Mult & Shift values to get nanoseconds from cycles */
++	u32 nsec_mult;
++	u32 nsec_shift;
++	/* Time delta value */
++	u64 time_delta;
++};
++
++struct kvm_vcpu_timer {
++	/* Flag for whether init is done */
++	bool init_done;
++	/* Flag for whether timer event is configured */
++	bool next_set;
++	/* Next timer event cycles */
++	u64 next_cycles;
++	/* Underlying hrtimer instance */
++	struct hrtimer hrt;
++};
++
++int kvm_riscv_vcpu_timer_next_event(struct kvm_vcpu *vcpu, u64 ncycles);
++int kvm_riscv_vcpu_get_reg_timer(struct kvm_vcpu *vcpu,
++				 const struct kvm_one_reg *reg);
++int kvm_riscv_vcpu_set_reg_timer(struct kvm_vcpu *vcpu,
++				 const struct kvm_one_reg *reg);
++int kvm_riscv_vcpu_timer_init(struct kvm_vcpu *vcpu);
++int kvm_riscv_vcpu_timer_deinit(struct kvm_vcpu *vcpu);
++int kvm_riscv_vcpu_timer_reset(struct kvm_vcpu *vcpu);
++void kvm_riscv_vcpu_timer_restore(struct kvm_vcpu *vcpu);
++int kvm_riscv_guest_timer_init(struct kvm *kvm);
++
++#endif
+diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
+index 3a20327242f1..8f15eee35a1e 100644
+--- a/arch/riscv/include/uapi/asm/kvm.h
++++ b/arch/riscv/include/uapi/asm/kvm.h
+@@ -73,6 +73,18 @@ struct kvm_riscv_csr {
+ 	unsigned long satp;
+ };
+ 
++/* TIMER registers for KVM_GET_ONE_REG and KVM_SET_ONE_REG */
++struct kvm_riscv_timer {
++	u64 frequency;
++	u64 time;
++	u64 compare;
++	u64 state;
++};
++
++/* Possible states for kvm_riscv_timer */
++#define KVM_RISCV_TIMER_STATE_OFF	0
++#define KVM_RISCV_TIMER_STATE_ON	1
++
+ #define KVM_REG_SIZE(id)		\
+ 	(1U << (((id) & KVM_REG_SIZE_MASK) >> KVM_REG_SIZE_SHIFT))
+ 
+@@ -95,6 +107,11 @@ struct kvm_riscv_csr {
+ #define KVM_REG_RISCV_CSR_REG(name)	\
+ 		(offsetof(struct kvm_riscv_csr, name) / sizeof(unsigned long))
+ 
++/* Timer registers are mapped as type 4 */
++#define KVM_REG_RISCV_TIMER		(0x04 << KVM_REG_RISCV_TYPE_SHIFT)
++#define KVM_REG_RISCV_TIMER_REG(name)	\
++		(offsetof(struct kvm_riscv_timer, name) / sizeof(u64))
++
+ #endif
+ 
+ #endif /* __LINUX_KVM_RISCV_H */
+diff --git a/arch/riscv/kvm/Makefile b/arch/riscv/kvm/Makefile
+index c0f57f26c13d..3e0c7558320d 100644
+--- a/arch/riscv/kvm/Makefile
++++ b/arch/riscv/kvm/Makefile
+@@ -9,6 +9,6 @@ ccflags-y := -Ivirt/kvm -Iarch/riscv/kvm
+ kvm-objs := $(common-objs-y)
+ 
+ kvm-objs += main.o vm.o vmid.o tlb.o mmu.o
+-kvm-objs += vcpu.o vcpu_exit.o vcpu_switch.o
++kvm-objs += vcpu.o vcpu_exit.o vcpu_switch.o vcpu_timer.o
+ 
+ obj-$(CONFIG_KVM)	+= kvm.o
+diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+index 82228e8b6cab..f2de6f120d50 100644
+--- a/arch/riscv/kvm/vcpu.c
++++ b/arch/riscv/kvm/vcpu.c
+@@ -55,6 +55,8 @@ static void kvm_riscv_reset_vcpu(struct kvm_vcpu *vcpu)
+ 
+ 	memcpy(cntx, reset_cntx, sizeof(*cntx));
+ 
++	kvm_riscv_vcpu_timer_reset(vcpu);
++
+ 	WRITE_ONCE(vcpu->arch.irqs_pending, 0);
+ 	WRITE_ONCE(vcpu->arch.irqs_pending_mask, 0);
+ }
+@@ -82,6 +84,9 @@ int kvm_arch_vcpu_create(struct kvm_vcpu *vcpu)
+ 	cntx->hstatus |= HSTATUS_SPVP;
+ 	cntx->hstatus |= HSTATUS_SPV;
+ 
++	/* Setup VCPU timer */
++	kvm_riscv_vcpu_timer_init(vcpu);
++
+ 	/* Reset VCPU */
+ 	kvm_riscv_reset_vcpu(vcpu);
+ 
+@@ -99,6 +104,9 @@ void kvm_arch_vcpu_postcreate(struct kvm_vcpu *vcpu)
+ 
+ void kvm_arch_vcpu_destroy(struct kvm_vcpu *vcpu)
+ {
++	/* Cleanup VCPU timer */
++	kvm_riscv_vcpu_timer_deinit(vcpu);
++
+ 	/* Flush the pages pre-allocated for Stage2 page table mappings */
+ 	kvm_riscv_stage2_flush_cache(vcpu);
+ }
+@@ -349,6 +357,8 @@ static int kvm_riscv_vcpu_set_reg(struct kvm_vcpu *vcpu,
+ 		return kvm_riscv_vcpu_set_reg_core(vcpu, reg);
+ 	else if ((reg->id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_CSR)
+ 		return kvm_riscv_vcpu_set_reg_csr(vcpu, reg);
++	else if ((reg->id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_TIMER)
++		return kvm_riscv_vcpu_set_reg_timer(vcpu, reg);
+ 
+ 	return -EINVAL;
+ }
+@@ -362,6 +372,8 @@ static int kvm_riscv_vcpu_get_reg(struct kvm_vcpu *vcpu,
+ 		return kvm_riscv_vcpu_get_reg_core(vcpu, reg);
+ 	else if ((reg->id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_CSR)
+ 		return kvm_riscv_vcpu_get_reg_csr(vcpu, reg);
++	else if ((reg->id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_TIMER)
++		return kvm_riscv_vcpu_get_reg_timer(vcpu, reg);
+ 
+ 	return -EINVAL;
+ }
+@@ -594,6 +606,8 @@ void kvm_arch_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
+ 
+ 	kvm_riscv_stage2_update_hgatp(vcpu);
+ 
++	kvm_riscv_vcpu_timer_restore(vcpu);
++
+ 	vcpu->cpu = cpu;
  }
  
-+static int handle_hva_to_gpa(struct kvm *kvm,
-+			     unsigned long start,
-+			     unsigned long end,
-+			     int (*handler)(struct kvm *kvm,
-+					    gpa_t gpa, u64 size,
-+					    void *data),
-+			     void *data)
+diff --git a/arch/riscv/kvm/vcpu_timer.c b/arch/riscv/kvm/vcpu_timer.c
+new file mode 100644
+index 000000000000..5fb9fe378800
+--- /dev/null
++++ b/arch/riscv/kvm/vcpu_timer.c
+@@ -0,0 +1,225 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Copyright (C) 2019 Western Digital Corporation or its affiliates.
++ *
++ * Authors:
++ *     Atish Patra <atish.patra@wdc.com>
++ */
++
++#include <linux/errno.h>
++#include <linux/err.h>
++#include <linux/kvm_host.h>
++#include <linux/uaccess.h>
++#include <clocksource/timer-riscv.h>
++#include <asm/csr.h>
++#include <asm/delay.h>
++#include <asm/kvm_vcpu_timer.h>
++
++static u64 kvm_riscv_current_cycles(struct kvm_guest_timer *gt)
 +{
-+	struct kvm_memslots *slots;
-+	struct kvm_memory_slot *memslot;
++	return get_cycles64() + gt->time_delta;
++}
++
++static u64 kvm_riscv_delta_cycles2ns(u64 cycles,
++				     struct kvm_guest_timer *gt,
++				     struct kvm_vcpu_timer *t)
++{
++	unsigned long flags;
++	u64 cycles_now, cycles_delta, delta_ns;
++
++	local_irq_save(flags);
++	cycles_now = kvm_riscv_current_cycles(gt);
++	if (cycles_now < cycles)
++		cycles_delta = cycles - cycles_now;
++	else
++		cycles_delta = 0;
++	delta_ns = (cycles_delta * gt->nsec_mult) >> gt->nsec_shift;
++	local_irq_restore(flags);
++
++	return delta_ns;
++}
++
++static enum hrtimer_restart kvm_riscv_vcpu_hrtimer_expired(struct hrtimer *h)
++{
++	u64 delta_ns;
++	struct kvm_vcpu_timer *t = container_of(h, struct kvm_vcpu_timer, hrt);
++	struct kvm_vcpu *vcpu = container_of(t, struct kvm_vcpu, arch.timer);
++	struct kvm_guest_timer *gt = &vcpu->kvm->arch.timer;
++
++	if (kvm_riscv_current_cycles(gt) < t->next_cycles) {
++		delta_ns = kvm_riscv_delta_cycles2ns(t->next_cycles, gt, t);
++		hrtimer_forward_now(&t->hrt, ktime_set(0, delta_ns));
++		return HRTIMER_RESTART;
++	}
++
++	t->next_set = false;
++	kvm_riscv_vcpu_set_interrupt(vcpu, IRQ_VS_TIMER);
++
++	return HRTIMER_NORESTART;
++}
++
++static int kvm_riscv_vcpu_timer_cancel(struct kvm_vcpu_timer *t)
++{
++	if (!t->init_done || !t->next_set)
++		return -EINVAL;
++
++	hrtimer_cancel(&t->hrt);
++	t->next_set = false;
++
++	return 0;
++}
++
++int kvm_riscv_vcpu_timer_next_event(struct kvm_vcpu *vcpu, u64 ncycles)
++{
++	struct kvm_vcpu_timer *t = &vcpu->arch.timer;
++	struct kvm_guest_timer *gt = &vcpu->kvm->arch.timer;
++	u64 delta_ns;
++
++	if (!t->init_done)
++		return -EINVAL;
++
++	kvm_riscv_vcpu_unset_interrupt(vcpu, IRQ_VS_TIMER);
++
++	delta_ns = kvm_riscv_delta_cycles2ns(ncycles, gt, t);
++	t->next_cycles = ncycles;
++	hrtimer_start(&t->hrt, ktime_set(0, delta_ns), HRTIMER_MODE_REL);
++	t->next_set = true;
++
++	return 0;
++}
++
++int kvm_riscv_vcpu_get_reg_timer(struct kvm_vcpu *vcpu,
++				 const struct kvm_one_reg *reg)
++{
++	struct kvm_vcpu_timer *t = &vcpu->arch.timer;
++	struct kvm_guest_timer *gt = &vcpu->kvm->arch.timer;
++	u64 __user *uaddr = (u64 __user *)(unsigned long)reg->addr;
++	unsigned long reg_num = reg->id & ~(KVM_REG_ARCH_MASK |
++					    KVM_REG_SIZE_MASK |
++					    KVM_REG_RISCV_TIMER);
++	u64 reg_val;
++
++	if (KVM_REG_SIZE(reg->id) != sizeof(u64))
++		return -EINVAL;
++	if (reg_num >= sizeof(struct kvm_riscv_timer) / sizeof(u64))
++		return -EINVAL;
++
++	switch (reg_num) {
++	case KVM_REG_RISCV_TIMER_REG(frequency):
++		reg_val = riscv_timebase;
++		break;
++	case KVM_REG_RISCV_TIMER_REG(time):
++		reg_val = kvm_riscv_current_cycles(gt);
++		break;
++	case KVM_REG_RISCV_TIMER_REG(compare):
++		reg_val = t->next_cycles;
++		break;
++	case KVM_REG_RISCV_TIMER_REG(state):
++		reg_val = (t->next_set) ? KVM_RISCV_TIMER_STATE_ON :
++					  KVM_RISCV_TIMER_STATE_OFF;
++		break;
++	default:
++		return -EINVAL;
++	};
++
++	if (copy_to_user(uaddr, &reg_val, KVM_REG_SIZE(reg->id)))
++		return -EFAULT;
++
++	return 0;
++}
++
++int kvm_riscv_vcpu_set_reg_timer(struct kvm_vcpu *vcpu,
++				 const struct kvm_one_reg *reg)
++{
++	struct kvm_vcpu_timer *t = &vcpu->arch.timer;
++	struct kvm_guest_timer *gt = &vcpu->kvm->arch.timer;
++	u64 __user *uaddr = (u64 __user *)(unsigned long)reg->addr;
++	unsigned long reg_num = reg->id & ~(KVM_REG_ARCH_MASK |
++					    KVM_REG_SIZE_MASK |
++					    KVM_REG_RISCV_TIMER);
++	u64 reg_val;
 +	int ret = 0;
 +
-+	slots = kvm_memslots(kvm);
++	if (KVM_REG_SIZE(reg->id) != sizeof(u64))
++		return -EINVAL;
++	if (reg_num >= sizeof(struct kvm_riscv_timer) / sizeof(u64))
++		return -EINVAL;
 +
-+	/* we only care about the pages that the guest sees */
-+	kvm_for_each_memslot(memslot, slots) {
-+		unsigned long hva_start, hva_end;
-+		gfn_t gpa;
++	if (copy_from_user(&reg_val, uaddr, KVM_REG_SIZE(reg->id)))
++		return -EFAULT;
 +
-+		hva_start = max(start, memslot->userspace_addr);
-+		hva_end = min(end, memslot->userspace_addr +
-+					(memslot->npages << PAGE_SHIFT));
-+		if (hva_start >= hva_end)
-+			continue;
-+
-+		gpa = hva_to_gfn_memslot(hva_start, memslot) << PAGE_SHIFT;
-+		ret |= handler(kvm, gpa, (u64)(hva_end - hva_start), data);
-+	}
++	switch (reg_num) {
++	case KVM_REG_RISCV_TIMER_REG(frequency):
++		ret = -ENOTSUPP;
++		break;
++	case KVM_REG_RISCV_TIMER_REG(time):
++		gt->time_delta = reg_val - get_cycles64();
++		break;
++	case KVM_REG_RISCV_TIMER_REG(compare):
++		t->next_cycles = reg_val;
++		break;
++	case KVM_REG_RISCV_TIMER_REG(state):
++		if (reg_val == KVM_RISCV_TIMER_STATE_ON)
++			ret = kvm_riscv_vcpu_timer_next_event(vcpu, reg_val);
++		else
++			ret = kvm_riscv_vcpu_timer_cancel(t);
++		break;
++	default:
++		ret = -EINVAL;
++		break;
++	};
 +
 +	return ret;
 +}
 +
- void kvm_arch_sync_dirty_log(struct kvm *kvm, struct kvm_memory_slot *memslot)
- {
- }
-@@ -504,6 +536,95 @@ int kvm_arch_prepare_memory_region(struct kvm *kvm,
- 	return ret;
- }
- 
-+static int kvm_unmap_hva_handler(struct kvm *kvm,
-+				 gpa_t gpa, u64 size, void *data)
++int kvm_riscv_vcpu_timer_init(struct kvm_vcpu *vcpu)
 +{
-+	stage2_unmap_range(kvm, gpa, size);
-+	return 0;
-+}
++	struct kvm_vcpu_timer *t = &vcpu->arch.timer;
 +
-+int kvm_unmap_hva_range(struct kvm *kvm,
-+			unsigned long start, unsigned long end)
-+{
-+	if (!kvm->arch.pgd)
-+		return 0;
++	if (t->init_done)
++		return -EINVAL;
 +
-+	handle_hva_to_gpa(kvm, start, end,
-+			  &kvm_unmap_hva_handler, NULL);
-+	return 0;
-+}
-+
-+static int kvm_set_spte_handler(struct kvm *kvm,
-+				gpa_t gpa, u64 size, void *data)
-+{
-+	pte_t *pte = (pte_t *)data;
-+
-+	WARN_ON(size != PAGE_SIZE);
-+	stage2_set_pte(kvm, 0, NULL, gpa, pte);
++	hrtimer_init(&t->hrt, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
++	t->hrt.function = kvm_riscv_vcpu_hrtimer_expired;
++	t->init_done = true;
++	t->next_set = false;
 +
 +	return 0;
 +}
 +
-+int kvm_set_spte_hva(struct kvm *kvm, unsigned long hva, pte_t pte)
++int kvm_riscv_vcpu_timer_deinit(struct kvm_vcpu *vcpu)
 +{
-+	unsigned long end = hva + PAGE_SIZE;
-+	kvm_pfn_t pfn = pte_pfn(pte);
-+	pte_t stage2_pte;
++	int ret;
 +
-+	if (!kvm->arch.pgd)
-+		return 0;
++	ret = kvm_riscv_vcpu_timer_cancel(&vcpu->arch.timer);
++	vcpu->arch.timer.init_done = false;
 +
-+	stage2_pte = pfn_pte(pfn, PAGE_WRITE_EXEC);
-+	handle_hva_to_gpa(kvm, hva, end,
-+			  &kvm_set_spte_handler, &stage2_pte);
++	return ret;
++}
++
++int kvm_riscv_vcpu_timer_reset(struct kvm_vcpu *vcpu)
++{
++	return kvm_riscv_vcpu_timer_cancel(&vcpu->arch.timer);
++}
++
++void kvm_riscv_vcpu_timer_restore(struct kvm_vcpu *vcpu)
++{
++	struct kvm_guest_timer *gt = &vcpu->kvm->arch.timer;
++
++#ifdef CONFIG_64BIT
++	csr_write(CSR_HTIMEDELTA, gt->time_delta);
++#else
++	csr_write(CSR_HTIMEDELTA, (u32)(gt->time_delta));
++	csr_write(CSR_HTIMEDELTAH, (u32)(gt->time_delta >> 32));
++#endif
++}
++
++int kvm_riscv_guest_timer_init(struct kvm *kvm)
++{
++	struct kvm_guest_timer *gt = &kvm->arch.timer;
++
++	riscv_cs_get_mult_shift(&gt->nsec_mult, &gt->nsec_shift);
++	gt->time_delta = -get_cycles64();
 +
 +	return 0;
 +}
-+
-+static int kvm_age_hva_handler(struct kvm *kvm,
-+				gpa_t gpa, u64 size, void *data)
-+{
-+	pte_t *ptep;
-+	u32 ptep_level = 0;
-+
-+	WARN_ON(size != PAGE_SIZE && size != PMD_SIZE && size != PGDIR_SIZE);
-+
-+	if (!stage2_get_leaf_entry(kvm, gpa, &ptep, &ptep_level))
-+		return 0;
-+
-+	return ptep_test_and_clear_young(NULL, 0, ptep);
-+}
-+
-+int kvm_age_hva(struct kvm *kvm, unsigned long start, unsigned long end)
-+{
-+	if (!kvm->arch.pgd)
-+		return 0;
-+
-+	return handle_hva_to_gpa(kvm, start, end, kvm_age_hva_handler, NULL);
-+}
-+
-+static int kvm_test_age_hva_handler(struct kvm *kvm,
-+				    gpa_t gpa, u64 size, void *data)
-+{
-+	pte_t *ptep;
-+	u32 ptep_level = 0;
-+
-+	WARN_ON(size != PAGE_SIZE && size != PMD_SIZE);
-+	if (!stage2_get_leaf_entry(kvm, gpa, &ptep, &ptep_level))
-+		return 0;
-+
-+	return pte_young(*ptep);
-+}
-+
-+int kvm_test_age_hva(struct kvm *kvm, unsigned long hva)
-+{
-+	if (!kvm->arch.pgd)
-+		return 0;
-+
-+	return handle_hva_to_gpa(kvm, hva, hva,
-+				 kvm_test_age_hva_handler, NULL);
-+}
-+
- int kvm_riscv_stage2_map(struct kvm_vcpu *vcpu,
- 			 struct kvm_memory_slot *memslot,
- 			 gpa_t gpa, unsigned long hva, bool is_write)
-@@ -518,7 +639,7 @@ int kvm_riscv_stage2_map(struct kvm_vcpu *vcpu,
- 	struct kvm_mmu_page_cache *pcache = &vcpu->arch.mmu_page_cache;
- 	bool logging = (memslot->dirty_bitmap &&
- 			!(memslot->flags & KVM_MEM_READONLY)) ? true : false;
--	unsigned long vma_pagesize;
-+	unsigned long vma_pagesize, mmu_seq;
- 
- 	mmap_read_lock(current->mm);
- 
-@@ -557,6 +678,8 @@ int kvm_riscv_stage2_map(struct kvm_vcpu *vcpu,
- 		return ret;
- 	}
- 
-+	mmu_seq = kvm->mmu_notifier_seq;
-+
- 	hfn = gfn_to_pfn_prot(kvm, gfn, is_write, &writeable);
- 	if (hfn == KVM_PFN_ERR_HWPOISON) {
- 		send_sig_mceerr(BUS_MCEERR_AR, (void __user *)hva,
-@@ -575,6 +698,9 @@ int kvm_riscv_stage2_map(struct kvm_vcpu *vcpu,
- 
- 	spin_lock(&kvm->mmu_lock);
- 
-+	if (mmu_notifier_retry(kvm, mmu_seq))
-+		goto out_unlock;
-+
- 	if (writeable) {
- 		kvm_set_pfn_dirty(hfn);
- 		mark_page_dirty(kvm, gfn);
-@@ -588,6 +714,7 @@ int kvm_riscv_stage2_map(struct kvm_vcpu *vcpu,
- 	if (ret)
- 		kvm_err("Failed to map in stage2\n");
- 
-+out_unlock:
- 	spin_unlock(&kvm->mmu_lock);
- 	kvm_set_pfn_accessed(hfn);
- 	kvm_release_pfn_clean(hfn);
 diff --git a/arch/riscv/kvm/vm.c b/arch/riscv/kvm/vm.c
-index c5aab5478c38..fd84b4d914dc 100644
+index fd84b4d914dc..4f2498198cb5 100644
 --- a/arch/riscv/kvm/vm.c
 +++ b/arch/riscv/kvm/vm.c
-@@ -54,6 +54,7 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
- 	switch (ext) {
- 	case KVM_CAP_DEVICE_CTRL:
- 	case KVM_CAP_USER_MEMORY:
-+	case KVM_CAP_SYNC_MMU:
- 	case KVM_CAP_DESTROY_MEMORY_REGION_WORKS:
- 	case KVM_CAP_ONE_REG:
- 	case KVM_CAP_READONLY_MEM:
+@@ -32,7 +32,7 @@ int kvm_arch_init_vm(struct kvm *kvm, unsigned long type)
+ 		return r;
+ 	}
+ 
+-	return 0;
++	return kvm_riscv_guest_timer_init(kvm);
+ }
+ 
+ void kvm_arch_destroy_vm(struct kvm *kvm)
+diff --git a/drivers/clocksource/timer-riscv.c b/drivers/clocksource/timer-riscv.c
+index 9de1dabfb126..b48c05c282f5 100644
+--- a/drivers/clocksource/timer-riscv.c
++++ b/drivers/clocksource/timer-riscv.c
+@@ -13,6 +13,7 @@
+ #include <linux/delay.h>
+ #include <linux/irq.h>
+ #include <linux/irqdomain.h>
++#include <linux/module.h>
+ #include <linux/sched_clock.h>
+ #include <linux/io-64-nonatomic-lo-hi.h>
+ #include <linux/interrupt.h>
+@@ -92,6 +93,13 @@ static int riscv_timer_dying_cpu(unsigned int cpu)
+ 	return 0;
+ }
+ 
++void riscv_cs_get_mult_shift(u32 *mult, u32 *shift)
++{
++	*mult = riscv_clocksource.mult;
++	*shift = riscv_clocksource.shift;
++}
++EXPORT_SYMBOL_GPL(riscv_cs_get_mult_shift);
++
+ /* called directly from the low-level interrupt handler */
+ static irqreturn_t riscv_timer_interrupt(int irq, void *dev_id)
+ {
+diff --git a/include/clocksource/timer-riscv.h b/include/clocksource/timer-riscv.h
+new file mode 100644
+index 000000000000..e94e4feecbe8
+--- /dev/null
++++ b/include/clocksource/timer-riscv.h
+@@ -0,0 +1,16 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/*
++ * Copyright (C) 2019 Western Digital Corporation or its affiliates.
++ *
++ * Authors:
++ *	Atish Patra <atish.patra@wdc.com>
++ */
++
++#ifndef __TIMER_RISCV_H
++#define __TIMER_RISCV_H
++
++#include <linux/types.h>
++
++void riscv_cs_get_mult_shift(u32 *mult, u32 *shift);
++
++#endif
 -- 
 2.25.1
 
