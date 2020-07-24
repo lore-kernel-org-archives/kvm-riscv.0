@@ -1,185 +1,100 @@
-From: Anup Patel <anup.patel@wdc.com>
-Date: Fri, 10 Jul 2020 14:30:35 +0530
-Subject: [RFC PATCH v4 8/8] riscv: Generate PCI host DT node
-In-Reply-To: <20200710090035.123941-1-anup.patel@wdc.com>
-References: <20200710090035.123941-1-anup.patel@wdc.com>
-Message-ID: <20200710090035.123941-9-anup.patel@wdc.com>
+From: Yifei Jiang <jiangyifei@huawei.com>
+Date: Fri, 24 Jul 2020 16:54:41 +0800
+Subject: [RFC 2/2] RISC-V: KVM: read\write kernel mmio device support
+In-Reply-To: <20200724085441.1514-1-jiangyifei@huawei.com>
+References: <20200724085441.1514-1-jiangyifei@huawei.com>
+Message-ID: <20200724085441.1514-3-jiangyifei@huawei.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This patch extends FDT generation to generate PCI host DT node.
-
-Of course, PCI host for Guest/VM is not useful at the moment
-because it's mostly for PCI pass-through and we don't have
-IOMMU and interrupt routing available for KVM RISC-V. In future,
-we might be able to use PCI host for VirtIO PCI transport or
-other software emulated PCI devices.
-
-Signed-off-by: Anup Patel <anup.patel@wdc.com>
+Signed-off-by: Yifei Jiang <jiangyifei@huawei.com>
+Signed-off-by: Mingwang Li <limingwang@huawei.com>
 ---
- Makefile                     |   1 +
- riscv/fdt.c                  |   3 +
- riscv/include/kvm/kvm-arch.h |   2 +
- riscv/pci.c                  | 109 +++++++++++++++++++++++++++++++++++
- 4 files changed, 115 insertions(+)
- create mode 100644 riscv/pci.c
+ arch/riscv/kvm/vcpu_exit.c | 38 ++++++++++++++++++++++++++++++++------
+ 1 file changed, 32 insertions(+), 6 deletions(-)
 
-diff --git a/Makefile b/Makefile
-index 6042c1c..5cb6c8b 100644
---- a/Makefile
-+++ b/Makefile
-@@ -204,6 +204,7 @@ ifeq ($(ARCH),riscv)
- 	OBJS		+= riscv/irq.o
- 	OBJS		+= riscv/kvm.o
- 	OBJS		+= riscv/kvm-cpu.o
-+	OBJS		+= riscv/pci.o
- 	OBJS		+= riscv/plic.o
- 	ifeq ($(RISCV_XLEN),32)
- 		CFLAGS	+= -mabi=ilp32d -march=rv32gc
-diff --git a/riscv/fdt.c b/riscv/fdt.c
-index 6527ef7..de15bfe 100644
---- a/riscv/fdt.c
-+++ b/riscv/fdt.c
-@@ -167,6 +167,9 @@ static int setup_fdt(struct kvm *kvm)
- 		dev_hdr = device__next_dev(dev_hdr);
- 	}
+diff --git a/arch/riscv/kvm/vcpu_exit.c b/arch/riscv/kvm/vcpu_exit.c
+index e97ba96cb0ae..448f11179fa8 100644
+--- a/arch/riscv/kvm/vcpu_exit.c
++++ b/arch/riscv/kvm/vcpu_exit.c
+@@ -191,6 +191,8 @@ static int virtual_inst_fault(struct kvm_vcpu *vcpu, struct kvm_run *run,
+ static int emulate_load(struct kvm_vcpu *vcpu, struct kvm_run *run,
+ 			unsigned long fault_addr, unsigned long htinst)
+ {
++	int ret;
++	u8 data_buf[8];
+ 	unsigned long insn;
+ 	int shift = 0, len = 0;
+ 	struct kvm_cpu_trap utrap = { 0 };
+@@ -272,19 +274,32 @@ static int emulate_load(struct kvm_vcpu *vcpu, struct kvm_run *run,
+ 	vcpu->arch.mmio_decode.len = len;
+ 	vcpu->arch.mmio_decode.return_handled = 0;
  
-+	/* PCI host controller */
-+	pci__generate_fdt_nodes(fdt);
+-	/* Exit to userspace for MMIO emulation */
+-	vcpu->stat.mmio_exit_user++;
+-	run->exit_reason = KVM_EXIT_MMIO;
++	ret = kvm_io_bus_read(vcpu, KVM_MMIO_BUS, fault_addr, len,
++						  data_buf);
 +
- 	_FDT(fdt_end_node(fdt));
+ 	run->mmio.is_write = false;
+ 	run->mmio.phys_addr = fault_addr;
+ 	run->mmio.len = len;
  
- 	if (fdt_stdout_path) {
-diff --git a/riscv/include/kvm/kvm-arch.h b/riscv/include/kvm/kvm-arch.h
-index 02825cd..d9a072e 100644
---- a/riscv/include/kvm/kvm-arch.h
-+++ b/riscv/include/kvm/kvm-arch.h
-@@ -80,4 +80,6 @@ void plic__generate_irq_prop(void *fdt, u8 irq, enum irq_type irq_type);
- 
- void plic__irq_trig(struct kvm *kvm, int irq, int level, bool edge);
- 
-+void pci__generate_fdt_nodes(void *fdt);
-+
- #endif /* KVM__KVM_ARCH_H */
-diff --git a/riscv/pci.c b/riscv/pci.c
-new file mode 100644
-index 0000000..666a452
---- /dev/null
-+++ b/riscv/pci.c
-@@ -0,0 +1,109 @@
-+#include "kvm/devices.h"
-+#include "kvm/fdt.h"
-+#include "kvm/kvm.h"
-+#include "kvm/of_pci.h"
-+#include "kvm/pci.h"
-+#include "kvm/util.h"
-+
-+/*
-+ * An entry in the interrupt-map table looks like:
-+ * <pci unit address> <pci interrupt pin> <plic phandle> <plic interrupt>
-+ */
-+
-+struct of_interrupt_map_entry {
-+	struct of_pci_irq_mask		pci_irq_mask;
-+	u32				plic_phandle;
-+	u32				plic_irq;
-+} __attribute__((packed));
-+
-+void pci__generate_fdt_nodes(void *fdt)
-+{
-+	struct device_header *dev_hdr;
-+	struct of_interrupt_map_entry irq_map[OF_PCI_IRQ_MAP_MAX];
-+	unsigned nentries = 0;
-+	/* Bus range */
-+	u32 bus_range[] = { cpu_to_fdt32(0), cpu_to_fdt32(1), };
-+	/* Configuration Space */
-+	u64 cfg_reg_prop[] = { cpu_to_fdt64(KVM_PCI_CFG_AREA),
-+			       cpu_to_fdt64(RISCV_PCI_CFG_SIZE), };
-+	/* Describe the memory ranges */
-+	struct of_pci_ranges_entry ranges[] = {
-+		{
-+			.pci_addr = {
-+				.hi	= cpu_to_fdt32(of_pci_b_ss(OF_PCI_SS_IO)),
-+				.mid	= 0,
-+				.lo	= 0,
-+			},
-+			.cpu_addr	= cpu_to_fdt64(KVM_IOPORT_AREA),
-+			.length		= cpu_to_fdt64(RISCV_IOPORT_SIZE),
-+		},
-+		{
-+			.pci_addr = {
-+				.hi	= cpu_to_fdt32(of_pci_b_ss(OF_PCI_SS_M32)),
-+				.mid	= cpu_to_fdt32(KVM_PCI_MMIO_AREA >> 32),
-+				.lo	= cpu_to_fdt32(KVM_PCI_MMIO_AREA),
-+			},
-+			.cpu_addr	= cpu_to_fdt64(KVM_PCI_MMIO_AREA),
-+			.length		= cpu_to_fdt64(RISCV_PCI_MMIO_SIZE),
-+		},
-+	};
-+
-+	/* Boilerplate PCI properties */
-+	_FDT(fdt_begin_node(fdt, "pci"));
-+	_FDT(fdt_property_string(fdt, "device_type", "pci"));
-+	_FDT(fdt_property_cell(fdt, "#address-cells", 0x3));
-+	_FDT(fdt_property_cell(fdt, "#size-cells", 0x2));
-+	_FDT(fdt_property_cell(fdt, "#interrupt-cells", 0x1));
-+	_FDT(fdt_property_string(fdt, "compatible", "pci-host-cam-generic"));
-+	_FDT(fdt_property(fdt, "dma-coherent", NULL, 0));
-+
-+	_FDT(fdt_property(fdt, "bus-range", bus_range, sizeof(bus_range)));
-+	_FDT(fdt_property(fdt, "reg", &cfg_reg_prop, sizeof(cfg_reg_prop)));
-+	_FDT(fdt_property(fdt, "ranges", ranges, sizeof(ranges)));
-+
-+	/* Generate the interrupt map ... */
-+	dev_hdr = device__first_dev(DEVICE_BUS_PCI);
-+	while (dev_hdr && nentries < ARRAY_SIZE(irq_map)) {
-+		struct of_interrupt_map_entry *entry = &irq_map[nentries];
-+		struct pci_device_header *pci_hdr = dev_hdr->data;
-+		u8 dev_num = dev_hdr->dev_num;
-+		u8 pin = pci_hdr->irq_pin;
-+		u8 irq = pci_hdr->irq_line;
-+
-+		*entry = (struct of_interrupt_map_entry) {
-+			.pci_irq_mask = {
-+				.pci_addr = {
-+					.hi	= cpu_to_fdt32(of_pci_b_ddddd(dev_num)),
-+					.mid	= 0,
-+					.lo	= 0,
-+				},
-+				.pci_pin	= cpu_to_fdt32(pin),
-+			},
-+			.plic_phandle	= cpu_to_fdt32(PHANDLE_PLIC),
-+			.plic_irq	= cpu_to_fdt32(irq),
-+		};
-+
-+		nentries++;
-+		dev_hdr = device__next_dev(dev_hdr);
++	if (!ret) {
++		/* We handled the access successfully in the kernel. */
++		memcpy(run->mmio.data, data_buf, len);
++		vcpu->stat.mmio_exit_kernel++;
++		kvm_riscv_vcpu_mmio_return(vcpu, run);
++		return 1;
 +	}
 +
-+	_FDT(fdt_property(fdt, "interrupt-map", irq_map,
-+			  sizeof(struct of_interrupt_map_entry) * nentries));
++	/* Exit to userspace for MMIO emulation */
++	vcpu->stat.mmio_exit_user++;
++	run->exit_reason = KVM_EXIT_MMIO;
 +
-+	/* ... and the corresponding mask. */
-+	if (nentries) {
-+		struct of_pci_irq_mask irq_mask = {
-+			.pci_addr = {
-+				.hi	= cpu_to_fdt32(of_pci_b_ddddd(-1)),
-+				.mid	= 0,
-+				.lo	= 0,
-+			},
-+			.pci_pin	= cpu_to_fdt32(7),
-+		};
+ 	return 0;
+ }
+ 
+ static int emulate_store(struct kvm_vcpu *vcpu, struct kvm_run *run,
+ 			 unsigned long fault_addr, unsigned long htinst)
+ {
++	int ret;
+ 	u8 data8;
+ 	u16 data16;
+ 	u32 data32;
+@@ -378,13 +393,24 @@ static int emulate_store(struct kvm_vcpu *vcpu, struct kvm_run *run,
+ 		return -ENOTSUPP;
+ 	};
+ 
+-	/* Exit to userspace for MMIO emulation */
+-	vcpu->stat.mmio_exit_user++;
+-	run->exit_reason = KVM_EXIT_MMIO;
++	ret = kvm_io_bus_write(vcpu, KVM_MMIO_BUS, fault_addr, len,
++						   run->mmio.data);
 +
-+		_FDT(fdt_property(fdt, "interrupt-map-mask", &irq_mask,
-+				  sizeof(irq_mask)));
+ 	run->mmio.is_write = true;
+ 	run->mmio.phys_addr = fault_addr;
+ 	run->mmio.len = len;
+ 
++	if (!ret) {
++		/* We handled the access successfully in the kernel. */
++		vcpu->stat.mmio_exit_kernel++;
++		kvm_riscv_vcpu_mmio_return(vcpu, run);
++		return 1;
 +	}
 +
-+	_FDT(fdt_end_node(fdt));
-+}
++	/* Exit to userspace for MMIO emulation */
++	vcpu->stat.mmio_exit_user++;
++	run->exit_reason = KVM_EXIT_MMIO;
++
+ 	return 0;
+ }
+ 
 -- 
-2.25.1
+2.19.1
+
 
 
