@@ -1,77 +1,109 @@
 From: Anup Patel <anup@brainfault.org>
-Date: Sun, 26 Jul 2020 18:18:38 +0530
-Subject: [RFC 1/2] RISC-V: KVM: enable ioeventfd capability and compile
- for risc-v
-In-Reply-To: <20200724085441.1514-2-jiangyifei@huawei.com>
+Date: Sun, 26 Jul 2020 18:27:16 +0530
+Subject: [RFC 2/2] RISC-V: KVM: read\write kernel mmio device support
+In-Reply-To: <20200724085441.1514-3-jiangyifei@huawei.com>
 References: <20200724085441.1514-1-jiangyifei@huawei.com>
- <20200724085441.1514-2-jiangyifei@huawei.com>
-Message-ID: <CAAhSdy08NEMR2jjJ-FVixyWMOpQ4+V-P9k2xuyO+Xu5OWKrmFQ@mail.gmail.com>
+ <20200724085441.1514-3-jiangyifei@huawei.com>
+Message-ID: <CAAhSdy3q3tNUqSxnFy2tdmXOLJZjt4rMAZirZh88-0BXT7-X1g@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Please change subject to:
-"RISC-V: KVM: enable ioeventfd capability"
-
-Also add 1-2 sentences of commit description.
-
 On Fri, Jul 24, 2020 at 2:25 PM Yifei Jiang <jiangyifei@huawei.com> wrote:
 >
 > Signed-off-by: Yifei Jiang <jiangyifei@huawei.com>
 > Signed-off-by: Mingwang Li <limingwang@huawei.com>
 > ---
->  arch/riscv/kvm/Kconfig  | 2 ++
->  arch/riscv/kvm/Makefile | 2 +-
->  arch/riscv/kvm/vm.c     | 1 +
->  3 files changed, 4 insertions(+), 1 deletion(-)
+>  arch/riscv/kvm/vcpu_exit.c | 38 ++++++++++++++++++++++++++++++++------
+>  1 file changed, 32 insertions(+), 6 deletions(-)
 >
-> diff --git a/arch/riscv/kvm/Kconfig b/arch/riscv/kvm/Kconfig
-> index 2356dc52ebb3..95d85d893ab6 100644
-> --- a/arch/riscv/kvm/Kconfig
-> +++ b/arch/riscv/kvm/Kconfig
-> @@ -4,6 +4,7 @@
->  #
+> diff --git a/arch/riscv/kvm/vcpu_exit.c b/arch/riscv/kvm/vcpu_exit.c
+> index e97ba96cb0ae..448f11179fa8 100644
+> --- a/arch/riscv/kvm/vcpu_exit.c
+> +++ b/arch/riscv/kvm/vcpu_exit.c
+> @@ -191,6 +191,8 @@ static int virtual_inst_fault(struct kvm_vcpu *vcpu, struct kvm_run *run,
+>  static int emulate_load(struct kvm_vcpu *vcpu, struct kvm_run *run,
+>                         unsigned long fault_addr, unsigned long htinst)
+>  {
+> +       int ret;
+> +       u8 data_buf[8];
+>         unsigned long insn;
+>         int shift = 0, len = 0;
+>         struct kvm_cpu_trap utrap = { 0 };
+> @@ -272,19 +274,32 @@ static int emulate_load(struct kvm_vcpu *vcpu, struct kvm_run *run,
+>         vcpu->arch.mmio_decode.len = len;
+>         vcpu->arch.mmio_decode.return_handled = 0;
 >
->  source "virt/kvm/Kconfig"
-> +source "drivers/vhost/Kconfig"
+> -       /* Exit to userspace for MMIO emulation */
+> -       vcpu->stat.mmio_exit_user++;
+> -       run->exit_reason = KVM_EXIT_MMIO;
+> +       ret = kvm_io_bus_read(vcpu, KVM_MMIO_BUS, fault_addr, len,
+> +                                                 data_buf);
+> +
+
+Move "ret = kvm_io_bus_read()" just before "if (!ret)".
+
+>         run->mmio.is_write = false;
+>         run->mmio.phys_addr = fault_addr;
+>         run->mmio.len = len;
 >
->  menuconfig VIRTUALIZATION
->         bool "Virtualization"
-> @@ -26,6 +27,7 @@ config KVM
->         select KVM_MMIO
->         select HAVE_KVM_VCPU_ASYNC_IOCTL
->         select SRCU
-> +       select HAVE_KVM_EVENTFD
->         help
->           Support hosting virtualized guest machines.
+> +       if (!ret) {
+> +               /* We handled the access successfully in the kernel. */
+> +               memcpy(run->mmio.data, data_buf, len);
+> +               vcpu->stat.mmio_exit_kernel++;
+> +               kvm_riscv_vcpu_mmio_return(vcpu, run);
+> +               return 1;
+> +       }
+> +
+> +       /* Exit to userspace for MMIO emulation */
+> +       vcpu->stat.mmio_exit_user++;
+> +       run->exit_reason = KVM_EXIT_MMIO;
+> +
+>         return 0;
+>  }
 >
-> diff --git a/arch/riscv/kvm/Makefile b/arch/riscv/kvm/Makefile
-> index b56dc1650d2c..3ad46fe44900 100644
-> --- a/arch/riscv/kvm/Makefile
-> +++ b/arch/riscv/kvm/Makefile
-> @@ -2,7 +2,7 @@
->  # Makefile for RISC-V KVM support
->  #
+>  static int emulate_store(struct kvm_vcpu *vcpu, struct kvm_run *run,
+>                          unsigned long fault_addr, unsigned long htinst)
+>  {
+> +       int ret;
+>         u8 data8;
+>         u16 data16;
+>         u32 data32;
+> @@ -378,13 +393,24 @@ static int emulate_store(struct kvm_vcpu *vcpu, struct kvm_run *run,
+>                 return -ENOTSUPP;
+>         };
 >
-> -common-objs-y = $(addprefix ../../../virt/kvm/, kvm_main.o coalesced_mmio.o)
-> +common-objs-y = $(addprefix ../../../virt/kvm/, kvm_main.o coalesced_mmio.o eventfd.o)
+> -       /* Exit to userspace for MMIO emulation */
+> -       vcpu->stat.mmio_exit_user++;
+> -       run->exit_reason = KVM_EXIT_MMIO;
+> +       ret = kvm_io_bus_write(vcpu, KVM_MMIO_BUS, fault_addr, len,
+> +                                                  run->mmio.data);
+> +
+
+Same as above.
+
+Move "ret = kvm_io_bus_write()" just before "if (!ret) {"
+
+>         run->mmio.is_write = true;
+>         run->mmio.phys_addr = fault_addr;
+>         run->mmio.len = len;
 >
->  ccflags-y := -Ivirt/kvm -Iarch/riscv/kvm
+> +       if (!ret) {
+> +               /* We handled the access successfully in the kernel. */
+> +               vcpu->stat.mmio_exit_kernel++;
+> +               kvm_riscv_vcpu_mmio_return(vcpu, run);
+> +               return 1;
+> +       }
+> +
+> +       /* Exit to userspace for MMIO emulation */
+> +       vcpu->stat.mmio_exit_user++;
+> +       run->exit_reason = KVM_EXIT_MMIO;
+> +
+>         return 0;
+>  }
 >
-> diff --git a/arch/riscv/kvm/vm.c b/arch/riscv/kvm/vm.c
-> index 4f2498198cb5..473299e71f68 100644
-> --- a/arch/riscv/kvm/vm.c
-> +++ b/arch/riscv/kvm/vm.c
-> @@ -52,6 +52,7 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
->         int r;
->
->         switch (ext) {
-> +       case KVM_CAP_IOEVENTFD:
->         case KVM_CAP_DEVICE_CTRL:
->         case KVM_CAP_USER_MEMORY:
->         case KVM_CAP_SYNC_MMU:
 > --
 > 2.19.1
 >
