@@ -1,15 +1,20 @@
 From: Anup Patel <anup@brainfault.org>
-Date: Sun, 26 Jul 2020 18:27:16 +0530
+Date: Sun, 26 Jul 2020 18:28:57 +0530
 Subject: [RFC 2/2] RISC-V: KVM: read\write kernel mmio device support
 In-Reply-To: <20200724085441.1514-3-jiangyifei@huawei.com>
 References: <20200724085441.1514-1-jiangyifei@huawei.com>
  <20200724085441.1514-3-jiangyifei@huawei.com>
-Message-ID: <CAAhSdy3q3tNUqSxnFy2tdmXOLJZjt4rMAZirZh88-0BXT7-X1g@mail.gmail.com>
+Message-ID: <CAAhSdy18+3ub9Lw+2v0WEujYkFJ2yU0x=GqZ+PQGe2DrWCR8Bg@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+
+Change subject to:
+RISC-V: KVM: kernel mmio read/write support
+
+Also add 1-2 sentences of commit description.
 
 On Fri, Jul 24, 2020 at 2:25 PM Yifei Jiang <jiangyifei@huawei.com> wrote:
 >
@@ -42,9 +47,6 @@ On Fri, Jul 24, 2020 at 2:25 PM Yifei Jiang <jiangyifei@huawei.com> wrote:
 > +       ret = kvm_io_bus_read(vcpu, KVM_MMIO_BUS, fault_addr, len,
 > +                                                 data_buf);
 > +
-
-Move "ret = kvm_io_bus_read()" just before "if (!ret)".
-
 >         run->mmio.is_write = false;
 >         run->mmio.phys_addr = fault_addr;
 >         run->mmio.len = len;
@@ -81,11 +83,6 @@ Move "ret = kvm_io_bus_read()" just before "if (!ret)".
 > +       ret = kvm_io_bus_write(vcpu, KVM_MMIO_BUS, fault_addr, len,
 > +                                                  run->mmio.data);
 > +
-
-Same as above.
-
-Move "ret = kvm_io_bus_write()" just before "if (!ret) {"
-
 >         run->mmio.is_write = true;
 >         run->mmio.phys_addr = fault_addr;
 >         run->mmio.len = len;
