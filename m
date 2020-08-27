@@ -1,98 +1,187 @@
 From: Yifei Jiang <jiangyifei@huawei.com>
-Date: Thu, 27 Aug 2020 17:21:33 +0800
-Subject: [PATCH RFC v3 10/14] target/riscv: Add sifive_plic vmstate
+Date: Thu, 27 Aug 2020 17:21:25 +0800
+Subject: [PATCH RFC v3 02/14] target/riscv: Add target/riscv/kvm.c to place
+ the public kvm interface
 In-Reply-To: <20200827092137.479-1-jiangyifei@huawei.com>
 References: <20200827092137.479-1-jiangyifei@huawei.com>
-Message-ID: <20200827092137.479-11-jiangyifei@huawei.com>
+Message-ID: <20200827092137.479-3-jiangyifei@huawei.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add sifive_plic vmstate for supporting sifive_plic migration.
-Current vmstate framework only supports one structure parameter
-as num field to describe variable length arrays, so introduce
-num_enables.
+Add target/riscv/kvm.c to place kvm_arch_* function needed by kvm/kvm-all.c.
+Meanwhile, add kvm support in configure file.
 
 Signed-off-by: Yifei Jiang <jiangyifei@huawei.com>
 Signed-off-by: Yipeng Yin <yinyipeng1@huawei.com>
+Reviewed-by: Alistair Francis <alistair.francis@wdc.com>
 ---
- hw/riscv/sifive_plic.c         | 24 +++++++++++++++++++++++-
- include/hw/riscv/sifive_plic.h |  1 +
- 2 files changed, 24 insertions(+), 1 deletion(-)
+ configure                |   1 +
+ target/riscv/kvm.c       | 128 +++++++++++++++++++++++++++++++++++++++
+ target/riscv/meson.build |   1 +
+ 3 files changed, 130 insertions(+)
+ create mode 100644 target/riscv/kvm.c
 
-diff --git a/hw/riscv/sifive_plic.c b/hw/riscv/sifive_plic.c
-index 9c5a131e0f..897dc289a0 100644
---- a/hw/riscv/sifive_plic.c
-+++ b/hw/riscv/sifive_plic.c
-@@ -32,6 +32,7 @@
- #include "hw/riscv/sifive_plic.h"
- #include "sysemu/kvm.h"
- #include "kvm_riscv.h"
-+#include "migration/vmstate.h"
- 
- #define RISCV_DEBUG_PLIC 0
- 
-@@ -460,11 +461,12 @@ static void sifive_plic_realize(DeviceState *dev, Error **errp)
-                           TYPE_SIFIVE_PLIC, plic->aperture_size);
-     parse_hart_config(plic);
-     plic->bitfield_words = (plic->num_sources + 31) >> 5;
-+    plic->num_enables = plic->bitfield_words * plic->num_addrs;
-     plic->source_priority = g_new0(uint32_t, plic->num_sources);
-     plic->target_priority = g_new(uint32_t, plic->num_addrs);
-     plic->pending = g_new0(uint32_t, plic->bitfield_words);
-     plic->claimed = g_new0(uint32_t, plic->bitfield_words);
--    plic->enable = g_new0(uint32_t, plic->bitfield_words * plic->num_addrs);
-+    plic->enable = g_new0(uint32_t, plic->num_enables);
-     sysbus_init_mmio(SYS_BUS_DEVICE(dev), &plic->mmio);
-     qdev_init_gpio_in(dev, sifive_plic_irq_request, plic->num_sources);
- 
-@@ -484,12 +486,32 @@ static void sifive_plic_realize(DeviceState *dev, Error **errp)
-     msi_nonbroken = true;
- }
- 
-+static const VMStateDescription vmstate_sifive_plic = {
-+    .name = "riscv_sifive_plic",
-+    .version_id = 1,
-+    .minimum_version_id = 1,
-+    .fields = (VMStateField[]) {
-+            VMSTATE_VARRAY_UINT32(source_priority, SiFivePLICState, num_sources, 0,
-+                                  vmstate_info_uint32, uint32_t),
-+            VMSTATE_VARRAY_UINT32(target_priority, SiFivePLICState, num_addrs, 0,
-+                                  vmstate_info_uint32, uint32_t),
-+            VMSTATE_VARRAY_UINT32(pending, SiFivePLICState, bitfield_words, 0,
-+                                  vmstate_info_uint32, uint32_t),
-+            VMSTATE_VARRAY_UINT32(claimed, SiFivePLICState, bitfield_words, 0,
-+                                  vmstate_info_uint32, uint32_t),
-+            VMSTATE_VARRAY_UINT32(enable, SiFivePLICState, num_enables, 0,
-+                                  vmstate_info_uint32, uint32_t),
-+            VMSTATE_END_OF_LIST()
-+        }
+diff --git a/configure b/configure
+index b8f5b81a67..f1fe4021d4 100755
+--- a/configure
++++ b/configure
+@@ -269,6 +269,7 @@ supported_kvm_target() {
+         x86_64:i386 | x86_64:x86_64 | x86_64:x32 | \
+         mips:mips | mipsel:mips | mips64:mips | mips64el:mips | \
+         ppc:ppc | ppc64:ppc | ppc:ppc64 | ppc64:ppc64 | ppc64:ppc64le | \
++        riscv32:riscv32 | riscv64:riscv64 | \
+         s390x:s390x)
+             return 0
+         ;;
+diff --git a/target/riscv/kvm.c b/target/riscv/kvm.c
+new file mode 100644
+index 0000000000..8c386d9acf
+--- /dev/null
++++ b/target/riscv/kvm.c
+@@ -0,0 +1,128 @@
++/*
++ * RISC-V implementation of KVM hooks
++ *
++ * Copyright (c) 2020 Huawei Technologies Co., Ltd
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms and conditions of the GNU General Public License,
++ * version 2 or later, as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ *
++ * You should have received a copy of the GNU General Public License along with
++ * this program.  If not, see <http://www.gnu.org/licenses/>.
++ */
++
++#include "qemu/osdep.h"
++#include <sys/ioctl.h>
++
++#include <linux/kvm.h>
++
++#include "qemu-common.h"
++#include "qemu/timer.h"
++#include "qemu/error-report.h"
++#include "qemu/main-loop.h"
++#include "sysemu/sysemu.h"
++#include "sysemu/kvm.h"
++#include "sysemu/kvm_int.h"
++#include "cpu.h"
++#include "trace.h"
++#include "hw/pci/pci.h"
++#include "exec/memattrs.h"
++#include "exec/address-spaces.h"
++#include "hw/boards.h"
++#include "hw/irq.h"
++#include "qemu/log.h"
++#include "hw/loader.h"
++
++const KVMCapabilityInfo kvm_arch_required_capabilities[] = {
++    KVM_CAP_LAST_INFO
 +};
 +
- static void sifive_plic_class_init(ObjectClass *klass, void *data)
- {
-     DeviceClass *dc = DEVICE_CLASS(klass);
++int kvm_arch_get_registers(CPUState *cs)
++{
++    return 0;
++}
++
++int kvm_arch_put_registers(CPUState *cs, int level)
++{
++    return 0;
++}
++
++int kvm_arch_release_virq_post(int virq)
++{
++    return 0;
++}
++
++int kvm_arch_fixup_msi_route(struct kvm_irq_routing_entry *route,
++                             uint64_t address, uint32_t data, PCIDevice *dev)
++{
++    return 0;
++}
++
++int kvm_arch_destroy_vcpu(CPUState *cs)
++{
++    return 0;
++}
++
++unsigned long kvm_arch_vcpu_id(CPUState *cpu)
++{
++    return cpu->cpu_index;
++}
++
++void kvm_arch_init_irq_routing(KVMState *s)
++{
++}
++
++int kvm_arch_init_vcpu(CPUState *cs)
++{
++    return 0;
++}
++
++int kvm_arch_msi_data_to_gsi(uint32_t data)
++{
++    abort();
++}
++
++int kvm_arch_add_msi_route_post(struct kvm_irq_routing_entry *route,
++                                int vector, PCIDevice *dev)
++{
++    return 0;
++}
++
++int kvm_arch_init(MachineState *ms, KVMState *s)
++{
++    return 0;
++}
++
++int kvm_arch_irqchip_create(KVMState *s)
++{
++    return 0;
++}
++
++int kvm_arch_process_async_events(CPUState *cs)
++{
++    return 0;
++}
++
++void kvm_arch_pre_run(CPUState *cs, struct kvm_run *run)
++{
++}
++
++MemTxAttrs kvm_arch_post_run(CPUState *cs, struct kvm_run *run)
++{
++    return MEMTXATTRS_UNSPECIFIED;
++}
++
++bool kvm_arch_stop_on_emulation_error(CPUState *cs)
++{
++    return true;
++}
++
++int kvm_arch_handle_exit(CPUState *cs, struct kvm_run *run)
++{
++    return 0;
++}
+diff --git a/target/riscv/meson.build b/target/riscv/meson.build
+index abd647fea1..66d0dfd0c9 100644
+--- a/target/riscv/meson.build
++++ b/target/riscv/meson.build
+@@ -23,6 +23,7 @@ riscv_ss.add(files(
+   'vector_helper.c',
+   'translate.c',
+ ))
++riscv_ss.add(when: 'CONFIG_KVM', if_true: files('kvm.c'))
  
-     device_class_set_props(dc, sifive_plic_properties);
-     dc->realize = sifive_plic_realize;
-+    dc->vmsd = &vmstate_sifive_plic;
- }
- 
- static const TypeInfo sifive_plic_info = {
-diff --git a/include/hw/riscv/sifive_plic.h b/include/hw/riscv/sifive_plic.h
-index 4421e81249..130df0cf1c 100644
---- a/include/hw/riscv/sifive_plic.h
-+++ b/include/hw/riscv/sifive_plic.h
-@@ -49,6 +49,7 @@ typedef struct SiFivePLICState {
-     MemoryRegion mmio;
-     uint32_t num_addrs;
-     uint32_t bitfield_words;
-+    uint32_t num_enables;
-     PLICAddr *addr_config;
-     uint32_t *source_priority;
-     uint32_t *target_priority;
+ riscv_softmmu_ss = ss.source_set()
+ riscv_softmmu_ss.add(files(
 -- 
 2.19.1
 
