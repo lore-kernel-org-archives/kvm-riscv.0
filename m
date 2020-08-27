@@ -1,113 +1,197 @@
 From: Yifei Jiang <jiangyifei@huawei.com>
-Date: Thu, 27 Aug 2020 17:21:30 +0800
-Subject: [PATCH RFC v3 07/14] hw/riscv: PLIC update external interrupt by KVM
- when kvm enabled
+Date: Thu, 27 Aug 2020 17:21:28 +0800
+Subject: [PATCH RFC v3 05/14] arget/riscv: Implement kvm_arch_put_registers
 In-Reply-To: <20200827092137.479-1-jiangyifei@huawei.com>
 References: <20200827092137.479-1-jiangyifei@huawei.com>
-Message-ID: <20200827092137.479-8-jiangyifei@huawei.com>
+Message-ID: <20200827092137.479-6-jiangyifei@huawei.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Only support supervisor external interrupt currently.
+Put GPR CSR and FP registers to kvm by KVM_SET_ONE_REG ioctl
 
 Signed-off-by: Yifei Jiang <jiangyifei@huawei.com>
 Signed-off-by: Yipeng Yin <yinyipeng1@huawei.com>
 ---
- hw/riscv/sifive_plic.c   | 31 ++++++++++++++++++++++---------
- target/riscv/kvm.c       | 19 +++++++++++++++++++
- target/riscv/kvm_riscv.h |  1 +
- 3 files changed, 42 insertions(+), 9 deletions(-)
+ target/riscv/kvm.c | 142 ++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 141 insertions(+), 1 deletion(-)
 
-diff --git a/hw/riscv/sifive_plic.c b/hw/riscv/sifive_plic.c
-index c20c192034..9c5a131e0f 100644
---- a/hw/riscv/sifive_plic.c
-+++ b/hw/riscv/sifive_plic.c
-@@ -30,6 +30,8 @@
- #include "target/riscv/cpu.h"
- #include "sysemu/sysemu.h"
- #include "hw/riscv/sifive_plic.h"
-+#include "sysemu/kvm.h"
-+#include "kvm_riscv.h"
- 
- #define RISCV_DEBUG_PLIC 0
- 
-@@ -146,15 +148,26 @@ static void sifive_plic_update(SiFivePLICState *plic)
-             continue;
-         }
-         int level = sifive_plic_irqs_pending(plic, addrid);
--        switch (mode) {
--        case PLICMode_M:
--            riscv_cpu_update_mip(RISCV_CPU(cpu), MIP_MEIP, BOOL_TO_MASK(level));
--            break;
--        case PLICMode_S:
--            riscv_cpu_update_mip(RISCV_CPU(cpu), MIP_SEIP, BOOL_TO_MASK(level));
--            break;
--        default:
--            break;
-+        if (kvm_enabled()) {
-+            if (mode == PLICMode_M) {
-+                continue;
-+            }
-+#ifdef CONFIG_KVM
-+            kvm_riscv_set_irq(RISCV_CPU(cpu), IRQ_S_EXT, level);
-+#endif
-+        } else {
-+            switch (mode) {
-+            case PLICMode_M:
-+                riscv_cpu_update_mip(RISCV_CPU(cpu),
-+                                     MIP_MEIP, BOOL_TO_MASK(level));
-+                break;
-+            case PLICMode_S:
-+                riscv_cpu_update_mip(RISCV_CPU(cpu),
-+                                     MIP_SEIP, BOOL_TO_MASK(level));
-+                break;
-+            default:
-+                break;
-+            }
-         }
-     }
- 
 diff --git a/target/riscv/kvm.c b/target/riscv/kvm.c
-index 69217add16..d510d23da1 100644
+index e91f505607..7afb4263e9 100644
 --- a/target/riscv/kvm.c
 +++ b/target/riscv/kvm.c
-@@ -452,3 +452,22 @@ void kvm_riscv_reset_vcpu(RISCVCPU *cpu)
-     env->gpr[11] = cpu->env.fdt_addr;          /* a1 */
+@@ -85,6 +85,31 @@ static int kvm_riscv_get_regs_core(CPUState *cs)
+     return ret;
  }
  
-+void kvm_riscv_set_irq(RISCVCPU *cpu, int irq, int level)
++static int kvm_riscv_put_regs_core(CPUState *cs)
 +{
-+    int ret;
-+    unsigned virq = level ? KVM_INTERRUPT_SET : KVM_INTERRUPT_UNSET;
++    int ret = 0;
++    int i;
++    target_ulong reg;
++    CPURISCVState *env = &RISCV_CPU(cs)->env;
 +
-+    if (irq != IRQ_S_EXT) {
-+        return;
++    reg = env->pc;
++    ret = kvm_set_one_reg(cs, RISCV_CORE_REG(regs.pc), &reg);
++    if (ret) {
++        return ret;
 +    }
 +
-+    if (!kvm_enabled()) {
-+        return;
++    for (i = 1; i < 32; i++) {
++        __u64 id = kvm_riscv_reg_id(KVM_REG_RISCV_CORE, i);
++        reg = env->gpr[i];
++        ret = kvm_set_one_reg(cs, id, &reg);
++        if (ret) {
++            return ret;
++        }
 +    }
 +
-+    ret = kvm_vcpu_ioctl(CPU(cpu), KVM_INTERRUPT, &virq);
-+    if (ret < 0) {
-+        perror("Set irq failed");
-+        abort();
-+    }
++    return ret;
 +}
-diff --git a/target/riscv/kvm_riscv.h b/target/riscv/kvm_riscv.h
-index f38c82bf59..ed281bdce0 100644
---- a/target/riscv/kvm_riscv.h
-+++ b/target/riscv/kvm_riscv.h
-@@ -20,5 +20,6 @@
- #define QEMU_KVM_RISCV_H
++
+ static int kvm_riscv_get_regs_csr(CPUState *cs)
+ {
+     int ret = 0;
+@@ -148,6 +173,70 @@ static int kvm_riscv_get_regs_csr(CPUState *cs)
+     return ret;
+ }
  
- void kvm_riscv_reset_vcpu(RISCVCPU *cpu);
-+void kvm_riscv_set_irq(RISCVCPU *cpu, int irq, int level);
++static int kvm_riscv_put_regs_csr(CPUState *cs)
++{
++    int ret = 0;
++    target_ulong reg;
++    CPURISCVState *env = &RISCV_CPU(cs)->env;
++
++    reg = env->mstatus;
++    ret = kvm_set_one_reg(cs, RISCV_CSR_REG(sstatus), &reg);
++    if (ret) {
++        return ret;
++    }
++
++    reg = env->mie;
++    ret = kvm_set_one_reg(cs, RISCV_CSR_REG(sie), &reg);
++    if (ret) {
++        return ret;
++    }
++
++    reg = env->stvec;
++    ret = kvm_set_one_reg(cs, RISCV_CSR_REG(stvec), &reg);
++    if (ret) {
++        return ret;
++    }
++
++    reg = env->sscratch;
++    ret = kvm_set_one_reg(cs, RISCV_CSR_REG(sscratch), &reg);
++    if (ret) {
++        return ret;
++    }
++
++    reg = env->sepc;
++    ret = kvm_set_one_reg(cs, RISCV_CSR_REG(sepc), &reg);
++    if (ret) {
++        return ret;
++    }
++
++    reg = env->scause;
++    ret = kvm_set_one_reg(cs, RISCV_CSR_REG(scause), &reg);
++    if (ret) {
++        return ret;
++    }
++
++    reg = env->sbadaddr;
++    ret = kvm_set_one_reg(cs, RISCV_CSR_REG(stval), &reg);
++    if (ret) {
++        return ret;
++    }
++
++    reg = env->mip;
++    ret = kvm_set_one_reg(cs, RISCV_CSR_REG(sip), &reg);
++    if (ret) {
++        return ret;
++    }
++
++    reg = env->satp;
++    ret = kvm_set_one_reg(cs, RISCV_CSR_REG(satp), &reg);
++    if (ret) {
++        return ret;
++    }
++
++    return ret;
++}
++
++
+ static int kvm_riscv_get_regs_fp(CPUState *cs)
+ {
+     int ret = 0;
+@@ -181,6 +270,40 @@ static int kvm_riscv_get_regs_fp(CPUState *cs)
+     return ret;
+ }
  
- #endif
++static int kvm_riscv_put_regs_fp(CPUState *cs)
++{
++    int ret = 0;
++    int i;
++    CPURISCVState *env = &RISCV_CPU(cs)->env;
++
++    if (riscv_has_ext(env, RVD)) {
++        uint64_t reg;
++        for (i = 0; i < 32; i++) {
++            reg = env->fpr[i];
++            ret = kvm_set_one_reg(cs, RISCV_FP_D_REG(i), &reg);
++            if (ret) {
++                return ret;
++            }
++        }
++        return ret;
++    }
++
++    if (riscv_has_ext(env, RVF)) {
++        uint32_t reg;
++        for (i = 0; i < 32; i++) {
++            reg = env->fpr[i];
++            ret = kvm_set_one_reg(cs, RISCV_FP_F_REG(i), &reg);
++            if (ret) {
++                return ret;
++            }
++        }
++        return ret;
++    }
++
++    return ret;
++}
++
++
+ const KVMCapabilityInfo kvm_arch_required_capabilities[] = {
+     KVM_CAP_LAST_INFO
+ };
+@@ -209,7 +332,24 @@ int kvm_arch_get_registers(CPUState *cs)
+ 
+ int kvm_arch_put_registers(CPUState *cs, int level)
+ {
+-    return 0;
++    int ret = 0;
++
++    ret = kvm_riscv_put_regs_core(cs);
++    if (ret) {
++        return ret;
++    }
++
++    ret = kvm_riscv_put_regs_csr(cs);
++    if (ret) {
++        return ret;
++    }
++
++    ret = kvm_riscv_put_regs_fp(cs);
++    if (ret) {
++        return ret;
++    }
++
++    return ret;
+ }
+ 
+ int kvm_arch_release_virq_post(int virq)
 -- 
 2.19.1
 
