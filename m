@@ -1,131 +1,113 @@
 From: Yifei Jiang <jiangyifei@huawei.com>
-Date: Thu, 27 Aug 2020 16:22:51 +0800
-Subject: [PATCH RFC 2/2] target/kvm: Add interfaces needed for log dirty
-In-Reply-To: <20200827082251.1591-1-jiangyifei@huawei.com>
-References: <20200827082251.1591-1-jiangyifei@huawei.com>
-Message-ID: <20200827082251.1591-3-jiangyifei@huawei.com>
+Date: Thu, 27 Aug 2020 17:21:30 +0800
+Subject: [PATCH RFC v3 07/14] hw/riscv: PLIC update external interrupt by KVM
+ when kvm enabled
+In-Reply-To: <20200827092137.479-1-jiangyifei@huawei.com>
+References: <20200827092137.479-1-jiangyifei@huawei.com>
+Message-ID: <20200827092137.479-8-jiangyifei@huawei.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add two interfaces of log dirty for kvm_main.c, and detele the interface
-kvm_vm_ioctl_get_dirty_log which is redundantly defined.
-
-CONFIG_KVM_GENERIC_DIRTYLOG_READ_PROTECT is added in defconfig.
+Only support supervisor external interrupt currently.
 
 Signed-off-by: Yifei Jiang <jiangyifei@huawei.com>
 Signed-off-by: Yipeng Yin <yinyipeng1@huawei.com>
 ---
- arch/riscv/configs/defconfig |  1 +
- arch/riscv/kvm/Kconfig       |  1 +
- arch/riscv/kvm/mmu.c         | 43 ++++++++++++++++++++++++++++++++++++
- arch/riscv/kvm/vm.c          |  6 -----
- 4 files changed, 45 insertions(+), 6 deletions(-)
+ hw/riscv/sifive_plic.c   | 31 ++++++++++++++++++++++---------
+ target/riscv/kvm.c       | 19 +++++++++++++++++++
+ target/riscv/kvm_riscv.h |  1 +
+ 3 files changed, 42 insertions(+), 9 deletions(-)
 
-diff --git a/arch/riscv/configs/defconfig b/arch/riscv/configs/defconfig
-index d36e1000bbd3..857d799672c2 100644
---- a/arch/riscv/configs/defconfig
-+++ b/arch/riscv/configs/defconfig
-@@ -19,6 +19,7 @@ CONFIG_SOC_VIRT=y
- CONFIG_SMP=y
- CONFIG_VIRTUALIZATION=y
- CONFIG_KVM=y
-+CONFIG_KVM_GENERIC_DIRTYLOG_READ_PROTECT=y
- CONFIG_HOTPLUG_CPU=y
- CONFIG_MODULES=y
- CONFIG_MODULE_UNLOAD=y
-diff --git a/arch/riscv/kvm/Kconfig b/arch/riscv/kvm/Kconfig
-index 2356dc52ebb3..91fcffc70e5d 100644
---- a/arch/riscv/kvm/Kconfig
-+++ b/arch/riscv/kvm/Kconfig
-@@ -26,6 +26,7 @@ config KVM
- 	select KVM_MMIO
- 	select HAVE_KVM_VCPU_ASYNC_IOCTL
- 	select SRCU
-+	select KVM_GENERIC_DIRTYLOG_READ_PROTECT
- 	help
- 	  Support hosting virtualized guest machines.
+diff --git a/hw/riscv/sifive_plic.c b/hw/riscv/sifive_plic.c
+index c20c192034..9c5a131e0f 100644
+--- a/hw/riscv/sifive_plic.c
++++ b/hw/riscv/sifive_plic.c
+@@ -30,6 +30,8 @@
+ #include "target/riscv/cpu.h"
+ #include "sysemu/sysemu.h"
+ #include "hw/riscv/sifive_plic.h"
++#include "sysemu/kvm.h"
++#include "kvm_riscv.h"
  
-diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
-index 88bce80ee983..df2a470c25e4 100644
---- a/arch/riscv/kvm/mmu.c
-+++ b/arch/riscv/kvm/mmu.c
-@@ -358,6 +358,43 @@ void stage2_wp_memory_region(struct kvm *kvm, int slot)
- 	kvm_flush_remote_tlbs(kvm);
+ #define RISCV_DEBUG_PLIC 0
+ 
+@@ -146,15 +148,26 @@ static void sifive_plic_update(SiFivePLICState *plic)
+             continue;
+         }
+         int level = sifive_plic_irqs_pending(plic, addrid);
+-        switch (mode) {
+-        case PLICMode_M:
+-            riscv_cpu_update_mip(RISCV_CPU(cpu), MIP_MEIP, BOOL_TO_MASK(level));
+-            break;
+-        case PLICMode_S:
+-            riscv_cpu_update_mip(RISCV_CPU(cpu), MIP_SEIP, BOOL_TO_MASK(level));
+-            break;
+-        default:
+-            break;
++        if (kvm_enabled()) {
++            if (mode == PLICMode_M) {
++                continue;
++            }
++#ifdef CONFIG_KVM
++            kvm_riscv_set_irq(RISCV_CPU(cpu), IRQ_S_EXT, level);
++#endif
++        } else {
++            switch (mode) {
++            case PLICMode_M:
++                riscv_cpu_update_mip(RISCV_CPU(cpu),
++                                     MIP_MEIP, BOOL_TO_MASK(level));
++                break;
++            case PLICMode_S:
++                riscv_cpu_update_mip(RISCV_CPU(cpu),
++                                     MIP_SEIP, BOOL_TO_MASK(level));
++                break;
++            default:
++                break;
++            }
+         }
+     }
+ 
+diff --git a/target/riscv/kvm.c b/target/riscv/kvm.c
+index 69217add16..d510d23da1 100644
+--- a/target/riscv/kvm.c
++++ b/target/riscv/kvm.c
+@@ -452,3 +452,22 @@ void kvm_riscv_reset_vcpu(RISCVCPU *cpu)
+     env->gpr[11] = cpu->env.fdt_addr;          /* a1 */
  }
  
-+/**
-+ * kvm_mmu_write_protect_pt_masked() - write protect dirty pages
-+ * @kvm:    The KVM pointer
-+ * @slot:   The memory slot associated with mask
-+ * @gfn_offset: The gfn offset in memory slot
-+ * @mask:   The mask of dirty pages at offset 'gfn_offset' in this memory
-+ *      slot to be write protected
-+ *
-+ * Walks bits set in mask write protects the associated pte's. Caller must
-+ * acquire kvm_mmu_lock.
-+ */
-+static void kvm_mmu_write_protect_pt_masked(struct kvm *kvm,
-+        struct kvm_memory_slot *slot,
-+        gfn_t gfn_offset, unsigned long mask)
++void kvm_riscv_set_irq(RISCVCPU *cpu, int irq, int level)
 +{
-+    phys_addr_t base_gfn = slot->base_gfn + gfn_offset;
-+    phys_addr_t start = (base_gfn +  __ffs(mask)) << PAGE_SHIFT;
-+    phys_addr_t end = (base_gfn + __fls(mask) + 1) << PAGE_SHIFT;
++    int ret;
++    unsigned virq = level ? KVM_INTERRUPT_SET : KVM_INTERRUPT_UNSET;
 +
-+    stage2_wp_range(kvm, start, end);
++    if (irq != IRQ_S_EXT) {
++        return;
++    }
++
++    if (!kvm_enabled()) {
++        return;
++    }
++
++    ret = kvm_vcpu_ioctl(CPU(cpu), KVM_INTERRUPT, &virq);
++    if (ret < 0) {
++        perror("Set irq failed");
++        abort();
++    }
 +}
-+
-+/*
-+ * kvm_arch_mmu_enable_log_dirty_pt_masked - enable dirty logging for selected
-+ * dirty pages.
-+ *
-+ * It calls kvm_mmu_write_protect_pt_masked to write protect selected pages to
-+ * enable dirty logging for them.
-+ */
-+void kvm_arch_mmu_enable_log_dirty_pt_masked(struct kvm *kvm,
-+        struct kvm_memory_slot *slot,
-+        gfn_t gfn_offset, unsigned long mask)
-+{
-+    kvm_mmu_write_protect_pt_masked(kvm, slot, gfn_offset, mask);
-+}
-+
-+
- int stage2_ioremap(struct kvm *kvm, gpa_t gpa, phys_addr_t hpa,
- 		   unsigned long size, bool writable)
- {
-@@ -433,6 +470,12 @@ void kvm_arch_sync_dirty_log(struct kvm *kvm, struct kvm_memory_slot *memslot)
- {
- }
+diff --git a/target/riscv/kvm_riscv.h b/target/riscv/kvm_riscv.h
+index f38c82bf59..ed281bdce0 100644
+--- a/target/riscv/kvm_riscv.h
++++ b/target/riscv/kvm_riscv.h
+@@ -20,5 +20,6 @@
+ #define QEMU_KVM_RISCV_H
  
-+void kvm_arch_flush_remote_tlbs_memslot(struct kvm *kvm,
-+					struct kvm_memory_slot *memslot)
-+{
-+	kvm_flush_remote_tlbs(kvm);
-+}
-+
- void kvm_arch_free_memslot(struct kvm *kvm, struct kvm_memory_slot *free)
- {
- }
-diff --git a/arch/riscv/kvm/vm.c b/arch/riscv/kvm/vm.c
-index 4f2498198cb5..f7405676903b 100644
---- a/arch/riscv/kvm/vm.c
-+++ b/arch/riscv/kvm/vm.c
-@@ -12,12 +12,6 @@
- #include <linux/uaccess.h>
- #include <linux/kvm_host.h>
+ void kvm_riscv_reset_vcpu(RISCVCPU *cpu);
++void kvm_riscv_set_irq(RISCVCPU *cpu, int irq, int level);
  
--int kvm_vm_ioctl_get_dirty_log(struct kvm *kvm, struct kvm_dirty_log *log)
--{
--	/* TODO: To be added later. */
--	return -ENOTSUPP;
--}
--
- int kvm_arch_init_vm(struct kvm *kvm, unsigned long type)
- {
- 	int r;
+ #endif
 -- 
 2.19.1
 
