@@ -1,32 +1,131 @@
 From: Yifei Jiang <jiangyifei@huawei.com>
-Date: Thu, 27 Aug 2020 16:22:49 +0800
-Subject: [PATCH RFC 0/2] Add log dirty support
-Message-ID: <20200827082251.1591-1-jiangyifei@huawei.com>
+Date: Thu, 27 Aug 2020 16:22:51 +0800
+Subject: [PATCH RFC 2/2] target/kvm: Add interfaces needed for log dirty
+In-Reply-To: <20200827082251.1591-1-jiangyifei@huawei.com>
+References: <20200827082251.1591-1-jiangyifei@huawei.com>
+Message-ID: <20200827082251.1591-3-jiangyifei@huawei.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This series supports log dirty for migration in RISC-V KVM. Two interfaces
-are added for kvm_main.c, and some bugs are fixed.
+Add two interfaces of log dirty for kvm_main.c, and detele the interface
+kvm_vm_ioctl_get_dirty_log which is redundantly defined.
 
-We have implemented the vm migration in Qemu. So these patches have been
-tested.
+CONFIG_KVM_GENERIC_DIRTYLOG_READ_PROTECT is added in defconfig.
 
-This series is implemented based on https://github.com/avpatel/linux/tree/riscv_kvm_v13.
-
-Yifei Jiang (2):
-  riscv/kvm: Fix use VSIP_VALID_MASK mask HIP register
-  target/kvm: Add interfaces needed for log dirty
-
+Signed-off-by: Yifei Jiang <jiangyifei@huawei.com>
+Signed-off-by: Yipeng Yin <yinyipeng1@huawei.com>
+---
  arch/riscv/configs/defconfig |  1 +
  arch/riscv/kvm/Kconfig       |  1 +
  arch/riscv/kvm/mmu.c         | 43 ++++++++++++++++++++++++++++++++++++
- arch/riscv/kvm/vcpu.c        |  2 +-
  arch/riscv/kvm/vm.c          |  6 -----
- 5 files changed, 46 insertions(+), 7 deletions(-)
+ 4 files changed, 45 insertions(+), 6 deletions(-)
 
+diff --git a/arch/riscv/configs/defconfig b/arch/riscv/configs/defconfig
+index d36e1000bbd3..857d799672c2 100644
+--- a/arch/riscv/configs/defconfig
++++ b/arch/riscv/configs/defconfig
+@@ -19,6 +19,7 @@ CONFIG_SOC_VIRT=y
+ CONFIG_SMP=y
+ CONFIG_VIRTUALIZATION=y
+ CONFIG_KVM=y
++CONFIG_KVM_GENERIC_DIRTYLOG_READ_PROTECT=y
+ CONFIG_HOTPLUG_CPU=y
+ CONFIG_MODULES=y
+ CONFIG_MODULE_UNLOAD=y
+diff --git a/arch/riscv/kvm/Kconfig b/arch/riscv/kvm/Kconfig
+index 2356dc52ebb3..91fcffc70e5d 100644
+--- a/arch/riscv/kvm/Kconfig
++++ b/arch/riscv/kvm/Kconfig
+@@ -26,6 +26,7 @@ config KVM
+ 	select KVM_MMIO
+ 	select HAVE_KVM_VCPU_ASYNC_IOCTL
+ 	select SRCU
++	select KVM_GENERIC_DIRTYLOG_READ_PROTECT
+ 	help
+ 	  Support hosting virtualized guest machines.
+ 
+diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
+index 88bce80ee983..df2a470c25e4 100644
+--- a/arch/riscv/kvm/mmu.c
++++ b/arch/riscv/kvm/mmu.c
+@@ -358,6 +358,43 @@ void stage2_wp_memory_region(struct kvm *kvm, int slot)
+ 	kvm_flush_remote_tlbs(kvm);
+ }
+ 
++/**
++ * kvm_mmu_write_protect_pt_masked() - write protect dirty pages
++ * @kvm:    The KVM pointer
++ * @slot:   The memory slot associated with mask
++ * @gfn_offset: The gfn offset in memory slot
++ * @mask:   The mask of dirty pages at offset 'gfn_offset' in this memory
++ *      slot to be write protected
++ *
++ * Walks bits set in mask write protects the associated pte's. Caller must
++ * acquire kvm_mmu_lock.
++ */
++static void kvm_mmu_write_protect_pt_masked(struct kvm *kvm,
++        struct kvm_memory_slot *slot,
++        gfn_t gfn_offset, unsigned long mask)
++{
++    phys_addr_t base_gfn = slot->base_gfn + gfn_offset;
++    phys_addr_t start = (base_gfn +  __ffs(mask)) << PAGE_SHIFT;
++    phys_addr_t end = (base_gfn + __fls(mask) + 1) << PAGE_SHIFT;
++
++    stage2_wp_range(kvm, start, end);
++}
++
++/*
++ * kvm_arch_mmu_enable_log_dirty_pt_masked - enable dirty logging for selected
++ * dirty pages.
++ *
++ * It calls kvm_mmu_write_protect_pt_masked to write protect selected pages to
++ * enable dirty logging for them.
++ */
++void kvm_arch_mmu_enable_log_dirty_pt_masked(struct kvm *kvm,
++        struct kvm_memory_slot *slot,
++        gfn_t gfn_offset, unsigned long mask)
++{
++    kvm_mmu_write_protect_pt_masked(kvm, slot, gfn_offset, mask);
++}
++
++
+ int stage2_ioremap(struct kvm *kvm, gpa_t gpa, phys_addr_t hpa,
+ 		   unsigned long size, bool writable)
+ {
+@@ -433,6 +470,12 @@ void kvm_arch_sync_dirty_log(struct kvm *kvm, struct kvm_memory_slot *memslot)
+ {
+ }
+ 
++void kvm_arch_flush_remote_tlbs_memslot(struct kvm *kvm,
++					struct kvm_memory_slot *memslot)
++{
++	kvm_flush_remote_tlbs(kvm);
++}
++
+ void kvm_arch_free_memslot(struct kvm *kvm, struct kvm_memory_slot *free)
+ {
+ }
+diff --git a/arch/riscv/kvm/vm.c b/arch/riscv/kvm/vm.c
+index 4f2498198cb5..f7405676903b 100644
+--- a/arch/riscv/kvm/vm.c
++++ b/arch/riscv/kvm/vm.c
+@@ -12,12 +12,6 @@
+ #include <linux/uaccess.h>
+ #include <linux/kvm_host.h>
+ 
+-int kvm_vm_ioctl_get_dirty_log(struct kvm *kvm, struct kvm_dirty_log *log)
+-{
+-	/* TODO: To be added later. */
+-	return -ENOTSUPP;
+-}
+-
+ int kvm_arch_init_vm(struct kvm *kvm, unsigned long type)
+ {
+ 	int r;
 -- 
 2.19.1
 
