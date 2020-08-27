@@ -1,68 +1,64 @@
 From: Yifei Jiang <jiangyifei@huawei.com>
-Date: Thu, 27 Aug 2020 17:21:26 +0800
-Subject: [PATCH RFC v3 03/14] target/riscv: Implement function
- kvm_arch_init_vcpu
+Date: Thu, 27 Aug 2020 17:21:32 +0800
+Subject: [PATCH RFC v3 09/14] target/riscv: Add host cpu type
 In-Reply-To: <20200827092137.479-1-jiangyifei@huawei.com>
 References: <20200827092137.479-1-jiangyifei@huawei.com>
-Message-ID: <20200827092137.479-4-jiangyifei@huawei.com>
+Message-ID: <20200827092137.479-10-jiangyifei@huawei.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Get isa info from kvm while kvm init.
+Currently, host cpu is inherited simply.
 
 Signed-off-by: Yifei Jiang <jiangyifei@huawei.com>
 Signed-off-by: Yipeng Yin <yinyipeng1@huawei.com>
 ---
- target/riscv/kvm.c | 26 +++++++++++++++++++++++++-
- 1 file changed, 25 insertions(+), 1 deletion(-)
+ target/riscv/cpu.c | 6 ++++++
+ target/riscv/cpu.h | 1 +
+ 2 files changed, 7 insertions(+)
 
-diff --git a/target/riscv/kvm.c b/target/riscv/kvm.c
-index 8c386d9acf..7983f43f3f 100644
---- a/target/riscv/kvm.c
-+++ b/target/riscv/kvm.c
-@@ -38,6 +38,18 @@
- #include "qemu/log.h"
- #include "hw/loader.h"
+diff --git a/target/riscv/cpu.c b/target/riscv/cpu.c
+index 266e70cc47..d8c32a8f84 100644
+--- a/target/riscv/cpu.c
++++ b/target/riscv/cpu.c
+@@ -179,6 +179,10 @@ static void rv32_imafcu_nommu_cpu_init(Object *obj)
  
-+static __u64 kvm_riscv_reg_id(__u64 type, __u64 idx)
+ #endif
+ 
++static void riscv_host_cpu_init(Object *obj)
 +{
-+    __u64 id = KVM_REG_RISCV | type | idx;
-+
-+#if defined(TARGET_RISCV32)
-+    id |= KVM_REG_SIZE_U32;
-+#elif defined(TARGET_RISCV64)
-+    id |= KVM_REG_SIZE_U64;
-+#endif
-+    return id;
 +}
 +
- const KVMCapabilityInfo kvm_arch_required_capabilities[] = {
-     KVM_CAP_LAST_INFO
- };
-@@ -79,7 +91,19 @@ void kvm_arch_init_irq_routing(KVMState *s)
- 
- int kvm_arch_init_vcpu(CPUState *cs)
+ static ObjectClass *riscv_cpu_class_by_name(const char *cpu_model)
  {
--    return 0;
-+    int ret = 0;
-+    target_ulong isa;
-+    RISCVCPU *cpu = RISCV_CPU(cs);
-+    __u64 id;
-+
-+    id = kvm_riscv_reg_id(KVM_REG_RISCV_CONFIG, KVM_REG_RISCV_CONFIG_REG(isa));
-+    ret = kvm_get_one_reg(cs, id, &isa);
-+    if (ret) {
-+        return ret;
-+    }
-+    cpu->env.misa = isa;
-+
-+    return ret;
- }
+     ObjectClass *oc;
+@@ -635,10 +639,12 @@ static const TypeInfo riscv_cpu_type_infos[] = {
+     DEFINE_CPU(TYPE_RISCV_CPU_SIFIVE_E31,       rvxx_sifive_e_cpu_init),
+     DEFINE_CPU(TYPE_RISCV_CPU_SIFIVE_E34,       rv32_imafcu_nommu_cpu_init),
+     DEFINE_CPU(TYPE_RISCV_CPU_SIFIVE_U34,       rvxx_sifive_u_cpu_init),
++    DEFINE_CPU(TYPE_RISCV_CPU_HOST,             riscv_host_cpu_init),
+ #elif defined(TARGET_RISCV64)
+     DEFINE_CPU(TYPE_RISCV_CPU_BASE64,           riscv_base_cpu_init),
+     DEFINE_CPU(TYPE_RISCV_CPU_SIFIVE_E51,       rvxx_sifive_e_cpu_init),
+     DEFINE_CPU(TYPE_RISCV_CPU_SIFIVE_U54,       rvxx_sifive_u_cpu_init),
++    DEFINE_CPU(TYPE_RISCV_CPU_HOST,             riscv_host_cpu_init),
+ #endif
+ };
  
- int kvm_arch_msi_data_to_gsi(uint32_t data)
+diff --git a/target/riscv/cpu.h b/target/riscv/cpu.h
+index d4cafe37e1..7795e7ae13 100644
+--- a/target/riscv/cpu.h
++++ b/target/riscv/cpu.h
+@@ -42,6 +42,7 @@
+ #define TYPE_RISCV_CPU_SIFIVE_E51       RISCV_CPU_TYPE_NAME("sifive-e51")
+ #define TYPE_RISCV_CPU_SIFIVE_U34       RISCV_CPU_TYPE_NAME("sifive-u34")
+ #define TYPE_RISCV_CPU_SIFIVE_U54       RISCV_CPU_TYPE_NAME("sifive-u54")
++#define TYPE_RISCV_CPU_HOST             RISCV_CPU_TYPE_NAME("host")
+ 
+ #define RV32 ((target_ulong)1 << (TARGET_LONG_BITS - 2))
+ #define RV64 ((target_ulong)2 << (TARGET_LONG_BITS - 2))
 -- 
 2.19.1
 
