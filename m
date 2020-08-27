@@ -1,51 +1,68 @@
 From: Yifei Jiang <jiangyifei@huawei.com>
-Date: Thu, 27 Aug 2020 17:21:24 +0800
-Subject: [PATCH RFC v3 01/14] linux-header: Update linux/kvm.h
+Date: Thu, 27 Aug 2020 17:21:26 +0800
+Subject: [PATCH RFC v3 03/14] target/riscv: Implement function
+ kvm_arch_init_vcpu
 In-Reply-To: <20200827092137.479-1-jiangyifei@huawei.com>
 References: <20200827092137.479-1-jiangyifei@huawei.com>
-Message-ID: <20200827092137.479-2-jiangyifei@huawei.com>
+Message-ID: <20200827092137.479-4-jiangyifei@huawei.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Update linux-headers/linux/kvm.h from https://github.com/kvm-riscv/linux.
-Only use this header file, so here do not update all linux headers by
-update-linux-headers.sh until above KVM series is accepted.
+Get isa info from kvm while kvm init.
 
 Signed-off-by: Yifei Jiang <jiangyifei@huawei.com>
 Signed-off-by: Yipeng Yin <yinyipeng1@huawei.com>
 ---
- linux-headers/linux/kvm.h | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ target/riscv/kvm.c | 26 +++++++++++++++++++++++++-
+ 1 file changed, 25 insertions(+), 1 deletion(-)
 
-diff --git a/linux-headers/linux/kvm.h b/linux-headers/linux/kvm.h
-index a28c366737..b2d3721798 100644
---- a/linux-headers/linux/kvm.h
-+++ b/linux-headers/linux/kvm.h
-@@ -248,6 +248,7 @@ struct kvm_hyperv_exit {
- #define KVM_EXIT_IOAPIC_EOI       26
- #define KVM_EXIT_HYPERV           27
- #define KVM_EXIT_ARM_NISV         28
-+#define KVM_EXIT_RISCV_SBI        28
+diff --git a/target/riscv/kvm.c b/target/riscv/kvm.c
+index 8c386d9acf..7983f43f3f 100644
+--- a/target/riscv/kvm.c
++++ b/target/riscv/kvm.c
+@@ -38,6 +38,18 @@
+ #include "qemu/log.h"
+ #include "hw/loader.h"
  
- /* For KVM_EXIT_INTERNAL_ERROR */
- /* Emulate instruction failed. */
-@@ -412,6 +413,13 @@ struct kvm_run {
- 			__u64 esr_iss;
- 			__u64 fault_ipa;
- 		} arm_nisv;
-+		/* KVM_EXIT_RISCV_SBI */
-+		struct {
-+			unsigned long extension_id;
-+			unsigned long function_id;
-+			unsigned long args[6];
-+			unsigned long ret[2];
-+		} riscv_sbi;
- 		/* Fix the size of the union. */
- 		char padding[256];
- 	};
++static __u64 kvm_riscv_reg_id(__u64 type, __u64 idx)
++{
++    __u64 id = KVM_REG_RISCV | type | idx;
++
++#if defined(TARGET_RISCV32)
++    id |= KVM_REG_SIZE_U32;
++#elif defined(TARGET_RISCV64)
++    id |= KVM_REG_SIZE_U64;
++#endif
++    return id;
++}
++
+ const KVMCapabilityInfo kvm_arch_required_capabilities[] = {
+     KVM_CAP_LAST_INFO
+ };
+@@ -79,7 +91,19 @@ void kvm_arch_init_irq_routing(KVMState *s)
+ 
+ int kvm_arch_init_vcpu(CPUState *cs)
+ {
+-    return 0;
++    int ret = 0;
++    target_ulong isa;
++    RISCVCPU *cpu = RISCV_CPU(cs);
++    __u64 id;
++
++    id = kvm_riscv_reg_id(KVM_REG_RISCV_CONFIG, KVM_REG_RISCV_CONFIG_REG(isa));
++    ret = kvm_get_one_reg(cs, id, &isa);
++    if (ret) {
++        return ret;
++    }
++    cpu->env.misa = isa;
++
++    return ret;
+ }
+ 
+ int kvm_arch_msi_data_to_gsi(uint32_t data)
 -- 
 2.19.1
 
