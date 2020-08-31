@@ -1,207 +1,298 @@
 From: Anup Patel <anup.patel@wdc.com>
-Date: Mon, 31 Aug 2020 18:00:01 +0530
-Subject: [PATCH v14 03/17] RISC-V: KVM: Implement VCPU create,
- init and destroy functions
+Date: Mon, 31 Aug 2020 18:00:14 +0530
+Subject: [PATCH v14 16/17] RISC-V: KVM: Document RISC-V specific parts of KVM
+ API
 In-Reply-To: <20200831123015.336047-1-anup.patel@wdc.com>
 References: <20200831123015.336047-1-anup.patel@wdc.com>
-Message-ID: <20200831123015.336047-4-anup.patel@wdc.com>
+Message-ID: <20200831123015.336047-17-anup.patel@wdc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This patch implements VCPU create, init and destroy functions
-required by generic KVM module. We don't have much dynamic
-resources in struct kvm_vcpu_arch so these functions are quite
-simple for KVM RISC-V.
+Document RISC-V specific parts of the KVM API, such as:
+ - The interrupt numbers passed to the KVM_INTERRUPT ioctl.
+ - The states supported by the KVM_{GET,SET}_MP_STATE ioctls.
+ - The registers supported by the KVM_{GET,SET}_ONE_REG interface
+   and the encoding of those register ids.
+ - The exit reason KVM_EXIT_RISCV_SBI for SBI calls forwarded to
+   userspace tool.
 
+CC: Jonathan Corbet <corbet@lwn.net>
+CC: linux-doc at vger.kernel.org
 Signed-off-by: Anup Patel <anup.patel@wdc.com>
-Acked-by: Paolo Bonzini <pbonzini@redhat.com>
-Reviewed-by: Paolo Bonzini <pbonzini@redhat.com>
-Reviewed-by: Alexander Graf <graf@amazon.com>
 ---
- arch/riscv/include/asm/kvm_host.h | 69 +++++++++++++++++++++++++++++++
- arch/riscv/kvm/vcpu.c             | 55 ++++++++++++++++++++----
- 2 files changed, 115 insertions(+), 9 deletions(-)
+ Documentation/virt/kvm/api.rst | 193 +++++++++++++++++++++++++++++++--
+ 1 file changed, 184 insertions(+), 9 deletions(-)
 
-diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
-index fdd63bafb714..43e85523a07e 100644
---- a/arch/riscv/include/asm/kvm_host.h
-+++ b/arch/riscv/include/asm/kvm_host.h
-@@ -63,7 +63,76 @@ struct kvm_cpu_trap {
- 	unsigned long htinst;
- };
+diff --git a/Documentation/virt/kvm/api.rst b/Documentation/virt/kvm/api.rst
+index eb3a1316f03e..b2f48e1adb11 100644
+--- a/Documentation/virt/kvm/api.rst
++++ b/Documentation/virt/kvm/api.rst
+@@ -513,7 +513,7 @@ translation mode.
+ ------------------
  
-+struct kvm_cpu_context {
-+	unsigned long zero;
-+	unsigned long ra;
-+	unsigned long sp;
-+	unsigned long gp;
-+	unsigned long tp;
-+	unsigned long t0;
-+	unsigned long t1;
-+	unsigned long t2;
-+	unsigned long s0;
-+	unsigned long s1;
-+	unsigned long a0;
-+	unsigned long a1;
-+	unsigned long a2;
-+	unsigned long a3;
-+	unsigned long a4;
-+	unsigned long a5;
-+	unsigned long a6;
-+	unsigned long a7;
-+	unsigned long s2;
-+	unsigned long s3;
-+	unsigned long s4;
-+	unsigned long s5;
-+	unsigned long s6;
-+	unsigned long s7;
-+	unsigned long s8;
-+	unsigned long s9;
-+	unsigned long s10;
-+	unsigned long s11;
-+	unsigned long t3;
-+	unsigned long t4;
-+	unsigned long t5;
-+	unsigned long t6;
-+	unsigned long sepc;
-+	unsigned long sstatus;
-+	unsigned long hstatus;
-+};
-+
-+struct kvm_vcpu_csr {
-+	unsigned long vsstatus;
-+	unsigned long hie;
-+	unsigned long vstvec;
-+	unsigned long vsscratch;
-+	unsigned long vsepc;
-+	unsigned long vscause;
-+	unsigned long vstval;
-+	unsigned long hvip;
-+	unsigned long vsatp;
-+	unsigned long scounteren;
-+};
-+
- struct kvm_vcpu_arch {
-+	/* VCPU ran atleast once */
-+	bool ran_atleast_once;
-+
-+	/* ISA feature bits (similar to MISA) */
-+	unsigned long isa;
-+
-+	/* CPU context of Guest VCPU */
-+	struct kvm_cpu_context guest_context;
-+
-+	/* CPU CSR context of Guest VCPU */
-+	struct kvm_vcpu_csr guest_csr;
-+
-+	/* CPU context upon Guest VCPU reset */
-+	struct kvm_cpu_context guest_reset_context;
-+
-+	/* CPU CSR context upon Guest VCPU reset */
-+	struct kvm_vcpu_csr guest_reset_csr;
-+
- 	/* Don't run the VCPU (blocked) */
- 	bool pause;
+ :Capability: basic
+-:Architectures: x86, ppc, mips
++:Architectures: x86, ppc, mips, riscv
+ :Type: vcpu ioctl
+ :Parameters: struct kvm_interrupt (in)
+ :Returns: 0 on success, negative on failure.
+@@ -582,6 +582,23 @@ interrupt number dequeues the interrupt.
  
-diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-index 8d8d140a0caf..84deeddbffbe 100644
---- a/arch/riscv/kvm/vcpu.c
-+++ b/arch/riscv/kvm/vcpu.c
-@@ -35,6 +35,27 @@ struct kvm_stats_debugfs_item debugfs_entries[] = {
- 	{ NULL }
- };
+ This is an asynchronous vcpu ioctl and can be invoked from any thread.
  
-+#define KVM_RISCV_ISA_ALLOWED	(riscv_isa_extension_mask(a) | \
-+				 riscv_isa_extension_mask(c) | \
-+				 riscv_isa_extension_mask(d) | \
-+				 riscv_isa_extension_mask(f) | \
-+				 riscv_isa_extension_mask(i) | \
-+				 riscv_isa_extension_mask(m) | \
-+				 riscv_isa_extension_mask(s) | \
-+				 riscv_isa_extension_mask(u))
++RISC-V:
++^^^^^^^
 +
-+static void kvm_riscv_reset_vcpu(struct kvm_vcpu *vcpu)
-+{
-+	struct kvm_vcpu_csr *csr = &vcpu->arch.guest_csr;
-+	struct kvm_vcpu_csr *reset_csr = &vcpu->arch.guest_reset_csr;
-+	struct kvm_cpu_context *cntx = &vcpu->arch.guest_context;
-+	struct kvm_cpu_context *reset_cntx = &vcpu->arch.guest_reset_context;
++Queues an external interrupt to be injected into the virutal CPU. This ioctl
++is overloaded with 2 different irq values:
 +
-+	memcpy(csr, reset_csr, sizeof(*csr));
++a) KVM_INTERRUPT_SET
 +
-+	memcpy(cntx, reset_cntx, sizeof(*cntx));
-+}
++   This sets external interrupt for a virtual CPU and it will receive
++   once it is ready.
 +
- int kvm_arch_vcpu_precreate(struct kvm *kvm, unsigned int id)
- {
- 	return 0;
-@@ -42,7 +63,25 @@ int kvm_arch_vcpu_precreate(struct kvm *kvm, unsigned int id)
++b) KVM_INTERRUPT_UNSET
++
++   This clears pending external interrupt for a virtual CPU.
++
++This is an asynchronous vcpu ioctl and can be invoked from any thread.
++
  
- int kvm_arch_vcpu_create(struct kvm_vcpu *vcpu)
- {
--	/* TODO: */
-+	struct kvm_cpu_context *cntx;
-+
-+	/* Mark this VCPU never ran */
-+	vcpu->arch.ran_atleast_once = false;
-+
-+	/* Setup ISA features available to VCPU */
-+	vcpu->arch.isa = riscv_isa_extension_base(NULL) & KVM_RISCV_ISA_ALLOWED;
-+
-+	/* Setup reset state of shadow SSTATUS and HSTATUS CSRs */
-+	cntx = &vcpu->arch.guest_reset_context;
-+	cntx->sstatus = SR_SPP | SR_SPIE;
-+	cntx->hstatus = 0;
-+	cntx->hstatus |= HSTATUS_VTW;
-+	cntx->hstatus |= HSTATUS_SPVP;
-+	cntx->hstatus |= HSTATUS_SPV;
-+
-+	/* Reset VCPU */
-+	kvm_riscv_reset_vcpu(vcpu);
-+
- 	return 0;
- }
+ 4.17 KVM_DEBUG_GUEST
+ --------------------
+@@ -1364,7 +1381,7 @@ for vm-wide capabilities.
+ ---------------------
  
-@@ -55,15 +94,10 @@ void kvm_arch_vcpu_postcreate(struct kvm_vcpu *vcpu)
- {
- }
+ :Capability: KVM_CAP_MP_STATE
+-:Architectures: x86, s390, arm, arm64
++:Architectures: x86, s390, arm, arm64, riscv
+ :Type: vcpu ioctl
+ :Parameters: struct kvm_mp_state (out)
+ :Returns: 0 on success; -1 on error
+@@ -1381,7 +1398,8 @@ uniprocessor guests).
+ Possible values are:
  
--int kvm_arch_vcpu_init(struct kvm_vcpu *vcpu)
--{
--	/* TODO: */
--	return 0;
--}
--
- void kvm_arch_vcpu_destroy(struct kvm_vcpu *vcpu)
- {
--	/* TODO: */
-+	/* Flush the pages pre-allocated for Stage2 page table mappings */
-+	kvm_riscv_stage2_flush_cache(vcpu);
- }
+    ==========================    ===============================================
+-   KVM_MP_STATE_RUNNABLE         the vcpu is currently running [x86,arm/arm64]
++   KVM_MP_STATE_RUNNABLE         the vcpu is currently running
++                                 [x86,arm/arm64,riscv]
+    KVM_MP_STATE_UNINITIALIZED    the vcpu is an application processor (AP)
+                                  which has not yet received an INIT signal [x86]
+    KVM_MP_STATE_INIT_RECEIVED    the vcpu has received an INIT signal, and is
+@@ -1390,7 +1408,7 @@ Possible values are:
+                                  is waiting for an interrupt [x86]
+    KVM_MP_STATE_SIPI_RECEIVED    the vcpu has just received a SIPI (vector
+                                  accessible via KVM_GET_VCPU_EVENTS) [x86]
+-   KVM_MP_STATE_STOPPED          the vcpu is stopped [s390,arm/arm64]
++   KVM_MP_STATE_STOPPED          the vcpu is stopped [s390,arm/arm64,riscv]
+    KVM_MP_STATE_CHECK_STOP       the vcpu is in a special error state [s390]
+    KVM_MP_STATE_OPERATING        the vcpu is operating (running or halted)
+                                  [s390]
+@@ -1402,8 +1420,8 @@ On x86, this ioctl is only useful after KVM_CREATE_IRQCHIP. Without an
+ in-kernel irqchip, the multiprocessing state must be maintained by userspace on
+ these architectures.
  
- int kvm_cpu_has_pending_timer(struct kvm_vcpu *vcpu)
-@@ -209,6 +243,9 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
- 	struct kvm_cpu_trap trap;
- 	struct kvm_run *run = vcpu->run;
+-For arm/arm64:
+-^^^^^^^^^^^^^^
++For arm/arm64/riscv:
++^^^^^^^^^^^^^^^^^^^^
  
-+	/* Mark this VCPU ran at least once */
-+	vcpu->arch.ran_atleast_once = true;
+ The only states that are valid are KVM_MP_STATE_STOPPED and
+ KVM_MP_STATE_RUNNABLE which reflect if the vcpu is paused or not.
+@@ -1412,7 +1430,7 @@ KVM_MP_STATE_RUNNABLE which reflect if the vcpu is paused or not.
+ ---------------------
+ 
+ :Capability: KVM_CAP_MP_STATE
+-:Architectures: x86, s390, arm, arm64
++:Architectures: x86, s390, arm, arm64, riscv
+ :Type: vcpu ioctl
+ :Parameters: struct kvm_mp_state (in)
+ :Returns: 0 on success; -1 on error
+@@ -1424,8 +1442,8 @@ On x86, this ioctl is only useful after KVM_CREATE_IRQCHIP. Without an
+ in-kernel irqchip, the multiprocessing state must be maintained by userspace on
+ these architectures.
+ 
+-For arm/arm64:
+-^^^^^^^^^^^^^^
++For arm/arm64/riscv:
++^^^^^^^^^^^^^^^^^^^^
+ 
+ The only states that are valid are KVM_MP_STATE_STOPPED and
+ KVM_MP_STATE_RUNNABLE which reflect if the vcpu should be paused or not.
+@@ -2539,6 +2557,144 @@ following id bit patterns::
+ 
+   0x7020 0000 0003 02 <0:3> <reg:5>
+ 
++RISC-V registers are mapped using the lower 32 bits. The upper 8 bits of
++that is the register group type.
 +
- 	vcpu->arch.srcu_idx = srcu_read_lock(&vcpu->kvm->srcu);
++RISC-V config registers are meant for configuring a Guest VCPU and it has
++the following id bit patterns::
++
++  0x8020 0000 01 <index into the kvm_riscv_config struct:24> (32bit Host)
++  0x8030 0000 01 <index into the kvm_riscv_config struct:24> (64bit Host)
++
++Following are the RISC-V config registers:
++
++======================= ========= =============================================
++    Encoding            Register  Description
++======================= ========= =============================================
++  0x80x0 0000 0100 0000 isa       ISA feature bitmap of Guest VCPU
++======================= ========= =============================================
++
++The isa config register can be read anytime but can only be written before
++a Guest VCPU runs. It will have ISA feature bits matching underlying host
++set by default.
++
++RISC-V core registers represent the general excution state of a Guest VCPU
++and it has the following id bit patterns::
++
++  0x8020 0000 02 <index into the kvm_riscv_core struct:24> (32bit Host)
++  0x8030 0000 02 <index into the kvm_riscv_core struct:24> (64bit Host)
++
++Following are the RISC-V core registers:
++
++======================= ========= =============================================
++    Encoding            Register  Description
++======================= ========= =============================================
++  0x80x0 0000 0200 0000 regs.pc   Program counter
++  0x80x0 0000 0200 0001 regs.ra   Return address
++  0x80x0 0000 0200 0002 regs.sp   Stack pointer
++  0x80x0 0000 0200 0003 regs.gp   Global pointer
++  0x80x0 0000 0200 0004 regs.tp   Task pointer
++  0x80x0 0000 0200 0005 regs.t0   Caller saved register 0
++  0x80x0 0000 0200 0006 regs.t1   Caller saved register 1
++  0x80x0 0000 0200 0007 regs.t2   Caller saved register 2
++  0x80x0 0000 0200 0008 regs.s0   Callee saved register 0
++  0x80x0 0000 0200 0009 regs.s1   Callee saved register 1
++  0x80x0 0000 0200 000a regs.a0   Function argument (or return value) 0
++  0x80x0 0000 0200 000b regs.a1   Function argument (or return value) 1
++  0x80x0 0000 0200 000c regs.a2   Function argument 2
++  0x80x0 0000 0200 000d regs.a3   Function argument 3
++  0x80x0 0000 0200 000e regs.a4   Function argument 4
++  0x80x0 0000 0200 000f regs.a5   Function argument 5
++  0x80x0 0000 0200 0010 regs.a6   Function argument 6
++  0x80x0 0000 0200 0011 regs.a7   Function argument 7
++  0x80x0 0000 0200 0012 regs.s2   Callee saved register 2
++  0x80x0 0000 0200 0013 regs.s3   Callee saved register 3
++  0x80x0 0000 0200 0014 regs.s4   Callee saved register 4
++  0x80x0 0000 0200 0015 regs.s5   Callee saved register 5
++  0x80x0 0000 0200 0016 regs.s6   Callee saved register 6
++  0x80x0 0000 0200 0017 regs.s7   Callee saved register 7
++  0x80x0 0000 0200 0018 regs.s8   Callee saved register 8
++  0x80x0 0000 0200 0019 regs.s9   Callee saved register 9
++  0x80x0 0000 0200 001a regs.s10  Callee saved register 10
++  0x80x0 0000 0200 001b regs.s11  Callee saved register 11
++  0x80x0 0000 0200 001c regs.t3   Caller saved register 3
++  0x80x0 0000 0200 001d regs.t4   Caller saved register 4
++  0x80x0 0000 0200 001e regs.t5   Caller saved register 5
++  0x80x0 0000 0200 001f regs.t6   Caller saved register 6
++  0x80x0 0000 0200 0020 mode      Privilege mode (1 = S-mode or 0 = U-mode)
++======================= ========= =============================================
++
++RISC-V csr registers represent the supervisor mode control/status registers
++of a Guest VCPU and it has the following id bit patterns::
++
++  0x8020 0000 03 <index into the kvm_riscv_csr struct:24> (32bit Host)
++  0x8030 0000 03 <index into the kvm_riscv_csr struct:24> (64bit Host)
++
++Following are the RISC-V csr registers:
++
++======================= ========= =============================================
++    Encoding            Register  Description
++======================= ========= =============================================
++  0x80x0 0000 0300 0000 sstatus   Supervisor status
++  0x80x0 0000 0300 0001 sie       Supervisor interrupt enable
++  0x80x0 0000 0300 0002 stvec     Supervisor trap vector base
++  0x80x0 0000 0300 0003 sscratch  Supervisor scratch register
++  0x80x0 0000 0300 0004 sepc      Supervisor exception program counter
++  0x80x0 0000 0300 0005 scause    Supervisor trap cause
++  0x80x0 0000 0300 0006 stval     Supervisor bad address or instruction
++  0x80x0 0000 0300 0007 sip       Supervisor interrupt pending
++  0x80x0 0000 0300 0008 satp      Supervisor address translation and protection
++======================= ========= =============================================
++
++RISC-V timer registers represent the timer state of a Guest VCPU and it has
++the following id bit patterns::
++
++  0x8030 0000 04 <index into the kvm_riscv_timer struct:24>
++
++Following are the RISC-V timer registers:
++
++======================= ========= =============================================
++    Encoding            Register  Description
++======================= ========= =============================================
++  0x8030 0000 0400 0000 frequency Time base frequency (read-only)
++  0x8030 0000 0400 0001 time      Time value visible to Guest
++  0x8030 0000 0400 0002 compare   Time compare programmed by Guest
++  0x8030 0000 0400 0003 state     Time compare state (1 = ON or 0 = OFF)
++======================= ========= =============================================
++
++RISC-V F-extension registers represent the single precision floating point
++state of a Guest VCPU and it has the following id bit patterns::
++
++  0x8020 0000 05 <index into the __riscv_f_ext_state struct:24>
++
++Following are the RISC-V F-extension registers:
++
++======================= ========= =============================================
++    Encoding            Register  Description
++======================= ========= =============================================
++  0x8020 0000 0500 0000 f[0]      Floating point register 0
++  ...
++  0x8020 0000 0500 001f f[31]     Floating point register 31
++  0x8020 0000 0500 0020 fcsr      Floating point control and status register
++======================= ========= =============================================
++
++RISC-V D-extension registers represent the double precision floating point
++state of a Guest VCPU and it has the following id bit patterns::
++
++  0x8020 0000 06 <index into the __riscv_d_ext_state struct:24> (fcsr)
++  0x8030 0000 06 <index into the __riscv_d_ext_state struct:24> (non-fcsr)
++
++Following are the RISC-V D-extension registers:
++
++======================= ========= =============================================
++    Encoding            Register  Description
++======================= ========= =============================================
++  0x8030 0000 0600 0000 f[0]      Floating point register 0
++  ...
++  0x8030 0000 0600 001f f[31]     Floating point register 31
++  0x8020 0000 0600 0020 fcsr      Floating point control and status register
++======================= ========= =============================================
++
  
- 	/* Process MMIO value returned from user-space */
-@@ -282,7 +319,7 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
- 		 * get an interrupt between __kvm_riscv_switch_to() and
- 		 * local_irq_enable() which can potentially change CSRs.
- 		 */
--		trap.sepc = 0;
-+		trap.sepc = vcpu->arch.guest_context.sepc;
- 		trap.scause = csr_read(CSR_SCAUSE);
- 		trap.stval = csr_read(CSR_STVAL);
- 		trap.htval = csr_read(CSR_HTVAL);
+ 4.69 KVM_GET_ONE_REG
+ --------------------
+@@ -5163,6 +5319,25 @@ Note that KVM does not skip the faulting instruction as it does for
+ KVM_EXIT_MMIO, but userspace has to emulate any change to the processing state
+ if it decides to decode and emulate the instruction.
+ 
++::
++
++		/* KVM_EXIT_RISCV_SBI */
++		struct {
++			unsigned long extension_id;
++			unsigned long function_id;
++			unsigned long args[6];
++			unsigned long ret[2];
++		} riscv_sbi;
++If exit reason is KVM_EXIT_RISCV_SBI then it indicates that the VCPU has
++done a SBI call which is not handled by KVM RISC-V kernel module. The details
++of the SBI call are available in 'riscv_sbi' member of kvm_run structure. The
++'extension_id' field of 'riscv_sbi' represents SBI extension ID whereas the
++'function_id' field represents function ID of given SBI extension. The 'args'
++array field of 'riscv_sbi' represents parameters for the SBI call and 'ret'
++array field represents return values. The userspace should update the return
++values of SBI call before resuming the VCPU. For more details on RISC-V SBI
++spec refer, https://github.com/riscv/riscv-sbi-doc.
++
+ ::
+ 
+ 		/* Fix the size of the union. */
 -- 
 2.25.1
 
