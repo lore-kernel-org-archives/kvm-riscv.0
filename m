@@ -1,292 +1,384 @@
 From: Anup Patel <anup.patel@wdc.com>
-Date: Mon, 31 Aug 2020 18:00:09 +0530
-Subject: [PATCH v14 11/17] RISC-V: KVM: Implement MMU notifiers
+Date: Mon, 31 Aug 2020 18:00:07 +0530
+Subject: [PATCH v14 09/17] RISC-V: KVM: Implement VMID allocator
 In-Reply-To: <20200831123015.336047-1-anup.patel@wdc.com>
 References: <20200831123015.336047-1-anup.patel@wdc.com>
-Message-ID: <20200831123015.336047-12-anup.patel@wdc.com>
+Message-ID: <20200831123015.336047-10-anup.patel@wdc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This patch implements MMU notifiers for KVM RISC-V so that Guest
-physical address space is in-sync with Host physical address space.
-
-This will allow swapping, page migration, etc to work transparently
-with KVM RISC-V.
+We implement a simple VMID allocator for Guests/VMs which:
+1. Detects number of VMID bits at boot-time
+2. Uses atomic number to track VMID version and increments
+   VMID version whenever we run-out of VMIDs
+3. Flushes Guest TLBs on all host CPUs whenever we run-out
+   of VMIDs
+4. Force updates HW Stage2 VMID for each Guest VCPU whenever
+   VMID changes using VCPU request KVM_REQ_UPDATE_HGATP
 
 Signed-off-by: Anup Patel <anup.patel@wdc.com>
 Acked-by: Paolo Bonzini <pbonzini@redhat.com>
 Reviewed-by: Paolo Bonzini <pbonzini@redhat.com>
 Reviewed-by: Alexander Graf <graf@amazon.com>
 ---
- arch/riscv/include/asm/kvm_host.h |   7 ++
- arch/riscv/kvm/Kconfig            |   1 +
- arch/riscv/kvm/mmu.c              | 144 +++++++++++++++++++++++++++++-
- arch/riscv/kvm/vm.c               |   1 +
- 4 files changed, 149 insertions(+), 4 deletions(-)
+ arch/riscv/include/asm/kvm_host.h |  24 ++++++
+ arch/riscv/kvm/Makefile           |   3 +-
+ arch/riscv/kvm/main.c             |   4 +
+ arch/riscv/kvm/tlb.S              |  74 ++++++++++++++++++
+ arch/riscv/kvm/vcpu.c             |   9 +++
+ arch/riscv/kvm/vm.c               |   6 ++
+ arch/riscv/kvm/vmid.c             | 120 ++++++++++++++++++++++++++++++
+ 7 files changed, 239 insertions(+), 1 deletion(-)
+ create mode 100644 arch/riscv/kvm/tlb.S
+ create mode 100644 arch/riscv/kvm/vmid.c
 
 diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
-index 5d70c8cf3733..d25f181c3433 100644
+index bfc9fca6b049..ca4eb4ce1335 100644
 --- a/arch/riscv/include/asm/kvm_host.h
 +++ b/arch/riscv/include/asm/kvm_host.h
-@@ -203,6 +203,13 @@ static inline void kvm_arch_vcpu_uninit(struct kvm_vcpu *vcpu) {}
+@@ -27,6 +27,7 @@
+ #define KVM_REQ_SLEEP \
+ 	KVM_ARCH_REQ_FLAGS(0, KVM_REQUEST_WAIT | KVM_REQUEST_NO_WAKEUP)
+ #define KVM_REQ_VCPU_RESET		KVM_ARCH_REQ(1)
++#define KVM_REQ_UPDATE_HGATP		KVM_ARCH_REQ(2)
+ 
+ struct kvm_vm_stat {
+ 	ulong remote_tlb_flush;
+@@ -49,7 +50,19 @@ struct kvm_vcpu_stat {
+ struct kvm_arch_memory_slot {
+ };
+ 
++struct kvm_vmid {
++	/*
++	 * Writes to vmid_version and vmid happen with vmid_lock held
++	 * whereas reads happen without any lock held.
++	 */
++	unsigned long vmid_version;
++	unsigned long vmid;
++};
++
+ struct kvm_arch {
++	/* stage2 vmid */
++	struct kvm_vmid vmid;
++
+ 	/* stage2 page table */
+ 	pgd_t *pgd;
+ 	phys_addr_t pgd_phys;
+@@ -180,6 +193,11 @@ static inline void kvm_arch_vcpu_uninit(struct kvm_vcpu *vcpu) {}
  static inline void kvm_arch_sched_in(struct kvm_vcpu *vcpu, int cpu) {}
  static inline void kvm_arch_vcpu_block_finish(struct kvm_vcpu *vcpu) {}
  
-+#define KVM_ARCH_WANT_MMU_NOTIFIER
-+int kvm_unmap_hva_range(struct kvm *kvm, unsigned long start,
-+			unsigned long end, unsigned int flags);
-+int kvm_set_spte_hva(struct kvm *kvm, unsigned long hva, pte_t pte);
-+int kvm_age_hva(struct kvm *kvm, unsigned long start, unsigned long end);
-+int kvm_test_age_hva(struct kvm *kvm, unsigned long hva);
-+
- void __kvm_riscv_hfence_gvma_vmid_gpa(unsigned long gpa, unsigned long vmid);
- void __kvm_riscv_hfence_gvma_vmid(unsigned long vmid);
- void __kvm_riscv_hfence_gvma_gpa(unsigned long gpa);
-diff --git a/arch/riscv/kvm/Kconfig b/arch/riscv/kvm/Kconfig
-index 633063edaee8..a712bb910cda 100644
---- a/arch/riscv/kvm/Kconfig
-+++ b/arch/riscv/kvm/Kconfig
-@@ -20,6 +20,7 @@ if VIRTUALIZATION
- config KVM
- 	tristate "Kernel-based Virtual Machine (KVM) support (EXPERIMENTAL)"
- 	depends on RISCV_SBI && MMU
-+	select MMU_NOTIFIER
- 	select PREEMPT_NOTIFIERS
- 	select ANON_INODES
- 	select KVM_MMIO
-diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
-index 35b9aabe6c57..b31db8a9f362 100644
---- a/arch/riscv/kvm/mmu.c
-+++ b/arch/riscv/kvm/mmu.c
-@@ -296,7 +296,8 @@ static void stage2_op_pte(struct kvm *kvm, gpa_t addr,
- 	}
- }
- 
--static void stage2_unmap_range(struct kvm *kvm, gpa_t start, gpa_t size)
-+static void stage2_unmap_range(struct kvm *kvm, gpa_t start,
-+			       gpa_t size, bool may_block)
- {
- 	int ret;
- 	pte_t *ptep;
-@@ -321,6 +322,13 @@ static void stage2_unmap_range(struct kvm *kvm, gpa_t start, gpa_t size)
- 
- next:
- 		addr += page_size;
-+
-+		/*
-+		 * If the range is too large, release the kvm->mmu_lock
-+		 * to prevent starvation and lockup detector warnings.
-+		 */
-+		if (may_block && addr < end)
-+			cond_resched_lock(&kvm->mmu_lock);
- 	}
- }
- 
-@@ -404,6 +412,38 @@ int stage2_ioremap(struct kvm *kvm, gpa_t gpa, phys_addr_t hpa,
- 
- }
- 
-+static int handle_hva_to_gpa(struct kvm *kvm,
-+			     unsigned long start,
-+			     unsigned long end,
-+			     int (*handler)(struct kvm *kvm,
-+					    gpa_t gpa, u64 size,
-+					    void *data),
-+			     void *data)
-+{
-+	struct kvm_memslots *slots;
-+	struct kvm_memory_slot *memslot;
-+	int ret = 0;
-+
-+	slots = kvm_memslots(kvm);
-+
-+	/* we only care about the pages that the guest sees */
-+	kvm_for_each_memslot(memslot, slots) {
-+		unsigned long hva_start, hva_end;
-+		gfn_t gpa;
-+
-+		hva_start = max(start, memslot->userspace_addr);
-+		hva_end = min(end, memslot->userspace_addr +
-+					(memslot->npages << PAGE_SHIFT));
-+		if (hva_start >= hva_end)
-+			continue;
-+
-+		gpa = hva_to_gfn_memslot(hva_start, memslot) << PAGE_SHIFT;
-+		ret |= handler(kvm, gpa, (u64)(hva_end - hva_start), data);
-+	}
-+
-+	return ret;
-+}
-+
- void kvm_arch_mmu_enable_log_dirty_pt_masked(struct kvm *kvm,
- 					     struct kvm_memory_slot *slot,
- 					     gfn_t gfn_offset,
-@@ -549,7 +589,7 @@ int kvm_arch_prepare_memory_region(struct kvm *kvm,
- 	spin_lock(&kvm->mmu_lock);
- 	if (ret)
- 		stage2_unmap_range(kvm, mem->guest_phys_addr,
--				   mem->memory_size);
-+				   mem->memory_size, false);
- 	spin_unlock(&kvm->mmu_lock);
- 
- out:
-@@ -557,6 +597,96 @@ int kvm_arch_prepare_memory_region(struct kvm *kvm,
- 	return ret;
- }
- 
-+static int kvm_unmap_hva_handler(struct kvm *kvm,
-+				 gpa_t gpa, u64 size, void *data)
-+{
-+	unsigned int flags = *(unsigned int *)data;
-+	bool may_block = flags & MMU_NOTIFIER_RANGE_BLOCKABLE;
-+
-+	stage2_unmap_range(kvm, gpa, size, may_block);
-+	return 0;
-+}
-+
-+int kvm_unmap_hva_range(struct kvm *kvm, unsigned long start,
-+			unsigned long end, unsigned int flags)
-+{
-+	if (!kvm->arch.pgd)
-+		return 0;
-+
-+	handle_hva_to_gpa(kvm, start, end, &kvm_unmap_hva_handler, &flags);
-+	return 0;
-+}
-+
-+static int kvm_set_spte_handler(struct kvm *kvm,
-+				gpa_t gpa, u64 size, void *data)
-+{
-+	pte_t *pte = (pte_t *)data;
-+
-+	WARN_ON(size != PAGE_SIZE);
-+	stage2_set_pte(kvm, 0, NULL, gpa, pte);
-+
-+	return 0;
-+}
-+
-+int kvm_set_spte_hva(struct kvm *kvm, unsigned long hva, pte_t pte)
-+{
-+	unsigned long end = hva + PAGE_SIZE;
-+	kvm_pfn_t pfn = pte_pfn(pte);
-+	pte_t stage2_pte;
-+
-+	if (!kvm->arch.pgd)
-+		return 0;
-+
-+	stage2_pte = pfn_pte(pfn, PAGE_WRITE_EXEC);
-+	handle_hva_to_gpa(kvm, hva, end, &kvm_set_spte_handler, &stage2_pte);
-+
-+	return 0;
-+}
-+
-+static int kvm_age_hva_handler(struct kvm *kvm,
-+				gpa_t gpa, u64 size, void *data)
-+{
-+	pte_t *ptep;
-+	u32 ptep_level = 0;
-+
-+	WARN_ON(size != PAGE_SIZE && size != PMD_SIZE && size != PGDIR_SIZE);
-+
-+	if (!stage2_get_leaf_entry(kvm, gpa, &ptep, &ptep_level))
-+		return 0;
-+
-+	return ptep_test_and_clear_young(NULL, 0, ptep);
-+}
-+
-+int kvm_age_hva(struct kvm *kvm, unsigned long start, unsigned long end)
-+{
-+	if (!kvm->arch.pgd)
-+		return 0;
-+
-+	return handle_hva_to_gpa(kvm, start, end, kvm_age_hva_handler, NULL);
-+}
-+
-+static int kvm_test_age_hva_handler(struct kvm *kvm,
-+				    gpa_t gpa, u64 size, void *data)
-+{
-+	pte_t *ptep;
-+	u32 ptep_level = 0;
-+
-+	WARN_ON(size != PAGE_SIZE && size != PMD_SIZE);
-+	if (!stage2_get_leaf_entry(kvm, gpa, &ptep, &ptep_level))
-+		return 0;
-+
-+	return pte_young(*ptep);
-+}
-+
-+int kvm_test_age_hva(struct kvm *kvm, unsigned long hva)
-+{
-+	if (!kvm->arch.pgd)
-+		return 0;
-+
-+	return handle_hva_to_gpa(kvm, hva, hva,
-+				 kvm_test_age_hva_handler, NULL);
-+}
++void __kvm_riscv_hfence_gvma_vmid_gpa(unsigned long gpa, unsigned long vmid);
++void __kvm_riscv_hfence_gvma_vmid(unsigned long vmid);
++void __kvm_riscv_hfence_gvma_gpa(unsigned long gpa);
++void __kvm_riscv_hfence_gvma_all(void);
 +
  int kvm_riscv_stage2_map(struct kvm_vcpu *vcpu,
  			 struct kvm_memory_slot *memslot,
- 			 gpa_t gpa, unsigned long hva, bool is_write)
-@@ -571,7 +701,7 @@ int kvm_riscv_stage2_map(struct kvm_vcpu *vcpu,
- 	struct kvm_mmu_page_cache *pcache = &vcpu->arch.mmu_page_cache;
- 	bool logging = (memslot->dirty_bitmap &&
- 			!(memslot->flags & KVM_MEM_READONLY)) ? true : false;
--	unsigned long vma_pagesize;
-+	unsigned long vma_pagesize, mmu_seq;
+ 			 gpa_t gpa, unsigned long hva, bool is_write);
+@@ -188,6 +206,12 @@ int kvm_riscv_stage2_alloc_pgd(struct kvm *kvm);
+ void kvm_riscv_stage2_free_pgd(struct kvm *kvm);
+ void kvm_riscv_stage2_update_hgatp(struct kvm_vcpu *vcpu);
  
- 	mmap_read_lock(current->mm);
++void kvm_riscv_stage2_vmid_detect(void);
++unsigned long kvm_riscv_stage2_vmid_bits(void);
++int kvm_riscv_stage2_vmid_init(struct kvm *kvm);
++bool kvm_riscv_stage2_vmid_ver_changed(struct kvm_vmid *vmid);
++void kvm_riscv_stage2_vmid_update(struct kvm_vcpu *vcpu);
++
+ void __kvm_riscv_unpriv_trap(void);
  
-@@ -610,6 +740,8 @@ int kvm_riscv_stage2_map(struct kvm_vcpu *vcpu,
- 		return ret;
+ unsigned long kvm_riscv_vcpu_unpriv_read(struct kvm_vcpu *vcpu,
+diff --git a/arch/riscv/kvm/Makefile b/arch/riscv/kvm/Makefile
+index 54991cc55c00..b32f60edf48c 100644
+--- a/arch/riscv/kvm/Makefile
++++ b/arch/riscv/kvm/Makefile
+@@ -9,6 +9,7 @@ ccflags-y := -Ivirt/kvm -Iarch/riscv/kvm
+ 
+ kvm-objs := $(common-objs-y)
+ 
+-kvm-objs += main.o vm.o mmu.o vcpu.o vcpu_exit.o vcpu_switch.o
++kvm-objs += main.o vm.o vmid.o tlb.o mmu.o
++kvm-objs += vcpu.o vcpu_exit.o vcpu_switch.o
+ 
+ obj-$(CONFIG_KVM)	+= kvm.o
+diff --git a/arch/riscv/kvm/main.c b/arch/riscv/kvm/main.c
+index 47926f0c175d..49a4941e3838 100644
+--- a/arch/riscv/kvm/main.c
++++ b/arch/riscv/kvm/main.c
+@@ -79,8 +79,12 @@ int kvm_arch_init(void *opaque)
+ 		return -ENODEV;
  	}
  
-+	mmu_seq = kvm->mmu_notifier_seq;
++	kvm_riscv_stage2_vmid_detect();
 +
- 	hfn = gfn_to_pfn_prot(kvm, gfn, is_write, &writeable);
- 	if (hfn == KVM_PFN_ERR_HWPOISON) {
- 		send_sig_mceerr(BUS_MCEERR_AR, (void __user *)hva,
-@@ -628,6 +760,9 @@ int kvm_riscv_stage2_map(struct kvm_vcpu *vcpu,
+ 	kvm_info("hypervisor extension available\n");
  
- 	spin_lock(&kvm->mmu_lock);
- 
-+	if (mmu_notifier_retry(kvm, mmu_seq))
-+		goto out_unlock;
++	kvm_info("VMID %ld bits available\n", kvm_riscv_stage2_vmid_bits());
 +
- 	if (writeable) {
- 		kvm_set_pfn_dirty(hfn);
- 		mark_page_dirty(kvm, gfn);
-@@ -641,6 +776,7 @@ int kvm_riscv_stage2_map(struct kvm_vcpu *vcpu,
- 	if (ret)
- 		kvm_err("Failed to map in stage2\n");
+ 	return 0;
+ }
  
-+out_unlock:
- 	spin_unlock(&kvm->mmu_lock);
- 	kvm_set_pfn_accessed(hfn);
- 	kvm_release_pfn_clean(hfn);
-@@ -674,7 +810,7 @@ void kvm_riscv_stage2_free_pgd(struct kvm *kvm)
+diff --git a/arch/riscv/kvm/tlb.S b/arch/riscv/kvm/tlb.S
+new file mode 100644
+index 000000000000..c858570f0856
+--- /dev/null
++++ b/arch/riscv/kvm/tlb.S
+@@ -0,0 +1,74 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/*
++ * Copyright (C) 2019 Western Digital Corporation or its affiliates.
++ *
++ * Authors:
++ *     Anup Patel <anup.patel@wdc.com>
++ */
++
++#include <linux/linkage.h>
++#include <asm/asm.h>
++
++	.text
++	.altmacro
++	.option norelax
++
++	/*
++	 * Instruction encoding of hfence.gvma is:
++	 * HFENCE.GVMA rs1, rs2
++	 * HFENCE.GVMA zero, rs2
++	 * HFENCE.GVMA rs1
++	 * HFENCE.GVMA
++	 *
++	 * rs1!=zero and rs2!=zero ==> HFENCE.GVMA rs1, rs2
++	 * rs1==zero and rs2!=zero ==> HFENCE.GVMA zero, rs2
++	 * rs1!=zero and rs2==zero ==> HFENCE.GVMA rs1
++	 * rs1==zero and rs2==zero ==> HFENCE.GVMA
++	 *
++	 * Instruction encoding of HFENCE.GVMA is:
++	 * 0110001 rs2(5) rs1(5) 000 00000 1110011
++	 */
++
++ENTRY(__kvm_riscv_hfence_gvma_vmid_gpa)
++	/*
++	 * rs1 = a0 (GPA)
++	 * rs2 = a1 (VMID)
++	 * HFENCE.GVMA a0, a1
++	 * 0110001 01011 01010 000 00000 1110011
++	 */
++	.word 0x62b50073
++	ret
++ENDPROC(__kvm_riscv_hfence_gvma_vmid_gpa)
++
++ENTRY(__kvm_riscv_hfence_gvma_vmid)
++	/*
++	 * rs1 = zero
++	 * rs2 = a0 (VMID)
++	 * HFENCE.GVMA zero, a0
++	 * 0110001 01010 00000 000 00000 1110011
++	 */
++	.word 0x62a00073
++	ret
++ENDPROC(__kvm_riscv_hfence_gvma_vmid)
++
++ENTRY(__kvm_riscv_hfence_gvma_gpa)
++	/*
++	 * rs1 = a0 (GPA)
++	 * rs2 = zero
++	 * HFENCE.GVMA a0
++	 * 0110001 00000 01010 000 00000 1110011
++	 */
++	.word 0x62050073
++	ret
++ENDPROC(__kvm_riscv_hfence_gvma_gpa)
++
++ENTRY(__kvm_riscv_hfence_gvma_all)
++	/*
++	 * rs1 = zero
++	 * rs2 = zero
++	 * HFENCE.GVMA
++	 * 0110001 00000 00000 000 00000 1110011
++	 */
++	.word 0x62000073
++	ret
++ENDPROC(__kvm_riscv_hfence_gvma_all)
+diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+index 43962a25fa55..7192b6edd826 100644
+--- a/arch/riscv/kvm/vcpu.c
++++ b/arch/riscv/kvm/vcpu.c
+@@ -637,6 +637,12 @@ static void kvm_riscv_check_vcpu_requests(struct kvm_vcpu *vcpu)
  
- 	spin_lock(&kvm->mmu_lock);
- 	if (kvm->arch.pgd) {
--		stage2_unmap_range(kvm, 0UL, stage2_gpa_size);
-+		stage2_unmap_range(kvm, 0UL, stage2_gpa_size, false);
- 		pgd = READ_ONCE(kvm->arch.pgd);
- 		kvm->arch.pgd = NULL;
- 		kvm->arch.pgd_phys = 0;
+ 		if (kvm_check_request(KVM_REQ_VCPU_RESET, vcpu))
+ 			kvm_riscv_reset_vcpu(vcpu);
++
++		if (kvm_check_request(KVM_REQ_UPDATE_HGATP, vcpu))
++			kvm_riscv_stage2_update_hgatp(vcpu);
++
++		if (kvm_check_request(KVM_REQ_TLB_FLUSH, vcpu))
++			__kvm_riscv_hfence_gvma_all();
+ 	}
+ }
+ 
+@@ -682,6 +688,8 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
+ 		/* Check conditions before entering the guest */
+ 		cond_resched();
+ 
++		kvm_riscv_stage2_vmid_update(vcpu);
++
+ 		kvm_riscv_check_vcpu_requests(vcpu);
+ 
+ 		preempt_disable();
+@@ -718,6 +726,7 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
+ 		kvm_riscv_update_hvip(vcpu);
+ 
+ 		if (ret <= 0 ||
++		    kvm_riscv_stage2_vmid_ver_changed(&vcpu->kvm->arch.vmid) ||
+ 		    kvm_request_pending(vcpu)) {
+ 			vcpu->mode = OUTSIDE_GUEST_MODE;
+ 			local_irq_enable();
 diff --git a/arch/riscv/kvm/vm.c b/arch/riscv/kvm/vm.c
-index 6cde69a82252..00a1a88008be 100644
+index 496a86a74236..282d67617229 100644
 --- a/arch/riscv/kvm/vm.c
 +++ b/arch/riscv/kvm/vm.c
-@@ -49,6 +49,7 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
- 	case KVM_CAP_IOEVENTFD:
- 	case KVM_CAP_DEVICE_CTRL:
- 	case KVM_CAP_USER_MEMORY:
-+	case KVM_CAP_SYNC_MMU:
- 	case KVM_CAP_DESTROY_MEMORY_REGION_WORKS:
- 	case KVM_CAP_ONE_REG:
- 	case KVM_CAP_READONLY_MEM:
+@@ -26,6 +26,12 @@ int kvm_arch_init_vm(struct kvm *kvm, unsigned long type)
+ 	if (r)
+ 		return r;
+ 
++	r = kvm_riscv_stage2_vmid_init(kvm);
++	if (r) {
++		kvm_riscv_stage2_free_pgd(kvm);
++		return r;
++	}
++
+ 	return 0;
+ }
+ 
+diff --git a/arch/riscv/kvm/vmid.c b/arch/riscv/kvm/vmid.c
+new file mode 100644
+index 000000000000..2c6253b293bc
+--- /dev/null
++++ b/arch/riscv/kvm/vmid.c
+@@ -0,0 +1,120 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Copyright (C) 2019 Western Digital Corporation or its affiliates.
++ *
++ * Authors:
++ *     Anup Patel <anup.patel@wdc.com>
++ */
++
++#include <linux/bitops.h>
++#include <linux/cpumask.h>
++#include <linux/errno.h>
++#include <linux/err.h>
++#include <linux/module.h>
++#include <linux/kvm_host.h>
++#include <asm/csr.h>
++#include <asm/sbi.h>
++
++static unsigned long vmid_version = 1;
++static unsigned long vmid_next;
++static unsigned long vmid_bits;
++static DEFINE_SPINLOCK(vmid_lock);
++
++void kvm_riscv_stage2_vmid_detect(void)
++{
++	unsigned long old;
++
++	/* Figure-out number of VMID bits in HW */
++	old = csr_read(CSR_HGATP);
++	csr_write(CSR_HGATP, old | HGATP_VMID_MASK);
++	vmid_bits = csr_read(CSR_HGATP);
++	vmid_bits = (vmid_bits & HGATP_VMID_MASK) >> HGATP_VMID_SHIFT;
++	vmid_bits = fls_long(vmid_bits);
++	csr_write(CSR_HGATP, old);
++
++	/* We polluted local TLB so flush all guest TLB */
++	__kvm_riscv_hfence_gvma_all();
++
++	/* We don't use VMID bits if they are not sufficient */
++	if ((1UL << vmid_bits) < num_possible_cpus())
++		vmid_bits = 0;
++}
++
++unsigned long kvm_riscv_stage2_vmid_bits(void)
++{
++	return vmid_bits;
++}
++
++int kvm_riscv_stage2_vmid_init(struct kvm *kvm)
++{
++	/* Mark the initial VMID and VMID version invalid */
++	kvm->arch.vmid.vmid_version = 0;
++	kvm->arch.vmid.vmid = 0;
++
++	return 0;
++}
++
++bool kvm_riscv_stage2_vmid_ver_changed(struct kvm_vmid *vmid)
++{
++	if (!vmid_bits)
++		return false;
++
++	return unlikely(READ_ONCE(vmid->vmid_version) !=
++			READ_ONCE(vmid_version));
++}
++
++void kvm_riscv_stage2_vmid_update(struct kvm_vcpu *vcpu)
++{
++	int i;
++	struct kvm_vcpu *v;
++	struct cpumask hmask;
++	struct kvm_vmid *vmid = &vcpu->kvm->arch.vmid;
++
++	if (!kvm_riscv_stage2_vmid_ver_changed(vmid))
++		return;
++
++	spin_lock(&vmid_lock);
++
++	/*
++	 * We need to re-check the vmid_version here to ensure that if
++	 * another vcpu already allocated a valid vmid for this vm.
++	 */
++	if (!kvm_riscv_stage2_vmid_ver_changed(vmid)) {
++		spin_unlock(&vmid_lock);
++		return;
++	}
++
++	/* First user of a new VMID version? */
++	if (unlikely(vmid_next == 0)) {
++		WRITE_ONCE(vmid_version, READ_ONCE(vmid_version) + 1);
++		vmid_next = 1;
++
++		/*
++		 * We ran out of VMIDs so we increment vmid_version and
++		 * start assigning VMIDs from 1.
++		 *
++		 * This also means existing VMIDs assignement to all Guest
++		 * instances is invalid and we have force VMID re-assignement
++		 * for all Guest instances. The Guest instances that were not
++		 * running will automatically pick-up new VMIDs because will
++		 * call kvm_riscv_stage2_vmid_update() whenever they enter
++		 * in-kernel run loop. For Guest instances that are already
++		 * running, we force VM exits on all host CPUs using IPI and
++		 * flush all Guest TLBs.
++		 */
++		riscv_cpuid_to_hartid_mask(cpu_online_mask, &hmask);
++		sbi_remote_hfence_gvma(cpumask_bits(&hmask), 0, 0);
++	}
++
++	vmid->vmid = vmid_next;
++	vmid_next++;
++	vmid_next &= (1 << vmid_bits) - 1;
++
++	WRITE_ONCE(vmid->vmid_version, READ_ONCE(vmid_version));
++
++	spin_unlock(&vmid_lock);
++
++	/* Request stage2 page table update for all VCPUs */
++	kvm_for_each_vcpu(i, v, vcpu->kvm)
++		kvm_make_request(KVM_REQ_UPDATE_HGATP, v);
++}
 -- 
 2.25.1
 
