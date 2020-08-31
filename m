@@ -1,268 +1,453 @@
-From: Anup Patel <anup@brainfault.org>
-Date: Mon, 31 Aug 2020 17:59:33 +0530
-Subject: [PATCH v14 00/18] KVM RISC-V Support
-In-Reply-To: <20200831122538.335889-1-anup.patel@wdc.com>
-References: <20200831122538.335889-1-anup.patel@wdc.com>
-Message-ID: <CAAhSdy0zkMGpXc+rZHOS2VsjjDuPzy9df8sLMi=4mkVAzthOjw@mail.gmail.com>
+From: Anup Patel <anup.patel@wdc.com>
+Date: Mon, 31 Aug 2020 18:00:11 +0530
+Subject: [PATCH v14 13/17] RISC-V: KVM: FP lazy save/restore
+In-Reply-To: <20200831123015.336047-1-anup.patel@wdc.com>
+References: <20200831123015.336047-1-anup.patel@wdc.com>
+Message-ID: <20200831123015.336047-14-anup.patel@wdc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Aug 31, 2020 at 5:56 PM Anup Patel <anup.patel@wdc.com> wrote:
->
-> This series adds initial KVM RISC-V support. Currently, we are able to boot
-> Linux on RV64/RV32 Guest with multiple VCPUs.
->
-> Key aspects of KVM RISC-V added by this series are:
-> 1. No RISC-V specific KVM IOCTL
-> 2. Minimal possible KVM world-switch which touches only GPRs and few CSRs
-> 3. Both RV64 and RV32 host supported
-> 4. Full Guest/VM switch is done via vcpu_get/vcpu_put infrastructure
-> 5. KVM ONE_REG interface for VCPU register access from user-space
-> 6. PLIC emulation is done in user-space
-> 7. Timer and IPI emuation is done in-kernel
-> 8. Both Sv39x4 and Sv48x4 supported for RV64 host
-> 9. MMU notifiers supported
-> 10. Generic dirtylog supported
-> 11. FP lazy save/restore supported
-> 12. SBI v0.1 emulation for KVM Guest available
-> 13. Forward unhandled SBI calls to KVM userspace
-> 14. Hugepage support for Guest/VM
-> 15. IOEVENTFD support for Vhost
->
-> Here's a brief TODO list which we will work upon after this series:
-> 1. SBI v0.2 emulation in-kernel
-> 2. SBI v0.2 hart state management emulation in-kernel
-> 3. In-kernel PLIC emulation
-> 4. ..... and more .....
->
-> This series can be found in riscv_kvm_v14 branch at:
-> https//github.com/avpatel/linux.git
->
-> Our work-in-progress KVMTOOL RISC-V port can be found in riscv_v4 branch
-> at: https//github.com/avpatel/kvmtool.git
->
-> The QEMU RISC-V hypervisor emulation is done by Alistair and is available
-> in mainline/anup/riscv-hyp-ext-v0.6.1 branch at:
-> https://github.com/kvm-riscv/qemu.git
->
-> To play around with KVM RISC-V, refer KVM RISC-V wiki at:
-> https://github.com/kvm-riscv/howto/wiki
-> https://github.com/kvm-riscv/howto/wiki/KVM-RISCV64-on-QEMU
-> https://github.com/kvm-riscv/howto/wiki/KVM-RISCV64-on-Spike
->
-> Changes since v13:
->  - Rebased on Linux-5.9-rc3
->  - Fixed kvm_riscv_vcpu_set_reg_csr() for SIP updation in PATCH5
->  - Fixed instruction length computation in PATCH7
->  - Added ioeventfd support in PATCH7
->  - Ensure HSTATUS.SPVP is set to correct value before using HLV/HSV
->    intructions in PATCH7
->  - Fixed stage2_map_page() to set PTE 'A' and 'D' bits correctly
->    in PATCH10
->  - Added stage2 dirty page logging in PATCH10
->  - Allow KVM user-space to SET/GET SCOUNTER CSR in PATCH5
->  - Save/restore SCOUNTEREN in PATCH6
->  - Reduced quite a few instructions for __kvm_riscv_switch_to() by
->    using CSR swap instruction in PATCH6
->  - Detect and use Sv48x4 when available in PATCH10
->
-> Changes since v12:
->  - Rebased patches on Linux-5.8-rc4
->  - By default enable all counters in HCOUNTEREN
->  - RISC-V H-Extension v0.6.1 spec support
->
-> Changes since v11:
->  - Rebased patches on Linux-5.7-rc3
->  - Fixed typo in typecast of stage2_map_size define
->  - Introduced struct kvm_cpu_trap to represent trap details and
->    use it as function parameter wherever applicable
->  - Pass memslot to kvm_riscv_stage2_map() for supporing dirty page
->    logging in future
->  - RISC-V H-Extension v0.6 spec support
->  - Send-out first three patches as separate series so that it can
->    be taken by Palmer for Linux RISC-V
->
-> Changes since v10:
->  - Rebased patches on Linux-5.6-rc5
->  - Reduce RISCV_ISA_EXT_MAX from 256 to 64
->  - Separate PATCH for removing N-extension related defines
->  - Added comments as requested by Palmer
->  - Fixed HIDELEG CSR programming
->
-> Changes since v9:
->  - Rebased patches on Linux-5.5-rc3
->  - Squash PATCH19 and PATCH20 into PATCH5
->  - Squash PATCH18 into PATCH11
->  - Squash PATCH17 into PATCH16
->  - Added ONE_REG interface for VCPU timer in PATCH13
->  - Use HTIMEDELTA for VCPU timer in PATCH13
->  - Updated KVM RISC-V mailing list in MAINTAINERS entry
->  - Update KVM kconfig option to depend on RISCV_SBI and MMU
->  - Check for SBI v0.2 and SBI v0.2 RFENCE extension at boot-time
->  - Use SBI v0.2 RFENCE extension in VMID implementation
->  - Use SBI v0.2 RFENCE extension in Stage2 MMU implementation
->  - Use SBI v0.2 RFENCE extension in SBI implementation
->  - Moved to RISC-V Hypervisor v0.5 draft spec
->  - Updated Documentation/virt/kvm/api.txt for timer ONE_REG interface
->
-> Changes since v8:
->  - Rebased series on Linux-5.4-rc3 and Atish's SBI v0.2 patches
->  - Use HRTIMER_MODE_REL instead of HRTIMER_MODE_ABS in timer emulation
->  - Fixed kvm_riscv_stage2_map() to handle hugepages
->  - Added patch to forward unhandled SBI calls to user-space
->  - Added patch for iterative/recursive stage2 page table programming
->  - Added patch to remove per-CPU vsip_shadow variable
->  - Added patch to fix race-condition in kvm_riscv_vcpu_sync_interrupts()
->
-> Changes since v7:
->  - Rebased series on Linux-5.4-rc1 and Atish's SBI v0.2 patches
->  - Removed PATCH1, PATCH3, and PATCH20 because these already merged
->  - Use kernel doc style comments for ISA bitmap functions
->  - Don't parse X, Y, and Z extension in riscv_fill_hwcap() because it will
->    be added in-future
->  - Mark KVM RISC-V kconfig option as EXPERIMENTAL
->  - Typo fix in commit description of PATCH6 of v7 series
->  - Use separate structs for CORE and CSR registers of ONE_REG interface
->  - Explicitly include asm/sbi.h in kvm/vcpu_sbi.c
->  - Removed implicit switch-case fall-through in kvm_riscv_vcpu_exit()
->  - No need to set VSSTATUS.MXR bit in kvm_riscv_vcpu_unpriv_read()
->  - Removed register for instruction length in kvm_riscv_vcpu_unpriv_read()
->  - Added defines for checking/decoding instruction length
->  - Added separate patch to forward unhandled SBI calls to userspace tool
->
-> Changes since v6:
->  - Rebased patches on Linux-5.3-rc7
->  - Added "return_handled" in struct kvm_mmio_decode to ensure that
->    kvm_riscv_vcpu_mmio_return() updates SEPC only once
->  - Removed trap_stval parameter from kvm_riscv_vcpu_unpriv_read()
->  - Updated git repo URL in MAINTAINERS entry
->
-> Changes since v5:
->  - Renamed KVM_REG_RISCV_CONFIG_TIMEBASE register to
->    KVM_REG_RISCV_CONFIG_TBFREQ register in ONE_REG interface
->  - Update SPEC in kvm_riscv_vcpu_mmio_return() for MMIO exits
->  - Use switch case instead of illegal instruction opcode table for simplicity
->  - Improve comments in stage2_remote_tlb_flush() for a potential remote TLB
->   flush optimization
->  - Handle all unsupported SBI calls in default case of
->    kvm_riscv_vcpu_sbi_ecall() function
->  - Fixed kvm_riscv_vcpu_sync_interrupts() for software interrupts
->  - Improved unprivilege reads to handle traps due to Guest stage1 page table
->  - Added separate patch to document RISC-V specific things in
->    Documentation/virt/kvm/api.txt
->
-> Changes since v4:
->  - Rebased patches on Linux-5.3-rc5
->  - Added Paolo's Acked-by and Reviewed-by
->  - Updated mailing list in MAINTAINERS entry
->
-> Changes since v3:
->  - Moved patch for ISA bitmap from KVM prep series to this series
->  - Make vsip_shadow as run-time percpu variable instead of compile-time
->  - Flush Guest TLBs on all Host CPUs whenever we run-out of VMIDs
->
-> Changes since v2:
->  - Removed references of KVM_REQ_IRQ_PENDING from all patches
->  - Use kvm->srcu within in-kernel KVM run loop
->  - Added percpu vsip_shadow to track last value programmed in VSIP CSR
->  - Added comments about irqs_pending and irqs_pending_mask
->  - Used kvm_arch_vcpu_runnable() in-place-of kvm_riscv_vcpu_has_interrupt()
->    in system_opcode_insn()
->  - Removed unwanted smp_wmb() in kvm_riscv_stage2_vmid_update()
->  - Use kvm_flush_remote_tlbs() in kvm_riscv_stage2_vmid_update()
->  - Use READ_ONCE() in kvm_riscv_stage2_update_hgatp() for vmid
->
-> Changes since v1:
->  - Fixed compile errors in building KVM RISC-V as module
->  - Removed unused kvm_riscv_halt_guest() and kvm_riscv_resume_guest()
->  - Set KVM_CAP_SYNC_MMU capability only after MMU notifiers are implemented
->  - Made vmid_version as unsigned long instead of atomic
->  - Renamed KVM_REQ_UPDATE_PGTBL to KVM_REQ_UPDATE_HGATP
->  - Renamed kvm_riscv_stage2_update_pgtbl() to kvm_riscv_stage2_update_hgatp()
->  - Configure HIDELEG and HEDELEG in kvm_arch_hardware_enable()
->  - Updated ONE_REG interface for CSR access to user-space
->  - Removed irqs_pending_lock and use atomic bitops instead
->  - Added separate patch for FP ONE_REG interface
->  - Added separate patch for updating MAINTAINERS file
->
-> Anup Patel (14):
->   RISC-V: Add hypervisor extension related CSR defines
->   RISC-V: Add initial skeletal KVM support
->   RISC-V: KVM: Implement VCPU create, init and destroy functions
->   RISC-V: KVM: Implement VCPU interrupts and requests handling
->   RISC-V: KVM: Implement KVM_GET_ONE_REG/KVM_SET_ONE_REG ioctls
->   RISC-V: KVM: Implement VCPU world-switch
->   RISC-V: KVM: Handle MMIO exits for VCPU
->   RISC-V: KVM: Handle WFI exits for VCPU
->   RISC-V: KVM: Implement VMID allocator
->   RISC-V: KVM: Implement stage2 page table programming
->   RISC-V: KVM: Implement MMU notifiers
->   RISC-V: KVM: Document RISC-V specific parts of KVM API
->   RISC-V: KVM: Add MAINTAINERS entry
->   RISC-V: Enable KVM for RV64 and RV32
->
-> Atish Patra (4):
->   RISC-V: KVM: Add timer functionality
->   RISC-V: KVM: FP lazy save/restore
->   RISC-V: KVM: Implement ONE REG interface for FP registers
->   RISC-V: KVM: Add SBI v0.1 support
->
->  Documentation/virt/kvm/api.rst          |  193 ++++-
->  MAINTAINERS                             |   11 +
->  arch/riscv/Kconfig                      |    2 +
->  arch/riscv/Makefile                     |    2 +
->  arch/riscv/configs/defconfig            |    3 +
->  arch/riscv/configs/rv32_defconfig       |    3 +
->  arch/riscv/include/asm/csr.h            |   89 ++
->  arch/riscv/include/asm/kvm_host.h       |  278 +++++++
->  arch/riscv/include/asm/kvm_types.h      |    7 +
->  arch/riscv/include/asm/kvm_vcpu_timer.h |   44 +
->  arch/riscv/include/asm/pgtable-bits.h   |    1 +
->  arch/riscv/include/uapi/asm/kvm.h       |  128 +++
->  arch/riscv/kernel/asm-offsets.c         |  156 ++++
->  arch/riscv/kvm/Kconfig                  |   36 +
->  arch/riscv/kvm/Makefile                 |   15 +
->  arch/riscv/kvm/main.c                   |  118 +++
->  arch/riscv/kvm/mmu.c                    |  857 +++++++++++++++++++
->  arch/riscv/kvm/tlb.S                    |   74 ++
->  arch/riscv/kvm/vcpu.c                   | 1012 +++++++++++++++++++++++
->  arch/riscv/kvm/vcpu_exit.c              |  701 ++++++++++++++++
->  arch/riscv/kvm/vcpu_sbi.c               |  173 ++++
->  arch/riscv/kvm/vcpu_switch.S            |  400 +++++++++
->  arch/riscv/kvm/vcpu_timer.c             |  225 +++++
->  arch/riscv/kvm/vm.c                     |   81 ++
->  arch/riscv/kvm/vmid.c                   |  120 +++
->  drivers/clocksource/timer-riscv.c       |    8 +
->  include/clocksource/timer-riscv.h       |   16 +
->  include/uapi/linux/kvm.h                |    8 +
->  28 files changed, 4752 insertions(+), 9 deletions(-)
->  create mode 100644 arch/riscv/include/asm/kvm_host.h
->  create mode 100644 arch/riscv/include/asm/kvm_types.h
->  create mode 100644 arch/riscv/include/asm/kvm_vcpu_timer.h
->  create mode 100644 arch/riscv/include/uapi/asm/kvm.h
->  create mode 100644 arch/riscv/kvm/Kconfig
->  create mode 100644 arch/riscv/kvm/Makefile
->  create mode 100644 arch/riscv/kvm/main.c
->  create mode 100644 arch/riscv/kvm/mmu.c
->  create mode 100644 arch/riscv/kvm/tlb.S
->  create mode 100644 arch/riscv/kvm/vcpu.c
->  create mode 100644 arch/riscv/kvm/vcpu_exit.c
->  create mode 100644 arch/riscv/kvm/vcpu_sbi.c
->  create mode 100644 arch/riscv/kvm/vcpu_switch.S
->  create mode 100644 arch/riscv/kvm/vcpu_timer.c
->  create mode 100644 arch/riscv/kvm/vm.c
->  create mode 100644 arch/riscv/kvm/vmid.c
->  create mode 100644 include/clocksource/timer-riscv.h
->
-> --
-> 2.25.1
->
+From: Atish Patra <atish.patra@wdc.com>
 
-Please ignore this cover letter email.
+This patch adds floating point (F and D extension) context save/restore
+for guest VCPUs. The FP context is saved and restored lazily only when
+kernel enter/exits the in-kernel run loop and not during the KVM world
+switch. This way FP save/restore has minimal impact on KVM performance.
 
-Regards,
-Anup
+Signed-off-by: Atish Patra <atish.patra@wdc.com>
+Signed-off-by: Anup Patel <anup.patel@wdc.com>
+Acked-by: Paolo Bonzini <pbonzini@redhat.com>
+Reviewed-by: Paolo Bonzini <pbonzini@redhat.com>
+Reviewed-by: Alexander Graf <graf@amazon.com>
+---
+ arch/riscv/include/asm/kvm_host.h |   5 +
+ arch/riscv/kernel/asm-offsets.c   |  72 +++++++++++++
+ arch/riscv/kvm/vcpu.c             |  91 ++++++++++++++++
+ arch/riscv/kvm/vcpu_switch.S      | 174 ++++++++++++++++++++++++++++++
+ 4 files changed, 342 insertions(+)
+
+diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
+index dcdc7816a799..6d97a8eab206 100644
+--- a/arch/riscv/include/asm/kvm_host.h
++++ b/arch/riscv/include/asm/kvm_host.h
+@@ -131,6 +131,7 @@ struct kvm_cpu_context {
+ 	unsigned long sepc;
+ 	unsigned long sstatus;
+ 	unsigned long hstatus;
++	union __riscv_fp_state fp;
+ };
+ 
+ struct kvm_vcpu_csr {
+@@ -251,6 +252,10 @@ int kvm_riscv_vcpu_exit(struct kvm_vcpu *vcpu, struct kvm_run *run,
+ 			struct kvm_cpu_trap *trap);
+ 
+ void __kvm_riscv_switch_to(struct kvm_vcpu_arch *vcpu_arch);
++void __kvm_riscv_fp_f_save(struct kvm_cpu_context *context);
++void __kvm_riscv_fp_f_restore(struct kvm_cpu_context *context);
++void __kvm_riscv_fp_d_save(struct kvm_cpu_context *context);
++void __kvm_riscv_fp_d_restore(struct kvm_cpu_context *context);
+ 
+ int kvm_riscv_vcpu_set_interrupt(struct kvm_vcpu *vcpu, unsigned int irq);
+ int kvm_riscv_vcpu_unset_interrupt(struct kvm_vcpu *vcpu, unsigned int irq);
+diff --git a/arch/riscv/kernel/asm-offsets.c b/arch/riscv/kernel/asm-offsets.c
+index cde94c0239d6..63fbcea8bc70 100644
+--- a/arch/riscv/kernel/asm-offsets.c
++++ b/arch/riscv/kernel/asm-offsets.c
+@@ -190,6 +190,78 @@ void asm_offsets(void)
+ 	OFFSET(KVM_ARCH_TRAP_HTVAL, kvm_cpu_trap, htval);
+ 	OFFSET(KVM_ARCH_TRAP_HTINST, kvm_cpu_trap, htinst);
+ 
++	/* F extension */
++
++	OFFSET(KVM_ARCH_FP_F_F0, kvm_cpu_context, fp.f.f[0]);
++	OFFSET(KVM_ARCH_FP_F_F1, kvm_cpu_context, fp.f.f[1]);
++	OFFSET(KVM_ARCH_FP_F_F2, kvm_cpu_context, fp.f.f[2]);
++	OFFSET(KVM_ARCH_FP_F_F3, kvm_cpu_context, fp.f.f[3]);
++	OFFSET(KVM_ARCH_FP_F_F4, kvm_cpu_context, fp.f.f[4]);
++	OFFSET(KVM_ARCH_FP_F_F5, kvm_cpu_context, fp.f.f[5]);
++	OFFSET(KVM_ARCH_FP_F_F6, kvm_cpu_context, fp.f.f[6]);
++	OFFSET(KVM_ARCH_FP_F_F7, kvm_cpu_context, fp.f.f[7]);
++	OFFSET(KVM_ARCH_FP_F_F8, kvm_cpu_context, fp.f.f[8]);
++	OFFSET(KVM_ARCH_FP_F_F9, kvm_cpu_context, fp.f.f[9]);
++	OFFSET(KVM_ARCH_FP_F_F10, kvm_cpu_context, fp.f.f[10]);
++	OFFSET(KVM_ARCH_FP_F_F11, kvm_cpu_context, fp.f.f[11]);
++	OFFSET(KVM_ARCH_FP_F_F12, kvm_cpu_context, fp.f.f[12]);
++	OFFSET(KVM_ARCH_FP_F_F13, kvm_cpu_context, fp.f.f[13]);
++	OFFSET(KVM_ARCH_FP_F_F14, kvm_cpu_context, fp.f.f[14]);
++	OFFSET(KVM_ARCH_FP_F_F15, kvm_cpu_context, fp.f.f[15]);
++	OFFSET(KVM_ARCH_FP_F_F16, kvm_cpu_context, fp.f.f[16]);
++	OFFSET(KVM_ARCH_FP_F_F17, kvm_cpu_context, fp.f.f[17]);
++	OFFSET(KVM_ARCH_FP_F_F18, kvm_cpu_context, fp.f.f[18]);
++	OFFSET(KVM_ARCH_FP_F_F19, kvm_cpu_context, fp.f.f[19]);
++	OFFSET(KVM_ARCH_FP_F_F20, kvm_cpu_context, fp.f.f[20]);
++	OFFSET(KVM_ARCH_FP_F_F21, kvm_cpu_context, fp.f.f[21]);
++	OFFSET(KVM_ARCH_FP_F_F22, kvm_cpu_context, fp.f.f[22]);
++	OFFSET(KVM_ARCH_FP_F_F23, kvm_cpu_context, fp.f.f[23]);
++	OFFSET(KVM_ARCH_FP_F_F24, kvm_cpu_context, fp.f.f[24]);
++	OFFSET(KVM_ARCH_FP_F_F25, kvm_cpu_context, fp.f.f[25]);
++	OFFSET(KVM_ARCH_FP_F_F26, kvm_cpu_context, fp.f.f[26]);
++	OFFSET(KVM_ARCH_FP_F_F27, kvm_cpu_context, fp.f.f[27]);
++	OFFSET(KVM_ARCH_FP_F_F28, kvm_cpu_context, fp.f.f[28]);
++	OFFSET(KVM_ARCH_FP_F_F29, kvm_cpu_context, fp.f.f[29]);
++	OFFSET(KVM_ARCH_FP_F_F30, kvm_cpu_context, fp.f.f[30]);
++	OFFSET(KVM_ARCH_FP_F_F31, kvm_cpu_context, fp.f.f[31]);
++	OFFSET(KVM_ARCH_FP_F_FCSR, kvm_cpu_context, fp.f.fcsr);
++
++	/* D extension */
++
++	OFFSET(KVM_ARCH_FP_D_F0, kvm_cpu_context, fp.d.f[0]);
++	OFFSET(KVM_ARCH_FP_D_F1, kvm_cpu_context, fp.d.f[1]);
++	OFFSET(KVM_ARCH_FP_D_F2, kvm_cpu_context, fp.d.f[2]);
++	OFFSET(KVM_ARCH_FP_D_F3, kvm_cpu_context, fp.d.f[3]);
++	OFFSET(KVM_ARCH_FP_D_F4, kvm_cpu_context, fp.d.f[4]);
++	OFFSET(KVM_ARCH_FP_D_F5, kvm_cpu_context, fp.d.f[5]);
++	OFFSET(KVM_ARCH_FP_D_F6, kvm_cpu_context, fp.d.f[6]);
++	OFFSET(KVM_ARCH_FP_D_F7, kvm_cpu_context, fp.d.f[7]);
++	OFFSET(KVM_ARCH_FP_D_F8, kvm_cpu_context, fp.d.f[8]);
++	OFFSET(KVM_ARCH_FP_D_F9, kvm_cpu_context, fp.d.f[9]);
++	OFFSET(KVM_ARCH_FP_D_F10, kvm_cpu_context, fp.d.f[10]);
++	OFFSET(KVM_ARCH_FP_D_F11, kvm_cpu_context, fp.d.f[11]);
++	OFFSET(KVM_ARCH_FP_D_F12, kvm_cpu_context, fp.d.f[12]);
++	OFFSET(KVM_ARCH_FP_D_F13, kvm_cpu_context, fp.d.f[13]);
++	OFFSET(KVM_ARCH_FP_D_F14, kvm_cpu_context, fp.d.f[14]);
++	OFFSET(KVM_ARCH_FP_D_F15, kvm_cpu_context, fp.d.f[15]);
++	OFFSET(KVM_ARCH_FP_D_F16, kvm_cpu_context, fp.d.f[16]);
++	OFFSET(KVM_ARCH_FP_D_F17, kvm_cpu_context, fp.d.f[17]);
++	OFFSET(KVM_ARCH_FP_D_F18, kvm_cpu_context, fp.d.f[18]);
++	OFFSET(KVM_ARCH_FP_D_F19, kvm_cpu_context, fp.d.f[19]);
++	OFFSET(KVM_ARCH_FP_D_F20, kvm_cpu_context, fp.d.f[20]);
++	OFFSET(KVM_ARCH_FP_D_F21, kvm_cpu_context, fp.d.f[21]);
++	OFFSET(KVM_ARCH_FP_D_F22, kvm_cpu_context, fp.d.f[22]);
++	OFFSET(KVM_ARCH_FP_D_F23, kvm_cpu_context, fp.d.f[23]);
++	OFFSET(KVM_ARCH_FP_D_F24, kvm_cpu_context, fp.d.f[24]);
++	OFFSET(KVM_ARCH_FP_D_F25, kvm_cpu_context, fp.d.f[25]);
++	OFFSET(KVM_ARCH_FP_D_F26, kvm_cpu_context, fp.d.f[26]);
++	OFFSET(KVM_ARCH_FP_D_F27, kvm_cpu_context, fp.d.f[27]);
++	OFFSET(KVM_ARCH_FP_D_F28, kvm_cpu_context, fp.d.f[28]);
++	OFFSET(KVM_ARCH_FP_D_F29, kvm_cpu_context, fp.d.f[29]);
++	OFFSET(KVM_ARCH_FP_D_F30, kvm_cpu_context, fp.d.f[30]);
++	OFFSET(KVM_ARCH_FP_D_F31, kvm_cpu_context, fp.d.f[31]);
++	OFFSET(KVM_ARCH_FP_D_FCSR, kvm_cpu_context, fp.d.fcsr);
++
+ 	/*
+ 	 * THREAD_{F,X}* might be larger than a S-type offset can handle, but
+ 	 * these are used in performance-sensitive assembly so we can't resort
+diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+index 45ff6761b89c..d039f17f106d 100644
+--- a/arch/riscv/kvm/vcpu.c
++++ b/arch/riscv/kvm/vcpu.c
+@@ -35,6 +35,86 @@ struct kvm_stats_debugfs_item debugfs_entries[] = {
+ 	{ NULL }
+ };
+ 
++#ifdef CONFIG_FPU
++static void kvm_riscv_vcpu_fp_reset(struct kvm_vcpu *vcpu)
++{
++	unsigned long isa = vcpu->arch.isa;
++	struct kvm_cpu_context *cntx = &vcpu->arch.guest_context;
++
++	cntx->sstatus &= ~SR_FS;
++	if (riscv_isa_extension_available(&isa, f) ||
++	    riscv_isa_extension_available(&isa, d))
++		cntx->sstatus |= SR_FS_INITIAL;
++	else
++		cntx->sstatus |= SR_FS_OFF;
++}
++
++static void kvm_riscv_vcpu_fp_clean(struct kvm_cpu_context *cntx)
++{
++	cntx->sstatus &= ~SR_FS;
++	cntx->sstatus |= SR_FS_CLEAN;
++}
++
++static void kvm_riscv_vcpu_guest_fp_save(struct kvm_cpu_context *cntx,
++					 unsigned long isa)
++{
++	if ((cntx->sstatus & SR_FS) == SR_FS_DIRTY) {
++		if (riscv_isa_extension_available(&isa, d))
++			__kvm_riscv_fp_d_save(cntx);
++		else if (riscv_isa_extension_available(&isa, f))
++			__kvm_riscv_fp_f_save(cntx);
++		kvm_riscv_vcpu_fp_clean(cntx);
++	}
++}
++
++static void kvm_riscv_vcpu_guest_fp_restore(struct kvm_cpu_context *cntx,
++					    unsigned long isa)
++{
++	if ((cntx->sstatus & SR_FS) != SR_FS_OFF) {
++		if (riscv_isa_extension_available(&isa, d))
++			__kvm_riscv_fp_d_restore(cntx);
++		else if (riscv_isa_extension_available(&isa, f))
++			__kvm_riscv_fp_f_restore(cntx);
++		kvm_riscv_vcpu_fp_clean(cntx);
++	}
++}
++
++static void kvm_riscv_vcpu_host_fp_save(struct kvm_cpu_context *cntx)
++{
++	/* No need to check host sstatus as it can be modified outside */
++	if (riscv_isa_extension_available(NULL, d))
++		__kvm_riscv_fp_d_save(cntx);
++	else if (riscv_isa_extension_available(NULL, f))
++		__kvm_riscv_fp_f_save(cntx);
++}
++
++static void kvm_riscv_vcpu_host_fp_restore(struct kvm_cpu_context *cntx)
++{
++	if (riscv_isa_extension_available(NULL, d))
++		__kvm_riscv_fp_d_restore(cntx);
++	else if (riscv_isa_extension_available(NULL, f))
++		__kvm_riscv_fp_f_restore(cntx);
++}
++#else
++static void kvm_riscv_vcpu_fp_reset(struct kvm_vcpu *vcpu)
++{
++}
++static void kvm_riscv_vcpu_guest_fp_save(struct kvm_cpu_context *cntx,
++					 unsigned long isa)
++{
++}
++static void kvm_riscv_vcpu_guest_fp_restore(struct kvm_cpu_context *cntx,
++					    unsigned long isa)
++{
++}
++static void kvm_riscv_vcpu_host_fp_save(struct kvm_cpu_context *cntx)
++{
++}
++static void kvm_riscv_vcpu_host_fp_restore(struct kvm_cpu_context *cntx)
++{
++}
++#endif
++
+ #define KVM_RISCV_ISA_ALLOWED	(riscv_isa_extension_mask(a) | \
+ 				 riscv_isa_extension_mask(c) | \
+ 				 riscv_isa_extension_mask(d) | \
+@@ -55,6 +135,8 @@ static void kvm_riscv_reset_vcpu(struct kvm_vcpu *vcpu)
+ 
+ 	memcpy(cntx, reset_cntx, sizeof(*cntx));
+ 
++	kvm_riscv_vcpu_fp_reset(vcpu);
++
+ 	kvm_riscv_vcpu_timer_reset(vcpu);
+ 
+ 	WRITE_ONCE(vcpu->arch.irqs_pending, 0);
+@@ -204,6 +286,7 @@ static int kvm_riscv_vcpu_set_reg_config(struct kvm_vcpu *vcpu,
+ 			vcpu->arch.isa = reg_val;
+ 			vcpu->arch.isa &= riscv_isa_extension_base(NULL);
+ 			vcpu->arch.isa &= KVM_RISCV_ISA_ALLOWED;
++			kvm_riscv_vcpu_fp_reset(vcpu);
+ 		} else {
+ 			return -EOPNOTSUPP;
+ 		}
+@@ -608,6 +691,10 @@ void kvm_arch_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
+ 
+ 	kvm_riscv_vcpu_timer_restore(vcpu);
+ 
++	kvm_riscv_vcpu_host_fp_save(&vcpu->arch.host_context);
++	kvm_riscv_vcpu_guest_fp_restore(&vcpu->arch.guest_context,
++					vcpu->arch.isa);
++
+ 	vcpu->cpu = cpu;
+ }
+ 
+@@ -617,6 +704,10 @@ void kvm_arch_vcpu_put(struct kvm_vcpu *vcpu)
+ 
+ 	vcpu->cpu = -1;
+ 
++	kvm_riscv_vcpu_guest_fp_save(&vcpu->arch.guest_context,
++				     vcpu->arch.isa);
++	kvm_riscv_vcpu_host_fp_restore(&vcpu->arch.host_context);
++
+ 	csr_write(CSR_HGATP, 0);
+ 
+ 	csr->vsstatus = csr_read(CSR_VSSTATUS);
+diff --git a/arch/riscv/kvm/vcpu_switch.S b/arch/riscv/kvm/vcpu_switch.S
+index 13fb56906da2..d200d59eaa33 100644
+--- a/arch/riscv/kvm/vcpu_switch.S
++++ b/arch/riscv/kvm/vcpu_switch.S
+@@ -224,3 +224,177 @@ ENTRY(__kvm_riscv_unpriv_trap)
+ 	REG_S	a1, (KVM_ARCH_TRAP_HTINST)(a0)
+ 	sret
+ ENDPROC(__kvm_riscv_unpriv_trap)
++
++#ifdef	CONFIG_FPU
++	.align 3
++	.global __kvm_riscv_fp_f_save
++__kvm_riscv_fp_f_save:
++	csrr t2, CSR_SSTATUS
++	li t1, SR_FS
++	csrs CSR_SSTATUS, t1
++	frcsr t0
++	fsw f0,  KVM_ARCH_FP_F_F0(a0)
++	fsw f1,  KVM_ARCH_FP_F_F1(a0)
++	fsw f2,  KVM_ARCH_FP_F_F2(a0)
++	fsw f3,  KVM_ARCH_FP_F_F3(a0)
++	fsw f4,  KVM_ARCH_FP_F_F4(a0)
++	fsw f5,  KVM_ARCH_FP_F_F5(a0)
++	fsw f6,  KVM_ARCH_FP_F_F6(a0)
++	fsw f7,  KVM_ARCH_FP_F_F7(a0)
++	fsw f8,  KVM_ARCH_FP_F_F8(a0)
++	fsw f9,  KVM_ARCH_FP_F_F9(a0)
++	fsw f10, KVM_ARCH_FP_F_F10(a0)
++	fsw f11, KVM_ARCH_FP_F_F11(a0)
++	fsw f12, KVM_ARCH_FP_F_F12(a0)
++	fsw f13, KVM_ARCH_FP_F_F13(a0)
++	fsw f14, KVM_ARCH_FP_F_F14(a0)
++	fsw f15, KVM_ARCH_FP_F_F15(a0)
++	fsw f16, KVM_ARCH_FP_F_F16(a0)
++	fsw f17, KVM_ARCH_FP_F_F17(a0)
++	fsw f18, KVM_ARCH_FP_F_F18(a0)
++	fsw f19, KVM_ARCH_FP_F_F19(a0)
++	fsw f20, KVM_ARCH_FP_F_F20(a0)
++	fsw f21, KVM_ARCH_FP_F_F21(a0)
++	fsw f22, KVM_ARCH_FP_F_F22(a0)
++	fsw f23, KVM_ARCH_FP_F_F23(a0)
++	fsw f24, KVM_ARCH_FP_F_F24(a0)
++	fsw f25, KVM_ARCH_FP_F_F25(a0)
++	fsw f26, KVM_ARCH_FP_F_F26(a0)
++	fsw f27, KVM_ARCH_FP_F_F27(a0)
++	fsw f28, KVM_ARCH_FP_F_F28(a0)
++	fsw f29, KVM_ARCH_FP_F_F29(a0)
++	fsw f30, KVM_ARCH_FP_F_F30(a0)
++	fsw f31, KVM_ARCH_FP_F_F31(a0)
++	sw t0, KVM_ARCH_FP_F_FCSR(a0)
++	csrw CSR_SSTATUS, t2
++	ret
++
++	.align 3
++	.global __kvm_riscv_fp_d_save
++__kvm_riscv_fp_d_save:
++	csrr t2, CSR_SSTATUS
++	li t1, SR_FS
++	csrs CSR_SSTATUS, t1
++	frcsr t0
++	fsd f0,  KVM_ARCH_FP_D_F0(a0)
++	fsd f1,  KVM_ARCH_FP_D_F1(a0)
++	fsd f2,  KVM_ARCH_FP_D_F2(a0)
++	fsd f3,  KVM_ARCH_FP_D_F3(a0)
++	fsd f4,  KVM_ARCH_FP_D_F4(a0)
++	fsd f5,  KVM_ARCH_FP_D_F5(a0)
++	fsd f6,  KVM_ARCH_FP_D_F6(a0)
++	fsd f7,  KVM_ARCH_FP_D_F7(a0)
++	fsd f8,  KVM_ARCH_FP_D_F8(a0)
++	fsd f9,  KVM_ARCH_FP_D_F9(a0)
++	fsd f10, KVM_ARCH_FP_D_F10(a0)
++	fsd f11, KVM_ARCH_FP_D_F11(a0)
++	fsd f12, KVM_ARCH_FP_D_F12(a0)
++	fsd f13, KVM_ARCH_FP_D_F13(a0)
++	fsd f14, KVM_ARCH_FP_D_F14(a0)
++	fsd f15, KVM_ARCH_FP_D_F15(a0)
++	fsd f16, KVM_ARCH_FP_D_F16(a0)
++	fsd f17, KVM_ARCH_FP_D_F17(a0)
++	fsd f18, KVM_ARCH_FP_D_F18(a0)
++	fsd f19, KVM_ARCH_FP_D_F19(a0)
++	fsd f20, KVM_ARCH_FP_D_F20(a0)
++	fsd f21, KVM_ARCH_FP_D_F21(a0)
++	fsd f22, KVM_ARCH_FP_D_F22(a0)
++	fsd f23, KVM_ARCH_FP_D_F23(a0)
++	fsd f24, KVM_ARCH_FP_D_F24(a0)
++	fsd f25, KVM_ARCH_FP_D_F25(a0)
++	fsd f26, KVM_ARCH_FP_D_F26(a0)
++	fsd f27, KVM_ARCH_FP_D_F27(a0)
++	fsd f28, KVM_ARCH_FP_D_F28(a0)
++	fsd f29, KVM_ARCH_FP_D_F29(a0)
++	fsd f30, KVM_ARCH_FP_D_F30(a0)
++	fsd f31, KVM_ARCH_FP_D_F31(a0)
++	sw t0, KVM_ARCH_FP_D_FCSR(a0)
++	csrw CSR_SSTATUS, t2
++	ret
++
++	.align 3
++	.global __kvm_riscv_fp_f_restore
++__kvm_riscv_fp_f_restore:
++	csrr t2, CSR_SSTATUS
++	li t1, SR_FS
++	lw t0, KVM_ARCH_FP_F_FCSR(a0)
++	csrs CSR_SSTATUS, t1
++	flw f0,  KVM_ARCH_FP_F_F0(a0)
++	flw f1,  KVM_ARCH_FP_F_F1(a0)
++	flw f2,  KVM_ARCH_FP_F_F2(a0)
++	flw f3,  KVM_ARCH_FP_F_F3(a0)
++	flw f4,  KVM_ARCH_FP_F_F4(a0)
++	flw f5,  KVM_ARCH_FP_F_F5(a0)
++	flw f6,  KVM_ARCH_FP_F_F6(a0)
++	flw f7,  KVM_ARCH_FP_F_F7(a0)
++	flw f8,  KVM_ARCH_FP_F_F8(a0)
++	flw f9,  KVM_ARCH_FP_F_F9(a0)
++	flw f10, KVM_ARCH_FP_F_F10(a0)
++	flw f11, KVM_ARCH_FP_F_F11(a0)
++	flw f12, KVM_ARCH_FP_F_F12(a0)
++	flw f13, KVM_ARCH_FP_F_F13(a0)
++	flw f14, KVM_ARCH_FP_F_F14(a0)
++	flw f15, KVM_ARCH_FP_F_F15(a0)
++	flw f16, KVM_ARCH_FP_F_F16(a0)
++	flw f17, KVM_ARCH_FP_F_F17(a0)
++	flw f18, KVM_ARCH_FP_F_F18(a0)
++	flw f19, KVM_ARCH_FP_F_F19(a0)
++	flw f20, KVM_ARCH_FP_F_F20(a0)
++	flw f21, KVM_ARCH_FP_F_F21(a0)
++	flw f22, KVM_ARCH_FP_F_F22(a0)
++	flw f23, KVM_ARCH_FP_F_F23(a0)
++	flw f24, KVM_ARCH_FP_F_F24(a0)
++	flw f25, KVM_ARCH_FP_F_F25(a0)
++	flw f26, KVM_ARCH_FP_F_F26(a0)
++	flw f27, KVM_ARCH_FP_F_F27(a0)
++	flw f28, KVM_ARCH_FP_F_F28(a0)
++	flw f29, KVM_ARCH_FP_F_F29(a0)
++	flw f30, KVM_ARCH_FP_F_F30(a0)
++	flw f31, KVM_ARCH_FP_F_F31(a0)
++	fscsr t0
++	csrw CSR_SSTATUS, t2
++	ret
++
++	.align 3
++	.global __kvm_riscv_fp_d_restore
++__kvm_riscv_fp_d_restore:
++	csrr t2, CSR_SSTATUS
++	li t1, SR_FS
++	lw t0, KVM_ARCH_FP_D_FCSR(a0)
++	csrs CSR_SSTATUS, t1
++	fld f0,  KVM_ARCH_FP_D_F0(a0)
++	fld f1,  KVM_ARCH_FP_D_F1(a0)
++	fld f2,  KVM_ARCH_FP_D_F2(a0)
++	fld f3,  KVM_ARCH_FP_D_F3(a0)
++	fld f4,  KVM_ARCH_FP_D_F4(a0)
++	fld f5,  KVM_ARCH_FP_D_F5(a0)
++	fld f6,  KVM_ARCH_FP_D_F6(a0)
++	fld f7,  KVM_ARCH_FP_D_F7(a0)
++	fld f8,  KVM_ARCH_FP_D_F8(a0)
++	fld f9,  KVM_ARCH_FP_D_F9(a0)
++	fld f10, KVM_ARCH_FP_D_F10(a0)
++	fld f11, KVM_ARCH_FP_D_F11(a0)
++	fld f12, KVM_ARCH_FP_D_F12(a0)
++	fld f13, KVM_ARCH_FP_D_F13(a0)
++	fld f14, KVM_ARCH_FP_D_F14(a0)
++	fld f15, KVM_ARCH_FP_D_F15(a0)
++	fld f16, KVM_ARCH_FP_D_F16(a0)
++	fld f17, KVM_ARCH_FP_D_F17(a0)
++	fld f18, KVM_ARCH_FP_D_F18(a0)
++	fld f19, KVM_ARCH_FP_D_F19(a0)
++	fld f20, KVM_ARCH_FP_D_F20(a0)
++	fld f21, KVM_ARCH_FP_D_F21(a0)
++	fld f22, KVM_ARCH_FP_D_F22(a0)
++	fld f23, KVM_ARCH_FP_D_F23(a0)
++	fld f24, KVM_ARCH_FP_D_F24(a0)
++	fld f25, KVM_ARCH_FP_D_F25(a0)
++	fld f26, KVM_ARCH_FP_D_F26(a0)
++	fld f27, KVM_ARCH_FP_D_F27(a0)
++	fld f28, KVM_ARCH_FP_D_F28(a0)
++	fld f29, KVM_ARCH_FP_D_F29(a0)
++	fld f30, KVM_ARCH_FP_D_F30(a0)
++	fld f31, KVM_ARCH_FP_D_F31(a0)
++	fscsr t0
++	csrw CSR_SSTATUS, t2
++	ret
++#endif
+-- 
+2.25.1
+
 
