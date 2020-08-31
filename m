@@ -1,258 +1,529 @@
 From: Anup Patel <anup.patel@wdc.com>
-Date: Mon, 31 Aug 2020 17:55:20 +0530
-Subject: [PATCH v14 00/18] KVM RISC-V Support
-Message-ID: <20200831122538.335889-1-anup.patel@wdc.com>
+Date: Mon, 31 Aug 2020 18:00:10 +0530
+Subject: [PATCH v14 12/17] RISC-V: KVM: Add timer functionality
+In-Reply-To: <20200831123015.336047-1-anup.patel@wdc.com>
+References: <20200831123015.336047-1-anup.patel@wdc.com>
+Message-ID: <20200831123015.336047-13-anup.patel@wdc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This series adds initial KVM RISC-V support. Currently, we are able to boot
-Linux on RV64/RV32 Guest with multiple VCPUs.
+From: Atish Patra <atish.patra@wdc.com>
 
-Key aspects of KVM RISC-V added by this series are:
-1. No RISC-V specific KVM IOCTL
-2. Minimal possible KVM world-switch which touches only GPRs and few CSRs
-3. Both RV64 and RV32 host supported
-4. Full Guest/VM switch is done via vcpu_get/vcpu_put infrastructure
-5. KVM ONE_REG interface for VCPU register access from user-space
-6. PLIC emulation is done in user-space
-7. Timer and IPI emuation is done in-kernel
-8. Both Sv39x4 and Sv48x4 supported for RV64 host
-9. MMU notifiers supported
-10. Generic dirtylog supported
-11. FP lazy save/restore supported
-12. SBI v0.1 emulation for KVM Guest available
-13. Forward unhandled SBI calls to KVM userspace
-14. Hugepage support for Guest/VM
-15. IOEVENTFD support for Vhost
+The RISC-V hypervisor specification doesn't have any virtual timer
+feature.
 
-Here's a brief TODO list which we will work upon after this series:
-1. SBI v0.2 emulation in-kernel
-2. SBI v0.2 hart state management emulation in-kernel
-3. In-kernel PLIC emulation
-4. ..... and more .....
+Due to this, the guest VCPU timer will be programmed via SBI calls.
+The host will use a separate hrtimer event for each guest VCPU to
+provide timer functionality. We inject a virtual timer interrupt to
+the guest VCPU whenever the guest VCPU hrtimer event expires.
 
-This series can be found in riscv_kvm_v14 branch at:
-https//github.com/avpatel/linux.git
+This patch adds guest VCPU timer implementation along with ONE_REG
+interface to access VCPU timer state from user space.
 
-Our work-in-progress KVMTOOL RISC-V port can be found in riscv_v4 branch
-at: https//github.com/avpatel/kvmtool.git
-
-The QEMU RISC-V hypervisor emulation is done by Alistair and is available
-in mainline/anup/riscv-hyp-ext-v0.6.1 branch at:
-https://github.com/kvm-riscv/qemu.git
-
-To play around with KVM RISC-V, refer KVM RISC-V wiki at:
-https://github.com/kvm-riscv/howto/wiki
-https://github.com/kvm-riscv/howto/wiki/KVM-RISCV64-on-QEMU
-https://github.com/kvm-riscv/howto/wiki/KVM-RISCV64-on-Spike
-
-Changes since v13:
- - Rebased on Linux-5.9-rc3
- - Fixed kvm_riscv_vcpu_set_reg_csr() for SIP updation in PATCH5
- - Fixed instruction length computation in PATCH7
- - Added ioeventfd support in PATCH7
- - Ensure HSTATUS.SPVP is set to correct value before using HLV/HSV
-   intructions in PATCH7
- - Fixed stage2_map_page() to set PTE 'A' and 'D' bits correctly
-   in PATCH10
- - Added stage2 dirty page logging in PATCH10
- - Allow KVM user-space to SET/GET SCOUNTER CSR in PATCH5
- - Save/restore SCOUNTEREN in PATCH6
- - Reduced quite a few instructions for __kvm_riscv_switch_to() by
-   using CSR swap instruction in PATCH6
- - Detect and use Sv48x4 when available in PATCH10
-
-Changes since v12:
- - Rebased patches on Linux-5.8-rc4
- - By default enable all counters in HCOUNTEREN
- - RISC-V H-Extension v0.6.1 spec support
-
-Changes since v11:
- - Rebased patches on Linux-5.7-rc3
- - Fixed typo in typecast of stage2_map_size define
- - Introduced struct kvm_cpu_trap to represent trap details and
-   use it as function parameter wherever applicable
- - Pass memslot to kvm_riscv_stage2_map() for supporing dirty page
-   logging in future
- - RISC-V H-Extension v0.6 spec support
- - Send-out first three patches as separate series so that it can
-   be taken by Palmer for Linux RISC-V
-
-Changes since v10:
- - Rebased patches on Linux-5.6-rc5
- - Reduce RISCV_ISA_EXT_MAX from 256 to 64
- - Separate PATCH for removing N-extension related defines
- - Added comments as requested by Palmer
- - Fixed HIDELEG CSR programming
-
-Changes since v9:
- - Rebased patches on Linux-5.5-rc3
- - Squash PATCH19 and PATCH20 into PATCH5
- - Squash PATCH18 into PATCH11
- - Squash PATCH17 into PATCH16
- - Added ONE_REG interface for VCPU timer in PATCH13
- - Use HTIMEDELTA for VCPU timer in PATCH13
- - Updated KVM RISC-V mailing list in MAINTAINERS entry
- - Update KVM kconfig option to depend on RISCV_SBI and MMU
- - Check for SBI v0.2 and SBI v0.2 RFENCE extension at boot-time
- - Use SBI v0.2 RFENCE extension in VMID implementation
- - Use SBI v0.2 RFENCE extension in Stage2 MMU implementation
- - Use SBI v0.2 RFENCE extension in SBI implementation
- - Moved to RISC-V Hypervisor v0.5 draft spec
- - Updated Documentation/virt/kvm/api.txt for timer ONE_REG interface
-
-Changes since v8:
- - Rebased series on Linux-5.4-rc3 and Atish's SBI v0.2 patches
- - Use HRTIMER_MODE_REL instead of HRTIMER_MODE_ABS in timer emulation
- - Fixed kvm_riscv_stage2_map() to handle hugepages
- - Added patch to forward unhandled SBI calls to user-space
- - Added patch for iterative/recursive stage2 page table programming
- - Added patch to remove per-CPU vsip_shadow variable
- - Added patch to fix race-condition in kvm_riscv_vcpu_sync_interrupts()
-
-Changes since v7:
- - Rebased series on Linux-5.4-rc1 and Atish's SBI v0.2 patches
- - Removed PATCH1, PATCH3, and PATCH20 because these already merged
- - Use kernel doc style comments for ISA bitmap functions
- - Don't parse X, Y, and Z extension in riscv_fill_hwcap() because it will
-   be added in-future
- - Mark KVM RISC-V kconfig option as EXPERIMENTAL
- - Typo fix in commit description of PATCH6 of v7 series
- - Use separate structs for CORE and CSR registers of ONE_REG interface
- - Explicitly include asm/sbi.h in kvm/vcpu_sbi.c
- - Removed implicit switch-case fall-through in kvm_riscv_vcpu_exit()
- - No need to set VSSTATUS.MXR bit in kvm_riscv_vcpu_unpriv_read()
- - Removed register for instruction length in kvm_riscv_vcpu_unpriv_read()
- - Added defines for checking/decoding instruction length
- - Added separate patch to forward unhandled SBI calls to userspace tool
-
-Changes since v6:
- - Rebased patches on Linux-5.3-rc7
- - Added "return_handled" in struct kvm_mmio_decode to ensure that
-   kvm_riscv_vcpu_mmio_return() updates SEPC only once
- - Removed trap_stval parameter from kvm_riscv_vcpu_unpriv_read()
- - Updated git repo URL in MAINTAINERS entry
-
-Changes since v5:
- - Renamed KVM_REG_RISCV_CONFIG_TIMEBASE register to
-   KVM_REG_RISCV_CONFIG_TBFREQ register in ONE_REG interface
- - Update SPEC in kvm_riscv_vcpu_mmio_return() for MMIO exits
- - Use switch case instead of illegal instruction opcode table for simplicity
- - Improve comments in stage2_remote_tlb_flush() for a potential remote TLB
-  flush optimization
- - Handle all unsupported SBI calls in default case of
-   kvm_riscv_vcpu_sbi_ecall() function
- - Fixed kvm_riscv_vcpu_sync_interrupts() for software interrupts
- - Improved unprivilege reads to handle traps due to Guest stage1 page table
- - Added separate patch to document RISC-V specific things in
-   Documentation/virt/kvm/api.txt
-
-Changes since v4:
- - Rebased patches on Linux-5.3-rc5
- - Added Paolo's Acked-by and Reviewed-by
- - Updated mailing list in MAINTAINERS entry
-
-Changes since v3:
- - Moved patch for ISA bitmap from KVM prep series to this series
- - Make vsip_shadow as run-time percpu variable instead of compile-time
- - Flush Guest TLBs on all Host CPUs whenever we run-out of VMIDs
-
-Changes since v2:
- - Removed references of KVM_REQ_IRQ_PENDING from all patches
- - Use kvm->srcu within in-kernel KVM run loop
- - Added percpu vsip_shadow to track last value programmed in VSIP CSR
- - Added comments about irqs_pending and irqs_pending_mask
- - Used kvm_arch_vcpu_runnable() in-place-of kvm_riscv_vcpu_has_interrupt()
-   in system_opcode_insn()
- - Removed unwanted smp_wmb() in kvm_riscv_stage2_vmid_update()
- - Use kvm_flush_remote_tlbs() in kvm_riscv_stage2_vmid_update()
- - Use READ_ONCE() in kvm_riscv_stage2_update_hgatp() for vmid
-
-Changes since v1:
- - Fixed compile errors in building KVM RISC-V as module
- - Removed unused kvm_riscv_halt_guest() and kvm_riscv_resume_guest()
- - Set KVM_CAP_SYNC_MMU capability only after MMU notifiers are implemented
- - Made vmid_version as unsigned long instead of atomic
- - Renamed KVM_REQ_UPDATE_PGTBL to KVM_REQ_UPDATE_HGATP
- - Renamed kvm_riscv_stage2_update_pgtbl() to kvm_riscv_stage2_update_hgatp()
- - Configure HIDELEG and HEDELEG in kvm_arch_hardware_enable()
- - Updated ONE_REG interface for CSR access to user-space
- - Removed irqs_pending_lock and use atomic bitops instead
- - Added separate patch for FP ONE_REG interface
- - Added separate patch for updating MAINTAINERS file
-
-Anup Patel (14):
-  RISC-V: Add hypervisor extension related CSR defines
-  RISC-V: Add initial skeletal KVM support
-  RISC-V: KVM: Implement VCPU create, init and destroy functions
-  RISC-V: KVM: Implement VCPU interrupts and requests handling
-  RISC-V: KVM: Implement KVM_GET_ONE_REG/KVM_SET_ONE_REG ioctls
-  RISC-V: KVM: Implement VCPU world-switch
-  RISC-V: KVM: Handle MMIO exits for VCPU
-  RISC-V: KVM: Handle WFI exits for VCPU
-  RISC-V: KVM: Implement VMID allocator
-  RISC-V: KVM: Implement stage2 page table programming
-  RISC-V: KVM: Implement MMU notifiers
-  RISC-V: KVM: Document RISC-V specific parts of KVM API
-  RISC-V: KVM: Add MAINTAINERS entry
-  RISC-V: Enable KVM for RV64 and RV32
-
-Atish Patra (4):
-  RISC-V: KVM: Add timer functionality
-  RISC-V: KVM: FP lazy save/restore
-  RISC-V: KVM: Implement ONE REG interface for FP registers
-  RISC-V: KVM: Add SBI v0.1 support
-
- Documentation/virt/kvm/api.rst          |  193 ++++-
- MAINTAINERS                             |   11 +
- arch/riscv/Kconfig                      |    2 +
- arch/riscv/Makefile                     |    2 +
- arch/riscv/configs/defconfig            |    3 +
- arch/riscv/configs/rv32_defconfig       |    3 +
- arch/riscv/include/asm/csr.h            |   89 ++
- arch/riscv/include/asm/kvm_host.h       |  278 +++++++
- arch/riscv/include/asm/kvm_types.h      |    7 +
- arch/riscv/include/asm/kvm_vcpu_timer.h |   44 +
- arch/riscv/include/asm/pgtable-bits.h   |    1 +
- arch/riscv/include/uapi/asm/kvm.h       |  128 +++
- arch/riscv/kernel/asm-offsets.c         |  156 ++++
- arch/riscv/kvm/Kconfig                  |   36 +
- arch/riscv/kvm/Makefile                 |   15 +
- arch/riscv/kvm/main.c                   |  118 +++
- arch/riscv/kvm/mmu.c                    |  857 +++++++++++++++++++
- arch/riscv/kvm/tlb.S                    |   74 ++
- arch/riscv/kvm/vcpu.c                   | 1012 +++++++++++++++++++++++
- arch/riscv/kvm/vcpu_exit.c              |  701 ++++++++++++++++
- arch/riscv/kvm/vcpu_sbi.c               |  173 ++++
- arch/riscv/kvm/vcpu_switch.S            |  400 +++++++++
- arch/riscv/kvm/vcpu_timer.c             |  225 +++++
- arch/riscv/kvm/vm.c                     |   81 ++
- arch/riscv/kvm/vmid.c                   |  120 +++
- drivers/clocksource/timer-riscv.c       |    8 +
- include/clocksource/timer-riscv.h       |   16 +
- include/uapi/linux/kvm.h                |    8 +
- 28 files changed, 4752 insertions(+), 9 deletions(-)
- create mode 100644 arch/riscv/include/asm/kvm_host.h
- create mode 100644 arch/riscv/include/asm/kvm_types.h
+Signed-off-by: Atish Patra <atish.patra@wdc.com>
+Signed-off-by: Anup Patel <anup.patel@wdc.com>
+Acked-by: Paolo Bonzini <pbonzini@redhat.com>
+Reviewed-by: Paolo Bonzini <pbonzini@redhat.com>
+Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+---
+ arch/riscv/include/asm/kvm_host.h       |   7 +
+ arch/riscv/include/asm/kvm_vcpu_timer.h |  44 +++++
+ arch/riscv/include/uapi/asm/kvm.h       |  17 ++
+ arch/riscv/kvm/Makefile                 |   2 +-
+ arch/riscv/kvm/vcpu.c                   |  14 ++
+ arch/riscv/kvm/vcpu_timer.c             | 225 ++++++++++++++++++++++++
+ arch/riscv/kvm/vm.c                     |   2 +-
+ drivers/clocksource/timer-riscv.c       |   8 +
+ include/clocksource/timer-riscv.h       |  16 ++
+ 9 files changed, 333 insertions(+), 2 deletions(-)
  create mode 100644 arch/riscv/include/asm/kvm_vcpu_timer.h
- create mode 100644 arch/riscv/include/uapi/asm/kvm.h
- create mode 100644 arch/riscv/kvm/Kconfig
- create mode 100644 arch/riscv/kvm/Makefile
- create mode 100644 arch/riscv/kvm/main.c
- create mode 100644 arch/riscv/kvm/mmu.c
- create mode 100644 arch/riscv/kvm/tlb.S
- create mode 100644 arch/riscv/kvm/vcpu.c
- create mode 100644 arch/riscv/kvm/vcpu_exit.c
- create mode 100644 arch/riscv/kvm/vcpu_sbi.c
- create mode 100644 arch/riscv/kvm/vcpu_switch.S
  create mode 100644 arch/riscv/kvm/vcpu_timer.c
- create mode 100644 arch/riscv/kvm/vm.c
- create mode 100644 arch/riscv/kvm/vmid.c
  create mode 100644 include/clocksource/timer-riscv.h
 
+diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
+index d25f181c3433..dcdc7816a799 100644
+--- a/arch/riscv/include/asm/kvm_host.h
++++ b/arch/riscv/include/asm/kvm_host.h
+@@ -12,6 +12,7 @@
+ #include <linux/types.h>
+ #include <linux/kvm.h>
+ #include <linux/kvm_types.h>
++#include <asm/kvm_vcpu_timer.h>
+ 
+ #ifdef CONFIG_64BIT
+ #define KVM_MAX_VCPUS			(1U << 16)
+@@ -66,6 +67,9 @@ struct kvm_arch {
+ 	/* stage2 page table */
+ 	pgd_t *pgd;
+ 	phys_addr_t pgd_phys;
++
++	/* Guest Timer */
++	struct kvm_guest_timer timer;
+ };
+ 
+ struct kvm_mmio_decode {
+@@ -181,6 +185,9 @@ struct kvm_vcpu_arch {
+ 	unsigned long irqs_pending;
+ 	unsigned long irqs_pending_mask;
+ 
++	/* VCPU Timer */
++	struct kvm_vcpu_timer timer;
++
+ 	/* MMIO instruction details */
+ 	struct kvm_mmio_decode mmio_decode;
+ 
+diff --git a/arch/riscv/include/asm/kvm_vcpu_timer.h b/arch/riscv/include/asm/kvm_vcpu_timer.h
+new file mode 100644
+index 000000000000..375281eb49e0
+--- /dev/null
++++ b/arch/riscv/include/asm/kvm_vcpu_timer.h
+@@ -0,0 +1,44 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/*
++ * Copyright (C) 2019 Western Digital Corporation or its affiliates.
++ *
++ * Authors:
++ *	Atish Patra <atish.patra@wdc.com>
++ */
++
++#ifndef __KVM_VCPU_RISCV_TIMER_H
++#define __KVM_VCPU_RISCV_TIMER_H
++
++#include <linux/hrtimer.h>
++
++struct kvm_guest_timer {
++	/* Mult & Shift values to get nanoseconds from cycles */
++	u32 nsec_mult;
++	u32 nsec_shift;
++	/* Time delta value */
++	u64 time_delta;
++};
++
++struct kvm_vcpu_timer {
++	/* Flag for whether init is done */
++	bool init_done;
++	/* Flag for whether timer event is configured */
++	bool next_set;
++	/* Next timer event cycles */
++	u64 next_cycles;
++	/* Underlying hrtimer instance */
++	struct hrtimer hrt;
++};
++
++int kvm_riscv_vcpu_timer_next_event(struct kvm_vcpu *vcpu, u64 ncycles);
++int kvm_riscv_vcpu_get_reg_timer(struct kvm_vcpu *vcpu,
++				 const struct kvm_one_reg *reg);
++int kvm_riscv_vcpu_set_reg_timer(struct kvm_vcpu *vcpu,
++				 const struct kvm_one_reg *reg);
++int kvm_riscv_vcpu_timer_init(struct kvm_vcpu *vcpu);
++int kvm_riscv_vcpu_timer_deinit(struct kvm_vcpu *vcpu);
++int kvm_riscv_vcpu_timer_reset(struct kvm_vcpu *vcpu);
++void kvm_riscv_vcpu_timer_restore(struct kvm_vcpu *vcpu);
++int kvm_riscv_guest_timer_init(struct kvm *kvm);
++
++#endif
+diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
+index f7e9dc388d54..00196a13d743 100644
+--- a/arch/riscv/include/uapi/asm/kvm.h
++++ b/arch/riscv/include/uapi/asm/kvm.h
+@@ -74,6 +74,18 @@ struct kvm_riscv_csr {
+ 	unsigned long scounteren;
+ };
+ 
++/* TIMER registers for KVM_GET_ONE_REG and KVM_SET_ONE_REG */
++struct kvm_riscv_timer {
++	u64 frequency;
++	u64 time;
++	u64 compare;
++	u64 state;
++};
++
++/* Possible states for kvm_riscv_timer */
++#define KVM_RISCV_TIMER_STATE_OFF	0
++#define KVM_RISCV_TIMER_STATE_ON	1
++
+ #define KVM_REG_SIZE(id)		\
+ 	(1U << (((id) & KVM_REG_SIZE_MASK) >> KVM_REG_SIZE_SHIFT))
+ 
+@@ -96,6 +108,11 @@ struct kvm_riscv_csr {
+ #define KVM_REG_RISCV_CSR_REG(name)	\
+ 		(offsetof(struct kvm_riscv_csr, name) / sizeof(unsigned long))
+ 
++/* Timer registers are mapped as type 4 */
++#define KVM_REG_RISCV_TIMER		(0x04 << KVM_REG_RISCV_TYPE_SHIFT)
++#define KVM_REG_RISCV_TIMER_REG(name)	\
++		(offsetof(struct kvm_riscv_timer, name) / sizeof(u64))
++
+ #endif
+ 
+ #endif /* __LINUX_KVM_RISCV_H */
+diff --git a/arch/riscv/kvm/Makefile b/arch/riscv/kvm/Makefile
+index b32f60edf48c..a034826f9a3f 100644
+--- a/arch/riscv/kvm/Makefile
++++ b/arch/riscv/kvm/Makefile
+@@ -10,6 +10,6 @@ ccflags-y := -Ivirt/kvm -Iarch/riscv/kvm
+ kvm-objs := $(common-objs-y)
+ 
+ kvm-objs += main.o vm.o vmid.o tlb.o mmu.o
+-kvm-objs += vcpu.o vcpu_exit.o vcpu_switch.o
++kvm-objs += vcpu.o vcpu_exit.o vcpu_switch.o vcpu_timer.o
+ 
+ obj-$(CONFIG_KVM)	+= kvm.o
+diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+index 7192b6edd826..45ff6761b89c 100644
+--- a/arch/riscv/kvm/vcpu.c
++++ b/arch/riscv/kvm/vcpu.c
+@@ -55,6 +55,8 @@ static void kvm_riscv_reset_vcpu(struct kvm_vcpu *vcpu)
+ 
+ 	memcpy(cntx, reset_cntx, sizeof(*cntx));
+ 
++	kvm_riscv_vcpu_timer_reset(vcpu);
++
+ 	WRITE_ONCE(vcpu->arch.irqs_pending, 0);
+ 	WRITE_ONCE(vcpu->arch.irqs_pending_mask, 0);
+ }
+@@ -82,6 +84,9 @@ int kvm_arch_vcpu_create(struct kvm_vcpu *vcpu)
+ 	cntx->hstatus |= HSTATUS_SPVP;
+ 	cntx->hstatus |= HSTATUS_SPV;
+ 
++	/* Setup VCPU timer */
++	kvm_riscv_vcpu_timer_init(vcpu);
++
+ 	/* Reset VCPU */
+ 	kvm_riscv_reset_vcpu(vcpu);
+ 
+@@ -99,6 +104,9 @@ void kvm_arch_vcpu_postcreate(struct kvm_vcpu *vcpu)
+ 
+ void kvm_arch_vcpu_destroy(struct kvm_vcpu *vcpu)
+ {
++	/* Cleanup VCPU timer */
++	kvm_riscv_vcpu_timer_deinit(vcpu);
++
+ 	/* Flush the pages pre-allocated for Stage2 page table mappings */
+ 	kvm_riscv_stage2_flush_cache(vcpu);
+ }
+@@ -349,6 +357,8 @@ static int kvm_riscv_vcpu_set_reg(struct kvm_vcpu *vcpu,
+ 		return kvm_riscv_vcpu_set_reg_core(vcpu, reg);
+ 	else if ((reg->id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_CSR)
+ 		return kvm_riscv_vcpu_set_reg_csr(vcpu, reg);
++	else if ((reg->id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_TIMER)
++		return kvm_riscv_vcpu_set_reg_timer(vcpu, reg);
+ 
+ 	return -EINVAL;
+ }
+@@ -362,6 +372,8 @@ static int kvm_riscv_vcpu_get_reg(struct kvm_vcpu *vcpu,
+ 		return kvm_riscv_vcpu_get_reg_core(vcpu, reg);
+ 	else if ((reg->id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_CSR)
+ 		return kvm_riscv_vcpu_get_reg_csr(vcpu, reg);
++	else if ((reg->id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_TIMER)
++		return kvm_riscv_vcpu_get_reg_timer(vcpu, reg);
+ 
+ 	return -EINVAL;
+ }
+@@ -594,6 +606,8 @@ void kvm_arch_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
+ 
+ 	kvm_riscv_stage2_update_hgatp(vcpu);
+ 
++	kvm_riscv_vcpu_timer_restore(vcpu);
++
+ 	vcpu->cpu = cpu;
+ }
+ 
+diff --git a/arch/riscv/kvm/vcpu_timer.c b/arch/riscv/kvm/vcpu_timer.c
+new file mode 100644
+index 000000000000..ddd0ce727b83
+--- /dev/null
++++ b/arch/riscv/kvm/vcpu_timer.c
+@@ -0,0 +1,225 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Copyright (C) 2019 Western Digital Corporation or its affiliates.
++ *
++ * Authors:
++ *     Atish Patra <atish.patra@wdc.com>
++ */
++
++#include <linux/errno.h>
++#include <linux/err.h>
++#include <linux/kvm_host.h>
++#include <linux/uaccess.h>
++#include <clocksource/timer-riscv.h>
++#include <asm/csr.h>
++#include <asm/delay.h>
++#include <asm/kvm_vcpu_timer.h>
++
++static u64 kvm_riscv_current_cycles(struct kvm_guest_timer *gt)
++{
++	return get_cycles64() + gt->time_delta;
++}
++
++static u64 kvm_riscv_delta_cycles2ns(u64 cycles,
++				     struct kvm_guest_timer *gt,
++				     struct kvm_vcpu_timer *t)
++{
++	unsigned long flags;
++	u64 cycles_now, cycles_delta, delta_ns;
++
++	local_irq_save(flags);
++	cycles_now = kvm_riscv_current_cycles(gt);
++	if (cycles_now < cycles)
++		cycles_delta = cycles - cycles_now;
++	else
++		cycles_delta = 0;
++	delta_ns = (cycles_delta * gt->nsec_mult) >> gt->nsec_shift;
++	local_irq_restore(flags);
++
++	return delta_ns;
++}
++
++static enum hrtimer_restart kvm_riscv_vcpu_hrtimer_expired(struct hrtimer *h)
++{
++	u64 delta_ns;
++	struct kvm_vcpu_timer *t = container_of(h, struct kvm_vcpu_timer, hrt);
++	struct kvm_vcpu *vcpu = container_of(t, struct kvm_vcpu, arch.timer);
++	struct kvm_guest_timer *gt = &vcpu->kvm->arch.timer;
++
++	if (kvm_riscv_current_cycles(gt) < t->next_cycles) {
++		delta_ns = kvm_riscv_delta_cycles2ns(t->next_cycles, gt, t);
++		hrtimer_forward_now(&t->hrt, ktime_set(0, delta_ns));
++		return HRTIMER_RESTART;
++	}
++
++	t->next_set = false;
++	kvm_riscv_vcpu_set_interrupt(vcpu, IRQ_VS_TIMER);
++
++	return HRTIMER_NORESTART;
++}
++
++static int kvm_riscv_vcpu_timer_cancel(struct kvm_vcpu_timer *t)
++{
++	if (!t->init_done || !t->next_set)
++		return -EINVAL;
++
++	hrtimer_cancel(&t->hrt);
++	t->next_set = false;
++
++	return 0;
++}
++
++int kvm_riscv_vcpu_timer_next_event(struct kvm_vcpu *vcpu, u64 ncycles)
++{
++	struct kvm_vcpu_timer *t = &vcpu->arch.timer;
++	struct kvm_guest_timer *gt = &vcpu->kvm->arch.timer;
++	u64 delta_ns;
++
++	if (!t->init_done)
++		return -EINVAL;
++
++	kvm_riscv_vcpu_unset_interrupt(vcpu, IRQ_VS_TIMER);
++
++	delta_ns = kvm_riscv_delta_cycles2ns(ncycles, gt, t);
++	t->next_cycles = ncycles;
++	hrtimer_start(&t->hrt, ktime_set(0, delta_ns), HRTIMER_MODE_REL);
++	t->next_set = true;
++
++	return 0;
++}
++
++int kvm_riscv_vcpu_get_reg_timer(struct kvm_vcpu *vcpu,
++				 const struct kvm_one_reg *reg)
++{
++	struct kvm_vcpu_timer *t = &vcpu->arch.timer;
++	struct kvm_guest_timer *gt = &vcpu->kvm->arch.timer;
++	u64 __user *uaddr = (u64 __user *)(unsigned long)reg->addr;
++	unsigned long reg_num = reg->id & ~(KVM_REG_ARCH_MASK |
++					    KVM_REG_SIZE_MASK |
++					    KVM_REG_RISCV_TIMER);
++	u64 reg_val;
++
++	if (KVM_REG_SIZE(reg->id) != sizeof(u64))
++		return -EINVAL;
++	if (reg_num >= sizeof(struct kvm_riscv_timer) / sizeof(u64))
++		return -EINVAL;
++
++	switch (reg_num) {
++	case KVM_REG_RISCV_TIMER_REG(frequency):
++		reg_val = riscv_timebase;
++		break;
++	case KVM_REG_RISCV_TIMER_REG(time):
++		reg_val = kvm_riscv_current_cycles(gt);
++		break;
++	case KVM_REG_RISCV_TIMER_REG(compare):
++		reg_val = t->next_cycles;
++		break;
++	case KVM_REG_RISCV_TIMER_REG(state):
++		reg_val = (t->next_set) ? KVM_RISCV_TIMER_STATE_ON :
++					  KVM_RISCV_TIMER_STATE_OFF;
++		break;
++	default:
++		return -EINVAL;
++	};
++
++	if (copy_to_user(uaddr, &reg_val, KVM_REG_SIZE(reg->id)))
++		return -EFAULT;
++
++	return 0;
++}
++
++int kvm_riscv_vcpu_set_reg_timer(struct kvm_vcpu *vcpu,
++				 const struct kvm_one_reg *reg)
++{
++	struct kvm_vcpu_timer *t = &vcpu->arch.timer;
++	struct kvm_guest_timer *gt = &vcpu->kvm->arch.timer;
++	u64 __user *uaddr = (u64 __user *)(unsigned long)reg->addr;
++	unsigned long reg_num = reg->id & ~(KVM_REG_ARCH_MASK |
++					    KVM_REG_SIZE_MASK |
++					    KVM_REG_RISCV_TIMER);
++	u64 reg_val;
++	int ret = 0;
++
++	if (KVM_REG_SIZE(reg->id) != sizeof(u64))
++		return -EINVAL;
++	if (reg_num >= sizeof(struct kvm_riscv_timer) / sizeof(u64))
++		return -EINVAL;
++
++	if (copy_from_user(&reg_val, uaddr, KVM_REG_SIZE(reg->id)))
++		return -EFAULT;
++
++	switch (reg_num) {
++	case KVM_REG_RISCV_TIMER_REG(frequency):
++		ret = -EOPNOTSUPP;
++		break;
++	case KVM_REG_RISCV_TIMER_REG(time):
++		gt->time_delta = reg_val - get_cycles64();
++		break;
++	case KVM_REG_RISCV_TIMER_REG(compare):
++		t->next_cycles = reg_val;
++		break;
++	case KVM_REG_RISCV_TIMER_REG(state):
++		if (reg_val == KVM_RISCV_TIMER_STATE_ON)
++			ret = kvm_riscv_vcpu_timer_next_event(vcpu, reg_val);
++		else
++			ret = kvm_riscv_vcpu_timer_cancel(t);
++		break;
++	default:
++		ret = -EINVAL;
++		break;
++	};
++
++	return ret;
++}
++
++int kvm_riscv_vcpu_timer_init(struct kvm_vcpu *vcpu)
++{
++	struct kvm_vcpu_timer *t = &vcpu->arch.timer;
++
++	if (t->init_done)
++		return -EINVAL;
++
++	hrtimer_init(&t->hrt, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
++	t->hrt.function = kvm_riscv_vcpu_hrtimer_expired;
++	t->init_done = true;
++	t->next_set = false;
++
++	return 0;
++}
++
++int kvm_riscv_vcpu_timer_deinit(struct kvm_vcpu *vcpu)
++{
++	int ret;
++
++	ret = kvm_riscv_vcpu_timer_cancel(&vcpu->arch.timer);
++	vcpu->arch.timer.init_done = false;
++
++	return ret;
++}
++
++int kvm_riscv_vcpu_timer_reset(struct kvm_vcpu *vcpu)
++{
++	return kvm_riscv_vcpu_timer_cancel(&vcpu->arch.timer);
++}
++
++void kvm_riscv_vcpu_timer_restore(struct kvm_vcpu *vcpu)
++{
++	struct kvm_guest_timer *gt = &vcpu->kvm->arch.timer;
++
++#ifdef CONFIG_64BIT
++	csr_write(CSR_HTIMEDELTA, gt->time_delta);
++#else
++	csr_write(CSR_HTIMEDELTA, (u32)(gt->time_delta));
++	csr_write(CSR_HTIMEDELTAH, (u32)(gt->time_delta >> 32));
++#endif
++}
++
++int kvm_riscv_guest_timer_init(struct kvm *kvm)
++{
++	struct kvm_guest_timer *gt = &kvm->arch.timer;
++
++	riscv_cs_get_mult_shift(&gt->nsec_mult, &gt->nsec_shift);
++	gt->time_delta = -get_cycles64();
++
++	return 0;
++}
+diff --git a/arch/riscv/kvm/vm.c b/arch/riscv/kvm/vm.c
+index 00a1a88008be..253c45ee20f9 100644
+--- a/arch/riscv/kvm/vm.c
++++ b/arch/riscv/kvm/vm.c
+@@ -26,7 +26,7 @@ int kvm_arch_init_vm(struct kvm *kvm, unsigned long type)
+ 		return r;
+ 	}
+ 
+-	return 0;
++	return kvm_riscv_guest_timer_init(kvm);
+ }
+ 
+ void kvm_arch_destroy_vm(struct kvm *kvm)
+diff --git a/drivers/clocksource/timer-riscv.c b/drivers/clocksource/timer-riscv.c
+index c51c5ed15aa7..8e73c0a23910 100644
+--- a/drivers/clocksource/timer-riscv.c
++++ b/drivers/clocksource/timer-riscv.c
+@@ -13,6 +13,7 @@
+ #include <linux/delay.h>
+ #include <linux/irq.h>
+ #include <linux/irqdomain.h>
++#include <linux/module.h>
+ #include <linux/sched_clock.h>
+ #include <linux/io-64-nonatomic-lo-hi.h>
+ #include <linux/interrupt.h>
+@@ -79,6 +80,13 @@ static int riscv_timer_dying_cpu(unsigned int cpu)
+ 	return 0;
+ }
+ 
++void riscv_cs_get_mult_shift(u32 *mult, u32 *shift)
++{
++	*mult = riscv_clocksource.mult;
++	*shift = riscv_clocksource.shift;
++}
++EXPORT_SYMBOL_GPL(riscv_cs_get_mult_shift);
++
+ /* called directly from the low-level interrupt handler */
+ static irqreturn_t riscv_timer_interrupt(int irq, void *dev_id)
+ {
+diff --git a/include/clocksource/timer-riscv.h b/include/clocksource/timer-riscv.h
+new file mode 100644
+index 000000000000..d7f455754e60
+--- /dev/null
++++ b/include/clocksource/timer-riscv.h
+@@ -0,0 +1,16 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/*
++ * Copyright (C) 2019 Western Digital Corporation or its affiliates.
++ *
++ * Authors:
++ *	Atish Patra <atish.patra@wdc.com>
++ */
++
++#ifndef __TIMER_RISCV_H
++#define __TIMER_RISCV_H
++
++#include <linux/types.h>
++
++extern void riscv_cs_get_mult_shift(u32 *mult, u32 *shift);
++
++#endif
 -- 
 2.25.1
 
