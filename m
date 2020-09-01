@@ -1,142 +1,228 @@
-From: Conor Dooley <conor.dooley@microchip.com>
-Date: Thu, 27 Apr 2023 10:37:35 -0000
-Subject: [PATCH] RISC-V: Align SBI probe implementation with spec
-In-Reply-To: <ryknbllu75eliur7v6tzei6jvqgwayuhej5icobxxrqwabymhz@lnnqmlrqxvex>
-References: <20230426172254.70342-1-ajones@ventanamicro.com>
- <20230427-property-barracuda-631a14371df0@wendy>
- <ryknbllu75eliur7v6tzei6jvqgwayuhej5icobxxrqwabymhz@lnnqmlrqxvex>
-Message-ID: <20230427-aflutter-emboss-6892d7097915@wendy>
+From: Anup Patel <anup@brainfault.org>
+Date: Tue, 1 Sep 2020 20:50:23 +0530
+Subject: [PATCH RFC 2/2] target/kvm: Add interfaces needed for log dirty
+In-Reply-To: <3915816D913D8241BB43E932213F57D4ADD8F34F@dggemm525-mbs.china.huawei.com>
+References: <20200827082251.1591-1-jiangyifei@huawei.com>
+ <20200827082251.1591-3-jiangyifei@huawei.com>
+ <CAAhSdy36ZCubU-1+WzjMzBaR+RipgEhvRqd9AT+28=99-EUDaQ@mail.gmail.com>
+ <3915816D913D8241BB43E932213F57D4ADD8F34F@dggemm525-mbs.china.huawei.com>
+Message-ID: <CAAhSdy3jvCcA=DsR6NoZ4HRx9qXTC-Wwc+B3T79TKDtXBPd8Jw@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Apr 27, 2023 at 12:17:02PM +0200, Andrew Jones wrote:
-> On Thu, Apr 27, 2023 at 10:42:11AM +0100, Conor Dooley wrote:
-> > On Wed, Apr 26, 2023 at 07:22:54PM +0200, Andrew Jones wrote:
-> > > sbi_probe_extension() is specified with "Returns 0 if the given SBI
-> > > extension ID (EID) is not available, or 1 if it is available unless
-> > > defined as any other non-zero value by the implementation."
-> > > Additionally, sbiret.value is a long. Fix the implementation to
-> > > ensure any nonzero long value is considered a success, rather
-> > > than only positive int values.
-> > 
-> > Does this need a fixes tag (or tags) then, since we could easily return
-> > a negative value as things stand if the SBI implementation decides to
-> > return 0b1...1 for success?
-> 
-> Nothing is getting fixed when only considering the current generic opensbi
-> platform, but there could be other SBI implementations Linux isn't
-> handling correctly by only considering success to be greater than zero
-> or by truncating the return value from long to int. I suppose that
-> possibility does warrant a fix tag, which would be
-
-Yah, I figured that something like opensbi would do the "sane" thing
-here, but there's no accounting for taste and all that.
-
-> Fixes: b9dcd9e41587 ("RISC-V: Add basic support for SBI v0.2")
-> 
-> > 
-> > > Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
+On Mon, Aug 31, 2020 at 8:09 AM Jiangyifei <jiangyifei@huawei.com> wrote:
+>
+>
+> > -----Original Message-----
+> > From: Anup Patel [mailto:anup at brainfault.org]
+> > Sent: Friday, August 28, 2020 12:54 PM
+> > To: Jiangyifei <jiangyifei@huawei.com>
+> > Cc: Paul Walmsley <paul.walmsley@sifive.com>; Palmer Dabbelt
+> > <palmer@dabbelt.com>; Albert Ou <aou@eecs.berkeley.edu>; Anup Patel
+> > <anup.patel@wdc.com>; Alistair Francis <alistair.francis@wdc.com>; Atish
+> > Patra <atish.patra@wdc.com>; deepa.kernel at gmail.com;
+> > kvm-riscv at lists.infradead.org; KVM General <kvm@vger.kernel.org>;
+> > linux-riscv <linux-riscv@lists.infradead.org>; linux-kernel at vger.kernel.org List
+> > <linux-kernel@vger.kernel.org>; Zhangxiaofeng (F)
+> > <victor.zhangxiaofeng@huawei.com>; Wubin (H) <wu.wubin@huawei.com>;
+> > Zhanghailiang <zhang.zhanghailiang@huawei.com>; dengkai (A)
+> > <dengkai1@huawei.com>; yinyipeng <yinyipeng1@huawei.com>
+> > Subject: Re: [PATCH RFC 2/2] target/kvm: Add interfaces needed for log dirty
+> >
+> > On Thu, Aug 27, 2020 at 1:54 PM Yifei Jiang <jiangyifei@huawei.com> wrote:
+> > >
+> > > Add two interfaces of log dirty for kvm_main.c, and detele the
+> > > interface kvm_vm_ioctl_get_dirty_log which is redundantly defined.
+> > >
+> > > CONFIG_KVM_GENERIC_DIRTYLOG_READ_PROTECT is added in defconfig.
+> > >
+> > > Signed-off-by: Yifei Jiang <jiangyifei@huawei.com>
+> > > Signed-off-by: Yipeng Yin <yinyipeng1@huawei.com>
 > > > ---
-> > >  arch/riscv/include/asm/sbi.h        |  2 +-
-> > >  arch/riscv/kernel/cpu_ops.c         |  2 +-
-> > >  arch/riscv/kernel/sbi.c             | 17 ++++++++---------
-> > >  arch/riscv/kvm/main.c               |  2 +-
-> > >  drivers/cpuidle/cpuidle-riscv-sbi.c |  2 +-
-> > >  drivers/perf/riscv_pmu_sbi.c        |  2 +-
-> > >  6 files changed, 13 insertions(+), 14 deletions(-)
-> > > 
-> > > diff --git a/arch/riscv/include/asm/sbi.h b/arch/riscv/include/asm/sbi.h
-> > > index 945b7be249c1..119355485703 100644
-> > > --- a/arch/riscv/include/asm/sbi.h
-> > > +++ b/arch/riscv/include/asm/sbi.h
-> > > @@ -296,7 +296,7 @@ int sbi_remote_hfence_vvma_asid(const struct cpumask *cpu_mask,
-> > >  				unsigned long start,
-> > >  				unsigned long size,
-> > >  				unsigned long asid);
-> > > -int sbi_probe_extension(int ext);
-> > > +long sbi_probe_extension(int ext);
-> > >  
-> > >  /* Check if current SBI specification version is 0.1 or not */
-> > >  static inline int sbi_spec_is_0_1(void)
-> > > diff --git a/arch/riscv/kernel/cpu_ops.c b/arch/riscv/kernel/cpu_ops.c
-> > > index 8275f237a59d..eb479a88a954 100644
-> > > --- a/arch/riscv/kernel/cpu_ops.c
-> > > +++ b/arch/riscv/kernel/cpu_ops.c
-> > > @@ -27,7 +27,7 @@ const struct cpu_operations cpu_ops_spinwait = {
-> > >  void __init cpu_set_ops(int cpuid)
-> > >  {
-> > >  #if IS_ENABLED(CONFIG_RISCV_SBI)
-> > > -	if (sbi_probe_extension(SBI_EXT_HSM) > 0) {
-> > > +	if (sbi_probe_extension(SBI_EXT_HSM)) {
-> > >  		if (!cpuid)
-> > >  			pr_info("SBI HSM extension detected\n");
-> > >  		cpu_ops[cpuid] = &cpu_ops_sbi;
-> > > diff --git a/arch/riscv/kernel/sbi.c b/arch/riscv/kernel/sbi.c
-> > > index 5c87db8fdff2..015ce8eef2de 100644
-> > > --- a/arch/riscv/kernel/sbi.c
-> > > +++ b/arch/riscv/kernel/sbi.c
-> > > @@ -581,19 +581,18 @@ static void sbi_srst_power_off(void)
-> > >   * sbi_probe_extension() - Check if an SBI extension ID is supported or not.
-> > >   * @extid: The extension ID to be probed.
-> > >   *
-> > > - * Return: Extension specific nonzero value f yes, -ENOTSUPP otherwise.
-> > > + * Return: 1 or an extension specific nonzero value if yes, 0 otherwise.
-> > >   */
-> > > -int sbi_probe_extension(int extid)
-> > > +long sbi_probe_extension(int extid)
-> > >  {
-> > >  	struct sbiret ret;
-> > >  
-> > >  	ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_PROBE_EXT, extid,
-> > >  			0, 0, 0, 0, 0);
-> > >  	if (!ret.error)
-> > > -		if (ret.value)
-> > > -			return ret.value;
-> > > +		return ret.value;
-> > >  
-> > > -	return -ENOTSUPP;
-> > > +	return 0;
-> > 
-> > Why not make it return -ENOTSUPP for failures and 0 for success instead,
-> > as it does not appear that any users actually care what the return value
-> > is, once it is not an error?
-> 
-> Just to prepare for theoretical new uses.
-> 
-> > Concerned that it'll look weird to have
-> > 	if(!sbi_probe_extension(foo))
-> > 		print(foo is available!)
-> > since it looks a bit weird that the !case is success?
-> 
-> No, that's pretty par for the course in the kernel. I'd just prefer
-> that sbi_probe_extension() be a simple wrapper around the SBI call,
-> one that doesn't change the SBI call's return value semantics.
-> 
-> > 
-> > If so, perhaps it could just return a bool instead, unless of course I
-> > am missing some pending user that make some decision on the actual value
-> > returned here is.
-> 
-> No pending user that I'm aware of, but it's not too awkward, IMO, to
-> implement this as the spec says, so any pending user that comes along
-> will be happy from the start. If a boolean function seems better for
-> everyone,
+> > >  arch/riscv/configs/defconfig |  1 +
+> > >  arch/riscv/kvm/Kconfig       |  1 +
+> > >  arch/riscv/kvm/mmu.c         | 43
+> > ++++++++++++++++++++++++++++++++++++
+> > >  arch/riscv/kvm/vm.c          |  6 -----
+> > >  4 files changed, 45 insertions(+), 6 deletions(-)
+> > >
+> > > diff --git a/arch/riscv/configs/defconfig
+> > > b/arch/riscv/configs/defconfig index d36e1000bbd3..857d799672c2 100644
+> > > --- a/arch/riscv/configs/defconfig
+> > > +++ b/arch/riscv/configs/defconfig
+> > > @@ -19,6 +19,7 @@ CONFIG_SOC_VIRT=y
+> > >  CONFIG_SMP=y
+> > >  CONFIG_VIRTUALIZATION=y
+> > >  CONFIG_KVM=y
+> > > +CONFIG_KVM_GENERIC_DIRTYLOG_READ_PROTECT=y
+> > >  CONFIG_HOTPLUG_CPU=y
+> > >  CONFIG_MODULES=y
+> > >  CONFIG_MODULE_UNLOAD=y
+> > > diff --git a/arch/riscv/kvm/Kconfig b/arch/riscv/kvm/Kconfig index
+> > > 2356dc52ebb3..91fcffc70e5d 100644
+> > > --- a/arch/riscv/kvm/Kconfig
+> > > +++ b/arch/riscv/kvm/Kconfig
+> > > @@ -26,6 +26,7 @@ config KVM
+> > >         select KVM_MMIO
+> > >         select HAVE_KVM_VCPU_ASYNC_IOCTL
+> > >         select SRCU
+> > > +       select KVM_GENERIC_DIRTYLOG_READ_PROTECT
+> > >         help
+> > >           Support hosting virtualized guest machines.
+> > >
+> > > diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c index
+> > > 88bce80ee983..df2a470c25e4 100644
+> > > --- a/arch/riscv/kvm/mmu.c
+> > > +++ b/arch/riscv/kvm/mmu.c
+> > > @@ -358,6 +358,43 @@ void stage2_wp_memory_region(struct kvm *kvm,
+> > int slot)
+> > >         kvm_flush_remote_tlbs(kvm);
+> > >  }
+> > >
+> > > +/**
+> > > + * kvm_mmu_write_protect_pt_masked() - write protect dirty pages
+> > > + * @kvm:    The KVM pointer
+> > > + * @slot:   The memory slot associated with mask
+> > > + * @gfn_offset: The gfn offset in memory slot
+> > > + * @mask:   The mask of dirty pages at offset 'gfn_offset' in this memory
+> > > + *      slot to be write protected
+> > > + *
+> > > + * Walks bits set in mask write protects the associated pte's. Caller
+> > > +must
+> > > + * acquire kvm_mmu_lock.
+> > > + */
+> > > +static void kvm_mmu_write_protect_pt_masked(struct kvm *kvm,
+> > > +        struct kvm_memory_slot *slot,
+> > > +        gfn_t gfn_offset, unsigned long mask) {
+> > > +    phys_addr_t base_gfn = slot->base_gfn + gfn_offset;
+> > > +    phys_addr_t start = (base_gfn +  __ffs(mask)) << PAGE_SHIFT;
+> > > +    phys_addr_t end = (base_gfn + __fls(mask) + 1) << PAGE_SHIFT;
+> > > +
+> > > +    stage2_wp_range(kvm, start, end); }
+> > > +
+> > > +/*
+> > > + * kvm_arch_mmu_enable_log_dirty_pt_masked - enable dirty logging for
+> > > +selected
+> > > + * dirty pages.
+> > > + *
+> > > + * It calls kvm_mmu_write_protect_pt_masked to write protect selected
+> > > +pages to
+> > > + * enable dirty logging for them.
+> > > + */
+> > > +void kvm_arch_mmu_enable_log_dirty_pt_masked(struct kvm *kvm,
+> > > +        struct kvm_memory_slot *slot,
+> > > +        gfn_t gfn_offset, unsigned long mask) {
+> > > +    kvm_mmu_write_protect_pt_masked(kvm, slot, gfn_offset, mask); }
+> > > +
+> > > +
+> > >  int stage2_ioremap(struct kvm *kvm, gpa_t gpa, phys_addr_t hpa,
+> > >                    unsigned long size, bool writable)  { @@ -433,6
+> > > +470,12 @@ void kvm_arch_sync_dirty_log(struct kvm *kvm, struct
+> > > kvm_memory_slot *memslot)  {  }
+> > >
+> > > +void kvm_arch_flush_remote_tlbs_memslot(struct kvm *kvm,
+> > > +                                       struct kvm_memory_slot
+> > > +*memslot) {
+> > > +       kvm_flush_remote_tlbs(kvm);
+> > > +}
+> > > +
+> > >  void kvm_arch_free_memslot(struct kvm *kvm, struct kvm_memory_slot
+> > > *free)  {  } diff --git a/arch/riscv/kvm/vm.c b/arch/riscv/kvm/vm.c
+> > > index 4f2498198cb5..f7405676903b 100644
+> > > --- a/arch/riscv/kvm/vm.c
+> > > +++ b/arch/riscv/kvm/vm.c
+> > > @@ -12,12 +12,6 @@
+> > >  #include <linux/uaccess.h>
+> > >  #include <linux/kvm_host.h>
+> > >
+> > > -int kvm_vm_ioctl_get_dirty_log(struct kvm *kvm, struct kvm_dirty_log
+> > > *log) -{
+> > > -       /* TODO: To be added later. */
+> > > -       return -ENOTSUPP;
+> > > -}
+> > > -
+> > >  int kvm_arch_init_vm(struct kvm *kvm, unsigned long type)  {
+> > >         int r;
+> > > --
+> > > 2.19.1
+> > >
+> > >
+> >
+> > I already have a similar change as part of v14 KVM RISC-V series.
+> >
+> > Let us coordinate better. Please let us know in-advance for any KVM RISC-V
+> > feature you plan to work on. Otherwise, this leads to efforts wasted at your
+> > end or at our end.
+> >
+> > Regards,
+> > Anup
+>
+> Hi Anup,
+>
+> Thanks for accepting our patches.
+>
+> In the next few weeks we plan to work on the following:
+> 1. memory reverse mapping (rmap), related to migration.
 
-I don't really mind which way you do it to be honest.
-I see reasons for both wanting alignment with what the SBI spec has &
-for returning the simplest type that fits the usage.
-Both are better than the current, potentially buggy, implementation.
+This is fine.
 
-Can put a
-Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
-on it either way.
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 228 bytes
-Desc: not available
-URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20230427/552cc251/attachment-0001.sig>
+> 2. irqfd.
+
+We had past discussion about doing in-kernel PLIC.
+
+Generally, in-kernel emulation of an interrupt controller provides the
+following benefits:
+1. Faster emulation of timer interrupts
+2. Faster emulation of ipi interrupts
+3. Irqfd for Vhost
+4. Pass-through interrupt routing
+5. Anything else ??
+
+For RISC-V, timer and ipi interrupts are handled locally by each HART
+so in-kernel PLIC emulation won't provide 1) and 2). Also, considering
+simplicity of PLIC we can't provide 4) as well. This means 3) might be
+the only benefit of in-kernel PLIC.
+
+There are already efforts underway to have a new interrupt-controller
+spec which has virtualization support and also supports MSIs. I think
+it is OKAY to have PLIC emulated in user-space for now. We will go
+for in-kernel emulation and irqfd support for the new interrupt controller.
+
+Does this sound okay ??
+
+(Please talk to Andrew Waterman and John Hauser for more details on
+new interrupt-controller spec)
+
+> 3. implmentaion related to the dedicated clock event source proposal.
+
+There are two SBI extensions required:
+1. Para-virt CPU steal accounting
+    This is for accounting stolen time by hypervisors.
+2. Para-virt time scaling
+    This is for migrating Guest/VM across Host with different timer frequency.
+
+We are already doing 1) and we will be proposing an SBI extension for it in
+the UnixPlatformSpec mailing list soon.
+
+By "dedicated clock event source" I assume you meant something related
+to 2). I would suggest you to join UnixPlatformSpec mailing list on RISC-V
+foundation and propose your SBI spec related ideas over there.
+
+>
+> Besides, we are aware of that you are working on irq chip emulation in KVM. Meanwhile, our implementaiton of irqfd and the clock event source has dependency on the irq chip and we may well modify the irq chip emulation code. So could you share with us any ideas, plans or progress regarding your work since there might be potential collision?
+
+Please see my comments on irqfd.
+
+>
+> Let's stay in touch in the long run and coodinate better. BTW, could you share with us if there's any regular discussion sessions focused on RISC-V KVM?
+
+I have started an email discussion about having regular Hypervisor sync-up
+call on the UnixPlatformSpec mailing list. We can use this sync-up call for
+KVM RISC-V as well.
+
+Regards,
+Anup
+
