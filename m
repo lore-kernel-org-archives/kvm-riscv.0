@@ -1,185 +1,169 @@
-From: Anup Patel <anup.patel@wdc.com>
-Date: Mon,  9 Nov 2020 17:06:55 +0530
-Subject: [RFC PATCH v5 8/8] riscv: Generate PCI host DT node
-In-Reply-To: <20201109113655.3733700-1-anup.patel@wdc.com>
-References: <20201109113655.3733700-1-anup.patel@wdc.com>
-Message-ID: <20201109113655.3733700-9-anup.patel@wdc.com>
+From: Jiangyifei <jiangyifei@huawei.com>
+Date: Mon, 16 Nov 2020 09:29:31 +0000
+Subject: [PATCH v15 10/17] RISC-V: KVM: Implement stage2 page table
+ programming
+In-Reply-To: <20201109113240.3733496-11-anup.patel@wdc.com>
+References: <20201109113240.3733496-1-anup.patel@wdc.com>
+ <20201109113240.3733496-11-anup.patel@wdc.com>
+Message-ID: <186ade3c372b44ef8ca1830da8c5002b@huawei.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This patch extends FDT generation to generate PCI host DT node.
 
-Of course, PCI host for Guest/VM is not useful at the moment
-because it's mostly for PCI pass-through and we don't have
-IOMMU and interrupt routing available for KVM RISC-V. In future,
-we might be able to use PCI host for VirtIO PCI transport or
-other software emulated PCI devices.
+> -----Original Message-----
+> From: Anup Patel [mailto:anup.patel at wdc.com]
+> Sent: Monday, November 9, 2020 7:33 PM
+> To: Palmer Dabbelt <palmer@dabbelt.com>; Palmer Dabbelt
+> <palmerdabbelt@google.com>; Paul Walmsley <paul.walmsley@sifive.com>;
+> Albert Ou <aou@eecs.berkeley.edu>; Paolo Bonzini <pbonzini@redhat.com>
+> Cc: Alexander Graf <graf@amazon.com>; Atish Patra <atish.patra@wdc.com>;
+> Alistair Francis <Alistair.Francis@wdc.com>; Damien Le Moal
+> <damien.lemoal@wdc.com>; Anup Patel <anup@brainfault.org>;
+> kvm at vger.kernel.org; kvm-riscv at lists.infradead.org;
+> linux-riscv at lists.infradead.org; linux-kernel at vger.kernel.org; Anup Patel
+> <anup.patel@wdc.com>; Jiangyifei <jiangyifei@huawei.com>
+> Subject: [PATCH v15 10/17] RISC-V: KVM: Implement stage2 page table
+> programming
+> 
+> This patch implements all required functions for programming the stage2 page
+> table for each Guest/VM.
+> 
+> At high-level, the flow of stage2 related functions is similar from KVM
+> ARM/ARM64 implementation but the stage2 page table format is quite
+> different for KVM RISC-V.
+> 
+> [jiangyifei: stage2 dirty log support]
+> Signed-off-by: Yifei Jiang <jiangyifei@huawei.com>
+> Signed-off-by: Anup Patel <anup.patel@wdc.com>
+> Acked-by: Paolo Bonzini <pbonzini@redhat.com>
+> Reviewed-by: Paolo Bonzini <pbonzini@redhat.com>
+> ---
+>  arch/riscv/include/asm/kvm_host.h     |  12 +
+>  arch/riscv/include/asm/pgtable-bits.h |   1 +
+>  arch/riscv/kvm/Kconfig                |   1 +
+>  arch/riscv/kvm/main.c                 |  19 +
+>  arch/riscv/kvm/mmu.c                  | 649
+> +++++++++++++++++++++++++-
+>  arch/riscv/kvm/vm.c                   |   6 -
+>  6 files changed, 672 insertions(+), 16 deletions(-)
+> 
 
-Signed-off-by: Anup Patel <anup.patel@wdc.com>
----
- Makefile                     |   1 +
- riscv/fdt.c                  |   3 +
- riscv/include/kvm/kvm-arch.h |   2 +
- riscv/pci.c                  | 109 +++++++++++++++++++++++++++++++++++
- 4 files changed, 115 insertions(+)
- create mode 100644 riscv/pci.c
+......
 
-diff --git a/Makefile b/Makefile
-index 6042c1c..5cb6c8b 100644
---- a/Makefile
-+++ b/Makefile
-@@ -204,6 +204,7 @@ ifeq ($(ARCH),riscv)
- 	OBJS		+= riscv/irq.o
- 	OBJS		+= riscv/kvm.o
- 	OBJS		+= riscv/kvm-cpu.o
-+	OBJS		+= riscv/pci.o
- 	OBJS		+= riscv/plic.o
- 	ifeq ($(RISCV_XLEN),32)
- 		CFLAGS	+= -mabi=ilp32d -march=rv32gc
-diff --git a/riscv/fdt.c b/riscv/fdt.c
-index 6527ef7..de15bfe 100644
---- a/riscv/fdt.c
-+++ b/riscv/fdt.c
-@@ -167,6 +167,9 @@ static int setup_fdt(struct kvm *kvm)
- 		dev_hdr = device__next_dev(dev_hdr);
- 	}
- 
-+	/* PCI host controller */
-+	pci__generate_fdt_nodes(fdt);
-+
- 	_FDT(fdt_end_node(fdt));
- 
- 	if (fdt_stdout_path) {
-diff --git a/riscv/include/kvm/kvm-arch.h b/riscv/include/kvm/kvm-arch.h
-index 02825cd..d9a072e 100644
---- a/riscv/include/kvm/kvm-arch.h
-+++ b/riscv/include/kvm/kvm-arch.h
-@@ -80,4 +80,6 @@ void plic__generate_irq_prop(void *fdt, u8 irq, enum irq_type irq_type);
- 
- void plic__irq_trig(struct kvm *kvm, int irq, int level, bool edge);
- 
-+void pci__generate_fdt_nodes(void *fdt);
-+
- #endif /* KVM__KVM_ARCH_H */
-diff --git a/riscv/pci.c b/riscv/pci.c
-new file mode 100644
-index 0000000..666a452
---- /dev/null
-+++ b/riscv/pci.c
-@@ -0,0 +1,109 @@
-+#include "kvm/devices.h"
-+#include "kvm/fdt.h"
-+#include "kvm/kvm.h"
-+#include "kvm/of_pci.h"
-+#include "kvm/pci.h"
-+#include "kvm/util.h"
-+
-+/*
-+ * An entry in the interrupt-map table looks like:
-+ * <pci unit address> <pci interrupt pin> <plic phandle> <plic interrupt>
-+ */
-+
-+struct of_interrupt_map_entry {
-+	struct of_pci_irq_mask		pci_irq_mask;
-+	u32				plic_phandle;
-+	u32				plic_irq;
-+} __attribute__((packed));
-+
-+void pci__generate_fdt_nodes(void *fdt)
-+{
-+	struct device_header *dev_hdr;
-+	struct of_interrupt_map_entry irq_map[OF_PCI_IRQ_MAP_MAX];
-+	unsigned nentries = 0;
-+	/* Bus range */
-+	u32 bus_range[] = { cpu_to_fdt32(0), cpu_to_fdt32(1), };
-+	/* Configuration Space */
-+	u64 cfg_reg_prop[] = { cpu_to_fdt64(KVM_PCI_CFG_AREA),
-+			       cpu_to_fdt64(RISCV_PCI_CFG_SIZE), };
-+	/* Describe the memory ranges */
-+	struct of_pci_ranges_entry ranges[] = {
-+		{
-+			.pci_addr = {
-+				.hi	= cpu_to_fdt32(of_pci_b_ss(OF_PCI_SS_IO)),
-+				.mid	= 0,
-+				.lo	= 0,
-+			},
-+			.cpu_addr	= cpu_to_fdt64(KVM_IOPORT_AREA),
-+			.length		= cpu_to_fdt64(RISCV_IOPORT_SIZE),
-+		},
-+		{
-+			.pci_addr = {
-+				.hi	= cpu_to_fdt32(of_pci_b_ss(OF_PCI_SS_M32)),
-+				.mid	= cpu_to_fdt32(KVM_PCI_MMIO_AREA >> 32),
-+				.lo	= cpu_to_fdt32(KVM_PCI_MMIO_AREA),
-+			},
-+			.cpu_addr	= cpu_to_fdt64(KVM_PCI_MMIO_AREA),
-+			.length		= cpu_to_fdt64(RISCV_PCI_MMIO_SIZE),
-+		},
-+	};
-+
-+	/* Boilerplate PCI properties */
-+	_FDT(fdt_begin_node(fdt, "pci"));
-+	_FDT(fdt_property_string(fdt, "device_type", "pci"));
-+	_FDT(fdt_property_cell(fdt, "#address-cells", 0x3));
-+	_FDT(fdt_property_cell(fdt, "#size-cells", 0x2));
-+	_FDT(fdt_property_cell(fdt, "#interrupt-cells", 0x1));
-+	_FDT(fdt_property_string(fdt, "compatible", "pci-host-cam-generic"));
-+	_FDT(fdt_property(fdt, "dma-coherent", NULL, 0));
-+
-+	_FDT(fdt_property(fdt, "bus-range", bus_range, sizeof(bus_range)));
-+	_FDT(fdt_property(fdt, "reg", &cfg_reg_prop, sizeof(cfg_reg_prop)));
-+	_FDT(fdt_property(fdt, "ranges", ranges, sizeof(ranges)));
-+
-+	/* Generate the interrupt map ... */
-+	dev_hdr = device__first_dev(DEVICE_BUS_PCI);
-+	while (dev_hdr && nentries < ARRAY_SIZE(irq_map)) {
-+		struct of_interrupt_map_entry *entry = &irq_map[nentries];
-+		struct pci_device_header *pci_hdr = dev_hdr->data;
-+		u8 dev_num = dev_hdr->dev_num;
-+		u8 pin = pci_hdr->irq_pin;
-+		u8 irq = pci_hdr->irq_line;
-+
-+		*entry = (struct of_interrupt_map_entry) {
-+			.pci_irq_mask = {
-+				.pci_addr = {
-+					.hi	= cpu_to_fdt32(of_pci_b_ddddd(dev_num)),
-+					.mid	= 0,
-+					.lo	= 0,
-+				},
-+				.pci_pin	= cpu_to_fdt32(pin),
-+			},
-+			.plic_phandle	= cpu_to_fdt32(PHANDLE_PLIC),
-+			.plic_irq	= cpu_to_fdt32(irq),
-+		};
-+
-+		nentries++;
-+		dev_hdr = device__next_dev(dev_hdr);
-+	}
-+
-+	_FDT(fdt_property(fdt, "interrupt-map", irq_map,
-+			  sizeof(struct of_interrupt_map_entry) * nentries));
-+
-+	/* ... and the corresponding mask. */
-+	if (nentries) {
-+		struct of_pci_irq_mask irq_mask = {
-+			.pci_addr = {
-+				.hi	= cpu_to_fdt32(of_pci_b_ddddd(-1)),
-+				.mid	= 0,
-+				.lo	= 0,
-+			},
-+			.pci_pin	= cpu_to_fdt32(7),
-+		};
-+
-+		_FDT(fdt_property(fdt, "interrupt-map-mask", &irq_mask,
-+				  sizeof(irq_mask)));
-+	}
-+
-+	_FDT(fdt_end_node(fdt));
-+}
--- 
-2.25.1
+> 
+>  int kvm_riscv_stage2_map(struct kvm_vcpu *vcpu, @@ -69,27 +562,163 @@
+> int kvm_riscv_stage2_map(struct kvm_vcpu *vcpu,
+>  			 gpa_t gpa, unsigned long hva,
+>  			 bool writeable, bool is_write)
+>  {
+> -	/* TODO: */
+> -	return 0;
+> +	int ret;
+> +	kvm_pfn_t hfn;
+> +	short vma_pageshift;
+> +	gfn_t gfn = gpa >> PAGE_SHIFT;
+> +	struct vm_area_struct *vma;
+> +	struct kvm *kvm = vcpu->kvm;
+> +	struct kvm_mmu_page_cache *pcache = &vcpu->arch.mmu_page_cache;
+> +	bool logging = (memslot->dirty_bitmap &&
+> +			!(memslot->flags & KVM_MEM_READONLY)) ? true : false;
+> +	unsigned long vma_pagesize;
+> +
+> +	mmap_read_lock(current->mm);
+> +
+> +	vma = find_vma_intersection(current->mm, hva, hva + 1);
+> +	if (unlikely(!vma)) {
+> +		kvm_err("Failed to find VMA for hva 0x%lx\n", hva);
+> +		mmap_read_unlock(current->mm);
+> +		return -EFAULT;
+> +	}
+> +
+> +	if (is_vm_hugetlb_page(vma))
+> +		vma_pageshift = huge_page_shift(hstate_vma(vma));
+> +	else
+> +		vma_pageshift = PAGE_SHIFT;
+> +	vma_pagesize = 1ULL << vma_pageshift;
+> +	if (logging || (vma->vm_flags & VM_PFNMAP))
+> +		vma_pagesize = PAGE_SIZE;
+> +
+> +	if (vma_pagesize == PMD_SIZE || vma_pagesize == PGDIR_SIZE)
+> +		gfn = (gpa & huge_page_mask(hstate_vma(vma))) >> PAGE_SHIFT;
+> +
+> +	mmap_read_unlock(current->mm);
+> +
+> +	if (vma_pagesize != PGDIR_SIZE &&
+> +	    vma_pagesize != PMD_SIZE &&
+> +	    vma_pagesize != PAGE_SIZE) {
+> +		kvm_err("Invalid VMA page size 0x%lx\n", vma_pagesize);
+> +		return -EFAULT;
+> +	}
+> +
+> +	/* We need minimum second+third level pages */
+> +	ret = stage2_cache_topup(pcache, stage2_pgd_levels,
+> +				 KVM_MMU_PAGE_CACHE_NR_OBJS);
+> +	if (ret) {
+> +		kvm_err("Failed to topup stage2 cache\n");
+> +		return ret;
+> +	}
+> +
+> +	hfn = gfn_to_pfn_prot(kvm, gfn, is_write, NULL);
+> +	if (hfn == KVM_PFN_ERR_HWPOISON) {
+> +		send_sig_mceerr(BUS_MCEERR_AR, (void __user *)hva,
+> +				vma_pageshift, current);
+> +		return 0;
+> +	}
+> +	if (is_error_noslot_pfn(hfn))
+> +		return -EFAULT;
+> +
+> +	/*
+> +	 * If logging is active then we allow writable pages only
+> +	 * for write faults.
+> +	 */
+> +	if (logging && !is_write)
+> +		writeable = false;
+> +
+> +	spin_lock(&kvm->mmu_lock);
+> +
+> +	if (writeable) {
+
+Hi Anup,
+
+What is the purpose of "writable = !memslot_is_readonly(slot)" in this series?
+
+When mapping the HVA to HPA above, it doesn't know that the PTE writeable of stage2 is "!memslot_is_readonly(slot)".
+This may causes the difference between the writability of HVA->HPA and GPA->HPA.
+For example, GPA->HPA is writeable, but HVA->HPA is not writeable.
+
+Is it better that the writability of HVA->HPA is also determined by whether the memslot is readonly in this change?
+Like this:
+-    hfn = gfn_to_pfn_prot(kvm, gfn, is_write, NULL);
++    hfn = gfn_to_pfn_prot(kvm, gfn, writeable, NULL);
+
+Regards,
+Yifei
+
+> +		kvm_set_pfn_dirty(hfn);
+> +		mark_page_dirty(kvm, gfn);
+> +		ret = stage2_map_page(kvm, pcache, gpa, hfn << PAGE_SHIFT,
+> +				      vma_pagesize, false, true);
+> +	} else {
+> +		ret = stage2_map_page(kvm, pcache, gpa, hfn << PAGE_SHIFT,
+> +				      vma_pagesize, true, true);
+> +	}
+> +
+> +	if (ret)
+> +		kvm_err("Failed to map in stage2\n");
+> +
+> +	spin_unlock(&kvm->mmu_lock);
+> +	kvm_set_pfn_accessed(hfn);
+> +	kvm_release_pfn_clean(hfn);
+> +	return ret;
+>  }
+> 
+
+......
 
 
