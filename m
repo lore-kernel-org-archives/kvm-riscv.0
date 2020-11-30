@@ -1,69 +1,233 @@
 From: Anup Patel <anup@brainfault.org>
-Date: Fri, 27 Nov 2020 13:44:52 +0530
-Subject: [PATCH 0/6] Add SBI v0.2 support for KVM
-In-Reply-To: <20200803175846.26272-1-atish.patra@wdc.com>
-References: <20200803175846.26272-1-atish.patra@wdc.com>
-Message-ID: <CAAhSdy0hrKNwOA4428Vf4mf32gZSw1cKiSXhhXB1s==yq7jEpA@mail.gmail.com>
+Date: Mon, 30 Nov 2020 15:51:31 +0530
+Subject: [PATCH v15 10/17] RISC-V: KVM: Implement stage2 page table
+ programming
+In-Reply-To: <CAAhSdy1sx_oLGGoGjzr5ZrPStwCyFF4mBDEBw5zpsbSGcCRJjg@mail.gmail.com>
+References: <20201109113240.3733496-1-anup.patel@wdc.com>
+ <20201109113240.3733496-11-anup.patel@wdc.com>
+ <186ade3c372b44ef8ca1830da8c5002b@huawei.com>
+ <CAAhSdy1sx_oLGGoGjzr5ZrPStwCyFF4mBDEBw5zpsbSGcCRJjg@mail.gmail.com>
+Message-ID: <CAAhSdy13nQqzfK-Voz-aBtGzEfjw_0V1fOrydijc3FLWy_W4nw@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Aug 3, 2020 at 11:29 PM Atish Patra <atish.patra@wdc.com> wrote:
+On Tue, Nov 24, 2020 at 2:56 PM Anup Patel <anup@brainfault.org> wrote:
 >
-> The Supervisor Binary Interface(SBI) specification[1] now defines a
-> base extension that provides extendability to add future extensions
-> while maintaining backward compatibility with previous versions.
-> The new version is defined as 0.2 and older version is marked as 0.1.
+> On Mon, Nov 16, 2020 at 2:59 PM Jiangyifei <jiangyifei@huawei.com> wrote:
+> >
+> >
+> > > -----Original Message-----
+> > > From: Anup Patel [mailto:anup.patel at wdc.com]
+> > > Sent: Monday, November 9, 2020 7:33 PM
+> > > To: Palmer Dabbelt <palmer@dabbelt.com>; Palmer Dabbelt
+> > > <palmerdabbelt@google.com>; Paul Walmsley <paul.walmsley@sifive.com>;
+> > > Albert Ou <aou@eecs.berkeley.edu>; Paolo Bonzini <pbonzini@redhat.com>
+> > > Cc: Alexander Graf <graf@amazon.com>; Atish Patra <atish.patra@wdc.com>;
+> > > Alistair Francis <Alistair.Francis@wdc.com>; Damien Le Moal
+> > > <damien.lemoal@wdc.com>; Anup Patel <anup@brainfault.org>;
+> > > kvm at vger.kernel.org; kvm-riscv at lists.infradead.org;
+> > > linux-riscv at lists.infradead.org; linux-kernel at vger.kernel.org; Anup Patel
+> > > <anup.patel@wdc.com>; Jiangyifei <jiangyifei@huawei.com>
+> > > Subject: [PATCH v15 10/17] RISC-V: KVM: Implement stage2 page table
+> > > programming
+> > >
+> > > This patch implements all required functions for programming the stage2 page
+> > > table for each Guest/VM.
+> > >
+> > > At high-level, the flow of stage2 related functions is similar from KVM
+> > > ARM/ARM64 implementation but the stage2 page table format is quite
+> > > different for KVM RISC-V.
+> > >
+> > > [jiangyifei: stage2 dirty log support]
+> > > Signed-off-by: Yifei Jiang <jiangyifei@huawei.com>
+> > > Signed-off-by: Anup Patel <anup.patel@wdc.com>
+> > > Acked-by: Paolo Bonzini <pbonzini@redhat.com>
+> > > Reviewed-by: Paolo Bonzini <pbonzini@redhat.com>
+> > > ---
+> > >  arch/riscv/include/asm/kvm_host.h     |  12 +
+> > >  arch/riscv/include/asm/pgtable-bits.h |   1 +
+> > >  arch/riscv/kvm/Kconfig                |   1 +
+> > >  arch/riscv/kvm/main.c                 |  19 +
+> > >  arch/riscv/kvm/mmu.c                  | 649
+> > > +++++++++++++++++++++++++-
+> > >  arch/riscv/kvm/vm.c                   |   6 -
+> > >  6 files changed, 672 insertions(+), 16 deletions(-)
+> > >
+> >
+> > ......
+> >
+> > >
+> > >  int kvm_riscv_stage2_map(struct kvm_vcpu *vcpu, @@ -69,27 +562,163 @@
+> > > int kvm_riscv_stage2_map(struct kvm_vcpu *vcpu,
+> > >                        gpa_t gpa, unsigned long hva,
+> > >                        bool writeable, bool is_write)
+> > >  {
+> > > -     /* TODO: */
+> > > -     return 0;
+> > > +     int ret;
+> > > +     kvm_pfn_t hfn;
+> > > +     short vma_pageshift;
+> > > +     gfn_t gfn = gpa >> PAGE_SHIFT;
+> > > +     struct vm_area_struct *vma;
+> > > +     struct kvm *kvm = vcpu->kvm;
+> > > +     struct kvm_mmu_page_cache *pcache = &vcpu->arch.mmu_page_cache;
+> > > +     bool logging = (memslot->dirty_bitmap &&
+> > > +                     !(memslot->flags & KVM_MEM_READONLY)) ? true : false;
+> > > +     unsigned long vma_pagesize;
+> > > +
+> > > +     mmap_read_lock(current->mm);
+> > > +
+> > > +     vma = find_vma_intersection(current->mm, hva, hva + 1);
+> > > +     if (unlikely(!vma)) {
+> > > +             kvm_err("Failed to find VMA for hva 0x%lx\n", hva);
+> > > +             mmap_read_unlock(current->mm);
+> > > +             return -EFAULT;
+> > > +     }
+> > > +
+> > > +     if (is_vm_hugetlb_page(vma))
+> > > +             vma_pageshift = huge_page_shift(hstate_vma(vma));
+> > > +     else
+> > > +             vma_pageshift = PAGE_SHIFT;
+> > > +     vma_pagesize = 1ULL << vma_pageshift;
+> > > +     if (logging || (vma->vm_flags & VM_PFNMAP))
+> > > +             vma_pagesize = PAGE_SIZE;
+> > > +
+> > > +     if (vma_pagesize == PMD_SIZE || vma_pagesize == PGDIR_SIZE)
+> > > +             gfn = (gpa & huge_page_mask(hstate_vma(vma))) >> PAGE_SHIFT;
+> > > +
+> > > +     mmap_read_unlock(current->mm);
+> > > +
+> > > +     if (vma_pagesize != PGDIR_SIZE &&
+> > > +         vma_pagesize != PMD_SIZE &&
+> > > +         vma_pagesize != PAGE_SIZE) {
+> > > +             kvm_err("Invalid VMA page size 0x%lx\n", vma_pagesize);
+> > > +             return -EFAULT;
+> > > +     }
+> > > +
+> > > +     /* We need minimum second+third level pages */
+> > > +     ret = stage2_cache_topup(pcache, stage2_pgd_levels,
+> > > +                              KVM_MMU_PAGE_CACHE_NR_OBJS);
+> > > +     if (ret) {
+> > > +             kvm_err("Failed to topup stage2 cache\n");
+> > > +             return ret;
+> > > +     }
+> > > +
+> > > +     hfn = gfn_to_pfn_prot(kvm, gfn, is_write, NULL);
+> > > +     if (hfn == KVM_PFN_ERR_HWPOISON) {
+> > > +             send_sig_mceerr(BUS_MCEERR_AR, (void __user *)hva,
+> > > +                             vma_pageshift, current);
+> > > +             return 0;
+> > > +     }
+> > > +     if (is_error_noslot_pfn(hfn))
+> > > +             return -EFAULT;
+> > > +
+> > > +     /*
+> > > +      * If logging is active then we allow writable pages only
+> > > +      * for write faults.
+> > > +      */
+> > > +     if (logging && !is_write)
+> > > +             writeable = false;
+> > > +
+> > > +     spin_lock(&kvm->mmu_lock);
+> > > +
+> > > +     if (writeable) {
+> >
+> > Hi Anup,
+> >
+> > What is the purpose of "writable = !memslot_is_readonly(slot)" in this series?
 >
-> This series adds following features to RISC-V Linux KVM.
-> 1. Adds support for SBI v0.2 in KVM
-> 2. SBI Hart state management extension (HSM) in KVM
-> 3. Ordered booting of guest vcpus in guest Linux
+> Where ? I don't see this line in any of the patches.
 >
-> This series depends on the base kvm support series[2].
+> >
+> > When mapping the HVA to HPA above, it doesn't know that the PTE writeable of stage2 is "!memslot_is_readonly(slot)".
+> > This may causes the difference between the writability of HVA->HPA and GPA->HPA.
+> > For example, GPA->HPA is writeable, but HVA->HPA is not writeable.
 >
-> Guest kernel needs to also support SBI v0.2 and HSM extension in Kernel
-> to boot multiple vcpus. Linux kernel supports both starting v5.7.
-> In absense of that, guest can only boot 1vcpu.
+> Yes, this is possible particularly when Host kernel is updating writability
+> of HVA->HPA mappings for swapping in/out pages.
 >
-> [1] https://github.com/riscv/riscv-sbi-doc/blob/master/riscv-sbi.adoc
-> [2] http://lists.infradead.org/pipermail/linux-riscv/2020-July/001028.html
+> >
+> > Is it better that the writability of HVA->HPA is also determined by whether the memslot is readonly in this change?
+> > Like this:
+> > -    hfn = gfn_to_pfn_prot(kvm, gfn, is_write, NULL);
+> > +    hfn = gfn_to_pfn_prot(kvm, gfn, writeable, NULL);
 >
-> Atish Patra (6):
-> RISC-V: Add a non-void return for sbi v02 functions
-> RISC-V: Mark the existing SBI v0.1 implementation as legacy
-> RISC-V: Reorganize SBI code by moving legacy SBI to its own file
-> RISC-V: Add SBI v0.2 base extension
-> RISC-V: Add v0.1 replacement SBI extensions defined in v02
-> RISC-V: Add SBI HSM extension in KVM
+> The gfn_to_pfn_prot() needs to know what type of fault we
+> got (i.e read/write fault). Rest of the information (such as whether
+> slot is writable or not) is already available to gfn_to_pfn_prot().
 >
-> arch/riscv/include/asm/kvm_vcpu_sbi.h |  32 +++++
-> arch/riscv/include/asm/sbi.h          |  17 ++-
-> arch/riscv/kernel/sbi.c               |  32 ++---
-> arch/riscv/kvm/Makefile               |   4 +-
-> arch/riscv/kvm/vcpu.c                 |  19 +++
-> arch/riscv/kvm/vcpu_sbi.c             | 194 ++++++++++++--------------
-> arch/riscv/kvm/vcpu_sbi_base.c        |  73 ++++++++++
-> arch/riscv/kvm/vcpu_sbi_hsm.c         | 109 +++++++++++++++
-> arch/riscv/kvm/vcpu_sbi_legacy.c      | 129 +++++++++++++++++
-> arch/riscv/kvm/vcpu_sbi_replace.c     | 136 ++++++++++++++++++
-> 10 files changed, 619 insertions(+), 126 deletions(-)
-> create mode 100644 arch/riscv/include/asm/kvm_vcpu_sbi.h
-> create mode 100644 arch/riscv/kvm/vcpu_sbi_base.c
-> create mode 100644 arch/riscv/kvm/vcpu_sbi_hsm.c
-> create mode 100644 arch/riscv/kvm/vcpu_sbi_legacy.c
-> create mode 100644 arch/riscv/kvm/vcpu_sbi_replace.c
+> The question here is should we pass "&writeable" or NULL as
+> last parameter to gfn_to_pfn_prot(). The recent JUMP label
+> support in Linux RISC-V causes problem on HW where PTE
+> 'A' and 'D' bits are not updated by HW so I have to change
+> last parameter of gfn_to_pfn_prot() from "&writeable" to NULL.
 >
-> --
-> 2.24.0
->
+> I am still investigating this.
 
-Please implement the SBI SRST extension in your series.
+This turned-out to be a bug in Spike which is not fixed.
 
-Also, the PATCH1 can be merged separately so I would suggest
-you to send this patch separately.
+I will include following change in v16 patch series:
+
+
+diff --git a/arch/riscv/include/asm/kvm_host.h
+b/arch/riscv/include/asm/kvm_host.h
+index 241030956d47..dc2666b4180b 100644
+--- a/arch/riscv/include/asm/kvm_host.h
++++ b/arch/riscv/include/asm/kvm_host.h
+@@ -232,8 +232,7 @@ void __kvm_riscv_hfence_gvma_all(void);
+
+ int kvm_riscv_stage2_map(struct kvm_vcpu *vcpu,
+              struct kvm_memory_slot *memslot,
+-             gpa_t gpa, unsigned long hva,
+-             bool writeable, bool is_write);
++             gpa_t gpa, unsigned long hva, bool is_write);
+ void kvm_riscv_stage2_flush_cache(struct kvm_vcpu *vcpu);
+ int kvm_riscv_stage2_alloc_pgd(struct kvm *kvm);
+ void kvm_riscv_stage2_free_pgd(struct kvm *kvm);
+diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
+index fcaeadc9b34d..56fda9ef70fd 100644
+--- a/arch/riscv/kvm/mmu.c
++++ b/arch/riscv/kvm/mmu.c
+@@ -689,11 +689,11 @@ int kvm_test_age_hva(struct kvm *kvm, unsigned long hva)
+
+ int kvm_riscv_stage2_map(struct kvm_vcpu *vcpu,
+              struct kvm_memory_slot *memslot,
+-             gpa_t gpa, unsigned long hva,
+-             bool writeable, bool is_write)
++             gpa_t gpa, unsigned long hva, bool is_write)
+ {
+     int ret;
+     kvm_pfn_t hfn;
++    bool writeable;
+     short vma_pageshift;
+     gfn_t gfn = gpa >> PAGE_SHIFT;
+     struct vm_area_struct *vma;
+@@ -742,7 +742,7 @@ int kvm_riscv_stage2_map(struct kvm_vcpu *vcpu,
+
+     mmu_seq = kvm->mmu_notifier_seq;
+
+-    hfn = gfn_to_pfn_prot(kvm, gfn, is_write, NULL);
++    hfn = gfn_to_pfn_prot(kvm, gfn, is_write, &writeable);
+     if (hfn == KVM_PFN_ERR_HWPOISON) {
+         send_sig_mceerr(BUS_MCEERR_AR, (void __user *)hva,
+                 vma_pageshift, current);
+diff --git a/arch/riscv/kvm/vcpu_exit.c b/arch/riscv/kvm/vcpu_exit.c
+index f054406792a6..058cfa168abe 100644
+--- a/arch/riscv/kvm/vcpu_exit.c
++++ b/arch/riscv/kvm/vcpu_exit.c
+@@ -445,7 +445,7 @@ static int stage2_page_fault(struct kvm_vcpu
+*vcpu, struct kvm_run *run,
+         };
+     }
+
+-    ret = kvm_riscv_stage2_map(vcpu, memslot, fault_addr, hva, writeable,
++    ret = kvm_riscv_stage2_map(vcpu, memslot, fault_addr, hva,
+         (trap->scause == EXC_STORE_GUEST_PAGE_FAULT) ? true : false);
+     if (ret < 0)
+         return ret;
 
 Regards,
 Anup
