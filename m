@@ -1,61 +1,136 @@
 From: Yifei Jiang <jiangyifei@huawei.com>
-Date: Thu, 3 Dec 2020 20:18:37 +0800
-Subject: [PATCH RFC 1/3] RISC-V: KVM: Change the method of calculating cycles
- to nanoseconds
+Date: Thu, 3 Dec 2020 20:18:38 +0800
+Subject: [PATCH RFC 2/3] RISC-V: KVM: Support dynamic time frequency from
+ userspace
 In-Reply-To: <20201203121839.308-1-jiangyifei@huawei.com>
 References: <20201203121839.308-1-jiangyifei@huawei.com>
-Message-ID: <20201203121839.308-2-jiangyifei@huawei.com>
+Message-ID: <20201203121839.308-3-jiangyifei@huawei.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Because we will introduce the dynamic guest frequency later, we
-can't use the fixed mult and shift to calculate nanoseconds.
+This patch implements KVM_S/GET_ONE_REG of time frequency to support
+setting dynamic time frequency from userspace. When the time frequency
+specified by userspace is inconsistent with host 'riscv_timebase',
+it will use scale_mult and scale_shift to calculate guest scaling time.
 
 Signed-off-by: Yifei Jiang <jiangyifei@huawei.com>
 Signed-off-by: Yipeng Yin <yinyipeng1@huawei.com>
 ---
- arch/riscv/include/asm/kvm_vcpu_timer.h | 3 ---
- arch/riscv/kvm/vcpu_timer.c             | 3 +--
- 2 files changed, 1 insertion(+), 5 deletions(-)
+ arch/riscv/include/asm/kvm_vcpu_timer.h |  9 ++++++
+ arch/riscv/kvm/vcpu_timer.c             | 40 +++++++++++++++++++++----
+ 2 files changed, 44 insertions(+), 5 deletions(-)
 
 diff --git a/arch/riscv/include/asm/kvm_vcpu_timer.h b/arch/riscv/include/asm/kvm_vcpu_timer.h
-index 375281eb49e0..87e00d878999 100644
+index 87e00d878999..41b5503de9e4 100644
 --- a/arch/riscv/include/asm/kvm_vcpu_timer.h
 +++ b/arch/riscv/include/asm/kvm_vcpu_timer.h
-@@ -12,9 +12,6 @@
+@@ -12,6 +12,10 @@
  #include <linux/hrtimer.h>
  
  struct kvm_guest_timer {
--	/* Mult & Shift values to get nanoseconds from cycles */
--	u32 nsec_mult;
--	u32 nsec_shift;
++	u64 frequency;
++	bool need_scale;
++	u64 scale_mult;
++	u64 scale_shift;
  	/* Time delta value */
  	u64 time_delta;
  };
+@@ -38,4 +42,9 @@ int kvm_riscv_vcpu_timer_reset(struct kvm_vcpu *vcpu);
+ void kvm_riscv_vcpu_timer_restore(struct kvm_vcpu *vcpu);
+ int kvm_riscv_guest_timer_init(struct kvm *kvm);
+ 
++static inline bool kvm_riscv_need_scale(struct kvm_guest_timer *gt)
++{
++	return gt->need_scale;
++}
++
+ #endif
 diff --git a/arch/riscv/kvm/vcpu_timer.c b/arch/riscv/kvm/vcpu_timer.c
-index ddd0ce727b83..f6b35180199a 100644
+index f6b35180199a..2d203660a7e9 100644
 --- a/arch/riscv/kvm/vcpu_timer.c
 +++ b/arch/riscv/kvm/vcpu_timer.c
-@@ -33,7 +33,7 @@ static u64 kvm_riscv_delta_cycles2ns(u64 cycles,
+@@ -15,9 +15,38 @@
+ #include <asm/delay.h>
+ #include <asm/kvm_vcpu_timer.h>
+ 
++#define SCALE_SHIFT_VALUE 48
++#define SCALE_TOLERANCE_HZ 1000
++
++static void kvm_riscv_set_time_freq(struct kvm_guest_timer *gt, u64 freq)
++{
++	/*
++	 * Guest time frequency and Host time frequency are identical
++	 * if the error between them is limited within SCALE_TOLERANCE_HZ.
++	 */
++	u64 diff = riscv_timebase > freq ?
++		   riscv_timebase - freq : freq - riscv_timebase;
++	gt->need_scale = (diff >= SCALE_TOLERANCE_HZ);
++	if (gt->need_scale) {
++		gt->scale_shift = SCALE_SHIFT_VALUE;
++		gt->scale_mult = mul_u64_u32_div(1ULL << gt->scale_shift,
++				 freq, riscv_timebase);
++	}
++	gt->frequency = freq;
++}
++
++static u64 kvm_riscv_scale_time(struct kvm_guest_timer *gt, u64 time)
++{
++	if (kvm_riscv_need_scale(gt))
++		return mul_u64_u64_shr(time, gt->scale_mult, gt->scale_shift);
++
++	return time;
++}
++
+ static u64 kvm_riscv_current_cycles(struct kvm_guest_timer *gt)
+ {
+-	return get_cycles64() + gt->time_delta;
++	u64 host_time = get_cycles64();
++	return kvm_riscv_scale_time(gt, host_time) + gt->time_delta;
+ }
+ 
+ static u64 kvm_riscv_delta_cycles2ns(u64 cycles,
+@@ -33,7 +62,7 @@ static u64 kvm_riscv_delta_cycles2ns(u64 cycles,
  		cycles_delta = cycles - cycles_now;
  	else
  		cycles_delta = 0;
--	delta_ns = (cycles_delta * gt->nsec_mult) >> gt->nsec_shift;
-+	delta_ns = mul_u64_u64_div_u64(cycles_delta, NSEC_PER_SEC, riscv_timebase);
+-	delta_ns = mul_u64_u64_div_u64(cycles_delta, NSEC_PER_SEC, riscv_timebase);
++	delta_ns = mul_u64_u64_div_u64(cycles_delta, NSEC_PER_SEC, gt->frequency);
  	local_irq_restore(flags);
  
  	return delta_ns;
-@@ -218,7 +218,6 @@ int kvm_riscv_guest_timer_init(struct kvm *kvm)
- {
+@@ -106,7 +135,7 @@ int kvm_riscv_vcpu_get_reg_timer(struct kvm_vcpu *vcpu,
+ 
+ 	switch (reg_num) {
+ 	case KVM_REG_RISCV_TIMER_REG(frequency):
+-		reg_val = riscv_timebase;
++		reg_val = gt->frequency;
+ 		break;
+ 	case KVM_REG_RISCV_TIMER_REG(time):
+ 		reg_val = kvm_riscv_current_cycles(gt);
+@@ -150,10 +179,10 @@ int kvm_riscv_vcpu_set_reg_timer(struct kvm_vcpu *vcpu,
+ 
+ 	switch (reg_num) {
+ 	case KVM_REG_RISCV_TIMER_REG(frequency):
+-		ret = -EOPNOTSUPP;
++		kvm_riscv_set_time_freq(gt, reg_val);
+ 		break;
+ 	case KVM_REG_RISCV_TIMER_REG(time):
+-		gt->time_delta = reg_val - get_cycles64();
++		gt->time_delta = reg_val - kvm_riscv_scale_time(gt, get_cycles64());
+ 		break;
+ 	case KVM_REG_RISCV_TIMER_REG(compare):
+ 		t->next_cycles = reg_val;
+@@ -219,6 +248,7 @@ int kvm_riscv_guest_timer_init(struct kvm *kvm)
  	struct kvm_guest_timer *gt = &kvm->arch.timer;
  
--	riscv_cs_get_mult_shift(&gt->nsec_mult, &gt->nsec_shift);
  	gt->time_delta = -get_cycles64();
++	gt->frequency = riscv_timebase;
  
  	return 0;
+ }
 -- 
 2.19.1
 
