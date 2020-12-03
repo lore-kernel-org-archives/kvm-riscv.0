@@ -1,166 +1,136 @@
 From: Yifei Jiang <jiangyifei@huawei.com>
-Date: Thu, 3 Dec 2020 20:46:56 +0800
-Subject: [PATCH RFC v4 08/15] target/riscv: Handle KVM_EXIT_RISCV_SBI exit
+Date: Thu, 3 Dec 2020 20:46:58 +0800
+Subject: [PATCH RFC v4 10/15] target/riscv: Add kvm_riscv_get/put_regs_timer
 In-Reply-To: <20201203124703.168-1-jiangyifei@huawei.com>
 References: <20201203124703.168-1-jiangyifei@huawei.com>
-Message-ID: <20201203124703.168-9-jiangyifei@huawei.com>
+Message-ID: <20201203124703.168-11-jiangyifei@huawei.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Use char-fe to handle console sbi call, which implement early
-console io while apply 'earlycon=sbi' into kernel parameters.
+Add kvm_riscv_get/put_regs_timer to synchronize virtual time context
+from KVM.
+
+To set register of RISCV_TIMER_REG(state) will occur a error from KVM
+on kvm_timer_state == 0. It's better to adapt in KVM, but it doesn't matter
+that adaping in QEMU.
 
 Signed-off-by: Yifei Jiang <jiangyifei@huawei.com>
 Signed-off-by: Yipeng Yin <yinyipeng1@huawei.com>
 ---
- target/riscv/kvm.c                 | 42 ++++++++++++++++-
- target/riscv/sbi_ecall_interface.h | 72 ++++++++++++++++++++++++++++++
- 2 files changed, 113 insertions(+), 1 deletion(-)
- create mode 100644 target/riscv/sbi_ecall_interface.h
+ target/riscv/cpu.h |  6 ++++
+ target/riscv/kvm.c | 72 ++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 78 insertions(+)
 
+diff --git a/target/riscv/cpu.h b/target/riscv/cpu.h
+index 4288898019..16d6050ead 100644
+--- a/target/riscv/cpu.h
++++ b/target/riscv/cpu.h
+@@ -237,6 +237,12 @@ struct CPURISCVState {
+ 
+     hwaddr kernel_addr;
+     hwaddr fdt_addr;
++
++    /* kvm timer */
++    bool kvm_timer_dirty;
++    uint64_t kvm_timer_time;
++    uint64_t kvm_timer_compare;
++    uint64_t kvm_timer_state;
+ };
+ 
+ OBJECT_DECLARE_TYPE(RISCVCPU, RISCVCPUClass,
 diff --git a/target/riscv/kvm.c b/target/riscv/kvm.c
-index b01ff0754c..afd99b3315 100644
+index afd99b3315..79228eb726 100644
 --- a/target/riscv/kvm.c
 +++ b/target/riscv/kvm.c
-@@ -38,6 +38,8 @@
- #include "qemu/log.h"
- #include "hw/loader.h"
- #include "kvm_riscv.h"
-+#include "sbi_ecall_interface.h"
-+#include "chardev/char-fe.h"
+@@ -59,6 +59,9 @@ static __u64 kvm_riscv_reg_id(__u64 type, __u64 idx)
+ #define RISCV_CSR_REG(name)  kvm_riscv_reg_id(KVM_REG_RISCV_CSR, \
+                  KVM_REG_RISCV_CSR_REG(name))
  
- static __u64 kvm_riscv_reg_id(__u64 type, __u64 idx)
- {
-@@ -436,9 +438,47 @@ bool kvm_arch_stop_on_emulation_error(CPUState *cs)
-     return true;
++#define RISCV_TIMER_REG(name)  kvm_riscv_reg_id(KVM_REG_RISCV_TIMER, \
++                 KVM_REG_RISCV_TIMER_REG(name))
++
+ #define RISCV_FP_F_REG(idx)  kvm_riscv_reg_id(KVM_REG_RISCV_FP_F, idx)
+ 
+ #define RISCV_FP_D_REG(idx)  kvm_riscv_reg_id(KVM_REG_RISCV_FP_D, idx)
+@@ -306,6 +309,75 @@ static int kvm_riscv_put_regs_fp(CPUState *cs)
+     return ret;
  }
  
-+static int kvm_riscv_handle_sbi(struct kvm_run *run)
++static void kvm_riscv_get_regs_timer(CPUState *cs)
 +{
-+    int ret = 0;
-+    unsigned char ch;
-+    switch (run->riscv_sbi.extension_id) {
-+    case SBI_EXT_0_1_CONSOLE_PUTCHAR:
-+        ch = run->riscv_sbi.args[0];
-+        qemu_chr_fe_write(serial_hd(0)->be, &ch, sizeof(ch));
-+        break;
-+    case SBI_EXT_0_1_CONSOLE_GETCHAR:
-+        ret = qemu_chr_fe_read_all(serial_hd(0)->be, &ch, sizeof(ch));
-+        if (ret == sizeof(ch)) {
-+            run->riscv_sbi.args[0] = ch;
-+        } else {
-+            run->riscv_sbi.args[0] = -1;
-+        }
-+        break;
-+    default:
-+        qemu_log_mask(LOG_UNIMP,
-+                      "%s: un-handled SBI EXIT, specific reasons is %lu\n",
-+                      __func__, run->riscv_sbi.extension_id);
-+        ret = -1;
-+        break;
++    int ret;
++    uint64_t reg;
++    CPURISCVState *env = &RISCV_CPU(cs)->env;
++
++    if (env->kvm_timer_dirty) {
++        return;
 +    }
-+    return ret;
++
++    ret = kvm_get_one_reg(cs, RISCV_TIMER_REG(time), &reg);
++    if (ret) {
++        abort();
++    }
++    env->kvm_timer_time = reg;
++
++    ret = kvm_get_one_reg(cs, RISCV_TIMER_REG(compare), &reg);
++    if (ret) {
++        abort();
++    }
++    env->kvm_timer_compare = reg;
++
++    ret = kvm_get_one_reg(cs, RISCV_TIMER_REG(state), &reg);
++    if (ret) {
++        abort();
++    }
++    env->kvm_timer_state = reg;
++
++    env->kvm_timer_dirty = true;
 +}
 +
- int kvm_arch_handle_exit(CPUState *cs, struct kvm_run *run)
- {
--    return 0;
-+    int ret = 0;
-+    switch (run->exit_reason) {
-+    case KVM_EXIT_RISCV_SBI:
-+        ret = kvm_riscv_handle_sbi(run);
-+        break;
-+    default:
-+        qemu_log_mask(LOG_UNIMP, "%s: un-handled exit reason %d\n",
-+                      __func__, run->exit_reason);
-+        ret = -1;
-+        break;
++static void kvm_riscv_put_regs_timer(CPUState *cs)
++{
++    int ret;
++    uint64_t reg;
++    CPURISCVState *env = &RISCV_CPU(cs)->env;
++
++    if (!env->kvm_timer_dirty) {
++        return;
 +    }
-+    return ret;
- }
++
++    reg = env->kvm_timer_time;
++    ret = kvm_set_one_reg(cs, RISCV_TIMER_REG(time), &reg);
++    if (ret) {
++        abort();
++    }
++
++    reg = env->kvm_timer_compare;
++    ret = kvm_set_one_reg(cs, RISCV_TIMER_REG(compare), &reg);
++    if (ret) {
++        abort();
++    }
++
++    /*
++     * To set register of RISCV_TIMER_REG(state) will occur a error from KVM
++     * on env->kvm_timer_state == 0, It's better to adapt in KVM, but it
++     * doesn't matter that adaping in QEMU now.
++     * TODO If KVM changes, adapt here.
++     */
++    if (env->kvm_timer_state) {
++        reg = env->kvm_timer_state;
++        ret = kvm_set_one_reg(cs, RISCV_TIMER_REG(state), &reg);
++        if (ret) {
++            abort();
++        }
++    }
++
++    env->kvm_timer_dirty = false;
++}
  
- void kvm_riscv_reset_vcpu(RISCVCPU *cpu)
-diff --git a/target/riscv/sbi_ecall_interface.h b/target/riscv/sbi_ecall_interface.h
-new file mode 100644
-index 0000000000..fb1a3fa8f2
---- /dev/null
-+++ b/target/riscv/sbi_ecall_interface.h
-@@ -0,0 +1,72 @@
-+/*
-+ * SPDX-License-Identifier: BSD-2-Clause
-+ *
-+ * Copyright (c) 2019 Western Digital Corporation or its affiliates.
-+ *
-+ * Authors:
-+ *   Anup Patel <anup.patel@wdc.com>
-+ */
-+
-+#ifndef __SBI_ECALL_INTERFACE_H__
-+#define __SBI_ECALL_INTERFACE_H__
-+
-+/* clang-format off */
-+
-+/* SBI Extension IDs */
-+#define SBI_EXT_0_1_SET_TIMER           0x0
-+#define SBI_EXT_0_1_CONSOLE_PUTCHAR     0x1
-+#define SBI_EXT_0_1_CONSOLE_GETCHAR     0x2
-+#define SBI_EXT_0_1_CLEAR_IPI           0x3
-+#define SBI_EXT_0_1_SEND_IPI            0x4
-+#define SBI_EXT_0_1_REMOTE_FENCE_I      0x5
-+#define SBI_EXT_0_1_REMOTE_SFENCE_VMA   0x6
-+#define SBI_EXT_0_1_REMOTE_SFENCE_VMA_ASID 0x7
-+#define SBI_EXT_0_1_SHUTDOWN            0x8
-+#define SBI_EXT_BASE                    0x10
-+#define SBI_EXT_TIME                    0x54494D45
-+#define SBI_EXT_IPI                     0x735049
-+#define SBI_EXT_RFENCE                  0x52464E43
-+#define SBI_EXT_HSM                     0x48534D
-+
-+/* SBI function IDs for BASE extension*/
-+#define SBI_EXT_BASE_GET_SPEC_VERSION   0x0
-+#define SBI_EXT_BASE_GET_IMP_ID         0x1
-+#define SBI_EXT_BASE_GET_IMP_VERSION    0x2
-+#define SBI_EXT_BASE_PROBE_EXT          0x3
-+#define SBI_EXT_BASE_GET_MVENDORID      0x4
-+#define SBI_EXT_BASE_GET_MARCHID        0x5
-+#define SBI_EXT_BASE_GET_MIMPID         0x6
-+
-+/* SBI function IDs for TIME extension*/
-+#define SBI_EXT_TIME_SET_TIMER          0x0
-+
-+/* SBI function IDs for IPI extension*/
-+#define SBI_EXT_IPI_SEND_IPI            0x0
-+
-+/* SBI function IDs for RFENCE extension*/
-+#define SBI_EXT_RFENCE_REMOTE_FENCE_I       0x0
-+#define SBI_EXT_RFENCE_REMOTE_SFENCE_VMA    0x1
-+#define SBI_EXT_RFENCE_REMOTE_SFENCE_VMA_ASID  0x2
-+#define SBI_EXT_RFENCE_REMOTE_HFENCE_GVMA   0x3
-+#define SBI_EXT_RFENCE_REMOTE_HFENCE_GVMA_VMID 0x4
-+#define SBI_EXT_RFENCE_REMOTE_HFENCE_VVMA   0x5
-+#define SBI_EXT_RFENCE_REMOTE_HFENCE_VVMA_ASID 0x6
-+
-+/* SBI function IDs for HSM extension */
-+#define SBI_EXT_HSM_HART_START          0x0
-+#define SBI_EXT_HSM_HART_STOP           0x1
-+#define SBI_EXT_HSM_HART_GET_STATUS     0x2
-+
-+#define SBI_HSM_HART_STATUS_STARTED     0x0
-+#define SBI_HSM_HART_STATUS_STOPPED     0x1
-+#define SBI_HSM_HART_STATUS_START_PENDING   0x2
-+#define SBI_HSM_HART_STATUS_STOP_PENDING    0x3
-+
-+#define SBI_SPEC_VERSION_MAJOR_OFFSET   24
-+#define SBI_SPEC_VERSION_MAJOR_MASK     0x7f
-+#define SBI_SPEC_VERSION_MINOR_MASK     0xffffff
-+#define SBI_EXT_VENDOR_START            0x09000000
-+#define SBI_EXT_VENDOR_END              0x09FFFFFF
-+/* clang-format on */
-+
-+#endif
+ const KVMCapabilityInfo kvm_arch_required_capabilities[] = {
+     KVM_CAP_LAST_INFO
 -- 
 2.19.1
 
