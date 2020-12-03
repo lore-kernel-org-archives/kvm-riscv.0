@@ -1,112 +1,188 @@
 From: Yifei Jiang <jiangyifei@huawei.com>
-Date: Thu, 3 Dec 2020 20:46:48 +0800
-Subject: [PATCH RFC v4 00/15] Add riscv kvm accel support
-Message-ID: <20201203124703.168-1-jiangyifei@huawei.com>
+Date: Thu, 3 Dec 2020 20:46:50 +0800
+Subject: [PATCH RFC v4 02/15] target/riscv: Add target/riscv/kvm.c to place
+ the public kvm interface
+In-Reply-To: <20201203124703.168-1-jiangyifei@huawei.com>
+References: <20201203124703.168-1-jiangyifei@huawei.com>
+Message-ID: <20201203124703.168-3-jiangyifei@huawei.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This series adds both riscv32 and riscv64 kvm support, and implements
-migration based on riscv. It is based on temporarily unaccepted kvm:
-https://github.com/kvm-riscv/linux (lastest version v15).
+Add target/riscv/kvm.c to place kvm_arch_* function needed by
+kvm/kvm-all.c. Meanwhile, add kvm support in meson.build file.
 
-This series depends on above pending changes which haven't yet been
-accepted, so this QEMU patch series is treated as RFC patches until
-that dependency has been dealt with.
-
-Compared to RFC v3, the time scaling is supported in this series. The
-new feature also requires the following patches:
-[1] Bugfix in kvm v15
-https://lkml.org/lkml/2020/11/30/245
-[2] kvm patches:
-[PATCH RFC 0/3] Implement guest time scaling in RISC-V KVM
-
-Several steps to use this:
-1. Build emulation
-$ ./configure --target-list=riscv64-softmmu
-$ make -j$(nproc)
-
-2. Build kernel
-https://github.com/kvm-riscv/linux
-
-3. Build QEMU VM
-Cross built in riscv toolchain.
-$ PKG_CONFIG_LIBDIR=<toolchain pkgconfig path>
-$ export PKG_CONFIG_SYSROOT_DIR=<toolchain sysroot path>
-$ ./configure --target-list=riscv64-softmmu --enable-kvm \
---cross-prefix=riscv64-linux-gnu- --disable-libiscsi --disable-glusterfs \
---disable-libusb --disable-usb-redir --audio-drv-list= --disable-opengl \
---disable-libxml2
-$ make -j$(nproc)
-
-4. Start emulation
-$ ./qemu-system-riscv64 -M virt -m 4096M -cpu rv64,x-h=true -nographic \
-        -name guest=riscv-hyp,debug-threads=on \
-        -smp 4 \
-        -bios ./fw_jump.bin \
-        -kernel ./Image \
-        -drive file=./hyp.img,format=raw,id=hd0 \
-        -device virtio-blk-device,drive=hd0 \
-        -append "root=/dev/vda rw console=ttyS0 earlycon=sbi"
-
-5. Start kvm-acceled QEMU VM in emulation
-$ ./qemu-system-riscv64 -M virt,accel=kvm -m 1024M -cpu host -nographic \
-        -name guest=riscv-guset \
-        -smp 2 \
-        -bios none \
-        -kernel ./Image \
-        -drive file=./guest.img,format=raw,id=hd0 \
-        -device virtio-blk-device,drive=hd0 \
-        -append "root=/dev/vda rw console=ttyS0 earlycon=sbi"
-
-Changes since RFC v3
-- Rebase on QEMU v5.2.0-rc2 and kvm-riscv linux v15.
-- Add time scaling support(New patches 13, 14 and 15).
-- Fix the bug that guest vm can't reboot.
-
-Changes since RFC v2
-- Fix checkpatch error at target/riscv/sbi_ecall_interface.h.
-- Add riscv migration support.
-
-Changes since RFC v1
-- Add separate SBI ecall interface header.
-- Add riscv32 kvm accel support.
-
-Yifei Jiang (15):
-  linux-header: Update linux/kvm.h
-  target/riscv: Add target/riscv/kvm.c to place the public kvm interface
-  target/riscv: Implement function kvm_arch_init_vcpu
-  target/riscv: Implement kvm_arch_get_registers
-  target/riscv: Implement kvm_arch_put_registers
-  target/riscv: Support start kernel directly by KVM
-  hw/riscv: PLIC update external interrupt by KVM when kvm enabled
-  target/riscv: Handle KVM_EXIT_RISCV_SBI exit
-  target/riscv: Add host cpu type
-  target/riscv: Add kvm_riscv_get/put_regs_timer
-  target/riscv: Implement virtual time adjusting with vm state changing
-  target/riscv: Support virtual time context synchronization
-  target/riscv: Introduce dynamic time frequency for virt machine
-  target/riscv: Synchronize vcpu's frequency with KVM
-  target/riscv: Add time frequency migration support
-
- hw/intc/sifive_plic.c              |  31 +-
- hw/riscv/virt.c                    |  26 +-
- linux-headers/linux/kvm.h          |   8 +
- meson.build                        |   2 +
- target/riscv/cpu.c                 |  13 +
- target/riscv/cpu.h                 |  12 +
- target/riscv/kvm.c                 | 617 +++++++++++++++++++++++++++++
- target/riscv/kvm_riscv.h           |  25 ++
- target/riscv/machine.c             |  23 ++
- target/riscv/meson.build           |   1 +
- target/riscv/sbi_ecall_interface.h |  72 ++++
- 11 files changed, 817 insertions(+), 13 deletions(-)
+Signed-off-by: Yifei Jiang <jiangyifei@huawei.com>
+Signed-off-by: Yipeng Yin <yinyipeng1@huawei.com>
+Reviewed-by: Alistair Francis <alistair.francis@wdc.com>
+---
+ meson.build              |   2 +
+ target/riscv/kvm.c       | 128 +++++++++++++++++++++++++++++++++++++++
+ target/riscv/meson.build |   1 +
+ 3 files changed, 131 insertions(+)
  create mode 100644 target/riscv/kvm.c
- create mode 100644 target/riscv/kvm_riscv.h
- create mode 100644 target/riscv/sbi_ecall_interface.h
 
+diff --git a/meson.build b/meson.build
+index e3386196ba..14728b77ab 100644
+--- a/meson.build
++++ b/meson.build
+@@ -69,6 +69,8 @@ elif cpu in ['ppc', 'ppc64']
+   kvm_targets = ['ppc-softmmu', 'ppc64-softmmu']
+ elif cpu in ['mips', 'mips64']
+   kvm_targets = ['mips-softmmu', 'mipsel-softmmu', 'mips64-softmmu', 'mips64el-softmmu']
++elif cpu in ['riscv32', 'riscv64']
++  kvm_targets = ['riscv32-softmmu', 'riscv64-softmmu']
+ else
+   kvm_targets = []
+ endif
+diff --git a/target/riscv/kvm.c b/target/riscv/kvm.c
+new file mode 100644
+index 0000000000..8c386d9acf
+--- /dev/null
++++ b/target/riscv/kvm.c
+@@ -0,0 +1,128 @@
++/*
++ * RISC-V implementation of KVM hooks
++ *
++ * Copyright (c) 2020 Huawei Technologies Co., Ltd
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms and conditions of the GNU General Public License,
++ * version 2 or later, as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ *
++ * You should have received a copy of the GNU General Public License along with
++ * this program.  If not, see <http://www.gnu.org/licenses/>.
++ */
++
++#include "qemu/osdep.h"
++#include <sys/ioctl.h>
++
++#include <linux/kvm.h>
++
++#include "qemu-common.h"
++#include "qemu/timer.h"
++#include "qemu/error-report.h"
++#include "qemu/main-loop.h"
++#include "sysemu/sysemu.h"
++#include "sysemu/kvm.h"
++#include "sysemu/kvm_int.h"
++#include "cpu.h"
++#include "trace.h"
++#include "hw/pci/pci.h"
++#include "exec/memattrs.h"
++#include "exec/address-spaces.h"
++#include "hw/boards.h"
++#include "hw/irq.h"
++#include "qemu/log.h"
++#include "hw/loader.h"
++
++const KVMCapabilityInfo kvm_arch_required_capabilities[] = {
++    KVM_CAP_LAST_INFO
++};
++
++int kvm_arch_get_registers(CPUState *cs)
++{
++    return 0;
++}
++
++int kvm_arch_put_registers(CPUState *cs, int level)
++{
++    return 0;
++}
++
++int kvm_arch_release_virq_post(int virq)
++{
++    return 0;
++}
++
++int kvm_arch_fixup_msi_route(struct kvm_irq_routing_entry *route,
++                             uint64_t address, uint32_t data, PCIDevice *dev)
++{
++    return 0;
++}
++
++int kvm_arch_destroy_vcpu(CPUState *cs)
++{
++    return 0;
++}
++
++unsigned long kvm_arch_vcpu_id(CPUState *cpu)
++{
++    return cpu->cpu_index;
++}
++
++void kvm_arch_init_irq_routing(KVMState *s)
++{
++}
++
++int kvm_arch_init_vcpu(CPUState *cs)
++{
++    return 0;
++}
++
++int kvm_arch_msi_data_to_gsi(uint32_t data)
++{
++    abort();
++}
++
++int kvm_arch_add_msi_route_post(struct kvm_irq_routing_entry *route,
++                                int vector, PCIDevice *dev)
++{
++    return 0;
++}
++
++int kvm_arch_init(MachineState *ms, KVMState *s)
++{
++    return 0;
++}
++
++int kvm_arch_irqchip_create(KVMState *s)
++{
++    return 0;
++}
++
++int kvm_arch_process_async_events(CPUState *cs)
++{
++    return 0;
++}
++
++void kvm_arch_pre_run(CPUState *cs, struct kvm_run *run)
++{
++}
++
++MemTxAttrs kvm_arch_post_run(CPUState *cs, struct kvm_run *run)
++{
++    return MEMTXATTRS_UNSPECIFIED;
++}
++
++bool kvm_arch_stop_on_emulation_error(CPUState *cs)
++{
++    return true;
++}
++
++int kvm_arch_handle_exit(CPUState *cs, struct kvm_run *run)
++{
++    return 0;
++}
+diff --git a/target/riscv/meson.build b/target/riscv/meson.build
+index 14a5c62dac..12e9c074af 100644
+--- a/target/riscv/meson.build
++++ b/target/riscv/meson.build
+@@ -23,6 +23,7 @@ riscv_ss.add(files(
+   'vector_helper.c',
+   'translate.c',
+ ))
++riscv_ss.add(when: 'CONFIG_KVM', if_true: files('kvm.c'))
+ 
+ riscv_softmmu_ss = ss.source_set()
+ riscv_softmmu_ss.add(files(
 -- 
 2.19.1
 
