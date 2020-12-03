@@ -1,66 +1,64 @@
 From: Yifei Jiang <jiangyifei@huawei.com>
-Date: Thu, 3 Dec 2020 20:46:59 +0800
-Subject: [PATCH RFC v4 11/15] target/riscv: Implement virtual time adjusting
- with vm state changing
+Date: Thu, 3 Dec 2020 20:46:57 +0800
+Subject: [PATCH RFC v4 09/15] target/riscv: Add host cpu type
 In-Reply-To: <20201203124703.168-1-jiangyifei@huawei.com>
 References: <20201203124703.168-1-jiangyifei@huawei.com>
-Message-ID: <20201203124703.168-12-jiangyifei@huawei.com>
+Message-ID: <20201203124703.168-10-jiangyifei@huawei.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-We hope that virtual time adjusts with vm state changing. When a vm
-is stopped, guest virtual time should stop counting and kvm_timer
-should be stopped. When the vm is resumed, guest virtual time should
-continue to count and kvm_timer should be restored.
+Currently, host cpu is inherited simply.
 
 Signed-off-by: Yifei Jiang <jiangyifei@huawei.com>
 Signed-off-by: Yipeng Yin <yinyipeng1@huawei.com>
 ---
- target/riscv/kvm.c | 14 ++++++++++++++
- 1 file changed, 14 insertions(+)
+ target/riscv/cpu.c | 6 ++++++
+ target/riscv/cpu.h | 1 +
+ 2 files changed, 7 insertions(+)
 
-diff --git a/target/riscv/kvm.c b/target/riscv/kvm.c
-index 79228eb726..1e16d24544 100644
---- a/target/riscv/kvm.c
-+++ b/target/riscv/kvm.c
-@@ -40,6 +40,7 @@
- #include "kvm_riscv.h"
- #include "sbi_ecall_interface.h"
- #include "chardev/char-fe.h"
-+#include "sysemu/runstate.h"
+diff --git a/target/riscv/cpu.c b/target/riscv/cpu.c
+index faee98a58c..439dc89ee7 100644
+--- a/target/riscv/cpu.c
++++ b/target/riscv/cpu.c
+@@ -186,6 +186,10 @@ static void rv32_imafcu_nommu_cpu_init(Object *obj)
  
- static __u64 kvm_riscv_reg_id(__u64 type, __u64 idx)
- {
-@@ -448,6 +449,17 @@ unsigned long kvm_arch_vcpu_id(CPUState *cpu)
-     return cpu->cpu_index;
- }
+ #endif
  
-+static void kvm_riscv_vm_state_change(void *opaque, int running, RunState state)
++static void riscv_host_cpu_init(Object *obj)
 +{
-+    CPUState *cs = opaque;
-+
-+    if (running) {
-+        kvm_riscv_put_regs_timer(cs);
-+    } else {
-+        kvm_riscv_get_regs_timer(cs);
-+    }
 +}
 +
- void kvm_arch_init_irq_routing(KVMState *s)
+ static ObjectClass *riscv_cpu_class_by_name(const char *cpu_model)
  {
- }
-@@ -460,6 +472,8 @@ int kvm_arch_init_vcpu(CPUState *cs)
-     CPURISCVState *env = &cpu->env;
-     __u64 id;
+     ObjectClass *oc;
+@@ -641,10 +645,12 @@ static const TypeInfo riscv_cpu_type_infos[] = {
+     DEFINE_CPU(TYPE_RISCV_CPU_SIFIVE_E31,       rvxx_sifive_e_cpu_init),
+     DEFINE_CPU(TYPE_RISCV_CPU_SIFIVE_E34,       rv32_imafcu_nommu_cpu_init),
+     DEFINE_CPU(TYPE_RISCV_CPU_SIFIVE_U34,       rvxx_sifive_u_cpu_init),
++    DEFINE_CPU(TYPE_RISCV_CPU_HOST,             riscv_host_cpu_init),
+ #elif defined(TARGET_RISCV64)
+     DEFINE_CPU(TYPE_RISCV_CPU_BASE64,           riscv_base_cpu_init),
+     DEFINE_CPU(TYPE_RISCV_CPU_SIFIVE_E51,       rvxx_sifive_e_cpu_init),
+     DEFINE_CPU(TYPE_RISCV_CPU_SIFIVE_U54,       rvxx_sifive_u_cpu_init),
++    DEFINE_CPU(TYPE_RISCV_CPU_HOST,             riscv_host_cpu_init),
+ #endif
+ };
  
-+    qemu_add_vm_change_state_handler(kvm_riscv_vm_state_change, cs);
-+
-     id = kvm_riscv_reg_id(KVM_REG_RISCV_CONFIG, KVM_REG_RISCV_CONFIG_REG(isa));
-     ret = kvm_get_one_reg(cs, id, &isa);
-     if (ret) {
+diff --git a/target/riscv/cpu.h b/target/riscv/cpu.h
+index ad1c90f798..4288898019 100644
+--- a/target/riscv/cpu.h
++++ b/target/riscv/cpu.h
+@@ -43,6 +43,7 @@
+ #define TYPE_RISCV_CPU_SIFIVE_E51       RISCV_CPU_TYPE_NAME("sifive-e51")
+ #define TYPE_RISCV_CPU_SIFIVE_U34       RISCV_CPU_TYPE_NAME("sifive-u34")
+ #define TYPE_RISCV_CPU_SIFIVE_U54       RISCV_CPU_TYPE_NAME("sifive-u54")
++#define TYPE_RISCV_CPU_HOST             RISCV_CPU_TYPE_NAME("host")
+ 
+ #define RV32 ((target_ulong)1 << (TARGET_LONG_BITS - 2))
+ #define RV64 ((target_ulong)2 << (TARGET_LONG_BITS - 2))
 -- 
 2.19.1
 
