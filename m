@@ -1,113 +1,68 @@
 From: Yifei Jiang <jiangyifei@huawei.com>
-Date: Thu, 3 Dec 2020 20:46:55 +0800
-Subject: [PATCH RFC v4 07/15] hw/riscv: PLIC update external interrupt by KVM
- when kvm enabled
+Date: Thu, 3 Dec 2020 20:47:02 +0800
+Subject: [PATCH RFC v4 14/15] target/riscv: Synchronize vcpu's frequency with
+ KVM
 In-Reply-To: <20201203124703.168-1-jiangyifei@huawei.com>
 References: <20201203124703.168-1-jiangyifei@huawei.com>
-Message-ID: <20201203124703.168-8-jiangyifei@huawei.com>
+Message-ID: <20201203124703.168-15-jiangyifei@huawei.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Only support supervisor external interrupt currently.
+If vcpu's frequency is specified by cpu option 'frequency', it
+will be set into KVM by KVM_SET_ONE_REG ioctl. Otherwise, vcpu's
+frequency will follow KVM by KVM_GET_ONE_REG ioctl.
 
 Signed-off-by: Yifei Jiang <jiangyifei@huawei.com>
 Signed-off-by: Yipeng Yin <yinyipeng1@huawei.com>
 ---
- hw/intc/sifive_plic.c    | 31 ++++++++++++++++++++++---------
- target/riscv/kvm.c       | 19 +++++++++++++++++++
- target/riscv/kvm_riscv.h |  1 +
- 3 files changed, 42 insertions(+), 9 deletions(-)
+ target/riscv/kvm.c | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
 
-diff --git a/hw/intc/sifive_plic.c b/hw/intc/sifive_plic.c
-index 97a1a27a9a..a419ca3a3c 100644
---- a/hw/intc/sifive_plic.c
-+++ b/hw/intc/sifive_plic.c
-@@ -31,6 +31,8 @@
- #include "target/riscv/cpu.h"
- #include "sysemu/sysemu.h"
- #include "migration/vmstate.h"
-+#include "sysemu/kvm.h"
-+#include "kvm_riscv.h"
- 
- #define RISCV_DEBUG_PLIC 0
- 
-@@ -147,15 +149,26 @@ static void sifive_plic_update(SiFivePLICState *plic)
-             continue;
-         }
-         int level = sifive_plic_irqs_pending(plic, addrid);
--        switch (mode) {
--        case PLICMode_M:
--            riscv_cpu_update_mip(RISCV_CPU(cpu), MIP_MEIP, BOOL_TO_MASK(level));
--            break;
--        case PLICMode_S:
--            riscv_cpu_update_mip(RISCV_CPU(cpu), MIP_SEIP, BOOL_TO_MASK(level));
--            break;
--        default:
--            break;
-+        if (kvm_enabled()) {
-+            if (mode == PLICMode_M) {
-+                continue;
-+            }
-+#ifdef CONFIG_KVM
-+            kvm_riscv_set_irq(RISCV_CPU(cpu), IRQ_S_EXT, level);
-+#endif
-+        } else {
-+            switch (mode) {
-+            case PLICMode_M:
-+                riscv_cpu_update_mip(RISCV_CPU(cpu),
-+                                     MIP_MEIP, BOOL_TO_MASK(level));
-+                break;
-+            case PLICMode_S:
-+                riscv_cpu_update_mip(RISCV_CPU(cpu),
-+                                     MIP_SEIP, BOOL_TO_MASK(level));
-+                break;
-+            default:
-+                break;
-+            }
-         }
-     }
- 
 diff --git a/target/riscv/kvm.c b/target/riscv/kvm.c
-index 6250ca0c7d..b01ff0754c 100644
+index 1e16d24544..3499efd4eb 100644
 --- a/target/riscv/kvm.c
 +++ b/target/riscv/kvm.c
-@@ -454,3 +454,22 @@ void kvm_riscv_reset_vcpu(RISCVCPU *cpu)
-     env->satp = 0;
+@@ -409,6 +409,8 @@ int kvm_arch_get_registers(CPUState *cs)
+ int kvm_arch_put_registers(CPUState *cs, int level)
+ {
+     int ret = 0;
++    RISCVCPU *cpu = RISCV_CPU(cs);
++    CPURISCVState *env = &cpu->env;
+ 
+     ret = kvm_riscv_put_regs_core(cs);
+     if (ret) {
+@@ -425,6 +427,10 @@ int kvm_arch_put_registers(CPUState *cs, int level)
+         return ret;
+     }
+ 
++    if (env->frequency) {
++        ret = kvm_set_one_reg(cs, RISCV_TIMER_REG(frequency), &env->frequency);
++    }
++
+     return ret;
  }
  
-+void kvm_riscv_set_irq(RISCVCPU *cpu, int irq, int level)
-+{
-+    int ret;
-+    unsigned virq = level ? KVM_INTERRUPT_SET : KVM_INTERRUPT_UNSET;
-+
-+    if (irq != IRQ_S_EXT) {
-+        return;
-+    }
-+
-+    if (!kvm_enabled()) {
-+        return;
-+    }
-+
-+    ret = kvm_vcpu_ioctl(CPU(cpu), KVM_INTERRUPT, &virq);
-+    if (ret < 0) {
-+        perror("Set irq failed");
-+        abort();
-+    }
-+}
-diff --git a/target/riscv/kvm_riscv.h b/target/riscv/kvm_riscv.h
-index f38c82bf59..ed281bdce0 100644
---- a/target/riscv/kvm_riscv.h
-+++ b/target/riscv/kvm_riscv.h
-@@ -20,5 +20,6 @@
- #define QEMU_KVM_RISCV_H
+@@ -481,6 +487,17 @@ int kvm_arch_init_vcpu(CPUState *cs)
+     }
+     env->misa = isa;
  
- void kvm_riscv_reset_vcpu(RISCVCPU *cpu);
-+void kvm_riscv_set_irq(RISCVCPU *cpu, int irq, int level);
++    /*
++     * Synchronize vcpu's frequency with KVM. If vcpu's frequency is specified
++     * by cpu option 'frequency', this will be set to KVM. Otherwise, vcpu's
++     * frequency will follow KVM.
++     */
++    if (env->user_frequency) {
++        ret = kvm_set_one_reg(cs, RISCV_TIMER_REG(frequency), &env->frequency);
++    } else {
++        ret = kvm_get_one_reg(cs, RISCV_TIMER_REG(frequency), &env->frequency);
++    }
++
+     return ret;
+ }
  
- #endif
 -- 
 2.19.1
 
