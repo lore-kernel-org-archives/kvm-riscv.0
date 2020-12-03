@@ -1,64 +1,113 @@
 From: Yifei Jiang <jiangyifei@huawei.com>
-Date: Thu, 3 Dec 2020 20:46:57 +0800
-Subject: [PATCH RFC v4 09/15] target/riscv: Add host cpu type
+Date: Thu, 3 Dec 2020 20:46:55 +0800
+Subject: [PATCH RFC v4 07/15] hw/riscv: PLIC update external interrupt by KVM
+ when kvm enabled
 In-Reply-To: <20201203124703.168-1-jiangyifei@huawei.com>
 References: <20201203124703.168-1-jiangyifei@huawei.com>
-Message-ID: <20201203124703.168-10-jiangyifei@huawei.com>
+Message-ID: <20201203124703.168-8-jiangyifei@huawei.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Currently, host cpu is inherited simply.
+Only support supervisor external interrupt currently.
 
 Signed-off-by: Yifei Jiang <jiangyifei@huawei.com>
 Signed-off-by: Yipeng Yin <yinyipeng1@huawei.com>
 ---
- target/riscv/cpu.c | 6 ++++++
- target/riscv/cpu.h | 1 +
- 2 files changed, 7 insertions(+)
+ hw/intc/sifive_plic.c    | 31 ++++++++++++++++++++++---------
+ target/riscv/kvm.c       | 19 +++++++++++++++++++
+ target/riscv/kvm_riscv.h |  1 +
+ 3 files changed, 42 insertions(+), 9 deletions(-)
 
-diff --git a/target/riscv/cpu.c b/target/riscv/cpu.c
-index faee98a58c..439dc89ee7 100644
---- a/target/riscv/cpu.c
-+++ b/target/riscv/cpu.c
-@@ -186,6 +186,10 @@ static void rv32_imafcu_nommu_cpu_init(Object *obj)
+diff --git a/hw/intc/sifive_plic.c b/hw/intc/sifive_plic.c
+index 97a1a27a9a..a419ca3a3c 100644
+--- a/hw/intc/sifive_plic.c
++++ b/hw/intc/sifive_plic.c
+@@ -31,6 +31,8 @@
+ #include "target/riscv/cpu.h"
+ #include "sysemu/sysemu.h"
+ #include "migration/vmstate.h"
++#include "sysemu/kvm.h"
++#include "kvm_riscv.h"
  
- #endif
+ #define RISCV_DEBUG_PLIC 0
  
-+static void riscv_host_cpu_init(Object *obj)
+@@ -147,15 +149,26 @@ static void sifive_plic_update(SiFivePLICState *plic)
+             continue;
+         }
+         int level = sifive_plic_irqs_pending(plic, addrid);
+-        switch (mode) {
+-        case PLICMode_M:
+-            riscv_cpu_update_mip(RISCV_CPU(cpu), MIP_MEIP, BOOL_TO_MASK(level));
+-            break;
+-        case PLICMode_S:
+-            riscv_cpu_update_mip(RISCV_CPU(cpu), MIP_SEIP, BOOL_TO_MASK(level));
+-            break;
+-        default:
+-            break;
++        if (kvm_enabled()) {
++            if (mode == PLICMode_M) {
++                continue;
++            }
++#ifdef CONFIG_KVM
++            kvm_riscv_set_irq(RISCV_CPU(cpu), IRQ_S_EXT, level);
++#endif
++        } else {
++            switch (mode) {
++            case PLICMode_M:
++                riscv_cpu_update_mip(RISCV_CPU(cpu),
++                                     MIP_MEIP, BOOL_TO_MASK(level));
++                break;
++            case PLICMode_S:
++                riscv_cpu_update_mip(RISCV_CPU(cpu),
++                                     MIP_SEIP, BOOL_TO_MASK(level));
++                break;
++            default:
++                break;
++            }
+         }
+     }
+ 
+diff --git a/target/riscv/kvm.c b/target/riscv/kvm.c
+index 6250ca0c7d..b01ff0754c 100644
+--- a/target/riscv/kvm.c
++++ b/target/riscv/kvm.c
+@@ -454,3 +454,22 @@ void kvm_riscv_reset_vcpu(RISCVCPU *cpu)
+     env->satp = 0;
+ }
+ 
++void kvm_riscv_set_irq(RISCVCPU *cpu, int irq, int level)
 +{
-+}
++    int ret;
++    unsigned virq = level ? KVM_INTERRUPT_SET : KVM_INTERRUPT_UNSET;
 +
- static ObjectClass *riscv_cpu_class_by_name(const char *cpu_model)
- {
-     ObjectClass *oc;
-@@ -641,10 +645,12 @@ static const TypeInfo riscv_cpu_type_infos[] = {
-     DEFINE_CPU(TYPE_RISCV_CPU_SIFIVE_E31,       rvxx_sifive_e_cpu_init),
-     DEFINE_CPU(TYPE_RISCV_CPU_SIFIVE_E34,       rv32_imafcu_nommu_cpu_init),
-     DEFINE_CPU(TYPE_RISCV_CPU_SIFIVE_U34,       rvxx_sifive_u_cpu_init),
-+    DEFINE_CPU(TYPE_RISCV_CPU_HOST,             riscv_host_cpu_init),
- #elif defined(TARGET_RISCV64)
-     DEFINE_CPU(TYPE_RISCV_CPU_BASE64,           riscv_base_cpu_init),
-     DEFINE_CPU(TYPE_RISCV_CPU_SIFIVE_E51,       rvxx_sifive_e_cpu_init),
-     DEFINE_CPU(TYPE_RISCV_CPU_SIFIVE_U54,       rvxx_sifive_u_cpu_init),
-+    DEFINE_CPU(TYPE_RISCV_CPU_HOST,             riscv_host_cpu_init),
++    if (irq != IRQ_S_EXT) {
++        return;
++    }
++
++    if (!kvm_enabled()) {
++        return;
++    }
++
++    ret = kvm_vcpu_ioctl(CPU(cpu), KVM_INTERRUPT, &virq);
++    if (ret < 0) {
++        perror("Set irq failed");
++        abort();
++    }
++}
+diff --git a/target/riscv/kvm_riscv.h b/target/riscv/kvm_riscv.h
+index f38c82bf59..ed281bdce0 100644
+--- a/target/riscv/kvm_riscv.h
++++ b/target/riscv/kvm_riscv.h
+@@ -20,5 +20,6 @@
+ #define QEMU_KVM_RISCV_H
+ 
+ void kvm_riscv_reset_vcpu(RISCVCPU *cpu);
++void kvm_riscv_set_irq(RISCVCPU *cpu, int irq, int level);
+ 
  #endif
- };
- 
-diff --git a/target/riscv/cpu.h b/target/riscv/cpu.h
-index ad1c90f798..4288898019 100644
---- a/target/riscv/cpu.h
-+++ b/target/riscv/cpu.h
-@@ -43,6 +43,7 @@
- #define TYPE_RISCV_CPU_SIFIVE_E51       RISCV_CPU_TYPE_NAME("sifive-e51")
- #define TYPE_RISCV_CPU_SIFIVE_U34       RISCV_CPU_TYPE_NAME("sifive-u34")
- #define TYPE_RISCV_CPU_SIFIVE_U54       RISCV_CPU_TYPE_NAME("sifive-u54")
-+#define TYPE_RISCV_CPU_HOST             RISCV_CPU_TYPE_NAME("host")
- 
- #define RV32 ((target_ulong)1 << (TARGET_LONG_BITS - 2))
- #define RV64 ((target_ulong)2 << (TARGET_LONG_BITS - 2))
 -- 
 2.19.1
 
