@@ -1,57 +1,81 @@
-From: Yifei Jiang <jiangyifei@huawei.com>
-Date: Thu, 3 Dec 2020 20:47:03 +0800
-Subject: [PATCH RFC v4 15/15] target/riscv: Add time frequency migration
- support
-In-Reply-To: <20201203124703.168-1-jiangyifei@huawei.com>
+From: Alistair Francis <alistair23@gmail.com>
+Date: Tue, 8 Dec 2020 14:13:56 -0800
+Subject: [PATCH RFC v4 03/15] target/riscv: Implement function
+ kvm_arch_init_vcpu
+In-Reply-To: <20201203124703.168-4-jiangyifei@huawei.com>
 References: <20201203124703.168-1-jiangyifei@huawei.com>
-Message-ID: <20201203124703.168-16-jiangyifei@huawei.com>
+ <20201203124703.168-4-jiangyifei@huawei.com>
+Message-ID: <CAKmqyKNE1JU3KJscNfg78dGW9Avs2nvTVt-qr417g5noTbCAYQ@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-If vcpu's time frequency is not specified by CPU option 'time-frequency'
-on the destination, the time frequency of destination will follow
-the source.
+On Thu, Dec 3, 2020 at 4:55 AM Yifei Jiang <jiangyifei@huawei.com> wrote:
+>
+> Get isa info from kvm while kvm init.
+>
+> Signed-off-by: Yifei Jiang <jiangyifei@huawei.com>
+> Signed-off-by: Yipeng Yin <yinyipeng1@huawei.com>
+> ---
+>  target/riscv/kvm.c | 27 ++++++++++++++++++++++++++-
+>  1 file changed, 26 insertions(+), 1 deletion(-)
+>
+> diff --git a/target/riscv/kvm.c b/target/riscv/kvm.c
+> index 8c386d9acf..86660ba81b 100644
+> --- a/target/riscv/kvm.c
+> +++ b/target/riscv/kvm.c
+> @@ -38,6 +38,18 @@
+>  #include "qemu/log.h"
+>  #include "hw/loader.h"
+>
+> +static __u64 kvm_riscv_reg_id(__u64 type, __u64 idx)
+> +{
+> +    __u64 id = KVM_REG_RISCV | type | idx;
+> +
+> +#if defined(TARGET_RISCV32)
+> +    id |= KVM_REG_SIZE_U32;
+> +#elif defined(TARGET_RISCV64)
+> +    id |= KVM_REG_SIZE_U64;
+> +#endif
 
-If vcpu's time frequency specified by CPU option 'time-frequency' on the
-destination is different from migrated time frequency. The migration
-will be abort.
+There is a series on list (I'll send a v2 out later today) that starts
+to remove these #ifdef for the RISC-V XLEN. Next time you rebase it
+would be great if you can use that and hopefully remove this.
 
-Signed-off-by: Yifei Jiang <jiangyifei@huawei.com>
-Signed-off-by: Yipeng Yin <yinyipeng1@huawei.com>
----
- target/riscv/machine.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
+Alistair
 
-diff --git a/target/riscv/machine.c b/target/riscv/machine.c
-index ef2d5395a8..6955542fef 100644
---- a/target/riscv/machine.c
-+++ b/target/riscv/machine.c
-@@ -144,6 +144,13 @@ static int cpu_post_load(void *opaque, int version_id)
-     CPURISCVState *env = &cpu->env;
- 
-     env->kvm_timer_dirty = true;
-+
-+    if (env->user_frequency && env->user_frequency != env->frequency) {
-+        error_report("Mismatch between user-specified time frequency and "
-+                     "migrated time frequency");
-+        return -EINVAL;
-+    }
-+
-     return 0;
- }
- 
-@@ -198,6 +205,7 @@ const VMStateDescription vmstate_riscv_cpu = {
-         VMSTATE_UINT64(env.kvm_timer_time, RISCVCPU),
-         VMSTATE_UINT64(env.kvm_timer_compare, RISCVCPU),
-         VMSTATE_UINT64(env.kvm_timer_state, RISCVCPU),
-+        VMSTATE_UINT64(env.frequency, RISCVCPU),
- 
-         VMSTATE_END_OF_LIST()
-     },
--- 
-2.19.1
-
+> +    return id;
+> +}
+> +
+>  const KVMCapabilityInfo kvm_arch_required_capabilities[] = {
+>      KVM_CAP_LAST_INFO
+>  };
+> @@ -79,7 +91,20 @@ void kvm_arch_init_irq_routing(KVMState *s)
+>
+>  int kvm_arch_init_vcpu(CPUState *cs)
+>  {
+> -    return 0;
+> +    int ret = 0;
+> +    target_ulong isa;
+> +    RISCVCPU *cpu = RISCV_CPU(cs);
+> +    CPURISCVState *env = &cpu->env;
+> +    __u64 id;
+> +
+> +    id = kvm_riscv_reg_id(KVM_REG_RISCV_CONFIG, KVM_REG_RISCV_CONFIG_REG(isa));
+> +    ret = kvm_get_one_reg(cs, id, &isa);
+> +    if (ret) {
+> +        return ret;
+> +    }
+> +    env->misa = isa;
+> +
+> +    return ret;
+>  }
+>
+>  int kvm_arch_msi_data_to_gsi(uint32_t data)
+> --
+> 2.19.1
+>
+>
 
