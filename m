@@ -1,12 +1,12 @@
 From: Jiangyifei <jiangyifei@huawei.com>
-Date: Tue, 15 Dec 2020 07:31:14 +0000
-Subject: [PATCH RFC v4 13/15] target/riscv: Introduce dynamic time
- frequency for virt machine
-In-Reply-To: <CAKmqyKM5m3_w6=Jd+EdTatY9G0YBm1mFjh+5FodnVmFfKydyZw@mail.gmail.com>
+Date: Tue, 15 Dec 2020 07:33:11 +0000
+Subject: [PATCH RFC v4 07/15] hw/riscv: PLIC update external interrupt by
+ KVM when kvm enabled
+In-Reply-To: <CAKmqyKMXmCPyMmo_OHdeVZCjN1k_Lv9n_FVFe9pvbnoHhVSL1g@mail.gmail.com>
 References: <20201203124703.168-1-jiangyifei@huawei.com>
- <20201203124703.168-14-jiangyifei@huawei.com>
- <CAKmqyKM5m3_w6=Jd+EdTatY9G0YBm1mFjh+5FodnVmFfKydyZw@mail.gmail.com>
-Message-ID: <1889871dcdf74ac3b495d75e6fd2aeaf@huawei.com>
+ <20201203124703.168-8-jiangyifei@huawei.com>
+ <CAKmqyKMXmCPyMmo_OHdeVZCjN1k_Lv9n_FVFe9pvbnoHhVSL1g@mail.gmail.com>
+Message-ID: <9845536243684e55b20fb9336229babe@huawei.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -16,7 +16,7 @@ Content-Transfer-Encoding: 7bit
 
 > -----Original Message-----
 > From: Alistair Francis [mailto:alistair23 at gmail.com]
-> Sent: Wednesday, December 9, 2020 6:26 AM
+> Sent: Wednesday, December 9, 2020 6:30 AM
 > To: Jiangyifei <jiangyifei@huawei.com>
 > Cc: qemu-devel at nongnu.org Developers <qemu-devel@nongnu.org>; open
 > list:RISC-V <qemu-riscv@nongnu.org>; Zhangxiaofeng (F)
@@ -28,152 +28,125 @@ Content-Transfer-Encoding: 7bit
 > <Alistair.Francis@wdc.com>; kvm-riscv at lists.infradead.org; Palmer Dabbelt
 > <palmer@dabbelt.com>; dengkai (A) <dengkai1@huawei.com>; Wubin (H)
 > <wu.wubin@huawei.com>; Zhanghailiang <zhang.zhanghailiang@huawei.com>
-> Subject: Re: [PATCH RFC v4 13/15] target/riscv: Introduce dynamic time
-> frequency for virt machine
+> Subject: Re: [PATCH RFC v4 07/15] hw/riscv: PLIC update external interrupt by
+> KVM when kvm enabled
 > 
-> On Thu, Dec 3, 2020 at 4:57 AM Yifei Jiang <jiangyifei@huawei.com> wrote:
+> On Thu, Dec 3, 2020 at 4:47 AM Yifei Jiang <jiangyifei@huawei.com> wrote:
 > >
-> > Currently, time base frequency was fixed as SIFIVE_CLINT_TIMEBASE_FREQ.
-> > Here introduce "time-frequency" property to set time base frequency
-> > dynamically of which default value is still
-> > SIFIVE_CLINT_TIMEBASE_FREQ. The virt machine uses frequency of the first
-> cpu to create clint and fdt.
+> > Only support supervisor external interrupt currently.
 > >
 > > Signed-off-by: Yifei Jiang <jiangyifei@huawei.com>
 > > Signed-off-by: Yipeng Yin <yinyipeng1@huawei.com>
 > > ---
-> >  hw/riscv/virt.c    | 18 ++++++++++++++----
-> >  target/riscv/cpu.c |  3 +++
-> >  target/riscv/cpu.h |  2 ++
-> >  3 files changed, 19 insertions(+), 4 deletions(-)
+> >  hw/intc/sifive_plic.c    | 31 ++++++++++++++++++++++---------
+> >  target/riscv/kvm.c       | 19 +++++++++++++++++++
+> >  target/riscv/kvm_riscv.h |  1 +
+> >  3 files changed, 42 insertions(+), 9 deletions(-)
 > >
-> > diff --git a/hw/riscv/virt.c b/hw/riscv/virt.c index
-> > 47b7018193..788a7237b6 100644
-> > --- a/hw/riscv/virt.c
-> > +++ b/hw/riscv/virt.c
-> > @@ -178,7 +178,7 @@ static void create_pcie_irq_map(void *fdt, char
-> > *nodename,  }
+> > diff --git a/hw/intc/sifive_plic.c b/hw/intc/sifive_plic.c index
+> > 97a1a27a9a..a419ca3a3c 100644
+> > --- a/hw/intc/sifive_plic.c
+> > +++ b/hw/intc/sifive_plic.c
+> > @@ -31,6 +31,8 @@
+> >  #include "target/riscv/cpu.h"
+> >  #include "sysemu/sysemu.h"
+> >  #include "migration/vmstate.h"
+> > +#include "sysemu/kvm.h"
+> > +#include "kvm_riscv.h"
 > >
-> >  static void create_fdt(RISCVVirtState *s, const struct MemmapEntry
-> *memmap,
-> > -    uint64_t mem_size, const char *cmdline)
-> > +    uint64_t mem_size, const char *cmdline, uint64_t
-> > + timebase_frequency)
-> >  {
-> >      void *fdt;
-> >      int i, cpu, socket;
-> > @@ -225,7 +225,7 @@ static void create_fdt(RISCVVirtState *s, const
-> > struct MemmapEntry *memmap,
+> >  #define RISCV_DEBUG_PLIC 0
 > >
-> >      qemu_fdt_add_subnode(fdt, "/cpus");
-> >      qemu_fdt_setprop_cell(fdt, "/cpus", "timebase-frequency",
-> > -                          SIFIVE_CLINT_TIMEBASE_FREQ);
-> > +                          timebase_frequency);
-> >      qemu_fdt_setprop_cell(fdt, "/cpus", "#size-cells", 0x0);
-> >      qemu_fdt_setprop_cell(fdt, "/cpus", "#address-cells", 0x1);
-> >      qemu_fdt_add_subnode(fdt, "/cpus/cpu-map"); @@ -510,6 +510,7
-> @@
-> > static void virt_machine_init(MachineState *machine)
-> >      target_ulong firmware_end_addr, kernel_start_addr;
-> >      uint32_t fdt_load_addr;
-> >      uint64_t kernel_entry;
-> > +    uint64_t timebase_frequency = 0;
-> >      DeviceState *mmio_plic, *virtio_plic, *pcie_plic;
-> >      int i, j, base_hartid, hart_count;
-> >      CPUState *cs;
-> > @@ -553,12 +554,20 @@ static void virt_machine_init(MachineState
-> *machine)
-> >                                  hart_count, &error_abort);
-> >          sysbus_realize(SYS_BUS_DEVICE(&s->soc[i]), &error_abort);
-> >
-> > +        if (!timebase_frequency) {
-> > +            timebase_frequency = RISCV_CPU(first_cpu)->env.frequency;
-> > +        }
-> > +        /* If vcpu's time frequency is not specified, we use default
-> frequency */
-> > +        if (!timebase_frequency) {
-> > +            timebase_frequency = SIFIVE_CLINT_TIMEBASE_FREQ;
-> > +        }
-> > +
-> >          /* Per-socket CLINT */
-> >          sifive_clint_create(
-> >              memmap[VIRT_CLINT].base + i *
-> memmap[VIRT_CLINT].size,
-> >              memmap[VIRT_CLINT].size, base_hartid, hart_count,
-> >              SIFIVE_SIP_BASE, SIFIVE_TIMECMP_BASE,
-> SIFIVE_TIME_BASE,
-> > -            SIFIVE_CLINT_TIMEBASE_FREQ, true);
-> > +            timebase_frequency, true);
-> >
-> >          /* Per-socket PLIC hart topology configuration string */
-> >          plic_hart_config_len =
-> > @@ -610,7 +619,8 @@ static void virt_machine_init(MachineState
-> *machine)
-> >          main_mem);
-> >
-> >      /* create device tree */
-> > -    create_fdt(s, memmap, machine->ram_size,
-> machine->kernel_cmdline);
-> > +    create_fdt(s, memmap, machine->ram_size,
-> machine->kernel_cmdline,
-> > +               timebase_frequency);
-> >
-> >      /* boot rom */
-> >      memory_region_init_rom(mask_rom, NULL, "riscv_virt_board.mrom",
-> > diff --git a/target/riscv/cpu.c b/target/riscv/cpu.c index
-> > 439dc89ee7..66f35bcbbf 100644
-> > --- a/target/riscv/cpu.c
-> > +++ b/target/riscv/cpu.c
-> > @@ -494,6 +494,8 @@ static void riscv_cpu_realize(DeviceState *dev,
-> > Error **errp)
-> >
-> >      riscv_cpu_register_gdb_regs_for_features(cs);
-> >
-> > +    env->user_frequency = env->frequency;
-> > +
-> >      qemu_init_vcpu(cs);
-> >      cpu_reset(cs);
-> >
-> > @@ -531,6 +533,7 @@ static Property riscv_cpu_properties[] = {
-> >      DEFINE_PROP_BOOL("mmu", RISCVCPU, cfg.mmu, true),
-> >      DEFINE_PROP_BOOL("pmp", RISCVCPU, cfg.pmp, true),
-> >      DEFINE_PROP_UINT64("resetvec", RISCVCPU, cfg.resetvec,
-> > DEFAULT_RSTVEC),
-> > +    DEFINE_PROP_UINT64("time-frequency", RISCVCPU, env.frequency, 0),
+> > @@ -147,15 +149,26 @@ static void sifive_plic_update(SiFivePLICState *plic)
+> >              continue;
+> >          }
+> >          int level = sifive_plic_irqs_pending(plic, addrid);
+> > -        switch (mode) {
+> > -        case PLICMode_M:
+> > -            riscv_cpu_update_mip(RISCV_CPU(cpu), MIP_MEIP,
+> BOOL_TO_MASK(level));
+> > -            break;
+> > -        case PLICMode_S:
+> > -            riscv_cpu_update_mip(RISCV_CPU(cpu), MIP_SEIP,
+> BOOL_TO_MASK(level));
+> > -            break;
+> > -        default:
+> > -            break;
+> > +        if (kvm_enabled()) {
+> > +            if (mode == PLICMode_M) {
+> > +                continue;
+> > +            }
+> > +#ifdef CONFIG_KVM
+> > +            kvm_riscv_set_irq(RISCV_CPU(cpu), IRQ_S_EXT, level);
+> > +#endif
 > 
-> Why not set the default to SIFIVE_CLINT_TIMEBASE_FREQ?
+> What if kvm_enalbed() is true, but CONFIG_KVM isn't defined?
+> 
+> Alistair
 > 
 
-When the time frequency is not specified, it will follow the host or the migration
-source. And we define 0 as equivalent to not specified time frequency.
+Impossible. It will cause compilation failure without CONFIG_KVM. We also
+introduce kvm-stub.c to solve the compilation failure like other architectures.
 
-> Also, QEMU now has a clock API, is using that instead a better option?
-> 
-
-Sorry, I didn't find the clock API. Could you tell me what the API is.
-I think that the time frequency is option of KVM VCPU. So it is appropriate to put this
-option in the CPU.
+We will introduce kvm-stub.c in next series.
 
 Yifei
 
-> Alistair
-> 
-> >      DEFINE_PROP_END_OF_LIST(),
-> >  };
+> > +        } else {
+> > +            switch (mode) {
+> > +            case PLICMode_M:
+> > +                riscv_cpu_update_mip(RISCV_CPU(cpu),
+> > +                                     MIP_MEIP,
+> BOOL_TO_MASK(level));
+> > +                break;
+> > +            case PLICMode_S:
+> > +                riscv_cpu_update_mip(RISCV_CPU(cpu),
+> > +                                     MIP_SEIP,
+> BOOL_TO_MASK(level));
+> > +                break;
+> > +            default:
+> > +                break;
+> > +            }
+> >          }
+> >      }
 > >
-> > diff --git a/target/riscv/cpu.h b/target/riscv/cpu.h index
-> > 16d6050ead..f5b6c34176 100644
-> > --- a/target/riscv/cpu.h
-> > +++ b/target/riscv/cpu.h
-> > @@ -243,6 +243,8 @@ struct CPURISCVState {
-> >      uint64_t kvm_timer_time;
-> >      uint64_t kvm_timer_compare;
-> >      uint64_t kvm_timer_state;
-> > +    uint64_t user_frequency;
-> > +    uint64_t frequency;
-> >  };
+> > diff --git a/target/riscv/kvm.c b/target/riscv/kvm.c index
+> > 6250ca0c7d..b01ff0754c 100644
+> > --- a/target/riscv/kvm.c
+> > +++ b/target/riscv/kvm.c
+> > @@ -454,3 +454,22 @@ void kvm_riscv_reset_vcpu(RISCVCPU *cpu)
+> >      env->satp = 0;
+> >  }
 > >
-> >  OBJECT_DECLARE_TYPE(RISCVCPU, RISCVCPUClass,
+> > +void kvm_riscv_set_irq(RISCVCPU *cpu, int irq, int level) {
+> > +    int ret;
+> > +    unsigned virq = level ? KVM_INTERRUPT_SET :
+> KVM_INTERRUPT_UNSET;
+> > +
+> > +    if (irq != IRQ_S_EXT) {
+> > +        return;
+> > +    }
+> > +
+> > +    if (!kvm_enabled()) {
+> > +        return;
+> > +    }
+> > +
+> > +    ret = kvm_vcpu_ioctl(CPU(cpu), KVM_INTERRUPT, &virq);
+> > +    if (ret < 0) {
+> > +        perror("Set irq failed");
+> > +        abort();
+> > +    }
+> > +}
+> > diff --git a/target/riscv/kvm_riscv.h b/target/riscv/kvm_riscv.h index
+> > f38c82bf59..ed281bdce0 100644
+> > --- a/target/riscv/kvm_riscv.h
+> > +++ b/target/riscv/kvm_riscv.h
+> > @@ -20,5 +20,6 @@
+> >  #define QEMU_KVM_RISCV_H
+> >
+> >  void kvm_riscv_reset_vcpu(RISCVCPU *cpu);
+> > +void kvm_riscv_set_irq(RISCVCPU *cpu, int irq, int level);
+> >
+> >  #endif
 > > --
 > > 2.19.1
 > >
