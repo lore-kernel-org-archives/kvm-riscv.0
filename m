@@ -1,11 +1,12 @@
 From: Jiangyifei <jiangyifei@huawei.com>
-Date: Tue, 15 Dec 2020 07:21:29 +0000
-Subject: [PATCH RFC v4 09/15] target/riscv: Add host cpu type
-In-Reply-To: <CAKmqyKMDWzBf29MgG7BsGTmweH7ZCRVqwCCqC620QoO776=cww@mail.gmail.com>
+Date: Tue, 15 Dec 2020 07:31:14 +0000
+Subject: [PATCH RFC v4 13/15] target/riscv: Introduce dynamic time
+ frequency for virt machine
+In-Reply-To: <CAKmqyKM5m3_w6=Jd+EdTatY9G0YBm1mFjh+5FodnVmFfKydyZw@mail.gmail.com>
 References: <20201203124703.168-1-jiangyifei@huawei.com>
- <20201203124703.168-10-jiangyifei@huawei.com>
- <CAKmqyKMDWzBf29MgG7BsGTmweH7ZCRVqwCCqC620QoO776=cww@mail.gmail.com>
-Message-ID: <8098caa00cdd4bda81a6ff2af62b5acd@huawei.com>
+ <20201203124703.168-14-jiangyifei@huawei.com>
+ <CAKmqyKM5m3_w6=Jd+EdTatY9G0YBm1mFjh+5FodnVmFfKydyZw@mail.gmail.com>
+Message-ID: <1889871dcdf74ac3b495d75e6fd2aeaf@huawei.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -15,7 +16,7 @@ Content-Transfer-Encoding: 7bit
 
 > -----Original Message-----
 > From: Alistair Francis [mailto:alistair23 at gmail.com]
-> Sent: Wednesday, December 9, 2020 6:22 AM
+> Sent: Wednesday, December 9, 2020 6:26 AM
 > To: Jiangyifei <jiangyifei@huawei.com>
 > Cc: qemu-devel at nongnu.org Developers <qemu-devel@nongnu.org>; open
 > list:RISC-V <qemu-riscv@nongnu.org>; Zhangxiaofeng (F)
@@ -27,80 +28,152 @@ Content-Transfer-Encoding: 7bit
 > <Alistair.Francis@wdc.com>; kvm-riscv at lists.infradead.org; Palmer Dabbelt
 > <palmer@dabbelt.com>; dengkai (A) <dengkai1@huawei.com>; Wubin (H)
 > <wu.wubin@huawei.com>; Zhanghailiang <zhang.zhanghailiang@huawei.com>
-> Subject: Re: [PATCH RFC v4 09/15] target/riscv: Add host cpu type
+> Subject: Re: [PATCH RFC v4 13/15] target/riscv: Introduce dynamic time
+> frequency for virt machine
 > 
-> On Thu, Dec 3, 2020 at 4:55 AM Yifei Jiang <jiangyifei@huawei.com> wrote:
+> On Thu, Dec 3, 2020 at 4:57 AM Yifei Jiang <jiangyifei@huawei.com> wrote:
 > >
-> > Currently, host cpu is inherited simply.
+> > Currently, time base frequency was fixed as SIFIVE_CLINT_TIMEBASE_FREQ.
+> > Here introduce "time-frequency" property to set time base frequency
+> > dynamically of which default value is still
+> > SIFIVE_CLINT_TIMEBASE_FREQ. The virt machine uses frequency of the first
+> cpu to create clint and fdt.
 > >
 > > Signed-off-by: Yifei Jiang <jiangyifei@huawei.com>
 > > Signed-off-by: Yipeng Yin <yinyipeng1@huawei.com>
 > > ---
-> >  target/riscv/cpu.c | 6 ++++++
-> >  target/riscv/cpu.h | 1 +
-> >  2 files changed, 7 insertions(+)
+> >  hw/riscv/virt.c    | 18 ++++++++++++++----
+> >  target/riscv/cpu.c |  3 +++
+> >  target/riscv/cpu.h |  2 ++
+> >  3 files changed, 19 insertions(+), 4 deletions(-)
 > >
+> > diff --git a/hw/riscv/virt.c b/hw/riscv/virt.c index
+> > 47b7018193..788a7237b6 100644
+> > --- a/hw/riscv/virt.c
+> > +++ b/hw/riscv/virt.c
+> > @@ -178,7 +178,7 @@ static void create_pcie_irq_map(void *fdt, char
+> > *nodename,  }
+> >
+> >  static void create_fdt(RISCVVirtState *s, const struct MemmapEntry
+> *memmap,
+> > -    uint64_t mem_size, const char *cmdline)
+> > +    uint64_t mem_size, const char *cmdline, uint64_t
+> > + timebase_frequency)
+> >  {
+> >      void *fdt;
+> >      int i, cpu, socket;
+> > @@ -225,7 +225,7 @@ static void create_fdt(RISCVVirtState *s, const
+> > struct MemmapEntry *memmap,
+> >
+> >      qemu_fdt_add_subnode(fdt, "/cpus");
+> >      qemu_fdt_setprop_cell(fdt, "/cpus", "timebase-frequency",
+> > -                          SIFIVE_CLINT_TIMEBASE_FREQ);
+> > +                          timebase_frequency);
+> >      qemu_fdt_setprop_cell(fdt, "/cpus", "#size-cells", 0x0);
+> >      qemu_fdt_setprop_cell(fdt, "/cpus", "#address-cells", 0x1);
+> >      qemu_fdt_add_subnode(fdt, "/cpus/cpu-map"); @@ -510,6 +510,7
+> @@
+> > static void virt_machine_init(MachineState *machine)
+> >      target_ulong firmware_end_addr, kernel_start_addr;
+> >      uint32_t fdt_load_addr;
+> >      uint64_t kernel_entry;
+> > +    uint64_t timebase_frequency = 0;
+> >      DeviceState *mmio_plic, *virtio_plic, *pcie_plic;
+> >      int i, j, base_hartid, hart_count;
+> >      CPUState *cs;
+> > @@ -553,12 +554,20 @@ static void virt_machine_init(MachineState
+> *machine)
+> >                                  hart_count, &error_abort);
+> >          sysbus_realize(SYS_BUS_DEVICE(&s->soc[i]), &error_abort);
+> >
+> > +        if (!timebase_frequency) {
+> > +            timebase_frequency = RISCV_CPU(first_cpu)->env.frequency;
+> > +        }
+> > +        /* If vcpu's time frequency is not specified, we use default
+> frequency */
+> > +        if (!timebase_frequency) {
+> > +            timebase_frequency = SIFIVE_CLINT_TIMEBASE_FREQ;
+> > +        }
+> > +
+> >          /* Per-socket CLINT */
+> >          sifive_clint_create(
+> >              memmap[VIRT_CLINT].base + i *
+> memmap[VIRT_CLINT].size,
+> >              memmap[VIRT_CLINT].size, base_hartid, hart_count,
+> >              SIFIVE_SIP_BASE, SIFIVE_TIMECMP_BASE,
+> SIFIVE_TIME_BASE,
+> > -            SIFIVE_CLINT_TIMEBASE_FREQ, true);
+> > +            timebase_frequency, true);
+> >
+> >          /* Per-socket PLIC hart topology configuration string */
+> >          plic_hart_config_len =
+> > @@ -610,7 +619,8 @@ static void virt_machine_init(MachineState
+> *machine)
+> >          main_mem);
+> >
+> >      /* create device tree */
+> > -    create_fdt(s, memmap, machine->ram_size,
+> machine->kernel_cmdline);
+> > +    create_fdt(s, memmap, machine->ram_size,
+> machine->kernel_cmdline,
+> > +               timebase_frequency);
+> >
+> >      /* boot rom */
+> >      memory_region_init_rom(mask_rom, NULL, "riscv_virt_board.mrom",
 > > diff --git a/target/riscv/cpu.c b/target/riscv/cpu.c index
-> > faee98a58c..439dc89ee7 100644
+> > 439dc89ee7..66f35bcbbf 100644
 > > --- a/target/riscv/cpu.c
 > > +++ b/target/riscv/cpu.c
-> > @@ -186,6 +186,10 @@ static void rv32_imafcu_nommu_cpu_init(Object
-> > *obj)
+> > @@ -494,6 +494,8 @@ static void riscv_cpu_realize(DeviceState *dev,
+> > Error **errp)
 > >
-> >  #endif
+> >      riscv_cpu_register_gdb_regs_for_features(cs);
 > >
-> > +static void riscv_host_cpu_init(Object *obj) { }
+> > +    env->user_frequency = env->frequency;
 > > +
-> >  static ObjectClass *riscv_cpu_class_by_name(const char *cpu_model)  {
-> >      ObjectClass *oc;
-> > @@ -641,10 +645,12 @@ static const TypeInfo riscv_cpu_type_infos[] = {
-> >      DEFINE_CPU(TYPE_RISCV_CPU_SIFIVE_E31,
-> rvxx_sifive_e_cpu_init),
-> >      DEFINE_CPU(TYPE_RISCV_CPU_SIFIVE_E34,
-> rv32_imafcu_nommu_cpu_init),
-> >      DEFINE_CPU(TYPE_RISCV_CPU_SIFIVE_U34,
-> rvxx_sifive_u_cpu_init),
-> > +    DEFINE_CPU(TYPE_RISCV_CPU_HOST,
-> riscv_host_cpu_init),
-> >  #elif defined(TARGET_RISCV64)
-> >      DEFINE_CPU(TYPE_RISCV_CPU_BASE64,
-> riscv_base_cpu_init),
-> >      DEFINE_CPU(TYPE_RISCV_CPU_SIFIVE_E51,
-> rvxx_sifive_e_cpu_init),
-> >      DEFINE_CPU(TYPE_RISCV_CPU_SIFIVE_U54,
-> rvxx_sifive_u_cpu_init),
-> > +    DEFINE_CPU(TYPE_RISCV_CPU_HOST,
-> riscv_host_cpu_init),
+> >      qemu_init_vcpu(cs);
+> >      cpu_reset(cs);
+> >
+> > @@ -531,6 +533,7 @@ static Property riscv_cpu_properties[] = {
+> >      DEFINE_PROP_BOOL("mmu", RISCVCPU, cfg.mmu, true),
+> >      DEFINE_PROP_BOOL("pmp", RISCVCPU, cfg.pmp, true),
+> >      DEFINE_PROP_UINT64("resetvec", RISCVCPU, cfg.resetvec,
+> > DEFAULT_RSTVEC),
+> > +    DEFINE_PROP_UINT64("time-frequency", RISCVCPU, env.frequency, 0),
 > 
-> Shouldn't this only be included if KVM is configured? Also it should be shared
-> between RV32 and RV64.
-> 
-> Alistair
+> Why not set the default to SIFIVE_CLINT_TIMEBASE_FREQ?
 > 
 
-Yes, It should be included by CONFIG_KVM and be shared between RV32 and RV64.
+When the time frequency is not specified, it will follow the host or the migration
+source. And we define 0 as equivalent to not specified time frequency.
+
+> Also, QEMU now has a clock API, is using that instead a better option?
+> 
+
+Sorry, I didn't find the clock API. Could you tell me what the API is.
+I think that the time frequency is option of KVM VCPU. So it is appropriate to put this
+option in the CPU.
 
 Yifei
 
-> >  #endif
+> Alistair
+> 
+> >      DEFINE_PROP_END_OF_LIST(),
 > >  };
 > >
 > > diff --git a/target/riscv/cpu.h b/target/riscv/cpu.h index
-> > ad1c90f798..4288898019 100644
+> > 16d6050ead..f5b6c34176 100644
 > > --- a/target/riscv/cpu.h
 > > +++ b/target/riscv/cpu.h
-> > @@ -43,6 +43,7 @@
-> >  #define TYPE_RISCV_CPU_SIFIVE_E51
-> RISCV_CPU_TYPE_NAME("sifive-e51")
-> >  #define TYPE_RISCV_CPU_SIFIVE_U34
-> RISCV_CPU_TYPE_NAME("sifive-u34")
-> >  #define TYPE_RISCV_CPU_SIFIVE_U54
-> RISCV_CPU_TYPE_NAME("sifive-u54")
-> > +#define TYPE_RISCV_CPU_HOST
-> RISCV_CPU_TYPE_NAME("host")
+> > @@ -243,6 +243,8 @@ struct CPURISCVState {
+> >      uint64_t kvm_timer_time;
+> >      uint64_t kvm_timer_compare;
+> >      uint64_t kvm_timer_state;
+> > +    uint64_t user_frequency;
+> > +    uint64_t frequency;
+> >  };
 > >
-> >  #define RV32 ((target_ulong)1 << (TARGET_LONG_BITS - 2))  #define
-> > RV64 ((target_ulong)2 << (TARGET_LONG_BITS - 2))
+> >  OBJECT_DECLARE_TYPE(RISCVCPU, RISCVCPUClass,
 > > --
 > > 2.19.1
 > >
