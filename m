@@ -1,10 +1,10 @@
 From: Jiangyifei <jiangyifei@huawei.com>
-Date: Wed, 16 Dec 2020 08:01:37 +0000
-Subject: [PATCH RFC 0/3] Implement guest time scaling in RISC-V KVM
-In-Reply-To: <CAAhSdy2zdwfOGFUtakhbeDUJBapz6fWPnQptT7nCdyFMSoLyGg@mail.gmail.com>
-References: <20201203121839.308-1-jiangyifei@huawei.com>
- <CAAhSdy2zdwfOGFUtakhbeDUJBapz6fWPnQptT7nCdyFMSoLyGg@mail.gmail.com>
-Message-ID: <70bdbe9c25214e9483950a0a0efb4305@huawei.com>
+Date: Wed, 23 Dec 2020 03:30:43 +0000
+Subject: [PATCH v15 12/17] RISC-V: KVM: Add timer functionality
+In-Reply-To: <20201109113240.3733496-13-anup.patel@wdc.com>
+References: <20201109113240.3733496-1-anup.patel@wdc.com>
+ <20201109113240.3733496-13-anup.patel@wdc.com>
+Message-ID: <d3f3a7aea01c49afb9cadccd47498854@huawei.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -13,75 +13,122 @@ Content-Transfer-Encoding: 7bit
 
 
 > -----Original Message-----
-> From: Anup Patel [mailto:anup at brainfault.org]
-> Sent: Wednesday, December 16, 2020 2:40 PM
-> To: Jiangyifei <jiangyifei@huawei.com>
-> Cc: Anup Patel <anup.patel@wdc.com>; Atish Patra <atish.patra@wdc.com>;
-> Paul Walmsley <paul.walmsley@sifive.com>; Palmer Dabbelt
-> <palmer@dabbelt.com>; Albert Ou <aou@eecs.berkeley.edu>; Paolo Bonzini
-> <pbonzini@redhat.com>; Zhanghailiang <zhang.zhanghailiang@huawei.com>;
-> KVM General <kvm@vger.kernel.org>; yinyipeng <yinyipeng1@huawei.com>;
-> Zhangxiaofeng (F) <victor.zhangxiaofeng@huawei.com>;
-> linux-kernel at vger.kernel.org List <linux-kernel@vger.kernel.org>;
-> kvm-riscv at lists.infradead.org; linux-riscv <linux-riscv@lists.infradead.org>;
-> Wubin (H) <wu.wubin@huawei.com>; dengkai (A) <dengkai1@huawei.com>
-> Subject: Re: [PATCH RFC 0/3] Implement guest time scaling in RISC-V KVM
+> From: Anup Patel [mailto:anup.patel at wdc.com]
+> Sent: Monday, November 9, 2020 7:33 PM
+> To: Palmer Dabbelt <palmer@dabbelt.com>; Palmer Dabbelt
+> <palmerdabbelt@google.com>; Paul Walmsley <paul.walmsley@sifive.com>;
+> Albert Ou <aou@eecs.berkeley.edu>; Paolo Bonzini <pbonzini@redhat.com>
+> Cc: Alexander Graf <graf@amazon.com>; Atish Patra <atish.patra@wdc.com>;
+> Alistair Francis <Alistair.Francis@wdc.com>; Damien Le Moal
+> <damien.lemoal@wdc.com>; Anup Patel <anup@brainfault.org>;
+> kvm at vger.kernel.org; kvm-riscv at lists.infradead.org;
+> linux-riscv at lists.infradead.org; linux-kernel at vger.kernel.org; Anup Patel
+> <anup.patel@wdc.com>; Daniel Lezcano <daniel.lezcano@linaro.org>
+> Subject: [PATCH v15 12/17] RISC-V: KVM: Add timer functionality
 > 
-> On Thu, Dec 3, 2020 at 5:51 PM Yifei Jiang <jiangyifei@huawei.com> wrote:
-> >
-> > This series implements guest time scaling based on RDTIME instruction
-> > emulation so that we can allow migrating Guest/VM across Hosts with
-> > different time frequency.
-> >
-> > Why not through para-virt. From arm's experience[1], para-virt
-> > implementation doesn't really solve the problem for the following two main
-> reasons:
-> > - RDTIME not only be used in linux, but also in firmware and userspace.
-> > - It is difficult to be compatible with nested virtualization.
+> From: Atish Patra <atish.patra@wdc.com>
 > 
-> I think this approach is rather incomplete. Also, I don't see how para-virt time
-> scaling will be difficult for nested virtualization.
+> The RISC-V hypervisor specification doesn't have any virtual timer feature.
 > 
-> If trap-n-emulate TIME CSR for Guest Linux then it will have significant
-> performance impact of systems where TIME CSR is implemented in HW.
+> Due to this, the guest VCPU timer will be programmed via SBI calls.
+> The host will use a separate hrtimer event for each guest VCPU to provide
+> timer functionality. We inject a virtual timer interrupt to the guest VCPU
+> whenever the guest VCPU hrtimer event expires.
 > 
-> Best approach will be to have VDSO-style para-virt time-scale SBI calls (similar
-> to what KVM x86 does). If the Guest software (Linux/Bootloader) does not
-> enable para-virt time-scaling then we trap-n-emulate TIME CSR (this series).
+> This patch adds guest VCPU timer implementation along with ONE_REG
+> interface to access VCPU timer state from user space.
 > 
-> Please propose VDSO-style para-virt time-scale SBI call and expand this this
-> series to provide both:
-> 1. VDSO-style para-virt time-scaling
-> 2. Trap-n-emulation of TIME CSR when #1 is disabled
+> Signed-off-by: Atish Patra <atish.patra@wdc.com>
+> Signed-off-by: Anup Patel <anup.patel@wdc.com>
+> Acked-by: Paolo Bonzini <pbonzini@redhat.com>
+> Reviewed-by: Paolo Bonzini <pbonzini@redhat.com>
+> Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> ---
+>  arch/riscv/include/asm/kvm_host.h       |   7 +
+>  arch/riscv/include/asm/kvm_vcpu_timer.h |  44 +++++
+>  arch/riscv/include/uapi/asm/kvm.h       |  17 ++
+>  arch/riscv/kvm/Makefile                 |   2 +-
+>  arch/riscv/kvm/vcpu.c                   |  14 ++
+>  arch/riscv/kvm/vcpu_timer.c             | 225
+> ++++++++++++++++++++++++
+>  arch/riscv/kvm/vm.c                     |   2 +-
+>  drivers/clocksource/timer-riscv.c       |   8 +
+>  include/clocksource/timer-riscv.h       |  16 ++
+>  9 files changed, 333 insertions(+), 2 deletions(-)  create mode 100644
+> arch/riscv/include/asm/kvm_vcpu_timer.h
+>  create mode 100644 arch/riscv/kvm/vcpu_timer.c  create mode 100644
+> include/clocksource/timer-riscv.h
 > 
-> Regards,
-> Anup
+> diff --git a/arch/riscv/include/asm/kvm_host.h
+> b/arch/riscv/include/asm/kvm_host.h
+> index 64311b262ee1..4daffc93f36a 100644
+> --- a/arch/riscv/include/asm/kvm_host.h
+> +++ b/arch/riscv/include/asm/kvm_host.h
+> @@ -12,6 +12,7 @@
+>  #include <linux/types.h>
+>  #include <linux/kvm.h>
+>  #include <linux/kvm_types.h>
+> +#include <asm/kvm_vcpu_timer.h>
+> 
+>  #ifdef CONFIG_64BIT
+>  #define KVM_MAX_VCPUS			(1U << 16)
+> @@ -66,6 +67,9 @@ struct kvm_arch {
+>  	/* stage2 page table */
+>  	pgd_t *pgd;
+>  	phys_addr_t pgd_phys;
+> +
+> +	/* Guest Timer */
+> +	struct kvm_guest_timer timer;
+>  };
 > 
 
-OK, it sounds good. We will look into the para-virt time-scaling for more details.
+...
 
+> diff --git a/arch/riscv/include/uapi/asm/kvm.h
+> b/arch/riscv/include/uapi/asm/kvm.h
+> index f7e9dc388d54..00196a13d743 100644
+> --- a/arch/riscv/include/uapi/asm/kvm.h
+> +++ b/arch/riscv/include/uapi/asm/kvm.h
+> @@ -74,6 +74,18 @@ struct kvm_riscv_csr {
+>  	unsigned long scounteren;
+>  };
+> 
+> +/* TIMER registers for KVM_GET_ONE_REG and KVM_SET_ONE_REG */
+> struct
+> +kvm_riscv_timer {
+> +	u64 frequency;
+> +	u64 time;
+> +	u64 compare;
+> +	u64 state;
+> +};
+> +
+
+Hi,
+
+There are some building errors when we build kernel by using allmodconfig.
+The commands are as follow:
+$ make allmodconfig ARCH=riscv CROSS_COMPILE=riscv64-linux-gnu-
+$ make -j64 ARCH=riscv CROSS_COMPILE=riscv64-linux-gnu-
+
+The following error occurs:
+[stdout] usr/include/Makefile:108: recipe for target 'usr/include/asm/kvm.hdrtest' failed
+[stderr] ./usr/include/asm/kvm.h:79:2: error: unknown type name 'u64'
+[stderr]   u64 frequency;
+[stderr]   ^~~
+[stderr] ./usr/include/asm/kvm.h:80:2: error: unknown type name 'u64'
+[stderr]   u64 time;
+[stderr]   ^~~
+[stderr] ./usr/include/asm/kvm.h:81:2: error: unknown type name 'u64'
+[stderr]   u64 compare;
+[stderr]   ^~~
+[stderr] ./usr/include/asm/kvm.h:82:2: error: unknown type name 'u64'
+[stderr]   u64 state;
+[stderr]   ^~~
+[stderr] make[2]: *** [usr/include/asm/kvm.hdrtest] Error 1
+
+Is it better to change u64 to __u64?
+
+Regards,
 Yifei
 
-> >
-> > [1] https://lore.kernel.org/patchwork/cover/1288153/
-> >
-> > Yifei Jiang (3):
-> >   RISC-V: KVM: Change the method of calculating cycles to nanoseconds
-> >   RISC-V: KVM: Support dynamic time frequency from userspace
-> >   RISC-V: KVM: Implement guest time scaling
-> >
-> >  arch/riscv/include/asm/csr.h            |  3 ++
-> >  arch/riscv/include/asm/kvm_vcpu_timer.h | 13 +++++--
-> >  arch/riscv/kvm/vcpu_exit.c              | 35 +++++++++++++++++
-> >  arch/riscv/kvm/vcpu_timer.c             | 51
-> ++++++++++++++++++++++---
-> >  4 files changed, 93 insertions(+), 9 deletions(-)
-> >
-> > --
-> > 2.19.1
-> >
-> >
-> > --
-> > kvm-riscv mailing list
-> > kvm-riscv at lists.infradead.org
-> > http://lists.infradead.org/mailman/listinfo/kvm-riscv
+
