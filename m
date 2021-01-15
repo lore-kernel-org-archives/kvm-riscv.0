@@ -1,207 +1,131 @@
 From: Anup Patel <anup.patel@wdc.com>
-Date: Fri, 15 Jan 2021 17:48:32 +0530
-Subject: [PATCH v16 03/17] RISC-V: KVM: Implement VCPU create,
- init and destroy functions
+Date: Fri, 15 Jan 2021 17:48:37 +0530
+Subject: [PATCH v16 08/17] RISC-V: KVM: Handle WFI exits for VCPU
 In-Reply-To: <20210115121846.114528-1-anup.patel@wdc.com>
 References: <20210115121846.114528-1-anup.patel@wdc.com>
-Message-ID: <20210115121846.114528-4-anup.patel@wdc.com>
+Message-ID: <20210115121846.114528-9-anup.patel@wdc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This patch implements VCPU create, init and destroy functions
-required by generic KVM module. We don't have much dynamic
-resources in struct kvm_vcpu_arch so these functions are quite
-simple for KVM RISC-V.
+We get illegal instruction trap whenever Guest/VM executes WFI
+instruction.
+
+This patch handles WFI trap by blocking the trapped VCPU using
+kvm_vcpu_block() API. The blocked VCPU will be automatically
+resumed whenever a VCPU interrupt is injected from user-space
+or from in-kernel IRQCHIP emulation.
 
 Signed-off-by: Anup Patel <anup.patel@wdc.com>
 Acked-by: Paolo Bonzini <pbonzini@redhat.com>
 Reviewed-by: Paolo Bonzini <pbonzini@redhat.com>
-Reviewed-by: Alexander Graf <graf@amazon.com>
 ---
- arch/riscv/include/asm/kvm_host.h | 69 +++++++++++++++++++++++++++++++
- arch/riscv/kvm/vcpu.c             | 55 ++++++++++++++++++++----
- 2 files changed, 115 insertions(+), 9 deletions(-)
+ arch/riscv/kvm/vcpu_exit.c | 76 ++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 76 insertions(+)
 
-diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
-index fdd63bafb714..43e85523a07e 100644
---- a/arch/riscv/include/asm/kvm_host.h
-+++ b/arch/riscv/include/asm/kvm_host.h
-@@ -63,7 +63,76 @@ struct kvm_cpu_trap {
- 	unsigned long htinst;
- };
+diff --git a/arch/riscv/kvm/vcpu_exit.c b/arch/riscv/kvm/vcpu_exit.c
+index cf99567955ad..bacad80686a2 100644
+--- a/arch/riscv/kvm/vcpu_exit.c
++++ b/arch/riscv/kvm/vcpu_exit.c
+@@ -12,6 +12,13 @@
+ #include <linux/kvm_host.h>
+ #include <asm/csr.h>
  
-+struct kvm_cpu_context {
-+	unsigned long zero;
-+	unsigned long ra;
-+	unsigned long sp;
-+	unsigned long gp;
-+	unsigned long tp;
-+	unsigned long t0;
-+	unsigned long t1;
-+	unsigned long t2;
-+	unsigned long s0;
-+	unsigned long s1;
-+	unsigned long a0;
-+	unsigned long a1;
-+	unsigned long a2;
-+	unsigned long a3;
-+	unsigned long a4;
-+	unsigned long a5;
-+	unsigned long a6;
-+	unsigned long a7;
-+	unsigned long s2;
-+	unsigned long s3;
-+	unsigned long s4;
-+	unsigned long s5;
-+	unsigned long s6;
-+	unsigned long s7;
-+	unsigned long s8;
-+	unsigned long s9;
-+	unsigned long s10;
-+	unsigned long s11;
-+	unsigned long t3;
-+	unsigned long t4;
-+	unsigned long t5;
-+	unsigned long t6;
-+	unsigned long sepc;
-+	unsigned long sstatus;
-+	unsigned long hstatus;
-+};
++#define INSN_OPCODE_MASK	0x007c
++#define INSN_OPCODE_SHIFT	2
++#define INSN_OPCODE_SYSTEM	28
 +
-+struct kvm_vcpu_csr {
-+	unsigned long vsstatus;
-+	unsigned long hie;
-+	unsigned long vstvec;
-+	unsigned long vsscratch;
-+	unsigned long vsepc;
-+	unsigned long vscause;
-+	unsigned long vstval;
-+	unsigned long hvip;
-+	unsigned long vsatp;
-+	unsigned long scounteren;
-+};
++#define INSN_MASK_WFI		0xffffff00
++#define INSN_MATCH_WFI		0x10500000
 +
- struct kvm_vcpu_arch {
-+	/* VCPU ran atleast once */
-+	bool ran_atleast_once;
-+
-+	/* ISA feature bits (similar to MISA) */
-+	unsigned long isa;
-+
-+	/* CPU context of Guest VCPU */
-+	struct kvm_cpu_context guest_context;
-+
-+	/* CPU CSR context of Guest VCPU */
-+	struct kvm_vcpu_csr guest_csr;
-+
-+	/* CPU context upon Guest VCPU reset */
-+	struct kvm_cpu_context guest_reset_context;
-+
-+	/* CPU CSR context upon Guest VCPU reset */
-+	struct kvm_vcpu_csr guest_reset_csr;
-+
- 	/* Don't run the VCPU (blocked) */
- 	bool pause;
+ #define INSN_MATCH_LB		0x3
+ #define INSN_MASK_LB		0x707f
+ #define INSN_MATCH_LH		0x1003
+@@ -116,6 +123,71 @@
+ 				 (s32)(((insn) >> 7) & 0x1f))
+ #define MASK_FUNCT3		0x7000
  
-diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-index 8d8d140a0caf..84deeddbffbe 100644
---- a/arch/riscv/kvm/vcpu.c
-+++ b/arch/riscv/kvm/vcpu.c
-@@ -35,6 +35,27 @@ struct kvm_stats_debugfs_item debugfs_entries[] = {
- 	{ NULL }
- };
- 
-+#define KVM_RISCV_ISA_ALLOWED	(riscv_isa_extension_mask(a) | \
-+				 riscv_isa_extension_mask(c) | \
-+				 riscv_isa_extension_mask(d) | \
-+				 riscv_isa_extension_mask(f) | \
-+				 riscv_isa_extension_mask(i) | \
-+				 riscv_isa_extension_mask(m) | \
-+				 riscv_isa_extension_mask(s) | \
-+				 riscv_isa_extension_mask(u))
-+
-+static void kvm_riscv_reset_vcpu(struct kvm_vcpu *vcpu)
++static int truly_illegal_insn(struct kvm_vcpu *vcpu,
++			      struct kvm_run *run,
++			      ulong insn)
 +{
-+	struct kvm_vcpu_csr *csr = &vcpu->arch.guest_csr;
-+	struct kvm_vcpu_csr *reset_csr = &vcpu->arch.guest_reset_csr;
-+	struct kvm_cpu_context *cntx = &vcpu->arch.guest_context;
-+	struct kvm_cpu_context *reset_cntx = &vcpu->arch.guest_reset_context;
++	struct kvm_cpu_trap utrap = { 0 };
 +
-+	memcpy(csr, reset_csr, sizeof(*csr));
++	/* Redirect trap to Guest VCPU */
++	utrap.sepc = vcpu->arch.guest_context.sepc;
++	utrap.scause = EXC_INST_ILLEGAL;
++	utrap.stval = insn;
++	kvm_riscv_vcpu_trap_redirect(vcpu, &utrap);
 +
-+	memcpy(cntx, reset_cntx, sizeof(*cntx));
++	return 1;
 +}
 +
- int kvm_arch_vcpu_precreate(struct kvm *kvm, unsigned int id)
++static int system_opcode_insn(struct kvm_vcpu *vcpu,
++			      struct kvm_run *run,
++			      ulong insn)
++{
++	if ((insn & INSN_MASK_WFI) == INSN_MATCH_WFI) {
++		vcpu->stat.wfi_exit_stat++;
++		if (!kvm_arch_vcpu_runnable(vcpu)) {
++			srcu_read_unlock(&vcpu->kvm->srcu, vcpu->arch.srcu_idx);
++			kvm_vcpu_block(vcpu);
++			vcpu->arch.srcu_idx = srcu_read_lock(&vcpu->kvm->srcu);
++			kvm_clear_request(KVM_REQ_UNHALT, vcpu);
++		}
++		vcpu->arch.guest_context.sepc += INSN_LEN(insn);
++		return 1;
++	}
++
++	return truly_illegal_insn(vcpu, run, insn);
++}
++
++static int virtual_inst_fault(struct kvm_vcpu *vcpu, struct kvm_run *run,
++			      struct kvm_cpu_trap *trap)
++{
++	unsigned long insn = trap->stval;
++	struct kvm_cpu_trap utrap = { 0 };
++	struct kvm_cpu_context *ct;
++
++	if (unlikely(INSN_IS_16BIT(insn))) {
++		if (insn == 0) {
++			ct = &vcpu->arch.guest_context;
++			insn = kvm_riscv_vcpu_unpriv_read(vcpu, true,
++							  ct->sepc,
++							  &utrap);
++			if (utrap.scause) {
++				utrap.sepc = ct->sepc;
++				kvm_riscv_vcpu_trap_redirect(vcpu, &utrap);
++				return 1;
++			}
++		}
++		if (INSN_IS_16BIT(insn))
++			return truly_illegal_insn(vcpu, run, insn);
++	}
++
++	switch ((insn & INSN_OPCODE_MASK) >> INSN_OPCODE_SHIFT) {
++	case INSN_OPCODE_SYSTEM:
++		return system_opcode_insn(vcpu, run, insn);
++	default:
++		return truly_illegal_insn(vcpu, run, insn);
++	}
++}
++
+ static int emulate_load(struct kvm_vcpu *vcpu, struct kvm_run *run,
+ 			unsigned long fault_addr, unsigned long htinst)
  {
- 	return 0;
-@@ -42,7 +63,25 @@ int kvm_arch_vcpu_precreate(struct kvm *kvm, unsigned int id)
- 
- int kvm_arch_vcpu_create(struct kvm_vcpu *vcpu)
- {
--	/* TODO: */
-+	struct kvm_cpu_context *cntx;
-+
-+	/* Mark this VCPU never ran */
-+	vcpu->arch.ran_atleast_once = false;
-+
-+	/* Setup ISA features available to VCPU */
-+	vcpu->arch.isa = riscv_isa_extension_base(NULL) & KVM_RISCV_ISA_ALLOWED;
-+
-+	/* Setup reset state of shadow SSTATUS and HSTATUS CSRs */
-+	cntx = &vcpu->arch.guest_reset_context;
-+	cntx->sstatus = SR_SPP | SR_SPIE;
-+	cntx->hstatus = 0;
-+	cntx->hstatus |= HSTATUS_VTW;
-+	cntx->hstatus |= HSTATUS_SPVP;
-+	cntx->hstatus |= HSTATUS_SPV;
-+
-+	/* Reset VCPU */
-+	kvm_riscv_reset_vcpu(vcpu);
-+
- 	return 0;
- }
- 
-@@ -55,15 +94,10 @@ void kvm_arch_vcpu_postcreate(struct kvm_vcpu *vcpu)
- {
- }
- 
--int kvm_arch_vcpu_init(struct kvm_vcpu *vcpu)
--{
--	/* TODO: */
--	return 0;
--}
--
- void kvm_arch_vcpu_destroy(struct kvm_vcpu *vcpu)
- {
--	/* TODO: */
-+	/* Flush the pages pre-allocated for Stage2 page table mappings */
-+	kvm_riscv_stage2_flush_cache(vcpu);
- }
- 
- int kvm_cpu_has_pending_timer(struct kvm_vcpu *vcpu)
-@@ -209,6 +243,9 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
- 	struct kvm_cpu_trap trap;
- 	struct kvm_run *run = vcpu->run;
- 
-+	/* Mark this VCPU ran at least once */
-+	vcpu->arch.ran_atleast_once = true;
-+
- 	vcpu->arch.srcu_idx = srcu_read_lock(&vcpu->kvm->srcu);
- 
- 	/* Process MMIO value returned from user-space */
-@@ -282,7 +319,7 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
- 		 * get an interrupt between __kvm_riscv_switch_to() and
- 		 * local_irq_enable() which can potentially change CSRs.
- 		 */
--		trap.sepc = 0;
-+		trap.sepc = vcpu->arch.guest_context.sepc;
- 		trap.scause = csr_read(CSR_SCAUSE);
- 		trap.stval = csr_read(CSR_STVAL);
- 		trap.htval = csr_read(CSR_HTVAL);
+@@ -596,6 +668,10 @@ int kvm_riscv_vcpu_exit(struct kvm_vcpu *vcpu, struct kvm_run *run,
+ 	ret = -EFAULT;
+ 	run->exit_reason = KVM_EXIT_UNKNOWN;
+ 	switch (trap->scause) {
++	case EXC_VIRTUAL_INST_FAULT:
++		if (vcpu->arch.guest_context.hstatus & HSTATUS_SPV)
++			ret = virtual_inst_fault(vcpu, run, trap);
++		break;
+ 	case EXC_INST_GUEST_PAGE_FAULT:
+ 	case EXC_LOAD_GUEST_PAGE_FAULT:
+ 	case EXC_STORE_GUEST_PAGE_FAULT:
 -- 
 2.25.1
 
