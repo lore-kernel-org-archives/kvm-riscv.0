@@ -1,163 +1,364 @@
 From: Anup Patel <anup.patel@wdc.com>
-Date: Fri, 15 Jan 2021 17:48:30 +0530
-Subject: [PATCH v16 01/17] RISC-V: Add hypervisor extension related CSR defines
+Date: Fri, 15 Jan 2021 17:48:33 +0530
+Subject: [PATCH v16 04/17] RISC-V: KVM: Implement VCPU interrupts and requests
+ handling
 In-Reply-To: <20210115121846.114528-1-anup.patel@wdc.com>
 References: <20210115121846.114528-1-anup.patel@wdc.com>
-Message-ID: <20210115121846.114528-2-anup.patel@wdc.com>
+Message-ID: <20210115121846.114528-5-anup.patel@wdc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This patch extends asm/csr.h by adding RISC-V hypervisor extension
-related defines.
+This patch implements VCPU interrupts and requests which are both
+asynchronous events.
+
+The VCPU interrupts can be set/unset using KVM_INTERRUPT ioctl from
+user-space. In future, the in-kernel IRQCHIP emulation will use
+kvm_riscv_vcpu_set_interrupt() and kvm_riscv_vcpu_unset_interrupt()
+functions to set/unset VCPU interrupts.
+
+Important VCPU requests implemented by this patch are:
+KVM_REQ_SLEEP       - set whenever VCPU itself goes to sleep state
+KVM_REQ_VCPU_RESET  - set whenever VCPU reset is requested
+
+The WFI trap-n-emulate (added later) will use KVM_REQ_SLEEP request
+and kvm_riscv_vcpu_has_interrupt() function.
+
+The KVM_REQ_VCPU_RESET request will be used by SBI emulation (added
+later) to power-up a VCPU in power-off state. The user-space can use
+the GET_MPSTATE/SET_MPSTATE ioctls to get/set power state of a VCPU.
 
 Signed-off-by: Anup Patel <anup.patel@wdc.com>
 Acked-by: Paolo Bonzini <pbonzini@redhat.com>
 Reviewed-by: Paolo Bonzini <pbonzini@redhat.com>
 Reviewed-by: Alexander Graf <graf@amazon.com>
 ---
- arch/riscv/include/asm/csr.h | 89 ++++++++++++++++++++++++++++++++++++
- 1 file changed, 89 insertions(+)
+ arch/riscv/include/asm/kvm_host.h |  23 ++++
+ arch/riscv/include/uapi/asm/kvm.h |   3 +
+ arch/riscv/kvm/vcpu.c             | 182 +++++++++++++++++++++++++++---
+ 3 files changed, 195 insertions(+), 13 deletions(-)
 
-diff --git a/arch/riscv/include/asm/csr.h b/arch/riscv/include/asm/csr.h
-index cec462e198ce..bc825693e0e3 100644
---- a/arch/riscv/include/asm/csr.h
-+++ b/arch/riscv/include/asm/csr.h
-@@ -30,6 +30,8 @@
- #define SR_XS_CLEAN	_AC(0x00010000, UL)
- #define SR_XS_DIRTY	_AC(0x00018000, UL)
+diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
+index 43e85523a07e..8829bed4517f 100644
+--- a/arch/riscv/include/asm/kvm_host.h
++++ b/arch/riscv/include/asm/kvm_host.h
+@@ -133,6 +133,21 @@ struct kvm_vcpu_arch {
+ 	/* CPU CSR context upon Guest VCPU reset */
+ 	struct kvm_vcpu_csr guest_reset_csr;
  
-+#define SR_MXR		_AC(0x00080000, UL)
++	/*
++	 * VCPU interrupts
++	 *
++	 * We have a lockless approach for tracking pending VCPU interrupts
++	 * implemented using atomic bitops. The irqs_pending bitmap represent
++	 * pending interrupts whereas irqs_pending_mask represent bits changed
++	 * in irqs_pending. Our approach is modeled around multiple producer
++	 * and single consumer problem where the consumer is the VCPU itself.
++	 */
++	unsigned long irqs_pending;
++	unsigned long irqs_pending_mask;
 +
- #ifndef CONFIG_64BIT
- #define SR_SD		_AC(0x80000000, UL) /* FS/XS dirty */
- #else
-@@ -52,22 +54,32 @@
++	/* VCPU power-off state */
++	bool power_off;
++
+ 	/* Don't run the VCPU (blocked) */
+ 	bool pause;
  
- /* Interrupt causes (minus the high bit) */
- #define IRQ_S_SOFT		1
-+#define IRQ_VS_SOFT		2
- #define IRQ_M_SOFT		3
- #define IRQ_S_TIMER		5
-+#define IRQ_VS_TIMER		6
- #define IRQ_M_TIMER		7
- #define IRQ_S_EXT		9
-+#define IRQ_VS_EXT		10
- #define IRQ_M_EXT		11
+@@ -157,4 +172,12 @@ int kvm_riscv_vcpu_exit(struct kvm_vcpu *vcpu, struct kvm_run *run,
  
- /* Exception causes */
- #define EXC_INST_MISALIGNED	0
- #define EXC_INST_ACCESS		1
-+#define EXC_INST_ILLEGAL	2
- #define EXC_BREAKPOINT		3
- #define EXC_LOAD_ACCESS		5
- #define EXC_STORE_ACCESS	7
- #define EXC_SYSCALL		8
-+#define EXC_HYPERVISOR_SYSCALL	9
-+#define EXC_SUPERVISOR_SYSCALL	10
- #define EXC_INST_PAGE_FAULT	12
- #define EXC_LOAD_PAGE_FAULT	13
- #define EXC_STORE_PAGE_FAULT	15
-+#define EXC_INST_GUEST_PAGE_FAULT	20
-+#define EXC_LOAD_GUEST_PAGE_FAULT	21
-+#define EXC_VIRTUAL_INST_FAULT	22
-+#define EXC_STORE_GUEST_PAGE_FAULT	23
+ static inline void __kvm_riscv_switch_to(struct kvm_vcpu_arch *vcpu_arch) {}
  
- /* PMP configuration */
- #define PMP_R			0x01
-@@ -79,6 +91,58 @@
- #define PMP_A_NAPOT		0x18
- #define PMP_L			0x80
++int kvm_riscv_vcpu_set_interrupt(struct kvm_vcpu *vcpu, unsigned int irq);
++int kvm_riscv_vcpu_unset_interrupt(struct kvm_vcpu *vcpu, unsigned int irq);
++void kvm_riscv_vcpu_flush_interrupts(struct kvm_vcpu *vcpu);
++void kvm_riscv_vcpu_sync_interrupts(struct kvm_vcpu *vcpu);
++bool kvm_riscv_vcpu_has_interrupts(struct kvm_vcpu *vcpu, unsigned long mask);
++void kvm_riscv_vcpu_power_off(struct kvm_vcpu *vcpu);
++void kvm_riscv_vcpu_power_on(struct kvm_vcpu *vcpu);
++
+ #endif /* __RISCV_KVM_HOST_H__ */
+diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
+index 984d041a3e3b..3d3d703713c6 100644
+--- a/arch/riscv/include/uapi/asm/kvm.h
++++ b/arch/riscv/include/uapi/asm/kvm.h
+@@ -18,6 +18,9 @@
  
-+/* HSTATUS flags */
-+#ifdef CONFIG_64BIT
-+#define HSTATUS_VSXL		_AC(0x300000000, UL)
-+#define HSTATUS_VSXL_SHIFT	32
-+#endif
-+#define HSTATUS_VTSR		_AC(0x00400000, UL)
-+#define HSTATUS_VTW		_AC(0x00200000, UL)
-+#define HSTATUS_VTVM		_AC(0x00100000, UL)
-+#define HSTATUS_VGEIN		_AC(0x0003f000, UL)
-+#define HSTATUS_VGEIN_SHIFT	12
-+#define HSTATUS_HU		_AC(0x00000200, UL)
-+#define HSTATUS_SPVP		_AC(0x00000100, UL)
-+#define HSTATUS_SPV		_AC(0x00000080, UL)
-+#define HSTATUS_GVA		_AC(0x00000040, UL)
-+#define HSTATUS_VSBE		_AC(0x00000020, UL)
-+
-+/* HGATP flags */
-+#define HGATP_MODE_OFF		_AC(0, UL)
-+#define HGATP_MODE_SV32X4	_AC(1, UL)
-+#define HGATP_MODE_SV39X4	_AC(8, UL)
-+#define HGATP_MODE_SV48X4	_AC(9, UL)
-+
-+#define HGATP32_MODE_SHIFT	31
-+#define HGATP32_VMID_SHIFT	22
-+#define HGATP32_VMID_MASK	_AC(0x1FC00000, UL)
-+#define HGATP32_PPN		_AC(0x003FFFFF, UL)
-+
-+#define HGATP64_MODE_SHIFT	60
-+#define HGATP64_VMID_SHIFT	44
-+#define HGATP64_VMID_MASK	_AC(0x03FFF00000000000, UL)
-+#define HGATP64_PPN		_AC(0x00000FFFFFFFFFFF, UL)
-+
-+#define HGATP_PAGE_SHIFT	12
-+
-+#ifdef CONFIG_64BIT
-+#define HGATP_PPN		HGATP64_PPN
-+#define HGATP_VMID_SHIFT	HGATP64_VMID_SHIFT
-+#define HGATP_VMID_MASK		HGATP64_VMID_MASK
-+#define HGATP_MODE_SHIFT	HGATP64_MODE_SHIFT
-+#else
-+#define HGATP_PPN		HGATP32_PPN
-+#define HGATP_VMID_SHIFT	HGATP32_VMID_SHIFT
-+#define HGATP_VMID_MASK		HGATP32_VMID_MASK
-+#define HGATP_MODE_SHIFT	HGATP32_MODE_SHIFT
-+#endif
-+
-+/* VSIP & HVIP relation */
-+#define VSIP_TO_HVIP_SHIFT	(IRQ_VS_SOFT - IRQ_S_SOFT)
-+#define VSIP_VALID_MASK		((_AC(1, UL) << IRQ_S_SOFT) | \
-+				 (_AC(1, UL) << IRQ_S_TIMER) | \
-+				 (_AC(1, UL) << IRQ_S_EXT))
-+
- /* symbolic CSR names: */
- #define CSR_CYCLE		0xc00
- #define CSR_TIME		0xc01
-@@ -98,6 +162,31 @@
- #define CSR_SIP			0x144
- #define CSR_SATP		0x180
+ #define KVM_COALESCED_MMIO_PAGE_OFFSET 1
  
-+#define CSR_VSSTATUS		0x200
-+#define CSR_VSIE		0x204
-+#define CSR_VSTVEC		0x205
-+#define CSR_VSSCRATCH		0x240
-+#define CSR_VSEPC		0x241
-+#define CSR_VSCAUSE		0x242
-+#define CSR_VSTVAL		0x243
-+#define CSR_VSIP		0x244
-+#define CSR_VSATP		0x280
++#define KVM_INTERRUPT_SET	-1U
++#define KVM_INTERRUPT_UNSET	-2U
 +
-+#define CSR_HSTATUS		0x600
-+#define CSR_HEDELEG		0x602
-+#define CSR_HIDELEG		0x603
-+#define CSR_HIE			0x604
-+#define CSR_HTIMEDELTA		0x605
-+#define CSR_HCOUNTEREN		0x606
-+#define CSR_HGEIE		0x607
-+#define CSR_HTIMEDELTAH		0x615
-+#define CSR_HTVAL		0x643
-+#define CSR_HIP			0x644
-+#define CSR_HVIP		0x645
-+#define CSR_HTINST		0x64a
-+#define CSR_HGATP		0x680
-+#define CSR_HGEIP		0xe12
+ /* for KVM_GET_REGS and KVM_SET_REGS */
+ struct kvm_regs {
+ };
+diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+index 84deeddbffbe..7acb2e622597 100644
+--- a/arch/riscv/kvm/vcpu.c
++++ b/arch/riscv/kvm/vcpu.c
+@@ -11,6 +11,7 @@
+ #include <linux/err.h>
+ #include <linux/kdebug.h>
+ #include <linux/module.h>
++#include <linux/percpu.h>
+ #include <linux/uaccess.h>
+ #include <linux/vmalloc.h>
+ #include <linux/sched/signal.h>
+@@ -54,6 +55,9 @@ static void kvm_riscv_reset_vcpu(struct kvm_vcpu *vcpu)
+ 	memcpy(csr, reset_csr, sizeof(*csr));
+ 
+ 	memcpy(cntx, reset_cntx, sizeof(*cntx));
 +
- #define CSR_MSTATUS		0x300
- #define CSR_MISA		0x301
- #define CSR_MIE			0x304
++	WRITE_ONCE(vcpu->arch.irqs_pending, 0);
++	WRITE_ONCE(vcpu->arch.irqs_pending_mask, 0);
+ }
+ 
+ int kvm_arch_vcpu_precreate(struct kvm *kvm, unsigned int id)
+@@ -102,8 +106,7 @@ void kvm_arch_vcpu_destroy(struct kvm_vcpu *vcpu)
+ 
+ int kvm_cpu_has_pending_timer(struct kvm_vcpu *vcpu)
+ {
+-	/* TODO: */
+-	return 0;
++	return kvm_riscv_vcpu_has_interrupts(vcpu, 1UL << IRQ_VS_TIMER);
+ }
+ 
+ void kvm_arch_vcpu_blocking(struct kvm_vcpu *vcpu)
+@@ -116,20 +119,18 @@ void kvm_arch_vcpu_unblocking(struct kvm_vcpu *vcpu)
+ 
+ int kvm_arch_vcpu_runnable(struct kvm_vcpu *vcpu)
+ {
+-	/* TODO: */
+-	return 0;
++	return (kvm_riscv_vcpu_has_interrupts(vcpu, -1UL) &&
++		!vcpu->arch.power_off && !vcpu->arch.pause);
+ }
+ 
+ int kvm_arch_vcpu_should_kick(struct kvm_vcpu *vcpu)
+ {
+-	/* TODO: */
+-	return 0;
++	return kvm_vcpu_exiting_guest_mode(vcpu) == IN_GUEST_MODE;
+ }
+ 
+ bool kvm_arch_vcpu_in_kernel(struct kvm_vcpu *vcpu)
+ {
+-	/* TODO: */
+-	return false;
++	return (vcpu->arch.guest_context.sstatus & SR_SPP) ? true : false;
+ }
+ 
+ bool kvm_arch_has_vcpu_debugfs(void)
+@@ -150,7 +151,21 @@ vm_fault_t kvm_arch_vcpu_fault(struct kvm_vcpu *vcpu, struct vm_fault *vmf)
+ long kvm_arch_vcpu_async_ioctl(struct file *filp,
+ 			       unsigned int ioctl, unsigned long arg)
+ {
+-	/* TODO; */
++	struct kvm_vcpu *vcpu = filp->private_data;
++	void __user *argp = (void __user *)arg;
++
++	if (ioctl == KVM_INTERRUPT) {
++		struct kvm_interrupt irq;
++
++		if (copy_from_user(&irq, argp, sizeof(irq)))
++			return -EFAULT;
++
++		if (irq.irq == KVM_INTERRUPT_SET)
++			return kvm_riscv_vcpu_set_interrupt(vcpu, IRQ_VS_EXT);
++		else
++			return kvm_riscv_vcpu_unset_interrupt(vcpu, IRQ_VS_EXT);
++	}
++
+ 	return -ENOIOCTLCMD;
+ }
+ 
+@@ -199,18 +214,121 @@ int kvm_arch_vcpu_ioctl_set_regs(struct kvm_vcpu *vcpu, struct kvm_regs *regs)
+ 	return -EINVAL;
+ }
+ 
++void kvm_riscv_vcpu_flush_interrupts(struct kvm_vcpu *vcpu)
++{
++	struct kvm_vcpu_csr *csr = &vcpu->arch.guest_csr;
++	unsigned long mask, val;
++
++	if (READ_ONCE(vcpu->arch.irqs_pending_mask)) {
++		mask = xchg_acquire(&vcpu->arch.irqs_pending_mask, 0);
++		val = READ_ONCE(vcpu->arch.irqs_pending) & mask;
++
++		csr->hvip &= ~mask;
++		csr->hvip |= val;
++	}
++}
++
++void kvm_riscv_vcpu_sync_interrupts(struct kvm_vcpu *vcpu)
++{
++	unsigned long hvip;
++	struct kvm_vcpu_arch *v = &vcpu->arch;
++	struct kvm_vcpu_csr *csr = &vcpu->arch.guest_csr;
++
++	/* Read current HVIP and HIE CSRs */
++	hvip = csr_read(CSR_HVIP);
++	csr->hie = csr_read(CSR_HIE);
++
++	/* Sync-up HVIP.VSSIP bit changes does by Guest */
++	if ((csr->hvip ^ hvip) & (1UL << IRQ_VS_SOFT)) {
++		if (hvip & (1UL << IRQ_VS_SOFT)) {
++			if (!test_and_set_bit(IRQ_VS_SOFT,
++					      &v->irqs_pending_mask))
++				set_bit(IRQ_VS_SOFT, &v->irqs_pending);
++		} else {
++			if (!test_and_set_bit(IRQ_VS_SOFT,
++					      &v->irqs_pending_mask))
++				clear_bit(IRQ_VS_SOFT, &v->irqs_pending);
++		}
++	}
++}
++
++int kvm_riscv_vcpu_set_interrupt(struct kvm_vcpu *vcpu, unsigned int irq)
++{
++	if (irq != IRQ_VS_SOFT &&
++	    irq != IRQ_VS_TIMER &&
++	    irq != IRQ_VS_EXT)
++		return -EINVAL;
++
++	set_bit(irq, &vcpu->arch.irqs_pending);
++	smp_mb__before_atomic();
++	set_bit(irq, &vcpu->arch.irqs_pending_mask);
++
++	kvm_vcpu_kick(vcpu);
++
++	return 0;
++}
++
++int kvm_riscv_vcpu_unset_interrupt(struct kvm_vcpu *vcpu, unsigned int irq)
++{
++	if (irq != IRQ_VS_SOFT &&
++	    irq != IRQ_VS_TIMER &&
++	    irq != IRQ_VS_EXT)
++		return -EINVAL;
++
++	clear_bit(irq, &vcpu->arch.irqs_pending);
++	smp_mb__before_atomic();
++	set_bit(irq, &vcpu->arch.irqs_pending_mask);
++
++	return 0;
++}
++
++bool kvm_riscv_vcpu_has_interrupts(struct kvm_vcpu *vcpu, unsigned long mask)
++{
++	return (READ_ONCE(vcpu->arch.irqs_pending) &
++		vcpu->arch.guest_csr.hie & mask) ? true : false;
++}
++
++void kvm_riscv_vcpu_power_off(struct kvm_vcpu *vcpu)
++{
++	vcpu->arch.power_off = true;
++	kvm_make_request(KVM_REQ_SLEEP, vcpu);
++	kvm_vcpu_kick(vcpu);
++}
++
++void kvm_riscv_vcpu_power_on(struct kvm_vcpu *vcpu)
++{
++	vcpu->arch.power_off = false;
++	kvm_vcpu_wake_up(vcpu);
++}
++
+ int kvm_arch_vcpu_ioctl_get_mpstate(struct kvm_vcpu *vcpu,
+ 				    struct kvm_mp_state *mp_state)
+ {
+-	/* TODO: */
++	if (vcpu->arch.power_off)
++		mp_state->mp_state = KVM_MP_STATE_STOPPED;
++	else
++		mp_state->mp_state = KVM_MP_STATE_RUNNABLE;
++
+ 	return 0;
+ }
+ 
+ int kvm_arch_vcpu_ioctl_set_mpstate(struct kvm_vcpu *vcpu,
+ 				    struct kvm_mp_state *mp_state)
+ {
+-	/* TODO: */
+-	return 0;
++	int ret = 0;
++
++	switch (mp_state->mp_state) {
++	case KVM_MP_STATE_RUNNABLE:
++		vcpu->arch.power_off = false;
++		break;
++	case KVM_MP_STATE_STOPPED:
++		kvm_riscv_vcpu_power_off(vcpu);
++		break;
++	default:
++		ret = -EINVAL;
++	}
++
++	return ret;
+ }
+ 
+ int kvm_arch_vcpu_ioctl_set_guest_debug(struct kvm_vcpu *vcpu,
+@@ -234,7 +352,33 @@ void kvm_arch_vcpu_put(struct kvm_vcpu *vcpu)
+ 
+ static void kvm_riscv_check_vcpu_requests(struct kvm_vcpu *vcpu)
+ {
+-	/* TODO: */
++	struct rcuwait *wait = kvm_arch_vcpu_get_wait(vcpu);
++
++	if (kvm_request_pending(vcpu)) {
++		if (kvm_check_request(KVM_REQ_SLEEP, vcpu)) {
++			rcuwait_wait_event(wait,
++				(!vcpu->arch.power_off) && (!vcpu->arch.pause),
++				TASK_INTERRUPTIBLE);
++
++			if (vcpu->arch.power_off || vcpu->arch.pause) {
++				/*
++				 * Awaken to handle a signal, request to
++				 * sleep again later.
++				 */
++				kvm_make_request(KVM_REQ_SLEEP, vcpu);
++			}
++		}
++
++		if (kvm_check_request(KVM_REQ_VCPU_RESET, vcpu))
++			kvm_riscv_reset_vcpu(vcpu);
++	}
++}
++
++static void kvm_riscv_update_hvip(struct kvm_vcpu *vcpu)
++{
++	struct kvm_vcpu_csr *csr = &vcpu->arch.guest_csr;
++
++	csr_write(CSR_HVIP, csr->hvip);
+ }
+ 
+ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
+@@ -298,6 +442,15 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
+ 		srcu_read_unlock(&vcpu->kvm->srcu, vcpu->arch.srcu_idx);
+ 		smp_mb__after_srcu_read_unlock();
+ 
++		/*
++		 * We might have got VCPU interrupts updated asynchronously
++		 * so update it in HW.
++		 */
++		kvm_riscv_vcpu_flush_interrupts(vcpu);
++
++		/* Update HVIP CSR for current CPU */
++		kvm_riscv_update_hvip(vcpu);
++
+ 		if (ret <= 0 ||
+ 		    kvm_request_pending(vcpu)) {
+ 			vcpu->mode = OUTSIDE_GUEST_MODE;
+@@ -325,6 +478,9 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
+ 		trap.htval = csr_read(CSR_HTVAL);
+ 		trap.htinst = csr_read(CSR_HTINST);
+ 
++		/* Syncup interrupts state with HW */
++		kvm_riscv_vcpu_sync_interrupts(vcpu);
++
+ 		/*
+ 		 * We may have taken a host interrupt in VS/VU-mode (i.e.
+ 		 * while executing the guest). This interrupt is still
 -- 
 2.25.1
 
