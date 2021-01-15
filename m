@@ -1,817 +1,863 @@
 From: Anup Patel <anup.patel@wdc.com>
-Date: Fri, 15 Jan 2021 17:48:36 +0530
-Subject: [PATCH v16 07/17] RISC-V: KVM: Handle MMIO exits for VCPU
+Date: Fri, 15 Jan 2021 17:48:39 +0530
+Subject: [PATCH v16 10/17] RISC-V: KVM: Implement stage2 page table programming
 In-Reply-To: <20210115121846.114528-1-anup.patel@wdc.com>
 References: <20210115121846.114528-1-anup.patel@wdc.com>
-Message-ID: <20210115121846.114528-8-anup.patel@wdc.com>
+Message-ID: <20210115121846.114528-11-anup.patel@wdc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-We will get stage2 page faults whenever Guest/VM access SW emulated
-MMIO device or unmapped Guest RAM.
+This patch implements all required functions for programming
+the stage2 page table for each Guest/VM.
 
-This patch implements MMIO read/write emulation by extracting MMIO
-details from the trapped load/store instruction and forwarding the
-MMIO read/write to user-space. The actual MMIO emulation will happen
-in user-space and KVM kernel module will only take care of register
-updates before resuming the trapped VCPU.
+At high-level, the flow of stage2 related functions is similar
+from KVM ARM/ARM64 implementation but the stage2 page table
+format is quite different for KVM RISC-V.
 
-The handling for stage2 page faults for unmapped Guest RAM will be
-implemeted by a separate patch later.
-
-[jiangyifei: ioeventfd and in-kernel mmio device support]
+[jiangyifei: stage2 dirty log support]
 Signed-off-by: Yifei Jiang <jiangyifei@huawei.com>
 Signed-off-by: Anup Patel <anup.patel@wdc.com>
 Acked-by: Paolo Bonzini <pbonzini@redhat.com>
 Reviewed-by: Paolo Bonzini <pbonzini@redhat.com>
-Reviewed-by: Alexander Graf <graf@amazon.com>
 ---
- arch/riscv/include/asm/kvm_host.h |  22 ++
- arch/riscv/kernel/asm-offsets.c   |   6 +
- arch/riscv/kvm/Kconfig            |   1 +
- arch/riscv/kvm/Makefile           |   1 +
- arch/riscv/kvm/mmu.c              |   8 +
- arch/riscv/kvm/vcpu_exit.c        | 592 +++++++++++++++++++++++++++++-
- arch/riscv/kvm/vcpu_switch.S      |  23 ++
- arch/riscv/kvm/vm.c               |   1 +
- 8 files changed, 651 insertions(+), 3 deletions(-)
+ arch/riscv/include/asm/kvm_host.h     |  12 +
+ arch/riscv/include/asm/pgtable-bits.h |   1 +
+ arch/riscv/kvm/Kconfig                |   1 +
+ arch/riscv/kvm/main.c                 |  19 +
+ arch/riscv/kvm/mmu.c                  | 650 +++++++++++++++++++++++++-
+ arch/riscv/kvm/vm.c                   |   6 -
+ 6 files changed, 673 insertions(+), 16 deletions(-)
 
 diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
-index e2f5523e26de..bfc9fca6b049 100644
+index ca4eb4ce1335..5d70c8cf3733 100644
 --- a/arch/riscv/include/asm/kvm_host.h
 +++ b/arch/riscv/include/asm/kvm_host.h
-@@ -55,6 +55,14 @@ struct kvm_arch {
- 	phys_addr_t pgd_phys;
+@@ -76,6 +76,13 @@ struct kvm_mmio_decode {
+ 	int return_handled;
  };
  
-+struct kvm_mmio_decode {
-+	unsigned long insn;
-+	int insn_len;
-+	int len;
-+	int shift;
-+	int return_handled;
++#define KVM_MMU_PAGE_CACHE_NR_OBJS	32
++
++struct kvm_mmu_page_cache {
++	int nobjs;
++	void *objects[KVM_MMU_PAGE_CACHE_NR_OBJS];
 +};
 +
  struct kvm_cpu_trap {
  	unsigned long sepc;
  	unsigned long scause;
-@@ -153,6 +161,9 @@ struct kvm_vcpu_arch {
- 	unsigned long irqs_pending;
- 	unsigned long irqs_pending_mask;
+@@ -177,6 +184,9 @@ struct kvm_vcpu_arch {
+ 	/* MMIO instruction details */
+ 	struct kvm_mmio_decode mmio_decode;
  
-+	/* MMIO instruction details */
-+	struct kvm_mmio_decode mmio_decode;
++	/* Cache pages needed to program page tables with spinlock held */
++	struct kvm_mmu_page_cache mmu_page_cache;
 +
  	/* VCPU power-off state */
  	bool power_off;
  
-@@ -169,11 +180,22 @@ static inline void kvm_arch_vcpu_uninit(struct kvm_vcpu *vcpu) {}
- static inline void kvm_arch_sched_in(struct kvm_vcpu *vcpu, int cpu) {}
- static inline void kvm_arch_vcpu_block_finish(struct kvm_vcpu *vcpu) {}
- 
-+int kvm_riscv_stage2_map(struct kvm_vcpu *vcpu,
-+			 struct kvm_memory_slot *memslot,
-+			 gpa_t gpa, unsigned long hva, bool is_write);
- void kvm_riscv_stage2_flush_cache(struct kvm_vcpu *vcpu);
+@@ -205,6 +215,8 @@ void kvm_riscv_stage2_flush_cache(struct kvm_vcpu *vcpu);
  int kvm_riscv_stage2_alloc_pgd(struct kvm *kvm);
  void kvm_riscv_stage2_free_pgd(struct kvm *kvm);
  void kvm_riscv_stage2_update_hgatp(struct kvm_vcpu *vcpu);
++void kvm_riscv_stage2_mode_detect(void);
++unsigned long kvm_riscv_stage2_mode(void);
  
-+void __kvm_riscv_unpriv_trap(void);
-+
-+unsigned long kvm_riscv_vcpu_unpriv_read(struct kvm_vcpu *vcpu,
-+					 bool read_insn,
-+					 unsigned long guest_addr,
-+					 struct kvm_cpu_trap *trap);
-+void kvm_riscv_vcpu_trap_redirect(struct kvm_vcpu *vcpu,
-+				  struct kvm_cpu_trap *trap);
- int kvm_riscv_vcpu_mmio_return(struct kvm_vcpu *vcpu, struct kvm_run *run);
- int kvm_riscv_vcpu_exit(struct kvm_vcpu *vcpu, struct kvm_run *run,
- 			struct kvm_cpu_trap *trap);
-diff --git a/arch/riscv/kernel/asm-offsets.c b/arch/riscv/kernel/asm-offsets.c
-index 8798db5b2901..a205b3c21ff8 100644
---- a/arch/riscv/kernel/asm-offsets.c
-+++ b/arch/riscv/kernel/asm-offsets.c
-@@ -186,6 +186,12 @@ void asm_offsets(void)
- 	OFFSET(KVM_ARCH_HOST_STVEC, kvm_vcpu_arch, host_stvec);
- 	OFFSET(KVM_ARCH_HOST_SCOUNTEREN, kvm_vcpu_arch, host_scounteren);
+ void kvm_riscv_stage2_vmid_detect(void);
+ unsigned long kvm_riscv_stage2_vmid_bits(void);
+diff --git a/arch/riscv/include/asm/pgtable-bits.h b/arch/riscv/include/asm/pgtable-bits.h
+index bbaeb5d35842..be49d62fcc2b 100644
+--- a/arch/riscv/include/asm/pgtable-bits.h
++++ b/arch/riscv/include/asm/pgtable-bits.h
+@@ -26,6 +26,7 @@
  
-+	OFFSET(KVM_ARCH_TRAP_SEPC, kvm_cpu_trap, sepc);
-+	OFFSET(KVM_ARCH_TRAP_SCAUSE, kvm_cpu_trap, scause);
-+	OFFSET(KVM_ARCH_TRAP_STVAL, kvm_cpu_trap, stval);
-+	OFFSET(KVM_ARCH_TRAP_HTVAL, kvm_cpu_trap, htval);
-+	OFFSET(KVM_ARCH_TRAP_HTINST, kvm_cpu_trap, htinst);
-+
- 	/*
- 	 * THREAD_{F,X}* might be larger than a S-type offset can handle, but
- 	 * these are used in performance-sensitive assembly so we can't resort
+ #define _PAGE_SPECIAL   _PAGE_SOFT
+ #define _PAGE_TABLE     _PAGE_PRESENT
++#define _PAGE_LEAF      (_PAGE_READ | _PAGE_WRITE | _PAGE_EXEC)
+ 
+ /*
+  * _PAGE_PROT_NONE is set on not-present pages (and ignored by the hardware) to
 diff --git a/arch/riscv/kvm/Kconfig b/arch/riscv/kvm/Kconfig
-index 88edd477b3a8..b42979f84042 100644
+index b42979f84042..633063edaee8 100644
 --- a/arch/riscv/kvm/Kconfig
 +++ b/arch/riscv/kvm/Kconfig
-@@ -24,6 +24,7 @@ config KVM
+@@ -23,6 +23,7 @@ config KVM
+ 	select PREEMPT_NOTIFIERS
  	select ANON_INODES
  	select KVM_MMIO
++	select KVM_GENERIC_DIRTYLOG_READ_PROTECT
  	select HAVE_KVM_VCPU_ASYNC_IOCTL
-+	select HAVE_KVM_EVENTFD
+ 	select HAVE_KVM_EVENTFD
  	select SRCU
- 	help
- 	  Support hosting virtualized guest machines.
-diff --git a/arch/riscv/kvm/Makefile b/arch/riscv/kvm/Makefile
-index 845579273727..54991cc55c00 100644
---- a/arch/riscv/kvm/Makefile
-+++ b/arch/riscv/kvm/Makefile
-@@ -3,6 +3,7 @@
- #
+diff --git a/arch/riscv/kvm/main.c b/arch/riscv/kvm/main.c
+index 49a4941e3838..421ecf4e6360 100644
+--- a/arch/riscv/kvm/main.c
++++ b/arch/riscv/kvm/main.c
+@@ -64,6 +64,8 @@ void kvm_arch_hardware_disable(void)
  
- common-objs-y = $(addprefix ../../../virt/kvm/, kvm_main.o coalesced_mmio.o)
-+common-objs-y += $(addprefix ../../../virt/kvm/, eventfd.o)
+ int kvm_arch_init(void *opaque)
+ {
++	const char *str;
++
+ 	if (!riscv_isa_extension_available(NULL, h)) {
+ 		kvm_info("hypervisor extension not available\n");
+ 		return -ENODEV;
+@@ -79,10 +81,27 @@ int kvm_arch_init(void *opaque)
+ 		return -ENODEV;
+ 	}
  
- ccflags-y := -Ivirt/kvm -Iarch/riscv/kvm
++	kvm_riscv_stage2_mode_detect();
++
+ 	kvm_riscv_stage2_vmid_detect();
  
+ 	kvm_info("hypervisor extension available\n");
+ 
++	switch (kvm_riscv_stage2_mode()) {
++	case HGATP_MODE_SV32X4:
++		str = "Sv32x4";
++		break;
++	case HGATP_MODE_SV39X4:
++		str = "Sv39x4";
++		break;
++	case HGATP_MODE_SV48X4:
++		str = "Sv48x4";
++		break;
++	default:
++		return -ENODEV;
++	}
++	kvm_info("using %s G-stage page table format\n", str);
++
+ 	kvm_info("VMID %ld bits available\n", kvm_riscv_stage2_vmid_bits());
+ 
+ 	return 0;
 diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
-index ec13507e8a18..8fb356e68cc5 100644
+index 8fb356e68cc5..e311c4bb0b8a 100644
 --- a/arch/riscv/kvm/mmu.c
 +++ b/arch/riscv/kvm/mmu.c
-@@ -64,6 +64,14 @@ int kvm_arch_prepare_memory_region(struct kvm *kvm,
- 	return 0;
- }
- 
-+int kvm_riscv_stage2_map(struct kvm_vcpu *vcpu,
-+			 struct kvm_memory_slot *memslot,
-+			 gpa_t gpa, unsigned long hva, bool is_write)
-+{
-+	/* TODO: */
-+	return 0;
-+}
-+
- void kvm_riscv_stage2_flush_cache(struct kvm_vcpu *vcpu)
- {
- 	/* TODO: */
-diff --git a/arch/riscv/kvm/vcpu_exit.c b/arch/riscv/kvm/vcpu_exit.c
-index 4484e9200fe4..cf99567955ad 100644
---- a/arch/riscv/kvm/vcpu_exit.c
-+++ b/arch/riscv/kvm/vcpu_exit.c
-@@ -6,9 +6,518 @@
-  *     Anup Patel <anup.patel@wdc.com>
-  */
- 
-+#include <linux/bitops.h>
- #include <linux/errno.h>
- #include <linux/err.h>
- #include <linux/kvm_host.h>
-+#include <asm/csr.h>
-+
-+#define INSN_MATCH_LB		0x3
-+#define INSN_MASK_LB		0x707f
-+#define INSN_MATCH_LH		0x1003
-+#define INSN_MASK_LH		0x707f
-+#define INSN_MATCH_LW		0x2003
-+#define INSN_MASK_LW		0x707f
-+#define INSN_MATCH_LD		0x3003
-+#define INSN_MASK_LD		0x707f
-+#define INSN_MATCH_LBU		0x4003
-+#define INSN_MASK_LBU		0x707f
-+#define INSN_MATCH_LHU		0x5003
-+#define INSN_MASK_LHU		0x707f
-+#define INSN_MATCH_LWU		0x6003
-+#define INSN_MASK_LWU		0x707f
-+#define INSN_MATCH_SB		0x23
-+#define INSN_MASK_SB		0x707f
-+#define INSN_MATCH_SH		0x1023
-+#define INSN_MASK_SH		0x707f
-+#define INSN_MATCH_SW		0x2023
-+#define INSN_MASK_SW		0x707f
-+#define INSN_MATCH_SD		0x3023
-+#define INSN_MASK_SD		0x707f
-+
-+#define INSN_MATCH_C_LD		0x6000
-+#define INSN_MASK_C_LD		0xe003
-+#define INSN_MATCH_C_SD		0xe000
-+#define INSN_MASK_C_SD		0xe003
-+#define INSN_MATCH_C_LW		0x4000
-+#define INSN_MASK_C_LW		0xe003
-+#define INSN_MATCH_C_SW		0xc000
-+#define INSN_MASK_C_SW		0xe003
-+#define INSN_MATCH_C_LDSP	0x6002
-+#define INSN_MASK_C_LDSP	0xe003
-+#define INSN_MATCH_C_SDSP	0xe002
-+#define INSN_MASK_C_SDSP	0xe003
-+#define INSN_MATCH_C_LWSP	0x4002
-+#define INSN_MASK_C_LWSP	0xe003
-+#define INSN_MATCH_C_SWSP	0xc002
-+#define INSN_MASK_C_SWSP	0xe003
-+
-+#define INSN_16BIT_MASK		0x3
-+
-+#define INSN_IS_16BIT(insn)	(((insn) & INSN_16BIT_MASK) != INSN_16BIT_MASK)
-+
-+#define INSN_LEN(insn)		(INSN_IS_16BIT(insn) ? 2 : 4)
+@@ -17,11 +17,415 @@
+ #include <linux/sched/signal.h>
+ #include <asm/page.h>
+ #include <asm/pgtable.h>
++#include <asm/sbi.h>
 +
 +#ifdef CONFIG_64BIT
-+#define LOG_REGBYTES		3
++static unsigned long stage2_mode = (HGATP_MODE_SV39X4 << HGATP_MODE_SHIFT);
++static unsigned long stage2_pgd_levels = 3;
++#define stage2_index_bits	9
 +#else
-+#define LOG_REGBYTES		2
++static unsigned long stage2_mode = (HGATP_MODE_SV32X4 << HGATP_MODE_SHIFT);
++static unsigned long stage2_pgd_levels = 2;
++#define stage2_index_bits	10
 +#endif
-+#define REGBYTES		(1 << LOG_REGBYTES)
 +
-+#define SH_RD			7
-+#define SH_RS1			15
-+#define SH_RS2			20
-+#define SH_RS2C			2
++#define stage2_pgd_xbits	2
++#define stage2_pgd_size	(1UL << (HGATP_PAGE_SHIFT + stage2_pgd_xbits))
++#define stage2_gpa_bits	(HGATP_PAGE_SHIFT + \
++			 (stage2_pgd_levels * stage2_index_bits) + \
++			 stage2_pgd_xbits)
++#define stage2_gpa_size	((gpa_t)(1ULL << stage2_gpa_bits))
 +
-+#define RV_X(x, s, n)		(((x) >> (s)) & ((1 << (n)) - 1))
-+#define RVC_LW_IMM(x)		((RV_X(x, 6, 1) << 2) | \
-+				 (RV_X(x, 10, 3) << 3) | \
-+				 (RV_X(x, 5, 1) << 6))
-+#define RVC_LD_IMM(x)		((RV_X(x, 10, 3) << 3) | \
-+				 (RV_X(x, 5, 2) << 6))
-+#define RVC_LWSP_IMM(x)		((RV_X(x, 4, 3) << 2) | \
-+				 (RV_X(x, 12, 1) << 5) | \
-+				 (RV_X(x, 2, 2) << 6))
-+#define RVC_LDSP_IMM(x)		((RV_X(x, 5, 2) << 3) | \
-+				 (RV_X(x, 12, 1) << 5) | \
-+				 (RV_X(x, 2, 3) << 6))
-+#define RVC_SWSP_IMM(x)		((RV_X(x, 9, 4) << 2) | \
-+				 (RV_X(x, 7, 2) << 6))
-+#define RVC_SDSP_IMM(x)		((RV_X(x, 10, 3) << 3) | \
-+				 (RV_X(x, 7, 3) << 6))
-+#define RVC_RS1S(insn)		(8 + RV_X(insn, SH_RD, 3))
-+#define RVC_RS2S(insn)		(8 + RV_X(insn, SH_RS2C, 3))
-+#define RVC_RS2(insn)		RV_X(insn, SH_RS2C, 5)
-+
-+#define SHIFT_RIGHT(x, y)		\
-+	((y) < 0 ? ((x) << -(y)) : ((x) >> (y)))
-+
-+#define REG_MASK			\
-+	((1 << (5 + LOG_REGBYTES)) - (1 << LOG_REGBYTES))
-+
-+#define REG_OFFSET(insn, pos)		\
-+	(SHIFT_RIGHT((insn), (pos) - LOG_REGBYTES) & REG_MASK)
-+
-+#define REG_PTR(insn, pos, regs)	\
-+	(ulong *)((ulong)(regs) + REG_OFFSET(insn, pos))
-+
-+#define GET_RM(insn)		(((insn) >> 12) & 7)
-+
-+#define GET_RS1(insn, regs)	(*REG_PTR(insn, SH_RS1, regs))
-+#define GET_RS2(insn, regs)	(*REG_PTR(insn, SH_RS2, regs))
-+#define GET_RS1S(insn, regs)	(*REG_PTR(RVC_RS1S(insn), 0, regs))
-+#define GET_RS2S(insn, regs)	(*REG_PTR(RVC_RS2S(insn), 0, regs))
-+#define GET_RS2C(insn, regs)	(*REG_PTR(insn, SH_RS2C, regs))
-+#define GET_SP(regs)		(*REG_PTR(2, 0, regs))
-+#define SET_RD(insn, regs, val)	(*REG_PTR(insn, SH_RD, regs) = (val))
-+#define IMM_I(insn)		((s32)(insn) >> 20)
-+#define IMM_S(insn)		(((s32)(insn) >> 25 << 5) | \
-+				 (s32)(((insn) >> 7) & 0x1f))
-+#define MASK_FUNCT3		0x7000
-+
-+static int emulate_load(struct kvm_vcpu *vcpu, struct kvm_run *run,
-+			unsigned long fault_addr, unsigned long htinst)
++static inline unsigned long stage2_pte_index(gpa_t addr, u32 level)
 +{
-+	u8 data_buf[8];
-+	unsigned long insn;
-+	int shift = 0, len = 0, insn_len = 0;
-+	struct kvm_cpu_trap utrap = { 0 };
-+	struct kvm_cpu_context *ct = &vcpu->arch.guest_context;
++	unsigned long mask;
++	unsigned long shift = HGATP_PAGE_SHIFT + (stage2_index_bits * level);
 +
-+	/* Determine trapped instruction */
-+	if (htinst & 0x1) {
-+		/*
-+		 * Bit[0] == 1 implies trapped instruction value is
-+		 * transformed instruction or custom instruction.
-+		 */
-+		insn = htinst | INSN_16BIT_MASK;
-+		insn_len = (htinst & BIT(1)) ? INSN_LEN(insn) : 2;
-+	} else {
-+		/*
-+		 * Bit[0] == 0 implies trapped instruction value is
-+		 * zero or special value.
-+		 */
-+		insn = kvm_riscv_vcpu_unpriv_read(vcpu, true, ct->sepc,
-+						  &utrap);
-+		if (utrap.scause) {
-+			/* Redirect trap if we failed to read instruction */
-+			utrap.sepc = ct->sepc;
-+			kvm_riscv_vcpu_trap_redirect(vcpu, &utrap);
-+			return 1;
++	if (level == (stage2_pgd_levels - 1))
++		mask = (PTRS_PER_PTE * (1UL << stage2_pgd_xbits)) - 1;
++	else
++		mask = PTRS_PER_PTE - 1;
++
++	return (addr >> shift) & mask;
++}
++
++static inline unsigned long stage2_pte_page_vaddr(pte_t pte)
++{
++	return (unsigned long)pfn_to_virt(pte_val(pte) >> _PAGE_PFN_SHIFT);
++}
++
++static int stage2_page_size_to_level(unsigned long page_size, u32 *out_level)
++{
++	u32 i;
++	unsigned long psz = 1UL << 12;
++
++	for (i = 0; i < stage2_pgd_levels; i++) {
++		if (page_size == (psz << (i * stage2_index_bits))) {
++			*out_level = i;
++			return 0;
 +		}
-+		insn_len = INSN_LEN(insn);
 +	}
 +
-+	/* Decode length of MMIO and shift */
-+	if ((insn & INSN_MASK_LW) == INSN_MATCH_LW) {
-+		len = 4;
-+		shift = 8 * (sizeof(ulong) - len);
-+	} else if ((insn & INSN_MASK_LB) == INSN_MATCH_LB) {
-+		len = 1;
-+		shift = 8 * (sizeof(ulong) - len);
-+	} else if ((insn & INSN_MASK_LBU) == INSN_MATCH_LBU) {
-+		len = 1;
-+		shift = 8 * (sizeof(ulong) - len);
-+#ifdef CONFIG_64BIT
-+	} else if ((insn & INSN_MASK_LD) == INSN_MATCH_LD) {
-+		len = 8;
-+		shift = 8 * (sizeof(ulong) - len);
-+	} else if ((insn & INSN_MASK_LWU) == INSN_MATCH_LWU) {
-+		len = 4;
-+#endif
-+	} else if ((insn & INSN_MASK_LH) == INSN_MATCH_LH) {
-+		len = 2;
-+		shift = 8 * (sizeof(ulong) - len);
-+	} else if ((insn & INSN_MASK_LHU) == INSN_MATCH_LHU) {
-+		len = 2;
-+#ifdef CONFIG_64BIT
-+	} else if ((insn & INSN_MASK_C_LD) == INSN_MATCH_C_LD) {
-+		len = 8;
-+		shift = 8 * (sizeof(ulong) - len);
-+		insn = RVC_RS2S(insn) << SH_RD;
-+	} else if ((insn & INSN_MASK_C_LDSP) == INSN_MATCH_C_LDSP &&
-+		   ((insn >> SH_RD) & 0x1f)) {
-+		len = 8;
-+		shift = 8 * (sizeof(ulong) - len);
-+#endif
-+	} else if ((insn & INSN_MASK_C_LW) == INSN_MATCH_C_LW) {
-+		len = 4;
-+		shift = 8 * (sizeof(ulong) - len);
-+		insn = RVC_RS2S(insn) << SH_RD;
-+	} else if ((insn & INSN_MASK_C_LWSP) == INSN_MATCH_C_LWSP &&
-+		   ((insn >> SH_RD) & 0x1f)) {
-+		len = 4;
-+		shift = 8 * (sizeof(ulong) - len);
-+	} else {
-+		return -EOPNOTSUPP;
-+	}
++	return -EINVAL;
++}
 +
-+	/* Fault address should be aligned to length of MMIO */
-+	if (fault_addr & (len - 1))
-+		return -EIO;
++static int stage2_level_to_page_size(u32 level, unsigned long *out_pgsize)
++{
++	if (stage2_pgd_levels < level)
++		return -EINVAL;
 +
-+	/* Save instruction decode info */
-+	vcpu->arch.mmio_decode.insn = insn;
-+	vcpu->arch.mmio_decode.insn_len = insn_len;
-+	vcpu->arch.mmio_decode.shift = shift;
-+	vcpu->arch.mmio_decode.len = len;
-+	vcpu->arch.mmio_decode.return_handled = 0;
-+
-+	/* Update MMIO details in kvm_run struct */
-+	run->mmio.is_write = false;
-+	run->mmio.phys_addr = fault_addr;
-+	run->mmio.len = len;
-+
-+	/* Try to handle MMIO access in the kernel */
-+	if (!kvm_io_bus_read(vcpu, KVM_MMIO_BUS, fault_addr, len, data_buf)) {
-+		/* Successfully handled MMIO access in the kernel so resume */
-+		memcpy(run->mmio.data, data_buf, len);
-+		vcpu->stat.mmio_exit_kernel++;
-+		kvm_riscv_vcpu_mmio_return(vcpu, run);
-+		return 1;
-+	}
-+
-+	/* Exit to userspace for MMIO emulation */
-+	vcpu->stat.mmio_exit_user++;
-+	run->exit_reason = KVM_EXIT_MMIO;
++	*out_pgsize = 1UL << (12 + (level * stage2_index_bits));
 +
 +	return 0;
 +}
 +
-+static int emulate_store(struct kvm_vcpu *vcpu, struct kvm_run *run,
-+			 unsigned long fault_addr, unsigned long htinst)
++static int stage2_cache_topup(struct kvm_mmu_page_cache *pcache,
++			      int min, int max)
 +{
-+	u8 data8;
-+	u16 data16;
-+	u32 data32;
-+	u64 data64;
-+	ulong data;
-+	unsigned long insn;
-+	int len = 0, insn_len = 0;
-+	struct kvm_cpu_trap utrap = { 0 };
-+	struct kvm_cpu_context *ct = &vcpu->arch.guest_context;
++	void *page;
 +
-+	/* Determine trapped instruction */
-+	if (htinst & 0x1) {
-+		/*
-+		 * Bit[0] == 1 implies trapped instruction value is
-+		 * transformed instruction or custom instruction.
-+		 */
-+		insn = htinst | INSN_16BIT_MASK;
-+		insn_len = (htinst & BIT(1)) ? INSN_LEN(insn) : 2;
-+	} else {
-+		/*
-+		 * Bit[0] == 0 implies trapped instruction value is
-+		 * zero or special value.
-+		 */
-+		insn = kvm_riscv_vcpu_unpriv_read(vcpu, true, ct->sepc,
-+						  &utrap);
-+		if (utrap.scause) {
-+			/* Redirect trap if we failed to read instruction */
-+			utrap.sepc = ct->sepc;
-+			kvm_riscv_vcpu_trap_redirect(vcpu, &utrap);
-+			return 1;
-+		}
-+		insn_len = INSN_LEN(insn);
++	BUG_ON(max > KVM_MMU_PAGE_CACHE_NR_OBJS);
++	if (pcache->nobjs >= min)
++		return 0;
++	while (pcache->nobjs < max) {
++		page = (void *)__get_free_page(GFP_KERNEL | __GFP_ZERO);
++		if (!page)
++			return -ENOMEM;
++		pcache->objects[pcache->nobjs++] = page;
 +	}
-+
-+	data = GET_RS2(insn, &vcpu->arch.guest_context);
-+	data8 = data16 = data32 = data64 = data;
-+
-+	if ((insn & INSN_MASK_SW) == INSN_MATCH_SW) {
-+		len = 4;
-+	} else if ((insn & INSN_MASK_SB) == INSN_MATCH_SB) {
-+		len = 1;
-+#ifdef CONFIG_64BIT
-+	} else if ((insn & INSN_MASK_SD) == INSN_MATCH_SD) {
-+		len = 8;
-+#endif
-+	} else if ((insn & INSN_MASK_SH) == INSN_MATCH_SH) {
-+		len = 2;
-+#ifdef CONFIG_64BIT
-+	} else if ((insn & INSN_MASK_C_SD) == INSN_MATCH_C_SD) {
-+		len = 8;
-+		data64 = GET_RS2S(insn, &vcpu->arch.guest_context);
-+	} else if ((insn & INSN_MASK_C_SDSP) == INSN_MATCH_C_SDSP &&
-+		   ((insn >> SH_RD) & 0x1f)) {
-+		len = 8;
-+		data64 = GET_RS2C(insn, &vcpu->arch.guest_context);
-+#endif
-+	} else if ((insn & INSN_MASK_C_SW) == INSN_MATCH_C_SW) {
-+		len = 4;
-+		data32 = GET_RS2S(insn, &vcpu->arch.guest_context);
-+	} else if ((insn & INSN_MASK_C_SWSP) == INSN_MATCH_C_SWSP &&
-+		   ((insn >> SH_RD) & 0x1f)) {
-+		len = 4;
-+		data32 = GET_RS2C(insn, &vcpu->arch.guest_context);
-+	} else {
-+		return -EOPNOTSUPP;
-+	}
-+
-+	/* Fault address should be aligned to length of MMIO */
-+	if (fault_addr & (len - 1))
-+		return -EIO;
-+
-+	/* Save instruction decode info */
-+	vcpu->arch.mmio_decode.insn = insn;
-+	vcpu->arch.mmio_decode.insn_len = insn_len;
-+	vcpu->arch.mmio_decode.shift = 0;
-+	vcpu->arch.mmio_decode.len = len;
-+	vcpu->arch.mmio_decode.return_handled = 0;
-+
-+	/* Copy data to kvm_run instance */
-+	switch (len) {
-+	case 1:
-+		*((u8 *)run->mmio.data) = data8;
-+		break;
-+	case 2:
-+		*((u16 *)run->mmio.data) = data16;
-+		break;
-+	case 4:
-+		*((u32 *)run->mmio.data) = data32;
-+		break;
-+	case 8:
-+		*((u64 *)run->mmio.data) = data64;
-+		break;
-+	default:
-+		return -EOPNOTSUPP;
-+	};
-+
-+	/* Update MMIO details in kvm_run struct */
-+	run->mmio.is_write = true;
-+	run->mmio.phys_addr = fault_addr;
-+	run->mmio.len = len;
-+
-+	/* Try to handle MMIO access in the kernel */
-+	if (!kvm_io_bus_write(vcpu, KVM_MMIO_BUS,
-+			      fault_addr, len, run->mmio.data)) {
-+		/* Successfully handled MMIO access in the kernel so resume */
-+		vcpu->stat.mmio_exit_kernel++;
-+		kvm_riscv_vcpu_mmio_return(vcpu, run);
-+		return 1;
-+	}
-+
-+	/* Exit to userspace for MMIO emulation */
-+	vcpu->stat.mmio_exit_user++;
-+	run->exit_reason = KVM_EXIT_MMIO;
 +
 +	return 0;
 +}
 +
-+static int stage2_page_fault(struct kvm_vcpu *vcpu, struct kvm_run *run,
-+			     struct kvm_cpu_trap *trap)
++static void stage2_cache_flush(struct kvm_mmu_page_cache *pcache)
 +{
-+	struct kvm_memory_slot *memslot;
-+	unsigned long hva, fault_addr;
-+	bool writeable;
-+	gfn_t gfn;
++	while (pcache && pcache->nobjs)
++		free_page((unsigned long)pcache->objects[--pcache->nobjs]);
++}
++
++static void *stage2_cache_alloc(struct kvm_mmu_page_cache *pcache)
++{
++	void *p;
++
++	if (!pcache)
++		return NULL;
++
++	BUG_ON(!pcache->nobjs);
++	p = pcache->objects[--pcache->nobjs];
++
++	return p;
++}
++
++static bool stage2_get_leaf_entry(struct kvm *kvm, gpa_t addr,
++				  pte_t **ptepp, u32 *ptep_level)
++{
++	pte_t *ptep;
++	u32 current_level = stage2_pgd_levels - 1;
++
++	*ptep_level = current_level;
++	ptep = (pte_t *)kvm->arch.pgd;
++	ptep = &ptep[stage2_pte_index(addr, current_level)];
++	while (ptep && pte_val(*ptep)) {
++		if (pte_val(*ptep) & _PAGE_LEAF) {
++			*ptep_level = current_level;
++			*ptepp = ptep;
++			return true;
++		}
++
++		if (current_level) {
++			current_level--;
++			*ptep_level = current_level;
++			ptep = (pte_t *)stage2_pte_page_vaddr(*ptep);
++			ptep = &ptep[stage2_pte_index(addr, current_level)];
++		} else {
++			ptep = NULL;
++		}
++	}
++
++	return false;
++}
++
++static void stage2_remote_tlb_flush(struct kvm *kvm, u32 level, gpa_t addr)
++{
++	struct cpumask hmask;
++	unsigned long size = PAGE_SIZE;
++	struct kvm_vmid *vmid = &kvm->arch.vmid;
++
++	if (stage2_level_to_page_size(level, &size))
++		return;
++	addr &= ~(size - 1);
++
++	/*
++	 * TODO: Instead of cpu_online_mask, we should only target CPUs
++	 * where the Guest/VM is running.
++	 */
++	preempt_disable();
++	riscv_cpuid_to_hartid_mask(cpu_online_mask, &hmask);
++	sbi_remote_hfence_gvma_vmid(cpumask_bits(&hmask), addr, size,
++				    READ_ONCE(vmid->vmid));
++	preempt_enable();
++}
++
++static int stage2_set_pte(struct kvm *kvm, u32 level,
++			   struct kvm_mmu_page_cache *pcache,
++			   gpa_t addr, const pte_t *new_pte)
++{
++	u32 current_level = stage2_pgd_levels - 1;
++	pte_t *next_ptep = (pte_t *)kvm->arch.pgd;
++	pte_t *ptep = &next_ptep[stage2_pte_index(addr, current_level)];
++
++	if (current_level < level)
++		return -EINVAL;
++
++	while (current_level != level) {
++		if (pte_val(*ptep) & _PAGE_LEAF)
++			return -EEXIST;
++
++		if (!pte_val(*ptep)) {
++			next_ptep = stage2_cache_alloc(pcache);
++			if (!next_ptep)
++				return -ENOMEM;
++			*ptep = pfn_pte(PFN_DOWN(__pa(next_ptep)),
++					__pgprot(_PAGE_TABLE));
++		} else {
++			if (pte_val(*ptep) & _PAGE_LEAF)
++				return -EEXIST;
++			next_ptep = (pte_t *)stage2_pte_page_vaddr(*ptep);
++		}
++
++		current_level--;
++		ptep = &next_ptep[stage2_pte_index(addr, current_level)];
++	}
++
++	*ptep = *new_pte;
++	if (pte_val(*ptep) & _PAGE_LEAF)
++		stage2_remote_tlb_flush(kvm, current_level, addr);
++
++	return 0;
++}
++
++static int stage2_map_page(struct kvm *kvm,
++			   struct kvm_mmu_page_cache *pcache,
++			   gpa_t gpa, phys_addr_t hpa,
++			   unsigned long page_size,
++			   bool page_rdonly, bool page_exec)
++{
 +	int ret;
++	u32 level = 0;
++	pte_t new_pte;
++	pgprot_t prot;
 +
-+	fault_addr = (trap->htval << 2) | (trap->stval & 0x3);
-+	gfn = fault_addr >> PAGE_SHIFT;
-+	memslot = gfn_to_memslot(vcpu->kvm, gfn);
-+	hva = gfn_to_hva_memslot_prot(memslot, gfn, &writeable);
-+
-+	if (kvm_is_error_hva(hva) ||
-+	    (trap->scause == EXC_STORE_GUEST_PAGE_FAULT && !writeable)) {
-+		switch (trap->scause) {
-+		case EXC_LOAD_GUEST_PAGE_FAULT:
-+			return emulate_load(vcpu, run, fault_addr,
-+					    trap->htinst);
-+		case EXC_STORE_GUEST_PAGE_FAULT:
-+			return emulate_store(vcpu, run, fault_addr,
-+					     trap->htinst);
-+		default:
-+			return -EOPNOTSUPP;
-+		};
-+	}
-+
-+	ret = kvm_riscv_stage2_map(vcpu, memslot, fault_addr, hva,
-+		(trap->scause == EXC_STORE_GUEST_PAGE_FAULT) ? true : false);
-+	if (ret < 0)
++	ret = stage2_page_size_to_level(page_size, &level);
++	if (ret)
 +		return ret;
 +
-+	return 1;
++	/*
++	 * A RISC-V implementation can choose to either:
++	 * 1) Update 'A' and 'D' PTE bits in hardware
++	 * 2) Generate page fault when 'A' and/or 'D' bits are not set
++	 *    PTE so that software can update these bits.
++	 *
++	 * We support both options mentioned above. To achieve this, we
++	 * always set 'A' and 'D' PTE bits@time of creating stage2
++	 * mapping. To support KVM dirty page logging with both options
++	 * mentioned above, we will write-protect stage2 PTEs to track
++	 * dirty pages.
++	 */
++
++	if (page_exec) {
++		if (page_rdonly)
++			prot = PAGE_READ_EXEC;
++		else
++			prot = PAGE_WRITE_EXEC;
++	} else {
++		if (page_rdonly)
++			prot = PAGE_READ;
++		else
++			prot = PAGE_WRITE;
++	}
++	new_pte = pfn_pte(PFN_DOWN(hpa), prot);
++	new_pte = pte_mkdirty(new_pte);
++
++	return stage2_set_pte(kvm, level, pcache, gpa, &new_pte);
 +}
 +
-+/**
-+ * kvm_riscv_vcpu_unpriv_read -- Read machine word from Guest memory
-+ *
-+ * @vcpu: The VCPU pointer
-+ * @read_insn: Flag representing whether we are reading instruction
-+ * @guest_addr: Guest address to read
-+ * @trap: Output pointer to trap details
-+ */
-+unsigned long kvm_riscv_vcpu_unpriv_read(struct kvm_vcpu *vcpu,
-+					 bool read_insn,
-+					 unsigned long guest_addr,
-+					 struct kvm_cpu_trap *trap)
++enum stage2_op {
++	STAGE2_OP_NOP = 0,	/* Nothing */
++	STAGE2_OP_CLEAR,	/* Clear/Unmap */
++	STAGE2_OP_WP,		/* Write-protect */
++};
++
++static void stage2_op_pte(struct kvm *kvm, gpa_t addr,
++			  pte_t *ptep, u32 ptep_level, enum stage2_op op)
 +{
-+	register unsigned long taddr asm("a0") = (unsigned long)trap;
-+	register unsigned long ttmp asm("a1");
-+	register unsigned long val asm("t0");
-+	register unsigned long tmp asm("t1");
-+	register unsigned long addr asm("t2") = guest_addr;
-+	unsigned long flags;
-+	unsigned long old_stvec, old_hstatus;
++	int i, ret;
++	pte_t *next_ptep;
++	u32 next_ptep_level;
++	unsigned long next_page_size, page_size;
 +
-+	local_irq_save(flags);
++	ret = stage2_level_to_page_size(ptep_level, &page_size);
++	if (ret)
++		return;
 +
-+	old_hstatus = csr_swap(CSR_HSTATUS, vcpu->arch.guest_context.hstatus);
-+	old_stvec = csr_swap(CSR_STVEC, (ulong)&__kvm_riscv_unpriv_trap);
++	BUG_ON(addr & (page_size - 1));
 +
-+	if (read_insn) {
-+		/*
-+		 * HLVX.HU instruction
-+		 * 0110010 00011 rs1 100 rd 1110011
-+		 */
-+		asm volatile ("\n"
-+			".option push\n"
-+			".option norvc\n"
-+			"add %[ttmp], %[taddr], 0\n"
-+			/*
-+			 * HLVX.HU %[val], (%[addr])
-+			 * HLVX.HU t0, (t2)
-+			 * 0110010 00011 00111 100 00101 1110011
-+			 */
-+			".word 0x6433c2f3\n"
-+			"andi %[tmp], %[val], 3\n"
-+			"addi %[tmp], %[tmp], -3\n"
-+			"bne %[tmp], zero, 2f\n"
-+			"addi %[addr], %[addr], 2\n"
-+			/*
-+			 * HLVX.HU %[tmp], (%[addr])
-+			 * HLVX.HU t1, (t2)
-+			 * 0110010 00011 00111 100 00110 1110011
-+			 */
-+			".word 0x6433c373\n"
-+			"sll %[tmp], %[tmp], 16\n"
-+			"add %[val], %[val], %[tmp]\n"
-+			"2:\n"
-+			".option pop"
-+		: [val] "=&r" (val), [tmp] "=&r" (tmp),
-+		  [taddr] "+&r" (taddr), [ttmp] "+&r" (ttmp),
-+		  [addr] "+&r" (addr) : : "memory");
++	if (!pte_val(*ptep))
++		return;
 +
-+		if (trap->scause == EXC_LOAD_PAGE_FAULT)
-+			trap->scause = EXC_INST_PAGE_FAULT;
++	if (ptep_level && !(pte_val(*ptep) & _PAGE_LEAF)) {
++		next_ptep = (pte_t *)stage2_pte_page_vaddr(*ptep);
++		next_ptep_level = ptep_level - 1;
++		ret = stage2_level_to_page_size(next_ptep_level,
++						&next_page_size);
++		if (ret)
++			return;
++
++		if (op == STAGE2_OP_CLEAR)
++			set_pte(ptep, __pte(0));
++		for (i = 0; i < PTRS_PER_PTE; i++)
++			stage2_op_pte(kvm, addr + i * next_page_size,
++					&next_ptep[i], next_ptep_level, op);
++		if (op == STAGE2_OP_CLEAR)
++			put_page(virt_to_page(next_ptep));
 +	} else {
-+		/*
-+		 * HLV.D instruction
-+		 * 0110110 00000 rs1 100 rd 1110011
-+		 *
-+		 * HLV.W instruction
-+		 * 0110100 00000 rs1 100 rd 1110011
-+		 */
-+		asm volatile ("\n"
-+			".option push\n"
-+			".option norvc\n"
-+			"add %[ttmp], %[taddr], 0\n"
-+#ifdef CONFIG_64BIT
-+			/*
-+			 * HLV.D %[val], (%[addr])
-+			 * HLV.D t0, (t2)
-+			 * 0110110 00000 00111 100 00101 1110011
-+			 */
-+			".word 0x6c03c2f3\n"
-+#else
-+			/*
-+			 * HLV.W %[val], (%[addr])
-+			 * HLV.W t0, (t2)
-+			 * 0110100 00000 00111 100 00101 1110011
-+			 */
-+			".word 0x6803c2f3\n"
-+#endif
-+			".option pop"
-+		: [val] "=&r" (val),
-+		  [taddr] "+&r" (taddr), [ttmp] "+&r" (ttmp)
-+		: [addr] "r" (addr) : "memory");
++		if (op == STAGE2_OP_CLEAR)
++			set_pte(ptep, __pte(0));
++		else if (op == STAGE2_OP_WP)
++			set_pte(ptep, __pte(pte_val(*ptep) & ~_PAGE_WRITE));
++		stage2_remote_tlb_flush(kvm, ptep_level, addr);
++	}
++}
++
++static void stage2_unmap_range(struct kvm *kvm, gpa_t start, gpa_t size)
++{
++	int ret;
++	pte_t *ptep;
++	u32 ptep_level;
++	bool found_leaf;
++	unsigned long page_size;
++	gpa_t addr = start, end = start + size;
++
++	while (addr < end) {
++		found_leaf = stage2_get_leaf_entry(kvm, addr,
++						   &ptep, &ptep_level);
++		ret = stage2_level_to_page_size(ptep_level, &page_size);
++		if (ret)
++			break;
++
++		if (!found_leaf)
++			goto next;
++
++		if (!(addr & (page_size - 1)) && ((end - addr) >= page_size))
++			stage2_op_pte(kvm, addr, ptep,
++				      ptep_level, STAGE2_OP_CLEAR);
++
++next:
++		addr += page_size;
++	}
++}
++
++static void stage2_wp_range(struct kvm *kvm, gpa_t start, gpa_t end)
++{
++	int ret;
++	pte_t *ptep;
++	u32 ptep_level;
++	bool found_leaf;
++	gpa_t addr = start;
++	unsigned long page_size;
++
++	while (addr < end) {
++		found_leaf = stage2_get_leaf_entry(kvm, addr,
++						   &ptep, &ptep_level);
++		ret = stage2_level_to_page_size(ptep_level, &page_size);
++		if (ret)
++			break;
++
++		if (!found_leaf)
++			goto next;
++
++		if (!(addr & (page_size - 1)) && ((end - addr) >= page_size))
++			stage2_op_pte(kvm, addr, ptep,
++				      ptep_level, STAGE2_OP_WP);
++
++next:
++		addr += page_size;
++	}
++}
++
++void stage2_wp_memory_region(struct kvm *kvm, int slot)
++{
++	struct kvm_memslots *slots = kvm_memslots(kvm);
++	struct kvm_memory_slot *memslot = id_to_memslot(slots, slot);
++	phys_addr_t start = memslot->base_gfn << PAGE_SHIFT;
++	phys_addr_t end = (memslot->base_gfn + memslot->npages) << PAGE_SHIFT;
++
++	spin_lock(&kvm->mmu_lock);
++	stage2_wp_range(kvm, start, end);
++	spin_unlock(&kvm->mmu_lock);
++	kvm_flush_remote_tlbs(kvm);
++}
++
++int stage2_ioremap(struct kvm *kvm, gpa_t gpa, phys_addr_t hpa,
++		   unsigned long size, bool writable)
++{
++	pte_t pte;
++	int ret = 0;
++	unsigned long pfn;
++	phys_addr_t addr, end;
++	struct kvm_mmu_page_cache pcache = { 0, };
++
++	end = (gpa + size + PAGE_SIZE - 1) & PAGE_MASK;
++	pfn = __phys_to_pfn(hpa);
++
++	for (addr = gpa; addr < end; addr += PAGE_SIZE) {
++		pte = pfn_pte(pfn, PAGE_KERNEL);
++
++		if (!writable)
++			pte = pte_wrprotect(pte);
++
++		ret = stage2_cache_topup(&pcache,
++					 stage2_pgd_levels,
++					 KVM_MMU_PAGE_CACHE_NR_OBJS);
++		if (ret)
++			goto out;
++
++		spin_lock(&kvm->mmu_lock);
++		ret = stage2_set_pte(kvm, 0, &pcache, addr, &pte);
++		spin_unlock(&kvm->mmu_lock);
++		if (ret)
++			goto out;
++
++		pfn++;
 +	}
 +
-+	csr_write(CSR_STVEC, old_stvec);
-+	csr_write(CSR_HSTATUS, old_hstatus);
++out:
++	stage2_cache_flush(&pcache);
++	return ret;
 +
-+	local_irq_restore(flags);
-+
-+	return val;
 +}
 +
-+/**
-+ * kvm_riscv_vcpu_trap_redirect -- Redirect trap to Guest
-+ *
-+ * @vcpu: The VCPU pointer
-+ * @trap: Trap details
-+ */
-+void kvm_riscv_vcpu_trap_redirect(struct kvm_vcpu *vcpu,
-+				  struct kvm_cpu_trap *trap)
++void kvm_arch_mmu_enable_log_dirty_pt_masked(struct kvm *kvm,
++					     struct kvm_memory_slot *slot,
++					     gfn_t gfn_offset,
++					     unsigned long mask)
 +{
-+	unsigned long vsstatus = csr_read(CSR_VSSTATUS);
++	phys_addr_t base_gfn = slot->base_gfn + gfn_offset;
++	phys_addr_t start = (base_gfn +  __ffs(mask)) << PAGE_SHIFT;
++	phys_addr_t end = (base_gfn + __fls(mask) + 1) << PAGE_SHIFT;
 +
-+	/* Change Guest SSTATUS.SPP bit */
-+	vsstatus &= ~SR_SPP;
-+	if (vcpu->arch.guest_context.sstatus & SR_SPP)
-+		vsstatus |= SR_SPP;
-+
-+	/* Change Guest SSTATUS.SPIE bit */
-+	vsstatus &= ~SR_SPIE;
-+	if (vsstatus & SR_SIE)
-+		vsstatus |= SR_SPIE;
-+
-+	/* Clear Guest SSTATUS.SIE bit */
-+	vsstatus &= ~SR_SIE;
-+
-+	/* Update Guest SSTATUS */
-+	csr_write(CSR_VSSTATUS, vsstatus);
-+
-+	/* Update Guest SCAUSE, STVAL, and SEPC */
-+	csr_write(CSR_VSCAUSE, trap->scause);
-+	csr_write(CSR_VSTVAL, trap->stval);
-+	csr_write(CSR_VSEPC, trap->sepc);
-+
-+	/* Set Guest PC to Guest exception vector */
-+	vcpu->arch.guest_context.sepc = csr_read(CSR_VSTVEC);
++	stage2_wp_range(kvm, start, end);
 +}
  
- /**
-  * kvm_riscv_vcpu_mmio_return -- Handle MMIO loads after user space emulation
-@@ -19,7 +528,54 @@
-  */
- int kvm_riscv_vcpu_mmio_return(struct kvm_vcpu *vcpu, struct kvm_run *run)
+ void kvm_arch_sync_dirty_log(struct kvm *kvm, struct kvm_memory_slot *memslot)
  {
--	/* TODO: */
-+	u8 data8;
-+	u16 data16;
-+	u32 data32;
-+	u64 data64;
-+	ulong insn;
-+	int len, shift;
-+
-+	if (vcpu->arch.mmio_decode.return_handled)
-+		return 0;
-+
-+	vcpu->arch.mmio_decode.return_handled = 1;
-+	insn = vcpu->arch.mmio_decode.insn;
-+
-+	if (run->mmio.is_write)
-+		goto done;
-+
-+	len = vcpu->arch.mmio_decode.len;
-+	shift = vcpu->arch.mmio_decode.shift;
-+
-+	switch (len) {
-+	case 1:
-+		data8 = *((u8 *)run->mmio.data);
-+		SET_RD(insn, &vcpu->arch.guest_context,
-+			(ulong)data8 << shift >> shift);
-+		break;
-+	case 2:
-+		data16 = *((u16 *)run->mmio.data);
-+		SET_RD(insn, &vcpu->arch.guest_context,
-+			(ulong)data16 << shift >> shift);
-+		break;
-+	case 4:
-+		data32 = *((u32 *)run->mmio.data);
-+		SET_RD(insn, &vcpu->arch.guest_context,
-+			(ulong)data32 << shift >> shift);
-+		break;
-+	case 8:
-+		data64 = *((u64 *)run->mmio.data);
-+		SET_RD(insn, &vcpu->arch.guest_context,
-+			(ulong)data64 << shift >> shift);
-+		break;
-+	default:
-+		return -EOPNOTSUPP;
-+	};
-+
-+done:
-+	/* Move to next instruction */
-+	vcpu->arch.guest_context.sepc += vcpu->arch.mmio_decode.insn_len;
-+
- 	return 0;
  }
  
-@@ -30,6 +586,36 @@ int kvm_riscv_vcpu_mmio_return(struct kvm_vcpu *vcpu, struct kvm_run *run)
- int kvm_riscv_vcpu_exit(struct kvm_vcpu *vcpu, struct kvm_run *run,
- 			struct kvm_cpu_trap *trap)
++void kvm_arch_flush_remote_tlbs_memslot(struct kvm *kvm,
++					struct kvm_memory_slot *memslot)
++{
++	kvm_flush_remote_tlbs(kvm);
++}
++
+ void kvm_arch_free_memslot(struct kvm *kvm, struct kvm_memory_slot *free)
+ {
+ }
+@@ -38,7 +442,7 @@ void kvm_arch_memslots_updated(struct kvm *kvm, u64 gen)
+ 
+ void kvm_arch_flush_shadow_all(struct kvm *kvm)
+ {
+-	/* TODO: */
++	kvm_riscv_stage2_free_pgd(kvm);
+ }
+ 
+ void kvm_arch_flush_shadow_memslot(struct kvm *kvm,
+@@ -52,7 +456,13 @@ void kvm_arch_commit_memory_region(struct kvm *kvm,
+ 				const struct kvm_memory_slot *new,
+ 				enum kvm_mr_change change)
+ {
+-	/* TODO: */
++	/*
++	 * At this point memslot has been committed and there is an
++	 * allocated dirty_bitmap[], dirty pages will be tracked while
++	 * the memory slot is write protected.
++	 */
++	if (change != KVM_MR_DELETE && mem->flags & KVM_MEM_LOG_DIRTY_PAGES)
++		stage2_wp_memory_region(kvm, mem->slot);
+ }
+ 
+ int kvm_arch_prepare_memory_region(struct kvm *kvm,
+@@ -60,35 +470,255 @@ int kvm_arch_prepare_memory_region(struct kvm *kvm,
+ 				const struct kvm_userspace_memory_region *mem,
+ 				enum kvm_mr_change change)
+ {
+-	/* TODO: */
+-	return 0;
++	hva_t hva = mem->userspace_addr;
++	hva_t reg_end = hva + mem->memory_size;
++	bool writable = !(mem->flags & KVM_MEM_READONLY);
++	int ret = 0;
++
++	if (change != KVM_MR_CREATE && change != KVM_MR_MOVE &&
++			change != KVM_MR_FLAGS_ONLY)
++		return 0;
++
++	/*
++	 * Prevent userspace from creating a memory region outside of the GPA
++	 * space addressable by the KVM guest GPA space.
++	 */
++	if ((memslot->base_gfn + memslot->npages) >=
++	    (stage2_gpa_size >> PAGE_SHIFT))
++		return -EFAULT;
++
++	mmap_read_lock(current->mm);
++
++	/*
++	 * A memory region could potentially cover multiple VMAs, and
++	 * any holes between them, so iterate over all of them to find
++	 * out if we can map any of them right now.
++	 *
++	 *     +--------------------------------------------+
++	 * +---------------+----------------+   +----------------+
++	 * |   : VMA 1     |      VMA 2     |   |    VMA 3  :    |
++	 * +---------------+----------------+   +----------------+
++	 *     |               memory region                |
++	 *     +--------------------------------------------+
++	 */
++	do {
++		struct vm_area_struct *vma = find_vma(current->mm, hva);
++		hva_t vm_start, vm_end;
++
++		if (!vma || vma->vm_start >= reg_end)
++			break;
++
++		/*
++		 * Mapping a read-only VMA is only allowed if the
++		 * memory region is configured as read-only.
++		 */
++		if (writable && !(vma->vm_flags & VM_WRITE)) {
++			ret = -EPERM;
++			break;
++		}
++
++		/* Take the intersection of this VMA with the memory region */
++		vm_start = max(hva, vma->vm_start);
++		vm_end = min(reg_end, vma->vm_end);
++
++		if (vma->vm_flags & VM_PFNMAP) {
++			gpa_t gpa = mem->guest_phys_addr +
++				    (vm_start - mem->userspace_addr);
++			phys_addr_t pa;
++
++			pa = (phys_addr_t)vma->vm_pgoff << PAGE_SHIFT;
++			pa += vm_start - vma->vm_start;
++
++			/* IO region dirty page logging not allowed */
++			if (memslot->flags & KVM_MEM_LOG_DIRTY_PAGES) {
++				ret = -EINVAL;
++				goto out;
++			}
++
++			ret = stage2_ioremap(kvm, gpa, pa,
++					     vm_end - vm_start, writable);
++			if (ret)
++				break;
++		}
++		hva = vm_end;
++	} while (hva < reg_end);
++
++	if (change == KVM_MR_FLAGS_ONLY)
++		goto out;
++
++	spin_lock(&kvm->mmu_lock);
++	if (ret)
++		stage2_unmap_range(kvm, mem->guest_phys_addr,
++				   mem->memory_size);
++	spin_unlock(&kvm->mmu_lock);
++
++out:
++	mmap_read_unlock(current->mm);
++	return ret;
+ }
+ 
+ int kvm_riscv_stage2_map(struct kvm_vcpu *vcpu,
+ 			 struct kvm_memory_slot *memslot,
+ 			 gpa_t gpa, unsigned long hva, bool is_write)
  {
 -	/* TODO: */
 -	return 0;
 +	int ret;
++	kvm_pfn_t hfn;
++	bool writeable;
++	short vma_pageshift;
++	gfn_t gfn = gpa >> PAGE_SHIFT;
++	struct vm_area_struct *vma;
++	struct kvm *kvm = vcpu->kvm;
++	struct kvm_mmu_page_cache *pcache = &vcpu->arch.mmu_page_cache;
++	bool logging = (memslot->dirty_bitmap &&
++			!(memslot->flags & KVM_MEM_READONLY)) ? true : false;
++	unsigned long vma_pagesize;
 +
-+	/* If we got host interrupt then do nothing */
-+	if (trap->scause & CAUSE_IRQ_FLAG)
-+		return 1;
++	mmap_read_lock(current->mm);
 +
-+	/* Handle guest traps */
-+	ret = -EFAULT;
-+	run->exit_reason = KVM_EXIT_UNKNOWN;
-+	switch (trap->scause) {
-+	case EXC_INST_GUEST_PAGE_FAULT:
-+	case EXC_LOAD_GUEST_PAGE_FAULT:
-+	case EXC_STORE_GUEST_PAGE_FAULT:
-+		if (vcpu->arch.guest_context.hstatus & HSTATUS_SPV)
-+			ret = stage2_page_fault(vcpu, run, trap);
-+		break;
-+	default:
-+		break;
-+	};
-+
-+	/* Print details in-case of error */
-+	if (ret < 0) {
-+		kvm_err("VCPU exit error %d\n", ret);
-+		kvm_err("SEPC=0x%lx SSTATUS=0x%lx HSTATUS=0x%lx\n",
-+			vcpu->arch.guest_context.sepc,
-+			vcpu->arch.guest_context.sstatus,
-+			vcpu->arch.guest_context.hstatus);
-+		kvm_err("SCAUSE=0x%lx STVAL=0x%lx HTVAL=0x%lx HTINST=0x%lx\n",
-+			trap->scause, trap->stval, trap->htval, trap->htinst);
++	vma = find_vma_intersection(current->mm, hva, hva + 1);
++	if (unlikely(!vma)) {
++		kvm_err("Failed to find VMA for hva 0x%lx\n", hva);
++		mmap_read_unlock(current->mm);
++		return -EFAULT;
 +	}
 +
++	if (is_vm_hugetlb_page(vma))
++		vma_pageshift = huge_page_shift(hstate_vma(vma));
++	else
++		vma_pageshift = PAGE_SHIFT;
++	vma_pagesize = 1ULL << vma_pageshift;
++	if (logging || (vma->vm_flags & VM_PFNMAP))
++		vma_pagesize = PAGE_SIZE;
++
++	if (vma_pagesize == PMD_SIZE || vma_pagesize == PGDIR_SIZE)
++		gfn = (gpa & huge_page_mask(hstate_vma(vma))) >> PAGE_SHIFT;
++
++	mmap_read_unlock(current->mm);
++
++	if (vma_pagesize != PGDIR_SIZE &&
++	    vma_pagesize != PMD_SIZE &&
++	    vma_pagesize != PAGE_SIZE) {
++		kvm_err("Invalid VMA page size 0x%lx\n", vma_pagesize);
++		return -EFAULT;
++	}
++
++	/* We need minimum second+third level pages */
++	ret = stage2_cache_topup(pcache, stage2_pgd_levels,
++				 KVM_MMU_PAGE_CACHE_NR_OBJS);
++	if (ret) {
++		kvm_err("Failed to topup stage2 cache\n");
++		return ret;
++	}
++
++	hfn = gfn_to_pfn_prot(kvm, gfn, is_write, &writeable);
++	if (hfn == KVM_PFN_ERR_HWPOISON) {
++		send_sig_mceerr(BUS_MCEERR_AR, (void __user *)hva,
++				vma_pageshift, current);
++		return 0;
++	}
++	if (is_error_noslot_pfn(hfn))
++		return -EFAULT;
++
++	/*
++	 * If logging is active then we allow writable pages only
++	 * for write faults.
++	 */
++	if (logging && !is_write)
++		writeable = false;
++
++	spin_lock(&kvm->mmu_lock);
++
++	if (writeable) {
++		kvm_set_pfn_dirty(hfn);
++		mark_page_dirty(kvm, gfn);
++		ret = stage2_map_page(kvm, pcache, gpa, hfn << PAGE_SHIFT,
++				      vma_pagesize, false, true);
++	} else {
++		ret = stage2_map_page(kvm, pcache, gpa, hfn << PAGE_SHIFT,
++				      vma_pagesize, true, true);
++	}
++
++	if (ret)
++		kvm_err("Failed to map in stage2\n");
++
++	spin_unlock(&kvm->mmu_lock);
++	kvm_set_pfn_accessed(hfn);
++	kvm_release_pfn_clean(hfn);
 +	return ret;
  }
-diff --git a/arch/riscv/kvm/vcpu_switch.S b/arch/riscv/kvm/vcpu_switch.S
-index 5174b025ff4e..13fb56906da2 100644
---- a/arch/riscv/kvm/vcpu_switch.S
-+++ b/arch/riscv/kvm/vcpu_switch.S
-@@ -201,3 +201,26 @@ __kvm_switch_return:
- 	/* Return to C code */
- 	ret
- ENDPROC(__kvm_riscv_switch_to)
+ 
+ void kvm_riscv_stage2_flush_cache(struct kvm_vcpu *vcpu)
+ {
+-	/* TODO: */
++	stage2_cache_flush(&vcpu->arch.mmu_page_cache);
+ }
+ 
+ int kvm_riscv_stage2_alloc_pgd(struct kvm *kvm)
+ {
+-	/* TODO: */
++	struct page *pgd_page;
 +
-+ENTRY(__kvm_riscv_unpriv_trap)
-+	/*
-+	 * We assume that faulting unpriv load/store instruction is
-+	 * is 4-byte long and blindly increment SEPC by 4.
-+	 *
-+	 * The trap details will be saved at address pointed by 'A0'
-+	 * register and we use 'A1' register as temporary.
-+	 */
-+	csrr	a1, CSR_SEPC
-+	REG_S	a1, (KVM_ARCH_TRAP_SEPC)(a0)
-+	addi	a1, a1, 4
-+	csrw	CSR_SEPC, a1
-+	csrr	a1, CSR_SCAUSE
-+	REG_S	a1, (KVM_ARCH_TRAP_SCAUSE)(a0)
-+	csrr	a1, CSR_STVAL
-+	REG_S	a1, (KVM_ARCH_TRAP_STVAL)(a0)
-+	csrr	a1, CSR_HTVAL
-+	REG_S	a1, (KVM_ARCH_TRAP_HTVAL)(a0)
-+	csrr	a1, CSR_HTINST
-+	REG_S	a1, (KVM_ARCH_TRAP_HTINST)(a0)
-+	sret
-+ENDPROC(__kvm_riscv_unpriv_trap)
++	if (kvm->arch.pgd != NULL) {
++		kvm_err("kvm_arch already initialized?\n");
++		return -EINVAL;
++	}
++
++	pgd_page = alloc_pages(GFP_KERNEL | __GFP_ZERO,
++				get_order(stage2_pgd_size));
++	if (!pgd_page)
++		return -ENOMEM;
++	kvm->arch.pgd = page_to_virt(pgd_page);
++	kvm->arch.pgd_phys = page_to_phys(pgd_page);
++
+ 	return 0;
+ }
+ 
+ void kvm_riscv_stage2_free_pgd(struct kvm *kvm)
+ {
+-	/* TODO: */
++	void *pgd = NULL;
++
++	spin_lock(&kvm->mmu_lock);
++	if (kvm->arch.pgd) {
++		stage2_unmap_range(kvm, 0UL, stage2_gpa_size);
++		pgd = READ_ONCE(kvm->arch.pgd);
++		kvm->arch.pgd = NULL;
++		kvm->arch.pgd_phys = 0;
++	}
++	spin_unlock(&kvm->mmu_lock);
++
++	if (pgd)
++		free_pages((unsigned long)pgd, get_order(stage2_pgd_size));
+ }
+ 
+ void kvm_riscv_stage2_update_hgatp(struct kvm_vcpu *vcpu)
+ {
+-	/* TODO: */
++	unsigned long hgatp = stage2_mode;
++	struct kvm_arch *k = &vcpu->kvm->arch;
++
++	hgatp |= (READ_ONCE(k->vmid.vmid) << HGATP_VMID_SHIFT) &
++		 HGATP_VMID_MASK;
++	hgatp |= (k->pgd_phys >> PAGE_SHIFT) & HGATP_PPN;
++
++	csr_write(CSR_HGATP, hgatp);
++
++	if (!kvm_riscv_stage2_vmid_bits())
++		__kvm_riscv_hfence_gvma_all();
++}
++
++void kvm_riscv_stage2_mode_detect(void)
++{
++#ifdef CONFIG_64BIT
++	/* Try Sv48x4 stage2 mode */
++	csr_write(CSR_HGATP, HGATP_MODE_SV48X4 << HGATP_MODE_SHIFT);
++	if ((csr_read(CSR_HGATP) >> HGATP_MODE_SHIFT) == HGATP_MODE_SV48X4) {
++		stage2_mode = (HGATP_MODE_SV48X4 << HGATP_MODE_SHIFT);
++		stage2_pgd_levels = 4;
++	}
++	csr_write(CSR_HGATP, 0);
++
++	__kvm_riscv_hfence_gvma_all();
++#endif
++}
++
++unsigned long kvm_riscv_stage2_mode(void)
++{
++	return stage2_mode >> HGATP_MODE_SHIFT;
+ }
 diff --git a/arch/riscv/kvm/vm.c b/arch/riscv/kvm/vm.c
-index d6776b4819bb..496a86a74236 100644
+index 282d67617229..6cde69a82252 100644
 --- a/arch/riscv/kvm/vm.c
 +++ b/arch/riscv/kvm/vm.c
-@@ -46,6 +46,7 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
- 	int r;
+@@ -12,12 +12,6 @@
+ #include <linux/uaccess.h>
+ #include <linux/kvm_host.h>
  
- 	switch (ext) {
-+	case KVM_CAP_IOEVENTFD:
- 	case KVM_CAP_DEVICE_CTRL:
- 	case KVM_CAP_USER_MEMORY:
- 	case KVM_CAP_DESTROY_MEMORY_REGION_WORKS:
+-int kvm_vm_ioctl_get_dirty_log(struct kvm *kvm, struct kvm_dirty_log *log)
+-{
+-	/* TODO: To be added later. */
+-	return -EOPNOTSUPP;
+-}
+-
+ int kvm_arch_init_vm(struct kvm *kvm, unsigned long type)
+ {
+ 	int r;
 -- 
 2.25.1
 
