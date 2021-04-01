@@ -1,154 +1,184 @@
 From: Anup Patel <anup.patel@wdc.com>
-Date: Thu,  1 Apr 2021 19:10:55 +0530
-Subject: [PATCH v7 7/8] riscv: Handle SBI calls forwarded to user space
+Date: Thu,  1 Apr 2021 19:10:56 +0530
+Subject: [PATCH v7 8/8] riscv: Generate PCI host DT node
 In-Reply-To: <20210401134056.384038-1-anup.patel@wdc.com>
 References: <20210401134056.384038-1-anup.patel@wdc.com>
-Message-ID: <20210401134056.384038-8-anup.patel@wdc.com>
+Message-ID: <20210401134056.384038-9-anup.patel@wdc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The kernel KVM RISC-V module will forward certain SBI calls
-to user space. These forwared SBI calls will usually be the
-SBI calls which cannot be emulated in kernel space such as
-PUTCHAR and GETCHAR calls.
+This patch extends FDT generation to generate PCI host DT node.
 
-This patch extends kvm_cpu__handle_exit() to handle SBI calls
-forwarded to user space.
+Of course, PCI host for Guest/VM is not useful at the moment
+because it's mostly for PCI pass-through and we don't have
+IOMMU and interrupt routing available for KVM RISC-V. In future,
+we might be able to use PCI host for VirtIO PCI transport or
+other software emulated PCI devices.
 
-Signed-off-by: Atish Patra <atish.patra@wdc.com>
 Signed-off-by: Anup Patel <anup.patel@wdc.com>
 ---
- riscv/include/kvm/sbi.h | 48 ++++++++++++++++++++++++++++++++++++++++
- riscv/kvm-cpu.c         | 49 ++++++++++++++++++++++++++++++++++++++++-
- 2 files changed, 96 insertions(+), 1 deletion(-)
- create mode 100644 riscv/include/kvm/sbi.h
+ Makefile                     |   1 +
+ riscv/fdt.c                  |   3 +
+ riscv/include/kvm/kvm-arch.h |   2 +
+ riscv/pci.c                  | 109 +++++++++++++++++++++++++++++++++++
+ 4 files changed, 115 insertions(+)
+ create mode 100644 riscv/pci.c
 
-diff --git a/riscv/include/kvm/sbi.h b/riscv/include/kvm/sbi.h
+diff --git a/Makefile b/Makefile
+index e4e1184..6920d7f 100644
+--- a/Makefile
++++ b/Makefile
+@@ -204,6 +204,7 @@ ifeq ($(ARCH),riscv)
+ 	OBJS		+= riscv/irq.o
+ 	OBJS		+= riscv/kvm.o
+ 	OBJS		+= riscv/kvm-cpu.o
++	OBJS		+= riscv/pci.o
+ 	OBJS		+= riscv/plic.o
+ 	ifeq ($(RISCV_XLEN),32)
+ 		CFLAGS	+= -mabi=ilp32d -march=rv32gc
+diff --git a/riscv/fdt.c b/riscv/fdt.c
+index 6527ef7..de15bfe 100644
+--- a/riscv/fdt.c
++++ b/riscv/fdt.c
+@@ -167,6 +167,9 @@ static int setup_fdt(struct kvm *kvm)
+ 		dev_hdr = device__next_dev(dev_hdr);
+ 	}
+ 
++	/* PCI host controller */
++	pci__generate_fdt_nodes(fdt);
++
+ 	_FDT(fdt_end_node(fdt));
+ 
+ 	if (fdt_stdout_path) {
+diff --git a/riscv/include/kvm/kvm-arch.h b/riscv/include/kvm/kvm-arch.h
+index 02825cd..d9a072e 100644
+--- a/riscv/include/kvm/kvm-arch.h
++++ b/riscv/include/kvm/kvm-arch.h
+@@ -80,4 +80,6 @@ void plic__generate_irq_prop(void *fdt, u8 irq, enum irq_type irq_type);
+ 
+ void plic__irq_trig(struct kvm *kvm, int irq, int level, bool edge);
+ 
++void pci__generate_fdt_nodes(void *fdt);
++
+ #endif /* KVM__KVM_ARCH_H */
+diff --git a/riscv/pci.c b/riscv/pci.c
 new file mode 100644
-index 0000000..f4b4182
+index 0000000..666a452
 --- /dev/null
-+++ b/riscv/include/kvm/sbi.h
-@@ -0,0 +1,48 @@
-+/* SPDX-License-Identifier: GPL-2.0-only */
++++ b/riscv/pci.c
+@@ -0,0 +1,109 @@
++#include "kvm/devices.h"
++#include "kvm/fdt.h"
++#include "kvm/kvm.h"
++#include "kvm/of_pci.h"
++#include "kvm/pci.h"
++#include "kvm/util.h"
++
 +/*
-+ * Common SBI related defines and macros to be used by RISC-V kernel,
-+ * RISC-V KVM and userspace.
-+ *
-+ * Copyright (c) 2019 Western Digital Corporation or its affiliates.
++ * An entry in the interrupt-map table looks like:
++ * <pci unit address> <pci interrupt pin> <plic phandle> <plic interrupt>
 + */
 +
-+#ifndef __RISCV_SBI_H__
-+#define __RISCV_SBI_H__
++struct of_interrupt_map_entry {
++	struct of_pci_irq_mask		pci_irq_mask;
++	u32				plic_phandle;
++	u32				plic_irq;
++} __attribute__((packed));
 +
-+enum sbi_ext_id {
-+	SBI_EXT_0_1_SET_TIMER = 0x0,
-+	SBI_EXT_0_1_CONSOLE_PUTCHAR = 0x1,
-+	SBI_EXT_0_1_CONSOLE_GETCHAR = 0x2,
-+	SBI_EXT_0_1_CLEAR_IPI = 0x3,
-+	SBI_EXT_0_1_SEND_IPI = 0x4,
-+	SBI_EXT_0_1_REMOTE_FENCE_I = 0x5,
-+	SBI_EXT_0_1_REMOTE_SFENCE_VMA = 0x6,
-+	SBI_EXT_0_1_REMOTE_SFENCE_VMA_ASID = 0x7,
-+	SBI_EXT_0_1_SHUTDOWN = 0x8,
-+	SBI_EXT_BASE = 0x10,
-+};
-+
-+enum sbi_ext_base_fid {
-+	SBI_BASE_GET_SPEC_VERSION = 0,
-+	SBI_BASE_GET_IMP_ID,
-+	SBI_BASE_GET_IMP_VERSION,
-+	SBI_BASE_PROBE_EXT,
-+	SBI_BASE_GET_MVENDORID,
-+	SBI_BASE_GET_MARCHID,
-+	SBI_BASE_GET_MIMPID,
-+};
-+
-+#define SBI_SPEC_VERSION_DEFAULT	0x1
-+#define SBI_SPEC_VERSION_MAJOR_OFFSET	24
-+#define SBI_SPEC_VERSION_MAJOR_MASK	0x7f
-+#define SBI_SPEC_VERSION_MINOR_MASK	0xffffff
-+
-+/* SBI return error codes */
-+#define SBI_SUCCESS		0
-+#define SBI_ERR_FAILURE		-1
-+#define SBI_ERR_NOT_SUPPORTED	-2
-+#define SBI_ERR_INVALID_PARAM   -3
-+#define SBI_ERR_DENIED		-4
-+#define SBI_ERR_INVALID_ADDRESS -5
-+
-+#endif
-diff --git a/riscv/kvm-cpu.c b/riscv/kvm-cpu.c
-index 8adaddd..df90c7b 100644
---- a/riscv/kvm-cpu.c
-+++ b/riscv/kvm-cpu.c
-@@ -1,6 +1,7 @@
- #include "kvm/kvm-cpu.h"
- #include "kvm/kvm.h"
- #include "kvm/virtio.h"
-+#include "kvm/sbi.h"
- #include "kvm/term.h"
- 
- #include <asm/ptrace.h>
-@@ -110,9 +111,55 @@ void kvm_cpu__delete(struct kvm_cpu *vcpu)
- 	free(vcpu);
- }
- 
-+static bool kvm_cpu_riscv_sbi(struct kvm_cpu *vcpu)
++void pci__generate_fdt_nodes(void *fdt)
 +{
-+	char ch;
-+	bool ret = true;
-+	int dfd = kvm_cpu__get_debug_fd();
-+
-+	switch (vcpu->kvm_run->riscv_sbi.extension_id) {
-+	case SBI_EXT_0_1_CONSOLE_PUTCHAR:
-+		ch = vcpu->kvm_run->riscv_sbi.args[0];
-+		term_putc(&ch, 1, 0);
-+		vcpu->kvm_run->riscv_sbi.ret[0] = 0;
-+		break;
-+	case SBI_EXT_0_1_CONSOLE_GETCHAR:
-+		if (term_readable(0))
-+			vcpu->kvm_run->riscv_sbi.ret[0] =
-+					term_getc(vcpu->kvm, 0);
-+		else
-+			vcpu->kvm_run->riscv_sbi.ret[0] = SBI_ERR_FAILURE;
-+		break;
-+	default:
-+		dprintf(dfd, "Unhandled SBI call\n");
-+		dprintf(dfd, "extension_id=0x%lx function_id=0x%lx\n",
-+			vcpu->kvm_run->riscv_sbi.extension_id,
-+			vcpu->kvm_run->riscv_sbi.function_id);
-+		dprintf(dfd, "args[0]=0x%lx args[1]=0x%lx\n",
-+			vcpu->kvm_run->riscv_sbi.args[0],
-+			vcpu->kvm_run->riscv_sbi.args[1]);
-+		dprintf(dfd, "args[2]=0x%lx args[3]=0x%lx\n",
-+			vcpu->kvm_run->riscv_sbi.args[2],
-+			vcpu->kvm_run->riscv_sbi.args[3]);
-+		dprintf(dfd, "args[4]=0x%lx args[5]=0x%lx\n",
-+			vcpu->kvm_run->riscv_sbi.args[4],
-+			vcpu->kvm_run->riscv_sbi.args[5]);
-+		ret = false;
-+		break;
++	struct device_header *dev_hdr;
++	struct of_interrupt_map_entry irq_map[OF_PCI_IRQ_MAP_MAX];
++	unsigned nentries = 0;
++	/* Bus range */
++	u32 bus_range[] = { cpu_to_fdt32(0), cpu_to_fdt32(1), };
++	/* Configuration Space */
++	u64 cfg_reg_prop[] = { cpu_to_fdt64(KVM_PCI_CFG_AREA),
++			       cpu_to_fdt64(RISCV_PCI_CFG_SIZE), };
++	/* Describe the memory ranges */
++	struct of_pci_ranges_entry ranges[] = {
++		{
++			.pci_addr = {
++				.hi	= cpu_to_fdt32(of_pci_b_ss(OF_PCI_SS_IO)),
++				.mid	= 0,
++				.lo	= 0,
++			},
++			.cpu_addr	= cpu_to_fdt64(KVM_IOPORT_AREA),
++			.length		= cpu_to_fdt64(RISCV_IOPORT_SIZE),
++		},
++		{
++			.pci_addr = {
++				.hi	= cpu_to_fdt32(of_pci_b_ss(OF_PCI_SS_M32)),
++				.mid	= cpu_to_fdt32(KVM_PCI_MMIO_AREA >> 32),
++				.lo	= cpu_to_fdt32(KVM_PCI_MMIO_AREA),
++			},
++			.cpu_addr	= cpu_to_fdt64(KVM_PCI_MMIO_AREA),
++			.length		= cpu_to_fdt64(RISCV_PCI_MMIO_SIZE),
++		},
 +	};
 +
-+	return ret;
++	/* Boilerplate PCI properties */
++	_FDT(fdt_begin_node(fdt, "pci"));
++	_FDT(fdt_property_string(fdt, "device_type", "pci"));
++	_FDT(fdt_property_cell(fdt, "#address-cells", 0x3));
++	_FDT(fdt_property_cell(fdt, "#size-cells", 0x2));
++	_FDT(fdt_property_cell(fdt, "#interrupt-cells", 0x1));
++	_FDT(fdt_property_string(fdt, "compatible", "pci-host-cam-generic"));
++	_FDT(fdt_property(fdt, "dma-coherent", NULL, 0));
++
++	_FDT(fdt_property(fdt, "bus-range", bus_range, sizeof(bus_range)));
++	_FDT(fdt_property(fdt, "reg", &cfg_reg_prop, sizeof(cfg_reg_prop)));
++	_FDT(fdt_property(fdt, "ranges", ranges, sizeof(ranges)));
++
++	/* Generate the interrupt map ... */
++	dev_hdr = device__first_dev(DEVICE_BUS_PCI);
++	while (dev_hdr && nentries < ARRAY_SIZE(irq_map)) {
++		struct of_interrupt_map_entry *entry = &irq_map[nentries];
++		struct pci_device_header *pci_hdr = dev_hdr->data;
++		u8 dev_num = dev_hdr->dev_num;
++		u8 pin = pci_hdr->irq_pin;
++		u8 irq = pci_hdr->irq_line;
++
++		*entry = (struct of_interrupt_map_entry) {
++			.pci_irq_mask = {
++				.pci_addr = {
++					.hi	= cpu_to_fdt32(of_pci_b_ddddd(dev_num)),
++					.mid	= 0,
++					.lo	= 0,
++				},
++				.pci_pin	= cpu_to_fdt32(pin),
++			},
++			.plic_phandle	= cpu_to_fdt32(PHANDLE_PLIC),
++			.plic_irq	= cpu_to_fdt32(irq),
++		};
++
++		nentries++;
++		dev_hdr = device__next_dev(dev_hdr);
++	}
++
++	_FDT(fdt_property(fdt, "interrupt-map", irq_map,
++			  sizeof(struct of_interrupt_map_entry) * nentries));
++
++	/* ... and the corresponding mask. */
++	if (nentries) {
++		struct of_pci_irq_mask irq_mask = {
++			.pci_addr = {
++				.hi	= cpu_to_fdt32(of_pci_b_ddddd(-1)),
++				.mid	= 0,
++				.lo	= 0,
++			},
++			.pci_pin	= cpu_to_fdt32(7),
++		};
++
++		_FDT(fdt_property(fdt, "interrupt-map-mask", &irq_mask,
++				  sizeof(irq_mask)));
++	}
++
++	_FDT(fdt_end_node(fdt));
 +}
-+
- bool kvm_cpu__handle_exit(struct kvm_cpu *vcpu)
- {
--	/* TODO: */
-+	switch (vcpu->kvm_run->exit_reason) {
-+	case KVM_EXIT_RISCV_SBI:
-+		return kvm_cpu_riscv_sbi(vcpu);
-+	default:
-+		break;
-+	};
-+
- 	return false;
- }
- 
 -- 
 2.25.1
 
