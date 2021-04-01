@@ -1,292 +1,452 @@
 From: Anup Patel <anup.patel@wdc.com>
-Date: Thu,  1 Apr 2021 19:04:29 +0530
-Subject: [PATCH v17 11/17] RISC-V: KVM: Implement MMU notifiers
+Date: Thu,  1 Apr 2021 19:04:31 +0530
+Subject: [PATCH v17 13/17] RISC-V: KVM: FP lazy save/restore
 In-Reply-To: <20210401133435.383959-1-anup.patel@wdc.com>
 References: <20210401133435.383959-1-anup.patel@wdc.com>
-Message-ID: <20210401133435.383959-12-anup.patel@wdc.com>
+Message-ID: <20210401133435.383959-14-anup.patel@wdc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This patch implements MMU notifiers for KVM RISC-V so that Guest
-physical address space is in-sync with Host physical address space.
+From: Atish Patra <atish.patra@wdc.com>
 
-This will allow swapping, page migration, etc to work transparently
-with KVM RISC-V.
+This patch adds floating point (F and D extension) context save/restore
+for guest VCPUs. The FP context is saved and restored lazily only when
+kernel enter/exits the in-kernel run loop and not during the KVM world
+switch. This way FP save/restore has minimal impact on KVM performance.
 
+Signed-off-by: Atish Patra <atish.patra@wdc.com>
 Signed-off-by: Anup Patel <anup.patel@wdc.com>
 Acked-by: Paolo Bonzini <pbonzini@redhat.com>
 Reviewed-by: Paolo Bonzini <pbonzini@redhat.com>
 Reviewed-by: Alexander Graf <graf@amazon.com>
 ---
- arch/riscv/include/asm/kvm_host.h |   7 ++
- arch/riscv/kvm/Kconfig            |   1 +
- arch/riscv/kvm/mmu.c              | 144 +++++++++++++++++++++++++++++-
- arch/riscv/kvm/vm.c               |   1 +
- 4 files changed, 149 insertions(+), 4 deletions(-)
+ arch/riscv/include/asm/kvm_host.h |   5 +
+ arch/riscv/kernel/asm-offsets.c   |  72 +++++++++++++
+ arch/riscv/kvm/vcpu.c             |  91 ++++++++++++++++
+ arch/riscv/kvm/vcpu_switch.S      | 174 ++++++++++++++++++++++++++++++
+ 4 files changed, 342 insertions(+)
 
 diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
-index f80c394312b8..4e318137d82a 100644
+index 20308046d5df..c6e717087a25 100644
 --- a/arch/riscv/include/asm/kvm_host.h
 +++ b/arch/riscv/include/asm/kvm_host.h
-@@ -202,6 +202,13 @@ static inline void kvm_arch_vcpu_uninit(struct kvm_vcpu *vcpu) {}
- static inline void kvm_arch_sched_in(struct kvm_vcpu *vcpu, int cpu) {}
- static inline void kvm_arch_vcpu_block_finish(struct kvm_vcpu *vcpu) {}
+@@ -130,6 +130,7 @@ struct kvm_cpu_context {
+ 	unsigned long sepc;
+ 	unsigned long sstatus;
+ 	unsigned long hstatus;
++	union __riscv_fp_state fp;
+ };
  
-+#define KVM_ARCH_WANT_MMU_NOTIFIER
-+int kvm_unmap_hva_range(struct kvm *kvm, unsigned long start,
-+			unsigned long end, unsigned int flags);
-+int kvm_set_spte_hva(struct kvm *kvm, unsigned long hva, pte_t pte);
-+int kvm_age_hva(struct kvm *kvm, unsigned long start, unsigned long end);
-+int kvm_test_age_hva(struct kvm *kvm, unsigned long hva);
+ struct kvm_vcpu_csr {
+@@ -250,6 +251,10 @@ int kvm_riscv_vcpu_exit(struct kvm_vcpu *vcpu, struct kvm_run *run,
+ 			struct kvm_cpu_trap *trap);
+ 
+ void __kvm_riscv_switch_to(struct kvm_vcpu_arch *vcpu_arch);
++void __kvm_riscv_fp_f_save(struct kvm_cpu_context *context);
++void __kvm_riscv_fp_f_restore(struct kvm_cpu_context *context);
++void __kvm_riscv_fp_d_save(struct kvm_cpu_context *context);
++void __kvm_riscv_fp_d_restore(struct kvm_cpu_context *context);
+ 
+ int kvm_riscv_vcpu_set_interrupt(struct kvm_vcpu *vcpu, unsigned int irq);
+ int kvm_riscv_vcpu_unset_interrupt(struct kvm_vcpu *vcpu, unsigned int irq);
+diff --git a/arch/riscv/kernel/asm-offsets.c b/arch/riscv/kernel/asm-offsets.c
+index 21e7cf76948d..c7252b76d3af 100644
+--- a/arch/riscv/kernel/asm-offsets.c
++++ b/arch/riscv/kernel/asm-offsets.c
+@@ -195,6 +195,78 @@ void asm_offsets(void)
+ 	OFFSET(KVM_ARCH_TRAP_HTVAL, kvm_cpu_trap, htval);
+ 	OFFSET(KVM_ARCH_TRAP_HTINST, kvm_cpu_trap, htinst);
+ 
++	/* F extension */
 +
- void __kvm_riscv_hfence_gvma_vmid_gpa(unsigned long gpa, unsigned long vmid);
- void __kvm_riscv_hfence_gvma_vmid(unsigned long vmid);
- void __kvm_riscv_hfence_gvma_gpa(unsigned long gpa);
-diff --git a/arch/riscv/kvm/Kconfig b/arch/riscv/kvm/Kconfig
-index 633063edaee8..a712bb910cda 100644
---- a/arch/riscv/kvm/Kconfig
-+++ b/arch/riscv/kvm/Kconfig
-@@ -20,6 +20,7 @@ if VIRTUALIZATION
- config KVM
- 	tristate "Kernel-based Virtual Machine (KVM) support (EXPERIMENTAL)"
- 	depends on RISCV_SBI && MMU
-+	select MMU_NOTIFIER
- 	select PREEMPT_NOTIFIERS
- 	select ANON_INODES
- 	select KVM_MMIO
-diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
-index 4c533a41b887..b64704aaed7d 100644
---- a/arch/riscv/kvm/mmu.c
-+++ b/arch/riscv/kvm/mmu.c
-@@ -296,7 +296,8 @@ static void stage2_op_pte(struct kvm *kvm, gpa_t addr,
- 	}
- }
- 
--static void stage2_unmap_range(struct kvm *kvm, gpa_t start, gpa_t size)
-+static void stage2_unmap_range(struct kvm *kvm, gpa_t start,
-+			       gpa_t size, bool may_block)
- {
- 	int ret;
- 	pte_t *ptep;
-@@ -321,6 +322,13 @@ static void stage2_unmap_range(struct kvm *kvm, gpa_t start, gpa_t size)
- 
- next:
- 		addr += page_size;
++	OFFSET(KVM_ARCH_FP_F_F0, kvm_cpu_context, fp.f.f[0]);
++	OFFSET(KVM_ARCH_FP_F_F1, kvm_cpu_context, fp.f.f[1]);
++	OFFSET(KVM_ARCH_FP_F_F2, kvm_cpu_context, fp.f.f[2]);
++	OFFSET(KVM_ARCH_FP_F_F3, kvm_cpu_context, fp.f.f[3]);
++	OFFSET(KVM_ARCH_FP_F_F4, kvm_cpu_context, fp.f.f[4]);
++	OFFSET(KVM_ARCH_FP_F_F5, kvm_cpu_context, fp.f.f[5]);
++	OFFSET(KVM_ARCH_FP_F_F6, kvm_cpu_context, fp.f.f[6]);
++	OFFSET(KVM_ARCH_FP_F_F7, kvm_cpu_context, fp.f.f[7]);
++	OFFSET(KVM_ARCH_FP_F_F8, kvm_cpu_context, fp.f.f[8]);
++	OFFSET(KVM_ARCH_FP_F_F9, kvm_cpu_context, fp.f.f[9]);
++	OFFSET(KVM_ARCH_FP_F_F10, kvm_cpu_context, fp.f.f[10]);
++	OFFSET(KVM_ARCH_FP_F_F11, kvm_cpu_context, fp.f.f[11]);
++	OFFSET(KVM_ARCH_FP_F_F12, kvm_cpu_context, fp.f.f[12]);
++	OFFSET(KVM_ARCH_FP_F_F13, kvm_cpu_context, fp.f.f[13]);
++	OFFSET(KVM_ARCH_FP_F_F14, kvm_cpu_context, fp.f.f[14]);
++	OFFSET(KVM_ARCH_FP_F_F15, kvm_cpu_context, fp.f.f[15]);
++	OFFSET(KVM_ARCH_FP_F_F16, kvm_cpu_context, fp.f.f[16]);
++	OFFSET(KVM_ARCH_FP_F_F17, kvm_cpu_context, fp.f.f[17]);
++	OFFSET(KVM_ARCH_FP_F_F18, kvm_cpu_context, fp.f.f[18]);
++	OFFSET(KVM_ARCH_FP_F_F19, kvm_cpu_context, fp.f.f[19]);
++	OFFSET(KVM_ARCH_FP_F_F20, kvm_cpu_context, fp.f.f[20]);
++	OFFSET(KVM_ARCH_FP_F_F21, kvm_cpu_context, fp.f.f[21]);
++	OFFSET(KVM_ARCH_FP_F_F22, kvm_cpu_context, fp.f.f[22]);
++	OFFSET(KVM_ARCH_FP_F_F23, kvm_cpu_context, fp.f.f[23]);
++	OFFSET(KVM_ARCH_FP_F_F24, kvm_cpu_context, fp.f.f[24]);
++	OFFSET(KVM_ARCH_FP_F_F25, kvm_cpu_context, fp.f.f[25]);
++	OFFSET(KVM_ARCH_FP_F_F26, kvm_cpu_context, fp.f.f[26]);
++	OFFSET(KVM_ARCH_FP_F_F27, kvm_cpu_context, fp.f.f[27]);
++	OFFSET(KVM_ARCH_FP_F_F28, kvm_cpu_context, fp.f.f[28]);
++	OFFSET(KVM_ARCH_FP_F_F29, kvm_cpu_context, fp.f.f[29]);
++	OFFSET(KVM_ARCH_FP_F_F30, kvm_cpu_context, fp.f.f[30]);
++	OFFSET(KVM_ARCH_FP_F_F31, kvm_cpu_context, fp.f.f[31]);
++	OFFSET(KVM_ARCH_FP_F_FCSR, kvm_cpu_context, fp.f.fcsr);
 +
-+		/*
-+		 * If the range is too large, release the kvm->mmu_lock
-+		 * to prevent starvation and lockup detector warnings.
-+		 */
-+		if (may_block && addr < end)
-+			cond_resched_lock(&kvm->mmu_lock);
- 	}
- }
++	/* D extension */
++
++	OFFSET(KVM_ARCH_FP_D_F0, kvm_cpu_context, fp.d.f[0]);
++	OFFSET(KVM_ARCH_FP_D_F1, kvm_cpu_context, fp.d.f[1]);
++	OFFSET(KVM_ARCH_FP_D_F2, kvm_cpu_context, fp.d.f[2]);
++	OFFSET(KVM_ARCH_FP_D_F3, kvm_cpu_context, fp.d.f[3]);
++	OFFSET(KVM_ARCH_FP_D_F4, kvm_cpu_context, fp.d.f[4]);
++	OFFSET(KVM_ARCH_FP_D_F5, kvm_cpu_context, fp.d.f[5]);
++	OFFSET(KVM_ARCH_FP_D_F6, kvm_cpu_context, fp.d.f[6]);
++	OFFSET(KVM_ARCH_FP_D_F7, kvm_cpu_context, fp.d.f[7]);
++	OFFSET(KVM_ARCH_FP_D_F8, kvm_cpu_context, fp.d.f[8]);
++	OFFSET(KVM_ARCH_FP_D_F9, kvm_cpu_context, fp.d.f[9]);
++	OFFSET(KVM_ARCH_FP_D_F10, kvm_cpu_context, fp.d.f[10]);
++	OFFSET(KVM_ARCH_FP_D_F11, kvm_cpu_context, fp.d.f[11]);
++	OFFSET(KVM_ARCH_FP_D_F12, kvm_cpu_context, fp.d.f[12]);
++	OFFSET(KVM_ARCH_FP_D_F13, kvm_cpu_context, fp.d.f[13]);
++	OFFSET(KVM_ARCH_FP_D_F14, kvm_cpu_context, fp.d.f[14]);
++	OFFSET(KVM_ARCH_FP_D_F15, kvm_cpu_context, fp.d.f[15]);
++	OFFSET(KVM_ARCH_FP_D_F16, kvm_cpu_context, fp.d.f[16]);
++	OFFSET(KVM_ARCH_FP_D_F17, kvm_cpu_context, fp.d.f[17]);
++	OFFSET(KVM_ARCH_FP_D_F18, kvm_cpu_context, fp.d.f[18]);
++	OFFSET(KVM_ARCH_FP_D_F19, kvm_cpu_context, fp.d.f[19]);
++	OFFSET(KVM_ARCH_FP_D_F20, kvm_cpu_context, fp.d.f[20]);
++	OFFSET(KVM_ARCH_FP_D_F21, kvm_cpu_context, fp.d.f[21]);
++	OFFSET(KVM_ARCH_FP_D_F22, kvm_cpu_context, fp.d.f[22]);
++	OFFSET(KVM_ARCH_FP_D_F23, kvm_cpu_context, fp.d.f[23]);
++	OFFSET(KVM_ARCH_FP_D_F24, kvm_cpu_context, fp.d.f[24]);
++	OFFSET(KVM_ARCH_FP_D_F25, kvm_cpu_context, fp.d.f[25]);
++	OFFSET(KVM_ARCH_FP_D_F26, kvm_cpu_context, fp.d.f[26]);
++	OFFSET(KVM_ARCH_FP_D_F27, kvm_cpu_context, fp.d.f[27]);
++	OFFSET(KVM_ARCH_FP_D_F28, kvm_cpu_context, fp.d.f[28]);
++	OFFSET(KVM_ARCH_FP_D_F29, kvm_cpu_context, fp.d.f[29]);
++	OFFSET(KVM_ARCH_FP_D_F30, kvm_cpu_context, fp.d.f[30]);
++	OFFSET(KVM_ARCH_FP_D_F31, kvm_cpu_context, fp.d.f[31]);
++	OFFSET(KVM_ARCH_FP_D_FCSR, kvm_cpu_context, fp.d.fcsr);
++
+ 	/*
+ 	 * THREAD_{F,X}* might be larger than a S-type offset can handle, but
+ 	 * these are used in performance-sensitive assembly so we can't resort
+diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+index e242431dca66..581fa55f7232 100644
+--- a/arch/riscv/kvm/vcpu.c
++++ b/arch/riscv/kvm/vcpu.c
+@@ -35,6 +35,86 @@ struct kvm_stats_debugfs_item debugfs_entries[] = {
+ 	{ NULL }
+ };
  
-@@ -404,6 +412,38 @@ static int stage2_ioremap(struct kvm *kvm, gpa_t gpa, phys_addr_t hpa,
- 
- }
- 
-+static int handle_hva_to_gpa(struct kvm *kvm,
-+			     unsigned long start,
-+			     unsigned long end,
-+			     int (*handler)(struct kvm *kvm,
-+					    gpa_t gpa, u64 size,
-+					    void *data),
-+			     void *data)
++#ifdef CONFIG_FPU
++static void kvm_riscv_vcpu_fp_reset(struct kvm_vcpu *vcpu)
 +{
-+	struct kvm_memslots *slots;
-+	struct kvm_memory_slot *memslot;
-+	int ret = 0;
++	unsigned long isa = vcpu->arch.isa;
++	struct kvm_cpu_context *cntx = &vcpu->arch.guest_context;
 +
-+	slots = kvm_memslots(kvm);
++	cntx->sstatus &= ~SR_FS;
++	if (riscv_isa_extension_available(&isa, f) ||
++	    riscv_isa_extension_available(&isa, d))
++		cntx->sstatus |= SR_FS_INITIAL;
++	else
++		cntx->sstatus |= SR_FS_OFF;
++}
 +
-+	/* we only care about the pages that the guest sees */
-+	kvm_for_each_memslot(memslot, slots) {
-+		unsigned long hva_start, hva_end;
-+		gfn_t gpa;
++static void kvm_riscv_vcpu_fp_clean(struct kvm_cpu_context *cntx)
++{
++	cntx->sstatus &= ~SR_FS;
++	cntx->sstatus |= SR_FS_CLEAN;
++}
 +
-+		hva_start = max(start, memslot->userspace_addr);
-+		hva_end = min(end, memslot->userspace_addr +
-+					(memslot->npages << PAGE_SHIFT));
-+		if (hva_start >= hva_end)
-+			continue;
-+
-+		gpa = hva_to_gfn_memslot(hva_start, memslot) << PAGE_SHIFT;
-+		ret |= handler(kvm, gpa, (u64)(hva_end - hva_start), data);
++static void kvm_riscv_vcpu_guest_fp_save(struct kvm_cpu_context *cntx,
++					 unsigned long isa)
++{
++	if ((cntx->sstatus & SR_FS) == SR_FS_DIRTY) {
++		if (riscv_isa_extension_available(&isa, d))
++			__kvm_riscv_fp_d_save(cntx);
++		else if (riscv_isa_extension_available(&isa, f))
++			__kvm_riscv_fp_f_save(cntx);
++		kvm_riscv_vcpu_fp_clean(cntx);
 +	}
-+
-+	return ret;
 +}
 +
- void kvm_arch_mmu_enable_log_dirty_pt_masked(struct kvm *kvm,
- 					     struct kvm_memory_slot *slot,
- 					     gfn_t gfn_offset,
-@@ -543,7 +583,7 @@ int kvm_arch_prepare_memory_region(struct kvm *kvm,
- 	spin_lock(&kvm->mmu_lock);
- 	if (ret)
- 		stage2_unmap_range(kvm, mem->guest_phys_addr,
--				   mem->memory_size);
-+				   mem->memory_size, false);
- 	spin_unlock(&kvm->mmu_lock);
++static void kvm_riscv_vcpu_guest_fp_restore(struct kvm_cpu_context *cntx,
++					    unsigned long isa)
++{
++	if ((cntx->sstatus & SR_FS) != SR_FS_OFF) {
++		if (riscv_isa_extension_available(&isa, d))
++			__kvm_riscv_fp_d_restore(cntx);
++		else if (riscv_isa_extension_available(&isa, f))
++			__kvm_riscv_fp_f_restore(cntx);
++		kvm_riscv_vcpu_fp_clean(cntx);
++	}
++}
++
++static void kvm_riscv_vcpu_host_fp_save(struct kvm_cpu_context *cntx)
++{
++	/* No need to check host sstatus as it can be modified outside */
++	if (riscv_isa_extension_available(NULL, d))
++		__kvm_riscv_fp_d_save(cntx);
++	else if (riscv_isa_extension_available(NULL, f))
++		__kvm_riscv_fp_f_save(cntx);
++}
++
++static void kvm_riscv_vcpu_host_fp_restore(struct kvm_cpu_context *cntx)
++{
++	if (riscv_isa_extension_available(NULL, d))
++		__kvm_riscv_fp_d_restore(cntx);
++	else if (riscv_isa_extension_available(NULL, f))
++		__kvm_riscv_fp_f_restore(cntx);
++}
++#else
++static void kvm_riscv_vcpu_fp_reset(struct kvm_vcpu *vcpu)
++{
++}
++static void kvm_riscv_vcpu_guest_fp_save(struct kvm_cpu_context *cntx,
++					 unsigned long isa)
++{
++}
++static void kvm_riscv_vcpu_guest_fp_restore(struct kvm_cpu_context *cntx,
++					    unsigned long isa)
++{
++}
++static void kvm_riscv_vcpu_host_fp_save(struct kvm_cpu_context *cntx)
++{
++}
++static void kvm_riscv_vcpu_host_fp_restore(struct kvm_cpu_context *cntx)
++{
++}
++#endif
++
+ #define KVM_RISCV_ISA_ALLOWED	(riscv_isa_extension_mask(a) | \
+ 				 riscv_isa_extension_mask(c) | \
+ 				 riscv_isa_extension_mask(d) | \
+@@ -55,6 +135,8 @@ static void kvm_riscv_reset_vcpu(struct kvm_vcpu *vcpu)
  
- out:
-@@ -551,6 +591,96 @@ int kvm_arch_prepare_memory_region(struct kvm *kvm,
- 	return ret;
+ 	memcpy(cntx, reset_cntx, sizeof(*cntx));
+ 
++	kvm_riscv_vcpu_fp_reset(vcpu);
++
+ 	kvm_riscv_vcpu_timer_reset(vcpu);
+ 
+ 	WRITE_ONCE(vcpu->arch.irqs_pending, 0);
+@@ -189,6 +271,7 @@ static int kvm_riscv_vcpu_set_reg_config(struct kvm_vcpu *vcpu,
+ 			vcpu->arch.isa = reg_val;
+ 			vcpu->arch.isa &= riscv_isa_extension_base(NULL);
+ 			vcpu->arch.isa &= KVM_RISCV_ISA_ALLOWED;
++			kvm_riscv_vcpu_fp_reset(vcpu);
+ 		} else {
+ 			return -EOPNOTSUPP;
+ 		}
+@@ -593,6 +676,10 @@ void kvm_arch_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
+ 
+ 	kvm_riscv_vcpu_timer_restore(vcpu);
+ 
++	kvm_riscv_vcpu_host_fp_save(&vcpu->arch.host_context);
++	kvm_riscv_vcpu_guest_fp_restore(&vcpu->arch.guest_context,
++					vcpu->arch.isa);
++
+ 	vcpu->cpu = cpu;
  }
  
-+static int kvm_unmap_hva_handler(struct kvm *kvm,
-+				 gpa_t gpa, u64 size, void *data)
-+{
-+	unsigned int flags = *(unsigned int *)data;
-+	bool may_block = flags & MMU_NOTIFIER_RANGE_BLOCKABLE;
-+
-+	stage2_unmap_range(kvm, gpa, size, may_block);
-+	return 0;
-+}
-+
-+int kvm_unmap_hva_range(struct kvm *kvm, unsigned long start,
-+			unsigned long end, unsigned int flags)
-+{
-+	if (!kvm->arch.pgd)
-+		return 0;
-+
-+	handle_hva_to_gpa(kvm, start, end, &kvm_unmap_hva_handler, &flags);
-+	return 0;
-+}
-+
-+static int kvm_set_spte_handler(struct kvm *kvm,
-+				gpa_t gpa, u64 size, void *data)
-+{
-+	pte_t *pte = (pte_t *)data;
-+
-+	WARN_ON(size != PAGE_SIZE);
-+	stage2_set_pte(kvm, 0, NULL, gpa, pte);
-+
-+	return 0;
-+}
-+
-+int kvm_set_spte_hva(struct kvm *kvm, unsigned long hva, pte_t pte)
-+{
-+	unsigned long end = hva + PAGE_SIZE;
-+	kvm_pfn_t pfn = pte_pfn(pte);
-+	pte_t stage2_pte;
-+
-+	if (!kvm->arch.pgd)
-+		return 0;
-+
-+	stage2_pte = pfn_pte(pfn, PAGE_WRITE_EXEC);
-+	handle_hva_to_gpa(kvm, hva, end, &kvm_set_spte_handler, &stage2_pte);
-+
-+	return 0;
-+}
-+
-+static int kvm_age_hva_handler(struct kvm *kvm,
-+				gpa_t gpa, u64 size, void *data)
-+{
-+	pte_t *ptep;
-+	u32 ptep_level = 0;
-+
-+	WARN_ON(size != PAGE_SIZE && size != PMD_SIZE && size != PGDIR_SIZE);
-+
-+	if (!stage2_get_leaf_entry(kvm, gpa, &ptep, &ptep_level))
-+		return 0;
-+
-+	return ptep_test_and_clear_young(NULL, 0, ptep);
-+}
-+
-+int kvm_age_hva(struct kvm *kvm, unsigned long start, unsigned long end)
-+{
-+	if (!kvm->arch.pgd)
-+		return 0;
-+
-+	return handle_hva_to_gpa(kvm, start, end, kvm_age_hva_handler, NULL);
-+}
-+
-+static int kvm_test_age_hva_handler(struct kvm *kvm,
-+				    gpa_t gpa, u64 size, void *data)
-+{
-+	pte_t *ptep;
-+	u32 ptep_level = 0;
-+
-+	WARN_ON(size != PAGE_SIZE && size != PMD_SIZE);
-+	if (!stage2_get_leaf_entry(kvm, gpa, &ptep, &ptep_level))
-+		return 0;
-+
-+	return pte_young(*ptep);
-+}
-+
-+int kvm_test_age_hva(struct kvm *kvm, unsigned long hva)
-+{
-+	if (!kvm->arch.pgd)
-+		return 0;
-+
-+	return handle_hva_to_gpa(kvm, hva, hva,
-+				 kvm_test_age_hva_handler, NULL);
-+}
-+
- int kvm_riscv_stage2_map(struct kvm_vcpu *vcpu,
- 			 struct kvm_memory_slot *memslot,
- 			 gpa_t gpa, unsigned long hva, bool is_write)
-@@ -565,7 +695,7 @@ int kvm_riscv_stage2_map(struct kvm_vcpu *vcpu,
- 	struct kvm_mmu_page_cache *pcache = &vcpu->arch.mmu_page_cache;
- 	bool logging = (memslot->dirty_bitmap &&
- 			!(memslot->flags & KVM_MEM_READONLY)) ? true : false;
--	unsigned long vma_pagesize;
-+	unsigned long vma_pagesize, mmu_seq;
+@@ -602,6 +689,10 @@ void kvm_arch_vcpu_put(struct kvm_vcpu *vcpu)
  
- 	mmap_read_lock(current->mm);
+ 	vcpu->cpu = -1;
  
-@@ -604,6 +734,8 @@ int kvm_riscv_stage2_map(struct kvm_vcpu *vcpu,
- 		return ret;
- 	}
- 
-+	mmu_seq = kvm->mmu_notifier_seq;
++	kvm_riscv_vcpu_guest_fp_save(&vcpu->arch.guest_context,
++				     vcpu->arch.isa);
++	kvm_riscv_vcpu_host_fp_restore(&vcpu->arch.host_context);
 +
- 	hfn = gfn_to_pfn_prot(kvm, gfn, is_write, &writeable);
- 	if (hfn == KVM_PFN_ERR_HWPOISON) {
- 		send_sig_mceerr(BUS_MCEERR_AR, (void __user *)hva,
-@@ -622,6 +754,9 @@ int kvm_riscv_stage2_map(struct kvm_vcpu *vcpu,
+ 	csr_write(CSR_HGATP, 0);
  
- 	spin_lock(&kvm->mmu_lock);
- 
-+	if (mmu_notifier_retry(kvm, mmu_seq))
-+		goto out_unlock;
+ 	csr->vsstatus = csr_read(CSR_VSSTATUS);
+diff --git a/arch/riscv/kvm/vcpu_switch.S b/arch/riscv/kvm/vcpu_switch.S
+index e22721e1b892..029a28a195c6 100644
+--- a/arch/riscv/kvm/vcpu_switch.S
++++ b/arch/riscv/kvm/vcpu_switch.S
+@@ -224,3 +224,177 @@ ENTRY(__kvm_riscv_unpriv_trap)
+ 	REG_S	a1, (KVM_ARCH_TRAP_HTINST)(a0)
+ 	sret
+ ENDPROC(__kvm_riscv_unpriv_trap)
 +
- 	if (writeable) {
- 		kvm_set_pfn_dirty(hfn);
- 		mark_page_dirty(kvm, gfn);
-@@ -635,6 +770,7 @@ int kvm_riscv_stage2_map(struct kvm_vcpu *vcpu,
- 	if (ret)
- 		kvm_err("Failed to map in stage2\n");
- 
-+out_unlock:
- 	spin_unlock(&kvm->mmu_lock);
- 	kvm_set_pfn_accessed(hfn);
- 	kvm_release_pfn_clean(hfn);
-@@ -671,7 +807,7 @@ void kvm_riscv_stage2_free_pgd(struct kvm *kvm)
- 
- 	spin_lock(&kvm->mmu_lock);
- 	if (kvm->arch.pgd) {
--		stage2_unmap_range(kvm, 0UL, stage2_gpa_size);
-+		stage2_unmap_range(kvm, 0UL, stage2_gpa_size, false);
- 		pgd = READ_ONCE(kvm->arch.pgd);
- 		kvm->arch.pgd = NULL;
- 		kvm->arch.pgd_phys = 0;
-diff --git a/arch/riscv/kvm/vm.c b/arch/riscv/kvm/vm.c
-index 6cde69a82252..00a1a88008be 100644
---- a/arch/riscv/kvm/vm.c
-+++ b/arch/riscv/kvm/vm.c
-@@ -49,6 +49,7 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
- 	case KVM_CAP_IOEVENTFD:
- 	case KVM_CAP_DEVICE_CTRL:
- 	case KVM_CAP_USER_MEMORY:
-+	case KVM_CAP_SYNC_MMU:
- 	case KVM_CAP_DESTROY_MEMORY_REGION_WORKS:
- 	case KVM_CAP_ONE_REG:
- 	case KVM_CAP_READONLY_MEM:
++#ifdef	CONFIG_FPU
++	.align 3
++	.global __kvm_riscv_fp_f_save
++__kvm_riscv_fp_f_save:
++	csrr t2, CSR_SSTATUS
++	li t1, SR_FS
++	csrs CSR_SSTATUS, t1
++	frcsr t0
++	fsw f0,  KVM_ARCH_FP_F_F0(a0)
++	fsw f1,  KVM_ARCH_FP_F_F1(a0)
++	fsw f2,  KVM_ARCH_FP_F_F2(a0)
++	fsw f3,  KVM_ARCH_FP_F_F3(a0)
++	fsw f4,  KVM_ARCH_FP_F_F4(a0)
++	fsw f5,  KVM_ARCH_FP_F_F5(a0)
++	fsw f6,  KVM_ARCH_FP_F_F6(a0)
++	fsw f7,  KVM_ARCH_FP_F_F7(a0)
++	fsw f8,  KVM_ARCH_FP_F_F8(a0)
++	fsw f9,  KVM_ARCH_FP_F_F9(a0)
++	fsw f10, KVM_ARCH_FP_F_F10(a0)
++	fsw f11, KVM_ARCH_FP_F_F11(a0)
++	fsw f12, KVM_ARCH_FP_F_F12(a0)
++	fsw f13, KVM_ARCH_FP_F_F13(a0)
++	fsw f14, KVM_ARCH_FP_F_F14(a0)
++	fsw f15, KVM_ARCH_FP_F_F15(a0)
++	fsw f16, KVM_ARCH_FP_F_F16(a0)
++	fsw f17, KVM_ARCH_FP_F_F17(a0)
++	fsw f18, KVM_ARCH_FP_F_F18(a0)
++	fsw f19, KVM_ARCH_FP_F_F19(a0)
++	fsw f20, KVM_ARCH_FP_F_F20(a0)
++	fsw f21, KVM_ARCH_FP_F_F21(a0)
++	fsw f22, KVM_ARCH_FP_F_F22(a0)
++	fsw f23, KVM_ARCH_FP_F_F23(a0)
++	fsw f24, KVM_ARCH_FP_F_F24(a0)
++	fsw f25, KVM_ARCH_FP_F_F25(a0)
++	fsw f26, KVM_ARCH_FP_F_F26(a0)
++	fsw f27, KVM_ARCH_FP_F_F27(a0)
++	fsw f28, KVM_ARCH_FP_F_F28(a0)
++	fsw f29, KVM_ARCH_FP_F_F29(a0)
++	fsw f30, KVM_ARCH_FP_F_F30(a0)
++	fsw f31, KVM_ARCH_FP_F_F31(a0)
++	sw t0, KVM_ARCH_FP_F_FCSR(a0)
++	csrw CSR_SSTATUS, t2
++	ret
++
++	.align 3
++	.global __kvm_riscv_fp_d_save
++__kvm_riscv_fp_d_save:
++	csrr t2, CSR_SSTATUS
++	li t1, SR_FS
++	csrs CSR_SSTATUS, t1
++	frcsr t0
++	fsd f0,  KVM_ARCH_FP_D_F0(a0)
++	fsd f1,  KVM_ARCH_FP_D_F1(a0)
++	fsd f2,  KVM_ARCH_FP_D_F2(a0)
++	fsd f3,  KVM_ARCH_FP_D_F3(a0)
++	fsd f4,  KVM_ARCH_FP_D_F4(a0)
++	fsd f5,  KVM_ARCH_FP_D_F5(a0)
++	fsd f6,  KVM_ARCH_FP_D_F6(a0)
++	fsd f7,  KVM_ARCH_FP_D_F7(a0)
++	fsd f8,  KVM_ARCH_FP_D_F8(a0)
++	fsd f9,  KVM_ARCH_FP_D_F9(a0)
++	fsd f10, KVM_ARCH_FP_D_F10(a0)
++	fsd f11, KVM_ARCH_FP_D_F11(a0)
++	fsd f12, KVM_ARCH_FP_D_F12(a0)
++	fsd f13, KVM_ARCH_FP_D_F13(a0)
++	fsd f14, KVM_ARCH_FP_D_F14(a0)
++	fsd f15, KVM_ARCH_FP_D_F15(a0)
++	fsd f16, KVM_ARCH_FP_D_F16(a0)
++	fsd f17, KVM_ARCH_FP_D_F17(a0)
++	fsd f18, KVM_ARCH_FP_D_F18(a0)
++	fsd f19, KVM_ARCH_FP_D_F19(a0)
++	fsd f20, KVM_ARCH_FP_D_F20(a0)
++	fsd f21, KVM_ARCH_FP_D_F21(a0)
++	fsd f22, KVM_ARCH_FP_D_F22(a0)
++	fsd f23, KVM_ARCH_FP_D_F23(a0)
++	fsd f24, KVM_ARCH_FP_D_F24(a0)
++	fsd f25, KVM_ARCH_FP_D_F25(a0)
++	fsd f26, KVM_ARCH_FP_D_F26(a0)
++	fsd f27, KVM_ARCH_FP_D_F27(a0)
++	fsd f28, KVM_ARCH_FP_D_F28(a0)
++	fsd f29, KVM_ARCH_FP_D_F29(a0)
++	fsd f30, KVM_ARCH_FP_D_F30(a0)
++	fsd f31, KVM_ARCH_FP_D_F31(a0)
++	sw t0, KVM_ARCH_FP_D_FCSR(a0)
++	csrw CSR_SSTATUS, t2
++	ret
++
++	.align 3
++	.global __kvm_riscv_fp_f_restore
++__kvm_riscv_fp_f_restore:
++	csrr t2, CSR_SSTATUS
++	li t1, SR_FS
++	lw t0, KVM_ARCH_FP_F_FCSR(a0)
++	csrs CSR_SSTATUS, t1
++	flw f0,  KVM_ARCH_FP_F_F0(a0)
++	flw f1,  KVM_ARCH_FP_F_F1(a0)
++	flw f2,  KVM_ARCH_FP_F_F2(a0)
++	flw f3,  KVM_ARCH_FP_F_F3(a0)
++	flw f4,  KVM_ARCH_FP_F_F4(a0)
++	flw f5,  KVM_ARCH_FP_F_F5(a0)
++	flw f6,  KVM_ARCH_FP_F_F6(a0)
++	flw f7,  KVM_ARCH_FP_F_F7(a0)
++	flw f8,  KVM_ARCH_FP_F_F8(a0)
++	flw f9,  KVM_ARCH_FP_F_F9(a0)
++	flw f10, KVM_ARCH_FP_F_F10(a0)
++	flw f11, KVM_ARCH_FP_F_F11(a0)
++	flw f12, KVM_ARCH_FP_F_F12(a0)
++	flw f13, KVM_ARCH_FP_F_F13(a0)
++	flw f14, KVM_ARCH_FP_F_F14(a0)
++	flw f15, KVM_ARCH_FP_F_F15(a0)
++	flw f16, KVM_ARCH_FP_F_F16(a0)
++	flw f17, KVM_ARCH_FP_F_F17(a0)
++	flw f18, KVM_ARCH_FP_F_F18(a0)
++	flw f19, KVM_ARCH_FP_F_F19(a0)
++	flw f20, KVM_ARCH_FP_F_F20(a0)
++	flw f21, KVM_ARCH_FP_F_F21(a0)
++	flw f22, KVM_ARCH_FP_F_F22(a0)
++	flw f23, KVM_ARCH_FP_F_F23(a0)
++	flw f24, KVM_ARCH_FP_F_F24(a0)
++	flw f25, KVM_ARCH_FP_F_F25(a0)
++	flw f26, KVM_ARCH_FP_F_F26(a0)
++	flw f27, KVM_ARCH_FP_F_F27(a0)
++	flw f28, KVM_ARCH_FP_F_F28(a0)
++	flw f29, KVM_ARCH_FP_F_F29(a0)
++	flw f30, KVM_ARCH_FP_F_F30(a0)
++	flw f31, KVM_ARCH_FP_F_F31(a0)
++	fscsr t0
++	csrw CSR_SSTATUS, t2
++	ret
++
++	.align 3
++	.global __kvm_riscv_fp_d_restore
++__kvm_riscv_fp_d_restore:
++	csrr t2, CSR_SSTATUS
++	li t1, SR_FS
++	lw t0, KVM_ARCH_FP_D_FCSR(a0)
++	csrs CSR_SSTATUS, t1
++	fld f0,  KVM_ARCH_FP_D_F0(a0)
++	fld f1,  KVM_ARCH_FP_D_F1(a0)
++	fld f2,  KVM_ARCH_FP_D_F2(a0)
++	fld f3,  KVM_ARCH_FP_D_F3(a0)
++	fld f4,  KVM_ARCH_FP_D_F4(a0)
++	fld f5,  KVM_ARCH_FP_D_F5(a0)
++	fld f6,  KVM_ARCH_FP_D_F6(a0)
++	fld f7,  KVM_ARCH_FP_D_F7(a0)
++	fld f8,  KVM_ARCH_FP_D_F8(a0)
++	fld f9,  KVM_ARCH_FP_D_F9(a0)
++	fld f10, KVM_ARCH_FP_D_F10(a0)
++	fld f11, KVM_ARCH_FP_D_F11(a0)
++	fld f12, KVM_ARCH_FP_D_F12(a0)
++	fld f13, KVM_ARCH_FP_D_F13(a0)
++	fld f14, KVM_ARCH_FP_D_F14(a0)
++	fld f15, KVM_ARCH_FP_D_F15(a0)
++	fld f16, KVM_ARCH_FP_D_F16(a0)
++	fld f17, KVM_ARCH_FP_D_F17(a0)
++	fld f18, KVM_ARCH_FP_D_F18(a0)
++	fld f19, KVM_ARCH_FP_D_F19(a0)
++	fld f20, KVM_ARCH_FP_D_F20(a0)
++	fld f21, KVM_ARCH_FP_D_F21(a0)
++	fld f22, KVM_ARCH_FP_D_F22(a0)
++	fld f23, KVM_ARCH_FP_D_F23(a0)
++	fld f24, KVM_ARCH_FP_D_F24(a0)
++	fld f25, KVM_ARCH_FP_D_F25(a0)
++	fld f26, KVM_ARCH_FP_D_F26(a0)
++	fld f27, KVM_ARCH_FP_D_F27(a0)
++	fld f28, KVM_ARCH_FP_D_F28(a0)
++	fld f29, KVM_ARCH_FP_D_F29(a0)
++	fld f30, KVM_ARCH_FP_D_F30(a0)
++	fld f31, KVM_ARCH_FP_D_F31(a0)
++	fscsr t0
++	csrw CSR_SSTATUS, t2
++	ret
++#endif
 -- 
 2.25.1
 
