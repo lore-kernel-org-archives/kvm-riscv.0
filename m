@@ -1,207 +1,385 @@
 From: Anup Patel <anup.patel@wdc.com>
-Date: Thu,  1 Apr 2021 19:04:21 +0530
-Subject: [PATCH v17 03/17] RISC-V: KVM: Implement VCPU create,
- init and destroy functions
+Date: Thu,  1 Apr 2021 19:04:23 +0530
+Subject: [PATCH v17 05/17] RISC-V: KVM: Implement
+ KVM_GET_ONE_REG/KVM_SET_ONE_REG ioctls
 In-Reply-To: <20210401133435.383959-1-anup.patel@wdc.com>
 References: <20210401133435.383959-1-anup.patel@wdc.com>
-Message-ID: <20210401133435.383959-4-anup.patel@wdc.com>
+Message-ID: <20210401133435.383959-6-anup.patel@wdc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This patch implements VCPU create, init and destroy functions
-required by generic KVM module. We don't have much dynamic
-resources in struct kvm_vcpu_arch so these functions are quite
-simple for KVM RISC-V.
+For KVM RISC-V, we use KVM_GET_ONE_REG/KVM_SET_ONE_REG ioctls to access
+VCPU config and registers from user-space.
+
+We have three types of VCPU registers:
+1. CONFIG - these are VCPU config and capabilities
+2. CORE   - these are VCPU general purpose registers
+3. CSR    - these are VCPU control and status registers
+
+The CONFIG register available to user-space is ISA. The ISA register is
+a read and write register where user-space can only write the desired
+VCPU ISA capabilities before running the VCPU.
+
+The CORE registers available to user-space are PC, RA, SP, GP, TP, A0-A7,
+T0-T6, S0-S11 and MODE. Most of these are RISC-V general registers except
+PC and MODE. The PC register represents program counter whereas the MODE
+register represent VCPU privilege mode (i.e. S/U-mode).
+
+The CSRs available to user-space are SSTATUS, SIE, STVEC, SSCRATCH, SEPC,
+SCAUSE, STVAL, SIP, and SATP. All of these are read/write registers.
+
+In future, more VCPU register types will be added (such as FP) for the
+KVM_GET_ONE_REG/KVM_SET_ONE_REG ioctls.
 
 Signed-off-by: Anup Patel <anup.patel@wdc.com>
 Acked-by: Paolo Bonzini <pbonzini@redhat.com>
 Reviewed-by: Paolo Bonzini <pbonzini@redhat.com>
-Reviewed-by: Alexander Graf <graf@amazon.com>
 ---
- arch/riscv/include/asm/kvm_host.h | 69 +++++++++++++++++++++++++++++++
- arch/riscv/kvm/vcpu.c             | 55 ++++++++++++++++++++----
- 2 files changed, 115 insertions(+), 9 deletions(-)
+ arch/riscv/include/uapi/asm/kvm.h |  53 ++++++-
+ arch/riscv/kvm/vcpu.c             | 246 +++++++++++++++++++++++++++++-
+ 2 files changed, 295 insertions(+), 4 deletions(-)
 
-diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
-index e1a8f89b2b81..2796a4211508 100644
---- a/arch/riscv/include/asm/kvm_host.h
-+++ b/arch/riscv/include/asm/kvm_host.h
-@@ -62,7 +62,76 @@ struct kvm_cpu_trap {
- 	unsigned long htinst;
+diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
+index 3d3d703713c6..f7e9dc388d54 100644
+--- a/arch/riscv/include/uapi/asm/kvm.h
++++ b/arch/riscv/include/uapi/asm/kvm.h
+@@ -41,10 +41,61 @@ struct kvm_guest_debug_arch {
+ struct kvm_sync_regs {
  };
  
-+struct kvm_cpu_context {
-+	unsigned long zero;
-+	unsigned long ra;
-+	unsigned long sp;
-+	unsigned long gp;
-+	unsigned long tp;
-+	unsigned long t0;
-+	unsigned long t1;
-+	unsigned long t2;
-+	unsigned long s0;
-+	unsigned long s1;
-+	unsigned long a0;
-+	unsigned long a1;
-+	unsigned long a2;
-+	unsigned long a3;
-+	unsigned long a4;
-+	unsigned long a5;
-+	unsigned long a6;
-+	unsigned long a7;
-+	unsigned long s2;
-+	unsigned long s3;
-+	unsigned long s4;
-+	unsigned long s5;
-+	unsigned long s6;
-+	unsigned long s7;
-+	unsigned long s8;
-+	unsigned long s9;
-+	unsigned long s10;
-+	unsigned long s11;
-+	unsigned long t3;
-+	unsigned long t4;
-+	unsigned long t5;
-+	unsigned long t6;
-+	unsigned long sepc;
-+	unsigned long sstatus;
-+	unsigned long hstatus;
+-/* dummy definition */
++/* for KVM_GET_SREGS and KVM_SET_SREGS */
+ struct kvm_sregs {
+ };
+ 
++/* CONFIG registers for KVM_GET_ONE_REG and KVM_SET_ONE_REG */
++struct kvm_riscv_config {
++	unsigned long isa;
 +};
 +
-+struct kvm_vcpu_csr {
-+	unsigned long vsstatus;
-+	unsigned long hie;
-+	unsigned long vstvec;
-+	unsigned long vsscratch;
-+	unsigned long vsepc;
-+	unsigned long vscause;
-+	unsigned long vstval;
-+	unsigned long hvip;
-+	unsigned long vsatp;
++/* CORE registers for KVM_GET_ONE_REG and KVM_SET_ONE_REG */
++struct kvm_riscv_core {
++	struct user_regs_struct regs;
++	unsigned long mode;
++};
++
++/* Possible privilege modes for kvm_riscv_core */
++#define KVM_RISCV_MODE_S	1
++#define KVM_RISCV_MODE_U	0
++
++/* CSR registers for KVM_GET_ONE_REG and KVM_SET_ONE_REG */
++struct kvm_riscv_csr {
++	unsigned long sstatus;
++	unsigned long sie;
++	unsigned long stvec;
++	unsigned long sscratch;
++	unsigned long sepc;
++	unsigned long scause;
++	unsigned long stval;
++	unsigned long sip;
++	unsigned long satp;
 +	unsigned long scounteren;
 +};
 +
- struct kvm_vcpu_arch {
-+	/* VCPU ran atleast once */
-+	bool ran_atleast_once;
++#define KVM_REG_SIZE(id)		\
++	(1U << (((id) & KVM_REG_SIZE_MASK) >> KVM_REG_SIZE_SHIFT))
 +
-+	/* ISA feature bits (similar to MISA) */
-+	unsigned long isa;
++/* If you need to interpret the index values, here is the key: */
++#define KVM_REG_RISCV_TYPE_MASK		0x00000000FF000000
++#define KVM_REG_RISCV_TYPE_SHIFT	24
 +
-+	/* CPU context of Guest VCPU */
-+	struct kvm_cpu_context guest_context;
++/* Config registers are mapped as type 1 */
++#define KVM_REG_RISCV_CONFIG		(0x01 << KVM_REG_RISCV_TYPE_SHIFT)
++#define KVM_REG_RISCV_CONFIG_REG(name)	\
++	(offsetof(struct kvm_riscv_config, name) / sizeof(unsigned long))
 +
-+	/* CPU CSR context of Guest VCPU */
-+	struct kvm_vcpu_csr guest_csr;
++/* Core registers are mapped as type 2 */
++#define KVM_REG_RISCV_CORE		(0x02 << KVM_REG_RISCV_TYPE_SHIFT)
++#define KVM_REG_RISCV_CORE_REG(name)	\
++		(offsetof(struct kvm_riscv_core, name) / sizeof(unsigned long))
 +
-+	/* CPU context upon Guest VCPU reset */
-+	struct kvm_cpu_context guest_reset_context;
++/* Control and status registers are mapped as type 3 */
++#define KVM_REG_RISCV_CSR		(0x03 << KVM_REG_RISCV_TYPE_SHIFT)
++#define KVM_REG_RISCV_CSR_REG(name)	\
++		(offsetof(struct kvm_riscv_csr, name) / sizeof(unsigned long))
 +
-+	/* CPU CSR context upon Guest VCPU reset */
-+	struct kvm_vcpu_csr guest_reset_csr;
-+
- 	/* Don't run the VCPU (blocked) */
- 	bool pause;
+ #endif
  
+ #endif /* __LINUX_KVM_RISCV_H */
 diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-index 6f1c6c8049e1..d87f56126df6 100644
+index ae85a5d9b979..551359c9136c 100644
 --- a/arch/riscv/kvm/vcpu.c
 +++ b/arch/riscv/kvm/vcpu.c
-@@ -35,6 +35,27 @@ struct kvm_stats_debugfs_item debugfs_entries[] = {
- 	{ NULL }
- };
+@@ -18,7 +18,6 @@
+ #include <linux/fs.h>
+ #include <linux/kvm_host.h>
+ #include <asm/csr.h>
+-#include <asm/delay.h>
+ #include <asm/hwcap.h>
  
-+#define KVM_RISCV_ISA_ALLOWED	(riscv_isa_extension_mask(a) | \
-+				 riscv_isa_extension_mask(c) | \
-+				 riscv_isa_extension_mask(d) | \
-+				 riscv_isa_extension_mask(f) | \
-+				 riscv_isa_extension_mask(i) | \
-+				 riscv_isa_extension_mask(m) | \
-+				 riscv_isa_extension_mask(s) | \
-+				 riscv_isa_extension_mask(u))
-+
-+static void kvm_riscv_reset_vcpu(struct kvm_vcpu *vcpu)
+ struct kvm_stats_debugfs_item debugfs_entries[] = {
+@@ -133,6 +132,225 @@ vm_fault_t kvm_arch_vcpu_fault(struct kvm_vcpu *vcpu, struct vm_fault *vmf)
+ 	return VM_FAULT_SIGBUS;
+ }
+ 
++static int kvm_riscv_vcpu_get_reg_config(struct kvm_vcpu *vcpu,
++					 const struct kvm_one_reg *reg)
 +{
-+	struct kvm_vcpu_csr *csr = &vcpu->arch.guest_csr;
-+	struct kvm_vcpu_csr *reset_csr = &vcpu->arch.guest_reset_csr;
-+	struct kvm_cpu_context *cntx = &vcpu->arch.guest_context;
-+	struct kvm_cpu_context *reset_cntx = &vcpu->arch.guest_reset_context;
++	unsigned long __user *uaddr =
++			(unsigned long __user *)(unsigned long)reg->addr;
++	unsigned long reg_num = reg->id & ~(KVM_REG_ARCH_MASK |
++					    KVM_REG_SIZE_MASK |
++					    KVM_REG_RISCV_CONFIG);
++	unsigned long reg_val;
 +
-+	memcpy(csr, reset_csr, sizeof(*csr));
++	if (KVM_REG_SIZE(reg->id) != sizeof(unsigned long))
++		return -EINVAL;
 +
-+	memcpy(cntx, reset_cntx, sizeof(*cntx));
++	switch (reg_num) {
++	case KVM_REG_RISCV_CONFIG_REG(isa):
++		reg_val = vcpu->arch.isa;
++		break;
++	default:
++		return -EINVAL;
++	};
++
++	if (copy_to_user(uaddr, &reg_val, KVM_REG_SIZE(reg->id)))
++		return -EFAULT;
++
++	return 0;
 +}
 +
- int kvm_arch_vcpu_precreate(struct kvm *kvm, unsigned int id)
++static int kvm_riscv_vcpu_set_reg_config(struct kvm_vcpu *vcpu,
++					 const struct kvm_one_reg *reg)
++{
++	unsigned long __user *uaddr =
++			(unsigned long __user *)(unsigned long)reg->addr;
++	unsigned long reg_num = reg->id & ~(KVM_REG_ARCH_MASK |
++					    KVM_REG_SIZE_MASK |
++					    KVM_REG_RISCV_CONFIG);
++	unsigned long reg_val;
++
++	if (KVM_REG_SIZE(reg->id) != sizeof(unsigned long))
++		return -EINVAL;
++
++	if (copy_from_user(&reg_val, uaddr, KVM_REG_SIZE(reg->id)))
++		return -EFAULT;
++
++	switch (reg_num) {
++	case KVM_REG_RISCV_CONFIG_REG(isa):
++		if (!vcpu->arch.ran_atleast_once) {
++			vcpu->arch.isa = reg_val;
++			vcpu->arch.isa &= riscv_isa_extension_base(NULL);
++			vcpu->arch.isa &= KVM_RISCV_ISA_ALLOWED;
++		} else {
++			return -EOPNOTSUPP;
++		}
++		break;
++	default:
++		return -EINVAL;
++	};
++
++	return 0;
++}
++
++static int kvm_riscv_vcpu_get_reg_core(struct kvm_vcpu *vcpu,
++				       const struct kvm_one_reg *reg)
++{
++	struct kvm_cpu_context *cntx = &vcpu->arch.guest_context;
++	unsigned long __user *uaddr =
++			(unsigned long __user *)(unsigned long)reg->addr;
++	unsigned long reg_num = reg->id & ~(KVM_REG_ARCH_MASK |
++					    KVM_REG_SIZE_MASK |
++					    KVM_REG_RISCV_CORE);
++	unsigned long reg_val;
++
++	if (KVM_REG_SIZE(reg->id) != sizeof(unsigned long))
++		return -EINVAL;
++	if (reg_num >= sizeof(struct kvm_riscv_core) / sizeof(unsigned long))
++		return -EINVAL;
++
++	if (reg_num == KVM_REG_RISCV_CORE_REG(regs.pc))
++		reg_val = cntx->sepc;
++	else if (KVM_REG_RISCV_CORE_REG(regs.pc) < reg_num &&
++		 reg_num <= KVM_REG_RISCV_CORE_REG(regs.t6))
++		reg_val = ((unsigned long *)cntx)[reg_num];
++	else if (reg_num == KVM_REG_RISCV_CORE_REG(mode))
++		reg_val = (cntx->sstatus & SR_SPP) ?
++				KVM_RISCV_MODE_S : KVM_RISCV_MODE_U;
++	else
++		return -EINVAL;
++
++	if (copy_to_user(uaddr, &reg_val, KVM_REG_SIZE(reg->id)))
++		return -EFAULT;
++
++	return 0;
++}
++
++static int kvm_riscv_vcpu_set_reg_core(struct kvm_vcpu *vcpu,
++				       const struct kvm_one_reg *reg)
++{
++	struct kvm_cpu_context *cntx = &vcpu->arch.guest_context;
++	unsigned long __user *uaddr =
++			(unsigned long __user *)(unsigned long)reg->addr;
++	unsigned long reg_num = reg->id & ~(KVM_REG_ARCH_MASK |
++					    KVM_REG_SIZE_MASK |
++					    KVM_REG_RISCV_CORE);
++	unsigned long reg_val;
++
++	if (KVM_REG_SIZE(reg->id) != sizeof(unsigned long))
++		return -EINVAL;
++	if (reg_num >= sizeof(struct kvm_riscv_core) / sizeof(unsigned long))
++		return -EINVAL;
++
++	if (copy_from_user(&reg_val, uaddr, KVM_REG_SIZE(reg->id)))
++		return -EFAULT;
++
++	if (reg_num == KVM_REG_RISCV_CORE_REG(regs.pc))
++		cntx->sepc = reg_val;
++	else if (KVM_REG_RISCV_CORE_REG(regs.pc) < reg_num &&
++		 reg_num <= KVM_REG_RISCV_CORE_REG(regs.t6))
++		((unsigned long *)cntx)[reg_num] = reg_val;
++	else if (reg_num == KVM_REG_RISCV_CORE_REG(mode)) {
++		if (reg_val == KVM_RISCV_MODE_S)
++			cntx->sstatus |= SR_SPP;
++		else
++			cntx->sstatus &= ~SR_SPP;
++	} else
++		return -EINVAL;
++
++	return 0;
++}
++
++static int kvm_riscv_vcpu_get_reg_csr(struct kvm_vcpu *vcpu,
++				      const struct kvm_one_reg *reg)
++{
++	struct kvm_vcpu_csr *csr = &vcpu->arch.guest_csr;
++	unsigned long __user *uaddr =
++			(unsigned long __user *)(unsigned long)reg->addr;
++	unsigned long reg_num = reg->id & ~(KVM_REG_ARCH_MASK |
++					    KVM_REG_SIZE_MASK |
++					    KVM_REG_RISCV_CSR);
++	unsigned long reg_val;
++
++	if (KVM_REG_SIZE(reg->id) != sizeof(unsigned long))
++		return -EINVAL;
++	if (reg_num >= sizeof(struct kvm_riscv_csr) / sizeof(unsigned long))
++		return -EINVAL;
++
++	if (reg_num == KVM_REG_RISCV_CSR_REG(sip)) {
++		kvm_riscv_vcpu_flush_interrupts(vcpu);
++		reg_val = csr->hvip >> VSIP_TO_HVIP_SHIFT;
++		reg_val = reg_val & VSIP_VALID_MASK;
++	} else if (reg_num == KVM_REG_RISCV_CSR_REG(sie)) {
++		reg_val = csr->hie >> VSIP_TO_HVIP_SHIFT;
++		reg_val = reg_val & VSIP_VALID_MASK;
++	} else
++		reg_val = ((unsigned long *)csr)[reg_num];
++
++	if (copy_to_user(uaddr, &reg_val, KVM_REG_SIZE(reg->id)))
++		return -EFAULT;
++
++	return 0;
++}
++
++static int kvm_riscv_vcpu_set_reg_csr(struct kvm_vcpu *vcpu,
++				      const struct kvm_one_reg *reg)
++{
++	struct kvm_vcpu_csr *csr = &vcpu->arch.guest_csr;
++	unsigned long __user *uaddr =
++			(unsigned long __user *)(unsigned long)reg->addr;
++	unsigned long reg_num = reg->id & ~(KVM_REG_ARCH_MASK |
++					    KVM_REG_SIZE_MASK |
++					    KVM_REG_RISCV_CSR);
++	unsigned long reg_val;
++
++	if (KVM_REG_SIZE(reg->id) != sizeof(unsigned long))
++		return -EINVAL;
++	if (reg_num >= sizeof(struct kvm_riscv_csr) / sizeof(unsigned long))
++		return -EINVAL;
++
++	if (copy_from_user(&reg_val, uaddr, KVM_REG_SIZE(reg->id)))
++		return -EFAULT;
++
++	if (reg_num == KVM_REG_RISCV_CSR_REG(sip) ||
++	    reg_num == KVM_REG_RISCV_CSR_REG(sie)) {
++		reg_val = reg_val & VSIP_VALID_MASK;
++		reg_val = reg_val << VSIP_TO_HVIP_SHIFT;
++	}
++
++	((unsigned long *)csr)[reg_num] = reg_val;
++
++	if (reg_num == KVM_REG_RISCV_CSR_REG(sip))
++		WRITE_ONCE(vcpu->arch.irqs_pending_mask, 0);
++
++	return 0;
++}
++
++static int kvm_riscv_vcpu_set_reg(struct kvm_vcpu *vcpu,
++				  const struct kvm_one_reg *reg)
++{
++	if ((reg->id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_CONFIG)
++		return kvm_riscv_vcpu_set_reg_config(vcpu, reg);
++	else if ((reg->id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_CORE)
++		return kvm_riscv_vcpu_set_reg_core(vcpu, reg);
++	else if ((reg->id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_CSR)
++		return kvm_riscv_vcpu_set_reg_csr(vcpu, reg);
++
++	return -EINVAL;
++}
++
++static int kvm_riscv_vcpu_get_reg(struct kvm_vcpu *vcpu,
++				  const struct kvm_one_reg *reg)
++{
++	if ((reg->id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_CONFIG)
++		return kvm_riscv_vcpu_get_reg_config(vcpu, reg);
++	else if ((reg->id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_CORE)
++		return kvm_riscv_vcpu_get_reg_core(vcpu, reg);
++	else if ((reg->id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_CSR)
++		return kvm_riscv_vcpu_get_reg_csr(vcpu, reg);
++
++	return -EINVAL;
++}
++
+ long kvm_arch_vcpu_async_ioctl(struct file *filp,
+ 			       unsigned int ioctl, unsigned long arg)
  {
- 	return 0;
-@@ -42,7 +63,25 @@ int kvm_arch_vcpu_precreate(struct kvm *kvm, unsigned int id)
- 
- int kvm_arch_vcpu_create(struct kvm_vcpu *vcpu)
+@@ -157,8 +375,30 @@ long kvm_arch_vcpu_async_ioctl(struct file *filp,
+ long kvm_arch_vcpu_ioctl(struct file *filp,
+ 			 unsigned int ioctl, unsigned long arg)
  {
 -	/* TODO: */
-+	struct kvm_cpu_context *cntx;
+-	return -EINVAL;
++	struct kvm_vcpu *vcpu = filp->private_data;
++	void __user *argp = (void __user *)arg;
++	long r = -EINVAL;
 +
-+	/* Mark this VCPU never ran */
-+	vcpu->arch.ran_atleast_once = false;
++	switch (ioctl) {
++	case KVM_SET_ONE_REG:
++	case KVM_GET_ONE_REG: {
++		struct kvm_one_reg reg;
 +
-+	/* Setup ISA features available to VCPU */
-+	vcpu->arch.isa = riscv_isa_extension_base(NULL) & KVM_RISCV_ISA_ALLOWED;
++		r = -EFAULT;
++		if (copy_from_user(&reg, argp, sizeof(reg)))
++			break;
 +
-+	/* Setup reset state of shadow SSTATUS and HSTATUS CSRs */
-+	cntx = &vcpu->arch.guest_reset_context;
-+	cntx->sstatus = SR_SPP | SR_SPIE;
-+	cntx->hstatus = 0;
-+	cntx->hstatus |= HSTATUS_VTW;
-+	cntx->hstatus |= HSTATUS_SPVP;
-+	cntx->hstatus |= HSTATUS_SPV;
++		if (ioctl == KVM_SET_ONE_REG)
++			r = kvm_riscv_vcpu_set_reg(vcpu, &reg);
++		else
++			r = kvm_riscv_vcpu_get_reg(vcpu, &reg);
++		break;
++	}
++	default:
++		break;
++	}
 +
-+	/* Reset VCPU */
-+	kvm_riscv_reset_vcpu(vcpu);
-+
- 	return 0;
++	return r;
  }
  
-@@ -50,15 +89,10 @@ void kvm_arch_vcpu_postcreate(struct kvm_vcpu *vcpu)
- {
- }
- 
--int kvm_arch_vcpu_init(struct kvm_vcpu *vcpu)
--{
--	/* TODO: */
--	return 0;
--}
--
- void kvm_arch_vcpu_destroy(struct kvm_vcpu *vcpu)
- {
--	/* TODO: */
-+	/* Flush the pages pre-allocated for Stage2 page table mappings */
-+	kvm_riscv_stage2_flush_cache(vcpu);
- }
- 
- int kvm_cpu_has_pending_timer(struct kvm_vcpu *vcpu)
-@@ -194,6 +228,9 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
- 	struct kvm_cpu_trap trap;
- 	struct kvm_run *run = vcpu->run;
- 
-+	/* Mark this VCPU ran at least once */
-+	vcpu->arch.ran_atleast_once = true;
-+
- 	vcpu->arch.srcu_idx = srcu_read_lock(&vcpu->kvm->srcu);
- 
- 	/* Process MMIO value returned from user-space */
-@@ -267,7 +304,7 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
- 		 * get an interrupt between __kvm_riscv_switch_to() and
- 		 * local_irq_enable() which can potentially change CSRs.
- 		 */
--		trap.sepc = 0;
-+		trap.sepc = vcpu->arch.guest_context.sepc;
- 		trap.scause = csr_read(CSR_SCAUSE);
- 		trap.stval = csr_read(CSR_STVAL);
- 		trap.htval = csr_read(CSR_HTVAL);
+ int kvm_arch_vcpu_ioctl_get_sregs(struct kvm_vcpu *vcpu,
 -- 
 2.25.1
 
