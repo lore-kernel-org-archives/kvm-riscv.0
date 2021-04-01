@@ -1,481 +1,600 @@
 From: Anup Patel <anup.patel@wdc.com>
-Date: Thu,  1 Apr 2021 19:10:52 +0530
-Subject: [PATCH v7 4/8] riscv: Implement Guest/VM VCPU arch functions
+Date: Thu,  1 Apr 2021 19:10:50 +0530
+Subject: [PATCH v7 2/8] riscv: Initial skeletal support
 In-Reply-To: <20210401134056.384038-1-anup.patel@wdc.com>
 References: <20210401134056.384038-1-anup.patel@wdc.com>
-Message-ID: <20210401134056.384038-5-anup.patel@wdc.com>
+Message-ID: <20210401134056.384038-3-anup.patel@wdc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This patch implements kvm_cpu__<xyz> Guest/VM VCPU arch functions.
+This patch adds initial skeletal KVMTOOL RISC-V support which
+just compiles for RV32 and RV64 host.
 
-These functions mostly deal with:
-1. VCPU allocation and initialization
-2. VCPU reset
-3. VCPU show/dump code
-4. VCPU show/dump registers
-
-We also save RISC-V ISA, XLEN, and TIMEBASE frequency for each VCPU
-so that it can be later used for generating Guest/VM FDT.
-
-Signed-off-by: Atish Patra <atish.patra@wdc.com>
 Signed-off-by: Anup Patel <anup.patel@wdc.com>
 ---
- riscv/include/kvm/kvm-cpu-arch.h |   4 +
- riscv/kvm-cpu.c                  | 393 ++++++++++++++++++++++++++++++-
- 2 files changed, 390 insertions(+), 7 deletions(-)
+ INSTALL                             |   7 +-
+ Makefile                            |  21 ++++-
+ riscv/include/asm/kvm.h             | 128 ++++++++++++++++++++++++++++
+ riscv/include/kvm/barrier.h         |  14 +++
+ riscv/include/kvm/fdt-arch.h        |   4 +
+ riscv/include/kvm/kvm-arch.h        |  64 ++++++++++++++
+ riscv/include/kvm/kvm-config-arch.h |   9 ++
+ riscv/include/kvm/kvm-cpu-arch.h    |  47 ++++++++++
+ riscv/ioport.c                      |   7 ++
+ riscv/irq.c                         |  13 +++
+ riscv/kvm-cpu.c                     |  64 ++++++++++++++
+ riscv/kvm.c                         |  61 +++++++++++++
+ util/update_headers.sh              |   2 +-
+ 13 files changed, 436 insertions(+), 5 deletions(-)
+ create mode 100644 riscv/include/asm/kvm.h
+ create mode 100644 riscv/include/kvm/barrier.h
+ create mode 100644 riscv/include/kvm/fdt-arch.h
+ create mode 100644 riscv/include/kvm/kvm-arch.h
+ create mode 100644 riscv/include/kvm/kvm-config-arch.h
+ create mode 100644 riscv/include/kvm/kvm-cpu-arch.h
+ create mode 100644 riscv/ioport.c
+ create mode 100644 riscv/irq.c
+ create mode 100644 riscv/kvm-cpu.c
+ create mode 100644 riscv/kvm.c
 
-diff --git a/riscv/include/kvm/kvm-cpu-arch.h b/riscv/include/kvm/kvm-cpu-arch.h
-index ae6ae0a..78fcd01 100644
---- a/riscv/include/kvm/kvm-cpu-arch.h
-+++ b/riscv/include/kvm/kvm-cpu-arch.h
-@@ -12,6 +12,10 @@ struct kvm_cpu {
+diff --git a/INSTALL b/INSTALL
+index ca8e022..951b123 100644
+--- a/INSTALL
++++ b/INSTALL
+@@ -26,8 +26,8 @@ For Fedora based systems:
+ For OpenSUSE based systems:
+ 	# zypper install glibc-devel-static
  
- 	unsigned long   cpu_id;
+-Architectures which require device tree (PowerPC, ARM, ARM64) also require
+-libfdt.
++Architectures which require device tree (PowerPC, ARM, ARM64, RISC-V) also
++require libfdt.
+ 	deb: $ sudo apt-get install libfdt-dev
+ 	Fedora: # yum install libfdt-devel
+ 	OpenSUSE: # zypper install libfdt1-devel
+@@ -64,6 +64,7 @@ to the Linux name of the architecture. Architectures supported:
+ - arm
+ - arm64
+ - mips
++- riscv
+ If ARCH is not provided, the target architecture will be automatically
+ determined by running "uname -m" on your host, resulting in a native build.
  
-+	unsigned long	riscv_xlen;
-+	unsigned long	riscv_isa;
-+	unsigned long	riscv_timebase;
+@@ -81,7 +82,7 @@ On multiarch system you should be able to install those be appending
+ the architecture name after the package (example for ARM64):
+ $ sudo apt-get install libfdt-dev:arm64
+ 
+-PowerPC and ARM/ARM64 require libfdt to be installed. If you cannot use
++PowerPC, ARM/ARM64 and RISC-V require libfdt to be installed. If you cannot use
+ precompiled mulitarch packages, you could either copy the required header and
+ library files from an installed target system into the SYSROOT (you will need
+ /usr/include/*fdt*.h and /usr/lib64/libfdt-v.v.v.so and its symlinks), or you
+diff --git a/Makefile b/Makefile
+index bb7ad3e..817f45c 100644
+--- a/Makefile
++++ b/Makefile
+@@ -105,7 +105,8 @@ OBJS	+= virtio/mmio.o
+ 
+ # Translate uname -m into ARCH string
+ ARCH ?= $(shell uname -m | sed -e s/i.86/i386/ -e s/ppc.*/powerpc/ \
+-	  -e s/armv.*/arm/ -e s/aarch64.*/arm64/ -e s/mips64/mips/)
++	  -e s/armv.*/arm/ -e s/aarch64.*/arm64/ -e s/mips64/mips/ \
++	  -e s/riscv64/riscv/ -e s/riscv32/riscv/)
+ 
+ ifeq ($(ARCH),i386)
+ 	ARCH         := x86
+@@ -193,6 +194,24 @@ ifeq ($(ARCH),mips)
+ 	OBJS		+= mips/kvm.o
+ 	OBJS		+= mips/kvm-cpu.o
+ endif
 +
- 	struct kvm	*kvm;
- 	int		vcpu_fd;
- 	struct kvm_run	*kvm_run;
-diff --git a/riscv/kvm-cpu.c b/riscv/kvm-cpu.c
-index e4b8fa5..8adaddd 100644
---- a/riscv/kvm-cpu.c
-+++ b/riscv/kvm-cpu.c
-@@ -17,10 +17,88 @@ int kvm_cpu__get_debug_fd(void)
- 	return debug_fd;
- }
- 
-+static __u64 __kvm_reg_id(__u64 type, __u64 idx, __u64  size)
-+{
-+	return KVM_REG_RISCV | type | idx | size;
-+}
++# RISC-V (RV32 and RV64)
++ifeq ($(ARCH),riscv)
++	DEFINES		+= -DCONFIG_RISCV
++	ARCH_INCLUDE	:= riscv/include
++	OBJS		+= riscv/ioport.o
++	OBJS		+= riscv/irq.o
++	OBJS		+= riscv/kvm.o
++	OBJS		+= riscv/kvm-cpu.o
++	ifeq ($(RISCV_XLEN),32)
++		CFLAGS	+= -mabi=ilp32d -march=rv32gc
++	endif
++	ifeq ($(RISCV_XLEN),64)
++		CFLAGS	+= -mabi=lp64d -march=rv64gc
++	endif
 +
-+#if __riscv_xlen == 64
-+#define KVM_REG_SIZE_ULONG	KVM_REG_SIZE_U64
-+#else
-+#define KVM_REG_SIZE_ULONG	KVM_REG_SIZE_U32
++	ARCH_WANT_LIBFDT := y
++endif
+ ###
+ 
+ ifeq (,$(ARCH_INCLUDE))
+diff --git a/riscv/include/asm/kvm.h b/riscv/include/asm/kvm.h
+new file mode 100644
+index 0000000..f808ad1
+--- /dev/null
++++ b/riscv/include/asm/kvm.h
+@@ -0,0 +1,128 @@
++/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
++/*
++ * Copyright (C) 2019 Western Digital Corporation or its affiliates.
++ *
++ * Authors:
++ *     Anup Patel <anup.patel@wdc.com>
++ */
++
++#ifndef __LINUX_KVM_RISCV_H
++#define __LINUX_KVM_RISCV_H
++
++#ifndef __ASSEMBLY__
++
++#include <linux/types.h>
++#include <asm/ptrace.h>
++
++#define __KVM_HAVE_READONLY_MEM
++
++#define KVM_COALESCED_MMIO_PAGE_OFFSET 1
++
++#define KVM_INTERRUPT_SET	-1U
++#define KVM_INTERRUPT_UNSET	-2U
++
++/* for KVM_GET_REGS and KVM_SET_REGS */
++struct kvm_regs {
++};
++
++/* for KVM_GET_FPU and KVM_SET_FPU */
++struct kvm_fpu {
++};
++
++/* KVM Debug exit structure */
++struct kvm_debug_exit_arch {
++};
++
++/* for KVM_SET_GUEST_DEBUG */
++struct kvm_guest_debug_arch {
++};
++
++/* definition of registers in kvm_run */
++struct kvm_sync_regs {
++};
++
++/* for KVM_GET_SREGS and KVM_SET_SREGS */
++struct kvm_sregs {
++};
++
++/* CONFIG registers for KVM_GET_ONE_REG and KVM_SET_ONE_REG */
++struct kvm_riscv_config {
++	unsigned long isa;
++};
++
++/* CORE registers for KVM_GET_ONE_REG and KVM_SET_ONE_REG */
++struct kvm_riscv_core {
++	struct user_regs_struct regs;
++	unsigned long mode;
++};
++
++/* Possible privilege modes for kvm_riscv_core */
++#define KVM_RISCV_MODE_S	1
++#define KVM_RISCV_MODE_U	0
++
++/* CSR registers for KVM_GET_ONE_REG and KVM_SET_ONE_REG */
++struct kvm_riscv_csr {
++	unsigned long sstatus;
++	unsigned long sie;
++	unsigned long stvec;
++	unsigned long sscratch;
++	unsigned long sepc;
++	unsigned long scause;
++	unsigned long stval;
++	unsigned long sip;
++	unsigned long satp;
++	unsigned long scounteren;
++};
++
++/* TIMER registers for KVM_GET_ONE_REG and KVM_SET_ONE_REG */
++struct kvm_riscv_timer {
++	__u64 frequency;
++	__u64 time;
++	__u64 compare;
++	__u64 state;
++};
++
++/* Possible states for kvm_riscv_timer */
++#define KVM_RISCV_TIMER_STATE_OFF	0
++#define KVM_RISCV_TIMER_STATE_ON	1
++
++#define KVM_REG_SIZE(id)		\
++	(1U << (((id) & KVM_REG_SIZE_MASK) >> KVM_REG_SIZE_SHIFT))
++
++/* If you need to interpret the index values, here is the key: */
++#define KVM_REG_RISCV_TYPE_MASK		0x00000000FF000000
++#define KVM_REG_RISCV_TYPE_SHIFT	24
++
++/* Config registers are mapped as type 1 */
++#define KVM_REG_RISCV_CONFIG		(0x01 << KVM_REG_RISCV_TYPE_SHIFT)
++#define KVM_REG_RISCV_CONFIG_REG(name)	\
++	(offsetof(struct kvm_riscv_config, name) / sizeof(unsigned long))
++
++/* Core registers are mapped as type 2 */
++#define KVM_REG_RISCV_CORE		(0x02 << KVM_REG_RISCV_TYPE_SHIFT)
++#define KVM_REG_RISCV_CORE_REG(name)	\
++		(offsetof(struct kvm_riscv_core, name) / sizeof(unsigned long))
++
++/* Control and status registers are mapped as type 3 */
++#define KVM_REG_RISCV_CSR		(0x03 << KVM_REG_RISCV_TYPE_SHIFT)
++#define KVM_REG_RISCV_CSR_REG(name)	\
++		(offsetof(struct kvm_riscv_csr, name) / sizeof(unsigned long))
++
++/* Timer registers are mapped as type 4 */
++#define KVM_REG_RISCV_TIMER		(0x04 << KVM_REG_RISCV_TYPE_SHIFT)
++#define KVM_REG_RISCV_TIMER_REG(name)	\
++		(offsetof(struct kvm_riscv_timer, name) / sizeof(__u64))
++
++/* F extension registers are mapped as type 5 */
++#define KVM_REG_RISCV_FP_F		(0x05 << KVM_REG_RISCV_TYPE_SHIFT)
++#define KVM_REG_RISCV_FP_F_REG(name)	\
++		(offsetof(struct __riscv_f_ext_state, name) / sizeof(__u32))
++
++/* D extension registers are mapped as type 6 */
++#define KVM_REG_RISCV_FP_D		(0x06 << KVM_REG_RISCV_TYPE_SHIFT)
++#define KVM_REG_RISCV_FP_D_REG(name)	\
++		(offsetof(struct __riscv_d_ext_state, name) / sizeof(__u64))
++
 +#endif
 +
-+#define RISCV_CONFIG_REG(name)	__kvm_reg_id(KVM_REG_RISCV_CONFIG, \
-+					     KVM_REG_RISCV_CONFIG_REG(name), \
-+					     KVM_REG_SIZE_ULONG)
++#endif /* __LINUX_KVM_RISCV_H */
+diff --git a/riscv/include/kvm/barrier.h b/riscv/include/kvm/barrier.h
+new file mode 100644
+index 0000000..235f610
+--- /dev/null
++++ b/riscv/include/kvm/barrier.h
+@@ -0,0 +1,14 @@
++#ifndef KVM__KVM_BARRIER_H
++#define KVM__KVM_BARRIER_H
 +
-+#define RISCV_CORE_REG(name)	__kvm_reg_id(KVM_REG_RISCV_CORE, \
-+					     KVM_REG_RISCV_CORE_REG(name), \
-+					     KVM_REG_SIZE_ULONG)
++#define nop()		__asm__ __volatile__ ("nop")
 +
-+#define RISCV_CSR_REG(name)	__kvm_reg_id(KVM_REG_RISCV_CSR, \
-+					     KVM_REG_RISCV_CSR_REG(name), \
-+					     KVM_REG_SIZE_ULONG)
++#define RISCV_FENCE(p, s) \
++	__asm__ __volatile__ ("fence " #p "," #s : : : "memory")
 +
-+#define RISCV_TIMER_REG(name)	__kvm_reg_id(KVM_REG_RISCV_TIMER, \
-+					     KVM_REG_RISCV_TIMER_REG(name), \
-+					     KVM_REG_SIZE_U64)
++/* These barriers need to enforce ordering on both devices or memory. */
++#define mb()		RISCV_FENCE(iorw,iorw)
++#define rmb()		RISCV_FENCE(ir,ir)
++#define wmb()		RISCV_FENCE(ow,ow)
 +
- struct kvm_cpu *kvm_cpu__arch_init(struct kvm *kvm, unsigned long cpu_id)
- {
--	/* TODO: */
--	return NULL;
-+	struct kvm_cpu *vcpu;
-+	u64 timebase = 0;
-+	unsigned long isa = 0;
-+	int coalesced_offset, mmap_size;
-+	struct kvm_one_reg reg;
++#endif /* KVM__KVM_BARRIER_H */
+diff --git a/riscv/include/kvm/fdt-arch.h b/riscv/include/kvm/fdt-arch.h
+new file mode 100644
+index 0000000..9450fc5
+--- /dev/null
++++ b/riscv/include/kvm/fdt-arch.h
+@@ -0,0 +1,4 @@
++#ifndef KVM__KVM_FDT_H
++#define KVM__KVM_FDT_H
 +
-+	vcpu = calloc(1, sizeof(struct kvm_cpu));
-+	if (!vcpu)
-+		return NULL;
++#endif /* KVM__KVM_FDT_H */
+diff --git a/riscv/include/kvm/kvm-arch.h b/riscv/include/kvm/kvm-arch.h
+new file mode 100644
+index 0000000..cebe362
+--- /dev/null
++++ b/riscv/include/kvm/kvm-arch.h
+@@ -0,0 +1,64 @@
++#ifndef KVM__KVM_ARCH_H
++#define KVM__KVM_ARCH_H
 +
-+	vcpu->vcpu_fd = ioctl(kvm->vm_fd, KVM_CREATE_VCPU, cpu_id);
-+	if (vcpu->vcpu_fd < 0)
-+		die_perror("KVM_CREATE_VCPU ioctl");
++#include <stdbool.h>
++#include <linux/const.h>
++#include <linux/sizes.h>
++#include <linux/types.h>
 +
-+	reg.id = RISCV_CONFIG_REG(isa);
-+	reg.addr = (unsigned long)&isa;
-+	if (ioctl(vcpu->vcpu_fd, KVM_GET_ONE_REG, &reg) < 0)
-+		die("KVM_GET_ONE_REG failed (config.isa)");
++#define RISCV_IOPORT		0x00000000ULL
++#define RISCV_IOPORT_SIZE	SZ_64K
++#define RISCV_PLIC		0x0c000000ULL
++#define RISCV_PLIC_SIZE		SZ_64M
++#define RISCV_MMIO		0x10000000ULL
++#define RISCV_MMIO_SIZE		SZ_512M
++#define RISCV_PCI		0x30000000ULL
++/*
++ * KVMTOOL emulates legacy PCI config space with 24bits device address
++ * so 16M is sufficient but we reserve 256M to keep it future ready for
++ * PCIe config space with 28bits device address.
++ */
++#define RISCV_PCI_CFG_SIZE	SZ_256M
++#define RISCV_PCI_MMIO_SIZE	SZ_1G
++#define RISCV_PCI_SIZE		(RISCV_PCI_CFG_SIZE + RISCV_PCI_MMIO_SIZE)
 +
-+	reg.id = RISCV_TIMER_REG(frequency);
-+	reg.addr = (unsigned long)&timebase;
-+	if (ioctl(vcpu->vcpu_fd, KVM_GET_ONE_REG, &reg) < 0)
-+		die("KVM_GET_ONE_REG failed (timer.frequency)");
++#define RISCV_RAM		0x80000000ULL
 +
-+	mmap_size = ioctl(kvm->sys_fd, KVM_GET_VCPU_MMAP_SIZE, 0);
-+	if (mmap_size < 0)
-+		die_perror("KVM_GET_VCPU_MMAP_SIZE ioctl");
++#define RISCV_LOMAP_MAX_MEMORY	((1ULL << 32) - RISCV_RAM)
++#define RISCV_HIMAP_MAX_MEMORY	((1ULL << 40) - RISCV_RAM)
 +
-+	vcpu->kvm_run = mmap(NULL, mmap_size, PROT_RW, MAP_SHARED,
-+			     vcpu->vcpu_fd, 0);
-+	if (vcpu->kvm_run == MAP_FAILED)
-+		die("unable to mmap vcpu fd");
++#if __riscv_xlen == 64
++#define RISCV_MAX_MEMORY(kvm)	RISCV_HIMAP_MAX_MEMORY
++#elif __riscv_xlen == 32
++#define RISCV_MAX_MEMORY(kvm)	RISCV_LOMAP_MAX_MEMORY
++#endif
 +
-+	coalesced_offset = ioctl(kvm->sys_fd, KVM_CHECK_EXTENSION,
-+				 KVM_CAP_COALESCED_MMIO);
-+	if (coalesced_offset)
-+		vcpu->ring = (void *)vcpu->kvm_run +
-+			     (coalesced_offset * PAGE_SIZE);
++#define KVM_IOPORT_AREA		RISCV_IOPORT
++#define KVM_PCI_CFG_AREA	RISCV_PCI
++#define KVM_PCI_MMIO_AREA	(KVM_PCI_CFG_AREA + RISCV_PCI_CFG_SIZE)
++#define KVM_VIRTIO_MMIO_AREA	RISCV_MMIO
 +
-+	reg.id = RISCV_CONFIG_REG(isa);
-+	reg.addr = (unsigned long)&isa;
-+	if (ioctl(vcpu->vcpu_fd, KVM_SET_ONE_REG, &reg) < 0)
-+		die("KVM_SET_ONE_REG failed (config.isa)");
++#define KVM_IOEVENTFD_HAS_PIO	0
 +
-+	/* Populate the vcpu structure. */
-+	vcpu->kvm		= kvm;
-+	vcpu->cpu_id		= cpu_id;
-+	vcpu->riscv_isa		= isa;
-+	vcpu->riscv_xlen	= __riscv_xlen;
-+	vcpu->riscv_timebase	= timebase;
-+	vcpu->is_running	= true;
++#define KVM_IRQ_OFFSET		1
 +
-+	return vcpu;
- }
- 
- void kvm_cpu__arch_nmi(struct kvm_cpu *cpu)
-@@ -29,7 +107,7 @@ void kvm_cpu__arch_nmi(struct kvm_cpu *cpu)
- 
- void kvm_cpu__delete(struct kvm_cpu *vcpu)
- {
--	/* TODO: */
-+	free(vcpu);
- }
- 
- bool kvm_cpu__handle_exit(struct kvm_cpu *vcpu)
-@@ -40,12 +118,43 @@ bool kvm_cpu__handle_exit(struct kvm_cpu *vcpu)
- 
- void kvm_cpu__show_page_tables(struct kvm_cpu *vcpu)
- {
--	/* TODO: */
- }
- 
- void kvm_cpu__reset_vcpu(struct kvm_cpu *vcpu)
- {
--	/* TODO: */
-+	struct kvm *kvm = vcpu->kvm;
-+	struct kvm_mp_state mp_state;
-+	struct kvm_one_reg reg;
-+	unsigned long data;
++#define KVM_VM_TYPE		0
 +
-+	if (ioctl(vcpu->vcpu_fd, KVM_GET_MP_STATE, &mp_state) < 0)
-+		die_perror("KVM_GET_MP_STATE failed");
++#define VIRTIO_DEFAULT_TRANS(kvm)	VIRTIO_MMIO
 +
-+	/*
-+	 * If MP state is stopped then it means Linux KVM RISC-V emulates
-+	 * SBI v0.2 (or higher) with HART power managment and give VCPU
-+	 * will power-up@boot-time by boot VCPU. For such VCPU, we
-+	 * don't update PC, A0 and A1 here.
-+	 */
-+	if (mp_state.mp_state == KVM_MP_STATE_STOPPED)
-+		return;
++#define VIRTIO_RING_ENDIAN	VIRTIO_ENDIAN_LE
 +
-+	reg.addr = (unsigned long)&data;
++struct kvm;
 +
-+	data	= kvm->arch.kern_guest_start;
-+	reg.id	= RISCV_CORE_REG(regs.pc);
-+	if (ioctl(vcpu->vcpu_fd, KVM_SET_ONE_REG, &reg) < 0)
-+		die_perror("KVM_SET_ONE_REG failed (pc)");
++struct kvm_arch {
++};
 +
-+	data	= vcpu->cpu_id;
-+	reg.id	= RISCV_CORE_REG(regs.a0);
-+	if (ioctl(vcpu->vcpu_fd, KVM_SET_ONE_REG, &reg) < 0)
-+		die_perror("KVM_SET_ONE_REG failed (a0)");
-+
-+	data	= kvm->arch.dtb_guest_start;
-+	reg.id	= RISCV_CORE_REG(regs.a1);
-+	if (ioctl(vcpu->vcpu_fd, KVM_SET_ONE_REG, &reg) < 0)
-+		die_perror("KVM_SET_ONE_REG failed (a1)");
- }
- 
- int kvm_cpu__get_endianness(struct kvm_cpu *vcpu)
-@@ -55,10 +164,280 @@ int kvm_cpu__get_endianness(struct kvm_cpu *vcpu)
- 
- void kvm_cpu__show_code(struct kvm_cpu *vcpu)
- {
--	/* TODO: */
-+	struct kvm_one_reg reg;
-+	unsigned long data;
-+	int debug_fd = kvm_cpu__get_debug_fd();
-+
-+	reg.addr = (unsigned long)&data;
-+
-+	dprintf(debug_fd, "\n*PC:\n");
-+	reg.id = RISCV_CORE_REG(regs.pc);
-+	if (ioctl(vcpu->vcpu_fd, KVM_GET_ONE_REG, &reg) < 0)
-+		die("KVM_GET_ONE_REG failed (show_code @ PC)");
-+
-+	kvm__dump_mem(vcpu->kvm, data, 32, debug_fd);
-+
-+	dprintf(debug_fd, "\n*RA:\n");
-+	reg.id = RISCV_CORE_REG(regs.ra);
-+	if (ioctl(vcpu->vcpu_fd, KVM_GET_ONE_REG, &reg) < 0)
-+		die("KVM_GET_ONE_REG failed (show_code @ RA)");
-+
-+	kvm__dump_mem(vcpu->kvm, data, 32, debug_fd);
++static inline bool riscv_addr_in_ioport_region(u64 phys_addr)
++{
++	u64 limit = KVM_IOPORT_AREA + RISCV_IOPORT_SIZE;
++	return phys_addr >= KVM_IOPORT_AREA && phys_addr < limit;
 +}
 +
-+static void kvm_cpu__show_csrs(struct kvm_cpu *vcpu)
++enum irq_type;
++
++#endif /* KVM__KVM_ARCH_H */
+diff --git a/riscv/include/kvm/kvm-config-arch.h b/riscv/include/kvm/kvm-config-arch.h
+new file mode 100644
+index 0000000..60c7333
+--- /dev/null
++++ b/riscv/include/kvm/kvm-config-arch.h
+@@ -0,0 +1,9 @@
++#ifndef KVM__KVM_CONFIG_ARCH_H
++#define KVM__KVM_CONFIG_ARCH_H
++
++#include "kvm/parse-options.h"
++
++struct kvm_config_arch {
++};
++
++#endif /* KVM__KVM_CONFIG_ARCH_H */
+diff --git a/riscv/include/kvm/kvm-cpu-arch.h b/riscv/include/kvm/kvm-cpu-arch.h
+new file mode 100644
+index 0000000..ae6ae0a
+--- /dev/null
++++ b/riscv/include/kvm/kvm-cpu-arch.h
+@@ -0,0 +1,47 @@
++#ifndef KVM__KVM_CPU_ARCH_H
++#define KVM__KVM_CPU_ARCH_H
++
++#include <linux/kvm.h>
++#include <pthread.h>
++#include <stdbool.h>
++
++#include "kvm/kvm.h"
++
++struct kvm_cpu {
++	pthread_t	thread;
++
++	unsigned long   cpu_id;
++
++	struct kvm	*kvm;
++	int		vcpu_fd;
++	struct kvm_run	*kvm_run;
++	struct kvm_cpu_task	*task;
++
++	u8		is_running;
++	u8		paused;
++	u8		needs_nmi;
++
++	struct kvm_coalesced_mmio_ring	*ring;
++};
++
++static inline bool kvm_cpu__emulate_io(struct kvm_cpu *vcpu, u16 port,
++				       void *data, int direction,
++				       int size, u32 count)
 +{
-+	struct kvm_one_reg reg;
-+	struct kvm_riscv_csr csr;
-+	unsigned long data;
-+	int debug_fd = kvm_cpu__get_debug_fd();
++	return false;
++}
 +
-+	reg.addr = (unsigned long)&data;
-+	dprintf(debug_fd, "\n Control Status Registers:\n");
-+	dprintf(debug_fd,   " ------------------------\n");
++static inline bool kvm_cpu__emulate_mmio(struct kvm_cpu *vcpu, u64 phys_addr,
++					 u8 *data, u32 len, u8 is_write)
++{
++	if (riscv_addr_in_ioport_region(phys_addr)) {
++		int direction = is_write ? KVM_EXIT_IO_OUT : KVM_EXIT_IO_IN;
++		u16 port = (phys_addr - KVM_IOPORT_AREA) & USHRT_MAX;
 +
-+	reg.id		= RISCV_CSR_REG(sstatus);
-+	if (ioctl(vcpu->vcpu_fd, KVM_GET_ONE_REG, &reg) < 0)
-+		die("KVM_GET_ONE_REG failed (sstatus)");
-+	csr.sstatus = data;
++		return kvm__emulate_io(vcpu, port, data, direction, len, 1);
++	}
 +
-+	reg.id		= RISCV_CSR_REG(sie);
-+	if (ioctl(vcpu->vcpu_fd, KVM_GET_ONE_REG, &reg) < 0)
-+		die("KVM_GET_ONE_REG failed (sie)");
-+	csr.sie = data;
++	return kvm__emulate_mmio(vcpu, phys_addr, data, len, is_write);
++}
 +
-+	reg.id		= RISCV_CSR_REG(stvec);
-+	if (ioctl(vcpu->vcpu_fd, KVM_GET_ONE_REG, &reg) < 0)
-+		die("KVM_GET_ONE_REG failed (stvec)");
-+	csr.stvec = data;
++#endif /* KVM__KVM_CPU_ARCH_H */
+diff --git a/riscv/ioport.c b/riscv/ioport.c
+new file mode 100644
+index 0000000..24092c9
+--- /dev/null
++++ b/riscv/ioport.c
+@@ -0,0 +1,7 @@
++#include "kvm/ioport.h"
++#include "kvm/irq.h"
 +
-+	reg.id		= RISCV_CSR_REG(sip);
-+	if (ioctl(vcpu->vcpu_fd, KVM_GET_ONE_REG, &reg) < 0)
-+		die("KVM_GET_ONE_REG failed (sip)");
-+	csr.sip = data;
++void ioport__map_irq(u8 *irq)
++{
++	*irq = irq__alloc_line();
++}
+diff --git a/riscv/irq.c b/riscv/irq.c
+new file mode 100644
+index 0000000..8e605ef
+--- /dev/null
++++ b/riscv/irq.c
+@@ -0,0 +1,13 @@
++#include "kvm/kvm.h"
++#include "kvm/kvm-cpu.h"
++#include "kvm/irq.h"
 +
-+	reg.id		= RISCV_CSR_REG(satp);
-+	if (ioctl(vcpu->vcpu_fd, KVM_GET_ONE_REG, &reg) < 0)
-+		die("KVM_GET_ONE_REG failed (satp)");
-+	csr.satp = data;
++void kvm__irq_line(struct kvm *kvm, int irq, int level)
++{
++	/* TODO: */
++}
 +
-+	reg.id		= RISCV_CSR_REG(stval);
-+	if (ioctl(vcpu->vcpu_fd, KVM_GET_ONE_REG, &reg) < 0)
-+		die("KVM_GET_ONE_REG failed (stval)");
-+	csr.stval = data;
++void kvm__irq_trigger(struct kvm *kvm, int irq)
++{
++	/* TODO: */
++}
+diff --git a/riscv/kvm-cpu.c b/riscv/kvm-cpu.c
+new file mode 100644
+index 0000000..e4b8fa5
+--- /dev/null
++++ b/riscv/kvm-cpu.c
+@@ -0,0 +1,64 @@
++#include "kvm/kvm-cpu.h"
++#include "kvm/kvm.h"
++#include "kvm/virtio.h"
++#include "kvm/term.h"
 +
-+	reg.id		= RISCV_CSR_REG(scause);
-+	if (ioctl(vcpu->vcpu_fd, KVM_GET_ONE_REG, &reg) < 0)
-+		die("KVM_GET_ONE_REG failed (SCAUSE)");
-+	csr.scause = data;
++#include <asm/ptrace.h>
 +
-+	reg.id		= RISCV_CSR_REG(sscratch);
-+	if (ioctl(vcpu->vcpu_fd, KVM_GET_ONE_REG, &reg) < 0)
-+		die("KVM_GET_ONE_REG failed (sscartch)");
-+	csr.sscratch = data;
-+	dprintf(debug_fd, " SSTATUS:  0x%016lx\n", csr.sstatus);
-+	dprintf(debug_fd, " SIE:      0x%016lx\n", csr.sie);
-+	dprintf(debug_fd, " STVEC:    0x%016lx\n", csr.stvec);
-+	dprintf(debug_fd, " SIP:      0x%016lx\n", csr.sip);
-+	dprintf(debug_fd, " SATP:     0x%016lx\n", csr.satp);
-+	dprintf(debug_fd, " STVAL:    0x%016lx\n", csr.stval);
-+	dprintf(debug_fd, " SCAUSE:   0x%016lx\n", csr.scause);
-+	dprintf(debug_fd, " SSCRATCH: 0x%016lx\n", csr.sscratch);
++static int debug_fd;
++
++void kvm_cpu__set_debug_fd(int fd)
++{
++	debug_fd = fd;
++}
++
++int kvm_cpu__get_debug_fd(void)
++{
++	return debug_fd;
++}
++
++struct kvm_cpu *kvm_cpu__arch_init(struct kvm *kvm, unsigned long cpu_id)
++{
++	/* TODO: */
++	return NULL;
++}
++
++void kvm_cpu__arch_nmi(struct kvm_cpu *cpu)
++{
++}
++
++void kvm_cpu__delete(struct kvm_cpu *vcpu)
++{
++	/* TODO: */
++}
++
++bool kvm_cpu__handle_exit(struct kvm_cpu *vcpu)
++{
++	/* TODO: */
++	return false;
++}
++
++void kvm_cpu__show_page_tables(struct kvm_cpu *vcpu)
++{
++	/* TODO: */
++}
++
++void kvm_cpu__reset_vcpu(struct kvm_cpu *vcpu)
++{
++	/* TODO: */
++}
++
++int kvm_cpu__get_endianness(struct kvm_cpu *vcpu)
++{
++	return VIRTIO_ENDIAN_LE;
++}
++
++void kvm_cpu__show_code(struct kvm_cpu *vcpu)
++{
++	/* TODO: */
++}
++
++void kvm_cpu__show_registers(struct kvm_cpu *vcpu)
++{
++	/* TODO: */
++}
+diff --git a/riscv/kvm.c b/riscv/kvm.c
+new file mode 100644
+index 0000000..e816ef5
+--- /dev/null
++++ b/riscv/kvm.c
+@@ -0,0 +1,61 @@
++#include "kvm/kvm.h"
++#include "kvm/util.h"
++#include "kvm/fdt.h"
++
++#include <linux/kernel.h>
++#include <linux/kvm.h>
++#include <linux/sizes.h>
++
++struct kvm_ext kvm_req_ext[] = {
++	{ DEFINE_KVM_EXT(KVM_CAP_ONE_REG) },
++	{ 0, 0 },
++};
++
++bool kvm__arch_cpu_supports_vm(void)
++{
++	/* The KVM capability check is enough. */
++	return true;
++}
++
++void kvm__init_ram(struct kvm *kvm)
++{
++	/* TODO: */
++}
++
++void kvm__arch_delete_ram(struct kvm *kvm)
++{
++	/* TODO: */
++}
++
++void kvm__arch_read_term(struct kvm *kvm)
++{
++	/* TODO: */
++}
++
++void kvm__arch_set_cmdline(char *cmdline, bool video)
++{
++	/* TODO: */
++}
++
++void kvm__arch_init(struct kvm *kvm, const char *hugetlbfs_path, u64 ram_size)
++{
++	/* TODO: */
++}
++
++bool kvm__arch_load_kernel_image(struct kvm *kvm, int fd_kernel, int fd_initrd,
++				 const char *kernel_cmdline)
++{
++	/* TODO: */
++	return true;
++}
++
++bool kvm__load_firmware(struct kvm *kvm, const char *firmware_filename)
++{
++	/* TODO: Firmware loading to be supported later. */
++	return false;
++}
++
++int kvm__arch_setup_firmware(struct kvm *kvm)
++{
++	return 0;
++}
+diff --git a/util/update_headers.sh b/util/update_headers.sh
+index 049dfe4..5f9cd32 100755
+--- a/util/update_headers.sh
++++ b/util/update_headers.sh
+@@ -36,7 +36,7 @@ copy_optional_arch () {
+ 	fi
  }
  
- void kvm_cpu__show_registers(struct kvm_cpu *vcpu)
- {
--	/* TODO: */
-+	struct kvm_one_reg reg;
-+	unsigned long data;
-+	int debug_fd = kvm_cpu__get_debug_fd();
-+	struct kvm_riscv_core core;
-+
-+	reg.addr = (unsigned long)&data;
-+
-+	reg.id		= RISCV_CORE_REG(mode);
-+	if (ioctl(vcpu->vcpu_fd, KVM_GET_ONE_REG, &reg) < 0)
-+		die("KVM_GET_ONE_REG failed (mode)");
-+	core.mode = data;
-+
-+	reg.id		= RISCV_CORE_REG(regs.pc);
-+	if (ioctl(vcpu->vcpu_fd, KVM_GET_ONE_REG, &reg) < 0)
-+		die("KVM_GET_ONE_REG failed (pc)");
-+	core.regs.pc = data;
-+
-+	reg.id		= RISCV_CORE_REG(regs.ra);
-+	if (ioctl(vcpu->vcpu_fd, KVM_GET_ONE_REG, &reg) < 0)
-+		die("KVM_GET_ONE_REG failed (ra)");
-+	core.regs.ra = data;
-+
-+	reg.id		= RISCV_CORE_REG(regs.sp);
-+	if (ioctl(vcpu->vcpu_fd, KVM_GET_ONE_REG, &reg) < 0)
-+		die("KVM_GET_ONE_REG failed (sp)");
-+	core.regs.sp = data;
-+
-+	reg.id		= RISCV_CORE_REG(regs.gp);
-+	if (ioctl(vcpu->vcpu_fd, KVM_GET_ONE_REG, &reg) < 0)
-+		die("KVM_GET_ONE_REG failed (gp)");
-+	core.regs.gp = data;
-+
-+	reg.id		= RISCV_CORE_REG(regs.tp);
-+	if (ioctl(vcpu->vcpu_fd, KVM_GET_ONE_REG, &reg) < 0)
-+		die("KVM_GET_ONE_REG failed (tp)");
-+	core.regs.tp = data;
-+
-+	reg.id		= RISCV_CORE_REG(regs.t0);
-+	if (ioctl(vcpu->vcpu_fd, KVM_GET_ONE_REG, &reg) < 0)
-+		die("KVM_GET_ONE_REG failed (t0)");
-+	core.regs.t0 = data;
-+
-+	reg.id		= RISCV_CORE_REG(regs.t1);
-+	if (ioctl(vcpu->vcpu_fd, KVM_GET_ONE_REG, &reg) < 0)
-+		die("KVM_GET_ONE_REG failed (t1)");
-+	core.regs.t1 = data;
-+
-+	reg.id		= RISCV_CORE_REG(regs.t2);
-+	if (ioctl(vcpu->vcpu_fd, KVM_GET_ONE_REG, &reg) < 0)
-+		die("KVM_GET_ONE_REG failed (t2)");
-+	core.regs.t2 = data;
-+
-+	reg.id		= RISCV_CORE_REG(regs.s0);
-+	if (ioctl(vcpu->vcpu_fd, KVM_GET_ONE_REG, &reg) < 0)
-+		die("KVM_GET_ONE_REG failed (s0)");
-+	core.regs.s0 = data;
-+
-+	reg.id		= RISCV_CORE_REG(regs.s1);
-+	if (ioctl(vcpu->vcpu_fd, KVM_GET_ONE_REG, &reg) < 0)
-+		die("KVM_GET_ONE_REG failed (s1)");
-+	core.regs.s1 = data;
-+
-+	reg.id		= RISCV_CORE_REG(regs.a0);
-+	if (ioctl(vcpu->vcpu_fd, KVM_GET_ONE_REG, &reg) < 0)
-+		die("KVM_GET_ONE_REG failed (a0)");
-+	core.regs.a0 = data;
-+
-+	reg.id		= RISCV_CORE_REG(regs.a1);
-+	if (ioctl(vcpu->vcpu_fd, KVM_GET_ONE_REG, &reg) < 0)
-+		die("KVM_GET_ONE_REG failed (a1)");
-+	core.regs.a1 = data;
-+
-+	reg.id		= RISCV_CORE_REG(regs.a2);
-+	if (ioctl(vcpu->vcpu_fd, KVM_GET_ONE_REG, &reg) < 0)
-+		die("KVM_GET_ONE_REG failed (a2)");
-+	core.regs.a2 = data;
-+
-+	reg.id		= RISCV_CORE_REG(regs.a3);
-+	if (ioctl(vcpu->vcpu_fd, KVM_GET_ONE_REG, &reg) < 0)
-+		die("KVM_GET_ONE_REG failed (a3)");
-+	core.regs.a3 = data;
-+
-+	reg.id		= RISCV_CORE_REG(regs.a4);
-+	if (ioctl(vcpu->vcpu_fd, KVM_GET_ONE_REG, &reg) < 0)
-+		die("KVM_GET_ONE_REG failed (a4)");
-+	core.regs.a4 = data;
-+
-+	reg.id		= RISCV_CORE_REG(regs.a5);
-+	if (ioctl(vcpu->vcpu_fd, KVM_GET_ONE_REG, &reg) < 0)
-+		die("KVM_GET_ONE_REG failed (a5)");
-+	core.regs.a5 = data;
-+
-+	reg.id		= RISCV_CORE_REG(regs.a6);
-+	if (ioctl(vcpu->vcpu_fd, KVM_GET_ONE_REG, &reg) < 0)
-+		die("KVM_GET_ONE_REG failed (a6)");
-+	core.regs.a6 = data;
-+
-+	reg.id		= RISCV_CORE_REG(regs.a7);
-+	if (ioctl(vcpu->vcpu_fd, KVM_GET_ONE_REG, &reg) < 0)
-+		die("KVM_GET_ONE_REG failed (a7)");
-+	core.regs.a7 = data;
-+
-+	reg.id		= RISCV_CORE_REG(regs.s2);
-+	if (ioctl(vcpu->vcpu_fd, KVM_GET_ONE_REG, &reg) < 0)
-+		die("KVM_GET_ONE_REG failed (s2)");
-+	core.regs.s2 = data;
-+
-+	reg.id		= RISCV_CORE_REG(regs.s3);
-+	if (ioctl(vcpu->vcpu_fd, KVM_GET_ONE_REG, &reg) < 0)
-+		die("KVM_GET_ONE_REG failed (s3)");
-+	core.regs.s3 = data;
-+
-+	reg.id		= RISCV_CORE_REG(regs.s4);
-+	if (ioctl(vcpu->vcpu_fd, KVM_GET_ONE_REG, &reg) < 0)
-+		die("KVM_GET_ONE_REG failed (s4)");
-+	core.regs.s4 = data;
-+
-+	reg.id		= RISCV_CORE_REG(regs.s5);
-+	if (ioctl(vcpu->vcpu_fd, KVM_GET_ONE_REG, &reg) < 0)
-+		die("KVM_GET_ONE_REG failed (s5)");
-+	core.regs.s5 = data;
-+
-+	reg.id		= RISCV_CORE_REG(regs.s6);
-+	if (ioctl(vcpu->vcpu_fd, KVM_GET_ONE_REG, &reg) < 0)
-+		die("KVM_GET_ONE_REG failed (s6)");
-+	core.regs.s6 = data;
-+
-+	reg.id		= RISCV_CORE_REG(regs.s7);
-+	if (ioctl(vcpu->vcpu_fd, KVM_GET_ONE_REG, &reg) < 0)
-+		die("KVM_GET_ONE_REG failed (s7)");
-+	core.regs.s7 = data;
-+
-+	reg.id		= RISCV_CORE_REG(regs.s8);
-+	if (ioctl(vcpu->vcpu_fd, KVM_GET_ONE_REG, &reg) < 0)
-+		die("KVM_GET_ONE_REG failed (s8)");
-+	core.regs.s8 = data;
-+
-+	reg.id		= RISCV_CORE_REG(regs.s9);
-+	if (ioctl(vcpu->vcpu_fd, KVM_GET_ONE_REG, &reg) < 0)
-+		die("KVM_GET_ONE_REG failed (s9)");
-+	core.regs.s9 = data;
-+
-+	reg.id		= RISCV_CORE_REG(regs.s10);
-+	if (ioctl(vcpu->vcpu_fd, KVM_GET_ONE_REG, &reg) < 0)
-+		die("KVM_GET_ONE_REG failed (s10)");
-+	core.regs.s10 = data;
-+
-+	reg.id		= RISCV_CORE_REG(regs.s11);
-+	if (ioctl(vcpu->vcpu_fd, KVM_GET_ONE_REG, &reg) < 0)
-+		die("KVM_GET_ONE_REG failed (s11)");
-+	core.regs.s11 = data;
-+
-+	reg.id		= RISCV_CORE_REG(regs.t3);
-+	if (ioctl(vcpu->vcpu_fd, KVM_GET_ONE_REG, &reg) < 0)
-+		die("KVM_GET_ONE_REG failed (t3)");
-+	core.regs.t3 = data;
-+
-+	reg.id		= RISCV_CORE_REG(regs.t4);
-+	if (ioctl(vcpu->vcpu_fd, KVM_GET_ONE_REG, &reg) < 0)
-+		die("KVM_GET_ONE_REG failed (t4)");
-+	core.regs.t4 = data;
-+
-+	reg.id		= RISCV_CORE_REG(regs.t5);
-+	if (ioctl(vcpu->vcpu_fd, KVM_GET_ONE_REG, &reg) < 0)
-+		die("KVM_GET_ONE_REG failed (t5)");
-+	core.regs.t5 = data;
-+
-+	reg.id		= RISCV_CORE_REG(regs.t6);
-+	if (ioctl(vcpu->vcpu_fd, KVM_GET_ONE_REG, &reg) < 0)
-+		die("KVM_GET_ONE_REG failed (t6)");
-+	core.regs.t6 = data;
-+
-+	dprintf(debug_fd, "\n General Purpose Registers:\n");
-+	dprintf(debug_fd,   " -------------------------\n");
-+	dprintf(debug_fd, " MODE:  0x%lx\n", data);
-+	dprintf(debug_fd, " PC: 0x%016lx   RA: 0x%016lx SP: 0x%016lx GP: 0x%016lx\n",
-+		core.regs.pc, core.regs.ra, core.regs.sp, core.regs.gp);
-+	dprintf(debug_fd, " TP: 0x%016lx   T0: 0x%016lx T1: 0x%016lx T2: 0x%016lx\n",
-+		core.regs.tp, core.regs.t0, core.regs.t1, core.regs.t2);
-+	dprintf(debug_fd, " S0: 0x%016lx   S1: 0x%016lx A0: 0x%016lx A1: 0x%016lx\n",
-+		core.regs.s0, core.regs.s1, core.regs.a0, core.regs.a1);
-+	dprintf(debug_fd, " A2: 0x%016lx   A3: 0x%016lx A4: 0x%016lx A5: 0x%016lx\n",
-+		core.regs.a2, core.regs.a3, core.regs.a4, core.regs.a5);
-+	dprintf(debug_fd, " A6: 0x%016lx   A7: 0x%016lx S2: 0x%016lx S3: 0x%016lx\n",
-+		core.regs.a6, core.regs.a7, core.regs.s2, core.regs.s3);
-+	dprintf(debug_fd, " S4: 0x%016lx   S5: 0x%016lx S6: 0x%016lx S7: 0x%016lx\n",
-+		core.regs.s4, core.regs.s5, core.regs.s6, core.regs.s7);
-+	dprintf(debug_fd, " S8: 0x%016lx   S9: 0x%016lx S10: 0x%016lx S11: 0x%016lx\n",
-+		core.regs.s8, core.regs.s9, core.regs.s10, core.regs.s11);
-+	dprintf(debug_fd, " T3: 0x%016lx   T4: 0x%016lx T5: 0x%016lx T6: 0x%016lx\n",
-+		core.regs.t3, core.regs.t4, core.regs.t5, core.regs.t6);
-+
-+	kvm_cpu__show_csrs(vcpu);
- }
+-for arch in arm64 mips powerpc x86
++for arch in arm64 mips powerpc riscv x86
+ do
+ 	case "$arch" in
+ 		arm64)	KVMTOOL_PATH=arm/aarch64
 -- 
 2.25.1
 
