@@ -1,64 +1,61 @@
 From: Yifei Jiang <jiangyifei@huawei.com>
-Date: Mon, 12 Apr 2021 14:52:43 +0800
-Subject: [PATCH RFC v5 09/12] target/riscv: Add host cpu type
+Date: Mon, 12 Apr 2021 14:52:46 +0800
+Subject: [PATCH RFC v5 12/12] target/riscv: Support virtual time context
+ synchronization
 In-Reply-To: <20210412065246.1853-1-jiangyifei@huawei.com>
 References: <20210412065246.1853-1-jiangyifei@huawei.com>
-Message-ID: <20210412065246.1853-10-jiangyifei@huawei.com>
+Message-ID: <20210412065246.1853-13-jiangyifei@huawei.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-'host' type cpu is set isa to RVXLEN simply, more isa info
-will obtain from KVM in kvm_arch_init_vcpu()
+Add virtual time context description to vmstate_riscv_cpu. After cpu being
+loaded, virtual time context is updated to KVM.
 
 Signed-off-by: Yifei Jiang <jiangyifei@huawei.com>
 Signed-off-by: Yipeng Yin <yinyipeng1@huawei.com>
 ---
- target/riscv/cpu.c | 9 +++++++++
- target/riscv/cpu.h | 1 +
- 2 files changed, 10 insertions(+)
+ target/riscv/machine.c | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
 
-diff --git a/target/riscv/cpu.c b/target/riscv/cpu.c
-index dd34ab4978..8132d35a92 100644
---- a/target/riscv/cpu.c
-+++ b/target/riscv/cpu.c
-@@ -216,6 +216,12 @@ static void rv32_imafcu_nommu_cpu_init(Object *obj)
- }
- #endif
+diff --git a/target/riscv/machine.c b/target/riscv/machine.c
+index 44d4015bd6..ef2d5395a8 100644
+--- a/target/riscv/machine.c
++++ b/target/riscv/machine.c
+@@ -138,10 +138,20 @@ static const VMStateDescription vmstate_hyper = {
+     }
+ };
  
-+static void riscv_host_cpu_init(Object *obj)
++static int cpu_post_load(void *opaque, int version_id)
 +{
-+    CPURISCVState *env = &RISCV_CPU(obj)->env;
-+    set_misa(env, RVXLEN);
++    RISCVCPU *cpu = opaque;
++    CPURISCVState *env = &cpu->env;
++
++    env->kvm_timer_dirty = true;
++    return 0;
 +}
 +
- static ObjectClass *riscv_cpu_class_by_name(const char *cpu_model)
- {
-     ObjectClass *oc;
-@@ -706,6 +712,9 @@ static const TypeInfo riscv_cpu_type_infos[] = {
-         .class_init = riscv_cpu_class_init,
-     },
-     DEFINE_CPU(TYPE_RISCV_CPU_ANY,              riscv_any_cpu_init),
-+#if defined(CONFIG_KVM)
-+    DEFINE_CPU(TYPE_RISCV_CPU_HOST,             riscv_host_cpu_init),
-+#endif
- #if defined(TARGET_RISCV32)
-     DEFINE_CPU(TYPE_RISCV_CPU_BASE32,           rv32_base_cpu_init),
-     DEFINE_CPU(TYPE_RISCV_CPU_IBEX,             rv32_ibex_cpu_init),
-diff --git a/target/riscv/cpu.h b/target/riscv/cpu.h
-index a489d94187..3ca3dad341 100644
---- a/target/riscv/cpu.h
-+++ b/target/riscv/cpu.h
-@@ -43,6 +43,7 @@
- #define TYPE_RISCV_CPU_SIFIVE_E51       RISCV_CPU_TYPE_NAME("sifive-e51")
- #define TYPE_RISCV_CPU_SIFIVE_U34       RISCV_CPU_TYPE_NAME("sifive-u34")
- #define TYPE_RISCV_CPU_SIFIVE_U54       RISCV_CPU_TYPE_NAME("sifive-u54")
-+#define TYPE_RISCV_CPU_HOST             RISCV_CPU_TYPE_NAME("host")
+ const VMStateDescription vmstate_riscv_cpu = {
+     .name = "cpu",
+     .version_id = 1,
+     .minimum_version_id = 1,
++    .post_load = cpu_post_load,
+     .fields = (VMStateField[]) {
+         VMSTATE_UINTTL_ARRAY(env.gpr, RISCVCPU, 32),
+         VMSTATE_UINT64_ARRAY(env.fpr, RISCVCPU, 32),
+@@ -185,6 +195,10 @@ const VMStateDescription vmstate_riscv_cpu = {
+         VMSTATE_UINT64(env.mtohost, RISCVCPU),
+         VMSTATE_UINT64(env.timecmp, RISCVCPU),
  
- #if defined(TARGET_RISCV32)
- # define TYPE_RISCV_CPU_BASE            TYPE_RISCV_CPU_BASE32
++        VMSTATE_UINT64(env.kvm_timer_time, RISCVCPU),
++        VMSTATE_UINT64(env.kvm_timer_compare, RISCVCPU),
++        VMSTATE_UINT64(env.kvm_timer_state, RISCVCPU),
++
+         VMSTATE_END_OF_LIST()
+     },
+     .subsections = (const VMStateDescription * []) {
 -- 
 2.19.1
 
