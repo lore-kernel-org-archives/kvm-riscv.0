@@ -1,111 +1,119 @@
-From: Palmer Dabbelt <palmer@dabbelt.com>
-Date: Fri, 09 Apr 2021 11:58:19 -0700 (PDT)
-Subject: [PATCH v16 00/17] KVM RISC-V Support
-In-Reply-To: <a49a7142-104e-fdaa-4a6a-619505695229@redhat.com>
-Message-ID: <mhng-d64da1be-bacd-4885-aaf2-fea3c763418c@palmerdabbelt-glaptop>
+From: Yifei Jiang <jiangyifei@huawei.com>
+Date: Mon, 12 Apr 2021 14:52:34 +0800
+Subject: [PATCH RFC v5 00/12] Add riscv kvm accel support
+Message-ID: <20210412065246.1853-1-jiangyifei@huawei.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 31 Mar 2021 02:21:58 PDT (-0700), pbonzini at redhat.com wrote:
-> On 30/03/21 07:48, Anup Patel wrote:
->>
->> It seems Andrew does not want to freeze H-extension until we have virtualization
->> aware interrupt controller (such as RISC-V AIA specification) and IOMMU. Lot
->> of us feel that these things can be done independently because RISC-V
->> H-extension already has provisions for external interrupt controller with
->> virtualization support.
+This series adds both riscv32 and riscv64 kvm support, and implements
+migration based on riscv. It is based on temporarily unaccepted kvm:
+https://github.com/kvm-riscv/linux (lastest version v17).
 
-Sorry to hear that.  It's really gotten to a point where I'm just 
-embarrassed with how the RISC-V foundation is being run -- not sure if 
-these other ones bled into Linux land, but this is the third ISA 
-extension that's blown up over the last few weeks.  We had a lot of 
-discussion about this on the binutils/GCC side of things and I've 
-managed to convince myself that coupling the software stack to the 
-specification process isn't viable -- we made that decision under the 
-assumption that specifications would actually progress through the 
-process, but in practice that's just not happening.
+This series depends on above pending changes which haven't yet been
+accepted, so this QEMU patch series is treated as RFC patches until
+that dependency has been dealt with.
 
-My goal with the RISC-V stuff has always been getting us to a place 
-where we have real shipping products running a software stack that is as 
-close as possible to the upstream codebases.  I see that as the only way 
-to get the software stack to a point where it can be sustainably 
-maintained.  The "only frozen extensions" policy was meant to help this 
-by steering vendors towards a common base we could support, but in 
-practice it's just not working out.  The specification process is just 
-so unreliable that in practice everything that gets built ends up 
-relying on some non-standard behavior: whether it's a draft extension, 
-some vendor-specific extension, or just some implementation quirks.  
-There's always going to be some degree of that going on, but over the 
-last year or so we've just stopped progressing.
+Several steps to use this:
+1. Build emulation
+$ ./configure --target-list=riscv64-softmmu
+$ make -j$(nproc)
 
-My worry with accepting the draft extensions is that we have no 
-guarantee of compatibility between various drafts, which makes 
-supporting multiple versions much more difficult.  I've always really 
-only been worried about supporting what gets implemented in a chip I can 
-actually run code on, as I can at least guarantee that doesn't change.  
-In practice that really has nothing to do with the specification freeze: 
-even ratified specifications change in ways that break compatibility so 
-we need to support multiple versions anyway.  That's why we've got 
-things like the K210 support (which doesn't quite follow the ratified 
-specs) and are going to take the errata stuff.  I hadn't been all that 
-worried about the H support because there was a plan to get is to 
-hardware, but with the change I'm not really sure how that's going to 
-happen.
+2. Build kernel
+https://github.com/kvm-riscv/linux
 
-> Yes, frankly that's pretty ridiculous as it's perfectly possible to
-> emulate the interrupt controller in software (and an IOMMU is not needed
-> at all if you are okay with emulated or paravirtualized devices---which
-> is almost always the case except for partitioning hypervisors).
+3. Build QEMU VM
+Cross built in riscv toolchain.
+$ PKG_CONFIG_LIBDIR=<toolchain pkgconfig path>
+$ export PKG_CONFIG_SYSROOT_DIR=<toolchain sysroot path>
+$ ./configure --target-list=riscv64-softmmu --enable-kvm \
+--cross-prefix=riscv64-linux-gnu- --disable-libiscsi --disable-glusterfs \
+--disable-libusb --disable-usb-redir --audio-drv-list= --disable-opengl \
+--disable-libxml2
+$ make -j$(nproc)
 
-There's certainly some risk to freezing the H extension before we have 
-all flavors of systems up and running.  I spent a lot of time arguing 
-that case years ago before we started telling people that the H 
-extension just needed implementation, but that's not the decision we 
-made.  I don't really do RISC-V foundation stuff any more so I don't 
-know why this changed, but it's just too late.  It would be wonderful to 
-have an implementation of everything we need to build out one of these 
-complex systems, but I just just don't see how the current plan gets 
-there: that's a huge amount of work and I don't see why anyone would 
-commit to that when they can't count on it being supported when it's 
-released.
+4. Start emulation
+$ ./qemu-system-riscv64 -M virt -m 4096M -cpu rv64,x-h=true -nographic \
+        -name guest=riscv-hyp,debug-threads=on \
+        -smp 4 \
+        -bios ./fw_jump.bin \
+        -kernel ./Image \
+        -drive file=./hyp.img,format=raw,id=hd0 \
+        -device virtio-blk-device,drive=hd0 \
+        -append "root=/dev/vda rw console=ttyS0 earlycon=sbi"
 
-There are clearly some systems that can be built with this as it stands.  
-They're not going to satisfy every use case, but at least we'll get 
-people to start seriously using the spec.  That's the only way I can see 
-to move forward with this.  It's pretty clear that sitting around and 
-waiting doesn't work, we've tried that.
+5. Start kvm-acceled QEMU VM in emulation
+$ ./qemu-system-riscv64 -M virt,accel=kvm -m 1024M -cpu host -nographic \
+        -name guest=riscv-guset \
+        -smp 2 \
+        -bios none \
+        -kernel ./Image \
+        -drive file=./guest.img,format=raw,id=hd0 \
+        -device virtio-blk-device,drive=hd0 \
+        -append "root=/dev/vda rw console=ttyS0 earlycon=sbi"
 
-> Palmer, are you okay with merging RISC-V KVM?  Or should we place it in
-> drivers/staging/riscv/kvm?
+Changes since RFC v4
+- Rebase on QEMU v6.0.0-rc2 and kvm-riscv linux v17.
+- Remove time scaling support as software solution is incomplete.
+  Because it will cause unacceptable performance degradation. and
+  We will post a better solution.
+- Revise according to Alistair's review comments.
+  - Remove compile time XLEN checks in kvm_riscv_reg_id
+  - Surround TYPE_RISCV_CPU_HOST definition by CONFIG_KVM and share
+    it between RV32 and RV64.
+  - Add kvm-stub.c for reduce unnecessary compilation checks.
+  - Add riscv_setup_direct_kernel() to direct boot kernel for KVM.
 
-I'm certainly ready to drop my objections to merging the code based on 
-it targeting a draft extension, but at a bare minimum I want to get a 
-new policy in place that everyone can agree to for merging code.  I've 
-tried to draft up a new policy a handful of times this week, but I'm not 
-really quite sure how to go about this: ultimately trying to build 
-stable interfaces around an unstable ISA is just a losing battle.  I've 
-got a bunch of stuff going on right now, but I'll try to find some time 
-to actually sit down and finish one.
+Changes since RFC v3
+- Rebase on QEMU v5.2.0-rc2 and kvm-riscv linux v15.
+- Add time scaling support(New patches 13, 14 and 15).
+- Fix the bug that guest vm can't reboot.
 
-I know it might seem odd to complain about how slowly things are going 
-and then throw up another roadblock, but I really do think this is a 
-very important thing to get right.  I'm just not sure how we're going to 
-get anywhere with RISC-V without someone providing stability, so I want 
-to make sure that whatever we do here can be done reliably.  If we don't 
-I'm worried the vendors are just going to go off and do their own 
-software stacks, which will make getting everyone back on the same page 
-very difficult.
+Changes since RFC v2
+- Fix checkpatch error at target/riscv/sbi_ecall_interface.h.
+- Add riscv migration support.
 
-> Either way, the best way to do it would be like this:
->
-> 1) you apply patch 1 in a topic branch
->
-> 2) you merge the topic branch in the risc-v tree
->
-> 3) Anup merges the topic branch too and sends me a pull request.
->
-> Paolo
+Changes since RFC v1
+- Add separate SBI ecall interface header.
+- Add riscv32 kvm accel support.
+
+Yifei Jiang (12):
+  linux-header: Update linux/kvm.h
+  target/riscv: Add target/riscv/kvm.c to place the public kvm interface
+  target/riscv: Implement function kvm_arch_init_vcpu
+  target/riscv: Implement kvm_arch_get_registers
+  target/riscv: Implement kvm_arch_put_registers
+  target/riscv: Support start kernel directly by KVM
+  hw/riscv: PLIC update external interrupt by KVM when kvm enabled
+  target/riscv: Handle KVM_EXIT_RISCV_SBI exit
+  target/riscv: Add host cpu type
+  target/riscv: Add kvm_riscv_get/put_regs_timer
+  target/riscv: Implement virtual time adjusting with vm state changing
+  target/riscv: Support virtual time context synchronization
+
+ hw/intc/sifive_plic.c              |  29 +-
+ hw/riscv/boot.c                    |  11 +
+ hw/riscv/virt.c                    |   7 +
+ include/hw/riscv/boot.h            |   1 +
+ linux-headers/linux/kvm.h          |  97 +++++
+ meson.build                        |   2 +
+ target/riscv/cpu.c                 |  17 +
+ target/riscv/cpu.h                 |  10 +
+ target/riscv/kvm-stub.c            |  30 ++
+ target/riscv/kvm.c                 | 605 +++++++++++++++++++++++++++++
+ target/riscv/kvm_riscv.h           |  25 ++
+ target/riscv/machine.c             |  14 +
+ target/riscv/meson.build           |   1 +
+ target/riscv/sbi_ecall_interface.h |  72 ++++
+ 14 files changed, 912 insertions(+), 9 deletions(-)
+ create mode 100644 target/riscv/kvm-stub.c
+ create mode 100644 target/riscv/kvm.c
+ create mode 100644 target/riscv/kvm_riscv.h
+ create mode 100644 target/riscv/sbi_ecall_interface.h
+
+-- 
+2.19.1
+
 
