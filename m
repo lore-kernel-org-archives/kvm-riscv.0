@@ -1,139 +1,154 @@
 From: Alistair Francis <alistair23@gmail.com>
-Date: Thu, 15 Apr 2021 08:39:49 +1000
-Subject: [PATCH RFC v5 04/12] target/riscv: Implement
- kvm_arch_get_registers
-In-Reply-To: <20210412065246.1853-5-jiangyifei@huawei.com>
+Date: Thu, 15 Apr 2021 08:46:07 +1000
+Subject: [PATCH RFC v5 05/12] target/riscv: Implement
+ kvm_arch_put_registers
+In-Reply-To: <20210412065246.1853-6-jiangyifei@huawei.com>
 References: <20210412065246.1853-1-jiangyifei@huawei.com>
- <20210412065246.1853-5-jiangyifei@huawei.com>
-Message-ID: <CAKmqyKPnrhC9c2ek5ZetoHaDHir52ihEKzRCXHioOqMNvnVknQ@mail.gmail.com>
+ <20210412065246.1853-6-jiangyifei@huawei.com>
+Message-ID: <CAKmqyKMgh0uTSoUrJW8O73i37rpwFoz7s1QZNgNf+8HKBfXRnA@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Apr 12, 2021 at 4:58 PM Yifei Jiang <jiangyifei@huawei.com> wrote:
+On Mon, Apr 12, 2021 at 4:56 PM Yifei Jiang <jiangyifei@huawei.com> wrote:
 >
-> Get GPR CSR and FP registers from kvm by KVM_GET_ONE_REG ioctl.
+> Put GPR CSR and FP registers to kvm by KVM_SET_ONE_REG ioctl
 >
 > Signed-off-by: Yifei Jiang <jiangyifei@huawei.com>
 > Signed-off-by: Yipeng Yin <yinyipeng1@huawei.com>
-
-Reviewed-by: Alistair Francis <alistair.francis@wdc.com>
-
-Alistair
-
 > ---
->  target/riscv/kvm.c | 150 ++++++++++++++++++++++++++++++++++++++++++++-
->  1 file changed, 149 insertions(+), 1 deletion(-)
+>  target/riscv/kvm.c | 142 ++++++++++++++++++++++++++++++++++++++++++++-
+>  1 file changed, 141 insertions(+), 1 deletion(-)
 >
 > diff --git a/target/riscv/kvm.c b/target/riscv/kvm.c
-> index 0d924be33f..63485d7b65 100644
+> index 63485d7b65..9d1441952a 100644
 > --- a/target/riscv/kvm.c
 > +++ b/target/riscv/kvm.c
-> @@ -50,13 +50,161 @@ static __u64 kvm_riscv_reg_id(CPURISCVState *env, __u64 type, __u64 idx)
->      return id;
+> @@ -85,6 +85,31 @@ static int kvm_riscv_get_regs_core(CPUState *cs)
+>      return ret;
 >  }
 >
-> +#define RISCV_CORE_REG(env, name)  kvm_riscv_reg_id(env, KVM_REG_RISCV_CORE, \
-> +                 KVM_REG_RISCV_CORE_REG(name))
-> +
-> +#define RISCV_CSR_REG(env, name)  kvm_riscv_reg_id(env, KVM_REG_RISCV_CSR, \
-> +                 KVM_REG_RISCV_CSR_REG(name))
-> +
-> +#define RISCV_FP_F_REG(env, idx)  kvm_riscv_reg_id(env, KVM_REG_RISCV_FP_F, idx)
-> +
-> +#define RISCV_FP_D_REG(env, idx)  kvm_riscv_reg_id(env, KVM_REG_RISCV_FP_D, idx)
-> +
-> +static int kvm_riscv_get_regs_core(CPUState *cs)
+> +static int kvm_riscv_put_regs_core(CPUState *cs)
 > +{
 > +    int ret = 0;
 > +    int i;
 > +    target_ulong reg;
 > +    CPURISCVState *env = &RISCV_CPU(cs)->env;
 > +
-> +    ret = kvm_get_one_reg(cs, RISCV_CORE_REG(env, regs.pc), &reg);
+> +    reg = env->pc;
+> +    ret = kvm_set_one_reg(cs, RISCV_CORE_REG(env, regs.pc), &reg);
 > +    if (ret) {
 > +        return ret;
 > +    }
-> +    env->pc = reg;
 > +
 > +    for (i = 1; i < 32; i++) {
 > +        __u64 id = kvm_riscv_reg_id(env, KVM_REG_RISCV_CORE, i);
-> +        ret = kvm_get_one_reg(cs, id, &reg);
+
+Can you use uint64_t for the entire series instead?
+
+> +        reg = env->gpr[i];
+> +        ret = kvm_set_one_reg(cs, id, &reg);
 > +        if (ret) {
 > +            return ret;
 > +        }
-> +        env->gpr[i] = reg;
 > +    }
 > +
 > +    return ret;
 > +}
 > +
-> +static int kvm_riscv_get_regs_csr(CPUState *cs)
+>  static int kvm_riscv_get_regs_csr(CPUState *cs)
+>  {
+>      int ret = 0;
+> @@ -148,6 +173,70 @@ static int kvm_riscv_get_regs_csr(CPUState *cs)
+>      return ret;
+>  }
+>
+> +static int kvm_riscv_put_regs_csr(CPUState *cs)
 > +{
 > +    int ret = 0;
 > +    target_ulong reg;
 > +    CPURISCVState *env = &RISCV_CPU(cs)->env;
 > +
-> +    ret = kvm_get_one_reg(cs, RISCV_CSR_REG(env, sstatus), &reg);
+> +    reg = env->mstatus;
+> +    ret = kvm_set_one_reg(cs, RISCV_CSR_REG(env, sstatus), &reg);
 > +    if (ret) {
 > +        return ret;
 > +    }
-> +    env->mstatus = reg;
 > +
-> +    ret = kvm_get_one_reg(cs, RISCV_CSR_REG(env, sie), &reg);
+> +    reg = env->mie;
+> +    ret = kvm_set_one_reg(cs, RISCV_CSR_REG(env, sie), &reg);
 > +    if (ret) {
 > +        return ret;
 > +    }
-> +    env->mie = reg;
 > +
-> +    ret = kvm_get_one_reg(cs, RISCV_CSR_REG(env, stvec), &reg);
+> +    reg = env->stvec;
+> +    ret = kvm_set_one_reg(cs, RISCV_CSR_REG(env, stvec), &reg);
 > +    if (ret) {
 > +        return ret;
 > +    }
-> +    env->stvec = reg;
 > +
-> +    ret = kvm_get_one_reg(cs, RISCV_CSR_REG(env, sscratch), &reg);
+> +    reg = env->sscratch;
+> +    ret = kvm_set_one_reg(cs, RISCV_CSR_REG(env, sscratch), &reg);
 > +    if (ret) {
 > +        return ret;
 > +    }
-> +    env->sscratch = reg;
 > +
-> +    ret = kvm_get_one_reg(cs, RISCV_CSR_REG(env, sepc), &reg);
+> +    reg = env->sepc;
+> +    ret = kvm_set_one_reg(cs, RISCV_CSR_REG(env, sepc), &reg);
 > +    if (ret) {
 > +        return ret;
 > +    }
-> +    env->sepc = reg;
 > +
-> +    ret = kvm_get_one_reg(cs, RISCV_CSR_REG(env, scause), &reg);
+> +    reg = env->scause;
+> +    ret = kvm_set_one_reg(cs, RISCV_CSR_REG(env, scause), &reg);
 > +    if (ret) {
 > +        return ret;
 > +    }
-> +    env->scause = reg;
 > +
-> +    ret = kvm_get_one_reg(cs, RISCV_CSR_REG(env, stval), &reg);
+> +    reg = env->sbadaddr;
+
+This will change soon-ish as my next PR converts this to stval.
+
+> +    ret = kvm_set_one_reg(cs, RISCV_CSR_REG(env, stval), &reg);
 > +    if (ret) {
 > +        return ret;
 > +    }
-> +    env->sbadaddr = reg;
 > +
-> +    ret = kvm_get_one_reg(cs, RISCV_CSR_REG(env, sip), &reg);
+> +    reg = env->mip;
+> +    ret = kvm_set_one_reg(cs, RISCV_CSR_REG(env, sip), &reg);
 > +    if (ret) {
 > +        return ret;
 > +    }
-> +    env->mip = reg;
 > +
-> +    ret = kvm_get_one_reg(cs, RISCV_CSR_REG(env, satp), &reg);
+> +    reg = env->satp;
+> +    ret = kvm_set_one_reg(cs, RISCV_CSR_REG(env, satp), &reg);
 > +    if (ret) {
 > +        return ret;
 > +    }
-> +    env->satp = reg;
 > +
 > +    return ret;
 > +}
 > +
-> +static int kvm_riscv_get_regs_fp(CPUState *cs)
+> +
+
+Double line here.
+
+Otherwise:
+
+Reviewed-by: Alistair Francis <alistair.francis@wdc.com>
+
+Alistair
+
+>  static int kvm_riscv_get_regs_fp(CPUState *cs)
+>  {
+>      int ret = 0;
+> @@ -181,6 +270,40 @@ static int kvm_riscv_get_regs_fp(CPUState *cs)
+>      return ret;
+>  }
+>
+> +static int kvm_riscv_put_regs_fp(CPUState *cs)
 > +{
 > +    int ret = 0;
 > +    int i;
@@ -142,11 +157,11 @@ Alistair
 > +    if (riscv_has_ext(env, RVD)) {
 > +        uint64_t reg;
 > +        for (i = 0; i < 32; i++) {
-> +            ret = kvm_get_one_reg(cs, RISCV_FP_D_REG(env, i), &reg);
+> +            reg = env->fpr[i];
+> +            ret = kvm_set_one_reg(cs, RISCV_FP_D_REG(env, i), &reg);
 > +            if (ret) {
 > +                return ret;
 > +            }
-> +            env->fpr[i] = reg;
 > +        }
 > +        return ret;
 > +    }
@@ -154,11 +169,11 @@ Alistair
 > +    if (riscv_has_ext(env, RVF)) {
 > +        uint32_t reg;
 > +        for (i = 0; i < 32; i++) {
-> +            ret = kvm_get_one_reg(cs, RISCV_FP_F_REG(env, i), &reg);
+> +            reg = env->fpr[i];
+> +            ret = kvm_set_one_reg(cs, RISCV_FP_F_REG(env, i), &reg);
 > +            if (ret) {
 > +                return ret;
 > +            }
-> +            env->fpr[i] = reg;
 > +        }
 > +        return ret;
 > +    }
@@ -166,26 +181,28 @@ Alistair
 > +    return ret;
 > +}
 > +
+> +
 >  const KVMCapabilityInfo kvm_arch_required_capabilities[] = {
 >      KVM_CAP_LAST_INFO
 >  };
+> @@ -209,7 +332,24 @@ int kvm_arch_get_registers(CPUState *cs)
 >
->  int kvm_arch_get_registers(CPUState *cs)
+>  int kvm_arch_put_registers(CPUState *cs, int level)
 >  {
 > -    return 0;
 > +    int ret = 0;
 > +
-> +    ret = kvm_riscv_get_regs_core(cs);
+> +    ret = kvm_riscv_put_regs_core(cs);
 > +    if (ret) {
 > +        return ret;
 > +    }
 > +
-> +    ret = kvm_riscv_get_regs_csr(cs);
+> +    ret = kvm_riscv_put_regs_csr(cs);
 > +    if (ret) {
 > +        return ret;
 > +    }
 > +
-> +    ret = kvm_riscv_get_regs_fp(cs);
+> +    ret = kvm_riscv_put_regs_fp(cs);
 > +    if (ret) {
 > +        return ret;
 > +    }
@@ -193,7 +210,7 @@ Alistair
 > +    return ret;
 >  }
 >
->  int kvm_arch_put_registers(CPUState *cs, int level)
+>  int kvm_arch_release_virq_post(int virq)
 > --
 > 2.19.1
 >
