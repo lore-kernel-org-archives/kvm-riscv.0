@@ -1,125 +1,110 @@
 From: Anup Patel <anup@brainfault.org>
-Date: Wed, 21 Apr 2021 09:38:01 +0530
+Date: Tue, 27 Apr 2021 11:31:09 +0530
 Subject: [PATCH v16 00/17] KVM RISC-V Support
-In-Reply-To: <mhng-d64da1be-bacd-4885-aaf2-fea3c763418c@palmerdabbelt-glaptop>
-References: <a49a7142-104e-fdaa-4a6a-619505695229@redhat.com>
- <mhng-d64da1be-bacd-4885-aaf2-fea3c763418c@palmerdabbelt-glaptop>
-Message-ID: <CAAhSdy1EYhgA52m48DcyevM5j5EsuXPbVq5Z0KHB+SaXorNTeg@mail.gmail.com>
+In-Reply-To: <5b988c4e-25e9-f2b9-b08d-35bc37a245e4@sifive.com>
+References: <mhng-d64da1be-bacd-4885-aaf2-fea3c763418c@palmerdabbelt-glaptop>
+ <5b988c4e-25e9-f2b9-b08d-35bc37a245e4@sifive.com>
+Message-ID: <CAAhSdy2g13XkeiG4-=0pHVw9Oq5zAeseM2LgxHf6daXD+qnc1Q@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Palmer,
+Hi Paolo,
 
-On Sat, Apr 10, 2021 at 12:28 AM Palmer Dabbelt <palmer@dabbelt.com> wrote:
->
-> On Wed, 31 Mar 2021 02:21:58 PDT (-0700), pbonzini at redhat.com wrote:
-> > On 30/03/21 07:48, Anup Patel wrote:
-> >>
-> >> It seems Andrew does not want to freeze H-extension until we have virtualization
-> >> aware interrupt controller (such as RISC-V AIA specification) and IOMMU. Lot
-> >> of us feel that these things can be done independently because RISC-V
-> >> H-extension already has provisions for external interrupt controller with
-> >> virtualization support.
->
-> Sorry to hear that.  It's really gotten to a point where I'm just
-> embarrassed with how the RISC-V foundation is being run -- not sure if
-> these other ones bled into Linux land, but this is the third ISA
-> extension that's blown up over the last few weeks.  We had a lot of
-> discussion about this on the binutils/GCC side of things and I've
-> managed to convince myself that coupling the software stack to the
-> specification process isn't viable -- we made that decision under the
-> assumption that specifications would actually progress through the
-> process, but in practice that's just not happening.
->
-> My goal with the RISC-V stuff has always been getting us to a place
-> where we have real shipping products running a software stack that is as
-> close as possible to the upstream codebases.  I see that as the only way
-> to get the software stack to a point where it can be sustainably
-> maintained.  The "only frozen extensions" policy was meant to help this
-> by steering vendors towards a common base we could support, but in
-> practice it's just not working out.  The specification process is just
-> so unreliable that in practice everything that gets built ends up
-> relying on some non-standard behavior: whether it's a draft extension,
-> some vendor-specific extension, or just some implementation quirks.
-> There's always going to be some degree of that going on, but over the
-> last year or so we've just stopped progressing.
->
-> My worry with accepting the draft extensions is that we have no
-> guarantee of compatibility between various drafts, which makes
-> supporting multiple versions much more difficult.  I've always really
-> only been worried about supporting what gets implemented in a chip I can
-> actually run code on, as I can at least guarantee that doesn't change.
-> In practice that really has nothing to do with the specification freeze:
-> even ratified specifications change in ways that break compatibility so
-> we need to support multiple versions anyway.  That's why we've got
-> things like the K210 support (which doesn't quite follow the ratified
-> specs) and are going to take the errata stuff.  I hadn't been all that
-> worried about the H support because there was a plan to get is to
-> hardware, but with the change I'm not really sure how that's going to
-> happen.
->
-> > Yes, frankly that's pretty ridiculous as it's perfectly possible to
-> > emulate the interrupt controller in software (and an IOMMU is not needed
-> > at all if you are okay with emulated or paravirtualized devices---which
-> > is almost always the case except for partitioning hypervisors).
->
-> There's certainly some risk to freezing the H extension before we have
-> all flavors of systems up and running.  I spent a lot of time arguing
-> that case years ago before we started telling people that the H
-> extension just needed implementation, but that's not the decision we
-> made.  I don't really do RISC-V foundation stuff any more so I don't
-> know why this changed, but it's just too late.  It would be wonderful to
-> have an implementation of everything we need to build out one of these
-> complex systems, but I just just don't see how the current plan gets
-> there: that's a huge amount of work and I don't see why anyone would
-> commit to that when they can't count on it being supported when it's
-> released.
->
-> There are clearly some systems that can be built with this as it stands.
-> They're not going to satisfy every use case, but at least we'll get
-> people to start seriously using the spec.  That's the only way I can see
-> to move forward with this.  It's pretty clear that sitting around and
-> waiting doesn't work, we've tried that.
->
-> > Palmer, are you okay with merging RISC-V KVM?  Or should we place it in
-> > drivers/staging/riscv/kvm?
->
-> I'm certainly ready to drop my objections to merging the code based on
-> it targeting a draft extension, but at a bare minimum I want to get a
-> new policy in place that everyone can agree to for merging code.  I've
-> tried to draft up a new policy a handful of times this week, but I'm not
-> really quite sure how to go about this: ultimately trying to build
-> stable interfaces around an unstable ISA is just a losing battle.  I've
-> got a bunch of stuff going on right now, but I'll try to find some time
-> to actually sit down and finish one.
+Looks like it will take more time for KVM RISC-V to be merged under arch/riscv.
 
-Can you send the patch for the updated policy which we can review ??
+Let's go ahead with your suggestion of having KVM RISC-V under drivers/staging
+so that development is not blocked.
 
-Will it be possible to get KVM RISC-V merged for Linux-5.13 ?
+I will send-out v18 series which will add KVM RISC-V under the staging
+directory.
+
+Should we target Linux-5.14 ?
 
 Regards,
 Anup
 
+On Tue, Apr 27, 2021 at 11:13 AM Paul Walmsley <paul.walmsley@sifive.com> wrote:
 >
-> I know it might seem odd to complain about how slowly things are going
-> and then throw up another roadblock, but I really do think this is a
-> very important thing to get right.  I'm just not sure how we're going to
-> get anywhere with RISC-V without someone providing stability, so I want
-> to make sure that whatever we do here can be done reliably.  If we don't
-> I'm worried the vendors are just going to go off and do their own
-> software stacks, which will make getting everyone back on the same page
-> very difficult.
+> On Fri, 9 Apr 2021, Palmer Dabbelt wrote:
 >
-> > Either way, the best way to do it would be like this:
+> > On Wed, 31 Mar 2021 02:21:58 PDT (-0700), pbonzini at redhat.com wrote:
 > >
-> > 1) you apply patch 1 in a topic branch
+> > > Palmer, are you okay with merging RISC-V KVM?  Or should we place it in
+> > > drivers/staging/riscv/kvm?
 > >
-> > 2) you merge the topic branch in the risc-v tree
+> > I'm certainly ready to drop my objections to merging the code based on
+> > it targeting a draft extension, but at a bare minimum I want to get a
+> > new policy in place that everyone can agree to for merging code.  I've
+> > tried to draft up a new policy a handful of times this week, but I'm not
+> > really quite sure how to go about this: ultimately trying to build
+> > stable interfaces around an unstable ISA is just a losing battle.  I've
+> > got a bunch of stuff going on right now, but I'll try to find some time
+> > to actually sit down and finish one.
 > >
-> > 3) Anup merges the topic branch too and sends me a pull request.
-> >
-> > Paolo
+> > I know it might seem odd to complain about how slowly things are going
+> > and then throw up another roadblock, but I really do think this is a
+> > very important thing to get right.  I'm just not sure how we're going to
+> > get anywhere with RISC-V without someone providing stability, so I want
+> > to make sure that whatever we do here can be done reliably.  If we don't
+> > I'm worried the vendors are just going to go off and do their own
+> > software stacks, which will make getting everyone back on the same page
+> > very difficult.
+>
+> I sympathize with Paolo, Anup, and others also.  Especially Anup, who has
+> been updating and carrying the hypervisor patches for a long time now.
+> And also Greentime, who has been carrying the V extension patches.  The
+> RISC-V hypervisor specification, like several other RISC-V draft
+> specifications, is taking longer to transition to the officially "frozen"
+> stage than almost anyone in the RISC-V community would like.
+>
+> Since we share this frustration, the next questions are:
+>
+> - What are the root causes of the problem?
+>
+> - What's the right forum to address the root causes?
+>
+> To me, the root causes of the problems described in this thread aren't
+> with the arch/riscv kernel maintenance guidelines, but rather with the
+> RISC-V specification process itself.  And the right forum to address
+> issues with the RISC-V specification process is with RISC-V International
+> itself: the mailing lists, the participants, and the board of directors.
+> Part of the challenge -- not simply with RISC-V, but with the Linux kernel
+> or any other community -- is to ensure that incentives (and disincentives)
+> are aligned with the appropriately responsible parts of the community.
+> And when it comes to specification development, the right focus to align
+> those incentives and disincentives is on RISC-V International.
+>
+> The arch/riscv patch acceptance guidelines are simply intended to ensure
+> that the definition of what is and isn't RISC-V remains clear and
+> unambiguous.  Even though the guidelines can result in short-term pain,
+> the intention is to promote long-term stability and sustainable
+> maintainability - particularly since the specifications get baked into
+> hardware.  We've observed that attempting to chase draft specifications
+> can cause significant churn: for example, the history of the RISC-V vector
+> specification illustrates how a draft extension can undergo major,
+> unexpected revisions throughout its journey towards ratification.  One of
+> our responsibilities as kernel developers is to minimize that churn - not
+> simply for our own sanity, or for the usability of RISC-V, but to ensure
+> that we remain members in good standing of the broader kernel community.
+> Those of us who were around for the ARM32 and ARM SoC kernel accelerando
+> absorbed strong lessons in maintainability, and I doubt anyone here is
+> interested in re-learning those the hard way.
+>
+> RVI states that the association is open to community participation.  The
+> organizations that have joined RVI, I believe, have a strong stake in the
+> health of the RISC-V ecosystem, just as the folks have here in this
+> discussion.  If the goal really is to get quality specifications out the
+> door faster, then let's focus the energy towards building consensus
+> towards improving the process at RISC-V International.  If that's
+> possible, the benefits won't only accrue to Linux developers, but to the
+> entire RISC-V hardware and software development community at large.  If
+> nothing else, it will be an interesting test of whether RISC-V
+> International can take action to address these concerns and balance them
+> with those of other stakeholders in the process.
+>
+>
+> - Paul
 
