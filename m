@@ -1,40 +1,186 @@
-From: Anup Patel <apatel@ventanamicro.com>
-Date: Thu, 1 Feb 2024 09:24:28 +0530
-Subject: RISC-V development board with Hypervisor Extension
-In-Reply-To: <5d6ae3f1.37b4.18d62c44490.Coremail.snt.d-boy@163.com>
-References: <5d6ae3f1.37b4.18d62c44490.Coremail.snt.d-boy@163.com>
-Message-ID: <CAK9=C2WzUx_7rmtw4ZnUV33JbcPyvJZFOW54LVZiqvF1-vk_fg@mail.gmail.com>
+From: Jiangyifei <jiangyifei@huawei.com>
+Date: Thu, 6 May 2021 07:59:24 +0000
+Subject: [PATCH RFC v5 07/12] hw/riscv: PLIC update external interrupt by
+ KVM when kvm enabled
+In-Reply-To: <CAAhSdy34aVwGEW-_Z=FkOkrAGrTsaS-11Ck6gJg77wwUSXe=zw@mail.gmail.com>
+References: <20210412065246.1853-1-jiangyifei@huawei.com>
+ <20210412065246.1853-8-jiangyifei@huawei.com>
+ <CAAhSdy34aVwGEW-_Z=FkOkrAGrTsaS-11Ck6gJg77wwUSXe=zw@mail.gmail.com>
+Message-ID: <057e885d5168477a904943e8ebb5fbbb@huawei.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Feb 1, 2024 at 9:14?AM Steve He <snt.d-boy@163.com> wrote:
->
->
-> Hi,
->
->
-> Is there any development board with RISC-V Hypervisor Extension?
-> Sifive P670 looks like the first RISC-V core that supports Hypervisor
-> Extension, but hasn't find any development board for it.
->
-> And what's your development env for all your RISC-V patches here? ;)
 
-Most of us test on QEMU and Spike.
+> -----Original Message-----
+> From: Qemu-riscv
+> [mailto:qemu-riscv-bounces+jiangyifei=huawei.com at nongnu.org] On Behalf Of
+> Anup Patel
+> Sent: Friday, April 30, 2021 12:54 PM
+> To: Jiangyifei <jiangyifei@huawei.com>
+> Cc: Bin Meng <bin.meng@windriver.com>; open list:RISC-V
+> <qemu-riscv@nongnu.org>; Sagar Karandikar <sagark@eecs.berkeley.edu>;
+> KVM General <kvm@vger.kernel.org>; libvir-list at redhat.com; Bastian
+> Koppelmann <kbastian@mail.uni-paderborn.de>; Anup Patel
+> <anup.patel@wdc.com>; QEMU Developers <qemu-devel@nongnu.org>;
+> yinyipeng <yinyipeng1@huawei.com>; Palmer Dabbelt <palmer@dabbelt.com>;
+> kvm-riscv at lists.infradead.org; Alistair Francis <Alistair.Francis@wdc.com>;
+> Fanliang (EulerOS) <fanliang@huawei.com>; Wubin (H)
+> <wu.wubin@huawei.com>; Zhanghailiang <zhang.zhanghailiang@huawei.com>
+> Subject: Re: [PATCH RFC v5 07/12] hw/riscv: PLIC update external interrupt by
+> KVM when kvm enabled
+> 
+> On Mon, Apr 12, 2021 at 12:24 PM Yifei Jiang <jiangyifei@huawei.com> wrote:
+> >
+> > Only support supervisor external interrupt currently.
+> >
+> > Signed-off-by: Yifei Jiang <jiangyifei@huawei.com>
+> > Signed-off-by: Yipeng Yin <yinyipeng1@huawei.com>
+> > ---
+> >  hw/intc/sifive_plic.c    | 29 ++++++++++++++++++++---------
+> >  target/riscv/kvm-stub.c  |  5 +++++
+> >  target/riscv/kvm.c       | 20 ++++++++++++++++++++
+> >  target/riscv/kvm_riscv.h |  1 +
+> >  4 files changed, 46 insertions(+), 9 deletions(-)
+> >
+> > diff --git a/hw/intc/sifive_plic.c b/hw/intc/sifive_plic.c index
+> > 97a1a27a9a..2746eb7a05 100644
+> > --- a/hw/intc/sifive_plic.c
+> > +++ b/hw/intc/sifive_plic.c
+> > @@ -31,6 +31,8 @@
+> >  #include "target/riscv/cpu.h"
+> >  #include "sysemu/sysemu.h"
+> >  #include "migration/vmstate.h"
+> > +#include "sysemu/kvm.h"
+> > +#include "kvm_riscv.h"
+> >
+> >  #define RISCV_DEBUG_PLIC 0
+> >
+> > @@ -147,15 +149,24 @@ static void sifive_plic_update(SiFivePLICState *plic)
+> >              continue;
+> >          }
+> >          int level = sifive_plic_irqs_pending(plic, addrid);
+> > -        switch (mode) {
+> > -        case PLICMode_M:
+> > -            riscv_cpu_update_mip(RISCV_CPU(cpu), MIP_MEIP,
+> BOOL_TO_MASK(level));
+> > -            break;
+> > -        case PLICMode_S:
+> > -            riscv_cpu_update_mip(RISCV_CPU(cpu), MIP_SEIP,
+> BOOL_TO_MASK(level));
+> > -            break;
+> > -        default:
+> > -            break;
+> > +        if (kvm_enabled()) {
+> > +            if (mode == PLICMode_M) {
+> > +                continue;
+> > +            }
+> > +            kvm_riscv_set_irq(RISCV_CPU(cpu), IRQ_S_EXT, level);
+> > +        } else {
+> > +            switch (mode) {
+> > +            case PLICMode_M:
+> > +                riscv_cpu_update_mip(RISCV_CPU(cpu),
+> > +                                     MIP_MEIP,
+> BOOL_TO_MASK(level));
+> > +                break;
+> > +            case PLICMode_S:
+> > +                riscv_cpu_update_mip(RISCV_CPU(cpu),
+> > +                                     MIP_SEIP,
+> BOOL_TO_MASK(level));
+> > +                break;
+> > +            default:
+> > +                break;
+> > +            }
+> 
+> I am not comfortable with this patch.
+> 
+> This way we will endup calling kvm_riscv_set_irq() from various places in
+> hw/intc and hw/riscv.
+> 
+> I suggest to extend riscv_cpu_update_mip() such that when kvm is enabled
+> riscv_cpu_update_mip() will:
+> 1) Consider only MIP_SEIP bit in "mask" parameter and all other
+>     bits in "mask" parameter will be ignored probably with warning
+> 2) When the MIP_SEIP bit is set in "mask" call kvm_riscv_set_irq() to change
+> the IRQ state in the KVM module.
+> 
+> Regards,
+> Anup
+> 
 
-Some of us also test on internal platforms.
+Yes, but riscv_cpu_update_mip() in target/riscv/cpu_helper.c is used to TCG. So it is not
+appropriate to adapt for KVM.
 
-AFAIK, currently there is no publicly available board with H-extension.
+We will move riscv_cpu_update_mip() to target/riscv/cpu.c and modify it according your
+advice.
 
 Regards,
-Anup
+Yifei
 
->
-> Thanks
-> --
-> kvm-riscv mailing list
-> kvm-riscv at lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/kvm-riscv
+> >          }
+> >      }
+> >
+> > diff --git a/target/riscv/kvm-stub.c b/target/riscv/kvm-stub.c index
+> > 39b96fe3f4..4e8fc31a21 100644
+> > --- a/target/riscv/kvm-stub.c
+> > +++ b/target/riscv/kvm-stub.c
+> > @@ -23,3 +23,8 @@ void kvm_riscv_reset_vcpu(RISCVCPU *cpu)  {
+> >      abort();
+> >  }
+> > +
+> > +void kvm_riscv_set_irq(RISCVCPU *cpu, int irq, int level) {
+> > +    abort();
+> > +}
+> > diff --git a/target/riscv/kvm.c b/target/riscv/kvm.c index
+> > 79c931acb4..da63535812 100644
+> > --- a/target/riscv/kvm.c
+> > +++ b/target/riscv/kvm.c
+> > @@ -453,6 +453,26 @@ void kvm_riscv_reset_vcpu(RISCVCPU *cpu)
+> >      env->gpr[11] = cpu->env.fdt_addr;          /* a1 */
+> >  }
+> >
+> > +void kvm_riscv_set_irq(RISCVCPU *cpu, int irq, int level) {
+> > +    int ret;
+> > +    unsigned virq = level ? KVM_INTERRUPT_SET :
+> KVM_INTERRUPT_UNSET;
+> > +
+> > +    if (irq != IRQ_S_EXT) {
+> > +        return;
+> > +    }
+> > +
+> > +    if (!kvm_enabled()) {
+> > +        return;
+> > +    }
+> > +
+> > +    ret = kvm_vcpu_ioctl(CPU(cpu), KVM_INTERRUPT, &virq);
+> > +    if (ret < 0) {
+> > +        perror("Set irq failed");
+> > +        abort();
+> > +    }
+> > +}
+> > +
+> >  bool kvm_arch_cpu_check_are_resettable(void)
+> >  {
+> >      return true;
+> > diff --git a/target/riscv/kvm_riscv.h b/target/riscv/kvm_riscv.h index
+> > f38c82bf59..ed281bdce0 100644
+> > --- a/target/riscv/kvm_riscv.h
+> > +++ b/target/riscv/kvm_riscv.h
+> > @@ -20,5 +20,6 @@
+> >  #define QEMU_KVM_RISCV_H
+> >
+> >  void kvm_riscv_reset_vcpu(RISCVCPU *cpu);
+> > +void kvm_riscv_set_irq(RISCVCPU *cpu, int irq, int level);
+> >
+> >  #endif
+> > --
+> > 2.19.1
+> >
+> >
+> > --
+> > kvm-riscv mailing list
+> > kvm-riscv at lists.infradead.org
+> > http://lists.infradead.org/mailman/listinfo/kvm-riscv
 
