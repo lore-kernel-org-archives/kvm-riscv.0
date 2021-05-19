@@ -1,49 +1,73 @@
-From: Anup Patel <anup.patel@wdc.com>
-Date: Wed, 19 May 2021 09:05:53 +0530
-Subject: [PATCH v18 18/18] RISC-V: KVM: Add MAINTAINERS entry
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Date: Wed, 19 May 2021 06:58:11 +0200
+Subject: [PATCH v18 00/18] KVM RISC-V Support
 In-Reply-To: <20210519033553.1110536-1-anup.patel@wdc.com>
 References: <20210519033553.1110536-1-anup.patel@wdc.com>
-Message-ID: <20210519033553.1110536-19-anup.patel@wdc.com>
+Message-ID: <YKSa48cejI1Lax+/@kroah.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add myself as maintainer for KVM RISC-V and Atish as designated reviewer.
+On Wed, May 19, 2021 at 09:05:35AM +0530, Anup Patel wrote:
+> From: Anup Patel <anup@brainfault.org>
+> 
+> This series adds initial KVM RISC-V support. Currently, we are able to boot
+> Linux on RV64/RV32 Guest with multiple VCPUs.
+> 
+> Key aspects of KVM RISC-V added by this series are:
+> 1. No RISC-V specific KVM IOCTL
+> 2. Minimal possible KVM world-switch which touches only GPRs and few CSRs
+> 3. Both RV64 and RV32 host supported
+> 4. Full Guest/VM switch is done via vcpu_get/vcpu_put infrastructure
+> 5. KVM ONE_REG interface for VCPU register access from user-space
+> 6. PLIC emulation is done in user-space
+> 7. Timer and IPI emuation is done in-kernel
+> 8. Both Sv39x4 and Sv48x4 supported for RV64 host
+> 9. MMU notifiers supported
+> 10. Generic dirtylog supported
+> 11. FP lazy save/restore supported
+> 12. SBI v0.1 emulation for KVM Guest available
+> 13. Forward unhandled SBI calls to KVM userspace
+> 14. Hugepage support for Guest/VM
+> 15. IOEVENTFD support for Vhost
+> 
+> Here's a brief TODO list which we will work upon after this series:
+> 1. SBI v0.2 emulation in-kernel
+> 2. SBI v0.2 hart state management emulation in-kernel
+> 3. In-kernel PLIC emulation
+> 4. ..... and more .....
+> 
+> This series can be found in riscv_kvm_v18 branch at:
+> https//github.com/avpatel/linux.git
+> 
+> Our work-in-progress KVMTOOL RISC-V port can be found in riscv_v7 branch
+> at: https//github.com/avpatel/kvmtool.git
+> 
+> The QEMU RISC-V hypervisor emulation is done by Alistair and is available
+> in master branch at: https://git.qemu.org/git/qemu.git
+> 
+> To play around with KVM RISC-V, refer KVM RISC-V wiki at:
+> https://github.com/kvm-riscv/howto/wiki
+> https://github.com/kvm-riscv/howto/wiki/KVM-RISCV64-on-QEMU
+> https://github.com/kvm-riscv/howto/wiki/KVM-RISCV64-on-Spike
+> 
+> Changes since v17:
+>  - Rebased on Linux-5.13-rc2
+>  - Moved to new KVM MMU notifier APIs
+>  - Removed redundant kvm_arch_vcpu_uninit()
+>  - Moved KVM RISC-V sources to drivers/staging for compliance with
+>    Linux RISC-V patch acceptance policy
 
-Signed-off-by: Atish Patra <atish.patra@wdc.com>
-Signed-off-by: Anup Patel <anup.patel@wdc.com>
-Acked-by: Paolo Bonzini <pbonzini@redhat.com>
-Reviewed-by: Paolo Bonzini <pbonzini@redhat.com>
-Reviewed-by: Alexander Graf <graf@amazon.com>
----
- MAINTAINERS | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+What is this new "patch acceptance policy" and what does it have to do
+with drivers/staging?
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 008fcad7ac00..8a54857a383c 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -10009,6 +10009,17 @@ F:	arch/powerpc/include/uapi/asm/kvm*
- F:	arch/powerpc/kernel/kvm*
- F:	arch/powerpc/kvm/
- 
-+KERNEL VIRTUAL MACHINE FOR RISC-V (KVM/riscv)
-+M:	Anup Patel <anup.patel@wdc.com>
-+R:	Atish Patra <atish.patra@wdc.com>
-+L:	kvm at vger.kernel.org
-+L:	kvm-riscv at lists.infradead.org
-+L:	linux-riscv at lists.infradead.org
-+S:	Maintained
-+T:	git git://github.com/kvm-riscv/linux.git
-+F:	arch/riscv/include/uapi/asm/kvm*
-+F:	drivers/staging/riscv/kvm/
-+
- KERNEL VIRTUAL MACHINE for s390 (KVM/s390)
- M:	Christian Borntraeger <borntraeger@de.ibm.com>
- M:	Janosch Frank <frankja@linux.ibm.com>
--- 
-2.25.1
+What does drivers/staging/ have to do with this at all?  Did anyone ask
+the staging maintainer about this?
 
+Not cool, and not something I'm about to take without some very good
+reasons...
+
+greg k-h
 
