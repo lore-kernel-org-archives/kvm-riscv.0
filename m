@@ -1,63 +1,51 @@
 From: Dan Carpenter <dan.carpenter@oracle.com>
-Date: Wed, 19 May 2021 13:09:12 +0300
-Subject: [PATCH v18 11/18] RISC-V: KVM: Implement MMU notifiers
-In-Reply-To: <20210519033553.1110536-12-anup.patel@wdc.com>
+Date: Wed, 19 May 2021 13:11:49 +0300
+Subject: [PATCH v18 14/18] RISC-V: KVM: Implement ONE REG interface for
+ FP registers
+In-Reply-To: <20210519033553.1110536-15-anup.patel@wdc.com>
 References: <20210519033553.1110536-1-anup.patel@wdc.com>
- <20210519033553.1110536-12-anup.patel@wdc.com>
-Message-ID: <20210519100912.GR1955@kadam>
+ <20210519033553.1110536-15-anup.patel@wdc.com>
+Message-ID: <20210519101149.GS1955@kadam>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, May 19, 2021 at 09:05:46AM +0530, Anup Patel wrote:
->  int kvm_riscv_stage2_map(struct kvm_vcpu *vcpu,
->  			 struct kvm_memory_slot *memslot,
->  			 gpa_t gpa, unsigned long hva, bool is_write)
-> @@ -569,7 +643,7 @@ int kvm_riscv_stage2_map(struct kvm_vcpu *vcpu,
->  	struct kvm_mmu_page_cache *pcache = &vcpu->arch.mmu_page_cache;
->  	bool logging = (memslot->dirty_bitmap &&
->  			!(memslot->flags & KVM_MEM_READONLY)) ? true : false;
-> -	unsigned long vma_pagesize;
-> +	unsigned long vma_pagesize, mmu_seq;
+On Wed, May 19, 2021 at 09:05:49AM +0530, Anup Patel wrote:
+>  static int kvm_riscv_vcpu_set_reg(struct kvm_vcpu *vcpu,
+>  				  const struct kvm_one_reg *reg)
+>  {
+> @@ -427,6 +519,12 @@ static int kvm_riscv_vcpu_set_reg(struct kvm_vcpu *vcpu,
+>  		return kvm_riscv_vcpu_set_reg_csr(vcpu, reg);
+>  	else if ((reg->id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_TIMER)
+>  		return kvm_riscv_vcpu_set_reg_timer(vcpu, reg);
+> +	else if ((reg->id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_FP_F)
+> +		return kvm_riscv_vcpu_set_reg_fp(vcpu, reg,
+> +						 KVM_REG_RISCV_FP_F);
+> +	else if ((reg->id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_FP_D)
+> +		return kvm_riscv_vcpu_set_reg_fp(vcpu, reg,
+> +						 KVM_REG_RISCV_FP_D);
 >  
->  	mmap_read_lock(current->mm);
->  
-> @@ -608,6 +682,8 @@ int kvm_riscv_stage2_map(struct kvm_vcpu *vcpu,
->  		return ret;
->  	}
->  
-> +	mmu_seq = kvm->mmu_notifier_seq;
-> +
->  	hfn = gfn_to_pfn_prot(kvm, gfn, is_write, &writeable);
->  	if (hfn == KVM_PFN_ERR_HWPOISON) {
->  		send_sig_mceerr(BUS_MCEERR_AR, (void __user *)hva,
-> @@ -626,6 +702,9 @@ int kvm_riscv_stage2_map(struct kvm_vcpu *vcpu,
->  
->  	spin_lock(&kvm->mmu_lock);
->  
-> +	if (mmu_notifier_retry(kvm, mmu_seq))
-> +		goto out_unlock;
+>  	return -EINVAL;
+>  }
+> @@ -442,6 +540,12 @@ static int kvm_riscv_vcpu_get_reg(struct kvm_vcpu *vcpu,
+>  		return kvm_riscv_vcpu_get_reg_csr(vcpu, reg);
+>  	else if ((reg->id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_TIMER)
+>  		return kvm_riscv_vcpu_get_reg_timer(vcpu, reg);
+> +	else if ((reg->id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_FP_F)
+> +		return kvm_riscv_vcpu_get_reg_fp(vcpu, reg,
+> +						 KVM_REG_RISCV_FP_F);
+> +	else if ((reg->id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_FP_D)
+> +		return kvm_riscv_vcpu_get_reg_fp(vcpu, reg,
+> +						 KVM_REG_RISCV_FP_D);
 
-Do we need an error code here or is it a success path?  You would
-expect from the name that mmu_notifier_retry() would retry something
-and return an error code, but it's actually a boolean function.
+These have become unwieldy.  Use a switch statement:
 
+	switch (reg->id & KVM_REG_RISCV_TYPE_MASK) {
+	case KVM_REG_RISCV_TIMER:
+		return kvm_riscv_vcpu_get_reg_timer(vcpu, reg);
 regards,
 dan carpenter
-
-> +
->  	if (writeable) {
->  		kvm_set_pfn_dirty(hfn);
->  		mark_page_dirty(kvm, gfn);
-> @@ -639,6 +718,7 @@ int kvm_riscv_stage2_map(struct kvm_vcpu *vcpu,
->  	if (ret)
->  		kvm_err("Failed to map in stage2\n");
->  
-> +out_unlock:
->  	spin_unlock(&kvm->mmu_lock);
->  	kvm_set_pfn_accessed(hfn);
->  	kvm_release_pfn_clean(hfn);
 
 
