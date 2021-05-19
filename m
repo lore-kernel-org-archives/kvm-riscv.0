@@ -1,41 +1,129 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Date: Wed, 19 May 2021 13:17:04 +0300
-Subject: [PATCH v18 02/18] RISC-V: Add initial skeletal KVM support
-In-Reply-To: <20210519033553.1110536-3-anup.patel@wdc.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Date: Wed, 19 May 2021 12:47:39 +0200
+Subject: [PATCH v18 00/18] KVM RISC-V Support
+In-Reply-To: <YKSgcn5gxE/4u2bT@kroah.com>
 References: <20210519033553.1110536-1-anup.patel@wdc.com>
- <20210519033553.1110536-3-anup.patel@wdc.com>
-Message-ID: <20210519101704.GT1955@kadam>
+ <YKSa48cejI1Lax+/@kroah.com>
+ <CAAhSdy18qySXbUdrEsUe-KtbtuEoYrys0TcmsV2UkEA2=7UQzw@mail.gmail.com>
+ <YKSgcn5gxE/4u2bT@kroah.com>
+Message-ID: <YKTsyyVYsHVMQC+G@kroah.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, May 19, 2021 at 09:05:37AM +0530, Anup Patel wrote:
-> +void kvm_riscv_stage2_free_pgd(struct kvm *kvm)
-> +{
-> +	/* TODO: */
-> +}
-> +
+On Wed, May 19, 2021 at 07:21:54AM +0200, Greg Kroah-Hartman wrote:
+> On Wed, May 19, 2021 at 10:40:13AM +0530, Anup Patel wrote:
+> > On Wed, May 19, 2021 at 10:28 AM Greg Kroah-Hartman
+> > <gregkh@linuxfoundation.org> wrote:
+> > >
+> > > On Wed, May 19, 2021 at 09:05:35AM +0530, Anup Patel wrote:
+> > > > From: Anup Patel <anup@brainfault.org>
+> > > >
+> > > > This series adds initial KVM RISC-V support. Currently, we are able to boot
+> > > > Linux on RV64/RV32 Guest with multiple VCPUs.
+> > > >
+> > > > Key aspects of KVM RISC-V added by this series are:
+> > > > 1. No RISC-V specific KVM IOCTL
+> > > > 2. Minimal possible KVM world-switch which touches only GPRs and few CSRs
+> > > > 3. Both RV64 and RV32 host supported
+> > > > 4. Full Guest/VM switch is done via vcpu_get/vcpu_put infrastructure
+> > > > 5. KVM ONE_REG interface for VCPU register access from user-space
+> > > > 6. PLIC emulation is done in user-space
+> > > > 7. Timer and IPI emuation is done in-kernel
+> > > > 8. Both Sv39x4 and Sv48x4 supported for RV64 host
+> > > > 9. MMU notifiers supported
+> > > > 10. Generic dirtylog supported
+> > > > 11. FP lazy save/restore supported
+> > > > 12. SBI v0.1 emulation for KVM Guest available
+> > > > 13. Forward unhandled SBI calls to KVM userspace
+> > > > 14. Hugepage support for Guest/VM
+> > > > 15. IOEVENTFD support for Vhost
+> > > >
+> > > > Here's a brief TODO list which we will work upon after this series:
+> > > > 1. SBI v0.2 emulation in-kernel
+> > > > 2. SBI v0.2 hart state management emulation in-kernel
+> > > > 3. In-kernel PLIC emulation
+> > > > 4. ..... and more .....
+> > > >
+> > > > This series can be found in riscv_kvm_v18 branch at:
+> > > > https//github.com/avpatel/linux.git
+> > > >
+> > > > Our work-in-progress KVMTOOL RISC-V port can be found in riscv_v7 branch
+> > > > at: https//github.com/avpatel/kvmtool.git
+> > > >
+> > > > The QEMU RISC-V hypervisor emulation is done by Alistair and is available
+> > > > in master branch at: https://git.qemu.org/git/qemu.git
+> > > >
+> > > > To play around with KVM RISC-V, refer KVM RISC-V wiki at:
+> > > > https://github.com/kvm-riscv/howto/wiki
+> > > > https://github.com/kvm-riscv/howto/wiki/KVM-RISCV64-on-QEMU
+> > > > https://github.com/kvm-riscv/howto/wiki/KVM-RISCV64-on-Spike
+> > > >
+> > > > Changes since v17:
+> > > >  - Rebased on Linux-5.13-rc2
+> > > >  - Moved to new KVM MMU notifier APIs
+> > > >  - Removed redundant kvm_arch_vcpu_uninit()
+> > > >  - Moved KVM RISC-V sources to drivers/staging for compliance with
+> > > >    Linux RISC-V patch acceptance policy
+> > >
+> > > What is this new "patch acceptance policy" and what does it have to do
+> > > with drivers/staging?
+> > 
+> > The Linux RISC-V patch acceptance policy is here:
+> > Documentation/riscv/patch-acceptance.rst
+> > 
+> > As-per this policy, the Linux RISC-V maintainers will only accept
+> > patches for frozen/ratified RISC-V extensions. Basically, it links the
+> > Linux RISC-V development process with the RISC-V foundation
+> > process which is painfully slow.
+> > 
+> > The KVM RISC-V patches have been sitting on the lists for almost
+> > 2 years now. The requirements for freezing RISC-V H-extension
+> > (hypervisor extension) keeps changing and we are not clear when
+> > it will be frozen. In fact, quite a few people have already implemented
+> > RISC-V H-extension in hardware as well and KVM RISC-V works
+> > on real HW as well.
+> > 
+> > Rationale of moving KVM RISC-V to drivers/staging is to continue
+> > KVM RISC-V development without breaking the Linux RISC-V patch
+> > acceptance policy until RISC-V H-extension is frozen. Once, RISC-V
+> > H-extension is frozen we will move KVM RISC-V back to arch/riscv
+> > (like other architectures).
+> 
+> Wait, no, this has nothing to do with what drivers/staging/ is for and
+> how it is used.  Again, not ok.
+> 
+> > > What does drivers/staging/ have to do with this at all?  Did anyone ask
+> > > the staging maintainer about this?
+> > 
+> > Yes, Paolo (KVM maintainer) suggested having KVM RISC-V under
+> > drivers/staging until RISC-V H-extension is frozen and continue the
+> > KVM RISC-V development from there.
+> 
+> staging is not for stuff like this at all.  It is for code that is
+> self-contained (not this) and needs work to get merged into the main
+> part of the kernel (listed in a TODO file, and is not this).
+> 
+> It is not a dumping ground for stuff that arch maintainers can not seem
+> to agree on, and it is not a place where you can just randomly play
+> around with user/kernel apis with no consequences.
+> 
+> So no, sorry, not going to take this code at all.
 
-I was disappointed how many stub functions remained at the end of the
-patchset...  It's better to not publish those.  How useful is this
-patchset with the functionality that is implemented currently?
+And to be a bit more clear about this, having other subsystem
+maintainers drop their unwanted code on this subsystem, _without_ even
+asking me first is just not very nice.  All of a sudden I am now
+responsible for this stuff, without me even being asked about it.
+Should I start throwing random drivers into the kvm subsystem for them
+to maintain because I don't want to?  :)
 
-> +int kvm_arch_init_vm(struct kvm *kvm, unsigned long type)
-> +{
-> +	int r;
-> +
-> +	r = kvm_riscv_stage2_alloc_pgd(kvm);
-> +	if (r)
-> +		return r;
-> +
-> +	return 0;
-> +}
+If there's really no other way to do this, than to put it in staging,
+let's talk about it.  But saying "this must go here" is not a
+conversation...
 
-Half the code uses "int ret;" and half uses "int r;".  Make everything
-int ret.
+thanks,
 
-regards,
-dan carpenter
+greg k-h
 
