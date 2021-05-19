@@ -1,298 +1,174 @@
 From: Anup Patel <anup.patel@wdc.com>
-Date: Wed, 19 May 2021 09:05:51 +0530
-Subject: [PATCH v18 16/18] RISC-V: KVM: Document RISC-V specific parts of KVM
- API
+Date: Wed, 19 May 2021 09:05:52 +0530
+Subject: [PATCH v18 17/18] RISC-V: KVM: Move sources to drivers/staging
+ directory
 In-Reply-To: <20210519033553.1110536-1-anup.patel@wdc.com>
 References: <20210519033553.1110536-1-anup.patel@wdc.com>
-Message-ID: <20210519033553.1110536-17-anup.patel@wdc.com>
+Message-ID: <20210519033553.1110536-18-anup.patel@wdc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Document RISC-V specific parts of the KVM API, such as:
- - The interrupt numbers passed to the KVM_INTERRUPT ioctl.
- - The states supported by the KVM_{GET,SET}_MP_STATE ioctls.
- - The registers supported by the KVM_{GET,SET}_ONE_REG interface
-   and the encoding of those register ids.
- - The exit reason KVM_EXIT_RISCV_SBI for SBI calls forwarded to
-   userspace tool.
+As-per the Linux RISC-V patch acceptance policy, patches for unfrozen
+specifications won't be accepted in arch/riscv directory.
 
-CC: Jonathan Corbet <corbet@lwn.net>
-CC: linux-doc at vger.kernel.org
+To unblock KVM RISC-V development, we move KVM RISC-V sources to
+drivers/staging directory. Only arch/riscv/include/uapi/asm/kvm.h
+header will remain in arch/riscv directory because this KVM RISC-V
+UAPI header is compliant with ratified RISC-V privilege specification
+hence also satisfies Linux RISC-V patch acceptance policy.
+
 Signed-off-by: Anup Patel <anup.patel@wdc.com>
 ---
- Documentation/virt/kvm/api.rst | 193 +++++++++++++++++++++++++++++++--
- 1 file changed, 184 insertions(+), 9 deletions(-)
+ arch/riscv/Kconfig                                          | 2 +-
+ arch/riscv/Makefile                                         | 2 +-
+ {arch => drivers/staging}/riscv/kvm/Kconfig                 | 0
+ {arch => drivers/staging}/riscv/kvm/Makefile                | 6 +++---
+ .../include => drivers/staging/riscv/kvm}/asm/kvm_csr.h     | 0
+ .../include => drivers/staging/riscv/kvm}/asm/kvm_host.h    | 0
+ .../include => drivers/staging/riscv/kvm}/asm/kvm_types.h   | 0
+ .../staging/riscv/kvm}/asm/kvm_vcpu_timer.h                 | 0
+ {arch => drivers/staging}/riscv/kvm/main.c                  | 0
+ {arch => drivers/staging}/riscv/kvm/mmu.c                   | 0
+ {arch => drivers/staging}/riscv/kvm/riscv_offsets.c         | 0
+ {arch => drivers/staging}/riscv/kvm/tlb.S                   | 0
+ {arch => drivers/staging}/riscv/kvm/vcpu.c                  | 0
+ {arch => drivers/staging}/riscv/kvm/vcpu_exit.c             | 0
+ {arch => drivers/staging}/riscv/kvm/vcpu_sbi.c              | 0
+ {arch => drivers/staging}/riscv/kvm/vcpu_switch.S           | 0
+ {arch => drivers/staging}/riscv/kvm/vcpu_timer.c            | 0
+ {arch => drivers/staging}/riscv/kvm/vm.c                    | 0
+ {arch => drivers/staging}/riscv/kvm/vmid.c                  | 0
+ 19 files changed, 5 insertions(+), 5 deletions(-)
+ rename {arch => drivers/staging}/riscv/kvm/Kconfig (100%)
+ rename {arch => drivers/staging}/riscv/kvm/Makefile (69%)
+ rename {arch/riscv/include => drivers/staging/riscv/kvm}/asm/kvm_csr.h (100%)
+ rename {arch/riscv/include => drivers/staging/riscv/kvm}/asm/kvm_host.h (100%)
+ rename {arch/riscv/include => drivers/staging/riscv/kvm}/asm/kvm_types.h (100%)
+ rename {arch/riscv/include => drivers/staging/riscv/kvm}/asm/kvm_vcpu_timer.h (100%)
+ rename {arch => drivers/staging}/riscv/kvm/main.c (100%)
+ rename {arch => drivers/staging}/riscv/kvm/mmu.c (100%)
+ rename {arch => drivers/staging}/riscv/kvm/riscv_offsets.c (100%)
+ rename {arch => drivers/staging}/riscv/kvm/tlb.S (100%)
+ rename {arch => drivers/staging}/riscv/kvm/vcpu.c (100%)
+ rename {arch => drivers/staging}/riscv/kvm/vcpu_exit.c (100%)
+ rename {arch => drivers/staging}/riscv/kvm/vcpu_sbi.c (100%)
+ rename {arch => drivers/staging}/riscv/kvm/vcpu_switch.S (100%)
+ rename {arch => drivers/staging}/riscv/kvm/vcpu_timer.c (100%)
+ rename {arch => drivers/staging}/riscv/kvm/vm.c (100%)
+ rename {arch => drivers/staging}/riscv/kvm/vmid.c (100%)
 
-diff --git a/Documentation/virt/kvm/api.rst b/Documentation/virt/kvm/api.rst
-index 7fcb2fd38f42..642f858d3605 100644
---- a/Documentation/virt/kvm/api.rst
-+++ b/Documentation/virt/kvm/api.rst
-@@ -532,7 +532,7 @@ translation mode.
- ------------------
+diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
+index d0602ea394bc..e79a73ff86c0 100644
+--- a/arch/riscv/Kconfig
++++ b/arch/riscv/Kconfig
+@@ -555,5 +555,5 @@ source "kernel/power/Kconfig"
  
- :Capability: basic
--:Architectures: x86, ppc, mips
-+:Architectures: x86, ppc, mips, riscv
- :Type: vcpu ioctl
- :Parameters: struct kvm_interrupt (in)
- :Returns: 0 on success, negative on failure.
-@@ -601,6 +601,23 @@ interrupt number dequeues the interrupt.
+ endmenu
  
- This is an asynchronous vcpu ioctl and can be invoked from any thread.
+-source "arch/riscv/kvm/Kconfig"
++source "drivers/staging/riscv/kvm/Kconfig"
+ source "drivers/firmware/Kconfig"
+diff --git a/arch/riscv/Makefile b/arch/riscv/Makefile
+index 05687d8b7b99..e8706c01733c 100644
+--- a/arch/riscv/Makefile
++++ b/arch/riscv/Makefile
+@@ -92,7 +92,7 @@ head-y := arch/riscv/kernel/head.o
  
-+RISC-V:
-+^^^^^^^
-+
-+Queues an external interrupt to be injected into the virutal CPU. This ioctl
-+is overloaded with 2 different irq values:
-+
-+a) KVM_INTERRUPT_SET
-+
-+   This sets external interrupt for a virtual CPU and it will receive
-+   once it is ready.
-+
-+b) KVM_INTERRUPT_UNSET
-+
-+   This clears pending external interrupt for a virtual CPU.
-+
-+This is an asynchronous vcpu ioctl and can be invoked from any thread.
-+
+ core-y += arch/riscv/
+ core-$(CONFIG_RISCV_ERRATA_ALTERNATIVE) += arch/riscv/errata/
+-core-$(CONFIG_KVM) += arch/riscv/kvm/
++core-$(CONFIG_KVM) += drivers/staging/riscv/kvm/
  
- 4.17 KVM_DEBUG_GUEST
- --------------------
-@@ -1394,7 +1411,7 @@ for vm-wide capabilities.
- ---------------------
+ libs-y += arch/riscv/lib/
+ libs-$(CONFIG_EFI_STUB) += $(objtree)/drivers/firmware/efi/libstub/lib.a
+diff --git a/arch/riscv/kvm/Kconfig b/drivers/staging/riscv/kvm/Kconfig
+similarity index 100%
+rename from arch/riscv/kvm/Kconfig
+rename to drivers/staging/riscv/kvm/Kconfig
+diff --git a/arch/riscv/kvm/Makefile b/drivers/staging/riscv/kvm/Makefile
+similarity index 69%
+rename from arch/riscv/kvm/Makefile
+rename to drivers/staging/riscv/kvm/Makefile
+index 938584254aad..3b876b6263e7 100644
+--- a/arch/riscv/kvm/Makefile
++++ b/drivers/staging/riscv/kvm/Makefile
+@@ -2,10 +2,10 @@
+ # Makefile for RISC-V KVM support
+ #
  
- :Capability: KVM_CAP_MP_STATE
--:Architectures: x86, s390, arm, arm64
-+:Architectures: x86, s390, arm, arm64, riscv
- :Type: vcpu ioctl
- :Parameters: struct kvm_mp_state (out)
- :Returns: 0 on success; -1 on error
-@@ -1411,7 +1428,8 @@ uniprocessor guests).
- Possible values are:
+-common-objs-y = $(addprefix ../../../virt/kvm/, kvm_main.o coalesced_mmio.o)
+-common-objs-y += $(addprefix ../../../virt/kvm/, eventfd.o)
++common-objs-y = $(addprefix ../../../../virt/kvm/, kvm_main.o coalesced_mmio.o)
++common-objs-y += $(addprefix ../../../../virt/kvm/, eventfd.o)
  
-    ==========================    ===============================================
--   KVM_MP_STATE_RUNNABLE         the vcpu is currently running [x86,arm/arm64]
-+   KVM_MP_STATE_RUNNABLE         the vcpu is currently running
-+                                 [x86,arm/arm64,riscv]
-    KVM_MP_STATE_UNINITIALIZED    the vcpu is an application processor (AP)
-                                  which has not yet received an INIT signal [x86]
-    KVM_MP_STATE_INIT_RECEIVED    the vcpu has received an INIT signal, and is
-@@ -1420,7 +1438,7 @@ Possible values are:
-                                  is waiting for an interrupt [x86]
-    KVM_MP_STATE_SIPI_RECEIVED    the vcpu has just received a SIPI (vector
-                                  accessible via KVM_GET_VCPU_EVENTS) [x86]
--   KVM_MP_STATE_STOPPED          the vcpu is stopped [s390,arm/arm64]
-+   KVM_MP_STATE_STOPPED          the vcpu is stopped [s390,arm/arm64,riscv]
-    KVM_MP_STATE_CHECK_STOP       the vcpu is in a special error state [s390]
-    KVM_MP_STATE_OPERATING        the vcpu is operating (running or halted)
-                                  [s390]
-@@ -1432,8 +1450,8 @@ On x86, this ioctl is only useful after KVM_CREATE_IRQCHIP. Without an
- in-kernel irqchip, the multiprocessing state must be maintained by userspace on
- these architectures.
+-ccflags-y := -Ivirt/kvm -Iarch/riscv/kvm
++ccflags-y := -Ivirt/kvm -Idrivers/staging/riscv/kvm
  
--For arm/arm64:
--^^^^^^^^^^^^^^
-+For arm/arm64/riscv:
-+^^^^^^^^^^^^^^^^^^^^
+ kvm-objs := $(common-objs-y)
  
- The only states that are valid are KVM_MP_STATE_STOPPED and
- KVM_MP_STATE_RUNNABLE which reflect if the vcpu is paused or not.
-@@ -1442,7 +1460,7 @@ KVM_MP_STATE_RUNNABLE which reflect if the vcpu is paused or not.
- ---------------------
- 
- :Capability: KVM_CAP_MP_STATE
--:Architectures: x86, s390, arm, arm64
-+:Architectures: x86, s390, arm, arm64, riscv
- :Type: vcpu ioctl
- :Parameters: struct kvm_mp_state (in)
- :Returns: 0 on success; -1 on error
-@@ -1454,8 +1472,8 @@ On x86, this ioctl is only useful after KVM_CREATE_IRQCHIP. Without an
- in-kernel irqchip, the multiprocessing state must be maintained by userspace on
- these architectures.
- 
--For arm/arm64:
--^^^^^^^^^^^^^^
-+For arm/arm64/riscv:
-+^^^^^^^^^^^^^^^^^^^^
- 
- The only states that are valid are KVM_MP_STATE_STOPPED and
- KVM_MP_STATE_RUNNABLE which reflect if the vcpu should be paused or not.
-@@ -2572,6 +2590,144 @@ following id bit patterns::
- 
-   0x7020 0000 0003 02 <0:3> <reg:5>
- 
-+RISC-V registers are mapped using the lower 32 bits. The upper 8 bits of
-+that is the register group type.
-+
-+RISC-V config registers are meant for configuring a Guest VCPU and it has
-+the following id bit patterns::
-+
-+  0x8020 0000 01 <index into the kvm_riscv_config struct:24> (32bit Host)
-+  0x8030 0000 01 <index into the kvm_riscv_config struct:24> (64bit Host)
-+
-+Following are the RISC-V config registers:
-+
-+======================= ========= =============================================
-+    Encoding            Register  Description
-+======================= ========= =============================================
-+  0x80x0 0000 0100 0000 isa       ISA feature bitmap of Guest VCPU
-+======================= ========= =============================================
-+
-+The isa config register can be read anytime but can only be written before
-+a Guest VCPU runs. It will have ISA feature bits matching underlying host
-+set by default.
-+
-+RISC-V core registers represent the general excution state of a Guest VCPU
-+and it has the following id bit patterns::
-+
-+  0x8020 0000 02 <index into the kvm_riscv_core struct:24> (32bit Host)
-+  0x8030 0000 02 <index into the kvm_riscv_core struct:24> (64bit Host)
-+
-+Following are the RISC-V core registers:
-+
-+======================= ========= =============================================
-+    Encoding            Register  Description
-+======================= ========= =============================================
-+  0x80x0 0000 0200 0000 regs.pc   Program counter
-+  0x80x0 0000 0200 0001 regs.ra   Return address
-+  0x80x0 0000 0200 0002 regs.sp   Stack pointer
-+  0x80x0 0000 0200 0003 regs.gp   Global pointer
-+  0x80x0 0000 0200 0004 regs.tp   Task pointer
-+  0x80x0 0000 0200 0005 regs.t0   Caller saved register 0
-+  0x80x0 0000 0200 0006 regs.t1   Caller saved register 1
-+  0x80x0 0000 0200 0007 regs.t2   Caller saved register 2
-+  0x80x0 0000 0200 0008 regs.s0   Callee saved register 0
-+  0x80x0 0000 0200 0009 regs.s1   Callee saved register 1
-+  0x80x0 0000 0200 000a regs.a0   Function argument (or return value) 0
-+  0x80x0 0000 0200 000b regs.a1   Function argument (or return value) 1
-+  0x80x0 0000 0200 000c regs.a2   Function argument 2
-+  0x80x0 0000 0200 000d regs.a3   Function argument 3
-+  0x80x0 0000 0200 000e regs.a4   Function argument 4
-+  0x80x0 0000 0200 000f regs.a5   Function argument 5
-+  0x80x0 0000 0200 0010 regs.a6   Function argument 6
-+  0x80x0 0000 0200 0011 regs.a7   Function argument 7
-+  0x80x0 0000 0200 0012 regs.s2   Callee saved register 2
-+  0x80x0 0000 0200 0013 regs.s3   Callee saved register 3
-+  0x80x0 0000 0200 0014 regs.s4   Callee saved register 4
-+  0x80x0 0000 0200 0015 regs.s5   Callee saved register 5
-+  0x80x0 0000 0200 0016 regs.s6   Callee saved register 6
-+  0x80x0 0000 0200 0017 regs.s7   Callee saved register 7
-+  0x80x0 0000 0200 0018 regs.s8   Callee saved register 8
-+  0x80x0 0000 0200 0019 regs.s9   Callee saved register 9
-+  0x80x0 0000 0200 001a regs.s10  Callee saved register 10
-+  0x80x0 0000 0200 001b regs.s11  Callee saved register 11
-+  0x80x0 0000 0200 001c regs.t3   Caller saved register 3
-+  0x80x0 0000 0200 001d regs.t4   Caller saved register 4
-+  0x80x0 0000 0200 001e regs.t5   Caller saved register 5
-+  0x80x0 0000 0200 001f regs.t6   Caller saved register 6
-+  0x80x0 0000 0200 0020 mode      Privilege mode (1 = S-mode or 0 = U-mode)
-+======================= ========= =============================================
-+
-+RISC-V csr registers represent the supervisor mode control/status registers
-+of a Guest VCPU and it has the following id bit patterns::
-+
-+  0x8020 0000 03 <index into the kvm_riscv_csr struct:24> (32bit Host)
-+  0x8030 0000 03 <index into the kvm_riscv_csr struct:24> (64bit Host)
-+
-+Following are the RISC-V csr registers:
-+
-+======================= ========= =============================================
-+    Encoding            Register  Description
-+======================= ========= =============================================
-+  0x80x0 0000 0300 0000 sstatus   Supervisor status
-+  0x80x0 0000 0300 0001 sie       Supervisor interrupt enable
-+  0x80x0 0000 0300 0002 stvec     Supervisor trap vector base
-+  0x80x0 0000 0300 0003 sscratch  Supervisor scratch register
-+  0x80x0 0000 0300 0004 sepc      Supervisor exception program counter
-+  0x80x0 0000 0300 0005 scause    Supervisor trap cause
-+  0x80x0 0000 0300 0006 stval     Supervisor bad address or instruction
-+  0x80x0 0000 0300 0007 sip       Supervisor interrupt pending
-+  0x80x0 0000 0300 0008 satp      Supervisor address translation and protection
-+======================= ========= =============================================
-+
-+RISC-V timer registers represent the timer state of a Guest VCPU and it has
-+the following id bit patterns::
-+
-+  0x8030 0000 04 <index into the kvm_riscv_timer struct:24>
-+
-+Following are the RISC-V timer registers:
-+
-+======================= ========= =============================================
-+    Encoding            Register  Description
-+======================= ========= =============================================
-+  0x8030 0000 0400 0000 frequency Time base frequency (read-only)
-+  0x8030 0000 0400 0001 time      Time value visible to Guest
-+  0x8030 0000 0400 0002 compare   Time compare programmed by Guest
-+  0x8030 0000 0400 0003 state     Time compare state (1 = ON or 0 = OFF)
-+======================= ========= =============================================
-+
-+RISC-V F-extension registers represent the single precision floating point
-+state of a Guest VCPU and it has the following id bit patterns::
-+
-+  0x8020 0000 05 <index into the __riscv_f_ext_state struct:24>
-+
-+Following are the RISC-V F-extension registers:
-+
-+======================= ========= =============================================
-+    Encoding            Register  Description
-+======================= ========= =============================================
-+  0x8020 0000 0500 0000 f[0]      Floating point register 0
-+  ...
-+  0x8020 0000 0500 001f f[31]     Floating point register 31
-+  0x8020 0000 0500 0020 fcsr      Floating point control and status register
-+======================= ========= =============================================
-+
-+RISC-V D-extension registers represent the double precision floating point
-+state of a Guest VCPU and it has the following id bit patterns::
-+
-+  0x8020 0000 06 <index into the __riscv_d_ext_state struct:24> (fcsr)
-+  0x8030 0000 06 <index into the __riscv_d_ext_state struct:24> (non-fcsr)
-+
-+Following are the RISC-V D-extension registers:
-+
-+======================= ========= =============================================
-+    Encoding            Register  Description
-+======================= ========= =============================================
-+  0x8030 0000 0600 0000 f[0]      Floating point register 0
-+  ...
-+  0x8030 0000 0600 001f f[31]     Floating point register 31
-+  0x8020 0000 0600 0020 fcsr      Floating point control and status register
-+======================= ========= =============================================
-+
- 
- 4.69 KVM_GET_ONE_REG
- --------------------
-@@ -5565,6 +5721,25 @@ Valid values for 'type' are:
-     Userspace is expected to place the hypercall result into the appropriate
-     field before invoking KVM_RUN again.
- 
-+::
-+
-+		/* KVM_EXIT_RISCV_SBI */
-+		struct {
-+			unsigned long extension_id;
-+			unsigned long function_id;
-+			unsigned long args[6];
-+			unsigned long ret[2];
-+		} riscv_sbi;
-+If exit reason is KVM_EXIT_RISCV_SBI then it indicates that the VCPU has
-+done a SBI call which is not handled by KVM RISC-V kernel module. The details
-+of the SBI call are available in 'riscv_sbi' member of kvm_run structure. The
-+'extension_id' field of 'riscv_sbi' represents SBI extension ID whereas the
-+'function_id' field represents function ID of given SBI extension. The 'args'
-+array field of 'riscv_sbi' represents parameters for the SBI call and 'ret'
-+array field represents return values. The userspace should update the return
-+values of SBI call before resuming the VCPU. For more details on RISC-V SBI
-+spec refer, https://github.com/riscv/riscv-sbi-doc.
-+
- ::
- 
- 		/* Fix the size of the union. */
+diff --git a/arch/riscv/include/asm/kvm_csr.h b/drivers/staging/riscv/kvm/asm/kvm_csr.h
+similarity index 100%
+rename from arch/riscv/include/asm/kvm_csr.h
+rename to drivers/staging/riscv/kvm/asm/kvm_csr.h
+diff --git a/arch/riscv/include/asm/kvm_host.h b/drivers/staging/riscv/kvm/asm/kvm_host.h
+similarity index 100%
+rename from arch/riscv/include/asm/kvm_host.h
+rename to drivers/staging/riscv/kvm/asm/kvm_host.h
+diff --git a/arch/riscv/include/asm/kvm_types.h b/drivers/staging/riscv/kvm/asm/kvm_types.h
+similarity index 100%
+rename from arch/riscv/include/asm/kvm_types.h
+rename to drivers/staging/riscv/kvm/asm/kvm_types.h
+diff --git a/arch/riscv/include/asm/kvm_vcpu_timer.h b/drivers/staging/riscv/kvm/asm/kvm_vcpu_timer.h
+similarity index 100%
+rename from arch/riscv/include/asm/kvm_vcpu_timer.h
+rename to drivers/staging/riscv/kvm/asm/kvm_vcpu_timer.h
+diff --git a/arch/riscv/kvm/main.c b/drivers/staging/riscv/kvm/main.c
+similarity index 100%
+rename from arch/riscv/kvm/main.c
+rename to drivers/staging/riscv/kvm/main.c
+diff --git a/arch/riscv/kvm/mmu.c b/drivers/staging/riscv/kvm/mmu.c
+similarity index 100%
+rename from arch/riscv/kvm/mmu.c
+rename to drivers/staging/riscv/kvm/mmu.c
+diff --git a/arch/riscv/kvm/riscv_offsets.c b/drivers/staging/riscv/kvm/riscv_offsets.c
+similarity index 100%
+rename from arch/riscv/kvm/riscv_offsets.c
+rename to drivers/staging/riscv/kvm/riscv_offsets.c
+diff --git a/arch/riscv/kvm/tlb.S b/drivers/staging/riscv/kvm/tlb.S
+similarity index 100%
+rename from arch/riscv/kvm/tlb.S
+rename to drivers/staging/riscv/kvm/tlb.S
+diff --git a/arch/riscv/kvm/vcpu.c b/drivers/staging/riscv/kvm/vcpu.c
+similarity index 100%
+rename from arch/riscv/kvm/vcpu.c
+rename to drivers/staging/riscv/kvm/vcpu.c
+diff --git a/arch/riscv/kvm/vcpu_exit.c b/drivers/staging/riscv/kvm/vcpu_exit.c
+similarity index 100%
+rename from arch/riscv/kvm/vcpu_exit.c
+rename to drivers/staging/riscv/kvm/vcpu_exit.c
+diff --git a/arch/riscv/kvm/vcpu_sbi.c b/drivers/staging/riscv/kvm/vcpu_sbi.c
+similarity index 100%
+rename from arch/riscv/kvm/vcpu_sbi.c
+rename to drivers/staging/riscv/kvm/vcpu_sbi.c
+diff --git a/arch/riscv/kvm/vcpu_switch.S b/drivers/staging/riscv/kvm/vcpu_switch.S
+similarity index 100%
+rename from arch/riscv/kvm/vcpu_switch.S
+rename to drivers/staging/riscv/kvm/vcpu_switch.S
+diff --git a/arch/riscv/kvm/vcpu_timer.c b/drivers/staging/riscv/kvm/vcpu_timer.c
+similarity index 100%
+rename from arch/riscv/kvm/vcpu_timer.c
+rename to drivers/staging/riscv/kvm/vcpu_timer.c
+diff --git a/arch/riscv/kvm/vm.c b/drivers/staging/riscv/kvm/vm.c
+similarity index 100%
+rename from arch/riscv/kvm/vm.c
+rename to drivers/staging/riscv/kvm/vm.c
+diff --git a/arch/riscv/kvm/vmid.c b/drivers/staging/riscv/kvm/vmid.c
+similarity index 100%
+rename from arch/riscv/kvm/vmid.c
+rename to drivers/staging/riscv/kvm/vmid.c
 -- 
 2.25.1
 
