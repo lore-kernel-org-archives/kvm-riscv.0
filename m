@@ -1,37 +1,69 @@
-From: Paolo Bonzini <pbonzini@redhat.com>
-Date: Wed, 19 May 2021 17:26:41 +0200
-Subject: [PATCH v18 00/18] KVM RISC-V Support
-In-Reply-To: <20210519150814.GY1955@kadam>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Thu, 20 May 2021 09:09:24 +0300
+Subject: [PATCH v18 14/18] RISC-V: KVM: Implement ONE REG interface for
+ FP registers
+In-Reply-To: <20210519033553.1110536-15-anup.patel@wdc.com>
 References: <20210519033553.1110536-1-anup.patel@wdc.com>
- <YKSa48cejI1Lax+/@kroah.com>
- <CAAhSdy18qySXbUdrEsUe-KtbtuEoYrys0TcmsV2UkEA2=7UQzw@mail.gmail.com>
- <YKSgcn5gxE/4u2bT@kroah.com> <YKTsyyVYsHVMQC+G@kroah.com>
- <d7d5ad76-aec3-3297-0fac-a9da9b0c3663@redhat.com>
- <YKUDWgZVj82/KiKw@kroah.com>
- <daa30135-8757-8d33-a92e-8db4207168ff@redhat.com>
- <YKUZbb6OK+UYAq+t@kroah.com> <20210519150814.GY1955@kadam>
-Message-ID: <1ce20fe0-0fea-406a-f7bf-1dde686b411a@redhat.com>
+ <20210519033553.1110536-15-anup.patel@wdc.com>
+Message-ID: <20210520060924.GD1955@kadam>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 19/05/21 17:08, Dan Carpenter wrote:
-> It's sort of frustrating that none of this information was in the commit
-> message.
-> 
-> "This code is not ready to be merged into the arch/risc/ directory
-> because the RISC-V Foundation has not certified the hardware spec yet.
-> However, the following chips have implemented it ABC12345, ABC6789 and
-> they've already shipping to thousands of customers since blah blah blah
-> so we should support it."
-> 
-> I honestly thought it was an issue with the code or the userspace API.
+On Wed, May 19, 2021 at 09:05:49AM +0530, Anup Patel wrote:
+> +static int kvm_riscv_vcpu_set_reg_fp(struct kvm_vcpu *vcpu,
+> +				     const struct kvm_one_reg *reg,
+> +				     unsigned long rtype)
+> +{
+> +	struct kvm_cpu_context *cntx = &vcpu->arch.guest_context;
+> +	unsigned long isa = vcpu->arch.isa;
+> +	unsigned long __user *uaddr =
+> +			(unsigned long __user *)(unsigned long)reg->addr;
+> +	unsigned long reg_num = reg->id & ~(KVM_REG_ARCH_MASK |
+> +					    KVM_REG_SIZE_MASK |
+> +					    rtype);
+> +	void *reg_val;
+> +
+> +	if ((rtype == KVM_REG_RISCV_FP_F) &&
+> +	    riscv_isa_extension_available(&isa, f)) {
+> +		if (KVM_REG_SIZE(reg->id) != sizeof(u32))
+> +			return -EINVAL;
+> +		if (reg_num == KVM_REG_RISCV_FP_F_REG(fcsr))
+> +			reg_val = &cntx->fp.f.fcsr;
+> +		else if ((KVM_REG_RISCV_FP_F_REG(f[0]) <= reg_num) &&
+> +			  reg_num <= KVM_REG_RISCV_FP_F_REG(f[31]))
+> +			reg_val = &cntx->fp.f.f[reg_num];
+> +		else
+> +			return -EINVAL;
+> +	} else if ((rtype == KVM_REG_RISCV_FP_D) &&
+> +		   riscv_isa_extension_available(&isa, d)) {
+> +		if (reg_num == KVM_REG_RISCV_FP_D_REG(fcsr)) {
+> +			if (KVM_REG_SIZE(reg->id) != sizeof(u32))
+> +				return -EINVAL;
+> +			reg_val = &cntx->fp.d.fcsr;
+> +		} else if ((KVM_REG_RISCV_FP_D_REG(f[0]) <= reg_num) &&
+> +			   reg_num <= KVM_REG_RISCV_FP_D_REG(f[31])) {
+> +			if (KVM_REG_SIZE(reg->id) != sizeof(u64))
+> +				return -EINVAL;
+> +			reg_val = &cntx->fp.d.f[reg_num];
+> +		} else
+> +			return -EINVAL;
+> +	} else
+> +		return -EINVAL;
+> +
+> +	if (copy_from_user(reg_val, uaddr, KVM_REG_SIZE(reg->id)))
+                           ^^^^^^^
+It sort of bothers me that if this copy fails then we have no idea
+what garbage is in reg_val.  It would be nicer to copy it to a temporary
+buffer and then memcpy it when we know it's going succeed.
 
-Yes, I was expecting this to be in the staging TODO file - I should have 
-been more explicit with Anup.
+> +		return -EFAULT;
+> +
+> +	return 0;
+> +}
 
-Paolo
-
+regards,
+dan carpenter
 
