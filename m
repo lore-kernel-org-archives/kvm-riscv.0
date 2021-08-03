@@ -1,51 +1,111 @@
-From: Oliver Upton <oliver.upton@linux.dev>
-Date: Wed, 1 May 2024 00:28:15 +0000
-Subject: [PATCH 0/4] KVM: Fold kvm_arch_sched_in() into
- kvm_arch_vcpu_load()
-In-Reply-To: <20240430193157.419425-1-seanjc@google.com>
-References: <20240430193157.419425-1-seanjc@google.com>
-Message-ID: <ZjGMn5tlq8edKZYv@linux.dev>
+From: limingwang (A) <limingwang@huawei.com>
+Date: Tue, 3 Aug 2021 13:19:51 +0000
+Subject: [PATCH v19 11/17] RISC-V: KVM: Implement MMU notifiers
+In-Reply-To: <20210727055450.2742868-12-anup.patel@wdc.com>
+References: <20210727055450.2742868-1-anup.patel@wdc.com>
+ <20210727055450.2742868-12-anup.patel@wdc.com>
+Message-ID: <38734ad1008a46169dcd89e1ded9ac62@huawei.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Apr 30, 2024 at 12:31:53PM -0700, Sean Christopherson wrote:
-> Drop kvm_arch_sched_in() and instead pass a @sched_in boolean to
-> kvm_arch_vcpu_load().
+> diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c index
+> fa9a4f9b9542..4b294113c63b 100644
+> --- a/arch/riscv/kvm/mmu.c
+> +++ b/arch/riscv/kvm/mmu.c
+> @@ -300,7 +300,8 @@ static void stage2_op_pte(struct kvm *kvm, gpa_t
+> addr,
+>  	}
+>  }
 > 
-> While fiddling with an idea for optimizing state management on AMD CPUs,
-> I wanted to skip re-saving certain host state when a vCPU is scheduled back
-> in, as the state (theoretically) shouldn't change for the task while it's
-> scheduled out.  Actually doing that was annoying and unnecessarily brittle
-> due to having a separate API for the kvm_sched_in() case (the state save
-> needed to be in kvm_arch_vcpu_load() for the common path).
+> -static void stage2_unmap_range(struct kvm *kvm, gpa_t start, gpa_t size)
+> +static void stage2_unmap_range(struct kvm *kvm, gpa_t start,
+> +			       gpa_t size, bool may_block)
+>  {
+>  	int ret;
+>  	pte_t *ptep;
+> @@ -325,6 +326,13 @@ static void stage2_unmap_range(struct kvm *kvm,
+> gpa_t start, gpa_t size)
 > 
-> E.g. I could have set a "temporary"-ish flag somewhere in kvm_vcpu, but (a)
-> that's gross and (b) it would rely on the arbitrary ordering between
-> sched_in() and vcpu_load() staying the same.
+>  next:
+>  		addr += page_size;
+> +
+> +		/*
+> +		 * If the range is too large, release the kvm->mmu_lock
+> +		 * to prevent starvation and lockup detector warnings.
+> +		 */
+> +		if (may_block && addr < end)
+> +			cond_resched_lock(&kvm->mmu_lock);
+>  	}
+>  }
+> 
+> @@ -405,7 +413,6 @@ static int stage2_ioremap(struct kvm *kvm, gpa_t gpa,
+> phys_addr_t hpa,
+>  out:
+>  	stage2_cache_flush(&pcache);
+>  	return ret;
+> -
+>  }
+> 
+>  void kvm_arch_mmu_enable_log_dirty_pt_masked(struct kvm *kvm, @@
+> -547,7 +554,7 @@ int kvm_arch_prepare_memory_region(struct kvm *kvm,
+>  	spin_lock(&kvm->mmu_lock);
+>  	if (ret)
+>  		stage2_unmap_range(kvm, mem->guest_phys_addr,
+> -				   mem->memory_size);
+> +				   mem->memory_size, false);
+>  	spin_unlock(&kvm->mmu_lock);
+> 
+>  out:
+> @@ -555,6 +562,73 @@ int kvm_arch_prepare_memory_region(struct kvm
+> *kvm,
+>  	return ret;
+>  }
+> 
+> +bool kvm_unmap_gfn_range(struct kvm *kvm, struct kvm_gfn_range *range)
+> +{
+> +	if (!kvm->arch.pgd)
+> +		return 0;
+> +
+> +	stage2_unmap_range(kvm, range->start << PAGE_SHIFT,
+> +			   (range->end - range->start) << PAGE_SHIFT,
+> +			   range->may_block);
+> +	return 0;
+> +}
+> +
+> +bool kvm_set_spte_gfn(struct kvm *kvm, struct kvm_gfn_range *range) {
+> +	int ret;
+> +	kvm_pfn_t pfn = pte_pfn(range->pte);
+> +
+> +	if (!kvm->arch.pgd)
+> +		return 0;
+> +
+> +	WARN_ON(range->end - range->start != 1);
+> +
+> +	ret = stage2_map_page(kvm, NULL, range->start << PAGE_SHIFT,
+> +			      __pfn_to_phys(pfn), PAGE_SIZE, true, true);
+> +	if (ret) {
+> +		kvm_err("Failed to map stage2 page (error %d)\n", ret);
+> +		return 1;
+> +	}
 
-Another option would be to change the rules around kvm_arch_sched_in()
-where the callee is expected to load the vCPU context.
+Hi, Anup
 
-The default implementation could just call kvm_arch_vcpu_load() directly
-and the x86 implementation can order things the way it wants before
-kvm_arch_vcpu_load().
+I think that it is not appropriate to add kvm_err here, because stage2_set_pte function
+may apply for memory based on the pcache parameter. If the value of pcache is NULL,
+stage2_set_pte function considers that there is not enough memory and here an invalid
+error log is generated.
 
-I say this because ...
+As an example, this error log is printed when a VM is migrating. But finally the VM migration
+is successful. And if the kvm_err is added to the same position in the ARM architecture, the
+same error log is also printed.
 
-> The only real downside I see is that arm64 and riscv end up having to pass
-> "false" for their direct usage of kvm_arch_vcpu_load(), and passing boolean
-> literals isn't ideal.  But that can be solved by adding an inner helper that
-> omits the @sched_in param (I almost added a patch to do that, but I couldn't
-> convince myself it was necessary).
+Mingwang
 
-Needing to pass @sched_in for other usage of kvm_arch_vcpu_load() hurts
-readability, especially when no other architecture besides x86 cares
-about it.
+> +	return 0;
+> +}
+> +
 
--- 
-Thanks,
-Oliver
 
