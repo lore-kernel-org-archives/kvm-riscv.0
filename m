@@ -1,52 +1,193 @@
 From: Yifei Jiang <jiangyifei@huawei.com>
-Date: Tue, 17 Aug 2021 11:24:36 +0800
-Subject: [PATCH RFC v6 01/12] linux-header: Update linux/kvm.h
+Date: Tue, 17 Aug 2021 11:24:37 +0800
+Subject: [PATCH RFC v6 02/12] target/riscv: Add target/riscv/kvm.c to place
+ the public kvm interface
 In-Reply-To: <20210817032447.2055-1-jiangyifei@huawei.com>
 References: <20210817032447.2055-1-jiangyifei@huawei.com>
-Message-ID: <20210817032447.2055-2-jiangyifei@huawei.com>
+Message-ID: <20210817032447.2055-3-jiangyifei@huawei.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Update linux-headers/linux/kvm.h from
-https://github.com/avpatel/linux/tree/riscv_kvm_v19.
-Only use this header file, so here do not update all linux headers by
-update-linux-headers.sh until above KVM series is accepted.
+Add target/riscv/kvm.c to place kvm_arch_* function needed by
+kvm/kvm-all.c. Meanwhile, add kvm support in meson.build file.
 
 Signed-off-by: Yifei Jiang <jiangyifei@huawei.com>
 Signed-off-by: Mingwang Li <limingwang@huawei.com>
+Reviewed-by: Alistair Francis <alistair.francis@wdc.com>
 ---
- linux-headers/linux/kvm.h | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ meson.build              |   2 +
+ target/riscv/kvm.c       | 133 +++++++++++++++++++++++++++++++++++++++
+ target/riscv/meson.build |   1 +
+ 3 files changed, 136 insertions(+)
+ create mode 100644 target/riscv/kvm.c
 
-diff --git a/linux-headers/linux/kvm.h b/linux-headers/linux/kvm.h
-index bcaf66cc4d..5e290c3c3e 100644
---- a/linux-headers/linux/kvm.h
-+++ b/linux-headers/linux/kvm.h
-@@ -269,6 +269,7 @@ struct kvm_xen_exit {
- #define KVM_EXIT_AP_RESET_HOLD    32
- #define KVM_EXIT_X86_BUS_LOCK     33
- #define KVM_EXIT_XEN              34
-+#define KVM_EXIT_RISCV_SBI        35
+diff --git a/meson.build b/meson.build
+index f2e148eaf9..8ad009ceb6 100644
+--- a/meson.build
++++ b/meson.build
+@@ -72,6 +72,8 @@ elif cpu in ['ppc', 'ppc64']
+   kvm_targets = ['ppc-softmmu', 'ppc64-softmmu']
+ elif cpu in ['mips', 'mips64']
+   kvm_targets = ['mips-softmmu', 'mipsel-softmmu', 'mips64-softmmu', 'mips64el-softmmu']
++elif cpu in ['riscv32', 'riscv64']
++  kvm_targets = ['riscv32-softmmu', 'riscv64-softmmu']
+ else
+   kvm_targets = []
+ endif
+diff --git a/target/riscv/kvm.c b/target/riscv/kvm.c
+new file mode 100644
+index 0000000000..687dd4b621
+--- /dev/null
++++ b/target/riscv/kvm.c
+@@ -0,0 +1,133 @@
++/*
++ * RISC-V implementation of KVM hooks
++ *
++ * Copyright (c) 2020 Huawei Technologies Co., Ltd
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms and conditions of the GNU General Public License,
++ * version 2 or later, as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ *
++ * You should have received a copy of the GNU General Public License along with
++ * this program.  If not, see <http://www.gnu.org/licenses/>.
++ */
++
++#include "qemu/osdep.h"
++#include <sys/ioctl.h>
++
++#include <linux/kvm.h>
++
++#include "qemu-common.h"
++#include "qemu/timer.h"
++#include "qemu/error-report.h"
++#include "qemu/main-loop.h"
++#include "sysemu/sysemu.h"
++#include "sysemu/kvm.h"
++#include "sysemu/kvm_int.h"
++#include "cpu.h"
++#include "trace.h"
++#include "hw/pci/pci.h"
++#include "exec/memattrs.h"
++#include "exec/address-spaces.h"
++#include "hw/boards.h"
++#include "hw/irq.h"
++#include "qemu/log.h"
++#include "hw/loader.h"
++
++const KVMCapabilityInfo kvm_arch_required_capabilities[] = {
++    KVM_CAP_LAST_INFO
++};
++
++int kvm_arch_get_registers(CPUState *cs)
++{
++    return 0;
++}
++
++int kvm_arch_put_registers(CPUState *cs, int level)
++{
++    return 0;
++}
++
++int kvm_arch_release_virq_post(int virq)
++{
++    return 0;
++}
++
++int kvm_arch_fixup_msi_route(struct kvm_irq_routing_entry *route,
++                             uint64_t address, uint32_t data, PCIDevice *dev)
++{
++    return 0;
++}
++
++int kvm_arch_destroy_vcpu(CPUState *cs)
++{
++    return 0;
++}
++
++unsigned long kvm_arch_vcpu_id(CPUState *cpu)
++{
++    return cpu->cpu_index;
++}
++
++void kvm_arch_init_irq_routing(KVMState *s)
++{
++}
++
++int kvm_arch_init_vcpu(CPUState *cs)
++{
++    return 0;
++}
++
++int kvm_arch_msi_data_to_gsi(uint32_t data)
++{
++    abort();
++}
++
++int kvm_arch_add_msi_route_post(struct kvm_irq_routing_entry *route,
++                                int vector, PCIDevice *dev)
++{
++    return 0;
++}
++
++int kvm_arch_init(MachineState *ms, KVMState *s)
++{
++    return 0;
++}
++
++int kvm_arch_irqchip_create(KVMState *s)
++{
++    return 0;
++}
++
++int kvm_arch_process_async_events(CPUState *cs)
++{
++    return 0;
++}
++
++void kvm_arch_pre_run(CPUState *cs, struct kvm_run *run)
++{
++}
++
++MemTxAttrs kvm_arch_post_run(CPUState *cs, struct kvm_run *run)
++{
++    return MEMTXATTRS_UNSPECIFIED;
++}
++
++bool kvm_arch_stop_on_emulation_error(CPUState *cs)
++{
++    return true;
++}
++
++int kvm_arch_handle_exit(CPUState *cs, struct kvm_run *run)
++{
++    return 0;
++}
++
++bool kvm_arch_cpu_check_are_resettable(void)
++{
++    return true;
++}
+diff --git a/target/riscv/meson.build b/target/riscv/meson.build
+index d5e0bc93ea..2faf08a941 100644
+--- a/target/riscv/meson.build
++++ b/target/riscv/meson.build
+@@ -19,6 +19,7 @@ riscv_ss.add(files(
+   'bitmanip_helper.c',
+   'translate.c',
+ ))
++riscv_ss.add(when: 'CONFIG_KVM', if_true: files('kvm.c'))
  
- /* For KVM_EXIT_INTERNAL_ERROR */
- /* Emulate instruction failed. */
-@@ -469,6 +470,13 @@ struct kvm_run {
- 		} msr;
- 		/* KVM_EXIT_XEN */
- 		struct kvm_xen_exit xen;
-+		/* KVM_EXIT_RISCV_SBI */
-+		struct {
-+			unsigned long extension_id;
-+			unsigned long function_id;
-+			unsigned long args[6];
-+			unsigned long ret[2];
-+		} riscv_sbi;
- 		/* Fix the size of the union. */
- 		char padding[256];
- 	};
+ riscv_softmmu_ss = ss.source_set()
+ riscv_softmmu_ss.add(files(
 -- 
 2.19.1
 
