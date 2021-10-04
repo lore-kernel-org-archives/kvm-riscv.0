@@ -1,54 +1,110 @@
-From: Paolo Bonzini <pbonzini@redhat.com>
-Date: Mon, 4 Oct 2021 10:58:28 +0200
+From: Ley Foon Tan <lftan.linux@gmail.com>
+Date: Mon, 4 Oct 2021 19:44:27 +0800
 Subject: [PATCH v20 00/17] KVM RISC-V Support
-In-Reply-To: <20210927114016.1089328-1-anup.patel@wdc.com>
+In-Reply-To: <CAAhSdy3a6MqR5bmgA3Znwsn7RXWYhpokWzSP308JV7MQJ0NmWg@mail.gmail.com>
 References: <20210927114016.1089328-1-anup.patel@wdc.com>
-Message-ID: <5cadb0b3-5e8f-110b-c6ed-4adaea033e58@redhat.com>
+ <CAAhSdy1yZ11L=A3g06GXM8tFtonBX0Cj5NDyGHQ1v44vJ8MqSA@mail.gmail.com>
+ <CAFiDJ5_--KsNd3aH1gT_cgU32C+wzunzXeSKtn8HTNj_La7n5A@mail.gmail.com>
+ <CAAhSdy1un6ab62LN-0ihV=oku8EH3fZ5YzbX1zzUFAEbatVAuQ@mail.gmail.com>
+ <CAFiDJ5-Pew6311w7pS-_ADWQnP=H7gFEUUuU8MqhsMHEDrofdA@mail.gmail.com>
+ <CAAhSdy3a6MqR5bmgA3Znwsn7RXWYhpokWzSP308JV7MQJ0NmWg@mail.gmail.com>
+Message-ID: <CAFiDJ5-Ji6cXcT8s7YvDce0Q2=VMokNHaCGJSdAtwo+d_GcDOg@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 27/09/21 13:39, Anup Patel wrote:
-> This series adds initial KVM RISC-V support. Currently, we are able to boot
-> Linux on RV64/RV32 Guest with multiple VCPUs.
-> 
-> Key aspects of KVM RISC-V added by this series are:
-> 1. No RISC-V specific KVM IOCTL
-> 2. Loadable KVM RISC-V module supported
-> 3. Minimal possible KVM world-switch which touches only GPRs and few CSRs
-> 4. Both RV64 and RV32 host supported
-> 5. Full Guest/VM switch is done via vcpu_get/vcpu_put infrastructure
-> 6. KVM ONE_REG interface for VCPU register access from user-space
-> 7. PLIC emulation is done in user-space
-> 8. Timer and IPI emuation is done in-kernel
-> 9. Both Sv39x4 and Sv48x4 supported for RV64 host
-> 10. MMU notifiers supported
-> 11. Generic dirtylog supported
-> 12. FP lazy save/restore supported
-> 13. SBI v0.1 emulation for KVM Guest available
-> 14. Forward unhandled SBI calls to KVM userspace
-> 15. Hugepage support for Guest/VM
-> 16. IOEVENTFD support for Vhost
-> 
-> Here's a brief TODO list which we will work upon after this series:
-> 1. KVM unit test support
-> 2. KVM selftest support
-> 3. SBI v0.3 emulation in-kernel
-> 4. In-kernel PMU virtualization
-> 5. In-kernel AIA irqchip support
-> 6. Nested virtualizaiton
-> 7. ..... and more .....
+On Mon, Oct 4, 2021 at 12:47 PM Anup Patel <anup@brainfault.org> wrote:
+>
+> On Mon, Oct 4, 2021 at 7:58 AM Ley Foon Tan <lftan.linux@gmail.com> wrote:
+> >
+> > On Fri, Oct 1, 2021 at 6:41 PM Anup Patel <anup@brainfault.org> wrote:
+> > >
+> > > On Fri, Oct 1, 2021 at 2:33 PM Ley Foon Tan <lftan.linux@gmail.com> wrote:
+> > > >
+> > > > On Mon, Sep 27, 2021 at 8:01 PM Anup Patel <anup@brainfault.org> wrote:
+> > > > >
+> > > > > Hi Palmer, Hi Paolo,
+> > > > >
+> > > > > On Mon, Sep 27, 2021 at 5:10 PM Anup Patel <anup.patel@wdc.com> wrote:
+> > > > > >
+> > > > > > This series adds initial KVM RISC-V support. Currently, we are able to boot
+> > > > > > Linux on RV64/RV32 Guest with multiple VCPUs.
+> > > > > >
+> > > > > > Key aspects of KVM RISC-V added by this series are:
+> > > > > > 1. No RISC-V specific KVM IOCTL
+> > > > > > 2. Loadable KVM RISC-V module supported
+> > > > > > 3. Minimal possible KVM world-switch which touches only GPRs and few CSRs
+> > > > > > 4. Both RV64 and RV32 host supported
+> > > > > > 5. Full Guest/VM switch is done via vcpu_get/vcpu_put infrastructure
+> > > > > > 6. KVM ONE_REG interface for VCPU register access from user-space
+> > > > > > 7. PLIC emulation is done in user-space
+> > > > > > 8. Timer and IPI emuation is done in-kernel
+> > > > > > 9. Both Sv39x4 and Sv48x4 supported for RV64 host
+> > > > > > 10. MMU notifiers supported
+> > > > > > 11. Generic dirtylog supported
+> > > > > > 12. FP lazy save/restore supported
+> > > > > > 13. SBI v0.1 emulation for KVM Guest available
+> > > > > > 14. Forward unhandled SBI calls to KVM userspace
+> > > > > > 15. Hugepage support for Guest/VM
+> > > > > > 16. IOEVENTFD support for Vhost
+> > > > > >
+> > > > > > Here's a brief TODO list which we will work upon after this series:
+> > > > > > 1. KVM unit test support
+> > > > > > 2. KVM selftest support
+> > > > > > 3. SBI v0.3 emulation in-kernel
+> > > > > > 4. In-kernel PMU virtualization
+> > > > > > 5. In-kernel AIA irqchip support
+> > > > > > 6. Nested virtualizaiton
+> > > > > > 7. ..... and more .....
+> > > > > >
+> > > > > > This series can be found in riscv_kvm_v20 branch at:
+> > > > > > https//github.com/avpatel/linux.git
+> > > > > >
+> > > > > > Our work-in-progress KVMTOOL RISC-V port can be found in riscv_v9 branch
+> > > > > > at: https//github.com/avpatel/kvmtool.git
+> > > > > >
+> > > > > > The QEMU RISC-V hypervisor emulation is done by Alistair and is available
+> > > > > > in master branch at: https://git.qemu.org/git/qemu.git
+> > > > > >
+> > > > > > To play around with KVM RISC-V, refer KVM RISC-V wiki at:
+> > > > > > https://github.com/kvm-riscv/howto/wiki
+> > > > > > https://github.com/kvm-riscv/howto/wiki/KVM-RISCV64-on-QEMU
+> > > > > > https://github.com/kvm-riscv/howto/wiki/KVM-RISCV64-on-Spike
+> > > > > >
+>
+> <snip>
+>
+> > Hi Anup
+> >
+> > It is able to boot up to kvm guest OS after change to use
+> > https://github.com/avpatel/qemu.git, riscv_aia_v2 branch.
+> > Is there dependency to AIA hardware feature for KVM?
+>
+> No, there is no dependency on AIA hardware and KVM RISC-V
+> v20 series.
+>
+> I quickly tried the latest QEMU master with KVM RISC-V v20 and
+> it worked perfectly fine for me.
+> (QEMU master commit 30bd1db58b09c12b68c35f041f919014b885482d)
+My last pull on master was last Thursday, last commit is
+0021c4765a6b83e5b09409b75d50c6caaa6971b9.
+After git pull again today (commit
+30bd1db58b09c12b68c35f041f919014b885482d), it can boot KVM on Qemu
+now.
 
-Looks good, I prepared a tag "for-riscv" at 
-https://git.kernel.org/pub/scm/virt/kvm/kvm.git.  Palmer can pull it and 
-you can use it to send me a pull request.
+>
+> Although, I did see that VS-mode interrupts were broken in the latest
+> Spike due to some recent merge. I have sent fix PR to Spike for this.
+> (Refer, https://github.com/riscv-software-src/riscv-isa-sim/pull/822)
+>
+> With Spike fix PR (above), the KVM RISC-V v20 series works fine
+> on Spike as well.
+KVM bootup successfully on Spike with this fix.
 
-I look forward to the test support. :)  Would be nice to have selftest 
-support already in 5.16, since there are a few arch-independent 
-selftests that cover the hairy parts of the MMU.
+Thanks.
 
-Paolo
-
+Regards
+Ley Foon
 
