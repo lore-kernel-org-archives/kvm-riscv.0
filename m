@@ -1,76 +1,102 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Fri,  8 Oct 2021 19:11:59 -0700
-Subject: [PATCH v2 06/43] KVM: Refactor and document halt-polling stats update
- helper
+Date: Fri,  8 Oct 2021 19:12:00 -0700
+Subject: [PATCH v2 07/43] KVM: Reconcile discrepancies in halt-polling stats
 In-Reply-To: <20211009021236.4122790-1-seanjc@google.com>
 References: <20211009021236.4122790-1-seanjc@google.com>
-Message-ID: <20211009021236.4122790-7-seanjc@google.com>
+Message-ID: <20211009021236.4122790-8-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add a comment to document that halt-polling is considered successful even
-if the polling loop itself didn't detect a wake event, i.e. if a wake
-event was detect in the final kvm_vcpu_check_block().  Invert the param
-to update helper so that the helper is a dumb function that is "told"
-whether or not polling was successful, as opposed to determining success
-based on blocking behavior.
+Move the halt-polling "success" and histogram stats update into the
+dedicated helper to fix a discrepancy where the success/fail "time" stats
+consider polling successful so long as the wait is avoided, but the main
+"success" and histogram stats consider polling successful if and only if
+a wake event was detected by the halt-polling loop.
 
-Opportunistically tweak the params to the update helper to reduce the
-line length for the call site so that it fits on a single line, and so
-that the prototype conforms to the more traditional kernel style.
+Move halt_attempted_poll to the helper as well so that all the stats are
+updated in a single location.  While it's a bit odd to update the stat
+well after the fact, practically speaking there's no meaningful advantage
+to updating before polling.
 
-No functional change intended.
+Note, there is a functional change in addition to the success vs. fail
+change.  The histogram updates previously called ktime_get() instead of
+using "cur".  But that change is desirable as it means all the stats are
+now updated with the same polling time, and avoids the extra ktime_get(),
+which isn't expensive but isn't free either.
 
 Reviewed-by: David Matlack <dmatlack@google.com>
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- virt/kvm/kvm_main.c | 20 +++++++++++++-------
- 1 file changed, 13 insertions(+), 7 deletions(-)
+ virt/kvm/kvm_main.c | 35 ++++++++++++++++-------------------
+ 1 file changed, 16 insertions(+), 19 deletions(-)
 
 diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 6156719bcbbc..4dfcd736b274 100644
+index 4dfcd736b274..1292c7876d3f 100644
 --- a/virt/kvm/kvm_main.c
 +++ b/virt/kvm/kvm_main.c
-@@ -3201,13 +3201,15 @@ static int kvm_vcpu_check_block(struct kvm_vcpu *vcpu)
- 	return ret;
- }
- 
--static inline void
--update_halt_poll_stats(struct kvm_vcpu *vcpu, u64 poll_ns, bool waited)
-+static inline void update_halt_poll_stats(struct kvm_vcpu *vcpu, ktime_t start,
-+					  ktime_t end, bool success)
+@@ -3204,12 +3204,23 @@ static int kvm_vcpu_check_block(struct kvm_vcpu *vcpu)
+ static inline void update_halt_poll_stats(struct kvm_vcpu *vcpu, ktime_t start,
+ 					  ktime_t end, bool success)
  {
--	if (waited)
--		vcpu->stat.generic.halt_poll_fail_ns += poll_ns;
++	struct kvm_vcpu_stat_generic *stats = &vcpu->stat.generic;
+ 	u64 poll_ns = ktime_to_ns(ktime_sub(end, start));
+ 
+-	if (success)
+-		vcpu->stat.generic.halt_poll_success_ns += poll_ns;
 -	else
-+	u64 poll_ns = ktime_to_ns(ktime_sub(end, start));
+-		vcpu->stat.generic.halt_poll_fail_ns += poll_ns;
++	++vcpu->stat.generic.halt_attempted_poll;
 +
-+	if (success)
- 		vcpu->stat.generic.halt_poll_success_ns += poll_ns;
-+	else
-+		vcpu->stat.generic.halt_poll_fail_ns += poll_ns;
++	if (success) {
++		++vcpu->stat.generic.halt_successful_poll;
++
++		if (!vcpu_valid_wakeup(vcpu))
++			++vcpu->stat.generic.halt_poll_invalid;
++
++		stats->halt_poll_success_ns += poll_ns;
++		KVM_STATS_LOG_HIST_UPDATE(stats->halt_poll_success_hist, poll_ns);
++	} else {
++		stats->halt_poll_fail_ns += poll_ns;
++		KVM_STATS_LOG_HIST_UPDATE(stats->halt_poll_fail_hist, poll_ns);
++	}
  }
  
  /*
-@@ -3277,9 +3279,13 @@ void kvm_vcpu_block(struct kvm_vcpu *vcpu)
- 	kvm_arch_vcpu_unblocking(vcpu);
- 	block_ns = ktime_to_ns(cur) - ktime_to_ns(start);
+@@ -3230,30 +3241,16 @@ void kvm_vcpu_block(struct kvm_vcpu *vcpu)
+ 	if (do_halt_poll) {
+ 		ktime_t stop = ktime_add_ns(ktime_get(), vcpu->halt_poll_ns);
  
-+	/*
-+	 * Note, halt-polling is considered successful so long as the vCPU was
-+	 * never actually scheduled out, i.e. even if the wake event arrived
-+	 * after of the halt-polling loop itself, but before the full wait.
-+	 */
- 	if (do_halt_poll)
--		update_halt_poll_stats(
--			vcpu, ktime_to_ns(ktime_sub(poll_end, start)), waited);
-+		update_halt_poll_stats(vcpu, start, poll_end, !waited);
+-		++vcpu->stat.generic.halt_attempted_poll;
+ 		do {
+ 			/*
+ 			 * This sets KVM_REQ_UNHALT if an interrupt
+ 			 * arrives.
+ 			 */
+-			if (kvm_vcpu_check_block(vcpu) < 0) {
+-				++vcpu->stat.generic.halt_successful_poll;
+-				if (!vcpu_valid_wakeup(vcpu))
+-					++vcpu->stat.generic.halt_poll_invalid;
+-
+-				KVM_STATS_LOG_HIST_UPDATE(
+-				      vcpu->stat.generic.halt_poll_success_hist,
+-				      ktime_to_ns(ktime_get()) -
+-				      ktime_to_ns(start));
++			if (kvm_vcpu_check_block(vcpu) < 0)
+ 				goto out;
+-			}
+ 			cpu_relax();
+ 			poll_end = cur = ktime_get();
+ 		} while (kvm_vcpu_can_poll(cur, stop));
+-
+-		KVM_STATS_LOG_HIST_UPDATE(
+-				vcpu->stat.generic.halt_poll_fail_hist,
+-				ktime_to_ns(ktime_get()) - ktime_to_ns(start));
+ 	}
  
- 	if (halt_poll_allowed) {
- 		if (!vcpu_valid_wakeup(vcpu)) {
+ 
 -- 
 2.33.0.882.g93a45727a2-goog
 
