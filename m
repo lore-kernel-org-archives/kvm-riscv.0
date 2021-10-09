@@ -1,85 +1,44 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Fri,  8 Oct 2021 19:12:08 -0700
-Subject: [PATCH v2 15/43] KVM: stats: Add stat to detect if vcpu is currently
- blocking
+Date: Fri,  8 Oct 2021 19:12:09 -0700
+Subject: [PATCH v2 16/43] KVM: Don't redo ktime_get() when calculating
+ halt-polling stop/deadline
 In-Reply-To: <20211009021236.4122790-1-seanjc@google.com>
 References: <20211009021236.4122790-1-seanjc@google.com>
-Message-ID: <20211009021236.4122790-16-seanjc@google.com>
+Message-ID: <20211009021236.4122790-17-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Jing Zhang <jingzhangos@google.com>
+Calculate the halt-polling "stop" time using "cur" instead of redoing
+ktime_get().  In the happy case where hardware correctly predicts
+do_halt_poll, "cur" is only a few cycles old.  And if the branch is
+mispredicted, arguably that extra latency should count toward the
+halt-polling time.
 
-Add a "blocking" stat that userspace can use to detect the case where a
-vCPU is not being run because of an vCPU/guest action, e.g. HLT or WFS on
-x86, WFI on arm64, etc...  Current guest/host/halt stats don't show this
-well, e.g. if a guest halts for a long period of time then the vCPU could
-could appear pathologically blocked due to a host condition, when in
-reality the vCPU has been put into a not-runnable state by the guest.
+In all likelihood, the numbers involved are in the noise and either
+approach is perfectly ok.
 
-Originally-by: Cannon Matthews <cannonmatthews@google.com>
-Suggested-by: Sean Christopherson <seanjc@google.com>
 Reviewed-by: David Matlack <dmatlack@google.com>
-Signed-off-by: Jing Zhang <jingzhangos@google.com>
-[sean: renamed stat to "blocking", massaged changelog]
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- include/linux/kvm_host.h  | 3 ++-
- include/linux/kvm_types.h | 1 +
- virt/kvm/kvm_main.c       | 4 ++++
- 3 files changed, 7 insertions(+), 1 deletion(-)
+ virt/kvm/kvm_main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index 2d837e06eeec..bdaa0e70b060 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -1462,7 +1462,8 @@ struct _kvm_stats_desc {
- 	STATS_DESC_LOGHIST_TIME_NSEC(VCPU_GENERIC, halt_poll_fail_hist,	       \
- 			HALT_POLL_HIST_COUNT),				       \
- 	STATS_DESC_LOGHIST_TIME_NSEC(VCPU_GENERIC, halt_wait_hist,	       \
--			HALT_POLL_HIST_COUNT)
-+			HALT_POLL_HIST_COUNT),				       \
-+	STATS_DESC_ICOUNTER(VCPU_GENERIC, blocking)
- 
- extern struct dentry *kvm_debugfs_dir;
- 
-diff --git a/include/linux/kvm_types.h b/include/linux/kvm_types.h
-index 2237abb93ccd..c4f9257bf32d 100644
---- a/include/linux/kvm_types.h
-+++ b/include/linux/kvm_types.h
-@@ -94,6 +94,7 @@ struct kvm_vcpu_stat_generic {
- 	u64 halt_poll_success_hist[HALT_POLL_HIST_COUNT];
- 	u64 halt_poll_fail_hist[HALT_POLL_HIST_COUNT];
- 	u64 halt_wait_hist[HALT_POLL_HIST_COUNT];
-+	u64 blocking;
- };
- 
- #define KVM_STATS_NAME_SIZE	48
 diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 42894ff7c474..a36ccdc93a72 100644
+index a36ccdc93a72..481e8178b43d 100644
 --- a/virt/kvm/kvm_main.c
 +++ b/virt/kvm/kvm_main.c
-@@ -3211,6 +3211,8 @@ bool kvm_vcpu_block(struct kvm_vcpu *vcpu)
- 	struct rcuwait *wait = kvm_arch_vcpu_get_wait(vcpu);
- 	bool waited = false;
+@@ -3272,7 +3272,7 @@ void kvm_vcpu_halt(struct kvm_vcpu *vcpu)
  
-+	vcpu->stat.generic.blocking = 1;
-+
- 	kvm_arch_vcpu_blocking(vcpu);
+ 	start = cur = poll_end = ktime_get();
+ 	if (do_halt_poll) {
+-		ktime_t stop = ktime_add_ns(ktime_get(), vcpu->halt_poll_ns);
++		ktime_t stop = ktime_add_ns(cur, vcpu->halt_poll_ns);
  
- 	prepare_to_rcuwait(wait);
-@@ -3227,6 +3229,8 @@ bool kvm_vcpu_block(struct kvm_vcpu *vcpu)
- 
- 	kvm_arch_vcpu_unblocking(vcpu);
- 
-+	vcpu->stat.generic.blocking = 0;
-+
- 	return waited;
- }
- 
+ 		do {
+ 			/*
 -- 
 2.33.0.882.g93a45727a2-goog
 
