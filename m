@@ -1,142 +1,50 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Fri,  8 Oct 2021 19:12:12 -0700
-Subject: [PATCH v2 19/43] KVM: Add helpers to wake/query blocking vCPU
+Date: Fri,  8 Oct 2021 19:12:13 -0700
+Subject: [PATCH v2 20/43] KVM: VMX: Skip Posted Interrupt updates if APICv is
+ hard disabled
 In-Reply-To: <20211009021236.4122790-1-seanjc@google.com>
 References: <20211009021236.4122790-1-seanjc@google.com>
-Message-ID: <20211009021236.4122790-20-seanjc@google.com>
+Message-ID: <20211009021236.4122790-21-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add helpers to wake and query a blocking vCPU.  In addition to providing
-nice names, the helpers reduce the probability of KVM neglecting to use
-kvm_arch_vcpu_get_wait().
-
-No functional change intended.
+Explicitly skip posted interrupt updates if APICv is disabled in all of
+KVM, or if the guest doesn't have an in-kernel APIC.  The PI descriptor
+is kept up-to-date if APICv is inhibited, e.g. so that re-enabling APICv
+doesn't require a bunch of updates, but neither the module param nor the
+APIC type can be changed on-the-fly.
 
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/arm64/kvm/arch_timer.c |  3 +--
- arch/arm64/kvm/arm.c        |  2 +-
- arch/x86/kvm/lapic.c        |  2 +-
- include/linux/kvm_host.h    | 14 ++++++++++++++
- virt/kvm/async_pf.c         |  2 +-
- virt/kvm/kvm_main.c         |  8 ++------
- 6 files changed, 20 insertions(+), 11 deletions(-)
+ arch/x86/kvm/vmx/posted_intr.c | 11 +++++++----
+ 1 file changed, 7 insertions(+), 4 deletions(-)
 
-diff --git a/arch/arm64/kvm/arch_timer.c b/arch/arm64/kvm/arch_timer.c
-index 7e8396f74010..addd53b6eba6 100644
---- a/arch/arm64/kvm/arch_timer.c
-+++ b/arch/arm64/kvm/arch_timer.c
-@@ -649,7 +649,6 @@ void kvm_timer_vcpu_put(struct kvm_vcpu *vcpu)
- {
- 	struct arch_timer_cpu *timer = vcpu_timer(vcpu);
- 	struct timer_map map;
--	struct rcuwait *wait = kvm_arch_vcpu_get_wait(vcpu);
- 
- 	if (unlikely(!timer->enabled))
- 		return;
-@@ -672,7 +671,7 @@ void kvm_timer_vcpu_put(struct kvm_vcpu *vcpu)
- 	if (map.emul_ptimer)
- 		soft_timer_cancel(&map.emul_ptimer->hrtimer);
- 
--	if (rcuwait_active(wait))
-+	if (kvm_vcpu_is_blocking(vcpu))
- 		kvm_timer_blocking(vcpu);
+diff --git a/arch/x86/kvm/vmx/posted_intr.c b/arch/x86/kvm/vmx/posted_intr.c
+index 3263056784f5..351666c41bbc 100644
+--- a/arch/x86/kvm/vmx/posted_intr.c
++++ b/arch/x86/kvm/vmx/posted_intr.c
+@@ -28,11 +28,14 @@ void vmx_vcpu_pi_load(struct kvm_vcpu *vcpu, int cpu)
+ 	unsigned int dest;
  
  	/*
-diff --git a/arch/arm64/kvm/arm.c b/arch/arm64/kvm/arm.c
-index 268b1e7bf700..9ff0e85a9f16 100644
---- a/arch/arm64/kvm/arm.c
-+++ b/arch/arm64/kvm/arm.c
-@@ -622,7 +622,7 @@ void kvm_arm_resume_guest(struct kvm *kvm)
- 
- 	kvm_for_each_vcpu(i, vcpu, kvm) {
- 		vcpu->arch.pause = false;
--		rcuwait_wake_up(kvm_arch_vcpu_get_wait(vcpu));
-+		__kvm_vcpu_wake_up(vcpu);
- 	}
- }
- 
-diff --git a/arch/x86/kvm/lapic.c b/arch/x86/kvm/lapic.c
-index 76fb00921203..0cd7ed21b205 100644
---- a/arch/x86/kvm/lapic.c
-+++ b/arch/x86/kvm/lapic.c
-@@ -1931,7 +1931,7 @@ void kvm_lapic_expired_hv_timer(struct kvm_vcpu *vcpu)
- 	/* If the preempt notifier has already run, it also called apic_timer_expired */
- 	if (!apic->lapic_timer.hv_timer_in_use)
- 		goto out;
--	WARN_ON(rcuwait_active(&vcpu->wait));
-+	WARN_ON(kvm_vcpu_is_blocking(vcpu));
- 	apic_timer_expired(apic, false);
- 	cancel_hv_timer(apic);
- 
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index bdaa0e70b060..1fa38dc00b87 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -1151,6 +1151,20 @@ static inline struct rcuwait *kvm_arch_vcpu_get_wait(struct kvm_vcpu *vcpu)
- #endif
- }
- 
-+/*
-+ * Wake a vCPU if necessary, but don't do any stats/metadata updates.  Returns
-+ * true if the vCPU was blocking and was awakened, false otherwise.
-+ */
-+static inline bool __kvm_vcpu_wake_up(struct kvm_vcpu *vcpu)
-+{
-+	return !!rcuwait_wake_up(kvm_arch_vcpu_get_wait(vcpu));
-+}
+-	 * In case of hot-plug or hot-unplug, we may have to undo
+-	 * vmx_vcpu_pi_put even if there is no assigned device.  And we
+-	 * always keep PI.NDST up to date for simplicity: it makes the
+-	 * code easier, and CPU migration is not a fast path.
++	 * To simplify hot-plug and dynamic toggling of APICv, keep PI.NDST and
++	 * PI.SN up-to-date even if there is no assigned device or if APICv is
++	 * deactivated due to a dynamic inhibit bit, e.g. for Hyper-V's SyncIC.
+ 	 */
++	if (!enable_apicv || !lapic_in_kernel(vcpu))
++		return;
 +
-+static inline bool kvm_vcpu_is_blocking(struct kvm_vcpu *vcpu)
-+{
-+	return rcuwait_active(kvm_arch_vcpu_get_wait(vcpu));
-+}
-+
- #ifdef __KVM_HAVE_ARCH_INTC_INITIALIZED
- /*
-  * returns true if the virtual interrupt controller is initialized and
-diff --git a/virt/kvm/async_pf.c b/virt/kvm/async_pf.c
-index ccb35c22785e..9bfe1d6f6529 100644
---- a/virt/kvm/async_pf.c
-+++ b/virt/kvm/async_pf.c
-@@ -85,7 +85,7 @@ static void async_pf_execute(struct work_struct *work)
++	/* Nothing to do if PI.SN==0 and the vCPU isn't being migrated. */
+ 	if (!pi_test_sn(pi_desc) && vcpu->cpu == cpu)
+ 		return;
  
- 	trace_kvm_async_pf_completed(addr, cr2_or_gpa);
- 
--	rcuwait_wake_up(kvm_arch_vcpu_get_wait(vcpu));
-+	__kvm_vcpu_wake_up(vcpu);
- 
- 	mmput(mm);
- 	kvm_put_kvm(vcpu->kvm);
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 481e8178b43d..c870cae7e776 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -3332,10 +3332,7 @@ EXPORT_SYMBOL_GPL(kvm_vcpu_halt);
- 
- bool kvm_vcpu_wake_up(struct kvm_vcpu *vcpu)
- {
--	struct rcuwait *waitp;
--
--	waitp = kvm_arch_vcpu_get_wait(vcpu);
--	if (rcuwait_wake_up(waitp)) {
-+	if (__kvm_vcpu_wake_up(vcpu)) {
- 		WRITE_ONCE(vcpu->ready, true);
- 		++vcpu->stat.generic.halt_wakeup;
- 		return true;
-@@ -3490,8 +3487,7 @@ void kvm_vcpu_on_spin(struct kvm_vcpu *me, bool yield_to_kernel_mode)
- 				continue;
- 			if (vcpu == me)
- 				continue;
--			if (rcuwait_active(kvm_arch_vcpu_get_wait(vcpu)) &&
--			    !vcpu_dy_runnable(vcpu))
-+			if (kvm_vcpu_is_blocking(vcpu) && !vcpu_dy_runnable(vcpu))
- 				continue;
- 			if (READ_ONCE(vcpu->preempted) && yield_to_kernel_mode &&
- 			    !kvm_arch_dy_has_pending_interrupt(vcpu) &&
 -- 
 2.33.0.882.g93a45727a2-goog
 
