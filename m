@@ -1,133 +1,156 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Fri,  8 Oct 2021 19:12:02 -0700
-Subject: [PATCH v2 09/43] KVM: Drop obsolete kvm_arch_vcpu_block_finish()
+Date: Fri,  8 Oct 2021 19:12:03 -0700
+Subject: [PATCH v2 10/43] KVM: arm64: Move vGIC v4 handling for WFI out arch
+ callback hook
 In-Reply-To: <20211009021236.4122790-1-seanjc@google.com>
 References: <20211009021236.4122790-1-seanjc@google.com>
-Message-ID: <20211009021236.4122790-10-seanjc@google.com>
+Message-ID: <20211009021236.4122790-11-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Drop kvm_arch_vcpu_block_finish() now that all arch implementations are
-nops.
+Move the put and reload of the vGIC out of the block/unblock callbacks
+and into a dedicated WFI helper.  Functionally, this is nearly a nop as
+the block hook is called at the very beginning of kvm_vcpu_block(), and
+the only code in kvm_vcpu_block() after the unblock hook is to update the
+halt-polling controls, i.e. can only affect the next WFI.
 
-No functional change intended.
+Back when the arch (un)blocking hooks were added by commits 3217f7c25bca
+("KVM: Add kvm_arch_vcpu_{un}blocking callbacks) and d35268da6687
+("arm/arm64: KVM: arch_timer: Only schedule soft timer on vcpu_block"),
+the hooks were invoked only when KVM was about to "block", i.e. schedule
+out the vCPU.  The use case at the time was to schedule a timer in the
+host based on the earliest timer in the guest in order to wake the
+blocking vCPU when the emulated guest timer fired.  Commit accb99bcd0ca
+("KVM: arm/arm64: Simplify bg_timer programming") reworked the timer
+logic to be even more precise, by waiting until the vCPU was actually
+scheduled out, and so move the timer logic from the (un)blocking hooks to
+vcpu_load/put.
 
-Acked-by: Christian Borntraeger <borntraeger@de.ibm.com>
-Reviewed-by: David Matlack <dmatlack@google.com>
+In the meantime, the hooks gained usage for enabling vGIC v4 doorbells in
+commit df9ba95993b9 ("KVM: arm/arm64: GICv4: Use the doorbell interrupt
+as an unblocking source"), and added related logic for the VMCR in commit
+5eeaf10eec39 ("KVM: arm/arm64: Sync ICH_VMCR_EL2 back when about to block").
+
+Finally, commit 07ab0f8d9a12 ("KVM: Call kvm_arch_vcpu_blocking early
+into the blocking sequence") hoisted the (un)blocking hooks so that they
+wrapped KVM's halt-polling logic in addition to the core "block" logic.
+
+In other words, the original need for arch hooks to take action _only_
+in the block path is long since gone.
+
+Cc: Oliver Upton <oupton@google.com>
+Cc: Marc Zyngier <maz@kernel.org>
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/arm64/include/asm/kvm_host.h   | 1 -
- arch/mips/include/asm/kvm_host.h    | 1 -
- arch/powerpc/include/asm/kvm_host.h | 1 -
- arch/riscv/include/asm/kvm_host.h   | 1 -
- arch/s390/include/asm/kvm_host.h    | 2 --
- arch/s390/kvm/kvm-s390.c            | 5 -----
- arch/x86/include/asm/kvm_host.h     | 2 --
- virt/kvm/kvm_main.c                 | 1 -
- 8 files changed, 14 deletions(-)
+ arch/arm64/include/asm/kvm_emulate.h |  2 ++
+ arch/arm64/kvm/arm.c                 | 52 +++++++++++++++++++---------
+ arch/arm64/kvm/handle_exit.c         |  3 +-
+ 3 files changed, 38 insertions(+), 19 deletions(-)
 
-diff --git a/arch/arm64/include/asm/kvm_host.h b/arch/arm64/include/asm/kvm_host.h
-index 369c30e28301..fe4dec96d1c3 100644
---- a/arch/arm64/include/asm/kvm_host.h
-+++ b/arch/arm64/include/asm/kvm_host.h
-@@ -716,7 +716,6 @@ void kvm_arm_vcpu_ptrauth_trap(struct kvm_vcpu *vcpu);
- static inline void kvm_arch_hardware_unsetup(void) {}
- static inline void kvm_arch_sync_events(struct kvm *kvm) {}
- static inline void kvm_arch_sched_in(struct kvm_vcpu *vcpu, int cpu) {}
--static inline void kvm_arch_vcpu_block_finish(struct kvm_vcpu *vcpu) {}
+diff --git a/arch/arm64/include/asm/kvm_emulate.h b/arch/arm64/include/asm/kvm_emulate.h
+index fd418955e31e..de8b4f5922b7 100644
+--- a/arch/arm64/include/asm/kvm_emulate.h
++++ b/arch/arm64/include/asm/kvm_emulate.h
+@@ -41,6 +41,8 @@ void kvm_inject_vabt(struct kvm_vcpu *vcpu);
+ void kvm_inject_dabt(struct kvm_vcpu *vcpu, unsigned long addr);
+ void kvm_inject_pabt(struct kvm_vcpu *vcpu, unsigned long addr);
  
- void kvm_arm_init_debug(void);
- void kvm_arm_vcpu_init_debug(struct kvm_vcpu *vcpu);
-diff --git a/arch/mips/include/asm/kvm_host.h b/arch/mips/include/asm/kvm_host.h
-index 696f6b009377..72b90d45a46e 100644
---- a/arch/mips/include/asm/kvm_host.h
-+++ b/arch/mips/include/asm/kvm_host.h
-@@ -897,7 +897,6 @@ static inline void kvm_arch_memslots_updated(struct kvm *kvm, u64 gen) {}
- static inline void kvm_arch_sched_in(struct kvm_vcpu *vcpu, int cpu) {}
- static inline void kvm_arch_vcpu_blocking(struct kvm_vcpu *vcpu) {}
- static inline void kvm_arch_vcpu_unblocking(struct kvm_vcpu *vcpu) {}
--static inline void kvm_arch_vcpu_block_finish(struct kvm_vcpu *vcpu) {}
++void kvm_vcpu_wfi(struct kvm_vcpu *vcpu);
++
+ static __always_inline bool vcpu_el1_is_32bit(struct kvm_vcpu *vcpu)
+ {
+ 	return !(vcpu->arch.hcr_el2 & HCR_RW);
+diff --git a/arch/arm64/kvm/arm.c b/arch/arm64/kvm/arm.c
+index 7838e9fb693e..1346f81b34df 100644
+--- a/arch/arm64/kvm/arm.c
++++ b/arch/arm64/kvm/arm.c
+@@ -359,27 +359,12 @@ int kvm_cpu_has_pending_timer(struct kvm_vcpu *vcpu)
  
- #define __KVM_HAVE_ARCH_FLUSH_REMOTE_TLB
- int kvm_arch_flush_remote_tlb(struct kvm *kvm);
-diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-index 876c10803cda..4a195c161592 100644
---- a/arch/powerpc/include/asm/kvm_host.h
-+++ b/arch/powerpc/include/asm/kvm_host.h
-@@ -865,6 +865,5 @@ static inline void kvm_arch_sched_in(struct kvm_vcpu *vcpu, int cpu) {}
- static inline void kvm_arch_exit(void) {}
- static inline void kvm_arch_vcpu_blocking(struct kvm_vcpu *vcpu) {}
- static inline void kvm_arch_vcpu_unblocking(struct kvm_vcpu *vcpu) {}
--static inline void kvm_arch_vcpu_block_finish(struct kvm_vcpu *vcpu) {}
- 
- #endif /* __POWERPC_KVM_HOST_H__ */
-diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
-index d7e1696cd2ec..b3f0c3773603 100644
---- a/arch/riscv/include/asm/kvm_host.h
-+++ b/arch/riscv/include/asm/kvm_host.h
-@@ -209,7 +209,6 @@ struct kvm_vcpu_arch {
- static inline void kvm_arch_hardware_unsetup(void) {}
- static inline void kvm_arch_sync_events(struct kvm *kvm) {}
- static inline void kvm_arch_sched_in(struct kvm_vcpu *vcpu, int cpu) {}
--static inline void kvm_arch_vcpu_block_finish(struct kvm_vcpu *vcpu) {}
- 
- #define KVM_ARCH_WANT_MMU_NOTIFIER
- 
-diff --git a/arch/s390/include/asm/kvm_host.h b/arch/s390/include/asm/kvm_host.h
-index a604d51acfc8..a22c9266ea05 100644
---- a/arch/s390/include/asm/kvm_host.h
-+++ b/arch/s390/include/asm/kvm_host.h
-@@ -1010,6 +1010,4 @@ static inline void kvm_arch_flush_shadow_memslot(struct kvm *kvm,
- static inline void kvm_arch_vcpu_blocking(struct kvm_vcpu *vcpu) {}
- static inline void kvm_arch_vcpu_unblocking(struct kvm_vcpu *vcpu) {}
- 
--void kvm_arch_vcpu_block_finish(struct kvm_vcpu *vcpu);
--
- #endif
-diff --git a/arch/s390/kvm/kvm-s390.c b/arch/s390/kvm/kvm-s390.c
-index 08ed68639a21..17fabb260c35 100644
---- a/arch/s390/kvm/kvm-s390.c
-+++ b/arch/s390/kvm/kvm-s390.c
-@@ -5080,11 +5080,6 @@ static inline unsigned long nonhyp_mask(int i)
- 	return 0x0000ffffffffffffUL >> (nonhyp_fai << 4);
+ void kvm_arch_vcpu_blocking(struct kvm_vcpu *vcpu)
+ {
+-	/*
+-	 * If we're about to block (most likely because we've just hit a
+-	 * WFI), we need to sync back the state of the GIC CPU interface
+-	 * so that we have the latest PMR and group enables. This ensures
+-	 * that kvm_arch_vcpu_runnable has up-to-date data to decide
+-	 * whether we have pending interrupts.
+-	 *
+-	 * For the same reason, we want to tell GICv4 that we need
+-	 * doorbells to be signalled, should an interrupt become pending.
+-	 */
+-	preempt_disable();
+-	kvm_vgic_vmcr_sync(vcpu);
+-	vgic_v4_put(vcpu, true);
+-	preempt_enable();
++
  }
  
--void kvm_arch_vcpu_block_finish(struct kvm_vcpu *vcpu)
--{
--
--}
--
- static int __init kvm_s390_init(void)
+ void kvm_arch_vcpu_unblocking(struct kvm_vcpu *vcpu)
  {
- 	int i;
-diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
-index 88f0326c184a..7aafc27ce7a9 100644
---- a/arch/x86/include/asm/kvm_host.h
-+++ b/arch/x86/include/asm/kvm_host.h
-@@ -1926,8 +1926,6 @@ static inline void kvm_arch_vcpu_unblocking(struct kvm_vcpu *vcpu)
- 	static_call_cond(kvm_x86_vcpu_unblocking)(vcpu);
+-	preempt_disable();
+-	vgic_v4_load(vcpu);
+-	preempt_enable();
++
  }
  
--static inline void kvm_arch_vcpu_block_finish(struct kvm_vcpu *vcpu) {}
--
- static inline int kvm_cpu_get_apicid(int mps_cpu)
+ void kvm_arch_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
+@@ -662,6 +647,39 @@ static void vcpu_req_sleep(struct kvm_vcpu *vcpu)
+ 	smp_rmb();
+ }
+ 
++/**
++ * kvm_vcpu_wfi - emulate Wait-For-Interrupt behavior
++ * @vcpu:	The VCPU pointer
++ *
++ * Suspend execution of a vCPU until a valid wake event is detected, i.e. until
++ * the vCPU is runnable.  The vCPU may or may not be scheduled out, depending
++ * on when a wake event arrives, e.g. there may already be a pending wake event.
++ */
++void kvm_vcpu_wfi(struct kvm_vcpu *vcpu)
++{
++	/*
++	 * Sync back the state of the GIC CPU interface so that we have
++	 * the latest PMR and group enables. This ensures that
++	 * kvm_arch_vcpu_runnable has up-to-date data to decide whether
++	 * we have pending interrupts, e.g. when determining if the
++	 * vCPU should block.
++	 *
++	 * For the same reason, we want to tell GICv4 that we need
++	 * doorbells to be signalled, should an interrupt become pending.
++	 */
++	preempt_disable();
++	kvm_vgic_vmcr_sync(vcpu);
++	vgic_v4_put(vcpu, true);
++	preempt_enable();
++
++	kvm_vcpu_block(vcpu);
++	kvm_clear_request(KVM_REQ_UNHALT, vcpu);
++
++	preempt_disable();
++	vgic_v4_load(vcpu);
++	preempt_enable();
++}
++
+ static int kvm_vcpu_initialized(struct kvm_vcpu *vcpu)
  {
- #ifdef CONFIG_X86_LOCAL_APIC
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 1292c7876d3f..f90b3ed05628 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -3304,7 +3304,6 @@ void kvm_vcpu_block(struct kvm_vcpu *vcpu)
+ 	return vcpu->arch.target >= 0;
+diff --git a/arch/arm64/kvm/handle_exit.c b/arch/arm64/kvm/handle_exit.c
+index 275a27368a04..4794563a506b 100644
+--- a/arch/arm64/kvm/handle_exit.c
++++ b/arch/arm64/kvm/handle_exit.c
+@@ -95,8 +95,7 @@ static int kvm_handle_wfx(struct kvm_vcpu *vcpu)
+ 	} else {
+ 		trace_kvm_wfx_arm64(*vcpu_pc(vcpu), false);
+ 		vcpu->stat.wfi_exit_stat++;
+-		kvm_vcpu_block(vcpu);
+-		kvm_clear_request(KVM_REQ_UNHALT, vcpu);
++		kvm_vcpu_wfi(vcpu);
  	}
  
- 	trace_kvm_vcpu_wakeup(block_ns, waited, vcpu_valid_wakeup(vcpu));
--	kvm_arch_vcpu_block_finish(vcpu);
- }
- EXPORT_SYMBOL_GPL(kvm_vcpu_block);
- 
+ 	kvm_incr_pc(vcpu);
 -- 
 2.33.0.882.g93a45727a2-goog
 
