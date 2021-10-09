@@ -1,60 +1,84 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Fri,  8 Oct 2021 19:12:28 -0700
-Subject: [PATCH v2 35/43] KVM: SVM: Signal AVIC doorbell iff vCPU is in guest
- mode
+Date: Fri,  8 Oct 2021 19:12:29 -0700
+Subject: [PATCH v2 36/43] KVM: SVM: Don't bother checking for "running" AVIC
+ when kicking for IPIs
 In-Reply-To: <20211009021236.4122790-1-seanjc@google.com>
 References: <20211009021236.4122790-1-seanjc@google.com>
-Message-ID: <20211009021236.4122790-36-seanjc@google.com>
+Message-ID: <20211009021236.4122790-37-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Signal the AVIC doorbell iff the vCPU is running in the guest.  If the vCPU
-is not IN_GUEST_MODE, it's guaranteed to pick up any pending IRQs on the
-next VMRUN, which unconditionally processes the vIRR.
+Drop the avic_vcpu_is_running() check when waking vCPUs in response to a
+VM-Exit due to incomplete IPI delivery.  The check isn't wrong per se, but
+it's not 100% accurate in the sense that it doesn't guarantee that the vCPU
+was one of the vCPUs that didn't receive the IPI.
 
-Add comments to document the logic.
+The check isn't required for correctness as blocking == !running in this
+context.
+
+From a performance perspective, waking a live task is not expensive as the
+only moderately costly operation is a locked operation to temporarily
+disable preemption.  And if that is indeed a performance issue,
+kvm_vcpu_is_blocking() would be a better check than poking into the AVIC.
 
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/x86/kvm/svm/avic.c | 14 ++++++++++++--
- 1 file changed, 12 insertions(+), 2 deletions(-)
+ arch/x86/kvm/svm/avic.c | 15 +++++++++------
+ arch/x86/kvm/svm/svm.h  | 11 -----------
+ 2 files changed, 9 insertions(+), 17 deletions(-)
 
 diff --git a/arch/x86/kvm/svm/avic.c b/arch/x86/kvm/svm/avic.c
-index 208c5c71e827..cbf02e7e20d0 100644
+index cbf02e7e20d0..b43b05610ade 100644
 --- a/arch/x86/kvm/svm/avic.c
 +++ b/arch/x86/kvm/svm/avic.c
-@@ -674,7 +674,12 @@ int svm_deliver_avic_intr(struct kvm_vcpu *vcpu, int vec)
- 	kvm_lapic_set_irr(vec, vcpu->arch.apic);
- 	smp_mb__after_atomic();
+@@ -295,13 +295,16 @@ static void avic_kick_target_vcpus(struct kvm *kvm, struct kvm_lapic *source,
+ 	struct kvm_vcpu *vcpu;
+ 	int i;
  
--	if (avic_vcpu_is_running(vcpu)) {
 +	/*
-+	 * Signal the doorbell to tell hardware to inject the IRQ if the vCPU
-+	 * is in the guest.  If the vCPU is not in the guest, hardware will
-+	 * automatically process AVIC interrupts at VMRUN.
++	 * Wake any target vCPUs that are blocking, i.e. waiting for a wake
++	 * event.  There's no need to signal doorbells, as hardware has handled
++	 * vCPUs that were in guest at the time of the IPI, and vCPUs that have
++	 * since entered the guest will have processed pending IRQs at VMRUN.
 +	 */
-+	if (vcpu->mode == IN_GUEST_MODE) {
- 		int cpu = READ_ONCE(vcpu->cpu);
- 
- 		/*
-@@ -687,8 +692,13 @@ int svm_deliver_avic_intr(struct kvm_vcpu *vcpu, int vec)
- 		if (cpu != get_cpu())
- 			wrmsrl(SVM_AVIC_DOORBELL, kvm_cpu_get_apicid(cpu));
- 		put_cpu();
--	} else
-+	} else {
-+		/*
-+		 * Wake the vCPU if it was blocking.  KVM will then detect the
-+		 * pending IRQ when checking if the vCPU has a wake event.
-+		 */
- 		kvm_vcpu_wake_up(vcpu);
-+	}
- 
- 	return 0;
+ 	kvm_for_each_vcpu(i, vcpu, kvm) {
+-		bool m = kvm_apic_match_dest(vcpu, source,
+-					     icrl & APIC_SHORT_MASK,
+-					     GET_APIC_DEST_FIELD(icrh),
+-					     icrl & APIC_DEST_MASK);
+-
+-		if (m && !avic_vcpu_is_running(vcpu))
++		if (kvm_apic_match_dest(vcpu, source, icrl & APIC_SHORT_MASK,
++					GET_APIC_DEST_FIELD(icrh),
++					icrl & APIC_DEST_MASK))
+ 			kvm_vcpu_wake_up(vcpu);
+ 	}
  }
+diff --git a/arch/x86/kvm/svm/svm.h b/arch/x86/kvm/svm/svm.h
+index 0d7bbe548ac3..7f5b01bbee29 100644
+--- a/arch/x86/kvm/svm/svm.h
++++ b/arch/x86/kvm/svm/svm.h
+@@ -509,17 +509,6 @@ extern struct kvm_x86_nested_ops svm_nested_ops;
+ 
+ #define VMCB_AVIC_APIC_BAR_MASK		0xFFFFFFFFFF000ULL
+ 
+-static inline bool avic_vcpu_is_running(struct kvm_vcpu *vcpu)
+-{
+-	struct vcpu_svm *svm = to_svm(vcpu);
+-	u64 *entry = svm->avic_physical_id_cache;
+-
+-	if (!entry)
+-		return false;
+-
+-	return (READ_ONCE(*entry) & AVIC_PHYSICAL_ID_ENTRY_IS_RUNNING_MASK);
+-}
+-
+ int avic_ga_log_notifier(u32 ga_tag);
+ void avic_vm_destroy(struct kvm *kvm);
+ int avic_vm_init(struct kvm *kvm);
 -- 
 2.33.0.882.g93a45727a2-goog
 
