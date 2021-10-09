@@ -1,71 +1,83 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Fri,  8 Oct 2021 19:12:15 -0700
-Subject: [PATCH v2 22/43] KVM: VMX: Drop unnecessary PI logic to handle
- impossible conditions
+Date: Fri,  8 Oct 2021 19:12:16 -0700
+Subject: [PATCH v2 23/43] KVM: VMX: Use boolean returns for Posted Interrupt
+ "test" helpers
 In-Reply-To: <20211009021236.4122790-1-seanjc@google.com>
 References: <20211009021236.4122790-1-seanjc@google.com>
-Message-ID: <20211009021236.4122790-23-seanjc@google.com>
+Message-ID: <20211009021236.4122790-24-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Drop sanity checks on the validity of the previous pCPU when handling
-vCPU block/unlock for posted interrupts.  Barring a code bug or memory
-corruption, the sanity checks will never fire, and any code bug that does
-trip the WARN is all but guaranteed to completely break posted interrupts,
-i.e. should never get anywhere near production.
+Return bools instead of ints for the posted interrupt "test" helpers.
+The bit position of the flag being test does not matter to the callers,
+and is in fact lost by virtue of test_bit() itself returning a bool.
 
-This is the first of several steps toward eliminating kvm_vcpu.pre_cpu.
+Returning ints is potentially dangerous, e.g. "pi_test_on(pi_desc) == 1"
+is safe-ish because ON is bit 0 and thus any sane implementation of
+pi_test_on() will work, but for SN (bit 1), checking "== 1" would rely on
+pi_test_on() to return 0 or 1, a.k.a. bools, as opposed to 0 or 2 (the
+positive bit position).
 
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/x86/kvm/vmx/posted_intr.c | 24 ++++++++++--------------
- 1 file changed, 10 insertions(+), 14 deletions(-)
+ arch/x86/kvm/vmx/posted_intr.c | 4 ++--
+ arch/x86/kvm/vmx/posted_intr.h | 6 +++---
+ 2 files changed, 5 insertions(+), 5 deletions(-)
 
 diff --git a/arch/x86/kvm/vmx/posted_intr.c b/arch/x86/kvm/vmx/posted_intr.c
-index 67cbe6ab8f66..6c2110d91b06 100644
+index 6c2110d91b06..1688f8dc535a 100644
 --- a/arch/x86/kvm/vmx/posted_intr.c
 +++ b/arch/x86/kvm/vmx/posted_intr.c
-@@ -118,12 +118,10 @@ static void __pi_post_block(struct kvm_vcpu *vcpu)
- 	} while (cmpxchg64(&pi_desc->control, old.control,
+@@ -185,7 +185,7 @@ int pi_pre_block(struct kvm_vcpu *vcpu)
  			   new.control) != old.control);
  
--	if (!WARN_ON_ONCE(vcpu->pre_pcpu == -1)) {
--		spin_lock(&per_cpu(blocked_vcpu_on_cpu_lock, vcpu->pre_pcpu));
--		list_del(&vcpu->blocked_vcpu_list);
--		spin_unlock(&per_cpu(blocked_vcpu_on_cpu_lock, vcpu->pre_pcpu));
--		vcpu->pre_pcpu = -1;
--	}
-+	spin_lock(&per_cpu(blocked_vcpu_on_cpu_lock, vcpu->pre_pcpu));
-+	list_del(&vcpu->blocked_vcpu_list);
-+	spin_unlock(&per_cpu(blocked_vcpu_on_cpu_lock, vcpu->pre_pcpu));
-+	vcpu->pre_pcpu = -1;
+ 	/* We should not block the vCPU if an interrupt is posted for it.  */
+-	if (pi_test_on(pi_desc) == 1)
++	if (pi_test_on(pi_desc))
+ 		__pi_post_block(vcpu);
+ 
+ 	local_irq_enable();
+@@ -216,7 +216,7 @@ void pi_wakeup_handler(void)
+ 			blocked_vcpu_list) {
+ 		struct pi_desc *pi_desc = vcpu_to_pi_desc(vcpu);
+ 
+-		if (pi_test_on(pi_desc) == 1)
++		if (pi_test_on(pi_desc))
+ 			kvm_vcpu_kick(vcpu);
+ 	}
+ 	spin_unlock(&per_cpu(blocked_vcpu_on_cpu_lock, cpu));
+diff --git a/arch/x86/kvm/vmx/posted_intr.h b/arch/x86/kvm/vmx/posted_intr.h
+index 7f7b2326caf5..36ae035f14aa 100644
+--- a/arch/x86/kvm/vmx/posted_intr.h
++++ b/arch/x86/kvm/vmx/posted_intr.h
+@@ -40,7 +40,7 @@ static inline bool pi_test_and_clear_on(struct pi_desc *pi_desc)
+ 			(unsigned long *)&pi_desc->control);
  }
  
- /*
-@@ -153,14 +151,12 @@ int pi_pre_block(struct kvm_vcpu *vcpu)
+-static inline int pi_test_and_set_pir(int vector, struct pi_desc *pi_desc)
++static inline bool pi_test_and_set_pir(int vector, struct pi_desc *pi_desc)
+ {
+ 	return test_and_set_bit(vector, (unsigned long *)pi_desc->pir);
+ }
+@@ -74,13 +74,13 @@ static inline void pi_clear_sn(struct pi_desc *pi_desc)
+ 		(unsigned long *)&pi_desc->control);
+ }
  
- 	WARN_ON(irqs_disabled());
- 	local_irq_disable();
--	if (!WARN_ON_ONCE(vcpu->pre_pcpu != -1)) {
--		vcpu->pre_pcpu = vcpu->cpu;
--		spin_lock(&per_cpu(blocked_vcpu_on_cpu_lock, vcpu->pre_pcpu));
--		list_add_tail(&vcpu->blocked_vcpu_list,
--			      &per_cpu(blocked_vcpu_on_cpu,
--				       vcpu->pre_pcpu));
--		spin_unlock(&per_cpu(blocked_vcpu_on_cpu_lock, vcpu->pre_pcpu));
--	}
-+
-+	vcpu->pre_pcpu = vcpu->cpu;
-+	spin_lock(&per_cpu(blocked_vcpu_on_cpu_lock, vcpu->pre_pcpu));
-+	list_add_tail(&vcpu->blocked_vcpu_list,
-+		      &per_cpu(blocked_vcpu_on_cpu, vcpu->pre_pcpu));
-+	spin_unlock(&per_cpu(blocked_vcpu_on_cpu_lock, vcpu->pre_pcpu));
+-static inline int pi_test_on(struct pi_desc *pi_desc)
++static inline bool pi_test_on(struct pi_desc *pi_desc)
+ {
+ 	return test_bit(POSTED_INTR_ON,
+ 			(unsigned long *)&pi_desc->control);
+ }
  
- 	WARN(pi_desc->sn == 1,
- 	     "Posted Interrupt Suppress Notification set before blocking");
+-static inline int pi_test_sn(struct pi_desc *pi_desc)
++static inline bool pi_test_sn(struct pi_desc *pi_desc)
+ {
+ 	return test_bit(POSTED_INTR_SN,
+ 			(unsigned long *)&pi_desc->control);
 -- 
 2.33.0.882.g93a45727a2-goog
 
