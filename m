@@ -1,61 +1,39 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Fri,  8 Oct 2021 19:12:34 -0700
-Subject: [PATCH v2 41/43] KVM: VMX: Pass desired vector instead of bool for
- triggering posted IRQ
+Date: Fri,  8 Oct 2021 19:12:36 -0700
+Subject: [PATCH v2 43/43] KVM: VMX: Don't do full kick when handling posted
+ interrupt wakeup
 In-Reply-To: <20211009021236.4122790-1-seanjc@google.com>
 References: <20211009021236.4122790-1-seanjc@google.com>
-Message-ID: <20211009021236.4122790-42-seanjc@google.com>
+Message-ID: <20211009021236.4122790-44-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Refactor the posted interrupt helper to take the desired notification
-vector instead of a bool so that the callers are self-documenting.
-
-No functional change intended.
+When waking vCPUs in the posted interrupt wakeup handling, do exactly
+that and no more.  There is no need to kick the vCPU as the wakeup
+handler just need to get the vCPU task running, and if it's in the guest
+then it's definitely running.
 
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/x86/kvm/vmx/vmx.c | 8 +++-----
- 1 file changed, 3 insertions(+), 5 deletions(-)
+ arch/x86/kvm/vmx/posted_intr.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/x86/kvm/vmx/vmx.c b/arch/x86/kvm/vmx/vmx.c
-index 78c8bc7f1b3b..f505fee3cf5c 100644
---- a/arch/x86/kvm/vmx/vmx.c
-+++ b/arch/x86/kvm/vmx/vmx.c
-@@ -3928,11 +3928,9 @@ static void vmx_msr_filter_changed(struct kvm_vcpu *vcpu)
- }
+diff --git a/arch/x86/kvm/vmx/posted_intr.c b/arch/x86/kvm/vmx/posted_intr.c
+index f1bcf8c32b6d..06eb9c950760 100644
+--- a/arch/x86/kvm/vmx/posted_intr.c
++++ b/arch/x86/kvm/vmx/posted_intr.c
+@@ -192,7 +192,7 @@ void pi_wakeup_handler(void)
+ 			    pi_wakeup_list) {
  
- static inline bool kvm_vcpu_trigger_posted_interrupt(struct kvm_vcpu *vcpu,
--						     bool nested)
-+						     int pi_vec)
- {
- #ifdef CONFIG_SMP
--	int pi_vec = nested ? POSTED_INTR_NESTED_VECTOR : POSTED_INTR_VECTOR;
--
- 	if (vcpu->mode == IN_GUEST_MODE) {
- 		/*
- 		 * The vector of interrupt to be delivered to vcpu had
-@@ -3986,7 +3984,7 @@ static int vmx_deliver_nested_posted_interrupt(struct kvm_vcpu *vcpu,
- 		 */
- 		kvm_make_request(KVM_REQ_EVENT, vcpu);
- 		/* the PIR and ON have been set by L1. */
--		if (!kvm_vcpu_trigger_posted_interrupt(vcpu, true))
-+		if (!kvm_vcpu_trigger_posted_interrupt(vcpu, POSTED_INTR_NESTED_VECTOR))
- 			kvm_vcpu_wake_up(vcpu);
- 		return 0;
+ 		if (pi_test_on(&vmx->pi_desc))
+-			kvm_vcpu_kick(&vmx->vcpu);
++			kvm_vcpu_wake_up(&vmx->vcpu);
  	}
-@@ -4024,7 +4022,7 @@ static int vmx_deliver_posted_interrupt(struct kvm_vcpu *vcpu, int vector)
- 	 * guaranteed to see PID.ON=1 and sync the PIR to IRR if triggering a
- 	 * posted interrupt "fails" because vcpu->mode != IN_GUEST_MODE.
- 	 */
--	if (!kvm_vcpu_trigger_posted_interrupt(vcpu, false))
-+	if (!kvm_vcpu_trigger_posted_interrupt(vcpu, POSTED_INTR_VECTOR))
- 		kvm_vcpu_wake_up(vcpu);
- 
- 	return 0;
+ 	spin_unlock(&per_cpu(wakeup_vcpus_on_cpu_lock, cpu));
+ }
 -- 
 2.33.0.882.g93a45727a2-goog
 
