@@ -1,185 +1,212 @@
-From: Guo Ren <guoren@kernel.org>
-Date: Sun, 10 Oct 2021 17:34:01 +0800
-Subject: [PATCH v3 0/5] Add SBI v0.2 support for KVM
-In-Reply-To: <20211008032036.2201971-1-atish.patra@wdc.com>
+From: Atish Patra <Atish.Patra@wdc.com>
+Date: Mon, 11 Oct 2021 08:02:35 +0000
+Subject: [PATCH v3 5/5] RISC-V: Add SBI HSM extension in KVM
+In-Reply-To: <YWBdbCNQdikbhhBq@google.com>
 References: <20211008032036.2201971-1-atish.patra@wdc.com>
-Message-ID: <CAJF2gTRrSS90XO+YGbSJ-smgEPgnHQadGRpcdW2XOQ7QCTFjOA@mail.gmail.com>
+ <20211008032036.2201971-6-atish.patra@wdc.com>
+ <YWBdbCNQdikbhhBq@google.com>
+Message-ID: <0383b5cacb25e9dc293d891284df9f4cbc06ee3a.camel@wdc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Oct 8, 2021 at 11:20 AM Atish Patra <atish.patra@wdc.com> wrote:
->
-> The Supervisor Binary Interface(SBI) specification[1] now defines a
-> base extension that provides extendability to add future extensions
-> while maintaining backward compatibility with previous versions.
-> The new version is defined as 0.2 and older version is marked as 0.1.
->
-> This series adds following features to RISC-V Linux KVM.
-> 1. Adds support for SBI v0.2 in KVM
-> 2. SBI Hart state management extension (HSM) in KVM
-> 3. Ordered booting of guest vcpus in guest Linux
->
-> This series is based on base KVM series which is already part of the kvm-next[2].
->
-> Guest kernel needs to also support SBI v0.2 and HSM extension in Kernel
-> to boot multiple vcpus. Linux kernel supports both starting v5.7.
-> In absense of that, guest can only boot 1 vcpu.
->
-> Changes from v2->v3:
-> 1. Rebased on the latest merged kvm series.
-> 2. Dropped the reset extension patch because reset extension is not merged in kernel.
-> However, my tree[3] still contains it in case anybody wants to test it.
->
-> Changes from v1->v2:
-> 1. Sent the patch 1 separately as it can merged independently.
-> 2. Added Reset extension functionality.
->
-> Tested on Qemu and Rocket core FPGA.
->
-> [1] https://github.com/riscv/riscv-sbi-doc/blob/master/riscv-sbi.adoc
-> [2] https://git.kernel.org/pub/scm/virt/kvm/kvm.git/log/?h=next
-> [3] https://github.com/atishp04/linux/tree/kvm_next_sbi_v02_reset
-Tested-by: Guo Ren <guoren@kernel.org>
-
-/ # echo o > /proc/sysrq-trigger
-[   97.164312] sysrq: Power Off
-[   97.177376] reboot: Power down
-[   97.189630] machine_power_off, 34.
-[   97.209240] sbi_srst_power_off, 528
-
-  # KVM session ended normally.
-
-> [4] https://github.com/atishp04/linux/tree/kvm_next_sbi_v02
-Yes, it will hang without your reset patch.
-
-/ # echo o > /proc/sysrq-trigger
-[   20.753143] sysrq: Power Off
-[   20.766105] reboot: Power down
-[   20.777462] machine_power_off, 34.
-[   20.789932] default_power_off, 11.
-[   41.769217] rcu: INFO: rcu_sched detected stalls on CPUs/tasks:
-[   41.803683]  (detected by 0, t=5252 jiffies, g=-191, q=2)
-[   41.823503] rcu: All QSes seen, last rcu_sched kthread activity
-5252 (4294902728-4294897476), jiffies_till_next_fqs=1, root ->qsmask
-0x0
-[   41.868656] rcu: rcu_sched kthread starved for 5252 jiffies! g-191
-f0x2 RCU_GP_WAIT_FQS(5) ->state=0x0 ->cpu=0
-[   41.905574] rcu:     Unless rcu_sched kthread gets sufficient CPU
-time, OOM is now expected behavior.
-[   41.939434] rcu: RCU grace-period kthread stack dump:
-[   41.957946] task:rcu_sched       state:R  running task     stack:
- 0 pid:   11 ppid:     2 flags:0x00000000
-[   41.994477] Call Trace:
-[   42.004217] [<ffffffff807384a8>] __schedule+0x22a/0x500
-[   42.024580] [<ffffffff807387d6>] schedule+0x58/0xcc
-[   42.042803] [<ffffffff8073cf82>] schedule_timeout+0x68/0xda
-[   42.063509] [<ffffffff8006e930>] rcu_gp_fqs_loop+0x22e/0x2de
-[   42.084670] [<ffffffff8006f9c4>] rcu_gp_kthread+0xf4/0x118
-[   42.105075] [<ffffffff800345ae>] kthread+0x100/0x112
-[   42.123564] [<ffffffff80003068>] ret_from_exception+0x0/0xc
-[   42.146121] rcu: Stack dump where RCU GP kthread last ran:
-[   42.173224] Task dump for CPU 0:
-[   42.185784] task:kworker/0:1     state:R  running task     stack:
- 0 pid:   13 ppid:     2 flags:0x00000008
-[   42.222593] Workqueue: events do_poweroff
-[   42.237804] Call Trace:
-[   42.247202] [<ffffffff8000487e>] dump_backtrace+0x1c/0x24
-[   42.267635] [<ffffffff80039aa6>] sched_show_task+0x156/0x176
-[   42.289890] [<ffffffff8072d914>] dump_cpu_task+0x42/0x4c
-[   42.309939] [<ffffffff8072e6e2>] rcu_check_gp_kthread_starvation+0xfa/0x112
-[   42.337239] [<ffffffff80070e40>] rcu_sched_clock_irq+0x638/0x6ca
-[   42.359294] [<ffffffff80076e44>] update_process_times+0xa2/0xca
-[   42.381707] [<ffffffff80084cb2>] tick_sched_timer+0x78/0x130
-[   42.402984] [<ffffffff800774e2>] __hrtimer_run_queues+0x122/0x186
-[   42.427002] [<ffffffff80078198>] hrtimer_interrupt+0xcc/0x1d8
-[   42.447506] [<ffffffff805cbe70>] riscv_timer_interrupt+0x32/0x3c
-[   42.470831] [<ffffffff8006508e>] handle_percpu_devid_irq+0x80/0x118
-[   42.495964] [<ffffffff800601d0>] handle_domain_irq+0x58/0x88
-[   42.518874] [<ffffffff803007ce>] riscv_intc_irq+0x36/0x5e
-[   42.540270] [<ffffffff80003068>] ret_from_exception+0x0/0xc
-[   42.561475] [<ffffffff80364f3e>] univ8250_console_write+0x0/0x2a
-[   68.137301] watchdog: BUG: soft lockup - CPU#0 stuck for 45s!
-[kworker/0:1:13]
-[   68.171330] Modules linked in:
-[   68.183426] CPU: 0 PID: 13 Comm: kworker/0:1 Not tainted
-5.15.0-rc2-00156-g5ff89d5fae43-dirty #10
-[   68.216937] Hardware name: linux,dummy-virt (DT)
-[   68.234380] Workqueue: events do_poweroff
-[   68.249798] epc : default_power_off+0x22/0x24
-[   68.266249]  ra : default_power_off+0x1e/0x24
-[   68.283131] epc : ffffffff8072ce4a ra : ffffffff8072ce46 sp :
-ffffffd00406bda0
-[   68.310349]  gp : ffffffff812e7ad0 tp : ffffffe0016b8000 t0 :
-ffffffff812f659f
-[   68.337152]  t1 : ffffffff812f6590 t2 : 0000000000000000 s0 :
-ffffffd00406bdb0
-[   68.364485]  s1 : ffffffff81214950 a0 : 0000000000000016 a1 :
-ffffffff81284af0
-[   68.391110]  a2 : 0000000000000010 a3 : fffffffffffffffe a4 :
-86a924d9b215f000
-[   68.418203]  a5 : 86a924d9b215f000 a6 : 0000000000000030 a7 :
-ffffffff80364f3e
-[   68.445367]  s2 : ffffffe001640a80 s3 : 0000000000000000 s4 :
-ffffffe00fa6d0c0
-[   68.472728]  s5 : ffffffe00fa70e00 s6 : ffffffe00fa70e05 s7 :
-ffffffff81214958
-[   68.499914]  s8 : ffffffff8002df26 s9 : ffffffff812e92e8 s10:
-ffffffff80034744
-[   68.526820]  s11: 0000000000000000 t3 : 0000000000000064 t4 :
-ffffffffffffffff
-[   68.554701]  t5 : ffffffff812128f8 t6 : ffffffd00406bb08
-[   68.574879] status: 0000000000000120 badaddr: 0000000000000000
-cause: 8000000000000005
-[   68.604540] [<ffffffff8072ce4a>] default_power_off+0x22/0x24
-[   68.625675] [<ffffffff8072cecc>] machine_power_off+0x26/0x2e
-[   68.646515] [<ffffffff80036c7e>] kernel_power_off+0x66/0x6e
-[   68.667518] [<ffffffff8005ba02>] do_poweroff+0xc/0x14
-[   68.686739] [<ffffffff8002dd24>] process_one_work+0x13e/0x28a
-[   68.707735] [<ffffffff8002deec>] worker_thread+0x7c/0x320
-[   68.729517] [<ffffffff800345ae>] kthread+0x100/0x112
-[   68.748754] [<ffffffff80003068>] ret_from_exception+0x0/0xc
-
->
-> Atish Patra (5):
-> RISC-V: Mark the existing SBI v0.1 implementation as legacy
-> RISC-V: Reorganize SBI code by moving legacy SBI to its own file
-> RISC-V: Add SBI v0.2 base extension
-> RISC-V: Add v0.1 replacement SBI extensions defined in v02
-> RISC-V: Add SBI HSM extension in KVM
->
-> arch/riscv/include/asm/kvm_vcpu_sbi.h |  33 ++++
-> arch/riscv/include/asm/sbi.h          |   9 ++
-> arch/riscv/kvm/Makefile               |   4 +
-> arch/riscv/kvm/vcpu.c                 |  19 +++
-> arch/riscv/kvm/vcpu_sbi.c             | 208 ++++++++++++--------------
-> arch/riscv/kvm/vcpu_sbi_base.c        |  73 +++++++++
-> arch/riscv/kvm/vcpu_sbi_hsm.c         | 109 ++++++++++++++
-> arch/riscv/kvm/vcpu_sbi_legacy.c      | 129 ++++++++++++++++
-> arch/riscv/kvm/vcpu_sbi_replace.c     | 136 +++++++++++++++++
-> 9 files changed, 608 insertions(+), 112 deletions(-)
-> create mode 100644 arch/riscv/include/asm/kvm_vcpu_sbi.h
-> create mode 100644 arch/riscv/kvm/vcpu_sbi_base.c
-> create mode 100644 arch/riscv/kvm/vcpu_sbi_hsm.c
-> create mode 100644 arch/riscv/kvm/vcpu_sbi_legacy.c
-> create mode 100644 arch/riscv/kvm/vcpu_sbi_replace.c
->
-> --
-> 2.31.1
->
->
-> --
-> kvm-riscv mailing list
-> kvm-riscv at lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/kvm-riscv
+On Fri, 2021-10-08 at 15:02 +0000, Sean Christopherson wrote:
+> On Thu, Oct 07, 2021, Atish Patra wrote:
+> > SBI HSM extension allows OS to start/stop harts any time. It also
+> > allows
+> > diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+> > index c44cabce7dd8..278b4d643e1b 100644
+> > --- a/arch/riscv/kvm/vcpu.c
+> > +++ b/arch/riscv/kvm/vcpu.c
+> > @@ -133,6 +133,13 @@ static void kvm_riscv_reset_vcpu(struct
+> > kvm_vcpu *vcpu)
+> > ????????struct kvm_vcpu_csr *reset_csr = &vcpu-
+> > >arch.guest_reset_csr;
+> > ????????struct kvm_cpu_context *cntx = &vcpu->arch.guest_context;
+> > ????????struct kvm_cpu_context *reset_cntx = &vcpu-
+> > >arch.guest_reset_context;
+> > +???????bool loaded;
+> > +
+> > +???????/* Disable preemption to avoid race with preempt notifiers
+> > */
+> 
+> Stating what the code literally does is not a helpful comment, as it
+> doesn't
+> help the reader understand _why_ preemption needs to be disabled.
 
 
+The preemption is disabled here because it races with
+kvm_sched_out/kvm_sched_in(called from preempt notifiers) which also
+calls vcpu_load/put.
+
+I will add some more explanation in the comment to make it more
+explicit.
+
+> 
+> > +???????preempt_disable();
+> > +???????loaded = (vcpu->cpu != -1);
+> > +???????if (loaded)
+> > +???????????????kvm_arch_vcpu_put(vcpu);
+> 
+> Oof.? Looks like this pattern was taken from arm64.?
+
+Yes. This part is similar to arm64 because the same race condition can
+happen in riscv due to save/restore of CSRs during reset.
+
+
+>  Is there really no better
+> approach to handling this?? I don't see anything in
+> kvm_riscv_reset_vcpu() that
+> will obviously break if the vCPU is loaded.? If the goal is purely to
+> effect a
+> CSR reset via kvm_arch_vcpu_load(), then why not just factor out a
+> helper to do
+> exactly that?
+> 
+> > ?
+> > ????????memcpy(csr, reset_csr, sizeof(*csr));
+> > ?
+> > @@ -144,6 +151,11 @@ static void kvm_riscv_reset_vcpu(struct
+> > kvm_vcpu *vcpu)
+> > ?
+> > ????????WRITE_ONCE(vcpu->arch.irqs_pending, 0);
+> > ????????WRITE_ONCE(vcpu->arch.irqs_pending_mask, 0);
+> > +
+> > +???????/* Reset the guest CSRs for hotplug usecase */
+> > +???????if (loaded)
+> > +???????????????kvm_arch_vcpu_load(vcpu, smp_processor_id());
+> 
+> If the preempt shenanigans really have to stay, at least use
+> get_cpu()/put_cpu().
+> 
+
+Is there any specific advantage to that ? get_cpu/put_cpu are just
+macros which calls preempt_disable/preempt_enable.
+
+The only advantage of get_cpu is that it returns the current cpu. 
+vcpu_load function uses get_cpu because it requires the current cpu id.
+
+However, we don't need that in this case. I am not against changing it
+to get_cpu/put_cpu. Just wanted to understand the reasoning behind your
+suggestion.
+
+
+> > +???????preempt_enable();
+> > ?}
+> > ?
+> > ?int kvm_arch_vcpu_precreate(struct kvm *kvm, unsigned int id)
+> > @@ -180,6 +192,13 @@ int kvm_arch_vcpu_create(struct kvm_vcpu
+> > *vcpu)
+> > ?
+> > ?void kvm_arch_vcpu_postcreate(struct kvm_vcpu *vcpu)
+> > ?{
+> > +???????/**
+> > +??????? * vcpu with id 0 is the designated boot cpu.
+> > +??????? * Keep all vcpus with non-zero cpu id in power-off state
+> > so that they
+> > +??????? * can brought to online using SBI HSM extension.
+> > +??????? */
+> > +???????if (vcpu->vcpu_idx != 0)
+> > +???????????????kvm_riscv_vcpu_power_off(vcpu);
+> 
+> Why do this in postcreate?
+> 
+
+Because we need to absolutely sure that the vcpu is created. It is
+cleaner in this way rather than doing this here at the end of
+kvm_arch_vcpu_create. create_vcpu can also fail after
+kvm_arch_vcpu_create returns.
+
+
+> > ?}
+> > ?
+> > ?void kvm_arch_vcpu_destroy(struct kvm_vcpu *vcpu)
+> > diff --git a/arch/riscv/kvm/vcpu_sbi.c b/arch/riscv/kvm/vcpu_sbi.c
+> > index dadee5e61a46..db54ef21168b 100644
+> 
+> ...
+> 
+> > +static int kvm_sbi_hsm_vcpu_start(struct kvm_vcpu *vcpu)
+> > +{
+> > +???????struct kvm_cpu_context *reset_cntx;
+> > +???????struct kvm_cpu_context *cp = &vcpu->arch.guest_context;
+> > +???????struct kvm_vcpu *target_vcpu;
+> > +???????unsigned long target_vcpuid = cp->a0;
+> > +
+> > +???????target_vcpu = kvm_get_vcpu_by_id(vcpu->kvm, target_vcpuid);
+> > +???????if (!target_vcpu)
+> > +???????????????return -EINVAL;
+> > +???????if (!target_vcpu->arch.power_off)
+> > +???????????????return -EALREADY;
+> > +
+> > +???????reset_cntx = &target_vcpu->arch.guest_reset_context;
+> > +???????/* start address */
+> > +???????reset_cntx->sepc = cp->a1;
+> > +???????/* target vcpu id to start */
+> > +???????reset_cntx->a0 = target_vcpuid;
+> > +???????/* private data passed from kernel */
+> > +???????reset_cntx->a1 = cp->a2;
+> > +???????kvm_make_request(KVM_REQ_VCPU_RESET, target_vcpu);
+> > +
+> > +???????/* Make sure that the reset request is enqueued before
+> > power on */
+> > +???????smp_wmb();
+> 
+> What does this pair with?? I suspect nothing, because AFAICT the code
+> was taken
+> from arm64.
+> 
+
+Thanks for noticing this. It was a slip up. I will fix it in next
+revision.
+
+
+> arm64 has the smp_wmb() in kvm_psci_vcpu_on() to ensure that the vCPU
+> sees the
+> request if the vCPU sees the change in vcpu->arch.power_off, and so
+> has a
+> smp_rmb() in kvm_reset_vcpu().
+> 
+> Side topic, how much of arm64 and RISC-V is this similar?? Would it
+> make sense
+> to find some way for them to share code?
+
+While some of the operational methodologies implemented in this patch
+are similar with ARM64 (i.e. SBI HSM vs PSCI for cpu hotplug/booting),
+the implementation is different in terms of CSR save/restore & pending
+irq handling. We may end up in more code to as new arch hookups may
+have to be added.
+
+This option certainly can be explored in future. But it is not our TODO
+list right now.
+
+
+> 
+> > +???????kvm_riscv_vcpu_power_on(target_vcpu);
+> > +
+> > +???????return 0;
+> > +}
+> > +
+> > +static int kvm_sbi_hsm_vcpu_stop(struct kvm_vcpu *vcpu)
+> > +{
+> > +???????if ((!vcpu) || (vcpu->arch.power_off))
+> 
+> Too many parentheses, and the NULL vCPU check is unnecessary.
+
+ok. Will fix it.
+
+
+> 
+> > +???????????????return -EINVAL;
+> > +
+> > +???????kvm_riscv_vcpu_power_off(vcpu);
+> > +
+> > +???????return 0;
+> > +}
+> > +
 
 -- 
-Best Regards
- Guo Ren
-
-ML: https://lore.kernel.org/linux-csky/
-
+Regards,
+Atish
