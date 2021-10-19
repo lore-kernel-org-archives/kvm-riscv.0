@@ -1,62 +1,70 @@
-From: Anup Patel <anup@brainfault.org>
-Date: Tue, 19 Oct 2021 14:52:26 +0530
-Subject: [PATCH v3 13/23] Documentation: update vcpu-requests.rst reference
-In-Reply-To: <1f62fdbd0dd9298a19c491447a4b415a8ef3bd69.1634630486.git.mchehab+huawei@kernel.org>
-References: <cover.1634630485.git.mchehab+huawei@kernel.org>
- <1f62fdbd0dd9298a19c491447a4b415a8ef3bd69.1634630486.git.mchehab+huawei@kernel.org>
-Message-ID: <CAAhSdy0Rp8gf_OHy-qi1aDhCouMXYe_4qcFUUZkZCs2BCRPNog@mail.gmail.com>
+From: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+Date: Tue, 19 Oct 2021 09:03:59 +0100
+Subject: [PATCH v3 00/23] Fix some issues at documentation
+Message-ID: <cover.1634630485.git.mchehab+huawei@kernel.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Oct 19, 2021 at 1:34 PM Mauro Carvalho Chehab
-<mchehab+huawei@kernel.org> wrote:
->
-> Changeset 2f5947dfcaec ("Documentation: move Documentation/virtual to Documentation/virt")
-> renamed: Documentation/virtual/kvm/vcpu-requests.rst
-> to: Documentation/virt/kvm/vcpu-requests.rst.
->
-> Update its cross-reference accordingly.
->
-> Fixes: 2f5947dfcaec ("Documentation: move Documentation/virtual to Documentation/virt")
-> Signed-off-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
-> ---
+Hi Jon,
 
-Looks good to me.
+This series is against today's next (next-20211019) and addresses missing
+links to Documentation/*.
 
-Reviewed-by: Anup Patel <anup.patel@wdc.com>
+The best would be to have the patches applied directly to the trees that
+contain the patches that moved/renamed files, and then apply the
+remaining ones either later during the merge window or just afterwards,
+whatever works best for you.
 
 Regards,
-Anup
+Mauro
 
->
-> To mailbombing on a large number of people, only mailing lists were C/C on the cover.
-> See [PATCH v3 00/23] at: https://lore.kernel.org/all/cover.1634630485.git.mchehab+huawei at kernel.org/
->
->  arch/riscv/kvm/vcpu.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-> index c44cabce7dd8..260ce0779a32 100644
-> --- a/arch/riscv/kvm/vcpu.c
-> +++ b/arch/riscv/kvm/vcpu.c
-> @@ -912,7 +912,7 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
->                  * Ensure we set mode to IN_GUEST_MODE after we disable
->                  * interrupts and before the final VCPU requests check.
->                  * See the comment in kvm_vcpu_exiting_guest_mode() and
-> -                * Documentation/virtual/kvm/vcpu-requests.rst
-> +                * Documentation/virt/kvm/vcpu-requests.rst
->                  */
->                 vcpu->mode = IN_GUEST_MODE;
->
-> --
-> 2.31.1
->
->
-> _______________________________________________
-> linux-riscv mailing list
-> linux-riscv at lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-riscv
+Mauro Carvalho Chehab (23):
+  visorbus: fix a copyright symbol that was bad encoded
+  libbpf: update index.rst reference
+  docs: accounting: update delay-accounting.rst reference
+  MAINTAINERS: update arm,vic.yaml reference
+  MAINTAINERS: update aspeed,i2c.yaml reference
+  MAINTAINERS: update faraday,ftrtc010.yaml reference
+  MAINTAINERS: update ti,sci.yaml reference
+  MAINTAINERS: update intel,ixp46x-rng.yaml reference
+  MAINTAINERS: update nxp,imx8-jpeg.yaml reference
+  MAINTAINERS: update gemini.yaml reference
+  MAINTAINERS: update brcm,unimac-mdio.yaml reference
+  MAINTAINERS: update mtd-physmap.yaml reference
+  Documentation: update vcpu-requests.rst reference
+  bpftool: update bpftool-cgroup.rst reference
+  docs: translations: zn_CN: irq-affinity.rst: add a missing extension
+  docs: translations: zh_CN: memory-hotplug.rst: fix a typo
+  docs: fs: locks.rst: update comment about mandatory file locking
+  fs: remove a comment pointing to the removed mandatory-locking file
+  Documentation/process: fix a cross reference
+  dt-bindings: mfd: update x-powers,axp152.yaml reference
+  regulator: dt-bindings: update samsung,s2mpa01.yaml reference
+  regulator: dt-bindings: update samsung,s5m8767.yaml reference
+  dt-bindings: reserved-memory: ramoops: update ramoops.yaml references
+
+ Documentation/admin-guide/ramoops.rst         |  2 +-
+ Documentation/admin-guide/sysctl/kernel.rst   |  2 +-
+ Documentation/bpf/index.rst                   |  2 +-
+ .../devicetree/bindings/gpio/gpio-axp209.txt  |  2 +-
+ .../bindings/regulator/samsung,s2mpa01.yaml   |  2 +-
+ .../bindings/regulator/samsung,s5m8767.yaml   |  2 +-
+ Documentation/filesystems/locks.rst           | 17 +++++-----------
+ Documentation/process/submitting-patches.rst  |  4 ++--
+ .../zh_CN/core-api/irq/irq-affinity.rst       |  2 +-
+ .../zh_CN/core-api/memory-hotplug.rst         |  2 +-
+ MAINTAINERS                                   | 20 +++++++++----------
+ arch/riscv/kvm/vcpu.c                         |  2 +-
+ drivers/visorbus/visorbus_main.c              |  2 +-
+ fs/locks.c                                    |  1 -
+ .../selftests/bpf/test_bpftool_synctypes.py   |  2 +-
+ 15 files changed, 28 insertions(+), 36 deletions(-)
+
+-- 
+2.31.1
+
+
 
