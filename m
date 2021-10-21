@@ -1,15 +1,9 @@
 From: cgel.zte@gmail.com <cgel.zte@gmail.com>
-Date: Thu, 21 Oct 2021 10:45:36 +0000
-Subject: [PATCH] RISC-V:KVM: remove unneeded semicolon Elimate the following
- coccinelle check warning: ./arch/riscv/kvm/vcpu_sbi.c:169:2-3: Unneeded
- semicolon ./arch/riscv/kvm/vcpu_exit.c:397:2-3: Unneeded semicolon
- ./arch/riscv/kvm/vcpu_exit.c:687:2-3: Unneeded semicolon
- ./arch/riscv/kvm/vcpu_exit.c:645:2-3: Unneeded semicolon
- ./arch/riscv/kvm/vcpu.c:247:2-3: Unneeded semicolon
- ./arch/riscv/kvm/vcpu.c:284:2-3: Unneeded semicolon
- ./arch/riscv/kvm/vcpu_timer.c:123:2-3: Unneeded semicolon
- ./arch/riscv/kvm/vcpu_timer.c:170:2-3: Unneeded semicolon
-Message-ID: <20211021104536.1060107-1-ran.jianping@zte.com.cn>
+Date: Thu, 21 Oct 2021 11:57:06 +0000
+Subject: [PATCH] RISC-V:KVM: remove unneeded semicolon
+In-Reply-To: <CAAhSdy3DWOux6HiDU6fPazZUq=FOor8_ZEoqh6FBZru07NyxLQ@mail.gmail.com>
+References: <CAAhSdy3DWOux6HiDU6fPazZUq=FOor8_ZEoqh6FBZru07NyxLQ@mail.gmail.com>
+Message-ID: <20211021115706.1060778-1-ran.jianping@zte.com.cn>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -17,6 +11,16 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 From: ran jianping <ran.jianping@zte.com.cn>
+
+ Elimate the following coccinelle check warning:
+ ./arch/riscv/kvm/vcpu_sbi.c:169:2-3: Unneeded semicolon
+ ./arch/riscv/kvm/vcpu_exit.c:397:2-3: Unneeded semicolon
+ ./arch/riscv/kvm/vcpu_exit.c:687:2-3: Unneeded semicolon
+ ./arch/riscv/kvm/vcpu_exit.c:645:2-3: Unneeded semicolon
+ ./arch/riscv/kvm/vcpu.c:247:2-3: Unneeded semicolon
+ ./arch/riscv/kvm/vcpu.c:284:2-3: Unneeded semicolon
+ ./arch/riscv/kvm/vcpu_timer.c:123:2-3: Unneeded semicolon
+ ./arch/riscv/kvm/vcpu_timer.c:170:2-3: Unneeded semicolon
 
 Reported-by: Zeal Robot <zealci@zte.com.cn>
 Signed-off-by: ran jianping <ran.jianping@zte.com.cn>
