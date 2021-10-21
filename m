@@ -1,45 +1,132 @@
-From: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
-Date: Tue, 19 Oct 2021 09:04:12 +0100
-Subject: [PATCH v3 13/23] Documentation: update vcpu-requests.rst reference
-In-Reply-To: <cover.1634630485.git.mchehab+huawei@kernel.org>
-References: <cover.1634630485.git.mchehab+huawei@kernel.org>
-Message-ID: <1f62fdbd0dd9298a19c491447a4b415a8ef3bd69.1634630486.git.mchehab+huawei@kernel.org>
+From: Anup Patel <anup@brainfault.org>
+Date: Thu, 21 Oct 2021 16:54:29 +0530
+Subject: [PATCH] RISC-V:KVM: remove unneeded semicolon Elimate the
+ following coccinelle check warning: ./arch/riscv/kvm/vcpu_sbi.c:169:2-3:
+ Unneeded semicolon ./arch/riscv/kvm/vcpu_exit.c:397:2-3: Unneeded semicolon
+ ./arch/riscv/kvm/vcpu_exit.c:687:2-3: Unneeded semicolon
+ ./arch/riscv/kvm/vcpu_exit.c:645:2-3:
+ Unneeded semicolon ./arch/riscv/kvm/vcpu.c:247:2-3: Unneeded semicolon
+ ./arch/riscv/kvm/vcpu.c:284:2-3: Unneeded semicolon
+ ./arch/riscv/kvm/vcpu_timer.c:123:2-3:
+ Unneeded semicolon ./arch/riscv/kvm/vcpu_timer.c:170:2-3: Unneeded semicolon
+In-Reply-To: <20211021104536.1060107-1-ran.jianping@zte.com.cn>
+References: <20211021104536.1060107-1-ran.jianping@zte.com.cn>
+Message-ID: <CAAhSdy3DWOux6HiDU6fPazZUq=FOor8_ZEoqh6FBZru07NyxLQ@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Changeset 2f5947dfcaec ("Documentation: move Documentation/virtual to Documentation/virt")
-renamed: Documentation/virtual/kvm/vcpu-requests.rst
-to: Documentation/virt/kvm/vcpu-requests.rst.
+On Thu, Oct 21, 2021 at 4:15 PM <cgel.zte@gmail.com> wrote:
+>
+> From: ran jianping <ran.jianping@zte.com.cn>
 
-Update its cross-reference accordingly.
+Reduce the length of patch subject (preferable around 70 characters)
+and move the rest of patch subject as patch description.
 
-Fixes: 2f5947dfcaec ("Documentation: move Documentation/virtual to Documentation/virt")
-Signed-off-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
----
+Regards,
+Anup
 
-To mailbombing on a large number of people, only mailing lists were C/C on the cover.
-See [PATCH v3 00/23] at: https://lore.kernel.org/all/cover.1634630485.git.mchehab+huawei at kernel.org/
-
- arch/riscv/kvm/vcpu.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-index c44cabce7dd8..260ce0779a32 100644
---- a/arch/riscv/kvm/vcpu.c
-+++ b/arch/riscv/kvm/vcpu.c
-@@ -912,7 +912,7 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
- 		 * Ensure we set mode to IN_GUEST_MODE after we disable
- 		 * interrupts and before the final VCPU requests check.
- 		 * See the comment in kvm_vcpu_exiting_guest_mode() and
--		 * Documentation/virtual/kvm/vcpu-requests.rst
-+		 * Documentation/virt/kvm/vcpu-requests.rst
- 		 */
- 		vcpu->mode = IN_GUEST_MODE;
- 
--- 
-2.31.1
-
+>
+> Reported-by: Zeal Robot <zealci@zte.com.cn>
+> Signed-off-by: ran jianping <ran.jianping@zte.com.cn>
+> ---
+>  arch/riscv/kvm/vcpu.c       | 4 ++--
+>  arch/riscv/kvm/vcpu_exit.c  | 6 +++---
+>  arch/riscv/kvm/vcpu_sbi.c   | 2 +-
+>  arch/riscv/kvm/vcpu_timer.c | 4 ++--
+>  4 files changed, 8 insertions(+), 8 deletions(-)
+>
+> diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+> index c44cabce7dd8..912928586df9 100644
+> --- a/arch/riscv/kvm/vcpu.c
+> +++ b/arch/riscv/kvm/vcpu.c
+> @@ -244,7 +244,7 @@ static int kvm_riscv_vcpu_get_reg_config(struct kvm_vcpu *vcpu,
+>                 break;
+>         default:
+>                 return -EINVAL;
+> -       };
+> +       }
+>
+>         if (copy_to_user(uaddr, &reg_val, KVM_REG_SIZE(reg->id)))
+>                 return -EFAULT;
+> @@ -281,7 +281,7 @@ static int kvm_riscv_vcpu_set_reg_config(struct kvm_vcpu *vcpu,
+>                 break;
+>         default:
+>                 return -EINVAL;
+> -       };
+> +       }
+>
+>         return 0;
+>  }
+> diff --git a/arch/riscv/kvm/vcpu_exit.c b/arch/riscv/kvm/vcpu_exit.c
+> index 13bbc3f73713..7f2d742ae4c6 100644
+> --- a/arch/riscv/kvm/vcpu_exit.c
+> +++ b/arch/riscv/kvm/vcpu_exit.c
+> @@ -394,7 +394,7 @@ static int emulate_store(struct kvm_vcpu *vcpu, struct kvm_run *run,
+>                 break;
+>         default:
+>                 return -EOPNOTSUPP;
+> -       };
+> +       }
+>
+>         /* Update MMIO details in kvm_run struct */
+>         run->mmio.is_write = true;
+> @@ -642,7 +642,7 @@ int kvm_riscv_vcpu_mmio_return(struct kvm_vcpu *vcpu, struct kvm_run *run)
+>                 break;
+>         default:
+>                 return -EOPNOTSUPP;
+> -       };
+> +       }
+>
+>  done:
+>         /* Move to next instruction */
+> @@ -684,7 +684,7 @@ int kvm_riscv_vcpu_exit(struct kvm_vcpu *vcpu, struct kvm_run *run,
+>                 break;
+>         default:
+>                 break;
+> -       };
+> +       }
+>
+>         /* Print details in-case of error */
+>         if (ret < 0) {
+> diff --git a/arch/riscv/kvm/vcpu_sbi.c b/arch/riscv/kvm/vcpu_sbi.c
+> index ebdcdbade9c6..eb3c045edf11 100644
+> --- a/arch/riscv/kvm/vcpu_sbi.c
+> +++ b/arch/riscv/kvm/vcpu_sbi.c
+> @@ -166,7 +166,7 @@ int kvm_riscv_vcpu_sbi_ecall(struct kvm_vcpu *vcpu, struct kvm_run *run)
+>                 /* Return error for unsupported SBI calls */
+>                 cp->a0 = SBI_ERR_NOT_SUPPORTED;
+>                 break;
+> -       };
+> +       }
+>
+>         if (next_sepc)
+>                 cp->sepc += 4;
+> diff --git a/arch/riscv/kvm/vcpu_timer.c b/arch/riscv/kvm/vcpu_timer.c
+> index ddd0ce727b83..5c4c37ff2d48 100644
+> --- a/arch/riscv/kvm/vcpu_timer.c
+> +++ b/arch/riscv/kvm/vcpu_timer.c
+> @@ -120,7 +120,7 @@ int kvm_riscv_vcpu_get_reg_timer(struct kvm_vcpu *vcpu,
+>                 break;
+>         default:
+>                 return -EINVAL;
+> -       };
+> +       }
+>
+>         if (copy_to_user(uaddr, &reg_val, KVM_REG_SIZE(reg->id)))
+>                 return -EFAULT;
+> @@ -167,7 +167,7 @@ int kvm_riscv_vcpu_set_reg_timer(struct kvm_vcpu *vcpu,
+>         default:
+>                 ret = -EINVAL;
+>                 break;
+> -       };
+> +       }
+>
+>         return ret;
+>  }
+> --
+> 2.25.1
+>
 
