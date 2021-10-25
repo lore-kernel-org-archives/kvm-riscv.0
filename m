@@ -1,11 +1,11 @@
 From: Paolo Bonzini <pbonzini@redhat.com>
-Date: Mon, 25 Oct 2021 15:48:20 +0200
-Subject: [PATCH v2 20/43] KVM: VMX: Skip Posted Interrupt updates if APICv
- is hard disabled
-In-Reply-To: <20211009021236.4122790-21-seanjc@google.com>
+Date: Mon, 25 Oct 2021 15:53:02 +0200
+Subject: [PATCH v2 22/43] KVM: VMX: Drop unnecessary PI logic to handle
+ impossible conditions
+In-Reply-To: <20211009021236.4122790-23-seanjc@google.com>
 References: <20211009021236.4122790-1-seanjc@google.com>
- <20211009021236.4122790-21-seanjc@google.com>
-Message-ID: <1537b693-80ee-4f9e-2c4e-6e1c62ccca92@redhat.com>
+ <20211009021236.4122790-23-seanjc@google.com>
+Message-ID: <acfdf0f5-0a18-162a-c785-fa0a520e3364@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -13,14 +13,67 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 On 09/10/21 04:12, Sean Christopherson wrote:
-> +	/* Nothing to do if PI.SN==0 and the vCPU isn't being migrated. */
->   	if (!pi_test_sn(pi_desc) && vcpu->cpu == cpu)
->   		return;
+> Drop sanity checks on the validity of the previous pCPU when handling
+> vCPU block/unlock for posted interrupts.  Barring a code bug or memory
+> corruption, the sanity checks will never fire, and any code bug that does
+> trip the WARN is all but guaranteed to completely break posted interrupts,
+> i.e. should never get anywhere near production.
+> 
+> This is the first of several steps toward eliminating kvm_vcpu.pre_cpu.
+> 
+> Signed-off-by: Sean Christopherson <seanjc@google.com>
+> ---
+>   arch/x86/kvm/vmx/posted_intr.c | 24 ++++++++++--------------
+>   1 file changed, 10 insertions(+), 14 deletions(-)
 
-This does not quite say "why", so:
-
-         /* Nothing to do if PI.SN and PI.NDST both have the desired value. */
+The idea here is to avoid making things worse by not making the list 
+inconsistent.  But that's impossible to do if pre_pcpu goes away, so 
+fair enough.
 
 Paolo
+
+> diff --git a/arch/x86/kvm/vmx/posted_intr.c b/arch/x86/kvm/vmx/posted_intr.c
+> index 67cbe6ab8f66..6c2110d91b06 100644
+> --- a/arch/x86/kvm/vmx/posted_intr.c
+> +++ b/arch/x86/kvm/vmx/posted_intr.c
+> @@ -118,12 +118,10 @@ static void __pi_post_block(struct kvm_vcpu *vcpu)
+>   	} while (cmpxchg64(&pi_desc->control, old.control,
+>   			   new.control) != old.control);
+>   
+> -	if (!WARN_ON_ONCE(vcpu->pre_pcpu == -1)) {
+> -		spin_lock(&per_cpu(blocked_vcpu_on_cpu_lock, vcpu->pre_pcpu));
+> -		list_del(&vcpu->blocked_vcpu_list);
+> -		spin_unlock(&per_cpu(blocked_vcpu_on_cpu_lock, vcpu->pre_pcpu));
+> -		vcpu->pre_pcpu = -1;
+> -	}
+> +	spin_lock(&per_cpu(blocked_vcpu_on_cpu_lock, vcpu->pre_pcpu));
+> +	list_del(&vcpu->blocked_vcpu_list);
+> +	spin_unlock(&per_cpu(blocked_vcpu_on_cpu_lock, vcpu->pre_pcpu));
+> +	vcpu->pre_pcpu = -1;
+>   }
+>   
+>   /*
+> @@ -153,14 +151,12 @@ int pi_pre_block(struct kvm_vcpu *vcpu)
+>   
+>   	WARN_ON(irqs_disabled());
+>   	local_irq_disable();
+> -	if (!WARN_ON_ONCE(vcpu->pre_pcpu != -1)) {
+> -		vcpu->pre_pcpu = vcpu->cpu;
+> -		spin_lock(&per_cpu(blocked_vcpu_on_cpu_lock, vcpu->pre_pcpu));
+> -		list_add_tail(&vcpu->blocked_vcpu_list,
+> -			      &per_cpu(blocked_vcpu_on_cpu,
+> -				       vcpu->pre_pcpu));
+> -		spin_unlock(&per_cpu(blocked_vcpu_on_cpu_lock, vcpu->pre_pcpu));
+> -	}
+> +
+> +	vcpu->pre_pcpu = vcpu->cpu;
+> +	spin_lock(&per_cpu(blocked_vcpu_on_cpu_lock, vcpu->pre_pcpu));
+> +	list_add_tail(&vcpu->blocked_vcpu_list,
+> +		      &per_cpu(blocked_vcpu_on_cpu, vcpu->pre_pcpu));
+> +	spin_unlock(&per_cpu(blocked_vcpu_on_cpu_lock, vcpu->pre_pcpu));
+>   
+>   	WARN(pi_desc->sn == 1,
+>   	     "Posted Interrupt Suppress Notification set before blocking");
+> 
 
 
