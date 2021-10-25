@@ -1,11 +1,11 @@
 From: Paolo Bonzini <pbonzini@redhat.com>
-Date: Mon, 25 Oct 2021 15:53:02 +0200
-Subject: [PATCH v2 22/43] KVM: VMX: Drop unnecessary PI logic to handle
- impossible conditions
-In-Reply-To: <20211009021236.4122790-23-seanjc@google.com>
+Date: Mon, 25 Oct 2021 16:01:42 +0200
+Subject: [PATCH v2 24/43] KVM: VMX: Drop pointless PI.NDST update when
+ blocking
+In-Reply-To: <20211009021236.4122790-25-seanjc@google.com>
 References: <20211009021236.4122790-1-seanjc@google.com>
- <20211009021236.4122790-23-seanjc@google.com>
-Message-ID: <acfdf0f5-0a18-162a-c785-fa0a520e3364@redhat.com>
+ <20211009021236.4122790-25-seanjc@google.com>
+Message-ID: <18e6a656-f583-0ad4-6770-9678be3f5cf4@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -13,67 +13,52 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 On 09/10/21 04:12, Sean Christopherson wrote:
-> Drop sanity checks on the validity of the previous pCPU when handling
-> vCPU block/unlock for posted interrupts.  Barring a code bug or memory
-> corruption, the sanity checks will never fire, and any code bug that does
-> trip the WARN is all but guaranteed to completely break posted interrupts,
-> i.e. should never get anywhere near production.
-> 
-> This is the first of several steps toward eliminating kvm_vcpu.pre_cpu.
-> 
-> Signed-off-by: Sean Christopherson <seanjc@google.com>
-> ---
->   arch/x86/kvm/vmx/posted_intr.c | 24 ++++++++++--------------
->   1 file changed, 10 insertions(+), 14 deletions(-)
+> Don't update Posted Interrupt's NDST, a.k.a. the target pCPU, in the
+> pre-block path, as NDST is guaranteed to be up-to-date.  The comment
+> about the vCPU being preempted during the update is simply wrong, as the
+> update path runs with IRQs disabled (from before snapshotting vcpu->cpu,
+> until after the update completes).
 
-The idea here is to avoid making things worse by not making the list 
-inconsistent.  But that's impossible to do if pre_pcpu goes away, so 
-fair enough.
+Right, it didn't as of commit bf9f6ac8d74969690df1485b33b7c238ca9f2269 
+(when VT-d posted interrupts were introduced).
+
+The interrupt disable/enable pair was added in the same commit that 
+motivated the introduction of the sanity checks:
+
+     commit 8b306e2f3c41939ea528e6174c88cfbfff893ce1
+     Author: Paolo Bonzini <pbonzini@redhat.com>
+     Date:   Tue Jun 6 12:57:05 2017 +0200
+
+     KVM: VMX: avoid double list add with VT-d posted interrupts
+
+     In some cases, for example involving hot-unplug of assigned
+     devices, pi_post_block can forget to remove the vCPU from the
+     blocked_vcpu_list.  When this happens, the next call to
+     pi_pre_block corrupts the list.
+
+     Fix this in two ways.  First, check vcpu->pre_pcpu in pi_pre_block
+     and WARN instead of adding the element twice in the list.  Second,
+     always do the list removal in pi_post_block if vcpu->pre_pcpu is
+     set (not -1).
+
+     The new code keeps interrupts disabled for the whole duration of
+     pi_pre_block/pi_post_block.  This is not strictly necessary, but
+     easier to follow.  For the same reason, PI.ON is checked only
+     after the cmpxchg, and to handle it we just call the post-block
+     code.  This removes duplication of the list removal code.
+
+At the time, I didn't notice the now useless NDST update.
 
 Paolo
 
-> diff --git a/arch/x86/kvm/vmx/posted_intr.c b/arch/x86/kvm/vmx/posted_intr.c
-> index 67cbe6ab8f66..6c2110d91b06 100644
-> --- a/arch/x86/kvm/vmx/posted_intr.c
-> +++ b/arch/x86/kvm/vmx/posted_intr.c
-> @@ -118,12 +118,10 @@ static void __pi_post_block(struct kvm_vcpu *vcpu)
->   	} while (cmpxchg64(&pi_desc->control, old.control,
->   			   new.control) != old.control);
->   
-> -	if (!WARN_ON_ONCE(vcpu->pre_pcpu == -1)) {
-> -		spin_lock(&per_cpu(blocked_vcpu_on_cpu_lock, vcpu->pre_pcpu));
-> -		list_del(&vcpu->blocked_vcpu_list);
-> -		spin_unlock(&per_cpu(blocked_vcpu_on_cpu_lock, vcpu->pre_pcpu));
-> -		vcpu->pre_pcpu = -1;
-> -	}
-> +	spin_lock(&per_cpu(blocked_vcpu_on_cpu_lock, vcpu->pre_pcpu));
-> +	list_del(&vcpu->blocked_vcpu_list);
-> +	spin_unlock(&per_cpu(blocked_vcpu_on_cpu_lock, vcpu->pre_pcpu));
-> +	vcpu->pre_pcpu = -1;
->   }
->   
->   /*
-> @@ -153,14 +151,12 @@ int pi_pre_block(struct kvm_vcpu *vcpu)
->   
->   	WARN_ON(irqs_disabled());
->   	local_irq_disable();
-> -	if (!WARN_ON_ONCE(vcpu->pre_pcpu != -1)) {
-> -		vcpu->pre_pcpu = vcpu->cpu;
-> -		spin_lock(&per_cpu(blocked_vcpu_on_cpu_lock, vcpu->pre_pcpu));
-> -		list_add_tail(&vcpu->blocked_vcpu_list,
-> -			      &per_cpu(blocked_vcpu_on_cpu,
-> -				       vcpu->pre_pcpu));
-> -		spin_unlock(&per_cpu(blocked_vcpu_on_cpu_lock, vcpu->pre_pcpu));
-> -	}
-> +
-> +	vcpu->pre_pcpu = vcpu->cpu;
-> +	spin_lock(&per_cpu(blocked_vcpu_on_cpu_lock, vcpu->pre_pcpu));
-> +	list_add_tail(&vcpu->blocked_vcpu_list,
-> +		      &per_cpu(blocked_vcpu_on_cpu, vcpu->pre_pcpu));
-> +	spin_unlock(&per_cpu(blocked_vcpu_on_cpu_lock, vcpu->pre_pcpu));
->   
->   	WARN(pi_desc->sn == 1,
->   	     "Posted Interrupt Suppress Notification set before blocking");
+> The vCPU can get preempted_before_  the update starts, but not during.
+> And if the vCPU is preempted before, vmx_vcpu_pi_load() is responsible
+> for updating NDST when the vCPU is scheduled back in.  In that case, the
+> check against the wakeup vector in vmx_vcpu_pi_load() cannot be true as
+> that would require the notification vector to have been set to the wakeup
+> vector_before_  blocking.
 > 
+> Opportunistically switch to using vcpu->cpu for the list/lock lookups,
+> which presumably used pre_pcpu only for some phantom preemption logic.
 
 
