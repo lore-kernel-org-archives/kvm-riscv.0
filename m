@@ -1,25 +1,24 @@
-From: Paolo Bonzini <pbonzini@redhat.com>
-Date: Mon, 25 Oct 2021 17:05:19 +0200
-Subject: [PATCH v2 40/43] KVM: VMX: Wake vCPU when delivering posted IRQ
- even if vCPU == this vCPU
-In-Reply-To: <20211009021236.4122790-41-seanjc@google.com>
+From: Sean Christopherson <seanjc@google.com>
+Date: Mon, 25 Oct 2021 15:48:24 +0000
+Subject: [PATCH v2 37/43] KVM: SVM: Unconditionally mark AVIC as running
+ on vCPU load (with APICv)
+In-Reply-To: <acea3c6d-49f4-ab5e-d9fe-6c6a8a665a46@redhat.com>
 References: <20211009021236.4122790-1-seanjc@google.com>
- <20211009021236.4122790-41-seanjc@google.com>
-Message-ID: <a2a4e076-edb8-2cb5-5cb2-6825a1a4559a@redhat.com>
+ <20211009021236.4122790-38-seanjc@google.com>
+ <acea3c6d-49f4-ab5e-d9fe-6c6a8a665a46@redhat.com>
+Message-ID: <YXbRyMQgMpHVQa3G@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 09/10/21 04:12, Sean Christopherson wrote:
+On Mon, Oct 25, 2021, Paolo Bonzini wrote:
+> On 09/10/21 04:12, Sean Christopherson wrote:
+> > +	/* TODO: Document why the unblocking path checks for updates. */
 > 
-> Lastly, this aligns the non-nested and nested usage of triggering posted
-> interrupts, and will allow for additional cleanups.
+> Is that a riddle or what? :)
 
-It also aligns with SVM a little bit more (especially given patch 35), 
-doesn't it?
-
-Paolo
-
+Yes?  I haven't been able to figure out why the unblocking path explicitly
+checks and handles an APICv update.
 
