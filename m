@@ -1,71 +1,38 @@
-From: Marc Zyngier <maz@kernel.org>
-Date: Tue, 26 Oct 2021 16:41:05 +0100
+From: Paolo Bonzini <pbonzini@redhat.com>
+Date: Tue, 26 Oct 2021 18:12:06 +0200
 Subject: [PATCH v2 10/43] KVM: arm64: Move vGIC v4 handling for WFI out
  arch callback hook
-In-Reply-To: <9236e715-c471-e1c8-6117-6f37b908a6bd@redhat.com>
+In-Reply-To: <875ytjbxpq.wl-maz@kernel.org>
 References: <20211009021236.4122790-1-seanjc@google.com>
  <20211009021236.4122790-11-seanjc@google.com>
  <9236e715-c471-e1c8-6117-6f37b908a6bd@redhat.com>
-Message-ID: <875ytjbxpq.wl-maz@kernel.org>
+ <875ytjbxpq.wl-maz@kernel.org>
+Message-ID: <be1cf8c7-ed87-b8eb-1bca-0a6c7505d7f8@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, 25 Oct 2021 14:31:48 +0100,
-Paolo Bonzini <pbonzini@redhat.com> wrote:
-> 
-> On 09/10/21 04:12, Sean Christopherson wrote:
-> > Move the put and reload of the vGIC out of the block/unblock callbacks
-> > and into a dedicated WFI helper.  Functionally, this is nearly a nop as
-> > the block hook is called at the very beginning of kvm_vcpu_block(), and
-> > the only code in kvm_vcpu_block() after the unblock hook is to update the
-> > halt-polling controls, i.e. can only affect the next WFI.
-> > 
-> > Back when the arch (un)blocking hooks were added by commits 3217f7c25bca
-> > ("KVM: Add kvm_arch_vcpu_{un}blocking callbacks) and d35268da6687
-> > ("arm/arm64: KVM: arch_timer: Only schedule soft timer on vcpu_block"),
-> > the hooks were invoked only when KVM was about to "block", i.e. schedule
-> > out the vCPU.  The use case at the time was to schedule a timer in the
-> > host based on the earliest timer in the guest in order to wake the
-> > blocking vCPU when the emulated guest timer fired.  Commit accb99bcd0ca
-> > ("KVM: arm/arm64: Simplify bg_timer programming") reworked the timer
-> > logic to be even more precise, by waiting until the vCPU was actually
-> > scheduled out, and so move the timer logic from the (un)blocking hooks to
-> > vcpu_load/put.
-> > 
-> > In the meantime, the hooks gained usage for enabling vGIC v4 doorbells in
-> > commit df9ba95993b9 ("KVM: arm/arm64: GICv4: Use the doorbell interrupt
-> > as an unblocking source"), and added related logic for the VMCR in commit
-> > 5eeaf10eec39 ("KVM: arm/arm64: Sync ICH_VMCR_EL2 back when about to block").
-> > 
-> > Finally, commit 07ab0f8d9a12 ("KVM: Call kvm_arch_vcpu_blocking early
-> > into the blocking sequence") hoisted the (un)blocking hooks so that they
-> > wrapped KVM's halt-polling logic in addition to the core "block" logic.
-> > 
-> > In other words, the original need for arch hooks to take action _only_
-> > in the block path is long since gone.
-> > 
-> > Cc: Oliver Upton <oupton@google.com>
-> > Cc: Marc Zyngier <maz@kernel.org>
-> > Signed-off-by: Sean Christopherson <seanjc@google.com>
-> 
-> This needs a word on why kvm_psci_vcpu_suspend does not need the
-> hooks.  Or it needs to be changed to also use kvm_vcpu_wfi in the PSCI
-> code, I don't know.
-> 
-> Marc, can you review and/or advise?
+On 26/10/21 17:41, Marc Zyngier wrote:
+>> This needs a word on why kvm_psci_vcpu_suspend does not need the
+>> hooks.  Or it needs to be changed to also use kvm_vcpu_wfi in the PSCI
+>> code, I don't know.
+>>
+>> Marc, can you review and/or advise?
+> I was looking at that over the weekend, and that's a pre-existing
+> bug. I would have addressed it independently, but it looks like you
+> already have queued the patch.
 
-I was looking at that over the weekend, and that's a pre-existing
-bug. I would have addressed it independently, but it looks like you
-already have queued the patch.
+I have "queued" it, but that's just my queue - it's not on kernel.org 
+and it's not going to be in 5.16, at least not in the first batch.
 
-I guess I'll have to revisit this once the whole thing lands
-somewhere.
+There's plenty of time for me to rebase on top of a fix, if you want to 
+send the fix through your kvm-arm pull request.  Just Cc me so that I 
+understand what's going on.
 
-	M.
+Thanks,
 
--- 
-Without deviation from the norm, progress is not possible.
+Paolo
+
 
