@@ -1,81 +1,60 @@
-From: Anup Patel <anup.patel@wdc.com>
-Date: Tue, 26 Oct 2021 22:31:36 +0530
-Subject: [PATCH 3/3] RISC-V: KVM: Fix GPA passed to
- __kvm_riscv_hfence_gvma_xyz() functions
-In-Reply-To: <20211026170136.2147619-1-anup.patel@wdc.com>
-References: <20211026170136.2147619-1-anup.patel@wdc.com>
-Message-ID: <20211026170136.2147619-4-anup.patel@wdc.com>
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+Date: Tue, 26 Oct 2021 20:29:57 +0200
+Subject: [PATCH v2 00/43] KVM: Halt-polling and x86 APICv overhaul
+In-Reply-To: <YXgVIvYhABnrP2Jo@google.com>
+References: <20211009021236.4122790-1-seanjc@google.com>
+ <04b1a72e-47b4-4bde-eb9e-ba36c156ff0d@de.ibm.com>
+ <YXgVIvYhABnrP2Jo@google.com>
+Message-ID: <a9c1e6ca-0257-4b69-84dd-49d3485f9565@de.ibm.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The parameter passed to HFENCE.GVMA instruction in rs1 register
-is guest physical address right shifted by 2 (i.e. divided by 4).
 
-Unfortunately, we overlooked the semantics of rs1 registers for
-HFENCE.GVMA instruction and never right shifted guest physical
-address by 2. This issue did not manifest for hypervisors till
-now because:
-  1) Currently, only __kvm_riscv_hfence_gvma_all() and SBI
-     HFENCE calls are used to invalidate TLB.
-  2) All H-extension implementations (such as QEMU, Spike,
-     Rocket Core FPGA, etc) that we tried till now were
-     conservatively flushing everything upon any HFENCE.GVMA
-     instruction.
 
-This patch fixes GPA passed to __kvm_riscv_hfence_gvma_vmid_gpa()
-and __kvm_riscv_hfence_gvma_gpa() functions.
+Am 26.10.21 um 16:48 schrieb Sean Christopherson:
+> On Tue, Oct 26, 2021, Christian Borntraeger wrote:
+>> Am 09.10.21 um 04:11 schrieb Sean Christopherson:
+>>> This is basically two series smushed into one.  The first "half" aims
+>>> to differentiate between "halt" and a more generic "block", where "halt"
+>>> aligns with x86's HLT instruction, the halt-polling mechanisms, and
+>>> associated stats, and "block" means any guest action that causes the vCPU
+>>> to block/wait.
+>>>
+>>> The second "half" overhauls x86's APIC virtualization code (Posted
+>>> Interrupts on Intel VMX, AVIC on AMD SVM) to do their updates in response
+>>> to vCPU (un)blocking in the vcpu_load/put() paths, keying off of the
+>>> vCPU's rcuwait status to determine when a blocking vCPU is being put and
+>>> reloaded.  This idea comes from arm64's kvm_timer_vcpu_put(), which I
+>>> stumbled across when diving into the history of arm64's (un)blocking hooks.
+>>>
+>>> The x86 APICv overhaul allows for killing off several sets of hooks in
+>>> common KVM and in x86 KVM (to the vendor code).  Moving everything to
+>>> vcpu_put/load() also realizes nice cleanups, especially for the Posted
+>>> Interrupt code, which required some impressive mental gymnastics to
+>>> understand how vCPU task migration interacted with vCPU blocking.
+>>>
+>>> Non-x86 folks, sorry for the noise.  I'm hoping the common parts can get
+>>> applied without much fuss so that future versions can be x86-only.
+>>>
+>>> v2:
+>>>    - Collect reviews. [Christian, David]
+>>>    - Add patch to move arm64 WFI functionality out of hooks. [Marc]
+>>>    - Add RISC-V to the fun.
+>>>    - Add all the APICv fun.
+>>
+>> Have we actually followed up on the regression regarding halt_poll_ns=0 no longer disabling
+>> polling for running systems?
+> 
+> No, I have that conversation flagged but haven't gotten back to it.  I still like
+> the idea of special casing halt_poll_ns=0 to override the capability.  I can send
+> a proper patch for that unless there's a different/better idea?
 
-Fixes: fd7bb4a251df ("RISC-V: KVM: Implement VMID allocator")
-Reported-by: Ian Huang <ihuang@ventanamicro.com>
-Signed-off-by: Anup Patel <anup.patel@wdc.com>
----
- arch/riscv/include/asm/kvm_host.h | 5 +++--
- arch/riscv/kvm/tlb.S              | 4 ++--
- 2 files changed, 5 insertions(+), 4 deletions(-)
-
-diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
-index d27878d6adf9..25ba21f98504 100644
---- a/arch/riscv/include/asm/kvm_host.h
-+++ b/arch/riscv/include/asm/kvm_host.h
-@@ -214,9 +214,10 @@ static inline void kvm_arch_vcpu_block_finish(struct kvm_vcpu *vcpu) {}
- 
- #define KVM_ARCH_WANT_MMU_NOTIFIER
- 
--void __kvm_riscv_hfence_gvma_vmid_gpa(unsigned long gpa, unsigned long vmid);
-+void __kvm_riscv_hfence_gvma_vmid_gpa(unsigned long gpa_divby_4,
-+				      unsigned long vmid);
- void __kvm_riscv_hfence_gvma_vmid(unsigned long vmid);
--void __kvm_riscv_hfence_gvma_gpa(unsigned long gpa);
-+void __kvm_riscv_hfence_gvma_gpa(unsigned long gpa_divby_4);
- void __kvm_riscv_hfence_gvma_all(void);
- 
- int kvm_riscv_stage2_map(struct kvm_vcpu *vcpu,
-diff --git a/arch/riscv/kvm/tlb.S b/arch/riscv/kvm/tlb.S
-index c858570f0856..899f75d60bad 100644
---- a/arch/riscv/kvm/tlb.S
-+++ b/arch/riscv/kvm/tlb.S
-@@ -31,7 +31,7 @@
- 
- ENTRY(__kvm_riscv_hfence_gvma_vmid_gpa)
- 	/*
--	 * rs1 = a0 (GPA)
-+	 * rs1 = a0 (GPA >> 2)
- 	 * rs2 = a1 (VMID)
- 	 * HFENCE.GVMA a0, a1
- 	 * 0110001 01011 01010 000 00000 1110011
-@@ -53,7 +53,7 @@ ENDPROC(__kvm_riscv_hfence_gvma_vmid)
- 
- ENTRY(__kvm_riscv_hfence_gvma_gpa)
- 	/*
--	 * rs1 = a0 (GPA)
-+	 * rs1 = a0 (GPA >> 2)
- 	 * rs2 = zero
- 	 * HFENCE.GVMA a0
- 	 * 0110001 00000 01010 000 00000 1110011
--- 
-2.25.1
+I think I would prefer a variant that uses the halt_poll_ns value AS IS for all
+guests that have not opted in the per guest feature.
+And then MAYBE have 0 as a special case to disable that also for the opted in
+VMs.
 
 
