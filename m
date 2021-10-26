@@ -1,38 +1,37 @@
-From: Paolo Bonzini <pbonzini@redhat.com>
-Date: Tue, 26 Oct 2021 18:12:06 +0200
-Subject: [PATCH v2 10/43] KVM: arm64: Move vGIC v4 handling for WFI out
- arch callback hook
-In-Reply-To: <875ytjbxpq.wl-maz@kernel.org>
-References: <20211009021236.4122790-1-seanjc@google.com>
- <20211009021236.4122790-11-seanjc@google.com>
- <9236e715-c471-e1c8-6117-6f37b908a6bd@redhat.com>
- <875ytjbxpq.wl-maz@kernel.org>
-Message-ID: <be1cf8c7-ed87-b8eb-1bca-0a6c7505d7f8@redhat.com>
+From: Anup Patel <anup.patel@wdc.com>
+Date: Tue, 26 Oct 2021 22:31:33 +0530
+Subject: [PATCH 0/3] RISC-V: KVM: Few assorted changes
+Message-ID: <20211026170136.2147619-1-anup.patel@wdc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 26/10/21 17:41, Marc Zyngier wrote:
->> This needs a word on why kvm_psci_vcpu_suspend does not need the
->> hooks.  Or it needs to be changed to also use kvm_vcpu_wfi in the PSCI
->> code, I don't know.
->>
->> Marc, can you review and/or advise?
-> I was looking at that over the weekend, and that's a pre-existing
-> bug. I would have addressed it independently, but it looks like you
-> already have queued the patch.
+I had a few assorted KVM RISC-V changes which I wanted to sent after
+KVM RISC-V was merged hence this series.
 
-I have "queued" it, but that's just my queue - it's not on kernel.org 
-and it's not going to be in 5.16, at least not in the first batch.
+These patches can also be found in riscv_kvm_assorted_v1 branch at:
+https://github.com/avpatel/linux.git
 
-There's plenty of time for me to rebase on top of a fix, if you want to 
-send the fix through your kvm-arm pull request.  Just Cc me so that I 
-understand what's going on.
+Anup Patel (3):
+  RISC-V: Enable KVM in RV64 and RV32 defconfigs as a module
+  RISC-V: KVM: Factor-out FP virtualization into separate sources
+  RISC-V: KVM: Fix GPA passed to __kvm_riscv_hfence_gvma_xyz() functions
 
-Thanks,
+ arch/riscv/configs/defconfig         |  15 ++-
+ arch/riscv/configs/rv32_defconfig    |   8 +-
+ arch/riscv/include/asm/kvm_host.h    |  10 +-
+ arch/riscv/include/asm/kvm_vcpu_fp.h |  59 +++++++++
+ arch/riscv/kvm/Makefile              |   1 +
+ arch/riscv/kvm/tlb.S                 |   4 +-
+ arch/riscv/kvm/vcpu.c                | 172 ---------------------------
+ arch/riscv/kvm/vcpu_fp.c             | 167 ++++++++++++++++++++++++++
+ 8 files changed, 244 insertions(+), 192 deletions(-)
+ create mode 100644 arch/riscv/include/asm/kvm_vcpu_fp.h
+ create mode 100644 arch/riscv/kvm/vcpu_fp.c
 
-Paolo
+-- 
+2.25.1
 
 
