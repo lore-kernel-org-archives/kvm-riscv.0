@@ -1,56 +1,144 @@
-From: Paolo Bonzini <pbonzini@redhat.com>
-Date: Thu, 28 Oct 2021 00:09:25 +0200
-Subject: [PATCH v2 39/43] KVM: VMX: Don't do full kick when triggering
- posted interrupt "fails"
-In-Reply-To: <YXl4mK7CyUBnPaQV@google.com>
-References: <20211009021236.4122790-1-seanjc@google.com>
- <20211009021236.4122790-40-seanjc@google.com>
- <335822ac-b98b-1eec-4911-34e4d0e99907@redhat.com>
- <YXl4mK7CyUBnPaQV@google.com>
-Message-ID: <fdf90c2f-81c8-513b-2e06-a90959f4cd89@redhat.com>
+From: Palmer Dabbelt <palmerdabbelt@google.com>
+Date: Wed, 27 Oct 2021 15:12:30 -0700 (PDT)
+Subject: [PATCH 1/3] RISC-V: Enable KVM in RV64 and RV32 defconfigs as a
+ module
+In-Reply-To: <20211026170136.2147619-2-anup.patel@wdc.com>
+Message-ID: <mhng-1044c135-bede-498b-b244-9f9c5f5ea89b@palmerdabbelt-glaptop>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 27/10/21 18:04, Sean Christopherson wrote:
->>> +		/*
->>> +		 * The smp_wmb() in kvm_make_request() pairs with the smp_mb_*()
->>> +		 * after setting vcpu->mode in vcpu_enter_guest(), thus the vCPU
->>> +		 * is guaranteed to see the event request if triggering a posted
->>> +		 * interrupt "fails" because vcpu->mode != IN_GUEST_MODE.
->>
->> What this smp_wmb() pair with, is the smp_mb__after_atomic in
->> kvm_check_request(KVM_REQ_EVENT, vcpu).
+On Tue, 26 Oct 2021 10:01:34 PDT (-0700), Anup Patel wrote:
+> Let's enable KVM RISC-V in RV64 and RV32 defconfigs as module
+> so that it always built along with the default kernel image.
+
+Turning on KVM in the defconfigs seems like the right way to go, but 
+this has more diff than just that.  Not sure if that's all just 
+savedefconfig stuff, I usually try and split out the non-functional 
+changes from anything that makes a change.
+
+If you checked then
+
+Acked-by: Palmer Dabbelt <palmerdabbelt@google.com>
+
+assuming you want to keep these together.  LMK if you want me to take 
+this on its own (I'll split it up if you do).
+
 >
-> I don't think that's correct.  There is no kvm_check_request() in the relevant path.
-> kvm_vcpu_exit_request() uses kvm_request_pending(), which is just a READ_ONCE()
-> without a barrier.
-
-Ok, we are talking about two different set of barriers.  This is mine:
-
-- smp_wmb() in kvm_make_request() pairs with the smp_mb__after_atomic() in
-kvm_check_request(); it ensures that everything before the request
-(in this case, pi_pending = true) is seen by inject_pending_event.
-
-- pi_test_and_set_on() orders the write to ON after the write to PIR,
-pairing with vmx_sync_pir_to_irr and ensuring that the bit in the PIR is
-seen.
-
-And this is yours:
-
-- pi_test_and_set_on() _also_ orders the write to ON before the read of
-vcpu->mode, pairing with vcpu_enter_guest()
-
-- kvm_make_request() however does _not_ order the write to
-vcpu->requests before the read of vcpu->mode, even though it's needed.
-Usually that's handled by kvm_vcpu_exiting_guest_mode(), but in this case
-vcpu->mode is read in kvm_vcpu_trigger_posted_interrupt.
-
-So vmx_deliver_nested_posted_interrupt() is missing a smp_mb__after_atomic().
-It's documentation only for x86, but still easily done in v3.
-
-Paolo
-
+> Signed-off-by: Anup Patel <anup.patel@wdc.com>
+> ---
+>  arch/riscv/configs/defconfig      | 15 +++++++--------
+>  arch/riscv/configs/rv32_defconfig |  8 ++++----
+>  2 files changed, 11 insertions(+), 12 deletions(-)
+>
+> diff --git a/arch/riscv/configs/defconfig b/arch/riscv/configs/defconfig
+> index 4ebc80315f01..40506dfab5cf 100644
+> --- a/arch/riscv/configs/defconfig
+> +++ b/arch/riscv/configs/defconfig
+> @@ -2,6 +2,7 @@ CONFIG_SYSVIPC=y
+>  CONFIG_POSIX_MQUEUE=y
+>  CONFIG_NO_HZ_IDLE=y
+>  CONFIG_HIGH_RES_TIMERS=y
+> +CONFIG_BPF_SYSCALL=y
+>  CONFIG_IKCONFIG=y
+>  CONFIG_IKCONFIG_PROC=y
+>  CONFIG_CGROUPS=y
+> @@ -13,12 +14,14 @@ CONFIG_USER_NS=y
+>  CONFIG_CHECKPOINT_RESTORE=y
+>  CONFIG_BLK_DEV_INITRD=y
+>  CONFIG_EXPERT=y
+> -CONFIG_BPF_SYSCALL=y
+> +# CONFIG_SYSFS_SYSCALL is not set
+> +CONFIG_SOC_MICROCHIP_POLARFIRE=y
+>  CONFIG_SOC_SIFIVE=y
+>  CONFIG_SOC_VIRT=y
+> -CONFIG_SOC_MICROCHIP_POLARFIRE=y
+>  CONFIG_SMP=y
+>  CONFIG_HOTPLUG_CPU=y
+> +CONFIG_VIRTUALIZATION=y
+> +CONFIG_KVM=m
+>  CONFIG_JUMP_LABEL=y
+>  CONFIG_MODULES=y
+>  CONFIG_MODULE_UNLOAD=y
+> @@ -68,14 +71,12 @@ CONFIG_HW_RANDOM=y
+>  CONFIG_HW_RANDOM_VIRTIO=y
+>  CONFIG_SPI=y
+>  CONFIG_SPI_SIFIVE=y
+> +# CONFIG_PTP_1588_CLOCK is not set
+>  CONFIG_GPIOLIB=y
+>  CONFIG_GPIO_SIFIVE=y
+> -# CONFIG_PTP_1588_CLOCK is not set
+> -CONFIG_POWER_RESET=y
+>  CONFIG_DRM=y
+>  CONFIG_DRM_RADEON=y
+>  CONFIG_DRM_VIRTIO_GPU=y
+> -CONFIG_FRAMEBUFFER_CONSOLE=y
+>  CONFIG_USB=y
+>  CONFIG_USB_XHCI_HCD=y
+>  CONFIG_USB_XHCI_PLATFORM=y
+> @@ -85,10 +86,10 @@ CONFIG_USB_OHCI_HCD=y
+>  CONFIG_USB_OHCI_HCD_PLATFORM=y
+>  CONFIG_USB_STORAGE=y
+>  CONFIG_USB_UAS=y
+> +CONFIG_MMC=y
+>  CONFIG_MMC_SDHCI=y
+>  CONFIG_MMC_SDHCI_PLTFM=y
+>  CONFIG_MMC_SDHCI_CADENCE=y
+> -CONFIG_MMC=y
+>  CONFIG_MMC_SPI=y
+>  CONFIG_RTC_CLASS=y
+>  CONFIG_VIRTIO_PCI=y
+> @@ -139,5 +140,3 @@ CONFIG_RCU_EQS_DEBUG=y
+>  # CONFIG_FTRACE is not set
+>  # CONFIG_RUNTIME_TESTING_MENU is not set
+>  CONFIG_MEMTEST=y
+> -# CONFIG_SYSFS_SYSCALL is not set
+> -CONFIG_EFI=y
+> diff --git a/arch/riscv/configs/rv32_defconfig b/arch/riscv/configs/rv32_defconfig
+> index 434ef5b64599..44022e048efd 100644
+> --- a/arch/riscv/configs/rv32_defconfig
+> +++ b/arch/riscv/configs/rv32_defconfig
+> @@ -2,6 +2,7 @@ CONFIG_SYSVIPC=y
+>  CONFIG_POSIX_MQUEUE=y
+>  CONFIG_NO_HZ_IDLE=y
+>  CONFIG_HIGH_RES_TIMERS=y
+> +CONFIG_BPF_SYSCALL=y
+>  CONFIG_IKCONFIG=y
+>  CONFIG_IKCONFIG_PROC=y
+>  CONFIG_CGROUPS=y
+> @@ -13,12 +14,14 @@ CONFIG_USER_NS=y
+>  CONFIG_CHECKPOINT_RESTORE=y
+>  CONFIG_BLK_DEV_INITRD=y
+>  CONFIG_EXPERT=y
+> -CONFIG_BPF_SYSCALL=y
+> +# CONFIG_SYSFS_SYSCALL is not set
+>  CONFIG_SOC_SIFIVE=y
+>  CONFIG_SOC_VIRT=y
+>  CONFIG_ARCH_RV32I=y
+>  CONFIG_SMP=y
+>  CONFIG_HOTPLUG_CPU=y
+> +CONFIG_VIRTUALIZATION=y
+> +CONFIG_KVM=m
+>  CONFIG_JUMP_LABEL=y
+>  CONFIG_MODULES=y
+>  CONFIG_MODULE_UNLOAD=y
+> @@ -67,11 +70,9 @@ CONFIG_HW_RANDOM_VIRTIO=y
+>  CONFIG_SPI=y
+>  CONFIG_SPI_SIFIVE=y
+>  # CONFIG_PTP_1588_CLOCK is not set
+> -CONFIG_POWER_RESET=y
+>  CONFIG_DRM=y
+>  CONFIG_DRM_RADEON=y
+>  CONFIG_DRM_VIRTIO_GPU=y
+> -CONFIG_FRAMEBUFFER_CONSOLE=y
+>  CONFIG_USB=y
+>  CONFIG_USB_XHCI_HCD=y
+>  CONFIG_USB_XHCI_PLATFORM=y
+> @@ -130,4 +131,3 @@ CONFIG_RCU_EQS_DEBUG=y
+>  # CONFIG_FTRACE is not set
+>  # CONFIG_RUNTIME_TESTING_MENU is not set
+>  CONFIG_MEMTEST=y
+> -# CONFIG_SYSFS_SYSCALL is not set
 
