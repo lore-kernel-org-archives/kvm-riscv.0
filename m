@@ -1,102 +1,69 @@
-From: Bixuan Cui <cuibixuan@linux.alibaba.com>
-Date: Wed, 27 Oct 2021 15:20:53 +0800
-Subject: [PATCH -next] RISC-V: KVM: fix boolreturn.cocci warnings
-Message-ID: <1635319253-100581-1-git-send-email-cuibixuan@linux.alibaba.com>
+From: Maxim Levitsky <mlevitsk@redhat.com>
+Date: Wed, 27 Oct 2021 12:50:30 +0300
+Subject: [PATCH v2 02/43] KVM: SVM: Ensure target pCPU is read once when
+ signalling AVIC doorbell
+In-Reply-To: <20211009021236.4122790-3-seanjc@google.com>
+References: <20211009021236.4122790-1-seanjc@google.com>
+ <20211009021236.4122790-3-seanjc@google.com>
+Message-ID: <aa1656c01ea5d46dd22c66da4a5eaa27f58810a2.camel@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Fix boolreturn.cocci warnings:
-./arch/riscv/kvm/mmu.c:603:9-10: WARNING: return of 0/1 in function
-'kvm_age_gfn' with return type bool
-./arch/riscv/kvm/mmu.c:582:9-10: WARNING: return of 0/1 in function
-'kvm_set_spte_gfn' with return type bool
-./arch/riscv/kvm/mmu.c:621:9-10: WARNING: return of 0/1 in function
-'kvm_test_age_gfn' with return type bool
-./arch/riscv/kvm/mmu.c:568:9-10: WARNING: return of 0/1 in function
-'kvm_unmap_gfn_range' with return type bool
+On Fri, 2021-10-08 at 19:11 -0700, Sean Christopherson wrote:
+> Ensure vcpu->cpu is read once when signalling the AVIC doorbell.  If the
+> compiler rereads the field and the vCPU is migrated between the check and
+> writing the doorbell, KVM would signal the wrong physical CPU.
 
-Signed-off-by: Bixuan Cui <cuibixuan@linux.alibaba.com>
----
- arch/riscv/kvm/mmu.c | 18 +++++++++---------
- 1 file changed, 9 insertions(+), 9 deletions(-)
+Since vcpu->cpu can change any moment anyway, adding READ_ONCE I think can't really fix anything
+but I do agree that it makes this more readable.
 
-diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
-index 3a00c2d..d81bae8 100644
---- a/arch/riscv/kvm/mmu.c
-+++ b/arch/riscv/kvm/mmu.c
-@@ -565,12 +565,12 @@ int kvm_arch_prepare_memory_region(struct kvm *kvm,
- bool kvm_unmap_gfn_range(struct kvm *kvm, struct kvm_gfn_range *range)
- {
- 	if (!kvm->arch.pgd)
--		return 0;
-+		return false;
- 
- 	stage2_unmap_range(kvm, range->start << PAGE_SHIFT,
- 			   (range->end - range->start) << PAGE_SHIFT,
- 			   range->may_block);
--	return 0;
-+	return false;
- }
- 
- bool kvm_set_spte_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
-@@ -579,7 +579,7 @@ bool kvm_set_spte_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
- 	kvm_pfn_t pfn = pte_pfn(range->pte);
- 
- 	if (!kvm->arch.pgd)
--		return 0;
-+		return false;
- 
- 	WARN_ON(range->end - range->start != 1);
- 
-@@ -587,10 +587,10 @@ bool kvm_set_spte_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
- 			      __pfn_to_phys(pfn), PAGE_SIZE, true, true);
- 	if (ret) {
- 		kvm_debug("Failed to map stage2 page (error %d)\n", ret);
--		return 1;
-+		return true;
- 	}
- 
--	return 0;
-+	return false;
- }
- 
- bool kvm_age_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
-@@ -600,13 +600,13 @@ bool kvm_age_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
- 	u64 size = (range->end - range->start) << PAGE_SHIFT;
- 
- 	if (!kvm->arch.pgd)
--		return 0;
-+		return false;
- 
- 	WARN_ON(size != PAGE_SIZE && size != PMD_SIZE && size != PGDIR_SIZE);
- 
- 	if (!stage2_get_leaf_entry(kvm, range->start << PAGE_SHIFT,
- 				   &ptep, &ptep_level))
--		return 0;
-+		return false;
- 
- 	return ptep_test_and_clear_young(NULL, 0, ptep);
- }
-@@ -618,13 +618,13 @@ bool kvm_test_age_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
- 	u64 size = (range->end - range->start) << PAGE_SHIFT;
- 
- 	if (!kvm->arch.pgd)
--		return 0;
-+		return false;
- 
- 	WARN_ON(size != PAGE_SIZE && size != PMD_SIZE && size != PGDIR_SIZE);
- 
- 	if (!stage2_get_leaf_entry(kvm, range->start << PAGE_SHIFT,
- 				   &ptep, &ptep_level))
--		return 0;
-+		return false;
- 
- 	return pte_young(*ptep);
- }
--- 
-1.8.3.1
+Reviewed-by: Maxim Levitsky <mlevitsk@redhat.com>
+
+
+
+> 
+> Functionally, signalling the wrong CPU in this case is not an issue as
+> task migration means the vCPU has exited and will pick up any pending
+> interrupts on the next VMRUN.  Add the READ_ONCE() purely to clean up the
+> code.
+> 
+> Opportunistically add a comment explaining the task migration behavior,
+> and rename cpuid=>cpu to avoid conflating the CPU number with KVM's more
+> common usage of CPUID.
+> 
+> Signed-off-by: Sean Christopherson <seanjc@google.com>
+> ---
+>  arch/x86/kvm/svm/avic.c | 13 ++++++++++---
+>  1 file changed, 10 insertions(+), 3 deletions(-)
+> 
+> diff --git a/arch/x86/kvm/svm/avic.c b/arch/x86/kvm/svm/avic.c
+> index 8052d92069e0..208c5c71e827 100644
+> --- a/arch/x86/kvm/svm/avic.c
+> +++ b/arch/x86/kvm/svm/avic.c
+> @@ -675,10 +675,17 @@ int svm_deliver_avic_intr(struct kvm_vcpu *vcpu, int vec)
+>  	smp_mb__after_atomic();
+>  
+>  	if (avic_vcpu_is_running(vcpu)) {
+> -		int cpuid = vcpu->cpu;
+> +		int cpu = READ_ONCE(vcpu->cpu);
+>  
+> -		if (cpuid != get_cpu())
+> -			wrmsrl(SVM_AVIC_DOORBELL, kvm_cpu_get_apicid(cpuid));
+> +		/*
+> +		 * Note, the vCPU could get migrated to a different pCPU at any
+> +		 * point, which could result in signalling the wrong/previous
+> +		 * pCPU.  But if that happens the vCPU is guaranteed to do a
+> +		 * VMRUN (after being migrated) and thus will process pending
+> +		 * interrupts, i.e. a doorbell is not needed (and the spurious)
+> +		 */
+> +		if (cpu != get_cpu())
+> +			wrmsrl(SVM_AVIC_DOORBELL, kvm_cpu_get_apicid(cpu));
+>  		put_cpu();
+>  	} else
+>  		kvm_vcpu_wake_up(vcpu);
+
 
 
