@@ -1,60 +1,102 @@
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-Date: Tue, 26 Oct 2021 20:29:57 +0200
-Subject: [PATCH v2 00/43] KVM: Halt-polling and x86 APICv overhaul
-In-Reply-To: <YXgVIvYhABnrP2Jo@google.com>
-References: <20211009021236.4122790-1-seanjc@google.com>
- <04b1a72e-47b4-4bde-eb9e-ba36c156ff0d@de.ibm.com>
- <YXgVIvYhABnrP2Jo@google.com>
-Message-ID: <a9c1e6ca-0257-4b69-84dd-49d3485f9565@de.ibm.com>
+From: Bixuan Cui <cuibixuan@linux.alibaba.com>
+Date: Wed, 27 Oct 2021 15:20:53 +0800
+Subject: [PATCH -next] RISC-V: KVM: fix boolreturn.cocci warnings
+Message-ID: <1635319253-100581-1-git-send-email-cuibixuan@linux.alibaba.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+Fix boolreturn.cocci warnings:
+./arch/riscv/kvm/mmu.c:603:9-10: WARNING: return of 0/1 in function
+'kvm_age_gfn' with return type bool
+./arch/riscv/kvm/mmu.c:582:9-10: WARNING: return of 0/1 in function
+'kvm_set_spte_gfn' with return type bool
+./arch/riscv/kvm/mmu.c:621:9-10: WARNING: return of 0/1 in function
+'kvm_test_age_gfn' with return type bool
+./arch/riscv/kvm/mmu.c:568:9-10: WARNING: return of 0/1 in function
+'kvm_unmap_gfn_range' with return type bool
 
+Signed-off-by: Bixuan Cui <cuibixuan@linux.alibaba.com>
+---
+ arch/riscv/kvm/mmu.c | 18 +++++++++---------
+ 1 file changed, 9 insertions(+), 9 deletions(-)
 
-Am 26.10.21 um 16:48 schrieb Sean Christopherson:
-> On Tue, Oct 26, 2021, Christian Borntraeger wrote:
->> Am 09.10.21 um 04:11 schrieb Sean Christopherson:
->>> This is basically two series smushed into one.  The first "half" aims
->>> to differentiate between "halt" and a more generic "block", where "halt"
->>> aligns with x86's HLT instruction, the halt-polling mechanisms, and
->>> associated stats, and "block" means any guest action that causes the vCPU
->>> to block/wait.
->>>
->>> The second "half" overhauls x86's APIC virtualization code (Posted
->>> Interrupts on Intel VMX, AVIC on AMD SVM) to do their updates in response
->>> to vCPU (un)blocking in the vcpu_load/put() paths, keying off of the
->>> vCPU's rcuwait status to determine when a blocking vCPU is being put and
->>> reloaded.  This idea comes from arm64's kvm_timer_vcpu_put(), which I
->>> stumbled across when diving into the history of arm64's (un)blocking hooks.
->>>
->>> The x86 APICv overhaul allows for killing off several sets of hooks in
->>> common KVM and in x86 KVM (to the vendor code).  Moving everything to
->>> vcpu_put/load() also realizes nice cleanups, especially for the Posted
->>> Interrupt code, which required some impressive mental gymnastics to
->>> understand how vCPU task migration interacted with vCPU blocking.
->>>
->>> Non-x86 folks, sorry for the noise.  I'm hoping the common parts can get
->>> applied without much fuss so that future versions can be x86-only.
->>>
->>> v2:
->>>    - Collect reviews. [Christian, David]
->>>    - Add patch to move arm64 WFI functionality out of hooks. [Marc]
->>>    - Add RISC-V to the fun.
->>>    - Add all the APICv fun.
->>
->> Have we actually followed up on the regression regarding halt_poll_ns=0 no longer disabling
->> polling for running systems?
-> 
-> No, I have that conversation flagged but haven't gotten back to it.  I still like
-> the idea of special casing halt_poll_ns=0 to override the capability.  I can send
-> a proper patch for that unless there's a different/better idea?
-
-I think I would prefer a variant that uses the halt_poll_ns value AS IS for all
-guests that have not opted in the per guest feature.
-And then MAYBE have 0 as a special case to disable that also for the opted in
-VMs.
+diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
+index 3a00c2d..d81bae8 100644
+--- a/arch/riscv/kvm/mmu.c
++++ b/arch/riscv/kvm/mmu.c
+@@ -565,12 +565,12 @@ int kvm_arch_prepare_memory_region(struct kvm *kvm,
+ bool kvm_unmap_gfn_range(struct kvm *kvm, struct kvm_gfn_range *range)
+ {
+ 	if (!kvm->arch.pgd)
+-		return 0;
++		return false;
+ 
+ 	stage2_unmap_range(kvm, range->start << PAGE_SHIFT,
+ 			   (range->end - range->start) << PAGE_SHIFT,
+ 			   range->may_block);
+-	return 0;
++	return false;
+ }
+ 
+ bool kvm_set_spte_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
+@@ -579,7 +579,7 @@ bool kvm_set_spte_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
+ 	kvm_pfn_t pfn = pte_pfn(range->pte);
+ 
+ 	if (!kvm->arch.pgd)
+-		return 0;
++		return false;
+ 
+ 	WARN_ON(range->end - range->start != 1);
+ 
+@@ -587,10 +587,10 @@ bool kvm_set_spte_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
+ 			      __pfn_to_phys(pfn), PAGE_SIZE, true, true);
+ 	if (ret) {
+ 		kvm_debug("Failed to map stage2 page (error %d)\n", ret);
+-		return 1;
++		return true;
+ 	}
+ 
+-	return 0;
++	return false;
+ }
+ 
+ bool kvm_age_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
+@@ -600,13 +600,13 @@ bool kvm_age_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
+ 	u64 size = (range->end - range->start) << PAGE_SHIFT;
+ 
+ 	if (!kvm->arch.pgd)
+-		return 0;
++		return false;
+ 
+ 	WARN_ON(size != PAGE_SIZE && size != PMD_SIZE && size != PGDIR_SIZE);
+ 
+ 	if (!stage2_get_leaf_entry(kvm, range->start << PAGE_SHIFT,
+ 				   &ptep, &ptep_level))
+-		return 0;
++		return false;
+ 
+ 	return ptep_test_and_clear_young(NULL, 0, ptep);
+ }
+@@ -618,13 +618,13 @@ bool kvm_test_age_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
+ 	u64 size = (range->end - range->start) << PAGE_SHIFT;
+ 
+ 	if (!kvm->arch.pgd)
+-		return 0;
++		return false;
+ 
+ 	WARN_ON(size != PAGE_SIZE && size != PMD_SIZE && size != PGDIR_SIZE);
+ 
+ 	if (!stage2_get_leaf_entry(kvm, range->start << PAGE_SHIFT,
+ 				   &ptep, &ptep_level))
+-		return 0;
++		return false;
+ 
+ 	return pte_young(*ptep);
+ }
+-- 
+1.8.3.1
 
 
