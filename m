@@ -1,27 +1,35 @@
-From: Sean Christopherson <seanjc@google.com>
-Date: Wed, 27 Oct 2021 15:30:34 +0000
-Subject: [PATCH v2 40/43] KVM: VMX: Wake vCPU when delivering posted IRQ
- even if vCPU == this vCPU
-In-Reply-To: <a2a4e076-edb8-2cb5-5cb2-6825a1a4559a@redhat.com>
+From: Paolo Bonzini <pbonzini@redhat.com>
+Date: Wed, 27 Oct 2021 17:36:18 +0200
+Subject: [PATCH v2 35/43] KVM: SVM: Signal AVIC doorbell iff vCPU is in
+ guest mode
+In-Reply-To: <YXlrEWmBohaDXmqL@google.com>
 References: <20211009021236.4122790-1-seanjc@google.com>
- <20211009021236.4122790-41-seanjc@google.com>
- <a2a4e076-edb8-2cb5-5cb2-6825a1a4559a@redhat.com>
-Message-ID: <YXlwmrrRVIoaU2kG@google.com>
+ <20211009021236.4122790-36-seanjc@google.com>
+ <0333be2a-76d8-657a-6c82-3bb5c9ff2e3b@redhat.com>
+ <YXlrEWmBohaDXmqL@google.com>
+Message-ID: <185502d7-861e-fa5c-b225-419710fe77ed@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Oct 25, 2021, Paolo Bonzini wrote:
-> On 09/10/21 04:12, Sean Christopherson wrote:
-> > 
-> > Lastly, this aligns the non-nested and nested usage of triggering posted
-> > interrupts, and will allow for additional cleanups.
+On 27/10/21 17:06, Sean Christopherson wrote:
+>> Does this still need to check the "running" flag?  That should be a strict
+>> superset of vcpu->mode == IN_GUEST_MODE.
+>
+> No.  Signalling the doorbell when "running" is set but the vCPU is not in the
+> guest is just an expensive nop.  So even if KVM were to rework its handling of
+> "running" to set the flag immediately before VMRUN and clear it immediately after,
+> keying off IN_GUEST_MODE and not "running" would not be wrong, just sub-optimal.
 > 
-> It also aligns with SVM a little bit more (especially given patch 35),
-> doesn't it?
+> I doubt KVM will ever make the "running" flag super precise, because keeping the
+> flag set when the vCPU is loaded avoids VM-Exits on other vCPUs due to undelivered
+> IPIs.
 
-Yes, aligning VMX and SVM APICv behavior as much as possible is definitely a goal
-of this series, though I suspect I failed to state that anywhere.
+Right, so should we drop the "if (running)" check in this patch, at the 
+same time as it's adding the IN_GUEST_MODE check?
+
+Paolo
+
 
