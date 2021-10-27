@@ -1,53 +1,58 @@
-From: Sean Christopherson <seanjc@google.com>
-Date: Wed, 27 Oct 2021 15:06:57 +0000
-Subject: [PATCH v2 35/43] KVM: SVM: Signal AVIC doorbell iff vCPU is in
- guest mode
-In-Reply-To: <0333be2a-76d8-657a-6c82-3bb5c9ff2e3b@redhat.com>
+From: Maxim Levitsky <mlevitsk@redhat.com>
+Date: Wed, 27 Oct 2021 18:18:13 +0300
+Subject: [PATCH v2 18/43] KVM: x86: Invoke kvm_vcpu_block() directly for
+ non-HALTED wait states
+In-Reply-To: <20211009021236.4122790-19-seanjc@google.com>
 References: <20211009021236.4122790-1-seanjc@google.com>
- <20211009021236.4122790-36-seanjc@google.com>
- <0333be2a-76d8-657a-6c82-3bb5c9ff2e3b@redhat.com>
-Message-ID: <YXlrEWmBohaDXmqL@google.com>
+ <20211009021236.4122790-19-seanjc@google.com>
+Message-ID: <796f9a7d553a0e13da5c44597666962620c64303.camel@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Oct 25, 2021, Paolo Bonzini wrote:
-> On 09/10/21 04:12, Sean Christopherson wrote:
-> > +	 */
-> > +	if (vcpu->mode == IN_GUEST_MODE) {
-> >   		int cpu = READ_ONCE(vcpu->cpu);
-> >   		/*
-> > @@ -687,8 +692,13 @@ int svm_deliver_avic_intr(struct kvm_vcpu *vcpu, int vec)
-> >   		if (cpu != get_cpu())
-> >   			wrmsrl(SVM_AVIC_DOORBELL, kvm_cpu_get_apicid(cpu));
-> >   		put_cpu();
-> > -	} else
-> > +	} else {
-> > +		/*
-> > +		 * Wake the vCPU if it was blocking.  KVM will then detect the
-> > +		 * pending IRQ when checking if the vCPU has a wake event.
-> > +		 */
-> >   		kvm_vcpu_wake_up(vcpu);
-> > +	}
+On Fri, 2021-10-08 at 19:12 -0700, Sean Christopherson wrote:
+> Call kvm_vcpu_block() directly for all wait states except HALTED so that
+> kvm_vcpu_halt() is no longer a misnomer on x86.
 > 
-> Does this still need to check the "running" flag?  That should be a strict
-> superset of vcpu->mode == IN_GUEST_MODE.
+> Functionally, this means KVM will never attempt halt-polling or adjust
+> vcpu->halt_poll_ns for INIT_RECEIVED (a.k.a. Wait-For-SIPI (WFS)) or
+> AP_RESET_HOLD; UNINITIALIZED is handled in kvm_arch_vcpu_ioctl_run(),
+> and x86 doesn't use any other "wait" states.
+> 
+> As mentioned above, the motivation of this is purely so that "halt" isn't
+> overloaded on x86, e.g. in KVM's stats.  Skipping halt-polling for WFS
+> (and RESET_HOLD) has no meaningful effect on guest performance as there
+> are typically single-digit numbers of INIT-SIPI sequences per AP vCPU,
+> per boot, versus thousands of HLTs just to boot to console.
+> 
+> Reviewed-by: David Matlack <dmatlack@google.com>
+> Signed-off-by: Sean Christopherson <seanjc@google.com>
+> ---
+>  arch/x86/kvm/x86.c | 5 ++++-
+>  1 file changed, 4 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+> index cd51f100e906..e0219acfd9cf 100644
+> --- a/arch/x86/kvm/x86.c
+> +++ b/arch/x86/kvm/x86.c
+> @@ -9899,7 +9899,10 @@ static inline int vcpu_block(struct kvm *kvm, struct kvm_vcpu *vcpu)
+>  	if (!kvm_arch_vcpu_runnable(vcpu) &&
+>  	    (!kvm_x86_ops.pre_block || static_call(kvm_x86_pre_block)(vcpu) == 0)) {
+>  		srcu_read_unlock(&kvm->srcu, vcpu->srcu_idx);
+> -		kvm_vcpu_halt(vcpu);
+> +		if (vcpu->arch.mp_state == KVM_MP_STATE_HALTED)
+> +			kvm_vcpu_halt(vcpu);
+> +		else
+> +			kvm_vcpu_block(vcpu);
+>  		vcpu->srcu_idx = srcu_read_lock(&kvm->srcu);
+>  
+>  		if (kvm_x86_ops.post_block)
 
-No.  Signalling the doorbell when "running" is set but the vCPU is not in the
-guest is just an expensive nop.  So even if KVM were to rework its handling of
-"running" to set the flag immediately before VMRUN and clear it immediately after,
-keying off IN_GUEST_MODE and not "running" would not be wrong, just sub-optimal.
+Reviewed-by: Maxim Levitsky <mlevitsk@redhat.com>
 
-I doubt KVM will ever make the "running" flag super precise, because keeping the
-flag set when the vCPU is loaded avoids VM-Exits on other vCPUs due to undelivered
-IPIs.  But the flip side is that it means the flag has terrible granularity, and
-is arguably inaccurate when viewed from a software perspective.  Anyways, if the
-treatment of "running" were ever changed, then this code should also be changed
-to essentially revert this commit since vcpu->mode would then be redundant.
+Best regards,
+	Maxim Levitsky
 
-And IMO, it makes sense to intentionally separate KVM's delivery of interrupts
-from hardware's delivery of interrupts.  I.e. use the same core rules as
-kvm_vcpu_kick() for when to send interrupts and when to wake for the AVIC.
 
