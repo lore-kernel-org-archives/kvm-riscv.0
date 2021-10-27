@@ -1,147 +1,56 @@
-From: Maxim Levitsky <mlevitsk@redhat.com>
-Date: Wed, 27 Oct 2021 22:27:22 +0300
-Subject: [PATCH v2 19/43] KVM: Add helpers to wake/query blocking vCPU
-In-Reply-To: <20211009021236.4122790-20-seanjc@google.com>
+From: Paolo Bonzini <pbonzini@redhat.com>
+Date: Thu, 28 Oct 2021 00:09:25 +0200
+Subject: [PATCH v2 39/43] KVM: VMX: Don't do full kick when triggering
+ posted interrupt "fails"
+In-Reply-To: <YXl4mK7CyUBnPaQV@google.com>
 References: <20211009021236.4122790-1-seanjc@google.com>
- <20211009021236.4122790-20-seanjc@google.com>
-Message-ID: <495f9106220b87ffa9eaf15fcf39b950628adee1.camel@redhat.com>
+ <20211009021236.4122790-40-seanjc@google.com>
+ <335822ac-b98b-1eec-4911-34e4d0e99907@redhat.com>
+ <YXl4mK7CyUBnPaQV@google.com>
+Message-ID: <fdf90c2f-81c8-513b-2e06-a90959f4cd89@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, 2021-10-08 at 19:12 -0700, Sean Christopherson wrote:
-> Add helpers to wake and query a blocking vCPU.  In addition to providing
-> nice names, the helpers reduce the probability of KVM neglecting to use
-> kvm_arch_vcpu_get_wait().
-> 
-> No functional change intended.
-> 
-> Signed-off-by: Sean Christopherson <seanjc@google.com>
-> ---
->  arch/arm64/kvm/arch_timer.c |  3 +--
->  arch/arm64/kvm/arm.c        |  2 +-
->  arch/x86/kvm/lapic.c        |  2 +-
->  include/linux/kvm_host.h    | 14 ++++++++++++++
->  virt/kvm/async_pf.c         |  2 +-
->  virt/kvm/kvm_main.c         |  8 ++------
->  6 files changed, 20 insertions(+), 11 deletions(-)
-> 
-> diff --git a/arch/arm64/kvm/arch_timer.c b/arch/arm64/kvm/arch_timer.c
-> index 7e8396f74010..addd53b6eba6 100644
-> --- a/arch/arm64/kvm/arch_timer.c
-> +++ b/arch/arm64/kvm/arch_timer.c
-> @@ -649,7 +649,6 @@ void kvm_timer_vcpu_put(struct kvm_vcpu *vcpu)
->  {
->  	struct arch_timer_cpu *timer = vcpu_timer(vcpu);
->  	struct timer_map map;
-> -	struct rcuwait *wait = kvm_arch_vcpu_get_wait(vcpu);
->  
->  	if (unlikely(!timer->enabled))
->  		return;
-> @@ -672,7 +671,7 @@ void kvm_timer_vcpu_put(struct kvm_vcpu *vcpu)
->  	if (map.emul_ptimer)
->  		soft_timer_cancel(&map.emul_ptimer->hrtimer);
->  
-> -	if (rcuwait_active(wait))
-> +	if (kvm_vcpu_is_blocking(vcpu))
->  		kvm_timer_blocking(vcpu);
->  
->  	/*
-> diff --git a/arch/arm64/kvm/arm.c b/arch/arm64/kvm/arm.c
-> index 268b1e7bf700..9ff0e85a9f16 100644
-> --- a/arch/arm64/kvm/arm.c
-> +++ b/arch/arm64/kvm/arm.c
-> @@ -622,7 +622,7 @@ void kvm_arm_resume_guest(struct kvm *kvm)
->  
->  	kvm_for_each_vcpu(i, vcpu, kvm) {
->  		vcpu->arch.pause = false;
-> -		rcuwait_wake_up(kvm_arch_vcpu_get_wait(vcpu));
-> +		__kvm_vcpu_wake_up(vcpu);
->  	}
->  }
->  
-> diff --git a/arch/x86/kvm/lapic.c b/arch/x86/kvm/lapic.c
-> index 76fb00921203..0cd7ed21b205 100644
-> --- a/arch/x86/kvm/lapic.c
-> +++ b/arch/x86/kvm/lapic.c
-> @@ -1931,7 +1931,7 @@ void kvm_lapic_expired_hv_timer(struct kvm_vcpu *vcpu)
->  	/* If the preempt notifier has already run, it also called apic_timer_expired */
->  	if (!apic->lapic_timer.hv_timer_in_use)
->  		goto out;
-> -	WARN_ON(rcuwait_active(&vcpu->wait));
-> +	WARN_ON(kvm_vcpu_is_blocking(vcpu));
->  	apic_timer_expired(apic, false);
->  	cancel_hv_timer(apic);
->  
-> diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-> index bdaa0e70b060..1fa38dc00b87 100644
-> --- a/include/linux/kvm_host.h
-> +++ b/include/linux/kvm_host.h
-> @@ -1151,6 +1151,20 @@ static inline struct rcuwait *kvm_arch_vcpu_get_wait(struct kvm_vcpu *vcpu)
->  #endif
->  }
->  
-> +/*
-> + * Wake a vCPU if necessary, but don't do any stats/metadata updates.  Returns
-> + * true if the vCPU was blocking and was awakened, false otherwise.
-> + */
-> +static inline bool __kvm_vcpu_wake_up(struct kvm_vcpu *vcpu)
-> +{
-> +	return !!rcuwait_wake_up(kvm_arch_vcpu_get_wait(vcpu));
-> +}
-> +
-> +static inline bool kvm_vcpu_is_blocking(struct kvm_vcpu *vcpu)
-> +{
-> +	return rcuwait_active(kvm_arch_vcpu_get_wait(vcpu));
-> +}
-> +
->  #ifdef __KVM_HAVE_ARCH_INTC_INITIALIZED
->  /*
->   * returns true if the virtual interrupt controller is initialized and
-> diff --git a/virt/kvm/async_pf.c b/virt/kvm/async_pf.c
-> index ccb35c22785e..9bfe1d6f6529 100644
-> --- a/virt/kvm/async_pf.c
-> +++ b/virt/kvm/async_pf.c
-> @@ -85,7 +85,7 @@ static void async_pf_execute(struct work_struct *work)
->  
->  	trace_kvm_async_pf_completed(addr, cr2_or_gpa);
->  
-> -	rcuwait_wake_up(kvm_arch_vcpu_get_wait(vcpu));
-> +	__kvm_vcpu_wake_up(vcpu);
->  
->  	mmput(mm);
->  	kvm_put_kvm(vcpu->kvm);
-> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-> index 481e8178b43d..c870cae7e776 100644
-> --- a/virt/kvm/kvm_main.c
-> +++ b/virt/kvm/kvm_main.c
-> @@ -3332,10 +3332,7 @@ EXPORT_SYMBOL_GPL(kvm_vcpu_halt);
->  
->  bool kvm_vcpu_wake_up(struct kvm_vcpu *vcpu)
->  {
-> -	struct rcuwait *waitp;
-> -
-> -	waitp = kvm_arch_vcpu_get_wait(vcpu);
-> -	if (rcuwait_wake_up(waitp)) {
-> +	if (__kvm_vcpu_wake_up(vcpu)) {
->  		WRITE_ONCE(vcpu->ready, true);
->  		++vcpu->stat.generic.halt_wakeup;
->  		return true;
-> @@ -3490,8 +3487,7 @@ void kvm_vcpu_on_spin(struct kvm_vcpu *me, bool yield_to_kernel_mode)
->  				continue;
->  			if (vcpu == me)
->  				continue;
-> -			if (rcuwait_active(kvm_arch_vcpu_get_wait(vcpu)) &&
-> -			    !vcpu_dy_runnable(vcpu))
-> +			if (kvm_vcpu_is_blocking(vcpu) && !vcpu_dy_runnable(vcpu))
->  				continue;
->  			if (READ_ONCE(vcpu->preempted) && yield_to_kernel_mode &&
->  			    !kvm_arch_dy_has_pending_interrupt(vcpu) &&
+On 27/10/21 18:04, Sean Christopherson wrote:
+>>> +		/*
+>>> +		 * The smp_wmb() in kvm_make_request() pairs with the smp_mb_*()
+>>> +		 * after setting vcpu->mode in vcpu_enter_guest(), thus the vCPU
+>>> +		 * is guaranteed to see the event request if triggering a posted
+>>> +		 * interrupt "fails" because vcpu->mode != IN_GUEST_MODE.
+>>
+>> What this smp_wmb() pair with, is the smp_mb__after_atomic in
+>> kvm_check_request(KVM_REQ_EVENT, vcpu).
+>
+> I don't think that's correct.  There is no kvm_check_request() in the relevant path.
+> kvm_vcpu_exit_request() uses kvm_request_pending(), which is just a READ_ONCE()
+> without a barrier.
 
-Reviewed-by: Maxim Levitsky <mlevitsk@redhat.com>
+Ok, we are talking about two different set of barriers.  This is mine:
 
+- smp_wmb() in kvm_make_request() pairs with the smp_mb__after_atomic() in
+kvm_check_request(); it ensures that everything before the request
+(in this case, pi_pending = true) is seen by inject_pending_event.
 
+- pi_test_and_set_on() orders the write to ON after the write to PIR,
+pairing with vmx_sync_pir_to_irr and ensuring that the bit in the PIR is
+seen.
+
+And this is yours:
+
+- pi_test_and_set_on() _also_ orders the write to ON before the read of
+vcpu->mode, pairing with vcpu_enter_guest()
+
+- kvm_make_request() however does _not_ order the write to
+vcpu->requests before the read of vcpu->mode, even though it's needed.
+Usually that's handled by kvm_vcpu_exiting_guest_mode(), but in this case
+vcpu->mode is read in kvm_vcpu_trigger_posted_interrupt.
+
+So vmx_deliver_nested_posted_interrupt() is missing a smp_mb__after_atomic().
+It's documentation only for x86, but still easily done in v3.
+
+Paolo
 
 
