@@ -1,41 +1,48 @@
-From: Sean Christopherson <seanjc@google.com>
-Date: Wed, 27 Oct 2021 14:41:29 +0000
-Subject: [PATCH v2 00/43] KVM: Halt-polling and x86 APICv overhaul
-In-Reply-To: <614858dd-106c-64cc-04bc-f1887b2054d1@redhat.com>
+From: Maxim Levitsky <mlevitsk@redhat.com>
+Date: Wed, 27 Oct 2021 17:46:34 +0300
+Subject: [PATCH v2 17/43] KVM: x86: Directly block (instead of
+ "halting") UNINITIALIZED vCPUs
+In-Reply-To: <20211009021236.4122790-18-seanjc@google.com>
 References: <20211009021236.4122790-1-seanjc@google.com>
- <614858dd-106c-64cc-04bc-f1887b2054d1@redhat.com>
-Message-ID: <YXllGfrjPX1pVUx6@google.com>
+ <20211009021236.4122790-18-seanjc@google.com>
+Message-ID: <e1f8c3d685c43f519927664c1743bc9503773bb1.camel@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Oct 25, 2021, Paolo Bonzini wrote:
-> On 09/10/21 04:11, Sean Christopherson wrote:
-> Queued 1-20 and 22-28.  Initially I skipped 21 because I didn't receive it,
-> but I have to think more about whether I agree with it.
+On Fri, 2021-10-08 at 19:12 -0700, Sean Christopherson wrote:
+> Go directly to kvm_vcpu_block() when handling the case where userspace
+> attempts to run an UNINITIALIZED vCPU.  The vCPU is not halted, nor is it
+> likely that halt-polling will be successful in this case.
+> 
+> Reviewed-by: David Matlack <dmatlack@google.com>
+> Signed-off-by: Sean Christopherson <seanjc@google.com>
+> ---
+>  arch/x86/kvm/x86.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+> index e6c17bbed25c..cd51f100e906 100644
+> --- a/arch/x86/kvm/x86.c
+> +++ b/arch/x86/kvm/x86.c
+> @@ -10133,7 +10133,7 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
+>  			r = -EINTR;
+>  			goto out;
+>  		}
+> -		kvm_vcpu_halt(vcpu);
+> +		kvm_vcpu_block(vcpu);
+>  		if (kvm_apic_accept_events(vcpu) < 0) {
+>  			r = 0;
+>  			goto out;
 
-https://lkml.kernel.org/r/20211009021236.4122790-22-seanjc at google.com
 
-> In reality the CMPXCHG loops can really fail just once, because they only
-> race with the processor setting ON=1.  But if the warnings were to trigger
-> at all, it would mean that something iffy is happening in the
-> pi_desc->control state machine, and having the check on every iteration is
-> (very marginally) more effective.
+Makes sense.
+Reviewed-by: Maxim Levitsky <mlevitsk@redhat.com>
 
-Yeah, the "very marginally" caveat is essentially my argument.  The WARNs are
-really there to ensure that the vCPU itself did the correct setup/clean before
-and after blocking.  Because IRQs are disabled, a failure on iteration>0 but not
-iteration=0 would mean that a different CPU or a device modified the PI descriptor.
-If that happens, (a) something is wildly wrong and (b) as you noted, the odds of
-the WARN firing in the tiny window between iteration=0 and iteration=1 are really,
-really low.
 
-The other thing I don't like about having the WARN in the loop is that it suggests
-that something other than the vCPU can modify the NDST and SN fields, which is
-wrong and confusing (for me).  The WARNs in the loops made more sense when the
-loops ran with IRQs enabled prior to commit 8b306e2f3c41 ("KVM: VMX: avoid
-double list add with VT-d posted interrupts").  Then it would be at least plausible
-that a vCPU could mess up its own descriptor while being scheduled out/in.
+Best regards,
+	Maxim levitsky
+
 
