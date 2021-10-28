@@ -1,105 +1,98 @@
-From: Sean Christopherson <seanjc@google.com>
-Date: Thu, 28 Oct 2021 15:55:41 +0000
-Subject: [PATCH v2 26/43] KVM: VMX: Read Posted Interrupt "control"
- exactly once per loop iteration
-In-Reply-To: <b078cce30f86672d7d8f8eaa0adc47d24def24e2.camel@redhat.com>
+From: Maxim Levitsky <mlevitsk@redhat.com>
+Date: Thu, 28 Oct 2021 19:09:41 +0300
+Subject: [PATCH v2 27/43] KVM: VMX: Move Posted Interrupt ndst
+ computation out of write loop
+In-Reply-To: <643d9c249b5863f04290a6f047ea1a2d98bd75f9.camel@redhat.com>
 References: <20211009021236.4122790-1-seanjc@google.com>
- <20211009021236.4122790-27-seanjc@google.com>
- <b078cce30f86672d7d8f8eaa0adc47d24def24e2.camel@redhat.com>
-Message-ID: <YXrH/ZZBOHrWHz4j@google.com>
+ <20211009021236.4122790-28-seanjc@google.com>
+ <643d9c249b5863f04290a6f047ea1a2d98bd75f9.camel@redhat.com>
+Message-ID: <5769bb700d94c3828bdef57963a3fe9422e801e7.camel@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Oct 28, 2021, Maxim Levitsky wrote:
+On Thu, 2021-10-28 at 14:28 +0300, Maxim Levitsky wrote:
 > On Fri, 2021-10-08 at 19:12 -0700, Sean Christopherson wrote:
-> > Use READ_ONCE() when loading the posted interrupt descriptor control
-> > field to ensure "old" and "new" have the same base value.  If the
-> > compiler emits separate loads, and loads into "new" before "old", KVM
-> > could theoretically drop the ON bit if it were set between the loads.
+> > Hoist the CPU => APIC ID conversion for the Posted Interrupt descriptor
+> > out of the loop to write the descriptor, preemption is disabled so the
+> > CPU won't change, and if the APIC ID changes KVM has bigger problems.
 > > 
-> > Fixes: 28b835d60fcc ("KVM: Update Posted-Interrupts Descriptor when vCPU is preempted")
+> > No functional change intended.
+> 
+> Is preemption always disabled in vmx_vcpu_pi_load? vmx_vcpu_pi_load is called from vmx_vcpu_load,
+> which is called indirectly from vcpu_load which is called from many ioctls,
+> which userspace does. In these places I don't think that preemption is disabled.
+
+You can disregard this, I missed the fact that we have 'int cpu = get_cpu();'
+which disables preemption in 'vcpu_load'
+
+Thus,
+
+Reviewed-by: Maxim Levitsky <mlevitsk@redhat.com>
+
+
+Best regards,
+	Maxim Levitsky
+> 
+> Best regards,
+> 	Maxim Levitsky
+> 
 > > Signed-off-by: Sean Christopherson <seanjc@google.com>
 > > ---
-> >  arch/x86/kvm/vmx/posted_intr.c | 6 +++---
-> >  1 file changed, 3 insertions(+), 3 deletions(-)
+> >  arch/x86/kvm/vmx/posted_intr.c | 25 +++++++++++--------------
+> >  1 file changed, 11 insertions(+), 14 deletions(-)
 > > 
 > > diff --git a/arch/x86/kvm/vmx/posted_intr.c b/arch/x86/kvm/vmx/posted_intr.c
-> > index 414ea6972b5c..fea343dcc011 100644
+> > index fea343dcc011..2b2206339174 100644
 > > --- a/arch/x86/kvm/vmx/posted_intr.c
 > > +++ b/arch/x86/kvm/vmx/posted_intr.c
-> > @@ -53,7 +53,7 @@ void vmx_vcpu_pi_load(struct kvm_vcpu *vcpu, int cpu)
+> > @@ -51,17 +51,15 @@ void vmx_vcpu_pi_load(struct kvm_vcpu *vcpu, int cpu)
+> >  		goto after_clear_sn;
+> >  	}
 > >  
-> >  	/* The full case.  */
+> > -	/* The full case.  */
+> > +	/* The full case.  Set the new destination and clear SN. */
+> > +	dest = cpu_physical_id(cpu);
+> > +	if (!x2apic_mode)
+> > +		dest = (dest << 8) & 0xFF00;
+> > +
 > >  	do {
-> > -		old.control = new.control = pi_desc->control;
-> > +		old.control = new.control = READ_ONCE(pi_desc->control);
+> >  		old.control = new.control = READ_ONCE(pi_desc->control);
 > >  
-> >  		dest = cpu_physical_id(cpu);
-> >  
-> > @@ -104,7 +104,7 @@ static void __pi_post_block(struct kvm_vcpu *vcpu)
+> > -		dest = cpu_physical_id(cpu);
+> > -
+> > -		if (x2apic_mode)
+> > -			new.ndst = dest;
+> > -		else
+> > -			new.ndst = (dest << 8) & 0xFF00;
+> > -
+> > +		new.ndst = dest;
+> >  		new.sn = 0;
+> >  	} while (cmpxchg64(&pi_desc->control, old.control,
+> >  			   new.control) != old.control);
+> > @@ -103,15 +101,14 @@ static void __pi_post_block(struct kvm_vcpu *vcpu)
+> >  	WARN(pi_desc->nv != POSTED_INTR_WAKEUP_VECTOR,
 > >  	     "Wakeup handler not enabled while the vCPU was blocking");
 > >  
+> > +	dest = cpu_physical_id(vcpu->cpu);
+> > +	if (!x2apic_mode)
+> > +		dest = (dest << 8) & 0xFF00;
+> > +
 > >  	do {
-> > -		old.control = new.control = pi_desc->control;
-> > +		old.control = new.control = READ_ONCE(pi_desc->control);
+> >  		old.control = new.control = READ_ONCE(pi_desc->control);
 > >  
-> >  		dest = cpu_physical_id(vcpu->cpu);
+> > -		dest = cpu_physical_id(vcpu->cpu);
+> > -
+> > -		if (x2apic_mode)
+> > -			new.ndst = dest;
+> > -		else
+> > -			new.ndst = (dest << 8) & 0xFF00;
+> > +		new.ndst = dest;
 > >  
-> > @@ -160,7 +160,7 @@ int pi_pre_block(struct kvm_vcpu *vcpu)
-> >  	     "Posted Interrupt Suppress Notification set before blocking");
-> >  
-> >  	do {
-> > -		old.control = new.control = pi_desc->control;
-> > +		old.control = new.control = READ_ONCE(pi_desc->control);
-> >  
-> >  		/* set 'NV' to 'wakeup vector' */
-> >  		new.nv = POSTED_INTR_WAKEUP_VECTOR;
-> 
-> I wish there was a way to mark fields in a struct, as requiring 'READ_ONCE' on them
-> so that compiler would complain if this isn't done, or automatically use 'READ_ONCE'
-> logic.
+> >  		/* set 'NV' to 'notification vector' */
+> >  		new.nv = POSTED_INTR_VECTOR;
 
-Hmm, I think you could make an argument that ON and thus the whole "control"
-word should be volatile.  AFAICT, tagging just "on" as volatile actually works.
-There's even in a clause in Documentation/process/volatile-considered-harmful.rst
-that calls this out as a (potentially) legitimate use case.
 
-  - Pointers to data structures in coherent memory which might be modified
-    by I/O devices can, sometimes, legitimately be volatile.
-
-That said, I think I actually prefer forcing the use of READ_ONCE.  The descriptor
-requires more protections than what volatile provides, namely that all writes need
-to be atomic.  So given that volatile alone isn't sufficient, I'd prefer to have
-the code itself be more self-documenting.
-
-E.g. this compiles and does mess up the expected size.
-
-diff --git a/arch/x86/kvm/vmx/posted_intr.h b/arch/x86/kvm/vmx/posted_intr.h
-index 7f7b2326caf5..149df3b18789 100644
---- a/arch/x86/kvm/vmx/posted_intr.h
-+++ b/arch/x86/kvm/vmx/posted_intr.h
-@@ -11,9 +11,9 @@ struct pi_desc {
-        union {
-                struct {
-                                /* bit 256 - Outstanding Notification */
--                       u16     on      : 1,
-+                       volatile u16    on      : 1;
-                                /* bit 257 - Suppress Notification */
--                               sn      : 1,
-+                       u16     sn      : 1,
-                                /* bit 271:258 - Reserved */
-                                rsvd_1  : 14;
-                                /* bit 279:272 - Notification Vector */
-@@ -23,7 +23,7 @@ struct pi_desc {
-                                /* bit 319:288 - Notification Destination */
-                        u32     ndst;
-                };
--               u64 control;
-+               volatile u64 control;
-        };
-        u32 rsvd[6];
- } __aligned(64);
 
