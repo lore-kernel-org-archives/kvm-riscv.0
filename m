@@ -1,78 +1,41 @@
-From: Maxim Levitsky <mlevitsk@redhat.com>
-Date: Thu, 28 Oct 2021 17:36:02 +0300
-Subject: [PATCH v2 22/43] KVM: VMX: Drop unnecessary PI logic to handle
- impossible conditions
-In-Reply-To: <20211009021236.4122790-23-seanjc@google.com>
-References: <20211009021236.4122790-1-seanjc@google.com>
- <20211009021236.4122790-23-seanjc@google.com>
-Message-ID: <33860db1f4951386347913d126ef7c8bc1655440.camel@redhat.com>
+From: Palmer Dabbelt <palmer@dabbelt.com>
+Date: Thu, 28 Oct 2021 08:05:06 -0700 (PDT)
+Subject: [PATCH 0/3] RISC-V: KVM: Few assorted changes
+In-Reply-To: <62fe1c8e-abe0-5de9-5c00-3549faae1dba@redhat.com>
+Message-ID: <mhng-e9d8caea-eae9-45dc-8072-cde5e275833f@palmerdabbelt-glaptop>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, 2021-10-08 at 19:12 -0700, Sean Christopherson wrote:
-> Drop sanity checks on the validity of the previous pCPU when handling
-> vCPU block/unlock for posted interrupts.  Barring a code bug or memory
-> corruption, the sanity checks will never fire, and any code bug that does
-> trip the WARN is all but guaranteed to completely break posted interrupts,
-> i.e. should never get anywhere near production.
-> 
-> This is the first of several steps toward eliminating kvm_vcpu.pre_cpu.
-> 
-> Signed-off-by: Sean Christopherson <seanjc@google.com>
-> ---
->  arch/x86/kvm/vmx/posted_intr.c | 24 ++++++++++--------------
->  1 file changed, 10 insertions(+), 14 deletions(-)
-> 
-> diff --git a/arch/x86/kvm/vmx/posted_intr.c b/arch/x86/kvm/vmx/posted_intr.c
-> index 67cbe6ab8f66..6c2110d91b06 100644
-> --- a/arch/x86/kvm/vmx/posted_intr.c
-> +++ b/arch/x86/kvm/vmx/posted_intr.c
-> @@ -118,12 +118,10 @@ static void __pi_post_block(struct kvm_vcpu *vcpu)
->  	} while (cmpxchg64(&pi_desc->control, old.control,
->  			   new.control) != old.control);
->  
-> -	if (!WARN_ON_ONCE(vcpu->pre_pcpu == -1)) {
-> -		spin_lock(&per_cpu(blocked_vcpu_on_cpu_lock, vcpu->pre_pcpu));
-> -		list_del(&vcpu->blocked_vcpu_list);
-> -		spin_unlock(&per_cpu(blocked_vcpu_on_cpu_lock, vcpu->pre_pcpu));
-> -		vcpu->pre_pcpu = -1;
-> -	}
-> +	spin_lock(&per_cpu(blocked_vcpu_on_cpu_lock, vcpu->pre_pcpu));
-> +	list_del(&vcpu->blocked_vcpu_list);
-> +	spin_unlock(&per_cpu(blocked_vcpu_on_cpu_lock, vcpu->pre_pcpu));
-> +	vcpu->pre_pcpu = -1;
->  }
->  
->  /*
-> @@ -153,14 +151,12 @@ int pi_pre_block(struct kvm_vcpu *vcpu)
->  
->  	WARN_ON(irqs_disabled());
->  	local_irq_disable();
-> -	if (!WARN_ON_ONCE(vcpu->pre_pcpu != -1)) {
-> -		vcpu->pre_pcpu = vcpu->cpu;
-> -		spin_lock(&per_cpu(blocked_vcpu_on_cpu_lock, vcpu->pre_pcpu));
-> -		list_add_tail(&vcpu->blocked_vcpu_list,
-> -			      &per_cpu(blocked_vcpu_on_cpu,
-> -				       vcpu->pre_pcpu));
-> -		spin_unlock(&per_cpu(blocked_vcpu_on_cpu_lock, vcpu->pre_pcpu));
-> -	}
-> +
-> +	vcpu->pre_pcpu = vcpu->cpu;
-> +	spin_lock(&per_cpu(blocked_vcpu_on_cpu_lock, vcpu->pre_pcpu));
-> +	list_add_tail(&vcpu->blocked_vcpu_list,
-> +		      &per_cpu(blocked_vcpu_on_cpu, vcpu->pre_pcpu));
-> +	spin_unlock(&per_cpu(blocked_vcpu_on_cpu_lock, vcpu->pre_pcpu));
->  
->  	WARN(pi_desc->sn == 1,
->  	     "Posted Interrupt Suppress Notification set before blocking");
+On Thu, 28 Oct 2021 07:07:33 PDT (-0700), pbonzini at redhat.com wrote:
+> On 26/10/21 19:01, Anup Patel wrote:
+>> I had a few assorted KVM RISC-V changes which I wanted to sent after
+>> KVM RISC-V was merged hence this series.
+>>
+>> These patches can also be found in riscv_kvm_assorted_v1 branch at:
+>> https://github.com/avpatel/linux.git
+>>
+>> Anup Patel (3):
+>>    RISC-V: Enable KVM in RV64 and RV32 defconfigs as a module
+>>    RISC-V: KVM: Factor-out FP virtualization into separate sources
+>>    RISC-V: KVM: Fix GPA passed to __kvm_riscv_hfence_gvma_xyz() functions
+>>
+>>   arch/riscv/configs/defconfig         |  15 ++-
+>>   arch/riscv/configs/rv32_defconfig    |   8 +-
+>>   arch/riscv/include/asm/kvm_host.h    |  10 +-
+>>   arch/riscv/include/asm/kvm_vcpu_fp.h |  59 +++++++++
+>>   arch/riscv/kvm/Makefile              |   1 +
+>>   arch/riscv/kvm/tlb.S                 |   4 +-
+>>   arch/riscv/kvm/vcpu.c                | 172 ---------------------------
+>>   arch/riscv/kvm/vcpu_fp.c             | 167 ++++++++++++++++++++++++++
+>>   8 files changed, 244 insertions(+), 192 deletions(-)
+>>   create mode 100644 arch/riscv/include/asm/kvm_vcpu_fp.h
+>>   create mode 100644 arch/riscv/kvm/vcpu_fp.c
+>>
+>
+> Queued 2+3, thanks.
 
-
-
-Reviewed-by: Maxim Levitsky <mlevitsk@redhat.com>
-
-
-
+Thanks.  I'll pick up 1, as per the thread.
 
