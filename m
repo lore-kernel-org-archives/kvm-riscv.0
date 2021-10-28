@@ -1,152 +1,88 @@
-From: Paolo Bonzini <pbonzini@redhat.com>
-Date: Thu, 28 Oct 2021 01:01:12 +0200
-Subject: [PATCH 1/3] RISC-V: Enable KVM in RV64 and RV32 defconfigs as a
- module
-In-Reply-To: <mhng-1044c135-bede-498b-b244-9f9c5f5ea89b@palmerdabbelt-glaptop>
-References: <mhng-1044c135-bede-498b-b244-9f9c5f5ea89b@palmerdabbelt-glaptop>
-Message-ID: <c8941c0a-959a-d6fc-fd9c-4c743371a733@redhat.com>
+From: Maxim Levitsky <mlevitsk@redhat.com>
+Date: Thu, 28 Oct 2021 09:05:35 +0300
+Subject: [PATCH v2 23/43] KVM: VMX: Use boolean returns for Posted
+ Interrupt "test" helpers
+In-Reply-To: <20211009021236.4122790-24-seanjc@google.com>
+References: <20211009021236.4122790-1-seanjc@google.com>
+ <20211009021236.4122790-24-seanjc@google.com>
+Message-ID: <49c6c208841a85dbcb397acdc7f20b81402e71fb.camel@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 28/10/21 00:12, Palmer Dabbelt wrote:
-> On Tue, 26 Oct 2021 10:01:34 PDT (-0700), Anup Patel wrote:
->> Let's enable KVM RISC-V in RV64 and RV32 defconfigs as module
->> so that it always built along with the default kernel image.
+On Fri, 2021-10-08 at 19:12 -0700, Sean Christopherson wrote:
+> Return bools instead of ints for the posted interrupt "test" helpers.
+> The bit position of the flag being test does not matter to the callers,
+> and is in fact lost by virtue of test_bit() itself returning a bool.
 > 
-> Turning on KVM in the defconfigs seems like the right way to go, but 
-> this has more diff than just that.? Not sure if that's all just 
-> savedefconfig stuff, I usually try and split out the non-functional 
-> changes from anything that makes a change.
+> Returning ints is potentially dangerous, e.g. "pi_test_on(pi_desc) == 1"
+> is safe-ish because ON is bit 0 and thus any sane implementation of
+> pi_test_on() will work, but for SN (bit 1), checking "== 1" would rely on
+> pi_test_on() to return 0 or 1, a.k.a. bools, as opposed to 0 or 2 (the
+> positive bit position).
 > 
-> If you checked then
+> Signed-off-by: Sean Christopherson <seanjc@google.com>
+> ---
+>  arch/x86/kvm/vmx/posted_intr.c | 4 ++--
+>  arch/x86/kvm/vmx/posted_intr.h | 6 +++---
+>  2 files changed, 5 insertions(+), 5 deletions(-)
 > 
-> Acked-by: Palmer Dabbelt <palmerdabbelt@google.com>
-> 
-> assuming you want to keep these together.? LMK if you want me to take 
-> this on its own (I'll split it up if you do).
+> diff --git a/arch/x86/kvm/vmx/posted_intr.c b/arch/x86/kvm/vmx/posted_intr.c
+> index 6c2110d91b06..1688f8dc535a 100644
+> --- a/arch/x86/kvm/vmx/posted_intr.c
+> +++ b/arch/x86/kvm/vmx/posted_intr.c
+> @@ -185,7 +185,7 @@ int pi_pre_block(struct kvm_vcpu *vcpu)
+>  			   new.control) != old.control);
+>  
+>  	/* We should not block the vCPU if an interrupt is posted for it.  */
+> -	if (pi_test_on(pi_desc) == 1)
+> +	if (pi_test_on(pi_desc))
+>  		__pi_post_block(vcpu);
+>  
+>  	local_irq_enable();
+> @@ -216,7 +216,7 @@ void pi_wakeup_handler(void)
+>  			blocked_vcpu_list) {
+>  		struct pi_desc *pi_desc = vcpu_to_pi_desc(vcpu);
+>  
+> -		if (pi_test_on(pi_desc) == 1)
+> +		if (pi_test_on(pi_desc))
+>  			kvm_vcpu_kick(vcpu);
+>  	}
+>  	spin_unlock(&per_cpu(blocked_vcpu_on_cpu_lock, cpu));
+> diff --git a/arch/x86/kvm/vmx/posted_intr.h b/arch/x86/kvm/vmx/posted_intr.h
+> index 7f7b2326caf5..36ae035f14aa 100644
+> --- a/arch/x86/kvm/vmx/posted_intr.h
+> +++ b/arch/x86/kvm/vmx/posted_intr.h
+> @@ -40,7 +40,7 @@ static inline bool pi_test_and_clear_on(struct pi_desc *pi_desc)
+>  			(unsigned long *)&pi_desc->control);
+>  }
+>  
+> -static inline int pi_test_and_set_pir(int vector, struct pi_desc *pi_desc)
+> +static inline bool pi_test_and_set_pir(int vector, struct pi_desc *pi_desc)
+>  {
+>  	return test_and_set_bit(vector, (unsigned long *)pi_desc->pir);
+>  }
+> @@ -74,13 +74,13 @@ static inline void pi_clear_sn(struct pi_desc *pi_desc)
+>  		(unsigned long *)&pi_desc->control);
+>  }
+>  
+> -static inline int pi_test_on(struct pi_desc *pi_desc)
+> +static inline bool pi_test_on(struct pi_desc *pi_desc)
+>  {
+>  	return test_bit(POSTED_INTR_ON,
+>  			(unsigned long *)&pi_desc->control);
+>  }
+>  
+> -static inline int pi_test_sn(struct pi_desc *pi_desc)
+> +static inline bool pi_test_sn(struct pi_desc *pi_desc)
+>  {
+>  	return test_bit(POSTED_INTR_SN,
+>  			(unsigned long *)&pi_desc->control);
+Reviewed-by: Maxim Levitsky <mlevitsk@redhat.com>
 
-I think it's easiest if you just merge it for -rc2 or something like that.
-
-Paolo
-
->>
->> Signed-off-by: Anup Patel <anup.patel@wdc.com>
->> ---
->> ?arch/riscv/configs/defconfig????? | 15 +++++++--------
->> ?arch/riscv/configs/rv32_defconfig |? 8 ++++----
->> ?2 files changed, 11 insertions(+), 12 deletions(-)
->>
->> diff --git a/arch/riscv/configs/defconfig b/arch/riscv/configs/defconfig
->> index 4ebc80315f01..40506dfab5cf 100644
->> --- a/arch/riscv/configs/defconfig
->> +++ b/arch/riscv/configs/defconfig
->> @@ -2,6 +2,7 @@ CONFIG_SYSVIPC=y
->> ?CONFIG_POSIX_MQUEUE=y
->> ?CONFIG_NO_HZ_IDLE=y
->> ?CONFIG_HIGH_RES_TIMERS=y
->> +CONFIG_BPF_SYSCALL=y
->> ?CONFIG_IKCONFIG=y
->> ?CONFIG_IKCONFIG_PROC=y
->> ?CONFIG_CGROUPS=y
->> @@ -13,12 +14,14 @@ CONFIG_USER_NS=y
->> ?CONFIG_CHECKPOINT_RESTORE=y
->> ?CONFIG_BLK_DEV_INITRD=y
->> ?CONFIG_EXPERT=y
->> -CONFIG_BPF_SYSCALL=y
->> +# CONFIG_SYSFS_SYSCALL is not set
->> +CONFIG_SOC_MICROCHIP_POLARFIRE=y
->> ?CONFIG_SOC_SIFIVE=y
->> ?CONFIG_SOC_VIRT=y
->> -CONFIG_SOC_MICROCHIP_POLARFIRE=y
->> ?CONFIG_SMP=y
->> ?CONFIG_HOTPLUG_CPU=y
->> +CONFIG_VIRTUALIZATION=y
->> +CONFIG_KVM=m
->> ?CONFIG_JUMP_LABEL=y
->> ?CONFIG_MODULES=y
->> ?CONFIG_MODULE_UNLOAD=y
->> @@ -68,14 +71,12 @@ CONFIG_HW_RANDOM=y
->> ?CONFIG_HW_RANDOM_VIRTIO=y
->> ?CONFIG_SPI=y
->> ?CONFIG_SPI_SIFIVE=y
->> +# CONFIG_PTP_1588_CLOCK is not set
->> ?CONFIG_GPIOLIB=y
->> ?CONFIG_GPIO_SIFIVE=y
->> -# CONFIG_PTP_1588_CLOCK is not set
->> -CONFIG_POWER_RESET=y
->> ?CONFIG_DRM=y
->> ?CONFIG_DRM_RADEON=y
->> ?CONFIG_DRM_VIRTIO_GPU=y
->> -CONFIG_FRAMEBUFFER_CONSOLE=y
->> ?CONFIG_USB=y
->> ?CONFIG_USB_XHCI_HCD=y
->> ?CONFIG_USB_XHCI_PLATFORM=y
->> @@ -85,10 +86,10 @@ CONFIG_USB_OHCI_HCD=y
->> ?CONFIG_USB_OHCI_HCD_PLATFORM=y
->> ?CONFIG_USB_STORAGE=y
->> ?CONFIG_USB_UAS=y
->> +CONFIG_MMC=y
->> ?CONFIG_MMC_SDHCI=y
->> ?CONFIG_MMC_SDHCI_PLTFM=y
->> ?CONFIG_MMC_SDHCI_CADENCE=y
->> -CONFIG_MMC=y
->> ?CONFIG_MMC_SPI=y
->> ?CONFIG_RTC_CLASS=y
->> ?CONFIG_VIRTIO_PCI=y
->> @@ -139,5 +140,3 @@ CONFIG_RCU_EQS_DEBUG=y
->> ?# CONFIG_FTRACE is not set
->> ?# CONFIG_RUNTIME_TESTING_MENU is not set
->> ?CONFIG_MEMTEST=y
->> -# CONFIG_SYSFS_SYSCALL is not set
->> -CONFIG_EFI=y
->> diff --git a/arch/riscv/configs/rv32_defconfig 
->> b/arch/riscv/configs/rv32_defconfig
->> index 434ef5b64599..44022e048efd 100644
->> --- a/arch/riscv/configs/rv32_defconfig
->> +++ b/arch/riscv/configs/rv32_defconfig
->> @@ -2,6 +2,7 @@ CONFIG_SYSVIPC=y
->> ?CONFIG_POSIX_MQUEUE=y
->> ?CONFIG_NO_HZ_IDLE=y
->> ?CONFIG_HIGH_RES_TIMERS=y
->> +CONFIG_BPF_SYSCALL=y
->> ?CONFIG_IKCONFIG=y
->> ?CONFIG_IKCONFIG_PROC=y
->> ?CONFIG_CGROUPS=y
->> @@ -13,12 +14,14 @@ CONFIG_USER_NS=y
->> ?CONFIG_CHECKPOINT_RESTORE=y
->> ?CONFIG_BLK_DEV_INITRD=y
->> ?CONFIG_EXPERT=y
->> -CONFIG_BPF_SYSCALL=y
->> +# CONFIG_SYSFS_SYSCALL is not set
->> ?CONFIG_SOC_SIFIVE=y
->> ?CONFIG_SOC_VIRT=y
->> ?CONFIG_ARCH_RV32I=y
->> ?CONFIG_SMP=y
->> ?CONFIG_HOTPLUG_CPU=y
->> +CONFIG_VIRTUALIZATION=y
->> +CONFIG_KVM=m
->> ?CONFIG_JUMP_LABEL=y
->> ?CONFIG_MODULES=y
->> ?CONFIG_MODULE_UNLOAD=y
->> @@ -67,11 +70,9 @@ CONFIG_HW_RANDOM_VIRTIO=y
->> ?CONFIG_SPI=y
->> ?CONFIG_SPI_SIFIVE=y
->> ?# CONFIG_PTP_1588_CLOCK is not set
->> -CONFIG_POWER_RESET=y
->> ?CONFIG_DRM=y
->> ?CONFIG_DRM_RADEON=y
->> ?CONFIG_DRM_VIRTIO_GPU=y
->> -CONFIG_FRAMEBUFFER_CONSOLE=y
->> ?CONFIG_USB=y
->> ?CONFIG_USB_XHCI_HCD=y
->> ?CONFIG_USB_XHCI_PLATFORM=y
->> @@ -130,4 +131,3 @@ CONFIG_RCU_EQS_DEBUG=y
->> ?# CONFIG_FTRACE is not set
->> ?# CONFIG_RUNTIME_TESTING_MENU is not set
->> ?CONFIG_MEMTEST=y
->> -# CONFIG_SYSFS_SYSCALL is not set
+Best regards,
+	Maxim Levitsky
 
 
