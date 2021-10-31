@@ -1,91 +1,40 @@
 From: Maxim Levitsky <mlevitsk@redhat.com>
-Date: Mon, 01 Nov 2021 00:30:07 +0200
-Subject: [PATCH v2 42/43] KVM: VMX: Fold fallback path into triggering
- posted IRQ helper
-In-Reply-To: <20211009021236.4122790-43-seanjc@google.com>
+Date: Mon, 01 Nov 2021 00:33:40 +0200
+Subject: [PATCH v2 43/43] KVM: VMX: Don't do full kick when handling
+ posted interrupt wakeup
+In-Reply-To: <01b5edae-aaa9-e96d-daaa-197c0c3a0431@redhat.com>
 References: <20211009021236.4122790-1-seanjc@google.com>
- <20211009021236.4122790-43-seanjc@google.com>
-Message-ID: <ffce26d0540acb7550be719255689b61210919c1.camel@redhat.com>
+ <20211009021236.4122790-44-seanjc@google.com>
+ <01b5edae-aaa9-e96d-daaa-197c0c3a0431@redhat.com>
+Message-ID: <c4453a4bd13dc8120664fe0bf4db5e391d4748e2.camel@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, 2021-10-08 at 19:12 -0700, Sean Christopherson wrote:
-> Move the fallback "wake_up" path into the helper to trigger posted
-> interrupt helper now that the nested and non-nested paths are identical.
+On Mon, 2021-10-25 at 16:16 +0200, Paolo Bonzini wrote:
+> On 09/10/21 04:12, Sean Christopherson wrote:
+> > When waking vCPUs in the posted interrupt wakeup handling, do exactly
+> > that and no more.  There is no need to kick the vCPU as the wakeup
+> > handler just need to get the vCPU task running, and if it's in the guest
+> > then it's definitely running.
+> 
+> And more important, the transition from blocking to running will have 
+> gone through sync_pir_to_irr, thus checking ON and manually moving the 
+> vector from PIR to RVI.
+> 
+> Paolo
+> 
+I also think so, and maybe this can be added to the commit message.
 
-Nit: I think you refer to patch 41 here, but I think that nested and non nested paths were identical
-before as well, so this patch could be done without patch 41 as well.
-
+Anyway, last one for the series :)
 
 Reviewed-by: Maxim Levitsky <mlevitsk@redhat.com>
 
+
+
 Best regards,
 	Maxim Levitsky
-
-
-> 
-> No functional change intended.
-> 
-> Signed-off-by: Sean Christopherson <seanjc@google.com>
-> ---
->  arch/x86/kvm/vmx/vmx.c | 18 ++++++++++--------
->  1 file changed, 10 insertions(+), 8 deletions(-)
-> 
-> diff --git a/arch/x86/kvm/vmx/vmx.c b/arch/x86/kvm/vmx/vmx.c
-> index f505fee3cf5c..b0d97cf18c34 100644
-> --- a/arch/x86/kvm/vmx/vmx.c
-> +++ b/arch/x86/kvm/vmx/vmx.c
-> @@ -3927,7 +3927,7 @@ static void vmx_msr_filter_changed(struct kvm_vcpu *vcpu)
->  	pt_update_intercept_for_msr(vcpu);
->  }
->  
-> -static inline bool kvm_vcpu_trigger_posted_interrupt(struct kvm_vcpu *vcpu,
-> +static inline void kvm_vcpu_trigger_posted_interrupt(struct kvm_vcpu *vcpu,
->  						     int pi_vec)
->  {
->  #ifdef CONFIG_SMP
-> @@ -3958,10 +3958,15 @@ static inline bool kvm_vcpu_trigger_posted_interrupt(struct kvm_vcpu *vcpu,
->  		 */
->  
->  		apic->send_IPI_mask(get_cpu_mask(vcpu->cpu), pi_vec);
-> -		return true;
-> +		return;
->  	}
->  #endif
-> -	return false;
-> +	/*
-> +	 * The vCPU isn't in the guest; wake the vCPU in case it is blocking,
-> +	 * otherwise do nothing as KVM will grab the highest priority pending
-> +	 * IRQ via ->sync_pir_to_irr() in vcpu_enter_guest().
-> +	 */
-> +	kvm_vcpu_wake_up(vcpu);
->  }
->  
->  static int vmx_deliver_nested_posted_interrupt(struct kvm_vcpu *vcpu,
-> @@ -3984,8 +3989,7 @@ static int vmx_deliver_nested_posted_interrupt(struct kvm_vcpu *vcpu,
->  		 */
->  		kvm_make_request(KVM_REQ_EVENT, vcpu);
->  		/* the PIR and ON have been set by L1. */
-> -		if (!kvm_vcpu_trigger_posted_interrupt(vcpu, POSTED_INTR_NESTED_VECTOR))
-> -			kvm_vcpu_wake_up(vcpu);
-> +		kvm_vcpu_trigger_posted_interrupt(vcpu, POSTED_INTR_NESTED_VECTOR);
->  		return 0;
->  	}
->  	return -1;
-> @@ -4022,9 +4026,7 @@ static int vmx_deliver_posted_interrupt(struct kvm_vcpu *vcpu, int vector)
->  	 * guaranteed to see PID.ON=1 and sync the PIR to IRR if triggering a
->  	 * posted interrupt "fails" because vcpu->mode != IN_GUEST_MODE.
->  	 */
-> -	if (!kvm_vcpu_trigger_posted_interrupt(vcpu, POSTED_INTR_VECTOR))
-> -		kvm_vcpu_wake_up(vcpu);
-> -
-> +	kvm_vcpu_trigger_posted_interrupt(vcpu, POSTED_INTR_VECTOR);
->  	return 0;
->  }
->  
-
 
 
