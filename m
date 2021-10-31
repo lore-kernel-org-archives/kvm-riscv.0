@@ -1,174 +1,74 @@
 From: Maxim Levitsky <mlevitsk@redhat.com>
-Date: Sun, 31 Oct 2021 18:35:57 +0200
-Subject: [PATCH v2 38/43] KVM: Drop defunct kvm_arch_vcpu_(un)blocking()
- hooks
-In-Reply-To: <20211009021236.4122790-39-seanjc@google.com>
+Date: Mon, 01 Nov 2021 00:15:26 +0200
+Subject: [PATCH v2 39/43] KVM: VMX: Don't do full kick when triggering
+ posted interrupt "fails"
+In-Reply-To: <fdf90c2f-81c8-513b-2e06-a90959f4cd89@redhat.com>
 References: <20211009021236.4122790-1-seanjc@google.com>
- <20211009021236.4122790-39-seanjc@google.com>
-Message-ID: <9addad02d861e20fc4e8a3c3efa983502ae2248c.camel@redhat.com>
+ <20211009021236.4122790-40-seanjc@google.com>
+ <335822ac-b98b-1eec-4911-34e4d0e99907@redhat.com>
+ <YXl4mK7CyUBnPaQV@google.com>
+ <fdf90c2f-81c8-513b-2e06-a90959f4cd89@redhat.com>
+Message-ID: <592a315a8932b03f601e4c22d5846e97bd4a1103.camel@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, 2021-10-08 at 19:12 -0700, Sean Christopherson wrote:
-> Remove kvm_arch_vcpu_(un)blocking() now that all implementations are nops.
+On Thu, 2021-10-28 at 00:09 +0200, Paolo Bonzini wrote:
+> On 27/10/21 18:04, Sean Christopherson wrote:
+> > > > +		/*
+> > > > +		 * The smp_wmb() in kvm_make_request() pairs with the smp_mb_*()
+> > > > +		 * after setting vcpu->mode in vcpu_enter_guest(), thus the vCPU
+> > > > +		 * is guaranteed to see the event request if triggering a posted
+> > > > +		 * interrupt "fails" because vcpu->mode != IN_GUEST_MODE.
+> > > 
+> > > What this smp_wmb() pair with, is the smp_mb__after_atomic in
+> > > kvm_check_request(KVM_REQ_EVENT, vcpu).
+> > 
+> > I don't think that's correct.  There is no kvm_check_request() in the relevant path.
+> > kvm_vcpu_exit_request() uses kvm_request_pending(), which is just a READ_ONCE()
+> > without a barrier.
 > 
-> No functional change intended.
+> Ok, we are talking about two different set of barriers.  This is mine:
 > 
-> Signed-off-by: Sean Christopherson <seanjc@google.com>
-> ---
->  arch/arm64/kvm/arm.c                | 10 ----------
->  arch/mips/include/asm/kvm_host.h    |  2 --
->  arch/powerpc/include/asm/kvm_host.h |  2 --
->  arch/s390/include/asm/kvm_host.h    |  2 --
->  arch/x86/include/asm/kvm-x86-ops.h  |  2 --
->  arch/x86/include/asm/kvm_host.h     | 13 -------------
->  include/linux/kvm_host.h            |  2 --
->  virt/kvm/kvm_main.c                 |  4 ----
->  8 files changed, 37 deletions(-)
+> - smp_wmb() in kvm_make_request() pairs with the smp_mb__after_atomic() in
+> kvm_check_request(); it ensures that everything before the request
+> (in this case, pi_pending = true) is seen by inject_pending_event.
 > 
-> diff --git a/arch/arm64/kvm/arm.c b/arch/arm64/kvm/arm.c
-> index 9ff0e85a9f16..444d6f5a980a 100644
-> --- a/arch/arm64/kvm/arm.c
-> +++ b/arch/arm64/kvm/arm.c
-> @@ -357,16 +357,6 @@ int kvm_cpu_has_pending_timer(struct kvm_vcpu *vcpu)
->  	return kvm_timer_is_pending(vcpu);
->  }
->  
-> -void kvm_arch_vcpu_blocking(struct kvm_vcpu *vcpu)
-> -{
-> -
-> -}
-> -
-> -void kvm_arch_vcpu_unblocking(struct kvm_vcpu *vcpu)
-> -{
-> -
-> -}
-> -
->  void kvm_arch_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
->  {
->  	struct kvm_s2_mmu *mmu;
-> diff --git a/arch/mips/include/asm/kvm_host.h b/arch/mips/include/asm/kvm_host.h
-> index 72b90d45a46e..28110f71089b 100644
-> --- a/arch/mips/include/asm/kvm_host.h
-> +++ b/arch/mips/include/asm/kvm_host.h
-> @@ -895,8 +895,6 @@ static inline void kvm_arch_free_memslot(struct kvm *kvm,
->  					 struct kvm_memory_slot *slot) {}
->  static inline void kvm_arch_memslots_updated(struct kvm *kvm, u64 gen) {}
->  static inline void kvm_arch_sched_in(struct kvm_vcpu *vcpu, int cpu) {}
-> -static inline void kvm_arch_vcpu_blocking(struct kvm_vcpu *vcpu) {}
-> -static inline void kvm_arch_vcpu_unblocking(struct kvm_vcpu *vcpu) {}
->  
->  #define __KVM_HAVE_ARCH_FLUSH_REMOTE_TLB
->  int kvm_arch_flush_remote_tlb(struct kvm *kvm);
-> diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-> index 4a195c161592..0dfee6866541 100644
-> --- a/arch/powerpc/include/asm/kvm_host.h
-> +++ b/arch/powerpc/include/asm/kvm_host.h
-> @@ -863,7 +863,5 @@ static inline void kvm_arch_memslots_updated(struct kvm *kvm, u64 gen) {}
->  static inline void kvm_arch_flush_shadow_all(struct kvm *kvm) {}
->  static inline void kvm_arch_sched_in(struct kvm_vcpu *vcpu, int cpu) {}
->  static inline void kvm_arch_exit(void) {}
-> -static inline void kvm_arch_vcpu_blocking(struct kvm_vcpu *vcpu) {}
-> -static inline void kvm_arch_vcpu_unblocking(struct kvm_vcpu *vcpu) {}
->  
->  #endif /* __POWERPC_KVM_HOST_H__ */
-> diff --git a/arch/s390/include/asm/kvm_host.h b/arch/s390/include/asm/kvm_host.h
-> index a22c9266ea05..25ed4ec66f4a 100644
-> --- a/arch/s390/include/asm/kvm_host.h
-> +++ b/arch/s390/include/asm/kvm_host.h
-> @@ -1007,7 +1007,5 @@ static inline void kvm_arch_memslots_updated(struct kvm *kvm, u64 gen) {}
->  static inline void kvm_arch_flush_shadow_all(struct kvm *kvm) {}
->  static inline void kvm_arch_flush_shadow_memslot(struct kvm *kvm,
->  		struct kvm_memory_slot *slot) {}
-> -static inline void kvm_arch_vcpu_blocking(struct kvm_vcpu *vcpu) {}
-> -static inline void kvm_arch_vcpu_unblocking(struct kvm_vcpu *vcpu) {}
->  
->  #endif
-> diff --git a/arch/x86/include/asm/kvm-x86-ops.h b/arch/x86/include/asm/kvm-x86-ops.h
-> index c2b007171abd..f2c38acdcad6 100644
-> --- a/arch/x86/include/asm/kvm-x86-ops.h
-> +++ b/arch/x86/include/asm/kvm-x86-ops.h
-> @@ -96,8 +96,6 @@ KVM_X86_OP(handle_exit_irqoff)
->  KVM_X86_OP_NULL(request_immediate_exit)
->  KVM_X86_OP(sched_in)
->  KVM_X86_OP_NULL(update_cpu_dirty_logging)
-> -KVM_X86_OP_NULL(vcpu_blocking)
-> -KVM_X86_OP_NULL(vcpu_unblocking)
->  KVM_X86_OP_NULL(update_pi_irte)
->  KVM_X86_OP_NULL(start_assignment)
->  KVM_X86_OP_NULL(apicv_post_state_restore)
-> diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
-> index 76a8dddc1a48..bebd42926321 100644
-> --- a/arch/x86/include/asm/kvm_host.h
-> +++ b/arch/x86/include/asm/kvm_host.h
-> @@ -1445,9 +1445,6 @@ struct kvm_x86_ops {
->  	const struct kvm_pmu_ops *pmu_ops;
->  	const struct kvm_x86_nested_ops *nested_ops;
->  
-> -	void (*vcpu_blocking)(struct kvm_vcpu *vcpu);
-> -	void (*vcpu_unblocking)(struct kvm_vcpu *vcpu);
-> -
->  	int (*update_pi_irte)(struct kvm *kvm, unsigned int host_irq,
->  			      uint32_t guest_irq, bool set);
->  	void (*start_assignment)(struct kvm *kvm);
-> @@ -1904,16 +1901,6 @@ static inline bool kvm_irq_is_postable(struct kvm_lapic_irq *irq)
->  		irq->delivery_mode == APIC_DM_LOWEST);
->  }
->  
-> -static inline void kvm_arch_vcpu_blocking(struct kvm_vcpu *vcpu)
-> -{
-> -	static_call_cond(kvm_x86_vcpu_blocking)(vcpu);
-> -}
-> -
-> -static inline void kvm_arch_vcpu_unblocking(struct kvm_vcpu *vcpu)
-> -{
-> -	static_call_cond(kvm_x86_vcpu_unblocking)(vcpu);
-> -}
-> -
->  static inline int kvm_cpu_get_apicid(int mps_cpu)
->  {
->  #ifdef CONFIG_X86_LOCAL_APIC
-> diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-> index c5961a361c73..6a84b020daa6 100644
-> --- a/include/linux/kvm_host.h
-> +++ b/include/linux/kvm_host.h
-> @@ -966,8 +966,6 @@ void kvm_sigset_deactivate(struct kvm_vcpu *vcpu);
->  
->  void kvm_vcpu_halt(struct kvm_vcpu *vcpu);
->  bool kvm_vcpu_block(struct kvm_vcpu *vcpu);
-> -void kvm_arch_vcpu_blocking(struct kvm_vcpu *vcpu);
-> -void kvm_arch_vcpu_unblocking(struct kvm_vcpu *vcpu);
->  bool kvm_vcpu_wake_up(struct kvm_vcpu *vcpu);
->  void kvm_vcpu_kick(struct kvm_vcpu *vcpu);
->  int kvm_vcpu_yield_to(struct kvm_vcpu *target);
-> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-> index c1850b60f38b..96de905e26e4 100644
-> --- a/virt/kvm/kvm_main.c
-> +++ b/virt/kvm/kvm_main.c
-> @@ -3210,8 +3210,6 @@ bool kvm_vcpu_block(struct kvm_vcpu *vcpu)
->  
->  	vcpu->stat.generic.blocking = 1;
->  
-> -	kvm_arch_vcpu_blocking(vcpu);
-> -
->  	prepare_to_rcuwait(wait);
->  	for (;;) {
->  		set_current_state(TASK_INTERRUPTIBLE);
-> @@ -3224,8 +3222,6 @@ bool kvm_vcpu_block(struct kvm_vcpu *vcpu)
->  	}
->  	finish_rcuwait(wait);
->  
-> -	kvm_arch_vcpu_unblocking(vcpu);
-> -
->  	vcpu->stat.generic.blocking = 0;
->  
->  	return waited;
+> - pi_test_and_set_on() orders the write to ON after the write to PIR,
+> pairing with vmx_sync_pir_to_irr and ensuring that the bit in the PIR is
+> seen.
+> 
+> And this is yours:
+> 
+> - pi_test_and_set_on() _also_ orders the write to ON before the read of
+> vcpu->mode, pairing with vcpu_enter_guest()
+> 
+> - kvm_make_request() however does _not_ order the write to
+> vcpu->requests before the read of vcpu->mode, even though it's needed.
+> Usually that's handled by kvm_vcpu_exiting_guest_mode(), but in this case
+> vcpu->mode is read in kvm_vcpu_trigger_posted_interrupt.
 
-Reviewed-by: Maxim Levitsky <mlevitsk@redhat.com>
+Yes indeed, kvm_make_request() writes the vcpu->requests after the memory barrier,
+and then there is no barrier until reading of vcpu->mode in kvm_vcpu_trigger_posted_interrupt.
 
+> 
+> So vmx_deliver_nested_posted_interrupt() is missing a smp_mb__after_atomic().
+> It's documentation only for x86, but still easily done in v3.
+> 
+> Paolo
+> 
+
+I used this patch as a justification to read Paolo's excellent LWN series of articles on memory barriers,
+to refresh my knowledge of the memory barriers and understand the above analysis better.
+https://lwn.net/Articles/844224/
+ 
+I agree with the above, but this is something that is so easy to make a mistake
+that I can't be 100% sure.
+ 
+Best regards,
+	Maxim Levitsky
 
 
 
