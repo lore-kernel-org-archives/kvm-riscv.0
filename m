@@ -1,37 +1,77 @@
 From: Maxim Levitsky <mlevitsk@redhat.com>
-Date: Mon, 01 Nov 2021 00:19:31 +0200
-Subject: [PATCH v2 40/43] KVM: VMX: Wake vCPU when delivering posted IRQ
- even if vCPU == this vCPU
-In-Reply-To: <YXlwmrrRVIoaU2kG@google.com>
+Date: Mon, 01 Nov 2021 00:25:25 +0200
+Subject: [PATCH v2 41/43] KVM: VMX: Pass desired vector instead of bool
+ for triggering posted IRQ
+In-Reply-To: <20211009021236.4122790-42-seanjc@google.com>
 References: <20211009021236.4122790-1-seanjc@google.com>
- <20211009021236.4122790-41-seanjc@google.com>
- <a2a4e076-edb8-2cb5-5cb2-6825a1a4559a@redhat.com>
- <YXlwmrrRVIoaU2kG@google.com>
-Message-ID: <1f2fb5f18b0f0bcee71c9d506769dd1357273444.camel@redhat.com>
+ <20211009021236.4122790-42-seanjc@google.com>
+Message-ID: <0e6e3ed2831a01f5dad9f51b83f3bd1a3c318847.camel@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 2021-10-27 at 15:30 +0000, Sean Christopherson wrote:
-> On Mon, Oct 25, 2021, Paolo Bonzini wrote:
-> > On 09/10/21 04:12, Sean Christopherson wrote:
-> > > Lastly, this aligns the non-nested and nested usage of triggering posted
-> > > interrupts, and will allow for additional cleanups.
-> > 
-> > It also aligns with SVM a little bit more (especially given patch 35),
-> > doesn't it?
+On Fri, 2021-10-08 at 19:12 -0700, Sean Christopherson wrote:
+> Refactor the posted interrupt helper to take the desired notification
+> vector instead of a bool so that the callers are self-documenting.
 > 
-> Yes, aligning VMX and SVM APICv behavior as much as possible is definitely a goal
-> of this series, though I suspect I failed to state that anywhere.
+> No functional change intended.
 > 
+> Signed-off-by: Sean Christopherson <seanjc@google.com>
+> ---
+>  arch/x86/kvm/vmx/vmx.c | 8 +++-----
+>  1 file changed, 3 insertions(+), 5 deletions(-)
+> 
+> diff --git a/arch/x86/kvm/vmx/vmx.c b/arch/x86/kvm/vmx/vmx.c
+> index 78c8bc7f1b3b..f505fee3cf5c 100644
+> --- a/arch/x86/kvm/vmx/vmx.c
+> +++ b/arch/x86/kvm/vmx/vmx.c
+> @@ -3928,11 +3928,9 @@ static void vmx_msr_filter_changed(struct kvm_vcpu *vcpu)
+>  }
+>  
+>  static inline bool kvm_vcpu_trigger_posted_interrupt(struct kvm_vcpu *vcpu,
+> -						     bool nested)
+> +						     int pi_vec)
+>  {
+>  #ifdef CONFIG_SMP
+> -	int pi_vec = nested ? POSTED_INTR_NESTED_VECTOR : POSTED_INTR_VECTOR;
+> -
+>  	if (vcpu->mode == IN_GUEST_MODE) {
+>  		/*
+>  		 * The vector of interrupt to be delivered to vcpu had
+> @@ -3986,7 +3984,7 @@ static int vmx_deliver_nested_posted_interrupt(struct kvm_vcpu *vcpu,
+>  		 */
+>  		kvm_make_request(KVM_REQ_EVENT, vcpu);
+>  		/* the PIR and ON have been set by L1. */
+> -		if (!kvm_vcpu_trigger_posted_interrupt(vcpu, true))
+> +		if (!kvm_vcpu_trigger_posted_interrupt(vcpu, POSTED_INTR_NESTED_VECTOR))
+>  			kvm_vcpu_wake_up(vcpu);
+>  		return 0;
+>  	}
+> @@ -4024,7 +4022,7 @@ static int vmx_deliver_posted_interrupt(struct kvm_vcpu *vcpu, int vector)
+>  	 * guaranteed to see PID.ON=1 and sync the PIR to IRR if triggering a
+>  	 * posted interrupt "fails" because vcpu->mode != IN_GUEST_MODE.
+>  	 */
+> -	if (!kvm_vcpu_trigger_posted_interrupt(vcpu, false))
+> +	if (!kvm_vcpu_trigger_posted_interrupt(vcpu, POSTED_INTR_VECTOR))
+>  		kvm_vcpu_wake_up(vcpu);
+>  
+>  	return 0;
 
-Looks reasonable to me.
+I both like and don't like this patch.
+
+It is indeed a bit more more self documented, but then it allows caller to
+pass anything other than POSTED_INTR_NESTED_VECTOR/POSTED_INTR_VECTOR which
+would fail.
+
+Maybe addd an assert?
+
+I won't do bikesheddding about this though, so
 
 Reviewed-by: Maxim Levitsky <mlevitsk@redhat.com>
 
 Best regards,
-	Maxim Levitky
+	Maxim Levitsky
 
 
