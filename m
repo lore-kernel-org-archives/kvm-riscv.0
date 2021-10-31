@@ -1,74 +1,37 @@
 From: Maxim Levitsky <mlevitsk@redhat.com>
-Date: Mon, 01 Nov 2021 00:15:26 +0200
-Subject: [PATCH v2 39/43] KVM: VMX: Don't do full kick when triggering
- posted interrupt "fails"
-In-Reply-To: <fdf90c2f-81c8-513b-2e06-a90959f4cd89@redhat.com>
+Date: Mon, 01 Nov 2021 00:19:31 +0200
+Subject: [PATCH v2 40/43] KVM: VMX: Wake vCPU when delivering posted IRQ
+ even if vCPU == this vCPU
+In-Reply-To: <YXlwmrrRVIoaU2kG@google.com>
 References: <20211009021236.4122790-1-seanjc@google.com>
- <20211009021236.4122790-40-seanjc@google.com>
- <335822ac-b98b-1eec-4911-34e4d0e99907@redhat.com>
- <YXl4mK7CyUBnPaQV@google.com>
- <fdf90c2f-81c8-513b-2e06-a90959f4cd89@redhat.com>
-Message-ID: <592a315a8932b03f601e4c22d5846e97bd4a1103.camel@redhat.com>
+ <20211009021236.4122790-41-seanjc@google.com>
+ <a2a4e076-edb8-2cb5-5cb2-6825a1a4559a@redhat.com>
+ <YXlwmrrRVIoaU2kG@google.com>
+Message-ID: <1f2fb5f18b0f0bcee71c9d506769dd1357273444.camel@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, 2021-10-28 at 00:09 +0200, Paolo Bonzini wrote:
-> On 27/10/21 18:04, Sean Christopherson wrote:
-> > > > +		/*
-> > > > +		 * The smp_wmb() in kvm_make_request() pairs with the smp_mb_*()
-> > > > +		 * after setting vcpu->mode in vcpu_enter_guest(), thus the vCPU
-> > > > +		 * is guaranteed to see the event request if triggering a posted
-> > > > +		 * interrupt "fails" because vcpu->mode != IN_GUEST_MODE.
-> > > 
-> > > What this smp_wmb() pair with, is the smp_mb__after_atomic in
-> > > kvm_check_request(KVM_REQ_EVENT, vcpu).
+On Wed, 2021-10-27 at 15:30 +0000, Sean Christopherson wrote:
+> On Mon, Oct 25, 2021, Paolo Bonzini wrote:
+> > On 09/10/21 04:12, Sean Christopherson wrote:
+> > > Lastly, this aligns the non-nested and nested usage of triggering posted
+> > > interrupts, and will allow for additional cleanups.
 > > 
-> > I don't think that's correct.  There is no kvm_check_request() in the relevant path.
-> > kvm_vcpu_exit_request() uses kvm_request_pending(), which is just a READ_ONCE()
-> > without a barrier.
+> > It also aligns with SVM a little bit more (especially given patch 35),
+> > doesn't it?
 > 
-> Ok, we are talking about two different set of barriers.  This is mine:
-> 
-> - smp_wmb() in kvm_make_request() pairs with the smp_mb__after_atomic() in
-> kvm_check_request(); it ensures that everything before the request
-> (in this case, pi_pending = true) is seen by inject_pending_event.
-> 
-> - pi_test_and_set_on() orders the write to ON after the write to PIR,
-> pairing with vmx_sync_pir_to_irr and ensuring that the bit in the PIR is
-> seen.
-> 
-> And this is yours:
-> 
-> - pi_test_and_set_on() _also_ orders the write to ON before the read of
-> vcpu->mode, pairing with vcpu_enter_guest()
-> 
-> - kvm_make_request() however does _not_ order the write to
-> vcpu->requests before the read of vcpu->mode, even though it's needed.
-> Usually that's handled by kvm_vcpu_exiting_guest_mode(), but in this case
-> vcpu->mode is read in kvm_vcpu_trigger_posted_interrupt.
-
-Yes indeed, kvm_make_request() writes the vcpu->requests after the memory barrier,
-and then there is no barrier until reading of vcpu->mode in kvm_vcpu_trigger_posted_interrupt.
-
-> 
-> So vmx_deliver_nested_posted_interrupt() is missing a smp_mb__after_atomic().
-> It's documentation only for x86, but still easily done in v3.
-> 
-> Paolo
+> Yes, aligning VMX and SVM APICv behavior as much as possible is definitely a goal
+> of this series, though I suspect I failed to state that anywhere.
 > 
 
-I used this patch as a justification to read Paolo's excellent LWN series of articles on memory barriers,
-to refresh my knowledge of the memory barriers and understand the above analysis better.
-https://lwn.net/Articles/844224/
- 
-I agree with the above, but this is something that is so easy to make a mistake
-that I can't be 100% sure.
- 
+Looks reasonable to me.
+
+Reviewed-by: Maxim Levitsky <mlevitsk@redhat.com>
+
 Best regards,
-	Maxim Levitsky
-
+	Maxim Levitky
 
 
