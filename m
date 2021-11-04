@@ -1,48 +1,147 @@
-From: cgel.zte@gmail.com <cgel.zte@gmail.com>
-Date: Wed,  3 Nov 2021 06:44:58 +0000
-Subject: [PATCH] RISC-V: KVM:Remove unneeded semicolon
-Message-ID: <20211103064458.26916-1-zhang.mingyu@zte.com.cn>
+From: Sean Christopherson <seanjc@google.com>
+Date: Thu,  4 Nov 2021 00:25:01 +0000
+Subject: [PATCH v5.5 00/30] KVM: Scalable memslots implementation
+Message-ID: <20211104002531.1176691-1-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Zhang Mingyu <zhang.mingyu@zte.com.cn>
+This series is an iteration of Maciej's scalable memslots work.  It
+addresses most, but not all, of my feedback from v5, hence the "5.5"
+moniker.  Specifically, I did not touch the iteration over gfn and hva
+ranges as I would likely do more harm than good, especially in the gfn
+iterator.
 
-Eliminate the following coccinelle check warning:
-arch/riscv/kvm/vcpu.c:167:2-3
-arch/riscv/kvm/vcpu.c:204:2-3
+The core functionality of the series is unchanged from v5 (or at least,
+it should be).  Patches "Resolve memslot ID via a hash table" and "Keep
+memslots in tree-based structures" are heavily reworked (the latter in
+particular) to provide better continuity between patches and to avoid
+the swap() logic when working with the "inactive" set of memslots.  But
+again, the changes are intended to be purely cosmetic.
 
-Reported-by: Zeal Robot <zealci@zte.com.cn>
-Signed-off-by: Zhang Mingyu <zhang.mingyu@zte.com.cn>
----
- arch/riscv/kvm/vcpu.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Paolo, ideally I'd like get to patch 03 (and therefore patch 02) into 5.16.
+The patch technically breaks backwards compatibility with 32-bit KVM, but
+I'm quite confident none of the existing 32-bit architectures can possibly
+work.  RISC-V is the one exception where it's not obvious that creating
+more guest memslot pages than can fit in an unsigned long won't fall on its
+face.  Since RISC-V is new in 5.16, I'd like to get that change in before
+RISC-V can gain any users doing bizarre things.
 
-diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-index e92ba3e5db8c..e3d3aed46184 100644
---- a/arch/riscv/kvm/vcpu.c
-+++ b/arch/riscv/kvm/vcpu.c
-@@ -164,7 +164,7 @@ static int kvm_riscv_vcpu_get_reg_config(struct kvm_vcpu *vcpu,
- 		break;
- 	default:
- 		return -EINVAL;
--	};
-+	}
+s390 folks, please look closely at patch 11, "KVM: s390: Use "new" memslot
+instead of userspace memory region".  There's a subtle/weird functional
+change in there that I can't imagine would negatively affect userspace,
+but the end result is odd nonetheless.
+
+Claudio, I dropped your R-b from "KVM: Integrate gfn_to_memslot_approx()
+into search_memslots()" because I changed the code enough to break the s390
+build at least once :-)
+
+Patches 01 and 02 are bug fixes.
+
+Patch 03 is fix of sorts to require that the total number of pages across
+all memslots fit in an unsigned long.  The existing 32-bit KVM
+architectures don't correctly handle this case, and fixing those issues
+would quite gross and a waste of time.
+
+Patches 04-18 are cleanups throughout common KVM and all architectures
+to fix some warts in the memslot APIs that allow for a cleaner (IMO)
+of the tree-based memslots code.  They also prep for more improvements
+that are realized in the final patch.
+
+Patches 19-28 are the core of Maciej's scalable memslots work.
+
+Patches 29-30 take advantage of the tree-based memslots to avoid creating
+a dummy "new" memslot on the stack, which simplifies the MOVE case and
+aligns it with the other three memslot update cases.
+
+v5.5
+  * Add all the pre- and post-work cleanups.
+  * Rebase to kvm/queue, commit 0d7d84498fb4 ("KVM: x86: SGX must...")
+  * Name innermost helper ____gfn_to_memslot() instead of ...approx. [Sean]
+  * Rework hash list patch and all subsequent tree modifications to use
+    common kvm_memslot_replace() helper. [Sean]
+  * Rework tree-based approach to avoid swap() by always pulling the
+    invalid memslot tree on-demand, and by relying on precise variables
+    names and comments (for the invidual memslot pointers).
+
+v5:
+  * https://lkml.kernel.org/r/cover.1632171478.git.maciej.szmigiero at oracle.com
+  * Rebase onto v5.15-rc2 (torvalds/master),
+  * Fix 64-bit division of n_memslots_pages for 32-bit KVM,
+  * Collect Claudio's Reviewed-by tags for some of the patches.
+
+Early history can be found in the above lore link.
  
- 	if (copy_to_user(uaddr, &reg_val, KVM_REG_SIZE(reg->id)))
- 		return -EFAULT;
-@@ -201,7 +201,7 @@ static int kvm_riscv_vcpu_set_reg_config(struct kvm_vcpu *vcpu,
- 		break;
- 	default:
- 		return -EINVAL;
--	};
-+	}
- 
- 	return 0;
- }
+Maciej S. Szmigiero (10):
+  KVM: Resync only arch fields when slots_arch_lock gets reacquired
+  KVM: x86: Use nr_memslot_pages to avoid traversing the memslots array
+  KVM: Integrate gfn_to_memslot_approx() into search_memslots()
+  KVM: Move WARN on invalid memslot index to update_memslots()
+  KVM: Resolve memslot ID via a hash table instead of via a static array
+  KVM: Use interval tree to do fast hva lookup in memslots
+  KVM: s390: Introduce kvm_s390_get_gfn_end()
+  KVM: Keep memslots in tree-based structures instead of array-based
+    ones
+  KVM: Optimize gfn lookup in kvm_zap_gfn_range()
+  KVM: Optimize overlapping memslots check
+
+Sean Christopherson (20):
+  KVM: Ensure local memslot copies operate on up-to-date arch-specific
+    data
+  KVM: Disallow user memslot with size that exceeds "unsigned long"
+  KVM: Require total number of memslot pages to fit in an unsigned long
+  KVM: Open code kvm_delete_memslot() into its only caller
+  KVM: Use "new" memslot's address space ID instead of dedicated param
+  KVM: Let/force architectures to deal with arch specific memslot data
+  KVM: arm64: Use "new" memslot instead of userspace memory region
+  KVM: MIPS: Drop pr_debug from memslot commit to avoid using "mem"
+  KVM: PPC: Avoid referencing userspace memory region in memslot updates
+  KVM: s390: Use "new" memslot instead of userspace memory region
+  KVM: x86: Use "new" memslot instead of userspace memory region
+  KVM: RISC-V: Use "new" memslot instead of userspace memory region
+  KVM: Stop passing kvm_userspace_memory_region to arch memslot hooks
+  KVM: Use prepare/commit hooks to handle generic memslot metadata
+    updates
+  KVM: x86: Don't assume old/new memslots are non-NULL at memslot commit
+  KVM: s390: Skip gfn/size sanity checks on memslot DELETE or FLAGS_ONLY
+  KVM: Don't make a full copy of the old memslot in
+    __kvm_set_memory_region()
+  KVM: x86: Don't call kvm_mmu_change_mmu_pages() if the count hasn't
+    changed
+  KVM: Wait 'til the bitter end to initialize the "new" memslot
+  KVM: Dynamically allocate "new" memslots from the get-go
+
+ arch/arm64/kvm/Kconfig              |   1 +
+ arch/arm64/kvm/mmu.c                |  27 +-
+ arch/mips/kvm/Kconfig               |   1 +
+ arch/mips/kvm/mips.c                |   9 +-
+ arch/powerpc/include/asm/kvm_ppc.h  |  18 +-
+ arch/powerpc/kvm/Kconfig            |   1 +
+ arch/powerpc/kvm/book3s.c           |  14 +-
+ arch/powerpc/kvm/book3s_64_mmu_hv.c |   4 +-
+ arch/powerpc/kvm/book3s_hv.c        |  28 +-
+ arch/powerpc/kvm/book3s_hv_nested.c |   4 +-
+ arch/powerpc/kvm/book3s_hv_uvmem.c  |  14 +-
+ arch/powerpc/kvm/book3s_pr.c        |  17 +-
+ arch/powerpc/kvm/booke.c            |   7 +-
+ arch/powerpc/kvm/powerpc.c          |   9 +-
+ arch/riscv/kvm/mmu.c                |  34 +-
+ arch/s390/kvm/Kconfig               |   1 +
+ arch/s390/kvm/kvm-s390.c            |  98 ++--
+ arch/s390/kvm/kvm-s390.h            |  14 +
+ arch/s390/kvm/pv.c                  |   4 +-
+ arch/x86/include/asm/kvm_host.h     |   1 -
+ arch/x86/kvm/Kconfig                |   1 +
+ arch/x86/kvm/debugfs.c              |   6 +-
+ arch/x86/kvm/mmu/mmu.c              |  39 +-
+ arch/x86/kvm/x86.c                  |  42 +-
+ include/linux/kvm_host.h            | 240 +++++---
+ virt/kvm/kvm_main.c                 | 868 ++++++++++++++++------------
+ 26 files changed, 855 insertions(+), 647 deletions(-)
+
 -- 
-2.25.1
+2.33.1.1089.g2158813163f-goog
 
 
