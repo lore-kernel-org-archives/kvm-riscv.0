@@ -1,88 +1,127 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Thu,  4 Nov 2021 00:25:05 +0000
-Subject: [PATCH v5.5 04/30] KVM: Open code kvm_delete_memslot() into its only
- caller
+Date: Thu,  4 Nov 2021 00:25:06 +0000
+Subject: [PATCH v5.5 05/30] KVM: Resync only arch fields when slots_arch_lock
+ gets reacquired
 In-Reply-To: <20211104002531.1176691-1-seanjc@google.com>
 References: <20211104002531.1176691-1-seanjc@google.com>
-Message-ID: <20211104002531.1176691-5-seanjc@google.com>
+Message-ID: <20211104002531.1176691-6-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Fold kvm_delete_memslot() into __kvm_set_memory_region() to free up the
-"kvm_delete_memslot()" name for use in a future helper.  The delete logic
-isn't so complex/long that it truly needs a helper, and it will be
-simplified a wee bit further in upcoming commits.
+From: Maciej S. Szmigiero <maciej.szmigiero@oracle.com>
 
-No functional change intended.
+There is no need to copy the whole memslot data after releasing
+slots_arch_lock for a moment to install temporary memslots copy in
+kvm_set_memslot() since this lock only protects the arch field of each
+memslot.
 
+Just resync this particular field after reacquiring slots_arch_lock.
+
+Note, this also eliminates the need to manually clear the INVALID flag
+when restoring memslots; the "setting" of the INVALID flag was an
+unwanted side effect of copying the entire memslots.
+
+Signed-off-by: Maciej S. Szmigiero <maciej.szmigiero@oracle.com>
+[sean: tweak shortlog, note INVALID flag in changelog, revert comment]
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- virt/kvm/kvm_main.c | 42 +++++++++++++++++-------------------------
- 1 file changed, 17 insertions(+), 25 deletions(-)
+ virt/kvm/kvm_main.c | 45 +++++++++++++++++++++++++--------------------
+ 1 file changed, 25 insertions(+), 20 deletions(-)
 
 diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 264c4b16520b..6171ddb3e31c 100644
+index 6171ddb3e31c..e5c2d10f6111 100644
 --- a/virt/kvm/kvm_main.c
 +++ b/virt/kvm/kvm_main.c
-@@ -1653,29 +1653,6 @@ static int kvm_set_memslot(struct kvm *kvm,
- 	return r;
+@@ -1500,12 +1500,6 @@ static size_t kvm_memslots_size(int slots)
+ 	       (sizeof(struct kvm_memory_slot) * slots);
  }
  
--static int kvm_delete_memslot(struct kvm *kvm,
--			      const struct kvm_userspace_memory_region *mem,
--			      struct kvm_memory_slot *old, int as_id)
+-static void kvm_copy_memslots(struct kvm_memslots *to,
+-			      struct kvm_memslots *from)
 -{
--	struct kvm_memory_slot new;
--
--	if (!old->npages)
--		return -EINVAL;
--
--	if (WARN_ON_ONCE(kvm->nr_memslot_pages < old->npages))
--		return -EIO;
--
--	memset(&new, 0, sizeof(new));
--	new.id = old->id;
--	/*
--	 * This is only for debugging purpose; it should never be referenced
--	 * for a removed memslot.
--	 */
--	new.as_id = as_id;
--
--	return kvm_set_memslot(kvm, mem, &new, as_id, KVM_MR_DELETE);
+-	memcpy(to, from, kvm_memslots_size(from->used_slots));
 -}
 -
  /*
-  * Allocate some memory and give it an address in the guest physical address
-  * space.
-@@ -1732,8 +1709,23 @@ int __kvm_set_memory_region(struct kvm *kvm,
- 		old.id = id;
+  * Note, at a minimum, the current number of used slots must be allocated, even
+  * when deleting a memslot, as we need a complete duplicate of the memslots for
+@@ -1524,11 +1518,22 @@ static struct kvm_memslots *kvm_dup_memslots(struct kvm_memslots *old,
+ 
+ 	slots = kvzalloc(new_size, GFP_KERNEL_ACCOUNT);
+ 	if (likely(slots))
+-		kvm_copy_memslots(slots, old);
++		memcpy(slots, old, kvm_memslots_size(old->used_slots));
+ 
+ 	return slots;
+ }
+ 
++static void kvm_copy_memslots_arch(struct kvm_memslots *to,
++				   struct kvm_memslots *from)
++{
++	int i;
++
++	WARN_ON_ONCE(to->used_slots != from->used_slots);
++
++	for (i = 0; i < from->used_slots; i++)
++		to->memslots[i].arch = from->memslots[i].arch;
++}
++
+ static int kvm_set_memslot(struct kvm *kvm,
+ 			   const struct kvm_userspace_memory_region *mem,
+ 			   struct kvm_memory_slot *new, int as_id,
+@@ -1569,9 +1574,10 @@ static int kvm_set_memslot(struct kvm *kvm,
+ 		slot->flags |= KVM_MEMSLOT_INVALID;
+ 
+ 		/*
+-		 * We can re-use the memory from the old memslots.
+-		 * It will be overwritten with a copy of the new memslots
+-		 * after reacquiring the slots_arch_lock below.
++		 * We can re-use the old memslots, the only difference from the
++		 * newly installed memslots is the invalid flag, which will get
++		 * dropped by update_memslots anyway.  We'll also revert to the
++		 * old memslots if preparing the new memory region fails.
+ 		 */
+ 		slots = install_new_memslots(kvm, as_id, slots);
+ 
+@@ -1588,12 +1594,14 @@ static int kvm_set_memslot(struct kvm *kvm,
+ 		mutex_lock(&kvm->slots_arch_lock);
+ 
+ 		/*
+-		 * The arch-specific fields of the memslots could have changed
+-		 * between releasing the slots_arch_lock in
+-		 * install_new_memslots and here, so get a fresh copy of the
+-		 * slots.
++		 * The arch-specific fields of the now-active memslots could
++		 * have been modified between releasing slots_arch_lock in
++		 * install_new_memslots and re-acquiring slots_arch_lock above.
++		 * Copy them to the inactive memslots.  Arch code is required
++		 * to retrieve memslots *after* acquiring slots_arch_lock, thus
++		 * the active memslots are guaranteed to be fresh.
+ 		 */
+-		kvm_copy_memslots(slots, __kvm_memslots(kvm, as_id));
++		kvm_copy_memslots_arch(slots, __kvm_memslots(kvm, as_id));
  	}
  
--	if (!mem->memory_size)
--		return kvm_delete_memslot(kvm, mem, &old, as_id);
-+	if (!mem->memory_size) {
-+		if (!old.npages)
-+			return -EINVAL;
-+
-+		if (WARN_ON_ONCE(kvm->nr_memslot_pages < old.npages))
-+			return -EIO;
-+
-+		memset(&new, 0, sizeof(new));
-+		new.id = id;
-+		/*
-+		 * This is only for debugging purpose; it should never be
-+		 * referenced for a removed memslot.
-+		 */
-+		new.as_id = as_id;
-+
-+		return kvm_set_memslot(kvm, mem, &new, as_id, KVM_MR_DELETE);
-+	}
+ 	/*
+@@ -1642,13 +1650,10 @@ static int kvm_set_memslot(struct kvm *kvm,
+ 	return 0;
  
- 	new.as_id = as_id;
- 	new.id = id;
+ out_slots:
+-	if (change == KVM_MR_DELETE || change == KVM_MR_MOVE) {
+-		slot = id_to_memslot(slots, new->id);
+-		slot->flags &= ~KVM_MEMSLOT_INVALID;
++	if (change == KVM_MR_DELETE || change == KVM_MR_MOVE)
+ 		slots = install_new_memslots(kvm, as_id, slots);
+-	} else {
++	else
+ 		mutex_unlock(&kvm->slots_arch_lock);
+-	}
+ 	kvfree(slots);
+ 	return r;
+ }
 -- 
 2.33.1.1089.g2158813163f-goog
 
