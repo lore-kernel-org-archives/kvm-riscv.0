@@ -1,53 +1,74 @@
-From: Sean Christopherson <seanjc@google.com>
-Date: Thu, 4 Nov 2021 22:41:53 +0000
-Subject: [PATCH v5.5 01/30] KVM: Ensure local memslot copies operate on
- up-to-date arch-specific data
-In-Reply-To: <CANgfPd-uuPFjAHk5kVNom2Qs=UU_GX6CQ0xDLg1h_iL8t8S2aQ@mail.gmail.com>
-References: <20211104002531.1176691-1-seanjc@google.com>
- <20211104002531.1176691-2-seanjc@google.com>
- <CANgfPd-uuPFjAHk5kVNom2Qs=UU_GX6CQ0xDLg1h_iL8t8S2aQ@mail.gmail.com>
-Message-ID: <YYRhsclZpZwilkE5@google.com>
+From: Atish Patra <atish.patra@wdc.com>
+Date: Fri,  5 Nov 2021 16:58:47 -0700
+Subject: [PATCH v4 0/5] Add SBI v0.2 support for KVM
+Message-ID: <20211105235852.3011900-1-atish.patra@wdc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Nov 04, 2021, Ben Gardon wrote:
-> > @@ -1597,6 +1596,26 @@ static int kvm_set_memslot(struct kvm *kvm,
-> >                 kvm_copy_memslots(slots, __kvm_memslots(kvm, as_id));
-> >         }
-> >
-> > +       /*
-> > +        * Make a full copy of the old memslot, the pointer will become stale
-> > +        * when the memslots are re-sorted by update_memslots(), and the old
-> > +        * memslot needs to be referenced after calling update_memslots(), e.g.
-> > +        * to free its resources and for arch specific behavior.  This needs to
-> > +        * happen *after* (re)acquiring slots_arch_lock.
-> > +        */
-> > +       slot = id_to_memslot(slots, new->id);
-> > +       if (slot) {
-> > +               old = *slot;
-> > +       } else {
-> > +               WARN_ON_ONCE(change != KVM_MR_CREATE);
-> > +               memset(&old, 0, sizeof(old));
-> > +               old.id = new->id;
-> > +               old.as_id = as_id;
-> > +       }
-> > +
-> > +       /* Copy the arch-specific data, again after (re)acquiring slots_arch_lock. */
-> > +       memcpy(&new->arch, &old.arch, sizeof(old.arch));
-> > +
-> 
-> Is new->arch not initialized before this function is called? Does this
-> need to be here, or could it be moved above into the first branch of
-> the if statement?
-> Oh I see you removed the memset below and replaced it with this. I
-> think this is fine, but it might be easier to reason about if we left
-> the memset and moved the memcopy into the if.
-> No point in doing a memcpy of zeros here.
+The Supervisor Binary Interface(SBI) specification[1] now defines a
+base extension that provides extendability to add future extensions
+while maintaining backward compatibility with previous versions.
+The new version is defined as 0.2 and older version is marked as 0.1.
 
-Hmm, good point.  I wrote it like this so that the "arch" part is more identifiable
-since that's what needs to be protected by the lock, but I completely agree that
-it's odd when viewed without that lens.
+This series adds following features to RISC-V Linux KVM.
+1. Adds support for SBI v0.2 in KVM
+2. SBI Hart state management extension (HSM) in KVM
+3. Ordered booting of guest vcpus in guest Linux
+
+This series is based on base KVM series which is already part of the kvm-next[2]. 
+
+Guest kernel needs to also support SBI v0.2 and HSM extension in Kernel
+to boot multiple vcpus. Linux kernel supports both starting v5.7.
+In absense of that, guest can only boot 1 vcpu.
+
+Changes from v3->v4:
+1. Fixed the commit text title.
+2. Removed a redundant memory barrier from patch 4.
+3. Replaced preempt_enable/disable with get_cpu/put_cpu.
+4. Renamed the exixting implementation as v01 instead of legacy.
+
+Changes from v2->v3:
+1. Rebased on the latest merged kvm series.
+2. Dropped the reset extension patch because reset extension is not merged in kernel. 
+However, my tree[3] still contains it in case anybody wants to test it.
+
+Changes from v1->v2:
+1. Sent the patch 1 separately as it can merged independently.
+2. Added Reset extension functionality.
+
+Tested on Qemu and Rocket core FPGA.
+
+[1] https://github.com/riscv/riscv-sbi-doc/blob/master/riscv-sbi.adoc
+[3] https://github.com/atishp04/linux/tree/kvm_sbi_v03_reset
+[4] https://github.com/atishp04/linux/tree/kvm_sbi_v03
+
+Atish Patra (5):
+RISC-V: KVM: Mark the existing SBI implementation as v01
+RISC-V: KVM: Reorganize SBI code by moving SBI v0.1 to its own file
+RISC-V: KVM: Add SBI v0.2 base extension
+RISC-V: KVM: Add v0.1 replacement SBI extensions defined in v02
+RISC-V: KVM: Add SBI HSM extension in KVM
+
+arch/riscv/include/asm/kvm_vcpu_sbi.h |  33 +++++
+arch/riscv/include/asm/sbi.h          |   9 ++
+arch/riscv/kvm/Makefile               |   4 +
+arch/riscv/kvm/vcpu.c                 |  23 +++
+arch/riscv/kvm/vcpu_sbi.c             | 206 ++++++++++++--------------
+arch/riscv/kvm/vcpu_sbi_base.c        |  73 +++++++++
+arch/riscv/kvm/vcpu_sbi_hsm.c         | 107 +++++++++++++
+arch/riscv/kvm/vcpu_sbi_replace.c     | 136 +++++++++++++++++
+arch/riscv/kvm/vcpu_sbi_v01.c         | 129 ++++++++++++++++
+9 files changed, 609 insertions(+), 111 deletions(-)
+create mode 100644 arch/riscv/include/asm/kvm_vcpu_sbi.h
+create mode 100644 arch/riscv/kvm/vcpu_sbi_base.c
+create mode 100644 arch/riscv/kvm/vcpu_sbi_hsm.c
+create mode 100644 arch/riscv/kvm/vcpu_sbi_replace.c
+create mode 100644 arch/riscv/kvm/vcpu_sbi_v01.c
+
+--
+2.31.1
+
 
