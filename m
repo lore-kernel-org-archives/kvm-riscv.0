@@ -1,11 +1,11 @@
 From: Maciej S. Szmigiero <maciej.szmigiero@oracle.com>
-Date: Tue, 9 Nov 2021 01:38:24 +0100
-Subject: [PATCH v5.5 03/30] KVM: Require total number of memslot pages to
- fit in an unsigned long
-In-Reply-To: <20211104002531.1176691-4-seanjc@google.com>
+Date: Tue, 9 Nov 2021 01:38:36 +0100
+Subject: [PATCH v5.5 04/30] KVM: Open code kvm_delete_memslot() into its
+ only caller
+In-Reply-To: <20211104002531.1176691-5-seanjc@google.com>
 References: <20211104002531.1176691-1-seanjc@google.com>
- <20211104002531.1176691-4-seanjc@google.com>
-Message-ID: <7bda9e32-3fbe-b5cf-f9e1-30b5c0b13f37@oracle.com>
+ <20211104002531.1176691-5-seanjc@google.com>
+Message-ID: <94ce4359-a87b-cbb1-0d47-acc5257d97b6@oracle.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -13,38 +13,12 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 On 04.11.2021 01:25, Sean Christopherson wrote:
-> Explicitly disallow creating more memslot pages than can fit in an
-> unsigned long, KVM doesn't correctly handle a total number of memslot
-> pages that doesn't fit in an unsigned long and remedying that would be a
-> waste of time.
+> Fold kvm_delete_memslot() into __kvm_set_memory_region() to free up the
+> "kvm_delete_memslot()" name for use in a future helper.  The delete logic
+> isn't so complex/long that it truly needs a helper, and it will be
+> simplified a wee bit further in upcoming commits.
 > 
-> For a 64-bit kernel, this is a nop as memslots are not allowed to overlap
-> in the gfn address space.
-> 
-> With a 32-bit kernel, userspace can at most address 3gb of virtual memory,
-> whereas wrapping the total number of pages would require 4tb+ of guest
-> physical memory.  Even with x86's second address space for SMM, userspace
-> would need to alias all of guest memory more than one _thousand_ times.
-> And on older x86 hardware with MAXPHYADDR < 43, the guest couldn't
-> actually access any of those aliases even if userspace lied about
-> guest.MAXPHYADDR.
-> 
-> On 390 and arm64, this is a nop as they don't support 32-bit hosts.
-> 
-> On x86, practically speaking this is simply acknowledging reality as the
-> existing kvm_mmu_calculate_default_mmu_pages() assumes the total number
-> of pages fits in an "unsigned long".
-> 
-> On PPC, this is likely a nop as every flavor of PPC KVM assumes gfns (and
-> gpas!) fit in unsigned long.  arch/powerpc/kvm/book3s_32_mmu_host.c goes
-> a step further and fails the build if CONFIG_PTE_64BIT=y, which
-> presumably means that it does't support 64-bit physical addresses.
-> 
-> On MIPS, this is also likely a nop as the core MMU helpers assume gpas
-> fit in unsigned long, e.g. see kvm_mips_##name##_pte.
-> 
-> And finally, RISC-V is a "don't care" as it doesn't exist in any release,
-> i.e. there is no established ABI to break.
+> No functional change intended.
 > 
 > Signed-off-by: Sean Christopherson <seanjc@google.com>
 
