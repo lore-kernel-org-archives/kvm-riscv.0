@@ -1,11 +1,11 @@
 From: Maciej S. Szmigiero <maciej.szmigiero@oracle.com>
-Date: Tue, 9 Nov 2021 01:38:02 +0100
-Subject: [PATCH v5.5 02/30] KVM: Disallow user memslot with size that
- exceeds "unsigned long"
-In-Reply-To: <20211104002531.1176691-3-seanjc@google.com>
+Date: Tue, 9 Nov 2021 01:38:24 +0100
+Subject: [PATCH v5.5 03/30] KVM: Require total number of memslot pages to
+ fit in an unsigned long
+In-Reply-To: <20211104002531.1176691-4-seanjc@google.com>
 References: <20211104002531.1176691-1-seanjc@google.com>
- <20211104002531.1176691-3-seanjc@google.com>
-Message-ID: <2f451590-bf89-d447-d92a-fe9f3f41ca74@oracle.com>
+ <20211104002531.1176691-4-seanjc@google.com>
+Message-ID: <7bda9e32-3fbe-b5cf-f9e1-30b5c0b13f37@oracle.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -13,39 +13,40 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 On 04.11.2021 01:25, Sean Christopherson wrote:
-> Reject userspace memslots whose size exceeds the storage capacity of an
-> "unsigned long".  KVM's uAPI takes the size as u64 to support large slots
-> on 64-bit hosts, but does not account for the size being truncated on
-> 32-bit hosts in various flows.  The access_ok() check on the userspace
-> virtual address in particular casts the size to "unsigned long" and will
-> check the wrong number of bytes.
+> Explicitly disallow creating more memslot pages than can fit in an
+> unsigned long, KVM doesn't correctly handle a total number of memslot
+> pages that doesn't fit in an unsigned long and remedying that would be a
+> waste of time.
 > 
-> KVM doesn't actually support slots whose size doesn't fit in an "unsigned
-> long", e.g. KVM's internal kvm_memory_slot.npages is an "unsigned long",
-> not a "u64", and misc arch specific code follows that behavior.
+> For a 64-bit kernel, this is a nop as memslots are not allowed to overlap
+> in the gfn address space.
 > 
-> Fixes: fa3d315a4ce2 ("KVM: Validate userspace_addr of memslot when registered")
-> Cc: stable at vger.kernel.org
+> With a 32-bit kernel, userspace can at most address 3gb of virtual memory,
+> whereas wrapping the total number of pages would require 4tb+ of guest
+> physical memory.  Even with x86's second address space for SMM, userspace
+> would need to alias all of guest memory more than one _thousand_ times.
+> And on older x86 hardware with MAXPHYADDR < 43, the guest couldn't
+> actually access any of those aliases even if userspace lied about
+> guest.MAXPHYADDR.
+> 
+> On 390 and arm64, this is a nop as they don't support 32-bit hosts.
+> 
+> On x86, practically speaking this is simply acknowledging reality as the
+> existing kvm_mmu_calculate_default_mmu_pages() assumes the total number
+> of pages fits in an "unsigned long".
+> 
+> On PPC, this is likely a nop as every flavor of PPC KVM assumes gfns (and
+> gpas!) fit in unsigned long.  arch/powerpc/kvm/book3s_32_mmu_host.c goes
+> a step further and fails the build if CONFIG_PTE_64BIT=y, which
+> presumably means that it does't support 64-bit physical addresses.
+> 
+> On MIPS, this is also likely a nop as the core MMU helpers assume gpas
+> fit in unsigned long, e.g. see kvm_mips_##name##_pte.
+> 
+> And finally, RISC-V is a "don't care" as it doesn't exist in any release,
+> i.e. there is no established ABI to break.
+> 
 > Signed-off-by: Sean Christopherson <seanjc@google.com>
-> ---
->   virt/kvm/kvm_main.c | 3 ++-
->   1 file changed, 2 insertions(+), 1 deletion(-)
-> 
-> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-> index 99e69375c4c9..83287730389f 100644
-> --- a/virt/kvm/kvm_main.c
-> +++ b/virt/kvm/kvm_main.c
-> @@ -1689,7 +1689,8 @@ int __kvm_set_memory_region(struct kvm *kvm,
->   	id = (u16)mem->slot;
->   
->   	/* General sanity checks */
-> -	if (mem->memory_size & (PAGE_SIZE - 1))
-> +	if ((mem->memory_size & (PAGE_SIZE - 1)) ||
-> +	    (mem->memory_size != (unsigned long)mem->memory_size))
->   		return -EINVAL;
->   	if (mem->guest_phys_addr & (PAGE_SIZE - 1))
->   		return -EINVAL;
-> 
 
 Reviewed-by: Maciej S. Szmigiero <maciej.szmigiero@oracle.com>
 
