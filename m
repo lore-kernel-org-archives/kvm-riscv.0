@@ -1,12 +1,12 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Tue, 9 Nov 2021 01:13:08 +0000
-Subject: [PATCH v5.5 07/30] KVM: Let/force architectures to deal with
- arch specific memslot data
-In-Reply-To: <e12ecff3-ee69-9e2c-02f9-0e54a1cb9519@oracle.com>
+Date: Tue, 9 Nov 2021 01:17:39 +0000
+Subject: [PATCH v5.5 01/30] KVM: Ensure local memslot copies operate on
+ up-to-date arch-specific data
+In-Reply-To: <6407c2d3-854b-edf6-9990-b54a5baedd0a@oracle.com>
 References: <20211104002531.1176691-1-seanjc@google.com>
- <20211104002531.1176691-8-seanjc@google.com>
- <e12ecff3-ee69-9e2c-02f9-0e54a1cb9519@oracle.com>
-Message-ID: <YYnLJKyt0aYsl1H0@google.com>
+ <20211104002531.1176691-2-seanjc@google.com>
+ <6407c2d3-854b-edf6-9990-b54a5baedd0a@oracle.com>
+Message-ID: <YYnMM17yXMq8cCTn@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -15,44 +15,49 @@ Content-Transfer-Encoding: 7bit
 
 On Tue, Nov 09, 2021, Maciej S. Szmigiero wrote:
 > On 04.11.2021 01:25, Sean Christopherson wrote:
-> > Pass the "old" slot to kvm_arch_prepare_memory_region() and force arch
-> > code to handle propagating arch specific data from "new" to "old" when
-> > necessary.  This is a baby step towards dynamically allocating "new" from
-> > the get go, and is a (very) minor performance boost on x86 due to not
-> > unnecessarily copying arch data.
-> > 
-> > For PPC HV, copy the rmap in the !CREATE and !DELETE paths, i.e. for MOVE
-> > and FLAGS_ONLY.  This is functionally a nop as the previous behavior
-> > would overwrite the pointer for CREATE, and eventually discard/ignore it
-> > for DELETE.
-> > 
-> > For x86, copy the arch data only for FLAGS_ONLY changes.  Unlike PPC HV,
-> > x86 needs to reallocate arch data in the MOVE case as the size of x86's
-> > allocations depend on the alignment of the memslot's gfn.
-> > 
-> > Opportunistically tweak kvm_arch_prepare_memory_region()'s param order to
-> > match the "commit" prototype.
-> > 
-> > Signed-off-by: Sean Christopherson <seanjc@google.com>
-> > ---
-> >   arch/arm64/kvm/mmu.c               |  7 ++++---
-> >   arch/mips/kvm/mips.c               |  3 ++-
-> >   arch/powerpc/include/asm/kvm_ppc.h | 18 ++++++++++--------
-> >   arch/powerpc/kvm/book3s.c          | 12 ++++++------
-> >   arch/powerpc/kvm/book3s_hv.c       | 17 ++++++++++-------
-> >   arch/powerpc/kvm/book3s_pr.c       | 17 +++++++++--------
-> >   arch/powerpc/kvm/booke.c           |  5 +++--
-> >   arch/powerpc/kvm/powerpc.c         |  5 +++--
-> >   arch/s390/kvm/kvm-s390.c           |  3 ++-
-> >   arch/x86/kvm/x86.c                 | 15 +++++++++++----
-> >   include/linux/kvm_host.h           |  3 ++-
-> >   virt/kvm/kvm_main.c                |  5 +----
-> >   12 files changed, 63 insertions(+), 47 deletions(-)
-> > 
+> > @@ -1597,6 +1596,26 @@ static int kvm_set_memslot(struct kvm *kvm,
+> >   		kvm_copy_memslots(slots, __kvm_memslots(kvm, as_id));
+> >   	}
+> > +	/*
+> > +	 * Make a full copy of the old memslot, the pointer will become stale
+> > +	 * when the memslots are re-sorted by update_memslots(), and the old
+> > +	 * memslot needs to be referenced after calling update_memslots(), e.g.
+> > +	 * to free its resources and for arch specific behavior.  This needs to
+> > +	 * happen *after* (re)acquiring slots_arch_lock.
+> > +	 */
+> > +	slot = id_to_memslot(slots, new->id);
+> > +	if (slot) {
+> > +		old = *slot;
+> > +	} else {
+> > +		WARN_ON_ONCE(change != KVM_MR_CREATE);
+> > +		memset(&old, 0, sizeof(old));
+> > +		old.id = new->id;
+> > +		old.as_id = as_id;
+> > +	}
+> > +
+> > +	/* Copy the arch-specific data, again after (re)acquiring slots_arch_lock. */
+> > +	memcpy(&new->arch, &old.arch, sizeof(old.arch));
 > 
-> You didn't include the RISCV kvm_arch_prepare_memory_region() change here
-> (that's actually in patch 13 of this series) so bisection on that arch
-> will be broken between this patch and patch 13.
+> Had "new" been zero-initialized completely in __kvm_set_memory_region()
+> for safety (so it does not contain stack garbage - I don't mean just the
+> new.arch field in the "if (!old.npages)" branch in that function but the
+> whole struct) this line would be needed only in the "if (slot)" branch
+> above (as Ben said).
+> 
+> Also, when patch 7 from this series removes this memcpy(),
+> kvm_arch_prepare_memory_region() does indeed receive this field
+> uninitialized - I know only x86 and ppcHV care
+> and kvm_alloc_memslot_metadata() or kvmppc_core_prepare_memory_region_hv()
+> then overwrites it unconditionally but it feels a bit wrong.
+> 
+> I am almost certain that compiler would figure out to only actually
+> zero the fields that wouldn't be overwritten immediately anyway.
+> 
+> But on the other hand, this patch is only a fix for code that's going
+> to be replaced anyway so perfection here probably isn't that important.
 
-Argh, I thought I had found all of those.  :-/  Thanks.  
+Yeah, that about sums up my feelings about the existing code.  That said, an
+individual memslot isn't _that_ big, and memslot updates without the scalable
+implementation are dreadfully slow anyways, so I'm leaning strongly toward your
+suggestion of zeroing all of new as part of this fix.
 
