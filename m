@@ -1,88 +1,58 @@
-From: Maciej S. Szmigiero <maciej.szmigiero@oracle.com>
-Date: Tue, 9 Nov 2021 01:43:01 +0100
-Subject: [PATCH v5.5 00/30] KVM: Scalable memslots implementation
-In-Reply-To: <20211104002531.1176691-1-seanjc@google.com>
+From: Sean Christopherson <seanjc@google.com>
+Date: Tue, 9 Nov 2021 01:13:08 +0000
+Subject: [PATCH v5.5 07/30] KVM: Let/force architectures to deal with
+ arch specific memslot data
+In-Reply-To: <e12ecff3-ee69-9e2c-02f9-0e54a1cb9519@oracle.com>
 References: <20211104002531.1176691-1-seanjc@google.com>
-Message-ID: <cb4f5d6e-9535-dd57-d8ee-3b593a81f3a6@oracle.com>
+ <20211104002531.1176691-8-seanjc@google.com>
+ <e12ecff3-ee69-9e2c-02f9-0e54a1cb9519@oracle.com>
+Message-ID: <YYnLJKyt0aYsl1H0@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 04.11.2021 01:25, Sean Christopherson wrote:
-> This series is an iteration of Maciej's scalable memslots work.  It
-> addresses most, but not all, of my feedback from v5, hence the "5.5"
-> moniker.  Specifically, I did not touch the iteration over gfn and hva
-> ranges as I would likely do more harm than good, especially in the gfn
-> iterator.
+On Tue, Nov 09, 2021, Maciej S. Szmigiero wrote:
+> On 04.11.2021 01:25, Sean Christopherson wrote:
+> > Pass the "old" slot to kvm_arch_prepare_memory_region() and force arch
+> > code to handle propagating arch specific data from "new" to "old" when
+> > necessary.  This is a baby step towards dynamically allocating "new" from
+> > the get go, and is a (very) minor performance boost on x86 due to not
+> > unnecessarily copying arch data.
+> > 
+> > For PPC HV, copy the rmap in the !CREATE and !DELETE paths, i.e. for MOVE
+> > and FLAGS_ONLY.  This is functionally a nop as the previous behavior
+> > would overwrite the pointer for CREATE, and eventually discard/ignore it
+> > for DELETE.
+> > 
+> > For x86, copy the arch data only for FLAGS_ONLY changes.  Unlike PPC HV,
+> > x86 needs to reallocate arch data in the MOVE case as the size of x86's
+> > allocations depend on the alignment of the memslot's gfn.
+> > 
+> > Opportunistically tweak kvm_arch_prepare_memory_region()'s param order to
+> > match the "commit" prototype.
+> > 
+> > Signed-off-by: Sean Christopherson <seanjc@google.com>
+> > ---
+> >   arch/arm64/kvm/mmu.c               |  7 ++++---
+> >   arch/mips/kvm/mips.c               |  3 ++-
+> >   arch/powerpc/include/asm/kvm_ppc.h | 18 ++++++++++--------
+> >   arch/powerpc/kvm/book3s.c          | 12 ++++++------
+> >   arch/powerpc/kvm/book3s_hv.c       | 17 ++++++++++-------
+> >   arch/powerpc/kvm/book3s_pr.c       | 17 +++++++++--------
+> >   arch/powerpc/kvm/booke.c           |  5 +++--
+> >   arch/powerpc/kvm/powerpc.c         |  5 +++--
+> >   arch/s390/kvm/kvm-s390.c           |  3 ++-
+> >   arch/x86/kvm/x86.c                 | 15 +++++++++++----
+> >   include/linux/kvm_host.h           |  3 ++-
+> >   virt/kvm/kvm_main.c                |  5 +----
+> >   12 files changed, 63 insertions(+), 47 deletions(-)
+> > 
 > 
-> The core functionality of the series is unchanged from v5 (or at least,
-> it should be).  Patches "Resolve memslot ID via a hash table" and "Keep
-> memslots in tree-based structures" are heavily reworked (the latter in
-> particular) to provide better continuity between patches and to avoid
-> the swap() logic when working with the "inactive" set of memslots.  But
-> again, the changes are intended to be purely cosmetic.
-> 
-> Paolo, ideally I'd like get to patch 03 (and therefore patch 02) into 5.16.
-> The patch technically breaks backwards compatibility with 32-bit KVM, but
-> I'm quite confident none of the existing 32-bit architectures can possibly
-> work.  RISC-V is the one exception where it's not obvious that creating
-> more guest memslot pages than can fit in an unsigned long won't fall on its
-> face.  Since RISC-V is new in 5.16, I'd like to get that change in before
-> RISC-V can gain any users doing bizarre things.
-> 
-> s390 folks, please look closely at patch 11, "KVM: s390: Use "new" memslot
-> instead of userspace memory region".  There's a subtle/weird functional
-> change in there that I can't imagine would negatively affect userspace,
-> but the end result is odd nonetheless.
-> 
-> Claudio, I dropped your R-b from "KVM: Integrate gfn_to_memslot_approx()
-> into search_memslots()" because I changed the code enough to break the s390
-> build at least once :-)
-> 
-> Patches 01 and 02 are bug fixes.
-> 
-> Patch 03 is fix of sorts to require that the total number of pages across
-> all memslots fit in an unsigned long.  The existing 32-bit KVM
-> architectures don't correctly handle this case, and fixing those issues
-> would quite gross and a waste of time.
-> 
-> Patches 04-18 are cleanups throughout common KVM and all architectures
-> to fix some warts in the memslot APIs that allow for a cleaner (IMO)
-> of the tree-based memslots code.  They also prep for more improvements
-> that are realized in the final patch.
-> 
-> Patches 19-28 are the core of Maciej's scalable memslots work.
-> 
-> Patches 29-30 take advantage of the tree-based memslots to avoid creating
-> a dummy "new" memslot on the stack, which simplifies the MOVE case and
-> aligns it with the other three memslot update cases.
+> You didn't include the RISCV kvm_arch_prepare_memory_region() change here
+> (that's actually in patch 13 of this series) so bisection on that arch
+> will be broken between this patch and patch 13.
 
-Thanks for the updated series Sean - that's an impressive amount of
-cleanups for the existing KVM code.
-
-I've reviewed the non-arch-specific and x86-specific patches till patch 22
-(inclusive).
-Further patches are more invasive and require a more through review -
-will try to do this in coming days.
-
-The arch-specific but non-x86-ones patches look OK to me, too, at the
-first glance but here it would be better if maintainers or reviewers
-from particular arch gave their acks.
-
-By the way, do you want your patches and my non-invasive patches (patches
-below number 23) merged without waiting for the rest of the series to be
-fully ready?
-
-This way there is less risk of conflicting changes to KVM being merged
-in meantime while we are still discussing the remaining patches.
-Or worse - changes that don't conflict but subtly break some assumptions
-that the code relies on.
-
-For this reason I am strongly for merging them independently from the
-more invasive parts.
-
-Thanks,
-Maciej
+Argh, I thought I had found all of those.  :-/  Thanks.  
 
