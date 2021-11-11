@@ -1,65 +1,50 @@
-From: Vitaly Kuznetsov <vkuznets@redhat.com>
-Date: Thu, 11 Nov 2021 17:27:46 +0100
-Subject: [PATCH 5/5] KVM: x86: Drop arbitraty KVM_SOFT_MAX_VCPUS
+From: Paolo Bonzini <pbonzini@redhat.com>
+Date: Thu, 11 Nov 2021 17:32:00 +0100
+Subject: [PATCH 0/5] KVM: Cap KVM_CAP_NR_VCPUS by KVM_CAP_MAX_VCPUS and
+ re-purpose it on x86
 In-Reply-To: <20211111162746.100598-1-vkuznets@redhat.com>
 References: <20211111162746.100598-1-vkuznets@redhat.com>
-Message-ID: <20211111162746.100598-6-vkuznets@redhat.com>
+Message-ID: <4a3c7be7-12fa-6e47-64eb-02e6c5be5dbc@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-KVM_CAP_NR_VCPUS is used to get the "recommended" maximum number of
-VCPUs and arm64/mips/riscv report num_online_cpus(). Powerpc reports
-either num_online_cpus() or num_present_cpus(), s390 has multiple
-constants depending on hardware features. On x86, KVM reports an
-arbitrary value of '710' which is supposed to be the maximum tested
-value but it's possible to test all KVM_MAX_VCPUS even when there are
-less physical CPUs available.
+On 11/11/21 17:27, Vitaly Kuznetsov wrote:
+> This is a comtinuation of "KVM: x86: Drop arbitraty KVM_SOFT_MAX_VCPUS"
+> (https://lore.kernel.org/kvm/20211111134733.86601-1-vkuznets at redhat.com/)
+> work.
+> 
+> 1) Enforce KVM_CAP_NR_VCPUS <= KVM_CAP_MAX_VCPUS rule on all
+>   architectures. [Sean Christopherson]
+> 2) Make KVM_CAP_NR_VCPUS return num_online_cpus() and not an arbitrary
+>   value of '710' on x86.
+> 
+> Everything but x86 was only 'eyeball tested', the change is trivial
+> but sorry in advance if I screwed up)
 
-Drop the arbitrary '710' value and return num_online_cpus() on x86 as
-well. The recommendation will match other architectures and will mean
-'no CPU overcommit'.
+Christian, can you look at this for s390?  Returning a fixed value seems 
+wrong for KVM_CAP_NR_VCPUS.
 
-For reference, QEMU only queries KVM_CAP_NR_VCPUS to print a warning
-when the requested vCPU number exceeds it. The static limit of '710'
-is quite weird as smaller systems with just a few physical CPUs should
-certainly "recommend" less.
+Thanks,
 
-Suggested-by: Eduardo Habkost <ehabkost@redhat.com>
-Signed-off-by: Vitaly Kuznetsov <vkuznets@redhat.com>
----
- arch/x86/include/asm/kvm_host.h | 1 -
- arch/x86/kvm/x86.c              | 2 +-
- 2 files changed, 1 insertion(+), 2 deletions(-)
+Paolo
 
-diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
-index 88fce6ab4bbd..0232a00598f2 100644
---- a/arch/x86/include/asm/kvm_host.h
-+++ b/arch/x86/include/asm/kvm_host.h
-@@ -38,7 +38,6 @@
- #define __KVM_HAVE_ARCH_VCPU_DEBUGFS
- 
- #define KVM_MAX_VCPUS 1024
--#define KVM_SOFT_MAX_VCPUS 710
- 
- /*
-  * In x86, the VCPU ID corresponds to the APIC ID, and APIC IDs
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index ac83d873d65b..18a00a7c23bc 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -4137,7 +4137,7 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
- 		r = !static_call(kvm_x86_cpu_has_accelerated_tpr)();
- 		break;
- 	case KVM_CAP_NR_VCPUS:
--		r = KVM_SOFT_MAX_VCPUS;
-+		r = min_t(unsigned int, num_online_cpus(), KVM_MAX_VCPUS);
- 		break;
- 	case KVM_CAP_MAX_VCPUS:
- 		r = KVM_MAX_VCPUS;
--- 
-2.33.1
+> Vitaly Kuznetsov (5):
+>    KVM: arm64: Cap KVM_CAP_NR_VCPUS by KVM_CAP_MAX_VCPUS
+>    KVM: MIPS: Cap KVM_CAP_NR_VCPUS by KVM_CAP_MAX_VCPUS
+>    KVM: PPC: Cap KVM_CAP_NR_VCPUS by KVM_CAP_MAX_VCPUS
+>    KVM: RISC-V: Cap KVM_CAP_NR_VCPUS by KVM_CAP_MAX_VCPUS
+>    KVM: x86: Drop arbitraty KVM_SOFT_MAX_VCPUS
+> 
+>   arch/arm64/kvm/arm.c            | 7 ++++++-
+>   arch/mips/kvm/mips.c            | 2 +-
+>   arch/powerpc/kvm/powerpc.c      | 4 ++--
+>   arch/riscv/kvm/vm.c             | 2 +-
+>   arch/x86/include/asm/kvm_host.h | 1 -
+>   arch/x86/kvm/x86.c              | 2 +-
+>   6 files changed, 11 insertions(+), 7 deletions(-)
+> 
 
 
