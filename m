@@ -1,61 +1,72 @@
-From: Marc Zyngier <maz@kernel.org>
-Date: Thu, 11 Nov 2021 19:36:34 +0000
-Subject: [PATCH 1/5] KVM: arm64: Cap KVM_CAP_NR_VCPUS by KVM_CAP_MAX_VCPUS
-In-Reply-To: <20211111162746.100598-2-vkuznets@redhat.com>
-References: <20211111162746.100598-1-vkuznets@redhat.com>
- <20211111162746.100598-2-vkuznets@redhat.com>
-Message-ID: <a5cdff6878b7157587e92ebe4d5af362@kernel.org>
+From: Maciej S. Szmigiero <maciej.szmigiero@oracle.com>
+Date: Fri, 12 Nov 2021 00:51:47 +0100
+Subject: [PATCH v5.5 23/30] KVM: Resolve memslot ID via a hash table
+ instead of via a static array
+In-Reply-To: <20211104002531.1176691-24-seanjc@google.com>
+References: <20211104002531.1176691-1-seanjc@google.com>
+ <20211104002531.1176691-24-seanjc@google.com>
+Message-ID: <f0b364ed-bf9e-5de9-0449-6d7ba3682405@oracle.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Vitaly,
-
-On 2021-11-11 16:27, Vitaly Kuznetsov wrote:
-> It doesn't make sense to return the recommended maximum number of
-> vCPUs which exceeds the maximum possible number of vCPUs.
+On 04.11.2021 01:25, Sean Christopherson wrote:
+> From: Maciej S. Szmigiero <maciej.szmigiero@oracle.com>
 > 
-> Signed-off-by: Vitaly Kuznetsov <vkuznets@redhat.com>
+> Memslot ID to the corresponding memslot mappings are currently kept as
+> indices in static id_to_index array.
+> The size of this array depends on the maximum allowed memslot count
+> (regardless of the number of memslots actually in use).
+> 
+> This has become especially problematic recently, when memslot count cap was
+> removed, so the maximum count is now full 32k memslots - the maximum
+> allowed by the current KVM API.
+> 
+> Keeping these IDs in a hash table (instead of an array) avoids this
+> problem.
+> 
+> Resolving a memslot ID to the actual memslot (instead of its index) will
+> also enable transitioning away from an array-based implementation of the
+> whole memslots structure in a later commit.
+> 
+> Signed-off-by: Maciej S. Szmigiero <maciej.szmigiero@oracle.com>
+> Co-developed-by: Sean Christopherson <seanjc@google.com>
+> Signed-off-by: Sean Christopherson <seanjc@google.com>
 > ---
->  arch/arm64/kvm/arm.c | 7 ++++++-
->  1 file changed, 6 insertions(+), 1 deletion(-)
+>   include/linux/kvm_host.h | 16 +++----
+>   virt/kvm/kvm_main.c      | 96 +++++++++++++++++++++++++++++++---------
+>   2 files changed, 84 insertions(+), 28 deletions(-)
 > 
-> diff --git a/arch/arm64/kvm/arm.c b/arch/arm64/kvm/arm.c
-> index 7838e9fb693e..391dc7a921d5 100644
-> --- a/arch/arm64/kvm/arm.c
-> +++ b/arch/arm64/kvm/arm.c
-> @@ -223,7 +223,12 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, 
-> long ext)
->  		r = 1;
->  		break;
->  	case KVM_CAP_NR_VCPUS:
-> -		r = num_online_cpus();
-> +		if (kvm)
-> +			r = min_t(unsigned int, num_online_cpus(),
-> +				  kvm->arch.max_vcpus);
-> +		else
-> +			r = min_t(unsigned int, num_online_cpus(),
-> +				  kvm_arm_default_max_vcpus());
->  		break;
->  	case KVM_CAP_MAX_VCPUS:
->  	case KVM_CAP_MAX_VCPU_ID:
+(..)
+> @@ -1259,17 +1257,49 @@ static int kvm_alloc_dirty_bitmap(struct kvm_memory_slot *memslot)
+>   	return 0;
+>   }
+>   
+> +static void kvm_replace_memslot(struct kvm_memslots *slots,
+> +				struct kvm_memory_slot *old,
+> +				struct kvm_memory_slot *new)
+> +{
+> +	/*
+> +	 * Remove the old memslot from the hash list, copying the node data
+> +	 * would corrupt the list.
+> +	 */
+> +	if (old) {
+> +		hash_del(&old->id_node);
+> +
+> +		if (!new)
+> +			return;
+> +	}
+> +
+> +	/* Copy the source *data*, not the pointer, to the destination. */
+> +	if (old)
+> +		*new = *old;
 
-This looks odd. This means that depending on the phase userspace is
-in while initialising the VM, KVM_CAP_NR_VCPUS can return one thing
-or the other.
-
-For example, I create a VM on a 32 CPU system, NR_VCPUS says 32.
-I create a GICv2 interrupt controller, it now says 8.
-
-That's a change in behaviour that is visible by userspace, which
-I'm keen on avoiding. I'd rather have the kvm and !kvm cases
-return the same thing.
+This way of writing it (that, is re-checking whether "old" is not-NULL)
+suggests that it could have been set to NULL inside the previous block
+(since the last check), which isn't true.
 
 Thanks,
-
-         M.
--- 
-Jazz is not dead. It just smells funny...
+Maciej
 
