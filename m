@@ -1,12 +1,12 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Fri, 12 Nov 2021 00:51:03 +0000
-Subject: [PATCH v5.5 26/30] KVM: Keep memslots in tree-based structures
- instead of array-based ones
-In-Reply-To: <5f5c80ce-9189-def3-9c50-d5a504925253@oracle.com>
+Date: Fri, 12 Nov 2021 01:03:51 +0000
+Subject: [PATCH v5.5 23/30] KVM: Resolve memslot ID via a hash table
+ instead of via a static array
+In-Reply-To: <f0b364ed-bf9e-5de9-0449-6d7ba3682405@oracle.com>
 References: <20211104002531.1176691-1-seanjc@google.com>
- <20211104002531.1176691-27-seanjc@google.com>
- <5f5c80ce-9189-def3-9c50-d5a504925253@oracle.com>
-Message-ID: <YY26dxv2kM3m2H7Z@google.com>
+ <20211104002531.1176691-24-seanjc@google.com>
+ <f0b364ed-bf9e-5de9-0449-6d7ba3682405@oracle.com>
+Message-ID: <YY29d7Vb6aiv93mu@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -15,73 +15,60 @@ Content-Transfer-Encoding: 7bit
 
 On Fri, Nov 12, 2021, Maciej S. Szmigiero wrote:
 > On 04.11.2021 01:25, Sean Christopherson wrote:
-> > -	/*
-> > -	 * Remove the old memslot from the hash list and interval tree, copying
-> > -	 * the node data would corrupt the structures.
-> > -	 */
-> > +	int as_id = kvm_memslots_get_as_id(old, new);
-> > +	struct kvm_memslots *slots = kvm_get_inactive_memslots(kvm, as_id);
-> > +	int idx = slots->node_idx;
-> > +
-> >   	if (old) {
-> > -		hash_del(&old->id_node);
-> > -		interval_tree_remove(&old->hva_node, &slots->hva_tree);
-> > +		hash_del(&old->id_node[idx]);
-> > +		interval_tree_remove(&old->hva_node[idx], &slots->hva_tree);
-> > -		if (!new)
-> > +		if ((long)old == atomic_long_read(&slots->last_used_slot))
-> > +			atomic_long_set(&slots->last_used_slot, (long)new);
-> 
-> Open-coding cmpxchg() is way less readable than a direct call.
-
-Doh, I meant to call this out and/or add a comment.
-
-My objection to cmpxchg() is that it implies atomicity is required (the kernel's
-version adds the lock), which is very much not the case.  So this isn't strictly
-an open-coded version of cmpxchg().
-
-> The open-coded version also compiles on x86 to multiple instructions with
-> a branch, instead of just a single instruction.
-
-Yeah.  The lock can't be contended, so that part of cmpxchg is a non-issue.  But
-that's also why I don't love using cmpxchg.
-
-I don't have a strong preference, I just got briefly confused by the atomicity part.
-
-> > +static void kvm_invalidate_memslot(struct kvm *kvm,
-> > +				   struct kvm_memory_slot *old,
-> > +				   struct kvm_memory_slot *working_slot)
+> > From: Maciej S. Szmigiero <maciej.szmigiero@oracle.com>
+> > 
+> > Memslot ID to the corresponding memslot mappings are currently kept as
+> > indices in static id_to_index array.
+> > The size of this array depends on the maximum allowed memslot count
+> > (regardless of the number of memslots actually in use).
+> > 
+> > This has become especially problematic recently, when memslot count cap was
+> > removed, so the maximum count is now full 32k memslots - the maximum
+> > allowed by the current KVM API.
+> > 
+> > Keeping these IDs in a hash table (instead of an array) avoids this
+> > problem.
+> > 
+> > Resolving a memslot ID to the actual memslot (instead of its index) will
+> > also enable transitioning away from an array-based implementation of the
+> > whole memslots structure in a later commit.
+> > 
+> > Signed-off-by: Maciej S. Szmigiero <maciej.szmigiero@oracle.com>
+> > Co-developed-by: Sean Christopherson <seanjc@google.com>
+> > Signed-off-by: Sean Christopherson <seanjc@google.com>
+> > ---
+> >   include/linux/kvm_host.h | 16 +++----
+> >   virt/kvm/kvm_main.c      | 96 +++++++++++++++++++++++++++++++---------
+> >   2 files changed, 84 insertions(+), 28 deletions(-)
+> > 
+> (..)
+> > @@ -1259,17 +1257,49 @@ static int kvm_alloc_dirty_bitmap(struct kvm_memory_slot *memslot)
+> >   	return 0;
+> >   }
+> > +static void kvm_replace_memslot(struct kvm_memslots *slots,
+> > +				struct kvm_memory_slot *old,
+> > +				struct kvm_memory_slot *new)
 > > +{
 > > +	/*
-> > +	 * Mark the current slot INVALID.  As with all memslot modifications,
-> > +	 * this must be done on an unreachable slot to avoid modifying the
-> > +	 * current slot in the active tree.
+> > +	 * Remove the old memslot from the hash list, copying the node data
+> > +	 * would corrupt the list.
 > > +	 */
-> > +	kvm_copy_memslot(working_slot, old);
-> > +	working_slot->flags |= KVM_MEMSLOT_INVALID;
-> > +	kvm_replace_memslot(kvm, old, working_slot);
+> > +	if (old) {
+> > +		hash_del(&old->id_node);
 > > +
-> > +	/*
-> > +	 * Activate the slot that is now marked INVALID, but don't propagate
-> > +	 * the slot to the now inactive slots. The slot is either going to be
-> > +	 * deleted or recreated as a new slot.
-> > +	 */
-> > +	kvm_swap_active_memslots(kvm, old->as_id);
+> > +		if (!new)
+> > +			return;
+> > +	}
 > > +
-> > +	/*
-> > +	 * From this point no new shadow pages pointing to a deleted, or moved,
-> > +	 * memslot will be created.  Validation of sp->gfn happens in:
-> > +	 *	- gfn_to_hva (kvm_read_guest, gfn_to_pfn)
-> > +	 *	- kvm_is_visible_gfn (mmu_check_root)
-> > +	 */
-> > +	kvm_arch_flush_shadow_memslot(kvm, old);
+> > +	/* Copy the source *data*, not the pointer, to the destination. */
+> > +	if (old)
+> > +		*new = *old;
 > 
-> This should flush the currently active slot (that is, "working_slot",
-> not "old") to not introduce a behavior change with respect to the existing
-> code.
-> 
-> That's also what the previous version of this patch set did.
+> This way of writing it (that, is re-checking whether "old" is not-NULL)
+> suggests that it could have been set to NULL inside the previous block
+> (since the last check), which isn't true.
 
-Eww.  I would much prefer to "fix" the existing code in a prep patch.  It shouldn't
-matter, but arch code really should not get passed an INVALID slot.
+Yeah, I think I was trying to minimize the logic delta in future patches, but
+looking back at the diffs, that didn't pan out.  I've no objection to folding
+the two together.
 
