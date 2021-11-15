@@ -1,11 +1,11 @@
 From: Christian Borntraeger <borntraeger@de.ibm.com>
-Date: Mon, 15 Nov 2021 13:16:10 +0100
+Date: Mon, 15 Nov 2021 13:33:56 +0100
 Subject: [PATCH 0/5] KVM: Cap KVM_CAP_NR_VCPUS by KVM_CAP_MAX_VCPUS and
  re-purpose it on x86
 In-Reply-To: <4a3c7be7-12fa-6e47-64eb-02e6c5be5dbc@redhat.com>
 References: <20211111162746.100598-1-vkuznets@redhat.com>
  <4a3c7be7-12fa-6e47-64eb-02e6c5be5dbc@redhat.com>
-Message-ID: <b581f056-e7ea-befa-8c13-50644105c042@de.ibm.com>
+Message-ID: <ecd55383-7089-b3cd-30cc-3f9feb7eadb4@de.ibm.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -28,26 +28,6 @@ Am 11.11.21 um 17:32 schrieb Paolo Bonzini:
 > 
 > Christian, can you look at this for s390?? Returning a fixed value seems wrong for KVM_CAP_NR_VCPUS.
 
-will do. (Sorry I was OOO the last days).
-> 
-> Thanks,
-> 
-> Paolo
-> 
->> Vitaly Kuznetsov (5):
->> ?? KVM: arm64: Cap KVM_CAP_NR_VCPUS by KVM_CAP_MAX_VCPUS
->> ?? KVM: MIPS: Cap KVM_CAP_NR_VCPUS by KVM_CAP_MAX_VCPUS
->> ?? KVM: PPC: Cap KVM_CAP_NR_VCPUS by KVM_CAP_MAX_VCPUS
->> ?? KVM: RISC-V: Cap KVM_CAP_NR_VCPUS by KVM_CAP_MAX_VCPUS
->> ?? KVM: x86: Drop arbitraty KVM_SOFT_MAX_VCPUS
->>
->> ? arch/arm64/kvm/arm.c??????????? | 7 ++++++-
->> ? arch/mips/kvm/mips.c??????????? | 2 +-
->> ? arch/powerpc/kvm/powerpc.c????? | 4 ++--
->> ? arch/riscv/kvm/vm.c???????????? | 2 +-
->> ? arch/x86/include/asm/kvm_host.h | 1 -
->> ? arch/x86/kvm/x86.c????????????? | 2 +-
->> ? 6 files changed, 11 insertions(+), 7 deletions(-)
->>
-> 
+If we talk about recommended number, then num_online_cpus() also seems to make sense on s390 so
+if you change that for s390 as well I can ACK this.
 
