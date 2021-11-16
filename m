@@ -1,51 +1,55 @@
-From: Paolo Bonzini <pbonzini@redhat.com>
-Date: Tue, 16 Nov 2021 14:10:40 +0100
-Subject: [PATCH] riscv: kvm: fix non-kernel-doc comment block
-In-Reply-To: <20211107034706.30672-1-rdunlap@infradead.org>
-References: <20211107034706.30672-1-rdunlap@infradead.org>
-Message-ID: <4e6df304-a5a5-fd33-1b6a-59eec905101f@redhat.com>
+From: Vitaly Kuznetsov <vkuznets@redhat.com>
+Date: Tue, 16 Nov 2021 14:23:25 +0100
+Subject: [PATCH 1/5] KVM: arm64: Cap KVM_CAP_NR_VCPUS by KVM_CAP_MAX_VCPUS
+In-Reply-To: <ad3534bc-fe3a-55f5-b022-4dbec5f29798@redhat.com>
+References: <20211111162746.100598-1-vkuznets@redhat.com>
+ <20211111162746.100598-2-vkuznets@redhat.com>
+ <a5cdff6878b7157587e92ebe4d5af362@kernel.org> <875ysxg0s1.fsf@redhat.com>
+ <87k0hd8obo.wl-maz@kernel.org>
+ <ad3534bc-fe3a-55f5-b022-4dbec5f29798@redhat.com>
+Message-ID: <87y25onsj6.fsf@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 11/7/21 04:47, Randy Dunlap wrote:
-> Don't use "/**" to begin a comment block for a non-kernel-doc comment.
-> 
-> Prevents this docs build warning:
-> 
-> vcpu_sbi.c:3: warning: This comment starts with '/**', but isn't a kernel-doc comment. Refer Documentation/doc-guide/kernel-doc.rst
->   * Copyright (c) 2019 Western Digital Corporation or its affiliates.
-> 
-> Fixes: dea8ee31a039 ("RISC-V: KVM: Add SBI v0.1 support")
-> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-> Reported-by: kernel test robot <lkp@intel.com>
-> Cc: Atish Patra <atish.patra@wdc.com>
-> Cc: Anup Patel <anup.patel@wdc.com>
-> Cc: kvm at vger.kernel.org
-> Cc: kvm-riscv at lists.infradead.org
-> Cc: linux-riscv at lists.infradead.org
-> Cc: Paul Walmsley <paul.walmsley@sifive.com>
-> Cc: Palmer Dabbelt <palmer@dabbelt.com>
-> Cc: Albert Ou <aou@eecs.berkeley.edu>
-> ---
->   arch/riscv/kvm/vcpu_sbi.c |    2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> --- linux-next-20211106.orig/arch/riscv/kvm/vcpu_sbi.c
-> +++ linux-next-20211106/arch/riscv/kvm/vcpu_sbi.c
-> @@ -1,5 +1,5 @@
->   // SPDX-License-Identifier: GPL-2.0
-> -/**
-> +/*
->    * Copyright (c) 2019 Western Digital Corporation or its affiliates.
->    *
->    * Authors:
-> 
+Paolo Bonzini <pbonzini@redhat.com> writes:
 
-Queued, thanks.
+> On 11/12/21 15:02, Marc Zyngier wrote:
+>>> I'd like KVM to be consistent across architectures and have the same
+>>> (similar) meaning for KVM_CAP_NR_VCPUS.
+>> Sure, but this is a pretty useless piece of information anyway. As
+>> Andrew pointed out, the information is available somewhere else, and
+>> all we need to do is to cap it to the number of supported vcpus, which
+>> is effectively a KVM limitation.
+>> 
+>> Also, we are talking about representing the architecture to userspace.
+>> No amount of massaging is going to make an arm64 box look like an x86.
+>
+> Not sure what you mean?  The API is about providing a piece of 
+> information independent of the architecture, while catering for a ppc 
+> weirdness.  Yes it's mostly useless if you don't care about ppc, but 
+> it's not about making arm64 look like x86 or ppc; it's about not having 
+> to special case ppc in userspace.
+>
+> If anything, if KVM_CAP_NR_VCPUS returns the same for kvm and !kvm, then 
+> *that* is making an arm64 box look like an x86.  On ARM the max vCPUs 
+> depends on VM's GIC configuration, so KVM_CAP_NR_VCPUS should take that 
+> into account.
 
-Paolo
+(I'm about to send v2 as we have s390 sorted out.)
+
+So what do we decide about ARM? 
+- Current approach (kvm->arch.max_vcpus/kvm_arm_default_max_vcpus()
+ depending on 'if (kvm)') - that would be my preference.
+- Always kvm_arm_default_max_vcpus to make the output independent on 'if
+ (kvm)'.
+- keep the status quo (drop the patch).
+
+Please advise)
+
+-- 
+Vitaly
 
 
