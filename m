@@ -1,65 +1,61 @@
-From: Vitaly Kuznetsov <vkuznets@redhat.com>
-Date: Tue, 16 Nov 2021 17:34:43 +0100
-Subject: [PATCH v2 6/6] KVM: x86: Drop arbitraty KVM_SOFT_MAX_VCPUS
-In-Reply-To: <20211116163443.88707-1-vkuznets@redhat.com>
-References: <20211116163443.88707-1-vkuznets@redhat.com>
-Message-ID: <20211116163443.88707-7-vkuznets@redhat.com>
+From: Paolo Bonzini <pbonzini@redhat.com>
+Date: Tue, 16 Nov 2021 19:05:28 +0100
+Subject: [PATCH 3/4] Documentation: update vcpu-requests.rst reference
+In-Reply-To: <CAAhSdy0JRTwmr+EdSEr3ng1gfDpqnF7m3ejC2AydjAgu0mEQLw@mail.gmail.com>
+References: <cover.1637064577.git.mchehab+huawei@kernel.org>
+ <32b3693314f3914f10a42dea97ad6e06292fcd4a.1637064577.git.mchehab+huawei@kernel.org>
+ <34e691ec-a58d-c86b-a2ef-6fa4f0385b69@redhat.com>
+ <CAAhSdy0JRTwmr+EdSEr3ng1gfDpqnF7m3ejC2AydjAgu0mEQLw@mail.gmail.com>
+Message-ID: <8a762a6b-4ad8-211f-f350-ba65f8e77b64@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-KVM_CAP_NR_VCPUS is used to get the "recommended" maximum number of
-VCPUs and arm64/mips/riscv report num_online_cpus(). Powerpc reports
-either num_online_cpus() or num_present_cpus(), s390 has multiple
-constants depending on hardware features. On x86, KVM reports an
-arbitrary value of '710' which is supposed to be the maximum tested
-value but it's possible to test all KVM_MAX_VCPUS even when there are
-less physical CPUs available.
+On 11/16/21 15:01, Anup Patel wrote:
+> On Tue, Nov 16, 2021 at 6:24 PM Paolo Bonzini <pbonzini@redhat.com> wrote:
+>>
+>> On 11/16/21 13:11, Mauro Carvalho Chehab wrote:
+>>> Changeset 2f5947dfcaec ("Documentation: move Documentation/virtual to Documentation/virt")
+>>> renamed: Documentation/virtual/kvm/vcpu-requests.rst
+>>> to: Documentation/virt/kvm/vcpu-requests.rst.
+>>>
+>>> Update its cross-reference accordingly.
+>>>
+>>> Fixes: 2f5947dfcaec ("Documentation: move Documentation/virtual to Documentation/virt")
+>>> Reviewed-by: Anup Patel <anup.patel@wdc.com>
+>>> Signed-off-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+>>> ---
+>>>
+>>> To mailbombing on a large number of people, only mailing lists were C/C on the cover.
+>>> See [PATCH 0/4] at: https://lore.kernel.org/all/cover.1637064577.git.mchehab+huawei at kernel.org/
+>>>
+>>>    arch/riscv/kvm/vcpu.c | 2 +-
+>>>    1 file changed, 1 insertion(+), 1 deletion(-)
+>>>
+>>> diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+>>> index e3d3aed46184..fb84619df012 100644
+>>> --- a/arch/riscv/kvm/vcpu.c
+>>> +++ b/arch/riscv/kvm/vcpu.c
+>>> @@ -740,7 +740,7 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
+>>>                 * Ensure we set mode to IN_GUEST_MODE after we disable
+>>>                 * interrupts and before the final VCPU requests check.
+>>>                 * See the comment in kvm_vcpu_exiting_guest_mode() and
+>>> -              * Documentation/virtual/kvm/vcpu-requests.rst
+>>> +              * Documentation/virt/kvm/vcpu-requests.rst
+>>>                 */
+>>>                vcpu->mode = IN_GUEST_MODE;
+>>>
+>>>
+>>
+>> Acked-by: Paolo Bonzini <pbonzini@redhat.com>
+> 
+> Thanks Paolo, let me know if you want me to include this patch
+> as part of the fixes I have collected.
 
-Drop the arbitrary '710' value and return num_online_cpus() on x86 as
-well. The recommendation will match other architectures and will mean
-'no CPU overcommit'.
+I think Mauro will handle it, but you can pick it as well.
 
-For reference, QEMU only queries KVM_CAP_NR_VCPUS to print a warning
-when the requested vCPU number exceeds it. The static limit of '710'
-is quite weird as smaller systems with just a few physical CPUs should
-certainly "recommend" less.
-
-Suggested-by: Eduardo Habkost <ehabkost@redhat.com>
-Signed-off-by: Vitaly Kuznetsov <vkuznets@redhat.com>
----
- arch/x86/include/asm/kvm_host.h | 1 -
- arch/x86/kvm/x86.c              | 2 +-
- 2 files changed, 1 insertion(+), 2 deletions(-)
-
-diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
-index 88fce6ab4bbd..0232a00598f2 100644
---- a/arch/x86/include/asm/kvm_host.h
-+++ b/arch/x86/include/asm/kvm_host.h
-@@ -38,7 +38,6 @@
- #define __KVM_HAVE_ARCH_VCPU_DEBUGFS
- 
- #define KVM_MAX_VCPUS 1024
--#define KVM_SOFT_MAX_VCPUS 710
- 
- /*
-  * In x86, the VCPU ID corresponds to the APIC ID, and APIC IDs
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index ac83d873d65b..18a00a7c23bc 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -4137,7 +4137,7 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
- 		r = !static_call(kvm_x86_cpu_has_accelerated_tpr)();
- 		break;
- 	case KVM_CAP_NR_VCPUS:
--		r = KVM_SOFT_MAX_VCPUS;
-+		r = min_t(unsigned int, num_online_cpus(), KVM_MAX_VCPUS);
- 		break;
- 	case KVM_CAP_MAX_VCPUS:
- 		r = KVM_MAX_VCPUS;
--- 
-2.33.1
+Paolo
 
 
