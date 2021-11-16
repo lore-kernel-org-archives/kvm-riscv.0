@@ -1,44 +1,46 @@
-From: David Woodhouse <dwmw2@infradead.org>
-Date: Tue, 16 Nov 2021 11:50:49 +0000
-Subject: [PATCH 5/7] KVM: RISC-V: Use Makefile.kvm for common files
-In-Reply-To: <20211116115051.119956-1-dwmw2@infradead.org>
-References: <5047c2591310e503491850ef683f251395247d50.camel@infradead.org>
- <20211116115051.119956-1-dwmw2@infradead.org>
-Message-ID: <20211116115051.119956-5-dwmw2@infradead.org>
+From: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+Date: Tue, 16 Nov 2021 12:11:22 +0000
+Subject: [PATCH 3/4] Documentation: update vcpu-requests.rst reference
+In-Reply-To: <cover.1637064577.git.mchehab+huawei@kernel.org>
+References: <cover.1637064577.git.mchehab+huawei@kernel.org>
+Message-ID: <32b3693314f3914f10a42dea97ad6e06292fcd4a.1637064577.git.mchehab+huawei@kernel.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: David Woodhouse <dwmw@amazon.co.uk>
+Changeset 2f5947dfcaec ("Documentation: move Documentation/virtual to Documentation/virt")
+renamed: Documentation/virtual/kvm/vcpu-requests.rst
+to: Documentation/virt/kvm/vcpu-requests.rst.
 
-Signed-off-by: David Woodhouse <dwmw@amazon.co.uk>
+Update its cross-reference accordingly.
+
+Fixes: 2f5947dfcaec ("Documentation: move Documentation/virtual to Documentation/virt")
+Reviewed-by: Anup Patel <anup.patel@wdc.com>
+Signed-off-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
 ---
- arch/riscv/kvm/Makefile | 6 +-----
- 1 file changed, 1 insertion(+), 5 deletions(-)
 
-diff --git a/arch/riscv/kvm/Makefile b/arch/riscv/kvm/Makefile
-index 30cdd1df0098..300590225348 100644
---- a/arch/riscv/kvm/Makefile
-+++ b/arch/riscv/kvm/Makefile
-@@ -5,14 +5,10 @@
+To mailbombing on a large number of people, only mailing lists were C/C on the cover.
+See [PATCH 0/4] at: https://lore.kernel.org/all/cover.1637064577.git.mchehab+huawei at kernel.org/
+
+ arch/riscv/kvm/vcpu.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+index e3d3aed46184..fb84619df012 100644
+--- a/arch/riscv/kvm/vcpu.c
++++ b/arch/riscv/kvm/vcpu.c
+@@ -740,7 +740,7 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
+ 		 * Ensure we set mode to IN_GUEST_MODE after we disable
+ 		 * interrupts and before the final VCPU requests check.
+ 		 * See the comment in kvm_vcpu_exiting_guest_mode() and
+-		 * Documentation/virtual/kvm/vcpu-requests.rst
++		 * Documentation/virt/kvm/vcpu-requests.rst
+ 		 */
+ 		vcpu->mode = IN_GUEST_MODE;
  
- ccflags-y += -I $(srctree)/$(src)
- 
--KVM := ../../../virt/kvm
-+include $(srctree)/virt/kvm/Makefile.kvm
- 
- obj-$(CONFIG_KVM) += kvm.o
- 
--kvm-y += $(KVM)/kvm_main.o
--kvm-y += $(KVM)/coalesced_mmio.o
--kvm-y += $(KVM)/binary_stats.o
--kvm-y += $(KVM)/eventfd.o
- kvm-y += main.o
- kvm-y += vm.o
- kvm-y += vmid.o
 -- 
-2.31.1
+2.33.1
 
 
