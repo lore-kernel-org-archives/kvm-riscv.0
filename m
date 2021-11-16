@@ -1,84 +1,113 @@
-From: Vitaly Kuznetsov <vkuznets@redhat.com>
-Date: Mon, 15 Nov 2021 17:04:01 +0100
-Subject: [PATCH 0/5] KVM: Cap KVM_CAP_NR_VCPUS by KVM_CAP_MAX_VCPUS and
- re-purpose it on x86
-In-Reply-To: <ecd55383-7089-b3cd-30cc-3f9feb7eadb4@de.ibm.com>
-References: <20211111162746.100598-1-vkuznets@redhat.com>
- <4a3c7be7-12fa-6e47-64eb-02e6c5be5dbc@redhat.com>
- <ecd55383-7089-b3cd-30cc-3f9feb7eadb4@de.ibm.com>
-Message-ID: <877dd9pfri.fsf@redhat.com>
+From: Anup Patel <anup.patel@wdc.com>
+Date: Tue, 16 Nov 2021 10:51:22 +0530
+Subject: [PATCH v10 kvmtool 0/8] KVMTOOL RISC-V Support
+Message-ID: <20211116052130.173679-1-anup.patel@wdc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Christian Borntraeger <borntraeger@de.ibm.com> writes:
+This series adds RISC-V support for KVMTOOL and it is based on the
+Linux-5.16-rc1. The KVM RISC-V patches have been merged in the Linux
+kernel since 5.16-rc1.
 
-> Am 11.11.21 um 17:32 schrieb Paolo Bonzini:
->> On 11/11/21 17:27, Vitaly Kuznetsov wrote:
->>> This is a comtinuation of "KVM: x86: Drop arbitraty KVM_SOFT_MAX_VCPUS"
->>> (https://lore.kernel.org/kvm/20211111134733.86601-1-vkuznets at redhat.com/)
->>> work.
->>>
->>> 1) Enforce KVM_CAP_NR_VCPUS <= KVM_CAP_MAX_VCPUS rule on all
->>> ? architectures. [Sean Christopherson]
->>> 2) Make KVM_CAP_NR_VCPUS return num_online_cpus() and not an arbitrary
->>> ? value of '710' on x86.
->>>
->>> Everything but x86 was only 'eyeball tested', the change is trivial
->>> but sorry in advance if I screwed up)
->> 
->> Christian, can you look at this for s390?? Returning a fixed value seems wrong for KVM_CAP_NR_VCPUS.
->
-> If we talk about recommended number, then num_online_cpus() also seems to make sense on s390 so
-> if you change that for s390 as well I can ACK this.
+The KVMTOOL RISC-V patches can be found in riscv_master branch at:
+https//github.com/kvm-riscv/kvmtool.git
 
-Thanks!
+Changes since v9:
+ - Rebased on recent commit 39181fc6429f4e9e71473284940e35857b42772a
+ - Sync-up headers with Linux-5.16-rc1
 
-For KVM_CAP_MAX_VCPUS s390 code returns one of the three things:
-KVM_S390_BSCA_CPU_SLOTS(64), KVM_MAX_VCPUS(255) or
-KVM_S390_ESCA_CPU_SLOTS(248).
+Changes since v8:
+ - Rebased on recent commit 2e7380db438defbc5aa24652fe10b7bf99822355
+ - Sync-up headers with latest KVM RISC-V v20 series which is based
+   on Linux-5.15-rc3
+ - Fixed PLIC context CLAIM register emulation in PATCH5
 
-For KVM_CAP_NR_VCPUS, would it be better to return raw
-num_online_cpus():
+Changes since v7:
+ - Rebased on recent commit 25c1dc6c4942ff0949c08780fcad6b324fec6bf7
+ - Sync-up headers with latest KVM RISC-V v19 series which is based
+   on Linux-5.14-rc3
 
-diff --git a/arch/s390/kvm/kvm-s390.c b/arch/s390/kvm/kvm-s390.c
-index 6a6dd5e1daf6..fcecbb762a1a 100644
---- a/arch/s390/kvm/kvm-s390.c
-+++ b/arch/s390/kvm/kvm-s390.c
-@@ -578,6 +578,8 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
-                r = MEM_OP_MAX_SIZE;
-                break;
-        case KVM_CAP_NR_VCPUS:
-+               r = num_online_cpus();
-+               break;
-        case KVM_CAP_MAX_VCPUS:
-        case KVM_CAP_MAX_VCPU_ID:
-                r = KVM_S390_BSCA_CPU_SLOTS;
+Changes since v6:
+ - Rebased on recent commit 117d64953228afa90b52f6e1b4873770643ffdc9
+ - Sync-up headers with latest KVM RISC-V v17 series which is based
+   on Linux-5.12-rc5
 
-or cap KVM_CAP_MAX_VCPUS value with num_online_cpus(), e.g.
+Changes since v5:
+ - Sync-up headers with latest KVM RISC-V v16 series which is based
+   on Linux-5.11-rc3
 
-diff --git a/arch/s390/kvm/kvm-s390.c b/arch/s390/kvm/kvm-s390.c
-index 6a6dd5e1daf6..1cfe36f6432e 100644
---- a/arch/s390/kvm/kvm-s390.c
-+++ b/arch/s390/kvm/kvm-s390.c
-@@ -585,6 +585,8 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
-                        r = KVM_MAX_VCPUS;
-                else if (sclp.has_esca && sclp.has_64bscao)
-                        r = KVM_S390_ESCA_CPU_SLOTS;
-+               if (ext == KVM_CAP_NR_VCPUS)
-+                       r = min_t(unsigned int, num_online_cpus(), r);
-                break;
-        case KVM_CAP_S390_COW:
-                r = MACHINE_HAS_ESOP;
+Changes since v4:
+ - Rebased on recent commit 90b2d3adadf218dfc6bdfdfcefe269843360223c
+ - Sync-up headers with latest KVM RISC-V v15 series which is based
+   on Linux-5.10-rc3
 
-For reference, see our ARM discussion:
-https://lore.kernel.org/kvm/20211111162746.100598-2-vkuznets at redhat.com/
-though 390's situation is different, the returned value for
-KVM_CAP_MAX_VCPUS is not VM-dependent.
+Changes since v3:
+ - Rebased on recent commit 351d931f496aeb2e97b8daa44c943d8b59351d07
+ - Improved kvm_cpu__show_registers() implementation
+
+Changes since v2:
+ - Support compiling KVMTOOL for both RV32 and RV64 systems using
+   a multilib toolchain
+ - Fix kvm_cpu__arch_init() for RV32 system
+
+Changes since v1:
+ - Use linux/sizes.h in kvm/kvm-arch.h
+ - Added comment in kvm/kvm-arch.h about why PCI config space is 256M
+ - Remove forward declaration of "struct kvm" from kvm/kvm-cpu-arch.h
+ - Fixed placement of DTB and INITRD in guest RAM
+ - Use __riscv_xlen instead of sizeof(unsigned long) in __kvm_reg_id()
+
+Anup Patel (8):
+  update_headers: Sync-up ABI headers with Linux-5.16-rc1
+  riscv: Initial skeletal support
+  riscv: Implement Guest/VM arch functions
+  riscv: Implement Guest/VM VCPU arch functions
+  riscv: Add PLIC device emulation
+  riscv: Generate FDT at runtime for Guest/VM
+  riscv: Handle SBI calls forwarded to user space
+  riscv: Generate PCI host DT node
+
+ INSTALL                             |   7 +-
+ Makefile                            |  24 +-
+ arm/aarch64/include/asm/kvm.h       |  56 ++-
+ include/linux/kvm.h                 | 441 ++++++++++++++++++++-
+ powerpc/include/asm/kvm.h           |  10 +
+ riscv/fdt.c                         | 195 ++++++++++
+ riscv/include/asm/kvm.h             | 128 +++++++
+ riscv/include/kvm/barrier.h         |  14 +
+ riscv/include/kvm/fdt-arch.h        |   8 +
+ riscv/include/kvm/kvm-arch.h        |  89 +++++
+ riscv/include/kvm/kvm-config-arch.h |  15 +
+ riscv/include/kvm/kvm-cpu-arch.h    |  51 +++
+ riscv/include/kvm/sbi.h             |  48 +++
+ riscv/ioport.c                      |   7 +
+ riscv/irq.c                         |  13 +
+ riscv/kvm-cpu.c                     | 490 ++++++++++++++++++++++++
+ riscv/kvm.c                         | 174 +++++++++
+ riscv/pci.c                         | 109 ++++++
+ riscv/plic.c                        | 568 ++++++++++++++++++++++++++++
+ util/update_headers.sh              |   2 +-
+ x86/include/asm/kvm.h               |  64 +++-
+ 21 files changed, 2494 insertions(+), 19 deletions(-)
+ create mode 100644 riscv/fdt.c
+ create mode 100644 riscv/include/asm/kvm.h
+ create mode 100644 riscv/include/kvm/barrier.h
+ create mode 100644 riscv/include/kvm/fdt-arch.h
+ create mode 100644 riscv/include/kvm/kvm-arch.h
+ create mode 100644 riscv/include/kvm/kvm-config-arch.h
+ create mode 100644 riscv/include/kvm/kvm-cpu-arch.h
+ create mode 100644 riscv/include/kvm/sbi.h
+ create mode 100644 riscv/ioport.c
+ create mode 100644 riscv/irq.c
+ create mode 100644 riscv/kvm-cpu.c
+ create mode 100644 riscv/kvm.c
+ create mode 100644 riscv/pci.c
+ create mode 100644 riscv/plic.c
 
 -- 
-Vitaly
+2.25.1
 
 
