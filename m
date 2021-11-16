@@ -1,58 +1,59 @@
 From: Anup Patel <anup@brainfault.org>
-Date: Tue, 16 Nov 2021 19:47:08 +0530
-Subject: [PATCH 1/2] KVM: RISC-V: Unmap stage2 mapping when
- deleting/moving a memslot
-In-Reply-To: <20211104164107.1291793-2-seanjc@google.com>
-References: <20211104164107.1291793-1-seanjc@google.com>
- <20211104164107.1291793-2-seanjc@google.com>
-Message-ID: <CAAhSdy1sREo9KT_99kbz70RYLsXr1aCSapxxpraZ6ZOxh1P+kw@mail.gmail.com>
+Date: Tue, 16 Nov 2021 19:57:59 +0530
+Subject: [PATCH] RISC-V: KVM:Remove unneeded semicolon
+In-Reply-To: <20211103064458.26916-1-zhang.mingyu@zte.com.cn>
+References: <20211103064458.26916-1-zhang.mingyu@zte.com.cn>
+Message-ID: <CAAhSdy3LvzR4H_rYvacER87n7fakU9EzE17vA3D+ASczR24=5g@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Nov 4, 2021 at 10:11 PM Sean Christopherson <seanjc@google.com> wrote:
+On Wed, Nov 3, 2021 at 12:15 PM <cgel.zte@gmail.com> wrote:
 >
-> Unmap stage2 page tables when a memslot is being deleted or moved.  It's
-> the architectures' responsibility to ensure existing mappings are removed
-> when kvm_arch_flush_shadow_memslot() returns.
+> From: Zhang Mingyu <zhang.mingyu@zte.com.cn>
 >
-> Fixes: 99cdc6c18c2d ("RISC-V: Add initial skeletal KVM support")
-> Signed-off-by: Sean Christopherson <seanjc@google.com>
+> Eliminate the following coccinelle check warning:
+> arch/riscv/kvm/vcpu.c:167:2-3
+> arch/riscv/kvm/vcpu.c:204:2-3
+>
+> Reported-by: Zeal Robot <zealci@zte.com.cn>
+> Signed-off-by: Zhang Mingyu <zhang.mingyu@zte.com.cn>
 
-The Fixes tag should be
-Fixes: 9d05c1fee837 ("RISC-V: KVM: Implement stage2 page table programming")
+Thanks but this is already fixed by following patch:
+https://www.spinics.net/lists/kvm/msg257614.html
 
-Otherwise it looks good to me.
-
-I have queued this patch for fixes.
-
-Thanks,
+Regards,
 Anup
 
 > ---
->  arch/riscv/kvm/mmu.c | 6 ++++++
->  1 file changed, 6 insertions(+)
+>  arch/riscv/kvm/vcpu.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 >
-> diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
-> index d81bae8eb55e..fc058ff5f4b6 100644
-> --- a/arch/riscv/kvm/mmu.c
-> +++ b/arch/riscv/kvm/mmu.c
-> @@ -453,6 +453,12 @@ void kvm_arch_flush_shadow_all(struct kvm *kvm)
->  void kvm_arch_flush_shadow_memslot(struct kvm *kvm,
->                                    struct kvm_memory_slot *slot)
->  {
-> +       gpa_t gpa = slot->base_gfn << PAGE_SHIFT;
-> +       phys_addr_t size = slot->npages << PAGE_SHIFT;
-> +
-> +       spin_lock(&kvm->mmu_lock);
-> +       stage2_unmap_range(kvm, gpa, size, false);
-> +       spin_unlock(&kvm->mmu_lock);
+> diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+> index e92ba3e5db8c..e3d3aed46184 100644
+> --- a/arch/riscv/kvm/vcpu.c
+> +++ b/arch/riscv/kvm/vcpu.c
+> @@ -164,7 +164,7 @@ static int kvm_riscv_vcpu_get_reg_config(struct kvm_vcpu *vcpu,
+>                 break;
+>         default:
+>                 return -EINVAL;
+> -       };
+> +       }
+>
+>         if (copy_to_user(uaddr, &reg_val, KVM_REG_SIZE(reg->id)))
+>                 return -EFAULT;
+> @@ -201,7 +201,7 @@ static int kvm_riscv_vcpu_set_reg_config(struct kvm_vcpu *vcpu,
+>                 break;
+>         default:
+>                 return -EINVAL;
+> -       };
+> +       }
+>
+>         return 0;
 >  }
->
->  void kvm_arch_commit_memory_region(struct kvm *kvm,
 > --
-> 2.34.0.rc0.344.g81b53c2807-goog
+> 2.25.1
 >
 
