@@ -1,59 +1,32 @@
-From: Anup Patel <anup@brainfault.org>
-Date: Tue, 16 Nov 2021 19:57:59 +0530
-Subject: [PATCH] RISC-V: KVM:Remove unneeded semicolon
-In-Reply-To: <20211103064458.26916-1-zhang.mingyu@zte.com.cn>
-References: <20211103064458.26916-1-zhang.mingyu@zte.com.cn>
-Message-ID: <CAAhSdy3LvzR4H_rYvacER87n7fakU9EzE17vA3D+ASczR24=5g@mail.gmail.com>
+From: Paolo Bonzini <pbonzini@redhat.com>
+Date: Tue, 16 Nov 2021 16:50:23 +0100
+Subject: [PATCH 1/5] KVM: arm64: Cap KVM_CAP_NR_VCPUS by KVM_CAP_MAX_VCPUS
+In-Reply-To: <87y25onsj6.fsf@redhat.com>
+References: <20211111162746.100598-1-vkuznets@redhat.com>
+ <20211111162746.100598-2-vkuznets@redhat.com>
+ <a5cdff6878b7157587e92ebe4d5af362@kernel.org> <875ysxg0s1.fsf@redhat.com>
+ <87k0hd8obo.wl-maz@kernel.org>
+ <ad3534bc-fe3a-55f5-b022-4dbec5f29798@redhat.com> <87y25onsj6.fsf@redhat.com>
+Message-ID: <ebfa56a6-d444-e82e-bf0d-946765c7f8ae@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Nov 3, 2021 at 12:15 PM <cgel.zte@gmail.com> wrote:
->
-> From: Zhang Mingyu <zhang.mingyu@zte.com.cn>
->
-> Eliminate the following coccinelle check warning:
-> arch/riscv/kvm/vcpu.c:167:2-3
-> arch/riscv/kvm/vcpu.c:204:2-3
->
-> Reported-by: Zeal Robot <zealci@zte.com.cn>
-> Signed-off-by: Zhang Mingyu <zhang.mingyu@zte.com.cn>
+On 11/16/21 14:23, Vitaly Kuznetsov wrote:
+> (I'm about to send v2 as we have s390 sorted out.)
+> 
+> So what do we decide about ARM?
+> - Current approach (kvm->arch.max_vcpus/kvm_arm_default_max_vcpus()
+>   depending on 'if (kvm)') - that would be my preference.
 
-Thanks but this is already fixed by following patch:
-https://www.spinics.net/lists/kvm/msg257614.html
+That would be mine too.
 
-Regards,
-Anup
+Paolo
 
-> ---
->  arch/riscv/kvm/vcpu.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
->
-> diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-> index e92ba3e5db8c..e3d3aed46184 100644
-> --- a/arch/riscv/kvm/vcpu.c
-> +++ b/arch/riscv/kvm/vcpu.c
-> @@ -164,7 +164,7 @@ static int kvm_riscv_vcpu_get_reg_config(struct kvm_vcpu *vcpu,
->                 break;
->         default:
->                 return -EINVAL;
-> -       };
-> +       }
->
->         if (copy_to_user(uaddr, &reg_val, KVM_REG_SIZE(reg->id)))
->                 return -EFAULT;
-> @@ -201,7 +201,7 @@ static int kvm_riscv_vcpu_set_reg_config(struct kvm_vcpu *vcpu,
->                 break;
->         default:
->                 return -EINVAL;
-> -       };
-> +       }
->
->         return 0;
->  }
-> --
-> 2.25.1
->
+> - Always kvm_arm_default_max_vcpus to make the output independent on 'if
+>   (kvm)'.
+> - keep the status quo (drop the patch).
+
 
