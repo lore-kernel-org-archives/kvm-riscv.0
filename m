@@ -1,40 +1,64 @@
 From: Vitaly Kuznetsov <vkuznets@redhat.com>
-Date: Tue, 16 Nov 2021 17:34:42 +0100
-Subject: [PATCH v2 5/6] KVM: s390: Cap KVM_CAP_NR_VCPUS by num_online_cpus()
+Date: Tue, 16 Nov 2021 17:34:43 +0100
+Subject: [PATCH v2 6/6] KVM: x86: Drop arbitraty KVM_SOFT_MAX_VCPUS
 In-Reply-To: <20211116163443.88707-1-vkuznets@redhat.com>
 References: <20211116163443.88707-1-vkuznets@redhat.com>
-Message-ID: <20211116163443.88707-6-vkuznets@redhat.com>
+Message-ID: <20211116163443.88707-7-vkuznets@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-KVM_CAP_NR_VCPUS is a legacy advisory value which on other architectures
-return num_online_cpus() caped by KVM_CAP_NR_VCPUS or something else
-(ppc and arm64 are special cases). On s390, KVM_CAP_NR_VCPUS returns
-the same as KVM_CAP_MAX_VCPUS and this may turn out to be a bad
-'advice'. Switch s390 to returning caped num_online_cpus() too.
+KVM_CAP_NR_VCPUS is used to get the "recommended" maximum number of
+VCPUs and arm64/mips/riscv report num_online_cpus(). Powerpc reports
+either num_online_cpus() or num_present_cpus(), s390 has multiple
+constants depending on hardware features. On x86, KVM reports an
+arbitrary value of '710' which is supposed to be the maximum tested
+value but it's possible to test all KVM_MAX_VCPUS even when there are
+less physical CPUs available.
 
-Acked-by: Christian Borntraeger <borntraeger@de.ibm.com>
+Drop the arbitrary '710' value and return num_online_cpus() on x86 as
+well. The recommendation will match other architectures and will mean
+'no CPU overcommit'.
+
+For reference, QEMU only queries KVM_CAP_NR_VCPUS to print a warning
+when the requested vCPU number exceeds it. The static limit of '710'
+is quite weird as smaller systems with just a few physical CPUs should
+certainly "recommend" less.
+
+Suggested-by: Eduardo Habkost <ehabkost@redhat.com>
 Signed-off-by: Vitaly Kuznetsov <vkuznets@redhat.com>
 ---
- arch/s390/kvm/kvm-s390.c | 2 ++
- 1 file changed, 2 insertions(+)
+ arch/x86/include/asm/kvm_host.h | 1 -
+ arch/x86/kvm/x86.c              | 2 +-
+ 2 files changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/arch/s390/kvm/kvm-s390.c b/arch/s390/kvm/kvm-s390.c
-index 6a6dd5e1daf6..1cfe36f6432e 100644
---- a/arch/s390/kvm/kvm-s390.c
-+++ b/arch/s390/kvm/kvm-s390.c
-@@ -585,6 +585,8 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
- 			r = KVM_MAX_VCPUS;
- 		else if (sclp.has_esca && sclp.has_64bscao)
- 			r = KVM_S390_ESCA_CPU_SLOTS;
-+		if (ext == KVM_CAP_NR_VCPUS)
-+			r = min_t(unsigned int, num_online_cpus(), r);
+diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
+index 88fce6ab4bbd..0232a00598f2 100644
+--- a/arch/x86/include/asm/kvm_host.h
++++ b/arch/x86/include/asm/kvm_host.h
+@@ -38,7 +38,6 @@
+ #define __KVM_HAVE_ARCH_VCPU_DEBUGFS
+ 
+ #define KVM_MAX_VCPUS 1024
+-#define KVM_SOFT_MAX_VCPUS 710
+ 
+ /*
+  * In x86, the VCPU ID corresponds to the APIC ID, and APIC IDs
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index ac83d873d65b..18a00a7c23bc 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -4137,7 +4137,7 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
+ 		r = !static_call(kvm_x86_cpu_has_accelerated_tpr)();
  		break;
- 	case KVM_CAP_S390_COW:
- 		r = MACHINE_HAS_ESOP;
+ 	case KVM_CAP_NR_VCPUS:
+-		r = KVM_SOFT_MAX_VCPUS;
++		r = min_t(unsigned int, num_online_cpus(), KVM_MAX_VCPUS);
+ 		break;
+ 	case KVM_CAP_MAX_VCPUS:
+ 		r = KVM_MAX_VCPUS;
 -- 
 2.33.1
 
