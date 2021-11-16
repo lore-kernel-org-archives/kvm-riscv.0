@@ -1,40 +1,67 @@
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-Date: Tue, 16 Nov 2021 09:15:43 +0100
-Subject: [PATCH 0/5] KVM: Cap KVM_CAP_NR_VCPUS by KVM_CAP_MAX_VCPUS and
- re-purpose it on x86
-In-Reply-To: <877dd9pfri.fsf@redhat.com>
-References: <20211111162746.100598-1-vkuznets@redhat.com>
- <4a3c7be7-12fa-6e47-64eb-02e6c5be5dbc@redhat.com>
- <ecd55383-7089-b3cd-30cc-3f9feb7eadb4@de.ibm.com> <877dd9pfri.fsf@redhat.com>
-Message-ID: <d7547cab-88d6-18a9-8307-bf2cc5d61163@de.ibm.com>
+From: David Woodhouse <dwmw2@infradead.org>
+Date: Tue, 16 Nov 2021 11:50:46 +0000
+Subject: [PATCH 2/7] KVM: Add Makefile.kvm for common files, use it for x86
+In-Reply-To: <20211116115051.119956-1-dwmw2@infradead.org>
+References: <5047c2591310e503491850ef683f251395247d50.camel@infradead.org>
+ <20211116115051.119956-1-dwmw2@infradead.org>
+Message-ID: <20211116115051.119956-2-dwmw2@infradead.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+From: David Woodhouse <dwmw@amazon.co.uk>
 
+Splitting kvm_main.c out into smaller and better-organized files is
+slightly non-trivial when it involves editing a bunch of per-arch
+KVM makefiles. Provide virt/kvm/Makefile.kvm for them to include.
 
-Am 15.11.21 um 17:04 schrieb Vitaly Kuznetsov:
-[...]
-> or cap KVM_CAP_MAX_VCPUS value with num_online_cpus(), e.g.
-> 
-> diff --git a/arch/s390/kvm/kvm-s390.c b/arch/s390/kvm/kvm-s390.c
-> index 6a6dd5e1daf6..1cfe36f6432e 100644
-> --- a/arch/s390/kvm/kvm-s390.c
-> +++ b/arch/s390/kvm/kvm-s390.c
-> @@ -585,6 +585,8 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
->                          r = KVM_MAX_VCPUS;
->                  else if (sclp.has_esca && sclp.has_64bscao)
->                          r = KVM_S390_ESCA_CPU_SLOTS;
-> +               if (ext == KVM_CAP_NR_VCPUS)
-> +                       r = min_t(unsigned int, num_online_cpus(), r);
->                  break;
->          case KVM_CAP_S390_COW:
->                  r = MACHINE_HAS_ESOP;
+Signed-off-by: David Woodhouse <dwmw@amazon.co.uk>
+---
+ arch/x86/kvm/Makefile |  7 +------
+ virt/kvm/Makefile.kvm | 13 +++++++++++++
+ 2 files changed, 14 insertions(+), 6 deletions(-)
+ create mode 100644 virt/kvm/Makefile.kvm
 
-Acked-by: Christian Borntraeger <borntraeger@de.ibm.com>
+diff --git a/arch/x86/kvm/Makefile b/arch/x86/kvm/Makefile
+index 75dfd27b6e8a..30f244b64523 100644
+--- a/arch/x86/kvm/Makefile
++++ b/arch/x86/kvm/Makefile
+@@ -7,12 +7,7 @@ ifeq ($(CONFIG_FRAME_POINTER),y)
+ OBJECT_FILES_NON_STANDARD_vmenter.o := y
+ endif
+ 
+-KVM := ../../../virt/kvm
+-
+-kvm-y			+= $(KVM)/kvm_main.o $(KVM)/coalesced_mmio.o \
+-				$(KVM)/eventfd.o $(KVM)/irqchip.o $(KVM)/vfio.o \
+-				$(KVM)/dirty_ring.o $(KVM)/binary_stats.o
+-kvm-$(CONFIG_KVM_ASYNC_PF)	+= $(KVM)/async_pf.o
++include $(srctree)/virt/kvm/Makefile.kvm
+ 
+ kvm-y			+= x86.o emulate.o i8259.o irq.o lapic.o \
+ 			   i8254.o ioapic.o irq_comm.o cpuid.o pmu.o mtrr.o \
+diff --git a/virt/kvm/Makefile.kvm b/virt/kvm/Makefile.kvm
+new file mode 100644
+index 000000000000..ee9c310f3601
+--- /dev/null
++++ b/virt/kvm/Makefile.kvm
+@@ -0,0 +1,13 @@
++# SPDX-License-Identifier: GPL-2.0
++#
++# Makefile for Kernel-based Virtual Machine module
++#
++
++KVM ?= ../../../virt/kvm
++
++kvm-y := $(KVM)/kvm_main.o $(KVM)/eventfd.o $(KVM)/binary_stats.o
++kvm-$(CONFIG_KVM_VFIO) += $(KVM)/vfio.o
++kvm-$(CONFIG_KVM_MMIO) += $(KVM)/coalesced_mmio.o
++kvm-$(CONFIG_KVM_ASYNC_PF) += $(KVM)/async_pf.o
++kvm-$(CONFIG_HAVE_KVM_IRQCHIP) += $(KVM)/irqchip.o
++kvm-$(CONFIG_HAVE_KVM_DIRTY_RING) += $(KVM)/dirty_ring.o
+-- 
+2.31.1
 
-
-I think this is the better variant. Thanks.
 
