@@ -1,52 +1,50 @@
 From: Paolo Bonzini <pbonzini@redhat.com>
-Date: Tue, 16 Nov 2021 13:54:17 +0100
-Subject: [PATCH 3/4] Documentation: update vcpu-requests.rst reference
-In-Reply-To: <32b3693314f3914f10a42dea97ad6e06292fcd4a.1637064577.git.mchehab+huawei@kernel.org>
-References: <cover.1637064577.git.mchehab+huawei@kernel.org>
- <32b3693314f3914f10a42dea97ad6e06292fcd4a.1637064577.git.mchehab+huawei@kernel.org>
-Message-ID: <34e691ec-a58d-c86b-a2ef-6fa4f0385b69@redhat.com>
+Date: Tue, 16 Nov 2021 14:10:40 +0100
+Subject: [PATCH] riscv: kvm: fix non-kernel-doc comment block
+In-Reply-To: <20211107034706.30672-1-rdunlap@infradead.org>
+References: <20211107034706.30672-1-rdunlap@infradead.org>
+Message-ID: <4e6df304-a5a5-fd33-1b6a-59eec905101f@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 11/16/21 13:11, Mauro Carvalho Chehab wrote:
-> Changeset 2f5947dfcaec ("Documentation: move Documentation/virtual to Documentation/virt")
-> renamed: Documentation/virtual/kvm/vcpu-requests.rst
-> to: Documentation/virt/kvm/vcpu-requests.rst.
+On 11/7/21 04:47, Randy Dunlap wrote:
+> Don't use "/**" to begin a comment block for a non-kernel-doc comment.
 > 
-> Update its cross-reference accordingly.
+> Prevents this docs build warning:
 > 
-> Fixes: 2f5947dfcaec ("Documentation: move Documentation/virtual to Documentation/virt")
-> Reviewed-by: Anup Patel <anup.patel@wdc.com>
-> Signed-off-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+> vcpu_sbi.c:3: warning: This comment starts with '/**', but isn't a kernel-doc comment. Refer Documentation/doc-guide/kernel-doc.rst
+>   * Copyright (c) 2019 Western Digital Corporation or its affiliates.
+> 
+> Fixes: dea8ee31a039 ("RISC-V: KVM: Add SBI v0.1 support")
+> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+> Reported-by: kernel test robot <lkp@intel.com>
+> Cc: Atish Patra <atish.patra@wdc.com>
+> Cc: Anup Patel <anup.patel@wdc.com>
+> Cc: kvm at vger.kernel.org
+> Cc: kvm-riscv at lists.infradead.org
+> Cc: linux-riscv at lists.infradead.org
+> Cc: Paul Walmsley <paul.walmsley@sifive.com>
+> Cc: Palmer Dabbelt <palmer@dabbelt.com>
+> Cc: Albert Ou <aou@eecs.berkeley.edu>
 > ---
-> 
-> To mailbombing on a large number of people, only mailing lists were C/C on the cover.
-> See [PATCH 0/4] at: https://lore.kernel.org/all/cover.1637064577.git.mchehab+huawei at kernel.org/
-> 
->   arch/riscv/kvm/vcpu.c | 2 +-
+>   arch/riscv/kvm/vcpu_sbi.c |    2 +-
 >   1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-> index e3d3aed46184..fb84619df012 100644
-> --- a/arch/riscv/kvm/vcpu.c
-> +++ b/arch/riscv/kvm/vcpu.c
-> @@ -740,7 +740,7 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
->   		 * Ensure we set mode to IN_GUEST_MODE after we disable
->   		 * interrupts and before the final VCPU requests check.
->   		 * See the comment in kvm_vcpu_exiting_guest_mode() and
-> -		 * Documentation/virtual/kvm/vcpu-requests.rst
-> +		 * Documentation/virt/kvm/vcpu-requests.rst
->   		 */
->   		vcpu->mode = IN_GUEST_MODE;
->   
+> --- linux-next-20211106.orig/arch/riscv/kvm/vcpu_sbi.c
+> +++ linux-next-20211106/arch/riscv/kvm/vcpu_sbi.c
+> @@ -1,5 +1,5 @@
+>   // SPDX-License-Identifier: GPL-2.0
+> -/**
+> +/*
+>    * Copyright (c) 2019 Western Digital Corporation or its affiliates.
+>    *
+>    * Authors:
 > 
 
-Acked-by: Paolo Bonzini <pbonzini@redhat.com>
-
-Thanks,
+Queued, thanks.
 
 Paolo
 
