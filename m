@@ -1,9 +1,9 @@
 From: David Woodhouse <dwmw2@infradead.org>
-Date: Wed, 17 Nov 2021 17:39:56 +0000
-Subject: [PATCH v3 05/12] KVM: RISC-V: Use Makefile.kvm for common files
+Date: Wed, 17 Nov 2021 17:39:54 +0000
+Subject: [PATCH v3 03/12] KVM: s390: Use Makefile.kvm for common files
 In-Reply-To: <20211117174003.297096-1-dwmw2@infradead.org>
 References: <20211117174003.297096-1-dwmw2@infradead.org>
-Message-ID: <20211117174003.297096-6-dwmw2@infradead.org>
+Message-ID: <20211117174003.297096-4-dwmw2@infradead.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -13,30 +13,31 @@ Content-Transfer-Encoding: 7bit
 From: David Woodhouse <dwmw@amazon.co.uk>
 
 Signed-off-by: David Woodhouse <dwmw@amazon.co.uk>
+Reviewed-by: Christian Borntraeger <borntraeger@de.ibm.com>
 ---
- arch/riscv/kvm/Makefile | 6 +-----
- 1 file changed, 1 insertion(+), 5 deletions(-)
+ arch/s390/kvm/Makefile | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/arch/riscv/kvm/Makefile b/arch/riscv/kvm/Makefile
-index 30cdd1df0098..300590225348 100644
---- a/arch/riscv/kvm/Makefile
-+++ b/arch/riscv/kvm/Makefile
-@@ -5,14 +5,10 @@
- 
- ccflags-y += -I $(srctree)/$(src)
+diff --git a/arch/s390/kvm/Makefile b/arch/s390/kvm/Makefile
+index b3aaadc60ead..e4f50453cf7f 100644
+--- a/arch/s390/kvm/Makefile
++++ b/arch/s390/kvm/Makefile
+@@ -3,13 +3,11 @@
+ #
+ # Copyright IBM Corp. 2008
  
 -KVM := ../../../virt/kvm
+-common-objs = $(KVM)/kvm_main.o $(KVM)/eventfd.o  $(KVM)/async_pf.o \
+-	      $(KVM)/irqchip.o $(KVM)/vfio.o $(KVM)/binary_stats.o
 +include $(srctree)/virt/kvm/Makefile.kvm
  
- obj-$(CONFIG_KVM) += kvm.o
+ ccflags-y := -Ivirt/kvm -Iarch/s390/kvm
  
--kvm-y += $(KVM)/kvm_main.o
--kvm-y += $(KVM)/coalesced_mmio.o
--kvm-y += $(KVM)/binary_stats.o
--kvm-y += $(KVM)/eventfd.o
- kvm-y += main.o
- kvm-y += vm.o
- kvm-y += vmid.o
+-kvm-objs := $(common-objs) kvm-s390.o intercept.o interrupt.o priv.o sigp.o
++kvm-objs := kvm-s390.o intercept.o interrupt.o priv.o sigp.o
+ kvm-objs += diag.o gaccess.o guestdbg.o vsie.o pv.o
+ 
+ obj-$(CONFIG_KVM) += kvm.o
 -- 
 2.31.1
 
