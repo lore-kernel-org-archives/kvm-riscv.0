@@ -1,10 +1,10 @@
 From: David Woodhouse <dwmw2@infradead.org>
-Date: Wed, 17 Nov 2021 17:40:03 +0000
-Subject: [PATCH v3 12/12] KVM: x86: First attempt at converting nested virtual
- APIC page to gpc
+Date: Wed, 17 Nov 2021 17:39:59 +0000
+Subject: [PATCH v3 08/12] KVM: Propagate vcpu explicitly to
+ mark_page_dirty_in_slot()
 In-Reply-To: <20211117174003.297096-1-dwmw2@infradead.org>
 References: <20211117174003.297096-1-dwmw2@infradead.org>
-Message-ID: <20211117174003.297096-13-dwmw2@infradead.org>
+Message-ID: <20211117174003.297096-9-dwmw2@infradead.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -13,234 +13,259 @@ Content-Transfer-Encoding: 7bit
 
 From: David Woodhouse <dwmw@amazon.co.uk>
 
-This is what evolved during the discussion at
-https://lore.kernel.org/kvm/960E233F-EC0B-4FB5-BA2E-C8D2CCB38B12 at infradead.org/T/#m11d75fcfe2da357ec1dabba0d0e3abb91fd13665
+The kvm_dirty_ring_get() function uses kvm_get_running_vcpu() to work out
+which dirty ring to use, but there are some use cases where that doesn't
+work.
 
-As discussed, an alternative approach might be to augment
-kvm_arch_memslots_updated() to raise KVM_REQ_GET_NESTED_STATE_PAGES to
-each vCPU (and make that req only do anything on a given vCPU if that
-vCPU is actually in L2 guest mode).
+There's one in setting the Xen shared info page, introduced in commit
+629b5348841a ("KVM: x86/xen: update wallclock region") and reported by
+"butt3rflyh4ck" <butterflyhuangxx@gmail.com> in
+https://lore.kernel.org/kvm/CAFcO6XOmoS7EacN_n6v4Txk7xL7iqRa2gABg3F7E3Naf5uG94g at mail.gmail.com/
 
-That would mean the reload gets actively triggered even on memslot
-changes rather than only on MMU notifiers as is the case now. It could
-*potentially* mean we can drop the new 'check_guest_maps' function.
+There's also about to be another one when the newly-reintroduced
+gfn_to_pfn_cache needs to mark a page as dirty from the MMU notifier
+which invalidates the mapping. In that case, we will *know* the vcpu
+that can be 'blamed' for dirtying the page, and we just need to be
+able to pass it in as an explicit argument when doing so.
 
-The 'check_guest_maps' function could be a lot simpler than it is,
-though. It only really needs to get kvm->memslots->generation, then
-check each gpc->generation against that, and each gpc->valid.
-
-Also I suspect we *shouldn't* destroy the virtual_apic_cache in
-nested_vmx_vmexit(). We can just leave it there for next time the
-vCPU enters guest mode. If it happens to get invalidated in the
-meantime, that's fine and we'll refresh it on the way back in.
-We probably *would* want to actively do something on memslot changes
-in that case though, to ensure that even if the vCPU isn't in guest
-mode any more, we *release* the cached page.
+This patch preemptively resolves the second issue, and paves the way
+for resolving the first. A complete fix for the first issue will need
+us to switch the Xen shinfo to be owned by a particular vCPU, which
+will happen in a separate patch.
 
 Signed-off-by: David Woodhouse <dwmw@amazon.co.uk>
 ---
- arch/x86/include/asm/kvm_host.h |  1 +
- arch/x86/kvm/vmx/nested.c       | 50 ++++++++++++++++++++++++++++-----
- arch/x86/kvm/vmx/vmx.c          | 12 +++++---
- arch/x86/kvm/vmx/vmx.h          |  2 +-
- arch/x86/kvm/x86.c              | 10 +++++++
- 5 files changed, 63 insertions(+), 12 deletions(-)
+ arch/arm64/kvm/mmu.c           |  2 +-
+ arch/x86/kvm/mmu/mmu.c         |  2 +-
+ arch/x86/kvm/mmu/spte.c        |  2 +-
+ arch/x86/kvm/mmu/tdp_mmu.c     |  2 +-
+ arch/x86/kvm/x86.c             |  4 ++--
+ include/linux/kvm_dirty_ring.h |  6 ++++--
+ include/linux/kvm_host.h       |  3 ++-
+ virt/kvm/dirty_ring.c          |  8 ++++++--
+ virt/kvm/kvm_main.c            | 18 +++++++++---------
+ 9 files changed, 27 insertions(+), 20 deletions(-)
 
-diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
-index 6ea2446ab851..24f6f3e2de47 100644
---- a/arch/x86/include/asm/kvm_host.h
-+++ b/arch/x86/include/asm/kvm_host.h
-@@ -1511,6 +1511,7 @@ struct kvm_x86_nested_ops {
- 	int (*enable_evmcs)(struct kvm_vcpu *vcpu,
- 			    uint16_t *vmcs_version);
- 	uint16_t (*get_evmcs_version)(struct kvm_vcpu *vcpu);
-+	void (*check_guest_maps)(struct kvm_vcpu *vcpu);
- };
- 
- struct kvm_x86_init_ops {
-diff --git a/arch/x86/kvm/vmx/nested.c b/arch/x86/kvm/vmx/nested.c
-index 1e2f66951566..794aa6021188 100644
---- a/arch/x86/kvm/vmx/nested.c
-+++ b/arch/x86/kvm/vmx/nested.c
-@@ -309,7 +309,7 @@ static void free_nested(struct kvm_vcpu *vcpu)
- 		kvm_release_page_clean(vmx->nested.apic_access_page);
- 		vmx->nested.apic_access_page = NULL;
- 	}
--	kvm_vcpu_unmap(vcpu, &vmx->nested.virtual_apic_map, true);
-+	kvm_gfn_to_pfn_cache_destroy(vcpu->kvm, &vmx->nested.virtual_apic_cache);
- 	kvm_vcpu_unmap(vcpu, &vmx->nested.pi_desc_map, true);
- 	vmx->nested.pi_desc = NULL;
- 
-@@ -3179,10 +3179,12 @@ static bool nested_get_vmcs12_pages(struct kvm_vcpu *vcpu)
+diff --git a/arch/arm64/kvm/mmu.c b/arch/arm64/kvm/mmu.c
+index 326cdfec74a1..d8411ce4db4b 100644
+--- a/arch/arm64/kvm/mmu.c
++++ b/arch/arm64/kvm/mmu.c
+@@ -1143,7 +1143,7 @@ static int user_mem_abort(struct kvm_vcpu *vcpu, phys_addr_t fault_ipa,
+ 	/* Mark the page dirty only if the fault is handled successfully */
+ 	if (writable && !ret) {
+ 		kvm_set_pfn_dirty(pfn);
+-		mark_page_dirty_in_slot(kvm, memslot, gfn);
++		mark_page_dirty_in_slot(kvm, vcpu, memslot, gfn);
  	}
  
- 	if (nested_cpu_has(vmcs12, CPU_BASED_TPR_SHADOW)) {
--		map = &vmx->nested.virtual_apic_map;
-+		struct gfn_to_pfn_cache *gpc = &vmx->nested.virtual_apic_cache;
- 
--		if (!kvm_vcpu_map(vcpu, gpa_to_gfn(vmcs12->virtual_apic_page_addr), map)) {
--			vmcs_write64(VIRTUAL_APIC_PAGE_ADDR, pfn_to_hpa(map->pfn));
-+ 		if (!kvm_gfn_to_pfn_cache_init(vcpu->kvm, gpc, vcpu, true, true,
-+					       vmcs12->virtual_apic_page_addr,
-+					       PAGE_SIZE, true)) {
-+			vmcs_write64(VIRTUAL_APIC_PAGE_ADDR, pfn_to_hpa(gpc->pfn));
- 		} else if (nested_cpu_has(vmcs12, CPU_BASED_CR8_LOAD_EXITING) &&
- 		           nested_cpu_has(vmcs12, CPU_BASED_CR8_STORE_EXITING) &&
- 			   !nested_cpu_has2(vmcs12, SECONDARY_EXEC_VIRTUALIZE_APIC_ACCESSES)) {
-@@ -3207,6 +3209,9 @@ static bool nested_get_vmcs12_pages(struct kvm_vcpu *vcpu)
- 	if (nested_cpu_has_posted_intr(vmcs12)) {
- 		map = &vmx->nested.pi_desc_map;
- 
-+		if (kvm_vcpu_mapped(map))
-+			kvm_vcpu_unmap(vcpu, map, true);
-+
- 		if (!kvm_vcpu_map(vcpu, gpa_to_gfn(vmcs12->posted_intr_desc_addr), map)) {
- 			vmx->nested.pi_desc =
- 				(struct pi_desc *)(((void *)map->hva) +
-@@ -3251,6 +3256,29 @@ static bool vmx_get_nested_state_pages(struct kvm_vcpu *vcpu)
- 	return true;
- }
- 
-+static void nested_vmx_check_guest_maps(struct kvm_vcpu *vcpu)
-+{
-+	struct vmcs12 *vmcs12 = get_vmcs12(vcpu);
-+	struct vcpu_vmx *vmx = to_vmx(vcpu);
-+	struct gfn_to_pfn_cache *gpc;
-+
-+	int valid;
-+
-+	if (nested_cpu_has_posted_intr(vmcs12)) {
-+		gpc = &vmx->nested.virtual_apic_cache;
-+
-+		read_lock(&gpc->lock);
-+		valid = kvm_gfn_to_pfn_cache_check(vcpu->kvm, gpc,
-+						   vmcs12->virtual_apic_page_addr,
-+						   PAGE_SIZE);
-+		read_unlock(&gpc->lock);
-+		if (!valid) {
-+			kvm_make_request(KVM_REQ_GET_NESTED_STATE_PAGES, vcpu);
-+			return;
-+		}
-+	}
-+}
-+
- static int nested_vmx_write_pml_buffer(struct kvm_vcpu *vcpu, gpa_t gpa)
- {
- 	struct vmcs12 *vmcs12;
-@@ -3749,9 +3777,15 @@ static int vmx_complete_nested_posted_interrupt(struct kvm_vcpu *vcpu)
- 
- 	max_irr = find_last_bit((unsigned long *)vmx->nested.pi_desc->pir, 256);
- 	if (max_irr != 256) {
--		vapic_page = vmx->nested.virtual_apic_map.hva;
--		if (!vapic_page)
-+		struct gfn_to_pfn_cache *gpc = &vmx->nested.virtual_apic_cache;
-+
-+		read_lock(&gpc->lock);
-+		if (!kvm_gfn_to_pfn_cache_check(vcpu->kvm, gpc, gpc->gpa, PAGE_SIZE)) {
-+			read_unlock(&gpc->lock);
- 			goto mmio_needed;
-+		}
-+
-+		vapic_page = gpc->khva;
- 
- 		__kvm_apic_update_irr(vmx->nested.pi_desc->pir,
- 			vapic_page, &max_irr);
-@@ -3761,6 +3795,7 @@ static int vmx_complete_nested_posted_interrupt(struct kvm_vcpu *vcpu)
- 			status |= (u8)max_irr;
- 			vmcs_write16(GUEST_INTR_STATUS, status);
- 		}
-+		read_unlock(&gpc->lock);
- 	}
- 
- 	nested_mark_vmcs12_pages_dirty(vcpu);
-@@ -4581,7 +4616,7 @@ void nested_vmx_vmexit(struct kvm_vcpu *vcpu, u32 vm_exit_reason,
- 		kvm_release_page_clean(vmx->nested.apic_access_page);
- 		vmx->nested.apic_access_page = NULL;
- 	}
--	kvm_vcpu_unmap(vcpu, &vmx->nested.virtual_apic_map, true);
-+	kvm_gfn_to_pfn_cache_destroy(vcpu->kvm, &vmx->nested.virtual_apic_cache);
- 	kvm_vcpu_unmap(vcpu, &vmx->nested.pi_desc_map, true);
- 	vmx->nested.pi_desc = NULL;
- 
-@@ -6756,4 +6791,5 @@ struct kvm_x86_nested_ops vmx_nested_ops = {
- 	.write_log_dirty = nested_vmx_write_pml_buffer,
- 	.enable_evmcs = nested_enable_evmcs,
- 	.get_evmcs_version = nested_get_evmcs_version,
-+	.check_guest_maps = nested_vmx_check_guest_maps,
- };
-diff --git a/arch/x86/kvm/vmx/vmx.c b/arch/x86/kvm/vmx/vmx.c
-index ba66c171d951..6c61faef86d3 100644
---- a/arch/x86/kvm/vmx/vmx.c
-+++ b/arch/x86/kvm/vmx/vmx.c
-@@ -3839,19 +3839,23 @@ void pt_update_intercept_for_msr(struct kvm_vcpu *vcpu)
- static bool vmx_guest_apic_has_interrupt(struct kvm_vcpu *vcpu)
- {
- 	struct vcpu_vmx *vmx = to_vmx(vcpu);
--	void *vapic_page;
-+	struct gfn_to_pfn_cache *gpc = &vmx->nested.virtual_apic_cache;
- 	u32 vppr;
- 	int rvi;
- 
- 	if (WARN_ON_ONCE(!is_guest_mode(vcpu)) ||
- 		!nested_cpu_has_vid(get_vmcs12(vcpu)) ||
--		WARN_ON_ONCE(!vmx->nested.virtual_apic_map.gfn))
-+		WARN_ON_ONCE(gpc->gpa == GPA_INVALID))
+ out_unlock:
+diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
+index 3be9beea838d..cedeab55b0d8 100644
+--- a/arch/x86/kvm/mmu/mmu.c
++++ b/arch/x86/kvm/mmu/mmu.c
+@@ -3090,7 +3090,7 @@ fast_pf_fix_direct_spte(struct kvm_vcpu *vcpu, struct kvm_page_fault *fault,
  		return false;
  
- 	rvi = vmx_get_rvi();
+ 	if (is_writable_pte(new_spte) && !is_writable_pte(old_spte))
+-		mark_page_dirty_in_slot(vcpu->kvm, fault->slot, fault->gfn);
++		mark_page_dirty_in_slot(vcpu->kvm, vcpu, fault->slot, fault->gfn);
  
--	vapic_page = vmx->nested.virtual_apic_map.hva;
--	vppr = *((u32 *)(vapic_page + APIC_PROCPRI));
-+	read_lock(&gpc->lock);
-+	if (!kvm_gfn_to_pfn_cache_check(vcpu->kvm, gpc, gpc->gpa, PAGE_SIZE))
-+		vppr = *((u32 *)(gpc->khva + APIC_PROCPRI));
-+	else
-+		vppr = 0xff;
-+	read_unlock(&gpc->lock);
- 
- 	return ((rvi & 0xf0) > (vppr & 0xf0));
+ 	return true;
  }
-diff --git a/arch/x86/kvm/vmx/vmx.h b/arch/x86/kvm/vmx/vmx.h
-index 4df2ac24ffc1..8364e7fc92a0 100644
---- a/arch/x86/kvm/vmx/vmx.h
-+++ b/arch/x86/kvm/vmx/vmx.h
-@@ -195,7 +195,7 @@ struct nested_vmx {
- 	 * pointers, so we must keep them pinned while L2 runs.
- 	 */
- 	struct page *apic_access_page;
--	struct kvm_host_map virtual_apic_map;
-+	struct gfn_to_pfn_cache virtual_apic_cache;
- 	struct kvm_host_map pi_desc_map;
- 
- 	struct kvm_host_map msr_bitmap_map;
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 6f7669c94c79..caf35aa85ae3 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -9739,6 +9739,8 @@ static int vcpu_enter_guest(struct kvm_vcpu *vcpu)
- 
- 		if (kvm_check_request(KVM_REQ_UPDATE_CPU_DIRTY_LOGGING, vcpu))
- 			static_call(kvm_x86_update_cpu_dirty_logging)(vcpu);
-+		if (kvm_check_request(KVM_REQ_GPC_INVALIDATE, vcpu))
-+			; /* Nothing to do. It just wanted to wake us */
+diff --git a/arch/x86/kvm/mmu/spte.c b/arch/x86/kvm/mmu/spte.c
+index 0c76c45fdb68..0598515f3ae2 100644
+--- a/arch/x86/kvm/mmu/spte.c
++++ b/arch/x86/kvm/mmu/spte.c
+@@ -184,7 +184,7 @@ bool make_spte(struct kvm_vcpu *vcpu, struct kvm_mmu_page *sp,
+ 	if ((spte & PT_WRITABLE_MASK) && kvm_slot_dirty_track_enabled(slot)) {
+ 		/* Enforced by kvm_mmu_hugepage_adjust. */
+ 		WARN_ON(level > PG_LEVEL_4K);
+-		mark_page_dirty_in_slot(vcpu->kvm, slot, gfn);
++		mark_page_dirty_in_slot(vcpu->kvm, vcpu, slot, gfn);
  	}
  
- 	if (kvm_check_request(KVM_REQ_EVENT, vcpu) || req_int_win ||
-@@ -9785,6 +9787,14 @@ static int vcpu_enter_guest(struct kvm_vcpu *vcpu)
- 	local_irq_disable();
- 	vcpu->mode = IN_GUEST_MODE;
+ 	*new_spte = spte;
+diff --git a/arch/x86/kvm/mmu/tdp_mmu.c b/arch/x86/kvm/mmu/tdp_mmu.c
+index a54c3491af42..c5669c9918a4 100644
+--- a/arch/x86/kvm/mmu/tdp_mmu.c
++++ b/arch/x86/kvm/mmu/tdp_mmu.c
+@@ -247,7 +247,7 @@ static void handle_changed_spte_dirty_log(struct kvm *kvm, int as_id, gfn_t gfn,
+ 	if ((!is_writable_pte(old_spte) || pfn_changed) &&
+ 	    is_writable_pte(new_spte)) {
+ 		slot = __gfn_to_memslot(__kvm_memslots(kvm, as_id), gfn);
+-		mark_page_dirty_in_slot(kvm, slot, gfn);
++		mark_page_dirty_in_slot(kvm, NULL, slot, gfn);
+ 	}
+ }
  
-+	/*
-+	 * If the guest requires direct access to mapped L1 pages, check
-+	 * the caches are valid. Will raise KVM_REQ_GET_NESTED_STATE_PAGES
-+	 * to go and revalidate them, if necessary.
-+	 */
-+	if (is_guest_mode(vcpu) && kvm_x86_ops.nested_ops->check_guest_maps)
-+		kvm_x86_ops.nested_ops->check_guest_maps(vcpu);
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index 5a403d92833f..5af88f9e7fd1 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -3353,7 +3353,7 @@ static void record_steal_time(struct kvm_vcpu *vcpu)
+  out:
+ 	user_access_end();
+  dirty:
+-	mark_page_dirty_in_slot(vcpu->kvm, ghc->memslot, gpa_to_gfn(ghc->gpa));
++	mark_page_dirty_in_slot(vcpu->kvm, vcpu, ghc->memslot, gpa_to_gfn(ghc->gpa));
+ }
+ 
+ int kvm_set_msr_common(struct kvm_vcpu *vcpu, struct msr_data *msr_info)
+@@ -4420,7 +4420,7 @@ static void kvm_steal_time_set_preempted(struct kvm_vcpu *vcpu)
+ 	if (!copy_to_user_nofault(&st->preempted, &preempted, sizeof(preempted)))
+ 		vcpu->arch.st.preempted = KVM_VCPU_PREEMPTED;
+ 
+-	mark_page_dirty_in_slot(vcpu->kvm, ghc->memslot, gpa_to_gfn(ghc->gpa));
++	mark_page_dirty_in_slot(vcpu->kvm, vcpu, ghc->memslot, gpa_to_gfn(ghc->gpa));
+ }
+ 
+ void kvm_arch_vcpu_put(struct kvm_vcpu *vcpu)
+diff --git a/include/linux/kvm_dirty_ring.h b/include/linux/kvm_dirty_ring.h
+index 4da8d4a4140b..f3be974f9c5a 100644
+--- a/include/linux/kvm_dirty_ring.h
++++ b/include/linux/kvm_dirty_ring.h
+@@ -43,7 +43,8 @@ static inline int kvm_dirty_ring_alloc(struct kvm_dirty_ring *ring,
+ 	return 0;
+ }
+ 
+-static inline struct kvm_dirty_ring *kvm_dirty_ring_get(struct kvm *kvm)
++static inline struct kvm_dirty_ring *kvm_dirty_ring_get(struct kvm *kvm,
++							struct kvm_vcpu *vcpu)
+ {
+ 	return NULL;
+ }
+@@ -78,7 +79,8 @@ static inline bool kvm_dirty_ring_soft_full(struct kvm_dirty_ring *ring)
+ 
+ u32 kvm_dirty_ring_get_rsvd_entries(void);
+ int kvm_dirty_ring_alloc(struct kvm_dirty_ring *ring, int index, u32 size);
+-struct kvm_dirty_ring *kvm_dirty_ring_get(struct kvm *kvm);
++struct kvm_dirty_ring *kvm_dirty_ring_get(struct kvm *kvm,
++					  struct kvm_vcpu *vcpu);
+ 
+ /*
+  * called with kvm->slots_lock held, returns the number of
+diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+index c310648cc8f1..1628c32e4464 100644
+--- a/include/linux/kvm_host.h
++++ b/include/linux/kvm_host.h
+@@ -942,7 +942,8 @@ struct kvm_memory_slot *gfn_to_memslot(struct kvm *kvm, gfn_t gfn);
+ bool kvm_is_visible_gfn(struct kvm *kvm, gfn_t gfn);
+ bool kvm_vcpu_is_visible_gfn(struct kvm_vcpu *vcpu, gfn_t gfn);
+ unsigned long kvm_host_page_size(struct kvm_vcpu *vcpu, gfn_t gfn);
+-void mark_page_dirty_in_slot(struct kvm *kvm, struct kvm_memory_slot *memslot, gfn_t gfn);
++void mark_page_dirty_in_slot(struct kvm *kvm, struct kvm_vcpu *vcpu,
++			     struct kvm_memory_slot *memslot, gfn_t gfn);
+ void mark_page_dirty(struct kvm *kvm, gfn_t gfn);
+ 
+ struct kvm_memslots *kvm_vcpu_memslots(struct kvm_vcpu *vcpu);
+diff --git a/virt/kvm/dirty_ring.c b/virt/kvm/dirty_ring.c
+index 88f4683198ea..61c94fc4d7f0 100644
+--- a/virt/kvm/dirty_ring.c
++++ b/virt/kvm/dirty_ring.c
+@@ -36,12 +36,16 @@ static bool kvm_dirty_ring_full(struct kvm_dirty_ring *ring)
+ 	return kvm_dirty_ring_used(ring) >= ring->size;
+ }
+ 
+-struct kvm_dirty_ring *kvm_dirty_ring_get(struct kvm *kvm)
++struct kvm_dirty_ring *kvm_dirty_ring_get(struct kvm *kvm, struct kvm_vcpu *vcpu)
+ {
+-	struct kvm_vcpu *vcpu = kvm_get_running_vcpu();
++	struct kvm_vcpu *running_vcpu = kvm_get_running_vcpu();
+ 
++	WARN_ON_ONCE(vcpu && vcpu != running_vcpu);
+ 	WARN_ON_ONCE(vcpu->kvm != kvm);
+ 
++	if (!vcpu)
++		vcpu = running_vcpu;
 +
- 	srcu_read_unlock(&vcpu->kvm->srcu, vcpu->srcu_idx);
+ 	return &vcpu->dirty_ring;
+ }
  
- 	/*
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index 356d636e037d..7137995cab41 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -2781,7 +2781,7 @@ int kvm_vcpu_read_guest_atomic(struct kvm_vcpu *vcpu, gpa_t gpa,
+ }
+ EXPORT_SYMBOL_GPL(kvm_vcpu_read_guest_atomic);
+ 
+-static int __kvm_write_guest_page(struct kvm *kvm,
++static int __kvm_write_guest_page(struct kvm *kvm, struct kvm_vcpu *vcpu,
+ 				  struct kvm_memory_slot *memslot, gfn_t gfn,
+ 			          const void *data, int offset, int len)
+ {
+@@ -2794,7 +2794,7 @@ static int __kvm_write_guest_page(struct kvm *kvm,
+ 	r = __copy_to_user((void __user *)addr + offset, data, len);
+ 	if (r)
+ 		return -EFAULT;
+-	mark_page_dirty_in_slot(kvm, memslot, gfn);
++	mark_page_dirty_in_slot(kvm, vcpu, memslot, gfn);
+ 	return 0;
+ }
+ 
+@@ -2803,7 +2803,7 @@ int kvm_write_guest_page(struct kvm *kvm, gfn_t gfn,
+ {
+ 	struct kvm_memory_slot *slot = gfn_to_memslot(kvm, gfn);
+ 
+-	return __kvm_write_guest_page(kvm, slot, gfn, data, offset, len);
++	return __kvm_write_guest_page(kvm, NULL, slot, gfn, data, offset, len);
+ }
+ EXPORT_SYMBOL_GPL(kvm_write_guest_page);
+ 
+@@ -2812,7 +2812,7 @@ int kvm_vcpu_write_guest_page(struct kvm_vcpu *vcpu, gfn_t gfn,
+ {
+ 	struct kvm_memory_slot *slot = kvm_vcpu_gfn_to_memslot(vcpu, gfn);
+ 
+-	return __kvm_write_guest_page(vcpu->kvm, slot, gfn, data, offset, len);
++	return __kvm_write_guest_page(vcpu->kvm, vcpu, slot, gfn, data, offset, len);
+ }
+ EXPORT_SYMBOL_GPL(kvm_vcpu_write_guest_page);
+ 
+@@ -2931,7 +2931,7 @@ int kvm_write_guest_offset_cached(struct kvm *kvm, struct gfn_to_hva_cache *ghc,
+ 	r = __copy_to_user((void __user *)ghc->hva + offset, data, len);
+ 	if (r)
+ 		return -EFAULT;
+-	mark_page_dirty_in_slot(kvm, ghc->memslot, gpa >> PAGE_SHIFT);
++	mark_page_dirty_in_slot(kvm, NULL, ghc->memslot, gpa >> PAGE_SHIFT);
+ 
+ 	return 0;
+ }
+@@ -3000,7 +3000,7 @@ int kvm_clear_guest(struct kvm *kvm, gpa_t gpa, unsigned long len)
+ }
+ EXPORT_SYMBOL_GPL(kvm_clear_guest);
+ 
+-void mark_page_dirty_in_slot(struct kvm *kvm,
++void mark_page_dirty_in_slot(struct kvm *kvm, struct kvm_vcpu *vcpu,
+ 			     struct kvm_memory_slot *memslot,
+ 		 	     gfn_t gfn)
+ {
+@@ -3009,7 +3009,7 @@ void mark_page_dirty_in_slot(struct kvm *kvm,
+ 		u32 slot = (memslot->as_id << 16) | memslot->id;
+ 
+ 		if (kvm->dirty_ring_size)
+-			kvm_dirty_ring_push(kvm_dirty_ring_get(kvm),
++			kvm_dirty_ring_push(kvm_dirty_ring_get(kvm, vcpu),
+ 					    slot, rel_gfn);
+ 		else
+ 			set_bit_le(rel_gfn, memslot->dirty_bitmap);
+@@ -3022,7 +3022,7 @@ void mark_page_dirty(struct kvm *kvm, gfn_t gfn)
+ 	struct kvm_memory_slot *memslot;
+ 
+ 	memslot = gfn_to_memslot(kvm, gfn);
+-	mark_page_dirty_in_slot(kvm, memslot, gfn);
++	mark_page_dirty_in_slot(kvm, NULL, memslot, gfn);
+ }
+ EXPORT_SYMBOL_GPL(mark_page_dirty);
+ 
+@@ -3031,7 +3031,7 @@ void kvm_vcpu_mark_page_dirty(struct kvm_vcpu *vcpu, gfn_t gfn)
+ 	struct kvm_memory_slot *memslot;
+ 
+ 	memslot = kvm_vcpu_gfn_to_memslot(vcpu, gfn);
+-	mark_page_dirty_in_slot(vcpu->kvm, memslot, gfn);
++	mark_page_dirty_in_slot(vcpu->kvm, vcpu, memslot, gfn);
+ }
+ EXPORT_SYMBOL_GPL(kvm_vcpu_mark_page_dirty);
+ 
 -- 
 2.31.1
 
