@@ -1,48 +1,54 @@
-From: Christian Borntraeger <borntraeger@linux.ibm.com>
-Date: Wed, 17 Nov 2021 08:33:38 +0100
-Subject: [PATCH v2 5/6] KVM: s390: Cap KVM_CAP_NR_VCPUS by
- num_online_cpus()
-In-Reply-To: <20211116163443.88707-6-vkuznets@redhat.com>
-References: <20211116163443.88707-1-vkuznets@redhat.com>
- <20211116163443.88707-6-vkuznets@redhat.com>
-Message-ID: <df5a43bb-3944-6fbb-a98f-94c46db867f8@linux.ibm.com>
+From: Anup Patel <anup.patel@wdc.com>
+Date: Wed, 17 Nov 2021 14:17:05 +0530
+Subject: [PATCH v2] RISC-V: Enable KVM in RV64 and RV32 defconfigs as a module
+Message-ID: <20211117084705.687762-1-anup.patel@wdc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Am 16.11.21 um 17:34 schrieb Vitaly Kuznetsov:
-> KVM_CAP_NR_VCPUS is a legacy advisory value which on other architectures
-> return num_online_cpus() caped by KVM_CAP_NR_VCPUS or something else
-> (ppc and arm64 are special cases). On s390, KVM_CAP_NR_VCPUS returns
-> the same as KVM_CAP_MAX_VCPUS and this may turn out to be a bad
-> 'advice'. Switch s390 to returning caped num_online_cpus() too.
-> 
-> Acked-by: Christian Borntraeger <borntraeger@de.ibm.com>
+Let's enable KVM RISC-V in RV64 and RV32 defconfigs as module
+so that it always built along with the default kernel image.
 
-you can also add
-Reviewed-by: Christian Borntraeger <borntraeger@linux.ibm.com>
+Signed-off-by: Anup Patel <anup.patel@wdc.com>
+---
+Changes since v1:
+ - Rebased on Linux-5.16-rc1
+ - Removed unwanted stuff from defconfig PATCH1
+ - Dropped PATCH2 and PATCH3 since these are already merged via KVM tree
+---
+ arch/riscv/configs/defconfig      | 2 ++
+ arch/riscv/configs/rv32_defconfig | 2 ++
+ 2 files changed, 4 insertions(+)
 
-(yes I am changing my default address, but the other should continue to work)
+diff --git a/arch/riscv/configs/defconfig b/arch/riscv/configs/defconfig
+index c252fd5706d2..ef473e2f503b 100644
+--- a/arch/riscv/configs/defconfig
++++ b/arch/riscv/configs/defconfig
+@@ -19,6 +19,8 @@ CONFIG_SOC_VIRT=y
+ CONFIG_SOC_MICROCHIP_POLARFIRE=y
+ CONFIG_SMP=y
+ CONFIG_HOTPLUG_CPU=y
++CONFIG_VIRTUALIZATION=y
++CONFIG_KVM=m
+ CONFIG_JUMP_LABEL=y
+ CONFIG_MODULES=y
+ CONFIG_MODULE_UNLOAD=y
+diff --git a/arch/riscv/configs/rv32_defconfig b/arch/riscv/configs/rv32_defconfig
+index 434ef5b64599..6e9f12ff968a 100644
+--- a/arch/riscv/configs/rv32_defconfig
++++ b/arch/riscv/configs/rv32_defconfig
+@@ -19,6 +19,8 @@ CONFIG_SOC_VIRT=y
+ CONFIG_ARCH_RV32I=y
+ CONFIG_SMP=y
+ CONFIG_HOTPLUG_CPU=y
++CONFIG_VIRTUALIZATION=y
++CONFIG_KVM=m
+ CONFIG_JUMP_LABEL=y
+ CONFIG_MODULES=y
+ CONFIG_MODULE_UNLOAD=y
+-- 
+2.25.1
 
-> Signed-off-by: Vitaly Kuznetsov <vkuznets@redhat.com>
-> ---
->   arch/s390/kvm/kvm-s390.c | 2 ++
->   1 file changed, 2 insertions(+)
-> 
-> diff --git a/arch/s390/kvm/kvm-s390.c b/arch/s390/kvm/kvm-s390.c
-> index 6a6dd5e1daf6..1cfe36f6432e 100644
-> --- a/arch/s390/kvm/kvm-s390.c
-> +++ b/arch/s390/kvm/kvm-s390.c
-> @@ -585,6 +585,8 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
->   			r = KVM_MAX_VCPUS;
->   		else if (sclp.has_esca && sclp.has_64bscao)
->   			r = KVM_S390_ESCA_CPU_SLOTS;
-> +		if (ext == KVM_CAP_NR_VCPUS)
-> +			r = min_t(unsigned int, num_online_cpus(), r);
->   		break;
->   	case KVM_CAP_S390_COW:
->   		r = MACHINE_HAS_ESOP;
-> 
 
