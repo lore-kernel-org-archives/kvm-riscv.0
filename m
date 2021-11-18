@@ -1,30 +1,35 @@
-From: David Woodhouse <dwmw2@infradead.org>
-Date: Wed, 17 Nov 2021 19:30:56 +0000
-Subject: [PATCH v3 08/12] KVM: Propagate vcpu explicitly to
- mark_page_dirty_in_slot()
-In-Reply-To: <87pmqy7ir2.wl-maz@kernel.org>
-References: <20211117174003.297096-1-dwmw2@infradead.org>
- <20211117174003.297096-9-dwmw2@infradead.org>
- <87pmqy7ir2.wl-maz@kernel.org>
-Message-ID: <bc51c15edf5b52b361998a922594db0bda726dad.camel@infradead.org>
+From: Atish Patra <atishp@atishpatra.org>
+Date: Wed, 17 Nov 2021 22:05:01 -0800
+Subject: [PATCH] MAINTAINERS: Update Atish's email address
+Message-ID: <20211118060501.932993-1-atishp@atishpatra.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 2021-11-17 at 18:13 +0000, Marc Zyngier wrote:
-> What's the base for this series? This patch fails to compile for me
-> (at least on arm64), and the following patch doesn't apply on -rc1.
+I no longer employed by western digital. Update my email address to
+personal one.
 
-It's on top of kvm/master, and it's also at
-https://git.infradead.org/users/dwmw2/linux.git/shortlog/refs/heads/xen-evtchn
+Signed-off-by: Atish Patra <atishp@atishpatra.org>
+---
+ MAINTAINERS | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-git pull git://git.infradead.org/users/dwmw2/linux.git xen-evtchn
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: smime.p7s
-Type: application/pkcs7-signature
-Size: 5174 bytes
-Desc: not available
-URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20211117/c017ea8c/attachment-0001.p7s>
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 7a2345ce8521..b22af4edcd08 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -10434,7 +10434,7 @@ F:	arch/powerpc/kvm/
+ 
+ KERNEL VIRTUAL MACHINE FOR RISC-V (KVM/riscv)
+ M:	Anup Patel <anup.patel@wdc.com>
+-R:	Atish Patra <atish.patra@wdc.com>
++R:	Atish Patra <atishp@atishpatra.org>
+ L:	kvm at vger.kernel.org
+ L:	kvm-riscv at lists.infradead.org
+ L:	linux-riscv at lists.infradead.org
+-- 
+2.33.1
+
+
