@@ -1,39 +1,38 @@
-From: Paolo Bonzini <pbonzini@redhat.com>
-Date: Thu, 18 Nov 2021 13:04:07 +0100
-Subject: [PATCH v3 08/12] KVM: Propagate vcpu explicitly to
- mark_page_dirty_in_slot()
-In-Reply-To: <85d9fec17f32c3eb9e100e56b91af050.squirrel@twosheds.infradead.org>
-References: <20211117174003.297096-1-dwmw2@infradead.org>
- <20211117174003.297096-9-dwmw2@infradead.org>
- <85d9fec17f32c3eb9e100e56b91af050.squirrel@twosheds.infradead.org>
-Message-ID: <4c48546b-eb4a-dff7-cc38-5df54f73f5d4@redhat.com>
+From: Sean Christopherson <seanjc@google.com>
+Date: Thu, 18 Nov 2021 18:22:44 +0000
+Subject: [PATCH] MAINTAINERS: Update Atish's email address
+In-Reply-To: <20211118060501.932993-1-atishp@atishpatra.org>
+References: <20211118060501.932993-1-atishp@atishpatra.org>
+Message-ID: <YZaZ9KxEz+GVjH7q@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 11/17/21 22:09, David Woodhouse wrote:
->>   {
->> -	struct kvm_vcpu *vcpu = kvm_get_running_vcpu();
->> +	struct kvm_vcpu *running_vcpu = kvm_get_running_vcpu();
->>
->> +	WARN_ON_ONCE(vcpu && vcpu != running_vcpu);
->>   	WARN_ON_ONCE(vcpu->kvm != kvm);
-> Ah, that one needs to be changed to check running_vcpu instead. Or this
-> needs to go first:
+On Wed, Nov 17, 2021, Atish Patra wrote:
+> I no longer employed by western digital. Update my email address to
+> personal one.
 > 
-> I think I prefer making the vCPU a required argument. If anyone's going to
-> pull a vCPU pointer out of their posterior, let the caller do it.
+> Signed-off-by: Atish Patra <atishp@atishpatra.org>
+> ---
+>  MAINTAINERS | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 7a2345ce8521..b22af4edcd08 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -10434,7 +10434,7 @@ F:	arch/powerpc/kvm/
+>  
+>  KERNEL VIRTUAL MACHINE FOR RISC-V (KVM/riscv)
+>  M:	Anup Patel <anup.patel@wdc.com>
+> -R:	Atish Patra <atish.patra@wdc.com>
+> +R:	Atish Patra <atishp@atishpatra.org>
+>  L:	kvm at vger.kernel.org
+>  L:	kvm-riscv at lists.infradead.org
+>  L:	linux-riscv at lists.infradead.org
+> -- 
 
-I understand that feeling, but still using the running vCPU is by far 
-the common case, and it's not worth adding a new function parameter to 
-all call sites.
-
-What about using a separate function, possibly __-prefixed, for the case 
-where you have a very specific vCPU?
-
-Paolo
-
+Please add an entry in .mailmap as well.
 
