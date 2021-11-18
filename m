@@ -1,185 +1,73 @@
-From: Anup Patel <anup.patel@wdc.com>
-Date: Fri, 19 Nov 2021 18:15:15 +0530
-Subject: [PATCH v11 kvmtool 8/8] riscv: Generate PCI host DT node
-In-Reply-To: <20211119124515.89439-1-anup.patel@wdc.com>
-References: <20211119124515.89439-1-anup.patel@wdc.com>
-Message-ID: <20211119124515.89439-9-anup.patel@wdc.com>
+From: David Woodhouse <dwmw2@infradead.org>
+Date: Thu, 18 Nov 2021 14:22:04 +0000
+Subject: [PATCH v3 08/12] KVM: Propagate vcpu explicitly to
+ mark_page_dirty_in_slot()
+In-Reply-To: <4c48546b-eb4a-dff7-cc38-5df54f73f5d4@redhat.com>
+References: <20211117174003.297096-1-dwmw2@infradead.org>
+ <20211117174003.297096-9-dwmw2@infradead.org>
+ <85d9fec17f32c3eb9e100e56b91af050.squirrel@twosheds.infradead.org>
+ <4c48546b-eb4a-dff7-cc38-5df54f73f5d4@redhat.com>
+Message-ID: <20b5952e76c54a3a5dfe5a898e3b835404ac6fb1.camel@infradead.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This patch extends FDT generation to generate PCI host DT node.
+On Thu, 2021-11-18 at 13:04 +0100, Paolo Bonzini wrote:
+> On 11/17/21 22:09, David Woodhouse wrote:
+> > >   {
+> > > -	struct kvm_vcpu *vcpu = kvm_get_running_vcpu();
+> > > +	struct kvm_vcpu *running_vcpu = kvm_get_running_vcpu();
+> > > 
+> > > +	WARN_ON_ONCE(vcpu && vcpu != running_vcpu);
+> > >   	WARN_ON_ONCE(vcpu->kvm != kvm);
+> > Ah, that one needs to be changed to check running_vcpu instead. Or this
+> > needs to go first:
+> > 
+> > I think I prefer making the vCPU a required argument. If anyone's going to
+> > pull a vCPU pointer out of their posterior, let the caller do it.
+> > 
+> 
+> I understand that feeling, but still using the running vCPU is by far 
+> the common case, and it's not worth adding a new function parameter to 
+> all call sites.
+> 
+> What about using a separate function, possibly __-prefixed, for the case 
+> where you have a very specific vCPU?
 
-Of course, PCI host for Guest/VM is not useful at the moment
-because it's mostly for PCI pass-through and we don't have
-IOMMU and interrupt routing available for KVM RISC-V. In future,
-we might be able to use PCI host for VirtIO PCI transport or
-other software emulated PCI devices.
+We could certainly do a kvm_vcpu_mark_page_dirty_in_slot() and reduce
+the collateral damage. I think this patch wouldn't need to touch
+anything outside virt/kvm/ if we did that.
 
-Signed-off-by: Anup Patel <anup.patel@wdc.com>
----
- Makefile                     |   1 +
- riscv/fdt.c                  |   3 +
- riscv/include/kvm/kvm-arch.h |   2 +
- riscv/pci.c                  | 109 +++++++++++++++++++++++++++++++++++
- 4 files changed, 115 insertions(+)
- create mode 100644 riscv/pci.c
+But bikeshedding aside, it occurs to me that I have a more substantial
+concern about this approach ? are we even *allowed* to touch the dirty
+ring of another vCPU? It seems to be based on the assumption that it's
+entirely a per-cpu structure on the kernel side. Wouldn't we need a
+spinlock in kvm_dirty_ring_push() at the very least?
 
-diff --git a/Makefile b/Makefile
-index e4e1184..6920d7f 100644
---- a/Makefile
-+++ b/Makefile
-@@ -204,6 +204,7 @@ ifeq ($(ARCH),riscv)
- 	OBJS		+= riscv/irq.o
- 	OBJS		+= riscv/kvm.o
- 	OBJS		+= riscv/kvm-cpu.o
-+	OBJS		+= riscv/pci.o
- 	OBJS		+= riscv/plic.o
- 	ifeq ($(RISCV_XLEN),32)
- 		CFLAGS	+= -mabi=ilp32d -march=rv32gc
-diff --git a/riscv/fdt.c b/riscv/fdt.c
-index 6527ef7..de15bfe 100644
---- a/riscv/fdt.c
-+++ b/riscv/fdt.c
-@@ -167,6 +167,9 @@ static int setup_fdt(struct kvm *kvm)
- 		dev_hdr = device__next_dev(dev_hdr);
- 	}
- 
-+	/* PCI host controller */
-+	pci__generate_fdt_nodes(fdt);
-+
- 	_FDT(fdt_end_node(fdt));
- 
- 	if (fdt_stdout_path) {
-diff --git a/riscv/include/kvm/kvm-arch.h b/riscv/include/kvm/kvm-arch.h
-index d0be965..f090883 100644
---- a/riscv/include/kvm/kvm-arch.h
-+++ b/riscv/include/kvm/kvm-arch.h
-@@ -84,4 +84,6 @@ void plic__generate_irq_prop(void *fdt, u8 irq, enum irq_type irq_type);
- 
- void plic__irq_trig(struct kvm *kvm, int irq, int level, bool edge);
- 
-+void pci__generate_fdt_nodes(void *fdt);
-+
- #endif /* KVM__KVM_ARCH_H */
-diff --git a/riscv/pci.c b/riscv/pci.c
-new file mode 100644
-index 0000000..604fd20
---- /dev/null
-+++ b/riscv/pci.c
-@@ -0,0 +1,109 @@
-+#include "kvm/devices.h"
-+#include "kvm/fdt.h"
-+#include "kvm/kvm.h"
-+#include "kvm/of_pci.h"
-+#include "kvm/pci.h"
-+#include "kvm/util.h"
-+
-+/*
-+ * An entry in the interrupt-map table looks like:
-+ * <pci unit address> <pci interrupt pin> <plic phandle> <plic interrupt>
-+ */
-+
-+struct of_interrupt_map_entry {
-+	struct of_pci_irq_mask		pci_irq_mask;
-+	u32				plic_phandle;
-+	u32				plic_irq;
-+} __attribute__((packed));
-+
-+void pci__generate_fdt_nodes(void *fdt)
-+{
-+	struct device_header *dev_hdr;
-+	struct of_interrupt_map_entry irq_map[OF_PCI_IRQ_MAP_MAX];
-+	unsigned nentries = 0;
-+	/* Bus range */
-+	u32 bus_range[] = { cpu_to_fdt32(0), cpu_to_fdt32(1), };
-+	/* Configuration Space */
-+	u64 cfg_reg_prop[] = { cpu_to_fdt64(KVM_PCI_CFG_AREA),
-+			       cpu_to_fdt64(RISCV_PCI_CFG_SIZE), };
-+	/* Describe the memory ranges */
-+	struct of_pci_ranges_entry ranges[] = {
-+		{
-+			.pci_addr = {
-+				.hi	= cpu_to_fdt32(of_pci_b_ss(OF_PCI_SS_IO)),
-+				.mid	= 0,
-+				.lo	= 0,
-+			},
-+			.cpu_addr	= cpu_to_fdt64(KVM_IOPORT_AREA),
-+			.length		= cpu_to_fdt64(RISCV_IOPORT_SIZE),
-+		},
-+		{
-+			.pci_addr = {
-+				.hi	= cpu_to_fdt32(of_pci_b_ss(OF_PCI_SS_M32)),
-+				.mid	= cpu_to_fdt32(KVM_PCI_MMIO_AREA >> 32),
-+				.lo	= cpu_to_fdt32(KVM_PCI_MMIO_AREA),
-+			},
-+			.cpu_addr	= cpu_to_fdt64(KVM_PCI_MMIO_AREA),
-+			.length		= cpu_to_fdt64(RISCV_PCI_MMIO_SIZE),
-+		},
-+	};
-+
-+	/* Boilerplate PCI properties */
-+	_FDT(fdt_begin_node(fdt, "pci"));
-+	_FDT(fdt_property_string(fdt, "device_type", "pci"));
-+	_FDT(fdt_property_cell(fdt, "#address-cells", 0x3));
-+	_FDT(fdt_property_cell(fdt, "#size-cells", 0x2));
-+	_FDT(fdt_property_cell(fdt, "#interrupt-cells", 0x1));
-+	_FDT(fdt_property_string(fdt, "compatible", "pci-host-ecam-generic"));
-+	_FDT(fdt_property(fdt, "dma-coherent", NULL, 0));
-+
-+	_FDT(fdt_property(fdt, "bus-range", bus_range, sizeof(bus_range)));
-+	_FDT(fdt_property(fdt, "reg", &cfg_reg_prop, sizeof(cfg_reg_prop)));
-+	_FDT(fdt_property(fdt, "ranges", ranges, sizeof(ranges)));
-+
-+	/* Generate the interrupt map ... */
-+	dev_hdr = device__first_dev(DEVICE_BUS_PCI);
-+	while (dev_hdr && nentries < ARRAY_SIZE(irq_map)) {
-+		struct of_interrupt_map_entry *entry = &irq_map[nentries];
-+		struct pci_device_header *pci_hdr = dev_hdr->data;
-+		u8 dev_num = dev_hdr->dev_num;
-+		u8 pin = pci_hdr->irq_pin;
-+		u8 irq = pci_hdr->irq_line;
-+
-+		*entry = (struct of_interrupt_map_entry) {
-+			.pci_irq_mask = {
-+				.pci_addr = {
-+					.hi	= cpu_to_fdt32(of_pci_b_ddddd(dev_num)),
-+					.mid	= 0,
-+					.lo	= 0,
-+				},
-+				.pci_pin	= cpu_to_fdt32(pin),
-+			},
-+			.plic_phandle	= cpu_to_fdt32(PHANDLE_PLIC),
-+			.plic_irq	= cpu_to_fdt32(irq),
-+		};
-+
-+		nentries++;
-+		dev_hdr = device__next_dev(dev_hdr);
-+	}
-+
-+	_FDT(fdt_property(fdt, "interrupt-map", irq_map,
-+			  sizeof(struct of_interrupt_map_entry) * nentries));
-+
-+	/* ... and the corresponding mask. */
-+	if (nentries) {
-+		struct of_pci_irq_mask irq_mask = {
-+			.pci_addr = {
-+				.hi	= cpu_to_fdt32(of_pci_b_ddddd(-1)),
-+				.mid	= 0,
-+				.lo	= 0,
-+			},
-+			.pci_pin	= cpu_to_fdt32(7),
-+		};
-+
-+		_FDT(fdt_property(fdt, "interrupt-map-mask", &irq_mask,
-+				  sizeof(irq_mask)));
-+	}
-+
-+	_FDT(fdt_end_node(fdt));
-+}
--- 
-2.25.1
+At this point I'm somewhat tempted to remove the mark_page_dirty() call
+from gfn_to_pfn_cache_invalidate_start() and move it to the tail of 
+kvm_gfn_to_pfn_cache_refresh() instead, where it unpins and memunmaps
+the page. (We'd still tell the *kernel* by calling kvm_set_pfn_dirty()
+immediately in the invalidation, just defer the KVM mark_page_dirty()
+to be done in the context of an actual vCPU.)
 
+If I do that, I can drop this 'propagate vcpu' patch completely.
 
+I'm already happy enough that I'll fix the Xen shared_info page by
+*never* bothering to dirty_log for it, and I can wash my hands of that
+problem.... if I stop typing now. But...
+
+That leaves the one in TDP MMU handle_changed_spte_dirty_log() which
+AFAICT can trigger the same crash seen by butt3rflyh4ck ? can't that
+happen from a thread where kvm_get_running_vcpu() is NULL too? For that
+one I'm not sure.
+
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: smime.p7s
+Type: application/pkcs7-signature
+Size: 5174 bytes
+Desc: not available
+URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20211118/bcc97888/attachment.p7s>
