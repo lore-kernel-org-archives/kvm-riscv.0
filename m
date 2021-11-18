@@ -1,66 +1,78 @@
-From: Atish Patra <atishp@atishpatra.org>
-Date: Wed, 17 Nov 2021 23:53:59 -0800
-Subject: [PATCH v2] RISC-V: Enable KVM in RV64 and RV32 defconfigs as a
- module
-In-Reply-To: <20211117084705.687762-1-anup.patel@wdc.com>
-References: <20211117084705.687762-1-anup.patel@wdc.com>
-Message-ID: <CAOnJCULQJj0ZyyF+Q1cogXsC9GDQKLTms8vHvNNpj4aHntmx6w@mail.gmail.com>
+From: Atish Patra <atishp@rivosinc.com>
+Date: Thu, 18 Nov 2021 00:39:07 -0800
+Subject: [PATCH v5 0/5] Add SBI v0.2 support for KVM
+Message-ID: <20211118083912.981995-1-atishp@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Nov 17, 2021 at 12:47 AM Anup Patel <anup.patel@wdc.com> wrote:
->
-> Let's enable KVM RISC-V in RV64 and RV32 defconfigs as module
-> so that it always built along with the default kernel image.
->
-> Signed-off-by: Anup Patel <anup.patel@wdc.com>
-> ---
-> Changes since v1:
->  - Rebased on Linux-5.16-rc1
->  - Removed unwanted stuff from defconfig PATCH1
->  - Dropped PATCH2 and PATCH3 since these are already merged via KVM tree
-> ---
->  arch/riscv/configs/defconfig      | 2 ++
->  arch/riscv/configs/rv32_defconfig | 2 ++
->  2 files changed, 4 insertions(+)
->
-> diff --git a/arch/riscv/configs/defconfig b/arch/riscv/configs/defconfig
-> index c252fd5706d2..ef473e2f503b 100644
-> --- a/arch/riscv/configs/defconfig
-> +++ b/arch/riscv/configs/defconfig
-> @@ -19,6 +19,8 @@ CONFIG_SOC_VIRT=y
->  CONFIG_SOC_MICROCHIP_POLARFIRE=y
->  CONFIG_SMP=y
->  CONFIG_HOTPLUG_CPU=y
-> +CONFIG_VIRTUALIZATION=y
-> +CONFIG_KVM=m
->  CONFIG_JUMP_LABEL=y
->  CONFIG_MODULES=y
->  CONFIG_MODULE_UNLOAD=y
-> diff --git a/arch/riscv/configs/rv32_defconfig b/arch/riscv/configs/rv32_defconfig
-> index 434ef5b64599..6e9f12ff968a 100644
-> --- a/arch/riscv/configs/rv32_defconfig
-> +++ b/arch/riscv/configs/rv32_defconfig
-> @@ -19,6 +19,8 @@ CONFIG_SOC_VIRT=y
->  CONFIG_ARCH_RV32I=y
->  CONFIG_SMP=y
->  CONFIG_HOTPLUG_CPU=y
-> +CONFIG_VIRTUALIZATION=y
-> +CONFIG_KVM=m
->  CONFIG_JUMP_LABEL=y
->  CONFIG_MODULES=y
->  CONFIG_MODULE_UNLOAD=y
-> --
-> 2.25.1
->
+The Supervisor Binary Interface(SBI) specification[1] now defines a
+base extension that provides extendability to add future extensions
+while maintaining backward compatibility with previous versions.
+The new version is defined as 0.2 and older version is marked as 0.1.
 
-Reviewed-by: Atish Patra <atishp@rivosinc.com>
+This series adds following features to RISC-V Linux KVM.
+1. Adds support for SBI v0.2 in KVM
+2. SBI Hart state management extension (HSM) in KVM
+3. Ordered booting of guest vcpus in guest Linux
 
+This series is based on base KVM series which is already part of the kvm-next[2]. 
 
--- 
-Regards,
-Atish
+Guest kernel needs to also support SBI v0.2 and HSM extension in Kernel
+to boot multiple vcpus. Linux kernel supports both starting v5.7.
+In absense of that, guest can only boot 1 vcpu.
+
+Changes from v4->v5:
+1. Added reviewed-by tags.
+2. Removed the redundant kvm_cpu_context pointer sanity check.
+
+Changes from v3->v4:
+1. Fixed the commit text title.
+2. Removed a redundant memory barrier from patch 4.
+3. Replaced preempt_enable/disable with get_cpu/put_cpu.
+4. Renamed the exixting implementation as v01 instead of legacy.
+
+Changes from v2->v3:
+1. Rebased on the latest merged kvm series.
+2. Dropped the reset extension patch because reset extension is not merged in kernel. 
+However, my tree[3] still contains it in case anybody wants to test it.
+
+Changes from v1->v2:
+1. Sent the patch 1 separately as it can merged independently.
+2. Added Reset extension functionality.
+
+Tested on Qemu and Rocket core FPGA.
+
+[1] https://github.com/riscv/riscv-sbi-doc/blob/master/riscv-sbi.adoc
+[3] https://github.com/atishp04/linux/tree/kvm_sbi_v05_reset
+[4] https://github.com/atishp04/linux/tree/kvm_sbi_v05
+
+Atish Patra (5):
+RISC-V: KVM: Mark the existing SBI implementation as v01
+RISC-V: KVM: Reorganize SBI code by moving SBI v0.1 to its own file
+RISC-V: KVM: Add SBI v0.2 base extension
+RISC-V: KVM: Add v0.1 replacement SBI extensions defined in v02
+RISC-V: KVM: Add SBI HSM extension in KVM
+
+arch/riscv/include/asm/kvm_vcpu_sbi.h |  33 ++++
+arch/riscv/include/asm/sbi.h          |   9 ++
+arch/riscv/kvm/Makefile               |   4 +
+arch/riscv/kvm/vcpu.c                 |  23 +++
+arch/riscv/kvm/vcpu_sbi.c             | 211 ++++++++++++--------------
+arch/riscv/kvm/vcpu_sbi_base.c        |  70 +++++++++
+arch/riscv/kvm/vcpu_sbi_hsm.c         | 105 +++++++++++++
+arch/riscv/kvm/vcpu_sbi_replace.c     | 133 ++++++++++++++++
+arch/riscv/kvm/vcpu_sbi_v01.c         | 126 +++++++++++++++
+9 files changed, 599 insertions(+), 115 deletions(-)
+create mode 100644 arch/riscv/include/asm/kvm_vcpu_sbi.h
+create mode 100644 arch/riscv/kvm/vcpu_sbi_base.c
+create mode 100644 arch/riscv/kvm/vcpu_sbi_hsm.c
+create mode 100644 arch/riscv/kvm/vcpu_sbi_replace.c
+create mode 100644 arch/riscv/kvm/vcpu_sbi_v01.c
+
+--
+2.33.1
+
 
