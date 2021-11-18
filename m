@@ -1,35 +1,57 @@
 From: Atish Patra <atishp@atishpatra.org>
-Date: Wed, 17 Nov 2021 22:05:01 -0800
-Subject: [PATCH] MAINTAINERS: Update Atish's email address
-Message-ID: <20211118060501.932993-1-atishp@atishpatra.org>
+Date: Wed, 17 Nov 2021 23:53:20 -0800
+Subject: [PATCH] RISC-V: KVM: Fix incorrect KVM_MAX_VCPUS value
+In-Reply-To: <20211117060241.611391-1-anup.patel@wdc.com>
+References: <20211117060241.611391-1-anup.patel@wdc.com>
+Message-ID: <CAOnJCU+KZn2JnZg-FZcJ7PXRpGo5SyOmdUYFeJgBenPO9xxE1w@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-I no longer employed by western digital. Update my email address to
-personal one.
+On Tue, Nov 16, 2021 at 10:03 PM Anup Patel <anup.patel@wdc.com> wrote:
+>
+> The KVM_MAX_VCPUS value is supposed to be aligned with number of
+> VMID bits in the hgatp CSR but the current KVM_MAX_VCPUS value
+> is aligned with number of ASID bits in the satp CSR.
+>
+> Fixes: 99cdc6c18c2d ("RISC-V: Add initial skeletal KVM support")
+> Signed-off-by: Anup Patel <anup.patel@wdc.com>
+> ---
+>  arch/riscv/include/asm/kvm_host.h | 8 +++-----
+>  1 file changed, 3 insertions(+), 5 deletions(-)
+>
+> diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
+> index 25ba21f98504..2639b9ee48f9 100644
+> --- a/arch/riscv/include/asm/kvm_host.h
+> +++ b/arch/riscv/include/asm/kvm_host.h
+> @@ -12,14 +12,12 @@
+>  #include <linux/types.h>
+>  #include <linux/kvm.h>
+>  #include <linux/kvm_types.h>
+> +#include <asm/csr.h>
+>  #include <asm/kvm_vcpu_fp.h>
+>  #include <asm/kvm_vcpu_timer.h>
+>
+> -#ifdef CONFIG_64BIT
+> -#define KVM_MAX_VCPUS                  (1U << 16)
+> -#else
+> -#define KVM_MAX_VCPUS                  (1U << 9)
+> -#endif
+> +#define KVM_MAX_VCPUS                  \
+> +       ((HGATP_VMID_MASK >> HGATP_VMID_SHIFT) + 1)
+>
+>  #define KVM_HALT_POLL_NS_DEFAULT       500000
+>
+> --
+> 2.25.1
+>
 
-Signed-off-by: Atish Patra <atishp@atishpatra.org>
----
- MAINTAINERS | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 7a2345ce8521..b22af4edcd08 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -10434,7 +10434,7 @@ F:	arch/powerpc/kvm/
- 
- KERNEL VIRTUAL MACHINE FOR RISC-V (KVM/riscv)
- M:	Anup Patel <anup.patel@wdc.com>
--R:	Atish Patra <atish.patra@wdc.com>
-+R:	Atish Patra <atishp@atishpatra.org>
- L:	kvm at vger.kernel.org
- L:	kvm-riscv at lists.infradead.org
- L:	linux-riscv at lists.infradead.org
+Reviewed-by: Atish Patra <atishp@rivosinc.com>
+
 -- 
-2.33.1
-
+Regards,
+Atish
 
