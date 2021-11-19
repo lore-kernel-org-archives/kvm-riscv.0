@@ -1,71 +1,66 @@
-From: Palmer Dabbelt <palmer@dabbelt.com>
-Date: Thu, 18 Nov 2021 23:10:58 -0800 (PST)
-Subject: [PATCH v2] RISC-V: Enable KVM in RV64 and RV32 defconfigs as a
- module
-In-Reply-To: <CAOnJCULQJj0ZyyF+Q1cogXsC9GDQKLTms8vHvNNpj4aHntmx6w@mail.gmail.com>
-Message-ID: <mhng-d3ecff31-cbc9-414f-b235-faaac49224f9@palmer-ri-x1c9>
+From: Anup Patel <anup@brainfault.org>
+Date: Fri, 19 Nov 2021 17:50:58 +0530
+Subject: [PATCH] RISC-V: KVM: Fix incorrect KVM_MAX_VCPUS value
+In-Reply-To: <CAOnJCU+KZn2JnZg-FZcJ7PXRpGo5SyOmdUYFeJgBenPO9xxE1w@mail.gmail.com>
+References: <20211117060241.611391-1-anup.patel@wdc.com>
+ <CAOnJCU+KZn2JnZg-FZcJ7PXRpGo5SyOmdUYFeJgBenPO9xxE1w@mail.gmail.com>
+Message-ID: <CAAhSdy0jaPPBNkXkt5-jj+LWCm+XiC0G2udK2C7n1f2TqBPCmg@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 17 Nov 2021 23:53:59 PST (-0800), atishp at atishpatra.org wrote:
-> On Wed, Nov 17, 2021 at 12:47 AM Anup Patel <anup.patel@wdc.com> wrote:
->>
->> Let's enable KVM RISC-V in RV64 and RV32 defconfigs as module
->> so that it always built along with the default kernel image.
->>
->> Signed-off-by: Anup Patel <anup.patel@wdc.com>
->> ---
->> Changes since v1:
->>  - Rebased on Linux-5.16-rc1
->>  - Removed unwanted stuff from defconfig PATCH1
->>  - Dropped PATCH2 and PATCH3 since these are already merged via KVM tree
->> ---
->>  arch/riscv/configs/defconfig      | 2 ++
->>  arch/riscv/configs/rv32_defconfig | 2 ++
->>  2 files changed, 4 insertions(+)
->>
->> diff --git a/arch/riscv/configs/defconfig b/arch/riscv/configs/defconfig
->> index c252fd5706d2..ef473e2f503b 100644
->> --- a/arch/riscv/configs/defconfig
->> +++ b/arch/riscv/configs/defconfig
->> @@ -19,6 +19,8 @@ CONFIG_SOC_VIRT=y
->>  CONFIG_SOC_MICROCHIP_POLARFIRE=y
->>  CONFIG_SMP=y
->>  CONFIG_HOTPLUG_CPU=y
->> +CONFIG_VIRTUALIZATION=y
->> +CONFIG_KVM=m
->>  CONFIG_JUMP_LABEL=y
->>  CONFIG_MODULES=y
->>  CONFIG_MODULE_UNLOAD=y
->> diff --git a/arch/riscv/configs/rv32_defconfig b/arch/riscv/configs/rv32_defconfig
->> index 434ef5b64599..6e9f12ff968a 100644
->> --- a/arch/riscv/configs/rv32_defconfig
->> +++ b/arch/riscv/configs/rv32_defconfig
->> @@ -19,6 +19,8 @@ CONFIG_SOC_VIRT=y
->>  CONFIG_ARCH_RV32I=y
->>  CONFIG_SMP=y
->>  CONFIG_HOTPLUG_CPU=y
->> +CONFIG_VIRTUALIZATION=y
->> +CONFIG_KVM=m
->>  CONFIG_JUMP_LABEL=y
->>  CONFIG_MODULES=y
->>  CONFIG_MODULE_UNLOAD=y
->> --
->> 2.25.1
->>
+On Thu, Nov 18, 2021 at 1:23 PM Atish Patra <atishp@atishpatra.org> wrote:
+>
+> On Tue, Nov 16, 2021 at 10:03 PM Anup Patel <anup.patel@wdc.com> wrote:
+> >
+> > The KVM_MAX_VCPUS value is supposed to be aligned with number of
+> > VMID bits in the hgatp CSR but the current KVM_MAX_VCPUS value
+> > is aligned with number of ASID bits in the satp CSR.
+> >
+> > Fixes: 99cdc6c18c2d ("RISC-V: Add initial skeletal KVM support")
+> > Signed-off-by: Anup Patel <anup.patel@wdc.com>
+> > ---
+> >  arch/riscv/include/asm/kvm_host.h | 8 +++-----
+> >  1 file changed, 3 insertions(+), 5 deletions(-)
+> >
+> > diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
+> > index 25ba21f98504..2639b9ee48f9 100644
+> > --- a/arch/riscv/include/asm/kvm_host.h
+> > +++ b/arch/riscv/include/asm/kvm_host.h
+> > @@ -12,14 +12,12 @@
+> >  #include <linux/types.h>
+> >  #include <linux/kvm.h>
+> >  #include <linux/kvm_types.h>
+> > +#include <asm/csr.h>
+> >  #include <asm/kvm_vcpu_fp.h>
+> >  #include <asm/kvm_vcpu_timer.h>
+> >
+> > -#ifdef CONFIG_64BIT
+> > -#define KVM_MAX_VCPUS                  (1U << 16)
+> > -#else
+> > -#define KVM_MAX_VCPUS                  (1U << 9)
+> > -#endif
+> > +#define KVM_MAX_VCPUS                  \
+> > +       ((HGATP_VMID_MASK >> HGATP_VMID_SHIFT) + 1)
+> >
+> >  #define KVM_HALT_POLL_NS_DEFAULT       500000
+> >
+> > --
+> > 2.25.1
+> >
+>
 >
 > Reviewed-by: Atish Patra <atishp@rivosinc.com>
 
-I was actually just about to send a defconfig cleanup patch set.  My 
-tests are all still a bit broken, so I'm going to hold off on sending 
-the defconfig cleanups until I can get them back together.  This is so 
-simple that anything it could break would already be broken, so I'm just 
-going to take it now.
+I have queued this patch for fixes.
 
-This is on fixes.
+Thanks,
+Anup
 
-Thanks!
+>
+> --
+> Regards,
+> Atish
 
