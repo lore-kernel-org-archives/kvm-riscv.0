@@ -1,10 +1,10 @@
 From: David Woodhouse <dwmw2@infradead.org>
-Date: Sat, 20 Nov 2021 10:28:08 +0000
-Subject: [PATCH v4 09/11] KVM: x86/xen: Maintain valid mapping of Xen
- shared_info page
+Date: Sat, 20 Nov 2021 10:28:10 +0000
+Subject: [PATCH v4 11/11] KVM: x86: First attempt at converting nested virtual
+ APIC page to gpc
 In-Reply-To: <20211120102810.8858-1-dwmw2@infradead.org>
 References: <20211120102810.8858-1-dwmw2@infradead.org>
-Message-ID: <20211120102810.8858-10-dwmw2@infradead.org>
+Message-ID: <20211120102810.8858-12-dwmw2@infradead.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -13,135 +13,234 @@ Content-Transfer-Encoding: 7bit
 
 From: David Woodhouse <dwmw@amazon.co.uk>
 
-Use the newly reinstated gfn_to_pfn_cache to maintain a kernel mapping
-of the Xen shared_info page so that it can be accessed in atomic context.
+This is what evolved during the discussion at
+https://lore.kernel.org/kvm/960E233F-EC0B-4FB5-BA2E-C8D2CCB38B12 at infradead.org/T/#m11d75fcfe2da357ec1dabba0d0e3abb91fd13665
 
-Note that we do not participate in dirty tracking for the shared info
-page and we do not explicitly mark it dirty every single tim we deliver
-an event channel interrupts. We wouldn't want to do that even if we *did*
-have a valid vCPU context with which to do so.
+As discussed, an alternative approach might be to augment
+kvm_arch_memslots_updated() to raise KVM_REQ_GET_NESTED_STATE_PAGES to
+each vCPU (and make that req only do anything on a given vCPU if that
+vCPU is actually in L2 guest mode).
+
+That would mean the reload gets actively triggered even on memslot
+changes rather than only on MMU notifiers as is the case now. It could
+*potentially* mean we can drop the new 'check_guest_maps' function.
+
+The 'check_guest_maps' function could be a lot simpler than it is,
+though. It only really needs to get kvm->memslots->generation, then
+check each gpc->generation against that, and each gpc->valid.
+
+Also I suspect we *shouldn't* destroy the virtual_apic_cache in
+nested_vmx_vmexit(). We can just leave it there for next time the
+vCPU enters guest mode. If it happens to get invalidated in the
+meantime, that's fine and we'll refresh it on the way back in.
+We probably *would* want to actively do something on memslot changes
+in that case though, to ensure that even if the vCPU isn't in guest
+mode any more, we *release* the cached page.
 
 Signed-off-by: David Woodhouse <dwmw@amazon.co.uk>
 ---
- Documentation/virt/kvm/api.rst  | 12 ++++++++++++
- arch/x86/include/asm/kvm_host.h |  2 +-
- arch/x86/kvm/xen.c              | 25 ++++++++++++++-----------
- 3 files changed, 27 insertions(+), 12 deletions(-)
+ arch/x86/include/asm/kvm_host.h |  1 +
+ arch/x86/kvm/vmx/nested.c       | 50 ++++++++++++++++++++++++++++-----
+ arch/x86/kvm/vmx/vmx.c          | 12 +++++---
+ arch/x86/kvm/vmx/vmx.h          |  2 +-
+ arch/x86/kvm/x86.c              | 10 +++++++
+ 5 files changed, 63 insertions(+), 12 deletions(-)
 
-diff --git a/Documentation/virt/kvm/api.rst b/Documentation/virt/kvm/api.rst
-index aeeb071c7688..455664c39d42 100644
---- a/Documentation/virt/kvm/api.rst
-+++ b/Documentation/virt/kvm/api.rst
-@@ -371,6 +371,9 @@ The bits in the dirty bitmap are cleared before the ioctl returns, unless
- KVM_CAP_MANUAL_DIRTY_LOG_PROTECT2 is enabled.  For more information,
- see the description of the capability.
- 
-+Note that the Xen shared info page, if configured, shall always be assumed
-+to be dirty. KVM will not explicitly mark it such.
-+
- 4.9 KVM_SET_MEMORY_ALIAS
- ------------------------
- 
-@@ -5134,6 +5137,15 @@ KVM_XEN_ATTR_TYPE_SHARED_INFO
-   not aware of the Xen CPU id which is used as the index into the
-   vcpu_info[] array, so cannot know the correct default location.
- 
-+  Note that the shared info page may be constantly written to by KVM;
-+  it contains the event channel bitmap used to deliver interrupts to
-+  a Xen guest, amongst other things. It is exempt from dirty tracking
-+  mechanisms ? KVM will not explicitly mark the page as dirty each
-+  time an event channel interrupt is delivered to the guest! Thus,
-+  userspace should always assume that the designated GFN is dirty if
-+  any vCPU has been running or any event channel interrupts can be
-+  routed to the guest.
-+
- KVM_XEN_ATTR_TYPE_UPCALL_VECTOR
-   Sets the exception vector used to deliver Xen event channel upcalls.
- 
 diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
-index 6ac61f85e07b..4b2b4ecf3b46 100644
+index 6ea2446ab851..24f6f3e2de47 100644
 --- a/arch/x86/include/asm/kvm_host.h
 +++ b/arch/x86/include/asm/kvm_host.h
-@@ -1014,7 +1014,7 @@ struct msr_bitmap_range {
- struct kvm_xen {
- 	bool long_mode;
- 	u8 upcall_vector;
--	gfn_t shinfo_gfn;
-+	struct gfn_to_pfn_cache shinfo_cache;
+@@ -1511,6 +1511,7 @@ struct kvm_x86_nested_ops {
+ 	int (*enable_evmcs)(struct kvm_vcpu *vcpu,
+ 			    uint16_t *vmcs_version);
+ 	uint16_t (*get_evmcs_version)(struct kvm_vcpu *vcpu);
++	void (*check_guest_maps)(struct kvm_vcpu *vcpu);
  };
  
- enum kvm_irqchip_mode {
-diff --git a/arch/x86/kvm/xen.c b/arch/x86/kvm/xen.c
-index dff2bdf9507a..da4bf2c6407f 100644
---- a/arch/x86/kvm/xen.c
-+++ b/arch/x86/kvm/xen.c
-@@ -23,16 +23,21 @@ DEFINE_STATIC_KEY_DEFERRED_FALSE(kvm_xen_enabled, HZ);
- 
- static int kvm_xen_shared_info_init(struct kvm *kvm, gfn_t gfn)
- {
-+	struct gfn_to_pfn_cache *gpc = &kvm->arch.xen.shinfo_cache;
- 	gpa_t gpa = gfn_to_gpa(gfn);
- 	int wc_ofs, sec_hi_ofs;
- 	int ret = 0;
- 	int idx = srcu_read_lock(&kvm->srcu);
- 
--	if (kvm_is_error_hva(gfn_to_hva(kvm, gfn))) {
--		ret = -EFAULT;
-+	if (gfn == GPA_INVALID) {
-+		kvm_gfn_to_pfn_cache_destroy(kvm, gpc);
- 		goto out;
+ struct kvm_x86_init_ops {
+diff --git a/arch/x86/kvm/vmx/nested.c b/arch/x86/kvm/vmx/nested.c
+index 1e2f66951566..01bfabcfbbce 100644
+--- a/arch/x86/kvm/vmx/nested.c
++++ b/arch/x86/kvm/vmx/nested.c
+@@ -309,7 +309,7 @@ static void free_nested(struct kvm_vcpu *vcpu)
+ 		kvm_release_page_clean(vmx->nested.apic_access_page);
+ 		vmx->nested.apic_access_page = NULL;
  	}
--	kvm->arch.xen.shinfo_gfn = gfn;
+-	kvm_vcpu_unmap(vcpu, &vmx->nested.virtual_apic_map, true);
++	kvm_gfn_to_pfn_cache_destroy(vcpu->kvm, &vmx->nested.virtual_apic_cache);
+ 	kvm_vcpu_unmap(vcpu, &vmx->nested.pi_desc_map, true);
+ 	vmx->nested.pi_desc = NULL;
+ 
+@@ -3179,10 +3179,12 @@ static bool nested_get_vmcs12_pages(struct kvm_vcpu *vcpu)
+ 	}
+ 
+ 	if (nested_cpu_has(vmcs12, CPU_BASED_TPR_SHADOW)) {
+-		map = &vmx->nested.virtual_apic_map;
++		struct gfn_to_pfn_cache *gpc = &vmx->nested.virtual_apic_cache;
+ 
+-		if (!kvm_vcpu_map(vcpu, gpa_to_gfn(vmcs12->virtual_apic_page_addr), map)) {
+-			vmcs_write64(VIRTUAL_APIC_PAGE_ADDR, pfn_to_hpa(map->pfn));
++ 		if (!kvm_gfn_to_pfn_cache_init(vcpu->kvm, gpc, vcpu, true, true,
++					       vmcs12->virtual_apic_page_addr,
++					       PAGE_SIZE, true)) {
++			vmcs_write64(VIRTUAL_APIC_PAGE_ADDR, pfn_to_hpa(gpc->pfn));
+ 		} else if (nested_cpu_has(vmcs12, CPU_BASED_CR8_LOAD_EXITING) &&
+ 		           nested_cpu_has(vmcs12, CPU_BASED_CR8_STORE_EXITING) &&
+ 			   !nested_cpu_has2(vmcs12, SECONDARY_EXEC_VIRTUALIZE_APIC_ACCESSES)) {
+@@ -3207,6 +3209,9 @@ static bool nested_get_vmcs12_pages(struct kvm_vcpu *vcpu)
+ 	if (nested_cpu_has_posted_intr(vmcs12)) {
+ 		map = &vmx->nested.pi_desc_map;
+ 
++		if (kvm_vcpu_mapped(map))
++			kvm_vcpu_unmap(vcpu, map, true);
 +
-+	ret = kvm_gfn_to_pfn_cache_init(kvm, gpc, NULL, false, true, gpa,
-+					PAGE_SIZE, false);
-+	if (ret)
-+		goto out;
- 
- 	/* Paranoia checks on the 32-bit struct layout */
- 	BUILD_BUG_ON(offsetof(struct compat_shared_info, wc) != 0x900);
-@@ -260,15 +265,9 @@ int kvm_xen_hvm_set_attr(struct kvm *kvm, struct kvm_xen_hvm_attr *data)
- 		break;
- 
- 	case KVM_XEN_ATTR_TYPE_SHARED_INFO:
--		if (data->u.shared_info.gfn == GPA_INVALID) {
--			kvm->arch.xen.shinfo_gfn = GPA_INVALID;
--			r = 0;
--			break;
--		}
- 		r = kvm_xen_shared_info_init(kvm, data->u.shared_info.gfn);
- 		break;
- 
--
- 	case KVM_XEN_ATTR_TYPE_UPCALL_VECTOR:
- 		if (data->u.vector && data->u.vector < 0x10)
- 			r = -EINVAL;
-@@ -299,7 +298,10 @@ int kvm_xen_hvm_get_attr(struct kvm *kvm, struct kvm_xen_hvm_attr *data)
- 		break;
- 
- 	case KVM_XEN_ATTR_TYPE_SHARED_INFO:
--		data->u.shared_info.gfn = kvm->arch.xen.shinfo_gfn;
-+		if (kvm->arch.xen.shinfo_cache.active)
-+			data->u.shared_info.gfn = gpa_to_gfn(kvm->arch.xen.shinfo_cache.gpa);
-+		else
-+			data->u.shared_info.gfn = GPA_INVALID;
- 		r = 0;
- 		break;
- 
-@@ -661,11 +663,12 @@ int kvm_xen_hvm_config(struct kvm *kvm, struct kvm_xen_hvm_config *xhc)
- 
- void kvm_xen_init_vm(struct kvm *kvm)
- {
--	kvm->arch.xen.shinfo_gfn = GPA_INVALID;
+ 		if (!kvm_vcpu_map(vcpu, gpa_to_gfn(vmcs12->posted_intr_desc_addr), map)) {
+ 			vmx->nested.pi_desc =
+ 				(struct pi_desc *)(((void *)map->hva) +
+@@ -3251,6 +3256,29 @@ static bool vmx_get_nested_state_pages(struct kvm_vcpu *vcpu)
+ 	return true;
  }
  
- void kvm_xen_destroy_vm(struct kvm *kvm)
- {
-+	kvm_gfn_to_pfn_cache_destroy(kvm, &kvm->arch.xen.shinfo_cache);
++static void nested_vmx_check_guest_maps(struct kvm_vcpu *vcpu)
++{
++	struct vmcs12 *vmcs12 = get_vmcs12(vcpu);
++	struct vcpu_vmx *vmx = to_vmx(vcpu);
++	struct gfn_to_pfn_cache *gpc;
 +
- 	if (kvm->arch.xen_hvm_config.msr)
- 		static_branch_slow_dec_deferred(&kvm_xen_enabled);
++	int valid;
++
++	if (nested_cpu_has_posted_intr(vmcs12)) {
++		gpc = &vmx->nested.virtual_apic_cache;
++
++		read_lock(&gpc->lock);
++		valid = kvm_gfn_to_pfn_cache_check(vcpu->kvm, gpc,
++						   vmcs12->virtual_apic_page_addr,
++						   PAGE_SIZE);
++		read_unlock(&gpc->lock);
++		if (!valid) {
++			kvm_make_request(KVM_REQ_GET_NESTED_STATE_PAGES, vcpu);
++			return;
++		}
++	}
++}
++
+ static int nested_vmx_write_pml_buffer(struct kvm_vcpu *vcpu, gpa_t gpa)
+ {
+ 	struct vmcs12 *vmcs12;
+@@ -3749,9 +3777,15 @@ static int vmx_complete_nested_posted_interrupt(struct kvm_vcpu *vcpu)
+ 
+ 	max_irr = find_last_bit((unsigned long *)vmx->nested.pi_desc->pir, 256);
+ 	if (max_irr != 256) {
+-		vapic_page = vmx->nested.virtual_apic_map.hva;
+-		if (!vapic_page)
++		struct gfn_to_pfn_cache *gpc = &vmx->nested.virtual_apic_cache;
++
++		read_lock(&gpc->lock);
++		if (!kvm_gfn_to_pfn_cache_check(vcpu->kvm, gpc, gpc->gpa, PAGE_SIZE)) {
++			read_unlock(&gpc->lock);
+ 			goto mmio_needed;
++		}
++
++		vapic_page = gpc->khva;
+ 
+ 		__kvm_apic_update_irr(vmx->nested.pi_desc->pir,
+ 			vapic_page, &max_irr);
+@@ -3761,6 +3795,7 @@ static int vmx_complete_nested_posted_interrupt(struct kvm_vcpu *vcpu)
+ 			status |= (u8)max_irr;
+ 			vmcs_write16(GUEST_INTR_STATUS, status);
+ 		}
++		read_unlock(&gpc->lock);
+ 	}
+ 
+ 	nested_mark_vmcs12_pages_dirty(vcpu);
+@@ -4581,7 +4616,7 @@ void nested_vmx_vmexit(struct kvm_vcpu *vcpu, u32 vm_exit_reason,
+ 		kvm_release_page_clean(vmx->nested.apic_access_page);
+ 		vmx->nested.apic_access_page = NULL;
+ 	}
+-	kvm_vcpu_unmap(vcpu, &vmx->nested.virtual_apic_map, true);
++	kvm_gfn_to_pfn_cache_unmap(vcpu->kvm, &vmx->nested.virtual_apic_cache);
+ 	kvm_vcpu_unmap(vcpu, &vmx->nested.pi_desc_map, true);
+ 	vmx->nested.pi_desc = NULL;
+ 
+@@ -6756,4 +6791,5 @@ struct kvm_x86_nested_ops vmx_nested_ops = {
+ 	.write_log_dirty = nested_vmx_write_pml_buffer,
+ 	.enable_evmcs = nested_enable_evmcs,
+ 	.get_evmcs_version = nested_get_evmcs_version,
++	.check_guest_maps = nested_vmx_check_guest_maps,
+ };
+diff --git a/arch/x86/kvm/vmx/vmx.c b/arch/x86/kvm/vmx/vmx.c
+index ba66c171d951..6c61faef86d3 100644
+--- a/arch/x86/kvm/vmx/vmx.c
++++ b/arch/x86/kvm/vmx/vmx.c
+@@ -3839,19 +3839,23 @@ void pt_update_intercept_for_msr(struct kvm_vcpu *vcpu)
+ static bool vmx_guest_apic_has_interrupt(struct kvm_vcpu *vcpu)
+ {
+ 	struct vcpu_vmx *vmx = to_vmx(vcpu);
+-	void *vapic_page;
++	struct gfn_to_pfn_cache *gpc = &vmx->nested.virtual_apic_cache;
+ 	u32 vppr;
+ 	int rvi;
+ 
+ 	if (WARN_ON_ONCE(!is_guest_mode(vcpu)) ||
+ 		!nested_cpu_has_vid(get_vmcs12(vcpu)) ||
+-		WARN_ON_ONCE(!vmx->nested.virtual_apic_map.gfn))
++		WARN_ON_ONCE(gpc->gpa == GPA_INVALID))
+ 		return false;
+ 
+ 	rvi = vmx_get_rvi();
+ 
+-	vapic_page = vmx->nested.virtual_apic_map.hva;
+-	vppr = *((u32 *)(vapic_page + APIC_PROCPRI));
++	read_lock(&gpc->lock);
++	if (!kvm_gfn_to_pfn_cache_check(vcpu->kvm, gpc, gpc->gpa, PAGE_SIZE))
++		vppr = *((u32 *)(gpc->khva + APIC_PROCPRI));
++	else
++		vppr = 0xff;
++	read_unlock(&gpc->lock);
+ 
+ 	return ((rvi & 0xf0) > (vppr & 0xf0));
  }
+diff --git a/arch/x86/kvm/vmx/vmx.h b/arch/x86/kvm/vmx/vmx.h
+index 4df2ac24ffc1..8364e7fc92a0 100644
+--- a/arch/x86/kvm/vmx/vmx.h
++++ b/arch/x86/kvm/vmx/vmx.h
+@@ -195,7 +195,7 @@ struct nested_vmx {
+ 	 * pointers, so we must keep them pinned while L2 runs.
+ 	 */
+ 	struct page *apic_access_page;
+-	struct kvm_host_map virtual_apic_map;
++	struct gfn_to_pfn_cache virtual_apic_cache;
+ 	struct kvm_host_map pi_desc_map;
+ 
+ 	struct kvm_host_map msr_bitmap_map;
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index fa56c590d8db..01d20db5b1f4 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -9739,6 +9739,8 @@ static int vcpu_enter_guest(struct kvm_vcpu *vcpu)
+ 
+ 		if (kvm_check_request(KVM_REQ_UPDATE_CPU_DIRTY_LOGGING, vcpu))
+ 			static_call(kvm_x86_update_cpu_dirty_logging)(vcpu);
++		if (kvm_check_request(KVM_REQ_GPC_INVALIDATE, vcpu))
++			; /* Nothing to do. It just wanted to wake us */
+ 	}
+ 
+ 	if (kvm_check_request(KVM_REQ_EVENT, vcpu) || req_int_win ||
+@@ -9785,6 +9787,14 @@ static int vcpu_enter_guest(struct kvm_vcpu *vcpu)
+ 	local_irq_disable();
+ 	vcpu->mode = IN_GUEST_MODE;
+ 
++	/*
++	 * If the guest requires direct access to mapped L1 pages, check
++	 * the caches are valid. Will raise KVM_REQ_GET_NESTED_STATE_PAGES
++	 * to go and revalidate them, if necessary.
++	 */
++	if (is_guest_mode(vcpu) && kvm_x86_ops.nested_ops->check_guest_maps)
++		kvm_x86_ops.nested_ops->check_guest_maps(vcpu);
++
+ 	srcu_read_unlock(&vcpu->kvm->srcu, vcpu->srcu_idx);
+ 
+ 	/*
 -- 
 2.31.1
 
