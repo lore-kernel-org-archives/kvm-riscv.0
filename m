@@ -1,9 +1,9 @@
 From: David Woodhouse <dwmw2@infradead.org>
-Date: Sat, 20 Nov 2021 10:28:02 +0000
-Subject: [PATCH v4 03/11] KVM: s390: Use Makefile.kvm for common files
+Date: Sat, 20 Nov 2021 10:28:05 +0000
+Subject: [PATCH v4 06/11] KVM: powerpc: Use Makefile.kvm for common files
 In-Reply-To: <20211120102810.8858-1-dwmw2@infradead.org>
 References: <20211120102810.8858-1-dwmw2@infradead.org>
-Message-ID: <20211120102810.8858-4-dwmw2@infradead.org>
+Message-ID: <20211120102810.8858-7-dwmw2@infradead.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -12,32 +12,42 @@ Content-Transfer-Encoding: 7bit
 
 From: David Woodhouse <dwmw@amazon.co.uk>
 
-Signed-off-by: David Woodhouse <dwmw@amazon.co.uk>
-Reviewed-by: Christian Borntraeger <borntraeger@de.ibm.com>
----
- arch/s390/kvm/Makefile | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+It's all fairly baroque but in the end, I don't think there's any reason
+for $(KVM)/irqchip.o to have been handled differently, as they all end
+up in $(kvm-y) in the end anyway, regardless of whether they get there
+via $(common-objs-y) and the CPU-specific object lists.
 
-diff --git a/arch/s390/kvm/Makefile b/arch/s390/kvm/Makefile
-index b3aaadc60ead..e4f50453cf7f 100644
---- a/arch/s390/kvm/Makefile
-+++ b/arch/s390/kvm/Makefile
-@@ -3,13 +3,11 @@
+Signed-off-by: David Woodhouse <dwmw@amazon.co.uk>
+Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
+---
+ arch/powerpc/kvm/Makefile | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
+
+diff --git a/arch/powerpc/kvm/Makefile b/arch/powerpc/kvm/Makefile
+index 583c14ef596e..245f59118413 100644
+--- a/arch/powerpc/kvm/Makefile
++++ b/arch/powerpc/kvm/Makefile
+@@ -4,11 +4,8 @@
  #
- # Copyright IBM Corp. 2008
  
+ ccflags-y := -Ivirt/kvm -Iarch/powerpc/kvm
 -KVM := ../../../virt/kvm
--common-objs = $(KVM)/kvm_main.o $(KVM)/eventfd.o  $(KVM)/async_pf.o \
--	      $(KVM)/irqchip.o $(KVM)/vfio.o $(KVM)/binary_stats.o
+ 
+-common-objs-y = $(KVM)/kvm_main.o $(KVM)/eventfd.o $(KVM)/binary_stats.o
+-common-objs-$(CONFIG_KVM_VFIO) += $(KVM)/vfio.o
+-common-objs-$(CONFIG_KVM_MMIO) += $(KVM)/coalesced_mmio.o
 +include $(srctree)/virt/kvm/Makefile.kvm
  
- ccflags-y := -Ivirt/kvm -Iarch/s390/kvm
+ common-objs-y += powerpc.o emulate_loadstore.o
+ obj-$(CONFIG_KVM_EXIT_TIMING) += timing.o
+@@ -125,7 +122,6 @@ kvm-book3s_32-objs := \
+ kvm-objs-$(CONFIG_KVM_BOOK3S_32) := $(kvm-book3s_32-objs)
  
--kvm-objs := $(common-objs) kvm-s390.o intercept.o interrupt.o priv.o sigp.o
-+kvm-objs := kvm-s390.o intercept.o interrupt.o priv.o sigp.o
- kvm-objs += diag.o gaccess.o guestdbg.o vsie.o pv.o
+ kvm-objs-$(CONFIG_KVM_MPIC) += mpic.o
+-kvm-objs-$(CONFIG_HAVE_KVM_IRQ_ROUTING) += $(KVM)/irqchip.o
  
- obj-$(CONFIG_KVM) += kvm.o
+ kvm-objs := $(kvm-objs-m) $(kvm-objs-y)
+ 
 -- 
 2.31.1
 
