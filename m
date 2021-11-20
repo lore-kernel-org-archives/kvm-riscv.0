@@ -1,62 +1,44 @@
-From: Yifei Jiang <jiangyifei@huawei.com>
-Date: Sat, 20 Nov 2021 15:46:44 +0800
-Subject: [PATCH v1 12/12] target/riscv: Support virtual time context
- synchronization
-In-Reply-To: <20211120074644.729-1-jiangyifei@huawei.com>
-References: <20211120074644.729-1-jiangyifei@huawei.com>
-Message-ID: <20211120074644.729-13-jiangyifei@huawei.com>
+From: David Woodhouse <dwmw2@infradead.org>
+Date: Sat, 20 Nov 2021 10:28:02 +0000
+Subject: [PATCH v4 03/11] KVM: s390: Use Makefile.kvm for common files
+In-Reply-To: <20211120102810.8858-1-dwmw2@infradead.org>
+References: <20211120102810.8858-1-dwmw2@infradead.org>
+Message-ID: <20211120102810.8858-4-dwmw2@infradead.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add virtual time context description to vmstate_riscv_cpu. After cpu being
-loaded, virtual time context is updated to KVM.
+From: David Woodhouse <dwmw@amazon.co.uk>
 
-Signed-off-by: Yifei Jiang <jiangyifei@huawei.com>
-Signed-off-by: Mingwang Li <limingwang@huawei.com>
+Signed-off-by: David Woodhouse <dwmw@amazon.co.uk>
+Reviewed-by: Christian Borntraeger <borntraeger@de.ibm.com>
 ---
- target/riscv/machine.c | 14 ++++++++++++++
- 1 file changed, 14 insertions(+)
+ arch/s390/kvm/Makefile | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/target/riscv/machine.c b/target/riscv/machine.c
-index ad8248ebfd..153215549b 100644
---- a/target/riscv/machine.c
-+++ b/target/riscv/machine.c
-@@ -164,10 +164,20 @@ static const VMStateDescription vmstate_pointermasking = {
-     }
- };
+diff --git a/arch/s390/kvm/Makefile b/arch/s390/kvm/Makefile
+index b3aaadc60ead..e4f50453cf7f 100644
+--- a/arch/s390/kvm/Makefile
++++ b/arch/s390/kvm/Makefile
+@@ -3,13 +3,11 @@
+ #
+ # Copyright IBM Corp. 2008
  
-+static int cpu_post_load(void *opaque, int version_id)
-+{
-+    RISCVCPU *cpu = opaque;
-+    CPURISCVState *env = &cpu->env;
-+
-+    env->kvm_timer_dirty = true;
-+    return 0;
-+}
-+
- const VMStateDescription vmstate_riscv_cpu = {
-     .name = "cpu",
-     .version_id = 3,
-     .minimum_version_id = 3,
-+    .post_load = cpu_post_load,
-     .fields = (VMStateField[]) {
-         VMSTATE_UINTTL_ARRAY(env.gpr, RISCVCPU, 32),
-         VMSTATE_UINT64_ARRAY(env.fpr, RISCVCPU, 32),
-@@ -211,6 +221,10 @@ const VMStateDescription vmstate_riscv_cpu = {
-         VMSTATE_UINT64(env.mtohost, RISCVCPU),
-         VMSTATE_UINT64(env.timecmp, RISCVCPU),
+-KVM := ../../../virt/kvm
+-common-objs = $(KVM)/kvm_main.o $(KVM)/eventfd.o  $(KVM)/async_pf.o \
+-	      $(KVM)/irqchip.o $(KVM)/vfio.o $(KVM)/binary_stats.o
++include $(srctree)/virt/kvm/Makefile.kvm
  
-+        VMSTATE_UINT64(env.kvm_timer_time, RISCVCPU),
-+        VMSTATE_UINT64(env.kvm_timer_compare, RISCVCPU),
-+        VMSTATE_UINT64(env.kvm_timer_state, RISCVCPU),
-+
-         VMSTATE_END_OF_LIST()
-     },
-     .subsections = (const VMStateDescription * []) {
+ ccflags-y := -Ivirt/kvm -Iarch/s390/kvm
+ 
+-kvm-objs := $(common-objs) kvm-s390.o intercept.o interrupt.o priv.o sigp.o
++kvm-objs := kvm-s390.o intercept.o interrupt.o priv.o sigp.o
+ kvm-objs += diag.o gaccess.o guestdbg.o vsie.o pv.o
+ 
+ obj-$(CONFIG_KVM) += kvm.o
 -- 
-2.19.1
+2.31.1
 
 
