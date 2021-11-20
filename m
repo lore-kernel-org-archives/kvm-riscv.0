@@ -1,59 +1,165 @@
 From: David Woodhouse <dwmw2@infradead.org>
-Date: Sat, 20 Nov 2021 17:02:03 +0000
-Subject: [PATCH v4 11/11] KVM: x86: First attempt at converting nested
- virtual APIC page to gpc
-In-Reply-To: <b806de35-167a-4c7c-f143-cff3ec279491@nextfour.com>
+Date: Sat, 20 Nov 2021 18:20:35 +0000
+Subject: [PATCH v4 12/11] KVM: x86: Fix wall clock writes in Xen shared_info
+ not to mark page dirty
+In-Reply-To: <20211120102810.8858-1-dwmw2@infradead.org>
 References: <20211120102810.8858-1-dwmw2@infradead.org>
- <20211120102810.8858-12-dwmw2@infradead.org>
- <d87de1ec-8be7-3967-87b2-c8906c1ab1b3@nextfour.com>
- <8f434989aebd257a36cafcb414edcc5906c02728.camel@infradead.org>
- <b806de35-167a-4c7c-f143-cff3ec279491@nextfour.com>
-Message-ID: <df87f7e828f403013f30c2c8d77ea2694b49292e.camel@infradead.org>
+Message-ID: <20fe80d50740a9e2ab79093cc1418ef76d518c4e.camel@infradead.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sat, 2021-11-20 at 18:30 +0200, Mika Penttil? wrote:
-> 
-> On 20.11.2021 18.21, David Woodhouse wrote:
-> > On Sat, 2021-11-20 at 17:48 +0200, Mika Penttil? wrote:
-> > > > @@ -9785,6 +9787,14 @@ static int vcpu_enter_guest(struct kvm_vcpu *vcpu)
-> > > >         local_irq_disable();
-> > > >         vcpu->mode = IN_GUEST_MODE;
-> > > >     
-> > > > +     /*
-> > > > +      * If the guest requires direct access to mapped L1 pages, check
-> > > > +      * the caches are valid. Will raise KVM_REQ_GET_NESTED_STATE_PAGES
-> > > > +      * to go and revalidate them, if necessary.
-> > > > +      */
-> > > > +     if (is_guest_mode(vcpu) && kvm_x86_ops.nested_ops->check_guest_maps)
-> > > > +             kvm_x86_ops.nested_ops->check_guest_maps(vcpu);
-> > >
-> > > But KVM_REQ_GET_NESTED_STATE_PAGES is not check until next
-> > > vcpu_enter_guest() entry ?
-> >
-> > Sure, but that's why this call to ->check_guest_maps() comes just a few
-> > lines *before* the 'if (kvm_cpu_exit_request(vcpu))' that will bounce
-> > us back out so that we go through vcpu_enter_guest() from the start
-> > again?
->
-> Yes, I had forgotten that...=
+From: David Woodhouse <dwmw@amazon.co.uk>
 
-Having said that, I think Paolo was rightly trying to persuade me that
-we don't need the check there at all anyway. Because the *invalidation*
-will raise KVM_REQ_GPC_INVALIDATE, and that's sufficient to bounce us
-out of IN_GUEST_MODE without us having to check the GPC explicitly.
+When dirty ring logging is enabled, any dirty logging without an active
+vCPU context will cause a kernel oops. But we've already declared that
+the shared_info page doesn't get dirty tracking anyway, since it would
+be kind of insane to mark it dirty every time we deliver an event channel
+interrupt. Userspace is supposed to just assume it's always dirty any
+time a vCPU can run or event channels are routed.
 
-We do need to ensure that we are up to date with memslots changes, but
-that's a bit simpler, and we have kvm_arch_memslots_changed() waking us
-for that too.
+So stop using the generic kvm_write_wall_clock() and just write directly
+through the gfn_to_pfn_cache that we already have set up.
 
-So yeah, with sufficient thought I think we can be entirely event-
-driven instead of having to have an explicit *check* on entry.
+We can make kvm_write_wall_clock() static in x86.c again now, but let's
+not remove the 'sec_hi_ofs' argument even though it's not used yet. At
+some point we *will* want to use that for KVM guests too.
 
+Fixes: 629b5348841a ("KVM: x86/xen: update wallclock region")
+Reported-by: butt3rflyh4ck <butterflyhuangxx@gmail.com>
+Signed-off-by: David Woodhouse <dwmw@amazon.co.uk>
+---
+Putting this after the Xen evtchn series because now I have a kernel
+mapping I can use to avoid the dirty tracking.
 
+ arch/x86/kvm/x86.c |  2 +-
+ arch/x86/kvm/x86.h |  1 -
+ arch/x86/kvm/xen.c | 62 +++++++++++++++++++++++++++++++++++-----------
+ 3 files changed, 49 insertions(+), 16 deletions(-)
+
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index 01d20db5b1f4..d8f1d2169b45 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -2118,7 +2118,7 @@ static s64 get_kvmclock_base_ns(void)
+ }
+ #endif
+ 
+-void kvm_write_wall_clock(struct kvm *kvm, gpa_t wall_clock, int sec_hi_ofs)
++static void kvm_write_wall_clock(struct kvm *kvm, gpa_t wall_clock, int sec_hi_ofs)
+ {
+ 	int version;
+ 	int r;
+diff --git a/arch/x86/kvm/x86.h b/arch/x86/kvm/x86.h
+index 997669ae9caa..0260836b42ff 100644
+--- a/arch/x86/kvm/x86.h
++++ b/arch/x86/kvm/x86.h
+@@ -306,7 +306,6 @@ static inline bool kvm_vcpu_latch_init(struct kvm_vcpu *vcpu)
+ 	return is_smm(vcpu) || static_call(kvm_x86_apic_init_signal_blocked)(vcpu);
+ }
+ 
+-void kvm_write_wall_clock(struct kvm *kvm, gpa_t wall_clock, int sec_hi_ofs);
+ void kvm_inject_realmode_interrupt(struct kvm_vcpu *vcpu, int irq, int inc_eip);
+ 
+ u64 get_kvmclock_ns(struct kvm *kvm);
+diff --git a/arch/x86/kvm/xen.c b/arch/x86/kvm/xen.c
+index ceddabd1f5c6..0e3f7d6e9fd7 100644
+--- a/arch/x86/kvm/xen.c
++++ b/arch/x86/kvm/xen.c
+@@ -25,8 +25,11 @@ DEFINE_STATIC_KEY_DEFERRED_FALSE(kvm_xen_enabled, HZ);
+ static int kvm_xen_shared_info_init(struct kvm *kvm, gfn_t gfn)
+ {
+ 	struct gfn_to_pfn_cache *gpc = &kvm->arch.xen.shinfo_cache;
++	struct pvclock_wall_clock *wc;
+ 	gpa_t gpa = gfn_to_gpa(gfn);
+-	int wc_ofs, sec_hi_ofs;
++	u32 *wc_sec_hi;
++	u32 wc_version;
++	u64 wall_nsec;
+ 	int ret = 0;
+ 	int idx = srcu_read_lock(&kvm->srcu);
+ 
+@@ -35,32 +38,63 @@ static int kvm_xen_shared_info_init(struct kvm *kvm, gfn_t gfn)
+ 		goto out;
+ 	}
+ 
+-	ret = kvm_gfn_to_pfn_cache_init(kvm, gpc, NULL, false, true, gpa,
+-					PAGE_SIZE, false);
+-	if (ret)
+-		goto out;
++	do {
++		ret = kvm_gfn_to_pfn_cache_init(kvm, gpc, NULL, false, true,
++						gpa, PAGE_SIZE, false);
++		if (ret)
++			goto out;
++
++		/*
++		 * This code mirrors kvm_write_wall_clock() except that it writes
++		 * directly through the pfn cache and doesn't mark the page dirty.
++		 */
++		wall_nsec = ktime_get_real_ns() - get_kvmclock_ns(kvm);
++
++		/* It could be invalid again already, so we need to check */
++		read_lock_irq(&gpc->lock);
++
++		if (gpc->valid)
++			break;
++
++		read_unlock_irq(&gpc->lock);
++	} while (1);
+ 
+ 	/* Paranoia checks on the 32-bit struct layout */
+ 	BUILD_BUG_ON(offsetof(struct compat_shared_info, wc) != 0x900);
+ 	BUILD_BUG_ON(offsetof(struct compat_shared_info, arch.wc_sec_hi) != 0x924);
+ 	BUILD_BUG_ON(offsetof(struct pvclock_vcpu_time_info, version) != 0);
+ 
+-	/* 32-bit location by default */
+-	wc_ofs = offsetof(struct compat_shared_info, wc);
+-	sec_hi_ofs = offsetof(struct compat_shared_info, arch.wc_sec_hi);
+-
+ #ifdef CONFIG_X86_64
+ 	/* Paranoia checks on the 64-bit struct layout */
+ 	BUILD_BUG_ON(offsetof(struct shared_info, wc) != 0xc00);
+ 	BUILD_BUG_ON(offsetof(struct shared_info, wc_sec_hi) != 0xc0c);
+ 
+-	if (kvm->arch.xen.long_mode) {
+-		wc_ofs = offsetof(struct shared_info, wc);
+-		sec_hi_ofs = offsetof(struct shared_info, wc_sec_hi);
+-	}
++	if (IS_ENABLED(CONFIG_64BIT) && kvm->arch.xen.long_mode) {
++		struct shared_info *shinfo = gpc->khva;
++
++		wc_sec_hi = &shinfo->wc_sec_hi;
++		wc = &shinfo->wc;
++	} else
+ #endif
++	{
++		struct compat_shared_info *shinfo = gpc->khva;
++
++		wc_sec_hi = &shinfo->arch.wc_sec_hi;
++		wc = &shinfo->wc;
++	}
++
++	/* Increment and ensure an odd value */
++	wc_version = wc->version = (wc->version + 1) | 1;
++	smp_wmb();
++
++	wc->nsec = do_div(wall_nsec,  1000000000);
++	wc->sec = (u32)wall_nsec;
++	*wc_sec_hi = wall_nsec >> 32;
++	smp_wmb();
++
++	wc->version = wc_version + 1;
++	read_unlock_irq(&gpc->lock);
+ 
+-	kvm_write_wall_clock(kvm, gpa + wc_ofs, sec_hi_ofs - wc_ofs);
+ 	kvm_make_all_cpus_request(kvm, KVM_REQ_MASTERCLOCK_UPDATE);
+ 
+ out:
+-- 
+2.31.1
 
 -------------- next part --------------
 A non-text attachment was scrubbed...
@@ -61,4 +167,4 @@ Name: smime.p7s
 Type: application/pkcs7-signature
 Size: 5174 bytes
 Desc: not available
-URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20211120/b49f0b79/attachment-0001.p7s>
+URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20211120/9e054d15/attachment.p7s>
