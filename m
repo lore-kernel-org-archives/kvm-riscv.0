@@ -1,79 +1,192 @@
-From: David Woodhouse <dwmw2@infradead.org>
-Date: Fri, 19 Nov 2021 09:23:29 +0000
-Subject: [PATCH v3 08/12] KVM: Propagate vcpu explicitly to
- mark_page_dirty_in_slot()
-In-Reply-To: <YZatsB3oadj6dgb8@google.com>
-References: <20211117174003.297096-1-dwmw2@infradead.org>
- <20211117174003.297096-9-dwmw2@infradead.org>
- <85d9fec17f32c3eb9e100e56b91af050.squirrel@twosheds.infradead.org>
- <4c48546b-eb4a-dff7-cc38-5df54f73f5d4@redhat.com>
- <20b5952e76c54a3a5dfe5a898e3b835404ac6fb1.camel@infradead.org>
- <YZaeL5YztL3p1nLM@google.com> <YZagjzYUsixbFre9@google.com>
- <35AEC3FD-B46A-451D-B7D5-4B1BDD5407BD@infradead.org>
- <YZatsB3oadj6dgb8@google.com>
-Message-ID: <0d8cd126fb15488ae1b523f799fe749f02c4cc8c.camel@infradead.org>
+From: Yifei Jiang <jiangyifei@huawei.com>
+Date: Sat, 20 Nov 2021 15:46:36 +0800
+Subject: [PATCH v1 04/12] target/riscv: Implement kvm_arch_get_registers
+In-Reply-To: <20211120074644.729-1-jiangyifei@huawei.com>
+References: <20211120074644.729-1-jiangyifei@huawei.com>
+Message-ID: <20211120074644.729-5-jiangyifei@huawei.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, 2021-11-18 at 19:46 +0000, Sean Christopherson wrote:
-> It is sufficient for the current physical CPU to have an active vCPU, which is
-> generally guaranteed in the MMU code because, with a few exceptions, populating
-> SPTEs is done in vCPU context.
-> 
-> mmap() will never directly trigger SPTE creation, KVM first requires a vCPU to
-> fault on the new address.  munmap() is a pure zap flow, i.e. won't create a
-> present SPTE and trigger the writeback of the dirty bit.
+Get GPR CSR and FP registers from kvm by KVM_GET_ONE_REG ioctl.
 
-OK, thanks.
+Signed-off-by: Yifei Jiang <jiangyifei@huawei.com>
+Signed-off-by: Mingwang Li <limingwang@huawei.com>
+Reviewed-by: Alistair Francis <alistair.francis@wdc.com>
+---
+ target/riscv/kvm.c | 150 ++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 149 insertions(+), 1 deletion(-)
 
-> That's also why I dislike using kvm_get_running_vcpu(); when it's needed, there's
-> a valid vCPU from the caller, but it deliberately gets dropped and indirectly
-> picked back up.
+diff --git a/target/riscv/kvm.c b/target/riscv/kvm.c
+index 9f9692fb9e..b49c24be0a 100644
+--- a/target/riscv/kvm.c
++++ b/target/riscv/kvm.c
+@@ -55,13 +55,161 @@ static uint64_t kvm_riscv_reg_id(CPURISCVState *env, uint64_t type, uint64_t idx
+     return id;
+ }
+ 
++#define RISCV_CORE_REG(env, name)  kvm_riscv_reg_id(env, KVM_REG_RISCV_CORE, \
++                 KVM_REG_RISCV_CORE_REG(name))
++
++#define RISCV_CSR_REG(env, name)  kvm_riscv_reg_id(env, KVM_REG_RISCV_CSR, \
++                 KVM_REG_RISCV_CSR_REG(name))
++
++#define RISCV_FP_F_REG(env, idx)  kvm_riscv_reg_id(env, KVM_REG_RISCV_FP_F, idx)
++
++#define RISCV_FP_D_REG(env, idx)  kvm_riscv_reg_id(env, KVM_REG_RISCV_FP_D, idx)
++
++static int kvm_riscv_get_regs_core(CPUState *cs)
++{
++    int ret = 0;
++    int i;
++    target_ulong reg;
++    CPURISCVState *env = &RISCV_CPU(cs)->env;
++
++    ret = kvm_get_one_reg(cs, RISCV_CORE_REG(env, regs.pc), &reg);
++    if (ret) {
++        return ret;
++    }
++    env->pc = reg;
++
++    for (i = 1; i < 32; i++) {
++        uint64_t id = kvm_riscv_reg_id(env, KVM_REG_RISCV_CORE, i);
++        ret = kvm_get_one_reg(cs, id, &reg);
++        if (ret) {
++            return ret;
++        }
++        env->gpr[i] = reg;
++    }
++
++    return ret;
++}
++
++static int kvm_riscv_get_regs_csr(CPUState *cs)
++{
++    int ret = 0;
++    target_ulong reg;
++    CPURISCVState *env = &RISCV_CPU(cs)->env;
++
++    ret = kvm_get_one_reg(cs, RISCV_CSR_REG(env, sstatus), &reg);
++    if (ret) {
++        return ret;
++    }
++    env->mstatus = reg;
++
++    ret = kvm_get_one_reg(cs, RISCV_CSR_REG(env, sie), &reg);
++    if (ret) {
++        return ret;
++    }
++    env->mie = reg;
++
++    ret = kvm_get_one_reg(cs, RISCV_CSR_REG(env, stvec), &reg);
++    if (ret) {
++        return ret;
++    }
++    env->stvec = reg;
++
++    ret = kvm_get_one_reg(cs, RISCV_CSR_REG(env, sscratch), &reg);
++    if (ret) {
++        return ret;
++    }
++    env->sscratch = reg;
++
++    ret = kvm_get_one_reg(cs, RISCV_CSR_REG(env, sepc), &reg);
++    if (ret) {
++        return ret;
++    }
++    env->sepc = reg;
++
++    ret = kvm_get_one_reg(cs, RISCV_CSR_REG(env, scause), &reg);
++    if (ret) {
++        return ret;
++    }
++    env->scause = reg;
++
++    ret = kvm_get_one_reg(cs, RISCV_CSR_REG(env, stval), &reg);
++    if (ret) {
++        return ret;
++    }
++    env->stval = reg;
++
++    ret = kvm_get_one_reg(cs, RISCV_CSR_REG(env, sip), &reg);
++    if (ret) {
++        return ret;
++    }
++    env->mip = reg;
++
++    ret = kvm_get_one_reg(cs, RISCV_CSR_REG(env, satp), &reg);
++    if (ret) {
++        return ret;
++    }
++    env->satp = reg;
++
++    return ret;
++}
++
++static int kvm_riscv_get_regs_fp(CPUState *cs)
++{
++    int ret = 0;
++    int i;
++    CPURISCVState *env = &RISCV_CPU(cs)->env;
++
++    if (riscv_has_ext(env, RVD)) {
++        uint64_t reg;
++        for (i = 0; i < 32; i++) {
++            ret = kvm_get_one_reg(cs, RISCV_FP_D_REG(env, i), &reg);
++            if (ret) {
++                return ret;
++            }
++            env->fpr[i] = reg;
++        }
++        return ret;
++    }
++
++    if (riscv_has_ext(env, RVF)) {
++        uint32_t reg;
++        for (i = 0; i < 32; i++) {
++            ret = kvm_get_one_reg(cs, RISCV_FP_F_REG(env, i), &reg);
++            if (ret) {
++                return ret;
++            }
++            env->fpr[i] = reg;
++        }
++        return ret;
++    }
++
++    return ret;
++}
++
+ const KVMCapabilityInfo kvm_arch_required_capabilities[] = {
+     KVM_CAP_LAST_INFO
+ };
+ 
+ int kvm_arch_get_registers(CPUState *cs)
+ {
+-    return 0;
++    int ret = 0;
++
++    ret = kvm_riscv_get_regs_core(cs);
++    if (ret) {
++        return ret;
++    }
++
++    ret = kvm_riscv_get_regs_csr(cs);
++    if (ret) {
++        return ret;
++    }
++
++    ret = kvm_riscv_get_regs_fp(cs);
++    if (ret) {
++        return ret;
++    }
++
++    return ret;
+ }
+ 
+ int kvm_arch_put_registers(CPUState *cs, int level)
+-- 
+2.19.1
 
-Yeah. So as things stand we have a kvm_write_guest() function which
-takes a 'struct kvm *', as well as a kvm_vcpu_write_guest() function
-which takes a 'struct kvm_vcpu *'.
 
-But it is verboten to *use* the kvm_write_guest() or mark_page_dirty()
-functions unless you actually *do* have an active vCPU. Do so, and the
-kernel might just crash; not even a graceful failure mode.
-
-That's a fairly awful bear trap that has now caught me *twice*. I'm
-kind of amused that in all my hairy inline asm and pinning and crap for
-guest memory access, the thing that's been *broken* is where I just
-used the *existing* kvm_write_wall_clock() which does the simple
-kvm_write_guest() thing.
-
-I think at the very least perhaps we should do something like this in
-mark_page_dirty_in_slot():
-
- WARN_ON_ONCE(!kvm_get_running_vcpu() || kvm_get_running_vcpu()->kvm != kvm);
-
-(For illustration only; I'd actually use a local vcpu variable *and*
-pass that vcpu to kvm_dirty_ring_get())
-
-On propagating the caller's vcpu through and killing off the non-vCPU
-versions of the functions, I'm torn... because even if we insist on *a*
-vCPU being passed, it might be *the* vCPU, and that's just setting a
-more subtle trap (which would have bitten my GPC invalidate code, for
-example).
-
-There are other more complex approaches like adding an extra ring, with
-spinlocks, for the 'not from a vCPU' cases. But I think that's
-overkill.
-
-
-
-
-
-
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: smime.p7s
-Type: application/pkcs7-signature
-Size: 5174 bytes
-Desc: not available
-URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20211119/5d1d906a/attachment.p7s>
