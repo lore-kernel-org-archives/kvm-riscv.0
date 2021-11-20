@@ -1,9 +1,10 @@
 From: David Woodhouse <dwmw2@infradead.org>
-Date: Sat, 20 Nov 2021 10:28:04 +0000
-Subject: [PATCH v4 05/11] KVM: RISC-V: Use Makefile.kvm for common files
+Date: Sat, 20 Nov 2021 10:28:01 +0000
+Subject: [PATCH v4 02/11] KVM: Add Makefile.kvm for common files,
+ use it for x86
 In-Reply-To: <20211120102810.8858-1-dwmw2@infradead.org>
 References: <20211120102810.8858-1-dwmw2@infradead.org>
-Message-ID: <20211120102810.8858-6-dwmw2@infradead.org>
+Message-ID: <20211120102810.8858-3-dwmw2@infradead.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -12,31 +13,55 @@ Content-Transfer-Encoding: 7bit
 
 From: David Woodhouse <dwmw@amazon.co.uk>
 
-Signed-off-by: David Woodhouse <dwmw@amazon.co.uk>
----
- arch/riscv/kvm/Makefile | 6 +-----
- 1 file changed, 1 insertion(+), 5 deletions(-)
+Splitting kvm_main.c out into smaller and better-organized files is
+slightly non-trivial when it involves editing a bunch of per-arch
+KVM makefiles. Provide virt/kvm/Makefile.kvm for them to include.
 
-diff --git a/arch/riscv/kvm/Makefile b/arch/riscv/kvm/Makefile
-index 30cdd1df0098..300590225348 100644
---- a/arch/riscv/kvm/Makefile
-+++ b/arch/riscv/kvm/Makefile
-@@ -5,14 +5,10 @@
- 
- ccflags-y += -I $(srctree)/$(src)
+Signed-off-by: David Woodhouse <dwmw@amazon.co.uk>
+Acked-by: Marc Zyngier <maz@kernel.org>
+---
+ arch/x86/kvm/Makefile |  7 +------
+ virt/kvm/Makefile.kvm | 13 +++++++++++++
+ 2 files changed, 14 insertions(+), 6 deletions(-)
+ create mode 100644 virt/kvm/Makefile.kvm
+
+diff --git a/arch/x86/kvm/Makefile b/arch/x86/kvm/Makefile
+index 75dfd27b6e8a..30f244b64523 100644
+--- a/arch/x86/kvm/Makefile
++++ b/arch/x86/kvm/Makefile
+@@ -7,12 +7,7 @@ ifeq ($(CONFIG_FRAME_POINTER),y)
+ OBJECT_FILES_NON_STANDARD_vmenter.o := y
+ endif
  
 -KVM := ../../../virt/kvm
+-
+-kvm-y			+= $(KVM)/kvm_main.o $(KVM)/coalesced_mmio.o \
+-				$(KVM)/eventfd.o $(KVM)/irqchip.o $(KVM)/vfio.o \
+-				$(KVM)/dirty_ring.o $(KVM)/binary_stats.o
+-kvm-$(CONFIG_KVM_ASYNC_PF)	+= $(KVM)/async_pf.o
 +include $(srctree)/virt/kvm/Makefile.kvm
  
- obj-$(CONFIG_KVM) += kvm.o
- 
--kvm-y += $(KVM)/kvm_main.o
--kvm-y += $(KVM)/coalesced_mmio.o
--kvm-y += $(KVM)/binary_stats.o
--kvm-y += $(KVM)/eventfd.o
- kvm-y += main.o
- kvm-y += vm.o
- kvm-y += vmid.o
+ kvm-y			+= x86.o emulate.o i8259.o irq.o lapic.o \
+ 			   i8254.o ioapic.o irq_comm.o cpuid.o pmu.o mtrr.o \
+diff --git a/virt/kvm/Makefile.kvm b/virt/kvm/Makefile.kvm
+new file mode 100644
+index 000000000000..ffdcad3cc97a
+--- /dev/null
++++ b/virt/kvm/Makefile.kvm
+@@ -0,0 +1,13 @@
++# SPDX-License-Identifier: GPL-2.0
++#
++# Makefile for Kernel-based Virtual Machine module
++#
++
++KVM ?= ../../../virt/kvm
++
++kvm-y := $(KVM)/kvm_main.o $(KVM)/eventfd.o $(KVM)/binary_stats.o
++kvm-$(CONFIG_KVM_VFIO) += $(KVM)/vfio.o
++kvm-$(CONFIG_KVM_MMIO) += $(KVM)/coalesced_mmio.o
++kvm-$(CONFIG_KVM_ASYNC_PF) += $(KVM)/async_pf.o
++kvm-$(CONFIG_HAVE_KVM_IRQ_ROUTING) += $(KVM)/irqchip.o
++kvm-$(CONFIG_HAVE_KVM_DIRTY_RING) += $(KVM)/dirty_ring.o
 -- 
 2.31.1
 
