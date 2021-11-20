@@ -1,9 +1,9 @@
 From: David Woodhouse <dwmw2@infradead.org>
-Date: Sat, 20 Nov 2021 10:28:03 +0000
-Subject: [PATCH v4 04/11] KVM: mips: Use Makefile.kvm for common files
+Date: Sat, 20 Nov 2021 10:28:04 +0000
+Subject: [PATCH v4 05/11] KVM: RISC-V: Use Makefile.kvm for common files
 In-Reply-To: <20211120102810.8858-1-dwmw2@infradead.org>
 References: <20211120102810.8858-1-dwmw2@infradead.org>
-Message-ID: <20211120102810.8858-5-dwmw2@infradead.org>
+Message-ID: <20211120102810.8858-6-dwmw2@infradead.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -14,25 +14,29 @@ From: David Woodhouse <dwmw@amazon.co.uk>
 
 Signed-off-by: David Woodhouse <dwmw@amazon.co.uk>
 ---
- arch/mips/kvm/Makefile | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ arch/riscv/kvm/Makefile | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
 
-diff --git a/arch/mips/kvm/Makefile b/arch/mips/kvm/Makefile
-index d3710959da55..21ff75bcdbc4 100644
---- a/arch/mips/kvm/Makefile
-+++ b/arch/mips/kvm/Makefile
-@@ -2,9 +2,10 @@
- # Makefile for KVM support for MIPS
- #
+diff --git a/arch/riscv/kvm/Makefile b/arch/riscv/kvm/Makefile
+index 30cdd1df0098..300590225348 100644
+--- a/arch/riscv/kvm/Makefile
++++ b/arch/riscv/kvm/Makefile
+@@ -5,14 +5,10 @@
  
+ ccflags-y += -I $(srctree)/$(src)
+ 
+-KVM := ../../../virt/kvm
 +include $(srctree)/virt/kvm/Makefile.kvm
-+
- ccflags-y += -Ivirt/kvm -Iarch/mips/kvm
  
--kvm-y := $(addprefix ../../../virt/kvm/, kvm_main.o coalesced_mmio.o eventfd.o binary_stats.o)
- kvm-$(CONFIG_CPU_HAS_MSA) += msa.o
+ obj-$(CONFIG_KVM) += kvm.o
  
- kvm-y +=    mips.o emulate.o entry.o \
+-kvm-y += $(KVM)/kvm_main.o
+-kvm-y += $(KVM)/coalesced_mmio.o
+-kvm-y += $(KVM)/binary_stats.o
+-kvm-y += $(KVM)/eventfd.o
+ kvm-y += main.o
+ kvm-y += vm.o
+ kvm-y += vmid.o
 -- 
 2.31.1
 
