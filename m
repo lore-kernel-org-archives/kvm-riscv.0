@@ -1,230 +1,166 @@
 From: Yifei Jiang <jiangyifei@huawei.com>
-Date: Sat, 20 Nov 2021 15:46:38 +0800
-Subject: [PATCH v1 06/12] target/riscv: Support start kernel directly by KVM
+Date: Sat, 20 Nov 2021 15:46:40 +0800
+Subject: [PATCH v1 08/12] target/riscv: Handle KVM_EXIT_RISCV_SBI exit
 In-Reply-To: <20211120074644.729-1-jiangyifei@huawei.com>
 References: <20211120074644.729-1-jiangyifei@huawei.com>
-Message-ID: <20211120074644.729-7-jiangyifei@huawei.com>
+Message-ID: <20211120074644.729-9-jiangyifei@huawei.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Get kernel and fdt start address in virt.c, and pass them to KVM
-when cpu reset. In addition, add kvm_riscv.h to place riscv specific
-interface.
+Use char-fe to handle console sbi call, which implement early
+console io while apply 'earlycon=sbi' into kernel parameters.
 
 Signed-off-by: Yifei Jiang <jiangyifei@huawei.com>
 Signed-off-by: Mingwang Li <limingwang@huawei.com>
-Reviewed-by: Alistair Francis <alistair.francis@wdc.com>
 ---
- hw/riscv/boot.c          | 11 +++++++++++
- hw/riscv/virt.c          |  7 +++++++
- include/hw/riscv/boot.h  |  1 +
- target/riscv/cpu.c       |  8 ++++++++
- target/riscv/cpu.h       |  3 +++
- target/riscv/kvm-stub.c  | 25 +++++++++++++++++++++++++
- target/riscv/kvm.c       | 14 ++++++++++++++
- target/riscv/kvm_riscv.h | 24 ++++++++++++++++++++++++
- target/riscv/meson.build |  2 +-
- 9 files changed, 94 insertions(+), 1 deletion(-)
- create mode 100644 target/riscv/kvm-stub.c
- create mode 100644 target/riscv/kvm_riscv.h
+ target/riscv/kvm.c                 | 42 ++++++++++++++++-
+ target/riscv/sbi_ecall_interface.h | 72 ++++++++++++++++++++++++++++++
+ 2 files changed, 113 insertions(+), 1 deletion(-)
+ create mode 100644 target/riscv/sbi_ecall_interface.h
 
-diff --git a/hw/riscv/boot.c b/hw/riscv/boot.c
-index 519fa455a1..00df6d7810 100644
---- a/hw/riscv/boot.c
-+++ b/hw/riscv/boot.c
-@@ -317,3 +317,14 @@ void riscv_setup_rom_reset_vec(MachineState *machine, RISCVHartArrayState *harts
- 
-     return;
- }
-+
-+void riscv_setup_direct_kernel(hwaddr kernel_addr, hwaddr fdt_addr)
-+{
-+    CPUState *cs;
-+
-+    for (cs = first_cpu; cs; cs = CPU_NEXT(cs)) {
-+        RISCVCPU *riscv_cpu = RISCV_CPU(cs);
-+        riscv_cpu->env.kernel_addr = kernel_addr;
-+        riscv_cpu->env.fdt_addr = fdt_addr;
-+    }
-+}
-diff --git a/hw/riscv/virt.c b/hw/riscv/virt.c
-index 3af074148e..e3452b25e8 100644
---- a/hw/riscv/virt.c
-+++ b/hw/riscv/virt.c
-@@ -941,6 +941,13 @@ static void virt_machine_init(MachineState *machine)
-                               virt_memmap[VIRT_MROM].size, kernel_entry,
-                               fdt_load_addr, machine->fdt);
- 
-+    /*
-+     * Only direct boot kernel is currently supported for KVM VM,
-+     * So here setup kernel start address and fdt address.
-+     * TODO:Support firmware loading and integrate to TCG start
-+     */
-+    riscv_setup_direct_kernel(kernel_entry, fdt_load_addr);
-+
-     /* SiFive Test MMIO device */
-     sifive_test_create(memmap[VIRT_TEST].base);
- 
-diff --git a/include/hw/riscv/boot.h b/include/hw/riscv/boot.h
-index baff11dd8a..5834c234aa 100644
---- a/include/hw/riscv/boot.h
-+++ b/include/hw/riscv/boot.h
-@@ -58,5 +58,6 @@ void riscv_rom_copy_firmware_info(MachineState *machine, hwaddr rom_base,
-                                   hwaddr rom_size,
-                                   uint32_t reset_vec_size,
-                                   uint64_t kernel_entry);
-+void riscv_setup_direct_kernel(hwaddr kernel_addr, hwaddr fdt_addr);
- 
- #endif /* RISCV_BOOT_H */
-diff --git a/target/riscv/cpu.c b/target/riscv/cpu.c
-index f812998123..1c944872a3 100644
---- a/target/riscv/cpu.c
-+++ b/target/riscv/cpu.c
-@@ -29,6 +29,8 @@
- #include "hw/qdev-properties.h"
- #include "migration/vmstate.h"
- #include "fpu/softfloat-helpers.h"
-+#include "sysemu/kvm.h"
-+#include "kvm_riscv.h"
- 
- /* RISC-V CPU definitions */
- 
-@@ -380,6 +382,12 @@ static void riscv_cpu_reset(DeviceState *dev)
-     cs->exception_index = RISCV_EXCP_NONE;
-     env->load_res = -1;
-     set_default_nan_mode(1, &env->fp_status);
-+
-+#ifndef CONFIG_USER_ONLY
-+    if (kvm_enabled()) {
-+        kvm_riscv_reset_vcpu(cpu);
-+    }
-+#endif
- }
- 
- static void riscv_cpu_disas_set_info(CPUState *s, disassemble_info *info)
-diff --git a/target/riscv/cpu.h b/target/riscv/cpu.h
-index 0760c0af93..2807eb1bcb 100644
---- a/target/riscv/cpu.h
-+++ b/target/riscv/cpu.h
-@@ -255,6 +255,9 @@ struct CPURISCVState {
- 
-     /* Fields from here on are preserved across CPU reset. */
-     QEMUTimer *timer; /* Internal timer */
-+
-+    hwaddr kernel_addr;
-+    hwaddr fdt_addr;
- };
- 
- OBJECT_DECLARE_TYPE(RISCVCPU, RISCVCPUClass,
-diff --git a/target/riscv/kvm-stub.c b/target/riscv/kvm-stub.c
-new file mode 100644
-index 0000000000..39b96fe3f4
---- /dev/null
-+++ b/target/riscv/kvm-stub.c
-@@ -0,0 +1,25 @@
-+/*
-+ * QEMU KVM RISC-V specific function stubs
-+ *
-+ * Copyright (c) 2020 Huawei Technologies Co., Ltd
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms and conditions of the GNU General Public License,
-+ * version 2 or later, as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along with
-+ * this program.  If not, see <http://www.gnu.org/licenses/>.
-+ */
-+#include "qemu/osdep.h"
-+#include "cpu.h"
-+#include "kvm_riscv.h"
-+
-+void kvm_riscv_reset_vcpu(RISCVCPU *cpu)
-+{
-+    abort();
-+}
 diff --git a/target/riscv/kvm.c b/target/riscv/kvm.c
-index 5fe5ca4434..7f3ffcc2b4 100644
+index 8da2648d1a..6d419ba02e 100644
 --- a/target/riscv/kvm.c
 +++ b/target/riscv/kvm.c
-@@ -37,6 +37,7 @@
- #include "hw/irq.h"
+@@ -38,6 +38,8 @@
  #include "qemu/log.h"
  #include "hw/loader.h"
-+#include "kvm_riscv.h"
+ #include "kvm_riscv.h"
++#include "sbi_ecall_interface.h"
++#include "chardev/char-fe.h"
  
  static uint64_t kvm_riscv_reg_id(CPURISCVState *env, uint64_t type, uint64_t idx)
  {
-@@ -444,6 +445,19 @@ int kvm_arch_handle_exit(CPUState *cs, struct kvm_run *run)
-     return 0;
+@@ -440,9 +442,47 @@ bool kvm_arch_stop_on_emulation_error(CPUState *cs)
+     return true;
  }
  
-+void kvm_riscv_reset_vcpu(RISCVCPU *cpu)
++static int kvm_riscv_handle_sbi(struct kvm_run *run)
 +{
-+    CPURISCVState *env = &cpu->env;
-+
-+    if (!kvm_enabled()) {
-+        return;
++    int ret = 0;
++    unsigned char ch;
++    switch (run->riscv_sbi.extension_id) {
++    case SBI_EXT_0_1_CONSOLE_PUTCHAR:
++        ch = run->riscv_sbi.args[0];
++        qemu_chr_fe_write(serial_hd(0)->be, &ch, sizeof(ch));
++        break;
++    case SBI_EXT_0_1_CONSOLE_GETCHAR:
++        ret = qemu_chr_fe_read_all(serial_hd(0)->be, &ch, sizeof(ch));
++        if (ret == sizeof(ch)) {
++            run->riscv_sbi.args[0] = ch;
++        } else {
++            run->riscv_sbi.args[0] = -1;
++        }
++        break;
++    default:
++        qemu_log_mask(LOG_UNIMP,
++                      "%s: un-handled SBI EXIT, specific reasons is %lu\n",
++                      __func__, run->riscv_sbi.extension_id);
++        ret = -1;
++        break;
 +    }
-+    env->pc = cpu->env.kernel_addr;
-+    env->gpr[10] = kvm_arch_vcpu_id(CPU(cpu)); /* a0 */
-+    env->gpr[11] = cpu->env.fdt_addr;          /* a1 */
-+    env->satp = 0;
++    return ret;
 +}
 +
- bool kvm_arch_cpu_check_are_resettable(void)
+ int kvm_arch_handle_exit(CPUState *cs, struct kvm_run *run)
  {
-     return true;
-diff --git a/target/riscv/kvm_riscv.h b/target/riscv/kvm_riscv.h
+-    return 0;
++    int ret = 0;
++    switch (run->exit_reason) {
++    case KVM_EXIT_RISCV_SBI:
++        ret = kvm_riscv_handle_sbi(run);
++        break;
++    default:
++        qemu_log_mask(LOG_UNIMP, "%s: un-handled exit reason %d\n",
++                      __func__, run->exit_reason);
++        ret = -1;
++        break;
++    }
++    return ret;
+ }
+ 
+ void kvm_riscv_reset_vcpu(RISCVCPU *cpu)
+diff --git a/target/riscv/sbi_ecall_interface.h b/target/riscv/sbi_ecall_interface.h
 new file mode 100644
-index 0000000000..f38c82bf59
+index 0000000000..fb1a3fa8f2
 --- /dev/null
-+++ b/target/riscv/kvm_riscv.h
-@@ -0,0 +1,24 @@
++++ b/target/riscv/sbi_ecall_interface.h
+@@ -0,0 +1,72 @@
 +/*
-+ * QEMU KVM support -- RISC-V specific functions.
++ * SPDX-License-Identifier: BSD-2-Clause
 + *
-+ * Copyright (c) 2020 Huawei Technologies Co., Ltd
++ * Copyright (c) 2019 Western Digital Corporation or its affiliates.
 + *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms and conditions of the GNU General Public License,
-+ * version 2 or later, as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along with
-+ * this program.  If not, see <http://www.gnu.org/licenses/>.
++ * Authors:
++ *   Anup Patel <anup.patel@wdc.com>
 + */
 +
-+#ifndef QEMU_KVM_RISCV_H
-+#define QEMU_KVM_RISCV_H
++#ifndef __SBI_ECALL_INTERFACE_H__
++#define __SBI_ECALL_INTERFACE_H__
 +
-+void kvm_riscv_reset_vcpu(RISCVCPU *cpu);
++/* clang-format off */
++
++/* SBI Extension IDs */
++#define SBI_EXT_0_1_SET_TIMER           0x0
++#define SBI_EXT_0_1_CONSOLE_PUTCHAR     0x1
++#define SBI_EXT_0_1_CONSOLE_GETCHAR     0x2
++#define SBI_EXT_0_1_CLEAR_IPI           0x3
++#define SBI_EXT_0_1_SEND_IPI            0x4
++#define SBI_EXT_0_1_REMOTE_FENCE_I      0x5
++#define SBI_EXT_0_1_REMOTE_SFENCE_VMA   0x6
++#define SBI_EXT_0_1_REMOTE_SFENCE_VMA_ASID 0x7
++#define SBI_EXT_0_1_SHUTDOWN            0x8
++#define SBI_EXT_BASE                    0x10
++#define SBI_EXT_TIME                    0x54494D45
++#define SBI_EXT_IPI                     0x735049
++#define SBI_EXT_RFENCE                  0x52464E43
++#define SBI_EXT_HSM                     0x48534D
++
++/* SBI function IDs for BASE extension*/
++#define SBI_EXT_BASE_GET_SPEC_VERSION   0x0
++#define SBI_EXT_BASE_GET_IMP_ID         0x1
++#define SBI_EXT_BASE_GET_IMP_VERSION    0x2
++#define SBI_EXT_BASE_PROBE_EXT          0x3
++#define SBI_EXT_BASE_GET_MVENDORID      0x4
++#define SBI_EXT_BASE_GET_MARCHID        0x5
++#define SBI_EXT_BASE_GET_MIMPID         0x6
++
++/* SBI function IDs for TIME extension*/
++#define SBI_EXT_TIME_SET_TIMER          0x0
++
++/* SBI function IDs for IPI extension*/
++#define SBI_EXT_IPI_SEND_IPI            0x0
++
++/* SBI function IDs for RFENCE extension*/
++#define SBI_EXT_RFENCE_REMOTE_FENCE_I       0x0
++#define SBI_EXT_RFENCE_REMOTE_SFENCE_VMA    0x1
++#define SBI_EXT_RFENCE_REMOTE_SFENCE_VMA_ASID  0x2
++#define SBI_EXT_RFENCE_REMOTE_HFENCE_GVMA   0x3
++#define SBI_EXT_RFENCE_REMOTE_HFENCE_GVMA_VMID 0x4
++#define SBI_EXT_RFENCE_REMOTE_HFENCE_VVMA   0x5
++#define SBI_EXT_RFENCE_REMOTE_HFENCE_VVMA_ASID 0x6
++
++/* SBI function IDs for HSM extension */
++#define SBI_EXT_HSM_HART_START          0x0
++#define SBI_EXT_HSM_HART_STOP           0x1
++#define SBI_EXT_HSM_HART_GET_STATUS     0x2
++
++#define SBI_HSM_HART_STATUS_STARTED     0x0
++#define SBI_HSM_HART_STATUS_STOPPED     0x1
++#define SBI_HSM_HART_STATUS_START_PENDING   0x2
++#define SBI_HSM_HART_STATUS_STOP_PENDING    0x3
++
++#define SBI_SPEC_VERSION_MAJOR_OFFSET   24
++#define SBI_SPEC_VERSION_MAJOR_MASK     0x7f
++#define SBI_SPEC_VERSION_MINOR_MASK     0xffffff
++#define SBI_EXT_VENDOR_START            0x09000000
++#define SBI_EXT_VENDOR_END              0x09FFFFFF
++/* clang-format on */
 +
 +#endif
-diff --git a/target/riscv/meson.build b/target/riscv/meson.build
-index 2faf08a941..fe41cc5805 100644
---- a/target/riscv/meson.build
-+++ b/target/riscv/meson.build
-@@ -19,7 +19,7 @@ riscv_ss.add(files(
-   'bitmanip_helper.c',
-   'translate.c',
- ))
--riscv_ss.add(when: 'CONFIG_KVM', if_true: files('kvm.c'))
-+riscv_ss.add(when: 'CONFIG_KVM', if_true: files('kvm.c'), if_false: files('kvm-stub.c'))
- 
- riscv_softmmu_ss = ss.source_set()
- riscv_softmmu_ss.add(files(
 -- 
 2.19.1
 
