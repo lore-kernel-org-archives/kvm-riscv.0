@@ -1,10 +1,10 @@
 From: David Woodhouse <dwmw2@infradead.org>
-Date: Sun, 21 Nov 2021 12:54:50 +0000
-Subject: [PATCH v5 11/12] KVM: x86: Fix wall clock writes in Xen shared_info
- not to mark page dirty
+Date: Sun, 21 Nov 2021 12:54:48 +0000
+Subject: [PATCH v5 09/12] KVM: x86/xen: Maintain valid mapping of Xen
+ shared_info page
 In-Reply-To: <20211121125451.9489-1-dwmw2@infradead.org>
 References: <20211121125451.9489-1-dwmw2@infradead.org>
-Message-ID: <20211121125451.9489-12-dwmw2@infradead.org>
+Message-ID: <20211121125451.9489-10-dwmw2@infradead.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -13,148 +13,135 @@ Content-Transfer-Encoding: 7bit
 
 From: David Woodhouse <dwmw@amazon.co.uk>
 
-When dirty ring logging is enabled, any dirty logging without an active
-vCPU context will cause a kernel oops. But we've already declared that
-the shared_info page doesn't get dirty tracking anyway, since it would
-be kind of insane to mark it dirty every time we deliver an event channel
-interrupt. Userspace is supposed to just assume it's always dirty any
-time a vCPU can run or event channels are routed.
+Use the newly reinstated gfn_to_pfn_cache to maintain a kernel mapping
+of the Xen shared_info page so that it can be accessed in atomic context.
 
-So stop using the generic kvm_write_wall_clock() and just write directly
-through the gfn_to_pfn_cache that we already have set up.
+Note that we do not participate in dirty tracking for the shared info
+page and we do not explicitly mark it dirty every single tim we deliver
+an event channel interrupts. We wouldn't want to do that even if we *did*
+have a valid vCPU context with which to do so.
 
-We can make kvm_write_wall_clock() static in x86.c again now, but let's
-not remove the 'sec_hi_ofs' argument even though it's not used yet. At
-some point we *will* want to use that for KVM guests too.
-
-Fixes: 629b5348841a ("KVM: x86/xen: update wallclock region")
-Reported-by: butt3rflyh4ck <butterflyhuangxx@gmail.com>
 Signed-off-by: David Woodhouse <dwmw@amazon.co.uk>
 ---
- arch/x86/kvm/x86.c |  2 +-
- arch/x86/kvm/x86.h |  1 -
- arch/x86/kvm/xen.c | 62 +++++++++++++++++++++++++++++++++++-----------
- 3 files changed, 49 insertions(+), 16 deletions(-)
+ Documentation/virt/kvm/api.rst  | 12 ++++++++++++
+ arch/x86/include/asm/kvm_host.h |  2 +-
+ arch/x86/kvm/xen.c              | 25 ++++++++++++++-----------
+ 3 files changed, 27 insertions(+), 12 deletions(-)
 
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index fa56c590d8db..6cb022d0afab 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -2118,7 +2118,7 @@ static s64 get_kvmclock_base_ns(void)
- }
- #endif
+diff --git a/Documentation/virt/kvm/api.rst b/Documentation/virt/kvm/api.rst
+index aeeb071c7688..455664c39d42 100644
+--- a/Documentation/virt/kvm/api.rst
++++ b/Documentation/virt/kvm/api.rst
+@@ -371,6 +371,9 @@ The bits in the dirty bitmap are cleared before the ioctl returns, unless
+ KVM_CAP_MANUAL_DIRTY_LOG_PROTECT2 is enabled.  For more information,
+ see the description of the capability.
  
--void kvm_write_wall_clock(struct kvm *kvm, gpa_t wall_clock, int sec_hi_ofs)
-+static void kvm_write_wall_clock(struct kvm *kvm, gpa_t wall_clock, int sec_hi_ofs)
- {
- 	int version;
- 	int r;
-diff --git a/arch/x86/kvm/x86.h b/arch/x86/kvm/x86.h
-index 997669ae9caa..0260836b42ff 100644
---- a/arch/x86/kvm/x86.h
-+++ b/arch/x86/kvm/x86.h
-@@ -306,7 +306,6 @@ static inline bool kvm_vcpu_latch_init(struct kvm_vcpu *vcpu)
- 	return is_smm(vcpu) || static_call(kvm_x86_apic_init_signal_blocked)(vcpu);
- }
++Note that the Xen shared info page, if configured, shall always be assumed
++to be dirty. KVM will not explicitly mark it such.
++
+ 4.9 KVM_SET_MEMORY_ALIAS
+ ------------------------
  
--void kvm_write_wall_clock(struct kvm *kvm, gpa_t wall_clock, int sec_hi_ofs);
- void kvm_inject_realmode_interrupt(struct kvm_vcpu *vcpu, int irq, int inc_eip);
+@@ -5134,6 +5137,15 @@ KVM_XEN_ATTR_TYPE_SHARED_INFO
+   not aware of the Xen CPU id which is used as the index into the
+   vcpu_info[] array, so cannot know the correct default location.
  
- u64 get_kvmclock_ns(struct kvm *kvm);
++  Note that the shared info page may be constantly written to by KVM;
++  it contains the event channel bitmap used to deliver interrupts to
++  a Xen guest, amongst other things. It is exempt from dirty tracking
++  mechanisms ? KVM will not explicitly mark the page as dirty each
++  time an event channel interrupt is delivered to the guest! Thus,
++  userspace should always assume that the designated GFN is dirty if
++  any vCPU has been running or any event channel interrupts can be
++  routed to the guest.
++
+ KVM_XEN_ATTR_TYPE_UPCALL_VECTOR
+   Sets the exception vector used to deliver Xen event channel upcalls.
+ 
+diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
+index 6ac61f85e07b..4b2b4ecf3b46 100644
+--- a/arch/x86/include/asm/kvm_host.h
++++ b/arch/x86/include/asm/kvm_host.h
+@@ -1014,7 +1014,7 @@ struct msr_bitmap_range {
+ struct kvm_xen {
+ 	bool long_mode;
+ 	u8 upcall_vector;
+-	gfn_t shinfo_gfn;
++	struct gfn_to_pfn_cache shinfo_cache;
+ };
+ 
+ enum kvm_irqchip_mode {
 diff --git a/arch/x86/kvm/xen.c b/arch/x86/kvm/xen.c
-index ceddabd1f5c6..0e3f7d6e9fd7 100644
+index dff2bdf9507a..da4bf2c6407f 100644
 --- a/arch/x86/kvm/xen.c
 +++ b/arch/x86/kvm/xen.c
-@@ -25,8 +25,11 @@ DEFINE_STATIC_KEY_DEFERRED_FALSE(kvm_xen_enabled, HZ);
+@@ -23,16 +23,21 @@ DEFINE_STATIC_KEY_DEFERRED_FALSE(kvm_xen_enabled, HZ);
+ 
  static int kvm_xen_shared_info_init(struct kvm *kvm, gfn_t gfn)
  {
- 	struct gfn_to_pfn_cache *gpc = &kvm->arch.xen.shinfo_cache;
-+	struct pvclock_wall_clock *wc;
++	struct gfn_to_pfn_cache *gpc = &kvm->arch.xen.shinfo_cache;
  	gpa_t gpa = gfn_to_gpa(gfn);
--	int wc_ofs, sec_hi_ofs;
-+	u32 *wc_sec_hi;
-+	u32 wc_version;
-+	u64 wall_nsec;
+ 	int wc_ofs, sec_hi_ofs;
  	int ret = 0;
  	int idx = srcu_read_lock(&kvm->srcu);
  
-@@ -35,32 +38,63 @@ static int kvm_xen_shared_info_init(struct kvm *kvm, gfn_t gfn)
+-	if (kvm_is_error_hva(gfn_to_hva(kvm, gfn))) {
+-		ret = -EFAULT;
++	if (gfn == GPA_INVALID) {
++		kvm_gfn_to_pfn_cache_destroy(kvm, gpc);
  		goto out;
  	}
- 
--	ret = kvm_gfn_to_pfn_cache_init(kvm, gpc, NULL, false, true, gpa,
--					PAGE_SIZE, false);
--	if (ret)
--		goto out;
-+	do {
-+		ret = kvm_gfn_to_pfn_cache_init(kvm, gpc, NULL, false, true,
-+						gpa, PAGE_SIZE, false);
-+		if (ret)
-+			goto out;
+-	kvm->arch.xen.shinfo_gfn = gfn;
 +
-+		/*
-+		 * This code mirrors kvm_write_wall_clock() except that it writes
-+		 * directly through the pfn cache and doesn't mark the page dirty.
-+		 */
-+		wall_nsec = ktime_get_real_ns() - get_kvmclock_ns(kvm);
-+
-+		/* It could be invalid again already, so we need to check */
-+		read_lock_irq(&gpc->lock);
-+
-+		if (gpc->valid)
-+			break;
-+
-+		read_unlock_irq(&gpc->lock);
-+	} while (1);
++	ret = kvm_gfn_to_pfn_cache_init(kvm, gpc, NULL, false, true, gpa,
++					PAGE_SIZE, false);
++	if (ret)
++		goto out;
  
  	/* Paranoia checks on the 32-bit struct layout */
  	BUILD_BUG_ON(offsetof(struct compat_shared_info, wc) != 0x900);
- 	BUILD_BUG_ON(offsetof(struct compat_shared_info, arch.wc_sec_hi) != 0x924);
- 	BUILD_BUG_ON(offsetof(struct pvclock_vcpu_time_info, version) != 0);
+@@ -260,15 +265,9 @@ int kvm_xen_hvm_set_attr(struct kvm *kvm, struct kvm_xen_hvm_attr *data)
+ 		break;
  
--	/* 32-bit location by default */
--	wc_ofs = offsetof(struct compat_shared_info, wc);
--	sec_hi_ofs = offsetof(struct compat_shared_info, arch.wc_sec_hi);
+ 	case KVM_XEN_ATTR_TYPE_SHARED_INFO:
+-		if (data->u.shared_info.gfn == GPA_INVALID) {
+-			kvm->arch.xen.shinfo_gfn = GPA_INVALID;
+-			r = 0;
+-			break;
+-		}
+ 		r = kvm_xen_shared_info_init(kvm, data->u.shared_info.gfn);
+ 		break;
+ 
 -
- #ifdef CONFIG_X86_64
- 	/* Paranoia checks on the 64-bit struct layout */
- 	BUILD_BUG_ON(offsetof(struct shared_info, wc) != 0xc00);
- 	BUILD_BUG_ON(offsetof(struct shared_info, wc_sec_hi) != 0xc0c);
+ 	case KVM_XEN_ATTR_TYPE_UPCALL_VECTOR:
+ 		if (data->u.vector && data->u.vector < 0x10)
+ 			r = -EINVAL;
+@@ -299,7 +298,10 @@ int kvm_xen_hvm_get_attr(struct kvm *kvm, struct kvm_xen_hvm_attr *data)
+ 		break;
  
--	if (kvm->arch.xen.long_mode) {
--		wc_ofs = offsetof(struct shared_info, wc);
--		sec_hi_ofs = offsetof(struct shared_info, wc_sec_hi);
--	}
-+	if (IS_ENABLED(CONFIG_64BIT) && kvm->arch.xen.long_mode) {
-+		struct shared_info *shinfo = gpc->khva;
-+
-+		wc_sec_hi = &shinfo->wc_sec_hi;
-+		wc = &shinfo->wc;
-+	} else
- #endif
-+	{
-+		struct compat_shared_info *shinfo = gpc->khva;
-+
-+		wc_sec_hi = &shinfo->arch.wc_sec_hi;
-+		wc = &shinfo->wc;
-+	}
-+
-+	/* Increment and ensure an odd value */
-+	wc_version = wc->version = (wc->version + 1) | 1;
-+	smp_wmb();
-+
-+	wc->nsec = do_div(wall_nsec,  1000000000);
-+	wc->sec = (u32)wall_nsec;
-+	*wc_sec_hi = wall_nsec >> 32;
-+	smp_wmb();
-+
-+	wc->version = wc_version + 1;
-+	read_unlock_irq(&gpc->lock);
+ 	case KVM_XEN_ATTR_TYPE_SHARED_INFO:
+-		data->u.shared_info.gfn = kvm->arch.xen.shinfo_gfn;
++		if (kvm->arch.xen.shinfo_cache.active)
++			data->u.shared_info.gfn = gpa_to_gfn(kvm->arch.xen.shinfo_cache.gpa);
++		else
++			data->u.shared_info.gfn = GPA_INVALID;
+ 		r = 0;
+ 		break;
  
--	kvm_write_wall_clock(kvm, gpa + wc_ofs, sec_hi_ofs - wc_ofs);
- 	kvm_make_all_cpus_request(kvm, KVM_REQ_MASTERCLOCK_UPDATE);
+@@ -661,11 +663,12 @@ int kvm_xen_hvm_config(struct kvm *kvm, struct kvm_xen_hvm_config *xhc)
  
- out:
+ void kvm_xen_init_vm(struct kvm *kvm)
+ {
+-	kvm->arch.xen.shinfo_gfn = GPA_INVALID;
+ }
+ 
+ void kvm_xen_destroy_vm(struct kvm *kvm)
+ {
++	kvm_gfn_to_pfn_cache_destroy(kvm, &kvm->arch.xen.shinfo_cache);
++
+ 	if (kvm->arch.xen_hvm_config.msr)
+ 		static_branch_slow_dec_deferred(&kvm_xen_enabled);
+ }
 -- 
 2.31.1
 
