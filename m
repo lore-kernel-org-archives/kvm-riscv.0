@@ -1,43 +1,54 @@
-From: Richard Henderson <richard.henderson@linaro.org>
-Date: Sat, 20 Nov 2021 23:34:58 +0100
-Subject: [PATCH v1 12/12] target/riscv: Support virtual time context
- synchronization
-In-Reply-To: <20211120074644.729-13-jiangyifei@huawei.com>
-References: <20211120074644.729-1-jiangyifei@huawei.com>
- <20211120074644.729-13-jiangyifei@huawei.com>
-Message-ID: <d9c9196a-692c-cbcf-339b-8e84ecde7cee@linaro.org>
+From: David Woodhouse <dwmw2@infradead.org>
+Date: Sun, 21 Nov 2021 12:54:45 +0000
+Subject: [PATCH v5 06/12] KVM: powerpc: Use Makefile.kvm for common files
+In-Reply-To: <20211121125451.9489-1-dwmw2@infradead.org>
+References: <20211121125451.9489-1-dwmw2@infradead.org>
+Message-ID: <20211121125451.9489-7-dwmw2@infradead.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 11/20/21 8:46 AM, Yifei Jiang wrote:
->   const VMStateDescription vmstate_riscv_cpu = {
->       .name = "cpu",
->       .version_id = 3,
->       .minimum_version_id = 3,
-> +    .post_load = cpu_post_load,
->       .fields = (VMStateField[]) {
->           VMSTATE_UINTTL_ARRAY(env.gpr, RISCVCPU, 32),
->           VMSTATE_UINT64_ARRAY(env.fpr, RISCVCPU, 32),
-> @@ -211,6 +221,10 @@ const VMStateDescription vmstate_riscv_cpu = {
->           VMSTATE_UINT64(env.mtohost, RISCVCPU),
->           VMSTATE_UINT64(env.timecmp, RISCVCPU),
->   
-> +        VMSTATE_UINT64(env.kvm_timer_time, RISCVCPU),
-> +        VMSTATE_UINT64(env.kvm_timer_compare, RISCVCPU),
-> +        VMSTATE_UINT64(env.kvm_timer_state, RISCVCPU),
-> +
->           VMSTATE_END_OF_LIST()
->       },
+From: David Woodhouse <dwmw@amazon.co.uk>
 
-Can't alter VMStateDescription.fields without bumping version.
+It's all fairly baroque but in the end, I don't think there's any reason
+for $(KVM)/irqchip.o to have been handled differently, as they all end
+up in $(kvm-y) in the end anyway, regardless of whether they get there
+via $(common-objs-y) and the CPU-specific object lists.
 
-If this is really kvm-only state, consider placing it into a subsection.  But I worry 
-about kvm-only state because ideally we'd be able to migrate between tcg and kvm (if only 
-for debugging).
+Signed-off-by: David Woodhouse <dwmw@amazon.co.uk>
+Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
+---
+ arch/powerpc/kvm/Makefile | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
 
+diff --git a/arch/powerpc/kvm/Makefile b/arch/powerpc/kvm/Makefile
+index 583c14ef596e..245f59118413 100644
+--- a/arch/powerpc/kvm/Makefile
++++ b/arch/powerpc/kvm/Makefile
+@@ -4,11 +4,8 @@
+ #
+ 
+ ccflags-y := -Ivirt/kvm -Iarch/powerpc/kvm
+-KVM := ../../../virt/kvm
+ 
+-common-objs-y = $(KVM)/kvm_main.o $(KVM)/eventfd.o $(KVM)/binary_stats.o
+-common-objs-$(CONFIG_KVM_VFIO) += $(KVM)/vfio.o
+-common-objs-$(CONFIG_KVM_MMIO) += $(KVM)/coalesced_mmio.o
++include $(srctree)/virt/kvm/Makefile.kvm
+ 
+ common-objs-y += powerpc.o emulate_loadstore.o
+ obj-$(CONFIG_KVM_EXIT_TIMING) += timing.o
+@@ -125,7 +122,6 @@ kvm-book3s_32-objs := \
+ kvm-objs-$(CONFIG_KVM_BOOK3S_32) := $(kvm-book3s_32-objs)
+ 
+ kvm-objs-$(CONFIG_KVM_MPIC) += mpic.o
+-kvm-objs-$(CONFIG_HAVE_KVM_IRQ_ROUTING) += $(KVM)/irqchip.o
+ 
+ kvm-objs := $(kvm-objs-m) $(kvm-objs-y)
+ 
+-- 
+2.31.1
 
-r~
 
