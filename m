@@ -1,9 +1,10 @@
 From: David Woodhouse <dwmw2@infradead.org>
-Date: Sun, 21 Nov 2021 12:54:44 +0000
-Subject: [PATCH v5 05/12] KVM: RISC-V: Use Makefile.kvm for common files
+Date: Sun, 21 Nov 2021 12:54:50 +0000
+Subject: [PATCH v5 11/12] KVM: x86: Fix wall clock writes in Xen shared_info
+ not to mark page dirty
 In-Reply-To: <20211121125451.9489-1-dwmw2@infradead.org>
 References: <20211121125451.9489-1-dwmw2@infradead.org>
-Message-ID: <20211121125451.9489-6-dwmw2@infradead.org>
+Message-ID: <20211121125451.9489-12-dwmw2@infradead.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -12,31 +13,148 @@ Content-Transfer-Encoding: 7bit
 
 From: David Woodhouse <dwmw@amazon.co.uk>
 
+When dirty ring logging is enabled, any dirty logging without an active
+vCPU context will cause a kernel oops. But we've already declared that
+the shared_info page doesn't get dirty tracking anyway, since it would
+be kind of insane to mark it dirty every time we deliver an event channel
+interrupt. Userspace is supposed to just assume it's always dirty any
+time a vCPU can run or event channels are routed.
+
+So stop using the generic kvm_write_wall_clock() and just write directly
+through the gfn_to_pfn_cache that we already have set up.
+
+We can make kvm_write_wall_clock() static in x86.c again now, but let's
+not remove the 'sec_hi_ofs' argument even though it's not used yet. At
+some point we *will* want to use that for KVM guests too.
+
+Fixes: 629b5348841a ("KVM: x86/xen: update wallclock region")
+Reported-by: butt3rflyh4ck <butterflyhuangxx@gmail.com>
 Signed-off-by: David Woodhouse <dwmw@amazon.co.uk>
 ---
- arch/riscv/kvm/Makefile | 6 +-----
- 1 file changed, 1 insertion(+), 5 deletions(-)
+ arch/x86/kvm/x86.c |  2 +-
+ arch/x86/kvm/x86.h |  1 -
+ arch/x86/kvm/xen.c | 62 +++++++++++++++++++++++++++++++++++-----------
+ 3 files changed, 49 insertions(+), 16 deletions(-)
 
-diff --git a/arch/riscv/kvm/Makefile b/arch/riscv/kvm/Makefile
-index 30cdd1df0098..300590225348 100644
---- a/arch/riscv/kvm/Makefile
-+++ b/arch/riscv/kvm/Makefile
-@@ -5,14 +5,10 @@
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index fa56c590d8db..6cb022d0afab 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -2118,7 +2118,7 @@ static s64 get_kvmclock_base_ns(void)
+ }
+ #endif
  
- ccflags-y += -I $(srctree)/$(src)
+-void kvm_write_wall_clock(struct kvm *kvm, gpa_t wall_clock, int sec_hi_ofs)
++static void kvm_write_wall_clock(struct kvm *kvm, gpa_t wall_clock, int sec_hi_ofs)
+ {
+ 	int version;
+ 	int r;
+diff --git a/arch/x86/kvm/x86.h b/arch/x86/kvm/x86.h
+index 997669ae9caa..0260836b42ff 100644
+--- a/arch/x86/kvm/x86.h
++++ b/arch/x86/kvm/x86.h
+@@ -306,7 +306,6 @@ static inline bool kvm_vcpu_latch_init(struct kvm_vcpu *vcpu)
+ 	return is_smm(vcpu) || static_call(kvm_x86_apic_init_signal_blocked)(vcpu);
+ }
  
--KVM := ../../../virt/kvm
-+include $(srctree)/virt/kvm/Makefile.kvm
+-void kvm_write_wall_clock(struct kvm *kvm, gpa_t wall_clock, int sec_hi_ofs);
+ void kvm_inject_realmode_interrupt(struct kvm_vcpu *vcpu, int irq, int inc_eip);
  
- obj-$(CONFIG_KVM) += kvm.o
+ u64 get_kvmclock_ns(struct kvm *kvm);
+diff --git a/arch/x86/kvm/xen.c b/arch/x86/kvm/xen.c
+index ceddabd1f5c6..0e3f7d6e9fd7 100644
+--- a/arch/x86/kvm/xen.c
++++ b/arch/x86/kvm/xen.c
+@@ -25,8 +25,11 @@ DEFINE_STATIC_KEY_DEFERRED_FALSE(kvm_xen_enabled, HZ);
+ static int kvm_xen_shared_info_init(struct kvm *kvm, gfn_t gfn)
+ {
+ 	struct gfn_to_pfn_cache *gpc = &kvm->arch.xen.shinfo_cache;
++	struct pvclock_wall_clock *wc;
+ 	gpa_t gpa = gfn_to_gpa(gfn);
+-	int wc_ofs, sec_hi_ofs;
++	u32 *wc_sec_hi;
++	u32 wc_version;
++	u64 wall_nsec;
+ 	int ret = 0;
+ 	int idx = srcu_read_lock(&kvm->srcu);
  
--kvm-y += $(KVM)/kvm_main.o
--kvm-y += $(KVM)/coalesced_mmio.o
--kvm-y += $(KVM)/binary_stats.o
--kvm-y += $(KVM)/eventfd.o
- kvm-y += main.o
- kvm-y += vm.o
- kvm-y += vmid.o
+@@ -35,32 +38,63 @@ static int kvm_xen_shared_info_init(struct kvm *kvm, gfn_t gfn)
+ 		goto out;
+ 	}
+ 
+-	ret = kvm_gfn_to_pfn_cache_init(kvm, gpc, NULL, false, true, gpa,
+-					PAGE_SIZE, false);
+-	if (ret)
+-		goto out;
++	do {
++		ret = kvm_gfn_to_pfn_cache_init(kvm, gpc, NULL, false, true,
++						gpa, PAGE_SIZE, false);
++		if (ret)
++			goto out;
++
++		/*
++		 * This code mirrors kvm_write_wall_clock() except that it writes
++		 * directly through the pfn cache and doesn't mark the page dirty.
++		 */
++		wall_nsec = ktime_get_real_ns() - get_kvmclock_ns(kvm);
++
++		/* It could be invalid again already, so we need to check */
++		read_lock_irq(&gpc->lock);
++
++		if (gpc->valid)
++			break;
++
++		read_unlock_irq(&gpc->lock);
++	} while (1);
+ 
+ 	/* Paranoia checks on the 32-bit struct layout */
+ 	BUILD_BUG_ON(offsetof(struct compat_shared_info, wc) != 0x900);
+ 	BUILD_BUG_ON(offsetof(struct compat_shared_info, arch.wc_sec_hi) != 0x924);
+ 	BUILD_BUG_ON(offsetof(struct pvclock_vcpu_time_info, version) != 0);
+ 
+-	/* 32-bit location by default */
+-	wc_ofs = offsetof(struct compat_shared_info, wc);
+-	sec_hi_ofs = offsetof(struct compat_shared_info, arch.wc_sec_hi);
+-
+ #ifdef CONFIG_X86_64
+ 	/* Paranoia checks on the 64-bit struct layout */
+ 	BUILD_BUG_ON(offsetof(struct shared_info, wc) != 0xc00);
+ 	BUILD_BUG_ON(offsetof(struct shared_info, wc_sec_hi) != 0xc0c);
+ 
+-	if (kvm->arch.xen.long_mode) {
+-		wc_ofs = offsetof(struct shared_info, wc);
+-		sec_hi_ofs = offsetof(struct shared_info, wc_sec_hi);
+-	}
++	if (IS_ENABLED(CONFIG_64BIT) && kvm->arch.xen.long_mode) {
++		struct shared_info *shinfo = gpc->khva;
++
++		wc_sec_hi = &shinfo->wc_sec_hi;
++		wc = &shinfo->wc;
++	} else
+ #endif
++	{
++		struct compat_shared_info *shinfo = gpc->khva;
++
++		wc_sec_hi = &shinfo->arch.wc_sec_hi;
++		wc = &shinfo->wc;
++	}
++
++	/* Increment and ensure an odd value */
++	wc_version = wc->version = (wc->version + 1) | 1;
++	smp_wmb();
++
++	wc->nsec = do_div(wall_nsec,  1000000000);
++	wc->sec = (u32)wall_nsec;
++	*wc_sec_hi = wall_nsec >> 32;
++	smp_wmb();
++
++	wc->version = wc_version + 1;
++	read_unlock_irq(&gpc->lock);
+ 
+-	kvm_write_wall_clock(kvm, gpa + wc_ofs, sec_hi_ofs - wc_ofs);
+ 	kvm_make_all_cpus_request(kvm, KVM_REQ_MASTERCLOCK_UPDATE);
+ 
+ out:
 -- 
 2.31.1
 
