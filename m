@@ -1,159 +1,195 @@
-From: Anup Patel <Anup.Patel@wdc.com>
-Date: Tue, 23 Nov 2021 05:33:24 +0000
-Subject: ERROR: modpost: "boot_cpu_hartid" [arch/riscv/kvm/kvm.ko]
- undefined!
-In-Reply-To: <YZvipLmkQQZ3va8F@google.com>
-References: <YZvP3AuTdEdje/IY@angband.pl> <YZvipLmkQQZ3va8F@google.com>
-Message-ID: <956FCFEA-AB88-495B-B4CD-F3FB410A4270@wdc.com>
+From: Alistair Francis <alistair23@gmail.com>
+Date: Tue, 23 Nov 2021 16:13:13 +1000
+Subject: [PATCH v1 01/12] update-linux-headers: Add asm-riscv/kvm.h
+In-Reply-To: <20211120074644.729-2-jiangyifei@huawei.com>
+References: <20211120074644.729-1-jiangyifei@huawei.com>
+ <20211120074644.729-2-jiangyifei@huawei.com>
+Message-ID: <CAKmqyKNXcJ_3Fkzc+WDzUSQ2tXp4H-vs4wi6NiBMP+o42qpo8A@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-+Atish, +Palmer
+On Sat, Nov 20, 2021 at 5:51 PM Yifei Jiang <jiangyifei@huawei.com> wrote:
+>
+> Add asm-riscv/kvm.h for RISC-V KVM, and update linux/kvm.h
+>
+> Signed-off-by: Yifei Jiang <jiangyifei@huawei.com>
+> Signed-off-by: Mingwang Li <limingwang@huawei.com>
 
-?On 23/11/21, 12:04 AM, "Sean Christopherson" <seanjc@google.com> wrote:
+Acked-by: Alistair Francis <alistair.francis@wdc.com>
 
-    On Mon, Nov 22, 2021, Adam Borowski wrote:
-    > Hi!
-    > With CONFIG_KVM=m and CONFIG_SMP=n, the build fails with:
-    > ERROR: modpost: "boot_cpu_hartid" [arch/riscv/kvm/kvm.ko] undefined!
-    > 
-    > An obvious fix would be to change riscv_cpuid_to_hartid_mask() from a
-    > static inline function to a real exported symbol
+Alistair
 
-    Amusingly, the !SMP version is buggy as it assumes the boot/only CPU is in the
-    target mask, which will not always be true, e.g. if a VM has more vCPUs than there
-    are pCPUs in the system, kvm_riscv_vcpu_sbi_ecall() can send in a mask without any
-    CPUs set.  Even if that's somewhat of a bogus use case, arguably a common helper
-    shouldn't have different semantics for SMP vs !SMP.
-
-    > but I wonder: is there a point in allowing such combinations that no one will
-    > test?
-
-    Eh, even if there is currently no known use case, unless the fix is really nasty,
-    there's no reason to actively prevent a potentially legitimate use case.  But it's
-    somewhat of a moot point as the easy fix is to use the SMP version for both cases.  
-
-    I think this would be an appropriate fix?
-
-
-    From f6510acd68feb90aa3ec393031cbcde725c52420 Mon Sep 17 00:00:00 2001
-    From: Sean Christopherson <seanjc@google.com>
-    Date: Mon, 22 Nov 2021 10:01:15 -0800
-    Subject: [PATCH] RISC-V: Use common riscv_cpuid_to_hartid_mask() for both
-     SMP=y and SMP=n
-
-    Use what is currently the SMP=y version of riscv_cpuid_to_hartid_mask()
-    for both SMP=y and SMP=n to fix a build failure with KVM=m and SMP=n due
-    to boot_cpu_hartid not being exported.  This also fixes a second bug
-    where the SMP=n version assumes the sole CPU in the system is in the
-    incoming mask, which may not hold true in kvm_riscv_vcpu_sbi_ecall() if
-    the KVM guest VM has multiple vCPUs (on a SMP=n system).
-
-    Reported-by: Adam Borowski <kilobyte@angband.pl>
-    Fixes: 1ef46c231df4 ("RISC-V: Implement new SBI v0.2 extensions")
-    Cc: stable at vger.kernel.org
-    Signed-off-by: Sean Christopherson <seanjc@google.com>
-
-Yes, this fix looks good for now.
-
-Reviewed-by: Anup Patel <anup.patel@wdc.com>
-
-As a separate series, we have to totally remove riscv_cpuid_to_hartid_mask()
-because this function is going to break for sparse HART ids. In fact, we
-should avoid using "struct cpumask" (which is limited by NR_CPUS) for
-representing set of HART ids.
-
-@Sean, can you re-send this patch to the Linux RISC-V mailing list ? It
-seems this email did not land correctly for Atish and other folks.
-
-Regards,
-Anup
-
-    ---
-     arch/riscv/include/asm/smp.h | 10 ++--------
-     arch/riscv/kernel/setup.c    | 10 ++++++++++
-     arch/riscv/kernel/smp.c      | 10 ----------
-     3 files changed, 12 insertions(+), 18 deletions(-)
-
-    diff --git a/arch/riscv/include/asm/smp.h b/arch/riscv/include/asm/smp.h
-    index a7d2811f3536..62d0e6e61da8 100644
-    --- a/arch/riscv/include/asm/smp.h
-    +++ b/arch/riscv/include/asm/smp.h
-    @@ -43,7 +43,6 @@ void arch_send_call_function_ipi_mask(struct cpumask *mask);
-     void arch_send_call_function_single_ipi(int cpu);
-
-     int riscv_hartid_to_cpuid(int hartid);
-    -void riscv_cpuid_to_hartid_mask(const struct cpumask *in, struct cpumask *out);
-
-     /* Set custom IPI operations */
-     void riscv_set_ipi_ops(const struct riscv_ipi_ops *ops);
-    @@ -85,13 +84,6 @@ static inline unsigned long cpuid_to_hartid_map(int cpu)
-     	return boot_cpu_hartid;
-     }
-
-    -static inline void riscv_cpuid_to_hartid_mask(const struct cpumask *in,
-    -					      struct cpumask *out)
-    -{
-    -	cpumask_clear(out);
-    -	cpumask_set_cpu(boot_cpu_hartid, out);
-    -}
-    -
-     static inline void riscv_set_ipi_ops(const struct riscv_ipi_ops *ops)
-     {
-     }
-    @@ -102,6 +94,8 @@ static inline void riscv_clear_ipi(void)
-
-     #endif /* CONFIG_SMP */
-
-    +void riscv_cpuid_to_hartid_mask(const struct cpumask *in, struct cpumask *out);
-    +
-     #if defined(CONFIG_HOTPLUG_CPU) && (CONFIG_SMP)
-     bool cpu_has_hotplug(unsigned int cpu);
-     #else
-    diff --git a/arch/riscv/kernel/setup.c b/arch/riscv/kernel/setup.c
-    index b9620e5f00ba..6c5caf5eb906 100644
-    --- a/arch/riscv/kernel/setup.c
-    +++ b/arch/riscv/kernel/setup.c
-    @@ -59,6 +59,16 @@ atomic_t hart_lottery __section(".sdata")
-     unsigned long boot_cpu_hartid;
-     static DEFINE_PER_CPU(struct cpu, cpu_devices);
-
-    +void riscv_cpuid_to_hartid_mask(const struct cpumask *in, struct cpumask *out)
-    +{
-    +	int cpu;
-    +
-    +	cpumask_clear(out);
-    +	for_each_cpu(cpu, in)
-    +		cpumask_set_cpu(cpuid_to_hartid_map(cpu), out);
-    +}
-    +EXPORT_SYMBOL_GPL(riscv_cpuid_to_hartid_mask);
-    +
-     /*
-      * Place kernel memory regions on the resource tree so that
-      * kexec-tools can retrieve them from /proc/iomem. While there
-    diff --git a/arch/riscv/kernel/smp.c b/arch/riscv/kernel/smp.c
-    index 921d9d7df400..d0147294691d 100644
-    --- a/arch/riscv/kernel/smp.c
-    +++ b/arch/riscv/kernel/smp.c
-    @@ -59,16 +59,6 @@ int riscv_hartid_to_cpuid(int hartid)
-     	return -ENOENT;
-     }
-
-    -void riscv_cpuid_to_hartid_mask(const struct cpumask *in, struct cpumask *out)
-    -{
-    -	int cpu;
-    -
-    -	cpumask_clear(out);
-    -	for_each_cpu(cpu, in)
-    -		cpumask_set_cpu(cpuid_to_hartid_map(cpu), out);
-    -}
-    -EXPORT_SYMBOL_GPL(riscv_cpuid_to_hartid_mask);
-    -
-     bool arch_match_cpu_phys_id(int cpu, u64 phys_id)
-     {
-     	return phys_id == cpuid_to_hartid_map(cpu);
-    --
+> ---
+>  linux-headers/asm-riscv/kvm.h | 128 ++++++++++++++++++++++++++++++++++
+>  linux-headers/linux/kvm.h     |   8 +++
+>  2 files changed, 136 insertions(+)
+>  create mode 100644 linux-headers/asm-riscv/kvm.h
+>
+> diff --git a/linux-headers/asm-riscv/kvm.h b/linux-headers/asm-riscv/kvm.h
+> new file mode 100644
+> index 0000000000..f808ad1ce5
+> --- /dev/null
+> +++ b/linux-headers/asm-riscv/kvm.h
+> @@ -0,0 +1,128 @@
+> +/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
+> +/*
+> + * Copyright (C) 2019 Western Digital Corporation or its affiliates.
+> + *
+> + * Authors:
+> + *     Anup Patel <anup.patel@wdc.com>
+> + */
+> +
+> +#ifndef __LINUX_KVM_RISCV_H
+> +#define __LINUX_KVM_RISCV_H
+> +
+> +#ifndef __ASSEMBLY__
+> +
+> +#include <linux/types.h>
+> +#include <asm/ptrace.h>
+> +
+> +#define __KVM_HAVE_READONLY_MEM
+> +
+> +#define KVM_COALESCED_MMIO_PAGE_OFFSET 1
+> +
+> +#define KVM_INTERRUPT_SET      -1U
+> +#define KVM_INTERRUPT_UNSET    -2U
+> +
+> +/* for KVM_GET_REGS and KVM_SET_REGS */
+> +struct kvm_regs {
+> +};
+> +
+> +/* for KVM_GET_FPU and KVM_SET_FPU */
+> +struct kvm_fpu {
+> +};
+> +
+> +/* KVM Debug exit structure */
+> +struct kvm_debug_exit_arch {
+> +};
+> +
+> +/* for KVM_SET_GUEST_DEBUG */
+> +struct kvm_guest_debug_arch {
+> +};
+> +
+> +/* definition of registers in kvm_run */
+> +struct kvm_sync_regs {
+> +};
+> +
+> +/* for KVM_GET_SREGS and KVM_SET_SREGS */
+> +struct kvm_sregs {
+> +};
+> +
+> +/* CONFIG registers for KVM_GET_ONE_REG and KVM_SET_ONE_REG */
+> +struct kvm_riscv_config {
+> +       unsigned long isa;
+> +};
+> +
+> +/* CORE registers for KVM_GET_ONE_REG and KVM_SET_ONE_REG */
+> +struct kvm_riscv_core {
+> +       struct user_regs_struct regs;
+> +       unsigned long mode;
+> +};
+> +
+> +/* Possible privilege modes for kvm_riscv_core */
+> +#define KVM_RISCV_MODE_S       1
+> +#define KVM_RISCV_MODE_U       0
+> +
+> +/* CSR registers for KVM_GET_ONE_REG and KVM_SET_ONE_REG */
+> +struct kvm_riscv_csr {
+> +       unsigned long sstatus;
+> +       unsigned long sie;
+> +       unsigned long stvec;
+> +       unsigned long sscratch;
+> +       unsigned long sepc;
+> +       unsigned long scause;
+> +       unsigned long stval;
+> +       unsigned long sip;
+> +       unsigned long satp;
+> +       unsigned long scounteren;
+> +};
+> +
+> +/* TIMER registers for KVM_GET_ONE_REG and KVM_SET_ONE_REG */
+> +struct kvm_riscv_timer {
+> +       __u64 frequency;
+> +       __u64 time;
+> +       __u64 compare;
+> +       __u64 state;
+> +};
+> +
+> +/* Possible states for kvm_riscv_timer */
+> +#define KVM_RISCV_TIMER_STATE_OFF      0
+> +#define KVM_RISCV_TIMER_STATE_ON       1
+> +
+> +#define KVM_REG_SIZE(id)               \
+> +       (1U << (((id) & KVM_REG_SIZE_MASK) >> KVM_REG_SIZE_SHIFT))
+> +
+> +/* If you need to interpret the index values, here is the key: */
+> +#define KVM_REG_RISCV_TYPE_MASK                0x00000000FF000000
+> +#define KVM_REG_RISCV_TYPE_SHIFT       24
+> +
+> +/* Config registers are mapped as type 1 */
+> +#define KVM_REG_RISCV_CONFIG           (0x01 << KVM_REG_RISCV_TYPE_SHIFT)
+> +#define KVM_REG_RISCV_CONFIG_REG(name) \
+> +       (offsetof(struct kvm_riscv_config, name) / sizeof(unsigned long))
+> +
+> +/* Core registers are mapped as type 2 */
+> +#define KVM_REG_RISCV_CORE             (0x02 << KVM_REG_RISCV_TYPE_SHIFT)
+> +#define KVM_REG_RISCV_CORE_REG(name)   \
+> +               (offsetof(struct kvm_riscv_core, name) / sizeof(unsigned long))
+> +
+> +/* Control and status registers are mapped as type 3 */
+> +#define KVM_REG_RISCV_CSR              (0x03 << KVM_REG_RISCV_TYPE_SHIFT)
+> +#define KVM_REG_RISCV_CSR_REG(name)    \
+> +               (offsetof(struct kvm_riscv_csr, name) / sizeof(unsigned long))
+> +
+> +/* Timer registers are mapped as type 4 */
+> +#define KVM_REG_RISCV_TIMER            (0x04 << KVM_REG_RISCV_TYPE_SHIFT)
+> +#define KVM_REG_RISCV_TIMER_REG(name)  \
+> +               (offsetof(struct kvm_riscv_timer, name) / sizeof(__u64))
+> +
+> +/* F extension registers are mapped as type 5 */
+> +#define KVM_REG_RISCV_FP_F             (0x05 << KVM_REG_RISCV_TYPE_SHIFT)
+> +#define KVM_REG_RISCV_FP_F_REG(name)   \
+> +               (offsetof(struct __riscv_f_ext_state, name) / sizeof(__u32))
+> +
+> +/* D extension registers are mapped as type 6 */
+> +#define KVM_REG_RISCV_FP_D             (0x06 << KVM_REG_RISCV_TYPE_SHIFT)
+> +#define KVM_REG_RISCV_FP_D_REG(name)   \
+> +               (offsetof(struct __riscv_d_ext_state, name) / sizeof(__u64))
+> +
+> +#endif
+> +
+> +#endif /* __LINUX_KVM_RISCV_H */
+> diff --git a/linux-headers/linux/kvm.h b/linux-headers/linux/kvm.h
+> index bcaf66cc4d..5e290c3c3e 100644
+> --- a/linux-headers/linux/kvm.h
+> +++ b/linux-headers/linux/kvm.h
+> @@ -269,6 +269,7 @@ struct kvm_xen_exit {
+>  #define KVM_EXIT_AP_RESET_HOLD    32
+>  #define KVM_EXIT_X86_BUS_LOCK     33
+>  #define KVM_EXIT_XEN              34
+> +#define KVM_EXIT_RISCV_SBI        35
+>
+>  /* For KVM_EXIT_INTERNAL_ERROR */
+>  /* Emulate instruction failed. */
+> @@ -469,6 +470,13 @@ struct kvm_run {
+>                 } msr;
+>                 /* KVM_EXIT_XEN */
+>                 struct kvm_xen_exit xen;
+> +               /* KVM_EXIT_RISCV_SBI */
+> +               struct {
+> +                       unsigned long extension_id;
+> +                       unsigned long function_id;
+> +                       unsigned long args[6];
+> +                       unsigned long ret[2];
+> +               } riscv_sbi;
+>                 /* Fix the size of the union. */
+>                 char padding[256];
+>         };
+> --
+> 2.19.1
+>
+>
 
