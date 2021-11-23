@@ -1,56 +1,26 @@
-From: Anup Patel <anup@brainfault.org>
-Date: Tue, 23 Nov 2021 14:42:21 +0530
-Subject: [PATCH v5 05/12] KVM: RISC-V: Use Makefile.kvm for common files
-In-Reply-To: <20211121125451.9489-6-dwmw2@infradead.org>
-References: <20211121125451.9489-1-dwmw2@infradead.org>
- <20211121125451.9489-6-dwmw2@infradead.org>
-Message-ID: <CAAhSdy307DqNuQEFCu2ze2jXJ7taDE6y6SwY9nHGA8yNPfggiQ@mail.gmail.com>
+From: Maciej S. Szmigiero <maciej.szmigiero@oracle.com>
+Date: Tue, 23 Nov 2021 15:42:51 +0100
+Subject: [PATCH v5.5 00/30] KVM: Scalable memslots implementation
+In-Reply-To: <f3bc3bfc-37c3-bbfd-25b4-ef0a72e534ba@oracle.com>
+References: <20211104002531.1176691-1-seanjc@google.com>
+ <cb4f5d6e-9535-dd57-d8ee-3b593a81f3a6@oracle.com>
+ <YYnNA5lZNXXdX/ig@google.com>
+ <f3bc3bfc-37c3-bbfd-25b4-ef0a72e534ba@oracle.com>
+Message-ID: <5129f02d-7c0e-8e88-797f-95e8d968df88@oracle.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sun, Nov 21, 2021 at 6:25 PM David Woodhouse <dwmw2@infradead.org> wrote:
->
-> From: David Woodhouse <dwmw@amazon.co.uk>
->
-> Signed-off-by: David Woodhouse <dwmw@amazon.co.uk>
+Paolo,
 
-Looks good to me.
+I see that you have merged the whole series to kvm/queue, even though it
+still needed some changes and, most importantly, a good round of testing.
 
-For KVM RISC-V,
-Acked-by: Anup Patel <anup.patel@wdc.com>
-Reviewed-by: Anup Patel <anup.patel@wdc.com>
+Does this mean you want all these changes as a separate patch set on top
+of the already-merged series?
 
 Thanks,
-Anup
-
-> ---
->  arch/riscv/kvm/Makefile | 6 +-----
->  1 file changed, 1 insertion(+), 5 deletions(-)
->
-> diff --git a/arch/riscv/kvm/Makefile b/arch/riscv/kvm/Makefile
-> index 30cdd1df0098..300590225348 100644
-> --- a/arch/riscv/kvm/Makefile
-> +++ b/arch/riscv/kvm/Makefile
-> @@ -5,14 +5,10 @@
->
->  ccflags-y += -I $(srctree)/$(src)
->
-> -KVM := ../../../virt/kvm
-> +include $(srctree)/virt/kvm/Makefile.kvm
->
->  obj-$(CONFIG_KVM) += kvm.o
->
-> -kvm-y += $(KVM)/kvm_main.o
-> -kvm-y += $(KVM)/coalesced_mmio.o
-> -kvm-y += $(KVM)/binary_stats.o
-> -kvm-y += $(KVM)/eventfd.o
->  kvm-y += main.o
->  kvm-y += vm.o
->  kvm-y += vmid.o
-> --
-> 2.31.1
->
+Maciej
 
