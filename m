@@ -1,170 +1,159 @@
-From: David Woodhouse <dwmw2@infradead.org>
-Date: Sat, 20 Nov 2021 18:20:35 +0000
-Subject: [PATCH v4 12/11] KVM: x86: Fix wall clock writes in Xen shared_info
- not to mark page dirty
-In-Reply-To: <20211120102810.8858-1-dwmw2@infradead.org>
-References: <20211120102810.8858-1-dwmw2@infradead.org>
-Message-ID: <20fe80d50740a9e2ab79093cc1418ef76d518c4e.camel@infradead.org>
+From: Anup Patel <Anup.Patel@wdc.com>
+Date: Tue, 23 Nov 2021 05:33:24 +0000
+Subject: ERROR: modpost: "boot_cpu_hartid" [arch/riscv/kvm/kvm.ko]
+ undefined!
+In-Reply-To: <YZvipLmkQQZ3va8F@google.com>
+References: <YZvP3AuTdEdje/IY@angband.pl> <YZvipLmkQQZ3va8F@google.com>
+Message-ID: <956FCFEA-AB88-495B-B4CD-F3FB410A4270@wdc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: David Woodhouse <dwmw@amazon.co.uk>
++Atish, +Palmer
 
-When dirty ring logging is enabled, any dirty logging without an active
-vCPU context will cause a kernel oops. But we've already declared that
-the shared_info page doesn't get dirty tracking anyway, since it would
-be kind of insane to mark it dirty every time we deliver an event channel
-interrupt. Userspace is supposed to just assume it's always dirty any
-time a vCPU can run or event channels are routed.
+?On 23/11/21, 12:04 AM, "Sean Christopherson" <seanjc@google.com> wrote:
 
-So stop using the generic kvm_write_wall_clock() and just write directly
-through the gfn_to_pfn_cache that we already have set up.
+    On Mon, Nov 22, 2021, Adam Borowski wrote:
+    > Hi!
+    > With CONFIG_KVM=m and CONFIG_SMP=n, the build fails with:
+    > ERROR: modpost: "boot_cpu_hartid" [arch/riscv/kvm/kvm.ko] undefined!
+    > 
+    > An obvious fix would be to change riscv_cpuid_to_hartid_mask() from a
+    > static inline function to a real exported symbol
 
-We can make kvm_write_wall_clock() static in x86.c again now, but let's
-not remove the 'sec_hi_ofs' argument even though it's not used yet. At
-some point we *will* want to use that for KVM guests too.
+    Amusingly, the !SMP version is buggy as it assumes the boot/only CPU is in the
+    target mask, which will not always be true, e.g. if a VM has more vCPUs than there
+    are pCPUs in the system, kvm_riscv_vcpu_sbi_ecall() can send in a mask without any
+    CPUs set.  Even if that's somewhat of a bogus use case, arguably a common helper
+    shouldn't have different semantics for SMP vs !SMP.
 
-Fixes: 629b5348841a ("KVM: x86/xen: update wallclock region")
-Reported-by: butt3rflyh4ck <butterflyhuangxx@gmail.com>
-Signed-off-by: David Woodhouse <dwmw@amazon.co.uk>
----
-Putting this after the Xen evtchn series because now I have a kernel
-mapping I can use to avoid the dirty tracking.
+    > but I wonder: is there a point in allowing such combinations that no one will
+    > test?
 
- arch/x86/kvm/x86.c |  2 +-
- arch/x86/kvm/x86.h |  1 -
- arch/x86/kvm/xen.c | 62 +++++++++++++++++++++++++++++++++++-----------
- 3 files changed, 49 insertions(+), 16 deletions(-)
+    Eh, even if there is currently no known use case, unless the fix is really nasty,
+    there's no reason to actively prevent a potentially legitimate use case.  But it's
+    somewhat of a moot point as the easy fix is to use the SMP version for both cases.  
 
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 01d20db5b1f4..d8f1d2169b45 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -2118,7 +2118,7 @@ static s64 get_kvmclock_base_ns(void)
- }
- #endif
- 
--void kvm_write_wall_clock(struct kvm *kvm, gpa_t wall_clock, int sec_hi_ofs)
-+static void kvm_write_wall_clock(struct kvm *kvm, gpa_t wall_clock, int sec_hi_ofs)
- {
- 	int version;
- 	int r;
-diff --git a/arch/x86/kvm/x86.h b/arch/x86/kvm/x86.h
-index 997669ae9caa..0260836b42ff 100644
---- a/arch/x86/kvm/x86.h
-+++ b/arch/x86/kvm/x86.h
-@@ -306,7 +306,6 @@ static inline bool kvm_vcpu_latch_init(struct kvm_vcpu *vcpu)
- 	return is_smm(vcpu) || static_call(kvm_x86_apic_init_signal_blocked)(vcpu);
- }
- 
--void kvm_write_wall_clock(struct kvm *kvm, gpa_t wall_clock, int sec_hi_ofs);
- void kvm_inject_realmode_interrupt(struct kvm_vcpu *vcpu, int irq, int inc_eip);
- 
- u64 get_kvmclock_ns(struct kvm *kvm);
-diff --git a/arch/x86/kvm/xen.c b/arch/x86/kvm/xen.c
-index ceddabd1f5c6..0e3f7d6e9fd7 100644
---- a/arch/x86/kvm/xen.c
-+++ b/arch/x86/kvm/xen.c
-@@ -25,8 +25,11 @@ DEFINE_STATIC_KEY_DEFERRED_FALSE(kvm_xen_enabled, HZ);
- static int kvm_xen_shared_info_init(struct kvm *kvm, gfn_t gfn)
- {
- 	struct gfn_to_pfn_cache *gpc = &kvm->arch.xen.shinfo_cache;
-+	struct pvclock_wall_clock *wc;
- 	gpa_t gpa = gfn_to_gpa(gfn);
--	int wc_ofs, sec_hi_ofs;
-+	u32 *wc_sec_hi;
-+	u32 wc_version;
-+	u64 wall_nsec;
- 	int ret = 0;
- 	int idx = srcu_read_lock(&kvm->srcu);
- 
-@@ -35,32 +38,63 @@ static int kvm_xen_shared_info_init(struct kvm *kvm, gfn_t gfn)
- 		goto out;
- 	}
- 
--	ret = kvm_gfn_to_pfn_cache_init(kvm, gpc, NULL, false, true, gpa,
--					PAGE_SIZE, false);
--	if (ret)
--		goto out;
-+	do {
-+		ret = kvm_gfn_to_pfn_cache_init(kvm, gpc, NULL, false, true,
-+						gpa, PAGE_SIZE, false);
-+		if (ret)
-+			goto out;
-+
-+		/*
-+		 * This code mirrors kvm_write_wall_clock() except that it writes
-+		 * directly through the pfn cache and doesn't mark the page dirty.
-+		 */
-+		wall_nsec = ktime_get_real_ns() - get_kvmclock_ns(kvm);
-+
-+		/* It could be invalid again already, so we need to check */
-+		read_lock_irq(&gpc->lock);
-+
-+		if (gpc->valid)
-+			break;
-+
-+		read_unlock_irq(&gpc->lock);
-+	} while (1);
- 
- 	/* Paranoia checks on the 32-bit struct layout */
- 	BUILD_BUG_ON(offsetof(struct compat_shared_info, wc) != 0x900);
- 	BUILD_BUG_ON(offsetof(struct compat_shared_info, arch.wc_sec_hi) != 0x924);
- 	BUILD_BUG_ON(offsetof(struct pvclock_vcpu_time_info, version) != 0);
- 
--	/* 32-bit location by default */
--	wc_ofs = offsetof(struct compat_shared_info, wc);
--	sec_hi_ofs = offsetof(struct compat_shared_info, arch.wc_sec_hi);
--
- #ifdef CONFIG_X86_64
- 	/* Paranoia checks on the 64-bit struct layout */
- 	BUILD_BUG_ON(offsetof(struct shared_info, wc) != 0xc00);
- 	BUILD_BUG_ON(offsetof(struct shared_info, wc_sec_hi) != 0xc0c);
- 
--	if (kvm->arch.xen.long_mode) {
--		wc_ofs = offsetof(struct shared_info, wc);
--		sec_hi_ofs = offsetof(struct shared_info, wc_sec_hi);
--	}
-+	if (IS_ENABLED(CONFIG_64BIT) && kvm->arch.xen.long_mode) {
-+		struct shared_info *shinfo = gpc->khva;
-+
-+		wc_sec_hi = &shinfo->wc_sec_hi;
-+		wc = &shinfo->wc;
-+	} else
- #endif
-+	{
-+		struct compat_shared_info *shinfo = gpc->khva;
-+
-+		wc_sec_hi = &shinfo->arch.wc_sec_hi;
-+		wc = &shinfo->wc;
-+	}
-+
-+	/* Increment and ensure an odd value */
-+	wc_version = wc->version = (wc->version + 1) | 1;
-+	smp_wmb();
-+
-+	wc->nsec = do_div(wall_nsec,  1000000000);
-+	wc->sec = (u32)wall_nsec;
-+	*wc_sec_hi = wall_nsec >> 32;
-+	smp_wmb();
-+
-+	wc->version = wc_version + 1;
-+	read_unlock_irq(&gpc->lock);
- 
--	kvm_write_wall_clock(kvm, gpa + wc_ofs, sec_hi_ofs - wc_ofs);
- 	kvm_make_all_cpus_request(kvm, KVM_REQ_MASTERCLOCK_UPDATE);
- 
- out:
--- 
-2.31.1
+    I think this would be an appropriate fix?
 
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: smime.p7s
-Type: application/pkcs7-signature
-Size: 5174 bytes
-Desc: not available
-URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20211120/9e054d15/attachment.p7s>
+
+    From f6510acd68feb90aa3ec393031cbcde725c52420 Mon Sep 17 00:00:00 2001
+    From: Sean Christopherson <seanjc@google.com>
+    Date: Mon, 22 Nov 2021 10:01:15 -0800
+    Subject: [PATCH] RISC-V: Use common riscv_cpuid_to_hartid_mask() for both
+     SMP=y and SMP=n
+
+    Use what is currently the SMP=y version of riscv_cpuid_to_hartid_mask()
+    for both SMP=y and SMP=n to fix a build failure with KVM=m and SMP=n due
+    to boot_cpu_hartid not being exported.  This also fixes a second bug
+    where the SMP=n version assumes the sole CPU in the system is in the
+    incoming mask, which may not hold true in kvm_riscv_vcpu_sbi_ecall() if
+    the KVM guest VM has multiple vCPUs (on a SMP=n system).
+
+    Reported-by: Adam Borowski <kilobyte@angband.pl>
+    Fixes: 1ef46c231df4 ("RISC-V: Implement new SBI v0.2 extensions")
+    Cc: stable at vger.kernel.org
+    Signed-off-by: Sean Christopherson <seanjc@google.com>
+
+Yes, this fix looks good for now.
+
+Reviewed-by: Anup Patel <anup.patel@wdc.com>
+
+As a separate series, we have to totally remove riscv_cpuid_to_hartid_mask()
+because this function is going to break for sparse HART ids. In fact, we
+should avoid using "struct cpumask" (which is limited by NR_CPUS) for
+representing set of HART ids.
+
+@Sean, can you re-send this patch to the Linux RISC-V mailing list ? It
+seems this email did not land correctly for Atish and other folks.
+
+Regards,
+Anup
+
+    ---
+     arch/riscv/include/asm/smp.h | 10 ++--------
+     arch/riscv/kernel/setup.c    | 10 ++++++++++
+     arch/riscv/kernel/smp.c      | 10 ----------
+     3 files changed, 12 insertions(+), 18 deletions(-)
+
+    diff --git a/arch/riscv/include/asm/smp.h b/arch/riscv/include/asm/smp.h
+    index a7d2811f3536..62d0e6e61da8 100644
+    --- a/arch/riscv/include/asm/smp.h
+    +++ b/arch/riscv/include/asm/smp.h
+    @@ -43,7 +43,6 @@ void arch_send_call_function_ipi_mask(struct cpumask *mask);
+     void arch_send_call_function_single_ipi(int cpu);
+
+     int riscv_hartid_to_cpuid(int hartid);
+    -void riscv_cpuid_to_hartid_mask(const struct cpumask *in, struct cpumask *out);
+
+     /* Set custom IPI operations */
+     void riscv_set_ipi_ops(const struct riscv_ipi_ops *ops);
+    @@ -85,13 +84,6 @@ static inline unsigned long cpuid_to_hartid_map(int cpu)
+     	return boot_cpu_hartid;
+     }
+
+    -static inline void riscv_cpuid_to_hartid_mask(const struct cpumask *in,
+    -					      struct cpumask *out)
+    -{
+    -	cpumask_clear(out);
+    -	cpumask_set_cpu(boot_cpu_hartid, out);
+    -}
+    -
+     static inline void riscv_set_ipi_ops(const struct riscv_ipi_ops *ops)
+     {
+     }
+    @@ -102,6 +94,8 @@ static inline void riscv_clear_ipi(void)
+
+     #endif /* CONFIG_SMP */
+
+    +void riscv_cpuid_to_hartid_mask(const struct cpumask *in, struct cpumask *out);
+    +
+     #if defined(CONFIG_HOTPLUG_CPU) && (CONFIG_SMP)
+     bool cpu_has_hotplug(unsigned int cpu);
+     #else
+    diff --git a/arch/riscv/kernel/setup.c b/arch/riscv/kernel/setup.c
+    index b9620e5f00ba..6c5caf5eb906 100644
+    --- a/arch/riscv/kernel/setup.c
+    +++ b/arch/riscv/kernel/setup.c
+    @@ -59,6 +59,16 @@ atomic_t hart_lottery __section(".sdata")
+     unsigned long boot_cpu_hartid;
+     static DEFINE_PER_CPU(struct cpu, cpu_devices);
+
+    +void riscv_cpuid_to_hartid_mask(const struct cpumask *in, struct cpumask *out)
+    +{
+    +	int cpu;
+    +
+    +	cpumask_clear(out);
+    +	for_each_cpu(cpu, in)
+    +		cpumask_set_cpu(cpuid_to_hartid_map(cpu), out);
+    +}
+    +EXPORT_SYMBOL_GPL(riscv_cpuid_to_hartid_mask);
+    +
+     /*
+      * Place kernel memory regions on the resource tree so that
+      * kexec-tools can retrieve them from /proc/iomem. While there
+    diff --git a/arch/riscv/kernel/smp.c b/arch/riscv/kernel/smp.c
+    index 921d9d7df400..d0147294691d 100644
+    --- a/arch/riscv/kernel/smp.c
+    +++ b/arch/riscv/kernel/smp.c
+    @@ -59,16 +59,6 @@ int riscv_hartid_to_cpuid(int hartid)
+     	return -ENOENT;
+     }
+
+    -void riscv_cpuid_to_hartid_mask(const struct cpumask *in, struct cpumask *out)
+    -{
+    -	int cpu;
+    -
+    -	cpumask_clear(out);
+    -	for_each_cpu(cpu, in)
+    -		cpumask_set_cpu(cpuid_to_hartid_map(cpu), out);
+    -}
+    -EXPORT_SYMBOL_GPL(riscv_cpuid_to_hartid_mask);
+    -
+     bool arch_match_cpu_phys_id(int cpu, u64 phys_id)
+     {
+     	return phys_id == cpuid_to_hartid_map(cpu);
+    --
+
