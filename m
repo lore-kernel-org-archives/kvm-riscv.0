@@ -1,84 +1,83 @@
 From: Anup Patel <anup.patel@wdc.com>
-Date: Fri, 26 Nov 2021 21:10:17 +0530
-Subject: [PATCH 1/4] RISC-V: KVM: Forward SBI experimental and vendor
- extensions
+Date: Fri, 26 Nov 2021 21:10:18 +0530
+Subject: [PATCH 2/4] RISC-V: KVM: Add VM capability to allow userspace get GPA
+ size
 In-Reply-To: <20211126154020.342924-1-anup.patel@wdc.com>
 References: <20211126154020.342924-1-anup.patel@wdc.com>
-Message-ID: <20211126154020.342924-2-anup.patel@wdc.com>
+Message-ID: <20211126154020.342924-3-anup.patel@wdc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The SBI experimental extension space is for temporary (or experimental)
-stuff whereas SBI vendor extension space is for hardware vendor specific
-stuff. Both these SBI extension spaces won't be standardized by the SBI
-specification so let's blindly forward such SBI calls to the userspace.
+The GPA size supported for a RISC-V Guest/VM is based on the MMU mode
+used by G-stage translation. The KVM RISC-V will detect and use the
+best possible MMU mode for the G-stage in kvm_arch_init().
+
+We add a RISC-V specific VM capability KVM_CAP_RISCV_VM_GPA_SIZE which
+can be used by KVM userspace to get guest physical address (GPA) size
+(i.e. number of GPA bits) supported for a Guest/VM.
 
 Signed-off-by: Anup Patel <anup.patel@wdc.com>
 ---
- arch/riscv/kvm/vcpu_sbi.c      |  4 ++++
- arch/riscv/kvm/vcpu_sbi_base.c | 27 +++++++++++++++++++++++++++
- 2 files changed, 31 insertions(+)
+ arch/riscv/include/asm/kvm_host.h | 1 +
+ arch/riscv/kvm/mmu.c              | 5 +++++
+ arch/riscv/kvm/vm.c               | 3 +++
+ include/uapi/linux/kvm.h          | 1 +
+ 4 files changed, 10 insertions(+)
 
-diff --git a/arch/riscv/kvm/vcpu_sbi.c b/arch/riscv/kvm/vcpu_sbi.c
-index f62d25bc9733..78aa3db76225 100644
---- a/arch/riscv/kvm/vcpu_sbi.c
-+++ b/arch/riscv/kvm/vcpu_sbi.c
-@@ -46,6 +46,8 @@ extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_time;
- extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_ipi;
- extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_rfence;
- extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_hsm;
-+extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_experimental;
-+extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_vendor;
+diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
+index 37589b953bcb..ae5d238607fe 100644
+--- a/arch/riscv/include/asm/kvm_host.h
++++ b/arch/riscv/include/asm/kvm_host.h
+@@ -221,6 +221,7 @@ void kvm_riscv_stage2_free_pgd(struct kvm *kvm);
+ void kvm_riscv_stage2_update_hgatp(struct kvm_vcpu *vcpu);
+ void kvm_riscv_stage2_mode_detect(void);
+ unsigned long kvm_riscv_stage2_mode(void);
++int kvm_riscv_stage2_gpa_size(void);
  
- static const struct kvm_vcpu_sbi_extension *sbi_ext[] = {
- 	&vcpu_sbi_ext_v01,
-@@ -54,6 +56,8 @@ static const struct kvm_vcpu_sbi_extension *sbi_ext[] = {
- 	&vcpu_sbi_ext_ipi,
- 	&vcpu_sbi_ext_rfence,
- 	&vcpu_sbi_ext_hsm,
-+	&vcpu_sbi_ext_experimental,
-+	&vcpu_sbi_ext_vendor,
- };
- 
- void kvm_riscv_vcpu_sbi_forward(struct kvm_vcpu *vcpu, struct kvm_run *run)
-diff --git a/arch/riscv/kvm/vcpu_sbi_base.c b/arch/riscv/kvm/vcpu_sbi_base.c
-index 641015549d12..2819c325f471 100644
---- a/arch/riscv/kvm/vcpu_sbi_base.c
-+++ b/arch/riscv/kvm/vcpu_sbi_base.c
-@@ -68,3 +68,30 @@ const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_base = {
- 	.extid_end = SBI_EXT_BASE,
- 	.handler = kvm_sbi_ext_base_handler,
- };
+ void kvm_riscv_stage2_vmid_detect(void);
+ unsigned long kvm_riscv_stage2_vmid_bits(void);
+diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
+index 9ffd0255af43..9b6d6465094f 100644
+--- a/arch/riscv/kvm/mmu.c
++++ b/arch/riscv/kvm/mmu.c
+@@ -760,3 +760,8 @@ unsigned long kvm_riscv_stage2_mode(void)
+ {
+ 	return stage2_mode >> HGATP_MODE_SHIFT;
+ }
 +
-+static int kvm_sbi_ext_expevend_handler(struct kvm_vcpu *vcpu,
-+					struct kvm_run *run,
-+					unsigned long *out_val,
-+					struct kvm_cpu_trap *utrap,
-+					bool *exit)
++int kvm_riscv_stage2_gpa_size(void)
 +{
-+	/*
-+	 * Both SBI experimental and vendor extensions are
-+	 * unconditionally forwarded to userspace.
-+	 */
-+	kvm_riscv_vcpu_sbi_forward(vcpu, run);
-+	*exit = true;
-+	return 0;
++	return stage2_gpa_bits;
 +}
-+
-+const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_experimental = {
-+	.extid_start = SBI_EXT_EXPERIMENTAL_START,
-+	.extid_end = SBI_EXT_EXPERIMENTAL_END,
-+	.handler = kvm_sbi_ext_expevend_handler,
-+};
-+
-+const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_vendor = {
-+	.extid_start = SBI_EXT_VENDOR_START,
-+	.extid_end = SBI_EXT_VENDOR_END,
-+	.handler = kvm_sbi_ext_expevend_handler,
-+};
+diff --git a/arch/riscv/kvm/vm.c b/arch/riscv/kvm/vm.c
+index fb18af34a4b5..ae97f6929897 100644
+--- a/arch/riscv/kvm/vm.c
++++ b/arch/riscv/kvm/vm.c
+@@ -82,6 +82,9 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
+ 	case KVM_CAP_NR_MEMSLOTS:
+ 		r = KVM_USER_MEM_SLOTS;
+ 		break;
++	case KVM_CAP_RISCV_VM_GPA_SIZE:
++		r = kvm_riscv_stage2_gpa_size();
++		break;
+ 	default:
+ 		r = 0;
+ 		break;
+diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
+index 1daa45268de2..dac98df3101d 100644
+--- a/include/uapi/linux/kvm.h
++++ b/include/uapi/linux/kvm.h
+@@ -1131,6 +1131,7 @@ struct kvm_ppc_resize_hpt {
+ #define KVM_CAP_EXIT_ON_EMULATION_FAILURE 204
+ #define KVM_CAP_ARM_MTE 205
+ #define KVM_CAP_VM_MOVE_ENC_CONTEXT_FROM 206
++#define KVM_CAP_RISCV_VM_GPA_SIZE 207
+ 
+ #ifdef KVM_CAP_IRQ_ROUTING
+ 
 -- 
 2.25.1
 
