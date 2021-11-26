@@ -1,32 +1,46 @@
-From: Paolo Bonzini <pbonzini@redhat.com>
-Date: Fri, 26 Nov 2021 13:33:39 +0100
-Subject: [PATCH v5.5 00/30] KVM: Scalable memslots implementation
-In-Reply-To: <5129f02d-7c0e-8e88-797f-95e8d968df88@oracle.com>
-References: <20211104002531.1176691-1-seanjc@google.com>
- <cb4f5d6e-9535-dd57-d8ee-3b593a81f3a6@oracle.com>
- <YYnNA5lZNXXdX/ig@google.com>
- <f3bc3bfc-37c3-bbfd-25b4-ef0a72e534ba@oracle.com>
- <5129f02d-7c0e-8e88-797f-95e8d968df88@oracle.com>
-Message-ID: <086c9553-6ba1-411b-43db-b51670798938@redhat.com>
+From: Anup Patel <anup.patel@wdc.com>
+Date: Fri, 26 Nov 2021 21:10:16 +0530
+Subject: [PATCH 0/4] KVM RISC-V 64-bit selftests support
+Message-ID: <20211126154020.342924-1-anup.patel@wdc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 11/23/21 15:42, Maciej S. Szmigiero wrote:
-> Paolo,
-> 
-> I see that you have merged the whole series to kvm/queue, even though it
-> still needed some changes and, most importantly, a good round of testing.
-> 
-> Does this mean you want all these changes as a separate patch set on top
-> of the already-merged series?
+This series adds initial support for testing KVM RISC-V 64-bit using
+kernel selftests framework. The PATCH1 & PATCH2 of this series does
+some ground work in KVM RISC-V to implement RISC-V support in the KVM
+selftests whereas remaining patches does required changes in the KVM
+selftests.
 
-Hi Maciej,
+These patches can be found in riscv_kvm_selftests_v1 branch at:
+https://github.com/avpatel/linux.git
 
-you can squash your changes and post a v6.
+Anup Patel (4):
+  RISC-V: KVM: Forward SBI experimental and vendor extensions
+  RISC-V: KVM: Add VM capability to allow userspace get GPA size
+  KVM: selftests: Add EXTRA_CFLAGS in top-level Makefile
+  KVM: selftests: Add initial support for RISC-V 64-bit
 
-Paolo
+ arch/riscv/include/asm/kvm_host.h             |   1 +
+ arch/riscv/kvm/mmu.c                          |   5 +
+ arch/riscv/kvm/vcpu_sbi.c                     |   4 +
+ arch/riscv/kvm/vcpu_sbi_base.c                |  27 ++
+ arch/riscv/kvm/vm.c                           |   3 +
+ include/uapi/linux/kvm.h                      |   1 +
+ tools/testing/selftests/kvm/Makefile          |  14 +-
+ .../testing/selftests/kvm/include/kvm_util.h  |  10 +
+ .../selftests/kvm/include/riscv/processor.h   | 135 +++++++
+ tools/testing/selftests/kvm/lib/guest_modes.c |  10 +
+ .../selftests/kvm/lib/riscv/processor.c       | 362 ++++++++++++++++++
+ tools/testing/selftests/kvm/lib/riscv/ucall.c |  87 +++++
+ 12 files changed, 658 insertions(+), 1 deletion(-)
+ create mode 100644 tools/testing/selftests/kvm/include/riscv/processor.h
+ create mode 100644 tools/testing/selftests/kvm/lib/riscv/processor.c
+ create mode 100644 tools/testing/selftests/kvm/lib/riscv/ucall.c
+
+-- 
+2.25.1
 
 
