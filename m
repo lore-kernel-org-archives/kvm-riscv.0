@@ -1,35 +1,52 @@
-From: Anup Patel <anup@brainfault.org>
-Date: Mon, 29 Nov 2021 09:13:49 +0530
-Subject: [PATCH 3/4] KVM: selftests: Add EXTRA_CFLAGS in top-level Makefile
-In-Reply-To: <9545cab7-6365-b20d-fc05-82ace6368661@redhat.com>
-References: <20211126154020.342924-1-anup.patel@wdc.com>
- <20211126154020.342924-4-anup.patel@wdc.com>
- <9545cab7-6365-b20d-fc05-82ace6368661@redhat.com>
-Message-ID: <CAAhSdy0v=CrxJwiMtkPaR9y2WHcwqZZC9-mgc0ZncJ--69rVag@mail.gmail.com>
+From: Anup Patel <anup.patel@wdc.com>
+Date: Mon, 29 Nov 2021 13:24:47 +0530
+Subject: [PATCH v2 0/4] KVM RISC-V 64-bit selftests support
+Message-ID: <20211129075451.418122-1-anup.patel@wdc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Nov 26, 2021 at 9:45 PM Paolo Bonzini <pbonzini@redhat.com> wrote:
->
-> On 11/26/21 16:40, Anup Patel wrote:
-> > We add EXTRA_CFLAGS to the common CFLAGS of top-level Makefile
-> > which will allow users to pass additional compile-time flags such
-> > as "-static".
->
-> Is this just for debugging?  I cannot understand if it's used in patch 4.
+This series adds initial support for testing KVM RISC-V 64-bit using
+kernel selftests framework. The PATCH1 & PATCH2 of this series does
+some ground work in KVM RISC-V to implement RISC-V support in the KVM
+selftests whereas remaining patches does required changes in the KVM
+selftests.
 
-Yes, this is just for debugging.
+These patches can be found in riscv_kvm_selftests_v2 branch at:
+https://github.com/avpatel/linux.git
 
-I am using it to add selftests ELFs to any arbitrary initrd so that I can
-try selftests on Spike, FPGA, or even HW simulators.
+Changes since v1:
+ - Renamed kvm_sbi_ext_expevend_handler() to kvm_sbi_ext_forward_handler()
+   in PATCH1
+ - Renamed KVM_CAP_RISCV_VM_GPA_SIZE to KVM_CAP_VM_GPA_BITS in PATCH2
+   and PATCH4
 
-Regards,
-Anup
+Anup Patel (4):
+  RISC-V: KVM: Forward SBI experimental and vendor extensions
+  RISC-V: KVM: Add VM capability to allow userspace get GPA bits
+  KVM: selftests: Add EXTRA_CFLAGS in top-level Makefile
+  KVM: selftests: Add initial support for RISC-V 64-bit
 
->
-> Paolo
->
+ arch/riscv/include/asm/kvm_host.h             |   1 +
+ arch/riscv/kvm/mmu.c                          |   5 +
+ arch/riscv/kvm/vcpu_sbi.c                     |   4 +
+ arch/riscv/kvm/vcpu_sbi_base.c                |  27 ++
+ arch/riscv/kvm/vm.c                           |   3 +
+ include/uapi/linux/kvm.h                      |   1 +
+ tools/testing/selftests/kvm/Makefile          |  14 +-
+ .../testing/selftests/kvm/include/kvm_util.h  |  10 +
+ .../selftests/kvm/include/riscv/processor.h   | 135 +++++++
+ tools/testing/selftests/kvm/lib/guest_modes.c |  10 +
+ .../selftests/kvm/lib/riscv/processor.c       | 362 ++++++++++++++++++
+ tools/testing/selftests/kvm/lib/riscv/ucall.c |  87 +++++
+ 12 files changed, 658 insertions(+), 1 deletion(-)
+ create mode 100644 tools/testing/selftests/kvm/include/riscv/processor.h
+ create mode 100644 tools/testing/selftests/kvm/lib/riscv/processor.c
+ create mode 100644 tools/testing/selftests/kvm/lib/riscv/ucall.c
+
+-- 
+2.25.1
+
 
