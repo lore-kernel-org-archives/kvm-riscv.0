@@ -1,37 +1,43 @@
-From: Maxim Levitsky <mlevitsk@redhat.com>
-Date: Tue, 30 Nov 2021 00:55:17 +0200
-Subject: [PATCH v2 11/43] KVM: Don't block+unblock when halt-polling is
- successful
-In-Reply-To: <ba8341d6-7ee7-1af1-1385-0a9226bbf952@redhat.com>
+From: Paolo Bonzini <pbonzini@redhat.com>
+Date: Tue, 30 Nov 2021 12:39:22 +0100
+Subject: [PATCH v2 10/43] KVM: arm64: Move vGIC v4 handling for WFI out
+ arch callback hook
+In-Reply-To: <be1cf8c7-ed87-b8eb-1bca-0a6c7505d7f8@redhat.com>
 References: <20211009021236.4122790-1-seanjc@google.com>
- <20211009021236.4122790-12-seanjc@google.com>
- <cceb33be9e2a6ac504bb95a7b2b8cf5fe0b1ff26.camel@redhat.com>
- <4e883728e3e5201a94eb46b56315afca5e95ad9c.camel@redhat.com>
- <YaUNBfJh35WXMV0M@google.com>
- <ba8341d6-7ee7-1af1-1385-0a9226bbf952@redhat.com>
-Message-ID: <c04c9854be8fc9493739f17c2cbd26dd240a8465.camel@redhat.com>
+ <20211009021236.4122790-11-seanjc@google.com>
+ <9236e715-c471-e1c8-6117-6f37b908a6bd@redhat.com>
+ <875ytjbxpq.wl-maz@kernel.org>
+ <be1cf8c7-ed87-b8eb-1bca-0a6c7505d7f8@redhat.com>
+Message-ID: <3490c50e-50d2-f906-3383-b87e14b14fab@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, 2021-11-29 at 18:55 +0100, Paolo Bonzini wrote:
-> On 11/29/21 18:25, Sean Christopherson wrote:
-> > > If I apply though only the patch series up to this patch, my fedora VM seems
-> > > to work fine, but my windows VM still locks up hard when I run 'LatencyTop'
-> > > in it, which doesn't happen without this patch.
-> > 
-> > Buy "run 'LatencyTop' in it", do you mean running something in the Windows guest?
-> > The only search results I can find for LatencyTop are Linux specific.
+On 10/26/21 18:12, Paolo Bonzini wrote:
+> On 26/10/21 17:41, Marc Zyngier wrote:
+>>> This needs a word on why kvm_psci_vcpu_suspend does not need the
+>>> hooks.? Or it needs to be changed to also use kvm_vcpu_wfi in the PSCI
+>>> code, I don't know.
+>>>
+>>> Marc, can you review and/or advise?
+>> I was looking at that over the weekend, and that's a pre-existing
+>> bug. I would have addressed it independently, but it looks like you
+>> already have queued the patch.
 > 
-> I think it's LatencyMon, https://www.resplendence.com/latencymon.
+> I have "queued" it, but that's just my queue - it's not on kernel.org 
+> and it's not going to be in 5.16, at least not in the first batch.
 > 
-> Paolo
-> 
-Yes.
+> There's plenty of time for me to rebase on top of a fix, if you want to 
+> send the fix through your kvm-arm pull request.? Just Cc me so that I 
+> understand what's going on.
 
-Best regards,
-	Maxim Levitsky
+Since a month has passed and I didn't see anything related in the 
+KVM-ARM pull requests, I am going to queue this patch.  Any conflicts 
+can be resolved through a kvmarm->kvm merge of either a topic branch or 
+a tag that is destined to 5.16.
+
+Paolo
 
 
