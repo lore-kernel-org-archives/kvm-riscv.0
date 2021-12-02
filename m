@@ -1,68 +1,69 @@
-From: Sean Christopherson <seanjc@google.com>
-Date: Thu, 2 Dec 2021 02:00:03 +0000
-Subject: [PATCH v2 11/43] KVM: Don't block+unblock when halt-polling is
- successful
-In-Reply-To: <32eabe7d270e5a466ba2d9345b4270b8fe27700c.camel@redhat.com>
-References: <20211009021236.4122790-1-seanjc@google.com>
- <20211009021236.4122790-12-seanjc@google.com>
- <cceb33be9e2a6ac504bb95a7b2b8cf5fe0b1ff26.camel@redhat.com>
- <4e883728e3e5201a94eb46b56315afca5e95ad9c.camel@redhat.com>
- <YaUNBfJh35WXMV0M@google.com>
- <496c2fc6-26b0-9b5d-32f4-2f9e9dd6a064@redhat.com>
- <YaUiEquKYi5eqWC0@google.com>
- <880a5727-69d1-72a1-b129-b053781625ad@redhat.com>
- <458c0819a578ba854f00089bc312c8faa177a81a.camel@redhat.com>
- <32eabe7d270e5a466ba2d9345b4270b8fe27700c.camel@redhat.com>
-Message-ID: <Yagoo7R8P5xVilsj@google.com>
+From: Anup Patel <anup@brainfault.org>
+Date: Thu, 2 Dec 2021 14:20:28 +0530
+Subject: [PATCH v2] MAINTAINERS: Update Atish's email address
+In-Reply-To: <20211126193111.559874-1-atishp@atishpatra.org>
+References: <20211126193111.559874-1-atishp@atishpatra.org>
+Message-ID: <CAAhSdy0bKWCBT+b1w1Z5YO+Vq8xYgyYQoR8yvPK2SuK=VXwWXw@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Dec 02, 2021, Maxim Levitsky wrote:
-> On Tue, 2021-11-30 at 00:53 +0200, Maxim Levitsky wrote:
-> > On Mon, 2021-11-29 at 20:18 +0100, Paolo Bonzini wrote:
-> > Basically what I see that
-> >  
-> > 1. vCPU2 disables is_running in avic physical id cache
-> > 2. vCPU2 checks that IRR is empty and it is
-> > 3. vCPU2 does schedule();
-> >  
-> > and it keeps on sleeping forever. If I kick it via signal 
-> > (like just doing 'info registers' qemu hmp command
-> > or just stop/cont on the same hmp interface, the
-> > vCPU wakes up and notices that IRR suddenly is not empty,
-> > and the VM comes back to life (and then hangs after a while again
-> > with the same problem....).
-> >  
-> > As far as I see in the traces, the bit in IRR came from
-> > another VCPU who didn't respect the ir_running bit and didn't get 
-> > AVIC_INCOMPLETE_IPI VMexit.
-> > I can't 100% prove it yet, but everything in the trace shows this.
+On Sat, Nov 27, 2021 at 1:01 AM Atish Patra <atishp@atishpatra.org> wrote:
+>
+> I am no longer employed by western digital. Update my email address to
+> personal one and add entries to .mailmap as well.
+>
+> Signed-off-by: Atish Patra <atishp@atishpatra.org>
+> ---
+>  .mailmap    | 3 +++
+>  MAINTAINERS | 2 +-
+>  2 files changed, 4 insertions(+), 1 deletion(-)
+>
+> diff --git a/.mailmap b/.mailmap
+> index 14314e3c5d5e..5878de9783e4 100644
+> --- a/.mailmap
+> +++ b/.mailmap
+> @@ -50,6 +50,9 @@ Archit Taneja <archit@ti.com>
+>  Ard Biesheuvel <ardb@kernel.org> <ard.biesheuvel@linaro.org>
+>  Arnaud Patard <arnaud.patard@rtp-net.org>
+>  Arnd Bergmann <arnd@arndb.de>
+> +Atish Patra <atish.patra@wdc.com>
+> +Atish Patra <atishp@atishpatra.org>
+> +Atish Patra <atishp@rivosinc.com>
 
-...
+I think you just need one-line entry to map WDC email (OLD) to
+Personal/Rivos email (NEW)
 
-> I am now almost sure that this is errata #1235.
-> 
-> I had attached a kvm-unit-test I wrote (patch against master of
-> https://gitlab.com/kvm-unit-tests/kvm-unit-tests.git/) which is able to
-> reproduce the issue on stock 5.15.0 kernel (*no patches applied at all*)
-> after just few seconds.  If kvm is loaded without halt-polling (that is
-> halt_poll_ns=0 is used).
-> 
-> Halt polling and/or Sean's patch are not to blame, it just changes timeing.
-> With Sean's patch I don't need to disable half polling.
+Something like:
+Atish Patra <atishp@atishpatra.org> <atish.patra@wdc.com>
 
-Hmm, that suggests the bug/erratum is due to the CPU consuming stale data from #4
-for the IsRunning check in #5, or retiring uops for the IsRunning check before
-retiring the vIRR update.  It would be helpful if the erratum actually provided
-info on the "highly specific and detailed set of internal timing conditions". :-/
+Regards,
+Anup
 
-  4. Lookup the vAPIC backing page address in the Physical APIC table using the
-     guest physical APIC ID as an index into the table.
-  5. For every valid destination:
-     - Atomically set the appropriate IRR bit in each of the destinations? vAPIC
-       backing page.
-     - Check the IsRunning status of each destination.
+>  Axel Dyks <xl@xlsigned.net>
+>  Axel Lin <axel.lin@gmail.com>
+>  Bart Van Assche <bvanassche@acm.org> <bart.vanassche@sandisk.com>
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 7a2345ce8521..b22af4edcd08 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -10434,7 +10434,7 @@ F:      arch/powerpc/kvm/
+>
+>  KERNEL VIRTUAL MACHINE FOR RISC-V (KVM/riscv)
+>  M:     Anup Patel <anup.patel@wdc.com>
+> -R:     Atish Patra <atish.patra@wdc.com>
+> +R:     Atish Patra <atishp@atishpatra.org>
+>  L:     kvm at vger.kernel.org
+>  L:     kvm-riscv at lists.infradead.org
+>  L:     linux-riscv at lists.infradead.org
+> --
+> 2.33.1
+>
+>
+> --
+> kvm-riscv mailing list
+> kvm-riscv at lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/kvm-riscv
 
