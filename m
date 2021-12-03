@@ -1,48 +1,202 @@
-From: Atish Patra <atishp@atishpatra.org>
-Date: Thu,  2 Dec 2021 15:58:23 -0800
-Subject: [PATCH v3] MAINTAINERS: Update Atish's email address
-Message-ID: <20211202235823.1926970-1-atishp@atishpatra.org>
+From: Anup Patel <anup@brainfault.org>
+Date: Fri, 3 Dec 2021 10:37:42 +0530
+Subject: [PATCH v1 01/12] update-linux-headers: Add asm-riscv/kvm.h
+In-Reply-To: <20211120074644.729-2-jiangyifei@huawei.com>
+References: <20211120074644.729-1-jiangyifei@huawei.com>
+ <20211120074644.729-2-jiangyifei@huawei.com>
+Message-ID: <CAAhSdy3kHbFX7bBCOn-m9BNtc_iHc-E+uE-GrPBWRj81DtAShQ@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-I am no longer employed by western digital. Update my email address to
-personal one and add entries to .mailmap as well.
+On Sat, Nov 20, 2021 at 1:17 PM Yifei Jiang <jiangyifei@huawei.com> wrote:
+>
+> Add asm-riscv/kvm.h for RISC-V KVM, and update linux/kvm.h
+>
+> Signed-off-by: Yifei Jiang <jiangyifei@huawei.com>
+> Signed-off-by: Mingwang Li <limingwang@huawei.com>
 
-Signed-off-by: Atish Patra <atishp@atishpatra.org>
----
- .mailmap    | 1 +
- MAINTAINERS | 2 +-
- 2 files changed, 2 insertions(+), 1 deletion(-)
+Looks good to me.
 
-diff --git a/.mailmap b/.mailmap
-index 6277bb27b4bf..23f6b0a60adf 100644
---- a/.mailmap
-+++ b/.mailmap
-@@ -50,6 +50,7 @@ Archit Taneja <archit@ti.com>
- Ard Biesheuvel <ardb@kernel.org> <ard.biesheuvel@linaro.org>
- Arnaud Patard <arnaud.patard@rtp-net.org>
- Arnd Bergmann <arnd@arndb.de>
-+Atish Patra <atishp@atishpatra.org> <atish.patra@wdc.com> <atishp@rivosinc.com>
- Axel Dyks <xl@xlsigned.net>
- Axel Lin <axel.lin@gmail.com>
- Bart Van Assche <bvanassche@acm.org> <bart.vanassche@sandisk.com>
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 5250298d2817..6c2a34da0314 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -10434,7 +10434,7 @@ F:	arch/powerpc/kvm/
- 
- KERNEL VIRTUAL MACHINE FOR RISC-V (KVM/riscv)
- M:	Anup Patel <anup.patel@wdc.com>
--R:	Atish Patra <atish.patra@wdc.com>
-+R:	Atish Patra <atishp@atishpatra.org>
- L:	kvm at vger.kernel.org
- L:	kvm-riscv at lists.infradead.org
- L:	linux-riscv at lists.infradead.org
--- 
-2.33.1
+Reviewed-by: Anup Patel <anup.patel@wdc.com>
 
+Regards,
+Anup
+
+> ---
+>  linux-headers/asm-riscv/kvm.h | 128 ++++++++++++++++++++++++++++++++++
+>  linux-headers/linux/kvm.h     |   8 +++
+>  2 files changed, 136 insertions(+)
+>  create mode 100644 linux-headers/asm-riscv/kvm.h
+>
+> diff --git a/linux-headers/asm-riscv/kvm.h b/linux-headers/asm-riscv/kvm.h
+> new file mode 100644
+> index 0000000000..f808ad1ce5
+> --- /dev/null
+> +++ b/linux-headers/asm-riscv/kvm.h
+> @@ -0,0 +1,128 @@
+> +/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
+> +/*
+> + * Copyright (C) 2019 Western Digital Corporation or its affiliates.
+> + *
+> + * Authors:
+> + *     Anup Patel <anup.patel@wdc.com>
+> + */
+> +
+> +#ifndef __LINUX_KVM_RISCV_H
+> +#define __LINUX_KVM_RISCV_H
+> +
+> +#ifndef __ASSEMBLY__
+> +
+> +#include <linux/types.h>
+> +#include <asm/ptrace.h>
+> +
+> +#define __KVM_HAVE_READONLY_MEM
+> +
+> +#define KVM_COALESCED_MMIO_PAGE_OFFSET 1
+> +
+> +#define KVM_INTERRUPT_SET      -1U
+> +#define KVM_INTERRUPT_UNSET    -2U
+> +
+> +/* for KVM_GET_REGS and KVM_SET_REGS */
+> +struct kvm_regs {
+> +};
+> +
+> +/* for KVM_GET_FPU and KVM_SET_FPU */
+> +struct kvm_fpu {
+> +};
+> +
+> +/* KVM Debug exit structure */
+> +struct kvm_debug_exit_arch {
+> +};
+> +
+> +/* for KVM_SET_GUEST_DEBUG */
+> +struct kvm_guest_debug_arch {
+> +};
+> +
+> +/* definition of registers in kvm_run */
+> +struct kvm_sync_regs {
+> +};
+> +
+> +/* for KVM_GET_SREGS and KVM_SET_SREGS */
+> +struct kvm_sregs {
+> +};
+> +
+> +/* CONFIG registers for KVM_GET_ONE_REG and KVM_SET_ONE_REG */
+> +struct kvm_riscv_config {
+> +       unsigned long isa;
+> +};
+> +
+> +/* CORE registers for KVM_GET_ONE_REG and KVM_SET_ONE_REG */
+> +struct kvm_riscv_core {
+> +       struct user_regs_struct regs;
+> +       unsigned long mode;
+> +};
+> +
+> +/* Possible privilege modes for kvm_riscv_core */
+> +#define KVM_RISCV_MODE_S       1
+> +#define KVM_RISCV_MODE_U       0
+> +
+> +/* CSR registers for KVM_GET_ONE_REG and KVM_SET_ONE_REG */
+> +struct kvm_riscv_csr {
+> +       unsigned long sstatus;
+> +       unsigned long sie;
+> +       unsigned long stvec;
+> +       unsigned long sscratch;
+> +       unsigned long sepc;
+> +       unsigned long scause;
+> +       unsigned long stval;
+> +       unsigned long sip;
+> +       unsigned long satp;
+> +       unsigned long scounteren;
+> +};
+> +
+> +/* TIMER registers for KVM_GET_ONE_REG and KVM_SET_ONE_REG */
+> +struct kvm_riscv_timer {
+> +       __u64 frequency;
+> +       __u64 time;
+> +       __u64 compare;
+> +       __u64 state;
+> +};
+> +
+> +/* Possible states for kvm_riscv_timer */
+> +#define KVM_RISCV_TIMER_STATE_OFF      0
+> +#define KVM_RISCV_TIMER_STATE_ON       1
+> +
+> +#define KVM_REG_SIZE(id)               \
+> +       (1U << (((id) & KVM_REG_SIZE_MASK) >> KVM_REG_SIZE_SHIFT))
+> +
+> +/* If you need to interpret the index values, here is the key: */
+> +#define KVM_REG_RISCV_TYPE_MASK                0x00000000FF000000
+> +#define KVM_REG_RISCV_TYPE_SHIFT       24
+> +
+> +/* Config registers are mapped as type 1 */
+> +#define KVM_REG_RISCV_CONFIG           (0x01 << KVM_REG_RISCV_TYPE_SHIFT)
+> +#define KVM_REG_RISCV_CONFIG_REG(name) \
+> +       (offsetof(struct kvm_riscv_config, name) / sizeof(unsigned long))
+> +
+> +/* Core registers are mapped as type 2 */
+> +#define KVM_REG_RISCV_CORE             (0x02 << KVM_REG_RISCV_TYPE_SHIFT)
+> +#define KVM_REG_RISCV_CORE_REG(name)   \
+> +               (offsetof(struct kvm_riscv_core, name) / sizeof(unsigned long))
+> +
+> +/* Control and status registers are mapped as type 3 */
+> +#define KVM_REG_RISCV_CSR              (0x03 << KVM_REG_RISCV_TYPE_SHIFT)
+> +#define KVM_REG_RISCV_CSR_REG(name)    \
+> +               (offsetof(struct kvm_riscv_csr, name) / sizeof(unsigned long))
+> +
+> +/* Timer registers are mapped as type 4 */
+> +#define KVM_REG_RISCV_TIMER            (0x04 << KVM_REG_RISCV_TYPE_SHIFT)
+> +#define KVM_REG_RISCV_TIMER_REG(name)  \
+> +               (offsetof(struct kvm_riscv_timer, name) / sizeof(__u64))
+> +
+> +/* F extension registers are mapped as type 5 */
+> +#define KVM_REG_RISCV_FP_F             (0x05 << KVM_REG_RISCV_TYPE_SHIFT)
+> +#define KVM_REG_RISCV_FP_F_REG(name)   \
+> +               (offsetof(struct __riscv_f_ext_state, name) / sizeof(__u32))
+> +
+> +/* D extension registers are mapped as type 6 */
+> +#define KVM_REG_RISCV_FP_D             (0x06 << KVM_REG_RISCV_TYPE_SHIFT)
+> +#define KVM_REG_RISCV_FP_D_REG(name)   \
+> +               (offsetof(struct __riscv_d_ext_state, name) / sizeof(__u64))
+> +
+> +#endif
+> +
+> +#endif /* __LINUX_KVM_RISCV_H */
+> diff --git a/linux-headers/linux/kvm.h b/linux-headers/linux/kvm.h
+> index bcaf66cc4d..5e290c3c3e 100644
+> --- a/linux-headers/linux/kvm.h
+> +++ b/linux-headers/linux/kvm.h
+> @@ -269,6 +269,7 @@ struct kvm_xen_exit {
+>  #define KVM_EXIT_AP_RESET_HOLD    32
+>  #define KVM_EXIT_X86_BUS_LOCK     33
+>  #define KVM_EXIT_XEN              34
+> +#define KVM_EXIT_RISCV_SBI        35
+>
+>  /* For KVM_EXIT_INTERNAL_ERROR */
+>  /* Emulate instruction failed. */
+> @@ -469,6 +470,13 @@ struct kvm_run {
+>                 } msr;
+>                 /* KVM_EXIT_XEN */
+>                 struct kvm_xen_exit xen;
+> +               /* KVM_EXIT_RISCV_SBI */
+> +               struct {
+> +                       unsigned long extension_id;
+> +                       unsigned long function_id;
+> +                       unsigned long args[6];
+> +                       unsigned long ret[2];
+> +               } riscv_sbi;
+>                 /* Fix the size of the union. */
+>                 char padding[256];
+>         };
+> --
+> 2.19.1
+>
+>
+> --
+> kvm-riscv mailing list
+> kvm-riscv at lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/kvm-riscv
 
