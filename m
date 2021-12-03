@@ -1,58 +1,51 @@
 From: Anup Patel <anup@brainfault.org>
-Date: Fri, 3 Dec 2021 18:11:59 +0530
-Subject: [PATCH v3] MAINTAINERS: Update Atish's email address
-In-Reply-To: <20211202235823.1926970-1-atishp@atishpatra.org>
-References: <20211202235823.1926970-1-atishp@atishpatra.org>
-Message-ID: <CAAhSdy3jvmSUBjVm+YP3PBqRt50UUmq9ci68f7gZdOfXCoBQjA@mail.gmail.com>
+Date: Fri, 3 Dec 2021 18:53:20 +0530
+Subject: [PATCH 3/5] riscv: kvm: make kvm_riscv_vcpu_fp_clean() static
+In-Reply-To: <20211128160741.2122-4-jszhang@kernel.org>
+References: <20211128160741.2122-1-jszhang@kernel.org>
+ <20211128160741.2122-4-jszhang@kernel.org>
+Message-ID: <CAAhSdy1ChQ6A0_zkOFFCO1dJypaK3-9RndRNLn-sNK1hNJKQEQ@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Dec 3, 2021 at 5:29 AM Atish Patra <atishp@atishpatra.org> wrote:
+On Sun, Nov 28, 2021 at 9:45 PM Jisheng Zhang <jszhang@kernel.org> wrote:
 >
-> I am no longer employed by western digital. Update my email address to
-> personal one and add entries to .mailmap as well.
+> There are no users outside vcpu_fp.c so make kvm_riscv_vcpu_fp_clean()
+> static.
 >
-> Signed-off-by: Atish Patra <atishp@atishpatra.org>
+> Signed-off-by: Jisheng Zhang <jszhang@kernel.org>
 
-I have queued this for 5.17
+I have queued this patch for 5.17
 
 Thanks,
 Anup
 
 > ---
->  .mailmap    | 1 +
->  MAINTAINERS | 2 +-
->  2 files changed, 2 insertions(+), 1 deletion(-)
+>  arch/riscv/kvm/vcpu_fp.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 >
-> diff --git a/.mailmap b/.mailmap
-> index 6277bb27b4bf..23f6b0a60adf 100644
-> --- a/.mailmap
-> +++ b/.mailmap
-> @@ -50,6 +50,7 @@ Archit Taneja <archit@ti.com>
->  Ard Biesheuvel <ardb@kernel.org> <ard.biesheuvel@linaro.org>
->  Arnaud Patard <arnaud.patard@rtp-net.org>
->  Arnd Bergmann <arnd@arndb.de>
-> +Atish Patra <atishp@atishpatra.org> <atish.patra@wdc.com> <atishp@rivosinc.com>
->  Axel Dyks <xl@xlsigned.net>
->  Axel Lin <axel.lin@gmail.com>
->  Bart Van Assche <bvanassche@acm.org> <bart.vanassche@sandisk.com>
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 5250298d2817..6c2a34da0314 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -10434,7 +10434,7 @@ F:      arch/powerpc/kvm/
+> diff --git a/arch/riscv/kvm/vcpu_fp.c b/arch/riscv/kvm/vcpu_fp.c
+> index 1b070152578f..4449a976e5a6 100644
+> --- a/arch/riscv/kvm/vcpu_fp.c
+> +++ b/arch/riscv/kvm/vcpu_fp.c
+> @@ -26,7 +26,7 @@ void kvm_riscv_vcpu_fp_reset(struct kvm_vcpu *vcpu)
+>                 cntx->sstatus |= SR_FS_OFF;
+>  }
 >
->  KERNEL VIRTUAL MACHINE FOR RISC-V (KVM/riscv)
->  M:     Anup Patel <anup.patel@wdc.com>
-> -R:     Atish Patra <atish.patra@wdc.com>
-> +R:     Atish Patra <atishp@atishpatra.org>
->  L:     kvm at vger.kernel.org
->  L:     kvm-riscv at lists.infradead.org
->  L:     linux-riscv at lists.infradead.org
+> -void kvm_riscv_vcpu_fp_clean(struct kvm_cpu_context *cntx)
+> +static void kvm_riscv_vcpu_fp_clean(struct kvm_cpu_context *cntx)
+>  {
+>         cntx->sstatus &= ~SR_FS;
+>         cntx->sstatus |= SR_FS_CLEAN;
 > --
-> 2.33.1
+> 2.34.0
 >
+>
+> --
+> kvm-riscv mailing list
+> kvm-riscv at lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/kvm-riscv
 
