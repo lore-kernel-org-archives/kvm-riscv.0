@@ -1,154 +1,58 @@
 From: Anup Patel <anup@brainfault.org>
-Date: Fri, 3 Dec 2021 15:08:29 +0530
-Subject: [PATCH v1 10/12] target/riscv: Add kvm_riscv_get/put_regs_timer
-In-Reply-To: <20211120074644.729-11-jiangyifei@huawei.com>
-References: <20211120074644.729-1-jiangyifei@huawei.com>
- <20211120074644.729-11-jiangyifei@huawei.com>
-Message-ID: <CAAhSdy075GcmcMTsVsvgXN+W9Cf7EKCrycnOG9BZAkfKfp3J-w@mail.gmail.com>
+Date: Fri, 3 Dec 2021 18:11:59 +0530
+Subject: [PATCH v3] MAINTAINERS: Update Atish's email address
+In-Reply-To: <20211202235823.1926970-1-atishp@atishpatra.org>
+References: <20211202235823.1926970-1-atishp@atishpatra.org>
+Message-ID: <CAAhSdy3jvmSUBjVm+YP3PBqRt50UUmq9ci68f7gZdOfXCoBQjA@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sat, Nov 20, 2021 at 1:17 PM Yifei Jiang <jiangyifei@huawei.com> wrote:
+On Fri, Dec 3, 2021 at 5:29 AM Atish Patra <atishp@atishpatra.org> wrote:
 >
-> Add kvm_riscv_get/put_regs_timer to synchronize virtual time context
-> from KVM.
+> I am no longer employed by western digital. Update my email address to
+> personal one and add entries to .mailmap as well.
 >
-> To set register of RISCV_TIMER_REG(state) will occur a error from KVM
-> on kvm_timer_state == 0. It's better to adapt in KVM, but it doesn't matter
-> that adaping in QEMU.
->
-> Signed-off-by: Yifei Jiang <jiangyifei@huawei.com>
-> Signed-off-by: Mingwang Li <limingwang@huawei.com>
-> ---
->  target/riscv/cpu.h |  6 ++++
->  target/riscv/kvm.c | 72 ++++++++++++++++++++++++++++++++++++++++++++++
->  2 files changed, 78 insertions(+)
->
-> diff --git a/target/riscv/cpu.h b/target/riscv/cpu.h
-> index e7dba35acb..dea49e53f0 100644
-> --- a/target/riscv/cpu.h
-> +++ b/target/riscv/cpu.h
-> @@ -259,6 +259,12 @@ struct CPURISCVState {
->
->      hwaddr kernel_addr;
->      hwaddr fdt_addr;
-> +
-> +    /* kvm timer */
-> +    bool kvm_timer_dirty;
-> +    uint64_t kvm_timer_time;
-> +    uint64_t kvm_timer_compare;
-> +    uint64_t kvm_timer_state;
+> Signed-off-by: Atish Patra <atishp@atishpatra.org>
 
-We should also include kvm_timer_frequency here.
+I have queued this for 5.17
 
-Currently, it is read-only but in-future KVM RISC-V will allow
-setting timer_frequency using SBI para-virt time scaling extension.
-
-Regards,
+Thanks,
 Anup
 
->  };
+> ---
+>  .mailmap    | 1 +
+>  MAINTAINERS | 2 +-
+>  2 files changed, 2 insertions(+), 1 deletion(-)
 >
->  OBJECT_DECLARE_TYPE(RISCVCPU, RISCVCPUClass,
-> diff --git a/target/riscv/kvm.c b/target/riscv/kvm.c
-> index 6d419ba02e..e5725770f2 100644
-> --- a/target/riscv/kvm.c
-> +++ b/target/riscv/kvm.c
-> @@ -64,6 +64,9 @@ static uint64_t kvm_riscv_reg_id(CPURISCVState *env, uint64_t type, uint64_t idx
->  #define RISCV_CSR_REG(env, name)  kvm_riscv_reg_id(env, KVM_REG_RISCV_CSR, \
->                   KVM_REG_RISCV_CSR_REG(name))
+> diff --git a/.mailmap b/.mailmap
+> index 6277bb27b4bf..23f6b0a60adf 100644
+> --- a/.mailmap
+> +++ b/.mailmap
+> @@ -50,6 +50,7 @@ Archit Taneja <archit@ti.com>
+>  Ard Biesheuvel <ardb@kernel.org> <ard.biesheuvel@linaro.org>
+>  Arnaud Patard <arnaud.patard@rtp-net.org>
+>  Arnd Bergmann <arnd@arndb.de>
+> +Atish Patra <atishp@atishpatra.org> <atish.patra@wdc.com> <atishp@rivosinc.com>
+>  Axel Dyks <xl@xlsigned.net>
+>  Axel Lin <axel.lin@gmail.com>
+>  Bart Van Assche <bvanassche@acm.org> <bart.vanassche@sandisk.com>
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 5250298d2817..6c2a34da0314 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -10434,7 +10434,7 @@ F:      arch/powerpc/kvm/
 >
-> +#define RISCV_TIMER_REG(env, name)  kvm_riscv_reg_id(env, KVM_REG_RISCV_TIMER, \
-> +                 KVM_REG_RISCV_TIMER_REG(name))
-> +
->  #define RISCV_FP_F_REG(env, idx)  kvm_riscv_reg_id(env, KVM_REG_RISCV_FP_F, idx)
->
->  #define RISCV_FP_D_REG(env, idx)  kvm_riscv_reg_id(env, KVM_REG_RISCV_FP_D, idx)
-> @@ -310,6 +313,75 @@ static int kvm_riscv_put_regs_fp(CPUState *cs)
->      return ret;
->  }
->
-> +static void kvm_riscv_get_regs_timer(CPUState *cs)
-> +{
-> +    int ret;
-> +    uint64_t reg;
-> +    CPURISCVState *env = &RISCV_CPU(cs)->env;
-> +
-> +    if (env->kvm_timer_dirty) {
-> +        return;
-> +    }
-> +
-> +    ret = kvm_get_one_reg(cs, RISCV_TIMER_REG(env, time), &reg);
-> +    if (ret) {
-> +        abort();
-> +    }
-> +    env->kvm_timer_time = reg;
-> +
-> +    ret = kvm_get_one_reg(cs, RISCV_TIMER_REG(env, compare), &reg);
-> +    if (ret) {
-> +        abort();
-> +    }
-> +    env->kvm_timer_compare = reg;
-> +
-> +    ret = kvm_get_one_reg(cs, RISCV_TIMER_REG(env, state), &reg);
-> +    if (ret) {
-> +        abort();
-> +    }
-> +    env->kvm_timer_state = reg;
-> +
-> +    env->kvm_timer_dirty = true;
-> +}
-> +
-> +static void kvm_riscv_put_regs_timer(CPUState *cs)
-> +{
-> +    int ret;
-> +    uint64_t reg;
-> +    CPURISCVState *env = &RISCV_CPU(cs)->env;
-> +
-> +    if (!env->kvm_timer_dirty) {
-> +        return;
-> +    }
-> +
-> +    reg = env->kvm_timer_time;
-> +    ret = kvm_set_one_reg(cs, RISCV_TIMER_REG(env, time), &reg);
-> +    if (ret) {
-> +        abort();
-> +    }
-> +
-> +    reg = env->kvm_timer_compare;
-> +    ret = kvm_set_one_reg(cs, RISCV_TIMER_REG(env, compare), &reg);
-> +    if (ret) {
-> +        abort();
-> +    }
-> +
-> +    /*
-> +     * To set register of RISCV_TIMER_REG(state) will occur a error from KVM
-> +     * on env->kvm_timer_state == 0, It's better to adapt in KVM, but it
-> +     * doesn't matter that adaping in QEMU now.
-> +     * TODO If KVM changes, adapt here.
-> +     */
-> +    if (env->kvm_timer_state) {
-> +        reg = env->kvm_timer_state;
-> +        ret = kvm_set_one_reg(cs, RISCV_TIMER_REG(env, state), &reg);
-> +        if (ret) {
-> +            abort();
-> +        }
-> +    }
-> +
-> +    env->kvm_timer_dirty = false;
-> +}
->
->  const KVMCapabilityInfo kvm_arch_required_capabilities[] = {
->      KVM_CAP_LAST_INFO
+>  KERNEL VIRTUAL MACHINE FOR RISC-V (KVM/riscv)
+>  M:     Anup Patel <anup.patel@wdc.com>
+> -R:     Atish Patra <atish.patra@wdc.com>
+> +R:     Atish Patra <atishp@atishpatra.org>
+>  L:     kvm at vger.kernel.org
+>  L:     kvm-riscv at lists.infradead.org
+>  L:     linux-riscv at lists.infradead.org
 > --
-> 2.19.1
+> 2.33.1
 >
->
-> --
-> kvm-riscv mailing list
-> kvm-riscv at lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/kvm-riscv
 
