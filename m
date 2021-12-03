@@ -1,51 +1,69 @@
-From: Anup Patel <anup@brainfault.org>
-Date: Fri, 3 Dec 2021 18:53:20 +0530
-Subject: [PATCH 3/5] riscv: kvm: make kvm_riscv_vcpu_fp_clean() static
-In-Reply-To: <20211128160741.2122-4-jszhang@kernel.org>
-References: <20211128160741.2122-1-jszhang@kernel.org>
- <20211128160741.2122-4-jszhang@kernel.org>
-Message-ID: <CAAhSdy1ChQ6A0_zkOFFCO1dJypaK3-9RndRNLn-sNK1hNJKQEQ@mail.gmail.com>
+From: Steven Price <steven.price@arm.com>
+Date: Fri, 3 Dec 2021 16:10:30 +0000
+Subject: [PATCH v3] MAINTAINERS: Update Atish's email address
+In-Reply-To: <20211202235823.1926970-1-atishp@atishpatra.org>
+References: <20211202235823.1926970-1-atishp@atishpatra.org>
+Message-ID: <f63e9f1b-4b8e-6c3e-8e21-f9a5f97ca17d@arm.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sun, Nov 28, 2021 at 9:45 PM Jisheng Zhang <jszhang@kernel.org> wrote:
->
-> There are no users outside vcpu_fp.c so make kvm_riscv_vcpu_fp_clean()
-> static.
->
-> Signed-off-by: Jisheng Zhang <jszhang@kernel.org>
-
-I have queued this patch for 5.17
-
-Thanks,
-Anup
-
+On 02/12/2021 23:58, Atish Patra wrote:
+> I am no longer employed by western digital. Update my email address to
+> personal one and add entries to .mailmap as well.
+> 
+> Signed-off-by: Atish Patra <atishp@atishpatra.org>
 > ---
->  arch/riscv/kvm/vcpu_fp.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/arch/riscv/kvm/vcpu_fp.c b/arch/riscv/kvm/vcpu_fp.c
-> index 1b070152578f..4449a976e5a6 100644
-> --- a/arch/riscv/kvm/vcpu_fp.c
-> +++ b/arch/riscv/kvm/vcpu_fp.c
-> @@ -26,7 +26,7 @@ void kvm_riscv_vcpu_fp_reset(struct kvm_vcpu *vcpu)
->                 cntx->sstatus |= SR_FS_OFF;
->  }
->
-> -void kvm_riscv_vcpu_fp_clean(struct kvm_cpu_context *cntx)
-> +static void kvm_riscv_vcpu_fp_clean(struct kvm_cpu_context *cntx)
->  {
->         cntx->sstatus &= ~SR_FS;
->         cntx->sstatus |= SR_FS_CLEAN;
-> --
-> 2.34.0
->
->
-> --
-> kvm-riscv mailing list
-> kvm-riscv at lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/kvm-riscv
+>  .mailmap    | 1 +
+>  MAINTAINERS | 2 +-
+>  2 files changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/.mailmap b/.mailmap
+> index 6277bb27b4bf..23f6b0a60adf 100644
+> --- a/.mailmap
+> +++ b/.mailmap
+> @@ -50,6 +50,7 @@ Archit Taneja <archit@ti.com>
+>  Ard Biesheuvel <ardb@kernel.org> <ard.biesheuvel@linaro.org>
+>  Arnaud Patard <arnaud.patard@rtp-net.org>
+>  Arnd Bergmann <arnd@arndb.de>
+> +Atish Patra <atishp@atishpatra.org> <atish.patra@wdc.com> <atishp@rivosinc.com>
+
+I don't think this does what you expect. You can't list more than one
+email address to replace on the same line. You can use the command "git
+check-mailmap" to test what happens, e.g. with this change applied:
+
+  $ git check-mailmap "<atishp@rivosinc.com>"
+  <atishp@rivosinc.com>
+  $ git check-mailmap "<atish.patra@wdc.com>"
+  Atish Patra <atishp@atishpatra.org>
+  $ git check-mailmap "<atishp@atishpatra.org>"
+  <atishp@atishpatra.org>
+
+So only your @wdc.com address is translated. If you want to translate
+the @rivosinc.com address as well you need a second line. As the file says:
+
+# For format details, see "MAPPING AUTHORS" in "man git-shortlog".
+
+Steve
+
+>  Axel Dyks <xl@xlsigned.net>
+>  Axel Lin <axel.lin@gmail.com>
+>  Bart Van Assche <bvanassche@acm.org> <bart.vanassche@sandisk.com>
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 5250298d2817..6c2a34da0314 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -10434,7 +10434,7 @@ F:	arch/powerpc/kvm/
+>  
+>  KERNEL VIRTUAL MACHINE FOR RISC-V (KVM/riscv)
+>  M:	Anup Patel <anup.patel@wdc.com>
+> -R:	Atish Patra <atish.patra@wdc.com>
+> +R:	Atish Patra <atishp@atishpatra.org>
+>  L:	kvm at vger.kernel.org
+>  L:	kvm-riscv at lists.infradead.org
+>  L:	linux-riscv at lists.infradead.org
+> 
+
 
