@@ -1,9 +1,10 @@
 From: Atish Patra <atishp@atishpatra.org>
-Date: Fri,  3 Dec 2021 16:20:33 -0800
-Subject: [RFC 1/6] RISC-V: Avoid using per cpu array for ordered booting
+Date: Fri,  3 Dec 2021 16:20:35 -0800
+Subject: [RFC 3/6] RISC-V: Use __cpu_up_stack/task_pointer only for spinwait
+ method
 In-Reply-To: <20211204002038.113653-1-atishp@atishpatra.org>
 References: <20211204002038.113653-1-atishp@atishpatra.org>
-Message-ID: <20211204002038.113653-2-atishp@atishpatra.org>
+Message-ID: <20211204002038.113653-4-atishp@atishpatra.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -12,147 +13,154 @@ Content-Transfer-Encoding: 7bit
 
 From: Atish Patra <atishp@rivosinc.com>
 
-Currently both order booting and spinwait approach uses a per cpu
-array to update stack & task pointer. This approach will not work for the
-following cases.
-1. If NR_CPUs are configured to be less than highest hart id.
-2. A platform has sparse hartid.
+The __cpu_up_stack/task_pointer array is only used for spinwait method
+now. The per cpu array based lookup is also fragile for platforms with
+discontiguous/sparse hartids. The spinwait method is only used for
+M-mode Linux or older firmwares without SBI HSM extension. For general
+Linux systems, ordered booting method is preferred anyways to support
+cpu hotplug and kexec.
 
-This issue can be fixed for ordered booting as the booting cpu brings up
-one cpu at a time using SBI HSM extension which has opaque parameter
-that is unused until now.
-
-Introduce a common secondary boot data structure that can store the stack
-and task pointer. Secondary harts will use this data while booting up
-to setup the sp & tp.
+Make sure that __cpu_up_stack/task_pointer is only used for spinwait
+method. Take this opportunity to rename it to
+__cpu_spinwait_stack/task_pointer to emphasize the purpose as well.
 
 Signed-off-by: Atish Patra <atishp@rivosinc.com>
 ---
- arch/riscv/include/asm/cpu_ops_sbi.h | 28 ++++++++++++++++++++++++++++
- arch/riscv/kernel/cpu_ops_sbi.c      | 23 ++++++++++++++++++++---
- arch/riscv/kernel/head.S             | 19 ++++++++++---------
- 3 files changed, 58 insertions(+), 12 deletions(-)
- create mode 100644 arch/riscv/include/asm/cpu_ops_sbi.h
+ arch/riscv/include/asm/cpu_ops.h     |  2 --
+ arch/riscv/kernel/cpu_ops.c          | 16 ----------------
+ arch/riscv/kernel/cpu_ops_spinwait.c | 27 ++++++++++++++++++++++++++-
+ arch/riscv/kernel/head.S             |  4 ++--
+ arch/riscv/kernel/head.h             |  4 ++--
+ 5 files changed, 30 insertions(+), 23 deletions(-)
 
-diff --git a/arch/riscv/include/asm/cpu_ops_sbi.h b/arch/riscv/include/asm/cpu_ops_sbi.h
-new file mode 100644
-index 000000000000..ccb9a6d30486
---- /dev/null
-+++ b/arch/riscv/include/asm/cpu_ops_sbi.h
-@@ -0,0 +1,28 @@
-+/* SPDX-License-Identifier: GPL-2.0-only */
-+/*
-+ * Copyright (c) 2021 by Rivos Inc.
-+ */
-+#ifndef __ASM_CPU_OPS_SBI_H
-+#define __ASM_CPU_OPS_SBI_H
-+
-+#ifndef __ASSEMBLY__
-+#include <linux/init.h>
-+#include <linux/sched.h>
-+#include <linux/threads.h>
-+
-+/**
-+ * struct sbi_hart_boot_data - Hart specific boot used during booting and
-+ *			       cpu hotplug.
-+ * @task_ptr: A pointer to the hart specific tp
-+ * @stack_ptr: A pointer to the hart specific sp
-+ */
-+struct sbi_hart_boot_data {
-+	void *task_ptr;
-+	void *stack_ptr;
-+};
-+#endif
-+
-+#define SBI_HART_BOOT_TASK_PTR_OFFSET (0x00)
-+#define SBI_HART_BOOT_STACK_PTR_OFFSET RISCV_SZPTR
-+
-+#endif /* ifndef __ASM_CPU_OPS_H */
-diff --git a/arch/riscv/kernel/cpu_ops_sbi.c b/arch/riscv/kernel/cpu_ops_sbi.c
-index 685fae72b7f5..2e7a9dd9c2a7 100644
---- a/arch/riscv/kernel/cpu_ops_sbi.c
-+++ b/arch/riscv/kernel/cpu_ops_sbi.c
-@@ -7,13 +7,22 @@
+diff --git a/arch/riscv/include/asm/cpu_ops.h b/arch/riscv/include/asm/cpu_ops.h
+index a8ec3c5c1bd2..134590f1b843 100644
+--- a/arch/riscv/include/asm/cpu_ops.h
++++ b/arch/riscv/include/asm/cpu_ops.h
+@@ -40,7 +40,5 @@ struct cpu_operations {
  
- #include <linux/init.h>
- #include <linux/mm.h>
-+#include <linux/sched/task_stack.h>
+ extern const struct cpu_operations *cpu_ops[NR_CPUS];
+ void __init cpu_set_ops(int cpu);
+-void cpu_update_secondary_bootdata(unsigned int cpuid,
+-				   struct task_struct *tidle);
+ 
+ #endif /* ifndef __ASM_CPU_OPS_H */
+diff --git a/arch/riscv/kernel/cpu_ops.c b/arch/riscv/kernel/cpu_ops.c
+index 3f5a38b03044..c1e30f403c3b 100644
+--- a/arch/riscv/kernel/cpu_ops.c
++++ b/arch/riscv/kernel/cpu_ops.c
+@@ -8,31 +8,15 @@
+ #include <linux/of.h>
+ #include <linux/string.h>
+ #include <linux/sched.h>
+-#include <linux/sched/task_stack.h>
  #include <asm/cpu_ops.h>
-+#include <asm/cpu_ops_sbi.h>
  #include <asm/sbi.h>
  #include <asm/smp.h>
  
- extern char secondary_start_sbi[];
- const struct cpu_operations cpu_ops_sbi;
+ const struct cpu_operations *cpu_ops[NR_CPUS] __ro_after_init;
  
-+/*
-+ * Ordered booting via HSM brings one cpu at a time. However, cpu hotplug can
-+ * be invoked from multiple threads in paralle. Define a per cpu data
-+ * to handle that.
-+ */
-+DEFINE_PER_CPU(struct sbi_hart_boot_data, boot_data);
-+
- static int sbi_hsm_hart_start(unsigned long hartid, unsigned long saddr,
- 			      unsigned long priv)
- {
-@@ -58,9 +67,17 @@ static int sbi_cpu_start(unsigned int cpuid, struct task_struct *tidle)
- 	int rc;
- 	unsigned long boot_addr = __pa_symbol(secondary_start_sbi);
- 	int hartid = cpuid_to_hartid_map(cpuid);
+-void *__cpu_up_stack_pointer[NR_CPUS] __section(".data");
+-void *__cpu_up_task_pointer[NR_CPUS] __section(".data");
 -
--	cpu_update_secondary_bootdata(cpuid, tidle);
--	rc = sbi_hsm_hart_start(hartid, boot_addr, 0);
-+	unsigned long hsm_data;
-+	struct sbi_hart_boot_data *bdata = &per_cpu(boot_data, cpuid);
+ extern const struct cpu_operations cpu_ops_sbi;
+ extern const struct cpu_operations cpu_ops_spinwait;
+ 
+-void cpu_update_secondary_bootdata(unsigned int cpuid,
+-				   struct task_struct *tidle)
+-{
+-	int hartid = cpuid_to_hartid_map(cpuid);
+-
+-	/* Make sure tidle is updated */
+-	smp_mb();
+-	WRITE_ONCE(__cpu_up_stack_pointer[hartid],
+-		   task_stack_page(tidle) + THREAD_SIZE);
+-	WRITE_ONCE(__cpu_up_task_pointer[hartid], tidle);
+-}
+-
+ void __init cpu_set_ops(int cpuid)
+ {
+ #if IS_ENABLED(CONFIG_RISCV_SBI)
+diff --git a/arch/riscv/kernel/cpu_ops_spinwait.c b/arch/riscv/kernel/cpu_ops_spinwait.c
+index b2c957bb68c1..9f398eb94f7a 100644
+--- a/arch/riscv/kernel/cpu_ops_spinwait.c
++++ b/arch/riscv/kernel/cpu_ops_spinwait.c
+@@ -6,11 +6,36 @@
+ #include <linux/errno.h>
+ #include <linux/of.h>
+ #include <linux/string.h>
++#include <linux/sched/task_stack.h>
+ #include <asm/cpu_ops.h>
+ #include <asm/sbi.h>
+ #include <asm/smp.h>
+ 
+ const struct cpu_operations cpu_ops_spinwait;
++void *__cpu_spinwait_stack_pointer[NR_CPUS] __section(".data");
++void *__cpu_spinwait_task_pointer[NR_CPUS] __section(".data");
++
++static void cpu_update_secondary_bootdata(unsigned int cpuid,
++				   struct task_struct *tidle)
++{
++	int hartid = cpuid_to_hartid_map(cpuid);
++
++	/*
++	 * The hartid must be less than NR_CPUS to avoid out-of-bound access
++	 * errors for __cpu_spinwait_stack/task_pointer. That is not always possible
++	 * for platforms with discontiguous hartid numbering scheme. That's why
++	 * spinwait booting is not the recommended approach for any platforms
++	 * and will be removed in future.
++	 */
++	if (hartid == INVALID_HARTID || hartid >= NR_CPUS)
++		return;
 +
 +	/* Make sure tidle is updated */
 +	smp_mb();
-+	bdata->task_ptr = tidle;
-+	bdata->stack_ptr = task_stack_page(tidle) + THREAD_SIZE;
-+	/* Make sure boot data is updated */
-+	smp_mb();
-+	hsm_data = __pa(bdata);
-+	rc = sbi_hsm_hart_start(hartid, boot_addr, hsm_data);
++	WRITE_ONCE(__cpu_spinwait_stack_pointer[hartid],
++		   task_stack_page(tidle) + THREAD_SIZE);
++	WRITE_ONCE(__cpu_spinwait_task_pointer[hartid], tidle);
++}
  
- 	return rc;
- }
+ static int spinwait_cpu_prepare(unsigned int cpuid)
+ {
+@@ -28,7 +53,7 @@ static int spinwait_cpu_start(unsigned int cpuid, struct task_struct *tidle)
+ 	 * selects the first cpu to boot the kernel and causes the remainder
+ 	 * of the cpus to spin in a loop waiting for their stack pointer to be
+ 	 * setup by that main cpu.  Writing to bootdata
+-	 * (i.e __cpu_up_stack_pointer) signals to the spinning cpus that they
++	 * (i.e __cpu_spinwait_stack_pointer) signals to the spinning cpus that they
+ 	 * can continue the boot process.
+ 	 */
+ 	cpu_update_secondary_bootdata(cpuid, tidle);
 diff --git a/arch/riscv/kernel/head.S b/arch/riscv/kernel/head.S
-index f52f01ecbeea..40d4c625513c 100644
+index 40d4c625513c..6f8e99eac6a1 100644
 --- a/arch/riscv/kernel/head.S
 +++ b/arch/riscv/kernel/head.S
-@@ -11,6 +11,7 @@
- #include <asm/page.h>
- #include <asm/pgtable.h>
- #include <asm/csr.h>
-+#include <asm/cpu_ops_sbi.h>
- #include <asm/hwcap.h>
- #include <asm/image.h>
- #include "efi-header.S"
-@@ -167,15 +168,15 @@ secondary_start_sbi:
- 	la a3, .Lsecondary_park
+@@ -347,9 +347,9 @@ clear_bss_done:
  	csrw CSR_TVEC, a3
  
--	slli a3, a0, LGREG
--	la a4, __cpu_up_stack_pointer
--	XIP_FIXUP_OFFSET a4
--	la a5, __cpu_up_task_pointer
--	XIP_FIXUP_OFFSET a5
--	add a4, a3, a4
--	add a5, a3, a5
--	REG_L sp, (a4)
--	REG_L tp, (a5)
-+	/* a0 contains the hartid & a1 contains boot data */
-+	li a2, SBI_HART_BOOT_TASK_PTR_OFFSET
-+	XIP_FIXUP_OFFSET a2
-+	add a2, a2, a1
-+	REG_L tp, (a2)
-+	li a3, SBI_HART_BOOT_STACK_PTR_OFFSET
-+	XIP_FIXUP_OFFSET a3
-+	add a3, a3, a1
-+	REG_L sp, (a3)
+ 	slli a3, a0, LGREG
+-	la a1, __cpu_up_stack_pointer
++	la a1, __cpu_spinwait_stack_pointer
+ 	XIP_FIXUP_OFFSET a1
+-	la a2, __cpu_up_task_pointer
++	la a2, __cpu_spinwait_task_pointer
+ 	XIP_FIXUP_OFFSET a2
+ 	add a1, a3, a1
+ 	add a2, a3, a2
+diff --git a/arch/riscv/kernel/head.h b/arch/riscv/kernel/head.h
+index aabbc3ac3e48..5393cca77790 100644
+--- a/arch/riscv/kernel/head.h
++++ b/arch/riscv/kernel/head.h
+@@ -16,7 +16,7 @@ asmlinkage void __init setup_vm(uintptr_t dtb_pa);
+ asmlinkage void __init __copy_data(void);
+ #endif
  
- 	.global secondary_start_common
- secondary_start_common:
+-extern void *__cpu_up_stack_pointer[];
+-extern void *__cpu_up_task_pointer[];
++extern void *__cpu_spinwait_stack_pointer[];
++extern void *__cpu_spinwait_task_pointer[];
+ 
+ #endif /* __ASM_HEAD_H */
 -- 
 2.33.1
 
