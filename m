@@ -1,134 +1,54 @@
 From: Paolo Bonzini <pbonzini@redhat.com>
-Date: Thu, 9 Dec 2021 19:34:08 +0100
-Subject: [PATCH v5 08/12] KVM: Reinstate gfn_to_pfn_cache with
- invalidation support
-In-Reply-To: <20211121125451.9489-9-dwmw2@infradead.org>
+Date: Thu, 9 Dec 2021 19:34:45 +0100
+Subject: [PATCH v5 00/12] KVM: x86/xen: Add in-kernel Xen event channel
+ delivery
+In-Reply-To: <20211121125451.9489-1-dwmw2@infradead.org>
 References: <20211121125451.9489-1-dwmw2@infradead.org>
- <20211121125451.9489-9-dwmw2@infradead.org>
-Message-ID: <b1bacc6f-be56-4108-6e52-4315a021184b@redhat.com>
+Message-ID: <2617aea0-af09-5c0d-1fd7-65e2a814b516@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Sorry for the late review...
-
 On 11/21/21 13:54, David Woodhouse wrote:
-> +EXPORT_SYMBOL_GPL(kvm_gfn_to_pfn_cache_check);
-> +
-> +static void __release_gpc(struct kvm *kvm, kvm_pfn_t pfn, void *khva,
-> +			  gpa_t gpa, bool dirty)
-> +{
-> +	/* Unmap the old page if it was mapped before, and release it */
-> +	if (!is_error_noslot_pfn(pfn)) {
-> +		if (khva) {
-> +			if (pfn_valid(pfn))
-> +				kunmap(pfn_to_page(pfn));
-> +#ifdef CONFIG_HAS_IOMEM
-> +			else
-> +				memunmap(khva);
-> +#endif
-> +		}
-
-Considering that the khva is passed directly to memunmap, perhaps it's
-cleaner to ensure it's page-aligned:
-
-diff --git a/virt/kvm/pfncache.c b/virt/kvm/pfncache.c
-index 13cae72d39e9..267477bd2972 100644
---- a/virt/kvm/pfncache.c
-+++ b/virt/kvm/pfncache.c
-@@ -147,7 +147,7 @@ int kvm_gfn_to_pfn_cache_refresh(struct kvm *kvm, struct gfn_to_pfn_cache *gpc,
-  
-  	old_gpa = gpc->gpa;
-  	old_pfn = gpc->pfn;
--	old_khva = gpc->khva;
-+	old_khva = (void *)((unsigned long)gpc->khva & ~PAGE_MASK);
-  	old_uhva = gpc->uhva;
-  	old_valid = gpc->valid;
-  	old_dirty = gpc->dirty;
-@@ -209,7 +209,7 @@ int kvm_gfn_to_pfn_cache_refresh(struct kvm *kvm, struct gfn_to_pfn_cache *gpc,
-  
-  		if (gpc->kernel_map) {
-  			if (new_pfn == old_pfn) {
--				new_khva = (void *)((unsigned long)old_khva - page_offset);
-+				new_khva = old_khva;
-  				old_pfn = KVM_PFN_ERR_FAULT;
-  				old_khva = NULL;
-  			} else if (pfn_valid(new_pfn)) {
-@@ -265,7 +265,7 @@ void kvm_gfn_to_pfn_cache_unmap(struct kvm *kvm, struct gfn_to_pfn_cache *gpc)
-  
-  	gpc->valid = false;
-  
--	old_khva = gpc->khva;
-+	old_khva = (void *)((unsigned long)gpc->khva & ~PAGE_MASK);
-  	old_dirty = gpc->dirty;
-  	old_gpa = gpc->gpa;
-  	old_pfn = gpc->pfn;
-
-
+> Introduce the basic concept of 2 level event channels for kernel delivery,
+> which is just a simple matter of a few test_and_set_bit calls on a mapped
+> shared info page.
 > 
-> +	retry_map:
-> +		mmu_seq = kvm->mmu_notifier_seq;
-> +		smp_rmb();
-> +
-> +		/* We always request a writeable mapping */
-> +		new_pfn = hva_to_pfn(uhva, false, NULL, true, NULL);
-> +		if (is_error_noslot_pfn(new_pfn)) {
-> +			ret = -EFAULT;
-> +			goto map_done;
-> +		}
-> +
-> +		KVM_MMU_READ_LOCK(kvm);
-> +		retry = mmu_notifier_retry_hva(kvm, mmu_seq, uhva);
-> +		KVM_MMU_READ_UNLOCK(kvm);
-> +		if (retry) {
-> +			cond_resched();
-> +			goto retry_map;
-> +		}
-> +
-
-This should also be a separate function, like
-
-static kvm_pfn_t hva_to_pfn_retry(unsigned long uhva)
-{
-         kvm_pfn_t new_pfn
-         unsigned long mmu_seq;
-         int retry;
-
-retry_map:
-         mmu_seq = kvm->mmu_notifier_seq;
-         smp_rmb();
-
-         /* We always request a writeable mapping */
-         new_pfn = hva_to_pfn(uhva, false, NULL, true, NULL);
-         if (is_error_noslot_pfn(new_pfn))
-                 return new_pfn;
-
-         KVM_MMU_READ_LOCK(kvm);
-         retry = mmu_notifier_retry_hva(kvm, mmu_seq, uhva);
-         KVM_MMU_READ_UNLOCK(kvm);
-         if (retry) {
-                 cond_resched();
-                 goto retry_map;
-         }
-         return new_pfn;
-}
-
+> This can be used for routing MSI of passthrough devices to PIRQ event
+> channels in a Xen guest, and we can build on it for delivering IPIs and
+> timers directly from the kernel too.
 > 
-> +		write_lock_irq(&gpc->lock);
-> +		if (ret) {
-> +			gpc->valid = false;
-> +			gpc->pfn = KVM_PFN_ERR_FAULT;
-> +			gpc->khva = NULL;
-> +		} else {
-> +			/* At this point, gpc->valid may already have been cleared */
-> +			gpc->pfn = new_pfn;
-> +			gpc->khva = new_khva + page_offset;
-> +		}
+> v1: Use kvm_map_gfn() although I didn't quite see how it works.
+> 
+> v2: Avoid kvm_map_gfn() and implement a safe mapping with invalidation
+>      support for myself.
+> 
+> v3: Reinvent gfn_to_pfn_cache with sane invalidation semantics, for my
+>      use case as well as nesting.
+> 
+> v4: Rework dirty handling, as it became apparently that we need an active
+>      vCPU context to mark pages dirty so it can't be done from the MMU
+>      notifier duing the invalidation; it has to happen on unmap.
+> 
+> v5: Fix sparse warnings reported by kernel test robot<lkp@intel.com>.
+> 
+>      Fix revalidation when memslots change but the resulting HVA stays
+>      the same. We can use the same kernel mapping in that case, if the
+>      HVA ? PFN translation was valid before. So that probably means we
+>      shouldn't unmap the "old_hva". Augment the test case to exercise
+>      that one too.
+> 
+>      Include the fix for the dirty ring vs. Xen shinfo oops reported
+>      by butt3rflyh4ck<butterflyhuangxx@gmail.com>.
+> 
+> 
+> As in the previous two rounds, the last patch (this time patch 12) is
+> included as illustration of how we*might*  use this for fixing the UAF
+> bugs in nesting, but isn't intended to be applied as-is. Patches 1-11 are.
 
-Should set gpc->khva only if new_khva != NULL (i.e. only if gpc->kernel_map
-is true).
+Queued 1-7, will be on kvm/next tomorrow though.
 
 Paolo
 
