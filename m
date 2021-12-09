@@ -1,49 +1,33 @@
-From: Will Deacon <will@kernel.org>
-Date: Tue, 14 Dec 2021 15:18:10 +0000
-Subject: [PATCH v11 kvmtool 0/8] KVMTOOL RISC-V Support
-In-Reply-To: <20211119124515.89439-1-anup.patel@wdc.com>
-References: <20211119124515.89439-1-anup.patel@wdc.com>
-Message-ID: <163949433071.4049230.18094387124072062307.b4-ty@kernel.org>
+From: David Woodhouse <dwmw2@infradead.org>
+Date: Thu, 09 Dec 2021 18:47:52 +0000
+Subject: [PATCH v5 00/12] KVM: x86/xen: Add in-kernel Xen event channel
+ delivery
+In-Reply-To: <2617aea0-af09-5c0d-1fd7-65e2a814b516@redhat.com>
+References: <20211121125451.9489-1-dwmw2@infradead.org>
+ <2617aea0-af09-5c0d-1fd7-65e2a814b516@redhat.com>
+Message-ID: <5706a7fec0ffdb18097792374dad90c0400b17cd.camel@infradead.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, 19 Nov 2021 18:15:07 +0530, Anup Patel wrote:
-> This series adds RISC-V support for KVMTOOL and it is based on the
-> Linux-5.16-rc1. The KVM RISC-V patches have been merged in the Linux
-> kernel since 5.16-rc1.
+On Thu, 2021-12-09 at 19:34 +0100, Paolo Bonzini wrote:
+> > As in the previous two rounds, the last patch (this time patch 12) is
+> > included as illustration of how we*might*  use this for fixing the UAF
+> > bugs in nesting, but isn't intended to be applied as-is. Patches 1-11 are.
 > 
-> The KVMTOOL RISC-V patches can be found in riscv_master branch at:
-> https//github.com/kvm-riscv/kvmtool.git
-> 
-> [...]
+> Queued 1-7, will be on kvm/next tomorrow though.
 
-Applied to kvmtool (master), thanks!
+Thanks. I assume you made the changes you wanted to the makefiles then,
+and will work on the gfn_to_pfn_cache changes you suggested.
 
-[1/8] update_headers: Sync-up ABI headers with Linux-5.16-rc1
-      https://git.kernel.org/will/kvmtool/c/5968b5ff26bb
-[2/8] riscv: Initial skeletal support
-      https://git.kernel.org/will/kvmtool/c/2e99678314c2
-[3/8] riscv: Implement Guest/VM arch functions
-      https://git.kernel.org/will/kvmtool/c/867159a7963b
-[4/8] riscv: Implement Guest/VM VCPU arch functions
-      https://git.kernel.org/will/kvmtool/c/42bfe448c1c3
-[5/8] riscv: Add PLIC device emulation
-      https://git.kernel.org/will/kvmtool/c/762224e47cc2
-[6/8] riscv: Generate FDT at runtime for Guest/VM
-      https://git.kernel.org/will/kvmtool/c/7c9aac003925
-[7/8] riscv: Handle SBI calls forwarded to user space
-      https://git.kernel.org/will/kvmtool/c/721da166a698
-[8/8] riscv: Generate PCI host DT node
-      https://git.kernel.org/will/kvmtool/c/cdd7d8cc0109
 
-Cheers,
--- 
-Will
 
-https://fixes.arm64.dev
-https://next.arm64.dev
-https://will.arm64.dev
-
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: smime.p7s
+Type: application/pkcs7-signature
+Size: 5174 bytes
+Desc: not available
+URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20211209/e0377cf4/attachment-0001.p7s>
