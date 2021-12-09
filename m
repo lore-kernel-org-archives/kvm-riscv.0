@@ -1,60 +1,134 @@
 From: Paolo Bonzini <pbonzini@redhat.com>
-Date: Thu, 9 Dec 2021 19:05:48 +0100
-Subject: [PATCH v5 06/12] KVM: powerpc: Use Makefile.kvm for common files
-In-Reply-To: <20211121125451.9489-7-dwmw2@infradead.org>
+Date: Thu, 9 Dec 2021 19:34:08 +0100
+Subject: [PATCH v5 08/12] KVM: Reinstate gfn_to_pfn_cache with
+ invalidation support
+In-Reply-To: <20211121125451.9489-9-dwmw2@infradead.org>
 References: <20211121125451.9489-1-dwmw2@infradead.org>
- <20211121125451.9489-7-dwmw2@infradead.org>
-Message-ID: <048a1ef6-193a-eb82-0433-70c97e1a03e5@redhat.com>
+ <20211121125451.9489-9-dwmw2@infradead.org>
+Message-ID: <b1bacc6f-be56-4108-6e52-4315a021184b@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+Sorry for the late review...
+
 On 11/21/21 13:54, David Woodhouse wrote:
-> From: David Woodhouse <dwmw@amazon.co.uk>
-> 
-> It's all fairly baroque but in the end, I don't think there's any reason
-> for $(KVM)/irqchip.o to have been handled differently, as they all end
-> up in $(kvm-y) in the end anyway, regardless of whether they get there
-> via $(common-objs-y) and the CPU-specific object lists.
-> 
-> Signed-off-by: David Woodhouse <dwmw@amazon.co.uk>
-> Acked-by: Michael Ellerman <mpe@ellerman.id.au> (powerpc)
-> ---
->   arch/powerpc/kvm/Makefile | 6 +-----
->   1 file changed, 1 insertion(+), 5 deletions(-)
-> 
-> diff --git a/arch/powerpc/kvm/Makefile b/arch/powerpc/kvm/Makefile
-> index 583c14ef596e..245f59118413 100644
-> --- a/arch/powerpc/kvm/Makefile
-> +++ b/arch/powerpc/kvm/Makefile
-> @@ -4,11 +4,8 @@
->   #
->   
->   ccflags-y := -Ivirt/kvm -Iarch/powerpc/kvm
-> -KVM := ../../../virt/kvm
->   
-> -common-objs-y = $(KVM)/kvm_main.o $(KVM)/eventfd.o $(KVM)/binary_stats.o
-> -common-objs-$(CONFIG_KVM_VFIO) += $(KVM)/vfio.o
-> -common-objs-$(CONFIG_KVM_MMIO) += $(KVM)/coalesced_mmio.o
-> +include $(srctree)/virt/kvm/Makefile.kvm
->   
->   common-objs-y += powerpc.o emulate_loadstore.o
->   obj-$(CONFIG_KVM_EXIT_TIMING) += timing.o
-> @@ -125,7 +122,6 @@ kvm-book3s_32-objs := \
->   kvm-objs-$(CONFIG_KVM_BOOK3S_32) := $(kvm-book3s_32-objs)
->   
->   kvm-objs-$(CONFIG_KVM_MPIC) += mpic.o
-> -kvm-objs-$(CONFIG_HAVE_KVM_IRQ_ROUTING) += $(KVM)/irqchip.o
->   
->   kvm-objs := $(kvm-objs-m) $(kvm-objs-y)
+> +EXPORT_SYMBOL_GPL(kvm_gfn_to_pfn_cache_check);
+> +
+> +static void __release_gpc(struct kvm *kvm, kvm_pfn_t pfn, void *khva,
+> +			  gpa_t gpa, bool dirty)
+> +{
+> +	/* Unmap the old page if it was mapped before, and release it */
+> +	if (!is_error_noslot_pfn(pfn)) {
+> +		if (khva) {
+> +			if (pfn_valid(pfn))
+> +				kunmap(pfn_to_page(pfn));
+> +#ifdef CONFIG_HAS_IOMEM
+> +			else
+> +				memunmap(khva);
+> +#endif
+> +		}
 
-Same here,
+Considering that the khva is passed directly to memunmap, perhaps it's
+cleaner to ensure it's page-aligned:
 
-kvm-y += $(kvm-objs-m) $(kvm-objs-y)
+diff --git a/virt/kvm/pfncache.c b/virt/kvm/pfncache.c
+index 13cae72d39e9..267477bd2972 100644
+--- a/virt/kvm/pfncache.c
++++ b/virt/kvm/pfncache.c
+@@ -147,7 +147,7 @@ int kvm_gfn_to_pfn_cache_refresh(struct kvm *kvm, struct gfn_to_pfn_cache *gpc,
+  
+  	old_gpa = gpc->gpa;
+  	old_pfn = gpc->pfn;
+-	old_khva = gpc->khva;
++	old_khva = (void *)((unsigned long)gpc->khva & ~PAGE_MASK);
+  	old_uhva = gpc->uhva;
+  	old_valid = gpc->valid;
+  	old_dirty = gpc->dirty;
+@@ -209,7 +209,7 @@ int kvm_gfn_to_pfn_cache_refresh(struct kvm *kvm, struct gfn_to_pfn_cache *gpc,
+  
+  		if (gpc->kernel_map) {
+  			if (new_pfn == old_pfn) {
+-				new_khva = (void *)((unsigned long)old_khva - page_offset);
++				new_khva = old_khva;
+  				old_pfn = KVM_PFN_ERR_FAULT;
+  				old_khva = NULL;
+  			} else if (pfn_valid(new_pfn)) {
+@@ -265,7 +265,7 @@ void kvm_gfn_to_pfn_cache_unmap(struct kvm *kvm, struct gfn_to_pfn_cache *gpc)
+  
+  	gpc->valid = false;
+  
+-	old_khva = gpc->khva;
++	old_khva = (void *)((unsigned long)gpc->khva & ~PAGE_MASK);
+  	old_dirty = gpc->dirty;
+  	old_gpa = gpc->gpa;
+  	old_pfn = gpc->pfn;
 
-would be slightly preferrable IMO.
+
+> 
+> +	retry_map:
+> +		mmu_seq = kvm->mmu_notifier_seq;
+> +		smp_rmb();
+> +
+> +		/* We always request a writeable mapping */
+> +		new_pfn = hva_to_pfn(uhva, false, NULL, true, NULL);
+> +		if (is_error_noslot_pfn(new_pfn)) {
+> +			ret = -EFAULT;
+> +			goto map_done;
+> +		}
+> +
+> +		KVM_MMU_READ_LOCK(kvm);
+> +		retry = mmu_notifier_retry_hva(kvm, mmu_seq, uhva);
+> +		KVM_MMU_READ_UNLOCK(kvm);
+> +		if (retry) {
+> +			cond_resched();
+> +			goto retry_map;
+> +		}
+> +
+
+This should also be a separate function, like
+
+static kvm_pfn_t hva_to_pfn_retry(unsigned long uhva)
+{
+         kvm_pfn_t new_pfn
+         unsigned long mmu_seq;
+         int retry;
+
+retry_map:
+         mmu_seq = kvm->mmu_notifier_seq;
+         smp_rmb();
+
+         /* We always request a writeable mapping */
+         new_pfn = hva_to_pfn(uhva, false, NULL, true, NULL);
+         if (is_error_noslot_pfn(new_pfn))
+                 return new_pfn;
+
+         KVM_MMU_READ_LOCK(kvm);
+         retry = mmu_notifier_retry_hva(kvm, mmu_seq, uhva);
+         KVM_MMU_READ_UNLOCK(kvm);
+         if (retry) {
+                 cond_resched();
+                 goto retry_map;
+         }
+         return new_pfn;
+}
+
+> 
+> +		write_lock_irq(&gpc->lock);
+> +		if (ret) {
+> +			gpc->valid = false;
+> +			gpc->pfn = KVM_PFN_ERR_FAULT;
+> +			gpc->khva = NULL;
+> +		} else {
+> +			/* At this point, gpc->valid may already have been cleared */
+> +			gpc->pfn = new_pfn;
+> +			gpc->khva = new_khva + page_offset;
+> +		}
+
+Should set gpc->khva only if new_khva != NULL (i.e. only if gpc->kernel_map
+is true).
 
 Paolo
 
