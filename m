@@ -1,12 +1,11 @@
 From: Jiangyifei <jiangyifei@huawei.com>
-Date: Fri, 10 Dec 2021 09:55:08 +0000
-Subject: [PATCH v1 03/12] target/riscv: Implement function
- kvm_arch_init_vcpu
-In-Reply-To: <d3f974e1-6278-8c11-898a-a1cc55965786@linaro.org>
+Date: Fri, 10 Dec 2021 09:57:42 +0000
+Subject: [PATCH v1 04/12] target/riscv: Implement kvm_arch_get_registers
+In-Reply-To: <CAAhSdy2gFufV4Xuu9Ewn2htLRB8SZ+xohbAnjYmnM1D_xMQP4A@mail.gmail.com>
 References: <20211120074644.729-1-jiangyifei@huawei.com>
- <20211120074644.729-4-jiangyifei@huawei.com>
- <d3f974e1-6278-8c11-898a-a1cc55965786@linaro.org>
-Message-ID: <8e09fe10ba1a4062831b934a836ff861@huawei.com>
+ <20211120074644.729-5-jiangyifei@huawei.com>
+ <CAAhSdy2gFufV4Xuu9Ewn2htLRB8SZ+xohbAnjYmnM1D_xMQP4A@mail.gmail.com>
+Message-ID: <7d88cc865bcc4dada21cfe09d9665d73@huawei.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -15,36 +14,225 @@ Content-Transfer-Encoding: 7bit
 
 
 > -----Original Message-----
-> From: Richard Henderson [mailto:richard.henderson at linaro.org]
-> Sent: Sunday, November 21, 2021 6:19 AM
-> To: Jiangyifei <jiangyifei@huawei.com>; qemu-devel at nongnu.org;
-> qemu-riscv at nongnu.org
-> Cc: bin.meng at windriver.com; limingwang (A) <limingwang@huawei.com>;
-> kvm at vger.kernel.org; libvir-list at redhat.com; anup.patel at wdc.com; wanbo (G)
-> <wanbo13@huawei.com>; Alistair Francis <alistair.francis@wdc.com>;
-> kvm-riscv at lists.infradead.org; Wanghaibin (D)
-> <wanghaibin.wang@huawei.com>; palmer at dabbelt.com; Fanliang (EulerOS)
-> <fanliang@huawei.com>; Wubin (H) <wu.wubin@huawei.com>
-> Subject: Re: [PATCH v1 03/12] target/riscv: Implement function
-> kvm_arch_init_vcpu
+> From: kvm-riscv [mailto:kvm-riscv-bounces at lists.infradead.org] On Behalf Of
+> Anup Patel
+> Sent: Friday, December 3, 2021 2:20 PM
+> To: Jiangyifei <jiangyifei@huawei.com>
+> Cc: QEMU Developers <qemu-devel@nongnu.org>; open list:RISC-V
+> <qemu-riscv@nongnu.org>; kvm-riscv at lists.infradead.org; KVM General
+> <kvm@vger.kernel.org>; libvir-list at redhat.com; Anup Patel
+> <anup.patel@wdc.com>; Palmer Dabbelt <palmer@dabbelt.com>; Alistair
+> Francis <Alistair.Francis@wdc.com>; Bin Meng <bin.meng@windriver.com>;
+> Fanliang (EulerOS) <fanliang@huawei.com>; Wubin (H)
+> <wu.wubin@huawei.com>; Wanghaibin (D) <wanghaibin.wang@huawei.com>;
+> wanbo (G) <wanbo13@huawei.com>; limingwang (A)
+> <limingwang@huawei.com>
+> Subject: Re: [PATCH v1 04/12] target/riscv: Implement kvm_arch_get_registers
 > 
-> On 11/20/21 8:46 AM, Yifei Jiang wrote:
-> > +    id = kvm_riscv_reg_id(env, KVM_REG_RISCV_CONFIG,
-> KVM_REG_RISCV_CONFIG_REG(isa));
-> > +    ret = kvm_get_one_reg(cs, id, &isa);
+> On Sat, Nov 20, 2021 at 1:17 PM Yifei Jiang <jiangyifei@huawei.com> wrote:
+> >
+> > Get GPR CSR and FP registers from kvm by KVM_GET_ONE_REG ioctl.
+> >
+> > Signed-off-by: Yifei Jiang <jiangyifei@huawei.com>
+> > Signed-off-by: Mingwang Li <limingwang@huawei.com>
+> > Reviewed-by: Alistair Francis <alistair.francis@wdc.com>
+> > ---
+> >  target/riscv/kvm.c | 150
+> > ++++++++++++++++++++++++++++++++++++++++++++-
+> >  1 file changed, 149 insertions(+), 1 deletion(-)
+> >
+> > diff --git a/target/riscv/kvm.c b/target/riscv/kvm.c index
+> > 9f9692fb9e..b49c24be0a 100644
+> > --- a/target/riscv/kvm.c
+> > +++ b/target/riscv/kvm.c
+> > @@ -55,13 +55,161 @@ static uint64_t kvm_riscv_reg_id(CPURISCVState
+> *env, uint64_t type, uint64_t idx
+> >      return id;
+> >  }
+> >
+> > +#define RISCV_CORE_REG(env, name)  kvm_riscv_reg_id(env,
+> KVM_REG_RISCV_CORE, \
+> > +                 KVM_REG_RISCV_CORE_REG(name))
+> > +
+> > +#define RISCV_CSR_REG(env, name)  kvm_riscv_reg_id(env,
+> KVM_REG_RISCV_CSR, \
+> > +                 KVM_REG_RISCV_CSR_REG(name))
+> > +
+> > +#define RISCV_FP_F_REG(env, idx)  kvm_riscv_reg_id(env,
+> > +KVM_REG_RISCV_FP_F, idx)
+> > +
+> > +#define RISCV_FP_D_REG(env, idx)  kvm_riscv_reg_id(env,
+> > +KVM_REG_RISCV_FP_D, idx)
+> > +
+> > +static int kvm_riscv_get_regs_core(CPUState *cs) {
+> > +    int ret = 0;
+> > +    int i;
+> > +    target_ulong reg;
+> > +    CPURISCVState *env = &RISCV_CPU(cs)->env;
+> > +
+> > +    ret = kvm_get_one_reg(cs, RISCV_CORE_REG(env, regs.pc), &reg);
 > > +    if (ret) {
 > > +        return ret;
 > > +    }
-> > +    env->misa_mxl |= isa;
+> > +    env->pc = reg;
+> > +
+> > +    for (i = 1; i < 32; i++) {
+> > +        uint64_t id = kvm_riscv_reg_id(env, KVM_REG_RISCV_CORE, i);
+> > +        ret = kvm_get_one_reg(cs, id, &reg);
+> > +        if (ret) {
+> > +            return ret;
+> > +        }
+> > +        env->gpr[i] = reg;
+> > +    }
+> > +
+> > +    return ret;
+> > +}
+> > +
+> > +static int kvm_riscv_get_regs_csr(CPUState *cs) {
+> > +    int ret = 0;
+> > +    target_ulong reg;
+> > +    CPURISCVState *env = &RISCV_CPU(cs)->env;
+> > +
+> > +    ret = kvm_get_one_reg(cs, RISCV_CSR_REG(env, sstatus), &reg);
+> > +    if (ret) {
+> > +        return ret;
+> > +    }
+> > +    env->mstatus = reg;
+> > +
+> > +    ret = kvm_get_one_reg(cs, RISCV_CSR_REG(env, sie), &reg);
+> > +    if (ret) {
+> > +        return ret;
+> > +    }
+> > +    env->mie = reg;
+> > +
+> > +    ret = kvm_get_one_reg(cs, RISCV_CSR_REG(env, stvec), &reg);
+> > +    if (ret) {
+> > +        return ret;
+> > +    }
+> > +    env->stvec = reg;
+> > +
+> > +    ret = kvm_get_one_reg(cs, RISCV_CSR_REG(env, sscratch), &reg);
+> > +    if (ret) {
+> > +        return ret;
+> > +    }
+> > +    env->sscratch = reg;
+> > +
+> > +    ret = kvm_get_one_reg(cs, RISCV_CSR_REG(env, sepc), &reg);
+> > +    if (ret) {
+> > +        return ret;
+> > +    }
+> > +    env->sepc = reg;
+> > +
+> > +    ret = kvm_get_one_reg(cs, RISCV_CSR_REG(env, scause), &reg);
+> > +    if (ret) {
+> > +        return ret;
+> > +    }
+> > +    env->scause = reg;
+> > +
+> > +    ret = kvm_get_one_reg(cs, RISCV_CSR_REG(env, stval), &reg);
+> > +    if (ret) {
+> > +        return ret;
+> > +    }
+> > +    env->stval = reg;
+> > +
+> > +    ret = kvm_get_one_reg(cs, RISCV_CSR_REG(env, sip), &reg);
+> > +    if (ret) {
+> > +        return ret;
+> > +    }
+> > +    env->mip = reg;
+> > +
+> > +    ret = kvm_get_one_reg(cs, RISCV_CSR_REG(env, satp), &reg);
+> > +    if (ret) {
+> > +        return ret;
+> > +    }
+> > +    env->satp = reg;
 > 
-> This doesn't look right.
-> I'm sure you meant
+> There is a common pattern in above kvm_get_one_reg() calls so I suggest
+> creating a macro for repeating code patterns. This can help us to have one line
+> for each CSR and in future it is easy to add more CSRs.
 > 
->      env->misa_ext = isa;
+> Regards,
+> Anup
 > 
-> 
-> r~
 
 Thanks, it will be modified in the next series.
 
 Yifei
+
+> > +
+> > +    return ret;
+> > +}
+> > +
+> > +static int kvm_riscv_get_regs_fp(CPUState *cs) {
+> > +    int ret = 0;
+> > +    int i;
+> > +    CPURISCVState *env = &RISCV_CPU(cs)->env;
+> > +
+> > +    if (riscv_has_ext(env, RVD)) {
+> > +        uint64_t reg;
+> > +        for (i = 0; i < 32; i++) {
+> > +            ret = kvm_get_one_reg(cs, RISCV_FP_D_REG(env, i), &reg);
+> > +            if (ret) {
+> > +                return ret;
+> > +            }
+> > +            env->fpr[i] = reg;
+> > +        }
+> > +        return ret;
+> > +    }
+> > +
+> > +    if (riscv_has_ext(env, RVF)) {
+> > +        uint32_t reg;
+> > +        for (i = 0; i < 32; i++) {
+> > +            ret = kvm_get_one_reg(cs, RISCV_FP_F_REG(env, i), &reg);
+> > +            if (ret) {
+> > +                return ret;
+> > +            }
+> > +            env->fpr[i] = reg;
+> > +        }
+> > +        return ret;
+> > +    }
+> > +
+> > +    return ret;
+> > +}
+> > +
+> >  const KVMCapabilityInfo kvm_arch_required_capabilities[] = {
+> >      KVM_CAP_LAST_INFO
+> >  };
+> >
+> >  int kvm_arch_get_registers(CPUState *cs)  {
+> > -    return 0;
+> > +    int ret = 0;
+> > +
+> > +    ret = kvm_riscv_get_regs_core(cs);
+> > +    if (ret) {
+> > +        return ret;
+> > +    }
+> > +
+> > +    ret = kvm_riscv_get_regs_csr(cs);
+> > +    if (ret) {
+> > +        return ret;
+> > +    }
+> > +
+> > +    ret = kvm_riscv_get_regs_fp(cs);
+> > +    if (ret) {
+> > +        return ret;
+> > +    }
+> > +
+> > +    return ret;
+> >  }
+> >
+> >  int kvm_arch_put_registers(CPUState *cs, int level)
+> > --
+> > 2.19.1
+> >
+> >
+> > --
+> > kvm-riscv mailing list
+> > kvm-riscv at lists.infradead.org
+> > http://lists.infradead.org/mailman/listinfo/kvm-riscv
+> 
+> --
+> kvm-riscv mailing list
+> kvm-riscv at lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/kvm-riscv
+
