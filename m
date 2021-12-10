@@ -1,39 +1,50 @@
-From: Paolo Bonzini <pbonzini@redhat.com>
-Date: Thu, 9 Dec 2021 23:34:37 +0100
-Subject: [PATCH v5 08/12] KVM: Reinstate gfn_to_pfn_cache with
- invalidation support
-In-Reply-To: <b614d9ae0fe7910cfa72eee0b4077776f8012e5f.camel@infradead.org>
-References: <20211121125451.9489-1-dwmw2@infradead.org>
- <20211121125451.9489-9-dwmw2@infradead.org>
- <b1bacc6f-be56-4108-6e52-4315a021184b@redhat.com>
- <b614d9ae0fe7910cfa72eee0b4077776f8012e5f.camel@infradead.org>
-Message-ID: <6cb2cd57-16f3-d0ec-adf6-cb8fdcbae035@redhat.com>
+From: Jiangyifei <jiangyifei@huawei.com>
+Date: Fri, 10 Dec 2021 09:55:08 +0000
+Subject: [PATCH v1 03/12] target/riscv: Implement function
+ kvm_arch_init_vcpu
+In-Reply-To: <d3f974e1-6278-8c11-898a-a1cc55965786@linaro.org>
+References: <20211120074644.729-1-jiangyifei@huawei.com>
+ <20211120074644.729-4-jiangyifei@huawei.com>
+ <d3f974e1-6278-8c11-898a-a1cc55965786@linaro.org>
+Message-ID: <8e09fe10ba1a4062831b934a836ff861@huawei.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 12/9/21 21:40, David Woodhouse wrote:
+
+> -----Original Message-----
+> From: Richard Henderson [mailto:richard.henderson at linaro.org]
+> Sent: Sunday, November 21, 2021 6:19 AM
+> To: Jiangyifei <jiangyifei@huawei.com>; qemu-devel at nongnu.org;
+> qemu-riscv at nongnu.org
+> Cc: bin.meng at windriver.com; limingwang (A) <limingwang@huawei.com>;
+> kvm at vger.kernel.org; libvir-list at redhat.com; anup.patel at wdc.com; wanbo (G)
+> <wanbo13@huawei.com>; Alistair Francis <alistair.francis@wdc.com>;
+> kvm-riscv at lists.infradead.org; Wanghaibin (D)
+> <wanghaibin.wang@huawei.com>; palmer at dabbelt.com; Fanliang (EulerOS)
+> <fanliang@huawei.com>; Wubin (H) <wu.wubin@huawei.com>
+> Subject: Re: [PATCH v1 03/12] target/riscv: Implement function
+> kvm_arch_init_vcpu
 > 
-> NP, very useful fixes. Thanks. Incremental patch looks like this. It
-> passes the xen_shinfo_test self-test; will test it with real Xen guests
-> tomorrow and repost based on your kvm/next tree once it shows up.
+> On 11/20/21 8:46 AM, Yifei Jiang wrote:
+> > +    id = kvm_riscv_reg_id(env, KVM_REG_RISCV_CONFIG,
+> KVM_REG_RISCV_CONFIG_REG(isa));
+> > +    ret = kvm_get_one_reg(cs, id, &isa);
+> > +    if (ret) {
+> > +        return ret;
+> > +    }
+> > +    env->misa_mxl |= isa;
+> 
+> This doesn't look right.
+> I'm sure you meant
+> 
+>      env->misa_ext = isa;
+> 
+> 
+> r~
 
-Compared to the review it's missing this hunk:
+Thanks, it will be modified in the next series.
 
-
-@@ -265,7 +265,7 @@ void kvm_gfn_to_pfn_cache_unmap(struct kvm *kvm, struct gfn_to_pfn_cache *gpc)
-   
-   	gpc->valid = false;
-   
--	old_khva = gpc->khva;
-+	old_khva = (void *)((unsigned long)gpc->khva & ~PAGE_MASK);
-   	old_dirty = gpc->dirty;
-   	old_gpa = gpc->gpa;
-   	old_pfn = gpc->pfn;
-
-Otherwise looks good, thanks!
-
-Paolo
-
+Yifei
