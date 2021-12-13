@@ -1,62 +1,181 @@
-From: Richard Henderson <richard.henderson@linaro.org>
-Date: Mon, 13 Dec 2021 07:21:48 -0800
-Subject: [PATCH v2 12/12] target/riscv: Support virtual time context
- synchronization
-In-Reply-To: <20211210100732.1080-13-jiangyifei@huawei.com>
-References: <20211210100732.1080-1-jiangyifei@huawei.com>
- <20211210100732.1080-13-jiangyifei@huawei.com>
-Message-ID: <10d2d911-e975-64b3-8ab6-e950c5064b9e@linaro.org>
+From: Atish Patra <atishp@atishpatra.org>
+Date: Mon, 13 Dec 2021 13:05:41 -0800
+Subject: [RFC 1/6] RISC-V: Avoid using per cpu array for ordered booting
+In-Reply-To: <CAAhSdy2YsrGSk4P41hneNkJJg6je9fMYV9-py6vim=ZEexigOQ@mail.gmail.com>
+References: <20211204002038.113653-1-atishp@atishpatra.org>
+ <20211204002038.113653-2-atishp@atishpatra.org>
+ <CAAhSdy2YsrGSk4P41hneNkJJg6je9fMYV9-py6vim=ZEexigOQ@mail.gmail.com>
+Message-ID: <CAOnJCU+cgrC=uYJjVUQzpONeMJMxW06g5eoPKB_PfDRY5tPSNw@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 12/10/21 2:07 AM, Yifei Jiang via wrote:
-> +static bool kvmtimer_needed(void *opaque)
-> +{
-> +    return kvm_enabled();
-> +}
-> +
-> +
-> +static const VMStateDescription vmstate_kvmtimer = {
-> +    .name = "cpu/kvmtimer",
-> +    .version_id = 1,
-> +    .minimum_version_id = 1,
-> +    .needed = kvmtimer_needed,
-> +    .fields = (VMStateField[]) {
-> +        VMSTATE_UINT64(env.kvm_timer_time, RISCVCPU),
-> +        VMSTATE_UINT64(env.kvm_timer_compare, RISCVCPU),
-> +        VMSTATE_UINT64(env.kvm_timer_state, RISCVCPU),
-> +
-> +        VMSTATE_END_OF_LIST()
-> +    }
-> +};
-> +
-> +static int cpu_post_load(void *opaque, int version_id)
-> +{
-> +    RISCVCPU *cpu = opaque;
-> +    CPURISCVState *env = &cpu->env;
-> +
-> +    if (kvm_enabled()) {
-> +        env->kvm_timer_dirty = true;
-> +    }
-> +    return 0;
-> +}
+On Mon, Dec 13, 2021 at 4:49 AM Anup Patel <anup@brainfault.org> wrote:
+>
+> On Sat, Dec 4, 2021 at 5:50 AM Atish Patra <atishp@atishpatra.org> wrote:
+> >
+> > From: Atish Patra <atishp@rivosinc.com>
+> >
+> > Currently both order booting and spinwait approach uses a per cpu
+> > array to update stack & task pointer. This approach will not work for the
+> > following cases.
+> > 1. If NR_CPUs are configured to be less than highest hart id.
+> > 2. A platform has sparse hartid.
+> >
+> > This issue can be fixed for ordered booting as the booting cpu brings up
+> > one cpu at a time using SBI HSM extension which has opaque parameter
+> > that is unused until now.
+> >
+> > Introduce a common secondary boot data structure that can store the stack
+> > and task pointer. Secondary harts will use this data while booting up
+> > to setup the sp & tp.
+> >
+> > Signed-off-by: Atish Patra <atishp@rivosinc.com>
+> > ---
+> >  arch/riscv/include/asm/cpu_ops_sbi.h | 28 ++++++++++++++++++++++++++++
+> >  arch/riscv/kernel/cpu_ops_sbi.c      | 23 ++++++++++++++++++++---
+> >  arch/riscv/kernel/head.S             | 19 ++++++++++---------
+> >  3 files changed, 58 insertions(+), 12 deletions(-)
+> >  create mode 100644 arch/riscv/include/asm/cpu_ops_sbi.h
+> >
+> > diff --git a/arch/riscv/include/asm/cpu_ops_sbi.h b/arch/riscv/include/asm/cpu_ops_sbi.h
+> > new file mode 100644
+> > index 000000000000..ccb9a6d30486
+> > --- /dev/null
+> > +++ b/arch/riscv/include/asm/cpu_ops_sbi.h
+> > @@ -0,0 +1,28 @@
+> > +/* SPDX-License-Identifier: GPL-2.0-only */
+> > +/*
+> > + * Copyright (c) 2021 by Rivos Inc.
+> > + */
+> > +#ifndef __ASM_CPU_OPS_SBI_H
+> > +#define __ASM_CPU_OPS_SBI_H
+> > +
+> > +#ifndef __ASSEMBLY__
+> > +#include <linux/init.h>
+> > +#include <linux/sched.h>
+> > +#include <linux/threads.h>
+> > +
+> > +/**
+> > + * struct sbi_hart_boot_data - Hart specific boot used during booting and
+> > + *                            cpu hotplug.
+> > + * @task_ptr: A pointer to the hart specific tp
+> > + * @stack_ptr: A pointer to the hart specific sp
+> > + */
+> > +struct sbi_hart_boot_data {
+> > +       void *task_ptr;
+> > +       void *stack_ptr;
+> > +};
+> > +#endif
+> > +
+> > +#define SBI_HART_BOOT_TASK_PTR_OFFSET (0x00)
+> > +#define SBI_HART_BOOT_STACK_PTR_OFFSET RISCV_SZPTR
+>
+> Don't manually create these defines instead generate this
+> defines at compile time by adding entries in kernel/asm-offsets.c
+>
 
-This post-load belongs on the vmstate_kvmtimer struct, so that you need not re-check 
-kvm_enabled().
+Sure. I will fix this in the next version.
 
->   const VMStateDescription vmstate_riscv_cpu = {
->       .name = "cpu",
-> -    .version_id = 3,
-> -    .minimum_version_id = 3,
-> +    .version_id = 4,
-> +    .minimum_version_id = 4,
-> +    .post_load = cpu_post_load,
+> > +
+> > +#endif /* ifndef __ASM_CPU_OPS_H */
+> > diff --git a/arch/riscv/kernel/cpu_ops_sbi.c b/arch/riscv/kernel/cpu_ops_sbi.c
+> > index 685fae72b7f5..2e7a9dd9c2a7 100644
+> > --- a/arch/riscv/kernel/cpu_ops_sbi.c
+> > +++ b/arch/riscv/kernel/cpu_ops_sbi.c
+> > @@ -7,13 +7,22 @@
+> >
+> >  #include <linux/init.h>
+> >  #include <linux/mm.h>
+> > +#include <linux/sched/task_stack.h>
+> >  #include <asm/cpu_ops.h>
+> > +#include <asm/cpu_ops_sbi.h>
+> >  #include <asm/sbi.h>
+> >  #include <asm/smp.h>
+> >
+> >  extern char secondary_start_sbi[];
+> >  const struct cpu_operations cpu_ops_sbi;
+> >
+> > +/*
+> > + * Ordered booting via HSM brings one cpu at a time. However, cpu hotplug can
+> > + * be invoked from multiple threads in paralle. Define a per cpu data
+> > + * to handle that.
+> > + */
+> > +DEFINE_PER_CPU(struct sbi_hart_boot_data, boot_data);
+> > +
+> >  static int sbi_hsm_hart_start(unsigned long hartid, unsigned long saddr,
+> >                               unsigned long priv)
+> >  {
+> > @@ -58,9 +67,17 @@ static int sbi_cpu_start(unsigned int cpuid, struct task_struct *tidle)
+> >         int rc;
+> >         unsigned long boot_addr = __pa_symbol(secondary_start_sbi);
+> >         int hartid = cpuid_to_hartid_map(cpuid);
+> > -
+> > -       cpu_update_secondary_bootdata(cpuid, tidle);
+> > -       rc = sbi_hsm_hart_start(hartid, boot_addr, 0);
+> > +       unsigned long hsm_data;
+> > +       struct sbi_hart_boot_data *bdata = &per_cpu(boot_data, cpuid);
+> > +
+> > +       /* Make sure tidle is updated */
+> > +       smp_mb();
+> > +       bdata->task_ptr = tidle;
+> > +       bdata->stack_ptr = task_stack_page(tidle) + THREAD_SIZE;
+> > +       /* Make sure boot data is updated */
+> > +       smp_mb();
+> > +       hsm_data = __pa(bdata);
+> > +       rc = sbi_hsm_hart_start(hartid, boot_addr, hsm_data);
+> >
+> >         return rc;
+> >  }
+> > diff --git a/arch/riscv/kernel/head.S b/arch/riscv/kernel/head.S
+> > index f52f01ecbeea..40d4c625513c 100644
+> > --- a/arch/riscv/kernel/head.S
+> > +++ b/arch/riscv/kernel/head.S
+> > @@ -11,6 +11,7 @@
+> >  #include <asm/page.h>
+> >  #include <asm/pgtable.h>
+> >  #include <asm/csr.h>
+> > +#include <asm/cpu_ops_sbi.h>
+> >  #include <asm/hwcap.h>
+> >  #include <asm/image.h>
+> >  #include "efi-header.S"
+> > @@ -167,15 +168,15 @@ secondary_start_sbi:
+> >         la a3, .Lsecondary_park
+> >         csrw CSR_TVEC, a3
+> >
+> > -       slli a3, a0, LGREG
+> > -       la a4, __cpu_up_stack_pointer
+> > -       XIP_FIXUP_OFFSET a4
+> > -       la a5, __cpu_up_task_pointer
+> > -       XIP_FIXUP_OFFSET a5
+> > -       add a4, a3, a4
+> > -       add a5, a3, a5
+> > -       REG_L sp, (a4)
+> > -       REG_L tp, (a5)
+> > +       /* a0 contains the hartid & a1 contains boot data */
+> > +       li a2, SBI_HART_BOOT_TASK_PTR_OFFSET
+> > +       XIP_FIXUP_OFFSET a2
+> > +       add a2, a2, a1
+> > +       REG_L tp, (a2)
+> > +       li a3, SBI_HART_BOOT_STACK_PTR_OFFSET
+> > +       XIP_FIXUP_OFFSET a3
+> > +       add a3, a3, a1
+> > +       REG_L sp, (a3)
+> >
+> >         .global secondary_start_common
+> >  secondary_start_common:
+> > --
+> > 2.33.1
+> >
+>
+> Regards,
+> Anup
 
-No need for version change.
 
 
-r~
+-- 
+Regards,
+Atish
 
