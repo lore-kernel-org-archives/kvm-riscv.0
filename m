@@ -1,11 +1,11 @@
 From: Anup Patel <anup@brainfault.org>
-Date: Mon, 13 Dec 2021 10:09:58 +0530
-Subject: [PATCH v2 11/12] target/riscv: Implement virtual time adjusting
- with vm state changing
-In-Reply-To: <20211210100732.1080-12-jiangyifei@huawei.com>
+Date: Mon, 13 Dec 2021 10:12:00 +0530
+Subject: [PATCH v2 12/12] target/riscv: Support virtual time context
+ synchronization
+In-Reply-To: <20211210100732.1080-13-jiangyifei@huawei.com>
 References: <20211210100732.1080-1-jiangyifei@huawei.com>
- <20211210100732.1080-12-jiangyifei@huawei.com>
-Message-ID: <CAAhSdy1gYnsQo2LOWAOtjSa8BKoK7btmXfaig-+6vRTF2b0QXQ@mail.gmail.com>
+ <20211210100732.1080-13-jiangyifei@huawei.com>
+Message-ID: <CAAhSdy34UorkvYVi7vUUifBh_TRvrQZW4c7uy1nQrj0UNMKGbg@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -14,65 +14,88 @@ Content-Transfer-Encoding: 7bit
 
 On Fri, Dec 10, 2021 at 3:38 PM Yifei Jiang <jiangyifei@huawei.com> wrote:
 >
-> We hope that virtual time adjusts with vm state changing. When a vm
-> is stopped, guest virtual time should stop counting and kvm_timer
-> should be stopped. When the vm is resumed, guest virtual time should
-> continue to count and kvm_timer should be restored.
+> Add virtual time context description to vmstate_kvmtimer. After cpu being
+> loaded, virtual time context is updated to KVM.
 >
 > Signed-off-by: Yifei Jiang <jiangyifei@huawei.com>
 > Signed-off-by: Mingwang Li <limingwang@huawei.com>
+> ---
+>  target/riscv/machine.c | 37 +++++++++++++++++++++++++++++++++++--
+>  1 file changed, 35 insertions(+), 2 deletions(-)
+>
+> diff --git a/target/riscv/machine.c b/target/riscv/machine.c
+> index ad8248ebfd..f46443c316 100644
+> --- a/target/riscv/machine.c
+> +++ b/target/riscv/machine.c
+> @@ -164,10 +164,42 @@ static const VMStateDescription vmstate_pointermasking = {
+>      }
+>  };
+>
+> +static bool kvmtimer_needed(void *opaque)
+> +{
+> +    return kvm_enabled();
+> +}
+> +
+> +
 
-Looks good to me.
+Remove extra newline from here.
+
+> +static const VMStateDescription vmstate_kvmtimer = {
+> +    .name = "cpu/kvmtimer",
+> +    .version_id = 1,
+> +    .minimum_version_id = 1,
+> +    .needed = kvmtimer_needed,
+> +    .fields = (VMStateField[]) {
+> +        VMSTATE_UINT64(env.kvm_timer_time, RISCVCPU),
+> +        VMSTATE_UINT64(env.kvm_timer_compare, RISCVCPU),
+> +        VMSTATE_UINT64(env.kvm_timer_state, RISCVCPU),
+> +
+> +        VMSTATE_END_OF_LIST()
+> +    }
+> +};
+> +
+> +static int cpu_post_load(void *opaque, int version_id)
+> +{
+> +    RISCVCPU *cpu = opaque;
+> +    CPURISCVState *env = &cpu->env;
+> +
+> +    if (kvm_enabled()) {
+> +        env->kvm_timer_dirty = true;
+> +    }
+> +    return 0;
+> +}
+> +
+>  const VMStateDescription vmstate_riscv_cpu = {
+>      .name = "cpu",
+> -    .version_id = 3,
+> -    .minimum_version_id = 3,
+> +    .version_id = 4,
+> +    .minimum_version_id = 4,
+> +    .post_load = cpu_post_load,
+>      .fields = (VMStateField[]) {
+>          VMSTATE_UINTTL_ARRAY(env.gpr, RISCVCPU, 32),
+>          VMSTATE_UINT64_ARRAY(env.fpr, RISCVCPU, 32),
+> @@ -218,6 +250,7 @@ const VMStateDescription vmstate_riscv_cpu = {
+>          &vmstate_hyper,
+>          &vmstate_vector,
+>          &vmstate_pointermasking,
+> +        &vmstate_kvmtimer,
+>          NULL
+>      }
+>  };
+> --
+> 2.19.1
+>
+>
+> --
+> kvm-riscv mailing list
+> kvm-riscv at lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/kvm-riscv
+
+Otherwise, it looks good to me.
 
 Reviewed-by: Anup Patel <anup.patel@wdc.com>
 
 Regards,
 Anup
-
-> ---
->  target/riscv/kvm.c | 14 ++++++++++++++
->  1 file changed, 14 insertions(+)
->
-> diff --git a/target/riscv/kvm.c b/target/riscv/kvm.c
-> index 802c076b22..be95dbc3f3 100644
-> --- a/target/riscv/kvm.c
-> +++ b/target/riscv/kvm.c
-> @@ -40,6 +40,7 @@
->  #include "kvm_riscv.h"
->  #include "sbi_ecall_interface.h"
->  #include "semihosting/console.h"
-> +#include "sysemu/runstate.h"
->
->  static uint64_t kvm_riscv_reg_id(CPURISCVState *env, uint64_t type, uint64_t idx)
->  {
-> @@ -377,6 +378,17 @@ unsigned long kvm_arch_vcpu_id(CPUState *cpu)
->      return cpu->cpu_index;
->  }
->
-> +static void kvm_riscv_vm_state_change(void *opaque, bool running, RunState state)
-> +{
-> +    CPUState *cs = opaque;
-> +
-> +    if (running) {
-> +        kvm_riscv_put_regs_timer(cs);
-> +    } else {
-> +        kvm_riscv_get_regs_timer(cs);
-> +    }
-> +}
-> +
->  void kvm_arch_init_irq_routing(KVMState *s)
->  {
->  }
-> @@ -389,6 +401,8 @@ int kvm_arch_init_vcpu(CPUState *cs)
->      CPURISCVState *env = &cpu->env;
->      uint64_t id;
->
-> +    qemu_add_vm_change_state_handler(kvm_riscv_vm_state_change, cs);
-> +
->      id = kvm_riscv_reg_id(env, KVM_REG_RISCV_CONFIG, KVM_REG_RISCV_CONFIG_REG(isa));
->      ret = kvm_get_one_reg(cs, id, &isa);
->      if (ret) {
-> --
-> 2.19.1
->
 
