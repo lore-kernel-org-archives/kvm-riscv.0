@@ -1,50 +1,61 @@
 From: Richard Henderson <richard.henderson@linaro.org>
-Date: Mon, 13 Dec 2021 07:19:43 -0800
-Subject: [PATCH v2 10/12] target/riscv: Add kvm_riscv_get/put_regs_timer
-In-Reply-To: <CAAhSdy11yd+f6OZZxjX9mWxkVH4AC7Kz5Vp+RPUz6cCam9GvNQ@mail.gmail.com>
+Date: Mon, 13 Dec 2021 07:21:48 -0800
+Subject: [PATCH v2 12/12] target/riscv: Support virtual time context
+ synchronization
+In-Reply-To: <20211210100732.1080-13-jiangyifei@huawei.com>
 References: <20211210100732.1080-1-jiangyifei@huawei.com>
- <20211210100732.1080-11-jiangyifei@huawei.com>
- <CAAhSdy11yd+f6OZZxjX9mWxkVH4AC7Kz5Vp+RPUz6cCam9GvNQ@mail.gmail.com>
-Message-ID: <dec3147b-24bc-7e48-680b-a7423b0640f9@linaro.org>
+ <20211210100732.1080-13-jiangyifei@huawei.com>
+Message-ID: <10d2d911-e975-64b3-8ab6-e950c5064b9e@linaro.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 12/12/21 9:05 PM, Anup Patel wrote:
->> +    ret = kvm_get_one_reg(cs, RISCV_TIMER_REG(env, state), &reg);
->> +    if (ret) {
->> +        abort();
->> +    }
->> +    env->kvm_timer_state = reg;
-> 
-> Please read the timer frequency here.
+On 12/10/21 2:07 AM, Yifei Jiang via wrote:
+> +static bool kvmtimer_needed(void *opaque)
+> +{
+> +    return kvm_enabled();
+> +}
+> +
+> +
+> +static const VMStateDescription vmstate_kvmtimer = {
+> +    .name = "cpu/kvmtimer",
+> +    .version_id = 1,
+> +    .minimum_version_id = 1,
+> +    .needed = kvmtimer_needed,
+> +    .fields = (VMStateField[]) {
+> +        VMSTATE_UINT64(env.kvm_timer_time, RISCVCPU),
+> +        VMSTATE_UINT64(env.kvm_timer_compare, RISCVCPU),
+> +        VMSTATE_UINT64(env.kvm_timer_state, RISCVCPU),
+> +
+> +        VMSTATE_END_OF_LIST()
+> +    }
+> +};
+> +
+> +static int cpu_post_load(void *opaque, int version_id)
+> +{
+> +    RISCVCPU *cpu = opaque;
+> +    CPURISCVState *env = &cpu->env;
+> +
+> +    if (kvm_enabled()) {
+> +        env->kvm_timer_dirty = true;
+> +    }
+> +    return 0;
+> +}
 
-Yep.
+This post-load belongs on the vmstate_kvmtimer struct, so that you need not re-check 
+kvm_enabled().
 
->> +
->> +    env->kvm_timer_dirty = true;
->> +}
->> +
->> +static void kvm_riscv_put_regs_timer(CPUState *cs)
->> +{
->> +    int ret;
->> +    uint64_t reg;
->> +    CPURISCVState *env = &RISCV_CPU(cs)->env;
->> +
->> +    if (!env->kvm_timer_dirty) {
->> +        return;
->> +    }
-> 
-> Over here, we should get the timer frequency and abort() with an
-> error message if it does not match env->kvm_timer_frequency
-> 
-> For now, migration will not work between Hosts with different
-> timer frequency.
+>   const VMStateDescription vmstate_riscv_cpu = {
+>       .name = "cpu",
+> -    .version_id = 3,
+> -    .minimum_version_id = 3,
+> +    .version_id = 4,
+> +    .minimum_version_id = 4,
+> +    .post_load = cpu_post_load,
 
-You shouldn't have to do this every "put", only on migration, at which point you can 
-actually signal a migration error rather than aborting directly.
+No need for version change.
 
 
 r~
