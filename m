@@ -1,56 +1,87 @@
 From: Anup Patel <anup@brainfault.org>
-Date: Mon, 13 Dec 2021 09:42:18 +0530
-Subject: [PATCH v11 kvmtool 0/8] KVMTOOL RISC-V Support
-In-Reply-To: <87sfuz9q8p.wl-maz@kernel.org>
-References: <20211119124515.89439-1-anup.patel@wdc.com>
- <CAAhSdy1pqS5PYdxuxx5RD8baeqfd07Vm1DM7_Eq9Mby37mS_ig@mail.gmail.com>
- <87sfuz9q8p.wl-maz@kernel.org>
-Message-ID: <CAAhSdy1Lnbe8VhnFW2nhnCzs_74PzuAeyaADvnMfo7iY0qhxsQ@mail.gmail.com>
+Date: Mon, 13 Dec 2021 09:45:12 +0530
+Subject: [PATCH v2 03/12] target/riscv: Implement function
+ kvm_arch_init_vcpu
+In-Reply-To: <20211210100732.1080-4-jiangyifei@huawei.com>
+References: <20211210100732.1080-1-jiangyifei@huawei.com>
+ <20211210100732.1080-4-jiangyifei@huawei.com>
+Message-ID: <CAAhSdy12sRcAarGN0z4HNDYrWPoJ+H6_HjXzc=2+ohdDvzeg5A@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sat, Dec 11, 2021 at 7:51 PM Marc Zyngier <maz@kernel.org> wrote:
+On Fri, Dec 10, 2021 at 3:37 PM Yifei Jiang <jiangyifei@huawei.com> wrote:
 >
-> On Sat, 11 Dec 2021 07:28:49 +0000,
-> Anup Patel <anup@brainfault.org> wrote:
-> >
-> > Hi Marc, Hi Will,
-> >
-> > On Fri, Nov 19, 2021 at 6:15 PM Anup Patel <anup.patel@wdc.com> wrote:
-> > >
-> > > This series adds RISC-V support for KVMTOOL and it is based on the
-> > > Linux-5.16-rc1. The KVM RISC-V patches have been merged in the Linux
-> > > kernel since 5.16-rc1.
-> > >
-> > > The KVMTOOL RISC-V patches can be found in riscv_master branch at:
-> > > https//github.com/kvm-riscv/kvmtool.git
-> >
-> > Ping ?
-> > Do you have further comments on this series ?
+> Get isa info from kvm while kvm init.
 >
-> Not much on my side, apart that it is a bit annoying that some of the
-> support is actually an almost exact copy of the arm code (PCI being a
-> striking example). It would have been nice to see some effort to make
-> the code common, although it isn't a blocker on my side.
+> Signed-off-by: Yifei Jiang <jiangyifei@huawei.com>
+> Signed-off-by: Mingwang Li <limingwang@huawei.com>
+> Reviewed-by: Alistair Francis <alistair.francis@wdc.com>
 
-Thanks Marc.
+Looks good to me.
 
-I agree with you. The code sharing between ARM and RISC-V support
-needs to be improved. We have more stuff to be added after this series
-so I will prioritize code sharing.
+Reviewed-by: Anup Patel <anup.patel@wdc.com>
 
 Regards,
 Anup
 
-
+> ---
+>  target/riscv/kvm.c | 32 +++++++++++++++++++++++++++++++-
+>  1 file changed, 31 insertions(+), 1 deletion(-)
 >
-> Thanks,
+> diff --git a/target/riscv/kvm.c b/target/riscv/kvm.c
+> index 687dd4b621..ccf3753048 100644
+> --- a/target/riscv/kvm.c
+> +++ b/target/riscv/kvm.c
+> @@ -38,6 +38,23 @@
+>  #include "qemu/log.h"
+>  #include "hw/loader.h"
 >
->         M.
+> +static uint64_t kvm_riscv_reg_id(CPURISCVState *env, uint64_t type, uint64_t idx)
+> +{
+> +    uint64_t id = KVM_REG_RISCV | type | idx;
+> +
+> +    switch (riscv_cpu_mxl(env)) {
+> +    case MXL_RV32:
+> +        id |= KVM_REG_SIZE_U32;
+> +        break;
+> +    case MXL_RV64:
+> +        id |= KVM_REG_SIZE_U64;
+> +        break;
+> +    default:
+> +        g_assert_not_reached();
+> +    }
+> +    return id;
+> +}
+> +
+>  const KVMCapabilityInfo kvm_arch_required_capabilities[] = {
+>      KVM_CAP_LAST_INFO
+>  };
+> @@ -79,7 +96,20 @@ void kvm_arch_init_irq_routing(KVMState *s)
 >
+>  int kvm_arch_init_vcpu(CPUState *cs)
+>  {
+> -    return 0;
+> +    int ret = 0;
+> +    target_ulong isa;
+> +    RISCVCPU *cpu = RISCV_CPU(cs);
+> +    CPURISCVState *env = &cpu->env;
+> +    uint64_t id;
+> +
+> +    id = kvm_riscv_reg_id(env, KVM_REG_RISCV_CONFIG, KVM_REG_RISCV_CONFIG_REG(isa));
+> +    ret = kvm_get_one_reg(cs, id, &isa);
+> +    if (ret) {
+> +        return ret;
+> +    }
+> +    env->misa_ext = isa;
+> +
+> +    return ret;
+>  }
+>
+>  int kvm_arch_msi_data_to_gsi(uint32_t data)
 > --
-> Without deviation from the norm, progress is not possible.
+> 2.19.1
+>
 
