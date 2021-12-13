@@ -1,154 +1,169 @@
 From: Anup Patel <anup@brainfault.org>
-Date: Mon, 13 Dec 2021 10:35:59 +0530
-Subject: [PATCH v2 10/12] target/riscv: Add kvm_riscv_get/put_regs_timer
-In-Reply-To: <20211210100732.1080-11-jiangyifei@huawei.com>
-References: <20211210100732.1080-1-jiangyifei@huawei.com>
- <20211210100732.1080-11-jiangyifei@huawei.com>
-Message-ID: <CAAhSdy11yd+f6OZZxjX9mWxkVH4AC7Kz5Vp+RPUz6cCam9GvNQ@mail.gmail.com>
+Date: Mon, 13 Dec 2021 18:18:59 +0530
+Subject: [RFC 1/6] RISC-V: Avoid using per cpu array for ordered booting
+In-Reply-To: <20211204002038.113653-2-atishp@atishpatra.org>
+References: <20211204002038.113653-1-atishp@atishpatra.org>
+ <20211204002038.113653-2-atishp@atishpatra.org>
+Message-ID: <CAAhSdy2YsrGSk4P41hneNkJJg6je9fMYV9-py6vim=ZEexigOQ@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Dec 10, 2021 at 3:37 PM Yifei Jiang <jiangyifei@huawei.com> wrote:
+On Sat, Dec 4, 2021 at 5:50 AM Atish Patra <atishp@atishpatra.org> wrote:
 >
-> Add kvm_riscv_get/put_regs_timer to synchronize virtual time context
-> from KVM.
+> From: Atish Patra <atishp@rivosinc.com>
 >
-> To set register of RISCV_TIMER_REG(state) will occur a error from KVM
-> on kvm_timer_state == 0. It's better to adapt in KVM, but it doesn't matter
-> that adaping in QEMU.
+> Currently both order booting and spinwait approach uses a per cpu
+> array to update stack & task pointer. This approach will not work for the
+> following cases.
+> 1. If NR_CPUs are configured to be less than highest hart id.
+> 2. A platform has sparse hartid.
 >
-> Signed-off-by: Yifei Jiang <jiangyifei@huawei.com>
-> Signed-off-by: Mingwang Li <limingwang@huawei.com>
+> This issue can be fixed for ordered booting as the booting cpu brings up
+> one cpu at a time using SBI HSM extension which has opaque parameter
+> that is unused until now.
+>
+> Introduce a common secondary boot data structure that can store the stack
+> and task pointer. Secondary harts will use this data while booting up
+> to setup the sp & tp.
+>
+> Signed-off-by: Atish Patra <atishp@rivosinc.com>
 > ---
->  target/riscv/cpu.h |  7 +++++
->  target/riscv/kvm.c | 72 ++++++++++++++++++++++++++++++++++++++++++++++
->  2 files changed, 79 insertions(+)
+>  arch/riscv/include/asm/cpu_ops_sbi.h | 28 ++++++++++++++++++++++++++++
+>  arch/riscv/kernel/cpu_ops_sbi.c      | 23 ++++++++++++++++++++---
+>  arch/riscv/kernel/head.S             | 19 ++++++++++---------
+>  3 files changed, 58 insertions(+), 12 deletions(-)
+>  create mode 100644 arch/riscv/include/asm/cpu_ops_sbi.h
 >
-> diff --git a/target/riscv/cpu.h b/target/riscv/cpu.h
-> index e7dba35acb..c892a2c8b7 100644
-> --- a/target/riscv/cpu.h
-> +++ b/target/riscv/cpu.h
-> @@ -259,6 +259,13 @@ struct CPURISCVState {
->
->      hwaddr kernel_addr;
->      hwaddr fdt_addr;
+> diff --git a/arch/riscv/include/asm/cpu_ops_sbi.h b/arch/riscv/include/asm/cpu_ops_sbi.h
+> new file mode 100644
+> index 000000000000..ccb9a6d30486
+> --- /dev/null
+> +++ b/arch/riscv/include/asm/cpu_ops_sbi.h
+> @@ -0,0 +1,28 @@
+> +/* SPDX-License-Identifier: GPL-2.0-only */
+> +/*
+> + * Copyright (c) 2021 by Rivos Inc.
+> + */
+> +#ifndef __ASM_CPU_OPS_SBI_H
+> +#define __ASM_CPU_OPS_SBI_H
 > +
-> +    /* kvm timer */
-> +    bool kvm_timer_dirty;
-> +    uint64_t kvm_timer_time;
-> +    uint64_t kvm_timer_compare;
-> +    uint64_t kvm_timer_state;
-> +    uint64_t kvm_timer_frequency;
->  };
->
->  OBJECT_DECLARE_TYPE(RISCVCPU, RISCVCPUClass,
-> diff --git a/target/riscv/kvm.c b/target/riscv/kvm.c
-> index 171a32adf9..802c076b22 100644
-> --- a/target/riscv/kvm.c
-> +++ b/target/riscv/kvm.c
-> @@ -64,6 +64,9 @@ static uint64_t kvm_riscv_reg_id(CPURISCVState *env, uint64_t type, uint64_t idx
->  #define RISCV_CSR_REG(env, name)  kvm_riscv_reg_id(env, KVM_REG_RISCV_CSR, \
->                   KVM_REG_RISCV_CSR_REG(name))
->
-> +#define RISCV_TIMER_REG(env, name)  kvm_riscv_reg_id(env, KVM_REG_RISCV_TIMER, \
-> +                 KVM_REG_RISCV_TIMER_REG(name))
+> +#ifndef __ASSEMBLY__
+> +#include <linux/init.h>
+> +#include <linux/sched.h>
+> +#include <linux/threads.h>
 > +
->  #define RISCV_FP_F_REG(env, idx)  kvm_riscv_reg_id(env, KVM_REG_RISCV_FP_F, idx)
+> +/**
+> + * struct sbi_hart_boot_data - Hart specific boot used during booting and
+> + *                            cpu hotplug.
+> + * @task_ptr: A pointer to the hart specific tp
+> + * @stack_ptr: A pointer to the hart specific sp
+> + */
+> +struct sbi_hart_boot_data {
+> +       void *task_ptr;
+> +       void *stack_ptr;
+> +};
+> +#endif
+> +
+> +#define SBI_HART_BOOT_TASK_PTR_OFFSET (0x00)
+> +#define SBI_HART_BOOT_STACK_PTR_OFFSET RISCV_SZPTR
+
+Don't manually create these defines instead generate this
+defines at compile time by adding entries in kernel/asm-offsets.c
+
+> +
+> +#endif /* ifndef __ASM_CPU_OPS_H */
+> diff --git a/arch/riscv/kernel/cpu_ops_sbi.c b/arch/riscv/kernel/cpu_ops_sbi.c
+> index 685fae72b7f5..2e7a9dd9c2a7 100644
+> --- a/arch/riscv/kernel/cpu_ops_sbi.c
+> +++ b/arch/riscv/kernel/cpu_ops_sbi.c
+> @@ -7,13 +7,22 @@
 >
->  #define RISCV_FP_D_REG(env, idx)  kvm_riscv_reg_id(env, KVM_REG_RISCV_FP_D, idx)
-> @@ -235,6 +238,75 @@ static int kvm_riscv_put_regs_fp(CPUState *cs)
->      return ret;
+>  #include <linux/init.h>
+>  #include <linux/mm.h>
+> +#include <linux/sched/task_stack.h>
+>  #include <asm/cpu_ops.h>
+> +#include <asm/cpu_ops_sbi.h>
+>  #include <asm/sbi.h>
+>  #include <asm/smp.h>
+>
+>  extern char secondary_start_sbi[];
+>  const struct cpu_operations cpu_ops_sbi;
+>
+> +/*
+> + * Ordered booting via HSM brings one cpu at a time. However, cpu hotplug can
+> + * be invoked from multiple threads in paralle. Define a per cpu data
+> + * to handle that.
+> + */
+> +DEFINE_PER_CPU(struct sbi_hart_boot_data, boot_data);
+> +
+>  static int sbi_hsm_hart_start(unsigned long hartid, unsigned long saddr,
+>                               unsigned long priv)
+>  {
+> @@ -58,9 +67,17 @@ static int sbi_cpu_start(unsigned int cpuid, struct task_struct *tidle)
+>         int rc;
+>         unsigned long boot_addr = __pa_symbol(secondary_start_sbi);
+>         int hartid = cpuid_to_hartid_map(cpuid);
+> -
+> -       cpu_update_secondary_bootdata(cpuid, tidle);
+> -       rc = sbi_hsm_hart_start(hartid, boot_addr, 0);
+> +       unsigned long hsm_data;
+> +       struct sbi_hart_boot_data *bdata = &per_cpu(boot_data, cpuid);
+> +
+> +       /* Make sure tidle is updated */
+> +       smp_mb();
+> +       bdata->task_ptr = tidle;
+> +       bdata->stack_ptr = task_stack_page(tidle) + THREAD_SIZE;
+> +       /* Make sure boot data is updated */
+> +       smp_mb();
+> +       hsm_data = __pa(bdata);
+> +       rc = sbi_hsm_hart_start(hartid, boot_addr, hsm_data);
+>
+>         return rc;
 >  }
+> diff --git a/arch/riscv/kernel/head.S b/arch/riscv/kernel/head.S
+> index f52f01ecbeea..40d4c625513c 100644
+> --- a/arch/riscv/kernel/head.S
+> +++ b/arch/riscv/kernel/head.S
+> @@ -11,6 +11,7 @@
+>  #include <asm/page.h>
+>  #include <asm/pgtable.h>
+>  #include <asm/csr.h>
+> +#include <asm/cpu_ops_sbi.h>
+>  #include <asm/hwcap.h>
+>  #include <asm/image.h>
+>  #include "efi-header.S"
+> @@ -167,15 +168,15 @@ secondary_start_sbi:
+>         la a3, .Lsecondary_park
+>         csrw CSR_TVEC, a3
 >
-> +static void kvm_riscv_get_regs_timer(CPUState *cs)
-> +{
-> +    int ret;
-> +    uint64_t reg;
-> +    CPURISCVState *env = &RISCV_CPU(cs)->env;
-> +
-> +    if (env->kvm_timer_dirty) {
-> +        return;
-> +    }
-> +
-> +    ret = kvm_get_one_reg(cs, RISCV_TIMER_REG(env, time), &reg);
-> +    if (ret) {
-> +        abort();
-> +    }
-> +    env->kvm_timer_time = reg;
-> +
-> +    ret = kvm_get_one_reg(cs, RISCV_TIMER_REG(env, compare), &reg);
-> +    if (ret) {
-> +        abort();
-> +    }
-> +    env->kvm_timer_compare = reg;
-> +
-> +    ret = kvm_get_one_reg(cs, RISCV_TIMER_REG(env, state), &reg);
-> +    if (ret) {
-> +        abort();
-> +    }
-> +    env->kvm_timer_state = reg;
-
-Please read the timer frequency here.
-
-> +
-> +    env->kvm_timer_dirty = true;
-> +}
-> +
-> +static void kvm_riscv_put_regs_timer(CPUState *cs)
-> +{
-> +    int ret;
-> +    uint64_t reg;
-> +    CPURISCVState *env = &RISCV_CPU(cs)->env;
-> +
-> +    if (!env->kvm_timer_dirty) {
-> +        return;
-> +    }
-
-Over here, we should get the timer frequency and abort() with an
-error message if it does not match env->kvm_timer_frequency
-
-For now, migration will not work between Hosts with different
-timer frequency.
+> -       slli a3, a0, LGREG
+> -       la a4, __cpu_up_stack_pointer
+> -       XIP_FIXUP_OFFSET a4
+> -       la a5, __cpu_up_task_pointer
+> -       XIP_FIXUP_OFFSET a5
+> -       add a4, a3, a4
+> -       add a5, a3, a5
+> -       REG_L sp, (a4)
+> -       REG_L tp, (a5)
+> +       /* a0 contains the hartid & a1 contains boot data */
+> +       li a2, SBI_HART_BOOT_TASK_PTR_OFFSET
+> +       XIP_FIXUP_OFFSET a2
+> +       add a2, a2, a1
+> +       REG_L tp, (a2)
+> +       li a3, SBI_HART_BOOT_STACK_PTR_OFFSET
+> +       XIP_FIXUP_OFFSET a3
+> +       add a3, a3, a1
+> +       REG_L sp, (a3)
+>
+>         .global secondary_start_common
+>  secondary_start_common:
+> --
+> 2.33.1
+>
 
 Regards,
 Anup
-
-> +
-> +    reg = env->kvm_timer_time;
-> +    ret = kvm_set_one_reg(cs, RISCV_TIMER_REG(env, time), &reg);
-> +    if (ret) {
-> +        abort();
-> +    }
-> +
-> +    reg = env->kvm_timer_compare;
-> +    ret = kvm_set_one_reg(cs, RISCV_TIMER_REG(env, compare), &reg);
-> +    if (ret) {
-> +        abort();
-> +    }
-> +
-> +    /*
-> +     * To set register of RISCV_TIMER_REG(state) will occur a error from KVM
-> +     * on env->kvm_timer_state == 0, It's better to adapt in KVM, but it
-> +     * doesn't matter that adaping in QEMU now.
-> +     * TODO If KVM changes, adapt here.
-> +     */
-> +    if (env->kvm_timer_state) {
-> +        reg = env->kvm_timer_state;
-> +        ret = kvm_set_one_reg(cs, RISCV_TIMER_REG(env, state), &reg);
-> +        if (ret) {
-> +            abort();
-> +        }
-> +    }
-> +
-> +    env->kvm_timer_dirty = false;
-> +}
->
->  const KVMCapabilityInfo kvm_arch_required_capabilities[] = {
->      KVM_CAP_LAST_INFO
-> --
-> 2.19.1
->
 
