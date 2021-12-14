@@ -1,82 +1,49 @@
-From: Atish Patra <atishp@atishpatra.org>
-Date: Mon, 13 Dec 2021 16:58:40 -0800
-Subject: [RFC 0/6] Sparse HART id support
-In-Reply-To: <CAL_JsqL_DXTJMdUGVwa1T9HqzcJkae=PS12dBbhFS9A22XK6=w@mail.gmail.com>
-References: <20211204002038.113653-1-atishp@atishpatra.org>
- <Ya4sDX974/dVEOQw@robh.at.kernel.org>
- <CAOnJCUKcYeWaDXY6OxQPrNwKV=4t9zbpSjfQLsL70P+3GE7F7A@mail.gmail.com>
- <CAL_JsqL_DXTJMdUGVwa1T9HqzcJkae=PS12dBbhFS9A22XK6=w@mail.gmail.com>
-Message-ID: <CAOnJCU+3cxXDZcnzFpXb+2CLYk7=0aiD6zyCU5=SCWMCFLKPzw@mail.gmail.com>
+From: Will Deacon <will@kernel.org>
+Date: Tue, 14 Dec 2021 15:18:10 +0000
+Subject: [PATCH v11 kvmtool 0/8] KVMTOOL RISC-V Support
+In-Reply-To: <20211119124515.89439-1-anup.patel@wdc.com>
+References: <20211119124515.89439-1-anup.patel@wdc.com>
+Message-ID: <163949433071.4049230.18094387124072062307.b4-ty@kernel.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Dec 13, 2021 at 3:11 PM Rob Herring <robh@kernel.org> wrote:
->
-> On Mon, Dec 13, 2021 at 3:27 PM Atish Patra <atishp@atishpatra.org> wrote:
-> >
-> > On Mon, Dec 6, 2021 at 7:28 AM Rob Herring <robh@kernel.org> wrote:
-> > >
-> > > On Fri, Dec 03, 2021 at 04:20:32PM -0800, Atish Patra wrote:
-> > > > Currently, sparse hartid is not supported for Linux RISC-V for the following
-> > > > reasons.
-> > > > 1. Both spinwait and ordered booting method uses __cpu_up_stack/task_pointer
-> > > >    which is an array size of NR_CPUs.
-> > > > 2. During early booting, any hartid greater than NR_CPUs are not booted at all.
-> > > > 3. riscv_cpuid_to_hartid_mask uses struct cpumask for generating hartid bitmap.
-> > > > 4. SBI v0.2 implementation uses NR_CPUs as the maximum hartid number while
-> > > >    generating hartmask.
-> > > >
-> > > > In order to support sparse hartid, the hartid & NR_CPUS needs to be disassociated
-> > > > which was logically incorrect anyways. NR_CPUs represent the maximum logical|
-> > > > CPU id configured in the kernel while the hartid represent the physical hartid
-> > > > stored in mhartid CSR defined by the privilege specification. Thus, hartid
-> > > > can have much greater value than logical cpuid.
-> > >
-> > > We already have a couple of architectures with logical to physical CPU
-> > > id maps. See cpu_logical_map. Can we make that common and use it here?
-> >
-> > Yes. We can move the cpu_logical_map(which is a macro) &
-> > __cpu_logical_map(actual array with NR_CPUS size)
-> > to common code so that all the architecture can use it instead of
-> > defining it separately.
->
-> IIRC, the macro is what varies by arch and I would move to static
-> inlines rather than supporting:
->
-> cpu_logical_map(cpu) = 0xdeadbeef;
->
+On Fri, 19 Nov 2021 18:15:07 +0530, Anup Patel wrote:
+> This series adds RISC-V support for KVMTOOL and it is based on the
+> Linux-5.16-rc1. The KVM RISC-V patches have been merged in the Linux
+> kernel since 5.16-rc1.
+> 
+> The KVMTOOL RISC-V patches can be found in riscv_master branch at:
+> https//github.com/kvm-riscv/kvmtool.git
+> 
+> [...]
 
-Sounds good.
+Applied to kvmtool (master), thanks!
 
+[1/8] update_headers: Sync-up ABI headers with Linux-5.16-rc1
+      https://git.kernel.org/will/kvmtool/c/5968b5ff26bb
+[2/8] riscv: Initial skeletal support
+      https://git.kernel.org/will/kvmtool/c/2e99678314c2
+[3/8] riscv: Implement Guest/VM arch functions
+      https://git.kernel.org/will/kvmtool/c/867159a7963b
+[4/8] riscv: Implement Guest/VM VCPU arch functions
+      https://git.kernel.org/will/kvmtool/c/42bfe448c1c3
+[5/8] riscv: Add PLIC device emulation
+      https://git.kernel.org/will/kvmtool/c/762224e47cc2
+[6/8] riscv: Generate FDT at runtime for Guest/VM
+      https://git.kernel.org/will/kvmtool/c/7c9aac003925
+[7/8] riscv: Handle SBI calls forwarded to user space
+      https://git.kernel.org/will/kvmtool/c/721da166a698
+[8/8] riscv: Generate PCI host DT node
+      https://git.kernel.org/will/kvmtool/c/cdd7d8cc0109
 
-> >
-> > > That would also possibly allow for common populating the map from DT.
-> > >
-> >
-> > I didn't understand this part. The mapping is populated at run time
-> > [1] as the boot cpu can be any hart in RISC-V.
-> > That booting hart will be mapped to cpu 0. All others will be mapped
-> > based on how the cpu node is laid out in the DT.
-> > Do you mean we can move the 2nd part to common code as well ?
->
-> Yes, as the DT platforms just loop thru the cpu nodes and fill the
-> logical map based on 'reg', I don't think that needs to be per arch
-> once we have a common map. But not asking for that now.
->
-
-It would make sense to keep them together in a series. I can take a stab
-at it once this series is merged so that we don't end up in
-conflicting changes between
-two series.
-
-> Rob
-
-
-
+Cheers,
 -- 
-Regards,
-Atish
+Will
+
+https://fixes.arm64.dev
+https://next.arm64.dev
+https://will.arm64.dev
 
