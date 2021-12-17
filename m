@@ -1,89 +1,30 @@
 From: Paolo Bonzini <pbonzini@redhat.com>
-Date: Fri, 17 Dec 2021 09:28:00 +0100
-Subject: [PATCH v2 2/4] RISC-V: KVM: Add VM capability to allow userspace
- get GPA bits
-In-Reply-To: <20211129075451.418122-3-anup.patel@wdc.com>
-References: <20211129075451.418122-1-anup.patel@wdc.com>
- <20211129075451.418122-3-anup.patel@wdc.com>
-Message-ID: <3c5472f4-44ce-9ba8-4dbc-967ea377ae10@redhat.com>
+Date: Fri, 17 Dec 2021 15:51:14 +0100
+Subject: Possible nohz-full/RCU issue in arm64 KVM
+In-Reply-To: <YbyO40zDW/kvUHEE@FVFF77S0Q05N>
+References: <d80e440375896f75d45e227d40af60ca7ba24ceb.camel@redhat.com>
+ <YbyO40zDW/kvUHEE@FVFF77S0Q05N>
+Message-ID: <ada9b2aa-f1e7-d566-0384-002890441a30@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 11/29/21 08:54, Anup Patel wrote:
-> The number of GPA bits supported for a RISC-V Guest/VM is based on the
-> MMU mode used by the G-stage translation. The KVM RISC-V will detect and
-> use the best possible MMU mode for the G-stage in kvm_arch_init().
-> 
-> We add a generic VM capability KVM_CAP_VM_GPA_BITS which can be used by
-> the KVM userspace to get the number of GPA (guest physical address) bits
-> supported for a Guest/VM.
-> 
-> Signed-off-by: Anup Patel <anup.patel@wdc.com>
-> ---
->   arch/riscv/include/asm/kvm_host.h | 1 +
->   arch/riscv/kvm/mmu.c              | 5 +++++
->   arch/riscv/kvm/vm.c               | 3 +++
->   include/uapi/linux/kvm.h          | 1 +
->   4 files changed, 10 insertions(+)
-> 
-> diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
-> index 37589b953bcb..ae5d238607fe 100644
-> --- a/arch/riscv/include/asm/kvm_host.h
-> +++ b/arch/riscv/include/asm/kvm_host.h
-> @@ -221,6 +221,7 @@ void kvm_riscv_stage2_free_pgd(struct kvm *kvm);
->   void kvm_riscv_stage2_update_hgatp(struct kvm_vcpu *vcpu);
->   void kvm_riscv_stage2_mode_detect(void);
->   unsigned long kvm_riscv_stage2_mode(void);
-> +int kvm_riscv_stage2_gpa_size(void);
->   
->   void kvm_riscv_stage2_vmid_detect(void);
->   unsigned long kvm_riscv_stage2_vmid_bits(void);
-> diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
-> index 9ffd0255af43..9b6d6465094f 100644
-> --- a/arch/riscv/kvm/mmu.c
-> +++ b/arch/riscv/kvm/mmu.c
-> @@ -760,3 +760,8 @@ unsigned long kvm_riscv_stage2_mode(void)
->   {
->   	return stage2_mode >> HGATP_MODE_SHIFT;
->   }
-> +
-> +int kvm_riscv_stage2_gpa_size(void)
-> +{
-> +	return stage2_gpa_bits;
-> +}
-> diff --git a/arch/riscv/kvm/vm.c b/arch/riscv/kvm/vm.c
-> index fb18af34a4b5..6f959639ec45 100644
-> --- a/arch/riscv/kvm/vm.c
-> +++ b/arch/riscv/kvm/vm.c
-> @@ -82,6 +82,9 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
->   	case KVM_CAP_NR_MEMSLOTS:
->   		r = KVM_USER_MEM_SLOTS;
->   		break;
-> +	case KVM_CAP_VM_GPA_BITS:
-> +		r = kvm_riscv_stage2_gpa_size();
-> +		break;
->   	default:
->   		r = 0;
->   		break;
-> diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
-> index 1daa45268de2..469f05d69c8d 100644
-> --- a/include/uapi/linux/kvm.h
-> +++ b/include/uapi/linux/kvm.h
-> @@ -1131,6 +1131,7 @@ struct kvm_ppc_resize_hpt {
->   #define KVM_CAP_EXIT_ON_EMULATION_FAILURE 204
->   #define KVM_CAP_ARM_MTE 205
->   #define KVM_CAP_VM_MOVE_ENC_CONTEXT_FROM 206
-> +#define KVM_CAP_VM_GPA_BITS 207
->   
->   #ifdef KVM_CAP_IRQ_ROUTING
->   
-> 
+On 12/17/21 14:21, Mark Rutland wrote:
+> I'm not immediately sure what we*should*  do here. What does x86 do for an IRQ
+> taken from a guest mode? I couldn't spot any handling of that case, but I'm not
+> familiar enough with the x86 exception model to know if I'm looking in the
+> right place.
 
-This is nice and other architectures could support it.
+ARM is missing something like commit 160457140187 ("KVM: x86: Defer 
+vtime accounting 'til after IRQ handling", 2021-05-05).
+
+With that change, it would be possible to move guest_exit() in the 
+irq-disabled region without breaking time accounting.
+
+RISC-V has the same issue and it would be fixed in the same way, so 
+let's Cc Anup too.
 
 Paolo
-
 
