@@ -1,52 +1,109 @@
-From: Atish Patra <atishp@atishpatra.org>
-Date: Thu, 16 Dec 2021 21:50:13 -0800
-Subject: [PATCH v2 3/4] KVM: selftests: Add EXTRA_CFLAGS in top-level
- Makefile
-In-Reply-To: <20211129075451.418122-4-anup.patel@wdc.com>
+From: Anup Patel <anup@brainfault.org>
+Date: Fri, 17 Dec 2021 11:38:59 +0530
+Subject: [PATCH v2 2/4] RISC-V: KVM: Add VM capability to allow userspace
+ get GPA bits
+In-Reply-To: <CAOnJCU+Yft5EjgUUCi=nW79pYSGYPWB1ew5iyTjViFvGGQxQCA@mail.gmail.com>
 References: <20211129075451.418122-1-anup.patel@wdc.com>
- <20211129075451.418122-4-anup.patel@wdc.com>
-Message-ID: <CAOnJCU+MvAj79Pyjg+pimPkcWTVbq9kwSaoUAXSCV9Y1odD+5g@mail.gmail.com>
+ <20211129075451.418122-3-anup.patel@wdc.com>
+ <CAOnJCU+Yft5EjgUUCi=nW79pYSGYPWB1ew5iyTjViFvGGQxQCA@mail.gmail.com>
+Message-ID: <CAAhSdy1WXnoFw2_o+6E1zjx5bP96FeW3ijMuOp3R794Yxasskg@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Nov 29, 2021 at 12:10 AM Anup Patel <anup.patel@wdc.com> wrote:
+On Fri, Dec 17, 2021 at 11:17 AM Atish Patra <atishp@atishpatra.org> wrote:
 >
-> We add EXTRA_CFLAGS to the common CFLAGS of top-level Makefile
-> which will allow users to pass additional compile-time flags such
-> as "-static".
+> On Mon, Nov 29, 2021 at 12:10 AM Anup Patel <anup.patel@wdc.com> wrote:
+> >
+> > The number of GPA bits supported for a RISC-V Guest/VM is based on the
+> > MMU mode used by the G-stage translation. The KVM RISC-V will detect and
+> > use the best possible MMU mode for the G-stage in kvm_arch_init().
+> >
+> > We add a generic VM capability KVM_CAP_VM_GPA_BITS which can be used by
+> > the KVM userspace to get the number of GPA (guest physical address) bits
+> > supported for a Guest/VM.
+> >
+> > Signed-off-by: Anup Patel <anup.patel@wdc.com>
+> > ---
+> >  arch/riscv/include/asm/kvm_host.h | 1 +
+> >  arch/riscv/kvm/mmu.c              | 5 +++++
+> >  arch/riscv/kvm/vm.c               | 3 +++
+> >  include/uapi/linux/kvm.h          | 1 +
+> >  4 files changed, 10 insertions(+)
+> >
+> > diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
+> > index 37589b953bcb..ae5d238607fe 100644
+> > --- a/arch/riscv/include/asm/kvm_host.h
+> > +++ b/arch/riscv/include/asm/kvm_host.h
+> > @@ -221,6 +221,7 @@ void kvm_riscv_stage2_free_pgd(struct kvm *kvm);
+> >  void kvm_riscv_stage2_update_hgatp(struct kvm_vcpu *vcpu);
+> >  void kvm_riscv_stage2_mode_detect(void);
+> >  unsigned long kvm_riscv_stage2_mode(void);
+> > +int kvm_riscv_stage2_gpa_size(void);
+> >
+> >  void kvm_riscv_stage2_vmid_detect(void);
+> >  unsigned long kvm_riscv_stage2_vmid_bits(void);
+> > diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
+> > index 9ffd0255af43..9b6d6465094f 100644
+> > --- a/arch/riscv/kvm/mmu.c
+> > +++ b/arch/riscv/kvm/mmu.c
+> > @@ -760,3 +760,8 @@ unsigned long kvm_riscv_stage2_mode(void)
+> >  {
+> >         return stage2_mode >> HGATP_MODE_SHIFT;
+> >  }
+> > +
+> > +int kvm_riscv_stage2_gpa_size(void)
+> > +{
+> > +       return stage2_gpa_bits;
+> > +}
 >
-> Signed-off-by: Anup Patel <anup.patel@wdc.com>
-> ---
->  tools/testing/selftests/kvm/Makefile | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+> The ioctl & the underlying stage2_gpa_bits has bits.
+> Maybe rename the function to kvm_riscv_stage2_gpa_bits as well ?
+
+Okay, I will rename in the next revision.
+
+Thanks,
+Anup
+
 >
-> diff --git a/tools/testing/selftests/kvm/Makefile b/tools/testing/selftests/kvm/Makefile
-> index c4e34717826a..ee6740e9ecdb 100644
-> --- a/tools/testing/selftests/kvm/Makefile
-> +++ b/tools/testing/selftests/kvm/Makefile
-> @@ -131,7 +131,7 @@ endif
->  CFLAGS += -Wall -Wstrict-prototypes -Wuninitialized -O2 -g -std=gnu99 \
->         -fno-stack-protector -fno-PIE -I$(LINUX_TOOL_INCLUDE) \
->         -I$(LINUX_TOOL_ARCH_INCLUDE) -I$(LINUX_HDR_PATH) -Iinclude \
-> -       -I$(<D) -Iinclude/$(UNAME_M) -I..
-> +       -I$(<D) -Iinclude/$(UNAME_M) -I.. $(EXTRA_CFLAGS)
+> > diff --git a/arch/riscv/kvm/vm.c b/arch/riscv/kvm/vm.c
+> > index fb18af34a4b5..6f959639ec45 100644
+> > --- a/arch/riscv/kvm/vm.c
+> > +++ b/arch/riscv/kvm/vm.c
+> > @@ -82,6 +82,9 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
+> >         case KVM_CAP_NR_MEMSLOTS:
+> >                 r = KVM_USER_MEM_SLOTS;
+> >                 break;
+> > +       case KVM_CAP_VM_GPA_BITS:
+> > +               r = kvm_riscv_stage2_gpa_size();
+> > +               break;
+> >         default:
+> >                 r = 0;
+> >                 break;
+> > diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
+> > index 1daa45268de2..469f05d69c8d 100644
+> > --- a/include/uapi/linux/kvm.h
+> > +++ b/include/uapi/linux/kvm.h
+> > @@ -1131,6 +1131,7 @@ struct kvm_ppc_resize_hpt {
+> >  #define KVM_CAP_EXIT_ON_EMULATION_FAILURE 204
+> >  #define KVM_CAP_ARM_MTE 205
+> >  #define KVM_CAP_VM_MOVE_ENC_CONTEXT_FROM 206
+> > +#define KVM_CAP_VM_GPA_BITS 207
+> >
+> >  #ifdef KVM_CAP_IRQ_ROUTING
+> >
+> > --
+> > 2.25.1
+> >
 >
->  no-pie-option := $(call try-run, echo 'int main() { return 0; }' | \
->          $(CC) -Werror -no-pie -x c - -o "$$TMP", -no-pie)
+> Other than that, it looks good to me.
+>
+> Reviewed-by: Atish Patra <atishp@rivosinc.com>
+>
+>
 > --
-> 2.25.1
->
-
-Reviewed-by: Atish Patra <atishp@rivosinc.com>
-
---
-Regards,
-Atish
-
--- 
-Regards,
-Atish
+> Regards,
+> Atish
 
