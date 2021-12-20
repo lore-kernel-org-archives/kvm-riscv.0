@@ -1,68 +1,34 @@
-From: Yifei Jiang <jiangyifei@huawei.com>
-Date: Mon, 20 Dec 2021 21:09:18 +0800
-Subject: [PATCH v3 11/12] target/riscv: Implement virtual time adjusting with
- vm state changing
-In-Reply-To: <20211220130919.413-1-jiangyifei@huawei.com>
-References: <20211220130919.413-1-jiangyifei@huawei.com>
-Message-ID: <20211220130919.413-12-jiangyifei@huawei.com>
+From: Sean Christopherson <seanjc@google.com>
+Date: Mon, 20 Dec 2021 19:45:01 +0000
+Subject: [PATCH v2 3/4] KVM: selftests: Add EXTRA_CFLAGS in top-level
+ Makefile
+In-Reply-To: <20211129075451.418122-4-anup.patel@wdc.com>
+References: <20211129075451.418122-1-anup.patel@wdc.com>
+ <20211129075451.418122-4-anup.patel@wdc.com>
+Message-ID: <YcDdPUn9bAVnxb/2@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-We hope that virtual time adjusts with vm state changing. When a vm
-is stopped, guest virtual time should stop counting and kvm_timer
-should be stopped. When the vm is resumed, guest virtual time should
-continue to count and kvm_timer should be restored.
+On Mon, Nov 29, 2021, Anup Patel wrote:
+> We add EXTRA_CFLAGS to the common CFLAGS of top-level Makefile
 
-Signed-off-by: Yifei Jiang <jiangyifei@huawei.com>
-Signed-off-by: Mingwang Li <limingwang@huawei.com>
-Reviewed-by: Anup Patel <anup.patel@wdc.com>
----
- target/riscv/kvm.c | 14 ++++++++++++++
- 1 file changed, 14 insertions(+)
+Nit, wrap closer to 75 chars.
 
-diff --git a/target/riscv/kvm.c b/target/riscv/kvm.c
-index 3c20ec5ad3..6c0306bd2b 100644
---- a/target/riscv/kvm.c
-+++ b/target/riscv/kvm.c
-@@ -42,6 +42,7 @@
- #include "chardev/char-fe.h"
- #include "semihosting/console.h"
- #include "migration/migration.h"
-+#include "sysemu/runstate.h"
- 
- static uint64_t kvm_riscv_reg_id(CPURISCVState *env, uint64_t type, uint64_t idx)
- {
-@@ -378,6 +379,17 @@ unsigned long kvm_arch_vcpu_id(CPUState *cpu)
-     return cpu->cpu_index;
- }
- 
-+static void kvm_riscv_vm_state_change(void *opaque, bool running, RunState state)
-+{
-+    CPUState *cs = opaque;
-+
-+    if (running) {
-+        kvm_riscv_put_regs_timer(cs);
-+    } else {
-+        kvm_riscv_get_regs_timer(cs);
-+    }
-+}
-+
- void kvm_arch_init_irq_routing(KVMState *s)
- {
- }
-@@ -390,6 +402,8 @@ int kvm_arch_init_vcpu(CPUState *cs)
-     CPURISCVState *env = &cpu->env;
-     uint64_t id;
- 
-+    qemu_add_vm_change_state_handler(kvm_riscv_vm_state_change, cs);
-+
-     id = kvm_riscv_reg_id(env, KVM_REG_RISCV_CONFIG, KVM_REG_RISCV_CONFIG_REG(isa));
-     ret = kvm_get_one_reg(cs, id, &isa);
-     if (ret) {
--- 
-2.19.1
+> which will allow users to pass additional compile-time flags such
+> as "-static".
 
+In case there's any hesitation in applying this (Paolo asked if this was just for
+debugging in v1), being able to pass "-static" is helpful for our environment as
+our test systems have a funky and minimal configuration (no gcc, and the interpreter
+is in a weird location).  Running selftests either requires building them with
+-static or creating a symbolic link for /lib64/ld-linux-x86-64.so.2.  It's generally
+easier to just tell people to compile with -static.
+
+> Signed-off-by: Anup Patel <anup.patel@wdc.com>
+> ---
+
+Reviewed-and-tested-by: Sean Christopherson <seanjc@google.com>
 
