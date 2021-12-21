@@ -1,46 +1,47 @@
-From: Anup Patel <anup@brainfault.org>
-Date: Tue, 21 Dec 2021 14:48:01 +0530
-Subject: [PATCH v2 3/4] KVM: selftests: Add EXTRA_CFLAGS in top-level
- Makefile
-In-Reply-To: <YcDdPUn9bAVnxb/2@google.com>
-References: <20211129075451.418122-1-anup.patel@wdc.com>
- <20211129075451.418122-4-anup.patel@wdc.com>
- <YcDdPUn9bAVnxb/2@google.com>
-Message-ID: <CAAhSdy3qFZoK16gh=F5jk7QC3q_xMOJbCmigCsQ1d7WYoSR9nA@mail.gmail.com>
+From: Anup Patel <anup.patel@wdc.com>
+Date: Tue, 21 Dec 2021 18:26:17 +0530
+Subject: [PATCH] KVM: selftests: Fix compile error for non-x86
+ vm_compute_max_gfn()
+Message-ID: <20211221125617.932371-1-anup.patel@wdc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Dec 21, 2021 at 1:15 AM Sean Christopherson <seanjc@google.com> wrote:
->
-> On Mon, Nov 29, 2021, Anup Patel wrote:
-> > We add EXTRA_CFLAGS to the common CFLAGS of top-level Makefile
->
-> Nit, wrap closer to 75 chars.
+The inline version of vm_compute_max_gfn() in kvm_util.h directly
+access members of "struct kvm_vm" which causes compile errors for
+non-x86 architectures because lib/elf.c includes "kvm_util.h" before
+"kvm_util_internal.h".
 
-Okay, I will update.
+This patch fixes above described compile error by converting inline
+version of vm_compute_max_gfn() into a macro.
 
->
-> > which will allow users to pass additional compile-time flags such
-> > as "-static".
->
-> In case there's any hesitation in applying this (Paolo asked if this was just for
-> debugging in v1), being able to pass "-static" is helpful for our environment as
-> our test systems have a funky and minimal configuration (no gcc, and the interpreter
-> is in a weird location).  Running selftests either requires building them with
-> -static or creating a symbolic link for /lib64/ld-linux-x86-64.so.2.  It's generally
-> easier to just tell people to compile with -static.
->
-> > Signed-off-by: Anup Patel <anup.patel@wdc.com>
-> > ---
->
-> Reviewed-and-tested-by: Sean Christopherson <seanjc@google.com>
+Fixes: c8cc43c1eae2 ("selftests: KVM: avoid failures due to reserved
+HyperTransport region")
+Signed-off-by: Anup Patel <anup.patel@wdc.com>
+---
+ tools/testing/selftests/kvm/include/kvm_util.h | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-Thanks, I am planning to queue this for 5.17. Currently, I am waiting for
-some reviews on the PATCH4 (last patch).
+diff --git a/tools/testing/selftests/kvm/include/kvm_util.h b/tools/testing/selftests/kvm/include/kvm_util.h
+index da2b702da71a..2279e340ca58 100644
+--- a/tools/testing/selftests/kvm/include/kvm_util.h
++++ b/tools/testing/selftests/kvm/include/kvm_util.h
+@@ -74,10 +74,8 @@ enum vm_guest_mode {
+ #if defined(__x86_64__)
+ unsigned long vm_compute_max_gfn(struct kvm_vm *vm);
+ #else
+-static inline unsigned long vm_compute_max_gfn(struct kvm_vm *vm)
+-{
+-	return ((1ULL << vm->pa_bits) >> vm->page_shift) - 1;
+-}
++#define vm_compute_max_gfn(vm) \
++	((unsigned long)(((1ULL << (vm)->pa_bits) >> (vm)->page_shift) - 1))
+ #endif
+ 
+ #define MIN_PAGE_SIZE		(1U << MIN_PAGE_SHIFT)
+-- 
+2.25.1
 
-Regards,
-Anup
 
