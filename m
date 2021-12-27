@@ -1,21 +1,21 @@
 From: Guo Ren <guoren@kernel.org>
-Date: Mon, 27 Dec 2021 15:36:58 +0800
+Date: Mon, 27 Dec 2021 15:37:23 +0800
 Subject: [PATCH] KVM: RISC-V: Avoid spurious virtual interrupts after
  clearing hideleg CSR
-In-Reply-To: <CAAhSdy0fAD=BexOPoiMBWzPort5S5y1iL2N0FLLHGATVvDye4Q@mail.gmail.com>
+In-Reply-To: <CABvJ_xg9ckkv6OCYNJJEo3m2z0v7KS+fF4Y-2T6ybuae87x37Q@mail.gmail.com>
 References: <20211223031342.11993-1-vincent.chen@sifive.com>
  <CAJF2gTTDiop+EPMjhrX8cbH+96N-wLJtyLC+yY_E3rtfA-o1Wg@mail.gmail.com>
- <CAAhSdy0fAD=BexOPoiMBWzPort5S5y1iL2N0FLLHGATVvDye4Q@mail.gmail.com>
-Message-ID: <CAJF2gTQD4rg7ZauuniWKK-BaZcz6jJ-FMsBo-2GMko2wVKes-g@mail.gmail.com>
+ <CABvJ_xg9ckkv6OCYNJJEo3m2z0v7KS+fF4Y-2T6ybuae87x37Q@mail.gmail.com>
+Message-ID: <CAJF2gTTHGSPpjFHstuHQOxEAQmyLGKS-7x_AR2gcEjMmFOc_vQ@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Dec 27, 2021 at 12:15 PM Anup Patel <anup@brainfault.org> wrote:
+On Mon, Dec 27, 2021 at 10:44 AM Vincent Chen <vincent.chen@sifive.com> wrote:
 >
-> On Sat, Dec 25, 2021 at 5:33 AM Guo Ren <guoren@kernel.org> wrote:
+> On Sat, Dec 25, 2021 at 8:02 AM Guo Ren <guoren@kernel.org> wrote:
 > >
 > > On Thu, Dec 23, 2021 at 11:13 AM Vincent Chen <vincent.chen@sifive.com> wrote:
 > > >
@@ -50,18 +50,22 @@ On Mon, Dec 27, 2021 at 12:15 PM Anup Patel <anup@brainfault.org> wrote:
 > > > +       csr_write(CSR_HVIP, 0);
 > > From hw design view, CSR_VSIE is enough, why apend CSR_HVIP clearing?
 >
-> Actually, both HVIP and VSIE are collectively responsible for injecting
-> virtual interrupts. Rather than clearing just one of them, it's better to
-> clear both in kvm_arch_hardware_disable() since this is in the
-> non-performance critical path.
-Clear enough, thx for the reply.
-
->
-> Regards,
-> Anup
+> The CSR_HVIP is for the host OS to trigger virtual interrupts intended
+> for VS-mode. Because the host OS has terminated all guest OS at this
+> moment, I think the host OS also needs to clear CSR_HVIP as well.
 >
 > >
 > > How can I reproduce it on qemu?
+>
+> After booting a guest OS to the shell, if you are lucky enough, you
+> will see the console repeatedly prints "unexpected IRQ trap at vector
+> 00" after using "halt -f" to terminate the guest OS.
+> (It is difficult to reproduce.  This is because this bug happens only
+> if $HVIP has pending interrupts whenever the guest OS is terminated)
+Got it, thx.
+
+>
+>
 > >
 > > >         csr_write(CSR_HEDELEG, 0);
 > > >         csr_write(CSR_HIDELEG, 0);
@@ -82,11 +86,6 @@ Clear enough, thx for the reply.
 > >  Guo Ren
 > >
 > > ML: https://lore.kernel.org/linux-csky/
-> >
-> > --
-> > kvm-riscv mailing list
-> > kvm-riscv at lists.infradead.org
-> > http://lists.infradead.org/mailman/listinfo/kvm-riscv
 
 
 
