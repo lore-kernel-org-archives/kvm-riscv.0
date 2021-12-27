@@ -1,97 +1,63 @@
-From: Guo Ren <guoren@kernel.org>
-Date: Mon, 27 Dec 2021 15:37:23 +0800
-Subject: [PATCH] KVM: RISC-V: Avoid spurious virtual interrupts after
- clearing hideleg CSR
-In-Reply-To: <CABvJ_xg9ckkv6OCYNJJEo3m2z0v7KS+fF4Y-2T6ybuae87x37Q@mail.gmail.com>
-References: <20211223031342.11993-1-vincent.chen@sifive.com>
- <CAJF2gTTDiop+EPMjhrX8cbH+96N-wLJtyLC+yY_E3rtfA-o1Wg@mail.gmail.com>
- <CABvJ_xg9ckkv6OCYNJJEo3m2z0v7KS+fF4Y-2T6ybuae87x37Q@mail.gmail.com>
-Message-ID: <CAJF2gTTHGSPpjFHstuHQOxEAQmyLGKS-7x_AR2gcEjMmFOc_vQ@mail.gmail.com>
+From: Chao Gao <chao.gao@intel.com>
+Date: Mon, 27 Dec 2021 16:15:06 +0800
+Subject: [PATCH 0/6] Improve KVM's interaction with CPU hotplug
+Message-ID: <20211227081515.2088920-1-chao.gao@intel.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Dec 27, 2021 at 10:44 AM Vincent Chen <vincent.chen@sifive.com> wrote:
->
-> On Sat, Dec 25, 2021 at 8:02 AM Guo Ren <guoren@kernel.org> wrote:
-> >
-> > On Thu, Dec 23, 2021 at 11:13 AM Vincent Chen <vincent.chen@sifive.com> wrote:
-> > >
-> > > When the last VM is terminated, the host kernel will invoke function
-> > > hardware_disable_nolock() on each CPU to disable the related virtualization
-> > > functions. Here, RISC-V currently only clears hideleg CSR and hedeleg CSR.
-> > > This behavior will cause the host kernel to receive spurious interrupts if
-> > > hvip CSR has pending interrupts and the corresponding enable bits in vsie
-> > > CSR are asserted. To avoid it, hvip CSR and vsie CSR shall be cleared
-> > > earlier than hideleg CSR.
-> > >
-> > > Signed-off-by: Vincent Chen <vincent.chen@sifive.com>
-> > > ---
-> > >  arch/riscv/kvm/main.c | 8 ++++++++
-> > >  1 file changed, 8 insertions(+)
-> > >
-> > > diff --git a/arch/riscv/kvm/main.c b/arch/riscv/kvm/main.c
-> > > index 421ecf4e6360..31777d29e864 100644
-> > > --- a/arch/riscv/kvm/main.c
-> > > +++ b/arch/riscv/kvm/main.c
-> > > @@ -58,6 +58,14 @@ int kvm_arch_hardware_enable(void)
-> > >
-> > >  void kvm_arch_hardware_disable(void)
-> > >  {
-> > > +       /*
-> > > +        * After clearing the hideleg CSR, the host kernel will receive spurious
-> > > +        * interrupts if hvip CSR has pending interrupts and the corresponding
-> > > +        * enable bits in vsie CSR are asserted. To avoid it, hvip CSR and
-> > > +        * vsie CSR shall be cleared early than hideleg CSR.
-> > > +        */
-> > > +       csr_write(CSR_VSIE, 0);
-> > > +       csr_write(CSR_HVIP, 0);
-> > From hw design view, CSR_VSIE is enough, why apend CSR_HVIP clearing?
->
-> The CSR_HVIP is for the host OS to trigger virtual interrupts intended
-> for VS-mode. Because the host OS has terminated all guest OS at this
-> moment, I think the host OS also needs to clear CSR_HVIP as well.
->
-> >
-> > How can I reproduce it on qemu?
->
-> After booting a guest OS to the shell, if you are lucky enough, you
-> will see the console repeatedly prints "unexpected IRQ trap at vector
-> 00" after using "halt -f" to terminate the guest OS.
-> (It is difficult to reproduce.  This is because this bug happens only
-> if $HVIP has pending interrupts whenever the guest OS is terminated)
-Got it, thx.
+KVM registers its CPU hotplug callback to CPU starting section. And in the
+callback, KVM enables hardware virtualization on hotplugged CPUs if any VM
+is running on existing CPUs.
 
->
->
-> >
-> > >         csr_write(CSR_HEDELEG, 0);
-> > >         csr_write(CSR_HIDELEG, 0);
-> > >  }
-> > > --
-> > > 2.17.1
-> > >
-> > >
-> > > --
-> > > kvm-riscv mailing list
-> > > kvm-riscv at lists.infradead.org
-> > > http://lists.infradead.org/mailman/listinfo/kvm-riscv
-> >
-> >
-> >
-> > --
-> > Best Regards
-> >  Guo Ren
-> >
-> > ML: https://lore.kernel.org/linux-csky/
+There are two problems in the process:
+1. KVM doesn't do compatibility checks before enabling hardware
+virtualization on hotplugged CPUs. This may cause #GP if VMX isn't
+supported or vmentry failure if some in-use VMX features are missing on
+hotplugged CPUs. Both break running VMs.
+2. Callbacks in CPU STARTING section cannot fail. So, even if KVM finds
+some incompatible CPUs, its callback cannot block CPU hotplug.
 
+This series improves KVM's interaction with CPU hotplug to avoid
+incompatible CPUs breaking running VMs. Following changes are made:
 
+1. move KVM's CPU hotplug callback to ONLINE section (suggested by Thomas)
+2. do compatibility checks on hotplugged CPUs.
+3. abort onlining incompatible CPUs if there is a running VM.
+
+This series is a follow-up to the discussion about KVM and CPU hotplug
+https://lore.kernel.org/lkml/3d3296f0-9245-40f9-1b5a-efffdb082de9 at redhat.com/T/
+
+Note: this series is tested only on Intel systems.
+
+Chao Gao (6):
+  KVM: x86: Move check_processor_compatibility from init ops to runtime
+    ops
+  KVM: x86: Use kvm_x86_ops in kvm_arch_check_processor_compat
+  KVM: Remove opaque from kvm_arch_check_processor_compat
+  KVM: Rename and move CPUHP_AP_KVM_STARTING to ONLINE section
+  KVM: x86: Remove WARN_ON in kvm_arch_check_processor_compat
+  KVM: Do compatibility checks on hotplugged CPUs
+
+ arch/arm64/kvm/arm.c            |  2 +-
+ arch/mips/kvm/mips.c            |  2 +-
+ arch/powerpc/kvm/powerpc.c      |  2 +-
+ arch/riscv/kvm/main.c           |  2 +-
+ arch/s390/kvm/kvm-s390.c        |  2 +-
+ arch/x86/include/asm/kvm_host.h |  2 +-
+ arch/x86/kvm/svm/svm.c          |  4 +-
+ arch/x86/kvm/vmx/evmcs.c        |  2 +-
+ arch/x86/kvm/vmx/evmcs.h        |  2 +-
+ arch/x86/kvm/vmx/vmx.c          | 12 +++---
+ arch/x86/kvm/x86.c              |  7 +---
+ include/linux/cpuhotplug.h      |  2 +-
+ include/linux/kvm_host.h        |  2 +-
+ virt/kvm/kvm_main.c             | 74 ++++++++++++++++++++++++---------
+ 14 files changed, 74 insertions(+), 43 deletions(-)
 
 -- 
-Best Regards
- Guo Ren
+2.25.1
 
-ML: https://lore.kernel.org/linux-csky/
 
