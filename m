@@ -1,68 +1,104 @@
 From: Anup Patel <anup@brainfault.org>
-Date: Thu, 6 Jan 2022 13:54:43 +0530
-Subject: [PATCH] MAINTAINERS: Update Anup's email address
-In-Reply-To: <CAOnJCUJkVT9W6X+oe1CHjnHLUFs11Z_3qeXnats9pUcxCUiDPw@mail.gmail.com>
-References: <20220103133759.103814-1-anup@brainfault.org>
- <CAOnJCUJkVT9W6X+oe1CHjnHLUFs11Z_3qeXnats9pUcxCUiDPw@mail.gmail.com>
-Message-ID: <CAAhSdy0CTwQn3PJER2H3snYA0D9y9f=nN3PCGxvVH_n7zFdZQA@mail.gmail.com>
+Date: Thu, 6 Jan 2022 18:51:01 +0530
+Subject: [GIT PULL] KVM/riscv changes for 5.17, take #1
+Message-ID: <CAAhSdy2iRgCBt=6t2p5AE_Rq18s2QcRoM62ZAGiAcn5A6TfB4w@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Jan 4, 2022 at 1:37 AM Atish Patra <atishp@atishpatra.org> wrote:
->
-> On Mon, Jan 3, 2022 at 5:38 AM Anup Patel <anup@brainfault.org> wrote:
-> >
-> > I am no longer work at Western Digital so update my email address to
-> > personal one and add entries to .mailmap as well.
-> >
-> > Signed-off-by: Anup Patel <anup@brainfault.org>
-> > ---
-> >  .mailmap    | 1 +
-> >  MAINTAINERS | 2 +-
-> >  2 files changed, 2 insertions(+), 1 deletion(-)
-> >
-> > diff --git a/.mailmap b/.mailmap
-> > index e951cf1b1730..f5d327f0c4be 100644
-> > --- a/.mailmap
-> > +++ b/.mailmap
-> > @@ -46,6 +46,7 @@ Andy Adamson <andros@citi.umich.edu>
-> >  Antoine Tenart <atenart@kernel.org> <antoine.tenart@bootlin.com>
-> >  Antoine Tenart <atenart@kernel.org> <antoine.tenart@free-electrons.com>
-> >  Antonio Ospite <ao2@ao2.it> <ao2@amarulasolutions.com>
-> > +Anup Patel <anup@brainfault.org> <anup.patel@wdc.com>
-> >  Archit Taneja <archit@ti.com>
-> >  Ard Biesheuvel <ardb@kernel.org> <ard.biesheuvel@linaro.org>
-> >  Arnaud Patard <arnaud.patard@rtp-net.org>
-> > diff --git a/MAINTAINERS b/MAINTAINERS
-> > index 3e8241451b49..aa7769f8c779 100644
-> > --- a/MAINTAINERS
-> > +++ b/MAINTAINERS
-> > @@ -10443,7 +10443,7 @@ F:      arch/powerpc/kernel/kvm*
-> >  F:     arch/powerpc/kvm/
-> >
-> >  KERNEL VIRTUAL MACHINE FOR RISC-V (KVM/riscv)
-> > -M:     Anup Patel <anup.patel@wdc.com>
-> > +M:     Anup Patel <anup@brainfault.org>
-> >  R:     Atish Patra <atishp@atishpatra.org>
-> >  L:     kvm at vger.kernel.org
-> >  L:     kvm-riscv at lists.infradead.org
-> > --
-> > 2.25.1
-> >
->
-> Acked-by: Atish Patra <atishp@rivosinc.com>
+Hi Palao,
 
-I have queued this patch for 5.17
+This is the first set of changes for 5.17. We have two new
+features for KVM RISC-V:
+1) SBI v0.2 support and
+2) Initial kvm selftest support.
 
-Thanks,
+Please pull.
+
+Regards,
 Anup
 
->
->
-> --
-> Regards,
-> Atish
+The following changes since commit 5e4e84f1124aa02643833b7ea40abd5a8e964388:
+
+  Merge tag 'kvm-s390-next-5.17-1' of
+git://git.kernel.org/pub/scm/linux/kernel/git/kvms390/linux into HEAD
+(2021-12-21 12:59:53 -0500)
+
+are available in the Git repository at:
+
+  https://github.com/kvm-riscv/linux.git tags/kvm-riscv-5.17-1
+
+for you to fetch changes up to 497685f2c743f552ec5626d60fc12e7c00faaf06:
+
+  MAINTAINERS: Update Anup's email address (2022-01-06 15:18:22 +0530)
+
+----------------------------------------------------------------
+KVM/riscv changes for 5.17, take #1
+
+- Use common KVM implementation of MMU memory caches
+- SBI v0.2 support for Guest
+- Initial KVM selftests support
+- Fix to avoid spurious virtual interrupts after clearing hideleg CSR
+- Update email address for Anup and Atish
+
+----------------------------------------------------------------
+Anup Patel (5):
+      RISC-V: KVM: Forward SBI experimental and vendor extensions
+      RISC-V: KVM: Add VM capability to allow userspace get GPA bits
+      KVM: selftests: Add EXTRA_CFLAGS in top-level Makefile
+      KVM: selftests: Add initial support for RISC-V 64-bit
+      MAINTAINERS: Update Anup's email address
+
+Atish Patra (6):
+      RISC-V: KVM: Mark the existing SBI implementation as v0.1
+      RISC-V: KVM: Reorganize SBI code by moving SBI v0.1 to its own file
+      RISC-V: KVM: Add SBI v0.2 base extension
+      RISC-V: KVM: Add v0.1 replacement SBI extensions defined in v0.2
+      RISC-V: KVM: Add SBI HSM extension in KVM
+      MAINTAINERS: Update Atish's email address
+
+Jisheng Zhang (1):
+      RISC-V: KVM: make kvm_riscv_vcpu_fp_clean() static
+
+Sean Christopherson (1):
+      KVM: RISC-V: Use common KVM implementation of MMU memory caches
+
+Vincent Chen (1):
+      KVM: RISC-V: Avoid spurious virtual interrupts after clearing hideleg CSR
+
+ .mailmap                                           |   2 +
+ MAINTAINERS                                        |   4 +-
+ arch/riscv/include/asm/kvm_host.h                  |  11 +-
+ arch/riscv/include/asm/kvm_types.h                 |   2 +-
+ arch/riscv/include/asm/kvm_vcpu_sbi.h              |  33 ++
+ arch/riscv/include/asm/sbi.h                       |   9 +
+ arch/riscv/kvm/Makefile                            |   4 +
+ arch/riscv/kvm/main.c                              |   8 +
+ arch/riscv/kvm/mmu.c                               |  71 +---
+ arch/riscv/kvm/vcpu.c                              |  28 +-
+ arch/riscv/kvm/vcpu_fp.c                           |   2 +-
+ arch/riscv/kvm/vcpu_sbi.c                          | 213 ++++++------
+ arch/riscv/kvm/vcpu_sbi_base.c                     |  99 ++++++
+ arch/riscv/kvm/vcpu_sbi_hsm.c                      | 105 ++++++
+ arch/riscv/kvm/vcpu_sbi_replace.c                  | 135 ++++++++
+ arch/riscv/kvm/vcpu_sbi_v01.c                      | 126 +++++++
+ arch/riscv/kvm/vm.c                                |   3 +
+ include/uapi/linux/kvm.h                           |   1 +
+ tools/testing/selftests/kvm/Makefile               |  14 +-
+ tools/testing/selftests/kvm/include/kvm_util.h     |  10 +
+ .../selftests/kvm/include/riscv/processor.h        | 135 ++++++++
+ tools/testing/selftests/kvm/lib/guest_modes.c      |  10 +
+ tools/testing/selftests/kvm/lib/riscv/processor.c  | 362 +++++++++++++++++++++
+ tools/testing/selftests/kvm/lib/riscv/ucall.c      |  87 +++++
+ 24 files changed, 1291 insertions(+), 183 deletions(-)
+ create mode 100644 arch/riscv/include/asm/kvm_vcpu_sbi.h
+ create mode 100644 arch/riscv/kvm/vcpu_sbi_base.c
+ create mode 100644 arch/riscv/kvm/vcpu_sbi_hsm.c
+ create mode 100644 arch/riscv/kvm/vcpu_sbi_replace.c
+ create mode 100644 arch/riscv/kvm/vcpu_sbi_v01.c
+ create mode 100644 tools/testing/selftests/kvm/include/riscv/processor.h
+ create mode 100644 tools/testing/selftests/kvm/lib/riscv/processor.c
+ create mode 100644 tools/testing/selftests/kvm/lib/riscv/ucall.c
 
