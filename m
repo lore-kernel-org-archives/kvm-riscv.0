@@ -1,152 +1,168 @@
 From: Yifei Jiang <jiangyifei@huawei.com>
-Date: Mon, 10 Jan 2022 09:38:29 +0800
-Subject: [PATCH v4 10/12] target/riscv: Add kvm_riscv_get/put_regs_timer
+Date: Mon, 10 Jan 2022 09:38:24 +0800
+Subject: [PATCH v4 05/12] target/riscv: Implement kvm_arch_put_registers
 In-Reply-To: <20220110013831.1594-1-jiangyifei@huawei.com>
 References: <20220110013831.1594-1-jiangyifei@huawei.com>
-Message-ID: <20220110013831.1594-11-jiangyifei@huawei.com>
+Message-ID: <20220110013831.1594-6-jiangyifei@huawei.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add kvm_riscv_get/put_regs_timer to synchronize virtual time context
-from KVM.
-
-To set register of RISCV_TIMER_REG(state) will occur a error from KVM
-on kvm_timer_state == 0. It's better to adapt in KVM, but it doesn't matter
-that adaping in QEMU.
+Put GPR CSR and FP registers to kvm by KVM_SET_ONE_REG ioctl
 
 Signed-off-by: Yifei Jiang <jiangyifei@huawei.com>
 Signed-off-by: Mingwang Li <limingwang@huawei.com>
+Reviewed-by: Alistair Francis <alistair.francis@wdc.com>
 Reviewed-by: Anup Patel <anup.patel@wdc.com>
 ---
- target/riscv/cpu.h |  7 +++++
- target/riscv/kvm.c | 72 ++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 79 insertions(+)
+ target/riscv/kvm.c | 104 ++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 103 insertions(+), 1 deletion(-)
 
-diff --git a/target/riscv/cpu.h b/target/riscv/cpu.h
-index 5f54fae7cc..9eceded96c 100644
---- a/target/riscv/cpu.h
-+++ b/target/riscv/cpu.h
-@@ -261,6 +261,13 @@ struct CPURISCVState {
- 
-     hwaddr kernel_addr;
-     hwaddr fdt_addr;
-+
-+    /* kvm timer */
-+    bool kvm_timer_dirty;
-+    uint64_t kvm_timer_time;
-+    uint64_t kvm_timer_compare;
-+    uint64_t kvm_timer_state;
-+    uint64_t kvm_timer_frequency;
- };
- 
- OBJECT_DECLARE_TYPE(RISCVCPU, RISCVCPUClass,
 diff --git a/target/riscv/kvm.c b/target/riscv/kvm.c
-index ded2a8c29d..b1f1d55f29 100644
+index 6d4df0ef6d..e695b91dc7 100644
 --- a/target/riscv/kvm.c
 +++ b/target/riscv/kvm.c
-@@ -40,6 +40,7 @@
- #include "kvm_riscv.h"
- #include "sbi_ecall_interface.h"
- #include "chardev/char-fe.h"
-+#include "migration/migration.h"
- 
- static uint64_t kvm_riscv_reg_id(CPURISCVState *env, uint64_t type, uint64_t idx)
- {
-@@ -64,6 +65,9 @@ static uint64_t kvm_riscv_reg_id(CPURISCVState *env, uint64_t type, uint64_t idx
- #define RISCV_CSR_REG(env, name)  kvm_riscv_reg_id(env, KVM_REG_RISCV_CSR, \
-                  KVM_REG_RISCV_CSR_REG(name))
- 
-+#define RISCV_TIMER_REG(env, name)  kvm_riscv_reg_id(env, KVM_REG_RISCV_TIMER, \
-+                 KVM_REG_RISCV_TIMER_REG(name))
-+
- #define RISCV_FP_F_REG(env, idx)  kvm_riscv_reg_id(env, KVM_REG_RISCV_FP_F, idx)
- 
- #define RISCV_FP_D_REG(env, idx)  kvm_riscv_reg_id(env, KVM_REG_RISCV_FP_D, idx)
-@@ -84,6 +88,22 @@ static uint64_t kvm_riscv_reg_id(CPURISCVState *env, uint64_t type, uint64_t idx
+@@ -73,6 +73,14 @@ static uint64_t kvm_riscv_reg_id(CPURISCVState *env, uint64_t type, uint64_t idx
          } \
      } while(0)
  
-+#define KVM_RISCV_GET_TIMER(cs, env, name, reg) \
++#define KVM_RISCV_SET_CSR(cs, env, csr, reg) \
 +    do { \
-+        int ret = kvm_get_one_reg(cs, RISCV_TIMER_REG(env, name), &reg); \
++        int ret = kvm_set_one_reg(cs, RISCV_CSR_REG(env, csr), &reg); \
 +        if (ret) { \
-+            abort(); \
++            return ret; \
 +        } \
 +    } while(0)
-+
-+#define KVM_RISCV_SET_TIMER(cs, env, name, reg) \
-+    do { \
-+        int ret = kvm_set_one_reg(cs, RISCV_TIMER_REG(env, time), &reg); \
-+        if (ret) { \
-+            abort(); \
-+        } \
-+    } while (0)
 +
  static int kvm_riscv_get_regs_core(CPUState *cs)
  {
      int ret = 0;
-@@ -235,6 +255,58 @@ static int kvm_riscv_put_regs_fp(CPUState *cs)
+@@ -98,6 +106,31 @@ static int kvm_riscv_get_regs_core(CPUState *cs)
      return ret;
  }
  
-+static void kvm_riscv_get_regs_timer(CPUState *cs)
++static int kvm_riscv_put_regs_core(CPUState *cs)
 +{
++    int ret = 0;
++    int i;
++    target_ulong reg;
 +    CPURISCVState *env = &RISCV_CPU(cs)->env;
 +
-+    if (env->kvm_timer_dirty) {
-+        return;
++    reg = env->pc;
++    ret = kvm_set_one_reg(cs, RISCV_CORE_REG(env, regs.pc), &reg);
++    if (ret) {
++        return ret;
 +    }
 +
-+    KVM_RISCV_GET_TIMER(cs, env, time, env->kvm_timer_time);
-+    KVM_RISCV_GET_TIMER(cs, env, compare, env->kvm_timer_compare);
-+    KVM_RISCV_GET_TIMER(cs, env, state, env->kvm_timer_state);
-+    KVM_RISCV_GET_TIMER(cs, env, frequency, env->kvm_timer_frequency);
-+
-+    env->kvm_timer_dirty = true;
-+}
-+
-+static void kvm_riscv_put_regs_timer(CPUState *cs)
-+{
-+    uint64_t reg;
-+    CPURISCVState *env = &RISCV_CPU(cs)->env;
-+
-+    if (!env->kvm_timer_dirty) {
-+        return;
-+    }
-+
-+    KVM_RISCV_SET_TIMER(cs, env, time, env->kvm_timer_time);
-+    KVM_RISCV_SET_TIMER(cs, env, compare, env->kvm_timer_compare);
-+
-+    /*
-+     * To set register of RISCV_TIMER_REG(state) will occur a error from KVM
-+     * on env->kvm_timer_state == 0, It's better to adapt in KVM, but it
-+     * doesn't matter that adaping in QEMU now.
-+     * TODO If KVM changes, adapt here.
-+     */
-+    if (env->kvm_timer_state) {
-+        KVM_RISCV_SET_TIMER(cs, env, state, env->kvm_timer_state);
-+    }
-+
-+    /*
-+     * For now, migration will not work between Hosts with different timer
-+     * frequency. Therefore, we should check whether they are the same here
-+     * during the migration.
-+     */
-+    if (migration_is_running(migrate_get_current()->state)) {
-+        KVM_RISCV_GET_TIMER(cs, env, frequency, reg);
-+        if (reg != env->kvm_timer_frequency) {
-+            error_report("Dst Hosts timer frequency != Src Hosts");
++    for (i = 1; i < 32; i++) {
++        uint64_t id = kvm_riscv_reg_id(env, KVM_REG_RISCV_CORE, i);
++        reg = env->gpr[i];
++        ret = kvm_set_one_reg(cs, id, &reg);
++        if (ret) {
++            return ret;
 +        }
 +    }
 +
-+    env->kvm_timer_dirty = false;
++    return ret;
 +}
++
+ static int kvm_riscv_get_regs_csr(CPUState *cs)
+ {
+     int ret = 0;
+@@ -115,6 +148,24 @@ static int kvm_riscv_get_regs_csr(CPUState *cs)
+     return ret;
+ }
  
++static int kvm_riscv_put_regs_csr(CPUState *cs)
++{
++    int ret = 0;
++    CPURISCVState *env = &RISCV_CPU(cs)->env;
++
++    KVM_RISCV_SET_CSR(cs, env, sstatus, env->mstatus);
++    KVM_RISCV_SET_CSR(cs, env, sie, env->mie);
++    KVM_RISCV_SET_CSR(cs, env, stvec, env->stvec);
++    KVM_RISCV_SET_CSR(cs, env, sscratch, env->sscratch);
++    KVM_RISCV_SET_CSR(cs, env, sepc, env->sepc);
++    KVM_RISCV_SET_CSR(cs, env, scause, env->scause);
++    KVM_RISCV_SET_CSR(cs, env, stval, env->stval);
++    KVM_RISCV_SET_CSR(cs, env, sip, env->mip);
++    KVM_RISCV_SET_CSR(cs, env, satp, env->satp);
++
++    return ret;
++}
++
+ static int kvm_riscv_get_regs_fp(CPUState *cs)
+ {
+     int ret = 0;
+@@ -148,6 +199,40 @@ static int kvm_riscv_get_regs_fp(CPUState *cs)
+     return ret;
+ }
+ 
++static int kvm_riscv_put_regs_fp(CPUState *cs)
++{
++    int ret = 0;
++    int i;
++    CPURISCVState *env = &RISCV_CPU(cs)->env;
++
++    if (riscv_has_ext(env, RVD)) {
++        uint64_t reg;
++        for (i = 0; i < 32; i++) {
++            reg = env->fpr[i];
++            ret = kvm_set_one_reg(cs, RISCV_FP_D_REG(env, i), &reg);
++            if (ret) {
++                return ret;
++            }
++        }
++        return ret;
++    }
++
++    if (riscv_has_ext(env, RVF)) {
++        uint32_t reg;
++        for (i = 0; i < 32; i++) {
++            reg = env->fpr[i];
++            ret = kvm_set_one_reg(cs, RISCV_FP_F_REG(env, i), &reg);
++            if (ret) {
++                return ret;
++            }
++        }
++        return ret;
++    }
++
++    return ret;
++}
++
++
  const KVMCapabilityInfo kvm_arch_required_capabilities[] = {
      KVM_CAP_LAST_INFO
+ };
+@@ -176,7 +261,24 @@ int kvm_arch_get_registers(CPUState *cs)
+ 
+ int kvm_arch_put_registers(CPUState *cs, int level)
+ {
+-    return 0;
++    int ret = 0;
++
++    ret = kvm_riscv_put_regs_core(cs);
++    if (ret) {
++        return ret;
++    }
++
++    ret = kvm_riscv_put_regs_csr(cs);
++    if (ret) {
++        return ret;
++    }
++
++    ret = kvm_riscv_put_regs_fp(cs);
++    if (ret) {
++        return ret;
++    }
++
++    return ret;
+ }
+ 
+ int kvm_arch_release_virq_post(int virq)
 -- 
 2.19.1
 
