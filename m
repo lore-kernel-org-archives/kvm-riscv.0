@@ -1,76 +1,177 @@
-From: Yifei Jiang <jiangyifei@huawei.com>
-Date: Mon, 10 Jan 2022 09:38:31 +0800
-Subject: [PATCH v4 12/12] target/riscv: Support virtual time context
- synchronization
-In-Reply-To: <20220110013831.1594-1-jiangyifei@huawei.com>
+From: Alistair Francis <alistair23@gmail.com>
+Date: Mon, 10 Jan 2022 16:48:48 +1000
+Subject: [PATCH v4 08/12] target/riscv: Handle KVM_EXIT_RISCV_SBI exit
+In-Reply-To: <20220110013831.1594-9-jiangyifei@huawei.com>
 References: <20220110013831.1594-1-jiangyifei@huawei.com>
-Message-ID: <20220110013831.1594-13-jiangyifei@huawei.com>
+ <20220110013831.1594-9-jiangyifei@huawei.com>
+Message-ID: <CAKmqyKMoCVpdKv+PJ+pu5Wvr45K1+wSVA+rTxf+_Ga16ErZGUw@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add virtual time context description to vmstate_kvmtimer. After cpu being
-loaded, virtual time context is updated to KVM.
+On Mon, Jan 10, 2022 at 11:49 AM Yifei Jiang via <qemu-devel@nongnu.org> wrote:
+>
+> Use char-fe to handle console sbi call, which implement early
+> console io while apply 'earlycon=sbi' into kernel parameters.
+>
+> Signed-off-by: Yifei Jiang <jiangyifei@huawei.com>
+> Signed-off-by: Mingwang Li <limingwang@huawei.com>
+> Reviewed-by: Anup Patel <anup.patel@wdc.com>
 
-Signed-off-by: Yifei Jiang <jiangyifei@huawei.com>
-Signed-off-by: Mingwang Li <limingwang@huawei.com>
-Reviewed-by: Anup Patel <anup.patel@wdc.com>
 Reviewed-by: Alistair Francis <alistair.francis@wdc.com>
----
- target/riscv/machine.c | 30 ++++++++++++++++++++++++++++++
- 1 file changed, 30 insertions(+)
 
-diff --git a/target/riscv/machine.c b/target/riscv/machine.c
-index ad8248ebfd..95eb82792a 100644
---- a/target/riscv/machine.c
-+++ b/target/riscv/machine.c
-@@ -164,6 +164,35 @@ static const VMStateDescription vmstate_pointermasking = {
-     }
- };
- 
-+static bool kvmtimer_needed(void *opaque)
-+{
-+    return kvm_enabled();
-+}
-+
-+static int cpu_post_load(void *opaque, int version_id)
-+{
-+    RISCVCPU *cpu = opaque;
-+    CPURISCVState *env = &cpu->env;
-+
-+    env->kvm_timer_dirty = true;
-+    return 0;
-+}
-+
-+static const VMStateDescription vmstate_kvmtimer = {
-+    .name = "cpu/kvmtimer",
-+    .version_id = 1,
-+    .minimum_version_id = 1,
-+    .needed = kvmtimer_needed,
-+    .post_load = cpu_post_load,
-+    .fields = (VMStateField[]) {
-+        VMSTATE_UINT64(env.kvm_timer_time, RISCVCPU),
-+        VMSTATE_UINT64(env.kvm_timer_compare, RISCVCPU),
-+        VMSTATE_UINT64(env.kvm_timer_state, RISCVCPU),
-+
-+        VMSTATE_END_OF_LIST()
-+    }
-+};
-+
- const VMStateDescription vmstate_riscv_cpu = {
-     .name = "cpu",
-     .version_id = 3,
-@@ -218,6 +247,7 @@ const VMStateDescription vmstate_riscv_cpu = {
-         &vmstate_hyper,
-         &vmstate_vector,
-         &vmstate_pointermasking,
-+        &vmstate_kvmtimer,
-         NULL
-     }
- };
--- 
-2.19.1
+Alistair
 
+> ---
+>  target/riscv/kvm.c                 | 42 ++++++++++++++++-
+>  target/riscv/sbi_ecall_interface.h | 72 ++++++++++++++++++++++++++++++
+>  2 files changed, 113 insertions(+), 1 deletion(-)
+>  create mode 100644 target/riscv/sbi_ecall_interface.h
+>
+> diff --git a/target/riscv/kvm.c b/target/riscv/kvm.c
+> index 0027f11f45..ded2a8c29d 100644
+> --- a/target/riscv/kvm.c
+> +++ b/target/riscv/kvm.c
+> @@ -38,6 +38,8 @@
+>  #include "qemu/log.h"
+>  #include "hw/loader.h"
+>  #include "kvm_riscv.h"
+> +#include "sbi_ecall_interface.h"
+> +#include "chardev/char-fe.h"
+>
+>  static uint64_t kvm_riscv_reg_id(CPURISCVState *env, uint64_t type, uint64_t idx)
+>  {
+> @@ -365,9 +367,47 @@ bool kvm_arch_stop_on_emulation_error(CPUState *cs)
+>      return true;
+>  }
+>
+> +static int kvm_riscv_handle_sbi(CPUState *cs, struct kvm_run *run)
+> +{
+> +    int ret = 0;
+> +    unsigned char ch;
+> +    switch (run->riscv_sbi.extension_id) {
+> +    case SBI_EXT_0_1_CONSOLE_PUTCHAR:
+> +        ch = run->riscv_sbi.args[0];
+> +        qemu_chr_fe_write(serial_hd(0)->be, &ch, sizeof(ch));
+> +        break;
+> +    case SBI_EXT_0_1_CONSOLE_GETCHAR:
+> +        ret = qemu_chr_fe_read_all(serial_hd(0)->be, &ch, sizeof(ch));
+> +        if (ret == sizeof(ch)) {
+> +            run->riscv_sbi.args[0] = ch;
+> +        } else {
+> +            run->riscv_sbi.args[0] = -1;
+> +        }
+> +        break;
+> +    default:
+> +        qemu_log_mask(LOG_UNIMP,
+> +                      "%s: un-handled SBI EXIT, specific reasons is %lu\n",
+> +                      __func__, run->riscv_sbi.extension_id);
+> +        ret = -1;
+> +        break;
+> +    }
+> +    return ret;
+> +}
+> +
+>  int kvm_arch_handle_exit(CPUState *cs, struct kvm_run *run)
+>  {
+> -    return 0;
+> +    int ret = 0;
+> +    switch (run->exit_reason) {
+> +    case KVM_EXIT_RISCV_SBI:
+> +        ret = kvm_riscv_handle_sbi(cs, run);
+> +        break;
+> +    default:
+> +        qemu_log_mask(LOG_UNIMP, "%s: un-handled exit reason %d\n",
+> +                      __func__, run->exit_reason);
+> +        ret = -1;
+> +        break;
+> +    }
+> +    return ret;
+>  }
+>
+>  void kvm_riscv_reset_vcpu(RISCVCPU *cpu)
+> diff --git a/target/riscv/sbi_ecall_interface.h b/target/riscv/sbi_ecall_interface.h
+> new file mode 100644
+> index 0000000000..fb1a3fa8f2
+> --- /dev/null
+> +++ b/target/riscv/sbi_ecall_interface.h
+> @@ -0,0 +1,72 @@
+> +/*
+> + * SPDX-License-Identifier: BSD-2-Clause
+> + *
+> + * Copyright (c) 2019 Western Digital Corporation or its affiliates.
+> + *
+> + * Authors:
+> + *   Anup Patel <anup.patel@wdc.com>
+> + */
+> +
+> +#ifndef __SBI_ECALL_INTERFACE_H__
+> +#define __SBI_ECALL_INTERFACE_H__
+> +
+> +/* clang-format off */
+> +
+> +/* SBI Extension IDs */
+> +#define SBI_EXT_0_1_SET_TIMER           0x0
+> +#define SBI_EXT_0_1_CONSOLE_PUTCHAR     0x1
+> +#define SBI_EXT_0_1_CONSOLE_GETCHAR     0x2
+> +#define SBI_EXT_0_1_CLEAR_IPI           0x3
+> +#define SBI_EXT_0_1_SEND_IPI            0x4
+> +#define SBI_EXT_0_1_REMOTE_FENCE_I      0x5
+> +#define SBI_EXT_0_1_REMOTE_SFENCE_VMA   0x6
+> +#define SBI_EXT_0_1_REMOTE_SFENCE_VMA_ASID 0x7
+> +#define SBI_EXT_0_1_SHUTDOWN            0x8
+> +#define SBI_EXT_BASE                    0x10
+> +#define SBI_EXT_TIME                    0x54494D45
+> +#define SBI_EXT_IPI                     0x735049
+> +#define SBI_EXT_RFENCE                  0x52464E43
+> +#define SBI_EXT_HSM                     0x48534D
+> +
+> +/* SBI function IDs for BASE extension*/
+> +#define SBI_EXT_BASE_GET_SPEC_VERSION   0x0
+> +#define SBI_EXT_BASE_GET_IMP_ID         0x1
+> +#define SBI_EXT_BASE_GET_IMP_VERSION    0x2
+> +#define SBI_EXT_BASE_PROBE_EXT          0x3
+> +#define SBI_EXT_BASE_GET_MVENDORID      0x4
+> +#define SBI_EXT_BASE_GET_MARCHID        0x5
+> +#define SBI_EXT_BASE_GET_MIMPID         0x6
+> +
+> +/* SBI function IDs for TIME extension*/
+> +#define SBI_EXT_TIME_SET_TIMER          0x0
+> +
+> +/* SBI function IDs for IPI extension*/
+> +#define SBI_EXT_IPI_SEND_IPI            0x0
+> +
+> +/* SBI function IDs for RFENCE extension*/
+> +#define SBI_EXT_RFENCE_REMOTE_FENCE_I       0x0
+> +#define SBI_EXT_RFENCE_REMOTE_SFENCE_VMA    0x1
+> +#define SBI_EXT_RFENCE_REMOTE_SFENCE_VMA_ASID  0x2
+> +#define SBI_EXT_RFENCE_REMOTE_HFENCE_GVMA   0x3
+> +#define SBI_EXT_RFENCE_REMOTE_HFENCE_GVMA_VMID 0x4
+> +#define SBI_EXT_RFENCE_REMOTE_HFENCE_VVMA   0x5
+> +#define SBI_EXT_RFENCE_REMOTE_HFENCE_VVMA_ASID 0x6
+> +
+> +/* SBI function IDs for HSM extension */
+> +#define SBI_EXT_HSM_HART_START          0x0
+> +#define SBI_EXT_HSM_HART_STOP           0x1
+> +#define SBI_EXT_HSM_HART_GET_STATUS     0x2
+> +
+> +#define SBI_HSM_HART_STATUS_STARTED     0x0
+> +#define SBI_HSM_HART_STATUS_STOPPED     0x1
+> +#define SBI_HSM_HART_STATUS_START_PENDING   0x2
+> +#define SBI_HSM_HART_STATUS_STOP_PENDING    0x3
+> +
+> +#define SBI_SPEC_VERSION_MAJOR_OFFSET   24
+> +#define SBI_SPEC_VERSION_MAJOR_MASK     0x7f
+> +#define SBI_SPEC_VERSION_MINOR_MASK     0xffffff
+> +#define SBI_EXT_VENDOR_START            0x09000000
+> +#define SBI_EXT_VENDOR_END              0x09FFFFFF
+> +/* clang-format on */
+> +
+> +#endif
+> --
+> 2.19.1
+>
+>
 
