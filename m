@@ -1,68 +1,75 @@
 From: Yifei Jiang <jiangyifei@huawei.com>
-Date: Mon, 10 Jan 2022 09:38:30 +0800
-Subject: [PATCH v4 11/12] target/riscv: Implement virtual time adjusting with
- vm state changing
+Date: Mon, 10 Jan 2022 09:38:31 +0800
+Subject: [PATCH v4 12/12] target/riscv: Support virtual time context
+ synchronization
 In-Reply-To: <20220110013831.1594-1-jiangyifei@huawei.com>
 References: <20220110013831.1594-1-jiangyifei@huawei.com>
-Message-ID: <20220110013831.1594-12-jiangyifei@huawei.com>
+Message-ID: <20220110013831.1594-13-jiangyifei@huawei.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-We hope that virtual time adjusts with vm state changing. When a vm
-is stopped, guest virtual time should stop counting and kvm_timer
-should be stopped. When the vm is resumed, guest virtual time should
-continue to count and kvm_timer should be restored.
+Add virtual time context description to vmstate_kvmtimer. After cpu being
+loaded, virtual time context is updated to KVM.
 
 Signed-off-by: Yifei Jiang <jiangyifei@huawei.com>
 Signed-off-by: Mingwang Li <limingwang@huawei.com>
 Reviewed-by: Anup Patel <anup.patel@wdc.com>
 Reviewed-by: Alistair Francis <alistair.francis@wdc.com>
 ---
- target/riscv/kvm.c | 14 ++++++++++++++
- 1 file changed, 14 insertions(+)
+ target/riscv/machine.c | 30 ++++++++++++++++++++++++++++++
+ 1 file changed, 30 insertions(+)
 
-diff --git a/target/riscv/kvm.c b/target/riscv/kvm.c
-index b1f1d55f29..8d94b1c6a9 100644
---- a/target/riscv/kvm.c
-+++ b/target/riscv/kvm.c
-@@ -41,6 +41,7 @@
- #include "sbi_ecall_interface.h"
- #include "chardev/char-fe.h"
- #include "migration/migration.h"
-+#include "sysemu/runstate.h"
+diff --git a/target/riscv/machine.c b/target/riscv/machine.c
+index ad8248ebfd..95eb82792a 100644
+--- a/target/riscv/machine.c
++++ b/target/riscv/machine.c
+@@ -164,6 +164,35 @@ static const VMStateDescription vmstate_pointermasking = {
+     }
+ };
  
- static uint64_t kvm_riscv_reg_id(CPURISCVState *env, uint64_t type, uint64_t idx)
- {
-@@ -377,6 +378,17 @@ unsigned long kvm_arch_vcpu_id(CPUState *cpu)
-     return cpu->cpu_index;
- }
- 
-+static void kvm_riscv_vm_state_change(void *opaque, bool running, RunState state)
++static bool kvmtimer_needed(void *opaque)
 +{
-+    CPUState *cs = opaque;
-+
-+    if (running) {
-+        kvm_riscv_put_regs_timer(cs);
-+    } else {
-+        kvm_riscv_get_regs_timer(cs);
-+    }
++    return kvm_enabled();
 +}
 +
- void kvm_arch_init_irq_routing(KVMState *s)
- {
- }
-@@ -389,6 +401,8 @@ int kvm_arch_init_vcpu(CPUState *cs)
-     CPURISCVState *env = &cpu->env;
-     uint64_t id;
- 
-+    qemu_add_vm_change_state_handler(kvm_riscv_vm_state_change, cs);
++static int cpu_post_load(void *opaque, int version_id)
++{
++    RISCVCPU *cpu = opaque;
++    CPURISCVState *env = &cpu->env;
 +
-     id = kvm_riscv_reg_id(env, KVM_REG_RISCV_CONFIG, KVM_REG_RISCV_CONFIG_REG(isa));
-     ret = kvm_get_one_reg(cs, id, &isa);
-     if (ret) {
++    env->kvm_timer_dirty = true;
++    return 0;
++}
++
++static const VMStateDescription vmstate_kvmtimer = {
++    .name = "cpu/kvmtimer",
++    .version_id = 1,
++    .minimum_version_id = 1,
++    .needed = kvmtimer_needed,
++    .post_load = cpu_post_load,
++    .fields = (VMStateField[]) {
++        VMSTATE_UINT64(env.kvm_timer_time, RISCVCPU),
++        VMSTATE_UINT64(env.kvm_timer_compare, RISCVCPU),
++        VMSTATE_UINT64(env.kvm_timer_state, RISCVCPU),
++
++        VMSTATE_END_OF_LIST()
++    }
++};
++
+ const VMStateDescription vmstate_riscv_cpu = {
+     .name = "cpu",
+     .version_id = 3,
+@@ -218,6 +247,7 @@ const VMStateDescription vmstate_riscv_cpu = {
+         &vmstate_hyper,
+         &vmstate_vector,
+         &vmstate_pointermasking,
++        &vmstate_kvmtimer,
+         NULL
+     }
+ };
 -- 
 2.19.1
 
