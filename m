@@ -1,207 +1,148 @@
-From: Jiangyifei <jiangyifei@huawei.com>
-Date: Mon, 10 Jan 2022 01:33:20 +0000
-Subject: [PATCH v3 08/12] target/riscv: Handle KVM_EXIT_RISCV_SBI exit
-In-Reply-To: <CAKmqyKOtOFmy1_9W785DZiFCc=Us6O_pVpLsBOyXOk32zansnA@mail.gmail.com>
-References: <20211220130919.413-1-jiangyifei@huawei.com>
- <20211220130919.413-9-jiangyifei@huawei.com>
- <CAKmqyKOtOFmy1_9W785DZiFCc=Us6O_pVpLsBOyXOk32zansnA@mail.gmail.com>
-Message-ID: <0a655978156646baa83d41446a0898ac@huawei.com>
+From: Yifei Jiang <jiangyifei@huawei.com>
+Date: Mon, 10 Jan 2022 09:38:19 +0800
+Subject: [PATCH v4 00/12] Add riscv kvm accel support
+Message-ID: <20220110013831.1594-1-jiangyifei@huawei.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+This series adds both riscv32 and riscv64 kvm support, and implements
+migration based on riscv.
 
-> -----Original Message-----
-> From: Alistair Francis [mailto:alistair23 at gmail.com]
-> Sent: Thursday, January 6, 2022 6:04 AM
-> To: Jiangyifei <jiangyifei@huawei.com>
-> Cc: qemu-devel at nongnu.org Developers <qemu-devel@nongnu.org>; open
-> list:RISC-V <qemu-riscv@nongnu.org>; kvm-riscv at lists.infradead.org; open
-> list:Overall <kvm@vger.kernel.org>; libvir-list at redhat.com; Anup Patel
-> <anup.patel@wdc.com>; Palmer Dabbelt <palmer@dabbelt.com>; Alistair
-> Francis <Alistair.Francis@wdc.com>; Bin Meng <bin.meng@windriver.com>;
-> Fanliang (EulerOS) <fanliang@huawei.com>; Wubin (H)
-> <wu.wubin@huawei.com>; Wanghaibin (D) <wanghaibin.wang@huawei.com>;
-> wanbo (G) <wanbo13@huawei.com>; limingwang (A)
-> <limingwang@huawei.com>
-> Subject: Re: [PATCH v3 08/12] target/riscv: Handle KVM_EXIT_RISCV_SBI exit
-> 
-> On Tue, Dec 21, 2021 at 3:41 AM Yifei Jiang via <qemu-devel@nongnu.org>
-> wrote:
-> >
-> > Use char-fe to handle console sbi call, which implement early console
-> > io while apply 'earlycon=sbi' into kernel parameters.
-> >
-> > Signed-off-by: Yifei Jiang <jiangyifei@huawei.com>
-> > Signed-off-by: Mingwang Li <limingwang@huawei.com>
-> > Reviewed-by: Anup Patel <anup.patel@wdc.com>
-> > ---
-> >  target/riscv/kvm.c                 | 43 +++++++++++++++++-
-> >  target/riscv/sbi_ecall_interface.h | 72
-> > ++++++++++++++++++++++++++++++
-> >  2 files changed, 114 insertions(+), 1 deletion(-)  create mode 100644
-> > target/riscv/sbi_ecall_interface.h
-> >
-> > diff --git a/target/riscv/kvm.c b/target/riscv/kvm.c index
-> > 0027f11f45..4d08669c81 100644
-> > --- a/target/riscv/kvm.c
-> > +++ b/target/riscv/kvm.c
-> > @@ -38,6 +38,9 @@
-> >  #include "qemu/log.h"
-> >  #include "hw/loader.h"
-> >  #include "kvm_riscv.h"
-> > +#include "sbi_ecall_interface.h"
-> > +#include "chardev/char-fe.h"
-> > +#include "semihosting/console.h"
-> >
-> >  static uint64_t kvm_riscv_reg_id(CPURISCVState *env, uint64_t type,
-> > uint64_t idx)  { @@ -365,9 +368,47 @@ bool
-> > kvm_arch_stop_on_emulation_error(CPUState *cs)
-> >      return true;
-> >  }
-> >
-> > +static int kvm_riscv_handle_sbi(CPUState *cs, struct kvm_run *run) {
-> > +    int ret = 0;
-> > +    unsigned char ch;
-> > +    switch (run->riscv_sbi.extension_id) {
-> > +    case SBI_EXT_0_1_CONSOLE_PUTCHAR:
-> > +        ch = run->riscv_sbi.args[0];
-> > +        qemu_semihosting_log_out((const char *)&ch, sizeof(ch));
-> 
-> Hmmm... We print to the semihosting
-> 
-> > +        break;
-> > +    case SBI_EXT_0_1_CONSOLE_GETCHAR:
-> > +        ret = qemu_chr_fe_read_all(serial_hd(0)->be, &ch,
-> > + sizeof(ch));
-> 
-> but then read from the first serial device.
-> 
-> That seems a little strange. Would it be better to just print to serial as well?
-> 
-> Alistair
-> 
+Because of RISC-V KVM has been merged into the Linux master, so this
+series are changed from RFC to patch.
 
-Hm...I also think so. It will be modified in the next series.
+Several steps to use this:
+1. Build emulation
+$ ./configure --target-list=riscv64-softmmu
+$ make -j$(nproc)
 
-Yifei
+2. Build kernel
 
-> > +        if (ret == sizeof(ch)) {
-> > +            run->riscv_sbi.args[0] = ch;
-> > +        } else {
-> > +            run->riscv_sbi.args[0] = -1;
-> > +        }
-> > +        break;
-> > +    default:
-> > +        qemu_log_mask(LOG_UNIMP,
-> > +                      "%s: un-handled SBI EXIT, specific reasons
-> is %lu\n",
-> > +                      __func__, run->riscv_sbi.extension_id);
-> > +        ret = -1;
-> > +        break;
-> > +    }
-> > +    return ret;
-> > +}
-> > +
-> >  int kvm_arch_handle_exit(CPUState *cs, struct kvm_run *run)  {
-> > -    return 0;
-> > +    int ret = 0;
-> > +    switch (run->exit_reason) {
-> > +    case KVM_EXIT_RISCV_SBI:
-> > +        ret = kvm_riscv_handle_sbi(cs, run);
-> > +        break;
-> > +    default:
-> > +        qemu_log_mask(LOG_UNIMP, "%s: un-handled exit reason %d\n",
-> > +                      __func__, run->exit_reason);
-> > +        ret = -1;
-> > +        break;
-> > +    }
-> > +    return ret;
-> >  }
-> >
-> >  void kvm_riscv_reset_vcpu(RISCVCPU *cpu) diff --git
-> > a/target/riscv/sbi_ecall_interface.h
-> > b/target/riscv/sbi_ecall_interface.h
-> > new file mode 100644
-> > index 0000000000..fb1a3fa8f2
-> > --- /dev/null
-> > +++ b/target/riscv/sbi_ecall_interface.h
-> > @@ -0,0 +1,72 @@
-> > +/*
-> > + * SPDX-License-Identifier: BSD-2-Clause
-> > + *
-> > + * Copyright (c) 2019 Western Digital Corporation or its affiliates.
-> > + *
-> > + * Authors:
-> > + *   Anup Patel <anup.patel@wdc.com>
-> > + */
-> > +
-> > +#ifndef __SBI_ECALL_INTERFACE_H__
-> > +#define __SBI_ECALL_INTERFACE_H__
-> > +
-> > +/* clang-format off */
-> > +
-> > +/* SBI Extension IDs */
-> > +#define SBI_EXT_0_1_SET_TIMER           0x0
-> > +#define SBI_EXT_0_1_CONSOLE_PUTCHAR     0x1
-> > +#define SBI_EXT_0_1_CONSOLE_GETCHAR     0x2
-> > +#define SBI_EXT_0_1_CLEAR_IPI           0x3
-> > +#define SBI_EXT_0_1_SEND_IPI            0x4
-> > +#define SBI_EXT_0_1_REMOTE_FENCE_I      0x5
-> > +#define SBI_EXT_0_1_REMOTE_SFENCE_VMA   0x6
-> > +#define SBI_EXT_0_1_REMOTE_SFENCE_VMA_ASID 0x7
-> > +#define SBI_EXT_0_1_SHUTDOWN            0x8
-> > +#define SBI_EXT_BASE                    0x10
-> > +#define SBI_EXT_TIME                    0x54494D45
-> > +#define SBI_EXT_IPI                     0x735049
-> > +#define SBI_EXT_RFENCE                  0x52464E43
-> > +#define SBI_EXT_HSM                     0x48534D
-> > +
-> > +/* SBI function IDs for BASE extension*/
-> > +#define SBI_EXT_BASE_GET_SPEC_VERSION   0x0
-> > +#define SBI_EXT_BASE_GET_IMP_ID         0x1
-> > +#define SBI_EXT_BASE_GET_IMP_VERSION    0x2
-> > +#define SBI_EXT_BASE_PROBE_EXT          0x3
-> > +#define SBI_EXT_BASE_GET_MVENDORID      0x4
-> > +#define SBI_EXT_BASE_GET_MARCHID        0x5
-> > +#define SBI_EXT_BASE_GET_MIMPID         0x6
-> > +
-> > +/* SBI function IDs for TIME extension*/
-> > +#define SBI_EXT_TIME_SET_TIMER          0x0
-> > +
-> > +/* SBI function IDs for IPI extension*/
-> > +#define SBI_EXT_IPI_SEND_IPI            0x0
-> > +
-> > +/* SBI function IDs for RFENCE extension*/
-> > +#define SBI_EXT_RFENCE_REMOTE_FENCE_I       0x0
-> > +#define SBI_EXT_RFENCE_REMOTE_SFENCE_VMA    0x1
-> > +#define SBI_EXT_RFENCE_REMOTE_SFENCE_VMA_ASID  0x2
-> > +#define SBI_EXT_RFENCE_REMOTE_HFENCE_GVMA   0x3
-> > +#define SBI_EXT_RFENCE_REMOTE_HFENCE_GVMA_VMID 0x4
-> > +#define SBI_EXT_RFENCE_REMOTE_HFENCE_VVMA   0x5
-> > +#define SBI_EXT_RFENCE_REMOTE_HFENCE_VVMA_ASID 0x6
-> > +
-> > +/* SBI function IDs for HSM extension */
-> > +#define SBI_EXT_HSM_HART_START          0x0
-> > +#define SBI_EXT_HSM_HART_STOP           0x1
-> > +#define SBI_EXT_HSM_HART_GET_STATUS     0x2
-> > +
-> > +#define SBI_HSM_HART_STATUS_STARTED     0x0
-> > +#define SBI_HSM_HART_STATUS_STOPPED     0x1
-> > +#define SBI_HSM_HART_STATUS_START_PENDING   0x2
-> > +#define SBI_HSM_HART_STATUS_STOP_PENDING    0x3
-> > +
-> > +#define SBI_SPEC_VERSION_MAJOR_OFFSET   24
-> > +#define SBI_SPEC_VERSION_MAJOR_MASK     0x7f
-> > +#define SBI_SPEC_VERSION_MINOR_MASK     0xffffff
-> > +#define SBI_EXT_VENDOR_START            0x09000000
-> > +#define SBI_EXT_VENDOR_END              0x09FFFFFF
-> > +/* clang-format on */
-> > +
-> > +#endif
-> > --
-> > 2.19.1
-> >
-> >
+3. Build QEMU VM
+Cross built in riscv toolchain.
+$ PKG_CONFIG_LIBDIR=<toolchain pkgconfig path>
+$ export PKG_CONFIG_SYSROOT_DIR=<toolchain sysroot path>
+$ ./configure --target-list=riscv64-softmmu --enable-kvm \
+--cross-prefix=riscv64-linux-gnu- --disable-libiscsi --disable-glusterfs \
+--disable-libusb --disable-usb-redir --audio-drv-list= --disable-opengl \
+--disable-libxml2
+$ make -j$(nproc)
+
+4. Start emulation
+$ ./qemu-system-riscv64 -M virt -m 4096M -cpu rv64,x-h=true -nographic \
+        -name guest=riscv-hyp,debug-threads=on \
+        -smp 4 \
+        -bios ./fw_jump.bin \
+        -kernel ./Image \
+        -drive file=./hyp.img,format=raw,id=hd0 \
+        -device virtio-blk-device,drive=hd0 \
+        -append "root=/dev/vda rw console=ttyS0 earlycon=sbi"
+
+5. Start kvm-acceled QEMU VM in emulation
+$ ./qemu-system-riscv64 -M virt,accel=kvm -m 1024M -cpu host -nographic \
+        -name guest=riscv-guset \
+        -smp 2 \
+        -bios none \
+        -kernel ./Image \
+        -drive file=./guest.img,format=raw,id=hd0 \
+        -device virtio-blk-device,drive=hd0 \
+        -append "root=/dev/vda rw console=ttyS0 earlycon=sbi"
+
+Changes since patch v3
+- Re-write the for-loop in sifive_plic_create().
+- Drop unnecessary change in hw/riscv/virt.c.
+- Use serial to handle console sbi call.
+
+Changes since patch v2
+- Create a macro for get and put timer csr.
+- Remove M-mode PLIC contexts when kvm is enabled.
+- Add get timer frequency.
+- Move cpu_host_load to vmstate_kvmtimer.
+
+Changes since patch v1
+- Rebase on recent commit a216e7cf119c91ffdf5931834a1a030ebea40d70
+- Sync-up headers with Linux-5.16-rc4.
+- Fixbug in kvm_arch_init_vcpu.
+- Create a macro for get and put regs csr.
+- Start kernel directly when kvm_enabled.
+- Use riscv_cpu_set_irq to inject KVM interrupts.
+- Use the Semihosting Console API for RISC-V kvm handle sbi.
+- Update vmstate_riscv_cpu version id.
+  Placing kvm_timer into a subsection.
+
+Changes since RFC v6
+- Rebase on recent commit 8627edfb3f1fca24a96a0954148885c3241c10f8
+- Sync-up headers with Linux-5.16-rc1
+
+Changes since RFC v5
+- Rebase on QEMU v6.1.0-rc1 and kvm-riscv linux v19.
+- Move kvm interrupt setting to riscv_cpu_update_mip().
+- Replace __u64 with uint64_t.
+
+Changes since RFC v4
+- Rebase on QEMU v6.0.0-rc2 and kvm-riscv linux v17.
+- Remove time scaling support as software solution is incomplete.
+  Because it will cause unacceptable performance degradation. and
+  We will post a better solution.
+- Revise according to Alistair's review comments.
+  - Remove compile time XLEN checks in kvm_riscv_reg_id
+  - Surround TYPE_RISCV_CPU_HOST definition by CONFIG_KVM and share
+    it between RV32 and RV64.
+  - Add kvm-stub.c for reduce unnecessary compilation checks.
+  - Add riscv_setup_direct_kernel() to direct boot kernel for KVM.
+
+Changes since RFC v3
+- Rebase on QEMU v5.2.0-rc2 and kvm-riscv linux v15.
+- Add time scaling support(New patches 13, 14 and 15).
+- Fix the bug that guest vm can't reboot.
+
+Changes since RFC v2
+- Fix checkpatch error at target/riscv/sbi_ecall_interface.h.
+- Add riscv migration support.
+
+Changes since RFC v1
+- Add separate SBI ecall interface header.
+- Add riscv32 kvm accel support.
+
+Yifei Jiang (12):
+  update-linux-headers: Add asm-riscv/kvm.h
+  target/riscv: Add target/riscv/kvm.c to place the public kvm interface
+  target/riscv: Implement function kvm_arch_init_vcpu
+  target/riscv: Implement kvm_arch_get_registers
+  target/riscv: Implement kvm_arch_put_registers
+  target/riscv: Support start kernel directly by KVM
+  target/riscv: Support setting external interrupt by KVM
+  target/riscv: Handle KVM_EXIT_RISCV_SBI exit
+  target/riscv: Add host cpu type
+  target/riscv: Add kvm_riscv_get/put_regs_timer
+  target/riscv: Implement virtual time adjusting with vm state changing
+  target/riscv: Support virtual time context synchronization
+
+ hw/intc/sifive_plic.c              |  21 +-
+ hw/riscv/boot.c                    |  16 +-
+ hw/riscv/virt.c                    |  83 +++--
+ include/hw/riscv/boot.h            |   1 +
+ linux-headers/asm-riscv/kvm.h      | 128 +++++++
+ meson.build                        |   2 +
+ target/riscv/cpu.c                 |  29 +-
+ target/riscv/cpu.h                 |  11 +
+ target/riscv/kvm-stub.c            |  30 ++
+ target/riscv/kvm.c                 | 532 +++++++++++++++++++++++++++++
+ target/riscv/kvm_riscv.h           |  25 ++
+ target/riscv/machine.c             |  30 ++
+ target/riscv/meson.build           |   1 +
+ target/riscv/sbi_ecall_interface.h |  72 ++++
+ 14 files changed, 948 insertions(+), 33 deletions(-)
+ create mode 100644 linux-headers/asm-riscv/kvm.h
+ create mode 100644 target/riscv/kvm-stub.c
+ create mode 100644 target/riscv/kvm.c
+ create mode 100644 target/riscv/kvm_riscv.h
+ create mode 100644 target/riscv/sbi_ecall_interface.h
+
+-- 
+2.19.1
+
+
