@@ -1,168 +1,68 @@
 From: Yifei Jiang <jiangyifei@huawei.com>
-Date: Mon, 10 Jan 2022 09:38:24 +0800
-Subject: [PATCH v4 05/12] target/riscv: Implement kvm_arch_put_registers
+Date: Mon, 10 Jan 2022 09:38:30 +0800
+Subject: [PATCH v4 11/12] target/riscv: Implement virtual time adjusting with
+ vm state changing
 In-Reply-To: <20220110013831.1594-1-jiangyifei@huawei.com>
 References: <20220110013831.1594-1-jiangyifei@huawei.com>
-Message-ID: <20220110013831.1594-6-jiangyifei@huawei.com>
+Message-ID: <20220110013831.1594-12-jiangyifei@huawei.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Put GPR CSR and FP registers to kvm by KVM_SET_ONE_REG ioctl
+We hope that virtual time adjusts with vm state changing. When a vm
+is stopped, guest virtual time should stop counting and kvm_timer
+should be stopped. When the vm is resumed, guest virtual time should
+continue to count and kvm_timer should be restored.
 
 Signed-off-by: Yifei Jiang <jiangyifei@huawei.com>
 Signed-off-by: Mingwang Li <limingwang@huawei.com>
-Reviewed-by: Alistair Francis <alistair.francis@wdc.com>
 Reviewed-by: Anup Patel <anup.patel@wdc.com>
+Reviewed-by: Alistair Francis <alistair.francis@wdc.com>
 ---
- target/riscv/kvm.c | 104 ++++++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 103 insertions(+), 1 deletion(-)
+ target/riscv/kvm.c | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
 
 diff --git a/target/riscv/kvm.c b/target/riscv/kvm.c
-index 6d4df0ef6d..e695b91dc7 100644
+index b1f1d55f29..8d94b1c6a9 100644
 --- a/target/riscv/kvm.c
 +++ b/target/riscv/kvm.c
-@@ -73,6 +73,14 @@ static uint64_t kvm_riscv_reg_id(CPURISCVState *env, uint64_t type, uint64_t idx
-         } \
-     } while(0)
+@@ -41,6 +41,7 @@
+ #include "sbi_ecall_interface.h"
+ #include "chardev/char-fe.h"
+ #include "migration/migration.h"
++#include "sysemu/runstate.h"
  
-+#define KVM_RISCV_SET_CSR(cs, env, csr, reg) \
-+    do { \
-+        int ret = kvm_set_one_reg(cs, RISCV_CSR_REG(env, csr), &reg); \
-+        if (ret) { \
-+            return ret; \
-+        } \
-+    } while(0)
-+
- static int kvm_riscv_get_regs_core(CPUState *cs)
+ static uint64_t kvm_riscv_reg_id(CPURISCVState *env, uint64_t type, uint64_t idx)
  {
-     int ret = 0;
-@@ -98,6 +106,31 @@ static int kvm_riscv_get_regs_core(CPUState *cs)
-     return ret;
+@@ -377,6 +378,17 @@ unsigned long kvm_arch_vcpu_id(CPUState *cpu)
+     return cpu->cpu_index;
  }
  
-+static int kvm_riscv_put_regs_core(CPUState *cs)
++static void kvm_riscv_vm_state_change(void *opaque, bool running, RunState state)
 +{
-+    int ret = 0;
-+    int i;
-+    target_ulong reg;
-+    CPURISCVState *env = &RISCV_CPU(cs)->env;
++    CPUState *cs = opaque;
 +
-+    reg = env->pc;
-+    ret = kvm_set_one_reg(cs, RISCV_CORE_REG(env, regs.pc), &reg);
-+    if (ret) {
-+        return ret;
++    if (running) {
++        kvm_riscv_put_regs_timer(cs);
++    } else {
++        kvm_riscv_get_regs_timer(cs);
 +    }
-+
-+    for (i = 1; i < 32; i++) {
-+        uint64_t id = kvm_riscv_reg_id(env, KVM_REG_RISCV_CORE, i);
-+        reg = env->gpr[i];
-+        ret = kvm_set_one_reg(cs, id, &reg);
-+        if (ret) {
-+            return ret;
-+        }
-+    }
-+
-+    return ret;
 +}
 +
- static int kvm_riscv_get_regs_csr(CPUState *cs)
+ void kvm_arch_init_irq_routing(KVMState *s)
  {
-     int ret = 0;
-@@ -115,6 +148,24 @@ static int kvm_riscv_get_regs_csr(CPUState *cs)
-     return ret;
  }
+@@ -389,6 +401,8 @@ int kvm_arch_init_vcpu(CPUState *cs)
+     CPURISCVState *env = &cpu->env;
+     uint64_t id;
  
-+static int kvm_riscv_put_regs_csr(CPUState *cs)
-+{
-+    int ret = 0;
-+    CPURISCVState *env = &RISCV_CPU(cs)->env;
++    qemu_add_vm_change_state_handler(kvm_riscv_vm_state_change, cs);
 +
-+    KVM_RISCV_SET_CSR(cs, env, sstatus, env->mstatus);
-+    KVM_RISCV_SET_CSR(cs, env, sie, env->mie);
-+    KVM_RISCV_SET_CSR(cs, env, stvec, env->stvec);
-+    KVM_RISCV_SET_CSR(cs, env, sscratch, env->sscratch);
-+    KVM_RISCV_SET_CSR(cs, env, sepc, env->sepc);
-+    KVM_RISCV_SET_CSR(cs, env, scause, env->scause);
-+    KVM_RISCV_SET_CSR(cs, env, stval, env->stval);
-+    KVM_RISCV_SET_CSR(cs, env, sip, env->mip);
-+    KVM_RISCV_SET_CSR(cs, env, satp, env->satp);
-+
-+    return ret;
-+}
-+
- static int kvm_riscv_get_regs_fp(CPUState *cs)
- {
-     int ret = 0;
-@@ -148,6 +199,40 @@ static int kvm_riscv_get_regs_fp(CPUState *cs)
-     return ret;
- }
- 
-+static int kvm_riscv_put_regs_fp(CPUState *cs)
-+{
-+    int ret = 0;
-+    int i;
-+    CPURISCVState *env = &RISCV_CPU(cs)->env;
-+
-+    if (riscv_has_ext(env, RVD)) {
-+        uint64_t reg;
-+        for (i = 0; i < 32; i++) {
-+            reg = env->fpr[i];
-+            ret = kvm_set_one_reg(cs, RISCV_FP_D_REG(env, i), &reg);
-+            if (ret) {
-+                return ret;
-+            }
-+        }
-+        return ret;
-+    }
-+
-+    if (riscv_has_ext(env, RVF)) {
-+        uint32_t reg;
-+        for (i = 0; i < 32; i++) {
-+            reg = env->fpr[i];
-+            ret = kvm_set_one_reg(cs, RISCV_FP_F_REG(env, i), &reg);
-+            if (ret) {
-+                return ret;
-+            }
-+        }
-+        return ret;
-+    }
-+
-+    return ret;
-+}
-+
-+
- const KVMCapabilityInfo kvm_arch_required_capabilities[] = {
-     KVM_CAP_LAST_INFO
- };
-@@ -176,7 +261,24 @@ int kvm_arch_get_registers(CPUState *cs)
- 
- int kvm_arch_put_registers(CPUState *cs, int level)
- {
--    return 0;
-+    int ret = 0;
-+
-+    ret = kvm_riscv_put_regs_core(cs);
-+    if (ret) {
-+        return ret;
-+    }
-+
-+    ret = kvm_riscv_put_regs_csr(cs);
-+    if (ret) {
-+        return ret;
-+    }
-+
-+    ret = kvm_riscv_put_regs_fp(cs);
-+    if (ret) {
-+        return ret;
-+    }
-+
-+    return ret;
- }
- 
- int kvm_arch_release_virq_post(int virq)
+     id = kvm_riscv_reg_id(env, KVM_REG_RISCV_CONFIG, KVM_REG_RISCV_CONFIG_REG(isa));
+     ret = kvm_get_one_reg(cs, id, &isa);
+     if (ret) {
 -- 
 2.19.1
 
