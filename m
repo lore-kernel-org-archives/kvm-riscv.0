@@ -1,11 +1,12 @@
 From: Jiangyifei <jiangyifei@huawei.com>
-Date: Wed, 12 Jan 2022 08:01:27 +0000
-Subject: [PATCH v4 05/12] target/riscv: Implement kvm_arch_put_registers
-In-Reply-To: <CAKmqyKPsSidxir_1fncugsmLK33aSbHk63MP0JnS3OJLvy65EA@mail.gmail.com>
+Date: Wed, 12 Jan 2022 08:04:28 +0000
+Subject: [PATCH v4 02/12] target/riscv: Add target/riscv/kvm.c to place
+ the public kvm interface
+In-Reply-To: <CAKmqyKOOD-iRxX8aj7V2Vtfmi6=i9jCDT=0qgUvxX1j1DOOHXg@mail.gmail.com>
 References: <20220110013831.1594-1-jiangyifei@huawei.com>
- <20220110013831.1594-6-jiangyifei@huawei.com>
- <CAKmqyKPsSidxir_1fncugsmLK33aSbHk63MP0JnS3OJLvy65EA@mail.gmail.com>
-Message-ID: <d5f384244df6442faae5e4812d9791ab@huawei.com>
+ <20220110013831.1594-3-jiangyifei@huawei.com>
+ <CAKmqyKOOD-iRxX8aj7V2Vtfmi6=i9jCDT=0qgUvxX1j1DOOHXg@mail.gmail.com>
+Message-ID: <d0b2766fb1c3465095c76e2b1efbae5c@huawei.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -15,7 +16,7 @@ Content-Transfer-Encoding: 7bit
 
 > -----Original Message-----
 > From: Alistair Francis [mailto:alistair23 at gmail.com]
-> Sent: Tuesday, January 11, 2022 7:07 AM
+> Sent: Tuesday, January 11, 2022 7:10 AM
 > To: Jiangyifei <jiangyifei@huawei.com>
 > Cc: qemu-devel at nongnu.org Developers <qemu-devel@nongnu.org>; open
 > list:RISC-V <qemu-riscv@nongnu.org>; kvm-riscv at lists.infradead.org; open
@@ -26,46 +27,48 @@ Content-Transfer-Encoding: 7bit
 > <wu.wubin@huawei.com>; Wanghaibin (D) <wanghaibin.wang@huawei.com>;
 > wanbo (G) <wanbo13@huawei.com>; limingwang (A)
 > <limingwang@huawei.com>; Anup Patel <anup.patel@wdc.com>
-> Subject: Re: [PATCH v4 05/12] target/riscv: Implement kvm_arch_put_registers
+> Subject: Re: [PATCH v4 02/12] target/riscv: Add target/riscv/kvm.c to place the
+> public kvm interface
 > 
-> On Mon, Jan 10, 2022 at 11:57 AM Yifei Jiang via <qemu-devel@nongnu.org>
+> On Mon, Jan 10, 2022 at 11:48 AM Yifei Jiang via <qemu-devel@nongnu.org>
 > wrote:
 > >
-> > Put GPR CSR and FP registers to kvm by KVM_SET_ONE_REG ioctl
+> > Add target/riscv/kvm.c to place kvm_arch_* function needed by
+> > kvm/kvm-all.c. Meanwhile, add kvm support in meson.build file.
 > >
 > > Signed-off-by: Yifei Jiang <jiangyifei@huawei.com>
 > > Signed-off-by: Mingwang Li <limingwang@huawei.com>
 > > Reviewed-by: Alistair Francis <alistair.francis@wdc.com>
 > > Reviewed-by: Anup Patel <anup.patel@wdc.com>
 > > ---
-> >  target/riscv/kvm.c | 104
-> > ++++++++++++++++++++++++++++++++++++++++++++-
-> >  1 file changed, 103 insertions(+), 1 deletion(-)
+> >  meson.build              |   2 +
+> >  target/riscv/kvm.c       | 133
+> +++++++++++++++++++++++++++++++++++++++
+> >  target/riscv/meson.build |   1 +
+> >  3 files changed, 136 insertions(+)
+> >  create mode 100644 target/riscv/kvm.c
 > >
-> > diff --git a/target/riscv/kvm.c b/target/riscv/kvm.c index
-> > 6d4df0ef6d..e695b91dc7 100644
-> > --- a/target/riscv/kvm.c
-> > +++ b/target/riscv/kvm.c
-> > @@ -73,6 +73,14 @@ static uint64_t kvm_riscv_reg_id(CPURISCVState *env,
-> uint64_t type, uint64_t idx
-> >          } \
-> >      } while(0)
-> >
-> > +#define KVM_RISCV_SET_CSR(cs, env, csr, reg) \
-> > +    do { \
-> > +        int ret = kvm_set_one_reg(cs, RISCV_CSR_REG(env, csr), &reg); \
-> > +        if (ret) { \
-> > +            return ret; \
-> > +        } \
-> > +    } while(0)
+> > diff --git a/meson.build b/meson.build index 53065e96ec..7eaec31a3a
+> > 100644
+> > --- a/meson.build
+> > +++ b/meson.build
+> > @@ -90,6 +90,8 @@ elif cpu in ['ppc', 'ppc64']
+> >    kvm_targets = ['ppc-softmmu', 'ppc64-softmmu']  elif cpu in
+> > ['mips', 'mips64']
+> >    kvm_targets = ['mips-softmmu', 'mipsel-softmmu', 'mips64-softmmu',
+> > 'mips64el-softmmu']
+> > +elif cpu in ['riscv']
+> > +  kvm_targets = ['riscv32-softmmu', 'riscv64-softmmu']
+> >  else
+> >    kvm_targets = []
+> >  endif
 > 
-> This fails checkpatch. I know there is lots of QEMU code like this, but it probably
-> should be `while (0)` to keep checkpatch happy.
+> Can you add this as a separate commit at the end of the series?
 > 
-> Please run checkpatch on all the patches.
+> That way we have implemented KVM support before we enable it for users.
 > 
 > Alistair
 
-OK, it will be modified in the next series.
+Yes, that makes sense.
 
 Yifei
