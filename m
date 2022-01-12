@@ -1,141 +1,161 @@
-From: Jiangyifei <jiangyifei@huawei.com>
-Date: Wed, 12 Jan 2022 08:07:53 +0000
-Subject: [PATCH v4 06/12] target/riscv: Support start kernel directly by
- KVM
-In-Reply-To: <CAKmqyKPNLSiLP_FGgod=1fa=kUnnkagYBOQD0Bx5O=96AAkhmQ@mail.gmail.com>
-References: <20220110013831.1594-1-jiangyifei@huawei.com>
- <20220110013831.1594-7-jiangyifei@huawei.com>
- <CAKmqyKPNLSiLP_FGgod=1fa=kUnnkagYBOQD0Bx5O=96AAkhmQ@mail.gmail.com>
-Message-ID: <b592508d4a034ec5a3aeaf218819803d@huawei.com>
+From: Yifei Jiang <jiangyifei@huawei.com>
+Date: Wed, 12 Jan 2022 16:13:17 +0800
+Subject: [PATCH v5 01/13] update-linux-headers: Add asm-riscv/kvm.h
+In-Reply-To: <20220112081329.1835-1-jiangyifei@huawei.com>
+References: <20220112081329.1835-1-jiangyifei@huawei.com>
+Message-ID: <20220112081329.1835-2-jiangyifei@huawei.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+Add asm-riscv/kvm.h for RISC-V KVM.
 
-> -----Original Message-----
-> From: Alistair Francis [mailto:alistair23 at gmail.com]
-> Sent: Tuesday, January 11, 2022 8:28 AM
-> To: Jiangyifei <jiangyifei@huawei.com>
-> Cc: qemu-devel at nongnu.org Developers <qemu-devel@nongnu.org>; open
-> list:RISC-V <qemu-riscv@nongnu.org>; kvm-riscv at lists.infradead.org; open
-> list:Overall <kvm@vger.kernel.org>; libvir-list at redhat.com; Anup Patel
-> <anup@brainfault.org>; Palmer Dabbelt <palmer@dabbelt.com>; Alistair
-> Francis <Alistair.Francis@wdc.com>; Bin Meng <bin.meng@windriver.com>;
-> Fanliang (EulerOS) <fanliang@huawei.com>; Wubin (H)
-> <wu.wubin@huawei.com>; Wanghaibin (D) <wanghaibin.wang@huawei.com>;
-> wanbo (G) <wanbo13@huawei.com>; limingwang (A)
-> <limingwang@huawei.com>
-> Subject: Re: [PATCH v4 06/12] target/riscv: Support start kernel directly by KVM
-> 
-> On Mon, Jan 10, 2022 at 11:52 AM Yifei Jiang via <qemu-devel@nongnu.org>
-> wrote:
-> >
-> > Get kernel and fdt start address in virt.c, and pass them to KVM when
-> > cpu reset. Add kvm_riscv.h to place riscv specific interface.
-> >
-> > In addition, PLIC is created without M-mode PLIC contexts when KVM is
-> > enabled.
-> >
-> > Signed-off-by: Yifei Jiang <jiangyifei@huawei.com>
-> > Signed-off-by: Mingwang Li <limingwang@huawei.com>
-> > Reviewed-by: Alistair Francis <alistair.francis@wdc.com>
-> > ---
-> >  hw/intc/sifive_plic.c    | 21 +++++++---
-> >  hw/riscv/boot.c          | 16 +++++++-
-> >  hw/riscv/virt.c          | 83 ++++++++++++++++++++++++++++------------
-> >  include/hw/riscv/boot.h  |  1 +
-> >  target/riscv/cpu.c       |  8 ++++
-> >  target/riscv/cpu.h       |  3 ++
-> >  target/riscv/kvm-stub.c  | 25 ++++++++++++
-> >  target/riscv/kvm.c       | 14 +++++++
-> >  target/riscv/kvm_riscv.h | 24 ++++++++++++  target/riscv/meson.build
-> > |  2 +-
-> >  10 files changed, 164 insertions(+), 33 deletions(-)  create mode
-> > 100644 target/riscv/kvm-stub.c  create mode 100644
-> > target/riscv/kvm_riscv.h
-> >
-> > diff --git a/hw/intc/sifive_plic.c b/hw/intc/sifive_plic.c index
-> > 877e76877c..58c16881cb 100644
-> > --- a/hw/intc/sifive_plic.c
-> > +++ b/hw/intc/sifive_plic.c
-> > @@ -30,6 +30,7 @@
-> >  #include "target/riscv/cpu.h"
-> >  #include "migration/vmstate.h"
-> >  #include "hw/irq.h"
-> > +#include "sysemu/kvm.h"
-> >
-> >  #define RISCV_DEBUG_PLIC 0
-> >
-> > @@ -533,6 +534,8 @@ DeviceState *sifive_plic_create(hwaddr addr, char
-> > *hart_config,  {
-> >      DeviceState *dev = qdev_new(TYPE_SIFIVE_PLIC);
-> >      int i;
-> > +    SiFivePLICState *plic;
-> > +    int s_count = 0, m_count = 0;
-> >
-> >      assert(enable_stride == (enable_stride & -enable_stride));
-> >      assert(context_stride == (context_stride & -context_stride)); @@
-> > -550,13 +553,19 @@ DeviceState *sifive_plic_create(hwaddr addr, char
-> *hart_config,
-> >      sysbus_realize_and_unref(SYS_BUS_DEVICE(dev), &error_fatal);
-> >      sysbus_mmio_map(SYS_BUS_DEVICE(dev), 0, addr);
-> >
-> > -    for (i = 0; i < num_harts; i++) {
-> > -        CPUState *cpu = qemu_get_cpu(hartid_base + i);
-> > +    plic = SIFIVE_PLIC(dev);
-> > +    for (i = 0; i < plic->num_addrs; i++) {
-> > +        CPUState *cpu = qemu_get_cpu(plic->addr_config[i].hartid);
-> >
-> > -        qdev_connect_gpio_out(dev, i,
-> > -                              qdev_get_gpio_in(DEVICE(cpu),
-> IRQ_S_EXT));
-> > -        qdev_connect_gpio_out(dev, num_harts + i,
-> > -                              qdev_get_gpio_in(DEVICE(cpu),
-> IRQ_M_EXT));
-> > +        if (plic->addr_config[i].mode == PLICMode_S) {
-> > +            qdev_connect_gpio_out(dev, s_count++,
-> > +                                  qdev_get_gpio_in(DEVICE(cpu),
-> IRQ_S_EXT));
-> > +        }
-> > +
-> > +        if (plic->addr_config[i].mode == PLICMode_M) {
-> > +            qdev_connect_gpio_out(dev, num_harts + m_count++,
-> > +                                  qdev_get_gpio_in(DEVICE(cpu),
-> IRQ_M_EXT));
-> > +        }
-> >      }
-> 
-> This PLIC change breaks my 5.11.0 buildroot test case on the SiFive U board
-> 
-> The boot process just hangs at:
-> 
-> [    0.542798] usbcore: registered new interface driver usbhid
-> [    0.543021] usbhid: USB HID core driver
-> [    0.544584] NET: Registered protocol family 10
-> [    4.054768] Segment Routing with IPv6
-> [    4.055325] sit: IPv6, IPv4 and MPLS over IPv4 tunneling driver
-> [    4.057956] NET: Registered protocol family 17
-> [    4.059327] 9pnet: Installing 9P2000 support
-> [    4.059787] Key type dns_resolver registered
-> [    4.060515] debug_vm_pgtable: [debug_vm_pgtable         ]:
-> Validating architecture page table helpers
-> [    4.078710] macb 10090000.ethernet eth0: PHY
-> [10090000.ethernet-ffffffff:00] driver [Generic PHY] (irq=POLL)
-> [    4.079454] macb 10090000.ethernet eth0: configuring for phy/gmii link
-> mode
-> [    4.087031] macb 10090000.ethernet eth0: Link is Up - 1Gbps/Full -
-> flow control tx
-> [    4.094634] IPv6: ADDRCONF(NETDEV_CHANGE): eth0: link becomes ready
-> 
-> Alistair
+Signed-off-by: Yifei Jiang <jiangyifei@huawei.com>
+Signed-off-by: Mingwang Li <limingwang@huawei.com>
+Acked-by: Alistair Francis <alistair.francis@wdc.com>
+Reviewed-by: Anup Patel <anup.patel@wdc.com>
+---
+ linux-headers/asm-riscv/kvm.h | 128 ++++++++++++++++++++++++++++++++++
+ 1 file changed, 128 insertions(+)
+ create mode 100644 linux-headers/asm-riscv/kvm.h
 
-SiFive-u machine cpu 0 is the management hart that does not have S-mode.
-The logic here causes an offset of the PLIC S-mode context. When the kernel
-driver enables the CPU 1 S-mode interrupt, it shifts to CPU 0. As a result,
-the interrupt is lost.
+diff --git a/linux-headers/asm-riscv/kvm.h b/linux-headers/asm-riscv/kvm.h
+new file mode 100644
+index 0000000000..f808ad1ce5
+--- /dev/null
++++ b/linux-headers/asm-riscv/kvm.h
+@@ -0,0 +1,128 @@
++/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
++/*
++ * Copyright (C) 2019 Western Digital Corporation or its affiliates.
++ *
++ * Authors:
++ *     Anup Patel <anup.patel@wdc.com>
++ */
++
++#ifndef __LINUX_KVM_RISCV_H
++#define __LINUX_KVM_RISCV_H
++
++#ifndef __ASSEMBLY__
++
++#include <linux/types.h>
++#include <asm/ptrace.h>
++
++#define __KVM_HAVE_READONLY_MEM
++
++#define KVM_COALESCED_MMIO_PAGE_OFFSET 1
++
++#define KVM_INTERRUPT_SET	-1U
++#define KVM_INTERRUPT_UNSET	-2U
++
++/* for KVM_GET_REGS and KVM_SET_REGS */
++struct kvm_regs {
++};
++
++/* for KVM_GET_FPU and KVM_SET_FPU */
++struct kvm_fpu {
++};
++
++/* KVM Debug exit structure */
++struct kvm_debug_exit_arch {
++};
++
++/* for KVM_SET_GUEST_DEBUG */
++struct kvm_guest_debug_arch {
++};
++
++/* definition of registers in kvm_run */
++struct kvm_sync_regs {
++};
++
++/* for KVM_GET_SREGS and KVM_SET_SREGS */
++struct kvm_sregs {
++};
++
++/* CONFIG registers for KVM_GET_ONE_REG and KVM_SET_ONE_REG */
++struct kvm_riscv_config {
++	unsigned long isa;
++};
++
++/* CORE registers for KVM_GET_ONE_REG and KVM_SET_ONE_REG */
++struct kvm_riscv_core {
++	struct user_regs_struct regs;
++	unsigned long mode;
++};
++
++/* Possible privilege modes for kvm_riscv_core */
++#define KVM_RISCV_MODE_S	1
++#define KVM_RISCV_MODE_U	0
++
++/* CSR registers for KVM_GET_ONE_REG and KVM_SET_ONE_REG */
++struct kvm_riscv_csr {
++	unsigned long sstatus;
++	unsigned long sie;
++	unsigned long stvec;
++	unsigned long sscratch;
++	unsigned long sepc;
++	unsigned long scause;
++	unsigned long stval;
++	unsigned long sip;
++	unsigned long satp;
++	unsigned long scounteren;
++};
++
++/* TIMER registers for KVM_GET_ONE_REG and KVM_SET_ONE_REG */
++struct kvm_riscv_timer {
++	__u64 frequency;
++	__u64 time;
++	__u64 compare;
++	__u64 state;
++};
++
++/* Possible states for kvm_riscv_timer */
++#define KVM_RISCV_TIMER_STATE_OFF	0
++#define KVM_RISCV_TIMER_STATE_ON	1
++
++#define KVM_REG_SIZE(id)		\
++	(1U << (((id) & KVM_REG_SIZE_MASK) >> KVM_REG_SIZE_SHIFT))
++
++/* If you need to interpret the index values, here is the key: */
++#define KVM_REG_RISCV_TYPE_MASK		0x00000000FF000000
++#define KVM_REG_RISCV_TYPE_SHIFT	24
++
++/* Config registers are mapped as type 1 */
++#define KVM_REG_RISCV_CONFIG		(0x01 << KVM_REG_RISCV_TYPE_SHIFT)
++#define KVM_REG_RISCV_CONFIG_REG(name)	\
++	(offsetof(struct kvm_riscv_config, name) / sizeof(unsigned long))
++
++/* Core registers are mapped as type 2 */
++#define KVM_REG_RISCV_CORE		(0x02 << KVM_REG_RISCV_TYPE_SHIFT)
++#define KVM_REG_RISCV_CORE_REG(name)	\
++		(offsetof(struct kvm_riscv_core, name) / sizeof(unsigned long))
++
++/* Control and status registers are mapped as type 3 */
++#define KVM_REG_RISCV_CSR		(0x03 << KVM_REG_RISCV_TYPE_SHIFT)
++#define KVM_REG_RISCV_CSR_REG(name)	\
++		(offsetof(struct kvm_riscv_csr, name) / sizeof(unsigned long))
++
++/* Timer registers are mapped as type 4 */
++#define KVM_REG_RISCV_TIMER		(0x04 << KVM_REG_RISCV_TYPE_SHIFT)
++#define KVM_REG_RISCV_TIMER_REG(name)	\
++		(offsetof(struct kvm_riscv_timer, name) / sizeof(__u64))
++
++/* F extension registers are mapped as type 5 */
++#define KVM_REG_RISCV_FP_F		(0x05 << KVM_REG_RISCV_TYPE_SHIFT)
++#define KVM_REG_RISCV_FP_F_REG(name)	\
++		(offsetof(struct __riscv_f_ext_state, name) / sizeof(__u32))
++
++/* D extension registers are mapped as type 6 */
++#define KVM_REG_RISCV_FP_D		(0x06 << KVM_REG_RISCV_TYPE_SHIFT)
++#define KVM_REG_RISCV_FP_D_REG(name)	\
++		(offsetof(struct __riscv_d_ext_state, name) / sizeof(__u64))
++
++#endif
++
++#endif /* __LINUX_KVM_RISCV_H */
+-- 
+2.19.1
 
-I will fix this bug in the next series.
 
-Yifei
