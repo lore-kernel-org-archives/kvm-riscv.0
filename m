@@ -1,37 +1,39 @@
-From: Yifei Jiang <jiangyifei@huawei.com>
-Date: Wed, 12 Jan 2022 16:13:29 +0800
-Subject: [PATCH v5 13/13] target/riscv: enable riscv kvm accel
-In-Reply-To: <20220112081329.1835-1-jiangyifei@huawei.com>
-References: <20220112081329.1835-1-jiangyifei@huawei.com>
-Message-ID: <20220112081329.1835-14-jiangyifei@huawei.com>
+From: Sean Christopherson <seanjc@google.com>
+Date: Wed, 12 Jan 2022 17:20:44 +0000
+Subject: [PATCH 3/6] KVM: Remove opaque from
+ kvm_arch_check_processor_compat
+In-Reply-To: <20220111031933.GB2175@gao-cwp>
+References: <20211227081515.2088920-1-chao.gao@intel.com>
+ <20211227081515.2088920-4-chao.gao@intel.com>
+ <Ydy8BCfE0jhJd5uE@google.com> <20220111031933.GB2175@gao-cwp>
+Message-ID: <Yd8N7PFqZbACzh2r@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add riscv kvm support in meson.build file.
+On Tue, Jan 11, 2022, Chao Gao wrote:
+> On Mon, Jan 10, 2022 at 11:06:44PM +0000, Sean Christopherson wrote:
+> >On Mon, Dec 27, 2021, Chao Gao wrote:
+> >> No arch implementation uses this opaque now.
+> >
+> >Except for the RISC-V part, this can be a pure revert of commit b99040853738 ("KVM:
+> >Pass kvm_init()'s opaque param to additional arch funcs").  I think it makes sense
+> >to process it as a revert, with a short blurb in the changelog to note that RISC-V
+> >is manually modified as RISC-V support came along in the interim.
+> 
+> commit b99040853738 adds opaque param to kvm_arch_hardware_setup(), which isn't
+> reverted in this patch. I.e., this patch is a partial revert of b99040853738
+> plus manual changes to RISC-V. Given that, "process it as a revert" means
+> clearly say in changelog that this commit contains a partial revert of commit
+> b99040853738 ("KVM: Pass kvm_init()'s opaque param to additional arch funcs").
+> 
+> Right?
 
-Signed-off-by: Yifei Jiang <jiangyifei@huawei.com>
-Signed-off-by: Mingwang Li <limingwang@huawei.com>
----
- meson.build | 2 ++
- 1 file changed, 2 insertions(+)
+What I meant is literally do
 
-diff --git a/meson.build b/meson.build
-index c1b1db1e28..06a5476254 100644
---- a/meson.build
-+++ b/meson.build
-@@ -90,6 +90,8 @@ elif cpu in ['ppc', 'ppc64']
-   kvm_targets = ['ppc-softmmu', 'ppc64-softmmu']
- elif cpu in ['mips', 'mips64']
-   kvm_targets = ['mips-softmmu', 'mipsel-softmmu', 'mips64-softmmu', 'mips64el-softmmu']
-+elif cpu in ['riscv']
-+  kvm_targets = ['riscv32-softmmu', 'riscv64-softmmu']
- else
-   kvm_targets = []
- endif
--- 
-2.19.1
+  git revert -s b99040853738
 
+and then manually handle RISC-V.
 
