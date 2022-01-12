@@ -1,32 +1,71 @@
-From: Chao Gao <chao.gao@intel.com>
-Date: Tue, 11 Jan 2022 11:19:34 +0800
-Subject: [PATCH 3/6] KVM: Remove opaque from
- kvm_arch_check_processor_compat
-In-Reply-To: <Ydy8BCfE0jhJd5uE@google.com>
-References: <20211227081515.2088920-1-chao.gao@intel.com>
- <20211227081515.2088920-4-chao.gao@intel.com>
- <Ydy8BCfE0jhJd5uE@google.com>
-Message-ID: <20220111031933.GB2175@gao-cwp>
+From: Jiangyifei <jiangyifei@huawei.com>
+Date: Wed, 12 Jan 2022 08:01:27 +0000
+Subject: [PATCH v4 05/12] target/riscv: Implement kvm_arch_put_registers
+In-Reply-To: <CAKmqyKPsSidxir_1fncugsmLK33aSbHk63MP0JnS3OJLvy65EA@mail.gmail.com>
+References: <20220110013831.1594-1-jiangyifei@huawei.com>
+ <20220110013831.1594-6-jiangyifei@huawei.com>
+ <CAKmqyKPsSidxir_1fncugsmLK33aSbHk63MP0JnS3OJLvy65EA@mail.gmail.com>
+Message-ID: <d5f384244df6442faae5e4812d9791ab@huawei.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Jan 10, 2022 at 11:06:44PM +0000, Sean Christopherson wrote:
->On Mon, Dec 27, 2021, Chao Gao wrote:
->> No arch implementation uses this opaque now.
->
->Except for the RISC-V part, this can be a pure revert of commit b99040853738 ("KVM:
->Pass kvm_init()'s opaque param to additional arch funcs").  I think it makes sense
->to process it as a revert, with a short blurb in the changelog to note that RISC-V
->is manually modified as RISC-V support came along in the interim.
 
-commit b99040853738 adds opaque param to kvm_arch_hardware_setup(), which isn't
-reverted in this patch. I.e., this patch is a partial revert of b99040853738
-plus manual changes to RISC-V. Given that, "process it as a revert" means
-clearly say in changelog that this commit contains a partial revert of commit
-b99040853738 ("KVM: Pass kvm_init()'s opaque param to additional arch funcs").
+> -----Original Message-----
+> From: Alistair Francis [mailto:alistair23 at gmail.com]
+> Sent: Tuesday, January 11, 2022 7:07 AM
+> To: Jiangyifei <jiangyifei@huawei.com>
+> Cc: qemu-devel at nongnu.org Developers <qemu-devel@nongnu.org>; open
+> list:RISC-V <qemu-riscv@nongnu.org>; kvm-riscv at lists.infradead.org; open
+> list:Overall <kvm@vger.kernel.org>; libvir-list at redhat.com; Anup Patel
+> <anup@brainfault.org>; Palmer Dabbelt <palmer@dabbelt.com>; Alistair
+> Francis <Alistair.Francis@wdc.com>; Bin Meng <bin.meng@windriver.com>;
+> Fanliang (EulerOS) <fanliang@huawei.com>; Wubin (H)
+> <wu.wubin@huawei.com>; Wanghaibin (D) <wanghaibin.wang@huawei.com>;
+> wanbo (G) <wanbo13@huawei.com>; limingwang (A)
+> <limingwang@huawei.com>; Anup Patel <anup.patel@wdc.com>
+> Subject: Re: [PATCH v4 05/12] target/riscv: Implement kvm_arch_put_registers
+> 
+> On Mon, Jan 10, 2022 at 11:57 AM Yifei Jiang via <qemu-devel@nongnu.org>
+> wrote:
+> >
+> > Put GPR CSR and FP registers to kvm by KVM_SET_ONE_REG ioctl
+> >
+> > Signed-off-by: Yifei Jiang <jiangyifei@huawei.com>
+> > Signed-off-by: Mingwang Li <limingwang@huawei.com>
+> > Reviewed-by: Alistair Francis <alistair.francis@wdc.com>
+> > Reviewed-by: Anup Patel <anup.patel@wdc.com>
+> > ---
+> >  target/riscv/kvm.c | 104
+> > ++++++++++++++++++++++++++++++++++++++++++++-
+> >  1 file changed, 103 insertions(+), 1 deletion(-)
+> >
+> > diff --git a/target/riscv/kvm.c b/target/riscv/kvm.c index
+> > 6d4df0ef6d..e695b91dc7 100644
+> > --- a/target/riscv/kvm.c
+> > +++ b/target/riscv/kvm.c
+> > @@ -73,6 +73,14 @@ static uint64_t kvm_riscv_reg_id(CPURISCVState *env,
+> uint64_t type, uint64_t idx
+> >          } \
+> >      } while(0)
+> >
+> > +#define KVM_RISCV_SET_CSR(cs, env, csr, reg) \
+> > +    do { \
+> > +        int ret = kvm_set_one_reg(cs, RISCV_CSR_REG(env, csr), &reg); \
+> > +        if (ret) { \
+> > +            return ret; \
+> > +        } \
+> > +    } while(0)
+> 
+> This fails checkpatch. I know there is lots of QEMU code like this, but it probably
+> should be `while (0)` to keep checkpatch happy.
+> 
+> Please run checkpatch on all the patches.
+> 
+> Alistair
 
-Right?
+OK, it will be modified in the next series.
 
+Yifei
