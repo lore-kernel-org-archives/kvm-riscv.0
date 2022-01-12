@@ -1,12 +1,12 @@
 From: Jiangyifei <jiangyifei@huawei.com>
-Date: Wed, 12 Jan 2022 08:04:28 +0000
-Subject: [PATCH v4 02/12] target/riscv: Add target/riscv/kvm.c to place
- the public kvm interface
-In-Reply-To: <CAKmqyKOOD-iRxX8aj7V2Vtfmi6=i9jCDT=0qgUvxX1j1DOOHXg@mail.gmail.com>
+Date: Wed, 12 Jan 2022 08:07:53 +0000
+Subject: [PATCH v4 06/12] target/riscv: Support start kernel directly by
+ KVM
+In-Reply-To: <CAKmqyKPNLSiLP_FGgod=1fa=kUnnkagYBOQD0Bx5O=96AAkhmQ@mail.gmail.com>
 References: <20220110013831.1594-1-jiangyifei@huawei.com>
- <20220110013831.1594-3-jiangyifei@huawei.com>
- <CAKmqyKOOD-iRxX8aj7V2Vtfmi6=i9jCDT=0qgUvxX1j1DOOHXg@mail.gmail.com>
-Message-ID: <d0b2766fb1c3465095c76e2b1efbae5c@huawei.com>
+ <20220110013831.1594-7-jiangyifei@huawei.com>
+ <CAKmqyKPNLSiLP_FGgod=1fa=kUnnkagYBOQD0Bx5O=96AAkhmQ@mail.gmail.com>
+Message-ID: <b592508d4a034ec5a3aeaf218819803d@huawei.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -16,7 +16,7 @@ Content-Transfer-Encoding: 7bit
 
 > -----Original Message-----
 > From: Alistair Francis [mailto:alistair23 at gmail.com]
-> Sent: Tuesday, January 11, 2022 7:10 AM
+> Sent: Tuesday, January 11, 2022 8:28 AM
 > To: Jiangyifei <jiangyifei@huawei.com>
 > Cc: qemu-devel at nongnu.org Developers <qemu-devel@nongnu.org>; open
 > list:RISC-V <qemu-riscv@nongnu.org>; kvm-riscv at lists.infradead.org; open
@@ -26,49 +26,116 @@ Content-Transfer-Encoding: 7bit
 > Fanliang (EulerOS) <fanliang@huawei.com>; Wubin (H)
 > <wu.wubin@huawei.com>; Wanghaibin (D) <wanghaibin.wang@huawei.com>;
 > wanbo (G) <wanbo13@huawei.com>; limingwang (A)
-> <limingwang@huawei.com>; Anup Patel <anup.patel@wdc.com>
-> Subject: Re: [PATCH v4 02/12] target/riscv: Add target/riscv/kvm.c to place the
-> public kvm interface
+> <limingwang@huawei.com>
+> Subject: Re: [PATCH v4 06/12] target/riscv: Support start kernel directly by KVM
 > 
-> On Mon, Jan 10, 2022 at 11:48 AM Yifei Jiang via <qemu-devel@nongnu.org>
+> On Mon, Jan 10, 2022 at 11:52 AM Yifei Jiang via <qemu-devel@nongnu.org>
 > wrote:
 > >
-> > Add target/riscv/kvm.c to place kvm_arch_* function needed by
-> > kvm/kvm-all.c. Meanwhile, add kvm support in meson.build file.
+> > Get kernel and fdt start address in virt.c, and pass them to KVM when
+> > cpu reset. Add kvm_riscv.h to place riscv specific interface.
+> >
+> > In addition, PLIC is created without M-mode PLIC contexts when KVM is
+> > enabled.
 > >
 > > Signed-off-by: Yifei Jiang <jiangyifei@huawei.com>
 > > Signed-off-by: Mingwang Li <limingwang@huawei.com>
 > > Reviewed-by: Alistair Francis <alistair.francis@wdc.com>
-> > Reviewed-by: Anup Patel <anup.patel@wdc.com>
 > > ---
-> >  meson.build              |   2 +
-> >  target/riscv/kvm.c       | 133
-> +++++++++++++++++++++++++++++++++++++++
-> >  target/riscv/meson.build |   1 +
-> >  3 files changed, 136 insertions(+)
-> >  create mode 100644 target/riscv/kvm.c
+> >  hw/intc/sifive_plic.c    | 21 +++++++---
+> >  hw/riscv/boot.c          | 16 +++++++-
+> >  hw/riscv/virt.c          | 83 ++++++++++++++++++++++++++++------------
+> >  include/hw/riscv/boot.h  |  1 +
+> >  target/riscv/cpu.c       |  8 ++++
+> >  target/riscv/cpu.h       |  3 ++
+> >  target/riscv/kvm-stub.c  | 25 ++++++++++++
+> >  target/riscv/kvm.c       | 14 +++++++
+> >  target/riscv/kvm_riscv.h | 24 ++++++++++++  target/riscv/meson.build
+> > |  2 +-
+> >  10 files changed, 164 insertions(+), 33 deletions(-)  create mode
+> > 100644 target/riscv/kvm-stub.c  create mode 100644
+> > target/riscv/kvm_riscv.h
 > >
-> > diff --git a/meson.build b/meson.build index 53065e96ec..7eaec31a3a
-> > 100644
-> > --- a/meson.build
-> > +++ b/meson.build
-> > @@ -90,6 +90,8 @@ elif cpu in ['ppc', 'ppc64']
-> >    kvm_targets = ['ppc-softmmu', 'ppc64-softmmu']  elif cpu in
-> > ['mips', 'mips64']
-> >    kvm_targets = ['mips-softmmu', 'mipsel-softmmu', 'mips64-softmmu',
-> > 'mips64el-softmmu']
-> > +elif cpu in ['riscv']
-> > +  kvm_targets = ['riscv32-softmmu', 'riscv64-softmmu']
-> >  else
-> >    kvm_targets = []
-> >  endif
+> > diff --git a/hw/intc/sifive_plic.c b/hw/intc/sifive_plic.c index
+> > 877e76877c..58c16881cb 100644
+> > --- a/hw/intc/sifive_plic.c
+> > +++ b/hw/intc/sifive_plic.c
+> > @@ -30,6 +30,7 @@
+> >  #include "target/riscv/cpu.h"
+> >  #include "migration/vmstate.h"
+> >  #include "hw/irq.h"
+> > +#include "sysemu/kvm.h"
+> >
+> >  #define RISCV_DEBUG_PLIC 0
+> >
+> > @@ -533,6 +534,8 @@ DeviceState *sifive_plic_create(hwaddr addr, char
+> > *hart_config,  {
+> >      DeviceState *dev = qdev_new(TYPE_SIFIVE_PLIC);
+> >      int i;
+> > +    SiFivePLICState *plic;
+> > +    int s_count = 0, m_count = 0;
+> >
+> >      assert(enable_stride == (enable_stride & -enable_stride));
+> >      assert(context_stride == (context_stride & -context_stride)); @@
+> > -550,13 +553,19 @@ DeviceState *sifive_plic_create(hwaddr addr, char
+> *hart_config,
+> >      sysbus_realize_and_unref(SYS_BUS_DEVICE(dev), &error_fatal);
+> >      sysbus_mmio_map(SYS_BUS_DEVICE(dev), 0, addr);
+> >
+> > -    for (i = 0; i < num_harts; i++) {
+> > -        CPUState *cpu = qemu_get_cpu(hartid_base + i);
+> > +    plic = SIFIVE_PLIC(dev);
+> > +    for (i = 0; i < plic->num_addrs; i++) {
+> > +        CPUState *cpu = qemu_get_cpu(plic->addr_config[i].hartid);
+> >
+> > -        qdev_connect_gpio_out(dev, i,
+> > -                              qdev_get_gpio_in(DEVICE(cpu),
+> IRQ_S_EXT));
+> > -        qdev_connect_gpio_out(dev, num_harts + i,
+> > -                              qdev_get_gpio_in(DEVICE(cpu),
+> IRQ_M_EXT));
+> > +        if (plic->addr_config[i].mode == PLICMode_S) {
+> > +            qdev_connect_gpio_out(dev, s_count++,
+> > +                                  qdev_get_gpio_in(DEVICE(cpu),
+> IRQ_S_EXT));
+> > +        }
+> > +
+> > +        if (plic->addr_config[i].mode == PLICMode_M) {
+> > +            qdev_connect_gpio_out(dev, num_harts + m_count++,
+> > +                                  qdev_get_gpio_in(DEVICE(cpu),
+> IRQ_M_EXT));
+> > +        }
+> >      }
 > 
-> Can you add this as a separate commit at the end of the series?
+> This PLIC change breaks my 5.11.0 buildroot test case on the SiFive U board
 > 
-> That way we have implemented KVM support before we enable it for users.
+> The boot process just hangs at:
+> 
+> [    0.542798] usbcore: registered new interface driver usbhid
+> [    0.543021] usbhid: USB HID core driver
+> [    0.544584] NET: Registered protocol family 10
+> [    4.054768] Segment Routing with IPv6
+> [    4.055325] sit: IPv6, IPv4 and MPLS over IPv4 tunneling driver
+> [    4.057956] NET: Registered protocol family 17
+> [    4.059327] 9pnet: Installing 9P2000 support
+> [    4.059787] Key type dns_resolver registered
+> [    4.060515] debug_vm_pgtable: [debug_vm_pgtable         ]:
+> Validating architecture page table helpers
+> [    4.078710] macb 10090000.ethernet eth0: PHY
+> [10090000.ethernet-ffffffff:00] driver [Generic PHY] (irq=POLL)
+> [    4.079454] macb 10090000.ethernet eth0: configuring for phy/gmii link
+> mode
+> [    4.087031] macb 10090000.ethernet eth0: Link is Up - 1Gbps/Full -
+> flow control tx
+> [    4.094634] IPv6: ADDRCONF(NETDEV_CHANGE): eth0: link becomes ready
 > 
 > Alistair
 
-Yes, that makes sense.
+SiFive-u machine cpu 0 is the management hart that does not have S-mode.
+The logic here causes an offset of the PLIC S-mode context. When the kernel
+driver enables the CPU 1 S-mode interrupt, it shifts to CPU 0. As a result,
+the interrupt is lost.
+
+I will fix this bug in the next series.
 
 Yifei
