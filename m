@@ -1,75 +1,36 @@
 From: Yifei Jiang <jiangyifei@huawei.com>
-Date: Wed, 12 Jan 2022 16:13:28 +0800
-Subject: [PATCH v5 12/13] target/riscv: Support virtual time context
- synchronization
+Date: Wed, 12 Jan 2022 16:13:29 +0800
+Subject: [PATCH v5 13/13] target/riscv: enable riscv kvm accel
 In-Reply-To: <20220112081329.1835-1-jiangyifei@huawei.com>
 References: <20220112081329.1835-1-jiangyifei@huawei.com>
-Message-ID: <20220112081329.1835-13-jiangyifei@huawei.com>
+Message-ID: <20220112081329.1835-14-jiangyifei@huawei.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add virtual time context description to vmstate_kvmtimer. After cpu being
-loaded, virtual time context is updated to KVM.
+Add riscv kvm support in meson.build file.
 
 Signed-off-by: Yifei Jiang <jiangyifei@huawei.com>
 Signed-off-by: Mingwang Li <limingwang@huawei.com>
-Reviewed-by: Anup Patel <anup.patel@wdc.com>
-Reviewed-by: Alistair Francis <alistair.francis@wdc.com>
 ---
- target/riscv/machine.c | 30 ++++++++++++++++++++++++++++++
- 1 file changed, 30 insertions(+)
+ meson.build | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/target/riscv/machine.c b/target/riscv/machine.c
-index 13b9ab375b..098670e680 100644
---- a/target/riscv/machine.c
-+++ b/target/riscv/machine.c
-@@ -185,6 +185,35 @@ static const VMStateDescription vmstate_rv128 = {
-     }
- };
- 
-+static bool kvmtimer_needed(void *opaque)
-+{
-+    return kvm_enabled();
-+}
-+
-+static int cpu_post_load(void *opaque, int version_id)
-+{
-+    RISCVCPU *cpu = opaque;
-+    CPURISCVState *env = &cpu->env;
-+
-+    env->kvm_timer_dirty = true;
-+    return 0;
-+}
-+
-+static const VMStateDescription vmstate_kvmtimer = {
-+    .name = "cpu/kvmtimer",
-+    .version_id = 1,
-+    .minimum_version_id = 1,
-+    .needed = kvmtimer_needed,
-+    .post_load = cpu_post_load,
-+    .fields = (VMStateField[]) {
-+        VMSTATE_UINT64(env.kvm_timer_time, RISCVCPU),
-+        VMSTATE_UINT64(env.kvm_timer_compare, RISCVCPU),
-+        VMSTATE_UINT64(env.kvm_timer_state, RISCVCPU),
-+
-+        VMSTATE_END_OF_LIST()
-+    }
-+};
-+
- const VMStateDescription vmstate_riscv_cpu = {
-     .name = "cpu",
-     .version_id = 3,
-@@ -240,6 +269,7 @@ const VMStateDescription vmstate_riscv_cpu = {
-         &vmstate_vector,
-         &vmstate_pointermasking,
-         &vmstate_rv128,
-+        &vmstate_kvmtimer,
-         NULL
-     }
- };
+diff --git a/meson.build b/meson.build
+index c1b1db1e28..06a5476254 100644
+--- a/meson.build
++++ b/meson.build
+@@ -90,6 +90,8 @@ elif cpu in ['ppc', 'ppc64']
+   kvm_targets = ['ppc-softmmu', 'ppc64-softmmu']
+ elif cpu in ['mips', 'mips64']
+   kvm_targets = ['mips-softmmu', 'mipsel-softmmu', 'mips64-softmmu', 'mips64el-softmmu']
++elif cpu in ['riscv']
++  kvm_targets = ['riscv32-softmmu', 'riscv64-softmmu']
+ else
+   kvm_targets = []
+ endif
 -- 
 2.19.1
 
