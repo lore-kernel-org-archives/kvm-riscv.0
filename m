@@ -1,72 +1,153 @@
 From: Yifei Jiang <jiangyifei@huawei.com>
-Date: Wed, 12 Jan 2022 16:13:25 +0800
-Subject: [PATCH v5 09/13] target/riscv: Add host cpu type
+Date: Wed, 12 Jan 2022 16:13:26 +0800
+Subject: [PATCH v5 10/13] target/riscv: Add kvm_riscv_get/put_regs_timer
 In-Reply-To: <20220112081329.1835-1-jiangyifei@huawei.com>
 References: <20220112081329.1835-1-jiangyifei@huawei.com>
-Message-ID: <20220112081329.1835-10-jiangyifei@huawei.com>
+Message-ID: <20220112081329.1835-11-jiangyifei@huawei.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-'host' type cpu is set isa to RV32 or RV64 simply, more isa info
-will obtain from KVM in kvm_arch_init_vcpu()
+Add kvm_riscv_get/put_regs_timer to synchronize virtual time context
+from KVM.
+
+To set register of RISCV_TIMER_REG(state) will occur a error from KVM
+on kvm_timer_state == 0. It's better to adapt in KVM, but it doesn't matter
+that adaping in QEMU.
 
 Signed-off-by: Yifei Jiang <jiangyifei@huawei.com>
 Signed-off-by: Mingwang Li <limingwang@huawei.com>
-Reviewed-by: Alistair Francis <alistair.francis@wdc.com>
 Reviewed-by: Anup Patel <anup.patel@wdc.com>
+Acked-by: Alistair Francis <alistair.francis@wdc.com>
 ---
- target/riscv/cpu.c | 15 +++++++++++++++
- target/riscv/cpu.h |  1 +
- 2 files changed, 16 insertions(+)
+ target/riscv/cpu.h |  7 +++++
+ target/riscv/kvm.c | 72 ++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 79 insertions(+)
 
-diff --git a/target/riscv/cpu.c b/target/riscv/cpu.c
-index 53b0524830..32879f1403 100644
---- a/target/riscv/cpu.c
-+++ b/target/riscv/cpu.c
-@@ -235,6 +235,18 @@ static void rv32_imafcu_nommu_cpu_init(Object *obj)
- }
- #endif
- 
-+#if defined(CONFIG_KVM)
-+static void riscv_host_cpu_init(Object *obj)
-+{
-+    CPURISCVState *env = &RISCV_CPU(obj)->env;
-+#if defined(TARGET_RISCV32)
-+    set_misa(env, MXL_RV32, 0);
-+#elif defined(TARGET_RISCV64)
-+    set_misa(env, MXL_RV64, 0);
-+#endif
-+}
-+#endif
-+
- static ObjectClass *riscv_cpu_class_by_name(const char *cpu_model)
- {
-     ObjectClass *oc;
-@@ -847,6 +859,9 @@ static const TypeInfo riscv_cpu_type_infos[] = {
-         .class_init = riscv_cpu_class_init,
-     },
-     DEFINE_CPU(TYPE_RISCV_CPU_ANY,              riscv_any_cpu_init),
-+#if defined(CONFIG_KVM)
-+    DEFINE_CPU(TYPE_RISCV_CPU_HOST,             riscv_host_cpu_init),
-+#endif
- #if defined(TARGET_RISCV32)
-     DEFINE_CPU(TYPE_RISCV_CPU_BASE32,           rv32_base_cpu_init),
-     DEFINE_CPU(TYPE_RISCV_CPU_IBEX,             rv32_ibex_cpu_init),
 diff --git a/target/riscv/cpu.h b/target/riscv/cpu.h
-index 8fa6fdcd77..73ced2116b 100644
+index 73ced2116b..22c94d3c57 100644
 --- a/target/riscv/cpu.h
 +++ b/target/riscv/cpu.h
-@@ -47,6 +47,7 @@
- #define TYPE_RISCV_CPU_SIFIVE_E51       RISCV_CPU_TYPE_NAME("sifive-e51")
- #define TYPE_RISCV_CPU_SIFIVE_U34       RISCV_CPU_TYPE_NAME("sifive-u34")
- #define TYPE_RISCV_CPU_SIFIVE_U54       RISCV_CPU_TYPE_NAME("sifive-u54")
-+#define TYPE_RISCV_CPU_HOST             RISCV_CPU_TYPE_NAME("host")
+@@ -273,6 +273,13 @@ struct CPURISCVState {
  
- #if defined(TARGET_RISCV32)
- # define TYPE_RISCV_CPU_BASE            TYPE_RISCV_CPU_BASE32
+     hwaddr kernel_addr;
+     hwaddr fdt_addr;
++
++    /* kvm timer */
++    bool kvm_timer_dirty;
++    uint64_t kvm_timer_time;
++    uint64_t kvm_timer_compare;
++    uint64_t kvm_timer_state;
++    uint64_t kvm_timer_frequency;
+ };
+ 
+ OBJECT_DECLARE_TYPE(RISCVCPU, RISCVCPUClass,
+diff --git a/target/riscv/kvm.c b/target/riscv/kvm.c
+index e90e2a6709..a43d5a2988 100644
+--- a/target/riscv/kvm.c
++++ b/target/riscv/kvm.c
+@@ -40,6 +40,7 @@
+ #include "kvm_riscv.h"
+ #include "sbi_ecall_interface.h"
+ #include "chardev/char-fe.h"
++#include "migration/migration.h"
+ 
+ static uint64_t kvm_riscv_reg_id(CPURISCVState *env, uint64_t type,
+                                  uint64_t idx)
+@@ -65,6 +66,9 @@ static uint64_t kvm_riscv_reg_id(CPURISCVState *env, uint64_t type,
+ #define RISCV_CSR_REG(env, name)  kvm_riscv_reg_id(env, KVM_REG_RISCV_CSR, \
+                  KVM_REG_RISCV_CSR_REG(name))
+ 
++#define RISCV_TIMER_REG(env, name)  kvm_riscv_reg_id(env, KVM_REG_RISCV_TIMER, \
++                 KVM_REG_RISCV_TIMER_REG(name))
++
+ #define RISCV_FP_F_REG(env, idx)  kvm_riscv_reg_id(env, KVM_REG_RISCV_FP_F, idx)
+ 
+ #define RISCV_FP_D_REG(env, idx)  kvm_riscv_reg_id(env, KVM_REG_RISCV_FP_D, idx)
+@@ -85,6 +89,22 @@ static uint64_t kvm_riscv_reg_id(CPURISCVState *env, uint64_t type,
+         } \
+     } while (0)
+ 
++#define KVM_RISCV_GET_TIMER(cs, env, name, reg) \
++    do { \
++        int ret = kvm_get_one_reg(cs, RISCV_TIMER_REG(env, name), &reg); \
++        if (ret) { \
++            abort(); \
++        } \
++    } while (0)
++
++#define KVM_RISCV_SET_TIMER(cs, env, name, reg) \
++    do { \
++        int ret = kvm_set_one_reg(cs, RISCV_TIMER_REG(env, time), &reg); \
++        if (ret) { \
++            abort(); \
++        } \
++    } while (0)
++
+ static int kvm_riscv_get_regs_core(CPUState *cs)
+ {
+     int ret = 0;
+@@ -236,6 +256,58 @@ static int kvm_riscv_put_regs_fp(CPUState *cs)
+     return ret;
+ }
+ 
++static void kvm_riscv_get_regs_timer(CPUState *cs)
++{
++    CPURISCVState *env = &RISCV_CPU(cs)->env;
++
++    if (env->kvm_timer_dirty) {
++        return;
++    }
++
++    KVM_RISCV_GET_TIMER(cs, env, time, env->kvm_timer_time);
++    KVM_RISCV_GET_TIMER(cs, env, compare, env->kvm_timer_compare);
++    KVM_RISCV_GET_TIMER(cs, env, state, env->kvm_timer_state);
++    KVM_RISCV_GET_TIMER(cs, env, frequency, env->kvm_timer_frequency);
++
++    env->kvm_timer_dirty = true;
++}
++
++static void kvm_riscv_put_regs_timer(CPUState *cs)
++{
++    uint64_t reg;
++    CPURISCVState *env = &RISCV_CPU(cs)->env;
++
++    if (!env->kvm_timer_dirty) {
++        return;
++    }
++
++    KVM_RISCV_SET_TIMER(cs, env, time, env->kvm_timer_time);
++    KVM_RISCV_SET_TIMER(cs, env, compare, env->kvm_timer_compare);
++
++    /*
++     * To set register of RISCV_TIMER_REG(state) will occur a error from KVM
++     * on env->kvm_timer_state == 0, It's better to adapt in KVM, but it
++     * doesn't matter that adaping in QEMU now.
++     * TODO If KVM changes, adapt here.
++     */
++    if (env->kvm_timer_state) {
++        KVM_RISCV_SET_TIMER(cs, env, state, env->kvm_timer_state);
++    }
++
++    /*
++     * For now, migration will not work between Hosts with different timer
++     * frequency. Therefore, we should check whether they are the same here
++     * during the migration.
++     */
++    if (migration_is_running(migrate_get_current()->state)) {
++        KVM_RISCV_GET_TIMER(cs, env, frequency, reg);
++        if (reg != env->kvm_timer_frequency) {
++            error_report("Dst Hosts timer frequency != Src Hosts");
++        }
++    }
++
++    env->kvm_timer_dirty = false;
++}
+ 
+ const KVMCapabilityInfo kvm_arch_required_capabilities[] = {
+     KVM_CAP_LAST_INFO
 -- 
 2.19.1
 
