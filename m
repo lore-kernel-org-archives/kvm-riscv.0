@@ -1,7 +1,9 @@
 From: Anup Patel <apatel@ventanamicro.com>
-Date: Wed, 26 Jan 2022 17:14:44 +0530
-Subject: [PATCH v10 0/8] RISC-V CPU Idle Support
-Message-ID: <20220126114452.692512-1-apatel@ventanamicro.com>
+Date: Wed, 26 Jan 2022 17:14:45 +0530
+Subject: [PATCH v10 1/8] RISC-V: Enable CPU_IDLE drivers
+In-Reply-To: <20220126114452.692512-1-apatel@ventanamicro.com>
+References: <20220126114452.692512-1-apatel@ventanamicro.com>
+Message-ID: <20220126114452.692512-2-apatel@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -10,122 +12,118 @@ Content-Transfer-Encoding: 7bit
 
 From: Anup Patel <anup.patel@wdc.com>
 
-This series adds RISC-V CPU Idle support using SBI HSM suspend function.
-The RISC-V SBI CPU idle driver added by this series is highly inspired
-from the ARM PSCI CPU idle driver.
+We force select CPU_PM and provide asm/cpuidle.h so that we can
+use CPU IDLE drivers for Linux RISC-V kernel.
 
-At high-level, this series includes the following changes:
-1) Preparatory arch/riscv patches (Patches 1 to 3)
-2) Defines for RISC-V SBI HSM suspend (Patch 4)
-3) Preparatory patch to share code between RISC-V SBI CPU idle driver
-   and ARM PSCI CPU idle driver (Patch 5)
-4) RISC-V SBI CPU idle driver and related DT bindings (Patches 6 to 7)
-
-These patches can be found in riscv_sbi_hsm_suspend_v10 branch of
-https://github.com/avpatel/linux.git
-
-Special thanks Sandeep Tripathy for providing early feeback on SBI HSM
-support in all above projects (RISC-V SBI specification, OpenSBI, and
-Linux RISC-V).
-
-Changes since v9:
- - Rebased on Linux-5.17-rc1
-
-Changes since v8:
- - Rebased on Linux-5.15-rc5
- - Fixed DT schema check errors in PATCH7
-
-Changes since v7:
- - Rebased on Linux-5.15-rc3
- - Renamed cpuidle-sbi.c to cpuidle-riscv-sbi.c in PATCH6
-
-Changes since v6:
- - Fixed error reported by "make DT_CHECKER_FLAGS=-m dt_binding_check"
-
-Changes since v5:
- - Rebased on Linux-5.13-rc5
- - Removed unnecessary exports from PATCH5
- - Removed stray ";" from PATCH5
- - Moved sbi_cpuidle_pd_power_off() under "#ifdef CONFIG_DT_IDLE_GENPD"
-   in PATCH6
-
-Changes since v4:
- - Rebased on Linux-5.13-rc2
- - Renamed all dt_idle_genpd functions to have "dt_idle_" prefix
- - Added MAINTAINERS file entry for dt_idle_genpd
-
-Changes since v3:
- - Rebased on Linux-5.13-rc2
- - Fixed __cpu_resume_enter() which was broken due to XIP kernel support
- - Removed "struct dt_idle_genpd_ops" abstraction which simplifies code
-   sharing between ARM PSCI and RISC-V SBI drivers in PATCH5
-
-Changes since v2:
- - Rebased on Linux-5.12-rc3
- - Updated PATCH7 to add common DT bindings for both ARM and RISC-V
-   idle states
- - Added "additionalProperties = false" for both idle-states node and
-   child nodes in PATCH7
-
-Changes since v1:
- - Fixex minor typo in PATCH1
- - Use just "idle-states" as DT node name for CPU idle states
- - Added documentation for "cpu-idle-states" DT property in
-   devicetree/bindings/riscv/cpus.yaml
- - Added documentation for "riscv,sbi-suspend-param" DT property in
-   devicetree/bindings/riscv/idle-states.yaml
-
-Anup Patel (8):
-  RISC-V: Enable CPU_IDLE drivers
-  RISC-V: Rename relocate() and make it global
-  RISC-V: Add arch functions for non-retentive suspend entry/exit
-  RISC-V: Add SBI HSM suspend related defines
-  cpuidle: Factor-out power domain related code from PSCI domain driver
-  cpuidle: Add RISC-V SBI CPU idle driver
-  dt-bindings: Add common bindings for ARM and RISC-V idle states
-  RISC-V: Enable RISC-V SBI CPU Idle driver for QEMU virt machine
-
- .../bindings/arm/msm/qcom,idle-state.txt      |   2 +-
- .../devicetree/bindings/arm/psci.yaml         |   2 +-
- .../bindings/{arm => cpu}/idle-states.yaml    | 228 ++++++-
- .../devicetree/bindings/riscv/cpus.yaml       |   6 +
- MAINTAINERS                                   |  14 +
- arch/riscv/Kconfig                            |   7 +
- arch/riscv/Kconfig.socs                       |   3 +
- arch/riscv/configs/defconfig                  |   2 +
- arch/riscv/configs/rv32_defconfig             |   2 +
- arch/riscv/include/asm/asm.h                  |  27 +
- arch/riscv/include/asm/cpuidle.h              |  24 +
- arch/riscv/include/asm/sbi.h                  |  27 +-
- arch/riscv/include/asm/suspend.h              |  36 +
- arch/riscv/kernel/Makefile                    |   2 +
- arch/riscv/kernel/asm-offsets.c               |   3 +
- arch/riscv/kernel/cpu_ops_sbi.c               |   2 +-
- arch/riscv/kernel/head.S                      |  28 +-
- arch/riscv/kernel/process.c                   |   3 +-
- arch/riscv/kernel/suspend.c                   |  87 +++
- arch/riscv/kernel/suspend_entry.S             | 124 ++++
- arch/riscv/kvm/vcpu_sbi_hsm.c                 |   4 +-
- drivers/cpuidle/Kconfig                       |   9 +
- drivers/cpuidle/Kconfig.arm                   |   1 +
- drivers/cpuidle/Kconfig.riscv                 |  15 +
- drivers/cpuidle/Makefile                      |   5 +
- drivers/cpuidle/cpuidle-psci-domain.c         | 138 +---
- drivers/cpuidle/cpuidle-psci.h                |  15 +-
- drivers/cpuidle/cpuidle-riscv-sbi.c           | 627 ++++++++++++++++++
- drivers/cpuidle/dt_idle_genpd.c               | 178 +++++
- drivers/cpuidle/dt_idle_genpd.h               |  50 ++
- 30 files changed, 1484 insertions(+), 187 deletions(-)
- rename Documentation/devicetree/bindings/{arm => cpu}/idle-states.yaml (74%)
+Signed-off-by: Anup Patel <anup.patel@wdc.com>
+Signed-off-by: Anup Patel <apatel@vetanamicro.com>
+---
+ arch/riscv/Kconfig                |  7 +++++++
+ arch/riscv/configs/defconfig      |  1 +
+ arch/riscv/configs/rv32_defconfig |  1 +
+ arch/riscv/include/asm/cpuidle.h  | 24 ++++++++++++++++++++++++
+ arch/riscv/kernel/process.c       |  3 ++-
+ 5 files changed, 35 insertions(+), 1 deletion(-)
  create mode 100644 arch/riscv/include/asm/cpuidle.h
- create mode 100644 arch/riscv/include/asm/suspend.h
- create mode 100644 arch/riscv/kernel/suspend.c
- create mode 100644 arch/riscv/kernel/suspend_entry.S
- create mode 100644 drivers/cpuidle/Kconfig.riscv
- create mode 100644 drivers/cpuidle/cpuidle-riscv-sbi.c
- create mode 100644 drivers/cpuidle/dt_idle_genpd.c
- create mode 100644 drivers/cpuidle/dt_idle_genpd.h
 
+diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
+index 5adcbd9b5e88..76976d12b463 100644
+--- a/arch/riscv/Kconfig
++++ b/arch/riscv/Kconfig
+@@ -46,6 +46,7 @@ config RISCV
+ 	select CLONE_BACKWARDS
+ 	select CLINT_TIMER if !MMU
+ 	select COMMON_CLK
++	select CPU_PM if CPU_IDLE
+ 	select EDAC_SUPPORT
+ 	select GENERIC_ARCH_TOPOLOGY if SMP
+ 	select GENERIC_ATOMIC64 if !64BIT
+@@ -547,4 +548,10 @@ source "kernel/power/Kconfig"
+ 
+ endmenu
+ 
++menu "CPU Power Management"
++
++source "drivers/cpuidle/Kconfig"
++
++endmenu
++
+ source "arch/riscv/kvm/Kconfig"
+diff --git a/arch/riscv/configs/defconfig b/arch/riscv/configs/defconfig
+index f120fcc43d0a..a5e0482a4969 100644
+--- a/arch/riscv/configs/defconfig
++++ b/arch/riscv/configs/defconfig
+@@ -20,6 +20,7 @@ CONFIG_SOC_SIFIVE=y
+ CONFIG_SOC_VIRT=y
+ CONFIG_SMP=y
+ CONFIG_HOTPLUG_CPU=y
++CONFIG_CPU_IDLE=y
+ CONFIG_VIRTUALIZATION=y
+ CONFIG_KVM=m
+ CONFIG_JUMP_LABEL=y
+diff --git a/arch/riscv/configs/rv32_defconfig b/arch/riscv/configs/rv32_defconfig
+index 8b56a7f1eb06..d1b87db54d68 100644
+--- a/arch/riscv/configs/rv32_defconfig
++++ b/arch/riscv/configs/rv32_defconfig
+@@ -20,6 +20,7 @@ CONFIG_SOC_VIRT=y
+ CONFIG_ARCH_RV32I=y
+ CONFIG_SMP=y
+ CONFIG_HOTPLUG_CPU=y
++CONFIG_CPU_IDLE=y
+ CONFIG_VIRTUALIZATION=y
+ CONFIG_KVM=m
+ CONFIG_JUMP_LABEL=y
+diff --git a/arch/riscv/include/asm/cpuidle.h b/arch/riscv/include/asm/cpuidle.h
+new file mode 100644
+index 000000000000..71fdc607d4bc
+--- /dev/null
++++ b/arch/riscv/include/asm/cpuidle.h
+@@ -0,0 +1,24 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/*
++ * Copyright (C) 2021 Allwinner Ltd
++ * Copyright (C) 2021 Western Digital Corporation or its affiliates.
++ */
++
++#ifndef _ASM_RISCV_CPUIDLE_H
++#define _ASM_RISCV_CPUIDLE_H
++
++#include <asm/barrier.h>
++#include <asm/processor.h>
++
++static inline void cpu_do_idle(void)
++{
++	/*
++	 * Add mb() here to ensure that all
++	 * IO/MEM accesses are completed prior
++	 * to entering WFI.
++	 */
++	mb();
++	wait_for_interrupt();
++}
++
++#endif
+diff --git a/arch/riscv/kernel/process.c b/arch/riscv/kernel/process.c
+index 03ac3aa611f5..504b496787aa 100644
+--- a/arch/riscv/kernel/process.c
++++ b/arch/riscv/kernel/process.c
+@@ -23,6 +23,7 @@
+ #include <asm/string.h>
+ #include <asm/switch_to.h>
+ #include <asm/thread_info.h>
++#include <asm/cpuidle.h>
+ 
+ register unsigned long gp_in_global __asm__("gp");
+ 
+@@ -37,7 +38,7 @@ extern asmlinkage void ret_from_kernel_thread(void);
+ 
+ void arch_cpu_idle(void)
+ {
+-	wait_for_interrupt();
++	cpu_do_idle();
+ 	raw_local_irq_enable();
+ }
+ 
 -- 
 2.25.1
 
