@@ -1,9 +1,9 @@
 From: Anup Patel <apatel@ventanamicro.com>
-Date: Wed, 26 Jan 2022 17:14:45 +0530
-Subject: [PATCH v10 1/8] RISC-V: Enable CPU_IDLE drivers
+Date: Wed, 26 Jan 2022 17:14:46 +0530
+Subject: [PATCH v10 2/8] RISC-V: Rename relocate() and make it global
 In-Reply-To: <20220126114452.692512-1-apatel@ventanamicro.com>
 References: <20220126114452.692512-1-apatel@ventanamicro.com>
-Message-ID: <20220126114452.692512-2-apatel@ventanamicro.com>
+Message-ID: <20220126114452.692512-3-apatel@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -12,118 +12,52 @@ Content-Transfer-Encoding: 7bit
 
 From: Anup Patel <anup.patel@wdc.com>
 
-We force select CPU_PM and provide asm/cpuidle.h so that we can
-use CPU IDLE drivers for Linux RISC-V kernel.
+The low-level relocate() function enables mmu and relocates
+execution to link-time addresses. We rename relocate() function
+to relocate_enable_mmu() function which is more informative.
+
+Also, the relocate_enable_mmu() function will be used in the
+resume path when a CPU wakes-up from a non-retentive suspend
+so we make it global symbol.
 
 Signed-off-by: Anup Patel <anup.patel@wdc.com>
-Signed-off-by: Anup Patel <apatel@vetanamicro.com>
+Signed-off-by: Anup Patel <apatel@ventanamicro.com>
 ---
- arch/riscv/Kconfig                |  7 +++++++
- arch/riscv/configs/defconfig      |  1 +
- arch/riscv/configs/rv32_defconfig |  1 +
- arch/riscv/include/asm/cpuidle.h  | 24 ++++++++++++++++++++++++
- arch/riscv/kernel/process.c       |  3 ++-
- 5 files changed, 35 insertions(+), 1 deletion(-)
- create mode 100644 arch/riscv/include/asm/cpuidle.h
+ arch/riscv/kernel/head.S | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
-index 5adcbd9b5e88..76976d12b463 100644
---- a/arch/riscv/Kconfig
-+++ b/arch/riscv/Kconfig
-@@ -46,6 +46,7 @@ config RISCV
- 	select CLONE_BACKWARDS
- 	select CLINT_TIMER if !MMU
- 	select COMMON_CLK
-+	select CPU_PM if CPU_IDLE
- 	select EDAC_SUPPORT
- 	select GENERIC_ARCH_TOPOLOGY if SMP
- 	select GENERIC_ATOMIC64 if !64BIT
-@@ -547,4 +548,10 @@ source "kernel/power/Kconfig"
+diff --git a/arch/riscv/kernel/head.S b/arch/riscv/kernel/head.S
+index 2363b43312fc..5f4c6b6c4974 100644
+--- a/arch/riscv/kernel/head.S
++++ b/arch/riscv/kernel/head.S
+@@ -90,7 +90,8 @@ pe_head_start:
  
- endmenu
+ .align 2
+ #ifdef CONFIG_MMU
+-relocate:
++	.global relocate_enable_mmu
++relocate_enable_mmu:
+ 	/* Relocate return address */
+ 	la a1, kernel_map
+ 	XIP_FIXUP_OFFSET a1
+@@ -185,7 +186,7 @@ secondary_start_sbi:
+ 	/* Enable virtual memory and relocate to virtual address */
+ 	la a0, swapper_pg_dir
+ 	XIP_FIXUP_OFFSET a0
+-	call relocate
++	call relocate_enable_mmu
+ #endif
+ 	call setup_trap_vector
+ 	tail smp_callin
+@@ -329,7 +330,7 @@ clear_bss_done:
+ #ifdef CONFIG_MMU
+ 	la a0, early_pg_dir
+ 	XIP_FIXUP_OFFSET a0
+-	call relocate
++	call relocate_enable_mmu
+ #endif /* CONFIG_MMU */
  
-+menu "CPU Power Management"
-+
-+source "drivers/cpuidle/Kconfig"
-+
-+endmenu
-+
- source "arch/riscv/kvm/Kconfig"
-diff --git a/arch/riscv/configs/defconfig b/arch/riscv/configs/defconfig
-index f120fcc43d0a..a5e0482a4969 100644
---- a/arch/riscv/configs/defconfig
-+++ b/arch/riscv/configs/defconfig
-@@ -20,6 +20,7 @@ CONFIG_SOC_SIFIVE=y
- CONFIG_SOC_VIRT=y
- CONFIG_SMP=y
- CONFIG_HOTPLUG_CPU=y
-+CONFIG_CPU_IDLE=y
- CONFIG_VIRTUALIZATION=y
- CONFIG_KVM=m
- CONFIG_JUMP_LABEL=y
-diff --git a/arch/riscv/configs/rv32_defconfig b/arch/riscv/configs/rv32_defconfig
-index 8b56a7f1eb06..d1b87db54d68 100644
---- a/arch/riscv/configs/rv32_defconfig
-+++ b/arch/riscv/configs/rv32_defconfig
-@@ -20,6 +20,7 @@ CONFIG_SOC_VIRT=y
- CONFIG_ARCH_RV32I=y
- CONFIG_SMP=y
- CONFIG_HOTPLUG_CPU=y
-+CONFIG_CPU_IDLE=y
- CONFIG_VIRTUALIZATION=y
- CONFIG_KVM=m
- CONFIG_JUMP_LABEL=y
-diff --git a/arch/riscv/include/asm/cpuidle.h b/arch/riscv/include/asm/cpuidle.h
-new file mode 100644
-index 000000000000..71fdc607d4bc
---- /dev/null
-+++ b/arch/riscv/include/asm/cpuidle.h
-@@ -0,0 +1,24 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/*
-+ * Copyright (C) 2021 Allwinner Ltd
-+ * Copyright (C) 2021 Western Digital Corporation or its affiliates.
-+ */
-+
-+#ifndef _ASM_RISCV_CPUIDLE_H
-+#define _ASM_RISCV_CPUIDLE_H
-+
-+#include <asm/barrier.h>
-+#include <asm/processor.h>
-+
-+static inline void cpu_do_idle(void)
-+{
-+	/*
-+	 * Add mb() here to ensure that all
-+	 * IO/MEM accesses are completed prior
-+	 * to entering WFI.
-+	 */
-+	mb();
-+	wait_for_interrupt();
-+}
-+
-+#endif
-diff --git a/arch/riscv/kernel/process.c b/arch/riscv/kernel/process.c
-index 03ac3aa611f5..504b496787aa 100644
---- a/arch/riscv/kernel/process.c
-+++ b/arch/riscv/kernel/process.c
-@@ -23,6 +23,7 @@
- #include <asm/string.h>
- #include <asm/switch_to.h>
- #include <asm/thread_info.h>
-+#include <asm/cpuidle.h>
- 
- register unsigned long gp_in_global __asm__("gp");
- 
-@@ -37,7 +38,7 @@ extern asmlinkage void ret_from_kernel_thread(void);
- 
- void arch_cpu_idle(void)
- {
--	wait_for_interrupt();
-+	cpu_do_idle();
- 	raw_local_irq_enable();
- }
- 
+ 	call setup_trap_vector
 -- 
 2.25.1
 
