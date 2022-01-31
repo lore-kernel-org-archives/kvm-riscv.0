@@ -1,51 +1,43 @@
-From: Mayuresh Chitale <mchitale@ventanamicro.com>
-Date: Mon, 31 Jan 2022 16:33:07 +0530
-Subject: [PATCH] RISC-V: KVM: make CY, TM,
- and IR counters accessible in VU mode
-Message-ID: <20220131110307.1684739-1-mchitale@ventanamicro.com>
+From: Anup Patel <apatel@ventanamicro.com>
+Date: Mon, 31 Jan 2022 22:12:32 +0530
+Subject: [PATCH] RISC-V: KVM: Fix SBI implementation version
+Message-ID: <20220131164232.295585-1-apatel@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Those applications that run in VU mode and access the time CSR cause
-a virtual instruction trap as Guest kernel currently does not
-initialize the scounteren CSR.
-?
-To fix this, we should make CY, TM, and IR counters accessibile
-by default in VU mode (similar to OpenSBI).
+The SBI implementation version returned by KVM RISC-V should be the
+Host Linux version code.
 
-Fixes: a33c72faf2d73 ("RISC-V: KVM: Implement VCPU create, init and
-destroy functions")
-Cc:stable at vger.kernel.org
-Signed-off-by: Mayuresh Chitale <mchitale@ventanamicro.com>
+Fixes: c62a76859723 ("RISC-V: KVM: Add SBI v0.2 base extension")
+Signed-off-by: Anup Patel <apatel@ventanamicro.com>
 ---
- arch/riscv/kvm/vcpu.c | 4 ++++
- 1 file changed, 4 insertions(+)
+ arch/riscv/kvm/vcpu_sbi_base.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-index 0c5239e05721..caaf824347b9 100644
---- a/arch/riscv/kvm/vcpu.c
-+++ b/arch/riscv/kvm/vcpu.c
-@@ -90,6 +90,7 @@ int kvm_arch_vcpu_precreate(struct kvm *kvm, unsigned int id)
- int kvm_arch_vcpu_create(struct kvm_vcpu *vcpu)
- {
- 	struct kvm_cpu_context *cntx;
-+	struct kvm_vcpu_csr *reset_csr = &vcpu->arch.guest_reset_csr;
- 
- 	/* Mark this VCPU never ran */
- 	vcpu->arch.ran_atleast_once = false;
-@@ -106,6 +107,9 @@ int kvm_arch_vcpu_create(struct kvm_vcpu *vcpu)
- 	cntx->hstatus |= HSTATUS_SPVP;
- 	cntx->hstatus |= HSTATUS_SPV;
- 
-+	/* By default, make CY, TM, and IR counters accessible in VU mode */
-+	reset_csr->scounteren=0x7;
-+
- 	/* Setup VCPU timer */
- 	kvm_riscv_vcpu_timer_init(vcpu);
- 
+diff --git a/arch/riscv/kvm/vcpu_sbi_base.c b/arch/riscv/kvm/vcpu_sbi_base.c
+index 4ecf377f483b..48f431091cdb 100644
+--- a/arch/riscv/kvm/vcpu_sbi_base.c
++++ b/arch/riscv/kvm/vcpu_sbi_base.c
+@@ -9,6 +9,7 @@
+ #include <linux/errno.h>
+ #include <linux/err.h>
+ #include <linux/kvm_host.h>
++#include <linux/version.h>
+ #include <asm/csr.h>
+ #include <asm/sbi.h>
+ #include <asm/kvm_vcpu_timer.h>
+@@ -32,7 +33,7 @@ static int kvm_sbi_ext_base_handler(struct kvm_vcpu *vcpu, struct kvm_run *run,
+ 		*out_val = KVM_SBI_IMPID;
+ 		break;
+ 	case SBI_EXT_BASE_GET_IMP_VERSION:
+-		*out_val = 0;
++		*out_val = LINUX_VERSION_CODE;
+ 		break;
+ 	case SBI_EXT_BASE_PROBE_EXT:
+ 		if ((cp->a0 >= SBI_EXT_EXPERIMENTAL_START &&
 -- 
 2.25.1
 
