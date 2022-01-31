@@ -1,68 +1,46 @@
-From: Anup Patel <apatel@ventanamicro.com>
-Date: Wed, 26 Jan 2022 17:14:52 +0530
-Subject: [PATCH v10 8/8] RISC-V: Enable RISC-V SBI CPU Idle driver for QEMU
- virt machine
-In-Reply-To: <20220126114452.692512-1-apatel@ventanamicro.com>
-References: <20220126114452.692512-1-apatel@ventanamicro.com>
-Message-ID: <20220126114452.692512-9-apatel@ventanamicro.com>
+From: Anup Patel <anup@brainfault.org>
+Date: Mon, 31 Jan 2022 09:47:05 +0530
+Subject: [PATCH -next] RISC-V: KVM: remove unneeded semicolon
+In-Reply-To: <20220111010454.126241-1-yang.lee@linux.alibaba.com>
+References: <20220111010454.126241-1-yang.lee@linux.alibaba.com>
+Message-ID: <CAAhSdy1xnb=D70rHkewRka6_-bT0+7JAMTYc3fM1MRjs+s1uRQ@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Anup Patel <anup.patel@wdc.com>
+On Tue, Jan 11, 2022 at 6:35 AM Yang Li <yang.lee@linux.alibaba.com> wrote:
+>
+> Eliminate the following coccicheck warning:
+> ./arch/riscv/kvm/vcpu_sbi_v01.c:117:2-3: Unneeded semicolon
+>
+> Reported-by: Abaci Robot <abaci@linux.alibaba.com>
+> Signed-off-by: Yang Li <yang.lee@linux.alibaba.com>
 
-We enable RISC-V SBI CPU Idle driver for QEMU virt machine to test
-SBI HSM Supend on QEMU.
+Thanks, I have queued this patch for 5.18
 
-Signed-off-by: Anup Patel <anup.patel@wdc.com>
-Signed-off-by: Anup Patel <apatel@ventanamicro.com>
----
- arch/riscv/Kconfig.socs           | 3 +++
- arch/riscv/configs/defconfig      | 1 +
- arch/riscv/configs/rv32_defconfig | 1 +
- 3 files changed, 5 insertions(+)
+Regards,
+Anup
 
-diff --git a/arch/riscv/Kconfig.socs b/arch/riscv/Kconfig.socs
-index 6ec44a22278a..f4097a815201 100644
---- a/arch/riscv/Kconfig.socs
-+++ b/arch/riscv/Kconfig.socs
-@@ -36,6 +36,9 @@ config SOC_VIRT
- 	select GOLDFISH
- 	select RTC_DRV_GOLDFISH if RTC_CLASS
- 	select SIFIVE_PLIC
-+	select PM_GENERIC_DOMAINS if PM
-+	select PM_GENERIC_DOMAINS_OF if PM && OF
-+	select RISCV_SBI_CPUIDLE if CPU_IDLE
- 	help
- 	  This enables support for QEMU Virt Machine.
- 
-diff --git a/arch/riscv/configs/defconfig b/arch/riscv/configs/defconfig
-index a5e0482a4969..b8c882b70b02 100644
---- a/arch/riscv/configs/defconfig
-+++ b/arch/riscv/configs/defconfig
-@@ -20,6 +20,7 @@ CONFIG_SOC_SIFIVE=y
- CONFIG_SOC_VIRT=y
- CONFIG_SMP=y
- CONFIG_HOTPLUG_CPU=y
-+CONFIG_PM=y
- CONFIG_CPU_IDLE=y
- CONFIG_VIRTUALIZATION=y
- CONFIG_KVM=m
-diff --git a/arch/riscv/configs/rv32_defconfig b/arch/riscv/configs/rv32_defconfig
-index d1b87db54d68..6f9a7c89bff9 100644
---- a/arch/riscv/configs/rv32_defconfig
-+++ b/arch/riscv/configs/rv32_defconfig
-@@ -20,6 +20,7 @@ CONFIG_SOC_VIRT=y
- CONFIG_ARCH_RV32I=y
- CONFIG_SMP=y
- CONFIG_HOTPLUG_CPU=y
-+CONFIG_PM=y
- CONFIG_CPU_IDLE=y
- CONFIG_VIRTUALIZATION=y
- CONFIG_KVM=m
--- 
-2.25.1
-
+> ---
+>  arch/riscv/kvm/vcpu_sbi_v01.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/arch/riscv/kvm/vcpu_sbi_v01.c b/arch/riscv/kvm/vcpu_sbi_v01.c
+> index 4c7e13ec9ccc..9acc8fa21d1f 100644
+> --- a/arch/riscv/kvm/vcpu_sbi_v01.c
+> +++ b/arch/riscv/kvm/vcpu_sbi_v01.c
+> @@ -114,7 +114,7 @@ static int kvm_sbi_ext_v01_handler(struct kvm_vcpu *vcpu, struct kvm_run *run,
+>         default:
+>                 ret = -EINVAL;
+>                 break;
+> -       };
+> +       }
+>
+>         return ret;
+>  }
+> --
+> 2.20.1.7.g153144c
+>
 
