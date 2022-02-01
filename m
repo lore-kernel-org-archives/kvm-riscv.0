@@ -1,158 +1,43 @@
-From: Anup Patel <Anup.Patel@wdc.com>
-Date: Sat, 26 Dec 2020 10:26:19 +0000
-Subject: [PATCH v15 12/17] RISC-V: KVM: Add timer functionality
-In-Reply-To: <d3f3a7aea01c49afb9cadccd47498854@huawei.com>
-References: <20201109113240.3733496-1-anup.patel@wdc.com>
- <20201109113240.3733496-13-anup.patel@wdc.com>
- <d3f3a7aea01c49afb9cadccd47498854@huawei.com>
-Message-ID: <MN2PR04MB6207BDD8992D24AB94466C1E8DDB0@MN2PR04MB6207.namprd04.prod.outlook.com>
+From: Anup Patel <apatel@ventanamicro.com>
+Date: Tue,  1 Feb 2022 13:52:21 +0530
+Subject: [PATCH 0/6] KVM RISC-V SBI v0.3 support
+Message-ID: <20220201082227.361967-1-apatel@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+This series adds initial support for SBI v0.3 which includes:
+1) SBI SRST support for Guest
+2) SBI HSM suspend for Guest
 
+The SBI PMU support is intentionally left out and will be added as
+a separate patch series.
 
-> -----Original Message-----
-> From: Jiangyifei <jiangyifei@huawei.com>
-> Sent: 23 December 2020 09:01
-> To: Anup Patel <Anup.Patel@wdc.com>; Palmer Dabbelt
-> <palmer@dabbelt.com>; Palmer Dabbelt <palmerdabbelt@google.com>;
-> Paul Walmsley <paul.walmsley@sifive.com>; Albert Ou
-> <aou@eecs.berkeley.edu>; Paolo Bonzini <pbonzini@redhat.com>
-> Cc: Alexander Graf <graf@amazon.com>; Atish Patra
-> <Atish.Patra@wdc.com>; Alistair Francis <Alistair.Francis@wdc.com>;
-> Damien Le Moal <Damien.LeMoal@wdc.com>; Anup Patel
-> <anup@brainfault.org>; kvm at vger.kernel.org; kvm-
-> riscv at lists.infradead.org; linux-riscv at lists.infradead.org; linux-
-> kernel at vger.kernel.org; Daniel Lezcano <daniel.lezcano@linaro.org>
-> Subject: RE: [PATCH v15 12/17] RISC-V: KVM: Add timer functionality
-> 
-> 
-> > -----Original Message-----
-> > From: Anup Patel [mailto:anup.patel at wdc.com]
-> > Sent: Monday, November 9, 2020 7:33 PM
-> > To: Palmer Dabbelt <palmer@dabbelt.com>; Palmer Dabbelt
-> > <palmerdabbelt@google.com>; Paul Walmsley
-> <paul.walmsley@sifive.com>;
-> > Albert Ou <aou@eecs.berkeley.edu>; Paolo Bonzini
-> <pbonzini@redhat.com>
-> > Cc: Alexander Graf <graf@amazon.com>; Atish Patra
-> > <atish.patra@wdc.com>; Alistair Francis <Alistair.Francis@wdc.com>;
-> > Damien Le Moal <damien.lemoal@wdc.com>; Anup Patel
-> > <anup@brainfault.org>; kvm at vger.kernel.org;
-> > kvm-riscv at lists.infradead.org; linux-riscv at lists.infradead.org;
-> > linux-kernel at vger.kernel.org; Anup Patel <anup.patel@wdc.com>; Daniel
-> > Lezcano <daniel.lezcano@linaro.org>
-> > Subject: [PATCH v15 12/17] RISC-V: KVM: Add timer functionality
-> >
-> > From: Atish Patra <atish.patra@wdc.com>
-> >
-> > The RISC-V hypervisor specification doesn't have any virtual timer feature.
-> >
-> > Due to this, the guest VCPU timer will be programmed via SBI calls.
-> > The host will use a separate hrtimer event for each guest VCPU to
-> > provide timer functionality. We inject a virtual timer interrupt to
-> > the guest VCPU whenever the guest VCPU hrtimer event expires.
-> >
-> > This patch adds guest VCPU timer implementation along with ONE_REG
-> > interface to access VCPU timer state from user space.
-> >
-> > Signed-off-by: Atish Patra <atish.patra@wdc.com>
-> > Signed-off-by: Anup Patel <anup.patel@wdc.com>
-> > Acked-by: Paolo Bonzini <pbonzini@redhat.com>
-> > Reviewed-by: Paolo Bonzini <pbonzini@redhat.com>
-> > Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> > ---
-> >  arch/riscv/include/asm/kvm_host.h       |   7 +
-> >  arch/riscv/include/asm/kvm_vcpu_timer.h |  44 +++++
-> >  arch/riscv/include/uapi/asm/kvm.h       |  17 ++
-> >  arch/riscv/kvm/Makefile                 |   2 +-
-> >  arch/riscv/kvm/vcpu.c                   |  14 ++
-> >  arch/riscv/kvm/vcpu_timer.c             | 225
-> > ++++++++++++++++++++++++
-> >  arch/riscv/kvm/vm.c                     |   2 +-
-> >  drivers/clocksource/timer-riscv.c       |   8 +
-> >  include/clocksource/timer-riscv.h       |  16 ++
-> >  9 files changed, 333 insertions(+), 2 deletions(-)  create mode
-> > 100644 arch/riscv/include/asm/kvm_vcpu_timer.h
-> >  create mode 100644 arch/riscv/kvm/vcpu_timer.c  create mode 100644
-> > include/clocksource/timer-riscv.h
-> >
-> > diff --git a/arch/riscv/include/asm/kvm_host.h
-> > b/arch/riscv/include/asm/kvm_host.h
-> > index 64311b262ee1..4daffc93f36a 100644
-> > --- a/arch/riscv/include/asm/kvm_host.h
-> > +++ b/arch/riscv/include/asm/kvm_host.h
-> > @@ -12,6 +12,7 @@
-> >  #include <linux/types.h>
-> >  #include <linux/kvm.h>
-> >  #include <linux/kvm_types.h>
-> > +#include <asm/kvm_vcpu_timer.h>
-> >
-> >  #ifdef CONFIG_64BIT
-> >  #define KVM_MAX_VCPUS			(1U << 16)
-> > @@ -66,6 +67,9 @@ struct kvm_arch {
-> >  	/* stage2 page table */
-> >  	pgd_t *pgd;
-> >  	phys_addr_t pgd_phys;
-> > +
-> > +	/* Guest Timer */
-> > +	struct kvm_guest_timer timer;
-> >  };
-> >
-> 
-> ...
-> 
-> > diff --git a/arch/riscv/include/uapi/asm/kvm.h
-> > b/arch/riscv/include/uapi/asm/kvm.h
-> > index f7e9dc388d54..00196a13d743 100644
-> > --- a/arch/riscv/include/uapi/asm/kvm.h
-> > +++ b/arch/riscv/include/uapi/asm/kvm.h
-> > @@ -74,6 +74,18 @@ struct kvm_riscv_csr {
-> >  	unsigned long scounteren;
-> >  };
-> >
-> > +/* TIMER registers for KVM_GET_ONE_REG and KVM_SET_ONE_REG */
-> > struct
-> > +kvm_riscv_timer {
-> > +	u64 frequency;
-> > +	u64 time;
-> > +	u64 compare;
-> > +	u64 state;
-> > +};
-> > +
-> 
-> Hi,
-> 
-> There are some building errors when we build kernel by using allmodconfig.
-> The commands are as follow:
-> $ make allmodconfig ARCH=riscv CROSS_COMPILE=riscv64-linux-gnu- $ make
-> -j64 ARCH=riscv CROSS_COMPILE=riscv64-linux-gnu-
-> 
-> The following error occurs:
-> [stdout] usr/include/Makefile:108: recipe for target
-> 'usr/include/asm/kvm.hdrtest' failed [stderr] ./usr/include/asm/kvm.h:79:2:
-> error: unknown type name 'u64'
-> [stderr]   u64 frequency;
-> [stderr]   ^~~
-> [stderr] ./usr/include/asm/kvm.h:80:2: error: unknown type name 'u64'
-> [stderr]   u64 time;
-> [stderr]   ^~~
-> [stderr] ./usr/include/asm/kvm.h:81:2: error: unknown type name 'u64'
-> [stderr]   u64 compare;
-> [stderr]   ^~~
-> [stderr] ./usr/include/asm/kvm.h:82:2: error: unknown type name 'u64'
-> [stderr]   u64 state;
-> [stderr]   ^~~
-> [stderr] make[2]: *** [usr/include/asm/kvm.hdrtest] Error 1
-> 
-> Is it better to change u64 to __u64?
+These patches can also be found in riscv_kvm_sbi_v03_v1 branch at:
+https://github.com/avpatel/linux.git
 
-Okay, I will investigate and replace it.
+Anup Patel (6):
+  RISC-V: KVM: Upgrade SBI spec version to v0.3
+  RISC-V: KVM: Add common kvm_riscv_vcpu_sbi_system_reset() function
+  RISC-V: KVM: Implement SBI v0.3 SRST extension
+  RISC-V: Add SBI HSM suspend related defines
+  RISC-V: KVM: Add common kvm_riscv_vcpu_wfi() function
+  RISC-V: KVM: Implement SBI HSM suspend call
 
-Regards,
-Anup
+ arch/riscv/include/asm/kvm_host.h     |  1 +
+ arch/riscv/include/asm/kvm_vcpu_sbi.h |  5 ++-
+ arch/riscv/include/asm/sbi.h          | 27 +++++++++++++---
+ arch/riscv/kernel/cpu_ops_sbi.c       |  2 +-
+ arch/riscv/kvm/vcpu_exit.c            | 22 ++++++++++----
+ arch/riscv/kvm/vcpu_sbi.c             | 19 ++++++++++++
+ arch/riscv/kvm/vcpu_sbi_hsm.c         | 18 +++++++++--
+ arch/riscv/kvm/vcpu_sbi_replace.c     | 44 +++++++++++++++++++++++++++
+ arch/riscv/kvm/vcpu_sbi_v01.c         | 18 ++---------
+ 9 files changed, 125 insertions(+), 31 deletions(-)
+
+-- 
+2.25.1
 
 
