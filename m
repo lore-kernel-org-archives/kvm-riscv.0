@@ -1,91 +1,56 @@
-From: Anup Patel <apatel@ventanamicro.com>
-Date: Wed, 2 Feb 2022 18:59:18 +0530
-Subject: [PATCH] RISC-V: KVM: make CY, TM, and IR counters accessible in
- VU mode
-In-Reply-To: <B04F937F-6FC8-42F5-9D6B-7EF1148F9646@jrtc27.com>
-References: <20220131110307.1684739-1-mchitale@ventanamicro.com>
- <CAAhSdy2wX7Re4yepV7ReNQazF9jb-eqSUDE7rLCarr3iUchzkQ@mail.gmail.com>
- <B04F937F-6FC8-42F5-9D6B-7EF1148F9646@jrtc27.com>
-Message-ID: <CAK9=C2WPmH4snAH1Ft4jNoaNuLRQ9dEuYm_K4ePVHdS9wkBYPA@mail.gmail.com>
+From: Anup Patel <anup@brainfault.org>
+Date: Wed, 2 Feb 2022 20:25:44 +0530
+Subject: [GIT PULL] KVM/riscv fixes for 5.17, take #1
+Message-ID: <CAAhSdy0C_RMVShk=vv7FRgmVRspBkVQfiCLx-4B6pYtLU10vZA@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Feb 2, 2022 at 6:49 PM Jessica Clarke <jrtc27@jrtc27.com> wrote:
->
-> On 2 Feb 2022, at 11:14, Anup Patel <anup@brainfault.org> wrote:
-> >
-> > On Mon, Jan 31, 2022 at 4:33 PM Mayuresh Chitale
-> > <mchitale@ventanamicro.com> wrote:
-> >>
-> >> Those applications that run in VU mode and access the time CSR cause
-> >> a virtual instruction trap as Guest kernel currently does not
-> >> initialize the scounteren CSR.
-> >>
-> >> To fix this, we should make CY, TM, and IR counters accessibile
-> >> by default in VU mode (similar to OpenSBI).
-> >>
-> >> Fixes: a33c72faf2d73 ("RISC-V: KVM: Implement VCPU create, init and
-> >> destroy functions")
-> >> Cc:stable at vger.kernel.org
-> >> Signed-off-by: Mayuresh Chitale <mchitale@ventanamicro.com>
-> >
-> > Thanks, I have queued this for fixes.
->
-> The formatting is clearly wrong...
+Hi Paolo,
 
-I have updated this in my fixes queue.
+This is the first set of fixes for 5.17. We have three fixes namely
+guest entry rework, sbi implementation version fix and counter
+access fix.
 
->
-> > Regards,
-> > Anup
-> >
-> >> ---
-> >> arch/riscv/kvm/vcpu.c | 4 ++++
-> >> 1 file changed, 4 insertions(+)
-> >>
-> >> diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-> >> index 0c5239e05721..caaf824347b9 100644
-> >> --- a/arch/riscv/kvm/vcpu.c
-> >> +++ b/arch/riscv/kvm/vcpu.c
-> >> @@ -90,6 +90,7 @@ int kvm_arch_vcpu_precreate(struct kvm *kvm, unsigned int id)
-> >> int kvm_arch_vcpu_create(struct kvm_vcpu *vcpu)
-> >> {
-> >>        struct kvm_cpu_context *cntx;
-> >> +       struct kvm_vcpu_csr *reset_csr = &vcpu->arch.guest_reset_csr;
-> >>
-> >>        /* Mark this VCPU never ran */
-> >>        vcpu->arch.ran_atleast_once = false;
-> >> @@ -106,6 +107,9 @@ int kvm_arch_vcpu_create(struct kvm_vcpu *vcpu)
-> >>        cntx->hstatus |= HSTATUS_SPVP;
-> >>        cntx->hstatus |= HSTATUS_SPV;
-> >>
-> >> +       /* By default, make CY, TM, and IR counters accessible in VU mode */
-> >> +       reset_csr->scounteren=0x7;
->
-> ... here
+Please pull.
 
-Same as above, I have updated this my queue as well.
-
-Thanks,
+Regards,
 Anup
 
->
-> Jess
->
-> >> +
-> >>        /* Setup VCPU timer */
-> >>        kvm_riscv_vcpu_timer_init(vcpu);
-> >>
-> >> --
-> >> 2.25.1
-> >>
-> >
-> > _______________________________________________
-> > linux-riscv mailing list
-> > linux-riscv at lists.infradead.org
-> > http://lists.infradead.org/mailman/listinfo/linux-riscv
->
+The following changes since commit b2d2af7e5df37ee3a9ba6b405bdbb7691a5c2dfc:
+
+  kvm/x86: rework guest entry logic (2022-02-01 08:51:54 -0500)
+
+are available in the Git repository at:
+
+  https://github.com/kvm-riscv/linux.git tags/kvm-riscv-fixes-5.17-1
+
+for you to fetch changes up to 403271548a840dd4f884088d6333e09f899be5ff:
+
+  RISC-V: KVM: Fix SBI implementation version (2022-02-02 18:58:06 +0530)
+
+----------------------------------------------------------------
+KVM/riscv fixes for 5.17, take #1
+
+- Rework guest entry logic
+
+- Make CY, TM, and IR counters accessible in VU mode
+
+- Fix SBI implementation version
+
+----------------------------------------------------------------
+Anup Patel (1):
+      RISC-V: KVM: Fix SBI implementation version
+
+Mark Rutland (1):
+      kvm/riscv: rework guest entry logic
+
+Mayuresh Chitale (1):
+      RISC-V: KVM: make CY, TM, and IR counters accessible in VU mode
+
+ arch/riscv/kvm/vcpu.c          | 48 +++++++++++++++++++++++++++---------------
+ arch/riscv/kvm/vcpu_sbi_base.c |  3 ++-
+ 2 files changed, 33 insertions(+), 18 deletions(-)
 
