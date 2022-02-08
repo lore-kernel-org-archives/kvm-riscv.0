@@ -1,104 +1,400 @@
 From: Guo Ren <guoren@kernel.org>
-Date: Tue, 8 Feb 2022 14:19:53 +0800
-Subject: [PATCH v10 4/8] RISC-V: Add SBI HSM suspend related defines
-In-Reply-To: <20220126114452.692512-5-apatel@ventanamicro.com>
+Date: Tue, 8 Feb 2022 14:20:48 +0800
+Subject: [PATCH v10 7/8] dt-bindings: Add common bindings for ARM and
+ RISC-V idle states
+In-Reply-To: <20220126114452.692512-8-apatel@ventanamicro.com>
 References: <20220126114452.692512-1-apatel@ventanamicro.com>
- <20220126114452.692512-5-apatel@ventanamicro.com>
-Message-ID: <CAJF2gTTk7p0r47F8-RjGX5CTry+MyQCcXpSOEUR6V63JWR5yhQ@mail.gmail.com>
+ <20220126114452.692512-8-apatel@ventanamicro.com>
+Message-ID: <CAJF2gTRyqqbNHM50vj729Uko-e6OV7kSbZyp-pWK6htyMcLLrQ@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Reviewed-by: Guo Ren <guoren@kernel.org>
+Acked-by: Guo Ren <guoren@kernel.org>
 
-On Wed, Jan 26, 2022 at 7:48 PM Anup Patel <apatel@ventanamicro.com> wrote:
+On Wed, Jan 26, 2022 at 7:50 PM Anup Patel <apatel@ventanamicro.com> wrote:
 >
 > From: Anup Patel <anup.patel@wdc.com>
 >
-> We add defines related to SBI HSM suspend call and also
-> update HSM states naming as-per latest SBI specification.
+> The RISC-V CPU idle states will be described in under the
+> /cpus/idle-states DT node in the same way as ARM CPU idle
+> states.
+>
+> This patch adds common bindings documentation for both ARM
+> and RISC-V idle states.
 >
 > Signed-off-by: Anup Patel <anup.patel@wdc.com>
 > Signed-off-by: Anup Patel <apatel@ventanamicro.com>
+> Reviewed-by: Rob Herring <robh@kernel.org>
 > ---
->  arch/riscv/include/asm/sbi.h    | 27 ++++++++++++++++++++++-----
->  arch/riscv/kernel/cpu_ops_sbi.c |  2 +-
->  arch/riscv/kvm/vcpu_sbi_hsm.c   |  4 ++--
->  3 files changed, 25 insertions(+), 8 deletions(-)
+>  .../bindings/arm/msm/qcom,idle-state.txt      |   2 +-
+>  .../devicetree/bindings/arm/psci.yaml         |   2 +-
+>  .../bindings/{arm => cpu}/idle-states.yaml    | 228 ++++++++++++++++--
+>  .../devicetree/bindings/riscv/cpus.yaml       |   6 +
+>  4 files changed, 219 insertions(+), 19 deletions(-)
+>  rename Documentation/devicetree/bindings/{arm => cpu}/idle-states.yaml (74%)
 >
-> diff --git a/arch/riscv/include/asm/sbi.h b/arch/riscv/include/asm/sbi.h
-> index d1c37479d828..06133b4f8e20 100644
-> --- a/arch/riscv/include/asm/sbi.h
-> +++ b/arch/riscv/include/asm/sbi.h
-> @@ -71,15 +71,32 @@ enum sbi_ext_hsm_fid {
->         SBI_EXT_HSM_HART_START = 0,
->         SBI_EXT_HSM_HART_STOP,
->         SBI_EXT_HSM_HART_STATUS,
-> +       SBI_EXT_HSM_HART_SUSPEND,
->  };
+> diff --git a/Documentation/devicetree/bindings/arm/msm/qcom,idle-state.txt b/Documentation/devicetree/bindings/arm/msm/qcom,idle-state.txt
+> index 6ce0b212ec6d..606b4b1b709d 100644
+> --- a/Documentation/devicetree/bindings/arm/msm/qcom,idle-state.txt
+> +++ b/Documentation/devicetree/bindings/arm/msm/qcom,idle-state.txt
+> @@ -81,4 +81,4 @@ Example:
+>                 };
+>         };
 >
-> -enum sbi_hsm_hart_status {
-> -       SBI_HSM_HART_STATUS_STARTED = 0,
-> -       SBI_HSM_HART_STATUS_STOPPED,
-> -       SBI_HSM_HART_STATUS_START_PENDING,
-> -       SBI_HSM_HART_STATUS_STOP_PENDING,
-> +enum sbi_hsm_hart_state {
-> +       SBI_HSM_STATE_STARTED = 0,
-> +       SBI_HSM_STATE_STOPPED,
-> +       SBI_HSM_STATE_START_PENDING,
-> +       SBI_HSM_STATE_STOP_PENDING,
-> +       SBI_HSM_STATE_SUSPENDED,
-> +       SBI_HSM_STATE_SUSPEND_PENDING,
-> +       SBI_HSM_STATE_RESUME_PENDING,
->  };
+> -[1]. Documentation/devicetree/bindings/arm/idle-states.yaml
+> +[1]. Documentation/devicetree/bindings/cpu/idle-states.yaml
+> diff --git a/Documentation/devicetree/bindings/arm/psci.yaml b/Documentation/devicetree/bindings/arm/psci.yaml
+> index 8b77cf83a095..dd83ef278af0 100644
+> --- a/Documentation/devicetree/bindings/arm/psci.yaml
+> +++ b/Documentation/devicetree/bindings/arm/psci.yaml
+> @@ -101,7 +101,7 @@ properties:
+>        bindings in [1]) must specify this property.
 >
-> +#define SBI_HSM_SUSP_BASE_MASK                 0x7fffffff
-> +#define SBI_HSM_SUSP_NON_RET_BIT               0x80000000
-> +#define SBI_HSM_SUSP_PLAT_BASE                 0x10000000
+>        [1] Kernel documentation - ARM idle states bindings
+> -        Documentation/devicetree/bindings/arm/idle-states.yaml
+> +        Documentation/devicetree/bindings/cpu/idle-states.yaml
+>
+>  patternProperties:
+>    "^power-domain-":
+> diff --git a/Documentation/devicetree/bindings/arm/idle-states.yaml b/Documentation/devicetree/bindings/cpu/idle-states.yaml
+> similarity index 74%
+> rename from Documentation/devicetree/bindings/arm/idle-states.yaml
+> rename to Documentation/devicetree/bindings/cpu/idle-states.yaml
+> index 52bce5dbb11f..95506ffb816c 100644
+> --- a/Documentation/devicetree/bindings/arm/idle-states.yaml
+> +++ b/Documentation/devicetree/bindings/cpu/idle-states.yaml
+> @@ -1,25 +1,30 @@
+>  # SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+>  %YAML 1.2
+>  ---
+> -$id: http://devicetree.org/schemas/arm/idle-states.yaml#
+> +$id: http://devicetree.org/schemas/cpu/idle-states.yaml#
+>  $schema: http://devicetree.org/meta-schemas/core.yaml#
+>
+> -title: ARM idle states binding description
+> +title: Idle states binding description
+>
+>  maintainers:
+>    - Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+> +  - Anup Patel <anup@brainfault.org>
+>
+>  description: |+
+>    ==========================================
+>    1 - Introduction
+>    ==========================================
+>
+> -  ARM systems contain HW capable of managing power consumption dynamically,
+> -  where cores can be put in different low-power states (ranging from simple wfi
+> -  to power gating) according to OS PM policies. The CPU states representing the
+> -  range of dynamic idle states that a processor can enter at run-time, can be
+> -  specified through device tree bindings representing the parameters required to
+> -  enter/exit specific idle states on a given processor.
+> +  ARM and RISC-V systems contain HW capable of managing power consumption
+> +  dynamically, where cores can be put in different low-power states (ranging
+> +  from simple wfi to power gating) according to OS PM policies. The CPU states
+> +  representing the range of dynamic idle states that a processor can enter at
+> +  run-time, can be specified through device tree bindings representing the
+> +  parameters required to enter/exit specific idle states on a given processor.
 > +
-> +#define SBI_HSM_SUSPEND_RET_DEFAULT            0x00000000
-> +#define SBI_HSM_SUSPEND_RET_PLATFORM           SBI_HSM_SUSP_PLAT_BASE
-> +#define SBI_HSM_SUSPEND_RET_LAST               SBI_HSM_SUSP_BASE_MASK
-> +#define SBI_HSM_SUSPEND_NON_RET_DEFAULT                SBI_HSM_SUSP_NON_RET_BIT
-> +#define SBI_HSM_SUSPEND_NON_RET_PLATFORM       (SBI_HSM_SUSP_NON_RET_BIT | \
-> +                                                SBI_HSM_SUSP_PLAT_BASE)
-> +#define SBI_HSM_SUSPEND_NON_RET_LAST           (SBI_HSM_SUSP_NON_RET_BIT | \
-> +                                                SBI_HSM_SUSP_BASE_MASK)
+> +  ==========================================
+> +  2 - ARM idle states
+> +  ==========================================
+>
+>    According to the Server Base System Architecture document (SBSA, [3]), the
+>    power states an ARM CPU can be put into are identified by the following list:
+> @@ -43,8 +48,23 @@ description: |+
+>    The device tree binding definition for ARM idle states is the subject of this
+>    document.
+>
+> +  ==========================================
+> +  3 - RISC-V idle states
+> +  ==========================================
 > +
->  enum sbi_ext_srst_fid {
->         SBI_EXT_SRST_RESET = 0,
->  };
-> diff --git a/arch/riscv/kernel/cpu_ops_sbi.c b/arch/riscv/kernel/cpu_ops_sbi.c
-> index dae29cbfe550..2e16f6732cdf 100644
-> --- a/arch/riscv/kernel/cpu_ops_sbi.c
-> +++ b/arch/riscv/kernel/cpu_ops_sbi.c
-> @@ -111,7 +111,7 @@ static int sbi_cpu_is_stopped(unsigned int cpuid)
+> +  On RISC-V systems, the HARTs (or CPUs) [6] can be put in platform specific
+> +  suspend (or idle) states (ranging from simple WFI, power gating, etc). The
+> +  RISC-V SBI v0.3 (or higher) [7] hart state management extension provides a
+> +  standard mechanism for OS to request HART state transitions.
+> +
+> +  The platform specific suspend (or idle) states of a hart can be either
+> +  retentive or non-rententive in nature. A retentive suspend state will
+> +  preserve HART registers and CSR values for all privilege modes whereas
+> +  a non-retentive suspend state will not preserve HART registers and CSR
+> +  values.
+> +
+>    ===========================================
+> -  2 - idle-states definitions
+> +  4 - idle-states definitions
+>    ===========================================
 >
->         rc = sbi_hsm_hart_get_status(hartid);
+>    Idle states are characterized for a specific system through a set of
+> @@ -211,10 +231,10 @@ description: |+
+>    properties specification that is the subject of the following sections.
 >
-> -       if (rc == SBI_HSM_HART_STATUS_STOPPED)
-> +       if (rc == SBI_HSM_STATE_STOPPED)
->                 return 0;
->         return rc;
->  }
-> diff --git a/arch/riscv/kvm/vcpu_sbi_hsm.c b/arch/riscv/kvm/vcpu_sbi_hsm.c
-> index 2e383687fa48..1ac4b2e8e4ec 100644
-> --- a/arch/riscv/kvm/vcpu_sbi_hsm.c
-> +++ b/arch/riscv/kvm/vcpu_sbi_hsm.c
-> @@ -60,9 +60,9 @@ static int kvm_sbi_hsm_vcpu_get_status(struct kvm_vcpu *vcpu)
->         if (!target_vcpu)
->                 return -EINVAL;
->         if (!target_vcpu->arch.power_off)
-> -               return SBI_HSM_HART_STATUS_STARTED;
-> +               return SBI_HSM_STATE_STARTED;
->         else
-> -               return SBI_HSM_HART_STATUS_STOPPED;
-> +               return SBI_HSM_STATE_STOPPED;
->  }
+>    ===========================================
+> -  3 - idle-states node
+> +  5 - idle-states node
+>    ===========================================
 >
->  static int kvm_sbi_ext_hsm_handler(struct kvm_vcpu *vcpu, struct kvm_run *run,
+> -  ARM processor idle states are defined within the idle-states node, which is
+> +  The processor idle states are defined within the idle-states node, which is
+>    a direct child of the cpus node [1] and provides a container where the
+>    processor idle states, defined as device tree nodes, are listed.
+>
+> @@ -223,7 +243,7 @@ description: |+
+>    just supports idle_standby, an idle-states node is not required.
+>
+>    ===========================================
+> -  4 - References
+> +  6 - References
+>    ===========================================
+>
+>    [1] ARM Linux Kernel documentation - CPUs bindings
+> @@ -238,9 +258,15 @@ description: |+
+>    [4] ARM Architecture Reference Manuals
+>        http://infocenter.arm.com/help/index.jsp
+>
+> -  [6] ARM Linux Kernel documentation - Booting AArch64 Linux
+> +  [5] ARM Linux Kernel documentation - Booting AArch64 Linux
+>        Documentation/arm64/booting.rst
+>
+> +  [6] RISC-V Linux Kernel documentation - CPUs bindings
+> +      Documentation/devicetree/bindings/riscv/cpus.yaml
+> +
+> +  [7] RISC-V Supervisor Binary Interface (SBI)
+> +      http://github.com/riscv/riscv-sbi-doc/riscv-sbi.adoc
+> +
+>  properties:
+>    $nodename:
+>      const: idle-states
+> @@ -253,7 +279,7 @@ properties:
+>        On ARM 32-bit systems this property is optional
+>
+>        This assumes that the "enable-method" property is set to "psci" in the cpu
+> -      node[6] that is responsible for setting up CPU idle management in the OS
+> +      node[5] that is responsible for setting up CPU idle management in the OS
+>        implementation.
+>      const: psci
+>
+> @@ -265,8 +291,8 @@ patternProperties:
+>        as follows.
+>
+>        The idle state entered by executing the wfi instruction (idle_standby
+> -      SBSA,[3][4]) is considered standard on all ARM platforms and therefore
+> -      must not be listed.
+> +      SBSA,[3][4]) is considered standard on all ARM and RISC-V platforms and
+> +      therefore must not be listed.
+>
+>        In addition to the properties listed above, a state node may require
+>        additional properties specific to the entry-method defined in the
+> @@ -275,7 +301,27 @@ patternProperties:
+>
+>      properties:
+>        compatible:
+> -        const: arm,idle-state
+> +        enum:
+> +          - arm,idle-state
+> +          - riscv,idle-state
+> +
+> +      arm,psci-suspend-param:
+> +        $ref: /schemas/types.yaml#/definitions/uint32
+> +        description: |
+> +          power_state parameter to pass to the ARM PSCI suspend call.
+> +
+> +          Device tree nodes that require usage of PSCI CPU_SUSPEND function
+> +          (i.e. idle states node with entry-method property is set to "psci")
+> +          must specify this property.
+> +
+> +      riscv,sbi-suspend-param:
+> +        $ref: /schemas/types.yaml#/definitions/uint32
+> +        description: |
+> +          suspend_type parameter to pass to the RISC-V SBI HSM suspend call.
+> +
+> +          This property is required in idle state nodes of device tree meant
+> +          for RISC-V systems. For more details on the suspend_type parameter
+> +          refer the SBI specifiation v0.3 (or higher) [7].
+>
+>        local-timer-stop:
+>          description:
+> @@ -317,6 +363,8 @@ patternProperties:
+>          description:
+>            A string used as a descriptive name for the idle state.
+>
+> +    additionalProperties: false
+> +
+>      required:
+>        - compatible
+>        - entry-latency-us
+> @@ -658,4 +706,150 @@ examples:
+>          };
+>      };
+>
+> +  - |
+> +    // Example 3 (RISC-V 64-bit, 4-cpu systems, two clusters):
+> +
+> +    cpus {
+> +        #size-cells = <0>;
+> +        #address-cells = <1>;
+> +
+> +        cpu at 0 {
+> +            device_type = "cpu";
+> +            compatible = "riscv";
+> +            reg = <0x0>;
+> +            riscv,isa = "rv64imafdc";
+> +            mmu-type = "riscv,sv48";
+> +            cpu-idle-states = <&CPU_RET_0_0 &CPU_NONRET_0_0
+> +                            &CLUSTER_RET_0 &CLUSTER_NONRET_0>;
+> +
+> +            cpu_intc0: interrupt-controller {
+> +                #interrupt-cells = <1>;
+> +                compatible = "riscv,cpu-intc";
+> +                interrupt-controller;
+> +            };
+> +        };
+> +
+> +        cpu at 1 {
+> +            device_type = "cpu";
+> +            compatible = "riscv";
+> +            reg = <0x1>;
+> +            riscv,isa = "rv64imafdc";
+> +            mmu-type = "riscv,sv48";
+> +            cpu-idle-states = <&CPU_RET_0_0 &CPU_NONRET_0_0
+> +                            &CLUSTER_RET_0 &CLUSTER_NONRET_0>;
+> +
+> +            cpu_intc1: interrupt-controller {
+> +                #interrupt-cells = <1>;
+> +                compatible = "riscv,cpu-intc";
+> +                interrupt-controller;
+> +            };
+> +        };
+> +
+> +        cpu at 10 {
+> +            device_type = "cpu";
+> +            compatible = "riscv";
+> +            reg = <0x10>;
+> +            riscv,isa = "rv64imafdc";
+> +            mmu-type = "riscv,sv48";
+> +            cpu-idle-states = <&CPU_RET_1_0 &CPU_NONRET_1_0
+> +                            &CLUSTER_RET_1 &CLUSTER_NONRET_1>;
+> +
+> +            cpu_intc10: interrupt-controller {
+> +                #interrupt-cells = <1>;
+> +                compatible = "riscv,cpu-intc";
+> +                interrupt-controller;
+> +            };
+> +        };
+> +
+> +        cpu at 11 {
+> +            device_type = "cpu";
+> +            compatible = "riscv";
+> +            reg = <0x11>;
+> +            riscv,isa = "rv64imafdc";
+> +            mmu-type = "riscv,sv48";
+> +            cpu-idle-states = <&CPU_RET_1_0 &CPU_NONRET_1_0
+> +                            &CLUSTER_RET_1 &CLUSTER_NONRET_1>;
+> +
+> +            cpu_intc11: interrupt-controller {
+> +                #interrupt-cells = <1>;
+> +                compatible = "riscv,cpu-intc";
+> +                interrupt-controller;
+> +            };
+> +        };
+> +
+> +        idle-states {
+> +            CPU_RET_0_0: cpu-retentive-0-0 {
+> +                compatible = "riscv,idle-state";
+> +                riscv,sbi-suspend-param = <0x10000000>;
+> +                entry-latency-us = <20>;
+> +                exit-latency-us = <40>;
+> +                min-residency-us = <80>;
+> +            };
+> +
+> +            CPU_NONRET_0_0: cpu-nonretentive-0-0 {
+> +                compatible = "riscv,idle-state";
+> +                riscv,sbi-suspend-param = <0x90000000>;
+> +                entry-latency-us = <250>;
+> +                exit-latency-us = <500>;
+> +                min-residency-us = <950>;
+> +            };
+> +
+> +            CLUSTER_RET_0: cluster-retentive-0 {
+> +                compatible = "riscv,idle-state";
+> +                riscv,sbi-suspend-param = <0x11000000>;
+> +                local-timer-stop;
+> +                entry-latency-us = <50>;
+> +                exit-latency-us = <100>;
+> +                min-residency-us = <250>;
+> +                wakeup-latency-us = <130>;
+> +            };
+> +
+> +            CLUSTER_NONRET_0: cluster-nonretentive-0 {
+> +                compatible = "riscv,idle-state";
+> +                riscv,sbi-suspend-param = <0x91000000>;
+> +                local-timer-stop;
+> +                entry-latency-us = <600>;
+> +                exit-latency-us = <1100>;
+> +                min-residency-us = <2700>;
+> +                wakeup-latency-us = <1500>;
+> +            };
+> +
+> +            CPU_RET_1_0: cpu-retentive-1-0 {
+> +                compatible = "riscv,idle-state";
+> +                riscv,sbi-suspend-param = <0x10000010>;
+> +                entry-latency-us = <20>;
+> +                exit-latency-us = <40>;
+> +                min-residency-us = <80>;
+> +            };
+> +
+> +            CPU_NONRET_1_0: cpu-nonretentive-1-0 {
+> +                compatible = "riscv,idle-state";
+> +                riscv,sbi-suspend-param = <0x90000010>;
+> +                entry-latency-us = <250>;
+> +                exit-latency-us = <500>;
+> +                min-residency-us = <950>;
+> +            };
+> +
+> +            CLUSTER_RET_1: cluster-retentive-1 {
+> +                compatible = "riscv,idle-state";
+> +                riscv,sbi-suspend-param = <0x11000010>;
+> +                local-timer-stop;
+> +                entry-latency-us = <50>;
+> +                exit-latency-us = <100>;
+> +                min-residency-us = <250>;
+> +                wakeup-latency-us = <130>;
+> +            };
+> +
+> +            CLUSTER_NONRET_1: cluster-nonretentive-1 {
+> +                compatible = "riscv,idle-state";
+> +                riscv,sbi-suspend-param = <0x91000010>;
+> +                local-timer-stop;
+> +                entry-latency-us = <600>;
+> +                exit-latency-us = <1100>;
+> +                min-residency-us = <2700>;
+> +                wakeup-latency-us = <1500>;
+> +            };
+> +        };
+> +    };
+> +
+>  ...
+> diff --git a/Documentation/devicetree/bindings/riscv/cpus.yaml b/Documentation/devicetree/bindings/riscv/cpus.yaml
+> index aa5fb64d57eb..f62f646bc695 100644
+> --- a/Documentation/devicetree/bindings/riscv/cpus.yaml
+> +++ b/Documentation/devicetree/bindings/riscv/cpus.yaml
+> @@ -99,6 +99,12 @@ properties:
+>        - compatible
+>        - interrupt-controller
+>
+> +  cpu-idle-states:
+> +    $ref: '/schemas/types.yaml#/definitions/phandle-array'
+> +    description: |
+> +      List of phandles to idle state nodes supported
+> +      by this hart (see ./idle-states.yaml).
+> +
+>  required:
+>    - riscv,isa
+>    - interrupt-controller
 > --
 > 2.25.1
 >
