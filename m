@@ -1,16 +1,20 @@
 From: Guo Ren <guoren@kernel.org>
-Date: Tue, 8 Feb 2022 14:26:16 +0800
+Date: Tue, 8 Feb 2022 14:46:13 +0800
 Subject: [PATCH v10 8/8] RISC-V: Enable RISC-V SBI CPU Idle driver for
  QEMU virt machine
 In-Reply-To: <20220126114452.692512-9-apatel@ventanamicro.com>
 References: <20220126114452.692512-1-apatel@ventanamicro.com>
  <20220126114452.692512-9-apatel@ventanamicro.com>
-Message-ID: <CAJF2gTRLcqQ8ZjKwWNmARtaraVW7dD5Hp5=iv+4kHYENvB2gWg@mail.gmail.com>
+Message-ID: <CAJF2gTQsSn1KBgX2bg2LiSUbCmbGD3oF5KcmK5gq2Dd49BWDBQ@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+
+Another question:
+
+Have you put "idle-states {" in qemu's DTS? or how do you test your patches?
 
 On Wed, Jan 26, 2022 at 7:51 PM Anup Patel <apatel@ventanamicro.com> wrote:
 >
@@ -54,11 +58,6 @@ On Wed, Jan 26, 2022 at 7:51 PM Anup Patel <apatel@ventanamicro.com> wrote:
 >  CONFIG_VIRTUALIZATION=y
 >  CONFIG_KVM=m
 > diff --git a/arch/riscv/configs/rv32_defconfig b/arch/riscv/configs/rv32_defconfig
-rv32_defconfig would be removed. I think you could delete this part.
-https://lore.kernel.org/linux-riscv/20220201150545.1512822-9-guoren at kernel.org/T/#u
-
-I would Cc you in the patch, and you could track the progress.
-
 > index d1b87db54d68..6f9a7c89bff9 100644
 > --- a/arch/riscv/configs/rv32_defconfig
 > +++ b/arch/riscv/configs/rv32_defconfig
