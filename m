@@ -1,11 +1,11 @@
 From: Anup Patel <anup@brainfault.org>
-Date: Wed, 9 Feb 2022 10:45:05 +0530
+Date: Wed, 9 Feb 2022 10:50:28 +0530
 Subject: [PATCH v10 1/8] RISC-V: Enable CPU_IDLE drivers
 In-Reply-To: <CAJF2gTSwzx-yC=WvFixT96=q+M0KPzaZH5PpgGKVWg42M4GBNw@mail.gmail.com>
 References: <20220126114452.692512-1-apatel@ventanamicro.com>
  <20220126114452.692512-2-apatel@ventanamicro.com>
  <CAJF2gTSwzx-yC=WvFixT96=q+M0KPzaZH5PpgGKVWg42M4GBNw@mail.gmail.com>
-Message-ID: <CAAhSdy0DcB2+vJSEBd5apQhzjFBz9haNTVqqTeX92+hYVyhB2A@mail.gmail.com>
+Message-ID: <CAAhSdy2onHRmnj6g6Swp86DL-nHJyv0r_KsUupatjHx11J11LA@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -110,17 +110,6 @@ On Tue, Feb 8, 2022 at 11:46 AM Guo Ren <guoren@kernel.org> wrote:
 > > +        */
 > > +       mb();
 > I think it's a separate fixup.
-
-This one is tricky to move as separate fixup because there
-is no cpu_do_idle() until this patch adds it.
-
-If we deliberately have a separate patch for "mb()" then it
-will be only fixing cpu_do_idle() function added by previous
-patch in the same series.
-
-Regards,
-Anup
-
 >
 > > +       wait_for_interrupt();
 > > +}
@@ -144,6 +133,14 @@ Anup
 > >  {
 > maybe below is enough.
 > + mb();
+
+We can't add "mb()" here because cpu_do_idle() is called
+directly from linux/cpuidle.h and arch_cpu_idle() is only
+called when CPU idle is disabled.
+
+Regards,
+Anup
+
 >    wait_for_interrupt();
 >
 > > -       wait_for_interrupt();
