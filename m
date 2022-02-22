@@ -1,177 +1,48 @@
-From: Anup Patel <anup@brainfault.org>
-Date: Tue, 22 Feb 2022 12:13:15 +0530
-Subject: [PATCH] riscv: kvm: refine __kvm_riscv_switch_to and
- __kvm_riscv_switch_from function
-In-Reply-To: <20220217104248.30948-1-vincent.chen@sifive.com>
-References: <20220217104248.30948-1-vincent.chen@sifive.com>
-Message-ID: <CAAhSdy22YkD+euF2wij9FhUT2q-jVQCjdN8+WQEqnyzdiQ6EAw@mail.gmail.com>
+From: Atish Patra <atishp@atishpatra.org>
+Date: Tue, 22 Feb 2022 15:53:47 -0800
+Subject: [PATCH 1/6] RISC-V: KVM: Upgrade SBI spec version to v0.3
+In-Reply-To: <20220201082227.361967-2-apatel@ventanamicro.com>
+References: <20220201082227.361967-1-apatel@ventanamicro.com>
+ <20220201082227.361967-2-apatel@ventanamicro.com>
+Message-ID: <CAOnJCUKKHVxRUA2kdrCRD3-q=DQWP=_gAJn8UovR3jXk3N-qOw@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Feb 17, 2022 at 4:13 PM Vincent Chen <vincent.chen@sifive.com> wrote:
+On Tue, Feb 1, 2022 at 12:23 AM Anup Patel <apatel@ventanamicro.com> wrote:
 >
-
-I think the patch subject should be:
-RISC-V: KVM: Refine __kvm_riscv_switch_to() implementation
-
-> Kernel uses __kvm_riscv_switch_to() and __kvm_riscv_switch_from() to switch
-
-s/__kvm_riscv_switch_from/__kvm_switch_return/
-
-> the context of host kernel and guest kernel. Several CSRs belonging to the
-> context will be read and written during the context switch. To ensure
-> atomic read-modify-write control of CSR and ordering of CSR accesses, some
-> hardware blocks or flushes the pipeline when writing a CSR. In this
-
-s/hardware blocks or flushes/hardware blocks flush/
-
-> circumstance, grouping CSR executions together as much as possible can
-> reduce the performance impact of the pipeline. Therefore, this commit
-> reorders the CSR instructions to enhance the context switch performance..
-
-I am mostly fine with this patch except a few nits below.
-
+> We upgrade SBI spec version implemented by KVM RISC-V to v0.3 so
+> that Guest kernel can probe and use SBI extensions added by the
+> SBI v0.3 specification.
 >
-> Signed-off-by: Vincent Chen <vincent.chen@sifive.com>
-> Suggested-by: Hsinyi Lee <hsinyi.lee@sifive.com>
-> Suggested-by: Fu-Ching Yang <fu-ching.yang@sifive.com>
+> Signed-off-by: Anup Patel <apatel@ventanamicro.com>
 > ---
->  arch/riscv/kvm/vcpu_switch.S | 55 ++++++++++++++++++------------------
->  1 file changed, 28 insertions(+), 27 deletions(-)
+>  arch/riscv/include/asm/kvm_vcpu_sbi.h | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 >
-> diff --git a/arch/riscv/kvm/vcpu_switch.S b/arch/riscv/kvm/vcpu_switch.S
-> index 029a28a195c6..75cf21e5ed92 100644
-> --- a/arch/riscv/kvm/vcpu_switch.S
-> +++ b/arch/riscv/kvm/vcpu_switch.S
-> @@ -40,34 +40,35 @@ ENTRY(__kvm_riscv_switch_to)
->         REG_S   s9, (KVM_ARCH_HOST_S9)(a0)
->         REG_S   s10, (KVM_ARCH_HOST_S10)(a0)
->         REG_S   s11, (KVM_ARCH_HOST_S11)(a0)
-
-Add a new line here.
-
-Also add a single line comment as follows:
-/* Load Guest CSR values */
-
-> +       REG_L   t0, (KVM_ARCH_GUEST_SSTATUS)(a0)
-> +       REG_L   t1, (KVM_ARCH_GUEST_HSTATUS)(a0)
-> +       REG_L   t2, (KVM_ARCH_GUEST_SCOUNTEREN)(a0)
-> +       la      t4, __kvm_switch_return
-> +       REG_L   t5, (KVM_ARCH_GUEST_SEPC)(a0)
+> diff --git a/arch/riscv/include/asm/kvm_vcpu_sbi.h b/arch/riscv/include/asm/kvm_vcpu_sbi.h
+> index 76e4e17a3e00..04cd81f2ab5b 100644
+> --- a/arch/riscv/include/asm/kvm_vcpu_sbi.h
+> +++ b/arch/riscv/include/asm/kvm_vcpu_sbi.h
+> @@ -12,7 +12,7 @@
+>  #define KVM_SBI_IMPID 3
 >
->         /* Save Host and Restore Guest SSTATUS */
-> -       REG_L   t0, (KVM_ARCH_GUEST_SSTATUS)(a0)
->         csrrw   t0, CSR_SSTATUS, t0
-> -       REG_S   t0, (KVM_ARCH_HOST_SSTATUS)(a0)
+>  #define KVM_SBI_VERSION_MAJOR 0
+> -#define KVM_SBI_VERSION_MINOR 2
+> +#define KVM_SBI_VERSION_MINOR 3
 >
->         /* Save Host and Restore Guest HSTATUS */
-> -       REG_L   t1, (KVM_ARCH_GUEST_HSTATUS)(a0)
->         csrrw   t1, CSR_HSTATUS, t1
-> -       REG_S   t1, (KVM_ARCH_HOST_HSTATUS)(a0)
->
->         /* Save Host and Restore Guest SCOUNTEREN */
-> -       REG_L   t2, (KVM_ARCH_GUEST_SCOUNTEREN)(a0)
->         csrrw   t2, CSR_SCOUNTEREN, t2
-> -       REG_S   t2, (KVM_ARCH_HOST_SCOUNTEREN)(a0)
-> -
-> -       /* Save Host SSCRATCH and change it to struct kvm_vcpu_arch pointer */
-> -       csrrw   t3, CSR_SSCRATCH, a0
-> -       REG_S   t3, (KVM_ARCH_HOST_SSCRATCH)(a0)
->
->         /* Save Host STVEC and change it to return path */
-> -       la      t4, __kvm_switch_return
->         csrrw   t4, CSR_STVEC, t4
-> -       REG_S   t4, (KVM_ARCH_HOST_STVEC)(a0)
-> +
-> +       /* Save Host SSCRATCH and change it to struct kvm_vcpu_arch pointer */
-> +       csrrw   t3, CSR_SSCRATCH, a0
->
->         /* Restore Guest SEPC */
-> -       REG_L   t0, (KVM_ARCH_GUEST_SEPC)(a0)
-> -       csrw    CSR_SEPC, t0
-> +       csrw    CSR_SEPC, t5
-> +
-
-Add a single line comment as follows:
-/* Store Host CSR values */
-
-> +       REG_S   t0, (KVM_ARCH_HOST_SSTATUS)(a0)
-> +       REG_S   t1, (KVM_ARCH_HOST_HSTATUS)(a0)
-> +       REG_S   t2, (KVM_ARCH_HOST_SCOUNTEREN)(a0)
-> +       REG_S   t3, (KVM_ARCH_HOST_SSCRATCH)(a0)
-> +       REG_S   t4, (KVM_ARCH_HOST_STVEC)(a0)
->
->         /* Restore Guest GPRs (except A0) */
->         REG_L   ra, (KVM_ARCH_GUEST_RA)(a0)
-> @@ -144,35 +145,35 @@ __kvm_switch_return:
->         REG_S   t4, (KVM_ARCH_GUEST_T4)(a0)
->         REG_S   t5, (KVM_ARCH_GUEST_T5)(a0)
->         REG_S   t6, (KVM_ARCH_GUEST_T6)(a0)
-
-Add a new line here.
-
-Also add a single line comment as follows:
-/* Load Host CSR values */
-
-> +       REG_L   t1, (KVM_ARCH_HOST_STVEC)(a0)
-> +       REG_L   t2, (KVM_ARCH_HOST_SSCRATCH)(a0)
-> +       REG_L   t3, (KVM_ARCH_HOST_SCOUNTEREN)(a0)
-> +       REG_L   t4, (KVM_ARCH_HOST_HSTATUS)(a0)
-> +       REG_L   t5, (KVM_ARCH_HOST_SSTATUS)(a0)
->
->         /* Save Guest SEPC */
->         csrr    t0, CSR_SEPC
-> -       REG_S   t0, (KVM_ARCH_GUEST_SEPC)(a0)
-> -
-> -       /* Restore Host STVEC */
-> -       REG_L   t1, (KVM_ARCH_HOST_STVEC)(a0)
-> -       csrw    CSR_STVEC, t1
->
->         /* Save Guest A0 and Restore Host SSCRATCH */
-> -       REG_L   t2, (KVM_ARCH_HOST_SSCRATCH)(a0)
->         csrrw   t2, CSR_SSCRATCH, t2
-> -       REG_S   t2, (KVM_ARCH_GUEST_A0)(a0)
-> +
-> +       /* Restore Host STVEC */
-> +       csrw    CSR_STVEC, t1
->
->         /* Save Guest and Restore Host SCOUNTEREN */
-> -       REG_L   t3, (KVM_ARCH_HOST_SCOUNTEREN)(a0)
->         csrrw   t3, CSR_SCOUNTEREN, t3
-> -       REG_S   t3, (KVM_ARCH_GUEST_SCOUNTEREN)(a0)
->
->         /* Save Guest and Restore Host HSTATUS */
-> -       REG_L   t4, (KVM_ARCH_HOST_HSTATUS)(a0)
->         csrrw   t4, CSR_HSTATUS, t4
-> -       REG_S   t4, (KVM_ARCH_GUEST_HSTATUS)(a0)
->
->         /* Save Guest and Restore Host SSTATUS */
-> -       REG_L   t5, (KVM_ARCH_HOST_SSTATUS)(a0)
->         csrrw   t5, CSR_SSTATUS, t5
-> -       REG_S   t5, (KVM_ARCH_GUEST_SSTATUS)(a0)
->
-
-Add a single line comment as follows:
-/* Store Guest CSR values */
-
-> +       REG_S   t0, (KVM_ARCH_GUEST_SEPC)(a0)
-> +       REG_S   t2, (KVM_ARCH_GUEST_A0)(a0)
-> +       REG_S   t3, (KVM_ARCH_GUEST_SCOUNTEREN)(a0)
-> +       REG_S   t4, (KVM_ARCH_GUEST_HSTATUS)(a0)
-> +       REG_S   t5, (KVM_ARCH_GUEST_SSTATUS)(a0)
-
-Add new line here
-
->         /* Restore Host GPRs (except A0 and T0-T6) */
->         REG_L   ra, (KVM_ARCH_HOST_RA)(a0)
->         REG_L   sp, (KVM_ARCH_HOST_SP)(a0)
+>  struct kvm_vcpu_sbi_extension {
+>         unsigned long extid_start;
 > --
-> 2.17.1
+> 2.25.1
 >
 
+
+Reviewed-by: Atish Patra <atishp@rivosinc.com>
+
+--
 Regards,
-Anup
+Atish
 
