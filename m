@@ -1,112 +1,119 @@
 From: Anup Patel <anup@brainfault.org>
-Date: Wed, 23 Feb 2022 12:07:14 +0530
-Subject: [PATCH v3 10/19] KVM: Create helper for setting a system event
- exit
-In-Reply-To: <20220223041844.3984439-11-oupton@google.com>
-References: <20220223041844.3984439-1-oupton@google.com>
- <20220223041844.3984439-11-oupton@google.com>
-Message-ID: <CAAhSdy1yY+fQMUZ=2g1JSsZ=jZXFPGxTYk_sM3kURTJ+t_z3Wg@mail.gmail.com>
+Date: Wed, 23 Feb 2022 12:32:11 +0530
+Subject: [PATCH v11 4/8] RISC-V: Add SBI HSM suspend related defines
+In-Reply-To: <20220210054947.170134-5-apatel@ventanamicro.com>
+References: <20220210054947.170134-1-apatel@ventanamicro.com>
+ <20220210054947.170134-5-apatel@ventanamicro.com>
+Message-ID: <CAAhSdy3jK26WFhG8Q=Up8hhHPpJCCkA09EKOi+B-Kp0U9Rwg7w@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Feb 23, 2022 at 9:49 AM Oliver Upton <oupton@google.com> wrote:
->
-> Create a helper that appropriately configures kvm_run for a system event
-> exit.
->
-> No functional change intended.
->
-> Suggested-by: Marc Zyngier <maz@kernel.org>
-> Signed-off-by: Oliver Upton <oupton@google.com>
+Hi Palmer
 
-Looks good to me.
+On Thu, Feb 10, 2022 at 11:20 AM Anup Patel <apatel@ventanamicro.com> wrote:
+>
+> From: Anup Patel <anup.patel@wdc.com>
+>
+> We add defines related to SBI HSM suspend call and also
+> update HSM states naming as-per latest SBI specification.
+>
+> Signed-off-by: Anup Patel <anup.patel@wdc.com>
+> Signed-off-by: Anup Patel <apatel@ventanamicro.com>
+> Reviewed-by: Guo Ren <guoren@kernel.org>
 
-For KVM RISC-V:
-Acked-by: Anup Patel <anup@brainfault.org>
+This patch is shared with "KVM RISC-V SBI v0.3 support".
+(https://lore.kernel.org/all/20220201082227.361967-2-apatel at ventanamicro.com/T/)
+
+How do you want to handle this ?
+
+One option is that I take this patch through the KVM RISC-V tree
+and you can send this series (minus this patch) for 5.18 after the
+KVM RISC-V changes have been merged.
 
 Regards,
 Anup
 
 > ---
->  arch/arm64/kvm/psci.c         | 4 +---
->  arch/riscv/kvm/vcpu_sbi_v01.c | 4 +---
->  arch/x86/kvm/x86.c            | 6 ++----
->  include/linux/kvm_host.h      | 7 +++++++
->  4 files changed, 11 insertions(+), 10 deletions(-)
+>  arch/riscv/include/asm/sbi.h    | 27 ++++++++++++++++++++++-----
+>  arch/riscv/kernel/cpu_ops_sbi.c |  2 +-
+>  arch/riscv/kvm/vcpu_sbi_hsm.c   |  4 ++--
+>  3 files changed, 25 insertions(+), 8 deletions(-)
 >
-> diff --git a/arch/arm64/kvm/psci.c b/arch/arm64/kvm/psci.c
-> index 41adaaf2234a..2bb8d047cde4 100644
-> --- a/arch/arm64/kvm/psci.c
-> +++ b/arch/arm64/kvm/psci.c
-> @@ -193,9 +193,7 @@ static void kvm_prepare_system_event(struct kvm_vcpu *vcpu, u32 type)
->                 tmp->arch.mp_state = KVM_MP_STATE_STOPPED;
->         kvm_make_all_cpus_request(vcpu->kvm, KVM_REQ_SLEEP);
+> diff --git a/arch/riscv/include/asm/sbi.h b/arch/riscv/include/asm/sbi.h
+> index d1c37479d828..06133b4f8e20 100644
+> --- a/arch/riscv/include/asm/sbi.h
+> +++ b/arch/riscv/include/asm/sbi.h
+> @@ -71,15 +71,32 @@ enum sbi_ext_hsm_fid {
+>         SBI_EXT_HSM_HART_START = 0,
+>         SBI_EXT_HSM_HART_STOP,
+>         SBI_EXT_HSM_HART_STATUS,
+> +       SBI_EXT_HSM_HART_SUSPEND,
+>  };
 >
-> -       memset(&vcpu->run->system_event, 0, sizeof(vcpu->run->system_event));
-> -       vcpu->run->system_event.type = type;
-> -       vcpu->run->exit_reason = KVM_EXIT_SYSTEM_EVENT;
-> +       kvm_vcpu_set_system_event_exit(vcpu, type);
->  }
+> -enum sbi_hsm_hart_status {
+> -       SBI_HSM_HART_STATUS_STARTED = 0,
+> -       SBI_HSM_HART_STATUS_STOPPED,
+> -       SBI_HSM_HART_STATUS_START_PENDING,
+> -       SBI_HSM_HART_STATUS_STOP_PENDING,
+> +enum sbi_hsm_hart_state {
+> +       SBI_HSM_STATE_STARTED = 0,
+> +       SBI_HSM_STATE_STOPPED,
+> +       SBI_HSM_STATE_START_PENDING,
+> +       SBI_HSM_STATE_STOP_PENDING,
+> +       SBI_HSM_STATE_SUSPENDED,
+> +       SBI_HSM_STATE_SUSPEND_PENDING,
+> +       SBI_HSM_STATE_RESUME_PENDING,
+>  };
 >
->  static void kvm_psci_system_off(struct kvm_vcpu *vcpu)
-> diff --git a/arch/riscv/kvm/vcpu_sbi_v01.c b/arch/riscv/kvm/vcpu_sbi_v01.c
-> index 07e2de14433a..7a197d5658d7 100644
-> --- a/arch/riscv/kvm/vcpu_sbi_v01.c
-> +++ b/arch/riscv/kvm/vcpu_sbi_v01.c
-> @@ -24,9 +24,7 @@ static void kvm_sbi_system_shutdown(struct kvm_vcpu *vcpu,
->                 tmp->arch.power_off = true;
->         kvm_make_all_cpus_request(vcpu->kvm, KVM_REQ_SLEEP);
->
-> -       memset(&run->system_event, 0, sizeof(run->system_event));
-> -       run->system_event.type = type;
-> -       run->exit_reason = KVM_EXIT_SYSTEM_EVENT;
-> +       kvm_vcpu_set_system_event_exit(vcpu, type);
->  }
->
->  static int kvm_sbi_ext_v01_handler(struct kvm_vcpu *vcpu, struct kvm_run *run,
-> diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-> index 7131d735b1ef..109751f89ee3 100644
-> --- a/arch/x86/kvm/x86.c
-> +++ b/arch/x86/kvm/x86.c
-> @@ -9903,14 +9903,12 @@ static int vcpu_enter_guest(struct kvm_vcpu *vcpu)
->                 if (kvm_check_request(KVM_REQ_APIC_PAGE_RELOAD, vcpu))
->                         kvm_vcpu_reload_apic_access_page(vcpu);
->                 if (kvm_check_request(KVM_REQ_HV_CRASH, vcpu)) {
-> -                       vcpu->run->exit_reason = KVM_EXIT_SYSTEM_EVENT;
-> -                       vcpu->run->system_event.type = KVM_SYSTEM_EVENT_CRASH;
-> +                       kvm_vcpu_set_system_event_exit(vcpu, KVM_SYSTEM_EVENT_CRASH);
->                         r = 0;
->                         goto out;
->                 }
->                 if (kvm_check_request(KVM_REQ_HV_RESET, vcpu)) {
-> -                       vcpu->run->exit_reason = KVM_EXIT_SYSTEM_EVENT;
-> -                       vcpu->run->system_event.type = KVM_SYSTEM_EVENT_RESET;
-> +                       kvm_vcpu_set_system_event_exit(vcpu, KVM_SYSTEM_EVENT_RESET);
->                         r = 0;
->                         goto out;
->                 }
-> diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-> index f11039944c08..9085a1b1569a 100644
-> --- a/include/linux/kvm_host.h
-> +++ b/include/linux/kvm_host.h
-> @@ -2202,6 +2202,13 @@ static inline void kvm_handle_signal_exit(struct kvm_vcpu *vcpu)
->  }
->  #endif /* CONFIG_KVM_XFER_TO_GUEST_WORK */
->
-> +static inline void kvm_vcpu_set_system_event_exit(struct kvm_vcpu *vcpu, u32 type)
-> +{
-> +       memset(&vcpu->run->system_event, 0, sizeof(vcpu->run->system_event));
-> +       vcpu->run->system_event.type = type;
-> +       vcpu->run->exit_reason = KVM_EXIT_SYSTEM_EVENT;
-> +}
+> +#define SBI_HSM_SUSP_BASE_MASK                 0x7fffffff
+> +#define SBI_HSM_SUSP_NON_RET_BIT               0x80000000
+> +#define SBI_HSM_SUSP_PLAT_BASE                 0x10000000
 > +
->  /*
->   * This defines how many reserved entries we want to keep before we
->   * kick the vcpu to the userspace to avoid dirty ring full.  This
+> +#define SBI_HSM_SUSPEND_RET_DEFAULT            0x00000000
+> +#define SBI_HSM_SUSPEND_RET_PLATFORM           SBI_HSM_SUSP_PLAT_BASE
+> +#define SBI_HSM_SUSPEND_RET_LAST               SBI_HSM_SUSP_BASE_MASK
+> +#define SBI_HSM_SUSPEND_NON_RET_DEFAULT                SBI_HSM_SUSP_NON_RET_BIT
+> +#define SBI_HSM_SUSPEND_NON_RET_PLATFORM       (SBI_HSM_SUSP_NON_RET_BIT | \
+> +                                                SBI_HSM_SUSP_PLAT_BASE)
+> +#define SBI_HSM_SUSPEND_NON_RET_LAST           (SBI_HSM_SUSP_NON_RET_BIT | \
+> +                                                SBI_HSM_SUSP_BASE_MASK)
+> +
+>  enum sbi_ext_srst_fid {
+>         SBI_EXT_SRST_RESET = 0,
+>  };
+> diff --git a/arch/riscv/kernel/cpu_ops_sbi.c b/arch/riscv/kernel/cpu_ops_sbi.c
+> index dae29cbfe550..2e16f6732cdf 100644
+> --- a/arch/riscv/kernel/cpu_ops_sbi.c
+> +++ b/arch/riscv/kernel/cpu_ops_sbi.c
+> @@ -111,7 +111,7 @@ static int sbi_cpu_is_stopped(unsigned int cpuid)
+>
+>         rc = sbi_hsm_hart_get_status(hartid);
+>
+> -       if (rc == SBI_HSM_HART_STATUS_STOPPED)
+> +       if (rc == SBI_HSM_STATE_STOPPED)
+>                 return 0;
+>         return rc;
+>  }
+> diff --git a/arch/riscv/kvm/vcpu_sbi_hsm.c b/arch/riscv/kvm/vcpu_sbi_hsm.c
+> index 2e383687fa48..1ac4b2e8e4ec 100644
+> --- a/arch/riscv/kvm/vcpu_sbi_hsm.c
+> +++ b/arch/riscv/kvm/vcpu_sbi_hsm.c
+> @@ -60,9 +60,9 @@ static int kvm_sbi_hsm_vcpu_get_status(struct kvm_vcpu *vcpu)
+>         if (!target_vcpu)
+>                 return -EINVAL;
+>         if (!target_vcpu->arch.power_off)
+> -               return SBI_HSM_HART_STATUS_STARTED;
+> +               return SBI_HSM_STATE_STARTED;
+>         else
+> -               return SBI_HSM_HART_STATUS_STOPPED;
+> +               return SBI_HSM_STATE_STOPPED;
+>  }
+>
+>  static int kvm_sbi_ext_hsm_handler(struct kvm_vcpu *vcpu, struct kvm_run *run,
 > --
-> 2.35.1.473.g83b2b277ed-goog
+> 2.25.1
 >
 
