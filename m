@@ -1,69 +1,59 @@
 From: Oliver Upton <oupton@google.com>
-Date: Wed, 23 Feb 2022 04:18:39 +0000
-Subject: [PATCH v3 14/19] KVM: arm64: Raise default PSCI version to v1.1
+Date: Wed, 23 Feb 2022 04:18:40 +0000
+Subject: [PATCH v3 15/19] selftests: KVM: Rename psci_cpu_on_test to psci_test
 In-Reply-To: <20220223041844.3984439-1-oupton@google.com>
 References: <20220223041844.3984439-1-oupton@google.com>
-Message-ID: <20220223041844.3984439-15-oupton@google.com>
+Message-ID: <20220223041844.3984439-16-oupton@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-As it turns out, KVM already implements the requirements of PSCI v1.1.
-Raise the default PSCI version to v1.1 to actually advertise as such.
+There are other interactions with PSCI worth testing; rename the PSCI
+test to make it more generic.
 
-Suggested-by: Marc Zyngier <maz@kernel.org>
+No functional change intended.
+
 Signed-off-by: Oliver Upton <oupton@google.com>
+Reviewed-by: Andrew Jones <drjones@redhat.com>
 ---
- arch/arm64/kvm/psci.c  | 4 +++-
- include/kvm/arm_psci.h | 3 ++-
- 2 files changed, 5 insertions(+), 2 deletions(-)
+ tools/testing/selftests/kvm/.gitignore                          | 2 +-
+ tools/testing/selftests/kvm/Makefile                            | 2 +-
+ .../selftests/kvm/aarch64/{psci_cpu_on_test.c => psci_test.c}   | 0
+ 3 files changed, 2 insertions(+), 2 deletions(-)
+ rename tools/testing/selftests/kvm/aarch64/{psci_cpu_on_test.c => psci_test.c} (100%)
 
-diff --git a/arch/arm64/kvm/psci.c b/arch/arm64/kvm/psci.c
-index a7de84cec2e4..0b8a603c471b 100644
---- a/arch/arm64/kvm/psci.c
-+++ b/arch/arm64/kvm/psci.c
-@@ -370,7 +370,7 @@ static int kvm_psci_1_0_call(struct kvm_vcpu *vcpu)
- 
- 	switch(psci_fn) {
- 	case PSCI_0_2_FN_PSCI_VERSION:
--		val = KVM_ARM_PSCI_1_0;
-+		val = kvm_psci_version(vcpu);
- 		break;
- 	case PSCI_1_0_FN_PSCI_FEATURES:
- 		feature = smccc_get_arg1(vcpu);
-@@ -456,6 +456,7 @@ static int kvm_psci_0_1_call(struct kvm_vcpu *vcpu)
- int kvm_psci_call(struct kvm_vcpu *vcpu)
- {
- 	switch (kvm_psci_version(vcpu)) {
-+	case KVM_ARM_PSCI_1_1:
- 	case KVM_ARM_PSCI_1_0:
- 		return kvm_psci_1_0_call(vcpu);
- 	case KVM_ARM_PSCI_0_2:
-@@ -574,6 +575,7 @@ int kvm_arm_set_fw_reg(struct kvm_vcpu *vcpu, const struct kvm_one_reg *reg)
- 			return 0;
- 		case KVM_ARM_PSCI_0_2:
- 		case KVM_ARM_PSCI_1_0:
-+		case KVM_ARM_PSCI_1_1:
- 			if (!wants_02)
- 				return -EINVAL;
- 			vcpu->kvm->arch.psci_version = val;
-diff --git a/include/kvm/arm_psci.h b/include/kvm/arm_psci.h
-index 297645edcaff..68b96c3826c3 100644
---- a/include/kvm/arm_psci.h
-+++ b/include/kvm/arm_psci.h
-@@ -13,8 +13,9 @@
- #define KVM_ARM_PSCI_0_1	PSCI_VERSION(0, 1)
- #define KVM_ARM_PSCI_0_2	PSCI_VERSION(0, 2)
- #define KVM_ARM_PSCI_1_0	PSCI_VERSION(1, 0)
-+#define KVM_ARM_PSCI_1_1	PSCI_VERSION(1, 1)
- 
--#define KVM_ARM_PSCI_LATEST	KVM_ARM_PSCI_1_0
-+#define KVM_ARM_PSCI_LATEST	KVM_ARM_PSCI_1_1
- 
- static inline int kvm_psci_version(struct kvm_vcpu *vcpu)
- {
+diff --git a/tools/testing/selftests/kvm/.gitignore b/tools/testing/selftests/kvm/.gitignore
+index dce7de7755e6..ac69108d9ffd 100644
+--- a/tools/testing/selftests/kvm/.gitignore
++++ b/tools/testing/selftests/kvm/.gitignore
+@@ -2,7 +2,7 @@
+ /aarch64/arch_timer
+ /aarch64/debug-exceptions
+ /aarch64/get-reg-list
+-/aarch64/psci_cpu_on_test
++/aarch64/psci_test
+ /aarch64/vgic_init
+ /aarch64/vgic_irq
+ /s390x/memop
+diff --git a/tools/testing/selftests/kvm/Makefile b/tools/testing/selftests/kvm/Makefile
+index 0e4926bc9a58..61e11e372366 100644
+--- a/tools/testing/selftests/kvm/Makefile
++++ b/tools/testing/selftests/kvm/Makefile
+@@ -103,7 +103,7 @@ TEST_GEN_PROGS_x86_64 += system_counter_offset_test
+ TEST_GEN_PROGS_aarch64 += aarch64/arch_timer
+ TEST_GEN_PROGS_aarch64 += aarch64/debug-exceptions
+ TEST_GEN_PROGS_aarch64 += aarch64/get-reg-list
+-TEST_GEN_PROGS_aarch64 += aarch64/psci_cpu_on_test
++TEST_GEN_PROGS_aarch64 += aarch64/psci_test
+ TEST_GEN_PROGS_aarch64 += aarch64/vgic_init
+ TEST_GEN_PROGS_aarch64 += aarch64/vgic_irq
+ TEST_GEN_PROGS_aarch64 += demand_paging_test
+diff --git a/tools/testing/selftests/kvm/aarch64/psci_cpu_on_test.c b/tools/testing/selftests/kvm/aarch64/psci_test.c
+similarity index 100%
+rename from tools/testing/selftests/kvm/aarch64/psci_cpu_on_test.c
+rename to tools/testing/selftests/kvm/aarch64/psci_test.c
 -- 
 2.35.1.473.g83b2b277ed-goog
 
