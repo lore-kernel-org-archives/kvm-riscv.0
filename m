@@ -1,105 +1,166 @@
 From: Oliver Upton <oupton@google.com>
-Date: Wed, 23 Feb 2022 04:18:30 +0000
-Subject: [PATCH v3 05/19] KVM: arm64: Dedupe vCPU power off helpers
+Date: Wed, 23 Feb 2022 04:18:31 +0000
+Subject: [PATCH v3 06/19] KVM: arm64: Track vCPU power state using MP state
+ values
 In-Reply-To: <20220223041844.3984439-1-oupton@google.com>
 References: <20220223041844.3984439-1-oupton@google.com>
-Message-ID: <20220223041844.3984439-6-oupton@google.com>
+Message-ID: <20220223041844.3984439-7-oupton@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-vcpu_power_off() and kvm_psci_vcpu_off() are equivalent; rename the
-former and replace all callsites to the latter.
+A subsequent change to KVM will add support for additional power states.
+Store the MP state by value rather than keeping track of it as a
+boolean.
 
 No functional change intended.
 
 Signed-off-by: Oliver Upton <oupton@google.com>
 ---
- arch/arm64/include/asm/kvm_host.h |  2 ++
- arch/arm64/kvm/arm.c              |  6 +++---
- arch/arm64/kvm/psci.c             | 11 ++---------
- 3 files changed, 7 insertions(+), 12 deletions(-)
+ arch/arm64/include/asm/kvm_host.h |  5 +++--
+ arch/arm64/kvm/arm.c              | 22 ++++++++++++----------
+ arch/arm64/kvm/psci.c             | 10 +++++-----
+ 3 files changed, 20 insertions(+), 17 deletions(-)
 
 diff --git a/arch/arm64/include/asm/kvm_host.h b/arch/arm64/include/asm/kvm_host.h
-index 5bc01e62c08a..cacc9efd2e70 100644
+index cacc9efd2e70..3e8bfecaa95b 100644
 --- a/arch/arm64/include/asm/kvm_host.h
 +++ b/arch/arm64/include/asm/kvm_host.h
-@@ -799,4 +799,6 @@ void __init kvm_hyp_reserve(void);
- static inline void kvm_hyp_reserve(void) { }
+@@ -350,8 +350,8 @@ struct kvm_vcpu_arch {
+ 		u32	mdscr_el1;
+ 	} guest_debug_preserved;
+ 
+-	/* vcpu power-off state */
+-	bool power_off;
++	/* vcpu power state */
++	u32 mp_state;
+ 
+ 	/* Don't run the guest (internal implementation need) */
+ 	bool pause;
+@@ -800,5 +800,6 @@ static inline void kvm_hyp_reserve(void) { }
  #endif
  
-+void kvm_arm_vcpu_power_off(struct kvm_vcpu *vcpu);
-+
+ void kvm_arm_vcpu_power_off(struct kvm_vcpu *vcpu);
++bool kvm_arm_vcpu_powered_off(struct kvm_vcpu *vcpu);
+ 
  #endif /* __ARM64_KVM_HOST_H__ */
 diff --git a/arch/arm64/kvm/arm.c b/arch/arm64/kvm/arm.c
-index ecc5958e27fe..07c6a176cdcc 100644
+index 07c6a176cdcc..b4987b891f38 100644
 --- a/arch/arm64/kvm/arm.c
 +++ b/arch/arm64/kvm/arm.c
-@@ -426,7 +426,7 @@ void kvm_arch_vcpu_put(struct kvm_vcpu *vcpu)
- 	vcpu->cpu = -1;
+@@ -428,18 +428,20 @@ void kvm_arch_vcpu_put(struct kvm_vcpu *vcpu)
+ 
+ void kvm_arm_vcpu_power_off(struct kvm_vcpu *vcpu)
+ {
+-	vcpu->arch.power_off = true;
++	vcpu->arch.mp_state = KVM_MP_STATE_STOPPED;
+ 	kvm_make_request(KVM_REQ_SLEEP, vcpu);
+ 	kvm_vcpu_kick(vcpu);
  }
  
--static void vcpu_power_off(struct kvm_vcpu *vcpu)
-+void kvm_arm_vcpu_power_off(struct kvm_vcpu *vcpu)
++bool kvm_arm_vcpu_powered_off(struct kvm_vcpu *vcpu)
++{
++	return vcpu->arch.mp_state == KVM_MP_STATE_STOPPED;
++}
++
+ int kvm_arch_vcpu_ioctl_get_mpstate(struct kvm_vcpu *vcpu,
+ 				    struct kvm_mp_state *mp_state)
  {
- 	vcpu->arch.power_off = true;
- 	kvm_make_request(KVM_REQ_SLEEP, vcpu);
-@@ -454,7 +454,7 @@ int kvm_arch_vcpu_ioctl_set_mpstate(struct kvm_vcpu *vcpu,
- 		vcpu->arch.power_off = false;
+-	if (vcpu->arch.power_off)
+-		mp_state->mp_state = KVM_MP_STATE_STOPPED;
+-	else
+-		mp_state->mp_state = KVM_MP_STATE_RUNNABLE;
++	mp_state->mp_state = vcpu->arch.mp_state;
+ 
+ 	return 0;
+ }
+@@ -451,7 +453,7 @@ int kvm_arch_vcpu_ioctl_set_mpstate(struct kvm_vcpu *vcpu,
+ 
+ 	switch (mp_state->mp_state) {
+ 	case KVM_MP_STATE_RUNNABLE:
+-		vcpu->arch.power_off = false;
++		vcpu->arch.mp_state = mp_state->mp_state;
  		break;
  	case KVM_MP_STATE_STOPPED:
--		vcpu_power_off(vcpu);
-+		kvm_arm_vcpu_power_off(vcpu);
- 		break;
- 	default:
- 		ret = -EINVAL;
-@@ -1179,7 +1179,7 @@ static int kvm_arch_vcpu_ioctl_vcpu_init(struct kvm_vcpu *vcpu,
- 	 * Handle the "start in power-off" case.
- 	 */
- 	if (test_bit(KVM_ARM_VCPU_POWER_OFF, vcpu->arch.features))
--		vcpu_power_off(vcpu);
-+		kvm_arm_vcpu_power_off(vcpu);
- 	else
- 		vcpu->arch.power_off = false;
- 
-diff --git a/arch/arm64/kvm/psci.c b/arch/arm64/kvm/psci.c
-index 4335cd5193b8..e3f93b7f8d38 100644
---- a/arch/arm64/kvm/psci.c
-+++ b/arch/arm64/kvm/psci.c
-@@ -53,13 +53,6 @@ static unsigned long kvm_psci_vcpu_suspend(struct kvm_vcpu *vcpu)
- 	return PSCI_RET_SUCCESS;
+ 		kvm_arm_vcpu_power_off(vcpu);
+@@ -474,7 +476,7 @@ int kvm_arch_vcpu_runnable(struct kvm_vcpu *v)
+ {
+ 	bool irq_lines = *vcpu_hcr(v) & (HCR_VI | HCR_VF);
+ 	return ((irq_lines || kvm_vgic_vcpu_pending_irq(v))
+-		&& !v->arch.power_off && !v->arch.pause);
++		&& !kvm_arm_vcpu_powered_off(v) && !v->arch.pause);
  }
  
--static void kvm_psci_vcpu_off(struct kvm_vcpu *vcpu)
--{
--	vcpu->arch.power_off = true;
--	kvm_make_request(KVM_REQ_SLEEP, vcpu);
--	kvm_vcpu_kick(vcpu);
--}
--
- static inline bool kvm_psci_valid_affinity(struct kvm_vcpu *vcpu,
- 					   unsigned long affinity)
- {
-@@ -262,7 +255,7 @@ static int kvm_psci_0_2_call(struct kvm_vcpu *vcpu)
- 		val = kvm_psci_vcpu_suspend(vcpu);
- 		break;
- 	case PSCI_0_2_FN_CPU_OFF:
--		kvm_psci_vcpu_off(vcpu);
-+		kvm_arm_vcpu_power_off(vcpu);
- 		val = PSCI_RET_SUCCESS;
- 		break;
- 	case PSCI_0_2_FN_CPU_ON:
-@@ -375,7 +368,7 @@ static int kvm_psci_0_1_call(struct kvm_vcpu *vcpu)
+ bool kvm_arch_vcpu_in_kernel(struct kvm_vcpu *vcpu)
+@@ -668,10 +670,10 @@ static void vcpu_req_sleep(struct kvm_vcpu *vcpu)
+ 	struct rcuwait *wait = kvm_arch_vcpu_get_wait(vcpu);
  
- 	switch (psci_fn) {
- 	case KVM_PSCI_FN_CPU_OFF:
--		kvm_psci_vcpu_off(vcpu);
-+		kvm_arm_vcpu_power_off(vcpu);
- 		val = PSCI_RET_SUCCESS;
- 		break;
- 	case KVM_PSCI_FN_CPU_ON:
+ 	rcuwait_wait_event(wait,
+-			   (!vcpu->arch.power_off) &&(!vcpu->arch.pause),
++			   (!kvm_arm_vcpu_powered_off(vcpu)) && (!vcpu->arch.pause),
+ 			   TASK_INTERRUPTIBLE);
+ 
+-	if (vcpu->arch.power_off || vcpu->arch.pause) {
++	if (kvm_arm_vcpu_powered_off(vcpu) || vcpu->arch.pause) {
+ 		/* Awaken to handle a signal, request we sleep again later. */
+ 		kvm_make_request(KVM_REQ_SLEEP, vcpu);
+ 	}
+@@ -1181,7 +1183,7 @@ static int kvm_arch_vcpu_ioctl_vcpu_init(struct kvm_vcpu *vcpu,
+ 	if (test_bit(KVM_ARM_VCPU_POWER_OFF, vcpu->arch.features))
+ 		kvm_arm_vcpu_power_off(vcpu);
+ 	else
+-		vcpu->arch.power_off = false;
++		vcpu->arch.mp_state = KVM_MP_STATE_RUNNABLE;
+ 
+ 	return 0;
+ }
+diff --git a/arch/arm64/kvm/psci.c b/arch/arm64/kvm/psci.c
+index e3f93b7f8d38..77a00913cdfd 100644
+--- a/arch/arm64/kvm/psci.c
++++ b/arch/arm64/kvm/psci.c
+@@ -97,7 +97,7 @@ static unsigned long kvm_psci_vcpu_on(struct kvm_vcpu *source_vcpu)
+ 	 */
+ 	if (!vcpu)
+ 		return PSCI_RET_INVALID_PARAMS;
+-	if (!vcpu->arch.power_off) {
++	if (!kvm_arm_vcpu_powered_off(vcpu)) {
+ 		if (kvm_psci_version(source_vcpu) != KVM_ARM_PSCI_0_1)
+ 			return PSCI_RET_ALREADY_ON;
+ 		else
+@@ -122,11 +122,11 @@ static unsigned long kvm_psci_vcpu_on(struct kvm_vcpu *source_vcpu)
+ 
+ 	/*
+ 	 * Make sure the reset request is observed if the change to
+-	 * power_off is observed.
++	 * mp_state is observed.
+ 	 */
+ 	smp_wmb();
+ 
+-	vcpu->arch.power_off = false;
++	vcpu->arch.mp_state = KVM_MP_STATE_RUNNABLE;
+ 	kvm_vcpu_wake_up(vcpu);
+ 
+ 	return PSCI_RET_SUCCESS;
+@@ -164,7 +164,7 @@ static unsigned long kvm_psci_vcpu_affinity_info(struct kvm_vcpu *vcpu)
+ 		mpidr = kvm_vcpu_get_mpidr_aff(tmp);
+ 		if ((mpidr & target_affinity_mask) == target_affinity) {
+ 			matching_cpus++;
+-			if (!tmp->arch.power_off)
++			if (!kvm_arm_vcpu_powered_off(tmp))
+ 				return PSCI_0_2_AFFINITY_LEVEL_ON;
+ 		}
+ 	}
+@@ -190,7 +190,7 @@ static void kvm_prepare_system_event(struct kvm_vcpu *vcpu, u32 type)
+ 	 * re-initialized.
+ 	 */
+ 	kvm_for_each_vcpu(i, tmp, vcpu->kvm)
+-		tmp->arch.power_off = true;
++		tmp->arch.mp_state = KVM_MP_STATE_STOPPED;
+ 	kvm_make_all_cpus_request(vcpu->kvm, KVM_REQ_SLEEP);
+ 
+ 	memset(&vcpu->run->system_event, 0, sizeof(vcpu->run->system_event));
 -- 
 2.35.1.473.g83b2b277ed-goog
 
