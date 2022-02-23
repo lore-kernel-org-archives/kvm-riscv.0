@@ -1,76 +1,64 @@
 From: Oliver Upton <oupton@google.com>
-Date: Wed, 23 Feb 2022 04:18:26 +0000
-Subject: [PATCH v3 01/19] KVM: arm64: Drop unused param from kvm_psci_version()
+Date: Wed, 23 Feb 2022 04:18:27 +0000
+Subject: [PATCH v3 02/19] KVM: arm64: Create a helper to check if IPA is valid
 In-Reply-To: <20220223041844.3984439-1-oupton@google.com>
 References: <20220223041844.3984439-1-oupton@google.com>
-Message-ID: <20220223041844.3984439-2-oupton@google.com>
+Message-ID: <20220223041844.3984439-3-oupton@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-kvm_psci_version() consumes a pointer to struct kvm in addition to a
-vcpu pointer. Drop the kvm pointer as it is unused. While the comment
-suggests the explicit kvm pointer was useful for calling from hyp, there
-exist no such callsite in hyp.
+Create a helper that tests if a given IPA fits within the guest's
+address space.
 
 Signed-off-by: Oliver Upton <oupton@google.com>
-Signed-off-by: Marc Zyngier <maz@kernel.org>
-Link: https://lore.kernel.org/r/20220208012705.640444-1-oupton at google.com
 ---
- arch/arm64/kvm/psci.c  | 6 +++---
- include/kvm/arm_psci.h | 6 +-----
- 2 files changed, 4 insertions(+), 8 deletions(-)
+ arch/arm64/include/asm/kvm_mmu.h      | 9 +++++++++
+ arch/arm64/kvm/vgic/vgic-kvm-device.c | 2 +-
+ 2 files changed, 10 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm64/kvm/psci.c b/arch/arm64/kvm/psci.c
-index 3eae32876897..a0c10c11f40e 100644
---- a/arch/arm64/kvm/psci.c
-+++ b/arch/arm64/kvm/psci.c
-@@ -85,7 +85,7 @@ static unsigned long kvm_psci_vcpu_on(struct kvm_vcpu *source_vcpu)
- 	if (!vcpu)
- 		return PSCI_RET_INVALID_PARAMS;
- 	if (!vcpu->arch.power_off) {
--		if (kvm_psci_version(source_vcpu, kvm) != KVM_ARM_PSCI_0_1)
-+		if (kvm_psci_version(source_vcpu) != KVM_ARM_PSCI_0_1)
- 			return PSCI_RET_ALREADY_ON;
- 		else
- 			return PSCI_RET_INVALID_PARAMS;
-@@ -392,7 +392,7 @@ static int kvm_psci_0_1_call(struct kvm_vcpu *vcpu)
-  */
- int kvm_psci_call(struct kvm_vcpu *vcpu)
- {
--	switch (kvm_psci_version(vcpu, vcpu->kvm)) {
-+	switch (kvm_psci_version(vcpu)) {
- 	case KVM_ARM_PSCI_1_0:
- 		return kvm_psci_1_0_call(vcpu);
- 	case KVM_ARM_PSCI_0_2:
-@@ -471,7 +471,7 @@ int kvm_arm_get_fw_reg(struct kvm_vcpu *vcpu, const struct kvm_one_reg *reg)
+diff --git a/arch/arm64/include/asm/kvm_mmu.h b/arch/arm64/include/asm/kvm_mmu.h
+index 81839e9a8a24..78e8be7ea627 100644
+--- a/arch/arm64/include/asm/kvm_mmu.h
++++ b/arch/arm64/include/asm/kvm_mmu.h
+@@ -111,6 +111,7 @@ alternative_cb_end
+ #else
  
- 	switch (reg->id) {
- 	case KVM_REG_ARM_PSCI_VERSION:
--		val = kvm_psci_version(vcpu, vcpu->kvm);
-+		val = kvm_psci_version(vcpu);
- 		break;
- 	case KVM_REG_ARM_SMCCC_ARCH_WORKAROUND_1:
- 	case KVM_REG_ARM_SMCCC_ARCH_WORKAROUND_2:
-diff --git a/include/kvm/arm_psci.h b/include/kvm/arm_psci.h
-index 5b58bd2fe088..297645edcaff 100644
---- a/include/kvm/arm_psci.h
-+++ b/include/kvm/arm_psci.h
-@@ -16,11 +16,7 @@
+ #include <linux/pgtable.h>
++#include <linux/kvm_host.h>
+ #include <asm/pgalloc.h>
+ #include <asm/cache.h>
+ #include <asm/cacheflush.h>
+@@ -147,6 +148,14 @@ static __always_inline unsigned long __kern_hyp_va(unsigned long v)
+ #define kvm_phys_size(kvm)		(_AC(1, ULL) << kvm_phys_shift(kvm))
+ #define kvm_phys_mask(kvm)		(kvm_phys_size(kvm) - _AC(1, ULL))
  
- #define KVM_ARM_PSCI_LATEST	KVM_ARM_PSCI_1_0
++/*
++ * Returns true if the provided IPA exists within the VM's IPA space.
++ */
++static inline bool kvm_ipa_valid(struct kvm *kvm, phys_addr_t guest_ipa)
++{
++	return !(guest_ipa & ~kvm_phys_mask(kvm));
++}
++
+ #include <asm/kvm_pgtable.h>
+ #include <asm/stage2_pgtable.h>
  
--/*
-- * We need the KVM pointer independently from the vcpu as we can call
-- * this from HYP, and need to apply kern_hyp_va on it...
-- */
--static inline int kvm_psci_version(struct kvm_vcpu *vcpu, struct kvm *kvm)
-+static inline int kvm_psci_version(struct kvm_vcpu *vcpu)
- {
- 	/*
- 	 * Our PSCI implementation stays the same across versions from
+diff --git a/arch/arm64/kvm/vgic/vgic-kvm-device.c b/arch/arm64/kvm/vgic/vgic-kvm-device.c
+index c6d52a1fd9c8..e3853a75cb00 100644
+--- a/arch/arm64/kvm/vgic/vgic-kvm-device.c
++++ b/arch/arm64/kvm/vgic/vgic-kvm-device.c
+@@ -27,7 +27,7 @@ int vgic_check_iorange(struct kvm *kvm, phys_addr_t ioaddr,
+ 	if (addr + size < addr)
+ 		return -EINVAL;
+ 
+-	if (addr & ~kvm_phys_mask(kvm) || addr + size > kvm_phys_size(kvm))
++	if (!kvm_ipa_valid(kvm, addr) || addr + size > kvm_phys_size(kvm))
+ 		return -E2BIG;
+ 
+ 	return 0;
 -- 
 2.35.1.473.g83b2b277ed-goog
 
