@@ -1,12 +1,11 @@
 From: Oliver Upton <oupton@google.com>
-Date: Thu, 24 Feb 2022 19:21:50 +0000
-Subject: [PATCH v3 03/19] KVM: arm64: Reject invalid addresses for CPU_ON
- PSCI call
-In-Reply-To: <87zgmg30qu.wl-maz@kernel.org>
+Date: Thu, 24 Feb 2022 19:35:33 +0000
+Subject: [PATCH v3 09/19] KVM: arm64: Implement PSCI SYSTEM_SUSPEND
+In-Reply-To: <87wnhk2whx.wl-maz@kernel.org>
 References: <20220223041844.3984439-1-oupton@google.com>
- <20220223041844.3984439-4-oupton@google.com>
- <87zgmg30qu.wl-maz@kernel.org>
-Message-ID: <YhfaztgV0GHzyh24@google.com>
+ <20220223041844.3984439-10-oupton@google.com>
+ <87wnhk2whx.wl-maz@kernel.org>
+Message-ID: <YhfeBfgbDA8IGc9f@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -15,92 +14,125 @@ Content-Transfer-Encoding: 7bit
 
 Hi Marc,
 
-On Thu, Feb 24, 2022 at 12:30:49PM +0000, Marc Zyngier wrote:
-> On Wed, 23 Feb 2022 04:18:28 +0000,
+Thanks for reviewing the series. ACK to the nits and smaller comments
+you've made, I'll incorporate that feedback in the next series.
+
+On Thu, Feb 24, 2022 at 02:02:34PM +0000, Marc Zyngier wrote:
+> On Wed, 23 Feb 2022 04:18:34 +0000,
 > Oliver Upton <oupton@google.com> wrote:
 > > 
-> > DEN0022D.b 5.6.2 "Caller responsibilities" states that a PSCI
-> > implementation may return INVALID_ADDRESS for the CPU_ON call if the
-> > provided entry address is known to be invalid. There is an additional
-> > caveat to this rule. Prior to PSCI v1.0, the INVALID_PARAMETERS error
-> > is returned instead. Check the guest's PSCI version and return the
-> > appropriate error if the IPA is invalid.
+> > ARM DEN0022D.b 5.19 "SYSTEM_SUSPEND" describes a PSCI call that allows
+> > software to request that a system be placed in the deepest possible
+> > low-power state. Effectively, software can use this to suspend itself to
+> > RAM. Note that the semantics of this PSCI call are very similar to
+> > CPU_SUSPEND, which is already implemented in KVM.
 > > 
-> > Reported-by: Reiji Watanabe <reijiw@google.com>
+> > Implement the SYSTEM_SUSPEND in KVM. Similar to CPU_SUSPEND, the
+> > low-power state is implemented as a guest WFI. Synchronously reset the
+> > calling CPU before entering the WFI, such that the vCPU may immediately
+> > resume execution when a wakeup event is recognized.
+> > 
 > > Signed-off-by: Oliver Upton <oupton@google.com>
 > > ---
-> >  arch/arm64/kvm/psci.c | 24 ++++++++++++++++++++++--
-> >  1 file changed, 22 insertions(+), 2 deletions(-)
+> >  arch/arm64/kvm/psci.c  | 51 ++++++++++++++++++++++++++++++++++++++++++
+> >  arch/arm64/kvm/reset.c |  3 ++-
+> >  2 files changed, 53 insertions(+), 1 deletion(-)
 > > 
 > > diff --git a/arch/arm64/kvm/psci.c b/arch/arm64/kvm/psci.c
-> > index a0c10c11f40e..de1cf554929d 100644
+> > index 77a00913cdfd..41adaaf2234a 100644
 > > --- a/arch/arm64/kvm/psci.c
 > > +++ b/arch/arm64/kvm/psci.c
-> > @@ -12,6 +12,7 @@
+> > @@ -208,6 +208,50 @@ static void kvm_psci_system_reset(struct kvm_vcpu *vcpu)
+> >  	kvm_prepare_system_event(vcpu, KVM_SYSTEM_EVENT_RESET);
+> >  }
 > >  
-> >  #include <asm/cputype.h>
-> >  #include <asm/kvm_emulate.h>
-> > +#include <asm/kvm_mmu.h>
-> >  
-> >  #include <kvm/arm_psci.h>
-> >  #include <kvm/arm_hypercalls.h>
-> > @@ -70,12 +71,31 @@ static unsigned long kvm_psci_vcpu_on(struct kvm_vcpu *source_vcpu)
-> >  	struct vcpu_reset_state *reset_state;
-> >  	struct kvm *kvm = source_vcpu->kvm;
-> >  	struct kvm_vcpu *vcpu = NULL;
-> > -	unsigned long cpu_id;
-> > +	unsigned long cpu_id, entry_addr;
-> >  
-> >  	cpu_id = smccc_get_arg1(source_vcpu);
-> >  	if (!kvm_psci_valid_affinity(source_vcpu, cpu_id))
-> >  		return PSCI_RET_INVALID_PARAMS;
-> >  
-> > +	/*
-> > +	 * Basic sanity check: ensure the requested entry address actually
-> > +	 * exists within the guest's address space.
-> > +	 */
-> > +	entry_addr = smccc_get_arg2(source_vcpu);
-> > +	if (!kvm_ipa_valid(kvm, entry_addr)) {
+> > +static int kvm_psci_system_suspend(struct kvm_vcpu *vcpu)
+> > +{
+> > +	struct vcpu_reset_state reset_state;
+> > +	struct kvm *kvm = vcpu->kvm;
+> > +	struct kvm_vcpu *tmp;
+> > +	bool denied = false;
+> > +	unsigned long i;
 > > +
-> > +		/*
-> > +		 * Before PSCI v1.0, the INVALID_PARAMETERS error is returned
-> > +		 * instead of INVALID_ADDRESS.
-> > +		 *
-> > +		 * For more details, see ARM DEN0022D.b 5.6 "CPU_ON".
-> > +		 */
-> > +		if (kvm_psci_version(source_vcpu) < KVM_ARM_PSCI_1_0)
-> > +			return PSCI_RET_INVALID_PARAMS;
-> > +		else
-> > +			return PSCI_RET_INVALID_ADDRESS;
+> > +	reset_state.pc = smccc_get_arg1(vcpu);
+> > +	if (!kvm_ipa_valid(kvm, reset_state.pc)) {
+> > +		smccc_set_retval(vcpu, PSCI_RET_INVALID_ADDRESS, 0, 0, 0);
+> > +		return 1;
 > > +	}
 > > +
+> > +	reset_state.r0 = smccc_get_arg2(vcpu);
+> > +	reset_state.be = kvm_vcpu_is_be(vcpu);
+> > +	reset_state.reset = true;
+> > +
+> > +	/*
+> > +	 * The SYSTEM_SUSPEND PSCI call requires that all vCPUs (except the
+> > +	 * calling vCPU) be in an OFF state, as determined by the
+> > +	 * implementation.
+> > +	 *
+> > +	 * See ARM DEN0022D, 5.19 "SYSTEM_SUSPEND" for more details.
+> > +	 */
+> > +	mutex_lock(&kvm->lock);
+> > +	kvm_for_each_vcpu(i, tmp, kvm) {
+> > +		if (tmp != vcpu && !kvm_arm_vcpu_powered_off(tmp)) {
+> > +			denied = true;
+> > +			break;
+> > +		}
+> > +	}
+> > +	mutex_unlock(&kvm->lock);
 > 
-> If you're concerned with this, should you also check for the PC
-> alignment, or the presence of a memslot covering the address you are
-> branching to?  Le latter is particularly hard to implement reliably.
+> This looks dodgy. Nothing seems to prevent userspace from setting the
+> mp_state to RUNNING in parallel with this, as only the vcpu mutex is
+> held when this ioctl is issued.
+> 
+> It looks to me that what you want is what lock_all_vcpus() does
+> (Alexandru has a patch moving it out of the vgic code as part of his
+> SPE series).
+> 
+> It is also pretty unclear what the interaction with userspace is once
+> you have released the lock. If the VMM starts a vcpu other than the
+> suspending one, what is its state? The spec doesn't see to help
+> here. I can see two options:
+> 
+> - either all the vcpus have the same reset state applied to them as
+>   they come up, unless they are started with CPU_ON by a vcpu that has
+>   already booted (but there is a single 'context_id' provided, and I
+>   fear this is going to confuse the OS)...
+> 
+> - or only the suspending vcpu can resume the system, and we must fail
+>   a change of mp_state for the other vcpus.
+> 
+> What do you think?
 
-Andrew, Reiji and I had a conversation regarding exactly this on the
-last run of this series, and concluded that checking against the IPA is
-probably the best KVM can do [1]. That said, alignment is also an easy
-thing to check.
+Definitely the latter. The documentation of SYSTEM_SUSPEND is quite
+shaky on this, but it would appear that the intention is for the caller
+to be the first CPU to wake up.
 
-> So far, my position has been that the guest is free to shoot itself in
-> the foot if that's what it wants to do, and that babysitting it was a
-> waste of useful bits! ;-)
->
+> > +
+> > +	if (denied) {
+> > +		smccc_set_retval(vcpu, PSCI_RET_DENIED, 0, 0, 0);
+> > +		return 1;
+> > +	}
+> > +
+> > +	__kvm_reset_vcpu(vcpu, &reset_state);
+> > +	kvm_vcpu_wfi(vcpu);
+> 
+> I have mixed feelings about this. The vcpu has reset before being in
+> WFI, while it really should be the other way around and userspace
+> could rely on observing the transition.
+> 
+> What breaks if you change this?
 
-Agreed -- there are plenty of spectacular/hilarious ways in which the
-guest can mess up :-)
+I don't think that userspace would be able to observe the transition
+even if we WFI before the reset. I imagine that would take the form
+of setting KVM_REQ_VCPU_RESET, which we explicitly handle before
+letting userspace access the vCPU's state as of commit
+6826c6849b46 ("KVM: arm64: Handle PSCI resets before userspace
+touches vCPU state").
 
-> Or have you identified something that makes it a requirement to handle
-> this case (and possibly others)  in the hypervisor?
-
-It is a lot easier to tell a guest that their software is broken if they
-get an error back from the hypercall, whereas a vCPU off in the weeds
-might need to be looked at before concluding there's a guest issue.
-
-
-[1]: http://lore.kernel.org/r/20211005190153.dc2befzcisvznxq5 at gator.home
+Given this, I felt it was probably best to avoid all the indirection and
+just do the vCPU reset in the handling of SYSTEM_SUSPEND. It does,
+however, imply that we have slightly different behavior when userspace
+exits are enabled, as that will happen pre-reset and pre-WFI.
 
 --
 Oliver
