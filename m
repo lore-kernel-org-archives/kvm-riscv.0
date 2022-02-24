@@ -1,84 +1,86 @@
 From: Marc Zyngier <maz@kernel.org>
-Date: Thu, 24 Feb 2022 12:06:33 +0000
-Subject: [PATCH v3 02/19] KVM: arm64: Create a helper to check if IPA is
- valid
-In-Reply-To: <20220223041844.3984439-3-oupton@google.com>
+Date: Thu, 24 Feb 2022 12:30:49 +0000
+Subject: [PATCH v3 03/19] KVM: arm64: Reject invalid addresses for CPU_ON
+ PSCI call
+In-Reply-To: <20220223041844.3984439-4-oupton@google.com>
 References: <20220223041844.3984439-1-oupton@google.com>
- <20220223041844.3984439-3-oupton@google.com>
-Message-ID: <871qzs4gfq.wl-maz@kernel.org>
+ <20220223041844.3984439-4-oupton@google.com>
+Message-ID: <87zgmg30qu.wl-maz@kernel.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 23 Feb 2022 04:18:27 +0000,
+On Wed, 23 Feb 2022 04:18:28 +0000,
 Oliver Upton <oupton@google.com> wrote:
 > 
-> Create a helper that tests if a given IPA fits within the guest's
-> address space.
+> DEN0022D.b 5.6.2 "Caller responsibilities" states that a PSCI
+> implementation may return INVALID_ADDRESS for the CPU_ON call if the
+> provided entry address is known to be invalid. There is an additional
+> caveat to this rule. Prior to PSCI v1.0, the INVALID_PARAMETERS error
+> is returned instead. Check the guest's PSCI version and return the
+> appropriate error if the IPA is invalid.
 > 
+> Reported-by: Reiji Watanabe <reijiw@google.com>
 > Signed-off-by: Oliver Upton <oupton@google.com>
 > ---
->  arch/arm64/include/asm/kvm_mmu.h      | 9 +++++++++
->  arch/arm64/kvm/vgic/vgic-kvm-device.c | 2 +-
->  2 files changed, 10 insertions(+), 1 deletion(-)
+>  arch/arm64/kvm/psci.c | 24 ++++++++++++++++++++++--
+>  1 file changed, 22 insertions(+), 2 deletions(-)
 > 
-> diff --git a/arch/arm64/include/asm/kvm_mmu.h b/arch/arm64/include/asm/kvm_mmu.h
-> index 81839e9a8a24..78e8be7ea627 100644
-> --- a/arch/arm64/include/asm/kvm_mmu.h
-> +++ b/arch/arm64/include/asm/kvm_mmu.h
-> @@ -111,6 +111,7 @@ alternative_cb_end
->  #else
+> diff --git a/arch/arm64/kvm/psci.c b/arch/arm64/kvm/psci.c
+> index a0c10c11f40e..de1cf554929d 100644
+> --- a/arch/arm64/kvm/psci.c
+> +++ b/arch/arm64/kvm/psci.c
+> @@ -12,6 +12,7 @@
 >  
->  #include <linux/pgtable.h>
-> +#include <linux/kvm_host.h>
-
-I'd rather you avoid that. This sort of linux->asm->linux transitive
-inclusions always lead to a terrible mess at some point. Which is why
-we use #defines below. And yes, the pgtable.h inclusion is a bad
-precedent.
-
->  #include <asm/pgalloc.h>
->  #include <asm/cache.h>
->  #include <asm/cacheflush.h>
-> @@ -147,6 +148,14 @@ static __always_inline unsigned long __kern_hyp_va(unsigned long v)
->  #define kvm_phys_size(kvm)		(_AC(1, ULL) << kvm_phys_shift(kvm))
->  #define kvm_phys_mask(kvm)		(kvm_phys_size(kvm) - _AC(1, ULL))
+>  #include <asm/cputype.h>
+>  #include <asm/kvm_emulate.h>
+> +#include <asm/kvm_mmu.h>
 >  
-> +/*
-> + * Returns true if the provided IPA exists within the VM's IPA space.
-> + */
-> +static inline bool kvm_ipa_valid(struct kvm *kvm, phys_addr_t guest_ipa)
-> +{
-> +	return !(guest_ipa & ~kvm_phys_mask(kvm));
-> +}
+>  #include <kvm/arm_psci.h>
+>  #include <kvm/arm_hypercalls.h>
+> @@ -70,12 +71,31 @@ static unsigned long kvm_psci_vcpu_on(struct kvm_vcpu *source_vcpu)
+>  	struct vcpu_reset_state *reset_state;
+>  	struct kvm *kvm = source_vcpu->kvm;
+>  	struct kvm_vcpu *vcpu = NULL;
+> -	unsigned long cpu_id;
+> +	unsigned long cpu_id, entry_addr;
+>  
+>  	cpu_id = smccc_get_arg1(source_vcpu);
+>  	if (!kvm_psci_valid_affinity(source_vcpu, cpu_id))
+>  		return PSCI_RET_INVALID_PARAMS;
+>  
+> +	/*
+> +	 * Basic sanity check: ensure the requested entry address actually
+> +	 * exists within the guest's address space.
+> +	 */
+> +	entry_addr = smccc_get_arg2(source_vcpu);
+> +	if (!kvm_ipa_valid(kvm, entry_addr)) {
+> +
+> +		/*
+> +		 * Before PSCI v1.0, the INVALID_PARAMETERS error is returned
+> +		 * instead of INVALID_ADDRESS.
+> +		 *
+> +		 * For more details, see ARM DEN0022D.b 5.6 "CPU_ON".
+> +		 */
+> +		if (kvm_psci_version(source_vcpu) < KVM_ARM_PSCI_1_0)
+> +			return PSCI_RET_INVALID_PARAMS;
+> +		else
+> +			return PSCI_RET_INVALID_ADDRESS;
+> +	}
 > +
 
-I'm all for the helper, but just make it a #define to be consistent
-with the rest of the code.
+If you're concerned with this, should you also check for the PC
+alignment, or the presence of a memslot covering the address you are
+branching to?  Le latter is particularly hard to implement reliably.
 
->  #include <asm/kvm_pgtable.h>
->  #include <asm/stage2_pgtable.h>
->  
-> diff --git a/arch/arm64/kvm/vgic/vgic-kvm-device.c b/arch/arm64/kvm/vgic/vgic-kvm-device.c
-> index c6d52a1fd9c8..e3853a75cb00 100644
-> --- a/arch/arm64/kvm/vgic/vgic-kvm-device.c
-> +++ b/arch/arm64/kvm/vgic/vgic-kvm-device.c
-> @@ -27,7 +27,7 @@ int vgic_check_iorange(struct kvm *kvm, phys_addr_t ioaddr,
->  	if (addr + size < addr)
->  		return -EINVAL;
->  
-> -	if (addr & ~kvm_phys_mask(kvm) || addr + size > kvm_phys_size(kvm))
-> +	if (!kvm_ipa_valid(kvm, addr) || addr + size > kvm_phys_size(kvm))
->  		return -E2BIG;
+So far, my position has been that the guest is free to shoot itself in
+the foot if that's what it wants to do, and that babysitting it was a
+waste of useful bits! ;-)
 
-I think you can pretty much use this helper everywhere something is
-compared to kvm_phys_size(), and the above becomes:
-
- if (!kvm_ipa_valid(kvm, addr) || !kvm_ipa_valid(kvm, addr + size - 1))
-
-Same this goes for the couple of occurrences in arch/arm64/kvm/mmu.c.
+Or have you identified something that makes it a requirement to handle
+this case (and possibly others)  in the hypervisor?
 
 Thanks,
 
