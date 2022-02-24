@@ -1,117 +1,39 @@
 From: Marc Zyngier <maz@kernel.org>
-Date: Thu, 24 Feb 2022 14:02:34 +0000
-Subject: [PATCH v3 09/19] KVM: arm64: Implement PSCI SYSTEM_SUSPEND
-In-Reply-To: <20220223041844.3984439-10-oupton@google.com>
+Date: Thu, 24 Feb 2022 14:07:02 +0000
+Subject: [PATCH v3 10/19] KVM: Create helper for setting a system event
+ exit
+In-Reply-To: <20220223041844.3984439-11-oupton@google.com>
 References: <20220223041844.3984439-1-oupton@google.com>
- <20220223041844.3984439-10-oupton@google.com>
-Message-ID: <87wnhk2whx.wl-maz@kernel.org>
+ <20220223041844.3984439-11-oupton@google.com>
+Message-ID: <87v8x42wah.wl-maz@kernel.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 23 Feb 2022 04:18:34 +0000,
+On Wed, 23 Feb 2022 04:18:35 +0000,
 Oliver Upton <oupton@google.com> wrote:
-> 
-> ARM DEN0022D.b 5.19 "SYSTEM_SUSPEND" describes a PSCI call that allows
-> software to request that a system be placed in the deepest possible
-> low-power state. Effectively, software can use this to suspend itself to
-> RAM. Note that the semantics of this PSCI call are very similar to
-> CPU_SUSPEND, which is already implemented in KVM.
-> 
-> Implement the SYSTEM_SUSPEND in KVM. Similar to CPU_SUSPEND, the
-> low-power state is implemented as a guest WFI. Synchronously reset the
-> calling CPU before entering the WFI, such that the vCPU may immediately
-> resume execution when a wakeup event is recognized.
-> 
-> Signed-off-by: Oliver Upton <oupton@google.com>
-> ---
->  arch/arm64/kvm/psci.c  | 51 ++++++++++++++++++++++++++++++++++++++++++
->  arch/arm64/kvm/reset.c |  3 ++-
->  2 files changed, 53 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/arm64/kvm/psci.c b/arch/arm64/kvm/psci.c
-> index 77a00913cdfd..41adaaf2234a 100644
-> --- a/arch/arm64/kvm/psci.c
-> +++ b/arch/arm64/kvm/psci.c
-> @@ -208,6 +208,50 @@ static void kvm_psci_system_reset(struct kvm_vcpu *vcpu)
->  	kvm_prepare_system_event(vcpu, KVM_SYSTEM_EVENT_RESET);
+
+> diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+> index f11039944c08..9085a1b1569a 100644
+> --- a/include/linux/kvm_host.h
+> +++ b/include/linux/kvm_host.h
+> @@ -2202,6 +2202,13 @@ static inline void kvm_handle_signal_exit(struct kvm_vcpu *vcpu)
 >  }
+>  #endif /* CONFIG_KVM_XFER_TO_GUEST_WORK */
 >  
-> +static int kvm_psci_system_suspend(struct kvm_vcpu *vcpu)
+> +static inline void kvm_vcpu_set_system_event_exit(struct kvm_vcpu *vcpu, u32 type)
 > +{
-> +	struct vcpu_reset_state reset_state;
-> +	struct kvm *kvm = vcpu->kvm;
-> +	struct kvm_vcpu *tmp;
-> +	bool denied = false;
-> +	unsigned long i;
+> +	memset(&vcpu->run->system_event, 0, sizeof(vcpu->run->system_event));
+> +	vcpu->run->system_event.type = type;
+> +	vcpu->run->exit_reason = KVM_EXIT_SYSTEM_EVENT;
+> +}
 > +
-> +	reset_state.pc = smccc_get_arg1(vcpu);
-> +	if (!kvm_ipa_valid(kvm, reset_state.pc)) {
-> +		smccc_set_retval(vcpu, PSCI_RET_INVALID_ADDRESS, 0, 0, 0);
-> +		return 1;
-> +	}
-> +
-> +	reset_state.r0 = smccc_get_arg2(vcpu);
-> +	reset_state.be = kvm_vcpu_is_be(vcpu);
-> +	reset_state.reset = true;
-> +
-> +	/*
-> +	 * The SYSTEM_SUSPEND PSCI call requires that all vCPUs (except the
-> +	 * calling vCPU) be in an OFF state, as determined by the
-> +	 * implementation.
-> +	 *
-> +	 * See ARM DEN0022D, 5.19 "SYSTEM_SUSPEND" for more details.
-> +	 */
-> +	mutex_lock(&kvm->lock);
-> +	kvm_for_each_vcpu(i, tmp, kvm) {
-> +		if (tmp != vcpu && !kvm_arm_vcpu_powered_off(tmp)) {
-> +			denied = true;
-> +			break;
-> +		}
-> +	}
-> +	mutex_unlock(&kvm->lock);
 
-This looks dodgy. Nothing seems to prevent userspace from setting the
-mp_state to RUNNING in parallel with this, as only the vcpu mutex is
-held when this ioctl is issued.
-
-It looks to me that what you want is what lock_all_vcpus() does
-(Alexandru has a patch moving it out of the vgic code as part of his
-SPE series).
-
-It is also pretty unclear what the interaction with userspace is once
-you have released the lock. If the VMM starts a vcpu other than the
-suspending one, what is its state? The spec doesn't see to help
-here. I can see two options:
-
-- either all the vcpus have the same reset state applied to them as
-  they come up, unless they are started with CPU_ON by a vcpu that has
-  already booted (but there is a single 'context_id' provided, and I
-  fear this is going to confuse the OS)...
-
-- or only the suspending vcpu can resume the system, and we must fail
-  a change of mp_state for the other vcpus.
-
-What do you think?
-
-> +
-> +	if (denied) {
-> +		smccc_set_retval(vcpu, PSCI_RET_DENIED, 0, 0, 0);
-> +		return 1;
-> +	}
-> +
-> +	__kvm_reset_vcpu(vcpu, &reset_state);
-> +	kvm_vcpu_wfi(vcpu);
-
-I have mixed feelings about this. The vcpu has reset before being in
-WFI, while it really should be the other way around and userspace
-could rely on observing the transition.
-
-What breaks if you change this?
-
-Thanks,
+nit: does this really deserve an inline function? I'd stick that in
+kvm_main.c, really. Or is that getting in the way of building KVM as a
+module on 'the other architecture'?
 
 	M.
 
