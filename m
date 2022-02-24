@@ -1,138 +1,256 @@
 From: Oliver Upton <oupton@google.com>
-Date: Thu, 24 Feb 2022 19:35:33 +0000
-Subject: [PATCH v3 09/19] KVM: arm64: Implement PSCI SYSTEM_SUSPEND
-In-Reply-To: <87wnhk2whx.wl-maz@kernel.org>
+Date: Thu, 24 Feb 2022 19:47:54 +0000
+Subject: [PATCH v3 12/19] KVM: arm64: Add support for userspace to
+ suspend a vCPU
+In-Reply-To: <87tuco2t9q.wl-maz@kernel.org>
 References: <20220223041844.3984439-1-oupton@google.com>
- <20220223041844.3984439-10-oupton@google.com>
- <87wnhk2whx.wl-maz@kernel.org>
-Message-ID: <YhfeBfgbDA8IGc9f@google.com>
+ <20220223041844.3984439-13-oupton@google.com>
+ <87tuco2t9q.wl-maz@kernel.org>
+Message-ID: <Yhfg6iQ1hR9/SozK@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Marc,
-
-Thanks for reviewing the series. ACK to the nits and smaller comments
-you've made, I'll incorporate that feedback in the next series.
-
-On Thu, Feb 24, 2022 at 02:02:34PM +0000, Marc Zyngier wrote:
-> On Wed, 23 Feb 2022 04:18:34 +0000,
+On Thu, Feb 24, 2022 at 03:12:17PM +0000, Marc Zyngier wrote:
+> On Wed, 23 Feb 2022 04:18:37 +0000,
 > Oliver Upton <oupton@google.com> wrote:
 > > 
-> > ARM DEN0022D.b 5.19 "SYSTEM_SUSPEND" describes a PSCI call that allows
-> > software to request that a system be placed in the deepest possible
-> > low-power state. Effectively, software can use this to suspend itself to
-> > RAM. Note that the semantics of this PSCI call are very similar to
-> > CPU_SUSPEND, which is already implemented in KVM.
+> > Introduce a new MP state, KVM_MP_STATE_SUSPENDED, which indicates a vCPU
+> > is in a suspended state. In the suspended state the vCPU will block
+> > until a wakeup event (pending interrupt) is recognized.
 > > 
-> > Implement the SYSTEM_SUSPEND in KVM. Similar to CPU_SUSPEND, the
-> > low-power state is implemented as a guest WFI. Synchronously reset the
-> > calling CPU before entering the WFI, such that the vCPU may immediately
-> > resume execution when a wakeup event is recognized.
+> > Add a new system event type, KVM_SYSTEM_EVENT_WAKEUP, to indicate to
+> > userspace that KVM has recognized one such wakeup event. It is the
+> > responsibility of userspace to then make the vCPU runnable, or leave it
+> > suspended until the next wakeup event.
 > > 
 > > Signed-off-by: Oliver Upton <oupton@google.com>
 > > ---
-> >  arch/arm64/kvm/psci.c  | 51 ++++++++++++++++++++++++++++++++++++++++++
-> >  arch/arm64/kvm/reset.c |  3 ++-
-> >  2 files changed, 53 insertions(+), 1 deletion(-)
+> >  Documentation/virt/kvm/api.rst    | 23 ++++++++++++++++++--
+> >  arch/arm64/include/asm/kvm_host.h |  1 +
+> >  arch/arm64/kvm/arm.c              | 35 +++++++++++++++++++++++++++++++
+> >  include/uapi/linux/kvm.h          |  2 ++
+> >  4 files changed, 59 insertions(+), 2 deletions(-)
 > > 
-> > diff --git a/arch/arm64/kvm/psci.c b/arch/arm64/kvm/psci.c
-> > index 77a00913cdfd..41adaaf2234a 100644
-> > --- a/arch/arm64/kvm/psci.c
-> > +++ b/arch/arm64/kvm/psci.c
-> > @@ -208,6 +208,50 @@ static void kvm_psci_system_reset(struct kvm_vcpu *vcpu)
-> >  	kvm_prepare_system_event(vcpu, KVM_SYSTEM_EVENT_RESET);
+> > diff --git a/Documentation/virt/kvm/api.rst b/Documentation/virt/kvm/api.rst
+> > index a4267104db50..2b4bdbc2dcc0 100644
+> > --- a/Documentation/virt/kvm/api.rst
+> > +++ b/Documentation/virt/kvm/api.rst
+> > @@ -1482,14 +1482,29 @@ Possible values are:
+> >                                   [s390]
+> >     KVM_MP_STATE_LOAD             the vcpu is in a special load/startup state
+> >                                   [s390]
+> > +   KVM_MP_STATE_SUSPENDED        the vcpu is in a suspend state and is waiting
+> > +                                 for a wakeup event [arm/arm64]
+> 
+> nit: arm64 only (these are host architectures, not guest).
+
+Roger that.
+
+> Eventually, someone needs to do a bit of cleanup in the docs to remove
+> any trace of ye olde 32bit stuff.
+>
+
+I'm just going to act like I didn't read this ;-)
+
+> 
+> >     ==========================    ===============================================
+> >  
+> >  On x86, this ioctl is only useful after KVM_CREATE_IRQCHIP. Without an
+> >  in-kernel irqchip, the multiprocessing state must be maintained by userspace on
+> >  these architectures.
+> >  
+> > -For arm/arm64/riscv:
+> > -^^^^^^^^^^^^^^^^^^^^
+> > +For arm/arm64:
+> > +^^^^^^^^^^^^^^
+> > +
+> > +If a vCPU is in the KVM_MP_STATE_SUSPENDED state, KVM will block the vCPU
+> > +thread and wait for a wakeup event. A wakeup event is defined as a pending
+> > +interrupt for the guest.
+> 
+> nit: a pending interrupt that the guest can actually handle (a masked
+> interrupt can be pending). It'd be more accurate to describe this
+> state as the architectural execution of a WFI instruction.
+>
+
+Yeah, probably better than paraphrasing.
+
+> > +
+> > +If a wakeup event is recognized, KVM will exit to userspace with a
+> > +KVM_SYSTEM_EVENT exit, where the event type is KVM_SYSTEM_EVENT_WAKEUP. If
+> > +userspace wants to honor the wakeup, it must set the vCPU's MP state to
+> > +KVM_MP_STATE_RUNNABLE. If it does not, KVM will continue to await a wakeup
+> > +event in subsequent calls to KVM_RUN.
+> 
+> I can see a potential 'gotcha' here. If the VMM doesn't want to set
+> the vcpu as runnable, but doesn't take action on the source of the
+> wake-up (masking the interrupt), you'll get an immediate wake-up event
+> again. The VMM is now eating 100% of the CPU and not making forward
+> progress. Luser error, but you may want to capture the failure mode
+> and make it crystal clear in the doc.
+> 
+> It also mean that at the point where it decides to restart the guest
+> for real, it must restore the interrupt state as it initially found
+> it.
+> 
+
+Yeah, I had realized this when working on the series, but lazily swept
+it under the rug of user error. But, it is probably better to be more
+descriptive in the documentation, so I'll adopt the suggestion. Thanks!
+
+> > +
+> > +For riscv:
+> > +^^^^^^^^^^
+> >  
+> >  The only states that are valid are KVM_MP_STATE_STOPPED and
+> >  KVM_MP_STATE_RUNNABLE which reflect if the vcpu is paused or not.
+> > @@ -5914,6 +5929,7 @@ should put the acknowledged interrupt vector into the 'epr' field.
+> >    #define KVM_SYSTEM_EVENT_SHUTDOWN       1
+> >    #define KVM_SYSTEM_EVENT_RESET          2
+> >    #define KVM_SYSTEM_EVENT_CRASH          3
+> > +  #define KVM_SYSTEM_EVENT_WAKEUP         4
+> >  			__u32 type;
+> >  			__u64 flags;
+> >  		} system_event;
+> > @@ -5938,6 +5954,9 @@ Valid values for 'type' are:
+> >     has requested a crash condition maintenance. Userspace can choose
+> >     to ignore the request, or to gather VM memory core dump and/or
+> >     reset/shutdown of the VM.
+> > + - KVM_SYSTEM_EVENT_WAKEUP -- the guest is in a suspended state and KVM
+> > +   has recognized a wakeup event. Userspace may honor this event by marking
+> > +   the exiting vCPU as runnable, or deny it and call KVM_RUN again.
+> >  
+> >  ::
+> >  
+> > diff --git a/arch/arm64/include/asm/kvm_host.h b/arch/arm64/include/asm/kvm_host.h
+> > index 33ecec755310..d32cab0c9752 100644
+> > --- a/arch/arm64/include/asm/kvm_host.h
+> > +++ b/arch/arm64/include/asm/kvm_host.h
+> > @@ -46,6 +46,7 @@
+> >  #define KVM_REQ_RECORD_STEAL	KVM_ARCH_REQ(3)
+> >  #define KVM_REQ_RELOAD_GICv4	KVM_ARCH_REQ(4)
+> >  #define KVM_REQ_RELOAD_PMU	KVM_ARCH_REQ(5)
+> > +#define KVM_REQ_SUSPEND		KVM_ARCH_REQ(6)
+> >  
+> >  #define KVM_DIRTY_LOG_MANUAL_CAPS   (KVM_DIRTY_LOG_MANUAL_PROTECT_ENABLE | \
+> >  				     KVM_DIRTY_LOG_INITIALLY_SET)
+> > diff --git a/arch/arm64/kvm/arm.c b/arch/arm64/kvm/arm.c
+> > index f6ce97c0069c..d2b190f32651 100644
+> > --- a/arch/arm64/kvm/arm.c
+> > +++ b/arch/arm64/kvm/arm.c
+> > @@ -438,6 +438,18 @@ bool kvm_arm_vcpu_powered_off(struct kvm_vcpu *vcpu)
+> >  	return vcpu->arch.mp_state == KVM_MP_STATE_STOPPED;
 > >  }
 > >  
-> > +static int kvm_psci_system_suspend(struct kvm_vcpu *vcpu)
+> > +static void kvm_arm_vcpu_suspend(struct kvm_vcpu *vcpu)
 > > +{
-> > +	struct vcpu_reset_state reset_state;
-> > +	struct kvm *kvm = vcpu->kvm;
-> > +	struct kvm_vcpu *tmp;
-> > +	bool denied = false;
-> > +	unsigned long i;
+> > +	vcpu->arch.mp_state = KVM_MP_STATE_SUSPENDED;
+> > +	kvm_make_request(KVM_REQ_SUSPEND, vcpu);
+> > +	kvm_vcpu_kick(vcpu);
+> 
+> I wonder whether this kvm_vcpu_kick() is simply cargo-culted. The
+> mp_state calls can only be done from the vcpu fd, and thus the vcpu
+> cannot be running, so there is nothing to kick. Not a big deal, but
+> something we may want to look at later on.
+>
+
+True, and hopefully this isn't an open invitation to add support for
+vCPUs suspending other vCPUs, which would be a mess.
+
+> > +}
 > > +
-> > +	reset_state.pc = smccc_get_arg1(vcpu);
-> > +	if (!kvm_ipa_valid(kvm, reset_state.pc)) {
-> > +		smccc_set_retval(vcpu, PSCI_RET_INVALID_ADDRESS, 0, 0, 0);
+> > +bool kvm_arm_vcpu_suspended(struct kvm_vcpu *vcpu)
+> 
+> static?
+> 
+> > +{
+> > +	return vcpu->arch.mp_state == KVM_MP_STATE_SUSPENDED;
+> > +}
+> > +
+> >  int kvm_arch_vcpu_ioctl_get_mpstate(struct kvm_vcpu *vcpu,
+> >  				    struct kvm_mp_state *mp_state)
+> >  {
+> > @@ -458,6 +470,9 @@ int kvm_arch_vcpu_ioctl_set_mpstate(struct kvm_vcpu *vcpu,
+> >  	case KVM_MP_STATE_STOPPED:
+> >  		kvm_arm_vcpu_power_off(vcpu);
+> >  		break;
+> > +	case KVM_MP_STATE_SUSPENDED:
+> > +		kvm_arm_vcpu_suspend(vcpu);
+> > +		break;
+> >  	default:
+> >  		ret = -EINVAL;
+> >  	}
+> > @@ -719,6 +734,23 @@ void kvm_vcpu_wfi(struct kvm_vcpu *vcpu)
+> >  	preempt_enable();
+> >  }
+> >  
+> > +static int kvm_vcpu_suspend(struct kvm_vcpu *vcpu)
+> > +{
+> > +	if (!kvm_arm_vcpu_suspended(vcpu))
 > > +		return 1;
-> > +	}
 > > +
-> > +	reset_state.r0 = smccc_get_arg2(vcpu);
-> > +	reset_state.be = kvm_vcpu_is_be(vcpu);
-> > +	reset_state.reset = true;
+> > +	kvm_vcpu_wfi(vcpu);
 > > +
 > > +	/*
-> > +	 * The SYSTEM_SUSPEND PSCI call requires that all vCPUs (except the
-> > +	 * calling vCPU) be in an OFF state, as determined by the
-> > +	 * implementation.
-> > +	 *
-> > +	 * See ARM DEN0022D, 5.19 "SYSTEM_SUSPEND" for more details.
+> > +	 * The suspend state is sticky; we do not leave it until userspace
+> > +	 * explicitly marks the vCPU as runnable. Request that we suspend again
+> > +	 * later.
 > > +	 */
-> > +	mutex_lock(&kvm->lock);
-> > +	kvm_for_each_vcpu(i, tmp, kvm) {
-> > +		if (tmp != vcpu && !kvm_arm_vcpu_powered_off(tmp)) {
-> > +			denied = true;
-> > +			break;
-> > +		}
-> > +	}
-> > +	mutex_unlock(&kvm->lock);
-> 
-> This looks dodgy. Nothing seems to prevent userspace from setting the
-> mp_state to RUNNING in parallel with this, as only the vcpu mutex is
-> held when this ioctl is issued.
-> 
-> It looks to me that what you want is what lock_all_vcpus() does
-> (Alexandru has a patch moving it out of the vgic code as part of his
-> SPE series).
-> 
-> It is also pretty unclear what the interaction with userspace is once
-> you have released the lock. If the VMM starts a vcpu other than the
-> suspending one, what is its state? The spec doesn't see to help
-> here. I can see two options:
-> 
-> - either all the vcpus have the same reset state applied to them as
->   they come up, unless they are started with CPU_ON by a vcpu that has
->   already booted (but there is a single 'context_id' provided, and I
->   fear this is going to confuse the OS)...
-> 
-> - or only the suspending vcpu can resume the system, and we must fail
->   a change of mp_state for the other vcpus.
-> 
-> What do you think?
-
-Definitely the latter. The documentation of SYSTEM_SUSPEND is quite
-shaky on this, but it would appear that the intention is for the caller
-to be the first CPU to wake up.
-
+> > +	kvm_make_request(KVM_REQ_SUSPEND, vcpu);
+> > +	kvm_vcpu_set_system_event_exit(vcpu, KVM_SYSTEM_EVENT_WAKEUP);
+> > +	return 0;
+> > +}
 > > +
-> > +	if (denied) {
-> > +		smccc_set_retval(vcpu, PSCI_RET_DENIED, 0, 0, 0);
-> > +		return 1;
-> > +	}
+> >  /**
+> >   * check_vcpu_requests - check and handle pending vCPU requests
+> >   * @vcpu:	the VCPU pointer
+> > @@ -757,6 +789,9 @@ static int check_vcpu_requests(struct kvm_vcpu *vcpu)
+> >  		if (kvm_check_request(KVM_REQ_RELOAD_PMU, vcpu))
+> >  			kvm_pmu_handle_pmcr(vcpu,
+> >  					    __vcpu_sys_reg(vcpu, PMCR_EL0));
 > > +
-> > +	__kvm_reset_vcpu(vcpu, &reset_state);
-> > +	kvm_vcpu_wfi(vcpu);
+> > +		if (kvm_check_request(KVM_REQ_SUSPEND, vcpu))
+> > +			return kvm_vcpu_suspend(vcpu);
+> >  	}
+> >  
+> >  	return 1;
+> > diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
+> > index 5191b57e1562..babb16c2abe5 100644
+> > --- a/include/uapi/linux/kvm.h
+> > +++ b/include/uapi/linux/kvm.h
+> > @@ -444,6 +444,7 @@ struct kvm_run {
+> >  #define KVM_SYSTEM_EVENT_SHUTDOWN       1
+> >  #define KVM_SYSTEM_EVENT_RESET          2
+> >  #define KVM_SYSTEM_EVENT_CRASH          3
+> > +#define KVM_SYSTEM_EVENT_WAKEUP         4
+> >  			__u32 type;
+> >  			__u64 flags;
+> >  		} system_event;
+> > @@ -634,6 +635,7 @@ struct kvm_vapic_addr {
+> >  #define KVM_MP_STATE_OPERATING         7
+> >  #define KVM_MP_STATE_LOAD              8
+> >  #define KVM_MP_STATE_AP_RESET_HOLD     9
+> > +#define KVM_MP_STATE_SUSPENDED         10
+> >  
+> >  struct kvm_mp_state {
+> >  	__u32 mp_state;
 > 
-> I have mixed feelings about this. The vcpu has reset before being in
-> WFI, while it really should be the other way around and userspace
-> could rely on observing the transition.
-> 
-> What breaks if you change this?
+> This patch looks OK as is, but it is the interactions with PSCI that
+> concern me. What we have here is per-CPU suspend triggered by
+> userspace. PSCI OTOH offers two variants of suspend triggered by the
+> guest. All of them get different implementations, and I have a hard
+> time figuring out how they all interact...
 
-I don't think that userspace would be able to observe the transition
-even if we WFI before the reset. I imagine that would take the form
-of setting KVM_REQ_VCPU_RESET, which we explicitly handle before
-letting userspace access the vCPU's state as of commit
-6826c6849b46 ("KVM: arm64: Handle PSCI resets before userspace
-touches vCPU state").
+Yeah, all of this suspend logic could become a tangle.
 
-Given this, I felt it was probably best to avoid all the indirection and
-just do the vCPU reset in the handling of SYSTEM_SUSPEND. It does,
-however, imply that we have slightly different behavior when userspace
-exits are enabled, as that will happen pre-reset and pre-WFI.
+There is likely an opportunity to share some bits between CPU_SUSPEND
+and SYSTEM_SUSPEND, but userspace-directed suspends are different enough
+that it warrants a different implmentation.
+
+Thanks again for the review!
 
 --
 Oliver
