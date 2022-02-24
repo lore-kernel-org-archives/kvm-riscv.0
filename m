@@ -1,24 +1,89 @@
-From: Reiji Watanabe <reijiw@google.com>
-Date: Wed, 23 Feb 2022 23:07:54 -0800
-Subject: [PATCH v3 05/19] KVM: arm64: Dedupe vCPU power off helpers
-In-Reply-To: <20220223041844.3984439-6-oupton@google.com>
+From: Marc Zyngier <maz@kernel.org>
+Date: Thu, 24 Feb 2022 12:06:33 +0000
+Subject: [PATCH v3 02/19] KVM: arm64: Create a helper to check if IPA is
+ valid
+In-Reply-To: <20220223041844.3984439-3-oupton@google.com>
 References: <20220223041844.3984439-1-oupton@google.com>
- <20220223041844.3984439-6-oupton@google.com>
-Message-ID: <CAAeT=Fz7jCBGS6UkMJRjgRfOo-8Bs5S0kkJfpmyq9Q+bwGD=+A@mail.gmail.com>
+ <20220223041844.3984439-3-oupton@google.com>
+Message-ID: <871qzs4gfq.wl-maz@kernel.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Feb 22, 2022 at 8:19 PM Oliver Upton <oupton@google.com> wrote:
->
-> vcpu_power_off() and kvm_psci_vcpu_off() are equivalent; rename the
-> former and replace all callsites to the latter.
->
-> No functional change intended.
->
+On Wed, 23 Feb 2022 04:18:27 +0000,
+Oliver Upton <oupton@google.com> wrote:
+> 
+> Create a helper that tests if a given IPA fits within the guest's
+> address space.
+> 
 > Signed-off-by: Oliver Upton <oupton@google.com>
+> ---
+>  arch/arm64/include/asm/kvm_mmu.h      | 9 +++++++++
+>  arch/arm64/kvm/vgic/vgic-kvm-device.c | 2 +-
+>  2 files changed, 10 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/arm64/include/asm/kvm_mmu.h b/arch/arm64/include/asm/kvm_mmu.h
+> index 81839e9a8a24..78e8be7ea627 100644
+> --- a/arch/arm64/include/asm/kvm_mmu.h
+> +++ b/arch/arm64/include/asm/kvm_mmu.h
+> @@ -111,6 +111,7 @@ alternative_cb_end
+>  #else
+>  
+>  #include <linux/pgtable.h>
+> +#include <linux/kvm_host.h>
 
-Reviewed-by: Reiji Watanabe <reijiw@google.com>
+I'd rather you avoid that. This sort of linux->asm->linux transitive
+inclusions always lead to a terrible mess at some point. Which is why
+we use #defines below. And yes, the pgtable.h inclusion is a bad
+precedent.
+
+>  #include <asm/pgalloc.h>
+>  #include <asm/cache.h>
+>  #include <asm/cacheflush.h>
+> @@ -147,6 +148,14 @@ static __always_inline unsigned long __kern_hyp_va(unsigned long v)
+>  #define kvm_phys_size(kvm)		(_AC(1, ULL) << kvm_phys_shift(kvm))
+>  #define kvm_phys_mask(kvm)		(kvm_phys_size(kvm) - _AC(1, ULL))
+>  
+> +/*
+> + * Returns true if the provided IPA exists within the VM's IPA space.
+> + */
+> +static inline bool kvm_ipa_valid(struct kvm *kvm, phys_addr_t guest_ipa)
+> +{
+> +	return !(guest_ipa & ~kvm_phys_mask(kvm));
+> +}
+> +
+
+I'm all for the helper, but just make it a #define to be consistent
+with the rest of the code.
+
+>  #include <asm/kvm_pgtable.h>
+>  #include <asm/stage2_pgtable.h>
+>  
+> diff --git a/arch/arm64/kvm/vgic/vgic-kvm-device.c b/arch/arm64/kvm/vgic/vgic-kvm-device.c
+> index c6d52a1fd9c8..e3853a75cb00 100644
+> --- a/arch/arm64/kvm/vgic/vgic-kvm-device.c
+> +++ b/arch/arm64/kvm/vgic/vgic-kvm-device.c
+> @@ -27,7 +27,7 @@ int vgic_check_iorange(struct kvm *kvm, phys_addr_t ioaddr,
+>  	if (addr + size < addr)
+>  		return -EINVAL;
+>  
+> -	if (addr & ~kvm_phys_mask(kvm) || addr + size > kvm_phys_size(kvm))
+> +	if (!kvm_ipa_valid(kvm, addr) || addr + size > kvm_phys_size(kvm))
+>  		return -E2BIG;
+
+I think you can pretty much use this helper everywhere something is
+compared to kvm_phys_size(), and the above becomes:
+
+ if (!kvm_ipa_valid(kvm, addr) || !kvm_ipa_valid(kvm, addr + size - 1))
+
+Same this goes for the couple of occurrences in arch/arm64/kvm/mmu.c.
+
+Thanks,
+
+	M.
+
+-- 
+Without deviation from the norm, progress is not possible.
 
