@@ -1,83 +1,77 @@
 From: Atish Patra <atishp@rivosinc.com>
-Date: Mon, 28 Feb 2022 01:42:30 -0800
-Subject: [RFC PATCH 3/6] RISC-V: Prefer sstc extension if available
+Date: Mon, 28 Feb 2022 01:42:31 -0800
+Subject: [RFC PATCH 4/6] RISC-V: Restrict the isa field in config register to
+ base extensions
 In-Reply-To: <20220228094234.3773153-1-atishp@rivosinc.com>
 References: <20220228094234.3773153-1-atishp@rivosinc.com>
-Message-ID: <20220228094234.3773153-4-atishp@rivosinc.com>
+Message-ID: <20220228094234.3773153-5-atishp@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-RISC-V ISA has sstc extension which allows updating the next clock event
-via a CSR (stimecmp) instead of an SBI call. This should happen dynamically
-if sstc extension is available. Otherwise, it will fallback to SBI call
-to maintain backward compatibility.
+The isa field in config register is meant only for single letter base ISA
+extensions. Multi-letter extensions can not be encoded here as it will
+exceed the size of ULONG easily in future.
+
+Only allow single letter extensions (0-25) to be encoded in that field.
 
 Signed-off-by: Atish Patra <atishp@rivosinc.com>
 ---
- arch/riscv/include/asm/timex.h    |  2 ++
- drivers/clocksource/timer-riscv.c | 22 +++++++++++++++++++++-
- 2 files changed, 23 insertions(+), 1 deletion(-)
+ arch/riscv/include/uapi/asm/kvm.h | 1 +
+ arch/riscv/kvm/vcpu.c             | 6 ++++--
+ 2 files changed, 5 insertions(+), 2 deletions(-)
 
-diff --git a/arch/riscv/include/asm/timex.h b/arch/riscv/include/asm/timex.h
-index 507cae273bc6..dc0ffed04ea1 100644
---- a/arch/riscv/include/asm/timex.h
-+++ b/arch/riscv/include/asm/timex.h
-@@ -48,6 +48,8 @@ static inline unsigned long random_get_entropy(void)
+diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
+index f808ad1ce500..aa9f5a5c57d8 100644
+--- a/arch/riscv/include/uapi/asm/kvm.h
++++ b/arch/riscv/include/uapi/asm/kvm.h
+@@ -47,6 +47,7 @@ struct kvm_sregs {
  
- #else /* CONFIG_RISCV_M_MODE */
+ /* CONFIG registers for KVM_GET_ONE_REG and KVM_SET_ONE_REG */
+ struct kvm_riscv_config {
++	/* This is a bitmap of all the single letter base ISA extensions */
+ 	unsigned long isa;
+ };
  
-+extern struct static_key_false cpu_sstc_available;
-+#define cpu_sstc_ext_available static_branch_likely(&cpu_sstc_available)
- static inline cycles_t get_cycles(void)
- {
- 	return csr_read(CSR_TIME);
-diff --git a/drivers/clocksource/timer-riscv.c b/drivers/clocksource/timer-riscv.c
-index 1767f8bf2013..f032da8a4272 100644
---- a/drivers/clocksource/timer-riscv.c
-+++ b/drivers/clocksource/timer-riscv.c
-@@ -23,11 +23,25 @@
- #include <asm/sbi.h>
- #include <asm/timex.h>
+diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+index 624166004e36..7a07dba504f8 100644
+--- a/arch/riscv/kvm/vcpu.c
++++ b/arch/riscv/kvm/vcpu.c
+@@ -182,13 +182,14 @@ static int kvm_riscv_vcpu_get_reg_config(struct kvm_vcpu *vcpu,
+ 					    KVM_REG_SIZE_MASK |
+ 					    KVM_REG_RISCV_CONFIG);
+ 	unsigned long reg_val;
++	unsigned long isa_mask = GENMASK(25, 0);
  
-+DEFINE_STATIC_KEY_FALSE(cpu_sstc_available);
-+EXPORT_SYMBOL(cpu_sstc_available);
-+
- static int riscv_clock_next_event(unsigned long delta,
- 		struct clock_event_device *ce)
- {
-+	uint64_t next_tval = get_cycles64() + delta;
-+
- 	csr_set(CSR_IE, IE_TIE);
--	sbi_set_timer(get_cycles64() + delta);
-+	if (cpu_sstc_ext_available) {
-+#if __riscv_xlen == 32
-+		csr_write(CSR_STIMECMP, next_tval & 0xFFFFFFFF);
-+		csr_write(CSR_STIMECMPH, next_tval >> 32);
-+#else
-+		csr_write(CSR_STIMECMP, get_cycles64() + delta);
-+#endif
-+	} else
-+		sbi_set_timer(get_cycles64() + delta);
-+
- 	return 0;
- }
+ 	if (KVM_REG_SIZE(reg->id) != sizeof(unsigned long))
+ 		return -EINVAL;
  
-@@ -165,6 +179,12 @@ static int __init riscv_timer_init_dt(struct device_node *n)
- 	if (error)
- 		pr_err("cpu hp setup state failed for RISCV timer [%d]\n",
- 		       error);
-+
-+	if (riscv_isa_extension_available(NULL, SSTC)) {
-+		pr_info("S-mode timer interrupt mode is available via sstc extension\n");
-+		static_branch_enable(&cpu_sstc_available);
-+	}
-+
- 	return error;
- }
+ 	switch (reg_num) {
+ 	case KVM_REG_RISCV_CONFIG_REG(isa):
+-		reg_val = vcpu->arch.isa;
++		reg_val = vcpu->arch.isa & isa_mask;
+ 		break;
+ 	default:
+ 		return -EINVAL;
+@@ -209,6 +210,7 @@ static int kvm_riscv_vcpu_set_reg_config(struct kvm_vcpu *vcpu,
+ 					    KVM_REG_SIZE_MASK |
+ 					    KVM_REG_RISCV_CONFIG);
+ 	unsigned long reg_val;
++	unsigned long isa_mask = GENMASK(25, 0);
  
+ 	if (KVM_REG_SIZE(reg->id) != sizeof(unsigned long))
+ 		return -EINVAL;
+@@ -219,7 +221,7 @@ static int kvm_riscv_vcpu_set_reg_config(struct kvm_vcpu *vcpu,
+ 	switch (reg_num) {
+ 	case KVM_REG_RISCV_CONFIG_REG(isa):
+ 		if (!vcpu->arch.ran_atleast_once) {
+-			vcpu->arch.isa = reg_val;
++			vcpu->arch.isa = reg_val & isa_mask;
+ 			vcpu->arch.isa &= riscv_isa_extension_base(NULL);
+ 			vcpu->arch.isa &= KVM_RISCV_ISA_ALLOWED;
+ 			kvm_riscv_vcpu_fp_reset(vcpu);
 -- 
 2.30.2
 
