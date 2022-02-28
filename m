@@ -1,115 +1,146 @@
-From: Oliver Upton <oupton@google.com>
-Date: Sat, 26 Feb 2022 10:28:21 -0800
-Subject: [PATCH v3 13/19] KVM: arm64: Add support KVM_SYSTEM_EVENT_SUSPEND
- to PSCI SYSTEM_SUSPEND
-In-Reply-To: <8735k57tnx.wl-maz@kernel.org>
-References: <20220223041844.3984439-1-oupton@google.com>
- <20220223041844.3984439-14-oupton@google.com>
- <87sfs82rz4.wl-maz@kernel.org> <YhflJ74nF2N+u1i4@google.com>
- <8735k57tnx.wl-maz@kernel.org>
-Message-ID: <CAOQ_Qsi1n2PTGe3F5BAhy3yHS4ar_0n0tru7smAfwAFWGY3Jug@mail.gmail.com>
+From: Anup Patel <anup@brainfault.org>
+Date: Mon, 28 Feb 2022 11:42:30 +0530
+Subject: [PATCH v2] RISC-V: KVM: Refine __kvm_riscv_switch_to()
+ implementation
+In-Reply-To: <20220223011331.12254-1-vincent.chen@sifive.com>
+References: <20220223011331.12254-1-vincent.chen@sifive.com>
+Message-ID: <CAAhSdy32PmqoJcYJ--k5qX2nLUQW34Q9qeEfwPSf1HQ+dPDAmw@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sat, Feb 26, 2022 at 3:29 AM Marc Zyngier <maz@kernel.org> wrote:
+On Wed, Feb 23, 2022 at 6:43 AM Vincent Chen <vincent.chen@sifive.com> wrote:
 >
-> On Thu, 24 Feb 2022 20:05:59 +0000,
-> Oliver Upton <oupton@google.com> wrote:
-> >
-> > On Thu, Feb 24, 2022 at 03:40:15PM +0000, Marc Zyngier wrote:
-> > > > diff --git a/arch/arm64/kvm/psci.c b/arch/arm64/kvm/psci.c
-> > > > index 2bb8d047cde4..a7de84cec2e4 100644
-> > > > --- a/arch/arm64/kvm/psci.c
-> > > > +++ b/arch/arm64/kvm/psci.c
-> > > > @@ -245,6 +245,11 @@ static int kvm_psci_system_suspend(struct kvm_vcpu *vcpu)
-> > > >           return 1;
-> > > >   }
-> > > >
-> > > > + if (kvm->arch.system_suspend_exits) {
-> > > > +         kvm_vcpu_set_system_event_exit(vcpu, KVM_SYSTEM_EVENT_SUSPEND);
-> > > > +         return 0;
-> > > > + }
-> > > > +
-> > >
-> > > So there really is a difference in behaviour here. Userspace sees the
-> > > WFI behaviour before reset (it implements it), while when not using
-> > > the SUSPEND event, reset occurs before anything else.
-> > >
-> > > They really should behave in a similar way (WFI first, reset next).
-> >
-> > I mentioned this on the other patch, but I think the conversation should
-> > continue here as UAPI context is in this one.
-> >
-> > If SUSPEND exits are disabled and SYSTEM_SUSPEND is implemented in the
-> > kernel, userspace cannot observe any intermediate state. I think it is
-> > necessary for migration, otherwise if userspace were to save the vCPU
-> > post-WFI, pre-reset the pending reset would get lost along the way.
-> >
-> > As far as userspace is concerned, I think the WFI+reset operation is
-> > atomic. SUSPEND exits just allow userspace to intervene before said
-> > atomic operation.
-> >
-> > Perhaps I'm missing something: assuming SUSPEND exits are disabled, what
-> > value is provided to userspace if it can see WFI behavior before the
-> > reset?
+> Kernel uses __kvm_riscv_switch_to() and __kvm_switch_return() to switch
+> the context of host kernel and guest kernel. Several CSRs belonging to the
+> context will be read and written during the context switch. To ensure
+> atomic read-modify-write control of CSR and ordering of CSR accesses, some
+> hardware blocks flush the pipeline when writing a CSR. In this
+> circumstance, grouping CSR executions together as much as possible can
+> reduce the performance impact of the pipeline. Therefore, this commit
+> reorders the CSR instructions to enhance the context switch performance..
 >
-> Signals get in the way, and break the notion of atomicity. Userspace
-> *will* observe this.
+> Signed-off-by: Vincent Chen <vincent.chen@sifive.com>
+> Suggested-by: Hsinyi Lee <hsinyi.lee@sifive.com>
+> Suggested-by: Fu-Ching Yang <fu-ching.yang@sifive.com>
+
+I have queued this patch for 5.18
+
+Thanks,
+Anup
+
+> ---
+>  arch/riscv/kvm/vcpu_switch.S | 60 ++++++++++++++++++++----------------
+>  1 file changed, 34 insertions(+), 26 deletions(-)
 >
-> I agree that save/restore is an important point, and that snapshoting
-> the guest at this stage should capture the reset value. But it is the
-> asymmetry of the behaviours that I find jarring:
+> diff --git a/arch/riscv/kvm/vcpu_switch.S b/arch/riscv/kvm/vcpu_switch.S
+> index 029a28a195c6..d74df8eb4d71 100644
+> --- a/arch/riscv/kvm/vcpu_switch.S
+> +++ b/arch/riscv/kvm/vcpu_switch.S
+> @@ -41,33 +41,37 @@ ENTRY(__kvm_riscv_switch_to)
+>         REG_S   s10, (KVM_ARCH_HOST_S10)(a0)
+>         REG_S   s11, (KVM_ARCH_HOST_S11)(a0)
 >
-> - if you ask for userspace exit, no reset value is applied and you
->   need to implement the reset in userspace
+> -       /* Save Host and Restore Guest SSTATUS */
+> +       /* Load Guest CSR values */
+>         REG_L   t0, (KVM_ARCH_GUEST_SSTATUS)(a0)
+> +       REG_L   t1, (KVM_ARCH_GUEST_HSTATUS)(a0)
+> +       REG_L   t2, (KVM_ARCH_GUEST_SCOUNTEREN)(a0)
+> +       la      t4, __kvm_switch_return
+> +       REG_L   t5, (KVM_ARCH_GUEST_SEPC)(a0)
+> +
+> +       /* Save Host and Restore Guest SSTATUS */
+>         csrrw   t0, CSR_SSTATUS, t0
+> -       REG_S   t0, (KVM_ARCH_HOST_SSTATUS)(a0)
 >
-> - if you *don't* ask for a userspace exit, the reset values are
->   applied, and a signal while in WFI will result in this reset being
->   observed
+>         /* Save Host and Restore Guest HSTATUS */
+> -       REG_L   t1, (KVM_ARCH_GUEST_HSTATUS)(a0)
+>         csrrw   t1, CSR_HSTATUS, t1
+> -       REG_S   t1, (KVM_ARCH_HOST_HSTATUS)(a0)
 >
-> Why can't the userspace exit path also apply the reset values *before*
-> exiting? After all, you can model this exit to userspace as
-> reset+WFI+'spurious exit from WFI'. This would at least unify the two
-> behaviours.
-
-I hesitated applying the reset context to the CPU before the userspace
-exit because that would be wildly different from the other system
-events. Userspace wouldn't have much choice but to comply with the
-guest request at that point.
-
-What about adopting the following:
-
- - Drop the in-kernel SYSTEM_SUSPEND emulation. I think you were
-getting at this point in [1], and I'd certainly be open to it. Without
-a userspace exit, I don't think there is anything meaningfully
-different between this call and a WFI instruction.
-
- - Add data to the kvm_run structure to convey the reset state for a
-SYSTEM_SUSPEND exit. There's plenty of room left in the structure for
-more, and can be done generically (just an array of data) for future
-expansion. We already are going to need a code change in userspace to
-do this right, so may as well update its view of kvm_run along the
-way.
-
- - Exit to userspace with PSCI_RET_INTERNAL_FAILURE queued up for the
-guest. Doing so keeps the exits consistent with the other system
-exits, and affords userspace the ability to deny the call when it
-wants to.
-
-[1]: http://lore.kernel.org/r/87fso63ha2.wl-maz at kernel.org
-
-> I still dislike the reset state being applied early, but consistency
-> (and save/restore) trumps taste here. I know I'm being pedantic here,
-> but we've been burned with loosely defined semantics in the past, and
-> I want to get this right. Or less wrong.
-
-I completely agree with you. The semantics are a bit funky, and I
-really do wonder if the easiest way around that is to just make the
-implementation a userspace problem.
-
---
-Oliver
+>         /* Save Host and Restore Guest SCOUNTEREN */
+> -       REG_L   t2, (KVM_ARCH_GUEST_SCOUNTEREN)(a0)
+>         csrrw   t2, CSR_SCOUNTEREN, t2
+> -       REG_S   t2, (KVM_ARCH_HOST_SCOUNTEREN)(a0)
+> -
+> -       /* Save Host SSCRATCH and change it to struct kvm_vcpu_arch pointer */
+> -       csrrw   t3, CSR_SSCRATCH, a0
+> -       REG_S   t3, (KVM_ARCH_HOST_SSCRATCH)(a0)
+>
+>         /* Save Host STVEC and change it to return path */
+> -       la      t4, __kvm_switch_return
+>         csrrw   t4, CSR_STVEC, t4
+> -       REG_S   t4, (KVM_ARCH_HOST_STVEC)(a0)
+> +
+> +       /* Save Host SSCRATCH and change it to struct kvm_vcpu_arch pointer */
+> +       csrrw   t3, CSR_SSCRATCH, a0
+>
+>         /* Restore Guest SEPC */
+> -       REG_L   t0, (KVM_ARCH_GUEST_SEPC)(a0)
+> -       csrw    CSR_SEPC, t0
+> +       csrw    CSR_SEPC, t5
+> +
+> +       /* Store Host CSR values */
+> +       REG_S   t0, (KVM_ARCH_HOST_SSTATUS)(a0)
+> +       REG_S   t1, (KVM_ARCH_HOST_HSTATUS)(a0)
+> +       REG_S   t2, (KVM_ARCH_HOST_SCOUNTEREN)(a0)
+> +       REG_S   t3, (KVM_ARCH_HOST_SSCRATCH)(a0)
+> +       REG_S   t4, (KVM_ARCH_HOST_STVEC)(a0)
+>
+>         /* Restore Guest GPRs (except A0) */
+>         REG_L   ra, (KVM_ARCH_GUEST_RA)(a0)
+> @@ -145,32 +149,36 @@ __kvm_switch_return:
+>         REG_S   t5, (KVM_ARCH_GUEST_T5)(a0)
+>         REG_S   t6, (KVM_ARCH_GUEST_T6)(a0)
+>
+> +       /* Load Host CSR values */
+> +       REG_L   t1, (KVM_ARCH_HOST_STVEC)(a0)
+> +       REG_L   t2, (KVM_ARCH_HOST_SSCRATCH)(a0)
+> +       REG_L   t3, (KVM_ARCH_HOST_SCOUNTEREN)(a0)
+> +       REG_L   t4, (KVM_ARCH_HOST_HSTATUS)(a0)
+> +       REG_L   t5, (KVM_ARCH_HOST_SSTATUS)(a0)
+> +
+>         /* Save Guest SEPC */
+>         csrr    t0, CSR_SEPC
+> -       REG_S   t0, (KVM_ARCH_GUEST_SEPC)(a0)
+> -
+> -       /* Restore Host STVEC */
+> -       REG_L   t1, (KVM_ARCH_HOST_STVEC)(a0)
+> -       csrw    CSR_STVEC, t1
+>
+>         /* Save Guest A0 and Restore Host SSCRATCH */
+> -       REG_L   t2, (KVM_ARCH_HOST_SSCRATCH)(a0)
+>         csrrw   t2, CSR_SSCRATCH, t2
+> -       REG_S   t2, (KVM_ARCH_GUEST_A0)(a0)
+> +
+> +       /* Restore Host STVEC */
+> +       csrw    CSR_STVEC, t1
+>
+>         /* Save Guest and Restore Host SCOUNTEREN */
+> -       REG_L   t3, (KVM_ARCH_HOST_SCOUNTEREN)(a0)
+>         csrrw   t3, CSR_SCOUNTEREN, t3
+> -       REG_S   t3, (KVM_ARCH_GUEST_SCOUNTEREN)(a0)
+>
+>         /* Save Guest and Restore Host HSTATUS */
+> -       REG_L   t4, (KVM_ARCH_HOST_HSTATUS)(a0)
+>         csrrw   t4, CSR_HSTATUS, t4
+> -       REG_S   t4, (KVM_ARCH_GUEST_HSTATUS)(a0)
+>
+>         /* Save Guest and Restore Host SSTATUS */
+> -       REG_L   t5, (KVM_ARCH_HOST_SSTATUS)(a0)
+>         csrrw   t5, CSR_SSTATUS, t5
+> +
+> +       /* Store Guest CSR values */
+> +       REG_S   t0, (KVM_ARCH_GUEST_SEPC)(a0)
+> +       REG_S   t2, (KVM_ARCH_GUEST_A0)(a0)
+> +       REG_S   t3, (KVM_ARCH_GUEST_SCOUNTEREN)(a0)
+> +       REG_S   t4, (KVM_ARCH_GUEST_HSTATUS)(a0)
+>         REG_S   t5, (KVM_ARCH_GUEST_SSTATUS)(a0)
+>
+>         /* Restore Host GPRs (except A0 and T0-T6) */
+> --
+> 2.17.1
+>
 
