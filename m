@@ -1,373 +1,231 @@
-From: Atish Patra <atishp@rivosinc.com>
-Date: Mon, 28 Feb 2022 01:42:33 -0800
-Subject: [RFC PATCH 6/6] RISC-V: KVM: Support sstc extension
-In-Reply-To: <20220228094234.3773153-1-atishp@rivosinc.com>
-References: <20220228094234.3773153-1-atishp@rivosinc.com>
-Message-ID: <20220228094234.3773153-7-atishp@rivosinc.com>
+From: Raghavendra Rao Ananta <rananta@google.com>
+Date: Mon, 28 Feb 2022 11:46:01 -0800
+Subject: [PATCH v4 02/13] KVM: arm64: Introduce KVM_CAP_ARM_REG_SCOPE
+In-Reply-To: <YhkfW76Rit6DYs9T@google.com>
+References: <20220224172559.4170192-1-rananta@google.com>
+ <20220224172559.4170192-3-rananta@google.com>
+ <Yhh6cI4P5VEMitkg@google.com>
+ <CAJHc60zn0df4e-TXaeKEgkej4G34VzbFdQUpX_6ii_XwTNY2tg@mail.gmail.com>
+ <YhkfW76Rit6DYs9T@google.com>
+Message-ID: <CAJHc60z=qmz_s1G+LkNRWGumZOrtgzYmRM78j=3VpMi08Ox4Zg@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Sstc extension allows the guest to program the vstimecmp CSR directly
-instead of making an SBI call to the hypervisor to program the next
-event. The timer interrupt is also directly injected to the guest by
-the hardware in this case. To maintain backward compatibility, the
-hypervisors also update the vstimecmp in an SBI set_time call if
-the hardware supports it. Thus, the older kernels in guest also
-take advantage of the sstc extension.
+On Fri, Feb 25, 2022 at 10:26 AM Oliver Upton <oupton@google.com> wrote:
+>
+> On Fri, Feb 25, 2022 at 09:34:35AM -0800, Raghavendra Rao Ananta wrote:
+> > Hey Oliver,
+> >
+> > On Thu, Feb 24, 2022 at 10:43 PM Oliver Upton <oupton@google.com> wrote:
+> > >
+> > > On Thu, Feb 24, 2022 at 05:25:48PM +0000, Raghavendra Rao Ananta wrote:
+> > > > KVM_[GET|SET]_ONE_REG act on per-vCPU basis. Currently certain
+> > > > ARM64 registers, such as KVM_REG_ARM_SMCCC_ARCH_WORKAROUND_[1|2],
+> > > > are accessed via this interface even though the effect that
+> > > > they have are really per-VM. As a result, userspace could just
+> > > > waste cycles to read/write the same information for every vCPU
+> > > > that it spawns, only to realize that there's absolutely no change
+> > > > in the VM's state. The problem gets worse in proportion to the
+> > > > number of vCPUs created.
+> > > >
+> > > > As a result, to avoid this redundancy, introduce the capability
+> > > > KVM_CAP_ARM_REG_SCOPE. If enabled, KVM_GET_REG_LIST will advertise
+> > > > the registers that are VM-scoped by dynamically modifying the
+> > > > register encoding. KVM_REG_ARM_SCOPE_* helper macros are introduced
+> > > > to decode the same. By learning this, userspace can access such
+> > > > registers only once.
+> > > >
+> > > > Signed-off-by: Raghavendra Rao Ananta <rananta@google.com>
+> > > > ---
+> > > >  Documentation/virt/kvm/api.rst    | 16 ++++++++++++++++
+> > > >  arch/arm64/include/asm/kvm_host.h |  3 +++
+> > > >  arch/arm64/include/uapi/asm/kvm.h |  6 ++++++
+> > > >  arch/arm64/kvm/arm.c              | 13 +++++++------
+> > > >  include/uapi/linux/kvm.h          |  1 +
+> > > >  5 files changed, 33 insertions(+), 6 deletions(-)
+> > > >
+> > > > diff --git a/Documentation/virt/kvm/api.rst b/Documentation/virt/kvm/api.rst
+> > > > index a4267104db50..7e7b3439f540 100644
+> > > > --- a/Documentation/virt/kvm/api.rst
+> > > > +++ b/Documentation/virt/kvm/api.rst
+> > > > @@ -7561,3 +7561,19 @@ The argument to KVM_ENABLE_CAP is also a bitmask, and must be a subset
+> > > >  of the result of KVM_CHECK_EXTENSION.  KVM will forward to userspace
+> > > >  the hypercalls whose corresponding bit is in the argument, and return
+> > > >  ENOSYS for the others.
+> > > > +
+> > > > +8.34 KVM_CAP_ARM_REG_SCOPE
+> > > > +--------------------------
+> > > > +
+> > > > +:Architectures: arm64
+> > > > +
+> > > > +The capability, if enabled, amends the existing register encoding
+> > > > +with additional information to the userspace if a particular register
+> > > > +is scoped per-vCPU or per-VM via KVM_GET_REG_LIST. KVM provides
+> > > > +KVM_REG_ARM_SCOPE_* helper macros to decode the same. Userspace can
+> > > > +use this information from the register encoding to access a VM-scopped
+> > > > +regiser only once, as opposed to accessing it for every vCPU for the
+> > > > +same effect.
+> > > > +
+> > >
+> > > Could you describe the encoding changes in 4.68 'KVM_SET_ONE_REG', along
+> > > with the other ARM encoding details?
+> > >
+> > > > +On the other hand, if the capability is disabled, all the registers
+> > > > +remain vCPU-scopped by default, retaining backward compatibility.
+> > >
+> > > typo: vCPU-scoped
+> > >
+> > > That said, I don't believe we need to document behavior if the CAP is
+> > > disabled, as the implicated ioctls should continue to work the same.
+> > >
+> > Sure, I'll address the above two Doc comments.
+> > > > diff --git a/arch/arm64/include/asm/kvm_host.h b/arch/arm64/include/asm/kvm_host.h
+> > > > index 5bc01e62c08a..8132de6bd718 100644
+> > > > --- a/arch/arm64/include/asm/kvm_host.h
+> > > > +++ b/arch/arm64/include/asm/kvm_host.h
+> > > > @@ -136,6 +136,9 @@ struct kvm_arch {
+> > > >
+> > > >       /* Memory Tagging Extension enabled for the guest */
+> > > >       bool mte_enabled;
+> > > > +
+> > > > +     /* Register scoping enabled for KVM registers */
+> > > > +     bool reg_scope_enabled;
+> > > >  };
+> > > >
+> > > >  struct kvm_vcpu_fault_info {
+> > > > diff --git a/arch/arm64/include/uapi/asm/kvm.h b/arch/arm64/include/uapi/asm/kvm.h
+> > > > index b3edde68bc3e..c35447cc0e0c 100644
+> > > > --- a/arch/arm64/include/uapi/asm/kvm.h
+> > > > +++ b/arch/arm64/include/uapi/asm/kvm.h
+> > > > @@ -199,6 +199,12 @@ struct kvm_arm_copy_mte_tags {
+> > > >  #define KVM_REG_ARM_COPROC_MASK              0x000000000FFF0000
+> > > >  #define KVM_REG_ARM_COPROC_SHIFT     16
+> > > >
+> > > > +/* Defines if a KVM register is one per-vCPU or one per-VM */
+> > > > +#define KVM_REG_ARM_SCOPE_MASK               0x0000000010000000
+> > > > +#define KVM_REG_ARM_SCOPE_SHIFT              28
+> > >
+> > > Thinking about the advertisement of VM- and vCPU-scoped registers, this
+> > > could be generally useful. Might it make sense to add such an encoding
+> > > to the arch-generic register definitions?
+> > >
+> > > If that is the case, we may want to snap up a few more bits (a nybble)
+> > > for future expansion.
+> > >
+> > That's a great idea! But I wonder if we'll get a push-back since there
+> > are no users of it in other arch(s) yet. Not sure if there was any
+> > need/discussion regarding the same, but I'm happy to share a patch for
+> > the same if you sense that there's a strong potential for the patch.
+> >
+>
+> I'm unsure if this is actually of interest to other architectures, it
+> just doesn't seem ARM-specific so we should probably raise the question
+> so we only grab these bits once.
+>
+I've CC'ed a few more arch-specific kvm lists for
+comments/concerns/suggestions on the idea (feel free to add any other
+relevant groups/persons). Based on the response, I can start an
+independent RFC series for the same.
 
-Signed-off-by: Atish Patra <atishp@rivosinc.com>
----
- arch/riscv/include/asm/kvm_host.h       |   4 +
- arch/riscv/include/asm/kvm_vcpu_timer.h |   3 +-
- arch/riscv/include/uapi/asm/kvm.h       |   1 +
- arch/riscv/kvm/main.c                   |   8 ++
- arch/riscv/kvm/vcpu.c                   |   4 +-
- arch/riscv/kvm/vcpu_sbi_replace.c       |  10 +-
- arch/riscv/kvm/vcpu_timer.c             | 136 +++++++++++++++++++++++-
- 7 files changed, 158 insertions(+), 8 deletions(-)
+> > > > +#define KVM_REG_ARM_SCOPE_VCPU               0
+> > > > +#define KVM_REG_ARM_SCOPE_VM         1
+> > > > +
+> > > >  /* Normal registers are mapped as coprocessor 16. */
+> > > >  #define KVM_REG_ARM_CORE             (0x0010 << KVM_REG_ARM_COPROC_SHIFT)
+> > > >  #define KVM_REG_ARM_CORE_REG(name)   (offsetof(struct kvm_regs, name) / sizeof(__u32))
+> > > > diff --git a/arch/arm64/kvm/arm.c b/arch/arm64/kvm/arm.c
+> > > > index ecc5958e27fe..107977c82c6c 100644
+> > > > --- a/arch/arm64/kvm/arm.c
+> > > > +++ b/arch/arm64/kvm/arm.c
+> > > > @@ -81,26 +81,26 @@ int kvm_arch_check_processor_compat(void *opaque)
+> > > >  int kvm_vm_ioctl_enable_cap(struct kvm *kvm,
+> > > >                           struct kvm_enable_cap *cap)
+> > > >  {
+> > > > -     int r;
+> > > > +     int r = 0;
+> > > >
+> > > >       if (cap->flags)
+> > > >               return -EINVAL;
+> > > >
+> > > >       switch (cap->cap) {
+> > > >       case KVM_CAP_ARM_NISV_TO_USER:
+> > > > -             r = 0;
+> > > >               kvm->arch.return_nisv_io_abort_to_user = true;
+> > > >               break;
+> > > >       case KVM_CAP_ARM_MTE:
+> > > >               mutex_lock(&kvm->lock);
+> > > > -             if (!system_supports_mte() || kvm->created_vcpus) {
+> > > > +             if (!system_supports_mte() || kvm->created_vcpus)
+> > > >                       r = -EINVAL;
+> > > > -             } else {
+> > > > -                     r = 0;
+> > > > +             else
+> > > >                       kvm->arch.mte_enabled = true;
+> > > > -             }
+> > > >               mutex_unlock(&kvm->lock);
+> > > >               break;
+> > >
+> > > Hmm.. these all look like cleanups. If you want to propose these, could
+> > > you do it in a separate patch?
+> > >
+> > Ahh, I thought I could squeeze it in. But sure, I can separate it out.
+> > > > +     case KVM_CAP_ARM_REG_SCOPE:
+> > > > +             WRITE_ONCE(kvm->arch.reg_scope_enabled, true);
+> > > > +             break;
+> > > >       default:
+> > > >               r = -EINVAL;
+> > > >               break;
+> > > > @@ -209,6 +209,7 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
+> > > >       case KVM_CAP_SET_GUEST_DEBUG:
+> > > >       case KVM_CAP_VCPU_ATTRIBUTES:
+> > > >       case KVM_CAP_PTP_KVM:
+> > > > +     case KVM_CAP_ARM_REG_SCOPE:
+> > >
+> > > It is a bit odd to advertise a capability (and allow userspace to enable
+> > > it), despite the fact that the feature itself hasn't yet been
+> > > implemented.
+> > >
+> > > Is it possible to fold the feature in to the patch that exposes it to
+> > > userspace? Otherwise, you could punt advertisement of the CAP until it
+> > > is actually implemented in kernel.
+> > >
+> > Well, I didn't want to complicate the patch, but technically the
+> > feature is available with this patch, including all the CAP and macro
+> > definitions. Userspace can still decode the scope information, only
+> > that no registers are added yet, which is done in the next patch. So,
+> > the userspace can still remain the same between this and the next
+> > patch.
+>
+> But the series isn't cleanly bisectable. There will exist commits in
+> history that report KVM_CAP_ARM_REG_SCOPE as implemented even though
+> that is not actually the case. You should really only advertise support
+> to userspace when the feature is implemented.
+>
+> Defining kvm->arch.reg_scope_enabled can be done earlier so you have a
+> bit to test and guard all of the new code, and only expose the CAP in
+> the last patch of the series.
+>
+Got it. I'll arrange that in the next spin.
+> Also, as an FYI Marc has a patch that I'll be picking up in my own
+> series which uses bits instead of bools to keep track of certain
+> VM-wide features:
+>
+> https://git.kernel.org/pub/scm/linux/kernel/git/maz/arm-platforms.git/commit/?h=kvm-arm64/mmu/guest-MMIO-guard&id=7dd0a13a4217b870f2e83cdc6045e5ce482a5340
+>
+Thanks. This is great. I can steal a couple of bits and implement the
+flags introduced in the series here.
+> Marc, if neither of our series land in 5.18 could you at least submit
+> this patch in preparation? Should keep conflicts minimal that way.
+>
+> Thanks!
+>
+> --
+> Oliver
 
-diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
-index 99ef6a120617..fb8c993ba022 100644
---- a/arch/riscv/include/asm/kvm_host.h
-+++ b/arch/riscv/include/asm/kvm_host.h
-@@ -135,6 +135,7 @@ struct kvm_vcpu_csr {
- 	unsigned long hvip;
- 	unsigned long vsatp;
- 	unsigned long scounteren;
-+	u64 vstimecmp;
- };
- 
- struct kvm_vcpu_arch {
-@@ -179,6 +180,9 @@ struct kvm_vcpu_arch {
- 	/* VCPU Timer */
- 	struct kvm_vcpu_timer timer;
- 
-+	/* VCPU Timer for vstimecmp */
-+	struct kvm_vcpu_timer vstimer;
-+
- 	/* MMIO instruction details */
- 	struct kvm_mmio_decode mmio_decode;
- 
-diff --git a/arch/riscv/include/asm/kvm_vcpu_timer.h b/arch/riscv/include/asm/kvm_vcpu_timer.h
-index 375281eb49e0..10715b81db86 100644
---- a/arch/riscv/include/asm/kvm_vcpu_timer.h
-+++ b/arch/riscv/include/asm/kvm_vcpu_timer.h
-@@ -39,6 +39,7 @@ int kvm_riscv_vcpu_timer_init(struct kvm_vcpu *vcpu);
- int kvm_riscv_vcpu_timer_deinit(struct kvm_vcpu *vcpu);
- int kvm_riscv_vcpu_timer_reset(struct kvm_vcpu *vcpu);
- void kvm_riscv_vcpu_timer_restore(struct kvm_vcpu *vcpu);
-+void kvm_riscv_vcpu_timer_save(struct kvm_vcpu *vcpu);
- int kvm_riscv_guest_timer_init(struct kvm *kvm);
--
-+bool kvm_riscv_vcpu_timer_pending(struct kvm_vcpu *vcpu);
- #endif
-diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
-index e01678aa2a55..c7c313272c0b 100644
---- a/arch/riscv/include/uapi/asm/kvm.h
-+++ b/arch/riscv/include/uapi/asm/kvm.h
-@@ -97,6 +97,7 @@ enum KVM_RISCV_ISA_EXT_ID {
- 	KVM_RISCV_ISA_EXT_H,
- 	KVM_RISCV_ISA_EXT_I,
- 	KVM_RISCV_ISA_EXT_M,
-+	KVM_RISCV_ISA_EXT_SSTC,
- 	KVM_RISCV_ISA_EXT_MAX,
- };
- 
-diff --git a/arch/riscv/kvm/main.c b/arch/riscv/kvm/main.c
-index 2e5ca43c8c49..8485f59d2db3 100644
---- a/arch/riscv/kvm/main.c
-+++ b/arch/riscv/kvm/main.c
-@@ -13,6 +13,7 @@
- #include <asm/csr.h>
- #include <asm/hwcap.h>
- #include <asm/sbi.h>
-+#include <asm/timex.h>
- 
- long kvm_arch_dev_ioctl(struct file *filp,
- 			unsigned int ioctl, unsigned long arg)
-@@ -50,6 +51,13 @@ int kvm_arch_hardware_enable(void)
- 	csr_write(CSR_HIDELEG, hideleg);
- 
- 	csr_write(CSR_HCOUNTEREN, -1UL);
-+	if (cpu_sstc_ext_available) {
-+#ifdef CONFIG_64BIT
-+		csr_write(CSR_HENVCFG, 1UL<<HENVCFG_STCE);
-+#else
-+		csr_write(CSR_HENVCFGH, 1UL<<HENVCFGH_STCE);
-+#endif
-+	}
- 
- 	csr_write(CSR_HVIP, 0);
- 
-diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-index c314c40be313..dda1fc950178 100644
---- a/arch/riscv/kvm/vcpu.c
-+++ b/arch/riscv/kvm/vcpu.c
-@@ -141,7 +141,7 @@ void kvm_arch_vcpu_destroy(struct kvm_vcpu *vcpu)
- 
- int kvm_cpu_has_pending_timer(struct kvm_vcpu *vcpu)
- {
--	return kvm_riscv_vcpu_has_interrupts(vcpu, 1UL << IRQ_VS_TIMER);
-+	return kvm_riscv_vcpu_timer_pending(vcpu);
- }
- 
- void kvm_arch_vcpu_blocking(struct kvm_vcpu *vcpu)
-@@ -373,6 +373,7 @@ static unsigned long kvm_isa_ext_arr[] = {
- 	RISCV_ISA_EXT_h,
- 	RISCV_ISA_EXT_i,
- 	RISCV_ISA_EXT_m,
-+	RISCV_ISA_EXT_SSTC,
- };
- 
- static int kvm_riscv_vcpu_get_reg_isa_ext(struct kvm_vcpu *vcpu,
-@@ -756,6 +757,7 @@ void kvm_arch_vcpu_put(struct kvm_vcpu *vcpu)
- 				     vcpu->arch.isa);
- 	kvm_riscv_vcpu_host_fp_restore(&vcpu->arch.host_context);
- 
-+	kvm_riscv_vcpu_timer_save(vcpu);
- 	csr_write(CSR_HGATP, 0);
- 
- 	csr->vsstatus = csr_read(CSR_VSSTATUS);
-diff --git a/arch/riscv/kvm/vcpu_sbi_replace.c b/arch/riscv/kvm/vcpu_sbi_replace.c
-index 1bc0608a5bfd..e34fc9e1f41b 100644
---- a/arch/riscv/kvm/vcpu_sbi_replace.c
-+++ b/arch/riscv/kvm/vcpu_sbi_replace.c
-@@ -30,7 +30,15 @@ static int kvm_sbi_ext_time_handler(struct kvm_vcpu *vcpu, struct kvm_run *run,
- #else
- 	next_cycle = (u64)cp->a0;
- #endif
--	kvm_riscv_vcpu_timer_next_event(vcpu, next_cycle);
-+	if (cpu_sstc_ext_available) {
-+#if __riscv_xlen == 32
-+		csr_write(CSR_VSTIMECMP, next_cycle & 0xFFFFFFFF);
-+		csr_write(CSR_VSTIMECMPH, next_cycle >> 32);
-+#else
-+		csr_write(CSR_VSTIMECMP, next_cycle);
-+#endif
-+	} else
-+		kvm_riscv_vcpu_timer_next_event(vcpu, next_cycle);
- 
- 	return ret;
- }
-diff --git a/arch/riscv/kvm/vcpu_timer.c b/arch/riscv/kvm/vcpu_timer.c
-index 5c4c37ff2d48..5647c234fea3 100644
---- a/arch/riscv/kvm/vcpu_timer.c
-+++ b/arch/riscv/kvm/vcpu_timer.c
-@@ -14,6 +14,7 @@
- #include <asm/csr.h>
- #include <asm/delay.h>
- #include <asm/kvm_vcpu_timer.h>
-+#include <asm/timex.h>
- 
- static u64 kvm_riscv_current_cycles(struct kvm_guest_timer *gt)
- {
-@@ -88,10 +89,66 @@ int kvm_riscv_vcpu_timer_next_event(struct kvm_vcpu *vcpu, u64 ncycles)
- 	return 0;
- }
- 
-+static enum hrtimer_restart kvm_riscv_vcpu_vstimer_expired(struct hrtimer *h)
-+{
-+	u64 delta_ns;
-+	struct kvm_vcpu_timer *vst = container_of(h, struct kvm_vcpu_timer, hrt);
-+	struct kvm_vcpu *vcpu = container_of(vst, struct kvm_vcpu, arch.vstimer);
-+	struct kvm_guest_timer *gt = &vcpu->kvm->arch.timer;
-+
-+	if (kvm_riscv_current_cycles(gt) < vst->next_cycles) {
-+		delta_ns = kvm_riscv_delta_cycles2ns(vst->next_cycles, gt, vst);
-+		hrtimer_forward_now(&vst->hrt, ktime_set(0, delta_ns));
-+		return HRTIMER_RESTART;
-+	}
-+
-+	vst->next_set = false;
-+	kvm_vcpu_kick(vcpu);
-+
-+	return HRTIMER_NORESTART;
-+}
-+
-+bool kvm_riscv_vcpu_timer_pending(struct kvm_vcpu *vcpu)
-+{
-+	struct kvm_vcpu_timer *vst = &vcpu->arch.vstimer;
-+	struct kvm_guest_timer *gt = &vcpu->kvm->arch.timer;
-+	u64 vstimecmp_val = vcpu->arch.guest_csr.vstimecmp;
-+
-+	if (!kvm_riscv_delta_cycles2ns(vstimecmp_val, gt, vst) ||
-+	    kvm_riscv_vcpu_has_interrupts(vcpu, 1UL << IRQ_VS_TIMER))
-+		return true;
-+	else
-+		return false;
-+}
-+
-+static void kvm_riscv_vcpu_timer_blocking(struct kvm_vcpu *vcpu)
-+{
-+	struct kvm_vcpu_timer *vst = &vcpu->arch.vstimer;
-+	struct kvm_guest_timer *gt = &vcpu->kvm->arch.timer;
-+	u64 delta_ns;
-+	u64 vstimecmp_val = vcpu->arch.guest_csr.vstimecmp;
-+
-+	if (!vst->init_done)
-+		return;
-+
-+	delta_ns = kvm_riscv_delta_cycles2ns(vstimecmp_val, gt, vst);
-+	if (delta_ns) {
-+		vst->next_cycles = vstimecmp_val;
-+		hrtimer_start(&vst->hrt, ktime_set(0, delta_ns), HRTIMER_MODE_REL);
-+		vst->next_set = true;
-+	}
-+}
-+
-+static void kvm_riscv_vcpu_timer_unblocking(struct kvm_vcpu *vcpu)
-+{
-+	kvm_riscv_vcpu_timer_cancel(&vcpu->arch.vstimer);
-+}
-+
- int kvm_riscv_vcpu_get_reg_timer(struct kvm_vcpu *vcpu,
- 				 const struct kvm_one_reg *reg)
- {
- 	struct kvm_vcpu_timer *t = &vcpu->arch.timer;
-+	struct kvm_vcpu_timer *vst = &vcpu->arch.vstimer;
- 	struct kvm_guest_timer *gt = &vcpu->kvm->arch.timer;
- 	u64 __user *uaddr = (u64 __user *)(unsigned long)reg->addr;
- 	unsigned long reg_num = reg->id & ~(KVM_REG_ARCH_MASK |
-@@ -112,7 +169,10 @@ int kvm_riscv_vcpu_get_reg_timer(struct kvm_vcpu *vcpu,
- 		reg_val = kvm_riscv_current_cycles(gt);
- 		break;
- 	case KVM_REG_RISCV_TIMER_REG(compare):
--		reg_val = t->next_cycles;
-+		if (cpu_sstc_ext_available)
-+			reg_val = vst->next_cycles;
-+		else
-+			reg_val = t->next_cycles;
- 		break;
- 	case KVM_REG_RISCV_TIMER_REG(state):
- 		reg_val = (t->next_set) ? KVM_RISCV_TIMER_STATE_ON :
-@@ -132,6 +192,7 @@ int kvm_riscv_vcpu_set_reg_timer(struct kvm_vcpu *vcpu,
- 				 const struct kvm_one_reg *reg)
- {
- 	struct kvm_vcpu_timer *t = &vcpu->arch.timer;
-+	struct kvm_vcpu_timer *vst = &vcpu->arch.vstimer;
- 	struct kvm_guest_timer *gt = &vcpu->kvm->arch.timer;
- 	u64 __user *uaddr = (u64 __user *)(unsigned long)reg->addr;
- 	unsigned long reg_num = reg->id & ~(KVM_REG_ARCH_MASK |
-@@ -156,7 +217,10 @@ int kvm_riscv_vcpu_set_reg_timer(struct kvm_vcpu *vcpu,
- 		gt->time_delta = reg_val - get_cycles64();
- 		break;
- 	case KVM_REG_RISCV_TIMER_REG(compare):
--		t->next_cycles = reg_val;
-+		if (cpu_sstc_ext_available)
-+			vst->next_cycles = reg_val;
-+		else
-+			t->next_cycles = reg_val;
- 		break;
- 	case KVM_REG_RISCV_TIMER_REG(state):
- 		if (reg_val == KVM_RISCV_TIMER_STATE_ON)
-@@ -175,8 +239,9 @@ int kvm_riscv_vcpu_set_reg_timer(struct kvm_vcpu *vcpu,
- int kvm_riscv_vcpu_timer_init(struct kvm_vcpu *vcpu)
- {
- 	struct kvm_vcpu_timer *t = &vcpu->arch.timer;
-+	struct kvm_vcpu_timer *vst = &vcpu->arch.vstimer;
- 
--	if (t->init_done)
-+	if (t->init_done || vst->init_done)
- 		return -EINVAL;
- 
- 	hrtimer_init(&t->hrt, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-@@ -184,6 +249,11 @@ int kvm_riscv_vcpu_timer_init(struct kvm_vcpu *vcpu)
- 	t->init_done = true;
- 	t->next_set = false;
- 
-+	hrtimer_init(&vst->hrt, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-+	vst->hrt.function = kvm_riscv_vcpu_vstimer_expired;
-+	vst->init_done = true;
-+	vst->next_set = false;
-+
- 	return 0;
- }
- 
-@@ -194,15 +264,21 @@ int kvm_riscv_vcpu_timer_deinit(struct kvm_vcpu *vcpu)
- 	ret = kvm_riscv_vcpu_timer_cancel(&vcpu->arch.timer);
- 	vcpu->arch.timer.init_done = false;
- 
-+	ret = kvm_riscv_vcpu_timer_cancel(&vcpu->arch.vstimer);
-+	vcpu->arch.vstimer.init_done = false;
-+
- 	return ret;
- }
- 
- int kvm_riscv_vcpu_timer_reset(struct kvm_vcpu *vcpu)
- {
--	return kvm_riscv_vcpu_timer_cancel(&vcpu->arch.timer);
-+	kvm_riscv_vcpu_timer_cancel(&vcpu->arch.timer);
-+	kvm_riscv_vcpu_timer_cancel(&vcpu->arch.vstimer);
-+
-+	return 0;
- }
- 
--void kvm_riscv_vcpu_timer_restore(struct kvm_vcpu *vcpu)
-+static void kvm_riscv_vcpu_update_timedelta(struct kvm_vcpu *vcpu)
- {
- 	struct kvm_guest_timer *gt = &vcpu->kvm->arch.timer;
- 
-@@ -214,6 +290,56 @@ void kvm_riscv_vcpu_timer_restore(struct kvm_vcpu *vcpu)
- #endif
- }
- 
-+void kvm_riscv_vcpu_timer_restore(struct kvm_vcpu *vcpu)
-+{
-+	struct kvm_vcpu_timer *vst;
-+	struct kvm_vcpu_csr *csr;
-+
-+	kvm_riscv_vcpu_update_timedelta(vcpu);
-+
-+	if (!cpu_sstc_ext_available)
-+		return;
-+
-+	vst = &vcpu->arch.vstimer;
-+	csr = &vcpu->arch.guest_csr;
-+#ifdef CONFIG_64BIT
-+	csr_write(CSR_VSTIMECMP, csr->vstimecmp);
-+#else
-+	csr_write(CSR_VSTIMECMP, (u32)csr->vstimecmp);
-+	csr_write(CSR_VSTIMECMPH, (u32)(csr->vstimecmp >> 32));
-+#endif
-+
-+	/* vstimer should be enabled for the remaining operations */
-+	if (unlikely(!vst->init_done))
-+		return;
-+
-+	if (kvm_vcpu_is_blocking(vcpu))
-+		kvm_riscv_vcpu_timer_blocking(vcpu);
-+}
-+
-+void kvm_riscv_vcpu_timer_save(struct kvm_vcpu *vcpu)
-+{
-+	struct kvm_vcpu_csr *csr;
-+	struct kvm_vcpu_timer *vst;
-+
-+	if (!cpu_sstc_ext_available)
-+		return;
-+
-+	csr = &vcpu->arch.guest_csr;
-+	vst = &vcpu->arch.vstimer;
-+#ifdef CONFIG_64BIT
-+	csr->vstimecmp = csr_read(CSR_VSTIMECMP);
-+#else
-+	csr->vstimecmp = csr_read(CSR_VSTIMECMP);
-+	csr->vstimecmp |= (u64)csr_read(CSR_VSTIMECMPH) >> 32;
-+#endif
-+	/* vstimer should be enabled for the remaining operations */
-+	if (unlikely(!vst->init_done))
-+		return;
-+
-+	kvm_riscv_vcpu_timer_unblocking(vcpu);
-+}
-+
- int kvm_riscv_guest_timer_init(struct kvm *kvm)
- {
- 	struct kvm_guest_timer *gt = &kvm->arch.timer;
--- 
-2.30.2
+Thank you.
 
+Raghavendra
 
