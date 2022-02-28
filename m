@@ -1,146 +1,66 @@
-From: Anup Patel <anup@brainfault.org>
-Date: Mon, 28 Feb 2022 11:42:30 +0530
-Subject: [PATCH v2] RISC-V: KVM: Refine __kvm_riscv_switch_to()
- implementation
-In-Reply-To: <20220223011331.12254-1-vincent.chen@sifive.com>
-References: <20220223011331.12254-1-vincent.chen@sifive.com>
-Message-ID: <CAAhSdy32PmqoJcYJ--k5qX2nLUQW34Q9qeEfwPSf1HQ+dPDAmw@mail.gmail.com>
+From: Atish Patra <atishp@rivosinc.com>
+Date: Mon, 28 Feb 2022 01:42:27 -0800
+Subject: [RFC PATCH 0/6] Add Sstc extension support 
+Message-ID: <20220228094234.3773153-1-atishp@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Feb 23, 2022 at 6:43 AM Vincent Chen <vincent.chen@sifive.com> wrote:
->
-> Kernel uses __kvm_riscv_switch_to() and __kvm_switch_return() to switch
-> the context of host kernel and guest kernel. Several CSRs belonging to the
-> context will be read and written during the context switch. To ensure
-> atomic read-modify-write control of CSR and ordering of CSR accesses, some
-> hardware blocks flush the pipeline when writing a CSR. In this
-> circumstance, grouping CSR executions together as much as possible can
-> reduce the performance impact of the pipeline. Therefore, this commit
-> reorders the CSR instructions to enhance the context switch performance..
->
-> Signed-off-by: Vincent Chen <vincent.chen@sifive.com>
-> Suggested-by: Hsinyi Lee <hsinyi.lee@sifive.com>
-> Suggested-by: Fu-Ching Yang <fu-ching.yang@sifive.com>
+This series implements Sstc extension support which was ratified recently.
+Before the Sstc extension, an SBI call is necessary to generate timer
+interrupts as only M-mode have access to the timecompare registers. Thus,
+there is significant latency to generate timer interrupts at kernel.
+For virtualized enviornments, its even worse as the KVM handles the SBI call
+and uses a software timer to emulate the timecomapre register. 
 
-I have queued this patch for 5.18
+Sstc extension solves both these problems by defining a stimecmp/vstimecmp
+at supervisor (host/guest) level. It allows kernel to program a timer and
+recieve interrupt without supervisor execution enviornment (M-mode/HS mode)
+intervention.
 
-Thanks,
-Anup
+To maintain backward compatibility, KVM directly updates the vstimecmp
+if older kernel without sstc support is running in guest. Similary, the
+M-mode firmware(OpenSBI) uses stimecmp for older kernel without sstc support. 
 
-> ---
->  arch/riscv/kvm/vcpu_switch.S | 60 ++++++++++++++++++++----------------
->  1 file changed, 34 insertions(+), 26 deletions(-)
->
-> diff --git a/arch/riscv/kvm/vcpu_switch.S b/arch/riscv/kvm/vcpu_switch.S
-> index 029a28a195c6..d74df8eb4d71 100644
-> --- a/arch/riscv/kvm/vcpu_switch.S
-> +++ b/arch/riscv/kvm/vcpu_switch.S
-> @@ -41,33 +41,37 @@ ENTRY(__kvm_riscv_switch_to)
->         REG_S   s10, (KVM_ARCH_HOST_S10)(a0)
->         REG_S   s11, (KVM_ARCH_HOST_S11)(a0)
->
-> -       /* Save Host and Restore Guest SSTATUS */
-> +       /* Load Guest CSR values */
->         REG_L   t0, (KVM_ARCH_GUEST_SSTATUS)(a0)
-> +       REG_L   t1, (KVM_ARCH_GUEST_HSTATUS)(a0)
-> +       REG_L   t2, (KVM_ARCH_GUEST_SCOUNTEREN)(a0)
-> +       la      t4, __kvm_switch_return
-> +       REG_L   t5, (KVM_ARCH_GUEST_SEPC)(a0)
-> +
-> +       /* Save Host and Restore Guest SSTATUS */
->         csrrw   t0, CSR_SSTATUS, t0
-> -       REG_S   t0, (KVM_ARCH_HOST_SSTATUS)(a0)
->
->         /* Save Host and Restore Guest HSTATUS */
-> -       REG_L   t1, (KVM_ARCH_GUEST_HSTATUS)(a0)
->         csrrw   t1, CSR_HSTATUS, t1
-> -       REG_S   t1, (KVM_ARCH_HOST_HSTATUS)(a0)
->
->         /* Save Host and Restore Guest SCOUNTEREN */
-> -       REG_L   t2, (KVM_ARCH_GUEST_SCOUNTEREN)(a0)
->         csrrw   t2, CSR_SCOUNTEREN, t2
-> -       REG_S   t2, (KVM_ARCH_HOST_SCOUNTEREN)(a0)
-> -
-> -       /* Save Host SSCRATCH and change it to struct kvm_vcpu_arch pointer */
-> -       csrrw   t3, CSR_SSCRATCH, a0
-> -       REG_S   t3, (KVM_ARCH_HOST_SSCRATCH)(a0)
->
->         /* Save Host STVEC and change it to return path */
-> -       la      t4, __kvm_switch_return
->         csrrw   t4, CSR_STVEC, t4
-> -       REG_S   t4, (KVM_ARCH_HOST_STVEC)(a0)
-> +
-> +       /* Save Host SSCRATCH and change it to struct kvm_vcpu_arch pointer */
-> +       csrrw   t3, CSR_SSCRATCH, a0
->
->         /* Restore Guest SEPC */
-> -       REG_L   t0, (KVM_ARCH_GUEST_SEPC)(a0)
-> -       csrw    CSR_SEPC, t0
-> +       csrw    CSR_SEPC, t5
-> +
-> +       /* Store Host CSR values */
-> +       REG_S   t0, (KVM_ARCH_HOST_SSTATUS)(a0)
-> +       REG_S   t1, (KVM_ARCH_HOST_HSTATUS)(a0)
-> +       REG_S   t2, (KVM_ARCH_HOST_SCOUNTEREN)(a0)
-> +       REG_S   t3, (KVM_ARCH_HOST_SSCRATCH)(a0)
-> +       REG_S   t4, (KVM_ARCH_HOST_STVEC)(a0)
->
->         /* Restore Guest GPRs (except A0) */
->         REG_L   ra, (KVM_ARCH_GUEST_RA)(a0)
-> @@ -145,32 +149,36 @@ __kvm_switch_return:
->         REG_S   t5, (KVM_ARCH_GUEST_T5)(a0)
->         REG_S   t6, (KVM_ARCH_GUEST_T6)(a0)
->
-> +       /* Load Host CSR values */
-> +       REG_L   t1, (KVM_ARCH_HOST_STVEC)(a0)
-> +       REG_L   t2, (KVM_ARCH_HOST_SSCRATCH)(a0)
-> +       REG_L   t3, (KVM_ARCH_HOST_SCOUNTEREN)(a0)
-> +       REG_L   t4, (KVM_ARCH_HOST_HSTATUS)(a0)
-> +       REG_L   t5, (KVM_ARCH_HOST_SSTATUS)(a0)
-> +
->         /* Save Guest SEPC */
->         csrr    t0, CSR_SEPC
-> -       REG_S   t0, (KVM_ARCH_GUEST_SEPC)(a0)
-> -
-> -       /* Restore Host STVEC */
-> -       REG_L   t1, (KVM_ARCH_HOST_STVEC)(a0)
-> -       csrw    CSR_STVEC, t1
->
->         /* Save Guest A0 and Restore Host SSCRATCH */
-> -       REG_L   t2, (KVM_ARCH_HOST_SSCRATCH)(a0)
->         csrrw   t2, CSR_SSCRATCH, t2
-> -       REG_S   t2, (KVM_ARCH_GUEST_A0)(a0)
-> +
-> +       /* Restore Host STVEC */
-> +       csrw    CSR_STVEC, t1
->
->         /* Save Guest and Restore Host SCOUNTEREN */
-> -       REG_L   t3, (KVM_ARCH_HOST_SCOUNTEREN)(a0)
->         csrrw   t3, CSR_SCOUNTEREN, t3
-> -       REG_S   t3, (KVM_ARCH_GUEST_SCOUNTEREN)(a0)
->
->         /* Save Guest and Restore Host HSTATUS */
-> -       REG_L   t4, (KVM_ARCH_HOST_HSTATUS)(a0)
->         csrrw   t4, CSR_HSTATUS, t4
-> -       REG_S   t4, (KVM_ARCH_GUEST_HSTATUS)(a0)
->
->         /* Save Guest and Restore Host SSTATUS */
-> -       REG_L   t5, (KVM_ARCH_HOST_SSTATUS)(a0)
->         csrrw   t5, CSR_SSTATUS, t5
-> +
-> +       /* Store Guest CSR values */
-> +       REG_S   t0, (KVM_ARCH_GUEST_SEPC)(a0)
-> +       REG_S   t2, (KVM_ARCH_GUEST_A0)(a0)
-> +       REG_S   t3, (KVM_ARCH_GUEST_SCOUNTEREN)(a0)
-> +       REG_S   t4, (KVM_ARCH_GUEST_HSTATUS)(a0)
->         REG_S   t5, (KVM_ARCH_GUEST_SSTATUS)(a0)
->
->         /* Restore Host GPRs (except A0 and T0-T6) */
-> --
-> 2.17.1
->
+The PATCH 1 & 2 enables the basic infrastructure around Sstc extension while
+PATCH 3 lets kernel use the Sstc extension if it is available in hardware.
+PATCH 4 & 5 adds the infrastructure for KVM to use sstc while PATCH 6 actually
+uses the Sstc extension if available. 
+
+This series has been tested on Qemu(RV32 & RV64) with additional patches in
+OpenSBI[2] and Qemu[3]. This series can also be found at [4].
+
+[1] https://drive.google.com/file/d/1m84Re2yK8m_vbW7TspvevCDR82MOBaSX/view
+[2] https://github.com/atishp04/opensbi/tree/sstc_v1
+[3] https://github.com/atishp04/qemu/tree/sstc_v1
+[3] https://github.com/atishp04/linux/tree/sstc_v1
+
+Atish Patra (6):
+RISC-V: Add SSTC extension CSR details
+RISC-V: Enable sstc extension parsing from DT
+RISC-V: Prefer sstc extension if available
+RISC-V: Restrict the isa field in config register to base extensions
+RISC-V: KVM: Introduce ISA extension register
+RISC-V: KVM: Support sstc extension
+
+arch/riscv/include/asm/csr.h            |  11 ++
+arch/riscv/include/asm/hwcap.h          |   1 +
+arch/riscv/include/asm/kvm_host.h       |   4 +
+arch/riscv/include/asm/kvm_vcpu_timer.h |   3 +-
+arch/riscv/include/asm/timex.h          |   2 +
+arch/riscv/include/uapi/asm/kvm.h       |  22 ++++
+arch/riscv/kernel/cpu.c                 |   1 +
+arch/riscv/kernel/cpufeature.c          |   4 +-
+arch/riscv/kvm/main.c                   |   8 ++
+arch/riscv/kvm/vcpu.c                   | 111 ++++++++++++++++++-
+arch/riscv/kvm/vcpu_sbi_replace.c       |  10 +-
+arch/riscv/kvm/vcpu_timer.c             | 136 +++++++++++++++++++++++-
+drivers/clocksource/timer-riscv.c       |  22 +++-
+13 files changed, 323 insertions(+), 12 deletions(-)
+
+--
+2.30.2
+
 
