@@ -1,68 +1,42 @@
 From: Atish Patra <atishp@rivosinc.com>
-Date: Fri,  4 Mar 2022 12:10:16 -0800
-Subject: [RFC PATCH v2 3/7] RISC-V: Prefer sstc extension if available
+Date: Fri,  4 Mar 2022 12:10:17 -0800
+Subject: [RFC PATCH v2 4/7] RISC-V: KVM: Remove 's' & 'u' as valid ISA
+ extension
 In-Reply-To: <20220304201020.810380-1-atishp@rivosinc.com>
 References: <20220304201020.810380-1-atishp@rivosinc.com>
-Message-ID: <20220304201020.810380-4-atishp@rivosinc.com>
+Message-ID: <20220304201020.810380-5-atishp@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-RISC-V ISA has sstc extension which allows updating the next clock event
-via a CSR (stimecmp) instead of an SBI call. This should happen dynamically
-if sstc extension is available. Otherwise, it will fallback to SBI call
-to maintain backward compatibility.
+There are no ISA extension defined as 's' & 'u' in RISC-V specifications.
+The misa register defines 's' & 'u' bit as Supervisor/User privilege mode
+enabled. But it should not appear in the ISA extension in the device tree.
+
+Remove those from the allowed ISA extension for kvm.
 
 Signed-off-by: Atish Patra <atishp@rivosinc.com>
 ---
- drivers/clocksource/timer-riscv.c | 21 ++++++++++++++++++++-
- 1 file changed, 20 insertions(+), 1 deletion(-)
+ arch/riscv/kvm/vcpu.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/drivers/clocksource/timer-riscv.c b/drivers/clocksource/timer-riscv.c
-index 1767f8bf2013..d9398ae84a20 100644
---- a/drivers/clocksource/timer-riscv.c
-+++ b/drivers/clocksource/timer-riscv.c
-@@ -23,11 +23,24 @@
- #include <asm/sbi.h>
- #include <asm/timex.h>
+diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+index 624166004e36..3ae545e7b398 100644
+--- a/arch/riscv/kvm/vcpu.c
++++ b/arch/riscv/kvm/vcpu.c
+@@ -43,9 +43,7 @@ const struct kvm_stats_header kvm_vcpu_stats_header = {
+ 				 riscv_isa_extension_mask(d) | \
+ 				 riscv_isa_extension_mask(f) | \
+ 				 riscv_isa_extension_mask(i) | \
+-				 riscv_isa_extension_mask(m) | \
+-				 riscv_isa_extension_mask(s) | \
+-				 riscv_isa_extension_mask(u))
++				 riscv_isa_extension_mask(m))
  
-+static DEFINE_STATIC_KEY_FALSE(riscv_sstc_available);
-+
- static int riscv_clock_next_event(unsigned long delta,
- 		struct clock_event_device *ce)
+ static void kvm_riscv_reset_vcpu(struct kvm_vcpu *vcpu)
  {
-+	uint64_t next_tval = get_cycles64() + delta;
-+
- 	csr_set(CSR_IE, IE_TIE);
--	sbi_set_timer(get_cycles64() + delta);
-+	if (static_branch_likely(&riscv_sstc_available)) {
-+#if __riscv_xlen == 32
-+		csr_write(CSR_STIMECMP, next_tval & 0xFFFFFFFF);
-+		csr_write(CSR_STIMECMPH, next_tval >> 32);
-+#else
-+		csr_write(CSR_STIMECMP, next_tval);
-+#endif
-+	} else
-+		sbi_set_timer(next_tval);
-+
- 	return 0;
- }
- 
-@@ -165,6 +178,12 @@ static int __init riscv_timer_init_dt(struct device_node *n)
- 	if (error)
- 		pr_err("cpu hp setup state failed for RISCV timer [%d]\n",
- 		       error);
-+
-+	if (riscv_isa_extension_available(NULL, SSTC)) {
-+		pr_info("Timer interrupt in S-mode is available via sstc extension\n");
-+		static_branch_enable(&riscv_sstc_available);
-+	}
-+
- 	return error;
- }
- 
 -- 
 2.30.2
 
