@@ -1,66 +1,67 @@
 From: Atish Patra <atishp@rivosinc.com>
-Date: Fri,  4 Mar 2022 12:10:14 -0800
-Subject: [RFC PATCH v2 1/7] RISC-V: Add SSTC extension CSR details
+Date: Fri,  4 Mar 2022 12:10:15 -0800
+Subject: [RFC PATCH v2 2/7] RISC-V: Enable sstc extension parsing from DT
 In-Reply-To: <20220304201020.810380-1-atishp@rivosinc.com>
 References: <20220304201020.810380-1-atishp@rivosinc.com>
-Message-ID: <20220304201020.810380-2-atishp@rivosinc.com>
+Message-ID: <20220304201020.810380-3-atishp@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This patch just introduces the required CSR fields related to the
-SSTC extension.
+The ISA extension framework now allows parsing any multi-letter
+ISA extension.
+
+Enable that for sstc extension.
 
 Signed-off-by: Atish Patra <atishp@rivosinc.com>
 ---
- arch/riscv/include/asm/csr.h | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+ arch/riscv/include/asm/hwcap.h | 1 +
+ arch/riscv/kernel/cpu.c        | 1 +
+ arch/riscv/kernel/cpufeature.c | 4 +++-
+ 3 files changed, 5 insertions(+), 1 deletion(-)
 
-diff --git a/arch/riscv/include/asm/csr.h b/arch/riscv/include/asm/csr.h
-index ae711692eec9..8f37c063a205 100644
---- a/arch/riscv/include/asm/csr.h
-+++ b/arch/riscv/include/asm/csr.h
-@@ -165,6 +165,9 @@
- #define CSR_SIP			0x144
- #define CSR_SATP		0x180
+diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
+index 691fc9c8099b..7335e9138fb7 100644
+--- a/arch/riscv/include/asm/hwcap.h
++++ b/arch/riscv/include/asm/hwcap.h
+@@ -51,6 +51,7 @@ extern unsigned long elf_hwcap;
+  * available logical extension id.
+  */
+ enum riscv_isa_ext_id {
++	RISCV_ISA_EXT_SSTC = RISCV_ISA_EXT_BASE,
+ 	RISCV_ISA_EXT_ID_MAX = RISCV_ISA_EXT_MAX,
+ };
  
-+#define CSR_STIMECMP		0x14D
-+#define CSR_STIMECMPH		0x15D
-+
- #define CSR_VSSTATUS		0x200
- #define CSR_VSIE		0x204
- #define CSR_VSTVEC		0x205
-@@ -174,6 +177,8 @@
- #define CSR_VSTVAL		0x243
- #define CSR_VSIP		0x244
- #define CSR_VSATP		0x280
-+#define CSR_VSTIMECMP		0x24D
-+#define CSR_VSTIMECMPH		0x25D
+diff --git a/arch/riscv/kernel/cpu.c b/arch/riscv/kernel/cpu.c
+index 031ad15a059f..7568c7084a52 100644
+--- a/arch/riscv/kernel/cpu.c
++++ b/arch/riscv/kernel/cpu.c
+@@ -71,6 +71,7 @@ int riscv_of_parent_hartid(struct device_node *node)
+ 	}
  
- #define CSR_HSTATUS		0x600
- #define CSR_HEDELEG		0x602
-@@ -189,6 +194,8 @@
- #define CSR_HTINST		0x64a
- #define CSR_HGATP		0x680
- #define CSR_HGEIP		0xe12
-+#define CSR_HENVCFG		0x60A
-+#define CSR_HENVCFGH		0x61A
+ static struct riscv_isa_ext_data isa_ext_arr[] = {
++	__RISCV_ISA_EXT_DATA(sstc, RISCV_ISA_EXT_SSTC),
+ 	__RISCV_ISA_EXT_DATA("", RISCV_ISA_EXT_MAX),
+ };
  
- #define CSR_MSTATUS		0x300
- #define CSR_MISA		0x301
-@@ -247,6 +254,10 @@
- #define IE_TIE		(_AC(0x1, UL) << RV_IRQ_TIMER)
- #define IE_EIE		(_AC(0x1, UL) << RV_IRQ_EXT)
+diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
+index f3a4b0619aa0..1d8a06575cea 100644
+--- a/arch/riscv/kernel/cpufeature.c
++++ b/arch/riscv/kernel/cpufeature.c
+@@ -192,8 +192,10 @@ void __init riscv_fill_hwcap(void)
+ 			if (!ext_long) {
+ 				this_hwcap |= isa2hwcap[(unsigned char)(*ext)];
+ 				set_bit(*ext - 'a', this_isa);
+-			}
++			} else {
++				SET_ISA_EXT_MAP("sstc", RISCV_ISA_EXT_SSTC);
+ #undef SET_ISA_EXT_MAP
++			}
+ 		}
  
-+/* ENVCFG related bits */
-+#define HENVCFG_STCE	63
-+#define HENVCFGH_STCE	31
-+
- #ifndef __ASSEMBLY__
- 
- #define csr_swap(csr, val)					\
+ 		/*
 -- 
 2.30.2
 
