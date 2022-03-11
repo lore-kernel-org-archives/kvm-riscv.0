@@ -1,60 +1,114 @@
 From: Oliver Upton <oupton@google.com>
-Date: Fri, 11 Mar 2022 17:39:59 +0000
-Subject: [PATCH v4 13/15] selftests: KVM: Use KVM_SET_MP_STATE to power off
- vCPU in psci_test
+Date: Fri, 11 Mar 2022 17:40:01 +0000
+Subject: [PATCH v4 15/15] selftests: KVM: Test SYSTEM_SUSPEND PSCI call
 In-Reply-To: <20220311174001.605719-1-oupton@google.com>
 References: <20220311174001.605719-1-oupton@google.com>
-Message-ID: <20220311174001.605719-14-oupton@google.com>
+Message-ID: <20220311174001.605719-16-oupton@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Setting a vCPU's MP state to KVM_MP_STATE_STOPPED has the effect of
-powering off the vCPU. Rather than using the vCPU init feature flag, use
-the KVM_SET_MP_STATE ioctl to power off the target vCPU.
+Assert that the vCPU exits to userspace with KVM_SYSTEM_EVENT_SUSPEND if
+the guest calls PSCI SYSTEM_SUSPEND. Additionally, guarantee that the
+SMC32 and SMC64 flavors of this call are discoverable with the
+PSCI_FEATURES call.
 
 Signed-off-by: Oliver Upton <oupton@google.com>
 ---
- tools/testing/selftests/kvm/aarch64/psci_test.c | 13 +++++++++++--
- 1 file changed, 11 insertions(+), 2 deletions(-)
+ .../testing/selftests/kvm/aarch64/psci_test.c | 69 +++++++++++++++++++
+ 1 file changed, 69 insertions(+)
 
 diff --git a/tools/testing/selftests/kvm/aarch64/psci_test.c b/tools/testing/selftests/kvm/aarch64/psci_test.c
-index 8c998f0b802c..fe1d5d343a2f 100644
+index 535130d5e97f..88541de21c41 100644
 --- a/tools/testing/selftests/kvm/aarch64/psci_test.c
 +++ b/tools/testing/selftests/kvm/aarch64/psci_test.c
-@@ -60,6 +60,15 @@ static void guest_main(uint64_t target_cpu)
- 	GUEST_DONE();
+@@ -45,6 +45,25 @@ static uint64_t psci_affinity_info(uint64_t target_affinity,
+ 	return res.a0;
  }
  
-+static void vcpu_power_off(struct kvm_vm *vm, uint32_t vcpuid)
++static uint64_t psci_system_suspend(uint64_t entry_addr, uint64_t context_id)
 +{
-+	struct kvm_mp_state mp_state = {
-+		.mp_state = KVM_MP_STATE_STOPPED,
++	struct arm_smccc_res res;
++
++	smccc_hvc(PSCI_1_0_FN64_SYSTEM_SUSPEND, entry_addr, context_id,
++		  0, 0, 0, 0, 0, &res);
++
++	return res.a0;
++}
++
++static uint64_t psci_features(uint32_t func_id)
++{
++	struct arm_smccc_res res;
++
++	smccc_hvc(PSCI_1_0_FN_PSCI_FEATURES, func_id, 0, 0, 0, 0, 0, 0, &res);
++
++	return res.a0;
++}
++
+ static void vcpu_power_off(struct kvm_vm *vm, uint32_t vcpuid)
+ {
+ 	struct kvm_mp_state mp_state = {
+@@ -137,8 +156,58 @@ static void host_test_cpu_on(void)
+ 	kvm_vm_free(vm);
+ }
+ 
++static void enable_system_suspend(struct kvm_vm *vm)
++{
++	struct kvm_enable_cap cap = {
++		.cap = KVM_CAP_ARM_SYSTEM_SUSPEND,
 +	};
 +
-+	vcpu_set_mp_state(vm, vcpuid, &mp_state);
++	vm_enable_cap(vm, &cap);
++}
++
++static void guest_test_system_suspend(void)
++{
++	uint64_t ret;
++
++	/* assert that SYSTEM_SUSPEND is discoverable */
++	GUEST_ASSERT(!psci_features(PSCI_1_0_FN_SYSTEM_SUSPEND));
++	GUEST_ASSERT(!psci_features(PSCI_1_0_FN64_SYSTEM_SUSPEND));
++
++	ret = psci_system_suspend(CPU_ON_ENTRY_ADDR, CPU_ON_CONTEXT_ID);
++	GUEST_SYNC(ret);
++}
++
++static void host_test_system_suspend(void)
++{
++	struct kvm_run *run;
++	struct kvm_vm *vm;
++
++	vm = setup_vm(guest_test_system_suspend);
++	enable_system_suspend(vm);
++
++	vcpu_power_off(vm, VCPU_ID_TARGET);
++	run = vcpu_state(vm, VCPU_ID_SOURCE);
++
++	enter_guest(vm, VCPU_ID_SOURCE);
++
++	TEST_ASSERT(run->exit_reason == KVM_EXIT_SYSTEM_EVENT,
++		    "Unhandled exit reason: %u (%s)",
++		    run->exit_reason, exit_reason_str(run->exit_reason));
++	TEST_ASSERT(run->system_event.type == KVM_SYSTEM_EVENT_SUSPEND,
++		    "Unhandled system event: %u (expected: %u)",
++		    run->system_event.type, KVM_SYSTEM_EVENT_SUSPEND);
++
++	kvm_vm_free(vm);
 +}
 +
  int main(void)
  {
- 	uint64_t target_mpidr, obs_pc, obs_x0;
-@@ -75,12 +84,12 @@ int main(void)
- 	init.features[0] |= (1 << KVM_ARM_VCPU_PSCI_0_2);
- 
- 	aarch64_vcpu_add_default(vm, VCPU_ID_SOURCE, &init, guest_main);
-+	aarch64_vcpu_add_default(vm, VCPU_ID_TARGET, &init, guest_main);
- 
- 	/*
- 	 * make sure the target is already off when executing the test.
- 	 */
--	init.features[0] |= (1 << KVM_ARM_VCPU_POWER_OFF);
--	aarch64_vcpu_add_default(vm, VCPU_ID_TARGET, &init, guest_main);
-+	vcpu_power_off(vm, VCPU_ID_TARGET);
- 
- 	get_reg(vm, VCPU_ID_TARGET, KVM_ARM64_SYS_REG(SYS_MPIDR_EL1), &target_mpidr);
- 	vcpu_args_set(vm, VCPU_ID_SOURCE, 1, target_mpidr & MPIDR_HWID_BITMASK);
++	if (!kvm_check_cap(KVM_CAP_ARM_SYSTEM_SUSPEND)) {
++		print_skip("KVM_CAP_ARM_SYSTEM_SUSPEND not supported");
++		exit(KSFT_SKIP);
++	}
++
+ 	host_test_cpu_on();
++	host_test_system_suspend();
+ 	return 0;
+ }
 -- 
 2.35.1.723.g4982287a31-goog
 
