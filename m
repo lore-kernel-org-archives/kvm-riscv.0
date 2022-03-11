@@ -1,64 +1,102 @@
 From: David Matlack <dmatlack@google.com>
-Date: Fri, 11 Mar 2022 00:25:27 +0000
-Subject: [PATCH v2 25/26] KVM: x86/mmu: Drop NULL pte_list_desc_cache fallback
+Date: Fri, 11 Mar 2022 00:25:28 +0000
+Subject: [PATCH v2 26/26] KVM: selftests: Map x86_64 guest virtual memory with
+ huge pages
 In-Reply-To: <20220311002528.2230172-1-dmatlack@google.com>
 References: <20220311002528.2230172-1-dmatlack@google.com>
-Message-ID: <20220311002528.2230172-26-dmatlack@google.com>
+Message-ID: <20220311002528.2230172-27-dmatlack@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Now that the eager page splitting code no longer passes in NULL cache
-pointers we can get rid of the debug WARN_ON() and allocation fallback.
-While here, also drop the helper function mmu_alloc_pte_list_desc() as
-it no longer serves any purpose.
+Override virt_map() in x86_64 selftests to use the largest page size
+possible when mapping guest virtual memory. This enables testing eager
+page splitting with shadow paging (e.g. kvm_intel.ept=N), as it allows
+KVM to shadow guest memory with huge pages.
 
 Signed-off-by: David Matlack <dmatlack@google.com>
 ---
- arch/x86/kvm/mmu/mmu.c | 14 ++------------
- 1 file changed, 2 insertions(+), 12 deletions(-)
+ .../selftests/kvm/include/x86_64/processor.h  |  6 ++++
+ tools/testing/selftests/kvm/lib/kvm_util.c    |  4 +--
+ .../selftests/kvm/lib/x86_64/processor.c      | 31 +++++++++++++++++++
+ 3 files changed, 39 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
-index 68785b422a08..d2ffebb659e0 100644
---- a/arch/x86/kvm/mmu/mmu.c
-+++ b/arch/x86/kvm/mmu/mmu.c
-@@ -725,16 +725,6 @@ static void mmu_free_memory_caches(struct kvm_vcpu *vcpu)
- 	kvm_mmu_free_memory_cache(&vcpu->arch.mmu_page_header_cache);
+diff --git a/tools/testing/selftests/kvm/include/x86_64/processor.h b/tools/testing/selftests/kvm/include/x86_64/processor.h
+index 37db341d4cc5..efb228d2fbf7 100644
+--- a/tools/testing/selftests/kvm/include/x86_64/processor.h
++++ b/tools/testing/selftests/kvm/include/x86_64/processor.h
+@@ -470,6 +470,12 @@ enum x86_page_size {
+ 	X86_PAGE_SIZE_2M,
+ 	X86_PAGE_SIZE_1G,
+ };
++
++static inline size_t page_size_bytes(enum x86_page_size page_size)
++{
++	return 1UL << (page_size * 9 + 12);
++}
++
+ void __virt_pg_map(struct kvm_vm *vm, uint64_t vaddr, uint64_t paddr,
+ 		   enum x86_page_size page_size);
+ 
+diff --git a/tools/testing/selftests/kvm/lib/kvm_util.c b/tools/testing/selftests/kvm/lib/kvm_util.c
+index 1665a220abcb..60198587236d 100644
+--- a/tools/testing/selftests/kvm/lib/kvm_util.c
++++ b/tools/testing/selftests/kvm/lib/kvm_util.c
+@@ -1432,8 +1432,8 @@ vm_vaddr_t vm_vaddr_alloc_page(struct kvm_vm *vm)
+  * Within the VM given by @vm, creates a virtual translation for
+  * @npages starting at @vaddr to the page range starting@@paddr.
+  */
+-void virt_map(struct kvm_vm *vm, uint64_t vaddr, uint64_t paddr,
+-	      unsigned int npages)
++void __weak virt_map(struct kvm_vm *vm, uint64_t vaddr, uint64_t paddr,
++		     unsigned int npages)
+ {
+ 	size_t page_size = vm->page_size;
+ 	size_t size = npages * page_size;
+diff --git a/tools/testing/selftests/kvm/lib/x86_64/processor.c b/tools/testing/selftests/kvm/lib/x86_64/processor.c
+index 9f000dfb5594..7df84292d5de 100644
+--- a/tools/testing/selftests/kvm/lib/x86_64/processor.c
++++ b/tools/testing/selftests/kvm/lib/x86_64/processor.c
+@@ -282,6 +282,37 @@ void virt_pg_map(struct kvm_vm *vm, uint64_t vaddr, uint64_t paddr)
+ 	__virt_pg_map(vm, vaddr, paddr, X86_PAGE_SIZE_4K);
  }
  
--static struct pte_list_desc *mmu_alloc_pte_list_desc(struct kvm_mmu_memory_cache *cache)
--{
--	static const gfp_t gfp_nocache = GFP_ATOMIC | __GFP_ACCOUNT | __GFP_ZERO;
--
--	if (WARN_ON_ONCE(!cache))
--		return kmem_cache_alloc(pte_list_desc_cache, gfp_nocache);
--
--	return kvm_mmu_memory_cache_alloc(cache);
--}
--
- static void mmu_free_pte_list_desc(struct pte_list_desc *pte_list_desc)
++void virt_map(struct kvm_vm *vm, uint64_t vaddr, uint64_t paddr, unsigned int npages)
++{
++	size_t size = (size_t) npages * vm->page_size;
++	size_t vend = vaddr + size;
++	enum x86_page_size page_size;
++	size_t stride;
++
++	TEST_ASSERT(vaddr + size > vaddr, "Vaddr overflow");
++	TEST_ASSERT(paddr + size > paddr, "Paddr overflow");
++
++	/*
++	 * Map the region with all 1G pages if possible, falling back to all
++	 * 2M pages, and finally all 4K pages. This could be improved to use
++	 * a mix of page sizes so that more of the region is mapped with large
++	 * pages.
++	 */
++	for (page_size = X86_PAGE_SIZE_1G; page_size >= X86_PAGE_SIZE_4K; page_size--) {
++		stride = page_size_bytes(page_size);
++
++		if (!(vaddr % stride) && !(paddr % stride) && !(size % stride))
++			break;
++	}
++
++	TEST_ASSERT(page_size >= X86_PAGE_SIZE_4K,
++		    "Cannot map unaligned region: vaddr 0x%lx paddr 0x%lx npages 0x%x\n",
++		    vaddr, paddr, npages);
++
++	for (; vaddr < vend; vaddr += stride, paddr += stride)
++		__virt_pg_map(vm, vaddr, paddr, page_size);
++}
++
+ static struct pageTableEntry *_vm_get_page_table_entry(struct kvm_vm *vm, int vcpuid,
+ 						       uint64_t vaddr)
  {
- 	kmem_cache_free(pte_list_desc_cache, pte_list_desc);
-@@ -914,7 +904,7 @@ static int pte_list_add(struct kvm_mmu_memory_cache *cache, u64 *spte,
- 		rmap_head->val = (unsigned long)spte;
- 	} else if (!(rmap_head->val & 1)) {
- 		rmap_printk("%p %llx 1->many\n", spte, *spte);
--		desc = mmu_alloc_pte_list_desc(cache);
-+		desc = kvm_mmu_memory_cache_alloc(cache);
- 		desc->sptes[0] = (u64 *)rmap_head->val;
- 		desc->sptes[1] = spte;
- 		desc->spte_count = 2;
-@@ -926,7 +916,7 @@ static int pte_list_add(struct kvm_mmu_memory_cache *cache, u64 *spte,
- 		while (desc->spte_count == PTE_LIST_EXT) {
- 			count += PTE_LIST_EXT;
- 			if (!desc->more) {
--				desc->more = mmu_alloc_pte_list_desc(cache);
-+				desc->more = kvm_mmu_memory_cache_alloc(cache);
- 				desc = desc->more;
- 				desc->spte_count = 0;
- 				break;
 -- 
 2.35.1.723.g4982287a31-goog
 
