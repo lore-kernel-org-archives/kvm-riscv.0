@@ -1,137 +1,155 @@
 From: David Matlack <dmatlack@google.com>
-Date: Fri, 11 Mar 2022 00:25:15 +0000
-Subject: [PATCH v2 13/26] KVM: x86/mmu: Pass const memslot to
- init_shadow_page() and descendants
+Date: Fri, 11 Mar 2022 00:25:16 +0000
+Subject: [PATCH v2 14/26] KVM: x86/mmu: Decouple rmap_add() and
+ link_shadow_page() from kvm_vcpu
 In-Reply-To: <20220311002528.2230172-1-dmatlack@google.com>
 References: <20220311002528.2230172-1-dmatlack@google.com>
-Message-ID: <20220311002528.2230172-14-dmatlack@google.com>
+Message-ID: <20220311002528.2230172-15-dmatlack@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Use a const pointer so that init_shadow_page() can be called from
-contexts where we have a const pointer.
+Allow adding new entries to the rmap and linking shadow pages without a
+struct kvm_vcpu pointer by moving the implementation of rmap_add() and
+link_shadow_page() into inner helper functions.
 
 No functional change intended.
 
 Reviewed-by: Ben Gardon <bgardon@google.com>
 Signed-off-by: David Matlack <dmatlack@google.com>
 ---
- arch/x86/include/asm/kvm_page_track.h | 2 +-
- arch/x86/kvm/mmu/mmu.c                | 6 +++---
- arch/x86/kvm/mmu/mmu_internal.h       | 2 +-
- arch/x86/kvm/mmu/page_track.c         | 4 ++--
- arch/x86/kvm/mmu/tdp_mmu.c            | 2 +-
- arch/x86/kvm/mmu/tdp_mmu.h            | 2 +-
- 6 files changed, 9 insertions(+), 9 deletions(-)
+ arch/x86/kvm/mmu/mmu.c | 43 +++++++++++++++++++++++++++---------------
+ 1 file changed, 28 insertions(+), 15 deletions(-)
 
-diff --git a/arch/x86/include/asm/kvm_page_track.h b/arch/x86/include/asm/kvm_page_track.h
-index eb186bc57f6a..3a2dc183ae9a 100644
---- a/arch/x86/include/asm/kvm_page_track.h
-+++ b/arch/x86/include/asm/kvm_page_track.h
-@@ -58,7 +58,7 @@ int kvm_page_track_create_memslot(struct kvm *kvm,
- 				  unsigned long npages);
- 
- void kvm_slot_page_track_add_page(struct kvm *kvm,
--				  struct kvm_memory_slot *slot, gfn_t gfn,
-+				  const struct kvm_memory_slot *slot, gfn_t gfn,
- 				  enum kvm_page_track_mode mode);
- void kvm_slot_page_track_remove_page(struct kvm *kvm,
- 				     struct kvm_memory_slot *slot, gfn_t gfn,
 diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
-index 23c0a36ac93f..d7ad71be6c52 100644
+index d7ad71be6c52..c57070ed157d 100644
 --- a/arch/x86/kvm/mmu/mmu.c
 +++ b/arch/x86/kvm/mmu/mmu.c
-@@ -794,7 +794,7 @@ void kvm_mmu_gfn_allow_lpage(const struct kvm_memory_slot *slot, gfn_t gfn)
+@@ -725,9 +725,9 @@ static void mmu_free_memory_caches(struct kvm_vcpu *vcpu)
+ 	kvm_mmu_free_memory_cache(&vcpu->arch.mmu_page_header_cache);
  }
  
- static void account_shadowed(struct kvm *kvm,
--			     struct kvm_memory_slot *slot,
-+			     const struct kvm_memory_slot *slot,
- 			     struct kvm_mmu_page *sp)
+-static struct pte_list_desc *mmu_alloc_pte_list_desc(struct kvm_vcpu *vcpu)
++static struct pte_list_desc *mmu_alloc_pte_list_desc(struct kvm_mmu_memory_cache *cache)
  {
- 	gfn_t gfn;
-@@ -1373,7 +1373,7 @@ int kvm_cpu_dirty_log_size(void)
+-	return kvm_mmu_memory_cache_alloc(&vcpu->arch.mmu_pte_list_desc_cache);
++	return kvm_mmu_memory_cache_alloc(cache);
  }
  
- bool kvm_mmu_slot_gfn_write_protect(struct kvm *kvm,
--				    struct kvm_memory_slot *slot, u64 gfn,
-+				    const struct kvm_memory_slot *slot, u64 gfn,
- 				    int min_level)
+ static void mmu_free_pte_list_desc(struct pte_list_desc *pte_list_desc)
+@@ -874,7 +874,7 @@ gfn_to_memslot_dirty_bitmap(struct kvm_vcpu *vcpu, gfn_t gfn,
+ /*
+  * Returns the number of pointers in the rmap chain, not counting the new one.
+  */
+-static int pte_list_add(struct kvm_vcpu *vcpu, u64 *spte,
++static int pte_list_add(struct kvm_mmu_memory_cache *cache, u64 *spte,
+ 			struct kvm_rmap_head *rmap_head)
  {
+ 	struct pte_list_desc *desc;
+@@ -885,7 +885,7 @@ static int pte_list_add(struct kvm_vcpu *vcpu, u64 *spte,
+ 		rmap_head->val = (unsigned long)spte;
+ 	} else if (!(rmap_head->val & 1)) {
+ 		rmap_printk("%p %llx 1->many\n", spte, *spte);
+-		desc = mmu_alloc_pte_list_desc(vcpu);
++		desc = mmu_alloc_pte_list_desc(cache);
+ 		desc->sptes[0] = (u64 *)rmap_head->val;
+ 		desc->sptes[1] = spte;
+ 		desc->spte_count = 2;
+@@ -897,7 +897,7 @@ static int pte_list_add(struct kvm_vcpu *vcpu, u64 *spte,
+ 		while (desc->spte_count == PTE_LIST_EXT) {
+ 			count += PTE_LIST_EXT;
+ 			if (!desc->more) {
+-				desc->more = mmu_alloc_pte_list_desc(vcpu);
++				desc->more = mmu_alloc_pte_list_desc(cache);
+ 				desc = desc->more;
+ 				desc->spte_count = 0;
+ 				break;
+@@ -1596,8 +1596,10 @@ static bool kvm_test_age_rmapp(struct kvm *kvm, struct kvm_rmap_head *rmap_head,
+ 
+ #define RMAP_RECYCLE_THRESHOLD 1000
+ 
+-static void rmap_add(struct kvm_vcpu *vcpu, const struct kvm_memory_slot *slot,
+-		     u64 *spte, gfn_t gfn)
++static void __rmap_add(struct kvm *kvm,
++		       struct kvm_mmu_memory_cache *cache,
++		       const struct kvm_memory_slot *slot,
++		       u64 *spte, gfn_t gfn)
+ {
+ 	struct kvm_mmu_page *sp;
  	struct kvm_rmap_head *rmap_head;
-@@ -2151,7 +2151,7 @@ static struct kvm_mmu_page *kvm_mmu_find_shadow_page(struct kvm_vcpu *vcpu,
+@@ -1606,15 +1608,21 @@ static void rmap_add(struct kvm_vcpu *vcpu, const struct kvm_memory_slot *slot,
+ 	sp = sptep_to_sp(spte);
+ 	kvm_mmu_page_set_gfn(sp, spte - sp->spt, gfn);
+ 	rmap_head = gfn_to_rmap(gfn, sp->role.level, slot);
+-	rmap_count = pte_list_add(vcpu, spte, rmap_head);
++	rmap_count = pte_list_add(cache, spte, rmap_head);
+ 
+ 	if (rmap_count > RMAP_RECYCLE_THRESHOLD) {
+-		kvm_unmap_rmapp(vcpu->kvm, rmap_head, NULL, gfn, sp->role.level, __pte(0));
++		kvm_unmap_rmapp(kvm, rmap_head, NULL, gfn, sp->role.level, __pte(0));
+ 		kvm_flush_remote_tlbs_with_address(
+-				vcpu->kvm, sp->gfn, KVM_PAGES_PER_HPAGE(sp->role.level));
++				kvm, sp->gfn, KVM_PAGES_PER_HPAGE(sp->role.level));
+ 	}
  }
  
- static void init_shadow_page(struct kvm *kvm, struct kvm_mmu_page *sp,
--			     struct kvm_memory_slot *slot, gfn_t gfn,
-+			     const struct kvm_memory_slot *slot, gfn_t gfn,
- 			     union kvm_mmu_page_role role)
++static void rmap_add(struct kvm_vcpu *vcpu, const struct kvm_memory_slot *slot,
++		     u64 *spte, gfn_t gfn)
++{
++	__rmap_add(vcpu->kvm, &vcpu->arch.mmu_pte_list_desc_cache, slot, spte, gfn);
++}
++
+ bool kvm_age_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
  {
- 	struct hlist_head *sp_list;
-diff --git a/arch/x86/kvm/mmu/mmu_internal.h b/arch/x86/kvm/mmu/mmu_internal.h
-index d4e2de5f2a6d..b6e22ba9c654 100644
---- a/arch/x86/kvm/mmu/mmu_internal.h
-+++ b/arch/x86/kvm/mmu/mmu_internal.h
-@@ -134,7 +134,7 @@ int mmu_try_to_unsync_pages(struct kvm *kvm, const struct kvm_memory_slot *slot,
- void kvm_mmu_gfn_disallow_lpage(const struct kvm_memory_slot *slot, gfn_t gfn);
- void kvm_mmu_gfn_allow_lpage(const struct kvm_memory_slot *slot, gfn_t gfn);
- bool kvm_mmu_slot_gfn_write_protect(struct kvm *kvm,
--				    struct kvm_memory_slot *slot, u64 gfn,
-+				    const struct kvm_memory_slot *slot, u64 gfn,
- 				    int min_level);
- void kvm_flush_remote_tlbs_with_address(struct kvm *kvm,
- 					u64 start_gfn, u64 pages);
-diff --git a/arch/x86/kvm/mmu/page_track.c b/arch/x86/kvm/mmu/page_track.c
-index 2e09d1b6249f..3e7901294573 100644
---- a/arch/x86/kvm/mmu/page_track.c
-+++ b/arch/x86/kvm/mmu/page_track.c
-@@ -84,7 +84,7 @@ int kvm_page_track_write_tracking_alloc(struct kvm_memory_slot *slot)
- 	return 0;
+ 	bool young = false;
+@@ -1682,13 +1690,13 @@ static unsigned kvm_page_table_hashfn(gfn_t gfn)
+ 	return hash_64(gfn, KVM_MMU_HASH_SHIFT);
  }
  
--static void update_gfn_track(struct kvm_memory_slot *slot, gfn_t gfn,
-+static void update_gfn_track(const struct kvm_memory_slot *slot, gfn_t gfn,
- 			     enum kvm_page_track_mode mode, short count)
+-static void mmu_page_add_parent_pte(struct kvm_vcpu *vcpu,
++static void mmu_page_add_parent_pte(struct kvm_mmu_memory_cache *cache,
+ 				    struct kvm_mmu_page *sp, u64 *parent_pte)
  {
- 	int index, val;
-@@ -112,7 +112,7 @@ static void update_gfn_track(struct kvm_memory_slot *slot, gfn_t gfn,
-  * @mode: tracking mode, currently only write track is supported.
-  */
- void kvm_slot_page_track_add_page(struct kvm *kvm,
--				  struct kvm_memory_slot *slot, gfn_t gfn,
-+				  const struct kvm_memory_slot *slot, gfn_t gfn,
- 				  enum kvm_page_track_mode mode)
+ 	if (!parent_pte)
+ 		return;
+ 
+-	pte_list_add(vcpu, parent_pte, &sp->parent_ptes);
++	pte_list_add(cache, parent_pte, &sp->parent_ptes);
+ }
+ 
+ static void mmu_page_remove_parent_pte(struct kvm_mmu_page *sp,
+@@ -2307,8 +2315,8 @@ static void shadow_walk_next(struct kvm_shadow_walk_iterator *iterator)
+ 	__shadow_walk_next(iterator, *iterator->sptep);
+ }
+ 
+-static void link_shadow_page(struct kvm_vcpu *vcpu, u64 *sptep,
+-			     struct kvm_mmu_page *sp)
++static void __link_shadow_page(struct kvm_mmu_memory_cache *cache, u64 *sptep,
++			       struct kvm_mmu_page *sp)
  {
+ 	u64 spte;
  
-diff --git a/arch/x86/kvm/mmu/tdp_mmu.c b/arch/x86/kvm/mmu/tdp_mmu.c
-index f285fd76717b..85b7bc333302 100644
---- a/arch/x86/kvm/mmu/tdp_mmu.c
-+++ b/arch/x86/kvm/mmu/tdp_mmu.c
-@@ -1768,7 +1768,7 @@ static bool write_protect_gfn(struct kvm *kvm, struct kvm_mmu_page *root,
-  * Returns true if an SPTE was set and a TLB flush is needed.
-  */
- bool kvm_tdp_mmu_write_protect_gfn(struct kvm *kvm,
--				   struct kvm_memory_slot *slot, gfn_t gfn,
-+				   const struct kvm_memory_slot *slot, gfn_t gfn,
- 				   int min_level)
+@@ -2318,12 +2326,17 @@ static void link_shadow_page(struct kvm_vcpu *vcpu, u64 *sptep,
+ 
+ 	mmu_spte_set(sptep, spte);
+ 
+-	mmu_page_add_parent_pte(vcpu, sp, sptep);
++	mmu_page_add_parent_pte(cache, sp, sptep);
+ 
+ 	if (sp->unsync_children || sp->unsync)
+ 		mark_unsync(sptep);
+ }
+ 
++static void link_shadow_page(struct kvm_vcpu *vcpu, u64 *sptep, struct kvm_mmu_page *sp)
++{
++	__link_shadow_page(&vcpu->arch.mmu_pte_list_desc_cache, sptep, sp);
++}
++
+ static void validate_direct_spte(struct kvm_vcpu *vcpu, u64 *sptep,
+ 				   unsigned direct_access)
  {
- 	struct kvm_mmu_page *root;
-diff --git a/arch/x86/kvm/mmu/tdp_mmu.h b/arch/x86/kvm/mmu/tdp_mmu.h
-index 54bc8118c40a..8308bfa4126b 100644
---- a/arch/x86/kvm/mmu/tdp_mmu.h
-+++ b/arch/x86/kvm/mmu/tdp_mmu.h
-@@ -42,7 +42,7 @@ void kvm_tdp_mmu_zap_collapsible_sptes(struct kvm *kvm,
- 				       const struct kvm_memory_slot *slot);
- 
- bool kvm_tdp_mmu_write_protect_gfn(struct kvm *kvm,
--				   struct kvm_memory_slot *slot, gfn_t gfn,
-+				   const struct kvm_memory_slot *slot, gfn_t gfn,
- 				   int min_level);
- 
- void kvm_tdp_mmu_try_split_huge_pages(struct kvm *kvm,
 -- 
 2.35.1.723.g4982287a31-goog
 
