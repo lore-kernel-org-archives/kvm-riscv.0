@@ -1,103 +1,75 @@
-From: David Matlack <dmatlack@google.com>
-Date: Fri, 11 Mar 2022 00:25:28 +0000
-Subject: [PATCH v2 26/26] KVM: selftests: Map x86_64 guest virtual memory with
- huge pages
-In-Reply-To: <20220311002528.2230172-1-dmatlack@google.com>
-References: <20220311002528.2230172-1-dmatlack@google.com>
-Message-ID: <20220311002528.2230172-27-dmatlack@google.com>
+From: Anup Patel <anup@brainfault.org>
+Date: Fri, 11 Mar 2022 22:32:25 +0530
+Subject: [GIT PULL] KVM/riscv changes for 5.18
+Message-ID: <CAAhSdy1cBkGqBLN7iZY-FUx2BFGoXmxd4WZJemPSRKz6my8cZQ@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Override virt_map() in x86_64 selftests to use the largest page size
-possible when mapping guest virtual memory. This enables testing eager
-page splitting with shadow paging (e.g. kvm_intel.ept=N), as it allows
-KVM to shadow guest memory with huge pages.
+Hi Paolo,
 
-Signed-off-by: David Matlack <dmatlack@google.com>
----
- .../selftests/kvm/include/x86_64/processor.h  |  6 ++++
- tools/testing/selftests/kvm/lib/kvm_util.c    |  4 +--
- .../selftests/kvm/lib/x86_64/processor.c      | 31 +++++++++++++++++++
- 3 files changed, 39 insertions(+), 2 deletions(-)
+We have three KVM RISC-V changes for 5.18 which are:
+1) Prevent KVM_COMPAT from being selected
+2) Refine __kvm_riscv_switch_to() implementation
+3) RISC-V SBI v0.3 support
 
-diff --git a/tools/testing/selftests/kvm/include/x86_64/processor.h b/tools/testing/selftests/kvm/include/x86_64/processor.h
-index 37db341d4cc5..efb228d2fbf7 100644
---- a/tools/testing/selftests/kvm/include/x86_64/processor.h
-+++ b/tools/testing/selftests/kvm/include/x86_64/processor.h
-@@ -470,6 +470,12 @@ enum x86_page_size {
- 	X86_PAGE_SIZE_2M,
- 	X86_PAGE_SIZE_1G,
- };
-+
-+static inline size_t page_size_bytes(enum x86_page_size page_size)
-+{
-+	return 1UL << (page_size * 9 + 12);
-+}
-+
- void __virt_pg_map(struct kvm_vm *vm, uint64_t vaddr, uint64_t paddr,
- 		   enum x86_page_size page_size);
- 
-diff --git a/tools/testing/selftests/kvm/lib/kvm_util.c b/tools/testing/selftests/kvm/lib/kvm_util.c
-index 1665a220abcb..60198587236d 100644
---- a/tools/testing/selftests/kvm/lib/kvm_util.c
-+++ b/tools/testing/selftests/kvm/lib/kvm_util.c
-@@ -1432,8 +1432,8 @@ vm_vaddr_t vm_vaddr_alloc_page(struct kvm_vm *vm)
-  * Within the VM given by @vm, creates a virtual translation for
-  * @npages starting at @vaddr to the page range starting@@paddr.
-  */
--void virt_map(struct kvm_vm *vm, uint64_t vaddr, uint64_t paddr,
--	      unsigned int npages)
-+void __weak virt_map(struct kvm_vm *vm, uint64_t vaddr, uint64_t paddr,
-+		     unsigned int npages)
- {
- 	size_t page_size = vm->page_size;
- 	size_t size = npages * page_size;
-diff --git a/tools/testing/selftests/kvm/lib/x86_64/processor.c b/tools/testing/selftests/kvm/lib/x86_64/processor.c
-index 9f000dfb5594..7df84292d5de 100644
---- a/tools/testing/selftests/kvm/lib/x86_64/processor.c
-+++ b/tools/testing/selftests/kvm/lib/x86_64/processor.c
-@@ -282,6 +282,37 @@ void virt_pg_map(struct kvm_vm *vm, uint64_t vaddr, uint64_t paddr)
- 	__virt_pg_map(vm, vaddr, paddr, X86_PAGE_SIZE_4K);
- }
- 
-+void virt_map(struct kvm_vm *vm, uint64_t vaddr, uint64_t paddr, unsigned int npages)
-+{
-+	size_t size = (size_t) npages * vm->page_size;
-+	size_t vend = vaddr + size;
-+	enum x86_page_size page_size;
-+	size_t stride;
-+
-+	TEST_ASSERT(vaddr + size > vaddr, "Vaddr overflow");
-+	TEST_ASSERT(paddr + size > paddr, "Paddr overflow");
-+
-+	/*
-+	 * Map the region with all 1G pages if possible, falling back to all
-+	 * 2M pages, and finally all 4K pages. This could be improved to use
-+	 * a mix of page sizes so that more of the region is mapped with large
-+	 * pages.
-+	 */
-+	for (page_size = X86_PAGE_SIZE_1G; page_size >= X86_PAGE_SIZE_4K; page_size--) {
-+		stride = page_size_bytes(page_size);
-+
-+		if (!(vaddr % stride) && !(paddr % stride) && !(size % stride))
-+			break;
-+	}
-+
-+	TEST_ASSERT(page_size >= X86_PAGE_SIZE_4K,
-+		    "Cannot map unaligned region: vaddr 0x%lx paddr 0x%lx npages 0x%x\n",
-+		    vaddr, paddr, npages);
-+
-+	for (; vaddr < vend; vaddr += stride, paddr += stride)
-+		__virt_pg_map(vm, vaddr, paddr, page_size);
-+}
-+
- static struct pageTableEntry *_vm_get_page_table_entry(struct kvm_vm *vm, int vcpuid,
- 						       uint64_t vaddr)
- {
--- 
-2.35.1.723.g4982287a31-goog
+I don't expect any other KVM RISC-V changes for 5.18.
 
+Please pull.
+
+Regards,
+Anup
+
+The following changes since commit 4a204f7895878363ca8211f50ec610408c8c70aa:
+
+  KVM: SVM: Allow AVIC support on system w/ physical APIC ID > 255
+(2022-03-08 10:59:12 -0500)
+
+are available in the Git repository at:
+
+  https://github.com/kvm-riscv/linux.git tags/kvm-riscv-5.18-1
+
+for you to fetch changes up to 763c8bed8c05ffcce8cba882e69cd6b03df07019:
+
+  RISC-V: KVM: Implement SBI HSM suspend call (2022-03-11 19:02:39 +0530)
+
+----------------------------------------------------------------
+KVM/riscv changes for 5.18
+
+- Prevent KVM_COMPAT from being selected
+- Refine __kvm_riscv_switch_to() implementation
+- RISC-V SBI v0.3 support
+
+----------------------------------------------------------------
+Anup Patel (6):
+      RISC-V: KVM: Upgrade SBI spec version to v0.3
+      RISC-V: KVM: Add common kvm_riscv_vcpu_sbi_system_reset() function
+      RISC-V: KVM: Implement SBI v0.3 SRST extension
+      RISC-V: Add SBI HSM suspend related defines
+      RISC-V: KVM: Add common kvm_riscv_vcpu_wfi() function
+      RISC-V: KVM: Implement SBI HSM suspend call
+
+Guo Ren (1):
+      KVM: compat: riscv: Prevent KVM_COMPAT from being selected
+
+Vincent Chen (1):
+      RISC-V: KVM: Refine __kvm_riscv_switch_to() implementation
+
+Yang Li (1):
+      RISC-V: KVM: remove unneeded semicolon
+
+ arch/riscv/include/asm/kvm_host.h     |  1 +
+ arch/riscv/include/asm/kvm_vcpu_sbi.h |  5 ++-
+ arch/riscv/include/asm/sbi.h          | 27 +++++++++++++---
+ arch/riscv/kernel/cpu_ops_sbi.c       |  2 +-
+ arch/riscv/kvm/vcpu_exit.c            | 22 +++++++++----
+ arch/riscv/kvm/vcpu_sbi.c             | 19 +++++++++++
+ arch/riscv/kvm/vcpu_sbi_hsm.c         | 18 +++++++++--
+ arch/riscv/kvm/vcpu_sbi_replace.c     | 44 +++++++++++++++++++++++++
+ arch/riscv/kvm/vcpu_sbi_v01.c         | 20 ++----------
+ arch/riscv/kvm/vcpu_switch.S          | 60 ++++++++++++++++++++---------------
+ virt/kvm/Kconfig                      |  2 +-
+ 11 files changed, 161 insertions(+), 59 deletions(-)
 
