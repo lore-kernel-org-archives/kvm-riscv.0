@@ -1,64 +1,148 @@
 From: David Matlack <dmatlack@google.com>
-Date: Fri, 11 Mar 2022 00:25:10 +0000
-Subject: [PATCH v2 08/26] KVM: x86/mmu: Link spt to sp during allocation
+Date: Fri, 11 Mar 2022 00:25:11 +0000
+Subject: [PATCH v2 09/26] KVM: x86/mmu: Move huge page split sp allocation
+ code to mmu.c
 In-Reply-To: <20220311002528.2230172-1-dmatlack@google.com>
 References: <20220311002528.2230172-1-dmatlack@google.com>
-Message-ID: <20220311002528.2230172-9-dmatlack@google.com>
+Message-ID: <20220311002528.2230172-10-dmatlack@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Link the shadow page table to the sp (via set_page_private()) during
-allocation rather than initialization. This is a more logical place to
-do it because allocation time is also where we do the reverse link
-(setting sp->spt).
+Move the code that allocates a new shadow page for splitting huge pages
+into mmu.c. Currently this code is only used by the TDP MMU but it will
+be reused in subsequent commits to also split huge pages mapped by the
+shadow MMU.
 
-This creates one extra call to set_page_private(), but having multiple
-calls to set_page_private() is unavoidable anyway. We either do
-set_page_private() during allocation, which requires 1 per allocation
-function, or we do it during initialization, which requires 1 per
-initialization function.
+While here, also shove the GFP complexity down into the allocation
+function so that it does not have to be duplicated when the shadow MMU
+needs to start allocating SPs for splitting.
 
 No functional change intended.
 
-Suggested-by: Ben Gardon <bgardon@google.com>
 Signed-off-by: David Matlack <dmatlack@google.com>
 ---
- arch/x86/kvm/mmu/tdp_mmu.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ arch/x86/kvm/mmu/mmu.c          | 34 +++++++++++++++++++++++++++++++++
+ arch/x86/kvm/mmu/mmu_internal.h |  2 ++
+ arch/x86/kvm/mmu/tdp_mmu.c      | 34 ++-------------------------------
+ 3 files changed, 38 insertions(+), 32 deletions(-)
 
-diff --git a/arch/x86/kvm/mmu/tdp_mmu.c b/arch/x86/kvm/mmu/tdp_mmu.c
-index af60922906ef..eecb0215e636 100644
---- a/arch/x86/kvm/mmu/tdp_mmu.c
-+++ b/arch/x86/kvm/mmu/tdp_mmu.c
-@@ -274,6 +274,7 @@ static struct kvm_mmu_page *tdp_mmu_alloc_sp(struct kvm_vcpu *vcpu)
- 
- 	sp = kvm_mmu_memory_cache_alloc(&vcpu->arch.mmu_page_header_cache);
- 	sp->spt = kvm_mmu_memory_cache_alloc(&vcpu->arch.mmu_shadow_page_cache);
-+	set_page_private(virt_to_page(sp->spt), (unsigned long)sp);
- 
+diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
+index e866e05c4ba5..c12d5016f6dc 100644
+--- a/arch/x86/kvm/mmu/mmu.c
++++ b/arch/x86/kvm/mmu/mmu.c
+@@ -1722,6 +1722,40 @@ static struct kvm_mmu_page *kvm_mmu_alloc_shadow_page(struct kvm_vcpu *vcpu,
  	return sp;
  }
-@@ -281,8 +282,6 @@ static struct kvm_mmu_page *tdp_mmu_alloc_sp(struct kvm_vcpu *vcpu)
- static void tdp_mmu_init_sp(struct kvm_mmu_page *sp, tdp_ptep_t sptep,
- 			    gfn_t gfn, union kvm_mmu_page_role role)
- {
--	set_page_private(virt_to_page(sp->spt), (unsigned long)sp);
--
- 	sp->role = role;
- 	sp->gfn = gfn;
- 	sp->ptep = sptep;
-@@ -1410,6 +1409,8 @@ static struct kvm_mmu_page *__tdp_mmu_alloc_sp_for_split(gfp_t gfp)
- 		return NULL;
- 	}
  
++/*
++ * Allocate a new shadow page, potentially while holding the MMU lock.
++ *
++ * Huge page splitting always uses direct shadow pages since the huge page is
++ * being mapped directly with a lower level page table. Thus there's no need to
++ * allocate the gfns array.
++ */
++struct kvm_mmu_page *kvm_mmu_alloc_direct_sp_for_split(bool locked)
++{
++	struct kvm_mmu_page *sp;
++	gfp_t gfp;
++
++	/*
++	 * If under the MMU lock, use GFP_NOWAIT to avoid direct reclaim (which
++	 * is slow) and to avoid making any filesystem callbacks (which can end
++	 * up invoking KVM MMU notifiers, resulting in a deadlock).
++	 */
++	gfp = (locked ? GFP_NOWAIT : GFP_KERNEL) | __GFP_ACCOUNT | __GFP_ZERO;
++
++	sp = kmem_cache_alloc(mmu_page_header_cache, gfp);
++	if (!sp)
++		return NULL;
++
++	sp->spt = (void *)__get_free_page(gfp);
++	if (!sp->spt) {
++		kmem_cache_free(mmu_page_header_cache, sp);
++		return NULL;
++	}
++
 +	set_page_private(virt_to_page(sp->spt), (unsigned long)sp);
 +
- 	return sp;
++	return sp;
++}
++
+ static void mark_unsync(u64 *spte);
+ static void kvm_mmu_mark_parents_unsync(struct kvm_mmu_page *sp)
+ {
+diff --git a/arch/x86/kvm/mmu/mmu_internal.h b/arch/x86/kvm/mmu/mmu_internal.h
+index 1bff453f7cbe..a0648e7ddd33 100644
+--- a/arch/x86/kvm/mmu/mmu_internal.h
++++ b/arch/x86/kvm/mmu/mmu_internal.h
+@@ -171,4 +171,6 @@ void *mmu_memory_cache_alloc(struct kvm_mmu_memory_cache *mc);
+ void account_huge_nx_page(struct kvm *kvm, struct kvm_mmu_page *sp);
+ void unaccount_huge_nx_page(struct kvm *kvm, struct kvm_mmu_page *sp);
+ 
++struct kvm_mmu_page *kvm_mmu_alloc_direct_sp_for_split(bool locked);
++
+ #endif /* __KVM_X86_MMU_INTERNAL_H */
+diff --git a/arch/x86/kvm/mmu/tdp_mmu.c b/arch/x86/kvm/mmu/tdp_mmu.c
+index eecb0215e636..1a43f908d508 100644
+--- a/arch/x86/kvm/mmu/tdp_mmu.c
++++ b/arch/x86/kvm/mmu/tdp_mmu.c
+@@ -1393,43 +1393,13 @@ bool kvm_tdp_mmu_wrprot_slot(struct kvm *kvm,
+ 	return spte_set;
  }
  
+-static struct kvm_mmu_page *__tdp_mmu_alloc_sp_for_split(gfp_t gfp)
+-{
+-	struct kvm_mmu_page *sp;
+-
+-	gfp |= __GFP_ZERO;
+-
+-	sp = kmem_cache_alloc(mmu_page_header_cache, gfp);
+-	if (!sp)
+-		return NULL;
+-
+-	sp->spt = (void *)__get_free_page(gfp);
+-	if (!sp->spt) {
+-		kmem_cache_free(mmu_page_header_cache, sp);
+-		return NULL;
+-	}
+-
+-	set_page_private(virt_to_page(sp->spt), (unsigned long)sp);
+-
+-	return sp;
+-}
+-
+ static struct kvm_mmu_page *tdp_mmu_alloc_sp_for_split(struct kvm *kvm,
+ 						       struct tdp_iter *iter,
+ 						       bool shared)
+ {
+ 	struct kvm_mmu_page *sp;
+ 
+-	/*
+-	 * Since we are allocating while under the MMU lock we have to be
+-	 * careful about GFP flags. Use GFP_NOWAIT to avoid blocking on direct
+-	 * reclaim and to avoid making any filesystem callbacks (which can end
+-	 * up invoking KVM MMU notifiers, resulting in a deadlock).
+-	 *
+-	 * If this allocation fails we drop the lock and retry with reclaim
+-	 * allowed.
+-	 */
+-	sp = __tdp_mmu_alloc_sp_for_split(GFP_NOWAIT | __GFP_ACCOUNT);
++	sp = kvm_mmu_alloc_direct_sp_for_split(true);
+ 	if (sp)
+ 		return sp;
+ 
+@@ -1441,7 +1411,7 @@ static struct kvm_mmu_page *tdp_mmu_alloc_sp_for_split(struct kvm *kvm,
+ 		write_unlock(&kvm->mmu_lock);
+ 
+ 	iter->yielded = true;
+-	sp = __tdp_mmu_alloc_sp_for_split(GFP_KERNEL_ACCOUNT);
++	sp = kvm_mmu_alloc_direct_sp_for_split(false);
+ 
+ 	if (shared)
+ 		read_lock(&kvm->mmu_lock);
 -- 
 2.35.1.723.g4982287a31-goog
 
