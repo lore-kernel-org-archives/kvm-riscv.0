@@ -1,30 +1,89 @@
 From: Peter Xu <peterx@redhat.com>
-Date: Tue, 15 Mar 2022 15:46:34 +0800
-Subject: [PATCH v2 02/26] KVM: x86/mmu: Use a bool for direct
-In-Reply-To: <20220311002528.2230172-3-dmatlack@google.com>
+Date: Tue, 15 Mar 2022 16:15:17 +0800
+Subject: [PATCH v2 03/26] KVM: x86/mmu: Derive shadow MMU page role from
+ parent
+In-Reply-To: <20220311002528.2230172-4-dmatlack@google.com>
 References: <20220311002528.2230172-1-dmatlack@google.com>
- <20220311002528.2230172-3-dmatlack@google.com>
-Message-ID: <YjBEWm3YsuSKj+ES@xz-m1.local>
+ <20220311002528.2230172-4-dmatlack@google.com>
+Message-ID: <YjBLFZWtdfwhNosG@xz-m1.local>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Mar 11, 2022 at 12:25:04AM +0000, David Matlack wrote:
-> The parameter "direct" can either be true or false, and all of the
-> callers pass in a bool variable or true/false literal, so just use the
-> type bool.
+On Fri, Mar 11, 2022 at 12:25:05AM +0000, David Matlack wrote:
+> Instead of computing the shadow page role from scratch for every new
+> page, we can derive most of the information from the parent shadow page.
+> This avoids redundant calculations and reduces the number of parameters
+> to kvm_mmu_get_page().
+> 
+> Preemptively split out the role calculation to a separate function for
+> use in a following commit.
 > 
 > No functional change intended.
 > 
 > Signed-off-by: David Matlack <dmatlack@google.com>
 
-If we care about this.. how about convert another one altogether?
+Looks right..
 
-TRACE_EVENT(kvm_hv_stimer_expiration,
-	TP_PROTO(int vcpu_id, int timer_index, int direct, int msg_send_result),
-	TP_ARGS(vcpu_id, timer_index, direct, msg_send_result),
+Reviewed-by: Peter Xu <peterx@redhat.com>
+
+Two more comments/questions below.
+
+> +static union kvm_mmu_page_role kvm_mmu_child_role(u64 *sptep, bool direct, u32 access)
+> +{
+> +	struct kvm_mmu_page *parent_sp = sptep_to_sp(sptep);
+> +	union kvm_mmu_page_role role;
+> +
+> +	role = parent_sp->role;
+> +	role.level--;
+> +	role.access = access;
+> +	role.direct = direct;
+> +
+> +	/*
+> +	 * If the guest has 4-byte PTEs then that means it's using 32-bit,
+> +	 * 2-level, non-PAE paging. KVM shadows such guests using 4 PAE page
+> +	 * directories, each mapping 1/4 of the guest's linear address space
+> +	 * (1GiB). The shadow pages for those 4 page directories are
+> +	 * pre-allocated and assigned a separate quadrant in their role.
+> +	 *
+> +	 * Since we are allocating a child shadow page and there are only 2
+> +	 * levels, this must be a PG_LEVEL_4K shadow page. Here the quadrant
+> +	 * will either be 0 or 1 because it maps 1/2 of the address space mapped
+> +	 * by the guest's PG_LEVEL_4K page table (or 4MiB huge page) that it
+> +	 * is shadowing. In this case, the quadrant can be derived by the index
+> +	 * of the SPTE that points to the new child shadow page in the page
+> +	 * directory (parent_sp). Specifically, every 2 SPTEs in parent_sp
+> +	 * shadow one half of a guest's page table (or 4MiB huge page) so the
+> +	 * quadrant is just the parity of the index of the SPTE.
+> +	 */
+> +	if (role.has_4_byte_gpte) {
+> +		BUG_ON(role.level != PG_LEVEL_4K);
+> +		role.quadrant = (sptep - parent_sp->spt) % 2;
+> +	}
+
+This made me wonder whether role.quadrant can be dropped, because it seems
+it can be calculated out of the box with has_4_byte_gpte, level and spte
+offset.  I could have missed something, though..
+
+> +
+> +	return role;
+> +}
+> +
+> +static struct kvm_mmu_page *kvm_mmu_get_child_sp(struct kvm_vcpu *vcpu,
+> +						 u64 *sptep, gfn_t gfn,
+> +						 bool direct, u32 access)
+> +{
+> +	union kvm_mmu_page_role role;
+> +
+> +	role = kvm_mmu_child_role(sptep, direct, access);
+> +	return kvm_mmu_get_page(vcpu, gfn, role);
+
+Nit: it looks nicer to just drop the temp var?
+
+        return kvm_mmu_get_page(vcpu, gfn,
+                                kvm_mmu_child_role(sptep, direct, access));
 
 Thanks,
 
