@@ -1,39 +1,32 @@
 From: Peter Xu <peterx@redhat.com>
-Date: Tue, 15 Mar 2022 15:40:05 +0800
-Subject: [PATCH v2 01/26] KVM: x86/mmu: Optimize MMU page cache lookup
- for all direct SPs
-In-Reply-To: <20220311002528.2230172-2-dmatlack@google.com>
+Date: Tue, 15 Mar 2022 15:46:34 +0800
+Subject: [PATCH v2 02/26] KVM: x86/mmu: Use a bool for direct
+In-Reply-To: <20220311002528.2230172-3-dmatlack@google.com>
 References: <20220311002528.2230172-1-dmatlack@google.com>
- <20220311002528.2230172-2-dmatlack@google.com>
-Message-ID: <YjBC1ZLio2iPkZ0V@xz-m1.local>
+ <20220311002528.2230172-3-dmatlack@google.com>
+Message-ID: <YjBEWm3YsuSKj+ES@xz-m1.local>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Mar 11, 2022 at 12:25:03AM +0000, David Matlack wrote:
-> Commit fb58a9c345f6 ("KVM: x86/mmu: Optimize MMU page cache lookup for
-> fully direct MMUs") skipped the unsync checks and write flood clearing
-> for full direct MMUs. We can extend this further and skip the checks for
-> all direct shadow pages. Direct shadow pages are never marked unsynced
-> or have a non-zero write-flooding count.
-
-Nit: IMHO it's better to spell out the exact functional change, IIUC those
-are the direct mapped SPs where guest uses huge pages but host uses only
-small pages for the shadowing?
-
-> 
-> Checking sp->role.direct alos generates better code than checking
-> direct_map because, due to register pressure, direct_map has to get
-> shoved onto the stack and then pulled back off.
+On Fri, Mar 11, 2022 at 12:25:04AM +0000, David Matlack wrote:
+> The parameter "direct" can either be true or false, and all of the
+> callers pass in a bool variable or true/false literal, so just use the
+> type bool.
 > 
 > No functional change intended.
 > 
-> Reviewed-by: Sean Christopherson <seanjc@google.com>
 > Signed-off-by: David Matlack <dmatlack@google.com>
 
-Reviewed-by: Peter Xu <peterx@redhat.com>
+If we care about this.. how about convert another one altogether?
+
+TRACE_EVENT(kvm_hv_stimer_expiration,
+	TP_PROTO(int vcpu_id, int timer_index, int direct, int msg_send_result),
+	TP_ARGS(vcpu_id, timer_index, direct, msg_send_result),
+
+Thanks,
 
 -- 
 Peter Xu
