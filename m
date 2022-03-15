@@ -1,26 +1,31 @@
 From: Peter Xu <peterx@redhat.com>
-Date: Tue, 15 Mar 2022 18:22:46 +0800
-Subject: [PATCH v2 10/26] KVM: x86/mmu: Use common code to free
- kvm_mmu_page structs
-In-Reply-To: <20220311002528.2230172-11-dmatlack@google.com>
+Date: Tue, 15 Mar 2022 18:27:12 +0800
+Subject: [PATCH v2 11/26] KVM: x86/mmu: Use common code to allocate
+ kvm_mmu_page structs from vCPU caches
+In-Reply-To: <20220311002528.2230172-12-dmatlack@google.com>
 References: <20220311002528.2230172-1-dmatlack@google.com>
- <20220311002528.2230172-11-dmatlack@google.com>
-Message-ID: <YjBo9iuSBm1hbqXz@xz-m1.local>
+ <20220311002528.2230172-12-dmatlack@google.com>
+Message-ID: <YjBqAL+bPmcQpTgM@xz-m1.local>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Mar 11, 2022 at 12:25:12AM +0000, David Matlack wrote:
->  static void tdp_mmu_free_sp(struct kvm_mmu_page *sp)
+On Fri, Mar 11, 2022 at 12:25:13AM +0000, David Matlack wrote:
+>  static struct kvm_mmu_page *tdp_mmu_alloc_sp(struct kvm_vcpu *vcpu)
 >  {
-> -	free_page((unsigned long)sp->spt);
-> -	kmem_cache_free(mmu_page_header_cache, sp);
-> +	kvm_mmu_free_shadow_page(sp);
+> -	struct kvm_mmu_page *sp;
+> -
+> -	sp = kvm_mmu_memory_cache_alloc(&vcpu->arch.mmu_page_header_cache);
+> -	sp->spt = kvm_mmu_memory_cache_alloc(&vcpu->arch.mmu_shadow_page_cache);
+> -	set_page_private(virt_to_page(sp->spt), (unsigned long)sp);
+> -
+> -	return sp;
+> +	return kvm_mmu_alloc_shadow_page(vcpu, true);
 >  }
 
-Perhaps tdp_mmu_free_sp() can be dropped altogether with this?
+Similarly I had a feeling we could drop tdp_mmu_alloc_sp() too.. anyway:
 
 Reviewed-by: Peter Xu <peterx@redhat.com>
 
