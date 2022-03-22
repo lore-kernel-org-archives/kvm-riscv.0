@@ -1,53 +1,71 @@
 From: Oliver Upton <oupton@google.com>
-Date: Tue, 22 Mar 2022 06:51:20 +0000
-Subject: [PATCH v4 08/15] KVM: arm64: Return a value from
- check_vcpu_requests()
-In-Reply-To: <CAAeT=FwmU1Ej8zc4wB15TRRH6dH9xK7621gO12ib2QjHW11=NA@mail.gmail.com>
+Date: Tue, 22 Mar 2022 06:52:35 +0000
+Subject: [PATCH v4 07/15] KVM: Create helper for setting a system event
+ exit
+In-Reply-To: <CAAhSdy3mH5JQ9N9JzbUpBw3ZdqKtLretsUKL3WAdMhpEXVmJRg@mail.gmail.com>
 References: <20220311174001.605719-1-oupton@google.com>
- <20220311174001.605719-9-oupton@google.com>
- <CAAeT=FwmU1Ej8zc4wB15TRRH6dH9xK7621gO12ib2QjHW11=NA@mail.gmail.com>
-Message-ID: <Yjlx6JKTRbzwAE7o@google.com>
+ <20220311174001.605719-8-oupton@google.com>
+ <CAAhSdy3mH5JQ9N9JzbUpBw3ZdqKtLretsUKL3WAdMhpEXVmJRg@mail.gmail.com>
+Message-ID: <YjlyM6/WFMB4JnHF@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Mar 21, 2022 at 11:21:15PM -0700, Reiji Watanabe wrote:
-> Hi Oliver,
-> 
-> On Fri, Mar 11, 2022 at 9:41 AM Oliver Upton <oupton@google.com> wrote:
+On Sat, Mar 19, 2022 at 12:58:28PM +0530, Anup Patel wrote:
+> On Fri, Mar 11, 2022 at 11:11 PM Oliver Upton <oupton@google.com> wrote:
 > >
-> > A subsequent change to KVM will introduce a vCPU request that could
-> > result in an exit to userspace. Change check_vcpu_requests() to return a
-> > value and document the function. Unconditionally return 1 for now.
+> > Create a helper that appropriately configures kvm_run for a system event
+> > exit.
 > >
+> > No functional change intended.
+> >
+> > Suggested-by: Marc Zyngier <maz@kernel.org>
 > > Signed-off-by: Oliver Upton <oupton@google.com>
+> > Acked-by: Anup Patel <anup@brainfault.org>
 > > ---
-> >  arch/arm64/kvm/arm.c | 16 ++++++++++++++--
-> >  1 file changed, 14 insertions(+), 2 deletions(-)
+> >  arch/arm64/kvm/psci.c         | 5 +----
+> >  arch/riscv/kvm/vcpu_sbi_v01.c | 4 +---
+> >  arch/x86/kvm/x86.c            | 6 ++----
+> >  include/linux/kvm_host.h      | 2 ++
+> >  virt/kvm/kvm_main.c           | 8 ++++++++
+> >  5 files changed, 14 insertions(+), 11 deletions(-)
 > >
-> > diff --git a/arch/arm64/kvm/arm.c b/arch/arm64/kvm/arm.c
-> > index 7c297ddc8177..8eed0556ccaa 100644
-> > --- a/arch/arm64/kvm/arm.c
-> > +++ b/arch/arm64/kvm/arm.c
-> > @@ -648,7 +648,16 @@ void kvm_vcpu_wfi(struct kvm_vcpu *vcpu)
-> >         preempt_enable();
+> > diff --git a/arch/arm64/kvm/psci.c b/arch/arm64/kvm/psci.c
+> > index efd4428fda1c..78266716165e 100644
+> > --- a/arch/arm64/kvm/psci.c
+> > +++ b/arch/arm64/kvm/psci.c
+> > @@ -173,10 +173,7 @@ static void kvm_prepare_system_event(struct kvm_vcpu *vcpu, u32 type, u64 flags)
+> >                 tmp->arch.mp_state.mp_state = KVM_MP_STATE_STOPPED;
+> >         kvm_make_all_cpus_request(vcpu->kvm, KVM_REQ_SLEEP);
+> >
+> > -       memset(&vcpu->run->system_event, 0, sizeof(vcpu->run->system_event));
+> > -       vcpu->run->system_event.type = type;
+> > -       vcpu->run->system_event.flags = flags;
+> > -       vcpu->run->exit_reason = KVM_EXIT_SYSTEM_EVENT;
+> > +       kvm_vcpu_set_system_event_exit(vcpu, type, flags);
 > >  }
 > >
-> > -static void check_vcpu_requests(struct kvm_vcpu *vcpu)
-> > +/**
-> > + * check_vcpu_requests - check and handle pending vCPU requests
-> > + * @vcpu:      the VCPU pointer
-> > + *
-> > + * Return: 1 if we should enter the guest
-> > + *        0 if we should exit to userspace
-> > + *        <= 0 if we should exit to userspace, where the return value indicates
-> > + *        an error
+> >  static void kvm_psci_system_off(struct kvm_vcpu *vcpu)
+> > diff --git a/arch/riscv/kvm/vcpu_sbi_v01.c b/arch/riscv/kvm/vcpu_sbi_v01.c
+> > index 07e2de14433a..c5581008dd88 100644
+> > --- a/arch/riscv/kvm/vcpu_sbi_v01.c
+> > +++ b/arch/riscv/kvm/vcpu_sbi_v01.c
+> > @@ -24,9 +24,7 @@ static void kvm_sbi_system_shutdown(struct kvm_vcpu *vcpu,
+> >                 tmp->arch.power_off = true;
+> >         kvm_make_all_cpus_request(vcpu->kvm, KVM_REQ_SLEEP);
+> >
+> > -       memset(&run->system_event, 0, sizeof(run->system_event));
+> > -       run->system_event.type = type;
+> > -       run->exit_reason = KVM_EXIT_SYSTEM_EVENT;
+> > +       kvm_vcpu_set_system_event_exit(vcpu, type, 0);
 > 
-> Nit: Shouldn't "<= 0" be "< 0" ?
+> This patch needs to be rebased on the latest kvm/next because we have
+> done some refactoring to support SBI v0.3 SRST extension.
 
-It definitely should. I'll fold this in to the next spin.
+Sure thing, I've already picked up some fixes anyhow so not a problem.
+Thank you for letting me know directly about the conflict though :)
 
 --
 Thanks,
