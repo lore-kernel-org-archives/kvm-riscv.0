@@ -1,38 +1,91 @@
 From: David Matlack <dmatlack@google.com>
-Date: Tue, 22 Mar 2022 14:35:25 -0700
-Subject: [PATCH v2 05/26] KVM: x86/mmu: Rename shadow MMU functions that
- deal with shadow pages
-In-Reply-To: <YjBTtz6wo/zQEHCv@xz-m1.local>
+Date: Tue, 22 Mar 2022 15:05:39 -0700
+Subject: [PATCH v2 06/26] KVM: x86/mmu: Pass memslot to
+ kvm_mmu_new_shadow_page()
+In-Reply-To: <YjBWdv3nEk3Cz40m@xz-m1.local>
 References: <20220311002528.2230172-1-dmatlack@google.com>
- <20220311002528.2230172-6-dmatlack@google.com>
- <YjBTtz6wo/zQEHCv@xz-m1.local>
-Message-ID: <CALzav=c0ccztDULiVMwR4K20iYc0WH53ApeOCorhjKwaMNL5Sg@mail.gmail.com>
+ <20220311002528.2230172-7-dmatlack@google.com>
+ <YjBWdv3nEk3Cz40m@xz-m1.local>
+Message-ID: <CALzav=dmfFNvitGvO-RCnxmqHpSiQN68JV6Q+UTem8Wfwma+wA@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Mar 15, 2022 at 1:52 AM Peter Xu <peterx@redhat.com> wrote:
+On Tue, Mar 15, 2022 at 2:04 AM Peter Xu <peterx@redhat.com> wrote:
 >
-> On Fri, Mar 11, 2022 at 12:25:07AM +0000, David Matlack wrote:
-> > Rename 3 functions:
+> On Fri, Mar 11, 2022 at 12:25:08AM +0000, David Matlack wrote:
+> > Passing the memslot to kvm_mmu_new_shadow_page() avoids the need for the
+> > vCPU pointer when write-protecting indirect 4k shadow pages. This moves
+> > us closer to being able to create new shadow pages during VM ioctls for
+> > eager page splitting, where there is not vCPU pointer.
 > >
-> >   kvm_mmu_get_page()   -> kvm_mmu_get_shadow_page()
-> >   kvm_mmu_alloc_page() -> kvm_mmu_alloc_shadow_page()
-> >   kvm_mmu_free_page()  -> kvm_mmu_free_shadow_page()
+> > This change does not negatively impact "Populate memory time" for ept=Y
+> > or ept=N configurations since kvm_vcpu_gfn_to_memslot() caches the last
+> > use slot. So even though we now look up the slot more often, it is a
+> > very cheap check.
 > >
-> > This change makes it clear that these functions deal with shadow pages
-> > rather than struct pages. Prefer "shadow_page" over the shorter "sp"
-> > since these are core routines.
+> > Opportunistically move the code to write-protect GFNs shadowed by
+> > PG_LEVEL_4K shadow pages into account_shadowed() to reduce indentation
+> > and consolidate the code. This also eliminates a memslot lookup.
+> >
+> > No functional change intended.
 > >
 > > Signed-off-by: David Matlack <dmatlack@google.com>
+> > ---
+> >  arch/x86/kvm/mmu/mmu.c | 23 ++++++++++++-----------
+> >  1 file changed, 12 insertions(+), 11 deletions(-)
+> >
+> > diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
+> > index b6fb50e32291..519910938478 100644
+> > --- a/arch/x86/kvm/mmu/mmu.c
+> > +++ b/arch/x86/kvm/mmu/mmu.c
+> > @@ -793,16 +793,14 @@ void kvm_mmu_gfn_allow_lpage(const struct kvm_memory_slot *slot, gfn_t gfn)
+> >       update_gfn_disallow_lpage_count(slot, gfn, -1);
+> >  }
+> >
+> > -static void account_shadowed(struct kvm *kvm, struct kvm_mmu_page *sp)
+> > +static void account_shadowed(struct kvm *kvm,
+> > +                          struct kvm_memory_slot *slot,
+> > +                          struct kvm_mmu_page *sp)
+> >  {
+> > -     struct kvm_memslots *slots;
+> > -     struct kvm_memory_slot *slot;
+> >       gfn_t gfn;
+> >
+> >       kvm->arch.indirect_shadow_pages++;
+> >       gfn = sp->gfn;
+> > -     slots = kvm_memslots_for_spte_role(kvm, sp->role);
+> > -     slot = __gfn_to_memslot(slots, gfn);
+> >
+> >       /* the non-leaf shadow pages are keeping readonly. */
+> >       if (sp->role.level > PG_LEVEL_4K)
+> > @@ -810,6 +808,9 @@ static void account_shadowed(struct kvm *kvm, struct kvm_mmu_page *sp)
+> >                                                   KVM_PAGE_TRACK_WRITE);
+> >
+> >       kvm_mmu_gfn_disallow_lpage(slot, gfn);
+> > +
+> > +     if (kvm_mmu_slot_gfn_write_protect(kvm, slot, gfn, PG_LEVEL_4K))
+> > +             kvm_flush_remote_tlbs_with_address(kvm, gfn, 1);
 >
-> Acked-by: Peter Xu <peterx@redhat.com>
+> It's not immediately obvious in this diff, but when looking at the code
+> yeah it looks right to just drop the 4K check..
 
-What's the reason to use Acked-by for this patch but Reviewed-by for others?
+Yeah it's a bit subtle but (as you probably noticed) account_shadowed()
+returns early if the level is above PG_LEVEL_4K.
 
 
+>
+> I also never understood why we only write-track the >1 levels but only
+> wr-protect the last level.  It'll be great if there's quick answer from
+> anyone.. even though it's probably unrelated to the patch.
+>
+> The change looks all correct:
+>
+> Reviewed-by: Peter Xu <peterx@redhat.com>
+>
+> Thanks,
 >
 > --
 > Peter Xu
