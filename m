@@ -1,73 +1,47 @@
-From: Oliver Upton <oupton@google.com>
-Date: Tue, 22 Mar 2022 06:52:35 +0000
-Subject: [PATCH v4 07/15] KVM: Create helper for setting a system event
- exit
-In-Reply-To: <CAAhSdy3mH5JQ9N9JzbUpBw3ZdqKtLretsUKL3WAdMhpEXVmJRg@mail.gmail.com>
-References: <20220311174001.605719-1-oupton@google.com>
- <20220311174001.605719-8-oupton@google.com>
- <CAAhSdy3mH5JQ9N9JzbUpBw3ZdqKtLretsUKL3WAdMhpEXVmJRg@mail.gmail.com>
-Message-ID: <YjlyM6/WFMB4JnHF@google.com>
+From: David Matlack <dmatlack@google.com>
+Date: Tue, 22 Mar 2022 11:16:59 -0700
+Subject: [PATCH v2 01/26] KVM: x86/mmu: Optimize MMU page cache lookup for
+ all direct SPs
+In-Reply-To: <YjBC1ZLio2iPkZ0V@xz-m1.local>
+References: <20220311002528.2230172-1-dmatlack@google.com>
+ <20220311002528.2230172-2-dmatlack@google.com>
+ <YjBC1ZLio2iPkZ0V@xz-m1.local>
+Message-ID: <CALzav=dx2rm7xm07x0iEMiS1jzNoU2cOT-mtA9=P6C1riOe2AQ@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sat, Mar 19, 2022 at 12:58:28PM +0530, Anup Patel wrote:
-> On Fri, Mar 11, 2022 at 11:11 PM Oliver Upton <oupton@google.com> wrote:
+On Tue, Mar 15, 2022 at 12:40 AM Peter Xu <peterx@redhat.com> wrote:
+>
+> On Fri, Mar 11, 2022 at 12:25:03AM +0000, David Matlack wrote:
+> > Commit fb58a9c345f6 ("KVM: x86/mmu: Optimize MMU page cache lookup for
+> > fully direct MMUs") skipped the unsync checks and write flood clearing
+> > for full direct MMUs. We can extend this further and skip the checks for
+> > all direct shadow pages. Direct shadow pages are never marked unsynced
+> > or have a non-zero write-flooding count.
+>
+> Nit: IMHO it's better to spell out the exact functional change, IIUC those
+> are the direct mapped SPs where guest uses huge pages but host uses only
+> small pages for the shadowing?
+
+Yes that's correct. I'll include that in the commit message in the next version.
+
+>
 > >
-> > Create a helper that appropriately configures kvm_run for a system event
-> > exit.
+> > Checking sp->role.direct alos generates better code than checking
+> > direct_map because, due to register pressure, direct_map has to get
+> > shoved onto the stack and then pulled back off.
 > >
 > > No functional change intended.
 > >
-> > Suggested-by: Marc Zyngier <maz@kernel.org>
-> > Signed-off-by: Oliver Upton <oupton@google.com>
-> > Acked-by: Anup Patel <anup@brainfault.org>
-> > ---
-> >  arch/arm64/kvm/psci.c         | 5 +----
-> >  arch/riscv/kvm/vcpu_sbi_v01.c | 4 +---
-> >  arch/x86/kvm/x86.c            | 6 ++----
-> >  include/linux/kvm_host.h      | 2 ++
-> >  virt/kvm/kvm_main.c           | 8 ++++++++
-> >  5 files changed, 14 insertions(+), 11 deletions(-)
-> >
-> > diff --git a/arch/arm64/kvm/psci.c b/arch/arm64/kvm/psci.c
-> > index efd4428fda1c..78266716165e 100644
-> > --- a/arch/arm64/kvm/psci.c
-> > +++ b/arch/arm64/kvm/psci.c
-> > @@ -173,10 +173,7 @@ static void kvm_prepare_system_event(struct kvm_vcpu *vcpu, u32 type, u64 flags)
-> >                 tmp->arch.mp_state.mp_state = KVM_MP_STATE_STOPPED;
-> >         kvm_make_all_cpus_request(vcpu->kvm, KVM_REQ_SLEEP);
-> >
-> > -       memset(&vcpu->run->system_event, 0, sizeof(vcpu->run->system_event));
-> > -       vcpu->run->system_event.type = type;
-> > -       vcpu->run->system_event.flags = flags;
-> > -       vcpu->run->exit_reason = KVM_EXIT_SYSTEM_EVENT;
-> > +       kvm_vcpu_set_system_event_exit(vcpu, type, flags);
-> >  }
-> >
-> >  static void kvm_psci_system_off(struct kvm_vcpu *vcpu)
-> > diff --git a/arch/riscv/kvm/vcpu_sbi_v01.c b/arch/riscv/kvm/vcpu_sbi_v01.c
-> > index 07e2de14433a..c5581008dd88 100644
-> > --- a/arch/riscv/kvm/vcpu_sbi_v01.c
-> > +++ b/arch/riscv/kvm/vcpu_sbi_v01.c
-> > @@ -24,9 +24,7 @@ static void kvm_sbi_system_shutdown(struct kvm_vcpu *vcpu,
-> >                 tmp->arch.power_off = true;
-> >         kvm_make_all_cpus_request(vcpu->kvm, KVM_REQ_SLEEP);
-> >
-> > -       memset(&run->system_event, 0, sizeof(run->system_event));
-> > -       run->system_event.type = type;
-> > -       run->exit_reason = KVM_EXIT_SYSTEM_EVENT;
-> > +       kvm_vcpu_set_system_event_exit(vcpu, type, 0);
-> 
-> This patch needs to be rebased on the latest kvm/next because we have
-> done some refactoring to support SBI v0.3 SRST extension.
-
-Sure thing, I've already picked up some fixes anyhow so not a problem.
-Thank you for letting me know directly about the conflict though :)
-
---
-Thanks,
-Oliver
+> > Reviewed-by: Sean Christopherson <seanjc@google.com>
+> > Signed-off-by: David Matlack <dmatlack@google.com>
+>
+> Reviewed-by: Peter Xu <peterx@redhat.com>
+>
+> --
+> Peter Xu
+>
 
