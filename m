@@ -1,64 +1,84 @@
 From: David Matlack <dmatlack@google.com>
-Date: Fri,  1 Apr 2022 17:55:39 +0000
-Subject: [PATCH v3 08/23] KVM: x86/mmu: Link spt to sp during allocation
+Date: Fri,  1 Apr 2022 17:55:41 +0000
+Subject: [PATCH v3 10/23] KVM: x86/mmu: Use common code to free kvm_mmu_page
+ structs
 In-Reply-To: <20220401175554.1931568-1-dmatlack@google.com>
 References: <20220401175554.1931568-1-dmatlack@google.com>
-Message-ID: <20220401175554.1931568-9-dmatlack@google.com>
+Message-ID: <20220401175554.1931568-11-dmatlack@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Link the shadow page table to the sp (via set_page_private()) during
-allocation rather than initialization. This is a more logical place to
-do it because allocation time is also where we do the reverse link
-(setting sp->spt).
-
-This creates one extra call to set_page_private(), but having multiple
-calls to set_page_private() is unavoidable anyway. We either do
-set_page_private() during allocation, which requires 1 per allocation
-function, or we do it during initialization, which requires 1 per
-initialization function.
+Use a common function to free kvm_mmu_page structs in the TDP MMU and
+the shadow MMU. This reduces the amount of duplicate code and is needed
+in subsequent commits that allocate and free kvm_mmu_pages for eager
+page splitting. Keep tdp_mmu_free_sp() as a wrapper to mirror
+tdp_mmu_alloc_sp().
 
 No functional change intended.
 
-Suggested-by: Ben Gardon <bgardon@google.com>
+Reviewed-by: Peter Xu <peterx@redhat.com>
 Signed-off-by: David Matlack <dmatlack@google.com>
 ---
- arch/x86/kvm/mmu/tdp_mmu.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ arch/x86/kvm/mmu/mmu.c          | 8 ++++----
+ arch/x86/kvm/mmu/mmu_internal.h | 2 ++
+ arch/x86/kvm/mmu/tdp_mmu.c      | 3 +--
+ 3 files changed, 7 insertions(+), 6 deletions(-)
 
+diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
+index 657c2a906c12..27996fdb0e7e 100644
+--- a/arch/x86/kvm/mmu/mmu.c
++++ b/arch/x86/kvm/mmu/mmu.c
+@@ -1669,11 +1669,8 @@ static inline void kvm_mod_used_mmu_pages(struct kvm *kvm, long nr)
+ 	percpu_counter_add(&kvm_total_used_mmu_pages, nr);
+ }
+ 
+-static void kvm_mmu_free_shadow_page(struct kvm_mmu_page *sp)
++void kvm_mmu_free_shadow_page(struct kvm_mmu_page *sp)
+ {
+-	MMU_WARN_ON(!is_empty_shadow_page(sp->spt));
+-	hlist_del(&sp->hash_link);
+-	list_del(&sp->link);
+ 	free_page((unsigned long)sp->spt);
+ 	if (!sp->role.direct)
+ 		free_page((unsigned long)sp->gfns);
+@@ -2518,6 +2515,9 @@ static void kvm_mmu_commit_zap_page(struct kvm *kvm,
+ 
+ 	list_for_each_entry_safe(sp, nsp, invalid_list, link) {
+ 		WARN_ON(!sp->role.invalid || sp->root_count);
++		MMU_WARN_ON(!is_empty_shadow_page(sp->spt));
++		hlist_del(&sp->hash_link);
++		list_del(&sp->link);
+ 		kvm_mmu_free_shadow_page(sp);
+ 	}
+ }
+diff --git a/arch/x86/kvm/mmu/mmu_internal.h b/arch/x86/kvm/mmu/mmu_internal.h
+index a0648e7ddd33..5f91e4d07a95 100644
+--- a/arch/x86/kvm/mmu/mmu_internal.h
++++ b/arch/x86/kvm/mmu/mmu_internal.h
+@@ -173,4 +173,6 @@ void unaccount_huge_nx_page(struct kvm *kvm, struct kvm_mmu_page *sp);
+ 
+ struct kvm_mmu_page *kvm_mmu_alloc_direct_sp_for_split(bool locked);
+ 
++void kvm_mmu_free_shadow_page(struct kvm_mmu_page *sp);
++
+ #endif /* __KVM_X86_MMU_INTERNAL_H */
 diff --git a/arch/x86/kvm/mmu/tdp_mmu.c b/arch/x86/kvm/mmu/tdp_mmu.c
-index b3b6426725d4..17354e55735f 100644
+index 34e581bcaaf6..8b00c868405b 100644
 --- a/arch/x86/kvm/mmu/tdp_mmu.c
 +++ b/arch/x86/kvm/mmu/tdp_mmu.c
-@@ -274,6 +274,7 @@ static struct kvm_mmu_page *tdp_mmu_alloc_sp(struct kvm_vcpu *vcpu)
+@@ -64,8 +64,7 @@ void kvm_mmu_uninit_tdp_mmu(struct kvm *kvm)
  
- 	sp = kvm_mmu_memory_cache_alloc(&vcpu->arch.mmu_page_header_cache);
- 	sp->spt = kvm_mmu_memory_cache_alloc(&vcpu->arch.mmu_shadow_page_cache);
-+	set_page_private(virt_to_page(sp->spt), (unsigned long)sp);
- 
- 	return sp;
- }
-@@ -281,8 +282,6 @@ static struct kvm_mmu_page *tdp_mmu_alloc_sp(struct kvm_vcpu *vcpu)
- static void tdp_mmu_init_sp(struct kvm_mmu_page *sp, tdp_ptep_t sptep,
- 			    gfn_t gfn, union kvm_mmu_page_role role)
+ static void tdp_mmu_free_sp(struct kvm_mmu_page *sp)
  {
--	set_page_private(virt_to_page(sp->spt), (unsigned long)sp);
--
- 	sp->role = role;
- 	sp->gfn = gfn;
- 	sp->ptep = sptep;
-@@ -1435,6 +1434,8 @@ static struct kvm_mmu_page *__tdp_mmu_alloc_sp_for_split(gfp_t gfp)
- 		return NULL;
- 	}
- 
-+	set_page_private(virt_to_page(sp->spt), (unsigned long)sp);
-+
- 	return sp;
+-	free_page((unsigned long)sp->spt);
+-	kmem_cache_free(mmu_page_header_cache, sp);
++	kvm_mmu_free_shadow_page(sp);
  }
  
+ /*
 -- 
 2.35.1.1094.g7c7d902a7c-goog
 
