@@ -1,432 +1,102 @@
 From: David Matlack <dmatlack@google.com>
-Date: Fri,  1 Apr 2022 17:55:53 +0000
-Subject: [PATCH v3 22/23] KVM: x86/mmu: Support Eager Page Splitting in the
- shadow MMU
+Date: Fri,  1 Apr 2022 17:55:54 +0000
+Subject: [PATCH v3 23/23] KVM: selftests: Map x86_64 guest virtual memory with
+ huge pages
 In-Reply-To: <20220401175554.1931568-1-dmatlack@google.com>
 References: <20220401175554.1931568-1-dmatlack@google.com>
-Message-ID: <20220401175554.1931568-23-dmatlack@google.com>
+Message-ID: <20220401175554.1931568-24-dmatlack@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add support for Eager Page Splitting pages that are mapped by the shadow
-MMU. Walk through the rmap first splitting all 1GiB pages to 2MiB pages,
-and then splitting all 2MiB pages to 4KiB pages.
+Override virt_map() in x86_64 selftests to use the largest page size
+possible when mapping guest virtual memory. This enables testing eager
+page splitting with shadow paging (e.g. kvm_intel.ept=N), as it allows
+KVM to shadow guest memory with huge pages.
 
-Splitting huge pages mapped by the shadow MMU requries dealing with some
-extra complexity beyond that of the TDP MMU:
-
-(1) The shadow MMU has a limit on the number of shadow pages that are
-    allowed to be allocated. So, as a policy, Eager Page Splitting
-    refuses to split if there are KVM_MIN_FREE_MMU_PAGES or fewer
-    pages available.
-
-(2) Huge pages may be mapped by indirect shadow pages which have the
-    possibility of being unsync. As a policy we opt not to split such
-    pages as their translation may no longer be valid.
-
-(3) Splitting a huge page may end up re-using an existing lower level
-    shadow page tables. This is unlike the TDP MMU which always allocates
-    new shadow page tables when splitting.
-
-(4) When installing the lower level SPTEs, they must be added to the
-    rmap which may require allocating additional pte_list_desc structs.
-
-Note, for case (3) we have to be careful about dealing with what's
-already in the lower level page table. Specifically the lower level page
-table may only be partially filled in and may point to even lower level
-page tables that are partially filled in. We can fill in non-present
-entries, but recursing into the lower level page tables would be too
-complex.
-
-This means that Eager Page Splitting may partially unmap a huge page.
-To handle this we flush TLBs after dropping the huge SPTE whenever we
-are about to install a lower level page table that was partially filled
-in (*). We can skip the TLB flush if the lower level page table was
-empty (no aliasing) or identical to what we were already going to
-populate it with (aliased huge page that was just eagerly split).
-
-(*) This TLB flush could probably be delayed until we're about to drop
-the MMU lock, which would also let us batch flushes for multiple splits.
-However such scenarios should be rare in practice (a huge page must be
-aliased in multiple SPTEs and have been split for NX Huge Pages in only
-some of them). Flushing immediately is simpler to plumb and also reduces
-the chances of tripping over a CPU bug (e.g. see iTLB multi-hit).
-
-Suggested-by: Peter Feiner <pfeiner@google.com>
-[ This commit is based off of the original implementation of Eager Page
-  Splitting from Peter in Google's kernel from 2016 that handles
-  cases (1) and (2) above. ]
 Signed-off-by: David Matlack <dmatlack@google.com>
 ---
- .../admin-guide/kernel-parameters.txt         |   3 -
- arch/x86/include/asm/kvm_host.h               |  12 +
- arch/x86/kvm/mmu/mmu.c                        | 268 ++++++++++++++++++
- arch/x86/kvm/x86.c                            |   6 +
- 4 files changed, 286 insertions(+), 3 deletions(-)
+ .../selftests/kvm/include/x86_64/processor.h  |  6 ++++
+ tools/testing/selftests/kvm/lib/kvm_util.c    |  4 +--
+ .../selftests/kvm/lib/x86_64/processor.c      | 31 +++++++++++++++++++
+ 3 files changed, 39 insertions(+), 2 deletions(-)
 
-diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-index 05161afd7642..495f6ac53801 100644
---- a/Documentation/admin-guide/kernel-parameters.txt
-+++ b/Documentation/admin-guide/kernel-parameters.txt
-@@ -2360,9 +2360,6 @@
- 			the KVM_CLEAR_DIRTY ioctl, and only for the pages being
- 			cleared.
- 
--			Eager page splitting currently only supports splitting
--			huge pages mapped by the TDP MMU.
--
- 			Default is Y (on).
- 
- 	kvm.enable_vmware_backdoor=[KVM] Support VMware backdoor PV interface.
-diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
-index ffb2b99f3a60..053a32afd18b 100644
---- a/arch/x86/include/asm/kvm_host.h
-+++ b/arch/x86/include/asm/kvm_host.h
-@@ -1246,6 +1246,16 @@ struct kvm_arch {
- 	hpa_t	hv_root_tdp;
- 	spinlock_t hv_root_tdp_lock;
- #endif
-+
-+	/*
-+	 * Memory cache used to allocate pte_list_desc structs while splitting
-+	 * huge pages. In the worst case, to split one huge page we need 512
-+	 * pte_list_desc structs to add each lower level leaf sptep to the rmap
-+	 * plus 1 to extend the parent_ptes rmap of the lower level page table.
-+	 */
-+#define HUGE_PAGE_SPLIT_DESC_CACHE_CAPACITY 513
-+	__DEFINE_KVM_MMU_MEMORY_CACHE(huge_page_split_desc_cache,
-+				      HUGE_PAGE_SPLIT_DESC_CACHE_CAPACITY);
+diff --git a/tools/testing/selftests/kvm/include/x86_64/processor.h b/tools/testing/selftests/kvm/include/x86_64/processor.h
+index 37db341d4cc5..efb228d2fbf7 100644
+--- a/tools/testing/selftests/kvm/include/x86_64/processor.h
++++ b/tools/testing/selftests/kvm/include/x86_64/processor.h
+@@ -470,6 +470,12 @@ enum x86_page_size {
+ 	X86_PAGE_SIZE_2M,
+ 	X86_PAGE_SIZE_1G,
  };
++
++static inline size_t page_size_bytes(enum x86_page_size page_size)
++{
++	return 1UL << (page_size * 9 + 12);
++}
++
+ void __virt_pg_map(struct kvm_vm *vm, uint64_t vaddr, uint64_t paddr,
+ 		   enum x86_page_size page_size);
  
- struct kvm_vm_stat {
-@@ -1621,6 +1631,8 @@ void kvm_mmu_zap_all(struct kvm *kvm);
- void kvm_mmu_invalidate_mmio_sptes(struct kvm *kvm, u64 gen);
- void kvm_mmu_change_mmu_pages(struct kvm *kvm, unsigned long kvm_nr_mmu_pages);
- 
-+void free_huge_page_split_desc_cache(struct kvm *kvm);
-+
- int load_pdptrs(struct kvm_vcpu *vcpu, unsigned long cr3);
- 
- int emulator_write_phys(struct kvm_vcpu *vcpu, gpa_t gpa,
-diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
-index a8200b3f8782..9adafed43048 100644
---- a/arch/x86/kvm/mmu/mmu.c
-+++ b/arch/x86/kvm/mmu/mmu.c
-@@ -5972,6 +5972,11 @@ void kvm_mmu_init_vm(struct kvm *kvm)
- 	node->track_write = kvm_mmu_pte_write;
- 	node->track_flush_slot = kvm_mmu_invalidate_zap_pages_in_memslot;
- 	kvm_page_track_register_notifier(kvm, node);
-+
-+	kvm->arch.huge_page_split_desc_cache.capacity =
-+		HUGE_PAGE_SPLIT_DESC_CACHE_CAPACITY;
-+	kvm->arch.huge_page_split_desc_cache.kmem_cache = pte_list_desc_cache;
-+	kvm->arch.huge_page_split_desc_cache.gfp_zero = __GFP_ZERO;
- }
- 
- void kvm_mmu_uninit_vm(struct kvm *kvm)
-@@ -6102,12 +6107,267 @@ void kvm_mmu_slot_remove_write_access(struct kvm *kvm,
- 		kvm_arch_flush_remote_tlbs_memslot(kvm, memslot);
- }
- 
-+static int topup_huge_page_split_desc_cache(struct kvm *kvm, bool locked)
-+{
-+	gfp_t gfp = gfp_flags_for_split(locked);
-+
-+	/*
-+	 * We may need up to HUGE_PAGE_SPLIT_DESC_CACHE_CAPACITY descriptors
-+	 * to split any given huge page. We could more accurately calculate how
-+	 * many we actually need by inspecting all the rmaps and check which
-+	 * will need new descriptors, but that's not worth the extra cost or
-+	 * code complexity.
-+	 */
-+	return __kvm_mmu_topup_memory_cache(
-+			&kvm->arch.huge_page_split_desc_cache,
-+			HUGE_PAGE_SPLIT_DESC_CACHE_CAPACITY,
-+			gfp);
-+}
-+
-+void free_huge_page_split_desc_cache(struct kvm *kvm)
-+{
-+	kvm_mmu_free_memory_cache(&kvm->arch.huge_page_split_desc_cache);
-+}
-+
-+static int alloc_memory_for_split(struct kvm *kvm, struct kvm_mmu_page **spp,
-+				  bool locked)
-+{
-+	int r;
-+
-+	r = topup_huge_page_split_desc_cache(kvm, locked);
-+	if (r)
-+		return r;
-+
-+	if (!*spp) {
-+		*spp = kvm_mmu_alloc_direct_sp_for_split(locked);
-+		r = *spp ? 0 : -ENOMEM;
-+	}
-+
-+	return r;
-+}
-+
-+static struct kvm_mmu_page *kvm_mmu_get_sp_for_split(struct kvm *kvm,
-+						     const struct kvm_memory_slot *slot,
-+						     u64 *huge_sptep,
-+						     struct kvm_mmu_page **spp)
-+{
-+	struct kvm_mmu_page *sp, *huge_sp = sptep_to_sp(huge_sptep);
-+	union kvm_mmu_page_role role;
-+	LIST_HEAD(invalid_list);
-+	unsigned int access;
-+	gfn_t gfn;
-+
-+	gfn = kvm_mmu_page_get_gfn(huge_sp, huge_sptep - huge_sp->spt);
-+	access = kvm_mmu_page_get_access(huge_sp, huge_sptep - huge_sp->spt);
-+
-+	/*
-+	 * Huge page splitting always uses direct shadow pages since we are
-+	 * directly mapping the huge page GFN region with smaller pages.
-+	 */
-+	role = kvm_mmu_child_role(huge_sptep, true, access);
-+
-+	sp = __kvm_mmu_find_shadow_page(kvm, gfn, role, &invalid_list);
-+	if (sp) {
-+		/* Direct SPs should never be unsync. */
-+		WARN_ON_ONCE(sp->unsync);
-+		trace_kvm_mmu_get_page(sp, false);
-+	} else {
-+		swap(sp, *spp);
-+		init_shadow_page(kvm, sp, slot, gfn, role);
-+		trace_kvm_mmu_get_page(sp, true);
-+	}
-+
-+	kvm_mmu_commit_zap_page(kvm, &invalid_list);
-+
-+	return sp;
-+}
-+
-+static void kvm_mmu_split_huge_page(struct kvm *kvm,
-+				    const struct kvm_memory_slot *slot,
-+				    u64 *huge_sptep, struct kvm_mmu_page **spp)
-+
-+{
-+	struct kvm_mmu_memory_cache *cache = &kvm->arch.huge_page_split_desc_cache;
-+	u64 huge_spte = READ_ONCE(*huge_sptep);
-+	struct kvm_mmu_page *sp;
-+	bool flush = false;
-+	u64 *sptep, spte;
-+	gfn_t gfn;
-+	int index;
-+
-+	sp = kvm_mmu_get_sp_for_split(kvm, slot, huge_sptep, spp);
-+
-+	for (index = 0; index < PT64_ENT_PER_PAGE; index++) {
-+		sptep = &sp->spt[index];
-+		gfn = kvm_mmu_page_get_gfn(sp, index);
-+
-+		/*
-+		 * sp may have populated page table entries, e.g. if this huge
-+		 * page is aliased by multiple sptes with the same access
-+		 * permissions. We know the sptes will be mapping the same
-+		 * gfn-to-pfn translation since sp is direct. However, a given
-+		 * spte may point to an even lower level page table. We don't
-+		 * know if that lower level page table is completely filled in,
-+		 * i.e. we may be effectively unmapping a region of memory, so
-+		 * we must flush the TLB.
-+		 */
-+		if (is_shadow_present_pte(*sptep)) {
-+			flush |= !is_last_spte(*sptep, sp->role.level);
-+			continue;
-+		}
-+
-+		spte = make_huge_page_split_spte(huge_spte, sp, index);
-+		mmu_spte_set(sptep, spte);
-+		__rmap_add(kvm, cache, slot, sptep, gfn, sp->role.access);
-+	}
-+
-+	/*
-+	 * Replace the huge spte with a pointer to the populated lower level
-+	 * page table. If the lower-level page table indentically maps the huge
-+	 * page, there's no need for a TLB flush. Otherwise, flush TLBs after
-+	 * dropping the huge page and before installing the shadow page table.
-+	 */
-+	__drop_large_spte(kvm, huge_sptep, flush);
-+	__link_shadow_page(cache, huge_sptep, sp);
-+}
-+
-+static int __try_split_huge_page(struct kvm *kvm,
-+				 const struct kvm_memory_slot *slot,
-+				 u64 *huge_sptep, struct kvm_mmu_page **spp)
-+{
-+	int r = 0;
-+
-+	if (kvm_mmu_available_pages(kvm) <= KVM_MIN_FREE_MMU_PAGES)
-+		return -ENOSPC;
-+
-+	if (need_resched() || rwlock_needbreak(&kvm->mmu_lock))
-+		goto drop_lock;
-+
-+	r = alloc_memory_for_split(kvm, spp, true);
-+	if (r)
-+		goto drop_lock;
-+
-+	kvm_mmu_split_huge_page(kvm, slot, huge_sptep, spp);
-+
-+	return 0;
-+
-+drop_lock:
-+	write_unlock(&kvm->mmu_lock);
-+	cond_resched();
-+	r = alloc_memory_for_split(kvm, spp, false);
-+	write_lock(&kvm->mmu_lock);
-+
-+	/*
-+	 * Ask the caller to try again if the allocation succeeded. We dropped
-+	 * the MMU lock so huge_sptep may no longer be valid.
-+	 */
-+	return r ?: -EAGAIN;
-+}
-+
-+static int try_split_huge_page(struct kvm *kvm,
-+			       const struct kvm_memory_slot *slot,
-+			       u64 *huge_sptep, struct kvm_mmu_page **spp)
-+{
-+	struct kvm_mmu_page *huge_sp = sptep_to_sp(huge_sptep);
-+	int level, r;
-+	gfn_t gfn;
-+	u64 spte;
-+
-+	/*
-+	 * Record information about the huge page being split to use in the
-+	 * tracepoint below. Do this now because __try_split_huge_page() may
-+	 * drop the MMU lock, after which huge_sptep may no longer be a valid
-+	 * pointer.
-+	 */
-+	gfn = kvm_mmu_page_get_gfn(huge_sp, huge_sptep - huge_sp->spt);
-+	level = huge_sp->role.level;
-+	spte = *huge_sptep;
-+
-+	r = __try_split_huge_page(kvm, slot, huge_sptep, spp);
-+
-+	trace_kvm_mmu_split_huge_page(gfn, spte, level, r);
-+
-+	return r;
-+}
-+
-+
-+static bool skip_split_huge_page(u64 *huge_sptep)
-+{
-+	struct kvm_mmu_page *sp = sptep_to_sp(huge_sptep);
-+
-+	if (WARN_ON_ONCE(!is_large_pte(*huge_sptep)))
-+		return true;
-+
-+	/*
-+	 * As a policy, do not split huge pages if the sp on which they reside
-+	 * is unsync. Unsync means the guest is modifying the page table being
-+	 * shadowed, so splitting may be a waste of cycles and memory.
-+	 */
-+	return sp->role.invalid || sp->unsync;
-+}
-+
-+static bool rmap_try_split_huge_pages(struct kvm *kvm,
-+				      struct kvm_rmap_head *rmap_head,
-+				      const struct kvm_memory_slot *slot)
-+{
-+	struct kvm_mmu_page *sp = NULL;
-+	struct rmap_iterator iter;
-+	u64 *huge_sptep;
-+	int r;
-+
-+restart:
-+	for_each_rmap_spte(rmap_head, &iter, huge_sptep) {
-+		if (skip_split_huge_page(huge_sptep))
-+			continue;
-+
-+		r = try_split_huge_page(kvm, slot, huge_sptep, &sp);
-+		if (r < 0 && r != -EAGAIN)
-+			break;
-+
-+		/*
-+		 * Splitting succeeded (and removed huge_sptep from the
-+		 * iterator) or we had to drop the MMU lock. Either way, restart
-+		 * the iterator to get it back into a consistent state.
-+		 */
-+		goto restart;
-+	}
-+
-+	if (sp)
-+		kvm_mmu_free_shadow_page(sp);
-+
-+	return false;
-+}
-+
-+static void kvm_rmap_try_split_huge_pages(struct kvm *kvm,
-+					  const struct kvm_memory_slot *slot,
-+					  gfn_t start, gfn_t end,
-+					  int target_level)
-+{
-+	int level;
-+
-+	/*
-+	 * Split huge pages starting with KVM_MAX_HUGEPAGE_LEVEL and working
-+	 * down to the target level. This ensures pages are recursively split
-+	 * all the way to the target level. There's no need to split pages
-+	 * already@the target level.
-+	 */
-+	for (level = KVM_MAX_HUGEPAGE_LEVEL; level > target_level; level--) {
-+		slot_handle_level_range(kvm, slot,
-+					rmap_try_split_huge_pages,
-+					level, level, start, end - 1,
-+					true, false);
-+	}
-+}
-+
- /* Must be called with the mmu_lock held in write-mode. */
- void kvm_mmu_try_split_huge_pages(struct kvm *kvm,
- 				   const struct kvm_memory_slot *memslot,
- 				   u64 start, u64 end,
- 				   int target_level)
+diff --git a/tools/testing/selftests/kvm/lib/kvm_util.c b/tools/testing/selftests/kvm/lib/kvm_util.c
+index 1665a220abcb..60198587236d 100644
+--- a/tools/testing/selftests/kvm/lib/kvm_util.c
++++ b/tools/testing/selftests/kvm/lib/kvm_util.c
+@@ -1432,8 +1432,8 @@ vm_vaddr_t vm_vaddr_alloc_page(struct kvm_vm *vm)
+  * Within the VM given by @vm, creates a virtual translation for
+  * @npages starting at @vaddr to the page range starting@@paddr.
+  */
+-void virt_map(struct kvm_vm *vm, uint64_t vaddr, uint64_t paddr,
+-	      unsigned int npages)
++void __weak virt_map(struct kvm_vm *vm, uint64_t vaddr, uint64_t paddr,
++		     unsigned int npages)
  {
-+	if (kvm_memslots_have_rmaps(kvm))
-+		kvm_rmap_try_split_huge_pages(kvm, memslot, start, end, target_level);
-+
- 	if (is_tdp_mmu_enabled(kvm))
- 		kvm_tdp_mmu_try_split_huge_pages(kvm, memslot, start, end,
- 						 target_level, false);
-@@ -6125,6 +6385,14 @@ void kvm_mmu_slot_try_split_huge_pages(struct kvm *kvm,
- 	u64 start = memslot->base_gfn;
- 	u64 end = start + memslot->npages;
+ 	size_t page_size = vm->page_size;
+ 	size_t size = npages * page_size;
+diff --git a/tools/testing/selftests/kvm/lib/x86_64/processor.c b/tools/testing/selftests/kvm/lib/x86_64/processor.c
+index 9f000dfb5594..7df84292d5de 100644
+--- a/tools/testing/selftests/kvm/lib/x86_64/processor.c
++++ b/tools/testing/selftests/kvm/lib/x86_64/processor.c
+@@ -282,6 +282,37 @@ void virt_pg_map(struct kvm_vm *vm, uint64_t vaddr, uint64_t paddr)
+ 	__virt_pg_map(vm, vaddr, paddr, X86_PAGE_SIZE_4K);
+ }
  
-+	if (kvm_memslots_have_rmaps(kvm)) {
-+		topup_huge_page_split_desc_cache(kvm, false);
-+		write_lock(&kvm->mmu_lock);
-+		kvm_rmap_try_split_huge_pages(kvm, memslot, start, end, target_level);
-+		write_unlock(&kvm->mmu_lock);
-+		free_huge_page_split_desc_cache(kvm);
++void virt_map(struct kvm_vm *vm, uint64_t vaddr, uint64_t paddr, unsigned int npages)
++{
++	size_t size = (size_t) npages * vm->page_size;
++	size_t vend = vaddr + size;
++	enum x86_page_size page_size;
++	size_t stride;
++
++	TEST_ASSERT(vaddr + size > vaddr, "Vaddr overflow");
++	TEST_ASSERT(paddr + size > paddr, "Paddr overflow");
++
++	/*
++	 * Map the region with all 1G pages if possible, falling back to all
++	 * 2M pages, and finally all 4K pages. This could be improved to use
++	 * a mix of page sizes so that more of the region is mapped with large
++	 * pages.
++	 */
++	for (page_size = X86_PAGE_SIZE_1G; page_size >= X86_PAGE_SIZE_4K; page_size--) {
++		stride = page_size_bytes(page_size);
++
++		if (!(vaddr % stride) && !(paddr % stride) && !(size % stride))
++			break;
 +	}
 +
- 	if (is_tdp_mmu_enabled(kvm)) {
- 		read_lock(&kvm->mmu_lock);
- 		kvm_tdp_mmu_try_split_huge_pages(kvm, memslot, start, end, target_level, true);
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index d3a9ce07a565..02728c3f088e 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -12106,6 +12106,12 @@ static void kvm_mmu_slot_apply_flags(struct kvm *kvm,
- 		 * page faults will create the large-page sptes.
- 		 */
- 		kvm_mmu_zap_collapsible_sptes(kvm, new);
++	TEST_ASSERT(page_size >= X86_PAGE_SIZE_4K,
++		    "Cannot map unaligned region: vaddr 0x%lx paddr 0x%lx npages 0x%x\n",
++		    vaddr, paddr, npages);
 +
-+		/*
-+		 * Free any memory left behind by eager page splitting. Ignore
-+		 * the module parameter since userspace might have changed it.
-+		 */
-+		free_huge_page_split_desc_cache(kvm);
- 	} else {
- 		/*
- 		 * Initially-all-set does not require write protecting any page,
++	for (; vaddr < vend; vaddr += stride, paddr += stride)
++		__virt_pg_map(vm, vaddr, paddr, page_size);
++}
++
+ static struct pageTableEntry *_vm_get_page_table_entry(struct kvm_vm *vm, int vcpuid,
+ 						       uint64_t vaddr)
+ {
 -- 
 2.35.1.1094.g7c7d902a7c-goog
 
