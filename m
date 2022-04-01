@@ -1,108 +1,100 @@
 From: David Matlack <dmatlack@google.com>
-Date: Fri,  1 Apr 2022 17:55:37 +0000
-Subject: [PATCH v3 06/23] KVM: x86/mmu: Pass memslot to
- kvm_mmu_new_shadow_page()
+Date: Fri,  1 Apr 2022 17:55:38 +0000
+Subject: [PATCH v3 07/23] KVM: x86/mmu: Separate shadow MMU sp allocation from
+ initialization
 In-Reply-To: <20220401175554.1931568-1-dmatlack@google.com>
 References: <20220401175554.1931568-1-dmatlack@google.com>
-Message-ID: <20220401175554.1931568-7-dmatlack@google.com>
+Message-ID: <20220401175554.1931568-8-dmatlack@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Passing the memslot to kvm_mmu_new_shadow_page() avoids the need for the
-vCPU pointer when write-protecting indirect 4k shadow pages. This moves
-us closer to being able to create new shadow pages during VM ioctls for
-eager page splitting, where there is not vCPU pointer.
-
-This change does not negatively impact "Populate memory time" for ept=Y
-or ept=N configurations since kvm_vcpu_gfn_to_memslot() caches the last
-use slot. So even though we now look up the slot more often, it is a
-very cheap check.
-
-Opportunistically move the code to write-protect GFNs shadowed by
-PG_LEVEL_4K shadow pages into account_shadowed() to reduce indentation
-and consolidate the code. This also eliminates a memslot lookup.
+Separate the code that allocates a new shadow page from the vCPU caches
+from the code that initializes it. This is in preparation for creating
+new shadow pages from VM ioctls for eager page splitting, where we do
+not have access to the vCPU caches.
 
 No functional change intended.
 
-Reviewed-by: Peter Xu <peterx@redhat.com>
 Signed-off-by: David Matlack <dmatlack@google.com>
 ---
- arch/x86/kvm/mmu/mmu.c | 23 ++++++++++++-----------
- 1 file changed, 12 insertions(+), 11 deletions(-)
+ arch/x86/kvm/mmu/mmu.c | 38 ++++++++++++++++++--------------------
+ 1 file changed, 18 insertions(+), 20 deletions(-)
 
 diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
-index dc1825de0752..abfb3e5d1372 100644
+index abfb3e5d1372..421fcbc97f9e 100644
 --- a/arch/x86/kvm/mmu/mmu.c
 +++ b/arch/x86/kvm/mmu/mmu.c
-@@ -793,16 +793,14 @@ void kvm_mmu_gfn_allow_lpage(const struct kvm_memory_slot *slot, gfn_t gfn)
- 	update_gfn_disallow_lpage_count(slot, gfn, -1);
- }
- 
--static void account_shadowed(struct kvm *kvm, struct kvm_mmu_page *sp)
-+static void account_shadowed(struct kvm *kvm,
-+			     struct kvm_memory_slot *slot,
-+			     struct kvm_mmu_page *sp)
- {
--	struct kvm_memslots *slots;
--	struct kvm_memory_slot *slot;
- 	gfn_t gfn;
- 
- 	kvm->arch.indirect_shadow_pages++;
- 	gfn = sp->gfn;
--	slots = kvm_memslots_for_spte_role(kvm, sp->role);
--	slot = __gfn_to_memslot(slots, gfn);
- 
- 	/* the non-leaf shadow pages are keeping readonly. */
- 	if (sp->role.level > PG_LEVEL_4K)
-@@ -810,6 +808,9 @@ static void account_shadowed(struct kvm *kvm, struct kvm_mmu_page *sp)
- 						    KVM_PAGE_TRACK_WRITE);
- 
- 	kvm_mmu_gfn_disallow_lpage(slot, gfn);
+@@ -1716,16 +1716,9 @@ static struct kvm_mmu_page *kvm_mmu_alloc_shadow_page(struct kvm_vcpu *vcpu,
+ 	sp->spt = kvm_mmu_memory_cache_alloc(&vcpu->arch.mmu_shadow_page_cache);
+ 	if (!direct)
+ 		sp->gfns = kvm_mmu_memory_cache_alloc(&vcpu->arch.mmu_gfn_array_cache);
 +
-+	if (kvm_mmu_slot_gfn_write_protect(kvm, slot, gfn, PG_LEVEL_4K))
-+		kvm_flush_remote_tlbs_with_address(kvm, gfn, 1);
- }
+ 	set_page_private(virt_to_page(sp->spt), (unsigned long)sp);
  
- void account_huge_nx_page(struct kvm *kvm, struct kvm_mmu_page *sp)
-@@ -2123,6 +2124,7 @@ static struct kvm_mmu_page *kvm_mmu_find_shadow_page(struct kvm_vcpu *vcpu,
- }
- 
- static struct kvm_mmu_page *kvm_mmu_new_shadow_page(struct kvm_vcpu *vcpu,
-+						    struct kvm_memory_slot *slot,
- 						    gfn_t gfn,
- 						    union kvm_mmu_page_role role)
- {
-@@ -2138,11 +2140,8 @@ static struct kvm_mmu_page *kvm_mmu_new_shadow_page(struct kvm_vcpu *vcpu,
- 	sp_list = &vcpu->kvm->arch.mmu_page_hash[kvm_page_table_hashfn(gfn)];
- 	hlist_add_head(&sp->hash_link, sp_list);
- 
--	if (!role.direct) {
--		account_shadowed(vcpu->kvm, sp);
--		if (role.level == PG_LEVEL_4K && kvm_vcpu_write_protect_gfn(vcpu, gfn))
--			kvm_flush_remote_tlbs_with_address(vcpu->kvm, gfn, 1);
--	}
-+	if (!role.direct)
-+		account_shadowed(vcpu->kvm, slot, sp);
- 
+-	/*
+-	 * active_mmu_pages must be a FIFO list, as kvm_zap_obsolete_pages()
+-	 * depends on valid pages being added to the head of the list.  See
+-	 * comments in kvm_zap_obsolete_pages().
+-	 */
+-	sp->mmu_valid_gen = vcpu->kvm->arch.mmu_valid_gen;
+-	list_add(&sp->link, &vcpu->kvm->arch.active_mmu_pages);
+-	kvm_mod_used_mmu_pages(vcpu->kvm, +1);
  	return sp;
  }
-@@ -2151,13 +2150,15 @@ static struct kvm_mmu_page *kvm_mmu_get_shadow_page(struct kvm_vcpu *vcpu,
- 						    gfn_t gfn,
- 						    union kvm_mmu_page_role role)
- {
-+	struct kvm_memory_slot *slot;
- 	struct kvm_mmu_page *sp;
- 	bool created = false;
  
- 	sp = kvm_mmu_find_shadow_page(vcpu, gfn, role);
+@@ -2123,27 +2116,31 @@ static struct kvm_mmu_page *kvm_mmu_find_shadow_page(struct kvm_vcpu *vcpu,
+ 	return sp;
+ }
+ 
+-static struct kvm_mmu_page *kvm_mmu_new_shadow_page(struct kvm_vcpu *vcpu,
+-						    struct kvm_memory_slot *slot,
+-						    gfn_t gfn,
+-						    union kvm_mmu_page_role role)
++static void init_shadow_page(struct kvm *kvm, struct kvm_mmu_page *sp,
++			     struct kvm_memory_slot *slot, gfn_t gfn,
++			     union kvm_mmu_page_role role)
+ {
+-	struct kvm_mmu_page *sp;
+ 	struct hlist_head *sp_list;
+ 
+-	++vcpu->kvm->stat.mmu_cache_miss;
++	++kvm->stat.mmu_cache_miss;
+ 
+-	sp = kvm_mmu_alloc_shadow_page(vcpu, role.direct);
+ 	sp->gfn = gfn;
+ 	sp->role = role;
++	sp->mmu_valid_gen = kvm->arch.mmu_valid_gen;
+ 
+-	sp_list = &vcpu->kvm->arch.mmu_page_hash[kvm_page_table_hashfn(gfn)];
++	/*
++	 * active_mmu_pages must be a FIFO list, as kvm_zap_obsolete_pages()
++	 * depends on valid pages being added to the head of the list.  See
++	 * comments in kvm_zap_obsolete_pages().
++	 */
++	list_add(&sp->link, &kvm->arch.active_mmu_pages);
++	kvm_mod_used_mmu_pages(kvm, 1);
++
++	sp_list = &kvm->arch.mmu_page_hash[kvm_page_table_hashfn(gfn)];
+ 	hlist_add_head(&sp->hash_link, sp_list);
+ 
+ 	if (!role.direct)
+-		account_shadowed(vcpu->kvm, slot, sp);
+-
+-	return sp;
++		account_shadowed(kvm, slot, sp);
+ }
+ 
+ static struct kvm_mmu_page *kvm_mmu_get_shadow_page(struct kvm_vcpu *vcpu,
+@@ -2158,7 +2155,8 @@ static struct kvm_mmu_page *kvm_mmu_get_shadow_page(struct kvm_vcpu *vcpu,
  	if (!sp) {
  		created = true;
--		sp = kvm_mmu_new_shadow_page(vcpu, gfn, role);
-+		slot = kvm_vcpu_gfn_to_memslot(vcpu, gfn);
-+		sp = kvm_mmu_new_shadow_page(vcpu, slot, gfn, role);
+ 		slot = kvm_vcpu_gfn_to_memslot(vcpu, gfn);
+-		sp = kvm_mmu_new_shadow_page(vcpu, slot, gfn, role);
++		sp = kvm_mmu_alloc_shadow_page(vcpu, role.direct);
++		init_shadow_page(vcpu->kvm, sp, slot, gfn, role);
  	}
  
  	trace_kvm_mmu_get_page(sp, created);
