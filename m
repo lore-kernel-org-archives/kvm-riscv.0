@@ -1,75 +1,137 @@
 From: David Matlack <dmatlack@google.com>
-Date: Fri,  1 Apr 2022 17:55:42 +0000
-Subject: [PATCH v3 11/23] KVM: x86/mmu: Use common code to allocate shadow
- pages from vCPU caches
+Date: Fri,  1 Apr 2022 17:55:44 +0000
+Subject: [PATCH v3 13/23] KVM: x86/mmu: Pass const memslot to
+ init_shadow_page() and descendants
 In-Reply-To: <20220401175554.1931568-1-dmatlack@google.com>
 References: <20220401175554.1931568-1-dmatlack@google.com>
-Message-ID: <20220401175554.1931568-12-dmatlack@google.com>
+Message-ID: <20220401175554.1931568-14-dmatlack@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Now that allocating shadow pages is isolated to a helper function, use
-it in the TDP MMU as well. Keep tdp_mmu_alloc_sp() to avoid hard-coding
-direct=true in multiple places.
+Use a const pointer so that init_shadow_page() can be called from
+contexts where we have a const pointer.
 
 No functional change intended.
 
-Reviewed-by: Peter Xu <peterx@redhat.com>
+Reviewed-by: Ben Gardon <bgardon@google.com>
 Signed-off-by: David Matlack <dmatlack@google.com>
 ---
- arch/x86/kvm/mmu/mmu.c          | 3 +--
- arch/x86/kvm/mmu/mmu_internal.h | 1 +
- arch/x86/kvm/mmu/tdp_mmu.c      | 8 +-------
- 3 files changed, 3 insertions(+), 9 deletions(-)
+ arch/x86/include/asm/kvm_page_track.h | 2 +-
+ arch/x86/kvm/mmu/mmu.c                | 6 +++---
+ arch/x86/kvm/mmu/mmu_internal.h       | 2 +-
+ arch/x86/kvm/mmu/page_track.c         | 4 ++--
+ arch/x86/kvm/mmu/tdp_mmu.c            | 2 +-
+ arch/x86/kvm/mmu/tdp_mmu.h            | 2 +-
+ 6 files changed, 9 insertions(+), 9 deletions(-)
 
+diff --git a/arch/x86/include/asm/kvm_page_track.h b/arch/x86/include/asm/kvm_page_track.h
+index eb186bc57f6a..3a2dc183ae9a 100644
+--- a/arch/x86/include/asm/kvm_page_track.h
++++ b/arch/x86/include/asm/kvm_page_track.h
+@@ -58,7 +58,7 @@ int kvm_page_track_create_memslot(struct kvm *kvm,
+ 				  unsigned long npages);
+ 
+ void kvm_slot_page_track_add_page(struct kvm *kvm,
+-				  struct kvm_memory_slot *slot, gfn_t gfn,
++				  const struct kvm_memory_slot *slot, gfn_t gfn,
+ 				  enum kvm_page_track_mode mode);
+ void kvm_slot_page_track_remove_page(struct kvm *kvm,
+ 				     struct kvm_memory_slot *slot, gfn_t gfn,
 diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
-index 27996fdb0e7e..37385835c399 100644
+index 1efe161f9c02..39d9cccbdc7e 100644
 --- a/arch/x86/kvm/mmu/mmu.c
 +++ b/arch/x86/kvm/mmu/mmu.c
-@@ -1704,8 +1704,7 @@ static void drop_parent_pte(struct kvm_mmu_page *sp,
- 	mmu_spte_clear_no_track(parent_pte);
+@@ -794,7 +794,7 @@ void kvm_mmu_gfn_allow_lpage(const struct kvm_memory_slot *slot, gfn_t gfn)
  }
  
--static struct kvm_mmu_page *kvm_mmu_alloc_shadow_page(struct kvm_vcpu *vcpu,
--						      bool direct)
-+struct kvm_mmu_page *kvm_mmu_alloc_shadow_page(struct kvm_vcpu *vcpu, bool direct)
+ static void account_shadowed(struct kvm *kvm,
+-			     struct kvm_memory_slot *slot,
++			     const struct kvm_memory_slot *slot,
+ 			     struct kvm_mmu_page *sp)
  {
- 	struct kvm_mmu_page *sp;
+ 	gfn_t gfn;
+@@ -1373,7 +1373,7 @@ int kvm_cpu_dirty_log_size(void)
+ }
  
+ bool kvm_mmu_slot_gfn_write_protect(struct kvm *kvm,
+-				    struct kvm_memory_slot *slot, u64 gfn,
++				    const struct kvm_memory_slot *slot, u64 gfn,
+ 				    int min_level)
+ {
+ 	struct kvm_rmap_head *rmap_head;
+@@ -2150,7 +2150,7 @@ static struct kvm_mmu_page *kvm_mmu_find_shadow_page(struct kvm_vcpu *vcpu,
+ }
+ 
+ static void init_shadow_page(struct kvm *kvm, struct kvm_mmu_page *sp,
+-			     struct kvm_memory_slot *slot, gfn_t gfn,
++			     const struct kvm_memory_slot *slot, gfn_t gfn,
+ 			     union kvm_mmu_page_role role)
+ {
+ 	struct hlist_head *sp_list;
 diff --git a/arch/x86/kvm/mmu/mmu_internal.h b/arch/x86/kvm/mmu/mmu_internal.h
-index 5f91e4d07a95..d4e2de5f2a6d 100644
+index d4e2de5f2a6d..b6e22ba9c654 100644
 --- a/arch/x86/kvm/mmu/mmu_internal.h
 +++ b/arch/x86/kvm/mmu/mmu_internal.h
-@@ -173,6 +173,7 @@ void unaccount_huge_nx_page(struct kvm *kvm, struct kvm_mmu_page *sp);
- 
- struct kvm_mmu_page *kvm_mmu_alloc_direct_sp_for_split(bool locked);
- 
-+struct kvm_mmu_page *kvm_mmu_alloc_shadow_page(struct kvm_vcpu *vcpu, bool direct);
- void kvm_mmu_free_shadow_page(struct kvm_mmu_page *sp);
- 
- #endif /* __KVM_X86_MMU_INTERNAL_H */
-diff --git a/arch/x86/kvm/mmu/tdp_mmu.c b/arch/x86/kvm/mmu/tdp_mmu.c
-index 8b00c868405b..f6201b89045b 100644
---- a/arch/x86/kvm/mmu/tdp_mmu.c
-+++ b/arch/x86/kvm/mmu/tdp_mmu.c
-@@ -269,13 +269,7 @@ static struct kvm_mmu_page *tdp_mmu_next_root(struct kvm *kvm,
- 
- static struct kvm_mmu_page *tdp_mmu_alloc_sp(struct kvm_vcpu *vcpu)
- {
--	struct kvm_mmu_page *sp;
--
--	sp = kvm_mmu_memory_cache_alloc(&vcpu->arch.mmu_page_header_cache);
--	sp->spt = kvm_mmu_memory_cache_alloc(&vcpu->arch.mmu_shadow_page_cache);
--	set_page_private(virt_to_page(sp->spt), (unsigned long)sp);
--
--	return sp;
-+	return kvm_mmu_alloc_shadow_page(vcpu, true);
+@@ -134,7 +134,7 @@ int mmu_try_to_unsync_pages(struct kvm *kvm, const struct kvm_memory_slot *slot,
+ void kvm_mmu_gfn_disallow_lpage(const struct kvm_memory_slot *slot, gfn_t gfn);
+ void kvm_mmu_gfn_allow_lpage(const struct kvm_memory_slot *slot, gfn_t gfn);
+ bool kvm_mmu_slot_gfn_write_protect(struct kvm *kvm,
+-				    struct kvm_memory_slot *slot, u64 gfn,
++				    const struct kvm_memory_slot *slot, u64 gfn,
+ 				    int min_level);
+ void kvm_flush_remote_tlbs_with_address(struct kvm *kvm,
+ 					u64 start_gfn, u64 pages);
+diff --git a/arch/x86/kvm/mmu/page_track.c b/arch/x86/kvm/mmu/page_track.c
+index 2e09d1b6249f..3e7901294573 100644
+--- a/arch/x86/kvm/mmu/page_track.c
++++ b/arch/x86/kvm/mmu/page_track.c
+@@ -84,7 +84,7 @@ int kvm_page_track_write_tracking_alloc(struct kvm_memory_slot *slot)
+ 	return 0;
  }
  
- static void tdp_mmu_init_sp(struct kvm_mmu_page *sp, tdp_ptep_t sptep,
+-static void update_gfn_track(struct kvm_memory_slot *slot, gfn_t gfn,
++static void update_gfn_track(const struct kvm_memory_slot *slot, gfn_t gfn,
+ 			     enum kvm_page_track_mode mode, short count)
+ {
+ 	int index, val;
+@@ -112,7 +112,7 @@ static void update_gfn_track(struct kvm_memory_slot *slot, gfn_t gfn,
+  * @mode: tracking mode, currently only write track is supported.
+  */
+ void kvm_slot_page_track_add_page(struct kvm *kvm,
+-				  struct kvm_memory_slot *slot, gfn_t gfn,
++				  const struct kvm_memory_slot *slot, gfn_t gfn,
+ 				  enum kvm_page_track_mode mode)
+ {
+ 
+diff --git a/arch/x86/kvm/mmu/tdp_mmu.c b/arch/x86/kvm/mmu/tdp_mmu.c
+index f6201b89045b..a04262bc34e2 100644
+--- a/arch/x86/kvm/mmu/tdp_mmu.c
++++ b/arch/x86/kvm/mmu/tdp_mmu.c
+@@ -1793,7 +1793,7 @@ static bool write_protect_gfn(struct kvm *kvm, struct kvm_mmu_page *root,
+  * Returns true if an SPTE was set and a TLB flush is needed.
+  */
+ bool kvm_tdp_mmu_write_protect_gfn(struct kvm *kvm,
+-				   struct kvm_memory_slot *slot, gfn_t gfn,
++				   const struct kvm_memory_slot *slot, gfn_t gfn,
+ 				   int min_level)
+ {
+ 	struct kvm_mmu_page *root;
+diff --git a/arch/x86/kvm/mmu/tdp_mmu.h b/arch/x86/kvm/mmu/tdp_mmu.h
+index 5e5ef2576c81..c139635d4209 100644
+--- a/arch/x86/kvm/mmu/tdp_mmu.h
++++ b/arch/x86/kvm/mmu/tdp_mmu.h
+@@ -48,7 +48,7 @@ void kvm_tdp_mmu_zap_collapsible_sptes(struct kvm *kvm,
+ 				       const struct kvm_memory_slot *slot);
+ 
+ bool kvm_tdp_mmu_write_protect_gfn(struct kvm *kvm,
+-				   struct kvm_memory_slot *slot, gfn_t gfn,
++				   const struct kvm_memory_slot *slot, gfn_t gfn,
+ 				   int min_level);
+ 
+ void kvm_tdp_mmu_try_split_huge_pages(struct kvm *kvm,
 -- 
 2.35.1.1094.g7c7d902a7c-goog
 
