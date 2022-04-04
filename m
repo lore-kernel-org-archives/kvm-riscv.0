@@ -1,104 +1,92 @@
 From: Yosry Ahmed <yosryahmed@google.com>
-Date: Mon,  4 Apr 2022 23:41:53 +0000
-Subject: [PATCH v2 4/5] KVM: riscv: mm: count KVM page table pages in
- pagetable stats
+Date: Mon,  4 Apr 2022 23:41:54 +0000
+Subject: [PATCH v2 5/5] KVM: mips: mm: count KVM page table pages in pagetable
+ stats
 In-Reply-To: <20220404234154.1251388-1-yosryahmed@google.com>
 References: <20220404234154.1251388-1-yosryahmed@google.com>
-Message-ID: <20220404234154.1251388-5-yosryahmed@google.com>
+Message-ID: <20220404234154.1251388-6-yosryahmed@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Count the pages used by KVM in riscv for page tables in pagetable stats.
+Count the pages used by KVM in mips for page tables in pagetable stats.
 
 Signed-off-by: Yosry Ahmed <yosryahmed@google.com>
 ---
- arch/riscv/kvm/mmu.c | 26 +++++++++++++++++++-------
- 1 file changed, 19 insertions(+), 7 deletions(-)
+ arch/mips/kvm/mips.c | 1 +
+ arch/mips/kvm/mmu.c  | 9 ++++++++-
+ 2 files changed, 9 insertions(+), 1 deletion(-)
 
-diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
-index f80a34fbf102..fcfb75713750 100644
---- a/arch/riscv/kvm/mmu.c
-+++ b/arch/riscv/kvm/mmu.c
-@@ -152,6 +152,7 @@ static int stage2_set_pte(struct kvm *kvm, u32 level,
- 			next_ptep = kvm_mmu_memory_cache_alloc(pcache);
- 			if (!next_ptep)
- 				return -ENOMEM;
-+			kvm_account_pgtable_pages((void *)next_ptep, +1);
- 			*ptep = pfn_pte(PFN_DOWN(__pa(next_ptep)),
- 					__pgprot(_PAGE_TABLE));
- 		} else {
-@@ -229,6 +230,7 @@ static void stage2_op_pte(struct kvm *kvm, gpa_t addr,
- 	pte_t *next_ptep;
- 	u32 next_ptep_level;
- 	unsigned long next_page_size, page_size;
-+	struct page *p;
- 
- 	ret = stage2_level_to_page_size(ptep_level, &page_size);
- 	if (ret)
-@@ -252,8 +254,13 @@ static void stage2_op_pte(struct kvm *kvm, gpa_t addr,
- 		for (i = 0; i < PTRS_PER_PTE; i++)
- 			stage2_op_pte(kvm, addr + i * next_page_size,
- 					&next_ptep[i], next_ptep_level, op);
--		if (op == STAGE2_OP_CLEAR)
--			put_page(virt_to_page(next_ptep));
-+		if (op == STAGE2_OP_CLEAR) {
-+			p = virt_to_page(next_ptep);
-+			if (page_count(p) == 1)
-+				kvm_account_pgtable_pages((void *)next_ptep,
-+							  -1);
-+			put_page(p);
-+		}
- 	} else {
- 		if (op == STAGE2_OP_CLEAR)
- 			set_pte(ptep, __pte(0));
-@@ -700,25 +707,27 @@ int kvm_riscv_stage2_map(struct kvm_vcpu *vcpu,
- int kvm_riscv_stage2_alloc_pgd(struct kvm *kvm)
+diff --git a/arch/mips/kvm/mips.c b/arch/mips/kvm/mips.c
+index a25e0b73ee70..e60c1920a408 100644
+--- a/arch/mips/kvm/mips.c
++++ b/arch/mips/kvm/mips.c
+@@ -175,6 +175,7 @@ static void kvm_mips_free_gpa_pt(struct kvm *kvm)
  {
- 	struct page *pgd_page;
-+	int order;
- 
- 	if (kvm->arch.pgd != NULL) {
- 		kvm_err("kvm_arch already initialized?\n");
- 		return -EINVAL;
- 	}
- 
--	pgd_page = alloc_pages(GFP_KERNEL | __GFP_ZERO,
--				get_order(stage2_pgd_size));
-+	order = get_order(stage2_pgd_size);
-+	pgd_page = alloc_pages(GFP_KERNEL | __GFP_ZERO, order);
- 	if (!pgd_page)
- 		return -ENOMEM;
- 	kvm->arch.pgd = page_to_virt(pgd_page);
- 	kvm->arch.pgd_phys = page_to_phys(pgd_page);
--
-+	kvm_account_pgtable_pages((void *)kvm->arch.pgd, +(1UL << order));
- 	return 0;
+ 	/* It should always be safe to remove after flushing the whole range */
+ 	WARN_ON(!kvm_mips_flush_gpa_pt(kvm, 0, ~0));
++	kvm_account_pgtable_pages((void *)kvm->arch.gpa_mm.pgd, -1);
+ 	pgd_free(NULL, kvm->arch.gpa_mm.pgd);
  }
  
- void kvm_riscv_stage2_free_pgd(struct kvm *kvm)
- {
- 	void *pgd = NULL;
-+	int order;
+diff --git a/arch/mips/kvm/mmu.c b/arch/mips/kvm/mmu.c
+index 1bfd1b501d82..18da2ac2ded7 100644
+--- a/arch/mips/kvm/mmu.c
++++ b/arch/mips/kvm/mmu.c
+@@ -81,8 +81,10 @@ pgd_t *kvm_pgd_alloc(void)
+ 	pgd_t *ret;
  
- 	spin_lock(&kvm->mmu_lock);
- 	if (kvm->arch.pgd) {
-@@ -729,8 +738,11 @@ void kvm_riscv_stage2_free_pgd(struct kvm *kvm)
- 	}
- 	spin_unlock(&kvm->mmu_lock);
- 
--	if (pgd)
--		free_pages((unsigned long)pgd, get_order(stage2_pgd_size));
-+	if (pgd) {
-+		order = get_order(stage2_pgd_size);
-+		kvm_account_pgtable_pages((void *)pgd, -(1UL << order));
-+		free_pages((unsigned long)pgd, order);
+ 	ret = (pgd_t *)__get_free_pages(GFP_KERNEL, PGD_ORDER);
+-	if (ret)
++	if (ret) {
+ 		kvm_pgd_init(ret);
++		kvm_account_pgtable_pages((void *)ret, +1);
 +	}
- }
  
- void kvm_riscv_stage2_update_hgatp(struct kvm_vcpu *vcpu)
+ 	return ret;
+ }
+@@ -125,6 +127,7 @@ static pte_t *kvm_mips_walk_pgd(pgd_t *pgd, struct kvm_mmu_memory_cache *cache,
+ 		pmd_init((unsigned long)new_pmd,
+ 			 (unsigned long)invalid_pte_table);
+ 		pud_populate(NULL, pud, new_pmd);
++		kvm_account_pgtable_pages((void *)new_pmd, +1);
+ 	}
+ 	pmd = pmd_offset(pud, addr);
+ 	if (pmd_none(*pmd)) {
+@@ -135,6 +138,7 @@ static pte_t *kvm_mips_walk_pgd(pgd_t *pgd, struct kvm_mmu_memory_cache *cache,
+ 		new_pte = kvm_mmu_memory_cache_alloc(cache);
+ 		clear_page(new_pte);
+ 		pmd_populate_kernel(NULL, pmd, new_pte);
++		kvm_account_pgtable_pages((void *)new_pte, +1);
+ 	}
+ 	return pte_offset_kernel(pmd, addr);
+ }
+@@ -189,6 +193,7 @@ static bool kvm_mips_flush_gpa_pmd(pmd_t *pmd, unsigned long start_gpa,
+ 
+ 		if (kvm_mips_flush_gpa_pte(pte, start_gpa, end)) {
+ 			pmd_clear(pmd + i);
++			kvm_account_pgtable_pages((void *)pte, -1);
+ 			pte_free_kernel(NULL, pte);
+ 		} else {
+ 			safe_to_remove = false;
+@@ -217,6 +222,7 @@ static bool kvm_mips_flush_gpa_pud(pud_t *pud, unsigned long start_gpa,
+ 
+ 		if (kvm_mips_flush_gpa_pmd(pmd, start_gpa, end)) {
+ 			pud_clear(pud + i);
++			kvm_account_pgtable_pages((void *)pmd, -1);
+ 			pmd_free(NULL, pmd);
+ 		} else {
+ 			safe_to_remove = false;
+@@ -247,6 +253,7 @@ static bool kvm_mips_flush_gpa_pgd(pgd_t *pgd, unsigned long start_gpa,
+ 
+ 		if (kvm_mips_flush_gpa_pud(pud, start_gpa, end)) {
+ 			pgd_clear(pgd + i);
++			kvm_account_pgtable_pages((void *)pud, -1);
+ 			pud_free(NULL, pud);
+ 		} else {
+ 			safe_to_remove = false;
 -- 
 2.35.1.1094.g7c7d902a7c-goog
 
