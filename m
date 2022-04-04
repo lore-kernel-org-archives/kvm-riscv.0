@@ -1,56 +1,45 @@
-From: Anup Patel <anup@brainfault.org>
-Date: Mon, 4 Apr 2022 09:20:27 +0530
-Subject: [PATCH] RISC-V: KVM: Don't clear hgatp CSR in kvm_arch_vcpu_put()
-In-Reply-To: <20220317035521.272486-1-apatel@ventanamicro.com>
-References: <20220317035521.272486-1-apatel@ventanamicro.com>
-Message-ID: <CAAhSdy35a5PrdSzonK6EeH0nynFxvvUzScaYRPeA=CmG5yuz+Q@mail.gmail.com>
+From: Mayuresh Chitale <mchitale@ventanamicro.com>
+Date: Mon, 4 Apr 2022 09:41:42 +0530
+Subject: [PATCH 0/3] Unexpected guest trap handling for KVM RISC-V
+ selftests
+In-Reply-To: <20220329072911.1692766-1-apatel@ventanamicro.com>
+References: <20220329072911.1692766-1-apatel@ventanamicro.com>
+Message-ID: <CAN37VV4qnjyf96EA-uo7bs1jRavh-oB+eUk08i-6f0RiqCDC-Q@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Mar 17, 2022 at 9:25 AM Anup Patel <apatel@ventanamicro.com> wrote:
+On Tue, Mar 29, 2022 at 1:00 PM Anup Patel <apatel@ventanamicro.com> wrote:
 >
-> We might have RISC-V systems (such as QEMU) where VMID is not part
-> of the TLB entry tag so these systems will have to flush all TLB
-> entries upon any change in hgatp.VMID.
+> Getting unexpected guest traps while running KVM RISC-V selftests should
+> cause the test to fail appropriately with VCPU register dump. This series
+> improves handling of unexpected traps along these lines.
 >
-> Currently, we zero-out hgatp CSR in kvm_arch_vcpu_put() and we
-> re-program hgatp CSR in kvm_arch_vcpu_load(). For above described
-> systems, this will flush all TLB entries whenever VCPU exits to
-> user-space hence reducing performance.
+> These patches can also be found in riscv_kvm_selftests_unexp_trap_v1 branch
+> at: https://github.com/avpatel/linux.git
 >
-> This patch fixes above described performance issue by not clearing
-> hgatp CSR in kvm_arch_vcpu_put().
+> Anup Patel (3):
+>   KVM: selftests: riscv: Set PTE A and D bits in VS-stage page table
+>   KVM: selftests: riscv: Fix alignment of the guest_hang() function
+>   KVM: selftests: riscv: Improve unexpected guest trap handling
 >
-> Fixes: 34bde9d8b9e6 ("RISC-V: KVM: Implement VCPU world-switch")
-> Cc: stable at vger.kernel.org
-> Signed-off-by: Anup Patel <apatel@ventanamicro.com>
-
-I have queued this patch for RC fixes.
-
-Thanks,
-Anup
-
-> ---
->  arch/riscv/kvm/vcpu.c | 2 --
->  1 file changed, 2 deletions(-)
+>  .../selftests/kvm/include/riscv/processor.h   | 12 ++++---
+>  .../selftests/kvm/lib/riscv/processor.c       |  9 +++---
+>  tools/testing/selftests/kvm/lib/riscv/ucall.c | 31 +++++++++++++------
+>  3 files changed, 34 insertions(+), 18 deletions(-)
 >
-> diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-> index 624166004e36..6785aef4cbd4 100644
-> --- a/arch/riscv/kvm/vcpu.c
-> +++ b/arch/riscv/kvm/vcpu.c
-> @@ -653,8 +653,6 @@ void kvm_arch_vcpu_put(struct kvm_vcpu *vcpu)
->                                      vcpu->arch.isa);
->         kvm_riscv_vcpu_host_fp_restore(&vcpu->arch.host_context);
->
-> -       csr_write(CSR_HGATP, 0);
-> -
->         csr->vsstatus = csr_read(CSR_VSSTATUS);
->         csr->vsie = csr_read(CSR_VSIE);
->         csr->vstvec = csr_read(CSR_VSTVEC);
 > --
 > 2.25.1
 >
+>
+> _______________________________________________
+> linux-riscv mailing list
+> linux-riscv at lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-riscv
+
+I have tested the series on Qemu.
+
+Tested-by: Mayuresh Chitale <mchitale@ventanamicro.com>
 
