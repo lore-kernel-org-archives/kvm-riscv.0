@@ -1,118 +1,214 @@
 From: Yosry Ahmed <yosryahmed@google.com>
-Date: Mon,  4 Apr 2022 23:41:51 +0000
-Subject: [PATCH v2 2/5] KVM: x86: mm: count KVM page table pages in pagetable
- stats
+Date: Mon,  4 Apr 2022 23:41:52 +0000
+Subject: [PATCH v2 3/5] KVM: arm64: mm: count KVM page table pages in
+ pagetable stats
 In-Reply-To: <20220404234154.1251388-1-yosryahmed@google.com>
 References: <20220404234154.1251388-1-yosryahmed@google.com>
-Message-ID: <20220404234154.1251388-3-yosryahmed@google.com>
+Message-ID: <20220404234154.1251388-4-yosryahmed@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Count the pages used by KVM in x86 for page tables in pagetable stats.
+Count the pages used by KVM in arm64 for page tables in pagetable stats.
 
-For legacy code, accounting pagetable stats is combined KVM's
-existing for mmu pages in newly introduced kvm_[un]account_mmu_page()
-helpers.
+Account pages allocated for PTEs in pgtable init functions and
+kvm_set_table_pte().
 
-For tdp mmu, introduce new tdp_[un]account_mmu_page() helpers. That
-combines accounting pagetable stats with the tdp_mmu_pages counter
-accounting.
-
-tdp_mmu_pages counter introduced in this series [1]. This patch was
-rebased on top of the first two patches in that series.
-
-[1]https://lore.kernel.org/lkml/20220401063636.2414200-1-mizhang at google.com/
+Since most page table pages are freed using put_page(), add a helper
+function put_pte_page() that checks if this is the last ref for a pte
+page before putting it, and unaccounts stats accordingly.
 
 Signed-off-by: Yosry Ahmed <yosryahmed@google.com>
 ---
- arch/x86/kvm/mmu/mmu.c     | 16 ++++++++++++++--
- arch/x86/kvm/mmu/tdp_mmu.c | 16 ++++++++++++++--
- 2 files changed, 28 insertions(+), 4 deletions(-)
+ arch/arm64/kernel/image-vars.h |  3 ++
+ arch/arm64/kvm/hyp/pgtable.c   | 50 +++++++++++++++++++++-------------
+ 2 files changed, 34 insertions(+), 19 deletions(-)
 
-diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
-index f4020837fb48..28579b96a483 100644
---- a/arch/x86/kvm/mmu/mmu.c
-+++ b/arch/x86/kvm/mmu/mmu.c
-@@ -1671,6 +1671,18 @@ static inline void kvm_mod_used_mmu_pages(struct kvm *kvm, long nr)
- 	percpu_counter_add(&kvm_total_used_mmu_pages, nr);
+diff --git a/arch/arm64/kernel/image-vars.h b/arch/arm64/kernel/image-vars.h
+index 884844849c70..4c87a718ccf0 100644
+--- a/arch/arm64/kernel/image-vars.h
++++ b/arch/arm64/kernel/image-vars.h
+@@ -139,6 +139,9 @@ KVM_NVHE_ALIAS(__hyp_rodata_end);
+ /* pKVM static key */
+ KVM_NVHE_ALIAS(kvm_protected_mode_initialized);
+ 
++/* Called by kvm_account_pgtable_pages() to update pagetable stats */
++KVM_NVHE_ALIAS(__mod_lruvec_page_state);
++
+ #endif /* CONFIG_KVM */
+ 
+ #endif /* __ARM64_KERNEL_IMAGE_VARS_H */
+diff --git a/arch/arm64/kvm/hyp/pgtable.c b/arch/arm64/kvm/hyp/pgtable.c
+index 2cb3867eb7c2..53e13c3313e9 100644
+--- a/arch/arm64/kvm/hyp/pgtable.c
++++ b/arch/arm64/kvm/hyp/pgtable.c
+@@ -152,6 +152,7 @@ static void kvm_set_table_pte(kvm_pte_t *ptep, kvm_pte_t *childp,
+ 
+ 	WARN_ON(kvm_pte_valid(old));
+ 	smp_store_release(ptep, pte);
++	kvm_account_pgtable_pages((void *)childp, +1);
  }
  
-+static void kvm_account_mmu_page(struct kvm *kvm, struct kvm_mmu_page *sp)
-+{
-+	kvm_mod_used_mmu_pages(kvm, +1);
-+	kvm_account_pgtable_pages((void *)sp->spt, +1);
-+}
-+
-+static void kvm_unaccount_mmu_page(struct kvm *kvm, struct kvm_mmu_page *sp)
-+{
-+	kvm_mod_used_mmu_pages(kvm, -1);
-+	kvm_account_pgtable_pages((void *)sp->spt, -1);
-+}
-+
- static void kvm_mmu_free_page(struct kvm_mmu_page *sp)
- {
- 	MMU_WARN_ON(!is_empty_shadow_page(sp->spt));
-@@ -1726,7 +1738,7 @@ static struct kvm_mmu_page *kvm_mmu_alloc_page(struct kvm_vcpu *vcpu, int direct
- 	 */
- 	sp->mmu_valid_gen = vcpu->kvm->arch.mmu_valid_gen;
- 	list_add(&sp->link, &vcpu->kvm->arch.active_mmu_pages);
--	kvm_mod_used_mmu_pages(vcpu->kvm, +1);
-+	kvm_account_mmu_page(vcpu->kvm, sp);
- 	return sp;
+ static kvm_pte_t kvm_init_valid_leaf_pte(u64 pa, kvm_pte_t attr, u32 level)
+@@ -326,6 +327,14 @@ int kvm_pgtable_get_leaf(struct kvm_pgtable *pgt, u64 addr,
+ 	return ret;
  }
  
-@@ -2342,7 +2354,7 @@ static bool __kvm_mmu_prepare_zap_page(struct kvm *kvm,
- 			list_add(&sp->link, invalid_list);
- 		else
- 			list_move(&sp->link, invalid_list);
--		kvm_mod_used_mmu_pages(kvm, -1);
-+		kvm_unaccount_mmu_page(kvm, sp);
- 	} else {
- 		/*
- 		 * Remove the active root from the active page list, the root
-diff --git a/arch/x86/kvm/mmu/tdp_mmu.c b/arch/x86/kvm/mmu/tdp_mmu.c
-index ed34f3f75f18..12bfcfc610c5 100644
---- a/arch/x86/kvm/mmu/tdp_mmu.c
-+++ b/arch/x86/kvm/mmu/tdp_mmu.c
-@@ -371,6 +371,18 @@ static void handle_changed_spte_dirty_log(struct kvm *kvm, int as_id, gfn_t gfn,
- 	}
- }
- 
-+static void tdp_account_mmu_page(struct kvm *kvm, struct kvm_mmu_page *sp)
++static void put_pte_page(kvm_pte_t *ptep, struct kvm_pgtable_mm_ops *mm_ops)
 +{
-+	atomic64_inc(&kvm->arch.tdp_mmu_pages);
-+	kvm_account_pgtable_pages((void *)sp->spt, +1);
++	/* If this is the last page ref, decrement pagetable stats first. */
++	if (!mm_ops->page_count || mm_ops->page_count(ptep) == 1)
++		kvm_account_pgtable_pages((void *)ptep, -1);
++	mm_ops->put_page(ptep);
 +}
 +
-+static void tdp_unaccount_mmu_page(struct kvm *kvm, struct kvm_mmu_page *sp)
-+{
-+	atomic64_dec(&kvm->arch.tdp_mmu_pages);
-+	kvm_account_pgtable_pages((void *)sp->spt, -1);
-+}
-+
- /**
-  * tdp_mmu_unlink_sp() - Remove a shadow page from the list of used pages
-  *
-@@ -383,7 +395,7 @@ static void handle_changed_spte_dirty_log(struct kvm *kvm, int as_id, gfn_t gfn,
- static void tdp_mmu_unlink_sp(struct kvm *kvm, struct kvm_mmu_page *sp,
- 			      bool shared)
- {
--	atomic64_dec(&kvm->arch.tdp_mmu_pages);
-+	tdp_unaccount_mmu_page(kvm, sp);
+ struct hyp_map_data {
+ 	u64				phys;
+ 	kvm_pte_t			attr;
+@@ -488,10 +497,10 @@ static int hyp_unmap_walker(u64 addr, u64 end, u32 level, kvm_pte_t *ptep,
  
- 	if (!sp->lpage_disallowed)
- 		return;
-@@ -1121,7 +1133,7 @@ static int tdp_mmu_link_sp(struct kvm *kvm, struct tdp_iter *iter,
- 		tdp_mmu_set_spte(kvm, iter, spte);
- 	}
+ 	dsb(ish);
+ 	isb();
+-	mm_ops->put_page(ptep);
++	put_pte_page(ptep, mm_ops);
  
--	atomic64_inc(&kvm->arch.tdp_mmu_pages);
-+	tdp_account_mmu_page(kvm, sp);
+ 	if (childp)
+-		mm_ops->put_page(childp);
++		put_pte_page(childp, mm_ops);
  
  	return 0;
+ }
+@@ -522,6 +531,7 @@ int kvm_pgtable_hyp_init(struct kvm_pgtable *pgt, u32 va_bits,
+ 	pgt->pgd = (kvm_pte_t *)mm_ops->zalloc_page(NULL);
+ 	if (!pgt->pgd)
+ 		return -ENOMEM;
++	kvm_account_pgtable_pages((void *)pgt->pgd, +1);
+ 
+ 	pgt->ia_bits		= va_bits;
+ 	pgt->start_level	= KVM_PGTABLE_MAX_LEVELS - levels;
+@@ -541,10 +551,10 @@ static int hyp_free_walker(u64 addr, u64 end, u32 level, kvm_pte_t *ptep,
+ 	if (!kvm_pte_valid(pte))
+ 		return 0;
+ 
+-	mm_ops->put_page(ptep);
++	put_pte_page(ptep, mm_ops);
+ 
+ 	if (kvm_pte_table(pte, level))
+-		mm_ops->put_page(kvm_pte_follow(pte, mm_ops));
++		put_pte_page(kvm_pte_follow(pte, mm_ops), mm_ops);
+ 
+ 	return 0;
+ }
+@@ -558,7 +568,7 @@ void kvm_pgtable_hyp_destroy(struct kvm_pgtable *pgt)
+ 	};
+ 
+ 	WARN_ON(kvm_pgtable_walk(pgt, 0, BIT(pgt->ia_bits), &walker));
+-	pgt->mm_ops->put_page(pgt->pgd);
++	put_pte_page(pgt->pgd, pgt->mm_ops);
+ 	pgt->pgd = NULL;
+ }
+ 
+@@ -694,7 +704,7 @@ static void stage2_put_pte(kvm_pte_t *ptep, struct kvm_s2_mmu *mmu, u64 addr,
+ 		kvm_call_hyp(__kvm_tlb_flush_vmid_ipa, mmu, addr, level);
+ 	}
+ 
+-	mm_ops->put_page(ptep);
++	put_pte_page(ptep, mm_ops);
+ }
+ 
+ static bool stage2_pte_cacheable(struct kvm_pgtable *pgt, kvm_pte_t pte)
+@@ -795,7 +805,7 @@ static int stage2_map_walk_leaf(u64 addr, u64 end, u32 level, kvm_pte_t *ptep,
+ 
+ 	if (data->anchor) {
+ 		if (stage2_pte_is_counted(pte))
+-			mm_ops->put_page(ptep);
++			put_pte_page(ptep, mm_ops);
+ 
+ 		return 0;
+ 	}
+@@ -848,8 +858,8 @@ static int stage2_map_walk_table_post(u64 addr, u64 end, u32 level,
+ 		childp = kvm_pte_follow(*ptep, mm_ops);
+ 	}
+ 
+-	mm_ops->put_page(childp);
+-	mm_ops->put_page(ptep);
++	put_pte_page(childp, mm_ops);
++	put_pte_page(ptep, mm_ops);
+ 
+ 	return ret;
+ }
+@@ -962,7 +972,7 @@ static int stage2_unmap_walker(u64 addr, u64 end, u32 level, kvm_pte_t *ptep,
+ 	if (!kvm_pte_valid(pte)) {
+ 		if (stage2_pte_is_counted(pte)) {
+ 			kvm_clear_pte(ptep);
+-			mm_ops->put_page(ptep);
++			put_pte_page(ptep, mm_ops);
+ 		}
+ 		return 0;
+ 	}
+@@ -988,7 +998,7 @@ static int stage2_unmap_walker(u64 addr, u64 end, u32 level, kvm_pte_t *ptep,
+ 					       kvm_granule_size(level));
+ 
+ 	if (childp)
+-		mm_ops->put_page(childp);
++		put_pte_page(childp, mm_ops);
+ 
+ 	return 0;
+ }
+@@ -1177,16 +1187,17 @@ int __kvm_pgtable_stage2_init(struct kvm_pgtable *pgt, struct kvm_s2_mmu *mmu,
+ 			      enum kvm_pgtable_stage2_flags flags,
+ 			      kvm_pgtable_force_pte_cb_t force_pte_cb)
+ {
+-	size_t pgd_sz;
++	u32 pgd_num;
+ 	u64 vtcr = mmu->arch->vtcr;
+ 	u32 ia_bits = VTCR_EL2_IPA(vtcr);
+ 	u32 sl0 = FIELD_GET(VTCR_EL2_SL0_MASK, vtcr);
+ 	u32 start_level = VTCR_EL2_TGRAN_SL0_BASE - sl0;
+ 
+-	pgd_sz = kvm_pgd_pages(ia_bits, start_level) * PAGE_SIZE;
+-	pgt->pgd = mm_ops->zalloc_pages_exact(pgd_sz);
++	pgd_num = kvm_pgd_pages(ia_bits, start_level);
++	pgt->pgd = mm_ops->zalloc_pages_exact(pgd_num * PAGE_SIZE);
+ 	if (!pgt->pgd)
+ 		return -ENOMEM;
++	kvm_account_pgtable_pages((void *)pgt->pgd, +pgd_num);
+ 
+ 	pgt->ia_bits		= ia_bits;
+ 	pgt->start_level	= start_level;
+@@ -1210,17 +1221,17 @@ static int stage2_free_walker(u64 addr, u64 end, u32 level, kvm_pte_t *ptep,
+ 	if (!stage2_pte_is_counted(pte))
+ 		return 0;
+ 
+-	mm_ops->put_page(ptep);
++	put_pte_page(ptep, mm_ops);
+ 
+ 	if (kvm_pte_table(pte, level))
+-		mm_ops->put_page(kvm_pte_follow(pte, mm_ops));
++		put_pte_page(kvm_pte_follow(pte, mm_ops), mm_ops);
+ 
+ 	return 0;
+ }
+ 
+ void kvm_pgtable_stage2_destroy(struct kvm_pgtable *pgt)
+ {
+-	size_t pgd_sz;
++	u32 pgd_num;
+ 	struct kvm_pgtable_walker walker = {
+ 		.cb	= stage2_free_walker,
+ 		.flags	= KVM_PGTABLE_WALK_LEAF |
+@@ -1229,7 +1240,8 @@ void kvm_pgtable_stage2_destroy(struct kvm_pgtable *pgt)
+ 	};
+ 
+ 	WARN_ON(kvm_pgtable_walk(pgt, 0, BIT(pgt->ia_bits), &walker));
+-	pgd_sz = kvm_pgd_pages(pgt->ia_bits, pgt->start_level) * PAGE_SIZE;
+-	pgt->mm_ops->free_pages_exact(pgt->pgd, pgd_sz);
++	pgd_num = kvm_pgd_pages(pgt->ia_bits, pgt->start_level);
++	kvm_account_pgtable_pages((void *)pgt->pgd, -pgd_num);
++	pgt->mm_ops->free_pages_exact(pgt->pgd, pgd_num * PAGE_SIZE);
+ 	pgt->pgd = NULL;
  }
 -- 
 2.35.1.1094.g7c7d902a7c-goog
