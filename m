@@ -1,45 +1,119 @@
 From: Yosry Ahmed <yosryahmed@google.com>
-Date: Mon,  4 Apr 2022 23:41:50 +0000
-Subject: [PATCH v2 1/5] KVM: mm: add a helper to account page table pages used
- by KVM.
+Date: Mon,  4 Apr 2022 23:41:51 +0000
+Subject: [PATCH v2 2/5] KVM: x86: mm: count KVM page table pages in pagetable
+ stats
 In-Reply-To: <20220404234154.1251388-1-yosryahmed@google.com>
 References: <20220404234154.1251388-1-yosryahmed@google.com>
-Message-ID: <20220404234154.1251388-2-yosryahmed@google.com>
+Message-ID: <20220404234154.1251388-3-yosryahmed@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add a helper to account pages used by KVM for page tables as pagetable
-stats. This function will be used by subsequent patches in different
-archs.
+Count the pages used by KVM in x86 for page tables in pagetable stats.
+
+For legacy code, accounting pagetable stats is combined KVM's
+existing for mmu pages in newly introduced kvm_[un]account_mmu_page()
+helpers.
+
+For tdp mmu, introduce new tdp_[un]account_mmu_page() helpers. That
+combines accounting pagetable stats with the tdp_mmu_pages counter
+accounting.
+
+tdp_mmu_pages counter introduced in this series [1]. This patch was
+rebased on top of the first two patches in that series.
+
+[1]https://lore.kernel.org/lkml/20220401063636.2414200-1-mizhang at google.com/
 
 Signed-off-by: Yosry Ahmed <yosryahmed@google.com>
 ---
- include/linux/kvm_host.h | 9 +++++++++
- 1 file changed, 9 insertions(+)
+ arch/x86/kvm/mmu/mmu.c     | 16 ++++++++++++++--
+ arch/x86/kvm/mmu/tdp_mmu.c | 16 ++++++++++++++--
+ 2 files changed, 28 insertions(+), 4 deletions(-)
 
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index 252ee4a61b58..ca46b68e7086 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -2221,6 +2221,15 @@ static inline void kvm_handle_signal_exit(struct kvm_vcpu *vcpu)
+diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
+index f4020837fb48..28579b96a483 100644
+--- a/arch/x86/kvm/mmu/mmu.c
++++ b/arch/x86/kvm/mmu/mmu.c
+@@ -1671,6 +1671,18 @@ static inline void kvm_mod_used_mmu_pages(struct kvm *kvm, long nr)
+ 	percpu_counter_add(&kvm_total_used_mmu_pages, nr);
  }
- #endif /* CONFIG_KVM_XFER_TO_GUEST_WORK */
  
-+/*
-+ * If nr > 1, we assume virt is the address of the first page of a block of
-+ * pages that were allocated together (i.e accounted together).
-+ */
-+static inline void kvm_account_pgtable_pages(void *virt, int nr)
++static void kvm_account_mmu_page(struct kvm *kvm, struct kvm_mmu_page *sp)
 +{
-+	mod_lruvec_page_state(virt_to_page(virt), NR_PAGETABLE, nr);
++	kvm_mod_used_mmu_pages(kvm, +1);
++	kvm_account_pgtable_pages((void *)sp->spt, +1);
 +}
 +
- /*
-  * This defines how many reserved entries we want to keep before we
-  * kick the vcpu to the userspace to avoid dirty ring full.  This
++static void kvm_unaccount_mmu_page(struct kvm *kvm, struct kvm_mmu_page *sp)
++{
++	kvm_mod_used_mmu_pages(kvm, -1);
++	kvm_account_pgtable_pages((void *)sp->spt, -1);
++}
++
+ static void kvm_mmu_free_page(struct kvm_mmu_page *sp)
+ {
+ 	MMU_WARN_ON(!is_empty_shadow_page(sp->spt));
+@@ -1726,7 +1738,7 @@ static struct kvm_mmu_page *kvm_mmu_alloc_page(struct kvm_vcpu *vcpu, int direct
+ 	 */
+ 	sp->mmu_valid_gen = vcpu->kvm->arch.mmu_valid_gen;
+ 	list_add(&sp->link, &vcpu->kvm->arch.active_mmu_pages);
+-	kvm_mod_used_mmu_pages(vcpu->kvm, +1);
++	kvm_account_mmu_page(vcpu->kvm, sp);
+ 	return sp;
+ }
+ 
+@@ -2342,7 +2354,7 @@ static bool __kvm_mmu_prepare_zap_page(struct kvm *kvm,
+ 			list_add(&sp->link, invalid_list);
+ 		else
+ 			list_move(&sp->link, invalid_list);
+-		kvm_mod_used_mmu_pages(kvm, -1);
++		kvm_unaccount_mmu_page(kvm, sp);
+ 	} else {
+ 		/*
+ 		 * Remove the active root from the active page list, the root
+diff --git a/arch/x86/kvm/mmu/tdp_mmu.c b/arch/x86/kvm/mmu/tdp_mmu.c
+index ed34f3f75f18..12bfcfc610c5 100644
+--- a/arch/x86/kvm/mmu/tdp_mmu.c
++++ b/arch/x86/kvm/mmu/tdp_mmu.c
+@@ -371,6 +371,18 @@ static void handle_changed_spte_dirty_log(struct kvm *kvm, int as_id, gfn_t gfn,
+ 	}
+ }
+ 
++static void tdp_account_mmu_page(struct kvm *kvm, struct kvm_mmu_page *sp)
++{
++	atomic64_inc(&kvm->arch.tdp_mmu_pages);
++	kvm_account_pgtable_pages((void *)sp->spt, +1);
++}
++
++static void tdp_unaccount_mmu_page(struct kvm *kvm, struct kvm_mmu_page *sp)
++{
++	atomic64_dec(&kvm->arch.tdp_mmu_pages);
++	kvm_account_pgtable_pages((void *)sp->spt, -1);
++}
++
+ /**
+  * tdp_mmu_unlink_sp() - Remove a shadow page from the list of used pages
+  *
+@@ -383,7 +395,7 @@ static void handle_changed_spte_dirty_log(struct kvm *kvm, int as_id, gfn_t gfn,
+ static void tdp_mmu_unlink_sp(struct kvm *kvm, struct kvm_mmu_page *sp,
+ 			      bool shared)
+ {
+-	atomic64_dec(&kvm->arch.tdp_mmu_pages);
++	tdp_unaccount_mmu_page(kvm, sp);
+ 
+ 	if (!sp->lpage_disallowed)
+ 		return;
+@@ -1121,7 +1133,7 @@ static int tdp_mmu_link_sp(struct kvm *kvm, struct tdp_iter *iter,
+ 		tdp_mmu_set_spte(kvm, iter, spte);
+ 	}
+ 
+-	atomic64_inc(&kvm->arch.tdp_mmu_pages);
++	tdp_account_mmu_page(kvm, sp);
+ 
+ 	return 0;
+ }
 -- 
 2.35.1.1094.g7c7d902a7c-goog
 
