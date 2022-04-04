@@ -1,45 +1,43 @@
-From: Mayuresh Chitale <mchitale@ventanamicro.com>
-Date: Mon, 4 Apr 2022 09:41:42 +0530
-Subject: [PATCH 0/3] Unexpected guest trap handling for KVM RISC-V
- selftests
-In-Reply-To: <20220329072911.1692766-1-apatel@ventanamicro.com>
-References: <20220329072911.1692766-1-apatel@ventanamicro.com>
-Message-ID: <CAN37VV4qnjyf96EA-uo7bs1jRavh-oB+eUk08i-6f0RiqCDC-Q@mail.gmail.com>
+From: Yosry Ahmed <yosryahmed@google.com>
+Date: Mon,  4 Apr 2022 23:41:49 +0000
+Subject: [PATCH v2 0/5] KVM: mm: count KVM page table pages in pagetable stats
+Message-ID: <20220404234154.1251388-1-yosryahmed@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Mar 29, 2022 at 1:00 PM Anup Patel <apatel@ventanamicro.com> wrote:
->
-> Getting unexpected guest traps while running KVM RISC-V selftests should
-> cause the test to fail appropriately with VCPU register dump. This series
-> improves handling of unexpected traps along these lines.
->
-> These patches can also be found in riscv_kvm_selftests_unexp_trap_v1 branch
-> at: https://github.com/avpatel/linux.git
->
-> Anup Patel (3):
->   KVM: selftests: riscv: Set PTE A and D bits in VS-stage page table
->   KVM: selftests: riscv: Fix alignment of the guest_hang() function
->   KVM: selftests: riscv: Improve unexpected guest trap handling
->
->  .../selftests/kvm/include/riscv/processor.h   | 12 ++++---
->  .../selftests/kvm/lib/riscv/processor.c       |  9 +++---
->  tools/testing/selftests/kvm/lib/riscv/ucall.c | 31 +++++++++++++------
->  3 files changed, 34 insertions(+), 18 deletions(-)
->
-> --
-> 2.25.1
->
->
-> _______________________________________________
-> linux-riscv mailing list
-> linux-riscv at lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-riscv
+We keep track of several kernel memory stats (total kernel memory, page
+tables, stack, vmalloc, etc) on multiple levels (global, per-node,
+per-memcg, etc). These stats give insights to users to how much memory
+is used by the kernel and for what purposes.
 
-I have tested the series on Qemu.
+Currently, memory used by kvm for its page tables is not accounted in
+the pagetable stats. This patch series accounts the memory pages used by
+KVM for page tables in those stats.
 
-Tested-by: Mayuresh Chitale <mchitale@ventanamicro.com>
+The riscv and mips patches are not tested properly due to lack of
+resources. Feel free to test or drop them.
+
+Yosry Ahmed (5):
+  KVM: mm: add a helper to account page table pages used by KVM.
+  KVM: x86: mm: count KVM page table pages in pagetable stats
+  KVM: arm64: mm: count KVM page table pages in pagetable stats
+  KVM: riscv: mm: count KVM page table pages in pagetable stats
+  KVM: mips: mm: count KVM page table pages in pagetable stats
+
+ arch/arm64/kernel/image-vars.h |  3 ++
+ arch/arm64/kvm/hyp/pgtable.c   | 50 +++++++++++++++++++++-------------
+ arch/mips/kvm/mips.c           |  1 +
+ arch/mips/kvm/mmu.c            |  9 +++++-
+ arch/riscv/kvm/mmu.c           | 26 +++++++++++++-----
+ arch/x86/kvm/mmu/mmu.c         | 16 +++++++++--
+ arch/x86/kvm/mmu/tdp_mmu.c     | 16 +++++++++--
+ include/linux/kvm_host.h       |  9 ++++++
+ 8 files changed, 99 insertions(+), 31 deletions(-)
+
+-- 
+2.35.1.1094.g7c7d902a7c-goog
+
 
