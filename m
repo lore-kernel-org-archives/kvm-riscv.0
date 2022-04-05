@@ -1,93 +1,61 @@
-From: Yosry Ahmed <yosryahmed@google.com>
-Date: Mon,  4 Apr 2022 23:41:54 +0000
-Subject: [PATCH v2 5/5] KVM: mips: mm: count KVM page table pages in pagetable
- stats
-In-Reply-To: <20220404234154.1251388-1-yosryahmed@google.com>
-References: <20220404234154.1251388-1-yosryahmed@google.com>
-Message-ID: <20220404234154.1251388-6-yosryahmed@google.com>
+From: Anup Patel <anup@brainfault.org>
+Date: Tue, 5 Apr 2022 12:48:03 +0530
+Subject: [PATCH 1/3] KVM: selftests: riscv: Set PTE A and D bits in
+ VS-stage page table
+In-Reply-To: <20220329072911.1692766-2-apatel@ventanamicro.com>
+References: <20220329072911.1692766-1-apatel@ventanamicro.com>
+ <20220329072911.1692766-2-apatel@ventanamicro.com>
+Message-ID: <CAAhSdy2=q4u9UR7zYks5A-3k1q4srOqk14O3+a14sUS5Qa+Ppg@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Count the pages used by KVM in mips for page tables in pagetable stats.
+On Tue, Mar 29, 2022 at 12:59 PM Anup Patel <apatel@ventanamicro.com> wrote:
+>
+> Supporting hardware updates of PTE A and D bits is optional for any
+> RISC-V implementation so current software strategy is to always set
+> these bits in both G-stage (hypervisor) and VS-stage (guest kernel).
+>
+> If PTE A and D bits are not set by software (hypervisor or guest)
+> then RISC-V implementations not supporting hardware updates of these
+> bits will cause traps even for perfectly valid PTEs.
+>
+> Based on above explanation, the VS-stage page table created by various
+> KVM selftest applications is not correct because PTE A and D bits are
+> not set. This patch fixes VS-stage page table programming of PTE A and
+> D bits for KVM selftests.
+>
+> Fixes: 3e06cdf10520 ("KVM: selftests: Add initial support for RISC-V
+> 64-bit")
+> Signed-off-by: Anup Patel <apatel@ventanamicro.com>
 
-Signed-off-by: Yosry Ahmed <yosryahmed@google.com>
----
- arch/mips/kvm/mips.c | 1 +
- arch/mips/kvm/mmu.c  | 9 ++++++++-
- 2 files changed, 9 insertions(+), 1 deletion(-)
+I have queued this patch for RC fixes.
 
-diff --git a/arch/mips/kvm/mips.c b/arch/mips/kvm/mips.c
-index a25e0b73ee70..e60c1920a408 100644
---- a/arch/mips/kvm/mips.c
-+++ b/arch/mips/kvm/mips.c
-@@ -175,6 +175,7 @@ static void kvm_mips_free_gpa_pt(struct kvm *kvm)
- {
- 	/* It should always be safe to remove after flushing the whole range */
- 	WARN_ON(!kvm_mips_flush_gpa_pt(kvm, 0, ~0));
-+	kvm_account_pgtable_pages((void *)kvm->arch.gpa_mm.pgd, -1);
- 	pgd_free(NULL, kvm->arch.gpa_mm.pgd);
- }
- 
-diff --git a/arch/mips/kvm/mmu.c b/arch/mips/kvm/mmu.c
-index 1bfd1b501d82..18da2ac2ded7 100644
---- a/arch/mips/kvm/mmu.c
-+++ b/arch/mips/kvm/mmu.c
-@@ -81,8 +81,10 @@ pgd_t *kvm_pgd_alloc(void)
- 	pgd_t *ret;
- 
- 	ret = (pgd_t *)__get_free_pages(GFP_KERNEL, PGD_ORDER);
--	if (ret)
-+	if (ret) {
- 		kvm_pgd_init(ret);
-+		kvm_account_pgtable_pages((void *)ret, +1);
-+	}
- 
- 	return ret;
- }
-@@ -125,6 +127,7 @@ static pte_t *kvm_mips_walk_pgd(pgd_t *pgd, struct kvm_mmu_memory_cache *cache,
- 		pmd_init((unsigned long)new_pmd,
- 			 (unsigned long)invalid_pte_table);
- 		pud_populate(NULL, pud, new_pmd);
-+		kvm_account_pgtable_pages((void *)new_pmd, +1);
- 	}
- 	pmd = pmd_offset(pud, addr);
- 	if (pmd_none(*pmd)) {
-@@ -135,6 +138,7 @@ static pte_t *kvm_mips_walk_pgd(pgd_t *pgd, struct kvm_mmu_memory_cache *cache,
- 		new_pte = kvm_mmu_memory_cache_alloc(cache);
- 		clear_page(new_pte);
- 		pmd_populate_kernel(NULL, pmd, new_pte);
-+		kvm_account_pgtable_pages((void *)new_pte, +1);
- 	}
- 	return pte_offset_kernel(pmd, addr);
- }
-@@ -189,6 +193,7 @@ static bool kvm_mips_flush_gpa_pmd(pmd_t *pmd, unsigned long start_gpa,
- 
- 		if (kvm_mips_flush_gpa_pte(pte, start_gpa, end)) {
- 			pmd_clear(pmd + i);
-+			kvm_account_pgtable_pages((void *)pte, -1);
- 			pte_free_kernel(NULL, pte);
- 		} else {
- 			safe_to_remove = false;
-@@ -217,6 +222,7 @@ static bool kvm_mips_flush_gpa_pud(pud_t *pud, unsigned long start_gpa,
- 
- 		if (kvm_mips_flush_gpa_pmd(pmd, start_gpa, end)) {
- 			pud_clear(pud + i);
-+			kvm_account_pgtable_pages((void *)pmd, -1);
- 			pmd_free(NULL, pmd);
- 		} else {
- 			safe_to_remove = false;
-@@ -247,6 +253,7 @@ static bool kvm_mips_flush_gpa_pgd(pgd_t *pgd, unsigned long start_gpa,
- 
- 		if (kvm_mips_flush_gpa_pud(pud, start_gpa, end)) {
- 			pgd_clear(pgd + i);
-+			kvm_account_pgtable_pages((void *)pud, -1);
- 			pud_free(NULL, pud);
- 		} else {
- 			safe_to_remove = false;
--- 
-2.35.1.1094.g7c7d902a7c-goog
+Thanks,
+Anup
 
+> ---
+>  tools/testing/selftests/kvm/include/riscv/processor.h | 4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
+>
+> diff --git a/tools/testing/selftests/kvm/include/riscv/processor.h b/tools/testing/selftests/kvm/include/riscv/processor.h
+> index dc284c6bdbc3..eca5c622efd2 100644
+> --- a/tools/testing/selftests/kvm/include/riscv/processor.h
+> +++ b/tools/testing/selftests/kvm/include/riscv/processor.h
+> @@ -101,7 +101,9 @@ static inline void set_reg(struct kvm_vm *vm, uint32_t vcpuid, uint64_t id,
+>  #define PGTBL_PTE_WRITE_SHIFT                  2
+>  #define PGTBL_PTE_READ_MASK                    0x0000000000000002ULL
+>  #define PGTBL_PTE_READ_SHIFT                   1
+> -#define PGTBL_PTE_PERM_MASK                    (PGTBL_PTE_EXECUTE_MASK | \
+> +#define PGTBL_PTE_PERM_MASK                    (PGTBL_PTE_ACCESSED_MASK | \
+> +                                                PGTBL_PTE_DIRTY_MASK | \
+> +                                                PGTBL_PTE_EXECUTE_MASK | \
+>                                                  PGTBL_PTE_WRITE_MASK | \
+>                                                  PGTBL_PTE_READ_MASK)
+>  #define PGTBL_PTE_VALID_MASK                   0x0000000000000001ULL
+> --
+> 2.25.1
+>
 
