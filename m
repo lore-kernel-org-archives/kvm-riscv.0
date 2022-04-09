@@ -1,116 +1,65 @@
 From: Oliver Upton <oupton@google.com>
-Date: Sat,  9 Apr 2022 18:45:41 +0000
-Subject: [PATCH v5 05/13] KVM: Create helper for setting a system event exit
+Date: Sat,  9 Apr 2022 18:45:42 +0000
+Subject: [PATCH v5 06/13] KVM: arm64: Return a value from check_vcpu_requests()
 In-Reply-To: <20220409184549.1681189-1-oupton@google.com>
 References: <20220409184549.1681189-1-oupton@google.com>
-Message-ID: <20220409184549.1681189-6-oupton@google.com>
+Message-ID: <20220409184549.1681189-7-oupton@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Create a helper that appropriately configures kvm_run for a system event
-exit.
+A subsequent change to KVM will introduce a vCPU request that could
+result in an exit to userspace. Change check_vcpu_requests() to return a
+value and document the function. Unconditionally return 1 for now.
 
-No functional change intended.
-
-Suggested-by: Marc Zyngier <maz@kernel.org>
 Signed-off-by: Oliver Upton <oupton@google.com>
-Acked-by: Anup Patel <anup@brainfault.org>
 ---
- arch/arm64/kvm/psci.c     | 5 +----
- arch/riscv/kvm/vcpu_sbi.c | 5 +----
- arch/x86/kvm/x86.c        | 6 ++----
- include/linux/kvm_host.h  | 2 ++
- virt/kvm/kvm_main.c       | 8 ++++++++
- 5 files changed, 14 insertions(+), 12 deletions(-)
+ arch/arm64/kvm/arm.c | 16 ++++++++++++++--
+ 1 file changed, 14 insertions(+), 2 deletions(-)
 
-diff --git a/arch/arm64/kvm/psci.c b/arch/arm64/kvm/psci.c
-index f2f45a3cbe86..362d2a898b83 100644
---- a/arch/arm64/kvm/psci.c
-+++ b/arch/arm64/kvm/psci.c
-@@ -172,10 +172,7 @@ static void kvm_prepare_system_event(struct kvm_vcpu *vcpu, u32 type, u64 flags)
- 		tmp->arch.mp_state.mp_state = KVM_MP_STATE_STOPPED;
- 	kvm_make_all_cpus_request(vcpu->kvm, KVM_REQ_SLEEP);
- 
--	memset(&vcpu->run->system_event, 0, sizeof(vcpu->run->system_event));
--	vcpu->run->system_event.type = type;
--	vcpu->run->system_event.flags = flags;
--	vcpu->run->exit_reason = KVM_EXIT_SYSTEM_EVENT;
-+	kvm_vcpu_set_system_event_exit(vcpu, type, flags);
+diff --git a/arch/arm64/kvm/arm.c b/arch/arm64/kvm/arm.c
+index 77b8b870c0fc..efe54aba5cce 100644
+--- a/arch/arm64/kvm/arm.c
++++ b/arch/arm64/kvm/arm.c
+@@ -648,7 +648,16 @@ void kvm_vcpu_wfi(struct kvm_vcpu *vcpu)
+ 	preempt_enable();
  }
  
- static void kvm_psci_system_off(struct kvm_vcpu *vcpu)
-diff --git a/arch/riscv/kvm/vcpu_sbi.c b/arch/riscv/kvm/vcpu_sbi.c
-index a09ecb97b890..3be9730ae68b 100644
---- a/arch/riscv/kvm/vcpu_sbi.c
-+++ b/arch/riscv/kvm/vcpu_sbi.c
-@@ -92,10 +92,7 @@ void kvm_riscv_vcpu_sbi_system_reset(struct kvm_vcpu *vcpu,
- 		tmp->arch.power_off = true;
- 	kvm_make_all_cpus_request(vcpu->kvm, KVM_REQ_SLEEP);
- 
--	memset(&run->system_event, 0, sizeof(run->system_event));
--	run->system_event.type = type;
--	run->system_event.flags = flags;
--	run->exit_reason = KVM_EXIT_SYSTEM_EVENT;
-+	kvm_vcpu_set_system_event_exit(vcpu, type, flags);
- }
- 
- int kvm_riscv_vcpu_sbi_return(struct kvm_vcpu *vcpu, struct kvm_run *run)
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 0c0ca599a353..54efc1b4eb28 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -10014,14 +10014,12 @@ static int vcpu_enter_guest(struct kvm_vcpu *vcpu)
- 		if (kvm_check_request(KVM_REQ_APIC_PAGE_RELOAD, vcpu))
- 			kvm_vcpu_reload_apic_access_page(vcpu);
- 		if (kvm_check_request(KVM_REQ_HV_CRASH, vcpu)) {
--			vcpu->run->exit_reason = KVM_EXIT_SYSTEM_EVENT;
--			vcpu->run->system_event.type = KVM_SYSTEM_EVENT_CRASH;
-+			kvm_vcpu_set_system_event_exit(vcpu, KVM_SYSTEM_EVENT_CRASH, 0);
- 			r = 0;
- 			goto out;
- 		}
- 		if (kvm_check_request(KVM_REQ_HV_RESET, vcpu)) {
--			vcpu->run->exit_reason = KVM_EXIT_SYSTEM_EVENT;
--			vcpu->run->system_event.type = KVM_SYSTEM_EVENT_RESET;
-+			kvm_vcpu_set_system_event_exit(vcpu, KVM_SYSTEM_EVENT_RESET, 0);
- 			r = 0;
- 			goto out;
- 		}
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index 3f9b22c4983a..f2f66dc0fa6e 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -2220,6 +2220,8 @@ static inline void kvm_handle_signal_exit(struct kvm_vcpu *vcpu)
- }
- #endif /* CONFIG_KVM_XFER_TO_GUEST_WORK */
- 
-+void kvm_vcpu_set_system_event_exit(struct kvm_vcpu *vcpu, u32 type, u64 flags);
-+
- /*
-  * This defines how many reserved entries we want to keep before we
-  * kick the vcpu to the userspace to avoid dirty ring full.  This
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index e39a6f56fc47..b91f689dd091 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -3208,6 +3208,14 @@ void kvm_vcpu_mark_page_dirty(struct kvm_vcpu *vcpu, gfn_t gfn)
- }
- EXPORT_SYMBOL_GPL(kvm_vcpu_mark_page_dirty);
- 
-+void kvm_vcpu_set_system_event_exit(struct kvm_vcpu *vcpu, u32 type, u64 flags)
-+{
-+	memset(&vcpu->run->system_event, 0, sizeof(vcpu->run->system_event));
-+	vcpu->run->system_event.type = type;
-+	vcpu->run->system_event.flags = flags;
-+	vcpu->run->exit_reason = KVM_EXIT_SYSTEM_EVENT;
-+}
-+
- void kvm_sigset_activate(struct kvm_vcpu *vcpu)
+-static void check_vcpu_requests(struct kvm_vcpu *vcpu)
++/**
++ * check_vcpu_requests - check and handle pending vCPU requests
++ * @vcpu:	the VCPU pointer
++ *
++ * Return: 1 if we should enter the guest
++ *	   0 if we should exit to userspace
++ *	   < 0 if we should exit to userspace, where the return value indicates
++ *	   an error
++ */
++static int check_vcpu_requests(struct kvm_vcpu *vcpu)
  {
- 	if (!vcpu->sigset_active)
+ 	if (kvm_request_pending(vcpu)) {
+ 		if (kvm_check_request(KVM_REQ_SLEEP, vcpu))
+@@ -678,6 +687,8 @@ static void check_vcpu_requests(struct kvm_vcpu *vcpu)
+ 			kvm_pmu_handle_pmcr(vcpu,
+ 					    __vcpu_sys_reg(vcpu, PMCR_EL0));
+ 	}
++
++	return 1;
+ }
+ 
+ static bool vcpu_mode_is_bad_32bit(struct kvm_vcpu *vcpu)
+@@ -793,7 +804,8 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
+ 		if (!ret)
+ 			ret = 1;
+ 
+-		check_vcpu_requests(vcpu);
++		if (ret > 0)
++			ret = check_vcpu_requests(vcpu);
+ 
+ 		/*
+ 		 * Preparing the interrupts to be injected also
 -- 
 2.35.1.1178.g4f1659d476-goog
 
