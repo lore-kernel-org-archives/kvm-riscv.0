@@ -1,106 +1,80 @@
 From: Oliver Upton <oupton@google.com>
-Date: Sat,  9 Apr 2022 18:45:38 +0000
-Subject: [PATCH v5 02/13] KVM: arm64: Dedupe vCPU power off helpers
+Date: Sat,  9 Apr 2022 18:45:37 +0000
+Subject: [PATCH v5 01/13] KVM: arm64: Don't depend on fallthrough to hide
+ SYSTEM_RESET2
 In-Reply-To: <20220409184549.1681189-1-oupton@google.com>
 References: <20220409184549.1681189-1-oupton@google.com>
-Message-ID: <20220409184549.1681189-3-oupton@google.com>
+Message-ID: <20220409184549.1681189-2-oupton@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-vcpu_power_off() and kvm_psci_vcpu_off() are equivalent; rename the
-former and replace all callsites to the latter.
+Depending on a fallthrough to the default case for hiding SYSTEM_RESET2
+requires that any new case statements clean up the failure path for this
+PSCI call.
+
+Unhitch SYSTEM_RESET2 from the default case by setting val to
+PSCI_RET_NOT_SUPPORTED outside of the switch statement. Apply the
+cleanup to both the PSCI_1_1_FN_SYSTEM_RESET2 and
+PSCI_1_0_FN_PSCI_FEATURES handlers.
 
 No functional change intended.
 
 Signed-off-by: Oliver Upton <oupton@google.com>
-Reviewed-by: Reiji Watanabe <reijiw@google.com>
 ---
- arch/arm64/include/asm/kvm_host.h |  2 ++
- arch/arm64/kvm/arm.c              |  6 +++---
- arch/arm64/kvm/psci.c             | 11 ++---------
- 3 files changed, 7 insertions(+), 12 deletions(-)
+ arch/arm64/kvm/psci.c | 13 +++++--------
+ 1 file changed, 5 insertions(+), 8 deletions(-)
 
-diff --git a/arch/arm64/include/asm/kvm_host.h b/arch/arm64/include/asm/kvm_host.h
-index 94a27a7520f4..490cd7f3a905 100644
---- a/arch/arm64/include/asm/kvm_host.h
-+++ b/arch/arm64/include/asm/kvm_host.h
-@@ -841,4 +841,6 @@ void __init kvm_hyp_reserve(void);
- static inline void kvm_hyp_reserve(void) { }
- #endif
- 
-+void kvm_arm_vcpu_power_off(struct kvm_vcpu *vcpu);
-+
- #endif /* __ARM64_KVM_HOST_H__ */
-diff --git a/arch/arm64/kvm/arm.c b/arch/arm64/kvm/arm.c
-index 523bc934fe2f..28c83c6ddbae 100644
---- a/arch/arm64/kvm/arm.c
-+++ b/arch/arm64/kvm/arm.c
-@@ -432,7 +432,7 @@ void kvm_arch_vcpu_put(struct kvm_vcpu *vcpu)
- 	vcpu->cpu = -1;
- }
- 
--static void vcpu_power_off(struct kvm_vcpu *vcpu)
-+void kvm_arm_vcpu_power_off(struct kvm_vcpu *vcpu)
- {
- 	vcpu->arch.power_off = true;
- 	kvm_make_request(KVM_REQ_SLEEP, vcpu);
-@@ -460,7 +460,7 @@ int kvm_arch_vcpu_ioctl_set_mpstate(struct kvm_vcpu *vcpu,
- 		vcpu->arch.power_off = false;
- 		break;
- 	case KVM_MP_STATE_STOPPED:
--		vcpu_power_off(vcpu);
-+		kvm_arm_vcpu_power_off(vcpu);
- 		break;
- 	default:
- 		ret = -EINVAL;
-@@ -1124,7 +1124,7 @@ static int kvm_arch_vcpu_ioctl_vcpu_init(struct kvm_vcpu *vcpu,
- 	 * Handle the "start in power-off" case.
- 	 */
- 	if (test_bit(KVM_ARM_VCPU_POWER_OFF, vcpu->arch.features))
--		vcpu_power_off(vcpu);
-+		kvm_arm_vcpu_power_off(vcpu);
- 	else
- 		vcpu->arch.power_off = false;
- 
 diff --git a/arch/arm64/kvm/psci.c b/arch/arm64/kvm/psci.c
-index 3d43350ffb07..cdc0609c1135 100644
+index baac2b405f23..3d43350ffb07 100644
 --- a/arch/arm64/kvm/psci.c
 +++ b/arch/arm64/kvm/psci.c
-@@ -51,13 +51,6 @@ static unsigned long kvm_psci_vcpu_suspend(struct kvm_vcpu *vcpu)
- 	return PSCI_RET_SUCCESS;
- }
+@@ -304,9 +304,9 @@ static int kvm_psci_0_2_call(struct kvm_vcpu *vcpu)
  
--static void kvm_psci_vcpu_off(struct kvm_vcpu *vcpu)
--{
--	vcpu->arch.power_off = true;
--	kvm_make_request(KVM_REQ_SLEEP, vcpu);
--	kvm_vcpu_kick(vcpu);
--}
--
- static inline bool kvm_psci_valid_affinity(struct kvm_vcpu *vcpu,
- 					   unsigned long affinity)
+ static int kvm_psci_1_x_call(struct kvm_vcpu *vcpu, u32 minor)
  {
-@@ -244,7 +237,7 @@ static int kvm_psci_0_2_call(struct kvm_vcpu *vcpu)
- 		val = kvm_psci_vcpu_suspend(vcpu);
- 		break;
- 	case PSCI_0_2_FN_CPU_OFF:
--		kvm_psci_vcpu_off(vcpu);
-+		kvm_arm_vcpu_power_off(vcpu);
- 		val = PSCI_RET_SUCCESS;
- 		break;
- 	case PSCI_0_2_FN_CPU_ON:
-@@ -378,7 +371,7 @@ static int kvm_psci_0_1_call(struct kvm_vcpu *vcpu)
++	unsigned long val = PSCI_RET_NOT_SUPPORTED;
+ 	u32 psci_fn = smccc_get_function(vcpu);
+ 	u32 arg;
+-	unsigned long val;
+ 	int ret = 1;
  
- 	switch (psci_fn) {
- 	case KVM_PSCI_FN_CPU_OFF:
--		kvm_psci_vcpu_off(vcpu);
-+		kvm_arm_vcpu_power_off(vcpu);
- 		val = PSCI_RET_SUCCESS;
+ 	switch(psci_fn) {
+@@ -319,6 +319,8 @@ static int kvm_psci_1_x_call(struct kvm_vcpu *vcpu, u32 minor)
+ 		if (val)
+ 			break;
+ 
++		val = PSCI_RET_NOT_SUPPORTED;
++
+ 		switch(arg) {
+ 		case PSCI_0_2_FN_PSCI_VERSION:
+ 		case PSCI_0_2_FN_CPU_SUSPEND:
+@@ -337,13 +339,8 @@ static int kvm_psci_1_x_call(struct kvm_vcpu *vcpu, u32 minor)
+ 			break;
+ 		case PSCI_1_1_FN_SYSTEM_RESET2:
+ 		case PSCI_1_1_FN64_SYSTEM_RESET2:
+-			if (minor >= 1) {
++			if (minor >= 1)
+ 				val = 0;
+-				break;
+-			}
+-			fallthrough;
+-		default:
+-			val = PSCI_RET_NOT_SUPPORTED;
+ 			break;
+ 		}
  		break;
- 	case KVM_PSCI_FN_CPU_ON:
+@@ -364,7 +361,7 @@ static int kvm_psci_1_x_call(struct kvm_vcpu *vcpu, u32 minor)
+ 			val = PSCI_RET_INVALID_PARAMS;
+ 			break;
+ 		}
+-		fallthrough;
++		break;
+ 	default:
+ 		return kvm_psci_0_2_call(vcpu);
+ 	}
 -- 
 2.35.1.1178.g4f1659d476-goog
 
