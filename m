@@ -1,62 +1,99 @@
-From: Anup Patel <anup@brainfault.org>
-Date: Sat, 9 Apr 2022 10:00:29 +0530
-Subject: [GIT PULL] KVM/riscv fixes for 5.18, take #1
-Message-ID: <CAAhSdy3RJpcYNS9NN=hNw=14O9e6=hqoF10fi1vT=No2cT0jWQ@mail.gmail.com>
+From: Oliver Upton <oupton@google.com>
+Date: Sat,  9 Apr 2022 18:45:36 +0000
+Subject: [PATCH v5 00/13] KVM: arm64: PSCI SYSTEM_SUSPEND support
+Message-ID: <20220409184549.1681189-1-oupton@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Paolo,
+The PSCI v1.0 specification describes a call, SYSTEM_SUSPEND, which
+allows software to request that the system be placed into the lowest
+possible power state and await a wakeup event. This call is optional
+in v1.0 and v1.1. KVM does not currently support this optional call.
 
-This is the first set of fixes for 5.18. There are four fixes:
-a) One fix related to hgatp in kvm_arch_vcpu_put()
-b) Two KVM selftests fixes
-c) Missing #include in vcpu_fp.c
+This series adds support for the PSCI SYSTEM_SUSPEND call to KVM/arm64.
+For reasons best described in patch 8, it is infeasible to correctly
+implement PSCI SYSTEM_SUSPEND (or any system-wide event for that matter)
+in a split design between kernel/userspace. As such, this series cheaply
+exits to userspace so it can decide what to do with the call. This
+series also gives userspace some help to emulate suspension with a new
+MP state that awaits an unmasked pending interrupt.
 
-Please pull.
+Patches 1-6 are small reworks to more easily shoehorn the new features
+into the kernel.
 
-Regards,
-Anup
+Patch 7 stands up the new suspend MP state, allowing userspace to
+emulate the PSCI call.
 
-The following changes since commit a44e2c207c30a5780c4ad0cc3579b8715cebf52e:
+Patch 8 actually allows userspace to enable the PSCI call, which
+requires explicit opt-in for the new KVM_EXIT_SYSTEM_EVENT type.
 
-  Merge tag 'kvmarm-fixes-5.18-1' of
-git://git.kernel.org/pub/scm/linux/kernel/git/kvmarm/kvmarm into HEAD
-(2022-04-08 12:30:04 -0400)
+Patches 9-12 clean up the way PSCI is tested in selftests to more easily
+add new test cases.
 
-are available in the Git repository at:
+Finally, the last patch actually tests that PSCI SYSTEM_SUSPEND calls
+within the guest result in userspace exits.
 
-  https://github.com/kvm-riscv/linux.git tags/kvm-riscv-fixes-5.18-1
+Applies cleanly to kvmarm/fixes, at the following commit:
 
-for you to fetch changes up to 4054eee9290248bf66c5eacb58879c9aaad37f71:
+  21db83846683 ("selftests: KVM: Free the GIC FD when cleaning up in arch_timer")
 
-  RISC-V: KVM: include missing hwcap.h into vcpu_fp (2022-04-09 09:16:00 +0530)
+This is because there's some patches on the fixes branch that would
+cause conflicts with this series otherwise.
 
-----------------------------------------------------------------
-KVM/riscv fixes for 5.18, take #1
+Tested with the included selftest and a hacked up kvmtool [1] with support
+for the new UAPI.
 
-- Remove hgatp zeroing in kvm_arch_vcpu_put()
+[1]: https://lore.kernel.org/all/20220311175717.616958-1-oupton at google.com/
 
-- Fix alignment of the guest_hang() in KVM selftest
+v4: http://lore.kernel.org/r/20220311174001.605719-1-oupton at google.com
 
-- Fix PTE A and D bits in KVM selftest
+v4 -> v5:
+ - Rebase to kvmarm/fixes (5.18-rc1 + a bit more)
+ - Rework system event helper around RISC-V SBI changes (Anup)
+ - Don't presume a vCPU has been woken up when it returns from
+   kvm_vcpu_wfi(), as there are other situations where the vCPU thread
+   unblocks, such as signals. (Reiji)
+ - Tighten up comments/docs (Reiji)
 
-- Missing #include in vcpu_fp.c
+Oliver Upton (13):
+  KVM: arm64: Don't depend on fallthrough to hide SYSTEM_RESET2
+  KVM: arm64: Dedupe vCPU power off helpers
+  KVM: arm64: Track vCPU power state using MP state values
+  KVM: arm64: Rename the KVM_REQ_SLEEP handler
+  KVM: Create helper for setting a system event exit
+  KVM: arm64: Return a value from check_vcpu_requests()
+  KVM: arm64: Add support for userspace to suspend a vCPU
+  KVM: arm64: Implement PSCI SYSTEM_SUSPEND
+  selftests: KVM: Rename psci_cpu_on_test to psci_test
+  selftests: KVM: Create helper for making SMCCC calls
+  selftests: KVM: Use KVM_SET_MP_STATE to power off vCPU in psci_test
+  selftests: KVM: Refactor psci_test to make it amenable to new tests
+  selftests: KVM: Test SYSTEM_SUSPEND PSCI call
 
-----------------------------------------------------------------
-Anup Patel (3):
-      RISC-V: KVM: Don't clear hgatp CSR in kvm_arch_vcpu_put()
-      KVM: selftests: riscv: Set PTE A and D bits in VS-stage page table
-      KVM: selftests: riscv: Fix alignment of the guest_hang() function
+ Documentation/virt/kvm/api.rst                |  76 ++++++-
+ arch/arm64/include/asm/kvm_host.h             |  11 +-
+ arch/arm64/kvm/arm.c                          | 107 +++++++--
+ arch/arm64/kvm/psci.c                         |  66 +++---
+ arch/riscv/kvm/vcpu_sbi.c                     |   5 +-
+ arch/x86/kvm/x86.c                            |   6 +-
+ include/linux/kvm_host.h                      |   2 +
+ include/uapi/linux/kvm.h                      |   4 +
+ tools/testing/selftests/kvm/.gitignore        |   2 +-
+ tools/testing/selftests/kvm/Makefile          |   2 +-
+ .../selftests/kvm/aarch64/psci_cpu_on_test.c  | 121 ----------
+ .../testing/selftests/kvm/aarch64/psci_test.c | 213 ++++++++++++++++++
+ .../selftests/kvm/include/aarch64/processor.h |  22 ++
+ .../selftests/kvm/lib/aarch64/processor.c     |  25 ++
+ tools/testing/selftests/kvm/steal_time.c      |  13 +-
+ virt/kvm/kvm_main.c                           |   8 +
+ 16 files changed, 493 insertions(+), 190 deletions(-)
+ delete mode 100644 tools/testing/selftests/kvm/aarch64/psci_cpu_on_test.c
+ create mode 100644 tools/testing/selftests/kvm/aarch64/psci_test.c
 
-Heiko Stuebner (1):
-      RISC-V: KVM: include missing hwcap.h into vcpu_fp
+-- 
+2.35.1.1178.g4f1659d476-goog
 
- arch/riscv/kvm/vcpu.c                                 | 2 --
- arch/riscv/kvm/vcpu_fp.c                              | 1 +
- tools/testing/selftests/kvm/include/riscv/processor.h | 4 +++-
- tools/testing/selftests/kvm/lib/riscv/processor.c     | 2 +-
- 4 files changed, 5 insertions(+), 4 deletions(-)
 
