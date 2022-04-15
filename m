@@ -1,86 +1,49 @@
-From: David Matlack <dmatlack@google.com>
-Date: Thu, 14 Apr 2022 09:50:35 -0700
-Subject: [PATCH v3 22/23] KVM: x86/mmu: Support Eager Page Splitting in
- the shadow MMU
-In-Reply-To: <YlDV27ediz+rBuLd@google.com>
-References: <20220401175554.1931568-1-dmatlack@google.com>
- <20220401175554.1931568-23-dmatlack@google.com>
- <YlDV27ediz+rBuLd@google.com>
-Message-ID: <CALzav=f7wtHtTi6z64Br8P_aKiNqHivMi7zwQDxFfqiPGXpBeA@mail.gmail.com>
+From: Sean Christopherson <seanjc@google.com>
+Date: Fri, 15 Apr 2022 00:43:40 +0000
+Subject: [PATCH 0/3] KVM: x86 SRCU bug fix and SRCU hardening
+Message-ID: <20220415004343.2203171-1-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Apr 8, 2022 at 5:40 PM Sean Christopherson <seanjc@google.com> wrote:
->
-> On Fri, Apr 01, 2022, David Matlack wrote:
-> > Add support for Eager Page Splitting pages that are mapped by the shadow
-> > MMU. Walk through the rmap first splitting all 1GiB pages to 2MiB pages,
-> > and then splitting all 2MiB pages to 4KiB pages.
-> >
-> > Splitting huge pages mapped by the shadow MMU requries dealing with some
-> > extra complexity beyond that of the TDP MMU:
-> >
-> > (1) The shadow MMU has a limit on the number of shadow pages that are
-> >     allowed to be allocated. So, as a policy, Eager Page Splitting
-> >     refuses to split if there are KVM_MIN_FREE_MMU_PAGES or fewer
-> >     pages available.
-> >
-> > (2) Huge pages may be mapped by indirect shadow pages which have the
-> >     possibility of being unsync. As a policy we opt not to split such
-> >     pages as their translation may no longer be valid.
->
-> This shouldn't be possible, shadow pages whose role is > 4k are always write-protected
-> and not allowed to become unsync.
+Fix an x86 bug where KVM overwrites vcpu->srcu_idx and can leak an SRCU
+lock due to unlocking the wrong index, ultimately causing a hang if/when
+KVM attempts to synchronize.
 
-Ah ok, then the unsync check is unnecessary (or at least could WARN_ON()).
+Switch RISC-V to the generic vcpu->srcu_idx, for reasons unknown it has
+its own copy and ignores the generic one.
 
->
-> >
-> > (3) Splitting a huge page may end up re-using an existing lower level
-> >     shadow page tables. This is unlike the TDP MMU which always allocates
-> >     new shadow page tables when splitting.
->
-> ...
->
-> > +static void kvm_mmu_split_huge_page(struct kvm *kvm,
-> > +                                 const struct kvm_memory_slot *slot,
-> > +                                 u64 *huge_sptep, struct kvm_mmu_page **spp)
-> > +
-> > +{
-> > +     struct kvm_mmu_memory_cache *cache = &kvm->arch.huge_page_split_desc_cache;
-> > +     u64 huge_spte = READ_ONCE(*huge_sptep);
-> > +     struct kvm_mmu_page *sp;
-> > +     bool flush = false;
-> > +     u64 *sptep, spte;
-> > +     gfn_t gfn;
-> > +     int index;
-> > +
-> > +     sp = kvm_mmu_get_sp_for_split(kvm, slot, huge_sptep, spp);
-> > +
-> > +     for (index = 0; index < PT64_ENT_PER_PAGE; index++) {
-> > +             sptep = &sp->spt[index];
-> > +             gfn = kvm_mmu_page_get_gfn(sp, index);
-> > +
-> > +             /*
-> > +              * sp may have populated page table entries, e.g. if this huge
-> > +              * page is aliased by multiple sptes with the same access
-> > +              * permissions. We know the sptes will be mapping the same
-> > +              * gfn-to-pfn translation since sp is direct. However, a given
-> > +              * spte may point to an even lower level page table. We don't
-> > +              * know if that lower level page table is completely filled in,
-> > +              * i.e. we may be effectively unmapping a region of memory, so
-> > +              * we must flush the TLB.
->
-> Random side topic, please avoid "we" and other pronouns in comments and changelogs,
-> it gets real easy to lose track of what a pronoun is referring to, especially in
-> changelogs where "we" might be KVM, might be the kernel, might be the team that's
-> using the patch, might be an author that's prone to illeism, etc...
+Add helpers with rudimentary detection of illegal vcpu->srcu_idx usage,
+the x86 bug would have been incredibly painful to debug had I not known
+what to look for (found by a selftest with very specific behavior...
+that we recently modified with respect to SRCU).
 
-Agreed. It's a bad habit of mine, and despite conscious effort to
-limit use of "we" in my comments and change logs, it inevitably creeps
-in. I'll do a pass on this series to get rid of the use of "we"
-throughout.
+Non-x86 changes are compile tested only.
+
+Sean Christopherson (3):
+  KVM: x86: Don't re-acquire SRCU lock in complete_emulated_io()
+  KVM: RISC-V: Use kvm_vcpu.srcu_idx, drop RISC-V's unnecessary copy
+  KVM: Add helpers to wrap vcpu->srcu_idx and yell if it's abused
+
+ arch/powerpc/kvm/book3s_64_mmu_radix.c |  9 ++++---
+ arch/powerpc/kvm/book3s_hv_nested.c    | 16 ++++++------
+ arch/powerpc/kvm/book3s_rtas.c         |  4 +--
+ arch/powerpc/kvm/powerpc.c             |  4 +--
+ arch/riscv/include/asm/kvm_host.h      |  3 ---
+ arch/riscv/kvm/vcpu.c                  | 16 ++++++------
+ arch/riscv/kvm/vcpu_exit.c             |  4 +--
+ arch/s390/kvm/interrupt.c              |  4 +--
+ arch/s390/kvm/kvm-s390.c               |  8 +++---
+ arch/s390/kvm/vsie.c                   |  4 +--
+ arch/x86/kvm/x86.c                     | 35 +++++++++++---------------
+ include/linux/kvm_host.h               | 24 +++++++++++++++++-
+ 12 files changed, 72 insertions(+), 59 deletions(-)
+
+
+base-commit: 150866cd0ec871c765181d145aa0912628289c8a
+-- 
+2.36.0.rc0.470.gd361397f0d-goog
+
 
