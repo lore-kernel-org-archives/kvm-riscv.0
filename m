@@ -1,97 +1,17 @@
-From: Anup Patel <apatel@ventanamicro.com>
-Date: Wed, 20 Apr 2022 14:17:10 +0530
-Subject: [PATCH 2/2] RISC-V: KVM: Restrict the extensions that can be
- disabled
-In-Reply-To: <CAOnJCU+EPHxD7MqbswKMy=gZhmyyXMiezqaw1+D1h+O+pbYR2w@mail.gmail.com>
-References: <20220420013258.3639264-1-atishp@rivosinc.com>
- <20220420013258.3639264-3-atishp@rivosinc.com>
- <CAOnJCU+EPHxD7MqbswKMy=gZhmyyXMiezqaw1+D1h+O+pbYR2w@mail.gmail.com>
-Message-ID: <CAK9=C2U4s5hC9G0w8ELmZn=YgCJ2hTAU-EfGZsSh=HZy4gQaiw@mail.gmail.com>
+From: Paolo Bonzini <pbonzini@redhat.com>
+Date: Wed, 20 Apr 2022 06:00:48 -0400
+Subject: [PATCH 0/3] KVM: x86 SRCU bug fix and SRCU hardening
+In-Reply-To: <20220415004343.2203171-1-seanjc@google.com>
+Message-ID: <20220420100048.1093018-1-pbonzini@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Apr 20, 2022 at 1:13 PM Atish Patra <atishp@atishpatra.org> wrote:
->
-> On Tue, Apr 19, 2022 at 6:33 PM Atish Patra <atishp@rivosinc.com> wrote:
-> >
-> > Currently, the config reg register allows to disable all allowed
-> > single letter ISA extensions. It shouldn't be the case as vmm
-> > shouldn't be able disable base extensions (imac).
->
-> /s/able/able to/
->
-> > These extensions should always be enabled as long as they are enabled
-> > in the host ISA.
-> >
-> > Signed-off-by: Atish Patra <atishp@rivosinc.com>
-> > ---
-> >  arch/riscv/kvm/vcpu.c | 21 +++++++++++++--------
-> >  1 file changed, 13 insertions(+), 8 deletions(-)
-> >
-> > diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-> > index 2e25a7b83a1b..14dd801651e5 100644
-> > --- a/arch/riscv/kvm/vcpu.c
-> > +++ b/arch/riscv/kvm/vcpu.c
-> > @@ -38,12 +38,16 @@ const struct kvm_stats_header kvm_vcpu_stats_header = {
-> >                        sizeof(kvm_vcpu_stats_desc),
-> >  };
-> >
-> > -#define KVM_RISCV_ISA_ALLOWED  (riscv_isa_extension_mask(a) | \
-> > -                                riscv_isa_extension_mask(c) | \
-> > -                                riscv_isa_extension_mask(d) | \
-> > -                                riscv_isa_extension_mask(f) | \
-> > -                                riscv_isa_extension_mask(i) | \
-> > -                                riscv_isa_extension_mask(m))
-> > +#define KVM_RISCV_ISA_DISABLE_ALLOWED  (riscv_isa_extension_mask(d) | \
-> > +                                       riscv_isa_extension_mask(f))
-> > +
-> > +#define KVM_RISCV_ISA_DISABLE_NOT_ALLOWED      (riscv_isa_extension_mask(a) | \
-> > +                                               riscv_isa_extension_mask(c) | \
-> > +                                               riscv_isa_extension_mask(i) | \
-> > +                                               riscv_isa_extension_mask(m))
-> > +
-> > +#define KVM_RISCV_ISA_ALLOWED (KVM_RISCV_ISA_DISABLE_ALLOWED | \
-> > +                              KVM_RISCV_ISA_DISABLE_NOT_ALLOWED)
-> >
-> >  static void kvm_riscv_reset_vcpu(struct kvm_vcpu *vcpu)
-> >  {
-> > @@ -217,9 +221,10 @@ static int kvm_riscv_vcpu_set_reg_config(struct kvm_vcpu *vcpu,
-> >         switch (reg_num) {
-> >         case KVM_REG_RISCV_CONFIG_REG(isa):
-> >                 if (!vcpu->arch.ran_atleast_once) {
-> > -                       vcpu->arch.isa = reg_val;
-> > +                       /* Ignore the disable request for these extensions */
-> > +                       vcpu->arch.isa = reg_val | KVM_RISCV_ISA_DISABLE_NOT_ALLOWED;
-> >                         vcpu->arch.isa &= riscv_isa_extension_base(NULL);
-> > -                       vcpu->arch.isa &= KVM_RISCV_ISA_ALLOWED;
-> > +                       vcpu->arch.isa &= KVM_RISCV_ISA_DISABLE_ALLOWED;
-> >                         kvm_riscv_vcpu_fp_reset(vcpu);
-> >                 } else {
-> >                         return -EOPNOTSUPP;
-> > --
-> > 2.25.1
-> >
->
-> Sorry. I forgot to add the fixes tag.
->
-> Fixes: 92ad82002c39 (RISC-V: KVM: Implement
-> KVM_GET_ONE_REG/KVM_SET_ONE_REG ioctls)
+Queued, thanks.
 
-I have queued this for fixes.
+Paolo
 
-Thanks,
-Anup
 
->
-> --
-> Regards,
-> Atish
->
-> --
-> kvm-riscv mailing list
-> kvm-riscv at lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/kvm-riscv
 
