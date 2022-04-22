@@ -1,256 +1,204 @@
-From: Reiji Watanabe <reijiw@google.com>
-Date: Fri, 22 Apr 2022 00:02:12 -0700
-Subject: [PATCH v5 08/13] KVM: arm64: Implement PSCI SYSTEM_SUSPEND
-In-Reply-To: <20220409184549.1681189-9-oupton@google.com>
-References: <20220409184549.1681189-1-oupton@google.com>
- <20220409184549.1681189-9-oupton@google.com>
-Message-ID: <CAAeT=Fw5as0GtZhdU6M2vGnP5ZX0GZqyiJm9Q4Ng2J1zY4AppQ@mail.gmail.com>
+From: Atish Patra <atishp@rivosinc.com>
+Date: Fri, 22 Apr 2022 08:05:19 -0700
+Subject: [v2 PATCH] RISC-V: KVM: Introduce ISA extension register
+Message-ID: <20220422150519.3818093-1-atishp@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sat, Apr 9, 2022 at 11:46 AM Oliver Upton <oupton@google.com> wrote:
->
-> ARM DEN0022D.b 5.19 "SYSTEM_SUSPEND" describes a PSCI call that allows
-> software to request that a system be placed in the deepest possible
-> low-power state. Effectively, software can use this to suspend itself to
-> RAM.
->
-> Unfortunately, there really is no good way to implement a system-wide
-> PSCI call in KVM. Any precondition checks done in the kernel will need
-> to be repeated by userspace since there is no good way to protect a
-> critical section that spans an exit to userspace. SYSTEM_RESET and
-> SYSTEM_OFF are equally plagued by this issue, although no users have
-> seemingly cared for the relatively long time these calls have been
-> supported.
->
-> The solution is to just make the whole implementation userspace's
-> problem. Introduce a new system event, KVM_SYSTEM_EVENT_SUSPEND, that
-> indicates to userspace a calling vCPU has invoked PSCI SYSTEM_SUSPEND.
-> Additionally, add a CAP to get buy-in from userspace for this new exit
-> type.
->
-> Only advertise the SYSTEM_SUSPEND PSCI call if userspace has opted in.
-> If a vCPU calls SYSTEM_SUSPEND, punt straight to userspace. Provide
-> explicit documentation of userspace's responsibilites for the exit and
-> point to the PSCI specification to describe the actual PSCI call.
->
-> Signed-off-by: Oliver Upton <oupton@google.com>
-> ---
->  Documentation/virt/kvm/api.rst    | 39 +++++++++++++++++++++++++++++++
->  arch/arm64/include/asm/kvm_host.h |  3 ++-
->  arch/arm64/kvm/arm.c              | 12 +++++++++-
->  arch/arm64/kvm/psci.c             | 25 ++++++++++++++++++++
->  include/uapi/linux/kvm.h          |  2 ++
->  5 files changed, 79 insertions(+), 2 deletions(-)
->
-> diff --git a/Documentation/virt/kvm/api.rst b/Documentation/virt/kvm/api.rst
-> index d104e34ad703..24e2fac2fea7 100644
-> --- a/Documentation/virt/kvm/api.rst
-> +++ b/Documentation/virt/kvm/api.rst
-> @@ -6015,6 +6015,7 @@ should put the acknowledged interrupt vector into the 'epr' field.
->    #define KVM_SYSTEM_EVENT_RESET          2
->    #define KVM_SYSTEM_EVENT_CRASH          3
->    #define KVM_SYSTEM_EVENT_WAKEUP         4
-> +  #define KVM_SYSTEM_EVENT_SUSPENDED      5
+Currently, there is no provision for vmm (qemu-kvm or kvmtool) to
+query about multiple-letter ISA extensions. The config register
+is only used for base single letter ISA extensions.
 
-Nit: This should be KVM_SYSTEM_EVENT_SUSPEND based on the code.
-(a few more parts in the doc use KVM_SYSTEM_EVENT_SUSPENDED)
+A new ISA extension register is added that will allow the vmm
+to query about any ISA extension one at a time. It is enabled for
+both single letter or multi-letter ISA extensions. The ISA extension
+register is useful to if the vmm requires to retrieve/set single
+extension while the config register should be used if all the base
+ISA extension required to retrieve or set.
 
-Otherwise,
-Reviewed-by: Reiji Watanabe <reijiw@google.com>
+For any multi-letter ISA extensions, the new register interface
+must be used.
 
-Thanks,
-Reiji
+Signed-off-by: Atish Patra <atishp@rivosinc.com>
+---
+Changes from v1->v2:
+1. Sending the patch separate from sstc series as it is unrelated.
+2. Removed few redundant lines.
 
+The kvm tool patches can be found here.
 
->                         __u32 type;
->                         __u64 flags;
->                 } system_event;
-> @@ -6042,6 +6043,34 @@ Valid values for 'type' are:
->   - KVM_SYSTEM_EVENT_WAKEUP -- the exiting vCPU is in a suspended state and
->     KVM has recognized a wakeup event. Userspace may honor this event by
->     marking the exiting vCPU as runnable, or deny it and call KVM_RUN again.
-> + - KVM_SYSTEM_EVENT_SUSPENDED -- the guest has requested a suspension of
-> +   the VM.
-> +
-> +For arm/arm64:
-> +^^^^^^^^^^^^^^
-> +
-> +   KVM_SYSTEM_EVENT_SUSPENDED exits are enabled with the
-> +   KVM_CAP_ARM_SYSTEM_SUSPEND VM capability. If a guest invokes the PSCI
-> +   SYSTEM_SUSPEND function, KVM will exit to userspace with this event
-> +   type.
-> +
-> +   It is the sole responsibility of userspace to implement the PSCI
-> +   SYSTEM_SUSPEND call according to ARM DEN0022D.b 5.19 "SYSTEM_SUSPEND".
-> +   KVM does not change the vCPU's state before exiting to userspace, so
-> +   the call parameters are left in-place in the vCPU registers.
-> +
-> +   Userspace is _required_ to take action for such an exit. It must
-> +   either:
-> +
-> +    - Honor the guest request to suspend the VM. Userspace can request
-> +      in-kernel emulation of suspension by setting the calling vCPU's
-> +      state to KVM_MP_STATE_SUSPENDED. Userspace must configure the vCPU's
-> +      state according to the parameters passed to the PSCI function when
-> +      the calling vCPU is resumed. See ARM DEN0022D.b 5.19.1 "Intended use"
-> +      for details on the function parameters.
-> +
-> +    - Deny the guest request to suspend the VM. See ARM DEN0022D.b 5.19.2
-> +      "Caller responsibilities" for possible return values.
->
->  Valid flags are:
->
-> @@ -7756,6 +7785,16 @@ At this time, KVM_PMU_CAP_DISABLE is the only capability.  Setting
->  this capability will disable PMU virtualization for that VM.  Usermode
->  should adjust CPUID leaf 0xA to reflect that the PMU is disabled.
->
-> +8.36 KVM_CAP_ARM_SYSTEM_SUSPEND
-> +-------------------------------
-> +
-> +:Capability: KVM_CAP_ARM_SYSTEM_SUSPEND
-> +:Architectures: arm64
-> +:Type: vm
-> +
-> +When enabled, KVM will exit to userspace with KVM_EXIT_SYSTEM_EVENT of
-> +type KVM_SYSTEM_EVENT_SUSPEND to process the guest suspend request.
-> +
->  9. Known KVM API problems
->  =========================
->
-> diff --git a/arch/arm64/include/asm/kvm_host.h b/arch/arm64/include/asm/kvm_host.h
-> index 46027b9b80ca..9243115c9d7b 100644
-> --- a/arch/arm64/include/asm/kvm_host.h
-> +++ b/arch/arm64/include/asm/kvm_host.h
-> @@ -137,7 +137,8 @@ struct kvm_arch {
->          */
->  #define KVM_ARCH_FLAG_REG_WIDTH_CONFIGURED             3
->  #define KVM_ARCH_FLAG_EL1_32BIT                                4
-> -
-> +       /* PSCI SYSTEM_SUSPEND enabled for the guest */
-> +#define KVM_ARCH_FLAG_SYSTEM_SUSPEND_ENABLED           5
->         unsigned long flags;
->
->         /*
-> diff --git a/arch/arm64/kvm/arm.c b/arch/arm64/kvm/arm.c
-> index e9641b86d375..1714aa55db9c 100644
-> --- a/arch/arm64/kvm/arm.c
-> +++ b/arch/arm64/kvm/arm.c
-> @@ -97,6 +97,10 @@ int kvm_vm_ioctl_enable_cap(struct kvm *kvm,
->                 }
->                 mutex_unlock(&kvm->lock);
->                 break;
-> +       case KVM_CAP_ARM_SYSTEM_SUSPEND:
-> +               r = 0;
-> +               set_bit(KVM_ARCH_FLAG_SYSTEM_SUSPEND_ENABLED, &kvm->arch.flags);
-> +               break;
->         default:
->                 r = -EINVAL;
->                 break;
-> @@ -210,6 +214,7 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
->         case KVM_CAP_SET_GUEST_DEBUG:
->         case KVM_CAP_VCPU_ATTRIBUTES:
->         case KVM_CAP_PTP_KVM:
-> +       case KVM_CAP_ARM_SYSTEM_SUSPEND:
->                 r = 1;
->                 break;
->         case KVM_CAP_SET_GUEST_DEBUG2:
-> @@ -447,8 +452,13 @@ bool kvm_arm_vcpu_stopped(struct kvm_vcpu *vcpu)
->  static void kvm_arm_vcpu_suspend(struct kvm_vcpu *vcpu)
->  {
->         vcpu->arch.mp_state.mp_state = KVM_MP_STATE_SUSPENDED;
-> +
-> +       /*
-> +        * Since this is only called from the intended vCPU, the target vCPU is
-> +        * guaranteed to not be running. As such there is no need to kick the
-> +        * target to handle the request.
-> +        */
->         kvm_make_request(KVM_REQ_SUSPEND, vcpu);
-> -       kvm_vcpu_kick(vcpu);
->  }
->
->  static bool kvm_arm_vcpu_suspended(struct kvm_vcpu *vcpu)
-> diff --git a/arch/arm64/kvm/psci.c b/arch/arm64/kvm/psci.c
-> index 362d2a898b83..58b5e2c2ff6a 100644
-> --- a/arch/arm64/kvm/psci.c
-> +++ b/arch/arm64/kvm/psci.c
-> @@ -191,6 +191,11 @@ static void kvm_psci_system_reset2(struct kvm_vcpu *vcpu)
->                                  KVM_SYSTEM_EVENT_RESET_FLAG_PSCI_RESET2);
->  }
->
-> +static void kvm_psci_system_suspend(struct kvm_vcpu *vcpu)
-> +{
-> +       kvm_vcpu_set_system_event_exit(vcpu, KVM_SYSTEM_EVENT_SUSPEND, 0);
-> +}
-> +
->  static void kvm_psci_narrow_to_32bit(struct kvm_vcpu *vcpu)
->  {
->         int i;
-> @@ -296,6 +301,7 @@ static int kvm_psci_1_x_call(struct kvm_vcpu *vcpu, u32 minor)
->  {
->         unsigned long val = PSCI_RET_NOT_SUPPORTED;
->         u32 psci_fn = smccc_get_function(vcpu);
-> +       struct kvm *kvm = vcpu->kvm;
->         u32 arg;
->         int ret = 1;
->
-> @@ -327,6 +333,11 @@ static int kvm_psci_1_x_call(struct kvm_vcpu *vcpu, u32 minor)
->                 case ARM_SMCCC_VERSION_FUNC_ID:
->                         val = 0;
->                         break;
-> +               case PSCI_1_0_FN_SYSTEM_SUSPEND:
-> +               case PSCI_1_0_FN64_SYSTEM_SUSPEND:
-> +                       if (test_bit(KVM_ARCH_FLAG_SYSTEM_SUSPEND_ENABLED, &kvm->arch.flags))
-> +                               val = 0;
-> +                       break;
->                 case PSCI_1_1_FN_SYSTEM_RESET2:
->                 case PSCI_1_1_FN64_SYSTEM_RESET2:
->                         if (minor >= 1)
-> @@ -334,6 +345,20 @@ static int kvm_psci_1_x_call(struct kvm_vcpu *vcpu, u32 minor)
->                         break;
->                 }
->                 break;
-> +       case PSCI_1_0_FN_SYSTEM_SUSPEND:
-> +               kvm_psci_narrow_to_32bit(vcpu);
-> +               fallthrough;
-> +       case PSCI_1_0_FN64_SYSTEM_SUSPEND:
-> +               /*
-> +                * Return directly to userspace without changing the vCPU's
-> +                * registers. Userspace depends on reading the SMCCC parameters
-> +                * to implement SYSTEM_SUSPEND.
-> +                */
-> +               if (test_bit(KVM_ARCH_FLAG_SYSTEM_SUSPEND_ENABLED, &kvm->arch.flags)) {
-> +                       kvm_psci_system_suspend(vcpu);
-> +                       return 0;
-> +               }
-> +               break;
->         case PSCI_1_1_FN_SYSTEM_RESET2:
->                 kvm_psci_narrow_to_32bit(vcpu);
->                 fallthrough;
-> diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
-> index 64e5f9d83a7a..752e4a5c3ce6 100644
-> --- a/include/uapi/linux/kvm.h
-> +++ b/include/uapi/linux/kvm.h
-> @@ -445,6 +445,7 @@ struct kvm_run {
->  #define KVM_SYSTEM_EVENT_RESET          2
->  #define KVM_SYSTEM_EVENT_CRASH          3
->  #define KVM_SYSTEM_EVENT_WAKEUP         4
-> +#define KVM_SYSTEM_EVENT_SUSPEND        5
->                         __u32 type;
->                         __u64 flags;
->                 } system_event;
-> @@ -1146,6 +1147,7 @@ struct kvm_ppc_resize_hpt {
->  #define KVM_CAP_S390_MEM_OP_EXTENSION 211
->  #define KVM_CAP_PMU_CAPABILITY 212
->  #define KVM_CAP_DISABLE_QUIRKS2 213
-> +#define KVM_CAP_ARM_SYSTEM_SUSPEND 214
->
->  #ifdef KVM_CAP_IRQ_ROUTING
->
-> --
-> 2.35.1.1178.g4f1659d476-goog
->
+https://github.com/atishp04/kvmtool/tree/sstc_v2
+
+---
+ arch/riscv/include/uapi/asm/kvm.h | 20 +++++++
+ arch/riscv/kvm/vcpu.c             | 98 +++++++++++++++++++++++++++++++
+ 2 files changed, 118 insertions(+)
+
+diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
+index f808ad1ce500..92bd469e2ba6 100644
+--- a/arch/riscv/include/uapi/asm/kvm.h
++++ b/arch/riscv/include/uapi/asm/kvm.h
+@@ -82,6 +82,23 @@ struct kvm_riscv_timer {
+ 	__u64 state;
+ };
+ 
++/**
++ * ISA extension IDs specific to KVM. This is not the same as the host ISA
++ * extension IDs as that is internal to the host and should not be exposed
++ * to the guest. This should always be contiguous to keep the mapping simple
++ * in KVM implementation.
++ */
++enum KVM_RISCV_ISA_EXT_ID {
++	KVM_RISCV_ISA_EXT_A = 0,
++	KVM_RISCV_ISA_EXT_C,
++	KVM_RISCV_ISA_EXT_D,
++	KVM_RISCV_ISA_EXT_F,
++	KVM_RISCV_ISA_EXT_H,
++	KVM_RISCV_ISA_EXT_I,
++	KVM_RISCV_ISA_EXT_M,
++	KVM_RISCV_ISA_EXT_MAX,
++};
++
+ /* Possible states for kvm_riscv_timer */
+ #define KVM_RISCV_TIMER_STATE_OFF	0
+ #define KVM_RISCV_TIMER_STATE_ON	1
+@@ -123,6 +140,9 @@ struct kvm_riscv_timer {
+ #define KVM_REG_RISCV_FP_D_REG(name)	\
+ 		(offsetof(struct __riscv_d_ext_state, name) / sizeof(__u64))
+ 
++/* ISA Extension registers are mapped as type 7 */
++#define KVM_REG_RISCV_ISA_EXT		(0x07 << KVM_REG_RISCV_TYPE_SHIFT)
++
+ #endif
+ 
+ #endif /* __LINUX_KVM_RISCV_H */
+diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+index aad430668bb4..93492eb292fd 100644
+--- a/arch/riscv/kvm/vcpu.c
++++ b/arch/riscv/kvm/vcpu.c
+@@ -365,6 +365,100 @@ static int kvm_riscv_vcpu_set_reg_csr(struct kvm_vcpu *vcpu,
+ 	return 0;
+ }
+ 
++/* Mapping between KVM ISA Extension ID & Host ISA extension ID */
++static unsigned long kvm_isa_ext_arr[] = {
++	RISCV_ISA_EXT_a,
++	RISCV_ISA_EXT_c,
++	RISCV_ISA_EXT_d,
++	RISCV_ISA_EXT_f,
++	RISCV_ISA_EXT_h,
++	RISCV_ISA_EXT_i,
++	RISCV_ISA_EXT_m,
++};
++
++static int kvm_riscv_vcpu_get_reg_isa_ext(struct kvm_vcpu *vcpu,
++					  const struct kvm_one_reg *reg)
++{
++	unsigned long __user *uaddr =
++			(unsigned long __user *)(unsigned long)reg->addr;
++	unsigned long reg_num = reg->id & ~(KVM_REG_ARCH_MASK |
++					    KVM_REG_SIZE_MASK |
++					    KVM_REG_RISCV_ISA_EXT);
++	unsigned long reg_val = 0;
++	unsigned long host_isa_ext;
++
++	if (KVM_REG_SIZE(reg->id) != sizeof(unsigned long))
++		return -EINVAL;
++
++	if (reg_num >= KVM_RISCV_ISA_EXT_MAX || reg_num >= ARRAY_SIZE(kvm_isa_ext_arr))
++		return -EINVAL;
++
++	host_isa_ext = kvm_isa_ext_arr[reg_num];
++	if (__riscv_isa_extension_available(NULL, host_isa_ext))
++		reg_val = 1; /* Mark the given extension as available */
++
++	if (copy_to_user(uaddr, &reg_val, KVM_REG_SIZE(reg->id)))
++		return -EFAULT;
++
++	return 0;
++}
++
++static int kvm_riscv_vcpu_set_reg_isa_ext(struct kvm_vcpu *vcpu,
++					  const struct kvm_one_reg *reg)
++{
++	unsigned long __user *uaddr =
++			(unsigned long __user *)(unsigned long)reg->addr;
++	unsigned long reg_num = reg->id & ~(KVM_REG_ARCH_MASK |
++					    KVM_REG_SIZE_MASK |
++					    KVM_REG_RISCV_ISA_EXT);
++	unsigned long reg_val;
++	unsigned long host_isa_ext;
++	unsigned long host_isa_ext_mask;
++
++	if (KVM_REG_SIZE(reg->id) != sizeof(unsigned long))
++		return -EINVAL;
++
++	if (reg_num >= KVM_RISCV_ISA_EXT_MAX || reg_num >= ARRAY_SIZE(kvm_isa_ext_arr))
++		return -EINVAL;
++
++	if (copy_from_user(&reg_val, uaddr, KVM_REG_SIZE(reg->id)))
++		return -EFAULT;
++
++	host_isa_ext = kvm_isa_ext_arr[reg_num];
++	if (!__riscv_isa_extension_available(NULL, host_isa_ext))
++		return	-EOPNOTSUPP;
++
++	if (host_isa_ext >= RISCV_ISA_EXT_BASE &&
++	    host_isa_ext < RISCV_ISA_EXT_MAX) {
++		/** Multi-letter ISA extension. Currently there is no provision
++		 * to enable/disable the multi-letter ISA extensions for guests.
++		 * Return success if the request is to enable any ISA extension
++		 * that is available in the hardware.
++		 * Return -EOPNOTSUPP otherwise.
++		 */
++		if (!reg_val)
++			return -EOPNOTSUPP;
++		else
++			return 0;
++	}
++
++	/* Single letter base ISA extension */
++	if (!vcpu->arch.ran_atleast_once) {
++		host_isa_ext_mask = BIT_MASK(host_isa_ext);
++		if (!reg_val && (host_isa_ext_mask & KVM_RISCV_ISA_DISABLE_ALLOWED))
++			vcpu->arch.isa &= ~host_isa_ext_mask;
++		else
++			vcpu->arch.isa |= host_isa_ext_mask;
++		vcpu->arch.isa &= riscv_isa_extension_base(NULL);
++		vcpu->arch.isa &= KVM_RISCV_ISA_ALLOWED;
++		kvm_riscv_vcpu_fp_reset(vcpu);
++	} else {
++		return -EOPNOTSUPP;
++	}
++
++	return 0;
++}
++
+ static int kvm_riscv_vcpu_set_reg(struct kvm_vcpu *vcpu,
+ 				  const struct kvm_one_reg *reg)
+ {
+@@ -382,6 +476,8 @@ static int kvm_riscv_vcpu_set_reg(struct kvm_vcpu *vcpu,
+ 	else if ((reg->id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_FP_D)
+ 		return kvm_riscv_vcpu_set_reg_fp(vcpu, reg,
+ 						 KVM_REG_RISCV_FP_D);
++	else if ((reg->id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_ISA_EXT)
++		return kvm_riscv_vcpu_set_reg_isa_ext(vcpu, reg);
+ 
+ 	return -EINVAL;
+ }
+@@ -403,6 +499,8 @@ static int kvm_riscv_vcpu_get_reg(struct kvm_vcpu *vcpu,
+ 	else if ((reg->id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_FP_D)
+ 		return kvm_riscv_vcpu_get_reg_fp(vcpu, reg,
+ 						 KVM_REG_RISCV_FP_D);
++	else if ((reg->id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_ISA_EXT)
++		return kvm_riscv_vcpu_get_reg_isa_ext(vcpu, reg);
+ 
+ 	return -EINVAL;
+ }
+-- 
+2.25.1
+
 
