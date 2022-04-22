@@ -1,103 +1,71 @@
 From: David Matlack <dmatlack@google.com>
-Date: Fri, 22 Apr 2022 21:05:42 +0000
-Subject: [PATCH v4 16/20] KVM: x86/mmu: Extend make_huge_page_split_spte() for
+Date: Fri, 22 Apr 2022 21:05:43 +0000
+Subject: [PATCH v4 17/20] KVM: x86/mmu: Zap collapsible SPTEs at all levels in
  the shadow MMU
 In-Reply-To: <20220422210546.458943-1-dmatlack@google.com>
 References: <20220422210546.458943-1-dmatlack@google.com>
-Message-ID: <20220422210546.458943-17-dmatlack@google.com>
+Message-ID: <20220422210546.458943-18-dmatlack@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Currently make_huge_page_split_spte() assumes execute permissions can be
-granted to any 4K SPTE when splitting huge pages. This is true for the
-TDP MMU but is not necessarily true for the shadow MMU, since KVM may be
-shadowing a non-executable huge page.
+Currently KVM only zaps collapsible 4KiB SPTEs in the shadow MMU (i.e.
+in the rmap). This is fine for now KVM never creates intermediate huge
+pages during dirty logging, i.e. a 1GiB page is never partially split to
+a 2MiB page.
 
-To fix this, pass in the child shadow page where the huge page will be
-split and derive the execution permission from the shadow page's role.
-This is correct because huge pages are always split with direct shadow
-page and thus the shadow page role contains the correct access
-permissions.
+However, this will stop being true once the shadow MMU participates in
+eager page splitting, which can in fact leave behind partially split
+huge pages. In preparation for that change, change the shadow MMU to
+iterate over all necessary levels when zapping collapsible SPTEs.
 
 No functional change intended.
 
+Reviewed-by: Peter Xu <peterx@redhat.com>
 Signed-off-by: David Matlack <dmatlack@google.com>
 ---
- arch/x86/kvm/mmu/spte.c    | 13 +++++++------
- arch/x86/kvm/mmu/spte.h    |  2 +-
- arch/x86/kvm/mmu/tdp_mmu.c |  2 +-
- 3 files changed, 9 insertions(+), 8 deletions(-)
+ arch/x86/kvm/mmu/mmu.c | 21 ++++++++++++++-------
+ 1 file changed, 14 insertions(+), 7 deletions(-)
 
-diff --git a/arch/x86/kvm/mmu/spte.c b/arch/x86/kvm/mmu/spte.c
-index 4739b53c9734..9db98fbeee61 100644
---- a/arch/x86/kvm/mmu/spte.c
-+++ b/arch/x86/kvm/mmu/spte.c
-@@ -215,10 +215,11 @@ static u64 make_spte_executable(u64 spte)
-  * This is used during huge page splitting to build the SPTEs that make up the
-  * new page table.
-  */
--u64 make_huge_page_split_spte(u64 huge_spte, int huge_level, int index)
-+u64 make_huge_page_split_spte(u64 huge_spte, struct kvm_mmu_page *sp, int index)
+diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
+index ed65899d15a2..479c581e8a96 100644
+--- a/arch/x86/kvm/mmu/mmu.c
++++ b/arch/x86/kvm/mmu/mmu.c
+@@ -6098,18 +6098,25 @@ static bool kvm_mmu_zap_collapsible_spte(struct kvm *kvm,
+ 	return need_tlb_flush;
+ }
+ 
++static void kvm_rmap_zap_collapsible_sptes(struct kvm *kvm,
++					   const struct kvm_memory_slot *slot)
++{
++	/*
++	 * Note, use KVM_MAX_HUGEPAGE_LEVEL - 1 since there's no need to zap
++	 * pages that are already mapped at the maximum possible level.
++	 */
++	if (slot_handle_level(kvm, slot, kvm_mmu_zap_collapsible_spte,
++			      PG_LEVEL_4K, KVM_MAX_HUGEPAGE_LEVEL - 1,
++			      true))
++		kvm_arch_flush_remote_tlbs_memslot(kvm, slot);
++}
++
+ void kvm_mmu_zap_collapsible_sptes(struct kvm *kvm,
+ 				   const struct kvm_memory_slot *slot)
  {
-+	bool exec_allowed = sp->role.access & ACC_EXEC_MASK;
-+	int child_level = sp->role.level;
- 	u64 child_spte;
--	int child_level;
- 
- 	if (WARN_ON_ONCE(!is_shadow_present_pte(huge_spte)))
- 		return 0;
-@@ -227,7 +228,6 @@ u64 make_huge_page_split_spte(u64 huge_spte, int huge_level, int index)
- 		return 0;
- 
- 	child_spte = huge_spte;
--	child_level = huge_level - 1;
- 
- 	/*
- 	 * The child_spte already has the base address of the huge page being
-@@ -240,10 +240,11 @@ u64 make_huge_page_split_spte(u64 huge_spte, int huge_level, int index)
- 		child_spte &= ~PT_PAGE_SIZE_MASK;
- 
- 		/*
--		 * When splitting to a 4K page, mark the page executable as the
--		 * NX hugepage mitigation no longer applies.
-+		 * When splitting to a 4K page where execution is allowed, mark
-+		 * the page executable as the NX hugepage mitigation no longer
-+		 * applies.
- 		 */
--		if (is_nx_huge_page_enabled())
-+		if (exec_allowed && is_nx_huge_page_enabled())
- 			child_spte = make_spte_executable(child_spte);
+ 	if (kvm_memslots_have_rmaps(kvm)) {
+ 		write_lock(&kvm->mmu_lock);
+-		/*
+-		 * Zap only 4k SPTEs since the legacy MMU only supports dirty
+-		 * logging at a 4k granularity and never creates collapsible
+-		 * 2m SPTEs during dirty logging.
+-		 */
+-		if (slot_handle_level_4k(kvm, slot, kvm_mmu_zap_collapsible_spte, true))
+-			kvm_arch_flush_remote_tlbs_memslot(kvm, slot);
++		kvm_rmap_zap_collapsible_sptes(kvm, slot);
+ 		write_unlock(&kvm->mmu_lock);
  	}
  
-diff --git a/arch/x86/kvm/mmu/spte.h b/arch/x86/kvm/mmu/spte.h
-index 73f12615416f..921ea77f1b5e 100644
---- a/arch/x86/kvm/mmu/spte.h
-+++ b/arch/x86/kvm/mmu/spte.h
-@@ -415,7 +415,7 @@ bool make_spte(struct kvm_vcpu *vcpu, struct kvm_mmu_page *sp,
- 	       unsigned int pte_access, gfn_t gfn, kvm_pfn_t pfn,
- 	       u64 old_spte, bool prefetch, bool can_unsync,
- 	       bool host_writable, u64 *new_spte);
--u64 make_huge_page_split_spte(u64 huge_spte, int huge_level, int index);
-+u64 make_huge_page_split_spte(u64 huge_spte, struct kvm_mmu_page *sp, int index);
- u64 make_nonleaf_spte(u64 *child_pt, bool ad_disabled);
- u64 make_mmio_spte(struct kvm_vcpu *vcpu, u64 gfn, unsigned int access);
- u64 mark_spte_for_access_track(u64 spte);
-diff --git a/arch/x86/kvm/mmu/tdp_mmu.c b/arch/x86/kvm/mmu/tdp_mmu.c
-index 566548a3efa7..110a34ca41c2 100644
---- a/arch/x86/kvm/mmu/tdp_mmu.c
-+++ b/arch/x86/kvm/mmu/tdp_mmu.c
-@@ -1469,7 +1469,7 @@ static int tdp_mmu_split_huge_page(struct kvm *kvm, struct tdp_iter *iter,
- 	 * not been linked in yet and thus is not reachable from any other CPU.
- 	 */
- 	for (i = 0; i < PT64_ENT_PER_PAGE; i++)
--		sp->spt[i] = make_huge_page_split_spte(huge_spte, level, i);
-+		sp->spt[i] = make_huge_page_split_spte(huge_spte, sp, i);
- 
- 	/*
- 	 * Replace the huge spte with a pointer to the populated lower level
 -- 
 2.36.0.rc2.479.g8af0fa9b8e-goog
 
