@@ -1,10 +1,10 @@
 From: kernel test robot <lkp@intel.com>
-Date: Sat, 23 Apr 2022 16:08:10 +0800
+Date: Sun, 24 Apr 2022 23:21:22 +0800
 Subject: [PATCH v4 19/20] KVM: Allow for different capacities in
  kvm_mmu_memory_cache structs
 In-Reply-To: <20220422210546.458943-20-dmatlack@google.com>
 References: <20220422210546.458943-20-dmatlack@google.com>
-Message-ID: <202204231516.bclimUe4-lkp@intel.com>
+Message-ID: <202204242355.T1SzNT9S-lkp@intel.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -19,37 +19,36 @@ Thank you for the patch! Yet something to improve:
 
 url:    https://github.com/intel-lab-lkp/linux/commits/David-Matlack/KVM-Extend-Eager-Page-Splitting-to-the-shadow-MMU/20220423-062108
 base:   150866cd0ec871c765181d145aa0912628289c8a
-config: riscv-randconfig-r005-20220422 (https://download.01.org/0day-ci/archive/20220423/202204231516.bclimUe4-lkp at intel.com/config)
-compiler: riscv64-linux-gcc (GCC) 11.2.0
+config: riscv-randconfig-r016-20220424 (https://download.01.org/0day-ci/archive/20220424/202204242355.T1SzNT9S-lkp at intel.com/config)
+compiler: clang version 15.0.0 (https://github.com/llvm/llvm-project 1cddcfdc3c683b393df1a5c9063252eb60e52818)
 reproduce (this is a W=1 build):
         wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
         chmod +x ~/bin/make.cross
+        # install riscv cross compiling tool for clang build
+        # apt-get install binutils-riscv64-linux-gnu
         # https://github.com/intel-lab-lkp/linux/commit/871c5afc76a6f414c03f433d06bacfd928910b1b
         git remote add linux-review https://github.com/intel-lab-lkp/linux
         git fetch --no-tags linux-review David-Matlack/KVM-Extend-Eager-Page-Splitting-to-the-shadow-MMU/20220423-062108
         git checkout 871c5afc76a6f414c03f433d06bacfd928910b1b
         # save the config file
         mkdir build_dir && cp config build_dir/.config
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-11.2.0 make.cross W=1 O=build_dir ARCH=riscv SHELL=/bin/bash
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross W=1 O=build_dir ARCH=riscv SHELL=/bin/bash
 
 If you fix the issue, kindly add following tag as appropriate
 Reported-by: kernel test robot <lkp@intel.com>
 
-All error/warnings (new ones prefixed by >>):
+All errors (new ones prefixed by >>):
 
-   arch/riscv/kvm/mmu.c: In function 'stage2_ioremap':
->> arch/riscv/kvm/mmu.c:364:56: error: 'struct kvm_mmu_memory_cache' has no member named 'cache'
-     364 |                 ret = kvm_mmu_topup_memory_cache(&cache.cache, stage2_pgd_levels);
-         |                                                        ^
-   arch/riscv/kvm/mmu.c:369:52: error: 'struct kvm_mmu_memory_cache' has no member named 'cache'
-     369 |                 ret = stage2_set_pte(kvm, 0, &cache.cache, addr, &pte);
-         |                                                    ^
-   arch/riscv/kvm/mmu.c:378:41: error: 'struct kvm_mmu_memory_cache' has no member named 'cache'
-     378 |         kvm_mmu_free_memory_cache(&cache.cache);
-         |                                         ^
->> arch/riscv/kvm/mmu.c:350:37: warning: variable 'cache' set but not used [-Wunused-but-set-variable]
-     350 |         struct kvm_mmu_memory_cache cache = {
-         |                                     ^~~~~
+>> arch/riscv/kvm/mmu.c:364:43: error: no member named 'cache' in 'struct kvm_mmu_memory_cache'
+                   ret = kvm_mmu_topup_memory_cache(&cache.cache, stage2_pgd_levels);
+                                                     ~~~~~ ^
+   arch/riscv/kvm/mmu.c:369:39: error: no member named 'cache' in 'struct kvm_mmu_memory_cache'
+                   ret = stage2_set_pte(kvm, 0, &cache.cache, addr, &pte);
+                                                 ~~~~~ ^
+   arch/riscv/kvm/mmu.c:378:35: error: no member named 'cache' in 'struct kvm_mmu_memory_cache'
+           kvm_mmu_free_memory_cache(&cache.cache);
+                                      ~~~~~ ^
+   3 errors generated.
 
 
 vim +364 arch/riscv/kvm/mmu.c
@@ -62,7 +61,7 @@ vim +364 arch/riscv/kvm/mmu.c
    347		int ret = 0;
    348		unsigned long pfn;
    349		phys_addr_t addr, end;
- > 350		struct kvm_mmu_memory_cache cache = {
+   350		struct kvm_mmu_memory_cache cache = {
    351			.capacity = KVM_ARCH_NR_OBJS_PER_MEMORY_CACHE,
    352			.gfp_zero = __GFP_ZERO,
    353		};
