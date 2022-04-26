@@ -1,25 +1,25 @@
 From: Yosry Ahmed <yosryahmed@google.com>
-Date: Tue, 26 Apr 2022 12:27:57 -0700
+Date: Tue, 26 Apr 2022 12:33:28 -0700
 Subject: [PATCH v3 4/6] KVM: arm64/mmu: count KVM page table pages in
  pagetable stats
-In-Reply-To: <YmegoB/fBkfwaE5z@google.com>
+In-Reply-To: <874k2falbk.wl-maz@kernel.org>
 References: <20220426053904.3684293-1-yosryahmed@google.com>
- <20220426053904.3684293-5-yosryahmed@google.com> <YmegoB/fBkfwaE5z@google.com>
-Message-ID: <CAJD7tkY-WZKcyer=TbWF0dVfOhvZO7hqPN=AYCDZe1f+2HA-QQ@mail.gmail.com>
+ <20220426053904.3684293-5-yosryahmed@google.com>
+ <874k2falbk.wl-maz@kernel.org>
+Message-ID: <CAJD7tkZ-mrhCXoR0ZONjJ7kuAuzWED8Dcjkw6mv812-3uSo_Cg@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Oliver,
-Thanks so much for taking the time to take a look at this!
+Thanks a lot for taking the time to look at this!
 
-On Tue, Apr 26, 2022 at 12:35 AM Oliver Upton <oupton@google.com> wrote:
+On Tue, Apr 26, 2022 at 8:58 AM Marc Zyngier <maz@kernel.org> wrote:
 >
-> Hi Yosry,
->
-> On Tue, Apr 26, 2022 at 05:39:02AM +0000, Yosry Ahmed wrote:
+> On Tue, 26 Apr 2022 06:39:02 +0100,
+> Yosry Ahmed <yosryahmed@google.com> wrote:
+> >
 > > Count the pages used by KVM in arm64 for page tables in pagetable stats.
 > >
 > > Account pages allocated for PTEs in pgtable init functions and
@@ -45,6 +45,19 @@ On Tue, Apr 26, 2022 at 12:35 AM Oliver Upton <oupton@google.com> wrote:
 > >
 > > +/* Called by kvm_account_pgtable_pages() to update pagetable stats */
 > > +KVM_NVHE_ALIAS(__mod_lruvec_page_state);
+>
+> This cannot be right. It means that this function will be called
+> directly from the EL2 code when in protected mode, and will result in
+> extreme fireworks.  There is no way you can call core kernel stuff
+> like this from this context.
+>
+> Please do not add random symbols to this list just for the sake of
+> being able to link the kernel.
+
+Excuse my ignorance, this is my first time touching kvm code. Thanks a
+lot for pointing this out.
+
+>
 > > +
 > >  #endif /* CONFIG_KVM */
 > >
@@ -59,49 +72,79 @@ On Tue, Apr 26, 2022 at 12:35 AM Oliver Upton <oupton@google.com> wrote:
 > >       smp_store_release(ptep, pte);
 > > +     kvm_account_pgtable_pages((void *)childp, +1);
 >
-> What page tables do we want to account? KVM on ARM manages several page
-> tables.
->
-> For regular KVM, the host kernel manages allocations for the hyp stage 1
-> tables in addition to the stage 2 tables used for a particular VM. The
-> former is system overhead whereas the latter could be attributed to a
-> guest VM.
+> Why the + sign?
 
-Honestly I would love to get your input on this. The main motivation
-here is to give users insights on the kernel memory usage on their
-system (or in a cgroup). We currently have NR_PAGETABLE stats for
-normal kernel page tables (allocated using
-__pte_alloc_one()/pte_free()), this shows up in /proc/meminfo,
-/path/to/cgroup/memory.stat, and node stats. The idea is to add
-NR_SECONDARY_PAGETABLE that should include the memory used for kvm
-pagetables, which should be a separate category (no overlap). What
-gets included or not depends on the semantics of KVM and what exactly
-falls under the category of secondary pagetables from the user's pov.
-
-Currently it looks like s2 page table allocations get accounted to
-kmem of memory control groups (GFP_KERNEL_ACCOUNT), while hyp page
-table allocations do not (GFP_KERNEL). So we could either follow this
-and only account s2 page table allocations in the stats, or make hyp
-allocations use GFP_KERNEL_ACCOUNT as well and add them to the stats.
-Let me know what you think.
+I am following conventions in other existing stat accounting hooks
+(e.g. kvm_mod_used_mmu_pages(vcpu->kvm, +1) call in
+arch/x86/kvm/mmu/mmu.c), but I can certainly remove it if you think
+this is better.
 
 >
-> I imagine protected KVM is out of scope, since it actually manages its
-> own allocations outside of the host kernel.
+> >  }
+> >
+> >  static kvm_pte_t kvm_init_valid_leaf_pte(u64 pa, kvm_pte_t attr, u32 level)
+> > @@ -326,6 +327,14 @@ int kvm_pgtable_get_leaf(struct kvm_pgtable *pgt, u64 addr,
+> >       return ret;
+> >  }
+> >
+> > +static void put_pte_page(kvm_pte_t *ptep, struct kvm_pgtable_mm_ops *mm_ops)
+> > +{
+> > +     /* If this is the last page ref, decrement pagetable stats first. */
+> > +     if (!mm_ops->page_count || mm_ops->page_count(ptep) == 1)
+> > +             kvm_account_pgtable_pages((void *)ptep, -1);
+> > +     mm_ops->put_page(ptep);
+> > +}
+> > +
+> >  struct hyp_map_data {
+> >       u64                             phys;
+> >       kvm_pte_t                       attr;
+> > @@ -488,10 +497,10 @@ static int hyp_unmap_walker(u64 addr, u64 end, u32 level, kvm_pte_t *ptep,
+> >
+> >       dsb(ish);
+> >       isb();
+> > -     mm_ops->put_page(ptep);
+> > +     put_pte_page(ptep, mm_ops);
+> >
+> >       if (childp)
+> > -             mm_ops->put_page(childp);
+> > +             put_pte_page(childp, mm_ops);
+> >
+> >       return 0;
+> >  }
+> > @@ -522,6 +531,7 @@ int kvm_pgtable_hyp_init(struct kvm_pgtable *pgt, u32 va_bits,
+> >       pgt->pgd = (kvm_pte_t *)mm_ops->zalloc_page(NULL);
+> >       if (!pgt->pgd)
+> >               return -ENOMEM;
+> > +     kvm_account_pgtable_pages((void *)pgt->pgd, +1);
+> >
+> >       pgt->ia_bits            = va_bits;
+> >       pgt->start_level        = KVM_PGTABLE_MAX_LEVELS - levels;
+> > @@ -541,10 +551,10 @@ static int hyp_free_walker(u64 addr, u64 end, u32 level, kvm_pte_t *ptep,
+> >       if (!kvm_pte_valid(pte))
+> >               return 0;
+> >
+> > -     mm_ops->put_page(ptep);
+> > +     put_pte_page(ptep, mm_ops);
+> >
+> >       if (kvm_pte_table(pte, level))
+> > -             mm_ops->put_page(kvm_pte_follow(pte, mm_ops));
+> > +             put_pte_page(kvm_pte_follow(pte, mm_ops), mm_ops);
 >
-> Given this, I would recommend adding the accounting hooks to mmu.c as
-> that is where we alloc/free table pages and it is in the host address
-> space. kvm_s2_mm_ops and kvm_hyp_mm_ops point to all the relevant
-> functions, though the latter is only relevant if we want to count system
-> page tables too.
+> OK, I see the pattern. I don't think this workable as such. I'd rather
+> the callbacks themselves (put_page, zalloc_page*) call into the
+> accounting code when it makes sense, rather than spreading the
+> complexity and having to special case the protected case.
+>
 
-Yeah moving the accounting hooks to mmu.c is much cleaner, I will do
-this in the next version. The only reason I did not do this is that I
-found other kvm_pgtable_mm_ops structs (such as pkvm_pgtable_mm_ops),
-but it looks like these may be irrelevant here.
+This makes sense. I am working on moving calls to
+kvm_account_pgtable_pages to callbacks in mmu.c in the next version
+(stage2_memcache_zalloc_page, kvm_host_put_page, etc).
 
+
+> Thanks,
+>
+>         M.
 >
 > --
-> Thanks,
-> Oliver
+> Without deviation from the norm, progress is not possible.
 
