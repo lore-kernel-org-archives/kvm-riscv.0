@@ -1,129 +1,75 @@
-From: Marc Zyngier <maz@kernel.org>
-Date: Tue, 26 Apr 2022 16:58:07 +0100
-Subject: [PATCH v3 4/6] KVM: arm64/mmu: count KVM page table pages in
- pagetable stats
-In-Reply-To: <20220426053904.3684293-5-yosryahmed@google.com>
-References: <20220426053904.3684293-1-yosryahmed@google.com>
- <20220426053904.3684293-5-yosryahmed@google.com>
-Message-ID: <874k2falbk.wl-maz@kernel.org>
+From: Atish Patra <atishp@rivosinc.com>
+Date: Tue, 26 Apr 2022 11:52:41 -0700
+Subject: [PATCH v3 0/4] Add Sstc extension support 
+Message-ID: <20220426185245.281182-1-atishp@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, 26 Apr 2022 06:39:02 +0100,
-Yosry Ahmed <yosryahmed@google.com> wrote:
-> 
-> Count the pages used by KVM in arm64 for page tables in pagetable stats.
-> 
-> Account pages allocated for PTEs in pgtable init functions and
-> kvm_set_table_pte().
-> 
-> Since most page table pages are freed using put_page(), add a helper
-> function put_pte_page() that checks if this is the last ref for a pte
-> page before putting it, and unaccounts stats accordingly.
-> 
-> Signed-off-by: Yosry Ahmed <yosryahmed@google.com>
-> ---
->  arch/arm64/kernel/image-vars.h |  3 ++
->  arch/arm64/kvm/hyp/pgtable.c   | 50 +++++++++++++++++++++-------------
->  2 files changed, 34 insertions(+), 19 deletions(-)
-> 
-> diff --git a/arch/arm64/kernel/image-vars.h b/arch/arm64/kernel/image-vars.h
-> index 241c86b67d01..25bf058714f6 100644
-> --- a/arch/arm64/kernel/image-vars.h
-> +++ b/arch/arm64/kernel/image-vars.h
-> @@ -143,6 +143,9 @@ KVM_NVHE_ALIAS(__hyp_rodata_end);
->  /* pKVM static key */
->  KVM_NVHE_ALIAS(kvm_protected_mode_initialized);
->  
-> +/* Called by kvm_account_pgtable_pages() to update pagetable stats */
-> +KVM_NVHE_ALIAS(__mod_lruvec_page_state);
+This series implements Sstc extension support which was ratified recently.
+Before the Sstc extension, an SBI call is necessary to generate timer
+interrupts as only M-mode have access to the timecompare registers. Thus,
+there is significant latency to generate timer interrupts at kernel.
+For virtualized enviornments, its even worse as the KVM handles the SBI call
+and uses a software timer to emulate the timecomapre register. 
 
-This cannot be right. It means that this function will be called
-directly from the EL2 code when in protected mode, and will result in
-extreme fireworks.  There is no way you can call core kernel stuff
-like this from this context.
+Sstc extension solves both these problems by defining a stimecmp/vstimecmp
+at supervisor (host/guest) level. It allows kernel to program a timer and
+recieve interrupt without supervisor execution enviornment (M-mode/HS mode)
+intervention.
 
-Please do not add random symbols to this list just for the sake of
-being able to link the kernel.
+To maintain backward compatibility, KVM directly updates the vstimecmp
+if older kernel without sstc support is running in guest. Similary, the
+M-mode firmware(OpenSBI) uses stimecmp for older kernel without sstc support. 
 
-> +
->  #endif /* CONFIG_KVM */
->  
->  #endif /* __ARM64_KERNEL_IMAGE_VARS_H */
-> diff --git a/arch/arm64/kvm/hyp/pgtable.c b/arch/arm64/kvm/hyp/pgtable.c
-> index 2cb3867eb7c2..53e13c3313e9 100644
-> --- a/arch/arm64/kvm/hyp/pgtable.c
-> +++ b/arch/arm64/kvm/hyp/pgtable.c
-> @@ -152,6 +152,7 @@ static void kvm_set_table_pte(kvm_pte_t *ptep, kvm_pte_t *childp,
->  
->  	WARN_ON(kvm_pte_valid(old));
->  	smp_store_release(ptep, pte);
-> +	kvm_account_pgtable_pages((void *)childp, +1);
+The PATCH 1 & 2 enables the basic infrastructure around Sstc extension while
+PATCH 3 lets kernel use the Sstc extension if it is available in hardware.
+PATCH 4 implements the Sstc extension in KVM.
 
-Why the + sign?
+This series has been tested on Qemu(RV32 & RV64) with additional patches in
+OpenSBI[2] and Qemu[3]. This series can also be found at [4].
 
->  }
->  
->  static kvm_pte_t kvm_init_valid_leaf_pte(u64 pa, kvm_pte_t attr, u32 level)
-> @@ -326,6 +327,14 @@ int kvm_pgtable_get_leaf(struct kvm_pgtable *pgt, u64 addr,
->  	return ret;
->  }
->  
-> +static void put_pte_page(kvm_pte_t *ptep, struct kvm_pgtable_mm_ops *mm_ops)
-> +{
-> +	/* If this is the last page ref, decrement pagetable stats first. */
-> +	if (!mm_ops->page_count || mm_ops->page_count(ptep) == 1)
-> +		kvm_account_pgtable_pages((void *)ptep, -1);
-> +	mm_ops->put_page(ptep);
-> +}
-> +
->  struct hyp_map_data {
->  	u64				phys;
->  	kvm_pte_t			attr;
-> @@ -488,10 +497,10 @@ static int hyp_unmap_walker(u64 addr, u64 end, u32 level, kvm_pte_t *ptep,
->  
->  	dsb(ish);
->  	isb();
-> -	mm_ops->put_page(ptep);
-> +	put_pte_page(ptep, mm_ops);
->  
->  	if (childp)
-> -		mm_ops->put_page(childp);
-> +		put_pte_page(childp, mm_ops);
->  
->  	return 0;
->  }
-> @@ -522,6 +531,7 @@ int kvm_pgtable_hyp_init(struct kvm_pgtable *pgt, u32 va_bits,
->  	pgt->pgd = (kvm_pte_t *)mm_ops->zalloc_page(NULL);
->  	if (!pgt->pgd)
->  		return -ENOMEM;
-> +	kvm_account_pgtable_pages((void *)pgt->pgd, +1);
->  
->  	pgt->ia_bits		= va_bits;
->  	pgt->start_level	= KVM_PGTABLE_MAX_LEVELS - levels;
-> @@ -541,10 +551,10 @@ static int hyp_free_walker(u64 addr, u64 end, u32 level, kvm_pte_t *ptep,
->  	if (!kvm_pte_valid(pte))
->  		return 0;
->  
-> -	mm_ops->put_page(ptep);
-> +	put_pte_page(ptep, mm_ops);
->  
->  	if (kvm_pte_table(pte, level))
-> -		mm_ops->put_page(kvm_pte_follow(pte, mm_ops));
-> +		put_pte_page(kvm_pte_follow(pte, mm_ops), mm_ops);
+Changes from v2->v3:
+1. Dropped unrelated KVM fixes from this series.
+2. Rebased on 5.18-rc3.
 
-OK, I see the pattern. I don't think this workable as such. I'd rather
-the callbacks themselves (put_page, zalloc_page*) call into the
-accounting code when it makes sense, rather than spreading the
-complexity and having to special case the protected case.
+Changes from v1->v2:
+1. Separate the static key from kvm usage
+2. Makde the sstc specific static key local to the driver/clocksource
+3. Moved the vstimecmp update code to the vcpu_timer
+4. Used function pointers instead of static key to invoke vstimecmp vs
+   hrtimer at the run time. This will help in future for migration of vms
+   from/to sstc enabled hardware to non-sstc enabled hardware.
+5. Unified the vstimer & timer to 1 timer as only one of them will be used
+   at runtime.
 
-Thanks,
+[1] https://drive.google.com/file/d/1m84Re2yK8m_vbW7TspvevCDR82MOBaSX/view
+[2] https://github.com/atishp04/opensbi/tree/sstc_v2
+[3] https://github.com/atishp04/qemu/tree/sstc_v2
+[3] https://github.com/atishp04/linux/tree/sstc_v3
 
-	M.
+Atish Patra (4):
+RISC-V: Add SSTC extension CSR details
+RISC-V: Enable sstc extension parsing from DT
+RISC-V: Prefer sstc extension if available
+RISC-V: KVM: Support sstc extension
 
--- 
-Without deviation from the norm, progress is not possible.
+arch/riscv/include/asm/csr.h            |  11 ++
+arch/riscv/include/asm/hwcap.h          |   1 +
+arch/riscv/include/asm/kvm_host.h       |   1 +
+arch/riscv/include/asm/kvm_vcpu_timer.h |   8 +-
+arch/riscv/include/uapi/asm/kvm.h       |   1 +
+arch/riscv/kernel/cpu.c                 |   1 +
+arch/riscv/kernel/cpufeature.c          |   1 +
+arch/riscv/kvm/main.c                   |  12 ++-
+arch/riscv/kvm/vcpu.c                   |   5 +-
+arch/riscv/kvm/vcpu_timer.c             | 138 +++++++++++++++++++++++-
+drivers/clocksource/timer-riscv.c       |  21 +++-
+11 files changed, 193 insertions(+), 7 deletions(-)
+
+--
+2.25.1
+
 
