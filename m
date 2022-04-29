@@ -1,59 +1,64 @@
-From: Yosry Ahmed <yosryahmed@google.com>
-Date: Thu, 28 Apr 2022 16:49:09 -0700
-Subject: [PATCH v3 4/6] KVM: arm64/mmu: count KVM page table pages in
- pagetable stats
-In-Reply-To: <YmrSywSU1ezREvT6@google.com>
-References: <20220426053904.3684293-1-yosryahmed@google.com>
- <20220426053904.3684293-5-yosryahmed@google.com> <YmegoB/fBkfwaE5z@google.com>
- <CAJD7tkY-WZKcyer=TbWF0dVfOhvZO7hqPN=AYCDZe1f+2HA-QQ@mail.gmail.com>
- <YmrSywSU1ezREvT6@google.com>
-Message-ID: <CAJD7tkY1sdjXFAhftWG+ZV1B4z_HR9mf4QZGA-EJWeKaRQGs4Q@mail.gmail.com>
+From: Oliver Upton <oupton@google.com>
+Date: Fri, 29 Apr 2022 03:42:28 +0000
+Subject: [PATCH v5 07/13] KVM: arm64: Add support for userspace to
+ suspend a vCPU
+In-Reply-To: <CAAeT=Fx5Nb0EJ+6825fYxAxF9bK5DHOXNmJiSVGP=JVSbWuCrQ@mail.gmail.com>
+References: <20220409184549.1681189-1-oupton@google.com>
+ <20220409184549.1681189-8-oupton@google.com>
+ <CAAeT=FzURZmYfsLJnWMXufBiaZ6Wypan+xK4WxOSM=p=kEnYxA@mail.gmail.com>
+ <CAOQ_Qsg2oNx8Ke7wGy1sU-5Ruq8uCWMKU5VkvTn=co6oRhhXww@mail.gmail.com>
+ <CAAeT=Fx5Nb0EJ+6825fYxAxF9bK5DHOXNmJiSVGP=JVSbWuCrQ@mail.gmail.com>
+Message-ID: <YmtepGWYckmUKln+@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Apr 28, 2022 at 10:45 AM Oliver Upton <oupton@google.com> wrote:
->
-> On Tue, Apr 26, 2022 at 12:27:57PM -0700, Yosry Ahmed wrote:
-> > > What page tables do we want to account? KVM on ARM manages several page
-> > > tables.
+On Thu, Apr 21, 2022 at 11:28:42PM -0700, Reiji Watanabe wrote:
+
+[...]
+
+> > > > +static void kvm_arm_vcpu_suspend(struct kvm_vcpu *vcpu)
+> > > > +{
+> > > > +       vcpu->arch.mp_state.mp_state = KVM_MP_STATE_SUSPENDED;
+> > > > +       kvm_make_request(KVM_REQ_SUSPEND, vcpu);
+> > > > +       kvm_vcpu_kick(vcpu);
 > > >
-> > > For regular KVM, the host kernel manages allocations for the hyp stage 1
-> > > tables in addition to the stage 2 tables used for a particular VM. The
-> > > former is system overhead whereas the latter could be attributed to a
-> > > guest VM.
+> > > Considering the patch 8 will remove the call to kvm_vcpu_kick()
+> > > (BTW, I wonder why you wanted to make that change in the patch-8
+> > > instead of the patch-7),
 > >
-> > Honestly I would love to get your input on this. The main motivation
-> > here is to give users insights on the kernel memory usage on their
-> > system (or in a cgroup). We currently have NR_PAGETABLE stats for
-> > normal kernel page tables (allocated using
-> > __pte_alloc_one()/pte_free()), this shows up in /proc/meminfo,
-> > /path/to/cgroup/memory.stat, and node stats. The idea is to add
-> > NR_SECONDARY_PAGETABLE that should include the memory used for kvm
-> > pagetables, which should be a separate category (no overlap). What
-> > gets included or not depends on the semantics of KVM and what exactly
-> > falls under the category of secondary pagetables from the user's pov.
+> > Squashed the diff into the wrong patch! Marc pointed out this is of
+> > course cargo-culted as I was following the pattern laid down by
+> > KVM_REQ_SLEEP :)
+> 
+> I see. Thanks for the clarification !
+> 
+> > > it looks like we could use the mp_state
+> > > KVM_MP_STATE_SUSPENDED instead of using KVM_REQ_SUSPEND.
+> > > What is the reason why you prefer to introduce KVM_REQ_SUSPEND
+> > > rather than simply using KVM_MP_STATE_SUSPENDED ?
 > >
-> > Currently it looks like s2 page table allocations get accounted to
-> > kmem of memory control groups (GFP_KERNEL_ACCOUNT), while hyp page
-> > table allocations do not (GFP_KERNEL). So we could either follow this
-> > and only account s2 page table allocations in the stats, or make hyp
-> > allocations use GFP_KERNEL_ACCOUNT as well and add them to the stats.
-> > Let me know what you think.
->
-> I think it is reasonable to just focus on stage 2 table allocations and
-> ignore all else. As Marc pointed out it isn't workable in other
-> contexts anyway (pKVM), and keeps the patch tidy too.
->
-> GFP_KERNEL_ACCOUNT for hyp allocations wouldn't make sense, as it is
-> done at init to build out the system page tables for EL2.
+> > I was trying to avoid any heavy refactoring in adding new
+> > functionality here, as we handle KVM_MP_STATE_STOPPED similarly (make
+> > a request). ARM is definitely a bit different than x86 in the way that
+> > we handle the MP states, as x86 doesn't bounce through vCPU requests
+> > to do it and instead directly checks the mp_state value.
+> 
+> The difference from KVM_MP_STATE_STOPPED is that kvm_arm_vcpu_power_off()
+> calls kvm_vcpu_kick(), which made me think having KVM_REQ_SLEEP was
+> reasonable (it appears kvm_vcpu_kick() won't be needed there due to
+> the same reason as kvm_arm_vcpu_suspend).
 
-Thanks so much for the insights, will send out v4 according to our discussion.
+Just to finish the thought on this before mailing out what I hope is the
+last take on all of this. I'm going to leave the pointless call to
+kvm_vcpu_kick() in place, if only to follow the pattern of other MP
+states.
 
->
-> --
-> Thanks,
-> Oliver
+That will all get cleaned up later on, as discussed :)
+
+--
+Thanks,
+Oliver
 
