@@ -1,55 +1,138 @@
-From: Atish Patra <atishp@atishpatra.org>
-Date: Tue, 3 May 2022 19:15:20 -0700
-Subject: [PATCH v2 5/7] RISC-V: KVM: Reduce KVM_MAX_VCPUS value
-In-Reply-To: <20220420112450.155624-6-apatel@ventanamicro.com>
-References: <20220420112450.155624-1-apatel@ventanamicro.com>
- <20220420112450.155624-6-apatel@ventanamicro.com>
-Message-ID: <CAOnJCU+yd7hqauHRYwnPqNKEgfy5FK06ezR64aH0Hm2AcNNadw@mail.gmail.com>
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Date: Wed,  4 May 2022 17:48:07 +1000
+Subject: [PATCH kernel] KVM: PPC: Make KVM_CAP_IRQFD_RESAMPLE platform
+ dependent
+Message-ID: <20220504074807.3616813-1-aik@ozlabs.ru>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Apr 20, 2022 at 4:25 AM Anup Patel <apatel@ventanamicro.com> wrote:
->
-> Currently, the KVM_MAX_VCPUS value is 16384 for RV64 and 128
-> for RV32.
->
-> The KVM_MAX_VCPUS value is too high for RV64 and too low for
-> RV32 compared to other architectures (e.g. x86 sets it to 1024
-> and ARM64 sets it to 512). The too high value of KVM_MAX_VCPUS
-> on RV64 also leads to VCPU mask on stack consuming 2KB.
->
-> We set KVM_MAX_VCPUS to 1024 for both RV64 and RV32 to be
-> aligned other architectures.
->
-> Signed-off-by: Anup Patel <apatel@ventanamicro.com>
-> ---
->  arch/riscv/include/asm/kvm_host.h | 3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
->
-> diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
-> index 806f74dc0bfc..61d8b40e3d82 100644
-> --- a/arch/riscv/include/asm/kvm_host.h
-> +++ b/arch/riscv/include/asm/kvm_host.h
-> @@ -16,8 +16,7 @@
->  #include <asm/kvm_vcpu_fp.h>
->  #include <asm/kvm_vcpu_timer.h>
->
-> -#define KVM_MAX_VCPUS                  \
-> -       ((HGATP_VMID_MASK >> HGATP_VMID_SHIFT) + 1)
-> +#define KVM_MAX_VCPUS                  1024
->
->  #define KVM_HALT_POLL_NS_DEFAULT       500000
->
-> --
-> 2.25.1
->
+When introduced, IRQFD resampling worked on POWER8 with XICS. However
+KVM on POWER9 has never implemented it - the compatibility mode code
+("XICS-on-XIVE") misses the kvm_notify_acked_irq() call and the native
+XIVE mode does not handle INTx in KVM at all.
 
-Reviewed-by: Atish Patra <atishp@rivosinc.com>
+This moved the capability support advertising to platforms and stops
+advertising it on XIVE, i.e. POWER9 and later.
 
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+---
+
+
+Or I could move this one together with KVM_CAP_IRQFD. Thoughts?
+
+---
+ arch/arm64/kvm/arm.c       | 3 +++
+ arch/mips/kvm/mips.c       | 3 +++
+ arch/powerpc/kvm/powerpc.c | 6 ++++++
+ arch/riscv/kvm/vm.c        | 3 +++
+ arch/s390/kvm/kvm-s390.c   | 3 +++
+ arch/x86/kvm/x86.c         | 3 +++
+ virt/kvm/kvm_main.c        | 1 -
+ 7 files changed, 21 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm64/kvm/arm.c b/arch/arm64/kvm/arm.c
+index 523bc934fe2f..092f0614bae3 100644
+--- a/arch/arm64/kvm/arm.c
++++ b/arch/arm64/kvm/arm.c
+@@ -210,6 +210,9 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
+ 	case KVM_CAP_SET_GUEST_DEBUG:
+ 	case KVM_CAP_VCPU_ATTRIBUTES:
+ 	case KVM_CAP_PTP_KVM:
++#ifdef CONFIG_HAVE_KVM_IRQFD
++	case KVM_CAP_IRQFD_RESAMPLE:
++#endif
+ 		r = 1;
+ 		break;
+ 	case KVM_CAP_SET_GUEST_DEBUG2:
+diff --git a/arch/mips/kvm/mips.c b/arch/mips/kvm/mips.c
+index a25e0b73ee70..0f3de470a73e 100644
+--- a/arch/mips/kvm/mips.c
++++ b/arch/mips/kvm/mips.c
+@@ -1071,6 +1071,9 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
+ 	case KVM_CAP_READONLY_MEM:
+ 	case KVM_CAP_SYNC_MMU:
+ 	case KVM_CAP_IMMEDIATE_EXIT:
++#ifdef CONFIG_HAVE_KVM_IRQFD
++	case KVM_CAP_IRQFD_RESAMPLE:
++#endif
+ 		r = 1;
+ 		break;
+ 	case KVM_CAP_NR_VCPUS:
+diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+index 875c30c12db0..87698ffef3be 100644
+--- a/arch/powerpc/kvm/powerpc.c
++++ b/arch/powerpc/kvm/powerpc.c
+@@ -591,6 +591,12 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
+ 		break;
+ #endif
+ 
++#ifdef CONFIG_HAVE_KVM_IRQFD
++	case KVM_CAP_IRQFD_RESAMPLE:
++		r = !xive_enabled();
++		break;
++#endif
++
+ 	case KVM_CAP_PPC_ALLOC_HTAB:
+ 		r = hv_enabled;
+ 		break;
+diff --git a/arch/riscv/kvm/vm.c b/arch/riscv/kvm/vm.c
+index c768f75279ef..b58579b386bb 100644
+--- a/arch/riscv/kvm/vm.c
++++ b/arch/riscv/kvm/vm.c
+@@ -63,6 +63,9 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
+ 	case KVM_CAP_READONLY_MEM:
+ 	case KVM_CAP_MP_STATE:
+ 	case KVM_CAP_IMMEDIATE_EXIT:
++#ifdef CONFIG_HAVE_KVM_IRQFD
++	case KVM_CAP_IRQFD_RESAMPLE:
++#endif
+ 		r = 1;
+ 		break;
+ 	case KVM_CAP_NR_VCPUS:
+diff --git a/arch/s390/kvm/kvm-s390.c b/arch/s390/kvm/kvm-s390.c
+index 156d1c25a3c1..85e093fc8d13 100644
+--- a/arch/s390/kvm/kvm-s390.c
++++ b/arch/s390/kvm/kvm-s390.c
+@@ -564,6 +564,9 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
+ 	case KVM_CAP_SET_GUEST_DEBUG:
+ 	case KVM_CAP_S390_DIAG318:
+ 	case KVM_CAP_S390_MEM_OP_EXTENSION:
++#ifdef CONFIG_HAVE_KVM_IRQFD
++	case KVM_CAP_IRQFD_RESAMPLE:
++#endif
+ 		r = 1;
+ 		break;
+ 	case KVM_CAP_SET_GUEST_DEBUG2:
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index 0c0ca599a353..a0a7b769483d 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -4273,6 +4273,9 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
+ 	case KVM_CAP_SYS_ATTRIBUTES:
+ 	case KVM_CAP_VAPIC:
+ 	case KVM_CAP_ENABLE_CAP:
++#ifdef CONFIG_HAVE_KVM_IRQFD
++	case KVM_CAP_IRQFD_RESAMPLE:
++#endif
+ 		r = 1;
+ 		break;
+ 	case KVM_CAP_EXIT_HYPERCALL:
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index 70e05af5ebea..885e72e668a5 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -4293,7 +4293,6 @@ static long kvm_vm_ioctl_check_extension_generic(struct kvm *kvm, long arg)
+ #endif
+ #ifdef CONFIG_HAVE_KVM_IRQFD
+ 	case KVM_CAP_IRQFD:
+-	case KVM_CAP_IRQFD_RESAMPLE:
+ #endif
+ 	case KVM_CAP_IOEVENTFD_ANY_LENGTH:
+ 	case KVM_CAP_CHECK_EXTENSION_VM:
 -- 
-Regards,
-Atish
+2.30.2
+
 
