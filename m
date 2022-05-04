@@ -1,10 +1,10 @@
 From: Atish Patra <atishp@atishpatra.org>
-Date: Tue, 3 May 2022 19:14:38 -0700
-Subject: [PATCH v2 3/7] RISC-V: KVM: Treat SBI HFENCE calls as NOPs
-In-Reply-To: <20220420112450.155624-4-apatel@ventanamicro.com>
+Date: Tue, 3 May 2022 19:15:20 -0700
+Subject: [PATCH v2 5/7] RISC-V: KVM: Reduce KVM_MAX_VCPUS value
+In-Reply-To: <20220420112450.155624-6-apatel@ventanamicro.com>
 References: <20220420112450.155624-1-apatel@ventanamicro.com>
- <20220420112450.155624-4-apatel@ventanamicro.com>
-Message-ID: <CAOnJCU+sDbJERnrcTUiLowvpfRDJ=-YPkc2dxzbfsD+qFBMUKw@mail.gmail.com>
+ <20220420112450.155624-6-apatel@ventanamicro.com>
+Message-ID: <CAOnJCU+yd7hqauHRYwnPqNKEgfy5FK06ezR64aH0Hm2AcNNadw@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -13,38 +13,42 @@ Content-Transfer-Encoding: 7bit
 
 On Wed, Apr 20, 2022 at 4:25 AM Anup Patel <apatel@ventanamicro.com> wrote:
 >
-> We should treat SBI HFENCE calls as NOPs until nested virtualization
-> is supported by KVM RISC-V. This will help us test booting a hypervisor
-> under KVM RISC-V.
+> Currently, the KVM_MAX_VCPUS value is 16384 for RV64 and 128
+> for RV32.
+>
+> The KVM_MAX_VCPUS value is too high for RV64 and too low for
+> RV32 compared to other architectures (e.g. x86 sets it to 1024
+> and ARM64 sets it to 512). The too high value of KVM_MAX_VCPUS
+> on RV64 also leads to VCPU mask on stack consuming 2KB.
+>
+> We set KVM_MAX_VCPUS to 1024 for both RV64 and RV32 to be
+> aligned other architectures.
 >
 > Signed-off-by: Anup Patel <apatel@ventanamicro.com>
 > ---
->  arch/riscv/kvm/vcpu_sbi_replace.c | 6 +++++-
->  1 file changed, 5 insertions(+), 1 deletion(-)
+>  arch/riscv/include/asm/kvm_host.h | 3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
 >
-> diff --git a/arch/riscv/kvm/vcpu_sbi_replace.c b/arch/riscv/kvm/vcpu_sbi_replace.c
-> index 0f217365c287..3c1dcd38358e 100644
-> --- a/arch/riscv/kvm/vcpu_sbi_replace.c
-> +++ b/arch/riscv/kvm/vcpu_sbi_replace.c
-> @@ -117,7 +117,11 @@ static int kvm_sbi_ext_rfence_handler(struct kvm_vcpu *vcpu, struct kvm_run *run
->         case SBI_EXT_RFENCE_REMOTE_HFENCE_GVMA_VMID:
->         case SBI_EXT_RFENCE_REMOTE_HFENCE_VVMA:
->         case SBI_EXT_RFENCE_REMOTE_HFENCE_VVMA_ASID:
-> -       /* TODO: implement for nested hypervisor case */
-> +               /*
-> +                * Until nested virtualization is implemented, the
-> +                * SBI HFENCE calls should be treated as NOPs
-> +                */
-> +               break;
->         default:
->                 ret = -EOPNOTSUPP;
->         }
+> diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
+> index 806f74dc0bfc..61d8b40e3d82 100644
+> --- a/arch/riscv/include/asm/kvm_host.h
+> +++ b/arch/riscv/include/asm/kvm_host.h
+> @@ -16,8 +16,7 @@
+>  #include <asm/kvm_vcpu_fp.h>
+>  #include <asm/kvm_vcpu_timer.h>
+>
+> -#define KVM_MAX_VCPUS                  \
+> -       ((HGATP_VMID_MASK >> HGATP_VMID_SHIFT) + 1)
+> +#define KVM_MAX_VCPUS                  1024
+>
+>  #define KVM_HALT_POLL_NS_DEFAULT       500000
+>
 > --
 > 2.25.1
 >
 
-
 Reviewed-by: Atish Patra <atishp@rivosinc.com>
+
 -- 
 Regards,
 Atish
