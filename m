@@ -1,128 +1,213 @@
 From: David Matlack <dmatlack@google.com>
-Date: Mon, 9 May 2022 14:40:54 -0700
+Date: Mon, 9 May 2022 14:44:20 -0700
 Subject: [PATCH v4 20/20] KVM: x86/mmu: Extend Eager Page Splitting to
  nested MMUs
-In-Reply-To: <de48ed40-4e6e-c49d-426e-91aba4ce1337@gmail.com>
+In-Reply-To: <YnlFzMpJZNfFuFic@google.com>
 References: <20220422210546.458943-1-dmatlack@google.com>
  <20220422210546.458943-21-dmatlack@google.com>
- <de48ed40-4e6e-c49d-426e-91aba4ce1337@gmail.com>
-Message-ID: <CALzav=dTmLLO1tLDuZyx6EPF3RbRi=BtpKiT0piU6xjW6f_LSw@mail.gmail.com>
+ <YnlFzMpJZNfFuFic@google.com>
+Message-ID: <CALzav=fTTf8=u1i0pePxAHtuHr4Q_+N1-d8x09MtRk+6y250rw@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sat, May 7, 2022 at 12:51 AM Lai Jiangshan <jiangshanlai@gmail.com> wrote:
+On Mon, May 9, 2022 at 9:48 AM Sean Christopherson <seanjc@google.com> wrote:
 >
->
-> On 2022/4/23 05:05, David Matlack wrote:
-> > Add support for Eager Page Splitting pages that are mapped by nested
-> > MMUs. Walk through the rmap first splitting all 1GiB pages to 2MiB
-> > pages, and then splitting all 2MiB pages to 4KiB pages.
-> >
-> > Note, Eager Page Splitting is limited to nested MMUs as a policy rather
-> > than due to any technical reason (the sp->role.guest_mode check could
-> > just be deleted and Eager Page Splitting would work correctly for all
-> > shadow MMU pages). There is really no reason to support Eager Page
-> > Splitting for tdp_mmu=N, since such support will eventually be phased
-> > out, and there is no current use case supporting Eager Page Splitting on
-> > hosts where TDP is either disabled or unavailable in hardware.
-> > Furthermore, future improvements to nested MMU scalability may diverge
-> > the code from the legacy shadow paging implementation. These
-> > improvements will be simpler to make if Eager Page Splitting does not
-> > have to worry about legacy shadow paging.
-> >
-> > Splitting huge pages mapped by nested MMUs requires dealing with some
-> > extra complexity beyond that of the TDP MMU:
-> >
-> > (1) The shadow MMU has a limit on the number of shadow pages that are
-> >      allowed to be allocated. So, as a policy, Eager Page Splitting
-> >      refuses to split if there are KVM_MIN_FREE_MMU_PAGES or fewer
-> >      pages available.
-> >
-> > (2) Splitting a huge page may end up re-using an existing lower level
-> >      shadow page tables. This is unlike the TDP MMU which always allocates
-> >      new shadow page tables when splitting.
-> >
-> > (3) When installing the lower level SPTEs, they must be added to the
-> >      rmap which may require allocating additional pte_list_desc structs.
-> >
-> > Case (2) is especially interesting since it may require a TLB flush,
-> > unlike the TDP MMU which can fully split huge pages without any TLB
-> > flushes. Specifically, an existing lower level page table may point to
-> > even lower level page tables that are not fully populated, effectively
-> > unmapping a portion of the huge page, which requires a flush.
-> >
-> > This commit performs such flushes after dropping the huge page and
-> > before installing the lower level page table. This TLB flush could
-> > instead be delayed until the MMU lock is about to be dropped, which
-> > would batch flushes for multiple splits.  However these flushes should
-> > be rare in practice (a huge page must be aliased in multiple SPTEs and
-> > have been split for NX Huge Pages in only some of them). Flushing
-> > immediately is simpler to plumb and also reduces the chances of tripping
-> > over a CPU bug (e.g. see iTLB multihit).
-> >
-> > Suggested-by: Peter Feiner <pfeiner@google.com>
-> > [ This commit is based off of the original implementation of Eager Page
-> >    Splitting from Peter in Google's kernel from 2016. ]
-> > Signed-off-by: David Matlack <dmatlack@google.com>
-> > ---
-> >   .../admin-guide/kernel-parameters.txt         |   3 +-
-> >   arch/x86/include/asm/kvm_host.h               |  20 ++
-> >   arch/x86/kvm/mmu/mmu.c                        | 276 +++++++++++++++++-
-> >   arch/x86/kvm/x86.c                            |   6 +
-> >   4 files changed, 296 insertions(+), 9 deletions(-)
-> >
-> > diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-> > index 3f1cc5e317ed..bc3ad3d4df0b 100644
-> > --- a/Documentation/admin-guide/kernel-parameters.txt
-> > +++ b/Documentation/admin-guide/kernel-parameters.txt
-> > @@ -2387,8 +2387,7 @@
-> >                       the KVM_CLEAR_DIRTY ioctl, and only for the pages being
-> >                       cleared.
-> >
-> > -                     Eager page splitting currently only supports splitting
-> > -                     huge pages mapped by the TDP MMU.
-> > +                     Eager page splitting is only supported when kvm.tdp_mmu=Y.
-> >
-> >                       Default is Y (on).
-> >
-> > diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
-> > index 15131aa05701..5df4dff385a1 100644
-> > --- a/arch/x86/include/asm/kvm_host.h
-> > +++ b/arch/x86/include/asm/kvm_host.h
-> > @@ -1240,6 +1240,24 @@ struct kvm_arch {
-> >       hpa_t   hv_root_tdp;
-> >       spinlock_t hv_root_tdp_lock;
-> >   #endif
+> On Fri, Apr 22, 2022, David Matlack wrote:
+> > +static bool need_topup_split_caches_or_resched(struct kvm *kvm)
+> > +{
+> > +     if (need_resched() || rwlock_needbreak(&kvm->mmu_lock))
+> > +             return true;
 > > +
 > > +     /*
-> > +      * Memory caches used to allocate shadow pages when performing eager
-> > +      * page splitting. No need for a shadowed_info_cache since eager page
-> > +      * splitting only allocates direct shadow pages.
+> > +      * In the worst case, SPLIT_DESC_CACHE_CAPACITY descriptors are needed
+> > +      * to split a single huge page. Calculating how many are actually needed
+> > +      * is possible but not worth the complexity.
 > > +      */
-> > +     struct kvm_mmu_memory_cache split_shadow_page_cache;
-> > +     struct kvm_mmu_memory_cache split_page_header_cache;
-> > +
-> > +     /*
-> > +      * Memory cache used to allocate pte_list_desc structs while splitting
-> > +      * huge pages. In the worst case, to split one huge page, 512
-> > +      * pte_list_desc structs are needed to add each lower level leaf sptep
-> > +      * to the rmap plus 1 to extend the parent_ptes rmap of the lower level
-> > +      * page table.
-> > +      */
-> > +#define SPLIT_DESC_CACHE_CAPACITY 513
-> > +     struct kvm_mmu_memory_cache split_desc_cache;
-> >   };
-> >
-> >
+> > +     return need_topup(&kvm->arch.split_desc_cache, SPLIT_DESC_CACHE_CAPACITY) ||
+> > +             need_topup(&kvm->arch.split_page_header_cache, 1) ||
+> > +             need_topup(&kvm->arch.split_shadow_page_cache, 1);
 >
+> Uber nit that Paolo will make fun of me for... please align indentiation
 >
-> I think it needs to document that the topup operations for these caches are
->
-> protected by kvm->slots_lock.
+>         return need_topup(&kvm->arch.split_desc_cache, SPLIT_DESC_CACHE_CAPACITY) ||
+>                need_topup(&kvm->arch.split_page_header_cache, 1) ||
+>                need_topup(&kvm->arch.split_shadow_page_cache, 1);
 
-Will do. Thanks!
+Will do.
+
 >
+> > +static void nested_mmu_split_huge_page(struct kvm *kvm,
+> > +                                    const struct kvm_memory_slot *slot,
+> > +                                    u64 *huge_sptep)
+> > +
+> > +{
+> > +     struct kvm_mmu_memory_cache *cache = &kvm->arch.split_desc_cache;
+> > +     u64 huge_spte = READ_ONCE(*huge_sptep);
+> > +     struct kvm_mmu_page *sp;
+> > +     bool flush = false;
+> > +     u64 *sptep, spte;
+> > +     gfn_t gfn;
+> > +     int index;
+> > +
+> > +     sp = nested_mmu_get_sp_for_split(kvm, huge_sptep);
+> > +
+> > +     for (index = 0; index < PT64_ENT_PER_PAGE; index++) {
+> > +             sptep = &sp->spt[index];
+> > +             gfn = kvm_mmu_page_get_gfn(sp, index);
+> > +
+> > +             /*
+> > +              * The SP may already have populated SPTEs, e.g. if this huge
+> > +              * page is aliased by multiple sptes with the same access
+> > +              * permissions. These entries are guaranteed to map the same
+> > +              * gfn-to-pfn translation since the SP is direct, so no need to
+> > +              * modify them.
+> > +              *
+> > +              * However, if a given SPTE points to a lower level page table,
+> > +              * that lower level page table may only be partially populated.
+> > +              * Installing such SPTEs would effectively unmap a potion of the
+> > +              * huge page, which requires a TLB flush.
+>
+> Maybe explain why a TLB flush is required?  E.g. "which requires a TLB flush as
+> a subsequent mmu_notifier event on the unmapped region would fail to detect the
+> need to flush".
+
+Will do.
+
+>
+> > +static bool nested_mmu_skip_split_huge_page(u64 *huge_sptep)
+>
+> "skip" is kinda odd terminology.  It reads like a command, but it's actually
+> querying state _and_ it's returning a boolean, which I've learned to hate :-)
+>
+> I don't see any reason for a helper, there's one caller and it can just do
+> "continue" directly.
+
+Will do.
+
+>
+> > +static void kvm_nested_mmu_try_split_huge_pages(struct kvm *kvm,
+> > +                                             const struct kvm_memory_slot *slot,
+> > +                                             gfn_t start, gfn_t end,
+> > +                                             int target_level)
+> > +{
+> > +     int level;
+> > +
+> > +     /*
+> > +      * Split huge pages starting with KVM_MAX_HUGEPAGE_LEVEL and working
+> > +      * down to the target level. This ensures pages are recursively split
+> > +      * all the way to the target level. There's no need to split pages
+> > +      * already at the target level.
+> > +      */
+> > +     for (level = KVM_MAX_HUGEPAGE_LEVEL; level > target_level; level--) {
+>
+> Unnecessary braces.
+
+The brace is unnecessary, but when the inner statement is split across
+multiple lines I tend to prefer using braces. (That's why I did the
+same in the other patch and you had the same feedback.) I couldn't
+find any guidance about this in CodingStyle so I'm fine with getting
+rid of the braces if that's what you prefer.
+
+> > +             slot_handle_level_range(kvm, slot,
+> > +                                     nested_mmu_try_split_huge_pages,
+> > +                                     level, level, start, end - 1,
+> > +                                     true, false);
+>
+> IMO it's worth running over by 4 chars to drop 2 lines:
+
+Will do.
+
+>
+>         for (level = KVM_MAX_HUGEPAGE_LEVEL; level > target_level; level--)
+>                 slot_handle_level_range(kvm, slot, nested_mmu_try_split_huge_pages,
+>                                         level, level, start, end - 1, true, false);
+> > +     }
+> > +}
+> > +
+> >  /* Must be called with the mmu_lock held in write-mode. */
+>
+> Add a lockdep assertion, not a comment.
+
+Agreed but this is an existing comment, so better left to a separate patch.
+
+>
+> >  void kvm_mmu_try_split_huge_pages(struct kvm *kvm,
+> >                                  const struct kvm_memory_slot *memslot,
+> >                                  u64 start, u64 end,
+> >                                  int target_level)
+> >  {
+> > -     if (is_tdp_mmu_enabled(kvm))
+> > -             kvm_tdp_mmu_try_split_huge_pages(kvm, memslot, start, end,
+> > -                                              target_level, false);
+> > +     if (!is_tdp_mmu_enabled(kvm))
+> > +             return;
+> > +
+> > +     kvm_tdp_mmu_try_split_huge_pages(kvm, memslot, start, end, target_level,
+> > +                                      false);
+> > +
+> > +     if (kvm_memslots_have_rmaps(kvm))
+> > +             kvm_nested_mmu_try_split_huge_pages(kvm, memslot, start, end,
+> > +                                                 target_level);
+> >
+> >       /*
+> >        * A TLB flush is unnecessary at this point for the same resons as in
+> > @@ -6051,10 +6304,19 @@ void kvm_mmu_slot_try_split_huge_pages(struct kvm *kvm,
+> >       u64 start = memslot->base_gfn;
+> >       u64 end = start + memslot->npages;
+> >
+> > -     if (is_tdp_mmu_enabled(kvm)) {
+> > -             read_lock(&kvm->mmu_lock);
+> > -             kvm_tdp_mmu_try_split_huge_pages(kvm, memslot, start, end, target_level, true);
+> > -             read_unlock(&kvm->mmu_lock);
+> > +     if (!is_tdp_mmu_enabled(kvm))
+> > +             return;
+> > +
+> > +     read_lock(&kvm->mmu_lock);
+> > +     kvm_tdp_mmu_try_split_huge_pages(kvm, memslot, start, end, target_level,
+> > +                                      true);
+>
+> Eh, let this poke out.
+
+Will do :)
+
+>
+> > +     read_unlock(&kvm->mmu_lock);
+> > +
+> > +     if (kvm_memslots_have_rmaps(kvm)) {
+> > +             write_lock(&kvm->mmu_lock);
+> > +             kvm_nested_mmu_try_split_huge_pages(kvm, memslot, start, end,
+> > +                                                 target_level);
+> > +             write_unlock(&kvm->mmu_lock);
+>
+> Super duper nit: all other flows do rmaps first, than TDP MMU.  Might as well keep
+> that ordering here, otherwise it suggests there's a reason to be different.
+
+Will do.
+>
+> >       }
+> >
+> >       /*
+> > diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+> > index ab336f7c82e4..e123e24a130f 100644
+> > --- a/arch/x86/kvm/x86.c
+> > +++ b/arch/x86/kvm/x86.c
+> > @@ -12161,6 +12161,12 @@ static void kvm_mmu_slot_apply_flags(struct kvm *kvm,
+> >                * page faults will create the large-page sptes.
+> >                */
+> >               kvm_mmu_zap_collapsible_sptes(kvm, new);
+> > +
+> > +             /*
+> > +              * Free any memory left behind by eager page splitting. Ignore
+> > +              * the module parameter since userspace might have changed it.
+> > +              */
+> > +             free_split_caches(kvm);
+> >       } else {
+> >               /*
+> >                * Initially-all-set does not require write protecting any page,
+> > --
+> > 2.36.0.rc2.479.g8af0fa9b8e-goog
+> >
 
