@@ -1,183 +1,200 @@
-From: Sean Christopherson <seanjc@google.com>
-Date: Mon, 9 May 2022 16:48:12 +0000
-Subject: [PATCH v4 20/20] KVM: x86/mmu: Extend Eager Page Splitting to
- nested MMUs
-In-Reply-To: <20220422210546.458943-21-dmatlack@google.com>
-References: <20220422210546.458943-1-dmatlack@google.com>
- <20220422210546.458943-21-dmatlack@google.com>
-Message-ID: <YnlFzMpJZNfFuFic@google.com>
+From: Atish Patra <atishp@rivosinc.com>
+Date: Mon,  9 May 2022 11:29:37 -0700
+Subject: [PATCH v3] RISC-V: KVM: Introduce ISA extension register
+Message-ID: <20220509182937.1881849-1-atishp@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Apr 22, 2022, David Matlack wrote:
-> +static bool need_topup_split_caches_or_resched(struct kvm *kvm)
-> +{
-> +	if (need_resched() || rwlock_needbreak(&kvm->mmu_lock))
-> +		return true;
-> +
-> +	/*
-> +	 * In the worst case, SPLIT_DESC_CACHE_CAPACITY descriptors are needed
-> +	 * to split a single huge page. Calculating how many are actually needed
-> +	 * is possible but not worth the complexity.
-> +	 */
-> +	return need_topup(&kvm->arch.split_desc_cache, SPLIT_DESC_CACHE_CAPACITY) ||
-> +		need_topup(&kvm->arch.split_page_header_cache, 1) ||
-> +		need_topup(&kvm->arch.split_shadow_page_cache, 1);
+Currently, there is no provision for vmm (qemu-kvm or kvmtool) to
+query about multiple-letter ISA extensions. The config register
+is only used for base single letter ISA extensions.
 
-Uber nit that Paolo will make fun of me for... please align indentiation
+A new ISA extension register is added that will allow the vmm
+to query about any ISA extension one at a time. It is enabled for
+both single letter or multi-letter ISA extensions. The ISA extension
+register is useful to if the vmm requires to retrieve/set single
+extension while the config register should be used if all the base
+ISA extension required to retrieve or set.
 
-	return need_topup(&kvm->arch.split_desc_cache, SPLIT_DESC_CACHE_CAPACITY) ||
-	       need_topup(&kvm->arch.split_page_header_cache, 1) ||
-	       need_topup(&kvm->arch.split_shadow_page_cache, 1);
+For any multi-letter ISA extensions, the new register interface
+must be used.
 
-> +static void nested_mmu_split_huge_page(struct kvm *kvm,
-> +				       const struct kvm_memory_slot *slot,
-> +				       u64 *huge_sptep)
-> +
-> +{
-> +	struct kvm_mmu_memory_cache *cache = &kvm->arch.split_desc_cache;
-> +	u64 huge_spte = READ_ONCE(*huge_sptep);
-> +	struct kvm_mmu_page *sp;
-> +	bool flush = false;
-> +	u64 *sptep, spte;
-> +	gfn_t gfn;
-> +	int index;
-> +
-> +	sp = nested_mmu_get_sp_for_split(kvm, huge_sptep);
-> +
-> +	for (index = 0; index < PT64_ENT_PER_PAGE; index++) {
-> +		sptep = &sp->spt[index];
-> +		gfn = kvm_mmu_page_get_gfn(sp, index);
-> +
-> +		/*
-> +		 * The SP may already have populated SPTEs, e.g. if this huge
-> +		 * page is aliased by multiple sptes with the same access
-> +		 * permissions. These entries are guaranteed to map the same
-> +		 * gfn-to-pfn translation since the SP is direct, so no need to
-> +		 * modify them.
-> +		 *
-> +		 * However, if a given SPTE points to a lower level page table,
-> +		 * that lower level page table may only be partially populated.
-> +		 * Installing such SPTEs would effectively unmap a potion of the
-> +		 * huge page, which requires a TLB flush.
+Signed-off-by: Atish Patra <atishp@rivosinc.com>
+---
+Changes from v2->v3:
+1. Fixed the comment style.
+2. Fixed the kvm_riscv_vcpu_get_reg_isa_ext function.
+---
+ arch/riscv/include/uapi/asm/kvm.h | 20 +++++++
+ arch/riscv/kvm/vcpu.c             | 99 +++++++++++++++++++++++++++++++
+ 2 files changed, 119 insertions(+)
 
-Maybe explain why a TLB flush is required?  E.g. "which requires a TLB flush as
-a subsequent mmu_notifier event on the unmapped region would fail to detect the
-need to flush".
+diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
+index f808ad1ce500..92bd469e2ba6 100644
+--- a/arch/riscv/include/uapi/asm/kvm.h
++++ b/arch/riscv/include/uapi/asm/kvm.h
+@@ -82,6 +82,23 @@ struct kvm_riscv_timer {
+ 	__u64 state;
+ };
+ 
++/**
++ * ISA extension IDs specific to KVM. This is not the same as the host ISA
++ * extension IDs as that is internal to the host and should not be exposed
++ * to the guest. This should always be contiguous to keep the mapping simple
++ * in KVM implementation.
++ */
++enum KVM_RISCV_ISA_EXT_ID {
++	KVM_RISCV_ISA_EXT_A = 0,
++	KVM_RISCV_ISA_EXT_C,
++	KVM_RISCV_ISA_EXT_D,
++	KVM_RISCV_ISA_EXT_F,
++	KVM_RISCV_ISA_EXT_H,
++	KVM_RISCV_ISA_EXT_I,
++	KVM_RISCV_ISA_EXT_M,
++	KVM_RISCV_ISA_EXT_MAX,
++};
++
+ /* Possible states for kvm_riscv_timer */
+ #define KVM_RISCV_TIMER_STATE_OFF	0
+ #define KVM_RISCV_TIMER_STATE_ON	1
+@@ -123,6 +140,9 @@ struct kvm_riscv_timer {
+ #define KVM_REG_RISCV_FP_D_REG(name)	\
+ 		(offsetof(struct __riscv_d_ext_state, name) / sizeof(__u64))
+ 
++/* ISA Extension registers are mapped as type 7 */
++#define KVM_REG_RISCV_ISA_EXT		(0x07 << KVM_REG_RISCV_TYPE_SHIFT)
++
+ #endif
+ 
+ #endif /* __LINUX_KVM_RISCV_H */
+diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+index 7461f964d20a..0875beaa1973 100644
+--- a/arch/riscv/kvm/vcpu.c
++++ b/arch/riscv/kvm/vcpu.c
+@@ -365,6 +365,101 @@ static int kvm_riscv_vcpu_set_reg_csr(struct kvm_vcpu *vcpu,
+ 	return 0;
+ }
+ 
++/* Mapping between KVM ISA Extension ID & Host ISA extension ID */
++static unsigned long kvm_isa_ext_arr[] = {
++	RISCV_ISA_EXT_a,
++	RISCV_ISA_EXT_c,
++	RISCV_ISA_EXT_d,
++	RISCV_ISA_EXT_f,
++	RISCV_ISA_EXT_h,
++	RISCV_ISA_EXT_i,
++	RISCV_ISA_EXT_m,
++};
++
++static int kvm_riscv_vcpu_get_reg_isa_ext(struct kvm_vcpu *vcpu,
++					  const struct kvm_one_reg *reg)
++{
++	unsigned long __user *uaddr =
++			(unsigned long __user *)(unsigned long)reg->addr;
++	unsigned long reg_num = reg->id & ~(KVM_REG_ARCH_MASK |
++					    KVM_REG_SIZE_MASK |
++					    KVM_REG_RISCV_ISA_EXT);
++	unsigned long reg_val = 0;
++	unsigned long host_isa_ext;
++
++	if (KVM_REG_SIZE(reg->id) != sizeof(unsigned long))
++		return -EINVAL;
++
++	if (reg_num >= KVM_RISCV_ISA_EXT_MAX || reg_num >= ARRAY_SIZE(kvm_isa_ext_arr))
++		return -EINVAL;
++
++	host_isa_ext = kvm_isa_ext_arr[reg_num];
++	if (__riscv_isa_extension_available(&vcpu->arch.isa, host_isa_ext))
++		reg_val = 1; /* Mark the given extension as available */
++
++	if (copy_to_user(uaddr, &reg_val, KVM_REG_SIZE(reg->id)))
++		return -EFAULT;
++
++	return 0;
++}
++
++static int kvm_riscv_vcpu_set_reg_isa_ext(struct kvm_vcpu *vcpu,
++					  const struct kvm_one_reg *reg)
++{
++	unsigned long __user *uaddr =
++			(unsigned long __user *)(unsigned long)reg->addr;
++	unsigned long reg_num = reg->id & ~(KVM_REG_ARCH_MASK |
++					    KVM_REG_SIZE_MASK |
++					    KVM_REG_RISCV_ISA_EXT);
++	unsigned long reg_val;
++	unsigned long host_isa_ext;
++	unsigned long host_isa_ext_mask;
++
++	if (KVM_REG_SIZE(reg->id) != sizeof(unsigned long))
++		return -EINVAL;
++
++	if (reg_num >= KVM_RISCV_ISA_EXT_MAX || reg_num >= ARRAY_SIZE(kvm_isa_ext_arr))
++		return -EINVAL;
++
++	if (copy_from_user(&reg_val, uaddr, KVM_REG_SIZE(reg->id)))
++		return -EFAULT;
++
++	host_isa_ext = kvm_isa_ext_arr[reg_num];
++	if (!__riscv_isa_extension_available(NULL, host_isa_ext))
++		return	-EOPNOTSUPP;
++
++	if (host_isa_ext >= RISCV_ISA_EXT_BASE &&
++	    host_isa_ext < RISCV_ISA_EXT_MAX) {
++		/*
++		 * Multi-letter ISA extension. Currently there is no provision
++		 * to enable/disable the multi-letter ISA extensions for guests.
++		 * Return success if the request is to enable any ISA extension
++		 * that is available in the hardware.
++		 * Return -EOPNOTSUPP otherwise.
++		 */
++		if (!reg_val)
++			return -EOPNOTSUPP;
++		else
++			return 0;
++	}
++
++	/* Single letter base ISA extension */
++	if (!vcpu->arch.ran_atleast_once) {
++		host_isa_ext_mask = BIT_MASK(host_isa_ext);
++		if (!reg_val && (host_isa_ext_mask & KVM_RISCV_ISA_DISABLE_ALLOWED))
++			vcpu->arch.isa &= ~host_isa_ext_mask;
++		else
++			vcpu->arch.isa |= host_isa_ext_mask;
++		vcpu->arch.isa &= riscv_isa_extension_base(NULL);
++		vcpu->arch.isa &= KVM_RISCV_ISA_ALLOWED;
++		kvm_riscv_vcpu_fp_reset(vcpu);
++	} else {
++		return -EOPNOTSUPP;
++	}
++
++	return 0;
++}
++
+ static int kvm_riscv_vcpu_set_reg(struct kvm_vcpu *vcpu,
+ 				  const struct kvm_one_reg *reg)
+ {
+@@ -382,6 +477,8 @@ static int kvm_riscv_vcpu_set_reg(struct kvm_vcpu *vcpu,
+ 	else if ((reg->id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_FP_D)
+ 		return kvm_riscv_vcpu_set_reg_fp(vcpu, reg,
+ 						 KVM_REG_RISCV_FP_D);
++	else if ((reg->id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_ISA_EXT)
++		return kvm_riscv_vcpu_set_reg_isa_ext(vcpu, reg);
+ 
+ 	return -EINVAL;
+ }
+@@ -403,6 +500,8 @@ static int kvm_riscv_vcpu_get_reg(struct kvm_vcpu *vcpu,
+ 	else if ((reg->id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_FP_D)
+ 		return kvm_riscv_vcpu_get_reg_fp(vcpu, reg,
+ 						 KVM_REG_RISCV_FP_D);
++	else if ((reg->id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_ISA_EXT)
++		return kvm_riscv_vcpu_get_reg_isa_ext(vcpu, reg);
+ 
+ 	return -EINVAL;
+ }
+-- 
+2.36.0
 
-> +static bool nested_mmu_skip_split_huge_page(u64 *huge_sptep)
-
-"skip" is kinda odd terminology.  It reads like a command, but it's actually
-querying state _and_ it's returning a boolean, which I've learned to hate :-)
-
-I don't see any reason for a helper, there's one caller and it can just do
-"continue" directly.
-
-> +static void kvm_nested_mmu_try_split_huge_pages(struct kvm *kvm,
-> +						const struct kvm_memory_slot *slot,
-> +						gfn_t start, gfn_t end,
-> +						int target_level)
-> +{
-> +	int level;
-> +
-> +	/*
-> +	 * Split huge pages starting with KVM_MAX_HUGEPAGE_LEVEL and working
-> +	 * down to the target level. This ensures pages are recursively split
-> +	 * all the way to the target level. There's no need to split pages
-> +	 * already at the target level.
-> +	 */
-> +	for (level = KVM_MAX_HUGEPAGE_LEVEL; level > target_level; level--) {
-
-Unnecessary braces.
-> +		slot_handle_level_range(kvm, slot,
-> +					nested_mmu_try_split_huge_pages,
-> +					level, level, start, end - 1,
-> +					true, false);
-
-IMO it's worth running over by 4 chars to drop 2 lines:
-
-	for (level = KVM_MAX_HUGEPAGE_LEVEL; level > target_level; level--)
-		slot_handle_level_range(kvm, slot, nested_mmu_try_split_huge_pages,
-					level, level, start, end - 1, true, false);
-> +	}
-> +}
-> +
->  /* Must be called with the mmu_lock held in write-mode. */
-
-Add a lockdep assertion, not a comment.
-
->  void kvm_mmu_try_split_huge_pages(struct kvm *kvm,
->  				   const struct kvm_memory_slot *memslot,
->  				   u64 start, u64 end,
->  				   int target_level)
->  {
-> -	if (is_tdp_mmu_enabled(kvm))
-> -		kvm_tdp_mmu_try_split_huge_pages(kvm, memslot, start, end,
-> -						 target_level, false);
-> +	if (!is_tdp_mmu_enabled(kvm))
-> +		return;
-> +
-> +	kvm_tdp_mmu_try_split_huge_pages(kvm, memslot, start, end, target_level,
-> +					 false);
-> +
-> +	if (kvm_memslots_have_rmaps(kvm))
-> +		kvm_nested_mmu_try_split_huge_pages(kvm, memslot, start, end,
-> +						    target_level);
->  
->  	/*
->  	 * A TLB flush is unnecessary at this point for the same resons as in
-> @@ -6051,10 +6304,19 @@ void kvm_mmu_slot_try_split_huge_pages(struct kvm *kvm,
->  	u64 start = memslot->base_gfn;
->  	u64 end = start + memslot->npages;
->  
-> -	if (is_tdp_mmu_enabled(kvm)) {
-> -		read_lock(&kvm->mmu_lock);
-> -		kvm_tdp_mmu_try_split_huge_pages(kvm, memslot, start, end, target_level, true);
-> -		read_unlock(&kvm->mmu_lock);
-> +	if (!is_tdp_mmu_enabled(kvm))
-> +		return;
-> +
-> +	read_lock(&kvm->mmu_lock);
-> +	kvm_tdp_mmu_try_split_huge_pages(kvm, memslot, start, end, target_level,
-> +					 true);
-
-Eh, let this poke out.
-
-> +	read_unlock(&kvm->mmu_lock);
-> +
-> +	if (kvm_memslots_have_rmaps(kvm)) {
-> +		write_lock(&kvm->mmu_lock);
-> +		kvm_nested_mmu_try_split_huge_pages(kvm, memslot, start, end,
-> +						    target_level);
-> +		write_unlock(&kvm->mmu_lock);
-
-Super duper nit: all other flows do rmaps first, than TDP MMU.  Might as well keep
-that ordering here, otherwise it suggests there's a reason to be different.
-
->  	}
->  
->  	/*
-> diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-> index ab336f7c82e4..e123e24a130f 100644
-> --- a/arch/x86/kvm/x86.c
-> +++ b/arch/x86/kvm/x86.c
-> @@ -12161,6 +12161,12 @@ static void kvm_mmu_slot_apply_flags(struct kvm *kvm,
->  		 * page faults will create the large-page sptes.
->  		 */
->  		kvm_mmu_zap_collapsible_sptes(kvm, new);
-> +
-> +		/*
-> +		 * Free any memory left behind by eager page splitting. Ignore
-> +		 * the module parameter since userspace might have changed it.
-> +		 */
-> +		free_split_caches(kvm);
->  	} else {
->  		/*
->  		 * Initially-all-set does not require write protecting any page,
-> -- 
-> 2.36.0.rc2.479.g8af0fa9b8e-goog
-> 
 
