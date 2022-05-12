@@ -1,212 +1,224 @@
-From: Anup Patel <anup@brainfault.org>
-Date: Tue, 10 May 2022 20:29:31 +0530
-Subject: [PATCH v3] RISC-V: KVM: Introduce ISA extension register
-In-Reply-To: <20220509182937.1881849-1-atishp@rivosinc.com>
-References: <20220509182937.1881849-1-atishp@rivosinc.com>
-Message-ID: <CAAhSdy2V20HEftXz04mOv40HV3pcyn+mAgwM7HRuDfQ+a7FGHA@mail.gmail.com>
+From: David Matlack <dmatlack@google.com>
+Date: Thu, 12 May 2022 09:10:59 -0700
+Subject: [PATCH v4 03/20] KVM: x86/mmu: Derive shadow MMU page role from
+ parent
+In-Reply-To: <CAJhGHyDQn=atFmn5o2TREW9cSY5Tv1F1vsSekzor6uYQxDgcfQ@mail.gmail.com>
+References: <20220422210546.458943-1-dmatlack@google.com>
+ <20220422210546.458943-4-dmatlack@google.com>
+ <75fbbcb6-d9bb-3d30-0bf4-fbf925517d09@gmail.com>
+ <CALzav=dmseUw6khErkiSV7T5K88QvaRvWvBpvrb6VNOQTE3bQQ@mail.gmail.com>
+ <CAJhGHyDQn=atFmn5o2TREW9cSY5Tv1F1vsSekzor6uYQxDgcfQ@mail.gmail.com>
+Message-ID: <CALzav=e0VnYar=jUr+C=uhVf9O6NDXaHx2rW-+yUocdHVk39Mg@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, May 9, 2022 at 11:59 PM Atish Patra <atishp@rivosinc.com> wrote:
+On Mon, May 9, 2022 at 7:58 PM Lai Jiangshan <jiangshanlai@gmail.com> wrote:
 >
-> Currently, there is no provision for vmm (qemu-kvm or kvmtool) to
-> query about multiple-letter ISA extensions. The config register
-> is only used for base single letter ISA extensions.
+> ()
 >
-> A new ISA extension register is added that will allow the vmm
-> to query about any ISA extension one at a time. It is enabled for
-> both single letter or multi-letter ISA extensions. The ISA extension
-> register is useful to if the vmm requires to retrieve/set single
-> extension while the config register should be used if all the base
-> ISA extension required to retrieve or set.
+> On Tue, May 10, 2022 at 5:04 AM David Matlack <dmatlack@google.com> wrote:
+> >
+> > On Sat, May 7, 2022 at 1:28 AM Lai Jiangshan <jiangshanlai@gmail.com> wrote:
+> > >
+> > >
+> > >
+> > > On 2022/4/23 05:05, David Matlack wrote:
+> > > > Instead of computing the shadow page role from scratch for every new
+> > > > page, derive most of the information from the parent shadow page.  This
+> > > > avoids redundant calculations and reduces the number of parameters to
+> > > > kvm_mmu_get_page().
+> > > >
+> > > > Preemptively split out the role calculation to a separate function for
+> > > > use in a following commit.
+> > > >
+> > > > No functional change intended.
+> > > >
+> > > > Reviewed-by: Peter Xu <peterx@redhat.com>
+> > > > Signed-off-by: David Matlack <dmatlack@google.com>
+> > > > ---
+> > > >   arch/x86/kvm/mmu/mmu.c         | 96 +++++++++++++++++++++++-----------
+> > > >   arch/x86/kvm/mmu/paging_tmpl.h |  9 ++--
+> > > >   2 files changed, 71 insertions(+), 34 deletions(-)
+> > > >
+> > > > diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
+> > > > index dc20eccd6a77..4249a771818b 100644
+> > > > --- a/arch/x86/kvm/mmu/mmu.c
+> > > > +++ b/arch/x86/kvm/mmu/mmu.c
+> > > > @@ -2021,31 +2021,15 @@ static void clear_sp_write_flooding_count(u64 *spte)
+> > > >       __clear_sp_write_flooding_count(sptep_to_sp(spte));
+> > > >   }
+> > > >
+> > > > -static struct kvm_mmu_page *kvm_mmu_get_page(struct kvm_vcpu *vcpu,
+> > > > -                                          gfn_t gfn,
+> > > > -                                          gva_t gaddr,
+> > > > -                                          unsigned level,
+> > > > -                                          bool direct,
+> > > > -                                          unsigned int access)
+> > > > +static struct kvm_mmu_page *kvm_mmu_get_page(struct kvm_vcpu *vcpu, gfn_t gfn,
+> > > > +                                          union kvm_mmu_page_role role)
+> > > >   {
+> > > > -     union kvm_mmu_page_role role;
+> > > >       struct hlist_head *sp_list;
+> > > > -     unsigned quadrant;
+> > > >       struct kvm_mmu_page *sp;
+> > > >       int ret;
+> > > >       int collisions = 0;
+> > > >       LIST_HEAD(invalid_list);
+> > > >
+> > > > -     role = vcpu->arch.mmu->root_role;
+> > > > -     role.level = level;
+> > > > -     role.direct = direct;
+> > > > -     role.access = access;
+> > > > -     if (role.has_4_byte_gpte) {
+> > > > -             quadrant = gaddr >> (PAGE_SHIFT + (PT64_PT_BITS * level));
+> > > > -             quadrant &= (1 << ((PT32_PT_BITS - PT64_PT_BITS) * level)) - 1;
+> > > > -             role.quadrant = quadrant;
+> > > > -     }
+> > >
+> > >
+> > > I don't think replacing it with kvm_mmu_child_role() can reduce any calculations.
+> > >
+> > > role.level, role.direct, role.access and role.quadrant still need to be
+> > > calculated.  And the old code is still in mmu_alloc_root().
+> >
+> > You are correct. Instead of saying "less calculations" I should have
+> > said "eliminates the dependency on vcpu->arch.mmu->root_role".
+> >
+> > >
+> > > I think kvm_mmu_get_shadow_page() can keep the those parameters and
+> > > kvm_mmu_child_role() is only introduced for nested_mmu_get_sp_for_split().
+> > >
+> > > Both kvm_mmu_get_shadow_page() and nested_mmu_get_sp_for_split() call
+> > > __kvm_mmu_get_shadow_page() which uses role as a parameter.
+> >
+> > I agree this would work, but I think the end result would be more
+> > difficult to read.
+> >
+> > The way I've implemented it there are two ways the SP roles are calculated:
+> >
+> > 1. For root SPs: Derive the role from vCPU root_role and caller-provided inputs.
+> > 2. For child SPs: Derive the role from parent SP and caller-provided inputs.
+> >
+> > Your proposal would still have two ways to calculate the SP role, but
+> > split along a different dimension:
+> >
+> > 1. For vCPUs creating SPs: Derive the role from vCPU root_role and
+> > caller-provided inputs.
+> > 2. For Eager Page Splitting creating SPs: Derive the role from parent
+> > SP and caller-provided inputs.
+> >
+> > With your proposal, it is less obvious that eager page splitting is
+> > going to end up with the correct role. Whereas if we use the same
+> > calculation for all child SPs, it is immediately obvious.
 >
-> For any multi-letter ISA extensions, the new register interface
-> must be used.
 >
-> Signed-off-by: Atish Patra <atishp@rivosinc.com>
+> In this patchset, there are still two ways to calculate the SP role
+> including the one in mmu_alloc_root() which I dislike.
 
-Looks good to me.
+My point is there will be two ways to calculate the SP role either
+way. Can you explain why you dislike calculating the role in
+mmu_alloc_root()? As you point out later, that code will disappear
+anyway as soon as your series is merged.
 
-Queued this patch for 5.19
-
-Thanks,
-Anup
-
-> ---
-> Changes from v2->v3:
-> 1. Fixed the comment style.
-> 2. Fixed the kvm_riscv_vcpu_get_reg_isa_ext function.
-> ---
->  arch/riscv/include/uapi/asm/kvm.h | 20 +++++++
->  arch/riscv/kvm/vcpu.c             | 99 +++++++++++++++++++++++++++++++
->  2 files changed, 119 insertions(+)
 >
-> diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
-> index f808ad1ce500..92bd469e2ba6 100644
-> --- a/arch/riscv/include/uapi/asm/kvm.h
-> +++ b/arch/riscv/include/uapi/asm/kvm.h
-> @@ -82,6 +82,23 @@ struct kvm_riscv_timer {
->         __u64 state;
->  };
+> The old code is just moved into mmu_alloc_root() even kvm_mmu_child_role()
+> is introduced.
 >
-> +/**
-> + * ISA extension IDs specific to KVM. This is not the same as the host ISA
-> + * extension IDs as that is internal to the host and should not be exposed
-> + * to the guest. This should always be contiguous to keep the mapping simple
-> + * in KVM implementation.
-> + */
-> +enum KVM_RISCV_ISA_EXT_ID {
-> +       KVM_RISCV_ISA_EXT_A = 0,
-> +       KVM_RISCV_ISA_EXT_C,
-> +       KVM_RISCV_ISA_EXT_D,
-> +       KVM_RISCV_ISA_EXT_F,
-> +       KVM_RISCV_ISA_EXT_H,
-> +       KVM_RISCV_ISA_EXT_I,
-> +       KVM_RISCV_ISA_EXT_M,
-> +       KVM_RISCV_ISA_EXT_MAX,
-> +};
-> +
->  /* Possible states for kvm_riscv_timer */
->  #define KVM_RISCV_TIMER_STATE_OFF      0
->  #define KVM_RISCV_TIMER_STATE_ON       1
-> @@ -123,6 +140,9 @@ struct kvm_riscv_timer {
->  #define KVM_REG_RISCV_FP_D_REG(name)   \
->                 (offsetof(struct __riscv_d_ext_state, name) / sizeof(__u64))
+> >
+> > >
+> > >
+> > >
+> > > > -
+> > > >       sp_list = &vcpu->kvm->arch.mmu_page_hash[kvm_page_table_hashfn(gfn)];
+> > > >       for_each_valid_sp(vcpu->kvm, sp, sp_list) {
+> > > >               if (sp->gfn != gfn) {
+> > > > @@ -2063,7 +2047,7 @@ static struct kvm_mmu_page *kvm_mmu_get_page(struct kvm_vcpu *vcpu,
+> > > >                        * Unsync pages must not be left as is, because the new
+> > > >                        * upper-level page will be write-protected.
+> > > >                        */
+> > > > -                     if (level > PG_LEVEL_4K && sp->unsync)
+> > > > +                     if (role.level > PG_LEVEL_4K && sp->unsync)
+> > > >                               kvm_mmu_prepare_zap_page(vcpu->kvm, sp,
+> > > >                                                        &invalid_list);
+> > > >                       continue;
+> > > > @@ -2104,14 +2088,14 @@ static struct kvm_mmu_page *kvm_mmu_get_page(struct kvm_vcpu *vcpu,
+> > > >
+> > > >       ++vcpu->kvm->stat.mmu_cache_miss;
+> > > >
+> > > > -     sp = kvm_mmu_alloc_page(vcpu, direct);
+> > > > +     sp = kvm_mmu_alloc_page(vcpu, role.direct);
+> > > >
+> > > >       sp->gfn = gfn;
+> > > >       sp->role = role;
+> > > >       hlist_add_head(&sp->hash_link, sp_list);
+> > > > -     if (!direct) {
+> > > > +     if (!role.direct) {
+> > > >               account_shadowed(vcpu->kvm, sp);
+> > > > -             if (level == PG_LEVEL_4K && kvm_vcpu_write_protect_gfn(vcpu, gfn))
+> > > > +             if (role.level == PG_LEVEL_4K && kvm_vcpu_write_protect_gfn(vcpu, gfn))
+> > > >                       kvm_flush_remote_tlbs_with_address(vcpu->kvm, gfn, 1);
+> > > >       }
+> > > >       trace_kvm_mmu_get_page(sp, true);
+> > > > @@ -2123,6 +2107,51 @@ static struct kvm_mmu_page *kvm_mmu_get_page(struct kvm_vcpu *vcpu,
+> > > >       return sp;
+> > > >   }
+> > > >
+> > > > +static union kvm_mmu_page_role kvm_mmu_child_role(u64 *sptep, bool direct, u32 access)
+> > > > +{
+> > > > +     struct kvm_mmu_page *parent_sp = sptep_to_sp(sptep);
+> > > > +     union kvm_mmu_page_role role;
+> > > > +
+> > > > +     role = parent_sp->role;
+> > > > +     role.level--;
+> > > > +     role.access = access;
+> > > > +     role.direct = direct;
+> > > > +
+> > > > +     /*
+> > > > +      * If the guest has 4-byte PTEs then that means it's using 32-bit,
+> > > > +      * 2-level, non-PAE paging. KVM shadows such guests using 4 PAE page
+> > > > +      * directories, each mapping 1/4 of the guest's linear address space
+> > > > +      * (1GiB). The shadow pages for those 4 page directories are
+> > > > +      * pre-allocated and assigned a separate quadrant in their role.
+> > >
+> > >
+> > > It is not going to be true in patchset:
+> > > [PATCH V2 0/7] KVM: X86/MMU: Use one-off special shadow page for special roots
+> > >
+> > > https://lore.kernel.org/lkml/20220503150735.32723-1-jiangshanlai at gmail.com/
+> > >
+> > > The shadow pages for those 4 page directories are also allocated on demand.
+> >
+> > Ack. I can even just drop this sentence in v5, it's just background information.
 >
-> +/* ISA Extension registers are mapped as type 7 */
-> +#define KVM_REG_RISCV_ISA_EXT          (0x07 << KVM_REG_RISCV_TYPE_SHIFT)
-> +
->  #endif
+> No, if one-off special shadow pages are used.
 >
->  #endif /* __LINUX_KVM_RISCV_H */
-> diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-> index 7461f964d20a..0875beaa1973 100644
-> --- a/arch/riscv/kvm/vcpu.c
-> +++ b/arch/riscv/kvm/vcpu.c
-> @@ -365,6 +365,101 @@ static int kvm_riscv_vcpu_set_reg_csr(struct kvm_vcpu *vcpu,
->         return 0;
->  }
+> kvm_mmu_child_role() should be:
 >
-> +/* Mapping between KVM ISA Extension ID & Host ISA extension ID */
-> +static unsigned long kvm_isa_ext_arr[] = {
-> +       RISCV_ISA_EXT_a,
-> +       RISCV_ISA_EXT_c,
-> +       RISCV_ISA_EXT_d,
-> +       RISCV_ISA_EXT_f,
-> +       RISCV_ISA_EXT_h,
-> +       RISCV_ISA_EXT_i,
-> +       RISCV_ISA_EXT_m,
-> +};
-> +
-> +static int kvm_riscv_vcpu_get_reg_isa_ext(struct kvm_vcpu *vcpu,
-> +                                         const struct kvm_one_reg *reg)
-> +{
-> +       unsigned long __user *uaddr =
-> +                       (unsigned long __user *)(unsigned long)reg->addr;
-> +       unsigned long reg_num = reg->id & ~(KVM_REG_ARCH_MASK |
-> +                                           KVM_REG_SIZE_MASK |
-> +                                           KVM_REG_RISCV_ISA_EXT);
-> +       unsigned long reg_val = 0;
-> +       unsigned long host_isa_ext;
-> +
-> +       if (KVM_REG_SIZE(reg->id) != sizeof(unsigned long))
-> +               return -EINVAL;
-> +
-> +       if (reg_num >= KVM_RISCV_ISA_EXT_MAX || reg_num >= ARRAY_SIZE(kvm_isa_ext_arr))
-> +               return -EINVAL;
-> +
-> +       host_isa_ext = kvm_isa_ext_arr[reg_num];
-> +       if (__riscv_isa_extension_available(&vcpu->arch.isa, host_isa_ext))
-> +               reg_val = 1; /* Mark the given extension as available */
-> +
-> +       if (copy_to_user(uaddr, &reg_val, KVM_REG_SIZE(reg->id)))
-> +               return -EFAULT;
-> +
-> +       return 0;
-> +}
-> +
-> +static int kvm_riscv_vcpu_set_reg_isa_ext(struct kvm_vcpu *vcpu,
-> +                                         const struct kvm_one_reg *reg)
-> +{
-> +       unsigned long __user *uaddr =
-> +                       (unsigned long __user *)(unsigned long)reg->addr;
-> +       unsigned long reg_num = reg->id & ~(KVM_REG_ARCH_MASK |
-> +                                           KVM_REG_SIZE_MASK |
-> +                                           KVM_REG_RISCV_ISA_EXT);
-> +       unsigned long reg_val;
-> +       unsigned long host_isa_ext;
-> +       unsigned long host_isa_ext_mask;
-> +
-> +       if (KVM_REG_SIZE(reg->id) != sizeof(unsigned long))
-> +               return -EINVAL;
-> +
-> +       if (reg_num >= KVM_RISCV_ISA_EXT_MAX || reg_num >= ARRAY_SIZE(kvm_isa_ext_arr))
-> +               return -EINVAL;
-> +
-> +       if (copy_from_user(&reg_val, uaddr, KVM_REG_SIZE(reg->id)))
-> +               return -EFAULT;
-> +
-> +       host_isa_ext = kvm_isa_ext_arr[reg_num];
-> +       if (!__riscv_isa_extension_available(NULL, host_isa_ext))
-> +               return  -EOPNOTSUPP;
-> +
-> +       if (host_isa_ext >= RISCV_ISA_EXT_BASE &&
-> +           host_isa_ext < RISCV_ISA_EXT_MAX) {
-> +               /*
-> +                * Multi-letter ISA extension. Currently there is no provision
-> +                * to enable/disable the multi-letter ISA extensions for guests.
-> +                * Return success if the request is to enable any ISA extension
-> +                * that is available in the hardware.
-> +                * Return -EOPNOTSUPP otherwise.
-> +                */
-> +               if (!reg_val)
-> +                       return -EOPNOTSUPP;
-> +               else
-> +                       return 0;
+> +       if (role.has_4_byte_gpte) {
+> +               if (role.level == PG_LEVEL_4K)
+> +                       role.quadrant = (sptep - parent_sp->spt) % 2;
+> +               if (role.level == PG_LEVEL_2M)
+> +                       role.quadrant = (sptep - parent_sp->spt) % 4;
 > +       }
-> +
-> +       /* Single letter base ISA extension */
-> +       if (!vcpu->arch.ran_atleast_once) {
-> +               host_isa_ext_mask = BIT_MASK(host_isa_ext);
-> +               if (!reg_val && (host_isa_ext_mask & KVM_RISCV_ISA_DISABLE_ALLOWED))
-> +                       vcpu->arch.isa &= ~host_isa_ext_mask;
-> +               else
-> +                       vcpu->arch.isa |= host_isa_ext_mask;
-> +               vcpu->arch.isa &= riscv_isa_extension_base(NULL);
-> +               vcpu->arch.isa &= KVM_RISCV_ISA_ALLOWED;
-> +               kvm_riscv_vcpu_fp_reset(vcpu);
-> +       } else {
-> +               return -EOPNOTSUPP;
-> +       }
-> +
-> +       return 0;
-> +}
-> +
->  static int kvm_riscv_vcpu_set_reg(struct kvm_vcpu *vcpu,
->                                   const struct kvm_one_reg *reg)
->  {
-> @@ -382,6 +477,8 @@ static int kvm_riscv_vcpu_set_reg(struct kvm_vcpu *vcpu,
->         else if ((reg->id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_FP_D)
->                 return kvm_riscv_vcpu_set_reg_fp(vcpu, reg,
->                                                  KVM_REG_RISCV_FP_D);
-> +       else if ((reg->id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_ISA_EXT)
-> +               return kvm_riscv_vcpu_set_reg_isa_ext(vcpu, reg);
 >
->         return -EINVAL;
->  }
-> @@ -403,6 +500,8 @@ static int kvm_riscv_vcpu_get_reg(struct kvm_vcpu *vcpu,
->         else if ((reg->id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_FP_D)
->                 return kvm_riscv_vcpu_get_reg_fp(vcpu, reg,
->                                                  KVM_REG_RISCV_FP_D);
-> +       else if ((reg->id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_ISA_EXT)
-> +               return kvm_riscv_vcpu_get_reg_isa_ext(vcpu, reg);
 >
->         return -EINVAL;
->  }
-> --
-> 2.36.0
+> And if one-off special shadow pages are merged first.  You don't
+> need any calculation in mmu_alloc_root(), you can just directly use
+>     sp = kvm_mmu_get_page(vcpu, gfn, vcpu->arch.mmu->root_role);
+> because vcpu->arch.mmu->root_role is always the real role of the root
+> sp no matter if it is a normall root sp or an one-off special sp.
 >
+> I hope you will pardon me for my touting my patchset and asking
+> people to review them in your threads.
+
+I see what you mean now. If your series is queued I will rebase on top
+with the appropriate changes. But for now I will continue to code
+against kvm/queue.
+
+>
+> Thanks
+> Lai
 
