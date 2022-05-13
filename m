@@ -1,68 +1,77 @@
 From: David Matlack <dmatlack@google.com>
-Date: Fri, 13 May 2022 20:28:08 +0000
-Subject: [PATCH v5 10/21] KVM: x86/mmu: Replace vcpu with kvm in
- kvm_mmu_alloc_shadow_page()
+Date: Fri, 13 May 2022 20:28:17 +0000
+Subject: [PATCH v5 19/21] KVM: x86/mmu: Refactor drop_large_spte()
 In-Reply-To: <20220513202819.829591-1-dmatlack@google.com>
 References: <20220513202819.829591-1-dmatlack@google.com>
-Message-ID: <20220513202819.829591-11-dmatlack@google.com>
+Message-ID: <20220513202819.829591-20-dmatlack@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The vcpu pointer in kvm_mmu_alloc_shadow_page() is only used to get the
-kvm pointer. So drop the vcpu pointer and just pass in the kvm pointer.
+drop_large_spte() drops a large SPTE if it exists and then flushes TLBs.
+Its helper function, __drop_large_spte(), does the drop without the
+flush.
+
+In preparation for eager page splitting, which will need to sometimes
+flush when dropping large SPTEs (and sometimes not), push the flushing
+logic down into __drop_large_spte() and add a bool parameter to control
+it.
 
 No functional change intended.
 
+Reviewed-by: Peter Xu <peterx@redhat.com>
 Signed-off-by: David Matlack <dmatlack@google.com>
 ---
- arch/x86/kvm/mmu/mmu.c | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ arch/x86/kvm/mmu/mmu.c | 28 ++++++++++++++--------------
+ 1 file changed, 14 insertions(+), 14 deletions(-)
 
 diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
-index 44431c0b797f..9cc73c3453c3 100644
+index ef190dd77ccc..4b40fa2e27eb 100644
 --- a/arch/x86/kvm/mmu/mmu.c
 +++ b/arch/x86/kvm/mmu/mmu.c
-@@ -2082,7 +2082,7 @@ struct shadow_page_caches {
- 	struct kvm_mmu_memory_cache *gfn_array_cache;
- };
- 
--static struct kvm_mmu_page *kvm_mmu_alloc_shadow_page(struct kvm_vcpu *vcpu,
-+static struct kvm_mmu_page *kvm_mmu_alloc_shadow_page(struct kvm *kvm,
- 						      struct shadow_page_caches *caches,
- 						      gfn_t gfn,
- 						      struct hlist_head *sp_list,
-@@ -2102,15 +2102,15 @@ static struct kvm_mmu_page *kvm_mmu_alloc_shadow_page(struct kvm_vcpu *vcpu,
- 	 * depends on valid pages being added to the head of the list.  See
- 	 * comments in kvm_zap_obsolete_pages().
- 	 */
--	sp->mmu_valid_gen = vcpu->kvm->arch.mmu_valid_gen;
--	list_add(&sp->link, &vcpu->kvm->arch.active_mmu_pages);
--	kvm_mod_used_mmu_pages(vcpu->kvm, +1);
-+	sp->mmu_valid_gen = kvm->arch.mmu_valid_gen;
-+	list_add(&sp->link, &kvm->arch.active_mmu_pages);
-+	kvm_mod_used_mmu_pages(kvm, +1);
- 
- 	sp->gfn = gfn;
- 	sp->role = role;
- 	hlist_add_head(&sp->hash_link, sp_list);
- 	if (sp_has_gptes(sp))
--		account_shadowed(vcpu->kvm, sp);
-+		account_shadowed(kvm, sp);
- 
- 	return sp;
+@@ -1161,26 +1161,26 @@ static void drop_spte(struct kvm *kvm, u64 *sptep)
+ 		rmap_remove(kvm, sptep);
  }
-@@ -2129,7 +2129,7 @@ static struct kvm_mmu_page *__kvm_mmu_get_shadow_page(struct kvm_vcpu *vcpu,
- 	sp = kvm_mmu_find_shadow_page(vcpu, gfn, sp_list, role);
- 	if (!sp) {
- 		created = true;
--		sp = kvm_mmu_alloc_shadow_page(vcpu, caches, gfn, sp_list, role);
-+		sp = kvm_mmu_alloc_shadow_page(vcpu->kvm, caches, gfn, sp_list, role);
- 	}
  
- 	trace_kvm_mmu_get_page(sp, created);
+-
+-static bool __drop_large_spte(struct kvm *kvm, u64 *sptep)
++static void __drop_large_spte(struct kvm *kvm, u64 *sptep, bool flush)
+ {
+-	if (is_large_pte(*sptep)) {
+-		WARN_ON(sptep_to_sp(sptep)->role.level == PG_LEVEL_4K);
+-		drop_spte(kvm, sptep);
+-		return true;
+-	}
++	struct kvm_mmu_page *sp;
+ 
+-	return false;
++	if (!is_large_pte(*sptep))
++		return;
++
++	sp = sptep_to_sp(sptep);
++	WARN_ON(sp->role.level == PG_LEVEL_4K);
++
++	drop_spte(kvm, sptep);
++
++	if (flush)
++		kvm_flush_remote_tlbs_with_address(kvm, sp->gfn,
++			KVM_PAGES_PER_HPAGE(sp->role.level));
+ }
+ 
+ static void drop_large_spte(struct kvm_vcpu *vcpu, u64 *sptep)
+ {
+-	if (__drop_large_spte(vcpu->kvm, sptep)) {
+-		struct kvm_mmu_page *sp = sptep_to_sp(sptep);
+-
+-		kvm_flush_remote_tlbs_with_address(vcpu->kvm, sp->gfn,
+-			KVM_PAGES_PER_HPAGE(sp->role.level));
+-	}
++	return __drop_large_spte(vcpu->kvm, sptep, true);
+ }
+ 
+ /*
 -- 
 2.36.0.550.gb090851708-goog
 
