@@ -1,54 +1,86 @@
-From: Lai Jiangshan <jiangshanlai@gmail.com>
-Date: Mon, 16 May 2022 14:54:55 +0800
-Subject: [PATCH v5 03/21] KVM: x86/mmu: Derive shadow MMU page role from
- parent
-In-Reply-To: <20220513202819.829591-4-dmatlack@google.com>
+From: Sean Christopherson <seanjc@google.com>
+Date: Mon, 16 May 2022 14:49:19 +0000
+Subject: [PATCH v5 20/21] KVM: Allow for different capacities in
+ kvm_mmu_memory_cache structs
+In-Reply-To: <20220513202819.829591-21-dmatlack@google.com>
 References: <20220513202819.829591-1-dmatlack@google.com>
- <20220513202819.829591-4-dmatlack@google.com>
-Message-ID: <CAJhGHyAU_5Esn6i-eeBNKOh4XenOc9_1aiF8N0+CeMF5yyhxew@mail.gmail.com>
+ <20220513202819.829591-21-dmatlack@google.com>
+Message-ID: <YoJkb7oMEz0v1dnp@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sat, May 14, 2022 at 4:28 AM David Matlack <dmatlack@google.com> wrote:
-
-> -static hpa_t mmu_alloc_root(struct kvm_vcpu *vcpu, gfn_t gfn, gva_t gva,
-> +static hpa_t mmu_alloc_root(struct kvm_vcpu *vcpu, gfn_t gfn, int quadrant,
->                             u8 level, bool direct)
+On Fri, May 13, 2022, David Matlack wrote:
+> diff --git a/arch/arm64/kvm/mmu.c b/arch/arm64/kvm/mmu.c
+> index 53ae2c0640bc..2f2ef6b60ff4 100644
+> --- a/arch/arm64/kvm/mmu.c
+> +++ b/arch/arm64/kvm/mmu.c
+> @@ -764,7 +764,10 @@ int kvm_phys_addr_ioremap(struct kvm *kvm, phys_addr_t guest_ipa,
 >  {
-> +       union kvm_mmu_page_role role;
->         struct kvm_mmu_page *sp;
->
-> -       sp = kvm_mmu_get_page(vcpu, gfn, gva, level, direct, ACC_ALL);
-> +       role = vcpu->arch.mmu->root_role;
-> +       role.level = level;
-> +       role.direct = direct;
-> +       role.access = ACC_ALL;
-> +
-> +       if (role.has_4_byte_gpte)
-> +               role.quadrant = quadrant;
-> +
-> +       if (level <= vcpu->arch.mmu->cpu_role.base.level)
-> +               role.passthrough = 0;
-> +
+>  	phys_addr_t addr;
+>  	int ret = 0;
+> -	struct kvm_mmu_memory_cache cache = { 0, __GFP_ZERO, NULL, };
+> +	struct kvm_mmu_memory_cache cache = {
+> +		.capacity = KVM_ARCH_NR_OBJS_PER_MEMORY_CACHE,
+> +		.gfp_zero = __GFP_ZERO,
 
+I dislike requiring all users to specificy the capacity.  It largely defeats the
+purpose of KVM_ARCH_NR_OBJS_PER_MEMORY_CACHE, and bleeds details into code that
+really doesn't care all that much about the details.
 
+Rather than force the capacity to be set before topup, what about adding a custom
+capacity topup helper?  That allows keeping a default capacity, better documents
+the caches that are special, and provides an opportunity to sanity check that the
+capacity isn't incorrectly changed by the user.  
 
-+       role.level = level;
-+
-+       if (role.has_4_byte_gpte)
-+               role.quadrant = quadrant;
+And then I believe this code becomes:
 
-Only these lines are needed because of mmu->pae_root, others are
-the same as vcpu->arch.mmu->root_role.
+	struct kvm_mmu_memory_cache cache = { .gfp_zero = __GFP_ZERO };
 
-The argument @direct is vcpu->arch.mmu->root_role.direct.
-vcpu->arch.mmu->root_role.access is always set to be ACC_ALL.
+E.g. (completely untested)
 
-vcpu->arch.mmu->root_role.passthrough is 0 when mmu->pae_root is used.
-Or if vcpu->arch.mmu->root_role.passthrough is 1, @level must be 5
-and vcpu->arch.mmu->cpu_role.base.level must be 4, the code here
-is useless.
+static int __kvm_mmu_topup_memory_cache(struct kvm_mmu_memory_cache *mc,
+					int capacity, int min)
+{
+	gfp_t gfp = GFP_KERNEL_ACCOUNT;
+	void *obj;
+
+	if (mc->nobjs >= min)
+		return 0;
+
+	if (likely(mc->capacity)) {
+		if (WARN_ON_ONCE(mc->capacity != capacity || !mc->objects))
+			return -EIO;
+	} else {
+		mc->objects = kvmalloc_array(sizeof(void *), capacity, gfp);
+		if (!mc->objects)
+			return -ENOMEM;
+
+		mc->capacity = capacity;
+	}
+
+	while (mc->nobjs < mc->capacity) {
+		obj = mmu_memory_cache_alloc_obj(mc, gfp);
+		if (!obj)
+			return mc->nobjs >= min ? 0 : -ENOMEM;
+		mc->objects[mc->nobjs++] = obj;
+	}
+	return 0;
+}
+
+int kvm_mmu_topup_memory_cache(struct kvm_mmu_memory_cache *mc, int min)
+{
+	const int capacity = KVM_ARCH_NR_OBJS_PER_MEMORY_CACHE;
+
+	return __kvm_mmu_topup_memory_cache(mc, capacity, min);
+}
+
+int kvm_mmu_topup_custom_memory_cache(struct kvm_mmu_memory_cache *mc,
+				      int capacity)
+{
+	return __kvm_mmu_topup_memory_cache(mc, capacity, capacity);
+}
+
 
