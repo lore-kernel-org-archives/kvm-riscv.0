@@ -1,77 +1,84 @@
 From: David Matlack <dmatlack@google.com>
-Date: Mon, 16 May 2022 23:21:21 +0000
-Subject: [PATCH v6 05/22] KVM: x86/mmu: Always pass 0 for @quadrant when gptes
- are 8 bytes
+Date: Mon, 16 May 2022 23:21:23 +0000
+Subject: [PATCH v6 07/22] KVM: x86/mmu: Consolidate shadow page allocation and
+ initialization
 In-Reply-To: <20220516232138.1783324-1-dmatlack@google.com>
 References: <20220516232138.1783324-1-dmatlack@google.com>
-Message-ID: <20220516232138.1783324-6-dmatlack@google.com>
+Message-ID: <20220516232138.1783324-8-dmatlack@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The quadrant is only used when gptes are 4 bytes, but
-mmu_alloc_{direct,shadow}_roots() pass in a non-zero quadrant for PAE
-page directories regardless. Make this less confusing by only passing in
-a non-zero quadrant when it is actually necessary.
+Consolidate kvm_mmu_alloc_page() and kvm_mmu_alloc_shadow_page() under
+the latter so that all shadow page allocation and initialization happens
+in one place.
+
+No functional change intended.
 
 Signed-off-by: David Matlack <dmatlack@google.com>
 ---
- arch/x86/kvm/mmu/mmu.c | 18 ++++++++++++++----
- 1 file changed, 14 insertions(+), 4 deletions(-)
+ arch/x86/kvm/mmu/mmu.c | 39 +++++++++++++++++----------------------
+ 1 file changed, 17 insertions(+), 22 deletions(-)
 
 diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
-index 515e0b33144a..8508c4bfddb5 100644
+index c8ee92e45e8b..0b14097f8771 100644
 --- a/arch/x86/kvm/mmu/mmu.c
 +++ b/arch/x86/kvm/mmu/mmu.c
-@@ -3406,9 +3406,10 @@ static hpa_t mmu_alloc_root(struct kvm_vcpu *vcpu, gfn_t gfn, int quadrant,
- 	struct kvm_mmu_page *sp;
+@@ -1690,27 +1690,6 @@ static void drop_parent_pte(struct kvm_mmu_page *sp,
+ 	mmu_spte_clear_no_track(parent_pte);
+ }
  
- 	role.level = level;
-+	role.quadrant = quadrant;
- 
--	if (role.has_4_byte_gpte)
--		role.quadrant = quadrant;
-+	WARN_ON_ONCE(quadrant && !role.has_4_byte_gpte);
-+	WARN_ON_ONCE(role.direct && role.has_4_byte_gpte);
- 
- 	sp = kvm_mmu_get_page(vcpu, gfn, role);
- 	++sp->root_count;
-@@ -3444,7 +3445,7 @@ static int mmu_alloc_direct_roots(struct kvm_vcpu *vcpu)
- 		for (i = 0; i < 4; ++i) {
- 			WARN_ON_ONCE(IS_VALID_PAE_ROOT(mmu->pae_root[i]));
- 
--			root = mmu_alloc_root(vcpu, i << (30 - PAGE_SHIFT), i,
-+			root = mmu_alloc_root(vcpu, i << (30 - PAGE_SHIFT), 0,
- 					      PT32_ROOT_LEVEL);
- 			mmu->pae_root[i] = root | PT_PRESENT_MASK |
- 					   shadow_me_mask;
-@@ -3529,6 +3530,7 @@ static int mmu_alloc_shadow_roots(struct kvm_vcpu *vcpu)
- 	struct kvm_mmu *mmu = vcpu->arch.mmu;
- 	u64 pdptrs[4], pm_mask;
- 	gfn_t root_gfn, root_pgd;
-+	unsigned int quadrant;
- 	hpa_t root;
- 	unsigned i;
- 	int r;
-@@ -3614,7 +3616,15 @@ static int mmu_alloc_shadow_roots(struct kvm_vcpu *vcpu)
- 			root_gfn = pdptrs[i] >> PAGE_SHIFT;
- 		}
- 
--		root = mmu_alloc_root(vcpu, root_gfn, i, PT32_ROOT_LEVEL);
-+		/*
-+		 * If shadowing 32-bit non-PAE page tables, each PAE page
-+		 * directory maps one quarter of the guest's non-PAE page
-+		 * directory. Othwerise each PAE page direct shadows one guest
-+		 * PAE page directory so that quadrant should be 0.
-+		 */
-+		quadrant = (mmu->cpu_role.base.level == PT32_ROOT_LEVEL) ? i : 0;
+-static struct kvm_mmu_page *kvm_mmu_alloc_page(struct kvm_vcpu *vcpu, bool direct)
+-{
+-	struct kvm_mmu_page *sp;
+-
+-	sp = kvm_mmu_memory_cache_alloc(&vcpu->arch.mmu_page_header_cache);
+-	sp->spt = kvm_mmu_memory_cache_alloc(&vcpu->arch.mmu_shadow_page_cache);
+-	if (!direct)
+-		sp->gfns = kvm_mmu_memory_cache_alloc(&vcpu->arch.mmu_gfn_array_cache);
+-	set_page_private(virt_to_page(sp->spt), (unsigned long)sp);
+-
+-	/*
+-	 * active_mmu_pages must be a FIFO list, as kvm_zap_obsolete_pages()
+-	 * depends on valid pages being added to the head of the list.  See
+-	 * comments in kvm_zap_obsolete_pages().
+-	 */
+-	sp->mmu_valid_gen = vcpu->kvm->arch.mmu_valid_gen;
+-	list_add(&sp->link, &vcpu->kvm->arch.active_mmu_pages);
+-	kvm_mod_used_mmu_pages(vcpu->kvm, +1);
+-	return sp;
+-}
+-
+ static void mark_unsync(u64 *spte);
+ static void kvm_mmu_mark_parents_unsync(struct kvm_mmu_page *sp)
+ {
+@@ -2098,7 +2077,23 @@ static struct kvm_mmu_page *kvm_mmu_alloc_shadow_page(struct kvm_vcpu *vcpu,
+ 						      struct hlist_head *sp_list,
+ 						      union kvm_mmu_page_role role)
+ {
+-	struct kvm_mmu_page *sp = kvm_mmu_alloc_page(vcpu, role.direct);
++	struct kvm_mmu_page *sp;
 +
-+		root = mmu_alloc_root(vcpu, root_gfn, quadrant, PT32_ROOT_LEVEL);
- 		mmu->pae_root[i] = root | pm_mask;
- 	}
++	sp = kvm_mmu_memory_cache_alloc(&vcpu->arch.mmu_page_header_cache);
++	sp->spt = kvm_mmu_memory_cache_alloc(&vcpu->arch.mmu_shadow_page_cache);
++	if (!role.direct)
++		sp->gfns = kvm_mmu_memory_cache_alloc(&vcpu->arch.mmu_gfn_array_cache);
++
++	set_page_private(virt_to_page(sp->spt), (unsigned long)sp);
++
++	/*
++	 * active_mmu_pages must be a FIFO list, as kvm_zap_obsolete_pages()
++	 * depends on valid pages being added to the head of the list.  See
++	 * comments in kvm_zap_obsolete_pages().
++	 */
++	sp->mmu_valid_gen = vcpu->kvm->arch.mmu_valid_gen;
++	list_add(&sp->link, &vcpu->kvm->arch.active_mmu_pages);
++	kvm_mod_used_mmu_pages(vcpu->kvm, +1);
  
+ 	sp->gfn = gfn;
+ 	sp->role = role;
 -- 
 2.36.0.550.gb090851708-goog
 
