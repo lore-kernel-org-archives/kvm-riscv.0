@@ -1,126 +1,147 @@
-From: David Matlack <dmatlack@google.com>
-Date: Mon, 16 May 2022 23:21:28 +0000
-Subject: [PATCH v6 12/22] KVM: x86/mmu: Pass kvm pointer separately from vcpu
- to kvm_mmu_find_shadow_page()
-In-Reply-To: <20220516232138.1783324-1-dmatlack@google.com>
-References: <20220516232138.1783324-1-dmatlack@google.com>
-Message-ID: <20220516232138.1783324-13-dmatlack@google.com>
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Date: Wed, 18 May 2022 16:27:41 +1000
+Subject: [PATCH kernel] KVM: PPC: Make KVM_CAP_IRQFD_RESAMPLE platform
+ dependent
+In-Reply-To: <20220504074807.3616813-1-aik@ozlabs.ru>
+References: <20220504074807.3616813-1-aik@ozlabs.ru>
+Message-ID: <0d4bb0fa-10c6-3f5a-34c8-293144b3fdbb@ozlabs.ru>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Get the kvm pointer from the caller, rather than deriving it from
-vcpu->kvm, and plumb the kvm pointer all the way from
-kvm_mmu_get_shadow_page(). With this change in place, the vcpu pointer
-is only needed to sync indirect shadow pages. In other words,
-__kvm_mmu_get_shadow_page() can now be used to get *direct* shadow pages
-without a vcpu pointer. This enables eager page splitting, which needs
-to allocate direct shadow pages during VM ioctls.
 
-No functional change intended.
 
-Signed-off-by: David Matlack <dmatlack@google.com>
----
- arch/x86/kvm/mmu/mmu.c | 28 +++++++++++++++-------------
- 1 file changed, 15 insertions(+), 13 deletions(-)
+On 5/4/22 17:48, Alexey Kardashevskiy wrote:
+> When introduced, IRQFD resampling worked on POWER8 with XICS. However
+> KVM on POWER9 has never implemented it - the compatibility mode code
+> ("XICS-on-XIVE") misses the kvm_notify_acked_irq() call and the native
+> XIVE mode does not handle INTx in KVM at all.
+> 
+> This moved the capability support advertising to platforms and stops
+> advertising it on XIVE, i.e. POWER9 and later.
+> 
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> ---
+> 
+> 
+> Or I could move this one together with KVM_CAP_IRQFD. Thoughts?
 
-diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
-index 8031b799ca77..4fbc2da47428 100644
---- a/arch/x86/kvm/mmu/mmu.c
-+++ b/arch/x86/kvm/mmu/mmu.c
-@@ -2001,7 +2001,8 @@ static void clear_sp_write_flooding_count(u64 *spte)
- 	__clear_sp_write_flooding_count(sptep_to_sp(spte));
- }
- 
--static struct kvm_mmu_page *kvm_mmu_find_shadow_page(struct kvm_vcpu *vcpu,
-+static struct kvm_mmu_page *kvm_mmu_find_shadow_page(struct kvm *kvm,
-+						     struct kvm_vcpu *vcpu,
- 						     gfn_t gfn,
- 						     struct hlist_head *sp_list,
- 						     union kvm_mmu_page_role role)
-@@ -2011,7 +2012,7 @@ static struct kvm_mmu_page *kvm_mmu_find_shadow_page(struct kvm_vcpu *vcpu,
- 	int collisions = 0;
- 	LIST_HEAD(invalid_list);
- 
--	for_each_valid_sp(vcpu->kvm, sp, sp_list) {
-+	for_each_valid_sp(kvm, sp, sp_list) {
- 		if (sp->gfn != gfn) {
- 			collisions++;
- 			continue;
-@@ -2028,7 +2029,7 @@ static struct kvm_mmu_page *kvm_mmu_find_shadow_page(struct kvm_vcpu *vcpu,
- 			 * upper-level page will be write-protected.
- 			 */
- 			if (role.level > PG_LEVEL_4K && sp->unsync)
--				kvm_mmu_prepare_zap_page(vcpu->kvm, sp,
-+				kvm_mmu_prepare_zap_page(kvm, sp,
- 							 &invalid_list);
- 			continue;
- 		}
-@@ -2056,7 +2057,7 @@ static struct kvm_mmu_page *kvm_mmu_find_shadow_page(struct kvm_vcpu *vcpu,
- 
- 			WARN_ON(!list_empty(&invalid_list));
- 			if (ret > 0)
--				kvm_flush_remote_tlbs(vcpu->kvm);
-+				kvm_flush_remote_tlbs(kvm);
- 		}
- 
- 		__clear_sp_write_flooding_count(sp);
-@@ -2065,13 +2066,13 @@ static struct kvm_mmu_page *kvm_mmu_find_shadow_page(struct kvm_vcpu *vcpu,
- 	}
- 
- 	sp = NULL;
--	++vcpu->kvm->stat.mmu_cache_miss;
-+	++kvm->stat.mmu_cache_miss;
- 
- out:
--	kvm_mmu_commit_zap_page(vcpu->kvm, &invalid_list);
-+	kvm_mmu_commit_zap_page(kvm, &invalid_list);
- 
--	if (collisions > vcpu->kvm->stat.max_mmu_page_hash_collisions)
--		vcpu->kvm->stat.max_mmu_page_hash_collisions = collisions;
-+	if (collisions > kvm->stat.max_mmu_page_hash_collisions)
-+		kvm->stat.max_mmu_page_hash_collisions = collisions;
- 	return sp;
- }
- 
-@@ -2115,7 +2116,8 @@ static struct kvm_mmu_page *kvm_mmu_alloc_shadow_page(struct kvm *kvm,
- 	return sp;
- }
- 
--static struct kvm_mmu_page *__kvm_mmu_get_shadow_page(struct kvm_vcpu *vcpu,
-+static struct kvm_mmu_page *__kvm_mmu_get_shadow_page(struct kvm *kvm,
-+						      struct kvm_vcpu *vcpu,
- 						      struct shadow_page_caches *caches,
- 						      gfn_t gfn,
- 						      union kvm_mmu_page_role role)
-@@ -2124,12 +2126,12 @@ static struct kvm_mmu_page *__kvm_mmu_get_shadow_page(struct kvm_vcpu *vcpu,
- 	struct kvm_mmu_page *sp;
- 	bool created = false;
- 
--	sp_list = &vcpu->kvm->arch.mmu_page_hash[kvm_page_table_hashfn(gfn)];
-+	sp_list = &kvm->arch.mmu_page_hash[kvm_page_table_hashfn(gfn)];
- 
--	sp = kvm_mmu_find_shadow_page(vcpu, gfn, sp_list, role);
-+	sp = kvm_mmu_find_shadow_page(kvm, vcpu, gfn, sp_list, role);
- 	if (!sp) {
- 		created = true;
--		sp = kvm_mmu_alloc_shadow_page(vcpu->kvm, caches, gfn, sp_list, role);
-+		sp = kvm_mmu_alloc_shadow_page(kvm, caches, gfn, sp_list, role);
- 	}
- 
- 	trace_kvm_mmu_get_page(sp, created);
-@@ -2146,7 +2148,7 @@ static struct kvm_mmu_page *kvm_mmu_get_shadow_page(struct kvm_vcpu *vcpu,
- 		.gfn_array_cache = &vcpu->arch.mmu_gfn_array_cache,
- 	};
- 
--	return __kvm_mmu_get_shadow_page(vcpu, &caches, gfn, role);
-+	return __kvm_mmu_get_shadow_page(vcpu->kvm, vcpu, &caches, gfn, role);
- }
- 
- static union kvm_mmu_page_role kvm_mmu_child_role(u64 *sptep, bool direct, u32 access)
+
+Ping?
+
+> 
+> ---
+>   arch/arm64/kvm/arm.c       | 3 +++
+>   arch/mips/kvm/mips.c       | 3 +++
+>   arch/powerpc/kvm/powerpc.c | 6 ++++++
+>   arch/riscv/kvm/vm.c        | 3 +++
+>   arch/s390/kvm/kvm-s390.c   | 3 +++
+>   arch/x86/kvm/x86.c         | 3 +++
+>   virt/kvm/kvm_main.c        | 1 -
+>   7 files changed, 21 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/arm64/kvm/arm.c b/arch/arm64/kvm/arm.c
+> index 523bc934fe2f..092f0614bae3 100644
+> --- a/arch/arm64/kvm/arm.c
+> +++ b/arch/arm64/kvm/arm.c
+> @@ -210,6 +210,9 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
+>   	case KVM_CAP_SET_GUEST_DEBUG:
+>   	case KVM_CAP_VCPU_ATTRIBUTES:
+>   	case KVM_CAP_PTP_KVM:
+> +#ifdef CONFIG_HAVE_KVM_IRQFD
+> +	case KVM_CAP_IRQFD_RESAMPLE:
+> +#endif
+>   		r = 1;
+>   		break;
+>   	case KVM_CAP_SET_GUEST_DEBUG2:
+> diff --git a/arch/mips/kvm/mips.c b/arch/mips/kvm/mips.c
+> index a25e0b73ee70..0f3de470a73e 100644
+> --- a/arch/mips/kvm/mips.c
+> +++ b/arch/mips/kvm/mips.c
+> @@ -1071,6 +1071,9 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
+>   	case KVM_CAP_READONLY_MEM:
+>   	case KVM_CAP_SYNC_MMU:
+>   	case KVM_CAP_IMMEDIATE_EXIT:
+> +#ifdef CONFIG_HAVE_KVM_IRQFD
+> +	case KVM_CAP_IRQFD_RESAMPLE:
+> +#endif
+>   		r = 1;
+>   		break;
+>   	case KVM_CAP_NR_VCPUS:
+> diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+> index 875c30c12db0..87698ffef3be 100644
+> --- a/arch/powerpc/kvm/powerpc.c
+> +++ b/arch/powerpc/kvm/powerpc.c
+> @@ -591,6 +591,12 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
+>   		break;
+>   #endif
+>   
+> +#ifdef CONFIG_HAVE_KVM_IRQFD
+> +	case KVM_CAP_IRQFD_RESAMPLE:
+> +		r = !xive_enabled();
+> +		break;
+> +#endif
+> +
+>   	case KVM_CAP_PPC_ALLOC_HTAB:
+>   		r = hv_enabled;
+>   		break;
+> diff --git a/arch/riscv/kvm/vm.c b/arch/riscv/kvm/vm.c
+> index c768f75279ef..b58579b386bb 100644
+> --- a/arch/riscv/kvm/vm.c
+> +++ b/arch/riscv/kvm/vm.c
+> @@ -63,6 +63,9 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
+>   	case KVM_CAP_READONLY_MEM:
+>   	case KVM_CAP_MP_STATE:
+>   	case KVM_CAP_IMMEDIATE_EXIT:
+> +#ifdef CONFIG_HAVE_KVM_IRQFD
+> +	case KVM_CAP_IRQFD_RESAMPLE:
+> +#endif
+>   		r = 1;
+>   		break;
+>   	case KVM_CAP_NR_VCPUS:
+> diff --git a/arch/s390/kvm/kvm-s390.c b/arch/s390/kvm/kvm-s390.c
+> index 156d1c25a3c1..85e093fc8d13 100644
+> --- a/arch/s390/kvm/kvm-s390.c
+> +++ b/arch/s390/kvm/kvm-s390.c
+> @@ -564,6 +564,9 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
+>   	case KVM_CAP_SET_GUEST_DEBUG:
+>   	case KVM_CAP_S390_DIAG318:
+>   	case KVM_CAP_S390_MEM_OP_EXTENSION:
+> +#ifdef CONFIG_HAVE_KVM_IRQFD
+> +	case KVM_CAP_IRQFD_RESAMPLE:
+> +#endif
+>   		r = 1;
+>   		break;
+>   	case KVM_CAP_SET_GUEST_DEBUG2:
+> diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+> index 0c0ca599a353..a0a7b769483d 100644
+> --- a/arch/x86/kvm/x86.c
+> +++ b/arch/x86/kvm/x86.c
+> @@ -4273,6 +4273,9 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
+>   	case KVM_CAP_SYS_ATTRIBUTES:
+>   	case KVM_CAP_VAPIC:
+>   	case KVM_CAP_ENABLE_CAP:
+> +#ifdef CONFIG_HAVE_KVM_IRQFD
+> +	case KVM_CAP_IRQFD_RESAMPLE:
+> +#endif
+>   		r = 1;
+>   		break;
+>   	case KVM_CAP_EXIT_HYPERCALL:
+> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+> index 70e05af5ebea..885e72e668a5 100644
+> --- a/virt/kvm/kvm_main.c
+> +++ b/virt/kvm/kvm_main.c
+> @@ -4293,7 +4293,6 @@ static long kvm_vm_ioctl_check_extension_generic(struct kvm *kvm, long arg)
+>   #endif
+>   #ifdef CONFIG_HAVE_KVM_IRQFD
+>   	case KVM_CAP_IRQFD:
+> -	case KVM_CAP_IRQFD_RESAMPLE:
+>   #endif
+>   	case KVM_CAP_IOEVENTFD_ANY_LENGTH:
+>   	case KVM_CAP_CHECK_EXTENSION_VM:
+
 -- 
-2.36.0.550.gb090851708-goog
-
+Alexey
 
