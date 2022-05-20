@@ -1,47 +1,87 @@
 From: Anup Patel <anup@brainfault.org>
-Date: Fri, 20 May 2022 09:05:37 +0530
-Subject: [PATCH] MAINTAINERS: Update KVM RISC-V entry to cover selftests
- support
-In-Reply-To: <20220509060634.134068-1-anup@brainfault.org>
-References: <20220509060634.134068-1-anup@brainfault.org>
-Message-ID: <CAAhSdy0MQ+Wq-r7Po-OOpVDdPP7xbucz+j4V-zrWGKCt76V9Ug@mail.gmail.com>
+Date: Fri, 20 May 2022 10:15:36 +0530
+Subject: KVM/riscv changes for 5.19
+Message-ID: <CAAhSdy0V3RziZOXe2UMfpAxmTYn1XpJJTQe5q2FdrmU_3zH+sQ@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, May 9, 2022 at 11:37 AM Anup Patel <anup@brainfault.org> wrote:
->
-> We update KVM RISC-V maintainers entry to include appropriate KVM
-> selftests directories so that RISC-V related KVM selftests patches
-> are CC'ed to KVM RISC-V mailing list.
->
-> Signed-off-by: Anup Patel <anup@brainfault.org>
+Hi Paolo,
 
-Queued this patch for 5.19
+We have following KVM RISC-V changes for 5.19:
+1) Added Sv57x4 support for G-stage page table
+2) Added range based local HFENCE functions
+3) Added remote HFENCE functions based on VCPU requests
+4) Added ISA extension registers in ONE_REG interface
+5) Updated KVM RISC-V maintainers entry to cover selftests support
 
-Thanks,
+I don't expect any other KVM RISC-V changes for 5.19.
+
+Please pull.
+
+Regards,
 Anup
 
-> ---
->  MAINTAINERS | 2 ++
->  1 file changed, 2 insertions(+)
->
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index e8c52d0192a6..ee73a71c1500 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -10767,6 +10767,8 @@ T:      git git://github.com/kvm-riscv/linux.git
->  F:     arch/riscv/include/asm/kvm*
->  F:     arch/riscv/include/uapi/asm/kvm*
->  F:     arch/riscv/kvm/
-> +F:     tools/testing/selftests/kvm/*/riscv/
-> +F:     tools/testing/selftests/kvm/riscv/
->
->  KERNEL VIRTUAL MACHINE for s390 (KVM/s390)
->  M:     Christian Borntraeger <borntraeger@linux.ibm.com>
-> --
-> 2.34.1
->
+The following changes since commit 42226c989789d8da4af1de0c31070c96726d990c:
+
+  Linux 5.18-rc7 (2022-05-15 18:08:58 -0700)
+
+are available in the Git repository at:
+
+  https://github.com/kvm-riscv/linux.git tags/kvm-riscv-5.19-1
+
+for you to fetch changes up to fed9b26b2501ea0ce41ae3a788bcc498440589c6:
+
+  MAINTAINERS: Update KVM RISC-V entry to cover selftests support
+(2022-05-20 09:09:23 +0530)
+
+----------------------------------------------------------------
+KVM/riscv changes for 5.19
+
+- Added Sv57x4 support for G-stage page table
+- Added range based local HFENCE functions
+- Added remote HFENCE functions based on VCPU requests
+- Added ISA extension registers in ONE_REG interface
+- Updated KVM RISC-V maintainers entry to cover selftests support
+
+----------------------------------------------------------------
+Anup Patel (9):
+      KVM: selftests: riscv: Improve unexpected guest trap handling
+      RISC-V: KVM: Use G-stage name for hypervisor page table
+      RISC-V: KVM: Add Sv57x4 mode support for G-stage
+      RISC-V: KVM: Treat SBI HFENCE calls as NOPs
+      RISC-V: KVM: Introduce range based local HFENCE functions
+      RISC-V: KVM: Reduce KVM_MAX_VCPUS value
+      RISC-V: KVM: Add remote HFENCE functions based on VCPU requests
+      RISC-V: KVM: Cleanup stale TLB entries when host CPU changes
+      MAINTAINERS: Update KVM RISC-V entry to cover selftests support
+
+Atish Patra (1):
+      RISC-V: KVM: Introduce ISA extension register
+
+Jiapeng Chong (1):
+      KVM: selftests: riscv: Remove unneeded semicolon
+
+ MAINTAINERS                                        |   2 +
+ arch/riscv/include/asm/csr.h                       |   1 +
+ arch/riscv/include/asm/kvm_host.h                  | 124 +++++-
+ arch/riscv/include/uapi/asm/kvm.h                  |  20 +
+ arch/riscv/kvm/main.c                              |  11 +-
+ arch/riscv/kvm/mmu.c                               | 264 ++++++------
+ arch/riscv/kvm/tlb.S                               |  74 ----
+ arch/riscv/kvm/tlb.c                               | 461 +++++++++++++++++++++
+ arch/riscv/kvm/vcpu.c                              | 144 ++++++-
+ arch/riscv/kvm/vcpu_exit.c                         |   6 +-
+ arch/riscv/kvm/vcpu_sbi_replace.c                  |  40 +-
+ arch/riscv/kvm/vcpu_sbi_v01.c                      |  35 +-
+ arch/riscv/kvm/vm.c                                |   8 +-
+ arch/riscv/kvm/vmid.c                              |  30 +-
+ .../selftests/kvm/include/riscv/processor.h        |   8 +-
+ tools/testing/selftests/kvm/lib/riscv/processor.c  |  11 +-
+ tools/testing/selftests/kvm/lib/riscv/ucall.c      |  31 +-
+ 17 files changed, 965 insertions(+), 305 deletions(-)
+ delete mode 100644 arch/riscv/kvm/tlb.S
+ create mode 100644 arch/riscv/kvm/tlb.c
 
