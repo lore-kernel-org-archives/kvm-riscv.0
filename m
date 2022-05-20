@@ -1,7 +1,7 @@
 From: Anup Patel <anup@brainfault.org>
-Date: Fri, 20 May 2022 10:15:36 +0530
-Subject: KVM/riscv changes for 5.19
-Message-ID: <CAAhSdy0V3RziZOXe2UMfpAxmTYn1XpJJTQe5q2FdrmU_3zH+sQ@mail.gmail.com>
+Date: Fri, 20 May 2022 10:18:29 +0530
+Subject: [GIT PULL] KVM/riscv changes for 5.19
+Message-ID: <CAAhSdy1DUJa=5YxbV_u0B=NLaTJrW03PbLxegJ2oCWDeWqy=zw@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
