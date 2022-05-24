@@ -1,10 +1,10 @@
 From: Anup Patel <anup@brainfault.org>
-Date: Tue, 24 May 2022 16:55:23 +0530
-Subject: [PATCH v3 2/4] RISC-V: Enable sstc extension parsing from DT
-In-Reply-To: <20220426185245.281182-3-atishp@rivosinc.com>
+Date: Tue, 24 May 2022 17:00:15 +0530
+Subject: [PATCH v3 3/4] RISC-V: Prefer sstc extension if available
+In-Reply-To: <20220426185245.281182-4-atishp@rivosinc.com>
 References: <20220426185245.281182-1-atishp@rivosinc.com>
- <20220426185245.281182-3-atishp@rivosinc.com>
-Message-ID: <CAAhSdy1utVaeMBUYKRQeEPtXxD5gXAs3WCacoXYm9fmHx5yyVA@mail.gmail.com>
+ <20220426185245.281182-4-atishp@rivosinc.com>
+Message-ID: <CAAhSdy0wbokRNZrXYcARKx=DpGfQ5gFGJ_1K26U0W99-jZcM5g@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -13,63 +13,72 @@ Content-Transfer-Encoding: 7bit
 
 On Wed, Apr 27, 2022 at 12:23 AM Atish Patra <atishp@rivosinc.com> wrote:
 >
-> The ISA extension framework now allows parsing any multi-letter
-> ISA extension.
->
-> Enable that for sstc extension.
+> RISC-V ISA has sstc extension which allows updating the next clock event
+> via a CSR (stimecmp) instead of an SBI call. This should happen dynamically
+> if sstc extension is available. Otherwise, it will fallback to SBI call
+> to maintain backward compatibility.
 >
 > Signed-off-by: Atish Patra <atishp@rivosinc.com>
-
-Looks good to me.
-
-Reviewed-by: Anup Patel <anup@brainfault.org>
-
-Regards,
-Anup
-
 > ---
->  arch/riscv/include/asm/hwcap.h | 1 +
->  arch/riscv/kernel/cpu.c        | 1 +
->  arch/riscv/kernel/cpufeature.c | 1 +
->  3 files changed, 3 insertions(+)
+>  drivers/clocksource/timer-riscv.c | 21 ++++++++++++++++++++-
+>  1 file changed, 20 insertions(+), 1 deletion(-)
 >
-> diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
-> index 0734e42f74f2..25915eb60d61 100644
-> --- a/arch/riscv/include/asm/hwcap.h
-> +++ b/arch/riscv/include/asm/hwcap.h
-> @@ -52,6 +52,7 @@ extern unsigned long elf_hwcap;
->   */
->  enum riscv_isa_ext_id {
->         RISCV_ISA_EXT_SSCOFPMF = RISCV_ISA_EXT_BASE,
-> +       RISCV_ISA_EXT_SSTC,
->         RISCV_ISA_EXT_ID_MAX = RISCV_ISA_EXT_MAX,
->  };
+> diff --git a/drivers/clocksource/timer-riscv.c b/drivers/clocksource/timer-riscv.c
+> index 1767f8bf2013..d9398ae84a20 100644
+> --- a/drivers/clocksource/timer-riscv.c
+> +++ b/drivers/clocksource/timer-riscv.c
+> @@ -23,11 +23,24 @@
+
+Add "#define pr_fmt(fmt)" here since you are using pr_info(...)
+
+>  #include <asm/sbi.h>
+>  #include <asm/timex.h>
 >
-> diff --git a/arch/riscv/kernel/cpu.c b/arch/riscv/kernel/cpu.c
-> index ccb617791e56..ca0e4c0db17e 100644
-> --- a/arch/riscv/kernel/cpu.c
-> +++ b/arch/riscv/kernel/cpu.c
-> @@ -88,6 +88,7 @@ int riscv_of_parent_hartid(struct device_node *node)
->   */
->  static struct riscv_isa_ext_data isa_ext_arr[] = {
->         __RISCV_ISA_EXT_DATA(sscofpmf, RISCV_ISA_EXT_SSCOFPMF),
-> +       __RISCV_ISA_EXT_DATA(sstc, RISCV_ISA_EXT_SSTC),
->         __RISCV_ISA_EXT_DATA("", RISCV_ISA_EXT_MAX),
->  };
+> +static DEFINE_STATIC_KEY_FALSE(riscv_sstc_available);
+> +
+>  static int riscv_clock_next_event(unsigned long delta,
+>                 struct clock_event_device *ce)
+>  {
+> +       uint64_t next_tval = get_cycles64() + delta;
+
+Use "u64" here to be consistent with other parts of the kernel.
+
+> +
+>         csr_set(CSR_IE, IE_TIE);
+> -       sbi_set_timer(get_cycles64() + delta);
+> +       if (static_branch_likely(&riscv_sstc_available)) {
+> +#if __riscv_xlen == 32
+
+Use CONFIG_32BIT here.
+
+> +               csr_write(CSR_STIMECMP, next_tval & 0xFFFFFFFF);
+> +               csr_write(CSR_STIMECMPH, next_tval >> 32);
+> +#else
+> +               csr_write(CSR_STIMECMP, next_tval);
+> +#endif
+> +       } else
+> +               sbi_set_timer(next_tval);
+> +
+>         return 0;
+>  }
 >
-> diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
-> index 1b2d42d7f589..a214537c22f1 100644
-> --- a/arch/riscv/kernel/cpufeature.c
-> +++ b/arch/riscv/kernel/cpufeature.c
-> @@ -192,6 +192,7 @@ void __init riscv_fill_hwcap(void)
->                                 set_bit(*ext - 'a', this_isa);
->                         } else {
->                                 SET_ISA_EXT_MAP("sscofpmf", RISCV_ISA_EXT_SSCOFPMF);
-> +                               SET_ISA_EXT_MAP("sstc", RISCV_ISA_EXT_SSTC);
->                         }
->  #undef SET_ISA_EXT_MAP
->                 }
+> @@ -165,6 +178,12 @@ static int __init riscv_timer_init_dt(struct device_node *n)
+>         if (error)
+>                 pr_err("cpu hp setup state failed for RISCV timer [%d]\n",
+>                        error);
+> +
+> +       if (riscv_isa_extension_available(NULL, SSTC)) {
+> +               pr_info("Timer interrupt in S-mode is available via sstc extension\n");
+> +               static_branch_enable(&riscv_sstc_available);
+> +       }
+> +
+>         return error;
+>  }
+>
 > --
 > 2.25.1
 >
+
+Regards,
+Anup
 
