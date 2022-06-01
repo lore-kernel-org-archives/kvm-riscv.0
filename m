@@ -1,34 +1,44 @@
-From: Julia Lawall <Julia.Lawall@inria.fr>
-Date: Sat, 30 Apr 2022 21:11:20 +0200
-Subject: [PATCH] RISC-V: fix typos in comments
-Message-ID: <20220430191122.8667-6-Julia.Lawall@inria.fr>
+From: Lukas Bulwahn <lukas.bulwahn@gmail.com>
+Date: Wed,  1 Jun 2022 10:51:22 +0200
+Subject: [PATCH] MAINTAINERS: Limit KVM RISC-V entry to existing selftests
+Message-ID: <20220601085122.28176-1-lukas.bulwahn@gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Various spelling mistakes in comments.
-Detected with the help of Coccinelle.
+Commit fed9b26b2501 ("MAINTAINERS: Update KVM RISC-V entry to cover
+selftests support") optimistically adds a file entry for
+tools/testing/selftests/kvm/riscv/, but this directory does not exist.
 
-Signed-off-by: Julia Lawall <Julia.Lawall@inria.fr>
+Hence, ./scripts/get_maintainer.pl --self-test=patterns complains about a
+broken reference. The script is very useful to keep MAINTAINERS up to date
+and MAINTAINERS can be kept in a state where the script emits no warning.
 
+So, just drop the non-matching file entry rather than starting to collect
+exceptions of entries that may match in some close or distant future.
+
+Signed-off-by: Lukas Bulwahn <lukas.bulwahn@gmail.com>
 ---
- arch/riscv/kvm/vmid.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Anup, please consider to pick this minor clean-up patch.
 
-diff --git a/arch/riscv/kvm/vmid.c b/arch/riscv/kvm/vmid.c
-index 2fa4f7b1813d..4a2178c60b5d 100644
---- a/arch/riscv/kvm/vmid.c
-+++ b/arch/riscv/kvm/vmid.c
-@@ -92,7 +92,7 @@ void kvm_riscv_stage2_vmid_update(struct kvm_vcpu *vcpu)
- 		 * We ran out of VMIDs so we increment vmid_version and
- 		 * start assigning VMIDs from 1.
- 		 *
--		 * This also means existing VMIDs assignement to all Guest
-+		 * This also means existing VMIDs assignment to all Guest
- 		 * instances is invalid and we have force VMID re-assignement
- 		 * for all Guest instances. The Guest instances that were not
- 		 * running will automatically pick-up new VMIDs because will
+ MAINTAINERS | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 36eab5ae237d..a8eee9d2aea5 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -10863,7 +10863,6 @@ F:	arch/riscv/include/asm/kvm*
+ F:	arch/riscv/include/uapi/asm/kvm*
+ F:	arch/riscv/kvm/
+ F:	tools/testing/selftests/kvm/*/riscv/
+-F:	tools/testing/selftests/kvm/riscv/
+ 
+ KERNEL VIRTUAL MACHINE for s390 (KVM/s390)
+ M:	Christian Borntraeger <borntraeger@linux.ibm.com>
+-- 
+2.17.1
 
 
