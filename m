@@ -1,121 +1,53 @@
-From: Heiko Stuebner <heiko@sntech.de>
-Date: Fri, 03 Jun 2022 16:59:17 +0200
-Subject: [PATCH -for-next] riscv: Fix missing PAGE_PFN_MASK
-In-Reply-To: <20220530094701.2891404-1-alexandre.ghiti@canonical.com>
-References: <20220530094701.2891404-1-alexandre.ghiti@canonical.com>
-Message-ID: <6852601.cEBGB3zze1@phil>
+From: Palmer Dabbelt <palmer@dabbelt.com>
+Date: Fri, 03 Jun 2022 14:20:15 -0700 (PDT)
+Subject: (RISC-V KVM) Re: [PATCH] RISC-V: fix typos in comments
+In-Reply-To: <CAAhSdy3+imWabbArUAg0Bki3qvD1PGVB-L-xY5CvNa_YBu80aA@mail.gmail.com>
+Message-ID: <mhng-90fa273a-b4b0-4078-887b-5e4f58986006@palmer-ri-x1c9>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi,
+On Thu, 02 Jun 2022 21:33:00 PDT (-0700), anup at brainfault.org wrote:
+> On Thu, Jun 2, 2022 at 9:56 AM Palmer Dabbelt <palmer@dabbelt.com> wrote:
+>>
+>> On Sat, 30 Apr 2022 12:11:20 PDT (-0700), Julia.Lawall at inria.fr wrote:
+>> > Various spelling mistakes in comments.
+>> > Detected with the help of Coccinelle.
+>> >
+>> > Signed-off-by: Julia Lawall <Julia.Lawall@inria.fr>
+>> >
+>> > ---
+>> >  arch/riscv/kvm/vmid.c |    2 +-
+>> >  1 file changed, 1 insertion(+), 1 deletion(-)
+>> >
+>> > diff --git a/arch/riscv/kvm/vmid.c b/arch/riscv/kvm/vmid.c
+>> > index 2fa4f7b1813d..4a2178c60b5d 100644
+>> > --- a/arch/riscv/kvm/vmid.c
+>> > +++ b/arch/riscv/kvm/vmid.c
+>> > @@ -92,7 +92,7 @@ void kvm_riscv_stage2_vmid_update(struct kvm_vcpu *vcpu)
+>> >                * We ran out of VMIDs so we increment vmid_version and
+>> >                * start assigning VMIDs from 1.
+>> >                *
+>> > -              * This also means existing VMIDs assignement to all Guest
+>> > +              * This also means existing VMIDs assignment to all Guest
+>> >                * instances is invalid and we have force VMID re-assignement
+>> >                * for all Guest instances. The Guest instances that were not
+>> >                * running will automatically pick-up new VMIDs because will
+>>
+>> Anup: I'm guessing you didn't see this because it didn't have KVM in the
+>> subject?
+>>
+>> Reviewed-by: Palmer Dabbelt <palmer@rivosinc.com>
+>> Acked-by: Palmer Dabbelt <palmer@rivosinc.com>
+>>
+>> if that helps any, I don't see in anywhere but not sure if I'm just
+>> missing it.
+>
+> Thanks Palmer, I had already planned to pick this as a RC fix for 5.19
+> but I forgot to reply here.
 
-Am Montag, 30. Mai 2022, 11:47:01 CEST schrieb Alexandre Ghiti:
-> There are a bunch of functions that use the PFN from a page table entry
-> that end up with the svpbmt upper-bits because they are missing the newly
-> introduced PAGE_PFN_MASK which leads to wrong addresses conversions and
-> then crash: fix this by adding this mask.
-> 
-> Fixes: 100631b48ded ("riscv: Fix accessing pfn bits in PTEs for non-32bit variants")
-> Signed-off-by: Alexandre Ghiti <alexandre.ghiti@canonical.com>
-
-agree with the approach but some things below:
-
-> ---
->  arch/riscv/include/asm/pgtable-64.h | 4 ++--
->  arch/riscv/include/asm/pgtable.h    | 4 ++--
->  arch/riscv/kvm/mmu.c                | 2 +-
->  3 files changed, 5 insertions(+), 5 deletions(-)
-> 
-> diff --git a/arch/riscv/include/asm/pgtable-64.h b/arch/riscv/include/asm/pgtable-64.h
-> index 6d59e4695200..0e57bf1e25e9 100644
-> --- a/arch/riscv/include/asm/pgtable-64.h
-> +++ b/arch/riscv/include/asm/pgtable-64.h
-> @@ -153,7 +153,7 @@ static inline pud_t pfn_pud(unsigned long pfn, pgprot_t prot)
->  
->  static inline unsigned long _pud_pfn(pud_t pud)
->  {
-> -	return pud_val(pud) >> _PAGE_PFN_SHIFT;
-> +	return (pud_val(pud) & _PAGE_PFN_MASK) >> _PAGE_PFN_SHIFT;
-
-we already have defined a helper:
-	#define __page_val_to_pfn(_val)  (((_val) & _PAGE_PFN_MASK) >> _PAGE_PFN_SHIFT)
-
-so maybe just use
-
-	return __page_val_to_pfn(pud_val(pud));
-
->  }
->  
->  static inline pmd_t *pud_pgtable(pud_t pud)
-> @@ -240,7 +240,7 @@ static inline void p4d_clear(p4d_t *p4d)
->  static inline pud_t *p4d_pgtable(p4d_t p4d)
->  {
->  	if (pgtable_l4_enabled)
-> -		return (pud_t *)pfn_to_virt(p4d_val(p4d) >> _PAGE_PFN_SHIFT);
-> +		return (pud_t *)pfn_to_virt((p4d_val(p4d) & _PAGE_PFN_MASK) >> _PAGE_PFN_SHIFT);
-
-	return (pud_t *)pfn_to_virt(__page_val_to_pfn(p4d_val(p4d)));
-
->  
->  	return (pud_t *)pud_pgtable((pud_t) { p4d_val(p4d) });
->  }
-> diff --git a/arch/riscv/include/asm/pgtable.h b/arch/riscv/include/asm/pgtable.h
-> index e2658a25f06d..43064025f4b0 100644
-> --- a/arch/riscv/include/asm/pgtable.h
-> +++ b/arch/riscv/include/asm/pgtable.h
-> @@ -255,7 +255,7 @@ static inline pgd_t pfn_pgd(unsigned long pfn, pgprot_t prot)
->  
->  static inline unsigned long _pgd_pfn(pgd_t pgd)
->  {
-> -	return pgd_val(pgd) >> _PAGE_PFN_SHIFT;
-> +	return (pgd_val(pgd) & _PAGE_PFN_MASK) >> _PAGE_PFN_SHIFT;
-
-	return __page_val_to_pfn(pgd_val(pgd));
-
->  }
->  
->  static inline struct page *pmd_page(pmd_t pmd)
-> @@ -568,7 +568,7 @@ static inline pmd_t pmd_mkinvalid(pmd_t pmd)
->  	return __pmd(pmd_val(pmd) & ~(_PAGE_PRESENT|_PAGE_PROT_NONE));
->  }
->  
-> -#define __pmd_to_phys(pmd)  (pmd_val(pmd) >> _PAGE_PFN_SHIFT << PAGE_SHIFT)
-> +#define __pmd_to_phys(pmd)  ((pmd_val(pmd) & _PAGE_PFN_MASK) >> _PAGE_PFN_SHIFT << PAGE_SHIFT)
-
-	#define __pmd_to_phys(pmd)  (__page_val_to_pfn(pmd_val(pmd)) << PAGE_SHIFT)
-
->  
->  static inline unsigned long pmd_pfn(pmd_t pmd)
->  {
-> diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
-> index f80a34fbf102..db03c5a29d4c 100644
-> --- a/arch/riscv/kvm/mmu.c
-> +++ b/arch/riscv/kvm/mmu.c
-> @@ -55,7 +55,7 @@ static inline unsigned long stage2_pte_index(gpa_t addr, u32 level)
->  
->  static inline unsigned long stage2_pte_page_vaddr(pte_t pte)
-
-This got renamed to gstage_pte_page_vaddr()
-in commit 26708234eb12 ("RISC-V: KVM: Use G-stage name for hypervisor page table")
-
->  {
-> -	return (unsigned long)pfn_to_virt(pte_val(pte) >> _PAGE_PFN_SHIFT);
-> +	return (unsigned long)pfn_to_virt((pte_val(pte) & _PAGE_PFN_MASK) >> _PAGE_PFN_SHIFT);
-
-return (unsigned long)pfn_to_virt(__page_val_to_pfn(pte_val(pte)));
-
-
-Heiko
-
->  }
->  
->  static int stage2_page_size_to_level(unsigned long page_size, u32 *out_level)
-> 
-
-
-
-
+OK, no worries.  I was't going to do anything with it as it's 
+arch/riscv/kvm, so no rush on my end.
 
