@@ -1,49 +1,44 @@
-From: Anup Patel <apatel@ventanamicro.com>
-Date: Wed,  8 Jun 2022 22:43:34 +0530
-Subject: [PATCH] rpmsg: virtio: Fix broken rpmsg_probe()
-Message-ID: <20220608171334.730739-1-apatel@ventanamicro.com>
+From: Anup Patel <anup@brainfault.org>
+Date: Thu, 9 Jun 2022 09:39:15 +0530
+Subject: [PATCH] RISC-V: fix typos in comments
+In-Reply-To: <20220430191122.8667-6-Julia.Lawall@inria.fr>
+References: <20220430191122.8667-6-Julia.Lawall@inria.fr>
+Message-ID: <CAAhSdy1kEPYJQdK+f-6Dkb92ScV9fG2m0J2rJSeWjfNFUtjVwA@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The rpmsg_probe() is broken at the moment because virtqueue_add_inbuf()
-fails due to both virtqueues (Rx and Tx) marked as broken by the
-__vring_new_virtqueue() function. To solve this, virtio_device_ready()
-(which unbreaks queues) should be called before virtqueue_add_inbuf().
+On Sun, May 1, 2022 at 12:41 AM Julia Lawall <Julia.Lawall@inria.fr> wrote:
+>
+> Various spelling mistakes in comments.
+> Detected with the help of Coccinelle.
+>
+> Signed-off-by: Julia Lawall <Julia.Lawall@inria.fr>
 
-Fixes: 8b4ec69d7e09 ("virtio: harden vring IRQ")
-Signed-off-by: Anup Patel <apatel@ventanamicro.com>
----
- drivers/rpmsg/virtio_rpmsg_bus.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+I have included this patch for 5.19-rc fixes
 
-diff --git a/drivers/rpmsg/virtio_rpmsg_bus.c b/drivers/rpmsg/virtio_rpmsg_bus.c
-index 905ac7910c98..71a64d2c7644 100644
---- a/drivers/rpmsg/virtio_rpmsg_bus.c
-+++ b/drivers/rpmsg/virtio_rpmsg_bus.c
-@@ -929,6 +929,9 @@ static int rpmsg_probe(struct virtio_device *vdev)
- 	/* and half is dedicated for TX */
- 	vrp->sbufs = bufs_va + total_buf_space / 2;
- 
-+	/* From this point on, we can notify and get callbacks. */
-+	virtio_device_ready(vdev);
-+
- 	/* set up the receive buffers */
- 	for (i = 0; i < vrp->num_bufs / 2; i++) {
- 		struct scatterlist sg;
-@@ -983,9 +986,6 @@ static int rpmsg_probe(struct virtio_device *vdev)
- 	 */
- 	notify = virtqueue_kick_prepare(vrp->rvq);
- 
--	/* From this point on, we can notify and get callbacks. */
--	virtio_device_ready(vdev);
--
- 	/* tell the remote processor it can start sending messages */
- 	/*
- 	 * this might be concurrent with callbacks, but we are only
--- 
-2.34.1
+Thanks,
+Anup
 
+>
+> ---
+>  arch/riscv/kvm/vmid.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/arch/riscv/kvm/vmid.c b/arch/riscv/kvm/vmid.c
+> index 2fa4f7b1813d..4a2178c60b5d 100644
+> --- a/arch/riscv/kvm/vmid.c
+> +++ b/arch/riscv/kvm/vmid.c
+> @@ -92,7 +92,7 @@ void kvm_riscv_stage2_vmid_update(struct kvm_vcpu *vcpu)
+>                  * We ran out of VMIDs so we increment vmid_version and
+>                  * start assigning VMIDs from 1.
+>                  *
+> -                * This also means existing VMIDs assignement to all Guest
+> +                * This also means existing VMIDs assignment to all Guest
+>                  * instances is invalid and we have force VMID re-assignement
+>                  * for all Guest instances. The Guest instances that were not
+>                  * running will automatically pick-up new VMIDs because will
+>
 
