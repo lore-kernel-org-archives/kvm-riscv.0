@@ -1,141 +1,194 @@
 From: Anup Patel <anup@brainfault.org>
-Date: Mon, 13 Jun 2022 15:01:28 +0530
-Subject: [PATCH -fixes v2] riscv: Fix missing PAGE_PFN_MASK
-In-Reply-To: <20220613085307.260256-1-alexandre.ghiti@canonical.com>
-References: <20220613085307.260256-1-alexandre.ghiti@canonical.com>
-Message-ID: <CAAhSdy1gr_WvCJUMXMwtZUux9qBsW-b_LGFg4=tdnkv5b538sg@mail.gmail.com>
+Date: Mon, 13 Jun 2022 15:29:13 +0530
+Subject: [PATCH 2/3] RISC-V: KVM: Add extensible system instruction
+ emulation framework
+In-Reply-To: <20220612153113.GA52224@liuzhao-OptiPlex-7080>
+References: <20220610050555.288251-1-apatel@ventanamicro.com>
+ <20220610050555.288251-3-apatel@ventanamicro.com> <20220612153113.GA52224@liuzhao-OptiPlex-7080>
+Message-ID: <CAAhSdy2GXCujSkJgrWC==nTbeT7soY57K_DKP-vs57E=iN-YkQ@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Jun 13, 2022 at 2:23 PM Alexandre Ghiti
-<alexandre.ghiti@canonical.com> wrote:
+On Sun, Jun 12, 2022 at 8:57 PM Liu Zhao <zhao1.liu@linux.intel.com> wrote:
 >
-> There are a bunch of functions that use the PFN from a page table entry
-> that end up with the svpbmt upper-bits because they are missing the newly
-> introduced PAGE_PFN_MASK which leads to wrong addresses conversions and
-> then crash: fix this by adding this mask.
+> On Fri, Jun 10, 2022 at 10:35:54AM +0530, Anup Patel wrote:
+> > Date: Fri, 10 Jun 2022 10:35:54 +0530
+> > From: Anup Patel <apatel@ventanamicro.com>
+> > Subject: [PATCH 2/3] RISC-V: KVM: Add extensible system instruction
+> >  emulation framework
+> > X-Mailer: git-send-email 2.34.1
+> >
+> > We will be emulating more system instructions in near future with
+> > upcoming AIA, PMU, Nested and other virtualization features.
+> >
+> > To accommodate above, we add an extensible system instruction emulation
+> > framework in vcpu_insn.c.
+> >
+> > Signed-off-by: Anup Patel <apatel@ventanamicro.com>
+> > ---
+> >  arch/riscv/include/asm/kvm_vcpu_insn.h |  9 +++
+> >  arch/riscv/kvm/vcpu_insn.c             | 82 +++++++++++++++++++++++---
+> >  2 files changed, 82 insertions(+), 9 deletions(-)
+> >
+> > diff --git a/arch/riscv/include/asm/kvm_vcpu_insn.h b/arch/riscv/include/asm/kvm_vcpu_insn.h
+> > index 4e3ba4e84d0f..3351eb61a251 100644
+> > --- a/arch/riscv/include/asm/kvm_vcpu_insn.h
+> > +++ b/arch/riscv/include/asm/kvm_vcpu_insn.h
+> > @@ -18,6 +18,15 @@ struct kvm_mmio_decode {
+> >       int return_handled;
+> >  };
+> >
+> > +/* Return values used by function emulating a particular instruction */
+> > +enum kvm_insn_return {
+> > +     KVM_INSN_EXIT_TO_USER_SPACE = 0,
+> > +     KVM_INSN_CONTINUE_NEXT_SEPC,
+> > +     KVM_INSN_CONTINUE_SAME_SEPC,
+> > +     KVM_INSN_ILLEGAL_TRAP,
+> > +     KVM_INSN_VIRTUAL_TRAP
+> > +};
+> > +
+> >  void kvm_riscv_vcpu_wfi(struct kvm_vcpu *vcpu);
+> >  int kvm_riscv_vcpu_virtual_insn(struct kvm_vcpu *vcpu, struct kvm_run *run,
+> >                               struct kvm_cpu_trap *trap);
+> > diff --git a/arch/riscv/kvm/vcpu_insn.c b/arch/riscv/kvm/vcpu_insn.c
+> > index be756879c2ee..75ca62a7fba5 100644
+> > --- a/arch/riscv/kvm/vcpu_insn.c
+> > +++ b/arch/riscv/kvm/vcpu_insn.c
+> > @@ -118,8 +118,24 @@
+> >                                (s32)(((insn) >> 7) & 0x1f))
+> >  #define MASK_FUNCT3          0x7000
+> >
+> > -static int truly_illegal_insn(struct kvm_vcpu *vcpu,
+> > -                           struct kvm_run *run,
+> > +struct insn_func {
+> > +     unsigned long mask;
+> > +     unsigned long match;
+> > +     /*
+> > +      * Possible return values are as follows:
+> > +      * 1) Returns < 0 for error case
+> > +      * 2) Returns 0 for exit to user-space
+> > +      * 3) Returns 1 to continue with next sepc
+> > +      * 4) Returns 2 to continue with same sepc
+> > +      * 5) Returns 3 to inject illegal instruction trap and continue
+> > +      * 6) Returns 4 to inject virtual instruction trap and continue
+> > +      *
+> > +      * Use enum kvm_insn_return for return values
+> > +      */
+> > +     int (*func)(struct kvm_vcpu *vcpu, struct kvm_run *run, ulong insn);
+> > +};
+> > +
+> > +static int truly_illegal_insn(struct kvm_vcpu *vcpu, struct kvm_run *run,
+> >                             ulong insn)
+> >  {
+> >       struct kvm_cpu_trap utrap = { 0 };
+> > @@ -128,6 +144,24 @@ static int truly_illegal_insn(struct kvm_vcpu *vcpu,
+> >       utrap.sepc = vcpu->arch.guest_context.sepc;
+> >       utrap.scause = EXC_INST_ILLEGAL;
+> >       utrap.stval = insn;
+> > +     utrap.htval = 0;
+> > +     utrap.htinst = 0;
+> > +     kvm_riscv_vcpu_trap_redirect(vcpu, &utrap);
+> > +
+> > +     return 1;
+> > +}
+> > +
+> > +static int truly_virtual_insn(struct kvm_vcpu *vcpu, struct kvm_run *run,
+> > +                           ulong insn)
+> > +{
+> > +     struct kvm_cpu_trap utrap = { 0 };
+> > +
+> > +     /* Redirect trap to Guest VCPU */
+> > +     utrap.sepc = vcpu->arch.guest_context.sepc;
+> > +     utrap.scause = EXC_VIRTUAL_INST_FAULT;
+> > +     utrap.stval = insn;
+> > +     utrap.htval = 0;
+> > +     utrap.htinst = 0;
+> >       kvm_riscv_vcpu_trap_redirect(vcpu, &utrap);
+> >
+> >       return 1;
+> > @@ -148,18 +182,48 @@ void kvm_riscv_vcpu_wfi(struct kvm_vcpu *vcpu)
+> >       }
+> >  }
+> >
+> > -static int system_opcode_insn(struct kvm_vcpu *vcpu,
+> > -                           struct kvm_run *run,
+> > +static int wfi_insn(struct kvm_vcpu *vcpu, struct kvm_run *run, ulong insn)
+> > +{
+> > +     vcpu->stat.wfi_exit_stat++;
+> > +     kvm_riscv_vcpu_wfi(vcpu);
+> > +     return KVM_INSN_CONTINUE_NEXT_SEPC;
+> > +}
+> > +
+> > +static const struct insn_func system_opcode_funcs[] = {
+> > +     {
+> > +             .mask  = INSN_MASK_WFI,
+> > +             .match = INSN_MATCH_WFI,
+> > +             .func  = wfi_insn,
+> > +     },
+> > +};
+> > +
+> > +static int system_opcode_insn(struct kvm_vcpu *vcpu, struct kvm_run *run,
+> >                             ulong insn)
+> >  {
+> > -     if ((insn & INSN_MASK_WFI) == INSN_MATCH_WFI) {
+> > -             vcpu->stat.wfi_exit_stat++;
+> > -             kvm_riscv_vcpu_wfi(vcpu);
+> > +     int i, rc = KVM_INSN_ILLEGAL_TRAP;
+> > +     const struct insn_func *ifn;
+> > +
+> > +     for (i = 0; i < ARRAY_SIZE(system_opcode_funcs); i++) {
+> > +             ifn = &system_opcode_funcs[i];
+> > +             if ((insn & ifn->mask) == ifn->match) {
+> > +                     rc = ifn->func(vcpu, run, insn);
+> > +                     break;
+> > +             }
+> > +     }
+> > +
+> > +     switch (rc) {
+> > +     case KVM_INSN_ILLEGAL_TRAP:
+> > +             return truly_illegal_insn(vcpu, run, insn);
+> > +     case KVM_INSN_VIRTUAL_TRAP:
+> > +             return truly_virtual_insn(vcpu, run, insn);
+> > +     case KVM_INSN_CONTINUE_NEXT_SEPC:
+> >               vcpu->arch.guest_context.sepc += INSN_LEN(insn);
+> > -             return 1;
+> > +             break;
 >
-> Fixes: 100631b48ded ("riscv: Fix accessing pfn bits in PTEs for non-32bit variants")
-> Signed-off-by: Alexandre Ghiti <alexandre.ghiti@canonical.com>
+> Hi Anup,
+> What about adding KVM_INSN_CONTINUE_SAME_SEPC and KVM_INSN_EXIT_TO_USER_SPACE
+> cases here and set rc to 1?
 
-Looks good to me.
+For KVM_INSN_CONTINUE_SAME_SEPC (and any rc >= 1) we should return 1
+whereas for KVM_INSN_EXIT_TO_USER_SPACE we should return 0.
 
-Reviewed-by: Anup Patel <anup@brainfault.org>
+> This is the explicit indication that both cases are handled.
 
-@Palmer let me know if you want me to take this through the KVM repo.
+The KVM_INSN_EXIT_TO_USER_SPACE is always 0 whereas
+KVM_INSN_CONTINUE_SAME_SEPC is always 1 so the statement
+"return (rc <= 0) ? rc : 1;" handles both these cases.
 
 Regards,
 Anup
 
-> ---
->  arch/riscv/include/asm/pgtable-64.h | 12 ++++++------
->  arch/riscv/include/asm/pgtable.h    |  6 +++---
->  arch/riscv/kvm/mmu.c                |  2 +-
->  3 files changed, 10 insertions(+), 10 deletions(-)
 >
-> diff --git a/arch/riscv/include/asm/pgtable-64.h b/arch/riscv/include/asm/pgtable-64.h
-> index 5c2aba5efbd0..dc42375c2357 100644
-> --- a/arch/riscv/include/asm/pgtable-64.h
-> +++ b/arch/riscv/include/asm/pgtable-64.h
-> @@ -175,7 +175,7 @@ static inline pud_t pfn_pud(unsigned long pfn, pgprot_t prot)
->
->  static inline unsigned long _pud_pfn(pud_t pud)
->  {
-> -       return pud_val(pud) >> _PAGE_PFN_SHIFT;
-> +       return __page_val_to_pfn(pud_val(pud));
->  }
->
->  static inline pmd_t *pud_pgtable(pud_t pud)
-> @@ -278,13 +278,13 @@ static inline p4d_t pfn_p4d(unsigned long pfn, pgprot_t prot)
->
->  static inline unsigned long _p4d_pfn(p4d_t p4d)
->  {
-> -       return p4d_val(p4d) >> _PAGE_PFN_SHIFT;
-> +       return __page_val_to_pfn(p4d_val(p4d));
->  }
->
->  static inline pud_t *p4d_pgtable(p4d_t p4d)
->  {
->         if (pgtable_l4_enabled)
-> -               return (pud_t *)pfn_to_virt(p4d_val(p4d) >> _PAGE_PFN_SHIFT);
-> +               return (pud_t *)pfn_to_virt(__page_val_to_pfn(p4d_val(p4d)));
->
->         return (pud_t *)pud_pgtable((pud_t) { p4d_val(p4d) });
->  }
-> @@ -292,7 +292,7 @@ static inline pud_t *p4d_pgtable(p4d_t p4d)
->
->  static inline struct page *p4d_page(p4d_t p4d)
->  {
-> -       return pfn_to_page(p4d_val(p4d) >> _PAGE_PFN_SHIFT);
-> +       return pfn_to_page(__page_val_to_pfn(p4d_val(p4d)));
->  }
->
->  #define pud_index(addr) (((addr) >> PUD_SHIFT) & (PTRS_PER_PUD - 1))
-> @@ -347,7 +347,7 @@ static inline void pgd_clear(pgd_t *pgd)
->  static inline p4d_t *pgd_pgtable(pgd_t pgd)
->  {
->         if (pgtable_l5_enabled)
-> -               return (p4d_t *)pfn_to_virt(pgd_val(pgd) >> _PAGE_PFN_SHIFT);
-> +               return (p4d_t *)pfn_to_virt(__page_val_to_pfn(pgd_val(pgd)));
->
->         return (p4d_t *)p4d_pgtable((p4d_t) { pgd_val(pgd) });
->  }
-> @@ -355,7 +355,7 @@ static inline p4d_t *pgd_pgtable(pgd_t pgd)
->
->  static inline struct page *pgd_page(pgd_t pgd)
->  {
-> -       return pfn_to_page(pgd_val(pgd) >> _PAGE_PFN_SHIFT);
-> +       return pfn_to_page(__page_val_to_pfn(pgd_val(pgd)));
->  }
->  #define pgd_page(pgd)  pgd_page(pgd)
->
-> diff --git a/arch/riscv/include/asm/pgtable.h b/arch/riscv/include/asm/pgtable.h
-> index 1d1be9d9419c..5dbd6610729b 100644
-> --- a/arch/riscv/include/asm/pgtable.h
-> +++ b/arch/riscv/include/asm/pgtable.h
-> @@ -261,7 +261,7 @@ static inline pgd_t pfn_pgd(unsigned long pfn, pgprot_t prot)
->
->  static inline unsigned long _pgd_pfn(pgd_t pgd)
->  {
-> -       return pgd_val(pgd) >> _PAGE_PFN_SHIFT;
-> +       return __page_val_to_pfn(pgd_val(pgd));
->  }
->
->  static inline struct page *pmd_page(pmd_t pmd)
-> @@ -590,14 +590,14 @@ static inline pmd_t pmd_mkinvalid(pmd_t pmd)
->         return __pmd(pmd_val(pmd) & ~(_PAGE_PRESENT|_PAGE_PROT_NONE));
->  }
->
-> -#define __pmd_to_phys(pmd)  (pmd_val(pmd) >> _PAGE_PFN_SHIFT << PAGE_SHIFT)
-> +#define __pmd_to_phys(pmd)  (__page_val_to_pfn(pmd_val(pmd)) << PAGE_SHIFT)
->
->  static inline unsigned long pmd_pfn(pmd_t pmd)
->  {
->         return ((__pmd_to_phys(pmd) & PMD_MASK) >> PAGE_SHIFT);
->  }
->
-> -#define __pud_to_phys(pud)  (pud_val(pud) >> _PAGE_PFN_SHIFT << PAGE_SHIFT)
-> +#define __pud_to_phys(pud)  (__page_val_to_pfn(pud_val(pud)) << PAGE_SHIFT)
->
->  static inline unsigned long pud_pfn(pud_t pud)
->  {
-> diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
-> index 1c00695ebee7..9826073fbc67 100644
-> --- a/arch/riscv/kvm/mmu.c
-> +++ b/arch/riscv/kvm/mmu.c
-> @@ -54,7 +54,7 @@ static inline unsigned long gstage_pte_index(gpa_t addr, u32 level)
->
->  static inline unsigned long gstage_pte_page_vaddr(pte_t pte)
->  {
-> -       return (unsigned long)pfn_to_virt(pte_val(pte) >> _PAGE_PFN_SHIFT);
-> +       return (unsigned long)pfn_to_virt(__page_val_to_pfn(pte_val(pte)));
->  }
->
->  static int gstage_page_size_to_level(unsigned long page_size, u32 *out_level)
-> --
-> 2.34.1
->
+> > +     default:
+> > +             break;
+> >       }
+> >
+> > -     return truly_illegal_insn(vcpu, run, insn);
+> > +     return (rc <= 0) ? rc : 1;
+> >  }
+> >
+> >  /**
+> > --
+> > 2.34.1
+> >
+> >
+> > --
+> > kvm-riscv mailing list
+> > kvm-riscv at lists.infradead.org
+> > http://lists.infradead.org/mailman/listinfo/kvm-riscv
 
