@@ -1,11 +1,11 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Fri, 17 Jun 2022 16:56:11 +0000
-Subject: [PATCH v6 18/22] KVM: x86/mmu: Extend
- make_huge_page_split_spte() for the shadow MMU
-In-Reply-To: <20220516232138.1783324-19-dmatlack@google.com>
+Date: Fri, 17 Jun 2022 17:01:30 +0000
+Subject: [PATCH v6 19/22] KVM: x86/mmu: Zap collapsible SPTEs in shadow
+ MMU at all possible levels
+In-Reply-To: <20220516232138.1783324-20-dmatlack@google.com>
 References: <20220516232138.1783324-1-dmatlack@google.com>
- <20220516232138.1783324-19-dmatlack@google.com>
-Message-ID: <YqyyK5C1PaByJur2@google.com>
+ <20220516232138.1783324-20-dmatlack@google.com>
+Message-ID: <Yqyzavjp9eS9p4+m@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -13,20 +13,81 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 On Mon, May 16, 2022, David Matlack wrote:
-> Currently make_huge_page_split_spte() assumes execute permissions can be
-> granted to any 4K SPTE when splitting huge pages. This is true for the
-> TDP MMU but is not necessarily true for the shadow MMU, since KVM may be
-> shadowing a non-executable huge page.
+> Currently KVM only zaps collapsible 4KiB SPTEs in the shadow MMU. This
+> is fine for now since KVM never creates intermediate huge pages during
+> dirty logging. In other words, KVM always replaces 1GiB pages directly
+> with 4KiB pages, so there is no reason to look for collapsible 2MiB
+> pages.
 > 
-> To fix this, pass in the role of the child shadow page where the huge
-> page will be split and derive the execution permission from that.  This
-> is correct because huge pages are always split with direct shadow page
-> and thus the shadow page role contains the correct access permissions.
+> However, this will stop being true once the shadow MMU participates in
+> eager page splitting. During eager page splitting, each 1GiB is first
+> split into 2MiB pages and then those are split into 4KiB pages. The
+> intermediate 2MiB pages may be left behind if an error condition causes
+> eager page splitting to bail early.
 > 
 > No functional change intended.
 > 
+> Reviewed-by: Peter Xu <peterx@redhat.com>
 > Signed-off-by: David Matlack <dmatlack@google.com>
 > ---
+>  arch/x86/kvm/mmu/mmu.c | 21 ++++++++++++++-------
+>  1 file changed, 14 insertions(+), 7 deletions(-)
+> 
+> diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
+> index f83de72feeac..a5d96d452f42 100644
+> --- a/arch/x86/kvm/mmu/mmu.c
+> +++ b/arch/x86/kvm/mmu/mmu.c
+> @@ -6177,18 +6177,25 @@ static bool kvm_mmu_zap_collapsible_spte(struct kvm *kvm,
+>  	return need_tlb_flush;
+>  }
+>  
+> +static void kvm_rmap_zap_collapsible_sptes(struct kvm *kvm,
+> +					   const struct kvm_memory_slot *slot)
+> +{
+> +	/*
+> +	 * Note, use KVM_MAX_HUGEPAGE_LEVEL - 1 since there's no need to zap
+> +	 * pages that are already mapped at the maximum possible level.
+> +	 */
+> +	if (slot_handle_level(kvm, slot, kvm_mmu_zap_collapsible_spte,
+> +			      PG_LEVEL_4K, KVM_MAX_HUGEPAGE_LEVEL - 1,
+> +			      true))
 
-Reviewed-by: Sean Christopherson <seanjc@google.com>
+No need to wrap, "true" fits easily on the previous line.  That said, I don't see
+any point in adding a helper.  It's highly unlike there will be another caller,
+and IMO it's not any more readable since I have to go look at another function
+when reading kvm_mmu_zap_collapsible_sptes().
+
+With some gentle massaging, the comment can squeeze onto two lines even with the
+extra level of indentation.
+
+		/*
+	 	 * Note, use KVM_MAX_HUGEPAGE_LEVEL - 1, there's no need to zap
+		 * pages that are already mapped at the maximum hugepage level.
+		 */
+		if (slot_handle_level(kvm, slot, kvm_mmu_zap_collapsible_spte,
+				      PG_LEVEL_4K, KVM_MAX_HUGEPAGE_LEVEL - 1, true)
+			kvm_arch_flush_remote_tlbs_memslot(kvm, slot);
+
+> +		kvm_arch_flush_remote_tlbs_memslot(kvm, slot);
+> +}
+> +
+>  void kvm_mmu_zap_collapsible_sptes(struct kvm *kvm,
+>  				   const struct kvm_memory_slot *slot)
+>  {
+>  	if (kvm_memslots_have_rmaps(kvm)) {
+>  		write_lock(&kvm->mmu_lock);
+> -		/*
+> -		 * Zap only 4k SPTEs since the legacy MMU only supports dirty
+> -		 * logging at a 4k granularity and never creates collapsible
+> -		 * 2m SPTEs during dirty logging.
+> -		 */
+> -		if (slot_handle_level_4k(kvm, slot, kvm_mmu_zap_collapsible_spte, true))
+> -			kvm_arch_flush_remote_tlbs_memslot(kvm, slot);
+> +		kvm_rmap_zap_collapsible_sptes(kvm, slot);
+>  		write_unlock(&kvm->mmu_lock);
+>  	}
+>  
+> -- 
+> 2.36.0.550.gb090851708-goog
+> 
 
