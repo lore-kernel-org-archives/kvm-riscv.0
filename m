@@ -1,11 +1,11 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Fri, 17 Jun 2022 15:12:04 +0000
-Subject: [PATCH v6 04/22] KVM: x86/mmu: Derive shadow MMU page role from
- parent
-In-Reply-To: <20220516232138.1783324-5-dmatlack@google.com>
+Date: Fri, 17 Jun 2022 15:20:28 +0000
+Subject: [PATCH v6 05/22] KVM: x86/mmu: Always pass 0 for @quadrant when
+ gptes are 8 bytes
+In-Reply-To: <20220516232138.1783324-6-dmatlack@google.com>
 References: <20220516232138.1783324-1-dmatlack@google.com>
- <20220516232138.1783324-5-dmatlack@google.com>
-Message-ID: <YqyZxEfxXLsHGoZ/@google.com>
+ <20220516232138.1783324-6-dmatlack@google.com>
+Message-ID: <YqybvAdDr6JY6Cu0@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -13,41 +13,86 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 On Mon, May 16, 2022, David Matlack wrote:
-> +static struct kvm_mmu_page *kvm_mmu_get_child_sp(struct kvm_vcpu *vcpu,
-> +						 u64 *sptep, gfn_t gfn,
-> +						 bool direct, u32 access)
+> The quadrant is only used when gptes are 4 bytes, but
+> mmu_alloc_{direct,shadow}_roots() pass in a non-zero quadrant for PAE
+> page directories regardless. Make this less confusing by only passing in
+> a non-zero quadrant when it is actually necessary.
+> 
+> Signed-off-by: David Matlack <dmatlack@google.com>
+> ---
 
-Please use "unsigned int" for @access, here and everywhere else, so that KVM is
-consistent in how it refers to access.  @access can actually squeeze into a u8,
-but it's referenced as a "unsigned int" because sp->role.access is an unsigned int.
-For me at least, when I see "u<size" I always assume there is a specific reason
-for using an exact size, e.g. variables/fields that track hardware state.  Whereas
-"int" and "unsigned int" give the hint that the variable is KVM metadata.
+One nit, otherwise
 
-@@ -2201,7 +2201,8 @@ static struct kvm_mmu_page *kvm_mmu_get_shadow_page(struct kvm_vcpu *vcpu,
-        return __kvm_mmu_get_shadow_page(vcpu->kvm, vcpu, &caches, gfn, role);
- }
+Reviewed-by: Sean Christopherson <seanjc@google.com>
 
--static union kvm_mmu_page_role kvm_mmu_child_role(u64 *sptep, bool direct, u32 access)
-+static union kvm_mmu_page_role kvm_mmu_child_role(u64 *sptep, bool direct,
-+                                                 unsigned int access)
- {
-        struct kvm_mmu_page *parent_sp = sptep_to_sp(sptep);
-        union kvm_mmu_page_role role;
-@@ -2242,7 +2243,7 @@ static union kvm_mmu_page_role kvm_mmu_child_role(u64 *sptep, bool direct, u32 a
+>  arch/x86/kvm/mmu/mmu.c | 18 ++++++++++++++----
+>  1 file changed, 14 insertions(+), 4 deletions(-)
+> 
+> diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
+> index 515e0b33144a..8508c4bfddb5 100644
+> --- a/arch/x86/kvm/mmu/mmu.c
+> +++ b/arch/x86/kvm/mmu/mmu.c
+> @@ -3406,9 +3406,10 @@ static hpa_t mmu_alloc_root(struct kvm_vcpu *vcpu, gfn_t gfn, int quadrant,
+>  	struct kvm_mmu_page *sp;
+>  
+>  	role.level = level;
+> +	role.quadrant = quadrant;
+>  
+> -	if (role.has_4_byte_gpte)
+> -		role.quadrant = quadrant;
+> +	WARN_ON_ONCE(quadrant && !role.has_4_byte_gpte);
+> +	WARN_ON_ONCE(role.direct && role.has_4_byte_gpte);
+>  
+>  	sp = kvm_mmu_get_page(vcpu, gfn, role);
+>  	++sp->root_count;
+> @@ -3444,7 +3445,7 @@ static int mmu_alloc_direct_roots(struct kvm_vcpu *vcpu)
+>  		for (i = 0; i < 4; ++i) {
+>  			WARN_ON_ONCE(IS_VALID_PAE_ROOT(mmu->pae_root[i]));
+>  
+> -			root = mmu_alloc_root(vcpu, i << (30 - PAGE_SHIFT), i,
+> +			root = mmu_alloc_root(vcpu, i << (30 - PAGE_SHIFT), 0,
+>  					      PT32_ROOT_LEVEL);
+>  			mmu->pae_root[i] = root | PT_PRESENT_MASK |
+>  					   shadow_me_mask;
+> @@ -3529,6 +3530,7 @@ static int mmu_alloc_shadow_roots(struct kvm_vcpu *vcpu)
+>  	struct kvm_mmu *mmu = vcpu->arch.mmu;
+>  	u64 pdptrs[4], pm_mask;
+>  	gfn_t root_gfn, root_pgd;
+> +	unsigned int quadrant;
+>  	hpa_t root;
+>  	unsigned i;
 
- static struct kvm_mmu_page *kvm_mmu_get_child_sp(struct kvm_vcpu *vcpu,
-                                                 u64 *sptep, gfn_t gfn,
--                                                bool direct, u32 access)
-+                                                bool direct, unsigned int access)
- {
-        union kvm_mmu_page_role role;
+Not really your fault, but this manages to use three different type declarations
+for quadrant.  i is a bare "unsigned", quadrant an "unsigned int" here, and then
+@quadrant in mmu_alloc_root() is an "int".
 
-> +{
-> +	union kvm_mmu_page_role role;
+I suspect the "unsigned i" is originated with the "i << (30 - PAGE_SHIFT)" in
+mmu_alloc_direct_roots(), though even that can't create a negative value.
+
+Given that quadrant is tiny and "int i" is a de facto standard for iterator values,
+my preference would be to opportunisticaly consolidate this to
+
+	int quadrant, i, r;
+
+>  	int r;
+> @@ -3614,7 +3616,15 @@ static int mmu_alloc_shadow_roots(struct kvm_vcpu *vcpu)
+>  			root_gfn = pdptrs[i] >> PAGE_SHIFT;
+>  		}
+>  
+> -		root = mmu_alloc_root(vcpu, root_gfn, i, PT32_ROOT_LEVEL);
+> +		/*
+> +		 * If shadowing 32-bit non-PAE page tables, each PAE page
+> +		 * directory maps one quarter of the guest's non-PAE page
+> +		 * directory. Othwerise each PAE page direct shadows one guest
+> +		 * PAE page directory so that quadrant should be 0.
+> +		 */
+> +		quadrant = (mmu->cpu_role.base.level == PT32_ROOT_LEVEL) ? i : 0;
 > +
-> +	role = kvm_mmu_child_role(sptep, direct, access);
-> +	return kvm_mmu_get_page(vcpu, gfn, role);
-> +}
-> +
+> +		root = mmu_alloc_root(vcpu, root_gfn, quadrant, PT32_ROOT_LEVEL);
+>  		mmu->pae_root[i] = root | pm_mask;
+>  	}
+>  
+> -- 
+> 2.36.0.550.gb090851708-goog
+> 
 
