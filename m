@@ -1,11 +1,10 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Fri, 17 Jun 2022 15:28:15 +0000
-Subject: [PATCH v6 13/22] KVM: x86/mmu: Allow NULL @vcpu in
- kvm_mmu_find_shadow_page()
-In-Reply-To: <20220516232138.1783324-14-dmatlack@google.com>
+Date: Fri, 17 Jun 2022 15:30:44 +0000
+Subject: [PATCH v6 14/22] KVM: x86/mmu: Pass const memslot to rmap_add()
+In-Reply-To: <20220516232138.1783324-15-dmatlack@google.com>
 References: <20220516232138.1783324-1-dmatlack@google.com>
- <20220516232138.1783324-14-dmatlack@google.com>
-Message-ID: <YqydjxjnuaYTIYMt@google.com>
+ <20220516232138.1783324-15-dmatlack@google.com>
+Message-ID: <YqyeJKMcqkO5zynw@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -13,95 +12,21 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 On Mon, May 16, 2022, David Matlack wrote:
-> Allow @vcpu to be NULL in kvm_mmu_find_shadow_page() (and its only
-> caller __kvm_mmu_get_shadow_page()). @vcpu is only required to sync
-> indirect shadow pages, so it's safe to pass in NULL when looking up
-> direct shadow pages.
-> 
-> This will be used for doing eager page splitting, which allocates direct
 
-"hugepage" again, because I need constant reminders :-)
+Please restate the shortlog in the changelog, it doesn't require much more typing
+and means readers don't have to mentally preserve context across "paragraphs".
 
-> shadow pages from the context of a VM ioctl without access to a vCPU
-> pointer.
+  Constify rmap_add()'s @slot parameter, the is just passed on to
+  gfn_to_rmap(), which takes a const memslot.
+
+> rmap_add() only uses the slot to call gfn_to_rmap() which takes a const
+> memslot.
 > 
+> No functional change intended.
+> 
+> Reviewed-by: Ben Gardon <bgardon@google.com>
 > Signed-off-by: David Matlack <dmatlack@google.com>
 > ---
 
-With nits addressed,
-
 Reviewed-by: Sean Christopherson <seanjc@google.com>
-
->  arch/x86/kvm/mmu/mmu.c | 13 +++++++++++++
->  1 file changed, 13 insertions(+)
-> 
-> diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
-> index 4fbc2da47428..acb54d6e0ea5 100644
-> --- a/arch/x86/kvm/mmu/mmu.c
-> +++ b/arch/x86/kvm/mmu/mmu.c
-> @@ -1850,6 +1850,7 @@ static int kvm_sync_page(struct kvm_vcpu *vcpu, struct kvm_mmu_page *sp,
->  
->  	if (ret < 0)
->  		kvm_mmu_prepare_zap_page(vcpu->kvm, sp, invalid_list);
-> +
-
-Unrelated whitespace change leftover from the previous approach.
-
->  	return ret;
->  }
->  
-> @@ -2001,6 +2002,7 @@ static void clear_sp_write_flooding_count(u64 *spte)
->  	__clear_sp_write_flooding_count(sptep_to_sp(spte));
->  }
->  
-> +/* Note, @vcpu may be NULL if @role.direct is true. */
->  static struct kvm_mmu_page *kvm_mmu_find_shadow_page(struct kvm *kvm,
->  						     struct kvm_vcpu *vcpu,
->  						     gfn_t gfn,
-> @@ -2039,6 +2041,16 @@ static struct kvm_mmu_page *kvm_mmu_find_shadow_page(struct kvm *kvm,
->  			goto out;
->  
->  		if (sp->unsync) {
-> +			/*
-> +			 * A vCPU pointer should always be provided when finding
-
-s/should/must, and "be provided" in unnecessarily ambiguous, simply state that
-"@vcpu must be non-NULL".  E.g. if a caller provides a pointer, but that pointer
-happens to be NULL.
-
-> +			 * indirect shadow pages, as that shadow page may
-> +			 * already exist and need to be synced using the vCPU
-> +			 * pointer. Direct shadow pages are never unsync and
-> +			 * thus do not require a vCPU pointer.
-> +			 */
-
-"vCPU pointer" over and over is a bit versbose, and I prefer to refer to vCPUs/VMs
-as objects themselves.  E.g. "XYZ requires a vCPU" versus "XYZ requires a vCPU
-pointer" since it's not the pointer itself that's required, it's all the context
-of the vCPU that is needed.
-
-			/*
-			 * @vcpu must be non-NULL when finding indirect shadow
-			 * pages, as such pages may already exist and need to
-			 * be synced, which requires a vCPU.  Direct pages are
-			 * never unsync and thus do not require a vCPU.
-			 */
-
-> +			if (KVM_BUG_ON(!vcpu, kvm))
-> +				break;
-> +
->  			/*
->  			 * The page is good, but is stale.  kvm_sync_page does
->  			 * get the latest guest state, but (unlike mmu_unsync_children)
-> @@ -2116,6 +2128,7 @@ static struct kvm_mmu_page *kvm_mmu_alloc_shadow_page(struct kvm *kvm,
->  	return sp;
->  }
->  
-> +/* Note, @vcpu may be NULL if @role.direct is true. */
->  static struct kvm_mmu_page *__kvm_mmu_get_shadow_page(struct kvm *kvm,
->  						      struct kvm_vcpu *vcpu,
->  						      struct shadow_page_caches *caches,
-> -- 
-> 2.36.0.550.gb090851708-goog
-> 
 
