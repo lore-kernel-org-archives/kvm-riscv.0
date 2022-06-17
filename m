@@ -1,11 +1,11 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Fri, 17 Jun 2022 15:20:28 +0000
-Subject: [PATCH v6 05/22] KVM: x86/mmu: Always pass 0 for @quadrant when
- gptes are 8 bytes
-In-Reply-To: <20220516232138.1783324-6-dmatlack@google.com>
+Date: Fri, 17 Jun 2022 15:28:15 +0000
+Subject: [PATCH v6 13/22] KVM: x86/mmu: Allow NULL @vcpu in
+ kvm_mmu_find_shadow_page()
+In-Reply-To: <20220516232138.1783324-14-dmatlack@google.com>
 References: <20220516232138.1783324-1-dmatlack@google.com>
- <20220516232138.1783324-6-dmatlack@google.com>
-Message-ID: <YqybvAdDr6JY6Cu0@google.com>
+ <20220516232138.1783324-14-dmatlack@google.com>
+Message-ID: <YqydjxjnuaYTIYMt@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -13,85 +13,94 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 On Mon, May 16, 2022, David Matlack wrote:
-> The quadrant is only used when gptes are 4 bytes, but
-> mmu_alloc_{direct,shadow}_roots() pass in a non-zero quadrant for PAE
-> page directories regardless. Make this less confusing by only passing in
-> a non-zero quadrant when it is actually necessary.
+> Allow @vcpu to be NULL in kvm_mmu_find_shadow_page() (and its only
+> caller __kvm_mmu_get_shadow_page()). @vcpu is only required to sync
+> indirect shadow pages, so it's safe to pass in NULL when looking up
+> direct shadow pages.
+> 
+> This will be used for doing eager page splitting, which allocates direct
+
+"hugepage" again, because I need constant reminders :-)
+
+> shadow pages from the context of a VM ioctl without access to a vCPU
+> pointer.
 > 
 > Signed-off-by: David Matlack <dmatlack@google.com>
 > ---
 
-One nit, otherwise
+With nits addressed,
 
 Reviewed-by: Sean Christopherson <seanjc@google.com>
 
->  arch/x86/kvm/mmu/mmu.c | 18 ++++++++++++++----
->  1 file changed, 14 insertions(+), 4 deletions(-)
+>  arch/x86/kvm/mmu/mmu.c | 13 +++++++++++++
+>  1 file changed, 13 insertions(+)
 > 
 > diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
-> index 515e0b33144a..8508c4bfddb5 100644
+> index 4fbc2da47428..acb54d6e0ea5 100644
 > --- a/arch/x86/kvm/mmu/mmu.c
 > +++ b/arch/x86/kvm/mmu/mmu.c
-> @@ -3406,9 +3406,10 @@ static hpa_t mmu_alloc_root(struct kvm_vcpu *vcpu, gfn_t gfn, int quadrant,
->  	struct kvm_mmu_page *sp;
+> @@ -1850,6 +1850,7 @@ static int kvm_sync_page(struct kvm_vcpu *vcpu, struct kvm_mmu_page *sp,
 >  
->  	role.level = level;
-> +	role.quadrant = quadrant;
->  
-> -	if (role.has_4_byte_gpte)
-> -		role.quadrant = quadrant;
-> +	WARN_ON_ONCE(quadrant && !role.has_4_byte_gpte);
-> +	WARN_ON_ONCE(role.direct && role.has_4_byte_gpte);
->  
->  	sp = kvm_mmu_get_page(vcpu, gfn, role);
->  	++sp->root_count;
-> @@ -3444,7 +3445,7 @@ static int mmu_alloc_direct_roots(struct kvm_vcpu *vcpu)
->  		for (i = 0; i < 4; ++i) {
->  			WARN_ON_ONCE(IS_VALID_PAE_ROOT(mmu->pae_root[i]));
->  
-> -			root = mmu_alloc_root(vcpu, i << (30 - PAGE_SHIFT), i,
-> +			root = mmu_alloc_root(vcpu, i << (30 - PAGE_SHIFT), 0,
->  					      PT32_ROOT_LEVEL);
->  			mmu->pae_root[i] = root | PT_PRESENT_MASK |
->  					   shadow_me_mask;
-> @@ -3529,6 +3530,7 @@ static int mmu_alloc_shadow_roots(struct kvm_vcpu *vcpu)
->  	struct kvm_mmu *mmu = vcpu->arch.mmu;
->  	u64 pdptrs[4], pm_mask;
->  	gfn_t root_gfn, root_pgd;
-> +	unsigned int quadrant;
->  	hpa_t root;
->  	unsigned i;
-
-Not really your fault, but this manages to use three different type declarations
-for quadrant.  i is a bare "unsigned", quadrant an "unsigned int" here, and then
-@quadrant in mmu_alloc_root() is an "int".
-
-I suspect the "unsigned i" is originated with the "i << (30 - PAGE_SHIFT)" in
-mmu_alloc_direct_roots(), though even that can't create a negative value.
-
-Given that quadrant is tiny and "int i" is a de facto standard for iterator values,
-my preference would be to opportunisticaly consolidate this to
-
-	int quadrant, i, r;
-
->  	int r;
-> @@ -3614,7 +3616,15 @@ static int mmu_alloc_shadow_roots(struct kvm_vcpu *vcpu)
->  			root_gfn = pdptrs[i] >> PAGE_SHIFT;
->  		}
->  
-> -		root = mmu_alloc_root(vcpu, root_gfn, i, PT32_ROOT_LEVEL);
-> +		/*
-> +		 * If shadowing 32-bit non-PAE page tables, each PAE page
-> +		 * directory maps one quarter of the guest's non-PAE page
-> +		 * directory. Othwerise each PAE page direct shadows one guest
-> +		 * PAE page directory so that quadrant should be 0.
-> +		 */
-> +		quadrant = (mmu->cpu_role.base.level == PT32_ROOT_LEVEL) ? i : 0;
+>  	if (ret < 0)
+>  		kvm_mmu_prepare_zap_page(vcpu->kvm, sp, invalid_list);
 > +
-> +		root = mmu_alloc_root(vcpu, root_gfn, quadrant, PT32_ROOT_LEVEL);
->  		mmu->pae_root[i] = root | pm_mask;
->  	}
+
+Unrelated whitespace change leftover from the previous approach.
+
+>  	return ret;
+>  }
 >  
+> @@ -2001,6 +2002,7 @@ static void clear_sp_write_flooding_count(u64 *spte)
+>  	__clear_sp_write_flooding_count(sptep_to_sp(spte));
+>  }
+>  
+> +/* Note, @vcpu may be NULL if @role.direct is true. */
+>  static struct kvm_mmu_page *kvm_mmu_find_shadow_page(struct kvm *kvm,
+>  						     struct kvm_vcpu *vcpu,
+>  						     gfn_t gfn,
+> @@ -2039,6 +2041,16 @@ static struct kvm_mmu_page *kvm_mmu_find_shadow_page(struct kvm *kvm,
+>  			goto out;
+>  
+>  		if (sp->unsync) {
+> +			/*
+> +			 * A vCPU pointer should always be provided when finding
+
+s/should/must, and "be provided" in unnecessarily ambiguous, simply state that
+"@vcpu must be non-NULL".  E.g. if a caller provides a pointer, but that pointer
+happens to be NULL.
+
+> +			 * indirect shadow pages, as that shadow page may
+> +			 * already exist and need to be synced using the vCPU
+> +			 * pointer. Direct shadow pages are never unsync and
+> +			 * thus do not require a vCPU pointer.
+> +			 */
+
+"vCPU pointer" over and over is a bit versbose, and I prefer to refer to vCPUs/VMs
+as objects themselves.  E.g. "XYZ requires a vCPU" versus "XYZ requires a vCPU
+pointer" since it's not the pointer itself that's required, it's all the context
+of the vCPU that is needed.
+
+			/*
+			 * @vcpu must be non-NULL when finding indirect shadow
+			 * pages, as such pages may already exist and need to
+			 * be synced, which requires a vCPU.  Direct pages are
+			 * never unsync and thus do not require a vCPU.
+			 */
+
+> +			if (KVM_BUG_ON(!vcpu, kvm))
+> +				break;
+> +
+>  			/*
+>  			 * The page is good, but is stale.  kvm_sync_page does
+>  			 * get the latest guest state, but (unlike mmu_unsync_children)
+> @@ -2116,6 +2128,7 @@ static struct kvm_mmu_page *kvm_mmu_alloc_shadow_page(struct kvm *kvm,
+>  	return sp;
+>  }
+>  
+> +/* Note, @vcpu may be NULL if @role.direct is true. */
+>  static struct kvm_mmu_page *__kvm_mmu_get_shadow_page(struct kvm *kvm,
+>  						      struct kvm_vcpu *vcpu,
+>  						      struct shadow_page_caches *caches,
 > -- 
 > 2.36.0.550.gb090851708-goog
 > 
