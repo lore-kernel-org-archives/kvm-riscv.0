@@ -1,13 +1,13 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Tue, 21 Jun 2022 17:27:45 +0000
-Subject: [PATCH v6 10/22] KVM: x86/mmu: Pass memory caches to allocate
- SPs separately
-In-Reply-To: <CALzav=fVzX+GXCdKRwRGofAgKatX206_kBKagT7R-eYO9RnYkA@mail.gmail.com>
+Date: Tue, 21 Jun 2022 17:59:07 +0000
+Subject: [PATCH v6 19/22] KVM: x86/mmu: Zap collapsible SPTEs in shadow
+ MMU at all possible levels
+In-Reply-To: <CALzav=dG9f2X8GBLjQgR-Lj4yPKX2Adg3C+9_9aC83A7mzmbtw@mail.gmail.com>
 References: <20220516232138.1783324-1-dmatlack@google.com>
- <20220516232138.1783324-11-dmatlack@google.com>
- <YqyXYJsoZGgp7l62@google.com>
- <CALzav=fVzX+GXCdKRwRGofAgKatX206_kBKagT7R-eYO9RnYkA@mail.gmail.com>
-Message-ID: <YrH/kd5g08rvZkTt@google.com>
+ <20220516232138.1783324-20-dmatlack@google.com>
+ <Yqyzavjp9eS9p4+m@google.com>
+ <CALzav=dG9f2X8GBLjQgR-Lj4yPKX2Adg3C+9_9aC83A7mzmbtw@mail.gmail.com>
+Message-ID: <YrIG6/dymlPQGwg1@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -15,35 +15,29 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 On Tue, Jun 21, 2022, David Matlack wrote:
-> On Fri, Jun 17, 2022 at 8:02 AM Sean Christopherson <seanjc@google.com> wrote:
+> On Fri, Jun 17, 2022 at 10:01 AM Sean Christopherson <seanjc@google.com> wrote:
 > >
 > > On Mon, May 16, 2022, David Matlack wrote:
-> > > Refactor kvm_mmu_alloc_shadow_page() to receive the caches from which it
-> > > will allocate the various pieces of memory for shadow pages as a
-> > > parameter, rather than deriving them from the vcpu pointer. This will be
-> > > useful in a future commit where shadow pages are allocated during VM
-> > > ioctls for eager page splitting, and thus will use a different set of
-> > > caches.
-> > >
-> > > Preemptively pull the caches out all the way to
-> > > kvm_mmu_get_shadow_page() since eager page splitting will not be calling
+> > > +static void kvm_rmap_zap_collapsible_sptes(struct kvm *kvm,
+> > > +                                        const struct kvm_memory_slot *slot)
+> > > +{
+> > > +     /*
+> > > +      * Note, use KVM_MAX_HUGEPAGE_LEVEL - 1 since there's no need to zap
+> > > +      * pages that are already mapped at the maximum possible level.
+> > > +      */
+> > > +     if (slot_handle_level(kvm, slot, kvm_mmu_zap_collapsible_spte,
+> > > +                           PG_LEVEL_4K, KVM_MAX_HUGEPAGE_LEVEL - 1,
+> > > +                           true))
 > >
-> > Uber nit, "eager hugepage splitting" to provide a mental cue/reminder for why
-> > those pages are direct.
+> > No need to wrap, "true" fits easily on the previous line.  That said, I don't see
+> > any point in adding a helper.  It's highly unlike there will be another caller,
+> > and IMO it's not any more readable since I have to go look at another function
+> > when reading kvm_mmu_zap_collapsible_sptes().
 > 
-> I think it may be too late to move away from the term "eager page
-> splitting" (it is already in commit messages and the module param is
-> called "eager_page_split"). Using a slightly different name here might
-> produce more confusion, or at least cause readers to do a double-take.
+> I could see an argument for readability either way. Putting it in a
+> helper function abstracts away the details, which would aid
+> readability if the reader does not care about the implementation
+> details of the rmap case.
 
-True.  I'm totally fine omitting "huge".
-
-> But naming aside, I don't follow what you mean here. i.e. What does
-> the fact that page splitting uses direct shadow pages have to do with
-> this patch?
-
-I have no idea.  I suspect I was looking at a different patch when replying to
-this one.  I distinctly remember pausing for a few seconds to recall the direct
-aspect, but looking back at this patch I don't see what I could have possibly be
-wondering about.
+I'm ok either way, dealer's choice.
 
