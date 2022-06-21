@@ -1,32 +1,49 @@
-From: Sean Christopherson <seanjc@google.com>
-Date: Tue, 21 Jun 2022 14:54:18 +0000
-Subject: [PATCH 0/3] KVM: selftests: Consolidate ucall code
-In-Reply-To: <19bba1a0-8fb7-2aae-a65a-1111e29b92d3@redhat.com>
-References: <20220618001618.1840806-1-seanjc@google.com>
- <19bba1a0-8fb7-2aae-a65a-1111e29b92d3@redhat.com>
-Message-ID: <YrHbml1HAfDtvMfn@google.com>
+From: David Matlack <dmatlack@google.com>
+Date: Tue, 21 Jun 2022 10:06:50 -0700
+Subject: [PATCH v6 10/22] KVM: x86/mmu: Pass memory caches to allocate SPs separately
+In-Reply-To: <YqyXYJsoZGgp7l62@google.com>
+References: <20220516232138.1783324-1-dmatlack@google.com> <20220516232138.1783324-11-dmatlack@google.com>
+ <YqyXYJsoZGgp7l62@google.com>
+Message-ID: <CALzav=fVzX+GXCdKRwRGofAgKatX206_kBKagT7R-eYO9RnYkA@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Jun 20, 2022, Paolo Bonzini wrote:
-> On 6/18/22 02:16, Sean Christopherson wrote:
-> > Consolidate the code for making and getting ucalls.  All architectures pass
-> > the ucall struct via memory, so filling and copying the struct is 100%
-> > generic.  The only per-arch code is sending and receiving the address of
-> > said struct.
-> > 
-> > Tested on x86 and arm, compile tested on s390 and RISC-V.
-> 
-> I'm not sure about doing this yet.  The SEV tests added multiple
-> implementations of the ucalls in one architecture.  I have rebased those
-> recently (not the SEV part) to get more familiar with the new kvm_vcpu API
-> for selftests, and was going to look at your old review next...
+On Fri, Jun 17, 2022 at 8:02 AM Sean Christopherson <seanjc@google.com> wrote:
+>
+> On Mon, May 16, 2022, David Matlack wrote:
+> > Refactor kvm_mmu_alloc_shadow_page() to receive the caches from which it
+> > will allocate the various pieces of memory for shadow pages as a
+> > parameter, rather than deriving them from the vcpu pointer. This will be
+> > useful in a future commit where shadow pages are allocated during VM
+> > ioctls for eager page splitting, and thus will use a different set of
+> > caches.
+> >
+> > Preemptively pull the caches out all the way to
+> > kvm_mmu_get_shadow_page() since eager page splitting will not be calling
+>
+> Uber nit, "eager hugepage splitting" to provide a mental cue/reminder for why
+> those pages are direct.
 
-I had forgotten about that code.  My idea of a per-VM list[*] would fit nicely on
-top, though maybe drop the last patch from this series.
+I think it may be too late to move away from the term "eager page
+splitting" (it is already in commit messages and the module param is
+called "eager_page_split"). Using a slightly different name here might
+produce more confusion, or at least cause readers to do a double-take.
 
-[*] https://lore.kernel.org/all/Yc4gcJdhxthBKUUd at google.com
+But naming aside, I don't follow what you mean here. i.e. What does
+the fact that page splitting uses direct shadow pages have to do with
+this patch?
+
+
+>
+> > kvm_mmu_alloc_shadow_page() directly.
+> >
+> > No functional change intended.
+> >
+> > Signed-off-by: David Matlack <dmatlack@google.com>
+> > ---
+>
+> Reviewed-by: Sean Christopherson <seanjc@google.com>
 
