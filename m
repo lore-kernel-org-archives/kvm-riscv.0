@@ -1,9 +1,9 @@
 From: Paolo Bonzini <pbonzini@redhat.com>
-Date: Wed, 22 Jun 2022 15:27:06 -0400
-Subject: [PATCH v7 19/23] KVM: x86/mmu: Zap collapsible SPTEs in shadow MMU at all possible levels
+Date: Wed, 22 Jun 2022 15:26:59 -0400
+Subject: [PATCH v7 12/23] KVM: x86/mmu: Pass kvm pointer separately from vcpu to kvm_mmu_find_shadow_page()
 In-Reply-To: <20220622192710.2547152-1-pbonzini@redhat.com>
 References: <20220622192710.2547152-1-pbonzini@redhat.com>
-Message-ID: <20220622192710.2547152-20-pbonzini@redhat.com>
+Message-ID: <20220622192710.2547152-13-pbonzini@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -12,65 +12,117 @@ Content-Transfer-Encoding: 7bit
 
 From: David Matlack <dmatlack@google.com>
 
-Currently KVM only zaps collapsible 4KiB SPTEs in the shadow MMU. This
-is fine for now since KVM never creates intermediate huge pages during
-dirty logging. In other words, KVM always replaces 1GiB pages directly
-with 4KiB pages, so there is no reason to look for collapsible 2MiB
-pages.
-
-However, this will stop being true once the shadow MMU participates in
-eager page splitting. During eager page splitting, each 1GiB is first
-split into 2MiB pages and then those are split into 4KiB pages. The
-intermediate 2MiB pages may be left behind if an error condition causes
-eager page splitting to bail early.
+Get the kvm pointer from the caller, rather than deriving it from
+vcpu->kvm, and plumb the kvm pointer all the way from
+kvm_mmu_get_shadow_page(). With this change in place, the vcpu pointer
+is only needed to sync indirect shadow pages. In other words,
+__kvm_mmu_get_shadow_page() can now be used to get *direct* shadow pages
+without a vcpu pointer. This enables eager page splitting, which needs
+to allocate direct shadow pages during VM ioctls.
 
 No functional change intended.
 
-Reviewed-by: Peter Xu <peterx@redhat.com>
 Signed-off-by: David Matlack <dmatlack@google.com>
-Message-Id: <20220516232138.1783324-20-dmatlack@google.com>
+Message-Id: <20220516232138.1783324-13-dmatlack@google.com>
 Signed-off-by: Paolo Bonzini <pbonzini@redhat.com>
 ---
- arch/x86/kvm/mmu/mmu.c | 21 ++++++++++++++-------
- 1 file changed, 14 insertions(+), 7 deletions(-)
+ arch/x86/kvm/mmu/mmu.c | 28 +++++++++++++++-------------
+ 1 file changed, 15 insertions(+), 13 deletions(-)
 
 diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
-index 13a059ad5dc7..36bc49f08d60 100644
+index c5a88e8d1b53..88b3f3c2c8b1 100644
 --- a/arch/x86/kvm/mmu/mmu.c
 +++ b/arch/x86/kvm/mmu/mmu.c
-@@ -6154,18 +6154,25 @@ static bool kvm_mmu_zap_collapsible_spte(struct kvm *kvm,
- 	return need_tlb_flush;
+@@ -1975,7 +1975,8 @@ static void clear_sp_write_flooding_count(u64 *spte)
+ 	__clear_sp_write_flooding_count(sptep_to_sp(spte));
  }
  
-+static void kvm_rmap_zap_collapsible_sptes(struct kvm *kvm,
-+					   const struct kvm_memory_slot *slot)
-+{
-+	/*
-+	 * Note, use KVM_MAX_HUGEPAGE_LEVEL - 1 since there's no need to zap
-+	 * pages that are already mapped at the maximum possible level.
-+	 */
-+	if (slot_handle_level(kvm, slot, kvm_mmu_zap_collapsible_spte,
-+			      PG_LEVEL_4K, KVM_MAX_HUGEPAGE_LEVEL - 1,
-+			      true))
-+		kvm_arch_flush_remote_tlbs_memslot(kvm, slot);
-+}
-+
- void kvm_mmu_zap_collapsible_sptes(struct kvm *kvm,
- 				   const struct kvm_memory_slot *slot)
- {
- 	if (kvm_memslots_have_rmaps(kvm)) {
- 		write_lock(&kvm->mmu_lock);
--		/*
--		 * Zap only 4k SPTEs since the legacy MMU only supports dirty
--		 * logging at a 4k granularity and never creates collapsible
--		 * 2m SPTEs during dirty logging.
--		 */
--		if (slot_handle_level_4k(kvm, slot, kvm_mmu_zap_collapsible_spte, true))
--			kvm_arch_flush_remote_tlbs_memslot(kvm, slot);
-+		kvm_rmap_zap_collapsible_sptes(kvm, slot);
- 		write_unlock(&kvm->mmu_lock);
+-static struct kvm_mmu_page *kvm_mmu_find_shadow_page(struct kvm_vcpu *vcpu,
++static struct kvm_mmu_page *kvm_mmu_find_shadow_page(struct kvm *kvm,
++						     struct kvm_vcpu *vcpu,
+ 						     gfn_t gfn,
+ 						     struct hlist_head *sp_list,
+ 						     union kvm_mmu_page_role role)
+@@ -1985,7 +1986,7 @@ static struct kvm_mmu_page *kvm_mmu_find_shadow_page(struct kvm_vcpu *vcpu,
+ 	int collisions = 0;
+ 	LIST_HEAD(invalid_list);
+ 
+-	for_each_valid_sp(vcpu->kvm, sp, sp_list) {
++	for_each_valid_sp(kvm, sp, sp_list) {
+ 		if (sp->gfn != gfn) {
+ 			collisions++;
+ 			continue;
+@@ -2002,7 +2003,7 @@ static struct kvm_mmu_page *kvm_mmu_find_shadow_page(struct kvm_vcpu *vcpu,
+ 			 * upper-level page will be write-protected.
+ 			 */
+ 			if (role.level > PG_LEVEL_4K && sp->unsync)
+-				kvm_mmu_prepare_zap_page(vcpu->kvm, sp,
++				kvm_mmu_prepare_zap_page(kvm, sp,
+ 							 &invalid_list);
+ 			continue;
+ 		}
+@@ -2030,7 +2031,7 @@ static struct kvm_mmu_page *kvm_mmu_find_shadow_page(struct kvm_vcpu *vcpu,
+ 
+ 			WARN_ON(!list_empty(&invalid_list));
+ 			if (ret > 0)
+-				kvm_flush_remote_tlbs(vcpu->kvm);
++				kvm_flush_remote_tlbs(kvm);
+ 		}
+ 
+ 		__clear_sp_write_flooding_count(sp);
+@@ -2039,13 +2040,13 @@ static struct kvm_mmu_page *kvm_mmu_find_shadow_page(struct kvm_vcpu *vcpu,
  	}
  
+ 	sp = NULL;
+-	++vcpu->kvm->stat.mmu_cache_miss;
++	++kvm->stat.mmu_cache_miss;
+ 
+ out:
+-	kvm_mmu_commit_zap_page(vcpu->kvm, &invalid_list);
++	kvm_mmu_commit_zap_page(kvm, &invalid_list);
+ 
+-	if (collisions > vcpu->kvm->stat.max_mmu_page_hash_collisions)
+-		vcpu->kvm->stat.max_mmu_page_hash_collisions = collisions;
++	if (collisions > kvm->stat.max_mmu_page_hash_collisions)
++		kvm->stat.max_mmu_page_hash_collisions = collisions;
+ 	return sp;
+ }
+ 
+@@ -2089,7 +2090,8 @@ static struct kvm_mmu_page *kvm_mmu_alloc_shadow_page(struct kvm *kvm,
+ 	return sp;
+ }
+ 
+-static struct kvm_mmu_page *__kvm_mmu_get_shadow_page(struct kvm_vcpu *vcpu,
++static struct kvm_mmu_page *__kvm_mmu_get_shadow_page(struct kvm *kvm,
++						      struct kvm_vcpu *vcpu,
+ 						      struct shadow_page_caches *caches,
+ 						      gfn_t gfn,
+ 						      union kvm_mmu_page_role role)
+@@ -2098,12 +2100,12 @@ static struct kvm_mmu_page *__kvm_mmu_get_shadow_page(struct kvm_vcpu *vcpu,
+ 	struct kvm_mmu_page *sp;
+ 	bool created = false;
+ 
+-	sp_list = &vcpu->kvm->arch.mmu_page_hash[kvm_page_table_hashfn(gfn)];
++	sp_list = &kvm->arch.mmu_page_hash[kvm_page_table_hashfn(gfn)];
+ 
+-	sp = kvm_mmu_find_shadow_page(vcpu, gfn, sp_list, role);
++	sp = kvm_mmu_find_shadow_page(kvm, vcpu, gfn, sp_list, role);
+ 	if (!sp) {
+ 		created = true;
+-		sp = kvm_mmu_alloc_shadow_page(vcpu->kvm, caches, gfn, sp_list, role);
++		sp = kvm_mmu_alloc_shadow_page(kvm, caches, gfn, sp_list, role);
+ 	}
+ 
+ 	trace_kvm_mmu_get_page(sp, created);
+@@ -2120,7 +2122,7 @@ static struct kvm_mmu_page *kvm_mmu_get_shadow_page(struct kvm_vcpu *vcpu,
+ 		.gfn_array_cache = &vcpu->arch.mmu_gfn_array_cache,
+ 	};
+ 
+-	return __kvm_mmu_get_shadow_page(vcpu, &caches, gfn, role);
++	return __kvm_mmu_get_shadow_page(vcpu->kvm, vcpu, &caches, gfn, role);
+ }
+ 
+ static union kvm_mmu_page_role kvm_mmu_child_role(u64 *sptep, bool direct, unsigned int access)
 -- 
 2.31.1
 
