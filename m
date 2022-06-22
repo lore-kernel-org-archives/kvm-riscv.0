@@ -1,135 +1,187 @@
 From: Paolo Bonzini <pbonzini@redhat.com>
-Date: Wed, 22 Jun 2022 16:26:32 +0200
-Subject: [PATCH v6 13/22] KVM: x86/mmu: Allow NULL @vcpu in
- kvm_mmu_find_shadow_page()
-In-Reply-To: <YqydjxjnuaYTIYMt@google.com>
+Date: Wed, 22 Jun 2022 18:13:13 +0200
+Subject: [PATCH v6 20/22] KVM: x86/mmu: Refactor drop_large_spte()
+In-Reply-To: <Yqy1v59ZDJ7EkCix@google.com>
 References: <20220516232138.1783324-1-dmatlack@google.com>
- <20220516232138.1783324-14-dmatlack@google.com> <YqydjxjnuaYTIYMt@google.com>
-Message-ID: <75f7f353-3cb1-8d0f-1148-8a916bf575a3@redhat.com>
+ <20220516232138.1783324-21-dmatlack@google.com> <Yqy1v59ZDJ7EkCix@google.com>
+Message-ID: <4665c87b-4983-7e15-9262-290d2969b10f@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 6/17/22 17:28, Sean Christopherson wrote:
-> On Mon, May 16, 2022, David Matlack wrote:
->> Allow @vcpu to be NULL in kvm_mmu_find_shadow_page() (and its only
->> caller __kvm_mmu_get_shadow_page()). @vcpu is only required to sync
->> indirect shadow pages, so it's safe to pass in NULL when looking up
->> direct shadow pages.
->>
->> This will be used for doing eager page splitting, which allocates direct
+On 6/17/22 19:11, Sean Christopherson wrote:
+> since the shortlog is already
+> a somewhat vague "do a refactor", I vote to opportunistically:
 > 
-> "hugepage" again, because I need constant reminders :-)
+>    - rename drop_large_spte() to drop_spte_if_huge()
+>    - rename __drop_large_spte() to drop_huge_spte()
+>    - move "if (!is_large_pte(*sptep))" to drop_spte_if_huge() since the split path
+>      should never pass in a non-huge SPTE.
 > 
->> shadow pages from the context of a VM ioctl without access to a vCPU
->> pointer.
->>
->> Signed-off-by: David Matlack <dmatlack@google.com>
->> ---
-> 
-> With nits addressed,
-> 
-> Reviewed-by: Sean Christopherson <seanjc@google.com>
-> 
->>   arch/x86/kvm/mmu/mmu.c | 13 +++++++++++++
->>   1 file changed, 13 insertions(+)
->>
->> diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
->> index 4fbc2da47428..acb54d6e0ea5 100644
->> --- a/arch/x86/kvm/mmu/mmu.c
->> +++ b/arch/x86/kvm/mmu/mmu.c
->> @@ -1850,6 +1850,7 @@ static int kvm_sync_page(struct kvm_vcpu *vcpu, struct kvm_mmu_page *sp,
->>   
->>   	if (ret < 0)
->>   		kvm_mmu_prepare_zap_page(vcpu->kvm, sp, invalid_list);
->> +
-> 
-> Unrelated whitespace change leftover from the previous approach.
-> 
->>   	return ret;
->>   }
->>   
->> @@ -2001,6 +2002,7 @@ static void clear_sp_write_flooding_count(u64 *spte)
->>   	__clear_sp_write_flooding_count(sptep_to_sp(spte));
->>   }
->>   
->> +/* Note, @vcpu may be NULL if @role.direct is true. */
->>   static struct kvm_mmu_page *kvm_mmu_find_shadow_page(struct kvm *kvm,
->>   						     struct kvm_vcpu *vcpu,
->>   						     gfn_t gfn,
->> @@ -2039,6 +2041,16 @@ static struct kvm_mmu_page *kvm_mmu_find_shadow_page(struct kvm *kvm,
->>   			goto out;
->>   
->>   		if (sp->unsync) {
->> +			/*
->> +			 * A vCPU pointer should always be provided when finding
-> 
-> s/should/must, and "be provided" in unnecessarily ambiguous, simply state that
-> "@vcpu must be non-NULL".  E.g. if a caller provides a pointer, but that pointer
-> happens to be NULL.
-> 
->> +			 * indirect shadow pages, as that shadow page may
->> +			 * already exist and need to be synced using the vCPU
->> +			 * pointer. Direct shadow pages are never unsync and
->> +			 * thus do not require a vCPU pointer.
->> +			 */
-> 
-> "vCPU pointer" over and over is a bit versbose, and I prefer to refer to vCPUs/VMs
-> as objects themselves.  E.g. "XYZ requires a vCPU" versus "XYZ requires a vCPU
-> pointer" since it's not the pointer itself that's required, it's all the context
-> of the vCPU that is needed.
-> 
-> 			/*
-> 			 * @vcpu must be non-NULL when finding indirect shadow
-> 			 * pages, as such pages may already exist and need to
-> 			 * be synced, which requires a vCPU.  Direct pages are
-> 			 * never unsync and thus do not require a vCPU.
-> 			 */
+> That last point will also clean up an oddity with with "flush" parameter; given
+> the command-like name of "flush", it's a bit weird that __drop_large_spte() doesn't
+> flush when the SPTE is large.
 
-My own take:
+Even better, drop_large_spte() is always called right before 
+kvm_mmu_get_child_sp(), so:
+
+ From 86a9490972a1e959a4df114678719494b5475720 Mon Sep 17 00:00:00 2001
+From: Paolo Bonzini <pbonzini@redhat.com>
+Date: Wed, 22 Jun 2022 12:11:44 -0400
+Subject: [PATCH] KVM: MMU: pull drop_large_spte into kvm_mmu_get_child_sp
+
+Before allocating a child shadow page table, all callers need to
+check whether the parent already points to a huge page and, if so,
+drop it.  This is done by drop_large_spte(), but it can be moved
+to kvm_mmu_get_child_sp().
+
+To ensure that the shadow page is not linked twice if it was
+present, do _not_ opportunistically make kvm_mmu_get_child_sp()
+idempotent: instead, return an error value if the shadow page
+already existed.  This is a bit more verbose, but clearer than
+NULL.
+
+Now that the drop_large_spte() name is not taken anymore,
+remove the two underscores in front of __drop_large_spte().
+
+Signed-off-by: Paolo Bonzini <pbonzini@redhat.com>
 
 diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
-index d7987420bb26..a7748c5a2385 100644
+index 36bc49f08d60..7f52870ee062 100644
 --- a/arch/x86/kvm/mmu/mmu.c
 +++ b/arch/x86/kvm/mmu/mmu.c
-@@ -1975,7 +1975,12 @@ static void clear_sp_write_flooding_count(u64 *spte)
-  	__clear_sp_write_flooding_count(sptep_to_sp(spte));
+@@ -1135,26 +1135,16 @@ static void drop_spte(struct kvm *kvm, u64 *sptep)
+  		rmap_remove(kvm, sptep);
   }
-  
--/* Note, @vcpu may be NULL if @role.direct is true. */
-+/*
-+ * The vCPU is required when finding indirect shadow pages; the shadow
-+ * page may already exist and syncing it needs the vCPU pointer in
-+ * order to read guest page tables.  Direct shadow pages are never
-+ * unsync, thus @vcpu can be NULL if @role.direct is true.
-+ */
-  static struct kvm_mmu_page *kvm_mmu_find_shadow_page(struct kvm *kvm,
-  						     struct kvm_vcpu *vcpu,
-  						     gfn_t gfn,
-@@ -2014,13 +2019,6 @@ static struct kvm_mmu_page *kvm_mmu_find_shadow_page(struct kvm *kvm,
-  			goto out;
-  
-  		if (sp->unsync) {
--			/*
--			 * The vCPU pointer is required when finding indirect
--			 * shadow pages, as that shadow page may already exist
--			 * exist and need to be synced using the vCPU pointer.
--			 * Direct shadow pages are never unsync and thus do not
--			 * require a vCPU pointer.
--			 */
-  			if (KVM_BUG_ON(!vcpu, kvm))
-  				break;
-  
-@@ -2101,7 +2099,7 @@ static struct kvm_mmu_page *kvm_mmu_alloc_shadow_page(struct kvm *kvm,
-  	return sp;
-  }
-  
--/* Note, @vcpu may be NULL if @role.direct is true. */
-+/* Note, @vcpu may be NULL if @role.direct is true; see kvm_mmu_find_shadow_page. */
-  static struct kvm_mmu_page *__kvm_mmu_get_shadow_page(struct kvm *kvm,
-  						      struct kvm_vcpu *vcpu,
-  						      struct shadow_page_caches *caches,
 
+-
+-static bool __drop_large_spte(struct kvm *kvm, u64 *sptep)
++static void drop_large_spte(struct kvm *kvm, u64 *sptep)
+  {
+-	if (is_large_pte(*sptep)) {
+-		WARN_ON(sptep_to_sp(sptep)->role.level == PG_LEVEL_4K);
+-		drop_spte(kvm, sptep);
+-		return true;
+-	}
+-
+-	return false;
+-}
++	struct kvm_mmu_page *sp;
+
+-static void drop_large_spte(struct kvm_vcpu *vcpu, u64 *sptep)
+-{
+-	if (__drop_large_spte(vcpu->kvm, sptep)) {
+-		struct kvm_mmu_page *sp = sptep_to_sp(sptep);
++	sp = sptep_to_sp(sptep);
++	WARN_ON(sp->role.level == PG_LEVEL_4K);
+
+-		kvm_flush_remote_tlbs_with_address(vcpu->kvm, sp->gfn,
++	drop_spte(kvm, sptep);
++	kvm_flush_remote_tlbs_with_address(kvm, sp->gfn,
+  			KVM_PAGES_PER_HPAGE(sp->role.level));
+-	}
+  }
+
+  /*
+@@ -2221,6 +2211,13 @@ static struct kvm_mmu_page 
+*kvm_mmu_get_child_sp(struct kvm_vcpu *vcpu,
+  {
+  	union kvm_mmu_page_role role;
+
++	if (is_shadow_present_pte(*sptep)) {
++		if (!is_large_pte(*sptep))
++			return ERR_PTR(-EEXIST);
++
++		drop_large_spte(vcpu->kvm, sptep, true);
++	}
++
+  	role = kvm_mmu_child_role(sptep, direct, access);
+  	return kvm_mmu_get_shadow_page(vcpu, gfn, role);
+  }
+@@ -3080,11 +3077,9 @@ static int __direct_map(struct kvm_vcpu *vcpu, 
+struct kvm_page_fault *fault)
+  		if (it.level == fault->goal_level)
+  			break;
+
+-		drop_large_spte(vcpu, it.sptep);
+-		if (is_shadow_present_pte(*it.sptep))
+-			continue;
+-
+  		sp = kvm_mmu_get_child_sp(vcpu, it.sptep, base_gfn, true, ACC_ALL);
++		if (sp == ERR_PTR(-EEXIST))
++			continue;
+
+  		link_shadow_page(vcpu, it.sptep, sp);
+  		if (fault->is_tdp && fault->huge_page_disallowed &&
+diff --git a/arch/x86/kvm/mmu/paging_tmpl.h b/arch/x86/kvm/mmu/paging_tmpl.h
+index 24f292f3f93f..2448fa8d8438 100644
+--- a/arch/x86/kvm/mmu/paging_tmpl.h
++++ b/arch/x86/kvm/mmu/paging_tmpl.h
+@@ -648,15 +648,13 @@ static int FNAME(fetch)(struct kvm_vcpu *vcpu, 
+struct kvm_page_fault *fault,
+  		gfn_t table_gfn;
+
+  		clear_sp_write_flooding_count(it.sptep);
+-		drop_large_spte(vcpu, it.sptep);
+
+-		sp = NULL;
+-		if (!is_shadow_present_pte(*it.sptep)) {
+-			table_gfn = gw->table_gfn[it.level - 2];
+-			access = gw->pt_access[it.level - 2];
+-			sp = kvm_mmu_get_child_sp(vcpu, it.sptep, table_gfn,
+-						  false, access);
++		table_gfn = gw->table_gfn[it.level - 2];
++		access = gw->pt_access[it.level - 2];
++		sp = kvm_mmu_get_child_sp(vcpu, it.sptep, table_gfn,
++					  false, access);
+
++		if (sp != ERR_PTR(-EEXIST)) {
+  			/*
+  			 * We must synchronize the pagetable before linking it
+  			 * because the guest doesn't need to flush tlb when
+@@ -685,7 +683,7 @@ static int FNAME(fetch)(struct kvm_vcpu *vcpu, 
+struct kvm_page_fault *fault,
+  		if (FNAME(gpte_changed)(vcpu, gw, it.level - 1))
+  			goto out_gpte_changed;
+
+-		if (sp)
++		if (sp != ERR_PTR(-EEXIST))
+  			link_shadow_page(vcpu, it.sptep, sp);
+  	}
+
+@@ -709,16 +707,15 @@ static int FNAME(fetch)(struct kvm_vcpu *vcpu, 
+struct kvm_page_fault *fault,
+
+  		validate_direct_spte(vcpu, it.sptep, direct_access);
+
+-		drop_large_spte(vcpu, it.sptep);
++		sp = kvm_mmu_get_child_sp(vcpu, it.sptep, base_gfn,
++					  true, direct_access);
++		if (sp == ERR_PTR(-EEXIST))
++			continue;
+
+-		if (!is_shadow_present_pte(*it.sptep)) {
+-			sp = kvm_mmu_get_child_sp(vcpu, it.sptep, base_gfn,
+-						  true, direct_access);
+-			link_shadow_page(vcpu, it.sptep, sp);
+-			if (fault->huge_page_disallowed &&
+-			    fault->req_level >= it.level)
+-				account_huge_nx_page(vcpu->kvm, sp);
+-		}
++		link_shadow_page(vcpu, it.sptep, sp);
++		if (fault->huge_page_disallowed &&
++		    fault->req_level >= it.level)
++			account_huge_nx_page(vcpu->kvm, sp);
+  	}
+
+  	if (WARN_ON_ONCE(it.level != fault->goal_level))
+
+with the obvious patch on top to add the flush argument.
+
+The ERR_PTR(-EEXIST) is a bit heavy, but at least conveys what's going 
+on.  Thoughts?
+
+Paolo
 
