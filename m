@@ -1,9 +1,9 @@
 From: Paolo Bonzini <pbonzini@redhat.com>
-Date: Wed, 22 Jun 2022 15:27:00 -0400
-Subject: [PATCH v7 13/23] KVM: x86/mmu: Allow NULL @vcpu in kvm_mmu_find_shadow_page()
+Date: Wed, 22 Jun 2022 15:27:02 -0400
+Subject: [PATCH v7 15/23] KVM: x86/mmu: Decouple rmap_add() and link_shadow_page() from kvm_vcpu
 In-Reply-To: <20220622192710.2547152-1-pbonzini@redhat.com>
 References: <20220622192710.2547152-1-pbonzini@redhat.com>
-Message-ID: <20220622192710.2547152-14-pbonzini@redhat.com>
+Message-ID: <20220622192710.2547152-16-pbonzini@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -12,57 +12,151 @@ Content-Transfer-Encoding: 7bit
 
 From: David Matlack <dmatlack@google.com>
 
-Allow @vcpu to be NULL in kvm_mmu_find_shadow_page() (and its only
-caller __kvm_mmu_get_shadow_page()). @vcpu is only required to sync
-indirect shadow pages, so it's safe to pass in NULL when looking up
-direct shadow pages.
+Allow adding new entries to the rmap and linking shadow pages without a
+struct kvm_vcpu pointer by moving the implementation of rmap_add() and
+link_shadow_page() into inner helper functions.
 
-This will be used for doing eager page splitting, which allocates direct
-shadow pages from the context of a VM ioctl without access to a vCPU
-pointer.
+No functional change intended.
 
+Reviewed-by: Ben Gardon <bgardon@google.com>
+Reviewed-by: Peter Xu <peterx@redhat.com>
 Signed-off-by: David Matlack <dmatlack@google.com>
-Message-Id: <20220516232138.1783324-14-dmatlack@google.com>
+Message-Id: <20220516232138.1783324-16-dmatlack@google.com>
 Signed-off-by: Paolo Bonzini <pbonzini@redhat.com>
 ---
- arch/x86/kvm/mmu/mmu.c | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+ arch/x86/kvm/mmu/mmu.c | 47 ++++++++++++++++++++++++++----------------
+ 1 file changed, 29 insertions(+), 18 deletions(-)
 
 diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
-index 88b3f3c2c8b1..a7748c5a2385 100644
+index 45a4e85c0b2c..a8cdbe2958d9 100644
 --- a/arch/x86/kvm/mmu/mmu.c
 +++ b/arch/x86/kvm/mmu/mmu.c
-@@ -1975,6 +1975,12 @@ static void clear_sp_write_flooding_count(u64 *spte)
- 	__clear_sp_write_flooding_count(sptep_to_sp(spte));
+@@ -673,11 +673,6 @@ static void mmu_free_memory_caches(struct kvm_vcpu *vcpu)
+ 	kvm_mmu_free_memory_cache(&vcpu->arch.mmu_page_header_cache);
  }
  
-+/*
-+ * The vCPU is required when finding indirect shadow pages; the shadow
-+ * page may already exist and syncing it needs the vCPU pointer in
-+ * order to read guest page tables.  Direct shadow pages are never
-+ * unsync, thus @vcpu can be NULL if @role.direct is true.
-+ */
- static struct kvm_mmu_page *kvm_mmu_find_shadow_page(struct kvm *kvm,
- 						     struct kvm_vcpu *vcpu,
- 						     gfn_t gfn,
-@@ -2013,6 +2019,9 @@ static struct kvm_mmu_page *kvm_mmu_find_shadow_page(struct kvm *kvm,
- 			goto out;
+-static struct pte_list_desc *mmu_alloc_pte_list_desc(struct kvm_vcpu *vcpu)
+-{
+-	return kvm_mmu_memory_cache_alloc(&vcpu->arch.mmu_pte_list_desc_cache);
+-}
+-
+ static void mmu_free_pte_list_desc(struct pte_list_desc *pte_list_desc)
+ {
+ 	kmem_cache_free(pte_list_desc_cache, pte_list_desc);
+@@ -832,7 +827,7 @@ gfn_to_memslot_dirty_bitmap(struct kvm_vcpu *vcpu, gfn_t gfn,
+ /*
+  * Returns the number of pointers in the rmap chain, not counting the new one.
+  */
+-static int pte_list_add(struct kvm_vcpu *vcpu, u64 *spte,
++static int pte_list_add(struct kvm_mmu_memory_cache *cache, u64 *spte,
+ 			struct kvm_rmap_head *rmap_head)
+ {
+ 	struct pte_list_desc *desc;
+@@ -843,7 +838,7 @@ static int pte_list_add(struct kvm_vcpu *vcpu, u64 *spte,
+ 		rmap_head->val = (unsigned long)spte;
+ 	} else if (!(rmap_head->val & 1)) {
+ 		rmap_printk("%p %llx 1->many\n", spte, *spte);
+-		desc = mmu_alloc_pte_list_desc(vcpu);
++		desc = kvm_mmu_memory_cache_alloc(cache);
+ 		desc->sptes[0] = (u64 *)rmap_head->val;
+ 		desc->sptes[1] = spte;
+ 		desc->spte_count = 2;
+@@ -855,7 +850,7 @@ static int pte_list_add(struct kvm_vcpu *vcpu, u64 *spte,
+ 		while (desc->spte_count == PTE_LIST_EXT) {
+ 			count += PTE_LIST_EXT;
+ 			if (!desc->more) {
+-				desc->more = mmu_alloc_pte_list_desc(vcpu);
++				desc->more = kvm_mmu_memory_cache_alloc(cache);
+ 				desc = desc->more;
+ 				desc->spte_count = 0;
+ 				break;
+@@ -1556,8 +1551,10 @@ static bool kvm_test_age_rmapp(struct kvm *kvm, struct kvm_rmap_head *rmap_head,
  
- 		if (sp->unsync) {
-+			if (KVM_BUG_ON(!vcpu, kvm))
-+				break;
+ #define RMAP_RECYCLE_THRESHOLD 1000
+ 
+-static void rmap_add(struct kvm_vcpu *vcpu, const struct kvm_memory_slot *slot,
+-		     u64 *spte, gfn_t gfn)
++static void __rmap_add(struct kvm *kvm,
++		       struct kvm_mmu_memory_cache *cache,
++		       const struct kvm_memory_slot *slot,
++		       u64 *spte, gfn_t gfn)
+ {
+ 	struct kvm_mmu_page *sp;
+ 	struct kvm_rmap_head *rmap_head;
+@@ -1566,15 +1563,23 @@ static void rmap_add(struct kvm_vcpu *vcpu, const struct kvm_memory_slot *slot,
+ 	sp = sptep_to_sp(spte);
+ 	kvm_mmu_page_set_gfn(sp, spte - sp->spt, gfn);
+ 	rmap_head = gfn_to_rmap(gfn, sp->role.level, slot);
+-	rmap_count = pte_list_add(vcpu, spte, rmap_head);
++	rmap_count = pte_list_add(cache, spte, rmap_head);
+ 
+ 	if (rmap_count > RMAP_RECYCLE_THRESHOLD) {
+-		kvm_unmap_rmapp(vcpu->kvm, rmap_head, NULL, gfn, sp->role.level, __pte(0));
++		kvm_unmap_rmapp(kvm, rmap_head, NULL, gfn, sp->role.level, __pte(0));
+ 		kvm_flush_remote_tlbs_with_address(
+-				vcpu->kvm, sp->gfn, KVM_PAGES_PER_HPAGE(sp->role.level));
++				kvm, sp->gfn, KVM_PAGES_PER_HPAGE(sp->role.level));
+ 	}
+ }
+ 
++static void rmap_add(struct kvm_vcpu *vcpu, const struct kvm_memory_slot *slot,
++		     u64 *spte, gfn_t gfn)
++{
++	struct kvm_mmu_memory_cache *cache = &vcpu->arch.mmu_pte_list_desc_cache;
 +
- 			/*
- 			 * The page is good, but is stale.  kvm_sync_page does
- 			 * get the latest guest state, but (unlike mmu_unsync_children)
-@@ -2090,6 +2099,7 @@ static struct kvm_mmu_page *kvm_mmu_alloc_shadow_page(struct kvm *kvm,
- 	return sp;
++	__rmap_add(vcpu->kvm, cache, slot, spte, gfn);
++}
++
+ bool kvm_age_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
+ {
+ 	bool young = false;
+@@ -1645,13 +1650,13 @@ static unsigned kvm_page_table_hashfn(gfn_t gfn)
+ 	return hash_64(gfn, KVM_MMU_HASH_SHIFT);
  }
  
-+/* Note, @vcpu may be NULL if @role.direct is true; see kvm_mmu_find_shadow_page. */
- static struct kvm_mmu_page *__kvm_mmu_get_shadow_page(struct kvm *kvm,
- 						      struct kvm_vcpu *vcpu,
- 						      struct shadow_page_caches *caches,
+-static void mmu_page_add_parent_pte(struct kvm_vcpu *vcpu,
++static void mmu_page_add_parent_pte(struct kvm_mmu_memory_cache *cache,
+ 				    struct kvm_mmu_page *sp, u64 *parent_pte)
+ {
+ 	if (!parent_pte)
+ 		return;
+ 
+-	pte_list_add(vcpu, parent_pte, &sp->parent_ptes);
++	pte_list_add(cache, parent_pte, &sp->parent_ptes);
+ }
+ 
+ static void mmu_page_remove_parent_pte(struct kvm_mmu_page *sp,
+@@ -2247,8 +2252,8 @@ static void shadow_walk_next(struct kvm_shadow_walk_iterator *iterator)
+ 	__shadow_walk_next(iterator, *iterator->sptep);
+ }
+ 
+-static void link_shadow_page(struct kvm_vcpu *vcpu, u64 *sptep,
+-			     struct kvm_mmu_page *sp)
++static void __link_shadow_page(struct kvm_mmu_memory_cache *cache, u64 *sptep,
++			       struct kvm_mmu_page *sp)
+ {
+ 	u64 spte;
+ 
+@@ -2258,12 +2263,18 @@ static void link_shadow_page(struct kvm_vcpu *vcpu, u64 *sptep,
+ 
+ 	mmu_spte_set(sptep, spte);
+ 
+-	mmu_page_add_parent_pte(vcpu, sp, sptep);
++	mmu_page_add_parent_pte(cache, sp, sptep);
+ 
+ 	if (sp->unsync_children || sp->unsync)
+ 		mark_unsync(sptep);
+ }
+ 
++static void link_shadow_page(struct kvm_vcpu *vcpu, u64 *sptep,
++			     struct kvm_mmu_page *sp)
++{
++	__link_shadow_page(&vcpu->arch.mmu_pte_list_desc_cache, sptep, sp);
++}
++
+ static void validate_direct_spte(struct kvm_vcpu *vcpu, u64 *sptep,
+ 				   unsigned direct_access)
+ {
 -- 
 2.31.1
 
