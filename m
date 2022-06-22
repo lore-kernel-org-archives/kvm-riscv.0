@@ -1,179 +1,124 @@
 From: Paolo Bonzini <pbonzini@redhat.com>
-Date: Wed, 22 Jun 2022 15:27:08 -0400
-Subject: [PATCH v7 21/23] KVM: Allow for different capacities in kvm_mmu_memory_cache structs
+Date: Wed, 22 Jun 2022 15:27:10 -0400
+Subject: [PATCH v7 23/23] KVM: x86/mmu: Avoid unnecessary flush on eager page split
 In-Reply-To: <20220622192710.2547152-1-pbonzini@redhat.com>
 References: <20220622192710.2547152-1-pbonzini@redhat.com>
-Message-ID: <20220622192710.2547152-22-pbonzini@redhat.com>
+Message-ID: <20220622192710.2547152-24-pbonzini@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: David Matlack <dmatlack@google.com>
+The TLB flush before installing the newly-populated lower level
+page table is unnecessary if the lower-level page table maps
+the huge page identically.  KVM knows it is if it did not reuse
+an existing shadow page table, tell drop_large_spte() to skip
+the flush in that case.
 
-Allow the capacity of the kvm_mmu_memory_cache struct to be chosen at
-declaration time rather than being fixed for all declarations. This will
-be used in a follow-up commit to declare an cache in x86 with a capacity
-of 512+ objects without having to increase the capacity of all caches in
-KVM.
+Extracted from a patch by David Matlack.
 
-This change requires each cache now specify its capacity at runtime,
-since the cache struct itself no longer has a fixed capacity known at
-compile time. To protect against someone accidentally defining a
-kvm_mmu_memory_cache struct directly (without the extra storage), this
-commit includes a WARN_ON() in kvm_mmu_topup_memory_cache().
-
-In order to support different capacities, this commit changes the
-objects pointer array to be dynamically allocated the first time the
-cache is topped-up.
-
-While here, opportunistically clean up the stack-allocated
-kvm_mmu_memory_cache structs in riscv and arm64 to use designated
-initializers.
-
-No functional change intended.
-
-Reviewed-by: Marc Zyngier <maz@kernel.org>
-Signed-off-by: David Matlack <dmatlack@google.com>
-Message-Id: <20220516232138.1783324-22-dmatlack@google.com>
 Signed-off-by: Paolo Bonzini <pbonzini@redhat.com>
 ---
- arch/arm64/kvm/mmu.c      |  2 +-
- arch/riscv/kvm/mmu.c      |  5 +----
- include/linux/kvm_host.h  |  1 +
- include/linux/kvm_types.h |  6 +++++-
- virt/kvm/kvm_main.c       | 33 ++++++++++++++++++++++++++++++---
- 5 files changed, 38 insertions(+), 9 deletions(-)
+ arch/x86/kvm/mmu/mmu.c | 32 ++++++++++++++++++++------------
+ 1 file changed, 20 insertions(+), 12 deletions(-)
 
-diff --git a/arch/arm64/kvm/mmu.c b/arch/arm64/kvm/mmu.c
-index f5651a05b6a8..87f1cd0df36e 100644
---- a/arch/arm64/kvm/mmu.c
-+++ b/arch/arm64/kvm/mmu.c
-@@ -786,7 +786,7 @@ int kvm_phys_addr_ioremap(struct kvm *kvm, phys_addr_t guest_ipa,
- {
- 	phys_addr_t addr;
- 	int ret = 0;
--	struct kvm_mmu_memory_cache cache = { 0, __GFP_ZERO, NULL, };
-+	struct kvm_mmu_memory_cache cache = { .gfp_zero = __GFP_ZERO };
- 	struct kvm_pgtable *pgt = kvm->arch.mmu.pgt;
- 	enum kvm_pgtable_prot prot = KVM_PGTABLE_PROT_DEVICE |
- 				     KVM_PGTABLE_PROT_R |
-diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
-index 1c00695ebee7..081f8d2b9cf3 100644
---- a/arch/riscv/kvm/mmu.c
-+++ b/arch/riscv/kvm/mmu.c
-@@ -350,10 +350,7 @@ static int gstage_ioremap(struct kvm *kvm, gpa_t gpa, phys_addr_t hpa,
- 	int ret = 0;
- 	unsigned long pfn;
- 	phys_addr_t addr, end;
--	struct kvm_mmu_memory_cache pcache;
--
--	memset(&pcache, 0, sizeof(pcache));
--	pcache.gfp_zero = __GFP_ZERO;
-+	struct kvm_mmu_memory_cache pcache = { .gfp_zero = __GFP_ZERO };
- 
- 	end = (gpa + size + PAGE_SIZE - 1) & PAGE_MASK;
- 	pfn = __phys_to_pfn(hpa);
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index a2bbdf3ab086..3554e48406e4 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -1356,6 +1356,7 @@ void kvm_flush_remote_tlbs(struct kvm *kvm);
- 
- #ifdef KVM_ARCH_NR_OBJS_PER_MEMORY_CACHE
- int kvm_mmu_topup_memory_cache(struct kvm_mmu_memory_cache *mc, int min);
-+int __kvm_mmu_topup_memory_cache(struct kvm_mmu_memory_cache *mc, int capacity, int min);
- int kvm_mmu_memory_cache_nr_free_objects(struct kvm_mmu_memory_cache *mc);
- void kvm_mmu_free_memory_cache(struct kvm_mmu_memory_cache *mc);
- void *kvm_mmu_memory_cache_alloc(struct kvm_mmu_memory_cache *mc);
-diff --git a/include/linux/kvm_types.h b/include/linux/kvm_types.h
-index f328a01db4fe..4d933518060f 100644
---- a/include/linux/kvm_types.h
-+++ b/include/linux/kvm_types.h
-@@ -85,12 +85,16 @@ struct gfn_to_pfn_cache {
-  * MMU flows is problematic, as is triggering reclaim, I/O, etc... while
-  * holding MMU locks.  Note, these caches act more like prefetch buffers than
-  * classical caches, i.e. objects are not returned to the cache on being freed.
-+ *
-+ * The @capacity field and @objects array are lazily initialized when the cache
-+ * is topped up (__kvm_mmu_topup_memory_cache()).
-  */
- struct kvm_mmu_memory_cache {
- 	int nobjs;
- 	gfp_t gfp_zero;
- 	struct kmem_cache *kmem_cache;
--	void *objects[KVM_ARCH_NR_OBJS_PER_MEMORY_CACHE];
-+	int capacity;
-+	void **objects;
- };
- #endif
- 
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 5b8ae83e09d7..45188d11812c 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -396,14 +396,31 @@ static inline void *mmu_memory_cache_alloc_obj(struct kvm_mmu_memory_cache *mc,
- 		return (void *)__get_free_page(gfp_flags);
+diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
+index 22681931921f..79c6a821ea0d 100644
+--- a/arch/x86/kvm/mmu/mmu.c
++++ b/arch/x86/kvm/mmu/mmu.c
+@@ -1135,7 +1135,7 @@ static void drop_spte(struct kvm *kvm, u64 *sptep)
+ 		rmap_remove(kvm, sptep);
  }
  
--int kvm_mmu_topup_memory_cache(struct kvm_mmu_memory_cache *mc, int min)
-+int __kvm_mmu_topup_memory_cache(struct kvm_mmu_memory_cache *mc, int capacity, int min)
+-static void drop_large_spte(struct kvm *kvm, u64 *sptep)
++static void drop_large_spte(struct kvm *kvm, u64 *sptep, bool flush)
  {
-+	gfp_t gfp = GFP_KERNEL_ACCOUNT;
- 	void *obj;
+ 	struct kvm_mmu_page *sp;
  
- 	if (mc->nobjs >= min)
- 		return 0;
--	while (mc->nobjs < ARRAY_SIZE(mc->objects)) {
--		obj = mmu_memory_cache_alloc_obj(mc, GFP_KERNEL_ACCOUNT);
+@@ -1143,7 +1143,9 @@ static void drop_large_spte(struct kvm *kvm, u64 *sptep)
+ 	WARN_ON(sp->role.level == PG_LEVEL_4K);
+ 
+ 	drop_spte(kvm, sptep);
+-	kvm_flush_remote_tlbs_with_address(kvm, sp->gfn,
 +
-+	if (unlikely(!mc->objects)) {
-+		if (WARN_ON_ONCE(!capacity))
-+			return -EIO;
-+
-+		mc->objects = kvmalloc_array(sizeof(void *), capacity, gfp);
-+		if (!mc->objects)
-+			return -ENOMEM;
-+
-+		mc->capacity = capacity;
-+	}
-+
-+	/* It is illegal to request a different capacity across topups. */
-+	if (WARN_ON_ONCE(mc->capacity != capacity))
-+		return -EIO;
-+
-+	while (mc->nobjs < mc->capacity) {
-+		obj = mmu_memory_cache_alloc_obj(mc, gfp);
- 		if (!obj)
- 			return mc->nobjs >= min ? 0 : -ENOMEM;
- 		mc->objects[mc->nobjs++] = obj;
-@@ -411,6 +428,11 @@ int kvm_mmu_topup_memory_cache(struct kvm_mmu_memory_cache *mc, int min)
- 	return 0;
++	if (flush)
++		kvm_flush_remote_tlbs_with_address(kvm, sp->gfn,
+ 			KVM_PAGES_PER_HPAGE(sp->role.level));
  }
  
-+int kvm_mmu_topup_memory_cache(struct kvm_mmu_memory_cache *mc, int min)
-+{
-+	return __kvm_mmu_topup_memory_cache(mc, KVM_ARCH_NR_OBJS_PER_MEMORY_CACHE, min);
-+}
-+
- int kvm_mmu_memory_cache_nr_free_objects(struct kvm_mmu_memory_cache *mc)
+@@ -2283,7 +2285,7 @@ static void shadow_walk_next(struct kvm_shadow_walk_iterator *iterator)
+ 
+ static void __link_shadow_page(struct kvm *kvm,
+ 			       struct kvm_mmu_memory_cache *cache, u64 *sptep,
+-			       struct kvm_mmu_page *sp)
++			       struct kvm_mmu_page *sp, bool flush)
  {
- 	return mc->nobjs;
-@@ -424,6 +446,11 @@ void kvm_mmu_free_memory_cache(struct kvm_mmu_memory_cache *mc)
- 		else
- 			free_page((unsigned long)mc->objects[--mc->nobjs]);
+ 	u64 spte;
+ 
+@@ -2291,10 +2293,11 @@ static void __link_shadow_page(struct kvm *kvm,
+ 
+ 	/*
+ 	 * If an SPTE is present already, it must be a leaf and therefore
+-	 * a large one.  Drop it and flush the TLB before installing sp.
++	 * a large one.  Drop it, and flush the TLB if needed, before
++	 * installing sp.
+ 	 */
+ 	if (is_shadow_present_pte(*sptep))
+-		drop_large_spte(kvm, sptep);
++		drop_large_spte(kvm, sptep, flush);
+ 
+ 	spte = make_nonleaf_spte(sp->spt, sp_ad_disabled(sp));
+ 
+@@ -2309,7 +2312,7 @@ static void __link_shadow_page(struct kvm *kvm,
+ static void link_shadow_page(struct kvm_vcpu *vcpu, u64 *sptep,
+ 			     struct kvm_mmu_page *sp)
+ {
+-	__link_shadow_page(vcpu->kvm, &vcpu->arch.mmu_pte_list_desc_cache, sptep, sp);
++	__link_shadow_page(vcpu->kvm, &vcpu->arch.mmu_pte_list_desc_cache, sptep, sp, true);
+ }
+ 
+ static void validate_direct_spte(struct kvm_vcpu *vcpu, u64 *sptep,
+@@ -6172,6 +6175,7 @@ static void shadow_mmu_split_huge_page(struct kvm *kvm,
+ 	struct kvm_mmu_memory_cache *cache = &kvm->arch.split_desc_cache;
+ 	u64 huge_spte = READ_ONCE(*huge_sptep);
+ 	struct kvm_mmu_page *sp;
++	bool flush = false;
+ 	u64 *sptep, spte;
+ 	gfn_t gfn;
+ 	int index;
+@@ -6189,20 +6193,24 @@ static void shadow_mmu_split_huge_page(struct kvm *kvm,
+ 		 * gfn-to-pfn translation since the SP is direct, so no need to
+ 		 * modify them.
+ 		 *
+-		 * If a given SPTE points to a lower level page table, installing
+-		 * such SPTEs would effectively unmap a potion of the huge page.
+-		 * This is not an issue because __link_shadow_page() flushes the TLB
+-		 * when the passed sp replaces a large SPTE.
++		 * However, if a given SPTE points to a lower level page table,
++		 * that lower level page table may only be partially populated.
++		 * Installing such SPTEs would effectively unmap a potion of the
++		 * huge page. Unmapping guest memory always requires a TLB flush
++		 * since a subsequent operation on the unmapped regions would
++		 * fail to detect the need to flush.
+ 		 */
+-		if (is_shadow_present_pte(*sptep))
++		if (is_shadow_present_pte(*sptep)) {
++			flush |= !is_last_spte(*sptep, sp->role.level);
+ 			continue;
++		}
+ 
+ 		spte = make_huge_page_split_spte(kvm, huge_spte, sp->role, index);
+ 		mmu_spte_set(sptep, spte);
+ 		__rmap_add(kvm, cache, slot, sptep, gfn, sp->role.access);
  	}
-+
-+	kvfree(mc->objects);
-+
-+	mc->objects = NULL;
-+	mc->capacity = 0;
+ 
+-	__link_shadow_page(kvm, cache, huge_sptep, sp);
++	__link_shadow_page(kvm, cache, huge_sptep, sp, flush);
  }
  
- void *kvm_mmu_memory_cache_alloc(struct kvm_mmu_memory_cache *mc)
+ static int shadow_mmu_try_split_huge_page(struct kvm *kvm,
 -- 
 2.31.1
-
 
 
