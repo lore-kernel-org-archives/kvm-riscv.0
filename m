@@ -1,191 +1,113 @@
 From: Paolo Bonzini <pbonzini@redhat.com>
-Date: Wed, 22 Jun 2022 15:27:07 -0400
-Subject: [PATCH v7 20/23] KVM: x86/mmu: pull call to drop_large_spte() into __link_shadow_page()
+Date: Wed, 22 Jun 2022 15:27:05 -0400
+Subject: [PATCH v7 18/23] KVM: x86/mmu: Extend make_huge_page_split_spte() for the shadow MMU
 In-Reply-To: <20220622192710.2547152-1-pbonzini@redhat.com>
 References: <20220622192710.2547152-1-pbonzini@redhat.com>
-Message-ID: <20220622192710.2547152-21-pbonzini@redhat.com>
+Message-ID: <20220622192710.2547152-19-pbonzini@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Before allocating a child shadow page table, all callers check
-whether the parent already points to a huge page and, if so, they
-drop that SPTE.  This is done by drop_large_spte().
+From: David Matlack <dmatlack@google.com>
 
-However, the act that requires dropping the large SPTE is the
-installation of the sp that is returned by kvm_mmu_get_child_sp(),
-which happens in __link_shadow_page().  Move the call there
-instead of having it in each and every caller.
+Currently make_huge_page_split_spte() assumes execute permissions can be
+granted to any 4K SPTE when splitting huge pages. This is true for the
+TDP MMU but is not necessarily true for the shadow MMU, since KVM may be
+shadowing a non-executable huge page.
 
-To ensure that the shadow page is not linked twice if it was
-present, do _not_ opportunistically make kvm_mmu_get_child_sp()
-idempotent: instead, return an error value if the shadow page
-already existed.  This is a bit more verbose, but clearer than
-NULL.
+To fix this, pass in the role of the child shadow page where the huge
+page will be split and derive the execution permission from that.  This
+is correct because huge pages are always split with direct shadow page
+and thus the shadow page role contains the correct access permissions.
 
-Now that the drop_large_spte() name is not taken anymore,
-remove the two underscores in front of __drop_large_spte().
+No functional change intended.
 
+Signed-off-by: David Matlack <dmatlack@google.com>
+Message-Id: <20220516232138.1783324-19-dmatlack@google.com>
 Signed-off-by: Paolo Bonzini <pbonzini@redhat.com>
 ---
- arch/x86/kvm/mmu/mmu.c         | 43 +++++++++++++++++-----------------
- arch/x86/kvm/mmu/paging_tmpl.h | 31 +++++++++++-------------
- 2 files changed, 35 insertions(+), 39 deletions(-)
+ arch/x86/kvm/mmu/spte.c    | 15 +++++++--------
+ arch/x86/kvm/mmu/spte.h    |  4 ++--
+ arch/x86/kvm/mmu/tdp_mmu.c |  2 +-
+ 3 files changed, 10 insertions(+), 11 deletions(-)
 
-diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
-index 36bc49f08d60..bf1ae5ebf41b 100644
---- a/arch/x86/kvm/mmu/mmu.c
-+++ b/arch/x86/kvm/mmu/mmu.c
-@@ -1135,26 +1135,16 @@ static void drop_spte(struct kvm *kvm, u64 *sptep)
- 		rmap_remove(kvm, sptep);
- }
- 
--
--static bool __drop_large_spte(struct kvm *kvm, u64 *sptep)
-+static void drop_large_spte(struct kvm *kvm, u64 *sptep)
+diff --git a/arch/x86/kvm/mmu/spte.c b/arch/x86/kvm/mmu/spte.c
+index db294c1beea2..fb1f17504138 100644
+--- a/arch/x86/kvm/mmu/spte.c
++++ b/arch/x86/kvm/mmu/spte.c
+@@ -246,11 +246,10 @@ static u64 make_spte_executable(u64 spte)
+  * This is used during huge page splitting to build the SPTEs that make up the
+  * new page table.
+  */
+-u64 make_huge_page_split_spte(struct kvm *kvm, u64 huge_spte, int huge_level,
++u64 make_huge_page_split_spte(struct kvm *kvm, u64 huge_spte, union kvm_mmu_page_role role,
+ 			      int index)
  {
--	if (is_large_pte(*sptep)) {
--		WARN_ON(sptep_to_sp(sptep)->role.level == PG_LEVEL_4K);
--		drop_spte(kvm, sptep);
--		return true;
--	}
--
--	return false;
--}
-+	struct kvm_mmu_page *sp;
+ 	u64 child_spte;
+-	int child_level;
  
--static void drop_large_spte(struct kvm_vcpu *vcpu, u64 *sptep)
--{
--	if (__drop_large_spte(vcpu->kvm, sptep)) {
--		struct kvm_mmu_page *sp = sptep_to_sp(sptep);
-+	sp = sptep_to_sp(sptep);
-+	WARN_ON(sp->role.level == PG_LEVEL_4K);
+ 	if (WARN_ON_ONCE(!is_shadow_present_pte(huge_spte)))
+ 		return 0;
+@@ -259,23 +258,23 @@ u64 make_huge_page_split_spte(struct kvm *kvm, u64 huge_spte, int huge_level,
+ 		return 0;
  
--		kvm_flush_remote_tlbs_with_address(vcpu->kvm, sp->gfn,
-+	drop_spte(kvm, sptep);
-+	kvm_flush_remote_tlbs_with_address(kvm, sp->gfn,
- 			KVM_PAGES_PER_HPAGE(sp->role.level));
--	}
- }
+ 	child_spte = huge_spte;
+-	child_level = huge_level - 1;
  
- /*
-@@ -2221,6 +2211,9 @@ static struct kvm_mmu_page *kvm_mmu_get_child_sp(struct kvm_vcpu *vcpu,
- {
- 	union kvm_mmu_page_role role;
+ 	/*
+ 	 * The child_spte already has the base address of the huge page being
+ 	 * split. So we just have to OR in the offset to the page at the next
+ 	 * lower level for the given index.
+ 	 */
+-	child_spte |= (index * KVM_PAGES_PER_HPAGE(child_level)) << PAGE_SHIFT;
++	child_spte |= (index * KVM_PAGES_PER_HPAGE(role.level)) << PAGE_SHIFT;
  
-+	if (is_shadow_present_pte(*sptep) && !is_large_pte(*sptep))
-+		return ERR_PTR(-EEXIST);
-+
- 	role = kvm_mmu_child_role(sptep, direct, access);
- 	return kvm_mmu_get_shadow_page(vcpu, gfn, role);
- }
-@@ -2288,13 +2281,21 @@ static void shadow_walk_next(struct kvm_shadow_walk_iterator *iterator)
- 	__shadow_walk_next(iterator, *iterator->sptep);
- }
+-	if (child_level == PG_LEVEL_4K) {
++	if (role.level == PG_LEVEL_4K) {
+ 		child_spte &= ~PT_PAGE_SIZE_MASK;
  
--static void __link_shadow_page(struct kvm_mmu_memory_cache *cache, u64 *sptep,
-+static void __link_shadow_page(struct kvm *kvm,
-+			       struct kvm_mmu_memory_cache *cache, u64 *sptep,
- 			       struct kvm_mmu_page *sp)
- {
- 	u64 spte;
- 
- 	BUILD_BUG_ON(VMX_EPT_WRITABLE_MASK != PT_WRITABLE_MASK);
- 
-+	/*
-+	 * If an SPTE is present already, it must be a leaf and therefore
-+	 * a large one.  Drop it and flush the TLB before installing sp.
-+	 */
-+	if (is_shadow_present_pte(*sptep))
-+		drop_large_spte(kvm, sptep);
-+
- 	spte = make_nonleaf_spte(sp->spt, sp_ad_disabled(sp));
- 
- 	mmu_spte_set(sptep, spte);
-@@ -2308,7 +2309,7 @@ static void __link_shadow_page(struct kvm_mmu_memory_cache *cache, u64 *sptep,
- static void link_shadow_page(struct kvm_vcpu *vcpu, u64 *sptep,
- 			     struct kvm_mmu_page *sp)
- {
--	__link_shadow_page(&vcpu->arch.mmu_pte_list_desc_cache, sptep, sp);
-+	__link_shadow_page(vcpu->kvm, &vcpu->arch.mmu_pte_list_desc_cache, sptep, sp);
- }
- 
- static void validate_direct_spte(struct kvm_vcpu *vcpu, u64 *sptep,
-@@ -3080,11 +3081,9 @@ static int __direct_map(struct kvm_vcpu *vcpu, struct kvm_page_fault *fault)
- 		if (it.level == fault->goal_level)
- 			break;
- 
--		drop_large_spte(vcpu, it.sptep);
--		if (is_shadow_present_pte(*it.sptep))
--			continue;
--
- 		sp = kvm_mmu_get_child_sp(vcpu, it.sptep, base_gfn, true, ACC_ALL);
-+		if (sp == ERR_PTR(-EEXIST))
-+			continue;
- 
- 		link_shadow_page(vcpu, it.sptep, sp);
- 		if (fault->is_tdp && fault->huge_page_disallowed &&
-diff --git a/arch/x86/kvm/mmu/paging_tmpl.h b/arch/x86/kvm/mmu/paging_tmpl.h
-index 24f292f3f93f..2448fa8d8438 100644
---- a/arch/x86/kvm/mmu/paging_tmpl.h
-+++ b/arch/x86/kvm/mmu/paging_tmpl.h
-@@ -648,15 +648,13 @@ static int FNAME(fetch)(struct kvm_vcpu *vcpu, struct kvm_page_fault *fault,
- 		gfn_t table_gfn;
- 
- 		clear_sp_write_flooding_count(it.sptep);
--		drop_large_spte(vcpu, it.sptep);
- 
--		sp = NULL;
--		if (!is_shadow_present_pte(*it.sptep)) {
--			table_gfn = gw->table_gfn[it.level - 2];
--			access = gw->pt_access[it.level - 2];
--			sp = kvm_mmu_get_child_sp(vcpu, it.sptep, table_gfn,
--						  false, access);
-+		table_gfn = gw->table_gfn[it.level - 2];
-+		access = gw->pt_access[it.level - 2];
-+		sp = kvm_mmu_get_child_sp(vcpu, it.sptep, table_gfn,
-+					  false, access);
- 
-+		if (sp != ERR_PTR(-EEXIST)) {
- 			/*
- 			 * We must synchronize the pagetable before linking it
- 			 * because the guest doesn't need to flush tlb when
-@@ -685,7 +683,7 @@ static int FNAME(fetch)(struct kvm_vcpu *vcpu, struct kvm_page_fault *fault,
- 		if (FNAME(gpte_changed)(vcpu, gw, it.level - 1))
- 			goto out_gpte_changed;
- 
--		if (sp)
-+		if (sp != ERR_PTR(-EEXIST))
- 			link_shadow_page(vcpu, it.sptep, sp);
+ 		/*
+-		 * When splitting to a 4K page, mark the page executable as the
+-		 * NX hugepage mitigation no longer applies.
++		 * When splitting to a 4K page where execution is allowed, mark
++		 * the page executable as the NX hugepage mitigation no longer
++		 * applies.
+ 		 */
+-		if (is_nx_huge_page_enabled(kvm))
++		if ((role.access & ACC_EXEC_MASK) && is_nx_huge_page_enabled(kvm))
+ 			child_spte = make_spte_executable(child_spte);
  	}
  
-@@ -709,16 +707,15 @@ static int FNAME(fetch)(struct kvm_vcpu *vcpu, struct kvm_page_fault *fault,
+diff --git a/arch/x86/kvm/mmu/spte.h b/arch/x86/kvm/mmu/spte.h
+index 256f90587e8d..b5c855f5514f 100644
+--- a/arch/x86/kvm/mmu/spte.h
++++ b/arch/x86/kvm/mmu/spte.h
+@@ -421,8 +421,8 @@ bool make_spte(struct kvm_vcpu *vcpu, struct kvm_mmu_page *sp,
+ 	       unsigned int pte_access, gfn_t gfn, kvm_pfn_t pfn,
+ 	       u64 old_spte, bool prefetch, bool can_unsync,
+ 	       bool host_writable, u64 *new_spte);
+-u64 make_huge_page_split_spte(struct kvm *kvm, u64 huge_spte, int huge_level,
+-			      int index);
++u64 make_huge_page_split_spte(struct kvm *kvm, u64 huge_spte,
++		      	      union kvm_mmu_page_role role, int index);
+ u64 make_nonleaf_spte(u64 *child_pt, bool ad_disabled);
+ u64 make_mmio_spte(struct kvm_vcpu *vcpu, u64 gfn, unsigned int access);
+ u64 mark_spte_for_access_track(u64 spte);
+diff --git a/arch/x86/kvm/mmu/tdp_mmu.c b/arch/x86/kvm/mmu/tdp_mmu.c
+index 522e2532343b..f3a430d64975 100644
+--- a/arch/x86/kvm/mmu/tdp_mmu.c
++++ b/arch/x86/kvm/mmu/tdp_mmu.c
+@@ -1478,7 +1478,7 @@ static int tdp_mmu_split_huge_page(struct kvm *kvm, struct tdp_iter *iter,
+ 	 * not been linked in yet and thus is not reachable from any other CPU.
+ 	 */
+ 	for (i = 0; i < SPTE_ENT_PER_PAGE; i++)
+-		sp->spt[i] = make_huge_page_split_spte(kvm, huge_spte, level, i);
++		sp->spt[i] = make_huge_page_split_spte(kvm, huge_spte, sp->role, i);
  
- 		validate_direct_spte(vcpu, it.sptep, direct_access);
- 
--		drop_large_spte(vcpu, it.sptep);
-+		sp = kvm_mmu_get_child_sp(vcpu, it.sptep, base_gfn,
-+					  true, direct_access);
-+		if (sp == ERR_PTR(-EEXIST))
-+			continue;
- 
--		if (!is_shadow_present_pte(*it.sptep)) {
--			sp = kvm_mmu_get_child_sp(vcpu, it.sptep, base_gfn,
--						  true, direct_access);
--			link_shadow_page(vcpu, it.sptep, sp);
--			if (fault->huge_page_disallowed &&
--			    fault->req_level >= it.level)
--				account_huge_nx_page(vcpu->kvm, sp);
--		}
-+		link_shadow_page(vcpu, it.sptep, sp);
-+		if (fault->huge_page_disallowed &&
-+		    fault->req_level >= it.level)
-+			account_huge_nx_page(vcpu->kvm, sp);
- 	}
- 
- 	if (WARN_ON_ONCE(it.level != fault->goal_level))
+ 	/*
+ 	 * Replace the huge spte with a pointer to the populated lower level
 -- 
 2.31.1
 
