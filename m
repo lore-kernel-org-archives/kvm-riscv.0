@@ -1,136 +1,86 @@
-From: Michael S. Tsirkin <mst@redhat.com>
-Date: Fri, 1 Jul 2022 02:16:21 -0400
-Subject: [PATCH] rpmsg: virtio: Fix broken rpmsg_probe()
-In-Reply-To: <CACGkMEtHuoHT6meHacsie8M87yjUX3jGEvP7BuU_Vrb3yqkDWw@mail.gmail.com>
-References: <20220608171334.730739-1-apatel@ventanamicro.com>
- <20220629174318.GB2018382@p14s>
- <bf87a50c-6d92-8657-72a9-75af81d2489f@foss.st.com>
- <CANLsYkzHZMV3eVUn3Xpk0eiAexyr9HC5__K9xfAwfm23nuQj=A@mail.gmail.com>
- <20220630152003-mutt-send-email-mst@kernel.org>
- <CACGkMEtHuoHT6meHacsie8M87yjUX3jGEvP7BuU_Vrb3yqkDWw@mail.gmail.com>
-Message-ID: <20220701021536-mutt-send-email-mst@kernel.org>
+From: Zhang Jiaming <jiaming@nfschina.com>
+Date: Fri,  1 Jul 2022 14:28:38 +0800
+Subject: [PATCH] RISC-V: KVM: Fix variable spelling mistake
+Message-ID: <20220701062838.6727-1-jiaming@nfschina.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Jul 01, 2022 at 09:22:15AM +0800, Jason Wang wrote:
-> On Fri, Jul 1, 2022 at 3:20 AM Michael S. Tsirkin <mst@redhat.com> wrote:
-> >
-> > On Thu, Jun 30, 2022 at 11:51:30AM -0600, Mathieu Poirier wrote:
-> > > + virtualization at lists.linux-foundation.org
-> > > + jasowang at redhat.com
-> > > + mst at redhat.com
-> > >
-> > > On Thu, 30 Jun 2022 at 10:20, Arnaud POULIQUEN
-> > > <arnaud.pouliquen@foss.st.com> wrote:
-> > > >
-> > > > Hi,
-> > > >
-> > > > On 6/29/22 19:43, Mathieu Poirier wrote:
-> > > > > Hi Anup,
-> > > > >
-> > > > > On Wed, Jun 08, 2022 at 10:43:34PM +0530, Anup Patel wrote:
-> > > > >> The rpmsg_probe() is broken at the moment because virtqueue_add_inbuf()
-> > > > >> fails due to both virtqueues (Rx and Tx) marked as broken by the
-> > > > >> __vring_new_virtqueue() function. To solve this, virtio_device_ready()
-> > > > >> (which unbreaks queues) should be called before virtqueue_add_inbuf().
-> > > > >>
-> > > > >> Fixes: 8b4ec69d7e09 ("virtio: harden vring IRQ")
-> > > > >> Signed-off-by: Anup Patel <apatel@ventanamicro.com>
-> > > > >> ---
-> > > > >>  drivers/rpmsg/virtio_rpmsg_bus.c | 6 +++---
-> > > > >>  1 file changed, 3 insertions(+), 3 deletions(-)
-> > > > >>
-> > > > >> diff --git a/drivers/rpmsg/virtio_rpmsg_bus.c b/drivers/rpmsg/virtio_rpmsg_bus.c
-> > > > >> index 905ac7910c98..71a64d2c7644 100644
-> > > > >> --- a/drivers/rpmsg/virtio_rpmsg_bus.c
-> > > > >> +++ b/drivers/rpmsg/virtio_rpmsg_bus.c
-> > > > >> @@ -929,6 +929,9 @@ static int rpmsg_probe(struct virtio_device *vdev)
-> > > > >>      /* and half is dedicated for TX */
-> > > > >>      vrp->sbufs = bufs_va + total_buf_space / 2;
-> > > > >>
-> > > > >> +    /* From this point on, we can notify and get callbacks. */
-> > > > >> +    virtio_device_ready(vdev);
-> > > > >> +
-> > > > >
-> > > > > Calling virtio_device_ready() here means that virtqueue_get_buf_ctx_split() can
-> > > > > potentially be called (by way of rpmsg_recv_done()), which will race with
-> > > > > virtqueue_add_inbuf().  If buffers in the virtqueue aren't available then
-> > > > > rpmsg_recv_done() will fail, potentially breaking remote processors' state
-> > > > > machines that don't expect their initial name service to fail when the "device"
-> > > > > has been marked as ready.
-> > > > >
-> > > > > What does make me curious though is that nobody on the remoteproc mailing list
-> > > > > has complained about commit 8b4ec69d7e09 breaking their environment... By now,
-> > > > > i.e rc4, that should have happened.  Anyone from TI, ST and Xilinx care to test this on
-> > > > > their rig?
-> > > >
-> > > > I tested on STm32mp1 board using tag v5.19-rc4(03c765b0e3b4)
-> > > > I confirm the issue!
-> > > >
-> > > > Concerning the solution, I share Mathieu's concern. This could break legacy.
-> > > > I made a short test and I would suggest to use __virtio_unbreak_device instead, tounbreak the virtqueues without changing the init sequence.
-> > > >
-> > > > I this case the patch would be:
-> > > >
-> > > > +       /*
-> > > > +        * Unbreak the virtqueues to allow to add buffers before setting the vdev status
-> > > > +        * to ready
-> > > > +        */
-> > > > +       __virtio_unbreak_device(vdev);
-> > > > +
-> > > >
-> > > >         /* set up the receive buffers */
-> > > >         for (i = 0; i < vrp->num_bufs / 2; i++) {
-> > > >                 struct scatterlist sg;
-> > > >                 void *cpu_addr = vrp->rbufs + i * vrp->buf_size;
-> > >
-> > > This will indeed fix the problem.  On the flip side the kernel
-> > > documentation for __virtio_unbreak_device() puzzles me...
-> > > It clearly states that it should be used for probing and restoring but
-> > > _not_ directly by the driver.  Function rpmsg_probe() is part of
-> > > probing but also the entry point to a driver.
-> > >
-> > > Michael and virtualisation folks, is this the right way to move forward?
-> >
-> > I don't think it is, __virtio_unbreak_device is intended for core use.
-> 
-> Can we fill the rx after virtio_device_ready() in this case?
-> 
-> Btw, the driver set driver ok after registering, we probably get a svq
-> kick before DRIVER_OK?
-> 
-> Thanks
+There is a spelling mistake in mmu.c and vcpu_exit.c. Fix it.
 
-Is this an ack for the original patch?
+Signed-off-by: Zhang Jiaming <jiaming@nfschina.com>
+---
+ arch/riscv/kvm/mmu.c       | 8 ++++----
+ arch/riscv/kvm/vcpu_exit.c | 6 +++---
+ 2 files changed, 7 insertions(+), 7 deletions(-)
 
-> >
-> > > >
-> > > > Regards,
-> > > > Arnaud
-> > > >
-> > > > >
-> > > > > Thanks,
-> > > > > Mathieu
-> > > > >
-> > > > >>      /* set up the receive buffers */
-> > > > >>      for (i = 0; i < vrp->num_bufs / 2; i++) {
-> > > > >>              struct scatterlist sg;
-> > > > >> @@ -983,9 +986,6 @@ static int rpmsg_probe(struct virtio_device *vdev)
-> > > > >>       */
-> > > > >>      notify = virtqueue_kick_prepare(vrp->rvq);
-> > > > >>
-> > > > >> -    /* From this point on, we can notify and get callbacks. */
-> > > > >> -    virtio_device_ready(vdev);
-> > > > >> -
-> > > > >>      /* tell the remote processor it can start sending messages */
-> > > > >>      /*
-> > > > >>       * this might be concurrent with callbacks, but we are only
-> > > > >> --
-> > > > >> 2.34.1
-> > > > >>
-> >
+diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
+index 1c00695ebee7..2965284a490d 100644
+--- a/arch/riscv/kvm/mmu.c
++++ b/arch/riscv/kvm/mmu.c
+@@ -611,7 +611,7 @@ int kvm_riscv_gstage_map(struct kvm_vcpu *vcpu,
+ {
+ 	int ret;
+ 	kvm_pfn_t hfn;
+-	bool writeable;
++	bool writable;
+ 	short vma_pageshift;
+ 	gfn_t gfn = gpa >> PAGE_SHIFT;
+ 	struct vm_area_struct *vma;
+@@ -659,7 +659,7 @@ int kvm_riscv_gstage_map(struct kvm_vcpu *vcpu,
+ 
+ 	mmu_seq = kvm->mmu_notifier_seq;
+ 
+-	hfn = gfn_to_pfn_prot(kvm, gfn, is_write, &writeable);
++	hfn = gfn_to_pfn_prot(kvm, gfn, is_write, &writable);
+ 	if (hfn == KVM_PFN_ERR_HWPOISON) {
+ 		send_sig_mceerr(BUS_MCEERR_AR, (void __user *)hva,
+ 				vma_pageshift, current);
+@@ -673,14 +673,14 @@ int kvm_riscv_gstage_map(struct kvm_vcpu *vcpu,
+ 	 * for write faults.
+ 	 */
+ 	if (logging && !is_write)
+-		writeable = false;
++		writable = false;
+ 
+ 	spin_lock(&kvm->mmu_lock);
+ 
+ 	if (mmu_notifier_retry(kvm, mmu_seq))
+ 		goto out_unlock;
+ 
+-	if (writeable) {
++	if (writable) {
+ 		kvm_set_pfn_dirty(hfn);
+ 		mark_page_dirty(kvm, gfn);
+ 		ret = gstage_map_page(kvm, pcache, gpa, hfn << PAGE_SHIFT,
+diff --git a/arch/riscv/kvm/vcpu_exit.c b/arch/riscv/kvm/vcpu_exit.c
+index dbb09afd7546..f4e569688619 100644
+--- a/arch/riscv/kvm/vcpu_exit.c
++++ b/arch/riscv/kvm/vcpu_exit.c
+@@ -417,17 +417,17 @@ static int gstage_page_fault(struct kvm_vcpu *vcpu, struct kvm_run *run,
+ {
+ 	struct kvm_memory_slot *memslot;
+ 	unsigned long hva, fault_addr;
+-	bool writeable;
++	bool writable;
+ 	gfn_t gfn;
+ 	int ret;
+ 
+ 	fault_addr = (trap->htval << 2) | (trap->stval & 0x3);
+ 	gfn = fault_addr >> PAGE_SHIFT;
+ 	memslot = gfn_to_memslot(vcpu->kvm, gfn);
+-	hva = gfn_to_hva_memslot_prot(memslot, gfn, &writeable);
++	hva = gfn_to_hva_memslot_prot(memslot, gfn, &writable);
+ 
+ 	if (kvm_is_error_hva(hva) ||
+-	    (trap->scause == EXC_STORE_GUEST_PAGE_FAULT && !writeable)) {
++	    (trap->scause == EXC_STORE_GUEST_PAGE_FAULT && !writable)) {
+ 		switch (trap->scause) {
+ 		case EXC_LOAD_GUEST_PAGE_FAULT:
+ 			return emulate_load(vcpu, run, fault_addr,
+-- 
+2.25.1
 
 
