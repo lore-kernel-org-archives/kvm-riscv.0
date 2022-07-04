@@ -1,144 +1,134 @@
-From: Jason Wang <jasowang@redhat.com>
-Date: Mon, 4 Jul 2022 12:35:36 +0800
-Subject: [PATCH] rpmsg: virtio: Fix broken rpmsg_probe()
-In-Reply-To: <20220701021536-mutt-send-email-mst@kernel.org>
-References: <20220608171334.730739-1-apatel@ventanamicro.com>
- <20220629174318.GB2018382@p14s> <bf87a50c-6d92-8657-72a9-75af81d2489f@foss.st.com>
- <CANLsYkzHZMV3eVUn3Xpk0eiAexyr9HC5__K9xfAwfm23nuQj=A@mail.gmail.com>
- <20220630152003-mutt-send-email-mst@kernel.org> <CACGkMEtHuoHT6meHacsie8M87yjUX3jGEvP7BuU_Vrb3yqkDWw@mail.gmail.com>
- <20220701021536-mutt-send-email-mst@kernel.org>
-Message-ID: <CACGkMEtkVmq2+NtDpp-XWZFD_WO6Dzm4=pcVwg-aKmStAqJCVg@mail.gmail.com>
+From: Alexandre Ghiti <alex@ghiti.fr>
+Date: Mon, 4 Jul 2022 09:03:01 +0200
+Subject: [PATCH -fixes v2] riscv: Fix missing PAGE_PFN_MASK
+In-Reply-To: <20220613085307.260256-1-alexandre.ghiti@canonical.com>
+References: <20220613085307.260256-1-alexandre.ghiti@canonical.com>
+Message-ID: <d5d1a6ef-1153-272b-af9b-9f369bbdd4e5@ghiti.fr>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Jul 1, 2022 at 2:16 PM Michael S. Tsirkin <mst@redhat.com> wrote:
+On 6/13/22 10:53, Alexandre Ghiti wrote:
+> There are a bunch of functions that use the PFN from a page table entry
+> that end up with the svpbmt upper-bits because they are missing the newly
+> introduced PAGE_PFN_MASK which leads to wrong addresses conversions and
+> then crash: fix this by adding this mask.
 >
-> On Fri, Jul 01, 2022 at 09:22:15AM +0800, Jason Wang wrote:
-> > On Fri, Jul 1, 2022 at 3:20 AM Michael S. Tsirkin <mst@redhat.com> wrote:
-> > >
-> > > On Thu, Jun 30, 2022 at 11:51:30AM -0600, Mathieu Poirier wrote:
-> > > > + virtualization at lists.linux-foundation.org
-> > > > + jasowang at redhat.com
-> > > > + mst at redhat.com
-> > > >
-> > > > On Thu, 30 Jun 2022 at 10:20, Arnaud POULIQUEN
-> > > > <arnaud.pouliquen@foss.st.com> wrote:
-> > > > >
-> > > > > Hi,
-> > > > >
-> > > > > On 6/29/22 19:43, Mathieu Poirier wrote:
-> > > > > > Hi Anup,
-> > > > > >
-> > > > > > On Wed, Jun 08, 2022 at 10:43:34PM +0530, Anup Patel wrote:
-> > > > > >> The rpmsg_probe() is broken at the moment because virtqueue_add_inbuf()
-> > > > > >> fails due to both virtqueues (Rx and Tx) marked as broken by the
-> > > > > >> __vring_new_virtqueue() function. To solve this, virtio_device_ready()
-> > > > > >> (which unbreaks queues) should be called before virtqueue_add_inbuf().
-> > > > > >>
-> > > > > >> Fixes: 8b4ec69d7e09 ("virtio: harden vring IRQ")
-> > > > > >> Signed-off-by: Anup Patel <apatel@ventanamicro.com>
-> > > > > >> ---
-> > > > > >>  drivers/rpmsg/virtio_rpmsg_bus.c | 6 +++---
-> > > > > >>  1 file changed, 3 insertions(+), 3 deletions(-)
-> > > > > >>
-> > > > > >> diff --git a/drivers/rpmsg/virtio_rpmsg_bus.c b/drivers/rpmsg/virtio_rpmsg_bus.c
-> > > > > >> index 905ac7910c98..71a64d2c7644 100644
-> > > > > >> --- a/drivers/rpmsg/virtio_rpmsg_bus.c
-> > > > > >> +++ b/drivers/rpmsg/virtio_rpmsg_bus.c
-> > > > > >> @@ -929,6 +929,9 @@ static int rpmsg_probe(struct virtio_device *vdev)
-> > > > > >>      /* and half is dedicated for TX */
-> > > > > >>      vrp->sbufs = bufs_va + total_buf_space / 2;
-> > > > > >>
-> > > > > >> +    /* From this point on, we can notify and get callbacks. */
-> > > > > >> +    virtio_device_ready(vdev);
-> > > > > >> +
-> > > > > >
-> > > > > > Calling virtio_device_ready() here means that virtqueue_get_buf_ctx_split() can
-> > > > > > potentially be called (by way of rpmsg_recv_done()), which will race with
-> > > > > > virtqueue_add_inbuf().  If buffers in the virtqueue aren't available then
-> > > > > > rpmsg_recv_done() will fail, potentially breaking remote processors' state
-> > > > > > machines that don't expect their initial name service to fail when the "device"
-> > > > > > has been marked as ready.
-> > > > > >
-> > > > > > What does make me curious though is that nobody on the remoteproc mailing list
-> > > > > > has complained about commit 8b4ec69d7e09 breaking their environment... By now,
-> > > > > > i.e rc4, that should have happened.  Anyone from TI, ST and Xilinx care to test this on
-> > > > > > their rig?
-> > > > >
-> > > > > I tested on STm32mp1 board using tag v5.19-rc4(03c765b0e3b4)
-> > > > > I confirm the issue!
-> > > > >
-> > > > > Concerning the solution, I share Mathieu's concern. This could break legacy.
-> > > > > I made a short test and I would suggest to use __virtio_unbreak_device instead, tounbreak the virtqueues without changing the init sequence.
-> > > > >
-> > > > > I this case the patch would be:
-> > > > >
-> > > > > +       /*
-> > > > > +        * Unbreak the virtqueues to allow to add buffers before setting the vdev status
-> > > > > +        * to ready
-> > > > > +        */
-> > > > > +       __virtio_unbreak_device(vdev);
-> > > > > +
-> > > > >
-> > > > >         /* set up the receive buffers */
-> > > > >         for (i = 0; i < vrp->num_bufs / 2; i++) {
-> > > > >                 struct scatterlist sg;
-> > > > >                 void *cpu_addr = vrp->rbufs + i * vrp->buf_size;
-> > > >
-> > > > This will indeed fix the problem.  On the flip side the kernel
-> > > > documentation for __virtio_unbreak_device() puzzles me...
-> > > > It clearly states that it should be used for probing and restoring but
-> > > > _not_ directly by the driver.  Function rpmsg_probe() is part of
-> > > > probing but also the entry point to a driver.
-> > > >
-> > > > Michael and virtualisation folks, is this the right way to move forward?
-> > >
-> > > I don't think it is, __virtio_unbreak_device is intended for core use.
-> >
-> > Can we fill the rx after virtio_device_ready() in this case?
-> >
-> > Btw, the driver set driver ok after registering, we probably get a svq
-> > kick before DRIVER_OK?
-> >
-> > Thanks
+> Fixes: 100631b48ded ("riscv: Fix accessing pfn bits in PTEs for non-32bit variants")
+> Signed-off-by: Alexandre Ghiti <alexandre.ghiti@canonical.com>
+> ---
+>   arch/riscv/include/asm/pgtable-64.h | 12 ++++++------
+>   arch/riscv/include/asm/pgtable.h    |  6 +++---
+>   arch/riscv/kvm/mmu.c                |  2 +-
+>   3 files changed, 10 insertions(+), 10 deletions(-)
 >
-> Is this an ack for the original patch?
+> diff --git a/arch/riscv/include/asm/pgtable-64.h b/arch/riscv/include/asm/pgtable-64.h
+> index 5c2aba5efbd0..dc42375c2357 100644
+> --- a/arch/riscv/include/asm/pgtable-64.h
+> +++ b/arch/riscv/include/asm/pgtable-64.h
+> @@ -175,7 +175,7 @@ static inline pud_t pfn_pud(unsigned long pfn, pgprot_t prot)
+>   
+>   static inline unsigned long _pud_pfn(pud_t pud)
+>   {
+> -	return pud_val(pud) >> _PAGE_PFN_SHIFT;
+> +	return __page_val_to_pfn(pud_val(pud));
+>   }
+>   
+>   static inline pmd_t *pud_pgtable(pud_t pud)
+> @@ -278,13 +278,13 @@ static inline p4d_t pfn_p4d(unsigned long pfn, pgprot_t prot)
+>   
+>   static inline unsigned long _p4d_pfn(p4d_t p4d)
+>   {
+> -	return p4d_val(p4d) >> _PAGE_PFN_SHIFT;
+> +	return __page_val_to_pfn(p4d_val(p4d));
+>   }
+>   
+>   static inline pud_t *p4d_pgtable(p4d_t p4d)
+>   {
+>   	if (pgtable_l4_enabled)
+> -		return (pud_t *)pfn_to_virt(p4d_val(p4d) >> _PAGE_PFN_SHIFT);
+> +		return (pud_t *)pfn_to_virt(__page_val_to_pfn(p4d_val(p4d)));
+>   
+>   	return (pud_t *)pud_pgtable((pud_t) { p4d_val(p4d) });
+>   }
+> @@ -292,7 +292,7 @@ static inline pud_t *p4d_pgtable(p4d_t p4d)
+>   
+>   static inline struct page *p4d_page(p4d_t p4d)
+>   {
+> -	return pfn_to_page(p4d_val(p4d) >> _PAGE_PFN_SHIFT);
+> +	return pfn_to_page(__page_val_to_pfn(p4d_val(p4d)));
+>   }
+>   
+>   #define pud_index(addr) (((addr) >> PUD_SHIFT) & (PTRS_PER_PUD - 1))
+> @@ -347,7 +347,7 @@ static inline void pgd_clear(pgd_t *pgd)
+>   static inline p4d_t *pgd_pgtable(pgd_t pgd)
+>   {
+>   	if (pgtable_l5_enabled)
+> -		return (p4d_t *)pfn_to_virt(pgd_val(pgd) >> _PAGE_PFN_SHIFT);
+> +		return (p4d_t *)pfn_to_virt(__page_val_to_pfn(pgd_val(pgd)));
+>   
+>   	return (p4d_t *)p4d_pgtable((p4d_t) { pgd_val(pgd) });
+>   }
+> @@ -355,7 +355,7 @@ static inline p4d_t *pgd_pgtable(pgd_t pgd)
+>   
+>   static inline struct page *pgd_page(pgd_t pgd)
+>   {
+> -	return pfn_to_page(pgd_val(pgd) >> _PAGE_PFN_SHIFT);
+> +	return pfn_to_page(__page_val_to_pfn(pgd_val(pgd)));
+>   }
+>   #define pgd_page(pgd)	pgd_page(pgd)
+>   
+> diff --git a/arch/riscv/include/asm/pgtable.h b/arch/riscv/include/asm/pgtable.h
+> index 1d1be9d9419c..5dbd6610729b 100644
+> --- a/arch/riscv/include/asm/pgtable.h
+> +++ b/arch/riscv/include/asm/pgtable.h
+> @@ -261,7 +261,7 @@ static inline pgd_t pfn_pgd(unsigned long pfn, pgprot_t prot)
+>   
+>   static inline unsigned long _pgd_pfn(pgd_t pgd)
+>   {
+> -	return pgd_val(pgd) >> _PAGE_PFN_SHIFT;
+> +	return __page_val_to_pfn(pgd_val(pgd));
+>   }
+>   
+>   static inline struct page *pmd_page(pmd_t pmd)
+> @@ -590,14 +590,14 @@ static inline pmd_t pmd_mkinvalid(pmd_t pmd)
+>   	return __pmd(pmd_val(pmd) & ~(_PAGE_PRESENT|_PAGE_PROT_NONE));
+>   }
+>   
+> -#define __pmd_to_phys(pmd)  (pmd_val(pmd) >> _PAGE_PFN_SHIFT << PAGE_SHIFT)
+> +#define __pmd_to_phys(pmd)  (__page_val_to_pfn(pmd_val(pmd)) << PAGE_SHIFT)
+>   
+>   static inline unsigned long pmd_pfn(pmd_t pmd)
+>   {
+>   	return ((__pmd_to_phys(pmd) & PMD_MASK) >> PAGE_SHIFT);
+>   }
+>   
+> -#define __pud_to_phys(pud)  (pud_val(pud) >> _PAGE_PFN_SHIFT << PAGE_SHIFT)
+> +#define __pud_to_phys(pud)  (__page_val_to_pfn(pud_val(pud)) << PAGE_SHIFT)
+>   
+>   static inline unsigned long pud_pfn(pud_t pud)
+>   {
+> diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
+> index 1c00695ebee7..9826073fbc67 100644
+> --- a/arch/riscv/kvm/mmu.c
+> +++ b/arch/riscv/kvm/mmu.c
+> @@ -54,7 +54,7 @@ static inline unsigned long gstage_pte_index(gpa_t addr, u32 level)
+>   
+>   static inline unsigned long gstage_pte_page_vaddr(pte_t pte)
+>   {
+> -	return (unsigned long)pfn_to_virt(pte_val(pte) >> _PAGE_PFN_SHIFT);
+> +	return (unsigned long)pfn_to_virt(__page_val_to_pfn(pte_val(pte)));
+>   }
+>   
+>   static int gstage_page_size_to_level(unsigned long page_size, u32 *out_level)
 
-Nope, I meant, instead of moving virtio_device_ready() a little bit
-earlier, can we only move the rvq filling after virtio_device_ready().
 
-Thanks
+@Palmer: IMO this should land in 5.19-rcX.
 
->
-> > >
-> > > > >
-> > > > > Regards,
-> > > > > Arnaud
-> > > > >
-> > > > > >
-> > > > > > Thanks,
-> > > > > > Mathieu
-> > > > > >
-> > > > > >>      /* set up the receive buffers */
-> > > > > >>      for (i = 0; i < vrp->num_bufs / 2; i++) {
-> > > > > >>              struct scatterlist sg;
-> > > > > >> @@ -983,9 +986,6 @@ static int rpmsg_probe(struct virtio_device *vdev)
-> > > > > >>       */
-> > > > > >>      notify = virtqueue_kick_prepare(vrp->rvq);
-> > > > > >>
-> > > > > >> -    /* From this point on, we can notify and get callbacks. */
-> > > > > >> -    virtio_device_ready(vdev);
-> > > > > >> -
-> > > > > >>      /* tell the remote processor it can start sending messages */
-> > > > > >>      /*
-> > > > > >>       * this might be concurrent with callbacks, but we are only
-> > > > > >> --
-> > > > > >> 2.34.1
-> > > > > >>
-> > >
->
+Thanks Heiko and Anup for the review,
+
+Alex
 
 
