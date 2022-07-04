@@ -1,81 +1,65 @@
 From: Anup Patel <anup@brainfault.org>
-Date: Mon, 4 Jul 2022 14:42:13 +0530
-Subject: [PATCH] riscv-v: kvm: Make kvm_riscv_guest_timer_init a void function
-In-Reply-To: <20220701084518.1922011-1-nborisov@suse.com>
-References: <20220701084518.1922011-1-nborisov@suse.com>
-Message-ID: <CAAhSdy0icMyOgc+Cf7RB=UitPTym6zoTKvJ=nsH5zt11QaGtfg@mail.gmail.com>
+Date: Mon, 4 Jul 2022 14:43:08 +0530
+Subject: [PATCH] riscv: kvm: move preempt_disable() call in kvm_arch_vcpu_ioctl_run
+In-Reply-To: <20220701094955.1927867-1-nborisov@suse.com>
+References: <20220701094955.1927867-1-nborisov@suse.com>
+Message-ID: <CAAhSdy1jhVkfMD0si0XZvj2Js+wKXpNxKq+rgUWD_ZTy6+R2Bw@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Jul 1, 2022 at 2:15 PM Nikolay Borisov <nborisov@suse.com> wrote:
+On Fri, Jul 1, 2022 at 3:19 PM Nikolay Borisov <nborisov@suse.com> wrote:
 >
-> It can never fail so convey that fact explicitly by making the function
-> void. Also in kvm_arch_init_vm it makes it clear that there no need
-> to do any cleanup after kvm_riscv_gstage_vmid_init has been called.
+> local_irq_disable provides stronger guarantees than preempt_disable so
+> calling the latter is redundant when interrupts are disabled. Instead,
+> explicitly disable preemption right before interrupts are
+> enabled/disabled to ensure that the time accounted in guest_timing_exit_irqoff
+> includes time taken by the guest or interrupts.
 >
 > Signed-off-by: Nikolay Borisov <nborisov@suse.com>
 
-Minor typo in patch subject. It should have prefix "riscv: kvm:".
+Looks good to me.
 
-I have taken care of above typo and queued it for 5.20
+I have queued it for 5.20
 
 Thanks,
 Anup
 
 > ---
->  arch/riscv/include/asm/kvm_vcpu_timer.h | 2 +-
->  arch/riscv/kvm/vcpu_timer.c             | 4 +---
->  arch/riscv/kvm/vm.c                     | 4 +++-
->  3 files changed, 5 insertions(+), 5 deletions(-)
+>  arch/riscv/kvm/vcpu.c | 4 +---
+>  1 file changed, 1 insertion(+), 3 deletions(-)
 >
-> diff --git a/arch/riscv/include/asm/kvm_vcpu_timer.h b/arch/riscv/include/asm/kvm_vcpu_timer.h
-> index 375281eb49e0..50138e2eb91b 100644
-> --- a/arch/riscv/include/asm/kvm_vcpu_timer.h
-> +++ b/arch/riscv/include/asm/kvm_vcpu_timer.h
-> @@ -39,6 +39,6 @@ int kvm_riscv_vcpu_timer_init(struct kvm_vcpu *vcpu);
->  int kvm_riscv_vcpu_timer_deinit(struct kvm_vcpu *vcpu);
->  int kvm_riscv_vcpu_timer_reset(struct kvm_vcpu *vcpu);
->  void kvm_riscv_vcpu_timer_restore(struct kvm_vcpu *vcpu);
-> -int kvm_riscv_guest_timer_init(struct kvm *kvm);
-> +void kvm_riscv_guest_timer_init(struct kvm *kvm);
+> diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+> index 7f4ad5e4373a..0c527b2c3c63 100644
+> --- a/arch/riscv/kvm/vcpu.c
+> +++ b/arch/riscv/kvm/vcpu.c
+> @@ -888,8 +888,6 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
 >
->  #endif
-> diff --git a/arch/riscv/kvm/vcpu_timer.c b/arch/riscv/kvm/vcpu_timer.c
-> index 5c4c37ff2d48..595043857049 100644
-> --- a/arch/riscv/kvm/vcpu_timer.c
-> +++ b/arch/riscv/kvm/vcpu_timer.c
-> @@ -214,12 +214,10 @@ void kvm_riscv_vcpu_timer_restore(struct kvm_vcpu *vcpu)
->  #endif
->  }
+>                 kvm_riscv_check_vcpu_requests(vcpu);
 >
-> -int kvm_riscv_guest_timer_init(struct kvm *kvm)
-> +void kvm_riscv_guest_timer_init(struct kvm *kvm)
->  {
->         struct kvm_guest_timer *gt = &kvm->arch.timer;
->
->         riscv_cs_get_mult_shift(&gt->nsec_mult, &gt->nsec_shift);
->         gt->time_delta = -get_cycles64();
+> -               preempt_disable();
 > -
-> -       return 0;
->  }
-> diff --git a/arch/riscv/kvm/vm.c b/arch/riscv/kvm/vm.c
-> index 945a2bf5e3f6..65a964d7e70d 100644
-> --- a/arch/riscv/kvm/vm.c
-> +++ b/arch/riscv/kvm/vm.c
-> @@ -41,7 +41,9 @@ int kvm_arch_init_vm(struct kvm *kvm, unsigned long type)
->                 return r;
->         }
+>                 local_irq_disable();
 >
-> -       return kvm_riscv_guest_timer_init(kvm);
-> +       kvm_riscv_guest_timer_init(kvm);
-> +
-> +       return 0;
->  }
+>                 /*
+> @@ -926,7 +924,6 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
+>                     kvm_request_pending(vcpu)) {
+>                         vcpu->mode = OUTSIDE_GUEST_MODE;
+>                         local_irq_enable();
+> -                       preempt_enable();
+>                         kvm_vcpu_srcu_read_lock(vcpu);
+>                         continue;
+>                 }
+> @@ -960,6 +957,7 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
+>                 /* Syncup interrupts state with HW */
+>                 kvm_riscv_vcpu_sync_interrupts(vcpu);
 >
->  void kvm_arch_destroy_vm(struct kvm *kvm)
+> +               preempt_disable();
+>                 /*
+>                  * We must ensure that any pending interrupts are taken before
+>                  * we exit guest timing so that timer ticks are accounted as
 > --
 > 2.25.1
 >
