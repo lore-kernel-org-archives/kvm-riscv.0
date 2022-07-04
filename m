@@ -1,58 +1,180 @@
-From: Anup Patel <anup@brainfault.org>
-Date: Mon, 4 Jul 2022 15:06:28 +0530
-Subject: [PATCH v2 0/3] Improve instruction and CSR emulation in KVM RISC-V
-In-Reply-To: <20220615104025.941382-1-apatel@ventanamicro.com>
-References: <20220615104025.941382-1-apatel@ventanamicro.com>
-Message-ID: <CAAhSdy3gmnqB6La125i2hdVh6eNiwqG6saqz4RTTYF=2Gqo6cA@mail.gmail.com>
+From: Arnaud POULIQUEN <arnaud.pouliquen@foss.st.com>
+Date: Mon, 4 Jul 2022 11:44:49 +0200
+Subject: [PATCH] rpmsg: virtio: Fix broken rpmsg_probe()
+In-Reply-To: <CACGkMEtkVmq2+NtDpp-XWZFD_WO6Dzm4=pcVwg-aKmStAqJCVg@mail.gmail.com>
+References: <20220608171334.730739-1-apatel@ventanamicro.com>
+ <20220629174318.GB2018382@p14s>
+ <bf87a50c-6d92-8657-72a9-75af81d2489f@foss.st.com>
+ <CANLsYkzHZMV3eVUn3Xpk0eiAexyr9HC5__K9xfAwfm23nuQj=A@mail.gmail.com>
+ <20220630152003-mutt-send-email-mst@kernel.org>
+ <CACGkMEtHuoHT6meHacsie8M87yjUX3jGEvP7BuU_Vrb3yqkDWw@mail.gmail.com>
+ <20220701021536-mutt-send-email-mst@kernel.org>
+ <CACGkMEtkVmq2+NtDpp-XWZFD_WO6Dzm4=pcVwg-aKmStAqJCVg@mail.gmail.com>
+Message-ID: <66323a79-48a7-853e-1c44-9e62fcc5b775@foss.st.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Jun 15, 2022 at 4:10 PM Anup Patel <apatel@ventanamicro.com> wrote:
->
-> Currently, the instruction emulation for MMIO traps and Virtual instruction
-> traps co-exist with general VCPU exit handling. The instruction and CSR
-> emulation will grow with upcoming SBI PMU, AIA, and Nested virtualization
-> in KVM RISC-V. In addition, we also need a mechanism to allow user-space
-> emulate certain CSRs under certain situation (example, host has AIA support
-> but user-space does not wants to use in-kernel AIA IMSIC and APLIC support).
->
-> This series improves instruction and CSR emulation in KVM RISC-V to make
-> it extensible based on above.
->
-> These patches can also be found in riscv_kvm_csr_v2 branch at:
-> https://github.com/avpatel/linux.git
->
-> Changes since v1:
->  - Added a switch-case in PATCH3 to process MMIO, CSR, and SBI returned
->    from user-space
->  - Removed hard-coding in PATCH3 for determining type of CSR instruction
->
-> Anup Patel (3):
->   RISC-V: KVM: Factor-out instruction emulation into separate sources
->   RISC-V: KVM: Add extensible system instruction emulation framework
->   RISC-V: KVM: Add extensible CSR emulation framework
+Hello Jason,
 
-I have queued this series for 5.20
+On 7/4/22 06:35, Jason Wang wrote:
+> On Fri, Jul 1, 2022 at 2:16 PM Michael S. Tsirkin <mst@redhat.com> wrote:
+>>
+>> On Fri, Jul 01, 2022 at 09:22:15AM +0800, Jason Wang wrote:
+>>> On Fri, Jul 1, 2022 at 3:20 AM Michael S. Tsirkin <mst@redhat.com> wrote:
+>>>>
+>>>> On Thu, Jun 30, 2022 at 11:51:30AM -0600, Mathieu Poirier wrote:
+>>>>> + virtualization at lists.linux-foundation.org
+>>>>> + jasowang at redhat.com
+>>>>> + mst at redhat.com
+>>>>>
+>>>>> On Thu, 30 Jun 2022 at 10:20, Arnaud POULIQUEN
+>>>>> <arnaud.pouliquen@foss.st.com> wrote:
+>>>>>>
+>>>>>> Hi,
+>>>>>>
+>>>>>> On 6/29/22 19:43, Mathieu Poirier wrote:
+>>>>>>> Hi Anup,
+>>>>>>>
+>>>>>>> On Wed, Jun 08, 2022 at 10:43:34PM +0530, Anup Patel wrote:
+>>>>>>>> The rpmsg_probe() is broken at the moment because virtqueue_add_inbuf()
+>>>>>>>> fails due to both virtqueues (Rx and Tx) marked as broken by the
+>>>>>>>> __vring_new_virtqueue() function. To solve this, virtio_device_ready()
+>>>>>>>> (which unbreaks queues) should be called before virtqueue_add_inbuf().
+>>>>>>>>
+>>>>>>>> Fixes: 8b4ec69d7e09 ("virtio: harden vring IRQ")
+>>>>>>>> Signed-off-by: Anup Patel <apatel@ventanamicro.com>
+>>>>>>>> ---
+>>>>>>>>  drivers/rpmsg/virtio_rpmsg_bus.c | 6 +++---
+>>>>>>>>  1 file changed, 3 insertions(+), 3 deletions(-)
+>>>>>>>>
+>>>>>>>> diff --git a/drivers/rpmsg/virtio_rpmsg_bus.c b/drivers/rpmsg/virtio_rpmsg_bus.c
+>>>>>>>> index 905ac7910c98..71a64d2c7644 100644
+>>>>>>>> --- a/drivers/rpmsg/virtio_rpmsg_bus.c
+>>>>>>>> +++ b/drivers/rpmsg/virtio_rpmsg_bus.c
+>>>>>>>> @@ -929,6 +929,9 @@ static int rpmsg_probe(struct virtio_device *vdev)
+>>>>>>>>      /* and half is dedicated for TX */
+>>>>>>>>      vrp->sbufs = bufs_va + total_buf_space / 2;
+>>>>>>>>
+>>>>>>>> +    /* From this point on, we can notify and get callbacks. */
+>>>>>>>> +    virtio_device_ready(vdev);
+>>>>>>>> +
+>>>>>>>
+>>>>>>> Calling virtio_device_ready() here means that virtqueue_get_buf_ctx_split() can
+>>>>>>> potentially be called (by way of rpmsg_recv_done()), which will race with
+>>>>>>> virtqueue_add_inbuf().  If buffers in the virtqueue aren't available then
+>>>>>>> rpmsg_recv_done() will fail, potentially breaking remote processors' state
+>>>>>>> machines that don't expect their initial name service to fail when the "device"
+>>>>>>> has been marked as ready.
+>>>>>>>
+>>>>>>> What does make me curious though is that nobody on the remoteproc mailing list
+>>>>>>> has complained about commit 8b4ec69d7e09 breaking their environment... By now,
+>>>>>>> i.e rc4, that should have happened.  Anyone from TI, ST and Xilinx care to test this on
+>>>>>>> their rig?
+>>>>>>
+>>>>>> I tested on STm32mp1 board using tag v5.19-rc4(03c765b0e3b4)
+>>>>>> I confirm the issue!
+>>>>>>
+>>>>>> Concerning the solution, I share Mathieu's concern. This could break legacy.
+>>>>>> I made a short test and I would suggest to use __virtio_unbreak_device instead, tounbreak the virtqueues without changing the init sequence.
+>>>>>>
+>>>>>> I this case the patch would be:
+>>>>>>
+>>>>>> +       /*
+>>>>>> +        * Unbreak the virtqueues to allow to add buffers before setting the vdev status
+>>>>>> +        * to ready
+>>>>>> +        */
+>>>>>> +       __virtio_unbreak_device(vdev);
+>>>>>> +
+>>>>>>
+>>>>>>         /* set up the receive buffers */
+>>>>>>         for (i = 0; i < vrp->num_bufs / 2; i++) {
+>>>>>>                 struct scatterlist sg;
+>>>>>>                 void *cpu_addr = vrp->rbufs + i * vrp->buf_size;
+>>>>>
+>>>>> This will indeed fix the problem.  On the flip side the kernel
+>>>>> documentation for __virtio_unbreak_device() puzzles me...
+>>>>> It clearly states that it should be used for probing and restoring but
+>>>>> _not_ directly by the driver.  Function rpmsg_probe() is part of
+>>>>> probing but also the entry point to a driver.
+>>>>>
+>>>>> Michael and virtualisation folks, is this the right way to move forward?
+>>>>
+>>>> I don't think it is, __virtio_unbreak_device is intended for core use.
+>>>
+>>> Can we fill the rx after virtio_device_ready() in this case?
+>>>
+>>> Btw, the driver set driver ok after registering, we probably get a svq
+>>> kick before DRIVER_OK?
+
+By "registering" you mean calling rpmsg_virtio_add_ctrl_dev and 
+rpmsg_ns_register_device?
+
+The rpmsg_ns_register_device has to be called before. Because it has to be
+probed to handle the first message coming from the remote side to create
+associated rpmsg local device. It doesn't send message.
+
+The risk could be for the rpmsg_ctrl device. Registering it
+after the virtio_device_ready(vdev) call could make sense...
+
+>>>
+>>> Thanks
+>>
+>> Is this an ack for the original patch?
+> 
+> Nope, I meant, instead of moving virtio_device_ready() a little bit
+> earlier, can we only move the rvq filling after virtio_device_ready().
+> 
+> Thanks
+
+Please find some concerns about this inversion here:
+https://lore.kernel.org/lkml/20220701053813-mutt-send-email-mst at kernel.org/
+
+Regarding __virtio_unbreak_device. The pending virtio_break_device is
+used by some virtio driver.
+Could we consider that it makes sense to also have a
+virtio_unbreak_device interface?
+
+
+I do not well understand the reason of the commit:
+8b4ec69d7e09 ("virtio: harden vring IRQ", 2022-05-27)
+So following alternative is probably pretty naive:
+Is the use of virtqueue_disable_cb could be an alternative to the
+vq->broken usage allowing to register buffer while preventing virtqueue IRQ?
 
 Thanks,
-Anup
+Arnaud
 
->
->  arch/riscv/include/asm/kvm_host.h           |  16 +-
->  arch/riscv/include/asm/kvm_vcpu_insn.h      |  48 ++
->  arch/riscv/kvm/Makefile                     |   1 +
->  arch/riscv/kvm/vcpu.c                       |  34 +-
->  arch/riscv/kvm/vcpu_exit.c                  | 490 +----------------
->  arch/riscv/kvm/{vcpu_exit.c => vcpu_insn.c} | 563 +++++++++++---------
->  include/uapi/linux/kvm.h                    |   8 +
->  7 files changed, 392 insertions(+), 768 deletions(-)
->  create mode 100644 arch/riscv/include/asm/kvm_vcpu_insn.h
->  copy arch/riscv/kvm/{vcpu_exit.c => vcpu_insn.c} (63%)
->
-> --
-> 2.34.1
->
+> 
+>>
+>>>>
+>>>>>>
+>>>>>> Regards,
+>>>>>> Arnaud
+>>>>>>
+>>>>>>>
+>>>>>>> Thanks,
+>>>>>>> Mathieu
+>>>>>>>
+>>>>>>>>      /* set up the receive buffers */
+>>>>>>>>      for (i = 0; i < vrp->num_bufs / 2; i++) {
+>>>>>>>>              struct scatterlist sg;
+>>>>>>>> @@ -983,9 +986,6 @@ static int rpmsg_probe(struct virtio_device *vdev)
+>>>>>>>>       */
+>>>>>>>>      notify = virtqueue_kick_prepare(vrp->rvq);
+>>>>>>>>
+>>>>>>>> -    /* From this point on, we can notify and get callbacks. */
+>>>>>>>> -    virtio_device_ready(vdev);
+>>>>>>>> -
+>>>>>>>>      /* tell the remote processor it can start sending messages */
+>>>>>>>>      /*
+>>>>>>>>       * this might be concurrent with callbacks, but we are only
+>>>>>>>> --
+>>>>>>>> 2.34.1
+>>>>>>>>
+>>>>
+>>
+> 
 
