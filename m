@@ -1,134 +1,393 @@
-From: Alexandre Ghiti <alex@ghiti.fr>
-Date: Mon, 4 Jul 2022 09:03:01 +0200
-Subject: [PATCH -fixes v2] riscv: Fix missing PAGE_PFN_MASK
-In-Reply-To: <20220613085307.260256-1-alexandre.ghiti@canonical.com>
-References: <20220613085307.260256-1-alexandre.ghiti@canonical.com>
-Message-ID: <d5d1a6ef-1153-272b-af9b-9f369bbdd4e5@ghiti.fr>
+From: Anup Patel <anup@brainfault.org>
+Date: Mon, 4 Jul 2022 14:17:38 +0530
+Subject: [PATCH] RISC-V: KVM: Improve ISA extension by using a bitmap
+In-Reply-To: <20220620234254.2610040-1-atishp@rivosinc.com>
+References: <20220620234254.2610040-1-atishp@rivosinc.com>
+Message-ID: <CAAhSdy2ziUJV2vozZw+vDiA+-Xa5pNiC=Dy_gapCApoR4bnxWg@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 6/13/22 10:53, Alexandre Ghiti wrote:
-> There are a bunch of functions that use the PFN from a page table entry
-> that end up with the svpbmt upper-bits because they are missing the newly
-> introduced PAGE_PFN_MASK which leads to wrong addresses conversions and
-> then crash: fix this by adding this mask.
+On Tue, Jun 21, 2022 at 5:13 AM Atish Patra <atishp@rivosinc.com> wrote:
 >
-> Fixes: 100631b48ded ("riscv: Fix accessing pfn bits in PTEs for non-32bit variants")
-> Signed-off-by: Alexandre Ghiti <alexandre.ghiti@canonical.com>
+> Currently, the every vcpu only stores the ISA extensions in a unsigned long
+> which is not scalable as number of extensions will continue to grow.
+> Using a bitmap allows the ISA extension to support any number of
+> extensions. The CONFIG one reg interface implementation is modified to
+> support the bitmap as well. But it is meant only for base extensions.
+> Thus, the first element of the bitmap array is sufficient for that
+> interface.
+>
+> In the future, all the new multi-letter extensions must use the
+> ISA_EXT one reg interface that allows enabling/disabling any extension
+> now.
+>
+> Signed-off-by: Atish Patra <atishp@rivosinc.com>
 > ---
->   arch/riscv/include/asm/pgtable-64.h | 12 ++++++------
->   arch/riscv/include/asm/pgtable.h    |  6 +++---
->   arch/riscv/kvm/mmu.c                |  2 +-
->   3 files changed, 10 insertions(+), 10 deletions(-)
+>  arch/riscv/include/asm/kvm_host.h    |  3 +-
+>  arch/riscv/include/asm/kvm_vcpu_fp.h |  8 +--
+>  arch/riscv/kvm/vcpu.c                | 81 ++++++++++++++--------------
+>  arch/riscv/kvm/vcpu_fp.c             | 27 +++++-----
+>  4 files changed, 59 insertions(+), 60 deletions(-)
 >
-> diff --git a/arch/riscv/include/asm/pgtable-64.h b/arch/riscv/include/asm/pgtable-64.h
-> index 5c2aba5efbd0..dc42375c2357 100644
-> --- a/arch/riscv/include/asm/pgtable-64.h
-> +++ b/arch/riscv/include/asm/pgtable-64.h
-> @@ -175,7 +175,7 @@ static inline pud_t pfn_pud(unsigned long pfn, pgprot_t prot)
->   
->   static inline unsigned long _pud_pfn(pud_t pud)
->   {
-> -	return pud_val(pud) >> _PAGE_PFN_SHIFT;
-> +	return __page_val_to_pfn(pud_val(pud));
->   }
->   
->   static inline pmd_t *pud_pgtable(pud_t pud)
-> @@ -278,13 +278,13 @@ static inline p4d_t pfn_p4d(unsigned long pfn, pgprot_t prot)
->   
->   static inline unsigned long _p4d_pfn(p4d_t p4d)
->   {
-> -	return p4d_val(p4d) >> _PAGE_PFN_SHIFT;
-> +	return __page_val_to_pfn(p4d_val(p4d));
->   }
->   
->   static inline pud_t *p4d_pgtable(p4d_t p4d)
->   {
->   	if (pgtable_l4_enabled)
-> -		return (pud_t *)pfn_to_virt(p4d_val(p4d) >> _PAGE_PFN_SHIFT);
-> +		return (pud_t *)pfn_to_virt(__page_val_to_pfn(p4d_val(p4d)));
->   
->   	return (pud_t *)pud_pgtable((pud_t) { p4d_val(p4d) });
->   }
-> @@ -292,7 +292,7 @@ static inline pud_t *p4d_pgtable(p4d_t p4d)
->   
->   static inline struct page *p4d_page(p4d_t p4d)
->   {
-> -	return pfn_to_page(p4d_val(p4d) >> _PAGE_PFN_SHIFT);
-> +	return pfn_to_page(__page_val_to_pfn(p4d_val(p4d)));
->   }
->   
->   #define pud_index(addr) (((addr) >> PUD_SHIFT) & (PTRS_PER_PUD - 1))
-> @@ -347,7 +347,7 @@ static inline void pgd_clear(pgd_t *pgd)
->   static inline p4d_t *pgd_pgtable(pgd_t pgd)
->   {
->   	if (pgtable_l5_enabled)
-> -		return (p4d_t *)pfn_to_virt(pgd_val(pgd) >> _PAGE_PFN_SHIFT);
-> +		return (p4d_t *)pfn_to_virt(__page_val_to_pfn(pgd_val(pgd)));
->   
->   	return (p4d_t *)p4d_pgtable((p4d_t) { pgd_val(pgd) });
->   }
-> @@ -355,7 +355,7 @@ static inline p4d_t *pgd_pgtable(pgd_t pgd)
->   
->   static inline struct page *pgd_page(pgd_t pgd)
->   {
-> -	return pfn_to_page(pgd_val(pgd) >> _PAGE_PFN_SHIFT);
-> +	return pfn_to_page(__page_val_to_pfn(pgd_val(pgd)));
->   }
->   #define pgd_page(pgd)	pgd_page(pgd)
->   
-> diff --git a/arch/riscv/include/asm/pgtable.h b/arch/riscv/include/asm/pgtable.h
-> index 1d1be9d9419c..5dbd6610729b 100644
-> --- a/arch/riscv/include/asm/pgtable.h
-> +++ b/arch/riscv/include/asm/pgtable.h
-> @@ -261,7 +261,7 @@ static inline pgd_t pfn_pgd(unsigned long pfn, pgprot_t prot)
->   
->   static inline unsigned long _pgd_pfn(pgd_t pgd)
->   {
-> -	return pgd_val(pgd) >> _PAGE_PFN_SHIFT;
-> +	return __page_val_to_pfn(pgd_val(pgd));
->   }
->   
->   static inline struct page *pmd_page(pmd_t pmd)
-> @@ -590,14 +590,14 @@ static inline pmd_t pmd_mkinvalid(pmd_t pmd)
->   	return __pmd(pmd_val(pmd) & ~(_PAGE_PRESENT|_PAGE_PROT_NONE));
->   }
->   
-> -#define __pmd_to_phys(pmd)  (pmd_val(pmd) >> _PAGE_PFN_SHIFT << PAGE_SHIFT)
-> +#define __pmd_to_phys(pmd)  (__page_val_to_pfn(pmd_val(pmd)) << PAGE_SHIFT)
->   
->   static inline unsigned long pmd_pfn(pmd_t pmd)
->   {
->   	return ((__pmd_to_phys(pmd) & PMD_MASK) >> PAGE_SHIFT);
->   }
->   
-> -#define __pud_to_phys(pud)  (pud_val(pud) >> _PAGE_PFN_SHIFT << PAGE_SHIFT)
-> +#define __pud_to_phys(pud)  (__page_val_to_pfn(pud_val(pud)) << PAGE_SHIFT)
->   
->   static inline unsigned long pud_pfn(pud_t pud)
->   {
-> diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
-> index 1c00695ebee7..9826073fbc67 100644
-> --- a/arch/riscv/kvm/mmu.c
-> +++ b/arch/riscv/kvm/mmu.c
-> @@ -54,7 +54,7 @@ static inline unsigned long gstage_pte_index(gpa_t addr, u32 level)
->   
->   static inline unsigned long gstage_pte_page_vaddr(pte_t pte)
->   {
-> -	return (unsigned long)pfn_to_virt(pte_val(pte) >> _PAGE_PFN_SHIFT);
-> +	return (unsigned long)pfn_to_virt(__page_val_to_pfn(pte_val(pte)));
->   }
->   
->   static int gstage_page_size_to_level(unsigned long page_size, u32 *out_level)
+> diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
+> index 319c8aeb42af..c749cdacbd63 100644
+> --- a/arch/riscv/include/asm/kvm_host.h
+> +++ b/arch/riscv/include/asm/kvm_host.h
+> @@ -14,6 +14,7 @@
+>  #include <linux/kvm_types.h>
+>  #include <linux/spinlock.h>
+>  #include <asm/csr.h>
+> +#include <asm/hwcap.h>
+>  #include <asm/kvm_vcpu_fp.h>
+>  #include <asm/kvm_vcpu_timer.h>
+>
+> @@ -170,7 +171,7 @@ struct kvm_vcpu_arch {
+>         int last_exit_cpu;
+>
+>         /* ISA feature bits (similar to MISA) */
+> -       unsigned long isa;
+> +       DECLARE_BITMAP(isa, RISCV_ISA_EXT_MAX);
+>
+>         /* SSCRATCH, STVEC, and SCOUNTEREN of Host */
+>         unsigned long host_sscratch;
+> diff --git a/arch/riscv/include/asm/kvm_vcpu_fp.h b/arch/riscv/include/asm/kvm_vcpu_fp.h
+> index 4da9b8e0f050..e86bb67f2a8a 100644
+> --- a/arch/riscv/include/asm/kvm_vcpu_fp.h
+> +++ b/arch/riscv/include/asm/kvm_vcpu_fp.h
+> @@ -22,9 +22,9 @@ void __kvm_riscv_fp_d_restore(struct kvm_cpu_context *context);
+>
+>  void kvm_riscv_vcpu_fp_reset(struct kvm_vcpu *vcpu);
+>  void kvm_riscv_vcpu_guest_fp_save(struct kvm_cpu_context *cntx,
+> -                                 unsigned long isa);
+> +                                 unsigned long *isa);
+
+Better to use "const unsigned long *"
+
+>  void kvm_riscv_vcpu_guest_fp_restore(struct kvm_cpu_context *cntx,
+> -                                    unsigned long isa);
+> +                                    unsigned long *isa);
+
+Same as above.
+
+>  void kvm_riscv_vcpu_host_fp_save(struct kvm_cpu_context *cntx);
+>  void kvm_riscv_vcpu_host_fp_restore(struct kvm_cpu_context *cntx);
+>  #else
+> @@ -32,12 +32,12 @@ static inline void kvm_riscv_vcpu_fp_reset(struct kvm_vcpu *vcpu)
+>  {
+>  }
+>  static inline void kvm_riscv_vcpu_guest_fp_save(struct kvm_cpu_context *cntx,
+> -                                               unsigned long isa)
+> +                                               unsigned long *isa)
+>  {
+>  }
+>  static inline void kvm_riscv_vcpu_guest_fp_restore(
+>                                         struct kvm_cpu_context *cntx,
+> -                                       unsigned long isa)
+> +                                       unsigned long *isa)
+>  {
+>  }
+>  static inline void kvm_riscv_vcpu_host_fp_save(struct kvm_cpu_context *cntx)
+> diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+> index 7f4ad5e4373a..cb2a65b5d563 100644
+> --- a/arch/riscv/kvm/vcpu.c
+> +++ b/arch/riscv/kvm/vcpu.c
+> @@ -46,8 +46,19 @@ const struct kvm_stats_header kvm_vcpu_stats_header = {
+>                                                 riscv_isa_extension_mask(i) | \
+>                                                 riscv_isa_extension_mask(m))
+>
+> -#define KVM_RISCV_ISA_ALLOWED (KVM_RISCV_ISA_DISABLE_ALLOWED | \
+> -                              KVM_RISCV_ISA_DISABLE_NOT_ALLOWED)
+> +#define KVM_RISCV_ISA_MASK GENMASK(25, 0)
+> +
+> +/* Mapping between KVM ISA Extension ID & Host ISA extension ID */
+> +static unsigned long kvm_isa_ext_arr[] = {
+> +       RISCV_ISA_EXT_a,
+> +       RISCV_ISA_EXT_c,
+> +       RISCV_ISA_EXT_d,
+> +       RISCV_ISA_EXT_f,
+> +       RISCV_ISA_EXT_h,
+> +       RISCV_ISA_EXT_i,
+> +       RISCV_ISA_EXT_m,
+> +       RISCV_ISA_EXT_SSCOFPMF,
+
+The RISCV_ISA_EXT_SSCOFPMF should be added only after we have
+SBI PMU support in KVM RISC-V. Please drop it.
+
+> +};
+>
+>  static void kvm_riscv_reset_vcpu(struct kvm_vcpu *vcpu)
+>  {
+> @@ -99,13 +110,20 @@ int kvm_arch_vcpu_create(struct kvm_vcpu *vcpu)
+>  {
+>         struct kvm_cpu_context *cntx;
+>         struct kvm_vcpu_csr *reset_csr = &vcpu->arch.guest_reset_csr;
+> +       unsigned long host_isa, i;
+>
+>         /* Mark this VCPU never ran */
+>         vcpu->arch.ran_atleast_once = false;
+>         vcpu->arch.mmu_page_cache.gfp_zero = __GFP_ZERO;
+> +       bitmap_zero(vcpu->arch.isa, RISCV_ISA_EXT_MAX);
+>
+>         /* Setup ISA features available to VCPU */
+> -       vcpu->arch.isa = riscv_isa_extension_base(NULL) & KVM_RISCV_ISA_ALLOWED;
+> +       for (i = 0; i < ARRAY_SIZE(kvm_isa_ext_arr); i++) {
+> +               host_isa = kvm_isa_ext_arr[i];
+> +               if (__riscv_isa_extension_available(NULL, host_isa) &&
+> +                  host_isa != RISCV_ISA_EXT_h)
+> +                       set_bit(host_isa, vcpu->arch.isa);
+> +       }
+>
+>         /* Setup VCPU hfence queue */
+>         spin_lock_init(&vcpu->arch.hfence_lock);
+> @@ -199,7 +217,7 @@ static int kvm_riscv_vcpu_get_reg_config(struct kvm_vcpu *vcpu,
+>
+>         switch (reg_num) {
+>         case KVM_REG_RISCV_CONFIG_REG(isa):
+> -               reg_val = vcpu->arch.isa;
+> +               reg_val = vcpu->arch.isa[0] & KVM_RISCV_ISA_MASK;
+>                 break;
+>         default:
+>                 return -EINVAL;
+> @@ -220,6 +238,7 @@ static int kvm_riscv_vcpu_set_reg_config(struct kvm_vcpu *vcpu,
+>                                             KVM_REG_SIZE_MASK |
+>                                             KVM_REG_RISCV_CONFIG);
+>         unsigned long reg_val;
+> +       unsigned long isa_mask;
+>
+>         if (KVM_REG_SIZE(reg->id) != sizeof(unsigned long))
+>                 return -EINVAL;
+> @@ -227,13 +246,19 @@ static int kvm_riscv_vcpu_set_reg_config(struct kvm_vcpu *vcpu,
+>         if (copy_from_user(&reg_val, uaddr, KVM_REG_SIZE(reg->id)))
+>                 return -EFAULT;
+>
+> +       /* This ONE REG interface is only defined for single letter extensions */
+> +       if (fls(reg_val) >= RISCV_ISA_EXT_BASE)
+> +               return -EINVAL;
+> +
+>         switch (reg_num) {
+>         case KVM_REG_RISCV_CONFIG_REG(isa):
+>                 if (!vcpu->arch.ran_atleast_once) {
+>                         /* Ignore the disable request for these extensions */
+> -                       vcpu->arch.isa = reg_val | KVM_RISCV_ISA_DISABLE_NOT_ALLOWED;
+> -                       vcpu->arch.isa &= riscv_isa_extension_base(NULL);
+> -                       vcpu->arch.isa &= KVM_RISCV_ISA_ALLOWED;
+> +                       isa_mask = (reg_val | KVM_RISCV_ISA_DISABLE_NOT_ALLOWED);
+> +                       isa_mask &= riscv_isa_extension_base(NULL);
+> +                       /* Do not modify anything beyond single letter extensions */
+> +                       isa_mask |= (~KVM_RISCV_ISA_MASK);
+> +                       bitmap_and(vcpu->arch.isa, vcpu->arch.isa, &isa_mask, RISCV_ISA_EXT_MAX);
+
+A little more readable version of above sequence can be:
+
+            /* Ignore the disable request for these extensions */
+            reg_val |= KVM_RISCV_ISA_DISABLE_NOT_ALLOWED;
+            reg_val &= riscv_isa_extension_base(NULL);
+            /* Do not modify anything beyond single letter extensions */
+            reg_val = (vcpu->arch.isa[0] & ~KVM_RISCV_ISA_MASK) |
+                  (reg_val & KVM_RISCV_ISA_MASK);
+            vcpu->arch.isa[0] = reg_val;
+            kvm_riscv_vcpu_fp_reset(vcpu);
 
 
-@Palmer: IMO this should land in 5.19-rcX.
+>                         kvm_riscv_vcpu_fp_reset(vcpu);
+>                 } else {
+>                         return -EOPNOTSUPP;
+> @@ -374,17 +399,6 @@ static int kvm_riscv_vcpu_set_reg_csr(struct kvm_vcpu *vcpu,
+>         return 0;
+>  }
+>
+> -/* Mapping between KVM ISA Extension ID & Host ISA extension ID */
+> -static unsigned long kvm_isa_ext_arr[] = {
+> -       RISCV_ISA_EXT_a,
+> -       RISCV_ISA_EXT_c,
+> -       RISCV_ISA_EXT_d,
+> -       RISCV_ISA_EXT_f,
+> -       RISCV_ISA_EXT_h,
+> -       RISCV_ISA_EXT_i,
+> -       RISCV_ISA_EXT_m,
+> -};
+> -
+>  static int kvm_riscv_vcpu_get_reg_isa_ext(struct kvm_vcpu *vcpu,
+>                                           const struct kvm_one_reg *reg)
+>  {
+> @@ -403,7 +417,7 @@ static int kvm_riscv_vcpu_get_reg_isa_ext(struct kvm_vcpu *vcpu,
+>                 return -EINVAL;
+>
+>         host_isa_ext = kvm_isa_ext_arr[reg_num];
+> -       if (__riscv_isa_extension_available(&vcpu->arch.isa, host_isa_ext))
+> +       if (__riscv_isa_extension_available(vcpu->arch.isa, host_isa_ext))
+>                 reg_val = 1; /* Mark the given extension as available */
+>
+>         if (copy_to_user(uaddr, &reg_val, KVM_REG_SIZE(reg->id)))
+> @@ -437,30 +451,17 @@ static int kvm_riscv_vcpu_set_reg_isa_ext(struct kvm_vcpu *vcpu,
+>         if (!__riscv_isa_extension_available(NULL, host_isa_ext))
+>                 return  -EOPNOTSUPP;
+>
+> -       if (host_isa_ext >= RISCV_ISA_EXT_BASE &&
+> -           host_isa_ext < RISCV_ISA_EXT_MAX) {
+> -               /*
+> -                * Multi-letter ISA extension. Currently there is no provision
+> -                * to enable/disable the multi-letter ISA extensions for guests.
+> -                * Return success if the request is to enable any ISA extension
+> -                * that is available in the hardware.
+> -                * Return -EOPNOTSUPP otherwise.
+> -                */
+> -               if (!reg_val)
+> -                       return -EOPNOTSUPP;
+> -               else
+> -                       return 0;
+> -       }
+> -
+> -       /* Single letter base ISA extension */
+>         if (!vcpu->arch.ran_atleast_once) {
+> +               /* All multi-letter extension and a few single letter extension can be disabled */
+>                 host_isa_ext_mask = BIT_MASK(host_isa_ext);
+> -               if (!reg_val && (host_isa_ext_mask & KVM_RISCV_ISA_DISABLE_ALLOWED))
+> -                       vcpu->arch.isa &= ~host_isa_ext_mask;
+> +               if (!reg_val &&
+> +                  ((host_isa_ext_mask & KVM_RISCV_ISA_DISABLE_ALLOWED) ||
+> +                  ((host_isa_ext >= RISCV_ISA_EXT_BASE) && (host_isa_ext < RISCV_ISA_EXT_MAX))))
+> +                       clear_bit(host_isa_ext, vcpu->arch.isa);
+> +               else if (reg_val == 1 && (host_isa_ext != RISCV_ISA_EXT_h))
+> +                       set_bit(host_isa_ext, vcpu->arch.isa);
+>                 else
+> -                       vcpu->arch.isa |= host_isa_ext_mask;
+> -               vcpu->arch.isa &= riscv_isa_extension_base(NULL);
+> -               vcpu->arch.isa &= KVM_RISCV_ISA_ALLOWED;
+> +                       return -EINVAL;
 
-Thanks Heiko and Anup for the review,
+A slightly more readable version of above sequence can be:
 
-Alex
+        /* All multi-letter extension and a few single letter
+extension can be disabled */
+        if (host_isa_ext >= RISCV_ISA_EXT_MAX)
+            return -EINVAL;
+        disable_allow_mask = KVM_RISCV_ISA_DISABLE_ALLOWED;
+        if (reg_val == 1)
+            set_bit(host_isa_ext, vcpu->arch.isa);
+        else if (!reg_val && test_bit(host_isa_ext, &disable_allow_mask))
+            clear_bit(host_isa_ext, vcpu->arch.isa);
+        else
+            return -EINVAL;
 
+
+>                 kvm_riscv_vcpu_fp_reset(vcpu);
+>         } else {
+>                 return -EOPNOTSUPP;
+> diff --git a/arch/riscv/kvm/vcpu_fp.c b/arch/riscv/kvm/vcpu_fp.c
+> index d4308c512007..748a8f6a9b5d 100644
+> --- a/arch/riscv/kvm/vcpu_fp.c
+> +++ b/arch/riscv/kvm/vcpu_fp.c
+> @@ -16,12 +16,11 @@
+>  #ifdef CONFIG_FPU
+>  void kvm_riscv_vcpu_fp_reset(struct kvm_vcpu *vcpu)
+>  {
+> -       unsigned long isa = vcpu->arch.isa;
+>         struct kvm_cpu_context *cntx = &vcpu->arch.guest_context;
+>
+>         cntx->sstatus &= ~SR_FS;
+> -       if (riscv_isa_extension_available(&isa, f) ||
+> -           riscv_isa_extension_available(&isa, d))
+> +       if (riscv_isa_extension_available(vcpu->arch.isa, f) ||
+> +           riscv_isa_extension_available(vcpu->arch.isa, d))
+>                 cntx->sstatus |= SR_FS_INITIAL;
+>         else
+>                 cntx->sstatus |= SR_FS_OFF;
+> @@ -34,24 +33,24 @@ static void kvm_riscv_vcpu_fp_clean(struct kvm_cpu_context *cntx)
+>  }
+>
+>  void kvm_riscv_vcpu_guest_fp_save(struct kvm_cpu_context *cntx,
+> -                                 unsigned long isa)
+> +                                 unsigned long *isa)
+>  {
+>         if ((cntx->sstatus & SR_FS) == SR_FS_DIRTY) {
+> -               if (riscv_isa_extension_available(&isa, d))
+> +               if (riscv_isa_extension_available(isa, d))
+>                         __kvm_riscv_fp_d_save(cntx);
+> -               else if (riscv_isa_extension_available(&isa, f))
+> +               else if (riscv_isa_extension_available(isa, f))
+>                         __kvm_riscv_fp_f_save(cntx);
+>                 kvm_riscv_vcpu_fp_clean(cntx);
+>         }
+>  }
+>
+>  void kvm_riscv_vcpu_guest_fp_restore(struct kvm_cpu_context *cntx,
+> -                                    unsigned long isa)
+> +                                    unsigned long *isa)
+>  {
+>         if ((cntx->sstatus & SR_FS) != SR_FS_OFF) {
+> -               if (riscv_isa_extension_available(&isa, d))
+> +               if (riscv_isa_extension_available(isa, d))
+>                         __kvm_riscv_fp_d_restore(cntx);
+> -               else if (riscv_isa_extension_available(&isa, f))
+> +               else if (riscv_isa_extension_available(isa, f))
+>                         __kvm_riscv_fp_f_restore(cntx);
+>                 kvm_riscv_vcpu_fp_clean(cntx);
+>         }
+> @@ -80,7 +79,6 @@ int kvm_riscv_vcpu_get_reg_fp(struct kvm_vcpu *vcpu,
+>                               unsigned long rtype)
+>  {
+>         struct kvm_cpu_context *cntx = &vcpu->arch.guest_context;
+> -       unsigned long isa = vcpu->arch.isa;
+>         unsigned long __user *uaddr =
+>                         (unsigned long __user *)(unsigned long)reg->addr;
+>         unsigned long reg_num = reg->id & ~(KVM_REG_ARCH_MASK |
+> @@ -89,7 +87,7 @@ int kvm_riscv_vcpu_get_reg_fp(struct kvm_vcpu *vcpu,
+>         void *reg_val;
+>
+>         if ((rtype == KVM_REG_RISCV_FP_F) &&
+> -           riscv_isa_extension_available(&isa, f)) {
+> +           riscv_isa_extension_available(vcpu->arch.isa, f)) {
+>                 if (KVM_REG_SIZE(reg->id) != sizeof(u32))
+>                         return -EINVAL;
+>                 if (reg_num == KVM_REG_RISCV_FP_F_REG(fcsr))
+> @@ -100,7 +98,7 @@ int kvm_riscv_vcpu_get_reg_fp(struct kvm_vcpu *vcpu,
+>                 else
+>                         return -EINVAL;
+>         } else if ((rtype == KVM_REG_RISCV_FP_D) &&
+> -                  riscv_isa_extension_available(&isa, d)) {
+> +                  riscv_isa_extension_available(vcpu->arch.isa, d)) {
+>                 if (reg_num == KVM_REG_RISCV_FP_D_REG(fcsr)) {
+>                         if (KVM_REG_SIZE(reg->id) != sizeof(u32))
+>                                 return -EINVAL;
+> @@ -126,7 +124,6 @@ int kvm_riscv_vcpu_set_reg_fp(struct kvm_vcpu *vcpu,
+>                               unsigned long rtype)
+>  {
+>         struct kvm_cpu_context *cntx = &vcpu->arch.guest_context;
+> -       unsigned long isa = vcpu->arch.isa;
+>         unsigned long __user *uaddr =
+>                         (unsigned long __user *)(unsigned long)reg->addr;
+>         unsigned long reg_num = reg->id & ~(KVM_REG_ARCH_MASK |
+> @@ -135,7 +132,7 @@ int kvm_riscv_vcpu_set_reg_fp(struct kvm_vcpu *vcpu,
+>         void *reg_val;
+>
+>         if ((rtype == KVM_REG_RISCV_FP_F) &&
+> -           riscv_isa_extension_available(&isa, f)) {
+> +           riscv_isa_extension_available(vcpu->arch.isa, f)) {
+>                 if (KVM_REG_SIZE(reg->id) != sizeof(u32))
+>                         return -EINVAL;
+>                 if (reg_num == KVM_REG_RISCV_FP_F_REG(fcsr))
+> @@ -146,7 +143,7 @@ int kvm_riscv_vcpu_set_reg_fp(struct kvm_vcpu *vcpu,
+>                 else
+>                         return -EINVAL;
+>         } else if ((rtype == KVM_REG_RISCV_FP_D) &&
+> -                  riscv_isa_extension_available(&isa, d)) {
+> +                  riscv_isa_extension_available(vcpu->arch.isa, d)) {
+>                 if (reg_num == KVM_REG_RISCV_FP_D_REG(fcsr)) {
+>                         if (KVM_REG_SIZE(reg->id) != sizeof(u32))
+>                                 return -EINVAL;
+> --
+> 2.25.1
+>
+
+Apart from minor comments above, this looks good to me.
+
+I have taken care of the above comments and queued it for 5.20. I
+can certainly modify my queue if you want further changes in this patch.
+
+Thanks,
+Anup
 
