@@ -1,97 +1,81 @@
 From: Anup Patel <anup@brainfault.org>
-Date: Mon, 4 Jul 2022 14:25:26 +0530
-Subject: [PATCH] RISC-V: KVM: Fix variable spelling mistake
-In-Reply-To: <20220701062838.6727-1-jiaming@nfschina.com>
-References: <20220701062838.6727-1-jiaming@nfschina.com>
-Message-ID: <CAAhSdy1_TVdvGEWQ=kTzp5_S_ACCuHxjYk3goe39V8YiwqUY_w@mail.gmail.com>
+Date: Mon, 4 Jul 2022 14:42:13 +0530
+Subject: [PATCH] riscv-v: kvm: Make kvm_riscv_guest_timer_init a void function
+In-Reply-To: <20220701084518.1922011-1-nborisov@suse.com>
+References: <20220701084518.1922011-1-nborisov@suse.com>
+Message-ID: <CAAhSdy0icMyOgc+Cf7RB=UitPTym6zoTKvJ=nsH5zt11QaGtfg@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Jul 1, 2022 at 11:58 AM Zhang Jiaming <jiaming@nfschina.com> wrote:
+On Fri, Jul 1, 2022 at 2:15 PM Nikolay Borisov <nborisov@suse.com> wrote:
 >
-> There is a spelling mistake in mmu.c and vcpu_exit.c. Fix it.
+> It can never fail so convey that fact explicitly by making the function
+> void. Also in kvm_arch_init_vm it makes it clear that there no need
+> to do any cleanup after kvm_riscv_gstage_vmid_init has been called.
 >
-> Signed-off-by: Zhang Jiaming <jiaming@nfschina.com>
+> Signed-off-by: Nikolay Borisov <nborisov@suse.com>
 
-Looks good to me.
+Minor typo in patch subject. It should have prefix "riscv: kvm:".
 
-I have queued this for 5.20
+I have taken care of above typo and queued it for 5.20
 
 Thanks,
 Anup
 
 > ---
->  arch/riscv/kvm/mmu.c       | 8 ++++----
->  arch/riscv/kvm/vcpu_exit.c | 6 +++---
->  2 files changed, 7 insertions(+), 7 deletions(-)
+>  arch/riscv/include/asm/kvm_vcpu_timer.h | 2 +-
+>  arch/riscv/kvm/vcpu_timer.c             | 4 +---
+>  arch/riscv/kvm/vm.c                     | 4 +++-
+>  3 files changed, 5 insertions(+), 5 deletions(-)
 >
-> diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
-> index 1c00695ebee7..2965284a490d 100644
-> --- a/arch/riscv/kvm/mmu.c
-> +++ b/arch/riscv/kvm/mmu.c
-> @@ -611,7 +611,7 @@ int kvm_riscv_gstage_map(struct kvm_vcpu *vcpu,
+> diff --git a/arch/riscv/include/asm/kvm_vcpu_timer.h b/arch/riscv/include/asm/kvm_vcpu_timer.h
+> index 375281eb49e0..50138e2eb91b 100644
+> --- a/arch/riscv/include/asm/kvm_vcpu_timer.h
+> +++ b/arch/riscv/include/asm/kvm_vcpu_timer.h
+> @@ -39,6 +39,6 @@ int kvm_riscv_vcpu_timer_init(struct kvm_vcpu *vcpu);
+>  int kvm_riscv_vcpu_timer_deinit(struct kvm_vcpu *vcpu);
+>  int kvm_riscv_vcpu_timer_reset(struct kvm_vcpu *vcpu);
+>  void kvm_riscv_vcpu_timer_restore(struct kvm_vcpu *vcpu);
+> -int kvm_riscv_guest_timer_init(struct kvm *kvm);
+> +void kvm_riscv_guest_timer_init(struct kvm *kvm);
+>
+>  #endif
+> diff --git a/arch/riscv/kvm/vcpu_timer.c b/arch/riscv/kvm/vcpu_timer.c
+> index 5c4c37ff2d48..595043857049 100644
+> --- a/arch/riscv/kvm/vcpu_timer.c
+> +++ b/arch/riscv/kvm/vcpu_timer.c
+> @@ -214,12 +214,10 @@ void kvm_riscv_vcpu_timer_restore(struct kvm_vcpu *vcpu)
+>  #endif
+>  }
+>
+> -int kvm_riscv_guest_timer_init(struct kvm *kvm)
+> +void kvm_riscv_guest_timer_init(struct kvm *kvm)
 >  {
->         int ret;
->         kvm_pfn_t hfn;
-> -       bool writeable;
-> +       bool writable;
->         short vma_pageshift;
->         gfn_t gfn = gpa >> PAGE_SHIFT;
->         struct vm_area_struct *vma;
-> @@ -659,7 +659,7 @@ int kvm_riscv_gstage_map(struct kvm_vcpu *vcpu,
+>         struct kvm_guest_timer *gt = &kvm->arch.timer;
 >
->         mmu_seq = kvm->mmu_notifier_seq;
+>         riscv_cs_get_mult_shift(&gt->nsec_mult, &gt->nsec_shift);
+>         gt->time_delta = -get_cycles64();
+> -
+> -       return 0;
+>  }
+> diff --git a/arch/riscv/kvm/vm.c b/arch/riscv/kvm/vm.c
+> index 945a2bf5e3f6..65a964d7e70d 100644
+> --- a/arch/riscv/kvm/vm.c
+> +++ b/arch/riscv/kvm/vm.c
+> @@ -41,7 +41,9 @@ int kvm_arch_init_vm(struct kvm *kvm, unsigned long type)
+>                 return r;
+>         }
 >
-> -       hfn = gfn_to_pfn_prot(kvm, gfn, is_write, &writeable);
-> +       hfn = gfn_to_pfn_prot(kvm, gfn, is_write, &writable);
->         if (hfn == KVM_PFN_ERR_HWPOISON) {
->                 send_sig_mceerr(BUS_MCEERR_AR, (void __user *)hva,
->                                 vma_pageshift, current);
-> @@ -673,14 +673,14 @@ int kvm_riscv_gstage_map(struct kvm_vcpu *vcpu,
->          * for write faults.
->          */
->         if (logging && !is_write)
-> -               writeable = false;
-> +               writable = false;
+> -       return kvm_riscv_guest_timer_init(kvm);
+> +       kvm_riscv_guest_timer_init(kvm);
+> +
+> +       return 0;
+>  }
 >
->         spin_lock(&kvm->mmu_lock);
->
->         if (mmu_notifier_retry(kvm, mmu_seq))
->                 goto out_unlock;
->
-> -       if (writeable) {
-> +       if (writable) {
->                 kvm_set_pfn_dirty(hfn);
->                 mark_page_dirty(kvm, gfn);
->                 ret = gstage_map_page(kvm, pcache, gpa, hfn << PAGE_SHIFT,
-> diff --git a/arch/riscv/kvm/vcpu_exit.c b/arch/riscv/kvm/vcpu_exit.c
-> index dbb09afd7546..f4e569688619 100644
-> --- a/arch/riscv/kvm/vcpu_exit.c
-> +++ b/arch/riscv/kvm/vcpu_exit.c
-> @@ -417,17 +417,17 @@ static int gstage_page_fault(struct kvm_vcpu *vcpu, struct kvm_run *run,
->  {
->         struct kvm_memory_slot *memslot;
->         unsigned long hva, fault_addr;
-> -       bool writeable;
-> +       bool writable;
->         gfn_t gfn;
->         int ret;
->
->         fault_addr = (trap->htval << 2) | (trap->stval & 0x3);
->         gfn = fault_addr >> PAGE_SHIFT;
->         memslot = gfn_to_memslot(vcpu->kvm, gfn);
-> -       hva = gfn_to_hva_memslot_prot(memslot, gfn, &writeable);
-> +       hva = gfn_to_hva_memslot_prot(memslot, gfn, &writable);
->
->         if (kvm_is_error_hva(hva) ||
-> -           (trap->scause == EXC_STORE_GUEST_PAGE_FAULT && !writeable)) {
-> +           (trap->scause == EXC_STORE_GUEST_PAGE_FAULT && !writable)) {
->                 switch (trap->scause) {
->                 case EXC_LOAD_GUEST_PAGE_FAULT:
->                         return emulate_load(vcpu, run, fault_addr,
+>  void kvm_arch_destroy_vm(struct kvm *kvm)
 > --
 > 2.25.1
 >
