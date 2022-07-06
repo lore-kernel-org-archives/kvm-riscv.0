@@ -1,224 +1,415 @@
-From: Jason Wang <jasowang@redhat.com>
-Date: Wed, 6 Jul 2022 12:03:27 +0800
-Subject: [PATCH] rpmsg: virtio: Fix broken rpmsg_probe()
-In-Reply-To: <66323a79-48a7-853e-1c44-9e62fcc5b775@foss.st.com>
-References: <20220608171334.730739-1-apatel@ventanamicro.com>
- <20220629174318.GB2018382@p14s> <bf87a50c-6d92-8657-72a9-75af81d2489f@foss.st.com>
- <CANLsYkzHZMV3eVUn3Xpk0eiAexyr9HC5__K9xfAwfm23nuQj=A@mail.gmail.com>
- <20220630152003-mutt-send-email-mst@kernel.org> <CACGkMEtHuoHT6meHacsie8M87yjUX3jGEvP7BuU_Vrb3yqkDWw@mail.gmail.com>
- <20220701021536-mutt-send-email-mst@kernel.org> <CACGkMEtkVmq2+NtDpp-XWZFD_WO6Dzm4=pcVwg-aKmStAqJCVg@mail.gmail.com>
- <66323a79-48a7-853e-1c44-9e62fcc5b775@foss.st.com>
-Message-ID: <CACGkMEt53Qd0m9sKjmPsHgBLWX=fkujD8hq6nNu3BSthAAGWwQ@mail.gmail.com>
+From: Anup Patel <anup@brainfault.org>
+Date: Wed, 6 Jul 2022 11:04:40 +0530
+Subject: [PATCH] RISC-V: KVM: Improve ISA extension by using a bitmap
+In-Reply-To: <CAHBxVyFQUdNYdtt_d3MtOGnSGz8TKr7e-LuUi7fJT90TMykGTw@mail.gmail.com>
+References: <20220620234254.2610040-1-atishp@rivosinc.com> <CAAhSdy2ziUJV2vozZw+vDiA+-Xa5pNiC=Dy_gapCApoR4bnxWg@mail.gmail.com>
+ <CAHBxVyFQUdNYdtt_d3MtOGnSGz8TKr7e-LuUi7fJT90TMykGTw@mail.gmail.com>
+Message-ID: <CAAhSdy3gQ3Zwqd+xZzK4No9znUZruH8hbXs74HCAEJX8HmOYvw@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Jul 4, 2022 at 5:45 PM Arnaud POULIQUEN
-<arnaud.pouliquen@foss.st.com> wrote:
+On Tue, Jul 5, 2022 at 12:53 PM Atish Kumar Patra <atishp@rivosinc.com> wrote:
 >
-> Hello Jason,
->
-> On 7/4/22 06:35, Jason Wang wrote:
-> > On Fri, Jul 1, 2022 at 2:16 PM Michael S. Tsirkin <mst@redhat.com> wrote:
-> >>
-> >> On Fri, Jul 01, 2022 at 09:22:15AM +0800, Jason Wang wrote:
-> >>> On Fri, Jul 1, 2022 at 3:20 AM Michael S. Tsirkin <mst@redhat.com> wrote:
-> >>>>
-> >>>> On Thu, Jun 30, 2022 at 11:51:30AM -0600, Mathieu Poirier wrote:
-> >>>>> + virtualization at lists.linux-foundation.org
-> >>>>> + jasowang at redhat.com
-> >>>>> + mst at redhat.com
-> >>>>>
-> >>>>> On Thu, 30 Jun 2022 at 10:20, Arnaud POULIQUEN
-> >>>>> <arnaud.pouliquen@foss.st.com> wrote:
-> >>>>>>
-> >>>>>> Hi,
-> >>>>>>
-> >>>>>> On 6/29/22 19:43, Mathieu Poirier wrote:
-> >>>>>>> Hi Anup,
-> >>>>>>>
-> >>>>>>> On Wed, Jun 08, 2022 at 10:43:34PM +0530, Anup Patel wrote:
-> >>>>>>>> The rpmsg_probe() is broken at the moment because virtqueue_add_inbuf()
-> >>>>>>>> fails due to both virtqueues (Rx and Tx) marked as broken by the
-> >>>>>>>> __vring_new_virtqueue() function. To solve this, virtio_device_ready()
-> >>>>>>>> (which unbreaks queues) should be called before virtqueue_add_inbuf().
-> >>>>>>>>
-> >>>>>>>> Fixes: 8b4ec69d7e09 ("virtio: harden vring IRQ")
-> >>>>>>>> Signed-off-by: Anup Patel <apatel@ventanamicro.com>
-> >>>>>>>> ---
-> >>>>>>>>  drivers/rpmsg/virtio_rpmsg_bus.c | 6 +++---
-> >>>>>>>>  1 file changed, 3 insertions(+), 3 deletions(-)
-> >>>>>>>>
-> >>>>>>>> diff --git a/drivers/rpmsg/virtio_rpmsg_bus.c b/drivers/rpmsg/virtio_rpmsg_bus.c
-> >>>>>>>> index 905ac7910c98..71a64d2c7644 100644
-> >>>>>>>> --- a/drivers/rpmsg/virtio_rpmsg_bus.c
-> >>>>>>>> +++ b/drivers/rpmsg/virtio_rpmsg_bus.c
-> >>>>>>>> @@ -929,6 +929,9 @@ static int rpmsg_probe(struct virtio_device *vdev)
-> >>>>>>>>      /* and half is dedicated for TX */
-> >>>>>>>>      vrp->sbufs = bufs_va + total_buf_space / 2;
-> >>>>>>>>
-> >>>>>>>> +    /* From this point on, we can notify and get callbacks. */
-> >>>>>>>> +    virtio_device_ready(vdev);
-> >>>>>>>> +
-> >>>>>>>
-> >>>>>>> Calling virtio_device_ready() here means that virtqueue_get_buf_ctx_split() can
-> >>>>>>> potentially be called (by way of rpmsg_recv_done()), which will race with
-> >>>>>>> virtqueue_add_inbuf().  If buffers in the virtqueue aren't available then
-> >>>>>>> rpmsg_recv_done() will fail, potentially breaking remote processors' state
-> >>>>>>> machines that don't expect their initial name service to fail when the "device"
-> >>>>>>> has been marked as ready.
-> >>>>>>>
-> >>>>>>> What does make me curious though is that nobody on the remoteproc mailing list
-> >>>>>>> has complained about commit 8b4ec69d7e09 breaking their environment... By now,
-> >>>>>>> i.e rc4, that should have happened.  Anyone from TI, ST and Xilinx care to test this on
-> >>>>>>> their rig?
-> >>>>>>
-> >>>>>> I tested on STm32mp1 board using tag v5.19-rc4(03c765b0e3b4)
-> >>>>>> I confirm the issue!
-> >>>>>>
-> >>>>>> Concerning the solution, I share Mathieu's concern. This could break legacy.
-> >>>>>> I made a short test and I would suggest to use __virtio_unbreak_device instead, tounbreak the virtqueues without changing the init sequence.
-> >>>>>>
-> >>>>>> I this case the patch would be:
-> >>>>>>
-> >>>>>> +       /*
-> >>>>>> +        * Unbreak the virtqueues to allow to add buffers before setting the vdev status
-> >>>>>> +        * to ready
-> >>>>>> +        */
-> >>>>>> +       __virtio_unbreak_device(vdev);
-> >>>>>> +
-> >>>>>>
-> >>>>>>         /* set up the receive buffers */
-> >>>>>>         for (i = 0; i < vrp->num_bufs / 2; i++) {
-> >>>>>>                 struct scatterlist sg;
-> >>>>>>                 void *cpu_addr = vrp->rbufs + i * vrp->buf_size;
-> >>>>>
-> >>>>> This will indeed fix the problem.  On the flip side the kernel
-> >>>>> documentation for __virtio_unbreak_device() puzzles me...
-> >>>>> It clearly states that it should be used for probing and restoring but
-> >>>>> _not_ directly by the driver.  Function rpmsg_probe() is part of
-> >>>>> probing but also the entry point to a driver.
-> >>>>>
-> >>>>> Michael and virtualisation folks, is this the right way to move forward?
-> >>>>
-> >>>> I don't think it is, __virtio_unbreak_device is intended for core use.
-> >>>
-> >>> Can we fill the rx after virtio_device_ready() in this case?
-> >>>
-> >>> Btw, the driver set driver ok after registering, we probably get a svq
-> >>> kick before DRIVER_OK?
->
-> By "registering" you mean calling rpmsg_virtio_add_ctrl_dev and
-> rpmsg_ns_register_device?
-
-Yes.
-
->
-> The rpmsg_ns_register_device has to be called before. Because it has to be
-> probed to handle the first message coming from the remote side to create
-> associated rpmsg local device.
-
-I couldn't find the code to do this, maybe you can give me some hint on this.
-
-> It doesn't send message.
-
-I see the function register the device to the bus, I wonder if this
-means the device could be probed and used by the driver before
-virtio_device_ready().
-
->
-> The risk could be for the rpmsg_ctrl device. Registering it
-> after the virtio_device_ready(vdev) call could make sense...
-
-I see.
-
->
-> >>>
-> >>> Thanks
-> >>
-> >> Is this an ack for the original patch?
+> On Mon, Jul 4, 2022 at 1:47 AM Anup Patel <anup@brainfault.org> wrote:
 > >
-> > Nope, I meant, instead of moving virtio_device_ready() a little bit
-> > earlier, can we only move the rvq filling after virtio_device_ready().
+> > On Tue, Jun 21, 2022 at 5:13 AM Atish Patra <atishp@rivosinc.com> wrote:
+> > >
+> > > Currently, the every vcpu only stores the ISA extensions in a unsigned long
+> > > which is not scalable as number of extensions will continue to grow.
+> > > Using a bitmap allows the ISA extension to support any number of
+> > > extensions. The CONFIG one reg interface implementation is modified to
+> > > support the bitmap as well. But it is meant only for base extensions.
+> > > Thus, the first element of the bitmap array is sufficient for that
+> > > interface.
+> > >
+> > > In the future, all the new multi-letter extensions must use the
+> > > ISA_EXT one reg interface that allows enabling/disabling any extension
+> > > now.
+> > >
+> > > Signed-off-by: Atish Patra <atishp@rivosinc.com>
+> > > ---
+> > >  arch/riscv/include/asm/kvm_host.h    |  3 +-
+> > >  arch/riscv/include/asm/kvm_vcpu_fp.h |  8 +--
+> > >  arch/riscv/kvm/vcpu.c                | 81 ++++++++++++++--------------
+> > >  arch/riscv/kvm/vcpu_fp.c             | 27 +++++-----
+> > >  4 files changed, 59 insertions(+), 60 deletions(-)
+> > >
+> > > diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
+> > > index 319c8aeb42af..c749cdacbd63 100644
+> > > --- a/arch/riscv/include/asm/kvm_host.h
+> > > +++ b/arch/riscv/include/asm/kvm_host.h
+> > > @@ -14,6 +14,7 @@
+> > >  #include <linux/kvm_types.h>
+> > >  #include <linux/spinlock.h>
+> > >  #include <asm/csr.h>
+> > > +#include <asm/hwcap.h>
+> > >  #include <asm/kvm_vcpu_fp.h>
+> > >  #include <asm/kvm_vcpu_timer.h>
+> > >
+> > > @@ -170,7 +171,7 @@ struct kvm_vcpu_arch {
+> > >         int last_exit_cpu;
+> > >
+> > >         /* ISA feature bits (similar to MISA) */
+> > > -       unsigned long isa;
+> > > +       DECLARE_BITMAP(isa, RISCV_ISA_EXT_MAX);
+> > >
+> > >         /* SSCRATCH, STVEC, and SCOUNTEREN of Host */
+> > >         unsigned long host_sscratch;
+> > > diff --git a/arch/riscv/include/asm/kvm_vcpu_fp.h b/arch/riscv/include/asm/kvm_vcpu_fp.h
+> > > index 4da9b8e0f050..e86bb67f2a8a 100644
+> > > --- a/arch/riscv/include/asm/kvm_vcpu_fp.h
+> > > +++ b/arch/riscv/include/asm/kvm_vcpu_fp.h
+> > > @@ -22,9 +22,9 @@ void __kvm_riscv_fp_d_restore(struct kvm_cpu_context *context);
+> > >
+> > >  void kvm_riscv_vcpu_fp_reset(struct kvm_vcpu *vcpu);
+> > >  void kvm_riscv_vcpu_guest_fp_save(struct kvm_cpu_context *cntx,
+> > > -                                 unsigned long isa);
+> > > +                                 unsigned long *isa);
 > >
-> > Thanks
->
-> Please find some concerns about this inversion here:
-> https://lore.kernel.org/lkml/20220701053813-mutt-send-email-mst at kernel.org/
->
-> Regarding __virtio_unbreak_device. The pending virtio_break_device is
-> used by some virtio driver.
-> Could we consider that it makes sense to also have a
-> virtio_unbreak_device interface?
-
-We don't want to allow the driver to unbreak a device since it's
-easier to have bugs.
-
->
->
-> I do not well understand the reason of the commit:
-> 8b4ec69d7e09 ("virtio: harden vring IRQ", 2022-05-27)
-
-It tries to forbid the virtqueue callbacks to be called before
-virtio_device_ready(). This helps to prevent the malicious device from
-attacking the driver.
-
-But unfortunately, it breaks several driver because:
-
-1) some driver have races in probe/remove
-2) it tries to reuse vq->broken which may break the driver that call
-virqueue_add() before virtio_device_ready() which is allowed by the
-spec
-
-There's a discussion to have a better behavior that doesn't break the
-existing drivers. And the IRQ hardening feature is marked as broken
-now, so rpmsg should be fine without any extra effort.
-
-> So following alternative is probably pretty naive:
-> Is the use of virtqueue_disable_cb could be an alternative to the
-> vq->broken usage allowing to register buffer while preventing virtqueue IRQ?
-
-Probably not, there's no guarantee that the device will not send
-notification after virqtueue_disable_cb().
-
-Thanks
-
->
-> Thanks,
-> Arnaud
->
+> > Better to use "const unsigned long *"
 > >
-> >>
-> >>>>
-> >>>>>>
-> >>>>>> Regards,
-> >>>>>> Arnaud
-> >>>>>>
-> >>>>>>>
-> >>>>>>> Thanks,
-> >>>>>>> Mathieu
-> >>>>>>>
-> >>>>>>>>      /* set up the receive buffers */
-> >>>>>>>>      for (i = 0; i < vrp->num_bufs / 2; i++) {
-> >>>>>>>>              struct scatterlist sg;
-> >>>>>>>> @@ -983,9 +986,6 @@ static int rpmsg_probe(struct virtio_device *vdev)
-> >>>>>>>>       */
-> >>>>>>>>      notify = virtqueue_kick_prepare(vrp->rvq);
-> >>>>>>>>
-> >>>>>>>> -    /* From this point on, we can notify and get callbacks. */
-> >>>>>>>> -    virtio_device_ready(vdev);
-> >>>>>>>> -
-> >>>>>>>>      /* tell the remote processor it can start sending messages */
-> >>>>>>>>      /*
-> >>>>>>>>       * this might be concurrent with callbacks, but we are only
-> >>>>>>>> --
-> >>>>>>>> 2.34.1
-> >>>>>>>>
-> >>>>
-> >>
+> > >  void kvm_riscv_vcpu_guest_fp_restore(struct kvm_cpu_context *cntx,
+> > > -                                    unsigned long isa);
+> > > +                                    unsigned long *isa);
+> >
+> > Same as above.
 > >
 >
+> Yes. Thanks.
+>
+> > >  void kvm_riscv_vcpu_host_fp_save(struct kvm_cpu_context *cntx);
+> > >  void kvm_riscv_vcpu_host_fp_restore(struct kvm_cpu_context *cntx);
+> > >  #else
+> > > @@ -32,12 +32,12 @@ static inline void kvm_riscv_vcpu_fp_reset(struct kvm_vcpu *vcpu)
+> > >  {
+> > >  }
+> > >  static inline void kvm_riscv_vcpu_guest_fp_save(struct kvm_cpu_context *cntx,
+> > > -                                               unsigned long isa)
+> > > +                                               unsigned long *isa)
+> > >  {
+> > >  }
+> > >  static inline void kvm_riscv_vcpu_guest_fp_restore(
+> > >                                         struct kvm_cpu_context *cntx,
+> > > -                                       unsigned long isa)
+> > > +                                       unsigned long *isa)
+> > >  {
+> > >  }
+> > >  static inline void kvm_riscv_vcpu_host_fp_save(struct kvm_cpu_context *cntx)
+> > > diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+> > > index 7f4ad5e4373a..cb2a65b5d563 100644
+> > > --- a/arch/riscv/kvm/vcpu.c
+> > > +++ b/arch/riscv/kvm/vcpu.c
+> > > @@ -46,8 +46,19 @@ const struct kvm_stats_header kvm_vcpu_stats_header = {
+> > >                                                 riscv_isa_extension_mask(i) | \
+> > >                                                 riscv_isa_extension_mask(m))
+> > >
+> > > -#define KVM_RISCV_ISA_ALLOWED (KVM_RISCV_ISA_DISABLE_ALLOWED | \
+> > > -                              KVM_RISCV_ISA_DISABLE_NOT_ALLOWED)
+> > > +#define KVM_RISCV_ISA_MASK GENMASK(25, 0)
+> > > +
+> > > +/* Mapping between KVM ISA Extension ID & Host ISA extension ID */
+> > > +static unsigned long kvm_isa_ext_arr[] = {
+> > > +       RISCV_ISA_EXT_a,
+> > > +       RISCV_ISA_EXT_c,
+> > > +       RISCV_ISA_EXT_d,
+> > > +       RISCV_ISA_EXT_f,
+> > > +       RISCV_ISA_EXT_h,
+> > > +       RISCV_ISA_EXT_i,
+> > > +       RISCV_ISA_EXT_m,
+> > > +       RISCV_ISA_EXT_SSCOFPMF,
+> >
+> > The RISCV_ISA_EXT_SSCOFPMF should be added only after we have
+> > SBI PMU support in KVM RISC-V. Please drop it.
+> >
+>
+> Ahh. Sorry. I forgot to remove it while rebasing.
+>
+> > > +};
+> > >
+> > >  static void kvm_riscv_reset_vcpu(struct kvm_vcpu *vcpu)
+> > >  {
+> > > @@ -99,13 +110,20 @@ int kvm_arch_vcpu_create(struct kvm_vcpu *vcpu)
+> > >  {
+> > >         struct kvm_cpu_context *cntx;
+> > >         struct kvm_vcpu_csr *reset_csr = &vcpu->arch.guest_reset_csr;
+> > > +       unsigned long host_isa, i;
+> > >
+> > >         /* Mark this VCPU never ran */
+> > >         vcpu->arch.ran_atleast_once = false;
+> > >         vcpu->arch.mmu_page_cache.gfp_zero = __GFP_ZERO;
+> > > +       bitmap_zero(vcpu->arch.isa, RISCV_ISA_EXT_MAX);
+> > >
+> > >         /* Setup ISA features available to VCPU */
+> > > -       vcpu->arch.isa = riscv_isa_extension_base(NULL) & KVM_RISCV_ISA_ALLOWED;
+> > > +       for (i = 0; i < ARRAY_SIZE(kvm_isa_ext_arr); i++) {
+> > > +               host_isa = kvm_isa_ext_arr[i];
+> > > +               if (__riscv_isa_extension_available(NULL, host_isa) &&
+> > > +                  host_isa != RISCV_ISA_EXT_h)
+> > > +                       set_bit(host_isa, vcpu->arch.isa);
+> > > +       }
+> > >
+> > >         /* Setup VCPU hfence queue */
+> > >         spin_lock_init(&vcpu->arch.hfence_lock);
+> > > @@ -199,7 +217,7 @@ static int kvm_riscv_vcpu_get_reg_config(struct kvm_vcpu *vcpu,
+> > >
+> > >         switch (reg_num) {
+> > >         case KVM_REG_RISCV_CONFIG_REG(isa):
+> > > -               reg_val = vcpu->arch.isa;
+> > > +               reg_val = vcpu->arch.isa[0] & KVM_RISCV_ISA_MASK;
+> > >                 break;
+> > >         default:
+> > >                 return -EINVAL;
+> > > @@ -220,6 +238,7 @@ static int kvm_riscv_vcpu_set_reg_config(struct kvm_vcpu *vcpu,
+> > >                                             KVM_REG_SIZE_MASK |
+> > >                                             KVM_REG_RISCV_CONFIG);
+> > >         unsigned long reg_val;
+> > > +       unsigned long isa_mask;
+> > >
+> > >         if (KVM_REG_SIZE(reg->id) != sizeof(unsigned long))
+> > >                 return -EINVAL;
+> > > @@ -227,13 +246,19 @@ static int kvm_riscv_vcpu_set_reg_config(struct kvm_vcpu *vcpu,
+> > >         if (copy_from_user(&reg_val, uaddr, KVM_REG_SIZE(reg->id)))
+> > >                 return -EFAULT;
+> > >
+> > > +       /* This ONE REG interface is only defined for single letter extensions */
+> > > +       if (fls(reg_val) >= RISCV_ISA_EXT_BASE)
+> > > +               return -EINVAL;
+> > > +
+> > >         switch (reg_num) {
+> > >         case KVM_REG_RISCV_CONFIG_REG(isa):
+> > >                 if (!vcpu->arch.ran_atleast_once) {
+> > >                         /* Ignore the disable request for these extensions */
+> > > -                       vcpu->arch.isa = reg_val | KVM_RISCV_ISA_DISABLE_NOT_ALLOWED;
+> > > -                       vcpu->arch.isa &= riscv_isa_extension_base(NULL);
+> > > -                       vcpu->arch.isa &= KVM_RISCV_ISA_ALLOWED;
+> > > +                       isa_mask = (reg_val | KVM_RISCV_ISA_DISABLE_NOT_ALLOWED);
+> > > +                       isa_mask &= riscv_isa_extension_base(NULL);
+> > > +                       /* Do not modify anything beyond single letter extensions */
+> > > +                       isa_mask |= (~KVM_RISCV_ISA_MASK);
+> > > +                       bitmap_and(vcpu->arch.isa, vcpu->arch.isa, &isa_mask, RISCV_ISA_EXT_MAX);
+> >
+> > A little more readable version of above sequence can be:
+> >
+> >             /* Ignore the disable request for these extensions */
+> >             reg_val |= KVM_RISCV_ISA_DISABLE_NOT_ALLOWED;
+> >             reg_val &= riscv_isa_extension_base(NULL);
+> >             /* Do not modify anything beyond single letter extensions */
+> >             reg_val = (vcpu->arch.isa[0] & ~KVM_RISCV_ISA_MASK) |
+> >                   (reg_val & KVM_RISCV_ISA_MASK);
+> >             vcpu->arch.isa[0] = reg_val;
+> >             kvm_riscv_vcpu_fp_reset(vcpu);
+> >
+> >
+> > >                         kvm_riscv_vcpu_fp_reset(vcpu);
+> > >                 } else {
+> > >                         return -EOPNOTSUPP;
+> > > @@ -374,17 +399,6 @@ static int kvm_riscv_vcpu_set_reg_csr(struct kvm_vcpu *vcpu,
+> > >         return 0;
+> > >  }
+> > >
+> > > -/* Mapping between KVM ISA Extension ID & Host ISA extension ID */
+> > > -static unsigned long kvm_isa_ext_arr[] = {
+> > > -       RISCV_ISA_EXT_a,
+> > > -       RISCV_ISA_EXT_c,
+> > > -       RISCV_ISA_EXT_d,
+> > > -       RISCV_ISA_EXT_f,
+> > > -       RISCV_ISA_EXT_h,
+> > > -       RISCV_ISA_EXT_i,
+> > > -       RISCV_ISA_EXT_m,
+> > > -};
+> > > -
+> > >  static int kvm_riscv_vcpu_get_reg_isa_ext(struct kvm_vcpu *vcpu,
+> > >                                           const struct kvm_one_reg *reg)
+> > >  {
+> > > @@ -403,7 +417,7 @@ static int kvm_riscv_vcpu_get_reg_isa_ext(struct kvm_vcpu *vcpu,
+> > >                 return -EINVAL;
+> > >
+> > >         host_isa_ext = kvm_isa_ext_arr[reg_num];
+> > > -       if (__riscv_isa_extension_available(&vcpu->arch.isa, host_isa_ext))
+> > > +       if (__riscv_isa_extension_available(vcpu->arch.isa, host_isa_ext))
+> > >                 reg_val = 1; /* Mark the given extension as available */
+> > >
+> > >         if (copy_to_user(uaddr, &reg_val, KVM_REG_SIZE(reg->id)))
+> > > @@ -437,30 +451,17 @@ static int kvm_riscv_vcpu_set_reg_isa_ext(struct kvm_vcpu *vcpu,
+> > >         if (!__riscv_isa_extension_available(NULL, host_isa_ext))
+> > >                 return  -EOPNOTSUPP;
+> > >
+> > > -       if (host_isa_ext >= RISCV_ISA_EXT_BASE &&
+> > > -           host_isa_ext < RISCV_ISA_EXT_MAX) {
+> > > -               /*
+> > > -                * Multi-letter ISA extension. Currently there is no provision
+> > > -                * to enable/disable the multi-letter ISA extensions for guests.
+> > > -                * Return success if the request is to enable any ISA extension
+> > > -                * that is available in the hardware.
+> > > -                * Return -EOPNOTSUPP otherwise.
+> > > -                */
+> > > -               if (!reg_val)
+> > > -                       return -EOPNOTSUPP;
+> > > -               else
+> > > -                       return 0;
+> > > -       }
+> > > -
+> > > -       /* Single letter base ISA extension */
+> > >         if (!vcpu->arch.ran_atleast_once) {
+> > > +               /* All multi-letter extension and a few single letter extension can be disabled */
+> > >                 host_isa_ext_mask = BIT_MASK(host_isa_ext);
+> > > -               if (!reg_val && (host_isa_ext_mask & KVM_RISCV_ISA_DISABLE_ALLOWED))
+> > > -                       vcpu->arch.isa &= ~host_isa_ext_mask;
+> > > +               if (!reg_val &&
+> > > +                  ((host_isa_ext_mask & KVM_RISCV_ISA_DISABLE_ALLOWED) ||
+> > > +                  ((host_isa_ext >= RISCV_ISA_EXT_BASE) && (host_isa_ext < RISCV_ISA_EXT_MAX))))
+> > > +                       clear_bit(host_isa_ext, vcpu->arch.isa);
+> > > +               else if (reg_val == 1 && (host_isa_ext != RISCV_ISA_EXT_h))
+> > > +                       set_bit(host_isa_ext, vcpu->arch.isa);
+> > >                 else
+> > > -                       vcpu->arch.isa |= host_isa_ext_mask;
+> > > -               vcpu->arch.isa &= riscv_isa_extension_base(NULL);
+> > > -               vcpu->arch.isa &= KVM_RISCV_ISA_ALLOWED;
+> > > +                       return -EINVAL;
+> >
+> > A slightly more readable version of above sequence can be:
+> >
+> >         /* All multi-letter extension and a few single letter
+> > extension can be disabled */
+> >         if (host_isa_ext >= RISCV_ISA_EXT_MAX)
+> >             return -EINVAL;
+> >         disable_allow_mask = KVM_RISCV_ISA_DISABLE_ALLOWED;
+> >         if (reg_val == 1)
+> >             set_bit(host_isa_ext, vcpu->arch.isa);
+>
+> Shouldn't we ensure that (host_isa_ext != RISCV_ISA_EXT_h) here ?
 
+Ahh, yes. I have updated the KVM queue.
+
+Thanks,
+Anup
+
+>
+> >         else if (!reg_val && test_bit(host_isa_ext, &disable_allow_mask))
+> >             clear_bit(host_isa_ext, vcpu->arch.isa);
+> >         else
+> >             return -EINVAL;
+> >
+> >
+> > >                 kvm_riscv_vcpu_fp_reset(vcpu);
+> > >         } else {
+> > >                 return -EOPNOTSUPP;
+> > > diff --git a/arch/riscv/kvm/vcpu_fp.c b/arch/riscv/kvm/vcpu_fp.c
+> > > index d4308c512007..748a8f6a9b5d 100644
+> > > --- a/arch/riscv/kvm/vcpu_fp.c
+> > > +++ b/arch/riscv/kvm/vcpu_fp.c
+> > > @@ -16,12 +16,11 @@
+> > >  #ifdef CONFIG_FPU
+> > >  void kvm_riscv_vcpu_fp_reset(struct kvm_vcpu *vcpu)
+> > >  {
+> > > -       unsigned long isa = vcpu->arch.isa;
+> > >         struct kvm_cpu_context *cntx = &vcpu->arch.guest_context;
+> > >
+> > >         cntx->sstatus &= ~SR_FS;
+> > > -       if (riscv_isa_extension_available(&isa, f) ||
+> > > -           riscv_isa_extension_available(&isa, d))
+> > > +       if (riscv_isa_extension_available(vcpu->arch.isa, f) ||
+> > > +           riscv_isa_extension_available(vcpu->arch.isa, d))
+> > >                 cntx->sstatus |= SR_FS_INITIAL;
+> > >         else
+> > >                 cntx->sstatus |= SR_FS_OFF;
+> > > @@ -34,24 +33,24 @@ static void kvm_riscv_vcpu_fp_clean(struct kvm_cpu_context *cntx)
+> > >  }
+> > >
+> > >  void kvm_riscv_vcpu_guest_fp_save(struct kvm_cpu_context *cntx,
+> > > -                                 unsigned long isa)
+> > > +                                 unsigned long *isa)
+> > >  {
+> > >         if ((cntx->sstatus & SR_FS) == SR_FS_DIRTY) {
+> > > -               if (riscv_isa_extension_available(&isa, d))
+> > > +               if (riscv_isa_extension_available(isa, d))
+> > >                         __kvm_riscv_fp_d_save(cntx);
+> > > -               else if (riscv_isa_extension_available(&isa, f))
+> > > +               else if (riscv_isa_extension_available(isa, f))
+> > >                         __kvm_riscv_fp_f_save(cntx);
+> > >                 kvm_riscv_vcpu_fp_clean(cntx);
+> > >         }
+> > >  }
+> > >
+> > >  void kvm_riscv_vcpu_guest_fp_restore(struct kvm_cpu_context *cntx,
+> > > -                                    unsigned long isa)
+> > > +                                    unsigned long *isa)
+> > >  {
+> > >         if ((cntx->sstatus & SR_FS) != SR_FS_OFF) {
+> > > -               if (riscv_isa_extension_available(&isa, d))
+> > > +               if (riscv_isa_extension_available(isa, d))
+> > >                         __kvm_riscv_fp_d_restore(cntx);
+> > > -               else if (riscv_isa_extension_available(&isa, f))
+> > > +               else if (riscv_isa_extension_available(isa, f))
+> > >                         __kvm_riscv_fp_f_restore(cntx);
+> > >                 kvm_riscv_vcpu_fp_clean(cntx);
+> > >         }
+> > > @@ -80,7 +79,6 @@ int kvm_riscv_vcpu_get_reg_fp(struct kvm_vcpu *vcpu,
+> > >                               unsigned long rtype)
+> > >  {
+> > >         struct kvm_cpu_context *cntx = &vcpu->arch.guest_context;
+> > > -       unsigned long isa = vcpu->arch.isa;
+> > >         unsigned long __user *uaddr =
+> > >                         (unsigned long __user *)(unsigned long)reg->addr;
+> > >         unsigned long reg_num = reg->id & ~(KVM_REG_ARCH_MASK |
+> > > @@ -89,7 +87,7 @@ int kvm_riscv_vcpu_get_reg_fp(struct kvm_vcpu *vcpu,
+> > >         void *reg_val;
+> > >
+> > >         if ((rtype == KVM_REG_RISCV_FP_F) &&
+> > > -           riscv_isa_extension_available(&isa, f)) {
+> > > +           riscv_isa_extension_available(vcpu->arch.isa, f)) {
+> > >                 if (KVM_REG_SIZE(reg->id) != sizeof(u32))
+> > >                         return -EINVAL;
+> > >                 if (reg_num == KVM_REG_RISCV_FP_F_REG(fcsr))
+> > > @@ -100,7 +98,7 @@ int kvm_riscv_vcpu_get_reg_fp(struct kvm_vcpu *vcpu,
+> > >                 else
+> > >                         return -EINVAL;
+> > >         } else if ((rtype == KVM_REG_RISCV_FP_D) &&
+> > > -                  riscv_isa_extension_available(&isa, d)) {
+> > > +                  riscv_isa_extension_available(vcpu->arch.isa, d)) {
+> > >                 if (reg_num == KVM_REG_RISCV_FP_D_REG(fcsr)) {
+> > >                         if (KVM_REG_SIZE(reg->id) != sizeof(u32))
+> > >                                 return -EINVAL;
+> > > @@ -126,7 +124,6 @@ int kvm_riscv_vcpu_set_reg_fp(struct kvm_vcpu *vcpu,
+> > >                               unsigned long rtype)
+> > >  {
+> > >         struct kvm_cpu_context *cntx = &vcpu->arch.guest_context;
+> > > -       unsigned long isa = vcpu->arch.isa;
+> > >         unsigned long __user *uaddr =
+> > >                         (unsigned long __user *)(unsigned long)reg->addr;
+> > >         unsigned long reg_num = reg->id & ~(KVM_REG_ARCH_MASK |
+> > > @@ -135,7 +132,7 @@ int kvm_riscv_vcpu_set_reg_fp(struct kvm_vcpu *vcpu,
+> > >         void *reg_val;
+> > >
+> > >         if ((rtype == KVM_REG_RISCV_FP_F) &&
+> > > -           riscv_isa_extension_available(&isa, f)) {
+> > > +           riscv_isa_extension_available(vcpu->arch.isa, f)) {
+> > >                 if (KVM_REG_SIZE(reg->id) != sizeof(u32))
+> > >                         return -EINVAL;
+> > >                 if (reg_num == KVM_REG_RISCV_FP_F_REG(fcsr))
+> > > @@ -146,7 +143,7 @@ int kvm_riscv_vcpu_set_reg_fp(struct kvm_vcpu *vcpu,
+> > >                 else
+> > >                         return -EINVAL;
+> > >         } else if ((rtype == KVM_REG_RISCV_FP_D) &&
+> > > -                  riscv_isa_extension_available(&isa, d)) {
+> > > +                  riscv_isa_extension_available(vcpu->arch.isa, d)) {
+> > >                 if (reg_num == KVM_REG_RISCV_FP_D_REG(fcsr)) {
+> > >                         if (KVM_REG_SIZE(reg->id) != sizeof(u32))
+> > >                                 return -EINVAL;
+> > > --
+> > > 2.25.1
+> > >
+> >
+> > Apart from minor comments above, this looks good to me.
+> >
+> Thanks.
+>
+> > I have taken care of the above comments and queued it for 5.20. I
+> > can certainly modify my queue if you want further changes in this patch.
+> >
+> > Thanks,
+> > Anup
 
