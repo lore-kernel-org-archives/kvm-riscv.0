@@ -1,125 +1,154 @@
-From: Anup Patel <apatel@ventanamicro.com>
-Date: Thu,  7 Jul 2022 20:22:48 +0530
-Subject: [PATCH 5/5] RISC-V: KVM: Add support for Svpbmt inside Guest/VM
-In-Reply-To: <20220707145248.458771-1-apatel@ventanamicro.com>
-References: <20220707145248.458771-1-apatel@ventanamicro.com>
-Message-ID: <20220707145248.458771-6-apatel@ventanamicro.com>
+From: Anup Patel <anup@brainfault.org>
+Date: Thu, 7 Jul 2022 20:26:31 +0530
+Subject: [PATCH -fixes v2] riscv: Fix missing PAGE_PFN_MASK
+In-Reply-To: <CAAhSdy1gr_WvCJUMXMwtZUux9qBsW-b_LGFg4=tdnkv5b538sg@mail.gmail.com>
+References: <20220613085307.260256-1-alexandre.ghiti@canonical.com> <CAAhSdy1gr_WvCJUMXMwtZUux9qBsW-b_LGFg4=tdnkv5b538sg@mail.gmail.com>
+Message-ID: <CAAhSdy3_EvAZJtHxFH=ihrfUaPUmp5EbXNY4eD+CRsiqNkYx9w@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The Guest/VM can use Svpbmt in VS-stage page tables when allowed by the
-Hypervisor using the henvcfg.PBMTE bit.
+Hi Palmer,
 
-We add Svpbmt support for the KVM Guest/VM which can be enabled/disabled
-by the KVM user-space (QEMU/KVMTOOL) using the ISA extension ONE_REG
-interface.
+On Mon, Jun 13, 2022 at 3:01 PM Anup Patel <anup@brainfault.org> wrote:
+>
+> On Mon, Jun 13, 2022 at 2:23 PM Alexandre Ghiti
+> <alexandre.ghiti@canonical.com> wrote:
+> >
+> > There are a bunch of functions that use the PFN from a page table entry
+> > that end up with the svpbmt upper-bits because they are missing the newly
+> > introduced PAGE_PFN_MASK which leads to wrong addresses conversions and
+> > then crash: fix this by adding this mask.
+> >
+> > Fixes: 100631b48ded ("riscv: Fix accessing pfn bits in PTEs for non-32bit variants")
+> > Signed-off-by: Alexandre Ghiti <alexandre.ghiti@canonical.com>
+>
+> Looks good to me.
+>
+> Reviewed-by: Anup Patel <anup@brainfault.org>
+>
+> @Palmer let me know if you want me to take this through the KVM repo.
 
-Signed-off-by: Anup Patel <apatel@ventanamicro.com>
----
- arch/riscv/include/asm/csr.h      | 16 ++++++++++++++++
- arch/riscv/include/uapi/asm/kvm.h |  1 +
- arch/riscv/kvm/vcpu.c             | 16 ++++++++++++++++
- 3 files changed, 33 insertions(+)
+This patch is required for KVM Svpbmt support so I have included it
+in my KVM RISC-V Svpbmt series.
 
-diff --git a/arch/riscv/include/asm/csr.h b/arch/riscv/include/asm/csr.h
-index 6d85655e7edf..17516afc389a 100644
---- a/arch/riscv/include/asm/csr.h
-+++ b/arch/riscv/include/asm/csr.h
-@@ -156,6 +156,18 @@
- 				 (_AC(1, UL) << IRQ_S_TIMER) | \
- 				 (_AC(1, UL) << IRQ_S_EXT))
- 
-+/* xENVCFG flags */
-+#define ENVCFG_STCE			(_AC(1, ULL) << 63)
-+#define ENVCFG_PBMTE			(_AC(1, ULL) << 62)
-+#define ENVCFG_CBZE			(_AC(1, UL) << 7)
-+#define ENVCFG_CBCFE			(_AC(1, UL) << 6)
-+#define ENVCFG_CBIE_SHIFT		4
-+#define ENVCFG_CBIE			(_AC(0x3, UL) << ENVCFG_CBIE_SHIFT)
-+#define ENVCFG_CBIE_ILL			_AC(0x0, UL)
-+#define ENVCFG_CBIE_FLUSH		_AC(0x1, UL)
-+#define ENVCFG_CBIE_INV			_AC(0x3, UL)
-+#define ENVCFG_FIOM			_AC(0x1, UL)
-+
- /* symbolic CSR names: */
- #define CSR_CYCLE		0xc00
- #define CSR_TIME		0xc01
-@@ -252,7 +264,9 @@
- #define CSR_HTIMEDELTA		0x605
- #define CSR_HCOUNTEREN		0x606
- #define CSR_HGEIE		0x607
-+#define CSR_HENVCFG		0x60a
- #define CSR_HTIMEDELTAH		0x615
-+#define CSR_HENVCFGH		0x61a
- #define CSR_HTVAL		0x643
- #define CSR_HIP			0x644
- #define CSR_HVIP		0x645
-@@ -264,6 +278,8 @@
- #define CSR_MISA		0x301
- #define CSR_MIE			0x304
- #define CSR_MTVEC		0x305
-+#define CSR_MENVCFG		0x30a
-+#define CSR_MENVCFGH		0x31a
- #define CSR_MSCRATCH		0x340
- #define CSR_MEPC		0x341
- #define CSR_MCAUSE		0x342
-diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
-index 6119368ba6d5..24b2a6e27698 100644
---- a/arch/riscv/include/uapi/asm/kvm.h
-+++ b/arch/riscv/include/uapi/asm/kvm.h
-@@ -96,6 +96,7 @@ enum KVM_RISCV_ISA_EXT_ID {
- 	KVM_RISCV_ISA_EXT_H,
- 	KVM_RISCV_ISA_EXT_I,
- 	KVM_RISCV_ISA_EXT_M,
-+	KVM_RISCV_ISA_EXT_SVPBMT,
- 	KVM_RISCV_ISA_EXT_MAX,
- };
- 
-diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-index 6dd9cf729614..b7a433c54d0f 100644
---- a/arch/riscv/kvm/vcpu.c
-+++ b/arch/riscv/kvm/vcpu.c
-@@ -51,6 +51,7 @@ static const unsigned long kvm_isa_ext_arr[] = {
- 	RISCV_ISA_EXT_h,
- 	RISCV_ISA_EXT_i,
- 	RISCV_ISA_EXT_m,
-+	RISCV_ISA_EXT_SVPBMT,
- };
- 
- static unsigned long kvm_riscv_vcpu_base2isa_ext(unsigned long base_ext)
-@@ -777,6 +778,19 @@ int kvm_arch_vcpu_ioctl_set_guest_debug(struct kvm_vcpu *vcpu,
- 	return -EINVAL;
- }
- 
-+static void kvm_riscv_vcpu_update_config(const unsigned long *isa)
-+{
-+	u64 henvcfg = 0;
-+
-+	if (__riscv_isa_extension_available(isa, RISCV_ISA_EXT_SVPBMT))
-+		henvcfg |= ENVCFG_PBMTE;
-+
-+	csr_write(CSR_HENVCFG, henvcfg);
-+#ifdef CONFIG_32BIT
-+	csr_write(CSR_HENVCFGH, henvcfg >> 32);
-+#endif
-+}
-+
- void kvm_arch_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
- {
- 	struct kvm_vcpu_csr *csr = &vcpu->arch.guest_csr;
-@@ -791,6 +805,8 @@ void kvm_arch_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
- 	csr_write(CSR_HVIP, csr->hvip);
- 	csr_write(CSR_VSATP, csr->vsatp);
- 
-+	kvm_riscv_vcpu_update_config(vcpu->arch.isa);
-+
- 	kvm_riscv_gstage_update_hgatp(vcpu);
- 
- 	kvm_riscv_vcpu_timer_restore(vcpu);
--- 
-2.34.1
+Let me know if you plan to send this as fix for Linux-5.19-rcX
 
+Regards,
+Anup
+
+>
+> Regards,
+> Anup
+>
+> > ---
+> >  arch/riscv/include/asm/pgtable-64.h | 12 ++++++------
+> >  arch/riscv/include/asm/pgtable.h    |  6 +++---
+> >  arch/riscv/kvm/mmu.c                |  2 +-
+> >  3 files changed, 10 insertions(+), 10 deletions(-)
+> >
+> > diff --git a/arch/riscv/include/asm/pgtable-64.h b/arch/riscv/include/asm/pgtable-64.h
+> > index 5c2aba5efbd0..dc42375c2357 100644
+> > --- a/arch/riscv/include/asm/pgtable-64.h
+> > +++ b/arch/riscv/include/asm/pgtable-64.h
+> > @@ -175,7 +175,7 @@ static inline pud_t pfn_pud(unsigned long pfn, pgprot_t prot)
+> >
+> >  static inline unsigned long _pud_pfn(pud_t pud)
+> >  {
+> > -       return pud_val(pud) >> _PAGE_PFN_SHIFT;
+> > +       return __page_val_to_pfn(pud_val(pud));
+> >  }
+> >
+> >  static inline pmd_t *pud_pgtable(pud_t pud)
+> > @@ -278,13 +278,13 @@ static inline p4d_t pfn_p4d(unsigned long pfn, pgprot_t prot)
+> >
+> >  static inline unsigned long _p4d_pfn(p4d_t p4d)
+> >  {
+> > -       return p4d_val(p4d) >> _PAGE_PFN_SHIFT;
+> > +       return __page_val_to_pfn(p4d_val(p4d));
+> >  }
+> >
+> >  static inline pud_t *p4d_pgtable(p4d_t p4d)
+> >  {
+> >         if (pgtable_l4_enabled)
+> > -               return (pud_t *)pfn_to_virt(p4d_val(p4d) >> _PAGE_PFN_SHIFT);
+> > +               return (pud_t *)pfn_to_virt(__page_val_to_pfn(p4d_val(p4d)));
+> >
+> >         return (pud_t *)pud_pgtable((pud_t) { p4d_val(p4d) });
+> >  }
+> > @@ -292,7 +292,7 @@ static inline pud_t *p4d_pgtable(p4d_t p4d)
+> >
+> >  static inline struct page *p4d_page(p4d_t p4d)
+> >  {
+> > -       return pfn_to_page(p4d_val(p4d) >> _PAGE_PFN_SHIFT);
+> > +       return pfn_to_page(__page_val_to_pfn(p4d_val(p4d)));
+> >  }
+> >
+> >  #define pud_index(addr) (((addr) >> PUD_SHIFT) & (PTRS_PER_PUD - 1))
+> > @@ -347,7 +347,7 @@ static inline void pgd_clear(pgd_t *pgd)
+> >  static inline p4d_t *pgd_pgtable(pgd_t pgd)
+> >  {
+> >         if (pgtable_l5_enabled)
+> > -               return (p4d_t *)pfn_to_virt(pgd_val(pgd) >> _PAGE_PFN_SHIFT);
+> > +               return (p4d_t *)pfn_to_virt(__page_val_to_pfn(pgd_val(pgd)));
+> >
+> >         return (p4d_t *)p4d_pgtable((p4d_t) { pgd_val(pgd) });
+> >  }
+> > @@ -355,7 +355,7 @@ static inline p4d_t *pgd_pgtable(pgd_t pgd)
+> >
+> >  static inline struct page *pgd_page(pgd_t pgd)
+> >  {
+> > -       return pfn_to_page(pgd_val(pgd) >> _PAGE_PFN_SHIFT);
+> > +       return pfn_to_page(__page_val_to_pfn(pgd_val(pgd)));
+> >  }
+> >  #define pgd_page(pgd)  pgd_page(pgd)
+> >
+> > diff --git a/arch/riscv/include/asm/pgtable.h b/arch/riscv/include/asm/pgtable.h
+> > index 1d1be9d9419c..5dbd6610729b 100644
+> > --- a/arch/riscv/include/asm/pgtable.h
+> > +++ b/arch/riscv/include/asm/pgtable.h
+> > @@ -261,7 +261,7 @@ static inline pgd_t pfn_pgd(unsigned long pfn, pgprot_t prot)
+> >
+> >  static inline unsigned long _pgd_pfn(pgd_t pgd)
+> >  {
+> > -       return pgd_val(pgd) >> _PAGE_PFN_SHIFT;
+> > +       return __page_val_to_pfn(pgd_val(pgd));
+> >  }
+> >
+> >  static inline struct page *pmd_page(pmd_t pmd)
+> > @@ -590,14 +590,14 @@ static inline pmd_t pmd_mkinvalid(pmd_t pmd)
+> >         return __pmd(pmd_val(pmd) & ~(_PAGE_PRESENT|_PAGE_PROT_NONE));
+> >  }
+> >
+> > -#define __pmd_to_phys(pmd)  (pmd_val(pmd) >> _PAGE_PFN_SHIFT << PAGE_SHIFT)
+> > +#define __pmd_to_phys(pmd)  (__page_val_to_pfn(pmd_val(pmd)) << PAGE_SHIFT)
+> >
+> >  static inline unsigned long pmd_pfn(pmd_t pmd)
+> >  {
+> >         return ((__pmd_to_phys(pmd) & PMD_MASK) >> PAGE_SHIFT);
+> >  }
+> >
+> > -#define __pud_to_phys(pud)  (pud_val(pud) >> _PAGE_PFN_SHIFT << PAGE_SHIFT)
+> > +#define __pud_to_phys(pud)  (__page_val_to_pfn(pud_val(pud)) << PAGE_SHIFT)
+> >
+> >  static inline unsigned long pud_pfn(pud_t pud)
+> >  {
+> > diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
+> > index 1c00695ebee7..9826073fbc67 100644
+> > --- a/arch/riscv/kvm/mmu.c
+> > +++ b/arch/riscv/kvm/mmu.c
+> > @@ -54,7 +54,7 @@ static inline unsigned long gstage_pte_index(gpa_t addr, u32 level)
+> >
+> >  static inline unsigned long gstage_pte_page_vaddr(pte_t pte)
+> >  {
+> > -       return (unsigned long)pfn_to_virt(pte_val(pte) >> _PAGE_PFN_SHIFT);
+> > +       return (unsigned long)pfn_to_virt(__page_val_to_pfn(pte_val(pte)));
+> >  }
+> >
+> >  static int gstage_page_size_to_level(unsigned long page_size, u32 *out_level)
+> > --
+> > 2.34.1
+> >
 
