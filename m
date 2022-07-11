@@ -1,16 +1,16 @@
-From: Bin Meng <bmeng.cn@gmail.com>
-Date: Mon, 11 Jul 2022 09:37:59 +0800
+From: Anup Patel <apatel@ventanamicro.com>
+Date: Mon, 11 Jul 2022 09:46:19 +0530
 Subject: [PATCH] RISC-V: KVM: Fix SRCU deadlock caused by kvm_riscv_check_vcpu_requests()
 In-Reply-To: <20220710151105.687193-1-apatel@ventanamicro.com>
 References: <20220710151105.687193-1-apatel@ventanamicro.com>
-Message-ID: <CAEUhbmUzzoA4uUQ3tRk4V3jAA14AfPnD08KM0GT5Px6DMFwBRA@mail.gmail.com>
+Message-ID: <CAK9=C2UjJ8eqXSBzsbpdUn9E=5_6Zp2NAnHts_FaGpxWxN-Krw@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sun, Jul 10, 2022 at 11:11 PM Anup Patel <apatel@ventanamicro.com> wrote:
+On Sun, Jul 10, 2022 at 8:41 PM Anup Patel <apatel@ventanamicro.com> wrote:
 >
 > The kvm_riscv_check_vcpu_requests() is called with SRCU read lock held
 > and for KVM_REQ_SLEEP request it will block the VCPU without releasing
@@ -24,12 +24,16 @@ On Sun, Jul 10, 2022 at 11:11 PM Anup Patel <apatel@ventanamicro.com> wrote:
 >
 > Fixes: cce69aff689e ("RISC-V: KVM: Implement VCPU interrupts and
 > requests handling")
-
-nites: the "Fixes" tag should be put in a single line to avoid
-breaking scripts that parse the "Fixes" tag
-
 > Reported-by: Bin Meng <bmeng.cn@gmail.com>
 > Signed-off-by: Anup Patel <apatel@ventanamicro.com>
+
+Thanks everyone for providing Tested-by and Reviewed-by.
+
+I have queued this patch for 5.19-rcX fixes.
+
+Regards,
+Anup
+
 > ---
 >  arch/riscv/kvm/vcpu.c | 2 ++
 >  1 file changed, 2 insertions(+)
@@ -51,6 +55,6 @@ breaking scripts that parse the "Fixes" tag
 >                         if (vcpu->arch.power_off || vcpu->arch.pause) {
 >                                 /*
 > --
-
-Tested-by: Bin Meng <bmeng.cn@gmail.com>
+> 2.34.1
+>
 
