@@ -1,76 +1,74 @@
 From: Atish Patra <atishp@rivosinc.com>
-Date: Mon, 18 Jul 2022 10:01:58 -0700
-Subject: [RFC  2/9] RISC-V: Define a helper function to return counter width
+Date: Mon, 18 Jul 2022 10:01:59 -0700
+Subject: [RFC  3/9] RISC-V: KVM: Define a probe function for SBI extension data structures
 In-Reply-To: <20220718170205.2972215-1-atishp@rivosinc.com>
 References: <20220718170205.2972215-1-atishp@rivosinc.com>
-Message-ID: <20220718170205.2972215-3-atishp@rivosinc.com>
+Message-ID: <20220718170205.2972215-4-atishp@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The virtual hardware counters need to have the same width as the
-logical hardware counters for simplicity.  However, there shouldn't
-be mapping between virtual hardware counters and logical hardware
-counters. As we don't support hetergeneous harts or counters with
-different width as of now, the implementation relies on the counter
-width of the first available programmable counter.
+c,urrently the probe function just check if an SBI extension is
+registered or not. However, the extension may not want to advertise
+itself depending on some other condition.
+An additional extension specific probe function will allow
+extensions to decide if they want to be advertised to the caller or
+not. Any extension that do not require additional dependency check
+does not required to implement this function.
 
 Signed-off-by: Atish Patra <atishp@rivosinc.com>
 ---
- drivers/perf/riscv_pmu_sbi.c   | 25 +++++++++++++++++++++++++
- include/linux/perf/riscv_pmu.h |  1 +
- 2 files changed, 26 insertions(+)
+ arch/riscv/include/asm/kvm_vcpu_sbi.h |  3 +++
+ arch/riscv/kvm/vcpu_sbi_base.c        | 13 +++++++++++--
+ 2 files changed, 14 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/perf/riscv_pmu_sbi.c b/drivers/perf/riscv_pmu_sbi.c
-index 1723af68ffa1..5d0eef3ef136 100644
---- a/drivers/perf/riscv_pmu_sbi.c
-+++ b/drivers/perf/riscv_pmu_sbi.c
-@@ -250,6 +250,31 @@ static bool pmu_sbi_ctr_is_fw(int cidx)
- 	return (info->type == SBI_PMU_CTR_TYPE_FW) ? true : false;
- }
+diff --git a/arch/riscv/include/asm/kvm_vcpu_sbi.h b/arch/riscv/include/asm/kvm_vcpu_sbi.h
+index 83d6d4d2b1df..5853a1ef71ea 100644
+--- a/arch/riscv/include/asm/kvm_vcpu_sbi.h
++++ b/arch/riscv/include/asm/kvm_vcpu_sbi.h
+@@ -25,6 +25,9 @@ struct kvm_vcpu_sbi_extension {
+ 	int (*handler)(struct kvm_vcpu *vcpu, struct kvm_run *run,
+ 		       unsigned long *out_val, struct kvm_cpu_trap *utrap,
+ 		       bool *exit);
++
++	/* Extension specific probe function */
++	unsigned long (*probe)(unsigned long extid);
+ };
  
-+/*
-+ * Returns the counter width of a programmable counter
-+ * As we don't support heterneous CPUs yet, it is okay to just
-+ * return the counter width of the first programmable counter.
-+ */
-+int riscv_pmu_sbi_hpmc_width(void)
-+{
-+	int i;
-+	union sbi_pmu_ctr_info *info;
-+
-+	if (!rvpmu)
-+		return -EINVAL;
-+
-+	for (i = 0; i < rvpmu->num_counters; i++) {
-+		info = &pmu_ctr_list[i];
-+		if (!info)
-+			continue;
-+		if (info->type == SBI_PMU_CTR_TYPE_HW)
-+			return info->width;
-+	}
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL(riscv_pmu_sbi_hpmc_width);
-+
- static int pmu_sbi_ctr_get_idx(struct perf_event *event)
- {
- 	struct hw_perf_event *hwc = &event->hw;
-diff --git a/include/linux/perf/riscv_pmu.h b/include/linux/perf/riscv_pmu.h
-index fc47167e000c..6fee211c27b5 100644
---- a/include/linux/perf/riscv_pmu.h
-+++ b/include/linux/perf/riscv_pmu.h
-@@ -72,6 +72,7 @@ static inline void riscv_pmu_legacy_skip_init(void) {};
- struct riscv_pmu *riscv_pmu_alloc(void);
- #ifdef CONFIG_RISCV_PMU_SBI
- int riscv_pmu_sbi_get_num_hw_ctrs(void);
-+int riscv_pmu_sbi_hpmc_width(void);
- #endif
+ void kvm_riscv_vcpu_sbi_forward(struct kvm_vcpu *vcpu, struct kvm_run *run);
+diff --git a/arch/riscv/kvm/vcpu_sbi_base.c b/arch/riscv/kvm/vcpu_sbi_base.c
+index 48f431091cdb..14be1a819588 100644
+--- a/arch/riscv/kvm/vcpu_sbi_base.c
++++ b/arch/riscv/kvm/vcpu_sbi_base.c
+@@ -22,6 +22,7 @@ static int kvm_sbi_ext_base_handler(struct kvm_vcpu *vcpu, struct kvm_run *run,
+ 	int ret = 0;
+ 	struct kvm_cpu_context *cp = &vcpu->arch.guest_context;
+ 	struct sbiret ecall_ret;
++	const struct kvm_vcpu_sbi_extension *sbi_ext;
  
- #endif /* CONFIG_RISCV_PMU */
+ 	switch (cp->a6) {
+ 	case SBI_EXT_BASE_GET_SPEC_VERSION:
+@@ -46,8 +47,16 @@ static int kvm_sbi_ext_base_handler(struct kvm_vcpu *vcpu, struct kvm_run *run,
+ 			 */
+ 			kvm_riscv_vcpu_sbi_forward(vcpu, run);
+ 			*exit = true;
+-		} else
+-			*out_val = kvm_vcpu_sbi_find_ext(cp->a0) ? 1 : 0;
++		} else {
++			sbi_ext = kvm_vcpu_sbi_find_ext(cp->a0);
++			if (sbi_ext) {
++				if (sbi_ext->probe)
++					*out_val = sbi_ext->probe(cp->a0);
++				else
++					*out_val = 1;
++			} else
++				*out_val = 0;
++		}
+ 		break;
+ 	case SBI_EXT_BASE_GET_MVENDORID:
+ 	case SBI_EXT_BASE_GET_MARCHID:
 -- 
 2.25.1
 
