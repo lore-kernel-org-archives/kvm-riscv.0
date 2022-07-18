@@ -1,90 +1,77 @@
 From: Atish Patra <atishp@rivosinc.com>
-Date: Mon, 18 Jul 2022 10:01:56 -0700
-Subject: [RFC  0/9] KVM perf support 
-Message-ID: <20220718170205.2972215-1-atishp@rivosinc.com>
+Date: Mon, 18 Jul 2022 10:01:58 -0700
+Subject: [RFC  2/9] RISC-V: Define a helper function to return counter width
+In-Reply-To: <20220718170205.2972215-1-atishp@rivosinc.com>
+References: <20220718170205.2972215-1-atishp@rivosinc.com>
+Message-ID: <20220718170205.2972215-3-atishp@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This series extends perf support for KVM. The KVM implementation relies
-on the SBI PMU extension and trap n emulation of hpmcounter CSRs.
-The KVM implementation exposes the virtual counters to the guest and internally
-manage the counters using kernel perf counters. 
+The virtual hardware counters need to have the same width as the
+logical hardware counters for simplicity.  However, there shouldn't
+be mapping between virtual hardware counters and logical hardware
+counters. As we don't support hetergeneous harts or counters with
+different width as of now, the implementation relies on the counter
+width of the first available programmable counter.
 
-This series doesn't support the counter overflow as the Sscofpmf extension
-doesn't allow trap & emulation mechanism of scountovf CSR yet. The required
-changes to allow that are being under discussions. Supporting overflow interrupt
-also requires AIA support which is not frozen either.
+Signed-off-by: Atish Patra <atishp@rivosinc.com>
+---
+ drivers/perf/riscv_pmu_sbi.c   | 25 +++++++++++++++++++++++++
+ include/linux/perf/riscv_pmu.h |  1 +
+ 2 files changed, 26 insertions(+)
 
-This series can be found at github[1] as well. It depends Anup's CSR emulation
-framework[1] series.
-
-perf stat works in kvm guests with this series. 
-
-Here is example of running perf stat in a guest running in KVM.
-===========================================================================
-/ # /host/apps/perf stat -e instructions -e cycles -e r8000000000000005 \
-> -e r8000000000000006 -e r8000000000000007 -e r8000000000000008 \
-> -e r800000000000000a perf bench sched messaging -g 5 -l 15
-# Running 'sched/messaging' benchmark:
-# 20 sender and receiver processes per group
-# 5 groups == 200 processes run
-
-     Total time: 5.210 [sec] 
-
- Performance counter stats for 'perf bench sched messaging -g 5 -l 15':
-
-       37209585734      instructions              #    1.00  insn per cycle
-       37177435570      cycles 
-              2740      r8000000000000005
-              3727      r8000000000000006
-              3655      r8000000000000007
-                10      r8000000000000008
-                 0      r800000000000000a
-
-       5.863014800 seconds time elapsed
-
-       0.569373000 seconds user
-      10.771533000 seconds sys 
-
-[1] https://github.com/atishp04/linux/tree/kvm_perf_rfc
-[2] https://lkml.org/lkml/2022/6/15/389
-
-Atish Patra (9):
-RISC-V: Define a helper function to probe number of hardware counters
-RISC-V: Define a helper function to return counter width
-RISC-V: KVM: Define a probe function for SBI extension data structures
-RISC-V: KVM: Improve privilege mode filtering for perf
-RISC-V: KVM: Add skeleton support for perf
-RISC-V: KVM: Add SBI PMU extension support
-RISC-V: KVM: Implement trap & emulate for hpmcounters
-RISC-V: KVM: Implement perf support
-RISC-V: KVM: Implement firmware events
-
-arch/riscv/include/asm/kvm_host.h     |   3 +
-arch/riscv/include/asm/kvm_vcpu_pmu.h | 102 +++++
-arch/riscv/include/asm/kvm_vcpu_sbi.h |   3 +
-arch/riscv/include/asm/sbi.h          |   2 +-
-arch/riscv/kvm/Makefile               |   1 +
-arch/riscv/kvm/main.c                 |   3 +-
-arch/riscv/kvm/tlb.c                  |   6 +-
-arch/riscv/kvm/vcpu.c                 |   5 +
-arch/riscv/kvm/vcpu_insn.c            |   4 +-
-arch/riscv/kvm/vcpu_pmu.c             | 517 ++++++++++++++++++++++++++
-arch/riscv/kvm/vcpu_sbi.c             |  11 +
-arch/riscv/kvm/vcpu_sbi_base.c        |  13 +-
-arch/riscv/kvm/vcpu_sbi_pmu.c         |  81 ++++
-arch/riscv/kvm/vcpu_sbi_replace.c     |   7 +
-drivers/perf/riscv_pmu_sbi.c          |  75 +++-
-include/linux/perf/riscv_pmu.h        |   7 +
-16 files changed, 823 insertions(+), 17 deletions(-)
-create mode 100644 arch/riscv/include/asm/kvm_vcpu_pmu.h
-create mode 100644 arch/riscv/kvm/vcpu_pmu.c
-create mode 100644 arch/riscv/kvm/vcpu_sbi_pmu.c
-
---
+diff --git a/drivers/perf/riscv_pmu_sbi.c b/drivers/perf/riscv_pmu_sbi.c
+index 1723af68ffa1..5d0eef3ef136 100644
+--- a/drivers/perf/riscv_pmu_sbi.c
++++ b/drivers/perf/riscv_pmu_sbi.c
+@@ -250,6 +250,31 @@ static bool pmu_sbi_ctr_is_fw(int cidx)
+ 	return (info->type == SBI_PMU_CTR_TYPE_FW) ? true : false;
+ }
+ 
++/*
++ * Returns the counter width of a programmable counter
++ * As we don't support heterneous CPUs yet, it is okay to just
++ * return the counter width of the first programmable counter.
++ */
++int riscv_pmu_sbi_hpmc_width(void)
++{
++	int i;
++	union sbi_pmu_ctr_info *info;
++
++	if (!rvpmu)
++		return -EINVAL;
++
++	for (i = 0; i < rvpmu->num_counters; i++) {
++		info = &pmu_ctr_list[i];
++		if (!info)
++			continue;
++		if (info->type == SBI_PMU_CTR_TYPE_HW)
++			return info->width;
++	}
++
++	return 0;
++}
++EXPORT_SYMBOL(riscv_pmu_sbi_hpmc_width);
++
+ static int pmu_sbi_ctr_get_idx(struct perf_event *event)
+ {
+ 	struct hw_perf_event *hwc = &event->hw;
+diff --git a/include/linux/perf/riscv_pmu.h b/include/linux/perf/riscv_pmu.h
+index fc47167e000c..6fee211c27b5 100644
+--- a/include/linux/perf/riscv_pmu.h
++++ b/include/linux/perf/riscv_pmu.h
+@@ -72,6 +72,7 @@ static inline void riscv_pmu_legacy_skip_init(void) {};
+ struct riscv_pmu *riscv_pmu_alloc(void);
+ #ifdef CONFIG_RISCV_PMU_SBI
+ int riscv_pmu_sbi_get_num_hw_ctrs(void);
++int riscv_pmu_sbi_hpmc_width(void);
+ #endif
+ 
+ #endif /* CONFIG_RISCV_PMU */
+-- 
 2.25.1
 
 
