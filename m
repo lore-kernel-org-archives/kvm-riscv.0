@@ -1,40 +1,72 @@
-From: Peter Gonda <pgonda@google.com>
-Date: Fri, 15 Jul 2022 13:32:06 -0600
-Subject: [PATCH 0/3] KVM: selftests: Consolidate ucall code
-In-Reply-To: <YrHbml1HAfDtvMfn@google.com>
-References: <20220618001618.1840806-1-seanjc@google.com> <19bba1a0-8fb7-2aae-a65a-1111e29b92d3@redhat.com>
- <YrHbml1HAfDtvMfn@google.com>
-Message-ID: <CAMkAt6p8_OUQ5rv7DsSjPX6_EUQV6TUn0L3Q4uT1B23e32PkSQ@mail.gmail.com>
+From: Anup Patel <anup@brainfault.org>
+Date: Mon, 18 Jul 2022 09:34:15 +0530
+Subject: [PATCH 1/5] KVM: Add gfp_custom flag in struct kvm_mmu_memory_cache
+In-Reply-To: <CAOnJCUKNaNz0iF5dfS9quRyDS_ZD1adWWAFjOnBPwqKEefpS8Q@mail.gmail.com>
+References: <20220707145248.458771-1-apatel@ventanamicro.com>
+ <20220707145248.458771-2-apatel@ventanamicro.com> <CAOnJCUKNaNz0iF5dfS9quRyDS_ZD1adWWAFjOnBPwqKEefpS8Q@mail.gmail.com>
+Message-ID: <CAAhSdy2rN4rrKep=P4W_hen_OsHR8USQ7xGH5=fKd-5_t8NTew@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Jun 21, 2022 at 8:55 AM Sean Christopherson <seanjc@google.com> wrote:
+Hi Paolo,
+
+On Wed, Jul 13, 2022 at 6:57 AM Atish Patra <atishp@atishpatra.org> wrote:
 >
-> On Mon, Jun 20, 2022, Paolo Bonzini wrote:
-> > On 6/18/22 02:16, Sean Christopherson wrote:
-> > > Consolidate the code for making and getting ucalls.  All architectures pass
-> > > the ucall struct via memory, so filling and copying the struct is 100%
-> > > generic.  The only per-arch code is sending and receiving the address of
-> > > said struct.
-> > >
-> > > Tested on x86 and arm, compile tested on s390 and RISC-V.
+> On Thu, Jul 7, 2022 at 7:53 AM Anup Patel <apatel@ventanamicro.com> wrote:
 > >
-> > I'm not sure about doing this yet.  The SEV tests added multiple
-> > implementations of the ucalls in one architecture.  I have rebased those
-> > recently (not the SEV part) to get more familiar with the new kvm_vcpu API
-> > for selftests, and was going to look at your old review next...
+> > The kvm_mmu_topup_memory_cache() always uses GFP_KERNEL_ACCOUNT for
+> > memory allocation which prevents it's use in atomic context. To address
+> > this limitation of kvm_mmu_topup_memory_cache(), we add gfp_custom flag
+> > in struct kvm_mmu_memory_cache. When the gfp_custom flag is set to some
+> > GFP_xyz flags, the kvm_mmu_topup_memory_cache() will use that instead of
+> > GFP_KERNEL_ACCOUNT.
+> >
+> > Signed-off-by: Anup Patel <apatel@ventanamicro.com>
+> > ---
+> >  include/linux/kvm_types.h | 1 +
+> >  virt/kvm/kvm_main.c       | 4 +++-
+> >  2 files changed, 4 insertions(+), 1 deletion(-)
+> >
+> > diff --git a/include/linux/kvm_types.h b/include/linux/kvm_types.h
+> > index ac1ebb37a0ff..1dcfba68076a 100644
+> > --- a/include/linux/kvm_types.h
+> > +++ b/include/linux/kvm_types.h
+> > @@ -87,6 +87,7 @@ struct gfn_to_pfn_cache {
+> >  struct kvm_mmu_memory_cache {
+> >         int nobjs;
+> >         gfp_t gfp_zero;
+> > +       gfp_t gfp_custom;
+> >         struct kmem_cache *kmem_cache;
+> >         void *objects[KVM_ARCH_NR_OBJS_PER_MEMORY_CACHE];
+> >  };
+> > diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+> > index a49df8988cd6..e3a6f7647474 100644
+> > --- a/virt/kvm/kvm_main.c
+> > +++ b/virt/kvm/kvm_main.c
+> > @@ -386,7 +386,9 @@ int kvm_mmu_topup_memory_cache(struct kvm_mmu_memory_cache *mc, int min)
+> >         if (mc->nobjs >= min)
+> >                 return 0;
+> >         while (mc->nobjs < ARRAY_SIZE(mc->objects)) {
+> > -               obj = mmu_memory_cache_alloc_obj(mc, GFP_KERNEL_ACCOUNT);
+> > +               obj = mmu_memory_cache_alloc_obj(mc, (mc->gfp_custom) ?
+> > +                                                mc->gfp_custom :
+> > +                                                GFP_KERNEL_ACCOUNT);
+> >                 if (!obj)
+> >                         return mc->nobjs >= min ? 0 : -ENOMEM;
+> >                 mc->objects[mc->nobjs++] = obj;
+> > --
+> > 2.34.1
+> >
 >
-> I had forgotten about that code.  My idea of a per-VM list[*] would fit nicely on
-> top, though maybe drop the last patch from this series.
->
-> [*] https://lore.kernel.org/all/Yc4gcJdhxthBKUUd at google.com
+> Acked-by: Atish Patra <atishp@rivosinc.com>
 
-I just sent an RFC of SEV selftesting using Sean's suggestion built on
-the first 2 patches in this series. I think they work well with the
-encrypted VMs ucalling.
+I have queued this patch for 5.20.
 
-https://lore.kernel.org/all/20220715192956.1873315-1-pgonda at google.com/
+Please let me know if you are not okay or need changes in this patch.
+
+Thanks,
+Anup
 
