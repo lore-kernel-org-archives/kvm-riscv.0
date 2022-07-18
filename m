@@ -1,74 +1,143 @@
 From: Atish Patra <atishp@rivosinc.com>
-Date: Mon, 18 Jul 2022 10:01:59 -0700
-Subject: [RFC  3/9] RISC-V: KVM: Define a probe function for SBI extension data structures
+Date: Mon, 18 Jul 2022 10:01:57 -0700
+Subject: [RFC  1/9] RISC-V: Define a helper function to probe number of hardware counters
 In-Reply-To: <20220718170205.2972215-1-atishp@rivosinc.com>
 References: <20220718170205.2972215-1-atishp@rivosinc.com>
-Message-ID: <20220718170205.2972215-4-atishp@rivosinc.com>
+Message-ID: <20220718170205.2972215-2-atishp@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-c,urrently the probe function just check if an SBI extension is
-registered or not. However, the extension may not want to advertise
-itself depending on some other condition.
-An additional extension specific probe function will allow
-extensions to decide if they want to be advertised to the caller or
-not. Any extension that do not require additional dependency check
-does not required to implement this function.
+KVM module needs to know how many hardware counters the platform supports.
+Otherwise, it will not be able to show optimal value of virtual
+counters to the guest.
 
 Signed-off-by: Atish Patra <atishp@rivosinc.com>
 ---
- arch/riscv/include/asm/kvm_vcpu_sbi.h |  3 +++
- arch/riscv/kvm/vcpu_sbi_base.c        | 13 +++++++++++--
- 2 files changed, 14 insertions(+), 2 deletions(-)
+ drivers/perf/riscv_pmu_sbi.c   | 23 +++++++++++++++++------
+ include/linux/perf/riscv_pmu.h |  4 ++++
+ 2 files changed, 21 insertions(+), 6 deletions(-)
 
-diff --git a/arch/riscv/include/asm/kvm_vcpu_sbi.h b/arch/riscv/include/asm/kvm_vcpu_sbi.h
-index 83d6d4d2b1df..5853a1ef71ea 100644
---- a/arch/riscv/include/asm/kvm_vcpu_sbi.h
-+++ b/arch/riscv/include/asm/kvm_vcpu_sbi.h
-@@ -25,6 +25,9 @@ struct kvm_vcpu_sbi_extension {
- 	int (*handler)(struct kvm_vcpu *vcpu, struct kvm_run *run,
- 		       unsigned long *out_val, struct kvm_cpu_trap *utrap,
- 		       bool *exit);
-+
-+	/* Extension specific probe function */
-+	unsigned long (*probe)(unsigned long extid);
+diff --git a/drivers/perf/riscv_pmu_sbi.c b/drivers/perf/riscv_pmu_sbi.c
+index 24124546844c..1723af68ffa1 100644
+--- a/drivers/perf/riscv_pmu_sbi.c
++++ b/drivers/perf/riscv_pmu_sbi.c
+@@ -27,6 +27,7 @@
+  */
+ static union sbi_pmu_ctr_info *pmu_ctr_list;
+ static unsigned int riscv_pmu_irq;
++static struct riscv_pmu *rvpmu;
+ 
+ struct sbi_pmu_event_data {
+ 	union {
+@@ -227,6 +228,12 @@ static const struct sbi_pmu_event_data pmu_cache_event_map[PERF_COUNT_HW_CACHE_M
+ 	},
  };
  
- void kvm_riscv_vcpu_sbi_forward(struct kvm_vcpu *vcpu, struct kvm_run *run);
-diff --git a/arch/riscv/kvm/vcpu_sbi_base.c b/arch/riscv/kvm/vcpu_sbi_base.c
-index 48f431091cdb..14be1a819588 100644
---- a/arch/riscv/kvm/vcpu_sbi_base.c
-+++ b/arch/riscv/kvm/vcpu_sbi_base.c
-@@ -22,6 +22,7 @@ static int kvm_sbi_ext_base_handler(struct kvm_vcpu *vcpu, struct kvm_run *run,
- 	int ret = 0;
- 	struct kvm_cpu_context *cp = &vcpu->arch.guest_context;
- 	struct sbiret ecall_ret;
-+	const struct kvm_vcpu_sbi_extension *sbi_ext;
++int riscv_pmu_sbi_get_num_hw_ctrs(void)
++{
++	return rvpmu ? rvpmu->num_hw_counters : 0;
++}
++EXPORT_SYMBOL(riscv_pmu_sbi_get_num_hw_ctrs);
++
+ static int pmu_sbi_ctr_get_width(int idx)
+ {
+ 	return pmu_ctr_list[idx].width;
+@@ -443,7 +450,7 @@ static int pmu_sbi_find_num_ctrs(void)
+ 		return sbi_err_map_linux_errno(ret.error);
+ }
  
- 	switch (cp->a6) {
- 	case SBI_EXT_BASE_GET_SPEC_VERSION:
-@@ -46,8 +47,16 @@ static int kvm_sbi_ext_base_handler(struct kvm_vcpu *vcpu, struct kvm_run *run,
- 			 */
- 			kvm_riscv_vcpu_sbi_forward(vcpu, run);
- 			*exit = true;
--		} else
--			*out_val = kvm_vcpu_sbi_find_ext(cp->a0) ? 1 : 0;
-+		} else {
-+			sbi_ext = kvm_vcpu_sbi_find_ext(cp->a0);
-+			if (sbi_ext) {
-+				if (sbi_ext->probe)
-+					*out_val = sbi_ext->probe(cp->a0);
-+				else
-+					*out_val = 1;
-+			} else
-+				*out_val = 0;
-+		}
- 		break;
- 	case SBI_EXT_BASE_GET_MVENDORID:
- 	case SBI_EXT_BASE_GET_MARCHID:
+-static int pmu_sbi_get_ctrinfo(int nctr)
++static int pmu_sbi_get_ctrinfo(int nctr, int *num_hw_ctrs)
+ {
+ 	struct sbiret ret;
+ 	int i, num_hw_ctr = 0, num_fw_ctr = 0;
+@@ -453,7 +460,7 @@ static int pmu_sbi_get_ctrinfo(int nctr)
+ 	if (!pmu_ctr_list)
+ 		return -ENOMEM;
+ 
+-	for (i = 0; i <= nctr; i++) {
++	for (i = 0; i < nctr; i++) {
+ 		ret = sbi_ecall(SBI_EXT_PMU, SBI_EXT_PMU_COUNTER_GET_INFO, i, 0, 0, 0, 0, 0);
+ 		if (ret.error)
+ 			/* The logical counter ids are not expected to be contiguous */
+@@ -466,6 +473,7 @@ static int pmu_sbi_get_ctrinfo(int nctr)
+ 		pmu_ctr_list[i].value = cinfo.value;
+ 	}
+ 
++	*num_hw_ctrs = num_hw_ctr;
+ 	pr_info("%d firmware and %d hardware counters\n", num_fw_ctr, num_hw_ctr);
+ 
+ 	return 0;
+@@ -698,7 +706,7 @@ static int pmu_sbi_setup_irqs(struct riscv_pmu *pmu, struct platform_device *pde
+ static int pmu_sbi_device_probe(struct platform_device *pdev)
+ {
+ 	struct riscv_pmu *pmu = NULL;
+-	int num_counters;
++	int num_counters, num_hw_ctrs = 0;
+ 	int ret = -ENODEV;
+ 
+ 	pr_info("SBI PMU extension is available\n");
+@@ -713,7 +721,7 @@ static int pmu_sbi_device_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	/* cache all the information about counters now */
+-	if (pmu_sbi_get_ctrinfo(num_counters))
++	if (pmu_sbi_get_ctrinfo(num_counters, &num_hw_ctrs))
+ 		goto out_free;
+ 
+ 	ret = pmu_sbi_setup_irqs(pmu, pdev);
+@@ -723,6 +731,7 @@ static int pmu_sbi_device_probe(struct platform_device *pdev)
+ 		pmu->pmu.capabilities |= PERF_PMU_CAP_NO_EXCLUDE;
+ 	}
+ 	pmu->num_counters = num_counters;
++	pmu->num_hw_counters = num_hw_ctrs;
+ 	pmu->ctr_start = pmu_sbi_ctr_start;
+ 	pmu->ctr_stop = pmu_sbi_ctr_stop;
+ 	pmu->event_map = pmu_sbi_event_map;
+@@ -733,14 +742,16 @@ static int pmu_sbi_device_probe(struct platform_device *pdev)
+ 
+ 	ret = cpuhp_state_add_instance(CPUHP_AP_PERF_RISCV_STARTING, &pmu->node);
+ 	if (ret)
+-		return ret;
++		goto out_free;
+ 
+ 	ret = perf_pmu_register(&pmu->pmu, "cpu", PERF_TYPE_RAW);
+ 	if (ret) {
+ 		cpuhp_state_remove_instance(CPUHP_AP_PERF_RISCV_STARTING, &pmu->node);
+-		return ret;
++		goto out_free;
+ 	}
+ 
++	rvpmu = pmu;
++
+ 	return 0;
+ 
+ out_free:
+diff --git a/include/linux/perf/riscv_pmu.h b/include/linux/perf/riscv_pmu.h
+index 46f9b6fe306e..fc47167e000c 100644
+--- a/include/linux/perf/riscv_pmu.h
++++ b/include/linux/perf/riscv_pmu.h
+@@ -46,6 +46,7 @@ struct riscv_pmu {
+ 	irqreturn_t	(*handle_irq)(int irq_num, void *dev);
+ 
+ 	int		num_counters;
++	int		num_hw_counters;
+ 	u64		(*ctr_read)(struct perf_event *event);
+ 	int		(*ctr_get_idx)(struct perf_event *event);
+ 	int		(*ctr_get_width)(int idx);
+@@ -69,6 +70,9 @@ void riscv_pmu_legacy_skip_init(void);
+ static inline void riscv_pmu_legacy_skip_init(void) {};
+ #endif
+ struct riscv_pmu *riscv_pmu_alloc(void);
++#ifdef CONFIG_RISCV_PMU_SBI
++int riscv_pmu_sbi_get_num_hw_ctrs(void);
++#endif
+ 
+ #endif /* CONFIG_RISCV_PMU */
+ 
 -- 
 2.25.1
 
