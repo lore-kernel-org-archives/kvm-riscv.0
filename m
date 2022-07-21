@@ -1,93 +1,65 @@
 From: Atish Patra <atishp@rivosinc.com>
-Date: Thu, 21 Jul 2022 11:12:08 -0700
-Subject: [PATCH v6 0/4] Add Sstc extension support 
-Message-ID: <20220721181212.3705138-1-atishp@rivosinc.com>
+Date: Thu, 21 Jul 2022 11:12:10 -0700
+Subject: [PATCH v6 2/4] RISC-V: Enable sstc extension parsing from DT
+In-Reply-To: <20220721181212.3705138-1-atishp@rivosinc.com>
+References: <20220721181212.3705138-1-atishp@rivosinc.com>
+Message-ID: <20220721181212.3705138-3-atishp@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This series implements Sstc extension support which was ratified recently.
-Before the Sstc extension, an SBI call is necessary to generate timer
-interrupts as only M-mode have access to the timecompare registers. Thus,
-there is significant latency to generate timer interrupts at kernel.
-For virtualized enviornments, its even worse as the KVM handles the SBI call
-and uses a software timer to emulate the timecomapre register. 
+The ISA extension framework now allows parsing any multi-letter
+ISA extension.
 
-Sstc extension solves both these problems by defining a stimecmp/vstimecmp
-at supervisor (host/guest) level. It allows kernel to program a timer and
-recieve interrupt without supervisor execution enviornment (M-mode/HS mode)
-intervention.
+Enable that for sstc extension.
 
-KVM directly updates the vstimecmp as well if the guest kernel invokes the SBI
-call instead of updating stimecmp directly. This is required because KVM will
-enable sstc extension if the hardware supports it unless the VMM explicitly
-disables it for that guest. The hardware is expected to compare the
-vstimecmp at every cycle if sstc is enabled and any stale value in vstimecmp
-will lead to spurious timer interrupts. This also helps maintaining the
-backward compatibility with older kernels.
+Reviewed-by: Anup Patel <anup@brainfault.org>
+Signed-off-by: Atish Patra <atishp@rivosinc.com>
+---
+ arch/riscv/include/asm/hwcap.h | 1 +
+ arch/riscv/kernel/cpu.c        | 1 +
+ arch/riscv/kernel/cpufeature.c | 1 +
+ 3 files changed, 3 insertions(+)
 
-Similary, the M-mode firmware(OpenSBI) uses stimecmp for older kernel
-without sstc support as STIP bit in mip is read only for hardware with sstc. 
-
-The PATCH 1 & 2 enables the basic infrastructure around Sstc extension while
-PATCH 3 lets kernel use the Sstc extension if it is available in hardware.
-PATCH 4 implements the Sstc extension in KVM.
-
-This series has been tested on Qemu(RV32 & RV64) with additional patches in
-Qemu[2]. This series can also be found at [3].
-
-Changes from v5->v6:
-1. Moved SSTC extension enum below SVPBMT.
-
-Changes from v4->v5:
-1. Added RB tag.
-2. Changed the pr-format.
-3. Rebased on 5.19-rc7 and kvm-queue.
-4. Moved the henvcfg modification from hardware enable to vcpu_load.
-
-Changes from v3->v4:
-1. Rebased on 5.18-rc6
-2. Unified vstimemp & next_cycles.
-3. Addressed comments in PATCH 3 & 4.
-
-Changes from v2->v3:
-1. Dropped unrelated KVM fixes from this series.
-2. Rebased on 5.18-rc3.
-
-Changes from v1->v2:
-1. Separate the static key from kvm usage
-2. Makde the sstc specific static key local to the driver/clocksource
-3. Moved the vstimecmp update code to the vcpu_timer
-4. Used function pointers instead of static key to invoke vstimecmp vs
-   hrtimer at the run time. This will help in future for migration of vms
-   from/to sstc enabled hardware to non-sstc enabled hardware.
-5. Unified the vstimer & timer to 1 timer as only one of them will be used
-   at runtime.
-
-[1] https://drive.google.com/file/d/1m84Re2yK8m_vbW7TspvevCDR82MOBaSX/view
-[2] https://github.com/atishp04/qemu/tree/sstc_v5
-[3] https://github.com/atishp04/linux/tree/sstc_v6
-
-Atish Patra (4):
-RISC-V: Add SSTC extension CSR details
-RISC-V: Enable sstc extension parsing from DT
-RISC-V: Prefer sstc extension if available
-RISC-V: KVM: Support sstc extension
-
-arch/riscv/include/asm/csr.h            |   5 +
-arch/riscv/include/asm/hwcap.h          |   1 +
-arch/riscv/include/asm/kvm_vcpu_timer.h |   7 ++
-arch/riscv/include/uapi/asm/kvm.h       |   1 +
-arch/riscv/kernel/cpu.c                 |   1 +
-arch/riscv/kernel/cpufeature.c          |   1 +
-arch/riscv/kvm/vcpu.c                   |   8 +-
-arch/riscv/kvm/vcpu_timer.c             | 144 +++++++++++++++++++++++-
-drivers/clocksource/timer-riscv.c       |  24 +++-
-9 files changed, 184 insertions(+), 8 deletions(-)
-
---
+diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
+index 4e2486881840..b186fff75198 100644
+--- a/arch/riscv/include/asm/hwcap.h
++++ b/arch/riscv/include/asm/hwcap.h
+@@ -53,6 +53,7 @@ extern unsigned long elf_hwcap;
+ enum riscv_isa_ext_id {
+ 	RISCV_ISA_EXT_SSCOFPMF = RISCV_ISA_EXT_BASE,
+ 	RISCV_ISA_EXT_SVPBMT,
++	RISCV_ISA_EXT_SSTC,
+ 	RISCV_ISA_EXT_ID_MAX = RISCV_ISA_EXT_MAX,
+ };
+ 
+diff --git a/arch/riscv/kernel/cpu.c b/arch/riscv/kernel/cpu.c
+index fba9e9f46a8c..0016d9337fe0 100644
+--- a/arch/riscv/kernel/cpu.c
++++ b/arch/riscv/kernel/cpu.c
+@@ -89,6 +89,7 @@ int riscv_of_parent_hartid(struct device_node *node)
+ static struct riscv_isa_ext_data isa_ext_arr[] = {
+ 	__RISCV_ISA_EXT_DATA(sscofpmf, RISCV_ISA_EXT_SSCOFPMF),
+ 	__RISCV_ISA_EXT_DATA(svpbmt, RISCV_ISA_EXT_SVPBMT),
++	__RISCV_ISA_EXT_DATA(sstc, RISCV_ISA_EXT_SSTC),
+ 	__RISCV_ISA_EXT_DATA("", RISCV_ISA_EXT_MAX),
+ };
+ 
+diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
+index 12b05ce164bb..034bdbd189d0 100644
+--- a/arch/riscv/kernel/cpufeature.c
++++ b/arch/riscv/kernel/cpufeature.c
+@@ -199,6 +199,7 @@ void __init riscv_fill_hwcap(void)
+ 			} else {
+ 				SET_ISA_EXT_MAP("sscofpmf", RISCV_ISA_EXT_SSCOFPMF);
+ 				SET_ISA_EXT_MAP("svpbmt", RISCV_ISA_EXT_SVPBMT);
++				SET_ISA_EXT_MAP("sstc", RISCV_ISA_EXT_SSTC);
+ 			}
+ #undef SET_ISA_EXT_MAP
+ 		}
+-- 
 2.25.1
 
 
