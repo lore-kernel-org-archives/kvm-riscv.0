@@ -1,64 +1,79 @@
 From: Atish Patra <atishp@rivosinc.com>
-Date: Thu, 21 Jul 2022 11:12:10 -0700
-Subject: [PATCH v6 2/4] RISC-V: Enable sstc extension parsing from DT
+Date: Thu, 21 Jul 2022 11:12:11 -0700
+Subject: [PATCH v6 3/4] RISC-V: Prefer sstc extension if available
 In-Reply-To: <20220721181212.3705138-1-atishp@rivosinc.com>
 References: <20220721181212.3705138-1-atishp@rivosinc.com>
-Message-ID: <20220721181212.3705138-3-atishp@rivosinc.com>
+Message-ID: <20220721181212.3705138-4-atishp@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The ISA extension framework now allows parsing any multi-letter
-ISA extension.
-
-Enable that for sstc extension.
+RISC-V ISA has sstc extension which allows updating the next clock event
+via a CSR (stimecmp) instead of an SBI call. This should happen dynamically
+if sstc extension is available. Otherwise, it will fallback to SBI call
+to maintain backward compatibility.
 
 Reviewed-by: Anup Patel <anup@brainfault.org>
 Signed-off-by: Atish Patra <atishp@rivosinc.com>
 ---
- arch/riscv/include/asm/hwcap.h | 1 +
- arch/riscv/kernel/cpu.c        | 1 +
- arch/riscv/kernel/cpufeature.c | 1 +
- 3 files changed, 3 insertions(+)
+ drivers/clocksource/timer-riscv.c | 24 +++++++++++++++++++++++-
+ 1 file changed, 23 insertions(+), 1 deletion(-)
 
-diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
-index 4e2486881840..b186fff75198 100644
---- a/arch/riscv/include/asm/hwcap.h
-+++ b/arch/riscv/include/asm/hwcap.h
-@@ -53,6 +53,7 @@ extern unsigned long elf_hwcap;
- enum riscv_isa_ext_id {
- 	RISCV_ISA_EXT_SSCOFPMF = RISCV_ISA_EXT_BASE,
- 	RISCV_ISA_EXT_SVPBMT,
-+	RISCV_ISA_EXT_SSTC,
- 	RISCV_ISA_EXT_ID_MAX = RISCV_ISA_EXT_MAX,
- };
+diff --git a/drivers/clocksource/timer-riscv.c b/drivers/clocksource/timer-riscv.c
+index 593d5a957b69..3f100fb53d82 100644
+--- a/drivers/clocksource/timer-riscv.c
++++ b/drivers/clocksource/timer-riscv.c
+@@ -7,6 +7,9 @@
+  * either be read from the "time" and "timeh" CSRs, and can use the SBI to
+  * setup events, or directly accessed using MMIO registers.
+  */
++
++#define pr_fmt(fmt) "riscv-timer: " fmt
++
+ #include <linux/clocksource.h>
+ #include <linux/clockchips.h>
+ #include <linux/cpu.h>
+@@ -23,11 +26,24 @@
+ #include <asm/sbi.h>
+ #include <asm/timex.h>
  
-diff --git a/arch/riscv/kernel/cpu.c b/arch/riscv/kernel/cpu.c
-index fba9e9f46a8c..0016d9337fe0 100644
---- a/arch/riscv/kernel/cpu.c
-+++ b/arch/riscv/kernel/cpu.c
-@@ -89,6 +89,7 @@ int riscv_of_parent_hartid(struct device_node *node)
- static struct riscv_isa_ext_data isa_ext_arr[] = {
- 	__RISCV_ISA_EXT_DATA(sscofpmf, RISCV_ISA_EXT_SSCOFPMF),
- 	__RISCV_ISA_EXT_DATA(svpbmt, RISCV_ISA_EXT_SVPBMT),
-+	__RISCV_ISA_EXT_DATA(sstc, RISCV_ISA_EXT_SSTC),
- 	__RISCV_ISA_EXT_DATA("", RISCV_ISA_EXT_MAX),
- };
++static DEFINE_STATIC_KEY_FALSE(riscv_sstc_available);
++
+ static int riscv_clock_next_event(unsigned long delta,
+ 		struct clock_event_device *ce)
+ {
++	u64 next_tval = get_cycles64() + delta;
++
+ 	csr_set(CSR_IE, IE_TIE);
+-	sbi_set_timer(get_cycles64() + delta);
++	if (static_branch_likely(&riscv_sstc_available)) {
++#if defined(CONFIG_32BIT)
++		csr_write(CSR_STIMECMP, next_tval & 0xFFFFFFFF);
++		csr_write(CSR_STIMECMPH, next_tval >> 32);
++#else
++		csr_write(CSR_STIMECMP, next_tval);
++#endif
++	} else
++		sbi_set_timer(next_tval);
++
+ 	return 0;
+ }
  
-diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
-index 12b05ce164bb..034bdbd189d0 100644
---- a/arch/riscv/kernel/cpufeature.c
-+++ b/arch/riscv/kernel/cpufeature.c
-@@ -199,6 +199,7 @@ void __init riscv_fill_hwcap(void)
- 			} else {
- 				SET_ISA_EXT_MAP("sscofpmf", RISCV_ISA_EXT_SSCOFPMF);
- 				SET_ISA_EXT_MAP("svpbmt", RISCV_ISA_EXT_SVPBMT);
-+				SET_ISA_EXT_MAP("sstc", RISCV_ISA_EXT_SSTC);
- 			}
- #undef SET_ISA_EXT_MAP
- 		}
+@@ -165,6 +181,12 @@ static int __init riscv_timer_init_dt(struct device_node *n)
+ 	if (error)
+ 		pr_err("cpu hp setup state failed for RISCV timer [%d]\n",
+ 		       error);
++
++	if (riscv_isa_extension_available(NULL, SSTC)) {
++		pr_info("Timer interrupt in S-mode is available via sstc extension\n");
++		static_branch_enable(&riscv_sstc_available);
++	}
++
+ 	return error;
+ }
+ 
 -- 
 2.25.1
 
