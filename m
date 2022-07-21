@@ -1,79 +1,47 @@
 From: Atish Patra <atishp@rivosinc.com>
-Date: Thu, 21 Jul 2022 11:12:11 -0700
-Subject: [PATCH v6 3/4] RISC-V: Prefer sstc extension if available
+Date: Thu, 21 Jul 2022 11:12:09 -0700
+Subject: [PATCH v6 1/4] RISC-V: Add SSTC extension CSR details
 In-Reply-To: <20220721181212.3705138-1-atishp@rivosinc.com>
 References: <20220721181212.3705138-1-atishp@rivosinc.com>
-Message-ID: <20220721181212.3705138-4-atishp@rivosinc.com>
+Message-ID: <20220721181212.3705138-2-atishp@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-RISC-V ISA has sstc extension which allows updating the next clock event
-via a CSR (stimecmp) instead of an SBI call. This should happen dynamically
-if sstc extension is available. Otherwise, it will fallback to SBI call
-to maintain backward compatibility.
+This patch just introduces the required CSR fields related to the
+SSTC extension.
 
 Reviewed-by: Anup Patel <anup@brainfault.org>
 Signed-off-by: Atish Patra <atishp@rivosinc.com>
 ---
- drivers/clocksource/timer-riscv.c | 24 +++++++++++++++++++++++-
- 1 file changed, 23 insertions(+), 1 deletion(-)
+ arch/riscv/include/asm/csr.h | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/drivers/clocksource/timer-riscv.c b/drivers/clocksource/timer-riscv.c
-index 593d5a957b69..3f100fb53d82 100644
---- a/drivers/clocksource/timer-riscv.c
-+++ b/drivers/clocksource/timer-riscv.c
-@@ -7,6 +7,9 @@
-  * either be read from the "time" and "timeh" CSRs, and can use the SBI to
-  * setup events, or directly accessed using MMIO registers.
-  */
-+
-+#define pr_fmt(fmt) "riscv-timer: " fmt
-+
- #include <linux/clocksource.h>
- #include <linux/clockchips.h>
- #include <linux/cpu.h>
-@@ -23,11 +26,24 @@
- #include <asm/sbi.h>
- #include <asm/timex.h>
+diff --git a/arch/riscv/include/asm/csr.h b/arch/riscv/include/asm/csr.h
+index 17516afc389a..0e571f6483d9 100644
+--- a/arch/riscv/include/asm/csr.h
++++ b/arch/riscv/include/asm/csr.h
+@@ -247,6 +247,9 @@
+ #define CSR_SIP			0x144
+ #define CSR_SATP		0x180
  
-+static DEFINE_STATIC_KEY_FALSE(riscv_sstc_available);
++#define CSR_STIMECMP		0x14D
++#define CSR_STIMECMPH		0x15D
 +
- static int riscv_clock_next_event(unsigned long delta,
- 		struct clock_event_device *ce)
- {
-+	u64 next_tval = get_cycles64() + delta;
-+
- 	csr_set(CSR_IE, IE_TIE);
--	sbi_set_timer(get_cycles64() + delta);
-+	if (static_branch_likely(&riscv_sstc_available)) {
-+#if defined(CONFIG_32BIT)
-+		csr_write(CSR_STIMECMP, next_tval & 0xFFFFFFFF);
-+		csr_write(CSR_STIMECMPH, next_tval >> 32);
-+#else
-+		csr_write(CSR_STIMECMP, next_tval);
-+#endif
-+	} else
-+		sbi_set_timer(next_tval);
-+
- 	return 0;
- }
+ #define CSR_VSSTATUS		0x200
+ #define CSR_VSIE		0x204
+ #define CSR_VSTVEC		0x205
+@@ -256,6 +259,8 @@
+ #define CSR_VSTVAL		0x243
+ #define CSR_VSIP		0x244
+ #define CSR_VSATP		0x280
++#define CSR_VSTIMECMP		0x24D
++#define CSR_VSTIMECMPH		0x25D
  
-@@ -165,6 +181,12 @@ static int __init riscv_timer_init_dt(struct device_node *n)
- 	if (error)
- 		pr_err("cpu hp setup state failed for RISCV timer [%d]\n",
- 		       error);
-+
-+	if (riscv_isa_extension_available(NULL, SSTC)) {
-+		pr_info("Timer interrupt in S-mode is available via sstc extension\n");
-+		static_branch_enable(&riscv_sstc_available);
-+	}
-+
- 	return error;
- }
- 
+ #define CSR_HSTATUS		0x600
+ #define CSR_HEDELEG		0x602
 -- 
 2.25.1
 
