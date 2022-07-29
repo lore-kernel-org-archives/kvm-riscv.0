@@ -1,94 +1,89 @@
-From: Atish Patra <atishp@atishpatra.org>
-Date: Mon, 25 Jul 2022 22:49:34 -0700
-Subject: [PATCH v7 3/4] RISC-V: Prefer sstc extension if available
-In-Reply-To: <20220722165047.519994-4-atishp@rivosinc.com>
-References: <20220722165047.519994-1-atishp@rivosinc.com> <20220722165047.519994-4-atishp@rivosinc.com>
-Message-ID: <CAOnJCUK1JppQkZ+bv7mNpCm95i3gGZ5wHaRc2wiBGyp3zj2Dhw@mail.gmail.com>
+From: Anup Patel <anup@brainfault.org>
+Date: Fri, 29 Jul 2022 18:01:27 +0530
+Subject: [GIT PULL] KVM/riscv changes for 5.20
+Message-ID: <CAAhSdy2iH-WpitweQ_nCYm6p0S5S_fmQ3x37FdAe7tEmu_np0A@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Jul 22, 2022 at 9:50 AM Atish Patra <atishp@rivosinc.com> wrote:
->
-> RISC-V ISA has sstc extension which allows updating the next clock event
-> via a CSR (stimecmp) instead of an SBI call. This should happen dynamically
-> if sstc extension is available. Otherwise, it will fallback to SBI call
-> to maintain backward compatibility.
->
-> Reviewed-by: Anup Patel <anup@brainfault.org>
-> Signed-off-by: Atish Patra <atishp@rivosinc.com>
-> ---
->  drivers/clocksource/timer-riscv.c | 25 ++++++++++++++++++++++++-
->  1 file changed, 24 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/clocksource/timer-riscv.c b/drivers/clocksource/timer-riscv.c
-> index 593d5a957b69..05f6cf067289 100644
-> --- a/drivers/clocksource/timer-riscv.c
-> +++ b/drivers/clocksource/timer-riscv.c
-> @@ -7,6 +7,9 @@
->   * either be read from the "time" and "timeh" CSRs, and can use the SBI to
->   * setup events, or directly accessed using MMIO registers.
->   */
-> +
-> +#define pr_fmt(fmt) "riscv-timer: " fmt
-> +
->  #include <linux/clocksource.h>
->  #include <linux/clockchips.h>
->  #include <linux/cpu.h>
-> @@ -20,14 +23,28 @@
->  #include <linux/of_irq.h>
->  #include <clocksource/timer-riscv.h>
->  #include <asm/smp.h>
-> +#include <asm/hwcap.h>
->  #include <asm/sbi.h>
->  #include <asm/timex.h>
->
-> +static DEFINE_STATIC_KEY_FALSE(riscv_sstc_available);
-> +
->  static int riscv_clock_next_event(unsigned long delta,
->                 struct clock_event_device *ce)
->  {
-> +       u64 next_tval = get_cycles64() + delta;
-> +
->         csr_set(CSR_IE, IE_TIE);
-> -       sbi_set_timer(get_cycles64() + delta);
-> +       if (static_branch_likely(&riscv_sstc_available)) {
-> +#if defined(CONFIG_32BIT)
-> +               csr_write(CSR_STIMECMP, next_tval & 0xFFFFFFFF);
-> +               csr_write(CSR_STIMECMPH, next_tval >> 32);
-> +#else
-> +               csr_write(CSR_STIMECMP, next_tval);
-> +#endif
-> +       } else
-> +               sbi_set_timer(next_tval);
-> +
->         return 0;
->  }
->
-> @@ -165,6 +182,12 @@ static int __init riscv_timer_init_dt(struct device_node *n)
->         if (error)
->                 pr_err("cpu hp setup state failed for RISCV timer [%d]\n",
->                        error);
-> +
-> +       if (riscv_isa_extension_available(NULL, SSTC)) {
-> +               pr_info("Timer interrupt in S-mode is available via sstc extension\n");
-> +               static_branch_enable(&riscv_sstc_available);
-> +       }
-> +
->         return error;
->  }
->
-> --
-> 2.25.1
->
+Hi Paolo,
 
-Hi Stephen,
-Can you please review this whenever you get a chance ? We probably
-need an ACK at least :)
+We have following KVM RISC-V changes for 5.20:
+1) Track ISA extensions used by Guest using bitmap
+2) Added system instruction emulation framework
+3) Added CSR emulation framework
+4) Added gfp_custom flag in struct kvm_mmu_memory_cache
+5) Added G-stage ioremap() and iounmap() functions
+6) Added support for Svpbmt inside Guest
 
--- 
+Please pull.
+
 Regards,
-Atish
+Anup
+
+The following changes since commit e0dccc3b76fb35bb257b4118367a883073d7390e:
+
+  Linux 5.19-rc8 (2022-07-24 13:26:27 -0700)
+
+are available in the Git repository at:
+
+  https://github.com/kvm-riscv/linux.git tags/kvm-riscv-5.20-1
+
+for you to fetch changes up to 6bb2e00ea304ffc0446f345c46fe22713ce43cbf:
+
+  RISC-V: KVM: Add support for Svpbmt inside Guest/VM (2022-07-29
+17:15:18 +0530)
+
+----------------------------------------------------------------
+KVM/riscv changes for 5.20
+
+- Track ISA extensions used by Guest using bitmap
+- Added system instruction emulation framework
+- Added CSR emulation framework
+- Added gfp_custom flag in struct kvm_mmu_memory_cache
+- Added G-stage ioremap() and iounmap() functions
+- Added support for Svpbmt inside Guest
+
+----------------------------------------------------------------
+Anup Patel (7):
+      RISC-V: KVM: Factor-out instruction emulation into separate sources
+      RISC-V: KVM: Add extensible system instruction emulation framework
+      RISC-V: KVM: Add extensible CSR emulation framework
+      KVM: Add gfp_custom flag in struct kvm_mmu_memory_cache
+      RISC-V: KVM: Add G-stage ioremap() and iounmap() functions
+      RISC-V: KVM: Use PAGE_KERNEL_IO in kvm_riscv_gstage_ioremap()
+      RISC-V: KVM: Add support for Svpbmt inside Guest/VM
+
+Atish Patra (1):
+      RISC-V: KVM: Improve ISA extension by using a bitmap
+
+Nikolay Borisov (2):
+      RISC-V: KVM: Make kvm_riscv_guest_timer_init a void function
+      RISC-V: KVM: move preempt_disable() call in kvm_arch_vcpu_ioctl_run
+
+Zhang Jiaming (1):
+      RISC-V: KVM: Fix variable spelling mistake
+
+ arch/riscv/include/asm/csr.h            |  16 +
+ arch/riscv/include/asm/kvm_host.h       |  24 +-
+ arch/riscv/include/asm/kvm_vcpu_fp.h    |   8 +-
+ arch/riscv/include/asm/kvm_vcpu_insn.h  |  48 ++
+ arch/riscv/include/asm/kvm_vcpu_timer.h |   2 +-
+ arch/riscv/include/uapi/asm/kvm.h       |   1 +
+ arch/riscv/kvm/Makefile                 |   1 +
+ arch/riscv/kvm/mmu.c                    |  28 +-
+ arch/riscv/kvm/vcpu.c                   | 203 ++++++---
+ arch/riscv/kvm/vcpu_exit.c              | 496 +--------------------
+ arch/riscv/kvm/vcpu_fp.c                |  27 +-
+ arch/riscv/kvm/vcpu_insn.c              | 752 ++++++++++++++++++++++++++++++++
+ arch/riscv/kvm/vcpu_timer.c             |   4 +-
+ arch/riscv/kvm/vm.c                     |   4 +-
+ include/linux/kvm_types.h               |   1 +
+ include/uapi/linux/kvm.h                |   8 +
+ virt/kvm/kvm_main.c                     |   4 +-
+ 17 files changed, 1028 insertions(+), 599 deletions(-)
+ create mode 100644 arch/riscv/include/asm/kvm_vcpu_insn.h
+ create mode 100644 arch/riscv/kvm/vcpu_insn.c
 
