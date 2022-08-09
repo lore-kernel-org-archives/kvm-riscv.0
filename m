@@ -1,20 +1,16 @@
-From: Guo Ren <guoren@kernel.org>
-Date: Mon, 8 Aug 2022 16:57:07 +0800
+From: Atish Patra <atishp@atishpatra.org>
+Date: Tue, 9 Aug 2022 10:07:56 -0700
 Subject: [PATCH v7 3/4] RISC-V: Prefer sstc extension if available
 In-Reply-To: <20220722165047.519994-4-atishp@rivosinc.com>
 References: <20220722165047.519994-1-atishp@rivosinc.com> <20220722165047.519994-4-atishp@rivosinc.com>
-Message-ID: <CAJF2gTR8yOwHNJBvq07eNTBAHansRhDq57HYrUYLnRV+WuSD_g@mail.gmail.com>
+Message-ID: <CAOnJCUJ246giiHpSFSe_B1wjwxrYGpKJF-VeGLL_QBmBO7Zfvw@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Looks good to me. The patch is concise, and static_branch is properly used.
-
-Reviewed-by: Guo Ren <guoren@kernel.org>
-
-On Sat, Jul 23, 2022 at 12:51 AM Atish Patra <atishp@rivosinc.com> wrote:
+On Fri, Jul 22, 2022 at 9:50 AM Atish Patra <atishp@rivosinc.com> wrote:
 >
 > RISC-V ISA has sstc extension which allows updating the next clock event
 > via a CSR (stimecmp) instead of an SBI call. This should happen dynamically
@@ -88,8 +84,11 @@ On Sat, Jul 23, 2022 at 12:51 AM Atish Patra <atishp@rivosinc.com> wrote:
 > 2.25.1
 >
 
+Hi Daniel,
+Can you please review/ack this patch whenever you get a chance ?
+
 
 -- 
-Best Regards
- Guo Ren
+Regards,
+Atish
 
