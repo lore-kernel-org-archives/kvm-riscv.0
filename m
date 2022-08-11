@@ -1,94 +1,120 @@
-From: Atish Patra <atishp@atishpatra.org>
-Date: Tue, 9 Aug 2022 10:07:56 -0700
-Subject: [PATCH v7 3/4] RISC-V: Prefer sstc extension if available
-In-Reply-To: <20220722165047.519994-4-atishp@rivosinc.com>
-References: <20220722165047.519994-1-atishp@rivosinc.com> <20220722165047.519994-4-atishp@rivosinc.com>
-Message-ID: <CAOnJCUJ246giiHpSFSe_B1wjwxrYGpKJF-VeGLL_QBmBO7Zfvw@mail.gmail.com>
+From: Palmer Dabbelt <palmer@dabbelt.com>
+Date: Thu, 11 Aug 2022 14:49:50 -0700 (PDT)
+Subject: [PATCH v7 0/4] Add Sstc extension support
+In-Reply-To: <CAAhSdy2UDwZYK+EaKHPXLxyKUMv-OX02EdaBDBgjNF0jdDJ7xQ@mail.gmail.com>
+Message-ID: <mhng-368a1ddb-43d3-4d61-934b-3916c63005d4@palmer-ri-x1c9>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Jul 22, 2022 at 9:50 AM Atish Patra <atishp@rivosinc.com> wrote:
+On Fri, 22 Jul 2022 21:47:06 PDT (-0700), anup at brainfault.org wrote:
+> Hi Palmer,
 >
-> RISC-V ISA has sstc extension which allows updating the next clock event
-> via a CSR (stimecmp) instead of an SBI call. This should happen dynamically
-> if sstc extension is available. Otherwise, it will fallback to SBI call
-> to maintain backward compatibility.
+> On Fri, Jul 22, 2022 at 10:20 PM Atish Patra <atishp@rivosinc.com> wrote:
+>>
+>> This series implements Sstc extension support which was ratified recently.
+>> Before the Sstc extension, an SBI call is necessary to generate timer
+>> interrupts as only M-mode have access to the timecompare registers. Thus,
+>> there is significant latency to generate timer interrupts at kernel.
+>> For virtualized enviornments, its even worse as the KVM handles the SBI call
+>> and uses a software timer to emulate the timecomapre register.
+>>
+>> Sstc extension solves both these problems by defining a stimecmp/vstimecmp
+>> at supervisor (host/guest) level. It allows kernel to program a timer and
+>> recieve interrupt without supervisor execution enviornment (M-mode/HS mode)
+>> intervention.
+>>
+>> KVM directly updates the vstimecmp as well if the guest kernel invokes the SBI
+>> call instead of updating stimecmp directly. This is required because KVM will
+>> enable sstc extension if the hardware supports it unless the VMM explicitly
+>> disables it for that guest. The hardware is expected to compare the
+>> vstimecmp at every cycle if sstc is enabled and any stale value in vstimecmp
+>> will lead to spurious timer interrupts. This also helps maintaining the
+>> backward compatibility with older kernels.
+>>
+>> Similary, the M-mode firmware(OpenSBI) uses stimecmp for older kernel
+>> without sstc support as STIP bit in mip is read only for hardware with sstc.
+>>
+>> The PATCH 1 & 2 enables the basic infrastructure around Sstc extension while
+>> PATCH 3 lets kernel use the Sstc extension if it is available in hardware.
+>> PATCH 4 implements the Sstc extension in KVM.
+>>
+>> This series has been tested on Qemu(RV32 & RV64) with additional patches in
+>> Qemu[2]. This series can also be found at [3].
+>>
+>> Changes from v6->v7:
+>> 1. Fixed a compilation error reported by 0-day bot.
+>>
+>> Changes from v5->v6:
+>> 1. Moved SSTC extension enum below SVPBMT.
+>>
+>> Changes from v4->v5:
+>> 1. Added RB tag.
+>> 2. Changed the pr-format.
+>> 3. Rebased on 5.19-rc7 and kvm-queue.
+>> 4. Moved the henvcfg modification from hardware enable to vcpu_load.
+>>
+>> Changes from v3->v4:
+>> 1. Rebased on 5.18-rc6
+>> 2. Unified vstimemp & next_cycles.
+>> 3. Addressed comments in PATCH 3 & 4.
+>>
+>> Changes from v2->v3:
+>> 1. Dropped unrelated KVM fixes from this series.
+>> 2. Rebased on 5.18-rc3.
+>>
+>> Changes from v1->v2:
+>> 1. Separate the static key from kvm usage
+>> 2. Makde the sstc specific static key local to the driver/clocksource
+>> 3. Moved the vstimecmp update code to the vcpu_timer
+>> 4. Used function pointers instead of static key to invoke vstimecmp vs
+>>    hrtimer at the run time. This will help in future for migration of vms
+>>    from/to sstc enabled hardware to non-sstc enabled hardware.
+>> 5. Unified the vstimer & timer to 1 timer as only one of them will be used
+>>    at runtime.
+>>
+>> [1] https://drive.google.com/file/d/1m84Re2yK8m_vbW7TspvevCDR82MOBaSX/view
+>> [2] https://github.com/atishp04/qemu/tree/sstc_v6
+>> [3] https://github.com/atishp04/linux/tree/sstc_v7
+>>
+>> Atish Patra (4):
+>> RISC-V: Add SSTC extension CSR details
+>> RISC-V: Enable sstc extension parsing from DT
+>> RISC-V: Prefer sstc extension if available
+>> RISC-V: KVM: Support sstc extension
 >
-> Reviewed-by: Anup Patel <anup@brainfault.org>
-> Signed-off-by: Atish Patra <atishp@rivosinc.com>
-> ---
->  drivers/clocksource/timer-riscv.c | 25 ++++++++++++++++++++++++-
->  1 file changed, 24 insertions(+), 1 deletion(-)
+> The PATCH4 is dependent on the KVM patches in queue for 5.20.
 >
-> diff --git a/drivers/clocksource/timer-riscv.c b/drivers/clocksource/timer-riscv.c
-> index 593d5a957b69..05f6cf067289 100644
-> --- a/drivers/clocksource/timer-riscv.c
-> +++ b/drivers/clocksource/timer-riscv.c
-> @@ -7,6 +7,9 @@
->   * either be read from the "time" and "timeh" CSRs, and can use the SBI to
->   * setup events, or directly accessed using MMIO registers.
->   */
-> +
-> +#define pr_fmt(fmt) "riscv-timer: " fmt
-> +
->  #include <linux/clocksource.h>
->  #include <linux/clockchips.h>
->  #include <linux/cpu.h>
-> @@ -20,14 +23,28 @@
->  #include <linux/of_irq.h>
->  #include <clocksource/timer-riscv.h>
->  #include <asm/smp.h>
-> +#include <asm/hwcap.h>
->  #include <asm/sbi.h>
->  #include <asm/timex.h>
+> I suggest you take PATCH1, PATCH2 and PATCH3. I will send
+> PATCH4 in second batch/PR for 5.20 assuming you will send the
+> first three patches in your first PR for 5.20
 >
-> +static DEFINE_STATIC_KEY_FALSE(riscv_sstc_available);
-> +
->  static int riscv_clock_next_event(unsigned long delta,
->                 struct clock_event_device *ce)
->  {
-> +       u64 next_tval = get_cycles64() + delta;
-> +
->         csr_set(CSR_IE, IE_TIE);
-> -       sbi_set_timer(get_cycles64() + delta);
-> +       if (static_branch_likely(&riscv_sstc_available)) {
-> +#if defined(CONFIG_32BIT)
-> +               csr_write(CSR_STIMECMP, next_tval & 0xFFFFFFFF);
-> +               csr_write(CSR_STIMECMPH, next_tval >> 32);
-> +#else
-> +               csr_write(CSR_STIMECMP, next_tval);
-> +#endif
-> +       } else
-> +               sbi_set_timer(next_tval);
-> +
->         return 0;
->  }
->
-> @@ -165,6 +182,12 @@ static int __init riscv_timer_init_dt(struct device_node *n)
->         if (error)
->                 pr_err("cpu hp setup state failed for RISCV timer [%d]\n",
->                        error);
-> +
-> +       if (riscv_isa_extension_available(NULL, SSTC)) {
-> +               pr_info("Timer interrupt in S-mode is available via sstc extension\n");
-> +               static_branch_enable(&riscv_sstc_available);
-> +       }
-> +
->         return error;
->  }
->
-> --
-> 2.25.1
->
+> Does this sound okay to you ?
 
-Hi Daniel,
-Can you please review/ack this patch whenever you get a chance ?
+Sorry for being slow here, I just merged the non-KVM ones onto 
+riscv/for-next.  LMK if you want me to try and sort out the KVM bits, 
+the branch base is at palmer/riscv-sstc assuming that's easier for you 
+to just merge in locally.
 
-
--- 
-Regards,
-Atish
+>
+> Regards,
+> Anup
+>
+>>
+>> arch/riscv/include/asm/csr.h            |   5 +
+>> arch/riscv/include/asm/hwcap.h          |   1 +
+>> arch/riscv/include/asm/kvm_vcpu_timer.h |   7 ++
+>> arch/riscv/include/uapi/asm/kvm.h       |   1 +
+>> arch/riscv/kernel/cpu.c                 |   1 +
+>> arch/riscv/kernel/cpufeature.c          |   1 +
+>> arch/riscv/kvm/vcpu.c                   |   8 +-
+>> arch/riscv/kvm/vcpu_timer.c             | 144 +++++++++++++++++++++++-
+>> drivers/clocksource/timer-riscv.c       |  25 +++-
+>> 9 files changed, 185 insertions(+), 8 deletions(-)
+>>
+>> --
+>> 2.25.1
+>>
 
