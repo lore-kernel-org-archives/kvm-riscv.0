@@ -1,60 +1,47 @@
-From: Conor Dooley <mail@conchuod.ie>
-Date: Sun, 14 Aug 2022 15:12:38 +0100
-Subject: [PATCH 4/4] riscv: traps: add missing prototype
-In-Reply-To: <20220814141237.493457-1-mail@conchuod.ie>
-References: <20220814141237.493457-1-mail@conchuod.ie>
-Message-ID: <20220814141237.493457-5-mail@conchuod.ie>
+From: Anup Patel <apatel@ventanamicro.com>
+Date: Mon, 15 Aug 2022 15:43:20 +0530
+Subject: [PATCH kvmtool 0/5] KVMTOOL RISC-V Svpbmt and Sstc Support
+Message-ID: <20220815101325.477694-1-apatel@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Conor Dooley <conor.dooley@microchip.com>
+The latest Linux-6.0-rc1 has support for Svpbmt and Sstc extensions
+in KVM RISC-V. This series adds corresponding changes in KVMTOOL to
+allow Guest/VM use these new RISC-V extensions.
 
-Sparse complains:
-arch/riscv/kernel/traps.c:213:6: warning: symbol 'shadow_stack' was not declared. Should it be static?
+The PATCH5 is an unrelated fix which was discovered while developing
+this series.
 
-The variable is used in entry.S, so declare shadow_stack there
-alongside SHADOW_OVERFLOW_STACK_SIZE.
+These patches can also be found in the riscv_svpbmt_sstc_v1 branch
+at: https://github.com/avpatel/kvmtool.git
 
-Fixes: 31da94c25aea ("riscv: add VMAP_STACK overflow detection")
-Signed-off-by: Conor Dooley <conor.dooley@microchip.com>
----
- arch/riscv/include/asm/thread_info.h | 2 ++
- arch/riscv/kernel/traps.c            | 3 ++-
- 2 files changed, 4 insertions(+), 1 deletion(-)
+Anup Patel (3):
+  Update UAPI headers based on Linux-6.0-rc1
+  riscv: Add Svpbmt extension support
+  riscv: Fix serial0 alias path
 
-diff --git a/arch/riscv/include/asm/thread_info.h b/arch/riscv/include/asm/thread_info.h
-index 78933ac04995..67322f878e0d 100644
---- a/arch/riscv/include/asm/thread_info.h
-+++ b/arch/riscv/include/asm/thread_info.h
-@@ -42,6 +42,8 @@
- 
- #ifndef __ASSEMBLY__
- 
-+extern long shadow_stack[SHADOW_OVERFLOW_STACK_SIZE / sizeof(long)];
-+
- #include <asm/processor.h>
- #include <asm/csr.h>
- 
-diff --git a/arch/riscv/kernel/traps.c b/arch/riscv/kernel/traps.c
-index 39d0f8bba4b4..635e6ec26938 100644
---- a/arch/riscv/kernel/traps.c
-+++ b/arch/riscv/kernel/traps.c
-@@ -20,9 +20,10 @@
- 
- #include <asm/asm-prototypes.h>
- #include <asm/bug.h>
-+#include <asm/csr.h>
- #include <asm/processor.h>
- #include <asm/ptrace.h>
--#include <asm/csr.h>
-+#include <asm/thread_info.h>
- 
- int show_unhandled_signals = 1;
- 
+Atish Patra (2):
+  riscv: Append ISA extensions to the device tree
+  riscv: Add Sstc extension support
+
+ arm/aarch64/include/asm/kvm.h    |  36 ++++++
+ include/linux/kvm.h              | 181 +++++++++++++++++++++++++++++--
+ include/linux/virtio_9p.h        |   2 +-
+ include/linux/virtio_config.h    |   7 +-
+ include/linux/virtio_ids.h       |  14 +--
+ include/linux/virtio_net.h       |  34 +++++-
+ include/linux/virtio_pci.h       |   2 +
+ riscv/fdt.c                      |  44 +++++++-
+ riscv/include/asm/kvm.h          |  22 ++++
+ riscv/include/kvm/kvm-cpu-arch.h |  11 ++
+ riscv/kvm-cpu.c                  |  11 --
+ x86/include/asm/kvm.h            |  33 +++---
+ 12 files changed, 352 insertions(+), 45 deletions(-)
+
 -- 
-2.37.1
+2.34.1
 
 
