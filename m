@@ -1,57 +1,43 @@
-From: Anup Patel <apatel@ventanamicro.com>
-Date: Mon, 15 Aug 2022 15:43:25 +0530
-Subject: [PATCH kvmtool 5/5] riscv: Fix serial0 alias path
-In-Reply-To: <20220815101325.477694-1-apatel@ventanamicro.com>
-References: <20220815101325.477694-1-apatel@ventanamicro.com>
-Message-ID: <20220815101325.477694-6-apatel@ventanamicro.com>
+From: Andrew Jones <ajones@ventanamicro.com>
+Date: Tue, 16 Aug 2022 18:30:58 +0200
+Subject: [PATCH] riscv: Ensure isa-ext static keys are writable
+Message-ID: <20220816163058.3004536-1-ajones@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-We have all MMIO devices under "/smb" DT node so the serial0 alias
-path should have "/smb" prefix.
+riscv_isa_ext_keys[] is an array of static keys used in the unified
+ISA extension framework. The keys added to this array may be used
+anywhere, including in modules. Ensure the keys remain writable by
+placing them in the data section.
 
-Fixes: 7c9aac003925 ("riscv: Generate FDT at runtime for Guest/VM")
-Signed-off-by: Anup Patel <apatel@ventanamicro.com>
+The need to change riscv_isa_ext_keys[]'s section was found when the
+kvm module started failing to load. Commit 8eb060e10185 ("arch/riscv:
+add Zihintpause support") adds a static branch check for a newly
+added isa-ext key to cpu_relax(), which kvm uses.
+
+Fixes: c360cbec3511 ("riscv: introduce unified static key mechanism for ISA extensions")
+Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
 ---
- riscv/fdt.c | 12 ++++++++----
- 1 file changed, 8 insertions(+), 4 deletions(-)
+ arch/riscv/kernel/cpufeature.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/riscv/fdt.c b/riscv/fdt.c
-index aeba042..e3d7717 100644
---- a/riscv/fdt.c
-+++ b/riscv/fdt.c
-@@ -122,6 +122,7 @@ static int setup_fdt(struct kvm *kvm)
- 		cpu_to_fdt64(kvm->arch.memory_guest_start),
- 		cpu_to_fdt64(kvm->ram_size),
- 	};
-+	char *str;
- 	void *fdt		= staging_fdt;
- 	void *fdt_dest		= guest_flat_to_host(kvm,
- 						     kvm->arch.dtb_guest_start);
-@@ -205,12 +206,15 @@ static int setup_fdt(struct kvm *kvm)
- 	_FDT(fdt_end_node(fdt));
+diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
+index 553d755483ed..3b5583db9d80 100644
+--- a/arch/riscv/kernel/cpufeature.c
++++ b/arch/riscv/kernel/cpufeature.c
+@@ -28,7 +28,7 @@ unsigned long elf_hwcap __read_mostly;
+ /* Host ISA bitmap */
+ static DECLARE_BITMAP(riscv_isa, RISCV_ISA_EXT_MAX) __read_mostly;
  
- 	if (fdt_stdout_path) {
--		_FDT(fdt_begin_node(fdt, "aliases"));
--		_FDT(fdt_property_string(fdt, "serial0", fdt_stdout_path));
--		_FDT(fdt_end_node(fdt));
--
-+		str = malloc(strlen(fdt_stdout_path) + strlen("/smb") + 1);
-+		sprintf(str, "/smb%s", fdt_stdout_path);
- 		free(fdt_stdout_path);
- 		fdt_stdout_path = NULL;
-+
-+		_FDT(fdt_begin_node(fdt, "aliases"));
-+		_FDT(fdt_property_string(fdt, "serial0", str));
-+		_FDT(fdt_end_node(fdt));
-+		free(str);
- 	}
+-__ro_after_init DEFINE_STATIC_KEY_ARRAY_FALSE(riscv_isa_ext_keys, RISCV_ISA_EXT_KEY_MAX);
++DEFINE_STATIC_KEY_ARRAY_FALSE(riscv_isa_ext_keys, RISCV_ISA_EXT_KEY_MAX);
+ EXPORT_SYMBOL(riscv_isa_ext_keys);
  
- 	/* Finalise. */
+ /**
 -- 
-2.34.1
+2.37.1
 
 
