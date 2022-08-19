@@ -1,85 +1,78 @@
-From: Anup Patel <apatel@ventanamicro.com>
-Date: Fri, 19 Aug 2022 21:44:32 +0530
-Subject: [PATCH 0/4] misc warning cleanup in arch/risc-v
-In-Reply-To: <mhng-49e49c17-7241-45f8-bea3-17188bd1d0fa@palmer-ri-x1c9>
-References: <20220814141237.493457-1-mail@conchuod.ie> <mhng-49e49c17-7241-45f8-bea3-17188bd1d0fa@palmer-ri-x1c9>
-Message-ID: <CAK9=C2UGJgu0eXHARkvftf+xbqnTaK2k9Jbz_4WVS8PQpgtaWg@mail.gmail.com>
+From: Atish Patra <atishp@atishpatra.org>
+Date: Fri, 19 Aug 2022 13:09:01 -0700
+Subject: [PATCH 1/4] riscv: kvm: vcpu_timer: fix unused variable warnings
+In-Reply-To: <20220814141237.493457-2-mail@conchuod.ie>
+References: <20220814141237.493457-1-mail@conchuod.ie> <20220814141237.493457-2-mail@conchuod.ie>
+Message-ID: <CAOnJCU+gvVfqN6DHQRMtJ82xU4ZajHrANfeDjt21i9Om4r43eg@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Aug 19, 2022 at 4:32 AM Palmer Dabbelt <palmer@dabbelt.com> wrote:
+On Sun, Aug 14, 2022 at 7:12 AM Conor Dooley <mail@conchuod.ie> wrote:
 >
-> On Sun, 14 Aug 2022 07:12:34 PDT (-0700), mail at conchuod.ie wrote:
-> > From: Conor Dooley <conor.dooley@microchip.com>
-> >
-> > Hey all,
-> > Couple fixes here for most of what's left of the {sparse,} warnings in
-> > arch/riscv that are still in need of patches. Ben has sent patches
-> > for the VDSO issue already (although they seem to need rework).
-> >
-> > VDSO aside, With this patchset applied, we are left with:
-> > - cpuinfo_ops missing prototype: this likely needs to go into an
-> >   asm-generic header & I'll send a separate patch for that.
-> > - Complaints about an error in mm/init.c:
-> >   "error inarch/riscv/mm/init.c:819:2: error: "setup_vm() is <trunc>
-> >   I think this can be ignored.
-> > - 600+ -Woverride-init warnings for syscall table setup where
-> >   overriding seems to be the whole point of the macro.
-> > - Warnings about imported kvm core code.
-> > - Flexible array member warnings that look like common KVM code
-> >   patterns
-> > - An unexpected unlock in kvm_riscv_check_vcpu_requests that was added
-> >   intentionally:
-> >   https://lore.kernel.org/all/20220710151105.687193-1-apatel at ventanamicro.com/
-> >   Is it worth looking into whether that's a false positive or not?
-> >
-> > Thanks,
-> > Conor.
-> >
-> > Conor Dooley (4):
-> >   riscv: kvm: vcpu_timer: fix unused variable warnings
-> >   riscv: kvm: move extern sbi_ext declarations to a header
-> >   riscv: signal: fix missing prototype warning
-> >   riscv: traps: add missing prototype
-> >
-> >  arch/riscv/include/asm/kvm_vcpu_sbi.h | 12 ++++++++++++
-> >  arch/riscv/include/asm/signal.h       | 12 ++++++++++++
-> >  arch/riscv/include/asm/thread_info.h  |  2 ++
-> >  arch/riscv/kernel/signal.c            |  1 +
-> >  arch/riscv/kernel/traps.c             |  3 ++-
-> >  arch/riscv/kvm/vcpu_sbi.c             | 12 +-----------
-> >  arch/riscv/kvm/vcpu_timer.c           |  4 ----
-> >  7 files changed, 30 insertions(+), 16 deletions(-)
-> >  create mode 100644 arch/riscv/include/asm/signal.h
+> From: Conor Dooley <conor.dooley@microchip.com>
 >
-> These generally look good to me.  Anup handles the KVM bits so I'll let
-> him chime in there, but
+> In two places, csr is set but never used:
 >
-> Reviewed-by: Palmer Dabbelt <palmer@rivosinc.com>
-> Acked-by: Palmer Dabbelt <palmer@rivosinc.com>
+> arch/riscv/kvm/vcpu_timer.c:302:23: warning: variable 'csr' set but not used [-Wunused-but-set-variable]
+>         struct kvm_vcpu_csr *csr;
+>                              ^
+> arch/riscv/kvm/vcpu_timer.c:327:23: warning: variable 'csr' set but not used [-Wunused-but-set-variable]
+>         struct kvm_vcpu_csr *csr;
+>                              ^
 >
-> on all of them.
+> Remove the variable.
 >
-> Happy to do some sort of shared tag thing, but it looks like these are
-> all independent enough that it'd be easier to just split them up.  I've
-> put the non-KVM bits over at palmer/riscv-variable_fixes_without_kvm, if
-> you guys are all OK splitting this up then I'll go take those onto
-> riscv/fixes.  I'll wait a bit for folks to get a chance to look, so it
-> won't be for tomorrow morning.
-
-Thanks Palmer. I have queued the KVM fixes (first two patches).
-
-Regards,
-Anup
-
+> Fixes: 8f5cb44b1bae ("RISC-V: KVM: Support sstc extension")
+> Signed-off-by: Conor Dooley <conor.dooley@microchip.com>
+> ---
+>  arch/riscv/kvm/vcpu_timer.c | 4 ----
+>  1 file changed, 4 deletions(-)
 >
-> Thanks!
+> diff --git a/arch/riscv/kvm/vcpu_timer.c b/arch/riscv/kvm/vcpu_timer.c
+> index 16f50c46ba39..185f2386a747 100644
+> --- a/arch/riscv/kvm/vcpu_timer.c
+> +++ b/arch/riscv/kvm/vcpu_timer.c
+> @@ -299,7 +299,6 @@ static void kvm_riscv_vcpu_update_timedelta(struct kvm_vcpu *vcpu)
 >
+>  void kvm_riscv_vcpu_timer_restore(struct kvm_vcpu *vcpu)
+>  {
+> -       struct kvm_vcpu_csr *csr;
+>         struct kvm_vcpu_timer *t = &vcpu->arch.timer;
+>
+>         kvm_riscv_vcpu_update_timedelta(vcpu);
+> @@ -307,7 +306,6 @@ void kvm_riscv_vcpu_timer_restore(struct kvm_vcpu *vcpu)
+>         if (!t->sstc_enabled)
+>                 return;
+>
+> -       csr = &vcpu->arch.guest_csr;
+>  #if defined(CONFIG_32BIT)
+>         csr_write(CSR_VSTIMECMP, (u32)t->next_cycles);
+>         csr_write(CSR_VSTIMECMPH, (u32)(t->next_cycles >> 32));
+> @@ -324,13 +322,11 @@ void kvm_riscv_vcpu_timer_restore(struct kvm_vcpu *vcpu)
+>
+>  void kvm_riscv_vcpu_timer_save(struct kvm_vcpu *vcpu)
+>  {
+> -       struct kvm_vcpu_csr *csr;
+>         struct kvm_vcpu_timer *t = &vcpu->arch.timer;
+>
+>         if (!t->sstc_enabled)
+>                 return;
+>
+> -       csr = &vcpu->arch.guest_csr;
+>         t = &vcpu->arch.timer;
+>  #if defined(CONFIG_32BIT)
+>         t->next_cycles = csr_read(CSR_VSTIMECMP);
 > --
-> kvm-riscv mailing list
-> kvm-riscv at lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/kvm-riscv
+> 2.37.1
+>
+
+Thanks for fixing this. Sorry for missing those.
+
+
+--
+Regards,
+Atish
 
