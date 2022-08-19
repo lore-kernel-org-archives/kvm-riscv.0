@@ -1,9 +1,9 @@
 From: Anup Patel <anup@brainfault.org>
-Date: Fri, 19 Aug 2022 21:41:46 +0530
-Subject: [PATCH 1/4] riscv: kvm: vcpu_timer: fix unused variable warnings
-In-Reply-To: <20220814141237.493457-2-mail@conchuod.ie>
-References: <20220814141237.493457-1-mail@conchuod.ie> <20220814141237.493457-2-mail@conchuod.ie>
-Message-ID: <CAAhSdy1qEJR_d5ynbptsCVOA5fk+dPyZ0mzT7-y-RXtQjMni_Q@mail.gmail.com>
+Date: Fri, 19 Aug 2022 21:42:15 +0530
+Subject: [PATCH 2/4] riscv: kvm: move extern sbi_ext declarations to a header
+In-Reply-To: <20220814141237.493457-3-mail@conchuod.ie>
+References: <20220814141237.493457-1-mail@conchuod.ie> <20220814141237.493457-3-mail@conchuod.ie>
+Message-ID: <CAAhSdy2bc4StpxUu6CgqygLG4FgzkN+VhsEavkge4rvJjPqNng@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -14,18 +14,24 @@ On Sun, Aug 14, 2022 at 7:42 PM Conor Dooley <mail@conchuod.ie> wrote:
 >
 > From: Conor Dooley <conor.dooley@microchip.com>
 >
-> In two places, csr is set but never used:
+> Sparse complains about missing statics in the declarations of several
+> variables:
+> arch/riscv/kvm/vcpu_sbi_replace.c:38:37: warning: symbol 'vcpu_sbi_ext_time' was not declared. Should it be static?
+> arch/riscv/kvm/vcpu_sbi_replace.c:73:37: warning: symbol 'vcpu_sbi_ext_ipi' was not declared. Should it be static?
+> arch/riscv/kvm/vcpu_sbi_replace.c:126:37: warning: symbol 'vcpu_sbi_ext_rfence' was not declared. Should it be static?
+> arch/riscv/kvm/vcpu_sbi_replace.c:170:37: warning: symbol 'vcpu_sbi_ext_srst' was not declared. Should it be static?
+> arch/riscv/kvm/vcpu_sbi_base.c:69:37: warning: symbol 'vcpu_sbi_ext_base' was not declared. Should it be static?
+> arch/riscv/kvm/vcpu_sbi_base.c:90:37: warning: symbol 'vcpu_sbi_ext_experimental' was not declared. Should it be static?
+> arch/riscv/kvm/vcpu_sbi_base.c:96:37: warning: symbol 'vcpu_sbi_ext_vendor' was not declared. Should it be static?
+> arch/riscv/kvm/vcpu_sbi_hsm.c:115:37: warning: symbol 'vcpu_sbi_ext_hsm' was not declared. Should it be static?
 >
-> arch/riscv/kvm/vcpu_timer.c:302:23: warning: variable 'csr' set but not used [-Wunused-but-set-variable]
->         struct kvm_vcpu_csr *csr;
->                              ^
-> arch/riscv/kvm/vcpu_timer.c:327:23: warning: variable 'csr' set but not used [-Wunused-but-set-variable]
->         struct kvm_vcpu_csr *csr;
->                              ^
+> These variables are however used in vcpu_sbi.c where they are declared
+> as extern. Move them to kvm_vcpu_sbi.h which is handily already
+> included by the three other files.
 >
-> Remove the variable.
->
-> Fixes: 8f5cb44b1bae ("RISC-V: KVM: Support sstc extension")
+> Fixes: a046c2d8578c ("RISC-V: KVM: Reorganize SBI code by moving SBI v0.1 to its own file")
+> Fixes: 5f862df5585c ("RISC-V: KVM: Add v0.1 replacement SBI extensions defined in v0.2")
+> Fixes: 3e1d86569c21 ("RISC-V: KVM: Add SBI HSM extension in KVM")
 > Signed-off-by: Conor Dooley <conor.dooley@microchip.com>
 
 I have queued this fix for 6.0-rc1
@@ -34,43 +40,60 @@ Thanks,
 Anup
 
 > ---
->  arch/riscv/kvm/vcpu_timer.c | 4 ----
->  1 file changed, 4 deletions(-)
+>  arch/riscv/include/asm/kvm_vcpu_sbi.h | 12 ++++++++++++
+>  arch/riscv/kvm/vcpu_sbi.c             | 12 +-----------
+>  2 files changed, 13 insertions(+), 11 deletions(-)
 >
-> diff --git a/arch/riscv/kvm/vcpu_timer.c b/arch/riscv/kvm/vcpu_timer.c
-> index 16f50c46ba39..185f2386a747 100644
-> --- a/arch/riscv/kvm/vcpu_timer.c
-> +++ b/arch/riscv/kvm/vcpu_timer.c
-> @@ -299,7 +299,6 @@ static void kvm_riscv_vcpu_update_timedelta(struct kvm_vcpu *vcpu)
+> diff --git a/arch/riscv/include/asm/kvm_vcpu_sbi.h b/arch/riscv/include/asm/kvm_vcpu_sbi.h
+> index 83d6d4d2b1df..26a446a34057 100644
+> --- a/arch/riscv/include/asm/kvm_vcpu_sbi.h
+> +++ b/arch/riscv/include/asm/kvm_vcpu_sbi.h
+> @@ -33,4 +33,16 @@ void kvm_riscv_vcpu_sbi_system_reset(struct kvm_vcpu *vcpu,
+>                                      u32 type, u64 flags);
+>  const struct kvm_vcpu_sbi_extension *kvm_vcpu_sbi_find_ext(unsigned long extid);
 >
->  void kvm_riscv_vcpu_timer_restore(struct kvm_vcpu *vcpu)
->  {
-> -       struct kvm_vcpu_csr *csr;
->         struct kvm_vcpu_timer *t = &vcpu->arch.timer;
+> +#ifdef CONFIG_RISCV_SBI_V01
+> +extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_v01;
+> +#endif
+> +extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_base;
+> +extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_time;
+> +extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_ipi;
+> +extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_rfence;
+> +extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_srst;
+> +extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_hsm;
+> +extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_experimental;
+> +extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_vendor;
+> +
+>  #endif /* __RISCV_KVM_VCPU_SBI_H__ */
+> diff --git a/arch/riscv/kvm/vcpu_sbi.c b/arch/riscv/kvm/vcpu_sbi.c
+> index d45e7da3f0d3..f96991d230bf 100644
+> --- a/arch/riscv/kvm/vcpu_sbi.c
+> +++ b/arch/riscv/kvm/vcpu_sbi.c
+> @@ -32,23 +32,13 @@ static int kvm_linux_err_map_sbi(int err)
+>         };
+>  }
 >
->         kvm_riscv_vcpu_update_timedelta(vcpu);
-> @@ -307,7 +306,6 @@ void kvm_riscv_vcpu_timer_restore(struct kvm_vcpu *vcpu)
->         if (!t->sstc_enabled)
->                 return;
+> -#ifdef CONFIG_RISCV_SBI_V01
+> -extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_v01;
+> -#else
+> +#ifndef CONFIG_RISCV_SBI_V01
+>  static const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_v01 = {
+>         .extid_start = -1UL,
+>         .extid_end = -1UL,
+>         .handler = NULL,
+>  };
+>  #endif
+> -extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_base;
+> -extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_time;
+> -extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_ipi;
+> -extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_rfence;
+> -extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_srst;
+> -extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_hsm;
+> -extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_experimental;
+> -extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_vendor;
 >
-> -       csr = &vcpu->arch.guest_csr;
->  #if defined(CONFIG_32BIT)
->         csr_write(CSR_VSTIMECMP, (u32)t->next_cycles);
->         csr_write(CSR_VSTIMECMPH, (u32)(t->next_cycles >> 32));
-> @@ -324,13 +322,11 @@ void kvm_riscv_vcpu_timer_restore(struct kvm_vcpu *vcpu)
->
->  void kvm_riscv_vcpu_timer_save(struct kvm_vcpu *vcpu)
->  {
-> -       struct kvm_vcpu_csr *csr;
->         struct kvm_vcpu_timer *t = &vcpu->arch.timer;
->
->         if (!t->sstc_enabled)
->                 return;
->
-> -       csr = &vcpu->arch.guest_csr;
->         t = &vcpu->arch.timer;
->  #if defined(CONFIG_32BIT)
->         t->next_cycles = csr_read(CSR_VSTIMECMP);
+>  static const struct kvm_vcpu_sbi_extension *sbi_ext[] = {
+>         &vcpu_sbi_ext_v01,
 > --
 > 2.37.1
 >
