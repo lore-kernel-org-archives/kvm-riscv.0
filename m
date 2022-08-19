@@ -1,108 +1,154 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Fri, 19 Aug 2022 16:02:50 +0200
-Subject: [PATCH 4/4] riscv: KVM: Apply insn-def to hlv encodings
-In-Reply-To: <20220819140250.3892995-1-ajones@ventanamicro.com>
+Date: Fri, 19 Aug 2022 16:26:08 +0200
+Subject: [PATCH 2/4] riscv: Introduce support for defining instructions
+In-Reply-To: <20220819140250.3892995-3-ajones@ventanamicro.com>
 References: <20220819140250.3892995-1-ajones@ventanamicro.com>
-Message-ID: <20220819140250.3892995-5-ajones@ventanamicro.com>
+ <20220819140250.3892995-3-ajones@ventanamicro.com>
+Message-ID: <20220819142608.uzqvtd7qfejvhzia@kamzik>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Introduce hlv instruction encodings and apply them to KVM's use.
-We're careful not to introduce hlv.d to 32-bit builds. Indeed,
-we ensure the build fails if someone tries to use it.
+On Fri, Aug 19, 2022 at 04:02:48PM +0200, Andrew Jones wrote:
+> When compiling with toolchains that haven't yet been taught about
+> new instructions we need to encode them ourselves. Create a new file
+> where support for instruction definitions will evolve. We initiate
+> the file with a macro called INSN_R(), which implements the R-type
+> instruction encoding. INSN_R() will use the assembler's .insn
+> directive when available, which should give the assembler a chance
+> to do some validation. When .insn is not available we fall back to
+> manual encoding.
+> 
+> Not only should using instruction encoding macros improve readability
+> and maintainability of code over the alternative of inserting
+> instructions directly (e.g. '.word 0xc0de'), but we should also gain
+> potential for more optimized code after compilation because the
+> compiler will have control over the input and output registers used.
+> 
+> Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
+> ---
+>  arch/riscv/Kconfig                |  3 ++
+>  arch/riscv/include/asm/insn-def.h | 82 +++++++++++++++++++++++++++++++
+>  2 files changed, 85 insertions(+)
+>  create mode 100644 arch/riscv/include/asm/insn-def.h
+> 
+> diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
+> index ed66c31e4655..f8f3b316b838 100644
+> --- a/arch/riscv/Kconfig
+> +++ b/arch/riscv/Kconfig
+> @@ -227,6 +227,9 @@ config RISCV_DMA_NONCOHERENT
+>  	select ARCH_HAS_SETUP_DMA_OPS
+>  	select DMA_DIRECT_REMAP
+>  
+> +config AS_HAS_INSN
+> +	def_bool $(as-instr,.insn r 51$(comma) 0$(comma) 0$(comma) t0$(comma) t0$(comma) zero)
+> +
+>  source "arch/riscv/Kconfig.socs"
+>  source "arch/riscv/Kconfig.erratas"
+>  
+> diff --git a/arch/riscv/include/asm/insn-def.h b/arch/riscv/include/asm/insn-def.h
+> new file mode 100644
+> index 000000000000..4cd0208068dd
+> --- /dev/null
+> +++ b/arch/riscv/include/asm/insn-def.h
+> @@ -0,0 +1,82 @@
+> +/* SPDX-License-Identifier: GPL-2.0-only */
+> +
+> +#ifndef __ASM_INSN_DEF_H
+> +#define __ASM_INSN_DEF_H
+> +#include <asm/asm.h>
+> +
+> +#define INSN_R_FUNC7_SHIFT		25
+> +#define INSN_R_RS2_SHIFT		20
+> +#define INSN_R_RS1_SHIFT		15
+> +#define INSN_R_FUNC3_SHIFT		12
+> +#define INSN_R_RD_SHIFT			 7
+> +#define INSN_R_OPCODE_SHIFT		 0
+> +
+> +#ifdef __ASSEMBLY__
+> +
+> +#ifdef CONFIG_AS_HAS_INSN
+> +
+> +	.macro insn_r, opcode, func3, func7, rd, rs1, rs2
+> +	.insn	r \opcode, \func3, \func7, \rd, \rs1, \rs2
+> +	.endm
+> +
+> +#else
+> +
+> +#include <asm/gpr-num.h>
+> +
+> +	.macro insn_r, opcode, func3, func7, rd, rs1, rs2
+> +	.4byte	((\opcode << INSN_R_OPCODE_SHIFT) |		\
+> +		 (\func3 << INSN_R_FUNC3_SHIFT) |		\
+> +		 (\func7 << INSN_R_FUNC7_SHIFT) |		\
+> +		 (.L__gpr_num_\rd << INSN_R_RD_SHIFT) |		\
+> +		 (.L__gpr_num_\rs1 << INSN_R_RS1_SHIFT) |	\
+> +		 (.L__gpr_num_\rs2 << INSN_R_RS2_SHIFT))
+> +        .endm
 
-Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
----
- arch/riscv/include/asm/insn-def.h | 14 ++++++++++++++
- arch/riscv/kvm/vcpu_exit.c        | 29 +++++------------------------
- 2 files changed, 19 insertions(+), 24 deletions(-)
+Doh, checkpatch told me about the spaces vs. tabs before .endm, but I
+forgot to refresh before sending. I won't send a v2 until the series
+gets more feedback, but I've already got it fixed.
 
-diff --git a/arch/riscv/include/asm/insn-def.h b/arch/riscv/include/asm/insn-def.h
-index cd1c0d365f47..c66d5745c5b4 100644
---- a/arch/riscv/include/asm/insn-def.h
-+++ b/arch/riscv/include/asm/insn-def.h
-@@ -87,4 +87,18 @@
- #define HFENCE_GVMA(gaddr, vmid)	\
- 	INSN_R(OPCODE_SYSTEM, FUNC3(0), FUNC7(49), RD(0), gaddr, vmid)
- 
-+#define HLVX_HU(dest, addr)	\
-+	INSN_R(OPCODE_SYSTEM, FUNC3(4), FUNC7(50), dest, addr, RS2(3))
-+
-+#define HLV_W(dest, addr)	\
-+	INSN_R(OPCODE_SYSTEM, FUNC3(4), FUNC7(52), dest, addr, RS2(0))
-+
-+#ifdef CONFIG_64BIT
-+#define HLV_D(dest, addr)	\
-+	INSN_R(OPCODE_SYSTEM, FUNC3(4), FUNC7(54), dest, addr, RS2(0))
-+#else
-+#define HLV_D(dest, addr)	\
-+	__ASM_STR(.error "hlv.d requires 64-bit support")
-+#endif
-+
- #endif /* __ASM_INSN_DEF_H */
-diff --git a/arch/riscv/kvm/vcpu_exit.c b/arch/riscv/kvm/vcpu_exit.c
-index d5c36386878a..9cb075e72799 100644
---- a/arch/riscv/kvm/vcpu_exit.c
-+++ b/arch/riscv/kvm/vcpu_exit.c
-@@ -8,6 +8,7 @@
- 
- #include <linux/kvm_host.h>
- #include <asm/csr.h>
-+#include <asm/insn-def.h>
- 
- static int gstage_page_fault(struct kvm_vcpu *vcpu, struct kvm_run *run,
- 			     struct kvm_cpu_trap *trap)
-@@ -82,22 +83,12 @@ unsigned long kvm_riscv_vcpu_unpriv_read(struct kvm_vcpu *vcpu,
- 			".option push\n"
- 			".option norvc\n"
- 			"add %[ttmp], %[taddr], 0\n"
--			/*
--			 * HLVX.HU %[val], (%[addr])
--			 * HLVX.HU t0, (t2)
--			 * 0110010 00011 00111 100 00101 1110011
--			 */
--			".word 0x6433c2f3\n"
-+			HLVX_HU("%[val]", "%[addr]")
- 			"andi %[tmp], %[val], 3\n"
- 			"addi %[tmp], %[tmp], -3\n"
- 			"bne %[tmp], zero, 2f\n"
- 			"addi %[addr], %[addr], 2\n"
--			/*
--			 * HLVX.HU %[tmp], (%[addr])
--			 * HLVX.HU t1, (t2)
--			 * 0110010 00011 00111 100 00110 1110011
--			 */
--			".word 0x6433c373\n"
-+			HLVX_HU("%[tmp]", "%[addr]")
- 			"sll %[tmp], %[tmp], 16\n"
- 			"add %[val], %[val], %[tmp]\n"
- 			"2:\n"
-@@ -121,19 +112,9 @@ unsigned long kvm_riscv_vcpu_unpriv_read(struct kvm_vcpu *vcpu,
- 			".option norvc\n"
- 			"add %[ttmp], %[taddr], 0\n"
- #ifdef CONFIG_64BIT
--			/*
--			 * HLV.D %[val], (%[addr])
--			 * HLV.D t0, (t2)
--			 * 0110110 00000 00111 100 00101 1110011
--			 */
--			".word 0x6c03c2f3\n"
-+			HLV_D("%[val]", "%[addr]")
- #else
--			/*
--			 * HLV.W %[val], (%[addr])
--			 * HLV.W t0, (t2)
--			 * 0110100 00000 00111 100 00101 1110011
--			 */
--			".word 0x6803c2f3\n"
-+			HLV_W("%[val]", "%[addr]")
- #endif
- 			".option pop"
- 		: [val] "=&r" (val),
--- 
-2.37.1
+> +
+> +#endif
+> +
+> +#define INSN_R(...)	insn_r __VA_ARGS__
+> +
+> +#else /* ! __ASSEMBLY__ */
+> +
+> +#ifdef CONFIG_AS_HAS_INSN
+> +
+> +#define INSN_R(opcode, func3, func7, rd, rs1, rs2)	\
+> +	".insn	r " opcode ", " func3 ", " func7 ", " rd ", " rs1 ", " rs2 "\n"
+> +
+> +#else
+> +
+> +#include <linux/stringify.h>
+> +#include <asm/gpr-num.h>
+> +
+> +#define DEFINE_INSN_R							\
+> +	__DEFINE_ASM_GPR_NUMS						\
+> +"	.macro insn_r, opcode, func3, func7, rd, rs1, rs2\n"		\
+> +"	.4byte  ((\\opcode << " __stringify(INSN_R_OPCODE_SHIFT) ") |"	\
+              ^
+              ^ checkpatch didn't tell me those are spaces instead of a
+	      tab, but I found it while fixing the other tab issue.
 
+> +"		 (\\func3 << " __stringify(INSN_R_FUNC3_SHIFT) ") |"	\
+> +"		 (\\func7 << " __stringify(INSN_R_FUNC7_SHIFT) ") |"	\
+> +"		 (.L__gpr_num_\\rd << " __stringify(INSN_R_RD_SHIFT) ") |"    \
+> +"		 (.L__gpr_num_\\rs1 << " __stringify(INSN_R_RS1_SHIFT) ") |"  \
+> +"		 (.L__gpr_num_\\rs2 << " __stringify(INSN_R_RS2_SHIFT) "))\n" \
+> +"	.endm\n"
+> +
+> +#define UNDEFINE_INSN_R							\
+> +"	.purgem insn_r\n"
+> +
+> +#define INSN_R(opcode, func3, func7, rd, rs1, rs2)			\
+> +	DEFINE_INSN_R							\
+> +	"insn_r " opcode ", " func3 ", " func7 ", " rd ", " rs1 ", " rs2 "\n" \
+> +	UNDEFINE_INSN_R
+> +
+> +#endif
+> +
+> +#endif /* ! __ASSEMBLY__ */
+> +
+> +#define OPCODE(v)	__ASM_STR(v)
+> +#define FUNC3(v)	__ASM_STR(v)
+> +#define FUNC7(v)	__ASM_STR(v)
+> +#define __REG(v)	__ASM_STR(x ## v)
+> +#define RD(v)		__REG(v)
+> +#define RS1(v)		__REG(v)
+> +#define RS2(v)		__REG(v)
+> +
+> +#endif /* __ASM_INSN_DEF_H */
+> -- 
+> 2.37.1
+> 
+
+Thanks,
+drew
 
