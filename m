@@ -1,100 +1,85 @@
-From: Anup Patel <anup@brainfault.org>
-Date: Fri, 19 Aug 2022 21:42:15 +0530
-Subject: [PATCH 2/4] riscv: kvm: move extern sbi_ext declarations to a header
-In-Reply-To: <20220814141237.493457-3-mail@conchuod.ie>
-References: <20220814141237.493457-1-mail@conchuod.ie> <20220814141237.493457-3-mail@conchuod.ie>
-Message-ID: <CAAhSdy2bc4StpxUu6CgqygLG4FgzkN+VhsEavkge4rvJjPqNng@mail.gmail.com>
+From: Anup Patel <apatel@ventanamicro.com>
+Date: Fri, 19 Aug 2022 21:44:32 +0530
+Subject: [PATCH 0/4] misc warning cleanup in arch/risc-v
+In-Reply-To: <mhng-49e49c17-7241-45f8-bea3-17188bd1d0fa@palmer-ri-x1c9>
+References: <20220814141237.493457-1-mail@conchuod.ie> <mhng-49e49c17-7241-45f8-bea3-17188bd1d0fa@palmer-ri-x1c9>
+Message-ID: <CAK9=C2UGJgu0eXHARkvftf+xbqnTaK2k9Jbz_4WVS8PQpgtaWg@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sun, Aug 14, 2022 at 7:42 PM Conor Dooley <mail@conchuod.ie> wrote:
+On Fri, Aug 19, 2022 at 4:32 AM Palmer Dabbelt <palmer@dabbelt.com> wrote:
 >
-> From: Conor Dooley <conor.dooley@microchip.com>
+> On Sun, 14 Aug 2022 07:12:34 PDT (-0700), mail at conchuod.ie wrote:
+> > From: Conor Dooley <conor.dooley@microchip.com>
+> >
+> > Hey all,
+> > Couple fixes here for most of what's left of the {sparse,} warnings in
+> > arch/riscv that are still in need of patches. Ben has sent patches
+> > for the VDSO issue already (although they seem to need rework).
+> >
+> > VDSO aside, With this patchset applied, we are left with:
+> > - cpuinfo_ops missing prototype: this likely needs to go into an
+> >   asm-generic header & I'll send a separate patch for that.
+> > - Complaints about an error in mm/init.c:
+> >   "error inarch/riscv/mm/init.c:819:2: error: "setup_vm() is <trunc>
+> >   I think this can be ignored.
+> > - 600+ -Woverride-init warnings for syscall table setup where
+> >   overriding seems to be the whole point of the macro.
+> > - Warnings about imported kvm core code.
+> > - Flexible array member warnings that look like common KVM code
+> >   patterns
+> > - An unexpected unlock in kvm_riscv_check_vcpu_requests that was added
+> >   intentionally:
+> >   https://lore.kernel.org/all/20220710151105.687193-1-apatel at ventanamicro.com/
+> >   Is it worth looking into whether that's a false positive or not?
+> >
+> > Thanks,
+> > Conor.
+> >
+> > Conor Dooley (4):
+> >   riscv: kvm: vcpu_timer: fix unused variable warnings
+> >   riscv: kvm: move extern sbi_ext declarations to a header
+> >   riscv: signal: fix missing prototype warning
+> >   riscv: traps: add missing prototype
+> >
+> >  arch/riscv/include/asm/kvm_vcpu_sbi.h | 12 ++++++++++++
+> >  arch/riscv/include/asm/signal.h       | 12 ++++++++++++
+> >  arch/riscv/include/asm/thread_info.h  |  2 ++
+> >  arch/riscv/kernel/signal.c            |  1 +
+> >  arch/riscv/kernel/traps.c             |  3 ++-
+> >  arch/riscv/kvm/vcpu_sbi.c             | 12 +-----------
+> >  arch/riscv/kvm/vcpu_timer.c           |  4 ----
+> >  7 files changed, 30 insertions(+), 16 deletions(-)
+> >  create mode 100644 arch/riscv/include/asm/signal.h
 >
-> Sparse complains about missing statics in the declarations of several
-> variables:
-> arch/riscv/kvm/vcpu_sbi_replace.c:38:37: warning: symbol 'vcpu_sbi_ext_time' was not declared. Should it be static?
-> arch/riscv/kvm/vcpu_sbi_replace.c:73:37: warning: symbol 'vcpu_sbi_ext_ipi' was not declared. Should it be static?
-> arch/riscv/kvm/vcpu_sbi_replace.c:126:37: warning: symbol 'vcpu_sbi_ext_rfence' was not declared. Should it be static?
-> arch/riscv/kvm/vcpu_sbi_replace.c:170:37: warning: symbol 'vcpu_sbi_ext_srst' was not declared. Should it be static?
-> arch/riscv/kvm/vcpu_sbi_base.c:69:37: warning: symbol 'vcpu_sbi_ext_base' was not declared. Should it be static?
-> arch/riscv/kvm/vcpu_sbi_base.c:90:37: warning: symbol 'vcpu_sbi_ext_experimental' was not declared. Should it be static?
-> arch/riscv/kvm/vcpu_sbi_base.c:96:37: warning: symbol 'vcpu_sbi_ext_vendor' was not declared. Should it be static?
-> arch/riscv/kvm/vcpu_sbi_hsm.c:115:37: warning: symbol 'vcpu_sbi_ext_hsm' was not declared. Should it be static?
+> These generally look good to me.  Anup handles the KVM bits so I'll let
+> him chime in there, but
 >
-> These variables are however used in vcpu_sbi.c where they are declared
-> as extern. Move them to kvm_vcpu_sbi.h which is handily already
-> included by the three other files.
+> Reviewed-by: Palmer Dabbelt <palmer@rivosinc.com>
+> Acked-by: Palmer Dabbelt <palmer@rivosinc.com>
 >
-> Fixes: a046c2d8578c ("RISC-V: KVM: Reorganize SBI code by moving SBI v0.1 to its own file")
-> Fixes: 5f862df5585c ("RISC-V: KVM: Add v0.1 replacement SBI extensions defined in v0.2")
-> Fixes: 3e1d86569c21 ("RISC-V: KVM: Add SBI HSM extension in KVM")
-> Signed-off-by: Conor Dooley <conor.dooley@microchip.com>
+> on all of them.
+>
+> Happy to do some sort of shared tag thing, but it looks like these are
+> all independent enough that it'd be easier to just split them up.  I've
+> put the non-KVM bits over at palmer/riscv-variable_fixes_without_kvm, if
+> you guys are all OK splitting this up then I'll go take those onto
+> riscv/fixes.  I'll wait a bit for folks to get a chance to look, so it
+> won't be for tomorrow morning.
 
-I have queued this fix for 6.0-rc1
+Thanks Palmer. I have queued the KVM fixes (first two patches).
 
-Thanks,
+Regards,
 Anup
 
-> ---
->  arch/riscv/include/asm/kvm_vcpu_sbi.h | 12 ++++++++++++
->  arch/riscv/kvm/vcpu_sbi.c             | 12 +-----------
->  2 files changed, 13 insertions(+), 11 deletions(-)
 >
-> diff --git a/arch/riscv/include/asm/kvm_vcpu_sbi.h b/arch/riscv/include/asm/kvm_vcpu_sbi.h
-> index 83d6d4d2b1df..26a446a34057 100644
-> --- a/arch/riscv/include/asm/kvm_vcpu_sbi.h
-> +++ b/arch/riscv/include/asm/kvm_vcpu_sbi.h
-> @@ -33,4 +33,16 @@ void kvm_riscv_vcpu_sbi_system_reset(struct kvm_vcpu *vcpu,
->                                      u32 type, u64 flags);
->  const struct kvm_vcpu_sbi_extension *kvm_vcpu_sbi_find_ext(unsigned long extid);
+> Thanks!
 >
-> +#ifdef CONFIG_RISCV_SBI_V01
-> +extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_v01;
-> +#endif
-> +extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_base;
-> +extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_time;
-> +extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_ipi;
-> +extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_rfence;
-> +extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_srst;
-> +extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_hsm;
-> +extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_experimental;
-> +extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_vendor;
-> +
->  #endif /* __RISCV_KVM_VCPU_SBI_H__ */
-> diff --git a/arch/riscv/kvm/vcpu_sbi.c b/arch/riscv/kvm/vcpu_sbi.c
-> index d45e7da3f0d3..f96991d230bf 100644
-> --- a/arch/riscv/kvm/vcpu_sbi.c
-> +++ b/arch/riscv/kvm/vcpu_sbi.c
-> @@ -32,23 +32,13 @@ static int kvm_linux_err_map_sbi(int err)
->         };
->  }
->
-> -#ifdef CONFIG_RISCV_SBI_V01
-> -extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_v01;
-> -#else
-> +#ifndef CONFIG_RISCV_SBI_V01
->  static const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_v01 = {
->         .extid_start = -1UL,
->         .extid_end = -1UL,
->         .handler = NULL,
->  };
->  #endif
-> -extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_base;
-> -extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_time;
-> -extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_ipi;
-> -extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_rfence;
-> -extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_srst;
-> -extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_hsm;
-> -extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_experimental;
-> -extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_vendor;
->
->  static const struct kvm_vcpu_sbi_extension *sbi_ext[] = {
->         &vcpu_sbi_ext_v01,
 > --
-> 2.37.1
->
+> kvm-riscv mailing list
+> kvm-riscv at lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/kvm-riscv
 
