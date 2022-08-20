@@ -1,78 +1,50 @@
-From: Atish Patra <atishp@atishpatra.org>
-Date: Fri, 19 Aug 2022 13:09:01 -0700
-Subject: [PATCH 1/4] riscv: kvm: vcpu_timer: fix unused variable warnings
-In-Reply-To: <20220814141237.493457-2-mail@conchuod.ie>
-References: <20220814141237.493457-1-mail@conchuod.ie> <20220814141237.493457-2-mail@conchuod.ie>
-Message-ID: <CAOnJCU+gvVfqN6DHQRMtJ82xU4ZajHrANfeDjt21i9Om4r43eg@mail.gmail.com>
+From: Anup Patel <anup@brainfault.org>
+Date: Sat, 20 Aug 2022 13:31:55 +0530
+Subject: [GIT PULL] KVM/riscv fixes for 6.0, take #1
+Message-ID: <CAAhSdy2oDoytypnjNFodEY7q_E0OVmrh=GkihQE_K5MnPcK_Sg@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sun, Aug 14, 2022 at 7:12 AM Conor Dooley <mail@conchuod.ie> wrote:
->
-> From: Conor Dooley <conor.dooley@microchip.com>
->
-> In two places, csr is set but never used:
->
-> arch/riscv/kvm/vcpu_timer.c:302:23: warning: variable 'csr' set but not used [-Wunused-but-set-variable]
->         struct kvm_vcpu_csr *csr;
->                              ^
-> arch/riscv/kvm/vcpu_timer.c:327:23: warning: variable 'csr' set but not used [-Wunused-but-set-variable]
->         struct kvm_vcpu_csr *csr;
->                              ^
->
-> Remove the variable.
->
-> Fixes: 8f5cb44b1bae ("RISC-V: KVM: Support sstc extension")
-> Signed-off-by: Conor Dooley <conor.dooley@microchip.com>
-> ---
->  arch/riscv/kvm/vcpu_timer.c | 4 ----
->  1 file changed, 4 deletions(-)
->
-> diff --git a/arch/riscv/kvm/vcpu_timer.c b/arch/riscv/kvm/vcpu_timer.c
-> index 16f50c46ba39..185f2386a747 100644
-> --- a/arch/riscv/kvm/vcpu_timer.c
-> +++ b/arch/riscv/kvm/vcpu_timer.c
-> @@ -299,7 +299,6 @@ static void kvm_riscv_vcpu_update_timedelta(struct kvm_vcpu *vcpu)
->
->  void kvm_riscv_vcpu_timer_restore(struct kvm_vcpu *vcpu)
->  {
-> -       struct kvm_vcpu_csr *csr;
->         struct kvm_vcpu_timer *t = &vcpu->arch.timer;
->
->         kvm_riscv_vcpu_update_timedelta(vcpu);
-> @@ -307,7 +306,6 @@ void kvm_riscv_vcpu_timer_restore(struct kvm_vcpu *vcpu)
->         if (!t->sstc_enabled)
->                 return;
->
-> -       csr = &vcpu->arch.guest_csr;
->  #if defined(CONFIG_32BIT)
->         csr_write(CSR_VSTIMECMP, (u32)t->next_cycles);
->         csr_write(CSR_VSTIMECMPH, (u32)(t->next_cycles >> 32));
-> @@ -324,13 +322,11 @@ void kvm_riscv_vcpu_timer_restore(struct kvm_vcpu *vcpu)
->
->  void kvm_riscv_vcpu_timer_save(struct kvm_vcpu *vcpu)
->  {
-> -       struct kvm_vcpu_csr *csr;
->         struct kvm_vcpu_timer *t = &vcpu->arch.timer;
->
->         if (!t->sstc_enabled)
->                 return;
->
-> -       csr = &vcpu->arch.guest_csr;
->         t = &vcpu->arch.timer;
->  #if defined(CONFIG_32BIT)
->         t->next_cycles = csr_read(CSR_VSTIMECMP);
-> --
-> 2.37.1
->
+Hi Paolo,
 
-Thanks for fixing this. Sorry for missing those.
+We have two minor fixes for 6.0:
+1) Fix unused variable warnings in vcpu_timer.c
+2) Move extern sbi_ext declarations to a header
 
+Please pull.
 
---
 Regards,
-Atish
+Anup
+
+The following changes since commit 568035b01cfb107af8d2e4bd2fb9aea22cf5b868:
+
+  Linux 6.0-rc1 (2022-08-14 15:50:18 -0700)
+
+are available in the Git repository at:
+
+  https://github.com/kvm-riscv/linux.git tags/kvm-riscv-fixes-6.0-1
+
+for you to fetch changes up to 3e5e56c60a14776e2a49837b55b03bc193fd91f7:
+
+  riscv: kvm: move extern sbi_ext declarations to a header (2022-08-19
+23:22:47 +0530)
+
+----------------------------------------------------------------
+KVM/riscv fixes for 6.0, take #1
+
+- Fix unused variable warnings in vcpu_timer.c
+- Move extern sbi_ext declarations to a header
+
+----------------------------------------------------------------
+Conor Dooley (2):
+      riscv: kvm: vcpu_timer: fix unused variable warnings
+      riscv: kvm: move extern sbi_ext declarations to a header
+
+ arch/riscv/include/asm/kvm_vcpu_sbi.h | 12 ++++++++++++
+ arch/riscv/kvm/vcpu_sbi.c             | 12 +-----------
+ arch/riscv/kvm/vcpu_timer.c           |  4 ----
+ 3 files changed, 13 insertions(+), 15 deletions(-)
 
