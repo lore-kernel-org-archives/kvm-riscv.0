@@ -1,235 +1,83 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Wed, 24 Aug 2022 03:21:11 +0000
-Subject: [PATCH v4 2/6] KVM: selftests: Consolidate boilerplate code in get_ucall()
+Date: Wed, 24 Aug 2022 03:21:13 +0000
+Subject: [PATCH v4 4/6] tools: Add atomic_test_and_set_bit()
 In-Reply-To: <20220824032115.3563686-1-seanjc@google.com>
 References: <20220824032115.3563686-1-seanjc@google.com>
-Message-ID: <20220824032115.3563686-3-seanjc@google.com>
+Message-ID: <20220824032115.3563686-5-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Consolidate the actual copying of a ucall struct from guest=>host into
-the common get_ucall().  Return a host virtual address instead of a guest
-virtual address even though the addr_gva2hva() part could be moved to
-get_ucall() too.  Conceptually, get_ucall() is invoked from the host and
-should return a host virtual address (and returning NULL for "nothing to
-see here" is far superior to returning 0).
+From: Peter Gonda <pgonda@google.com>
 
-Use pointer shenanigans instead of an unnecessary bounce buffer when the
-caller of get_ucall() provides a valid pointer.
+Add x86 and generic implementations of atomic_test_and_set_bit() to allow
+KVM selftests to atomically manage bitmaps.
 
-Reviewed-by: Andrew Jones <andrew.jones@linux.dev>
+Note, the generic version is taken from arch_test_and_set_bit() as of
+commit 415d83249709 ("locking/atomic: Make test_and_*_bit() ordered on
+failure").
+
+Signed-off-by: Peter Gonda <pgonda@google.com>
+Co-developed-by: Sean Christopherson <seanjc@google.com>
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- .../selftests/kvm/include/ucall_common.h      |  8 ++------
- .../testing/selftests/kvm/lib/aarch64/ucall.c | 14 +++-----------
- tools/testing/selftests/kvm/lib/riscv/ucall.c | 19 +++----------------
- tools/testing/selftests/kvm/lib/s390x/ucall.c | 16 +++-------------
- .../testing/selftests/kvm/lib/ucall_common.c  | 19 +++++++++++++++++++
- .../testing/selftests/kvm/lib/x86_64/ucall.c  | 16 +++-------------
- 6 files changed, 33 insertions(+), 59 deletions(-)
+ tools/arch/x86/include/asm/atomic.h    |  7 +++++++
+ tools/include/asm-generic/atomic-gcc.h | 12 ++++++++++++
+ 2 files changed, 19 insertions(+)
 
-diff --git a/tools/testing/selftests/kvm/include/ucall_common.h b/tools/testing/selftests/kvm/include/ucall_common.h
-index 5a85f5318bbe..63bfc60be995 100644
---- a/tools/testing/selftests/kvm/include/ucall_common.h
-+++ b/tools/testing/selftests/kvm/include/ucall_common.h
-@@ -27,9 +27,10 @@ struct ucall {
- void ucall_arch_init(struct kvm_vm *vm, void *arg);
- void ucall_arch_uninit(struct kvm_vm *vm);
- void ucall_arch_do_ucall(vm_vaddr_t uc);
--uint64_t ucall_arch_get_ucall(struct kvm_vcpu *vcpu, struct ucall *uc);
-+void *ucall_arch_get_ucall(struct kvm_vcpu *vcpu);
+diff --git a/tools/arch/x86/include/asm/atomic.h b/tools/arch/x86/include/asm/atomic.h
+index 1f5e26aae9fc..01cc27ec4520 100644
+--- a/tools/arch/x86/include/asm/atomic.h
++++ b/tools/arch/x86/include/asm/atomic.h
+@@ -8,6 +8,7 @@
  
- void ucall(uint64_t cmd, int nargs, ...);
-+uint64_t get_ucall(struct kvm_vcpu *vcpu, struct ucall *uc);
+ #define LOCK_PREFIX "\n\tlock; "
  
- static inline void ucall_init(struct kvm_vm *vm, void *arg)
- {
-@@ -41,11 +42,6 @@ static inline void ucall_uninit(struct kvm_vm *vm)
- 	ucall_arch_uninit(vm);
++#include <asm/asm.h>
+ #include <asm/cmpxchg.h>
+ 
+ /*
+@@ -70,4 +71,10 @@ static __always_inline int atomic_cmpxchg(atomic_t *v, int old, int new)
+ 	return cmpxchg(&v->counter, old, new);
  }
  
--static inline uint64_t get_ucall(struct kvm_vcpu *vcpu, struct ucall *uc)
--{
--	return ucall_arch_get_ucall(vcpu, uc);
--}
--
- #define GUEST_SYNC_ARGS(stage, arg1, arg2, arg3, arg4)	\
- 				ucall(UCALL_SYNC, 6, "hello", stage, arg1, arg2, arg3, arg4)
- #define GUEST_SYNC(stage)	ucall(UCALL_SYNC, 2, "hello", stage)
-diff --git a/tools/testing/selftests/kvm/lib/aarch64/ucall.c b/tools/testing/selftests/kvm/lib/aarch64/ucall.c
-index 3630708c32d6..f214f5cc53d3 100644
---- a/tools/testing/selftests/kvm/lib/aarch64/ucall.c
-+++ b/tools/testing/selftests/kvm/lib/aarch64/ucall.c
-@@ -75,13 +75,9 @@ void ucall_arch_do_ucall(vm_vaddr_t uc)
- 	WRITE_ONCE(*ucall_exit_mmio_addr, uc);
- }
- 
--uint64_t ucall_arch_get_ucall(struct kvm_vcpu *vcpu, struct ucall *uc)
-+void *ucall_arch_get_ucall(struct kvm_vcpu *vcpu)
- {
- 	struct kvm_run *run = vcpu->run;
--	struct ucall ucall = {};
--
--	if (uc)
--		memset(uc, 0, sizeof(*uc));
- 
- 	if (run->exit_reason == KVM_EXIT_MMIO &&
- 	    run->mmio.phys_addr == (uint64_t)ucall_exit_mmio_addr) {
-@@ -90,12 +86,8 @@ uint64_t ucall_arch_get_ucall(struct kvm_vcpu *vcpu, struct ucall *uc)
- 		TEST_ASSERT(run->mmio.is_write && run->mmio.len == 8,
- 			    "Unexpected ucall exit mmio address access");
- 		memcpy(&gva, run->mmio.data, sizeof(gva));
--		memcpy(&ucall, addr_gva2hva(vcpu->vm, gva), sizeof(ucall));
--
--		vcpu_run_complete_io(vcpu);
--		if (uc)
--			memcpy(uc, &ucall, sizeof(ucall));
-+		return addr_gva2hva(vcpu->vm, gva);
- 	}
- 
--	return ucall.cmd;
-+	return NULL;
- }
-diff --git a/tools/testing/selftests/kvm/lib/riscv/ucall.c b/tools/testing/selftests/kvm/lib/riscv/ucall.c
-index b1598f418c1f..37e091d4366e 100644
---- a/tools/testing/selftests/kvm/lib/riscv/ucall.c
-+++ b/tools/testing/selftests/kvm/lib/riscv/ucall.c
-@@ -51,27 +51,15 @@ void ucall_arch_do_ucall(vm_vaddr_t uc)
- 		  uc, 0, 0, 0, 0, 0);
- }
- 
--uint64_t ucall_arch_get_ucall(struct kvm_vcpu *vcpu, struct ucall *uc)
-+void *ucall_arch_get_ucall(struct kvm_vcpu *vcpu)
- {
- 	struct kvm_run *run = vcpu->run;
--	struct ucall ucall = {};
--
--	if (uc)
--		memset(uc, 0, sizeof(*uc));
- 
- 	if (run->exit_reason == KVM_EXIT_RISCV_SBI &&
- 	    run->riscv_sbi.extension_id == KVM_RISCV_SELFTESTS_SBI_EXT) {
- 		switch (run->riscv_sbi.function_id) {
- 		case KVM_RISCV_SELFTESTS_SBI_UCALL:
--			memcpy(&ucall,
--			       addr_gva2hva(vcpu->vm, run->riscv_sbi.args[0]),
--			       sizeof(ucall));
--
--			vcpu_run_complete_io(vcpu);
--			if (uc)
--				memcpy(uc, &ucall, sizeof(ucall));
--
--			break;
-+			return addr_gva2hva(vcpu->vm, run->riscv_sbi.args[0]);
- 		case KVM_RISCV_SELFTESTS_SBI_UNEXP:
- 			vcpu_dump(stderr, vcpu, 2);
- 			TEST_ASSERT(0, "Unexpected trap taken by guest");
-@@ -80,6 +68,5 @@ uint64_t ucall_arch_get_ucall(struct kvm_vcpu *vcpu, struct ucall *uc)
- 			break;
- 		}
- 	}
--
--	return ucall.cmd;
-+	return NULL;
- }
-diff --git a/tools/testing/selftests/kvm/lib/s390x/ucall.c b/tools/testing/selftests/kvm/lib/s390x/ucall.c
-index 114cb4af295f..0f695a031d35 100644
---- a/tools/testing/selftests/kvm/lib/s390x/ucall.c
-+++ b/tools/testing/selftests/kvm/lib/s390x/ucall.c
-@@ -20,13 +20,9 @@ void ucall_arch_do_ucall(vm_vaddr_t uc)
- 	asm volatile ("diag 0,%0,0x501" : : "a"(uc) : "memory");
- }
- 
--uint64_t ucall_arch_get_ucall(struct kvm_vcpu *vcpu, struct ucall *uc)
-+void *ucall_arch_get_ucall(struct kvm_vcpu *vcpu)
- {
- 	struct kvm_run *run = vcpu->run;
--	struct ucall ucall = {};
--
--	if (uc)
--		memset(uc, 0, sizeof(*uc));
- 
- 	if (run->exit_reason == KVM_EXIT_S390_SIEIC &&
- 	    run->s390_sieic.icptcode == 4 &&
-@@ -34,13 +30,7 @@ uint64_t ucall_arch_get_ucall(struct kvm_vcpu *vcpu, struct ucall *uc)
- 	    (run->s390_sieic.ipb >> 16) == 0x501) {
- 		int reg = run->s390_sieic.ipa & 0xf;
- 
--		memcpy(&ucall, addr_gva2hva(vcpu->vm, run->s.regs.gprs[reg]),
--		       sizeof(ucall));
--
--		vcpu_run_complete_io(vcpu);
--		if (uc)
--			memcpy(uc, &ucall, sizeof(ucall));
-+		return addr_gva2hva(vcpu->vm, run->s.regs.gprs[reg]);
- 	}
--
--	return ucall.cmd;
-+	return NULL;
- }
-diff --git a/tools/testing/selftests/kvm/lib/ucall_common.c b/tools/testing/selftests/kvm/lib/ucall_common.c
-index 2395c7f1d543..ced480860746 100644
---- a/tools/testing/selftests/kvm/lib/ucall_common.c
-+++ b/tools/testing/selftests/kvm/lib/ucall_common.c
-@@ -18,3 +18,22 @@ void ucall(uint64_t cmd, int nargs, ...)
- 
- 	ucall_arch_do_ucall((vm_vaddr_t)&uc);
- }
-+
-+uint64_t get_ucall(struct kvm_vcpu *vcpu, struct ucall *uc)
++static inline int atomic_test_and_set_bit(long nr, unsigned long *addr)
 +{
-+	struct ucall ucall;
-+	void *addr;
++	GEN_BINARY_RMWcc(LOCK_PREFIX __ASM_SIZE(bts), *addr, "Ir", nr, "%0", "c");
 +
-+	if (!uc)
-+		uc = &ucall;
-+
-+	addr = ucall_arch_get_ucall(vcpu);
-+	if (addr) {
-+		memcpy(uc, addr, sizeof(*uc));
-+		vcpu_run_complete_io(vcpu);
-+	} else {
-+		memset(uc, 0, sizeof(*uc));
-+	}
-+
-+	return uc->cmd;
 +}
-diff --git a/tools/testing/selftests/kvm/lib/x86_64/ucall.c b/tools/testing/selftests/kvm/lib/x86_64/ucall.c
-index 9f532dba1003..ead9946399ab 100644
---- a/tools/testing/selftests/kvm/lib/x86_64/ucall.c
-+++ b/tools/testing/selftests/kvm/lib/x86_64/ucall.c
-@@ -22,25 +22,15 @@ void ucall_arch_do_ucall(vm_vaddr_t uc)
- 		: : [port] "d" (UCALL_PIO_PORT), "D" (uc) : "rax", "memory");
++
+ #endif /* _TOOLS_LINUX_ASM_X86_ATOMIC_H */
+diff --git a/tools/include/asm-generic/atomic-gcc.h b/tools/include/asm-generic/atomic-gcc.h
+index 4c1966f7c77a..6daa68bf5b9e 100644
+--- a/tools/include/asm-generic/atomic-gcc.h
++++ b/tools/include/asm-generic/atomic-gcc.h
+@@ -4,6 +4,7 @@
+ 
+ #include <linux/compiler.h>
+ #include <linux/types.h>
++#include <linux/bitops.h>
+ 
+ /*
+  * Atomic operations that C can't guarantee us.  Useful for
+@@ -69,4 +70,15 @@ static inline int atomic_cmpxchg(atomic_t *v, int oldval, int newval)
+ 	return cmpxchg(&(v)->counter, oldval, newval);
  }
  
--uint64_t ucall_arch_get_ucall(struct kvm_vcpu *vcpu, struct ucall *uc)
-+void *ucall_arch_get_ucall(struct kvm_vcpu *vcpu)
- {
- 	struct kvm_run *run = vcpu->run;
--	struct ucall ucall = {};
--
--	if (uc)
--		memset(uc, 0, sizeof(*uc));
- 
- 	if (run->exit_reason == KVM_EXIT_IO && run->io.port == UCALL_PIO_PORT) {
- 		struct kvm_regs regs;
- 
- 		vcpu_regs_get(vcpu, &regs);
--		memcpy(&ucall, addr_gva2hva(vcpu->vm, (vm_vaddr_t)regs.rdi),
--		       sizeof(ucall));
--
--		vcpu_run_complete_io(vcpu);
--		if (uc)
--			memcpy(uc, &ucall, sizeof(ucall));
-+		return addr_gva2hva(vcpu->vm, regs.rdi);
- 	}
--
--	return ucall.cmd;
-+	return NULL;
- }
++static inline int atomic_test_and_set_bit(long nr, unsigned long *addr)
++{
++	unsigned long mask = BIT_MASK(nr);
++	long old;
++
++	addr += BIT_WORD(nr);
++
++	old = __sync_fetch_and_or(addr, mask);
++	return !!(old & mask);
++}
++
+ #endif /* __TOOLS_ASM_GENERIC_ATOMIC_H */
 -- 
 2.37.1.595.g718a3a8f04-goog
 
