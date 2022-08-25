@@ -1,73 +1,235 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Thu, 25 Aug 2022 23:25:15 +0000
-Subject: [PATCH v5 0/7] KVM: selftests: Implement ucall "pool" (for SEV)
-Message-ID: <20220825232522.3997340-1-seanjc@google.com>
+Date: Thu, 25 Aug 2022 23:25:17 +0000
+Subject: [PATCH v5 2/7] KVM: selftests: Consolidate boilerplate code in get_ucall()
+In-Reply-To: <20220825232522.3997340-1-seanjc@google.com>
+References: <20220825232522.3997340-1-seanjc@google.com>
+Message-ID: <20220825232522.3997340-3-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Non-KVM folks, y'all got pulled in because of the atomic_test_and_set_bit()
-patch.
+Consolidate the actual copying of a ucall struct from guest=>host into
+the common get_ucall().  Return a host virtual address instead of a guest
+virtual address even though the addr_gva2hva() part could be moved to
+get_ucall() too.  Conceptually, get_ucall() is invoked from the host and
+should return a host virtual address (and returning NULL for "nothing to
+see here" is far superior to returning 0).
 
-Rework the ucall infrastructure to use a pool of ucall structs to pass
-memory instead of using the guest's stack.  For confidential VMs with
-encrypted memory, e.g. SEV, the guest's stack "needs" to be private memory
-and so can't be used to communicate with the host.
+Use pointer shenanigans instead of an unnecessary bounce buffer when the
+caller of get_ucall() provides a valid pointer.
 
-Convert all implementations to the pool as all of the complexity is hidden
-in common code, and supporting multiple interfaces adds its own kind of
-complexity. 
+Reviewed-by: Andrew Jones <andrew.jones@linux.dev>
+Signed-off-by: Sean Christopherson <seanjc@google.com>
+---
+ .../selftests/kvm/include/ucall_common.h      |  8 ++------
+ .../testing/selftests/kvm/lib/aarch64/ucall.c | 14 +++-----------
+ tools/testing/selftests/kvm/lib/riscv/ucall.c | 19 +++----------------
+ tools/testing/selftests/kvm/lib/s390x/ucall.c | 16 +++-------------
+ .../testing/selftests/kvm/lib/ucall_common.c  | 19 +++++++++++++++++++
+ .../testing/selftests/kvm/lib/x86_64/ucall.c  | 16 +++-------------
+ 6 files changed, 33 insertions(+), 59 deletions(-)
 
-Tested on x86 and ARM, compile tested on s390 and RISC-V.
-
-v5:
- - Use less convoluted method of writing per-VM "globals". [Oliver]
- - Add patch to drop ucall_uninit().
-
-v4: https://lore.kernel.org/all/20220824032115.3563686-1-seanjc at google.com
-
-Peter Gonda (2):
-  tools: Add atomic_test_and_set_bit()
-  KVM: selftests: Add ucall pool based implementation
-
-Sean Christopherson (5):
-  KVM: selftests: Consolidate common code for populating ucall struct
-  KVM: selftests: Consolidate boilerplate code in get_ucall()
-  KVM: selftests: Automatically do init_ucall() for non-barebones VMs
-  KVM: selftests: Make arm64's MMIO ucall multi-VM friendly
-  KVM: selftest: Drop now-unnecessary ucall_uninit()
-
- tools/arch/x86/include/asm/atomic.h           |   7 ++
- tools/include/asm-generic/atomic-gcc.h        |  12 +++
- tools/testing/selftests/kvm/Makefile          |   1 +
- .../selftests/kvm/aarch64/arch_timer.c        |   1 -
- .../selftests/kvm/aarch64/debug-exceptions.c  |   1 -
- .../selftests/kvm/aarch64/hypercalls.c        |   1 -
- .../testing/selftests/kvm/aarch64/psci_test.c |   1 -
- .../testing/selftests/kvm/aarch64/vgic_init.c |   2 -
- .../testing/selftests/kvm/aarch64/vgic_irq.c  |   1 -
- tools/testing/selftests/kvm/dirty_log_test.c  |   3 -
- .../selftests/kvm/include/kvm_util_base.h     |  15 +++
- .../selftests/kvm/include/ucall_common.h      |  10 +-
- .../selftests/kvm/kvm_page_table_test.c       |   2 -
- .../testing/selftests/kvm/lib/aarch64/ucall.c | 102 +++---------------
- tools/testing/selftests/kvm/lib/kvm_util.c    |  11 ++
- .../selftests/kvm/lib/perf_test_util.c        |   3 -
- tools/testing/selftests/kvm/lib/riscv/ucall.c |  42 ++------
- tools/testing/selftests/kvm/lib/s390x/ucall.c |  39 ++-----
- .../testing/selftests/kvm/lib/ucall_common.c  | 102 ++++++++++++++++++
- .../testing/selftests/kvm/lib/x86_64/ucall.c  |  39 ++-----
- .../testing/selftests/kvm/memslot_perf_test.c |   1 -
- tools/testing/selftests/kvm/rseq_test.c       |   1 -
- tools/testing/selftests/kvm/steal_time.c      |   1 -
- .../kvm/system_counter_offset_test.c          |   1 -
- 24 files changed, 189 insertions(+), 210 deletions(-)
- create mode 100644 tools/testing/selftests/kvm/lib/ucall_common.c
-
-
-base-commit: 372d07084593dc7a399bf9bee815711b1fb1bcf2
+diff --git a/tools/testing/selftests/kvm/include/ucall_common.h b/tools/testing/selftests/kvm/include/ucall_common.h
+index 5a85f5318bbe..63bfc60be995 100644
+--- a/tools/testing/selftests/kvm/include/ucall_common.h
++++ b/tools/testing/selftests/kvm/include/ucall_common.h
+@@ -27,9 +27,10 @@ struct ucall {
+ void ucall_arch_init(struct kvm_vm *vm, void *arg);
+ void ucall_arch_uninit(struct kvm_vm *vm);
+ void ucall_arch_do_ucall(vm_vaddr_t uc);
+-uint64_t ucall_arch_get_ucall(struct kvm_vcpu *vcpu, struct ucall *uc);
++void *ucall_arch_get_ucall(struct kvm_vcpu *vcpu);
+ 
+ void ucall(uint64_t cmd, int nargs, ...);
++uint64_t get_ucall(struct kvm_vcpu *vcpu, struct ucall *uc);
+ 
+ static inline void ucall_init(struct kvm_vm *vm, void *arg)
+ {
+@@ -41,11 +42,6 @@ static inline void ucall_uninit(struct kvm_vm *vm)
+ 	ucall_arch_uninit(vm);
+ }
+ 
+-static inline uint64_t get_ucall(struct kvm_vcpu *vcpu, struct ucall *uc)
+-{
+-	return ucall_arch_get_ucall(vcpu, uc);
+-}
+-
+ #define GUEST_SYNC_ARGS(stage, arg1, arg2, arg3, arg4)	\
+ 				ucall(UCALL_SYNC, 6, "hello", stage, arg1, arg2, arg3, arg4)
+ #define GUEST_SYNC(stage)	ucall(UCALL_SYNC, 2, "hello", stage)
+diff --git a/tools/testing/selftests/kvm/lib/aarch64/ucall.c b/tools/testing/selftests/kvm/lib/aarch64/ucall.c
+index 3630708c32d6..f214f5cc53d3 100644
+--- a/tools/testing/selftests/kvm/lib/aarch64/ucall.c
++++ b/tools/testing/selftests/kvm/lib/aarch64/ucall.c
+@@ -75,13 +75,9 @@ void ucall_arch_do_ucall(vm_vaddr_t uc)
+ 	WRITE_ONCE(*ucall_exit_mmio_addr, uc);
+ }
+ 
+-uint64_t ucall_arch_get_ucall(struct kvm_vcpu *vcpu, struct ucall *uc)
++void *ucall_arch_get_ucall(struct kvm_vcpu *vcpu)
+ {
+ 	struct kvm_run *run = vcpu->run;
+-	struct ucall ucall = {};
+-
+-	if (uc)
+-		memset(uc, 0, sizeof(*uc));
+ 
+ 	if (run->exit_reason == KVM_EXIT_MMIO &&
+ 	    run->mmio.phys_addr == (uint64_t)ucall_exit_mmio_addr) {
+@@ -90,12 +86,8 @@ uint64_t ucall_arch_get_ucall(struct kvm_vcpu *vcpu, struct ucall *uc)
+ 		TEST_ASSERT(run->mmio.is_write && run->mmio.len == 8,
+ 			    "Unexpected ucall exit mmio address access");
+ 		memcpy(&gva, run->mmio.data, sizeof(gva));
+-		memcpy(&ucall, addr_gva2hva(vcpu->vm, gva), sizeof(ucall));
+-
+-		vcpu_run_complete_io(vcpu);
+-		if (uc)
+-			memcpy(uc, &ucall, sizeof(ucall));
++		return addr_gva2hva(vcpu->vm, gva);
+ 	}
+ 
+-	return ucall.cmd;
++	return NULL;
+ }
+diff --git a/tools/testing/selftests/kvm/lib/riscv/ucall.c b/tools/testing/selftests/kvm/lib/riscv/ucall.c
+index b1598f418c1f..37e091d4366e 100644
+--- a/tools/testing/selftests/kvm/lib/riscv/ucall.c
++++ b/tools/testing/selftests/kvm/lib/riscv/ucall.c
+@@ -51,27 +51,15 @@ void ucall_arch_do_ucall(vm_vaddr_t uc)
+ 		  uc, 0, 0, 0, 0, 0);
+ }
+ 
+-uint64_t ucall_arch_get_ucall(struct kvm_vcpu *vcpu, struct ucall *uc)
++void *ucall_arch_get_ucall(struct kvm_vcpu *vcpu)
+ {
+ 	struct kvm_run *run = vcpu->run;
+-	struct ucall ucall = {};
+-
+-	if (uc)
+-		memset(uc, 0, sizeof(*uc));
+ 
+ 	if (run->exit_reason == KVM_EXIT_RISCV_SBI &&
+ 	    run->riscv_sbi.extension_id == KVM_RISCV_SELFTESTS_SBI_EXT) {
+ 		switch (run->riscv_sbi.function_id) {
+ 		case KVM_RISCV_SELFTESTS_SBI_UCALL:
+-			memcpy(&ucall,
+-			       addr_gva2hva(vcpu->vm, run->riscv_sbi.args[0]),
+-			       sizeof(ucall));
+-
+-			vcpu_run_complete_io(vcpu);
+-			if (uc)
+-				memcpy(uc, &ucall, sizeof(ucall));
+-
+-			break;
++			return addr_gva2hva(vcpu->vm, run->riscv_sbi.args[0]);
+ 		case KVM_RISCV_SELFTESTS_SBI_UNEXP:
+ 			vcpu_dump(stderr, vcpu, 2);
+ 			TEST_ASSERT(0, "Unexpected trap taken by guest");
+@@ -80,6 +68,5 @@ uint64_t ucall_arch_get_ucall(struct kvm_vcpu *vcpu, struct ucall *uc)
+ 			break;
+ 		}
+ 	}
+-
+-	return ucall.cmd;
++	return NULL;
+ }
+diff --git a/tools/testing/selftests/kvm/lib/s390x/ucall.c b/tools/testing/selftests/kvm/lib/s390x/ucall.c
+index 114cb4af295f..0f695a031d35 100644
+--- a/tools/testing/selftests/kvm/lib/s390x/ucall.c
++++ b/tools/testing/selftests/kvm/lib/s390x/ucall.c
+@@ -20,13 +20,9 @@ void ucall_arch_do_ucall(vm_vaddr_t uc)
+ 	asm volatile ("diag 0,%0,0x501" : : "a"(uc) : "memory");
+ }
+ 
+-uint64_t ucall_arch_get_ucall(struct kvm_vcpu *vcpu, struct ucall *uc)
++void *ucall_arch_get_ucall(struct kvm_vcpu *vcpu)
+ {
+ 	struct kvm_run *run = vcpu->run;
+-	struct ucall ucall = {};
+-
+-	if (uc)
+-		memset(uc, 0, sizeof(*uc));
+ 
+ 	if (run->exit_reason == KVM_EXIT_S390_SIEIC &&
+ 	    run->s390_sieic.icptcode == 4 &&
+@@ -34,13 +30,7 @@ uint64_t ucall_arch_get_ucall(struct kvm_vcpu *vcpu, struct ucall *uc)
+ 	    (run->s390_sieic.ipb >> 16) == 0x501) {
+ 		int reg = run->s390_sieic.ipa & 0xf;
+ 
+-		memcpy(&ucall, addr_gva2hva(vcpu->vm, run->s.regs.gprs[reg]),
+-		       sizeof(ucall));
+-
+-		vcpu_run_complete_io(vcpu);
+-		if (uc)
+-			memcpy(uc, &ucall, sizeof(ucall));
++		return addr_gva2hva(vcpu->vm, run->s.regs.gprs[reg]);
+ 	}
+-
+-	return ucall.cmd;
++	return NULL;
+ }
+diff --git a/tools/testing/selftests/kvm/lib/ucall_common.c b/tools/testing/selftests/kvm/lib/ucall_common.c
+index 2395c7f1d543..ced480860746 100644
+--- a/tools/testing/selftests/kvm/lib/ucall_common.c
++++ b/tools/testing/selftests/kvm/lib/ucall_common.c
+@@ -18,3 +18,22 @@ void ucall(uint64_t cmd, int nargs, ...)
+ 
+ 	ucall_arch_do_ucall((vm_vaddr_t)&uc);
+ }
++
++uint64_t get_ucall(struct kvm_vcpu *vcpu, struct ucall *uc)
++{
++	struct ucall ucall;
++	void *addr;
++
++	if (!uc)
++		uc = &ucall;
++
++	addr = ucall_arch_get_ucall(vcpu);
++	if (addr) {
++		memcpy(uc, addr, sizeof(*uc));
++		vcpu_run_complete_io(vcpu);
++	} else {
++		memset(uc, 0, sizeof(*uc));
++	}
++
++	return uc->cmd;
++}
+diff --git a/tools/testing/selftests/kvm/lib/x86_64/ucall.c b/tools/testing/selftests/kvm/lib/x86_64/ucall.c
+index 9f532dba1003..ead9946399ab 100644
+--- a/tools/testing/selftests/kvm/lib/x86_64/ucall.c
++++ b/tools/testing/selftests/kvm/lib/x86_64/ucall.c
+@@ -22,25 +22,15 @@ void ucall_arch_do_ucall(vm_vaddr_t uc)
+ 		: : [port] "d" (UCALL_PIO_PORT), "D" (uc) : "rax", "memory");
+ }
+ 
+-uint64_t ucall_arch_get_ucall(struct kvm_vcpu *vcpu, struct ucall *uc)
++void *ucall_arch_get_ucall(struct kvm_vcpu *vcpu)
+ {
+ 	struct kvm_run *run = vcpu->run;
+-	struct ucall ucall = {};
+-
+-	if (uc)
+-		memset(uc, 0, sizeof(*uc));
+ 
+ 	if (run->exit_reason == KVM_EXIT_IO && run->io.port == UCALL_PIO_PORT) {
+ 		struct kvm_regs regs;
+ 
+ 		vcpu_regs_get(vcpu, &regs);
+-		memcpy(&ucall, addr_gva2hva(vcpu->vm, (vm_vaddr_t)regs.rdi),
+-		       sizeof(ucall));
+-
+-		vcpu_run_complete_io(vcpu);
+-		if (uc)
+-			memcpy(uc, &ucall, sizeof(ucall));
++		return addr_gva2hva(vcpu->vm, regs.rdi);
+ 	}
+-
+-	return ucall.cmd;
++	return NULL;
+ }
 -- 
 2.37.2.672.g94769d06f0-goog
 
