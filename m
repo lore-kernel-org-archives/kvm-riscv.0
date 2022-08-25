@@ -1,122 +1,88 @@
-From: Sean Christopherson <seanjc@google.com>
-Date: Thu, 25 Aug 2022 23:25:20 +0000
-Subject: [PATCH v5 5/7] KVM: selftests: Make arm64's MMIO ucall multi-VM friendly
-In-Reply-To: <20220825232522.3997340-1-seanjc@google.com>
-References: <20220825232522.3997340-1-seanjc@google.com>
-Message-ID: <20220825232522.3997340-6-seanjc@google.com>
+From: Palmer Dabbelt <palmer@dabbelt.com>
+Date: Thu, 25 Aug 2022 16:42:53 -0700 (PDT)
+Subject: [PATCH 0/4] misc warning cleanup in arch/risc-v
+In-Reply-To: <CAK9=C2UGJgu0eXHARkvftf+xbqnTaK2k9Jbz_4WVS8PQpgtaWg@mail.gmail.com>
+Message-ID: <mhng-45ccfcad-b9d9-4914-8e07-c7a3581ea52b@palmer-mbp2014>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Fix a mostly-theoretical bug where ARM's ucall MMIO setup could result in
-different VMs stomping on each other by cloberring the global pointer.
+On Fri, 19 Aug 2022 09:14:32 PDT (-0700), apatel at ventanamicro.com wrote:
+> On Fri, Aug 19, 2022 at 4:32 AM Palmer Dabbelt <palmer@dabbelt.com> wrote:
+>>
+>> On Sun, 14 Aug 2022 07:12:34 PDT (-0700), mail at conchuod.ie wrote:
+>> > From: Conor Dooley <conor.dooley@microchip.com>
+>> >
+>> > Hey all,
+>> > Couple fixes here for most of what's left of the {sparse,} warnings in
+>> > arch/riscv that are still in need of patches. Ben has sent patches
+>> > for the VDSO issue already (although they seem to need rework).
+>> >
+>> > VDSO aside, With this patchset applied, we are left with:
+>> > - cpuinfo_ops missing prototype: this likely needs to go into an
+>> >   asm-generic header & I'll send a separate patch for that.
+>> > - Complaints about an error in mm/init.c:
+>> >   "error inarch/riscv/mm/init.c:819:2: error: "setup_vm() is <trunc>
+>> >   I think this can be ignored.
+>> > - 600+ -Woverride-init warnings for syscall table setup where
+>> >   overriding seems to be the whole point of the macro.
+>> > - Warnings about imported kvm core code.
+>> > - Flexible array member warnings that look like common KVM code
+>> >   patterns
+>> > - An unexpected unlock in kvm_riscv_check_vcpu_requests that was added
+>> >   intentionally:
+>> >   https://lore.kernel.org/all/20220710151105.687193-1-apatel at ventanamicro.com/
+>> >   Is it worth looking into whether that's a false positive or not?
+>> >
+>> > Thanks,
+>> > Conor.
+>> >
+>> > Conor Dooley (4):
+>> >   riscv: kvm: vcpu_timer: fix unused variable warnings
+>> >   riscv: kvm: move extern sbi_ext declarations to a header
+>> >   riscv: signal: fix missing prototype warning
+>> >   riscv: traps: add missing prototype
+>> >
+>> >  arch/riscv/include/asm/kvm_vcpu_sbi.h | 12 ++++++++++++
+>> >  arch/riscv/include/asm/signal.h       | 12 ++++++++++++
+>> >  arch/riscv/include/asm/thread_info.h  |  2 ++
+>> >  arch/riscv/kernel/signal.c            |  1 +
+>> >  arch/riscv/kernel/traps.c             |  3 ++-
+>> >  arch/riscv/kvm/vcpu_sbi.c             | 12 +-----------
+>> >  arch/riscv/kvm/vcpu_timer.c           |  4 ----
+>> >  7 files changed, 30 insertions(+), 16 deletions(-)
+>> >  create mode 100644 arch/riscv/include/asm/signal.h
+>>
+>> These generally look good to me.  Anup handles the KVM bits so I'll let
+>> him chime in there, but
+>>
+>> Reviewed-by: Palmer Dabbelt <palmer@rivosinc.com>
+>> Acked-by: Palmer Dabbelt <palmer@rivosinc.com>
+>>
+>> on all of them.
+>>
+>> Happy to do some sort of shared tag thing, but it looks like these are
+>> all independent enough that it'd be easier to just split them up.  I've
+>> put the non-KVM bits over at palmer/riscv-variable_fixes_without_kvm, if
+>> you guys are all OK splitting this up then I'll go take those onto
+>> riscv/fixes.  I'll wait a bit for folks to get a chance to look, so it
+>> won't be for tomorrow morning.
+>
+> Thanks Palmer. I have queued the KVM fixes (first two patches).
 
-Fix the most obvious issue by saving the MMIO gpa into the VM.
+Sounds good.  The others are in riscv/fixes.
 
-A more subtle bug is that creating VMs in parallel (on multiple tasks)
-could result in a VM using the wrong address.  Synchronizing a global to
-a guest effectively snapshots the value on a per-VM basis, i.e. the
-"global" is already prepped to work with multiple VMs, but setting the
-global in the host is not thread-safe.  To fix that bug, add
-write_guest_global() to allow stuffing a VM's copy of a "global" without
-modifying the host value.
-
-Signed-off-by: Sean Christopherson <seanjc@google.com>
----
- .../selftests/kvm/include/kvm_util_base.h     | 15 +++++++++++++++
- .../testing/selftests/kvm/lib/aarch64/ucall.c | 19 ++++++++++++++-----
- 2 files changed, 29 insertions(+), 5 deletions(-)
-
-diff --git a/tools/testing/selftests/kvm/include/kvm_util_base.h b/tools/testing/selftests/kvm/include/kvm_util_base.h
-index 24fde97f6121..59d52b58a1a6 100644
---- a/tools/testing/selftests/kvm/include/kvm_util_base.h
-+++ b/tools/testing/selftests/kvm/include/kvm_util_base.h
-@@ -16,6 +16,7 @@
- #include <linux/kvm.h>
- #include "linux/rbtree.h"
- 
-+#include <asm/atomic.h>
- 
- #include <sys/ioctl.h>
- 
-@@ -81,6 +82,7 @@ struct kvm_vm {
- 	struct sparsebit *vpages_mapped;
- 	bool has_irqchip;
- 	bool pgd_created;
-+	vm_paddr_t ucall_mmio_addr;
- 	vm_paddr_t pgd;
- 	vm_vaddr_t gdt;
- 	vm_vaddr_t tss;
-@@ -714,6 +716,19 @@ kvm_userspace_memory_region_find(struct kvm_vm *vm, uint64_t start,
- 	memcpy(&(g), _p, sizeof(g));				\
- })
- 
-+/*
-+ * Write a global value, but only in the VM's (guest's) domain.  Primarily used
-+ * for "globals" that hold per-VM values (VMs always duplicate code and global
-+ * data into their own region of physical memory), but can be used anytime it's
-+ * undesirable to change the host's copy of the global.
-+ */
-+#define write_guest_global(vm, g, val) ({			\
-+	typeof(g) *_p = addr_gva2hva(vm, (vm_vaddr_t)&(g));	\
-+	typeof(g) _val = val;					\
-+								\
-+	memcpy(_p, &(_val), sizeof(g));				\
-+})
-+
- void assert_on_unhandled_exception(struct kvm_vcpu *vcpu);
- 
- void vcpu_arch_dump(FILE *stream, struct kvm_vcpu *vcpu,
-diff --git a/tools/testing/selftests/kvm/lib/aarch64/ucall.c b/tools/testing/selftests/kvm/lib/aarch64/ucall.c
-index f02ae27c3e43..1c38bd260f90 100644
---- a/tools/testing/selftests/kvm/lib/aarch64/ucall.c
-+++ b/tools/testing/selftests/kvm/lib/aarch64/ucall.c
-@@ -6,20 +6,29 @@
-  */
- #include "kvm_util.h"
- 
-+/*
-+ * ucall_exit_mmio_addr holds per-VM values (global data is duplicated by each
-+ * VM), it must not be accessed from host code.
-+ */
- static vm_vaddr_t *ucall_exit_mmio_addr;
- 
-+static void ucall_set_mmio_addr(struct kvm_vm *vm, vm_paddr_t mmio_gpa)
-+{
-+	vm->ucall_mmio_addr = mmio_gpa;
-+
-+	write_guest_global(vm, ucall_exit_mmio_addr, (vm_vaddr_t *)mmio_gpa);
-+}
-+
- void ucall_arch_init(struct kvm_vm *vm, vm_paddr_t mmio_gpa)
- {
- 	virt_pg_map(vm, mmio_gpa, mmio_gpa);
- 
--	ucall_exit_mmio_addr = (vm_vaddr_t *)mmio_gpa;
--	sync_global_to_guest(vm, ucall_exit_mmio_addr);
-+	ucall_set_mmio_addr(vm, mmio_gpa);
- }
- 
- void ucall_arch_uninit(struct kvm_vm *vm)
- {
--	ucall_exit_mmio_addr = 0;
--	sync_global_to_guest(vm, ucall_exit_mmio_addr);
-+	ucall_set_mmio_addr(vm, (vm_paddr_t)NULL);
- }
- 
- void ucall_arch_do_ucall(vm_vaddr_t uc)
-@@ -32,7 +41,7 @@ void *ucall_arch_get_ucall(struct kvm_vcpu *vcpu)
- 	struct kvm_run *run = vcpu->run;
- 
- 	if (run->exit_reason == KVM_EXIT_MMIO &&
--	    run->mmio.phys_addr == (uint64_t)ucall_exit_mmio_addr) {
-+	    run->mmio.phys_addr == vcpu->vm->ucall_mmio_addr) {
- 		vm_vaddr_t gva;
- 
- 		TEST_ASSERT(run->mmio.is_write && run->mmio.len == 8,
--- 
-2.37.2.672.g94769d06f0-goog
-
+>
+> Regards,
+> Anup
+>
+>>
+>> Thanks!
+>>
+>> --
+>> kvm-riscv mailing list
+>> kvm-riscv at lists.infradead.org
+>> http://lists.infradead.org/mailman/listinfo/kvm-riscv
 
