@@ -1,9 +1,9 @@
 From: Anup Patel <anup@brainfault.org>
-Date: Mon, 29 Aug 2022 13:54:17 +0530
-Subject: [PATCH 1/4] riscv: Add X register names to gpr-nums
-In-Reply-To: <20220819140250.3892995-2-ajones@ventanamicro.com>
-References: <20220819140250.3892995-1-ajones@ventanamicro.com> <20220819140250.3892995-2-ajones@ventanamicro.com>
-Message-ID: <CAAhSdy3C_4tNQ42XEtc+cHW-ArubPxoSEmmBnj2mCdYi04JHjg@mail.gmail.com>
+Date: Mon, 29 Aug 2022 14:01:06 +0530
+Subject: [PATCH 2/4] riscv: Introduce support for defining instructions
+In-Reply-To: <20220819140250.3892995-3-ajones@ventanamicro.com>
+References: <20220819140250.3892995-1-ajones@ventanamicro.com> <20220819140250.3892995-3-ajones@ventanamicro.com>
+Message-ID: <CAAhSdy3KcjR-jFTxH-oYEw=mLTSdbMnadoLcygDPQaa0h3JbxQ@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -12,50 +12,148 @@ Content-Transfer-Encoding: 7bit
 
 On Fri, Aug 19, 2022 at 7:32 PM Andrew Jones <ajones@ventanamicro.com> wrote:
 >
-> When encoding instructions it's sometimes necessary to set a
-> register field to a precise number. This is easiest to do using
-> the x<num> naming.
+> When compiling with toolchains that haven't yet been taught about
+> new instructions we need to encode them ourselves. Create a new file
+> where support for instruction definitions will evolve. We initiate
+> the file with a macro called INSN_R(), which implements the R-type
+> instruction encoding. INSN_R() will use the assembler's .insn
+> directive when available, which should give the assembler a chance
+> to do some validation. When .insn is not available we fall back to
+> manual encoding.
+>
+> Not only should using instruction encoding macros improve readability
+> and maintainability of code over the alternative of inserting
+> instructions directly (e.g. '.word 0xc0de'), but we should also gain
+> potential for more optimized code after compilation because the
+> compiler will have control over the input and output registers used.
 >
 > Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
+> ---
+>  arch/riscv/Kconfig                |  3 ++
+>  arch/riscv/include/asm/insn-def.h | 82 +++++++++++++++++++++++++++++++
+>  2 files changed, 85 insertions(+)
+>  create mode 100644 arch/riscv/include/asm/insn-def.h
+>
+> diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
+> index ed66c31e4655..f8f3b316b838 100644
+> --- a/arch/riscv/Kconfig
+> +++ b/arch/riscv/Kconfig
+> @@ -227,6 +227,9 @@ config RISCV_DMA_NONCOHERENT
+>         select ARCH_HAS_SETUP_DMA_OPS
+>         select DMA_DIRECT_REMAP
+>
+> +config AS_HAS_INSN
+> +       def_bool $(as-instr,.insn r 51$(comma) 0$(comma) 0$(comma) t0$(comma) t0$(comma) zero)
+> +
+>  source "arch/riscv/Kconfig.socs"
+>  source "arch/riscv/Kconfig.erratas"
+>
+> diff --git a/arch/riscv/include/asm/insn-def.h b/arch/riscv/include/asm/insn-def.h
+> new file mode 100644
+> index 000000000000..4cd0208068dd
+> --- /dev/null
+> +++ b/arch/riscv/include/asm/insn-def.h
+> @@ -0,0 +1,82 @@
+> +/* SPDX-License-Identifier: GPL-2.0-only */
+> +
+> +#ifndef __ASM_INSN_DEF_H
+> +#define __ASM_INSN_DEF_H
 
-Looks good to me.
+Add a new line here.
+
+> +#include <asm/asm.h>
+> +
+> +#define INSN_R_FUNC7_SHIFT             25
+> +#define INSN_R_RS2_SHIFT               20
+> +#define INSN_R_RS1_SHIFT               15
+> +#define INSN_R_FUNC3_SHIFT             12
+> +#define INSN_R_RD_SHIFT                         7
+> +#define INSN_R_OPCODE_SHIFT             0
+> +
+> +#ifdef __ASSEMBLY__
+> +
+> +#ifdef CONFIG_AS_HAS_INSN
+> +
+> +       .macro insn_r, opcode, func3, func7, rd, rs1, rs2
+> +       .insn   r \opcode, \func3, \func7, \rd, \rs1, \rs2
+> +       .endm
+
+Maybe use indentation here ?
+
+.macro <xyz>
+     .insn ...
+.endm
+
+> +
+> +#else
+> +
+> +#include <asm/gpr-num.h>
+> +
+> +       .macro insn_r, opcode, func3, func7, rd, rs1, rs2
+> +       .4byte  ((\opcode << INSN_R_OPCODE_SHIFT) |             \
+> +                (\func3 << INSN_R_FUNC3_SHIFT) |               \
+> +                (\func7 << INSN_R_FUNC7_SHIFT) |               \
+> +                (.L__gpr_num_\rd << INSN_R_RD_SHIFT) |         \
+> +                (.L__gpr_num_\rs1 << INSN_R_RS1_SHIFT) |       \
+> +                (.L__gpr_num_\rs2 << INSN_R_RS2_SHIFT))
+> +        .endm
+> +
+> +#endif
+> +
+> +#define INSN_R(...)    insn_r __VA_ARGS__
+> +
+> +#else /* ! __ASSEMBLY__ */
+> +
+> +#ifdef CONFIG_AS_HAS_INSN
+> +
+> +#define INSN_R(opcode, func3, func7, rd, rs1, rs2)     \
+> +       ".insn  r " opcode ", " func3 ", " func7 ", " rd ", " rs1 ", " rs2 "\n"
+> +
+> +#else
+> +
+> +#include <linux/stringify.h>
+> +#include <asm/gpr-num.h>
+> +
+> +#define DEFINE_INSN_R                                                  \
+> +       __DEFINE_ASM_GPR_NUMS                                           \
+> +"      .macro insn_r, opcode, func3, func7, rd, rs1, rs2\n"            \
+> +"      .4byte  ((\\opcode << " __stringify(INSN_R_OPCODE_SHIFT) ") |"  \
+> +"               (\\func3 << " __stringify(INSN_R_FUNC3_SHIFT) ") |"    \
+> +"               (\\func7 << " __stringify(INSN_R_FUNC7_SHIFT) ") |"    \
+> +"               (.L__gpr_num_\\rd << " __stringify(INSN_R_RD_SHIFT) ") |"    \
+> +"               (.L__gpr_num_\\rs1 << " __stringify(INSN_R_RS1_SHIFT) ") |"  \
+> +"               (.L__gpr_num_\\rs2 << " __stringify(INSN_R_RS2_SHIFT) "))\n" \
+> +"      .endm\n"
+> +
+> +#define UNDEFINE_INSN_R                                                        \
+> +"      .purgem insn_r\n"
+> +
+> +#define INSN_R(opcode, func3, func7, rd, rs1, rs2)                     \
+> +       DEFINE_INSN_R                                                   \
+> +       "insn_r " opcode ", " func3 ", " func7 ", " rd ", " rs1 ", " rs2 "\n" \
+> +       UNDEFINE_INSN_R
+> +
+> +#endif
+> +
+> +#endif /* ! __ASSEMBLY__ */
+> +
+> +#define OPCODE(v)      __ASM_STR(v)
+> +#define FUNC3(v)       __ASM_STR(v)
+> +#define FUNC7(v)       __ASM_STR(v)
+> +#define __REG(v)       __ASM_STR(x ## v)
+> +#define RD(v)          __REG(v)
+> +#define RS1(v)         __REG(v)
+> +#define RS2(v)         __REG(v)
+> +
+> +#endif /* __ASM_INSN_DEF_H */
+> --
+> 2.37.1
+>
+
+Apart from new nit comments above, this looks good to me.
 
 Reviewed-by: Anup Patel <anup@brainfault.org>
 
 Regards,
 Anup
-
-> ---
->  arch/riscv/include/asm/gpr-num.h | 8 ++++++++
->  1 file changed, 8 insertions(+)
->
-> diff --git a/arch/riscv/include/asm/gpr-num.h b/arch/riscv/include/asm/gpr-num.h
-> index dfee2829fc7c..efeb5edf8a3a 100644
-> --- a/arch/riscv/include/asm/gpr-num.h
-> +++ b/arch/riscv/include/asm/gpr-num.h
-> @@ -3,6 +3,11 @@
->  #define __ASM_GPR_NUM_H
->
->  #ifdef __ASSEMBLY__
-> +
-> +       .irp    num,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31
-> +       .equ    .L__gpr_num_x\num, \num
-> +       .endr
-> +
->         .equ    .L__gpr_num_zero,       0
->         .equ    .L__gpr_num_ra,         1
->         .equ    .L__gpr_num_sp,         2
-> @@ -39,6 +44,9 @@
->  #else /* __ASSEMBLY__ */
->
->  #define __DEFINE_ASM_GPR_NUMS                                  \
-> +"      .irp    num,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31\n" \
-> +"      .equ    .L__gpr_num_x\\num, \\num\n"                    \
-> +"      .endr\n"                                                \
->  "      .equ    .L__gpr_num_zero,       0\n"                    \
->  "      .equ    .L__gpr_num_ra,         1\n"                    \
->  "      .equ    .L__gpr_num_sp,         2\n"                    \
-> --
-> 2.37.1
->
 
