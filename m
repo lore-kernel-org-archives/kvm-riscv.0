@@ -1,98 +1,68 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Mon, 29 Aug 2022 11:47:39 +0200
-Subject: [PATCH 3/4] riscv: KVM: Apply insn-def to hfence encodings
-In-Reply-To: <CAAhSdy0d8mjr5-5Um2DpLgnhPb3UnGggXvbu_=oqEHWYzMP1SQ@mail.gmail.com>
-References: <20220819140250.3892995-1-ajones@ventanamicro.com>
- <20220819140250.3892995-4-ajones@ventanamicro.com>
- <CAAhSdy0d8mjr5-5Um2DpLgnhPb3UnGggXvbu_=oqEHWYzMP1SQ@mail.gmail.com>
-Message-ID: <20220829094739.pn7iltmtimpwpshf@kamzik>
+From: Andrew Jones <andrew.jones@linux.dev>
+Date: Mon, 29 Aug 2022 18:15:36 +0200
+Subject: [PATCH v5 3/7] KVM: selftests: Automatically do init_ucall() for
+ non-barebones VMs
+In-Reply-To: <20220825232522.3997340-4-seanjc@google.com>
+References: <20220825232522.3997340-1-seanjc@google.com>
+ <20220825232522.3997340-4-seanjc@google.com>
+Message-ID: <20220829161536.gszp6yvgbzwnor7r@kamzik>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Aug 29, 2022 at 02:07:59PM +0530, Anup Patel wrote:
-> On Fri, Aug 19, 2022 at 7:32 PM Andrew Jones <ajones@ventanamicro.com> wrote:
-> >
-> > Introduce hfence instruction encodings and apply them to KVM's use.
-> > With the self-documenting nature of the instruction encoding macros,
-> > and a spec always within arm's reach, it's safe to remove the
-> > comments, so we do that too.
-> >
-> > Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
-> > ---
-> >  arch/riscv/include/asm/insn-def.h |   8 ++
-> >  arch/riscv/kvm/tlb.c              | 117 ++++--------------------------
-> >  2 files changed, 21 insertions(+), 104 deletions(-)
-> >
-> > diff --git a/arch/riscv/include/asm/insn-def.h b/arch/riscv/include/asm/insn-def.h
-> > index 4cd0208068dd..cd1c0d365f47 100644
-> > --- a/arch/riscv/include/asm/insn-def.h
-> > +++ b/arch/riscv/include/asm/insn-def.h
-> > @@ -79,4 +79,12 @@
-> >  #define RS1(v)         __REG(v)
-> >  #define RS2(v)         __REG(v)
-> >
-> > +#define OPCODE_SYSTEM  OPCODE(115)
-> > +
-> > +#define HFENCE_VVMA(vaddr, asid)       \
-> > +       INSN_R(OPCODE_SYSTEM, FUNC3(0), FUNC7(17), RD(0), vaddr, asid)
-> > +
-> > +#define HFENCE_GVMA(gaddr, vmid)       \
-> > +       INSN_R(OPCODE_SYSTEM, FUNC3(0), FUNC7(49), RD(0), gaddr, vmid)
-> > +
-> >  #endif /* __ASM_INSN_DEF_H */
-> > diff --git a/arch/riscv/kvm/tlb.c b/arch/riscv/kvm/tlb.c
-> > index 1a76d0b1907d..f742a0d888e1 100644
-> > --- a/arch/riscv/kvm/tlb.c
-> > +++ b/arch/riscv/kvm/tlb.c
-> > @@ -12,22 +12,7 @@
-> >  #include <linux/kvm_host.h>
-> >  #include <asm/cacheflush.h>
-> >  #include <asm/csr.h>
-> > -
-> > -/*
-> > - * Instruction encoding of hfence.gvma is:
-> > - * HFENCE.GVMA rs1, rs2
-> > - * HFENCE.GVMA zero, rs2
-> > - * HFENCE.GVMA rs1
-> > - * HFENCE.GVMA
-> > - *
-> > - * rs1!=zero and rs2!=zero ==> HFENCE.GVMA rs1, rs2
-> > - * rs1==zero and rs2!=zero ==> HFENCE.GVMA zero, rs2
-> > - * rs1!=zero and rs2==zero ==> HFENCE.GVMA rs1
-> > - * rs1==zero and rs2==zero ==> HFENCE.GVMA
-> > - *
-> > - * Instruction encoding of HFENCE.GVMA is:
-> > - * 0110001 rs2(5) rs1(5) 000 00000 1110011
-> > - */
-> > +#include <asm/insn-def.h>
-> >
-> >  void kvm_riscv_local_hfence_gvma_vmid_gpa(unsigned long vmid,
-> >                                           gpa_t gpa, gpa_t gpsz,
-> > @@ -41,31 +26,14 @@ void kvm_riscv_local_hfence_gvma_vmid_gpa(unsigned long vmid,
-> >         }
-> >
-> >         for (pos = gpa; pos < (gpa + gpsz); pos += BIT(order)) {
-> > -               /*
-> > -                * rs1 = a0 (GPA >> 2)
-> > -                * rs2 = a1 (VMID)
-> > -                * HFENCE.GVMA a0, a1
-> > -                * 0110001 01011 01010 000 00000 1110011
-> > -                */
-> > -               asm volatile ("srli a0, %0, 2\n"
-> > -                             "add a1, %1, zero\n"
-> > -                             ".word 0x62b50073\n"
-> > -                             :: "r" (pos), "r" (vmid)
-> > -                             : "a0", "a1", "memory");
-> > +               asm volatile (HFENCE_GVMA("%0", "%1")
+On Thu, Aug 25, 2022 at 11:25:18PM +0000, Sean Christopherson wrote:
+> Do init_ucall() automatically during VM creation to kill two (three?)
+> birds with one stone.
+> 
+> First, initializing ucall immediately after VM creations allows forcing
+> aarch64's MMIO ucall address to immediately follow memslot0.  This is
+> still somewhat fragile as tests could clobber the MMIO address with a
+> new memslot, but it's safe-ish since tests have to be conversative when
+> accounting for memslot0.  And this can be hardened in the future by
+> creating a read-only memslot for the MMIO page (KVM ARM exits with MMIO
+> if the guest writes to a read-only memslot).  Add a TODO to document that
+> selftests can and should use a memslot for the ucall MMIO (doing so
+> requires yet more rework because tests assumes thay can use all memslots
+> except memslot0).
+> 
+> Second, initializing ucall for all VMs prepares for making ucall
+> initialization meaningful on all architectures.  aarch64 is currently the
+> only arch that needs to do any setup, but that will change in the future
+> by switching to a pool-based implementation (instead of the current
+> stack-based approach).
+> 
+> Lastly, defining the ucall MMIO address from common code will simplify
+> switching all architectures (except s390) to a common MMIO-based ucall
+> implementation (if there's ever sufficient motivation to do so).
+> 
+> Cc: Oliver Upton <oliver.upton@linux.dev>
+> Signed-off-by: Sean Christopherson <seanjc@google.com>
+> ---
+>  .../selftests/kvm/aarch64/arch_timer.c        |  1 -
+>  .../selftests/kvm/aarch64/debug-exceptions.c  |  1 -
+>  .../selftests/kvm/aarch64/hypercalls.c        |  1 -
+>  .../testing/selftests/kvm/aarch64/psci_test.c |  1 -
+>  .../testing/selftests/kvm/aarch64/vgic_init.c |  2 -
+>  .../testing/selftests/kvm/aarch64/vgic_irq.c  |  1 -
+>  tools/testing/selftests/kvm/dirty_log_test.c  |  2 -
+>  .../selftests/kvm/include/ucall_common.h      |  6 +--
+>  .../selftests/kvm/kvm_page_table_test.c       |  1 -
+>  .../testing/selftests/kvm/lib/aarch64/ucall.c | 54 ++-----------------
+>  tools/testing/selftests/kvm/lib/kvm_util.c    | 11 ++++
+>  .../selftests/kvm/lib/perf_test_util.c        |  2 -
+>  tools/testing/selftests/kvm/lib/riscv/ucall.c |  2 +-
+>  tools/testing/selftests/kvm/lib/s390x/ucall.c |  2 +-
+>  .../testing/selftests/kvm/lib/x86_64/ucall.c  |  2 +-
+>  .../testing/selftests/kvm/memslot_perf_test.c |  1 -
+>  tools/testing/selftests/kvm/rseq_test.c       |  1 -
+>  tools/testing/selftests/kvm/steal_time.c      |  1 -
+>  .../kvm/system_counter_offset_test.c          |  1 -
+>  19 files changed, 20 insertions(+), 73 deletions(-)
+>
 
-Thank you for the review, Anup! I'd also like to get opinions on whether
-the caller should quote the register tokens or the call should be made as,
-e.g. HFENCE_GVMA(%0, %1), and then do the quoting inside the macro for
-C callers. I could go either way, but I'm starting to lean towards moving
-the quoting into the macros.
+Reviewed-by: Andrew Jones <andrew.jones@linux.dev>
 
 Thanks,
 drew
