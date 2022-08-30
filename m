@@ -1,239 +1,104 @@
-From: Andrew Jones <andrew.jones@linux.dev>
-Date: Mon, 29 Aug 2022 18:36:27 +0200
-Subject: [PATCH v5 7/7] KVM: selftests: Add ucall pool based
- implementation
-In-Reply-To: <20220825232522.3997340-8-seanjc@google.com>
-References: <20220825232522.3997340-1-seanjc@google.com>
- <20220825232522.3997340-8-seanjc@google.com>
-Message-ID: <20220829163627.qbafyl4qz5cxxue5@kamzik>
+From: Anup Patel <anup@brainfault.org>
+Date: Tue, 30 Aug 2022 08:42:20 +0530
+Subject: [PATCH 3/4] riscv: KVM: Apply insn-def to hfence encodings
+In-Reply-To: <20220829094739.pn7iltmtimpwpshf@kamzik>
+References: <20220819140250.3892995-1-ajones@ventanamicro.com>
+ <20220819140250.3892995-4-ajones@ventanamicro.com> <CAAhSdy0d8mjr5-5Um2DpLgnhPb3UnGggXvbu_=oqEHWYzMP1SQ@mail.gmail.com>
+ <20220829094739.pn7iltmtimpwpshf@kamzik>
+Message-ID: <CAAhSdy2OwNNq4PzFfHgVFYVGW3UQt3=geZGOGPojcA55c20rcA@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Aug 25, 2022 at 11:25:22PM +0000, Sean Christopherson wrote:
-> From: Peter Gonda <pgonda@google.com>
-> 
-> To play nice with guests whose stack memory is encrypted, e.g. AMD SEV,
-> introduce a new "ucall pool" implementation that passes the ucall struct
-> via dedicated memory (which can be mapped shared, a.k.a. as plain text).
-> 
-> Because not all architectures have access to the vCPU index in the guest,
-> use a bitmap with atomic accesses to track which entries in the pool are
-> free/used.  A list+lock could also work in theory, but synchronizing the
-> individual pointers to the guest would be a mess.
-> 
-> Note, there's no need to rewalk the bitmap to ensure success.  If all
-> vCPUs are simply allocating, success is guaranteed because there are
-> enough entries for all vCPUs.  If one or more vCPUs are freeing and then
-> reallocating, success is guaranteed because vCPUs _always_ walk the
-> bitmap from 0=>N; if vCPU frees an entry and then wins a race to
-> re-allocate, then either it will consume the entry it just freed (bit is
-> the first free bit), or the losing vCPU is guaranteed to see the freed
-> bit (winner consumes an earlier bit, which the loser hasn't yet visited).
-> 
-> Signed-off-by: Peter Gonda <pgonda@google.com>
-> Co-developed-by: Sean Christopherson <seanjc@google.com>
-> Signed-off-by: Sean Christopherson <seanjc@google.com>
-> ---
->  .../selftests/kvm/include/ucall_common.h      |  9 ++-
->  .../testing/selftests/kvm/lib/aarch64/ucall.c |  7 +-
->  tools/testing/selftests/kvm/lib/riscv/ucall.c |  2 +-
->  tools/testing/selftests/kvm/lib/s390x/ucall.c |  2 +-
->  .../testing/selftests/kvm/lib/ucall_common.c  | 71 +++++++++++++++++--
->  .../testing/selftests/kvm/lib/x86_64/ucall.c  |  2 +-
->  6 files changed, 76 insertions(+), 17 deletions(-)
-> 
-> diff --git a/tools/testing/selftests/kvm/include/ucall_common.h b/tools/testing/selftests/kvm/include/ucall_common.h
-> index 2662a4352a8c..bdd373189a77 100644
-> --- a/tools/testing/selftests/kvm/include/ucall_common.h
-> +++ b/tools/testing/selftests/kvm/include/ucall_common.h
-> @@ -22,6 +22,9 @@ enum {
->  struct ucall {
->  	uint64_t cmd;
->  	uint64_t args[UCALL_MAX_ARGS];
-> +
-> +	/* Host virtual address of this struct. */
-> +	struct ucall *hva;
->  };
->  
->  void ucall_arch_init(struct kvm_vm *vm, vm_paddr_t mmio_gpa);
-> @@ -30,11 +33,7 @@ void *ucall_arch_get_ucall(struct kvm_vcpu *vcpu);
->  
->  void ucall(uint64_t cmd, int nargs, ...);
->  uint64_t get_ucall(struct kvm_vcpu *vcpu, struct ucall *uc);
-> -
-> -static inline void ucall_init(struct kvm_vm *vm, vm_paddr_t mmio_gpa)
-> -{
-> -	ucall_arch_init(vm, mmio_gpa);
-> -}
-> +void ucall_init(struct kvm_vm *vm, vm_paddr_t mmio_gpa);
->  
->  #define GUEST_SYNC_ARGS(stage, arg1, arg2, arg3, arg4)	\
->  				ucall(UCALL_SYNC, 6, "hello", stage, arg1, arg2, arg3, arg4)
-> diff --git a/tools/testing/selftests/kvm/lib/aarch64/ucall.c b/tools/testing/selftests/kvm/lib/aarch64/ucall.c
-> index 21d73afcb14f..562c16dfbb00 100644
-> --- a/tools/testing/selftests/kvm/lib/aarch64/ucall.c
-> +++ b/tools/testing/selftests/kvm/lib/aarch64/ucall.c
-> @@ -32,12 +32,9 @@ void *ucall_arch_get_ucall(struct kvm_vcpu *vcpu)
->  
->  	if (run->exit_reason == KVM_EXIT_MMIO &&
->  	    run->mmio.phys_addr == vcpu->vm->ucall_mmio_addr) {
-> -		vm_vaddr_t gva;
-> -
-> -		TEST_ASSERT(run->mmio.is_write && run->mmio.len == 8,
-> +		TEST_ASSERT(run->mmio.is_write && run->mmio.len == sizeof(uint64_t),
->  			    "Unexpected ucall exit mmio address access");
-> -		memcpy(&gva, run->mmio.data, sizeof(gva));
-> -		return addr_gva2hva(vcpu->vm, gva);
-> +		return (void *)(*((uint64_t *)run->mmio.data));
->  	}
->  
->  	return NULL;
-> diff --git a/tools/testing/selftests/kvm/lib/riscv/ucall.c b/tools/testing/selftests/kvm/lib/riscv/ucall.c
-> index 78acdb084ab0..9a3476a2dfca 100644
-> --- a/tools/testing/selftests/kvm/lib/riscv/ucall.c
-> +++ b/tools/testing/selftests/kvm/lib/riscv/ucall.c
-> @@ -55,7 +55,7 @@ void *ucall_arch_get_ucall(struct kvm_vcpu *vcpu)
->  	    run->riscv_sbi.extension_id == KVM_RISCV_SELFTESTS_SBI_EXT) {
->  		switch (run->riscv_sbi.function_id) {
->  		case KVM_RISCV_SELFTESTS_SBI_UCALL:
-> -			return addr_gva2hva(vcpu->vm, run->riscv_sbi.args[0]);
-> +			return (void *)run->riscv_sbi.args[0];
->  		case KVM_RISCV_SELFTESTS_SBI_UNEXP:
->  			vcpu_dump(stderr, vcpu, 2);
->  			TEST_ASSERT(0, "Unexpected trap taken by guest");
-> diff --git a/tools/testing/selftests/kvm/lib/s390x/ucall.c b/tools/testing/selftests/kvm/lib/s390x/ucall.c
-> index cbee520a26f2..a7f02dc372cf 100644
-> --- a/tools/testing/selftests/kvm/lib/s390x/ucall.c
-> +++ b/tools/testing/selftests/kvm/lib/s390x/ucall.c
-> @@ -26,7 +26,7 @@ void *ucall_arch_get_ucall(struct kvm_vcpu *vcpu)
->  	    (run->s390_sieic.ipb >> 16) == 0x501) {
->  		int reg = run->s390_sieic.ipa & 0xf;
->  
-> -		return addr_gva2hva(vcpu->vm, run->s.regs.gprs[reg]);
-> +		return (void *)run->s.regs.gprs[reg];
->  	}
->  	return NULL;
->  }
-> diff --git a/tools/testing/selftests/kvm/lib/ucall_common.c b/tools/testing/selftests/kvm/lib/ucall_common.c
-> index ced480860746..cc79d497b6b4 100644
-> --- a/tools/testing/selftests/kvm/lib/ucall_common.c
-> +++ b/tools/testing/selftests/kvm/lib/ucall_common.c
-> @@ -1,22 +1,85 @@
->  // SPDX-License-Identifier: GPL-2.0-only
->  #include "kvm_util.h"
-> +#include "linux/types.h"
-> +#include "linux/bitmap.h"
-> +#include "linux/atomic.h"
-> +
-> +struct ucall_header {
-> +	DECLARE_BITMAP(in_use, KVM_MAX_VCPUS);
-> +	struct ucall ucalls[KVM_MAX_VCPUS];
-> +};
-> +
-> +/*
-> + * ucall_pool holds per-VM values (global data is duplicated by each VM), it
-> + * must not be accessed from host code.
-> + */
-> +static struct ucall_header *ucall_pool;
-> +
-> +void ucall_init(struct kvm_vm *vm, vm_paddr_t mmio_gpa)
-> +{
-> +	struct ucall_header *hdr;
-> +	struct ucall *uc;
-> +	vm_vaddr_t vaddr;
-> +	int i;
-> +
-> +	vaddr = vm_vaddr_alloc(vm, sizeof(*hdr), KVM_UTIL_MIN_VADDR);
-> +	hdr = (struct ucall_header *)addr_gva2hva(vm, vaddr);
-> +	memset(hdr, 0, sizeof(*hdr));
-> +
-> +	for (i = 0; i < KVM_MAX_VCPUS; ++i) {
-> +		uc = &hdr->ucalls[i];
-> +		uc->hva = uc;
-> +	}
-> +
-> +	write_guest_global(vm, ucall_pool, (struct ucall_header *)vaddr);
-> +
-> +	ucall_arch_init(vm, mmio_gpa);
-> +}
-> +
-> +static struct ucall *ucall_alloc(void)
-> +{
-> +	struct ucall *uc;
-> +	int i;
-> +
-> +	GUEST_ASSERT(ucall_pool && ucall_pool->in_use);
+On Mon, Aug 29, 2022 at 3:17 PM Andrew Jones <ajones@ventanamicro.com> wrote:
+>
+> On Mon, Aug 29, 2022 at 02:07:59PM +0530, Anup Patel wrote:
+> > On Fri, Aug 19, 2022 at 7:32 PM Andrew Jones <ajones@ventanamicro.com> wrote:
+> > >
+> > > Introduce hfence instruction encodings and apply them to KVM's use.
+> > > With the self-documenting nature of the instruction encoding macros,
+> > > and a spec always within arm's reach, it's safe to remove the
+> > > comments, so we do that too.
+> > >
+> > > Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
+> > > ---
+> > >  arch/riscv/include/asm/insn-def.h |   8 ++
+> > >  arch/riscv/kvm/tlb.c              | 117 ++++--------------------------
+> > >  2 files changed, 21 insertions(+), 104 deletions(-)
+> > >
+> > > diff --git a/arch/riscv/include/asm/insn-def.h b/arch/riscv/include/asm/insn-def.h
+> > > index 4cd0208068dd..cd1c0d365f47 100644
+> > > --- a/arch/riscv/include/asm/insn-def.h
+> > > +++ b/arch/riscv/include/asm/insn-def.h
+> > > @@ -79,4 +79,12 @@
+> > >  #define RS1(v)         __REG(v)
+> > >  #define RS2(v)         __REG(v)
+> > >
+> > > +#define OPCODE_SYSTEM  OPCODE(115)
+> > > +
+> > > +#define HFENCE_VVMA(vaddr, asid)       \
+> > > +       INSN_R(OPCODE_SYSTEM, FUNC3(0), FUNC7(17), RD(0), vaddr, asid)
+> > > +
+> > > +#define HFENCE_GVMA(gaddr, vmid)       \
+> > > +       INSN_R(OPCODE_SYSTEM, FUNC3(0), FUNC7(49), RD(0), gaddr, vmid)
+> > > +
+> > >  #endif /* __ASM_INSN_DEF_H */
+> > > diff --git a/arch/riscv/kvm/tlb.c b/arch/riscv/kvm/tlb.c
+> > > index 1a76d0b1907d..f742a0d888e1 100644
+> > > --- a/arch/riscv/kvm/tlb.c
+> > > +++ b/arch/riscv/kvm/tlb.c
+> > > @@ -12,22 +12,7 @@
+> > >  #include <linux/kvm_host.h>
+> > >  #include <asm/cacheflush.h>
+> > >  #include <asm/csr.h>
+> > > -
+> > > -/*
+> > > - * Instruction encoding of hfence.gvma is:
+> > > - * HFENCE.GVMA rs1, rs2
+> > > - * HFENCE.GVMA zero, rs2
+> > > - * HFENCE.GVMA rs1
+> > > - * HFENCE.GVMA
+> > > - *
+> > > - * rs1!=zero and rs2!=zero ==> HFENCE.GVMA rs1, rs2
+> > > - * rs1==zero and rs2!=zero ==> HFENCE.GVMA zero, rs2
+> > > - * rs1!=zero and rs2==zero ==> HFENCE.GVMA rs1
+> > > - * rs1==zero and rs2==zero ==> HFENCE.GVMA
+> > > - *
+> > > - * Instruction encoding of HFENCE.GVMA is:
+> > > - * 0110001 rs2(5) rs1(5) 000 00000 1110011
+> > > - */
+> > > +#include <asm/insn-def.h>
+> > >
+> > >  void kvm_riscv_local_hfence_gvma_vmid_gpa(unsigned long vmid,
+> > >                                           gpa_t gpa, gpa_t gpsz,
+> > > @@ -41,31 +26,14 @@ void kvm_riscv_local_hfence_gvma_vmid_gpa(unsigned long vmid,
+> > >         }
+> > >
+> > >         for (pos = gpa; pos < (gpa + gpsz); pos += BIT(order)) {
+> > > -               /*
+> > > -                * rs1 = a0 (GPA >> 2)
+> > > -                * rs2 = a1 (VMID)
+> > > -                * HFENCE.GVMA a0, a1
+> > > -                * 0110001 01011 01010 000 00000 1110011
+> > > -                */
+> > > -               asm volatile ("srli a0, %0, 2\n"
+> > > -                             "add a1, %1, zero\n"
+> > > -                             ".word 0x62b50073\n"
+> > > -                             :: "r" (pos), "r" (vmid)
+> > > -                             : "a0", "a1", "memory");
+> > > +               asm volatile (HFENCE_GVMA("%0", "%1")
+>
+> Thank you for the review, Anup! I'd also like to get opinions on whether
+> the caller should quote the register tokens or the call should be made as,
+> e.g. HFENCE_GVMA(%0, %1), and then do the quoting inside the macro for
+> C callers. I could go either way, but I'm starting to lean towards moving
+> the quoting into the macros.
 
-ucall_pool->in_use will never be null.
+I am fine with the current approach but doing quoting inside macors will
+certainly be more user friendly.
 
-> +
-> +	for (i = 0; i < KVM_MAX_VCPUS; ++i) {
-> +		if (!atomic_test_and_set_bit(i, ucall_pool->in_use)) {
-> +			uc = &ucall_pool->ucalls[i];
-> +			memset(uc->args, 0, sizeof(uc->args));
-> +			return uc;
-> +		}
-> +	}
-
-nit: blank line
-
-> +	GUEST_ASSERT(0);
-> +	return NULL;
-> +}
-> +
-> +static void ucall_free(struct ucall *uc)
-> +{
-> +	/* Beware, here be pointer arithmetic.  */
-> +	clear_bit(uc - ucall_pool->ucalls, ucall_pool->in_use);
-> +}
->  
->  void ucall(uint64_t cmd, int nargs, ...)
->  {
-> -	struct ucall uc = {};
-> +	struct ucall *uc;
->  	va_list va;
->  	int i;
->  
-> -	WRITE_ONCE(uc.cmd, cmd);
-> +	uc = ucall_alloc();
-> +
-> +	WRITE_ONCE(uc->cmd, cmd);
->  
->  	nargs = min(nargs, UCALL_MAX_ARGS);
->  
->  	va_start(va, nargs);
->  	for (i = 0; i < nargs; ++i)
-> -		WRITE_ONCE(uc.args[i], va_arg(va, uint64_t));
-> +		WRITE_ONCE(uc->args[i], va_arg(va, uint64_t));
->  	va_end(va);
->  
-> -	ucall_arch_do_ucall((vm_vaddr_t)&uc);
-> +	ucall_arch_do_ucall((vm_vaddr_t)uc->hva);
-> +
-> +	ucall_free(uc);
->  }
->  
->  uint64_t get_ucall(struct kvm_vcpu *vcpu, struct ucall *uc)
-> diff --git a/tools/testing/selftests/kvm/lib/x86_64/ucall.c b/tools/testing/selftests/kvm/lib/x86_64/ucall.c
-> index eb8bf55b359a..4d41dc63cc9e 100644
-> --- a/tools/testing/selftests/kvm/lib/x86_64/ucall.c
-> +++ b/tools/testing/selftests/kvm/lib/x86_64/ucall.c
-> @@ -26,7 +26,7 @@ void *ucall_arch_get_ucall(struct kvm_vcpu *vcpu)
->  		struct kvm_regs regs;
->  
->  		vcpu_regs_get(vcpu, &regs);
-> -		return addr_gva2hva(vcpu->vm, regs.rdi);
-> +		return (void *)regs.rdi;
->  	}
->  	return NULL;
->  }
-> -- 
-> 2.37.2.672.g94769d06f0-goog
-
-Otherwise,
-
-Reviewed-by: Andrew Jones <andrew.jones@linux.dev>
+Regards,
+Anup
 
