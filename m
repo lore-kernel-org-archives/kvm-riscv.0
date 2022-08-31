@@ -1,59 +1,55 @@
-From: Anup Patel <anup@brainfault.org>
-Date: Wed, 31 Aug 2022 15:29:42 +0530
-Subject: [PATCH kvmtool 0/5] KVMTOOL RISC-V Svpbmt and Sstc Support
-In-Reply-To: <20220815101325.477694-1-apatel@ventanamicro.com>
-References: <20220815101325.477694-1-apatel@ventanamicro.com>
-Message-ID: <CAAhSdy3XF79M1juW7T_A2YvrZS+rcywDih2xi02=6uius33-0g@mail.gmail.com>
+From: Andrew Jones <ajones@ventanamicro.com>
+Date: Wed, 31 Aug 2022 19:24:56 +0200
+Subject: [PATCH v2 0/4] riscv: Introduce support for defining instructions
+Message-ID: <20220831172500.752195-1-ajones@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Will,
+When compiling with toolchains that haven't yet been taught about
+new instructions we need to encode them ourselves. This series
+creates a new file where support for instruction definitions can
+evolve. For starters the file is initiated with a macro for R-type
+encodings. The series then applies the R-type encoding macro to all
+instances of hard coded instruction definitions in KVM.
 
-On Mon, Aug 15, 2022 at 3:43 PM Anup Patel <apatel@ventanamicro.com> wrote:
->
-> The latest Linux-6.0-rc1 has support for Svpbmt and Sstc extensions
-> in KVM RISC-V. This series adds corresponding changes in KVMTOOL to
-> allow Guest/VM use these new RISC-V extensions.
->
-> The PATCH5 is an unrelated fix which was discovered while developing
-> this series.
->
-> These patches can also be found in the riscv_svpbmt_sstc_v1 branch
-> at: https://github.com/avpatel/kvmtool.git
->
-> Anup Patel (3):
->   Update UAPI headers based on Linux-6.0-rc1
->   riscv: Add Svpbmt extension support
->   riscv: Fix serial0 alias path
->
-> Atish Patra (2):
->   riscv: Append ISA extensions to the device tree
->   riscv: Add Sstc extension support
->
->  arm/aarch64/include/asm/kvm.h    |  36 ++++++
->  include/linux/kvm.h              | 181 +++++++++++++++++++++++++++++--
->  include/linux/virtio_9p.h        |   2 +-
->  include/linux/virtio_config.h    |   7 +-
->  include/linux/virtio_ids.h       |  14 +--
->  include/linux/virtio_net.h       |  34 +++++-
->  include/linux/virtio_pci.h       |   2 +
->  riscv/fdt.c                      |  44 +++++++-
->  riscv/include/asm/kvm.h          |  22 ++++
->  riscv/include/kvm/kvm-cpu-arch.h |  11 ++
->  riscv/kvm-cpu.c                  |  11 --
->  x86/include/asm/kvm.h            |  33 +++---
->  12 files changed, 352 insertions(+), 45 deletions(-)
->
-> --
-> 2.34.1
->
+Not only should using instruction encoding macros improve readability
+and maintainability of code, but we should also gain potential for
+more optimized code after compilation as the compiler will have control
+over the input and output registers used, which may provide more
+opportunities for inlining.
 
-Ping ?
-Does this series look fine to you ?
+I grepped for other places we may want to use these macros and the
+only place I found was ALT_CMO_OP(), but I didn't dare touch it :-)
+I do suggest we apply this to the Svinal support [1] as we won't
+want to frustrate the compiler's inlining efforts with hard coded
+register selection.
 
-Regards,
-Anup
+[1] https://lore.kernel.org/linux-riscv/20220812042921.14508-1-mchitale at ventanamicro.com/
+
+v2:
+ - Cleaned up some whitespace issues pointed out by Anup, myself
+   and checkpatch and dropped some {}
+ - Pushed the quoting of register tokens into the macros
+ - Picked up Anup's r-b's
+
+Andrew Jones (4):
+  riscv: Add X register names to gpr-nums
+  riscv: Introduce support for defining instructions
+  riscv: KVM: Apply insn-def to hfence encodings
+  riscv: KVM: Apply insn-def to hlv encodings
+
+ arch/riscv/Kconfig                |   3 +
+ arch/riscv/include/asm/gpr-num.h  |   8 ++
+ arch/riscv/include/asm/insn-def.h | 113 ++++++++++++++++++++++++++
+ arch/riscv/kvm/tlb.c              | 129 ++++--------------------------
+ arch/riscv/kvm/vcpu_exit.c        |  29 ++-----
+ 5 files changed, 146 insertions(+), 136 deletions(-)
+ create mode 100644 arch/riscv/include/asm/insn-def.h
+
+-- 
+2.37.2
+
 
