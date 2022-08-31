@@ -1,16 +1,17 @@
 From: Jisheng Zhang <jszhang@kernel.org>
-Date: Thu,  1 Sep 2022 01:59:20 +0800
-Subject: [PATCH v2 5/5] riscv: Allow to enable RT
+Date: Thu,  1 Sep 2022 01:59:18 +0800
+Subject: [PATCH v2 3/5] riscv: select HAVE_POSIX_CPU_TIMERS_TASK_WORK
 In-Reply-To: <20220831175920.2806-1-jszhang@kernel.org>
 References: <20220831175920.2806-1-jszhang@kernel.org>
-Message-ID: <20220831175920.2806-6-jszhang@kernel.org>
+Message-ID: <20220831175920.2806-4-jszhang@kernel.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Allow to select RT.
+Move POSIX CPU timer expiry and signal delivery into task context to
+allow PREEMPT_RT setups to coexist with KVM.
 
 Signed-off-by: Jisheng Zhang <jszhang@kernel.org>
 ---
@@ -18,17 +19,17 @@ Signed-off-by: Jisheng Zhang <jszhang@kernel.org>
  1 file changed, 1 insertion(+)
 
 diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
-index 9f2f1936b1b5..69cdcb3cf251 100644
+index 79e52441e18b..7a8134fd7ec9 100644
 --- a/arch/riscv/Kconfig
 +++ b/arch/riscv/Kconfig
-@@ -39,6 +39,7 @@ config RISCV
- 	select ARCH_SUPPORTS_DEBUG_PAGEALLOC if MMU
- 	select ARCH_SUPPORTS_HUGETLBFS if MMU
- 	select ARCH_SUPPORTS_PAGE_TABLE_CHECK if MMU
-+	select ARCH_SUPPORTS_RT
- 	select ARCH_USE_MEMTEST
- 	select ARCH_USE_QUEUED_RWLOCKS
- 	select ARCH_WANT_DEFAULT_TOPDOWN_MMAP_LAYOUT if MMU
+@@ -104,6 +104,7 @@ config RISCV
+ 	select HAVE_PERF_EVENTS
+ 	select HAVE_PERF_REGS
+ 	select HAVE_PERF_USER_STACK_DUMP
++	select HAVE_POSIX_CPU_TIMERS_TASK_WORK
+ 	select HAVE_REGS_AND_STACK_ACCESS_API
+ 	select HAVE_FUNCTION_ARG_ACCESS_API
+ 	select HAVE_STACKPROTECTOR
 -- 
 2.34.1
 
