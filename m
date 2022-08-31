@@ -1,54 +1,51 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Wed, 31 Aug 2022 19:24:56 +0200
-Subject: [PATCH v2 0/4] riscv: Introduce support for defining instructions
-Message-ID: <20220831172500.752195-1-ajones@ventanamicro.com>
+Date: Wed, 31 Aug 2022 19:24:57 +0200
+Subject: [PATCH v2 1/4] riscv: Add X register names to gpr-nums
+In-Reply-To: <20220831172500.752195-1-ajones@ventanamicro.com>
+References: <20220831172500.752195-1-ajones@ventanamicro.com>
+Message-ID: <20220831172500.752195-2-ajones@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-When compiling with toolchains that haven't yet been taught about
-new instructions we need to encode them ourselves. This series
-creates a new file where support for instruction definitions can
-evolve. For starters the file is initiated with a macro for R-type
-encodings. The series then applies the R-type encoding macro to all
-instances of hard coded instruction definitions in KVM.
+When encoding instructions it's sometimes necessary to set a
+register field to a precise number. This is easiest to do using
+the x<num> naming.
 
-Not only should using instruction encoding macros improve readability
-and maintainability of code, but we should also gain potential for
-more optimized code after compilation as the compiler will have control
-over the input and output registers used, which may provide more
-opportunities for inlining.
+Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
+Reviewed-by: Anup Patel <anup@brainfault.org>
+---
+ arch/riscv/include/asm/gpr-num.h | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-I grepped for other places we may want to use these macros and the
-only place I found was ALT_CMO_OP(), but I didn't dare touch it :-)
-I do suggest we apply this to the Svinal support [1] as we won't
-want to frustrate the compiler's inlining efforts with hard coded
-register selection.
-
-[1] https://lore.kernel.org/linux-riscv/20220812042921.14508-1-mchitale at ventanamicro.com/
-
-v2:
- - Cleaned up some whitespace issues pointed out by Anup, myself
-   and checkpatch and dropped some {}
- - Pushed the quoting of register tokens into the macros
- - Picked up Anup's r-b's
-
-Andrew Jones (4):
-  riscv: Add X register names to gpr-nums
-  riscv: Introduce support for defining instructions
-  riscv: KVM: Apply insn-def to hfence encodings
-  riscv: KVM: Apply insn-def to hlv encodings
-
- arch/riscv/Kconfig                |   3 +
- arch/riscv/include/asm/gpr-num.h  |   8 ++
- arch/riscv/include/asm/insn-def.h | 113 ++++++++++++++++++++++++++
- arch/riscv/kvm/tlb.c              | 129 ++++--------------------------
- arch/riscv/kvm/vcpu_exit.c        |  29 ++-----
- 5 files changed, 146 insertions(+), 136 deletions(-)
- create mode 100644 arch/riscv/include/asm/insn-def.h
-
+diff --git a/arch/riscv/include/asm/gpr-num.h b/arch/riscv/include/asm/gpr-num.h
+index dfee2829fc7c..efeb5edf8a3a 100644
+--- a/arch/riscv/include/asm/gpr-num.h
++++ b/arch/riscv/include/asm/gpr-num.h
+@@ -3,6 +3,11 @@
+ #define __ASM_GPR_NUM_H
+ 
+ #ifdef __ASSEMBLY__
++
++	.irp	num,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31
++	.equ	.L__gpr_num_x\num, \num
++	.endr
++
+ 	.equ	.L__gpr_num_zero,	0
+ 	.equ	.L__gpr_num_ra,		1
+ 	.equ	.L__gpr_num_sp,		2
+@@ -39,6 +44,9 @@
+ #else /* __ASSEMBLY__ */
+ 
+ #define __DEFINE_ASM_GPR_NUMS					\
++"	.irp	num,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31\n" \
++"	.equ	.L__gpr_num_x\\num, \\num\n"			\
++"	.endr\n"						\
+ "	.equ	.L__gpr_num_zero,	0\n"			\
+ "	.equ	.L__gpr_num_ra,		1\n"			\
+ "	.equ	.L__gpr_num_sp,		2\n"			\
 -- 
 2.37.2
 
