@@ -1,20 +1,60 @@
-From: Paolo Bonzini <pbonzini@redhat.com>
-Date: Fri, 2 Sep 2022 00:46:16 +0200
-Subject: [GIT PULL] KVM/riscv fixes for 6.0, take #1
-In-Reply-To: <CAAhSdy2oDoytypnjNFodEY7q_E0OVmrh=GkihQE_K5MnPcK_Sg@mail.gmail.com>
-References: <CAAhSdy2oDoytypnjNFodEY7q_E0OVmrh=GkihQE_K5MnPcK_Sg@mail.gmail.com>
-Message-ID: <c218bef6-bbc1-931e-64cc-5328c0966365@redhat.com>
+From: Anup Patel <anup@brainfault.org>
+Date: Fri, 2 Sep 2022 12:21:49 +0530
+Subject: [PATCH v2 1/4] riscv: Add X register names to gpr-nums
+In-Reply-To: <20220831172500.752195-2-ajones@ventanamicro.com>
+References: <20220831172500.752195-1-ajones@ventanamicro.com> <20220831172500.752195-2-ajones@ventanamicro.com>
+Message-ID: <CAAhSdy2uVFr7-hrxC9DbrSLSytnZLTs4D4j1s=cdmaqwo-Jq8Q@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 8/20/22 10:01, Anup Patel wrote:
->    https://github.com/kvm-riscv/linux.git  tags/kvm-riscv-fixes-6.0-1
+On Wed, Aug 31, 2022 at 10:55 PM Andrew Jones <ajones@ventanamicro.com> wrote:
+>
+> When encoding instructions it's sometimes necessary to set a
+> register field to a precise number. This is easiest to do using
+> the x<num> naming.
+>
+> Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
+> Reviewed-by: Anup Patel <anup@brainfault.org>
 
-Pulled, thanks; sorry for the delay.
+I have queued this patch for Linux-6.1
 
-Paolo
+Thanks,
+Anup
 
+> ---
+>  arch/riscv/include/asm/gpr-num.h | 8 ++++++++
+>  1 file changed, 8 insertions(+)
+>
+> diff --git a/arch/riscv/include/asm/gpr-num.h b/arch/riscv/include/asm/gpr-num.h
+> index dfee2829fc7c..efeb5edf8a3a 100644
+> --- a/arch/riscv/include/asm/gpr-num.h
+> +++ b/arch/riscv/include/asm/gpr-num.h
+> @@ -3,6 +3,11 @@
+>  #define __ASM_GPR_NUM_H
+>
+>  #ifdef __ASSEMBLY__
+> +
+> +       .irp    num,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31
+> +       .equ    .L__gpr_num_x\num, \num
+> +       .endr
+> +
+>         .equ    .L__gpr_num_zero,       0
+>         .equ    .L__gpr_num_ra,         1
+>         .equ    .L__gpr_num_sp,         2
+> @@ -39,6 +44,9 @@
+>  #else /* __ASSEMBLY__ */
+>
+>  #define __DEFINE_ASM_GPR_NUMS                                  \
+> +"      .irp    num,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31\n" \
+> +"      .equ    .L__gpr_num_x\\num, \\num\n"                    \
+> +"      .endr\n"                                                \
+>  "      .equ    .L__gpr_num_zero,       0\n"                    \
+>  "      .equ    .L__gpr_num_ra,         1\n"                    \
+>  "      .equ    .L__gpr_num_sp,         2\n"                    \
+> --
+> 2.37.2
+>
 
