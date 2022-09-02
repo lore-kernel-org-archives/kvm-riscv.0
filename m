@@ -1,120 +1,45 @@
-From: Anup Patel <anup@brainfault.org>
-Date: Fri, 2 Sep 2022 12:23:27 +0530
-Subject: [PATCH v2 4/4] riscv: KVM: Apply insn-def to hlv encodings
-In-Reply-To: <20220831172500.752195-5-ajones@ventanamicro.com>
-References: <20220831172500.752195-1-ajones@ventanamicro.com> <20220831172500.752195-5-ajones@ventanamicro.com>
-Message-ID: <CAAhSdy1746pbZKBuFizhv6e8_ivSd4ePNkN_OG6X0NEhcrVRfw@mail.gmail.com>
+From: Jisheng Zhang <jszhang@kernel.org>
+Date: Fri, 2 Sep 2022 21:09:45 +0800
+Subject: [PATCH v2 0/5] riscv: add PREEMPT_RT support
+In-Reply-To: <4488b1ec-aa34-4be5-3b9b-c65f052f5270@microchip.com>
+References: <20220831175920.2806-1-jszhang@kernel.org>
+ <4488b1ec-aa34-4be5-3b9b-c65f052f5270@microchip.com>
+Message-ID: <YxIAmT2X9TU1CZhC@xhacker>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Aug 31, 2022 at 10:55 PM Andrew Jones <ajones@ventanamicro.com> wrote:
->
-> Introduce hlv instruction encodings and apply them to KVM's use.
-> We're careful not to introduce hlv.d to 32-bit builds. Indeed,
-> we ensure the build fails if someone tries to use it.
->
-> Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
-> Reviewed-by: Anup Patel <anup@brainfault.org>
+On Thu, Sep 01, 2022 at 04:41:52PM +0000, Conor.Dooley at microchip.com wrote:
+> On 31/08/2022 18:59, Jisheng Zhang wrote:
+> > EXTERNAL EMAIL: Do not click links or open attachments unless you know the content is safe
+> > 
+> > This series is to add PREEMPT_RT support to riscv:
+> > patch1 adds the missing number of signal exits in vCPU stat
+> > patch2 switches to the generic guest entry infrastructure
+> > patch3 select HAVE_POSIX_CPU_TIMERS_TASK_WORK which is a requirement for
+> > RT
+> > patch4 adds lazy preempt support
+> > patch5 allows to enable PREEMPT_RT
+> > 
+> 
+> What version of the preempt_rt patch did you test this with?
 
-I have queued this patch for Linux-6.1
+v6.0-rc1 + v6.0-rc1-rt patch
 
-Thanks,
-Anup
+> 
+> Maybe I am missing something, but I gave this a whirl with
+> v6.0-rc3 + v6.0-rc3-rt5 & was meant by a bunch of complaints.
+> I am not familiar with the preempt_rt patch, so I am not sure what
+> level of BUG()s or WARNING()s are to be expected, but I saw a fair
+> few...
 
-> ---
->  arch/riscv/include/asm/insn-def.h | 17 +++++++++++++++++
->  arch/riscv/kvm/vcpu_exit.c        | 29 +++++------------------------
->  2 files changed, 22 insertions(+), 24 deletions(-)
->
-> diff --git a/arch/riscv/include/asm/insn-def.h b/arch/riscv/include/asm/insn-def.h
-> index 86c1f602413b..8fe9036efb68 100644
-> --- a/arch/riscv/include/asm/insn-def.h
-> +++ b/arch/riscv/include/asm/insn-def.h
-> @@ -93,4 +93,21 @@
->         INSN_R(OPCODE_SYSTEM, FUNC3(0), FUNC7(49),              \
->                __RD(0), RS1(gaddr), RS2(vmid))
->
-> +#define HLVX_HU(dest, addr)                                    \
-> +       INSN_R(OPCODE_SYSTEM, FUNC3(4), FUNC7(50),              \
-> +              RD(dest), RS1(addr), __RS2(3))
-> +
-> +#define HLV_W(dest, addr)                                      \
-> +       INSN_R(OPCODE_SYSTEM, FUNC3(4), FUNC7(52),              \
-> +              RD(dest), RS1(addr), __RS2(0))
-> +
-> +#ifdef CONFIG_64BIT
-> +#define HLV_D(dest, addr)                                      \
-> +       INSN_R(OPCODE_SYSTEM, FUNC3(4), FUNC7(54),              \
-> +              RD(dest), RS1(addr), __RS2(0))
-> +#else
-> +#define HLV_D(dest, addr)      \
-> +       __ASM_STR(.error "hlv.d requires 64-bit support")
-> +#endif
-> +
->  #endif /* __ASM_INSN_DEF_H */
-> diff --git a/arch/riscv/kvm/vcpu_exit.c b/arch/riscv/kvm/vcpu_exit.c
-> index d5c36386878a..da793f113a72 100644
-> --- a/arch/riscv/kvm/vcpu_exit.c
-> +++ b/arch/riscv/kvm/vcpu_exit.c
-> @@ -8,6 +8,7 @@
->
->  #include <linux/kvm_host.h>
->  #include <asm/csr.h>
-> +#include <asm/insn-def.h>
->
->  static int gstage_page_fault(struct kvm_vcpu *vcpu, struct kvm_run *run,
->                              struct kvm_cpu_trap *trap)
-> @@ -82,22 +83,12 @@ unsigned long kvm_riscv_vcpu_unpriv_read(struct kvm_vcpu *vcpu,
->                         ".option push\n"
->                         ".option norvc\n"
->                         "add %[ttmp], %[taddr], 0\n"
-> -                       /*
-> -                        * HLVX.HU %[val], (%[addr])
-> -                        * HLVX.HU t0, (t2)
-> -                        * 0110010 00011 00111 100 00101 1110011
-> -                        */
-> -                       ".word 0x6433c2f3\n"
-> +                       HLVX_HU(%[val], %[addr])
->                         "andi %[tmp], %[val], 3\n"
->                         "addi %[tmp], %[tmp], -3\n"
->                         "bne %[tmp], zero, 2f\n"
->                         "addi %[addr], %[addr], 2\n"
-> -                       /*
-> -                        * HLVX.HU %[tmp], (%[addr])
-> -                        * HLVX.HU t1, (t2)
-> -                        * 0110010 00011 00111 100 00110 1110011
-> -                        */
-> -                       ".word 0x6433c373\n"
-> +                       HLVX_HU(%[tmp], %[addr])
->                         "sll %[tmp], %[tmp], 16\n"
->                         "add %[val], %[val], %[tmp]\n"
->                         "2:\n"
-> @@ -121,19 +112,9 @@ unsigned long kvm_riscv_vcpu_unpriv_read(struct kvm_vcpu *vcpu,
->                         ".option norvc\n"
->                         "add %[ttmp], %[taddr], 0\n"
->  #ifdef CONFIG_64BIT
-> -                       /*
-> -                        * HLV.D %[val], (%[addr])
-> -                        * HLV.D t0, (t2)
-> -                        * 0110110 00000 00111 100 00101 1110011
-> -                        */
-> -                       ".word 0x6c03c2f3\n"
-> +                       HLV_D(%[val], %[addr])
->  #else
-> -                       /*
-> -                        * HLV.W %[val], (%[addr])
-> -                        * HLV.W t0, (t2)
-> -                        * 0110100 00000 00111 100 00101 1110011
-> -                        */
-> -                       ".word 0x6803c2f3\n"
-> +                       HLV_W(%[val], %[addr])
->  #endif
->                         ".option pop"
->                 : [val] "=&r" (val),
-> --
-> 2.37.2
->
+Could you please provide corresponding log? Usually, this means there's
+a bug in related drivers, so it's better to fix them now rather than
+wait for RT patches mainlined.
+
+PS: which HW are you using?
+
+Thanks
 
