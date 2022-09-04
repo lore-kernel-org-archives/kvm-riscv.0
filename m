@@ -1,155 +1,130 @@
-From: Anup Patel <apatel@ventanamicro.com>
-Date: Fri,  2 Sep 2022 22:31:30 +0530
-Subject: [PATCH 2/3] RISC-V: KVM: Use Svinval for local TLB maintenance when available
-In-Reply-To: <20220902170131.32334-1-apatel@ventanamicro.com>
-References: <20220902170131.32334-1-apatel@ventanamicro.com>
-Message-ID: <20220902170131.32334-3-apatel@ventanamicro.com>
+From: Guo Ren <guoren@kernel.org>
+Date: Sun, 4 Sep 2022 23:16:12 +0800
+Subject: [PATCH v2 4/5] riscv: add lazy preempt support
+In-Reply-To: <20220831175920.2806-5-jszhang@kernel.org>
+References: <20220831175920.2806-1-jszhang@kernel.org> <20220831175920.2806-5-jszhang@kernel.org>
+Message-ID: <CAJF2gTQMM50TZZ95XOY+Rgvm2hZ3nLxkYfaSW_2MvPiJeqTtJw@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-We should prefer HINVAL.GVMA and HINVAL.VVMA instruction for local TLB
-maintenance when underlying host supports Svinval extension.
+On Thu, Sep 1, 2022 at 2:08 AM Jisheng Zhang <jszhang@kernel.org> wrote:
+>
+> Implement the lazy preempt for riscv.
+>
+> Signed-off-by: Jisheng Zhang <jszhang@kernel.org>
+> ---
+>  arch/riscv/Kconfig                   | 1 +
+>  arch/riscv/include/asm/thread_info.h | 7 +++++--
+>  arch/riscv/kernel/asm-offsets.c      | 1 +
+>  arch/riscv/kernel/entry.S            | 9 +++++++--
+>  4 files changed, 14 insertions(+), 4 deletions(-)
+>
+> diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
+> index 7a8134fd7ec9..9f2f1936b1b5 100644
+> --- a/arch/riscv/Kconfig
+> +++ b/arch/riscv/Kconfig
+> @@ -105,6 +105,7 @@ config RISCV
+>         select HAVE_PERF_REGS
+>         select HAVE_PERF_USER_STACK_DUMP
+>         select HAVE_POSIX_CPU_TIMERS_TASK_WORK
+> +       select HAVE_PREEMPT_LAZY
+>         select HAVE_REGS_AND_STACK_ACCESS_API
+>         select HAVE_FUNCTION_ARG_ACCESS_API
+>         select HAVE_STACKPROTECTOR
+> diff --git a/arch/riscv/include/asm/thread_info.h b/arch/riscv/include/asm/thread_info.h
+> index 78933ac04995..471915b179a2 100644
+> --- a/arch/riscv/include/asm/thread_info.h
+> +++ b/arch/riscv/include/asm/thread_info.h
+> @@ -56,6 +56,7 @@
+>  struct thread_info {
+>         unsigned long           flags;          /* low level flags */
+>         int                     preempt_count;  /* 0=>preemptible, <0=>BUG */
+> +       int                     preempt_lazy_count;  /* 0=>preemptible, <0=>BUG */
+>         /*
+>          * These stack pointers are overwritten on every system call or
+>          * exception.  SP is also saved to the stack it can be recovered when
+> @@ -90,7 +91,7 @@ struct thread_info {
+>  #define TIF_NOTIFY_RESUME      1       /* callback before returning to user */
+>  #define TIF_SIGPENDING         2       /* signal pending */
+>  #define TIF_NEED_RESCHED       3       /* rescheduling necessary */
+> -#define TIF_RESTORE_SIGMASK    4       /* restore signal mask in do_signal() */
+> +#define TIF_NEED_RESCHED_LAZY  4       /* lazy rescheduling */
+>  #define TIF_MEMDIE             5       /* is terminating due to OOM killer */
+>  #define TIF_SYSCALL_TRACEPOINT  6       /* syscall tracepoint instrumentation */
+>  #define TIF_SYSCALL_AUDIT      7       /* syscall auditing */
+> @@ -98,6 +99,7 @@ struct thread_info {
+>  #define TIF_NOTIFY_SIGNAL      9       /* signal notifications exist */
+>  #define TIF_UPROBE             10      /* uprobe breakpoint or singlestep */
+>  #define TIF_32BIT              11      /* compat-mode 32bit process */
+> +#define TIF_RESTORE_SIGMASK    12      /* restore signal mask in do_signal() */
+>
+>  #define _TIF_SYSCALL_TRACE     (1 << TIF_SYSCALL_TRACE)
+>  #define _TIF_NOTIFY_RESUME     (1 << TIF_NOTIFY_RESUME)
+> @@ -108,10 +110,11 @@ struct thread_info {
+>  #define _TIF_SECCOMP           (1 << TIF_SECCOMP)
+>  #define _TIF_NOTIFY_SIGNAL     (1 << TIF_NOTIFY_SIGNAL)
+>  #define _TIF_UPROBE            (1 << TIF_UPROBE)
+> +#define _TIF_NEED_RESCHED_LAZY (1 << TIF_NEED_RESCHED_LAZY)
+>
+>  #define _TIF_WORK_MASK \
+>         (_TIF_NOTIFY_RESUME | _TIF_SIGPENDING | _TIF_NEED_RESCHED | \
+> -        _TIF_NOTIFY_SIGNAL | _TIF_UPROBE)
+> +        _TIF_NEED_RESCHED_LAZY | _TIF_NOTIFY_SIGNAL | _TIF_UPROBE)
+>
+>  #define _TIF_SYSCALL_WORK \
+>         (_TIF_SYSCALL_TRACE | _TIF_SYSCALL_TRACEPOINT | _TIF_SYSCALL_AUDIT | \
+> diff --git a/arch/riscv/kernel/asm-offsets.c b/arch/riscv/kernel/asm-offsets.c
+> index df9444397908..e38e33822f72 100644
+> --- a/arch/riscv/kernel/asm-offsets.c
+> +++ b/arch/riscv/kernel/asm-offsets.c
+> @@ -35,6 +35,7 @@ void asm_offsets(void)
+>         OFFSET(TASK_THREAD_S11, task_struct, thread.s[11]);
+>         OFFSET(TASK_TI_FLAGS, task_struct, thread_info.flags);
+>         OFFSET(TASK_TI_PREEMPT_COUNT, task_struct, thread_info.preempt_count);
+> +       OFFSET(TASK_TI_PREEMPT_LAZY_COUNT, task_struct, thread_info.preempt_lazy_count);
+>         OFFSET(TASK_TI_KERNEL_SP, task_struct, thread_info.kernel_sp);
+>         OFFSET(TASK_TI_USER_SP, task_struct, thread_info.user_sp);
+>
+> diff --git a/arch/riscv/kernel/entry.S b/arch/riscv/kernel/entry.S
+> index b9eda3fcbd6d..595100a4c2c7 100644
+> --- a/arch/riscv/kernel/entry.S
+> +++ b/arch/riscv/kernel/entry.S
+> @@ -361,9 +361,14 @@ restore_all:
+>  resume_kernel:
+>         REG_L s0, TASK_TI_PREEMPT_COUNT(tp)
+>         bnez s0, restore_all
+> -       REG_L s0, TASK_TI_FLAGS(tp)
+> -       andi s0, s0, _TIF_NEED_RESCHED
+> +       REG_L s1, TASK_TI_FLAGS(tp)
+> +       andi s0, s1, _TIF_NEED_RESCHED
+> +       bnez s0, 1f
+> +       REG_L s0, TASK_TI_PREEMPT_LAZY_COUNT(tp)
+> +       bnez s0, restore_all
+> +       andi s0, s1, _TIF_NEED_RESCHED_LAZY
+Can you tell me, who increased/decreased the PREEMPT_LAZY_COUNT? And
+who set NEED_RESCHED_LAZY?
 
-Signed-off-by: Anup Patel <apatel@ventanamicro.com>
----
- arch/riscv/include/asm/insn-def.h | 20 +++++++++++
- arch/riscv/kvm/tlb.c              | 60 ++++++++++++++++++++++++-------
- 2 files changed, 68 insertions(+), 12 deletions(-)
 
-diff --git a/arch/riscv/include/asm/insn-def.h b/arch/riscv/include/asm/insn-def.h
-index 8fe9036efb68..246a627d16ee 100644
---- a/arch/riscv/include/asm/insn-def.h
-+++ b/arch/riscv/include/asm/insn-def.h
-@@ -110,4 +110,24 @@
- 	__ASM_STR(.error "hlv.d requires 64-bit support")
- #endif
- 
-+#define SINVAL_VMA(vaddr, asid)					\
-+	INSN_R(OPCODE_SYSTEM, FUNC3(0), FUNC7(11),		\
-+	       __RD(0), RS1(vaddr), RS2(asid))
-+
-+#define SFENCE_W_INVAL()					\
-+	INSN_R(OPCODE_SYSTEM, FUNC3(0), FUNC7(12),		\
-+	       __RD(0), __RS1(0), __RS2(0))
-+
-+#define SFENCE_INVAL_IR()					\
-+	INSN_R(OPCODE_SYSTEM, FUNC3(0), FUNC7(12),		\
-+	       __RD(0), __RS1(0), __RS2(1))
-+
-+#define HINVAL_VVMA(vaddr, asid)				\
-+	INSN_R(OPCODE_SYSTEM, FUNC3(0), FUNC7(19),		\
-+	       __RD(0), RS1(vaddr), RS2(asid))
-+
-+#define HINVAL_GVMA(gaddr, vmid)				\
-+	INSN_R(OPCODE_SYSTEM, FUNC3(0), FUNC7(51),		\
-+	       __RD(0), RS1(gaddr), RS2(vmid))
-+
- #endif /* __ASM_INSN_DEF_H */
-diff --git a/arch/riscv/kvm/tlb.c b/arch/riscv/kvm/tlb.c
-index 1ce3394b3acf..309d79b3e5cd 100644
---- a/arch/riscv/kvm/tlb.c
-+++ b/arch/riscv/kvm/tlb.c
-@@ -12,8 +12,12 @@
- #include <linux/kvm_host.h>
- #include <asm/cacheflush.h>
- #include <asm/csr.h>
-+#include <asm/hwcap.h>
- #include <asm/insn-def.h>
- 
-+#define has_svinval()	\
-+	static_branch_unlikely(&riscv_isa_ext_keys[RISCV_ISA_EXT_KEY_SVINVAL])
-+
- void kvm_riscv_local_hfence_gvma_vmid_gpa(unsigned long vmid,
- 					  gpa_t gpa, gpa_t gpsz,
- 					  unsigned long order)
-@@ -25,9 +29,17 @@ void kvm_riscv_local_hfence_gvma_vmid_gpa(unsigned long vmid,
- 		return;
- 	}
- 
--	for (pos = gpa; pos < (gpa + gpsz); pos += BIT(order))
--		asm volatile (HFENCE_GVMA(%0, %1)
--		: : "r" (pos >> 2), "r" (vmid) : "memory");
-+	if (has_svinval()) {
-+		asm volatile (SFENCE_W_INVAL() ::: "memory");
-+		for (pos = gpa; pos < (gpa + gpsz); pos += BIT(order))
-+			asm volatile (HINVAL_GVMA(%0, %1)
-+			: : "r" (pos >> 2), "r" (vmid) : "memory");
-+		asm volatile (SFENCE_INVAL_IR() ::: "memory");
-+	} else {
-+		for (pos = gpa; pos < (gpa + gpsz); pos += BIT(order))
-+			asm volatile (HFENCE_GVMA(%0, %1)
-+			: : "r" (pos >> 2), "r" (vmid) : "memory");
-+	}
- }
- 
- void kvm_riscv_local_hfence_gvma_vmid_all(unsigned long vmid)
-@@ -45,9 +57,17 @@ void kvm_riscv_local_hfence_gvma_gpa(gpa_t gpa, gpa_t gpsz,
- 		return;
- 	}
- 
--	for (pos = gpa; pos < (gpa + gpsz); pos += BIT(order))
--		asm volatile(HFENCE_GVMA(%0, zero)
--		: : "r" (pos >> 2) : "memory");
-+	if (has_svinval()) {
-+		asm volatile (SFENCE_W_INVAL() ::: "memory");
-+		for (pos = gpa; pos < (gpa + gpsz); pos += BIT(order))
-+			asm volatile(HINVAL_GVMA(%0, zero)
-+			: : "r" (pos >> 2) : "memory");
-+		asm volatile (SFENCE_INVAL_IR() ::: "memory");
-+	} else {
-+		for (pos = gpa; pos < (gpa + gpsz); pos += BIT(order))
-+			asm volatile(HFENCE_GVMA(%0, zero)
-+			: : "r" (pos >> 2) : "memory");
-+	}
- }
- 
- void kvm_riscv_local_hfence_gvma_all(void)
-@@ -70,9 +90,17 @@ void kvm_riscv_local_hfence_vvma_asid_gva(unsigned long vmid,
- 
- 	hgatp = csr_swap(CSR_HGATP, vmid << HGATP_VMID_SHIFT);
- 
--	for (pos = gva; pos < (gva + gvsz); pos += BIT(order))
--		asm volatile(HFENCE_VVMA(%0, %1)
--		: : "r" (pos), "r" (asid) : "memory");
-+	if (has_svinval()) {
-+		asm volatile (SFENCE_W_INVAL() ::: "memory");
-+		for (pos = gva; pos < (gva + gvsz); pos += BIT(order))
-+			asm volatile(HINVAL_VVMA(%0, %1)
-+			: : "r" (pos), "r" (asid) : "memory");
-+		asm volatile (SFENCE_INVAL_IR() ::: "memory");
-+	} else {
-+		for (pos = gva; pos < (gva + gvsz); pos += BIT(order))
-+			asm volatile(HFENCE_VVMA(%0, %1)
-+			: : "r" (pos), "r" (asid) : "memory");
-+	}
- 
- 	csr_write(CSR_HGATP, hgatp);
- }
-@@ -102,9 +130,17 @@ void kvm_riscv_local_hfence_vvma_gva(unsigned long vmid,
- 
- 	hgatp = csr_swap(CSR_HGATP, vmid << HGATP_VMID_SHIFT);
- 
--	for (pos = gva; pos < (gva + gvsz); pos += BIT(order))
--		asm volatile(HFENCE_VVMA(%0, zero)
--		: : "r" (pos) : "memory");
-+	if (has_svinval()) {
-+		asm volatile (SFENCE_W_INVAL() ::: "memory");
-+		for (pos = gva; pos < (gva + gvsz); pos += BIT(order))
-+			asm volatile(HINVAL_VVMA(%0, zero)
-+			: : "r" (pos) : "memory");
-+		asm volatile (SFENCE_INVAL_IR() ::: "memory");
-+	} else {
-+		for (pos = gva; pos < (gva + gvsz); pos += BIT(order))
-+			asm volatile(HFENCE_VVMA(%0, zero)
-+			: : "r" (pos) : "memory");
-+	}
- 
- 	csr_write(CSR_HGATP, hgatp);
- }
+>         beqz s0, restore_all
+> +1:
+>         call preempt_schedule_irq
+>         j restore_all
+>  #endif
+> --
+> 2.34.1
+>
+>
+> --
+> kvm-riscv mailing list
+> kvm-riscv at lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/kvm-riscv
+
+
+
 -- 
-2.34.1
-
+Best Regards
+ Guo Ren
 
