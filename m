@@ -1,32 +1,45 @@
-From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Date: Mon, 5 Sep 2022 10:46:41 +0200
-Subject: [PATCH v2 4/5] riscv: add lazy preempt support
-In-Reply-To: <CAJF2gTR=Cmcox5JrX2bB12MdmurY3vexSA6vw1cdXXbCNB8tXw@mail.gmail.com>
-References: <20220831175920.2806-1-jszhang@kernel.org>
- <20220831175920.2806-5-jszhang@kernel.org>
- <CAJF2gTQMM50TZZ95XOY+Rgvm2hZ3nLxkYfaSW_2MvPiJeqTtJw@mail.gmail.com>
- <YxWYh5C5swlyobi2@linutronix.de>
- <CAJF2gTR=Cmcox5JrX2bB12MdmurY3vexSA6vw1cdXXbCNB8tXw@mail.gmail.com>
-Message-ID: <YxW3cZEhEideZon2@linutronix.de>
+From: Andrew Jones <ajones@ventanamicro.com>
+Date: Mon, 5 Sep 2022 16:05:20 +0200
+Subject: [PATCH 0/3] Svinval support for KVM RISC-V
+In-Reply-To: <20220902170131.32334-1-apatel@ventanamicro.com>
+References: <20220902170131.32334-1-apatel@ventanamicro.com>
+Message-ID: <20220905140520.dmpbbh5fkk634leg@kamzik>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 2022-09-05 16:33:54 [+0800], Guo Ren wrote:
-> > There is "generic" code in the PREEMPT_RT patch doing that. The counter
-> > is incremented/ decremented via preempt_lazy_enable()/disable() and one
-> > of the user is migrate_disable()/enable().
-> > Basically if a task is task_is_realtime() then NEED_RESCHED is set for
-> > the wakeup. For the remaining states (SCHED_OTHER, ?) NEED_RESCHED_LAZY
-> > is set for the wakeup. This can be delayed if the task is in a "preempt
-> > disable lazy" section (similar to a preempt_disable() section) but a
-> > task_is_realtime() can still be scheduled if needed.
-> Okay, It should be [PATCH RT]. RISC-V would also move to GENERIC_ENTRY
-> [1], so above assembly code would be replaced by generic one, right?
+On Fri, Sep 02, 2022 at 10:31:28PM +0530, Anup Patel wrote:
+> This series adds Svinval extension support for both Host hypervisor
+> and Guest.
+> 
+> These patches can also be found in riscv_kvm_svinval_v1 branch at:
+> https://github.com/avpatel/linux.git
+> 
+> The corresponding KVMTOOL patches are available in riscv_svinval_v1
+> branch at: https://github.com/avpatel/kvmtool.git
+> 
+> Anup Patel (2):
+>   RISC-V: KVM: Use Svinval for local TLB maintenance when available
+>   RISC-V: KVM: Allow Guest use Svinval extension
+> 
+> Mayuresh Chitale (1):
+>   RISC-V: Probe Svinval extension form ISA string
+> 
+>  arch/riscv/include/asm/hwcap.h    |  4 +++
+>  arch/riscv/include/asm/insn-def.h | 20 +++++++++++
+>  arch/riscv/include/uapi/asm/kvm.h |  1 +
+>  arch/riscv/kernel/cpu.c           |  1 +
+>  arch/riscv/kernel/cpufeature.c    |  1 +
+>  arch/riscv/kvm/tlb.c              | 60 ++++++++++++++++++++++++-------
+>  arch/riscv/kvm/vcpu.c             |  2 ++
+>  7 files changed, 77 insertions(+), 12 deletions(-)
+> 
+> -- 
+> 2.34.1
 
-correct.
+For the series,
 
-Sebastian
+Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
 
