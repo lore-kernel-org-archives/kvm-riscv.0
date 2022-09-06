@@ -1,45 +1,83 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Tue,  6 Sep 2022 16:58:40 +0200
-Subject: [PATCH v2 0/2] riscv: KVM: Expose Zicbom to the guest
-Message-ID: <20220906145842.965488-1-ajones@ventanamicro.com>
+Date: Tue,  6 Sep 2022 16:58:41 +0200
+Subject: [PATCH v2 1/2] RISC-V: KVM: Provide UAPI for Zicbom block size
+In-Reply-To: <20220906145842.965488-1-ajones@ventanamicro.com>
+References: <20220906145842.965488-1-ajones@ventanamicro.com>
+Message-ID: <20220906145842.965488-2-ajones@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add support for exposing the Zicbom extension to guests. This has been
-tested over a QEMU including the Zicbom support [1] ([1] was rebased and
-the Zicboz support from it was dropped.) QEMU was further modified to
-ensure the cache block size was provided in the DT. kvmtool was also
-modified [2] to test the new KVM API and provide the guest the cache
-block size in its DT (The kvmtool patches are based on Anup's Svpbmt/Sstc
-series [3]). These KVM patches are based on the riscv_init_cbom_blocksize()
-cleanup patch from Palmer and the move and expose riscv_cbom_block_size
-patch from Anup which was reposted [4]. This series is also available here
-[5].
+We're about to allow guests to use the Zicbom extension. KVM
+userspace needs to know the cache block size in order to
+properly advertise it to the guest. Provide a virtual config
+register for userspace to get it with the GET_ONE_REG API, but
+setting it cannot be supported, so disallow SET_ONE_REG.
 
-[1] https://gitlab.com/jones-drew/qemu/-/commits/riscv/zicbom
-[2] https://github.com/jones-drew/kvmtool/commits/riscv/zicbom
-[3] https://github.com/avpatel/kvmtool/commits/riscv_svpbmt_sstc_v1
-[4] https://lore.kernel.org/linux-riscv/20220906074509.928865-1-ajones at ventanamicro.com/T/#u
-[5] https://github.com/jones-drew/linux/commits/riscv/kvm/zicbom-v2
+Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
+---
+ arch/riscv/include/uapi/asm/kvm.h | 1 +
+ arch/riscv/kvm/vcpu.c             | 6 ++++++
+ arch/riscv/mm/cacheflush.c        | 1 +
+ 3 files changed, 8 insertions(+)
 
-Thanks,
-drew
-
-v2:
- - Dropped a patch that output the cache block size to dmesg
-
-Andrew Jones (2):
-  RISC-V: KVM: Provide UAPI for Zicbom block size
-  RISC-V: KVM: Expose Zicbom to the guest
-
- arch/riscv/include/uapi/asm/kvm.h |  2 ++
- arch/riscv/kvm/vcpu.c             | 11 +++++++++++
- arch/riscv/mm/cacheflush.c        |  1 +
- 3 files changed, 14 insertions(+)
-
+diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
+index 7351417afd62..b9a4cf36be4b 100644
+--- a/arch/riscv/include/uapi/asm/kvm.h
++++ b/arch/riscv/include/uapi/asm/kvm.h
+@@ -48,6 +48,7 @@ struct kvm_sregs {
+ /* CONFIG registers for KVM_GET_ONE_REG and KVM_SET_ONE_REG */
+ struct kvm_riscv_config {
+ 	unsigned long isa;
++	unsigned long zicbom_block_size;
+ };
+ 
+ /* CORE registers for KVM_GET_ONE_REG and KVM_SET_ONE_REG */
+diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+index d0f08d5b4282..3f36e79876e7 100644
+--- a/arch/riscv/kvm/vcpu.c
++++ b/arch/riscv/kvm/vcpu.c
+@@ -18,6 +18,7 @@
+ #include <linux/fs.h>
+ #include <linux/kvm_host.h>
+ #include <asm/csr.h>
++#include <asm/cacheflush.h>
+ #include <asm/hwcap.h>
+ 
+ const struct _kvm_stats_desc kvm_vcpu_stats_desc[] = {
+@@ -254,6 +255,9 @@ static int kvm_riscv_vcpu_get_reg_config(struct kvm_vcpu *vcpu,
+ 	case KVM_REG_RISCV_CONFIG_REG(isa):
+ 		reg_val = vcpu->arch.isa[0] & KVM_RISCV_BASE_ISA_MASK;
+ 		break;
++	case KVM_REG_RISCV_CONFIG_REG(zicbom_block_size):
++		reg_val = riscv_cbom_block_size;
++		break;
+ 	default:
+ 		return -EINVAL;
+ 	}
+@@ -311,6 +315,8 @@ static int kvm_riscv_vcpu_set_reg_config(struct kvm_vcpu *vcpu,
+ 			return -EOPNOTSUPP;
+ 		}
+ 		break;
++	case KVM_REG_RISCV_CONFIG_REG(zicbom_block_size):
++		return -EOPNOTSUPP;
+ 	default:
+ 		return -EINVAL;
+ 	}
+diff --git a/arch/riscv/mm/cacheflush.c b/arch/riscv/mm/cacheflush.c
+index e5b087be1577..f318b2553612 100644
+--- a/arch/riscv/mm/cacheflush.c
++++ b/arch/riscv/mm/cacheflush.c
+@@ -90,6 +90,7 @@ void flush_icache_pte(pte_t pte)
+ #endif /* CONFIG_MMU */
+ 
+ unsigned int riscv_cbom_block_size;
++EXPORT_SYMBOL_GPL(riscv_cbom_block_size);
+ 
+ #ifdef CONFIG_RISCV_ISA_ZICBOM
+ void riscv_init_cbom_blocksize(void)
 -- 
 2.37.2
 
