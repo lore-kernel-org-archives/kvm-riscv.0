@@ -1,64 +1,62 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Tue,  6 Sep 2022 16:58:42 +0200
-Subject: [PATCH v2 2/2] RISC-V: KVM: Expose Zicbom to the guest
+From: Conor.Dooley@microchip.com <Conor.Dooley@microchip.com>
+Date: Tue, 6 Sep 2022 16:10:16 +0000
+Subject: [PATCH v2 0/2] riscv: KVM: Expose Zicbom to the guest
 In-Reply-To: <20220906145842.965488-1-ajones@ventanamicro.com>
 References: <20220906145842.965488-1-ajones@ventanamicro.com>
-Message-ID: <20220906145842.965488-3-ajones@ventanamicro.com>
+Message-ID: <201f510f-9b29-d299-7827-4f135145fc21@microchip.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Guests may use the cbo.inval,clean,flush instructions when the
-CPU has the Zicbom extension and the hypervisor sets henvcfg.CBIE
-(for cbo.inval) and henvcfg.CBCFE (for cbo.clean,flush).
+On 06/09/2022 15:58, Andrew Jones wrote:
+> EXTERNAL EMAIL: Do not click links or open attachments unless you know the content is safe
+> 
+> Add support for exposing the Zicbom extension to guests. This has been
+> tested over a QEMU including the Zicbom support [1] ([1] was rebased and
+> the Zicboz support from it was dropped.) QEMU was further modified to
+> ensure the cache block size was provided in the DT. kvmtool was also
+> modified [2] to test the new KVM API and provide the guest the cache
+> block size in its DT (The kvmtool patches are based on Anup's Svpbmt/Sstc
+> series [3]). These KVM patches are based on the riscv_init_cbom_blocksize()
+> cleanup patch from Palmer and the move and expose riscv_cbom_block_size
+> patch from Anup which was reposted [4]. This series is also available here
+> [5].
 
-Add Zicbom support for KVM guests which may be enabled and
-disabled from KVM userspace using the ISA extension ONE_REG API.
+Saw this right before I left it against v1, but both of these patches
+look sane-&-reasonable to me.
 
-Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
----
- arch/riscv/include/uapi/asm/kvm.h | 1 +
- arch/riscv/kvm/vcpu.c             | 5 +++++
- 2 files changed, 6 insertions(+)
+Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
 
-diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
-index b9a4cf36be4b..ed37a4a6e5cf 100644
---- a/arch/riscv/include/uapi/asm/kvm.h
-+++ b/arch/riscv/include/uapi/asm/kvm.h
-@@ -99,6 +99,7 @@ enum KVM_RISCV_ISA_EXT_ID {
- 	KVM_RISCV_ISA_EXT_M,
- 	KVM_RISCV_ISA_EXT_SVPBMT,
- 	KVM_RISCV_ISA_EXT_SSTC,
-+	KVM_RISCV_ISA_EXT_ZICBOM,
- 	KVM_RISCV_ISA_EXT_MAX,
- };
- 
-diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-index 3f36e79876e7..3ce4f1c11b4c 100644
---- a/arch/riscv/kvm/vcpu.c
-+++ b/arch/riscv/kvm/vcpu.c
-@@ -54,6 +54,7 @@ static const unsigned long kvm_isa_ext_arr[] = {
- 	RISCV_ISA_EXT_m,
- 	RISCV_ISA_EXT_SVPBMT,
- 	RISCV_ISA_EXT_SSTC,
-+	RISCV_ISA_EXT_ZICBOM,
- };
- 
- static unsigned long kvm_riscv_vcpu_base2isa_ext(unsigned long base_ext)
-@@ -795,6 +796,10 @@ static void kvm_riscv_vcpu_update_config(const unsigned long *isa)
- 
- 	if (__riscv_isa_extension_available(isa, RISCV_ISA_EXT_SSTC))
- 		henvcfg |= ENVCFG_STCE;
-+
-+	if (__riscv_isa_extension_available(isa, RISCV_ISA_EXT_ZICBOM))
-+		henvcfg |= (ENVCFG_CBIE | ENVCFG_CBCFE);
-+
- 	csr_write(CSR_HENVCFG, henvcfg);
- #ifdef CONFIG_32BIT
- 	csr_write(CSR_HENVCFGH, henvcfg >> 32);
--- 
-2.37.2
-
+> 
+> [1] https://gitlab.com/jones-drew/qemu/-/commits/riscv/zicbom
+> [2] https://github.com/jones-drew/kvmtool/commits/riscv/zicbom
+> [3] https://github.com/avpatel/kvmtool/commits/riscv_svpbmt_sstc_v1
+> [4] https://lore.kernel.org/linux-riscv/20220906074509.928865-1-ajones at ventanamicro.com/T/#u
+> [5] https://github.com/jones-drew/linux/commits/riscv/kvm/zicbom-v2
+> 
+> Thanks,
+> drew
+> 
+> v2:
+>  - Dropped a patch that output the cache block size to dmesg
+> 
+> Andrew Jones (2):
+>   RISC-V: KVM: Provide UAPI for Zicbom block size
+>   RISC-V: KVM: Expose Zicbom to the guest
+> 
+>  arch/riscv/include/uapi/asm/kvm.h |  2 ++
+>  arch/riscv/kvm/vcpu.c             | 11 +++++++++++
+>  arch/riscv/mm/cacheflush.c        |  1 +
+>  3 files changed, 14 insertions(+)
+> 
+> --
+> 2.37.2
+> 
+> 
+> _______________________________________________
+> linux-riscv mailing list
+> linux-riscv at lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-riscv
 
