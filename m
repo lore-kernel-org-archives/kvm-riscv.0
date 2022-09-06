@@ -1,83 +1,63 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Tue,  6 Sep 2022 16:58:41 +0200
-Subject: [PATCH v2 1/2] RISC-V: KVM: Provide UAPI for Zicbom block size
+Date: Tue,  6 Sep 2022 16:58:42 +0200
+Subject: [PATCH v2 2/2] RISC-V: KVM: Expose Zicbom to the guest
 In-Reply-To: <20220906145842.965488-1-ajones@ventanamicro.com>
 References: <20220906145842.965488-1-ajones@ventanamicro.com>
-Message-ID: <20220906145842.965488-2-ajones@ventanamicro.com>
+Message-ID: <20220906145842.965488-3-ajones@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-We're about to allow guests to use the Zicbom extension. KVM
-userspace needs to know the cache block size in order to
-properly advertise it to the guest. Provide a virtual config
-register for userspace to get it with the GET_ONE_REG API, but
-setting it cannot be supported, so disallow SET_ONE_REG.
+Guests may use the cbo.inval,clean,flush instructions when the
+CPU has the Zicbom extension and the hypervisor sets henvcfg.CBIE
+(for cbo.inval) and henvcfg.CBCFE (for cbo.clean,flush).
+
+Add Zicbom support for KVM guests which may be enabled and
+disabled from KVM userspace using the ISA extension ONE_REG API.
 
 Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
 ---
  arch/riscv/include/uapi/asm/kvm.h | 1 +
- arch/riscv/kvm/vcpu.c             | 6 ++++++
- arch/riscv/mm/cacheflush.c        | 1 +
- 3 files changed, 8 insertions(+)
+ arch/riscv/kvm/vcpu.c             | 5 +++++
+ 2 files changed, 6 insertions(+)
 
 diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
-index 7351417afd62..b9a4cf36be4b 100644
+index b9a4cf36be4b..ed37a4a6e5cf 100644
 --- a/arch/riscv/include/uapi/asm/kvm.h
 +++ b/arch/riscv/include/uapi/asm/kvm.h
-@@ -48,6 +48,7 @@ struct kvm_sregs {
- /* CONFIG registers for KVM_GET_ONE_REG and KVM_SET_ONE_REG */
- struct kvm_riscv_config {
- 	unsigned long isa;
-+	unsigned long zicbom_block_size;
+@@ -99,6 +99,7 @@ enum KVM_RISCV_ISA_EXT_ID {
+ 	KVM_RISCV_ISA_EXT_M,
+ 	KVM_RISCV_ISA_EXT_SVPBMT,
+ 	KVM_RISCV_ISA_EXT_SSTC,
++	KVM_RISCV_ISA_EXT_ZICBOM,
+ 	KVM_RISCV_ISA_EXT_MAX,
  };
  
- /* CORE registers for KVM_GET_ONE_REG and KVM_SET_ONE_REG */
 diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-index d0f08d5b4282..3f36e79876e7 100644
+index 3f36e79876e7..3ce4f1c11b4c 100644
 --- a/arch/riscv/kvm/vcpu.c
 +++ b/arch/riscv/kvm/vcpu.c
-@@ -18,6 +18,7 @@
- #include <linux/fs.h>
- #include <linux/kvm_host.h>
- #include <asm/csr.h>
-+#include <asm/cacheflush.h>
- #include <asm/hwcap.h>
+@@ -54,6 +54,7 @@ static const unsigned long kvm_isa_ext_arr[] = {
+ 	RISCV_ISA_EXT_m,
+ 	RISCV_ISA_EXT_SVPBMT,
+ 	RISCV_ISA_EXT_SSTC,
++	RISCV_ISA_EXT_ZICBOM,
+ };
  
- const struct _kvm_stats_desc kvm_vcpu_stats_desc[] = {
-@@ -254,6 +255,9 @@ static int kvm_riscv_vcpu_get_reg_config(struct kvm_vcpu *vcpu,
- 	case KVM_REG_RISCV_CONFIG_REG(isa):
- 		reg_val = vcpu->arch.isa[0] & KVM_RISCV_BASE_ISA_MASK;
- 		break;
-+	case KVM_REG_RISCV_CONFIG_REG(zicbom_block_size):
-+		reg_val = riscv_cbom_block_size;
-+		break;
- 	default:
- 		return -EINVAL;
- 	}
-@@ -311,6 +315,8 @@ static int kvm_riscv_vcpu_set_reg_config(struct kvm_vcpu *vcpu,
- 			return -EOPNOTSUPP;
- 		}
- 		break;
-+	case KVM_REG_RISCV_CONFIG_REG(zicbom_block_size):
-+		return -EOPNOTSUPP;
- 	default:
- 		return -EINVAL;
- 	}
-diff --git a/arch/riscv/mm/cacheflush.c b/arch/riscv/mm/cacheflush.c
-index e5b087be1577..f318b2553612 100644
---- a/arch/riscv/mm/cacheflush.c
-+++ b/arch/riscv/mm/cacheflush.c
-@@ -90,6 +90,7 @@ void flush_icache_pte(pte_t pte)
- #endif /* CONFIG_MMU */
+ static unsigned long kvm_riscv_vcpu_base2isa_ext(unsigned long base_ext)
+@@ -795,6 +796,10 @@ static void kvm_riscv_vcpu_update_config(const unsigned long *isa)
  
- unsigned int riscv_cbom_block_size;
-+EXPORT_SYMBOL_GPL(riscv_cbom_block_size);
- 
- #ifdef CONFIG_RISCV_ISA_ZICBOM
- void riscv_init_cbom_blocksize(void)
+ 	if (__riscv_isa_extension_available(isa, RISCV_ISA_EXT_SSTC))
+ 		henvcfg |= ENVCFG_STCE;
++
++	if (__riscv_isa_extension_available(isa, RISCV_ISA_EXT_ZICBOM))
++		henvcfg |= (ENVCFG_CBIE | ENVCFG_CBCFE);
++
+ 	csr_write(CSR_HENVCFG, henvcfg);
+ #ifdef CONFIG_32BIT
+ 	csr_write(CSR_HENVCFGH, henvcfg >> 32);
 -- 
 2.37.2
 
