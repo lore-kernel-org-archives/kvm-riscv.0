@@ -1,179 +1,50 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Thu, 8 Sep 2022 18:55:33 +0200
-Subject: [PATCH v2 2/4] riscv: Introduce support for defining instructions
-In-Reply-To: <CAAhSdy0yiYZFhcxvDr22h1+NWgQAc-APhZfErdfgcHD1kMosfg@mail.gmail.com>
-References: <20220831172500.752195-1-ajones@ventanamicro.com>
- <20220831172500.752195-3-ajones@ventanamicro.com>
- <3006889.o7ts2hSHzF@diego>
- <CAAhSdy0yiYZFhcxvDr22h1+NWgQAc-APhZfErdfgcHD1kMosfg@mail.gmail.com>
-Message-ID: <20220908165533.5mohd76rydgzsbz2@kamzik>
+From: Atish Patra <atishp@atishpatra.org>
+Date: Thu, 8 Sep 2022 11:07:42 -0700
+Subject: [PATCH] RISC-V: KVM: Change the SBI specification version to v1.0
+In-Reply-To: <20220908110404.186725-1-apatel@ventanamicro.com>
+References: <20220908110404.186725-1-apatel@ventanamicro.com>
+Message-ID: <CAOnJCUKHCjmaJ2TCxUVnuYetWovwJQnEWJEi3geqf1hOGSM_Nw@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Sep 08, 2022 at 09:33:15PM +0530, Anup Patel wrote:
-> On Thu, Sep 8, 2022 at 9:19 PM Heiko St?bner <heiko@sntech.de> wrote:
-> >
-> > Am Mittwoch, 31. August 2022, 19:24:58 CEST schrieb Andrew Jones:
-> > > When compiling with toolchains that haven't yet been taught about
-> > > new instructions we need to encode them ourselves. Create a new file
-> > > where support for instruction definitions will evolve. We initiate
-> > > the file with a macro called INSN_R(), which implements the R-type
-> > > instruction encoding. INSN_R() will use the assembler's .insn
-> > > directive when available, which should give the assembler a chance
-> > > to do some validation. When .insn is not available we fall back to
-> > > manual encoding.
-> > >
-> > > Not only should using instruction encoding macros improve readability
-> > > and maintainability of code over the alternative of inserting
-> > > instructions directly (e.g. '.word 0xc0de'), but we should also gain
-> > > potential for more optimized code after compilation because the
-> > > compiler will have control over the input and output registers used.
-> > >
-> > > Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
-> > > Reviewed-by: Anup Patel <anup@brainfault.org>
-> > > ---
-> > >  arch/riscv/Kconfig                |  3 ++
-> > >  arch/riscv/include/asm/insn-def.h | 86 +++++++++++++++++++++++++++++++
-> > >  2 files changed, 89 insertions(+)
-> > >  create mode 100644 arch/riscv/include/asm/insn-def.h
-> > >
-> > > diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
-> > > index ed66c31e4655..f8f3b316b838 100644
-> > > --- a/arch/riscv/Kconfig
-> > > +++ b/arch/riscv/Kconfig
-> > > @@ -227,6 +227,9 @@ config RISCV_DMA_NONCOHERENT
-> > >       select ARCH_HAS_SETUP_DMA_OPS
-> > >       select DMA_DIRECT_REMAP
-> > >
-> > > +config AS_HAS_INSN
-> > > +     def_bool $(as-instr,.insn r 51$(comma) 0$(comma) 0$(comma) t0$(comma) t0$(comma) zero)
-> > > +
-> > >  source "arch/riscv/Kconfig.socs"
-> > >  source "arch/riscv/Kconfig.erratas"
-> > >
-> > > diff --git a/arch/riscv/include/asm/insn-def.h b/arch/riscv/include/asm/insn-def.h
-> > > new file mode 100644
-> > > index 000000000000..2dcd1d4781bf
-> > > --- /dev/null
-> > > +++ b/arch/riscv/include/asm/insn-def.h
-> > > @@ -0,0 +1,86 @@
-> > > +/* SPDX-License-Identifier: GPL-2.0-only */
-> > > +
-> > > +#ifndef __ASM_INSN_DEF_H
-> > > +#define __ASM_INSN_DEF_H
-> > > +
-> > > +#include <asm/asm.h>
-> > > +
-> > > +#define INSN_R_FUNC7_SHIFT           25
-> > > +#define INSN_R_RS2_SHIFT             20
-> > > +#define INSN_R_RS1_SHIFT             15
-> > > +#define INSN_R_FUNC3_SHIFT           12
-> > > +#define INSN_R_RD_SHIFT                       7
-> > > +#define INSN_R_OPCODE_SHIFT           0
-> > > +
-> > > +#ifdef __ASSEMBLY__
-> > > +
-> > > +#ifdef CONFIG_AS_HAS_INSN
-> > > +
-> > > +     .macro insn_r, opcode, func3, func7, rd, rs1, rs2
-> > > +     .insn   r \opcode, \func3, \func7, \rd, \rs1, \rs2
-> > > +     .endm
-> > > +
-> > > +#else
-> > > +
-> > > +#include <asm/gpr-num.h>
-> > > +
-> > > +     .macro insn_r, opcode, func3, func7, rd, rs1, rs2
-> > > +     .4byte  ((\opcode << INSN_R_OPCODE_SHIFT) |             \
-> > > +              (\func3 << INSN_R_FUNC3_SHIFT) |               \
-> > > +              (\func7 << INSN_R_FUNC7_SHIFT) |               \
-> > > +              (.L__gpr_num_\rd << INSN_R_RD_SHIFT) |         \
-> > > +              (.L__gpr_num_\rs1 << INSN_R_RS1_SHIFT) |       \
-> > > +              (.L__gpr_num_\rs2 << INSN_R_RS2_SHIFT))
-> > > +     .endm
-> > > +
-> > > +#endif
-> > > +
-> > > +#define INSN_R(...)  insn_r __VA_ARGS__
-> > > +
-> > > +#else /* ! __ASSEMBLY__ */
-> > > +
-> > > +#ifdef CONFIG_AS_HAS_INSN
-> > > +
-> > > +#define INSN_R(opcode, func3, func7, rd, rs1, rs2)   \
-> > > +     ".insn  r " opcode ", " func3 ", " func7 ", " rd ", " rs1 ", " rs2 "\n"
-> > > +
-> > > +#else
-> > > +
-> > > +#include <linux/stringify.h>
-> > > +#include <asm/gpr-num.h>
-> > > +
-> > > +#define DEFINE_INSN_R                                                        \
-> > > +     __DEFINE_ASM_GPR_NUMS                                           \
-> > > +"    .macro insn_r, opcode, func3, func7, rd, rs1, rs2\n"            \
-> > > +"    .4byte  ((\\opcode << " __stringify(INSN_R_OPCODE_SHIFT) ") |"  \
-> > > +"             (\\func3 << " __stringify(INSN_R_FUNC3_SHIFT) ") |"    \
-> > > +"             (\\func7 << " __stringify(INSN_R_FUNC7_SHIFT) ") |"    \
-> > > +"             (.L__gpr_num_\\rd << " __stringify(INSN_R_RD_SHIFT) ") |"    \
-> > > +"             (.L__gpr_num_\\rs1 << " __stringify(INSN_R_RS1_SHIFT) ") |"  \
-> > > +"             (.L__gpr_num_\\rs2 << " __stringify(INSN_R_RS2_SHIFT) "))\n" \
-> > > +"    .endm\n"
-> > > +
-> > > +#define UNDEFINE_INSN_R                                                      \
-> > > +"    .purgem insn_r\n"
-> > > +
-> > > +#define INSN_R(opcode, func3, func7, rd, rs1, rs2)                   \
-> > > +     DEFINE_INSN_R                                                   \
-> > > +     "insn_r " opcode ", " func3 ", " func7 ", " rd ", " rs1 ", " rs2 "\n" \
-> > > +     UNDEFINE_INSN_R
-> > > +
-> > > +#endif
-> > > +
-> > > +#endif /* ! __ASSEMBLY__ */
-> > > +
-> > > +#define OPCODE(v)    __ASM_STR(v)
-> > > +#define FUNC3(v)     __ASM_STR(v)
-> > > +#define FUNC7(v)     __ASM_STR(v)
-> > > +#define RD(v)                __ASM_STR(v)
-> > > +#define RS1(v)               __ASM_STR(v)
-> > > +#define RS2(v)               __ASM_STR(v)
-> >
-> > you might want some sort of prefix here
-> >         RISCV_RS1(v) ?
-> >
-> > While trying to adapt this for the cmo stuff I ran into the issue
-> > of bpf complaining that "IMM" is already defined there.
-> >
-> > And names above are generic enough that these also
-> > might conflict with other stuff.
-> 
-> I can update the KVM RISC-V queue but I suggest to
-> use a smaller prefix. Maybe RV_xyz() ?
+On Thu, Sep 8, 2022 at 4:04 AM Anup Patel <apatel@ventanamicro.com> wrote:
+>
+> The SBI v1.0 specificaiton is functionally same as SBI v0.3
+> specification except that SBI v1.0 specification went through
+> the full RISC-V International ratification process.
+>
+> Let us change the SBI specification version to v1.0.
+>
+> Signed-off-by: Anup Patel <apatel@ventanamicro.com>
+> ---
+>  arch/riscv/include/asm/kvm_vcpu_sbi.h | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/arch/riscv/include/asm/kvm_vcpu_sbi.h b/arch/riscv/include/asm/kvm_vcpu_sbi.h
+> index 26a446a34057..d4e3e600beef 100644
+> --- a/arch/riscv/include/asm/kvm_vcpu_sbi.h
+> +++ b/arch/riscv/include/asm/kvm_vcpu_sbi.h
+> @@ -11,8 +11,8 @@
+>
+>  #define KVM_SBI_IMPID 3
+>
+> -#define KVM_SBI_VERSION_MAJOR 0
+> -#define KVM_SBI_VERSION_MINOR 3
+> +#define KVM_SBI_VERSION_MAJOR 1
+> +#define KVM_SBI_VERSION_MINOR 0
+>
+>  struct kvm_vcpu_sbi_extension {
+>         unsigned long extid_start;
+> --
+> 2.34.1
+>
 
-Ack and thanks for doing the update.
+Reviewed-by: Atish Patra <atishp@rivosinc.com>
 
-drew
-
-> 
-> Regards,
-> Anup
-> 
-> >
-> >
-> >
-> >
-> > > +#define __REG(v)     __ASM_STR(x ## v)
-> > > +#define __RD(v)              __REG(v)
-> > > +#define __RS1(v)     __REG(v)
-> > > +#define __RS2(v)     __REG(v)
-> > > +
-> > > +#endif /* __ASM_INSN_DEF_H */
-> > >
-> >
-> >
-> >
-> >
+-- 
+Regards,
+Atish
 
