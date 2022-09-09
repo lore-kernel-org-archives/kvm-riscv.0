@@ -1,173 +1,54 @@
-From: Heiko Stübner <heiko@sntech.de>
-Date: Fri, 09 Sep 2022 14:10:51 +0200
-Subject: [PATCH v2 2/4] riscv: Introduce support for defining instructions
-In-Reply-To: <CAK9=C2VM8NB1+gf9w+QQ6pzoC0O68WFRZkt8xCphGVtPUWS4NQ@mail.gmail.com>
-References: <20220831172500.752195-1-ajones@ventanamicro.com> <3006889.o7ts2hSHzF@diego> <CAK9=C2VM8NB1+gf9w+QQ6pzoC0O68WFRZkt8xCphGVtPUWS4NQ@mail.gmail.com>
-Message-ID: <2513607.d7IHhHJzqS@diego>
+From: Andrew Jones <ajones@ventanamicro.com>
+Date: Fri,  9 Sep 2022 16:43:58 +0200
+Subject: [PATCH v3 0/2] riscv: KVM: Expose Zicbom to the guest
+Message-ID: <20220909144400.1114485-1-ajones@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Am Freitag, 9. September 2022, 13:23:47 CEST schrieb Anup Patel:
-> On Thu, Sep 8, 2022 at 9:20 PM Heiko St?bner <heiko@sntech.de> wrote:
-> >
-> > Am Mittwoch, 31. August 2022, 19:24:58 CEST schrieb Andrew Jones:
-> > > When compiling with toolchains that haven't yet been taught about
-> > > new instructions we need to encode them ourselves. Create a new file
-> > > where support for instruction definitions will evolve. We initiate
-> > > the file with a macro called INSN_R(), which implements the R-type
-> > > instruction encoding. INSN_R() will use the assembler's .insn
-> > > directive when available, which should give the assembler a chance
-> > > to do some validation. When .insn is not available we fall back to
-> > > manual encoding.
-> > >
-> > > Not only should using instruction encoding macros improve readability
-> > > and maintainability of code over the alternative of inserting
-> > > instructions directly (e.g. '.word 0xc0de'), but we should also gain
-> > > potential for more optimized code after compilation because the
-> > > compiler will have control over the input and output registers used.
-> > >
-> > > Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
-> > > Reviewed-by: Anup Patel <anup@brainfault.org>
-> > > ---
-> > >  arch/riscv/Kconfig                |  3 ++
-> > >  arch/riscv/include/asm/insn-def.h | 86 +++++++++++++++++++++++++++++++
-> > >  2 files changed, 89 insertions(+)
-> > >  create mode 100644 arch/riscv/include/asm/insn-def.h
-> > >
-> > > diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
-> > > index ed66c31e4655..f8f3b316b838 100644
-> > > --- a/arch/riscv/Kconfig
-> > > +++ b/arch/riscv/Kconfig
-> > > @@ -227,6 +227,9 @@ config RISCV_DMA_NONCOHERENT
-> > >       select ARCH_HAS_SETUP_DMA_OPS
-> > >       select DMA_DIRECT_REMAP
-> > >
-> > > +config AS_HAS_INSN
-> > > +     def_bool $(as-instr,.insn r 51$(comma) 0$(comma) 0$(comma) t0$(comma) t0$(comma) zero)
-> > > +
-> > >  source "arch/riscv/Kconfig.socs"
-> > >  source "arch/riscv/Kconfig.erratas"
-> > >
-> > > diff --git a/arch/riscv/include/asm/insn-def.h b/arch/riscv/include/asm/insn-def.h
-> > > new file mode 100644
-> > > index 000000000000..2dcd1d4781bf
-> > > --- /dev/null
-> > > +++ b/arch/riscv/include/asm/insn-def.h
-> > > @@ -0,0 +1,86 @@
-> > > +/* SPDX-License-Identifier: GPL-2.0-only */
-> > > +
-> > > +#ifndef __ASM_INSN_DEF_H
-> > > +#define __ASM_INSN_DEF_H
-> > > +
-> > > +#include <asm/asm.h>
-> > > +
-> > > +#define INSN_R_FUNC7_SHIFT           25
-> > > +#define INSN_R_RS2_SHIFT             20
-> > > +#define INSN_R_RS1_SHIFT             15
-> > > +#define INSN_R_FUNC3_SHIFT           12
-> > > +#define INSN_R_RD_SHIFT                       7
-> > > +#define INSN_R_OPCODE_SHIFT           0
-> > > +
-> > > +#ifdef __ASSEMBLY__
-> > > +
-> > > +#ifdef CONFIG_AS_HAS_INSN
-> > > +
-> > > +     .macro insn_r, opcode, func3, func7, rd, rs1, rs2
-> > > +     .insn   r \opcode, \func3, \func7, \rd, \rs1, \rs2
-> > > +     .endm
-> > > +
-> > > +#else
-> > > +
-> > > +#include <asm/gpr-num.h>
-> > > +
-> > > +     .macro insn_r, opcode, func3, func7, rd, rs1, rs2
-> > > +     .4byte  ((\opcode << INSN_R_OPCODE_SHIFT) |             \
-> > > +              (\func3 << INSN_R_FUNC3_SHIFT) |               \
-> > > +              (\func7 << INSN_R_FUNC7_SHIFT) |               \
-> > > +              (.L__gpr_num_\rd << INSN_R_RD_SHIFT) |         \
-> > > +              (.L__gpr_num_\rs1 << INSN_R_RS1_SHIFT) |       \
-> > > +              (.L__gpr_num_\rs2 << INSN_R_RS2_SHIFT))
-> > > +     .endm
-> > > +
-> > > +#endif
-> > > +
-> > > +#define INSN_R(...)  insn_r __VA_ARGS__
-> > > +
-> > > +#else /* ! __ASSEMBLY__ */
-> > > +
-> > > +#ifdef CONFIG_AS_HAS_INSN
-> > > +
-> > > +#define INSN_R(opcode, func3, func7, rd, rs1, rs2)   \
-> > > +     ".insn  r " opcode ", " func3 ", " func7 ", " rd ", " rs1 ", " rs2 "\n"
-> > > +
-> > > +#else
-> > > +
-> > > +#include <linux/stringify.h>
-> > > +#include <asm/gpr-num.h>
-> > > +
-> > > +#define DEFINE_INSN_R                                                        \
-> > > +     __DEFINE_ASM_GPR_NUMS                                           \
-> > > +"    .macro insn_r, opcode, func3, func7, rd, rs1, rs2\n"            \
-> > > +"    .4byte  ((\\opcode << " __stringify(INSN_R_OPCODE_SHIFT) ") |"  \
-> > > +"             (\\func3 << " __stringify(INSN_R_FUNC3_SHIFT) ") |"    \
-> > > +"             (\\func7 << " __stringify(INSN_R_FUNC7_SHIFT) ") |"    \
-> > > +"             (.L__gpr_num_\\rd << " __stringify(INSN_R_RD_SHIFT) ") |"    \
-> > > +"             (.L__gpr_num_\\rs1 << " __stringify(INSN_R_RS1_SHIFT) ") |"  \
-> > > +"             (.L__gpr_num_\\rs2 << " __stringify(INSN_R_RS2_SHIFT) "))\n" \
-> > > +"    .endm\n"
-> > > +
-> > > +#define UNDEFINE_INSN_R                                                      \
-> > > +"    .purgem insn_r\n"
-> > > +
-> > > +#define INSN_R(opcode, func3, func7, rd, rs1, rs2)                   \
-> > > +     DEFINE_INSN_R                                                   \
-> > > +     "insn_r " opcode ", " func3 ", " func7 ", " rd ", " rs1 ", " rs2 "\n" \
-> > > +     UNDEFINE_INSN_R
-> > > +
-> > > +#endif
-> > > +
-> > > +#endif /* ! __ASSEMBLY__ */
-> > > +
-> > > +#define OPCODE(v)    __ASM_STR(v)
-> > > +#define FUNC3(v)     __ASM_STR(v)
-> > > +#define FUNC7(v)     __ASM_STR(v)
-> > > +#define RD(v)                __ASM_STR(v)
-> > > +#define RS1(v)               __ASM_STR(v)
-> > > +#define RS2(v)               __ASM_STR(v)
-> >
-> > you might want some sort of prefix here
-> >         RISCV_RS1(v) ?
-> >
-> > While trying to adapt this for the cmo stuff I ran into the issue
-> > of bpf complaining that "IMM" is already defined there.
-> >
-> > And names above are generic enough that these also
-> > might conflict with other stuff.
-> 
-> I have updated the KVM RISC-V queue to use the "RV_" prefix
-> in macro names.
+Add support for exposing the Zicbom extension to guests. This has been
+tested over a QEMU including the Zicbom support [1] ([1] was rebased and
+the Zicboz support from it was dropped.) QEMU was further modified to
+ensure the cache block size was provided in the DT. kvmtool was also
+modified [2] to test the new KVM API and provide the guest the cache
+block size in its DT (The kvmtool patches are based on Anup's Svpbmt/Sstc
+series [3]). These KVM patches are based on the riscv_init_cbom_blocksize()
+cleanup patch from Palmer and the move and expose riscv_cbom_block_size
+patch from Anup which was reposted [4]. This series is also available here
+[5].
 
-that is great to hear. Thanks a lot for doing that.
+[1] https://gitlab.com/jones-drew/qemu/-/commits/riscv/zicbom
+[2] https://github.com/jones-drew/kvmtool/commits/riscv/zicbom
+[3] https://github.com/avpatel/kvmtool/commits/riscv_svpbmt_sstc_v1
+[4] https://lore.kernel.org/linux-riscv/20220906074509.928865-1-ajones at ventanamicro.com/T/#u
+[5] https://github.com/jones-drew/linux/commits/riscv/kvm/zicbom-v3
 
-Heiko
+Thanks,
+drew
 
-> > > +#define __REG(v)     __ASM_STR(x ## v)
-> > > +#define __RD(v)              __REG(v)
-> > > +#define __RS1(v)     __REG(v)
-> > > +#define __RS2(v)     __REG(v)
-> > > +
-> > > +#endif /* __ASM_INSN_DEF_H */
-> > >
-> >
-> >
-> >
-> >
-> 
+v3:
+ - Added check to ensure the extension is enabled for
+   config.get(blocksz) [Atish and Anup]
+ - Opportunistically switched all extension checks in
+   kvm_riscv_vcpu_update_config() to riscv_isa_extension_available()
+   from its __ counterpart
+ - Picked up some r-b's
 
+v2:
+ - Dropped a patch that output the cache block size to dmesg
 
+Andrew Jones (2):
+  RISC-V: KVM: Provide UAPI for Zicbom block size
+  RISC-V: KVM: Expose Zicbom to the guest
 
+ arch/riscv/include/uapi/asm/kvm.h |  2 ++
+ arch/riscv/kvm/vcpu.c             | 17 +++++++++++++++--
+ arch/riscv/mm/cacheflush.c        |  1 +
+ 3 files changed, 18 insertions(+), 2 deletions(-)
+
+-- 
+2.37.2
 
 
