@@ -1,95 +1,158 @@
-From: Atish Patra <atishp@atishpatra.org>
-Date: Fri, 9 Sep 2022 11:41:08 -0700
-Subject: [PATCH v3 1/2] RISC-V: KVM: Provide UAPI for Zicbom block size
-In-Reply-To: <20220909144400.1114485-2-ajones@ventanamicro.com>
-References: <20220909144400.1114485-1-ajones@ventanamicro.com> <20220909144400.1114485-2-ajones@ventanamicro.com>
-Message-ID: <CAOnJCULo_5OROypyBaq3chQDf2p4wFfP7kYsWuBz9V=8sy_ABg@mail.gmail.com>
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Date: Tue, 13 Sep 2022 22:50:49 +1000
+Subject: [PATCH kernel] KVM: PPC: Make KVM_CAP_IRQFD_RESAMPLE platform
+ dependent
+In-Reply-To: <0d4bb0fa-10c6-3f5a-34c8-293144b3fdbb@ozlabs.ru>
+References: <20220504074807.3616813-1-aik@ozlabs.ru>
+ <0d4bb0fa-10c6-3f5a-34c8-293144b3fdbb@ozlabs.ru>
+Message-ID: <59dfb450-5a91-f27b-6edf-0adfa89729b7@ozlabs.ru>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Sep 9, 2022 at 7:44 AM Andrew Jones <ajones@ventanamicro.com> wrote:
->
-> We're about to allow guests to use the Zicbom extension. KVM
-> userspace needs to know the cache block size in order to
-> properly advertise it to the guest. Provide a virtual config
-> register for userspace to get it with the GET_ONE_REG API, but
-> setting it cannot be supported, so disallow SET_ONE_REG.
->
-> Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
-> Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
-> ---
->  arch/riscv/include/uapi/asm/kvm.h | 1 +
->  arch/riscv/kvm/vcpu.c             | 8 ++++++++
->  arch/riscv/mm/cacheflush.c        | 1 +
->  3 files changed, 10 insertions(+)
->
-> diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
-> index 7351417afd62..b9a4cf36be4b 100644
-> --- a/arch/riscv/include/uapi/asm/kvm.h
-> +++ b/arch/riscv/include/uapi/asm/kvm.h
-> @@ -48,6 +48,7 @@ struct kvm_sregs {
->  /* CONFIG registers for KVM_GET_ONE_REG and KVM_SET_ONE_REG */
->  struct kvm_riscv_config {
->         unsigned long isa;
-> +       unsigned long zicbom_block_size;
->  };
->
->  /* CORE registers for KVM_GET_ONE_REG and KVM_SET_ONE_REG */
-> diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-> index d0f08d5b4282..2ef33d5d94d1 100644
-> --- a/arch/riscv/kvm/vcpu.c
-> +++ b/arch/riscv/kvm/vcpu.c
-> @@ -18,6 +18,7 @@
->  #include <linux/fs.h>
->  #include <linux/kvm_host.h>
->  #include <asm/csr.h>
-> +#include <asm/cacheflush.h>
->  #include <asm/hwcap.h>
->
->  const struct _kvm_stats_desc kvm_vcpu_stats_desc[] = {
-> @@ -254,6 +255,11 @@ static int kvm_riscv_vcpu_get_reg_config(struct kvm_vcpu *vcpu,
->         case KVM_REG_RISCV_CONFIG_REG(isa):
->                 reg_val = vcpu->arch.isa[0] & KVM_RISCV_BASE_ISA_MASK;
->                 break;
-> +       case KVM_REG_RISCV_CONFIG_REG(zicbom_block_size):
-> +               if (!riscv_isa_extension_available(vcpu->arch.isa, ZICBOM))
-> +                       return -EINVAL;
-> +               reg_val = riscv_cbom_block_size;
-> +               break;
->         default:
->                 return -EINVAL;
->         }
-> @@ -311,6 +317,8 @@ static int kvm_riscv_vcpu_set_reg_config(struct kvm_vcpu *vcpu,
->                         return -EOPNOTSUPP;
->                 }
->                 break;
-> +       case KVM_REG_RISCV_CONFIG_REG(zicbom_block_size):
-> +               return -EOPNOTSUPP;
->         default:
->                 return -EINVAL;
->         }
-> diff --git a/arch/riscv/mm/cacheflush.c b/arch/riscv/mm/cacheflush.c
-> index e5b087be1577..f318b2553612 100644
-> --- a/arch/riscv/mm/cacheflush.c
-> +++ b/arch/riscv/mm/cacheflush.c
-> @@ -90,6 +90,7 @@ void flush_icache_pte(pte_t pte)
->  #endif /* CONFIG_MMU */
->
->  unsigned int riscv_cbom_block_size;
-> +EXPORT_SYMBOL_GPL(riscv_cbom_block_size);
->
->  #ifdef CONFIG_RISCV_ISA_ZICBOM
->  void riscv_init_cbom_blocksize(void)
-> --
-> 2.37.2
->
+Ping? It's been a while and probably got lost :-/
 
+On 18/05/2022 16:27, Alexey Kardashevskiy wrote:
+> 
+> 
+> On 5/4/22 17:48, Alexey Kardashevskiy wrote:
+>> When introduced, IRQFD resampling worked on POWER8 with XICS. However
+>> KVM on POWER9 has never implemented it - the compatibility mode code
+>> ("XICS-on-XIVE") misses the kvm_notify_acked_irq() call and the native
+>> XIVE mode does not handle INTx in KVM at all.
+>>
+>> This moved the capability support advertising to platforms and stops
+>> advertising it on XIVE, i.e. POWER9 and later.
+>>
+>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>> ---
+>>
+>>
+>> Or I could move this one together with KVM_CAP_IRQFD. Thoughts?
+> 
+> 
+> Ping?
+> 
+>>
+>> ---
+>> ? arch/arm64/kvm/arm.c?????? | 3 +++
+>> ? arch/mips/kvm/mips.c?????? | 3 +++
+>> ? arch/powerpc/kvm/powerpc.c | 6 ++++++
+>> ? arch/riscv/kvm/vm.c??????? | 3 +++
+>> ? arch/s390/kvm/kvm-s390.c?? | 3 +++
+>> ? arch/x86/kvm/x86.c???????? | 3 +++
+>> ? virt/kvm/kvm_main.c??????? | 1 -
+>> ? 7 files changed, 21 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/arch/arm64/kvm/arm.c b/arch/arm64/kvm/arm.c
+>> index 523bc934fe2f..092f0614bae3 100644
+>> --- a/arch/arm64/kvm/arm.c
+>> +++ b/arch/arm64/kvm/arm.c
+>> @@ -210,6 +210,9 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, 
+>> long ext)
+>> ????? case KVM_CAP_SET_GUEST_DEBUG:
+>> ????? case KVM_CAP_VCPU_ATTRIBUTES:
+>> ????? case KVM_CAP_PTP_KVM:
+>> +#ifdef CONFIG_HAVE_KVM_IRQFD
+>> +??? case KVM_CAP_IRQFD_RESAMPLE:
+>> +#endif
+>> ????????? r = 1;
+>> ????????? break;
+>> ????? case KVM_CAP_SET_GUEST_DEBUG2:
+>> diff --git a/arch/mips/kvm/mips.c b/arch/mips/kvm/mips.c
+>> index a25e0b73ee70..0f3de470a73e 100644
+>> --- a/arch/mips/kvm/mips.c
+>> +++ b/arch/mips/kvm/mips.c
+>> @@ -1071,6 +1071,9 @@ int kvm_vm_ioctl_check_extension(struct kvm 
+>> *kvm, long ext)
+>> ????? case KVM_CAP_READONLY_MEM:
+>> ????? case KVM_CAP_SYNC_MMU:
+>> ????? case KVM_CAP_IMMEDIATE_EXIT:
+>> +#ifdef CONFIG_HAVE_KVM_IRQFD
+>> +??? case KVM_CAP_IRQFD_RESAMPLE:
+>> +#endif
+>> ????????? r = 1;
+>> ????????? break;
+>> ????? case KVM_CAP_NR_VCPUS:
+>> diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+>> index 875c30c12db0..87698ffef3be 100644
+>> --- a/arch/powerpc/kvm/powerpc.c
+>> +++ b/arch/powerpc/kvm/powerpc.c
+>> @@ -591,6 +591,12 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, 
+>> long ext)
+>> ????????? break;
+>> ? #endif
+>> +#ifdef CONFIG_HAVE_KVM_IRQFD
+>> +??? case KVM_CAP_IRQFD_RESAMPLE:
+>> +??????? r = !xive_enabled();
+>> +??????? break;
+>> +#endif
+>> +
+>> ????? case KVM_CAP_PPC_ALLOC_HTAB:
+>> ????????? r = hv_enabled;
+>> ????????? break;
+>> diff --git a/arch/riscv/kvm/vm.c b/arch/riscv/kvm/vm.c
+>> index c768f75279ef..b58579b386bb 100644
+>> --- a/arch/riscv/kvm/vm.c
+>> +++ b/arch/riscv/kvm/vm.c
+>> @@ -63,6 +63,9 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, 
+>> long ext)
+>> ????? case KVM_CAP_READONLY_MEM:
+>> ????? case KVM_CAP_MP_STATE:
+>> ????? case KVM_CAP_IMMEDIATE_EXIT:
+>> +#ifdef CONFIG_HAVE_KVM_IRQFD
+>> +??? case KVM_CAP_IRQFD_RESAMPLE:
+>> +#endif
+>> ????????? r = 1;
+>> ????????? break;
+>> ????? case KVM_CAP_NR_VCPUS:
+>> diff --git a/arch/s390/kvm/kvm-s390.c b/arch/s390/kvm/kvm-s390.c
+>> index 156d1c25a3c1..85e093fc8d13 100644
+>> --- a/arch/s390/kvm/kvm-s390.c
+>> +++ b/arch/s390/kvm/kvm-s390.c
+>> @@ -564,6 +564,9 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, 
+>> long ext)
+>> ????? case KVM_CAP_SET_GUEST_DEBUG:
+>> ????? case KVM_CAP_S390_DIAG318:
+>> ????? case KVM_CAP_S390_MEM_OP_EXTENSION:
+>> +#ifdef CONFIG_HAVE_KVM_IRQFD
+>> +??? case KVM_CAP_IRQFD_RESAMPLE:
+>> +#endif
+>> ????????? r = 1;
+>> ????????? break;
+>> ????? case KVM_CAP_SET_GUEST_DEBUG2:
+>> diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+>> index 0c0ca599a353..a0a7b769483d 100644
+>> --- a/arch/x86/kvm/x86.c
+>> +++ b/arch/x86/kvm/x86.c
+>> @@ -4273,6 +4273,9 @@ int kvm_vm_ioctl_check_extension(struct kvm 
+>> *kvm, long ext)
+>> ????? case KVM_CAP_SYS_ATTRIBUTES:
+>> ????? case KVM_CAP_VAPIC:
+>> ????? case KVM_CAP_ENABLE_CAP:
+>> +#ifdef CONFIG_HAVE_KVM_IRQFD
+>> +??? case KVM_CAP_IRQFD_RESAMPLE:
+>> +#endif
+>> ????????? r = 1;
+>> ????????? break;
+>> ????? case KVM_CAP_EXIT_HYPERCALL:
+>> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+>> index 70e05af5ebea..885e72e668a5 100644
+>> --- a/virt/kvm/kvm_main.c
+>> +++ b/virt/kvm/kvm_main.c
+>> @@ -4293,7 +4293,6 @@ static long 
+>> kvm_vm_ioctl_check_extension_generic(struct kvm *kvm, long arg)
+>> ? #endif
+>> ? #ifdef CONFIG_HAVE_KVM_IRQFD
+>> ????? case KVM_CAP_IRQFD:
+>> -??? case KVM_CAP_IRQFD_RESAMPLE:
+>> ? #endif
+>> ????? case KVM_CAP_IOEVENTFD_ANY_LENGTH:
+>> ????? case KVM_CAP_CHECK_EXTENSION_VM:
+> 
 
-Reviewed-by: Atish Patra <atishp@rivosinc.com>
---
-Regards,
-Atish
+-- 
+Alexey
 
