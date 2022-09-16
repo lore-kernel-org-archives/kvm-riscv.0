@@ -1,48 +1,49 @@
 From: Anup Patel <anup@brainfault.org>
-Date: Fri, 16 Sep 2022 10:28:56 +0530
-Subject: [PATCH 0/3] Svinval support for KVM RISC-V
-In-Reply-To: <20220902170131.32334-1-apatel@ventanamicro.com>
-References: <20220902170131.32334-1-apatel@ventanamicro.com>
-Message-ID: <CAAhSdy1iDXMhE_MVdj9JDu8XHXiV_Ci=aLVqQG7r-m6d28aAdw@mail.gmail.com>
+Date: Fri, 16 Sep 2022 10:29:57 +0530
+Subject: [PATCH] RISC-V: KVM: Change the SBI specification version to v1.0
+In-Reply-To: <20220908110404.186725-1-apatel@ventanamicro.com>
+References: <20220908110404.186725-1-apatel@ventanamicro.com>
+Message-ID: <CAAhSdy1RVVq28h3FtbmToTOZJKPza4t-uFLVV2Uotj3DUrAEHw@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Sep 2, 2022 at 10:31 PM Anup Patel <apatel@ventanamicro.com> wrote:
+On Thu, Sep 8, 2022 at 4:34 PM Anup Patel <apatel@ventanamicro.com> wrote:
 >
-> This series adds Svinval extension support for both Host hypervisor
-> and Guest.
+> The SBI v1.0 specificaiton is functionally same as SBI v0.3
+> specification except that SBI v1.0 specification went through
+> the full RISC-V International ratification process.
 >
-> These patches can also be found in riscv_kvm_svinval_v1 branch at:
-> https://github.com/avpatel/linux.git
+> Let us change the SBI specification version to v1.0.
 >
-> The corresponding KVMTOOL patches are available in riscv_svinval_v1
-> branch at: https://github.com/avpatel/kvmtool.git
->
-> Anup Patel (2):
->   RISC-V: KVM: Use Svinval for local TLB maintenance when available
->   RISC-V: KVM: Allow Guest use Svinval extension
->
-> Mayuresh Chitale (1):
->   RISC-V: Probe Svinval extension form ISA string
+> Signed-off-by: Anup Patel <apatel@ventanamicro.com>
 
-I have queued this series for 6.1
+I have queued this patch for 6.1
 
 Thanks,
 Anup
 
+> ---
+>  arch/riscv/include/asm/kvm_vcpu_sbi.h | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 >
->  arch/riscv/include/asm/hwcap.h    |  4 +++
->  arch/riscv/include/asm/insn-def.h | 20 +++++++++++
->  arch/riscv/include/uapi/asm/kvm.h |  1 +
->  arch/riscv/kernel/cpu.c           |  1 +
->  arch/riscv/kernel/cpufeature.c    |  1 +
->  arch/riscv/kvm/tlb.c              | 60 ++++++++++++++++++++++++-------
->  arch/riscv/kvm/vcpu.c             |  2 ++
->  7 files changed, 77 insertions(+), 12 deletions(-)
+> diff --git a/arch/riscv/include/asm/kvm_vcpu_sbi.h b/arch/riscv/include/asm/kvm_vcpu_sbi.h
+> index 26a446a34057..d4e3e600beef 100644
+> --- a/arch/riscv/include/asm/kvm_vcpu_sbi.h
+> +++ b/arch/riscv/include/asm/kvm_vcpu_sbi.h
+> @@ -11,8 +11,8 @@
 >
+>  #define KVM_SBI_IMPID 3
+>
+> -#define KVM_SBI_VERSION_MAJOR 0
+> -#define KVM_SBI_VERSION_MINOR 3
+> +#define KVM_SBI_VERSION_MAJOR 1
+> +#define KVM_SBI_VERSION_MINOR 0
+>
+>  struct kvm_vcpu_sbi_extension {
+>         unsigned long extid_start;
 > --
 > 2.34.1
 >
