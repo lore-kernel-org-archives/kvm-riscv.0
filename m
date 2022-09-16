@@ -1,65 +1,75 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Fri, 16 Sep 2022 09:32:16 +0200
-Subject: [PATCH v1] RISC-V: KVM: Allow Guest use Zihintpause extension
-In-Reply-To: <20220916054637.24133-1-mchitale@ventanamicro.com>
-References: <20220916054637.24133-1-mchitale@ventanamicro.com>
-Message-ID: <20220916073216.l2mm6ydq2asf7ogd@kamzik>
+From: Marc Zyngier <maz@misterjones.org>
+Date: Fri, 16 Sep 2022 10:00:45 +0100
+Subject: [PATCH kernel] KVM: PPC: Make KVM_CAP_IRQFD_RESAMPLE platform
+ dependent
+In-Reply-To: <59dfb450-5a91-f27b-6edf-0adfa89729b7@ozlabs.ru>
+References: <20220504074807.3616813-1-aik@ozlabs.ru>
+ <0d4bb0fa-10c6-3f5a-34c8-293144b3fdbb@ozlabs.ru>
+ <59dfb450-5a91-f27b-6edf-0adfa89729b7@ozlabs.ru>
+Message-ID: <4884805567a0288ab1dbefb8aec819a2@misterjones.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Sep 16, 2022 at 11:16:37AM +0530, Mayuresh Chitale wrote:
-> We should advertise Zihintpause ISA extension to KVM user-space whenever
-> host supports it. This will allow KVM user-space (i.e. QEMU or KVMTOOL)
-> to pass on this information to Guest via ISA string.
+On 2022-09-13 13:50, Alexey Kardashevskiy wrote:
+> Ping? It's been a while and probably got lost :-/
 > 
-> Signed-off-by: Mayuresh Chitale <mchitale@ventanamicro.com>
-> ---
+> On 18/05/2022 16:27, Alexey Kardashevskiy wrote:
+>> 
+>> 
+>> On 5/4/22 17:48, Alexey Kardashevskiy wrote:
+>>> When introduced, IRQFD resampling worked on POWER8 with XICS. However
+>>> KVM on POWER9 has never implemented it - the compatibility mode code
+>>> ("XICS-on-XIVE") misses the kvm_notify_acked_irq() call and the 
+>>> native
+>>> XIVE mode does not handle INTx in KVM at all.
+>>> 
+>>> This moved the capability support advertising to platforms and stops
+>>> advertising it on XIVE, i.e. POWER9 and later.
+>>> 
+>>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>>> ---
+>>> 
+>>> 
+>>> Or I could move this one together with KVM_CAP_IRQFD. Thoughts?
+>> 
+>> 
+>> Ping?
+>> 
+>>> 
+>>> ---
+>>> ? arch/arm64/kvm/arm.c?????? | 3 +++
+>>> ? arch/mips/kvm/mips.c?????? | 3 +++
+>>> ? arch/powerpc/kvm/powerpc.c | 6 ++++++
+>>> ? arch/riscv/kvm/vm.c??????? | 3 +++
+>>> ? arch/s390/kvm/kvm-s390.c?? | 3 +++
+>>> ? arch/x86/kvm/x86.c???????? | 3 +++
+>>> ? virt/kvm/kvm_main.c??????? | 1 -
+>>> ? 7 files changed, 21 insertions(+), 1 deletion(-)
+>>> 
+>>> diff --git a/arch/arm64/kvm/arm.c b/arch/arm64/kvm/arm.c
+>>> index 523bc934fe2f..092f0614bae3 100644
+>>> --- a/arch/arm64/kvm/arm.c
+>>> +++ b/arch/arm64/kvm/arm.c
+>>> @@ -210,6 +210,9 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, 
+>>> long ext)
+>>> ????? case KVM_CAP_SET_GUEST_DEBUG:
+>>> ????? case KVM_CAP_VCPU_ATTRIBUTES:
+>>> ????? case KVM_CAP_PTP_KVM:
+>>> +#ifdef CONFIG_HAVE_KVM_IRQFD
+>>> +??? case KVM_CAP_IRQFD_RESAMPLE:
+>>> +#endif
 
-Applies to riscv_kvm_queue.
+I don't mind moving this around, but I object to the #ifdefery.
 
->  arch/riscv/include/uapi/asm/kvm.h | 1 +
->  arch/riscv/kvm/vcpu.c             | 2 ++
->  2 files changed, 3 insertions(+)
-> 
-> diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
-> index b6770ee08872..9085b90cf324 100644
-> --- a/arch/riscv/include/uapi/asm/kvm.h
-> +++ b/arch/riscv/include/uapi/asm/kvm.h
-> @@ -99,6 +99,7 @@ enum KVM_RISCV_ISA_EXT_ID {
->  	KVM_RISCV_ISA_EXT_SVPBMT,
->  	KVM_RISCV_ISA_EXT_SSTC,
->  	KVM_RISCV_ISA_EXT_SVINVAL,
-> +	KVM_RISCV_ISA_EXT_ZIHINTPAUSE,
->  	KVM_RISCV_ISA_EXT_MAX,
->  };
->  
-> diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-> index 901bb5c0cb50..0de0dd22e734 100644
-> --- a/arch/riscv/kvm/vcpu.c
-> +++ b/arch/riscv/kvm/vcpu.c
-> @@ -54,6 +54,7 @@ static const unsigned long kvm_isa_ext_arr[] = {
->  	RISCV_ISA_EXT_SVPBMT,
->  	RISCV_ISA_EXT_SSTC,
->  	RISCV_ISA_EXT_SVINVAL,
-> +	RISCV_ISA_EXT_ZIHINTPAUSE,
->  };
->  
->  static unsigned long kvm_riscv_vcpu_base2isa_ext(unsigned long base_ext)
-> @@ -89,6 +90,7 @@ static bool kvm_riscv_vcpu_isa_disable_allowed(unsigned long ext)
->  	case KVM_RISCV_ISA_EXT_M:
->  	case KVM_RISCV_ISA_EXT_SSTC:
->  	case KVM_RISCV_ISA_EXT_SVINVAL:
-> +	case KVM_RISCV_ISA_EXT_ZIHINTPAUSE:
->  		return false;
->  	default:
->  		break;
-> -- 
-> 2.34.1
-> 
->
+This option is always selected on arm64, so it can safely be added
+to the list without any condition.
 
-Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+Thanks,
+
+         M.
+-- 
+Who you jivin' with that Cosmik Debris?
 
