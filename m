@@ -1,72 +1,68 @@
-From: Anup Patel <apatel@ventanamicro.com>
-Date: Tue, 20 Sep 2022 23:58:34 +0530
-Subject: [PATCH v1] RISC-V: KVM: Allow Guest use Zihintpause extension
-In-Reply-To: <20220916054637.24133-1-mchitale@ventanamicro.com>
-References: <20220916054637.24133-1-mchitale@ventanamicro.com>
-Message-ID: <CAK9=C2UhaRo6idT3xXLUx52UHyTeHVfMQczXyYQRPboNxjXiFQ@mail.gmail.com>
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Date: Wed, 21 Sep 2022 07:46:21 +1000
+Subject: [PATCH kernel v2] KVM: PPC: Make KVM_CAP_IRQFD_RESAMPLE support
+ platform dependent
+In-Reply-To: <874jx2kp02.wl-maz@kernel.org>
+References: <20220920125143.28009-1-aik@ozlabs.ru>
+ <874jx2kp02.wl-maz@kernel.org>
+Message-ID: <02490d2a-5e89-f342-f5b3-386406ffb2ea@ozlabs.ru>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Sep 16, 2022 at 11:17 AM Mayuresh Chitale
-<mchitale@ventanamicro.com> wrote:
->
-> We should advertise Zihintpause ISA extension to KVM user-space whenever
-> host supports it. This will allow KVM user-space (i.e. QEMU or KVMTOOL)
-> to pass on this information to Guest via ISA string.
->
-> Signed-off-by: Mayuresh Chitale <mchitale@ventanamicro.com>
 
-I have queued this patch for 6.1
 
-Thanks,
-Anup
+On 21/09/2022 02:08, Marc Zyngier wr
+ote:
+> On Tue, 20 Sep 2022 13:51:43 +0100,
+> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
+>>
+>> When introduced, IRQFD resampling worked on POWER8 with XICS. However
+>> KVM on POWER9 has never implemented it - the compatibility mode code
+>> ("XICS-on-XIVE") misses the kvm_notify_acked_irq() call and the native
+>> XIVE mode does not handle INTx in KVM at all.
+>>
+>> This moved the capability support advertising to platforms and stops
+>> advertising it on XIVE, i.e. POWER9 and later.
+>>
+>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>> Acked-by: Nicholas Piggin <npiggin@gmail.com>
+>> [For KVM RISC-V]
+>> Acked-by: Anup Patel <anup@brainfault.org>
+>> ---
+>> Changes:
+>> v2:
+>> * removed ifdef for ARM64.
+> 
+> The same argument applies to both x86 and s390, which do select
+> HAVE_KVM_IRQFD from the KVM config option. Only power allows this
+> option to be selected depending on the underlying interrupt controller
+> emulation.
+> 
+> As for riscv and mips, they don't select HAVE_KVM_IRQFD, and this
+> isn't a user-selectable option. So why do they get patched at all?
 
-> ---
->  arch/riscv/include/uapi/asm/kvm.h | 1 +
->  arch/riscv/kvm/vcpu.c             | 2 ++
->  2 files changed, 3 insertions(+)
->
-> diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
-> index b6770ee08872..9085b90cf324 100644
-> --- a/arch/riscv/include/uapi/asm/kvm.h
-> +++ b/arch/riscv/include/uapi/asm/kvm.h
-> @@ -99,6 +99,7 @@ enum KVM_RISCV_ISA_EXT_ID {
->         KVM_RISCV_ISA_EXT_SVPBMT,
->         KVM_RISCV_ISA_EXT_SSTC,
->         KVM_RISCV_ISA_EXT_SVINVAL,
-> +       KVM_RISCV_ISA_EXT_ZIHINTPAUSE,
->         KVM_RISCV_ISA_EXT_MAX,
->  };
->
-> diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-> index 901bb5c0cb50..0de0dd22e734 100644
-> --- a/arch/riscv/kvm/vcpu.c
-> +++ b/arch/riscv/kvm/vcpu.c
-> @@ -54,6 +54,7 @@ static const unsigned long kvm_isa_ext_arr[] = {
->         RISCV_ISA_EXT_SVPBMT,
->         RISCV_ISA_EXT_SSTC,
->         RISCV_ISA_EXT_SVINVAL,
-> +       RISCV_ISA_EXT_ZIHINTPAUSE,
->  };
->
->  static unsigned long kvm_riscv_vcpu_base2isa_ext(unsigned long base_ext)
-> @@ -89,6 +90,7 @@ static bool kvm_riscv_vcpu_isa_disable_allowed(unsigned long ext)
->         case KVM_RISCV_ISA_EXT_M:
->         case KVM_RISCV_ISA_EXT_SSTC:
->         case KVM_RISCV_ISA_EXT_SVINVAL:
-> +       case KVM_RISCV_ISA_EXT_ZIHINTPAUSE:
->                 return false;
->         default:
->                 break;
-> --
-> 2.34.1
->
->
-> --
-> kvm-riscv mailing list
-> kvm-riscv at lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/kvm-riscv
+Before the patch, the capability was advertised on those, with your 
+proposal it will stop. Which is a change in behavior which some may say 
+requires a separate patch (like, one per platform). I am definitely 
+overthinking it though and you are right.
+
+> My conclusion is that:
+> 
+> - only power needs the #ifdefery in the arch-specific code
+> - arm64, s390 and x86 can use KVM_CAP_IRQFD_RESAMPLE without a #ifdef
+> - mips and riscv should be left alone
+
+Fair enough, thanks for the review! I'll post v3 shortly.
+
+> 
+> Thanks,
+> 
+> 	M.
+> 
+
+-- 
+Alexey
 
