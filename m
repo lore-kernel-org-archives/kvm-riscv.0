@@ -1,146 +1,213 @@
 From: Chris Stillson <stillson@rivosinc.com>
-Date: Wed, 21 Sep 2022 14:43:53 -0700
-Subject: [PATCH v12 11/17] riscv: signal: Report signal frame size to userspace via auxv
+Date: Wed, 21 Sep 2022 14:43:54 -0700
+Subject: [PATCH v12 12/17] riscv: Add support for kernel mode vector
 In-Reply-To: <20220921214439.1491510-1-stillson@rivosinc.com>
 References: <20220921214439.1491510-1-stillson@rivosinc.com>
-Message-ID: <20220921214439.1491510-11-stillson@rivosinc.com>
+Message-ID: <20220921214439.1491510-12-stillson@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Vincent Chen <vincent.chen@sifive.com>
+From: Greentime Hu <greentime.hu@sifive.com>
 
-The vector register belongs to the signal context. They need to be stored
-and restored as entering and leaving the signal handler. According to the
-V-extension specification, the maximum length of the vector registers can
-be 2^(XLEN-1). Hence, if userspace refers to the MINSIGSTKSZ to create a
-sigframe, it may not be enough. To resolve this problem, this patch refers
-to the commit 94b07c1f8c39c
-("arm64: signal: Report signal frame size to userspace via auxv") to enable
-userspace to know the minimum required sigframe size through the auxiliary
-vector and use it to allocate enough memory for signal context.
+Add kernel_rvv_begin() and kernel_rvv_end() function declarations
+and corresponding definitions in kernel_mode_vector.c
 
-Signed-off-by: Greentime Hu <greentime.hu@sifive.com>
+These are needed to wrap uses of vector in kernel mode.
+
+Co-developed-by: Vincent Chen <vincent.chen@sifive.com>
 Signed-off-by: Vincent Chen <vincent.chen@sifive.com>
+Signed-off-by: Greentime Hu <greentime.hu@sifive.com>
 ---
- arch/riscv/include/asm/elf.h         | 47 +++++++++++++++-------------
- arch/riscv/include/asm/processor.h   |  2 ++
- arch/riscv/include/uapi/asm/auxvec.h |  1 +
- arch/riscv/kernel/signal.c           |  8 +++++
- 4 files changed, 36 insertions(+), 22 deletions(-)
+ arch/riscv/include/asm/vector.h        |   3 +
+ arch/riscv/kernel/Makefile             |   1 +
+ arch/riscv/kernel/kernel_mode_vector.c | 132 +++++++++++++++++++++++++
+ arch/riscv/kernel/vector.S             |   9 ++
+ 4 files changed, 145 insertions(+)
+ create mode 100644 arch/riscv/kernel/kernel_mode_vector.c
 
-diff --git a/arch/riscv/include/asm/elf.h b/arch/riscv/include/asm/elf.h
-index 14fc7342490b..df9047b619e8 100644
---- a/arch/riscv/include/asm/elf.h
-+++ b/arch/riscv/include/asm/elf.h
-@@ -77,28 +77,31 @@ extern unsigned long elf_hwcap;
- #define COMPAT_ELF_PLATFORM	(NULL)
+diff --git a/arch/riscv/include/asm/vector.h b/arch/riscv/include/asm/vector.h
+index 16304b0c6a6f..a59841cc81fb 100644
+--- a/arch/riscv/include/asm/vector.h
++++ b/arch/riscv/include/asm/vector.h
+@@ -10,5 +10,8 @@
  
- #ifdef CONFIG_MMU
--#define ARCH_DLINFO						\
--do {								\
--	/*							\
--	 * Note that we add ulong after elf_addr_t because	\
--	 * casting current->mm->context.vdso triggers a cast	\
--	 * warning of cast from pointer to integer for		\
--	 * COMPAT ELFCLASS32.					\
--	 */							\
--	NEW_AUX_ENT(AT_SYSINFO_EHDR,				\
--		(elf_addr_t)(ulong)current->mm->context.vdso);	\
--	NEW_AUX_ENT(AT_L1I_CACHESIZE,				\
--		get_cache_size(1, CACHE_TYPE_INST));		\
--	NEW_AUX_ENT(AT_L1I_CACHEGEOMETRY,			\
--		get_cache_geometry(1, CACHE_TYPE_INST));	\
--	NEW_AUX_ENT(AT_L1D_CACHESIZE,				\
--		get_cache_size(1, CACHE_TYPE_DATA));		\
--	NEW_AUX_ENT(AT_L1D_CACHEGEOMETRY,			\
--		get_cache_geometry(1, CACHE_TYPE_DATA));	\
--	NEW_AUX_ENT(AT_L2_CACHESIZE,				\
--		get_cache_size(2, CACHE_TYPE_UNIFIED));		\
--	NEW_AUX_ENT(AT_L2_CACHEGEOMETRY,			\
--		get_cache_geometry(2, CACHE_TYPE_UNIFIED));	\
-+#define ARCH_DLINFO						 \
-+do {								 \
-+	NEW_AUX_ENT(AT_SYSINFO_EHDR,				 \
-+		(elf_addr_t)current->mm->context.vdso);		 \
-+	NEW_AUX_ENT(AT_L1I_CACHESIZE,				 \
-+		get_cache_size(1, CACHE_TYPE_INST));		 \
-+	NEW_AUX_ENT(AT_L1I_CACHEGEOMETRY,			 \
-+		get_cache_geometry(1, CACHE_TYPE_INST));	 \
-+	NEW_AUX_ENT(AT_L1D_CACHESIZE,				 \
-+		get_cache_size(1, CACHE_TYPE_DATA));		 \
-+	NEW_AUX_ENT(AT_L1D_CACHEGEOMETRY,			 \
-+		get_cache_geometry(1, CACHE_TYPE_DATA));	 \
-+	NEW_AUX_ENT(AT_L2_CACHESIZE,				 \
-+		get_cache_size(2, CACHE_TYPE_UNIFIED));		 \
-+	NEW_AUX_ENT(AT_L2_CACHEGEOMETRY,			 \
-+		get_cache_geometry(2, CACHE_TYPE_UNIFIED));	 \
-+	/*							 \
-+	 * Should always be nonzero unless there's a kernel bug. \
-+	 * If we haven't determined a sensible value to give to	 \
-+	 * userspace, omit the entry:				 \
-+	 */							 \
-+	if (likely(signal_minsigstksz))				 \
-+		NEW_AUX_ENT(AT_MINSIGSTKSZ, signal_minsigstksz); \
-+	else							 \
-+		NEW_AUX_ENT(AT_IGNORE, 0);			 \
- } while (0)
- #define ARCH_HAS_SETUP_ADDITIONAL_PAGES
- struct linux_binprm;
-diff --git a/arch/riscv/include/asm/processor.h b/arch/riscv/include/asm/processor.h
-index 95917a2b24f9..a09141ecf6aa 100644
---- a/arch/riscv/include/asm/processor.h
-+++ b/arch/riscv/include/asm/processor.h
-@@ -7,6 +7,7 @@
- #define _ASM_RISCV_PROCESSOR_H
+ void rvv_enable(void);
+ void rvv_disable(void);
++void kernel_rvv_begin(void);
++void kernel_rvv_end(void);
++void vector_flush_cpu_state(void);
  
- #include <linux/const.h>
-+#include <linux/cache.h>
- 
- #include <vdso/processor.h>
- 
-@@ -86,6 +87,7 @@ int riscv_of_parent_hartid(struct device_node *node, unsigned long *hartid);
- extern void riscv_fill_hwcap(void);
- extern int arch_dup_task_struct(struct task_struct *dst, struct task_struct *src);
- 
-+extern unsigned long signal_minsigstksz __ro_after_init;
- #endif /* __ASSEMBLY__ */
- 
- #endif /* _ASM_RISCV_PROCESSOR_H */
-diff --git a/arch/riscv/include/uapi/asm/auxvec.h b/arch/riscv/include/uapi/asm/auxvec.h
-index 32c73ba1d531..6610d24e6662 100644
---- a/arch/riscv/include/uapi/asm/auxvec.h
-+++ b/arch/riscv/include/uapi/asm/auxvec.h
-@@ -33,5 +33,6 @@
- 
- /* entries in ARCH_DLINFO */
- #define AT_VECTOR_SIZE_ARCH	7
-+#define AT_MINSIGSTKSZ 51
- 
- #endif /* _UAPI_ASM_RISCV_AUXVEC_H */
-diff --git a/arch/riscv/kernel/signal.c b/arch/riscv/kernel/signal.c
-index 41d9a02c7098..fb1f5012416e 100644
---- a/arch/riscv/kernel/signal.c
-+++ b/arch/riscv/kernel/signal.c
-@@ -478,8 +478,16 @@ asmlinkage __visible void do_notify_resume(struct pt_regs *regs,
- 		resume_user_mode_work(regs);
- }
- 
-+unsigned long __ro_after_init signal_minsigstksz;
+ #endif /* ! __ASM_RISCV_VECTOR_H */
+diff --git a/arch/riscv/kernel/Makefile b/arch/riscv/kernel/Makefile
+index 35752fb6d145..8c238415f800 100644
+--- a/arch/riscv/kernel/Makefile
++++ b/arch/riscv/kernel/Makefile
+@@ -56,6 +56,7 @@ obj-$(CONFIG_MMU) += vdso.o vdso/
+ obj-$(CONFIG_RISCV_M_MODE)	+= traps_misaligned.o
+ obj-$(CONFIG_FPU)		+= fpu.o
+ obj-$(CONFIG_VECTOR)		+= vector.o
++obj-$(CONFIG_VECTOR)		+= kernel_mode_vector.o
+ obj-$(CONFIG_SMP)		+= smpboot.o
+ obj-$(CONFIG_SMP)		+= smp.o
+ obj-$(CONFIG_SMP)		+= cpu_ops.o
+diff --git a/arch/riscv/kernel/kernel_mode_vector.c b/arch/riscv/kernel/kernel_mode_vector.c
+new file mode 100644
+index 000000000000..0277168af0c5
+--- /dev/null
++++ b/arch/riscv/kernel/kernel_mode_vector.c
+@@ -0,0 +1,132 @@
++// SPDX-License-Identifier: GPL-2.0-or-later
++/*
++ * Copyright (C) 2012 ARM Ltd.
++ * Author: Catalin Marinas <catalin.marinas@arm.com>
++ * Copyright (C) 2017 Linaro Ltd. <ard.biesheuvel@linaro.org>
++ * Copyright (C) 2021 SiFive
++ */
++#include <linux/compiler.h>
++#include <linux/irqflags.h>
++#include <linux/percpu.h>
++#include <linux/preempt.h>
++#include <linux/types.h>
 +
- void init_rt_signal_env(void);
- void __init init_rt_signal_env(void)
- {
- 	rvv_sc_size = sizeof(struct __sc_riscv_v_state) + riscv_vsize;
++#include <asm/vector.h>
++#include <asm/switch_to.h>
++
++DECLARE_PER_CPU(bool, vector_context_busy);
++DEFINE_PER_CPU(bool, vector_context_busy);
++
++/*
++ * may_use_vector - whether it is allowable at this time to issue vector
++ *                instructions or access the vector register file
++ *
++ * Callers must not assume that the result remains true beyond the next
++ * preempt_enable() or return from softirq context.
++ */
++static __must_check inline bool may_use_vector(void)
++{
 +	/*
-+	 * Determine the stack space required for guaranteed signal delivery.
-+	 * The signal_minsigstksz will be populated into the AT_MINSIGSTKSZ entry
-+	 * in the auxiliary array at process startup.
++	 * vector_context_busy is only set while preemption is disabled,
++	 * and is clear whenever preemption is enabled. Since
++	 * this_cpu_read() is atomic w.r.t. preemption, vector_context_busy
++	 * cannot change under our feet -- if it's set we cannot be
++	 * migrated, and if it's clear we cannot be migrated to a CPU
++	 * where it is set.
 +	 */
-+	signal_minsigstksz = cal_rt_frame_size();
- }
++	return !in_irq() && !irqs_disabled() && !in_nmi() &&
++	       !this_cpu_read(vector_context_busy);
++}
++
++/*
++ * Claim ownership of the CPU vector context for use by the calling context.
++ *
++ * The caller may freely manipulate the vector context metadata until
++ * put_cpu_vector_context() is called.
++ */
++static void get_cpu_vector_context(void)
++{
++	bool busy;
++
++	preempt_disable();
++	busy = __this_cpu_xchg(vector_context_busy, true);
++
++	WARN_ON(busy);
++}
++
++/*
++ * Release the CPU vector context.
++ *
++ * Must be called from a context in which get_cpu_vector_context() was
++ * previously called, with no call to put_cpu_vector_context() in the
++ * meantime.
++ */
++static void put_cpu_vector_context(void)
++{
++	bool busy = __this_cpu_xchg(vector_context_busy, false);
++
++	WARN_ON(!busy);
++	preempt_enable();
++}
++
++/*
++ * kernel_rvv_begin(): obtain the CPU vector registers for use by the calling
++ * context
++ *
++ * Must not be called unless may_use_vector() returns true.
++ * Task context in the vector registers is saved back to memory as necessary.
++ *
++ * A matching call to kernel_rvv_end() must be made before returning from the
++ * calling context.
++ *
++ * The caller may freely use the vector registers until kernel_rvv_end() is
++ * called.
++ */
++void kernel_rvv_begin(void)
++{
++	if (WARN_ON(!has_vector()))
++		return;
++
++	WARN_ON(!may_use_vector());
++
++	/* Acquire kernel mode vector */
++	get_cpu_vector_context();
++
++	/* Save vector state, if any */
++	vstate_save(current, task_pt_regs(current));
++
++	/* Enable vector */
++	rvv_enable();
++
++	/* Invalidate vector regs */
++	vector_flush_cpu_state();
++}
++EXPORT_SYMBOL_GPL(kernel_rvv_begin);
++
++/*
++ * kernel_rvv_end(): give the CPU vector registers back to the current task
++ *
++ * Must be called from a context in which kernel_rvv_begin() was previously
++ * called, with no call to kernel_rvv_end() in the meantime.
++ *
++ * The caller must not use the vector registers after this function is called,
++ * unless kernel_rvv_begin() is called again in the meantime.
++ */
++void kernel_rvv_end(void)
++{
++	if (WARN_ON(!has_vector()))
++		return;
++
++	/* Invalidate vector regs */
++	vector_flush_cpu_state();
++
++	/* Restore vector state, if any */
++	vstate_restore(current, task_pt_regs(current));
++
++	/* disable vector */
++	rvv_disable();
++
++	/* release kernel mode vector */
++	put_cpu_vector_context();
++}
++EXPORT_SYMBOL_GPL(kernel_rvv_end);
+diff --git a/arch/riscv/kernel/vector.S b/arch/riscv/kernel/vector.S
+index 9f7dc70c4443..9c2de823c0d9 100644
+--- a/arch/riscv/kernel/vector.S
++++ b/arch/riscv/kernel/vector.S
+@@ -91,3 +91,12 @@ ENTRY(rvv_disable)
+ 	csrc	CSR_STATUS, status
+ 	ret
+ ENDPROC(rvv_disable)
++
++ENTRY(vector_flush_cpu_state)
++	vsetvli t0, x0, e8, m8, ta, ma
++	vmv.v.i v0, 0
++	vmv.v.i v8, 0
++	vmv.v.i v16, 0
++	vmv.v.i v24, 0
++	ret
++ENDPROC(vector_flush_cpu_state)
 -- 
 2.25.1
 
