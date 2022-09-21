@@ -1,258 +1,110 @@
-From: Sean Christopherson <seanjc@google.com>
-Date: Wed, 21 Sep 2022 00:32:01 +0000
-Subject: [PATCH v4 12/12] KVM: remove KVM_REQ_UNHALT
-In-Reply-To: <20220921003201.1441511-1-seanjc@google.com>
-References: <20220921003201.1441511-1-seanjc@google.com>
-Message-ID: <20220921003201.1441511-13-seanjc@google.com>
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Date: Wed, 21 Sep 2022 14:49:25 +1000
+Subject: [PATCH kernel v3] KVM: PPC: Make KVM_CAP_IRQFD_RESAMPLE support platform dependent
+Message-ID: <20220921044925.101802-1-aik@ozlabs.ru>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Paolo Bonzini <pbonzini@redhat.com>
+When introduced, IRQFD resampling worked on POWER8 with XICS. However
+KVM on POWER9 has never implemented it - the compatibility mode code
+("XICS-on-XIVE") misses the kvm_notify_acked_irq() call and the native
+XIVE mode does not handle INTx in KVM at all.
 
-KVM_REQ_UNHALT is now unnecessary because it is replaced by the return
-value of kvm_vcpu_block/kvm_vcpu_halt.  Remove it.
+This moved the capability support advertising to platforms and stops
+advertising it on XIVE, i.e. POWER9 and later.
 
-No functional change intended.
+This stops advertising the capability on MIPS and RISC-V as these
+do not select HAVE_KVM_IRQFD and do not implement IRQFD resampling
+anyway.
 
-Signed-off-by: Paolo Bonzini <pbonzini@redhat.com>
-Signed-off-by: Sean Christopherson <seanjc@google.com>
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+Acked-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- Documentation/virt/kvm/vcpu-requests.rst | 28 +-----------------------
- arch/arm64/kvm/arm.c                     |  1 -
- arch/mips/kvm/emulate.c                  |  1 -
- arch/powerpc/kvm/book3s_pr.c             |  1 -
- arch/powerpc/kvm/book3s_pr_papr.c        |  1 -
- arch/powerpc/kvm/booke.c                 |  1 -
- arch/powerpc/kvm/powerpc.c               |  1 -
- arch/riscv/kvm/vcpu_insn.c               |  1 -
- arch/s390/kvm/kvm-s390.c                 |  2 --
- arch/x86/kvm/x86.c                       |  3 ---
- arch/x86/kvm/xen.c                       |  1 -
- include/linux/kvm_host.h                 |  3 +--
- virt/kvm/kvm_main.c                      |  4 +---
- 13 files changed, 3 insertions(+), 45 deletions(-)
+Changes:
+v3:
+* removed all ifdeferry
+* removed the capability for MIPS and RISCV
+* adjusted the commit log about MIPS and RISCV
 
-diff --git a/Documentation/virt/kvm/vcpu-requests.rst b/Documentation/virt/kvm/vcpu-requests.rst
-index 31f62b64e07b..87f04c1fa53d 100644
---- a/Documentation/virt/kvm/vcpu-requests.rst
-+++ b/Documentation/virt/kvm/vcpu-requests.rst
-@@ -97,7 +97,7 @@ VCPU requests are simply bit indices of the ``vcpu->requests`` bitmap.
- This means general bitops, like those documented in [atomic-ops]_ could
- also be used, e.g. ::
- 
--  clear_bit(KVM_REQ_UNHALT & KVM_REQUEST_MASK, &vcpu->requests);
-+  clear_bit(KVM_REQ_UNBLOCK & KVM_REQUEST_MASK, &vcpu->requests);
- 
- However, VCPU request users should refrain from doing so, as it would
- break the abstraction.  The first 8 bits are reserved for architecture
-@@ -126,17 +126,6 @@ KVM_REQ_UNBLOCK
-   or in order to update the interrupt routing and ensure that assigned
-   devices will wake up the vCPU.
- 
--KVM_REQ_UNHALT
--
--  This request may be made from the KVM common function kvm_vcpu_block(),
--  which is used to emulate an instruction that causes a CPU to halt until
--  one of an architectural specific set of events and/or interrupts is
--  received (determined by checking kvm_arch_vcpu_runnable()).  When that
--  event or interrupt arrives kvm_vcpu_block() makes the request.  This is
--  in contrast to when kvm_vcpu_block() returns due to any other reason,
--  such as a pending signal, which does not indicate the VCPU's halt
--  emulation should stop, and therefore does not make the request.
--
- KVM_REQ_OUTSIDE_GUEST_MODE
- 
-   This "request" ensures the target vCPU has exited guest mode prior to the
-@@ -297,21 +286,6 @@ architecture dependent.  kvm_vcpu_block() calls kvm_arch_vcpu_runnable()
- to check if it should awaken.  One reason to do so is to provide
- architectures a function where requests may be checked if necessary.
- 
--Clearing Requests
-------------------
--
--Generally it only makes sense for the receiving VCPU thread to clear a
--request.  However, in some circumstances, such as when the requesting
--thread and the receiving VCPU thread are executed serially, such as when
--they are the same thread, or when they are using some form of concurrency
--control to temporarily execute synchronously, then it's possible to know
--that the request may be cleared immediately, rather than waiting for the
--receiving VCPU thread to handle the request in VCPU RUN.  The only current
--examples of this are kvm_vcpu_block() calls made by VCPUs to block
--themselves.  A possible side-effect of that call is to make the
--KVM_REQ_UNHALT request, which may then be cleared immediately when the
--VCPU returns from the call.
--
- References
- ==========
- 
+v2:
+* removed ifdef for ARM64.
+---
+ arch/arm64/kvm/arm.c       | 1 +
+ arch/powerpc/kvm/powerpc.c | 6 ++++++
+ arch/s390/kvm/kvm-s390.c   | 1 +
+ arch/x86/kvm/x86.c         | 1 +
+ virt/kvm/kvm_main.c        | 1 -
+ 5 files changed, 9 insertions(+), 1 deletion(-)
+
 diff --git a/arch/arm64/kvm/arm.c b/arch/arm64/kvm/arm.c
-index 2ff0ef62abad..4f949b64fdc9 100644
+index 2ff0ef62abad..d2daa4d375b5 100644
 --- a/arch/arm64/kvm/arm.c
 +++ b/arch/arm64/kvm/arm.c
-@@ -666,7 +666,6 @@ void kvm_vcpu_wfi(struct kvm_vcpu *vcpu)
- 
- 	kvm_vcpu_halt(vcpu);
- 	vcpu_clear_flag(vcpu, IN_WFIT);
--	kvm_clear_request(KVM_REQ_UNHALT, vcpu);
- 
- 	preempt_disable();
- 	vgic_v4_load(vcpu);
-diff --git a/arch/mips/kvm/emulate.c b/arch/mips/kvm/emulate.c
-index 1d7c56defe93..edaec93a1a1f 100644
---- a/arch/mips/kvm/emulate.c
-+++ b/arch/mips/kvm/emulate.c
-@@ -958,7 +958,6 @@ enum emulation_result kvm_mips_emul_wait(struct kvm_vcpu *vcpu)
- 		 * We are runnable, then definitely go off to user space to
- 		 * check if any I/O interrupts are pending.
- 		 */
--		kvm_clear_request(KVM_REQ_UNHALT, vcpu);
- 		if (kvm_arch_vcpu_runnable(vcpu))
- 			vcpu->run->exit_reason = KVM_EXIT_IRQ_WINDOW_OPEN;
- 	}
-diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
-index d6abed6e51e6..9fc4dd8f66eb 100644
---- a/arch/powerpc/kvm/book3s_pr.c
-+++ b/arch/powerpc/kvm/book3s_pr.c
-@@ -499,7 +499,6 @@ static void kvmppc_set_msr_pr(struct kvm_vcpu *vcpu, u64 msr)
- 	if (msr & MSR_POW) {
- 		if (!vcpu->arch.pending_exceptions) {
- 			kvm_vcpu_halt(vcpu);
--			kvm_clear_request(KVM_REQ_UNHALT, vcpu);
- 			vcpu->stat.generic.halt_wakeup++;
- 
- 			/* Unset POW bit after we woke up */
-diff --git a/arch/powerpc/kvm/book3s_pr_papr.c b/arch/powerpc/kvm/book3s_pr_papr.c
-index a1f2978b2a86..b2c89e850d7a 100644
---- a/arch/powerpc/kvm/book3s_pr_papr.c
-+++ b/arch/powerpc/kvm/book3s_pr_papr.c
-@@ -393,7 +393,6 @@ int kvmppc_h_pr(struct kvm_vcpu *vcpu, unsigned long cmd)
- 	case H_CEDE:
- 		kvmppc_set_msr_fast(vcpu, kvmppc_get_msr(vcpu) | MSR_EE);
- 		kvm_vcpu_halt(vcpu);
--		kvm_clear_request(KVM_REQ_UNHALT, vcpu);
- 		vcpu->stat.generic.halt_wakeup++;
- 		return EMULATE_DONE;
- 	case H_LOGICAL_CI_LOAD:
-diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
-index 06c5830a93f9..7b4920e9fd26 100644
---- a/arch/powerpc/kvm/booke.c
-+++ b/arch/powerpc/kvm/booke.c
-@@ -719,7 +719,6 @@ int kvmppc_core_prepare_to_enter(struct kvm_vcpu *vcpu)
- 	if (vcpu->arch.shared->msr & MSR_WE) {
- 		local_irq_enable();
- 		kvm_vcpu_halt(vcpu);
--		kvm_clear_request(KVM_REQ_UNHALT, vcpu);
- 		hard_irq_disable();
- 
- 		kvmppc_set_exit_type(vcpu, EMULATED_MTMSRWE_EXITS);
+@@ -218,6 +218,7 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
+ 	case KVM_CAP_VCPU_ATTRIBUTES:
+ 	case KVM_CAP_PTP_KVM:
+ 	case KVM_CAP_ARM_SYSTEM_SUSPEND:
++	case KVM_CAP_IRQFD_RESAMPLE:
+ 		r = 1;
+ 		break;
+ 	case KVM_CAP_SET_GUEST_DEBUG2:
 diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-index fb1490761c87..ec9c1e3c2ff4 100644
+index fb1490761c87..908ce8bd91c9 100644
 --- a/arch/powerpc/kvm/powerpc.c
 +++ b/arch/powerpc/kvm/powerpc.c
-@@ -239,7 +239,6 @@ int kvmppc_kvm_pv(struct kvm_vcpu *vcpu)
- 	case EV_HCALL_TOKEN(EV_IDLE):
- 		r = EV_SUCCESS;
- 		kvm_vcpu_halt(vcpu);
--		kvm_clear_request(KVM_REQ_UNHALT, vcpu);
+@@ -593,6 +593,12 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
  		break;
- 	default:
- 		r = EV_UNIMPLEMENTED;
-diff --git a/arch/riscv/kvm/vcpu_insn.c b/arch/riscv/kvm/vcpu_insn.c
-index 7eb90a47b571..0bb52761a3f7 100644
---- a/arch/riscv/kvm/vcpu_insn.c
-+++ b/arch/riscv/kvm/vcpu_insn.c
-@@ -191,7 +191,6 @@ void kvm_riscv_vcpu_wfi(struct kvm_vcpu *vcpu)
- 		kvm_vcpu_srcu_read_unlock(vcpu);
- 		kvm_vcpu_halt(vcpu);
- 		kvm_vcpu_srcu_read_lock(vcpu);
--		kvm_clear_request(KVM_REQ_UNHALT, vcpu);
- 	}
- }
+ #endif
  
++#ifdef CONFIG_HAVE_KVM_IRQFD
++	case KVM_CAP_IRQFD_RESAMPLE:
++		r = !xive_enabled();
++		break;
++#endif
++
+ 	case KVM_CAP_PPC_ALLOC_HTAB:
+ 		r = hv_enabled;
+ 		break;
 diff --git a/arch/s390/kvm/kvm-s390.c b/arch/s390/kvm/kvm-s390.c
-index edfd4bbd0cba..aa39ea4582bd 100644
+index edfd4bbd0cba..7521adadb81b 100644
 --- a/arch/s390/kvm/kvm-s390.c
 +++ b/arch/s390/kvm/kvm-s390.c
-@@ -4343,8 +4343,6 @@ static int kvm_s390_handle_requests(struct kvm_vcpu *vcpu)
- 		goto retry;
- 	}
- 
--	/* nothing to do, just clear the request */
--	kvm_clear_request(KVM_REQ_UNHALT, vcpu);
- 	/* we left the vsie handler, nothing to do, just clear the request */
- 	kvm_clear_request(KVM_REQ_VSIE_RESTART, vcpu);
- 
+@@ -577,6 +577,7 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
+ 	case KVM_CAP_SET_GUEST_DEBUG:
+ 	case KVM_CAP_S390_DIAG318:
+ 	case KVM_CAP_S390_MEM_OP_EXTENSION:
++	case KVM_CAP_IRQFD_RESAMPLE:
+ 		r = 1;
+ 		break;
+ 	case KVM_CAP_SET_GUEST_DEBUG2:
 diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 8b1ff7e91ecb..8927f37a07c9 100644
+index 43a6a7efc6ec..2d6c5a8fdf14 100644
 --- a/arch/x86/kvm/x86.c
 +++ b/arch/x86/kvm/x86.c
-@@ -10811,8 +10811,6 @@ static inline int vcpu_block(struct kvm_vcpu *vcpu)
- 		if (hv_timer)
- 			kvm_lapic_switch_to_hv_timer(vcpu);
- 
--		kvm_clear_request(KVM_REQ_UNHALT, vcpu);
--
- 		/*
- 		 * If the vCPU is not runnable, a signal or another host event
- 		 * of some kind is pending; service it without changing the
-@@ -11032,7 +11030,6 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
- 			r = 0;
- 			goto out;
- 		}
--		kvm_clear_request(KVM_REQ_UNHALT, vcpu);
- 		r = -EAGAIN;
- 		if (signal_pending(current)) {
- 			r = -EINTR;
-diff --git a/arch/x86/kvm/xen.c b/arch/x86/kvm/xen.c
-index 280cb5dc7341..93c628d3e3a9 100644
---- a/arch/x86/kvm/xen.c
-+++ b/arch/x86/kvm/xen.c
-@@ -1065,7 +1065,6 @@ static bool kvm_xen_schedop_poll(struct kvm_vcpu *vcpu, bool longmode,
- 			del_timer(&vcpu->arch.xen.poll_timer);
- 
- 		vcpu->arch.mp_state = KVM_MP_STATE_RUNNABLE;
--		kvm_clear_request(KVM_REQ_UNHALT, vcpu);
- 	}
- 
- 	vcpu->arch.xen.poll_evtchn = 0;
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index 04c7e5f2f727..32f259fa5801 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -151,12 +151,11 @@ static inline bool is_error_page(struct page *page)
- #define KVM_REQUEST_NO_ACTION      BIT(10)
- /*
-  * Architecture-independent vcpu->requests bit members
-- * Bits 4-7 are reserved for more arch-independent bits.
-+ * Bits 3-7 are reserved for more arch-independent bits.
-  */
- #define KVM_REQ_TLB_FLUSH         (0 | KVM_REQUEST_WAIT | KVM_REQUEST_NO_WAKEUP)
- #define KVM_REQ_VM_DEAD           (1 | KVM_REQUEST_WAIT | KVM_REQUEST_NO_WAKEUP)
- #define KVM_REQ_UNBLOCK           2
--#define KVM_REQ_UNHALT            3
- #define KVM_REQUEST_ARCH_BASE     8
- 
- /*
+@@ -4395,6 +4395,7 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
+ 	case KVM_CAP_VAPIC:
+ 	case KVM_CAP_ENABLE_CAP:
+ 	case KVM_CAP_VM_DISABLE_NX_HUGE_PAGES:
++	case KVM_CAP_IRQFD_RESAMPLE:
+ 		r = 1;
+ 		break;
+ 	case KVM_CAP_EXIT_HYPERCALL:
 diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index dcf47da44844..26383e63d9dd 100644
+index 584a5bab3af3..05cf94013f02 100644
 --- a/virt/kvm/kvm_main.c
 +++ b/virt/kvm/kvm_main.c
-@@ -3409,10 +3409,8 @@ static int kvm_vcpu_check_block(struct kvm_vcpu *vcpu)
- 	int ret = -EINTR;
- 	int idx = srcu_read_lock(&vcpu->kvm->srcu);
- 
--	if (kvm_arch_vcpu_runnable(vcpu)) {
--		kvm_make_request(KVM_REQ_UNHALT, vcpu);
-+	if (kvm_arch_vcpu_runnable(vcpu))
- 		goto out;
--	}
- 	if (kvm_cpu_has_pending_timer(vcpu))
- 		goto out;
- 	if (signal_pending(current))
+@@ -4447,7 +4447,6 @@ static long kvm_vm_ioctl_check_extension_generic(struct kvm *kvm, long arg)
+ #endif
+ #ifdef CONFIG_HAVE_KVM_IRQFD
+ 	case KVM_CAP_IRQFD:
+-	case KVM_CAP_IRQFD_RESAMPLE:
+ #endif
+ 	case KVM_CAP_IOEVENTFD_ANY_LENGTH:
+ 	case KVM_CAP_CHECK_EXTENSION_VM:
 -- 
-2.37.3.968.ga6b4b080e4-goog
+2.37.3
 
 
