@@ -1,54 +1,73 @@
 From: Chris Stillson <stillson@rivosinc.com>
-Date: Wed, 21 Sep 2022 14:43:44 -0700
-Subject: [PATCH v12 02/17] riscv: Extending cpufeature.c to detect V-extension
+Date: Wed, 21 Sep 2022 14:43:45 -0700
+Subject: [PATCH v12 03/17] riscv: Add new csr defines related to vector extension
 In-Reply-To: <20220921214439.1491510-1-stillson@rivosinc.com>
 References: <20220921214439.1491510-1-stillson@rivosinc.com>
-Message-ID: <20220921214439.1491510-2-stillson@rivosinc.com>
+Message-ID: <20220921214439.1491510-3-stillson@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Guo Ren <ren_guo@c-sky.com>
+From: Greentime Hu <greentime.hu@sifive.com>
 
-Current cpufeature.c doesn't support detecting V-extension, because
-"rv64" also contain a 'v' letter and we need to skip it.
+Follow the riscv vector spec to add new csr numbers.
 
-Signed-off-by: Guo Ren <ren_guo@c-sky.com>
+[guoren at linux.alibaba.com: first porting for new vector related csr]
+Acked-by: Guo Ren <guoren@kernel.org>
+Co-developed-by: Guo Ren <guoren@linux.alibaba.com>
 Signed-off-by: Guo Ren <guoren@linux.alibaba.com>
-Reviewed-by: Anup Patel <anup@brainfault.org>
-Reviewed-by: Greentime Hu <greentime.hu@sifive.com>
+Co-developed-by: Vincent Chen <vincent.chen@sifive.com>
+Signed-off-by: Vincent Chen <vincent.chen@sifive.com>
 Signed-off-by: Greentime Hu <greentime.hu@sifive.com>
 Reviewed-by: Palmer Dabbelt <palmer@rivosinc.com>
 ---
- arch/riscv/include/uapi/asm/hwcap.h | 1 +
- arch/riscv/kernel/cpufeature.c      | 1 +
- 2 files changed, 2 insertions(+)
+ arch/riscv/include/asm/csr.h | 16 ++++++++++++++--
+ 1 file changed, 14 insertions(+), 2 deletions(-)
 
-diff --git a/arch/riscv/include/uapi/asm/hwcap.h b/arch/riscv/include/uapi/asm/hwcap.h
-index 46dc3f5ee99f..c52bb7bbbabe 100644
---- a/arch/riscv/include/uapi/asm/hwcap.h
-+++ b/arch/riscv/include/uapi/asm/hwcap.h
-@@ -21,5 +21,6 @@
- #define COMPAT_HWCAP_ISA_F	(1 << ('F' - 'A'))
- #define COMPAT_HWCAP_ISA_D	(1 << ('D' - 'A'))
- #define COMPAT_HWCAP_ISA_C	(1 << ('C' - 'A'))
-+#define COMPAT_HWCAP_ISA_V	(1 << ('V' - 'A'))
+diff --git a/arch/riscv/include/asm/csr.h b/arch/riscv/include/asm/csr.h
+index 0e571f6483d9..78a68f29c3ba 100644
+--- a/arch/riscv/include/asm/csr.h
++++ b/arch/riscv/include/asm/csr.h
+@@ -24,6 +24,12 @@
+ #define SR_FS_CLEAN	_AC(0x00004000, UL)
+ #define SR_FS_DIRTY	_AC(0x00006000, UL)
  
- #endif /* _UAPI_ASM_RISCV_HWCAP_H */
-diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
-index 553d755483ed..8d4448c2d4f4 100644
---- a/arch/riscv/kernel/cpufeature.c
-+++ b/arch/riscv/kernel/cpufeature.c
-@@ -83,6 +83,7 @@ void __init riscv_fill_hwcap(void)
- 	isa2hwcap['f'] = isa2hwcap['F'] = COMPAT_HWCAP_ISA_F;
- 	isa2hwcap['d'] = isa2hwcap['D'] = COMPAT_HWCAP_ISA_D;
- 	isa2hwcap['c'] = isa2hwcap['C'] = COMPAT_HWCAP_ISA_C;
-+	isa2hwcap['v'] = isa2hwcap['V'] = COMPAT_HWCAP_ISA_V;
++#define SR_VS           _AC(0x00000600, UL) /* Vector Status */
++#define SR_VS_OFF       _AC(0x00000000, UL)
++#define SR_VS_INITIAL   _AC(0x00000200, UL)
++#define SR_VS_CLEAN     _AC(0x00000400, UL)
++#define SR_VS_DIRTY     _AC(0x00000600, UL)
++
+ #define SR_XS		_AC(0x00018000, UL) /* Extension Status */
+ #define SR_XS_OFF	_AC(0x00000000, UL)
+ #define SR_XS_INITIAL	_AC(0x00008000, UL)
+@@ -31,9 +37,9 @@
+ #define SR_XS_DIRTY	_AC(0x00018000, UL)
  
- 	elf_hwcap = 0;
+ #ifndef CONFIG_64BIT
+-#define SR_SD		_AC(0x80000000, UL) /* FS/XS dirty */
++#define SR_SD		_AC(0x80000000, UL) /* FS/VS/XS dirty */
+ #else
+-#define SR_SD		_AC(0x8000000000000000, UL) /* FS/XS dirty */
++#define SR_SD		_AC(0x8000000000000000, UL) /* FS/VS/XS dirty */
+ #endif
  
+ #ifdef CONFIG_64BIT
+@@ -297,6 +303,12 @@
+ #define CSR_MIMPID		0xf13
+ #define CSR_MHARTID		0xf14
+ 
++#define CSR_VSTART		0x8
++#define CSR_VCSR		0xf
++#define CSR_VL			0xc20
++#define CSR_VTYPE		0xc21
++#define CSR_VLENB		0xc22
++
+ #ifdef CONFIG_RISCV_M_MODE
+ # define CSR_STATUS	CSR_MSTATUS
+ # define CSR_IE		CSR_MIE
 -- 
 2.25.1
 
