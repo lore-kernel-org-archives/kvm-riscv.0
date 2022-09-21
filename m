@@ -1,158 +1,279 @@
 From: Chris Stillson <stillson@rivosinc.com>
-Date: Wed, 21 Sep 2022 12:46:21 -0700
-Subject: [PATCH 09/17] riscv: Add ptrace vector support
+Date: Wed, 21 Sep 2022 12:46:29 -0700
+Subject: [PATCH 17/17] riscv: prctl to enable vector commands
 In-Reply-To: <20220921194629.1480202-1-stillson@rivosinc.com>
 References: <20220921194629.1480202-1-stillson@rivosinc.com>
-Message-ID: <20220921194629.1480202-10-stillson@rivosinc.com>
+Message-ID: <20220921194629.1480202-18-stillson@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Greentime Hu <greentime.hu@sifive.com>
+This code makes enabling the vector extension on a riscv manchine
+optional by adding an option to prctl() to allow a process to enable,
+disable or query its vector context state.
 
-This patch adds ptrace support for riscv vector. The vector registers will
-be saved in datap pointer of __riscv_v_state. This pointer will be set
-right after the __riscv_v_state data structure then it will be put in ubuf
-for ptrace system call to get or set. It will check if the datap got from
-ubuf is set to the correct address or not when the ptrace system call is
-trying to set the vector registers.
-
-Co-developed-by: Vincent Chen <vincent.chen@sifive.com>
-Signed-off-by: Vincent Chen <vincent.chen@sifive.com>
-Signed-off-by: Greentime Hu <greentime.hu@sifive.com>
+-added prctl to enable/disable/query current vector state
+-added actual function in riscv specific code to change/query the process
+state
+- Fixed problem with initial set of patches
+	(missing some EXPORT_SYMBOL() macro calls)
+- rebased to 6.0-rc1
 ---
- arch/riscv/include/uapi/asm/ptrace.h |  6 +++
- arch/riscv/kernel/ptrace.c           | 71 ++++++++++++++++++++++++++++
- include/uapi/linux/elf.h             |  1 +
- 3 files changed, 78 insertions(+)
+ arch/riscv/configs/defconfig             |  6 ++++++
+ arch/riscv/include/asm/kvm_vcpu_vector.h |  8 ++++----
+ arch/riscv/include/asm/processor.h       |  6 ++++++
+ arch/riscv/include/asm/switch_to.h       | 11 +++++++++++
+ arch/riscv/kernel/cpufeature.c           |  3 ++-
+ arch/riscv/kernel/process.c              | 20 +++++++++++++++++++-
+ arch/riscv/kvm/vcpu_vector.c             | 14 +++++++-------
+ include/uapi/linux/prctl.h               |  6 ++++++
+ kernel/sys.c                             |  7 +++++++
+ 9 files changed, 68 insertions(+), 13 deletions(-)
 
-diff --git a/arch/riscv/include/uapi/asm/ptrace.h b/arch/riscv/include/uapi/asm/ptrace.h
-index 6ee1ca2edfa7..2491875be80d 100644
---- a/arch/riscv/include/uapi/asm/ptrace.h
-+++ b/arch/riscv/include/uapi/asm/ptrace.h
-@@ -94,6 +94,12 @@ struct __riscv_v_state {
- 	 */
- };
+diff --git a/arch/riscv/configs/defconfig b/arch/riscv/configs/defconfig
+index aed332a9d4ea..fce054286b1f 100644
+--- a/arch/riscv/configs/defconfig
++++ b/arch/riscv/configs/defconfig
+@@ -209,3 +209,9 @@ CONFIG_RCU_EQS_DEBUG=y
+ # CONFIG_FTRACE is not set
+ # CONFIG_RUNTIME_TESTING_MENU is not set
+ CONFIG_MEMTEST=y
++CONFIG_ARCH_RV64I=y
++CONFIG_64BIT=y
++CONFIG_VECTOR=y
++CONFIG_ARCH_RV64I=y
++CONFIG_64BIT=y
++CONFIG_VECTOR=y
+diff --git a/arch/riscv/include/asm/kvm_vcpu_vector.h b/arch/riscv/include/asm/kvm_vcpu_vector.h
+index 1dcc1b2e05bb..c7101ff943a0 100644
+--- a/arch/riscv/include/asm/kvm_vcpu_vector.h
++++ b/arch/riscv/include/asm/kvm_vcpu_vector.h
+@@ -22,9 +22,9 @@ void __kvm_riscv_vector_save(struct kvm_cpu_context *context);
+ void __kvm_riscv_vector_restore(struct kvm_cpu_context *context);
+ void kvm_riscv_vcpu_vector_reset(struct kvm_vcpu *vcpu);
+ void kvm_riscv_vcpu_guest_vector_save(struct kvm_cpu_context *cntx,
+-				      unsigned long isa);
++				      unsigned long *isa);
+ void kvm_riscv_vcpu_guest_vector_restore(struct kvm_cpu_context *cntx,
+-					 unsigned long isa);
++					 unsigned long *isa);
+ void kvm_riscv_vcpu_host_vector_save(struct kvm_cpu_context *cntx);
+ void kvm_riscv_vcpu_host_vector_restore(struct kvm_cpu_context *cntx);
+ void kvm_riscv_vcpu_free_vector_context(struct kvm_vcpu *vcpu);
+@@ -34,12 +34,12 @@ static inline void kvm_riscv_vcpu_vector_reset(struct kvm_vcpu *vcpu)
+ }
  
-+/*
-+ * According to spec: The number of bits in a single vector register,
-+ * VLEN >= ELEN, which must be a power of 2, and must be no greater than
-+ * 2^16 = 65536bits = 8192bytes
-+ */
-+#define RISCV_MAX_VLENB (8192)
+ static inline void kvm_riscv_vcpu_guest_vector_save(struct kvm_cpu_context *cntx,
+-						    unsigned long isa)
++						    unsigned long *isa)
+ {
+ }
+ 
+ static inline void kvm_riscv_vcpu_guest_vector_restore(struct kvm_cpu_context *cntx,
+-						       unsigned long isa)
++						       unsigned long *isa)
+ {
+ }
+ 
+diff --git a/arch/riscv/include/asm/processor.h b/arch/riscv/include/asm/processor.h
+index a09141ecf6aa..f2d0a91ce174 100644
+--- a/arch/riscv/include/asm/processor.h
++++ b/arch/riscv/include/asm/processor.h
+@@ -88,6 +88,12 @@ extern void riscv_fill_hwcap(void);
+ extern int arch_dup_task_struct(struct task_struct *dst, struct task_struct *src);
+ 
+ extern unsigned long signal_minsigstksz __ro_after_init;
++
++#ifdef CONFIG_VECTOR
++extern int rvv_proc_enable(unsigned long x);
++#define RVV_PROC_ENABLE(x) rvv_proc_enable(x)
++#endif
++
  #endif /* __ASSEMBLY__ */
  
- #endif /* _UAPI_ASM_RISCV_PTRACE_H */
-diff --git a/arch/riscv/kernel/ptrace.c b/arch/riscv/kernel/ptrace.c
-index 2ae8280ae475..cce459ff551d 100644
---- a/arch/riscv/kernel/ptrace.c
-+++ b/arch/riscv/kernel/ptrace.c
-@@ -27,6 +27,9 @@ enum riscv_regset {
- #ifdef CONFIG_FPU
- 	REGSET_F,
- #endif
-+#ifdef CONFIG_VECTOR
-+	REGSET_V,
-+#endif
- };
+ #endif /* _ASM_RISCV_PROCESSOR_H */
+diff --git a/arch/riscv/include/asm/switch_to.h b/arch/riscv/include/asm/switch_to.h
+index 527951c033d4..d9747450311c 100644
+--- a/arch/riscv/include/asm/switch_to.h
++++ b/arch/riscv/include/asm/switch_to.h
+@@ -80,6 +80,17 @@ extern unsigned long riscv_vsize;
+ extern void __vstate_save(struct __riscv_v_state *save_to, void *datap);
+ extern void __vstate_restore(struct __riscv_v_state *restore_from, void *datap);
  
- static int riscv_gpr_get(struct task_struct *target,
-@@ -83,6 +86,64 @@ static int riscv_fpr_set(struct task_struct *target,
++static inline bool vstate_query(struct pt_regs *regs)
++{
++	return (regs->status & SR_VS) != 0;
++}
++
++static inline void vstate_on(struct task_struct *task,
++				struct pt_regs *regs)
++{
++	regs->status = (regs->status & ~(SR_VS)) | SR_VS_INITIAL;
++}
++
+ static inline void __vstate_clean(struct pt_regs *regs)
+ {
+ 	regs->status = (regs->status & ~(SR_VS)) | SR_VS_CLEAN;
+diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
+index 0487ab19b234..3be469cb9266 100644
+--- a/arch/riscv/kernel/cpufeature.c
++++ b/arch/riscv/kernel/cpufeature.c
+@@ -37,6 +37,8 @@ __ro_after_init DEFINE_STATIC_KEY_FALSE(cpu_hwcap_fpu);
+ #include <asm/vector.h>
+ __ro_after_init DEFINE_STATIC_KEY_FALSE(cpu_hwcap_vector);
+ unsigned long riscv_vsize __read_mostly;
++EXPORT_SYMBOL(cpu_hwcap_vector);
++EXPORT_SYMBOL(riscv_vsize);
+ #endif
+ 
+ /**
+@@ -346,4 +348,3 @@ void __init_or_module riscv_cpufeature_patch_func(struct alt_entry *begin,
+ 	}
  }
  #endif
+-}
+diff --git a/arch/riscv/kernel/process.c b/arch/riscv/kernel/process.c
+index e88a37fc77ed..a5a76d1374ec 100644
+--- a/arch/riscv/kernel/process.c
++++ b/arch/riscv/kernel/process.c
+@@ -15,6 +15,7 @@
+ #include <linux/tick.h>
+ #include <linux/ptrace.h>
+ #include <linux/uaccess.h>
++#include <linux/prctl.h>
  
+ #include <asm/unistd.h>
+ #include <asm/processor.h>
+@@ -134,7 +135,6 @@ void start_thread(struct pt_regs *regs, unsigned long pc,
+ 			if (WARN_ON(!vstate->datap))
+ 				return;
+ 		}
+-		regs->status |= SR_VS_INITIAL;
+ 
+ 		/*
+ 		 * Restore the initial value to the vector register
+@@ -230,3 +230,21 @@ int copy_thread(struct task_struct *p, const struct kernel_clone_args *args)
+ 	p->thread.sp = (unsigned long)childregs; /* kernel sp */
+ 	return 0;
+ }
++
 +#ifdef CONFIG_VECTOR
-+static int riscv_vr_get(struct task_struct *target,
-+			const struct user_regset *regset,
-+			struct membuf to)
-+{
-+	struct __riscv_v_state *vstate = &target->thread.vstate;
++int rvv_proc_enable(unsigned long x) {
++	switch (x) {
++	case PR_RVV_DISABLE:
++		vstate_off(current, task_pt_regs(current));
++		return 0;
++	case PR_RVV_ENABLE:
++		vstate_on(current, task_pt_regs(current));
++		return 0;
++	case PR_RVV_QUERY:
++		return vstate_query(task_pt_regs(current));
++	default:
++	       	return -(EINVAL);
 +
-+	/*
-+	 * Ensure the vector registers have been saved to the memory before
-+	 * copying them to membuf.
-+	 */
-+	if (target == current)
-+		vstate_save(current, task_pt_regs(current));
-+
-+	/* Copy vector header from vstate. */
-+	membuf_write(&to, vstate, RISCV_V_STATE_DATAP);
-+	membuf_zero(&to, sizeof(void *));
-+#if __riscv_xlen == 32
-+	membuf_zero(&to, sizeof(__u32));
-+#endif
-+
-+	/* Copy all the vector registers from vstate. */
-+	return membuf_write(&to, vstate->datap, riscv_vsize);
-+}
-+
-+static int riscv_vr_set(struct task_struct *target,
-+			 const struct user_regset *regset,
-+			 unsigned int pos, unsigned int count,
-+			 const void *kbuf, const void __user *ubuf)
-+{
-+	int ret, size;
-+	struct __riscv_v_state *vstate = &target->thread.vstate;
-+
-+	/* Copy rest of the vstate except datap and __padding. */
-+	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf, vstate, 0,
-+				 RISCV_V_STATE_DATAP);
-+	if (unlikely(ret))
-+		return ret;
-+
-+	/* Skip copy datap. */
-+	size = sizeof(vstate->datap);
-+	count -= size;
-+	ubuf += size;
-+#if __riscv_xlen == 32
-+	/* Skip copy _padding. */
-+	size = sizeof(vstate->__padding);
-+	count -= size;
-+	ubuf += size;
-+#endif
-+
-+	/* Copy all the vector registers. */
-+	pos = 0;
-+	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf, vstate->datap,
-+				 0, riscv_vsize);
-+	return ret;
++	}
 +}
 +#endif
+diff --git a/arch/riscv/kvm/vcpu_vector.c b/arch/riscv/kvm/vcpu_vector.c
+index 37bf4ffd47dd..9d1613da561a 100644
+--- a/arch/riscv/kvm/vcpu_vector.c
++++ b/arch/riscv/kvm/vcpu_vector.c
+@@ -20,7 +20,7 @@
+ extern unsigned long riscv_vsize;
+ void kvm_riscv_vcpu_vector_reset(struct kvm_vcpu *vcpu)
+ {
+-	unsigned long isa = vcpu->arch.isa;
++	unsigned long isa = *vcpu->arch.isa;
+ 	struct kvm_cpu_context *cntx = &vcpu->arch.guest_context;
+ 
+ 	cntx->sstatus &= ~SR_VS;
+@@ -39,20 +39,20 @@ static void kvm_riscv_vcpu_vector_clean(struct kvm_cpu_context *cntx)
+ }
+ 
+ void kvm_riscv_vcpu_guest_vector_save(struct kvm_cpu_context *cntx,
+-				      unsigned long isa)
++				      unsigned long *isa)
+ {
+ 	if ((cntx->sstatus & SR_VS) == SR_VS_DIRTY) {
+-		if (riscv_isa_extension_available(&isa, v))
++		if (riscv_isa_extension_available(isa, v))
+ 			__kvm_riscv_vector_save(cntx);
+ 		kvm_riscv_vcpu_vector_clean(cntx);
+ 	}
+ }
+ 
+ void kvm_riscv_vcpu_guest_vector_restore(struct kvm_cpu_context *cntx,
+-					 unsigned long isa)
++					 unsigned long *isa)
+ {
+ 	if ((cntx->sstatus & SR_VS) != SR_VS_OFF) {
+-		if (riscv_isa_extension_available(&isa, v))
++		if (riscv_isa_extension_available(isa, v))
+ 			__kvm_riscv_vector_restore(cntx);
+ 		kvm_riscv_vcpu_vector_clean(cntx);
+ 	}
+@@ -122,7 +122,7 @@ int kvm_riscv_vcpu_get_reg_vector(struct kvm_vcpu *vcpu,
+ 				  const struct kvm_one_reg *reg,
+ 				  unsigned long rtype)
+ {
+-	unsigned long isa = vcpu->arch.isa;
++	unsigned long isa = *vcpu->arch.isa;
+ 	unsigned long __user *uaddr =
+ 			(unsigned long __user *)(unsigned long)reg->addr;
+ 	unsigned long reg_num = reg->id & ~(KVM_REG_ARCH_MASK |
+@@ -149,7 +149,7 @@ int kvm_riscv_vcpu_set_reg_vector(struct kvm_vcpu *vcpu,
+ 				  const struct kvm_one_reg *reg,
+ 				  unsigned long rtype)
+ {
+-	unsigned long isa = vcpu->arch.isa;
++	unsigned long isa = *vcpu->arch.isa;
+ 	unsigned long __user *uaddr =
+ 			(unsigned long __user *)(unsigned long)reg->addr;
+ 	unsigned long reg_num = reg->id & ~(KVM_REG_ARCH_MASK |
+diff --git a/include/uapi/linux/prctl.h b/include/uapi/linux/prctl.h
+index a5e06dcbba13..8ea56e4c48f8 100644
+--- a/include/uapi/linux/prctl.h
++++ b/include/uapi/linux/prctl.h
+@@ -281,6 +281,12 @@ struct prctl_mm_map {
+ # define PR_SME_VL_LEN_MASK		0xffff
+ # define PR_SME_VL_INHERIT		(1 << 17) /* inherit across exec */
+ 
++/* RISC-V V vector extension */
++#define PR_RVV_STATE			65
++# define PR_RVV_DISABLE	  		0
++# define PR_RVV_ENABLE	  		1
++# define PR_RVV_QUERY	  		2
 +
- static const struct user_regset riscv_user_regset[] = {
- 	[REGSET_X] = {
- 		.core_note_type = NT_PRSTATUS,
-@@ -102,6 +163,16 @@ static const struct user_regset riscv_user_regset[] = {
- 		.set = riscv_fpr_set,
- 	},
+ #define PR_SET_VMA		0x53564d41
+ # define PR_SET_VMA_ANON_NAME		0
+ 
+diff --git a/kernel/sys.c b/kernel/sys.c
+index b911fa6d81ab..3049b1823273 100644
+--- a/kernel/sys.c
++++ b/kernel/sys.c
+@@ -138,6 +138,9 @@
+ #ifndef GET_TAGGED_ADDR_CTRL
+ # define GET_TAGGED_ADDR_CTRL()		(-EINVAL)
  #endif
-+#ifdef CONFIG_VECTOR
-+	[REGSET_V] = {
-+		.core_note_type = NT_RISCV_VECTOR,
-+		.align = 16,
-+		.n = (32 * RISCV_MAX_VLENB)/sizeof(__u32),
-+		.size = sizeof(__u32),
-+		.regset_get = riscv_vr_get,
-+		.set = riscv_vr_set,
-+	},
++#ifndef RVV_PROC_ENABLE
++# define RVV_PROC_ENABLE(x)			(-EINVAL)
 +#endif
- };
  
- static const struct user_regset_view riscv_user_native_view = {
-diff --git a/include/uapi/linux/elf.h b/include/uapi/linux/elf.h
-index c7b056af9ef0..5a5056c6a2a1 100644
---- a/include/uapi/linux/elf.h
-+++ b/include/uapi/linux/elf.h
-@@ -439,6 +439,7 @@ typedef struct elf64_shdr {
- #define NT_MIPS_DSP	0x800		/* MIPS DSP ASE registers */
- #define NT_MIPS_FP_MODE	0x801		/* MIPS floating-point mode */
- #define NT_MIPS_MSA	0x802		/* MIPS SIMD registers */
-+#define NT_RISCV_VECTOR	0x900		/* RISC-V vector registers */
- #define NT_LOONGARCH_CPUCFG	0xa00	/* LoongArch CPU config registers */
- #define NT_LOONGARCH_CSR	0xa01	/* LoongArch control and status registers */
- #define NT_LOONGARCH_LSX	0xa02	/* LoongArch Loongson SIMD Extension registers */
+ /*
+  * this is where the system-wide overflow UID and GID are defined, for
+@@ -2620,6 +2623,10 @@ SYSCALL_DEFINE5(prctl, int, option, unsigned long, arg2, unsigned long, arg3,
+ 		error = sched_core_share_pid(arg2, arg3, arg4, arg5);
+ 		break;
+ #endif
++	case PR_RVV_STATE:
++		error = RVV_PROC_ENABLE(arg2);
++		break;
++
+ 	case PR_SET_VMA:
+ 		error = prctl_set_vma(arg2, arg3, arg4, arg5);
+ 		break;
 -- 
 2.25.1
 
