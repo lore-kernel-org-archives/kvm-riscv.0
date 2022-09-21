@@ -1,9 +1,9 @@
 From: Chris Stillson <stillson@rivosinc.com>
-Date: Wed, 21 Sep 2022 14:43:49 -0700
-Subject: [PATCH v12 07/17] riscv: Add vector struct and assembler definitions
+Date: Wed, 21 Sep 2022 14:43:50 -0700
+Subject: [PATCH v12 08/17] riscv: Add task switch support for vector
 In-Reply-To: <20220921214439.1491510-1-stillson@rivosinc.com>
 References: <20220921214439.1491510-1-stillson@rivosinc.com>
-Message-ID: <20220921214439.1491510-7-stillson@rivosinc.com>
+Message-ID: <20220921214439.1491510-8-stillson@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -12,79 +12,223 @@ Content-Transfer-Encoding: 7bit
 
 From: Greentime Hu <greentime.hu@sifive.com>
 
-Add vector state context struct in struct thread and asm-offsets.c
-definitions.
+This patch adds task switch support for vector. It supports partial lazy
+save and restore mechanism. It also supports all lengths of vlen.
 
-The vector registers will be saved in datap pointer of __riscv_v_state. It
-will be dynamically allocated in kernel space. It will be put right after
-the __riscv_v_state data structure in user space.
+[guoren at linux.alibaba.com: First available porting to support vector
+context switching]
+[nick.knight at sifive.com: Rewrite vector.S to support dynamic vlen, xlen and
+code refine]
+[vincent.chen at sifive.com: Fix the might_sleep issue in vstate_save,
+vstate_restore]
+[andrew at sifive.com: Optimize task switch codes of vector]
+[ruinland.tsai at sifive.com: Fix the arch_release_task_struct free wrong
+datap issue]
 
+Suggested-by: Andrew Waterman <andrew@sifive.com>
+Co-developed-by: Nick Knight <nick.knight@sifive.com>
+Signed-off-by: Nick Knight <nick.knight@sifive.com>
+Co-developed-by: Guo Ren <guoren@linux.alibaba.com>
+Signed-off-by: Guo Ren <guoren@linux.alibaba.com>
 Co-developed-by: Vincent Chen <vincent.chen@sifive.com>
 Signed-off-by: Vincent Chen <vincent.chen@sifive.com>
+Co-developed-by: Ruinland Tsai <ruinland.tsai@sifive.com>
+Signed-off-by: Ruinland Tsai <ruinland.tsai@sifive.com>
 Signed-off-by: Greentime Hu <greentime.hu@sifive.com>
+Reported-by: kernel test robot <lkp@intel.com>
+Reported-by: kernel test robot <lkp@intel.com>
 ---
- arch/riscv/include/asm/processor.h   |  1 +
- arch/riscv/include/uapi/asm/ptrace.h | 17 +++++++++++++++++
- arch/riscv/kernel/asm-offsets.c      |  6 ++++++
- 3 files changed, 24 insertions(+)
+ arch/riscv/include/asm/switch_to.h | 66 ++++++++++++++++++++++++++++++
+ arch/riscv/kernel/Makefile         |  1 +
+ arch/riscv/kernel/process.c        | 43 +++++++++++++++++++
+ 3 files changed, 110 insertions(+)
 
-diff --git a/arch/riscv/include/asm/processor.h b/arch/riscv/include/asm/processor.h
-index 19eedd4af4cd..95917a2b24f9 100644
---- a/arch/riscv/include/asm/processor.h
-+++ b/arch/riscv/include/asm/processor.h
-@@ -39,6 +39,7 @@ struct thread_struct {
- 	unsigned long s[12];	/* s[0]: frame pointer */
- 	struct __riscv_d_ext_state fstate;
- 	unsigned long bad_cause;
-+	struct __riscv_v_state vstate;
- };
+diff --git a/arch/riscv/include/asm/switch_to.h b/arch/riscv/include/asm/switch_to.h
+index df1aa589b7fd..527951c033d4 100644
+--- a/arch/riscv/include/asm/switch_to.h
++++ b/arch/riscv/include/asm/switch_to.h
+@@ -7,11 +7,13 @@
+ #define _ASM_RISCV_SWITCH_TO_H
  
- /* Whitelist the fstate from the task_struct for hardened usercopy */
-diff --git a/arch/riscv/include/uapi/asm/ptrace.h b/arch/riscv/include/uapi/asm/ptrace.h
-index 882547f6bd5c..6ee1ca2edfa7 100644
---- a/arch/riscv/include/uapi/asm/ptrace.h
-+++ b/arch/riscv/include/uapi/asm/ptrace.h
-@@ -77,6 +77,23 @@ union __riscv_fp_state {
- 	struct __riscv_q_ext_state q;
- };
+ #include <linux/jump_label.h>
++#include <linux/slab.h>
+ #include <linux/sched/task_stack.h>
+ #include <asm/hwcap.h>
+ #include <asm/processor.h>
+ #include <asm/ptrace.h>
+ #include <asm/csr.h>
++#include <asm/asm-offsets.h>
  
-+struct __riscv_v_state {
-+	unsigned long vstart;
-+	unsigned long vl;
-+	unsigned long vtype;
-+	unsigned long vcsr;
-+	void *datap;
-+	/*
-+	 * In signal handler, datap will be set a correct user stack offset
-+	 * and vector registers will be copied to the address of datap
-+	 * pointer.
-+	 *
-+	 * In ptrace syscall, datap will be set to zero and the vector
-+	 * registers will be copied to the address right after this
-+	 * structure.
-+	 */
-+};
-+
- #endif /* __ASSEMBLY__ */
- 
- #endif /* _UAPI_ASM_RISCV_PTRACE_H */
-diff --git a/arch/riscv/kernel/asm-offsets.c b/arch/riscv/kernel/asm-offsets.c
-index df9444397908..37e3e6a8d877 100644
---- a/arch/riscv/kernel/asm-offsets.c
-+++ b/arch/riscv/kernel/asm-offsets.c
-@@ -75,6 +75,12 @@ void asm_offsets(void)
- 	OFFSET(TSK_STACK_CANARY, task_struct, stack_canary);
+ #ifdef CONFIG_FPU
+ extern void __fstate_save(struct task_struct *save_to);
+@@ -68,6 +70,68 @@ static __always_inline bool has_fpu(void) { return false; }
+ #define __switch_to_fpu(__prev, __next) do { } while (0)
  #endif
  
-+	OFFSET(RISCV_V_STATE_VSTART, __riscv_v_state, vstart);
-+	OFFSET(RISCV_V_STATE_VL, __riscv_v_state, vl);
-+	OFFSET(RISCV_V_STATE_VTYPE, __riscv_v_state, vtype);
-+	OFFSET(RISCV_V_STATE_VCSR, __riscv_v_state, vcsr);
-+	OFFSET(RISCV_V_STATE_DATAP, __riscv_v_state, datap);
++#ifdef CONFIG_VECTOR
++extern struct static_key_false cpu_hwcap_vector;
++static __always_inline bool has_vector(void)
++{
++	return static_branch_likely(&cpu_hwcap_vector);
++}
++extern unsigned long riscv_vsize;
++extern void __vstate_save(struct __riscv_v_state *save_to, void *datap);
++extern void __vstate_restore(struct __riscv_v_state *restore_from, void *datap);
 +
- 	DEFINE(PT_SIZE, sizeof(struct pt_regs));
- 	OFFSET(PT_EPC, pt_regs, epc);
- 	OFFSET(PT_RA, pt_regs, ra);
++static inline void __vstate_clean(struct pt_regs *regs)
++{
++	regs->status = (regs->status & ~(SR_VS)) | SR_VS_CLEAN;
++}
++
++static inline void vstate_off(struct task_struct *task,
++			      struct pt_regs *regs)
++{
++	regs->status = (regs->status & ~SR_VS) | SR_VS_OFF;
++}
++
++static inline void vstate_save(struct task_struct *task,
++			       struct pt_regs *regs)
++{
++	if ((regs->status & SR_VS) == SR_VS_DIRTY) {
++		struct __riscv_v_state *vstate = &(task->thread.vstate);
++
++		__vstate_save(vstate, vstate->datap);
++		__vstate_clean(regs);
++	}
++}
++
++static inline void vstate_restore(struct task_struct *task,
++				  struct pt_regs *regs)
++{
++	if ((regs->status & SR_VS) != SR_VS_OFF) {
++		struct __riscv_v_state *vstate = &(task->thread.vstate);
++
++		__vstate_restore(vstate, vstate->datap);
++		__vstate_clean(regs);
++	}
++}
++
++static inline void __switch_to_vector(struct task_struct *prev,
++				   struct task_struct *next)
++{
++	struct pt_regs *regs;
++
++	regs = task_pt_regs(prev);
++	if (unlikely(regs->status & SR_SD))
++		vstate_save(prev, regs);
++	vstate_restore(next, task_pt_regs(next));
++}
++
++#else
++static __always_inline bool has_vector(void) { return false; }
++#define riscv_vsize (0)
++#define vstate_save(task, regs) do { } while (0)
++#define vstate_restore(task, regs) do { } while (0)
++#define __switch_to_vector(__prev, __next) do { } while (0)
++#endif
++
+ extern struct task_struct *__switch_to(struct task_struct *,
+ 				       struct task_struct *);
+ 
+@@ -77,6 +141,8 @@ do {							\
+ 	struct task_struct *__next = (next);		\
+ 	if (has_fpu())					\
+ 		__switch_to_fpu(__prev, __next);	\
++	if (has_vector())					\
++		__switch_to_vector(__prev, __next);	\
+ 	((last) = __switch_to(__prev, __next));		\
+ } while (0)
+ 
+diff --git a/arch/riscv/kernel/Makefile b/arch/riscv/kernel/Makefile
+index 33bb60a354cd..35752fb6d145 100644
+--- a/arch/riscv/kernel/Makefile
++++ b/arch/riscv/kernel/Makefile
+@@ -55,6 +55,7 @@ obj-$(CONFIG_MMU) += vdso.o vdso/
+ 
+ obj-$(CONFIG_RISCV_M_MODE)	+= traps_misaligned.o
+ obj-$(CONFIG_FPU)		+= fpu.o
++obj-$(CONFIG_VECTOR)		+= vector.o
+ obj-$(CONFIG_SMP)		+= smpboot.o
+ obj-$(CONFIG_SMP)		+= smp.o
+ obj-$(CONFIG_SMP)		+= cpu_ops.o
+diff --git a/arch/riscv/kernel/process.c b/arch/riscv/kernel/process.c
+index ceb9ebab6558..e88a37fc77ed 100644
+--- a/arch/riscv/kernel/process.c
++++ b/arch/riscv/kernel/process.c
+@@ -124,6 +124,25 @@ void start_thread(struct pt_regs *regs, unsigned long pc,
+ 		 */
+ 		fstate_restore(current, regs);
+ 	}
++
++	if (has_vector()) {
++		struct __riscv_v_state *vstate = &(current->thread.vstate);
++
++		/* Enable vector and allocate memory for vector registers. */
++		if (!vstate->datap) {
++			vstate->datap = kzalloc(riscv_vsize, GFP_KERNEL);
++			if (WARN_ON(!vstate->datap))
++				return;
++		}
++		regs->status |= SR_VS_INITIAL;
++
++		/*
++		 * Restore the initial value to the vector register
++		 * before starting the user program.
++		 */
++		vstate_restore(current, regs);
++	}
++
+ 	regs->epc = pc;
+ 	regs->sp = sp;
+ 
+@@ -148,15 +167,29 @@ void flush_thread(void)
+ 	fstate_off(current, task_pt_regs(current));
+ 	memset(&current->thread.fstate, 0, sizeof(current->thread.fstate));
+ #endif
++#ifdef CONFIG_VECTOR
++	/* Reset vector state */
++	vstate_off(current, task_pt_regs(current));
++	memset(&current->thread.vstate, 0, RISCV_V_STATE_DATAP);
++#endif
+ }
+ 
+ int arch_dup_task_struct(struct task_struct *dst, struct task_struct *src)
+ {
+ 	fstate_save(src, task_pt_regs(src));
+ 	*dst = *src;
++	dst->thread.vstate.datap = NULL;
++
+ 	return 0;
+ }
+ 
++void arch_release_task_struct(struct task_struct *tsk)
++{
++	/* Free the vector context of datap. */
++	if (has_vector() && tsk->thread.vstate.datap)
++		kfree(tsk->thread.vstate.datap);
++}
++
+ int copy_thread(struct task_struct *p, const struct kernel_clone_args *args)
+ {
+ 	unsigned long clone_flags = args->flags;
+@@ -175,7 +208,17 @@ int copy_thread(struct task_struct *p, const struct kernel_clone_args *args)
+ 		p->thread.ra = (unsigned long)ret_from_kernel_thread;
+ 		p->thread.s[0] = (unsigned long)args->fn;
+ 		p->thread.s[1] = (unsigned long)args->fn_arg;
++		p->thread.vstate.datap = NULL;
+ 	} else {
++		/* Allocate the datap for the user process if datap is NULL */
++		if (has_vector() && !p->thread.vstate.datap) {
++			void *datap = kzalloc(riscv_vsize, GFP_KERNEL);
++			/* Failed to allocate memory. */
++			if (!datap)
++				return -ENOMEM;
++			p->thread.vstate.datap = datap;
++			memset(&p->thread.vstate, 0, RISCV_V_STATE_DATAP);
++		}
+ 		*childregs = *(current_pt_regs());
+ 		if (usp) /* User fork */
+ 			childregs->sp = usp;
 -- 
 2.25.1
 
