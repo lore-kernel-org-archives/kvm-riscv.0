@@ -1,129 +1,74 @@
-From: Marc Zyngier <maz@kernel.org>
-Date: Wed, 21 Sep 2022 18:08:41 +0100
-Subject: [PATCH kernel v3] KVM: PPC: Make KVM_CAP_IRQFD_RESAMPLE support platform dependent
-In-Reply-To: <20220921044925.101802-1-aik@ozlabs.ru>
-References: <20220921044925.101802-1-aik@ozlabs.ru>
-Message-ID: <87pmfok63q.wl-maz@kernel.org>
+From: Chris Stillson <stillson@rivosinc.com>
+Date: Wed, 21 Sep 2022 12:46:15 -0700
+Subject: [PATCH 03/17] riscv: Add new csr defines related to vector extension
+In-Reply-To: <20220921194629.1480202-1-stillson@rivosinc.com>
+References: <20220921194629.1480202-1-stillson@rivosinc.com>
+Message-ID: <20220921194629.1480202-4-stillson@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 21 Sep 2022 05:49:25 +0100,
-Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
-> 
-> When introduced, IRQFD resampling worked on POWER8 with XICS. However
-> KVM on POWER9 has never implemented it - the compatibility mode code
-> ("XICS-on-XIVE") misses the kvm_notify_acked_irq() call and the native
-> XIVE mode does not handle INTx in KVM at all.
-> 
-> This moved the capability support advertising to platforms and stops
-> advertising it on XIVE, i.e. POWER9 and later.
-> 
-> This stops advertising the capability on MIPS and RISC-V as these
-> do not select HAVE_KVM_IRQFD and do not implement IRQFD resampling
-> anyway.
+From: Greentime Hu <greentime.hu@sifive.com>
 
-This paragraph makes no sense. Not selecting HAVE_KVM_IRQFD, by
-definition, prevents the advertising of the capability. Hell, you are
-even removing it from a block guarded by "#ifdef CONFIG_HAVE_KVM_IRQFD".
+Follow the riscv vector spec to add new csr numbers.
 
-> 
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> Acked-by: Nicholas Piggin <npiggin@gmail.com>
-> ---
-> Changes:
-> v3:
-> * removed all ifdeferry
-> * removed the capability for MIPS and RISCV
-> * adjusted the commit log about MIPS and RISCV
-> 
-> v2:
-> * removed ifdef for ARM64.
-> ---
->  arch/arm64/kvm/arm.c       | 1 +
->  arch/powerpc/kvm/powerpc.c | 6 ++++++
->  arch/s390/kvm/kvm-s390.c   | 1 +
->  arch/x86/kvm/x86.c         | 1 +
->  virt/kvm/kvm_main.c        | 1 -
->  5 files changed, 9 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/arm64/kvm/arm.c b/arch/arm64/kvm/arm.c
-> index 2ff0ef62abad..d2daa4d375b5 100644
-> --- a/arch/arm64/kvm/arm.c
-> +++ b/arch/arm64/kvm/arm.c
-> @@ -218,6 +218,7 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
->  	case KVM_CAP_VCPU_ATTRIBUTES:
->  	case KVM_CAP_PTP_KVM:
->  	case KVM_CAP_ARM_SYSTEM_SUSPEND:
-> +	case KVM_CAP_IRQFD_RESAMPLE:
->  		r = 1;
->  		break;
->  	case KVM_CAP_SET_GUEST_DEBUG2:
-> diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-> index fb1490761c87..908ce8bd91c9 100644
-> --- a/arch/powerpc/kvm/powerpc.c
-> +++ b/arch/powerpc/kvm/powerpc.c
-> @@ -593,6 +593,12 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
->  		break;
->  #endif
->  
-> +#ifdef CONFIG_HAVE_KVM_IRQFD
-> +	case KVM_CAP_IRQFD_RESAMPLE:
-> +		r = !xive_enabled();
-> +		break;
-> +#endif
-> +
->  	case KVM_CAP_PPC_ALLOC_HTAB:
->  		r = hv_enabled;
->  		break;
-> diff --git a/arch/s390/kvm/kvm-s390.c b/arch/s390/kvm/kvm-s390.c
-> index edfd4bbd0cba..7521adadb81b 100644
-> --- a/arch/s390/kvm/kvm-s390.c
-> +++ b/arch/s390/kvm/kvm-s390.c
-> @@ -577,6 +577,7 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
->  	case KVM_CAP_SET_GUEST_DEBUG:
->  	case KVM_CAP_S390_DIAG318:
->  	case KVM_CAP_S390_MEM_OP_EXTENSION:
-> +	case KVM_CAP_IRQFD_RESAMPLE:
->  		r = 1;
->  		break;
->  	case KVM_CAP_SET_GUEST_DEBUG2:
-> diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-> index 43a6a7efc6ec..2d6c5a8fdf14 100644
-> --- a/arch/x86/kvm/x86.c
-> +++ b/arch/x86/kvm/x86.c
-> @@ -4395,6 +4395,7 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
->  	case KVM_CAP_VAPIC:
->  	case KVM_CAP_ENABLE_CAP:
->  	case KVM_CAP_VM_DISABLE_NX_HUGE_PAGES:
-> +	case KVM_CAP_IRQFD_RESAMPLE:
->  		r = 1;
->  		break;
->  	case KVM_CAP_EXIT_HYPERCALL:
-> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-> index 584a5bab3af3..05cf94013f02 100644
-> --- a/virt/kvm/kvm_main.c
-> +++ b/virt/kvm/kvm_main.c
-> @@ -4447,7 +4447,6 @@ static long kvm_vm_ioctl_check_extension_generic(struct kvm *kvm, long arg)
->  #endif
->  #ifdef CONFIG_HAVE_KVM_IRQFD
->  	case KVM_CAP_IRQFD:
-> -	case KVM_CAP_IRQFD_RESAMPLE:
->  #endif
+[guoren at linux.alibaba.com: first porting for new vector related csr]
+Acked-by: Guo Ren <guoren@kernel.org>
+Co-developed-by: Guo Ren <guoren@linux.alibaba.com>
+Signed-off-by: Guo Ren <guoren@linux.alibaba.com>
+Co-developed-by: Vincent Chen <vincent.chen@sifive.com>
+Signed-off-by: Vincent Chen <vincent.chen@sifive.com>
+Signed-off-by: Greentime Hu <greentime.hu@sifive.com>
+Reviewed-by: Palmer Dabbelt <palmer@rivosinc.com>
+---
+ arch/riscv/include/asm/csr.h | 16 ++++++++++++++--
+ 1 file changed, 14 insertions(+), 2 deletions(-)
 
-Do you see what I mean?
-
->  	case KVM_CAP_IOEVENTFD_ANY_LENGTH:
->  	case KVM_CAP_CHECK_EXTENSION_VM:
-
-So, with the nonsensical paragraph removed from the commit log:
-
-Acked-by: Marc Zyngier <maz@kernel.org>
-
-	M.
-
+diff --git a/arch/riscv/include/asm/csr.h b/arch/riscv/include/asm/csr.h
+index 0e571f6483d9..78a68f29c3ba 100644
+--- a/arch/riscv/include/asm/csr.h
++++ b/arch/riscv/include/asm/csr.h
+@@ -24,6 +24,12 @@
+ #define SR_FS_CLEAN	_AC(0x00004000, UL)
+ #define SR_FS_DIRTY	_AC(0x00006000, UL)
+ 
++#define SR_VS           _AC(0x00000600, UL) /* Vector Status */
++#define SR_VS_OFF       _AC(0x00000000, UL)
++#define SR_VS_INITIAL   _AC(0x00000200, UL)
++#define SR_VS_CLEAN     _AC(0x00000400, UL)
++#define SR_VS_DIRTY     _AC(0x00000600, UL)
++
+ #define SR_XS		_AC(0x00018000, UL) /* Extension Status */
+ #define SR_XS_OFF	_AC(0x00000000, UL)
+ #define SR_XS_INITIAL	_AC(0x00008000, UL)
+@@ -31,9 +37,9 @@
+ #define SR_XS_DIRTY	_AC(0x00018000, UL)
+ 
+ #ifndef CONFIG_64BIT
+-#define SR_SD		_AC(0x80000000, UL) /* FS/XS dirty */
++#define SR_SD		_AC(0x80000000, UL) /* FS/VS/XS dirty */
+ #else
+-#define SR_SD		_AC(0x8000000000000000, UL) /* FS/XS dirty */
++#define SR_SD		_AC(0x8000000000000000, UL) /* FS/VS/XS dirty */
+ #endif
+ 
+ #ifdef CONFIG_64BIT
+@@ -297,6 +303,12 @@
+ #define CSR_MIMPID		0xf13
+ #define CSR_MHARTID		0xf14
+ 
++#define CSR_VSTART		0x8
++#define CSR_VCSR		0xf
++#define CSR_VL			0xc20
++#define CSR_VTYPE		0xc21
++#define CSR_VLENB		0xc22
++
+ #ifdef CONFIG_RISCV_M_MODE
+ # define CSR_STATUS	CSR_MSTATUS
+ # define CSR_IE		CSR_MIE
 -- 
-Without deviation from the norm, progress is not possible.
+2.25.1
+
 
