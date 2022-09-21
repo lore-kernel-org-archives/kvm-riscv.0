@@ -1,9 +1,9 @@
 From: Chris Stillson <stillson@rivosinc.com>
-Date: Wed, 21 Sep 2022 14:43:54 -0700
-Subject: [PATCH v12 12/17] riscv: Add support for kernel mode vector
+Date: Wed, 21 Sep 2022 14:43:55 -0700
+Subject: [PATCH v12 13/17] riscv: Add vector extension XOR implementation
 In-Reply-To: <20220921214439.1491510-1-stillson@rivosinc.com>
 References: <20220921214439.1491510-1-stillson@rivosinc.com>
-Message-ID: <20220921214439.1491510-12-stillson@rivosinc.com>
+Message-ID: <20220921214439.1491510-13-stillson@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -12,202 +12,204 @@ Content-Transfer-Encoding: 7bit
 
 From: Greentime Hu <greentime.hu@sifive.com>
 
-Add kernel_rvv_begin() and kernel_rvv_end() function declarations
-and corresponding definitions in kernel_mode_vector.c
+This patch adds support for vector optimized XOR and it is tested in
+qemu.
 
-These are needed to wrap uses of vector in kernel mode.
-
-Co-developed-by: Vincent Chen <vincent.chen@sifive.com>
-Signed-off-by: Vincent Chen <vincent.chen@sifive.com>
+Co-developed-by: Han-Kuan Chen <hankuan.chen@sifive.com>
+Signed-off-by: Han-Kuan Chen <hankuan.chen@sifive.com>
 Signed-off-by: Greentime Hu <greentime.hu@sifive.com>
 ---
- arch/riscv/include/asm/vector.h        |   3 +
- arch/riscv/kernel/Makefile             |   1 +
- arch/riscv/kernel/kernel_mode_vector.c | 132 +++++++++++++++++++++++++
- arch/riscv/kernel/vector.S             |   9 ++
- 4 files changed, 145 insertions(+)
- create mode 100644 arch/riscv/kernel/kernel_mode_vector.c
+ arch/riscv/include/asm/xor.h | 82 ++++++++++++++++++++++++++++++++++++
+ arch/riscv/lib/Makefile      |  1 +
+ arch/riscv/lib/xor.S         | 81 +++++++++++++++++++++++++++++++++++
+ 3 files changed, 164 insertions(+)
+ create mode 100644 arch/riscv/include/asm/xor.h
+ create mode 100644 arch/riscv/lib/xor.S
 
-diff --git a/arch/riscv/include/asm/vector.h b/arch/riscv/include/asm/vector.h
-index 16304b0c6a6f..a59841cc81fb 100644
---- a/arch/riscv/include/asm/vector.h
-+++ b/arch/riscv/include/asm/vector.h
-@@ -10,5 +10,8 @@
- 
- void rvv_enable(void);
- void rvv_disable(void);
-+void kernel_rvv_begin(void);
-+void kernel_rvv_end(void);
-+void vector_flush_cpu_state(void);
- 
- #endif /* ! __ASM_RISCV_VECTOR_H */
-diff --git a/arch/riscv/kernel/Makefile b/arch/riscv/kernel/Makefile
-index 35752fb6d145..8c238415f800 100644
---- a/arch/riscv/kernel/Makefile
-+++ b/arch/riscv/kernel/Makefile
-@@ -56,6 +56,7 @@ obj-$(CONFIG_MMU) += vdso.o vdso/
- obj-$(CONFIG_RISCV_M_MODE)	+= traps_misaligned.o
- obj-$(CONFIG_FPU)		+= fpu.o
- obj-$(CONFIG_VECTOR)		+= vector.o
-+obj-$(CONFIG_VECTOR)		+= kernel_mode_vector.o
- obj-$(CONFIG_SMP)		+= smpboot.o
- obj-$(CONFIG_SMP)		+= smp.o
- obj-$(CONFIG_SMP)		+= cpu_ops.o
-diff --git a/arch/riscv/kernel/kernel_mode_vector.c b/arch/riscv/kernel/kernel_mode_vector.c
+diff --git a/arch/riscv/include/asm/xor.h b/arch/riscv/include/asm/xor.h
 new file mode 100644
-index 000000000000..0277168af0c5
+index 000000000000..d1f2eeb14afb
 --- /dev/null
-+++ b/arch/riscv/kernel/kernel_mode_vector.c
-@@ -0,0 +1,132 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
++++ b/arch/riscv/include/asm/xor.h
+@@ -0,0 +1,82 @@
++/* SPDX-License-Identifier: GPL-2.0-or-later */
 +/*
-+ * Copyright (C) 2012 ARM Ltd.
-+ * Author: Catalin Marinas <catalin.marinas@arm.com>
-+ * Copyright (C) 2017 Linaro Ltd. <ard.biesheuvel@linaro.org>
 + * Copyright (C) 2021 SiFive
 + */
-+#include <linux/compiler.h>
-+#include <linux/irqflags.h>
-+#include <linux/percpu.h>
-+#include <linux/preempt.h>
-+#include <linux/types.h>
 +
++#include <linux/hardirq.h>
++#include <asm-generic/xor.h>
++#ifdef CONFIG_VECTOR
 +#include <asm/vector.h>
 +#include <asm/switch_to.h>
 +
-+DECLARE_PER_CPU(bool, vector_context_busy);
-+DEFINE_PER_CPU(bool, vector_context_busy);
++void xor_regs_2_(unsigned long bytes, unsigned long *__restrict p1,
++		 const unsigned long *__restrict p2);
++void xor_regs_3_(unsigned long bytes, unsigned long *__restrict p1,
++		 const unsigned long *__restrict p2,
++		 const unsigned long *__restrict p3);
++void xor_regs_4_(unsigned long bytes, unsigned long *__restrict p1,
++		 const unsigned long *__restrict p2,
++		 const unsigned long *__restrict p3,
++		 const unsigned long *__restrict p4);
++void xor_regs_5_(unsigned long bytes, unsigned long *__restrict p1,
++		 const unsigned long *__restrict p2,
++		 const unsigned long *__restrict p3,
++		 const unsigned long *__restrict p4,
++		 const unsigned long *__restrict p5);
 +
-+/*
-+ * may_use_vector - whether it is allowable at this time to issue vector
-+ *                instructions or access the vector register file
-+ *
-+ * Callers must not assume that the result remains true beyond the next
-+ * preempt_enable() or return from softirq context.
-+ */
-+static __must_check inline bool may_use_vector(void)
++static void xor_rvv_2(unsigned long bytes, unsigned long *__restrict p1,
++		      const unsigned long *__restrict p2)
 +{
-+	/*
-+	 * vector_context_busy is only set while preemption is disabled,
-+	 * and is clear whenever preemption is enabled. Since
-+	 * this_cpu_read() is atomic w.r.t. preemption, vector_context_busy
-+	 * cannot change under our feet -- if it's set we cannot be
-+	 * migrated, and if it's clear we cannot be migrated to a CPU
-+	 * where it is set.
-+	 */
-+	return !in_irq() && !irqs_disabled() && !in_nmi() &&
-+	       !this_cpu_read(vector_context_busy);
++	kernel_rvv_begin();
++	xor_regs_2_(bytes, p1, p2);
++	kernel_rvv_end();
 +}
 +
-+/*
-+ * Claim ownership of the CPU vector context for use by the calling context.
-+ *
-+ * The caller may freely manipulate the vector context metadata until
-+ * put_cpu_vector_context() is called.
-+ */
-+static void get_cpu_vector_context(void)
++static void xor_rvv_3(unsigned long bytes, unsigned long *__restrict p1,
++		      const unsigned long *__restrict p2,
++		      const unsigned long *__restrict p3)
 +{
-+	bool busy;
-+
-+	preempt_disable();
-+	busy = __this_cpu_xchg(vector_context_busy, true);
-+
-+	WARN_ON(busy);
++	kernel_rvv_begin();
++	xor_regs_3_(bytes, p1, p2, p3);
++	kernel_rvv_end();
 +}
 +
-+/*
-+ * Release the CPU vector context.
-+ *
-+ * Must be called from a context in which get_cpu_vector_context() was
-+ * previously called, with no call to put_cpu_vector_context() in the
-+ * meantime.
-+ */
-+static void put_cpu_vector_context(void)
++static void xor_rvv_4(unsigned long bytes, unsigned long *__restrict p1,
++		      const unsigned long *__restrict p2,
++		      const unsigned long *__restrict p3,
++		      const unsigned long *__restrict p4)
 +{
-+	bool busy = __this_cpu_xchg(vector_context_busy, false);
-+
-+	WARN_ON(!busy);
-+	preempt_enable();
++	kernel_rvv_begin();
++	xor_regs_4_(bytes, p1, p2, p3, p4);
++	kernel_rvv_end();
 +}
 +
-+/*
-+ * kernel_rvv_begin(): obtain the CPU vector registers for use by the calling
-+ * context
-+ *
-+ * Must not be called unless may_use_vector() returns true.
-+ * Task context in the vector registers is saved back to memory as necessary.
-+ *
-+ * A matching call to kernel_rvv_end() must be made before returning from the
-+ * calling context.
-+ *
-+ * The caller may freely use the vector registers until kernel_rvv_end() is
-+ * called.
-+ */
-+void kernel_rvv_begin(void)
++static void xor_rvv_5(unsigned long bytes, unsigned long *__restrict p1,
++		      const unsigned long *__restrict p2,
++		      const unsigned long *__restrict p3,
++		      const unsigned long *__restrict p4,
++		      const unsigned long *__restrict p5)
 +{
-+	if (WARN_ON(!has_vector()))
-+		return;
-+
-+	WARN_ON(!may_use_vector());
-+
-+	/* Acquire kernel mode vector */
-+	get_cpu_vector_context();
-+
-+	/* Save vector state, if any */
-+	vstate_save(current, task_pt_regs(current));
-+
-+	/* Enable vector */
-+	rvv_enable();
-+
-+	/* Invalidate vector regs */
-+	vector_flush_cpu_state();
++	kernel_rvv_begin();
++	xor_regs_5_(bytes, p1, p2, p3, p4, p5);
++	kernel_rvv_end();
 +}
-+EXPORT_SYMBOL_GPL(kernel_rvv_begin);
 +
++static struct xor_block_template xor_block_rvv = {
++	.name = "rvv",
++	.do_2 = xor_rvv_2,
++	.do_3 = xor_rvv_3,
++	.do_4 = xor_rvv_4,
++	.do_5 = xor_rvv_5
++};
++
++#undef XOR_TRY_TEMPLATES
++#define XOR_TRY_TEMPLATES           \
++	do {        \
++		xor_speed(&xor_block_8regs);    \
++		xor_speed(&xor_block_32regs);    \
++		if (has_vector()) { \
++			xor_speed(&xor_block_rvv);\
++		} \
++	} while (0)
++#endif
+diff --git a/arch/riscv/lib/Makefile b/arch/riscv/lib/Makefile
+index 25d5c9664e57..acd87ac86d24 100644
+--- a/arch/riscv/lib/Makefile
++++ b/arch/riscv/lib/Makefile
+@@ -7,3 +7,4 @@ lib-$(CONFIG_MMU)	+= uaccess.o
+ lib-$(CONFIG_64BIT)	+= tishift.o
+ 
+ obj-$(CONFIG_FUNCTION_ERROR_INJECTION) += error-inject.o
++lib-$(CONFIG_VECTOR)	+= xor.o
+diff --git a/arch/riscv/lib/xor.S b/arch/riscv/lib/xor.S
+new file mode 100644
+index 000000000000..3bc059e18171
+--- /dev/null
++++ b/arch/riscv/lib/xor.S
+@@ -0,0 +1,81 @@
++/* SPDX-License-Identifier: GPL-2.0-or-later */
 +/*
-+ * kernel_rvv_end(): give the CPU vector registers back to the current task
-+ *
-+ * Must be called from a context in which kernel_rvv_begin() was previously
-+ * called, with no call to kernel_rvv_end() in the meantime.
-+ *
-+ * The caller must not use the vector registers after this function is called,
-+ * unless kernel_rvv_begin() is called again in the meantime.
++ * Copyright (C) 2021 SiFive
 + */
-+void kernel_rvv_end(void)
-+{
-+	if (WARN_ON(!has_vector()))
-+		return;
++#include <linux/linkage.h>
++#include <asm-generic/export.h>
++#include <asm/asm.h>
 +
-+	/* Invalidate vector regs */
-+	vector_flush_cpu_state();
-+
-+	/* Restore vector state, if any */
-+	vstate_restore(current, task_pt_regs(current));
-+
-+	/* disable vector */
-+	rvv_disable();
-+
-+	/* release kernel mode vector */
-+	put_cpu_vector_context();
-+}
-+EXPORT_SYMBOL_GPL(kernel_rvv_end);
-diff --git a/arch/riscv/kernel/vector.S b/arch/riscv/kernel/vector.S
-index 9f7dc70c4443..9c2de823c0d9 100644
---- a/arch/riscv/kernel/vector.S
-+++ b/arch/riscv/kernel/vector.S
-@@ -91,3 +91,12 @@ ENTRY(rvv_disable)
- 	csrc	CSR_STATUS, status
- 	ret
- ENDPROC(rvv_disable)
-+
-+ENTRY(vector_flush_cpu_state)
-+	vsetvli t0, x0, e8, m8, ta, ma
-+	vmv.v.i v0, 0
-+	vmv.v.i v8, 0
-+	vmv.v.i v16, 0
-+	vmv.v.i v24, 0
++ENTRY(xor_regs_2_)
++	vsetvli a3, a0, e8, m8, ta, ma
++	vle8.v v0, (a1)
++	vle8.v v8, (a2)
++	sub a0, a0, a3
++	vxor.vv v16, v0, v8
++	add a2, a2, a3
++	vse8.v v16, (a1)
++	add a1, a1, a3
++	bnez a0, xor_regs_2_
 +	ret
-+ENDPROC(vector_flush_cpu_state)
++END(xor_regs_2_)
++EXPORT_SYMBOL(xor_regs_2_)
++
++ENTRY(xor_regs_3_)
++	vsetvli a4, a0, e8, m8, ta, ma
++	vle8.v v0, (a1)
++	vle8.v v8, (a2)
++	sub a0, a0, a4
++	vxor.vv v0, v0, v8
++	vle8.v v16, (a3)
++	add a2, a2, a4
++	vxor.vv v16, v0, v16
++	add a3, a3, a4
++	vse8.v v16, (a1)
++	add a1, a1, a4
++	bnez a0, xor_regs_3_
++	ret
++END(xor_regs_3_)
++EXPORT_SYMBOL(xor_regs_3_)
++
++ENTRY(xor_regs_4_)
++	vsetvli a5, a0, e8, m8, ta, ma
++	vle8.v v0, (a1)
++	vle8.v v8, (a2)
++	sub a0, a0, a5
++	vxor.vv v0, v0, v8
++	vle8.v v16, (a3)
++	add a2, a2, a5
++	vxor.vv v0, v0, v16
++	vle8.v v24, (a4)
++	add a3, a3, a5
++	vxor.vv v16, v0, v24
++	add a4, a4, a5
++	vse8.v v16, (a1)
++	add a1, a1, a5
++	bnez a0, xor_regs_4_
++	ret
++END(xor_regs_4_)
++EXPORT_SYMBOL(xor_regs_4_)
++
++ENTRY(xor_regs_5_)
++	vsetvli a6, a0, e8, m8, ta, ma
++	vle8.v v0, (a1)
++	vle8.v v8, (a2)
++	sub a0, a0, a6
++	vxor.vv v0, v0, v8
++	vle8.v v16, (a3)
++	add a2, a2, a6
++	vxor.vv v0, v0, v16
++	vle8.v v24, (a4)
++	add a3, a3, a6
++	vxor.vv v0, v0, v24
++	vle8.v v8, (a5)
++	add a4, a4, a6
++	vxor.vv v16, v0, v8
++	add a5, a5, a6
++	vse8.v v16, (a1)
++	add a1, a1, a6
++	bnez a0, xor_regs_5_
++	ret
++END(xor_regs_5_)
++EXPORT_SYMBOL(xor_regs_5_)
 -- 
 2.25.1
 
