@@ -1,86 +1,35 @@
 From: Jisheng Zhang <jszhang@kernel.org>
-Date: Mon, 26 Sep 2022 00:23:59 +0800
-Subject: [PATCH v3 2/3] RISC-V: KVM: Use generic guest entry infrastructure
+Date: Mon, 26 Sep 2022 00:24:00 +0800
+Subject: [PATCH v3 3/3] riscv: select HAVE_POSIX_CPU_TIMERS_TASK_WORK
 In-Reply-To: <20220925162400.1606-1-jszhang@kernel.org>
 References: <20220925162400.1606-1-jszhang@kernel.org>
-Message-ID: <20220925162400.1606-3-jszhang@kernel.org>
+Message-ID: <20220925162400.1606-4-jszhang@kernel.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Use generic guest entry infrastructure to properly handle
-TIF_NOTIFY_RESUME.
+Move POSIX CPU timer expiry and signal delivery into task context to
+allow PREEMPT_RT setups to coexist with KVM.
 
 Signed-off-by: Jisheng Zhang <jszhang@kernel.org>
 ---
- arch/riscv/kvm/Kconfig |  1 +
- arch/riscv/kvm/vcpu.c  | 18 ++++++------------
- 2 files changed, 7 insertions(+), 12 deletions(-)
+ arch/riscv/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/arch/riscv/kvm/Kconfig b/arch/riscv/kvm/Kconfig
-index f5a342fa1b1d..f36a737d5f96 100644
---- a/arch/riscv/kvm/Kconfig
-+++ b/arch/riscv/kvm/Kconfig
-@@ -24,6 +24,7 @@ config KVM
- 	select PREEMPT_NOTIFIERS
- 	select KVM_MMIO
- 	select KVM_GENERIC_DIRTYLOG_READ_PROTECT
-+	select KVM_XFER_TO_GUEST_WORK
- 	select HAVE_KVM_VCPU_ASYNC_IOCTL
- 	select HAVE_KVM_EVENTFD
- 	select SRCU
-diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-index 3da459fedc28..e3e6b8608288 100644
---- a/arch/riscv/kvm/vcpu.c
-+++ b/arch/riscv/kvm/vcpu.c
-@@ -7,6 +7,7 @@
-  */
- 
- #include <linux/bitops.h>
-+#include <linux/entry-kvm.h>
- #include <linux/errno.h>
- #include <linux/err.h>
- #include <linux/kdebug.h>
-@@ -959,7 +960,9 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
- 	run->exit_reason = KVM_EXIT_UNKNOWN;
- 	while (ret > 0) {
- 		/* Check conditions before entering the guest */
--		cond_resched();
-+		ret = xfer_to_guest_mode_handle_work(vcpu);
-+		if (!ret)
-+			ret = 1;
- 
- 		kvm_riscv_gstage_vmid_update(vcpu);
- 
-@@ -967,16 +970,6 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
- 
- 		local_irq_disable();
- 
--		/*
--		 * Exit if we have a signal pending so that we can deliver
--		 * the signal to user space.
--		 */
--		if (signal_pending(current)) {
--			ret = -EINTR;
--			run->exit_reason = KVM_EXIT_INTR;
--			++vcpu->stat.signal_exits;
--		}
--
- 		/*
- 		 * Ensure we set mode to IN_GUEST_MODE after we disable
- 		 * interrupts and before the final VCPU requests check.
-@@ -999,7 +992,8 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
- 
- 		if (ret <= 0 ||
- 		    kvm_riscv_gstage_vmid_ver_changed(&vcpu->kvm->arch.vmid) ||
--		    kvm_request_pending(vcpu)) {
-+		    kvm_request_pending(vcpu) ||
-+		    xfer_to_guest_mode_work_pending()) {
- 			vcpu->mode = OUTSIDE_GUEST_MODE;
- 			local_irq_enable();
- 			kvm_vcpu_srcu_read_lock(vcpu);
+diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
+index 79e52441e18b..7a8134fd7ec9 100644
+--- a/arch/riscv/Kconfig
++++ b/arch/riscv/Kconfig
+@@ -104,6 +104,7 @@ config RISCV
+ 	select HAVE_PERF_EVENTS
+ 	select HAVE_PERF_REGS
+ 	select HAVE_PERF_USER_STACK_DUMP
++	select HAVE_POSIX_CPU_TIMERS_TASK_WORK
+ 	select HAVE_REGS_AND_STACK_ACCESS_API
+ 	select HAVE_FUNCTION_ARG_ACCESS_API
+ 	select HAVE_STACKPROTECTOR
 -- 
 2.34.1
 
