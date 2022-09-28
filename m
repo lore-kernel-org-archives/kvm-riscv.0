@@ -1,97 +1,74 @@
-From: Anup Patel <anup@brainfault.org>
-Date: Mon, 26 Sep 2022 15:35:18 +0530
-Subject: [PATCH v3 2/2] RISC-V: KVM: Expose Zicbom to the guest
-In-Reply-To: <CAOnJCU+meVE_A=ki1bTMNCf-CHMwCQvTn-0aaHydREAH=OdcFw@mail.gmail.com>
-References: <20220909144400.1114485-1-ajones@ventanamicro.com>
- <20220909144400.1114485-3-ajones@ventanamicro.com> <CAOnJCU+meVE_A=ki1bTMNCf-CHMwCQvTn-0aaHydREAH=OdcFw@mail.gmail.com>
-Message-ID: <CAAhSdy2PajD_dLFBgrVkqVbk5oqrExLndzhRgnZLXvC4z589ew@mail.gmail.com>
+From: Guo Ren <guoren@kernel.org>
+Date: Wed, 28 Sep 2022 13:18:01 +0800
+Subject: [PATCH v3 1/3] RISC-V: KVM: Record number of signal exits as a
+ vCPU stat
+In-Reply-To: <20220925162400.1606-2-jszhang@kernel.org>
+References: <20220925162400.1606-1-jszhang@kernel.org> <20220925162400.1606-2-jszhang@kernel.org>
+Message-ID: <CAJF2gTRSb4f9rF_sTZ2hr9iOnvLYcQYu3CN7q8PCZQg4HvC_Gg@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sat, Sep 10, 2022 at 12:07 AM Atish Patra <atishp@atishpatra.org> wrote:
->
-> On Fri, Sep 9, 2022 at 7:44 AM Andrew Jones <ajones@ventanamicro.com> wrote:
-> >
-> > Guests may use the cbo.inval,clean,flush instructions when the
-> > CPU has the Zicbom extension and the hypervisor sets henvcfg.CBIE
-> > (for cbo.inval) and henvcfg.CBCFE (for cbo.clean,flush).
-> >
-> > Add Zicbom support for KVM guests which may be enabled and
-> > disabled from KVM userspace using the ISA extension ONE_REG API.
-> >
-> > Also opportunistically switch the other isa extension checks in
-> > kvm_riscv_vcpu_update_config() to riscv_isa_extension_available().
-> >
-> > Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
-> > Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
-> > Reviewed-by: Atish Patra <atishp@rivosinc.com>
-> > ---
-> >  arch/riscv/include/uapi/asm/kvm.h | 1 +
-> >  arch/riscv/kvm/vcpu.c             | 9 +++++++--
-> >  2 files changed, 8 insertions(+), 2 deletions(-)
-> >
-> > diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
-> > index b9a4cf36be4b..ed37a4a6e5cf 100644
-> > --- a/arch/riscv/include/uapi/asm/kvm.h
-> > +++ b/arch/riscv/include/uapi/asm/kvm.h
-> > @@ -99,6 +99,7 @@ enum KVM_RISCV_ISA_EXT_ID {
-> >         KVM_RISCV_ISA_EXT_M,
-> >         KVM_RISCV_ISA_EXT_SVPBMT,
-> >         KVM_RISCV_ISA_EXT_SSTC,
-> > +       KVM_RISCV_ISA_EXT_ZICBOM,
-> >         KVM_RISCV_ISA_EXT_MAX,
-> >  };
-> >
-> > diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-> > index 2ef33d5d94d1..74d1532b26c0 100644
-> > --- a/arch/riscv/kvm/vcpu.c
-> > +++ b/arch/riscv/kvm/vcpu.c
-> > @@ -54,6 +54,7 @@ static const unsigned long kvm_isa_ext_arr[] = {
-> >         RISCV_ISA_EXT_m,
-> >         RISCV_ISA_EXT_SVPBMT,
-> >         RISCV_ISA_EXT_SSTC,
-> > +       RISCV_ISA_EXT_ZICBOM,
-> >  };
-> >
-> >  static unsigned long kvm_riscv_vcpu_base2isa_ext(unsigned long base_ext)
-> > @@ -792,11 +793,15 @@ static void kvm_riscv_vcpu_update_config(const unsigned long *isa)
-> >  {
-> >         u64 henvcfg = 0;
-> >
-> > -       if (__riscv_isa_extension_available(isa, RISCV_ISA_EXT_SVPBMT))
-> > +       if (riscv_isa_extension_available(isa, SVPBMT))
-> >                 henvcfg |= ENVCFG_PBMTE;
-> >
-> > -       if (__riscv_isa_extension_available(isa, RISCV_ISA_EXT_SSTC))
-> > +       if (riscv_isa_extension_available(isa, SSTC))
-> >                 henvcfg |= ENVCFG_STCE;
-> > +
->
-> Ideally, these should be in a separate patch.
->
-> > +       if (riscv_isa_extension_available(isa, ZICBOM))
-> > +               henvcfg |= (ENVCFG_CBIE | ENVCFG_CBCFE);
-> > +
-> >         csr_write(CSR_HENVCFG, henvcfg);
-> >  #ifdef CONFIG_32BIT
-> >         csr_write(CSR_HENVCFGH, henvcfg >> 32);
-> > --
-> > 2.37.2
-> >
->
-> Otherwise, LGTM.
-> Reviewed-by: Atish Patra <atishp@rivosinc.com>
+Reviewed-by: Guo Ren <guoren@kernel.org>
 
-I agree with Atish's comment but this being a very simple change, I
-have queued it as-is for Linux-6.1
+?  linux git:(master) grep signal_exits arch/arm64 -r
+arch/arm64/kvm/guest.c: STATS_DESC_COUNTER(VCPU, signal_exits),
+arch/arm64/include/asm/kvm_host.h:      u64 signal_exits;
 
-Thanks,
-Anup
+By the way, do you know why arm64 is defined, but not used?
 
+
+On Mon, Sep 26, 2022 at 12:33 AM Jisheng Zhang <jszhang@kernel.org> wrote:
+>
+> Record a statistic indicating the number of times a vCPU has exited
+> due to a pending signal.
+>
+> Signed-off-by: Jisheng Zhang <jszhang@kernel.org>
+> ---
+>  arch/riscv/include/asm/kvm_host.h | 1 +
+>  arch/riscv/kvm/vcpu.c             | 2 ++
+>  2 files changed, 3 insertions(+)
+>
+> diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
+> index 60c517e4d576..dbbf43d52623 100644
+> --- a/arch/riscv/include/asm/kvm_host.h
+> +++ b/arch/riscv/include/asm/kvm_host.h
+> @@ -67,6 +67,7 @@ struct kvm_vcpu_stat {
+>         u64 mmio_exit_kernel;
+>         u64 csr_exit_user;
+>         u64 csr_exit_kernel;
+> +       u64 signal_exits;
+>         u64 exits;
+>  };
+>
+> diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+> index d0f08d5b4282..3da459fedc28 100644
+> --- a/arch/riscv/kvm/vcpu.c
+> +++ b/arch/riscv/kvm/vcpu.c
+> @@ -28,6 +28,7 @@ const struct _kvm_stats_desc kvm_vcpu_stats_desc[] = {
+>         STATS_DESC_COUNTER(VCPU, mmio_exit_kernel),
+>         STATS_DESC_COUNTER(VCPU, csr_exit_user),
+>         STATS_DESC_COUNTER(VCPU, csr_exit_kernel),
+> +       STATS_DESC_COUNTER(VCPU, signal_exits),
+>         STATS_DESC_COUNTER(VCPU, exits)
+>  };
+>
+> @@ -973,6 +974,7 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
+>                 if (signal_pending(current)) {
+>                         ret = -EINTR;
+>                         run->exit_reason = KVM_EXIT_INTR;
+> +                       ++vcpu->stat.signal_exits;
+>                 }
+>
+>                 /*
 > --
-> Regards,
-> Atish
+> 2.34.1
+>
+
+
+--
+Best Regards
+ Guo Ren
 
