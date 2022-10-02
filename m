@@ -1,54 +1,94 @@
 From: Anup Patel <anup@brainfault.org>
-Date: Sat, 1 Oct 2022 18:07:33 +0530
-Subject: [PATCH v3 0/3] riscv: kvm: use generic entry for
- TIF_NOTIFY_RESUME and misc
-In-Reply-To: <20220925162400.1606-1-jszhang@kernel.org>
-References: <20220925162400.1606-1-jszhang@kernel.org>
-Message-ID: <CAAhSdy0qtH=N_LQ8KfiYTJFoNLeO_wYzhmQD8-TtSTNE5doLBw@mail.gmail.com>
+Date: Sun, 2 Oct 2022 11:16:24 +0530
+Subject: [GIT PULL] KVM/riscv changes for 6.1
+Message-ID: <CAAhSdy134Ve1mbeK+TNRx-pWpQ=nVzNLptDcUyPaDU4v18Qyaw@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sun, Sep 25, 2022 at 10:03 PM Jisheng Zhang <jszhang@kernel.org> wrote:
->
-> This series is a preparation series to add PREEMPT_RT support to riscv:
-> patch1 adds the missing number of signal exits in vCPU stat
-> patch2 switches to the generic guest entry infrastructure
-> patch3 select HAVE_POSIX_CPU_TIMERS_TASK_WORK which is a requirement for
-> RT
->
-> After these three patches merged, the left RT patches are similar as
-> other arch.
->
-> Since v2:
->   - splict the series into two separate ones, one for next another for
->     RT.
->
-> Since v1:
->   - send to related maillist, I press ENTER too quickly when sending v1
->   - remove the signal_pending() handling because that's covered by
->     generic guest entry infrastructure
->
-> Jisheng Zhang (3):
->   RISC-V: KVM: Record number of signal exits as a vCPU stat
->   RISC-V: KVM: Use generic guest entry infrastructure
->   riscv: select HAVE_POSIX_CPU_TIMERS_TASK_WORK
+Hi Paolo,
 
-I have queued this series for Linux-6.1
+We have the following KVM RISC-V changes for 6.1:
+1) Improved instruction encoding infrastructure for
+    instructions not yet supported by binutils
+2) Svinval support for both KVM Host and KVM Guest
+3) Zihintpause support for KVM Guest
+4) Zicbom support for KVM Guest
+5) Record number of signal exits as a VCPU stat
+6) Use generic guest entry infrastructure
 
-Thanks,
+Please pull.
+
+Regards,
 Anup
 
->
->  arch/riscv/Kconfig                |  1 +
->  arch/riscv/include/asm/kvm_host.h |  1 +
->  arch/riscv/kvm/Kconfig            |  1 +
->  arch/riscv/kvm/vcpu.c             | 18 +++++++-----------
->  4 files changed, 10 insertions(+), 11 deletions(-)
->
-> --
-> 2.34.1
->
+The following changes since commit f76349cf41451c5c42a99f18a9163377e4b364ff:
+
+  Linux 6.0-rc7 (2022-09-25 14:01:02 -0700)
+
+are available in the Git repository at:
+
+  https://github.com/kvm-riscv/linux.git tags/kvm-riscv-6.1-1
+
+for you to fetch changes up to b60ca69715fcc39a5f4bdd56ca2ea691b7358455:
+
+  riscv: select HAVE_POSIX_CPU_TIMERS_TASK_WORK (2022-10-02 10:19:31 +0530)
+
+----------------------------------------------------------------
+KVM/riscv changes for 6.1
+
+- Improved instruction encoding infrastructure for
+  instructions not yet supported by binutils
+- Svinval support for both KVM Host and KVM Guest
+- Zihintpause support for KVM Guest
+- Zicbom support for KVM Guest
+- Record number of signal exits as a VCPU stat
+- Use generic guest entry infrastructure
+
+----------------------------------------------------------------
+Andrew Jones (7):
+      riscv: Add X register names to gpr-nums
+      riscv: Introduce support for defining instructions
+      riscv: KVM: Apply insn-def to hfence encodings
+      riscv: KVM: Apply insn-def to hlv encodings
+      RISC-V: KVM: Make ISA ext mappings explicit
+      RISC-V: KVM: Provide UAPI for Zicbom block size
+      RISC-V: KVM: Expose Zicbom to the guest
+
+Anup Patel (3):
+      RISC-V: KVM: Change the SBI specification version to v1.0
+      RISC-V: KVM: Use Svinval for local TLB maintenance when available
+      RISC-V: KVM: Allow Guest use Svinval extension
+
+Jisheng Zhang (3):
+      RISC-V: KVM: Record number of signal exits as a vCPU stat
+      RISC-V: KVM: Use generic guest entry infrastructure
+      riscv: select HAVE_POSIX_CPU_TIMERS_TASK_WORK
+
+Mayuresh Chitale (2):
+      RISC-V: Probe Svinval extension form ISA string
+      RISC-V: KVM: Allow Guest use Zihintpause extension
+
+Xiu Jianfeng (1):
+      RISC-V: KVM: add __init annotation to riscv_kvm_init()
+
+ arch/riscv/Kconfig                    |   4 +
+ arch/riscv/include/asm/gpr-num.h      |   8 ++
+ arch/riscv/include/asm/hwcap.h        |   4 +
+ arch/riscv/include/asm/insn-def.h     | 137 ++++++++++++++++++++++++++++++
+ arch/riscv/include/asm/kvm_host.h     |   1 +
+ arch/riscv/include/asm/kvm_vcpu_sbi.h |   4 +-
+ arch/riscv/include/uapi/asm/kvm.h     |   4 +
+ arch/riscv/kernel/cpu.c               |   1 +
+ arch/riscv/kernel/cpufeature.c        |   1 +
+ arch/riscv/kvm/Kconfig                |   1 +
+ arch/riscv/kvm/main.c                 |   2 +-
+ arch/riscv/kvm/tlb.c                  | 155 +++++++++++-----------------------
+ arch/riscv/kvm/vcpu.c                 |  60 ++++++++-----
+ arch/riscv/kvm/vcpu_exit.c            |  39 ++-------
+ arch/riscv/mm/dma-noncoherent.c       |   2 +
+ 15 files changed, 260 insertions(+), 163 deletions(-)
+ create mode 100644 arch/riscv/include/asm/insn-def.h
 
