@@ -1,386 +1,171 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Thu,  6 Oct 2022 00:34:05 +0000
-Subject: [PATCH v6 3/7] KVM: selftests: Automatically do init_ucall() for
- non-barebones VMs
+Date: Thu,  6 Oct 2022 00:34:08 +0000
+Subject: [PATCH v6 6/7] KVM: selftest: Drop now-unnecessary ucall_uninit()
 In-Reply-To: <20221006003409.649993-1-seanjc@google.com>
 References: <20221006003409.649993-1-seanjc@google.com>
-Message-ID: <20221006003409.649993-4-seanjc@google.com>
+Message-ID: <20221006003409.649993-7-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Do init_ucall() automatically during VM creation to kill two (three?)
-birds with one stone.
+Drop ucall_uninit() and ucall_arch_uninit() now that ARM doesn't modify
+the host's copy of ucall_exit_mmio_addr, i.e. now that there's no need to
+reset the pointer before potentially creating a new VM.  The few calls to
+ucall_uninit() are all immediately followed by kvm_vm_free(), and that is
+likely always going to hold true, i.e. it's extremely unlikely a test
+will want to effectively disable ucall in the middle of a test.
 
-First, initializing ucall immediately after VM creations allows forcing
-aarch64's MMIO ucall address to immediately follow memslot0.  This is
-still somewhat fragile as tests could clobber the MMIO address with a
-new memslot, but it's safe-ish since tests have to be conversative when
-accounting for memslot0.  And this can be hardened in the future by
-creating a read-only memslot for the MMIO page (KVM ARM exits with MMIO
-if the guest writes to a read-only memslot).  Add a TODO to document that
-selftests can and should use a memslot for the ucall MMIO (doing so
-requires yet more rework because tests assumes thay can use all memslots
-except memslot0).
-
-Second, initializing ucall for all VMs prepares for making ucall
-initialization meaningful on all architectures.  aarch64 is currently the
-only arch that needs to do any setup, but that will change in the future
-by switching to a pool-based implementation (instead of the current
-stack-based approach).
-
-Lastly, defining the ucall MMIO address from common code will simplify
-switching all architectures (except s390) to a common MMIO-based ucall
-implementation (if there's ever sufficient motivation to do so).
-
-Cc: Oliver Upton <oliver.upton@linux.dev>
 Reviewed-by: Andrew Jones <andrew.jones@linux.dev>
 Tested-by: Peter Gonda <pgonda@google.com>
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- .../selftests/kvm/aarch64/arch_timer.c        |  1 -
- .../selftests/kvm/aarch64/debug-exceptions.c  |  1 -
- .../selftests/kvm/aarch64/hypercalls.c        |  1 -
- .../testing/selftests/kvm/aarch64/psci_test.c |  1 -
- .../testing/selftests/kvm/aarch64/vgic_init.c |  2 -
- .../testing/selftests/kvm/aarch64/vgic_irq.c  |  1 -
- tools/testing/selftests/kvm/dirty_log_test.c  |  2 -
- .../selftests/kvm/include/ucall_common.h      |  6 +--
- .../selftests/kvm/kvm_page_table_test.c       |  1 -
- .../testing/selftests/kvm/lib/aarch64/ucall.c | 54 ++-----------------
- tools/testing/selftests/kvm/lib/kvm_util.c    | 11 ++++
- .../selftests/kvm/lib/perf_test_util.c        |  2 -
- tools/testing/selftests/kvm/lib/riscv/ucall.c |  2 +-
- tools/testing/selftests/kvm/lib/s390x/ucall.c |  2 +-
- .../testing/selftests/kvm/lib/x86_64/ucall.c  |  2 +-
- .../testing/selftests/kvm/memslot_perf_test.c |  1 -
- tools/testing/selftests/kvm/rseq_test.c       |  1 -
- tools/testing/selftests/kvm/steal_time.c      |  1 -
- .../kvm/system_counter_offset_test.c          |  1 -
- 19 files changed, 20 insertions(+), 73 deletions(-)
+ tools/testing/selftests/kvm/dirty_log_test.c       |  1 -
+ tools/testing/selftests/kvm/include/ucall_common.h |  6 ------
+ tools/testing/selftests/kvm/kvm_page_table_test.c  |  1 -
+ tools/testing/selftests/kvm/lib/aarch64/ucall.c    | 14 ++------------
+ tools/testing/selftests/kvm/lib/perf_test_util.c   |  1 -
+ tools/testing/selftests/kvm/lib/riscv/ucall.c      |  4 ----
+ tools/testing/selftests/kvm/lib/s390x/ucall.c      |  4 ----
+ tools/testing/selftests/kvm/lib/x86_64/ucall.c     |  4 ----
+ 8 files changed, 2 insertions(+), 33 deletions(-)
 
-diff --git a/tools/testing/selftests/kvm/aarch64/arch_timer.c b/tools/testing/selftests/kvm/aarch64/arch_timer.c
-index 574eb73f0e90..37c0ddebf4db 100644
---- a/tools/testing/selftests/kvm/aarch64/arch_timer.c
-+++ b/tools/testing/selftests/kvm/aarch64/arch_timer.c
-@@ -375,7 +375,6 @@ static struct kvm_vm *test_vm_create(void)
- 	for (i = 0; i < nr_vcpus; i++)
- 		vcpu_init_descriptor_tables(vcpus[i]);
- 
--	ucall_init(vm, NULL);
- 	test_init_timer_irq(vm);
- 	gic_fd = vgic_v3_setup(vm, nr_vcpus, 64, GICD_BASE_GPA, GICR_BASE_GPA);
- 	__TEST_REQUIRE(gic_fd >= 0, "Failed to create vgic-v3");
-diff --git a/tools/testing/selftests/kvm/aarch64/debug-exceptions.c b/tools/testing/selftests/kvm/aarch64/debug-exceptions.c
-index 947bd201435c..b08b1edc369f 100644
---- a/tools/testing/selftests/kvm/aarch64/debug-exceptions.c
-+++ b/tools/testing/selftests/kvm/aarch64/debug-exceptions.c
-@@ -295,7 +295,6 @@ static void test_guest_debug_exceptions(void)
- 	int stage;
- 
- 	vm = vm_create_with_one_vcpu(&vcpu, guest_code);
--	ucall_init(vm, NULL);
- 
- 	vm_init_descriptor_tables(vm);
- 	vcpu_init_descriptor_tables(vcpu);
-diff --git a/tools/testing/selftests/kvm/aarch64/hypercalls.c b/tools/testing/selftests/kvm/aarch64/hypercalls.c
-index a39da3fe4952..3dceecfd1f62 100644
---- a/tools/testing/selftests/kvm/aarch64/hypercalls.c
-+++ b/tools/testing/selftests/kvm/aarch64/hypercalls.c
-@@ -236,7 +236,6 @@ static struct kvm_vm *test_vm_create(struct kvm_vcpu **vcpu)
- 
- 	vm = vm_create_with_one_vcpu(vcpu, guest_code);
- 
--	ucall_init(vm, NULL);
- 	steal_time_init(*vcpu);
- 
- 	return vm;
-diff --git a/tools/testing/selftests/kvm/aarch64/psci_test.c b/tools/testing/selftests/kvm/aarch64/psci_test.c
-index e0b9e81a3e09..cfa36f387948 100644
---- a/tools/testing/selftests/kvm/aarch64/psci_test.c
-+++ b/tools/testing/selftests/kvm/aarch64/psci_test.c
-@@ -79,7 +79,6 @@ static struct kvm_vm *setup_vm(void *guest_code, struct kvm_vcpu **source,
- 	struct kvm_vm *vm;
- 
- 	vm = vm_create(2);
--	ucall_init(vm, NULL);
- 
- 	vm_ioctl(vm, KVM_ARM_PREFERRED_TARGET, &init);
- 	init.features[0] |= (1 << KVM_ARM_VCPU_PSCI_0_2);
-diff --git a/tools/testing/selftests/kvm/aarch64/vgic_init.c b/tools/testing/selftests/kvm/aarch64/vgic_init.c
-index e05ecb31823f..cc828fb53d8f 100644
---- a/tools/testing/selftests/kvm/aarch64/vgic_init.c
-+++ b/tools/testing/selftests/kvm/aarch64/vgic_init.c
-@@ -68,8 +68,6 @@ static void guest_code(void)
- /* we don't want to assert on run execution, hence that helper */
- static int run_vcpu(struct kvm_vcpu *vcpu)
- {
--	ucall_init(vcpu->vm, NULL);
--
- 	return __vcpu_run(vcpu) ? -errno : 0;
- }
- 
-diff --git a/tools/testing/selftests/kvm/aarch64/vgic_irq.c b/tools/testing/selftests/kvm/aarch64/vgic_irq.c
-index 17417220a083..d1817f852daf 100644
---- a/tools/testing/selftests/kvm/aarch64/vgic_irq.c
-+++ b/tools/testing/selftests/kvm/aarch64/vgic_irq.c
-@@ -756,7 +756,6 @@ static void test_vgic(uint32_t nr_irqs, bool level_sensitive, bool eoi_split)
- 	print_args(&args);
- 
- 	vm = vm_create_with_one_vcpu(&vcpu, guest_code);
--	ucall_init(vm, NULL);
- 
- 	vm_init_descriptor_tables(vm);
- 	vcpu_init_descriptor_tables(vcpu);
 diff --git a/tools/testing/selftests/kvm/dirty_log_test.c b/tools/testing/selftests/kvm/dirty_log_test.c
-index b5234d6efbe1..b458a2701634 100644
+index b458a2701634..a38c4369fb8e 100644
 --- a/tools/testing/selftests/kvm/dirty_log_test.c
 +++ b/tools/testing/selftests/kvm/dirty_log_test.c
-@@ -756,8 +756,6 @@ static void run_test(enum vm_guest_mode mode, void *arg)
- 	/* Cache the HVA pointer of the region */
- 	host_test_mem = addr_gpa2hva(vm, (vm_paddr_t)guest_test_phys_mem);
+@@ -811,7 +811,6 @@ static void run_test(enum vm_guest_mode mode, void *arg)
  
--	ucall_init(vm, NULL);
--
- 	/* Export the shared variables to the guest */
- 	sync_global_to_guest(vm, host_page_size);
- 	sync_global_to_guest(vm, guest_page_size);
+ 	free(bmap);
+ 	free(host_bmap_track);
+-	ucall_uninit(vm);
+ 	kvm_vm_free(vm);
+ }
+ 
 diff --git a/tools/testing/selftests/kvm/include/ucall_common.h b/tools/testing/selftests/kvm/include/ucall_common.h
-index 63bfc60be995..8077a6d8b1ba 100644
+index 8077a6d8b1ba..2662a4352a8c 100644
 --- a/tools/testing/selftests/kvm/include/ucall_common.h
 +++ b/tools/testing/selftests/kvm/include/ucall_common.h
-@@ -24,7 +24,7 @@ struct ucall {
- 	uint64_t args[UCALL_MAX_ARGS];
+@@ -25,7 +25,6 @@ struct ucall {
  };
  
--void ucall_arch_init(struct kvm_vm *vm, void *arg);
-+void ucall_arch_init(struct kvm_vm *vm, vm_paddr_t mmio_gpa);
- void ucall_arch_uninit(struct kvm_vm *vm);
+ void ucall_arch_init(struct kvm_vm *vm, vm_paddr_t mmio_gpa);
+-void ucall_arch_uninit(struct kvm_vm *vm);
  void ucall_arch_do_ucall(vm_vaddr_t uc);
  void *ucall_arch_get_ucall(struct kvm_vcpu *vcpu);
-@@ -32,9 +32,9 @@ void *ucall_arch_get_ucall(struct kvm_vcpu *vcpu);
- void ucall(uint64_t cmd, int nargs, ...);
- uint64_t get_ucall(struct kvm_vcpu *vcpu, struct ucall *uc);
  
--static inline void ucall_init(struct kvm_vm *vm, void *arg)
-+static inline void ucall_init(struct kvm_vm *vm, vm_paddr_t mmio_gpa)
- {
--	ucall_arch_init(vm, arg);
-+	ucall_arch_init(vm, mmio_gpa);
+@@ -37,11 +36,6 @@ static inline void ucall_init(struct kvm_vm *vm, vm_paddr_t mmio_gpa)
+ 	ucall_arch_init(vm, mmio_gpa);
  }
  
- static inline void ucall_uninit(struct kvm_vm *vm)
-diff --git a/tools/testing/selftests/kvm/kvm_page_table_test.c b/tools/testing/selftests/kvm/kvm_page_table_test.c
-index f42c6ac6d71d..20533c48ba3d 100644
---- a/tools/testing/selftests/kvm/kvm_page_table_test.c
-+++ b/tools/testing/selftests/kvm/kvm_page_table_test.c
-@@ -289,7 +289,6 @@ static struct kvm_vm *pre_init_before_test(enum vm_guest_mode mode, void *arg)
- 	host_test_mem = addr_gpa2hva(vm, (vm_paddr_t)guest_test_phys_mem);
- 
- 	/* Export shared structure test_args to guest */
--	ucall_init(vm, NULL);
- 	sync_global_to_guest(vm, test_args);
- 
- 	ret = sem_init(&test_stage_updated, 0, 0);
-diff --git a/tools/testing/selftests/kvm/lib/aarch64/ucall.c b/tools/testing/selftests/kvm/lib/aarch64/ucall.c
-index f214f5cc53d3..f02ae27c3e43 100644
---- a/tools/testing/selftests/kvm/lib/aarch64/ucall.c
-+++ b/tools/testing/selftests/kvm/lib/aarch64/ucall.c
-@@ -8,60 +8,12 @@
- 
- static vm_vaddr_t *ucall_exit_mmio_addr;
- 
--static bool ucall_mmio_init(struct kvm_vm *vm, vm_paddr_t gpa)
-+void ucall_arch_init(struct kvm_vm *vm, vm_paddr_t mmio_gpa)
- {
--	if (kvm_userspace_memory_region_find(vm, gpa, gpa + 1))
--		return false;
-+	virt_pg_map(vm, mmio_gpa, mmio_gpa);
- 
--	virt_pg_map(vm, gpa, gpa);
--
--	ucall_exit_mmio_addr = (vm_vaddr_t *)gpa;
-+	ucall_exit_mmio_addr = (vm_vaddr_t *)mmio_gpa;
- 	sync_global_to_guest(vm, ucall_exit_mmio_addr);
--
--	return true;
+-static inline void ucall_uninit(struct kvm_vm *vm)
+-{
+-	ucall_arch_uninit(vm);
 -}
 -
--void ucall_arch_init(struct kvm_vm *vm, void *arg)
+ #define GUEST_SYNC_ARGS(stage, arg1, arg2, arg3, arg4)	\
+ 				ucall(UCALL_SYNC, 6, "hello", stage, arg1, arg2, arg3, arg4)
+ #define GUEST_SYNC(stage)	ucall(UCALL_SYNC, 2, "hello", stage)
+diff --git a/tools/testing/selftests/kvm/kvm_page_table_test.c b/tools/testing/selftests/kvm/kvm_page_table_test.c
+index 20533c48ba3d..d77b1f634f29 100644
+--- a/tools/testing/selftests/kvm/kvm_page_table_test.c
++++ b/tools/testing/selftests/kvm/kvm_page_table_test.c
+@@ -416,7 +416,6 @@ static void run_test(enum vm_guest_mode mode, void *arg)
+ 	TEST_ASSERT(ret == 0, "Error in sem_destroy");
+ 
+ 	free(vcpu_threads);
+-	ucall_uninit(vm);
+ 	kvm_vm_free(vm);
+ }
+ 
+diff --git a/tools/testing/selftests/kvm/lib/aarch64/ucall.c b/tools/testing/selftests/kvm/lib/aarch64/ucall.c
+index 1c38bd260f90..21d73afcb14f 100644
+--- a/tools/testing/selftests/kvm/lib/aarch64/ucall.c
++++ b/tools/testing/selftests/kvm/lib/aarch64/ucall.c
+@@ -12,23 +12,13 @@
+  */
+ static vm_vaddr_t *ucall_exit_mmio_addr;
+ 
+-static void ucall_set_mmio_addr(struct kvm_vm *vm, vm_paddr_t mmio_gpa)
 -{
--	vm_paddr_t gpa, start, end, step, offset;
--	unsigned int bits;
--	bool ret;
+-	vm->ucall_mmio_addr = mmio_gpa;
 -
--	if (arg) {
--		gpa = (vm_paddr_t)arg;
--		ret = ucall_mmio_init(vm, gpa);
--		TEST_ASSERT(ret, "Can't set ucall mmio address to %lx", gpa);
--		return;
--	}
+-	write_guest_global(vm, ucall_exit_mmio_addr, (vm_vaddr_t *)mmio_gpa);
+-}
 -
--	/*
--	 * Find an address within the allowed physical and virtual address
--	 * spaces, that does _not_ have a KVM memory region associated with
--	 * it. Identity mapping an address like this allows the guest to
--	 * access it, but as KVM doesn't know what to do with it, it
--	 * will assume it's something userspace handles and exit with
--	 * KVM_EXIT_MMIO. Well, at least that's how it works for AArch64.
--	 * Here we start with a guess that the addresses around 5/8th
--	 * of the allowed space are unmapped and then work both down and
--	 * up from there in 1/16th allowed space sized steps.
--	 *
--	 * Note, we need to use VA-bits - 1 when calculating the allowed
--	 * virtual address space for an identity mapping because the upper
--	 * half of the virtual address space is the two's complement of the
--	 * lower and won't match physical addresses.
--	 */
--	bits = vm->va_bits - 1;
--	bits = min(vm->pa_bits, bits);
--	end = 1ul << bits;
--	start = end * 5 / 8;
--	step = end / 16;
--	for (offset = 0; offset < end - start; offset += step) {
--		if (ucall_mmio_init(vm, start - offset))
--			return;
--		if (ucall_mmio_init(vm, start + offset))
--			return;
--	}
--	TEST_FAIL("Can't find a ucall mmio address");
- }
- 
- void ucall_arch_uninit(struct kvm_vm *vm)
-diff --git a/tools/testing/selftests/kvm/lib/kvm_util.c b/tools/testing/selftests/kvm/lib/kvm_util.c
-index f1cb1627161f..f12ebd27f6e5 100644
---- a/tools/testing/selftests/kvm/lib/kvm_util.c
-+++ b/tools/testing/selftests/kvm/lib/kvm_util.c
-@@ -334,6 +334,7 @@ struct kvm_vm *__vm_create(enum vm_guest_mode mode, uint32_t nr_runnable_vcpus,
+ void ucall_arch_init(struct kvm_vm *vm, vm_paddr_t mmio_gpa)
  {
- 	uint64_t nr_pages = vm_nr_pages_required(mode, nr_runnable_vcpus,
- 						 nr_extra_pages);
-+	struct userspace_mem_region *slot0;
- 	struct kvm_vm *vm;
+ 	virt_pg_map(vm, mmio_gpa, mmio_gpa);
  
- 	vm = ____vm_create(mode, nr_pages);
-@@ -343,6 +344,16 @@ struct kvm_vm *__vm_create(enum vm_guest_mode mode, uint32_t nr_runnable_vcpus,
- #ifdef __x86_64__
- 	vm_create_irqchip(vm);
- #endif
-+
-+	/*
-+	 * TODO: Add proper defines to protect the library's memslots, and then
-+	 * carve out memslot1 for the ucall MMIO address.  KVM treats writes to
-+	 * read-only memslots as MMIO, and creating a read-only memslot for the
-+	 * MMIO region would prevent silently clobbering the MMIO region.
-+	 */
-+	slot0 = memslot2region(vm, 0);
-+	ucall_init(vm, slot0->region.guest_phys_addr + slot0->region.memory_size);
-+
- 	return vm;
+-	ucall_set_mmio_addr(vm, mmio_gpa);
+-}
++	vm->ucall_mmio_addr = mmio_gpa;
+ 
+-void ucall_arch_uninit(struct kvm_vm *vm)
+-{
+-	ucall_set_mmio_addr(vm, (vm_paddr_t)NULL);
++	write_guest_global(vm, ucall_exit_mmio_addr, (vm_vaddr_t *)mmio_gpa);
  }
  
+ void ucall_arch_do_ucall(vm_vaddr_t uc)
 diff --git a/tools/testing/selftests/kvm/lib/perf_test_util.c b/tools/testing/selftests/kvm/lib/perf_test_util.c
-index 9618b37c66f7..5161fa68cdf3 100644
+index 5161fa68cdf3..78e5be2c7f1a 100644
 --- a/tools/testing/selftests/kvm/lib/perf_test_util.c
 +++ b/tools/testing/selftests/kvm/lib/perf_test_util.c
-@@ -209,8 +209,6 @@ struct kvm_vm *perf_test_create_vm(enum vm_guest_mode mode, int nr_vcpus,
- 		perf_test_setup_nested(vm, nr_vcpus, vcpus);
- 	}
+@@ -217,7 +217,6 @@ struct kvm_vm *perf_test_create_vm(enum vm_guest_mode mode, int nr_vcpus,
  
--	ucall_init(vm, NULL);
--
- 	/* Export the shared variables to the guest. */
- 	sync_global_to_guest(vm, perf_test_args);
+ void perf_test_destroy_vm(struct kvm_vm *vm)
+ {
+-	ucall_uninit(vm);
+ 	kvm_vm_free(vm);
+ }
  
 diff --git a/tools/testing/selftests/kvm/lib/riscv/ucall.c b/tools/testing/selftests/kvm/lib/riscv/ucall.c
-index 37e091d4366e..c58ecb8a0981 100644
+index c58ecb8a0981..78acdb084ab0 100644
 --- a/tools/testing/selftests/kvm/lib/riscv/ucall.c
 +++ b/tools/testing/selftests/kvm/lib/riscv/ucall.c
-@@ -10,7 +10,7 @@
- #include "kvm_util.h"
- #include "processor.h"
- 
--void ucall_arch_init(struct kvm_vm *vm, void *arg)
-+void ucall_arch_init(struct kvm_vm *vm, vm_paddr_t mmio_gpa)
+@@ -14,10 +14,6 @@ void ucall_arch_init(struct kvm_vm *vm, vm_paddr_t mmio_gpa)
  {
  }
  
+-void ucall_arch_uninit(struct kvm_vm *vm)
+-{
+-}
+-
+ struct sbiret sbi_ecall(int ext, int fid, unsigned long arg0,
+ 			unsigned long arg1, unsigned long arg2,
+ 			unsigned long arg3, unsigned long arg4,
 diff --git a/tools/testing/selftests/kvm/lib/s390x/ucall.c b/tools/testing/selftests/kvm/lib/s390x/ucall.c
-index 0f695a031d35..208f0f04299b 100644
+index 208f0f04299b..cbee520a26f2 100644
 --- a/tools/testing/selftests/kvm/lib/s390x/ucall.c
 +++ b/tools/testing/selftests/kvm/lib/s390x/ucall.c
-@@ -6,7 +6,7 @@
-  */
- #include "kvm_util.h"
- 
--void ucall_arch_init(struct kvm_vm *vm, void *arg)
-+void ucall_arch_init(struct kvm_vm *vm, vm_paddr_t mmio_gpa)
+@@ -10,10 +10,6 @@ void ucall_arch_init(struct kvm_vm *vm, vm_paddr_t mmio_gpa)
  {
  }
  
+-void ucall_arch_uninit(struct kvm_vm *vm)
+-{
+-}
+-
+ void ucall_arch_do_ucall(vm_vaddr_t uc)
+ {
+ 	/* Exit via DIAGNOSE 0x501 (normally used for breakpoints) */
 diff --git a/tools/testing/selftests/kvm/lib/x86_64/ucall.c b/tools/testing/selftests/kvm/lib/x86_64/ucall.c
-index ead9946399ab..016a0487cf72 100644
+index 016a0487cf72..eb8bf55b359a 100644
 --- a/tools/testing/selftests/kvm/lib/x86_64/ucall.c
 +++ b/tools/testing/selftests/kvm/lib/x86_64/ucall.c
-@@ -8,7 +8,7 @@
- 
- #define UCALL_PIO_PORT ((uint16_t)0x1000)
- 
--void ucall_arch_init(struct kvm_vm *vm, void *arg)
-+void ucall_arch_init(struct kvm_vm *vm, vm_paddr_t mmio_gpa)
+@@ -12,10 +12,6 @@ void ucall_arch_init(struct kvm_vm *vm, vm_paddr_t mmio_gpa)
  {
  }
  
-diff --git a/tools/testing/selftests/kvm/memslot_perf_test.c b/tools/testing/selftests/kvm/memslot_perf_test.c
-index 44995446d942..4ed5acd74278 100644
---- a/tools/testing/selftests/kvm/memslot_perf_test.c
-+++ b/tools/testing/selftests/kvm/memslot_perf_test.c
-@@ -277,7 +277,6 @@ static bool prepare_vm(struct vm_data *data, int nslots, uint64_t *maxslots,
- 	TEST_ASSERT(data->hva_slots, "malloc() fail");
- 
- 	data->vm = __vm_create_with_one_vcpu(&data->vcpu, mempages, guest_code);
--	ucall_init(data->vm, NULL);
- 
- 	pr_info_v("Adding slots 1..%i, each slot with %"PRIu64" pages + %"PRIu64" extra pages last\n",
- 		max_mem_slots - 1, data->pages_per_slot, rempages);
-diff --git a/tools/testing/selftests/kvm/rseq_test.c b/tools/testing/selftests/kvm/rseq_test.c
-index 6f88da7e60be..0e9e2b48a51f 100644
---- a/tools/testing/selftests/kvm/rseq_test.c
-+++ b/tools/testing/selftests/kvm/rseq_test.c
-@@ -224,7 +224,6 @@ int main(int argc, char *argv[])
- 	 * CPU affinity.
- 	 */
- 	vm = vm_create_with_one_vcpu(&vcpu, guest_code);
--	ucall_init(vm, NULL);
- 
- 	pthread_create(&migration_thread, NULL, migration_worker,
- 		       (void *)(unsigned long)syscall(SYS_gettid));
-diff --git a/tools/testing/selftests/kvm/steal_time.c b/tools/testing/selftests/kvm/steal_time.c
-index db8967f1a17b..c87f38712073 100644
---- a/tools/testing/selftests/kvm/steal_time.c
-+++ b/tools/testing/selftests/kvm/steal_time.c
-@@ -266,7 +266,6 @@ int main(int ac, char **av)
- 	gpages = vm_calc_num_guest_pages(VM_MODE_DEFAULT, STEAL_TIME_SIZE * NR_VCPUS);
- 	vm_userspace_mem_region_add(vm, VM_MEM_SRC_ANONYMOUS, ST_GPA_BASE, 1, gpages, 0);
- 	virt_map(vm, ST_GPA_BASE, ST_GPA_BASE, gpages);
--	ucall_init(vm, NULL);
- 
- 	TEST_REQUIRE(is_steal_time_supported(vcpus[0]));
- 
-diff --git a/tools/testing/selftests/kvm/system_counter_offset_test.c b/tools/testing/selftests/kvm/system_counter_offset_test.c
-index 1c274933912b..7f5b330b6a1b 100644
---- a/tools/testing/selftests/kvm/system_counter_offset_test.c
-+++ b/tools/testing/selftests/kvm/system_counter_offset_test.c
-@@ -121,7 +121,6 @@ int main(void)
- 
- 	vm = vm_create_with_one_vcpu(&vcpu, guest_main);
- 	check_preconditions(vcpu);
--	ucall_init(vm, NULL);
- 
- 	enter_guest(vcpu);
- 	kvm_vm_free(vm);
+-void ucall_arch_uninit(struct kvm_vm *vm)
+-{
+-}
+-
+ void ucall_arch_do_ucall(vm_vaddr_t uc)
+ {
+ 	asm volatile("in %[port], %%al"
 -- 
 2.38.0.rc1.362.ged0d419d3c-goog
 
