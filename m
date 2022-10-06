@@ -1,123 +1,83 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Thu,  6 Oct 2022 00:34:07 +0000
-Subject: [PATCH v6 5/7] KVM: selftests: Make arm64's MMIO ucall multi-VM friendly
+Date: Thu,  6 Oct 2022 00:34:06 +0000
+Subject: [PATCH v6 4/7] tools: Add atomic_test_and_set_bit()
 In-Reply-To: <20221006003409.649993-1-seanjc@google.com>
 References: <20221006003409.649993-1-seanjc@google.com>
-Message-ID: <20221006003409.649993-6-seanjc@google.com>
+Message-ID: <20221006003409.649993-5-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Fix a mostly-theoretical bug where ARM's ucall MMIO setup could result in
-different VMs stomping on each other by cloberring the global pointer.
+From: Peter Gonda <pgonda@google.com>
 
-Fix the most obvious issue by saving the MMIO gpa into the VM.
+Add x86 and generic implementations of atomic_test_and_set_bit() to allow
+KVM selftests to atomically manage bitmaps.
 
-A more subtle bug is that creating VMs in parallel (on multiple tasks)
-could result in a VM using the wrong address.  Synchronizing a global to
-a guest effectively snapshots the value on a per-VM basis, i.e. the
-"global" is already prepped to work with multiple VMs, but setting the
-global in the host is not thread-safe.  To fix that bug, add
-write_guest_global() to allow stuffing a VM's copy of a "global" without
-modifying the host value.
+Note, the generic version is taken from arch_test_and_set_bit() as of
+commit 415d83249709 ("locking/atomic: Make test_and_*_bit() ordered on
+failure").
 
-Reviewed-by: Andrew Jones <andrew.jones@linux.dev>
-Tested-by: Peter Gonda <pgonda@google.com>
+Signed-off-by: Peter Gonda <pgonda@google.com>
+Co-developed-by: Sean Christopherson <seanjc@google.com>
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- .../selftests/kvm/include/kvm_util_base.h     | 15 +++++++++++++++
- .../testing/selftests/kvm/lib/aarch64/ucall.c | 19 ++++++++++++++-----
- 2 files changed, 29 insertions(+), 5 deletions(-)
+ tools/arch/x86/include/asm/atomic.h    |  7 +++++++
+ tools/include/asm-generic/atomic-gcc.h | 12 ++++++++++++
+ 2 files changed, 19 insertions(+)
 
-diff --git a/tools/testing/selftests/kvm/include/kvm_util_base.h b/tools/testing/selftests/kvm/include/kvm_util_base.h
-index e42a09cd24a0..c14d531a942a 100644
---- a/tools/testing/selftests/kvm/include/kvm_util_base.h
-+++ b/tools/testing/selftests/kvm/include/kvm_util_base.h
-@@ -16,6 +16,7 @@
- #include <linux/kvm.h>
- #include "linux/rbtree.h"
+diff --git a/tools/arch/x86/include/asm/atomic.h b/tools/arch/x86/include/asm/atomic.h
+index 1f5e26aae9fc..01cc27ec4520 100644
+--- a/tools/arch/x86/include/asm/atomic.h
++++ b/tools/arch/x86/include/asm/atomic.h
+@@ -8,6 +8,7 @@
  
-+#include <asm/atomic.h>
+ #define LOCK_PREFIX "\n\tlock; "
  
- #include <sys/ioctl.h>
++#include <asm/asm.h>
+ #include <asm/cmpxchg.h>
  
-@@ -81,6 +82,7 @@ struct kvm_vm {
- 	struct sparsebit *vpages_mapped;
- 	bool has_irqchip;
- 	bool pgd_created;
-+	vm_paddr_t ucall_mmio_addr;
- 	vm_paddr_t pgd;
- 	vm_vaddr_t gdt;
- 	vm_vaddr_t tss;
-@@ -718,6 +720,19 @@ kvm_userspace_memory_region_find(struct kvm_vm *vm, uint64_t start,
- 	memcpy(&(g), _p, sizeof(g));				\
- })
+ /*
+@@ -70,4 +71,10 @@ static __always_inline int atomic_cmpxchg(atomic_t *v, int old, int new)
+ 	return cmpxchg(&v->counter, old, new);
+ }
  
-+/*
-+ * Write a global value, but only in the VM's (guest's) domain.  Primarily used
-+ * for "globals" that hold per-VM values (VMs always duplicate code and global
-+ * data into their own region of physical memory), but can be used anytime it's
-+ * undesirable to change the host's copy of the global.
-+ */
-+#define write_guest_global(vm, g, val) ({			\
-+	typeof(g) *_p = addr_gva2hva(vm, (vm_vaddr_t)&(g));	\
-+	typeof(g) _val = val;					\
-+								\
-+	memcpy(_p, &(_val), sizeof(g));				\
-+})
-+
- void assert_on_unhandled_exception(struct kvm_vcpu *vcpu);
- 
- void vcpu_arch_dump(FILE *stream, struct kvm_vcpu *vcpu,
-diff --git a/tools/testing/selftests/kvm/lib/aarch64/ucall.c b/tools/testing/selftests/kvm/lib/aarch64/ucall.c
-index f02ae27c3e43..1c38bd260f90 100644
---- a/tools/testing/selftests/kvm/lib/aarch64/ucall.c
-+++ b/tools/testing/selftests/kvm/lib/aarch64/ucall.c
-@@ -6,20 +6,29 @@
-  */
- #include "kvm_util.h"
- 
-+/*
-+ * ucall_exit_mmio_addr holds per-VM values (global data is duplicated by each
-+ * VM), it must not be accessed from host code.
-+ */
- static vm_vaddr_t *ucall_exit_mmio_addr;
- 
-+static void ucall_set_mmio_addr(struct kvm_vm *vm, vm_paddr_t mmio_gpa)
++static inline int atomic_test_and_set_bit(long nr, unsigned long *addr)
 +{
-+	vm->ucall_mmio_addr = mmio_gpa;
++	GEN_BINARY_RMWcc(LOCK_PREFIX __ASM_SIZE(bts), *addr, "Ir", nr, "%0", "c");
 +
-+	write_guest_global(vm, ucall_exit_mmio_addr, (vm_vaddr_t *)mmio_gpa);
 +}
 +
- void ucall_arch_init(struct kvm_vm *vm, vm_paddr_t mmio_gpa)
- {
- 	virt_pg_map(vm, mmio_gpa, mmio_gpa);
+ #endif /* _TOOLS_LINUX_ASM_X86_ATOMIC_H */
+diff --git a/tools/include/asm-generic/atomic-gcc.h b/tools/include/asm-generic/atomic-gcc.h
+index 4c1966f7c77a..6daa68bf5b9e 100644
+--- a/tools/include/asm-generic/atomic-gcc.h
++++ b/tools/include/asm-generic/atomic-gcc.h
+@@ -4,6 +4,7 @@
  
--	ucall_exit_mmio_addr = (vm_vaddr_t *)mmio_gpa;
--	sync_global_to_guest(vm, ucall_exit_mmio_addr);
-+	ucall_set_mmio_addr(vm, mmio_gpa);
+ #include <linux/compiler.h>
+ #include <linux/types.h>
++#include <linux/bitops.h>
+ 
+ /*
+  * Atomic operations that C can't guarantee us.  Useful for
+@@ -69,4 +70,15 @@ static inline int atomic_cmpxchg(atomic_t *v, int oldval, int newval)
+ 	return cmpxchg(&(v)->counter, oldval, newval);
  }
  
- void ucall_arch_uninit(struct kvm_vm *vm)
- {
--	ucall_exit_mmio_addr = 0;
--	sync_global_to_guest(vm, ucall_exit_mmio_addr);
-+	ucall_set_mmio_addr(vm, (vm_paddr_t)NULL);
- }
- 
- void ucall_arch_do_ucall(vm_vaddr_t uc)
-@@ -32,7 +41,7 @@ void *ucall_arch_get_ucall(struct kvm_vcpu *vcpu)
- 	struct kvm_run *run = vcpu->run;
- 
- 	if (run->exit_reason == KVM_EXIT_MMIO &&
--	    run->mmio.phys_addr == (uint64_t)ucall_exit_mmio_addr) {
-+	    run->mmio.phys_addr == vcpu->vm->ucall_mmio_addr) {
- 		vm_vaddr_t gva;
- 
- 		TEST_ASSERT(run->mmio.is_write && run->mmio.len == 8,
++static inline int atomic_test_and_set_bit(long nr, unsigned long *addr)
++{
++	unsigned long mask = BIT_MASK(nr);
++	long old;
++
++	addr += BIT_WORD(nr);
++
++	old = __sync_fetch_and_or(addr, mask);
++	return !!(old & mask);
++}
++
+ #endif /* __TOOLS_ASM_GENERIC_ATOMIC_H */
 -- 
 2.38.0.rc1.362.ged0d419d3c-goog
 
