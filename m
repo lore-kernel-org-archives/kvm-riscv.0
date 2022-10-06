@@ -1,112 +1,237 @@
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Date: Tue,  4 Oct 2022 10:57:22 +1100
-Subject: [PATCH kernel v4] KVM: PPC: Make KVM_CAP_IRQFD_RESAMPLE support platform dependent
-Message-ID: <20221003235722.2085145-1-aik@ozlabs.ru>
+From: Sean Christopherson <seanjc@google.com>
+Date: Thu,  6 Oct 2022 00:34:04 +0000
+Subject: [PATCH v6 2/7] KVM: selftests: Consolidate boilerplate code in get_ucall()
+In-Reply-To: <20221006003409.649993-1-seanjc@google.com>
+References: <20221006003409.649993-1-seanjc@google.com>
+Message-ID: <20221006003409.649993-3-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-When introduced, IRQFD resampling worked on POWER8 with XICS. However
-KVM on POWER9 has never implemented it - the compatibility mode code
-("XICS-on-XIVE") misses the kvm_notify_acked_irq() call and the native
-XIVE mode does not handle INTx in KVM at all.
+Consolidate the actual copying of a ucall struct from guest=>host into
+the common get_ucall().  Return a host virtual address instead of a guest
+virtual address even though the addr_gva2hva() part could be moved to
+get_ucall() too.  Conceptually, get_ucall() is invoked from the host and
+should return a host virtual address (and returning NULL for "nothing to
+see here" is far superior to returning 0).
 
-This moved the capability support advertising to platforms and stops
-advertising it on XIVE, i.e. POWER9 and later.
+Use pointer shenanigans instead of an unnecessary bounce buffer when the
+caller of get_ucall() provides a valid pointer.
 
-This should cause no behavioural change for other architectures.
-
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-Acked-by: Nicholas Piggin <npiggin@gmail.com>
-Acked-by: Marc Zyngier <maz@kernel.org>
+Reviewed-by: Andrew Jones <andrew.jones@linux.dev>
+Tested-by: Peter Gonda <pgonda@google.com>
+Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
-Changes:
-v4:
-* removed incorrect clause about changing behavoir on MIPS and RISCV
+ .../selftests/kvm/include/ucall_common.h      |  8 ++------
+ .../testing/selftests/kvm/lib/aarch64/ucall.c | 14 +++-----------
+ tools/testing/selftests/kvm/lib/riscv/ucall.c | 19 +++----------------
+ tools/testing/selftests/kvm/lib/s390x/ucall.c | 16 +++-------------
+ .../testing/selftests/kvm/lib/ucall_common.c  | 19 +++++++++++++++++++
+ .../testing/selftests/kvm/lib/x86_64/ucall.c  | 16 +++-------------
+ 6 files changed, 33 insertions(+), 59 deletions(-)
 
-v3:
-* removed all ifdeferry
-* removed the capability for MIPS and RISCV
-* adjusted the commit log about MIPS and RISCV
-
-v2:
-* removed ifdef for ARM64.
----
- arch/arm64/kvm/arm.c       | 1 +
- arch/powerpc/kvm/powerpc.c | 6 ++++++
- arch/s390/kvm/kvm-s390.c   | 1 +
- arch/x86/kvm/x86.c         | 1 +
- virt/kvm/kvm_main.c        | 1 -
- 5 files changed, 9 insertions(+), 1 deletion(-)
-
-diff --git a/arch/arm64/kvm/arm.c b/arch/arm64/kvm/arm.c
-index 2ff0ef62abad..d2daa4d375b5 100644
---- a/arch/arm64/kvm/arm.c
-+++ b/arch/arm64/kvm/arm.c
-@@ -218,6 +218,7 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
- 	case KVM_CAP_VCPU_ATTRIBUTES:
- 	case KVM_CAP_PTP_KVM:
- 	case KVM_CAP_ARM_SYSTEM_SUSPEND:
-+	case KVM_CAP_IRQFD_RESAMPLE:
- 		r = 1;
- 		break;
- 	case KVM_CAP_SET_GUEST_DEBUG2:
-diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-index fb1490761c87..908ce8bd91c9 100644
---- a/arch/powerpc/kvm/powerpc.c
-+++ b/arch/powerpc/kvm/powerpc.c
-@@ -593,6 +593,12 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
- 		break;
- #endif
+diff --git a/tools/testing/selftests/kvm/include/ucall_common.h b/tools/testing/selftests/kvm/include/ucall_common.h
+index 5a85f5318bbe..63bfc60be995 100644
+--- a/tools/testing/selftests/kvm/include/ucall_common.h
++++ b/tools/testing/selftests/kvm/include/ucall_common.h
+@@ -27,9 +27,10 @@ struct ucall {
+ void ucall_arch_init(struct kvm_vm *vm, void *arg);
+ void ucall_arch_uninit(struct kvm_vm *vm);
+ void ucall_arch_do_ucall(vm_vaddr_t uc);
+-uint64_t ucall_arch_get_ucall(struct kvm_vcpu *vcpu, struct ucall *uc);
++void *ucall_arch_get_ucall(struct kvm_vcpu *vcpu);
  
-+#ifdef CONFIG_HAVE_KVM_IRQFD
-+	case KVM_CAP_IRQFD_RESAMPLE:
-+		r = !xive_enabled();
-+		break;
-+#endif
+ void ucall(uint64_t cmd, int nargs, ...);
++uint64_t get_ucall(struct kvm_vcpu *vcpu, struct ucall *uc);
+ 
+ static inline void ucall_init(struct kvm_vm *vm, void *arg)
+ {
+@@ -41,11 +42,6 @@ static inline void ucall_uninit(struct kvm_vm *vm)
+ 	ucall_arch_uninit(vm);
+ }
+ 
+-static inline uint64_t get_ucall(struct kvm_vcpu *vcpu, struct ucall *uc)
+-{
+-	return ucall_arch_get_ucall(vcpu, uc);
+-}
+-
+ #define GUEST_SYNC_ARGS(stage, arg1, arg2, arg3, arg4)	\
+ 				ucall(UCALL_SYNC, 6, "hello", stage, arg1, arg2, arg3, arg4)
+ #define GUEST_SYNC(stage)	ucall(UCALL_SYNC, 2, "hello", stage)
+diff --git a/tools/testing/selftests/kvm/lib/aarch64/ucall.c b/tools/testing/selftests/kvm/lib/aarch64/ucall.c
+index 3630708c32d6..f214f5cc53d3 100644
+--- a/tools/testing/selftests/kvm/lib/aarch64/ucall.c
++++ b/tools/testing/selftests/kvm/lib/aarch64/ucall.c
+@@ -75,13 +75,9 @@ void ucall_arch_do_ucall(vm_vaddr_t uc)
+ 	WRITE_ONCE(*ucall_exit_mmio_addr, uc);
+ }
+ 
+-uint64_t ucall_arch_get_ucall(struct kvm_vcpu *vcpu, struct ucall *uc)
++void *ucall_arch_get_ucall(struct kvm_vcpu *vcpu)
+ {
+ 	struct kvm_run *run = vcpu->run;
+-	struct ucall ucall = {};
+-
+-	if (uc)
+-		memset(uc, 0, sizeof(*uc));
+ 
+ 	if (run->exit_reason == KVM_EXIT_MMIO &&
+ 	    run->mmio.phys_addr == (uint64_t)ucall_exit_mmio_addr) {
+@@ -90,12 +86,8 @@ uint64_t ucall_arch_get_ucall(struct kvm_vcpu *vcpu, struct ucall *uc)
+ 		TEST_ASSERT(run->mmio.is_write && run->mmio.len == 8,
+ 			    "Unexpected ucall exit mmio address access");
+ 		memcpy(&gva, run->mmio.data, sizeof(gva));
+-		memcpy(&ucall, addr_gva2hva(vcpu->vm, gva), sizeof(ucall));
+-
+-		vcpu_run_complete_io(vcpu);
+-		if (uc)
+-			memcpy(uc, &ucall, sizeof(ucall));
++		return addr_gva2hva(vcpu->vm, gva);
+ 	}
+ 
+-	return ucall.cmd;
++	return NULL;
+ }
+diff --git a/tools/testing/selftests/kvm/lib/riscv/ucall.c b/tools/testing/selftests/kvm/lib/riscv/ucall.c
+index b1598f418c1f..37e091d4366e 100644
+--- a/tools/testing/selftests/kvm/lib/riscv/ucall.c
++++ b/tools/testing/selftests/kvm/lib/riscv/ucall.c
+@@ -51,27 +51,15 @@ void ucall_arch_do_ucall(vm_vaddr_t uc)
+ 		  uc, 0, 0, 0, 0, 0);
+ }
+ 
+-uint64_t ucall_arch_get_ucall(struct kvm_vcpu *vcpu, struct ucall *uc)
++void *ucall_arch_get_ucall(struct kvm_vcpu *vcpu)
+ {
+ 	struct kvm_run *run = vcpu->run;
+-	struct ucall ucall = {};
+-
+-	if (uc)
+-		memset(uc, 0, sizeof(*uc));
+ 
+ 	if (run->exit_reason == KVM_EXIT_RISCV_SBI &&
+ 	    run->riscv_sbi.extension_id == KVM_RISCV_SELFTESTS_SBI_EXT) {
+ 		switch (run->riscv_sbi.function_id) {
+ 		case KVM_RISCV_SELFTESTS_SBI_UCALL:
+-			memcpy(&ucall,
+-			       addr_gva2hva(vcpu->vm, run->riscv_sbi.args[0]),
+-			       sizeof(ucall));
+-
+-			vcpu_run_complete_io(vcpu);
+-			if (uc)
+-				memcpy(uc, &ucall, sizeof(ucall));
+-
+-			break;
++			return addr_gva2hva(vcpu->vm, run->riscv_sbi.args[0]);
+ 		case KVM_RISCV_SELFTESTS_SBI_UNEXP:
+ 			vcpu_dump(stderr, vcpu, 2);
+ 			TEST_ASSERT(0, "Unexpected trap taken by guest");
+@@ -80,6 +68,5 @@ uint64_t ucall_arch_get_ucall(struct kvm_vcpu *vcpu, struct ucall *uc)
+ 			break;
+ 		}
+ 	}
+-
+-	return ucall.cmd;
++	return NULL;
+ }
+diff --git a/tools/testing/selftests/kvm/lib/s390x/ucall.c b/tools/testing/selftests/kvm/lib/s390x/ucall.c
+index 114cb4af295f..0f695a031d35 100644
+--- a/tools/testing/selftests/kvm/lib/s390x/ucall.c
++++ b/tools/testing/selftests/kvm/lib/s390x/ucall.c
+@@ -20,13 +20,9 @@ void ucall_arch_do_ucall(vm_vaddr_t uc)
+ 	asm volatile ("diag 0,%0,0x501" : : "a"(uc) : "memory");
+ }
+ 
+-uint64_t ucall_arch_get_ucall(struct kvm_vcpu *vcpu, struct ucall *uc)
++void *ucall_arch_get_ucall(struct kvm_vcpu *vcpu)
+ {
+ 	struct kvm_run *run = vcpu->run;
+-	struct ucall ucall = {};
+-
+-	if (uc)
+-		memset(uc, 0, sizeof(*uc));
+ 
+ 	if (run->exit_reason == KVM_EXIT_S390_SIEIC &&
+ 	    run->s390_sieic.icptcode == 4 &&
+@@ -34,13 +30,7 @@ uint64_t ucall_arch_get_ucall(struct kvm_vcpu *vcpu, struct ucall *uc)
+ 	    (run->s390_sieic.ipb >> 16) == 0x501) {
+ 		int reg = run->s390_sieic.ipa & 0xf;
+ 
+-		memcpy(&ucall, addr_gva2hva(vcpu->vm, run->s.regs.gprs[reg]),
+-		       sizeof(ucall));
+-
+-		vcpu_run_complete_io(vcpu);
+-		if (uc)
+-			memcpy(uc, &ucall, sizeof(ucall));
++		return addr_gva2hva(vcpu->vm, run->s.regs.gprs[reg]);
+ 	}
+-
+-	return ucall.cmd;
++	return NULL;
+ }
+diff --git a/tools/testing/selftests/kvm/lib/ucall_common.c b/tools/testing/selftests/kvm/lib/ucall_common.c
+index 2395c7f1d543..ced480860746 100644
+--- a/tools/testing/selftests/kvm/lib/ucall_common.c
++++ b/tools/testing/selftests/kvm/lib/ucall_common.c
+@@ -18,3 +18,22 @@ void ucall(uint64_t cmd, int nargs, ...)
+ 
+ 	ucall_arch_do_ucall((vm_vaddr_t)&uc);
+ }
 +
- 	case KVM_CAP_PPC_ALLOC_HTAB:
- 		r = hv_enabled;
- 		break;
-diff --git a/arch/s390/kvm/kvm-s390.c b/arch/s390/kvm/kvm-s390.c
-index edfd4bbd0cba..7521adadb81b 100644
---- a/arch/s390/kvm/kvm-s390.c
-+++ b/arch/s390/kvm/kvm-s390.c
-@@ -577,6 +577,7 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
- 	case KVM_CAP_SET_GUEST_DEBUG:
- 	case KVM_CAP_S390_DIAG318:
- 	case KVM_CAP_S390_MEM_OP_EXTENSION:
-+	case KVM_CAP_IRQFD_RESAMPLE:
- 		r = 1;
- 		break;
- 	case KVM_CAP_SET_GUEST_DEBUG2:
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 43a6a7efc6ec..2d6c5a8fdf14 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -4395,6 +4395,7 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
- 	case KVM_CAP_VAPIC:
- 	case KVM_CAP_ENABLE_CAP:
- 	case KVM_CAP_VM_DISABLE_NX_HUGE_PAGES:
-+	case KVM_CAP_IRQFD_RESAMPLE:
- 		r = 1;
- 		break;
- 	case KVM_CAP_EXIT_HYPERCALL:
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 584a5bab3af3..05cf94013f02 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -4447,7 +4447,6 @@ static long kvm_vm_ioctl_check_extension_generic(struct kvm *kvm, long arg)
- #endif
- #ifdef CONFIG_HAVE_KVM_IRQFD
- 	case KVM_CAP_IRQFD:
--	case KVM_CAP_IRQFD_RESAMPLE:
- #endif
- 	case KVM_CAP_IOEVENTFD_ANY_LENGTH:
- 	case KVM_CAP_CHECK_EXTENSION_VM:
++uint64_t get_ucall(struct kvm_vcpu *vcpu, struct ucall *uc)
++{
++	struct ucall ucall;
++	void *addr;
++
++	if (!uc)
++		uc = &ucall;
++
++	addr = ucall_arch_get_ucall(vcpu);
++	if (addr) {
++		memcpy(uc, addr, sizeof(*uc));
++		vcpu_run_complete_io(vcpu);
++	} else {
++		memset(uc, 0, sizeof(*uc));
++	}
++
++	return uc->cmd;
++}
+diff --git a/tools/testing/selftests/kvm/lib/x86_64/ucall.c b/tools/testing/selftests/kvm/lib/x86_64/ucall.c
+index 9f532dba1003..ead9946399ab 100644
+--- a/tools/testing/selftests/kvm/lib/x86_64/ucall.c
++++ b/tools/testing/selftests/kvm/lib/x86_64/ucall.c
+@@ -22,25 +22,15 @@ void ucall_arch_do_ucall(vm_vaddr_t uc)
+ 		: : [port] "d" (UCALL_PIO_PORT), "D" (uc) : "rax", "memory");
+ }
+ 
+-uint64_t ucall_arch_get_ucall(struct kvm_vcpu *vcpu, struct ucall *uc)
++void *ucall_arch_get_ucall(struct kvm_vcpu *vcpu)
+ {
+ 	struct kvm_run *run = vcpu->run;
+-	struct ucall ucall = {};
+-
+-	if (uc)
+-		memset(uc, 0, sizeof(*uc));
+ 
+ 	if (run->exit_reason == KVM_EXIT_IO && run->io.port == UCALL_PIO_PORT) {
+ 		struct kvm_regs regs;
+ 
+ 		vcpu_regs_get(vcpu, &regs);
+-		memcpy(&ucall, addr_gva2hva(vcpu->vm, (vm_vaddr_t)regs.rdi),
+-		       sizeof(ucall));
+-
+-		vcpu_run_complete_io(vcpu);
+-		if (uc)
+-			memcpy(uc, &ucall, sizeof(ucall));
++		return addr_gva2hva(vcpu->vm, regs.rdi);
+ 	}
+-
+-	return ucall.cmd;
++	return NULL;
+ }
 -- 
-2.37.3
+2.38.0.rc1.362.ged0d419d3c-goog
 
 
