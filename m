@@ -1,17 +1,16 @@
-From: Anup Patel <anup@brainfault.org>
-Date: Thu, 13 Oct 2022 19:17:31 +0530
+From: Andrew Jones <ajones@ventanamicro.com>
+Date: Thu, 13 Oct 2022 15:48:07 +0200
 Subject: [PATCH v2] RISC-V: KVM: Fix compilation without RISCV_ISA_ZICBOM
 In-Reply-To: <20221013134217.1850349-1-ajones@ventanamicro.com>
 References: <20221013134217.1850349-1-ajones@ventanamicro.com>
-Message-ID: <CAAhSdy3j6rA34+bY_X0CTkjOF8Ubj0OGMbbXy30tFbN_sc-Kyg@mail.gmail.com>
+Message-ID: <20221013134807.wi53dyogw36jqdgr@kamzik>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Oct 13, 2022 at 7:12 PM Andrew Jones <ajones@ventanamicro.com> wrote:
->
+On Thu, Oct 13, 2022 at 03:42:17PM +0200, Andrew Jones wrote:
 > riscv_cbom_block_size and riscv_init_cbom_blocksize() should always
 > be available and riscv_init_cbom_blocksize() should always be
 > invoked, even when compiling without RISCV_ISA_ZICBOM enabled. This
@@ -21,36 +20,35 @@ On Thu, Oct 13, 2022 at 7:12 PM Andrew Jones <ajones@ventanamicro.com> wrote:
 > its use with RISCV_ISA_ZICBOM or not, KVM will offer it to guests.
 > Ensure we can build KVM and that the block size is initialized even
 > when compiling without RISCV_ISA_ZICBOM.
->
+> 
 > Fixes: 8f7e001e0325 ("RISC-V: Clean up the Zicbom block size probing")
 > Reported-by: kernel test robot <lkp@intel.com>
 > Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
-
-This is quite similar to the code movement patch I had in the PMEM series.
-
-Looks good to me.
-
-Reviewed-by: Anup Patel <anup@brainfault.org>
-
-@Palmer, let me know if you are okay with this going through the KVM tree.
-
-Regards,
-Anup
-
 > ---
+
+Grr... Second time I forgot my changelog on a patch this week...
+
+v2:
+ - Instead of #ifdefing the use of riscv_cbom_block_size in KVM always
+   expose it by moving it to cacheflush.c and change Fixes commit. [Palmer]
+ - Move riscv_init_cbom_blocksize() to cacheflush.c and always expose
+   it since KVM can offer zicbom to guests even if the host kernel
+   chooses not to use it (RISCV_ISA_ZICBOM=n) [drew]
+ - Rewrote commit message
+
 >  arch/riscv/include/asm/cacheflush.h |  8 ------
 >  arch/riscv/mm/cacheflush.c          | 38 ++++++++++++++++++++++++++
 >  arch/riscv/mm/dma-noncoherent.c     | 41 -----------------------------
 >  3 files changed, 38 insertions(+), 49 deletions(-)
->
+> 
 > diff --git a/arch/riscv/include/asm/cacheflush.h b/arch/riscv/include/asm/cacheflush.h
 > index 273ece6b622f..1470e556cdb1 100644
 > --- a/arch/riscv/include/asm/cacheflush.h
 > +++ b/arch/riscv/include/asm/cacheflush.h
 > @@ -42,16 +42,8 @@ void flush_icache_mm(struct mm_struct *mm, bool local);
->
+>  
 >  #endif /* CONFIG_SMP */
->
+>  
 > -/*
 > - * The T-Head CMO errata internally probe the CBOM block size, but otherwise
 > - * don't depend on Zicbom.
@@ -61,7 +59,7 @@ Anup
 > -#else
 > -static inline void riscv_init_cbom_blocksize(void) { }
 > -#endif
->
+>  
 >  #ifdef CONFIG_RISCV_DMA_NONCOHERENT
 >  void riscv_noncoherent_supported(void);
 > diff --git a/arch/riscv/mm/cacheflush.c b/arch/riscv/mm/cacheflush.c
@@ -71,13 +69,13 @@ Anup
 > @@ -3,6 +3,7 @@
 >   * Copyright (C) 2017 SiFive
 >   */
->
+>  
 > +#include <linux/of.h>
 >  #include <asm/cacheflush.h>
->
+>  
 >  #ifdef CONFIG_SMP
 > @@ -86,3 +87,40 @@ void flush_icache_pte(pte_t pte)
->                 flush_icache_all();
+>  		flush_icache_all();
 >  }
 >  #endif /* CONFIG_MMU */
 > +
@@ -86,36 +84,36 @@ Anup
 > +
 > +void riscv_init_cbom_blocksize(void)
 > +{
-> +       struct device_node *node;
-> +       unsigned long cbom_hartid;
-> +       u32 val, probed_block_size;
-> +       int ret;
+> +	struct device_node *node;
+> +	unsigned long cbom_hartid;
+> +	u32 val, probed_block_size;
+> +	int ret;
 > +
-> +       probed_block_size = 0;
-> +       for_each_of_cpu_node(node) {
-> +               unsigned long hartid;
+> +	probed_block_size = 0;
+> +	for_each_of_cpu_node(node) {
+> +		unsigned long hartid;
 > +
-> +               ret = riscv_of_processor_hartid(node, &hartid);
-> +               if (ret)
-> +                       continue;
+> +		ret = riscv_of_processor_hartid(node, &hartid);
+> +		if (ret)
+> +			continue;
 > +
-> +               /* set block-size for cbom extension if available */
-> +               ret = of_property_read_u32(node, "riscv,cbom-block-size", &val);
-> +               if (ret)
-> +                       continue;
+> +		/* set block-size for cbom extension if available */
+> +		ret = of_property_read_u32(node, "riscv,cbom-block-size", &val);
+> +		if (ret)
+> +			continue;
 > +
-> +               if (!probed_block_size) {
-> +                       probed_block_size = val;
-> +                       cbom_hartid = hartid;
-> +               } else {
-> +                       if (probed_block_size != val)
-> +                               pr_warn("cbom-block-size mismatched between harts %lu and %lu\n",
-> +                                       cbom_hartid, hartid);
-> +               }
-> +       }
+> +		if (!probed_block_size) {
+> +			probed_block_size = val;
+> +			cbom_hartid = hartid;
+> +		} else {
+> +			if (probed_block_size != val)
+> +				pr_warn("cbom-block-size mismatched between harts %lu and %lu\n",
+> +					cbom_hartid, hartid);
+> +		}
+> +	}
 > +
-> +       if (probed_block_size)
-> +               riscv_cbom_block_size = probed_block_size;
+> +	if (probed_block_size)
+> +		riscv_cbom_block_size = probed_block_size;
 > +}
 > diff --git a/arch/riscv/mm/dma-noncoherent.c b/arch/riscv/mm/dma-noncoherent.c
 > index b0add983530a..d919efab6eba 100644
@@ -128,57 +126,57 @@ Anup
 > -#include <linux/of.h>
 > -#include <linux/of_device.h>
 >  #include <asm/cacheflush.h>
->
+>  
 > -unsigned int riscv_cbom_block_size;
 > -EXPORT_SYMBOL_GPL(riscv_cbom_block_size);
 > -
 >  static bool noncoherent_supported;
->
+>  
 >  void arch_sync_dma_for_device(phys_addr_t paddr, size_t size,
 > @@ -77,42 +72,6 @@ void arch_setup_dma_ops(struct device *dev, u64 dma_base, u64 size,
->         dev->dma_coherent = coherent;
+>  	dev->dma_coherent = coherent;
 >  }
->
+>  
 > -#ifdef CONFIG_RISCV_ISA_ZICBOM
 > -void riscv_init_cbom_blocksize(void)
 > -{
-> -       struct device_node *node;
-> -       unsigned long cbom_hartid;
-> -       u32 val, probed_block_size;
-> -       int ret;
+> -	struct device_node *node;
+> -	unsigned long cbom_hartid;
+> -	u32 val, probed_block_size;
+> -	int ret;
 > -
-> -       probed_block_size = 0;
-> -       for_each_of_cpu_node(node) {
-> -               unsigned long hartid;
+> -	probed_block_size = 0;
+> -	for_each_of_cpu_node(node) {
+> -		unsigned long hartid;
 > -
-> -               ret = riscv_of_processor_hartid(node, &hartid);
-> -               if (ret)
-> -                       continue;
+> -		ret = riscv_of_processor_hartid(node, &hartid);
+> -		if (ret)
+> -			continue;
 > -
-> -               /* set block-size for cbom extension if available */
-> -               ret = of_property_read_u32(node, "riscv,cbom-block-size", &val);
-> -               if (ret)
-> -                       continue;
+> -		/* set block-size for cbom extension if available */
+> -		ret = of_property_read_u32(node, "riscv,cbom-block-size", &val);
+> -		if (ret)
+> -			continue;
 > -
-> -               if (!probed_block_size) {
-> -                       probed_block_size = val;
-> -                       cbom_hartid = hartid;
-> -               } else {
-> -                       if (probed_block_size != val)
-> -                               pr_warn("cbom-block-size mismatched between harts %lu and %lu\n",
-> -                                       cbom_hartid, hartid);
-> -               }
-> -       }
+> -		if (!probed_block_size) {
+> -			probed_block_size = val;
+> -			cbom_hartid = hartid;
+> -		} else {
+> -			if (probed_block_size != val)
+> -				pr_warn("cbom-block-size mismatched between harts %lu and %lu\n",
+> -					cbom_hartid, hartid);
+> -		}
+> -	}
 > -
-> -       if (probed_block_size)
-> -               riscv_cbom_block_size = probed_block_size;
+> -	if (probed_block_size)
+> -		riscv_cbom_block_size = probed_block_size;
 > -}
 > -#endif
 > -
 >  void riscv_noncoherent_supported(void)
 >  {
->         WARN(!riscv_cbom_block_size,
-> --
+>  	WARN(!riscv_cbom_block_size,
+> -- 
 > 2.37.3
->
+> 
 
