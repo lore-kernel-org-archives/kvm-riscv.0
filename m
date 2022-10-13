@@ -1,9 +1,9 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Thu, 13 Oct 2022 15:48:07 +0200
+From: Conor Dooley <conor.dooley@microchip.com>
+Date: Thu, 13 Oct 2022 15:21:06 +0100
 Subject: [PATCH v2] RISC-V: KVM: Fix compilation without RISCV_ISA_ZICBOM
 In-Reply-To: <20221013134217.1850349-1-ajones@ventanamicro.com>
 References: <20221013134217.1850349-1-ajones@ventanamicro.com>
-Message-ID: <20221013134807.wi53dyogw36jqdgr@kamzik>
+Message-ID: <Y0ge0mbur3HAJFdJ@wendy>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -11,31 +11,41 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 On Thu, Oct 13, 2022 at 03:42:17PM +0200, Andrew Jones wrote:
+
+> RISC-V: KVM: Fix compilation without RISCV_ISA_ZICBOM
+
+nit: I know that this is what it fixes, but I think the commit subject
+is a little misleading when it doesnt touch arch/riscv/kvm & has some
+meaning for non-kvm too.
+
 > riscv_cbom_block_size and riscv_init_cbom_blocksize() should always
-> be available and riscv_init_cbom_blocksize() should always be
-> invoked, even when compiling without RISCV_ISA_ZICBOM enabled. This
+> be available and riscv_init_cbom_blocksize() should always be invoked
+
+Yup, I like where this is going...
+
+> even when compiling without RISCV_ISA_ZICBOM enabled. This
 > is because disabling RISCV_ISA_ZICBOM means "don't use zicbom
 > instructions in the kernel" not "pretend there isn't zicbom, even
 > when there is". When zicbom is available, whether the kernel enables
 > its use with RISCV_ISA_ZICBOM or not, KVM will offer it to guests.
+
+...right, I'll take your word for this part. You're the kvm people :)
+
 > Ensure we can build KVM and that the block size is initialized even
 > when compiling without RISCV_ISA_ZICBOM.
 > 
 > Fixes: 8f7e001e0325 ("RISC-V: Clean up the Zicbom block size probing")
 > Reported-by: kernel test robot <lkp@intel.com>
 > Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
+
+Is cacheflush.c the "right" place for it? idk. But shaving that yak is a
+waste of time imo. I like the unconditional availability & if ZICBOM is
+off in the kernel I figure it should not matter that we set the
+blocksize.
+
+Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
+
 > ---
-
-Grr... Second time I forgot my changelog on a patch this week...
-
-v2:
- - Instead of #ifdefing the use of riscv_cbom_block_size in KVM always
-   expose it by moving it to cacheflush.c and change Fixes commit. [Palmer]
- - Move riscv_init_cbom_blocksize() to cacheflush.c and always expose
-   it since KVM can offer zicbom to guests even if the host kernel
-   chooses not to use it (RISCV_ISA_ZICBOM=n) [drew]
- - Rewrote commit message
-
 >  arch/riscv/include/asm/cacheflush.h |  8 ------
 >  arch/riscv/mm/cacheflush.c          | 38 ++++++++++++++++++++++++++
 >  arch/riscv/mm/dma-noncoherent.c     | 41 -----------------------------
@@ -179,4 +189,9 @@ v2:
 > -- 
 > 2.37.3
 > 
+> 
+> _______________________________________________
+> linux-riscv mailing list
+> linux-riscv at lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-riscv
 
