@@ -1,61 +1,64 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Thu, 27 Oct 2022 15:02:44 +0200
-Subject: [PATCH 6/9] RISC-V: KVM: Expose Zicboz to the guest
+Date: Thu, 27 Oct 2022 15:02:43 +0200
+Subject: [PATCH 5/9] RISC-V: KVM: Provide UAPI for Zicboz block size
 In-Reply-To: <20221027130247.31634-1-ajones@ventanamicro.com>
 References: <20221027130247.31634-1-ajones@ventanamicro.com>
-Message-ID: <20221027130247.31634-7-ajones@ventanamicro.com>
+Message-ID: <20221027130247.31634-6-ajones@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Guests may use the cbo.zero instruction when the CPU has the Zicboz
-extension and the hypervisor sets henvcfg.CBZE.
-
-Add Zicboz support for KVM guests which may be enabled and
-disabled from KVM userspace using the ISA extension ONE_REG API.
+We're about to allow guests to use the Zicboz extension. KVM
+userspace needs to know the cache block size in order to
+properly advertise it to the guest. Provide a virtual config
+register for userspace to get it with the GET_ONE_REG API, but
+setting it cannot be supported, so disallow SET_ONE_REG.
 
 Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
 ---
  arch/riscv/include/uapi/asm/kvm.h | 1 +
- arch/riscv/kvm/vcpu.c             | 4 ++++
- 2 files changed, 5 insertions(+)
+ arch/riscv/kvm/vcpu.c             | 7 +++++++
+ 2 files changed, 8 insertions(+)
 
 diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
-index 4bbf55cb2b70..8dc21ceee7aa 100644
+index 8985ff234c01..4bbf55cb2b70 100644
 --- a/arch/riscv/include/uapi/asm/kvm.h
 +++ b/arch/riscv/include/uapi/asm/kvm.h
-@@ -103,6 +103,7 @@ enum KVM_RISCV_ISA_EXT_ID {
- 	KVM_RISCV_ISA_EXT_SVINVAL,
- 	KVM_RISCV_ISA_EXT_ZIHINTPAUSE,
- 	KVM_RISCV_ISA_EXT_ZICBOM,
-+	KVM_RISCV_ISA_EXT_ZICBOZ,
- 	KVM_RISCV_ISA_EXT_MAX,
+@@ -49,6 +49,7 @@ struct kvm_sregs {
+ struct kvm_riscv_config {
+ 	unsigned long isa;
+ 	unsigned long zicbom_block_size;
++	unsigned long zicboz_block_size;
  };
  
+ /* CORE registers for KVM_GET_ONE_REG and KVM_SET_ONE_REG */
 diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-index 18a739070b51..7758faec590a 100644
+index 71ebbc4821f0..18a739070b51 100644
 --- a/arch/riscv/kvm/vcpu.c
 +++ b/arch/riscv/kvm/vcpu.c
-@@ -62,6 +62,7 @@ static const unsigned long kvm_isa_ext_arr[] = {
- 	KVM_ISA_EXT_ARR(SVPBMT),
- 	KVM_ISA_EXT_ARR(ZIHINTPAUSE),
- 	KVM_ISA_EXT_ARR(ZICBOM),
-+	KVM_ISA_EXT_ARR(ZICBOZ),
- };
- 
- static unsigned long kvm_riscv_vcpu_base2isa_ext(unsigned long base_ext)
-@@ -821,6 +822,9 @@ static void kvm_riscv_vcpu_update_config(const unsigned long *isa)
- 	if (riscv_isa_extension_available(isa, ZICBOM))
- 		henvcfg |= (ENVCFG_CBIE | ENVCFG_CBCFE);
- 
-+	if (riscv_isa_extension_available(isa, ZICBOZ))
-+		henvcfg |= ENVCFG_CBZE;
-+
- 	csr_write(CSR_HENVCFG, henvcfg);
- #ifdef CONFIG_32BIT
- 	csr_write(CSR_HENVCFGH, henvcfg >> 32);
+@@ -270,6 +270,11 @@ static int kvm_riscv_vcpu_get_reg_config(struct kvm_vcpu *vcpu,
+ 			return -EINVAL;
+ 		reg_val = riscv_cbom_block_size;
+ 		break;
++	case KVM_REG_RISCV_CONFIG_REG(zicboz_block_size):
++		if (!riscv_isa_extension_available(vcpu->arch.isa, ZICBOZ))
++			return -EINVAL;
++		reg_val = riscv_cboz_block_size;
++		break;
+ 	default:
+ 		return -EINVAL;
+ 	}
+@@ -329,6 +334,8 @@ static int kvm_riscv_vcpu_set_reg_config(struct kvm_vcpu *vcpu,
+ 		break;
+ 	case KVM_REG_RISCV_CONFIG_REG(zicbom_block_size):
+ 		return -EOPNOTSUPP;
++	case KVM_REG_RISCV_CONFIG_REG(zicboz_block_size):
++		return -EOPNOTSUPP;
+ 	default:
+ 		return -EINVAL;
+ 	}
 -- 
 2.37.3
 
