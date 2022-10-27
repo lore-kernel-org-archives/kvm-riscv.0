@@ -1,101 +1,147 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Thu, 27 Oct 2022 15:02:42 +0200
-Subject: [PATCH 4/9] RISC-V: Use Zicboz in clear_page when available
+Date: Thu, 27 Oct 2022 15:02:41 +0200
+Subject: [PATCH 3/9] RISC-V: insn-def: Define cbo.zero
 In-Reply-To: <20221027130247.31634-1-ajones@ventanamicro.com>
 References: <20221027130247.31634-1-ajones@ventanamicro.com>
-Message-ID: <20221027130247.31634-5-ajones@ventanamicro.com>
+Message-ID: <20221027130247.31634-4-ajones@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Using memset() to zero a 4K page takes 563 total instructions
-where 20 are branches. clear_page() with Zicboz takes 198 total
-instructions where 64 are branches. We could reduce the number
-branches by unrolling, but since the cboz block size isn't fixed,
-cbo.zero doesn't take an offset, and even PAGE_SIZE doesn't have
-to be 4K forever, we'd end up implementing a Duff device where
-each unrolled block would not only contain a cbo.zero instruction,
-but also an add to update the base address. So, for now, it seems
-the simple tight loop approach is better. At least we don't have
-to worry as much about potential icache misses as unrolled loops
-do. Of course as hardware becomes available we can experiment
-with unrolling too.
+CBO instructions use the I-type of instruction format where
+the immediate is used to identify the CBO instruction type.
+Add I-type instruction encoding support to insn-def and also
+add cbo.zero.
 
 Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
 ---
- arch/riscv/include/asm/page.h |  6 +++++-
- arch/riscv/lib/Makefile       |  1 +
- arch/riscv/lib/clear_page.S   | 28 ++++++++++++++++++++++++++++
- 3 files changed, 34 insertions(+), 1 deletion(-)
- create mode 100644 arch/riscv/lib/clear_page.S
+ arch/riscv/include/asm/insn-def.h | 50 +++++++++++++++++++++++++++++++
+ 1 file changed, 50 insertions(+)
 
-diff --git a/arch/riscv/include/asm/page.h b/arch/riscv/include/asm/page.h
-index ac70b0fd9a9a..a86d6d8a9ca0 100644
---- a/arch/riscv/include/asm/page.h
-+++ b/arch/riscv/include/asm/page.h
-@@ -49,10 +49,14 @@
+diff --git a/arch/riscv/include/asm/insn-def.h b/arch/riscv/include/asm/insn-def.h
+index 16044affa57c..f13054716556 100644
+--- a/arch/riscv/include/asm/insn-def.h
++++ b/arch/riscv/include/asm/insn-def.h
+@@ -12,6 +12,12 @@
+ #define INSN_R_RD_SHIFT			 7
+ #define INSN_R_OPCODE_SHIFT		 0
  
- #ifndef __ASSEMBLY__
- 
-+#ifdef CONFIG_RISCV_ISA_ZICBOZ
-+void clear_page(void *page);
-+#else
- #define clear_page(pgaddr)			memset((pgaddr), 0, PAGE_SIZE)
-+#endif
- #define copy_page(to, from)			memcpy((to), (from), PAGE_SIZE)
- 
--#define clear_user_page(pgaddr, vaddr, page)	memset((pgaddr), 0, PAGE_SIZE)
-+#define clear_user_page(pgaddr, vaddr, page)	clear_page(pgaddr)
- #define copy_user_page(vto, vfrom, vaddr, topg) \
- 			memcpy((vto), (vfrom), PAGE_SIZE)
- 
-diff --git a/arch/riscv/lib/Makefile b/arch/riscv/lib/Makefile
-index 25d5c9664e57..9ee5e2ab5143 100644
---- a/arch/riscv/lib/Makefile
-+++ b/arch/riscv/lib/Makefile
-@@ -5,5 +5,6 @@ lib-y			+= memset.o
- lib-y			+= memmove.o
- lib-$(CONFIG_MMU)	+= uaccess.o
- lib-$(CONFIG_64BIT)	+= tishift.o
-+lib-$(CONFIG_RISCV_ISA_ZICBOZ)	+= clear_page.o
- 
- obj-$(CONFIG_FUNCTION_ERROR_INJECTION) += error-inject.o
-diff --git a/arch/riscv/lib/clear_page.S b/arch/riscv/lib/clear_page.S
-new file mode 100644
-index 000000000000..cafa24a918d6
---- /dev/null
-+++ b/arch/riscv/lib/clear_page.S
-@@ -0,0 +1,28 @@
-+/* SPDX-License-Identifier: GPL-2.0-only */
++#define INSN_I_SIMM12_SHIFT		20
++#define INSN_I_RS1_SHIFT		15
++#define INSN_I_FUNC3_SHIFT		12
++#define INSN_I_RD_SHIFT			 7
++#define INSN_I_OPCODE_SHIFT		 0
 +
-+#include <linux/linkage.h>
-+#include <asm/asm.h>
-+#include <asm/alternative-macros.h>
-+#include <asm/hwcap.h>
-+#include <asm/insn-def.h>
-+#include <asm/page.h>
+ #ifdef __ASSEMBLY__
+ 
+ #ifdef CONFIG_AS_HAS_INSN
+@@ -20,6 +26,10 @@
+ 	.insn	r \opcode, \func3, \func7, \rd, \rs1, \rs2
+ 	.endm
+ 
++	.macro insn_i, opcode, func3, rd, rs1, simm12
++	.insn	i \opcode, \func3, \rd, \rs1, \simm12
++	.endm
 +
-+/* void clear_page(void *page) */
-+ENTRY(__clear_page)
-+WEAK(clear_page)
-+	li	a2, PAGE_SIZE
-+	ALTERNATIVE("j .Lno_zicboz", "nop",
-+		    0, RISCV_ISA_EXT_ZICBOZ, CONFIG_RISCV_ISA_ZICBOZ)
-+	la	a3, riscv_cboz_block_size
-+	lw	a1, 0(a3)
-+	add	a2, a0, a2
-+.Lzero_loop:
-+	CBO_ZERO(a0)
-+	add	a0, a0, a1
-+	bltu	a0, a2, .Lzero_loop
-+	ret
-+.Lno_zicboz:
-+	li	a1, 0
-+	la	a3, __memset
-+	jr	a3
-+END(__clear_page)
+ #else
+ 
+ #include <asm/gpr-num.h>
+@@ -33,9 +43,18 @@
+ 		 (.L__gpr_num_\rs2 << INSN_R_RS2_SHIFT))
+ 	.endm
+ 
++	.macro insn_i, opcode, func3, rd, rs1, simm12
++	.4byte	((\opcode << INSN_I_OPCODE_SHIFT) |		\
++		 (\func3 << INSN_I_FUNC3_SHIFT) |		\
++		 (.L__gpr_num_\rd << INSN_I_RD_SHIFT) |		\
++		 (.L__gpr_num_\rs1 << INSN_I_RS1_SHIFT) |	\
++		 (\simm12 << INSN_I_SIMM12_SHIFT))
++	.endm
++
+ #endif
+ 
+ #define __INSN_R(...)	insn_r __VA_ARGS__
++#define __INSN_I(...)	insn_i __VA_ARGS__
+ 
+ #else /* ! __ASSEMBLY__ */
+ 
+@@ -44,6 +63,9 @@
+ #define __INSN_R(opcode, func3, func7, rd, rs1, rs2)	\
+ 	".insn	r " opcode ", " func3 ", " func7 ", " rd ", " rs1 ", " rs2 "\n"
+ 
++#define __INSN_I(opcode, func3, rd, rs1, simm12)	\
++	".insn	i " opcode ", " func3 ", " rd ", " rs1 ", " simm12 "\n"
++
+ #else
+ 
+ #include <linux/stringify.h>
+@@ -60,14 +82,32 @@
+ "		 (.L__gpr_num_\\rs2 << " __stringify(INSN_R_RS2_SHIFT) "))\n" \
+ "	.endm\n"
+ 
++#define DEFINE_INSN_I							\
++	__DEFINE_ASM_GPR_NUMS						\
++"	.macro insn_i, opcode, func3, rd, rs1, simm12\n"		\
++"	.4byte	((\\opcode << " __stringify(INSN_I_OPCODE_SHIFT) ") |"	\
++"		 (\\func3 << " __stringify(INSN_I_FUNC3_SHIFT) ") |"	\
++"		 (.L__gpr_num_\\rd << " __stringify(INSN_I_RD_SHIFT) ") |"   \
++"		 (.L__gpr_num_\\rs1 << " __stringify(INSN_I_RS1_SHIFT) ") |" \
++"		 (\\simm12 << " __stringify(INSN_I_SIMM12_SHIFT) "))\n"	\
++"	.endm\n"
++
+ #define UNDEFINE_INSN_R							\
+ "	.purgem insn_r\n"
+ 
++#define UNDEFINE_INSN_I							\
++"	.purgem insn_i\n"
++
+ #define __INSN_R(opcode, func3, func7, rd, rs1, rs2)			\
+ 	DEFINE_INSN_R							\
+ 	"insn_r " opcode ", " func3 ", " func7 ", " rd ", " rs1 ", " rs2 "\n" \
+ 	UNDEFINE_INSN_R
+ 
++#define __INSN_I(opcode, func3, rd, rs1, simm12)			\
++	DEFINE_INSN_I							\
++	"insn_i " opcode ", " func3 ", " rd ", " rs1 ", " simm12 "\n" \
++	UNDEFINE_INSN_I
++
+ #endif
+ 
+ #endif /* ! __ASSEMBLY__ */
+@@ -76,9 +116,14 @@
+ 	__INSN_R(RV_##opcode, RV_##func3, RV_##func7,		\
+ 		 RV_##rd, RV_##rs1, RV_##rs2)
+ 
++#define INSN_I(opcode, func3, rd, rs1, simm12)			\
++	__INSN_I(RV_##opcode, RV_##func3, RV_##rd,		\
++		 RV_##rs1, RV_##simm12)
++
+ #define RV_OPCODE(v)		__ASM_STR(v)
+ #define RV_FUNC3(v)		__ASM_STR(v)
+ #define RV_FUNC7(v)		__ASM_STR(v)
++#define RV_SIMM12(v)		__ASM_STR(v)
+ #define RV_RD(v)		__ASM_STR(v)
+ #define RV_RS1(v)		__ASM_STR(v)
+ #define RV_RS2(v)		__ASM_STR(v)
+@@ -87,6 +132,7 @@
+ #define RV___RS1(v)		__RV_REG(v)
+ #define RV___RS2(v)		__RV_REG(v)
+ 
++#define RV_OPCODE_MISC_MEM	RV_OPCODE(15)
+ #define RV_OPCODE_SYSTEM	RV_OPCODE(115)
+ 
+ #define HFENCE_VVMA(vaddr, asid)				\
+@@ -134,4 +180,8 @@
+ 	INSN_R(OPCODE_SYSTEM, FUNC3(0), FUNC7(51),		\
+ 	       __RD(0), RS1(gaddr), RS2(vmid))
+ 
++#define CBO_ZERO(base)						\
++	INSN_I(OPCODE_MISC_MEM, FUNC3(2), __RD(0),		\
++	       RS1(base), SIMM12(4))
++
+ #endif /* __ASM_INSN_DEF_H */
 -- 
 2.37.3
 
