@@ -1,147 +1,61 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Thu, 27 Oct 2022 15:02:41 +0200
-Subject: [PATCH 3/9] RISC-V: insn-def: Define cbo.zero
+Date: Thu, 27 Oct 2022 15:02:44 +0200
+Subject: [PATCH 6/9] RISC-V: KVM: Expose Zicboz to the guest
 In-Reply-To: <20221027130247.31634-1-ajones@ventanamicro.com>
 References: <20221027130247.31634-1-ajones@ventanamicro.com>
-Message-ID: <20221027130247.31634-4-ajones@ventanamicro.com>
+Message-ID: <20221027130247.31634-7-ajones@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-CBO instructions use the I-type of instruction format where
-the immediate is used to identify the CBO instruction type.
-Add I-type instruction encoding support to insn-def and also
-add cbo.zero.
+Guests may use the cbo.zero instruction when the CPU has the Zicboz
+extension and the hypervisor sets henvcfg.CBZE.
+
+Add Zicboz support for KVM guests which may be enabled and
+disabled from KVM userspace using the ISA extension ONE_REG API.
 
 Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
 ---
- arch/riscv/include/asm/insn-def.h | 50 +++++++++++++++++++++++++++++++
- 1 file changed, 50 insertions(+)
+ arch/riscv/include/uapi/asm/kvm.h | 1 +
+ arch/riscv/kvm/vcpu.c             | 4 ++++
+ 2 files changed, 5 insertions(+)
 
-diff --git a/arch/riscv/include/asm/insn-def.h b/arch/riscv/include/asm/insn-def.h
-index 16044affa57c..f13054716556 100644
---- a/arch/riscv/include/asm/insn-def.h
-+++ b/arch/riscv/include/asm/insn-def.h
-@@ -12,6 +12,12 @@
- #define INSN_R_RD_SHIFT			 7
- #define INSN_R_OPCODE_SHIFT		 0
+diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
+index 4bbf55cb2b70..8dc21ceee7aa 100644
+--- a/arch/riscv/include/uapi/asm/kvm.h
++++ b/arch/riscv/include/uapi/asm/kvm.h
+@@ -103,6 +103,7 @@ enum KVM_RISCV_ISA_EXT_ID {
+ 	KVM_RISCV_ISA_EXT_SVINVAL,
+ 	KVM_RISCV_ISA_EXT_ZIHINTPAUSE,
+ 	KVM_RISCV_ISA_EXT_ZICBOM,
++	KVM_RISCV_ISA_EXT_ZICBOZ,
+ 	KVM_RISCV_ISA_EXT_MAX,
+ };
  
-+#define INSN_I_SIMM12_SHIFT		20
-+#define INSN_I_RS1_SHIFT		15
-+#define INSN_I_FUNC3_SHIFT		12
-+#define INSN_I_RD_SHIFT			 7
-+#define INSN_I_OPCODE_SHIFT		 0
+diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+index 18a739070b51..7758faec590a 100644
+--- a/arch/riscv/kvm/vcpu.c
++++ b/arch/riscv/kvm/vcpu.c
+@@ -62,6 +62,7 @@ static const unsigned long kvm_isa_ext_arr[] = {
+ 	KVM_ISA_EXT_ARR(SVPBMT),
+ 	KVM_ISA_EXT_ARR(ZIHINTPAUSE),
+ 	KVM_ISA_EXT_ARR(ZICBOM),
++	KVM_ISA_EXT_ARR(ZICBOZ),
+ };
+ 
+ static unsigned long kvm_riscv_vcpu_base2isa_ext(unsigned long base_ext)
+@@ -821,6 +822,9 @@ static void kvm_riscv_vcpu_update_config(const unsigned long *isa)
+ 	if (riscv_isa_extension_available(isa, ZICBOM))
+ 		henvcfg |= (ENVCFG_CBIE | ENVCFG_CBCFE);
+ 
++	if (riscv_isa_extension_available(isa, ZICBOZ))
++		henvcfg |= ENVCFG_CBZE;
 +
- #ifdef __ASSEMBLY__
- 
- #ifdef CONFIG_AS_HAS_INSN
-@@ -20,6 +26,10 @@
- 	.insn	r \opcode, \func3, \func7, \rd, \rs1, \rs2
- 	.endm
- 
-+	.macro insn_i, opcode, func3, rd, rs1, simm12
-+	.insn	i \opcode, \func3, \rd, \rs1, \simm12
-+	.endm
-+
- #else
- 
- #include <asm/gpr-num.h>
-@@ -33,9 +43,18 @@
- 		 (.L__gpr_num_\rs2 << INSN_R_RS2_SHIFT))
- 	.endm
- 
-+	.macro insn_i, opcode, func3, rd, rs1, simm12
-+	.4byte	((\opcode << INSN_I_OPCODE_SHIFT) |		\
-+		 (\func3 << INSN_I_FUNC3_SHIFT) |		\
-+		 (.L__gpr_num_\rd << INSN_I_RD_SHIFT) |		\
-+		 (.L__gpr_num_\rs1 << INSN_I_RS1_SHIFT) |	\
-+		 (\simm12 << INSN_I_SIMM12_SHIFT))
-+	.endm
-+
- #endif
- 
- #define __INSN_R(...)	insn_r __VA_ARGS__
-+#define __INSN_I(...)	insn_i __VA_ARGS__
- 
- #else /* ! __ASSEMBLY__ */
- 
-@@ -44,6 +63,9 @@
- #define __INSN_R(opcode, func3, func7, rd, rs1, rs2)	\
- 	".insn	r " opcode ", " func3 ", " func7 ", " rd ", " rs1 ", " rs2 "\n"
- 
-+#define __INSN_I(opcode, func3, rd, rs1, simm12)	\
-+	".insn	i " opcode ", " func3 ", " rd ", " rs1 ", " simm12 "\n"
-+
- #else
- 
- #include <linux/stringify.h>
-@@ -60,14 +82,32 @@
- "		 (.L__gpr_num_\\rs2 << " __stringify(INSN_R_RS2_SHIFT) "))\n" \
- "	.endm\n"
- 
-+#define DEFINE_INSN_I							\
-+	__DEFINE_ASM_GPR_NUMS						\
-+"	.macro insn_i, opcode, func3, rd, rs1, simm12\n"		\
-+"	.4byte	((\\opcode << " __stringify(INSN_I_OPCODE_SHIFT) ") |"	\
-+"		 (\\func3 << " __stringify(INSN_I_FUNC3_SHIFT) ") |"	\
-+"		 (.L__gpr_num_\\rd << " __stringify(INSN_I_RD_SHIFT) ") |"   \
-+"		 (.L__gpr_num_\\rs1 << " __stringify(INSN_I_RS1_SHIFT) ") |" \
-+"		 (\\simm12 << " __stringify(INSN_I_SIMM12_SHIFT) "))\n"	\
-+"	.endm\n"
-+
- #define UNDEFINE_INSN_R							\
- "	.purgem insn_r\n"
- 
-+#define UNDEFINE_INSN_I							\
-+"	.purgem insn_i\n"
-+
- #define __INSN_R(opcode, func3, func7, rd, rs1, rs2)			\
- 	DEFINE_INSN_R							\
- 	"insn_r " opcode ", " func3 ", " func7 ", " rd ", " rs1 ", " rs2 "\n" \
- 	UNDEFINE_INSN_R
- 
-+#define __INSN_I(opcode, func3, rd, rs1, simm12)			\
-+	DEFINE_INSN_I							\
-+	"insn_i " opcode ", " func3 ", " rd ", " rs1 ", " simm12 "\n" \
-+	UNDEFINE_INSN_I
-+
- #endif
- 
- #endif /* ! __ASSEMBLY__ */
-@@ -76,9 +116,14 @@
- 	__INSN_R(RV_##opcode, RV_##func3, RV_##func7,		\
- 		 RV_##rd, RV_##rs1, RV_##rs2)
- 
-+#define INSN_I(opcode, func3, rd, rs1, simm12)			\
-+	__INSN_I(RV_##opcode, RV_##func3, RV_##rd,		\
-+		 RV_##rs1, RV_##simm12)
-+
- #define RV_OPCODE(v)		__ASM_STR(v)
- #define RV_FUNC3(v)		__ASM_STR(v)
- #define RV_FUNC7(v)		__ASM_STR(v)
-+#define RV_SIMM12(v)		__ASM_STR(v)
- #define RV_RD(v)		__ASM_STR(v)
- #define RV_RS1(v)		__ASM_STR(v)
- #define RV_RS2(v)		__ASM_STR(v)
-@@ -87,6 +132,7 @@
- #define RV___RS1(v)		__RV_REG(v)
- #define RV___RS2(v)		__RV_REG(v)
- 
-+#define RV_OPCODE_MISC_MEM	RV_OPCODE(15)
- #define RV_OPCODE_SYSTEM	RV_OPCODE(115)
- 
- #define HFENCE_VVMA(vaddr, asid)				\
-@@ -134,4 +180,8 @@
- 	INSN_R(OPCODE_SYSTEM, FUNC3(0), FUNC7(51),		\
- 	       __RD(0), RS1(gaddr), RS2(vmid))
- 
-+#define CBO_ZERO(base)						\
-+	INSN_I(OPCODE_MISC_MEM, FUNC3(2), __RD(0),		\
-+	       RS1(base), SIMM12(4))
-+
- #endif /* __ASM_INSN_DEF_H */
+ 	csr_write(CSR_HENVCFG, henvcfg);
+ #ifdef CONFIG_32BIT
+ 	csr_write(CSR_HENVCFGH, henvcfg >> 32);
 -- 
 2.37.3
 
