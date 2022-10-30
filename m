@@ -1,220 +1,119 @@
 From: Conor Dooley <conor@kernel.org>
-Date: Sun, 30 Oct 2022 21:27:42 +0000
-Subject: [PATCH 7/9] RISC-V: lib: Improve memset assembler formatting
-In-Reply-To: <20221027130247.31634-8-ajones@ventanamicro.com>
+Date: Sun, 30 Oct 2022 22:15:43 +0000
+Subject: [PATCH 8/9] RISC-V: lib: Use named labels in memset
+In-Reply-To: <20221027130247.31634-9-ajones@ventanamicro.com>
 References: <20221027130247.31634-1-ajones@ventanamicro.com>
- <20221027130247.31634-8-ajones@ventanamicro.com>
-Message-ID: <Y17sTkBtemXU0Uc/@spud>
+ <20221027130247.31634-9-ajones@ventanamicro.com>
+Message-ID: <Y173j6+YaxpLgf4E@spud>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Oct 27, 2022 at 03:02:45PM +0200, Andrew Jones wrote:
-> Aligning the first operand of each instructions with a tab is a
-> typical style which improves readability. Apply it to memset.S.
-> While there, we also make a small grammar change to a comment.
+On Thu, Oct 27, 2022 at 03:02:46PM +0200, Andrew Jones wrote:
+> In a coming patch we'll be adding more branch targets. Let's
+
+rather minor nit: I don't think "In a coming patch" will be
+particularly meaningful if anyone does some history diving.
+
+> change the numeric labels to named labels to make it easier
+> to read and integrate with.
 > 
 > No functional change intended.
 
-Cool, nice cleanup :)
+It looks fine to me..
 Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
-Thanks,
-Conor.
 
 > 
 > Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
 > ---
->  arch/riscv/lib/memset.S | 143 ++++++++++++++++++++--------------------
->  1 file changed, 72 insertions(+), 71 deletions(-)
+>  arch/riscv/lib/memset.S | 29 +++++++++++++++--------------
+>  1 file changed, 15 insertions(+), 14 deletions(-)
 > 
 > diff --git a/arch/riscv/lib/memset.S b/arch/riscv/lib/memset.S
-> index 34c5360c6705..e613c5c27998 100644
+> index e613c5c27998..74e4c7feec00 100644
 > --- a/arch/riscv/lib/memset.S
 > +++ b/arch/riscv/lib/memset.S
-> @@ -3,111 +3,112 @@
->   * Copyright (C) 2013 Regents of the University of California
->   */
->  
-> -
->  #include <linux/linkage.h>
->  #include <asm/asm.h>
->  
->  /* void *memset(void *, int, size_t) */
->  ENTRY(__memset)
->  WEAK(memset)
-> -	move t0, a0  /* Preserve return value */
-> +	move	t0, a0			/* Preserve return value */
+> @@ -13,7 +13,7 @@ WEAK(memset)
 >  
 >  	/* Defer to byte-oriented fill for small sizes */
-> -	sltiu a3, a2, 16
-> -	bnez a3, 4f
-> +	sltiu	a3, a2, 16
-> +	bnez	a3, 4f
+>  	sltiu	a3, a2, 16
+> -	bnez	a3, 4f
+> +	bnez	a3, .Lfinish
 >  
 >  	/*
 >  	 * Round to nearest XLEN-aligned address
-> -	 * greater than or equal to start address
-> +	 * greater than or equal to the start address.
+> @@ -21,17 +21,18 @@ WEAK(memset)
 >  	 */
-> -	addi a3, t0, SZREG-1
-> -	andi a3, a3, ~(SZREG-1)
-> -	beq a3, t0, 2f  /* Skip if already aligned */
-> +	addi	a3, t0, SZREG-1
-> +	andi	a3, a3, ~(SZREG-1)
-> +	beq	a3, t0, 2f		/* Skip if already aligned */
-> +
+>  	addi	a3, t0, SZREG-1
+>  	andi	a3, a3, ~(SZREG-1)
+> -	beq	a3, t0, 2f		/* Skip if already aligned */
+> +	beq	a3, t0, .Ldo_duff	/* Skip if already aligned */
+>  
 >  	/* Handle initial misalignment */
-> -	sub a4, a3, t0
-> +	sub	a4, a3, t0
->  1:
-> -	sb a1, 0(t0)
-> -	addi t0, t0, 1
-> -	bltu t0, a3, 1b
-> -	sub a2, a2, a4  /* Update count */
-> +	sb	a1, 0(t0)
-> +	addi	t0, t0, 1
-> +	bltu	t0, a3, 1b
-> +	sub	a2, a2, a4		/* Update count */
+>  	sub	a4, a3, t0
+> -1:
+> +.Lmisaligned1:
+>  	sb	a1, 0(t0)
+>  	addi	t0, t0, 1
+> -	bltu	t0, a3, 1b
+> +	bltu	t0, a3, .Lmisaligned1
+>  	sub	a2, a2, a4		/* Update count */
 >  
->  2: /* Duff's device with 32 XLEN stores per iteration */
+> -2: /* Duff's device with 32 XLEN stores per iteration */
+> +.Ldo_duff:
+> +	/* Duff's device with 32 XLEN stores per iteration */
 >  	/* Broadcast value into all bytes */
-> -	andi a1, a1, 0xff
-> -	slli a3, a1, 8
-> -	or a1, a3, a1
-> -	slli a3, a1, 16
-> -	or a1, a3, a1
-> +	andi	a1, a1, 0xff
-> +	slli	a3, a1, 8
-> +	or	a1, a3, a1
-> +	slli	a3, a1, 16
-> +	or	a1, a3, a1
->  #ifdef CONFIG_64BIT
-> -	slli a3, a1, 32
-> -	or a1, a3, a1
-> +	slli	a3, a1, 32
-> +	or	a1, a3, a1
->  #endif
+>  	andi	a1, a1, 0xff
+>  	slli	a3, a1, 8
+> @@ -48,7 +49,7 @@ WEAK(memset)
+>  	add	a3, t0, a4
 >  
->  	/* Calculate end address */
-> -	andi a4, a2, ~(SZREG-1)
-> -	add a3, t0, a4
-> +	andi	a4, a2, ~(SZREG-1)
-> +	add	a3, t0, a4
+>  	andi	a4, a4, 31*SZREG	/* Calculate remainder */
+> -	beqz	a4, 3f			/* Shortcut if no remainder */
+> +	beqz	a4, .Lduff_loop		/* Shortcut if no remainder */
+>  	neg	a4, a4
+>  	addi	a4, a4, 32*SZREG	/* Calculate initial offset */
 >  
-> -	andi a4, a4, 31*SZREG  /* Calculate remainder */
-> -	beqz a4, 3f            /* Shortcut if no remainder */
-> -	neg a4, a4
-> -	addi a4, a4, 32*SZREG  /* Calculate initial offset */
-> +	andi	a4, a4, 31*SZREG	/* Calculate remainder */
-> +	beqz	a4, 3f			/* Shortcut if no remainder */
-> +	neg	a4, a4
-> +	addi	a4, a4, 32*SZREG	/* Calculate initial offset */
->  
->  	/* Adjust start address with offset */
-> -	sub t0, t0, a4
-> +	sub	t0, t0, a4
+> @@ -57,13 +58,13 @@ WEAK(memset)
 >  
 >  	/* Jump into loop body */
 >  	/* Assumes 32-bit instruction lengths */
-> -	la a5, 3f
-> +	la	a5, 3f
+> -	la	a5, 3f
+> +	la	a5, .Lduff_loop
 >  #ifdef CONFIG_64BIT
-> -	srli a4, a4, 1
-> +	srli	a4, a4, 1
+>  	srli	a4, a4, 1
 >  #endif
-> -	add a5, a5, a4
-> -	jr a5
-> +	add	a5, a5, a4
-> +	jr	a5
->  3:
-> -	REG_S a1,        0(t0)
-> -	REG_S a1,    SZREG(t0)
-> -	REG_S a1,  2*SZREG(t0)
-> -	REG_S a1,  3*SZREG(t0)
-> -	REG_S a1,  4*SZREG(t0)
-> -	REG_S a1,  5*SZREG(t0)
-> -	REG_S a1,  6*SZREG(t0)
-> -	REG_S a1,  7*SZREG(t0)
-> -	REG_S a1,  8*SZREG(t0)
-> -	REG_S a1,  9*SZREG(t0)
-> -	REG_S a1, 10*SZREG(t0)
-> -	REG_S a1, 11*SZREG(t0)
-> -	REG_S a1, 12*SZREG(t0)
-> -	REG_S a1, 13*SZREG(t0)
-> -	REG_S a1, 14*SZREG(t0)
-> -	REG_S a1, 15*SZREG(t0)
-> -	REG_S a1, 16*SZREG(t0)
-> -	REG_S a1, 17*SZREG(t0)
-> -	REG_S a1, 18*SZREG(t0)
-> -	REG_S a1, 19*SZREG(t0)
-> -	REG_S a1, 20*SZREG(t0)
-> -	REG_S a1, 21*SZREG(t0)
-> -	REG_S a1, 22*SZREG(t0)
-> -	REG_S a1, 23*SZREG(t0)
-> -	REG_S a1, 24*SZREG(t0)
-> -	REG_S a1, 25*SZREG(t0)
-> -	REG_S a1, 26*SZREG(t0)
-> -	REG_S a1, 27*SZREG(t0)
-> -	REG_S a1, 28*SZREG(t0)
-> -	REG_S a1, 29*SZREG(t0)
-> -	REG_S a1, 30*SZREG(t0)
-> -	REG_S a1, 31*SZREG(t0)
-> -	addi t0, t0, 32*SZREG
-> -	bltu t0, a3, 3b
-> -	andi a2, a2, SZREG-1  /* Update count */
-> +	REG_S	a1,        0(t0)
-> +	REG_S	a1,    SZREG(t0)
-> +	REG_S	a1,  2*SZREG(t0)
-> +	REG_S	a1,  3*SZREG(t0)
-> +	REG_S	a1,  4*SZREG(t0)
-> +	REG_S	a1,  5*SZREG(t0)
-> +	REG_S	a1,  6*SZREG(t0)
-> +	REG_S	a1,  7*SZREG(t0)
-> +	REG_S	a1,  8*SZREG(t0)
-> +	REG_S	a1,  9*SZREG(t0)
-> +	REG_S	a1, 10*SZREG(t0)
-> +	REG_S	a1, 11*SZREG(t0)
-> +	REG_S	a1, 12*SZREG(t0)
-> +	REG_S	a1, 13*SZREG(t0)
-> +	REG_S	a1, 14*SZREG(t0)
-> +	REG_S	a1, 15*SZREG(t0)
-> +	REG_S	a1, 16*SZREG(t0)
-> +	REG_S	a1, 17*SZREG(t0)
-> +	REG_S	a1, 18*SZREG(t0)
-> +	REG_S	a1, 19*SZREG(t0)
-> +	REG_S	a1, 20*SZREG(t0)
-> +	REG_S	a1, 21*SZREG(t0)
-> +	REG_S	a1, 22*SZREG(t0)
-> +	REG_S	a1, 23*SZREG(t0)
-> +	REG_S	a1, 24*SZREG(t0)
-> +	REG_S	a1, 25*SZREG(t0)
-> +	REG_S	a1, 26*SZREG(t0)
-> +	REG_S	a1, 27*SZREG(t0)
-> +	REG_S	a1, 28*SZREG(t0)
-> +	REG_S	a1, 29*SZREG(t0)
-> +	REG_S	a1, 30*SZREG(t0)
-> +	REG_S	a1, 31*SZREG(t0)
-> +
-> +	addi	t0, t0, 32*SZREG
-> +	bltu	t0, a3, 3b
-> +	andi	a2, a2, SZREG-1		/* Update count */
+>  	add	a5, a5, a4
+>  	jr	a5
+> -3:
+> +.Lduff_loop:
+>  	REG_S	a1,        0(t0)
+>  	REG_S	a1,    SZREG(t0)
+>  	REG_S	a1,  2*SZREG(t0)
+> @@ -98,17 +99,17 @@ WEAK(memset)
+>  	REG_S	a1, 31*SZREG(t0)
 >  
->  4:
+>  	addi	t0, t0, 32*SZREG
+> -	bltu	t0, a3, 3b
+> +	bltu	t0, a3, .Lduff_loop
+>  	andi	a2, a2, SZREG-1		/* Update count */
+>  
+> -4:
+> +.Lfinish:
 >  	/* Handle trailing misalignment */
-> -	beqz a2, 6f
-> -	add a3, t0, a2
-> +	beqz	a2, 6f
-> +	add	a3, t0, a2
->  5:
-> -	sb a1, 0(t0)
-> -	addi t0, t0, 1
-> -	bltu t0, a3, 5b
-> +	sb	a1, 0(t0)
-> +	addi	t0, t0, 1
-> +	bltu	t0, a3, 5b
->  6:
+> -	beqz	a2, 6f
+> +	beqz	a2, .Ldone
+>  	add	a3, t0, a2
+> -5:
+> +.Lmisaligned2:
+>  	sb	a1, 0(t0)
+>  	addi	t0, t0, 1
+> -	bltu	t0, a3, 5b
+> -6:
+> +	bltu	t0, a3, .Lmisaligned2
+> +.Ldone:
 >  	ret
 >  END(__memset)
 > -- 
