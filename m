@@ -1,190 +1,168 @@
 From: Conor Dooley <conor@kernel.org>
-Date: Sun, 30 Oct 2022 20:47:46 +0000
-Subject: [PATCH 2/9] RISC-V: Add Zicboz detection and block size parsing
-In-Reply-To: <20221027130247.31634-3-ajones@ventanamicro.com>
+Date: Sun, 30 Oct 2022 21:08:35 +0000
+Subject: [PATCH 3/9] RISC-V: insn-def: Define cbo.zero
+In-Reply-To: <20221027130247.31634-4-ajones@ventanamicro.com>
 References: <20221027130247.31634-1-ajones@ventanamicro.com>
- <20221027130247.31634-3-ajones@ventanamicro.com>
-Message-ID: <Y17i8sRf4KXLFkrK@spud>
+ <20221027130247.31634-4-ajones@ventanamicro.com>
+Message-ID: <Y17n0xRqGPihGkRJ@spud>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Oct 27, 2022 at 03:02:40PM +0200, Andrew Jones wrote:
-> Mostly follow the same pattern as Zicbom, but leave out the toolchain
-> checks as we plan to use the insn-def framework for the cbo.zero
-> instruction.
+On Thu, Oct 27, 2022 at 03:02:41PM +0200, Andrew Jones wrote:
+> CBO instructions use the I-type of instruction format where
+> the immediate is used to identify the CBO instruction type.
+> Add I-type instruction encoding support to insn-def and also
+> add cbo.zero.
 
-nit: I'd prefer to see a commit message that stands on it's own without
-relying on someone knowing how zicbom has been wired up.
+Cool, I like this a lot more than putting cc-option & linker version
+number checks into Kbuild stuff. I guess if this gets applied, I'll
+send one ripping my checks in Kconfig out and replace it with one of
+these?
+
+I mostly just cross-checked the numbers etc here and things look grand.
+Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
+
+One minor comment below.
 
 > 
 > Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
 > ---
->  arch/riscv/Kconfig                  | 13 +++++++++++++
->  arch/riscv/include/asm/cacheflush.h |  3 ++-
->  arch/riscv/include/asm/hwcap.h      |  1 +
->  arch/riscv/kernel/cpu.c             |  1 +
->  arch/riscv/kernel/cpufeature.c      | 10 ++++++++++
->  arch/riscv/kernel/setup.c           |  2 +-
->  arch/riscv/mm/cacheflush.c          | 23 +++++++++++++++--------
->  7 files changed, 43 insertions(+), 10 deletions(-)
+>  arch/riscv/include/asm/insn-def.h | 50 +++++++++++++++++++++++++++++++
+>  1 file changed, 50 insertions(+)
 > 
-> diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
-> index 6b48a3ae9843..c20e6fa0c0b1 100644
-> --- a/arch/riscv/Kconfig
-> +++ b/arch/riscv/Kconfig
-> @@ -433,6 +433,19 @@ config RISCV_ISA_ZICBOM
+> diff --git a/arch/riscv/include/asm/insn-def.h b/arch/riscv/include/asm/insn-def.h
+> index 16044affa57c..f13054716556 100644
+> --- a/arch/riscv/include/asm/insn-def.h
+> +++ b/arch/riscv/include/asm/insn-def.h
+> @@ -12,6 +12,12 @@
+>  #define INSN_R_RD_SHIFT			 7
+>  #define INSN_R_OPCODE_SHIFT		 0
 >  
->  	   If you don't know what to do here, say Y.
->  
-> +config RISCV_ISA_ZICBOZ
-> +	bool "Zicboz extension support for faster zeroing of memory"
-> +	depends on !XIP_KERNEL && MMU
-> +	select RISCV_ALTERNATIVE
-> +	default y
-> +	help
-> +	   Adds support to dynamically detect the presence of the ZICBOZ
-> +	   extension (cbo.zero instruction) and enable its usage.
+> +#define INSN_I_SIMM12_SHIFT		20
+> +#define INSN_I_RS1_SHIFT		15
+> +#define INSN_I_FUNC3_SHIFT		12
+> +#define INSN_I_RD_SHIFT			 7
+> +#define INSN_I_OPCODE_SHIFT		 0
 > +
-> +	   The Zicboz extension is used for faster zeroing of memory.
+>  #ifdef __ASSEMBLY__
+>  
+>  #ifdef CONFIG_AS_HAS_INSN
+> @@ -20,6 +26,10 @@
+>  	.insn	r \opcode, \func3, \func7, \rd, \rs1, \rs2
+>  	.endm
+>  
+> +	.macro insn_i, opcode, func3, rd, rs1, simm12
+> +	.insn	i \opcode, \func3, \rd, \rs1, \simm12
+> +	.endm
 > +
-> +	   If you don't know what to do here, say Y.
+>  #else
+>  
+>  #include <asm/gpr-num.h>
+> @@ -33,9 +43,18 @@
+>  		 (.L__gpr_num_\rs2 << INSN_R_RS2_SHIFT))
+>  	.endm
+>  
+> +	.macro insn_i, opcode, func3, rd, rs1, simm12
+> +	.4byte	((\opcode << INSN_I_OPCODE_SHIFT) |		\
+> +		 (\func3 << INSN_I_FUNC3_SHIFT) |		\
+> +		 (.L__gpr_num_\rd << INSN_I_RD_SHIFT) |		\
+> +		 (.L__gpr_num_\rs1 << INSN_I_RS1_SHIFT) |	\
+> +		 (\simm12 << INSN_I_SIMM12_SHIFT))
+> +	.endm
 > +
->  config FPU
->  	bool "FPU support"
->  	default y
-> diff --git a/arch/riscv/include/asm/cacheflush.h b/arch/riscv/include/asm/cacheflush.h
-> index f6fbe7042f1c..5b31568cf5e6 100644
-> --- a/arch/riscv/include/asm/cacheflush.h
-> +++ b/arch/riscv/include/asm/cacheflush.h
-> @@ -43,7 +43,8 @@ void flush_icache_mm(struct mm_struct *mm, bool local);
->  #endif /* CONFIG_SMP */
->  
->  extern unsigned int riscv_cbom_block_size;
-> -void riscv_init_cbom_blocksize(void);
-> +extern unsigned int riscv_cboz_block_size;
-> +void riscv_init_cbo_blocksizes(void);
->  
->  #ifdef CONFIG_RISCV_DMA_NONCOHERENT
->  void riscv_noncoherent_supported(void);
-> diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
-> index 5d6492bde446..eaa5a972ad2d 100644
-> --- a/arch/riscv/include/asm/hwcap.h
-> +++ b/arch/riscv/include/asm/hwcap.h
-> @@ -45,6 +45,7 @@
->  #define RISCV_ISA_EXT_ZIHINTPAUSE	29
->  #define RISCV_ISA_EXT_SSTC		30
->  #define RISCV_ISA_EXT_SVINVAL		31
-> +#define RISCV_ISA_EXT_ZICBOZ		32
->  
->  #define RISCV_ISA_EXT_ID_MAX		RISCV_ISA_EXT_MAX
->  
-> diff --git a/arch/riscv/kernel/cpu.c b/arch/riscv/kernel/cpu.c
-> index fa427bdcf773..bf969218f609 100644
-> --- a/arch/riscv/kernel/cpu.c
-> +++ b/arch/riscv/kernel/cpu.c
-> @@ -144,6 +144,7 @@ static struct riscv_isa_ext_data isa_ext_arr[] = {
->  	__RISCV_ISA_EXT_DATA(svpbmt, RISCV_ISA_EXT_SVPBMT),
->  	__RISCV_ISA_EXT_DATA(zicbom, RISCV_ISA_EXT_ZICBOM),
->  	__RISCV_ISA_EXT_DATA(zihintpause, RISCV_ISA_EXT_ZIHINTPAUSE),
-> +	__RISCV_ISA_EXT_DATA(zicboz, RISCV_ISA_EXT_ZICBOZ),
->  	__RISCV_ISA_EXT_DATA("", RISCV_ISA_EXT_MAX),
->  };
->  
-> diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
-> index 18b9ed4df1f4..e13b3391de76 100644
-> --- a/arch/riscv/kernel/cpufeature.c
-> +++ b/arch/riscv/kernel/cpufeature.c
-> @@ -78,6 +78,15 @@ static bool riscv_isa_extension_check(int id)
->  			return false;
->  		}
->  		return true;
-> +	case RISCV_ISA_EXT_ZICBOZ:
-> +		if (!riscv_cboz_block_size) {
-> +			pr_err("Zicboz detected in ISA string, but no cboz-block-size found\n");
-> +			return false;
-> +		} else if (!is_power_of_2(riscv_cboz_block_size)) {
-> +			pr_err("cboz-block-size present, but is not a power-of-2\n");
-> +			return false;
-> +		}
-> +		return true;
->  	}
->  
->  	return true;
-> @@ -225,6 +234,7 @@ void __init riscv_fill_hwcap(void)
->  				SET_ISA_EXT_MAP("zihintpause", RISCV_ISA_EXT_ZIHINTPAUSE);
->  				SET_ISA_EXT_MAP("sstc", RISCV_ISA_EXT_SSTC);
->  				SET_ISA_EXT_MAP("svinval", RISCV_ISA_EXT_SVINVAL);
-> +				SET_ISA_EXT_MAP("zicboz", RISCV_ISA_EXT_ZICBOZ);
->  			}
->  #undef SET_ISA_EXT_MAP
->  		}
-> diff --git a/arch/riscv/kernel/setup.c b/arch/riscv/kernel/setup.c
-> index a07917551027..26de0d8fd23d 100644
-> --- a/arch/riscv/kernel/setup.c
-> +++ b/arch/riscv/kernel/setup.c
-> @@ -296,7 +296,7 @@ void __init setup_arch(char **cmdline_p)
->  	setup_smp();
 >  #endif
 >  
-> -	riscv_init_cbom_blocksize();
-> +	riscv_init_cbo_blocksizes();
->  	riscv_fill_hwcap();
->  	apply_boot_alternatives();
->  #ifdef CONFIG_RISCV_DMA_NONCOHERENT
-> diff --git a/arch/riscv/mm/cacheflush.c b/arch/riscv/mm/cacheflush.c
-> index f096b9966cae..208e0d58bde3 100644
-> --- a/arch/riscv/mm/cacheflush.c
-> +++ b/arch/riscv/mm/cacheflush.c
-> @@ -91,6 +91,9 @@ void flush_icache_pte(pte_t pte)
->  unsigned int riscv_cbom_block_size;
->  EXPORT_SYMBOL_GPL(riscv_cbom_block_size);
+>  #define __INSN_R(...)	insn_r __VA_ARGS__
+> +#define __INSN_I(...)	insn_i __VA_ARGS__
 >  
-> +unsigned int riscv_cboz_block_size;
-> +EXPORT_SYMBOL_GPL(riscv_cboz_block_size);
+>  #else /* ! __ASSEMBLY__ */
+>  
+> @@ -44,6 +63,9 @@
+>  #define __INSN_R(opcode, func3, func7, rd, rs1, rs2)	\
+>  	".insn	r " opcode ", " func3 ", " func7 ", " rd ", " rs1 ", " rs2 "\n"
+>  
+> +#define __INSN_I(opcode, func3, rd, rs1, simm12)	\
+> +	".insn	i " opcode ", " func3 ", " rd ", " rs1 ", " simm12 "\n"
 > +
->  static void cbo_get_block_size(struct device_node *node,
->  			       const char *name, u32 *blksz,
->  			       unsigned long *first_hartid)
-> @@ -113,19 +116,23 @@ static void cbo_get_block_size(struct device_node *node,
->  	}
->  }
+>  #else
 >  
-> -void riscv_init_cbom_blocksize(void)
-> +void riscv_init_cbo_blocksizes(void)
->  {
-> +	unsigned long cbom_hartid, cboz_hartid;
-> +	u32 cbom_blksz = 0, cboz_blksz = 0;
->  	struct device_node *node;
-> -	unsigned long cbom_hartid;
-> -	u32 probed_block_size;
+>  #include <linux/stringify.h>
+> @@ -60,14 +82,32 @@
+>  "		 (.L__gpr_num_\\rs2 << " __stringify(INSN_R_RS2_SHIFT) "))\n" \
+>  "	.endm\n"
 >  
-> -	probed_block_size = 0;
->  	for_each_of_cpu_node(node) {
-> -		/* set block-size for cbom extension if available */
-> +		/* set block-size for cbom and/or cboz extension if available */
->  		cbo_get_block_size(node, "riscv,cbom-block-size",
-> -				   &probed_block_size, &cbom_hartid);
-> +				   &cbom_blksz, &cbom_hartid);
-> +		cbo_get_block_size(node, "riscv,cboz-block-size",
-> +				   &cboz_blksz, &cboz_hartid);
->  	}
->  
-> -	if (probed_block_size)
-> -		riscv_cbom_block_size = probed_block_size;
-> +	if (cbom_blksz)
-> +		riscv_cbom_block_size = cbom_blksz;
+> +#define DEFINE_INSN_I							\
+> +	__DEFINE_ASM_GPR_NUMS						\
+> +"	.macro insn_i, opcode, func3, rd, rs1, simm12\n"		\
+> +"	.4byte	((\\opcode << " __stringify(INSN_I_OPCODE_SHIFT) ") |"	\
+> +"		 (\\func3 << " __stringify(INSN_I_FUNC3_SHIFT) ") |"	\
+> +"		 (.L__gpr_num_\\rd << " __stringify(INSN_I_RD_SHIFT) ") |"   \
+> +"		 (.L__gpr_num_\\rs1 << " __stringify(INSN_I_RS1_SHIFT) ") |" \
 
-As in patch 1, can you stick with s/blksz/block_size/ please.
-My poor OCD!!! Other than those minor things:
-Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
+It'd be nice if these macros had aligned \s. I know the file is pretty
+inconsistent in that regard and I'm not asking you to change those but I
+think it'd be nice to do so for stuff that's just being added now.
 
+Thanks,
+Conor.
+
+> +"		 (\\simm12 << " __stringify(INSN_I_SIMM12_SHIFT) "))\n"	\
+> +"	.endm\n"
 > +
-> +	if (cboz_blksz)
-> +		riscv_cboz_block_size = cboz_blksz;
->  }
+>  #define UNDEFINE_INSN_R							\
+>  "	.purgem insn_r\n"
+>  
+> +#define UNDEFINE_INSN_I							\
+> +"	.purgem insn_i\n"
+> +
+>  #define __INSN_R(opcode, func3, func7, rd, rs1, rs2)			\
+>  	DEFINE_INSN_R							\
+>  	"insn_r " opcode ", " func3 ", " func7 ", " rd ", " rs1 ", " rs2 "\n" \
+>  	UNDEFINE_INSN_R
+>  
+> +#define __INSN_I(opcode, func3, rd, rs1, simm12)			\
+> +	DEFINE_INSN_I							\
+> +	"insn_i " opcode ", " func3 ", " rd ", " rs1 ", " simm12 "\n" \
+> +	UNDEFINE_INSN_I
+> +
+>  #endif
+>  
+>  #endif /* ! __ASSEMBLY__ */
+> @@ -76,9 +116,14 @@
+>  	__INSN_R(RV_##opcode, RV_##func3, RV_##func7,		\
+>  		 RV_##rd, RV_##rs1, RV_##rs2)
+>  
+> +#define INSN_I(opcode, func3, rd, rs1, simm12)			\
+> +	__INSN_I(RV_##opcode, RV_##func3, RV_##rd,		\
+> +		 RV_##rs1, RV_##simm12)
+> +
+>  #define RV_OPCODE(v)		__ASM_STR(v)
+>  #define RV_FUNC3(v)		__ASM_STR(v)
+>  #define RV_FUNC7(v)		__ASM_STR(v)
+> +#define RV_SIMM12(v)		__ASM_STR(v)
+>  #define RV_RD(v)		__ASM_STR(v)
+>  #define RV_RS1(v)		__ASM_STR(v)
+>  #define RV_RS2(v)		__ASM_STR(v)
+> @@ -87,6 +132,7 @@
+>  #define RV___RS1(v)		__RV_REG(v)
+>  #define RV___RS2(v)		__RV_REG(v)
+>  
+> +#define RV_OPCODE_MISC_MEM	RV_OPCODE(15)
+>  #define RV_OPCODE_SYSTEM	RV_OPCODE(115)
+>  
+>  #define HFENCE_VVMA(vaddr, asid)				\
+> @@ -134,4 +180,8 @@
+>  	INSN_R(OPCODE_SYSTEM, FUNC3(0), FUNC7(51),		\
+>  	       __RD(0), RS1(gaddr), RS2(vmid))
+>  
+> +#define CBO_ZERO(base)						\
+> +	INSN_I(OPCODE_MISC_MEM, FUNC3(2), __RD(0),		\
+> +	       RS1(base), SIMM12(4))
+> +
+>  #endif /* __ASM_INSN_DEF_H */
 > -- 
 > 2.37.3
 > 
