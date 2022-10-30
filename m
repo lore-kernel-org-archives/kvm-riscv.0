@@ -1,67 +1,222 @@
 From: Conor Dooley <conor@kernel.org>
-Date: Sun, 30 Oct 2022 21:23:53 +0000
-Subject: [PATCH 6/9] RISC-V: KVM: Expose Zicboz to the guest
-In-Reply-To: <20221027130247.31634-7-ajones@ventanamicro.com>
+Date: Sun, 30 Oct 2022 21:27:42 +0000
+Subject: [PATCH 7/9] RISC-V: lib: Improve memset assembler formatting
+In-Reply-To: <20221027130247.31634-8-ajones@ventanamicro.com>
 References: <20221027130247.31634-1-ajones@ventanamicro.com>
- <20221027130247.31634-7-ajones@ventanamicro.com>
-Message-ID: <Y17raZlWvu1GBmBX@spud>
+ <20221027130247.31634-8-ajones@ventanamicro.com>
+Message-ID: <Y17sTkBtemXU0Uc/@spud>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Oct 27, 2022 at 03:02:44PM +0200, Andrew Jones wrote:
-> Guests may use the cbo.zero instruction when the CPU has the Zicboz
-> extension and the hypervisor sets henvcfg.CBZE.
+On Thu, Oct 27, 2022 at 03:02:45PM +0200, Andrew Jones wrote:
+> Aligning the first operand of each instructions with a tab is a
+> typical style which improves readability. Apply it to memset.S.
+> While there, we also make a small grammar change to a comment.
 > 
-> Add Zicboz support for KVM guests which may be enabled and
-> disabled from KVM userspace using the ISA extension ONE_REG API.
+> No functional change intended.
 
-Ditto re: formulaic.. Doubt it's needed here, but:
+Cool, nice cleanup :)
 Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
+Thanks,
+Conor.
 
 > 
 > Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
 > ---
->  arch/riscv/include/uapi/asm/kvm.h | 1 +
->  arch/riscv/kvm/vcpu.c             | 4 ++++
->  2 files changed, 5 insertions(+)
+>  arch/riscv/lib/memset.S | 143 ++++++++++++++++++++--------------------
+>  1 file changed, 72 insertions(+), 71 deletions(-)
 > 
-> diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
-> index 4bbf55cb2b70..8dc21ceee7aa 100644
-> --- a/arch/riscv/include/uapi/asm/kvm.h
-> +++ b/arch/riscv/include/uapi/asm/kvm.h
-> @@ -103,6 +103,7 @@ enum KVM_RISCV_ISA_EXT_ID {
->  	KVM_RISCV_ISA_EXT_SVINVAL,
->  	KVM_RISCV_ISA_EXT_ZIHINTPAUSE,
->  	KVM_RISCV_ISA_EXT_ZICBOM,
-> +	KVM_RISCV_ISA_EXT_ZICBOZ,
->  	KVM_RISCV_ISA_EXT_MAX,
->  };
+> diff --git a/arch/riscv/lib/memset.S b/arch/riscv/lib/memset.S
+> index 34c5360c6705..e613c5c27998 100644
+> --- a/arch/riscv/lib/memset.S
+> +++ b/arch/riscv/lib/memset.S
+> @@ -3,111 +3,112 @@
+>   * Copyright (C) 2013 Regents of the University of California
+>   */
 >  
-> diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-> index 18a739070b51..7758faec590a 100644
-> --- a/arch/riscv/kvm/vcpu.c
-> +++ b/arch/riscv/kvm/vcpu.c
-> @@ -62,6 +62,7 @@ static const unsigned long kvm_isa_ext_arr[] = {
->  	KVM_ISA_EXT_ARR(SVPBMT),
->  	KVM_ISA_EXT_ARR(ZIHINTPAUSE),
->  	KVM_ISA_EXT_ARR(ZICBOM),
-> +	KVM_ISA_EXT_ARR(ZICBOZ),
->  };
+> -
+>  #include <linux/linkage.h>
+>  #include <asm/asm.h>
 >  
->  static unsigned long kvm_riscv_vcpu_base2isa_ext(unsigned long base_ext)
-> @@ -821,6 +822,9 @@ static void kvm_riscv_vcpu_update_config(const unsigned long *isa)
->  	if (riscv_isa_extension_available(isa, ZICBOM))
->  		henvcfg |= (ENVCFG_CBIE | ENVCFG_CBCFE);
+>  /* void *memset(void *, int, size_t) */
+>  ENTRY(__memset)
+>  WEAK(memset)
+> -	move t0, a0  /* Preserve return value */
+> +	move	t0, a0			/* Preserve return value */
 >  
-> +	if (riscv_isa_extension_available(isa, ZICBOZ))
-> +		henvcfg |= ENVCFG_CBZE;
+>  	/* Defer to byte-oriented fill for small sizes */
+> -	sltiu a3, a2, 16
+> -	bnez a3, 4f
+> +	sltiu	a3, a2, 16
+> +	bnez	a3, 4f
+>  
+>  	/*
+>  	 * Round to nearest XLEN-aligned address
+> -	 * greater than or equal to start address
+> +	 * greater than or equal to the start address.
+>  	 */
+> -	addi a3, t0, SZREG-1
+> -	andi a3, a3, ~(SZREG-1)
+> -	beq a3, t0, 2f  /* Skip if already aligned */
+> +	addi	a3, t0, SZREG-1
+> +	andi	a3, a3, ~(SZREG-1)
+> +	beq	a3, t0, 2f		/* Skip if already aligned */
 > +
->  	csr_write(CSR_HENVCFG, henvcfg);
->  #ifdef CONFIG_32BIT
->  	csr_write(CSR_HENVCFGH, henvcfg >> 32);
+>  	/* Handle initial misalignment */
+> -	sub a4, a3, t0
+> +	sub	a4, a3, t0
+>  1:
+> -	sb a1, 0(t0)
+> -	addi t0, t0, 1
+> -	bltu t0, a3, 1b
+> -	sub a2, a2, a4  /* Update count */
+> +	sb	a1, 0(t0)
+> +	addi	t0, t0, 1
+> +	bltu	t0, a3, 1b
+> +	sub	a2, a2, a4		/* Update count */
+>  
+>  2: /* Duff's device with 32 XLEN stores per iteration */
+>  	/* Broadcast value into all bytes */
+> -	andi a1, a1, 0xff
+> -	slli a3, a1, 8
+> -	or a1, a3, a1
+> -	slli a3, a1, 16
+> -	or a1, a3, a1
+> +	andi	a1, a1, 0xff
+> +	slli	a3, a1, 8
+> +	or	a1, a3, a1
+> +	slli	a3, a1, 16
+> +	or	a1, a3, a1
+>  #ifdef CONFIG_64BIT
+> -	slli a3, a1, 32
+> -	or a1, a3, a1
+> +	slli	a3, a1, 32
+> +	or	a1, a3, a1
+>  #endif
+>  
+>  	/* Calculate end address */
+> -	andi a4, a2, ~(SZREG-1)
+> -	add a3, t0, a4
+> +	andi	a4, a2, ~(SZREG-1)
+> +	add	a3, t0, a4
+>  
+> -	andi a4, a4, 31*SZREG  /* Calculate remainder */
+> -	beqz a4, 3f            /* Shortcut if no remainder */
+> -	neg a4, a4
+> -	addi a4, a4, 32*SZREG  /* Calculate initial offset */
+> +	andi	a4, a4, 31*SZREG	/* Calculate remainder */
+> +	beqz	a4, 3f			/* Shortcut if no remainder */
+> +	neg	a4, a4
+> +	addi	a4, a4, 32*SZREG	/* Calculate initial offset */
+>  
+>  	/* Adjust start address with offset */
+> -	sub t0, t0, a4
+> +	sub	t0, t0, a4
+>  
+>  	/* Jump into loop body */
+>  	/* Assumes 32-bit instruction lengths */
+> -	la a5, 3f
+> +	la	a5, 3f
+>  #ifdef CONFIG_64BIT
+> -	srli a4, a4, 1
+> +	srli	a4, a4, 1
+>  #endif
+> -	add a5, a5, a4
+> -	jr a5
+> +	add	a5, a5, a4
+> +	jr	a5
+>  3:
+> -	REG_S a1,        0(t0)
+> -	REG_S a1,    SZREG(t0)
+> -	REG_S a1,  2*SZREG(t0)
+> -	REG_S a1,  3*SZREG(t0)
+> -	REG_S a1,  4*SZREG(t0)
+> -	REG_S a1,  5*SZREG(t0)
+> -	REG_S a1,  6*SZREG(t0)
+> -	REG_S a1,  7*SZREG(t0)
+> -	REG_S a1,  8*SZREG(t0)
+> -	REG_S a1,  9*SZREG(t0)
+> -	REG_S a1, 10*SZREG(t0)
+> -	REG_S a1, 11*SZREG(t0)
+> -	REG_S a1, 12*SZREG(t0)
+> -	REG_S a1, 13*SZREG(t0)
+> -	REG_S a1, 14*SZREG(t0)
+> -	REG_S a1, 15*SZREG(t0)
+> -	REG_S a1, 16*SZREG(t0)
+> -	REG_S a1, 17*SZREG(t0)
+> -	REG_S a1, 18*SZREG(t0)
+> -	REG_S a1, 19*SZREG(t0)
+> -	REG_S a1, 20*SZREG(t0)
+> -	REG_S a1, 21*SZREG(t0)
+> -	REG_S a1, 22*SZREG(t0)
+> -	REG_S a1, 23*SZREG(t0)
+> -	REG_S a1, 24*SZREG(t0)
+> -	REG_S a1, 25*SZREG(t0)
+> -	REG_S a1, 26*SZREG(t0)
+> -	REG_S a1, 27*SZREG(t0)
+> -	REG_S a1, 28*SZREG(t0)
+> -	REG_S a1, 29*SZREG(t0)
+> -	REG_S a1, 30*SZREG(t0)
+> -	REG_S a1, 31*SZREG(t0)
+> -	addi t0, t0, 32*SZREG
+> -	bltu t0, a3, 3b
+> -	andi a2, a2, SZREG-1  /* Update count */
+> +	REG_S	a1,        0(t0)
+> +	REG_S	a1,    SZREG(t0)
+> +	REG_S	a1,  2*SZREG(t0)
+> +	REG_S	a1,  3*SZREG(t0)
+> +	REG_S	a1,  4*SZREG(t0)
+> +	REG_S	a1,  5*SZREG(t0)
+> +	REG_S	a1,  6*SZREG(t0)
+> +	REG_S	a1,  7*SZREG(t0)
+> +	REG_S	a1,  8*SZREG(t0)
+> +	REG_S	a1,  9*SZREG(t0)
+> +	REG_S	a1, 10*SZREG(t0)
+> +	REG_S	a1, 11*SZREG(t0)
+> +	REG_S	a1, 12*SZREG(t0)
+> +	REG_S	a1, 13*SZREG(t0)
+> +	REG_S	a1, 14*SZREG(t0)
+> +	REG_S	a1, 15*SZREG(t0)
+> +	REG_S	a1, 16*SZREG(t0)
+> +	REG_S	a1, 17*SZREG(t0)
+> +	REG_S	a1, 18*SZREG(t0)
+> +	REG_S	a1, 19*SZREG(t0)
+> +	REG_S	a1, 20*SZREG(t0)
+> +	REG_S	a1, 21*SZREG(t0)
+> +	REG_S	a1, 22*SZREG(t0)
+> +	REG_S	a1, 23*SZREG(t0)
+> +	REG_S	a1, 24*SZREG(t0)
+> +	REG_S	a1, 25*SZREG(t0)
+> +	REG_S	a1, 26*SZREG(t0)
+> +	REG_S	a1, 27*SZREG(t0)
+> +	REG_S	a1, 28*SZREG(t0)
+> +	REG_S	a1, 29*SZREG(t0)
+> +	REG_S	a1, 30*SZREG(t0)
+> +	REG_S	a1, 31*SZREG(t0)
+> +
+> +	addi	t0, t0, 32*SZREG
+> +	bltu	t0, a3, 3b
+> +	andi	a2, a2, SZREG-1		/* Update count */
+>  
+>  4:
+>  	/* Handle trailing misalignment */
+> -	beqz a2, 6f
+> -	add a3, t0, a2
+> +	beqz	a2, 6f
+> +	add	a3, t0, a2
+>  5:
+> -	sb a1, 0(t0)
+> -	addi t0, t0, 1
+> -	bltu t0, a3, 5b
+> +	sb	a1, 0(t0)
+> +	addi	t0, t0, 1
+> +	bltu	t0, a3, 5b
+>  6:
+>  	ret
+>  END(__memset)
 > -- 
 > 2.37.3
 > 
