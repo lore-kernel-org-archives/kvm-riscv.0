@@ -1,179 +1,115 @@
-From: Conor Dooley <conor@kernel.org>
-Date: Sun, 30 Oct 2022 22:35:47 +0000
-Subject: [PATCH 9/9] RISC-V: Use Zicboz in memset when available
-In-Reply-To: <20221027130247.31634-10-ajones@ventanamicro.com>
+From: Andrew Jones <ajones@ventanamicro.com>
+Date: Mon, 31 Oct 2022 09:11:13 +0100
+Subject: [PATCH 1/9] RISC-V: Factor out body of riscv_init_cbom_blocksize
+ loop
+In-Reply-To: <Y17fMkRRkTIbEX+r@spud>
 References: <20221027130247.31634-1-ajones@ventanamicro.com>
- <20221027130247.31634-10-ajones@ventanamicro.com>
-Message-ID: <Y178Q/szFZNlaFej@spud>
+ <20221027130247.31634-2-ajones@ventanamicro.com>
+ <Y17fMkRRkTIbEX+r@spud>
+Message-ID: <20221031081113.um77mqvtr36toorz@kamzik>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Oct 27, 2022 at 03:02:47PM +0200, Andrew Jones wrote:
-> RISC-V has an optimized memset() which does byte by byte writes up to
-> the first sizeof(long) aligned address, then uses Duff's device until
-> the last sizeof(long) aligned address, and finally byte by byte to
-> the end. When memset is used to zero memory and the Zicboz extension
-> is available, then we can extend that by doing the optimized memset
-> up to the first Zicboz block size aligned address, then use the
-> Zicboz zero instruction for each block to the last block size aligned
-> address, and finally the optimized memset to the end.
+On Sun, Oct 30, 2022 at 08:31:46PM +0000, Conor Dooley wrote:
+> On Thu, Oct 27, 2022 at 03:02:39PM +0200, Andrew Jones wrote:
+> > Refactor riscv_init_cbom_blocksize() to prepare for it to be used
+> > for both cbom block size and cboz block size.
+> > 
+> > Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
+> > ---
+> >  arch/riscv/mm/cacheflush.c | 45 +++++++++++++++++++++-----------------
+> >  1 file changed, 25 insertions(+), 20 deletions(-)
+> > 
+> > diff --git a/arch/riscv/mm/cacheflush.c b/arch/riscv/mm/cacheflush.c
+> > index 57b40a350420..f096b9966cae 100644
+> > --- a/arch/riscv/mm/cacheflush.c
+> > +++ b/arch/riscv/mm/cacheflush.c
+> > @@ -91,34 +91,39 @@ void flush_icache_pte(pte_t pte)
+> >  unsigned int riscv_cbom_block_size;
+> >  EXPORT_SYMBOL_GPL(riscv_cbom_block_size);
+> >  
+> > +static void cbo_get_block_size(struct device_node *node,
+> > +			       const char *name, u32 *blksz,
 > 
-> Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
-> ---
->  arch/riscv/lib/memset.S | 81 +++++++++++++++++++++++++++++++++++++++++
->  1 file changed, 81 insertions(+)
+> Is there a reason you called this "blksz" when we are using the spelt
+> out "block_size" everywhere else in this code? My OCD would appreciate
+> the consistency :s
+
+I just tend to prefer shorter names for local, short-lived variables
+as it sometimes helps avoid line wrapping, but I'm fine with naming it
+block_size as well and can do the rename for v2 if you'd like.
+
 > 
-> diff --git a/arch/riscv/lib/memset.S b/arch/riscv/lib/memset.S
-> index 74e4c7feec00..786b85b5e9cc 100644
-> --- a/arch/riscv/lib/memset.S
-> +++ b/arch/riscv/lib/memset.S
-> @@ -5,6 +5,12 @@
->  
->  #include <linux/linkage.h>
->  #include <asm/asm.h>
-> +#include <asm/alternative-macros.h>
-> +#include <asm/insn-def.h>
-> +#include <asm/hwcap.h>
-> +
-> +#define ALT_ZICBOZ(old, new)	ALTERNATIVE(old, new, 0, RISCV_ISA_EXT_ZICBOZ, \
-> +					    CONFIG_RISCV_ISA_ZICBOZ)
->  
->  /* void *memset(void *, int, size_t) */
->  ENTRY(__memset)
-> @@ -15,6 +21,58 @@ WEAK(memset)
->  	sltiu	a3, a2, 16
->  	bnez	a3, .Lfinish
->  
-> +#ifdef CONFIG_RISCV_ISA_ZICBOZ
-> +	ALT_ZICBOZ("j .Ldo_memset", "nop")
-> +	/*
-> +	 * t1 will be the Zicboz block size.
-> +	 * Zero means we're not using Zicboz, and we don't when a1 != 0
-                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-I find this second half a little hard to parse. Do you mean "we don't
-use zicboz when a1 != 0"? IOW, is my rewording of this comment accurate?
-"A block size of zero means we're not using Zicboz. We also do not use
-Zicboz when a1 is non zero".
-
-> +	 */
-> +	li	t1, 0
-> +	bnez	a1, .Ldo_memset
-> +	la	a3, riscv_cboz_block_size
-> +	lw	t1, 0(a3)
-> +
-> +	/*
-> +	 * Round to nearest Zicboz block-aligned address
-> +	 * greater than or equal to the start address.
-> +	 */
-> +	addi	a3, t1, -1
-> +	not	t2, a3			/* t2 is Zicboz block size mask */
-> +	add	a3, t0, a3
-> +	and	t3, a3, t2		/* t3 is Zicboz block aligned start */
-> +
-> +	/* Did we go too far or not have at least one block? */
-
-This one is a little hard too, I think it's because you're switching
-from "did" to "have". Maybe this is only an issue for me because this
-stuff is beyond me in terms of reviewing, so I relying on the comments a
-lot - although I suppose that makes me the target audience in a way.
-
-I think it'd make more sense to me as "Did we go too far, or did we not
-find any blocks".
+> Other than that:
+> Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
 
 Thanks,
-Conor.
+drew
 
-> +	add	a3, a0, a2
-> +	and	a3, a3, t2
-> +	bgtu	a3, t3, .Ldo_zero
-> +	li	t1, 0
-> +	j	.Ldo_memset
-> +
-> +.Ldo_zero:
-> +	/* Use Duff for initial bytes if there are any */
-> +	bne	t3, t0, .Ldo_memset
-> +
-> +.Ldo_zero2:
-> +	/* Calculate end address */
-> +	and	a3, a2, t2
-> +	add	a3, t0, a3
-> +	sub	a4, a3, t0
-> +
-> +.Lzero_loop:
-> +	CBO_ZERO(t0)
-> +	add	t0, t0, t1
-> +	bltu	t0, a3, .Lzero_loop
-> +	li	t1, 0			/* We're done with Zicboz */
-> +
-> +	sub	a2, a2, a4		/* Update count */
-> +	sltiu	a3, a2, 16
-> +	bnez	a3, .Lfinish
-> +
-> +	/* t0 is Zicboz block size aligned, so it must be SZREG aligned */
-> +	j	.Ldo_duff3
-> +#endif
-> +
-> +.Ldo_memset:
->  	/*
->  	 * Round to nearest XLEN-aligned address
->  	 * greater than or equal to the start address.
-> @@ -33,6 +91,18 @@ WEAK(memset)
->  
->  .Ldo_duff:
->  	/* Duff's device with 32 XLEN stores per iteration */
-> +
-> +#ifdef CONFIG_RISCV_ISA_ZICBOZ
-> +	ALT_ZICBOZ("j .Ldo_duff2", "nop")
-> +	beqz	t1, .Ldo_duff2
-> +	/* a3, "end", is start of block aligned start. a1 is 0 */
-> +	move    a3, t3
-> +	sub	a4, a3, t0		/* a4 is SZREG aligned count */
-> +	move	t4, a4			/* Save count for later, see below. */
-> +	j	.Ldo_duff4
-> +#endif
-> +
-> +.Ldo_duff2:
->  	/* Broadcast value into all bytes */
->  	andi	a1, a1, 0xff
->  	slli	a3, a1, 8
-> @@ -44,10 +114,12 @@ WEAK(memset)
->  	or	a1, a3, a1
->  #endif
->  
-> +.Ldo_duff3:
->  	/* Calculate end address */
->  	andi	a4, a2, ~(SZREG-1)
->  	add	a3, t0, a4
->  
-> +.Ldo_duff4:
->  	andi	a4, a4, 31*SZREG	/* Calculate remainder */
->  	beqz	a4, .Lduff_loop		/* Shortcut if no remainder */
->  	neg	a4, a4
-> @@ -100,6 +172,15 @@ WEAK(memset)
->  
->  	addi	t0, t0, 32*SZREG
->  	bltu	t0, a3, .Lduff_loop
-> +
-> +#ifdef CONFIG_RISCV_ISA_ZICBOZ
-> +	ALT_ZICBOZ("j .Lcount_update", "nop")
-> +	beqz	t1, .Lcount_update
-> +	sub	a2, a2, t4		/* Difference was saved above */
-> +	j	.Ldo_zero2
-> +#endif
-> +
-> +.Lcount_update:
->  	andi	a2, a2, SZREG-1		/* Update count */
->  
->  .Lfinish:
-> -- 
-> 2.37.3
 > 
-> 
-> _______________________________________________
-> linux-riscv mailing list
-> linux-riscv at lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-riscv
+> > +			       unsigned long *first_hartid)
+> > +{
+> > +	unsigned long hartid;
+> > +	u32 val;
+> > +
+> > +	if (riscv_of_processor_hartid(node, &hartid))
+> > +		return;
+> > +
+> > +	if (of_property_read_u32(node, name, &val))
+> > +		return;
+> > +
+> > +	if (!*blksz) {
+> > +		*blksz = val;
+> > +		*first_hartid = hartid;
+> > +	} else if (*blksz != val) {
+> > +		pr_warn("%s mismatched between harts %lu and %lu\n",
+> > +			name, *first_hartid, hartid);
+> > +	}
+> > +}
+> > +
+> >  void riscv_init_cbom_blocksize(void)
+> >  {
+> >  	struct device_node *node;
+> >  	unsigned long cbom_hartid;
+> > -	u32 val, probed_block_size;
+> > -	int ret;
+> > +	u32 probed_block_size;
+> >  
+> >  	probed_block_size = 0;
+> >  	for_each_of_cpu_node(node) {
+> > -		unsigned long hartid;
+> > -
+> > -		ret = riscv_of_processor_hartid(node, &hartid);
+> > -		if (ret)
+> > -			continue;
+> > -
+> >  		/* set block-size for cbom extension if available */
+> > -		ret = of_property_read_u32(node, "riscv,cbom-block-size", &val);
+> > -		if (ret)
+> > -			continue;
+> > -
+> > -		if (!probed_block_size) {
+> > -			probed_block_size = val;
+> > -			cbom_hartid = hartid;
+> > -		} else {
+> > -			if (probed_block_size != val)
+> > -				pr_warn("cbom-block-size mismatched between harts %lu and %lu\n",
+> > -					cbom_hartid, hartid);
+> > -		}
+> > +		cbo_get_block_size(node, "riscv,cbom-block-size",
+> > +				   &probed_block_size, &cbom_hartid);
+> >  	}
+> >  
+> >  	if (probed_block_size)
+> > -- 
+> > 2.37.3
+> > 
+> > 
+> > _______________________________________________
+> > linux-riscv mailing list
+> > linux-riscv at lists.infradead.org
+> > http://lists.infradead.org/mailman/listinfo/linux-riscv
 
