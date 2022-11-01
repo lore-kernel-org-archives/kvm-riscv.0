@@ -1,158 +1,143 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Tue, 1 Nov 2022 15:26:31 +0100
-Subject: [RFC  6/9] RISC-V: KVM: Add SBI PMU extension support
-In-Reply-To: <20220718170205.2972215-7-atishp@rivosinc.com>
+Date: Tue, 1 Nov 2022 15:35:48 +0100
+Subject: [RFC  7/9] RISC-V: KVM: Implement trap & emulate for hpmcounters
+In-Reply-To: <20220718170205.2972215-8-atishp@rivosinc.com>
 References: <20220718170205.2972215-1-atishp@rivosinc.com>
- <20220718170205.2972215-7-atishp@rivosinc.com>
-Message-ID: <20221101142631.du54p4kyhlgf54cr@kamzik>
+ <20220718170205.2972215-8-atishp@rivosinc.com>
+Message-ID: <20221101143548.plvlhedzt3oifa3u@kamzik>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Jul 18, 2022 at 10:02:02AM -0700, Atish Patra wrote:
-> SBI PMU extension allows KVM guests to configure/start/stop/query about
-> the PMU counters in virtualized enviornment as well.
-> 
-> In order to allow that, KVM implements the entire SBI PMU extension.
+On Mon, Jul 18, 2022 at 10:02:03AM -0700, Atish Patra wrote:
+> As the KVM guests only see the virtual PMU counters, all hpmcounter
+> access should trap and KVM emulates the read access on behalf of guests.
 > 
 > Signed-off-by: Atish Patra <atishp@rivosinc.com>
 > ---
->  arch/riscv/kvm/vcpu_sbi.c     | 11 +++++
->  arch/riscv/kvm/vcpu_sbi_pmu.c | 81 +++++++++++++++++++++++++++++++++++
->  2 files changed, 92 insertions(+)
->  create mode 100644 arch/riscv/kvm/vcpu_sbi_pmu.c
+>  arch/riscv/include/asm/kvm_vcpu_pmu.h | 16 +++++++++
+>  arch/riscv/kvm/vcpu_insn.c            |  1 +
+>  arch/riscv/kvm/vcpu_pmu.c             | 47 +++++++++++++++++++++++----
+>  3 files changed, 57 insertions(+), 7 deletions(-)
 > 
-> diff --git a/arch/riscv/kvm/vcpu_sbi.c b/arch/riscv/kvm/vcpu_sbi.c
-> index d45e7da3f0d3..da9f7959340e 100644
-> --- a/arch/riscv/kvm/vcpu_sbi.c
-> +++ b/arch/riscv/kvm/vcpu_sbi.c
-> @@ -50,6 +50,16 @@ extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_hsm;
->  extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_experimental;
->  extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_vendor;
+> diff --git a/arch/riscv/include/asm/kvm_vcpu_pmu.h b/arch/riscv/include/asm/kvm_vcpu_pmu.h
+> index bffee052f2ae..5410236b62a8 100644
+> --- a/arch/riscv/include/asm/kvm_vcpu_pmu.h
+> +++ b/arch/riscv/include/asm/kvm_vcpu_pmu.h
+> @@ -39,6 +39,19 @@ struct kvm_pmu {
+>  #define pmu_to_vcpu(pmu)  (container_of((pmu), struct kvm_vcpu, arch.pmu))
+>  #define pmc_to_pmu(pmc)   (&(pmc)->vcpu->arch.pmu)
 >  
-> +#ifdef CONFIG_RISCV_PMU_SBI
-> +extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_pmu;
+> +#if defined(CONFIG_32BIT)
+> +#define KVM_RISCV_VCPU_HPMCOUNTER_CSR_FUNCS \
+> +{ .base = CSR_CYCLEH,      .count = 31, .func = kvm_riscv_vcpu_pmu_read_hpm }, \
+> +{ .base = CSR_CYCLE,      .count = 31, .func = kvm_riscv_vcpu_pmu_read_hpm },
 > +#else
-> +static const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_pmu = {
-> +	.extid_start = -1UL,
-> +	.extid_end = -1UL,
-> +	.handler = NULL,
-> +};
+> +#define KVM_RISCV_VCPU_HPMCOUNTER_CSR_FUNCS \
+> +{ .base = CSR_CYCLE,      .count = 31, .func = kvm_riscv_vcpu_pmu_read_hpm },
 > +#endif
 > +
->  static const struct kvm_vcpu_sbi_extension *sbi_ext[] = {
->  	&vcpu_sbi_ext_v01,
->  	&vcpu_sbi_ext_base,
-> @@ -58,6 +68,7 @@ static const struct kvm_vcpu_sbi_extension *sbi_ext[] = {
->  	&vcpu_sbi_ext_rfence,
->  	&vcpu_sbi_ext_srst,
->  	&vcpu_sbi_ext_hsm,
-> +	&vcpu_sbi_ext_pmu,
->  	&vcpu_sbi_ext_experimental,
->  	&vcpu_sbi_ext_vendor,
+> +int kvm_riscv_vcpu_pmu_read_hpm(struct kvm_vcpu *vcpu, unsigned int csr_num,
+> +				unsigned long *val, unsigned long new_val,
+> +				unsigned long wr_mask);
+> +
+>  int kvm_riscv_vcpu_pmu_num_ctrs(struct kvm_vcpu *vcpu, unsigned long *out_val);
+>  int kvm_riscv_vcpu_pmu_ctr_info(struct kvm_vcpu *vcpu, unsigned long cidx,
+>  				unsigned long *ctr_info);
+> @@ -59,6 +72,9 @@ void kvm_riscv_vcpu_pmu_reset(struct kvm_vcpu *vcpu);
+>  #else
+>  struct kvm_pmu {
 >  };
-> diff --git a/arch/riscv/kvm/vcpu_sbi_pmu.c b/arch/riscv/kvm/vcpu_sbi_pmu.c
-> new file mode 100644
-> index 000000000000..90c51a95d4f4
-> --- /dev/null
-> +++ b/arch/riscv/kvm/vcpu_sbi_pmu.c
-> @@ -0,0 +1,81 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +/*
-> + * Copyright (c) 2022 Rivos Inc
-> + *
-> + * Authors:
-> + *     Atish Patra <atishp@rivosinc.com>
-> + */
+> +#define KVM_RISCV_VCPU_HPMCOUNTER_CSR_FUNCS \
+> +{ .base = 0,      .count = 0, .func = NULL },
 > +
-> +#include <linux/errno.h>
-> +#include <linux/err.h>
-> +#include <linux/kvm_host.h>
-> +#include <asm/csr.h>
-> +#include <asm/sbi.h>
-> +#include <asm/kvm_vcpu_sbi.h>
-> +
-> +static int kvm_sbi_ext_pmu_handler(struct kvm_vcpu *vcpu, struct kvm_run *run,
-> +				   unsigned long *out_val,
-> +				   struct kvm_cpu_trap *utrap,
-> +				   bool *exit)
+>  
+>  static inline int kvm_riscv_vcpu_pmu_init(struct kvm_vcpu *vcpu)
+>  {
+> diff --git a/arch/riscv/kvm/vcpu_insn.c b/arch/riscv/kvm/vcpu_insn.c
+> index 0aa334f853c8..7c2a4b1a69f7 100644
+> --- a/arch/riscv/kvm/vcpu_insn.c
+> +++ b/arch/riscv/kvm/vcpu_insn.c
+> @@ -215,6 +215,7 @@ struct csr_func {
+>  };
+>  
+>  static const struct csr_func csr_funcs[] = {
+> +	KVM_RISCV_VCPU_HPMCOUNTER_CSR_FUNCS
+>  };
+>  
+>  /**
+> diff --git a/arch/riscv/kvm/vcpu_pmu.c b/arch/riscv/kvm/vcpu_pmu.c
+> index 3168ed740bdd..5434051f495d 100644
+> --- a/arch/riscv/kvm/vcpu_pmu.c
+> +++ b/arch/riscv/kvm/vcpu_pmu.c
+> @@ -14,6 +14,46 @@
+>  #include <asm/kvm_vcpu_pmu.h>
+>  #include <linux/kvm_host.h>
+>  
+> +int kvm_riscv_vcpu_pmu_ctr_read(struct kvm_vcpu *vcpu, unsigned long cidx,
+> +				unsigned long *out_val)
 > +{
-> +	int ret = -EOPNOTSUPP;
-> +	struct kvm_cpu_context *cp = &vcpu->arch.guest_context;
-> +	unsigned long funcid = cp->a6;
-> +	uint64_t temp;
-
-I think we need something like
-
-   if (!vcpu_to_pmu(vcpu)->enabled)
-      return -EOPNOTSUPP;
-
-here. Where 'enabled' is only true when we successfully initialize
-the pmu. And, successful initialization depends on 
-IS_ENABLED(CONFIG_RISCV_PMU_SBI) and
-riscv_isa_extension_available(NULL, SSCOFPMF) as well as not
-failing other things. And, KVM userspace should be able to
-disable the pmu, which keep enabled from being set as well.
-
+> +	struct kvm_pmu *kvpmu = vcpu_to_pmu(vcpu);
+> +	struct kvm_pmc *pmc;
+> +	u64 enabled, running;
 > +
-> +	switch (funcid) {
-> +	case SBI_EXT_PMU_NUM_COUNTERS:
-> +		ret = kvm_riscv_vcpu_pmu_num_ctrs(vcpu, out_val);
-> +		break;
-> +	case SBI_EXT_PMU_COUNTER_GET_INFO:
-> +		ret = kvm_riscv_vcpu_pmu_ctr_info(vcpu, cp->a0, out_val);
-> +		break;
-> +	case SBI_EXT_PMU_COUNTER_CFG_MATCH:
-> +#if defined(CONFIG_32BIT)
-> +		temp = ((uint64_t)cp->a5 << 32) | cp->a4;
-> +#else
-> +		temp = cp->a4;
-> +#endif
-> +		ret = kvm_riscv_vcpu_pmu_ctr_cfg_match(vcpu, cp->a0, cp->a1, cp->a2, cp->a3, temp);
-> +		if (ret >= 0) {
-> +			*out_val = ret;
-> +			ret = 0;
-> +		}
-> +		break;
-> +	case SBI_EXT_PMU_COUNTER_START:
-> +#if defined(CONFIG_32BIT)
-> +		temp = ((uint64_t)cp->a4 << 32) | cp->a3;
-> +#else
-> +		temp = cp->a3;
-> +#endif
-> +		ret = kvm_riscv_vcpu_pmu_ctr_start(vcpu, cp->a0, cp->a1, cp->a2, temp);
-> +		break;
-> +	case SBI_EXT_PMU_COUNTER_STOP:
-> +		ret = kvm_riscv_vcpu_pmu_ctr_stop(vcpu, cp->a0, cp->a1, cp->a2);
-> +		break;
-> +	case SBI_EXT_PMU_COUNTER_FW_READ:
-> +		ret = kvm_riscv_vcpu_pmu_ctr_read(vcpu, cp->a0, out_val);
-> +		break;
-> +	default:
-> +		ret = -EOPNOTSUPP;
-> +	}
+> +	if (!kvpmu)
+> +		return -EINVAL;
+> +
+> +	pmc = &kvpmu->pmc[cidx];
+> +	if (!pmc->perf_event)
+> +		return -EINVAL;
+> +
+> +	pmc->counter_val += perf_event_read_value(pmc->perf_event, &enabled, &running);
+> +	*out_val = pmc->counter_val;
+> +
+> +	return 0;
+> +}
+> +
+> +int kvm_riscv_vcpu_pmu_read_hpm(struct kvm_vcpu *vcpu, unsigned int csr_num,
+> +				unsigned long *val, unsigned long new_val,
+> +				unsigned long wr_mask)
+> +{
+> +	struct kvm_pmu *kvpmu = vcpu_to_pmu(vcpu);
+> +	int cidx, ret = KVM_INSN_CONTINUE_NEXT_SEPC;
+> +
+> +	if (!kvpmu)
+> +		return KVM_INSN_EXIT_TO_USER_SPACE;
+> +	//TODO: Should we check if vcpu pmu is initialized or not!
+
+I guess it depends on the path to this call. It'd be best to keep the
+checks to the minimum, so if this isn't a top level call then I'd say
+no, but we need to check in the top level.
+
+> +	if (wr_mask)
+> +		return KVM_INSN_ILLEGAL_TRAP;
+> +	cidx = csr_num - CSR_CYCLE;
+> +
+> +	if (kvm_riscv_vcpu_pmu_ctr_read(vcpu, cidx, val) < 0)
+> +		return KVM_INSN_EXIT_TO_USER_SPACE;
 > +
 > +	return ret;
 > +}
 > +
-> +unsigned long kvm_sbi_ext_pmu_probe(unsigned long extid)
-> +{
-> +	/*
-> +	 * PMU Extension is only available to guests if privilege mode filtering
-> +	 * is available. Otherwise, guest will always count events while the
-> +	 * execution is in hypervisor mode.
-> +	 */
-> +	return riscv_isa_extension_available(NULL, SSCOFPMF);
-> +}
-> +
-> +const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_pmu = {
-> +	.extid_start = SBI_EXT_PMU,
-> +	.extid_end = SBI_EXT_PMU,
-> +	.handler = kvm_sbi_ext_pmu_handler,
-> +	.probe = kvm_sbi_ext_pmu_probe,
-> +};
+>  int kvm_riscv_vcpu_pmu_num_ctrs(struct kvm_vcpu *vcpu, unsigned long *out_val)
+>  {
+>  	struct kvm_pmu *kvpmu = vcpu_to_pmu(vcpu);
+> @@ -60,13 +100,6 @@ int kvm_riscv_vcpu_pmu_ctr_cfg_match(struct kvm_vcpu *vcpu, unsigned long ctr_ba
+>  	return 0;
+>  }
+>  
+> -int kvm_riscv_vcpu_pmu_ctr_read(struct kvm_vcpu *vcpu, unsigned long cidx,
+> -				unsigned long *out_val)
+> -{
+> -	/* TODO */
+> -	return 0;
+> -}
+> -
+>  int kvm_riscv_vcpu_pmu_init(struct kvm_vcpu *vcpu)
+>  {
+>  	int i = 0, num_hw_ctrs, num_fw_ctrs, hpm_width;
 > -- 
 > 2.25.1
 >
