@@ -1,168 +1,35 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Mon, 31 Oct 2022 09:39:19 +0100
-Subject: [PATCH 0/9] RISC-V: Apply Zicboz to clear_page and memset
-In-Reply-To: <Y17dP7/SJXk4kLpr@spud>
-References: <20221027130247.31634-1-ajones@ventanamicro.com>
- <20221029095953.zhzb47lbiepptqpn@kamzik>
- <Y17dP7/SJXk4kLpr@spud>
-Message-ID: <20221031083919.5ilhub26udingklx@kamzik>
+From: Bo Liu <liubo03@inspur.com>
+Date: Tue, 1 Nov 2022 01:38:11 -0400
+Subject: [PATCH] RISC-V: KVM: use vma_lookup() instead of find_vma_intersection()
+Message-ID: <20221101053811.5884-1-liubo03@inspur.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sun, Oct 30, 2022 at 08:23:27PM +0000, Conor Dooley wrote:
-> On Sat, Oct 29, 2022 at 11:59:53AM +0200, Andrew Jones wrote:
-> > On Thu, Oct 27, 2022 at 03:02:38PM +0200, Andrew Jones wrote:
-> > > When the Zicboz extension is available we can more rapidly zero naturally
-> > > aligned Zicboz block sized chunks of memory. As pages are always page
-> > > aligned and are larger than any Zicboz block size will be, then
-> > > clear_page() appears to be a good candidate for the extension. While cycle
-> > > count and energy consumption should also be considered, we can be pretty
-> > > certain that implementing clear_page() with the Zicboz extension is a win
-> > > by comparing the new dynamic instruction count with its current count[1].
-> > > Doing so we see that the new count is less than half the old count (see
-> > > patch4's commit message for more details). Another candidate for the
-> > > extension is memset(), but, since memset() isn't just used for zeroing
-> > > memory and it accepts arbitrarily aligned addresses and arbitrary sizes,
-> > > it's not as obvious if adding support for Zicboz will be an overall win.
-> > > In order to make a determination, I've done some analysis and wrote my
-> > > conclusions in the bullets below.
-> > > 
-> > > * When compiling the kernel without CONFIG_RISCV_ISA_ZICBOZ, memset()
-> > >   doesn't change, so that's fine.
-> > > 
-> > > * The overhead added to memset() when the Zicboz extension isn't present,
-> > >   but CONFIG_RISCV_ISA_ZICBOZ is selected, is 3 jumps to known targets,
-> > >   which I believe is fine.
-> > > 
-> > > * The overhead added to a memset() invocation which is not zeroing memory
-> > >   is 7 instructions, where 3 are branches. This seems fine and,
-> > >   furthermore, memset() is almost always invoked to zero memory (99% [2]).
-> > > 
-> > > * When memset() is invoked to zero memory, the proposed Zicboz extended
-> > >   memset() always has a lower dynamic instruction count than the current
-> > >   memset() as long as the input address is Zicboz block aligned and the
-> > >   length is >= the block size.
-> > > 
-> > > * When memset() is invoked to zero memory, the proposed Zicboz extended
-> > >   memset() is always worse for unaligned or too small inputs than the
-> > >   current memset(), but it's only at most a few dozen instructions worse.
-> > >   I think this is probably fine, especially considering the large majority
-> > >   of zeroing invocations are 64 bytes or larger and are aligned to a
-> > >   power-of-2 boundary, 64-byte or larger (77% [2]).
-> > > 
-> > > [1] I ported the functions under test to userspace and linked them with
-> > >     a test program. Then, I ran them under gdb with a script[3] which
-> > >     counted instructions by single stepping.
-> > > 
-> > > [2] I wrote bpftrace scripts[4] to count memset() invocations to see the
-> > >     frequency of it being used to zero memory and have block size aligned
-> > >     input addresses with block size or larger lengths. The workload was
-> > >     just random desktop stuff including streaming video and compiling.
-> > >     While I did run this on my x86 notebook, I still expect the data to
-> > >     be representative on RISC-V. Note, x86 has clear_page() so the
-> > >     memset() data regarding alignment and size weren't over inflated by
-> > >     page zeroing invocations. Grepping also shows the large majority of
-> > >     memset() calls are to zero memory (93%).
-> > > 
-> > > [3] https://gist.github.com/jones-drew/487791c956ceca8c18adc2847eec9c60
-> > > [4] https://gist.github.com/jones-drew/1e860692cf6fc0fb2a82a04c9ce720fe
-> > > 
-> > > These patches are based on the following pending series
-> > > 
-> > > 1. "[PATCH v2 0/3] RISC-V: Ensure Zicbom has a valid block size"
-> > >    20221024091309.406906-1-ajones at ventanamicro.com
-> > > 
-> > > 2. "[PATCH 0/8] riscv: improve boot time isa extensions handling"
-> > >    20221006070818.3616-1-jszhang at kernel.org
-> > >    Also including the additional patch proposed here
-> > >    20221013162038.ehseju2neic2xu5z at kamzik
-> > > 
-> > > The patches are also available here
-> > > https://github.com/jones-drew/linux/commits/riscv/zicboz
-> > > 
-> > > To test over QEMU this branch may be used to enable Zicboz
-> > > https://gitlab.com/jones-drew/qemu/-/commits/riscv/zicboz
-> > > 
-> > > To test running a KVM guest with Zicboz this kvmtool branch may be used
-> > > https://github.com/jones-drew/kvmtool/commits/riscv/zicboz
-> > > 
-> > > Thanks,
-> > > drew
-> > > 
-> > > Andrew Jones (9):
-> > >   RISC-V: Factor out body of riscv_init_cbom_blocksize loop
-> > >   RISC-V: Add Zicboz detection and block size parsing
-> > >   RISC-V: insn-def: Define cbo.zero
-> > >   RISC-V: Use Zicboz in clear_page when available
-> > >   RISC-V: KVM: Provide UAPI for Zicboz block size
-> > >   RISC-V: KVM: Expose Zicboz to the guest
-> > >   RISC-V: lib: Improve memset assembler formatting
-> > >   RISC-V: lib: Use named labels in memset
-> > >   RISC-V: Use Zicboz in memset when available
-> > > 
-> > >  arch/riscv/Kconfig                  |  13 ++
-> > >  arch/riscv/include/asm/cacheflush.h |   3 +-
-> > >  arch/riscv/include/asm/hwcap.h      |   1 +
-> > >  arch/riscv/include/asm/insn-def.h   |  50 ++++++
-> > >  arch/riscv/include/asm/page.h       |   6 +-
-> > >  arch/riscv/include/uapi/asm/kvm.h   |   2 +
-> > >  arch/riscv/kernel/cpu.c             |   1 +
-> > >  arch/riscv/kernel/cpufeature.c      |  10 ++
-> > >  arch/riscv/kernel/setup.c           |   2 +-
-> > >  arch/riscv/kvm/vcpu.c               |  11 ++
-> > >  arch/riscv/lib/Makefile             |   1 +
-> > >  arch/riscv/lib/clear_page.S         |  28 ++++
-> > >  arch/riscv/lib/memset.S             | 241 +++++++++++++++++++---------
-> > >  arch/riscv/mm/cacheflush.c          |  64 +++++---
-> > >  14 files changed, 325 insertions(+), 108 deletions(-)
-> > >  create mode 100644 arch/riscv/lib/clear_page.S
-> > > 
-> > > -- 
-> > > 2.37.3
-> > >
-> > 
-> > FYI, I just tried this with clang. It compiles but doesn't boot when
-> > Zicboz is present (it does boot when Zicboz is disabled in QEMU). I'm
-> > suspicious of the ALTERNATIVE() stuff, but I'll debug more on Monday.
-> > Also, I see building with LLVM=1 doesn't work, but that appears to be
-> > an issue introduced with "[PATCH 0/8] riscv: improve boot time isa
-> > extensions handling" which this series is based on.
-> 
-> Yeah, I was hitting the LLVM failures when I gave it a go the other day,
-> thanks for passing it on to Jisheng.. I meant to do that and forgot.
-> FWIW, I did find a build error with gcc too:
-> 
-> riscv64-unknown-linux-gnu-ld: arch/riscv/purgatory/purgatory.ro: in function `.L3?1':
-> ctype.c:(.text+0x215a): undefined reference to `riscv_cboz_block_size'
+vma_lookup() finds the vma of a specific address with a cleaner interface
+and is more readable.
 
-Oh, I didn't see that with my toolchain
- - gcc 12.1.0 (g1ea978e3066a)
- - binutils 2.39
+Signed-off-by: Bo Liu <liubo03@inspur.com>
+---
+ arch/riscv/kvm/mmu.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-I'll see if I can reproduce it.
+diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
+index 3620ecac2fa1..5942d10c9736 100644
+--- a/arch/riscv/kvm/mmu.c
++++ b/arch/riscv/kvm/mmu.c
+@@ -632,7 +632,7 @@ int kvm_riscv_gstage_map(struct kvm_vcpu *vcpu,
+ 
+ 	mmap_read_lock(current->mm);
+ 
+-	vma = find_vma_intersection(current->mm, hva, hva + 1);
++	vma = vma_lookup(current->mm, hva);
+ 	if (unlikely(!vma)) {
+ 		kvm_err("Failed to find VMA for hva 0x%lx\n", hva);
+ 		mmap_read_unlock(current->mm);
+-- 
+2.27.0
 
-Thanks,
-drew
-
-> 
-> defconfig should be:
-> https://gist.github.com/ConchuOD/e14293a28b04dca2125bdcc0d97d366a
-> & toolchain stuff:
-> CONFIG_CC_VERSION_TEXT="riscv64-unknown-linux-gnu-gcc (g5964b5cd727) 11.1.0"
-> CONFIG_CC_IS_GCC=y
-> CONFIG_GCC_VERSION=110100
-> CONFIG_AS_IS_GNU=y
-> CONFIG_AS_VERSION=23700
-> CONFIG_LD_IS_BFD=y
-> CONFIG_LD_VERSION=23700
-> 
-> My toolchain predates zicbo* being introduced & I set the config option.
-> I didn't do any specific digging as to the cause.
-> 
-> Thanks,
-> Conor.
-> 
 
