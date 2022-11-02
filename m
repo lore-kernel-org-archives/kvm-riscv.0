@@ -1,166 +1,123 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Wed,  2 Nov 2022 23:18:38 +0000
-Subject: [PATCH 11/44] KVM: x86: Move guts of kvm_arch_init() to standalone helper
+Date: Wed,  2 Nov 2022 23:18:39 +0000
+Subject: [PATCH 12/44] KVM: VMX: Do _all_ initialization before exposing
+ /dev/kvm to userspace
 In-Reply-To: <20221102231911.3107438-1-seanjc@google.com>
 References: <20221102231911.3107438-1-seanjc@google.com>
-Message-ID: <20221102231911.3107438-12-seanjc@google.com>
+Message-ID: <20221102231911.3107438-13-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Move the guts of kvm_arch_init() to a new helper, kvm_x86_vendor_init(),
-so that VMX can do _all_ arch and vendor initialization before calling
-kvm_init().  Calling kvm_init() must be the _very_ last step during init,
-as kvm_init() exposes /dev/kvm to userspace, i.e. allows creating VMs.
+Call kvm_init() only after _all_ setup is complete, as kvm_init() exposes
+/dev/kvm to userspace and thus allows userspace to create VMs (and call
+other ioctls).  E.g. KVM will encounter a NULL pointer when attempting to
+add a vCPU to the per-CPU loaded_vmcss_on_cpu list if userspace is able to
+create a VM before vmx_init() configures said list.
 
-No functional change intended.
+ BUG: kernel NULL pointer dereference, address: 0000000000000008
+ #PF: supervisor write access in kernel mode
+ #PF: error_code(0x0002) - not-present page
+ PGD 0 P4D 0
+ Oops: 0002 [#1] SMP
+ CPU: 6 PID: 1143 Comm: stable Not tainted 6.0.0-rc7+ #988
+ Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 0.0.0 02/06/2015
+ RIP: 0010:vmx_vcpu_load_vmcs+0x68/0x230 [kvm_intel]
+  <TASK>
+  vmx_vcpu_load+0x16/0x60 [kvm_intel]
+  kvm_arch_vcpu_load+0x32/0x1f0 [kvm]
+  vcpu_load+0x2f/0x40 [kvm]
+  kvm_arch_vcpu_create+0x231/0x310 [kvm]
+  kvm_vm_ioctl+0x79f/0xe10 [kvm]
+  ? handle_mm_fault+0xb1/0x220
+  __x64_sys_ioctl+0x80/0xb0
+  do_syscall_64+0x2b/0x50
+  entry_SYSCALL_64_after_hwframe+0x46/0xb0
+ RIP: 0033:0x7f5a6b05743b
+  </TASK>
+ Modules linked in: vhost_net vhost vhost_iotlb tap kvm_intel(+) kvm irqbypass
 
+Cc: stable at vger.kernel.org
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/x86/include/asm/kvm_host.h |  3 +++
- arch/x86/kvm/svm/svm.c          | 23 +++++++++++++++++++++--
- arch/x86/kvm/vmx/vmx.c          |  9 ++++++++-
- arch/x86/kvm/x86.c              | 15 +++++++++++++--
- 4 files changed, 45 insertions(+), 5 deletions(-)
+ arch/x86/kvm/vmx/vmx.c | 38 +++++++++++++++++++++++---------------
+ 1 file changed, 23 insertions(+), 15 deletions(-)
 
-diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
-index 415113dea951..58a7cb8d8e96 100644
---- a/arch/x86/include/asm/kvm_host.h
-+++ b/arch/x86/include/asm/kvm_host.h
-@@ -1695,6 +1695,9 @@ extern struct kvm_x86_ops kvm_x86_ops;
- #define KVM_X86_OP_OPTIONAL_RET0 KVM_X86_OP
- #include <asm/kvm-x86-ops.h>
+diff --git a/arch/x86/kvm/vmx/vmx.c b/arch/x86/kvm/vmx/vmx.c
+index 118d9b29b339..6adb60485839 100644
+--- a/arch/x86/kvm/vmx/vmx.c
++++ b/arch/x86/kvm/vmx/vmx.c
+@@ -8493,21 +8493,25 @@ static void vmx_cleanup_l1d_flush(void)
+ 	l1tf_vmx_mitigation = VMENTER_L1D_FLUSH_AUTO;
+ }
  
-+int kvm_x86_vendor_init(struct kvm_x86_init_ops *ops);
-+void kvm_x86_vendor_exit(void);
-+
- #define __KVM_HAVE_ARCH_VM_ALLOC
- static inline struct kvm *kvm_arch_alloc_vm(void)
+-static void vmx_exit(void)
++static void __vmx_exit(void)
  {
-diff --git a/arch/x86/kvm/svm/svm.c b/arch/x86/kvm/svm/svm.c
-index d22a809d9233..f48d07bfc3d7 100644
---- a/arch/x86/kvm/svm/svm.c
-+++ b/arch/x86/kvm/svm/svm.c
-@@ -5132,15 +5132,34 @@ static struct kvm_x86_init_ops svm_init_ops __initdata = {
- 
- static int __init svm_init(void)
- {
-+	int r;
++	allow_smaller_maxphyaddr = false;
 +
- 	__unused_size_checks();
+ #ifdef CONFIG_KEXEC_CORE
+ 	RCU_INIT_POINTER(crash_vmclear_loaded_vmcss, NULL);
+ 	synchronize_rcu();
+ #endif
+-
+-	kvm_exit();
+-	kvm_x86_vendor_exit();
+-
+-	hv_cleanup_evmcs();
+-
+ 	vmx_cleanup_l1d_flush();
++}
  
--	return kvm_init(&svm_init_ops, sizeof(struct vcpu_svm),
--			__alignof__(struct vcpu_svm), THIS_MODULE);
-+	r = kvm_x86_vendor_init(&svm_init_ops);
-+	if (r)
-+		return r;
+-	allow_smaller_maxphyaddr = false;
++static void vmx_exit(void)
++{
++	kvm_exit();
++	kvm_x86_vendor_exit();
 +
++	__vmx_exit();
++
++	hv_cleanup_evmcs();
+ }
+ module_exit(vmx_exit);
+ 
+@@ -8521,11 +8525,6 @@ static int __init vmx_init(void)
+ 	if (r)
+ 		goto err_x86_init;
+ 
+-	r = kvm_init(&vmx_init_ops, sizeof(struct vcpu_vmx),
+-		     __alignof__(struct vcpu_vmx), THIS_MODULE);
+-	if (r)
+-		goto err_kvm_init;
+-
+ 	/*
+ 	 * Must be called after common x86 init so enable_ept is properly set
+ 	 * up. Hand the parameter mitigation value in which was stored in
+@@ -8559,11 +8558,20 @@ static int __init vmx_init(void)
+ 	if (!enable_ept)
+ 		allow_smaller_maxphyaddr = true;
+ 
 +	/*
 +	 * Common KVM initialization _must_ come last, after this, /dev/kvm is
 +	 * exposed to userspace!
 +	 */
-+	r = kvm_init(&svm_init_ops, sizeof(struct vcpu_svm),
-+		     __alignof__(struct vcpu_svm), THIS_MODULE);
++	r = kvm_init(&vmx_init_ops, sizeof(struct vcpu_vmx),
++		     __alignof__(struct vcpu_vmx), THIS_MODULE);
 +	if (r)
 +		goto err_kvm_init;
 +
-+	return 0;
-+
-+err_kvm_init:
-+	kvm_x86_vendor_exit();
-+	return r;
- }
+ 	return 0;
  
- static void __exit svm_exit(void)
- {
- 	kvm_exit();
-+	kvm_x86_vendor_exit();
- }
- 
- module_init(svm_init)
-diff --git a/arch/x86/kvm/vmx/vmx.c b/arch/x86/kvm/vmx/vmx.c
-index b3fd4049de01..118d9b29b339 100644
---- a/arch/x86/kvm/vmx/vmx.c
-+++ b/arch/x86/kvm/vmx/vmx.c
-@@ -8501,6 +8501,7 @@ static void vmx_exit(void)
- #endif
- 
- 	kvm_exit();
-+	kvm_x86_vendor_exit();
- 
- 	hv_cleanup_evmcs();
- 
-@@ -8516,13 +8517,17 @@ static int __init vmx_init(void)
- 
- 	hv_setup_evmcs();
- 
-+	r = kvm_x86_vendor_init(&vmx_init_ops);
-+	if (r)
-+		goto err_x86_init;
-+
- 	r = kvm_init(&vmx_init_ops, sizeof(struct vcpu_vmx),
- 		     __alignof__(struct vcpu_vmx), THIS_MODULE);
- 	if (r)
- 		goto err_kvm_init;
- 
- 	/*
--	 * Must be called after kvm_init() so enable_ept is properly set
-+	 * Must be called after common x86 init so enable_ept is properly set
- 	 * up. Hand the parameter mitigation value in which was stored in
- 	 * the pre module init parser. If no parameter was given, it will
- 	 * contain 'auto' which will be turned into the default 'cond'
-@@ -8559,6 +8564,8 @@ static int __init vmx_init(void)
- err_l1d_flush:
- 	vmx_exit();
+-err_l1d_flush:
+-	vmx_exit();
  err_kvm_init:
-+	kvm_x86_vendor_exit();
-+err_x86_init:
++	__vmx_exit();
++err_l1d_flush:
+ 	kvm_x86_vendor_exit();
+ err_x86_init:
  	hv_cleanup_evmcs();
- 	return r;
- }
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 40d4bfaa17a4..a0ca401d3cdf 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -9272,7 +9272,16 @@ static inline void kvm_ops_update(struct kvm_x86_init_ops *ops)
- 
- int kvm_arch_init(void *opaque)
- {
--	struct kvm_x86_init_ops *ops = opaque;
-+	return 0;
-+}
-+
-+void kvm_arch_exit(void)
-+{
-+
-+}
-+
-+int kvm_x86_vendor_init(struct kvm_x86_init_ops *ops)
-+{
- 	u64 host_pat;
- 	int r;
- 
-@@ -9404,8 +9413,9 @@ int kvm_arch_init(void *opaque)
- 	kmem_cache_destroy(x86_emulator_cache);
- 	return r;
- }
-+EXPORT_SYMBOL_GPL(kvm_x86_vendor_init);
- 
--void kvm_arch_exit(void)
-+void kvm_x86_vendor_exit(void)
- {
- 	kvm_unregister_perf_callbacks();
- 
-@@ -9434,6 +9444,7 @@ void kvm_arch_exit(void)
- 	WARN_ON(static_branch_unlikely(&kvm_xen_enabled.key));
- #endif
- }
-+EXPORT_SYMBOL_GPL(kvm_x86_vendor_exit);
- 
- static int __kvm_emulate_halt(struct kvm_vcpu *vcpu, int state, int reason)
- {
 -- 
 2.38.1.431.g37b22c650d-goog
 
