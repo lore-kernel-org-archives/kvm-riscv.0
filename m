@@ -1,215 +1,212 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Wed,  2 Nov 2022 23:18:37 +0000
-Subject: [PATCH 10/44] KVM: VMX: Clean up eVMCS enabling if KVM initialization fails
+Date: Wed,  2 Nov 2022 23:18:35 +0000
+Subject: [PATCH 08/44] KVM: x86: Move hardware setup/unsetup to init/exit
 In-Reply-To: <20221102231911.3107438-1-seanjc@google.com>
 References: <20221102231911.3107438-1-seanjc@google.com>
-Message-ID: <20221102231911.3107438-11-seanjc@google.com>
+Message-ID: <20221102231911.3107438-9-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-To make it obvious that KVM doesn't have a lurking bug, cleanup eVMCS
-enabling if kvm_init() fails even though the enabling doesn't strictly
-need to be unwound.  eVMCS enabling only toggles values that are fully
-contained in the VMX module, i.e. it's technically ok to leave the values
-as-is since they'll disappear entirely when the module is unloaded, but
-doing proper cleanup is relatively simple, and having a chunk of code
-that isn't unwound is confusing.
+Now that kvm_arch_hardware_setup() is called immediately after
+kvm_arch_init(), fold the guts of kvm_arch_hardware_(un)setup() into
+kvm_arch_{init,exit}() as a step towards dropping one of the hooks.
+
+To avoid having to unwind various setup, e.g registration of several
+notifiers, slot in the vendor hardware setup before the registration of
+said notifiers and callbacks.  Introducing a functional change while
+moving code is less than ideal, but the alternative is adding a pile of
+unwinding code, which is much more error prone, e.g. several attempts to
+move the setup code verbatim all introduced bugs.
+
+Add a comment to document that kvm_ops_update() is effectively the point
+of no return, e.g. it sets the kvm_x86_ops.hardware_enable canary and so
+needs to be unwound.
 
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/x86/kvm/vmx/vmx.c | 137 +++++++++++++++++++++++------------------
- 1 file changed, 78 insertions(+), 59 deletions(-)
+ arch/x86/kvm/x86.c | 121 +++++++++++++++++++++++----------------------
+ 1 file changed, 63 insertions(+), 58 deletions(-)
 
-diff --git a/arch/x86/kvm/vmx/vmx.c b/arch/x86/kvm/vmx/vmx.c
-index 05a747c9a9ff..b3fd4049de01 100644
---- a/arch/x86/kvm/vmx/vmx.c
-+++ b/arch/x86/kvm/vmx/vmx.c
-@@ -524,6 +524,8 @@ static inline void vmx_segment_cache_clear(struct vcpu_vmx *vmx)
- static unsigned long host_idt_base;
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index 9a7702b1c563..80ee580a9cd4 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -9252,6 +9252,24 @@ static struct notifier_block pvclock_gtod_notifier = {
+ };
+ #endif
  
- #if IS_ENABLED(CONFIG_HYPERV)
-+static struct kvm_x86_ops vmx_x86_ops __initdata;
-+
- static bool __read_mostly enlightened_vmcs = true;
- module_param(enlightened_vmcs, bool, 0444);
- 
-@@ -552,6 +554,71 @@ static int hv_enable_direct_tlbflush(struct kvm_vcpu *vcpu)
- 	return 0;
- }
- 
-+static __init void hv_setup_evmcs(void)
++static inline void kvm_ops_update(struct kvm_x86_init_ops *ops)
 +{
-+	int cpu;
++	memcpy(&kvm_x86_ops, ops->runtime_ops, sizeof(kvm_x86_ops));
 +
-+	if (!enlightened_vmcs)
-+		return;
++#define __KVM_X86_OP(func) \
++	static_call_update(kvm_x86_##func, kvm_x86_ops.func);
++#define KVM_X86_OP(func) \
++	WARN_ON(!kvm_x86_ops.func); __KVM_X86_OP(func)
++#define KVM_X86_OP_OPTIONAL __KVM_X86_OP
++#define KVM_X86_OP_OPTIONAL_RET0(func) \
++	static_call_update(kvm_x86_##func, (void *)kvm_x86_ops.func ? : \
++					   (void *)__static_call_return0);
++#include <asm/kvm-x86-ops.h>
++#undef __KVM_X86_OP
 +
-+	/*
-+	 * Enlightened VMCS usage should be recommended and the host needs
-+	 * to support eVMCS v1 or above.
-+	 */
-+	if (ms_hyperv.hints & HV_X64_ENLIGHTENED_VMCS_RECOMMENDED &&
-+	    (ms_hyperv.nested_features & HV_X64_ENLIGHTENED_VMCS_VERSION) >=
-+	     KVM_EVMCS_VERSION) {
-+
-+		/* Check that we have assist pages on all online CPUs */
-+		for_each_online_cpu(cpu) {
-+			if (!hv_get_vp_assist_page(cpu)) {
-+				enlightened_vmcs = false;
-+				break;
-+			}
-+		}
-+
-+		if (enlightened_vmcs) {
-+			pr_info("KVM: vmx: using Hyper-V Enlightened VMCS\n");
-+			static_branch_enable(&enable_evmcs);
-+		}
-+
-+		if (ms_hyperv.nested_features & HV_X64_NESTED_DIRECT_FLUSH)
-+			vmx_x86_ops.enable_direct_tlbflush
-+				= hv_enable_direct_tlbflush;
-+
-+	} else {
-+		enlightened_vmcs = false;
-+	}
-+}
-+static void hv_cleanup_evmcs(void)
-+{
-+	struct hv_vp_assist_page *vp_ap;
-+	int cpu;
-+
-+	if (!static_branch_unlikely(&enable_evmcs))
-+		return;
-+
-+	/*
-+	 * Reset everything to support using non-enlightened VMCS access later
-+	 * (e.g. when we reload the module with enlightened_vmcs=0)
-+	 */
-+	for_each_online_cpu(cpu) {
-+		vp_ap =	hv_get_vp_assist_page(cpu);
-+
-+		if (!vp_ap)
-+			continue;
-+
-+		vp_ap->nested_control.features.directhypercall = 0;
-+		vp_ap->current_nested_vmcs = 0;
-+		vp_ap->enlighten_vmentry = 0;
-+	}
-+
-+	static_branch_disable(&enable_evmcs);
++	kvm_pmu_ops_update(ops->pmu_ops);
 +}
 +
-+#else /* IS_ENABLED(CONFIG_HYPERV) */
-+static void hv_setup_evmcs(void) {}
-+static void hv_cleanup_evmcs(void) {}
- #endif /* IS_ENABLED(CONFIG_HYPERV) */
- 
- /*
-@@ -8435,29 +8502,8 @@ static void vmx_exit(void)
- 
- 	kvm_exit();
- 
--#if IS_ENABLED(CONFIG_HYPERV)
--	if (static_branch_unlikely(&enable_evmcs)) {
--		int cpu;
--		struct hv_vp_assist_page *vp_ap;
--		/*
--		 * Reset everything to support using non-enlightened VMCS
--		 * access later (e.g. when we reload the module with
--		 * enlightened_vmcs=0)
--		 */
--		for_each_online_cpu(cpu) {
--			vp_ap =	hv_get_vp_assist_page(cpu);
-+	hv_cleanup_evmcs();
- 
--			if (!vp_ap)
--				continue;
--
--			vp_ap->nested_control.features.directhypercall = 0;
--			vp_ap->current_nested_vmcs = 0;
--			vp_ap->enlighten_vmentry = 0;
--		}
--
--		static_branch_disable(&enable_evmcs);
--	}
--#endif
- 	vmx_cleanup_l1d_flush();
- 
- 	allow_smaller_maxphyaddr = false;
-@@ -8468,43 +8514,12 @@ static int __init vmx_init(void)
+ int kvm_arch_init(void *opaque)
  {
- 	int r, cpu;
+ 	struct kvm_x86_init_ops *ops = opaque;
+@@ -9325,6 +9343,24 @@ int kvm_arch_init(void *opaque)
+ 		kvm_caps.supported_xcr0 = host_xcr0 & KVM_SUPPORTED_XCR0;
+ 	}
  
--#if IS_ENABLED(CONFIG_HYPERV)
--	/*
--	 * Enlightened VMCS usage should be recommended and the host needs
--	 * to support eVMCS v1 or above. We can also disable eVMCS support
--	 * with module parameter.
--	 */
--	if (enlightened_vmcs &&
--	    ms_hyperv.hints & HV_X64_ENLIGHTENED_VMCS_RECOMMENDED &&
--	    (ms_hyperv.nested_features & HV_X64_ENLIGHTENED_VMCS_VERSION) >=
--	    KVM_EVMCS_VERSION) {
--
--		/* Check that we have assist pages on all online CPUs */
--		for_each_online_cpu(cpu) {
--			if (!hv_get_vp_assist_page(cpu)) {
--				enlightened_vmcs = false;
--				break;
--			}
--		}
--
--		if (enlightened_vmcs) {
--			pr_info("KVM: vmx: using Hyper-V Enlightened VMCS\n");
--			static_branch_enable(&enable_evmcs);
--		}
--
--		if (ms_hyperv.nested_features & HV_X64_NESTED_DIRECT_FLUSH)
--			vmx_x86_ops.enable_direct_tlbflush
--				= hv_enable_direct_tlbflush;
--
--	} else {
--		enlightened_vmcs = false;
--	}
--#endif
-+	hv_setup_evmcs();
- 
- 	r = kvm_init(&vmx_init_ops, sizeof(struct vcpu_vmx),
- 		     __alignof__(struct vcpu_vmx), THIS_MODULE);
- 	if (r)
--		return r;
-+		goto err_kvm_init;
- 
- 	/*
- 	 * Must be called after kvm_init() so enable_ept is properly set
-@@ -8514,10 +8529,8 @@ static int __init vmx_init(void)
- 	 * mitigation mode.
- 	 */
- 	r = vmx_setup_l1d_flush(vmentry_l1d_flush_param);
--	if (r) {
--		vmx_exit();
--		return r;
--	}
-+	if (r)
-+		goto err_l1d_flush;
- 
- 	vmx_setup_fb_clear_ctrl();
- 
-@@ -8542,5 +8555,11 @@ static int __init vmx_init(void)
- 		allow_smaller_maxphyaddr = true;
- 
- 	return 0;
++	rdmsrl_safe(MSR_EFER, &host_efer);
 +
-+err_l1d_flush:
-+	vmx_exit();
-+err_kvm_init:
-+	hv_cleanup_evmcs();
-+	return r;
++	if (boot_cpu_has(X86_FEATURE_XSAVES))
++		rdmsrl(MSR_IA32_XSS, host_xss);
++
++	kvm_init_pmu_capability();
++
++	r = ops->hardware_setup();
++	if (r != 0)
++		goto out_mmu_exit;
++
++	/*
++	 * Point of no return!  DO NOT add error paths below this point unless
++	 * absolutely necessary, as most operations from this point forward
++	 * require unwinding.
++	 */
++	kvm_ops_update(ops);
++
+ 	kvm_timer_init();
+ 
+ 	if (pi_inject_timer == -1)
+@@ -9336,8 +9372,32 @@ int kvm_arch_init(void *opaque)
+ 		set_hv_tscchange_cb(kvm_hyperv_tsc_notifier);
+ #endif
+ 
++	kvm_register_perf_callbacks(ops->handle_intel_pt_intr);
++
++	if (!kvm_cpu_cap_has(X86_FEATURE_XSAVES))
++		kvm_caps.supported_xss = 0;
++
++#define __kvm_cpu_cap_has(UNUSED_, f) kvm_cpu_cap_has(f)
++	cr4_reserved_bits = __cr4_reserved_bits(__kvm_cpu_cap_has, UNUSED_);
++#undef __kvm_cpu_cap_has
++
++	if (kvm_caps.has_tsc_control) {
++		/*
++		 * Make sure the user can only configure tsc_khz values that
++		 * fit into a signed integer.
++		 * A min value is not calculated because it will always
++		 * be 1 on all machines.
++		 */
++		u64 max = min(0x7fffffffULL,
++			      __scale_tsc(kvm_caps.max_tsc_scaling_ratio, tsc_khz));
++		kvm_caps.max_guest_tsc_khz = max;
++	}
++	kvm_caps.default_tsc_scaling_ratio = 1ULL << kvm_caps.tsc_scaling_ratio_frac_bits;
++	kvm_init_msr_list();
+ 	return 0;
+ 
++out_mmu_exit:
++	kvm_mmu_vendor_module_exit();
+ out_free_percpu:
+ 	free_percpu(user_return_msrs);
+ out_free_x86_emulator_cache:
+@@ -9347,6 +9407,8 @@ int kvm_arch_init(void *opaque)
+ 
+ void kvm_arch_exit(void)
+ {
++	kvm_unregister_perf_callbacks();
++
+ #ifdef CONFIG_X86_64
+ 	if (hypervisor_is_type(X86_HYPER_MS_HYPERV))
+ 		clear_hv_tscchange_cb();
+@@ -9362,6 +9424,7 @@ void kvm_arch_exit(void)
+ 	irq_work_sync(&pvclock_irq_work);
+ 	cancel_work_sync(&pvclock_gtod_work);
+ #endif
++	static_call(kvm_x86_hardware_unsetup)();
+ 	kvm_x86_ops.hardware_enable = NULL;
+ 	kvm_mmu_vendor_module_exit();
+ 	free_percpu(user_return_msrs);
+@@ -11922,72 +11985,14 @@ void kvm_arch_hardware_disable(void)
+ 	drop_user_return_notifiers();
  }
- module_init(vmx_init);
+ 
+-static inline void kvm_ops_update(struct kvm_x86_init_ops *ops)
+-{
+-	memcpy(&kvm_x86_ops, ops->runtime_ops, sizeof(kvm_x86_ops));
+-
+-#define __KVM_X86_OP(func) \
+-	static_call_update(kvm_x86_##func, kvm_x86_ops.func);
+-#define KVM_X86_OP(func) \
+-	WARN_ON(!kvm_x86_ops.func); __KVM_X86_OP(func)
+-#define KVM_X86_OP_OPTIONAL __KVM_X86_OP
+-#define KVM_X86_OP_OPTIONAL_RET0(func) \
+-	static_call_update(kvm_x86_##func, (void *)kvm_x86_ops.func ? : \
+-					   (void *)__static_call_return0);
+-#include <asm/kvm-x86-ops.h>
+-#undef __KVM_X86_OP
+-
+-	kvm_pmu_ops_update(ops->pmu_ops);
+-}
+-
+ int kvm_arch_hardware_setup(void *opaque)
+ {
+-	struct kvm_x86_init_ops *ops = opaque;
+-	int r;
+-
+-	rdmsrl_safe(MSR_EFER, &host_efer);
+-
+-	if (boot_cpu_has(X86_FEATURE_XSAVES))
+-		rdmsrl(MSR_IA32_XSS, host_xss);
+-
+-	kvm_init_pmu_capability();
+-
+-	r = ops->hardware_setup();
+-	if (r != 0)
+-		return r;
+-
+-	kvm_ops_update(ops);
+-
+-	kvm_register_perf_callbacks(ops->handle_intel_pt_intr);
+-
+-	if (!kvm_cpu_cap_has(X86_FEATURE_XSAVES))
+-		kvm_caps.supported_xss = 0;
+-
+-#define __kvm_cpu_cap_has(UNUSED_, f) kvm_cpu_cap_has(f)
+-	cr4_reserved_bits = __cr4_reserved_bits(__kvm_cpu_cap_has, UNUSED_);
+-#undef __kvm_cpu_cap_has
+-
+-	if (kvm_caps.has_tsc_control) {
+-		/*
+-		 * Make sure the user can only configure tsc_khz values that
+-		 * fit into a signed integer.
+-		 * A min value is not calculated because it will always
+-		 * be 1 on all machines.
+-		 */
+-		u64 max = min(0x7fffffffULL,
+-			      __scale_tsc(kvm_caps.max_tsc_scaling_ratio, tsc_khz));
+-		kvm_caps.max_guest_tsc_khz = max;
+-	}
+-	kvm_caps.default_tsc_scaling_ratio = 1ULL << kvm_caps.tsc_scaling_ratio_frac_bits;
+-	kvm_init_msr_list();
+ 	return 0;
+ }
+ 
+ void kvm_arch_hardware_unsetup(void)
+ {
+-	kvm_unregister_perf_callbacks();
+ 
+-	static_call(kvm_x86_hardware_unsetup)();
+ }
+ 
+ int kvm_arch_check_processor_compat(void *opaque)
 -- 
 2.38.1.431.g37b22c650d-goog
 
