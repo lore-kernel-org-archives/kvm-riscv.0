@@ -1,134 +1,209 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Wed,  2 Nov 2022 23:18:46 +0000
-Subject: [PATCH 19/44] KVM: MIPS: Hardcode callbacks to hardware
- virtualization extensions
+Date: Wed,  2 Nov 2022 23:18:41 +0000
+Subject: [PATCH 14/44] KVM: arm64: Simplify the CPUHP logic
 In-Reply-To: <20221102231911.3107438-1-seanjc@google.com>
 References: <20221102231911.3107438-1-seanjc@google.com>
-Message-ID: <20221102231911.3107438-20-seanjc@google.com>
+Message-ID: <20221102231911.3107438-15-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Now that KVM no longer supports trap-and-emulate (see commit 45c7e8af4a5e
-"MIPS: Remove KVM_TE support"), hardcode the MIPS callbacks to the
-virtualization callbacks.
+From: Marc Zyngier <maz@kernel.org>
 
-Harcoding the callbacks eliminates the technically-unnecessary check on
-non-NULL kvm_mips_callbacks in kvm_arch_init().  MIPS has never supported
-multiple in-tree modules, i.e. barring an out-of-tree module, where
-copying and renaming kvm.ko counts as "out-of-tree", KVM could never
-encounter a non-NULL set of callbacks during module init.
+For a number of historical reasons, the KVM/arm64 hotplug setup is pretty
+complicated, and we have two extra CPUHP notifiers for vGIC and timers.
 
-The callback check is also subtly broken, as it is not thread safe,
-i.e. if there were multiple modules, loading both concurrently would
-create a race between checking and setting kvm_mips_callbacks.
+It looks pretty pointless, and gets in the way of further changes.
+So let's just expose some helpers that can be called from the core
+CPUHP callback, and get rid of everything else.
 
-Given that out-of-tree shenanigans are not the kernel's responsibility,
-hardcode the callbacks to simplify the code.
+This gives us the opportunity to drop a useless notifier entry,
+as well as tidy-up the timer enable/disable, which was a bit odd.
 
+Signed-off-by: Marc Zyngier <maz@kernel.org>
+Signed-off-by: Isaku Yamahata <isaku.yamahata@intel.com>
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/mips/include/asm/kvm_host.h |  2 +-
- arch/mips/kvm/Makefile           |  2 +-
- arch/mips/kvm/callback.c         | 14 --------------
- arch/mips/kvm/mips.c             |  9 ++-------
- arch/mips/kvm/vz.c               |  7 ++++---
- 5 files changed, 8 insertions(+), 26 deletions(-)
- delete mode 100644 arch/mips/kvm/callback.c
+ arch/arm64/kvm/arch_timer.c     | 27 ++++++++++-----------------
+ arch/arm64/kvm/arm.c            | 13 +++++++++++++
+ arch/arm64/kvm/vgic/vgic-init.c | 19 ++-----------------
+ include/kvm/arm_arch_timer.h    |  4 ++++
+ include/kvm/arm_vgic.h          |  4 ++++
+ include/linux/cpuhotplug.h      |  3 ---
+ 6 files changed, 33 insertions(+), 37 deletions(-)
 
-diff --git a/arch/mips/include/asm/kvm_host.h b/arch/mips/include/asm/kvm_host.h
-index 28f0ba97db71..2803c9c21ef9 100644
---- a/arch/mips/include/asm/kvm_host.h
-+++ b/arch/mips/include/asm/kvm_host.h
-@@ -758,7 +758,7 @@ struct kvm_mips_callbacks {
- 	void (*vcpu_reenter)(struct kvm_vcpu *vcpu);
- };
- extern struct kvm_mips_callbacks *kvm_mips_callbacks;
--int kvm_mips_emulation_init(struct kvm_mips_callbacks **install_callbacks);
-+int kvm_mips_emulation_init(void);
- 
- /* Debug: dump vcpu state */
- int kvm_arch_vcpu_dump_regs(struct kvm_vcpu *vcpu);
-diff --git a/arch/mips/kvm/Makefile b/arch/mips/kvm/Makefile
-index 21ff75bcdbc4..805aeea2166e 100644
---- a/arch/mips/kvm/Makefile
-+++ b/arch/mips/kvm/Makefile
-@@ -17,4 +17,4 @@ kvm-$(CONFIG_CPU_LOONGSON64) += loongson_ipi.o
- 
- kvm-y		+= vz.o
- obj-$(CONFIG_KVM)	+= kvm.o
--obj-y			+= callback.o tlb.o
-+obj-y			+= tlb.o
-diff --git a/arch/mips/kvm/callback.c b/arch/mips/kvm/callback.c
-deleted file mode 100644
-index d88aa2173fb0..000000000000
---- a/arch/mips/kvm/callback.c
-+++ /dev/null
-@@ -1,14 +0,0 @@
--/*
-- * This file is subject to the terms and conditions of the GNU General Public
-- * License.  See the file "COPYING" in the main directory of this archive
-- * for more details.
-- *
-- * Copyright (C) 2012  MIPS Technologies, Inc.  All rights reserved.
-- * Authors: Yann Le Du <ledu@kymasys.com>
-- */
--
--#include <linux/export.h>
--#include <linux/kvm_host.h>
--
--struct kvm_mips_callbacks *kvm_mips_callbacks;
--EXPORT_SYMBOL_GPL(kvm_mips_callbacks);
-diff --git a/arch/mips/kvm/mips.c b/arch/mips/kvm/mips.c
-index af29490d9740..f0a6c245d1ff 100644
---- a/arch/mips/kvm/mips.c
-+++ b/arch/mips/kvm/mips.c
-@@ -1012,17 +1012,12 @@ long kvm_arch_vm_ioctl(struct file *filp, unsigned int ioctl, unsigned long arg)
- 
- int kvm_arch_init(void *opaque)
- {
--	if (kvm_mips_callbacks) {
--		kvm_err("kvm: module already exists\n");
--		return -EEXIST;
--	}
--
--	return kvm_mips_emulation_init(&kvm_mips_callbacks);
-+	return kvm_mips_emulation_init();
+diff --git a/arch/arm64/kvm/arch_timer.c b/arch/arm64/kvm/arch_timer.c
+index bb24a76b4224..33fca1a691a5 100644
+--- a/arch/arm64/kvm/arch_timer.c
++++ b/arch/arm64/kvm/arch_timer.c
+@@ -811,10 +811,18 @@ void kvm_timer_vcpu_init(struct kvm_vcpu *vcpu)
+ 	ptimer->host_timer_irq_flags = host_ptimer_irq_flags;
  }
  
- void kvm_arch_exit(void)
+-static void kvm_timer_init_interrupt(void *info)
++void kvm_timer_cpu_up(void)
  {
--	kvm_mips_callbacks = NULL;
+ 	enable_percpu_irq(host_vtimer_irq, host_vtimer_irq_flags);
+-	enable_percpu_irq(host_ptimer_irq, host_ptimer_irq_flags);
++	if (host_ptimer_irq)
++		enable_percpu_irq(host_ptimer_irq, host_ptimer_irq_flags);
++}
 +
++void kvm_timer_cpu_down(void)
++{
++	disable_percpu_irq(host_vtimer_irq);
++	if (host_ptimer_irq)
++		disable_percpu_irq(host_ptimer_irq);
  }
  
- int kvm_arch_vcpu_ioctl_get_sregs(struct kvm_vcpu *vcpu,
-diff --git a/arch/mips/kvm/vz.c b/arch/mips/kvm/vz.c
-index c706f5890a05..dafab003ea0d 100644
---- a/arch/mips/kvm/vz.c
-+++ b/arch/mips/kvm/vz.c
-@@ -3304,7 +3304,10 @@ static struct kvm_mips_callbacks kvm_vz_callbacks = {
- 	.vcpu_reenter = kvm_vz_vcpu_reenter,
- };
+ int kvm_arm_timer_set_reg(struct kvm_vcpu *vcpu, u64 regid, u64 value)
+@@ -976,18 +984,6 @@ void kvm_arm_timer_write_sysreg(struct kvm_vcpu *vcpu,
+ 	preempt_enable();
+ }
  
--int kvm_mips_emulation_init(struct kvm_mips_callbacks **install_callbacks)
-+/* FIXME: Get rid of the callbacks now that trap-and-emulate is gone. */
-+struct kvm_mips_callbacks *kvm_mips_callbacks = &kvm_vz_callbacks;
-+
-+int kvm_mips_emulation_init(void)
- {
- 	if (!cpu_has_vz)
- 		return -ENODEV;
-@@ -3318,7 +3321,5 @@ int kvm_mips_emulation_init(struct kvm_mips_callbacks **install_callbacks)
- 		return -ENODEV;
- 
- 	pr_info("Starting KVM with MIPS VZ extensions\n");
+-static int kvm_timer_starting_cpu(unsigned int cpu)
+-{
+-	kvm_timer_init_interrupt(NULL);
+-	return 0;
+-}
 -
--	*install_callbacks = &kvm_vz_callbacks;
+-static int kvm_timer_dying_cpu(unsigned int cpu)
+-{
+-	disable_percpu_irq(host_vtimer_irq);
+-	return 0;
+-}
+-
+ static int timer_irq_set_vcpu_affinity(struct irq_data *d, void *vcpu)
+ {
+ 	if (vcpu)
+@@ -1185,9 +1181,6 @@ int kvm_timer_hyp_init(bool has_gic)
+ 		goto out_free_irq;
+ 	}
+ 
+-	cpuhp_setup_state(CPUHP_AP_KVM_ARM_TIMER_STARTING,
+-			  "kvm/arm/timer:starting", kvm_timer_starting_cpu,
+-			  kvm_timer_dying_cpu);
+ 	return 0;
+ out_free_irq:
+ 	free_percpu_irq(host_vtimer_irq, kvm_get_running_vcpus());
+diff --git a/arch/arm64/kvm/arm.c b/arch/arm64/kvm/arm.c
+index 2ee729f54ce0..0c328af064dd 100644
+--- a/arch/arm64/kvm/arm.c
++++ b/arch/arm64/kvm/arm.c
+@@ -1670,7 +1670,15 @@ static void _kvm_arch_hardware_enable(void *discard)
+ 
+ int kvm_arch_hardware_enable(void)
+ {
++	int was_enabled = __this_cpu_read(kvm_arm_hardware_enabled);
++
+ 	_kvm_arch_hardware_enable(NULL);
++
++	if (!was_enabled) {
++		kvm_vgic_cpu_up();
++		kvm_timer_cpu_up();
++	}
++
  	return 0;
  }
+ 
+@@ -1684,6 +1692,11 @@ static void _kvm_arch_hardware_disable(void *discard)
+ 
+ void kvm_arch_hardware_disable(void)
+ {
++	if (__this_cpu_read(kvm_arm_hardware_enabled)) {
++		kvm_timer_cpu_down();
++		kvm_vgic_cpu_down();
++	}
++
+ 	if (!is_protected_kvm_enabled())
+ 		_kvm_arch_hardware_disable(NULL);
+ }
+diff --git a/arch/arm64/kvm/vgic/vgic-init.c b/arch/arm64/kvm/vgic/vgic-init.c
+index f6d4f4052555..6c7f6ae21ec0 100644
+--- a/arch/arm64/kvm/vgic/vgic-init.c
++++ b/arch/arm64/kvm/vgic/vgic-init.c
+@@ -465,17 +465,15 @@ int kvm_vgic_map_resources(struct kvm *kvm)
+ 
+ /* GENERIC PROBE */
+ 
+-static int vgic_init_cpu_starting(unsigned int cpu)
++void kvm_vgic_cpu_up(void)
+ {
+ 	enable_percpu_irq(kvm_vgic_global_state.maint_irq, 0);
+-	return 0;
+ }
+ 
+ 
+-static int vgic_init_cpu_dying(unsigned int cpu)
++void kvm_vgic_cpu_down(void)
+ {
+ 	disable_percpu_irq(kvm_vgic_global_state.maint_irq);
+-	return 0;
+ }
+ 
+ static irqreturn_t vgic_maintenance_handler(int irq, void *data)
+@@ -584,19 +582,6 @@ int kvm_vgic_hyp_init(void)
+ 		return ret;
+ 	}
+ 
+-	ret = cpuhp_setup_state(CPUHP_AP_KVM_ARM_VGIC_INIT_STARTING,
+-				"kvm/arm/vgic:starting",
+-				vgic_init_cpu_starting, vgic_init_cpu_dying);
+-	if (ret) {
+-		kvm_err("Cannot register vgic CPU notifier\n");
+-		goto out_free_irq;
+-	}
+-
+ 	kvm_info("vgic interrupt IRQ%d\n", kvm_vgic_global_state.maint_irq);
+ 	return 0;
+-
+-out_free_irq:
+-	free_percpu_irq(kvm_vgic_global_state.maint_irq,
+-			kvm_get_running_vcpus());
+-	return ret;
+ }
+diff --git a/include/kvm/arm_arch_timer.h b/include/kvm/arm_arch_timer.h
+index cd6d8f260eab..1638418f72dd 100644
+--- a/include/kvm/arm_arch_timer.h
++++ b/include/kvm/arm_arch_timer.h
+@@ -104,4 +104,8 @@ void kvm_arm_timer_write_sysreg(struct kvm_vcpu *vcpu,
+ u32 timer_get_ctl(struct arch_timer_context *ctxt);
+ u64 timer_get_cval(struct arch_timer_context *ctxt);
+ 
++/* CPU HP callbacks */
++void kvm_timer_cpu_up(void);
++void kvm_timer_cpu_down(void);
++
+ #endif
+diff --git a/include/kvm/arm_vgic.h b/include/kvm/arm_vgic.h
+index 4df9e73a8bb5..fc4acc91ba06 100644
+--- a/include/kvm/arm_vgic.h
++++ b/include/kvm/arm_vgic.h
+@@ -431,4 +431,8 @@ int vgic_v4_load(struct kvm_vcpu *vcpu);
+ void vgic_v4_commit(struct kvm_vcpu *vcpu);
+ int vgic_v4_put(struct kvm_vcpu *vcpu, bool need_db);
+ 
++/* CPU HP callbacks */
++void kvm_vgic_cpu_up(void);
++void kvm_vgic_cpu_down(void);
++
+ #endif /* __KVM_ARM_VGIC_H */
+diff --git a/include/linux/cpuhotplug.h b/include/linux/cpuhotplug.h
+index f61447913db9..7337414e4947 100644
+--- a/include/linux/cpuhotplug.h
++++ b/include/linux/cpuhotplug.h
+@@ -186,9 +186,6 @@ enum cpuhp_state {
+ 	CPUHP_AP_TI_GP_TIMER_STARTING,
+ 	CPUHP_AP_HYPERV_TIMER_STARTING,
+ 	CPUHP_AP_KVM_STARTING,
+-	CPUHP_AP_KVM_ARM_VGIC_INIT_STARTING,
+-	CPUHP_AP_KVM_ARM_VGIC_STARTING,
+-	CPUHP_AP_KVM_ARM_TIMER_STARTING,
+ 	/* Must be the last timer callback */
+ 	CPUHP_AP_DUMMY_TIMER_STARTING,
+ 	CPUHP_AP_ARM_XEN_STARTING,
 -- 
 2.38.1.431.g37b22c650d-goog
 
