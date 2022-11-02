@@ -1,88 +1,78 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Wed,  2 Nov 2022 23:18:28 +0000
-Subject: [PATCH 01/44] KVM: Register /dev/kvm as the _very_ last thing during initialization
+Date: Wed,  2 Nov 2022 23:18:30 +0000
+Subject: [PATCH 03/44] KVM: Allocate cpus_hardware_enabled after arch hardware setup
 In-Reply-To: <20221102231911.3107438-1-seanjc@google.com>
 References: <20221102231911.3107438-1-seanjc@google.com>
-Message-ID: <20221102231911.3107438-2-seanjc@google.com>
+Message-ID: <20221102231911.3107438-4-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Register /dev/kvm, i.e. expose KVM to userspace, only after all other
-setup has completed.  Once /dev/kvm is exposed, userspace can start
-invoking KVM ioctls, creating VMs, etc...  If userspace creates a VM
-before KVM is done with its configuration, bad things may happen, e.g.
-KVM will fail to properly migrate vCPU state if a VM is created before
-KVM has registered preemption notifiers.
+Allocate cpus_hardware_enabled after arch hardware setup so that arch
+"init" and "hardware setup" are called back-to-back and thus can be
+combined in a future patch.  cpus_hardware_enabled is never used before
+kvm_create_vm(), i.e. doesn't have a dependency with hardware setup and
+only needs to be allocated before /dev/kvm is exposed to userspace.
 
-Cc: stable at vger.kernel.org
+Free the object before the arch hooks are invoked to maintain symmetry,
+and so that arch code can move away from the hooks without having to
+worry about ordering changes.
+
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- virt/kvm/kvm_main.c | 31 ++++++++++++++++++++++---------
- 1 file changed, 22 insertions(+), 9 deletions(-)
+ virt/kvm/kvm_main.c | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
 diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index f1df24c2bc84..a188d27f78af 100644
+index e0424af52acc..8b7534cc953b 100644
 --- a/virt/kvm/kvm_main.c
 +++ b/virt/kvm/kvm_main.c
-@@ -5900,12 +5900,6 @@ int kvm_init(void *opaque, unsigned vcpu_size, unsigned vcpu_align,
+@@ -5843,15 +5843,15 @@ int kvm_init(void *opaque, unsigned vcpu_size, unsigned vcpu_align,
+ 	if (r)
+ 		return r;
  
- 	kvm_chardev_ops.owner = module;
++	r = kvm_arch_hardware_setup(opaque);
++	if (r < 0)
++		goto err_hw_setup;
++
+ 	if (!zalloc_cpumask_var(&cpus_hardware_enabled, GFP_KERNEL)) {
+ 		r = -ENOMEM;
+ 		goto err_hw_enabled;
+ 	}
  
--	r = misc_register(&kvm_dev);
--	if (r) {
--		pr_err("kvm: misc device register failed\n");
--		goto out_unreg;
--	}
+-	r = kvm_arch_hardware_setup(opaque);
+-	if (r < 0)
+-		goto out_free_1;
 -
- 	register_syscore_ops(&kvm_syscore_ops);
- 
- 	kvm_preempt_ops.sched_in = kvm_sched_in;
-@@ -5914,11 +5908,24 @@ int kvm_init(void *opaque, unsigned vcpu_size, unsigned vcpu_align,
- 	kvm_init_debug();
- 
- 	r = kvm_vfio_ops_init();
--	WARN_ON(r);
-+	if (WARN_ON_ONCE(r))
-+		goto err_vfio;
-+
-+	/*
-+	 * Registration _must_ be the very last thing done, as this exposes
-+	 * /dev/kvm to userspace, i.e. all infrastructure must be setup!
-+	 */
-+	r = misc_register(&kvm_dev);
-+	if (r) {
-+		pr_err("kvm: misc device register failed\n");
-+		goto err_register;
-+	}
- 
- 	return 0;
- 
--out_unreg:
-+err_register:
-+	kvm_vfio_ops_exit();
-+err_vfio:
- 	kvm_async_pf_deinit();
- out_free_4:
- 	for_each_possible_cpu(cpu)
-@@ -5944,8 +5951,14 @@ void kvm_exit(void)
- {
- 	int cpu;
- 
--	debugfs_remove_recursive(kvm_debugfs_dir);
-+	/*
-+	 * Note, unregistering /dev/kvm doesn't strictly need to come first,
-+	 * fops_get(), a.k.a. try_module_get(), prevents acquiring references
-+	 * to KVM while the module is being stopped.
-+	 */
- 	misc_deregister(&kvm_dev);
-+
-+	debugfs_remove_recursive(kvm_debugfs_dir);
- 	for_each_possible_cpu(cpu)
- 		free_cpumask_var(per_cpu(cpu_kick_mask, cpu));
- 	kmem_cache_destroy(kvm_vcpu_cache);
+ 	c.ret = &r;
+ 	c.opaque = opaque;
+ 	for_each_online_cpu(cpu) {
+@@ -5937,10 +5937,10 @@ int kvm_init(void *opaque, unsigned vcpu_size, unsigned vcpu_align,
+ 	unregister_reboot_notifier(&kvm_reboot_notifier);
+ 	cpuhp_remove_state_nocalls(CPUHP_AP_KVM_STARTING);
+ out_free_2:
+-	kvm_arch_hardware_unsetup();
+-out_free_1:
+ 	free_cpumask_var(cpus_hardware_enabled);
+ err_hw_enabled:
++	kvm_arch_hardware_unsetup();
++err_hw_setup:
+ 	kvm_arch_exit();
+ 	return r;
+ }
+@@ -5967,9 +5967,9 @@ void kvm_exit(void)
+ 	cpuhp_remove_state_nocalls(CPUHP_AP_KVM_STARTING);
+ 	on_each_cpu(hardware_disable_nolock, NULL, 1);
+ 	kvm_irqfd_exit();
++	free_cpumask_var(cpus_hardware_enabled);
+ 	kvm_arch_hardware_unsetup();
+ 	kvm_arch_exit();
+-	free_cpumask_var(cpus_hardware_enabled);
+ 	kvm_vfio_ops_exit();
+ }
+ EXPORT_SYMBOL_GPL(kvm_exit);
 -- 
 2.38.1.431.g37b22c650d-goog
 
