@@ -1,99 +1,167 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Wed,  2 Nov 2022 23:18:50 +0000
-Subject: [PATCH 23/44] KVM: RISC-V: Tag init functions and data with __init, __ro_after_init
+Date: Wed,  2 Nov 2022 23:18:40 +0000
+Subject: [PATCH 13/44] KVM: x86: Serialize vendor module initialization
+ (hardware setup)
 In-Reply-To: <20221102231911.3107438-1-seanjc@google.com>
 References: <20221102231911.3107438-1-seanjc@google.com>
-Message-ID: <20221102231911.3107438-24-seanjc@google.com>
+Message-ID: <20221102231911.3107438-14-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Now that KVM setup is handled directly in riscv_kvm_init(), tag functions
-and data that are used/set only during init with __init/__ro_after_init.
+Acquire a new mutex, vendor_module_lock, in kvm_x86_vendor_init() while
+doing hardware setup to ensure that concurrent calls are fully serialized.
+KVM rejects attempts to load vendor modules if a different module has
+already been loaded, but doesn't handle the case where multiple vendor
+modules are loaded at the same time, and module_init() doesn't run under
+the global module_mutex.
+
+Note, in practice, this is likely a benign bug as no platform exists that
+supports both SVM and VMX, i.e. barring a weird VM setup, one of the
+vendor modules is guaranteed to fail a support check before modifying
+common KVM state.
+
+Alternatively, KVM could perform an atomic CMPXCHG on .hardware_enable,
+but that comes with its own ugliness as it would require setting
+.hardware_enable before success is guaranteed, e.g. attempting to load
+the "wrong" could result in spurious failure to load the "right" module.
+
+Introduce a new mutex as using kvm_lock is extremely deadlock prone due
+to kvm_lock being taken under cpus_write_lock(), and in the future, under
+under cpus_read_lock().  Any operation that takes cpus_read_lock() while
+holding kvm_lock would potentially deadlock, e.g. kvm_timer_init() takes
+cpus_read_lock() to register a callback.  In theory, KVM could avoid
+such problematic paths, i.e. do less setup under kvm_lock, but avoiding
+all calls to cpus_read_lock() is subtly difficult and thus fragile.  E.g.
+updating static calls also acquires cpus_read_lock().
+
+Inverting the lock ordering, i.e. always taking kvm_lock outside
+cpus_read_lock(), is not a viable option, e.g. kvm_online_cpu() takes
+kvm_lock and is called under cpus_write_lock().
+
+The lockdep splat below is dependent on future patches to take
+cpus_read_lock() in hardware_enable_all(), but as above, deadlock is
+already is already possible.
+
+  ======================================================
+  WARNING: possible circular locking dependency detected
+  6.0.0-smp--7ec93244f194-init2 #27 Tainted: G           O
+  ------------------------------------------------------
+  stable/251833 is trying to acquire lock:
+  ffffffffc097ea28 (kvm_lock){+.+.}-{3:3}, at: hardware_enable_all+0x1f/0xc0 [kvm]
+
+               but task is already holding lock:
+  ffffffffa2456828 (cpu_hotplug_lock){++++}-{0:0}, at: hardware_enable_all+0xf/0xc0 [kvm]
+
+               which lock already depends on the new lock.
+
+               the existing dependency chain (in reverse order) is:
+
+               -> #1 (cpu_hotplug_lock){++++}-{0:0}:
+         cpus_read_lock+0x2a/0xa0
+         __cpuhp_setup_state+0x2b/0x60
+         __kvm_x86_vendor_init+0x16a/0x1870 [kvm]
+         kvm_x86_vendor_init+0x23/0x40 [kvm]
+         0xffffffffc0a4d02b
+         do_one_initcall+0x110/0x200
+         do_init_module+0x4f/0x250
+         load_module+0x1730/0x18f0
+         __se_sys_finit_module+0xca/0x100
+         __x64_sys_finit_module+0x1d/0x20
+         do_syscall_64+0x3d/0x80
+         entry_SYSCALL_64_after_hwframe+0x63/0xcd
+
+               -> #0 (kvm_lock){+.+.}-{3:3}:
+         __lock_acquire+0x16f4/0x30d0
+         lock_acquire+0xb2/0x190
+         __mutex_lock+0x98/0x6f0
+         mutex_lock_nested+0x1b/0x20
+         hardware_enable_all+0x1f/0xc0 [kvm]
+         kvm_dev_ioctl+0x45e/0x930 [kvm]
+         __se_sys_ioctl+0x77/0xc0
+         __x64_sys_ioctl+0x1d/0x20
+         do_syscall_64+0x3d/0x80
+         entry_SYSCALL_64_after_hwframe+0x63/0xcd
+
+               other info that might help us debug this:
+
+   Possible unsafe locking scenario:
+
+         CPU0                    CPU1
+         ----                    ----
+    lock(cpu_hotplug_lock);
+                                 lock(kvm_lock);
+                                 lock(cpu_hotplug_lock);
+    lock(kvm_lock);
+
+                *** DEADLOCK ***
+
+  1 lock held by stable/251833:
+   #0: ffffffffa2456828 (cpu_hotplug_lock){++++}-{0:0}, at: hardware_enable_all+0xf/0xc0 [kvm]
 
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/riscv/include/asm/kvm_host.h |  6 +++---
- arch/riscv/kvm/mmu.c              | 12 ++++++------
- arch/riscv/kvm/vmid.c             |  4 ++--
- 3 files changed, 11 insertions(+), 11 deletions(-)
+ arch/x86/kvm/x86.c | 18 ++++++++++++++++--
+ 1 file changed, 16 insertions(+), 2 deletions(-)
 
-diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
-index 8c771fc4f5d2..778ff0f282b7 100644
---- a/arch/riscv/include/asm/kvm_host.h
-+++ b/arch/riscv/include/asm/kvm_host.h
-@@ -295,11 +295,11 @@ int kvm_riscv_gstage_map(struct kvm_vcpu *vcpu,
- int kvm_riscv_gstage_alloc_pgd(struct kvm *kvm);
- void kvm_riscv_gstage_free_pgd(struct kvm *kvm);
- void kvm_riscv_gstage_update_hgatp(struct kvm_vcpu *vcpu);
--void kvm_riscv_gstage_mode_detect(void);
--unsigned long kvm_riscv_gstage_mode(void);
-+void __init kvm_riscv_gstage_mode_detect(void);
-+unsigned long __init kvm_riscv_gstage_mode(void);
- int kvm_riscv_gstage_gpa_bits(void);
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index a0ca401d3cdf..218707597bea 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -128,6 +128,7 @@ static int kvm_vcpu_do_singlestep(struct kvm_vcpu *vcpu);
+ static int __set_sregs2(struct kvm_vcpu *vcpu, struct kvm_sregs2 *sregs2);
+ static void __get_sregs2(struct kvm_vcpu *vcpu, struct kvm_sregs2 *sregs2);
  
--void kvm_riscv_gstage_vmid_detect(void);
-+void __init kvm_riscv_gstage_vmid_detect(void);
- unsigned long kvm_riscv_gstage_vmid_bits(void);
- int kvm_riscv_gstage_vmid_init(struct kvm *kvm);
- bool kvm_riscv_gstage_vmid_ver_changed(struct kvm_vmid *vmid);
-diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
-index 3620ecac2fa1..f42a34c7879a 100644
---- a/arch/riscv/kvm/mmu.c
-+++ b/arch/riscv/kvm/mmu.c
-@@ -20,12 +20,12 @@
- #include <asm/pgtable.h>
++static DEFINE_MUTEX(vendor_module_lock);
+ struct kvm_x86_ops kvm_x86_ops __read_mostly;
  
- #ifdef CONFIG_64BIT
--static unsigned long gstage_mode = (HGATP_MODE_SV39X4 << HGATP_MODE_SHIFT);
--static unsigned long gstage_pgd_levels = 3;
-+static unsigned long gstage_mode __ro_after_init = (HGATP_MODE_SV39X4 << HGATP_MODE_SHIFT);
-+static unsigned long gstage_pgd_levels __ro_after_init = 3;
- #define gstage_index_bits	9
- #else
--static unsigned long gstage_mode = (HGATP_MODE_SV32X4 << HGATP_MODE_SHIFT);
--static unsigned long gstage_pgd_levels = 2;
-+static unsigned long gstage_mode __ro_after_init = (HGATP_MODE_SV32X4 << HGATP_MODE_SHIFT);
-+static unsigned long gstage_pgd_levels __ro_after_init = 2;
- #define gstage_index_bits	10
+ #define KVM_X86_OP(func)					     \
+@@ -9280,7 +9281,7 @@ void kvm_arch_exit(void)
+ 
+ }
+ 
+-int kvm_x86_vendor_init(struct kvm_x86_init_ops *ops)
++static int __kvm_x86_vendor_init(struct kvm_x86_init_ops *ops)
+ {
+ 	u64 host_pat;
+ 	int r;
+@@ -9413,6 +9414,17 @@ int kvm_x86_vendor_init(struct kvm_x86_init_ops *ops)
+ 	kmem_cache_destroy(x86_emulator_cache);
+ 	return r;
+ }
++
++int kvm_x86_vendor_init(struct kvm_x86_init_ops *ops)
++{
++	int r;
++
++	mutex_lock(&vendor_module_lock);
++	r = __kvm_x86_vendor_init(ops);
++	mutex_unlock(&vendor_module_lock);
++
++	return r;
++}
+ EXPORT_SYMBOL_GPL(kvm_x86_vendor_init);
+ 
+ void kvm_x86_vendor_exit(void)
+@@ -9435,7 +9447,6 @@ void kvm_x86_vendor_exit(void)
+ 	cancel_work_sync(&pvclock_gtod_work);
  #endif
- 
-@@ -760,7 +760,7 @@ void kvm_riscv_gstage_update_hgatp(struct kvm_vcpu *vcpu)
- 		kvm_riscv_local_hfence_gvma_all();
- }
- 
--void kvm_riscv_gstage_mode_detect(void)
-+void __init kvm_riscv_gstage_mode_detect(void)
- {
- #ifdef CONFIG_64BIT
- 	/* Try Sv57x4 G-stage mode */
-@@ -784,7 +784,7 @@ void kvm_riscv_gstage_mode_detect(void)
+ 	static_call(kvm_x86_hardware_unsetup)();
+-	kvm_x86_ops.hardware_enable = NULL;
+ 	kvm_mmu_vendor_module_exit();
+ 	free_percpu(user_return_msrs);
+ 	kmem_cache_destroy(x86_emulator_cache);
+@@ -9443,6 +9454,9 @@ void kvm_x86_vendor_exit(void)
+ 	static_key_deferred_flush(&kvm_xen_enabled);
+ 	WARN_ON(static_branch_unlikely(&kvm_xen_enabled.key));
  #endif
++	mutex_lock(&vendor_module_lock);
++	kvm_x86_ops.hardware_enable = NULL;
++	mutex_unlock(&vendor_module_lock);
  }
- 
--unsigned long kvm_riscv_gstage_mode(void)
-+unsigned long __init kvm_riscv_gstage_mode(void)
- {
- 	return gstage_mode >> HGATP_MODE_SHIFT;
- }
-diff --git a/arch/riscv/kvm/vmid.c b/arch/riscv/kvm/vmid.c
-index 6cd93995fb65..5246da1c9167 100644
---- a/arch/riscv/kvm/vmid.c
-+++ b/arch/riscv/kvm/vmid.c
-@@ -17,10 +17,10 @@
- 
- static unsigned long vmid_version = 1;
- static unsigned long vmid_next;
--static unsigned long vmid_bits;
-+static unsigned long vmid_bits __ro_after_init;
- static DEFINE_SPINLOCK(vmid_lock);
- 
--void kvm_riscv_gstage_vmid_detect(void)
-+void __init kvm_riscv_gstage_vmid_detect(void)
- {
- 	unsigned long old;
+ EXPORT_SYMBOL_GPL(kvm_x86_vendor_exit);
  
 -- 
 2.38.1.431.g37b22c650d-goog
