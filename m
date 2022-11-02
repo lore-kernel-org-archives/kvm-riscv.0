@@ -1,168 +1,166 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Wed,  2 Nov 2022 23:18:40 +0000
-Subject: [PATCH 13/44] KVM: x86: Serialize vendor module initialization
- (hardware setup)
+Date: Wed,  2 Nov 2022 23:18:38 +0000
+Subject: [PATCH 11/44] KVM: x86: Move guts of kvm_arch_init() to standalone helper
 In-Reply-To: <20221102231911.3107438-1-seanjc@google.com>
 References: <20221102231911.3107438-1-seanjc@google.com>
-Message-ID: <20221102231911.3107438-14-seanjc@google.com>
+Message-ID: <20221102231911.3107438-12-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Acquire a new mutex, vendor_module_lock, in kvm_x86_vendor_init() while
-doing hardware setup to ensure that concurrent calls are fully serialized.
-KVM rejects attempts to load vendor modules if a different module has
-already been loaded, but doesn't handle the case where multiple vendor
-modules are loaded at the same time, and module_init() doesn't run under
-the global module_mutex.
+Move the guts of kvm_arch_init() to a new helper, kvm_x86_vendor_init(),
+so that VMX can do _all_ arch and vendor initialization before calling
+kvm_init().  Calling kvm_init() must be the _very_ last step during init,
+as kvm_init() exposes /dev/kvm to userspace, i.e. allows creating VMs.
 
-Note, in practice, this is likely a benign bug as no platform exists that
-supports both SVM and VMX, i.e. barring a weird VM setup, one of the
-vendor modules is guaranteed to fail a support check before modifying
-common KVM state.
-
-Alternatively, KVM could perform an atomic CMPXCHG on .hardware_enable,
-but that comes with its own ugliness as it would require setting
-.hardware_enable before success is guaranteed, e.g. attempting to load
-the "wrong" could result in spurious failure to load the "right" module.
-
-Introduce a new mutex as using kvm_lock is extremely deadlock prone due
-to kvm_lock being taken under cpus_write_lock(), and in the future, under
-under cpus_read_lock().  Any operation that takes cpus_read_lock() while
-holding kvm_lock would potentially deadlock, e.g. kvm_timer_init() takes
-cpus_read_lock() to register a callback.  In theory, KVM could avoid
-such problematic paths, i.e. do less setup under kvm_lock, but avoiding
-all calls to cpus_read_lock() is subtly difficult and thus fragile.  E.g.
-updating static calls also acquires cpus_read_lock().
-
-Inverting the lock ordering, i.e. always taking kvm_lock outside
-cpus_read_lock(), is not a viable option, e.g. kvm_online_cpu() takes
-kvm_lock and is called under cpus_write_lock().
-
-The lockdep splat below is dependent on future patches to take
-cpus_read_lock() in hardware_enable_all(), but as above, deadlock is
-already is already possible.
-
-  ======================================================
-  WARNING: possible circular locking dependency detected
-  6.0.0-smp--7ec93244f194-init2 #27 Tainted: G           O
-  ------------------------------------------------------
-  stable/251833 is trying to acquire lock:
-  ffffffffc097ea28 (kvm_lock){+.+.}-{3:3}, at: hardware_enable_all+0x1f/0xc0 [kvm]
-
-               but task is already holding lock:
-  ffffffffa2456828 (cpu_hotplug_lock){++++}-{0:0}, at: hardware_enable_all+0xf/0xc0 [kvm]
-
-               which lock already depends on the new lock.
-
-               the existing dependency chain (in reverse order) is:
-
-               -> #1 (cpu_hotplug_lock){++++}-{0:0}:
-         cpus_read_lock+0x2a/0xa0
-         __cpuhp_setup_state+0x2b/0x60
-         __kvm_x86_vendor_init+0x16a/0x1870 [kvm]
-         kvm_x86_vendor_init+0x23/0x40 [kvm]
-         0xffffffffc0a4d02b
-         do_one_initcall+0x110/0x200
-         do_init_module+0x4f/0x250
-         load_module+0x1730/0x18f0
-         __se_sys_finit_module+0xca/0x100
-         __x64_sys_finit_module+0x1d/0x20
-         do_syscall_64+0x3d/0x80
-         entry_SYSCALL_64_after_hwframe+0x63/0xcd
-
-               -> #0 (kvm_lock){+.+.}-{3:3}:
-         __lock_acquire+0x16f4/0x30d0
-         lock_acquire+0xb2/0x190
-         __mutex_lock+0x98/0x6f0
-         mutex_lock_nested+0x1b/0x20
-         hardware_enable_all+0x1f/0xc0 [kvm]
-         kvm_dev_ioctl+0x45e/0x930 [kvm]
-         __se_sys_ioctl+0x77/0xc0
-         __x64_sys_ioctl+0x1d/0x20
-         do_syscall_64+0x3d/0x80
-         entry_SYSCALL_64_after_hwframe+0x63/0xcd
-
-               other info that might help us debug this:
-
-   Possible unsafe locking scenario:
-
-         CPU0                    CPU1
-         ----                    ----
-    lock(cpu_hotplug_lock);
-                                 lock(kvm_lock);
-                                 lock(cpu_hotplug_lock);
-    lock(kvm_lock);
-
-                *** DEADLOCK ***
-
-  1 lock held by stable/251833:
-   #0: ffffffffa2456828 (cpu_hotplug_lock){++++}-{0:0}, at: hardware_enable_all+0xf/0xc0 [kvm]
+No functional change intended.
 
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/x86/kvm/x86.c | 18 ++++++++++++++++--
- 1 file changed, 16 insertions(+), 2 deletions(-)
+ arch/x86/include/asm/kvm_host.h |  3 +++
+ arch/x86/kvm/svm/svm.c          | 23 +++++++++++++++++++++--
+ arch/x86/kvm/vmx/vmx.c          |  9 ++++++++-
+ arch/x86/kvm/x86.c              | 15 +++++++++++++--
+ 4 files changed, 45 insertions(+), 5 deletions(-)
 
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index a0ca401d3cdf..218707597bea 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -128,6 +128,7 @@ static int kvm_vcpu_do_singlestep(struct kvm_vcpu *vcpu);
- static int __set_sregs2(struct kvm_vcpu *vcpu, struct kvm_sregs2 *sregs2);
- static void __get_sregs2(struct kvm_vcpu *vcpu, struct kvm_sregs2 *sregs2);
+diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
+index 415113dea951..58a7cb8d8e96 100644
+--- a/arch/x86/include/asm/kvm_host.h
++++ b/arch/x86/include/asm/kvm_host.h
+@@ -1695,6 +1695,9 @@ extern struct kvm_x86_ops kvm_x86_ops;
+ #define KVM_X86_OP_OPTIONAL_RET0 KVM_X86_OP
+ #include <asm/kvm-x86-ops.h>
  
-+static DEFINE_MUTEX(vendor_module_lock);
- struct kvm_x86_ops kvm_x86_ops __read_mostly;
++int kvm_x86_vendor_init(struct kvm_x86_init_ops *ops);
++void kvm_x86_vendor_exit(void);
++
+ #define __KVM_HAVE_ARCH_VM_ALLOC
+ static inline struct kvm *kvm_arch_alloc_vm(void)
+ {
+diff --git a/arch/x86/kvm/svm/svm.c b/arch/x86/kvm/svm/svm.c
+index d22a809d9233..f48d07bfc3d7 100644
+--- a/arch/x86/kvm/svm/svm.c
++++ b/arch/x86/kvm/svm/svm.c
+@@ -5132,15 +5132,34 @@ static struct kvm_x86_init_ops svm_init_ops __initdata = {
  
- #define KVM_X86_OP(func)					     \
-@@ -9280,7 +9281,7 @@ void kvm_arch_exit(void)
+ static int __init svm_init(void)
+ {
++	int r;
++
+ 	__unused_size_checks();
  
+-	return kvm_init(&svm_init_ops, sizeof(struct vcpu_svm),
+-			__alignof__(struct vcpu_svm), THIS_MODULE);
++	r = kvm_x86_vendor_init(&svm_init_ops);
++	if (r)
++		return r;
++
++	/*
++	 * Common KVM initialization _must_ come last, after this, /dev/kvm is
++	 * exposed to userspace!
++	 */
++	r = kvm_init(&svm_init_ops, sizeof(struct vcpu_svm),
++		     __alignof__(struct vcpu_svm), THIS_MODULE);
++	if (r)
++		goto err_kvm_init;
++
++	return 0;
++
++err_kvm_init:
++	kvm_x86_vendor_exit();
++	return r;
  }
  
--int kvm_x86_vendor_init(struct kvm_x86_init_ops *ops)
-+static int __kvm_x86_vendor_init(struct kvm_x86_init_ops *ops)
+ static void __exit svm_exit(void)
  {
- 	u64 host_pat;
- 	int r;
-@@ -9413,6 +9414,17 @@ int kvm_x86_vendor_init(struct kvm_x86_init_ops *ops)
- 	kmem_cache_destroy(x86_emulator_cache);
+ 	kvm_exit();
++	kvm_x86_vendor_exit();
+ }
+ 
+ module_init(svm_init)
+diff --git a/arch/x86/kvm/vmx/vmx.c b/arch/x86/kvm/vmx/vmx.c
+index b3fd4049de01..118d9b29b339 100644
+--- a/arch/x86/kvm/vmx/vmx.c
++++ b/arch/x86/kvm/vmx/vmx.c
+@@ -8501,6 +8501,7 @@ static void vmx_exit(void)
+ #endif
+ 
+ 	kvm_exit();
++	kvm_x86_vendor_exit();
+ 
+ 	hv_cleanup_evmcs();
+ 
+@@ -8516,13 +8517,17 @@ static int __init vmx_init(void)
+ 
+ 	hv_setup_evmcs();
+ 
++	r = kvm_x86_vendor_init(&vmx_init_ops);
++	if (r)
++		goto err_x86_init;
++
+ 	r = kvm_init(&vmx_init_ops, sizeof(struct vcpu_vmx),
+ 		     __alignof__(struct vcpu_vmx), THIS_MODULE);
+ 	if (r)
+ 		goto err_kvm_init;
+ 
+ 	/*
+-	 * Must be called after kvm_init() so enable_ept is properly set
++	 * Must be called after common x86 init so enable_ept is properly set
+ 	 * up. Hand the parameter mitigation value in which was stored in
+ 	 * the pre module init parser. If no parameter was given, it will
+ 	 * contain 'auto' which will be turned into the default 'cond'
+@@ -8559,6 +8564,8 @@ static int __init vmx_init(void)
+ err_l1d_flush:
+ 	vmx_exit();
+ err_kvm_init:
++	kvm_x86_vendor_exit();
++err_x86_init:
+ 	hv_cleanup_evmcs();
  	return r;
  }
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index 40d4bfaa17a4..a0ca401d3cdf 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -9272,7 +9272,16 @@ static inline void kvm_ops_update(struct kvm_x86_init_ops *ops)
+ 
+ int kvm_arch_init(void *opaque)
+ {
+-	struct kvm_x86_init_ops *ops = opaque;
++	return 0;
++}
++
++void kvm_arch_exit(void)
++{
++
++}
 +
 +int kvm_x86_vendor_init(struct kvm_x86_init_ops *ops)
 +{
-+	int r;
-+
-+	mutex_lock(&vendor_module_lock);
-+	r = __kvm_x86_vendor_init(ops);
-+	mutex_unlock(&vendor_module_lock);
-+
-+	return r;
-+}
- EXPORT_SYMBOL_GPL(kvm_x86_vendor_init);
+ 	u64 host_pat;
+ 	int r;
  
- void kvm_x86_vendor_exit(void)
-@@ -9435,7 +9447,6 @@ void kvm_x86_vendor_exit(void)
- 	cancel_work_sync(&pvclock_gtod_work);
- #endif
- 	static_call(kvm_x86_hardware_unsetup)();
--	kvm_x86_ops.hardware_enable = NULL;
- 	kvm_mmu_vendor_module_exit();
- 	free_percpu(user_return_msrs);
+@@ -9404,8 +9413,9 @@ int kvm_arch_init(void *opaque)
  	kmem_cache_destroy(x86_emulator_cache);
-@@ -9443,6 +9454,9 @@ void kvm_x86_vendor_exit(void)
- 	static_key_deferred_flush(&kvm_xen_enabled);
+ 	return r;
+ }
++EXPORT_SYMBOL_GPL(kvm_x86_vendor_init);
+ 
+-void kvm_arch_exit(void)
++void kvm_x86_vendor_exit(void)
+ {
+ 	kvm_unregister_perf_callbacks();
+ 
+@@ -9434,6 +9444,7 @@ void kvm_arch_exit(void)
  	WARN_ON(static_branch_unlikely(&kvm_xen_enabled.key));
  #endif
-+	mutex_lock(&vendor_module_lock);
-+	kvm_x86_ops.hardware_enable = NULL;
-+	mutex_unlock(&vendor_module_lock);
  }
- EXPORT_SYMBOL_GPL(kvm_x86_vendor_exit);
++EXPORT_SYMBOL_GPL(kvm_x86_vendor_exit);
  
+ static int __kvm_emulate_halt(struct kvm_vcpu *vcpu, int state, int reason)
+ {
 -- 
 2.38.1.431.g37b22c650d-goog
 
