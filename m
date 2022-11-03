@@ -1,57 +1,112 @@
-From: Christian Borntraeger <borntraeger@linux.ibm.com>
-Date: Thu, 3 Nov 2022 13:08:02 +0100
-Subject: [PATCH 00/44] KVM: Rework kvm_init() and hardware enabling
-In-Reply-To: <20221102231911.3107438-1-seanjc@google.com>
+From: Claudio Imbrenda <imbrenda@linux.ibm.com>
+Date: Thu, 3 Nov 2022 13:44:15 +0100
+Subject: [PATCH 25/44] KVM: s390: Do s390 specific init without bouncing
+ through kvm_init()
+In-Reply-To: <20221102231911.3107438-26-seanjc@google.com>
 References: <20221102231911.3107438-1-seanjc@google.com>
-Message-ID: <b37267a9-c0b4-9841-71af-d8eab9baeb60@linux.ibm.com>
+	<20221102231911.3107438-26-seanjc@google.com>
+Message-ID: <20221103134415.5b277ce9@p-imbrenda>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Am 03.11.22 um 00:18 schrieb Sean Christopherson:
-> Non-x86 folks, please test on hardware when possible.  I made a _lot_ of
-> mistakes when moving code around.  Thankfully, x86 was the trickiest code
-> to deal with, and I'm fairly confident that I found all the bugs I
-> introduced via testing.  But the number of mistakes I made and found on
-> x86 makes me more than a bit worried that I screwed something up in other
-> arch code.
-> 
-> This is a continuation of Chao's series to do x86 CPU compatibility checks
-> during virtualization hardware enabling[1], and of Isaku's series to try
-> and clean up the hardware enabling paths so that x86 (Intel specifically)
-> can temporarily enable hardware during module initialization without
-> causing undue pain for other architectures[2].  It also includes one patch
-> from another mini-series from Isaku that provides the less controversial
-> patches[3].
-> 
-> The main theme of this series is to kill off kvm_arch_init(),
-> kvm_arch_hardware_(un)setup(), and kvm_arch_check_processor_compat(), which
-> all originated in x86 code from way back when, and needlessly complicate
-> both common KVM code and architecture code.  E.g. many architectures don't
-> mark functions/data as __init/__ro_after_init purely because kvm_init()
-> isn't marked __init to support x86's separate vendor modules.
-> 
-> The idea/hope is that with those hooks gone (moved to arch code), it will
-> be easier for x86 (and other architectures) to modify their module init
-> sequences as needed without having to fight common KVM code.  E.g. I'm
-> hoping that ARM can build on this to simplify its hardware enabling logic,
-> especially the pKVM side of things.
-> 
-> There are bug fixes throughout this series.  They are more scattered than
-> I would usually prefer, but getting the sequencing correct was a gigantic
-> pain for many of the x86 fixes due to needing to fix common code in order
-> for the x86 fix to have any meaning.  And while the bugs are often fatal,
-> they aren't all that interesting for most users as they either require a
-> malicious admin or broken hardware, i.e. aren't likely to be encountered
-> by the vast majority of KVM users.  So unless someone _really_ wants a
-> particular fix isolated for backporting, I'm not planning on shuffling
-> patches.
-> 
-> Tested on x86.  Lightly tested on arm64.  Compile tested only on all other
-> architectures.
+On Wed,  2 Nov 2022 23:18:52 +0000
+Sean Christopherson <seanjc@google.com> wrote:
 
-Some sniff tests seem to work ok on s390.
+> Move the guts of kvm_arch_init() into a new helper, __kvm_s390_init(),
+> and invoke the new helper directly from kvm_s390_init() instead of
+> bouncing through kvm_init().  Invoking kvm_arch_init() is the very
+> first action performed by kvm_init(), i.e. this is a glorified nop.
+> 
+> Moving setup to __kvm_s390_init() will allow tagging more functions as
+> __init, and emptying kvm_arch_init() will allow dropping the hook
+> entirely once all architecture implementations are nops.
+> 
+> No functional change intended.
+> 
+> Signed-off-by: Sean Christopherson <seanjc@google.com>
+> ---
+>  arch/s390/kvm/kvm-s390.c | 29 +++++++++++++++++++++++++----
+>  1 file changed, 25 insertions(+), 4 deletions(-)
+> 
+> diff --git a/arch/s390/kvm/kvm-s390.c b/arch/s390/kvm/kvm-s390.c
+> index 7fcd2d3b3558..e1c9980aae78 100644
+> --- a/arch/s390/kvm/kvm-s390.c
+> +++ b/arch/s390/kvm/kvm-s390.c
+> @@ -461,7 +461,7 @@ static void kvm_s390_cpu_feat_init(void)
+>  	 */
+>  }
+>  
+> -int kvm_arch_init(void *opaque)
+> +static int __kvm_s390_init(void)
+>  {
+>  	int rc = -ENOMEM;
+>  
+> @@ -519,7 +519,7 @@ int kvm_arch_init(void *opaque)
+>  	return rc;
+>  }
+>  
+> -void kvm_arch_exit(void)
+> +static void __kvm_s390_exit(void)
+>  {
+>  	gmap_unregister_pte_notifier(&gmap_notifier);
+>  	gmap_unregister_pte_notifier(&vsie_gmap_notifier);
+> @@ -533,6 +533,16 @@ void kvm_arch_exit(void)
+>  	debug_unregister(kvm_s390_dbf_uv);
+>  }
+>  
+> +int kvm_arch_init(void *opaque)
+> +{
+> +	return 0;
+> +}
+> +
+> +void kvm_arch_exit(void)
+> +{
+> +
+> +}
+> +
+
+I wonder at this point if it's possible to define kvm_arch_init and
+kvm_arch_exit directly in kvm_main.c with __weak
+
+>  /* Section: device related */
+>  long kvm_arch_dev_ioctl(struct file *filp,
+>  			unsigned int ioctl, unsigned long arg)
+> @@ -5634,7 +5644,7 @@ static inline unsigned long nonhyp_mask(int i)
+>  
+>  static int __init kvm_s390_init(void)
+>  {
+> -	int i;
+> +	int i, r;
+>  
+>  	if (!sclp.has_sief2) {
+>  		pr_info("SIE is not available\n");
+> @@ -5650,12 +5660,23 @@ static int __init kvm_s390_init(void)
+>  		kvm_s390_fac_base[i] |=
+>  			stfle_fac_list[i] & nonhyp_mask(i);
+>  
+> -	return kvm_init(NULL, sizeof(struct kvm_vcpu), 0, THIS_MODULE);
+> +	r = __kvm_s390_init();
+> +	if (r)
+> +		return r;
+> +
+> +	r = kvm_init(NULL, sizeof(struct kvm_vcpu), 0, THIS_MODULE);
+> +	if (r) {
+> +		__kvm_s390_exit();
+> +		return r;
+> +	}
+> +	return 0;
+>  }
+>  
+>  static void __exit kvm_s390_exit(void)
+>  {
+>  	kvm_exit();
+> +
+> +	__kvm_s390_exit();
+>  }
+>  
+>  module_init(kvm_s390_init);
 
 
