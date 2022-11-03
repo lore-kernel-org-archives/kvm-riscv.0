@@ -1,11 +1,12 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Thu, 3 Nov 2022 17:44:51 +0000
-Subject: [PATCH 36/44] KVM: x86: Do compatibility checks when onlining CPU
-In-Reply-To: <23bfd709-f99a-5a74-e4b9-1381b88453f1@redhat.com>
+Date: Thu, 3 Nov 2022 17:53:31 +0000
+Subject: [PATCH 39/44] KVM: Drop kvm_count_lock and instead protect
+ kvm_usage_count with kvm_lock
+In-Reply-To: <7b6ce80e-7f1f-11cd-8bde-8d8fa9fd7e1d@redhat.com>
 References: <20221102231911.3107438-1-seanjc@google.com>
- <20221102231911.3107438-37-seanjc@google.com>
- <23bfd709-f99a-5a74-e4b9-1381b88453f1@redhat.com>
-Message-ID: <Y2P+E+631c0TNcK7@google.com>
+ <20221102231911.3107438-40-seanjc@google.com>
+ <7b6ce80e-7f1f-11cd-8bde-8d8fa9fd7e1d@redhat.com>
+Message-ID: <Y2QAG0wCPNv7atC/@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -14,33 +15,43 @@ Content-Transfer-Encoding: 7bit
 
 On Thu, Nov 03, 2022, Paolo Bonzini wrote:
 > On 11/3/22 00:19, Sean Christopherson wrote:
-> > From: Chao Gao<chao.gao@intel.com>
-> > 
-> > Do compatibility checks when enabling hardware to effectively add
-> > compatibility checks when onlining a CPU.  Abort enabling, i.e. the
-> > online process, if the (hotplugged) CPU is incompatible with the known
-> > good setup.
+> > +- kvm_lock is taken outside kvm->mmu_lock
 > 
-> This paragraph is not true with this patch being before "KVM: Rename and
-> move CPUHP_AP_KVM_STARTING to ONLINE section".
+> Not surprising since one is a mutex and one is an rwlock. :)
 
-Argh, good eyes.  Getting the ordering correct in this series has been quite the
-struggle.  Assuming there are no subtle dependencies between x86 and common KVM,
-the ordering should be something like this:
+Heh, 
 
-  KVM: Opt out of generic hardware enabling on s390 and PPC
-  KVM: Register syscore (suspend/resume) ops early in kvm_init()
-  KVM: x86: Do compatibility checks when onlining CPU
-  KVM: SVM: Check for SVM support in CPU compatibility checks
-  KVM: VMX: Shuffle support checks and hardware enabling code around
-  KVM: x86: Do VMX/SVM support checks directly in vendor code
-  KVM: x86: Unify pr_fmt to use module name for all KVM modules
-  KVM: x86: Use KBUILD_MODNAME to specify vendor module name
-  KVM: Make hardware_enable_failed a local variable in the "enable all" path
-  KVM: Use a per-CPU variable to track which CPUs have enabled virtualization
-  KVM: Remove on_each_cpu(hardware_disable_nolock) in kvm_exit()
-  KVM: Drop kvm_count_lock and instead protect kvm_usage_count with kvm_lock
-  KVM: Disable CPU hotplug during hardware enabling
-  KVM: Rename and move CPUHP_AP_KVM_STARTING to ONLINE section
-  KVM: Drop kvm_arch_check_processor_compat() hook
+  Signed-off-by: Captain Obvious <seanjc@google.com>
+
+> You can drop this hunk as well as the "Opportunistically update KVM's locking
+> documentation" sentence in the commit message.
+
+Will do.
+
+> >   - vcpu->mutex is taken outside kvm->arch.hyperv.hv_lock
+> >   - kvm->arch.mmu_lock is an rwlock.  kvm->arch.tdp_mmu_pages_lock and
+> > @@ -216,15 +220,11 @@ time it will be set using the Dirty tracking mechanism described above.
+> >   :Type:		mutex
+> >   :Arch:		any
+> >   :Protects:	- vm_list
+> > -
+> > -``kvm_count_lock``
+> > -^^^^^^^^^^^^^^^^^^
+> > -
+> > -:Type:		raw_spinlock_t
+> > -:Arch:		any
+> > -:Protects:	- hardware virtualization enable/disable
+> > -:Comment:	'raw' because hardware enabling/disabling must be atomic /wrt
+> > -		migration.
+> > +		- kvm_usage_count
+> > +		- hardware virtualization enable/disable
+> > +		- module probing (x86 only)
+> 
+> What do you mean exactly by "module probing"?  Is it anything else than what
+> is serialized by vendor_module_lock?
+
+Ooh, I forgot to update this patch after switching to vendor_module_lock.  I
+added the above after fixing the first deadlock between kvm_lock and cpu_hotplug_lock,
+but later gave up on trying to use kvm_lock after deadlock #2, which is when I
+when I realized piggybacking kvm_lock was going to be a maintainance nightmare due.
 
