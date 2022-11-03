@@ -1,55 +1,48 @@
-From: Paolo Bonzini <pbonzini@redhat.com>
-Date: Thu, 3 Nov 2022 18:57:55 +0100
-Subject: [PATCH 36/44] KVM: x86: Do compatibility checks when onlining CPU
-In-Reply-To: <Y2P+E+631c0TNcK7@google.com>
+From: Sean Christopherson <seanjc@google.com>
+Date: Thu, 3 Nov 2022 18:35:05 +0000
+Subject: [PATCH 33/44] KVM: x86: Do VMX/SVM support checks directly in
+ vendor code
+In-Reply-To: <bfa98587-3b36-3834-a4b9-585a0e0aa56a@redhat.com>
 References: <20221102231911.3107438-1-seanjc@google.com>
- <20221102231911.3107438-37-seanjc@google.com>
- <23bfd709-f99a-5a74-e4b9-1381b88453f1@redhat.com>
- <Y2P+E+631c0TNcK7@google.com>
-Message-ID: <1fd2e729-6e46-b0bf-d89e-f5d1b4dbde77@redhat.com>
+ <20221102231911.3107438-34-seanjc@google.com>
+ <bfa98587-3b36-3834-a4b9-585a0e0aa56a@redhat.com>
+Message-ID: <Y2QJ2TuyZImbFFvi@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 11/3/22 18:44, Sean Christopherson wrote:
->>> Do compatibility checks when enabling hardware to effectively add
->>> compatibility checks when onlining a CPU.  Abort enabling, i.e. the
->>> online process, if the (hotplugged) CPU is incompatible with the known
->>> good setup.
->>
->> This paragraph is not true with this patch being before "KVM: Rename and
->> move CPUHP_AP_KVM_STARTING to ONLINE section".
->
-> Argh, good eyes.  Getting the ordering correct in this series has been quite the
-> struggle.  Assuming there are no subtle dependencies between x86 and common KVM,
-> the ordering should be something like this:
-
-It's not a problem to keep the ordering in this v1, just fix the commit 
-message like "Do compatibility checks when enabling hardware to 
-effectively add compatibility checks on CPU hotplug.  For now KVM is 
-using a STARTING hook, which makes it impossible to abort the hotplug if 
-the new CPU is incompatible with the known good setup; switching to an 
-ONLINE hook will fix this."
-
-Paolo
-
->    KVM: Opt out of generic hardware enabling on s390 and PPC
->    KVM: Register syscore (suspend/resume) ops early in kvm_init()
->    KVM: x86: Do compatibility checks when onlining CPU
->    KVM: SVM: Check for SVM support in CPU compatibility checks
->    KVM: VMX: Shuffle support checks and hardware enabling code around
->    KVM: x86: Do VMX/SVM support checks directly in vendor code
->    KVM: x86: Unify pr_fmt to use module name for all KVM modules
->    KVM: x86: Use KBUILD_MODNAME to specify vendor module name
->    KVM: Make hardware_enable_failed a local variable in the "enable all" path
->    KVM: Use a per-CPU variable to track which CPUs have enabled virtualization
->    KVM: Remove on_each_cpu(hardware_disable_nolock) in kvm_exit()
->    KVM: Drop kvm_count_lock and instead protect kvm_usage_count with kvm_lock
->    KVM: Disable CPU hotplug during hardware enabling
->    KVM: Rename and move CPUHP_AP_KVM_STARTING to ONLINE section
->    KVM: Drop kvm_arch_check_processor_compat() hook
+On Thu, Nov 03, 2022, Paolo Bonzini wrote:
+> On 11/3/22 00:19, Sean Christopherson wrote:
+> > +	if (!boot_cpu_has(X86_FEATURE_MSR_IA32_FEAT_CTL) ||
+> > +	    !boot_cpu_has(X86_FEATURE_VMX)) {
+> > +		pr_err("VMX not enabled in MSR_IA32_FEAT_CTL\n");
+> > +		return false;
 > 
+> I think the reference to the BIOS should remain in these messages and in
+> svm.c (even though these days it's much less common for vendors to default
+> to disabled virtualization in the system setup).
 
+Ya, I'll figure out a way to mention BIOS/firmware.
+
+> The check for X86_FEATURE_MSR_IA32_FEAT_CTL is not needed because
+> init_ia32_feat_ctl() will clear X86_FEATURE_VMX if the rdmsr fail (and not
+> set X86_FEATURE_MSR_IA32_FEAT_CTL).
+
+It's technically required.  IA32_FEAT_CTL and thus KVM_INTEL depends on any of
+CPU_SUP_{INTEL,CENATUR,ZHAOXIN}, but init_ia32_feat_ctl() is invoked if and only
+if the actual CPU type matches one of the aforementioned CPU_SUP_*.
+
+E.g. running a kernel built with
+
+  CONFIG_CPU_SUP_INTEL=y
+  CONFIG_CPU_SUP_AMD=y
+  # CONFIG_CPU_SUP_HYGON is not set
+  # CONFIG_CPU_SUP_CENTAUR is not set
+  # CONFIG_CPU_SUP_ZHAOXIN is not set
+
+on a Cenatur or Zhaoxin CPU will leave X86_FEATURE_VMX set but not set
+X86_FEATURE_MSR_IA32_FEAT_CTL.  If VMX isn't enabled in MSR_IA32_FEAT_CTL, KVM
+will get unexpected #UDs when trying to enable VMX.
 
