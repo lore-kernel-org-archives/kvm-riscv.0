@@ -1,86 +1,219 @@
 From: Yuan Yao <yuan.yao@linux.intel.com>
-Date: Fri, 4 Nov 2022 13:37:45 +0800
-Subject: [PATCH 03/44] KVM: Allocate cpus_hardware_enabled after arch
- hardware setup
-In-Reply-To: <20221102231911.3107438-4-seanjc@google.com>
+Date: Fri, 4 Nov 2022 14:22:23 +0800
+Subject: [PATCH 08/44] KVM: x86: Move hardware setup/unsetup to init/exit
+In-Reply-To: <20221102231911.3107438-9-seanjc@google.com>
 References: <20221102231911.3107438-1-seanjc@google.com>
- <20221102231911.3107438-4-seanjc@google.com>
-Message-ID: <20221104053745.qvi35kflf2i2ifgs@yy-desk-7060>
+ <20221102231911.3107438-9-seanjc@google.com>
+Message-ID: <20221104062223.7kcrbt66mlmqxk7f@yy-desk-7060>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Nov 02, 2022 at 11:18:30PM +0000, Sean Christopherson wrote:
-> Allocate cpus_hardware_enabled after arch hardware setup so that arch
-> "init" and "hardware setup" are called back-to-back and thus can be
-> combined in a future patch.  cpus_hardware_enabled is never used before
-> kvm_create_vm(), i.e. doesn't have a dependency with hardware setup and
-> only needs to be allocated before /dev/kvm is exposed to userspace.
+On Wed, Nov 02, 2022 at 11:18:35PM +0000, Sean Christopherson wrote:
+> Now that kvm_arch_hardware_setup() is called immediately after
+> kvm_arch_init(), fold the guts of kvm_arch_hardware_(un)setup() into
+> kvm_arch_{init,exit}() as a step towards dropping one of the hooks.
 >
-> Free the object before the arch hooks are invoked to maintain symmetry,
-> and so that arch code can move away from the hooks without having to
-> worry about ordering changes.
+> To avoid having to unwind various setup, e.g registration of several
+> notifiers, slot in the vendor hardware setup before the registration of
+> said notifiers and callbacks.  Introducing a functional change while
+> moving code is less than ideal, but the alternative is adding a pile of
+> unwinding code, which is much more error prone, e.g. several attempts to
+> move the setup code verbatim all introduced bugs.
+>
+> Add a comment to document that kvm_ops_update() is effectively the point
+> of no return, e.g. it sets the kvm_x86_ops.hardware_enable canary and so
+> needs to be unwound.
 >
 > Signed-off-by: Sean Christopherson <seanjc@google.com>
 > ---
->  virt/kvm/kvm_main.c | 14 +++++++-------
->  1 file changed, 7 insertions(+), 7 deletions(-)
+>  arch/x86/kvm/x86.c | 121 +++++++++++++++++++++++----------------------
+>  1 file changed, 63 insertions(+), 58 deletions(-)
 >
-> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-> index e0424af52acc..8b7534cc953b 100644
-> --- a/virt/kvm/kvm_main.c
-> +++ b/virt/kvm/kvm_main.c
-> @@ -5843,15 +5843,15 @@ int kvm_init(void *opaque, unsigned vcpu_size, unsigned vcpu_align,
->  	if (r)
->  		return r;
+> diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+> index 9a7702b1c563..80ee580a9cd4 100644
+> --- a/arch/x86/kvm/x86.c
+> +++ b/arch/x86/kvm/x86.c
+> @@ -9252,6 +9252,24 @@ static struct notifier_block pvclock_gtod_notifier = {
+>  };
+>  #endif
 >
-> +	r = kvm_arch_hardware_setup(opaque);
-> +	if (r < 0)
-> +		goto err_hw_setup;
+> +static inline void kvm_ops_update(struct kvm_x86_init_ops *ops)
+> +{
+> +	memcpy(&kvm_x86_ops, ops->runtime_ops, sizeof(kvm_x86_ops));
 > +
->  	if (!zalloc_cpumask_var(&cpus_hardware_enabled, GFP_KERNEL)) {
->  		r = -ENOMEM;
->  		goto err_hw_enabled;
+> +#define __KVM_X86_OP(func) \
+> +	static_call_update(kvm_x86_##func, kvm_x86_ops.func);
+> +#define KVM_X86_OP(func) \
+> +	WARN_ON(!kvm_x86_ops.func); __KVM_X86_OP(func)
+> +#define KVM_X86_OP_OPTIONAL __KVM_X86_OP
+> +#define KVM_X86_OP_OPTIONAL_RET0(func) \
+> +	static_call_update(kvm_x86_##func, (void *)kvm_x86_ops.func ? : \
+> +					   (void *)__static_call_return0);
+> +#include <asm/kvm-x86-ops.h>
+> +#undef __KVM_X86_OP
+> +
+> +	kvm_pmu_ops_update(ops->pmu_ops);
+> +}
+> +
+>  int kvm_arch_init(void *opaque)
+>  {
+>  	struct kvm_x86_init_ops *ops = opaque;
+> @@ -9325,6 +9343,24 @@ int kvm_arch_init(void *opaque)
+>  		kvm_caps.supported_xcr0 = host_xcr0 & KVM_SUPPORTED_XCR0;
 >  	}
 >
-> -	r = kvm_arch_hardware_setup(opaque);
-> -	if (r < 0)
-> -		goto out_free_1;
+> +	rdmsrl_safe(MSR_EFER, &host_efer);
+> +
+> +	if (boot_cpu_has(X86_FEATURE_XSAVES))
+> +		rdmsrl(MSR_IA32_XSS, host_xss);
+> +
+> +	kvm_init_pmu_capability();
+> +
+> +	r = ops->hardware_setup();
+> +	if (r != 0)
+> +		goto out_mmu_exit;
+
+The failure case of ops->hardware_setup() is unwound
+by kvm_arch_exit() before this patch, do we need to
+keep that old behavior ?
+
+> +
+> +	/*
+> +	 * Point of no return!  DO NOT add error paths below this point unless
+> +	 * absolutely necessary, as most operations from this point forward
+> +	 * require unwinding.
+> +	 */
+> +	kvm_ops_update(ops);
+> +
+>  	kvm_timer_init();
+>
+>  	if (pi_inject_timer == -1)
+> @@ -9336,8 +9372,32 @@ int kvm_arch_init(void *opaque)
+>  		set_hv_tscchange_cb(kvm_hyperv_tsc_notifier);
+>  #endif
+>
+> +	kvm_register_perf_callbacks(ops->handle_intel_pt_intr);
+> +
+> +	if (!kvm_cpu_cap_has(X86_FEATURE_XSAVES))
+> +		kvm_caps.supported_xss = 0;
+> +
+> +#define __kvm_cpu_cap_has(UNUSED_, f) kvm_cpu_cap_has(f)
+> +	cr4_reserved_bits = __cr4_reserved_bits(__kvm_cpu_cap_has, UNUSED_);
+> +#undef __kvm_cpu_cap_has
+> +
+> +	if (kvm_caps.has_tsc_control) {
+> +		/*
+> +		 * Make sure the user can only configure tsc_khz values that
+> +		 * fit into a signed integer.
+> +		 * A min value is not calculated because it will always
+> +		 * be 1 on all machines.
+> +		 */
+> +		u64 max = min(0x7fffffffULL,
+> +			      __scale_tsc(kvm_caps.max_tsc_scaling_ratio, tsc_khz));
+> +		kvm_caps.max_guest_tsc_khz = max;
+> +	}
+> +	kvm_caps.default_tsc_scaling_ratio = 1ULL << kvm_caps.tsc_scaling_ratio_frac_bits;
+> +	kvm_init_msr_list();
+>  	return 0;
+>
+> +out_mmu_exit:
+> +	kvm_mmu_vendor_module_exit();
+>  out_free_percpu:
+>  	free_percpu(user_return_msrs);
+>  out_free_x86_emulator_cache:
+> @@ -9347,6 +9407,8 @@ int kvm_arch_init(void *opaque)
+>
+>  void kvm_arch_exit(void)
+>  {
+> +	kvm_unregister_perf_callbacks();
+> +
+>  #ifdef CONFIG_X86_64
+>  	if (hypervisor_is_type(X86_HYPER_MS_HYPERV))
+>  		clear_hv_tscchange_cb();
+> @@ -9362,6 +9424,7 @@ void kvm_arch_exit(void)
+>  	irq_work_sync(&pvclock_irq_work);
+>  	cancel_work_sync(&pvclock_gtod_work);
+>  #endif
+> +	static_call(kvm_x86_hardware_unsetup)();
+>  	kvm_x86_ops.hardware_enable = NULL;
+>  	kvm_mmu_vendor_module_exit();
+>  	free_percpu(user_return_msrs);
+> @@ -11922,72 +11985,14 @@ void kvm_arch_hardware_disable(void)
+>  	drop_user_return_notifiers();
+>  }
+>
+> -static inline void kvm_ops_update(struct kvm_x86_init_ops *ops)
+> -{
+> -	memcpy(&kvm_x86_ops, ops->runtime_ops, sizeof(kvm_x86_ops));
 > -
->  	c.ret = &r;
->  	c.opaque = opaque;
->  	for_each_online_cpu(cpu) {
-> @@ -5937,10 +5937,10 @@ int kvm_init(void *opaque, unsigned vcpu_size, unsigned vcpu_align,
->  	unregister_reboot_notifier(&kvm_reboot_notifier);
->  	cpuhp_remove_state_nocalls(CPUHP_AP_KVM_STARTING);
->  out_free_2:
-> -	kvm_arch_hardware_unsetup();
-> -out_free_1:
->  	free_cpumask_var(cpus_hardware_enabled);
->  err_hw_enabled:
-> +	kvm_arch_hardware_unsetup();
-> +err_hw_setup:
->  	kvm_arch_exit();
->  	return r;
+> -#define __KVM_X86_OP(func) \
+> -	static_call_update(kvm_x86_##func, kvm_x86_ops.func);
+> -#define KVM_X86_OP(func) \
+> -	WARN_ON(!kvm_x86_ops.func); __KVM_X86_OP(func)
+> -#define KVM_X86_OP_OPTIONAL __KVM_X86_OP
+> -#define KVM_X86_OP_OPTIONAL_RET0(func) \
+> -	static_call_update(kvm_x86_##func, (void *)kvm_x86_ops.func ? : \
+> -					   (void *)__static_call_return0);
+> -#include <asm/kvm-x86-ops.h>
+> -#undef __KVM_X86_OP
+> -
+> -	kvm_pmu_ops_update(ops->pmu_ops);
+> -}
+> -
+>  int kvm_arch_hardware_setup(void *opaque)
+>  {
+> -	struct kvm_x86_init_ops *ops = opaque;
+> -	int r;
+> -
+> -	rdmsrl_safe(MSR_EFER, &host_efer);
+> -
+> -	if (boot_cpu_has(X86_FEATURE_XSAVES))
+> -		rdmsrl(MSR_IA32_XSS, host_xss);
+> -
+> -	kvm_init_pmu_capability();
+> -
+> -	r = ops->hardware_setup();
+> -	if (r != 0)
+> -		return r;
+> -
+> -	kvm_ops_update(ops);
+> -
+> -	kvm_register_perf_callbacks(ops->handle_intel_pt_intr);
+> -
+> -	if (!kvm_cpu_cap_has(X86_FEATURE_XSAVES))
+> -		kvm_caps.supported_xss = 0;
+> -
+> -#define __kvm_cpu_cap_has(UNUSED_, f) kvm_cpu_cap_has(f)
+> -	cr4_reserved_bits = __cr4_reserved_bits(__kvm_cpu_cap_has, UNUSED_);
+> -#undef __kvm_cpu_cap_has
+> -
+> -	if (kvm_caps.has_tsc_control) {
+> -		/*
+> -		 * Make sure the user can only configure tsc_khz values that
+> -		 * fit into a signed integer.
+> -		 * A min value is not calculated because it will always
+> -		 * be 1 on all machines.
+> -		 */
+> -		u64 max = min(0x7fffffffULL,
+> -			      __scale_tsc(kvm_caps.max_tsc_scaling_ratio, tsc_khz));
+> -		kvm_caps.max_guest_tsc_khz = max;
+> -	}
+> -	kvm_caps.default_tsc_scaling_ratio = 1ULL << kvm_caps.tsc_scaling_ratio_frac_bits;
+> -	kvm_init_msr_list();
+>  	return 0;
 >  }
-> @@ -5967,9 +5967,9 @@ void kvm_exit(void)
->  	cpuhp_remove_state_nocalls(CPUHP_AP_KVM_STARTING);
->  	on_each_cpu(hardware_disable_nolock, NULL, 1);
->  	kvm_irqfd_exit();
-> +	free_cpumask_var(cpus_hardware_enabled);
->  	kvm_arch_hardware_unsetup();
->  	kvm_arch_exit();
-> -	free_cpumask_var(cpus_hardware_enabled);
->  	kvm_vfio_ops_exit();
-
-Looks good to me.
-
-Reviewed-by: Yuan Yao <yuan.yao@intel.com>
-
+>
+>  void kvm_arch_hardware_unsetup(void)
+>  {
+> -	kvm_unregister_perf_callbacks();
+>
+> -	static_call(kvm_x86_hardware_unsetup)();
 >  }
->  EXPORT_SYMBOL_GPL(kvm_exit);
+>
+>  int kvm_arch_check_processor_compat(void *opaque)
 > --
 > 2.38.1.431.g37b22c650d-goog
 >
