@@ -1,49 +1,45 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Fri, 4 Nov 2022 18:03:21 +0100
-Subject: [PATCH] RISC-V KVM: Add exit logic to main.c
-In-Reply-To: <20221104154618.9953-1-13212017962@163.com>
-References: <20221104154618.9953-1-13212017962@163.com>
-Message-ID: <20221104170321.roif5wddbypjw2tc@kamzik>
+From: Sean Christopherson <seanjc@google.com>
+Date: Fri, 4 Nov 2022 20:15:36 +0000
+Subject: [PATCH 02/44] KVM: Initialize IRQ FD after arch hardware setup
+In-Reply-To: <Y2Rfz+TIcdfcawxh@gao-cwp>
+References: <20221102231911.3107438-1-seanjc@google.com>
+ <20221102231911.3107438-3-seanjc@google.com>
+ <Y2Rfz+TIcdfcawxh@gao-cwp>
+Message-ID: <Y2Vy6Eq89tQa+3bq@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Nov 04, 2022 at 11:46:18PM +0800, XiakaiPan wrote:
-> Several lines of code are inserted to remove KVM module normally using rmmod command just like others.
+On Fri, Nov 04, 2022, Chao Gao wrote:
+> On Wed, Nov 02, 2022 at 11:18:29PM +0000, Sean Christopherson wrote:
+> > 
+> >+	r = kvm_irqfd_init();
+> >+	if (r)
+> >+		goto err_irqfd;
+> >+
+> > 	r = kvm_async_pf_init();
+> > 	if (r)
+> >-		goto out_free_4;
+> >+		goto err_async_pf;
+> > 
+> > 	kvm_chardev_ops.owner = module;
+> > 
+> >@@ -5927,6 +5926,9 @@ int kvm_init(void *opaque, unsigned vcpu_size, unsigned vcpu_align,
+> > 	kvm_vfio_ops_exit();
+> > err_vfio:
+> > 	kvm_async_pf_deinit();
+> >+err_async_pf:
+> >+	kvm_irqfd_exit();
 > 
-> Signed-off-by: XiakaiPan <13212017962@163.com>
-> ---
->  arch/riscv/kvm/main.c | 6 ++++++
->  1 file changed, 6 insertions(+)
+> >+err_irqfd:
+> > out_free_4:
 > 
-> diff --git a/arch/riscv/kvm/main.c b/arch/riscv/kvm/main.c
-> index 1549205fe..81f1a761d 100644
-> --- a/arch/riscv/kvm/main.c
-> +++ b/arch/riscv/kvm/main.c
-> @@ -122,6 +122,12 @@ void kvm_arch_exit(void)
->  {
->  }
->  
-> +static void riscv_kvm_exit(void)
-> +{
-> +       kvm_exit();
-> +}
-> +module_exit(riscv_kvm_exit);
-> +
->  static int riscv_kvm_init(void)
->  {
->  	return kvm_init(NULL, sizeof(struct kvm_vcpu), 0, THIS_MODULE);
-> -- 
-> 2.25.1
->
+> Do you mind removing one of the two labels?
 
-LGTM, assuming we don't need the riscv kvm module to be permanent for some
-reason. If we do, then I guess we need a comment here by module_init()
-stating that. I did test loading and unloading multiple times and running
-VMs in between, no fireballs appeared.
-
-Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
-Tested-by: Andrew Jones <ajones@ventanamicro.com>
+Ah, I meant to tack on a patch at the very end to clean up these labels once the
+dust had settled, e.g. to also resolve the "err" vs. "out" mess I created (on
+purpose, because trying to describe the "out" path was frustrating and generated
+too much churn).
 
