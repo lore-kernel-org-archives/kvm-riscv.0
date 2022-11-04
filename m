@@ -1,45 +1,28 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Fri, 4 Nov 2022 20:15:36 +0000
-Subject: [PATCH 02/44] KVM: Initialize IRQ FD after arch hardware setup
-In-Reply-To: <Y2Rfz+TIcdfcawxh@gao-cwp>
+Date: Fri, 4 Nov 2022 20:27:14 +0000
+Subject: [PATCH 00/44] KVM: Rework kvm_init() and hardware enabling
+In-Reply-To: <20221104071749.GC1063309@ls.amr.corp.intel.com>
 References: <20221102231911.3107438-1-seanjc@google.com>
- <20221102231911.3107438-3-seanjc@google.com>
- <Y2Rfz+TIcdfcawxh@gao-cwp>
-Message-ID: <Y2Vy6Eq89tQa+3bq@google.com>
+ <20221104071749.GC1063309@ls.amr.corp.intel.com>
+Message-ID: <Y2V1oslbw24/2Opd@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Nov 04, 2022, Chao Gao wrote:
-> On Wed, Nov 02, 2022 at 11:18:29PM +0000, Sean Christopherson wrote:
-> > 
-> >+	r = kvm_irqfd_init();
-> >+	if (r)
-> >+		goto err_irqfd;
-> >+
-> > 	r = kvm_async_pf_init();
-> > 	if (r)
-> >-		goto out_free_4;
-> >+		goto err_async_pf;
-> > 
-> > 	kvm_chardev_ops.owner = module;
-> > 
-> >@@ -5927,6 +5926,9 @@ int kvm_init(void *opaque, unsigned vcpu_size, unsigned vcpu_align,
-> > 	kvm_vfio_ops_exit();
-> > err_vfio:
-> > 	kvm_async_pf_deinit();
-> >+err_async_pf:
-> >+	kvm_irqfd_exit();
-> 
-> >+err_irqfd:
-> > out_free_4:
-> 
-> Do you mind removing one of the two labels?
+On Fri, Nov 04, 2022, Isaku Yamahata wrote:
+> Thanks for the patch series. I the rebased TDX KVM patch series and it worked.
+> Since cpu offline needs to be rejected in some cases(To keep at least one cpu
+> on a package), arch hook for cpu offline is needed.
 
-Ah, I meant to tack on a patch at the very end to clean up these labels once the
-dust had settled, e.g. to also resolve the "err" vs. "out" mess I created (on
-purpose, because trying to describe the "out" path was frustrating and generated
-too much churn).
+I hate to bring this up because I doubt there's a real use case for SUSPEND with
+TDX, but the CPU offline path isn't just for true offlining of CPUs.  When the
+system enters SUSPEND, only the initiating CPU goes through kvm_suspend()+kvm_resume(),
+all responding CPUs go through CPU offline+online.  I.e. disallowing all CPUs from
+going "offline" will prevent suspending the system.
+
+I don't see anything in the TDX series or the specs that suggests suspend+resume
+is disallowed when TDX is enabled, so blocking that seems just as wrong as
+preventing software from soft-offlining CPUs.
 
