@@ -1,9 +1,10 @@
 From: Anup Patel <anup@brainfault.org>
-Date: Mon, 7 Nov 2022 08:35:03 +0530
-Subject: [PATCH 22/44] KVM: RISC-V: Do arch init directly in riscv_kvm_init()
-In-Reply-To: <20221102231911.3107438-23-seanjc@google.com>
-References: <20221102231911.3107438-1-seanjc@google.com> <20221102231911.3107438-23-seanjc@google.com>
-Message-ID: <CAAhSdy01NfFuHCsA1mrcxERL+=8F=PQbD_Nu7qvdKQOyQ_p9Tw@mail.gmail.com>
+Date: Mon, 7 Nov 2022 08:40:14 +0530
+Subject: [PATCH 23/44] KVM: RISC-V: Tag init functions and data with
+ __init, __ro_after_init
+In-Reply-To: <20221102231911.3107438-24-seanjc@google.com>
+References: <20221102231911.3107438-1-seanjc@google.com> <20221102231911.3107438-24-seanjc@google.com>
+Message-ID: <CAAhSdy1XSv+yNHyhPf44H3f7oaz+7Ku6COkKAQt7Zy7ahdC7jA@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -12,66 +13,98 @@ Content-Transfer-Encoding: 7bit
 
 On Thu, Nov 3, 2022 at 4:49 AM Sean Christopherson <seanjc@google.com> wrote:
 >
-> Fold the guts of kvm_arch_init() into riscv_kvm_init() instead of
-> bouncing through kvm_init()=>kvm_arch_init().  Functionally, this is a
-> glorified nop as invoking kvm_arch_init() is the very first action
-> performed by kvm_init().
->
-> Moving setup to riscv_kvm_init(), which is tagged __init, will allow
-> tagging more functions and data with __init and __ro_after_init.  And
-> emptying kvm_arch_init() will allow dropping the hook entirely once all
-> architecture implementations are nops.
->
-> No functional change intended.
+> Now that KVM setup is handled directly in riscv_kvm_init(), tag functions
+> and data that are used/set only during init with __init/__ro_after_init.
 >
 > Signed-off-by: Sean Christopherson <seanjc@google.com>
 
 For KVM RISC-V:
 Acked-by: Anup Patel <anup@brainfault.org>
 
-Regards,
+Thanks,
 Anup
 
 > ---
->  arch/riscv/kvm/main.c | 18 +++++++++---------
->  1 file changed, 9 insertions(+), 9 deletions(-)
+>  arch/riscv/include/asm/kvm_host.h |  6 +++---
+>  arch/riscv/kvm/mmu.c              | 12 ++++++------
+>  arch/riscv/kvm/vmid.c             |  4 ++--
+>  3 files changed, 11 insertions(+), 11 deletions(-)
 >
-> diff --git a/arch/riscv/kvm/main.c b/arch/riscv/kvm/main.c
-> index a146fa0ce4d2..cb063b8a9a0f 100644
-> --- a/arch/riscv/kvm/main.c
-> +++ b/arch/riscv/kvm/main.c
-> @@ -66,6 +66,15 @@ void kvm_arch_hardware_disable(void)
+> diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
+> index 8c771fc4f5d2..778ff0f282b7 100644
+> --- a/arch/riscv/include/asm/kvm_host.h
+> +++ b/arch/riscv/include/asm/kvm_host.h
+> @@ -295,11 +295,11 @@ int kvm_riscv_gstage_map(struct kvm_vcpu *vcpu,
+>  int kvm_riscv_gstage_alloc_pgd(struct kvm *kvm);
+>  void kvm_riscv_gstage_free_pgd(struct kvm *kvm);
+>  void kvm_riscv_gstage_update_hgatp(struct kvm_vcpu *vcpu);
+> -void kvm_riscv_gstage_mode_detect(void);
+> -unsigned long kvm_riscv_gstage_mode(void);
+> +void __init kvm_riscv_gstage_mode_detect(void);
+> +unsigned long __init kvm_riscv_gstage_mode(void);
+>  int kvm_riscv_gstage_gpa_bits(void);
+>
+> -void kvm_riscv_gstage_vmid_detect(void);
+> +void __init kvm_riscv_gstage_vmid_detect(void);
+>  unsigned long kvm_riscv_gstage_vmid_bits(void);
+>  int kvm_riscv_gstage_vmid_init(struct kvm *kvm);
+>  bool kvm_riscv_gstage_vmid_ver_changed(struct kvm_vmid *vmid);
+> diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
+> index 3620ecac2fa1..f42a34c7879a 100644
+> --- a/arch/riscv/kvm/mmu.c
+> +++ b/arch/riscv/kvm/mmu.c
+> @@ -20,12 +20,12 @@
+>  #include <asm/pgtable.h>
+>
+>  #ifdef CONFIG_64BIT
+> -static unsigned long gstage_mode = (HGATP_MODE_SV39X4 << HGATP_MODE_SHIFT);
+> -static unsigned long gstage_pgd_levels = 3;
+> +static unsigned long gstage_mode __ro_after_init = (HGATP_MODE_SV39X4 << HGATP_MODE_SHIFT);
+> +static unsigned long gstage_pgd_levels __ro_after_init = 3;
+>  #define gstage_index_bits      9
+>  #else
+> -static unsigned long gstage_mode = (HGATP_MODE_SV32X4 << HGATP_MODE_SHIFT);
+> -static unsigned long gstage_pgd_levels = 2;
+> +static unsigned long gstage_mode __ro_after_init = (HGATP_MODE_SV32X4 << HGATP_MODE_SHIFT);
+> +static unsigned long gstage_pgd_levels __ro_after_init = 2;
+>  #define gstage_index_bits      10
+>  #endif
+>
+> @@ -760,7 +760,7 @@ void kvm_riscv_gstage_update_hgatp(struct kvm_vcpu *vcpu)
+>                 kvm_riscv_local_hfence_gvma_all();
 >  }
 >
->  int kvm_arch_init(void *opaque)
-> +{
-> +       return 0;
-> +}
-> +
-> +void kvm_arch_exit(void)
-> +{
-> +}
-> +
-> +static int __init riscv_kvm_init(void)
+> -void kvm_riscv_gstage_mode_detect(void)
+> +void __init kvm_riscv_gstage_mode_detect(void)
 >  {
->         const char *str;
->
-> @@ -110,15 +119,6 @@ int kvm_arch_init(void *opaque)
->
->         kvm_info("VMID %ld bits available\n", kvm_riscv_gstage_vmid_bits());
->
-> -       return 0;
-> -}
-> -
-> -void kvm_arch_exit(void)
-> -{
-> -}
-> -
-> -static int __init riscv_kvm_init(void)
-> -{
->         return kvm_init(NULL, sizeof(struct kvm_vcpu), 0, THIS_MODULE);
+>  #ifdef CONFIG_64BIT
+>         /* Try Sv57x4 G-stage mode */
+> @@ -784,7 +784,7 @@ void kvm_riscv_gstage_mode_detect(void)
+>  #endif
 >  }
->  module_init(riscv_kvm_init);
+>
+> -unsigned long kvm_riscv_gstage_mode(void)
+> +unsigned long __init kvm_riscv_gstage_mode(void)
+>  {
+>         return gstage_mode >> HGATP_MODE_SHIFT;
+>  }
+> diff --git a/arch/riscv/kvm/vmid.c b/arch/riscv/kvm/vmid.c
+> index 6cd93995fb65..5246da1c9167 100644
+> --- a/arch/riscv/kvm/vmid.c
+> +++ b/arch/riscv/kvm/vmid.c
+> @@ -17,10 +17,10 @@
+>
+>  static unsigned long vmid_version = 1;
+>  static unsigned long vmid_next;
+> -static unsigned long vmid_bits;
+> +static unsigned long vmid_bits __ro_after_init;
+>  static DEFINE_SPINLOCK(vmid_lock);
+>
+> -void kvm_riscv_gstage_vmid_detect(void)
+> +void __init kvm_riscv_gstage_vmid_detect(void)
+>  {
+>         unsigned long old;
+>
 > --
 > 2.38.1.431.g37b22c650d-goog
 >
