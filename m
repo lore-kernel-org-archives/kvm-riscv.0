@@ -1,11 +1,10 @@
 From: Eric Farman <farman@linux.ibm.com>
-Date: Mon, 07 Nov 2022 13:22:11 -0500
-Subject: [PATCH 25/44] KVM: s390: Do s390 specific init without bouncing
- through kvm_init()
-In-Reply-To: <20221102231911.3107438-26-seanjc@google.com>
+Date: Mon, 07 Nov 2022 14:08:47 -0500
+Subject: [PATCH 30/44] KVM: Drop kvm_arch_check_processor_compat() hook
+In-Reply-To: <20221102231911.3107438-31-seanjc@google.com>
 References: <20221102231911.3107438-1-seanjc@google.com>
-	 <20221102231911.3107438-26-seanjc@google.com>
-Message-ID: <e2b21ebfec94bcc3d830a5c7f11837d6dedac652.camel@linux.ibm.com>
+	 <20221102231911.3107438-31-seanjc@google.com>
+Message-ID: <13c194d02d02a0e2adc006c724809b63c11f1e80.camel@linux.ibm.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -13,24 +12,26 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 On Wed, 2022-11-02 at 23:18 +0000, Sean Christopherson wrote:
-> Move the guts of kvm_arch_init() into a new helper,
-> __kvm_s390_init(),
-> and invoke the new helper directly from kvm_s390_init() instead of
-> bouncing through kvm_init().? Invoking kvm_arch_init() is the very
-> first action performed by kvm_init(), i.e. this is a glorified nop.
-> 
-> Moving setup to __kvm_s390_init() will allow tagging more functions
-> as
-> __init, and emptying kvm_arch_init() will allow dropping the hook
-> entirely once all architecture implementations are nops.
-> 
-> No functional change intended.
+> Drop kvm_arch_check_processor_compat() and its support code now that
+> all
+> architecture implementations are nops.
 > 
 > Signed-off-by: Sean Christopherson <seanjc@google.com>
 > ---
-> ?arch/s390/kvm/kvm-s390.c | 29 +++++++++++++++++++++++++----
-> ?1 file changed, 25 insertions(+), 4 deletions(-)
+> ?arch/arm64/kvm/arm.c?????? |? 7 +------
+> ?arch/mips/kvm/mips.c?????? |? 7 +------
+> ?arch/powerpc/kvm/book3s.c? |? 2 +-
+> ?arch/powerpc/kvm/e500.c??? |? 2 +-
+> ?arch/powerpc/kvm/e500mc.c? |? 2 +-
+> ?arch/powerpc/kvm/powerpc.c |? 5 -----
+> ?arch/riscv/kvm/main.c????? |? 7 +------
+> ?arch/s390/kvm/kvm-s390.c?? |? 7 +------
+> ?arch/x86/kvm/svm/svm.c???? |? 4 ++--
+> ?arch/x86/kvm/vmx/vmx.c???? |? 4 ++--
+> ?arch/x86/kvm/x86.c???????? |? 5 -----
+> ?include/linux/kvm_host.h?? |? 4 +---
+> ?virt/kvm/kvm_main.c??????? | 24 +-----------------------
+> ?13 files changed, 13 insertions(+), 67 deletions(-)
 
-Reviewed-by: Eric Farman <farman@linux.ibm.com>
-
+Reviewed-by: Eric Farman <farman@linux.ibm.com>	# s390
 
