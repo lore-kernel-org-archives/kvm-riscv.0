@@ -1,10 +1,11 @@
 From: Eric Farman <farman@linux.ibm.com>
-Date: Mon, 07 Nov 2022 12:56:51 -0500
-Subject: [PATCH 04/44] KVM: Teardown VFIO ops earlier in kvm_exit()
-In-Reply-To: <20221102231911.3107438-5-seanjc@google.com>
+Date: Mon, 07 Nov 2022 12:57:17 -0500
+Subject: [PATCH 05/44] KVM: s390: Unwind kvm_arch_init()
+ piece-by-piece() if a step fails
+In-Reply-To: <20221102231911.3107438-6-seanjc@google.com>
 References: <20221102231911.3107438-1-seanjc@google.com>
-	 <20221102231911.3107438-5-seanjc@google.com>
-Message-ID: <5e44854b2781a0be6fae5c82645ac64ef9b5dccf.camel@linux.ibm.com>
+	 <20221102231911.3107438-6-seanjc@google.com>
+Message-ID: <1386ccd1ff60cb8e4af80fbb294160a8d7cc3b5b.camel@linux.ibm.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -12,29 +13,27 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 On Wed, 2022-11-02 at 23:18 +0000, Sean Christopherson wrote:
-> Move the call to kvm_vfio_ops_exit() further up kvm_exit() to try and
-> bring some amount of symmetry to the setup order in kvm_init(), and
-> more
-> importantly so that the arch hooks are invoked dead last by
-> kvm_exit().
-> This will allow arch code to move away from the arch hooks without
-> any
-> change in ordering between arch code and common code in kvm_exit().
-> 
-> That kvm_vfio_ops_exit() is called last appears to be 100%
-> arbitrary.? It
-> was bolted on after the fact by commit 571ee1b68598 ("kvm: vfio: fix
-> unregister kvm_device_ops of vfio").? The nullified
-> kvm_device_ops_table
-> is also local to kvm_main.c and is used only when there are active
-> VMs,
-> so unless arch code is doing something truly bizarre, nullifying the
-> table earlier in kvm_exit() is little more than a nop.
+> In preparation for folding kvm_arch_hardware_setup() into
+> kvm_arch_init(),
+> unwind initialization one step at a time instead of simply calling
+> kvm_arch_exit().? Using kvm_arch_exit() regardless of which
+> initialization
+> step failed relies on all affected state playing nice with being
+> undone
+> even if said state wasn't first setup.? That holds true for state
+> that is
+> currently configured by kvm_arch_init(), but not for state that's
+> handled
+> by kvm_arch_hardware_setup(), e.g. calling
+> gmap_unregister_pte_notifier()
+> without first registering a notifier would result in list corruption
+> due
+> to attempting to delete an entry that was never added to the list.
 > 
 > Signed-off-by: Sean Christopherson <seanjc@google.com>
 > ---
-> ?virt/kvm/kvm_main.c | 2 +-
-> ?1 file changed, 1 insertion(+), 1 deletion(-)
+> ?arch/s390/kvm/kvm-s390.c | 21 ++++++++++++++-------
+> ?1 file changed, 14 insertions(+), 7 deletions(-)
 
 Reviewed-by: Eric Farman <farman@linux.ibm.com>
 
