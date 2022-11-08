@@ -1,60 +1,45 @@
 From: Will Deacon <will@kernel.org>
-Date: Tue, 8 Nov 2022 15:33:57 +0000
-Subject: [PATCH kvmtool 0/6] RISC-V Svinval, Zihintpause, anad Zicbom
- support
-In-Reply-To: <CAAhSdy0KcB9_0zh9eHECW1PLN+zAAEpyL5zPWT4VB_8fQ5+4Yw@mail.gmail.com>
+Date: Tue,  8 Nov 2022 17:38:38 +0000
+Subject: [PATCH kvmtool 0/6] RISC-V Svinval, Zihintpause, anad Zicbom support
+In-Reply-To: <20221018140854.69846-1-apatel@ventanamicro.com>
 References: <20221018140854.69846-1-apatel@ventanamicro.com>
- <CAAhSdy0KcB9_0zh9eHECW1PLN+zAAEpyL5zPWT4VB_8fQ5+4Yw@mail.gmail.com>
-Message-ID: <20221108153355.GA23117@willie-the-truck>
+Message-ID: <166792166159.1914852.10387116696255694350.b4-ty@kernel.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Nov 07, 2022 at 05:50:16PM +0530, Anup Patel wrote:
-> On Tue, Oct 18, 2022 at 7:39 PM Anup Patel <apatel@ventanamicro.com> wrote:
-> >
-> > The latest Linux-6.1-rc1 has support for Svinval, Zihintpause and Zicbom
-> > extensions in KVM RISC-V. This series adds corresponding changes in KVMTOOL
-> > to allow Guest/VM use these new RISC-V extensions.
-> >
-> > These patches can also be found in the riscv_svinval_zihintpause_zicbom_v1
-> > branch at: https://github.com/avpatel/kvmtool.git
-> >
-> > Andrew Jones (2):
-> >   riscv: Move reg encoding helpers to kvm-cpu-arch.h
-> >   riscv: Add Zicbom extension support
-> >
-> > Anup Patel (3):
-> >   Update UAPI headers based on Linux-6.1-rc1
-> >   riscv: Add Svinval extension support
-> >   riscv: Add --disable-<xyz> options to allow user disable extensions
-> >
-> > Mayuresh Chitale (1):
-> >   riscv: Add zihintpause extension support
-> >
-> >  arm/aarch64/include/asm/kvm.h       |  6 ++++--
-> >  include/linux/kvm.h                 |  1 +
-> >  include/linux/virtio_blk.h          | 19 +++++++++++++++++++
-> >  include/linux/virtio_net.h          | 14 +++++++-------
-> >  include/linux/virtio_ring.h         | 16 +++++++++++-----
-> >  riscv/fdt.c                         | 23 +++++++++++++++++++++--
-> >  riscv/include/asm/kvm.h             |  4 ++++
-> >  riscv/include/kvm/kvm-config-arch.h | 18 +++++++++++++++++-
-> >  riscv/include/kvm/kvm-cpu-arch.h    | 19 +++++++++++++++++++
-> >  riscv/kvm-cpu.c                     | 16 ----------------
-> >  10 files changed, 103 insertions(+), 33 deletions(-)
-> >
-> > --
-> > 2.34.1
-> >
+On Tue, 18 Oct 2022 19:38:48 +0530, Anup Patel wrote:
+> The latest Linux-6.1-rc1 has support for Svinval, Zihintpause and Zicbom
+> extensions in KVM RISC-V. This series adds corresponding changes in KVMTOOL
+> to allow Guest/VM use these new RISC-V extensions.
 > 
-> Friendly ping ?
+> These patches can also be found in the riscv_svinval_zihintpause_zicbom_v1
+> branch at: https://github.com/avpatel/kvmtool.git
 > 
-> Please check this series.
+> [...]
 
-It's all a random sequence of letters to me, so I guess I'll apply it :)
+Applied to kvmtool (master), thanks!
 
+[1/6] Update UAPI headers based on Linux-6.1-rc1
+      https://git.kernel.org/will/kvmtool/c/76dfc0cf2d6b
+[2/6] riscv: Add Svinval extension support
+      https://git.kernel.org/will/kvmtool/c/ac16e9430627
+[3/6] riscv: Add zihintpause extension support
+      https://git.kernel.org/will/kvmtool/c/23a8ed907331
+[4/6] riscv: Move reg encoding helpers to kvm-cpu-arch.h
+      https://git.kernel.org/will/kvmtool/c/b721ac0ad88a
+[5/6] riscv: Add Zicbom extension support
+      https://git.kernel.org/will/kvmtool/c/798398f40a16
+[6/6] riscv: Add --disable-<xyz> options to allow user disable extensions
+      https://git.kernel.org/will/kvmtool/c/e17d182ad3f7
+
+Cheers,
+-- 
 Will
+
+https://fixes.arm64.dev
+https://next.arm64.dev
+https://will.arm64.dev
 
