@@ -1,118 +1,52 @@
-From: Robert Hoo <robert.hu@linux.intel.com>
-Date: Thu, 10 Nov 2022 15:31:42 +0800
-Subject: [PATCH 32/44] KVM: x86: Unify pr_fmt to use module name for all
- KVM modules
-In-Reply-To: <20221102231911.3107438-33-seanjc@google.com>
+From: Sean Christopherson <seanjc@google.com>
+Date: Thu, 10 Nov 2022 16:49:29 +0000
+Subject: [PATCH 37/44] KVM: Rename and move CPUHP_AP_KVM_STARTING to
+ ONLINE section
+In-Reply-To: <301a8a33a5cbe5b4fd3efe03b05bb8410a46e9f5.camel@linux.intel.com>
 References: <20221102231911.3107438-1-seanjc@google.com>
-	 <20221102231911.3107438-33-seanjc@google.com>
-Message-ID: <ff0e8701d02ee161d064f92c8b742c2cc061bce0.camel@linux.intel.com>
+ <20221102231911.3107438-38-seanjc@google.com>
+ <301a8a33a5cbe5b4fd3efe03b05bb8410a46e9f5.camel@linux.intel.com>
+Message-ID: <Y20rmaU14rZFFCZI@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 2022-11-02 at 23:18 +0000, Sean Christopherson wrote:
-> Define pr_fmt using KBUILD_MODNAME for all KVM x86 code so that
-> printks
-> use consistent formatting across common x86, Intel, and AMD code.  In
-> addition to providing consistent print formatting, using
-> KBUILD_MODNAME,
-> e.g. kvm_amd and kvm_intel, allows referencing SVM and VMX (and SEV
-> and
-> SGX and ...) as technologies without generating weird messages, and
-> without causing naming conflicts with other kernel code, e.g. "SEV:
-> ",
-> "tdx: ", "sgx: " etc.. are all used by the kernel for non-KVM
-> subsystems.
+On Thu, Nov 10, 2022, Robert Hoo wrote:
+> > -static int kvm_starting_cpu(unsigned int cpu)
+> > +static int kvm_online_cpu(unsigned int cpu)
+> >  {
+> > +	int ret = 0;
+> > +
+> >  	raw_spin_lock(&kvm_count_lock);
+> > -	if (kvm_usage_count)
+> > +	/*
+> > +	 * Abort the CPU online process if hardware virtualization
+> > cannot
+> > +	 * be enabled. Otherwise running VMs would encounter
+> > unrecoverable
+> > +	 * errors when scheduled to this CPU.
+> > +	 */
+> > +	if (kvm_usage_count) {
+> > +		WARN_ON_ONCE(atomic_read(&hardware_enable_failed));
+> > +
+> >  		hardware_enable_nolock(NULL);
+> > +		if (atomic_read(&hardware_enable_failed)) {
+> > +			atomic_set(&hardware_enable_failed, 0);
 > 
-> Opportunistically move away from printk() for prints that need to be
-> modified anyways, e.g. to drop a manual "kvm: " prefix.
-> 
-> Opportunistically convert a few SGX WARNs that are similarly modified
-> to
-> WARN_ONCE; in the very unlikely event that the WARNs fire, odds are
-> good
-> that they would fire repeatedly and spam the kernel log without
-> providing
-> unique information in each print.
-> 
-> Note, defining pr_fmt yields undesirable results for code that uses
-> KVM's
-> printk wrappers, e.g. vcpu_unimpl().  But, that's a pre-existing
-> problem
-> as SVM/kvm_amd already defines a pr_fmt, and thankfully use of KVM's
-> wrappers is relatively limited in KVM x86 code.
-> 
-> Signed-off-by: Sean Christopherson <seanjc@google.com>
-> ---
->  arch/x86/kvm/cpuid.c            |  1 +
->  arch/x86/kvm/debugfs.c          |  2 ++
->  arch/x86/kvm/emulate.c          |  1 +
->  arch/x86/kvm/hyperv.c           |  1 +
->  arch/x86/kvm/i8254.c            |  4 ++--
->  arch/x86/kvm/i8259.c            |  4 +++-
->  arch/x86/kvm/ioapic.c           |  1 +
->  arch/x86/kvm/irq.c              |  1 +
->  arch/x86/kvm/irq_comm.c         |  7 +++---
->  arch/x86/kvm/kvm_onhyperv.c     |  1 +
->  arch/x86/kvm/lapic.c            |  8 +++----
->  arch/x86/kvm/mmu/mmu.c          |  6 ++---
->  arch/x86/kvm/mmu/page_track.c   |  1 +
->  arch/x86/kvm/mmu/spte.c         |  4 ++--
->  arch/x86/kvm/mmu/spte.h         |  4 ++--
->  arch/x86/kvm/mmu/tdp_iter.c     |  1 +
->  arch/x86/kvm/mmu/tdp_mmu.c      |  1 +
->  arch/x86/kvm/mtrr.c             |  1 +
->  arch/x86/kvm/pmu.c              |  1 +
->  arch/x86/kvm/smm.c              |  1 +
->  arch/x86/kvm/svm/avic.c         |  2 +-
->  arch/x86/kvm/svm/nested.c       |  2 +-
->  arch/x86/kvm/svm/pmu.c          |  2 ++
->  arch/x86/kvm/svm/sev.c          |  1 +
->  arch/x86/kvm/svm/svm.c          | 10 ++++-----
->  arch/x86/kvm/svm/svm_onhyperv.c |  1 +
->  arch/x86/kvm/svm/svm_onhyperv.h |  4 ++--
->  arch/x86/kvm/vmx/evmcs.c        |  1 +
->  arch/x86/kvm/vmx/evmcs.h        |  4 +---
->  arch/x86/kvm/vmx/nested.c       |  3 ++-
->  arch/x86/kvm/vmx/pmu_intel.c    |  5 +++--
->  arch/x86/kvm/vmx/posted_intr.c  |  2 ++
->  arch/x86/kvm/vmx/sgx.c          |  5 +++--
->  arch/x86/kvm/vmx/vmcs12.c       |  1 +
->  arch/x86/kvm/vmx/vmx.c          | 40 ++++++++++++++++---------------
-> --
->  arch/x86/kvm/vmx/vmx_ops.h      |  4 ++--
->  arch/x86/kvm/x86.c              | 28 ++++++++++++-----------
->  arch/x86/kvm/xen.c              |  1 +
->  38 files changed, 97 insertions(+), 70 deletions(-)
-> 
-After this patch set, still find some printk()s left in arch/x86/kvm/*,
-consider clean all of them up?
+> I see other places using this hardware_enable_failed with atomic_inc(),
+> should here use atomic_dec() instead of straightly set to 0?
 
-arch/x86/kvm/lapic.c:1215:		printk(KERN_ERR "TODO:
-unsupported delivery mode %x\n",
-arch/x86/kvm/lapic.c:1506:		printk(KERN_ERR "Local APIC
-read with len = %x, "
-arch/x86/kvm/lapic.c:2586:		printk(KERN_ERR "malloc apic
-regs error for vcpu %x\n",
-arch/x86/kvm/ioapic.h:95:		printk(KERN_EMERG "assertion
-failed %s: %d: %s\n",	\
-arch/x86/kvm/ioapic.c:614:		printk(KERN_WARNING "ioapic:
-wrong length %d\n", len);
-arch/x86/kvm/ioapic.c:641:		printk(KERN_WARNING "ioapic:
-Unsupported size %d\n", len);
-arch/x86/kvm/mmu/mmu.c:1652:			printk(KERN_ERR "%s: %p
-%llx\n", __func__,
-arch/x86/kvm/svm/svm.c:3450:		printk(KERN_ERR "%s: unexpected
-exit_int_info 0x%x "
-arch/x86/kvm/vmx/posted_intr.c:322:				printk(
-KERN_INFO
-arch/x86/kvm/vmx/posted_intr.c:343:			printk(KERN_INF
-O "%s: failed to update PI IRTE\n",
-arch/x86/kvm/vmx/vmx.c:6507:			printk(KERN_WARNING
-"%s: Breaking out of NMI-blocked "
-arch/x86/kvm/x86.c:13027:		printk(KERN_INFO "irq bypass
-consumer (token %p) unregistration"
+Meh, both options are flawed.  E.g. if hardware_enable_failed was left dangling
+(the WARN above), then atomic_dec() won't remedy the problem and KVM will reject
+onlining CPUs indefinitely.  Forcing the atomic back to '0' will remedy that
+particular issue, but could lead to problems if there are other bugs.
 
+> Though here is embraced by spin_lock, hardware_enable_nolock() can be
+> invoked in other places in parallel?
+
+Only because of a KVM bug, which gets fixed in the next patch:
+
+  KVM: Disable CPU hotplug during hardware enabling
 
