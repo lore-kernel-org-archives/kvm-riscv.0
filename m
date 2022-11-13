@@ -1,44 +1,34 @@
-From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Date: Sun, 13 Nov 2022 14:52:54 +0100
-Subject: [PATCH] RISC-V: KVM: Simplify kvm_arch_prepare_memory_region()
-Message-ID: <c5e918630ba37273d7b0f4e4dbb6f90d4c2f321d.1668347565.git.christophe.jaillet@wanadoo.fr>
+From: Conor Dooley <conor@kernel.org>
+Date: Sun, 13 Nov 2022 22:24:30 +0000
+Subject: [PATCH 2/9] RISC-V: Add Zicboz detection and block size parsing
+In-Reply-To: <Y17i8sRf4KXLFkrK@spud>
+References: <20221027130247.31634-1-ajones@ventanamicro.com>
+ <20221027130247.31634-3-ajones@ventanamicro.com>
+ <Y17i8sRf4KXLFkrK@spud>
+Message-ID: <Y3FuniwXbN/hRNJj@spud>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-In kvm_arch_prepare_memory_region(), if no error occurs, a spin_lock()/
-spin_unlock() call can be avoided.
+On Sun, Oct 30, 2022 at 08:47:46PM +0000, Conor Dooley wrote:
+> On Thu, Oct 27, 2022 at 03:02:40PM +0200, Andrew Jones wrote:
 
-Switch to kvm_riscv_gstage_iounmap() that is the same as the current code,
-but with a better semantic.
-It also embeds the locking logic. So it is avoided if ret == 0.
+> > diff --git a/arch/riscv/kernel/cpu.c b/arch/riscv/kernel/cpu.c
+> > index fa427bdcf773..bf969218f609 100644
+> > --- a/arch/riscv/kernel/cpu.c
+> > +++ b/arch/riscv/kernel/cpu.c
+> > @@ -144,6 +144,7 @@ static struct riscv_isa_ext_data isa_ext_arr[] = {
+> >  	__RISCV_ISA_EXT_DATA(svpbmt, RISCV_ISA_EXT_SVPBMT),
+> >  	__RISCV_ISA_EXT_DATA(zicbom, RISCV_ISA_EXT_ZICBOM),
+> >  	__RISCV_ISA_EXT_DATA(zihintpause, RISCV_ISA_EXT_ZIHINTPAUSE),
+> > +	__RISCV_ISA_EXT_DATA(zicboz, RISCV_ISA_EXT_ZICBOZ),
 
-Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
----
-I don't use cross-compiler, so this patch is NOT even compile tested.
----
- arch/riscv/kvm/mmu.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+Forgot to mention it at the time, but given Palmer submitted a resort of
+this in canonical order recently - seems like zicboz should sort before
+zihintpause?
 
-diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
-index 3620ecac2fa1..c8834e463763 100644
---- a/arch/riscv/kvm/mmu.c
-+++ b/arch/riscv/kvm/mmu.c
-@@ -537,10 +537,8 @@ int kvm_arch_prepare_memory_region(struct kvm *kvm,
- 	if (change == KVM_MR_FLAGS_ONLY)
- 		goto out;
- 
--	spin_lock(&kvm->mmu_lock);
- 	if (ret)
--		gstage_unmap_range(kvm, base_gpa, size, false);
--	spin_unlock(&kvm->mmu_lock);
-+		kvm_riscv_gstage_iounmap(kvm, base_gpa, size);
- 
- out:
- 	mmap_read_unlock(current->mm);
--- 
-2.34.1
+> >  	__RISCV_ISA_EXT_DATA("", RISCV_ISA_EXT_MAX),
 
 
