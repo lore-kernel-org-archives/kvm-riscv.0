@@ -1,43 +1,230 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Mon, 14 Nov 2022 09:29:53 +0100
-Subject: [PATCH 2/9] RISC-V: Add Zicboz detection and block size parsing
-In-Reply-To: <Y3FuniwXbN/hRNJj@spud>
-References: <20221027130247.31634-1-ajones@ventanamicro.com>
- <20221027130247.31634-3-ajones@ventanamicro.com>
- <Y17i8sRf4KXLFkrK@spud>
- <Y3FuniwXbN/hRNJj@spud>
-Message-ID: <20221114082953.pidqz5icx2vqkku3@kamzik>
+From: Vitaly Kuznetsov <vkuznets@redhat.com>
+Date: Tue, 15 Nov 2022 10:30:14 +0100
+Subject: [PATCH 10/44] KVM: VMX: Clean up eVMCS enabling if KVM
+ initialization fails
+In-Reply-To: <Y22nrQ7aziK0NMOE@google.com>
+References: <20221102231911.3107438-1-seanjc@google.com>
+ <20221102231911.3107438-11-seanjc@google.com>
+ <87mt98qfi2.fsf@ovpn-194-252.brq.redhat.com> <Y22nrQ7aziK0NMOE@google.com>
+Message-ID: <87sfikmuop.fsf@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sun, Nov 13, 2022 at 10:24:30PM +0000, Conor Dooley wrote:
-> On Sun, Oct 30, 2022 at 08:47:46PM +0000, Conor Dooley wrote:
-> > On Thu, Oct 27, 2022 at 03:02:40PM +0200, Andrew Jones wrote:
-> 
-> > > diff --git a/arch/riscv/kernel/cpu.c b/arch/riscv/kernel/cpu.c
-> > > index fa427bdcf773..bf969218f609 100644
-> > > --- a/arch/riscv/kernel/cpu.c
-> > > +++ b/arch/riscv/kernel/cpu.c
-> > > @@ -144,6 +144,7 @@ static struct riscv_isa_ext_data isa_ext_arr[] = {
-> > >  	__RISCV_ISA_EXT_DATA(svpbmt, RISCV_ISA_EXT_SVPBMT),
-> > >  	__RISCV_ISA_EXT_DATA(zicbom, RISCV_ISA_EXT_ZICBOM),
-> > >  	__RISCV_ISA_EXT_DATA(zihintpause, RISCV_ISA_EXT_ZIHINTPAUSE),
-> > > +	__RISCV_ISA_EXT_DATA(zicboz, RISCV_ISA_EXT_ZICBOZ),
-> 
-> Forgot to mention it at the time, but given Palmer submitted a resort of
-> this in canonical order recently - seems like zicboz should sort before
-> zihintpause?
+Sean Christopherson <seanjc@google.com> writes:
 
-Will do for v2. Sorry for the delay on v2. I need to finish some other
-stuff before I can get back to this.
+> On Thu, Nov 03, 2022, Vitaly Kuznetsov wrote:
+>> Sean Christopherson <seanjc@google.com> writes:
+>> > +	/*
+>> > +	 * Reset everything to support using non-enlightened VMCS access later
+>> > +	 * (e.g. when we reload the module with enlightened_vmcs=0)
+>> > +	 */
+>> > +	for_each_online_cpu(cpu) {
+>> > +		vp_ap =	hv_get_vp_assist_page(cpu);
+>> > +
+>> > +		if (!vp_ap)
+>> > +			continue;
+>> > +
+>> > +		vp_ap->nested_control.features.directhypercall = 0;
+>> > +		vp_ap->current_nested_vmcs = 0;
+>> > +		vp_ap->enlighten_vmentry = 0;
+>> > +	}
+>> 
+>> Unrelated to your patch but while looking at this code I got curious
+>> about why don't we need a protection against CPU offlining here. Turns
+>> out that even when we offline a CPU, its VP assist page remains
+>> allocated (see hv_cpu_die()), we just write '0' to the MSR and thus
+>
+> Heh, "die".  Hyper-V is quite dramatic.
+>
+>> accessing the page is safe. The consequent hv_cpu_init(), however, does
+>> not restore VP assist page when it's already allocated:
+>> 
+>> # rdmsr -p 24 0x40000073
+>> 10212f001
+>> # echo 0 > /sys/devices/system/cpu/cpu24/online 
+>> # echo 1 > /sys/devices/system/cpu/cpu24/online 
+>> # rdmsr -p 24 0x40000073
+>> 0
+>> 
+>> The culprit is commit e5d9b714fe402 ("x86/hyperv: fix root partition
+>> faults when writing to VP assist page MSR"). A patch is inbound.
+>> 
+>> 'hv_root_partition' case is different though. We do memunmap() and reset
+>> VP assist page to zero so it is theoretically possible we're going to
+>> clash. Unless I'm missing some obvious reason why module unload can't
+>> coincide with CPU offlining, we may be better off surrounding this with
+>> cpus_read_lock()/cpus_read_unlock(). 
+>
+> I finally see what you're concerned about.  If a CPU goes offline and its assist
+> page is unmapped, zeroing out the nested/eVMCS stuff will fault.
+>
+> I think the real problem is that the purging of the eVMCS is in the wrong place.
+> Move the clearing to vmx_hardware_disable() and then the CPU hotplug bug goes
+> away once KVM disables hotplug during hardware enabling/disable later in the series.
+> There's no need to wait until module exit, e.g. it's not like it costs much to
+> clear a few variables, and IIUC the state is used only when KVM is actively using
+> VMX/eVMCS.
+>
+> However, I believe there's a second bug.  KVM's CPU online hook is called before
+> Hyper-V's online hook (CPUHP_AP_ONLINE_DYN).  Before this series, which moves KVM's
+> hook from STARTING to ONLINE, KVM's hook is waaaay before Hyper-V's.  That means
+> that hv_cpu_init()'s allocation of the VP assist page will come _after_ KVM's
+> check in vmx_hardware_enable()
+>
+> 	/*
+> 	 * This can happen if we hot-added a CPU but failed to allocate
+> 	 * VP assist page for it.
+> 	 */
+> 	if (static_branch_unlikely(&enable_evmcs) &&
+> 	    !hv_get_vp_assist_page(cpu))
+> 		return -EFAULT;
+>
+> I.e. CPU hotplug will never work if KVM is running VMs as a Hyper-V guest.  I bet
+> you can repro by doing a SUSPEND+RESUME.
+>
+> Can you try to see if that's actually a bug?  If so, the only sane fix seems to
+> be to add a dedicated ONLINE action for Hyper-V.  
 
-Thanks,
-drew
+It seems we can't get away without a dedicated stage for Hyper-V anyway,
+e.g. see our discussion with Michael:
 
-> 
-> > >  	__RISCV_ISA_EXT_DATA("", RISCV_ISA_EXT_MAX),
-> 
+https://lore.kernel.org/linux-hyperv/878rkqr7ku.fsf at ovpn-192-136.brq.redhat.com/
+
+All these issues are more or less "theoretical" as there's no real CPU
+hotplug on Hyper-V/Azure. Yes, it is possible to trigger problems by
+doing CPU offline/online but I don't see how this may come handy outside
+of testing envs.
+
+> Per patch
+>
+>   KVM: Rename and move CPUHP_AP_KVM_STARTING to ONLINE section
+>
+> from this series, CPUHP_AP_KVM_ONLINE needs to be before CPUHP_AP_SCHED_WAIT_EMPTY
+> to ensure there are no tasks, i.e. no vCPUs, running on the to-be-unplugged CPU.
+>
+> Back to the original bug, proposed fix is below.  The other advantage of moving
+> the reset to hardware disabling is that the "cleanup" is just disabling the static
+> key, and at that point can simply be deleted as there's no need to disable the
+> static key when kvm-intel is unloaded since kvm-intel owns the key.  I.e. this
+> patch (that we're replying to) would get replaced with a patch to delete the
+> disabling of the static key.
+>
+
+From a quick glance looks good to me, I'll try to find some time to work
+on this issue. I will likely end up proposing a dedicated CPU hotplug
+stage for Hyper-V (which needs to happen before KVM's
+CPUHP_AP_KVM_ONLINE on CPU hotplug and after on unplug) anyway.
+
+Thanks for looking into this!
+
+> --
+> From: Sean Christopherson <seanjc@google.com>
+> Date: Thu, 10 Nov 2022 17:28:08 -0800
+> Subject: [PATCH] KVM: VMX: Reset eVMCS controls in VP assist page during
+>  hardware disabling
+>
+> Reset the eVMCS controls in the per-CPU VP assist page during hardware
+> disabling instead of waiting until kvm-intel's module exit.  The controls
+> are activated if and only if KVM creates a VM, i.e. don't need to be
+> reset if hardware is never enabled.
+>
+> Doing the reset during hardware disabling will naturally fix a potential
+> NULL pointer deref bug once KVM disables CPU hotplug while enabling and
+> disabling hardware (which is necessary to fix a variety of bugs).  If the
+> kernel is running as the root partition, the VP assist page is unmapped
+> during CPU hot unplug, and so KVM's clearing of the eVMCS controls needs
+> to occur with CPU hot(un)plug disabled, otherwise KVM could attempt to
+> write to a CPU's VP assist page after it's unmapped.
+>
+> Reported-by: Vitaly Kuznetsov <vkuznets@redhat.com>
+> Signed-off-by: Sean Christopherson <seanjc@google.com>
+> ---
+>  arch/x86/kvm/vmx/vmx.c | 50 +++++++++++++++++++++++++-----------------
+>  1 file changed, 30 insertions(+), 20 deletions(-)
+>
+> diff --git a/arch/x86/kvm/vmx/vmx.c b/arch/x86/kvm/vmx/vmx.c
+> index aca88524fd1e..ae13aa3e8a1d 100644
+> --- a/arch/x86/kvm/vmx/vmx.c
+> +++ b/arch/x86/kvm/vmx/vmx.c
+> @@ -552,6 +552,33 @@ static int hv_enable_direct_tlbflush(struct kvm_vcpu *vcpu)
+>  	return 0;
+>  }
+>  
+> +static void hv_reset_evmcs(void)
+> +{
+> +	struct hv_vp_assist_page *vp_ap;
+> +
+> +	if (!static_branch_unlikely(&enable_evmcs))
+> +		return;
+> +
+> +	/*
+> +	 * KVM should enable eVMCS if and only if all CPUs have a VP assist
+> +	 * page, and should reject CPU onlining if eVMCS is enabled the CPU
+> +	 * doesn't have a VP assist page allocated.
+> +	 */
+> +	vp_ap = hv_get_vp_assist_page(smp_processor_id());
+> +	if (WARN_ON_ONCE(!vp_ap))
+> +		return;
+> +
+> +	/*
+> +	 * Reset everything to support using non-enlightened VMCS access later
+> +	 * (e.g. when we reload the module with enlightened_vmcs=0)
+> +	 */
+> +	vp_ap->nested_control.features.directhypercall = 0;
+> +	vp_ap->current_nested_vmcs = 0;
+> +	vp_ap->enlighten_vmentry = 0;
+> +}
+> +
+> +#else /* IS_ENABLED(CONFIG_HYPERV) */
+> +static void hv_reset_evmcs(void) {}
+>  #endif /* IS_ENABLED(CONFIG_HYPERV) */
+>  
+>  /*
+> @@ -2497,6 +2524,8 @@ static void vmx_hardware_disable(void)
+>  	if (cpu_vmxoff())
+>  		kvm_spurious_fault();
+>  
+> +	hv_reset_evmcs();
+> +
+>  	intel_pt_handle_vmx(0);
+>  }
+>  
+> @@ -8463,27 +8492,8 @@ static void vmx_exit(void)
+>  	kvm_exit();
+>  
+>  #if IS_ENABLED(CONFIG_HYPERV)
+> -	if (static_branch_unlikely(&enable_evmcs)) {
+> -		int cpu;
+> -		struct hv_vp_assist_page *vp_ap;
+> -		/*
+> -		 * Reset everything to support using non-enlightened VMCS
+> -		 * access later (e.g. when we reload the module with
+> -		 * enlightened_vmcs=0)
+> -		 */
+> -		for_each_online_cpu(cpu) {
+> -			vp_ap =	hv_get_vp_assist_page(cpu);
+> -
+> -			if (!vp_ap)
+> -				continue;
+> -
+> -			vp_ap->nested_control.features.directhypercall = 0;
+> -			vp_ap->current_nested_vmcs = 0;
+> -			vp_ap->enlighten_vmentry = 0;
+> -		}
+> -
+> +	if (static_branch_unlikely(&enable_evmcs))
+>  		static_branch_disable(&enable_evmcs);
+> -	}
+>  #endif
+>  	vmx_cleanup_l1d_flush();
+>  
+>
+> base-commit: 5f47ba6894477dfbdc5416467a25fb7acb47d404
+
+-- 
+Vitaly
+
 
