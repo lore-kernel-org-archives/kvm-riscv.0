@@ -1,12 +1,14 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Wed, 16 Nov 2022 15:52:26 +0000
-Subject: [PATCH 13/44] KVM: x86: Serialize vendor module initialization
- (hardware setup)
-In-Reply-To: <e8e3b4c7bf3bd733c626618b57f9bf2f1835770e.camel@intel.com>
+Date: Wed, 16 Nov 2022 17:11:18 +0000
+Subject: [PATCH 38/44] KVM: Disable CPU hotplug during hardware enabling
+In-Reply-To: <95ca433349eca601bdd2b16d70f59ba8e56d8e3f.camel@intel.com>
 References: <20221102231911.3107438-1-seanjc@google.com>
- <20221102231911.3107438-14-seanjc@google.com>
- <e8e3b4c7bf3bd733c626618b57f9bf2f1835770e.camel@intel.com>
-Message-ID: <Y3UHOg7E0iRFpjml@google.com>
+ <20221102231911.3107438-39-seanjc@google.com>
+ <88e920944de70e7d69a98f74005b49c59b5aaa3b.camel@intel.com>
+ <b198fe971cecd301f0c7c66028cfd71dd7ba7e62.camel@intel.com>
+ <Y3PzhANShVlTXVg1@google.com>
+ <95ca433349eca601bdd2b16d70f59ba8e56d8e3f.camel@intel.com>
+Message-ID: <Y3UZtoIidMyE8qVz@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -14,65 +16,105 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 On Wed, Nov 16, 2022, Huang, Kai wrote:
-> On Wed, 2022-11-02 at 23:18 +0000, Sean Christopherson wrote:
-> > Acquire a new mutex, vendor_module_lock, in kvm_x86_vendor_init() while
-> > doing hardware setup to ensure that concurrent calls are fully serialized.
-> > KVM rejects attempts to load vendor modules if a different module has
-> > already been loaded, but doesn't handle the case where multiple vendor
-> > modules are loaded at the same time, and module_init() doesn't run under
-> > the global module_mutex.
+> On Tue, 2022-11-15 at 20:16 +0000, Sean Christopherson wrote:
+> > On Thu, Nov 10, 2022, Huang, Kai wrote:
+> > > On Thu, 2022-11-10 at 01:33 +0000, Huang, Kai wrote:
+> > > Hmm.. I wasn't thinking thoroughly.  I forgot CPU compatibility check also
+> > > happens on all online cpus when loading KVM.  For this case, IRQ is disabled and
+> > > cpu_active() is true.  For the hotplug case, IRQ is enabled but  cpu_active() is
+> > > false.
 > > 
-> > Note, in practice, this is likely a benign bug as no platform exists that
-> > supports both SVM and VMX, i.e. barring a weird VM setup, one of the
-> > vendor modules is guaranteed to fail a support check before modifying
-> > common KVM state.
-> > 
-> > Alternatively, KVM could perform an atomic CMPXCHG on .hardware_enable,
-> > but that comes with its own ugliness as it would require setting
-> > .hardware_enable before success is guaranteed, e.g. attempting to load
-> > the "wrong" could result in spurious failure to load the "right" module.
-> > 
-> > Introduce a new mutex as using kvm_lock is extremely deadlock prone due
-> > to kvm_lock being taken under cpus_write_lock(), and in the future, under
-> > under cpus_read_lock().  Any operation that takes cpus_read_lock() while
-> > holding kvm_lock would potentially deadlock, e.g. kvm_timer_init() takes
-> > cpus_read_lock() to register a callback.  In theory, KVM could avoid
-> > such problematic paths, i.e. do less setup under kvm_lock, but avoiding
-> > all calls to cpus_read_lock() is subtly difficult and thus fragile.  E.g.
-> > updating static calls also acquires cpus_read_lock().
-> > 
-> > Inverting the lock ordering, i.e. always taking kvm_lock outside
-> > cpus_read_lock(), is not a viable option, e.g. kvm_online_cpu() takes
-> > kvm_lock and is called under cpus_write_lock().
+> > Actually, you're right (and wrong).  You're right in that the WARN is flawed.  And
+> > the reason for that is because you're wrong about the hotplug case.  In this version
+> > of things, the compatibility checks are routed through hardware enabling, i.e. this
+> > flow is used only when loading KVM.  This helper should only be called via SMP function
+> > call, which means that IRQs should always be disabled.
 > 
-> "kvm_online_cpu() takes kvm_lock and is called under cpus_write_lock()" hasn't
-> happened yet.
-
-Doh, right.  Thanks!
-
-> > The lockdep splat below is dependent on future patches to take
-> > cpus_read_lock() in hardware_enable_all(), but as above, deadlock is
-> > already is already possible.
+> Did you mean below code change in later patch "[PATCH 39/44] KVM: Drop
+> kvm_count_lock and instead protect kvm_usage_count with kvm_lock"?
 > 
-> IIUC kvm_lock by design is supposed to protect vm_list, thus IMHO naturally it
-> doesn't fit to protect multiple vendor module loading.
+>  	/*
+>  	 * Abort the CPU online process if hardware virtualization cannot
+>  	 * be enabled. Otherwise running VMs would encounter unrecoverable
+> @@ -5039,13 +5039,16 @@ static int kvm_online_cpu(unsigned int cpu)
+>  	if (kvm_usage_count) {
+>  		WARN_ON_ONCE(atomic_read(&hardware_enable_failed));
+>  
+> +		local_irq_save(flags);
+>  		hardware_enable_nolock(NULL);
+> +		local_irq_restore(flags);
 
-A different way to look at it is that kvm_lock protects anything that is global to
-all of KVM, and it just so happens that lists and counters of VMs are the only
-such resources (lumping in the usage in vm_uevent_notify_change() and the future
-usage to protect kvm_usage_count).
+Sort of.  What I was saying is that in this v1, the compatibility checks that are
+done during harware enabling are initiated from vendor code, i.e. VMX and SVM call
+{svm,vmx}_check_processor_compat() directly.  As a result, the compat checks that
+are handled in common code:
 
-> Looks above argument is good enough.  I am not sure  whether we need additional
-> justification which comes from future patches. :)
+	if (__cr4_reserved_bits(cpu_has, c) !=
+	    __cr4_reserved_bits(cpu_has, &boot_cpu_data))
+		return -EIO;
 
-To try to prevent someone from trying to eliminate the "extra" lock, like this
-series does for kvm_count_lock.  Hopefully future someones that want to clean up
-the code do a git blame to understand why the lock was introduced and don't waste
-their time running into the same issues (or worse, don't run into the issues and
-break KVM).
+are skipped.  And if that's fixed, then the above hardware_enable_nolock() call
+will bounce through kvm_x86_check_processor_compatibility() with IRQs enabled
+once the KVM hotplug hook is moved to the ONLINE section.
 
-> Also, do you also want to update Documentation/virt/kvm/locking.rst" in this
-> patch?
+As above, the simple "fix" would be to disable IRQs, but that's not actually
+necessary.  The only requirement is that preemption is disabled so that the checks
+are done on the current CPU.  The "IRQs disabled" check was a deliberately
+agressive WARN that was added to guard against doing compatibility checks from
+the "wrong" location.
 
-Hmm, yeah.  That'd also be a good place to document why kvm_lock isn't used.
+E.g. this is what I ended up with for a changelog to drop the irqs_disabled()
+check and for the end code (though it's not tested yet...)
+
+    Drop kvm_x86_check_processor_compatibility()'s WARN that IRQs are
+    disabled, as the ONLINE section runs with IRQs disabled.  The WARN wasn't
+    intended to be a requirement, e.g. disabling preemption is sufficient,
+    the IRQ thing was purely an aggressive sanity check since the helper was
+    only ever invoked via SMP function call.
+
+
+static int kvm_x86_check_processor_compatibility(void)
+{
+        int cpu = smp_processor_id();
+        struct cpuinfo_x86 *c = &cpu_data(cpu);
+
+        /*
+         * Compatibility checks are done when loading KVM and when enabling
+         * hardware, e.g. during CPU hotplug, to ensure all online CPUs are
+         * compatible, i.e. KVM should never perform a compatibility check on
+         * an offline CPU.
+         */
+        WARN_ON(!cpu_online(cpu));
+
+        if (__cr4_reserved_bits(cpu_has, c) !=
+            __cr4_reserved_bits(cpu_has, &boot_cpu_data))
+                return -EIO;
+
+        return static_call(kvm_x86_check_processor_compatibility)();
+}
+
+
+int kvm_arch_hardware_enable(void)
+{
+        struct kvm *kvm;
+        struct kvm_vcpu *vcpu;
+        unsigned long i;
+        int ret;
+        u64 local_tsc;
+        u64 max_tsc = 0;
+        bool stable, backwards_tsc = false;
+
+        kvm_user_return_msr_cpu_online();
+
+        ret = kvm_x86_check_processor_compatibility();
+        if (ret)
+                return ret;
+
+        ret = static_call(kvm_x86_hardware_enable)();
+        if (ret != 0)
+                return ret;
+
+
+	....
+}
 
