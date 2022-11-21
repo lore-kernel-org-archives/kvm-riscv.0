@@ -1,99 +1,67 @@
-From: chenlifu <chenlifu@huawei.com>
-Date: Mon, 21 Nov 2022 21:38:12 +0800
-Subject: [PATCH -next] RISC-V: KVM: optimize kvm_arch_hardware_enable()
-In-Reply-To: <20221121105333.rap67cpmst3odiid@kamzik>
-References: <20221121003915.2817102-1-chenlifu@huawei.com>
- <20221121105333.rap67cpmst3odiid@kamzik>
-Message-ID: <bb1c22ef-8cdb-2fc8-5ff7-f6cd92bf935d@huawei.com>
+From: Atish Patra <atishp@atishpatra.org>
+Date: Mon, 21 Nov 2022 15:50:37 -0800
+Subject: [RFC 1/9] RISC-V: Define a helper function to probe number of
+ hardware counters
+In-Reply-To: <20221101123008.e3bwen6f2yxi3whi@kamzik>
+References: <20220718170205.2972215-1-atishp@rivosinc.com> <20220718170205.2972215-2-atishp@rivosinc.com>
+ <20221101123008.e3bwen6f2yxi3whi@kamzik>
+Message-ID: <CAOnJCU+wf=CR12GONjBougZGs+ZQV1MoDAK-w+ALQatEECoFBQ@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-? 2022/11/21 18:53, Andrew Jones ??:
-> On Mon, Nov 21, 2022 at 08:39:15AM +0800, Chen Lifu wrote:
->> The values of CSR_HEDELEG and CSR_HIDELEG registers are constants,
->> so change them from variables to macros.
->>
->> Signed-off-by: Chen Lifu <chenlifu@huawei.com>
->> ---
->>   arch/riscv/kvm/main.c | 31 +++++++++++++------------------
->>   1 file changed, 13 insertions(+), 18 deletions(-)
->>
->> diff --git a/arch/riscv/kvm/main.c b/arch/riscv/kvm/main.c
->> index df2d8716851f..70196b03b6f9 100644
->> --- a/arch/riscv/kvm/main.c
->> +++ b/arch/riscv/kvm/main.c
->> @@ -12,10 +12,21 @@
->>   #include <linux/kvm_host.h>
->>   #include <asm/csr.h>
->>   #include <asm/hwcap.h>
->>   #include <asm/sbi.h>
->>   
->> +#define EXC_HEDELEG ((1UL << EXC_INST_MISALIGNED) | \
->> +		     (1UL << EXC_BREAKPOINT)      | \
->> +		     (1UL << EXC_SYSCALL)         | \
->> +		     (1UL << EXC_INST_PAGE_FAULT) | \
->> +		     (1UL << EXC_LOAD_PAGE_FAULT) | \
->> +		     (1UL << EXC_STORE_PAGE_FAULT))
->> +
->> +#define IRQ_HIDELEG ((1UL << IRQ_VS_SOFT)  | \
->> +		     (1UL << IRQ_VS_TIMER) | \
->> +		     (1UL << IRQ_VS_EXT))
->> +
->>   long kvm_arch_dev_ioctl(struct file *filp,
->>   			unsigned int ioctl, unsigned long arg)
->>   {
->>   	return -EINVAL;
->>   }
->> @@ -30,29 +41,13 @@ int kvm_arch_hardware_setup(void *opaque)
->>   	return 0;
->>   }
->>   
->>   int kvm_arch_hardware_enable(void)
->>   {
->> -	unsigned long hideleg, hedeleg;
->> -
->> -	hedeleg = 0;
->> -	hedeleg |= (1UL << EXC_INST_MISALIGNED);
->> -	hedeleg |= (1UL << EXC_BREAKPOINT);
->> -	hedeleg |= (1UL << EXC_SYSCALL);
->> -	hedeleg |= (1UL << EXC_INST_PAGE_FAULT);
->> -	hedeleg |= (1UL << EXC_LOAD_PAGE_FAULT);
->> -	hedeleg |= (1UL << EXC_STORE_PAGE_FAULT);
->> -	csr_write(CSR_HEDELEG, hedeleg);
->> -
->> -	hideleg = 0;
->> -	hideleg |= (1UL << IRQ_VS_SOFT);
->> -	hideleg |= (1UL << IRQ_VS_TIMER);
->> -	hideleg |= (1UL << IRQ_VS_EXT);
->> -	csr_write(CSR_HIDELEG, hideleg);
->> -
->> +	csr_write(CSR_HEDELEG, EXC_HEDELEG);
->> +	csr_write(CSR_HIDELEG, IRQ_HIDELEG);
->>   	csr_write(CSR_HCOUNTEREN, -1UL);
->> -
->>   	csr_write(CSR_HVIP, 0);
->>   
->>   	return 0;
->>   }
->>   
->> -- 
->> 2.37.1
->>
-> 
-> I don't think this optimizes anything. I'm pretty sure the compiler will
-> load the input to csr_write() in the most efficient way it can, regardless
-> of using a constant or building the input out of constants. This could
-> maybe be considered a code cleanup, but, in this case, it's really in the
-> eye of the beholder.
-> 
+On Tue, Nov 1, 2022 at 5:30 AM Andrew Jones <ajones@ventanamicro.com> wrote:
+>
+> On Mon, Jul 18, 2022 at 10:01:57AM -0700, Atish Patra wrote:
+> > KVM module needs to know how many hardware counters the platform supports.
+> > Otherwise, it will not be able to show optimal value of virtual
+>                                         ^ the
+> > counters to the guest.
+> >
+> > Signed-off-by: Atish Patra <atishp@rivosinc.com>
+> > ---
+> >  drivers/perf/riscv_pmu_sbi.c   | 23 +++++++++++++++++------
+> >  include/linux/perf/riscv_pmu.h |  4 ++++
+> >  2 files changed, 21 insertions(+), 6 deletions(-)
+> >
+> > diff --git a/drivers/perf/riscv_pmu_sbi.c b/drivers/perf/riscv_pmu_sbi.c
+> > index 24124546844c..1723af68ffa1 100644
+> > --- a/drivers/perf/riscv_pmu_sbi.c
+> > +++ b/drivers/perf/riscv_pmu_sbi.c
+> > @@ -27,6 +27,7 @@
+> >   */
+> >  static union sbi_pmu_ctr_info *pmu_ctr_list;
+> >  static unsigned int riscv_pmu_irq;
+> > +static struct riscv_pmu *rvpmu;
+>
+> Do we really need rvpmu? From a quick scan of the series it's only used
+> for num_hw_counters, which has to be added to struct riscv_pmu, and
+> num_counters. How about instead creating a static global for num_counters
+
+Yes. I added rvpmu just for future usage if any.
+
+> and then getting num_hw_counters by iterating pmu_ctr_list. If we want
+
+iteration is fine as we are doing that for hpm_width anyways.
+
+> riscv_pmu_sbi_get_num_hw_ctrs() to be faster, then we can cache the value
+> in a static variable in the function.
+>
+
+We have cmask now which can be cached in a static variable. We need to
+retrieve the
+counter width and the hardware counters for kvm. I have combined PATCH
+1 & PATCH 2
+to return both the values in one function.
+
 > Thanks,
 > drew
 
-Thanks drew?you're right.
-I compared two version arch/riscv/kvm/main.o files, they are same.
 
 
+-- 
+Regards,
+Atish
 
