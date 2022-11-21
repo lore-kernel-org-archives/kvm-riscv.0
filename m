@@ -1,46 +1,80 @@
-From: Sean Christopherson <seanjc@google.com>
-Date: Thu, 17 Nov 2022 15:16:15 +0000
-Subject: [PATCH 38/44] KVM: Disable CPU hotplug during hardware enabling
-In-Reply-To: <7fb66c497b6c41049167b05c63267cbc301b1c20.camel@intel.com>
-References: <20221102231911.3107438-1-seanjc@google.com>
- <20221102231911.3107438-39-seanjc@google.com>
- <88e920944de70e7d69a98f74005b49c59b5aaa3b.camel@intel.com>
- <b198fe971cecd301f0c7c66028cfd71dd7ba7e62.camel@intel.com>
- <Y3PzhANShVlTXVg1@google.com>
- <95ca433349eca601bdd2b16d70f59ba8e56d8e3f.camel@intel.com>
- <Y3UZtoIidMyE8qVz@google.com>
- <7fb66c497b6c41049167b05c63267cbc301b1c20.camel@intel.com>
-Message-ID: <Y3ZQP3C1f8pk199t@google.com>
+From: Chen Lifu <chenlifu@huawei.com>
+Date: Mon, 21 Nov 2022 08:39:15 +0800
+Subject: [PATCH -next] RISC-V: KVM: optimize kvm_arch_hardware_enable()
+Message-ID: <20221121003915.2817102-1-chenlifu@huawei.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Nov 17, 2022, Huang, Kai wrote:
-> On Wed, 2022-11-16 at 17:11 +0000, Sean Christopherson wrote:
-> > static int kvm_x86_check_processor_compatibility(void)
-> > {
-> >         int cpu = smp_processor_id();
-> >         struct cpuinfo_x86 *c = &cpu_data(cpu);
-> > 
-> >         /*
-> >          * Compatibility checks are done when loading KVM and when enabling
-> >          * hardware, e.g. during CPU hotplug, to ensure all online CPUs are
-> >          * compatible, i.e. KVM should never perform a compatibility check on
-> >          * an offline CPU.
-> >          */
-> >         WARN_ON(!cpu_online(cpu));
-> 
-> Looks good to me.  Perhaps this also can be removed, though.
+The values of CSR_HEDELEG and CSR_HIDELEG registers are constants,
+so change them from variables to macros.
 
-Hmm, it's a bit superfluous, but I think it could fire if KVM messed up CPU
-hotplug again, e.g. if the for_each_online_cpu() => IPI raced with CPU unplug.
+Signed-off-by: Chen Lifu <chenlifu@huawei.com>
+---
+ arch/riscv/kvm/main.c | 31 +++++++++++++------------------
+ 1 file changed, 13 insertions(+), 18 deletions(-)
 
-> And IMHO the removing of WARN_ON(!irq_disabled()) should be folded to the patch
-> "[PATCH 37/44] KVM: Rename and move CPUHP_AP_KVM_STARTING to ONLINE section". 
-> Because moving from STARTING section to ONLINE section changes the IRQ status
-> when the compatibility check is called.
+diff --git a/arch/riscv/kvm/main.c b/arch/riscv/kvm/main.c
+index df2d8716851f..70196b03b6f9 100644
+--- a/arch/riscv/kvm/main.c
++++ b/arch/riscv/kvm/main.c
+@@ -12,10 +12,21 @@
+ #include <linux/kvm_host.h>
+ #include <asm/csr.h>
+ #include <asm/hwcap.h>
+ #include <asm/sbi.h>
+ 
++#define EXC_HEDELEG ((1UL << EXC_INST_MISALIGNED) | \
++		     (1UL << EXC_BREAKPOINT)      | \
++		     (1UL << EXC_SYSCALL)         | \
++		     (1UL << EXC_INST_PAGE_FAULT) | \
++		     (1UL << EXC_LOAD_PAGE_FAULT) | \
++		     (1UL << EXC_STORE_PAGE_FAULT))
++
++#define IRQ_HIDELEG ((1UL << IRQ_VS_SOFT)  | \
++		     (1UL << IRQ_VS_TIMER) | \
++		     (1UL << IRQ_VS_EXT))
++
+ long kvm_arch_dev_ioctl(struct file *filp,
+ 			unsigned int ioctl, unsigned long arg)
+ {
+ 	return -EINVAL;
+ }
+@@ -30,29 +41,13 @@ int kvm_arch_hardware_setup(void *opaque)
+ 	return 0;
+ }
+ 
+ int kvm_arch_hardware_enable(void)
+ {
+-	unsigned long hideleg, hedeleg;
+-
+-	hedeleg = 0;
+-	hedeleg |= (1UL << EXC_INST_MISALIGNED);
+-	hedeleg |= (1UL << EXC_BREAKPOINT);
+-	hedeleg |= (1UL << EXC_SYSCALL);
+-	hedeleg |= (1UL << EXC_INST_PAGE_FAULT);
+-	hedeleg |= (1UL << EXC_LOAD_PAGE_FAULT);
+-	hedeleg |= (1UL << EXC_STORE_PAGE_FAULT);
+-	csr_write(CSR_HEDELEG, hedeleg);
+-
+-	hideleg = 0;
+-	hideleg |= (1UL << IRQ_VS_SOFT);
+-	hideleg |= (1UL << IRQ_VS_TIMER);
+-	hideleg |= (1UL << IRQ_VS_EXT);
+-	csr_write(CSR_HIDELEG, hideleg);
+-
++	csr_write(CSR_HEDELEG, EXC_HEDELEG);
++	csr_write(CSR_HIDELEG, IRQ_HIDELEG);
+ 	csr_write(CSR_HCOUNTEREN, -1UL);
+-
+ 	csr_write(CSR_HVIP, 0);
+ 
+ 	return 0;
+ }
+ 
+-- 
+2.37.1
 
-Yep, that's what I have coded up, just smushed it all together here.
 
