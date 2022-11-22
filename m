@@ -1,63 +1,72 @@
 From: Atish Patra <atishp@atishpatra.org>
-Date: Mon, 21 Nov 2022 15:50:37 -0800
-Subject: [RFC 1/9] RISC-V: Define a helper function to probe number of
- hardware counters
-In-Reply-To: <20221101123008.e3bwen6f2yxi3whi@kamzik>
-References: <20220718170205.2972215-1-atishp@rivosinc.com> <20220718170205.2972215-2-atishp@rivosinc.com>
- <20221101123008.e3bwen6f2yxi3whi@kamzik>
-Message-ID: <CAOnJCU+wf=CR12GONjBougZGs+ZQV1MoDAK-w+ALQatEECoFBQ@mail.gmail.com>
+Date: Mon, 21 Nov 2022 16:21:49 -0800
+Subject: [RFC 4/9] RISC-V: KVM: Improve privilege mode filtering for perf
+In-Reply-To: <Y2uuQ4wH4dU98K2b@curiosity>
+References: <20220718170205.2972215-1-atishp@rivosinc.com> <20220718170205.2972215-5-atishp@rivosinc.com>
+ <Y2uuQ4wH4dU98K2b@curiosity>
+Message-ID: <CAOnJCUJogprsp+D2ZH7yEEPr-LOp801LrYTwjg0EEoKaYfPV-Q@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Nov 1, 2022 at 5:30 AM Andrew Jones <ajones@ventanamicro.com> wrote:
+On Wed, Nov 9, 2022 at 5:42 AM Sergey Matyukevich <geomatsi@gmail.com> wrote:
 >
-> On Mon, Jul 18, 2022 at 10:01:57AM -0700, Atish Patra wrote:
-> > KVM module needs to know how many hardware counters the platform supports.
-> > Otherwise, it will not be able to show optimal value of virtual
->                                         ^ the
-> > counters to the guest.
+> Hi Atish,
+>
+> > Currently, the host driver doesn't have any method to identify if the
+> > requested perf event is from kvm or bare metal. As KVM runs in HS
+> > mode, there are no separate hypervisor privilege mode to distinguish
+> > between the attributes for guest/host.
 > >
-> > Signed-off-by: Atish Patra <atishp@rivosinc.com>
-> > ---
-> >  drivers/perf/riscv_pmu_sbi.c   | 23 +++++++++++++++++------
-> >  include/linux/perf/riscv_pmu.h |  4 ++++
-> >  2 files changed, 21 insertions(+), 6 deletions(-)
-> >
-> > diff --git a/drivers/perf/riscv_pmu_sbi.c b/drivers/perf/riscv_pmu_sbi.c
-> > index 24124546844c..1723af68ffa1 100644
-> > --- a/drivers/perf/riscv_pmu_sbi.c
-> > +++ b/drivers/perf/riscv_pmu_sbi.c
-> > @@ -27,6 +27,7 @@
-> >   */
-> >  static union sbi_pmu_ctr_info *pmu_ctr_list;
-> >  static unsigned int riscv_pmu_irq;
-> > +static struct riscv_pmu *rvpmu;
+> > Improve the privilege mode filtering by using the event specific
+> > config1 field.
 >
-> Do we really need rvpmu? From a quick scan of the series it's only used
-> for num_hw_counters, which has to be added to struct riscv_pmu, and
-> num_counters. How about instead creating a static global for num_counters
-
-Yes. I added rvpmu just for future usage if any.
-
-> and then getting num_hw_counters by iterating pmu_ctr_list. If we want
-
-iteration is fine as we are doing that for hpm_width anyways.
-
-> riscv_pmu_sbi_get_num_hw_ctrs() to be faster, then we can cache the value
-> in a static variable in the function.
+> ... [snip]
+>
+> > +static unsigned long pmu_sbi_get_filter_flags(struct perf_event *event)
+> > +{
+> > +     unsigned long cflags = 0;
+> > +     bool guest_events = false;
+> > +
+> > +     if (event->attr.config1 & RISCV_KVM_PMU_CONFIG1_GUEST_EVENTS)
+> > +             guest_events = true;
+> > +     if (event->attr.exclude_kernel)
+> > +             cflags |= guest_events ? SBI_PMU_CFG_FLAG_SET_VSINH : SBI_PMU_CFG_FLAG_SET_SINH;
+>
+> IIUC we should inhibit host counting if we want guest events:
+>                 cflags |= guest_events ? SBI_PMU_CFG_FLAG_SET_SINH : SBI_PMU_CFG_FLAG_SET_VSINH;
 >
 
-We have cmask now which can be cached in a static variable. We need to
-retrieve the
-counter width and the hardware counters for kvm. I have combined PATCH
-1 & PATCH 2
-to return both the values in one function.
+guest_events indicate that the user in the guest VM is configured to
+exclude the kernel i.e. the guest kernel which
+is running in VS mode.
+That's why, we have to set  SBI_PMU_CFG_FLAG_SET_VSINH
 
-> Thanks,
-> drew
+To inhibit host counting, the user needs to specify exclude_host
+and/or exclude_hv which happens below as well.
+
+> > +     if (event->attr.exclude_user)
+> > +             cflags |= guest_events ? SBI_PMU_CFG_FLAG_SET_VUINH : SBI_PMU_CFG_FLAG_SET_UINH;
+>
+> Same here.
+>
+
+Same explanation as above.
+
+> > +     if (guest_events && event->attr.exclude_hv)
+> > +             cflags |= SBI_PMU_CFG_FLAG_SET_SINH;
+> > +     if (event->attr.exclude_host)
+> > +             cflags |= SBI_PMU_CFG_FLAG_SET_UINH | SBI_PMU_CFG_FLAG_SET_SINH;
+> > +     if (event->attr.exclude_guest)
+> > +             cflags |= SBI_PMU_CFG_FLAG_SET_VSINH | SBI_PMU_CFG_FLAG_SET_VUINH;
+> > +
+> > +     return cflags;
+> > +}
+>
+> Regards,
+> Sergey
 
 
 
