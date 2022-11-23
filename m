@@ -1,44 +1,99 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Wed, 23 Nov 2022 14:36:36 +0100
-Subject: [RFC 5/9] RISC-V: KVM: Add skeleton support for perf
-In-Reply-To: <CAOnJCUKpdV3u8X6BSC+-rhV0Q8q2tdsa8r_KTH5FWCh2LV2q8Q@mail.gmail.com>
+Date: Wed, 23 Nov 2022 14:58:42 +0100
+Subject: [RFC 6/9] RISC-V: KVM: Add SBI PMU extension support
+In-Reply-To: <CAOnJCUJfakcoiWh4vFk5_BcTKfoSDbx+wtmh7MW4cPYog7q4BQ@mail.gmail.com>
 References: <20220718170205.2972215-1-atishp@rivosinc.com>
- <20220718170205.2972215-6-atishp@rivosinc.com>
- <20221101141329.j4qtvjf6kmqixt2r@kamzik>
- <CAOnJCULMbTp6WhVRWHxzFnUgCJJV01hcyukQxSEih-sYt5TJWg@mail.gmail.com>
- <CAOnJCUKpdV3u8X6BSC+-rhV0Q8q2tdsa8r_KTH5FWCh2LV2q8Q@mail.gmail.com>
-Message-ID: <20221123133636.gke3626aolfrnevy@kamzik>
+ <20220718170205.2972215-7-atishp@rivosinc.com>
+ <20221101142631.du54p4kyhlgf54cr@kamzik>
+ <CAOnJCUJfakcoiWh4vFk5_BcTKfoSDbx+wtmh7MW4cPYog7q4BQ@mail.gmail.com>
+Message-ID: <20221123135842.uyw46kbybgb7unm2@kamzik>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+On Tue, Nov 22, 2022 at 03:08:34PM -0800, Atish Patra wrote:
+> On Tue, Nov 1, 2022 at 7:26 AM Andrew Jones <ajones@ventanamicro.com> wrote:
+> >
+> > On Mon, Jul 18, 2022 at 10:02:02AM -0700, Atish Patra wrote:
 ...
-> > > > -     csr_write(CSR_HCOUNTEREN, -1UL);
-> > > > +     /* VS should access only TM bit. Everything else should trap */
-> > > > +     csr_write(CSR_HCOUNTEREN, 0x02);
-> > >
-> > > This looks like something that should be broken out into a separate patch
-> > > with a description of what happens now when guests try to access the newly
-> > > trapping counter registers. We should probably also create a TM define.
-> > >
+> > > +static int kvm_sbi_ext_pmu_handler(struct kvm_vcpu *vcpu, struct kvm_run *run,
+> > > +                                unsigned long *out_val,
+> > > +                                struct kvm_cpu_trap *utrap,
+> > > +                                bool *exit)
+> > > +{
+> > > +     int ret = -EOPNOTSUPP;
+> > > +     struct kvm_cpu_context *cp = &vcpu->arch.guest_context;
+> > > +     unsigned long funcid = cp->a6;
+> > > +     uint64_t temp;
 > >
-> > Done.
+> > I think we need something like
 > >
+> >    if (!vcpu_to_pmu(vcpu)->enabled)
+> >       return -EOPNOTSUPP;
+> >
+> > here. Where 'enabled' is only true when we successfully initialize
+> > the pmu. And, successful initialization depends on
 > 
-> As we allow cycles & instret for host user space now [1], should we do the same
-> for guests as well ? I would prefer not to but same user space
-> software will start to break
-> they will run inside a guest.
-> 
-> https://lore.kernel.org/all/20220928131807.30386-1-palmer at rivosinc.com/
->
+> Yes. I have added the flag. But should we do the check here or
+> respective function
+> as a paranoia sanity check ?
 
-Yeah, it seems like we should either forbid access to unprivileged users
-or ensure the numbers include some random noise. For guests, a privileged
-KVM userspace should need to explicitly request access for them, ensuring
-that the creation of privileged guests is done by conscious choice.
+I think something like above that returns a not-supported error should be
+in all the entry points, like the top level SBI call handler. Functions
+that should never be called unless the PMU is active could have WARNs
+added for sanity checks.
+
+> 
+> > IS_ENABLED(CONFIG_RISCV_PMU_SBI) and
+> 
+> Why do we need to guard under CONFIG_RISCV_PMU_SBI ?
+> vcpu_sbi_pmu.c is only compiled under CONFIG_RISCV_PMU_SBI
+> 
+> If CONFIG_RISCV_PMU_SBI is not enabled, probe function will return failure.
+
+You're right. We don't need explicit config checks for things that can't
+exist without the config.
+
+> 
+> In fact, I think we should also add the pmu enabled check in the probe function
+> itself. Probe function(kvm_sbi_ext_pmu_probe) should only true when
+> both vcpu_to_pmu(vcpu)->enabled and
+> riscv_isa_extension_available(NULL, SSCOFPMF) are true.
+> 
+> Thoughts?
+
+Agreed.
+
+> 
+> > riscv_isa_extension_available(NULL, SSCOFPMF) as well as not
+> > failing other things. And, KVM userspace should be able to
+> > disable the pmu, which keep enabled from being set as well.
+> >
+> We already have provisions for disabling sscofpmf from guests via ISA
+> one reg interface.
+> Do you mean disable the entire PMU from userspace ?
+
+Yes. We may need to configure a VM without a PMU to increase its
+migratability, workaround errata, or just for testing/debugging purposes.
+
+> 
+> Currently, ARM64 enables pmu from user space using device control APIs
+> on vcpu fd.
+> Are you suggesting we should do something like that ?
+
+Yes. Although choosing which KVM API should be used could probably be
+thought-out again. x86 uses VM ioctls.
+
+> 
+> If PMU needs to have device control APIs (either via vcpu fd or its
+> own), we can retrieve
+> the hpmcounter width and count from there as well.
+
+Right. We need to decide how the VM/VCPU + PMU user interface should look.
+A separate PMU device, like arm64 has, sounds good, but the ioctl
+sequences for initialization may get more tricky.
 
 Thanks,
 drew
