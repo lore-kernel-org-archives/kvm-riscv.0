@@ -1,45 +1,63 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Wed, 23 Nov 2022 15:22:54 +0100
-Subject: [RFC 8/9] RISC-V: KVM: Implement perf support
-In-Reply-To: <CAOnJCU++M5jd6toy1J8T+FPGJWSUaw8s9X7sxZY25naPoZeJJw@mail.gmail.com>
-References: <20220718170205.2972215-1-atishp@rivosinc.com>
- <20220718170205.2972215-9-atishp@rivosinc.com>
- <20221101153112.hpst2bohsdvqours@kamzik>
- <CAOnJCU++M5jd6toy1J8T+FPGJWSUaw8s9X7sxZY25naPoZeJJw@mail.gmail.com>
-Message-ID: <20221123142254.2mc3j27kgw37jblv@kamzik>
+From: Atish Patra <atishp@atishpatra.org>
+Date: Thu, 24 Nov 2022 01:04:15 -0800
+Subject: [RFC 5/9] RISC-V: KVM: Add skeleton support for perf
+In-Reply-To: <20221123133636.gke3626aolfrnevy@kamzik>
+References: <20220718170205.2972215-1-atishp@rivosinc.com> <20220718170205.2972215-6-atishp@rivosinc.com>
+ <20221101141329.j4qtvjf6kmqixt2r@kamzik> <CAOnJCULMbTp6WhVRWHxzFnUgCJJV01hcyukQxSEih-sYt5TJWg@mail.gmail.com>
+ <CAOnJCUKpdV3u8X6BSC+-rhV0Q8q2tdsa8r_KTH5FWCh2LV2q8Q@mail.gmail.com> <20221123133636.gke3626aolfrnevy@kamzik>
+Message-ID: <CAOnJCULUH09HPZL6Ks-xUsiDLQPR6xOv2g+ic9Gd3uwea6hCyQ@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Nov 22, 2022 at 04:45:16PM -0800, Atish Patra wrote:
-...
-> This brings up another generic error returning problem in KVM SBI
-> land. Usually, SBI error code numbers do not
-> align with Linux error codes to accommodate other operating systems.
-> However, most of the SBI error codes
-> have 1-1 relationship with the Linux error code.
-> Thus, kvm internal code returns a Linux specific error code and
-> vcpu_sbi will map those to SBI error code using
-> kvm_linux_err_map_sbi.
-> 
-> However, this will not work for SBI_ERR_ALREADY_STARTED/STOPPED as
-> there are no corresponding
-> Linux specific error codes. We can directly return the SBI error codes
-> from vcpu_pmu.c and modify the
-> kvm_linux_err_map_sbi to pass through those. In that case, we can't
-> map any linux error code that
-> collides with SBI error code. Any other ideas to handle this case ?
+On Wed, Nov 23, 2022 at 5:36 AM Andrew Jones <ajones@ventanamicro.com> wrote:
+>
+> ...
+> > > > > -     csr_write(CSR_HCOUNTEREN, -1UL);
+> > > > > +     /* VS should access only TM bit. Everything else should trap */
+> > > > > +     csr_write(CSR_HCOUNTEREN, 0x02);
+> > > >
+> > > > This looks like something that should be broken out into a separate patch
+> > > > with a description of what happens now when guests try to access the newly
+> > > > trapping counter registers. We should probably also create a TM define.
+> > > >
+> > >
+> > > Done.
+> > >
+> >
+> > As we allow cycles & instret for host user space now [1], should we do the same
+> > for guests as well ? I would prefer not to but same user space
+> > software will start to break
+> > they will run inside a guest.
+> >
+> > https://lore.kernel.org/all/20220928131807.30386-1-palmer at rivosinc.com/
+> >
+>
+> Yeah, it seems like we should either forbid access to unprivileged users
+> or ensure the numbers include some random noise. For guests, a privileged
+> KVM userspace should need to explicitly request access for them, ensuring
+> that the creation of privileged guests is done by conscious choice.
 >
 
-It seems like we should drop kvm_linux_err_map_sbi() and add another
-parameter to kvm_vcpu_sbi_extension.handler for the SBI error. Another
-option is to continue mapping SBI errors to Linux errors, e.g.
-SBI_ERR_ALREADY_STARTED == EBUSY, but that may not be too easy in
-all cases and the errors become ambiguous, as we can't tell if the
-Linux implementation generated the error or if the SBI call did.
+If I understand you correctly, you are suggesting we only enable TM
+bit in hcounteren ?
+We also need a mechanism to enable the hcounteren bits from KVM guest userspace.
 
-Thanks,
-drew
+I can think of the following approaches.
+
+1. The CYCLE, INSTRET enabling can also be via one reg interface.
+2. We can enable it during first virtual instruction trap if these
+bits in guest scounteren
+are enabled.
+
+> Thanks,
+> drew
+
+
+
+-- 
+Regards,
+Atish
 
