@@ -1,66 +1,67 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Thu, 24 Nov 2022 11:55:09 +0100
+Date: Thu, 24 Nov 2022 12:14:41 +0100
 Subject: [RFC 5/9] RISC-V: KVM: Add skeleton support for perf
-In-Reply-To: <CAOnJCULUH09HPZL6Ks-xUsiDLQPR6xOv2g+ic9Gd3uwea6hCyQ@mail.gmail.com>
+In-Reply-To: <CAOnJCUK0PcSXxt-Qvomy-4UoP5993-bVfPvWn_Rd5=ELC9n1gA@mail.gmail.com>
 References: <20220718170205.2972215-1-atishp@rivosinc.com>
  <20220718170205.2972215-6-atishp@rivosinc.com>
  <20221101141329.j4qtvjf6kmqixt2r@kamzik>
  <CAOnJCULMbTp6WhVRWHxzFnUgCJJV01hcyukQxSEih-sYt5TJWg@mail.gmail.com>
- <CAOnJCUKpdV3u8X6BSC+-rhV0Q8q2tdsa8r_KTH5FWCh2LV2q8Q@mail.gmail.com>
- <20221123133636.gke3626aolfrnevy@kamzik>
- <CAOnJCULUH09HPZL6Ks-xUsiDLQPR6xOv2g+ic9Gd3uwea6hCyQ@mail.gmail.com>
-Message-ID: <20221124105509.3kwnardcxvbbkf67@kamzik>
+ <20221123131104.zglb3osa5tsgkkkb@kamzik>
+ <CAOnJCUK0PcSXxt-Qvomy-4UoP5993-bVfPvWn_Rd5=ELC9n1gA@mail.gmail.com>
+Message-ID: <20221124111441.oixispy6d7rit7jr@kamzik>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Nov 24, 2022 at 01:04:15AM -0800, Atish Patra wrote:
-> On Wed, Nov 23, 2022 at 5:36 AM Andrew Jones <ajones@ventanamicro.com> wrote:
+On Thu, Nov 24, 2022 at 01:09:03AM -0800, Atish Patra wrote:
+> On Wed, Nov 23, 2022 at 5:11 AM Andrew Jones <ajones@ventanamicro.com> wrote:
 > >
+> > On Tue, Nov 22, 2022 at 04:46:14PM -0800, Atish Patra wrote:
 > > ...
-> > > > > > -     csr_write(CSR_HCOUNTEREN, -1UL);
-> > > > > > +     /* VS should access only TM bit. Everything else should trap */
-> > > > > > +     csr_write(CSR_HCOUNTEREN, 0x02);
-> > > > >
-> > > > > This looks like something that should be broken out into a separate patch
-> > > > > with a description of what happens now when guests try to access the newly
-> > > > > trapping counter registers. We should probably also create a TM define.
-> > > > >
+> > > > > +     kvpmu->num_hw_ctrs = num_hw_ctrs;
+> > > > > +     kvpmu->num_fw_ctrs = num_fw_ctrs;
 > > > >
-> > > > Done.
+> > > > Maybe it's coming later, but we need to give KVM userspace control over
+> > > > the number of counters to allow it to migrate to a larger set of hosts.
+> > > > Also, a previous patch said the virtual width must be the same as the
+> > > > host width for the hw counters, so we need userspace to know what that
+> > > > is in order to determine to which hosts it can migrate a guest.
 > > > >
 > > >
-> > > As we allow cycles & instret for host user space now [1], should we do the same
-> > > for guests as well ? I would prefer not to but same user space
-> > > software will start to break
-> > > they will run inside a guest.
+> > > Yes. The entire user space access control needs to be sketched out.
+> > > We probably need another one reg interface to set/get the number of
+> > > counters/width.
 > > >
-> > > https://lore.kernel.org/all/20220928131807.30386-1-palmer at rivosinc.com/
+> > > However, Is it a common to migrate a guest between different hosts
+> > > with different PMU capabilities ?
 > > >
 > >
-> > Yeah, it seems like we should either forbid access to unprivileged users
-> > or ensure the numbers include some random noise. For guests, a privileged
-> > KVM userspace should need to explicitly request access for them, ensuring
-> > that the creation of privileged guests is done by conscious choice.
+> > Ideally we'd be able to define a virtual CPU+PMU which represents the
+> > least common denominator of a set of hosts, allowing VMs which use that
+> > VCPU model to migrate among all the hosts. x86 pulls this off pretty well,
+> > but arm64 doesn't. In the least, I think a goal should be to enable
+> > migration of VMs from hosts with less extensions and less PMU counters to
+> > hosts with more, as that would support host upgrades without having to
+> > recreate VMs.
 > >
 > 
-> If I understand you correctly, you are suggesting we only enable TM
-> bit in hcounteren ?
-
-Yeah, and also that I think it'd be nice to revisit this for userspace.
-
-> We also need a mechanism to enable the hcounteren bits from KVM guest userspace.
+> We also have hpmwidth to worry about. I guess the policy details will be
+> VMM specific one. We need to think through the parameters that can be
+> varied between
+> hosts. As you pointed out earlier,
 > 
-> I can think of the following approaches.
+> 1. hpmcounter wdith
+> 2. Number of hpmcounters
+> 3. PMU related ISA extension - this will be applicable for all the extensions.
 > 
-> 1. The CYCLE, INSTRET enabling can also be via one reg interface.
-> 2. We can enable it during first virtual instruction trap if these
-> bits in guest scounteren
-> are enabled.
+> Anything else ?
 
-Those sound good to me.
+I can't think of anything at the moment. Hopefully most potential
+differences (features and errata) will be in extensions or in
+number, i.e. smaller sets of things which can be emulated with
+larger sets.
 
 Thanks,
 drew
