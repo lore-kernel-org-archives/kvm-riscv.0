@@ -1,58 +1,118 @@
 From: Atish Patra <atishp@atishpatra.org>
-Date: Thu, 24 Nov 2022 01:09:03 -0800
-Subject: [RFC 5/9] RISC-V: KVM: Add skeleton support for perf
-In-Reply-To: <20221123131104.zglb3osa5tsgkkkb@kamzik>
-References: <20220718170205.2972215-1-atishp@rivosinc.com> <20220718170205.2972215-6-atishp@rivosinc.com>
- <20221101141329.j4qtvjf6kmqixt2r@kamzik> <CAOnJCULMbTp6WhVRWHxzFnUgCJJV01hcyukQxSEih-sYt5TJWg@mail.gmail.com>
- <20221123131104.zglb3osa5tsgkkkb@kamzik>
-Message-ID: <CAOnJCUK0PcSXxt-Qvomy-4UoP5993-bVfPvWn_Rd5=ELC9n1gA@mail.gmail.com>
+Date: Thu, 24 Nov 2022 02:18:26 -0800
+Subject: [RFC 6/9] RISC-V: KVM: Add SBI PMU extension support
+In-Reply-To: <20221123135842.uyw46kbybgb7unm2@kamzik>
+References: <20220718170205.2972215-1-atishp@rivosinc.com> <20220718170205.2972215-7-atishp@rivosinc.com>
+ <20221101142631.du54p4kyhlgf54cr@kamzik> <CAOnJCUJfakcoiWh4vFk5_BcTKfoSDbx+wtmh7MW4cPYog7q4BQ@mail.gmail.com>
+ <20221123135842.uyw46kbybgb7unm2@kamzik>
+Message-ID: <CAOnJCUKZV+0Xts6C4QY7X+Wak0ZR_f8wPtEAtH4PEmh2-_AcWw@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Nov 23, 2022 at 5:11 AM Andrew Jones <ajones@ventanamicro.com> wrote:
+On Wed, Nov 23, 2022 at 5:58 AM Andrew Jones <ajones@ventanamicro.com> wrote:
 >
-> On Tue, Nov 22, 2022 at 04:46:14PM -0800, Atish Patra wrote:
+> On Tue, Nov 22, 2022 at 03:08:34PM -0800, Atish Patra wrote:
+> > On Tue, Nov 1, 2022 at 7:26 AM Andrew Jones <ajones@ventanamicro.com> wrote:
+> > >
+> > > On Mon, Jul 18, 2022 at 10:02:02AM -0700, Atish Patra wrote:
 > ...
-> > > > +     kvpmu->num_hw_ctrs = num_hw_ctrs;
-> > > > +     kvpmu->num_fw_ctrs = num_fw_ctrs;
+> > > > +static int kvm_sbi_ext_pmu_handler(struct kvm_vcpu *vcpu, struct kvm_run *run,
+> > > > +                                unsigned long *out_val,
+> > > > +                                struct kvm_cpu_trap *utrap,
+> > > > +                                bool *exit)
+> > > > +{
+> > > > +     int ret = -EOPNOTSUPP;
+> > > > +     struct kvm_cpu_context *cp = &vcpu->arch.guest_context;
+> > > > +     unsigned long funcid = cp->a6;
+> > > > +     uint64_t temp;
 > > >
-> > > Maybe it's coming later, but we need to give KVM userspace control over
-> > > the number of counters to allow it to migrate to a larger set of hosts.
-> > > Also, a previous patch said the virtual width must be the same as the
-> > > host width for the hw counters, so we need userspace to know what that
-> > > is in order to determine to which hosts it can migrate a guest.
+> > > I think we need something like
 > > >
+> > >    if (!vcpu_to_pmu(vcpu)->enabled)
+> > >       return -EOPNOTSUPP;
+> > >
+> > > here. Where 'enabled' is only true when we successfully initialize
+> > > the pmu. And, successful initialization depends on
 > >
-> > Yes. The entire user space access control needs to be sketched out.
-> > We probably need another one reg interface to set/get the number of
-> > counters/width.
-> >
-> > However, Is it a common to migrate a guest between different hosts
-> > with different PMU capabilities ?
-> >
+> > Yes. I have added the flag. But should we do the check here or
+> > respective function
+> > as a paranoia sanity check ?
 >
-> Ideally we'd be able to define a virtual CPU+PMU which represents the
-> least common denominator of a set of hosts, allowing VMs which use that
-> VCPU model to migrate among all the hosts. x86 pulls this off pretty well,
-> but arm64 doesn't. In the least, I think a goal should be to enable
-> migration of VMs from hosts with less extensions and less PMU counters to
-> hosts with more, as that would support host upgrades without having to
-> recreate VMs.
+> I think something like above that returns a not-supported error should be
+> in all the entry points, like the top level SBI call handler. Functions
+> that should never be called unless the PMU is active could have WARNs
+> added for sanity checks.
 >
 
-We also have hpmwidth to worry about. I guess the policy details will be
-VMM specific one. We need to think through the parameters that can be
-varied between
-hosts. As you pointed out earlier,
+Sure. Will add those checks.
 
-1. hpmcounter wdith
-2. Number of hpmcounters
-3. PMU related ISA extension - this will be applicable for all the extensions.
+> >
+> > > IS_ENABLED(CONFIG_RISCV_PMU_SBI) and
+> >
+> > Why do we need to guard under CONFIG_RISCV_PMU_SBI ?
+> > vcpu_sbi_pmu.c is only compiled under CONFIG_RISCV_PMU_SBI
+> >
+> > If CONFIG_RISCV_PMU_SBI is not enabled, probe function will return failure.
+>
+> You're right. We don't need explicit config checks for things that can't
+> exist without the config.
+>
+> >
+> > In fact, I think we should also add the pmu enabled check in the probe function
+> > itself. Probe function(kvm_sbi_ext_pmu_probe) should only true when
+> > both vcpu_to_pmu(vcpu)->enabled and
+> > riscv_isa_extension_available(NULL, SSCOFPMF) are true.
+> >
+> > Thoughts?
+>
+> Agreed.
+>
+> >
+> > > riscv_isa_extension_available(NULL, SSCOFPMF) as well as not
+> > > failing other things. And, KVM userspace should be able to
+> > > disable the pmu, which keep enabled from being set as well.
+> > >
+> > We already have provisions for disabling sscofpmf from guests via ISA
+> > one reg interface.
+> > Do you mean disable the entire PMU from userspace ?
+>
+> Yes. We may need to configure a VM without a PMU to increase its
+> migratability, workaround errata, or just for testing/debugging purposes.
+>
+> >
+> > Currently, ARM64 enables pmu from user space using device control APIs
+> > on vcpu fd.
+> > Are you suggesting we should do something like that ?
+>
+> Yes. Although choosing which KVM API should be used could probably be
+> thought-out again. x86 uses VM ioctls.
+>
 
-Anything else ?
+How does it handle hetergenous systems in per VM ioctls ?
+
+> >
+> > If PMU needs to have device control APIs (either via vcpu fd or its
+> > own), we can retrieve
+> > the hpmcounter width and count from there as well.
+>
+> Right. We need to decide how the VM/VCPU + PMU user interface should look.
+> A separate PMU device, like arm64 has, sounds good, but the ioctl
+> sequences for initialization may get more tricky.
+>
+
+Do we really need a per VM interface ? I was thinking we can just
+continue to use
+one reg interface for PMU as well. We probably need two of them.
+
+1. To enable/disable SBI extension
+    -- The probe function will depend on this
+2. PMU specific get/set
+    -- Number of hpmcounters
+    -- hpmcounter width
+    -- enable PMU
 
 
 > Thanks,
@@ -60,7 +120,7 @@ Anything else ?
 
 
 
---
+-- 
 Regards,
 Atish
 
