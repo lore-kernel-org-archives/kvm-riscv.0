@@ -1,56 +1,47 @@
 From: Anup Patel <anup@brainfault.org>
-Date: Sun, 27 Nov 2022 11:41:17 +0530
-Subject: [PATCH] RISC-V KVM: Add exit logic to main.c
-In-Reply-To: <20221104154618.9953-1-13212017962@163.com>
-References: <20221104154618.9953-1-13212017962@163.com>
-Message-ID: <CAAhSdy279u+6iPX__5ekg5Gy2UVXd4YyTLy1Hq9wy7sGnsLLCA@mail.gmail.com>
+Date: Sun, 27 Nov 2022 17:34:15 +0530
+Subject: [PATCH] RISC-V: KVM: use vma_lookup() instead of find_vma_intersection()
+In-Reply-To: <20221101053811.5884-1-liubo03@inspur.com>
+References: <20221101053811.5884-1-liubo03@inspur.com>
+Message-ID: <CAAhSdy0t1XGTENidgNQkQ5m5emZOes+-2RXTPLEJ0tEZXuX2hA@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Nov 4, 2022 at 9:16 PM XiakaiPan <13212017962@163.com> wrote:
+On Tue, Nov 1, 2022 at 11:08 AM Bo Liu <liubo03@inspur.com> wrote:
 >
-> Several lines of code are inserted to remove KVM module normally using rmmod command just like others.
+> vma_lookup() finds the vma of a specific address with a cleaner interface
+> and is more readable.
 >
-> Signed-off-by: XiakaiPan <13212017962@163.com>
-> ---
->  arch/riscv/kvm/main.c | 6 ++++++
->  1 file changed, 6 insertions(+)
->
-> diff --git a/arch/riscv/kvm/main.c b/arch/riscv/kvm/main.c
-> index 1549205fe..81f1a761d 100644
-> --- a/arch/riscv/kvm/main.c
-> +++ b/arch/riscv/kvm/main.c
-> @@ -122,6 +122,12 @@ void kvm_arch_exit(void)
->  {
->  }
->
-> +static void riscv_kvm_exit(void)
+> Signed-off-by: Bo Liu <liubo03@inspur.com>
 
-Add __exit attribute to riscv_kvm_exit()
-
-> +{
-> +       kvm_exit();
-
-Use tab instead of space for indentation.
-
-> +}
-> +module_exit(riscv_kvm_exit);
-> +
->  static int riscv_kvm_init(void)
->  {
->         return kvm_init(NULL, sizeof(struct kvm_vcpu), 0, THIS_MODULE);
-> --
-> 2.25.1
->
-
-I have taken care of the above comments at the
-time of applying this patch.
+Looks good to me.
 
 Queued this patch for Linux-6.2
 
 Thanks,
 Anup
+
+> ---
+>  arch/riscv/kvm/mmu.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
+> index 3620ecac2fa1..5942d10c9736 100644
+> --- a/arch/riscv/kvm/mmu.c
+> +++ b/arch/riscv/kvm/mmu.c
+> @@ -632,7 +632,7 @@ int kvm_riscv_gstage_map(struct kvm_vcpu *vcpu,
+>
+>         mmap_read_lock(current->mm);
+>
+> -       vma = find_vma_intersection(current->mm, hva, hva + 1);
+> +       vma = vma_lookup(current->mm, hva);
+>         if (unlikely(!vma)) {
+>                 kvm_err("Failed to find VMA for hva 0x%lx\n", hva);
+>                 mmap_read_unlock(current->mm);
+> --
+> 2.27.0
+>
 
