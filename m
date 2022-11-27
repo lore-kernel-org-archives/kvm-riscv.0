@@ -1,76 +1,80 @@
-From: Anup Patel <apatel@ventanamicro.com>
-Date: Thu, 24 Nov 2022 18:29:04 +0530
-Subject: [RFC 6/9] RISC-V: KVM: Add SBI PMU extension support
-In-Reply-To: <20221124105051.hbsavj3bgf4mvlzb@kamzik>
-References: <20220718170205.2972215-1-atishp@rivosinc.com> <20220718170205.2972215-7-atishp@rivosinc.com>
- <20221101142631.du54p4kyhlgf54cr@kamzik> <CAOnJCUJfakcoiWh4vFk5_BcTKfoSDbx+wtmh7MW4cPYog7q4BQ@mail.gmail.com>
- <20221123135842.uyw46kbybgb7unm2@kamzik> <CAOnJCUKZV+0Xts6C4QY7X+Wak0ZR_f8wPtEAtH4PEmh2-_AcWw@mail.gmail.com>
- <20221124105051.hbsavj3bgf4mvlzb@kamzik>
-Message-ID: <CAK9=C2XifUiOdA4cTFbQq7SNVJn+1Xup_giw4jo_z6bRdng4hQ@mail.gmail.com>
+From: Anup Patel <anup@brainfault.org>
+Date: Sun, 27 Nov 2022 11:07:36 +0530
+Subject: [PATCH 5/9] RISC-V: KVM: Provide UAPI for Zicboz block size
+In-Reply-To: <20221027130247.31634-6-ajones@ventanamicro.com>
+References: <20221027130247.31634-1-ajones@ventanamicro.com> <20221027130247.31634-6-ajones@ventanamicro.com>
+Message-ID: <CAAhSdy0eKP-4uvK--N97CDcqq+yemXSzSE1neGhSEeETo6y3xQ@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Nov 24, 2022 at 4:21 PM Andrew Jones <ajones@ventanamicro.com> wrote:
+On Thu, Oct 27, 2022 at 6:34 PM Andrew Jones <ajones@ventanamicro.com> wrote:
 >
-> On Thu, Nov 24, 2022 at 02:18:26AM -0800, Atish Patra wrote:
-> > On Wed, Nov 23, 2022 at 5:58 AM Andrew Jones <ajones@ventanamicro.com> wrote:
-> > >
-> > > On Tue, Nov 22, 2022 at 03:08:34PM -0800, Atish Patra wrote:
-> ...
-> > > > Currently, ARM64 enables pmu from user space using device control APIs
-> > > > on vcpu fd.
-> > > > Are you suggesting we should do something like that ?
-> > >
-> > > Yes. Although choosing which KVM API should be used could probably be
-> > > thought-out again. x86 uses VM ioctls.
-> > >
-> >
-> > How does it handle hetergenous systems in per VM ioctls ?
+> We're about to allow guests to use the Zicboz extension. KVM
+> userspace needs to know the cache block size in order to
+> properly advertise it to the guest. Provide a virtual config
+> register for userspace to get it with the GET_ONE_REG API, but
+> setting it cannot be supported, so disallow SET_ONE_REG.
 >
-> I don't think it does, but neither does arm64. Afaik, the only way to run
-> KVM VMs on heterogeneous systems is to pin the VM to one set of the CPUs,
-> i.e. make sure the system it runs on is homogeneous.
->
-> I agree we shouldn't paint ourselves into a homogeneous-only corner for
-> riscv, though, so if it's possible to use VCPU APIs, then I guess we
-> should. Although, one thing to keep in mind is that if the same ioctl
-> needs to be run on each VCPU, then, when we start building VMs with
-> hundreds of VCPUs, we'll see slow VM starts.
->
-> >
-> > > >
-> > > > If PMU needs to have device control APIs (either via vcpu fd or its
-> > > > own), we can retrieve
-> > > > the hpmcounter width and count from there as well.
-> > >
-> > > Right. We need to decide how the VM/VCPU + PMU user interface should look.
-> > > A separate PMU device, like arm64 has, sounds good, but the ioctl
-> > > sequences for initialization may get more tricky.
-> > >
-> >
-> > Do we really need a per VM interface ? I was thinking we can just
-> > continue to use
-> > one reg interface for PMU as well. We probably need two of them.
-> >
-> > 1. To enable/disable SBI extension
-> >     -- The probe function will depend on this
-> > 2. PMU specific get/set
-> >     -- Number of hpmcounters
-> >     -- hpmcounter width
-> >     -- enable PMU
->
-> ONE_REG is good for registers and virtual registers, which means the
-> number of hpmcounters and the hpmcounter width are probably good
-> candidates, but I'm not sure we should use it for enable/init types of
-> purposes.
+> Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
 
-We are already using ONE_REG interface to enable/disable
-ISA extensions so we should follow the same pattern and have
-ONE_REG interface to enable/disable SBI extensions as well.
+Looks good to me.
+
+Reviewed-by: Anup Patel <anup@brainfault.org>
 
 Regards,
 Anup
+
+> ---
+>  arch/riscv/include/uapi/asm/kvm.h | 1 +
+>  arch/riscv/kvm/vcpu.c             | 7 +++++++
+>  2 files changed, 8 insertions(+)
+>
+> diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
+> index 8985ff234c01..4bbf55cb2b70 100644
+> --- a/arch/riscv/include/uapi/asm/kvm.h
+> +++ b/arch/riscv/include/uapi/asm/kvm.h
+> @@ -49,6 +49,7 @@ struct kvm_sregs {
+>  struct kvm_riscv_config {
+>         unsigned long isa;
+>         unsigned long zicbom_block_size;
+> +       unsigned long zicboz_block_size;
+>  };
+>
+>  /* CORE registers for KVM_GET_ONE_REG and KVM_SET_ONE_REG */
+> diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+> index 71ebbc4821f0..18a739070b51 100644
+> --- a/arch/riscv/kvm/vcpu.c
+> +++ b/arch/riscv/kvm/vcpu.c
+> @@ -270,6 +270,11 @@ static int kvm_riscv_vcpu_get_reg_config(struct kvm_vcpu *vcpu,
+>                         return -EINVAL;
+>                 reg_val = riscv_cbom_block_size;
+>                 break;
+> +       case KVM_REG_RISCV_CONFIG_REG(zicboz_block_size):
+> +               if (!riscv_isa_extension_available(vcpu->arch.isa, ZICBOZ))
+> +                       return -EINVAL;
+> +               reg_val = riscv_cboz_block_size;
+> +               break;
+>         default:
+>                 return -EINVAL;
+>         }
+> @@ -329,6 +334,8 @@ static int kvm_riscv_vcpu_set_reg_config(struct kvm_vcpu *vcpu,
+>                 break;
+>         case KVM_REG_RISCV_CONFIG_REG(zicbom_block_size):
+>                 return -EOPNOTSUPP;
+> +       case KVM_REG_RISCV_CONFIG_REG(zicboz_block_size):
+> +               return -EOPNOTSUPP;
+>         default:
+>                 return -EINVAL;
+>         }
+> --
+> 2.37.3
+>
+>
+> --
+> kvm-riscv mailing list
+> kvm-riscv at lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/kvm-riscv
 
