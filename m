@@ -1,61 +1,36 @@
-From: Anup Patel <anup@brainfault.org>
-Date: Sun, 27 Nov 2022 18:07:17 +0530
-Subject: [PATCH] RISC-V: KVM: Simplify kvm_arch_prepare_memory_region()
-In-Reply-To: <c5e918630ba37273d7b0f4e4dbb6f90d4c2f321d.1668347565.git.christophe.jaillet@wanadoo.fr>
-References: <c5e918630ba37273d7b0f4e4dbb6f90d4c2f321d.1668347565.git.christophe.jaillet@wanadoo.fr>
-Message-ID: <CAAhSdy1JPKwknR7HrNXkcBxL3QoVDAAzFthDS6nCocnzJor0XA@mail.gmail.com>
+From: Anup Patel <apatel@ventanamicro.com>
+Date: Mon, 28 Nov 2022 21:44:17 +0530
+Subject: [PATCH 2/9] RISC-V: KVM: Remove redundant includes of asm/kvm_vcpu_timer.h
+In-Reply-To: <20221128161424.608889-1-apatel@ventanamicro.com>
+References: <20221128161424.608889-1-apatel@ventanamicro.com>
+Message-ID: <20221128161424.608889-3-apatel@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sun, Nov 13, 2022 at 7:22 PM Christophe JAILLET
-<christophe.jaillet@wanadoo.fr> wrote:
->
-> In kvm_arch_prepare_memory_region(), if no error occurs, a spin_lock()/
-> spin_unlock() call can be avoided.
->
-> Switch to kvm_riscv_gstage_iounmap() that is the same as the current code,
-> but with a better semantic.
-> It also embeds the locking logic. So it is avoided if ret == 0.
->
-> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+The asm/kvm_vcpu_timer.h is redundantly included in vcpu_sbi_base.c
+so let us remove it.
 
-Looks good to me.
+Signed-off-by: Anup Patel <apatel@ventanamicro.com>
+---
+ arch/riscv/kvm/vcpu_sbi_base.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-Reviewed-by: Anup Patel <anup@brainfault.org>
+diff --git a/arch/riscv/kvm/vcpu_sbi_base.c b/arch/riscv/kvm/vcpu_sbi_base.c
+index 48f431091cdb..22b9126e2872 100644
+--- a/arch/riscv/kvm/vcpu_sbi_base.c
++++ b/arch/riscv/kvm/vcpu_sbi_base.c
+@@ -12,7 +12,6 @@
+ #include <linux/version.h>
+ #include <asm/csr.h>
+ #include <asm/sbi.h>
+-#include <asm/kvm_vcpu_timer.h>
+ #include <asm/kvm_vcpu_sbi.h>
+ 
+ static int kvm_sbi_ext_base_handler(struct kvm_vcpu *vcpu, struct kvm_run *run,
+-- 
+2.34.1
 
-I have tested this on QEMU virt machine for RV64.
-
-Queued this patch for Linux-6.2
-
-Thanks,
-Anup
-
-> ---
-> I don't use cross-compiler, so this patch is NOT even compile tested.
-> ---
->  arch/riscv/kvm/mmu.c | 4 +---
->  1 file changed, 1 insertion(+), 3 deletions(-)
->
-> diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
-> index 3620ecac2fa1..c8834e463763 100644
-> --- a/arch/riscv/kvm/mmu.c
-> +++ b/arch/riscv/kvm/mmu.c
-> @@ -537,10 +537,8 @@ int kvm_arch_prepare_memory_region(struct kvm *kvm,
->         if (change == KVM_MR_FLAGS_ONLY)
->                 goto out;
->
-> -       spin_lock(&kvm->mmu_lock);
->         if (ret)
-> -               gstage_unmap_range(kvm, base_gpa, size, false);
-> -       spin_unlock(&kvm->mmu_lock);
-> +               kvm_riscv_gstage_iounmap(kvm, base_gpa, size);
->
->  out:
->         mmap_read_unlock(current->mm);
-> --
-> 2.34.1
->
 
