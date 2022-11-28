@@ -1,47 +1,87 @@
 From: Anup Patel <apatel@ventanamicro.com>
-Date: Mon, 28 Nov 2022 21:44:15 +0530
-Subject: [PATCH 0/9] RISC-V KVM ONE_REG interface for SBI
-Message-ID: <20221128161424.608889-1-apatel@ventanamicro.com>
+Date: Mon, 28 Nov 2022 21:44:18 +0530
+Subject: [PATCH 3/9] RISC-V: KVM: Remove redundant includes of asm/csr.h
+In-Reply-To: <20221128161424.608889-1-apatel@ventanamicro.com>
+References: <20221128161424.608889-1-apatel@ventanamicro.com>
+Message-ID: <20221128161424.608889-4-apatel@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This series does first does few cleanups/fixes (PATCH1 to PATCH5) and
-adds ONE-REG interface for customizing the SBI interface visible to the
-Guest/VM.
+We should include asm/csr.h only where required so let us remove
+redundant includes of this header.
 
-The testing of this series has been done with KVMTOOL changes in
-riscv_sbi_imp_v1 branch at:
-https://github.com/avpatel/kvmtool.git
+Signed-off-by: Anup Patel <apatel@ventanamicro.com>
+---
+ arch/riscv/include/asm/kvm_host.h | 1 -
+ arch/riscv/kvm/vcpu_sbi_base.c    | 1 -
+ arch/riscv/kvm/vcpu_sbi_hsm.c     | 1 -
+ arch/riscv/kvm/vcpu_sbi_replace.c | 1 -
+ arch/riscv/kvm/vcpu_sbi_v01.c     | 1 -
+ 5 files changed, 5 deletions(-)
 
-These patches can also be found in the riscv_kvm_sbi_imp_v1 branch at:
-https://github.com/avpatel/linux.git
-
-Anup Patel (9):
-  RISC-V: KVM: Fix reg_val check in kvm_riscv_vcpu_set_reg_config()
-  RISC-V: KVM: Remove redundant includes of asm/kvm_vcpu_timer.h
-  RISC-V: KVM: Remove redundant includes of asm/csr.h
-  RISC-V: KVM: Use switch-case in kvm_riscv_vcpu_set/get_reg()
-  RISC-V: KVM: Move sbi related struct and functions to kvm_vcpu_sbi.h
-  RISC-V: Export sbi_get_mvendorid() and friends
-  RISC-V: KVM: Save mvendorid, marchid, and mimpid when creating VCPU
-  RISC-V: KVM: Add ONE_REG interface for mvendorid, marchid, and mimpid
-  RISC-V: KVM: Add ONE_REG interface to enable/disable SBI extensions
-
- arch/riscv/include/asm/kvm_host.h     |  16 ++-
- arch/riscv/include/asm/kvm_vcpu_sbi.h |  14 ++-
- arch/riscv/include/uapi/asm/kvm.h     |  22 ++++
- arch/riscv/kernel/sbi.c               |   3 +
- arch/riscv/kvm/vcpu.c                 |  82 +++++++++++----
- arch/riscv/kvm/vcpu_sbi.c             | 145 +++++++++++++++++++++++---
- arch/riscv/kvm/vcpu_sbi_base.c        |  15 ++-
- arch/riscv/kvm/vcpu_sbi_hsm.c         |   1 -
- arch/riscv/kvm/vcpu_sbi_replace.c     |   1 -
- arch/riscv/kvm/vcpu_sbi_v01.c         |   1 -
- 10 files changed, 244 insertions(+), 56 deletions(-)
-
+diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
+index dbbf43d52623..6502f9099965 100644
+--- a/arch/riscv/include/asm/kvm_host.h
++++ b/arch/riscv/include/asm/kvm_host.h
+@@ -13,7 +13,6 @@
+ #include <linux/kvm.h>
+ #include <linux/kvm_types.h>
+ #include <linux/spinlock.h>
+-#include <asm/csr.h>
+ #include <asm/hwcap.h>
+ #include <asm/kvm_vcpu_fp.h>
+ #include <asm/kvm_vcpu_insn.h>
+diff --git a/arch/riscv/kvm/vcpu_sbi_base.c b/arch/riscv/kvm/vcpu_sbi_base.c
+index 22b9126e2872..0c806f61c629 100644
+--- a/arch/riscv/kvm/vcpu_sbi_base.c
++++ b/arch/riscv/kvm/vcpu_sbi_base.c
+@@ -10,7 +10,6 @@
+ #include <linux/err.h>
+ #include <linux/kvm_host.h>
+ #include <linux/version.h>
+-#include <asm/csr.h>
+ #include <asm/sbi.h>
+ #include <asm/kvm_vcpu_sbi.h>
+ 
+diff --git a/arch/riscv/kvm/vcpu_sbi_hsm.c b/arch/riscv/kvm/vcpu_sbi_hsm.c
+index 239dec0a628a..2e915cafd551 100644
+--- a/arch/riscv/kvm/vcpu_sbi_hsm.c
++++ b/arch/riscv/kvm/vcpu_sbi_hsm.c
+@@ -9,7 +9,6 @@
+ #include <linux/errno.h>
+ #include <linux/err.h>
+ #include <linux/kvm_host.h>
+-#include <asm/csr.h>
+ #include <asm/sbi.h>
+ #include <asm/kvm_vcpu_sbi.h>
+ 
+diff --git a/arch/riscv/kvm/vcpu_sbi_replace.c b/arch/riscv/kvm/vcpu_sbi_replace.c
+index 4c034d8a606a..03a0198389f0 100644
+--- a/arch/riscv/kvm/vcpu_sbi_replace.c
++++ b/arch/riscv/kvm/vcpu_sbi_replace.c
+@@ -9,7 +9,6 @@
+ #include <linux/errno.h>
+ #include <linux/err.h>
+ #include <linux/kvm_host.h>
+-#include <asm/csr.h>
+ #include <asm/sbi.h>
+ #include <asm/kvm_vcpu_timer.h>
+ #include <asm/kvm_vcpu_sbi.h>
+diff --git a/arch/riscv/kvm/vcpu_sbi_v01.c b/arch/riscv/kvm/vcpu_sbi_v01.c
+index 8a91a14e7139..489f225ee66d 100644
+--- a/arch/riscv/kvm/vcpu_sbi_v01.c
++++ b/arch/riscv/kvm/vcpu_sbi_v01.c
+@@ -9,7 +9,6 @@
+ #include <linux/errno.h>
+ #include <linux/err.h>
+ #include <linux/kvm_host.h>
+-#include <asm/csr.h>
+ #include <asm/sbi.h>
+ #include <asm/kvm_vcpu_timer.h>
+ #include <asm/kvm_vcpu_sbi.h>
 -- 
 2.34.1
 
