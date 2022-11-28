@@ -1,292 +1,109 @@
-From: Anup Patel <apatel@ventanamicro.com>
-Date: Mon, 28 Nov 2022 21:44:24 +0530
-Subject: [PATCH 9/9] RISC-V: KVM: Add ONE_REG interface to enable/disable SBI extensions
-In-Reply-To: <20221128161424.608889-1-apatel@ventanamicro.com>
-References: <20221128161424.608889-1-apatel@ventanamicro.com>
-Message-ID: <20221128161424.608889-10-apatel@ventanamicro.com>
+From: Atish Patra <atishp@atishpatra.org>
+Date: Mon, 28 Nov 2022 13:00:50 -0800
+Subject: [RFC 6/9] RISC-V: KVM: Add SBI PMU extension support
+In-Reply-To: <CAK9=C2XifUiOdA4cTFbQq7SNVJn+1Xup_giw4jo_z6bRdng4hQ@mail.gmail.com>
+References: <20220718170205.2972215-1-atishp@rivosinc.com> <20220718170205.2972215-7-atishp@rivosinc.com>
+ <20221101142631.du54p4kyhlgf54cr@kamzik> <CAOnJCUJfakcoiWh4vFk5_BcTKfoSDbx+wtmh7MW4cPYog7q4BQ@mail.gmail.com>
+ <20221123135842.uyw46kbybgb7unm2@kamzik> <CAOnJCUKZV+0Xts6C4QY7X+Wak0ZR_f8wPtEAtH4PEmh2-_AcWw@mail.gmail.com>
+ <20221124105051.hbsavj3bgf4mvlzb@kamzik> <CAK9=C2XifUiOdA4cTFbQq7SNVJn+1Xup_giw4jo_z6bRdng4hQ@mail.gmail.com>
+Message-ID: <CAOnJCU+fxyLbLMEPbo+FA_DK+R872rJTeXrEeZGXwzxh6LyR0A@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-We add ONE_REG interface to enable/disable SBI extensions (just
-like the ONE_REG interface for ISA extensions). This allows KVM
-user-space to decide the set of SBI extension enabled for a Guest
-and by default all SBI extensions are enabled.
+On Thu, Nov 24, 2022 at 4:59 AM Anup Patel <apatel@ventanamicro.com> wrote:
+>
+> On Thu, Nov 24, 2022 at 4:21 PM Andrew Jones <ajones@ventanamicro.com> wrote:
+> >
+> > On Thu, Nov 24, 2022 at 02:18:26AM -0800, Atish Patra wrote:
+> > > On Wed, Nov 23, 2022 at 5:58 AM Andrew Jones <ajones@ventanamicro.com> wrote:
+> > > >
+> > > > On Tue, Nov 22, 2022 at 03:08:34PM -0800, Atish Patra wrote:
+> > ...
+> > > > > Currently, ARM64 enables pmu from user space using device control APIs
+> > > > > on vcpu fd.
+> > > > > Are you suggesting we should do something like that ?
+> > > >
+> > > > Yes. Although choosing which KVM API should be used could probably be
+> > > > thought-out again. x86 uses VM ioctls.
+> > > >
+> > >
+> > > How does it handle hetergenous systems in per VM ioctls ?
+> >
+> > I don't think it does, but neither does arm64. Afaik, the only way to run
+> > KVM VMs on heterogeneous systems is to pin the VM to one set of the CPUs,
+> > i.e. make sure the system it runs on is homogeneous.
+> >
+> > I agree we shouldn't paint ourselves into a homogeneous-only corner for
+> > riscv, though, so if it's possible to use VCPU APIs, then I guess we
+> > should. Although, one thing to keep in mind is that if the same ioctl
+> > needs to be run on each VCPU, then, when we start building VMs with
+> > hundreds of VCPUs, we'll see slow VM starts.
+> >
+> > >
+> > > > >
+> > > > > If PMU needs to have device control APIs (either via vcpu fd or its
+> > > > > own), we can retrieve
+> > > > > the hpmcounter width and count from there as well.
+> > > >
+> > > > Right. We need to decide how the VM/VCPU + PMU user interface should look.
+> > > > A separate PMU device, like arm64 has, sounds good, but the ioctl
+> > > > sequences for initialization may get more tricky.
+> > > >
+> > >
+> > > Do we really need a per VM interface ? I was thinking we can just
+> > > continue to use
+> > > one reg interface for PMU as well. We probably need two of them.
+> > >
+> > > 1. To enable/disable SBI extension
+> > >     -- The probe function will depend on this
+> > > 2. PMU specific get/set
+> > >     -- Number of hpmcounters
+> > >     -- hpmcounter width
+> > >     -- enable PMU
+> >
+> > ONE_REG is good for registers and virtual registers, which means the
+> > number of hpmcounters and the hpmcounter width are probably good
+> > candidates, but I'm not sure we should use it for enable/init types of
+> > purposes.
+>
+> We are already using ONE_REG interface to enable/disable
+> ISA extensions so we should follow the same pattern and have
+> ONE_REG interface to enable/disable SBI extensions as well.
+>
 
-Signed-off-by: Anup Patel <apatel@ventanamicro.com>
----
- arch/riscv/include/asm/kvm_vcpu_sbi.h |   8 +-
- arch/riscv/include/uapi/asm/kvm.h     |  19 ++++
- arch/riscv/kvm/vcpu.c                 |   2 +
- arch/riscv/kvm/vcpu_sbi.c             | 145 +++++++++++++++++++++++---
- arch/riscv/kvm/vcpu_sbi_base.c        |   2 +-
- 5 files changed, 158 insertions(+), 18 deletions(-)
+Thinking about it more, it may end up in vcpus with heterogeneous
+capabilities (different SBI extension).
+Most likely, it will be a bug and incorrect configuration from VMM but
+it's a possibility.
+For example: There will be two different scenarios for PMU extension
 
-diff --git a/arch/riscv/include/asm/kvm_vcpu_sbi.h b/arch/riscv/include/asm/kvm_vcpu_sbi.h
-index f79478a85d2d..baa342dadf95 100644
---- a/arch/riscv/include/asm/kvm_vcpu_sbi.h
-+++ b/arch/riscv/include/asm/kvm_vcpu_sbi.h
-@@ -16,6 +16,7 @@
- 
- struct kvm_vcpu_sbi_context {
- 	int return_handled;
-+	bool extension_disabled[KVM_RISCV_SBI_EXT_MAX];
- };
- 
- struct kvm_vcpu_sbi_extension {
-@@ -36,7 +37,12 @@ void kvm_riscv_vcpu_sbi_system_reset(struct kvm_vcpu *vcpu,
- 				     struct kvm_run *run,
- 				     u32 type, u64 flags);
- int kvm_riscv_vcpu_sbi_return(struct kvm_vcpu *vcpu, struct kvm_run *run);
--const struct kvm_vcpu_sbi_extension *kvm_vcpu_sbi_find_ext(unsigned long extid);
-+int kvm_riscv_vcpu_set_reg_sbi_ext(struct kvm_vcpu *vcpu,
-+				   const struct kvm_one_reg *reg);
-+int kvm_riscv_vcpu_get_reg_sbi_ext(struct kvm_vcpu *vcpu,
-+				   const struct kvm_one_reg *reg);
-+const struct kvm_vcpu_sbi_extension *kvm_vcpu_sbi_find_ext(
-+				struct kvm_vcpu *vcpu, unsigned long extid);
- int kvm_riscv_vcpu_sbi_ecall(struct kvm_vcpu *vcpu, struct kvm_run *run);
- 
- #ifdef CONFIG_RISCV_SBI_V01
-diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
-index 92af6f3f057c..71992ff1f9dd 100644
---- a/arch/riscv/include/uapi/asm/kvm.h
-+++ b/arch/riscv/include/uapi/asm/kvm.h
-@@ -108,6 +108,22 @@ enum KVM_RISCV_ISA_EXT_ID {
- 	KVM_RISCV_ISA_EXT_MAX,
- };
- 
-+/*
-+ * SBI extension IDs specific to KVM. This is not the same as the SBI
-+ * extension IDs defined by the RISC-V SBI specification.
-+ */
-+enum KVM_RISCV_SBI_EXT_ID {
-+	KVM_RISCV_SBI_EXT_V01 = 0,
-+	KVM_RISCV_SBI_EXT_TIME,
-+	KVM_RISCV_SBI_EXT_IPI,
-+	KVM_RISCV_SBI_EXT_RFENCE,
-+	KVM_RISCV_SBI_EXT_SRST,
-+	KVM_RISCV_SBI_EXT_HSM,
-+	KVM_RISCV_SBI_EXT_EXPERIMENTAL,
-+	KVM_RISCV_SBI_EXT_VENDOR,
-+	KVM_RISCV_SBI_EXT_MAX,
-+};
-+
- /* Possible states for kvm_riscv_timer */
- #define KVM_RISCV_TIMER_STATE_OFF	0
- #define KVM_RISCV_TIMER_STATE_ON	1
-@@ -152,6 +168,9 @@ enum KVM_RISCV_ISA_EXT_ID {
- /* ISA Extension registers are mapped as type 7 */
- #define KVM_REG_RISCV_ISA_EXT		(0x07 << KVM_REG_RISCV_TYPE_SHIFT)
- 
-+/* SBI extension registers are mapped as type 8 */
-+#define KVM_REG_RISCV_SBI_EXT		(0x08 << KVM_REG_RISCV_TYPE_SHIFT)
-+
- #endif
- 
- #endif /* __LINUX_KVM_RISCV_H */
-diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-index 7c08567097f0..2260adaf2de8 100644
---- a/arch/riscv/kvm/vcpu.c
-+++ b/arch/riscv/kvm/vcpu.c
-@@ -594,6 +594,8 @@ static int kvm_riscv_vcpu_set_reg(struct kvm_vcpu *vcpu,
- 						 KVM_REG_RISCV_FP_D);
- 	case KVM_REG_RISCV_ISA_EXT:
- 		return kvm_riscv_vcpu_set_reg_isa_ext(vcpu, reg);
-+	case KVM_REG_RISCV_SBI_EXT:
-+		return kvm_riscv_vcpu_set_reg_sbi_ext(vcpu, reg);
- 	default:
- 		break;
- 	}
-diff --git a/arch/riscv/kvm/vcpu_sbi.c b/arch/riscv/kvm/vcpu_sbi.c
-index f96991d230bf..0abb44f8f4d1 100644
---- a/arch/riscv/kvm/vcpu_sbi.c
-+++ b/arch/riscv/kvm/vcpu_sbi.c
-@@ -40,16 +40,48 @@ static const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_v01 = {
- };
- #endif
- 
--static const struct kvm_vcpu_sbi_extension *sbi_ext[] = {
--	&vcpu_sbi_ext_v01,
--	&vcpu_sbi_ext_base,
--	&vcpu_sbi_ext_time,
--	&vcpu_sbi_ext_ipi,
--	&vcpu_sbi_ext_rfence,
--	&vcpu_sbi_ext_srst,
--	&vcpu_sbi_ext_hsm,
--	&vcpu_sbi_ext_experimental,
--	&vcpu_sbi_ext_vendor,
-+struct kvm_riscv_sbi_extension_entry {
-+	enum KVM_RISCV_SBI_EXT_ID dis_idx;
-+	const struct kvm_vcpu_sbi_extension *ext_ptr;
-+};
-+
-+static const struct kvm_riscv_sbi_extension_entry sbi_ext[] = {
-+	{
-+		.dis_idx = KVM_RISCV_SBI_EXT_V01,
-+		.ext_ptr = &vcpu_sbi_ext_v01,
-+	},
-+	{
-+		.dis_idx = KVM_RISCV_SBI_EXT_MAX, /* Can't be disabled */
-+		.ext_ptr = &vcpu_sbi_ext_base,
-+	},
-+	{
-+		.dis_idx = KVM_RISCV_SBI_EXT_TIME,
-+		.ext_ptr = &vcpu_sbi_ext_time,
-+	},
-+	{
-+		.dis_idx = KVM_RISCV_SBI_EXT_IPI,
-+		.ext_ptr = &vcpu_sbi_ext_ipi,
-+	},
-+	{
-+		.dis_idx = KVM_RISCV_SBI_EXT_RFENCE,
-+		.ext_ptr = &vcpu_sbi_ext_rfence,
-+	},
-+	{
-+		.dis_idx = KVM_RISCV_SBI_EXT_SRST,
-+		.ext_ptr = &vcpu_sbi_ext_srst,
-+	},
-+	{
-+		.dis_idx = KVM_RISCV_SBI_EXT_HSM,
-+		.ext_ptr = &vcpu_sbi_ext_hsm,
-+	},
-+	{
-+		.dis_idx = KVM_RISCV_SBI_EXT_EXPERIMENTAL,
-+		.ext_ptr = &vcpu_sbi_ext_experimental,
-+	},
-+	{
-+		.dis_idx = KVM_RISCV_SBI_EXT_VENDOR,
-+		.ext_ptr = &vcpu_sbi_ext_vendor,
-+	},
- };
- 
- void kvm_riscv_vcpu_sbi_forward(struct kvm_vcpu *vcpu, struct kvm_run *run)
-@@ -108,14 +140,95 @@ int kvm_riscv_vcpu_sbi_return(struct kvm_vcpu *vcpu, struct kvm_run *run)
- 	return 0;
- }
- 
--const struct kvm_vcpu_sbi_extension *kvm_vcpu_sbi_find_ext(unsigned long extid)
-+int kvm_riscv_vcpu_set_reg_sbi_ext(struct kvm_vcpu *vcpu,
-+				   const struct kvm_one_reg *reg)
-+{
-+	unsigned long __user *uaddr =
-+			(unsigned long __user *)(unsigned long)reg->addr;
-+	unsigned long reg_num = reg->id & ~(KVM_REG_ARCH_MASK |
-+					    KVM_REG_SIZE_MASK |
-+					    KVM_REG_RISCV_SBI_EXT);
-+	unsigned long i, reg_val;
-+	const struct kvm_riscv_sbi_extension_entry *sext = NULL;
-+	struct kvm_vcpu_sbi_context *scontext = &vcpu->arch.sbi_context;
-+
-+	if (KVM_REG_SIZE(reg->id) != sizeof(unsigned long))
-+		return -EINVAL;
-+
-+	if (copy_from_user(&reg_val, uaddr, KVM_REG_SIZE(reg->id)))
-+		return -EFAULT;
-+
-+	if (reg_num >= KVM_RISCV_SBI_EXT_MAX ||
-+	    (reg_val != 1 && reg_val != 0))
-+		return -EINVAL;
-+
-+	if (vcpu->arch.ran_atleast_once)
-+		return -EBUSY;
-+
-+	for (i = 0; i < ARRAY_SIZE(sbi_ext); i++) {
-+		if (sbi_ext[i].dis_idx == reg_num) {
-+			sext = &sbi_ext[i];
-+			break;
-+		}
-+	}
-+	if (!sext)
-+		return -ENOENT;
-+
-+	scontext->extension_disabled[sext->dis_idx] = !reg_val;
-+
-+	return 0;
-+}
-+
-+int kvm_riscv_vcpu_get_reg_sbi_ext(struct kvm_vcpu *vcpu,
-+				   const struct kvm_one_reg *reg)
-+{
-+	unsigned long __user *uaddr =
-+			(unsigned long __user *)(unsigned long)reg->addr;
-+	unsigned long reg_num = reg->id & ~(KVM_REG_ARCH_MASK |
-+					    KVM_REG_SIZE_MASK |
-+					    KVM_REG_RISCV_SBI_EXT);
-+	unsigned long i, reg_val;
-+	const struct kvm_riscv_sbi_extension_entry *sext = NULL;
-+	struct kvm_vcpu_sbi_context *scontext = &vcpu->arch.sbi_context;
-+
-+	if (KVM_REG_SIZE(reg->id) != sizeof(unsigned long))
-+		return -EINVAL;
-+
-+	if (reg_num >= KVM_RISCV_SBI_EXT_MAX)
-+		return -EINVAL;
-+
-+	for (i = 0; i < ARRAY_SIZE(sbi_ext); i++) {
-+		if (sbi_ext[i].dis_idx == reg_num) {
-+			sext = &sbi_ext[i];
-+			break;
-+		}
-+	}
-+	if (!sext)
-+		return -ENOENT;
-+
-+	reg_val = !scontext->extension_disabled[sext->dis_idx];
-+	if (copy_to_user(uaddr, &reg_val, KVM_REG_SIZE(reg->id)))
-+		return -EFAULT;
-+
-+	return 0;
-+}
-+
-+const struct kvm_vcpu_sbi_extension *kvm_vcpu_sbi_find_ext(
-+				struct kvm_vcpu *vcpu, unsigned long extid)
- {
--	int i = 0;
-+	int i;
-+	const struct kvm_riscv_sbi_extension_entry *sext;
-+	struct kvm_vcpu_sbi_context *scontext = &vcpu->arch.sbi_context;
- 
- 	for (i = 0; i < ARRAY_SIZE(sbi_ext); i++) {
--		if (sbi_ext[i]->extid_start <= extid &&
--		    sbi_ext[i]->extid_end >= extid)
--			return sbi_ext[i];
-+		sext = &sbi_ext[i];
-+		if (sext->ext_ptr->extid_start <= extid &&
-+		    sext->ext_ptr->extid_end >= extid) {
-+			if (sext->dis_idx < KVM_RISCV_SBI_EXT_MAX &&
-+			    scontext->extension_disabled[sext->dis_idx])
-+				return NULL;
-+			return sbi_ext[i].ext_ptr;
-+		}
- 	}
- 
- 	return NULL;
-@@ -132,7 +245,7 @@ int kvm_riscv_vcpu_sbi_ecall(struct kvm_vcpu *vcpu, struct kvm_run *run)
- 	unsigned long out_val = 0;
- 	bool ext_is_v01 = false;
- 
--	sbi_ext = kvm_vcpu_sbi_find_ext(cp->a7);
-+	sbi_ext = kvm_vcpu_sbi_find_ext(vcpu, cp->a7);
- 	if (sbi_ext && sbi_ext->handler) {
- #ifdef CONFIG_RISCV_SBI_V01
- 		if (cp->a7 >= SBI_EXT_0_1_SET_TIMER &&
-diff --git a/arch/riscv/kvm/vcpu_sbi_base.c b/arch/riscv/kvm/vcpu_sbi_base.c
-index 5d65c634d301..a51ed0c615bf 100644
---- a/arch/riscv/kvm/vcpu_sbi_base.c
-+++ b/arch/riscv/kvm/vcpu_sbi_base.c
-@@ -44,7 +44,7 @@ static int kvm_sbi_ext_base_handler(struct kvm_vcpu *vcpu, struct kvm_run *run,
- 			kvm_riscv_vcpu_sbi_forward(vcpu, run);
- 			*exit = true;
- 		} else
--			*out_val = kvm_vcpu_sbi_find_ext(cp->a0) ? 1 : 0;
-+			*out_val = kvm_vcpu_sbi_find_ext(vcpu, cp->a0) ? 1 : 0;
- 		break;
- 	case SBI_EXT_BASE_GET_MVENDORID:
- 		*out_val = vcpu->arch.mvendorid;
+1. Boot vcpu disabled PMU extension - probably okay as guest queries
+the PMU extension on boot cpu only.
+The PMU extension won't be available for any other vcpu.
+
+2. Boot vcpu has PMU extension enabled but others have it disabled.
+The run time SBI PMU calls will
+fail with EOPNOTSUPP and the user gets confused.
+
+There will be similar cases for HSM extension as well.
+
+As the entire extension won't be available to the guest if the SBI
+extension is disabled for the boot cpu only.
+There is also a slow VM start issue Andrew pointed about earlier.
+
+This makes me think if a VM ioctl to disable/enable the SBI extension
+for all vcpus makes more sense in this case.
+
+
+> Regards,
+> Anup
+
+
+
 -- 
-2.34.1
-
+Regards,
+Atish
 
