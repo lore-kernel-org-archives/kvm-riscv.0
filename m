@@ -1,108 +1,57 @@
 From: Atish Patra <atishp@atishpatra.org>
-Date: Mon, 28 Nov 2022 13:00:50 -0800
-Subject: [RFC 6/9] RISC-V: KVM: Add SBI PMU extension support
-In-Reply-To: <CAK9=C2XifUiOdA4cTFbQq7SNVJn+1Xup_giw4jo_z6bRdng4hQ@mail.gmail.com>
-References: <20220718170205.2972215-1-atishp@rivosinc.com> <20220718170205.2972215-7-atishp@rivosinc.com>
- <20221101142631.du54p4kyhlgf54cr@kamzik> <CAOnJCUJfakcoiWh4vFk5_BcTKfoSDbx+wtmh7MW4cPYog7q4BQ@mail.gmail.com>
- <20221123135842.uyw46kbybgb7unm2@kamzik> <CAOnJCUKZV+0Xts6C4QY7X+Wak0ZR_f8wPtEAtH4PEmh2-_AcWw@mail.gmail.com>
- <20221124105051.hbsavj3bgf4mvlzb@kamzik> <CAK9=C2XifUiOdA4cTFbQq7SNVJn+1Xup_giw4jo_z6bRdng4hQ@mail.gmail.com>
-Message-ID: <CAOnJCU+fxyLbLMEPbo+FA_DK+R872rJTeXrEeZGXwzxh6LyR0A@mail.gmail.com>
+Date: Mon, 28 Nov 2022 13:03:46 -0800
+Subject: [PATCH 1/9] RISC-V: KVM: Fix reg_val check in kvm_riscv_vcpu_set_reg_config()
+In-Reply-To: <20221128161424.608889-2-apatel@ventanamicro.com>
+References: <20221128161424.608889-1-apatel@ventanamicro.com> <20221128161424.608889-2-apatel@ventanamicro.com>
+Message-ID: <CAOnJCUL4oNd8vN9s2zxvDGzUOmZDtDzSYHsBfGeyBv9BSxrtTw@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Nov 24, 2022 at 4:59 AM Anup Patel <apatel@ventanamicro.com> wrote:
+On Mon, Nov 28, 2022 at 8:14 AM Anup Patel <apatel@ventanamicro.com> wrote:
 >
-> On Thu, Nov 24, 2022 at 4:21 PM Andrew Jones <ajones@ventanamicro.com> wrote:
-> >
-> > On Thu, Nov 24, 2022 at 02:18:26AM -0800, Atish Patra wrote:
-> > > On Wed, Nov 23, 2022 at 5:58 AM Andrew Jones <ajones@ventanamicro.com> wrote:
-> > > >
-> > > > On Tue, Nov 22, 2022 at 03:08:34PM -0800, Atish Patra wrote:
-> > ...
-> > > > > Currently, ARM64 enables pmu from user space using device control APIs
-> > > > > on vcpu fd.
-> > > > > Are you suggesting we should do something like that ?
-> > > >
-> > > > Yes. Although choosing which KVM API should be used could probably be
-> > > > thought-out again. x86 uses VM ioctls.
-> > > >
-> > >
-> > > How does it handle hetergenous systems in per VM ioctls ?
-> >
-> > I don't think it does, but neither does arm64. Afaik, the only way to run
-> > KVM VMs on heterogeneous systems is to pin the VM to one set of the CPUs,
-> > i.e. make sure the system it runs on is homogeneous.
-> >
-> > I agree we shouldn't paint ourselves into a homogeneous-only corner for
-> > riscv, though, so if it's possible to use VCPU APIs, then I guess we
-> > should. Although, one thing to keep in mind is that if the same ioctl
-> > needs to be run on each VCPU, then, when we start building VMs with
-> > hundreds of VCPUs, we'll see slow VM starts.
-> >
-> > >
-> > > > >
-> > > > > If PMU needs to have device control APIs (either via vcpu fd or its
-> > > > > own), we can retrieve
-> > > > > the hpmcounter width and count from there as well.
-> > > >
-> > > > Right. We need to decide how the VM/VCPU + PMU user interface should look.
-> > > > A separate PMU device, like arm64 has, sounds good, but the ioctl
-> > > > sequences for initialization may get more tricky.
-> > > >
-> > >
-> > > Do we really need a per VM interface ? I was thinking we can just
-> > > continue to use
-> > > one reg interface for PMU as well. We probably need two of them.
-> > >
-> > > 1. To enable/disable SBI extension
-> > >     -- The probe function will depend on this
-> > > 2. PMU specific get/set
-> > >     -- Number of hpmcounters
-> > >     -- hpmcounter width
-> > >     -- enable PMU
-> >
-> > ONE_REG is good for registers and virtual registers, which means the
-> > number of hpmcounters and the hpmcounter width are probably good
-> > candidates, but I'm not sure we should use it for enable/init types of
-> > purposes.
+> The reg_val check in kvm_riscv_vcpu_set_reg_config() should only
+> be done for isa config register.
 >
-> We are already using ONE_REG interface to enable/disable
-> ISA extensions so we should follow the same pattern and have
-> ONE_REG interface to enable/disable SBI extensions as well.
+> Fixes: 9bfd900beeec ("RISC-V: KVM: Improve ISA extension by using a bitmap")
+> Signed-off-by: Anup Patel <apatel@ventanamicro.com>
+> Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+> ---
+>  arch/riscv/kvm/vcpu.c | 11 +++++++----
+>  1 file changed, 7 insertions(+), 4 deletions(-)
+>
+> diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+> index 17d5b3f8c2ee..982a3f5e7130 100644
+> --- a/arch/riscv/kvm/vcpu.c
+> +++ b/arch/riscv/kvm/vcpu.c
+> @@ -296,12 +296,15 @@ static int kvm_riscv_vcpu_set_reg_config(struct kvm_vcpu *vcpu,
+>         if (copy_from_user(&reg_val, uaddr, KVM_REG_SIZE(reg->id)))
+>                 return -EFAULT;
+>
+> -       /* This ONE REG interface is only defined for single letter extensions */
+> -       if (fls(reg_val) >= RISCV_ISA_EXT_BASE)
+> -               return -EINVAL;
+> -
+>         switch (reg_num) {
+>         case KVM_REG_RISCV_CONFIG_REG(isa):
+> +               /*
+> +                * This ONE REG interface is only defined for
+> +                * single letter extensions.
+> +                */
+> +               if (fls(reg_val) >= RISCV_ISA_EXT_BASE)
+> +                       return -EINVAL;
+> +
+>                 if (!vcpu->arch.ran_atleast_once) {
+>                         /* Ignore the enable/disable request for certain extensions */
+>                         for (i = 0; i < RISCV_ISA_EXT_BASE; i++) {
+> --
+> 2.34.1
 >
 
-Thinking about it more, it may end up in vcpus with heterogeneous
-capabilities (different SBI extension).
-Most likely, it will be a bug and incorrect configuration from VMM but
-it's a possibility.
-For example: There will be two different scenarios for PMU extension
 
-1. Boot vcpu disabled PMU extension - probably okay as guest queries
-the PMU extension on boot cpu only.
-The PMU extension won't be available for any other vcpu.
-
-2. Boot vcpu has PMU extension enabled but others have it disabled.
-The run time SBI PMU calls will
-fail with EOPNOTSUPP and the user gets confused.
-
-There will be similar cases for HSM extension as well.
-
-As the entire extension won't be available to the guest if the SBI
-extension is disabled for the boot cpu only.
-There is also a slow VM start issue Andrew pointed about earlier.
-
-This makes me think if a VM ioctl to disable/enable the SBI extension
-for all vcpus makes more sense in this case.
-
-
-> Regards,
-> Anup
-
-
-
+Reviewed-by: Atish Patra <atishp@rivosinc.com>
 -- 
 Regards,
 Atish
