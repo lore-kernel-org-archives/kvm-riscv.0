@@ -1,96 +1,89 @@
 From: Anup Patel <apatel@ventanamicro.com>
-Date: Mon, 28 Nov 2022 21:44:19 +0530
-Subject: [PATCH 4/9] RISC-V: KVM: Use switch-case in kvm_riscv_vcpu_set/get_reg()
+Date: Mon, 28 Nov 2022 21:44:20 +0530
+Subject: [PATCH 5/9] RISC-V: KVM: Move sbi related struct and functions to kvm_vcpu_sbi.h
 In-Reply-To: <20221128161424.608889-1-apatel@ventanamicro.com>
 References: <20221128161424.608889-1-apatel@ventanamicro.com>
-Message-ID: <20221128161424.608889-5-apatel@ventanamicro.com>
+Message-ID: <20221128161424.608889-6-apatel@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-We should use switch-case in kvm_riscv_vcpu_set/get_reg() functions
-because the else-if ladder is quite big now.
+Just like asm/kvm_vcpu_timer.h, we should have all sbi related struct
+and functions in asm/kvm_vcpu_sbi.h.
 
 Signed-off-by: Anup Patel <apatel@ventanamicro.com>
-Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
 ---
- arch/riscv/kvm/vcpu.c | 36 ++++++++++++++++++++++--------------
- 1 file changed, 22 insertions(+), 14 deletions(-)
+ arch/riscv/include/asm/kvm_host.h     | 10 ++--------
+ arch/riscv/include/asm/kvm_vcpu_sbi.h |  6 ++++++
+ 2 files changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-index 982a3f5e7130..68c86f632d37 100644
---- a/arch/riscv/kvm/vcpu.c
-+++ b/arch/riscv/kvm/vcpu.c
-@@ -544,22 +544,26 @@ static int kvm_riscv_vcpu_set_reg_isa_ext(struct kvm_vcpu *vcpu,
- static int kvm_riscv_vcpu_set_reg(struct kvm_vcpu *vcpu,
- 				  const struct kvm_one_reg *reg)
- {
--	if ((reg->id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_CONFIG)
-+	switch (reg->id & KVM_REG_RISCV_TYPE_MASK) {
-+	case KVM_REG_RISCV_CONFIG:
- 		return kvm_riscv_vcpu_set_reg_config(vcpu, reg);
--	else if ((reg->id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_CORE)
-+	case KVM_REG_RISCV_CORE:
- 		return kvm_riscv_vcpu_set_reg_core(vcpu, reg);
--	else if ((reg->id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_CSR)
-+	case KVM_REG_RISCV_CSR:
- 		return kvm_riscv_vcpu_set_reg_csr(vcpu, reg);
--	else if ((reg->id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_TIMER)
-+	case KVM_REG_RISCV_TIMER:
- 		return kvm_riscv_vcpu_set_reg_timer(vcpu, reg);
--	else if ((reg->id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_FP_F)
-+	case KVM_REG_RISCV_FP_F:
- 		return kvm_riscv_vcpu_set_reg_fp(vcpu, reg,
- 						 KVM_REG_RISCV_FP_F);
--	else if ((reg->id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_FP_D)
-+	case KVM_REG_RISCV_FP_D:
- 		return kvm_riscv_vcpu_set_reg_fp(vcpu, reg,
- 						 KVM_REG_RISCV_FP_D);
--	else if ((reg->id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_ISA_EXT)
-+	case KVM_REG_RISCV_ISA_EXT:
- 		return kvm_riscv_vcpu_set_reg_isa_ext(vcpu, reg);
-+	default:
-+		break;
-+	}
+diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
+index 6502f9099965..91c74b09a970 100644
+--- a/arch/riscv/include/asm/kvm_host.h
++++ b/arch/riscv/include/asm/kvm_host.h
+@@ -16,6 +16,7 @@
+ #include <asm/hwcap.h>
+ #include <asm/kvm_vcpu_fp.h>
+ #include <asm/kvm_vcpu_insn.h>
++#include <asm/kvm_vcpu_sbi.h>
+ #include <asm/kvm_vcpu_timer.h>
  
- 	return -EINVAL;
- }
-@@ -567,22 +571,26 @@ static int kvm_riscv_vcpu_set_reg(struct kvm_vcpu *vcpu,
- static int kvm_riscv_vcpu_get_reg(struct kvm_vcpu *vcpu,
- 				  const struct kvm_one_reg *reg)
- {
--	if ((reg->id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_CONFIG)
-+	switch (reg->id & KVM_REG_RISCV_TYPE_MASK) {
-+	case KVM_REG_RISCV_CONFIG:
- 		return kvm_riscv_vcpu_get_reg_config(vcpu, reg);
--	else if ((reg->id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_CORE)
-+	case KVM_REG_RISCV_CORE:
- 		return kvm_riscv_vcpu_get_reg_core(vcpu, reg);
--	else if ((reg->id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_CSR)
-+	case KVM_REG_RISCV_CSR:
- 		return kvm_riscv_vcpu_get_reg_csr(vcpu, reg);
--	else if ((reg->id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_TIMER)
-+	case KVM_REG_RISCV_TIMER:
- 		return kvm_riscv_vcpu_get_reg_timer(vcpu, reg);
--	else if ((reg->id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_FP_F)
-+	case KVM_REG_RISCV_FP_F:
- 		return kvm_riscv_vcpu_get_reg_fp(vcpu, reg,
- 						 KVM_REG_RISCV_FP_F);
--	else if ((reg->id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_FP_D)
-+	case KVM_REG_RISCV_FP_D:
- 		return kvm_riscv_vcpu_get_reg_fp(vcpu, reg,
- 						 KVM_REG_RISCV_FP_D);
--	else if ((reg->id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_ISA_EXT)
-+	case KVM_REG_RISCV_ISA_EXT:
- 		return kvm_riscv_vcpu_get_reg_isa_ext(vcpu, reg);
-+	default:
-+		break;
-+	}
+ #define KVM_MAX_VCPUS			1024
+@@ -94,10 +95,6 @@ struct kvm_arch {
+ 	struct kvm_guest_timer timer;
+ };
  
- 	return -EINVAL;
- }
+-struct kvm_sbi_context {
+-	int return_handled;
+-};
+-
+ struct kvm_cpu_trap {
+ 	unsigned long sepc;
+ 	unsigned long scause;
+@@ -216,7 +213,7 @@ struct kvm_vcpu_arch {
+ 	struct kvm_csr_decode csr_decode;
+ 
+ 	/* SBI context */
+-	struct kvm_sbi_context sbi_context;
++	struct kvm_vcpu_sbi_context sbi_context;
+ 
+ 	/* Cache pages needed to program page tables with spinlock held */
+ 	struct kvm_mmu_memory_cache mmu_page_cache;
+@@ -326,7 +323,4 @@ bool kvm_riscv_vcpu_has_interrupts(struct kvm_vcpu *vcpu, unsigned long mask);
+ void kvm_riscv_vcpu_power_off(struct kvm_vcpu *vcpu);
+ void kvm_riscv_vcpu_power_on(struct kvm_vcpu *vcpu);
+ 
+-int kvm_riscv_vcpu_sbi_return(struct kvm_vcpu *vcpu, struct kvm_run *run);
+-int kvm_riscv_vcpu_sbi_ecall(struct kvm_vcpu *vcpu, struct kvm_run *run);
+-
+ #endif /* __RISCV_KVM_HOST_H__ */
+diff --git a/arch/riscv/include/asm/kvm_vcpu_sbi.h b/arch/riscv/include/asm/kvm_vcpu_sbi.h
+index d4e3e600beef..f79478a85d2d 100644
+--- a/arch/riscv/include/asm/kvm_vcpu_sbi.h
++++ b/arch/riscv/include/asm/kvm_vcpu_sbi.h
+@@ -14,6 +14,10 @@
+ #define KVM_SBI_VERSION_MAJOR 1
+ #define KVM_SBI_VERSION_MINOR 0
+ 
++struct kvm_vcpu_sbi_context {
++	int return_handled;
++};
++
+ struct kvm_vcpu_sbi_extension {
+ 	unsigned long extid_start;
+ 	unsigned long extid_end;
+@@ -31,7 +35,9 @@ void kvm_riscv_vcpu_sbi_forward(struct kvm_vcpu *vcpu, struct kvm_run *run);
+ void kvm_riscv_vcpu_sbi_system_reset(struct kvm_vcpu *vcpu,
+ 				     struct kvm_run *run,
+ 				     u32 type, u64 flags);
++int kvm_riscv_vcpu_sbi_return(struct kvm_vcpu *vcpu, struct kvm_run *run);
+ const struct kvm_vcpu_sbi_extension *kvm_vcpu_sbi_find_ext(unsigned long extid);
++int kvm_riscv_vcpu_sbi_ecall(struct kvm_vcpu *vcpu, struct kvm_run *run);
+ 
+ #ifdef CONFIG_RISCV_SBI_V01
+ extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_v01;
 -- 
 2.34.1
 
