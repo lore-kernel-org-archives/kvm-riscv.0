@@ -1,49 +1,47 @@
 From: Anup Patel <apatel@ventanamicro.com>
-Date: Mon, 28 Nov 2022 21:44:16 +0530
-Subject: [PATCH 1/9] RISC-V: KVM: Fix reg_val check in kvm_riscv_vcpu_set_reg_config()
-In-Reply-To: <20221128161424.608889-1-apatel@ventanamicro.com>
-References: <20221128161424.608889-1-apatel@ventanamicro.com>
-Message-ID: <20221128161424.608889-2-apatel@ventanamicro.com>
+Date: Mon, 28 Nov 2022 21:44:15 +0530
+Subject: [PATCH 0/9] RISC-V KVM ONE_REG interface for SBI
+Message-ID: <20221128161424.608889-1-apatel@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The reg_val check in kvm_riscv_vcpu_set_reg_config() should only
-be done for isa config register.
+This series does first does few cleanups/fixes (PATCH1 to PATCH5) and
+adds ONE-REG interface for customizing the SBI interface visible to the
+Guest/VM.
 
-Fixes: 9bfd900beeec ("RISC-V: KVM: Improve ISA extension by using a bitmap")
-Signed-off-by: Anup Patel <apatel@ventanamicro.com>
-Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
----
- arch/riscv/kvm/vcpu.c | 11 +++++++----
- 1 file changed, 7 insertions(+), 4 deletions(-)
+The testing of this series has been done with KVMTOOL changes in
+riscv_sbi_imp_v1 branch at:
+https://github.com/avpatel/kvmtool.git
 
-diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-index 17d5b3f8c2ee..982a3f5e7130 100644
---- a/arch/riscv/kvm/vcpu.c
-+++ b/arch/riscv/kvm/vcpu.c
-@@ -296,12 +296,15 @@ static int kvm_riscv_vcpu_set_reg_config(struct kvm_vcpu *vcpu,
- 	if (copy_from_user(&reg_val, uaddr, KVM_REG_SIZE(reg->id)))
- 		return -EFAULT;
- 
--	/* This ONE REG interface is only defined for single letter extensions */
--	if (fls(reg_val) >= RISCV_ISA_EXT_BASE)
--		return -EINVAL;
--
- 	switch (reg_num) {
- 	case KVM_REG_RISCV_CONFIG_REG(isa):
-+		/*
-+		 * This ONE REG interface is only defined for
-+		 * single letter extensions.
-+		 */
-+		if (fls(reg_val) >= RISCV_ISA_EXT_BASE)
-+			return -EINVAL;
-+
- 		if (!vcpu->arch.ran_atleast_once) {
- 			/* Ignore the enable/disable request for certain extensions */
- 			for (i = 0; i < RISCV_ISA_EXT_BASE; i++) {
+These patches can also be found in the riscv_kvm_sbi_imp_v1 branch at:
+https://github.com/avpatel/linux.git
+
+Anup Patel (9):
+  RISC-V: KVM: Fix reg_val check in kvm_riscv_vcpu_set_reg_config()
+  RISC-V: KVM: Remove redundant includes of asm/kvm_vcpu_timer.h
+  RISC-V: KVM: Remove redundant includes of asm/csr.h
+  RISC-V: KVM: Use switch-case in kvm_riscv_vcpu_set/get_reg()
+  RISC-V: KVM: Move sbi related struct and functions to kvm_vcpu_sbi.h
+  RISC-V: Export sbi_get_mvendorid() and friends
+  RISC-V: KVM: Save mvendorid, marchid, and mimpid when creating VCPU
+  RISC-V: KVM: Add ONE_REG interface for mvendorid, marchid, and mimpid
+  RISC-V: KVM: Add ONE_REG interface to enable/disable SBI extensions
+
+ arch/riscv/include/asm/kvm_host.h     |  16 ++-
+ arch/riscv/include/asm/kvm_vcpu_sbi.h |  14 ++-
+ arch/riscv/include/uapi/asm/kvm.h     |  22 ++++
+ arch/riscv/kernel/sbi.c               |   3 +
+ arch/riscv/kvm/vcpu.c                 |  82 +++++++++++----
+ arch/riscv/kvm/vcpu_sbi.c             | 145 +++++++++++++++++++++++---
+ arch/riscv/kvm/vcpu_sbi_base.c        |  15 ++-
+ arch/riscv/kvm/vcpu_sbi_hsm.c         |   1 -
+ arch/riscv/kvm/vcpu_sbi_replace.c     |   1 -
+ arch/riscv/kvm/vcpu_sbi_v01.c         |   1 -
+ 10 files changed, 244 insertions(+), 56 deletions(-)
+
 -- 
 2.34.1
 
