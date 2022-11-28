@@ -1,9 +1,9 @@
 From: Atish Patra <atishp@atishpatra.org>
-Date: Mon, 28 Nov 2022 13:04:20 -0800
-Subject: [PATCH 3/9] RISC-V: KVM: Remove redundant includes of asm/csr.h
-In-Reply-To: <20221128161424.608889-4-apatel@ventanamicro.com>
-References: <20221128161424.608889-1-apatel@ventanamicro.com> <20221128161424.608889-4-apatel@ventanamicro.com>
-Message-ID: <CAOnJCUJT_WcBk3bkB7BnA+xPSGoLH0W19ZAwUD2NhnfyApsL5g@mail.gmail.com>
+Date: Mon, 28 Nov 2022 13:04:42 -0800
+Subject: [PATCH 4/9] RISC-V: KVM: Use switch-case in kvm_riscv_vcpu_set/get_reg()
+In-Reply-To: <20221128161424.608889-5-apatel@ventanamicro.com>
+References: <20221128161424.608889-1-apatel@ventanamicro.com> <20221128161424.608889-5-apatel@ventanamicro.com>
+Message-ID: <CAOnJCULajHen9us+AePGKarM1xSXp0wVBXyz7ySQyZz9YQvFaQ@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -12,84 +12,93 @@ Content-Transfer-Encoding: 7bit
 
 On Mon, Nov 28, 2022 at 8:14 AM Anup Patel <apatel@ventanamicro.com> wrote:
 >
-> We should include asm/csr.h only where required so let us remove
-> redundant includes of this header.
+> We should use switch-case in kvm_riscv_vcpu_set/get_reg() functions
+> because the else-if ladder is quite big now.
 >
 > Signed-off-by: Anup Patel <apatel@ventanamicro.com>
+> Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
 > ---
->  arch/riscv/include/asm/kvm_host.h | 1 -
->  arch/riscv/kvm/vcpu_sbi_base.c    | 1 -
->  arch/riscv/kvm/vcpu_sbi_hsm.c     | 1 -
->  arch/riscv/kvm/vcpu_sbi_replace.c | 1 -
->  arch/riscv/kvm/vcpu_sbi_v01.c     | 1 -
->  5 files changed, 5 deletions(-)
+>  arch/riscv/kvm/vcpu.c | 36 ++++++++++++++++++++++--------------
+>  1 file changed, 22 insertions(+), 14 deletions(-)
 >
-> diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
-> index dbbf43d52623..6502f9099965 100644
-> --- a/arch/riscv/include/asm/kvm_host.h
-> +++ b/arch/riscv/include/asm/kvm_host.h
-> @@ -13,7 +13,6 @@
->  #include <linux/kvm.h>
->  #include <linux/kvm_types.h>
->  #include <linux/spinlock.h>
-> -#include <asm/csr.h>
->  #include <asm/hwcap.h>
->  #include <asm/kvm_vcpu_fp.h>
->  #include <asm/kvm_vcpu_insn.h>
-> diff --git a/arch/riscv/kvm/vcpu_sbi_base.c b/arch/riscv/kvm/vcpu_sbi_base.c
-> index 22b9126e2872..0c806f61c629 100644
-> --- a/arch/riscv/kvm/vcpu_sbi_base.c
-> +++ b/arch/riscv/kvm/vcpu_sbi_base.c
-> @@ -10,7 +10,6 @@
->  #include <linux/err.h>
->  #include <linux/kvm_host.h>
->  #include <linux/version.h>
-> -#include <asm/csr.h>
->  #include <asm/sbi.h>
->  #include <asm/kvm_vcpu_sbi.h>
+> diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+> index 982a3f5e7130..68c86f632d37 100644
+> --- a/arch/riscv/kvm/vcpu.c
+> +++ b/arch/riscv/kvm/vcpu.c
+> @@ -544,22 +544,26 @@ static int kvm_riscv_vcpu_set_reg_isa_ext(struct kvm_vcpu *vcpu,
+>  static int kvm_riscv_vcpu_set_reg(struct kvm_vcpu *vcpu,
+>                                   const struct kvm_one_reg *reg)
+>  {
+> -       if ((reg->id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_CONFIG)
+> +       switch (reg->id & KVM_REG_RISCV_TYPE_MASK) {
+> +       case KVM_REG_RISCV_CONFIG:
+>                 return kvm_riscv_vcpu_set_reg_config(vcpu, reg);
+> -       else if ((reg->id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_CORE)
+> +       case KVM_REG_RISCV_CORE:
+>                 return kvm_riscv_vcpu_set_reg_core(vcpu, reg);
+> -       else if ((reg->id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_CSR)
+> +       case KVM_REG_RISCV_CSR:
+>                 return kvm_riscv_vcpu_set_reg_csr(vcpu, reg);
+> -       else if ((reg->id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_TIMER)
+> +       case KVM_REG_RISCV_TIMER:
+>                 return kvm_riscv_vcpu_set_reg_timer(vcpu, reg);
+> -       else if ((reg->id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_FP_F)
+> +       case KVM_REG_RISCV_FP_F:
+>                 return kvm_riscv_vcpu_set_reg_fp(vcpu, reg,
+>                                                  KVM_REG_RISCV_FP_F);
+> -       else if ((reg->id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_FP_D)
+> +       case KVM_REG_RISCV_FP_D:
+>                 return kvm_riscv_vcpu_set_reg_fp(vcpu, reg,
+>                                                  KVM_REG_RISCV_FP_D);
+> -       else if ((reg->id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_ISA_EXT)
+> +       case KVM_REG_RISCV_ISA_EXT:
+>                 return kvm_riscv_vcpu_set_reg_isa_ext(vcpu, reg);
+> +       default:
+> +               break;
+> +       }
 >
-> diff --git a/arch/riscv/kvm/vcpu_sbi_hsm.c b/arch/riscv/kvm/vcpu_sbi_hsm.c
-> index 239dec0a628a..2e915cafd551 100644
-> --- a/arch/riscv/kvm/vcpu_sbi_hsm.c
-> +++ b/arch/riscv/kvm/vcpu_sbi_hsm.c
-> @@ -9,7 +9,6 @@
->  #include <linux/errno.h>
->  #include <linux/err.h>
->  #include <linux/kvm_host.h>
-> -#include <asm/csr.h>
->  #include <asm/sbi.h>
->  #include <asm/kvm_vcpu_sbi.h>
+>         return -EINVAL;
+>  }
+> @@ -567,22 +571,26 @@ static int kvm_riscv_vcpu_set_reg(struct kvm_vcpu *vcpu,
+>  static int kvm_riscv_vcpu_get_reg(struct kvm_vcpu *vcpu,
+>                                   const struct kvm_one_reg *reg)
+>  {
+> -       if ((reg->id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_CONFIG)
+> +       switch (reg->id & KVM_REG_RISCV_TYPE_MASK) {
+> +       case KVM_REG_RISCV_CONFIG:
+>                 return kvm_riscv_vcpu_get_reg_config(vcpu, reg);
+> -       else if ((reg->id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_CORE)
+> +       case KVM_REG_RISCV_CORE:
+>                 return kvm_riscv_vcpu_get_reg_core(vcpu, reg);
+> -       else if ((reg->id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_CSR)
+> +       case KVM_REG_RISCV_CSR:
+>                 return kvm_riscv_vcpu_get_reg_csr(vcpu, reg);
+> -       else if ((reg->id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_TIMER)
+> +       case KVM_REG_RISCV_TIMER:
+>                 return kvm_riscv_vcpu_get_reg_timer(vcpu, reg);
+> -       else if ((reg->id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_FP_F)
+> +       case KVM_REG_RISCV_FP_F:
+>                 return kvm_riscv_vcpu_get_reg_fp(vcpu, reg,
+>                                                  KVM_REG_RISCV_FP_F);
+> -       else if ((reg->id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_FP_D)
+> +       case KVM_REG_RISCV_FP_D:
+>                 return kvm_riscv_vcpu_get_reg_fp(vcpu, reg,
+>                                                  KVM_REG_RISCV_FP_D);
+> -       else if ((reg->id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_ISA_EXT)
+> +       case KVM_REG_RISCV_ISA_EXT:
+>                 return kvm_riscv_vcpu_get_reg_isa_ext(vcpu, reg);
+> +       default:
+> +               break;
+> +       }
 >
-> diff --git a/arch/riscv/kvm/vcpu_sbi_replace.c b/arch/riscv/kvm/vcpu_sbi_replace.c
-> index 4c034d8a606a..03a0198389f0 100644
-> --- a/arch/riscv/kvm/vcpu_sbi_replace.c
-> +++ b/arch/riscv/kvm/vcpu_sbi_replace.c
-> @@ -9,7 +9,6 @@
->  #include <linux/errno.h>
->  #include <linux/err.h>
->  #include <linux/kvm_host.h>
-> -#include <asm/csr.h>
->  #include <asm/sbi.h>
->  #include <asm/kvm_vcpu_timer.h>
->  #include <asm/kvm_vcpu_sbi.h>
-> diff --git a/arch/riscv/kvm/vcpu_sbi_v01.c b/arch/riscv/kvm/vcpu_sbi_v01.c
-> index 8a91a14e7139..489f225ee66d 100644
-> --- a/arch/riscv/kvm/vcpu_sbi_v01.c
-> +++ b/arch/riscv/kvm/vcpu_sbi_v01.c
-> @@ -9,7 +9,6 @@
->  #include <linux/errno.h>
->  #include <linux/err.h>
->  #include <linux/kvm_host.h>
-> -#include <asm/csr.h>
->  #include <asm/sbi.h>
->  #include <asm/kvm_vcpu_timer.h>
->  #include <asm/kvm_vcpu_sbi.h>
+>         return -EINVAL;
+>  }
 > --
 > 2.34.1
 >
 
-Reviewed-by: Atish Patra <atishp@rivosinc.com>
 
+Reviewed-by: Atish Patra <atishp@rivosinc.com>
 -- 
 Regards,
 Atish
