@@ -1,61 +1,70 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Wed, 30 Nov 2022 23:09:14 +0000
-Subject: [PATCH v2 30/50] KVM: VMX: Make VMCS configuration/capabilities
- structs read-only after init
+Date: Wed, 30 Nov 2022 23:09:02 +0000
+Subject: [PATCH v2 18/50] KVM: arm64: Unregister perf callbacks if hypervisor
+ finalization fails
 In-Reply-To: <20221130230934.1014142-1-seanjc@google.com>
 References: <20221130230934.1014142-1-seanjc@google.com>
-Message-ID: <20221130230934.1014142-31-seanjc@google.com>
+Message-ID: <20221130230934.1014142-19-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Tag vmcs_config and vmx_capability structs as __init, the canonical
-configuration is generated during hardware_setup() and must never be
-modified after that point.
+Undo everything done by init_subsystems() if a later initialization step
+fails, i.e. unregister perf callbacks in addition to unregistering the
+power management notifier.
 
+Fixes: bfa79a805454 ("KVM: arm64: Elevate hypervisor mappings creation at EL2")
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/x86/kvm/vmx/capabilities.h | 4 ++--
- arch/x86/kvm/vmx/vmx.c          | 4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+ arch/arm64/kvm/arm.c | 13 +++++++++++--
+ 1 file changed, 11 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/kvm/vmx/capabilities.h b/arch/x86/kvm/vmx/capabilities.h
-index cd2ac9536c99..45162c1bcd8f 100644
---- a/arch/x86/kvm/vmx/capabilities.h
-+++ b/arch/x86/kvm/vmx/capabilities.h
-@@ -66,13 +66,13 @@ struct vmcs_config {
- 	u64 misc;
- 	struct nested_vmx_msrs nested;
- };
--extern struct vmcs_config vmcs_config;
-+extern struct vmcs_config vmcs_config __ro_after_init;
+diff --git a/arch/arm64/kvm/arm.c b/arch/arm64/kvm/arm.c
+index fa986ebb4793..e6f6fcfe6bcc 100644
+--- a/arch/arm64/kvm/arm.c
++++ b/arch/arm64/kvm/arm.c
+@@ -1839,12 +1839,21 @@ static int init_subsystems(void)
+ 	kvm_register_perf_callbacks(NULL);
  
- struct vmx_capability {
- 	u32 ept;
- 	u32 vpid;
- };
--extern struct vmx_capability vmx_capability;
-+extern struct vmx_capability vmx_capability __ro_after_init;
+ out:
++	if (err)
++		hyp_cpu_pm_exit();
++
+ 	if (err || !is_protected_kvm_enabled())
+ 		on_each_cpu(_kvm_arch_hardware_disable, NULL, 1);
  
- static inline bool cpu_has_vmx_basic_inout(void)
+ 	return err;
+ }
+ 
++static void teardown_subsystems(void)
++{
++	kvm_unregister_perf_callbacks();
++	hyp_cpu_pm_exit();
++}
++
+ static void teardown_hyp_mode(void)
  {
-diff --git a/arch/x86/kvm/vmx/vmx.c b/arch/x86/kvm/vmx/vmx.c
-index 76185a7a7ded..654d81f781da 100644
---- a/arch/x86/kvm/vmx/vmx.c
-+++ b/arch/x86/kvm/vmx/vmx.c
-@@ -488,8 +488,8 @@ static DEFINE_PER_CPU(struct list_head, loaded_vmcss_on_cpu);
- static DECLARE_BITMAP(vmx_vpid_bitmap, VMX_NR_VPIDS);
- static DEFINE_SPINLOCK(vmx_vpid_lock);
+ 	int cpu;
+@@ -2242,7 +2251,7 @@ int kvm_arch_init(void *opaque)
  
--struct vmcs_config vmcs_config;
--struct vmx_capability vmx_capability;
-+struct vmcs_config vmcs_config __ro_after_init;
-+struct vmx_capability vmx_capability __ro_after_init;
+ 	err = init_subsystems();
+ 	if (err)
+-		goto out_subs;
++		goto out_hyp;
  
- #define VMX_SEGMENT_FIELD(seg)					\
- 	[VCPU_SREG_##seg] = {                                   \
+ 	if (!in_hyp_mode) {
+ 		err = finalize_hyp_mode();
+@@ -2263,7 +2272,7 @@ int kvm_arch_init(void *opaque)
+ 	return 0;
+ 
+ out_subs:
+-	hyp_cpu_pm_exit();
++	teardown_subsystems();
+ out_hyp:
+ 	if (!in_hyp_mode)
+ 		teardown_hyp_mode();
 -- 
 2.38.1.584.g0f3c55d4c2-goog
 
