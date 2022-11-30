@@ -1,212 +1,110 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Wed, 30 Nov 2022 23:08:52 +0000
-Subject: [PATCH v2 08/50] KVM: x86: Move hardware setup/unsetup to init/exit
+Date: Wed, 30 Nov 2022 23:09:26 +0000
+Subject: [PATCH v2 42/50] KVM: Disable CPU hotplug during hardware enabling/disabling
 In-Reply-To: <20221130230934.1014142-1-seanjc@google.com>
 References: <20221130230934.1014142-1-seanjc@google.com>
-Message-ID: <20221130230934.1014142-9-seanjc@google.com>
+Message-ID: <20221130230934.1014142-43-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Now that kvm_arch_hardware_setup() is called immediately after
-kvm_arch_init(), fold the guts of kvm_arch_hardware_(un)setup() into
-kvm_arch_{init,exit}() as a step towards dropping one of the hooks.
+From: Chao Gao <chao.gao@intel.com>
 
-To avoid having to unwind various setup, e.g registration of several
-notifiers, slot in the vendor hardware setup before the registration of
-said notifiers and callbacks.  Introducing a functional change while
-moving code is less than ideal, but the alternative is adding a pile of
-unwinding code, which is much more error prone, e.g. several attempts to
-move the setup code verbatim all introduced bugs.
+Disable CPU hotplug when enabling/disabling hardware to prevent the
+corner case where if the following sequence occurs:
 
-Add a comment to document that kvm_ops_update() is effectively the point
-of no return, e.g. it sets the kvm_x86_ops.hardware_enable canary and so
-needs to be unwound.
+  1. A hotplugged CPU marks itself online in cpu_online_mask
+  2. The hotplugged CPU enables interrupt before invoking KVM's ONLINE
+     callback
+  3  hardware_{en,dis}able_all() is invoked on another CPU
 
+the hotplugged CPU will be included in on_each_cpu() and thus get sent
+through hardware_{en,dis}able_nolock() before kvm_online_cpu() is called.
+
+        start_secondary { ...
+                set_cpu_online(smp_processor_id(), true); <- 1
+                ...
+                local_irq_enable();  <- 2
+                ...
+                cpu_startup_entry(CPUHP_AP_ONLINE_IDLE); <- 3
+        }
+
+KVM currently fudges around this race by keeping track of which CPUs have
+done hardware enabling (see commit 1b6c016818a5 "KVM: Keep track of which
+cpus have virtualization enabled"), but that's an inefficient, convoluted,
+and hacky solution.
+
+Signed-off-by: Chao Gao <chao.gao@intel.com>
+[sean: split to separate patch, write changelog]
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/x86/kvm/x86.c | 121 +++++++++++++++++++++++----------------------
- 1 file changed, 63 insertions(+), 58 deletions(-)
+ arch/x86/kvm/x86.c  | 11 ++++++++++-
+ virt/kvm/kvm_main.c | 12 ++++++++++++
+ 2 files changed, 22 insertions(+), 1 deletion(-)
 
 diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index a873618564cd..fe5f2e49b5eb 100644
+index dad30097f0c3..d2ad383da998 100644
 --- a/arch/x86/kvm/x86.c
 +++ b/arch/x86/kvm/x86.c
-@@ -9258,6 +9258,24 @@ static struct notifier_block pvclock_gtod_notifier = {
- };
- #endif
+@@ -9281,7 +9281,16 @@ static inline void kvm_ops_update(struct kvm_x86_init_ops *ops)
  
-+static inline void kvm_ops_update(struct kvm_x86_init_ops *ops)
-+{
-+	memcpy(&kvm_x86_ops, ops->runtime_ops, sizeof(kvm_x86_ops));
-+
-+#define __KVM_X86_OP(func) \
-+	static_call_update(kvm_x86_##func, kvm_x86_ops.func);
-+#define KVM_X86_OP(func) \
-+	WARN_ON(!kvm_x86_ops.func); __KVM_X86_OP(func)
-+#define KVM_X86_OP_OPTIONAL __KVM_X86_OP
-+#define KVM_X86_OP_OPTIONAL_RET0(func) \
-+	static_call_update(kvm_x86_##func, (void *)kvm_x86_ops.func ? : \
-+					   (void *)__static_call_return0);
-+#include <asm/kvm-x86-ops.h>
-+#undef __KVM_X86_OP
-+
-+	kvm_pmu_ops_update(ops->pmu_ops);
-+}
-+
- int kvm_arch_init(void *opaque)
+ static int kvm_x86_check_processor_compatibility(void)
  {
- 	struct kvm_x86_init_ops *ops = opaque;
-@@ -9331,6 +9349,24 @@ int kvm_arch_init(void *opaque)
- 		kvm_caps.supported_xcr0 = host_xcr0 & KVM_SUPPORTED_XCR0;
- 	}
- 
-+	rdmsrl_safe(MSR_EFER, &host_efer);
-+
-+	if (boot_cpu_has(X86_FEATURE_XSAVES))
-+		rdmsrl(MSR_IA32_XSS, host_xss);
-+
-+	kvm_init_pmu_capability();
-+
-+	r = ops->hardware_setup();
-+	if (r != 0)
-+		goto out_mmu_exit;
+-	struct cpuinfo_x86 *c = &cpu_data(smp_processor_id());
++	int cpu = smp_processor_id();
++	struct cpuinfo_x86 *c = &cpu_data(cpu);
 +
 +	/*
-+	 * Point of no return!  DO NOT add error paths below this point unless
-+	 * absolutely necessary, as most operations from this point forward
-+	 * require unwinding.
++	 * Compatibility checks are done when loading KVM and when enabling
++	 * hardware, e.g. during CPU hotplug, to ensure all online CPUs are
++	 * compatible, i.e. KVM should never perform a compatibility check on
++	 * an offline CPU.
 +	 */
-+	kvm_ops_update(ops);
-+
- 	kvm_timer_init();
++	WARN_ON(!cpu_online(cpu));
  
- 	if (pi_inject_timer == -1)
-@@ -9342,8 +9378,32 @@ int kvm_arch_init(void *opaque)
- 		set_hv_tscchange_cb(kvm_hyperv_tsc_notifier);
- #endif
+ 	if (__cr4_reserved_bits(cpu_has, c) !=
+ 	    __cr4_reserved_bits(cpu_has, &boot_cpu_data))
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index f26ea779710a..d985b24c423b 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -5098,15 +5098,26 @@ static void hardware_disable_all_nolock(void)
  
-+	kvm_register_perf_callbacks(ops->handle_intel_pt_intr);
-+
-+	if (!kvm_cpu_cap_has(X86_FEATURE_XSAVES))
-+		kvm_caps.supported_xss = 0;
-+
-+#define __kvm_cpu_cap_has(UNUSED_, f) kvm_cpu_cap_has(f)
-+	cr4_reserved_bits = __cr4_reserved_bits(__kvm_cpu_cap_has, UNUSED_);
-+#undef __kvm_cpu_cap_has
-+
-+	if (kvm_caps.has_tsc_control) {
-+		/*
-+		 * Make sure the user can only configure tsc_khz values that
-+		 * fit into a signed integer.
-+		 * A min value is not calculated because it will always
-+		 * be 1 on all machines.
-+		 */
-+		u64 max = min(0x7fffffffULL,
-+			      __scale_tsc(kvm_caps.max_tsc_scaling_ratio, tsc_khz));
-+		kvm_caps.max_guest_tsc_khz = max;
-+	}
-+	kvm_caps.default_tsc_scaling_ratio = 1ULL << kvm_caps.tsc_scaling_ratio_frac_bits;
-+	kvm_init_msr_list();
- 	return 0;
- 
-+out_mmu_exit:
-+	kvm_mmu_vendor_module_exit();
- out_free_percpu:
- 	free_percpu(user_return_msrs);
- out_free_x86_emulator_cache:
-@@ -9353,6 +9413,8 @@ int kvm_arch_init(void *opaque)
- 
- void kvm_arch_exit(void)
+ static void hardware_disable_all(void)
  {
-+	kvm_unregister_perf_callbacks();
-+
- #ifdef CONFIG_X86_64
- 	if (hypervisor_is_type(X86_HYPER_MS_HYPERV))
- 		clear_hv_tscchange_cb();
-@@ -9368,6 +9430,7 @@ void kvm_arch_exit(void)
- 	irq_work_sync(&pvclock_irq_work);
- 	cancel_work_sync(&pvclock_gtod_work);
- #endif
-+	static_call(kvm_x86_hardware_unsetup)();
- 	kvm_x86_ops.hardware_enable = NULL;
- 	kvm_mmu_vendor_module_exit();
- 	free_percpu(user_return_msrs);
-@@ -11957,72 +12020,14 @@ void kvm_arch_hardware_disable(void)
- 	drop_user_return_notifiers();
++	cpus_read_lock();
+ 	raw_spin_lock(&kvm_count_lock);
+ 	hardware_disable_all_nolock();
+ 	raw_spin_unlock(&kvm_count_lock);
++	cpus_read_unlock();
  }
  
--static inline void kvm_ops_update(struct kvm_x86_init_ops *ops)
--{
--	memcpy(&kvm_x86_ops, ops->runtime_ops, sizeof(kvm_x86_ops));
--
--#define __KVM_X86_OP(func) \
--	static_call_update(kvm_x86_##func, kvm_x86_ops.func);
--#define KVM_X86_OP(func) \
--	WARN_ON(!kvm_x86_ops.func); __KVM_X86_OP(func)
--#define KVM_X86_OP_OPTIONAL __KVM_X86_OP
--#define KVM_X86_OP_OPTIONAL_RET0(func) \
--	static_call_update(kvm_x86_##func, (void *)kvm_x86_ops.func ? : \
--					   (void *)__static_call_return0);
--#include <asm/kvm-x86-ops.h>
--#undef __KVM_X86_OP
--
--	kvm_pmu_ops_update(ops->pmu_ops);
--}
--
- int kvm_arch_hardware_setup(void *opaque)
+ static int hardware_enable_all(void)
  {
--	struct kvm_x86_init_ops *ops = opaque;
--	int r;
--
--	rdmsrl_safe(MSR_EFER, &host_efer);
--
--	if (boot_cpu_has(X86_FEATURE_XSAVES))
--		rdmsrl(MSR_IA32_XSS, host_xss);
--
--	kvm_init_pmu_capability();
--
--	r = ops->hardware_setup();
--	if (r != 0)
--		return r;
--
--	kvm_ops_update(ops);
--
--	kvm_register_perf_callbacks(ops->handle_intel_pt_intr);
--
--	if (!kvm_cpu_cap_has(X86_FEATURE_XSAVES))
--		kvm_caps.supported_xss = 0;
--
--#define __kvm_cpu_cap_has(UNUSED_, f) kvm_cpu_cap_has(f)
--	cr4_reserved_bits = __cr4_reserved_bits(__kvm_cpu_cap_has, UNUSED_);
--#undef __kvm_cpu_cap_has
--
--	if (kvm_caps.has_tsc_control) {
--		/*
--		 * Make sure the user can only configure tsc_khz values that
--		 * fit into a signed integer.
--		 * A min value is not calculated because it will always
--		 * be 1 on all machines.
--		 */
--		u64 max = min(0x7fffffffULL,
--			      __scale_tsc(kvm_caps.max_tsc_scaling_ratio, tsc_khz));
--		kvm_caps.max_guest_tsc_khz = max;
--	}
--	kvm_caps.default_tsc_scaling_ratio = 1ULL << kvm_caps.tsc_scaling_ratio_frac_bits;
--	kvm_init_msr_list();
- 	return 0;
+ 	int r = 0;
+ 
++	/*
++	 * When onlining a CPU, cpu_online_mask is set before kvm_online_cpu()
++	 * is called, and so on_each_cpu() between them includes the CPU that
++	 * is being onlined.  As a result, hardware_enable_nolock() may get
++	 * invoked before kvm_online_cpu(), which also enables hardware if the
++	 * usage count is non-zero.  Disable CPU hotplug to avoid attempting to
++	 * enable hardware multiple times.
++	 */
++	cpus_read_lock();
+ 	raw_spin_lock(&kvm_count_lock);
+ 
+ 	kvm_usage_count++;
+@@ -5121,6 +5132,7 @@ static int hardware_enable_all(void)
+ 	}
+ 
+ 	raw_spin_unlock(&kvm_count_lock);
++	cpus_read_unlock();
+ 
+ 	return r;
  }
- 
- void kvm_arch_hardware_unsetup(void)
- {
--	kvm_unregister_perf_callbacks();
- 
--	static_call(kvm_x86_hardware_unsetup)();
- }
- 
- int kvm_arch_check_processor_compat(void *opaque)
 -- 
 2.38.1.584.g0f3c55d4c2-goog
 
