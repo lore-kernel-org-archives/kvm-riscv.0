@@ -1,105 +1,97 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Wed, 30 Nov 2022 23:09:12 +0000
-Subject: [PATCH v2 28/50] KVM: s390: Mark __kvm_s390_init() and its
- descendants as __init
+Date: Wed, 30 Nov 2022 23:09:03 +0000
+Subject: [PATCH v2 19/50] KVM: arm64: Do arm/arch initialization without
+ bouncing through kvm_init()
 In-Reply-To: <20221130230934.1014142-1-seanjc@google.com>
 References: <20221130230934.1014142-1-seanjc@google.com>
-Message-ID: <20221130230934.1014142-29-seanjc@google.com>
+Message-ID: <20221130230934.1014142-20-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Tag __kvm_s390_init() and its unique helpers as __init.  These functions
-are only ever called during module_init(), but could not be tagged
-accordingly while they were invoked from the common kvm_arch_init(),
-which is not __init because of x86.
+Do arm/arch specific initialization directly in arm's module_init(), now
+called kvm_arm_init(), instead of bouncing through kvm_init() to reach
+kvm_arch_init().  Invoking kvm_arch_init() is the very first action
+performed by kvm_init(), so from a initialization perspective this is a
+glorified nop.
+
+Avoiding kvm_arch_init() also fixes a mostly benign bug as kvm_arch_exit()
+doesn't properly unwind if a later stage of kvm_init() fails.  While the
+soon-to-be-deleted comment about compiling as a module being unsupported
+is correct, kvm_arch_exit() can still be called by kvm_init() if any step
+after the call to kvm_arch_init() succeeds.
+
+Add a FIXME to call out that pKVM initialization isn't unwound if
+kvm_init() fails, which is a pre-existing problem inherited from
+kvm_arch_exit().
+
+Making kvm_arch_init() a nop will also allow dropping kvm_arch_init() and
+kvm_arch_exit() entirely once all other architectures follow suit.
 
 Signed-off-by: Sean Christopherson <seanjc@google.com>
-Reviewed-by: Eric Farman <farman@linux.ibm.com>
 ---
- arch/s390/kvm/interrupt.c | 2 +-
- arch/s390/kvm/kvm-s390.c  | 4 ++--
- arch/s390/kvm/kvm-s390.h  | 2 +-
- arch/s390/kvm/pci.c       | 2 +-
- arch/s390/kvm/pci.h       | 2 +-
- 5 files changed, 6 insertions(+), 6 deletions(-)
+ arch/arm64/kvm/arm.c | 25 ++++++++++++++++---------
+ 1 file changed, 16 insertions(+), 9 deletions(-)
 
-diff --git a/arch/s390/kvm/interrupt.c b/arch/s390/kvm/interrupt.c
-index 1dae78deddf2..3754d7937530 100644
---- a/arch/s390/kvm/interrupt.c
-+++ b/arch/s390/kvm/interrupt.c
-@@ -3411,7 +3411,7 @@ void kvm_s390_gib_destroy(void)
- 	gib = NULL;
+diff --git a/arch/arm64/kvm/arm.c b/arch/arm64/kvm/arm.c
+index e6f6fcfe6bcc..d3a4db1abf32 100644
+--- a/arch/arm64/kvm/arm.c
++++ b/arch/arm64/kvm/arm.c
+@@ -2195,7 +2195,7 @@ void kvm_arch_irq_bypass_start(struct irq_bypass_consumer *cons)
+ /**
+  * Initialize Hyp-mode and memory mappings on all CPUs.
+  */
+-int kvm_arch_init(void *opaque)
++int kvm_arm_init(void)
+ {
+ 	int err;
+ 	bool in_hyp_mode;
+@@ -2269,6 +2269,14 @@ int kvm_arch_init(void *opaque)
+ 		kvm_info("Hyp mode initialized successfully\n");
+ 	}
+ 
++	/*
++	 * FIXME: Do something reasonable if kvm_init() fails after pKVM
++	 * hypervisor protection is finalized.
++	 */
++	err = kvm_init(NULL, sizeof(struct kvm_vcpu), 0, THIS_MODULE);
++	if (err)
++		goto out_subs;
++
+ 	return 0;
+ 
+ out_subs:
+@@ -2281,10 +2289,15 @@ int kvm_arch_init(void *opaque)
+ 	return err;
  }
  
--int kvm_s390_gib_init(u8 nisc)
-+int __init kvm_s390_gib_init(u8 nisc)
++int kvm_arch_init(void *opaque)
++{
++	return 0;
++}
++
+ /* NOP: Compiling as a module not supported */
+ void kvm_arch_exit(void)
  {
- 	int rc = 0;
- 
-diff --git a/arch/s390/kvm/kvm-s390.c b/arch/s390/kvm/kvm-s390.c
-index 8c4fcaf2bd36..66d162723d21 100644
---- a/arch/s390/kvm/kvm-s390.c
-+++ b/arch/s390/kvm/kvm-s390.c
-@@ -366,7 +366,7 @@ static __always_inline void __insn32_query(unsigned int opcode, u8 *query)
- #define INSN_SORTL 0xb938
- #define INSN_DFLTCC 0xb939
- 
--static void kvm_s390_cpu_feat_init(void)
-+static void __init kvm_s390_cpu_feat_init(void)
- {
- 	int i;
- 
-@@ -469,7 +469,7 @@ static void kvm_s390_cpu_feat_init(void)
- 	 */
+-	kvm_unregister_perf_callbacks();
++
  }
  
--static int __kvm_s390_init(void)
-+static int __init __kvm_s390_init(void)
- {
- 	int rc = -ENOMEM;
- 
-diff --git a/arch/s390/kvm/kvm-s390.h b/arch/s390/kvm/kvm-s390.h
-index d48588c207d8..0261d42c7d01 100644
---- a/arch/s390/kvm/kvm-s390.h
-+++ b/arch/s390/kvm/kvm-s390.h
-@@ -470,7 +470,7 @@ void kvm_s390_gisa_clear(struct kvm *kvm);
- void kvm_s390_gisa_destroy(struct kvm *kvm);
- void kvm_s390_gisa_disable(struct kvm *kvm);
- void kvm_s390_gisa_enable(struct kvm *kvm);
--int kvm_s390_gib_init(u8 nisc);
-+int __init kvm_s390_gib_init(u8 nisc);
- void kvm_s390_gib_destroy(void);
- 
- /* implemented in guestdbg.c */
-diff --git a/arch/s390/kvm/pci.c b/arch/s390/kvm/pci.c
-index ded1af2ddae9..39544c92ce3d 100644
---- a/arch/s390/kvm/pci.c
-+++ b/arch/s390/kvm/pci.c
-@@ -670,7 +670,7 @@ int kvm_s390_pci_zpci_op(struct kvm *kvm, struct kvm_s390_zpci_op *args)
- 	return r;
+ static int __init early_kvm_mode_cfg(char *arg)
+@@ -2325,10 +2338,4 @@ enum kvm_mode kvm_get_mode(void)
+ 	return kvm_mode;
  }
  
--int kvm_s390_pci_init(void)
-+int __init kvm_s390_pci_init(void)
- {
- 	zpci_kvm_hook.kvm_register = kvm_s390_pci_register_kvm;
- 	zpci_kvm_hook.kvm_unregister = kvm_s390_pci_unregister_kvm;
-diff --git a/arch/s390/kvm/pci.h b/arch/s390/kvm/pci.h
-index 486d06ef563f..ff0972dd5e71 100644
---- a/arch/s390/kvm/pci.h
-+++ b/arch/s390/kvm/pci.h
-@@ -60,7 +60,7 @@ void kvm_s390_pci_clear_list(struct kvm *kvm);
- 
- int kvm_s390_pci_zpci_op(struct kvm *kvm, struct kvm_s390_zpci_op *args);
- 
--int kvm_s390_pci_init(void);
-+int __init kvm_s390_pci_init(void);
- void kvm_s390_pci_exit(void);
- 
- static inline bool kvm_s390_pci_interp_allowed(void)
+-static int arm_init(void)
+-{
+-	int rc = kvm_init(NULL, sizeof(struct kvm_vcpu), 0, THIS_MODULE);
+-	return rc;
+-}
+-
+-module_init(arm_init);
++module_init(kvm_arm_init);
 -- 
 2.38.1.584.g0f3c55d4c2-goog
 
