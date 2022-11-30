@@ -1,133 +1,111 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Wed, 30 Nov 2022 23:08:56 +0000
-Subject: [PATCH v2 12/50] KVM: VMX: Move Hyper-V eVMCS initialization to helper
+Date: Wed, 30 Nov 2022 23:08:54 +0000
+Subject: [PATCH v2 10/50] KVM: VMX: Reset eVMCS controls in VP assist page
+ during hardware disabling
 In-Reply-To: <20221130230934.1014142-1-seanjc@google.com>
 References: <20221130230934.1014142-1-seanjc@google.com>
-Message-ID: <20221130230934.1014142-13-seanjc@google.com>
+Message-ID: <20221130230934.1014142-11-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Move Hyper-V's eVMCS initialization to a dedicated helper to clean up
-vmx_init(), and add a comment to call out that the Hyper-V init code
-doesn't need to be unwound if vmx_init() ultimately fails.
+Reset the eVMCS controls in the per-CPU VP assist page during hardware
+disabling instead of waiting until kvm-intel's module exit.  The controls
+are activated if and only if KVM creates a VM, i.e. don't need to be
+reset if hardware is never enabled.
 
-No functional change intended.
+Doing the reset during hardware disabling will naturally fix a potential
+NULL pointer deref bug once KVM disables CPU hotplug while enabling and
+disabling hardware (which is necessary to fix a variety of bugs).  If the
+kernel is running as the root partition, the VP assist page is unmapped
+during CPU hot unplug, and so KVM's clearing of the eVMCS controls needs
+to occur with CPU hot(un)plug disabled, otherwise KVM could attempt to
+write to a CPU's VP assist page after it's unmapped.
 
+Reported-by: Vitaly Kuznetsov <vkuznets@redhat.com>
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/x86/kvm/vmx/vmx.c | 73 +++++++++++++++++++++++++-----------------
- 1 file changed, 43 insertions(+), 30 deletions(-)
+ arch/x86/kvm/vmx/vmx.c | 50 +++++++++++++++++++++++++-----------------
+ 1 file changed, 30 insertions(+), 20 deletions(-)
 
 diff --git a/arch/x86/kvm/vmx/vmx.c b/arch/x86/kvm/vmx/vmx.c
-index c0de7160700b..b8bf95b9710d 100644
+index cea8c07f5229..d85d175dca70 100644
 --- a/arch/x86/kvm/vmx/vmx.c
 +++ b/arch/x86/kvm/vmx/vmx.c
-@@ -523,6 +523,8 @@ static inline void vmx_segment_cache_clear(struct vcpu_vmx *vmx)
- static unsigned long host_idt_base;
- 
- #if IS_ENABLED(CONFIG_HYPERV)
-+static struct kvm_x86_ops vmx_x86_ops __initdata;
-+
- static bool __read_mostly enlightened_vmcs = true;
- module_param(enlightened_vmcs, bool, 0444);
- 
-@@ -551,6 +553,43 @@ static int hv_enable_l2_tlb_flush(struct kvm_vcpu *vcpu)
+@@ -551,6 +551,33 @@ static int hv_enable_l2_tlb_flush(struct kvm_vcpu *vcpu)
  	return 0;
  }
  
-+static __init void hv_init_evmcs(void)
++static void hv_reset_evmcs(void)
 +{
-+	int cpu;
++	struct hv_vp_assist_page *vp_ap;
 +
-+	if (!enlightened_vmcs)
++	if (!static_branch_unlikely(&enable_evmcs))
 +		return;
 +
 +	/*
-+	 * Enlightened VMCS usage should be recommended and the host needs
-+	 * to support eVMCS v1 or above.
++	 * KVM should enable eVMCS if and only if all CPUs have a VP assist
++	 * page, and should reject CPU onlining if eVMCS is enabled the CPU
++	 * doesn't have a VP assist page allocated.
 +	 */
-+	if (ms_hyperv.hints & HV_X64_ENLIGHTENED_VMCS_RECOMMENDED &&
-+	    (ms_hyperv.nested_features & HV_X64_ENLIGHTENED_VMCS_VERSION) >=
-+	     KVM_EVMCS_VERSION) {
++	vp_ap = hv_get_vp_assist_page(smp_processor_id());
++	if (WARN_ON_ONCE(!vp_ap))
++		return;
 +
-+		/* Check that we have assist pages on all online CPUs */
-+		for_each_online_cpu(cpu) {
-+			if (!hv_get_vp_assist_page(cpu)) {
-+				enlightened_vmcs = false;
-+				break;
-+			}
-+		}
-+
-+		if (enlightened_vmcs) {
-+			pr_info("KVM: vmx: using Hyper-V Enlightened VMCS\n");
-+			static_branch_enable(&enable_evmcs);
-+		}
-+
-+		if (ms_hyperv.nested_features & HV_X64_NESTED_DIRECT_FLUSH)
-+			vmx_x86_ops.enable_l2_tlb_flush
-+				= hv_enable_l2_tlb_flush;
-+
-+	} else {
-+		enlightened_vmcs = false;
-+	}
++	/*
++	 * Reset everything to support using non-enlightened VMCS access later
++	 * (e.g. when we reload the module with enlightened_vmcs=0)
++	 */
++	vp_ap->nested_control.features.directhypercall = 0;
++	vp_ap->current_nested_vmcs = 0;
++	vp_ap->enlighten_vmentry = 0;
 +}
 +
- static void hv_reset_evmcs(void)
- {
- 	struct hv_vp_assist_page *vp_ap;
-@@ -577,6 +616,7 @@ static void hv_reset_evmcs(void)
- }
- 
- #else /* IS_ENABLED(CONFIG_HYPERV) */
-+static void hv_init_evmcs(void) {}
- static void hv_reset_evmcs(void) {}
++#else /* IS_ENABLED(CONFIG_HYPERV) */
++static void hv_reset_evmcs(void) {}
  #endif /* IS_ENABLED(CONFIG_HYPERV) */
  
-@@ -8500,38 +8540,11 @@ static int __init vmx_init(void)
- {
- 	int r, cpu;
+ /*
+@@ -2496,6 +2523,8 @@ static void vmx_hardware_disable(void)
+ 	if (cpu_vmxoff())
+ 		kvm_spurious_fault();
  
--#if IS_ENABLED(CONFIG_HYPERV)
- 	/*
--	 * Enlightened VMCS usage should be recommended and the host needs
--	 * to support eVMCS v1 or above. We can also disable eVMCS support
--	 * with module parameter.
-+	 * Note, hv_init_evmcs() touches only VMX knobs, i.e. there's nothing
-+	 * to unwind if a later step fails.
- 	 */
--	if (enlightened_vmcs &&
--	    ms_hyperv.hints & HV_X64_ENLIGHTENED_VMCS_RECOMMENDED &&
--	    (ms_hyperv.nested_features & HV_X64_ENLIGHTENED_VMCS_VERSION) >=
--	    KVM_EVMCS_VERSION) {
--
--		/* Check that we have assist pages on all online CPUs */
++	hv_reset_evmcs();
++
+ 	intel_pt_handle_vmx(0);
+ }
+ 
+@@ -8462,27 +8491,8 @@ static void vmx_exit(void)
+ 	kvm_exit();
+ 
+ #if IS_ENABLED(CONFIG_HYPERV)
+-	if (static_branch_unlikely(&enable_evmcs)) {
+-		int cpu;
+-		struct hv_vp_assist_page *vp_ap;
+-		/*
+-		 * Reset everything to support using non-enlightened VMCS
+-		 * access later (e.g. when we reload the module with
+-		 * enlightened_vmcs=0)
+-		 */
 -		for_each_online_cpu(cpu) {
--			if (!hv_get_vp_assist_page(cpu)) {
--				enlightened_vmcs = false;
--				break;
--			}
+-			vp_ap =	hv_get_vp_assist_page(cpu);
+-
+-			if (!vp_ap)
+-				continue;
+-
+-			vp_ap->nested_control.features.directhypercall = 0;
+-			vp_ap->current_nested_vmcs = 0;
+-			vp_ap->enlighten_vmentry = 0;
 -		}
 -
--		if (enlightened_vmcs) {
--			pr_info("KVM: vmx: using Hyper-V Enlightened VMCS\n");
--			static_branch_enable(&enable_evmcs);
--		}
--
--		if (ms_hyperv.nested_features & HV_X64_NESTED_DIRECT_FLUSH)
--			vmx_x86_ops.enable_l2_tlb_flush
--				= hv_enable_l2_tlb_flush;
--
--	} else {
--		enlightened_vmcs = false;
++	if (static_branch_unlikely(&enable_evmcs))
+ 		static_branch_disable(&enable_evmcs);
 -	}
--#endif
-+	hv_init_evmcs();
+ #endif
+ 	vmx_cleanup_l1d_flush();
  
- 	r = kvm_init(&vmx_init_ops, sizeof(struct vcpu_vmx),
- 		     __alignof__(struct vcpu_vmx), THIS_MODULE);
 -- 
 2.38.1.584.g0f3c55d4c2-goog
 
