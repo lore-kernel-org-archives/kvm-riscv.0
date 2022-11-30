@@ -1,55 +1,51 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Wed, 30 Nov 2022 23:09:06 +0000
-Subject: [PATCH v2 22/50] KVM: MIPS: Setup VZ emulation? directly from kvm_mips_init()
+Date: Wed, 30 Nov 2022 23:09:07 +0000
+Subject: [PATCH v2 23/50] KVM: MIPS: Register die notifier prior to kvm_init()
 In-Reply-To: <20221130230934.1014142-1-seanjc@google.com>
 References: <20221130230934.1014142-1-seanjc@google.com>
-Message-ID: <20221130230934.1014142-23-seanjc@google.com>
+Message-ID: <20221130230934.1014142-24-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Invoke kvm_mips_emulation_init() directly from kvm_mips_init() instead
-of bouncing through kvm_init()=>kvm_arch_init().  Functionally, this is
-a glorified nop as invoking kvm_arch_init() is the very first action
-performed by kvm_init().
-
-Emptying kvm_arch_init() will allow dropping the hook entirely once all
-architecture implementations are nops.
-
-No functional change intended.
+Call kvm_init() only after _all_ setup is complete, as kvm_init() exposes
+/dev/kvm to userspace and thus allows userspace to create VMs (and call
+other ioctls).
 
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 Reviewed-by: Philippe Mathieu-Daud? <philmd@linaro.org>
 ---
- arch/mips/kvm/mips.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+ arch/mips/kvm/mips.c | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
 diff --git a/arch/mips/kvm/mips.c b/arch/mips/kvm/mips.c
-index f0a6c245d1ff..75681281e2df 100644
+index 75681281e2df..ae7a24342fdf 100644
 --- a/arch/mips/kvm/mips.c
 +++ b/arch/mips/kvm/mips.c
-@@ -1012,7 +1012,7 @@ long kvm_arch_vm_ioctl(struct file *filp, unsigned int ioctl, unsigned long arg)
- 
- int kvm_arch_init(void *opaque)
- {
--	return kvm_mips_emulation_init();
-+	return 0;
- }
- 
- void kvm_arch_exit(void)
-@@ -1636,6 +1636,10 @@ static int __init kvm_mips_init(void)
+@@ -1640,16 +1640,17 @@ static int __init kvm_mips_init(void)
  	if (ret)
  		return ret;
  
-+	ret = kvm_mips_emulation_init();
-+	if (ret)
-+		return ret;
-+
- 	ret = kvm_init(NULL, sizeof(struct kvm_vcpu), 0, THIS_MODULE);
+-	ret = kvm_init(NULL, sizeof(struct kvm_vcpu), 0, THIS_MODULE);
+-
+-	if (ret)
+-		return ret;
  
- 	if (ret)
+ 	if (boot_cpu_type() == CPU_LOONGSON64)
+ 		kvm_priority_to_irq = kvm_loongson3_priority_to_irq;
+ 
+ 	register_die_notifier(&kvm_mips_csr_die_notifier);
+ 
++	ret = kvm_init(NULL, sizeof(struct kvm_vcpu), 0, THIS_MODULE);
++	if (ret) {
++		unregister_die_notifier(&kvm_mips_csr_die_notifier);
++		return ret;
++	}
+ 	return 0;
+ }
+ 
 -- 
 2.38.1.584.g0f3c55d4c2-goog
 
