@@ -1,278 +1,149 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Wed, 30 Nov 2022 23:09:33 +0000
-Subject: [PATCH v2 49/50] KVM: Opt out of generic hardware enabling on s390
- and PPC
+Date: Wed, 30 Nov 2022 23:09:31 +0000
+Subject: [PATCH v2 47/50] KVM: Make hardware_enable_failed a local variable in
+ the "enable all" path
 In-Reply-To: <20221130230934.1014142-1-seanjc@google.com>
 References: <20221130230934.1014142-1-seanjc@google.com>
-Message-ID: <20221130230934.1014142-50-seanjc@google.com>
+Message-ID: <20221130230934.1014142-48-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Allow architectures to opt out of the generic hardware enabling logic,
-and opt out on both s390 and PPC, which don't need to manually enable
-virtualization as it's always on (when available).
+From: Isaku Yamahata <isaku.yamahata@intel.com>
 
-In addition to letting s390 and PPC drop a bit of dead code, this will
-hopefully also allow ARM to clean up its related code, e.g. ARM has its
-own per-CPU flag to track which CPUs have enable hardware due to the
-need to keep hardware enabled indefinitely when pKVM is enabled.
+Rework detecting hardware enabling errors to use a local variable in the
+"enable all" path to track whether or not enabling was successful across
+all CPUs.  Using a global variable complicates paths that enable hardware
+only on the current CPU, e.g. kvm_resume() and kvm_online_cpu().
 
+Opportunistically add a WARN if hardware enabling fails during
+kvm_resume(), KVM is all kinds of hosed if CPU0 fails to enable hardware.
+The WARN is largely futile in the current code, as KVM BUG()s on spurious
+faults on VMX instructions, e.g. attempting to run a vCPU on CPU if
+hardware enabling fails will explode.
+
+  ------------[ cut here ]------------
+  kernel BUG at arch/x86/kvm/x86.c:508!
+  invalid opcode: 0000 [#1] SMP
+  CPU: 3 PID: 1009 Comm: CPU 4/KVM Not tainted 6.1.0-rc1+ #11
+  Hardware name: QEMU Standard PC (Q35 + ICH9, 2009), BIOS 0.0.0 02/06/2015
+  RIP: 0010:kvm_spurious_fault+0xa/0x10
+  Call Trace:
+   vmx_vcpu_load_vmcs+0x192/0x230 [kvm_intel]
+   vmx_vcpu_load+0x16/0x60 [kvm_intel]
+   kvm_arch_vcpu_load+0x32/0x1f0
+   vcpu_load+0x2f/0x40
+   kvm_arch_vcpu_ioctl_run+0x19/0x9d0
+   kvm_vcpu_ioctl+0x271/0x660
+   __x64_sys_ioctl+0x80/0xb0
+   do_syscall_64+0x2b/0x50
+   entry_SYSCALL_64_after_hwframe+0x46/0xb0
+
+But, the WARN may provide a breadcrumb to understand what went awry, and
+someday KVM may fix one or both of those bugs, e.g. by finding a way to
+eat spurious faults no matter the context (easier said than done due to
+side effects of certain operations, e.g. Intel's VMCLEAR).
+
+Signed-off-by: Isaku Yamahata <isaku.yamahata@intel.com>
+[sean: rebase, WARN on failure in kvm_resume()]
 Signed-off-by: Sean Christopherson <seanjc@google.com>
-Acked-by: Anup Patel <anup@brainfault.org>
 ---
- arch/arm64/kvm/Kconfig              |  1 +
- arch/mips/kvm/Kconfig               |  1 +
- arch/powerpc/include/asm/kvm_host.h |  1 -
- arch/powerpc/kvm/powerpc.c          |  5 -----
- arch/riscv/kvm/Kconfig              |  1 +
- arch/s390/include/asm/kvm_host.h    |  1 -
- arch/s390/kvm/kvm-s390.c            |  6 ------
- arch/x86/kvm/Kconfig                |  1 +
- include/linux/kvm_host.h            |  4 ++++
- virt/kvm/Kconfig                    |  3 +++
- virt/kvm/kvm_main.c                 | 30 +++++++++++++++++++++++------
- 11 files changed, 35 insertions(+), 19 deletions(-)
+ virt/kvm/kvm_main.c | 35 ++++++++++++++++-------------------
+ 1 file changed, 16 insertions(+), 19 deletions(-)
 
-diff --git a/arch/arm64/kvm/Kconfig b/arch/arm64/kvm/Kconfig
-index 815cc118c675..0a7d2116b27b 100644
---- a/arch/arm64/kvm/Kconfig
-+++ b/arch/arm64/kvm/Kconfig
-@@ -21,6 +21,7 @@ if VIRTUALIZATION
- menuconfig KVM
- 	bool "Kernel-based Virtual Machine (KVM) support"
- 	depends on HAVE_KVM
-+	select KVM_GENERIC_HARDWARE_ENABLING
- 	select MMU_NOTIFIER
- 	select PREEMPT_NOTIFIERS
- 	select HAVE_KVM_CPU_RELAX_INTERCEPT
-diff --git a/arch/mips/kvm/Kconfig b/arch/mips/kvm/Kconfig
-index 91d197bee9c0..29e51649203b 100644
---- a/arch/mips/kvm/Kconfig
-+++ b/arch/mips/kvm/Kconfig
-@@ -28,6 +28,7 @@ config KVM
- 	select MMU_NOTIFIER
- 	select SRCU
- 	select INTERVAL_TREE
-+	select KVM_GENERIC_HARDWARE_ENABLING
- 	help
- 	  Support for hosting Guest kernels.
- 
-diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-index 0a80e80c7b9e..959f566a455c 100644
---- a/arch/powerpc/include/asm/kvm_host.h
-+++ b/arch/powerpc/include/asm/kvm_host.h
-@@ -876,7 +876,6 @@ struct kvm_vcpu_arch {
- #define __KVM_HAVE_ARCH_WQP
- #define __KVM_HAVE_CREATE_DEVICE
- 
--static inline void kvm_arch_hardware_disable(void) {}
- static inline void kvm_arch_sync_events(struct kvm *kvm) {}
- static inline void kvm_arch_memslots_updated(struct kvm *kvm, u64 gen) {}
- static inline void kvm_arch_flush_shadow_all(struct kvm *kvm) {}
-diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-index f5b4ff6bfc89..4c5405fc5538 100644
---- a/arch/powerpc/kvm/powerpc.c
-+++ b/arch/powerpc/kvm/powerpc.c
-@@ -435,11 +435,6 @@ int kvmppc_ld(struct kvm_vcpu *vcpu, ulong *eaddr, int size, void *ptr,
- }
- EXPORT_SYMBOL_GPL(kvmppc_ld);
- 
--int kvm_arch_hardware_enable(void)
--{
--	return 0;
--}
--
- int kvm_arch_init_vm(struct kvm *kvm, unsigned long type)
- {
- 	struct kvmppc_ops *kvm_ops = NULL;
-diff --git a/arch/riscv/kvm/Kconfig b/arch/riscv/kvm/Kconfig
-index f36a737d5f96..d5a658a047a7 100644
---- a/arch/riscv/kvm/Kconfig
-+++ b/arch/riscv/kvm/Kconfig
-@@ -20,6 +20,7 @@ if VIRTUALIZATION
- config KVM
- 	tristate "Kernel-based Virtual Machine (KVM) support (EXPERIMENTAL)"
- 	depends on RISCV_SBI && MMU
-+	select KVM_GENERIC_HARDWARE_ENABLING
- 	select MMU_NOTIFIER
- 	select PREEMPT_NOTIFIERS
- 	select KVM_MMIO
-diff --git a/arch/s390/include/asm/kvm_host.h b/arch/s390/include/asm/kvm_host.h
-index d67ce719d16a..2bbc3d54959d 100644
---- a/arch/s390/include/asm/kvm_host.h
-+++ b/arch/s390/include/asm/kvm_host.h
-@@ -1031,7 +1031,6 @@ extern char sie_exit;
- extern int kvm_s390_gisc_register(struct kvm *kvm, u32 gisc);
- extern int kvm_s390_gisc_unregister(struct kvm *kvm, u32 gisc);
- 
--static inline void kvm_arch_hardware_disable(void) {}
- static inline void kvm_arch_sync_events(struct kvm *kvm) {}
- static inline void kvm_arch_sched_in(struct kvm_vcpu *vcpu, int cpu) {}
- static inline void kvm_arch_free_memslot(struct kvm *kvm,
-diff --git a/arch/s390/kvm/kvm-s390.c b/arch/s390/kvm/kvm-s390.c
-index 7ad8252e92c2..bd25076aa19b 100644
---- a/arch/s390/kvm/kvm-s390.c
-+++ b/arch/s390/kvm/kvm-s390.c
-@@ -256,12 +256,6 @@ debug_info_t *kvm_s390_dbf;
- debug_info_t *kvm_s390_dbf_uv;
- 
- /* Section: not file related */
--int kvm_arch_hardware_enable(void)
--{
--	/* every s390 is virtualization enabled ;-) */
--	return 0;
--}
--
- /* forward declarations */
- static void kvm_gmap_notifier(struct gmap *gmap, unsigned long start,
- 			      unsigned long end);
-diff --git a/arch/x86/kvm/Kconfig b/arch/x86/kvm/Kconfig
-index fbeaa9ddef59..8e578311ca9d 100644
---- a/arch/x86/kvm/Kconfig
-+++ b/arch/x86/kvm/Kconfig
-@@ -49,6 +49,7 @@ config KVM
- 	select SRCU
- 	select INTERVAL_TREE
- 	select HAVE_KVM_PM_NOTIFIER if PM
-+	select KVM_GENERIC_HARDWARE_ENABLING
- 	help
- 	  Support hosting fully virtualized guest machines using hardware
- 	  virtualization extensions.  You will need a fairly recent
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index 616e8e90558b..ffb4f9c3371f 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -1457,8 +1457,10 @@ void kvm_arch_create_vcpu_debugfs(struct kvm_vcpu *vcpu, struct dentry *debugfs_
- static inline void kvm_create_vcpu_debugfs(struct kvm_vcpu *vcpu) {}
- #endif
- 
-+#ifdef CONFIG_KVM_GENERIC_HARDWARE_ENABLING
- int kvm_arch_hardware_enable(void);
- void kvm_arch_hardware_disable(void);
-+#endif
- int kvm_arch_vcpu_runnable(struct kvm_vcpu *vcpu);
- bool kvm_arch_vcpu_in_kernel(struct kvm_vcpu *vcpu);
- int kvm_arch_vcpu_should_kick(struct kvm_vcpu *vcpu);
-@@ -2090,7 +2092,9 @@ static inline bool kvm_check_request(int req, struct kvm_vcpu *vcpu)
- 	}
- }
- 
-+#ifdef CONFIG_KVM_GENERIC_HARDWARE_ENABLING
- extern bool kvm_rebooting;
-+#endif
- 
- extern unsigned int halt_poll_ns;
- extern unsigned int halt_poll_ns_grow;
-diff --git a/virt/kvm/Kconfig b/virt/kvm/Kconfig
-index 800f9470e36b..d28df77345e1 100644
---- a/virt/kvm/Kconfig
-+++ b/virt/kvm/Kconfig
-@@ -86,3 +86,6 @@ config KVM_XFER_TO_GUEST_WORK
- 
- config HAVE_KVM_PM_NOTIFIER
-        bool
-+
-+config KVM_GENERIC_HARDWARE_ENABLING
-+       bool
 diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index c12db3839114..6a2be96557c2 100644
+index c1e48c18e2d9..674a9dab5411 100644
 --- a/virt/kvm/kvm_main.c
 +++ b/virt/kvm/kvm_main.c
-@@ -102,9 +102,6 @@ EXPORT_SYMBOL_GPL(halt_poll_ns_shrink);
- DEFINE_MUTEX(kvm_lock);
- LIST_HEAD(vm_list);
+@@ -104,7 +104,6 @@ LIST_HEAD(vm_list);
  
--static DEFINE_PER_CPU(bool, hardware_enabled);
--static int kvm_usage_count;
--
+ static DEFINE_PER_CPU(bool, hardware_enabled);
+ static int kvm_usage_count;
+-static atomic_t hardware_enable_failed;
+ 
  static struct kmem_cache *kvm_vcpu_cache;
  
- static __read_mostly struct preempt_ops kvm_preempt_ops;
-@@ -146,9 +143,6 @@ static void hardware_disable_all(void);
- 
- static void kvm_io_bus_destroy(struct kvm_io_bus *bus);
- 
--__visible bool kvm_rebooting;
--EXPORT_SYMBOL_GPL(kvm_rebooting);
--
- #define KVM_EVENT_CREATE_VM 0
- #define KVM_EVENT_DESTROY_VM 1
- static void kvm_uevent_notify_change(unsigned int type, struct kvm *kvm);
-@@ -5024,6 +5018,13 @@ static struct miscdevice kvm_dev = {
+@@ -5025,19 +5024,25 @@ static struct miscdevice kvm_dev = {
  	&kvm_chardev_ops,
  };
  
-+#ifdef CONFIG_KVM_GENERIC_HARDWARE_ENABLING
-+__visible bool kvm_rebooting;
-+EXPORT_SYMBOL_GPL(kvm_rebooting);
-+
-+static DEFINE_PER_CPU(bool, hardware_enabled);
-+static int kvm_usage_count;
-+
- static int __hardware_enable_nolock(void)
+-static void hardware_enable_nolock(void *junk)
++static int __hardware_enable_nolock(void)
  {
  	if (__this_cpu_read(hardware_enabled))
-@@ -5185,6 +5186,17 @@ static struct syscore_ops kvm_syscore_ops = {
- 	.suspend = kvm_suspend,
- 	.resume = kvm_resume,
- };
-+#else /* CONFIG_KVM_GENERIC_HARDWARE_ENABLING */
-+static int hardware_enable_all(void)
-+{
+-		return;
++		return 0;
+ 
+ 	if (kvm_arch_hardware_enable()) {
+-		atomic_inc(&hardware_enable_failed);
+ 		pr_info("kvm: enabling virtualization on CPU%d failed\n",
+ 			raw_smp_processor_id());
+-		return;
++		return -EIO;
+ 	}
+ 
+ 	__this_cpu_write(hardware_enabled, true);
 +	return 0;
 +}
 +
-+static void hardware_disable_all(void)
++static void hardware_enable_nolock(void *failed)
 +{
-+
-+}
-+#endif /* CONFIG_KVM_GENERIC_HARDWARE_ENABLING */
++	if (__hardware_enable_nolock())
++		atomic_inc(failed);
+ }
  
- static void kvm_io_bus_destroy(struct kvm_io_bus *bus)
+ static int kvm_online_cpu(unsigned int cpu)
+@@ -5050,16 +5055,8 @@ static int kvm_online_cpu(unsigned int cpu)
+ 	 * errors when scheduled to this CPU.
+ 	 */
+ 	mutex_lock(&kvm_lock);
+-	if (kvm_usage_count) {
+-		WARN_ON_ONCE(atomic_read(&hardware_enable_failed));
+-
+-		hardware_enable_nolock(NULL);
+-
+-		if (atomic_read(&hardware_enable_failed)) {
+-			atomic_set(&hardware_enable_failed, 0);
+-			ret = -EIO;
+-		}
+-	}
++	if (kvm_usage_count)
++		ret = __hardware_enable_nolock();
+ 	mutex_unlock(&kvm_lock);
+ 	return ret;
+ }
+@@ -5107,6 +5104,7 @@ static void hardware_disable_all(void)
+ 
+ static int hardware_enable_all(void)
  {
-@@ -5873,6 +5885,7 @@ int kvm_init(unsigned vcpu_size, unsigned vcpu_align, struct module *module)
- 	int r;
- 	int cpu;
++	atomic_t failed = ATOMIC_INIT(0);
+ 	int r = 0;
  
-+#ifdef CONFIG_KVM_GENERIC_HARDWARE_ENABLING
- 	r = cpuhp_setup_state_nocalls(CPUHP_AP_KVM_ONLINE, "kvm/cpu:online",
- 				      kvm_online_cpu, kvm_offline_cpu);
- 	if (r)
-@@ -5880,6 +5893,7 @@ int kvm_init(unsigned vcpu_size, unsigned vcpu_align, struct module *module)
+ 	/*
+@@ -5122,10 +5120,9 @@ static int hardware_enable_all(void)
  
- 	register_reboot_notifier(&kvm_reboot_notifier);
- 	register_syscore_ops(&kvm_syscore_ops);
-+#endif
+ 	kvm_usage_count++;
+ 	if (kvm_usage_count == 1) {
+-		atomic_set(&hardware_enable_failed, 0);
+-		on_each_cpu(hardware_enable_nolock, NULL, 1);
++		on_each_cpu(hardware_enable_nolock, &failed, 1);
  
- 	/* A kmem cache lets us meet the alignment requirements of fx_save. */
- 	if (!vcpu_align)
-@@ -5947,9 +5961,11 @@ int kvm_init(unsigned vcpu_size, unsigned vcpu_align, struct module *module)
- 		free_cpumask_var(per_cpu(cpu_kick_mask, cpu));
- 	kmem_cache_destroy(kvm_vcpu_cache);
- out_free_3:
-+#ifdef CONFIG_KVM_GENERIC_HARDWARE_ENABLING
- 	unregister_syscore_ops(&kvm_syscore_ops);
- 	unregister_reboot_notifier(&kvm_reboot_notifier);
- 	cpuhp_remove_state_nocalls(CPUHP_AP_KVM_ONLINE);
-+#endif
- 	return r;
+-		if (atomic_read(&hardware_enable_failed)) {
++		if (atomic_read(&failed)) {
+ 			hardware_disable_all_nolock();
+ 			r = -EBUSY;
+ 		}
+@@ -5759,7 +5756,7 @@ static void kvm_resume(void)
+ 	lockdep_assert_irqs_disabled();
+ 
+ 	if (kvm_usage_count)
+-		hardware_enable_nolock(NULL);
++		WARN_ON_ONCE(__hardware_enable_nolock());
  }
- EXPORT_SYMBOL_GPL(kvm_init);
-@@ -5971,9 +5987,11 @@ void kvm_exit(void)
- 	kmem_cache_destroy(kvm_vcpu_cache);
- 	kvm_vfio_ops_exit();
- 	kvm_async_pf_deinit();
-+#ifdef CONFIG_KVM_GENERIC_HARDWARE_ENABLING
- 	unregister_syscore_ops(&kvm_syscore_ops);
- 	unregister_reboot_notifier(&kvm_reboot_notifier);
- 	cpuhp_remove_state_nocalls(CPUHP_AP_KVM_ONLINE);
-+#endif
- 	kvm_irqfd_exit();
- }
- EXPORT_SYMBOL_GPL(kvm_exit);
+ 
+ static struct syscore_ops kvm_syscore_ops = {
 -- 
 2.38.1.584.g0f3c55d4c2-goog
 
