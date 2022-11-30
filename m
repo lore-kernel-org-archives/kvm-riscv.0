@@ -1,107 +1,61 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Wed, 30 Nov 2022 23:09:11 +0000
-Subject: [PATCH v2 27/50] KVM: s390: Do s390 specific init without bouncing
- through kvm_init()
+Date: Wed, 30 Nov 2022 23:09:14 +0000
+Subject: [PATCH v2 30/50] KVM: VMX: Make VMCS configuration/capabilities
+ structs read-only after init
 In-Reply-To: <20221130230934.1014142-1-seanjc@google.com>
 References: <20221130230934.1014142-1-seanjc@google.com>
-Message-ID: <20221130230934.1014142-28-seanjc@google.com>
+Message-ID: <20221130230934.1014142-31-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Move the guts of kvm_arch_init() into a new helper, __kvm_s390_init(),
-and invoke the new helper directly from kvm_s390_init() instead of
-bouncing through kvm_init().  Invoking kvm_arch_init() is the very
-first action performed by kvm_init(), i.e. this is a glorified nop.
-
-Moving setup to __kvm_s390_init() will allow tagging more functions as
-__init, and emptying kvm_arch_init() will allow dropping the hook
-entirely once all architecture implementations are nops.
-
-No functional change intended.
+Tag vmcs_config and vmx_capability structs as __init, the canonical
+configuration is generated during hardware_setup() and must never be
+modified after that point.
 
 Signed-off-by: Sean Christopherson <seanjc@google.com>
-Reviewed-by: Eric Farman <farman@linux.ibm.com>
-Reviewed-by: Philippe Mathieu-Daud? <philmd@linaro.org>
 ---
- arch/s390/kvm/kvm-s390.c | 29 +++++++++++++++++++++++++----
- 1 file changed, 25 insertions(+), 4 deletions(-)
+ arch/x86/kvm/vmx/capabilities.h | 4 ++--
+ arch/x86/kvm/vmx/vmx.c          | 4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/arch/s390/kvm/kvm-s390.c b/arch/s390/kvm/kvm-s390.c
-index 829e6e046003..8c4fcaf2bd36 100644
---- a/arch/s390/kvm/kvm-s390.c
-+++ b/arch/s390/kvm/kvm-s390.c
-@@ -469,7 +469,7 @@ static void kvm_s390_cpu_feat_init(void)
- 	 */
- }
+diff --git a/arch/x86/kvm/vmx/capabilities.h b/arch/x86/kvm/vmx/capabilities.h
+index cd2ac9536c99..45162c1bcd8f 100644
+--- a/arch/x86/kvm/vmx/capabilities.h
++++ b/arch/x86/kvm/vmx/capabilities.h
+@@ -66,13 +66,13 @@ struct vmcs_config {
+ 	u64 misc;
+ 	struct nested_vmx_msrs nested;
+ };
+-extern struct vmcs_config vmcs_config;
++extern struct vmcs_config vmcs_config __ro_after_init;
  
--int kvm_arch_init(void *opaque)
-+static int __kvm_s390_init(void)
+ struct vmx_capability {
+ 	u32 ept;
+ 	u32 vpid;
+ };
+-extern struct vmx_capability vmx_capability;
++extern struct vmx_capability vmx_capability __ro_after_init;
+ 
+ static inline bool cpu_has_vmx_basic_inout(void)
  {
- 	int rc = -ENOMEM;
+diff --git a/arch/x86/kvm/vmx/vmx.c b/arch/x86/kvm/vmx/vmx.c
+index 76185a7a7ded..654d81f781da 100644
+--- a/arch/x86/kvm/vmx/vmx.c
++++ b/arch/x86/kvm/vmx/vmx.c
+@@ -488,8 +488,8 @@ static DEFINE_PER_CPU(struct list_head, loaded_vmcss_on_cpu);
+ static DECLARE_BITMAP(vmx_vpid_bitmap, VMX_NR_VPIDS);
+ static DEFINE_SPINLOCK(vmx_vpid_lock);
  
-@@ -527,7 +527,7 @@ int kvm_arch_init(void *opaque)
- 	return rc;
- }
+-struct vmcs_config vmcs_config;
+-struct vmx_capability vmx_capability;
++struct vmcs_config vmcs_config __ro_after_init;
++struct vmx_capability vmx_capability __ro_after_init;
  
--void kvm_arch_exit(void)
-+static void __kvm_s390_exit(void)
- {
- 	gmap_unregister_pte_notifier(&gmap_notifier);
- 	gmap_unregister_pte_notifier(&vsie_gmap_notifier);
-@@ -541,6 +541,16 @@ void kvm_arch_exit(void)
- 	debug_unregister(kvm_s390_dbf_uv);
- }
- 
-+int kvm_arch_init(void *opaque)
-+{
-+	return 0;
-+}
-+
-+void kvm_arch_exit(void)
-+{
-+
-+}
-+
- /* Section: device related */
- long kvm_arch_dev_ioctl(struct file *filp,
- 			unsigned int ioctl, unsigned long arg)
-@@ -5696,7 +5706,7 @@ static inline unsigned long nonhyp_mask(int i)
- 
- static int __init kvm_s390_init(void)
- {
--	int i;
-+	int i, r;
- 
- 	if (!sclp.has_sief2) {
- 		pr_info("SIE is not available\n");
-@@ -5712,12 +5722,23 @@ static int __init kvm_s390_init(void)
- 		kvm_s390_fac_base[i] |=
- 			stfle_fac_list[i] & nonhyp_mask(i);
- 
--	return kvm_init(NULL, sizeof(struct kvm_vcpu), 0, THIS_MODULE);
-+	r = __kvm_s390_init();
-+	if (r)
-+		return r;
-+
-+	r = kvm_init(NULL, sizeof(struct kvm_vcpu), 0, THIS_MODULE);
-+	if (r) {
-+		__kvm_s390_exit();
-+		return r;
-+	}
-+	return 0;
- }
- 
- static void __exit kvm_s390_exit(void)
- {
- 	kvm_exit();
-+
-+	__kvm_s390_exit();
- }
- 
- module_init(kvm_s390_init);
+ #define VMX_SEGMENT_FIELD(seg)					\
+ 	[VCPU_SREG_##seg] = {                                   \
 -- 
 2.38.1.584.g0f3c55d4c2-goog
 
