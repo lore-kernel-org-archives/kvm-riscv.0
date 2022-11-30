@@ -1,145 +1,122 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Wed, 30 Nov 2022 23:09:24 +0000
-Subject: [PATCH v2 40/50] KVM: x86: Do compatibility checks when onlining CPU
+Date: Wed, 30 Nov 2022 23:09:10 +0000
+Subject: [PATCH v2 26/50] KVM: PPC: Move processor compatibility check to
+ module init
 In-Reply-To: <20221130230934.1014142-1-seanjc@google.com>
 References: <20221130230934.1014142-1-seanjc@google.com>
-Message-ID: <20221130230934.1014142-41-seanjc@google.com>
+Message-ID: <20221130230934.1014142-27-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Chao Gao <chao.gao@intel.com>
+Move KVM PPC's compatibility checks to their respective module_init()
+hooks, there's no need to wait until KVM's common compat check, nor is
+there a need to perform the check on every CPU (provided by common KVM's
+hook), as the compatibility checks operate on global data.
 
-Do compatibility checks when enabling hardware to effectively add
-compatibility checks when onlining a CPU.  Abort enabling, i.e. the
-online process, if the (hotplugged) CPU is incompatible with the known
-good setup.
+  arch/powerpc/include/asm/cputable.h: extern struct cpu_spec *cur_cpu_spec;
+  arch/powerpc/kvm/book3s.c: return 0
+  arch/powerpc/kvm/e500.c: strcmp(cur_cpu_spec->cpu_name, "e500v2")
+  arch/powerpc/kvm/e500mc.c: strcmp(cur_cpu_spec->cpu_name, "e500mc")
+                             strcmp(cur_cpu_spec->cpu_name, "e5500")
+                             strcmp(cur_cpu_spec->cpu_name, "e6500")
 
-At init time, KVM does compatibility checks to ensure that all online
-CPUs support hardware virtualization and a common set of features. But
-KVM uses hotplugged CPUs without such compatibility checks. On Intel
-CPUs, this leads to #GP if the hotplugged CPU doesn't support VMX, or
-VM-Entry failure if the hotplugged CPU doesn't support all features
-enabled by KVM.
-
-Note, this is little more than a NOP on SVM, as SVM already checks for
-full SVM support during hardware enabling.
-
-Opportunistically add a pr_err() if setup_vmcs_config() fails, and
-tweak all error messages to output which CPU failed.
-
-Signed-off-by: Chao Gao <chao.gao@intel.com>
-Co-developed-by: Sean Christopherson <seanjc@google.com>
+Cc: Fabiano Rosas <farosas@linux.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/x86/kvm/svm/svm.c |  8 +++-----
- arch/x86/kvm/vmx/vmx.c | 15 ++++++++++-----
- arch/x86/kvm/x86.c     |  5 +++++
- 3 files changed, 18 insertions(+), 10 deletions(-)
+ arch/powerpc/include/asm/kvm_ppc.h |  1 -
+ arch/powerpc/kvm/book3s.c          | 10 ----------
+ arch/powerpc/kvm/e500.c            |  4 ++--
+ arch/powerpc/kvm/e500mc.c          |  4 ++++
+ arch/powerpc/kvm/powerpc.c         |  2 +-
+ 5 files changed, 7 insertions(+), 14 deletions(-)
 
-diff --git a/arch/x86/kvm/svm/svm.c b/arch/x86/kvm/svm/svm.c
-index c2e95c0d9fd8..46b658d0f46e 100644
---- a/arch/x86/kvm/svm/svm.c
-+++ b/arch/x86/kvm/svm/svm.c
-@@ -521,11 +521,12 @@ static void svm_init_osvw(struct kvm_vcpu *vcpu)
+diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
+index bfacf12784dd..51a1824b0a16 100644
+--- a/arch/powerpc/include/asm/kvm_ppc.h
++++ b/arch/powerpc/include/asm/kvm_ppc.h
+@@ -118,7 +118,6 @@ extern int kvmppc_xlate(struct kvm_vcpu *vcpu, ulong eaddr,
+ extern int kvmppc_core_vcpu_create(struct kvm_vcpu *vcpu);
+ extern void kvmppc_core_vcpu_free(struct kvm_vcpu *vcpu);
+ extern int kvmppc_core_vcpu_setup(struct kvm_vcpu *vcpu);
+-extern int kvmppc_core_check_processor_compat(void);
+ extern int kvmppc_core_vcpu_translate(struct kvm_vcpu *vcpu,
+                                       struct kvm_translation *tr);
  
- static bool kvm_is_svm_supported(void)
- {
-+	int cpu = raw_smp_processor_id();
- 	const char *msg;
- 	u64 vm_cr;
+diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
+index 6d525285dbe8..87283a0e33d8 100644
+--- a/arch/powerpc/kvm/book3s.c
++++ b/arch/powerpc/kvm/book3s.c
+@@ -999,16 +999,6 @@ int kvmppc_h_logical_ci_store(struct kvm_vcpu *vcpu)
+ }
+ EXPORT_SYMBOL_GPL(kvmppc_h_logical_ci_store);
  
- 	if (!cpu_has_svm(&msg)) {
--		pr_err("SVM not supported, %s\n", msg);
-+		pr_err("SVM not supported by CPU %d, %s\n", cpu, msg);
- 		return false;
- 	}
- 
-@@ -536,7 +537,7 @@ static bool kvm_is_svm_supported(void)
- 
- 	rdmsrl(MSR_VM_CR, vm_cr);
- 	if (vm_cr & (1 << SVM_VM_CR_SVM_DISABLE)) {
--		pr_err("SVM disabled (by BIOS) in MSR_VM_CR\n");
-+		pr_err("SVM disabled (by BIOS) in MSR_VM_CR on CPU %d\n", cpu);
- 		return false;
- 	}
- 
-@@ -587,9 +588,6 @@ static int svm_hardware_enable(void)
- 	if (efer & EFER_SVME)
- 		return -EBUSY;
- 
--	if (!kvm_is_svm_supported())
--		return -EINVAL;
+-int kvmppc_core_check_processor_compat(void)
+-{
+-	/*
+-	 * We always return 0 for book3s. We check
+-	 * for compatibility while loading the HV
+-	 * or PR module
+-	 */
+-	return 0;
+-}
 -
- 	sd = per_cpu_ptr(&svm_data, me);
- 	sd->asid_generation = 1;
- 	sd->max_asid = cpuid_ebx(SVM_CPUID_FUNC) - 1;
-diff --git a/arch/x86/kvm/vmx/vmx.c b/arch/x86/kvm/vmx/vmx.c
-index 6416ed5b7f89..39dd3082fcd8 100644
---- a/arch/x86/kvm/vmx/vmx.c
-+++ b/arch/x86/kvm/vmx/vmx.c
-@@ -2711,14 +2711,16 @@ static int setup_vmcs_config(struct vmcs_config *vmcs_conf,
- 
- static bool kvm_is_vmx_supported(void)
+ int kvmppc_book3s_hcall_implemented(struct kvm *kvm, unsigned long hcall)
  {
-+	int cpu = raw_smp_processor_id();
-+
- 	if (!cpu_has_vmx()) {
--		pr_err("CPU doesn't support VMX\n");
-+		pr_err("VMX not supported by CPU %d\n", cpu);
- 		return false;
- 	}
+ 	return kvm->arch.kvm_ops->hcall_implemented(hcall);
+diff --git a/arch/powerpc/kvm/e500.c b/arch/powerpc/kvm/e500.c
+index c8b2b4478545..0ea61190ec04 100644
+--- a/arch/powerpc/kvm/e500.c
++++ b/arch/powerpc/kvm/e500.c
+@@ -314,7 +314,7 @@ static void kvmppc_core_vcpu_put_e500(struct kvm_vcpu *vcpu)
+ 	kvmppc_booke_vcpu_put(vcpu);
+ }
  
- 	if (!this_cpu_has(X86_FEATURE_MSR_IA32_FEAT_CTL) ||
- 	    !this_cpu_has(X86_FEATURE_VMX)) {
--		pr_err("VMX not enabled (by BIOS) in MSR_IA32_FEAT_CTL\n");
-+		pr_err("VMX not enabled (by BIOS) in MSR_IA32_FEAT_CTL on CPU %d\n", cpu);
- 		return false;
- 	}
- 
-@@ -2727,18 +2729,21 @@ static bool kvm_is_vmx_supported(void)
- 
- static int vmx_check_processor_compat(void)
+-int kvmppc_core_check_processor_compat(void)
++static int kvmppc_e500_check_processor_compat(void)
  {
-+	int cpu = raw_smp_processor_id();
- 	struct vmcs_config vmcs_conf;
- 	struct vmx_capability vmx_cap;
+ 	int r;
  
- 	if (!kvm_is_vmx_supported())
- 		return -EIO;
+@@ -507,7 +507,7 @@ static int __init kvmppc_e500_init(void)
+ 	unsigned long handler_len;
+ 	unsigned long max_ivor = 0;
  
--	if (setup_vmcs_config(&vmcs_conf, &vmx_cap) < 0)
-+	if (setup_vmcs_config(&vmcs_conf, &vmx_cap) < 0) {
-+		pr_err("Failed to setup VMCS config on CPU %d\n", cpu);
- 		return -EIO;
-+	}
- 	if (nested)
- 		nested_vmx_setup_ctls_msrs(&vmcs_conf, vmx_cap.ept);
--	if (memcmp(&vmcs_config, &vmcs_conf, sizeof(struct vmcs_config)) != 0) {
--		pr_err("CPU %d feature inconsistency!\n", smp_processor_id());
-+	if (memcmp(&vmcs_config, &vmcs_conf, sizeof(struct vmcs_config))) {
-+		pr_err("Inconsistent VMCS config on CPU %d\n", cpu);
- 		return -EIO;
- 	}
- 	return 0;
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index ee9af412ffd4..5a9e74cedbc6 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -11967,6 +11967,11 @@ int kvm_arch_hardware_enable(void)
- 	bool stable, backwards_tsc = false;
+-	r = kvmppc_core_check_processor_compat();
++	r = kvmppc_e500_check_processor_compat();
+ 	if (r)
+ 		goto err_out;
  
- 	kvm_user_return_msr_cpu_online();
+diff --git a/arch/powerpc/kvm/e500mc.c b/arch/powerpc/kvm/e500mc.c
+index 57e0ad6a2ca3..795667f7ebf0 100644
+--- a/arch/powerpc/kvm/e500mc.c
++++ b/arch/powerpc/kvm/e500mc.c
+@@ -388,6 +388,10 @@ static int __init kvmppc_e500mc_init(void)
+ {
+ 	int r;
+ 
++	r = kvmppc_e500mc_check_processor_compat();
++	if (r)
++		return kvmppc_e500mc;
 +
-+	ret = kvm_x86_check_processor_compatibility();
-+	if (ret)
-+		return ret;
-+
- 	ret = static_call(kvm_x86_hardware_enable)();
- 	if (ret != 0)
- 		return ret;
+ 	r = kvmppc_booke_init();
+ 	if (r)
+ 		goto err_out;
+diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+index 5faf69421f13..d44b85ba8cef 100644
+--- a/arch/powerpc/kvm/powerpc.c
++++ b/arch/powerpc/kvm/powerpc.c
+@@ -442,7 +442,7 @@ int kvm_arch_hardware_enable(void)
+ 
+ int kvm_arch_check_processor_compat(void *opaque)
+ {
+-	return kvmppc_core_check_processor_compat();
++	return 0;
+ }
+ 
+ int kvm_arch_init_vm(struct kvm *kvm, unsigned long type)
 -- 
 2.38.1.584.g0f3c55d4c2-goog
 
