@@ -1,80 +1,55 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Wed, 30 Nov 2022 23:08:50 +0000
-Subject: [PATCH v2 06/50] KVM: s390: Move hardware setup/unsetup to init/exit
+Date: Wed, 30 Nov 2022 23:08:48 +0000
+Subject: [PATCH v2 04/50] KVM: Teardown VFIO ops earlier in kvm_exit()
 In-Reply-To: <20221130230934.1014142-1-seanjc@google.com>
 References: <20221130230934.1014142-1-seanjc@google.com>
-Message-ID: <20221130230934.1014142-7-seanjc@google.com>
+Message-ID: <20221130230934.1014142-5-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Now that kvm_arch_hardware_setup() is called immediately after
-kvm_arch_init(), fold the guts of kvm_arch_hardware_(un)setup() into
-kvm_arch_{init,exit}() as a step towards dropping one of the hooks.
+Move the call to kvm_vfio_ops_exit() further up kvm_exit() to try and
+bring some amount of symmetry to the setup order in kvm_init(), and more
+importantly so that the arch hooks are invoked dead last by kvm_exit().
+This will allow arch code to move away from the arch hooks without any
+change in ordering between arch code and common code in kvm_exit().
 
-No functional change intended.
+That kvm_vfio_ops_exit() is called last appears to be 100% arbitrary.  It
+was bolted on after the fact by commit 571ee1b68598 ("kvm: vfio: fix
+unregister kvm_device_ops of vfio").  The nullified kvm_device_ops_table
+is also local to kvm_main.c and is used only when there are active VMs,
+so unless arch code is doing something truly bizarre, nullifying the
+table earlier in kvm_exit() is little more than a nop.
 
 Signed-off-by: Sean Christopherson <seanjc@google.com>
+Reviewed-by: Cornelia Huck <cohuck@redhat.com>
 Reviewed-by: Eric Farman <farman@linux.ibm.com>
 ---
- arch/s390/kvm/kvm-s390.c | 23 +++++++++++++----------
- 1 file changed, 13 insertions(+), 10 deletions(-)
+ virt/kvm/kvm_main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/s390/kvm/kvm-s390.c b/arch/s390/kvm/kvm-s390.c
-index 221481a09742..97c7ccd189eb 100644
---- a/arch/s390/kvm/kvm-s390.c
-+++ b/arch/s390/kvm/kvm-s390.c
-@@ -331,21 +331,12 @@ static struct notifier_block kvm_clock_notifier = {
- 
- int kvm_arch_hardware_setup(void *opaque)
- {
--	gmap_notifier.notifier_call = kvm_gmap_notifier;
--	gmap_register_pte_notifier(&gmap_notifier);
--	vsie_gmap_notifier.notifier_call = kvm_s390_vsie_gmap_notifier;
--	gmap_register_pte_notifier(&vsie_gmap_notifier);
--	atomic_notifier_chain_register(&s390_epoch_delta_notifier,
--				       &kvm_clock_notifier);
- 	return 0;
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index ded88ad6c2d8..988f7d92db2e 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -5980,6 +5980,7 @@ void kvm_exit(void)
+ 	for_each_possible_cpu(cpu)
+ 		free_cpumask_var(per_cpu(cpu_kick_mask, cpu));
+ 	kmem_cache_destroy(kvm_vcpu_cache);
++	kvm_vfio_ops_exit();
+ 	kvm_async_pf_deinit();
+ 	unregister_syscore_ops(&kvm_syscore_ops);
+ 	unregister_reboot_notifier(&kvm_reboot_notifier);
+@@ -5989,7 +5990,6 @@ void kvm_exit(void)
+ 	free_cpumask_var(cpus_hardware_enabled);
+ 	kvm_arch_hardware_unsetup();
+ 	kvm_arch_exit();
+-	kvm_vfio_ops_exit();
  }
+ EXPORT_SYMBOL_GPL(kvm_exit);
  
- void kvm_arch_hardware_unsetup(void)
- {
--	gmap_unregister_pte_notifier(&gmap_notifier);
--	gmap_unregister_pte_notifier(&vsie_gmap_notifier);
--	atomic_notifier_chain_unregister(&s390_epoch_delta_notifier,
--					 &kvm_clock_notifier);
-+
- }
- 
- static void allow_cpu_feat(unsigned long nr)
-@@ -525,6 +516,13 @@ int kvm_arch_init(void *opaque)
- 	if (rc)
- 		goto err_gib;
- 
-+	gmap_notifier.notifier_call = kvm_gmap_notifier;
-+	gmap_register_pte_notifier(&gmap_notifier);
-+	vsie_gmap_notifier.notifier_call = kvm_s390_vsie_gmap_notifier;
-+	gmap_register_pte_notifier(&vsie_gmap_notifier);
-+	atomic_notifier_chain_register(&s390_epoch_delta_notifier,
-+				       &kvm_clock_notifier);
-+
- 	return 0;
- 
- err_gib:
-@@ -541,6 +539,11 @@ int kvm_arch_init(void *opaque)
- 
- void kvm_arch_exit(void)
- {
-+	gmap_unregister_pte_notifier(&gmap_notifier);
-+	gmap_unregister_pte_notifier(&vsie_gmap_notifier);
-+	atomic_notifier_chain_unregister(&s390_epoch_delta_notifier,
-+					 &kvm_clock_notifier);
-+
- 	kvm_s390_gib_destroy();
- 	if (IS_ENABLED(CONFIG_VFIO_PCI_ZDEV_KVM))
- 		kvm_s390_pci_exit();
 -- 
 2.38.1.584.g0f3c55d4c2-goog
 
