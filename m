@@ -1,224 +1,137 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Wed, 30 Nov 2022 23:09:13 +0000
-Subject: [PATCH v2 29/50] KVM: Drop kvm_arch_{init,exit}() hooks
+Date: Wed, 30 Nov 2022 23:09:30 +0000
+Subject: [PATCH v2 46/50] KVM: Use a per-CPU variable to track which CPUs have
+ enabled virtualization
 In-Reply-To: <20221130230934.1014142-1-seanjc@google.com>
 References: <20221130230934.1014142-1-seanjc@google.com>
-Message-ID: <20221130230934.1014142-30-seanjc@google.com>
+Message-ID: <20221130230934.1014142-47-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Drop kvm_arch_init() and kvm_arch_exit() now that all implementations
-are nops.
+Use a per-CPU variable instead of a shared bitmap to track which CPUs
+have successfully enabled virtualization hardware.  Using a per-CPU bool
+avoids the need for an additional allocation, and arguably yields easier
+to read code.  Using a bitmap would be advantageous if KVM used it to
+avoid generating IPIs to CPUs that failed to enable hardware, but that's
+an extreme edge case and not worth optimizing, and the low level helpers
+would still want to keep their individual checks as attempting to enable
+virtualization hardware when it's already enabled can be problematic,
+e.g. Intel's VMXON will fault.
 
-No functional change intended.
+Opportunistically change the order in hardware_enable_nolock() to set
+the flag if and only if hardware enabling is successful, instead of
+speculatively setting the flag and then clearing it on failure.
+
+Add a comment explaining that the check in hardware_disable_nolock()
+isn't simply paranoia.  Waaay back when, commit 1b6c016818a5 ("KVM: Keep
+track of which cpus have virtualization enabled"), added the logic as a
+guards against CPU hotplug racing with hardware enable/disable.  Now that
+KVM has eliminated the race by taking cpu_hotplug_lock for read (via
+cpus_read_lock()) when enabling or disabling hardware, at first glance it
+appears that the check is now superfluous, i.e. it's tempting to remove
+the per-CPU flag entirely...
 
 Signed-off-by: Sean Christopherson <seanjc@google.com>
-Reviewed-by: Eric Farman <farman@linux.ibm.com>	# s390
-Reviewed-by: Philippe Mathieu-Daud? <philmd@linaro.org>
-Acked-by: Anup Patel <anup@brainfault.org>
 ---
- arch/arm64/kvm/arm.c                | 11 -----------
- arch/mips/kvm/mips.c                | 10 ----------
- arch/powerpc/include/asm/kvm_host.h |  1 -
- arch/powerpc/kvm/powerpc.c          |  5 -----
- arch/riscv/kvm/main.c               |  9 ---------
- arch/s390/kvm/kvm-s390.c            | 10 ----------
- arch/x86/kvm/x86.c                  | 10 ----------
- include/linux/kvm_host.h            |  3 ---
- virt/kvm/kvm_main.c                 | 19 ++-----------------
- 9 files changed, 2 insertions(+), 76 deletions(-)
+ virt/kvm/kvm_main.c | 41 ++++++++++++++++++-----------------------
+ 1 file changed, 18 insertions(+), 23 deletions(-)
 
-diff --git a/arch/arm64/kvm/arm.c b/arch/arm64/kvm/arm.c
-index 4d34abcfc9a9..936ef7d1ea94 100644
---- a/arch/arm64/kvm/arm.c
-+++ b/arch/arm64/kvm/arm.c
-@@ -2289,17 +2289,6 @@ static __init int kvm_arm_init(void)
- 	return err;
- }
- 
--int kvm_arch_init(void *opaque)
--{
--	return 0;
--}
--
--/* NOP: Compiling as a module not supported */
--void kvm_arch_exit(void)
--{
--
--}
--
- static int __init early_kvm_mode_cfg(char *arg)
- {
- 	if (!arg)
-diff --git a/arch/mips/kvm/mips.c b/arch/mips/kvm/mips.c
-index ae7a24342fdf..3cade648827a 100644
---- a/arch/mips/kvm/mips.c
-+++ b/arch/mips/kvm/mips.c
-@@ -1010,16 +1010,6 @@ long kvm_arch_vm_ioctl(struct file *filp, unsigned int ioctl, unsigned long arg)
- 	return r;
- }
- 
--int kvm_arch_init(void *opaque)
--{
--	return 0;
--}
--
--void kvm_arch_exit(void)
--{
--
--}
--
- int kvm_arch_vcpu_ioctl_get_sregs(struct kvm_vcpu *vcpu,
- 				  struct kvm_sregs *sregs)
- {
-diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-index 5d2c3a487e73..0a80e80c7b9e 100644
---- a/arch/powerpc/include/asm/kvm_host.h
-+++ b/arch/powerpc/include/asm/kvm_host.h
-@@ -881,7 +881,6 @@ static inline void kvm_arch_sync_events(struct kvm *kvm) {}
- static inline void kvm_arch_memslots_updated(struct kvm *kvm, u64 gen) {}
- static inline void kvm_arch_flush_shadow_all(struct kvm *kvm) {}
- static inline void kvm_arch_sched_in(struct kvm_vcpu *vcpu, int cpu) {}
--static inline void kvm_arch_exit(void) {}
- static inline void kvm_arch_vcpu_blocking(struct kvm_vcpu *vcpu) {}
- static inline void kvm_arch_vcpu_unblocking(struct kvm_vcpu *vcpu) {}
- 
-diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-index d44b85ba8cef..01d0f9935e6c 100644
---- a/arch/powerpc/kvm/powerpc.c
-+++ b/arch/powerpc/kvm/powerpc.c
-@@ -2539,11 +2539,6 @@ void kvmppc_init_lpid(unsigned long nr_lpids_param)
- }
- EXPORT_SYMBOL_GPL(kvmppc_init_lpid);
- 
--int kvm_arch_init(void *opaque)
--{
--	return 0;
--}
--
- EXPORT_TRACEPOINT_SYMBOL_GPL(kvm_ppc_instr);
- 
- void kvm_arch_create_vcpu_debugfs(struct kvm_vcpu *vcpu, struct dentry *debugfs_dentry)
-diff --git a/arch/riscv/kvm/main.c b/arch/riscv/kvm/main.c
-index cb063b8a9a0f..4710a6751687 100644
---- a/arch/riscv/kvm/main.c
-+++ b/arch/riscv/kvm/main.c
-@@ -65,15 +65,6 @@ void kvm_arch_hardware_disable(void)
- 	csr_write(CSR_HIDELEG, 0);
- }
- 
--int kvm_arch_init(void *opaque)
--{
--	return 0;
--}
--
--void kvm_arch_exit(void)
--{
--}
--
- static int __init riscv_kvm_init(void)
- {
- 	const char *str;
-diff --git a/arch/s390/kvm/kvm-s390.c b/arch/s390/kvm/kvm-s390.c
-index 66d162723d21..25b08b956888 100644
---- a/arch/s390/kvm/kvm-s390.c
-+++ b/arch/s390/kvm/kvm-s390.c
-@@ -541,16 +541,6 @@ static void __kvm_s390_exit(void)
- 	debug_unregister(kvm_s390_dbf_uv);
- }
- 
--int kvm_arch_init(void *opaque)
--{
--	return 0;
--}
--
--void kvm_arch_exit(void)
--{
--
--}
--
- /* Section: device related */
- long kvm_arch_dev_ioctl(struct file *filp,
- 			unsigned int ioctl, unsigned long arg)
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 45184ca89317..66f16458aa97 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -9277,16 +9277,6 @@ static inline void kvm_ops_update(struct kvm_x86_init_ops *ops)
- 	kvm_pmu_ops_update(ops->pmu_ops);
- }
- 
--int kvm_arch_init(void *opaque)
--{
--	return 0;
--}
--
--void kvm_arch_exit(void)
--{
--
--}
--
- static int __kvm_x86_vendor_init(struct kvm_x86_init_ops *ops)
- {
- 	u64 host_pat;
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index f2e0e78d2d92..7dde28333e7c 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -1439,9 +1439,6 @@ int kvm_arch_vcpu_ioctl_set_guest_debug(struct kvm_vcpu *vcpu,
- 					struct kvm_guest_debug *dbg);
- int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu);
- 
--int kvm_arch_init(void *opaque);
--void kvm_arch_exit(void);
--
- void kvm_arch_sched_in(struct kvm_vcpu *vcpu, int cpu);
- 
- void kvm_arch_vcpu_load(struct kvm_vcpu *vcpu, int cpu);
 diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 0e62887e8ce1..a4a10a0b322f 100644
+index a27ded004644..c1e48c18e2d9 100644
 --- a/virt/kvm/kvm_main.c
 +++ b/virt/kvm/kvm_main.c
-@@ -5852,20 +5852,8 @@ int kvm_init(void *opaque, unsigned vcpu_size, unsigned vcpu_align,
+@@ -102,7 +102,7 @@ EXPORT_SYMBOL_GPL(halt_poll_ns_shrink);
+ DEFINE_MUTEX(kvm_lock);
+ LIST_HEAD(vm_list);
+ 
+-static cpumask_var_t cpus_hardware_enabled;
++static DEFINE_PER_CPU(bool, hardware_enabled);
+ static int kvm_usage_count;
+ static atomic_t hardware_enable_failed;
+ 
+@@ -5027,21 +5027,17 @@ static struct miscdevice kvm_dev = {
+ 
+ static void hardware_enable_nolock(void *junk)
+ {
+-	int cpu = smp_processor_id();
+-	int r;
+-
+-	if (cpumask_test_cpu(cpu, cpus_hardware_enabled))
++	if (__this_cpu_read(hardware_enabled))
+ 		return;
+ 
+-	cpumask_set_cpu(cpu, cpus_hardware_enabled);
+-
+-	r = kvm_arch_hardware_enable();
+-
+-	if (r) {
+-		cpumask_clear_cpu(cpu, cpus_hardware_enabled);
++	if (kvm_arch_hardware_enable()) {
+ 		atomic_inc(&hardware_enable_failed);
+-		pr_info("kvm: enabling virtualization on CPU%d failed\n", cpu);
++		pr_info("kvm: enabling virtualization on CPU%d failed\n",
++			raw_smp_processor_id());
++		return;
+ 	}
++
++	__this_cpu_write(hardware_enabled, true);
+ }
+ 
+ static int kvm_online_cpu(unsigned int cpu)
+@@ -5070,12 +5066,16 @@ static int kvm_online_cpu(unsigned int cpu)
+ 
+ static void hardware_disable_nolock(void *junk)
+ {
+-	int cpu = smp_processor_id();
+-
+-	if (!cpumask_test_cpu(cpu, cpus_hardware_enabled))
++	/*
++	 * Note, hardware_disable_all_nolock() tells all online CPUs to disable
++	 * hardware, not just CPUs that successfully enabled hardware!
++	 */
++	if (!__this_cpu_read(hardware_enabled))
+ 		return;
+-	cpumask_clear_cpu(cpu, cpus_hardware_enabled);
++
+ 	kvm_arch_hardware_disable();
++
++	__this_cpu_write(hardware_enabled, false);
+ }
+ 
+ static int kvm_offline_cpu(unsigned int cpu)
+@@ -5876,13 +5876,11 @@ int kvm_init(unsigned vcpu_size, unsigned vcpu_align, struct module *module)
  	int r;
  	int cpu;
  
--	/*
--	 * FIXME: Get rid of kvm_arch_init(), vendor code should call arch code
--	 * directly.  Note, kvm_arch_init() _must_ be called before anything
--	 * else as x86 relies on checks buried in kvm_arch_init() to guard
--	 * against multiple calls to kvm_init().
--	 */
--	r = kvm_arch_init(opaque);
--	if (r)
--		return r;
+-	if (!zalloc_cpumask_var(&cpus_hardware_enabled, GFP_KERNEL))
+-		return -ENOMEM;
 -
--	if (!zalloc_cpumask_var(&cpus_hardware_enabled, GFP_KERNEL)) {
--		r = -ENOMEM;
--		goto err_hw_enabled;
--	}
-+	if (!zalloc_cpumask_var(&cpus_hardware_enabled, GFP_KERNEL))
-+		return -ENOMEM;
+ 	r = cpuhp_setup_state_nocalls(CPUHP_AP_KVM_ONLINE, "kvm/cpu:online",
+ 				      kvm_online_cpu, kvm_offline_cpu);
+ 	if (r)
+-		goto out_free_2;
++		return r;
++
+ 	register_reboot_notifier(&kvm_reboot_notifier);
  
- 	c.ret = &r;
- 	c.opaque = opaque;
-@@ -5953,8 +5941,6 @@ int kvm_init(void *opaque, unsigned vcpu_size, unsigned vcpu_align,
- 	cpuhp_remove_state_nocalls(CPUHP_AP_KVM_STARTING);
- out_free_2:
- 	free_cpumask_var(cpus_hardware_enabled);
--err_hw_enabled:
--	kvm_arch_exit();
+ 	/* A kmem cache lets us meet the alignment requirements of fx_save. */
+@@ -5955,8 +5953,6 @@ int kvm_init(unsigned vcpu_size, unsigned vcpu_align, struct module *module)
+ out_free_3:
+ 	unregister_reboot_notifier(&kvm_reboot_notifier);
+ 	cpuhp_remove_state_nocalls(CPUHP_AP_KVM_ONLINE);
+-out_free_2:
+-	free_cpumask_var(cpus_hardware_enabled);
  	return r;
  }
  EXPORT_SYMBOL_GPL(kvm_init);
-@@ -5982,7 +5968,6 @@ void kvm_exit(void)
- 	on_each_cpu(hardware_disable_nolock, NULL, 1);
+@@ -5982,7 +5978,6 @@ void kvm_exit(void)
+ 	unregister_reboot_notifier(&kvm_reboot_notifier);
+ 	cpuhp_remove_state_nocalls(CPUHP_AP_KVM_ONLINE);
  	kvm_irqfd_exit();
- 	free_cpumask_var(cpus_hardware_enabled);
--	kvm_arch_exit();
+-	free_cpumask_var(cpus_hardware_enabled);
  }
  EXPORT_SYMBOL_GPL(kvm_exit);
  
