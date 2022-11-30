@@ -1,55 +1,47 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Wed, 30 Nov 2022 23:08:48 +0000
-Subject: [PATCH v2 04/50] KVM: Teardown VFIO ops earlier in kvm_exit()
+Date: Wed, 30 Nov 2022 23:08:51 +0000
+Subject: [PATCH v2 07/50] KVM: x86: Do timer initialization after XCR0 configuration
 In-Reply-To: <20221130230934.1014142-1-seanjc@google.com>
 References: <20221130230934.1014142-1-seanjc@google.com>
-Message-ID: <20221130230934.1014142-5-seanjc@google.com>
+Message-ID: <20221130230934.1014142-8-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Move the call to kvm_vfio_ops_exit() further up kvm_exit() to try and
-bring some amount of symmetry to the setup order in kvm_init(), and more
-importantly so that the arch hooks are invoked dead last by kvm_exit().
-This will allow arch code to move away from the arch hooks without any
-change in ordering between arch code and common code in kvm_exit().
-
-That kvm_vfio_ops_exit() is called last appears to be 100% arbitrary.  It
-was bolted on after the fact by commit 571ee1b68598 ("kvm: vfio: fix
-unregister kvm_device_ops of vfio").  The nullified kvm_device_ops_table
-is also local to kvm_main.c and is used only when there are active VMs,
-so unless arch code is doing something truly bizarre, nullifying the
-table earlier in kvm_exit() is little more than a nop.
+Move kvm_arch_init()'s call to kvm_timer_init() down a few lines below
+the XCR0 configuration code.  A future patch will move hardware setup
+into kvm_arch_init() and slot in vendor hardware setup before the call
+to kvm_timer_init() so that timer initialization (among other stuff)
+doesn't need to be unwound if vendor setup fails.  XCR0 setup on the
+other hand needs to happen before vendor hardware setup.
 
 Signed-off-by: Sean Christopherson <seanjc@google.com>
-Reviewed-by: Cornelia Huck <cohuck@redhat.com>
-Reviewed-by: Eric Farman <farman@linux.ibm.com>
 ---
- virt/kvm/kvm_main.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/x86/kvm/x86.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index ded88ad6c2d8..988f7d92db2e 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -5980,6 +5980,7 @@ void kvm_exit(void)
- 	for_each_possible_cpu(cpu)
- 		free_cpumask_var(per_cpu(cpu_kick_mask, cpu));
- 	kmem_cache_destroy(kvm_vcpu_cache);
-+	kvm_vfio_ops_exit();
- 	kvm_async_pf_deinit();
- 	unregister_syscore_ops(&kvm_syscore_ops);
- 	unregister_reboot_notifier(&kvm_reboot_notifier);
-@@ -5989,7 +5990,6 @@ void kvm_exit(void)
- 	free_cpumask_var(cpus_hardware_enabled);
- 	kvm_arch_hardware_unsetup();
- 	kvm_arch_exit();
--	kvm_vfio_ops_exit();
- }
- EXPORT_SYMBOL_GPL(kvm_exit);
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index f18f579ebde8..a873618564cd 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -9326,13 +9326,13 @@ int kvm_arch_init(void *opaque)
+ 	if (r)
+ 		goto out_free_percpu;
  
+-	kvm_timer_init();
+-
+ 	if (boot_cpu_has(X86_FEATURE_XSAVE)) {
+ 		host_xcr0 = xgetbv(XCR_XFEATURE_ENABLED_MASK);
+ 		kvm_caps.supported_xcr0 = host_xcr0 & KVM_SUPPORTED_XCR0;
+ 	}
+ 
++	kvm_timer_init();
++
+ 	if (pi_inject_timer == -1)
+ 		pi_inject_timer = housekeeping_enabled(HK_TYPE_TIMER);
+ #ifdef CONFIG_X86_64
 -- 
 2.38.1.584.g0f3c55d4c2-goog
 
