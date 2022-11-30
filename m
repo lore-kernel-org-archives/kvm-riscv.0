@@ -1,80 +1,88 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Wed, 30 Nov 2022 23:08:47 +0000
-Subject: [PATCH v2 03/50] KVM: Allocate cpus_hardware_enabled after arch
- hardware setup
+Date: Wed, 30 Nov 2022 23:08:49 +0000
+Subject: [PATCH v2 05/50] KVM: s390: Unwind kvm_arch_init() piece-by-piece()
+ if a step fails
 In-Reply-To: <20221130230934.1014142-1-seanjc@google.com>
 References: <20221130230934.1014142-1-seanjc@google.com>
-Message-ID: <20221130230934.1014142-4-seanjc@google.com>
+Message-ID: <20221130230934.1014142-6-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Allocate cpus_hardware_enabled after arch hardware setup so that arch
-"init" and "hardware setup" are called back-to-back and thus can be
-combined in a future patch.  cpus_hardware_enabled is never used before
-kvm_create_vm(), i.e. doesn't have a dependency with hardware setup and
-only needs to be allocated before /dev/kvm is exposed to userspace.
-
-Free the object before the arch hooks are invoked to maintain symmetry,
-and so that arch code can move away from the hooks without having to
-worry about ordering changes.
+In preparation for folding kvm_arch_hardware_setup() into kvm_arch_init(),
+unwind initialization one step at a time instead of simply calling
+kvm_arch_exit().  Using kvm_arch_exit() regardless of which initialization
+step failed relies on all affected state playing nice with being undone
+even if said state wasn't first setup.  That holds true for state that is
+currently configured by kvm_arch_init(), but not for state that's handled
+by kvm_arch_hardware_setup(), e.g. calling gmap_unregister_pte_notifier()
+without first registering a notifier would result in list corruption due
+to attempting to delete an entry that was never added to the list.
 
 Signed-off-by: Sean Christopherson <seanjc@google.com>
-Reviewed-by: Yuan Yao <yuan.yao@intel.com>
+Reviewed-by: Eric Farman <farman@linux.ibm.com>
 ---
- virt/kvm/kvm_main.c | 14 +++++++-------
- 1 file changed, 7 insertions(+), 7 deletions(-)
+ arch/s390/kvm/kvm-s390.c | 21 ++++++++++++++-------
+ 1 file changed, 14 insertions(+), 7 deletions(-)
 
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 43e2e4f38151..ded88ad6c2d8 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -5862,15 +5862,15 @@ int kvm_init(void *opaque, unsigned vcpu_size, unsigned vcpu_align,
- 	if (r)
- 		return r;
+diff --git a/arch/s390/kvm/kvm-s390.c b/arch/s390/kvm/kvm-s390.c
+index e4890e04b210..221481a09742 100644
+--- a/arch/s390/kvm/kvm-s390.c
++++ b/arch/s390/kvm/kvm-s390.c
+@@ -498,11 +498,11 @@ int kvm_arch_init(void *opaque)
  
-+	r = kvm_arch_hardware_setup(opaque);
-+	if (r < 0)
-+		goto err_hw_setup;
-+
- 	if (!zalloc_cpumask_var(&cpus_hardware_enabled, GFP_KERNEL)) {
- 		r = -ENOMEM;
- 		goto err_hw_enabled;
+ 	kvm_s390_dbf_uv = debug_register("kvm-uv", 32, 1, 7 * sizeof(long));
+ 	if (!kvm_s390_dbf_uv)
+-		goto out;
++		goto err_kvm_uv;
+ 
+ 	if (debug_register_view(kvm_s390_dbf, &debug_sprintf_view) ||
+ 	    debug_register_view(kvm_s390_dbf_uv, &debug_sprintf_view))
+-		goto out;
++		goto err_debug_view;
+ 
+ 	kvm_s390_cpu_feat_init();
+ 
+@@ -510,25 +510,32 @@ int kvm_arch_init(void *opaque)
+ 	rc = kvm_register_device_ops(&kvm_flic_ops, KVM_DEV_TYPE_FLIC);
+ 	if (rc) {
+ 		pr_err("A FLIC registration call failed with rc=%d\n", rc);
+-		goto out;
++		goto err_flic;
  	}
  
--	r = kvm_arch_hardware_setup(opaque);
--	if (r < 0)
--		goto out_free_1;
--
- 	c.ret = &r;
- 	c.opaque = opaque;
- 	for_each_online_cpu(cpu) {
-@@ -5956,10 +5956,10 @@ int kvm_init(void *opaque, unsigned vcpu_size, unsigned vcpu_align,
- 	unregister_reboot_notifier(&kvm_reboot_notifier);
- 	cpuhp_remove_state_nocalls(CPUHP_AP_KVM_STARTING);
- out_free_2:
--	kvm_arch_hardware_unsetup();
--out_free_1:
- 	free_cpumask_var(cpus_hardware_enabled);
- err_hw_enabled:
-+	kvm_arch_hardware_unsetup();
-+err_hw_setup:
- 	kvm_arch_exit();
- 	return r;
+ 	if (IS_ENABLED(CONFIG_VFIO_PCI_ZDEV_KVM)) {
+ 		rc = kvm_s390_pci_init();
+ 		if (rc) {
+ 			pr_err("Unable to allocate AIFT for PCI\n");
+-			goto out;
++			goto err_pci;
+ 		}
+ 	}
+ 
+ 	rc = kvm_s390_gib_init(GAL_ISC);
+ 	if (rc)
+-		goto out;
++		goto err_gib;
+ 
+ 	return 0;
+ 
+-out:
+-	kvm_arch_exit();
++err_gib:
++	if (IS_ENABLED(CONFIG_VFIO_PCI_ZDEV_KVM))
++		kvm_s390_pci_exit();
++err_pci:
++err_flic:
++err_debug_view:
++	debug_unregister(kvm_s390_dbf_uv);
++err_kvm_uv:
++	debug_unregister(kvm_s390_dbf);
+ 	return rc;
  }
-@@ -5986,9 +5986,9 @@ void kvm_exit(void)
- 	cpuhp_remove_state_nocalls(CPUHP_AP_KVM_STARTING);
- 	on_each_cpu(hardware_disable_nolock, NULL, 1);
- 	kvm_irqfd_exit();
-+	free_cpumask_var(cpus_hardware_enabled);
- 	kvm_arch_hardware_unsetup();
- 	kvm_arch_exit();
--	free_cpumask_var(cpus_hardware_enabled);
- 	kvm_vfio_ops_exit();
- }
- EXPORT_SYMBOL_GPL(kvm_exit);
+ 
 -- 
 2.38.1.584.g0f3c55d4c2-goog
 
