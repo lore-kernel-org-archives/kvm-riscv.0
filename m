@@ -1,51 +1,70 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Wed, 30 Nov 2022 23:09:07 +0000
-Subject: [PATCH v2 23/50] KVM: MIPS: Register die notifier prior to kvm_init()
+Date: Wed, 30 Nov 2022 23:09:08 +0000
+Subject: [PATCH v2 24/50] KVM: RISC-V: Do arch init directly in riscv_kvm_init()
 In-Reply-To: <20221130230934.1014142-1-seanjc@google.com>
 References: <20221130230934.1014142-1-seanjc@google.com>
-Message-ID: <20221130230934.1014142-24-seanjc@google.com>
+Message-ID: <20221130230934.1014142-25-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Call kvm_init() only after _all_ setup is complete, as kvm_init() exposes
-/dev/kvm to userspace and thus allows userspace to create VMs (and call
-other ioctls).
+Fold the guts of kvm_arch_init() into riscv_kvm_init() instead of
+bouncing through kvm_init()=>kvm_arch_init().  Functionally, this is a
+glorified nop as invoking kvm_arch_init() is the very first action
+performed by kvm_init().
+
+Moving setup to riscv_kvm_init(), which is tagged __init, will allow
+tagging more functions and data with __init and __ro_after_init.  And
+emptying kvm_arch_init() will allow dropping the hook entirely once all
+architecture implementations are nops.
+
+No functional change intended.
 
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 Reviewed-by: Philippe Mathieu-Daud? <philmd@linaro.org>
+Acked-by: Anup Patel <anup@brainfault.org>
 ---
- arch/mips/kvm/mips.c | 9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
+ arch/riscv/kvm/main.c | 18 +++++++++---------
+ 1 file changed, 9 insertions(+), 9 deletions(-)
 
-diff --git a/arch/mips/kvm/mips.c b/arch/mips/kvm/mips.c
-index 75681281e2df..ae7a24342fdf 100644
---- a/arch/mips/kvm/mips.c
-+++ b/arch/mips/kvm/mips.c
-@@ -1640,16 +1640,17 @@ static int __init kvm_mips_init(void)
- 	if (ret)
- 		return ret;
- 
--	ret = kvm_init(NULL, sizeof(struct kvm_vcpu), 0, THIS_MODULE);
--
--	if (ret)
--		return ret;
- 
- 	if (boot_cpu_type() == CPU_LOONGSON64)
- 		kvm_priority_to_irq = kvm_loongson3_priority_to_irq;
- 
- 	register_die_notifier(&kvm_mips_csr_die_notifier);
- 
-+	ret = kvm_init(NULL, sizeof(struct kvm_vcpu), 0, THIS_MODULE);
-+	if (ret) {
-+		unregister_die_notifier(&kvm_mips_csr_die_notifier);
-+		return ret;
-+	}
- 	return 0;
+diff --git a/arch/riscv/kvm/main.c b/arch/riscv/kvm/main.c
+index a146fa0ce4d2..cb063b8a9a0f 100644
+--- a/arch/riscv/kvm/main.c
++++ b/arch/riscv/kvm/main.c
+@@ -66,6 +66,15 @@ void kvm_arch_hardware_disable(void)
  }
  
+ int kvm_arch_init(void *opaque)
++{
++	return 0;
++}
++
++void kvm_arch_exit(void)
++{
++}
++
++static int __init riscv_kvm_init(void)
+ {
+ 	const char *str;
+ 
+@@ -110,15 +119,6 @@ int kvm_arch_init(void *opaque)
+ 
+ 	kvm_info("VMID %ld bits available\n", kvm_riscv_gstage_vmid_bits());
+ 
+-	return 0;
+-}
+-
+-void kvm_arch_exit(void)
+-{
+-}
+-
+-static int __init riscv_kvm_init(void)
+-{
+ 	return kvm_init(NULL, sizeof(struct kvm_vcpu), 0, THIS_MODULE);
+ }
+ module_init(riscv_kvm_init);
 -- 
 2.38.1.584.g0f3c55d4c2-goog
 
