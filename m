@@ -1,11 +1,11 @@
 From: Huang, Kai <kai.huang@intel.com>
-Date: Fri, 2 Dec 2022 13:01:24 +0000
-Subject: [PATCH v2 39/50] KVM: x86: Move CPU compat checks hook to
- kvm_x86_ops (from kvm_x86_init_ops)
-In-Reply-To: <20221130230934.1014142-40-seanjc@google.com>
+Date: Fri, 2 Dec 2022 13:03:37 +0000
+Subject: [PATCH v2 40/50] KVM: x86: Do compatibility checks when onlining
+ CPU
+In-Reply-To: <20221130230934.1014142-41-seanjc@google.com>
 References: <20221130230934.1014142-1-seanjc@google.com>
-	 <20221130230934.1014142-40-seanjc@google.com>
-Message-ID: <1b0ece3937436f59f466c352b84cb35f84347399.camel@intel.com>
+	 <20221130230934.1014142-41-seanjc@google.com>
+Message-ID: <34ed147326f8c0b0c7df4eeacb62fc802d030de1.camel@intel.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -13,234 +13,139 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 On Wed, 2022-11-30 at 23:09 +0000, Sean Christopherson wrote:
-> Move the .check_processor_compatibility() callback from kvm_x86_init_ops
-> to kvm_x86_ops to allow a future patch to do compatibility checks during
-> CPU hotplug.
+> From: Chao Gao <chao.gao@intel.com>
 > 
-> Do kvm_ops_update() before compat checks so that static_call() can be
-> used during compat checks.
+> Do compatibility checks when enabling hardware to effectively add
+> compatibility checks when onlining a CPU.  Abort enabling, i.e. the
+> online process, if the (hotplugged) CPU is incompatible with the known
+> good setup.
 > 
+> At init time, KVM does compatibility checks to ensure that all online
+> CPUs support hardware virtualization and a common set of features. But
+> KVM uses hotplugged CPUs without such compatibility checks. On Intel
+> CPUs, this leads to #GP if the hotplugged CPU doesn't support VMX, or
+> VM-Entry failure if the hotplugged CPU doesn't support all features
+> enabled by KVM.
+> 
+> Note, this is little more than a NOP on SVM, as SVM already checks for
+> full SVM support during hardware enabling.
+> 
+> Opportunistically add a pr_err() if setup_vmcs_config() fails, and
+> tweak all error messages to output which CPU failed.
+> 
+> Signed-off-by: Chao Gao <chao.gao@intel.com>
+> Co-developed-by: Sean Christopherson <seanjc@google.com>
 > Signed-off-by: Sean Christopherson <seanjc@google.com>
 
-Reviewed-by: Kai Huang <kai.huang@intel.com>
+For VMX:
+
+Acked-by: Kai Huang <kai.huang@intel.com>
 
 > ---
->  arch/x86/include/asm/kvm-x86-ops.h |  1 +
->  arch/x86/include/asm/kvm_host.h    |  3 ++-
->  arch/x86/kvm/svm/svm.c             |  5 +++--
->  arch/x86/kvm/vmx/vmx.c             | 16 +++++++--------
->  arch/x86/kvm/x86.c                 | 31 +++++++++++-------------------
->  5 files changed, 25 insertions(+), 31 deletions(-)
+>  arch/x86/kvm/svm/svm.c |  8 +++-----
+>  arch/x86/kvm/vmx/vmx.c | 15 ++++++++++-----
+>  arch/x86/kvm/x86.c     |  5 +++++
+>  3 files changed, 18 insertions(+), 10 deletions(-)
 > 
-> diff --git a/arch/x86/include/asm/kvm-x86-ops.h b/arch/x86/include/asm/kvm-x86-ops.h
-> index abccd51dcfca..dba2909e5ae2 100644
-> --- a/arch/x86/include/asm/kvm-x86-ops.h
-> +++ b/arch/x86/include/asm/kvm-x86-ops.h
-> @@ -14,6 +14,7 @@ BUILD_BUG_ON(1)
->   * to make a definition optional, but in this case the default will
->   * be __static_call_return0.
->   */
-> +KVM_X86_OP(check_processor_compatibility)
->  KVM_X86_OP(hardware_enable)
->  KVM_X86_OP(hardware_disable)
->  KVM_X86_OP(hardware_unsetup)
-> diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
-> index d79aedf70908..ba74fea6850b 100644
-> --- a/arch/x86/include/asm/kvm_host.h
-> +++ b/arch/x86/include/asm/kvm_host.h
-> @@ -1518,6 +1518,8 @@ static inline u16 kvm_lapic_irq_dest_mode(bool dest_mode_logical)
->  struct kvm_x86_ops {
->  	const char *name;
->  
-> +	int (*check_processor_compatibility)(void);
-> +
->  	int (*hardware_enable)(void);
->  	void (*hardware_disable)(void);
->  	void (*hardware_unsetup)(void);
-> @@ -1729,7 +1731,6 @@ struct kvm_x86_nested_ops {
->  };
->  
->  struct kvm_x86_init_ops {
-> -	int (*check_processor_compatibility)(void);
->  	int (*hardware_setup)(void);
->  	unsigned int (*handle_intel_pt_intr)(void);
->  
 > diff --git a/arch/x86/kvm/svm/svm.c b/arch/x86/kvm/svm/svm.c
-> index 9f94efcb9aa6..c2e95c0d9fd8 100644
+> index c2e95c0d9fd8..46b658d0f46e 100644
 > --- a/arch/x86/kvm/svm/svm.c
 > +++ b/arch/x86/kvm/svm/svm.c
-> @@ -543,7 +543,7 @@ static bool kvm_is_svm_supported(void)
->  	return true;
->  }
+> @@ -521,11 +521,12 @@ static void svm_init_osvw(struct kvm_vcpu *vcpu)
 >  
-> -static int __init svm_check_processor_compat(void)
-> +static int svm_check_processor_compat(void)
+>  static bool kvm_is_svm_supported(void)
 >  {
->  	if (!kvm_is_svm_supported())
->  		return -EIO;
-> @@ -4695,6 +4695,8 @@ static int svm_vm_init(struct kvm *kvm)
->  static struct kvm_x86_ops svm_x86_ops __initdata = {
->  	.name = KBUILD_MODNAME,
+> +	int cpu = raw_smp_processor_id();
+>  	const char *msg;
+>  	u64 vm_cr;
 >  
-> +	.check_processor_compatibility = svm_check_processor_compat,
-> +
->  	.hardware_unsetup = svm_hardware_unsetup,
->  	.hardware_enable = svm_hardware_enable,
->  	.hardware_disable = svm_hardware_disable,
-> @@ -5079,7 +5081,6 @@ static __init int svm_hardware_setup(void)
->  
->  static struct kvm_x86_init_ops svm_init_ops __initdata = {
->  	.hardware_setup = svm_hardware_setup,
-> -	.check_processor_compatibility = svm_check_processor_compat,
->  
->  	.runtime_ops = &svm_x86_ops,
->  	.pmu_ops = &amd_pmu_ops,
-> diff --git a/arch/x86/kvm/vmx/vmx.c b/arch/x86/kvm/vmx/vmx.c
-> index 2a8a6e481c76..6416ed5b7f89 100644
-> --- a/arch/x86/kvm/vmx/vmx.c
-> +++ b/arch/x86/kvm/vmx/vmx.c
-> @@ -2520,8 +2520,7 @@ static bool cpu_has_perf_global_ctrl_bug(void)
->  	return false;
->  }
->  
-> -static __init int adjust_vmx_controls(u32 ctl_min, u32 ctl_opt,
-> -				      u32 msr, u32 *result)
-> +static int adjust_vmx_controls(u32 ctl_min, u32 ctl_opt, u32 msr, u32 *result)
->  {
->  	u32 vmx_msr_low, vmx_msr_high;
->  	u32 ctl = ctl_min | ctl_opt;
-> @@ -2539,7 +2538,7 @@ static __init int adjust_vmx_controls(u32 ctl_min, u32 ctl_opt,
->  	return 0;
->  }
->  
-> -static __init u64 adjust_vmx_controls64(u64 ctl_opt, u32 msr)
-> +static u64 adjust_vmx_controls64(u64 ctl_opt, u32 msr)
->  {
->  	u64 allowed;
->  
-> @@ -2548,8 +2547,8 @@ static __init u64 adjust_vmx_controls64(u64 ctl_opt, u32 msr)
->  	return  ctl_opt & allowed;
->  }
->  
-> -static __init int setup_vmcs_config(struct vmcs_config *vmcs_conf,
-> -				    struct vmx_capability *vmx_cap)
-> +static int setup_vmcs_config(struct vmcs_config *vmcs_conf,
-> +			     struct vmx_capability *vmx_cap)
->  {
->  	u32 vmx_msr_low, vmx_msr_high;
->  	u32 _pin_based_exec_control = 0;
-> @@ -2710,7 +2709,7 @@ static __init int setup_vmcs_config(struct vmcs_config *vmcs_conf,
->  	return 0;
->  }
->  
-> -static bool __init kvm_is_vmx_supported(void)
-> +static bool kvm_is_vmx_supported(void)
->  {
->  	if (!cpu_has_vmx()) {
->  		pr_err("CPU doesn't support VMX\n");
-> @@ -2726,7 +2725,7 @@ static bool __init kvm_is_vmx_supported(void)
->  	return true;
->  }
->  
-> -static int __init vmx_check_processor_compat(void)
-> +static int vmx_check_processor_compat(void)
->  {
->  	struct vmcs_config vmcs_conf;
->  	struct vmx_capability vmx_cap;
-> @@ -8104,6 +8103,8 @@ static void vmx_vm_destroy(struct kvm *kvm)
->  static struct kvm_x86_ops vmx_x86_ops __initdata = {
->  	.name = KBUILD_MODNAME,
->  
-> +	.check_processor_compatibility = vmx_check_processor_compat,
-> +
->  	.hardware_unsetup = vmx_hardware_unsetup,
->  
->  	.hardware_enable = vmx_hardware_enable,
-> @@ -8501,7 +8502,6 @@ static __init int hardware_setup(void)
->  }
->  
->  static struct kvm_x86_init_ops vmx_init_ops __initdata = {
-> -	.check_processor_compatibility = vmx_check_processor_compat,
->  	.hardware_setup = hardware_setup,
->  	.handle_intel_pt_intr = NULL,
->  
-> diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-> index 5551f3552f08..ee9af412ffd4 100644
-> --- a/arch/x86/kvm/x86.c
-> +++ b/arch/x86/kvm/x86.c
-> @@ -9279,12 +9279,7 @@ static inline void kvm_ops_update(struct kvm_x86_init_ops *ops)
->  	kvm_pmu_ops_update(ops->pmu_ops);
->  }
->  
-> -struct kvm_cpu_compat_check {
-> -	struct kvm_x86_init_ops *ops;
-> -	int *ret;
-> -};
-> -
-> -static int kvm_x86_check_processor_compatibility(struct kvm_x86_init_ops *ops)
-> +static int kvm_x86_check_processor_compatibility(void)
->  {
->  	struct cpuinfo_x86 *c = &cpu_data(smp_processor_id());
->  
-> @@ -9294,19 +9289,16 @@ static int kvm_x86_check_processor_compatibility(struct kvm_x86_init_ops *ops)
->  	    __cr4_reserved_bits(cpu_has, &boot_cpu_data))
->  		return -EIO;
->  
-> -	return ops->check_processor_compatibility();
-> +	return static_call(kvm_x86_check_processor_compatibility)();
->  }
->  
-> -static void kvm_x86_check_cpu_compat(void *data)
-> +static void kvm_x86_check_cpu_compat(void *ret)
->  {
-> -	struct kvm_cpu_compat_check *c = data;
-> -
-> -	*c->ret = kvm_x86_check_processor_compatibility(c->ops);
-> +	*(int *)ret = kvm_x86_check_processor_compatibility();
->  }
->  
->  static int __kvm_x86_vendor_init(struct kvm_x86_init_ops *ops)
->  {
-> -	struct kvm_cpu_compat_check c;
->  	u64 host_pat;
->  	int r, cpu;
->  
-> @@ -9377,12 +9369,12 @@ static int __kvm_x86_vendor_init(struct kvm_x86_init_ops *ops)
->  	if (r != 0)
->  		goto out_mmu_exit;
->  
-> -	c.ret = &r;
-> -	c.ops = ops;
-> +	kvm_ops_update(ops);
-> +
->  	for_each_online_cpu(cpu) {
-> -		smp_call_function_single(cpu, kvm_x86_check_cpu_compat, &c, 1);
-> +		smp_call_function_single(cpu, kvm_x86_check_cpu_compat, &r, 1);
->  		if (r < 0)
-> -			goto out_hardware_unsetup;
-> +			goto out_unwind_ops;
+>  	if (!cpu_has_svm(&msg)) {
+> -		pr_err("SVM not supported, %s\n", msg);
+> +		pr_err("SVM not supported by CPU %d, %s\n", cpu, msg);
+>  		return false;
 >  	}
 >  
->  	/*
-> @@ -9390,8 +9382,6 @@ static int __kvm_x86_vendor_init(struct kvm_x86_init_ops *ops)
->  	 * absolutely necessary, as most operations from this point forward
->  	 * require unwinding.
->  	 */
-> -	kvm_ops_update(ops);
+> @@ -536,7 +537,7 @@ static bool kvm_is_svm_supported(void)
+>  
+>  	rdmsrl(MSR_VM_CR, vm_cr);
+>  	if (vm_cr & (1 << SVM_VM_CR_SVM_DISABLE)) {
+> -		pr_err("SVM disabled (by BIOS) in MSR_VM_CR\n");
+> +		pr_err("SVM disabled (by BIOS) in MSR_VM_CR on CPU %d\n", cpu);
+>  		return false;
+>  	}
+>  
+> @@ -587,9 +588,6 @@ static int svm_hardware_enable(void)
+>  	if (efer & EFER_SVME)
+>  		return -EBUSY;
+>  
+> -	if (!kvm_is_svm_supported())
+> -		return -EINVAL;
 > -
->  	kvm_timer_init();
+>  	sd = per_cpu_ptr(&svm_data, me);
+>  	sd->asid_generation = 1;
+>  	sd->max_asid = cpuid_ebx(SVM_CPUID_FUNC) - 1;
+> diff --git a/arch/x86/kvm/vmx/vmx.c b/arch/x86/kvm/vmx/vmx.c
+> index 6416ed5b7f89..39dd3082fcd8 100644
+> --- a/arch/x86/kvm/vmx/vmx.c
+> +++ b/arch/x86/kvm/vmx/vmx.c
+> @@ -2711,14 +2711,16 @@ static int setup_vmcs_config(struct vmcs_config *vmcs_conf,
 >  
->  	if (pi_inject_timer == -1)
-> @@ -9427,8 +9417,9 @@ static int __kvm_x86_vendor_init(struct kvm_x86_init_ops *ops)
->  	kvm_init_msr_list();
+>  static bool kvm_is_vmx_supported(void)
+>  {
+> +	int cpu = raw_smp_processor_id();
+> +
+>  	if (!cpu_has_vmx()) {
+> -		pr_err("CPU doesn't support VMX\n");
+> +		pr_err("VMX not supported by CPU %d\n", cpu);
+>  		return false;
+>  	}
+>  
+>  	if (!this_cpu_has(X86_FEATURE_MSR_IA32_FEAT_CTL) ||
+>  	    !this_cpu_has(X86_FEATURE_VMX)) {
+> -		pr_err("VMX not enabled (by BIOS) in MSR_IA32_FEAT_CTL\n");
+> +		pr_err("VMX not enabled (by BIOS) in MSR_IA32_FEAT_CTL on CPU %d\n", cpu);
+>  		return false;
+>  	}
+>  
+> @@ -2727,18 +2729,21 @@ static bool kvm_is_vmx_supported(void)
+>  
+>  static int vmx_check_processor_compat(void)
+>  {
+> +	int cpu = raw_smp_processor_id();
+>  	struct vmcs_config vmcs_conf;
+>  	struct vmx_capability vmx_cap;
+>  
+>  	if (!kvm_is_vmx_supported())
+>  		return -EIO;
+>  
+> -	if (setup_vmcs_config(&vmcs_conf, &vmx_cap) < 0)
+> +	if (setup_vmcs_config(&vmcs_conf, &vmx_cap) < 0) {
+> +		pr_err("Failed to setup VMCS config on CPU %d\n", cpu);
+>  		return -EIO;
+> +	}
+>  	if (nested)
+>  		nested_vmx_setup_ctls_msrs(&vmcs_conf, vmx_cap.ept);
+> -	if (memcmp(&vmcs_config, &vmcs_conf, sizeof(struct vmcs_config)) != 0) {
+> -		pr_err("CPU %d feature inconsistency!\n", smp_processor_id());
+> +	if (memcmp(&vmcs_config, &vmcs_conf, sizeof(struct vmcs_config))) {
+> +		pr_err("Inconsistent VMCS config on CPU %d\n", cpu);
+>  		return -EIO;
+>  	}
 >  	return 0;
+> diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+> index ee9af412ffd4..5a9e74cedbc6 100644
+> --- a/arch/x86/kvm/x86.c
+> +++ b/arch/x86/kvm/x86.c
+> @@ -11967,6 +11967,11 @@ int kvm_arch_hardware_enable(void)
+>  	bool stable, backwards_tsc = false;
 >  
-> -out_hardware_unsetup:
-> -	ops->runtime_ops->hardware_unsetup();
-> +out_unwind_ops:
-> +	kvm_x86_ops.hardware_enable = NULL;
-> +	static_call(kvm_x86_hardware_unsetup)();
->  out_mmu_exit:
->  	kvm_mmu_vendor_module_exit();
->  out_free_percpu:
+>  	kvm_user_return_msr_cpu_online();
+> +
+> +	ret = kvm_x86_check_processor_compatibility();
+> +	if (ret)
+> +		return ret;
+> +
+>  	ret = static_call(kvm_x86_hardware_enable)();
+>  	if (ret != 0)
+>  		return ret;
 
