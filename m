@@ -1,93 +1,150 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Fri, 2 Dec 2022 12:37:08 +0100
-Subject: [RFC 8/9] RISC-V: KVM: Implement perf support
-In-Reply-To: <CAOnJCULCHZXLG18BNw=Fn8UaNb8hSMuvLAsA+j_4mX+_B27MYg@mail.gmail.com>
-References: <20220718170205.2972215-1-atishp@rivosinc.com>
- <20220718170205.2972215-9-atishp@rivosinc.com>
- <20221101153112.hpst2bohsdvqours@kamzik>
- <CAOnJCU++M5jd6toy1J8T+FPGJWSUaw8s9X7sxZY25naPoZeJJw@mail.gmail.com>
- <20221123142254.2mc3j27kgw37jblv@kamzik>
- <CAOnJCULCHZXLG18BNw=Fn8UaNb8hSMuvLAsA+j_4mX+_B27MYg@mail.gmail.com>
-Message-ID: <20221202113708.5sxbpnayj75xg6jp@kamzik>
+From: Huang, Kai <kai.huang@intel.com>
+Date: Fri, 2 Dec 2022 12:16:22 +0000
+Subject: [PATCH v2 31/50] KVM: x86: Do CPU compatibility checks in x86
+ code
+In-Reply-To: <20221130230934.1014142-32-seanjc@google.com>
+References: <20221130230934.1014142-1-seanjc@google.com>
+	 <20221130230934.1014142-32-seanjc@google.com>
+Message-ID: <fdc18aa646a1636d0523b3848d938e43e7553725.camel@intel.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Dec 02, 2022 at 01:08:47AM -0800, Atish Patra wrote:
-> On Wed, Nov 23, 2022 at 6:22 AM Andrew Jones <ajones@ventanamicro.com> wrote:
-> >
-> > On Tue, Nov 22, 2022 at 04:45:16PM -0800, Atish Patra wrote:
-> > ...
-> > > This brings up another generic error returning problem in KVM SBI
-> > > land. Usually, SBI error code numbers do not
-> > > align with Linux error codes to accommodate other operating systems.
-> > > However, most of the SBI error codes
-> > > have 1-1 relationship with the Linux error code.
-> > > Thus, kvm internal code returns a Linux specific error code and
-> > > vcpu_sbi will map those to SBI error code using
-> > > kvm_linux_err_map_sbi.
-> > >
-> > > However, this will not work for SBI_ERR_ALREADY_STARTED/STOPPED as
-> > > there are no corresponding
-> > > Linux specific error codes. We can directly return the SBI error codes
-> > > from vcpu_pmu.c and modify the
-> > > kvm_linux_err_map_sbi to pass through those. In that case, we can't
-> > > map any linux error code that
-> > > collides with SBI error code. Any other ideas to handle this case ?
-> > >
-> >
-> > It seems like we should drop kvm_linux_err_map_sbi() and add another
-> > parameter to kvm_vcpu_sbi_extension.handler for the SBI error. Another
+On Wed, 2022-11-30 at 23:09 +0000, Sean Christopherson wrote:
+> Move the CPU compatibility checks to pure x86 code, i.e. drop x86's use
+> of the common kvm_x86_check_cpu_compat() arch hook.  x86 is the only
+		^
+		kvm_arch_check_processor_compat()
+
+> architecture that "needs" to do per-CPU compatibility checks, moving
+> the logic to x86 will allow dropping the common code, and will also
+> give x86 more control over when/how the compatibility checks are
+> performed, e.g. TDX will need to enable hardware (do VMXON) in order to
+> perform compatibility checks.
 > 
-> That will just move the problem from the generic SBI layer to
-> extension specific layer.
-> The root problem remains the same as we can't expect the individual
-> extension to return
-> a valid linux specific error code.
+> Signed-off-by: Sean Christopherson <seanjc@google.com>
 
-I'm saying we return both from the extension specific layer, particularly
-because only the extension specific layer knows what it should return.
-KVM's SBI handlers currently have a return value and *out_val. *out_val
-maps directly to SBI's sbiret.value, but the return value does not map to
-SBI's sbiret.error. But, all we have to do is add *error_val to the
-parameters for the extension handler to get it. Then, cp->a0 should be set
-to that, not the return value.
+Reviewed-by: Kai Huang <kai.huang@intel.com>
 
+> ---
+>  arch/x86/kvm/svm/svm.c |  2 +-
+>  arch/x86/kvm/vmx/vmx.c |  2 +-
+>  arch/x86/kvm/x86.c     | 49 ++++++++++++++++++++++++++++++++----------
+>  3 files changed, 40 insertions(+), 13 deletions(-)
 > 
-> Maybe we can relax that requirement. Thus, any extension that has
-> additional SBI error codes
-> may opt to return SBI error codes directly. For example, PMU extension
-> implementation will
-> directly SBI specific error codes from arch/riscv/kvm/vcpu_pmu.c. In
-> future, there will be other
-> extensions (e.g TEE) will have many more error codes that can leverage
-> this as well.
+> diff --git a/arch/x86/kvm/svm/svm.c b/arch/x86/kvm/svm/svm.c
+> index 19e81a99c58f..d7ea1c1175c2 100644
+> --- a/arch/x86/kvm/svm/svm.c
+> +++ b/arch/x86/kvm/svm/svm.c
+> @@ -5103,7 +5103,7 @@ static int __init svm_init(void)
+>  	 * Common KVM initialization _must_ come last, after this, /dev/kvm is
+>  	 * exposed to userspace!
+>  	 */
+> -	r = kvm_init(&svm_init_ops, sizeof(struct vcpu_svm),
+> +	r = kvm_init(NULL, sizeof(struct vcpu_svm),
+>  		     __alignof__(struct vcpu_svm), THIS_MODULE);
+>  	if (r)
+>  		goto err_kvm_init;
+> diff --git a/arch/x86/kvm/vmx/vmx.c b/arch/x86/kvm/vmx/vmx.c
+> index 654d81f781da..8deb1bd60c10 100644
+> --- a/arch/x86/kvm/vmx/vmx.c
+> +++ b/arch/x86/kvm/vmx/vmx.c
+> @@ -8592,7 +8592,7 @@ static int __init vmx_init(void)
+>  	 * Common KVM initialization _must_ come last, after this, /dev/kvm is
+>  	 * exposed to userspace!
+>  	 */
+> -	r = kvm_init(&vmx_init_ops, sizeof(struct vcpu_vmx),
+> +	r = kvm_init(NULL, sizeof(struct vcpu_vmx),
+>  		     __alignof__(struct vcpu_vmx), THIS_MODULE);
+>  	if (r)
+>  		goto err_kvm_init;
+> diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+> index 66f16458aa97..3571bc968cf8 100644
+> --- a/arch/x86/kvm/x86.c
+> +++ b/arch/x86/kvm/x86.c
+> @@ -9277,10 +9277,36 @@ static inline void kvm_ops_update(struct kvm_x86_init_ops *ops)
+>  	kvm_pmu_ops_update(ops->pmu_ops);
+>  }
+>  
+> +struct kvm_cpu_compat_check {
+> +	struct kvm_x86_init_ops *ops;
+> +	int *ret;
+> +};
+> +
+> +static int kvm_x86_check_processor_compatibility(struct kvm_x86_init_ops *ops)
+> +{
+> +	struct cpuinfo_x86 *c = &cpu_data(smp_processor_id());
+> +
+> +	WARN_ON(!irqs_disabled());
+> +
+> +	if (__cr4_reserved_bits(cpu_has, c) !=
+> +	    __cr4_reserved_bits(cpu_has, &boot_cpu_data))
+> +		return -EIO;
+> +
+> +	return ops->check_processor_compatibility();
+> +}
+> +
+> +static void kvm_x86_check_cpu_compat(void *data)
+> +{
+> +	struct kvm_cpu_compat_check *c = data;
+> +
+> +	*c->ret = kvm_x86_check_processor_compatibility(c->ops);
+> +}
+> +
+>  static int __kvm_x86_vendor_init(struct kvm_x86_init_ops *ops)
+>  {
+> +	struct kvm_cpu_compat_check c;
+>  	u64 host_pat;
+> -	int r;
+> +	int r, cpu;
+>  
+>  	if (kvm_x86_ops.hardware_enable) {
+>  		pr_err("kvm: already loaded vendor module '%s'\n", kvm_x86_ops.name);
+> @@ -9360,6 +9386,14 @@ static int __kvm_x86_vendor_init(struct kvm_x86_init_ops *ops)
+>  	if (r != 0)
+>  		goto out_mmu_exit;
+>  
+> +	c.ret = &r;
+> +	c.ops = ops;
+> +	for_each_online_cpu(cpu) {
+> +		smp_call_function_single(cpu, kvm_x86_check_cpu_compat, &c, 1);
+> +		if (r < 0)
+> +			goto out_hardware_unsetup;
+> +	}
+> +
+>  	/*
+>  	 * Point of no return!  DO NOT add error paths below this point unless
+>  	 * absolutely necessary, as most operations from this point forward
+> @@ -9402,6 +9436,8 @@ static int __kvm_x86_vendor_init(struct kvm_x86_init_ops *ops)
+>  	kvm_init_msr_list();
+>  	return 0;
+>  
+> +out_hardware_unsetup:
+> +	ops->runtime_ops->hardware_unsetup();
+>  out_mmu_exit:
+>  	kvm_mmu_vendor_module_exit();
+>  out_free_percpu:
+> @@ -12037,16 +12073,7 @@ void kvm_arch_hardware_disable(void)
+>  
+>  int kvm_arch_check_processor_compat(void *opaque)
+>  {
+> -	struct cpuinfo_x86 *c = &cpu_data(smp_processor_id());
+> -	struct kvm_x86_init_ops *ops = opaque;
+> -
+> -	WARN_ON(!irqs_disabled());
+> -
+> -	if (__cr4_reserved_bits(cpu_has, c) !=
+> -	    __cr4_reserved_bits(cpu_has, &boot_cpu_data))
+> -		return -EIO;
+> -
+> -	return ops->check_processor_compatibility();
+> +	return 0;
+>  }
+>  
+>  bool kvm_vcpu_is_reset_bsp(struct kvm_vcpu *vcpu)
+> -- 
+> 2.38.1.584.g0f3c55d4c2-goog
 > 
-> Does that sound reasonable ?
-
-I think we need both the Linux return and sbiret.error. The return value
-indicates a problem *with* the emulation, while the new parameter I'm
-proposing (*error_val) is the return value *of* the emulation. Normally
-the Linux return value will be zero (a successful Linux call) even when
-emulating a failure (*error_val != SBI_SUCCESS). When the return value
-is not zero, then there's something wrong in KVM and the return value
-should be propagated to userspace. We could also set the exit_reason to
-KVM_EXIT_INTERNAL_ERROR, but KVM_EXIT_UNKNOWN is probably fine too.
-
-> 
-> > option is to continue mapping SBI errors to Linux errors, e.g.
-> > SBI_ERR_ALREADY_STARTED == EBUSY, but that may not be too easy in
-> > all cases and the errors become ambiguous, as we can't tell if the
-> > Linux implementation generated the error or if the SBI call did.
-> >
-> 
-> We can't distinguish between SBI_ERR_ALREADY_STARTED/STOPPED in that case.
-
-That's why I only suggested using EBUSY for STARTED. Mapping STOPPED
-was left as an exercise for the reader :-)
-
-Thanks,
-drew
 
