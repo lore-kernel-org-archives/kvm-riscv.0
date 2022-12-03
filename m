@@ -1,47 +1,113 @@
-From: Palmer Dabbelt <palmer@dabbelt.com>
-Date: Fri, 02 Dec 2022 09:53:39 -0800 (PST)
-Subject: [PATCH 6/9] RISC-V: Export sbi_get_mvendorid() and friends
-In-Reply-To: <20221128161424.608889-7-apatel@ventanamicro.com>
-Message-ID: <mhng-365b9851-cb0a-4e2c-9cf4-4eca9623cf04@palmer-ri-x1c9a>
+From: Anup Patel <anup@brainfault.org>
+Date: Sat, 3 Dec 2022 17:48:54 +0530
+Subject: [PATCH 8/9] RISC-V: KVM: Add ONE_REG interface for mvendorid,
+ marchid, and mimpid
+In-Reply-To: <20221129054616.4zju5z7ipg6wki7l@kamzik>
+References: <20221128161424.608889-1-apatel@ventanamicro.com>
+ <20221128161424.608889-9-apatel@ventanamicro.com> <20221129054616.4zju5z7ipg6wki7l@kamzik>
+Message-ID: <CAAhSdy3CnkK7=zombN4zH=g8+buz_rEhgXCzOE-WdSTYtcfdMA@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, 28 Nov 2022 08:14:21 PST (-0800), apatel at ventanamicro.com wrote:
-> The sbi_get_mvendorid(), sbi_get_marchid(), and sbi_get_mimpid()
-> can be used by KVM module so let us export these functions.
+On Tue, Nov 29, 2022 at 11:16 AM Andrew Jones <ajones@ventanamicro.com> wrote:
 >
-> Signed-off-by: Anup Patel <apatel@ventanamicro.com>
-> ---
->  arch/riscv/kernel/sbi.c | 3 +++
->  1 file changed, 3 insertions(+)
+> On Mon, Nov 28, 2022 at 09:44:23PM +0530, Anup Patel wrote:
+> > We add ONE_REG interface for VCPU mvendorid, marchid, and mimpid
+> > so that KVM user-space can change this details to support migration
+> > across heterogeneous hosts.
+> >
+> > Signed-off-by: Anup Patel <apatel@ventanamicro.com>
+> > ---
+> >  arch/riscv/include/uapi/asm/kvm.h |  3 +++
+> >  arch/riscv/kvm/vcpu.c             | 27 +++++++++++++++++++++++++++
+> >  2 files changed, 30 insertions(+)
+> >
+> > diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
+> > index 8985ff234c01..92af6f3f057c 100644
+> > --- a/arch/riscv/include/uapi/asm/kvm.h
+> > +++ b/arch/riscv/include/uapi/asm/kvm.h
+> > @@ -49,6 +49,9 @@ struct kvm_sregs {
+> >  struct kvm_riscv_config {
+> >       unsigned long isa;
+> >       unsigned long zicbom_block_size;
+> > +     unsigned long mvendorid;
+> > +     unsigned long marchid;
+> > +     unsigned long mimpid;
+> >  };
+> >
+> >  /* CORE registers for KVM_GET_ONE_REG and KVM_SET_ONE_REG */
+> > diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+> > index 312a8a926867..7c08567097f0 100644
+> > --- a/arch/riscv/kvm/vcpu.c
+> > +++ b/arch/riscv/kvm/vcpu.c
+> > @@ -276,6 +276,15 @@ static int kvm_riscv_vcpu_get_reg_config(struct kvm_vcpu *vcpu,
+> >                       return -EINVAL;
+> >               reg_val = riscv_cbom_block_size;
+> >               break;
+> > +     case KVM_REG_RISCV_CONFIG_REG(mvendorid):
+> > +             reg_val = vcpu->arch.mvendorid;
+> > +             break;
+> > +     case KVM_REG_RISCV_CONFIG_REG(marchid):
+> > +             reg_val = vcpu->arch.marchid;
+> > +             break;
+> > +     case KVM_REG_RISCV_CONFIG_REG(mimpid):
+> > +             reg_val = vcpu->arch.mimpid;
+> > +             break;
+> >       default:
+> >               return -EINVAL;
+> >       }
+> > @@ -338,6 +347,24 @@ static int kvm_riscv_vcpu_set_reg_config(struct kvm_vcpu *vcpu,
+> >               break;
+> >       case KVM_REG_RISCV_CONFIG_REG(zicbom_block_size):
+> >               return -EOPNOTSUPP;
+> > +     case KVM_REG_RISCV_CONFIG_REG(mvendorid):
+> > +             if (!vcpu->arch.ran_atleast_once)
+> > +                     vcpu->arch.mvendorid = reg_val;
+> > +             else
+> > +                     return -EBUSY;
+> > +             break;
+> > +     case KVM_REG_RISCV_CONFIG_REG(marchid):
+> > +             if (!vcpu->arch.ran_atleast_once)
+> > +                     vcpu->arch.marchid = reg_val;
+> > +             else
+> > +                     return -EBUSY;
+> > +             break;
+> > +     case KVM_REG_RISCV_CONFIG_REG(mimpid):
+> > +             if (!vcpu->arch.ran_atleast_once)
+> > +                     vcpu->arch.mimpid = reg_val;
+> > +             else
+> > +                     return -EBUSY;
+> > +             break;
+> >       default:
+> >               return -EINVAL;
+> >       }
+> > --
+> > 2.34.1
+> >
 >
-> diff --git a/arch/riscv/kernel/sbi.c b/arch/riscv/kernel/sbi.c
-> index 775d3322b422..5c87db8fdff2 100644
-> --- a/arch/riscv/kernel/sbi.c
-> +++ b/arch/riscv/kernel/sbi.c
-> @@ -627,16 +627,19 @@ long sbi_get_mvendorid(void)
->  {
->  	return __sbi_base_ecall(SBI_EXT_BASE_GET_MVENDORID);
->  }
-> +EXPORT_SYMBOL_GPL(sbi_get_mvendorid);
+> At some point we should patch Documentation/virt/kvm/api.rst to describe
+> the possible errors we have. It's missing EOPNOTSUPP and EBUSY.
 >
->  long sbi_get_marchid(void)
->  {
->  	return __sbi_base_ecall(SBI_EXT_BASE_GET_MARCHID);
->  }
-> +EXPORT_SYMBOL_GPL(sbi_get_marchid);
+> Also, I see a couple places were we use EOPNOTSUPP that would be better
+> as EBUSY. And finally I wonder if we shouldn't use ENOENT when the reg_num
+> is wrong/unknown, which would allow us to differentiate between bad
+> reg_num and bad reg_val in set-one ioctls.
 >
->  long sbi_get_mimpid(void)
->  {
->  	return __sbi_base_ecall(SBI_EXT_BASE_GET_MIMPID);
->  }
-> +EXPORT_SYMBOL_GPL(sbi_get_mimpid);
->
->  static void sbi_send_cpumask_ipi(const struct cpumask *target)
->  {
+> I can send an RFC series to better describe these thoughts.
 
-Acked-by: Palmer Dabbelt <palmer@rivosinc.com>
+Sure, go ahead.
+
+>
+> And for this patch,
+>
+> Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+>
+> Thanks,
+> drew
+
+Regards,
+Anup
 
