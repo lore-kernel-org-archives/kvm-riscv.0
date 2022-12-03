@@ -1,113 +1,61 @@
 From: Anup Patel <anup@brainfault.org>
-Date: Sat, 3 Dec 2022 17:48:54 +0530
-Subject: [PATCH 8/9] RISC-V: KVM: Add ONE_REG interface for mvendorid,
- marchid, and mimpid
-In-Reply-To: <20221129054616.4zju5z7ipg6wki7l@kamzik>
+Date: Sat, 3 Dec 2022 18:09:11 +0530
+Subject: [PATCH 0/9] RISC-V KVM ONE_REG interface for SBI
+In-Reply-To: <20221128161424.608889-1-apatel@ventanamicro.com>
 References: <20221128161424.608889-1-apatel@ventanamicro.com>
- <20221128161424.608889-9-apatel@ventanamicro.com> <20221129054616.4zju5z7ipg6wki7l@kamzik>
-Message-ID: <CAAhSdy3CnkK7=zombN4zH=g8+buz_rEhgXCzOE-WdSTYtcfdMA@mail.gmail.com>
+Message-ID: <CAAhSdy1b=uzQqaBAkysHzFtSC+ftrTEryqLT03SPrBtyTKjuWQ@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Nov 29, 2022 at 11:16 AM Andrew Jones <ajones@ventanamicro.com> wrote:
+On Mon, Nov 28, 2022 at 9:44 PM Anup Patel <apatel@ventanamicro.com> wrote:
 >
-> On Mon, Nov 28, 2022 at 09:44:23PM +0530, Anup Patel wrote:
-> > We add ONE_REG interface for VCPU mvendorid, marchid, and mimpid
-> > so that KVM user-space can change this details to support migration
-> > across heterogeneous hosts.
-> >
-> > Signed-off-by: Anup Patel <apatel@ventanamicro.com>
-> > ---
-> >  arch/riscv/include/uapi/asm/kvm.h |  3 +++
-> >  arch/riscv/kvm/vcpu.c             | 27 +++++++++++++++++++++++++++
-> >  2 files changed, 30 insertions(+)
-> >
-> > diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
-> > index 8985ff234c01..92af6f3f057c 100644
-> > --- a/arch/riscv/include/uapi/asm/kvm.h
-> > +++ b/arch/riscv/include/uapi/asm/kvm.h
-> > @@ -49,6 +49,9 @@ struct kvm_sregs {
-> >  struct kvm_riscv_config {
-> >       unsigned long isa;
-> >       unsigned long zicbom_block_size;
-> > +     unsigned long mvendorid;
-> > +     unsigned long marchid;
-> > +     unsigned long mimpid;
-> >  };
-> >
-> >  /* CORE registers for KVM_GET_ONE_REG and KVM_SET_ONE_REG */
-> > diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-> > index 312a8a926867..7c08567097f0 100644
-> > --- a/arch/riscv/kvm/vcpu.c
-> > +++ b/arch/riscv/kvm/vcpu.c
-> > @@ -276,6 +276,15 @@ static int kvm_riscv_vcpu_get_reg_config(struct kvm_vcpu *vcpu,
-> >                       return -EINVAL;
-> >               reg_val = riscv_cbom_block_size;
-> >               break;
-> > +     case KVM_REG_RISCV_CONFIG_REG(mvendorid):
-> > +             reg_val = vcpu->arch.mvendorid;
-> > +             break;
-> > +     case KVM_REG_RISCV_CONFIG_REG(marchid):
-> > +             reg_val = vcpu->arch.marchid;
-> > +             break;
-> > +     case KVM_REG_RISCV_CONFIG_REG(mimpid):
-> > +             reg_val = vcpu->arch.mimpid;
-> > +             break;
-> >       default:
-> >               return -EINVAL;
-> >       }
-> > @@ -338,6 +347,24 @@ static int kvm_riscv_vcpu_set_reg_config(struct kvm_vcpu *vcpu,
-> >               break;
-> >       case KVM_REG_RISCV_CONFIG_REG(zicbom_block_size):
-> >               return -EOPNOTSUPP;
-> > +     case KVM_REG_RISCV_CONFIG_REG(mvendorid):
-> > +             if (!vcpu->arch.ran_atleast_once)
-> > +                     vcpu->arch.mvendorid = reg_val;
-> > +             else
-> > +                     return -EBUSY;
-> > +             break;
-> > +     case KVM_REG_RISCV_CONFIG_REG(marchid):
-> > +             if (!vcpu->arch.ran_atleast_once)
-> > +                     vcpu->arch.marchid = reg_val;
-> > +             else
-> > +                     return -EBUSY;
-> > +             break;
-> > +     case KVM_REG_RISCV_CONFIG_REG(mimpid):
-> > +             if (!vcpu->arch.ran_atleast_once)
-> > +                     vcpu->arch.mimpid = reg_val;
-> > +             else
-> > +                     return -EBUSY;
-> > +             break;
-> >       default:
-> >               return -EINVAL;
-> >       }
-> > --
-> > 2.34.1
-> >
+> This series does first does few cleanups/fixes (PATCH1 to PATCH5) and
+> adds ONE-REG interface for customizing the SBI interface visible to the
+> Guest/VM.
 >
-> At some point we should patch Documentation/virt/kvm/api.rst to describe
-> the possible errors we have. It's missing EOPNOTSUPP and EBUSY.
+> The testing of this series has been done with KVMTOOL changes in
+> riscv_sbi_imp_v1 branch at:
+> https://github.com/avpatel/kvmtool.git
 >
-> Also, I see a couple places were we use EOPNOTSUPP that would be better
-> as EBUSY. And finally I wonder if we shouldn't use ENOENT when the reg_num
-> is wrong/unknown, which would allow us to differentiate between bad
-> reg_num and bad reg_val in set-one ioctls.
+> These patches can also be found in the riscv_kvm_sbi_imp_v1 branch at:
+> https://github.com/avpatel/linux.git
 >
-> I can send an RFC series to better describe these thoughts.
+> Anup Patel (9):
+>   RISC-V: KVM: Fix reg_val check in kvm_riscv_vcpu_set_reg_config()
+>   RISC-V: KVM: Remove redundant includes of asm/kvm_vcpu_timer.h
+>   RISC-V: KVM: Remove redundant includes of asm/csr.h
+>   RISC-V: KVM: Use switch-case in kvm_riscv_vcpu_set/get_reg()
+>   RISC-V: KVM: Move sbi related struct and functions to kvm_vcpu_sbi.h
+>   RISC-V: Export sbi_get_mvendorid() and friends
+>   RISC-V: KVM: Save mvendorid, marchid, and mimpid when creating VCPU
+>   RISC-V: KVM: Add ONE_REG interface for mvendorid, marchid, and mimpid
+>   RISC-V: KVM: Add ONE_REG interface to enable/disable SBI extensions
 
-Sure, go ahead.
+I have queued PATCH1 to PATCH8 for Linux-6.2.
+
+I have deferred PATCH9 until we have an agreement about how to deal
+with VM-level attributes. This is also required for the KVM SBI PMU series.
 
 >
-> And for this patch,
+>  arch/riscv/include/asm/kvm_host.h     |  16 ++-
+>  arch/riscv/include/asm/kvm_vcpu_sbi.h |  14 ++-
+>  arch/riscv/include/uapi/asm/kvm.h     |  22 ++++
+>  arch/riscv/kernel/sbi.c               |   3 +
+>  arch/riscv/kvm/vcpu.c                 |  82 +++++++++++----
+>  arch/riscv/kvm/vcpu_sbi.c             | 145 +++++++++++++++++++++++---
+>  arch/riscv/kvm/vcpu_sbi_base.c        |  15 ++-
+>  arch/riscv/kvm/vcpu_sbi_hsm.c         |   1 -
+>  arch/riscv/kvm/vcpu_sbi_replace.c     |   1 -
+>  arch/riscv/kvm/vcpu_sbi_v01.c         |   1 -
+>  10 files changed, 244 insertions(+), 56 deletions(-)
 >
-> Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+> --
+> 2.34.1
 >
-> Thanks,
-> drew
 
-Regards,
+Thanks,
 Anup
 
