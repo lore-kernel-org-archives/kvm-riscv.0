@@ -1,102 +1,59 @@
-From: Jisheng Zhang <jszhang@kernel.org>
-Date: Mon,  5 Dec 2022 01:46:32 +0800
-Subject: [PATCH v2 13/13] riscv: remove riscv_isa_ext_keys[] array and related usage
-In-Reply-To: <20221204174632.3677-1-jszhang@kernel.org>
-References: <20221204174632.3677-1-jszhang@kernel.org>
-Message-ID: <20221204174632.3677-14-jszhang@kernel.org>
+From: Heiko Stübner <heiko@sntech.de>
+Date: Sun, 04 Dec 2022 22:52:03 +0100
+Subject: [PATCH v2 02/13] riscv: move riscv_noncoherent_supported() out of ZICBOM probe
+In-Reply-To: <20221204174632.3677-3-jszhang@kernel.org>
+References: <20221204174632.3677-1-jszhang@kernel.org> <20221204174632.3677-3-jszhang@kernel.org>
+Message-ID: <5629547.DvuYhMxLoT@diego>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-All users have switched to riscv_has_extension_*, removed unused
-definitions, vars and related setting code.
+Am Sonntag, 4. Dezember 2022, 18:46:21 CET schrieb Jisheng Zhang:
+> It's a bit weird to call riscv_noncoherent_supported() each time when
+> insmoding a module. Move the calling out of feature patch func.
+> 
+> Signed-off-by: Jisheng Zhang <jszhang@kernel.org>
+> Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+> Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
+> ---
+>  arch/riscv/kernel/cpufeature.c | 1 -
+>  arch/riscv/kernel/setup.c      | 2 ++
+>  2 files changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
+> index c743f0adc794..364d1fe86bea 100644
+> --- a/arch/riscv/kernel/cpufeature.c
+> +++ b/arch/riscv/kernel/cpufeature.c
+> @@ -274,7 +274,6 @@ static bool __init_or_module cpufeature_probe_zicbom(unsigned int stage)
+>  	if (!riscv_isa_extension_available(NULL, ZICBOM))
+>  		return false;
+>  
+> -	riscv_noncoherent_supported();
+>  	return true;
+>  }
+>  
+> diff --git a/arch/riscv/kernel/setup.c b/arch/riscv/kernel/setup.c
+> index 86acd690d529..6eea40bf8c6b 100644
+> --- a/arch/riscv/kernel/setup.c
+> +++ b/arch/riscv/kernel/setup.c
+> @@ -300,6 +300,8 @@ void __init setup_arch(char **cmdline_p)
+>  	riscv_init_cbom_blocksize();
+>  	riscv_fill_hwcap();
+>  	apply_boot_alternatives();
+> +	if (riscv_isa_extension_available(NULL, ZICBOM))
+> +		riscv_noncoherent_supported();
 
-Signed-off-by: Jisheng Zhang <jszhang@kernel.org>
-Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
-Reviewed-by: Heiko Stuebner <heiko@sntech.de>
----
- arch/riscv/include/asm/hwcap.h | 30 ------------------------------
- arch/riscv/kernel/cpufeature.c |  9 ---------
- 2 files changed, 39 deletions(-)
+hmm, this changes the behaviour slightly. In the probe function there
+is the
+	if (!IS_ENABLED(CONFIG_RISCV_ISA_ZICBOM))
+		return false;
+at the top, so with this change the second WARN_TAINT in arch_setup_dma_ops
+will behave differently
 
-diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
-index e2d3f6df7701..be00a4337578 100644
---- a/arch/riscv/include/asm/hwcap.h
-+++ b/arch/riscv/include/asm/hwcap.h
-@@ -60,18 +60,6 @@ enum {
- 
- extern unsigned long elf_hwcap;
- 
--/*
-- * This enum represents the logical ID for each RISC-V ISA extension static
-- * keys. We can use static key to optimize code path if some ISA extensions
-- * are available.
-- */
--enum riscv_isa_ext_key {
--	RISCV_ISA_EXT_KEY_FPU,		/* For 'F' and 'D' */
--	RISCV_ISA_EXT_KEY_ZIHINTPAUSE,
--	RISCV_ISA_EXT_KEY_SVINVAL,
--	RISCV_ISA_EXT_KEY_MAX,
--};
--
- struct riscv_isa_ext_data {
- 	/* Name of the extension displayed to userspace via /proc/cpuinfo */
- 	char uprop[RISCV_ISA_EXT_NAME_LEN_MAX];
-@@ -79,24 +67,6 @@ struct riscv_isa_ext_data {
- 	unsigned int isa_ext_id;
- };
- 
--extern struct static_key_false riscv_isa_ext_keys[RISCV_ISA_EXT_KEY_MAX];
--
--static __always_inline int riscv_isa_ext2key(int num)
--{
--	switch (num) {
--	case RISCV_ISA_EXT_f:
--		return RISCV_ISA_EXT_KEY_FPU;
--	case RISCV_ISA_EXT_d:
--		return RISCV_ISA_EXT_KEY_FPU;
--	case RISCV_ISA_EXT_ZIHINTPAUSE:
--		return RISCV_ISA_EXT_KEY_ZIHINTPAUSE;
--	case RISCV_ISA_EXT_SVINVAL:
--		return RISCV_ISA_EXT_KEY_SVINVAL;
--	default:
--		return -EINVAL;
--	}
--}
--
- static __always_inline bool
- riscv_has_extension_likely(const unsigned long ext)
- {
-diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
-index adeac90b1d8e..3240a2915bf1 100644
---- a/arch/riscv/kernel/cpufeature.c
-+++ b/arch/riscv/kernel/cpufeature.c
-@@ -28,9 +28,6 @@ unsigned long elf_hwcap __read_mostly;
- /* Host ISA bitmap */
- static DECLARE_BITMAP(riscv_isa, RISCV_ISA_EXT_MAX) __read_mostly;
- 
--DEFINE_STATIC_KEY_ARRAY_FALSE(riscv_isa_ext_keys, RISCV_ISA_EXT_KEY_MAX);
--EXPORT_SYMBOL(riscv_isa_ext_keys);
--
- /**
-  * riscv_isa_extension_base() - Get base extension word
-  *
-@@ -243,12 +240,6 @@ void __init riscv_fill_hwcap(void)
- 		if (elf_hwcap & BIT_MASK(i))
- 			print_str[j++] = (char)('a' + i);
- 	pr_info("riscv: ELF capabilities %s\n", print_str);
--
--	for_each_set_bit(i, riscv_isa, RISCV_ISA_EXT_MAX) {
--		j = riscv_isa_ext2key(i);
--		if (j >= 0)
--			static_branch_enable(&riscv_isa_ext_keys[j]);
--	}
- }
- 
- #ifdef CONFIG_RISCV_ALTERNATIVE
--- 
-2.37.2
+Heiko
+
+
 
 
