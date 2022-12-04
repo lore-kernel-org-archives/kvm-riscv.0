@@ -1,168 +1,108 @@
 From: Jisheng Zhang <jszhang@kernel.org>
-Date: Mon,  5 Dec 2022 01:46:24 +0800
-Subject: [PATCH v2 05/13] riscv: cpufeature: extend riscv_cpufeature_patch_func to all ISA extensions
+Date: Mon,  5 Dec 2022 01:46:25 +0800
+Subject: [PATCH v2 06/13] riscv: introduce riscv_has_extension_[un]likely()
 In-Reply-To: <20221204174632.3677-1-jszhang@kernel.org>
 References: <20221204174632.3677-1-jszhang@kernel.org>
-Message-ID: <20221204174632.3677-6-jszhang@kernel.org>
+Message-ID: <20221204174632.3677-7-jszhang@kernel.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-make the riscv_cpufeature_patch_func() scan all ISA extensions rather
-than limited feature macros.
+Generally, riscv ISA extensions are fixed for any specific hardware
+platform, that's to say, the hart features won't change any more
+after booting, this chacteristic make it straightforward to use
+static branch to check one specific ISA extension is supported or not
+to optimize performance.
+
+However, some ISA extensions such as SVPBMT and ZICBOM are handled
+via. the alternative sequences.
+
+Basically, for ease of maintenance, we prefer to use static branches
+in C code, but recently, Samuel found that the static branch usage in
+cpu_relax() breaks building with CONFIG_CC_OPTIMIZE_FOR_SIZE[1]. As
+Samuel pointed out, "Having a static branch in cpu_relax() is
+problematic because that function is widely inlined, including in some
+quite complex functions like in the VDSO. A quick measurement shows
+this static branch is responsible by itself for around 40% of the jump
+table."
+
+Samuel's findings pointed out one of a few downsides of static branches
+usage in C code to handle ISA extensions detected at boot time:
+static branch's metadata in the __jump_table section, which is not
+discarded after ISA extensions are finalized, wastes some space.
+
+I want to try to solve the issue for all possible dynamic handling of
+ISA extensions at boot time. Inspired by Mark[2], this patch introduces
+riscv_has_extension_*() helpers, which work like static branches but
+are patched using alternatives, thus the metadata can be freed after
+patching.
+
+[1]https://lore.kernel.org/linux-riscv/20220922060958.44203-1-samuel at sholland.org/
+[2]https://lore.kernel.org/linux-arm-kernel/20220912162210.3626215-8-mark.rutland at arm.com/
 
 Signed-off-by: Jisheng Zhang <jszhang@kernel.org>
 Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
-Reviewed-by: Heiko Stuebner <heiko@sntech.de>
 ---
- arch/riscv/include/asm/errata_list.h |  9 ++--
- arch/riscv/kernel/cpufeature.c       | 73 +++++-----------------------
- 2 files changed, 15 insertions(+), 67 deletions(-)
+ arch/riscv/include/asm/hwcap.h | 37 ++++++++++++++++++++++++++++++++++
+ 1 file changed, 37 insertions(+)
 
-diff --git a/arch/riscv/include/asm/errata_list.h b/arch/riscv/include/asm/errata_list.h
-index 19a771085781..722525f4fc96 100644
---- a/arch/riscv/include/asm/errata_list.h
-+++ b/arch/riscv/include/asm/errata_list.h
-@@ -6,6 +6,7 @@
- #define ASM_ERRATA_LIST_H
+diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
+index 996884986fea..e2d3f6df7701 100644
+--- a/arch/riscv/include/asm/hwcap.h
++++ b/arch/riscv/include/asm/hwcap.h
+@@ -8,6 +8,7 @@
+ #ifndef _ASM_RISCV_HWCAP_H
+ #define _ASM_RISCV_HWCAP_H
  
- #include <asm/alternative.h>
-+#include <asm/hwcap.h>
- #include <asm/vendorid_list.h>
- 
- #ifdef CONFIG_ERRATA_SIFIVE
-@@ -20,10 +21,6 @@
- #define	ERRATA_THEAD_NUMBER 2
- #endif
- 
--#define	CPUFEATURE_SVPBMT 0
--#define	CPUFEATURE_ZICBOM 1
--#define	CPUFEATURE_NUMBER 2
--
- #ifdef __ASSEMBLY__
- 
- #define ALT_INSN_FAULT(x)						\
-@@ -53,7 +50,7 @@ asm(ALTERNATIVE("sfence.vma %0", "sfence.vma", SIFIVE_VENDOR_ID,	\
- #define ALT_SVPBMT(_val, prot)						\
- asm(ALTERNATIVE_2("li %0, 0\t\nnop",					\
- 		  "li %0, %1\t\nslli %0,%0,%3", 0,			\
--			CPUFEATURE_SVPBMT, CONFIG_RISCV_ISA_SVPBMT,	\
-+			RISCV_ISA_EXT_SVPBMT, CONFIG_RISCV_ISA_SVPBMT,	\
- 		  "li %0, %2\t\nslli %0,%0,%4", THEAD_VENDOR_ID,	\
- 			ERRATA_THEAD_PBMT, CONFIG_ERRATA_THEAD_PBMT)	\
- 		: "=r"(_val)						\
-@@ -127,7 +124,7 @@ asm volatile(ALTERNATIVE_2(						\
- 	"add a0, a0, %0\n\t"						\
- 	"2:\n\t"							\
- 	"bltu a0, %2, 3b\n\t"						\
--	"nop", 0, CPUFEATURE_ZICBOM, CONFIG_RISCV_ISA_ZICBOM,		\
-+	"nop", 0, RISCV_ISA_EXT_ZICBOM, CONFIG_RISCV_ISA_ZICBOM,	\
- 	"mv a0, %1\n\t"							\
- 	"j 2f\n\t"							\
- 	"3:\n\t"							\
-diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
-index a4d2af67e05c..6244be5cd94a 100644
---- a/arch/riscv/kernel/cpufeature.c
-+++ b/arch/riscv/kernel/cpufeature.c
-@@ -252,58 +252,11 @@ void __init riscv_fill_hwcap(void)
- }
- 
- #ifdef CONFIG_RISCV_ALTERNATIVE
--static bool __init_or_module cpufeature_probe_svpbmt(unsigned int stage)
--{
--	if (!IS_ENABLED(CONFIG_RISCV_ISA_SVPBMT))
--		return false;
--
--	if (stage == RISCV_ALTERNATIVES_EARLY_BOOT)
--		return false;
--
--	return riscv_isa_extension_available(NULL, SVPBMT);
--}
--
--static bool __init_or_module cpufeature_probe_zicbom(unsigned int stage)
--{
--	if (!IS_ENABLED(CONFIG_RISCV_ISA_ZICBOM))
--		return false;
--
--	if (stage == RISCV_ALTERNATIVES_EARLY_BOOT)
--		return false;
--
--	if (!riscv_isa_extension_available(NULL, ZICBOM))
--		return false;
--
--	return true;
--}
--
--/*
-- * Probe presence of individual extensions.
-- *
-- * This code may also be executed before kernel relocation, so we cannot use
-- * addresses generated by the address-of operator as they won't be valid in
-- * this context.
-- */
--static u32 __init_or_module cpufeature_probe(unsigned int stage)
--{
--	u32 cpu_req_feature = 0;
--
--	if (cpufeature_probe_svpbmt(stage))
--		cpu_req_feature |= BIT(CPUFEATURE_SVPBMT);
--
--	if (cpufeature_probe_zicbom(stage))
--		cpu_req_feature |= BIT(CPUFEATURE_ZICBOM);
--
--	return cpu_req_feature;
--}
--
- void __init_or_module riscv_cpufeature_patch_func(struct alt_entry *begin,
- 						  struct alt_entry *end,
- 						  unsigned int stage)
- {
--	u32 cpu_req_feature = cpufeature_probe(stage);
- 	struct alt_entry *alt;
--	u32 tmp;
- 
- 	if (stage == RISCV_ALTERNATIVES_EARLY_BOOT)
- 		return;
-@@ -311,25 +264,23 @@ void __init_or_module riscv_cpufeature_patch_func(struct alt_entry *begin,
- 	for (alt = begin; alt < end; alt++) {
- 		if (alt->vendor_id != 0)
- 			continue;
--		if (alt->errata_id >= CPUFEATURE_NUMBER) {
--			WARN(1, "This feature id:%d is not in kernel cpufeature list",
-+		if (alt->errata_id >= RISCV_ISA_EXT_MAX) {
-+			WARN(1, "This extension id:%d is not in ISA extension list",
- 				alt->errata_id);
- 			continue;
- 		}
- 
--		tmp = (1U << alt->errata_id);
--		if (cpu_req_feature & tmp) {
--			/* do the basic patching */
--			patch_text_nosync(alt->old_ptr, alt->alt_ptr,
--					  alt->alt_len);
-+		if (!__riscv_isa_extension_available(NULL, alt->errata_id))
-+			continue;
- 
--			riscv_alternative_fix_auipc_jalr(alt->old_ptr,
--							 alt->alt_len,
--							 alt->old_ptr - alt->alt_ptr);
--			riscv_alternative_fix_jal(alt->old_ptr,
--						  alt->alt_len,
--						  alt->old_ptr - alt->alt_ptr);
--		}
-+		/* do the basic patching */
-+		patch_text_nosync(alt->old_ptr, alt->alt_ptr, alt->alt_len);
-+		riscv_alternative_fix_auipc_jalr(alt->old_ptr,
-+						 alt->alt_len,
-+						 alt->old_ptr - alt->alt_ptr);
-+		riscv_alternative_fix_jal(alt->old_ptr,
-+					  alt->alt_len,
-+					  alt->old_ptr - alt->alt_ptr);
++#include <asm/alternative-macros.h>
+ #include <asm/errno.h>
+ #include <linux/bits.h>
+ #include <uapi/asm/hwcap.h>
+@@ -96,6 +97,42 @@ static __always_inline int riscv_isa_ext2key(int num)
  	}
  }
- #endif
+ 
++static __always_inline bool
++riscv_has_extension_likely(const unsigned long ext)
++{
++	compiletime_assert(ext < RISCV_ISA_EXT_MAX,
++			   "ext must be < RISCV_ISA_EXT_MAX");
++
++	asm_volatile_goto(
++	ALTERNATIVE("j	%l[l_no]", "nop", 0, %[ext], 1)
++	:
++	: [ext] "i" (ext)
++	:
++	: l_no);
++
++	return true;
++l_no:
++	return false;
++}
++
++static __always_inline bool
++riscv_has_extension_unlikely(const unsigned long ext)
++{
++	compiletime_assert(ext < RISCV_ISA_EXT_MAX,
++			   "ext must be < RISCV_ISA_EXT_MAX");
++
++	asm_volatile_goto(
++	ALTERNATIVE("nop", "j	%l[l_yes]", 0, %[ext], 1)
++	:
++	: [ext] "i" (ext)
++	:
++	: l_yes);
++
++	return false;
++l_yes:
++	return true;
++}
++
+ unsigned long riscv_isa_extension_base(const unsigned long *isa_bitmap);
+ 
+ #define riscv_isa_extension_mask(ext) BIT_MASK(RISCV_ISA_EXT_##ext)
 -- 
 2.37.2
 
