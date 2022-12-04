@@ -1,61 +1,104 @@
-From: Anup Patel <anup@brainfault.org>
-Date: Sat, 3 Dec 2022 18:09:11 +0530
-Subject: [PATCH 0/9] RISC-V KVM ONE_REG interface for SBI
-In-Reply-To: <20221128161424.608889-1-apatel@ventanamicro.com>
-References: <20221128161424.608889-1-apatel@ventanamicro.com>
-Message-ID: <CAAhSdy1b=uzQqaBAkysHzFtSC+ftrTEryqLT03SPrBtyTKjuWQ@mail.gmail.com>
+From: Jisheng Zhang <jszhang@kernel.org>
+Date: Mon,  5 Dec 2022 01:46:20 +0800
+Subject: [PATCH v2 01/13] riscv: fix jal offsets in patched alternatives
+In-Reply-To: <20221204174632.3677-1-jszhang@kernel.org>
+References: <20221204174632.3677-1-jszhang@kernel.org>
+Message-ID: <20221204174632.3677-2-jszhang@kernel.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Nov 28, 2022 at 9:44 PM Anup Patel <apatel@ventanamicro.com> wrote:
->
-> This series does first does few cleanups/fixes (PATCH1 to PATCH5) and
-> adds ONE-REG interface for customizing the SBI interface visible to the
-> Guest/VM.
->
-> The testing of this series has been done with KVMTOOL changes in
-> riscv_sbi_imp_v1 branch at:
-> https://github.com/avpatel/kvmtool.git
->
-> These patches can also be found in the riscv_kvm_sbi_imp_v1 branch at:
-> https://github.com/avpatel/linux.git
->
-> Anup Patel (9):
->   RISC-V: KVM: Fix reg_val check in kvm_riscv_vcpu_set_reg_config()
->   RISC-V: KVM: Remove redundant includes of asm/kvm_vcpu_timer.h
->   RISC-V: KVM: Remove redundant includes of asm/csr.h
->   RISC-V: KVM: Use switch-case in kvm_riscv_vcpu_set/get_reg()
->   RISC-V: KVM: Move sbi related struct and functions to kvm_vcpu_sbi.h
->   RISC-V: Export sbi_get_mvendorid() and friends
->   RISC-V: KVM: Save mvendorid, marchid, and mimpid when creating VCPU
->   RISC-V: KVM: Add ONE_REG interface for mvendorid, marchid, and mimpid
->   RISC-V: KVM: Add ONE_REG interface to enable/disable SBI extensions
+Alternatives live in a different section, so offsets used by jal
+instruction will point to wrong locations after the patch got applied.
 
-I have queued PATCH1 to PATCH8 for Linux-6.2.
+Similar to arm64, adjust the location to consider that offset.
 
-I have deferred PATCH9 until we have an agreement about how to deal
-with VM-level attributes. This is also required for the KVM SBI PMU series.
+Signed-off-by: Jisheng Zhang <jszhang@kernel.org>
+---
+ arch/riscv/include/asm/alternative.h |  2 ++
+ arch/riscv/kernel/alternative.c      | 38 ++++++++++++++++++++++++++++
+ arch/riscv/kernel/cpufeature.c       |  3 +++
+ 3 files changed, 43 insertions(+)
 
->
->  arch/riscv/include/asm/kvm_host.h     |  16 ++-
->  arch/riscv/include/asm/kvm_vcpu_sbi.h |  14 ++-
->  arch/riscv/include/uapi/asm/kvm.h     |  22 ++++
->  arch/riscv/kernel/sbi.c               |   3 +
->  arch/riscv/kvm/vcpu.c                 |  82 +++++++++++----
->  arch/riscv/kvm/vcpu_sbi.c             | 145 +++++++++++++++++++++++---
->  arch/riscv/kvm/vcpu_sbi_base.c        |  15 ++-
->  arch/riscv/kvm/vcpu_sbi_hsm.c         |   1 -
->  arch/riscv/kvm/vcpu_sbi_replace.c     |   1 -
->  arch/riscv/kvm/vcpu_sbi_v01.c         |   1 -
->  10 files changed, 244 insertions(+), 56 deletions(-)
->
-> --
-> 2.34.1
->
+diff --git a/arch/riscv/include/asm/alternative.h b/arch/riscv/include/asm/alternative.h
+index c58ec3cc4bc3..33eae9541684 100644
+--- a/arch/riscv/include/asm/alternative.h
++++ b/arch/riscv/include/asm/alternative.h
+@@ -29,6 +29,8 @@ void apply_module_alternatives(void *start, size_t length);
+ 
+ void riscv_alternative_fix_auipc_jalr(void *alt_ptr, unsigned int len,
+ 				      int patch_offset);
++void riscv_alternative_fix_jal(void *alt_ptr, unsigned int len,
++			       int patch_offset);
+ 
+ struct alt_entry {
+ 	void *old_ptr;		 /* address of original instruciton or data  */
+diff --git a/arch/riscv/kernel/alternative.c b/arch/riscv/kernel/alternative.c
+index 292cc42dc3be..9d88375624b5 100644
+--- a/arch/riscv/kernel/alternative.c
++++ b/arch/riscv/kernel/alternative.c
+@@ -125,6 +125,44 @@ void riscv_alternative_fix_auipc_jalr(void *alt_ptr, unsigned int len,
+ 	}
+ }
+ 
++#define to_jal_imm(value)						\
++	(((value & (RV_J_IMM_10_1_MASK << RV_J_IMM_10_1_OFF)) << RV_I_IMM_11_0_OPOFF) | \
++	 ((value & (RV_J_IMM_11_MASK << RV_J_IMM_11_OFF)) << RV_J_IMM_11_OPOFF) | \
++	 ((value & (RV_J_IMM_19_12_OPOFF << RV_J_IMM_19_12_OFF)) << RV_J_IMM_19_12_OPOFF) | \
++	 ((value & (1 << RV_J_IMM_SIGN_OFF)) << RV_J_IMM_SIGN_OPOFF))
++
++void riscv_alternative_fix_jal(void *alt_ptr, unsigned int len,
++			       int patch_offset)
++{
++	int num_instr = len / sizeof(u32);
++	unsigned int call;
++	int i;
++	int imm;
++
++	for (i = 0; i < num_instr; i++) {
++		u32 inst = riscv_instruction_at(alt_ptr, i);
++
++		if (!riscv_insn_is_jal(inst))
++			continue;
++
++		/* get and adjust new target address */
++		imm = RV_EXTRACT_JTYPE_IMM(inst);
++		imm -= patch_offset;
++
++		/* pick the original jal */
++		call = inst;
++
++		/* drop the old IMMs, all jal imm bits sit@31:12 */
++		call &= ~GENMASK(31, 12);
++
++		/* add the adapted IMMs */
++		call |= to_jal_imm(imm);
++
++		/* patch the call place again */
++		patch_text_nosync(alt_ptr + i * sizeof(u32), &call, 4);
++	}
++}
++
+ /*
+  * This is called very early in the boot process (directly after we run
+  * a feature detect on the boot CPU). No need to worry about other CPUs
+diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
+index ba62a4ff5ccd..c743f0adc794 100644
+--- a/arch/riscv/kernel/cpufeature.c
++++ b/arch/riscv/kernel/cpufeature.c
+@@ -324,6 +324,9 @@ void __init_or_module riscv_cpufeature_patch_func(struct alt_entry *begin,
+ 			riscv_alternative_fix_auipc_jalr(alt->old_ptr,
+ 							 alt->alt_len,
+ 							 alt->old_ptr - alt->alt_ptr);
++			riscv_alternative_fix_jal(alt->old_ptr,
++						  alt->alt_len,
++						  alt->old_ptr - alt->alt_ptr);
+ 		}
+ 	}
+ }
+-- 
+2.37.2
 
-Thanks,
-Anup
 
