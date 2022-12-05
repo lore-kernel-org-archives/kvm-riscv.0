@@ -1,19 +1,19 @@
 From: Jisheng Zhang <jszhang@kernel.org>
-Date: Mon, 5 Dec 2022 23:34:50 +0800
+Date: Mon, 5 Dec 2022 23:40:44 +0800
 Subject: [PATCH v2 01/13] riscv: fix jal offsets in patched alternatives
-In-Reply-To: <20221205145710.xzb4prrc44gv7mwm@kamzik>
+In-Reply-To: <4764569.GXAFRqVoOG@diego>
 References: <20221204174632.3677-1-jszhang@kernel.org>
  <20221204174632.3677-2-jszhang@kernel.org>
- <20221205145710.xzb4prrc44gv7mwm@kamzik>
-Message-ID: <Y44PmvL878v57CzZ@xhacker>
+ <4764569.GXAFRqVoOG@diego>
+Message-ID: <Y44Q/B6THtP38eyL@xhacker>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Dec 05, 2022 at 03:57:10PM +0100, Andrew Jones wrote:
-> On Mon, Dec 05, 2022 at 01:46:20AM +0800, Jisheng Zhang wrote:
+On Mon, Dec 05, 2022 at 04:31:08PM +0100, Heiko St?bner wrote:
+> Am Sonntag, 4. Dezember 2022, 18:46:20 CET schrieb Jisheng Zhang:
 > > Alternatives live in a different section, so offsets used by jal
 > > instruction will point to wrong locations after the patch got applied.
 > > 
@@ -49,26 +49,49 @@ On Mon, Dec 05, 2022 at 03:57:10PM +0100, Andrew Jones wrote:
 > >  
 > > +#define to_jal_imm(value)						\
 > > +	(((value & (RV_J_IMM_10_1_MASK << RV_J_IMM_10_1_OFF)) << RV_I_IMM_11_0_OPOFF) | \
->                                                                  ^ RV_J_IMM_10_1_OPOFF
-
-Good catch! I was lucky when testing the whole series ;) will fix it in
-newer version.
-
-> 
 > > +	 ((value & (RV_J_IMM_11_MASK << RV_J_IMM_11_OFF)) << RV_J_IMM_11_OPOFF) | \
 > > +	 ((value & (RV_J_IMM_19_12_OPOFF << RV_J_IMM_19_12_OFF)) << RV_J_IMM_19_12_OPOFF) | \
 > > +	 ((value & (1 << RV_J_IMM_SIGN_OFF)) << RV_J_IMM_SIGN_OPOFF))
-> 
-> Should put () around value
-
-good idea, previously, I just follow to_jalr_imm(), will update it in
-newer version.
-
-> 
 > > +
 > > +void riscv_alternative_fix_jal(void *alt_ptr, unsigned int len,
 > > +			       int patch_offset)
 > > +{
+> 
+> I think we might want to unfiy this into a common function like
+> 
+> 	riscv_alternative_fix_offsets(...)
+> 
+> so that we only run through the code block once
+> 
+> 	for (i = 0; i < num_instr; i++) {
+> 		if (riscv_insn_is_auipc_jalr(inst1, inst2)) {
+> 			riscv_alternative_fix_auipc_jalr(...)
+> 			continue;
+> 		}
+> 
+> 		if (riscv_insn_is_jal(inst)) {
+> 			riscv_alternative_fix_jal(...)
+> 			continue;
+> 		}
+> 	}
+> 
+> This would also remove the need from calling multiple functions
+> after patching alternatives.
+
+Yesterday, I also wanted to unify the two instruction fix into
+one. But that would need to roll back the
+riscv_alternative_fix_auipc_jalr() to your v1 version. And IMHO,
+it's better if you can split the Zbb string optimizations series
+into two: one for alternative improvements, another for Zbb. Then
+we may get the alternative improvements and this inst extension
+series merged in v6.2-rc1.
+
+> 
+> Thoughts?
+> 
+> 
+> Heiko
+> 
 > > +	int num_instr = len / sizeof(u32);
 > > +	unsigned int call;
 > > +	int i;
@@ -89,9 +112,6 @@ newer version.
 > > +
 > > +		/* drop the old IMMs, all jal imm bits sit at 31:12 */
 > > +		call &= ~GENMASK(31, 12);
-> 
-> It'd be nice if this had a define.
-> 
 > > +
 > > +		/* add the adapted IMMs */
 > > +		call |= to_jal_imm(imm);
@@ -118,10 +138,9 @@ newer version.
 > >  		}
 > >  	}
 > >  }
-> > -- 
-> > 2.37.2
-> >
+> > 
 > 
-> Thanks,
-> drew
+> 
+> 
+> 
 
