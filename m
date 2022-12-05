@@ -1,69 +1,84 @@
 From: Conor Dooley <conor@kernel.org>
-Date: Mon, 5 Dec 2022 19:09:29 +0000
-Subject: [PATCH v2 03/13] riscv: cpufeature: detect
- RISCV_ALTERNATIVES_EARLY_BOOT earlier
-In-Reply-To: <20221204174632.3677-4-jszhang@kernel.org>
+Date: Mon, 5 Dec 2022 19:37:53 +0000
+Subject: [PATCH v2 05/13] riscv: cpufeature: extend
+ riscv_cpufeature_patch_func to all ISA extensions
+In-Reply-To: <20221204174632.3677-6-jszhang@kernel.org>
 References: <20221204174632.3677-1-jszhang@kernel.org>
- <20221204174632.3677-4-jszhang@kernel.org>
-Message-ID: <Y45B6eB0BQTSZMEa@spud>
+ <20221204174632.3677-6-jszhang@kernel.org>
+Message-ID: <Y45IkVXYshIciACY@spud>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Dec 05, 2022 at 01:46:22AM +0800, Jisheng Zhang wrote:
-> Now, the riscv_cpufeature_patch_func() do nothing in the stage of
-> RISCV_ALTERNATIVES_EARLY_BOOT. We can move the detection of "early
-> boot" stage earlier.
-> 
-> In following patch, we will make riscv_cpufeature_patch_func() scans
-> all ISA extensions.
+On Mon, Dec 05, 2022 at 01:46:24AM +0800, Jisheng Zhang wrote:
+> make the riscv_cpufeature_patch_func() scan all ISA extensions rather
+> than limited feature macros.
 
-I'm not 100% on the motivation here. Let me try and regurgitate the
-changelog in a way that makes more sense to me and maybe you can confirm
-it.
+Certainly looks like a nice cleanup. Perhaps for the changelog,
+something along the lines of:
 
-Currently riscv_cpufeature_patch_func() does nothing at the
-RISCV_ALTERNATIVES_EARLY_BOOT stage.
-Add a check to detect whether we are in this stage and exit early.
-This will allow us to use riscv_cpufeature_patch_func() for scanning of
-all ISA extensions.
-
-Would that be a correct summary?
-
-Thanks,
-Conor.
+"riscv_cpufeature_patch_func() currently only scans a limited set of
+cpufeatures, explicitly defined with macros. Extend it to probe for all
+ISA extensions"
 
 > 
 > Signed-off-by: Jisheng Zhang <jszhang@kernel.org>
 > Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
 > Reviewed-by: Heiko Stuebner <heiko@sntech.de>
 > ---
->  arch/riscv/kernel/cpufeature.c | 3 +++
->  1 file changed, 3 insertions(+)
-> 
-> diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
-> index 364d1fe86bea..a4d2af67e05c 100644
-> --- a/arch/riscv/kernel/cpufeature.c
-> +++ b/arch/riscv/kernel/cpufeature.c
-> @@ -305,6 +305,9 @@ void __init_or_module riscv_cpufeature_patch_func(struct alt_entry *begin,
->  	struct alt_entry *alt;
->  	u32 tmp;
->  
-> +	if (stage == RISCV_ALTERNATIVES_EARLY_BOOT)
-> +		return;
-> +
+>  arch/riscv/include/asm/errata_list.h |  9 ++--
+>  arch/riscv/kernel/cpufeature.c       | 73 +++++-----------------------
+>  2 files changed, 15 insertions(+), 67 deletions(-)
+
+> @@ -311,25 +264,23 @@ void __init_or_module riscv_cpufeature_patch_func(struct alt_entry *begin,
 >  	for (alt = begin; alt < end; alt++) {
 >  		if (alt->vendor_id != 0)
 >  			continue;
-> -- 
-> 2.37.2
-> 
+> -		if (alt->errata_id >= CPUFEATURE_NUMBER) {
+> -			WARN(1, "This feature id:%d is not in kernel cpufeature list",
+> +		if (alt->errata_id >= RISCV_ISA_EXT_MAX) {
+> +			WARN(1, "This extension id:%d is not in ISA extension list",
+>  				alt->errata_id);
+>  			continue;
+>  		}
+>  
+> -		tmp = (1U << alt->errata_id);
+> -		if (cpu_req_feature & tmp) {
+> -			/* do the basic patching */
+> -			patch_text_nosync(alt->old_ptr, alt->alt_ptr,
+> -					  alt->alt_len);
+> +		if (!__riscv_isa_extension_available(NULL, alt->errata_id))
+> +			continue;
+>  
+> -			riscv_alternative_fix_auipc_jalr(alt->old_ptr,
+> -							 alt->alt_len,
+> -							 alt->old_ptr - alt->alt_ptr);
+> -			riscv_alternative_fix_jal(alt->old_ptr,
+> -						  alt->alt_len,
+> -						  alt->old_ptr - alt->alt_ptr);
+> -		}
+> +		/* do the basic patching */
+> +		patch_text_nosync(alt->old_ptr, alt->alt_ptr, alt->alt_len);
+> +		riscv_alternative_fix_auipc_jalr(alt->old_ptr,
+> +						 alt->alt_len,
+> +						 alt->old_ptr - alt->alt_ptr);
+> +		riscv_alternative_fix_jal(alt->old_ptr,
+> +					  alt->alt_len,
+> +					  alt->old_ptr - alt->alt_ptr);
+
+nit:
+Now that you've dropped a level of indent, can alt->alt_len move up a
+line?
+
+Thanks,
+Conor.
+
 -------------- next part --------------
 A non-text attachment was scrubbed...
 Name: signature.asc
 Type: application/pgp-signature
 Size: 228 bytes
 Desc: not available
-URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20221205/6cba4cad/attachment.sig>
+URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20221205/a8392d07/attachment.sig>
