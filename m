@@ -1,134 +1,158 @@
-From: Heiko Stübner <heiko@sntech.de>
-Date: Mon, 05 Dec 2022 19:49:01 +0100
-Subject: [PATCH v2 01/13] riscv: fix jal offsets in patched alternatives
-In-Reply-To: <Y446PdlUPGw5iB71@spud>
-References: <20221204174632.3677-1-jszhang@kernel.org> <Y44Q/B6THtP38eyL@xhacker> <Y446PdlUPGw5iB71@spud>
-Message-ID: <10190559.nUPlyArG6x@diego>
+From: Isaku Yamahata <isaku.yamahata@gmail.com>
+Date: Mon, 5 Dec 2022 12:52:46 -0800
+Subject: [PATCH v2 31/50] KVM: x86: Do CPU compatibility checks in x86
+ code
+In-Reply-To: <20221130230934.1014142-32-seanjc@google.com>
+References: <20221130230934.1014142-1-seanjc@google.com>
+ <20221130230934.1014142-32-seanjc@google.com>
+Message-ID: <20221205205246.GA3630770@ls.amr.corp.intel.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Am Montag, 5. Dezember 2022, 19:36:45 CET schrieb Conor Dooley:
-> Heiko, Jisheng,
+On Wed, Nov 30, 2022 at 11:09:15PM +0000,
+Sean Christopherson <seanjc@google.com> wrote:
+
+> Move the CPU compatibility checks to pure x86 code, i.e. drop x86's use
+> of the common kvm_x86_check_cpu_compat() arch hook.  x86 is the only
+> architecture that "needs" to do per-CPU compatibility checks, moving
+> the logic to x86 will allow dropping the common code, and will also
+> give x86 more control over when/how the compatibility checks are
+> performed, e.g. TDX will need to enable hardware (do VMXON) in order to
+> perform compatibility checks.
 > 
-> On Mon, Dec 05, 2022 at 11:40:44PM +0800, Jisheng Zhang wrote:
-> > On Mon, Dec 05, 2022 at 04:31:08PM +0100, Heiko St?bner wrote:
-> > > Am Sonntag, 4. Dezember 2022, 18:46:20 CET schrieb Jisheng Zhang:
-> > > > Alternatives live in a different section, so offsets used by jal
-> > > > instruction will point to wrong locations after the patch got applied.
-> > > > 
-> > > > Similar to arm64, adjust the location to consider that offset.
-> > > > 
-> > > > Signed-off-by: Jisheng Zhang <jszhang@kernel.org>
-> > > > ---
-> > > >  arch/riscv/include/asm/alternative.h |  2 ++
-> > > >  arch/riscv/kernel/alternative.c      | 38 ++++++++++++++++++++++++++++
-> > > >  arch/riscv/kernel/cpufeature.c       |  3 +++
-> > > >  3 files changed, 43 insertions(+)
-> > > > 
-> > > > diff --git a/arch/riscv/include/asm/alternative.h b/arch/riscv/include/asm/alternative.h
-> > > > index c58ec3cc4bc3..33eae9541684 100644
-> > > > --- a/arch/riscv/include/asm/alternative.h
-> > > > +++ b/arch/riscv/include/asm/alternative.h
-> > > > @@ -29,6 +29,8 @@ void apply_module_alternatives(void *start, size_t length);
-> > > >  
-> > > >  void riscv_alternative_fix_auipc_jalr(void *alt_ptr, unsigned int len,
-> > > >  				      int patch_offset);
-> > > > +void riscv_alternative_fix_jal(void *alt_ptr, unsigned int len,
-> > > > +			       int patch_offset);
-> > > >  
-> > > >  struct alt_entry {
-> > > >  	void *old_ptr;		 /* address of original instruciton or data  */
-> > > > diff --git a/arch/riscv/kernel/alternative.c b/arch/riscv/kernel/alternative.c
-> > > > index 292cc42dc3be..9d88375624b5 100644
-> > > > --- a/arch/riscv/kernel/alternative.c
-> > > > +++ b/arch/riscv/kernel/alternative.c
-> > > > @@ -125,6 +125,44 @@ void riscv_alternative_fix_auipc_jalr(void *alt_ptr, unsigned int len,
-> > > >  	}
-> > > >  }
-> > > >  
-> > > > +#define to_jal_imm(value)						\
-> > > > +	(((value & (RV_J_IMM_10_1_MASK << RV_J_IMM_10_1_OFF)) << RV_I_IMM_11_0_OPOFF) | \
-> > > > +	 ((value & (RV_J_IMM_11_MASK << RV_J_IMM_11_OFF)) << RV_J_IMM_11_OPOFF) | \
-> > > > +	 ((value & (RV_J_IMM_19_12_OPOFF << RV_J_IMM_19_12_OFF)) << RV_J_IMM_19_12_OPOFF) | \
-> > > > +	 ((value & (1 << RV_J_IMM_SIGN_OFF)) << RV_J_IMM_SIGN_OPOFF))
-> > > > +
-> > > > +void riscv_alternative_fix_jal(void *alt_ptr, unsigned int len,
-> > > > +			       int patch_offset)
-> > > > +{
-> > > 
-> > > I think we might want to unfiy this into a common function like
-> > > 
-> > > 	riscv_alternative_fix_offsets(...)
-> > > 
-> > > so that we only run through the code block once
-> > > 
-> > > 	for (i = 0; i < num_instr; i++) {
-> > > 		if (riscv_insn_is_auipc_jalr(inst1, inst2)) {
-> > > 			riscv_alternative_fix_auipc_jalr(...)
-> > > 			continue;
-> > > 		}
-> > > 
-> > > 		if (riscv_insn_is_jal(inst)) {
-> > > 			riscv_alternative_fix_jal(...)
-> > > 			continue;
-> > > 		}
-> > > 	}
-> > > 
-> > > This would also remove the need from calling multiple functions
-> > > after patching alternatives.
-> > 
-> > Yesterday, I also wanted to unify the two instruction fix into
-> > one. But that would need to roll back the
-> > riscv_alternative_fix_auipc_jalr() to your v1 version. And IMHO,
-> > it's better if you can split the Zbb string optimizations series
-> > into two: one for alternative improvements, another for Zbb. Then
-> > we may get the alternative improvements and this inst extension
-> > series merged in v6.2-rc1.
+> Signed-off-by: Sean Christopherson <seanjc@google.com>
+> ---
+>  arch/x86/kvm/svm/svm.c |  2 +-
+>  arch/x86/kvm/vmx/vmx.c |  2 +-
+>  arch/x86/kvm/x86.c     | 49 ++++++++++++++++++++++++++++++++----------
+>  3 files changed, 40 insertions(+), 13 deletions(-)
 > 
-> Heiko, perhaps you can correct me here:
+> diff --git a/arch/x86/kvm/svm/svm.c b/arch/x86/kvm/svm/svm.c
+> index 19e81a99c58f..d7ea1c1175c2 100644
+> --- a/arch/x86/kvm/svm/svm.c
+> +++ b/arch/x86/kvm/svm/svm.c
+> @@ -5103,7 +5103,7 @@ static int __init svm_init(void)
+>  	 * Common KVM initialization _must_ come last, after this, /dev/kvm is
+>  	 * exposed to userspace!
+>  	 */
+> -	r = kvm_init(&svm_init_ops, sizeof(struct vcpu_svm),
+> +	r = kvm_init(NULL, sizeof(struct vcpu_svm),
+>  		     __alignof__(struct vcpu_svm), THIS_MODULE);
+>  	if (r)
+>  		goto err_kvm_init;
+> diff --git a/arch/x86/kvm/vmx/vmx.c b/arch/x86/kvm/vmx/vmx.c
+> index 654d81f781da..8deb1bd60c10 100644
+> --- a/arch/x86/kvm/vmx/vmx.c
+> +++ b/arch/x86/kvm/vmx/vmx.c
+> @@ -8592,7 +8592,7 @@ static int __init vmx_init(void)
+>  	 * Common KVM initialization _must_ come last, after this, /dev/kvm is
+>  	 * exposed to userspace!
+>  	 */
+> -	r = kvm_init(&vmx_init_ops, sizeof(struct vcpu_vmx),
+> +	r = kvm_init(NULL, sizeof(struct vcpu_vmx),
+>  		     __alignof__(struct vcpu_vmx), THIS_MODULE);
+>  	if (r)
+>  		goto err_kvm_init;
+> diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+> index 66f16458aa97..3571bc968cf8 100644
+> --- a/arch/x86/kvm/x86.c
+> +++ b/arch/x86/kvm/x86.c
+> @@ -9277,10 +9277,36 @@ static inline void kvm_ops_update(struct kvm_x86_init_ops *ops)
+>  	kvm_pmu_ops_update(ops->pmu_ops);
+>  }
+>  
+> +struct kvm_cpu_compat_check {
+> +	struct kvm_x86_init_ops *ops;
+> +	int *ret;
+
+minor nitpick: just int ret. I don't see the necessity of the pointer.
+Anyway overall it looks good to me.
+
+Reviewed-by: Isaku Yamahata <isaku.yamahata@intel.com>
+
+> +};
+> +
+> +static int kvm_x86_check_processor_compatibility(struct kvm_x86_init_ops *ops)
+> +{
+> +	struct cpuinfo_x86 *c = &cpu_data(smp_processor_id());
+> +
+> +	WARN_ON(!irqs_disabled());
+> +
+> +	if (__cr4_reserved_bits(cpu_has, c) !=
+> +	    __cr4_reserved_bits(cpu_has, &boot_cpu_data))
+> +		return -EIO;
+> +
+> +	return ops->check_processor_compatibility();
+> +}
+> +
+> +static void kvm_x86_check_cpu_compat(void *data)
+> +{
+> +	struct kvm_cpu_compat_check *c = data;
+> +
+> +	*c->ret = kvm_x86_check_processor_compatibility(c->ops);
+> +}
+> +
+>  static int __kvm_x86_vendor_init(struct kvm_x86_init_ops *ops)
+>  {
+> +	struct kvm_cpu_compat_check c;
+>  	u64 host_pat;
+> -	int r;
+> +	int r, cpu;
+>  
+>  	if (kvm_x86_ops.hardware_enable) {
+>  		pr_err("kvm: already loaded vendor module '%s'\n", kvm_x86_ops.name);
+> @@ -9360,6 +9386,14 @@ static int __kvm_x86_vendor_init(struct kvm_x86_init_ops *ops)
+>  	if (r != 0)
+>  		goto out_mmu_exit;
+>  
+> +	c.ret = &r;
+> +	c.ops = ops;
+> +	for_each_online_cpu(cpu) {
+> +		smp_call_function_single(cpu, kvm_x86_check_cpu_compat, &c, 1);
+> +		if (r < 0)
+
+Here it can be "c.ret < 0".
+
+> +			goto out_hardware_unsetup;
+> +	}
+> +
+>  	/*
+>  	 * Point of no return!  DO NOT add error paths below this point unless
+>  	 * absolutely necessary, as most operations from this point forward
+> @@ -9402,6 +9436,8 @@ static int __kvm_x86_vendor_init(struct kvm_x86_init_ops *ops)
+>  	kvm_init_msr_list();
+>  	return 0;
+>  
+> +out_hardware_unsetup:
+> +	ops->runtime_ops->hardware_unsetup();
+>  out_mmu_exit:
+>  	kvm_mmu_vendor_module_exit();
+>  out_free_percpu:
+> @@ -12037,16 +12073,7 @@ void kvm_arch_hardware_disable(void)
+>  
+>  int kvm_arch_check_processor_compat(void *opaque)
+>  {
+> -	struct cpuinfo_x86 *c = &cpu_data(smp_processor_id());
+> -	struct kvm_x86_init_ops *ops = opaque;
+> -
+> -	WARN_ON(!irqs_disabled());
+> -
+> -	if (__cr4_reserved_bits(cpu_has, c) !=
+> -	    __cr4_reserved_bits(cpu_has, &boot_cpu_data))
+> -		return -EIO;
+> -
+> -	return ops->check_processor_compatibility();
+> +	return 0;
+>  }
+>  
+>  bool kvm_vcpu_is_reset_bsp(struct kvm_vcpu *vcpu)
+> -- 
+> 2.38.1.584.g0f3c55d4c2-goog
 > 
-> Last Wednesday you & Palmer agreed that it was too late in the cycle to
-> apply any of the stuff touching alternatives?
-> If I do recall correctly, gives plenty of time to sort out any
-> interdependent changes here.
-> 
-> Could easily be misremembering, wouldn't be the first time!
 
-You slightly misremembered, but are still correct with the above ;-) .
-
-I.e. what we talked about was stuff for fixes for 6.1-rc, were Palmers
-wisely wanted to limit additions to really easy fixes for the remaining
-last rc, to not upset any existing boards.
-
-But you are still correct that we also shouldn't target the 6.2 merge window
-anymore :-) .
-
-We're after -rc8 now (which is in itself uncommon) and in his -rc7
-announcement [0], Linus stated
-
-"[...] the usual rule is that things that I get sent for the
-merge window should have been all ready _before_ the merge window
-opened. But with the merge window happening largely during the holiday
-season, I'll just be enforcing that pretty strictly."
-
-That means new stuff should be reviewed and in linux-next _way before_ the
-merge window opens next weekend. Taking into account that people need
-to review stuff (and maybe the series needing another round), I really don't
-see this happening this week and everything else will get us shouted at
-from atop a christmas tree ;-) .
-
-That's the reason most maintainer-trees stop accepting stuff after -rc7
-
-
-Heiko
-
-
-[0] https://lkml.org/lkml/2022/11/27/278
-
-
-
-
+-- 
+Isaku Yamahata <isaku.yamahata@gmail.com>
 
