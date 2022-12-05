@@ -1,117 +1,87 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Mon, 5 Dec 2022 15:57:10 +0100
-Subject: [PATCH v2 01/13] riscv: fix jal offsets in patched alternatives
-In-Reply-To: <20221204174632.3677-2-jszhang@kernel.org>
+Date: Mon, 5 Dec 2022 16:25:41 +0100
+Subject: [PATCH v2 08/13] riscv: module: move find_section to module.h
+In-Reply-To: <20221204174632.3677-9-jszhang@kernel.org>
 References: <20221204174632.3677-1-jszhang@kernel.org>
- <20221204174632.3677-2-jszhang@kernel.org>
-Message-ID: <20221205145710.xzb4prrc44gv7mwm@kamzik>
+ <20221204174632.3677-9-jszhang@kernel.org>
+Message-ID: <20221205152541.5ahiqvlb7lt6np7w@kamzik>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Dec 05, 2022 at 01:46:20AM +0800, Jisheng Zhang wrote:
-> Alternatives live in a different section, so offsets used by jal
-> instruction will point to wrong locations after the patch got applied.
-> 
-> Similar to arm64, adjust the location to consider that offset.
+On Mon, Dec 05, 2022 at 01:46:27AM +0800, Jisheng Zhang wrote:
+> Move it to the header so that the implementation can be shared
+> by the alternatives code.
 > 
 > Signed-off-by: Jisheng Zhang <jszhang@kernel.org>
 > ---
->  arch/riscv/include/asm/alternative.h |  2 ++
->  arch/riscv/kernel/alternative.c      | 38 ++++++++++++++++++++++++++++
->  arch/riscv/kernel/cpufeature.c       |  3 +++
->  3 files changed, 43 insertions(+)
+>  arch/riscv/include/asm/module.h | 15 +++++++++++++++
+>  arch/riscv/kernel/module.c      | 15 ---------------
+>  2 files changed, 15 insertions(+), 15 deletions(-)
 > 
-> diff --git a/arch/riscv/include/asm/alternative.h b/arch/riscv/include/asm/alternative.h
-> index c58ec3cc4bc3..33eae9541684 100644
-> --- a/arch/riscv/include/asm/alternative.h
-> +++ b/arch/riscv/include/asm/alternative.h
-> @@ -29,6 +29,8 @@ void apply_module_alternatives(void *start, size_t length);
+> diff --git a/arch/riscv/include/asm/module.h b/arch/riscv/include/asm/module.h
+> index 76aa96a9fc08..78722a79fc59 100644
+> --- a/arch/riscv/include/asm/module.h
+> +++ b/arch/riscv/include/asm/module.h
+> @@ -111,4 +111,19 @@ static inline struct plt_entry *get_plt_entry(unsigned long val,
 >  
->  void riscv_alternative_fix_auipc_jalr(void *alt_ptr, unsigned int len,
->  				      int patch_offset);
-> +void riscv_alternative_fix_jal(void *alt_ptr, unsigned int len,
-> +			       int patch_offset);
->  
->  struct alt_entry {
->  	void *old_ptr;		 /* address of original instruciton or data  */
-> diff --git a/arch/riscv/kernel/alternative.c b/arch/riscv/kernel/alternative.c
-> index 292cc42dc3be..9d88375624b5 100644
-> --- a/arch/riscv/kernel/alternative.c
-> +++ b/arch/riscv/kernel/alternative.c
-> @@ -125,6 +125,44 @@ void riscv_alternative_fix_auipc_jalr(void *alt_ptr, unsigned int len,
->  	}
->  }
->  
-> +#define to_jal_imm(value)						\
-> +	(((value & (RV_J_IMM_10_1_MASK << RV_J_IMM_10_1_OFF)) << RV_I_IMM_11_0_OPOFF) | \
-                                                                 ^ RV_J_IMM_10_1_OPOFF
+>  #endif /* CONFIG_MODULE_SECTIONS */
 
-> +	 ((value & (RV_J_IMM_11_MASK << RV_J_IMM_11_OFF)) << RV_J_IMM_11_OPOFF) | \
-> +	 ((value & (RV_J_IMM_19_12_OPOFF << RV_J_IMM_19_12_OFF)) << RV_J_IMM_19_12_OPOFF) | \
-> +	 ((value & (1 << RV_J_IMM_SIGN_OFF)) << RV_J_IMM_SIGN_OPOFF))
+Should probably add an explicit #include <linux/elf.h>
 
-Should put () around value
+Otherwise
 
-> +
-> +void riscv_alternative_fix_jal(void *alt_ptr, unsigned int len,
-> +			       int patch_offset)
-> +{
-> +	int num_instr = len / sizeof(u32);
-> +	unsigned int call;
-> +	int i;
-> +	int imm;
-> +
-> +	for (i = 0; i < num_instr; i++) {
-> +		u32 inst = riscv_instruction_at(alt_ptr, i);
-> +
-> +		if (!riscv_insn_is_jal(inst))
-> +			continue;
-> +
-> +		/* get and adjust new target address */
-> +		imm = RV_EXTRACT_JTYPE_IMM(inst);
-> +		imm -= patch_offset;
-> +
-> +		/* pick the original jal */
-> +		call = inst;
-> +
-> +		/* drop the old IMMs, all jal imm bits sit at 31:12 */
-> +		call &= ~GENMASK(31, 12);
-
-It'd be nice if this had a define.
-
-> +
-> +		/* add the adapted IMMs */
-> +		call |= to_jal_imm(imm);
-> +
-> +		/* patch the call place again */
-> +		patch_text_nosync(alt_ptr + i * sizeof(u32), &call, 4);
-> +	}
-> +}
-> +
->  /*
->   * This is called very early in the boot process (directly after we run
->   * a feature detect on the boot CPU). No need to worry about other CPUs
-> diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
-> index ba62a4ff5ccd..c743f0adc794 100644
-> --- a/arch/riscv/kernel/cpufeature.c
-> +++ b/arch/riscv/kernel/cpufeature.c
-> @@ -324,6 +324,9 @@ void __init_or_module riscv_cpufeature_patch_func(struct alt_entry *begin,
->  			riscv_alternative_fix_auipc_jalr(alt->old_ptr,
->  							 alt->alt_len,
->  							 alt->old_ptr - alt->alt_ptr);
-> +			riscv_alternative_fix_jal(alt->old_ptr,
-> +						  alt->alt_len,
-> +						  alt->old_ptr - alt->alt_ptr);
->  		}
->  	}
->  }
-> -- 
-> 2.37.2
->
+Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
 
 Thanks,
 drew
+
+>  
+> +static inline const Elf_Shdr *find_section(const Elf_Ehdr *hdr,
+> +					   const Elf_Shdr *sechdrs,
+> +					   const char *name)
+> +{
+> +	const Elf_Shdr *s, *se;
+> +	const char *secstrs = (void *)hdr + sechdrs[hdr->e_shstrndx].sh_offset;
+> +
+> +	for (s = sechdrs, se = sechdrs + hdr->e_shnum; s < se; s++) {
+> +		if (strcmp(name, secstrs + s->sh_name) == 0)
+> +			return s;
+> +	}
+> +
+> +	return NULL;
+> +}
+> +
+>  #endif /* _ASM_RISCV_MODULE_H */
+> diff --git a/arch/riscv/kernel/module.c b/arch/riscv/kernel/module.c
+> index 91fe16bfaa07..76f4b9c2ec5b 100644
+> --- a/arch/riscv/kernel/module.c
+> +++ b/arch/riscv/kernel/module.c
+> @@ -429,21 +429,6 @@ void *module_alloc(unsigned long size)
+>  }
+>  #endif
+>  
+> -static const Elf_Shdr *find_section(const Elf_Ehdr *hdr,
+> -				    const Elf_Shdr *sechdrs,
+> -				    const char *name)
+> -{
+> -	const Elf_Shdr *s, *se;
+> -	const char *secstrs = (void *)hdr + sechdrs[hdr->e_shstrndx].sh_offset;
+> -
+> -	for (s = sechdrs, se = sechdrs + hdr->e_shnum; s < se; s++) {
+> -		if (strcmp(name, secstrs + s->sh_name) == 0)
+> -			return s;
+> -	}
+> -
+> -	return NULL;
+> -}
+> -
+>  int module_finalize(const Elf_Ehdr *hdr,
+>  		    const Elf_Shdr *sechdrs,
+>  		    struct module *me)
+> -- 
+> 2.37.2
+> 
 
