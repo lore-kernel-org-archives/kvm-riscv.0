@@ -1,228 +1,106 @@
 From: Jisheng Zhang <jszhang@kernel.org>
-Date: Tue, 6 Dec 2022 22:50:37 +0800
-Subject: [PATCH v2 09/13] riscv: switch to relative alternative entries
-In-Reply-To: <CAJF2gTQ98fyTNc6d3PJrkMjUjUstN8s1FcRNyZQCLiN5CV5NCw@mail.gmail.com>
+Date: Tue, 6 Dec 2022 23:02:35 +0800
+Subject: [PATCH v2 01/13] riscv: fix jal offsets in patched alternatives
+In-Reply-To: <12207576.O9o76ZdvQC@diego>
 References: <20221204174632.3677-1-jszhang@kernel.org>
- <20221204174632.3677-10-jszhang@kernel.org>
- <CAJF2gTRxm7LJFtups5fexJ5ishm9_j3e+yzfKv3nTtQqUtXPtA@mail.gmail.com>
- <Y44LuRcQYPnVnFje@xhacker>
- <CAJF2gTQ98fyTNc6d3PJrkMjUjUstN8s1FcRNyZQCLiN5CV5NCw@mail.gmail.com>
-Message-ID: <Y49WvYWIsFAIeabH@xhacker>
+ <10190559.nUPlyArG6x@diego>
+ <Y45LRu0Gvrurm5Rh@spud>
+ <12207576.O9o76ZdvQC@diego>
+Message-ID: <Y49Zi2CNv8pZSAe5@xhacker>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Dec 06, 2022 at 12:34:40PM +0800, Guo Ren wrote:
-> On Mon, Dec 5, 2022 at 11:28 PM Jisheng Zhang <jszhang@kernel.org> wrote:
-> >
-> > On Mon, Dec 05, 2022 at 08:51:41AM +0800, Guo Ren wrote:
-> > > On Mon, Dec 5, 2022 at 1:57 AM Jisheng Zhang <jszhang@kernel.org> wrote:
-> > > >
-> > > > Instead of using absolute addresses for both the old instrucions and
-> > > > the alternative instructions, use offsets relative to the alt_entry
-> > > > values. So we can not only cut the size of the alternative entry, but
-> > > > also meet the prerequisite for patching alternatives in the vDSO,
-> > > > since absolute alternative entries are subject to dynamic relocation,
-> > > > which is incompatible with the vDSO building.
-> > > >
-> > > > Signed-off-by: Jisheng Zhang <jszhang@kernel.org>
-> > > > ---
-> > > >  arch/riscv/errata/sifive/errata.c           |  4 +++-
-> > > >  arch/riscv/errata/thead/errata.c            | 11 ++++++++---
-> > > >  arch/riscv/include/asm/alternative-macros.h | 20 ++++++++++----------
-> > > >  arch/riscv/include/asm/alternative.h        | 12 ++++++------
-> > > >  arch/riscv/kernel/cpufeature.c              | 13 ++++++-------
-> > > >  5 files changed, 33 insertions(+), 27 deletions(-)
-> > > >
-> > > > diff --git a/arch/riscv/errata/sifive/errata.c b/arch/riscv/errata/sifive/errata.c
-> > > > index 1031038423e7..0e537cdfd324 100644
-> > > > --- a/arch/riscv/errata/sifive/errata.c
-> > > > +++ b/arch/riscv/errata/sifive/errata.c
-> > > > @@ -107,7 +107,9 @@ void __init_or_module sifive_errata_patch_func(struct alt_entry *begin,
-> > > >
-> > > >                 tmp = (1U << alt->errata_id);
-> > > >                 if (cpu_req_errata & tmp) {
-> > > > -                       patch_text_nosync(alt->old_ptr, alt->alt_ptr, alt->alt_len);
-> > > > +                       patch_text_nosync((void *)&alt->old_offset + alt->old_offset,
-> > > > +                                         (void *)&alt->alt_offset + alt->alt_offset,
-> > >  (void *)&alt->alt_offset + alt->alt_offset. ??!!
-> >
-> > Hi Guo,
-> >
-> > what's the problem? I can't catch your meaning, could you please proide
-> > more details?
-> Can you explain why:
-> 
-> alt->old_ptr = (void *)&alt->old_offset + alt->old_offset
+On Tue, Dec 06, 2022 at 01:39:50AM +0100, Heiko St?bner wrote:
+> Am Montag, 5. Dezember 2022, 20:49:26 CET schrieb Conor Dooley:
+> > On Mon, Dec 05, 2022 at 07:49:01PM +0100, Heiko St?bner wrote:
+> > > Am Montag, 5. Dezember 2022, 19:36:45 CET schrieb Conor Dooley:
+> > > > Heiko, Jisheng,
+> > > > On Mon, Dec 05, 2022 at 11:40:44PM +0800, Jisheng Zhang wrote:
+> > > > > Yesterday, I also wanted to unify the two instruction fix into
+> > > > > one. But that would need to roll back the
+> > > > > riscv_alternative_fix_auipc_jalr() to your v1 version. And IMHO,
+> > > > > it's better if you can split the Zbb string optimizations series
+> > > > > into two: one for alternative improvements, another for Zbb. Then
+> > > > > we may get the alternative improvements and this inst extension
+> > > > > series merged in v6.2-rc1.
+> > > > 
+> > > > Heiko, perhaps you can correct me here:
+> > > > 
+> > > > Last Wednesday you & Palmer agreed that it was too late in the cycle to
+> > > > apply any of the stuff touching alternatives?
+> > > > If I do recall correctly, gives plenty of time to sort out any
+> > > > interdependent changes here.
+> > > > 
+> > > > Could easily be misremembering, wouldn't be the first time!
+> > > 
+> > > You slightly misremembered, but are still correct with the above ;-) .
+> > > 
+> > > I.e. what we talked about was stuff for fixes for 6.1-rc, were Palmers
+> > > wisely wanted to limit additions to really easy fixes for the remaining
+> > > last rc, to not upset any existing boards.
+> > 
+> > Ahh right. I was 50-50 on whether something like that was said so at
+> > least I am not going crazy.
+> > 
+> > > But you are still correct that we also shouldn't target the 6.2 merge window
+> > > anymore :-) .
+> > > 
+> > > We're after -rc8 now (which is in itself uncommon) and in his -rc7
+> > > announcement [0], Linus stated
+> > > 
+> > > "[...] the usual rule is that things that I get sent for the
+> > > merge window should have been all ready _before_ the merge window
+> > > opened. But with the merge window happening largely during the holiday
+> > > season, I'll just be enforcing that pretty strictly."
+> > 
+> > Yah, of all the windows to land patchsets that are being re-spun a few
+> > days before it opens this probably isn't the best one to pick!
+> > 
+> > > That means new stuff should be reviewed and in linux-next _way before_ the
+> > > merge window opens next weekend. Taking into account that people need
+> > > to review stuff (and maybe the series needing another round), I really don't
+> > > see this happening this week and everything else will get us shouted at
+> > > from atop a christmas tree ;-) .
+> > > 
+> > > That's the reason most maintainer-trees stop accepting stuff after -rc7
 
-Hi,
+Thanks for the information, then we have more time to test and review
+this series.
 
-when constructing the alt entry, we save the offset in
-then entry as below:
+> > 
+> > Aye, in RISC-V land maybe we will get there one day :)
+> > 
+> > For the original question though, breaking them up into 3 or 4 smaller
+> > bits that could get applied on their own is probably a good idea?
+> > 
+> > Between yourselves, Drew and Prabhakar there's a couple series touching
+> > the same bits. Certainly don't want to seem like I am speaking for the
 
-.long \oldptr - .
+Because alternative is the best solution to riscv extensions while still
+keep one unified kernel Image ;)
 
-So we can restore the old_ptr by &alt->old_offset + alt->old_offset
+> > Higher Powers here, but some sort of logical ordering would probably be
+> > a good idea so as not to hold each other up?
+> > The non-string bit of your series has been fairly well reviewed & would,
+> > in theory, be mergeable once the tree re-opens? Timing aside, Jisheng's
+> > idea seems like a good one, no?
 
-Thanks
+IMHO, it will be better if Palmer can merge Heiko's alternative improvements
+into riscv-next once well reviewed and the window is reopen. Then Drew,
+Prabhakar and I can rebase on that tree.
 
 > 
-> | offset | <- &offset
-> | ...       |
-> | value | <- ptr = &offset + offset
+> yeah, I had that same thought over the weekend - with the generic
+> part being pretty good in the review and only the string part needing
+> more work and thus ideally splitting the series [0] .
 > 
-> I don't make sense of the above.
-> 
-> >
-> > Thanks
-> >
-> > >
-> > > > +                                         alt->alt_len);
-> > > >                         cpu_apply_errata |= tmp;
-> > > >                 }
-> > > >         }
-> > > > diff --git a/arch/riscv/errata/thead/errata.c b/arch/riscv/errata/thead/errata.c
-> > > > index 21546937db39..2a6e335b5a32 100644
-> > > > --- a/arch/riscv/errata/thead/errata.c
-> > > > +++ b/arch/riscv/errata/thead/errata.c
-> > > > @@ -68,6 +68,7 @@ void __init_or_module thead_errata_patch_func(struct alt_entry *begin, struct al
-> > > >         struct alt_entry *alt;
-> > > >         u32 cpu_req_errata = thead_errata_probe(stage, archid, impid);
-> > > >         u32 tmp;
-> > > > +       void *oldptr, *updptr;
-> > > >
-> > > >         for (alt = begin; alt < end; alt++) {
-> > > >                 if (alt->vendor_id != THEAD_VENDOR_ID)
-> > > > @@ -77,12 +78,16 @@ void __init_or_module thead_errata_patch_func(struct alt_entry *begin, struct al
-> > > >
-> > > >                 tmp = (1U << alt->errata_id);
-> > > >                 if (cpu_req_errata & tmp) {
-> > > > +                       oldptr = (void *)&alt->old_offset + alt->old_offset;
-> > > > +                       updptr = (void *)&alt->alt_offset + alt->alt_offset;
-> > > > +
-> > > >                         /* On vm-alternatives, the mmu isn't running yet */
-> > > >                         if (stage == RISCV_ALTERNATIVES_EARLY_BOOT)
-> > > > -                               memcpy((void *)__pa_symbol(alt->old_ptr),
-> > > > -                                      (void *)__pa_symbol(alt->alt_ptr), alt->alt_len);
-> > > > +                               memcpy((void *)__pa_symbol(oldptr),
-> > > > +                                      (void *)__pa_symbol(updptr),
-> > > > +                                      alt->alt_len);
-> > > >                         else
-> > > > -                               patch_text_nosync(alt->old_ptr, alt->alt_ptr, alt->alt_len);
-> > > > +                               patch_text_nosync(oldptr, updptr, alt->alt_len);
-> > > >                 }
-> > > >         }
-> > > >
-> > > > diff --git a/arch/riscv/include/asm/alternative-macros.h b/arch/riscv/include/asm/alternative-macros.h
-> > > > index ec2f3f1b836f..dd40727bc859 100644
-> > > > --- a/arch/riscv/include/asm/alternative-macros.h
-> > > > +++ b/arch/riscv/include/asm/alternative-macros.h
-> > > > @@ -7,11 +7,11 @@
-> > > >  #ifdef __ASSEMBLY__
-> > > >
-> > > >  .macro ALT_ENTRY oldptr newptr vendor_id errata_id new_len
-> > > > -       RISCV_PTR \oldptr
-> > > > -       RISCV_PTR \newptr
-> > > > -       REG_ASM \vendor_id
-> > > > -       REG_ASM \new_len
-> > > > -       .word   \errata_id
-> > > > +       .long \oldptr - .
-> > > > +       .long \newptr - .
-> > > > +       .short \vendor_id
-> > > > +       .short \new_len
-> > > > +       .long \errata_id
-> > > >  .endm
-> > > >
-> > > >  .macro ALT_NEW_CONTENT vendor_id, errata_id, enable = 1, new_c : vararg
-> > > > @@ -75,11 +75,11 @@
-> > > >  #include <linux/stringify.h>
-> > > >
-> > > >  #define ALT_ENTRY(oldptr, newptr, vendor_id, errata_id, newlen)                \
-> > > > -       RISCV_PTR " " oldptr "\n"                                       \
-> > > > -       RISCV_PTR " " newptr "\n"                                       \
-> > > > -       REG_ASM " " vendor_id "\n"                                      \
-> > > > -       REG_ASM " " newlen "\n"                                         \
-> > > > -       ".word " errata_id "\n"
-> > > > +       ".long  ((" oldptr ") - .) \n"                                  \
-> > > > +       ".long  ((" newptr ") - .) \n"                                  \
-> > > > +       ".short " vendor_id "\n"                                        \
-> > > > +       ".short " newlen "\n"                                           \
-> > > > +       ".long  " errata_id "\n"
-> > > >
-> > > >  #define ALT_NEW_CONTENT(vendor_id, errata_id, enable, new_c)           \
-> > > >         ".if " __stringify(enable) " == 1\n"                            \
-> > > > diff --git a/arch/riscv/include/asm/alternative.h b/arch/riscv/include/asm/alternative.h
-> > > > index 33eae9541684..3baf32e05b46 100644
-> > > > --- a/arch/riscv/include/asm/alternative.h
-> > > > +++ b/arch/riscv/include/asm/alternative.h
-> > > > @@ -33,12 +33,12 @@ void riscv_alternative_fix_jal(void *alt_ptr, unsigned int len,
-> > > >                                int patch_offset);
-> > > >
-> > > >  struct alt_entry {
-> > > > -       void *old_ptr;           /* address of original instruciton or data  */
-> > > > -       void *alt_ptr;           /* address of replacement instruction or data */
-> > > > -       unsigned long vendor_id; /* cpu vendor id */
-> > > > -       unsigned long alt_len;   /* The replacement size */
-> > > > -       unsigned int errata_id;  /* The errata id */
-> > > > -} __packed;
-> > > > +       s32 old_offset;         /* offset to original instruciton or data  */
-> > > > +       s32 alt_offset;         /* offset to replacement instruction or data */
-> > > > +       u16 vendor_id;          /* cpu vendor id */
-> > > > +       u16 alt_len;            /* The replacement size */
-> > > > +       u32 errata_id;          /* The errata id */
-> > > > +};
-> > > >
-> > > >  struct errata_checkfunc_id {
-> > > >         unsigned long vendor_id;
-> > > > diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
-> > > > index 6244be5cd94a..adeac90b1d8e 100644
-> > > > --- a/arch/riscv/kernel/cpufeature.c
-> > > > +++ b/arch/riscv/kernel/cpufeature.c
-> > > > @@ -257,6 +257,7 @@ void __init_or_module riscv_cpufeature_patch_func(struct alt_entry *begin,
-> > > >                                                   unsigned int stage)
-> > > >  {
-> > > >         struct alt_entry *alt;
-> > > > +       void *oldptr, *updptr;
-> > > >
-> > > >         if (stage == RISCV_ALTERNATIVES_EARLY_BOOT)
-> > > >                 return;
-> > > > @@ -270,17 +271,15 @@ void __init_or_module riscv_cpufeature_patch_func(struct alt_entry *begin,
-> > > >                         continue;
-> > > >                 }
-> > > >
-> > > > +               oldptr = (void *)&alt->old_offset + alt->old_offset;
-> > > > +               updptr = (void *)&alt->alt_offset + alt->alt_offset;
-> > > >                 if (!__riscv_isa_extension_available(NULL, alt->errata_id))
-> > > >                         continue;
-> > > >
-> > > >                 /* do the basic patching */
-> > > > -               patch_text_nosync(alt->old_ptr, alt->alt_ptr, alt->alt_len);
-> > > > -               riscv_alternative_fix_auipc_jalr(alt->old_ptr,
-> > > > -                                                alt->alt_len,
-> > > > -                                                alt->old_ptr - alt->alt_ptr);
-> > > > -               riscv_alternative_fix_jal(alt->old_ptr,
-> > > > -                                         alt->alt_len,
-> > > > -                                         alt->old_ptr - alt->alt_ptr);
-> > > > +               patch_text_nosync(oldptr, updptr, alt->alt_len);
-> > > > +               riscv_alternative_fix_auipc_jalr(oldptr, alt->alt_len, oldptr - updptr);
-> > > > +               riscv_alternative_fix_jal(oldptr, alt->alt_len, oldptr - updptr);
-> > > >         }
-> > > >  }
-> > > >  #endif
-> > > > --
-> > > > 2.37.2
-> > > >
-> > >
-> > >
-> > > --
-> > > Best Regards
-> > >  Guo Ren
+> Jisheng's series just made that even more important to do :-)
 > 
 > 
+> Heiko
 > 
-> -- 
-> Best Regards
->  Guo Ren
+> 
 
