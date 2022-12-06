@@ -1,212 +1,129 @@
-From: Guo Ren <guoren@kernel.org>
-Date: Tue, 6 Dec 2022 12:34:40 +0800
-Subject: [PATCH v2 09/13] riscv: switch to relative alternative entries
-In-Reply-To: <Y44LuRcQYPnVnFje@xhacker>
-References: <20221204174632.3677-1-jszhang@kernel.org> <20221204174632.3677-10-jszhang@kernel.org>
- <CAJF2gTRxm7LJFtups5fexJ5ishm9_j3e+yzfKv3nTtQqUtXPtA@mail.gmail.com> <Y44LuRcQYPnVnFje@xhacker>
-Message-ID: <CAJF2gTQ98fyTNc6d3PJrkMjUjUstN8s1FcRNyZQCLiN5CV5NCw@mail.gmail.com>
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Date: Tue, 6 Dec 2022 15:39:26 +1100
+Subject: [PATCH kernel v4] KVM: PPC: Make KVM_CAP_IRQFD_RESAMPLE support
+ platform dependent
+In-Reply-To: <7a790aa8-c643-1098-4d28-bd3b10399fcd@ozlabs.ru>
+References: <20221003235722.2085145-1-aik@ozlabs.ru>
+ <7a790aa8-c643-1098-4d28-bd3b10399fcd@ozlabs.ru>
+Message-ID: <5178485f-60d8-0f16-558b-05207102a37e@ozlabs.ru>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Dec 5, 2022 at 11:28 PM Jisheng Zhang <jszhang@kernel.org> wrote:
->
-> On Mon, Dec 05, 2022 at 08:51:41AM +0800, Guo Ren wrote:
-> > On Mon, Dec 5, 2022 at 1:57 AM Jisheng Zhang <jszhang@kernel.org> wrote:
-> > >
-> > > Instead of using absolute addresses for both the old instrucions and
-> > > the alternative instructions, use offsets relative to the alt_entry
-> > > values. So we can not only cut the size of the alternative entry, but
-> > > also meet the prerequisite for patching alternatives in the vDSO,
-> > > since absolute alternative entries are subject to dynamic relocation,
-> > > which is incompatible with the vDSO building.
-> > >
-> > > Signed-off-by: Jisheng Zhang <jszhang@kernel.org>
-> > > ---
-> > >  arch/riscv/errata/sifive/errata.c           |  4 +++-
-> > >  arch/riscv/errata/thead/errata.c            | 11 ++++++++---
-> > >  arch/riscv/include/asm/alternative-macros.h | 20 ++++++++++----------
-> > >  arch/riscv/include/asm/alternative.h        | 12 ++++++------
-> > >  arch/riscv/kernel/cpufeature.c              | 13 ++++++-------
-> > >  5 files changed, 33 insertions(+), 27 deletions(-)
-> > >
-> > > diff --git a/arch/riscv/errata/sifive/errata.c b/arch/riscv/errata/sifive/errata.c
-> > > index 1031038423e7..0e537cdfd324 100644
-> > > --- a/arch/riscv/errata/sifive/errata.c
-> > > +++ b/arch/riscv/errata/sifive/errata.c
-> > > @@ -107,7 +107,9 @@ void __init_or_module sifive_errata_patch_func(struct alt_entry *begin,
-> > >
-> > >                 tmp = (1U << alt->errata_id);
-> > >                 if (cpu_req_errata & tmp) {
-> > > -                       patch_text_nosync(alt->old_ptr, alt->alt_ptr, alt->alt_len);
-> > > +                       patch_text_nosync((void *)&alt->old_offset + alt->old_offset,
-> > > +                                         (void *)&alt->alt_offset + alt->alt_offset,
-> >  (void *)&alt->alt_offset + alt->alt_offset. ??!!
->
-> Hi Guo,
->
-> what's the problem? I can't catch your meaning, could you please proide
-> more details?
-Can you explain why:
-
-alt->old_ptr = (void *)&alt->old_offset + alt->old_offset
-
-| offset | <- &offset
-| ...       |
-| value | <- ptr = &offset + offset
-
-I don't make sense of the above.
-
->
-> Thanks
->
-> >
-> > > +                                         alt->alt_len);
-> > >                         cpu_apply_errata |= tmp;
-> > >                 }
-> > >         }
-> > > diff --git a/arch/riscv/errata/thead/errata.c b/arch/riscv/errata/thead/errata.c
-> > > index 21546937db39..2a6e335b5a32 100644
-> > > --- a/arch/riscv/errata/thead/errata.c
-> > > +++ b/arch/riscv/errata/thead/errata.c
-> > > @@ -68,6 +68,7 @@ void __init_or_module thead_errata_patch_func(struct alt_entry *begin, struct al
-> > >         struct alt_entry *alt;
-> > >         u32 cpu_req_errata = thead_errata_probe(stage, archid, impid);
-> > >         u32 tmp;
-> > > +       void *oldptr, *updptr;
-> > >
-> > >         for (alt = begin; alt < end; alt++) {
-> > >                 if (alt->vendor_id != THEAD_VENDOR_ID)
-> > > @@ -77,12 +78,16 @@ void __init_or_module thead_errata_patch_func(struct alt_entry *begin, struct al
-> > >
-> > >                 tmp = (1U << alt->errata_id);
-> > >                 if (cpu_req_errata & tmp) {
-> > > +                       oldptr = (void *)&alt->old_offset + alt->old_offset;
-> > > +                       updptr = (void *)&alt->alt_offset + alt->alt_offset;
-> > > +
-> > >                         /* On vm-alternatives, the mmu isn't running yet */
-> > >                         if (stage == RISCV_ALTERNATIVES_EARLY_BOOT)
-> > > -                               memcpy((void *)__pa_symbol(alt->old_ptr),
-> > > -                                      (void *)__pa_symbol(alt->alt_ptr), alt->alt_len);
-> > > +                               memcpy((void *)__pa_symbol(oldptr),
-> > > +                                      (void *)__pa_symbol(updptr),
-> > > +                                      alt->alt_len);
-> > >                         else
-> > > -                               patch_text_nosync(alt->old_ptr, alt->alt_ptr, alt->alt_len);
-> > > +                               patch_text_nosync(oldptr, updptr, alt->alt_len);
-> > >                 }
-> > >         }
-> > >
-> > > diff --git a/arch/riscv/include/asm/alternative-macros.h b/arch/riscv/include/asm/alternative-macros.h
-> > > index ec2f3f1b836f..dd40727bc859 100644
-> > > --- a/arch/riscv/include/asm/alternative-macros.h
-> > > +++ b/arch/riscv/include/asm/alternative-macros.h
-> > > @@ -7,11 +7,11 @@
-> > >  #ifdef __ASSEMBLY__
-> > >
-> > >  .macro ALT_ENTRY oldptr newptr vendor_id errata_id new_len
-> > > -       RISCV_PTR \oldptr
-> > > -       RISCV_PTR \newptr
-> > > -       REG_ASM \vendor_id
-> > > -       REG_ASM \new_len
-> > > -       .word   \errata_id
-> > > +       .long \oldptr - .
-> > > +       .long \newptr - .
-> > > +       .short \vendor_id
-> > > +       .short \new_len
-> > > +       .long \errata_id
-> > >  .endm
-> > >
-> > >  .macro ALT_NEW_CONTENT vendor_id, errata_id, enable = 1, new_c : vararg
-> > > @@ -75,11 +75,11 @@
-> > >  #include <linux/stringify.h>
-> > >
-> > >  #define ALT_ENTRY(oldptr, newptr, vendor_id, errata_id, newlen)                \
-> > > -       RISCV_PTR " " oldptr "\n"                                       \
-> > > -       RISCV_PTR " " newptr "\n"                                       \
-> > > -       REG_ASM " " vendor_id "\n"                                      \
-> > > -       REG_ASM " " newlen "\n"                                         \
-> > > -       ".word " errata_id "\n"
-> > > +       ".long  ((" oldptr ") - .) \n"                                  \
-> > > +       ".long  ((" newptr ") - .) \n"                                  \
-> > > +       ".short " vendor_id "\n"                                        \
-> > > +       ".short " newlen "\n"                                           \
-> > > +       ".long  " errata_id "\n"
-> > >
-> > >  #define ALT_NEW_CONTENT(vendor_id, errata_id, enable, new_c)           \
-> > >         ".if " __stringify(enable) " == 1\n"                            \
-> > > diff --git a/arch/riscv/include/asm/alternative.h b/arch/riscv/include/asm/alternative.h
-> > > index 33eae9541684..3baf32e05b46 100644
-> > > --- a/arch/riscv/include/asm/alternative.h
-> > > +++ b/arch/riscv/include/asm/alternative.h
-> > > @@ -33,12 +33,12 @@ void riscv_alternative_fix_jal(void *alt_ptr, unsigned int len,
-> > >                                int patch_offset);
-> > >
-> > >  struct alt_entry {
-> > > -       void *old_ptr;           /* address of original instruciton or data  */
-> > > -       void *alt_ptr;           /* address of replacement instruction or data */
-> > > -       unsigned long vendor_id; /* cpu vendor id */
-> > > -       unsigned long alt_len;   /* The replacement size */
-> > > -       unsigned int errata_id;  /* The errata id */
-> > > -} __packed;
-> > > +       s32 old_offset;         /* offset to original instruciton or data  */
-> > > +       s32 alt_offset;         /* offset to replacement instruction or data */
-> > > +       u16 vendor_id;          /* cpu vendor id */
-> > > +       u16 alt_len;            /* The replacement size */
-> > > +       u32 errata_id;          /* The errata id */
-> > > +};
-> > >
-> > >  struct errata_checkfunc_id {
-> > >         unsigned long vendor_id;
-> > > diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
-> > > index 6244be5cd94a..adeac90b1d8e 100644
-> > > --- a/arch/riscv/kernel/cpufeature.c
-> > > +++ b/arch/riscv/kernel/cpufeature.c
-> > > @@ -257,6 +257,7 @@ void __init_or_module riscv_cpufeature_patch_func(struct alt_entry *begin,
-> > >                                                   unsigned int stage)
-> > >  {
-> > >         struct alt_entry *alt;
-> > > +       void *oldptr, *updptr;
-> > >
-> > >         if (stage == RISCV_ALTERNATIVES_EARLY_BOOT)
-> > >                 return;
-> > > @@ -270,17 +271,15 @@ void __init_or_module riscv_cpufeature_patch_func(struct alt_entry *begin,
-> > >                         continue;
-> > >                 }
-> > >
-> > > +               oldptr = (void *)&alt->old_offset + alt->old_offset;
-> > > +               updptr = (void *)&alt->alt_offset + alt->alt_offset;
-> > >                 if (!__riscv_isa_extension_available(NULL, alt->errata_id))
-> > >                         continue;
-> > >
-> > >                 /* do the basic patching */
-> > > -               patch_text_nosync(alt->old_ptr, alt->alt_ptr, alt->alt_len);
-> > > -               riscv_alternative_fix_auipc_jalr(alt->old_ptr,
-> > > -                                                alt->alt_len,
-> > > -                                                alt->old_ptr - alt->alt_ptr);
-> > > -               riscv_alternative_fix_jal(alt->old_ptr,
-> > > -                                         alt->alt_len,
-> > > -                                         alt->old_ptr - alt->alt_ptr);
-> > > +               patch_text_nosync(oldptr, updptr, alt->alt_len);
-> > > +               riscv_alternative_fix_auipc_jalr(oldptr, alt->alt_len, oldptr - updptr);
-> > > +               riscv_alternative_fix_jal(oldptr, alt->alt_len, oldptr - updptr);
-> > >         }
-> > >  }
-> > >  #endif
-> > > --
-> > > 2.37.2
-> > >
-> >
-> >
-> > --
-> > Best Regards
-> >  Guo Ren
+Paolo, ping? :)
 
 
+On 27/10/2022 18:38, Alexey Kardashevskiy wrote:
+> Paolo, ping?
+> 
+> 
+> On 04/10/2022 10:57, Alexey Kardashevskiy wrote:
+>> When introduced, IRQFD resampling worked on POWER8 with XICS. However
+>> KVM on POWER9 has never implemented it - the compatibility mode code
+>> ("XICS-on-XIVE") misses the kvm_notify_acked_irq() call and the native
+>> XIVE mode does not handle INTx in KVM at all.
+>>
+>> This moved the capability support advertising to platforms and stops
+>> advertising it on XIVE, i.e. POWER9 and later.
+>>
+>> This should cause no behavioural change for other architectures.
+>>
+>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>> Acked-by: Nicholas Piggin <npiggin@gmail.com>
+>> Acked-by: Marc Zyngier <maz@kernel.org>
+>> ---
+>> Changes:
+>> v4:
+>> * removed incorrect clause about changing behavoir on MIPS and RISCV
+>>
+>> v3:
+>> * removed all ifdeferry
+>> * removed the capability for MIPS and RISCV
+>> * adjusted the commit log about MIPS and RISCV
+>>
+>> v2:
+>> * removed ifdef for ARM64.
+>> ---
+>> ? arch/arm64/kvm/arm.c?????? | 1 +
+>> ? arch/powerpc/kvm/powerpc.c | 6 ++++++
+>> ? arch/s390/kvm/kvm-s390.c?? | 1 +
+>> ? arch/x86/kvm/x86.c???????? | 1 +
+>> ? virt/kvm/kvm_main.c??????? | 1 -
+>> ? 5 files changed, 9 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/arch/arm64/kvm/arm.c b/arch/arm64/kvm/arm.c
+>> index 2ff0ef62abad..d2daa4d375b5 100644
+>> --- a/arch/arm64/kvm/arm.c
+>> +++ b/arch/arm64/kvm/arm.c
+>> @@ -218,6 +218,7 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, 
+>> long ext)
+>> ????? case KVM_CAP_VCPU_ATTRIBUTES:
+>> ????? case KVM_CAP_PTP_KVM:
+>> ????? case KVM_CAP_ARM_SYSTEM_SUSPEND:
+>> +??? case KVM_CAP_IRQFD_RESAMPLE:
+>> ????????? r = 1;
+>> ????????? break;
+>> ????? case KVM_CAP_SET_GUEST_DEBUG2:
+>> diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+>> index fb1490761c87..908ce8bd91c9 100644
+>> --- a/arch/powerpc/kvm/powerpc.c
+>> +++ b/arch/powerpc/kvm/powerpc.c
+>> @@ -593,6 +593,12 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, 
+>> long ext)
+>> ????????? break;
+>> ? #endif
+>> +#ifdef CONFIG_HAVE_KVM_IRQFD
+>> +??? case KVM_CAP_IRQFD_RESAMPLE:
+>> +??????? r = !xive_enabled();
+>> +??????? break;
+>> +#endif
+>> +
+>> ????? case KVM_CAP_PPC_ALLOC_HTAB:
+>> ????????? r = hv_enabled;
+>> ????????? break;
+>> diff --git a/arch/s390/kvm/kvm-s390.c b/arch/s390/kvm/kvm-s390.c
+>> index edfd4bbd0cba..7521adadb81b 100644
+>> --- a/arch/s390/kvm/kvm-s390.c
+>> +++ b/arch/s390/kvm/kvm-s390.c
+>> @@ -577,6 +577,7 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, 
+>> long ext)
+>> ????? case KVM_CAP_SET_GUEST_DEBUG:
+>> ????? case KVM_CAP_S390_DIAG318:
+>> ????? case KVM_CAP_S390_MEM_OP_EXTENSION:
+>> +??? case KVM_CAP_IRQFD_RESAMPLE:
+>> ????????? r = 1;
+>> ????????? break;
+>> ????? case KVM_CAP_SET_GUEST_DEBUG2:
+>> diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+>> index 43a6a7efc6ec..2d6c5a8fdf14 100644
+>> --- a/arch/x86/kvm/x86.c
+>> +++ b/arch/x86/kvm/x86.c
+>> @@ -4395,6 +4395,7 @@ int kvm_vm_ioctl_check_extension(struct kvm 
+>> *kvm, long ext)
+>> ????? case KVM_CAP_VAPIC:
+>> ????? case KVM_CAP_ENABLE_CAP:
+>> ????? case KVM_CAP_VM_DISABLE_NX_HUGE_PAGES:
+>> +??? case KVM_CAP_IRQFD_RESAMPLE:
+>> ????????? r = 1;
+>> ????????? break;
+>> ????? case KVM_CAP_EXIT_HYPERCALL:
+>> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+>> index 584a5bab3af3..05cf94013f02 100644
+>> --- a/virt/kvm/kvm_main.c
+>> +++ b/virt/kvm/kvm_main.c
+>> @@ -4447,7 +4447,6 @@ static long 
+>> kvm_vm_ioctl_check_extension_generic(struct kvm *kvm, long arg)
+>> ? #endif
+>> ? #ifdef CONFIG_HAVE_KVM_IRQFD
+>> ????? case KVM_CAP_IRQFD:
+>> -??? case KVM_CAP_IRQFD_RESAMPLE:
+>> ? #endif
+>> ????? case KVM_CAP_IOEVENTFD_ANY_LENGTH:
+>> ????? case KVM_CAP_CHECK_EXTENSION_VM:
+> 
 
 -- 
-Best Regards
- Guo Ren
+Alexey
 
