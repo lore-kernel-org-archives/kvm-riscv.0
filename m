@@ -1,44 +1,115 @@
 From: Conor Dooley <conor@kernel.org>
-Date: Tue, 06 Dec 2022 22:04:33 -0000
-Subject: [PATCH v2 11/13] riscv: cpu_relax: switch to
- riscv_has_extension_likely()
-In-Reply-To: <20221204174632.3677-12-jszhang@kernel.org>
+Date: Tue, 06 Dec 2022 22:16:52 -0000
+Subject: [PATCH v2 13/13] riscv: remove riscv_isa_ext_keys[] array and
+ related usage
+In-Reply-To: <20221204174632.3677-14-jszhang@kernel.org>
 References: <20221204174632.3677-1-jszhang@kernel.org>
- <20221204174632.3677-12-jszhang@kernel.org>
-Message-ID: <Y4+8ZY8xb2nMRCD6@spud>
+ <20221204174632.3677-14-jszhang@kernel.org>
+Message-ID: <Y4+/TPEfueQqahgb@spud>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Dec 05, 2022 at 01:46:30AM +0800, Jisheng Zhang wrote:
-> Switch cpu_relax() from statich branch to the new helper
+On Mon, Dec 05, 2022 at 01:46:32AM +0800, Jisheng Zhang wrote:
+> All users have switched to riscv_has_extension_*, removed unused
 
-The tiniest nit: static
+minor nit: remove
 
-> riscv_has_extension_likely()
+> definitions, vars and related setting code.
 > 
 > Signed-off-by: Jisheng Zhang <jszhang@kernel.org>
 > Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
 > Reviewed-by: Heiko Stuebner <heiko@sntech.de>
+
+May as well join the R-b club here, the removal of 2 places where
+extensions need to be kept ordered is especially appreciated!
+
+Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
+
+Thanks!
+
 > ---
->  arch/riscv/include/asm/vdso/processor.h | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  arch/riscv/include/asm/hwcap.h | 30 ------------------------------
+>  arch/riscv/kernel/cpufeature.c |  9 ---------
+>  2 files changed, 39 deletions(-)
 > 
-> diff --git a/arch/riscv/include/asm/vdso/processor.h b/arch/riscv/include/asm/vdso/processor.h
-> index fa70cfe507aa..edf0e25e43d1 100644
-> --- a/arch/riscv/include/asm/vdso/processor.h
-> +++ b/arch/riscv/include/asm/vdso/processor.h
-> @@ -10,7 +10,7 @@
+> diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
+> index e2d3f6df7701..be00a4337578 100644
+> --- a/arch/riscv/include/asm/hwcap.h
+> +++ b/arch/riscv/include/asm/hwcap.h
+> @@ -60,18 +60,6 @@ enum {
 >  
->  static inline void cpu_relax(void)
+>  extern unsigned long elf_hwcap;
+>  
+> -/*
+> - * This enum represents the logical ID for each RISC-V ISA extension static
+> - * keys. We can use static key to optimize code path if some ISA extensions
+> - * are available.
+> - */
+> -enum riscv_isa_ext_key {
+> -	RISCV_ISA_EXT_KEY_FPU,		/* For 'F' and 'D' */
+> -	RISCV_ISA_EXT_KEY_ZIHINTPAUSE,
+> -	RISCV_ISA_EXT_KEY_SVINVAL,
+> -	RISCV_ISA_EXT_KEY_MAX,
+> -};
+> -
+>  struct riscv_isa_ext_data {
+>  	/* Name of the extension displayed to userspace via /proc/cpuinfo */
+>  	char uprop[RISCV_ISA_EXT_NAME_LEN_MAX];
+> @@ -79,24 +67,6 @@ struct riscv_isa_ext_data {
+>  	unsigned int isa_ext_id;
+>  };
+>  
+> -extern struct static_key_false riscv_isa_ext_keys[RISCV_ISA_EXT_KEY_MAX];
+> -
+> -static __always_inline int riscv_isa_ext2key(int num)
+> -{
+> -	switch (num) {
+> -	case RISCV_ISA_EXT_f:
+> -		return RISCV_ISA_EXT_KEY_FPU;
+> -	case RISCV_ISA_EXT_d:
+> -		return RISCV_ISA_EXT_KEY_FPU;
+> -	case RISCV_ISA_EXT_ZIHINTPAUSE:
+> -		return RISCV_ISA_EXT_KEY_ZIHINTPAUSE;
+> -	case RISCV_ISA_EXT_SVINVAL:
+> -		return RISCV_ISA_EXT_KEY_SVINVAL;
+> -	default:
+> -		return -EINVAL;
+> -	}
+> -}
+> -
+>  static __always_inline bool
+>  riscv_has_extension_likely(const unsigned long ext)
 >  {
-> -	if (!static_branch_likely(&riscv_isa_ext_keys[RISCV_ISA_EXT_KEY_ZIHINTPAUSE])) {
-> +	if (!riscv_has_extension_likely(RISCV_ISA_EXT_ZIHINTPAUSE)) {
->  #ifdef __riscv_muldiv
->  		int dummy;
->  		/* In lieu of a halt instruction, induce a long-latency stall. */
+> diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
+> index adeac90b1d8e..3240a2915bf1 100644
+> --- a/arch/riscv/kernel/cpufeature.c
+> +++ b/arch/riscv/kernel/cpufeature.c
+> @@ -28,9 +28,6 @@ unsigned long elf_hwcap __read_mostly;
+>  /* Host ISA bitmap */
+>  static DECLARE_BITMAP(riscv_isa, RISCV_ISA_EXT_MAX) __read_mostly;
+>  
+> -DEFINE_STATIC_KEY_ARRAY_FALSE(riscv_isa_ext_keys, RISCV_ISA_EXT_KEY_MAX);
+> -EXPORT_SYMBOL(riscv_isa_ext_keys);
+> -
+>  /**
+>   * riscv_isa_extension_base() - Get base extension word
+>   *
+> @@ -243,12 +240,6 @@ void __init riscv_fill_hwcap(void)
+>  		if (elf_hwcap & BIT_MASK(i))
+>  			print_str[j++] = (char)('a' + i);
+>  	pr_info("riscv: ELF capabilities %s\n", print_str);
+> -
+> -	for_each_set_bit(i, riscv_isa, RISCV_ISA_EXT_MAX) {
+> -		j = riscv_isa_ext2key(i);
+> -		if (j >= 0)
+> -			static_branch_enable(&riscv_isa_ext_keys[j]);
+> -	}
+>  }
+>  
+>  #ifdef CONFIG_RISCV_ALTERNATIVE
 > -- 
 > 2.37.2
 > 
@@ -48,4 +119,4 @@ Name: signature.asc
 Type: application/pgp-signature
 Size: 228 bytes
 Desc: not available
-URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20221206/908d1260/attachment-0001.sig>
+URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20221206/f876de99/attachment-0001.sig>
