@@ -1,87 +1,164 @@
-From: Conor Dooley <conor@kernel.org>
-Date: Mon, 5 Dec 2022 19:49:26 +0000
-Subject: [PATCH v2 01/13] riscv: fix jal offsets in patched alternatives
-In-Reply-To: <10190559.nUPlyArG6x@diego>
-References: <20221204174632.3677-1-jszhang@kernel.org>
- <Y44Q/B6THtP38eyL@xhacker>
- <Y446PdlUPGw5iB71@spud>
- <10190559.nUPlyArG6x@diego>
-Message-ID: <Y45LRu0Gvrurm5Rh@spud>
+From: Guo Ren <guoren@kernel.org>
+Date: Tue, 6 Dec 2022 12:29:37 +0800
+Subject: [PATCH v2 10/13] riscv: alternative: patch alternatives in the vDSO
+In-Reply-To: <Y44M5vHaqglLvL3c@xhacker>
+References: <20221204174632.3677-1-jszhang@kernel.org> <20221204174632.3677-11-jszhang@kernel.org>
+ <CAJF2gTR5VW0m=czqF2cQOcX5Vstow6EsuT044_E4WLo-NeVCOg@mail.gmail.com> <Y44M5vHaqglLvL3c@xhacker>
+Message-ID: <CAJF2gTQW2GP6X-tOyt=4qN-vYGcBbbFeSvnmGXBq2T1Bm226FA@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Dec 05, 2022 at 07:49:01PM +0100, Heiko St?bner wrote:
-> Am Montag, 5. Dezember 2022, 19:36:45 CET schrieb Conor Dooley:
-> > Heiko, Jisheng,
-> > On Mon, Dec 05, 2022 at 11:40:44PM +0800, Jisheng Zhang wrote:
-> > > Yesterday, I also wanted to unify the two instruction fix into
-> > > one. But that would need to roll back the
-> > > riscv_alternative_fix_auipc_jalr() to your v1 version. And IMHO,
-> > > it's better if you can split the Zbb string optimizations series
-> > > into two: one for alternative improvements, another for Zbb. Then
-> > > we may get the alternative improvements and this inst extension
-> > > series merged in v6.2-rc1.
-> > 
-> > Heiko, perhaps you can correct me here:
-> > 
-> > Last Wednesday you & Palmer agreed that it was too late in the cycle to
-> > apply any of the stuff touching alternatives?
-> > If I do recall correctly, gives plenty of time to sort out any
-> > interdependent changes here.
-> > 
-> > Could easily be misremembering, wouldn't be the first time!
-> 
-> You slightly misremembered, but are still correct with the above ;-) .
-> 
-> I.e. what we talked about was stuff for fixes for 6.1-rc, were Palmers
-> wisely wanted to limit additions to really easy fixes for the remaining
-> last rc, to not upset any existing boards.
+On Mon, Dec 5, 2022 at 11:33 PM Jisheng Zhang <jszhang@kernel.org> wrote:
+>
+> On Mon, Dec 05, 2022 at 09:56:37AM +0800, Guo Ren wrote:
+> > Are there any patches that depend on it? Any existing utilization? My
+> > first idea is to let __vdso_flush_icache use it, the standard
+> > implementation is so heavy for user space JIT scenario, maybe vendors
+> > could give a custom one.
+>
+> Hi Guo,
+>
+> the 11th patch of swtiching cpu_relax() to riscv_has_extension_likely()
+> depends on this patch, the gettimeofday implementation calls cpu_relax()
+> which may use ZIHINTPAUSE extension, so we need to patch vDSO.
+Oh, I missed that. Thx.
 
-Ahh right. I was 50-50 on whether something like that was said so at
-least I am not going crazy.
+Reviewed-by: Guo Ren <guoren@kernel.org>
 
-> But you are still correct that we also shouldn't target the 6.2 merge window
-> anymore :-) .
-> 
-> We're after -rc8 now (which is in itself uncommon) and in his -rc7
-> announcement [0], Linus stated
-> 
-> "[...] the usual rule is that things that I get sent for the
-> merge window should have been all ready _before_ the merge window
-> opened. But with the merge window happening largely during the holiday
-> season, I'll just be enforcing that pretty strictly."
+>
+> Thanks
+>
+> >
+> > On Mon, Dec 5, 2022 at 1:57 AM Jisheng Zhang <jszhang@kernel.org> wrote:
+> > >
+> > > Make it possible to use alternatives in the vDSO, so that better
+> > > implementations can be used if possible.
+> > >
+> > > Signed-off-by: Jisheng Zhang <jszhang@kernel.org>
+> > > ---
+> > >  arch/riscv/include/asm/vdso.h     |  4 ++++
+> > >  arch/riscv/kernel/alternative.c   | 25 +++++++++++++++++++++++++
+> > >  arch/riscv/kernel/vdso.c          |  5 -----
+> > >  arch/riscv/kernel/vdso/vdso.lds.S |  7 +++++++
+> > >  4 files changed, 36 insertions(+), 5 deletions(-)
+> > >
+> > > diff --git a/arch/riscv/include/asm/vdso.h b/arch/riscv/include/asm/vdso.h
+> > > index af981426fe0f..b6ff7473fb8a 100644
+> > > --- a/arch/riscv/include/asm/vdso.h
+> > > +++ b/arch/riscv/include/asm/vdso.h
+> > > @@ -28,8 +28,12 @@
+> > >  #define COMPAT_VDSO_SYMBOL(base, name)                                         \
+> > >         (void __user *)((unsigned long)(base) + compat__vdso_##name##_offset)
+> > >
+> > > +extern char compat_vdso_start[], compat_vdso_end[];
+> > > +
+> > >  #endif /* CONFIG_COMPAT */
+> > >
+> > > +extern char vdso_start[], vdso_end[];
+> > > +
+> > >  #endif /* !__ASSEMBLY__ */
+> > >
+> > >  #endif /* CONFIG_MMU */
+> > > diff --git a/arch/riscv/kernel/alternative.c b/arch/riscv/kernel/alternative.c
+> > > index 9d88375624b5..eaf7ddaba54c 100644
+> > > --- a/arch/riscv/kernel/alternative.c
+> > > +++ b/arch/riscv/kernel/alternative.c
+> > > @@ -11,7 +11,9 @@
+> > >  #include <linux/cpu.h>
+> > >  #include <linux/uaccess.h>
+> > >  #include <asm/alternative.h>
+> > > +#include <asm/module.h>
+> > >  #include <asm/sections.h>
+> > > +#include <asm/vdso.h>
+> > >  #include <asm/vendorid_list.h>
+> > >  #include <asm/sbi.h>
+> > >  #include <asm/csr.h>
+> > > @@ -187,6 +189,27 @@ static void __init_or_module _apply_alternatives(struct alt_entry *begin,
+> > >                                 stage);
+> > >  }
+> > >
+> > > +static void __init apply_vdso_alternatives(void)
+> > > +{
+> > > +       const struct elf64_hdr *hdr;
+> > > +       const struct elf64_shdr *shdr;
+> > > +       const struct elf64_shdr *alt;
+> > > +       struct alt_entry *begin, *end;
+> > > +
+> > > +       hdr = (struct elf64_hdr *)vdso_start;
+> > > +       shdr = (void *)hdr + hdr->e_shoff;
+> > > +       alt = find_section(hdr, shdr, ".alternative");
+> > > +       if (!alt)
+> > > +               return;
+> > > +
+> > > +       begin = (void *)hdr + alt->sh_offset,
+> > > +       end = (void *)hdr + alt->sh_offset + alt->sh_size,
+> > > +
+> > > +       _apply_alternatives((struct alt_entry *)begin,
+> > > +                           (struct alt_entry *)end,
+> > > +                           RISCV_ALTERNATIVES_BOOT);
+> > > +}
+> > > +
+> > >  void __init apply_boot_alternatives(void)
+> > >  {
+> > >         /* If called on non-boot cpu things could go wrong */
+> > > @@ -195,6 +218,8 @@ void __init apply_boot_alternatives(void)
+> > >         _apply_alternatives((struct alt_entry *)__alt_start,
+> > >                             (struct alt_entry *)__alt_end,
+> > >                             RISCV_ALTERNATIVES_BOOT);
+> > > +
+> > > +       apply_vdso_alternatives();
+> > >  }
+> > >
+> > >  /*
+> > > diff --git a/arch/riscv/kernel/vdso.c b/arch/riscv/kernel/vdso.c
+> > > index 123d05255fcf..1f47bc6566cf 100644
+> > > --- a/arch/riscv/kernel/vdso.c
+> > > +++ b/arch/riscv/kernel/vdso.c
+> > > @@ -22,11 +22,6 @@ struct vdso_data {
+> > >  };
+> > >  #endif
+> > >
+> > > -extern char vdso_start[], vdso_end[];
+> > > -#ifdef CONFIG_COMPAT
+> > > -extern char compat_vdso_start[], compat_vdso_end[];
+> > > -#endif
+> > > -
+> > >  enum vvar_pages {
+> > >         VVAR_DATA_PAGE_OFFSET,
+> > >         VVAR_TIMENS_PAGE_OFFSET,
+> > > diff --git a/arch/riscv/kernel/vdso/vdso.lds.S b/arch/riscv/kernel/vdso/vdso.lds.S
+> > > index 150b1a572e61..4a0606633290 100644
+> > > --- a/arch/riscv/kernel/vdso/vdso.lds.S
+> > > +++ b/arch/riscv/kernel/vdso/vdso.lds.S
+> > > @@ -40,6 +40,13 @@ SECTIONS
+> > >         . = 0x800;
+> > >         .text           : { *(.text .text.*) }          :text
+> > >
+> > > +       . = ALIGN(4);
+> > > +       .alternative : {
+> > > +               __alt_start = .;
+> > > +               *(.alternative)
+> > > +               __alt_end = .;
+> > > +       }
+> > > +
+> > >         .data           : {
+> > >                 *(.got.plt) *(.got)
+> > >                 *(.data .data.* .gnu.linkonce.d.*)
+> > > --
+> > > 2.37.2
+> > >
+> >
+> >
+> > --
+> > Best Regards
+> >  Guo Ren
 
-Yah, of all the windows to land patchsets that are being re-spun a few
-days before it opens this probably isn't the best one to pick!
 
-> That means new stuff should be reviewed and in linux-next _way before_ the
-> merge window opens next weekend. Taking into account that people need
-> to review stuff (and maybe the series needing another round), I really don't
-> see this happening this week and everything else will get us shouted at
-> from atop a christmas tree ;-) .
-> 
-> That's the reason most maintainer-trees stop accepting stuff after -rc7
 
-Aye, in RISC-V land maybe we will get there one day :)
+-- 
+Best Regards
+ Guo Ren
 
-For the original question though, breaking them up into 3 or 4 smaller
-bits that could get applied on their own is probably a good idea?
-
-Between yourselves, Drew and Prabhakar there's a couple series touching
-the same bits. Certainly don't want to seem like I am speaking for the
-Higher Powers here, but some sort of logical ordering would probably be
-a good idea so as not to hold each other up?
-The non-string bit of your series has been fairly well reviewed & would,
-in theory, be mergeable once the tree re-opens? Timing aside, Jisheng's
-idea seems like a good one, no?
-
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 228 bytes
-Desc: not available
-URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20221205/2e948fc5/attachment.sig>
