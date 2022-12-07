@@ -1,76 +1,50 @@
-From: Anup Patel <anup@brainfault.org>
-Date: Wed, 7 Dec 2022 16:03:28 +0530
-Subject: [GIT PULL] KVM/riscv changes for 6.2
-Message-ID: <CAAhSdy0qihfFCXTV-QUjP-5XiQQqBC4_sP-swx77k6PC3uTmmw@mail.gmail.com>
+From: Sean Christopherson <seanjc@google.com>
+Date: Wed, 7 Dec 2022 16:31:30 +0000
+Subject: [RFC 8/9] RISC-V: KVM: Implement perf support
+In-Reply-To: <CAOnJCU+Eo7do0Rd+S4RBOMYpY+sG8ODqpkqA-Cii92bO-cG5+Q@mail.gmail.com>
+References: <20220718170205.2972215-1-atishp@rivosinc.com>
+ <20220718170205.2972215-9-atishp@rivosinc.com>
+ <Y4oxNbQwOldICdnw@google.com>
+ <CAOnJCU+Eo7do0Rd+S4RBOMYpY+sG8ODqpkqA-Cii92bO-cG5+Q@mail.gmail.com>
+Message-ID: <Y5C/4s7OannaS8+H@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Paolo,
+On Wed, Dec 07, 2022, Atish Patra wrote:
+> On Fri, Dec 2, 2022 at 9:09 AM Sean Christopherson <seanjc@google.com> wrote:
+> >
+> > On Mon, Jul 18, 2022, Atish Patra wrote:
+> > > RISC-V SBI PMU & Sscofpmf ISA extension allows supporting perf in
+> > > the virtualization enviornment as well. KVM implementation
+> > > relies on SBI PMU extension for most of the part while traps
+> > > & emulates the CSRs read for counter access.
+> >
+> > For the benefit of non-RISCV people, the changelog (and documentation?) should
+> > explain why RISC-V doesn't need to tap into kvm_register_perf_callbacks().
+> 
+> As per my understanding, kvm_register_perf_callbacks is only useful
+> during event sampling for guests. Please let me know if I missed
+> something.
+> This series doesn't support sampling and guest counter overflow interrupt yet.
+> That's why kvm_register_perf_callbacks support is missing.
 
-We have the following KVM RISC-V changes for 6.2:
-1) Allow unloading KVM module
-2) Allow KVM user-space to set mvendorid, marchid, and mimpid
-3) Several fixes and cleanups
+Ah, I missed that connection in the cover letter.
 
-Please pull.
+In the future, if a patch adds partial support for a thing/feature, it's very
+helpful to call that out in the lack shortlog and changelog, even for RFCs.  E.g.
+adding a single word in the shortlog and sentence or two in the changelog doesn't
+take much time on your end, and helps avoid cases like this where drive-by reviewers
+like me from cause a fuss about non-issues.
 
-Regards,
-Anup
+ RISC-V: KVM: Implement partial perf support
 
-The following changes since commit 76dcd734eca23168cb008912c0f69ff408905235:
+ ...
 
-  Linux 6.1-rc8 (2022-12-04 14:48:12 -0800)
+ Counter overflow and interrupts are not supported as the relevant
+ architectural specifications are still under discussion.
 
-are available in the Git repository at:
-
-  https://github.com/kvm-riscv/linux.git tags/kvm-riscv-6.2-1
-
-for you to fetch changes up to 6ebbdecff6ae00557a52539287b681641f4f0d33:
-
-  RISC-V: KVM: Add ONE_REG interface for mvendorid, marchid, and
-mimpid (2022-12-07 09:17:49 +0530)
-
-----------------------------------------------------------------
-KVM/riscv changes for 6.2
-
-- Allow unloading KVM module
-- Allow KVM user-space to set mvendorid, marchid, and mimpid
-- Several fixes and cleanups
-
-----------------------------------------------------------------
-Anup Patel (9):
-      RISC-V: KVM: Exit run-loop immediately if xfer_to_guest fails
-      RISC-V: KVM: Fix reg_val check in kvm_riscv_vcpu_set_reg_config()
-      RISC-V: KVM: Remove redundant includes of asm/kvm_vcpu_timer.h
-      RISC-V: KVM: Remove redundant includes of asm/csr.h
-      RISC-V: KVM: Use switch-case in kvm_riscv_vcpu_set/get_reg()
-      RISC-V: KVM: Move sbi related struct and functions to kvm_vcpu_sbi.h
-      RISC-V: Export sbi_get_mvendorid() and friends
-      RISC-V: KVM: Save mvendorid, marchid, and mimpid when creating VCPU
-      RISC-V: KVM: Add ONE_REG interface for mvendorid, marchid, and mimpid
-
-Bo Liu (1):
-      RISC-V: KVM: use vma_lookup() instead of find_vma_intersection()
-
-Christophe JAILLET (1):
-      RISC-V: KVM: Simplify kvm_arch_prepare_memory_region()
-
-XiakaiPan (1):
-      RISC-V: KVM: Add exit logic to main.c
-
- arch/riscv/include/asm/kvm_host.h     | 16 +++----
- arch/riscv/include/asm/kvm_vcpu_sbi.h |  6 +++
- arch/riscv/include/uapi/asm/kvm.h     |  3 ++
- arch/riscv/kernel/sbi.c               |  3 ++
- arch/riscv/kvm/main.c                 |  6 +++
- arch/riscv/kvm/mmu.c                  |  6 +--
- arch/riscv/kvm/vcpu.c                 | 85 ++++++++++++++++++++++++++---------
- arch/riscv/kvm/vcpu_sbi_base.c        | 13 +++---
- arch/riscv/kvm/vcpu_sbi_hsm.c         |  1 -
- arch/riscv/kvm/vcpu_sbi_replace.c     |  1 -
- arch/riscv/kvm/vcpu_sbi_v01.c         |  1 -
- 11 files changed, 97 insertions(+), 44 deletions(-)
+Thanks!
 
