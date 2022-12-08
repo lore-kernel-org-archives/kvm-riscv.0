@@ -1,198 +1,73 @@
 From: David Matlack <dmatlack@google.com>
-Date: Thu,  8 Dec 2022 11:38:50 -0800
-Subject: [RFC PATCH 30/37] KVM: x86/mmu: Rename kvm_flush_remote_tlbs_with_address()
+Date: Thu,  8 Dec 2022 11:38:52 -0800
+Subject: [RFC PATCH 32/37] KVM: Allow range-based TLB invalidation from common code
 In-Reply-To: <20221208193857.4090582-1-dmatlack@google.com>
 References: <20221208193857.4090582-1-dmatlack@google.com>
-Message-ID: <20221208193857.4090582-31-dmatlack@google.com>
+Message-ID: <20221208193857.4090582-33-dmatlack@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Rename kvm_flush_remote_tlbs_with_address() to
-kvm_flush_remote_tlbs_range(). This name is shorter, which reduces the
-number of callsites that need to be broken up across multiple lines, and
-more readable since it conveys a range of memory is being flushed rather
-than a single address.
+Make kvm_flush_remote_tlbs_range() visible in common code and create a
+default implementation that just invalidates the whole TLB. This will be
+used in future commits to clean up kvm_arch_flush_remote_tlbs_memslot()
+and to move the KVM/x86 TDP MMU to common code.
 
 No functional change intended.
 
 Signed-off-by: David Matlack <dmatlack@google.com>
 ---
- arch/x86/kvm/mmu/mmu.c          | 32 ++++++++++++++------------------
- arch/x86/kvm/mmu/mmu_internal.h |  3 +--
- arch/x86/kvm/mmu/paging_tmpl.h  |  4 ++--
- arch/x86/kvm/mmu/tdp_mmu.c      |  7 +++----
- 4 files changed, 20 insertions(+), 26 deletions(-)
+ arch/x86/kvm/mmu/mmu_internal.h | 1 -
+ include/linux/kvm_host.h        | 1 +
+ virt/kvm/kvm_main.c             | 9 +++++++++
+ 3 files changed, 10 insertions(+), 1 deletion(-)
 
-diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
-index b7bbabac9127..4a28adaa92b4 100644
---- a/arch/x86/kvm/mmu/mmu.c
-+++ b/arch/x86/kvm/mmu/mmu.c
-@@ -244,8 +244,7 @@ static inline bool kvm_available_flush_tlb_with_range(void)
- 	return kvm_x86_ops.tlb_remote_flush_with_range;
- }
- 
--void kvm_flush_remote_tlbs_with_address(struct kvm *kvm,
--		u64 start_gfn, u64 pages)
-+void kvm_flush_remote_tlbs_range(struct kvm *kvm, u64 start_gfn, u64 pages)
- {
- 	struct kvm_tlb_range range;
- 	int ret = -EOPNOTSUPP;
-@@ -804,7 +803,7 @@ static void account_shadowed(struct kvm *kvm, struct kvm_mmu_page *sp)
- 	kvm_mmu_gfn_disallow_lpage(slot, gfn);
- 
- 	if (kvm_mmu_slot_gfn_write_protect(kvm, slot, gfn, PG_LEVEL_4K))
--		kvm_flush_remote_tlbs_with_address(kvm, gfn, 1);
-+		kvm_flush_remote_tlbs_range(kvm, gfn, 1);
- }
- 
- void track_possible_nx_huge_page(struct kvm *kvm, struct kvm_mmu_page *sp)
-@@ -1178,7 +1177,7 @@ static void drop_large_spte(struct kvm *kvm, u64 *sptep, bool flush)
- 	drop_spte(kvm, sptep);
- 
- 	if (flush)
--		kvm_flush_remote_tlbs_with_address(kvm, sp->gfn,
-+		kvm_flush_remote_tlbs_range(kvm, sp->gfn,
- 			KVM_PAGES_PER_HPAGE(sp->role.level));
- }
- 
-@@ -1460,7 +1459,7 @@ static bool kvm_set_pte_rmap(struct kvm *kvm, struct kvm_rmap_head *rmap_head,
- 	}
- 
- 	if (need_flush && kvm_available_flush_tlb_with_range()) {
--		kvm_flush_remote_tlbs_with_address(kvm, gfn, 1);
-+		kvm_flush_remote_tlbs_range(kvm, gfn, 1);
- 		return false;
- 	}
- 
-@@ -1630,8 +1629,8 @@ static void __rmap_add(struct kvm *kvm,
- 		kvm->stat.max_mmu_rmap_size = rmap_count;
- 	if (rmap_count > RMAP_RECYCLE_THRESHOLD) {
- 		kvm_zap_all_rmap_sptes(kvm, rmap_head);
--		kvm_flush_remote_tlbs_with_address(
--				kvm, sp->gfn, KVM_PAGES_PER_HPAGE(sp->role.level));
-+		kvm_flush_remote_tlbs_range(kvm, sp->gfn,
-+					    KVM_PAGES_PER_HPAGE(sp->role.level));
- 	}
- }
- 
-@@ -2389,7 +2388,7 @@ static void validate_direct_spte(struct kvm_vcpu *vcpu, u64 *sptep,
- 			return;
- 
- 		drop_parent_pte(child, sptep);
--		kvm_flush_remote_tlbs_with_address(vcpu->kvm, child->gfn, 1);
-+		kvm_flush_remote_tlbs_range(vcpu->kvm, child->gfn, 1);
- 	}
- }
- 
-@@ -2873,8 +2872,8 @@ static int mmu_set_spte(struct kvm_vcpu *vcpu, struct kvm_memory_slot *slot,
- 	}
- 
- 	if (flush)
--		kvm_flush_remote_tlbs_with_address(vcpu->kvm, gfn,
--				KVM_PAGES_PER_HPAGE(level));
-+		kvm_flush_remote_tlbs_range(vcpu->kvm, gfn,
-+					    KVM_PAGES_PER_HPAGE(level));
- 
- 	pgprintk("%s: setting spte %llx\n", __func__, *sptep);
- 
-@@ -5809,9 +5808,8 @@ slot_handle_level_range(struct kvm *kvm, const struct kvm_memory_slot *memslot,
- 
- 		if (need_resched() || rwlock_needbreak(&kvm->mmu_lock)) {
- 			if (flush && flush_on_yield) {
--				kvm_flush_remote_tlbs_with_address(kvm,
--						start_gfn,
--						iterator.gfn - start_gfn + 1);
-+				kvm_flush_remote_tlbs_range(kvm, start_gfn,
-+							    iterator.gfn - start_gfn + 1);
- 				flush = false;
- 			}
- 			cond_resched_rwlock_write(&kvm->mmu_lock);
-@@ -6166,8 +6164,7 @@ void kvm_zap_gfn_range(struct kvm *kvm, gfn_t gfn_start, gfn_t gfn_end)
- 	}
- 
- 	if (flush)
--		kvm_flush_remote_tlbs_with_address(kvm, gfn_start,
--						   gfn_end - gfn_start);
-+		kvm_flush_remote_tlbs_range(kvm, gfn_start, gfn_end - gfn_start);
- 
- 	kvm_mmu_invalidate_end(kvm, gfn_start, gfn_end);
- 
-@@ -6506,7 +6503,7 @@ static bool kvm_mmu_zap_collapsible_spte(struct kvm *kvm,
- 			kvm_zap_one_rmap_spte(kvm, rmap_head, sptep);
- 
- 			if (kvm_available_flush_tlb_with_range())
--				kvm_flush_remote_tlbs_with_address(kvm, sp->gfn,
-+				kvm_flush_remote_tlbs_range(kvm, sp->gfn,
- 					KVM_PAGES_PER_HPAGE(sp->role.level));
- 			else
- 				need_tlb_flush = 1;
-@@ -6557,8 +6554,7 @@ void kvm_arch_flush_remote_tlbs_memslot(struct kvm *kvm,
- 	 * is observed by any other operation on the same memslot.
- 	 */
- 	lockdep_assert_held(&kvm->slots_lock);
--	kvm_flush_remote_tlbs_with_address(kvm, memslot->base_gfn,
--					   memslot->npages);
-+	kvm_flush_remote_tlbs_range(kvm, memslot->base_gfn, memslot->npages);
- }
- 
- void kvm_mmu_slot_leaf_clear_dirty(struct kvm *kvm,
 diff --git a/arch/x86/kvm/mmu/mmu_internal.h b/arch/x86/kvm/mmu/mmu_internal.h
-index 4aa60d5d87b0..d35a5b408b98 100644
+index e44fe7ad3cfb..df815cb84bd2 100644
 --- a/arch/x86/kvm/mmu/mmu_internal.h
 +++ b/arch/x86/kvm/mmu/mmu_internal.h
-@@ -65,8 +65,7 @@ void kvm_mmu_gfn_allow_lpage(const struct kvm_memory_slot *slot, gfn_t gfn);
+@@ -65,7 +65,6 @@ void kvm_mmu_gfn_allow_lpage(const struct kvm_memory_slot *slot, gfn_t gfn);
  bool kvm_mmu_slot_gfn_write_protect(struct kvm *kvm,
  				    struct kvm_memory_slot *slot, u64 gfn,
  				    int min_level);
--void kvm_flush_remote_tlbs_with_address(struct kvm *kvm,
--					u64 start_gfn, u64 pages);
-+void kvm_flush_remote_tlbs_range(struct kvm *kvm, u64 start_gfn, u64 pages);
+-void kvm_flush_remote_tlbs_range(struct kvm *kvm, gfn_t start_gfn, u64 pages);
  unsigned int pte_list_count(struct kvm_rmap_head *rmap_head);
  
  extern int nx_huge_pages;
-diff --git a/arch/x86/kvm/mmu/paging_tmpl.h b/arch/x86/kvm/mmu/paging_tmpl.h
-index daf9c7731edc..bfee5e0d1ee1 100644
---- a/arch/x86/kvm/mmu/paging_tmpl.h
-+++ b/arch/x86/kvm/mmu/paging_tmpl.h
-@@ -929,8 +929,8 @@ static void FNAME(invlpg)(struct kvm_vcpu *vcpu, gva_t gva, hpa_t root_hpa)
+diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+index ec3a6de6d54e..d9a7f559d2c5 100644
+--- a/include/linux/kvm_host.h
++++ b/include/linux/kvm_host.h
+@@ -1365,6 +1365,7 @@ int kvm_vcpu_yield_to(struct kvm_vcpu *target);
+ void kvm_vcpu_on_spin(struct kvm_vcpu *vcpu, bool usermode_vcpu_not_eligible);
  
- 			mmu_page_zap_pte(vcpu->kvm, sp, sptep, NULL);
- 			if (is_shadow_present_pte(old_spte))
--				kvm_flush_remote_tlbs_with_address(vcpu->kvm,
--					sp->gfn, KVM_PAGES_PER_HPAGE(sp->role.level));
-+				kvm_flush_remote_tlbs_range(vcpu->kvm, sp->gfn,
-+							    KVM_PAGES_PER_HPAGE(sp->role.level));
+ void kvm_flush_remote_tlbs(struct kvm *kvm);
++void kvm_flush_remote_tlbs_range(struct kvm *kvm, gfn_t start_gfn, u64 pages);
  
- 			if (!rmap_can_add(vcpu))
- 				break;
-diff --git a/arch/x86/kvm/mmu/tdp_mmu.c b/arch/x86/kvm/mmu/tdp_mmu.c
-index 72746b645e99..1f1f511cd1a0 100644
---- a/arch/x86/kvm/mmu/tdp_mmu.c
-+++ b/arch/x86/kvm/mmu/tdp_mmu.c
-@@ -676,8 +676,7 @@ static inline int tdp_mmu_zap_spte_atomic(struct kvm *kvm,
- 	if (ret)
- 		return ret;
+ #ifdef KVM_ARCH_NR_OBJS_PER_MEMORY_CACHE
+ int kvm_mmu_topup_memory_cache(struct kvm_mmu_memory_cache *mc, int min);
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index 0f1d48ed7d57..662ca280c0cf 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -379,6 +379,15 @@ void kvm_flush_remote_tlbs(struct kvm *kvm)
+ EXPORT_SYMBOL_GPL(kvm_flush_remote_tlbs);
+ #endif
  
--	kvm_flush_remote_tlbs_with_address(kvm, iter->gfn,
--					   TDP_PAGES_PER_LEVEL(iter->level));
-+	kvm_flush_remote_tlbs_range(kvm, iter->gfn, TDP_PAGES_PER_LEVEL(iter->level));
- 
- 	/*
- 	 * No other thread can overwrite the removed SPTE as they must either
-@@ -1067,8 +1066,8 @@ static int tdp_mmu_map_handle_target_level(struct kvm_vcpu *vcpu,
- 		return RET_PF_RETRY;
- 	else if (tdp_pte_is_present(iter->old_spte) &&
- 		 !tdp_pte_is_leaf(iter->old_spte, iter->level))
--		kvm_flush_remote_tlbs_with_address(vcpu->kvm, sp->gfn,
--						   TDP_PAGES_PER_LEVEL(iter->level + 1));
-+		kvm_flush_remote_tlbs_range(vcpu->kvm, sp->gfn,
-+					    TDP_PAGES_PER_LEVEL(iter->level + 1));
- 
- 	/*
- 	 * If the page fault was caused by a write but the page is write
++/*
++ * Architectures that support range-based TLB invalidation can override this
++ * function.
++ */
++void __weak kvm_flush_remote_tlbs_range(struct kvm *kvm, gfn_t start_gfn, u64 pages)
++{
++	kvm_flush_remote_tlbs(kvm);
++}
++
+ static void kvm_flush_shadow_all(struct kvm *kvm)
+ {
+ 	kvm_arch_flush_shadow_all(kvm);
 -- 
 2.39.0.rc1.256.g54fd8350bd-goog
 
