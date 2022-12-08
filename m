@@ -1,67 +1,84 @@
 From: David Matlack <dmatlack@google.com>
-Date: Thu,  8 Dec 2022 11:38:49 -0800
-Subject: [RFC PATCH 29/37] KVM: x86/mmu: Collapse kvm_flush_remote_tlbs_with_{range,address}()
- together
+Date: Thu,  8 Dec 2022 11:38:40 -0800
+Subject: [RFC PATCH 20/37] KVM: x86/mmu: Abstract away computing the max
+ mapping level
 In-Reply-To: <20221208193857.4090582-1-dmatlack@google.com>
 References: <20221208193857.4090582-1-dmatlack@google.com>
-Message-ID: <20221208193857.4090582-30-dmatlack@google.com>
+Message-ID: <20221208193857.4090582-21-dmatlack@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Collapse kvm_flush_remote_tlbs_with_range() and
-kvm_flush_remote_tlbs_with_address() into a single function. This
-eliminates some lines of code and a useless NULL check on the range
-struct.
+Abstract away kvm_mmu_max_mapping_level(), which is an x86-specific
+function for computing the max level that a given GFN can be mapped in
+KVM's page tables. This will be used in a future commit to enable moving
+the TDP MMU to common code.
 
-Opportunistically switch from ENOTSUPP to EOPNOTSUPP to make checkpatch
-happy.
+Provide a default implementation for non-x86 architectures that just
+returns the max level. This will result in more zapping than necessary
+when disabling dirty logging (i.e. less than optimal performance) but no
+correctness issues.
 
 Signed-off-by: David Matlack <dmatlack@google.com>
 ---
- arch/x86/kvm/mmu/mmu.c | 19 ++++++-------------
- 1 file changed, 6 insertions(+), 13 deletions(-)
+ arch/x86/kvm/mmu/tdp_mmu.c     | 14 ++++++++++----
+ arch/x86/kvm/mmu/tdp_pgtable.c |  7 +++++++
+ 2 files changed, 17 insertions(+), 4 deletions(-)
 
-diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
-index f01ee01f3509..b7bbabac9127 100644
---- a/arch/x86/kvm/mmu/mmu.c
-+++ b/arch/x86/kvm/mmu/mmu.c
-@@ -244,27 +244,20 @@ static inline bool kvm_available_flush_tlb_with_range(void)
- 	return kvm_x86_ops.tlb_remote_flush_with_range;
+diff --git a/arch/x86/kvm/mmu/tdp_mmu.c b/arch/x86/kvm/mmu/tdp_mmu.c
+index 7670fbd8e72d..24d1dbd0a1ec 100644
+--- a/arch/x86/kvm/mmu/tdp_mmu.c
++++ b/arch/x86/kvm/mmu/tdp_mmu.c
+@@ -1696,6 +1696,13 @@ void kvm_tdp_mmu_clear_dirty_pt_masked(struct kvm *kvm,
+ 		clear_dirty_pt_masked(kvm, root, gfn, mask, wrprot);
  }
  
--static void kvm_flush_remote_tlbs_with_range(struct kvm *kvm,
--		struct kvm_tlb_range *range)
--{
--	int ret = -ENOTSUPP;
--
--	if (range && kvm_x86_ops.tlb_remote_flush_with_range)
--		ret = static_call(kvm_x86_tlb_remote_flush_with_range)(kvm, range);
--
--	if (ret)
--		kvm_flush_remote_tlbs(kvm);
--}
--
- void kvm_flush_remote_tlbs_with_address(struct kvm *kvm,
- 		u64 start_gfn, u64 pages)
- {
- 	struct kvm_tlb_range range;
-+	int ret = -EOPNOTSUPP;
- 
- 	range.start_gfn = start_gfn;
- 	range.pages = pages;
- 
--	kvm_flush_remote_tlbs_with_range(kvm, &range);
-+	if (kvm_x86_ops.tlb_remote_flush_with_range)
-+		ret = static_call(kvm_x86_tlb_remote_flush_with_range)(kvm, &range);
++__weak int tdp_mmu_max_mapping_level(struct kvm *kvm,
++				     const struct kvm_memory_slot *slot,
++				     struct tdp_iter *iter)
++{
++	return TDP_MAX_HUGEPAGE_LEVEL;
++}
 +
-+	if (ret)
-+		kvm_flush_remote_tlbs(kvm);
- }
+ static void zap_collapsible_spte_range(struct kvm *kvm,
+ 				       struct kvm_mmu_page *root,
+ 				       const struct kvm_memory_slot *slot)
+@@ -1727,15 +1734,14 @@ static void zap_collapsible_spte_range(struct kvm *kvm,
+ 		/*
+ 		 * If iter.gfn resides outside of the slot, i.e. the page for
+ 		 * the current level overlaps but is not contained by the slot,
+-		 * then the SPTE can't be made huge.  More importantly, trying
+-		 * to query that info from slot->arch.lpage_info will cause an
++		 * then the SPTE can't be made huge. On x86, trying to query
++		 * that info from slot->arch.lpage_info will cause an
+ 		 * out-of-bounds access.
+ 		 */
+ 		if (iter.gfn < start || iter.gfn >= end)
+ 			continue;
  
- static void mark_mmio_spte(struct kvm_vcpu *vcpu, u64 *sptep, u64 gfn,
+-		max_mapping_level = kvm_mmu_max_mapping_level(kvm, slot,
+-							      iter.gfn, PG_LEVEL_NUM);
++		max_mapping_level = tdp_mmu_max_mapping_level(kvm, slot, &iter);
+ 		if (max_mapping_level < iter.level)
+ 			continue;
+ 
+diff --git a/arch/x86/kvm/mmu/tdp_pgtable.c b/arch/x86/kvm/mmu/tdp_pgtable.c
+index b07ed99b4ab1..840d063c45b8 100644
+--- a/arch/x86/kvm/mmu/tdp_pgtable.c
++++ b/arch/x86/kvm/mmu/tdp_pgtable.c
+@@ -163,3 +163,10 @@ void tdp_mmu_arch_unlink_sp(struct kvm *kvm, struct kvm_mmu_page *sp,
+ 	if (shared)
+ 		spin_unlock(&kvm->arch.tdp_mmu_pages_lock);
+ }
++
++int tdp_mmu_max_mapping_level(struct kvm *kvm,
++			      const struct kvm_memory_slot *slot,
++			      struct tdp_iter *iter)
++{
++	return kvm_mmu_max_mapping_level(kvm, slot, iter->gfn, PG_LEVEL_NUM);
++}
 -- 
 2.39.0.rc1.256.g54fd8350bd-goog
 
