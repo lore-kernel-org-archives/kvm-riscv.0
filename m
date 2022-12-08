@@ -1,209 +1,110 @@
 From: David Matlack <dmatlack@google.com>
-Date: Thu,  8 Dec 2022 11:38:39 -0800
-Subject: [RFC PATCH 19/37] KVM: x86/mmu: Add arch hooks for NX Huge Pages
+Date: Thu,  8 Dec 2022 11:38:32 -0800
+Subject: [RFC PATCH 12/37] KVM: x86/mmu: Use PG_LEVEL_{PTE,PMD,PUD} in the TDP MMU
 In-Reply-To: <20221208193857.4090582-1-dmatlack@google.com>
 References: <20221208193857.4090582-1-dmatlack@google.com>
-Message-ID: <20221208193857.4090582-20-dmatlack@google.com>
+Message-ID: <20221208193857.4090582-13-dmatlack@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Abstract away the handling for NX Huge Pages down to arch-specific
-hooks. This will be used in a future commit to move the TDP MMU to
-common code despite NX Huge Pages, which is x86-specific.
-
-NX Huge Pages is by far the most disruptive feature in terms of needing
-the most arch hooks in the TDP MMU.
+Use PG_LEVEL_{PTE,PMD,PUD} in the TDP MMU instead of the x86-specific
+PG_LEVEL_{4K,2M,1G} aliases. This prepares for moving the TDP MMU to
+common code, where not all architectures will have 4K PAGE_SIZE.
 
 No functional change intended.
 
 Signed-off-by: David Matlack <dmatlack@google.com>
 ---
- arch/x86/kvm/mmu/tdp_mmu.c     | 57 +++++++++++++++++++---------------
- arch/x86/kvm/mmu/tdp_pgtable.c | 52 +++++++++++++++++++++++++++++++
- 2 files changed, 84 insertions(+), 25 deletions(-)
+ arch/x86/kvm/mmu/tdp_iter.h |  2 +-
+ arch/x86/kvm/mmu/tdp_mmu.c  | 16 ++++++++--------
+ 2 files changed, 9 insertions(+), 9 deletions(-)
 
+diff --git a/arch/x86/kvm/mmu/tdp_iter.h b/arch/x86/kvm/mmu/tdp_iter.h
+index f0af385c56e0..892c078aab58 100644
+--- a/arch/x86/kvm/mmu/tdp_iter.h
++++ b/arch/x86/kvm/mmu/tdp_iter.h
+@@ -106,7 +106,7 @@ struct tdp_iter {
+ 	     tdp_iter_next(&iter))
+ 
+ #define for_each_tdp_pte(iter, root, start, end) \
+-	for_each_tdp_pte_min_level(iter, root, PG_LEVEL_4K, start, end)
++	for_each_tdp_pte_min_level(iter, root, PG_LEVEL_PTE, start, end)
+ 
+ tdp_ptep_t spte_to_child_pt(u64 pte, int level);
+ 
 diff --git a/arch/x86/kvm/mmu/tdp_mmu.c b/arch/x86/kvm/mmu/tdp_mmu.c
-index 0172b0e44817..7670fbd8e72d 100644
+index 4940413d3767..bce0566f2d94 100644
 --- a/arch/x86/kvm/mmu/tdp_mmu.c
 +++ b/arch/x86/kvm/mmu/tdp_mmu.c
-@@ -269,17 +269,21 @@ static struct kvm_mmu_page *tdp_mmu_alloc_sp(struct kvm_vcpu *vcpu)
- 	return sp;
- }
+@@ -347,7 +347,7 @@ static void handle_changed_spte_dirty_log(struct kvm *kvm, int as_id, gfn_t gfn,
+ 	bool pfn_changed;
+ 	struct kvm_memory_slot *slot;
  
-+__weak void tdp_mmu_arch_init_sp(struct kvm_mmu_page *sp)
-+{
-+}
-+
- static void tdp_mmu_init_sp(struct kvm_mmu_page *sp, tdp_ptep_t sptep,
- 			    gfn_t gfn, union kvm_mmu_page_role role)
- {
--	INIT_LIST_HEAD(&sp->arch.possible_nx_huge_page_link);
--
- 	set_page_private(virt_to_page(sp->spt), (unsigned long)sp);
+-	if (level > PG_LEVEL_4K)
++	if (level > PG_LEVEL_PTE)
+ 		return;
  
- 	sp->role = role;
- 	sp->gfn = gfn;
- 	sp->ptep = sptep;
+ 	pfn_changed = spte_to_pfn(old_spte) != spte_to_pfn(new_spte);
+@@ -526,7 +526,7 @@ static void __handle_changed_spte(struct kvm *kvm, int as_id, gfn_t gfn,
+ 	bool pfn_changed = spte_to_pfn(old_spte) != spte_to_pfn(new_spte);
  
-+	tdp_mmu_arch_init_sp(sp);
-+
- 	trace_kvm_mmu_get_page(sp, true);
- }
- 
-@@ -373,6 +377,11 @@ static void tdp_unaccount_mmu_page(struct kvm *kvm, struct kvm_mmu_page *sp)
- 	atomic64_dec(&kvm->arch.tdp_mmu_pages);
- }
- 
-+__weak void tdp_mmu_arch_unlink_sp(struct kvm *kvm, struct kvm_mmu_page *sp,
-+				   bool shared)
-+{
-+}
-+
- /**
-  * tdp_mmu_unlink_sp() - Remove a shadow page from the list of used pages
-  *
-@@ -386,20 +395,7 @@ static void tdp_mmu_unlink_sp(struct kvm *kvm, struct kvm_mmu_page *sp,
- 			      bool shared)
- {
- 	tdp_unaccount_mmu_page(kvm, sp);
--
--	if (!sp->arch.nx_huge_page_disallowed)
--		return;
--
--	if (shared)
--		spin_lock(&kvm->arch.tdp_mmu_pages_lock);
--	else
--		lockdep_assert_held_write(&kvm->mmu_lock);
--
--	sp->arch.nx_huge_page_disallowed = false;
--	untrack_possible_nx_huge_page(kvm, sp);
--
--	if (shared)
--		spin_unlock(&kvm->arch.tdp_mmu_pages_lock);
-+	tdp_mmu_arch_unlink_sp(kvm, sp, shared);
- }
- 
- /**
-@@ -1129,6 +1125,23 @@ static int tdp_mmu_link_sp(struct kvm *kvm, struct tdp_iter *iter,
- 	return 0;
- }
- 
-+__weak void tdp_mmu_arch_adjust_map_level(struct kvm_page_fault *fault,
-+					  struct tdp_iter *iter)
-+{
-+}
-+
-+__weak void tdp_mmu_arch_pre_link_sp(struct kvm *kvm,
-+				     struct kvm_mmu_page *sp,
-+				     struct kvm_page_fault *fault)
-+{
-+}
-+
-+__weak void tdp_mmu_arch_post_link_sp(struct kvm *kvm,
-+				      struct kvm_mmu_page *sp,
-+				      struct kvm_page_fault *fault)
-+{
-+}
-+
- static int tdp_mmu_split_huge_page(struct kvm *kvm, struct tdp_iter *iter,
- 				   struct kvm_mmu_page *sp, bool shared);
- 
-@@ -1153,8 +1166,7 @@ int kvm_tdp_mmu_map(struct kvm_vcpu *vcpu, struct kvm_page_fault *fault)
- 	for_each_tdp_pte(iter, root, fault->gfn, fault->gfn + 1) {
- 		int r;
- 
--		if (fault->arch.nx_huge_page_workaround_enabled)
--			disallowed_hugepage_adjust(fault, iter.old_spte, iter.level);
-+		tdp_mmu_arch_adjust_map_level(fault, &iter);
- 
- 		if (iter.level == fault->goal_level)
- 			break;
-@@ -1178,7 +1190,7 @@ int kvm_tdp_mmu_map(struct kvm_vcpu *vcpu, struct kvm_page_fault *fault)
- 		sp = tdp_mmu_alloc_sp(vcpu);
- 		tdp_mmu_init_child_sp(sp, &iter);
- 
--		sp->arch.nx_huge_page_disallowed = fault->arch.huge_page_disallowed;
-+		tdp_mmu_arch_pre_link_sp(kvm, sp, fault);
- 
- 		if (tdp_pte_is_present(iter.old_spte))
- 			r = tdp_mmu_split_huge_page(kvm, &iter, sp, true);
-@@ -1194,12 +1206,7 @@ int kvm_tdp_mmu_map(struct kvm_vcpu *vcpu, struct kvm_page_fault *fault)
- 			goto retry;
- 		}
- 
--		if (fault->arch.huge_page_disallowed &&
--		    fault->req_level >= iter.level) {
--			spin_lock(&kvm->arch.tdp_mmu_pages_lock);
--			track_possible_nx_huge_page(kvm, sp);
--			spin_unlock(&kvm->arch.tdp_mmu_pages_lock);
--		}
-+		tdp_mmu_arch_post_link_sp(kvm, sp, fault);
- 	}
+ 	WARN_ON(level > PT64_ROOT_MAX_LEVEL);
+-	WARN_ON(level < PG_LEVEL_4K);
++	WARN_ON(level < PG_LEVEL_PTE);
+ 	WARN_ON(gfn & (KVM_PAGES_PER_HPAGE(level) - 1));
  
  	/*
-diff --git a/arch/x86/kvm/mmu/tdp_pgtable.c b/arch/x86/kvm/mmu/tdp_pgtable.c
-index e036ba0c6bee..b07ed99b4ab1 100644
---- a/arch/x86/kvm/mmu/tdp_pgtable.c
-+++ b/arch/x86/kvm/mmu/tdp_pgtable.c
-@@ -111,3 +111,55 @@ u64 tdp_mmu_make_huge_page_split_pte(struct kvm *kvm, u64 huge_spte,
- {
- 	return make_huge_page_split_spte(kvm, huge_spte, sp->role, index);
- }
-+
-+void tdp_mmu_arch_adjust_map_level(struct kvm_page_fault *fault,
-+				   struct tdp_iter *iter)
-+{
-+	if (fault->arch.nx_huge_page_workaround_enabled)
-+		disallowed_hugepage_adjust(fault, iter->old_spte, iter->level);
-+}
-+
-+void tdp_mmu_arch_init_sp(struct kvm_mmu_page *sp)
-+{
-+	INIT_LIST_HEAD(&sp->arch.possible_nx_huge_page_link);
-+}
-+
-+void tdp_mmu_arch_pre_link_sp(struct kvm *kvm,
-+			      struct kvm_mmu_page *sp,
-+			      struct kvm_page_fault *fault)
-+{
-+	sp->arch.nx_huge_page_disallowed = fault->arch.huge_page_disallowed;
-+}
-+
-+void tdp_mmu_arch_post_link_sp(struct kvm *kvm,
-+			       struct kvm_mmu_page *sp,
-+			       struct kvm_page_fault *fault)
-+{
-+	if (!fault->arch.huge_page_disallowed)
-+		return;
-+
-+	if (fault->req_level < sp->role.level)
-+		return;
-+
-+	spin_lock(&kvm->arch.tdp_mmu_pages_lock);
-+	track_possible_nx_huge_page(kvm, sp);
-+	spin_unlock(&kvm->arch.tdp_mmu_pages_lock);
-+}
-+
-+void tdp_mmu_arch_unlink_sp(struct kvm *kvm, struct kvm_mmu_page *sp,
-+			    bool shared)
-+{
-+	if (!sp->arch.nx_huge_page_disallowed)
-+		return;
-+
-+	if (shared)
-+		spin_lock(&kvm->arch.tdp_mmu_pages_lock);
-+	else
-+		lockdep_assert_held_write(&kvm->mmu_lock);
-+
-+	sp->arch.nx_huge_page_disallowed = false;
-+	untrack_possible_nx_huge_page(kvm, sp);
-+
-+	if (shared)
-+		spin_unlock(&kvm->arch.tdp_mmu_pages_lock);
-+}
+@@ -897,9 +897,9 @@ static void tdp_mmu_zap_root(struct kvm *kvm, struct kvm_mmu_page *root,
+ 	 * inducing a stall to allow in-place replacement with a 1gb hugepage.
+ 	 *
+ 	 * Because zapping a SP recurses on its children, stepping down to
+-	 * PG_LEVEL_4K in the iterator itself is unnecessary.
++	 * PG_LEVEL_PTE in the iterator itself is unnecessary.
+ 	 */
+-	__tdp_mmu_zap_root(kvm, root, shared, PG_LEVEL_1G);
++	__tdp_mmu_zap_root(kvm, root, shared, PG_LEVEL_PUD);
+ 	__tdp_mmu_zap_root(kvm, root, shared, root->role.level);
+ 
+ 	rcu_read_unlock();
+@@ -944,7 +944,7 @@ static bool tdp_mmu_zap_leafs(struct kvm *kvm, struct kvm_mmu_page *root,
+ 
+ 	rcu_read_lock();
+ 
+-	for_each_tdp_pte_min_level(iter, root, PG_LEVEL_4K, start, end) {
++	for_each_tdp_pte_min_level(iter, root, PG_LEVEL_PTE, start, end) {
+ 		if (can_yield &&
+ 		    tdp_mmu_iter_cond_resched(kvm, &iter, flush, false)) {
+ 			flush = false;
+@@ -1303,7 +1303,7 @@ static bool set_spte_gfn(struct kvm *kvm, struct tdp_iter *iter,
+ 	/* Huge pages aren't expected to be modified without first being zapped. */
+ 	WARN_ON(pte_huge(range->pte) || range->start + 1 != range->end);
+ 
+-	if (iter->level != PG_LEVEL_4K ||
++	if (iter->level != PG_LEVEL_PTE ||
+ 	    !is_shadow_present_pte(iter->old_spte))
+ 		return false;
+ 
+@@ -1672,7 +1672,7 @@ static void clear_dirty_pt_masked(struct kvm *kvm, struct kvm_mmu_page *root,
+ 		if (!mask)
+ 			break;
+ 
+-		if (iter.level > PG_LEVEL_4K ||
++		if (iter.level > PG_LEVEL_PTE ||
+ 		    !(mask & (1UL << (iter.gfn - gfn))))
+ 			continue;
+ 
+@@ -1726,7 +1726,7 @@ static void zap_collapsible_spte_range(struct kvm *kvm,
+ 
+ 	rcu_read_lock();
+ 
+-	for_each_tdp_pte_min_level(iter, root, PG_LEVEL_2M, start, end) {
++	for_each_tdp_pte_min_level(iter, root, PG_LEVEL_PMD, start, end) {
+ retry:
+ 		if (tdp_mmu_iter_cond_resched(kvm, &iter, false, true))
+ 			continue;
 -- 
 2.39.0.rc1.256.g54fd8350bd-goog
 
