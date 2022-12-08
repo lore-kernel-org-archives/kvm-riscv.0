@@ -1,165 +1,39 @@
 From: David Matlack <dmatlack@google.com>
-Date: Thu,  8 Dec 2022 11:38:38 -0800
-Subject: [RFC PATCH 18/37] KVM: x86/mmu: Add common API for creating TDP PTEs
+Date: Thu,  8 Dec 2022 11:38:42 -0800
+Subject: [RFC PATCH 22/37] KVM: x86: Select HAVE_TDP_MMU if X86_64
 In-Reply-To: <20221208193857.4090582-1-dmatlack@google.com>
 References: <20221208193857.4090582-1-dmatlack@google.com>
-Message-ID: <20221208193857.4090582-19-dmatlack@google.com>
+Message-ID: <20221208193857.4090582-23-dmatlack@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Introduce an API for construction of TDP PTEs.
-
-- tdp_mmu_make_leaf_pte()
-- tdp_mmu_make_nonleaf_pte()
-- tdp_mmu_make_huge_page_split_pte()
-- tdp_mmu_make_changed_pte_notifier_pte()
-
-This will be used in a future commit to move the TDP MMU to common code,
-while PTE construction will stay in the architecture-specific code.
+In preparation for moving the TDP MMU implementation into virt/kvm/
+guarded behind HAVE_TDP_MMU, ensure that HAVE_TDP_MMU is selected in
+X86_64 builds that enable KVM. This matches the existing behavior of the
+TDP MMU in x86.
 
 No functional change intended.
 
 Signed-off-by: David Matlack <dmatlack@google.com>
 ---
- arch/x86/include/asm/kvm/tdp_pgtable.h | 10 +++++++
- arch/x86/kvm/mmu/tdp_mmu.c             | 18 +++++--------
- arch/x86/kvm/mmu/tdp_pgtable.c         | 36 ++++++++++++++++++++++++++
- 3 files changed, 52 insertions(+), 12 deletions(-)
+ arch/x86/kvm/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/arch/x86/include/asm/kvm/tdp_pgtable.h b/arch/x86/include/asm/kvm/tdp_pgtable.h
-index c5c4e4cab24a..ff2691ced38b 100644
---- a/arch/x86/include/asm/kvm/tdp_pgtable.h
-+++ b/arch/x86/include/asm/kvm/tdp_pgtable.h
-@@ -4,6 +4,7 @@
- 
- #include <linux/types.h>
- #include <linux/kvm_types.h>
-+#include <kvm/mmu_types.h>
- 
- struct kvm_mmu_page *tdp_mmu_root(struct kvm_vcpu *vcpu);
- 
-@@ -57,4 +58,13 @@ kvm_pfn_t tdp_pte_to_pfn(u64 pte);
- 
- void tdp_pte_check_leaf_invariants(u64 pte);
- 
-+struct tdp_iter;
-+
-+u64 tdp_mmu_make_leaf_pte(struct kvm_vcpu *vcpu, struct kvm_page_fault *fault,
-+			  struct tdp_iter *iter, bool *wrprot);
-+u64 tdp_mmu_make_nonleaf_pte(struct kvm_mmu_page *sp);
-+u64 tdp_mmu_make_changed_pte_notifier_pte(struct tdp_iter *iter,
-+					  struct kvm_gfn_range *range);
-+u64 tdp_mmu_make_huge_page_split_pte(struct kvm *kvm, u64 huge_spte,
-+				     struct kvm_mmu_page *sp, int index);
- #endif /* !__ASM_KVM_TDP_PGTABLE_H */
-diff --git a/arch/x86/kvm/mmu/tdp_mmu.c b/arch/x86/kvm/mmu/tdp_mmu.c
-index 8155a9e79203..0172b0e44817 100644
---- a/arch/x86/kvm/mmu/tdp_mmu.c
-+++ b/arch/x86/kvm/mmu/tdp_mmu.c
-@@ -1057,17 +1057,13 @@ static int tdp_mmu_map_handle_target_level(struct kvm_vcpu *vcpu,
- 					  struct tdp_iter *iter)
- {
- 	struct kvm_mmu_page *sp = sptep_to_sp(rcu_dereference(iter->sptep));
--	u64 new_spte;
- 	int ret = RET_PF_FIXED;
- 	bool wrprot = false;
-+	u64 new_spte;
- 
- 	WARN_ON(sp->role.level != fault->goal_level);
--	if (unlikely(!fault->slot))
--		new_spte = make_mmio_spte(vcpu, iter->gfn, ACC_ALL);
--	else
--		wrprot = make_spte(vcpu, sp, fault->slot, ACC_ALL, iter->gfn,
--					 fault->pfn, iter->old_spte, fault->prefetch, true,
--					 fault->map_writable, &new_spte);
-+
-+	new_spte = tdp_mmu_make_leaf_pte(vcpu, fault, iter, &wrprot);
- 
- 	if (new_spte == iter->old_spte)
- 		ret = RET_PF_SPURIOUS;
-@@ -1117,7 +1113,7 @@ static int tdp_mmu_map_handle_target_level(struct kvm_vcpu *vcpu,
- static int tdp_mmu_link_sp(struct kvm *kvm, struct tdp_iter *iter,
- 			   struct kvm_mmu_page *sp, bool shared)
- {
--	u64 spte = make_nonleaf_spte(sp->spt, !kvm_ad_enabled());
-+	u64 spte = tdp_mmu_make_nonleaf_pte(sp);
- 	int ret = 0;
- 
- 	if (shared) {
-@@ -1312,9 +1308,7 @@ static bool set_spte_gfn(struct kvm *kvm, struct tdp_iter *iter,
- 	tdp_mmu_set_spte(kvm, iter, 0);
- 
- 	if (!pte_write(range->pte)) {
--		new_spte = kvm_mmu_changed_pte_notifier_make_spte(iter->old_spte,
--								  pte_pfn(range->pte));
--
-+		new_spte = tdp_mmu_make_changed_pte_notifier_pte(iter, range);
- 		tdp_mmu_set_spte(kvm, iter, new_spte);
- 	}
- 
-@@ -1466,7 +1460,7 @@ static int tdp_mmu_split_huge_page(struct kvm *kvm, struct tdp_iter *iter,
- 	 * not been linked in yet and thus is not reachable from any other CPU.
- 	 */
- 	for (i = 0; i < TDP_PTES_PER_PAGE; i++)
--		sp->spt[i] = make_huge_page_split_spte(kvm, huge_spte, sp->role, i);
-+		sp->spt[i] = tdp_mmu_make_huge_page_split_pte(kvm, huge_spte, sp, i);
- 
- 	/*
- 	 * Replace the huge spte with a pointer to the populated lower level
-diff --git a/arch/x86/kvm/mmu/tdp_pgtable.c b/arch/x86/kvm/mmu/tdp_pgtable.c
-index 97cc900e8818..e036ba0c6bee 100644
---- a/arch/x86/kvm/mmu/tdp_pgtable.c
-+++ b/arch/x86/kvm/mmu/tdp_pgtable.c
-@@ -5,6 +5,7 @@
- 
- #include "mmu.h"
- #include "spte.h"
-+#include "tdp_iter.h"
- 
- /* Removed SPTEs must not be misconstrued as shadow present PTEs. */
- static_assert(!(REMOVED_TDP_PTE & SPTE_MMU_PRESENT_MASK));
-@@ -75,3 +76,38 @@ void tdp_pte_check_leaf_invariants(u64 pte)
- 	check_spte_writable_invariants(pte);
- }
- 
-+u64 tdp_mmu_make_leaf_pte(struct kvm_vcpu *vcpu,
-+			  struct kvm_page_fault *fault,
-+			  struct tdp_iter *iter,
-+			  bool *wrprot)
-+{
-+	struct kvm_mmu_page *sp = sptep_to_sp(rcu_dereference(iter->sptep));
-+	u64 new_spte;
-+
-+	if (unlikely(!fault->slot))
-+		return make_mmio_spte(vcpu, iter->gfn, ACC_ALL);
-+
-+	*wrprot = make_spte(vcpu, sp, fault->slot, ACC_ALL, iter->gfn,
-+			    fault->pfn, iter->old_spte, fault->prefetch, true,
-+			    fault->map_writable, &new_spte);
-+
-+	return new_spte;
-+}
-+
-+u64 tdp_mmu_make_nonleaf_pte(struct kvm_mmu_page *sp)
-+{
-+	return make_nonleaf_spte(sp->spt, !kvm_ad_enabled());
-+}
-+
-+u64 tdp_mmu_make_changed_pte_notifier_pte(struct tdp_iter *iter,
-+					  struct kvm_gfn_range *range)
-+{
-+	return kvm_mmu_changed_pte_notifier_make_spte(iter->old_spte,
-+						      pte_pfn(range->pte));
-+}
-+
-+u64 tdp_mmu_make_huge_page_split_pte(struct kvm *kvm, u64 huge_spte,
-+				     struct kvm_mmu_page *sp, int index)
-+{
-+	return make_huge_page_split_spte(kvm, huge_spte, sp->role, index);
-+}
+diff --git a/arch/x86/kvm/Kconfig b/arch/x86/kvm/Kconfig
+index fbeaa9ddef59..849185d5020d 100644
+--- a/arch/x86/kvm/Kconfig
++++ b/arch/x86/kvm/Kconfig
+@@ -49,6 +49,7 @@ config KVM
+ 	select SRCU
+ 	select INTERVAL_TREE
+ 	select HAVE_KVM_PM_NOTIFIER if PM
++	select HAVE_TDP_MMU if X86_64
+ 	help
+ 	  Support hosting fully virtualized guest machines using hardware
+ 	  virtualization extensions.  You will need a fairly recent
 -- 
 2.39.0.rc1.256.g54fd8350bd-goog
 
