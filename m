@@ -1,225 +1,209 @@
 From: David Matlack <dmatlack@google.com>
-Date: Thu,  8 Dec 2022 11:38:34 -0800
-Subject: [RFC PATCH 14/37] KVM: MMU: Introduce common macros for TDP page tables
+Date: Thu,  8 Dec 2022 11:38:39 -0800
+Subject: [RFC PATCH 19/37] KVM: x86/mmu: Add arch hooks for NX Huge Pages
 In-Reply-To: <20221208193857.4090582-1-dmatlack@google.com>
 References: <20221208193857.4090582-1-dmatlack@google.com>
-Message-ID: <20221208193857.4090582-15-dmatlack@google.com>
+Message-ID: <20221208193857.4090582-20-dmatlack@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Introduce macros in common KVM code for dealing with TDP page tables.
-TDP page tables are assumed to be PAGE_SIZE with 64-bit PTEs. ARM will
-have some nuance, e.g. for root page table concatenation, but that will
-be handled separately when the time comes. Furthermore, we can add
-arch-specific overrides for any of these macros in the future on a case
-by case basis.
+Abstract away the handling for NX Huge Pages down to arch-specific
+hooks. This will be used in a future commit to move the TDP MMU to
+common code despite NX Huge Pages, which is x86-specific.
+
+NX Huge Pages is by far the most disruptive feature in terms of needing
+the most arch hooks in the TDP MMU.
+
+No functional change intended.
 
 Signed-off-by: David Matlack <dmatlack@google.com>
 ---
- arch/x86/kvm/mmu/tdp_iter.c | 14 +++++++-------
- arch/x86/kvm/mmu/tdp_iter.h |  3 ++-
- arch/x86/kvm/mmu/tdp_mmu.c  | 24 +++++++++++++-----------
- include/kvm/tdp_pgtable.h   | 21 +++++++++++++++++++++
- 4 files changed, 43 insertions(+), 19 deletions(-)
- create mode 100644 include/kvm/tdp_pgtable.h
+ arch/x86/kvm/mmu/tdp_mmu.c     | 57 +++++++++++++++++++---------------
+ arch/x86/kvm/mmu/tdp_pgtable.c | 52 +++++++++++++++++++++++++++++++
+ 2 files changed, 84 insertions(+), 25 deletions(-)
 
-diff --git a/arch/x86/kvm/mmu/tdp_iter.c b/arch/x86/kvm/mmu/tdp_iter.c
-index 4a7d58bf81c4..d6328dac9cd3 100644
---- a/arch/x86/kvm/mmu/tdp_iter.c
-+++ b/arch/x86/kvm/mmu/tdp_iter.c
-@@ -10,14 +10,15 @@
-  */
- static void tdp_iter_refresh_sptep(struct tdp_iter *iter)
- {
--	iter->sptep = iter->pt_path[iter->level - 1] +
--		SPTE_INDEX(iter->gfn << PAGE_SHIFT, iter->level);
-+	int pte_index = TDP_PTE_INDEX(iter->gfn, iter->level);
-+
-+	iter->sptep = iter->pt_path[iter->level - 1] + pte_index;
- 	iter->old_spte = kvm_tdp_mmu_read_spte(iter->sptep);
- }
- 
- static gfn_t round_gfn_for_level(gfn_t gfn, int level)
- {
--	return gfn & -KVM_PAGES_PER_HPAGE(level);
-+	return gfn & -TDP_PAGES_PER_LEVEL(level);
- }
- 
- /*
-@@ -46,7 +47,7 @@ void tdp_iter_start(struct tdp_iter *iter, struct kvm_mmu_page *root,
- 	int root_level = root->role.level;
- 
- 	WARN_ON(root_level < 1);
--	WARN_ON(root_level > PT64_ROOT_MAX_LEVEL);
-+	WARN_ON(root_level > TDP_ROOT_MAX_LEVEL);
- 
- 	iter->next_last_level_gfn = next_last_level_gfn;
- 	iter->root_level = root_level;
-@@ -116,11 +117,10 @@ static bool try_step_side(struct tdp_iter *iter)
- 	 * Check if the iterator is already at the end of the current page
- 	 * table.
- 	 */
--	if (SPTE_INDEX(iter->gfn << PAGE_SHIFT, iter->level) ==
--	    (SPTE_ENT_PER_PAGE - 1))
-+	if (TDP_PTE_INDEX(iter->gfn, iter->level) == (TDP_PTES_PER_PAGE - 1))
- 		return false;
- 
--	iter->gfn += KVM_PAGES_PER_HPAGE(iter->level);
-+	iter->gfn += TDP_PAGES_PER_LEVEL(iter->level);
- 	iter->next_last_level_gfn = iter->gfn;
- 	iter->sptep++;
- 	iter->old_spte = kvm_tdp_mmu_read_spte(iter->sptep);
-diff --git a/arch/x86/kvm/mmu/tdp_iter.h b/arch/x86/kvm/mmu/tdp_iter.h
-index 892c078aab58..bfac83ab52db 100644
---- a/arch/x86/kvm/mmu/tdp_iter.h
-+++ b/arch/x86/kvm/mmu/tdp_iter.h
-@@ -4,6 +4,7 @@
- #define __KVM_X86_MMU_TDP_ITER_H
- 
- #include <linux/kvm_host.h>
-+#include <kvm/tdp_pgtable.h>
- 
- #include "mmu.h"
- #include "spte.h"
-@@ -68,7 +69,7 @@ struct tdp_iter {
- 	 */
- 	gfn_t yielded_gfn;
- 	/* Pointers to the page tables traversed to reach the current SPTE */
--	tdp_ptep_t pt_path[PT64_ROOT_MAX_LEVEL];
-+	tdp_ptep_t pt_path[TDP_ROOT_MAX_LEVEL];
- 	/* A pointer to the current SPTE */
- 	tdp_ptep_t sptep;
- 	/* The lowest GFN mapped by the current SPTE */
 diff --git a/arch/x86/kvm/mmu/tdp_mmu.c b/arch/x86/kvm/mmu/tdp_mmu.c
-index bce0566f2d94..a6d6e393c009 100644
+index 0172b0e44817..7670fbd8e72d 100644
 --- a/arch/x86/kvm/mmu/tdp_mmu.c
 +++ b/arch/x86/kvm/mmu/tdp_mmu.c
-@@ -7,6 +7,8 @@
- #include "tdp_mmu.h"
- #include "spte.h"
+@@ -269,17 +269,21 @@ static struct kvm_mmu_page *tdp_mmu_alloc_sp(struct kvm_vcpu *vcpu)
+ 	return sp;
+ }
  
-+#include <kvm/tdp_pgtable.h>
++__weak void tdp_mmu_arch_init_sp(struct kvm_mmu_page *sp)
++{
++}
 +
- #include <asm/cmpxchg.h>
- #include <trace/events/kvm.h>
+ static void tdp_mmu_init_sp(struct kvm_mmu_page *sp, tdp_ptep_t sptep,
+ 			    gfn_t gfn, union kvm_mmu_page_role role)
+ {
+-	INIT_LIST_HEAD(&sp->arch.possible_nx_huge_page_link);
+-
+ 	set_page_private(virt_to_page(sp->spt), (unsigned long)sp);
  
-@@ -428,9 +430,9 @@ static void handle_removed_pt(struct kvm *kvm, tdp_ptep_t pt, bool shared)
+ 	sp->role = role;
+ 	sp->gfn = gfn;
+ 	sp->ptep = sptep;
  
- 	tdp_mmu_unlink_sp(kvm, sp, shared);
++	tdp_mmu_arch_init_sp(sp);
++
+ 	trace_kvm_mmu_get_page(sp, true);
+ }
  
--	for (i = 0; i < SPTE_ENT_PER_PAGE; i++) {
-+	for (i = 0; i < TDP_PTES_PER_PAGE; i++) {
- 		tdp_ptep_t sptep = pt + i;
--		gfn_t gfn = base_gfn + i * KVM_PAGES_PER_HPAGE(level);
-+		gfn_t gfn = base_gfn + i * TDP_PAGES_PER_LEVEL(level);
- 		u64 old_spte;
+@@ -373,6 +377,11 @@ static void tdp_unaccount_mmu_page(struct kvm *kvm, struct kvm_mmu_page *sp)
+ 	atomic64_dec(&kvm->arch.tdp_mmu_pages);
+ }
  
- 		if (shared) {
-@@ -525,9 +527,9 @@ static void __handle_changed_spte(struct kvm *kvm, int as_id, gfn_t gfn,
- 	bool is_leaf = is_present && is_last_spte(new_spte, level);
- 	bool pfn_changed = spte_to_pfn(old_spte) != spte_to_pfn(new_spte);
++__weak void tdp_mmu_arch_unlink_sp(struct kvm *kvm, struct kvm_mmu_page *sp,
++				   bool shared)
++{
++}
++
+ /**
+  * tdp_mmu_unlink_sp() - Remove a shadow page from the list of used pages
+  *
+@@ -386,20 +395,7 @@ static void tdp_mmu_unlink_sp(struct kvm *kvm, struct kvm_mmu_page *sp,
+ 			      bool shared)
+ {
+ 	tdp_unaccount_mmu_page(kvm, sp);
+-
+-	if (!sp->arch.nx_huge_page_disallowed)
+-		return;
+-
+-	if (shared)
+-		spin_lock(&kvm->arch.tdp_mmu_pages_lock);
+-	else
+-		lockdep_assert_held_write(&kvm->mmu_lock);
+-
+-	sp->arch.nx_huge_page_disallowed = false;
+-	untrack_possible_nx_huge_page(kvm, sp);
+-
+-	if (shared)
+-		spin_unlock(&kvm->arch.tdp_mmu_pages_lock);
++	tdp_mmu_arch_unlink_sp(kvm, sp, shared);
+ }
  
--	WARN_ON(level > PT64_ROOT_MAX_LEVEL);
-+	WARN_ON(level > TDP_ROOT_MAX_LEVEL);
- 	WARN_ON(level < PG_LEVEL_PTE);
--	WARN_ON(gfn & (KVM_PAGES_PER_HPAGE(level) - 1));
-+	WARN_ON(gfn & (TDP_PAGES_PER_LEVEL(level) - 1));
+ /**
+@@ -1129,6 +1125,23 @@ static int tdp_mmu_link_sp(struct kvm *kvm, struct tdp_iter *iter,
+ 	return 0;
+ }
+ 
++__weak void tdp_mmu_arch_adjust_map_level(struct kvm_page_fault *fault,
++					  struct tdp_iter *iter)
++{
++}
++
++__weak void tdp_mmu_arch_pre_link_sp(struct kvm *kvm,
++				     struct kvm_mmu_page *sp,
++				     struct kvm_page_fault *fault)
++{
++}
++
++__weak void tdp_mmu_arch_post_link_sp(struct kvm *kvm,
++				      struct kvm_mmu_page *sp,
++				      struct kvm_page_fault *fault)
++{
++}
++
+ static int tdp_mmu_split_huge_page(struct kvm *kvm, struct tdp_iter *iter,
+ 				   struct kvm_mmu_page *sp, bool shared);
+ 
+@@ -1153,8 +1166,7 @@ int kvm_tdp_mmu_map(struct kvm_vcpu *vcpu, struct kvm_page_fault *fault)
+ 	for_each_tdp_pte(iter, root, fault->gfn, fault->gfn + 1) {
+ 		int r;
+ 
+-		if (fault->arch.nx_huge_page_workaround_enabled)
+-			disallowed_hugepage_adjust(fault, iter.old_spte, iter.level);
++		tdp_mmu_arch_adjust_map_level(fault, &iter);
+ 
+ 		if (iter.level == fault->goal_level)
+ 			break;
+@@ -1178,7 +1190,7 @@ int kvm_tdp_mmu_map(struct kvm_vcpu *vcpu, struct kvm_page_fault *fault)
+ 		sp = tdp_mmu_alloc_sp(vcpu);
+ 		tdp_mmu_init_child_sp(sp, &iter);
+ 
+-		sp->arch.nx_huge_page_disallowed = fault->arch.huge_page_disallowed;
++		tdp_mmu_arch_pre_link_sp(kvm, sp, fault);
+ 
+ 		if (tdp_pte_is_present(iter.old_spte))
+ 			r = tdp_mmu_split_huge_page(kvm, &iter, sp, true);
+@@ -1194,12 +1206,7 @@ int kvm_tdp_mmu_map(struct kvm_vcpu *vcpu, struct kvm_page_fault *fault)
+ 			goto retry;
+ 		}
+ 
+-		if (fault->arch.huge_page_disallowed &&
+-		    fault->req_level >= iter.level) {
+-			spin_lock(&kvm->arch.tdp_mmu_pages_lock);
+-			track_possible_nx_huge_page(kvm, sp);
+-			spin_unlock(&kvm->arch.tdp_mmu_pages_lock);
+-		}
++		tdp_mmu_arch_post_link_sp(kvm, sp, fault);
+ 	}
  
  	/*
- 	 * If this warning were to trigger it would indicate that there was a
-@@ -677,7 +679,7 @@ static inline int tdp_mmu_zap_spte_atomic(struct kvm *kvm,
- 		return ret;
- 
- 	kvm_flush_remote_tlbs_with_address(kvm, iter->gfn,
--					   KVM_PAGES_PER_HPAGE(iter->level));
-+					   TDP_PAGES_PER_LEVEL(iter->level));
- 
- 	/*
- 	 * No other thread can overwrite the removed SPTE as they must either
-@@ -1075,7 +1077,7 @@ static int tdp_mmu_map_handle_target_level(struct kvm_vcpu *vcpu,
- 	else if (is_shadow_present_pte(iter->old_spte) &&
- 		 !is_last_spte(iter->old_spte, iter->level))
- 		kvm_flush_remote_tlbs_with_address(vcpu->kvm, sp->gfn,
--						   KVM_PAGES_PER_HPAGE(iter->level + 1));
-+						   TDP_PAGES_PER_LEVEL(iter->level + 1));
- 
- 	/*
- 	 * If the page fault was caused by a write but the page is write
-@@ -1355,7 +1357,7 @@ static bool wrprot_gfn_range(struct kvm *kvm, struct kvm_mmu_page *root,
- 
- 	rcu_read_lock();
- 
--	BUG_ON(min_level > KVM_MAX_HUGEPAGE_LEVEL);
-+	BUG_ON(min_level > TDP_MAX_HUGEPAGE_LEVEL);
- 
- 	for_each_tdp_pte_min_level(iter, root, min_level, start, end) {
- retry:
-@@ -1469,7 +1471,7 @@ static int tdp_mmu_split_huge_page(struct kvm *kvm, struct tdp_iter *iter,
- 	 * No need for atomics when writing to sp->spt since the page table has
- 	 * not been linked in yet and thus is not reachable from any other CPU.
- 	 */
--	for (i = 0; i < SPTE_ENT_PER_PAGE; i++)
-+	for (i = 0; i < TDP_PTES_PER_PAGE; i++)
- 		sp->spt[i] = make_huge_page_split_spte(kvm, huge_spte, sp->role, i);
- 
- 	/*
-@@ -1489,7 +1491,7 @@ static int tdp_mmu_split_huge_page(struct kvm *kvm, struct tdp_iter *iter,
- 	 * are overwriting from the page stats. But we have to manually update
- 	 * the page stats with the new present child pages.
- 	 */
--	kvm_update_page_stats(kvm, level - 1, SPTE_ENT_PER_PAGE);
-+	kvm_update_page_stats(kvm, level - 1, TDP_PTES_PER_PAGE);
- 
- out:
- 	trace_kvm_mmu_split_huge_page(iter->gfn, huge_spte, level, ret);
-@@ -1731,7 +1733,7 @@ static void zap_collapsible_spte_range(struct kvm *kvm,
- 		if (tdp_mmu_iter_cond_resched(kvm, &iter, false, true))
- 			continue;
- 
--		if (iter.level > KVM_MAX_HUGEPAGE_LEVEL ||
-+		if (iter.level > TDP_MAX_HUGEPAGE_LEVEL ||
- 		    !is_shadow_present_pte(iter.old_spte))
- 			continue;
- 
-@@ -1793,7 +1795,7 @@ static bool write_protect_gfn(struct kvm *kvm, struct kvm_mmu_page *root,
- 	u64 new_spte;
- 	bool spte_set = false;
- 
--	BUG_ON(min_level > KVM_MAX_HUGEPAGE_LEVEL);
-+	BUG_ON(min_level > TDP_MAX_HUGEPAGE_LEVEL);
- 
- 	rcu_read_lock();
- 
-diff --git a/include/kvm/tdp_pgtable.h b/include/kvm/tdp_pgtable.h
-new file mode 100644
-index 000000000000..968be8d92350
---- /dev/null
-+++ b/include/kvm/tdp_pgtable.h
-@@ -0,0 +1,21 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+#ifndef __KVM_TDP_PGTABLE_H
-+#define __KVM_TDP_PGTABLE_H
+diff --git a/arch/x86/kvm/mmu/tdp_pgtable.c b/arch/x86/kvm/mmu/tdp_pgtable.c
+index e036ba0c6bee..b07ed99b4ab1 100644
+--- a/arch/x86/kvm/mmu/tdp_pgtable.c
++++ b/arch/x86/kvm/mmu/tdp_pgtable.c
+@@ -111,3 +111,55 @@ u64 tdp_mmu_make_huge_page_split_pte(struct kvm *kvm, u64 huge_spte,
+ {
+ 	return make_huge_page_split_spte(kvm, huge_spte, sp->role, index);
+ }
 +
-+#include <linux/log2.h>
-+#include <linux/mm_types.h>
++void tdp_mmu_arch_adjust_map_level(struct kvm_page_fault *fault,
++				   struct tdp_iter *iter)
++{
++	if (fault->arch.nx_huge_page_workaround_enabled)
++		disallowed_hugepage_adjust(fault, iter->old_spte, iter->level);
++}
 +
-+#define TDP_ROOT_MAX_LEVEL	5
-+#define TDP_MAX_HUGEPAGE_LEVEL	PG_LEVEL_PUD
-+#define TDP_PTES_PER_PAGE	(PAGE_SIZE / sizeof(u64))
-+#define TDP_LEVEL_BITS		ilog2(TDP_PTES_PER_PAGE)
-+#define TDP_LEVEL_MASK		((1UL << TDP_LEVEL_BITS) - 1)
++void tdp_mmu_arch_init_sp(struct kvm_mmu_page *sp)
++{
++	INIT_LIST_HEAD(&sp->arch.possible_nx_huge_page_link);
++}
 +
-+#define TDP_LEVEL_SHIFT(level) (((level) - 1) * TDP_LEVEL_BITS)
++void tdp_mmu_arch_pre_link_sp(struct kvm *kvm,
++			      struct kvm_mmu_page *sp,
++			      struct kvm_page_fault *fault)
++{
++	sp->arch.nx_huge_page_disallowed = fault->arch.huge_page_disallowed;
++}
 +
-+#define TDP_PAGES_PER_LEVEL(level) (1UL << TDP_LEVEL_SHIFT(level))
++void tdp_mmu_arch_post_link_sp(struct kvm *kvm,
++			       struct kvm_mmu_page *sp,
++			       struct kvm_page_fault *fault)
++{
++	if (!fault->arch.huge_page_disallowed)
++		return;
 +
-+#define TDP_PTE_INDEX(gfn, level) \
-+	(((gfn) >> TDP_LEVEL_SHIFT(level)) & TDP_LEVEL_MASK)
++	if (fault->req_level < sp->role.level)
++		return;
 +
-+#endif /* !__KVM_TDP_PGTABLE_H */
++	spin_lock(&kvm->arch.tdp_mmu_pages_lock);
++	track_possible_nx_huge_page(kvm, sp);
++	spin_unlock(&kvm->arch.tdp_mmu_pages_lock);
++}
++
++void tdp_mmu_arch_unlink_sp(struct kvm *kvm, struct kvm_mmu_page *sp,
++			    bool shared)
++{
++	if (!sp->arch.nx_huge_page_disallowed)
++		return;
++
++	if (shared)
++		spin_lock(&kvm->arch.tdp_mmu_pages_lock);
++	else
++		lockdep_assert_held_write(&kvm->mmu_lock);
++
++	sp->arch.nx_huge_page_disallowed = false;
++	untrack_possible_nx_huge_page(kvm, sp);
++
++	if (shared)
++		spin_unlock(&kvm->arch.tdp_mmu_pages_lock);
++}
 -- 
 2.39.0.rc1.256.g54fd8350bd-goog
 
