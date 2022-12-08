@@ -1,62 +1,53 @@
 From: David Matlack <dmatlack@google.com>
-Date: Thu,  8 Dec 2022 11:38:56 -0800
-Subject: [RFC PATCH 36/37] KVM: x86/mmu: Move is_tdp_mmu_page() to mmu_internal.h
+Date: Thu,  8 Dec 2022 11:38:51 -0800
+Subject: [RFC PATCH 31/37] KVM: x86/MMU: Use gfn_t in kvm_flush_remote_tlbs_range()
 In-Reply-To: <20221208193857.4090582-1-dmatlack@google.com>
 References: <20221208193857.4090582-1-dmatlack@google.com>
-Message-ID: <20221208193857.4090582-37-dmatlack@google.com>
+Message-ID: <20221208193857.4090582-32-dmatlack@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Move is_tdp_mmu_page(), which is x86-specific, into mmu_internal.h. This
-prepares for moving tdp_mmu.h into common code.
+Use gfn_t instead of u64 for the start_gfn parameter to
+kvm_flush_remote_tlbs_range(), since that is the standard type for GFNs
+throughout KVM.
 
 No functional change intended.
 
 Signed-off-by: David Matlack <dmatlack@google.com>
 ---
- arch/x86/kvm/mmu/mmu_internal.h | 9 +++++++++
- arch/x86/kvm/mmu/tdp_mmu.h      | 9 ---------
- 2 files changed, 9 insertions(+), 9 deletions(-)
+ arch/x86/kvm/mmu/mmu.c          | 2 +-
+ arch/x86/kvm/mmu/mmu_internal.h | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
+diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
+index 4a28adaa92b4..19963ed83484 100644
+--- a/arch/x86/kvm/mmu/mmu.c
++++ b/arch/x86/kvm/mmu/mmu.c
+@@ -244,7 +244,7 @@ static inline bool kvm_available_flush_tlb_with_range(void)
+ 	return kvm_x86_ops.tlb_remote_flush_with_range;
+ }
+ 
+-void kvm_flush_remote_tlbs_range(struct kvm *kvm, u64 start_gfn, u64 pages)
++void kvm_flush_remote_tlbs_range(struct kvm *kvm, gfn_t start_gfn, u64 pages)
+ {
+ 	struct kvm_tlb_range range;
+ 	int ret = -EOPNOTSUPP;
 diff --git a/arch/x86/kvm/mmu/mmu_internal.h b/arch/x86/kvm/mmu/mmu_internal.h
-index df815cb84bd2..51aef9624521 100644
+index d35a5b408b98..e44fe7ad3cfb 100644
 --- a/arch/x86/kvm/mmu/mmu_internal.h
 +++ b/arch/x86/kvm/mmu/mmu_internal.h
-@@ -147,4 +147,13 @@ void *mmu_memory_cache_alloc(struct kvm_mmu_memory_cache *mc);
- void track_possible_nx_huge_page(struct kvm *kvm, struct kvm_mmu_page *sp);
- void untrack_possible_nx_huge_page(struct kvm *kvm, struct kvm_mmu_page *sp);
+@@ -65,7 +65,7 @@ void kvm_mmu_gfn_allow_lpage(const struct kvm_memory_slot *slot, gfn_t gfn);
+ bool kvm_mmu_slot_gfn_write_protect(struct kvm *kvm,
+ 				    struct kvm_memory_slot *slot, u64 gfn,
+ 				    int min_level);
+-void kvm_flush_remote_tlbs_range(struct kvm *kvm, u64 start_gfn, u64 pages);
++void kvm_flush_remote_tlbs_range(struct kvm *kvm, gfn_t start_gfn, u64 pages);
+ unsigned int pte_list_count(struct kvm_rmap_head *rmap_head);
  
-+#ifdef CONFIG_X86_64
-+static inline bool is_tdp_mmu_page(struct kvm_mmu_page *sp)
-+{
-+	return !sp->arch.shadow_mmu_page;
-+}
-+#else
-+static inline bool is_tdp_mmu_page(struct kvm_mmu_page *sp) { return false; }
-+#endif
-+
- #endif /* __KVM_X86_MMU_INTERNAL_H */
-diff --git a/arch/x86/kvm/mmu/tdp_mmu.h b/arch/x86/kvm/mmu/tdp_mmu.h
-index 897608be7f75..607c1417abd1 100644
---- a/arch/x86/kvm/mmu/tdp_mmu.h
-+++ b/arch/x86/kvm/mmu/tdp_mmu.h
-@@ -71,13 +71,4 @@ int kvm_tdp_mmu_get_walk(struct kvm_vcpu *vcpu, u64 addr, u64 *sptes,
- u64 *kvm_tdp_mmu_fast_pf_get_last_sptep(struct kvm_vcpu *vcpu, u64 addr,
- 					u64 *spte);
- 
--#ifdef CONFIG_X86_64
--static inline bool is_tdp_mmu_page(struct kvm_mmu_page *sp)
--{
--	return !sp->arch.shadow_mmu_page;
--}
--#else
--static inline bool is_tdp_mmu_page(struct kvm_mmu_page *sp) { return false; }
--#endif
--
- #endif /* __KVM_X86_MMU_TDP_MMU_H */
+ extern int nx_huge_pages;
 -- 
 2.39.0.rc1.256.g54fd8350bd-goog
 
