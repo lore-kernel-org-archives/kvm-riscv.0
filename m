@@ -1,53 +1,68 @@
 From: David Matlack <dmatlack@google.com>
-Date: Thu,  8 Dec 2022 11:38:51 -0800
-Subject: [RFC PATCH 31/37] KVM: x86/MMU: Use gfn_t in kvm_flush_remote_tlbs_range()
+Date: Thu,  8 Dec 2022 11:38:48 -0800
+Subject: [RFC PATCH 28/37] KVM: MMU: Stub out tracepoints on non-x86 architectures
 In-Reply-To: <20221208193857.4090582-1-dmatlack@google.com>
 References: <20221208193857.4090582-1-dmatlack@google.com>
-Message-ID: <20221208193857.4090582-32-dmatlack@google.com>
+Message-ID: <20221208193857.4090582-29-dmatlack@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Use gfn_t instead of u64 for the start_gfn parameter to
-kvm_flush_remote_tlbs_range(), since that is the standard type for GFNs
-throughout KVM.
+Create stub tracepoints outside of x86. The KVM MMU tracepoints can be
+moved to common code, but will be deferred to a future commit.
 
 No functional change intended.
 
 Signed-off-by: David Matlack <dmatlack@google.com>
 ---
- arch/x86/kvm/mmu/mmu.c          | 2 +-
- arch/x86/kvm/mmu/mmu_internal.h | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ arch/x86/kvm/mmu/tdp_mmu.c |  2 +-
+ include/kvm/mmutrace.h     | 17 +++++++++++++++++
+ 2 files changed, 18 insertions(+), 1 deletion(-)
+ create mode 100644 include/kvm/mmutrace.h
 
-diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
-index 4a28adaa92b4..19963ed83484 100644
---- a/arch/x86/kvm/mmu/mmu.c
-+++ b/arch/x86/kvm/mmu/mmu.c
-@@ -244,7 +244,7 @@ static inline bool kvm_available_flush_tlb_with_range(void)
- 	return kvm_x86_ops.tlb_remote_flush_with_range;
- }
+diff --git a/arch/x86/kvm/mmu/tdp_mmu.c b/arch/x86/kvm/mmu/tdp_mmu.c
+index 891877a6fb78..72746b645e99 100644
+--- a/arch/x86/kvm/mmu/tdp_mmu.c
++++ b/arch/x86/kvm/mmu/tdp_mmu.c
+@@ -2,12 +2,12 @@
  
--void kvm_flush_remote_tlbs_range(struct kvm *kvm, u64 start_gfn, u64 pages)
-+void kvm_flush_remote_tlbs_range(struct kvm *kvm, gfn_t start_gfn, u64 pages)
- {
- 	struct kvm_tlb_range range;
- 	int ret = -EOPNOTSUPP;
-diff --git a/arch/x86/kvm/mmu/mmu_internal.h b/arch/x86/kvm/mmu/mmu_internal.h
-index d35a5b408b98..e44fe7ad3cfb 100644
---- a/arch/x86/kvm/mmu/mmu_internal.h
-+++ b/arch/x86/kvm/mmu/mmu_internal.h
-@@ -65,7 +65,7 @@ void kvm_mmu_gfn_allow_lpage(const struct kvm_memory_slot *slot, gfn_t gfn);
- bool kvm_mmu_slot_gfn_write_protect(struct kvm *kvm,
- 				    struct kvm_memory_slot *slot, u64 gfn,
- 				    int min_level);
--void kvm_flush_remote_tlbs_range(struct kvm *kvm, u64 start_gfn, u64 pages);
-+void kvm_flush_remote_tlbs_range(struct kvm *kvm, gfn_t start_gfn, u64 pages);
- unsigned int pte_list_count(struct kvm_rmap_head *rmap_head);
+ #include "mmu.h"
+ #include "mmu_internal.h"
+-#include "mmutrace.h"
+ #include "tdp_iter.h"
+ #include "tdp_mmu.h"
+ #include "spte.h"
  
- extern int nx_huge_pages;
+ #include <kvm/tdp_pgtable.h>
++#include <kvm/mmutrace.h>
+ 
+ #include <asm/cmpxchg.h>
+ #include <trace/events/kvm.h>
+diff --git a/include/kvm/mmutrace.h b/include/kvm/mmutrace.h
+new file mode 100644
+index 000000000000..e95a3cb47479
+--- /dev/null
++++ b/include/kvm/mmutrace.h
+@@ -0,0 +1,17 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++#if !defined(_TRACE_KVM_MMUTRACE_H) || defined(TRACE_HEADER_MULTI_READ)
++#define _TRACE_KVM_MMUTRACE_H
++
++#ifdef CONFIG_X86
++#include "../../arch/x86/kvm/mmu/mmutrace.h"
++#else
++#define trace_mark_mmio_spte(...)		do {} while (0)
++#define trace_kvm_mmu_get_page(...)		do {} while (0)
++#define trace_kvm_mmu_prepare_zap_page(...)	do {} while (0)
++#define trace_kvm_mmu_set_spte(...)		do {} while (0)
++#define trace_kvm_mmu_spte_requested(...)	do {} while (0)
++#define trace_kvm_mmu_split_huge_page(...)	do {} while (0)
++#define trace_kvm_tdp_mmu_spte_changed(...)	do {} while (0)
++#endif
++
++#endif /* _TRACE_KVM_MMUTRACE_H */
 -- 
 2.39.0.rc1.256.g54fd8350bd-goog
 
