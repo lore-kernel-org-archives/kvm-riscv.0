@@ -1,92 +1,71 @@
-From: David Matlack <dmatlack@google.com>
-Date: Thu,  8 Dec 2022 11:38:24 -0800
-Subject: [RFC PATCH 04/37] KVM: x86/mmu: Invert sp->tdp_mmu_page to sp->shadow_mmu_page
-In-Reply-To: <20221208193857.4090582-1-dmatlack@google.com>
+From: Yang, Weijiang <weijiang.yang@intel.com>
+Date: Fri, 9 Dec 2022 10:37:47 +0800
+Subject: [RFC PATCH 01/37] KVM: x86/mmu: Store the address space ID
+ directly in kvm_mmu_page_role
+In-Reply-To: <20221208193857.4090582-2-dmatlack@google.com>
 References: <20221208193857.4090582-1-dmatlack@google.com>
-Message-ID: <20221208193857.4090582-5-dmatlack@google.com>
+ <20221208193857.4090582-2-dmatlack@google.com>
+Message-ID: <22fe2332-497e-fe30-0155-e026b0eded97@intel.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Invert the meaning of sp->tdp_mmu_page and rename it accordingly. This
-allows the TDP MMU code to not care about this field, which will be used
-in a subsequent commit to move the TDP MMU to common code.
 
-No functional change intended.
+On 12/9/2022 3:38 AM, David Matlack wrote:
+> Rename kvm_mmu_page_role.smm with kvm_mmu_page_role.as_id and use it
+> directly as the address space ID throughout the KVM MMU code. This
+> eliminates a needless level of indirection, kvm_mmu_role_as_id(), and
+> prepares for making kvm_mmu_page_role architecture-neutral.
+>
+> Signed-off-by: David Matlack <dmatlack@google.com>
+> ---
+>   arch/x86/include/asm/kvm_host.h |  4 ++--
+>   arch/x86/kvm/mmu/mmu.c          |  6 +++---
+>   arch/x86/kvm/mmu/mmu_internal.h | 10 ----------
+>   arch/x86/kvm/mmu/tdp_iter.c     |  2 +-
+>   arch/x86/kvm/mmu/tdp_mmu.c      | 12 ++++++------
+>   5 files changed, 12 insertions(+), 22 deletions(-)
+>
+> diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
+> index aa4eb8cfcd7e..0a819d40131a 100644
+> --- a/arch/x86/include/asm/kvm_host.h
+> +++ b/arch/x86/include/asm/kvm_host.h
+> @@ -348,7 +348,7 @@ union kvm_mmu_page_role {
+>   		 * simple shift.  While there is room, give it a whole
+>   		 * byte so it is also faster to load it from memory.
+>   		 */
+> -		unsigned smm:8;
+> +		unsigned as_id:8;
+>   	};
+>   };
+>   
+> @@ -2056,7 +2056,7 @@ enum {
+>   # define __KVM_VCPU_MULTIPLE_ADDRESS_SPACE
+>   # define KVM_ADDRESS_SPACE_NUM 2
+>   # define kvm_arch_vcpu_memslots_id(vcpu) ((vcpu)->arch.hflags & HF_SMM_MASK ? 1 : 0)
+> -# define kvm_memslots_for_spte_role(kvm, role) __kvm_memslots(kvm, (role).smm)
+> +# define kvm_memslots_for_spte_role(kvm, role) __kvm_memslots(kvm, (role).as_id)
+>   #else
+>   # define kvm_memslots_for_spte_role(kvm, role) __kvm_memslots(kvm, 0)
+>   #endif
+> diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
+> index 4d188f056933..f375b719f565 100644
+> --- a/arch/x86/kvm/mmu/mmu.c
+> +++ b/arch/x86/kvm/mmu/mmu.c
+> @@ -5056,7 +5056,7 @@ kvm_calc_cpu_role(struct kvm_vcpu *vcpu, const struct kvm_mmu_role_regs *regs)
+>   	union kvm_cpu_role role = {0};
+>   
+>   	role.base.access = ACC_ALL;
+> -	role.base.smm = is_smm(vcpu);
+> +	role.base.as_id = is_smm(vcpu);
 
-Signed-off-by: David Matlack <dmatlack@google.com>
----
- arch/x86/kvm/mmu/mmu.c          | 1 +
- arch/x86/kvm/mmu/mmu_internal.h | 2 +-
- arch/x86/kvm/mmu/tdp_mmu.c      | 3 ---
- arch/x86/kvm/mmu/tdp_mmu.h      | 5 ++++-
- 4 files changed, 6 insertions(+), 5 deletions(-)
+I'm not familiar with other architectures, is there similar conception 
+as x86 smm mode?
 
-diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
-index 355548603960..f7668a32721d 100644
---- a/arch/x86/kvm/mmu/mmu.c
-+++ b/arch/x86/kvm/mmu/mmu.c
-@@ -2180,6 +2180,7 @@ static struct kvm_mmu_page *kvm_mmu_alloc_shadow_page(struct kvm *kvm,
- 
- 	sp->gfn = gfn;
- 	sp->role = role;
-+	sp->shadow_mmu_page = true;
- 	hlist_add_head(&sp->hash_link, sp_list);
- 	if (sp_has_gptes(sp))
- 		account_shadowed(kvm, sp);
-diff --git a/arch/x86/kvm/mmu/mmu_internal.h b/arch/x86/kvm/mmu/mmu_internal.h
-index e32379c5b1ad..c1a379fba24d 100644
---- a/arch/x86/kvm/mmu/mmu_internal.h
-+++ b/arch/x86/kvm/mmu/mmu_internal.h
-@@ -52,7 +52,7 @@ struct kvm_mmu_page {
- 	struct list_head link;
- 	struct hlist_node hash_link;
- 
--	bool tdp_mmu_page;
-+	bool shadow_mmu_page;
- 	bool unsync;
- 	u8 mmu_valid_gen;
- 
-diff --git a/arch/x86/kvm/mmu/tdp_mmu.c b/arch/x86/kvm/mmu/tdp_mmu.c
-index 7ccac1aa8df6..fc0b87ceb1ea 100644
---- a/arch/x86/kvm/mmu/tdp_mmu.c
-+++ b/arch/x86/kvm/mmu/tdp_mmu.c
-@@ -133,8 +133,6 @@ void kvm_tdp_mmu_put_root(struct kvm *kvm, struct kvm_mmu_page *root,
- 	if (!refcount_dec_and_test(&root->tdp_mmu_root_count))
- 		return;
- 
--	WARN_ON(!is_tdp_mmu_page(root));
--
- 	/*
- 	 * The root now has refcount=0.  It is valid, but readers already
- 	 * cannot acquire a reference to it because kvm_tdp_mmu_get_root()
-@@ -279,7 +277,6 @@ static void tdp_mmu_init_sp(struct kvm_mmu_page *sp, tdp_ptep_t sptep,
- 	sp->role = role;
- 	sp->gfn = gfn;
- 	sp->ptep = sptep;
--	sp->tdp_mmu_page = true;
- 
- 	trace_kvm_mmu_get_page(sp, true);
- }
-diff --git a/arch/x86/kvm/mmu/tdp_mmu.h b/arch/x86/kvm/mmu/tdp_mmu.h
-index 0a63b1afabd3..18d3719f14ea 100644
---- a/arch/x86/kvm/mmu/tdp_mmu.h
-+++ b/arch/x86/kvm/mmu/tdp_mmu.h
-@@ -71,7 +71,10 @@ u64 *kvm_tdp_mmu_fast_pf_get_last_sptep(struct kvm_vcpu *vcpu, u64 addr,
- 					u64 *spte);
- 
- #ifdef CONFIG_X86_64
--static inline bool is_tdp_mmu_page(struct kvm_mmu_page *sp) { return sp->tdp_mmu_page; }
-+static inline bool is_tdp_mmu_page(struct kvm_mmu_page *sp)
-+{
-+	return !sp->shadow_mmu_page;
-+}
- #else
- static inline bool is_tdp_mmu_page(struct kvm_mmu_page *sp) { return false; }
- #endif
--- 
-2.39.0.rc1.256.g54fd8350bd-goog
+If not, maybe need to re-shape is_smm() as a common helper to get the as_id.
+
+[...]
 
 
