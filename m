@@ -1,70 +1,41 @@
 From: David Matlack <dmatlack@google.com>
-Date: Mon, 12 Dec 2022 17:06:03 -0800
-Subject: [RFC PATCH 02/37] KVM: MMU: Move struct kvm_mmu_page_role into
- common code
-In-Reply-To: <48f4df00-8ef6-042f-c9ae-4023c4f70058@redhat.com>
-References: <20221208193857.4090582-1-dmatlack@google.com> <20221208193857.4090582-3-dmatlack@google.com>
- <48f4df00-8ef6-042f-c9ae-4023c4f70058@redhat.com>
-Message-ID: <CALzav=crvFwCo50N5QOFD5FstrR9wJ=FmQAkYDHaKzQuatCNfw@mail.gmail.com>
+Date: Mon, 12 Dec 2022 17:11:02 -0800
+Subject: [RFC PATCH 01/37] KVM: x86/mmu: Store the address space ID
+ directly in kvm_mmu_page_role
+In-Reply-To: <Y5dwQEJHNiTPE+jz@google.com>
+References: <20221208193857.4090582-1-dmatlack@google.com>
+ <20221208193857.4090582-2-dmatlack@google.com>
+ <22fe2332-497e-fe30-0155-e026b0eded97@intel.com>
+ <Y5NvYmxpy6BPkmpW@google.com>
+ <CALzav=eju4LYyX=ufNneSww+5sraYJ8cfQSi4LTOHfHWmddX9A@mail.gmail.com>
+ <Y5dnWgJ0ine55/hN@google.com>
+ <Y5dwQEJHNiTPE+jz@google.com>
+Message-ID: <Y5fRJr34/BnsE+Dv@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Dec 12, 2022 at 3:11 PM Paolo Bonzini <pbonzini@redhat.com> wrote:
->
-> On 12/8/22 20:38, David Matlack wrote:
-> > +/*
-> > + * kvm_mmu_page_role tracks the properties of a shadow page (where shadow page
-> > + * also includes TDP pages) to determine whether or not a page can be used in
-> > + * the given MMU context.
-> > + */
-> > +union kvm_mmu_page_role {
-> > +     u32 word;
-> > +     struct {
-> > +             struct {
-> > +                     /* The address space ID mapped by the page. */
-> > +                     u16 as_id:8;
-> > +
-> > +                     /* The level of the page in the page table hierarchy. */
-> > +                     u16 level:4;
-> > +
-> > +                     /* Whether the page is invalid, i.e. pending destruction. */
-> > +                     u16 invalid:1;
-> > +             };
-> > +
-> > +             /* Architecture-specific properties. */
-> > +             struct kvm_mmu_page_role_arch arch;
-> > +     };
-> > +};
-> > +
->
-> Have you considered adding a tdp_mmu:1 field to the arch-independent
-> part?  I think that as long as _that_ field is the same, there's no need
-> to have any overlap between TDP MMU and shadow MMU roles.
->
-> I'm not even sure if the x86 TDP MMU needs _any_ other role bit.  It
-> needs of course the above three, and it also needs "direct" but it is
-> used exactly to mean "is this a TDP MMU page".  So we could have
->
-> union {
->         struct {
->                 u32 tdp_mmu:1;
->                 u32 invalid:1;
->                 u32 :6;
->                 u32 level:8;
->                 u32 arch:8;
->                 u32 :8;
->         } tdp;
->         /* the first field must be "u32 tdp_mmu:1;" */
->         struct kvm_mmu_page_role_arch shadow;
+On Mon, Dec 12, 2022 at 06:17:36PM +0000, Oliver Upton wrote:
+> On Mon, Dec 12, 2022 at 05:39:38PM +0000, Sean Christopherson wrote:
+> > On Fri, Dec 09, 2022, David Matlack wrote:
+> > > On Fri, Dec 9, 2022 at 9:25 AM Oliver Upton <oliver.upton@linux.dev> wrote:
+> > My preference would be to leave .smm in x86's page role.  IMO, defining multiple
+> > address spaces to support SMM emulation was a mistake that should be contained to
+> > SMM, i.e. should never be used for any other feature.  And with CONFIG_KVM_SMM,
+> > even x86 can opt out.
+> 
+> +1
+> 
+> I don't think something is architecture-neutral by virtue of it existing
+> in virt/kvm/*.
 
-We could but then that prevents having common fields between the
-Shadow MMU and TDP MMU. For example, make_spte() and
-make_huge_page_split_spte() use sp->role.level regardless of TDP or
-Shadow MMU, and is_obsolete_sp() uses sp->role.invalid. Plus then you
-need the `arch:8` byte for SMM.
+Put another way, just because something exists in virt/kvm/* doesn't
+mean it is used (or will be useful) to more than one architecture.
+Totally agree.  In this case, there never turned out to be any other
+usecases for memslot address spaces.
 
-It's possible to make it work, but I don't see what the benefit would be.
+As for role.arch.smm vs role.as_id, I'll post my response on the other
+thread with Paolo. Juggling these threads is hard.
 
