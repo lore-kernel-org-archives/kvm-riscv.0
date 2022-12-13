@@ -1,41 +1,50 @@
 From: David Matlack <dmatlack@google.com>
-Date: Mon, 12 Dec 2022 17:11:02 -0800
+Date: Mon, 12 Dec 2022 17:18:35 -0800
 Subject: [RFC PATCH 01/37] KVM: x86/mmu: Store the address space ID
  directly in kvm_mmu_page_role
-In-Reply-To: <Y5dwQEJHNiTPE+jz@google.com>
+In-Reply-To: <01cb4882-7a06-176f-7d55-f80cca300ffd@redhat.com>
 References: <20221208193857.4090582-1-dmatlack@google.com>
  <20221208193857.4090582-2-dmatlack@google.com>
  <22fe2332-497e-fe30-0155-e026b0eded97@intel.com>
  <Y5NvYmxpy6BPkmpW@google.com>
  <CALzav=eju4LYyX=ufNneSww+5sraYJ8cfQSi4LTOHfHWmddX9A@mail.gmail.com>
  <Y5dnWgJ0ine55/hN@google.com>
- <Y5dwQEJHNiTPE+jz@google.com>
-Message-ID: <Y5fRJr34/BnsE+Dv@google.com>
+ <01cb4882-7a06-176f-7d55-f80cca300ffd@redhat.com>
+Message-ID: <Y5fS69mLXlV+cQlg@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Dec 12, 2022 at 06:17:36PM +0000, Oliver Upton wrote:
-> On Mon, Dec 12, 2022 at 05:39:38PM +0000, Sean Christopherson wrote:
-> > On Fri, Dec 09, 2022, David Matlack wrote:
-> > > On Fri, Dec 9, 2022 at 9:25 AM Oliver Upton <oliver.upton@linux.dev> wrote:
-> > My preference would be to leave .smm in x86's page role.  IMO, defining multiple
-> > address spaces to support SMM emulation was a mistake that should be contained to
-> > SMM, i.e. should never be used for any other feature.  And with CONFIG_KVM_SMM,
-> > even x86 can opt out.
+On Mon, Dec 12, 2022 at 11:50:29PM +0100, Paolo Bonzini wrote:
+> On 12/12/22 18:39, Sean Christopherson wrote:
+> > > The notion of address spaces is already existing architecture-neutral
+> > > concept in KVM (e.g. see uses of KVM_ADDRESS_SPACE_NUM in
+> > > virt/kvm/kvm_main.c), although SMM is the only use-case I'm aware of.
+> > 
+> > Yes, SMM is currently the only use-case.
 > 
-> +1
+> It's possible that in the future Hyper-V VTLs will also have per-level
+> protections.  It wouldn't use as_id, but it would likely be recorded in the
+> upper byte of the role.
 > 
-> I don't think something is architecture-neutral by virtue of it existing
-> in virt/kvm/*.
+> I'm not sure if Microsoft intends to port those to ARM as well.
+> 
+> > My preference would be to leave .smm in x86's page role
+> 
+> What about defining a byte of arch_role and a macro to build it?
 
-Put another way, just because something exists in virt/kvm/* doesn't
-mean it is used (or will be useful) to more than one architecture.
-Totally agree.  In this case, there never turned out to be any other
-usecases for memslot address spaces.
+Both would work. I went with as_id in the common role since that's how
+it's encoded in kvm_memory_slot and because, not matter what, the TDP
+MMU still has to handle multiple address spaces. i.e. Even if we hide
+SMM away in the role, the TDP MMU still has to access it with some
+wrapper e.g.  kvm_mmu_page_as_id() (that would just return 0 outside of
+x86). From that perspective, just having as_id directly in the common
+role seemed like the cleanest option.
 
-As for role.arch.smm vs role.as_id, I'll post my response on the other
-thread with Paolo. Juggling these threads is hard.
+The only way to truly shield the TDP MMU from SMM would be to disallow
+it. e.g. Disable the TDP MMU if defined(CONFIG_KVM_SMM), or something
+similar. But I don't know enough about how KVM SMM support is used to
+say if that's even worth entertaining.
 
