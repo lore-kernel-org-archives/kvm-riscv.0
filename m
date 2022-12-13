@@ -1,31 +1,53 @@
-From: Paolo Bonzini <pbonzini@redhat.com>
-Date: Tue, 13 Dec 2022 00:43:17 +0100
-Subject: [RFC PATCH 00/37] KVM: Refactor the KVM/x86 TDP MMU into common
- code
-In-Reply-To: <Y5e4qxjHWoMt8YGs@google.com>
+From: Sean Christopherson <seanjc@google.com>
+Date: Tue, 13 Dec 2022 01:02:06 +0000
+Subject: [RFC PATCH 20/37] KVM: x86/mmu: Abstract away computing the max
+ mapping level
+In-Reply-To: <CALzav=cashgJPmeKSRQnd_kdYg2EK0G4rygSCt6GaJWSYz3juw@mail.gmail.com>
 References: <20221208193857.4090582-1-dmatlack@google.com>
- <Y5OHVzBSHPmAq2FO@google.com>
- <eb93beee-9d43-1c1e-250c-28ab7e9ebed9@redhat.com>
- <Y5e4qxjHWoMt8YGs@google.com>
-Message-ID: <f1026204-1895-1a7e-5bf8-3527223f3778@redhat.com>
+ <20221208193857.4090582-21-dmatlack@google.com>
+ <CANgfPd-6LNdZ42tb0DnC21r1Z5JGR_1Lvvop8RKJJ8hEz+PUDg@mail.gmail.com>
+ <CALzav=cashgJPmeKSRQnd_kdYg2EK0G4rygSCt6GaJWSYz3juw@mail.gmail.com>
+Message-ID: <Y5fPDqI7TBngeaj8@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 12/13/22 00:26, Sean Christopherson wrote:
->>> I would strongly be in favor of discarding the shadow paging residue if
->>> x86 folks are willing to part ways with it ?
->> Yes, absolutely.  Something like to_shadow_page->to_mmu_data, sp->md,
->> spt->hpt, spte->spte, sptep->hptep.
-> "host" will be confusing if when the primary MMU is involved though, e.g. I always
-> think of the primary MMU's page tables as the "host page tables".
+On Mon, Dec 12, 2022, David Matlack wrote:
+> On Mon, Dec 12, 2022 at 11:32 AM Ben Gardon <bgardon@google.com> wrote:
+> >
+> > On Thu, Dec 8, 2022 at 11:39 AM David Matlack <dmatlack@google.com> wrote:
+> > >
+> > > Abstract away kvm_mmu_max_mapping_level(), which is an x86-specific
+> > > function for computing the max level that a given GFN can be mapped in
+> > > KVM's page tables. This will be used in a future commit to enable moving
+> > > the TDP MMU to common code.
+> > >
+> > > Provide a default implementation for non-x86 architectures that just
+> > > returns the max level. This will result in more zapping than necessary
+> > > when disabling dirty logging (i.e. less than optimal performance) but no
+> > > correctness issues.
+> >
+> > Apologies if you already implemented it in a later patch in this
+> > series, but would it not at least be possible to port
+> > host_pfn_mapping_level to common code and check that?
+> > I'm assuming, though I could be wrong, that all archs map GFNs with at
+> > most a host page table granularity mapping.
+> > I suppose that doesn't strictly need to be included in this series,
+> > but it would be worth addressing in the commit description.
 > 
-> What if we keep the "S" for SPT(E) and repurpose it to mean Secondary PTE?
+> It's not implemented later in this series, but I agree it's something
+> we should do. In fact, it's worth doing regardless of this series as a
+> way to share more code across architectures (e.g. KVM/ARM has it's own
+> version in arch/arm64/kvm/mmu.c:get_user_mapping_size()).
 
-Makes sense, so just to_shadow_page->to_secmmu_page?
+Ya, ARM converted to walking the host user page tables largely in response to
+x86's conversion.  After x86 switched, ARM was left holding the bag that was
+PageTransCompoundMap().
 
-Paolo
-
+On a related topic, I'm guessing all the comments in transparent_hugepage_adjust()
+about the code working _only_ for THP are stale.  Unless ARM support for HugeTLB
+works differently, walking host user page tables should Just Work for all hugepage
+types.
 
