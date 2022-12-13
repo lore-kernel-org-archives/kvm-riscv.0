@@ -1,53 +1,70 @@
-From: Sean Christopherson <seanjc@google.com>
-Date: Tue, 13 Dec 2022 01:02:06 +0000
-Subject: [RFC PATCH 20/37] KVM: x86/mmu: Abstract away computing the max
- mapping level
-In-Reply-To: <CALzav=cashgJPmeKSRQnd_kdYg2EK0G4rygSCt6GaJWSYz3juw@mail.gmail.com>
-References: <20221208193857.4090582-1-dmatlack@google.com>
- <20221208193857.4090582-21-dmatlack@google.com>
- <CANgfPd-6LNdZ42tb0DnC21r1Z5JGR_1Lvvop8RKJJ8hEz+PUDg@mail.gmail.com>
- <CALzav=cashgJPmeKSRQnd_kdYg2EK0G4rygSCt6GaJWSYz3juw@mail.gmail.com>
-Message-ID: <Y5fPDqI7TBngeaj8@google.com>
+From: David Matlack <dmatlack@google.com>
+Date: Mon, 12 Dec 2022 17:06:03 -0800
+Subject: [RFC PATCH 02/37] KVM: MMU: Move struct kvm_mmu_page_role into
+ common code
+In-Reply-To: <48f4df00-8ef6-042f-c9ae-4023c4f70058@redhat.com>
+References: <20221208193857.4090582-1-dmatlack@google.com> <20221208193857.4090582-3-dmatlack@google.com>
+ <48f4df00-8ef6-042f-c9ae-4023c4f70058@redhat.com>
+Message-ID: <CALzav=crvFwCo50N5QOFD5FstrR9wJ=FmQAkYDHaKzQuatCNfw@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Dec 12, 2022, David Matlack wrote:
-> On Mon, Dec 12, 2022 at 11:32 AM Ben Gardon <bgardon@google.com> wrote:
-> >
-> > On Thu, Dec 8, 2022 at 11:39 AM David Matlack <dmatlack@google.com> wrote:
-> > >
-> > > Abstract away kvm_mmu_max_mapping_level(), which is an x86-specific
-> > > function for computing the max level that a given GFN can be mapped in
-> > > KVM's page tables. This will be used in a future commit to enable moving
-> > > the TDP MMU to common code.
-> > >
-> > > Provide a default implementation for non-x86 architectures that just
-> > > returns the max level. This will result in more zapping than necessary
-> > > when disabling dirty logging (i.e. less than optimal performance) but no
-> > > correctness issues.
-> >
-> > Apologies if you already implemented it in a later patch in this
-> > series, but would it not at least be possible to port
-> > host_pfn_mapping_level to common code and check that?
-> > I'm assuming, though I could be wrong, that all archs map GFNs with at
-> > most a host page table granularity mapping.
-> > I suppose that doesn't strictly need to be included in this series,
-> > but it would be worth addressing in the commit description.
-> 
-> It's not implemented later in this series, but I agree it's something
-> we should do. In fact, it's worth doing regardless of this series as a
-> way to share more code across architectures (e.g. KVM/ARM has it's own
-> version in arch/arm64/kvm/mmu.c:get_user_mapping_size()).
+On Mon, Dec 12, 2022 at 3:11 PM Paolo Bonzini <pbonzini@redhat.com> wrote:
+>
+> On 12/8/22 20:38, David Matlack wrote:
+> > +/*
+> > + * kvm_mmu_page_role tracks the properties of a shadow page (where shadow page
+> > + * also includes TDP pages) to determine whether or not a page can be used in
+> > + * the given MMU context.
+> > + */
+> > +union kvm_mmu_page_role {
+> > +     u32 word;
+> > +     struct {
+> > +             struct {
+> > +                     /* The address space ID mapped by the page. */
+> > +                     u16 as_id:8;
+> > +
+> > +                     /* The level of the page in the page table hierarchy. */
+> > +                     u16 level:4;
+> > +
+> > +                     /* Whether the page is invalid, i.e. pending destruction. */
+> > +                     u16 invalid:1;
+> > +             };
+> > +
+> > +             /* Architecture-specific properties. */
+> > +             struct kvm_mmu_page_role_arch arch;
+> > +     };
+> > +};
+> > +
+>
+> Have you considered adding a tdp_mmu:1 field to the arch-independent
+> part?  I think that as long as _that_ field is the same, there's no need
+> to have any overlap between TDP MMU and shadow MMU roles.
+>
+> I'm not even sure if the x86 TDP MMU needs _any_ other role bit.  It
+> needs of course the above three, and it also needs "direct" but it is
+> used exactly to mean "is this a TDP MMU page".  So we could have
+>
+> union {
+>         struct {
+>                 u32 tdp_mmu:1;
+>                 u32 invalid:1;
+>                 u32 :6;
+>                 u32 level:8;
+>                 u32 arch:8;
+>                 u32 :8;
+>         } tdp;
+>         /* the first field must be "u32 tdp_mmu:1;" */
+>         struct kvm_mmu_page_role_arch shadow;
 
-Ya, ARM converted to walking the host user page tables largely in response to
-x86's conversion.  After x86 switched, ARM was left holding the bag that was
-PageTransCompoundMap().
+We could but then that prevents having common fields between the
+Shadow MMU and TDP MMU. For example, make_spte() and
+make_huge_page_split_spte() use sp->role.level regardless of TDP or
+Shadow MMU, and is_obsolete_sp() uses sp->role.invalid. Plus then you
+need the `arch:8` byte for SMM.
 
-On a related topic, I'm guessing all the comments in transparent_hugepage_adjust()
-about the code working _only_ for THP are stale.  Unless ARM support for HugeTLB
-works differently, walking host user page tables should Just Work for all hugepage
-types.
+It's possible to make it work, but I don't see what the benefit would be.
 
