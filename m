@@ -1,60 +1,45 @@
-From: Sean Christopherson <seanjc@google.com>
-Date: Tue, 13 Dec 2022 01:42:10 +0000
+From: Lai Jiangshan <jiangshanlai@gmail.com>
+Date: Wed, 14 Dec 2022 17:50:07 +0800
 Subject: [RFC PATCH 01/37] KVM: x86/mmu: Store the address space ID
  directly in kvm_mmu_page_role
-In-Reply-To: <01cb4882-7a06-176f-7d55-f80cca300ffd@redhat.com>
-References: <20221208193857.4090582-1-dmatlack@google.com>
- <20221208193857.4090582-2-dmatlack@google.com>
- <22fe2332-497e-fe30-0155-e026b0eded97@intel.com>
- <Y5NvYmxpy6BPkmpW@google.com>
- <CALzav=eju4LYyX=ufNneSww+5sraYJ8cfQSi4LTOHfHWmddX9A@mail.gmail.com>
- <Y5dnWgJ0ine55/hN@google.com>
- <01cb4882-7a06-176f-7d55-f80cca300ffd@redhat.com>
-Message-ID: <Y5fYcosbituc0kc4@google.com>
+In-Reply-To: <Y5dnWgJ0ine55/hN@google.com>
+References: <20221208193857.4090582-1-dmatlack@google.com> <20221208193857.4090582-2-dmatlack@google.com>
+ <22fe2332-497e-fe30-0155-e026b0eded97@intel.com> <Y5NvYmxpy6BPkmpW@google.com>
+ <CALzav=eju4LYyX=ufNneSww+5sraYJ8cfQSi4LTOHfHWmddX9A@mail.gmail.com> <Y5dnWgJ0ine55/hN@google.com>
+Message-ID: <CAJhGHyBbjyKVEv3KcoOcPGQ28753FjR_rc9uNDEF3Dd-gNTRGQ@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Dec 12, 2022, Paolo Bonzini wrote:
-> On 12/12/22 18:39, Sean Christopherson wrote:
-> > My preference would be to leave .smm in x86's page role
-> 
-> What about defining a byte of arch_role and a macro to build it?
+On Tue, Dec 13, 2022 at 1:47 AM Sean Christopherson <seanjc@google.com> wrote:
 
-I think David already carved out a big chunk for arch role bits, my objection
-was purely to making as_id a generic 8-bit role.
-
-> > Unless I'm missing something, e.g. a need to map GPAs differently for
-> > SMM vs. non-SMM, SMM could have been implemented with a simple flag
-> > in a memslot to mark the memslot as SMM-only.
-> 
-> Unfortunately not, because there can be another region (for example video
-> RAM at 0A0000h) underneath SMRAM.
-
-Ugh, it's even a very explicitly documented "feature".
-
-  When compatible SMM space is enabled, SMM-mode CBO accesses to this range route
-  to physical system DRAM at 00_000A_0h ? 00_000B_FFFFh.
-  
-  Non-SMM mode CBO accesses to this range are considered to be to the Video Buffer
-  Area as described above. PCI Express* and DMI originated cycles to SMM space are not
-  supported and are considered to be to the Video Buffer Area.
-
-I also forgot KVM supports SMBASE relocation :-(
-
-> In fact, KVM_MEM_X86_SMRAM was the first idea.  It was uglier than multiple
-> address spaces (https://lore.kernel.org/lkml/1431084034-8425-1-git-send-email-pbonzini at redhat.com).
-> In retrospect there were probably ways to mix the best of the two designs,
-> but it wasn't generic enough.
 >
-> > And separate address spaces become truly nasty if the CPU can access multiple
-> > protected regions, e.g. if the CPU can access type X and type Y at the same time,
-> > then there would need to be memslots for "regular", X, Y, and X+Y.
-> 
-> Without a usecase that's hard to say.  It's just as possible that there
-> would be a natural hierarchy of levels.
+> My preference would be to leave .smm in x86's page role.  IMO, defining multiple
+> address spaces to support SMM emulation was a mistake that should be contained to
+> SMM, i.e. should never be used for any other feature.  And with CONFIG_KVM_SMM,
+> even x86 can opt out.
+>
 
-Ah, true.
+
+I think the name ASID in kvm/x86 should be used for vmcb's ASID,
+vmcs's VPID, and PCID. Using the name ASID for other purposes
+would only result in unnecessary confusion.
+
+There is a bug for shadow paging when it uses two separate sets
+of memslots which are using two sets of rmap and page-tracking.
+
+When SMM world is writing to a non-SMM page which happens to be
+a guest pagetable in the non-SMM world, the write operation will
+go smoothly without specially handled and the shadow page for the guest
+pagetable is neither unshadowed nor marked unsync.  The shadow paging
+code is unaware that the shadow page has deviated from the guest
+pagetable.
+
+It means when SMM is enabled, shadow paging should be disabled,
+which also means it has to use tdp and not to use nested tdp.
+
+Thanks
+Lai
 
