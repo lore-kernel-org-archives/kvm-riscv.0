@@ -1,117 +1,109 @@
 From: Conor Dooley <conor@kernel.org>
-Date: Tue, 06 Dec 2022 22:16:52 -0000
-Subject: [PATCH v2 13/13] riscv: remove riscv_isa_ext_keys[] array and
- related usage
-In-Reply-To: <20221204174632.3677-14-jszhang@kernel.org>
-References: <20221204174632.3677-1-jszhang@kernel.org>
- <20221204174632.3677-14-jszhang@kernel.org>
-Message-ID: <Y4+/TPEfueQqahgb@spud>
+Date: Thu, 15 Dec 2022 20:17:52 +0000
+Subject: [PATCH v2 05/11] RISC-V: KVM: Improve privilege mode filtering
+ for perf
+In-Reply-To: <20221215170046.2010255-6-atishp@rivosinc.com>
+References: <20221215170046.2010255-1-atishp@rivosinc.com>
+ <20221215170046.2010255-6-atishp@rivosinc.com>
+Message-ID: <Y5uA8CEoTKzIGoSy@dizzy>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Dec 05, 2022 at 01:46:32AM +0800, Jisheng Zhang wrote:
-> All users have switched to riscv_has_extension_*, removed unused
+Hey Atish,
 
-minor nit: remove
+On Thu, Dec 15, 2022 at 09:00:40AM -0800, Atish Patra wrote:
+> RISC-V: KVM: Improve privilege mode filtering for perf
 
-> definitions, vars and related setting code.
+I almost marked this as "not applicable" in patchwork as I was mislead
+by the $subject. I know our perf driver is a real mixed bag, but should
+it not be something more like:
+"perf: RISC-V: Improve privilege mode filtering for KVM"?
+It was only when I noticed that the rest of the series had been marked
+as "Handled Elsewhere" that I realised that this must not be a KVM patch
+;)
+
+Thanks,
+Conor
+
+> Currently, the host driver doesn't have any method to identify if the
+> requested perf event is from kvm or bare metal. As KVM runs in HS
+> mode, there are no separate hypervisor privilege mode to distinguish
+> between the attributes for guest/host.
 > 
-> Signed-off-by: Jisheng Zhang <jszhang@kernel.org>
+> Improve the privilege mode filtering by using the event specific
+> config1 field.
+> 
 > Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
-> Reviewed-by: Heiko Stuebner <heiko@sntech.de>
-
-May as well join the R-b club here, the removal of 2 places where
-extensions need to be kept ordered is especially appreciated!
-
-Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
-
-Thanks!
-
+> Signed-off-by: Atish Patra <atishp@rivosinc.com>
 > ---
->  arch/riscv/include/asm/hwcap.h | 30 ------------------------------
->  arch/riscv/kernel/cpufeature.c |  9 ---------
->  2 files changed, 39 deletions(-)
+>  drivers/perf/riscv_pmu_sbi.c   | 27 ++++++++++++++++++++++-----
+>  include/linux/perf/riscv_pmu.h |  2 ++
+>  2 files changed, 24 insertions(+), 5 deletions(-)
 > 
-> diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
-> index e2d3f6df7701..be00a4337578 100644
-> --- a/arch/riscv/include/asm/hwcap.h
-> +++ b/arch/riscv/include/asm/hwcap.h
-> @@ -60,18 +60,6 @@ enum {
->  
->  extern unsigned long elf_hwcap;
->  
-> -/*
-> - * This enum represents the logical ID for each RISC-V ISA extension static
-> - * keys. We can use static key to optimize code path if some ISA extensions
-> - * are available.
-> - */
-> -enum riscv_isa_ext_key {
-> -	RISCV_ISA_EXT_KEY_FPU,		/* For 'F' and 'D' */
-> -	RISCV_ISA_EXT_KEY_ZIHINTPAUSE,
-> -	RISCV_ISA_EXT_KEY_SVINVAL,
-> -	RISCV_ISA_EXT_KEY_MAX,
-> -};
-> -
->  struct riscv_isa_ext_data {
->  	/* Name of the extension displayed to userspace via /proc/cpuinfo */
->  	char uprop[RISCV_ISA_EXT_NAME_LEN_MAX];
-> @@ -79,24 +67,6 @@ struct riscv_isa_ext_data {
->  	unsigned int isa_ext_id;
->  };
->  
-> -extern struct static_key_false riscv_isa_ext_keys[RISCV_ISA_EXT_KEY_MAX];
-> -
-> -static __always_inline int riscv_isa_ext2key(int num)
-> -{
-> -	switch (num) {
-> -	case RISCV_ISA_EXT_f:
-> -		return RISCV_ISA_EXT_KEY_FPU;
-> -	case RISCV_ISA_EXT_d:
-> -		return RISCV_ISA_EXT_KEY_FPU;
-> -	case RISCV_ISA_EXT_ZIHINTPAUSE:
-> -		return RISCV_ISA_EXT_KEY_ZIHINTPAUSE;
-> -	case RISCV_ISA_EXT_SVINVAL:
-> -		return RISCV_ISA_EXT_KEY_SVINVAL;
-> -	default:
-> -		return -EINVAL;
-> -	}
-> -}
-> -
->  static __always_inline bool
->  riscv_has_extension_likely(const unsigned long ext)
->  {
-> diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
-> index adeac90b1d8e..3240a2915bf1 100644
-> --- a/arch/riscv/kernel/cpufeature.c
-> +++ b/arch/riscv/kernel/cpufeature.c
-> @@ -28,9 +28,6 @@ unsigned long elf_hwcap __read_mostly;
->  /* Host ISA bitmap */
->  static DECLARE_BITMAP(riscv_isa, RISCV_ISA_EXT_MAX) __read_mostly;
->  
-> -DEFINE_STATIC_KEY_ARRAY_FALSE(riscv_isa_ext_keys, RISCV_ISA_EXT_KEY_MAX);
-> -EXPORT_SYMBOL(riscv_isa_ext_keys);
-> -
->  /**
->   * riscv_isa_extension_base() - Get base extension word
->   *
-> @@ -243,12 +240,6 @@ void __init riscv_fill_hwcap(void)
->  		if (elf_hwcap & BIT_MASK(i))
->  			print_str[j++] = (char)('a' + i);
->  	pr_info("riscv: ELF capabilities %s\n", print_str);
-> -
-> -	for_each_set_bit(i, riscv_isa, RISCV_ISA_EXT_MAX) {
-> -		j = riscv_isa_ext2key(i);
-> -		if (j >= 0)
-> -			static_branch_enable(&riscv_isa_ext_keys[j]);
-> -	}
+> diff --git a/drivers/perf/riscv_pmu_sbi.c b/drivers/perf/riscv_pmu_sbi.c
+> index 65d4aa4..df795b7 100644
+> --- a/drivers/perf/riscv_pmu_sbi.c
+> +++ b/drivers/perf/riscv_pmu_sbi.c
+> @@ -298,6 +298,27 @@ int riscv_pmu_get_hpm_info(u32 *hw_ctr_width, u32 *num_hw_ctr)
 >  }
+>  EXPORT_SYMBOL(riscv_pmu_get_hpm_info);
 >  
->  #ifdef CONFIG_RISCV_ALTERNATIVE
+> +static unsigned long pmu_sbi_get_filter_flags(struct perf_event *event)
+> +{
+> +	unsigned long cflags = 0;
+> +	bool guest_events = false;
+> +
+> +	if (event->attr.config1 & RISCV_KVM_PMU_CONFIG1_GUEST_EVENTS)
+> +		guest_events = true;
+> +	if (event->attr.exclude_kernel)
+> +		cflags |= guest_events ? SBI_PMU_CFG_FLAG_SET_VSINH : SBI_PMU_CFG_FLAG_SET_SINH;
+> +	if (event->attr.exclude_user)
+> +		cflags |= guest_events ? SBI_PMU_CFG_FLAG_SET_VUINH : SBI_PMU_CFG_FLAG_SET_UINH;
+> +	if (guest_events && event->attr.exclude_hv)
+> +		cflags |= SBI_PMU_CFG_FLAG_SET_SINH;
+> +	if (event->attr.exclude_host)
+> +		cflags |= SBI_PMU_CFG_FLAG_SET_UINH | SBI_PMU_CFG_FLAG_SET_SINH;
+> +	if (event->attr.exclude_guest)
+> +		cflags |= SBI_PMU_CFG_FLAG_SET_VSINH | SBI_PMU_CFG_FLAG_SET_VUINH;
+> +
+> +	return cflags;
+> +}
+> +
+>  static int pmu_sbi_ctr_get_idx(struct perf_event *event)
+>  {
+>  	struct hw_perf_event *hwc = &event->hw;
+> @@ -308,11 +329,7 @@ static int pmu_sbi_ctr_get_idx(struct perf_event *event)
+>  	uint64_t cbase = 0;
+>  	unsigned long cflags = 0;
+>  
+> -	if (event->attr.exclude_kernel)
+> -		cflags |= SBI_PMU_CFG_FLAG_SET_SINH;
+> -	if (event->attr.exclude_user)
+> -		cflags |= SBI_PMU_CFG_FLAG_SET_UINH;
+> -
+> +	cflags = pmu_sbi_get_filter_flags(event);
+>  	/* retrieve the available counter index */
+>  #if defined(CONFIG_32BIT)
+>  	ret = sbi_ecall(SBI_EXT_PMU, SBI_EXT_PMU_COUNTER_CFG_MATCH, cbase,
+> diff --git a/include/linux/perf/riscv_pmu.h b/include/linux/perf/riscv_pmu.h
+> index a1c3f77..1c42146 100644
+> --- a/include/linux/perf/riscv_pmu.h
+> +++ b/include/linux/perf/riscv_pmu.h
+> @@ -26,6 +26,8 @@
+>  
+>  #define RISCV_PMU_STOP_FLAG_RESET 1
+>  
+> +#define RISCV_KVM_PMU_CONFIG1_GUEST_EVENTS 0x1
+> +
+>  struct cpu_hw_events {
+>  	/* currently enabled events */
+>  	int			n_events;
 > -- 
-> 2.37.2
+> 2.25.1
+> 
 > 
 -------------- next part --------------
 A non-text attachment was scrubbed...
@@ -119,4 +111,4 @@ Name: signature.asc
 Type: application/pgp-signature
 Size: 228 bytes
 Desc: not available
-URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20221206/f876de99/attachment-0001.sig>
+URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20221215/0c08422f/attachment-0001.sig>
