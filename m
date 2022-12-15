@@ -1,74 +1,88 @@
 From: Atish Patra <atishp@rivosinc.com>
-Date: Thu, 15 Dec 2022 09:00:37 -0800
-Subject: [PATCH v2 02/11] RISC-V: KVM: Define a probe function for SBI extension data structures
+Date: Thu, 15 Dec 2022 09:00:40 -0800
+Subject: [PATCH v2 05/11] RISC-V: KVM: Improve privilege mode filtering for perf
 In-Reply-To: <20221215170046.2010255-1-atishp@rivosinc.com>
 References: <20221215170046.2010255-1-atishp@rivosinc.com>
-Message-ID: <20221215170046.2010255-3-atishp@rivosinc.com>
+Message-ID: <20221215170046.2010255-6-atishp@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Currently the probe function just checks if an SBI extension is
-registered or not. However, the extension may not want to advertise
-itself depending on some other condition.
-An additional extension specific probe function will allow
-extensions to decide if they want to be advertised to the caller or
-not. Any extension that does not require additional dependency checks
-can avoid implementing this function.
+Currently, the host driver doesn't have any method to identify if the
+requested perf event is from kvm or bare metal. As KVM runs in HS
+mode, there are no separate hypervisor privilege mode to distinguish
+between the attributes for guest/host.
 
+Improve the privilege mode filtering by using the event specific
+config1 field.
+
+Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
 Signed-off-by: Atish Patra <atishp@rivosinc.com>
 ---
- arch/riscv/include/asm/kvm_vcpu_sbi.h |  3 +++
- arch/riscv/kvm/vcpu_sbi_base.c        | 13 +++++++++++--
- 2 files changed, 14 insertions(+), 2 deletions(-)
+ drivers/perf/riscv_pmu_sbi.c   | 27 ++++++++++++++++++++++-----
+ include/linux/perf/riscv_pmu.h |  2 ++
+ 2 files changed, 24 insertions(+), 5 deletions(-)
 
-diff --git a/arch/riscv/include/asm/kvm_vcpu_sbi.h b/arch/riscv/include/asm/kvm_vcpu_sbi.h
-index f79478a..61dac1b 100644
---- a/arch/riscv/include/asm/kvm_vcpu_sbi.h
-+++ b/arch/riscv/include/asm/kvm_vcpu_sbi.h
-@@ -29,6 +29,9 @@ struct kvm_vcpu_sbi_extension {
- 	int (*handler)(struct kvm_vcpu *vcpu, struct kvm_run *run,
- 		       unsigned long *out_val, struct kvm_cpu_trap *utrap,
- 		       bool *exit);
+diff --git a/drivers/perf/riscv_pmu_sbi.c b/drivers/perf/riscv_pmu_sbi.c
+index 65d4aa4..df795b7 100644
+--- a/drivers/perf/riscv_pmu_sbi.c
++++ b/drivers/perf/riscv_pmu_sbi.c
+@@ -298,6 +298,27 @@ int riscv_pmu_get_hpm_info(u32 *hw_ctr_width, u32 *num_hw_ctr)
+ }
+ EXPORT_SYMBOL(riscv_pmu_get_hpm_info);
+ 
++static unsigned long pmu_sbi_get_filter_flags(struct perf_event *event)
++{
++	unsigned long cflags = 0;
++	bool guest_events = false;
 +
-+	/* Extension specific probe function */
-+	unsigned long (*probe)(struct kvm_vcpu *vcpu, unsigned long extid);
- };
- 
- void kvm_riscv_vcpu_sbi_forward(struct kvm_vcpu *vcpu, struct kvm_run *run);
-diff --git a/arch/riscv/kvm/vcpu_sbi_base.c b/arch/riscv/kvm/vcpu_sbi_base.c
-index 5d65c63..89e2415 100644
---- a/arch/riscv/kvm/vcpu_sbi_base.c
-+++ b/arch/riscv/kvm/vcpu_sbi_base.c
-@@ -19,6 +19,7 @@ static int kvm_sbi_ext_base_handler(struct kvm_vcpu *vcpu, struct kvm_run *run,
++	if (event->attr.config1 & RISCV_KVM_PMU_CONFIG1_GUEST_EVENTS)
++		guest_events = true;
++	if (event->attr.exclude_kernel)
++		cflags |= guest_events ? SBI_PMU_CFG_FLAG_SET_VSINH : SBI_PMU_CFG_FLAG_SET_SINH;
++	if (event->attr.exclude_user)
++		cflags |= guest_events ? SBI_PMU_CFG_FLAG_SET_VUINH : SBI_PMU_CFG_FLAG_SET_UINH;
++	if (guest_events && event->attr.exclude_hv)
++		cflags |= SBI_PMU_CFG_FLAG_SET_SINH;
++	if (event->attr.exclude_host)
++		cflags |= SBI_PMU_CFG_FLAG_SET_UINH | SBI_PMU_CFG_FLAG_SET_SINH;
++	if (event->attr.exclude_guest)
++		cflags |= SBI_PMU_CFG_FLAG_SET_VSINH | SBI_PMU_CFG_FLAG_SET_VUINH;
++
++	return cflags;
++}
++
+ static int pmu_sbi_ctr_get_idx(struct perf_event *event)
  {
- 	int ret = 0;
- 	struct kvm_cpu_context *cp = &vcpu->arch.guest_context;
-+	const struct kvm_vcpu_sbi_extension *sbi_ext;
+ 	struct hw_perf_event *hwc = &event->hw;
+@@ -308,11 +329,7 @@ static int pmu_sbi_ctr_get_idx(struct perf_event *event)
+ 	uint64_t cbase = 0;
+ 	unsigned long cflags = 0;
  
- 	switch (cp->a6) {
- 	case SBI_EXT_BASE_GET_SPEC_VERSION:
-@@ -43,8 +44,16 @@ static int kvm_sbi_ext_base_handler(struct kvm_vcpu *vcpu, struct kvm_run *run,
- 			 */
- 			kvm_riscv_vcpu_sbi_forward(vcpu, run);
- 			*exit = true;
--		} else
--			*out_val = kvm_vcpu_sbi_find_ext(cp->a0) ? 1 : 0;
-+		} else {
-+			sbi_ext = kvm_vcpu_sbi_find_ext(cp->a0);
-+			if (sbi_ext) {
-+				if (sbi_ext->probe)
-+					*out_val = sbi_ext->probe(vcpu, cp->a0);
-+				else
-+					*out_val = 1;
-+			} else
-+				*out_val = 0;
-+		}
- 		break;
- 	case SBI_EXT_BASE_GET_MVENDORID:
- 		*out_val = vcpu->arch.mvendorid;
+-	if (event->attr.exclude_kernel)
+-		cflags |= SBI_PMU_CFG_FLAG_SET_SINH;
+-	if (event->attr.exclude_user)
+-		cflags |= SBI_PMU_CFG_FLAG_SET_UINH;
+-
++	cflags = pmu_sbi_get_filter_flags(event);
+ 	/* retrieve the available counter index */
+ #if defined(CONFIG_32BIT)
+ 	ret = sbi_ecall(SBI_EXT_PMU, SBI_EXT_PMU_COUNTER_CFG_MATCH, cbase,
+diff --git a/include/linux/perf/riscv_pmu.h b/include/linux/perf/riscv_pmu.h
+index a1c3f77..1c42146 100644
+--- a/include/linux/perf/riscv_pmu.h
++++ b/include/linux/perf/riscv_pmu.h
+@@ -26,6 +26,8 @@
+ 
+ #define RISCV_PMU_STOP_FLAG_RESET 1
+ 
++#define RISCV_KVM_PMU_CONFIG1_GUEST_EVENTS 0x1
++
+ struct cpu_hw_events {
+ 	/* currently enabled events */
+ 	int			n_events;
 -- 
 2.25.1
 
