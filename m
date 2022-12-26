@@ -1,129 +1,148 @@
-From: Conor Dooley <conor@kernel.org>
-Date: Thu, 22 Dec 2022 22:58:46 +0000
-Subject: [PATCH v2 04/13] riscv: hwcap: make ISA extension ids can be
- used in asm
-In-Reply-To: <Y44+QWJfaa7haS/5@spud>
-References: <20221204174632.3677-1-jszhang@kernel.org>
- <20221204174632.3677-5-jszhang@kernel.org>
- <Y44+QWJfaa7haS/5@spud>
-Message-ID: <Y6ThJkjhdee2uNfS@spud>
+From: Andrew Jones <ajones@ventanamicro.com>
+Date: Mon, 26 Dec 2022 19:56:53 +0100
+Subject: [PATCH 0/9] RISC-V: Apply Zicboz to clear_page and memset
+In-Reply-To: <Y6Gwq3f6sFa2gBNZ@wendy>
+References: <20221027130247.31634-1-ajones@ventanamicro.com>
+ <Y6Gwq3f6sFa2gBNZ@wendy>
+Message-ID: <20221226185653.f4lsko7e5mblfjg4@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Dec 05, 2022 at 06:53:53PM +0000, Conor Dooley wrote:
-> Hey Jisheng,
+On Tue, Dec 20, 2022 at 12:55:07PM +0000, Conor Dooley wrote:
+> Hey Drew,
 > 
-> On Mon, Dec 05, 2022 at 01:46:23AM +0800, Jisheng Zhang wrote:
-> > We will make use of ISA extension in asm files, so make the multi-letter
-> > RISC-V ISA extension IDs macros rather than enums and move them and
-> > those base ISA extension IDs to suitable place.
+> I assume you're not gonna respin this one before the xmas holidays etc,
+> but a v2 is on the cards, right?
+
+Hi Conor,
+
+A v2 is definitely on my TODO. I'll try to get one out soon.
+
+Thanks,
+drew
+
 > 
-> Which base ISA extension IDs? Changelog should match the patch contents,
-> and it's a little unclear here since the base ISA extension IDs are
-> visible here but in the context not the diff.
+> Thanks,
+> Conor.
 > 
+> On Thu, Oct 27, 2022 at 03:02:38PM +0200, Andrew Jones wrote:
+> > When the Zicboz extension is available we can more rapidly zero naturally
+> > aligned Zicboz block sized chunks of memory. As pages are always page
+> > aligned and are larger than any Zicboz block size will be, then
+> > clear_page() appears to be a good candidate for the extension. While cycle
+> > count and energy consumption should also be considered, we can be pretty
+> > certain that implementing clear_page() with the Zicboz extension is a win
+> > by comparing the new dynamic instruction count with its current count[1].
+> > Doing so we see that the new count is less than half the old count (see
+> > patch4's commit message for more details). Another candidate for the
+> > extension is memset(), but, since memset() isn't just used for zeroing
+> > memory and it accepts arbitrarily aligned addresses and arbitrary sizes,
+> > it's not as obvious if adding support for Zicboz will be an overall win.
+> > In order to make a determination, I've done some analysis and wrote my
+> > conclusions in the bullets below.
 > > 
-> > Signed-off-by: Jisheng Zhang <jszhang@kernel.org>
-> > Reviewed-by: Heiko Stuebner <heiko@sntech.de>
-> > Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
-> > ---
-> >  arch/riscv/include/asm/hwcap.h | 43 ++++++++++++++++------------------
-> >  1 file changed, 20 insertions(+), 23 deletions(-)
+> > * When compiling the kernel without CONFIG_RISCV_ISA_ZICBOZ, memset()
+> >   doesn't change, so that's fine.
 > > 
-> > diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
-> > index b22525290073..996884986fea 100644
-> > --- a/arch/riscv/include/asm/hwcap.h
-> > +++ b/arch/riscv/include/asm/hwcap.h
-> > @@ -12,20 +12,6 @@
-> >  #include <linux/bits.h>
-> >  #include <uapi/asm/hwcap.h>
-> >  
-> > -#ifndef __ASSEMBLY__
-> > -#include <linux/jump_label.h>
-> > -/*
-> > - * This yields a mask that user programs can use to figure out what
-> > - * instruction set this cpu supports.
-> > - */
-> > -#define ELF_HWCAP		(elf_hwcap)
-> > -
-> > -enum {
-> > -	CAP_HWCAP = 1,
-> > -};
-> > -
-> > -extern unsigned long elf_hwcap;
-> > -
-> >  #define RISCV_ISA_EXT_a		('a' - 'a')
-> >  #define RISCV_ISA_EXT_c		('c' - 'a')
-> >  #define RISCV_ISA_EXT_d		('d' - 'a')
-> > @@ -46,22 +32,33 @@ extern unsigned long elf_hwcap;
-> >  #define RISCV_ISA_EXT_BASE 26
-> >  
-> >  /*
-> > - * This enum represent the logical ID for each multi-letter RISC-V ISA extension.
-> > + * These macros represent the logical ID for each multi-letter RISC-V ISA extension.
-> >   * The logical ID should start from RISCV_ISA_EXT_BASE and must not exceed
-> >   * RISCV_ISA_EXT_MAX. 0-25 range is reserved for single letter
-> >   * extensions while all the multi-letter extensions should define the next
-> >   * available logical extension id.
-> >   */
-> > -enum riscv_isa_ext_id {
-> > -	RISCV_ISA_EXT_SSCOFPMF = RISCV_ISA_EXT_BASE,
-> > -	RISCV_ISA_EXT_SVPBMT,
-> > -	RISCV_ISA_EXT_ZICBOM,
-> > -	RISCV_ISA_EXT_ZIHINTPAUSE,
-> > -	RISCV_ISA_EXT_SSTC,
-> > -	RISCV_ISA_EXT_SVINVAL,
-> > -	RISCV_ISA_EXT_ID_MAX = RISCV_ISA_EXT_MAX,
-> > +#define RISCV_ISA_EXT_SSCOFPMF		26
-> > +#define RISCV_ISA_EXT_SVPBMT		27
-> > +#define RISCV_ISA_EXT_ZICBOM		28
-> > +#define RISCV_ISA_EXT_ZIHINTPAUSE	29
-> > +#define RISCV_ISA_EXT_SSTC		30
-> > +#define RISCV_ISA_EXT_SVINVAL		31
-> 
-> Could you re-order these alphabetically when you move them please?
-
-On reflection, this is a horrific idea - don't bother. It'd only be
-temporary anyway as it'd need massaging when the next extension comes
-along.
-
-Either people will have a slightly harder seeing if something is added,
-or a "slightly" harder time finding which is the next free number or
-have to reshuffle the whole thing.
-The latter sounds like a prime bug breeding ground, while the former is
-just a search away.
-So yeah, don't bother & apologies for the noise!
-
-> > +
-> > +#ifndef __ASSEMBLY__
-> > +#include <linux/jump_label.h>
-> > +/*
-> > + * This yields a mask that user programs can use to figure out what
-> > + * instruction set this cpu supports.
-> > + */
-> > +#define ELF_HWCAP		(elf_hwcap)
-> > +
-> > +enum {
-> > +	CAP_HWCAP = 1,
-> >  };
-> >  
-> > +extern unsigned long elf_hwcap;
-> > +
-> >  /*
-> >   * This enum represents the logical ID for each RISC-V ISA extension static
-> >   * keys. We can use static key to optimize code path if some ISA extensions
+> > * The overhead added to memset() when the Zicboz extension isn't present,
+> >   but CONFIG_RISCV_ISA_ZICBOZ is selected, is 3 jumps to known targets,
+> >   which I believe is fine.
+> > 
+> > * The overhead added to a memset() invocation which is not zeroing memory
+> >   is 7 instructions, where 3 are branches. This seems fine and,
+> >   furthermore, memset() is almost always invoked to zero memory (99% [2]).
+> > 
+> > * When memset() is invoked to zero memory, the proposed Zicboz extended
+> >   memset() always has a lower dynamic instruction count than the current
+> >   memset() as long as the input address is Zicboz block aligned and the
+> >   length is >= the block size.
+> > 
+> > * When memset() is invoked to zero memory, the proposed Zicboz extended
+> >   memset() is always worse for unaligned or too small inputs than the
+> >   current memset(), but it's only at most a few dozen instructions worse.
+> >   I think this is probably fine, especially considering the large majority
+> >   of zeroing invocations are 64 bytes or larger and are aligned to a
+> >   power-of-2 boundary, 64-byte or larger (77% [2]).
+> > 
+> > [1] I ported the functions under test to userspace and linked them with
+> >     a test program. Then, I ran them under gdb with a script[3] which
+> >     counted instructions by single stepping.
+> > 
+> > [2] I wrote bpftrace scripts[4] to count memset() invocations to see the
+> >     frequency of it being used to zero memory and have block size aligned
+> >     input addresses with block size or larger lengths. The workload was
+> >     just random desktop stuff including streaming video and compiling.
+> >     While I did run this on my x86 notebook, I still expect the data to
+> >     be representative on RISC-V. Note, x86 has clear_page() so the
+> >     memset() data regarding alignment and size weren't over inflated by
+> >     page zeroing invocations. Grepping also shows the large majority of
+> >     memset() calls are to zero memory (93%).
+> > 
+> > [3] https://gist.github.com/jones-drew/487791c956ceca8c18adc2847eec9c60
+> > [4] https://gist.github.com/jones-drew/1e860692cf6fc0fb2a82a04c9ce720fe
+> > 
+> > These patches are based on the following pending series
+> > 
+> > 1. "[PATCH v2 0/3] RISC-V: Ensure Zicbom has a valid block size"
+> >    20221024091309.406906-1-ajones at ventanamicro.com
+> > 
+> > 2. "[PATCH 0/8] riscv: improve boot time isa extensions handling"
+> >    20221006070818.3616-1-jszhang at kernel.org
+> >    Also including the additional patch proposed here
+> >    20221013162038.ehseju2neic2xu5z at kamzik
+> > 
+> > The patches are also available here
+> > https://github.com/jones-drew/linux/commits/riscv/zicboz
+> > 
+> > To test over QEMU this branch may be used to enable Zicboz
+> > https://gitlab.com/jones-drew/qemu/-/commits/riscv/zicboz
+> > 
+> > To test running a KVM guest with Zicboz this kvmtool branch may be used
+> > https://github.com/jones-drew/kvmtool/commits/riscv/zicboz
+> > 
+> > Thanks,
+> > drew
+> > 
+> > Andrew Jones (9):
+> >   RISC-V: Factor out body of riscv_init_cbom_blocksize loop
+> >   RISC-V: Add Zicboz detection and block size parsing
+> >   RISC-V: insn-def: Define cbo.zero
+> >   RISC-V: Use Zicboz in clear_page when available
+> >   RISC-V: KVM: Provide UAPI for Zicboz block size
+> >   RISC-V: KVM: Expose Zicboz to the guest
+> >   RISC-V: lib: Improve memset assembler formatting
+> >   RISC-V: lib: Use named labels in memset
+> >   RISC-V: Use Zicboz in memset when available
+> > 
+> >  arch/riscv/Kconfig                  |  13 ++
+> >  arch/riscv/include/asm/cacheflush.h |   3 +-
+> >  arch/riscv/include/asm/hwcap.h      |   1 +
+> >  arch/riscv/include/asm/insn-def.h   |  50 ++++++
+> >  arch/riscv/include/asm/page.h       |   6 +-
+> >  arch/riscv/include/uapi/asm/kvm.h   |   2 +
+> >  arch/riscv/kernel/cpu.c             |   1 +
+> >  arch/riscv/kernel/cpufeature.c      |  10 ++
+> >  arch/riscv/kernel/setup.c           |   2 +-
+> >  arch/riscv/kvm/vcpu.c               |  11 ++
+> >  arch/riscv/lib/Makefile             |   1 +
+> >  arch/riscv/lib/clear_page.S         |  28 ++++
+> >  arch/riscv/lib/memset.S             | 241 +++++++++++++++++++---------
+> >  arch/riscv/mm/cacheflush.c          |  64 +++++---
+> >  14 files changed, 325 insertions(+), 108 deletions(-)
+> >  create mode 100644 arch/riscv/lib/clear_page.S
+> > 
 > > -- 
-> > 2.37.2
+> > 2.37.3
+> > 
+> > 
+> > _______________________________________________
+> > linux-riscv mailing list
+> > linux-riscv at lists.infradead.org
+> > http://lists.infradead.org/mailman/listinfo/linux-riscv
 > > 
 
 
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 228 bytes
-Desc: not available
-URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20221222/57b9f567/attachment.sig>
+
