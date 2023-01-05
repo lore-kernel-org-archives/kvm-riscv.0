@@ -1,135 +1,45 @@
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-Date: Mon, 2 Jan 2023 11:43:40 +1100
-Subject: [PATCH kernel v4] KVM: PPC: Make KVM_CAP_IRQFD_RESAMPLE support
- platform dependent
-In-Reply-To: <5178485f-60d8-0f16-558b-05207102a37e@ozlabs.ru>
-References: <20221003235722.2085145-1-aik@ozlabs.ru>
- <7a790aa8-c643-1098-4d28-bd3b10399fcd@ozlabs.ru>
- <5178485f-60d8-0f16-558b-05207102a37e@ozlabs.ru>
-Message-ID: <cea59fc2-1052-53fd-42b0-ac53f5699aa9@ozlabs.ru>
+From: Paul E. McKenney <paulmck@kernel.org>
+Date: Wed,  4 Jan 2023 16:37:51 -0800
+Subject: [PATCH rcu 05/27] arch/riscv/kvm: Remove "select SRCU"
+In-Reply-To: <20230105003759.GA1769545@paulmck-ThinkPad-P17-Gen-1>
+References: <20230105003759.GA1769545@paulmck-ThinkPad-P17-Gen-1>
+Message-ID: <20230105003813.1770367-5-paulmck@kernel.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Paolo, ping?
+Now that the SRCU Kconfig option is unconditionally selected, there is
+no longer any point in selecting it.  Therefore, remove the "select SRCU"
+Kconfig statements.
 
+Signed-off-by: Paul E. McKenney <paulmck@kernel.org>
+Cc: Anup Patel <anup@brainfault.org>
+Cc: Atish Patra <atishp@atishpatra.org>
+Cc: Paul Walmsley <paul.walmsley@sifive.com>
+Cc: Palmer Dabbelt <palmer@dabbelt.com>
+Cc: Albert Ou <aou@eecs.berkeley.edu>
+Cc: <kvm@vger.kernel.org>
+Cc: <kvm-riscv@lists.infradead.org>
+Cc: <linux-riscv@lists.infradead.org>
+---
+ arch/riscv/kvm/Kconfig | 1 -
+ 1 file changed, 1 deletion(-)
 
-On 06/12/2022 15:39, Alexey Kardashevskiy wrote:
-> Paolo, ping? :)
-> 
-> 
-> On 27/10/2022 18:38, Alexey Kardashevskiy wrote:
->> Paolo, ping?
->>
->>
->> On 04/10/2022 10:57, Alexey Kardashevskiy wrote:
->>> When introduced, IRQFD resampling worked on POWER8 with XICS. However
->>> KVM on POWER9 has never implemented it - the compatibility mode code
->>> ("XICS-on-XIVE") misses the kvm_notify_acked_irq() call and the native
->>> XIVE mode does not handle INTx in KVM at all.
->>>
->>> This moved the capability support advertising to platforms and stops
->>> advertising it on XIVE, i.e. POWER9 and later.
->>>
->>> This should cause no behavioural change for other architectures.
->>>
->>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->>> Acked-by: Nicholas Piggin <npiggin@gmail.com>
->>> Acked-by: Marc Zyngier <maz@kernel.org>
->>> ---
->>> Changes:
->>> v4:
->>> * removed incorrect clause about changing behavoir on MIPS and RISCV
->>>
->>> v3:
->>> * removed all ifdeferry
->>> * removed the capability for MIPS and RISCV
->>> * adjusted the commit log about MIPS and RISCV
->>>
->>> v2:
->>> * removed ifdef for ARM64.
->>> ---
->>> ? arch/arm64/kvm/arm.c?????? | 1 +
->>> ? arch/powerpc/kvm/powerpc.c | 6 ++++++
->>> ? arch/s390/kvm/kvm-s390.c?? | 1 +
->>> ? arch/x86/kvm/x86.c???????? | 1 +
->>> ? virt/kvm/kvm_main.c??????? | 1 -
->>> ? 5 files changed, 9 insertions(+), 1 deletion(-)
->>>
->>> diff --git a/arch/arm64/kvm/arm.c b/arch/arm64/kvm/arm.c
->>> index 2ff0ef62abad..d2daa4d375b5 100644
->>> --- a/arch/arm64/kvm/arm.c
->>> +++ b/arch/arm64/kvm/arm.c
->>> @@ -218,6 +218,7 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, 
->>> long ext)
->>> ????? case KVM_CAP_VCPU_ATTRIBUTES:
->>> ????? case KVM_CAP_PTP_KVM:
->>> ????? case KVM_CAP_ARM_SYSTEM_SUSPEND:
->>> +??? case KVM_CAP_IRQFD_RESAMPLE:
->>> ????????? r = 1;
->>> ????????? break;
->>> ????? case KVM_CAP_SET_GUEST_DEBUG2:
->>> diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
->>> index fb1490761c87..908ce8bd91c9 100644
->>> --- a/arch/powerpc/kvm/powerpc.c
->>> +++ b/arch/powerpc/kvm/powerpc.c
->>> @@ -593,6 +593,12 @@ int kvm_vm_ioctl_check_extension(struct kvm 
->>> *kvm, long ext)
->>> ????????? break;
->>> ? #endif
->>> +#ifdef CONFIG_HAVE_KVM_IRQFD
->>> +??? case KVM_CAP_IRQFD_RESAMPLE:
->>> +??????? r = !xive_enabled();
->>> +??????? break;
->>> +#endif
->>> +
->>> ????? case KVM_CAP_PPC_ALLOC_HTAB:
->>> ????????? r = hv_enabled;
->>> ????????? break;
->>> diff --git a/arch/s390/kvm/kvm-s390.c b/arch/s390/kvm/kvm-s390.c
->>> index edfd4bbd0cba..7521adadb81b 100644
->>> --- a/arch/s390/kvm/kvm-s390.c
->>> +++ b/arch/s390/kvm/kvm-s390.c
->>> @@ -577,6 +577,7 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, 
->>> long ext)
->>> ????? case KVM_CAP_SET_GUEST_DEBUG:
->>> ????? case KVM_CAP_S390_DIAG318:
->>> ????? case KVM_CAP_S390_MEM_OP_EXTENSION:
->>> +??? case KVM_CAP_IRQFD_RESAMPLE:
->>> ????????? r = 1;
->>> ????????? break;
->>> ????? case KVM_CAP_SET_GUEST_DEBUG2:
->>> diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
->>> index 43a6a7efc6ec..2d6c5a8fdf14 100644
->>> --- a/arch/x86/kvm/x86.c
->>> +++ b/arch/x86/kvm/x86.c
->>> @@ -4395,6 +4395,7 @@ int kvm_vm_ioctl_check_extension(struct kvm 
->>> *kvm, long ext)
->>> ????? case KVM_CAP_VAPIC:
->>> ????? case KVM_CAP_ENABLE_CAP:
->>> ????? case KVM_CAP_VM_DISABLE_NX_HUGE_PAGES:
->>> +??? case KVM_CAP_IRQFD_RESAMPLE:
->>> ????????? r = 1;
->>> ????????? break;
->>> ????? case KVM_CAP_EXIT_HYPERCALL:
->>> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
->>> index 584a5bab3af3..05cf94013f02 100644
->>> --- a/virt/kvm/kvm_main.c
->>> +++ b/virt/kvm/kvm_main.c
->>> @@ -4447,7 +4447,6 @@ static long 
->>> kvm_vm_ioctl_check_extension_generic(struct kvm *kvm, long arg)
->>> ? #endif
->>> ? #ifdef CONFIG_HAVE_KVM_IRQFD
->>> ????? case KVM_CAP_IRQFD:
->>> -??? case KVM_CAP_IRQFD_RESAMPLE:
->>> ? #endif
->>> ????? case KVM_CAP_IOEVENTFD_ANY_LENGTH:
->>> ????? case KVM_CAP_CHECK_EXTENSION_VM:
->>
-> 
-
+diff --git a/arch/riscv/kvm/Kconfig b/arch/riscv/kvm/Kconfig
+index f36a737d5f96d..6bc9b290c1283 100644
+--- a/arch/riscv/kvm/Kconfig
++++ b/arch/riscv/kvm/Kconfig
+@@ -27,7 +27,6 @@ config KVM
+ 	select KVM_XFER_TO_GUEST_WORK
+ 	select HAVE_KVM_VCPU_ASYNC_IOCTL
+ 	select HAVE_KVM_EVENTFD
+-	select SRCU
+ 	help
+ 	  Support hosting virtualized guest machines.
+ 
 -- 
-Alexey
+2.31.1.189.g2e36527f23
+
 
