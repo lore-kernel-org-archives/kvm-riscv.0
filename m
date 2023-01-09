@@ -1,61 +1,25 @@
-From: Paul E. McKenney <paulmck@kernel.org>
-Date: Sat, 7 Jan 2023 08:03:04 -0800
-Subject: [PATCH rcu 05/27] arch/riscv/kvm: Remove "select SRCU"
-In-Reply-To: <CAAhSdy1VsT48WPQHZ5Pj5WNZRPUQvciFPF2LySawVv27tehD+g@mail.gmail.com>
-References: <20230105003759.GA1769545@paulmck-ThinkPad-P17-Gen-1>
- <20230105003813.1770367-5-paulmck@kernel.org>
- <CAAhSdy1VsT48WPQHZ5Pj5WNZRPUQvciFPF2LySawVv27tehD+g@mail.gmail.com>
-Message-ID: <20230107160304.GZ4028633@paulmck-ThinkPad-P17-Gen-1>
+From: David Matlack <dmatlack@google.com>
+Date: Mon, 9 Jan 2023 10:55:45 -0800
+Subject: [RFC PATCH 10/37] KVM: MMU: Move struct kvm_page_fault to common code
+In-Reply-To: <ce1ea196-d854-18bd-0e60-91985ed5aaea@redhat.com>
+References: <20221208193857.4090582-1-dmatlack@google.com> <20221208193857.4090582-11-dmatlack@google.com>
+ <ce1ea196-d854-18bd-0e60-91985ed5aaea@redhat.com>
+Message-ID: <CALzav=fVbvKQMhSBD0AdrRTH+jDyRG0Hf5M-H7vCtRCR1Lk9sw@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sat, Jan 07, 2023 at 03:28:06PM +0530, Anup Patel wrote:
-> On Thu, Jan 5, 2023 at 6:08 AM Paul E. McKenney <paulmck@kernel.org> wrote:
-> >
-> > Now that the SRCU Kconfig option is unconditionally selected, there is
-> > no longer any point in selecting it.  Therefore, remove the "select SRCU"
-> > Kconfig statements.
-> >
-> > Signed-off-by: Paul E. McKenney <paulmck@kernel.org>
-> > Cc: Anup Patel <anup@brainfault.org>
-> > Cc: Atish Patra <atishp@atishpatra.org>
-> > Cc: Paul Walmsley <paul.walmsley@sifive.com>
-> > Cc: Palmer Dabbelt <palmer@dabbelt.com>
-> > Cc: Albert Ou <aou@eecs.berkeley.edu>
-> > Cc: <kvm@vger.kernel.org>
-> > Cc: <kvm-riscv@lists.infradead.org>
-> > Cc: <linux-riscv@lists.infradead.org>
-> 
-> For KVM RISC-V:
-> Acked-by: Anup Patel <anup@brainfault.org>
+On Mon, Dec 12, 2022 at 2:27 PM Paolo Bonzini <pbonzini@redhat.com> wrote:
+>
+> On 12/8/22 20:38, David Matlack wrote:
+> > +
+> > +     /* Derived from mmu and global state.  */
+> > +     const bool is_tdp;
+>
+> I think this could stay in the architecture-independent part.
 
-Thank you, Anup!  I will apply this on my next rebase.
-
-							Thanx, Paul
-
-> Thanks,
-> Anup
-> 
-> > ---
-> >  arch/riscv/kvm/Kconfig | 1 -
-> >  1 file changed, 1 deletion(-)
-> >
-> > diff --git a/arch/riscv/kvm/Kconfig b/arch/riscv/kvm/Kconfig
-> > index f36a737d5f96d..6bc9b290c1283 100644
-> > --- a/arch/riscv/kvm/Kconfig
-> > +++ b/arch/riscv/kvm/Kconfig
-> > @@ -27,7 +27,6 @@ config KVM
-> >         select KVM_XFER_TO_GUEST_WORK
-> >         select HAVE_KVM_VCPU_ASYNC_IOCTL
-> >         select HAVE_KVM_EVENTFD
-> > -       select SRCU
-> >         help
-> >           Support hosting virtualized guest machines.
-> >
-> > --
-> > 2.31.1.189.g2e36527f23
-> >
+I agree but until there's a use case for accessing it in common code
+I'm inclined to leave it in x86's kvm_page_fault_arch.
 
