@@ -1,39 +1,40 @@
 From: Jisheng Zhang <jszhang@kernel.org>
-Date: Thu, 12 Jan 2023 01:10:25 +0800
-Subject: [PATCH v3 11/13] riscv: cpu_relax: switch to riscv_has_extension_likely()
+Date: Thu, 12 Jan 2023 01:10:26 +0800
+Subject: [PATCH v3 12/13] riscv: KVM: Switch has_svinval() to riscv_has_extension_unlikely()
 In-Reply-To: <20230111171027.2392-1-jszhang@kernel.org>
 References: <20230111171027.2392-1-jszhang@kernel.org>
-Message-ID: <20230111171027.2392-12-jszhang@kernel.org>
+Message-ID: <20230111171027.2392-13-jszhang@kernel.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Switch cpu_relax() from static branch to the new helper
-riscv_has_extension_likely()
+From: Andrew Jones <ajones@ventanamicro.com>
 
-Signed-off-by: Jisheng Zhang <jszhang@kernel.org>
-Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
-Reviewed-by: Heiko Stuebner <heiko@sntech.de>
+Switch has_svinval() from static branch to the new helper
+riscv_has_extension_unlikely().
+
+Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
 Reviewed-by: Guo Ren <guoren@kernel.org>
 ---
- arch/riscv/include/asm/vdso/processor.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/riscv/kvm/tlb.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/arch/riscv/include/asm/vdso/processor.h b/arch/riscv/include/asm/vdso/processor.h
-index fa70cfe507aa..edf0e25e43d1 100644
---- a/arch/riscv/include/asm/vdso/processor.h
-+++ b/arch/riscv/include/asm/vdso/processor.h
-@@ -10,7 +10,7 @@
+diff --git a/arch/riscv/kvm/tlb.c b/arch/riscv/kvm/tlb.c
+index 309d79b3e5cd..aa3da18ad873 100644
+--- a/arch/riscv/kvm/tlb.c
++++ b/arch/riscv/kvm/tlb.c
+@@ -15,8 +15,7 @@
+ #include <asm/hwcap.h>
+ #include <asm/insn-def.h>
  
- static inline void cpu_relax(void)
- {
--	if (!static_branch_likely(&riscv_isa_ext_keys[RISCV_ISA_EXT_KEY_ZIHINTPAUSE])) {
-+	if (!riscv_has_extension_likely(RISCV_ISA_EXT_ZIHINTPAUSE)) {
- #ifdef __riscv_muldiv
- 		int dummy;
- 		/* In lieu of a halt instruction, induce a long-latency stall. */
+-#define has_svinval()	\
+-	static_branch_unlikely(&riscv_isa_ext_keys[RISCV_ISA_EXT_KEY_SVINVAL])
++#define has_svinval()	riscv_has_extension_unlikely(RISCV_ISA_EXT_SVINVAL)
+ 
+ void kvm_riscv_local_hfence_gvma_vmid_gpa(unsigned long vmid,
+ 					  gpa_t gpa, gpa_t gpsz,
 -- 
 2.38.1
 
