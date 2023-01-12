@@ -1,60 +1,173 @@
 From: Anup Patel <apatel@ventanamicro.com>
-Date: Thu, 12 Jan 2023 19:32:57 +0530
-Subject: [PATCH 0/7] RISC-V KVM virtualize AIA CSRs
-Message-ID: <20230112140304.1830648-1-apatel@ventanamicro.com>
+Date: Thu, 12 Jan 2023 19:32:58 +0530
+Subject: [PATCH 1/7] RISC-V: Add AIA related CSR defines
+In-Reply-To: <20230112140304.1830648-1-apatel@ventanamicro.com>
+References: <20230112140304.1830648-1-apatel@ventanamicro.com>
+Message-ID: <20230112140304.1830648-2-apatel@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The RISC-V AIA specification is now frozen as-per the RISC-V international
-process. The latest frozen specifcation can be found at:
-https://github.com/riscv/riscv-aia/releases/download/1.0-RC1/riscv-interrupts-1.0-RC1.pdf
+The RISC-V AIA specification improves handling per-HART local interrupts
+in a backward compatible manner. This patch adds defines for new RISC-V
+AIA CSRs.
 
-This series implements first phase of AIA virtualization which targets
-virtualizing AIA CSRs. This also provides a foundation for the second
-phase of AIA virtualization which will target in-kernel AIA irqchip
-(including both IMSIC and APLIC).
+Signed-off-by: Anup Patel <apatel@ventanamicro.com>
+---
+ arch/riscv/include/asm/csr.h | 93 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 93 insertions(+)
 
-The first two patches are shared with the "Linux RISC-V AIA Support"
-series which adds AIA driver support.
-
-To test this series, use AIA drivers from the "Linux RISC-V AIA Support"
-series and use KVMTOOL from the riscv_aia_v1 branch at:
-https://github.com/avpatel/kvmtoo.git
-
-These patches can also be found in the riscv_kvm_aia_csr_v1 branch at:
-https://github.com/avpatel/linux.git
-
-Anup Patel (7):
-  RISC-V: Add AIA related CSR defines
-  RISC-V: Detect AIA CSRs from ISA string
-  RISC-V: KVM: Drop the _MASK suffix from hgatp.VMID mask defines
-  RISC-V: KVM: Initial skeletal support for AIA
-  RISC-V: KVM: Add ONE_REG interface for AIA CSRs
-  RISC-V: KVM: Virtualize per-HART AIA CSRs
-  RISC-V: KVM: Implement guest external interrupt line management
-
- arch/riscv/include/asm/csr.h      | 101 ++++-
- arch/riscv/include/asm/hwcap.h    |   8 +
- arch/riscv/include/asm/kvm_aia.h  | 137 +++++++
- arch/riscv/include/asm/kvm_host.h |  14 +-
- arch/riscv/include/uapi/asm/kvm.h |  22 +-
- arch/riscv/kernel/cpu.c           |   2 +
- arch/riscv/kernel/cpufeature.c    |   2 +
- arch/riscv/kvm/Makefile           |   1 +
- arch/riscv/kvm/aia.c              | 624 ++++++++++++++++++++++++++++++
- arch/riscv/kvm/main.c             |  14 +
- arch/riscv/kvm/mmu.c              |   3 +-
- arch/riscv/kvm/vcpu.c             | 185 +++++++--
- arch/riscv/kvm/vcpu_insn.c        |   4 +-
- arch/riscv/kvm/vm.c               |   4 +
- arch/riscv/kvm/vmid.c             |   4 +-
- 15 files changed, 1072 insertions(+), 53 deletions(-)
- create mode 100644 arch/riscv/include/asm/kvm_aia.h
- create mode 100644 arch/riscv/kvm/aia.c
-
+diff --git a/arch/riscv/include/asm/csr.h b/arch/riscv/include/asm/csr.h
+index 0e571f6483d9..d608dac4b19f 100644
+--- a/arch/riscv/include/asm/csr.h
++++ b/arch/riscv/include/asm/csr.h
+@@ -73,7 +73,10 @@
+ #define IRQ_S_EXT		9
+ #define IRQ_VS_EXT		10
+ #define IRQ_M_EXT		11
++#define IRQ_S_GEXT		12
+ #define IRQ_PMU_OVF		13
++#define IRQ_LOCAL_MAX		(IRQ_PMU_OVF + 1)
++#define IRQ_LOCAL_MASK		((_AC(1, UL) << IRQ_LOCAL_MAX) - 1)
+ 
+ /* Exception causes */
+ #define EXC_INST_MISALIGNED	0
+@@ -156,6 +159,27 @@
+ 				 (_AC(1, UL) << IRQ_S_TIMER) | \
+ 				 (_AC(1, UL) << IRQ_S_EXT))
+ 
++/* AIA CSR bits */
++#define TOPI_IID_SHIFT		16
++#define TOPI_IID_MASK		_AC(0xfff, UL)
++#define TOPI_IPRIO_MASK		_AC(0xff, UL)
++#define TOPI_IPRIO_BITS		8
++
++#define TOPEI_ID_SHIFT		16
++#define TOPEI_ID_MASK		_AC(0x7ff, UL)
++#define TOPEI_PRIO_MASK		_AC(0x7ff, UL)
++
++#define ISELECT_IPRIO0		0x30
++#define ISELECT_IPRIO15		0x3f
++#define ISELECT_MASK		_AC(0x1ff, UL)
++
++#define HVICTL_VTI		_AC(0x40000000, UL)
++#define HVICTL_IID		_AC(0x0fff0000, UL)
++#define HVICTL_IID_SHIFT	16
++#define HVICTL_DPR		_AC(0x00000200, UL)
++#define HVICTL_IPRIOM		_AC(0x00000100, UL)
++#define HVICTL_IPRIO		_AC(0x000000ff, UL)
++
+ /* xENVCFG flags */
+ #define ENVCFG_STCE			(_AC(1, ULL) << 63)
+ #define ENVCFG_PBMTE			(_AC(1, ULL) << 62)
+@@ -250,6 +274,18 @@
+ #define CSR_STIMECMP		0x14D
+ #define CSR_STIMECMPH		0x15D
+ 
++/* Supervisor-Level Window to Indirectly Accessed Registers (AIA) */
++#define CSR_SISELECT		0x150
++#define CSR_SIREG		0x151
++
++/* Supervisor-Level Interrupts (AIA) */
++#define CSR_STOPEI		0x15c
++#define CSR_STOPI		0xdb0
++
++/* Supervisor-Level High-Half CSRs (AIA) */
++#define CSR_SIEH		0x114
++#define CSR_SIPH		0x154
++
+ #define CSR_VSSTATUS		0x200
+ #define CSR_VSIE		0x204
+ #define CSR_VSTVEC		0x205
+@@ -279,8 +315,32 @@
+ #define CSR_HGATP		0x680
+ #define CSR_HGEIP		0xe12
+ 
++/* Virtual Interrupts and Interrupt Priorities (H-extension with AIA) */
++#define CSR_HVIEN		0x608
++#define CSR_HVICTL		0x609
++#define CSR_HVIPRIO1		0x646
++#define CSR_HVIPRIO2		0x647
++
++/* VS-Level Window to Indirectly Accessed Registers (H-extension with AIA) */
++#define CSR_VSISELECT		0x250
++#define CSR_VSIREG		0x251
++
++/* VS-Level Interrupts (H-extension with AIA) */
++#define CSR_VSTOPEI		0x25c
++#define CSR_VSTOPI		0xeb0
++
++/* Hypervisor and VS-Level High-Half CSRs (H-extension with AIA) */
++#define CSR_HIDELEGH		0x613
++#define CSR_HVIENH		0x618
++#define CSR_HVIPH		0x655
++#define CSR_HVIPRIO1H		0x656
++#define CSR_HVIPRIO2H		0x657
++#define CSR_VSIEH		0x214
++#define CSR_VSIPH		0x254
++
+ #define CSR_MSTATUS		0x300
+ #define CSR_MISA		0x301
++#define CSR_MIDELEG		0x303
+ #define CSR_MIE			0x304
+ #define CSR_MTVEC		0x305
+ #define CSR_MENVCFG		0x30a
+@@ -297,6 +357,25 @@
+ #define CSR_MIMPID		0xf13
+ #define CSR_MHARTID		0xf14
+ 
++/* Machine-Level Window to Indirectly Accessed Registers (AIA) */
++#define CSR_MISELECT		0x350
++#define CSR_MIREG		0x351
++
++/* Machine-Level Interrupts (AIA) */
++#define CSR_MTOPEI		0x35c
++#define CSR_MTOPI		0xfb0
++
++/* Virtual Interrupts for Supervisor Level (AIA) */
++#define CSR_MVIEN		0x308
++#define CSR_MVIP		0x309
++
++/* Machine-Level High-Half CSRs (AIA) */
++#define CSR_MIDELEGH		0x313
++#define CSR_MIEH		0x314
++#define CSR_MVIENH		0x318
++#define CSR_MVIPH		0x319
++#define CSR_MIPH		0x354
++
+ #ifdef CONFIG_RISCV_M_MODE
+ # define CSR_STATUS	CSR_MSTATUS
+ # define CSR_IE		CSR_MIE
+@@ -307,6 +386,13 @@
+ # define CSR_TVAL	CSR_MTVAL
+ # define CSR_IP		CSR_MIP
+ 
++# define CSR_IEH		CSR_MIEH
++# define CSR_ISELECT	CSR_MISELECT
++# define CSR_IREG	CSR_MIREG
++# define CSR_IPH		CSR_MIPH
++# define CSR_TOPEI	CSR_MTOPEI
++# define CSR_TOPI	CSR_MTOPI
++
+ # define SR_IE		SR_MIE
+ # define SR_PIE		SR_MPIE
+ # define SR_PP		SR_MPP
+@@ -324,6 +410,13 @@
+ # define CSR_TVAL	CSR_STVAL
+ # define CSR_IP		CSR_SIP
+ 
++# define CSR_IEH		CSR_SIEH
++# define CSR_ISELECT	CSR_SISELECT
++# define CSR_IREG	CSR_SIREG
++# define CSR_IPH		CSR_SIPH
++# define CSR_TOPEI	CSR_STOPEI
++# define CSR_TOPI	CSR_STOPI
++
+ # define SR_IE		SR_SIE
+ # define SR_PIE		SR_SPIE
+ # define SR_PP		SR_SPP
 -- 
 2.34.1
 
