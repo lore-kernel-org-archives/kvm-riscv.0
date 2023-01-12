@@ -1,126 +1,84 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Thu, 12 Jan 2023 11:06:08 +0100
-Subject: [PATCH v2 01/11] RISC-V: Define helper functions expose hpm
- counter width and count
-In-Reply-To: <20221215170046.2010255-2-atishp@rivosinc.com>
+Date: Thu, 12 Jan 2023 11:21:41 +0100
+Subject: [PATCH v2 02/11] RISC-V: KVM: Define a probe function for SBI
+ extension data structures
+In-Reply-To: <20221215170046.2010255-3-atishp@rivosinc.com>
 References: <20221215170046.2010255-1-atishp@rivosinc.com>
- <20221215170046.2010255-2-atishp@rivosinc.com>
-Message-ID: <20230112100608.d7tnvhbotjfctlgk@orel>
+ <20221215170046.2010255-3-atishp@rivosinc.com>
+Message-ID: <20230112102141.chpcqzoko25s2cak@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Dec 15, 2022 at 09:00:36AM -0800, Atish Patra wrote:
-> KVM module needs to know how many hardware counters and the counter
-> width that the platform supports. Otherwise, it will not be able to show
-> optimal value of virtual counters to the guest. The virtual hardware
-> counters also need to have the same width as the logical hardware
-> counters for simplicity. However, there shouldn't be mapping between
-> virtual hardware counters and logical hardware counters. As we don't
-> support hetergeneous harts or counters with different width as of now,
-> the implementation relies on the counter width of the first available
-> programmable counter.
+On Thu, Dec 15, 2022 at 09:00:37AM -0800, Atish Patra wrote:
+> Currently the probe function just checks if an SBI extension is
+> registered or not. However, the extension may not want to advertise
+> itself depending on some other condition.
+> An additional extension specific probe function will allow
+> extensions to decide if they want to be advertised to the caller or
+> not. Any extension that does not require additional dependency checks
+> can avoid implementing this function.
 > 
 > Signed-off-by: Atish Patra <atishp@rivosinc.com>
 > ---
->  drivers/perf/riscv_pmu_sbi.c   | 35 +++++++++++++++++++++++++++++++++-
->  include/linux/perf/riscv_pmu.h |  3 +++
->  2 files changed, 37 insertions(+), 1 deletion(-)
+>  arch/riscv/include/asm/kvm_vcpu_sbi.h |  3 +++
+>  arch/riscv/kvm/vcpu_sbi_base.c        | 13 +++++++++++--
+>  2 files changed, 14 insertions(+), 2 deletions(-)
 > 
-> diff --git a/drivers/perf/riscv_pmu_sbi.c b/drivers/perf/riscv_pmu_sbi.c
-> index 3852c18..65d4aa4 100644
-> --- a/drivers/perf/riscv_pmu_sbi.c
-> +++ b/drivers/perf/riscv_pmu_sbi.c
-> @@ -49,6 +49,9 @@ static const struct attribute_group *riscv_pmu_attr_groups[] = {
->  static union sbi_pmu_ctr_info *pmu_ctr_list;
->  static unsigned int riscv_pmu_irq;
+> diff --git a/arch/riscv/include/asm/kvm_vcpu_sbi.h b/arch/riscv/include/asm/kvm_vcpu_sbi.h
+> index f79478a..61dac1b 100644
+> --- a/arch/riscv/include/asm/kvm_vcpu_sbi.h
+> +++ b/arch/riscv/include/asm/kvm_vcpu_sbi.h
+> @@ -29,6 +29,9 @@ struct kvm_vcpu_sbi_extension {
+>  	int (*handler)(struct kvm_vcpu *vcpu, struct kvm_run *run,
+>  		       unsigned long *out_val, struct kvm_cpu_trap *utrap,
+>  		       bool *exit);
+> +
+> +	/* Extension specific probe function */
+> +	unsigned long (*probe)(struct kvm_vcpu *vcpu, unsigned long extid);
+
+It doesn't seem like the extid parameter should be necessary since the
+probe function is specific to the extension, but it doesn't hurt either.
+
+>  };
 >  
-> +/* Cache the available counters in a bitmask */
-> +unsigned long cmask;
-
-I presume this can be static since it's not getting added to the header.
-And don't we need this to be a long long for rv32? We should probably
-just use u64.
-
-> +
->  struct sbi_pmu_event_data {
->  	union {
->  		union {
-> @@ -264,6 +267,37 @@ static bool pmu_sbi_ctr_is_fw(int cidx)
->  	return (info->type == SBI_PMU_CTR_TYPE_FW) ? true : false;
->  }
->  
-> +/*
-> + * Returns the counter width of a programmable counter and number of hardware
-> + * counters. As we don't support heterneous CPUs yet, it is okay to just
-
-heterogeneous
-
-> + * return the counter width of the first programmable counter.
-> + */
-> +int riscv_pmu_get_hpm_info(u32 *hw_ctr_width, u32 *num_hw_ctr)
-> +{
-> +	int i;
-> +	union sbi_pmu_ctr_info *info;
-> +	u32 hpm_width = 0, hpm_count = 0;
-> +
-> +	if (!cmask)
-> +		return -EINVAL;
-> +
-> +	for_each_set_bit(i, &cmask, RISCV_MAX_COUNTERS) {
-> +		info = &pmu_ctr_list[i];
-> +		if (!info)
-> +			continue;
-> +		if (!hpm_width && (info->csr != CSR_CYCLE) && (info->csr != CSR_INSTRET))
-
-nit: No need for () around the != expressions
-
-> +			hpm_width = info->width;
-> +		if (info->type == SBI_PMU_CTR_TYPE_HW)
-> +			hpm_count++;
-> +	}
-> +
-> +	*hw_ctr_width = hpm_width;
-> +	*num_hw_ctr = hpm_count;
-> +
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL(riscv_pmu_get_hpm_info);
-
-EXPORT_SYMBOL_GPL ?
-
-> +
->  static int pmu_sbi_ctr_get_idx(struct perf_event *event)
+>  void kvm_riscv_vcpu_sbi_forward(struct kvm_vcpu *vcpu, struct kvm_run *run);
+> diff --git a/arch/riscv/kvm/vcpu_sbi_base.c b/arch/riscv/kvm/vcpu_sbi_base.c
+> index 5d65c63..89e2415 100644
+> --- a/arch/riscv/kvm/vcpu_sbi_base.c
+> +++ b/arch/riscv/kvm/vcpu_sbi_base.c
+> @@ -19,6 +19,7 @@ static int kvm_sbi_ext_base_handler(struct kvm_vcpu *vcpu, struct kvm_run *run,
 >  {
->  	struct hw_perf_event *hwc = &event->hw;
-> @@ -798,7 +832,6 @@ static void riscv_pmu_destroy(struct riscv_pmu *pmu)
->  static int pmu_sbi_device_probe(struct platform_device *pdev)
->  {
->  	struct riscv_pmu *pmu = NULL;
-> -	unsigned long cmask = 0;
->  	int ret = -ENODEV;
->  	int num_counters;
+>  	int ret = 0;
+>  	struct kvm_cpu_context *cp = &vcpu->arch.guest_context;
+> +	const struct kvm_vcpu_sbi_extension *sbi_ext;
 >  
-> diff --git a/include/linux/perf/riscv_pmu.h b/include/linux/perf/riscv_pmu.h
-> index e17e86a..a1c3f77 100644
-> --- a/include/linux/perf/riscv_pmu.h
-> +++ b/include/linux/perf/riscv_pmu.h
-> @@ -73,6 +73,9 @@ void riscv_pmu_legacy_skip_init(void);
->  static inline void riscv_pmu_legacy_skip_init(void) {};
->  #endif
->  struct riscv_pmu *riscv_pmu_alloc(void);
-> +#ifdef CONFIG_RISCV_PMU_SBI
-> +int riscv_pmu_get_hpm_info(u32 *hw_ctr_width, u32 *num_hw_ctr);
-> +#endif
->  
->  #endif /* CONFIG_RISCV_PMU */
->  
+>  	switch (cp->a6) {
+>  	case SBI_EXT_BASE_GET_SPEC_VERSION:
+> @@ -43,8 +44,16 @@ static int kvm_sbi_ext_base_handler(struct kvm_vcpu *vcpu, struct kvm_run *run,
+>  			 */
+>  			kvm_riscv_vcpu_sbi_forward(vcpu, run);
+>  			*exit = true;
+> -		} else
+> -			*out_val = kvm_vcpu_sbi_find_ext(cp->a0) ? 1 : 0;
+> +		} else {
+> +			sbi_ext = kvm_vcpu_sbi_find_ext(cp->a0);
+> +			if (sbi_ext) {
+> +				if (sbi_ext->probe)
+> +					*out_val = sbi_ext->probe(vcpu, cp->a0);
+> +				else
+> +					*out_val = 1;
+> +			} else
+> +				*out_val = 0;
+> +		}
+>  		break;
+>  	case SBI_EXT_BASE_GET_MVENDORID:
+>  		*out_val = vcpu->arch.mvendorid;
 > -- 
 > 2.25.1
-> 
+>
 
-Thanks,
-drew
+Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
 
