@@ -1,37 +1,41 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Fri, 13 Jan 2023 08:22:55 +0100
-Subject: [PATCH v2 01/11] RISC-V: Define helper functions expose hpm
- counter width and count
-In-Reply-To: <CAHBxVyESkQ9Krmn-44f-A8hYzMrZBtBfq15fdx-sHDQfkBMtKQ@mail.gmail.com>
+Date: Fri, 13 Jan 2023 08:25:31 +0100
+Subject: [PATCH v2 03/11] RISC-V: KVM: Return correct code for hsm stop
+ function
+In-Reply-To: <CAHBxVyFokVx0C+a8LvYrftE=JwuDAHgPRmhMQFtV9LHGqMuJgA@mail.gmail.com>
 References: <20221215170046.2010255-1-atishp@rivosinc.com>
- <20221215170046.2010255-2-atishp@rivosinc.com>
- <20230112100608.d7tnvhbotjfctlgk@orel>
- <CAHBxVyESkQ9Krmn-44f-A8hYzMrZBtBfq15fdx-sHDQfkBMtKQ@mail.gmail.com>
-Message-ID: <20230113072255.34cnyautbwiy25p5@orel>
+ <20221215170046.2010255-4-atishp@rivosinc.com>
+ <20230112102839.rsabb2bah5lkkx4e@orel>
+ <CAHBxVyFokVx0C+a8LvYrftE=JwuDAHgPRmhMQFtV9LHGqMuJgA@mail.gmail.com>
+Message-ID: <20230113072531.xgg5e3rwdjvx7afy@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Jan 12, 2023 at 10:18:05AM -0800, Atish Kumar Patra wrote:
-> On Thu, Jan 12, 2023 at 2:06 AM Andrew Jones <ajones@ventanamicro.com> wrote:
+On Thu, Jan 12, 2023 at 10:25:06AM -0800, Atish Kumar Patra wrote:
+> On Thu, Jan 12, 2023 at 2:28 AM Andrew Jones <ajones@ventanamicro.com> wrote:
 > >
-> > On Thu, Dec 15, 2022 at 09:00:36AM -0800, Atish Patra wrote:
-...
-> > > +EXPORT_SYMBOL(riscv_pmu_get_hpm_info);
+> > On Thu, Dec 15, 2022 at 09:00:38AM -0800, Atish Patra wrote:
+> > > According to the SBI specification, the stop function can only
+> > > return error code SBI_ERR_FAILED. However, currently it returns
+> > > -EINVAL which will be mapped SBI_ERR_INVALID_PARAM.
 > >
-> > EXPORT_SYMBOL_GPL ?
+> > I presume the mapping referred to here is kvm_linux_err_map_sbi().
+> > If so, then -EPERM isn't correct either. That maps to SBI_ERR_DENIED.
+> > The only thing that will ensure we get SBI_ERR_FAILURE (-1) is
+> > anything not handled by the kvm_linux_err_map_sbi switch, as we
+> > need to use the default.
 > >
 > 
-> Is that mandatory ? I have seen usage of both in arch/riscv and other
-> places though.
-> I am also not sure if any other non-GPL module should/need access to this.
+> It returns SBI_ERR_FAILURE in the next patch when kvm_linux_err_map_sbi
+> is removed. Maybe I should drop this patch. The next patch does the
+> correct thing anyways.
 
-TBH, I'm not sure what the best policy is, but I presumed we should use
-_GPL when we aren't aware of anything non-GPL and then when a day comes
-that something non-GPL would like this to be exported, the patch that
-flips it will provide the justification in its commit message.
+Yeah, I saw that, but then we silently fix a bug in the next patch.
+I like that this is a separate patch, but it should do what it says
+it's doing :-)
 
 Thanks,
 drew
