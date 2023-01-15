@@ -1,145 +1,97 @@
 From: Jisheng Zhang <jszhang@kernel.org>
-Date: Sun, 15 Jan 2023 21:13:25 +0800
-Subject: [PATCH v3 04/13] riscv: hwcap: make ISA extension ids can be
- used in asm
-In-Reply-To: <Y8B7lw0iPXJlr8mB@spud>
+Date: Sun, 15 Jan 2023 21:59:18 +0800
+Subject: [PATCH v3 05/13] riscv: cpufeature: extend
+ riscv_cpufeature_patch_func to all ISA extensions
+In-Reply-To: <20230112092136.f2g43hrhmrqouy4y@orel>
 References: <20230111171027.2392-1-jszhang@kernel.org>
- <20230111171027.2392-5-jszhang@kernel.org>
- <Y8B7lw0iPXJlr8mB@spud>
-Message-ID: <Y8P79ap+UbyZUdZ2@xhacker>
+ <20230111171027.2392-6-jszhang@kernel.org>
+ <2398293.3Lj2Plt8kZ@diego>
+ <20230112092136.f2g43hrhmrqouy4y@orel>
+Message-ID: <Y8QGtlnZKk5rp+fg@xhacker>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Jan 12, 2023 at 09:28:55PM +0000, Conor Dooley wrote:
-> Hey Jisheng,
-
-Hi Conor,
-
-> 
-> On Thu, Jan 12, 2023 at 01:10:18AM +0800, Jisheng Zhang wrote:
-> > We will make use of ISA extension in asm files, so make the multi-letter
+On Thu, Jan 12, 2023 at 10:21:36AM +0100, Andrew Jones wrote:
+> On Thu, Jan 12, 2023 at 12:29:57AM +0100, Heiko St?bner wrote:
+> > Hi Jisheng.
 > > 
-> > RISC-V ISA extension IDs macros rather than enums and move them and
-> > those base ISA extension IDs to suitable place.
+> > Am Mittwoch, 11. Januar 2023, 18:10:19 CET schrieb Jisheng Zhang:
+> > > riscv_cpufeature_patch_func() currently only scans a limited set of
+> > > cpufeatures, explicitly defined with macros. Extend it to probe for all
+> > > ISA extensions.
+> > > 
+> > > Signed-off-by: Jisheng Zhang <jszhang@kernel.org>
+> > > Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+> > > Reviewed-by: Heiko Stuebner <heiko@sntech.de>
+> > > ---
+> > >  arch/riscv/include/asm/errata_list.h |  9 ++--
+> > >  arch/riscv/kernel/cpufeature.c       | 63 ++++------------------------
+> > >  2 files changed, 11 insertions(+), 61 deletions(-)
+> > 
+> > hmmm ... I do see a somewhat big caveat for this.
+> > and would like to take back my Reviewed-by for now
+> > 
+> > 
+> > With this change we would limit the patchable cpufeatures to actual
+> > riscv extensions. But cpufeatures can also be soft features like
+> > how performant the core handles unaligned accesses.
 > 
-> From v2:
-> Which base ISA extension IDs? Changelog should match the patch contents,
-> and it's a little unclear here since the base ISA extension IDs are
-> visible here but in the context not the diff.
-
-"that is not what git thinks you did" is the key, see below.
-
+> I agree that this needs to be addressed and Jisheng also raised this
+> yesterday here [*]. It seems we need the concept of cpufeatures, which
+> may be extensions or non-extensions.
 > 
-> How about something like:
-> "So that ISA extensions can be used in assembly files, convert the
-> multi-letter RISC-V ISA extension IDs enums to macros.
-> In order to make them visible, move the #ifndef __ASSEMBLY__ guard
-> to a later point in the header"
-
-This commit msg looks better, thanks.
+> [*] https://lore.kernel.org/all/Y77xyNPNqnFQUqAx at xhacker/
 > 
-> Pedantry perhaps, but referring to moving the base IDs looks odd, since
-> that is not what git thinks you did - even if that is the copy paste
-
-Aha, this is the key, I moved the base IDs out side of __ASSEMBLY__
-macro protection and move extension IDs to macros, but the git doesn't
-think I did the base IDs moving ;)
-
-> operation you carried out.
+> > 
+> > See Palmer's series [0].
+> > 
+> > 
+> > Also this essentially codifies that each ALTERNATIVE can only ever
+> > be attached to exactly one extension.
+> > 
+> > But contrary to vendor-errata, it is very likely that we will need
+> > combinations of different extensions for some alternatives in the future.
 > 
-> Content itself is
-> Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
+> One possible approach may be to combine extensions/non-extensions at boot
+> time into pseudo-cpufeatures. Then, alternatives can continue attaching to
+> a single "feature". (I'm not saying that's a better approach than the
+> bitmap, I'm just suggesting it as something else to consider.)
+
+When swtiching pgtable_l4_enabled to static key for the first time, I
+suggested bitmap for cpufeatures which cover both ISA extensions
+and non-extensions-but-some-cpu-related-features [1],
+but it was rejected at that time, it seems we need to revisit the idea.
+
+[1] https://lore.kernel.org/linux-riscv/20220508160749.984-1-jszhang at kernel.org/
+
 > 
 > Thanks,
-> Conor.
+> drew
 > 
-> > Signed-off-by: Jisheng Zhang <jszhang@kernel.org>
-> > Reviewed-by: Heiko Stuebner <heiko@sntech.de>
-> > Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
-> > ---
-> >  arch/riscv/include/asm/hwcap.h | 45 ++++++++++++++++------------------
-> >  1 file changed, 21 insertions(+), 24 deletions(-)
 > > 
-> > diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
-> > index 86328e3acb02..09a7767723f6 100644
-> > --- a/arch/riscv/include/asm/hwcap.h
-> > +++ b/arch/riscv/include/asm/hwcap.h
-> > @@ -12,20 +12,6 @@
-> >  #include <linux/bits.h>
-> >  #include <uapi/asm/hwcap.h>
-> >  
-> > -#ifndef __ASSEMBLY__
-> > -#include <linux/jump_label.h>
-> > -/*
-> > - * This yields a mask that user programs can use to figure out what
-> > - * instruction set this cpu supports.
-> > - */
-> > -#define ELF_HWCAP		(elf_hwcap)
-> > -
-> > -enum {
-> > -	CAP_HWCAP = 1,
-> > -};
-> > -
-> > -extern unsigned long elf_hwcap;
-> > -
-> >  #define RISCV_ISA_EXT_a		('a' - 'a')
-> >  #define RISCV_ISA_EXT_c		('c' - 'a')
-> >  #define RISCV_ISA_EXT_d		('d' - 'a')
-> > @@ -46,22 +32,33 @@ extern unsigned long elf_hwcap;
-> >  #define RISCV_ISA_EXT_BASE 26
-> >  
-> >  /*
-> > - * This enum represent the logical ID for each multi-letter RISC-V ISA extension.
-> > + * These macros represent the logical ID for each multi-letter RISC-V ISA extension.
-> >   * The logical ID should start from RISCV_ISA_EXT_BASE and must not exceed
-> >   * RISCV_ISA_EXT_MAX. 0-25 range is reserved for single letter
-> >   * extensions while all the multi-letter extensions should define the next
-> >   * available logical extension id.
-> >   */
-> > -enum riscv_isa_ext_id {
-> > -	RISCV_ISA_EXT_SSCOFPMF = RISCV_ISA_EXT_BASE,
-> > -	RISCV_ISA_EXT_SVPBMT,
-> > -	RISCV_ISA_EXT_ZICBOM,
-> > -	RISCV_ISA_EXT_ZIHINTPAUSE,
-> > -	RISCV_ISA_EXT_SSTC,
-> > -	RISCV_ISA_EXT_SVINVAL,
-> > -	RISCV_ISA_EXT_ID_MAX
-> > +#define RISCV_ISA_EXT_SSCOFPMF		26
-> > +#define RISCV_ISA_EXT_SVPBMT		27
-> > +#define RISCV_ISA_EXT_ZICBOM		28
-> > +#define RISCV_ISA_EXT_ZIHINTPAUSE	29
-> > +#define RISCV_ISA_EXT_SSTC		30
-> > +#define RISCV_ISA_EXT_SVINVAL		31
-> > +
-> > +#ifndef __ASSEMBLY__
-> > +#include <linux/jump_label.h>
-> > +/*
-> > + * This yields a mask that user programs can use to figure out what
-> > + * instruction set this cpu supports.
-> > + */
-> > +#define ELF_HWCAP		(elf_hwcap)
-> > +
-> > +enum {
-> > +	CAP_HWCAP = 1,
-> >  };
-> > -static_assert(RISCV_ISA_EXT_ID_MAX <= RISCV_ISA_EXT_MAX);
-> > +
-> > +extern unsigned long elf_hwcap;
-> > +
-> >  
-> >  /*
-> >   * This enum represents the logical ID for each RISC-V ISA extension static
-> > -- 
-> > 2.38.1
+> > In my optimization quest, I found that it's actually pretty neat to
+> > convert the errata-id for cpufeatures to a bitfield [1], because then it's
+> > possible to just combine extensions into said bitfield [2]:
+> > 
+> > 	ALTERNATIVE_2("nop",
+> > 		      "j strcmp_zbb_unaligned", 0, CPUFEATURE_ZBB | CPUFEATURE_FAST_UNALIGNED, 0, CONFIG_RISCV_ISA_ZBB,
+> > 		      "j variant_zbb", 0, CPUFEATURE_ZBB, CPUFEATURE_FAST_UNALIGNED, CONFIG_RISCV_ISA_ZBB)
+> > 
+> > [the additional field there models a "not" component]
+> > 
+> > So I really feel this would limit us quite a bit.
 > > 
 > > 
-> > _______________________________________________
-> > linux-riscv mailing list
-> > linux-riscv at lists.infradead.org
-> > http://lists.infradead.org/mailman/listinfo/linux-riscv
-
-
+> > Heiko
+> > 
+> > 
+> > 
+> > [0] https://git.kernel.org/pub/scm/linux/kernel/git/palmer/linux.git/commit/?h=riscv-hwprobe-v1&id=510c491cb9d87dcbdc91c63558dc704968723240
+> > [1] https://github.com/mmind/linux-riscv/commit/f57a896122ee7e666692079320fc35829434cf96
+> > [2] https://github.com/mmind/linux-riscv/commit/8cef615dab0c00ad68af2651ee5b93d06be17f27#diff-194cb8a86f9fb9b03683295f21c8f46b456a9f94737f01726ddbcbb9e3aace2cR12
+> > 
+> > 
 
