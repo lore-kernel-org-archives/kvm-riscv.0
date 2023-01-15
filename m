@@ -1,454 +1,145 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Fri, 13 Jan 2023 13:08:54 +0100
-Subject: [PATCH v2 11/11] RISC-V: KVM: Implement firmware events
-In-Reply-To: <20221215170046.2010255-12-atishp@rivosinc.com>
-References: <20221215170046.2010255-1-atishp@rivosinc.com>
- <20221215170046.2010255-12-atishp@rivosinc.com>
-Message-ID: <20230113120854.axtnxmykmwh2ixeb@orel>
+From: Jisheng Zhang <jszhang@kernel.org>
+Date: Sun, 15 Jan 2023 21:13:25 +0800
+Subject: [PATCH v3 04/13] riscv: hwcap: make ISA extension ids can be
+ used in asm
+In-Reply-To: <Y8B7lw0iPXJlr8mB@spud>
+References: <20230111171027.2392-1-jszhang@kernel.org>
+ <20230111171027.2392-5-jszhang@kernel.org>
+ <Y8B7lw0iPXJlr8mB@spud>
+Message-ID: <Y8P79ap+UbyZUdZ2@xhacker>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Dec 15, 2022 at 09:00:46AM -0800, Atish Patra wrote:
-> SBI PMU extension defines a set of firmware events which can provide
-> useful information to guests about number of SBI calls. As hypervisor
-> implements the SBI PMU extension, these firmware events corresponds
-> to ecall invocations between VS->HS mode. All other firmware events
-> will always report zero if monitored as KVM doesn't implement them.
+On Thu, Jan 12, 2023 at 09:28:55PM +0000, Conor Dooley wrote:
+> Hey Jisheng,
+
+Hi Conor,
+
 > 
-> Signed-off-by: Atish Patra <atishp@rivosinc.com>
-> ---
->  arch/riscv/include/asm/kvm_vcpu_pmu.h |  16 ++++
->  arch/riscv/include/asm/sbi.h          |   2 +-
->  arch/riscv/kvm/tlb.c                  |   6 +-
->  arch/riscv/kvm/vcpu_pmu.c             | 105 ++++++++++++++++++++++----
->  arch/riscv/kvm/vcpu_sbi_replace.c     |   7 ++
->  5 files changed, 119 insertions(+), 17 deletions(-)
+> On Thu, Jan 12, 2023 at 01:10:18AM +0800, Jisheng Zhang wrote:
+> > We will make use of ISA extension in asm files, so make the multi-letter
+> > 
+> > RISC-V ISA extension IDs macros rather than enums and move them and
+> > those base ISA extension IDs to suitable place.
 > 
-> diff --git a/arch/riscv/include/asm/kvm_vcpu_pmu.h b/arch/riscv/include/asm/kvm_vcpu_pmu.h
-> index 7a9a8e6..cccc6182 100644
-> --- a/arch/riscv/include/asm/kvm_vcpu_pmu.h
-> +++ b/arch/riscv/include/asm/kvm_vcpu_pmu.h
-> @@ -17,6 +17,14 @@
->  #define RISCV_KVM_MAX_FW_CTRS 32
->  #define RISCV_MAX_COUNTERS      64
->  
-> +struct kvm_fw_event {
-> +	/* Current value of the event */
-> +	unsigned long value;
-> +
-> +	/* Event monitoring status */
-> +	bool started;
-> +};
-> +
->  /* Per virtual pmu counter data */
->  struct kvm_pmc {
->  	u8 idx;
-> @@ -25,11 +33,14 @@ struct kvm_pmc {
->  	union sbi_pmu_ctr_info cinfo;
->  	/* Event monitoring status */
->  	bool started;
-> +	/* Monitoring event ID */
-> +	unsigned long event_idx;
->  };
->  
->  /* PMU data structure per vcpu */
->  struct kvm_pmu {
->  	struct kvm_pmc pmc[RISCV_MAX_COUNTERS];
-> +	struct kvm_fw_event fw_event[RISCV_KVM_MAX_FW_CTRS];
->  	/* Number of the virtual firmware counters available */
->  	int num_fw_ctrs;
->  	/* Number of the virtual hardware counters available */
-> @@ -52,6 +63,7 @@ struct kvm_pmu {
->  { .base = CSR_CYCLE,      .count = 31, .func = kvm_riscv_vcpu_pmu_read_hpm },
->  #endif
->  
-> +int kvm_riscv_vcpu_pmu_incr_fw(struct kvm_vcpu *vcpu, unsigned long fid);
->  int kvm_riscv_vcpu_pmu_read_hpm(struct kvm_vcpu *vcpu, unsigned int csr_num,
->  				unsigned long *val, unsigned long new_val,
->  				unsigned long wr_mask);
-> @@ -81,6 +93,10 @@ struct kvm_pmu {
->  #define KVM_RISCV_VCPU_HPMCOUNTER_CSR_FUNCS \
->  { .base = 0,      .count = 0, .func = NULL },
->  
-> +static inline int kvm_riscv_vcpu_pmu_incr_fw(struct kvm_vcpu *vcpu, unsigned long fid)
-> +{
-> +	return 0;
-> +}
->  
->  static inline int kvm_riscv_vcpu_pmu_init(struct kvm_vcpu *vcpu)
->  {
-> diff --git a/arch/riscv/include/asm/sbi.h b/arch/riscv/include/asm/sbi.h
-> index 2a0ef738..a192a95a 100644
-> --- a/arch/riscv/include/asm/sbi.h
-> +++ b/arch/riscv/include/asm/sbi.h
-> @@ -171,7 +171,7 @@ enum sbi_pmu_fw_generic_events_t {
->  	SBI_PMU_FW_IPI_SENT		= 6,
->  	SBI_PMU_FW_IPI_RECVD		= 7,
->  	SBI_PMU_FW_FENCE_I_SENT		= 8,
-> -	SBI_PMU_FW_FENCE_I_RECVD	= 9,
-> +	SBI_PMU_FW_FENCE_I_RCVD		= 9,
+> From v2:
+> Which base ISA extension IDs? Changelog should match the patch contents,
+> and it's a little unclear here since the base ISA extension IDs are
+> visible here but in the context not the diff.
 
-This should probably be in its own patch.
+"that is not what git thinks you did" is the key, see below.
 
->  	SBI_PMU_FW_SFENCE_VMA_SENT	= 10,
->  	SBI_PMU_FW_SFENCE_VMA_RCVD	= 11,
->  	SBI_PMU_FW_SFENCE_VMA_ASID_SENT	= 12,
-> diff --git a/arch/riscv/kvm/tlb.c b/arch/riscv/kvm/tlb.c
-> index 309d79b..de81920 100644
-> --- a/arch/riscv/kvm/tlb.c
-> +++ b/arch/riscv/kvm/tlb.c
-> @@ -181,6 +181,7 @@ void kvm_riscv_local_tlb_sanitize(struct kvm_vcpu *vcpu)
->  
->  void kvm_riscv_fence_i_process(struct kvm_vcpu *vcpu)
->  {
-> +	kvm_riscv_vcpu_pmu_incr_fw(vcpu, SBI_PMU_FW_FENCE_I_RCVD);
->  	local_flush_icache_all();
->  }
->  
-> @@ -264,15 +265,18 @@ void kvm_riscv_hfence_process(struct kvm_vcpu *vcpu)
->  						d.addr, d.size, d.order);
->  			break;
->  		case KVM_RISCV_HFENCE_VVMA_ASID_GVA:
-> +			kvm_riscv_vcpu_pmu_incr_fw(vcpu, SBI_PMU_FW_HFENCE_VVMA_ASID_RCVD);
->  			kvm_riscv_local_hfence_vvma_asid_gva(
->  						READ_ONCE(v->vmid), d.asid,
->  						d.addr, d.size, d.order);
->  			break;
->  		case KVM_RISCV_HFENCE_VVMA_ASID_ALL:
-> +			kvm_riscv_vcpu_pmu_incr_fw(vcpu, SBI_PMU_FW_HFENCE_VVMA_ASID_RCVD);
->  			kvm_riscv_local_hfence_vvma_asid_all(
->  						READ_ONCE(v->vmid), d.asid);
->  			break;
->  		case KVM_RISCV_HFENCE_VVMA_GVA:
-> +			kvm_riscv_vcpu_pmu_incr_fw(vcpu, SBI_PMU_FW_HFENCE_VVMA_RCVD);
->  			kvm_riscv_local_hfence_vvma_gva(
->  						READ_ONCE(v->vmid),
->  						d.addr, d.size, d.order);
-> @@ -323,7 +327,7 @@ void kvm_riscv_fence_i(struct kvm *kvm,
->  		       unsigned long hbase, unsigned long hmask)
->  {
->  	make_xfence_request(kvm, hbase, hmask, KVM_REQ_FENCE_I,
-> -			    KVM_REQ_FENCE_I, NULL);
-> +		    KVM_REQ_FENCE_I, NULL);
+> 
+> How about something like:
+> "So that ISA extensions can be used in assembly files, convert the
+> multi-letter RISC-V ISA extension IDs enums to macros.
+> In order to make them visible, move the #ifndef __ASSEMBLY__ guard
+> to a later point in the header"
 
-stray change, and whitespace was correct before
+This commit msg looks better, thanks.
+> 
+> Pedantry perhaps, but referring to moving the base IDs looks odd, since
+> that is not what git thinks you did - even if that is the copy paste
 
->  }
->  
->  void kvm_riscv_hfence_gvma_vmid_gpa(struct kvm *kvm,
-> diff --git a/arch/riscv/kvm/vcpu_pmu.c b/arch/riscv/kvm/vcpu_pmu.c
-> index 21c1f0f..a64a7ae 100644
-> --- a/arch/riscv/kvm/vcpu_pmu.c
-> +++ b/arch/riscv/kvm/vcpu_pmu.c
-> @@ -170,18 +170,36 @@ static int pmu_get_pmc_index(struct kvm_pmu *pmu, unsigned long eidx,
->  	return pmu_get_programmable_pmc_index(pmu, eidx, cbase, cmask);
->  }
->  
-> +int kvm_riscv_vcpu_pmu_incr_fw(struct kvm_vcpu *vcpu, unsigned long fid)
-> +{
-> +	struct kvm_pmu *kvpmu = vcpu_to_pmu(vcpu);
-> +	struct kvm_fw_event *fevent;
-> +
-> +	if (!kvpmu || fid >= SBI_PMU_FW_MAX)
-> +		return -EINVAL;
-> +
-> +	fevent = &kvpmu->fw_event[fid];
-> +	if (fevent->started)
-> +		fevent->value++;
-> +
-> +	return 0;
-> +}
-> +
->  static int pmu_ctr_read(struct kvm_vcpu *vcpu, unsigned long cidx,
->  			unsigned long *out_val)
->  {
->  	struct kvm_pmu *kvpmu = vcpu_to_pmu(vcpu);
->  	struct kvm_pmc *pmc;
->  	u64 enabled, running;
-> +	int fevent_code;
->  
->  	pmc = &kvpmu->pmc[cidx];
-> -	if (!pmc->perf_event)
-> -		return -EINVAL;
->  
-> -	pmc->counter_val += perf_event_read_value(pmc->perf_event, &enabled, &running);
-> +	if (pmc->cinfo.type == SBI_PMU_CTR_TYPE_FW) {
-> +		fevent_code = get_event_code(pmc->event_idx);
-> +		pmc->counter_val = kvpmu->fw_event[fevent_code].value;
-> +	} else if (pmc->perf_event)
-> +		pmc->counter_val += perf_event_read_value(pmc->perf_event, &enabled, &running);
->  	*out_val = pmc->counter_val;
->  
->  	return 0;
-> @@ -238,6 +256,7 @@ int kvm_riscv_vcpu_pmu_ctr_start(struct kvm_vcpu *vcpu, unsigned long ctr_base,
->  	struct kvm_pmu *kvpmu = vcpu_to_pmu(vcpu);
->  	int i, num_ctrs, pmc_index, sbiret = 0;
->  	struct kvm_pmc *pmc;
-> +	int fevent_code;
->  
->  	num_ctrs = kvpmu->num_fw_ctrs + kvpmu->num_hw_ctrs;
->  	if (ctr_base + __fls(ctr_mask) >= num_ctrs) {
-> @@ -253,7 +272,22 @@ int kvm_riscv_vcpu_pmu_ctr_start(struct kvm_vcpu *vcpu, unsigned long ctr_base,
->  		pmc = &kvpmu->pmc[pmc_index];
->  		if (flag & SBI_PMU_START_FLAG_SET_INIT_VALUE)
->  			pmc->counter_val = ival;
-> -		if (pmc->perf_event) {
-> +		if (pmc->cinfo.type == SBI_PMU_CTR_TYPE_FW) {
-> +			fevent_code = get_event_code(pmc->event_idx);
-> +			if (fevent_code >= SBI_PMU_FW_MAX) {
-> +				sbiret = SBI_ERR_INVALID_PARAM;
-> +				goto out;
-> +			}
-> +
-> +			/* Check if the counter was already started for some reason */
-> +			if (kvpmu->fw_event[fevent_code].started) {
-> +				sbiret = SBI_ERR_ALREADY_STARTED;
-> +				continue;
-> +			}
-> +
-> +			kvpmu->fw_event[fevent_code].started = true;
-> +			kvpmu->fw_event[fevent_code].value = pmc->counter_val;
-> +		} else if (pmc->perf_event) {
->  			if (unlikely(pmc->started)) {
->  				sbiret = SBI_ERR_ALREADY_STARTED;
->  				continue;
-> @@ -281,6 +315,7 @@ int kvm_riscv_vcpu_pmu_ctr_stop(struct kvm_vcpu *vcpu, unsigned long ctr_base,
->  	int i, num_ctrs, pmc_index, sbiret = 0;
->  	u64 enabled, running;
->  	struct kvm_pmc *pmc;
-> +	int fevent_code;
->  
->  	num_ctrs = kvpmu->num_fw_ctrs + kvpmu->num_hw_ctrs;
->  	if ((ctr_base + __fls(ctr_mask)) >= num_ctrs) {
-> @@ -294,7 +329,18 @@ int kvm_riscv_vcpu_pmu_ctr_stop(struct kvm_vcpu *vcpu, unsigned long ctr_base,
->  		if (!test_bit(pmc_index, kvpmu->pmc_in_use))
->  			continue;
->  		pmc = &kvpmu->pmc[pmc_index];
-> -		if (pmc->perf_event) {
-> +		if (pmc->cinfo.type == SBI_PMU_CTR_TYPE_FW) {
-> +			fevent_code = get_event_code(pmc->event_idx);
-> +			if (fevent_code >= SBI_PMU_FW_MAX) {
-> +				sbiret = SBI_ERR_INVALID_PARAM;
-> +				goto out;
-> +			}
-> +
-> +			if (!kvpmu->fw_event[fevent_code].started)
-> +				sbiret = SBI_ERR_ALREADY_STOPPED;
-> +
-> +			kvpmu->fw_event[fevent_code].started = false;
-> +		} else if (pmc->perf_event) {
->  			if (pmc->started) {
->  				/* Stop counting the counter */
->  				perf_event_disable(pmc->perf_event);
-> @@ -307,12 +353,15 @@ int kvm_riscv_vcpu_pmu_ctr_stop(struct kvm_vcpu *vcpu, unsigned long ctr_base,
->  				pmc->counter_val += perf_event_read_value(pmc->perf_event,
->  									  &enabled, &running);
->  				pmu_release_perf_event(pmc);
-> -				clear_bit(pmc_index, kvpmu->pmc_in_use);
->  			}
->  		} else {
->  			kvm_debug("Can not stop counter due to invalid confiugartion\n");
->  			sbiret = SBI_ERR_INVALID_PARAM;
->  		}
-> +		if (flag & SBI_PMU_STOP_FLAG_RESET) {
-> +			pmc->event_idx = SBI_PMU_EVENT_IDX_INVALID;
-> +			clear_bit(pmc_index, kvpmu->pmc_in_use);
+Aha, this is the key, I moved the base IDs out side of __ASSEMBLY__
+macro protection and move extension IDs to macros, but the git doesn't
+think I did the base IDs moving ;)
 
-nit: I'd probably just leave clear_bit where it was and add
+> operation you carried out.
+> 
+> Content itself is
+> Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
+> 
+> Thanks,
+> Conor.
+> 
+> > Signed-off-by: Jisheng Zhang <jszhang@kernel.org>
+> > Reviewed-by: Heiko Stuebner <heiko@sntech.de>
+> > Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+> > ---
+> >  arch/riscv/include/asm/hwcap.h | 45 ++++++++++++++++------------------
+> >  1 file changed, 21 insertions(+), 24 deletions(-)
+> > 
+> > diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
+> > index 86328e3acb02..09a7767723f6 100644
+> > --- a/arch/riscv/include/asm/hwcap.h
+> > +++ b/arch/riscv/include/asm/hwcap.h
+> > @@ -12,20 +12,6 @@
+> >  #include <linux/bits.h>
+> >  #include <uapi/asm/hwcap.h>
+> >  
+> > -#ifndef __ASSEMBLY__
+> > -#include <linux/jump_label.h>
+> > -/*
+> > - * This yields a mask that user programs can use to figure out what
+> > - * instruction set this cpu supports.
+> > - */
+> > -#define ELF_HWCAP		(elf_hwcap)
+> > -
+> > -enum {
+> > -	CAP_HWCAP = 1,
+> > -};
+> > -
+> > -extern unsigned long elf_hwcap;
+> > -
+> >  #define RISCV_ISA_EXT_a		('a' - 'a')
+> >  #define RISCV_ISA_EXT_c		('c' - 'a')
+> >  #define RISCV_ISA_EXT_d		('d' - 'a')
+> > @@ -46,22 +32,33 @@ extern unsigned long elf_hwcap;
+> >  #define RISCV_ISA_EXT_BASE 26
+> >  
+> >  /*
+> > - * This enum represent the logical ID for each multi-letter RISC-V ISA extension.
+> > + * These macros represent the logical ID for each multi-letter RISC-V ISA extension.
+> >   * The logical ID should start from RISCV_ISA_EXT_BASE and must not exceed
+> >   * RISCV_ISA_EXT_MAX. 0-25 range is reserved for single letter
+> >   * extensions while all the multi-letter extensions should define the next
+> >   * available logical extension id.
+> >   */
+> > -enum riscv_isa_ext_id {
+> > -	RISCV_ISA_EXT_SSCOFPMF = RISCV_ISA_EXT_BASE,
+> > -	RISCV_ISA_EXT_SVPBMT,
+> > -	RISCV_ISA_EXT_ZICBOM,
+> > -	RISCV_ISA_EXT_ZIHINTPAUSE,
+> > -	RISCV_ISA_EXT_SSTC,
+> > -	RISCV_ISA_EXT_SVINVAL,
+> > -	RISCV_ISA_EXT_ID_MAX
+> > +#define RISCV_ISA_EXT_SSCOFPMF		26
+> > +#define RISCV_ISA_EXT_SVPBMT		27
+> > +#define RISCV_ISA_EXT_ZICBOM		28
+> > +#define RISCV_ISA_EXT_ZIHINTPAUSE	29
+> > +#define RISCV_ISA_EXT_SSTC		30
+> > +#define RISCV_ISA_EXT_SVINVAL		31
+> > +
+> > +#ifndef __ASSEMBLY__
+> > +#include <linux/jump_label.h>
+> > +/*
+> > + * This yields a mask that user programs can use to figure out what
+> > + * instruction set this cpu supports.
+> > + */
+> > +#define ELF_HWCAP		(elf_hwcap)
+> > +
+> > +enum {
+> > +	CAP_HWCAP = 1,
+> >  };
+> > -static_assert(RISCV_ISA_EXT_ID_MAX <= RISCV_ISA_EXT_MAX);
+> > +
+> > +extern unsigned long elf_hwcap;
+> > +
+> >  
+> >  /*
+> >   * This enum represents the logical ID for each RISC-V ISA extension static
+> > -- 
+> > 2.38.1
+> > 
+> > 
+> > _______________________________________________
+> > linux-riscv mailing list
+> > linux-riscv at lists.infradead.org
+> > http://lists.infradead.org/mailman/listinfo/linux-riscv
 
-if (flag & SBI_PMU_STOP_FLAG_RESET)
-   pmc->event_idx = SBI_PMU_EVENT_IDX_INVALID;
 
-to the firmware arm.
-
-> +		}
->  	}
->  
->  out:
-> @@ -329,12 +378,12 @@ int kvm_riscv_vcpu_pmu_ctr_cfg_match(struct kvm_vcpu *vcpu, unsigned long ctr_ba
->  	struct kvm_pmu *kvpmu = vcpu_to_pmu(vcpu);
->  	struct perf_event *event;
->  	struct perf_event_attr attr;
-> -	int num_ctrs, ctr_idx;
-> +	int num_ctrs, ctr_idx, sbiret = 0;
->  	u32 etype = pmu_get_perf_event_type(eidx);
->  	u64 config;
-> -	struct kvm_pmc *pmc;
-> -	int sbiret = 0;
-> -
-> +	struct kvm_pmc *pmc = NULL;
-> +	bool is_fevent;
-> +	unsigned long event_code;
->  
->  	num_ctrs = kvpmu->num_fw_ctrs + kvpmu->num_hw_ctrs;
->  	if (etype == PERF_TYPE_MAX || (ctr_base + __fls(ctr_mask) >= num_ctrs)) {
-> @@ -342,7 +391,9 @@ int kvm_riscv_vcpu_pmu_ctr_cfg_match(struct kvm_vcpu *vcpu, unsigned long ctr_ba
->  		goto out;
->  	}
->  
-> -	if (pmu_is_fw_event(eidx)) {
-> +	event_code = get_event_code(eidx);
-> +	is_fevent = pmu_is_fw_event(eidx);
-> +	if (is_fevent && event_code >= SBI_PMU_FW_MAX) {
->  		sbiret = SBI_ERR_NOT_SUPPORTED;
->  		goto out;
->  	}
-> @@ -357,7 +408,10 @@ int kvm_riscv_vcpu_pmu_ctr_cfg_match(struct kvm_vcpu *vcpu, unsigned long ctr_ba
->  			goto out;
->  		}
->  		ctr_idx = ctr_base;
-> -		goto match_done;
-> +		if (is_fevent)
-> +			goto perf_event_done;
-> +		else
-> +			goto match_done;
->  	}
->  
->  	ctr_idx = pmu_get_pmc_index(kvpmu, eidx, ctr_base, ctr_mask);
-> @@ -366,6 +420,13 @@ int kvm_riscv_vcpu_pmu_ctr_cfg_match(struct kvm_vcpu *vcpu, unsigned long ctr_ba
->  		goto out;
->  	}
->  
-> +	/*
-> +	 * No need to create perf events for firmware events as the firmware counter
-> +	 * is supposed to return the measurement of VS->HS mode invocations.
-> +	 */
-> +	if (is_fevent)
-> +		goto perf_event_done;
-> +
->  match_done:
->  	pmc = &kvpmu->pmc[ctr_idx];
->  	pmu_release_perf_event(pmc);
-> @@ -404,10 +465,19 @@ int kvm_riscv_vcpu_pmu_ctr_cfg_match(struct kvm_vcpu *vcpu, unsigned long ctr_ba
->  		return -EOPNOTSUPP;
->  	}
->  
-> -	set_bit(ctr_idx, kvpmu->pmc_in_use);
->  	pmc->perf_event = event;
-> -	if (flag & SBI_PMU_CFG_FLAG_AUTO_START)
-> -		perf_event_enable(pmc->perf_event);
-
-Maybe we can move the perf setup stuff into a helper function and
-then guard it with an if-statement rather than have the gotos?
-
-> +perf_event_done:
-> +	if (flag & SBI_PMU_CFG_FLAG_AUTO_START) {
-> +		if (is_fevent)
-> +			kvpmu->fw_event[event_code].started = true;
-> +		else
-> +			perf_event_enable(pmc->perf_event);
-> +	}
-> +	/* This should be only true for firmware events */
-> +	if (!pmc)
-> +		pmc = &kvpmu->pmc[ctr_idx];
-> +	pmc->event_idx = eidx;
-> +	set_bit(ctr_idx, kvpmu->pmc_in_use);
->  
->  	ext_data->out_val = ctr_idx;
->  out:
-> @@ -451,6 +521,7 @@ int kvm_riscv_vcpu_pmu_init(struct kvm_vcpu *vcpu)
->  	bitmap_zero(kvpmu->pmc_in_use, RISCV_MAX_COUNTERS);
->  	kvpmu->num_hw_ctrs = num_hw_ctrs;
->  	kvpmu->num_fw_ctrs = num_fw_ctrs;
-> +	memset(&kvpmu->fw_event, 0, SBI_PMU_FW_MAX * sizeof(struct kvm_fw_event));
-
-I'm wondering if we need this array. We already have an underused pmc for
-the fw events which has counter_val and started. Can't we just used those?
-
->  	/*
->  	 * There is no corelation betwen the logical hardware counter and virtual counters.
->  	 * However, we need to encode a hpmcounter CSR in the counter info field so that
-> @@ -464,6 +535,7 @@ int kvm_riscv_vcpu_pmu_init(struct kvm_vcpu *vcpu)
->  		pmc = &kvpmu->pmc[i];
->  		pmc->idx = i;
->  		pmc->counter_val = 0;
-> +		pmc->event_idx = SBI_PMU_EVENT_IDX_INVALID;
->  		if (i < kvpmu->num_hw_ctrs) {
->  			kvpmu->pmc[i].cinfo.type = SBI_PMU_CTR_TYPE_HW;
->  			if (i < 3)
-> @@ -501,7 +573,10 @@ void kvm_riscv_vcpu_pmu_deinit(struct kvm_vcpu *vcpu)
->  	for_each_set_bit(i, kvpmu->pmc_in_use, RISCV_MAX_COUNTERS) {
->  		pmc = &kvpmu->pmc[i];
->  		pmu_release_perf_event(pmc);
-> +		pmc->counter_val = 0;
-> +		pmc->event_idx = SBI_PMU_EVENT_IDX_INVALID;
->  	}
-> +	memset(&kvpmu->fw_event, 0, SBI_PMU_FW_MAX * sizeof(struct kvm_fw_event));
->  }
->  
->  void kvm_riscv_vcpu_pmu_reset(struct kvm_vcpu *vcpu)
-> diff --git a/arch/riscv/kvm/vcpu_sbi_replace.c b/arch/riscv/kvm/vcpu_sbi_replace.c
-> index d029136..3f39711 100644
-> --- a/arch/riscv/kvm/vcpu_sbi_replace.c
-> +++ b/arch/riscv/kvm/vcpu_sbi_replace.c
-> @@ -11,6 +11,7 @@
->  #include <linux/kvm_host.h>
->  #include <asm/sbi.h>
->  #include <asm/kvm_vcpu_timer.h>
-> +#include <asm/kvm_vcpu_pmu.h>
->  #include <asm/kvm_vcpu_sbi.h>
->  
->  static int kvm_sbi_ext_time_handler(struct kvm_vcpu *vcpu, struct kvm_run *run,
-> @@ -26,6 +27,7 @@ static int kvm_sbi_ext_time_handler(struct kvm_vcpu *vcpu, struct kvm_run *run,
->  		return 0;
->  	}
->  
-> +	kvm_riscv_vcpu_pmu_incr_fw(vcpu, SBI_PMU_FW_SET_TIMER);
->  #if __riscv_xlen == 32
->  	next_cycle = ((u64)cp->a1 << 32) | (u64)cp->a0;
->  #else
-> @@ -58,6 +60,7 @@ static int kvm_sbi_ext_ipi_handler(struct kvm_vcpu *vcpu, struct kvm_run *run,
->  		return 0;
->  	}
->  
-> +	kvm_riscv_vcpu_pmu_incr_fw(vcpu, SBI_PMU_FW_IPI_SENT);
->  	kvm_for_each_vcpu(i, tmp, vcpu->kvm) {
->  		if (hbase != -1UL) {
->  			if (tmp->vcpu_id < hbase)
-> @@ -68,6 +71,7 @@ static int kvm_sbi_ext_ipi_handler(struct kvm_vcpu *vcpu, struct kvm_run *run,
->  		ret = kvm_riscv_vcpu_set_interrupt(tmp, IRQ_VS_SOFT);
->  		if (ret < 0)
->  			break;
-> +		kvm_riscv_vcpu_pmu_incr_fw(tmp, SBI_PMU_FW_IPI_RECVD);
->  	}
->  
->  	return ret;
-> @@ -91,6 +95,7 @@ static int kvm_sbi_ext_rfence_handler(struct kvm_vcpu *vcpu, struct kvm_run *run
->  	switch (funcid) {
->  	case SBI_EXT_RFENCE_REMOTE_FENCE_I:
->  		kvm_riscv_fence_i(vcpu->kvm, hbase, hmask);
-> +		kvm_riscv_vcpu_pmu_incr_fw(vcpu, SBI_PMU_FW_FENCE_I_SENT);
->  		break;
->  	case SBI_EXT_RFENCE_REMOTE_SFENCE_VMA:
->  		if (cp->a2 == 0 && cp->a3 == 0)
-> @@ -98,6 +103,7 @@ static int kvm_sbi_ext_rfence_handler(struct kvm_vcpu *vcpu, struct kvm_run *run
->  		else
->  			kvm_riscv_hfence_vvma_gva(vcpu->kvm, hbase, hmask,
->  						  cp->a2, cp->a3, PAGE_SHIFT);
-> +		kvm_riscv_vcpu_pmu_incr_fw(vcpu, SBI_PMU_FW_HFENCE_VVMA_SENT);
->  		break;
->  	case SBI_EXT_RFENCE_REMOTE_SFENCE_VMA_ASID:
->  		if (cp->a2 == 0 && cp->a3 == 0)
-> @@ -108,6 +114,7 @@ static int kvm_sbi_ext_rfence_handler(struct kvm_vcpu *vcpu, struct kvm_run *run
->  						       hbase, hmask,
->  						       cp->a2, cp->a3,
->  						       PAGE_SHIFT, cp->a4);
-> +		kvm_riscv_vcpu_pmu_incr_fw(vcpu, SBI_PMU_FW_HFENCE_VVMA_ASID_SENT);
->  		break;
->  	case SBI_EXT_RFENCE_REMOTE_HFENCE_GVMA:
->  	case SBI_EXT_RFENCE_REMOTE_HFENCE_GVMA_VMID:
-> -- 
-> 2.25.1
->
-
-It think it'd be nice to break the application of
-kvm_riscv_vcpu_pmu_incr_fw() out of this patch. I.e. introduce
-kvm_riscv_vcpu_pmu_incr_fw() in this patch and then a second patch
-applies it to all the ecalls.
-
-Thanks,
-drew
 
