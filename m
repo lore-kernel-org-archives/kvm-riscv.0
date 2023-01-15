@@ -1,42 +1,107 @@
 From: Jisheng Zhang <jszhang@kernel.org>
-Date: Sun, 15 Jan 2023 23:49:43 +0800
-Subject: [PATCH v4 03/13] riscv: cpufeature: detect RISCV_ALTERNATIVES_EARLY_BOOT earlier
+Date: Sun, 15 Jan 2023 23:49:46 +0800
+Subject: [PATCH v4 06/13] riscv: introduce riscv_has_extension_[un]likely()
 In-Reply-To: <20230115154953.831-1-jszhang@kernel.org>
 References: <20230115154953.831-1-jszhang@kernel.org>
-Message-ID: <20230115154953.831-4-jszhang@kernel.org>
+Message-ID: <20230115154953.831-7-jszhang@kernel.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Currently riscv_cpufeature_patch_func() does nothing at the
-RISCV_ALTERNATIVES_EARLY_BOOT stage. Add a check to detect whether we
-are in this stage and exit early. This will allow us to use
-riscv_cpufeature_patch_func() for scanning of all ISA extensions.
+Generally, riscv ISA extensions are fixed for any specific hardware
+platform, so a hart's features won't change after booting. This
+chacteristic makes it straightforward to use a static branch to check
+if a specific ISA extension is supported or not to optimize
+performance.
 
+However, some ISA extensions such as SVPBMT and ZICBOM are handled
+via. the alternative sequences.
+
+Basically, for ease of maintenance, we prefer to use static branches
+in C code, but recently, Samuel found that the static branch usage in
+cpu_relax() breaks building with CONFIG_CC_OPTIMIZE_FOR_SIZE[1]. As
+Samuel pointed out, "Having a static branch in cpu_relax() is
+problematic because that function is widely inlined, including in some
+quite complex functions like in the VDSO. A quick measurement shows
+this static branch is responsible by itself for around 40% of the jump
+table."
+
+Samuel's findings pointed out one of a few downsides of static branches
+usage in C code to handle ISA extensions detected at boot time:
+static branch's metadata in the __jump_table section, which is not
+discarded after ISA extensions are finalized, wastes some space.
+
+I want to try to solve the issue for all possible dynamic handling of
+ISA extensions at boot time. Inspired by Mark[2], this patch introduces
+riscv_has_extension_*() helpers, which work like static branches but
+are patched using alternatives, thus the metadata can be freed after
+patching.
+
+Link: https://lore.kernel.org/linux-riscv/20220922060958.44203-1-samuel at sholland.org/ [1]
+Link: https://lore.kernel.org/linux-arm-kernel/20220912162210.3626215-8-mark.rutland at arm.com/ [2]
 Signed-off-by: Jisheng Zhang <jszhang@kernel.org>
 Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
-Reviewed-by: Heiko Stuebner <heiko@sntech.de>
-Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
 ---
- arch/riscv/kernel/cpufeature.c | 3 +++
- 1 file changed, 3 insertions(+)
+ arch/riscv/include/asm/hwcap.h | 37 ++++++++++++++++++++++++++++++++++
+ 1 file changed, 37 insertions(+)
 
-diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
-index 421b3d9578cc..37e8c5e69754 100644
---- a/arch/riscv/kernel/cpufeature.c
-+++ b/arch/riscv/kernel/cpufeature.c
-@@ -328,6 +328,9 @@ void __init_or_module riscv_cpufeature_patch_func(struct alt_entry *begin,
- 	struct alt_entry *alt;
- 	u32 tmp;
+diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
+index 09a7767723f6..1767a9ce1a04 100644
+--- a/arch/riscv/include/asm/hwcap.h
++++ b/arch/riscv/include/asm/hwcap.h
+@@ -8,6 +8,7 @@
+ #ifndef _ASM_RISCV_HWCAP_H
+ #define _ASM_RISCV_HWCAP_H
  
-+	if (stage == RISCV_ALTERNATIVES_EARLY_BOOT)
-+		return;
++#include <asm/alternative-macros.h>
+ #include <asm/errno.h>
+ #include <linux/bits.h>
+ #include <uapi/asm/hwcap.h>
+@@ -97,6 +98,42 @@ static __always_inline int riscv_isa_ext2key(int num)
+ 	}
+ }
+ 
++static __always_inline bool
++riscv_has_extension_likely(const unsigned long ext)
++{
++	compiletime_assert(ext < RISCV_ISA_EXT_MAX,
++			   "ext must be < RISCV_ISA_EXT_MAX");
 +
- 	for (alt = begin; alt < end; alt++) {
- 		if (alt->vendor_id != 0)
- 			continue;
++	asm_volatile_goto(
++	ALTERNATIVE("j	%l[l_no]", "nop", 0, %[ext], 1)
++	:
++	: [ext] "i" (ext)
++	:
++	: l_no);
++
++	return true;
++l_no:
++	return false;
++}
++
++static __always_inline bool
++riscv_has_extension_unlikely(const unsigned long ext)
++{
++	compiletime_assert(ext < RISCV_ISA_EXT_MAX,
++			   "ext must be < RISCV_ISA_EXT_MAX");
++
++	asm_volatile_goto(
++	ALTERNATIVE("nop", "j	%l[l_yes]", 0, %[ext], 1)
++	:
++	: [ext] "i" (ext)
++	:
++	: l_yes);
++
++	return false;
++l_yes:
++	return true;
++}
++
+ unsigned long riscv_isa_extension_base(const unsigned long *isa_bitmap);
+ 
+ #define riscv_isa_extension_mask(ext) BIT_MASK(RISCV_ISA_EXT_##ext)
 -- 
 2.38.1
 
