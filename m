@@ -1,41 +1,72 @@
-From: Marc Zyngier <maz@kernel.org>
-Date: Thu, 19 Jan 2023 17:24:25 +0000
-Subject: [RFC PATCH 00/37] KVM: Refactor the KVM/x86 TDP MMU into common code
-In-Reply-To: <Y8l6egh2wWN7BUlZ@google.com>
-References: <20221208193857.4090582-1-dmatlack@google.com>
-	<Y8l6egh2wWN7BUlZ@google.com>
-Message-ID: <86tu0mmo8m.wl-maz@kernel.org>
+From: David Matlack <dmatlack@google.com>
+Date: Thu, 19 Jan 2023 09:35:52 -0800
+Subject: [PATCH 0/7] KVM: Add a common API for range-based TLB invalidation
+Message-ID: <20230119173559.2517103-1-dmatlack@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, 19 Jan 2023 17:14:34 +0000,
-David Matlack <dmatlack@google.com> wrote:
-> 
-> On Thu, Dec 08, 2022 at 11:38:20AM -0800, David Matlack wrote:
-> > 
-> > Hello,
-> > 
-> > This series refactors the KVM/x86 "TDP MMU" into common code. This is
-> > the first step toward sharing TDP (aka Stage-2) page table management
-> > code across architectures that support KVM.
-> 
-> Thank you everyone for the feedback on this RFC. I have a couple of
-> updates to share and a question at the end.
-> 
-> First, Alexandre Ghiti from Rivos is going to work on the RISC-V port.
-> I'd like to target RISC-V first, since it has significantly lower risk
-> and complexity than e.g. ARM (which has pKVM, stage-1 walkers, and
-> [soon] nested virtualization to deal with).
+This series introduces a common API for performing range-based TLB
+invalidation. This is then used to supplant
+kvm_arch_flush_remote_tlbs_memslot() and pave the way for two other
+patch series:
 
-And (joy, happiness), the upcoming 128bit page table support[1].
+1. https://lore.kernel.org/kvm/20230109215347.3119271-1-rananta at google.com/
 
-	M.
+  Adds ARM support for range-based TLB invalidation and needs a
+  mechanism to invoke it from common code. This series provides such a
+  mechanism via kvm_arch_flush_remote_tlbs_range().
 
-[1] https://developer.arm.com/documentation/ddi0601/2022-12/AArch64-Registers/TTBR0-EL1--Translation-Table-Base-Register-0--EL1-?lang=en
+2. https://lore.kernel.org/kvm/20221208193857.4090582-1-dmatlack at google.com/
 
+  Refactors the TDP MMU into common code, which requires an API for
+  range-based TLB invaliation.
+
+This series is based on patches 29-33 from (2.), but I made some further
+cleanups after looking at it a second time.
+
+Tested on x86_64 and ARM64 using KVM selftests.
+
+Cc: Raghavendra Rao Ananta <rananta@google.com>
+
+David Matlack (7):
+  KVM: Rename kvm_arch_flush_remote_tlb() to
+    kvm_arch_flush_remote_tlbs()
+  KVM: arm64: Use kvm_arch_flush_remote_tlbs()
+  KVM: x86/mmu: Collapse kvm_flush_remote_tlbs_with_{range,address}()
+    together
+  KVM: x86/mmu: Rename kvm_flush_remote_tlbs_with_address()
+  KVM: x86/MMU: Use gfn_t in kvm_flush_remote_tlbs_range()
+  KVM: Allow range-based TLB invalidation from common code
+  KVM: Move kvm_arch_flush_remote_tlbs_memslot() to common code
+
+ arch/arm64/include/asm/kvm_host.h |  3 ++
+ arch/arm64/kvm/Kconfig            |  1 -
+ arch/arm64/kvm/arm.c              |  6 ---
+ arch/arm64/kvm/mmu.c              |  6 +--
+ arch/mips/include/asm/kvm_host.h  |  4 +-
+ arch/mips/kvm/mips.c              | 12 ++----
+ arch/riscv/kvm/mmu.c              |  6 ---
+ arch/x86/include/asm/kvm_host.h   |  7 +++-
+ arch/x86/kvm/mmu/mmu.c            | 68 ++++++++++---------------------
+ arch/x86/kvm/mmu/mmu_internal.h   |  2 -
+ arch/x86/kvm/mmu/paging_tmpl.h    |  4 +-
+ arch/x86/kvm/mmu/tdp_mmu.c        |  7 ++--
+ arch/x86/kvm/x86.c                |  2 +-
+ include/linux/kvm_host.h          | 20 ++++++---
+ virt/kvm/kvm_main.c               | 35 +++++++++++++---
+ 15 files changed, 87 insertions(+), 96 deletions(-)
+
+
+base-commit: de60733246ff4545a0483140c1f21426b8d7cb7f
+prerequisite-patch-id: 42a76ce7cec240776c21f674e99e893a3a6bee58
+prerequisite-patch-id: c5ef6bbef252706b7e65b76dc9bd92cf320828f5
+prerequisite-patch-id: c6e662cb6c369a47a027c25d3ccc7138a19b17f5
+prerequisite-patch-id: 15a58bec64bf1537e6c9e2f52179fac652d441f7
+prerequisite-patch-id: d5b6fea4724f4f2c3408b95d7ce5acdd4b528b10
 -- 
-Without deviation from the norm, progress is not possible.
+2.39.0.246.g2a6d74b583-goog
+
 
