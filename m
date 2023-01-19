@@ -1,207 +1,67 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Thu, 19 Jan 2023 09:29:03 +0100
-Subject: [PATCH v3 05/13] riscv: cpufeature: extend
- riscv_cpufeature_patch_func to all ISA extensions
-In-Reply-To: <Y8hqptFcUgjhns4F@spud>
-References: <20230111171027.2392-1-jszhang@kernel.org>
- <20230111171027.2392-6-jszhang@kernel.org>
- <2398293.3Lj2Plt8kZ@diego>
- <20230112092136.f2g43hrhmrqouy4y@orel>
- <Y8F2YxMHUt+djhX4@wendy>
- <Y8MRZQENua+wi34T@spud>
- <Y8hqptFcUgjhns4F@spud>
-Message-ID: <20230119082903.yk3uslfrjtxzassi@orel>
+From: David Matlack <dmatlack@google.com>
+Date: Thu, 19 Jan 2023 09:14:34 -0800
+Subject: [RFC PATCH 00/37] KVM: Refactor the KVM/x86 TDP MMU into common
+ code
+In-Reply-To: <20221208193857.4090582-1-dmatlack@google.com>
+References: <20221208193857.4090582-1-dmatlack@google.com>
+Message-ID: <Y8l6egh2wWN7BUlZ@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Jan 18, 2023 at 09:54:46PM +0000, Conor Dooley wrote:
-> Hey!
+On Thu, Dec 08, 2022 at 11:38:20AM -0800, David Matlack wrote:
 > 
-> I guess here is the right place to follow up on all of this stuff...
+> Hello,
 > 
-> On Sat, Jan 14, 2023 at 08:32:37PM +0000, Conor Dooley wrote:
-> > On Fri, Jan 13, 2023 at 03:18:59PM +0000, Conor Dooley wrote:
-> > > On Thu, Jan 12, 2023 at 10:21:36AM +0100, Andrew Jones wrote:
-> > > > On Thu, Jan 12, 2023 at 12:29:57AM +0100, Heiko St?bner wrote:
-> > > > > Am Mittwoch, 11. Januar 2023, 18:10:19 CET schrieb Jisheng Zhang:
-> > > > > > riscv_cpufeature_patch_func() currently only scans a limited set of
-> > > > > > cpufeatures, explicitly defined with macros. Extend it to probe for all
-> > > > > > ISA extensions.
-> > > > > > 
-> > > > > > Signed-off-by: Jisheng Zhang <jszhang@kernel.org>
-> > > > > > Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
-> > > > > > Reviewed-by: Heiko Stuebner <heiko@sntech.de>
-> > > > > > ---
-> > > > > >  arch/riscv/include/asm/errata_list.h |  9 ++--
-> > > > > >  arch/riscv/kernel/cpufeature.c       | 63 ++++------------------------
-> > > > > >  2 files changed, 11 insertions(+), 61 deletions(-)
-> > > > > 
-> > > > > hmmm ... I do see a somewhat big caveat for this.
-> > > > > and would like to take back my Reviewed-by for now
-> > > > > 
-> > > > > 
-> > > > > With this change we would limit the patchable cpufeatures to actual
-> > > > > riscv extensions. But cpufeatures can also be soft features like
-> > > > > how performant the core handles unaligned accesses.
-> > > > 
-> > > > I agree that this needs to be addressed and Jisheng also raised this
-> > > > yesterday here [*]. It seems we need the concept of cpufeatures, which
-> > > > may be extensions or non-extensions.
-> > > > 
-> > > > [*] https://lore.kernel.org/all/Y77xyNPNqnFQUqAx at xhacker/
-> > > > 
-> > > > > See Palmer's series [0].
-> > > > > 
-> > > > > 
-> > > > > Also this essentially codifies that each ALTERNATIVE can only ever
-> > > > > be attached to exactly one extension.
-> > > > > 
-> > > > > But contrary to vendor-errata, it is very likely that we will need
-> > > > > combinations of different extensions for some alternatives in the future.
-> > > > 
-> > > > One possible approach may be to combine extensions/non-extensions at boot
-> > > > time into pseudo-cpufeatures. Then, alternatives can continue attaching to
-> > > > a single "feature". (I'm not saying that's a better approach than the
-> > > > bitmap, I'm just suggesting it as something else to consider.)
-> > > 
-> > > 
-> > > > >         ALTERNATIVE_2("nop",
-> > > > >                       "j strcmp_zbb_unaligned", 0, CPUFEATURE_ZBB | CPUFEATURE_FAST_UNALIGNED, 0, CONFIG_RISCV_ISA_ZBB,
-> > > > >                       "j variant_zbb", 0, CPUFEATURE_ZBB, CPUFEATURE_FAST_UNALIGNED, CONFIG_RISCV_ISA_ZBB)
-> > > > > 
-> > > > > [the additional field there models a "not" component]
-> > > 
-> > > Since we're discussing theoretical implementations, and it's a little hard
-> > > to picture all that they entail in my head, I might be making a fool of
-> > > myself here with assumptions...
-> > > 
-> > > Heiko's suggestion sounded along the lines of: keep probing individual
-> > > "features" as we are now. Features in this case being the presence of
-> > > the extension or non-extension capability. And then in the alternative,
-> > > make all of the decisions about which to apply.
-> > > 
-> > > Drew's suggestion would have significantly more defined CPUFEATURE_FOOs,
-> > > but would offload the decision making about which extensions or non-
-> > > extension capabilities constitute a feature to regular old cpufeature
-> > > code. However, the order of precedence would remain in the alt macro, as
-> > > it does now.
-> > > 
-> > > I think I am just a wee bit biased, but adding the complexity somewhere
-> > > other than alternative macros seems a wise choice, especially as we are
-> > > likely to find that complexity increases over time?
-> > > 
-> > > The other thing that came to mind, and maybe this is just looking for
-> > > holes where they don't exist (or are not worth addressing), is that
-> > > order of precedence.
-> > > I can imagine that, in some cases, the order of precedence is not a
-> > > constant per psuedo-cpufeature, but determined by implementation of
-> > > the capabilities that comprise it?
-> > 
-> > Having spent longer than I maybe should've looking at your patches
-> > Heiko, given it's a Saturday evening, the precedence stuff is still
-> > sticking out to me..
-> > 
-> > For Zbb & fast unaligned, the order may be non-controversial, but in
-> > the general case I don't see how it can be true that the order of
-> > precedence for variants is a constant.
-> > 
-> > Creating pseudo cpufeatures as Drew suggested does seem like a way to
-> > extract complexity from the alternatives themselves (which I think is a
-> > good thing) but at the expense of eating up cpu_req_feature bits...
-> > By itself, it doesn't help with precedence, but it may better allow us
-> > to deal with some of the precedence in cpufeature.c, since the
-> > alternative would operate based on the pseudo cpufeature rather than on
-> > the individual capabilities that the pseudo cpufeature depends on.
-> > 
-> > I tried to come up with a suggestion for what to do about precedence,
-> > but everything I thought up felt a bit horrific tbh.
-> > The thing that fits the current model best is just allowing cpu vendors
-> > to add, yet more, "errata" that pick the variant that works best for
-> > their implementation... Although I'd be worried about ballooning some of
-> > these ALT_FOO macros out to a massive degree with that sort of approach.
-> > 
-> > > If my assumption/understanding holds, moving decision making out of the
-> > > alternative seems like it would better provision for scenarios like
-> > > that? I dunno, maybe that is whatever the corollary of "premature
-> > > optimisation" is for this discussion.
-> > > 
-> > > That's my unsolicited ? 0.02, hopefully I wasn't off-base with the
-> > > assumptions I made.
-> > 
-> > The order in which an alternative is added to the macro does matter,
-> > right? At least, that's how I thought it worked and hope I've not had
-> > an incorrect interpretation there all along... I wasn't until I started
-> > reading your patch and couldn't understand why you had a construct that
-> > looked like
-> > 
-> > if (zbb && !fast_unaligned)
-> > ...
-> > else if (zbb && fast_unaligned)
-> > ...
-> > 
-> > rather than just inverting the order and dropping the !fast_unaligned
-> > that I realised I might have a gap in my understanding after all..
-> > 
-> > > Heiko, I figure you've got some sort of WIP stuff for this anyway since
-> > > you're interested in the fast unaligned? How close are you to posting any
-> > > of that?
-> > > 
-> > > While I think of it, w.r.t. extension versus (pseudo)cpufeature etc
-> > > naming, it may make sense to call the functions that this series adds
-> > > in patch 6 has_cpufeature_{un,}likely(), no matter what decision gets
-> > > made here?
-> > > IMO using cpufeature seems to make more sense for a general use API that
-> > > may be used later on for the likes of unaligned access, even if
-> > > initially it is not used for anything other than extensions. 
-> 
-> Today at [1] we talked a bit about the various bits going on here.
-> I'll attempt to summarise what I remember, but I meant to do this
-> several hours ago and am likely to make a hames of it.
-> 
-> For Zbb/unaligned stuff, the sentiment was along the lines of there
-> needing to be a performance benefit to justify the inclusion.
-> Some of us have HW that is (allegedly) capable of Zbb, and, if that's the
-> case, will give it a go.
-> I think it was similar for unaligned, since there is nothing yet that
-> supports this behaviour, we should wait until a benefit is demonstrable.
-> 
-> On the subject of grouping extension/non-extension capabilities into a
-> single cpufeature, Palmer mentioned that GCC does something similar,
-> for the likes of the Ventana vendor extensions, that are unlikely to be
-> present in isolation.
-> Those are (or were?) probed as a group of extensions rather than
-> individually.
-> I think it was said it'd make sense for us to unify extensions that will
-> only ever appear together single psuedo cpufeature too.
-> 
-> For the bitfield approach versus creating pseudo cpufeatures discussion
-> & how to deal with that in alternatives etc, I'm a bit less sure what the
-> outcome was.
-> IIRC, nothing concrete was said about either approach, but maybe it was
-> implied that we should do as GCC does, only grouping things that won't
-> ever been seen apart.
-> Figuring that out seems to have been punted down the road, as the
-> inclusion of our only current example of this (Zbb + unaligned) is
-> dependant on hardware showing up that actually benefits from it.
-> 
-> The plan then seemed to be press ahead with this series & test the
-> benefits of the Zbb str* functions in Zbb capable hardware before making
-> a decision there.
-> 
-> Hopefully I wasn't too far off with that summary...
+> This series refactors the KVM/x86 "TDP MMU" into common code. This is
+> the first step toward sharing TDP (aka Stage-2) page table management
+> code across architectures that support KVM.
 
-This matches my recollection. Thanks for the summary, Conor.
+Thank you everyone for the feedback on this RFC. I have a couple of
+updates to share and a question at the end.
 
-drew
+First, Alexandre Ghiti from Rivos is going to work on the RISC-V port.
+I'd like to target RISC-V first, since it has significantly lower risk
+and complexity than e.g. ARM (which has pKVM, stage-1 walkers, and
+[soon] nested virtualization to deal with).
 
-> 
-> Thanks,
-> Conor.
-> 
-> 1 - https://lore.kernel.org/linux-riscv/mhng-775d4068-6c1e-48a4-a1dc-b4a76ff26bb3 at palmer-ri-x1c9a/
+Before I send a v2 I am working on sending several related patches.
+These are patches that should have enough justification to be merged
+regardless of the fate of the Common MMU. By sending them out
+separately, I figure they will be easier to review, allow me to make
+incremental progress, and ultimately simplify the v2 of this series.
 
+What I've sent so far:
 
+ - https://lore.kernel.org/kvm/20230117222707.3949974-1-dmatlack at google.com/
+ - https://lore.kernel.org/kvm/20230118175300.790835-1-dmatlack at google.com/
+
+What's coming soon:
+
+ - A series to add a common API for range-based TLB flushing (patches
+   29-33 from this series, plus another cleanup). This cleanup stands on
+   its own, plus Raghavendra from Google has need of this for his ARM
+   series to add range-based TLBI support [1]
+
+ - A patch to move sp->tdp_mmu_page into sp->role.tdp_mmu. This was
+   suggested by Paolo as an alternative to patch 4, and saves a byte
+   from struct kvm_mmu_page.
+
+There will probably be more related cleanups I will send but this is
+everything I'm tracking so far. If anyone wants to see a complete v2
+sooner, let me know.
+
+Paolo and Sean, what are your thoughts on merging the Common MMU
+refactor without RISC-V support? e.g. Should Alexandre and I work on
+developing a functional prototype first, or are you open to merging the
+refactor and then building RISC-V support on top of that? My preference
+is the latter so that there is a more stable base on which to build the
+RISC-V support, we can make incremental progress, and keep everyone
+upstream more involved in the development.
+
+Thanks.
+
+[2] https://lore.kernel.org/kvm/20230109215347.3119271-4-rananta at google.com/
 
