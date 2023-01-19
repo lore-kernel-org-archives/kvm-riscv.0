@@ -1,67 +1,53 @@
 From: David Matlack <dmatlack@google.com>
-Date: Thu, 19 Jan 2023 09:35:55 -0800
-Subject: [PATCH 3/7] KVM: x86/mmu: Collapse kvm_flush_remote_tlbs_with_{range,address}()
- together
+Date: Thu, 19 Jan 2023 09:35:57 -0800
+Subject: [PATCH 5/7] KVM: x86/MMU: Use gfn_t in kvm_flush_remote_tlbs_range()
 In-Reply-To: <20230119173559.2517103-1-dmatlack@google.com>
 References: <20230119173559.2517103-1-dmatlack@google.com>
-Message-ID: <20230119173559.2517103-4-dmatlack@google.com>
+Message-ID: <20230119173559.2517103-6-dmatlack@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Collapse kvm_flush_remote_tlbs_with_range() and
-kvm_flush_remote_tlbs_with_address() into a single function. This
-eliminates some lines of code and a useless NULL check on the range
-struct.
+Use gfn_t instead of u64 for the start_gfn parameter to
+kvm_flush_remote_tlbs_range(), since that is the standard type for GFNs
+throughout KVM.
 
-Opportunistically switch from ENOTSUPP to EOPNOTSUPP to make checkpatch
-happy.
+No functional change intended.
 
 Signed-off-by: David Matlack <dmatlack@google.com>
 ---
- arch/x86/kvm/mmu/mmu.c | 19 ++++++-------------
- 1 file changed, 6 insertions(+), 13 deletions(-)
+ arch/x86/kvm/mmu/mmu.c          | 2 +-
+ arch/x86/kvm/mmu/mmu_internal.h | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
-index aeb240b339f5..7740ca52dab4 100644
+index 36ce3110b7da..1e2c2d711dbb 100644
 --- a/arch/x86/kvm/mmu/mmu.c
 +++ b/arch/x86/kvm/mmu/mmu.c
-@@ -246,27 +246,20 @@ static inline bool kvm_available_flush_tlb_with_range(void)
+@@ -246,7 +246,7 @@ static inline bool kvm_available_flush_tlb_with_range(void)
  	return kvm_x86_ops.tlb_remote_flush_with_range;
  }
  
--static void kvm_flush_remote_tlbs_with_range(struct kvm *kvm,
--		struct kvm_tlb_range *range)
--{
--	int ret = -ENOTSUPP;
--
--	if (range && kvm_x86_ops.tlb_remote_flush_with_range)
--		ret = static_call(kvm_x86_tlb_remote_flush_with_range)(kvm, range);
--
--	if (ret)
--		kvm_flush_remote_tlbs(kvm);
--}
--
- void kvm_flush_remote_tlbs_with_address(struct kvm *kvm,
- 		u64 start_gfn, u64 pages)
+-void kvm_flush_remote_tlbs_range(struct kvm *kvm, u64 start_gfn, u64 pages)
++void kvm_flush_remote_tlbs_range(struct kvm *kvm, gfn_t start_gfn, u64 pages)
  {
  	struct kvm_tlb_range range;
-+	int ret = -EOPNOTSUPP;
+ 	int ret = -EOPNOTSUPP;
+diff --git a/arch/x86/kvm/mmu/mmu_internal.h b/arch/x86/kvm/mmu/mmu_internal.h
+index e606a6d5e040..851982a25502 100644
+--- a/arch/x86/kvm/mmu/mmu_internal.h
++++ b/arch/x86/kvm/mmu/mmu_internal.h
+@@ -164,7 +164,7 @@ void kvm_mmu_gfn_allow_lpage(const struct kvm_memory_slot *slot, gfn_t gfn);
+ bool kvm_mmu_slot_gfn_write_protect(struct kvm *kvm,
+ 				    struct kvm_memory_slot *slot, u64 gfn,
+ 				    int min_level);
+-void kvm_flush_remote_tlbs_range(struct kvm *kvm, u64 start_gfn, u64 pages);
++void kvm_flush_remote_tlbs_range(struct kvm *kvm, gfn_t start_gfn, u64 pages);
+ unsigned int pte_list_count(struct kvm_rmap_head *rmap_head);
  
- 	range.start_gfn = start_gfn;
- 	range.pages = pages;
- 
--	kvm_flush_remote_tlbs_with_range(kvm, &range);
-+	if (kvm_x86_ops.tlb_remote_flush_with_range)
-+		ret = static_call(kvm_x86_tlb_remote_flush_with_range)(kvm, &range);
-+
-+	if (ret)
-+		kvm_flush_remote_tlbs(kvm);
- }
- 
- static void mark_mmio_spte(struct kvm_vcpu *vcpu, u64 *sptep, u64 gfn,
+ extern int nx_huge_pages;
 -- 
 2.39.0.246.g2a6d74b583-goog
 
