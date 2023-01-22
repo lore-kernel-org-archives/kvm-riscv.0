@@ -1,100 +1,95 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Fri, 20 Jan 2023 19:34:18 +0100
-Subject: [PATCH v4 09/13] riscv: switch to relative alternative entries
-In-Reply-To: <20230115154953.831-10-jszhang@kernel.org>
-References: <20230115154953.831-1-jszhang@kernel.org>
- <20230115154953.831-10-jszhang@kernel.org>
-Message-ID: <20230120183418.ngdppppvwzysqtcr@orel>
+Date: Sun, 22 Jan 2023 20:13:22 +0100
+Subject: [PATCH v2 0/6] RISC-V: Apply Zicboz to clear_page
+Message-ID: <20230122191328.1193885-1-ajones@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sun, Jan 15, 2023 at 11:49:49PM +0800, Jisheng Zhang wrote:
-...
->  #define ALT_ENTRY(oldptr, newptr, vendor_id, errata_id, newlen)		\
-> -	RISCV_PTR " " oldptr "\n"					\
-> -	RISCV_PTR " " newptr "\n"					\
-> -	REG_ASM " " vendor_id "\n"					\
-> -	REG_ASM " " newlen "\n"						\
-> -	".word " errata_id "\n"
-> +	".4byte	((" oldptr ") - .) \n"					\
-> +	".4byte	((" newptr ") - .) \n"					\
-> +	".2byte	" vendor_id "\n"					\
-> +	".2byte " newlen "\n"						\
-> +	".4byte	" errata_id "\n"
->
+When the Zicboz extension is available we can more rapidly zero naturally
+aligned Zicboz block sized chunks of memory. As pages are always page
+aligned and are larger than any Zicboz block size will be, then
+clear_page() appears to be a good candidate for the extension. While cycle
+count and energy consumption should also be considered, we can be pretty
+certain that implementing clear_page() with the Zicboz extension is a win
+by comparing the new dynamic instruction count with its current count[1].
+Doing so we see that the new count is just over a quarter of the old count
+(see patch4's commit message for more details).
 
-Hi Jisheng,
+For those of you who reviewed v1[2], you may be looking for the memset()
+patches. As pointed out in v1, and a couple follow-up emails, it's not
+clear that patching memset() is a win yet. When I get a chance to test
+on real hardware with a comprehensive benchmark collection then I can
+post the memset() patches separately (assuming the benchmarks show it's
+worthwhile).
 
-This patch breaks loading the KVM module for me. I got "kvm: Unknown
-relocation type 34". My guess is that these 2 byte fields are inspiring
-the compiler to emit 16-bit relocation types. The patch below fixes
-things for me. If you agree with fixing it this way, rather than
-changing something in alternatives, like not using 2 byte fields,
-then please pick the below patch up in your series.
+Dependencies:
+  - "[PATCH v4 00/13] riscv: improve boot time isa extensions handling"
+    https://lore.kernel.org/all/20230115154953.831-1-jszhang at kernel.org/
+    (Plus a fix for it, "riscv: module: Add ADD16 and SUB16 rela types",
+     https://lore.kernel.org/all/20230120183418.ngdppppvwzysqtcr at orel/)
+  - "[PATCH v1 0/3] Remove toolchain dependencies for Zicbom"
+    https://lore.kernel.org/all/20230108163356.3063839-1-conor at kernel.org/
+  - "[PATCH v2 0/3] Putting some basic order on isa extension lists"
+    https://lore.kernel.org/all/20221205144525.2148448-1-conor.dooley at microchip.com/
+
+The patches are also available here
+https://github.com/jones-drew/linux/commits/riscv/zicboz-v2
+
+To test over QEMU this branch may be used to enable Zicboz
+https://gitlab.com/jones-drew/qemu/-/commits/riscv/zicboz
+
+To test running a KVM guest with Zicboz this kvmtool branch may be used
+https://github.com/jones-drew/kvmtool/commits/riscv/zicboz
 
 Thanks,
 drew
 
-From 4d203697aa745a0cd3a9217d547a9fb7fa2a87c7 Mon Sep 17 00:00:00 2001
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Fri, 20 Jan 2023 19:05:44 +0100
-Subject: [PATCH] riscv: module: Add ADD16 and SUB16 rela types
-Content-type: text/plain
+[1] I ported the functions under test to userspace and linked them with
+    a test program. Then, I ran them under gdb with a script[3] which
+    counted instructions by single stepping.
+[2] https://lore.kernel.org/all/20221027130247.31634-1-ajones at ventanamicro.com/
+[3] https://gist.github.com/jones-drew/487791c956ceca8c18adc2847eec9c60
 
-To prepare for 16-bit relocation types to be emitted in alternatives
-add support for ADD16 and SUB16.
+v2:
+  - s/blksz/block_size/, improved commit message for "RISC-V: Add Zicboz
+    detection and block size parsing", isa ext sorting [Conor]
+  - Added dt binding patch [Heiko]
+  - Picked up r-b's from Conor, Heiko, and Anup
+  - Moved config symbol and CBO_zero() introduction to "RISC-V: Use Zicboz
+    in clear_page when available" and improved its commit message and
+    implementation (unrolled four times) [drew]
+  - Dropped memset() patches [drew]
+  - Rebased on ae4d39f75308 ("Merge patch "RISC-V: fix incorrect type of
+    ARCH_CANAAN_K210_DTB_SOURCE"") plus the dependencies
 
-Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
----
- arch/riscv/kernel/module.c | 16 ++++++++++++++++
- 1 file changed, 16 insertions(+)
+Andrew Jones (6):
+  RISC-V: Factor out body of riscv_init_cbom_blocksize loop
+  dt-bindings: riscv: Document cboz-block-size
+  RISC-V: Add Zicboz detection and block size parsing
+  RISC-V: Use Zicboz in clear_page when available
+  RISC-V: KVM: Provide UAPI for Zicboz block size
+  RISC-V: KVM: Expose Zicboz to the guest
 
-diff --git a/arch/riscv/kernel/module.c b/arch/riscv/kernel/module.c
-index 76f4b9c2ec5b..7c651d55fcbd 100644
---- a/arch/riscv/kernel/module.c
-+++ b/arch/riscv/kernel/module.c
-@@ -268,6 +268,13 @@ static int apply_r_riscv_align_rela(struct module *me, u32 *location,
- 	return -EINVAL;
- }
- 
-+static int apply_r_riscv_add16_rela(struct module *me, u32 *location,
-+				    Elf_Addr v)
-+{
-+	*(u16 *)location += (u16)v;
-+	return 0;
-+}
-+
- static int apply_r_riscv_add32_rela(struct module *me, u32 *location,
- 				    Elf_Addr v)
- {
-@@ -282,6 +289,13 @@ static int apply_r_riscv_add64_rela(struct module *me, u32 *location,
- 	return 0;
- }
- 
-+static int apply_r_riscv_sub16_rela(struct module *me, u32 *location,
-+				    Elf_Addr v)
-+{
-+	*(u16 *)location -= (u16)v;
-+	return 0;
-+}
-+
- static int apply_r_riscv_sub32_rela(struct module *me, u32 *location,
- 				    Elf_Addr v)
- {
-@@ -315,8 +329,10 @@ static int (*reloc_handlers_rela[]) (struct module *me, u32 *location,
- 	[R_RISCV_CALL]			= apply_r_riscv_call_rela,
- 	[R_RISCV_RELAX]			= apply_r_riscv_relax_rela,
- 	[R_RISCV_ALIGN]			= apply_r_riscv_align_rela,
-+	[R_RISCV_ADD16]			= apply_r_riscv_add16_rela,
- 	[R_RISCV_ADD32]			= apply_r_riscv_add32_rela,
- 	[R_RISCV_ADD64]			= apply_r_riscv_add64_rela,
-+	[R_RISCV_SUB16]			= apply_r_riscv_sub16_rela,
- 	[R_RISCV_SUB32]			= apply_r_riscv_sub32_rela,
- 	[R_RISCV_SUB64]			= apply_r_riscv_sub64_rela,
- };
+ .../devicetree/bindings/riscv/cpus.yaml       |  5 ++
+ arch/riscv/Kconfig                            | 13 ++++
+ arch/riscv/include/asm/cacheflush.h           |  3 +-
+ arch/riscv/include/asm/hwcap.h                |  1 +
+ arch/riscv/include/asm/insn-def.h             |  4 ++
+ arch/riscv/include/asm/page.h                 |  6 +-
+ arch/riscv/include/uapi/asm/kvm.h             |  2 +
+ arch/riscv/kernel/cpu.c                       |  1 +
+ arch/riscv/kernel/cpufeature.c                | 10 +++
+ arch/riscv/kernel/setup.c                     |  2 +-
+ arch/riscv/kvm/vcpu.c                         | 11 ++++
+ arch/riscv/lib/Makefile                       |  1 +
+ arch/riscv/lib/clear_page.S                   | 36 +++++++++++
+ arch/riscv/mm/cacheflush.c                    | 64 +++++++++++--------
+ 14 files changed, 130 insertions(+), 29 deletions(-)
+ create mode 100644 arch/riscv/lib/clear_page.S
+
 -- 
 2.39.0
 
