@@ -1,43 +1,89 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Sun, 22 Jan 2023 20:13:24 +0100
-Subject: [PATCH v2 2/6] dt-bindings: riscv: Document cboz-block-size
+Date: Sun, 22 Jan 2023 20:13:23 +0100
+Subject: [PATCH v2 1/6] RISC-V: Factor out body of riscv_init_cbom_blocksize loop
 In-Reply-To: <20230122191328.1193885-1-ajones@ventanamicro.com>
 References: <20230122191328.1193885-1-ajones@ventanamicro.com>
-Message-ID: <20230122191328.1193885-3-ajones@ventanamicro.com>
+Message-ID: <20230122191328.1193885-2-ajones@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The Zicboz operates on a block-size defined for the cpu-core,
-which does not necessarily match other cache-sizes used.
+Refactor riscv_init_cbom_blocksize() to prepare for it to be used
+for both cbom block size and cboz block size.
 
-So add the necessary property for the system to know the core's
-block-size.
-
-Cc: Rob Herring <robh@kernel.org>
 Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
+Reviewed-by: Heiko Stuebner <heiko@sntech.de>
+Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
 ---
- Documentation/devicetree/bindings/riscv/cpus.yaml | 5 +++++
- 1 file changed, 5 insertions(+)
+ arch/riscv/mm/cacheflush.c | 45 +++++++++++++++++++++-----------------
+ 1 file changed, 25 insertions(+), 20 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/riscv/cpus.yaml b/Documentation/devicetree/bindings/riscv/cpus.yaml
-index c6720764e765..f4ee70f8e1cf 100644
---- a/Documentation/devicetree/bindings/riscv/cpus.yaml
-+++ b/Documentation/devicetree/bindings/riscv/cpus.yaml
-@@ -72,6 +72,11 @@ properties:
-     description:
-       The blocksize in bytes for the Zicbom cache operations.
+diff --git a/arch/riscv/mm/cacheflush.c b/arch/riscv/mm/cacheflush.c
+index 3cc07ed45aeb..eaf23fc14966 100644
+--- a/arch/riscv/mm/cacheflush.c
++++ b/arch/riscv/mm/cacheflush.c
+@@ -98,34 +98,39 @@ void flush_icache_pte(pte_t pte)
+ unsigned int riscv_cbom_block_size;
+ EXPORT_SYMBOL_GPL(riscv_cbom_block_size);
  
-+  riscv,cboz-block-size:
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    description:
-+      The blocksize in bytes for the Zicboz cache operations.
++static void cbo_get_block_size(struct device_node *node,
++			       const char *name, u32 *block_size,
++			       unsigned long *first_hartid)
++{
++	unsigned long hartid;
++	u32 val;
 +
-   riscv,isa:
-     description:
-       Identifies the specific RISC-V instruction set architecture
++	if (riscv_of_processor_hartid(node, &hartid))
++		return;
++
++	if (of_property_read_u32(node, name, &val))
++		return;
++
++	if (!*block_size) {
++		*block_size = val;
++		*first_hartid = hartid;
++	} else if (*block_size != val) {
++		pr_warn("%s mismatched between harts %lu and %lu\n",
++			name, *first_hartid, hartid);
++	}
++}
++
+ void riscv_init_cbom_blocksize(void)
+ {
+ 	struct device_node *node;
+ 	unsigned long cbom_hartid;
+-	u32 val, probed_block_size;
+-	int ret;
++	u32 probed_block_size;
+ 
+ 	probed_block_size = 0;
+ 	for_each_of_cpu_node(node) {
+-		unsigned long hartid;
+-
+-		ret = riscv_of_processor_hartid(node, &hartid);
+-		if (ret)
+-			continue;
+-
+ 		/* set block-size for cbom extension if available */
+-		ret = of_property_read_u32(node, "riscv,cbom-block-size", &val);
+-		if (ret)
+-			continue;
+-
+-		if (!probed_block_size) {
+-			probed_block_size = val;
+-			cbom_hartid = hartid;
+-		} else {
+-			if (probed_block_size != val)
+-				pr_warn("cbom-block-size mismatched between harts %lu and %lu\n",
+-					cbom_hartid, hartid);
+-		}
++		cbo_get_block_size(node, "riscv,cbom-block-size",
++				   &probed_block_size, &cbom_hartid);
+ 	}
+ 
+ 	if (probed_block_size)
 -- 
 2.39.0
 
