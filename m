@@ -1,66 +1,152 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Sun, 22 Jan 2023 20:13:27 +0100
-Subject: [PATCH v2 5/6] RISC-V: KVM: Provide UAPI for Zicboz block size
+Date: Sun, 22 Jan 2023 20:13:26 +0100
+Subject: [PATCH v2 4/6] RISC-V: Use Zicboz in clear_page when available
 In-Reply-To: <20230122191328.1193885-1-ajones@ventanamicro.com>
 References: <20230122191328.1193885-1-ajones@ventanamicro.com>
-Message-ID: <20230122191328.1193885-6-ajones@ventanamicro.com>
+Message-ID: <20230122191328.1193885-5-ajones@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-We're about to allow guests to use the Zicboz extension. KVM
-userspace needs to know the cache block size in order to
-properly advertise it to the guest. Provide a virtual config
-register for userspace to get it with the GET_ONE_REG API, but
-setting it cannot be supported, so disallow SET_ONE_REG.
+Using memset() to zero a 4K page takes 563 total instructions
+where 20 are branches. clear_page() with Zicboz takes 150 total
+instructions where 16 are branches. We could reduce the numbers
+by further unrolling, but, since the cboz block size isn't fixed,
+we'd need a Duff device to ensure we don't execute too many
+unrolled steps. Also, cbo.zero doesn't take an offset, so each
+unrolled step requires it and an add instruction. This increases
+the chance for icache misses if we unroll many times. For these
+reasons we only unroll four times. Unrolling four times should be
+safe as it supports cboz block sizes up to 1K when used with 4K
+pages and it's only 24 to 32 bytes of unrolled instructions.
+
+Another note about the Duff device idea is that it would probably
+be best to store the number of steps needed at boot time and then
+load the value in clear_page(). Calculating it in clear_page(),
+particularly without the Zbb extension, would not be efficient.
 
 Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
-Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
-Reviewed-by: Anup Patel <anup@brainfault.org>
 ---
- arch/riscv/include/uapi/asm/kvm.h | 1 +
- arch/riscv/kvm/vcpu.c             | 7 +++++++
- 2 files changed, 8 insertions(+)
+ arch/riscv/Kconfig                | 13 +++++++++++
+ arch/riscv/include/asm/insn-def.h |  4 ++++
+ arch/riscv/include/asm/page.h     |  6 +++++-
+ arch/riscv/lib/Makefile           |  1 +
+ arch/riscv/lib/clear_page.S       | 36 +++++++++++++++++++++++++++++++
+ 5 files changed, 59 insertions(+), 1 deletion(-)
+ create mode 100644 arch/riscv/lib/clear_page.S
 
-diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
-index 92af6f3f057c..c1a1bb0fa91c 100644
---- a/arch/riscv/include/uapi/asm/kvm.h
-+++ b/arch/riscv/include/uapi/asm/kvm.h
-@@ -52,6 +52,7 @@ struct kvm_riscv_config {
- 	unsigned long mvendorid;
- 	unsigned long marchid;
- 	unsigned long mimpid;
-+	unsigned long zicboz_block_size;
- };
+diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
+index 33bbdc33cef8..3759a2f6edd5 100644
+--- a/arch/riscv/Kconfig
++++ b/arch/riscv/Kconfig
+@@ -432,6 +432,19 @@ config RISCV_ISA_ZICBOM
  
- /* CORE registers for KVM_GET_ONE_REG and KVM_SET_ONE_REG */
-diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-index 7c08567097f0..e5126cefbc87 100644
---- a/arch/riscv/kvm/vcpu.c
-+++ b/arch/riscv/kvm/vcpu.c
-@@ -276,6 +276,11 @@ static int kvm_riscv_vcpu_get_reg_config(struct kvm_vcpu *vcpu,
- 			return -EINVAL;
- 		reg_val = riscv_cbom_block_size;
- 		break;
-+	case KVM_REG_RISCV_CONFIG_REG(zicboz_block_size):
-+		if (!riscv_isa_extension_available(vcpu->arch.isa, ZICBOZ))
-+			return -EINVAL;
-+		reg_val = riscv_cboz_block_size;
-+		break;
- 	case KVM_REG_RISCV_CONFIG_REG(mvendorid):
- 		reg_val = vcpu->arch.mvendorid;
- 		break;
-@@ -347,6 +352,8 @@ static int kvm_riscv_vcpu_set_reg_config(struct kvm_vcpu *vcpu,
- 		break;
- 	case KVM_REG_RISCV_CONFIG_REG(zicbom_block_size):
- 		return -EOPNOTSUPP;
-+	case KVM_REG_RISCV_CONFIG_REG(zicboz_block_size):
-+		return -EOPNOTSUPP;
- 	case KVM_REG_RISCV_CONFIG_REG(mvendorid):
- 		if (!vcpu->arch.ran_atleast_once)
- 			vcpu->arch.mvendorid = reg_val;
+ 	   If you don't know what to do here, say Y.
+ 
++config RISCV_ISA_ZICBOZ
++	bool "Zicboz extension support for faster zeroing of memory"
++	depends on !XIP_KERNEL && MMU
++	select RISCV_ALTERNATIVE
++	default y
++	help
++	   Enable the use of the ZICBOZ extension (cbo.zero instruction)
++	   when available.
++
++	   The Zicboz extension is used for faster zeroing of memory.
++
++	   If you don't know what to do here, say Y.
++
+ config TOOLCHAIN_HAS_ZIHINTPAUSE
+ 	bool
+ 	default y
+diff --git a/arch/riscv/include/asm/insn-def.h b/arch/riscv/include/asm/insn-def.h
+index e01ab51f50d2..6960beb75f32 100644
+--- a/arch/riscv/include/asm/insn-def.h
++++ b/arch/riscv/include/asm/insn-def.h
+@@ -192,4 +192,8 @@
+ 	INSN_I(OPCODE_MISC_MEM, FUNC3(2), __RD(0),		\
+ 	       RS1(base), SIMM12(2))
+ 
++#define CBO_zero(base)						\
++	INSN_I(OPCODE_MISC_MEM, FUNC3(2), __RD(0),		\
++	       RS1(base), SIMM12(4))
++
+ #endif /* __ASM_INSN_DEF_H */
+diff --git a/arch/riscv/include/asm/page.h b/arch/riscv/include/asm/page.h
+index 9f432c1b5289..ccd168fe29d2 100644
+--- a/arch/riscv/include/asm/page.h
++++ b/arch/riscv/include/asm/page.h
+@@ -49,10 +49,14 @@
+ 
+ #ifndef __ASSEMBLY__
+ 
++#ifdef CONFIG_RISCV_ISA_ZICBOZ
++void clear_page(void *page);
++#else
+ #define clear_page(pgaddr)			memset((pgaddr), 0, PAGE_SIZE)
++#endif
+ #define copy_page(to, from)			memcpy((to), (from), PAGE_SIZE)
+ 
+-#define clear_user_page(pgaddr, vaddr, page)	memset((pgaddr), 0, PAGE_SIZE)
++#define clear_user_page(pgaddr, vaddr, page)	clear_page(pgaddr)
+ #define copy_user_page(vto, vfrom, vaddr, topg) \
+ 			memcpy((vto), (vfrom), PAGE_SIZE)
+ 
+diff --git a/arch/riscv/lib/Makefile b/arch/riscv/lib/Makefile
+index 25d5c9664e57..9ee5e2ab5143 100644
+--- a/arch/riscv/lib/Makefile
++++ b/arch/riscv/lib/Makefile
+@@ -5,5 +5,6 @@ lib-y			+= memset.o
+ lib-y			+= memmove.o
+ lib-$(CONFIG_MMU)	+= uaccess.o
+ lib-$(CONFIG_64BIT)	+= tishift.o
++lib-$(CONFIG_RISCV_ISA_ZICBOZ)	+= clear_page.o
+ 
+ obj-$(CONFIG_FUNCTION_ERROR_INJECTION) += error-inject.o
+diff --git a/arch/riscv/lib/clear_page.S b/arch/riscv/lib/clear_page.S
+new file mode 100644
+index 000000000000..49f29139a5b6
+--- /dev/null
++++ b/arch/riscv/lib/clear_page.S
+@@ -0,0 +1,36 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/*
++ * Copyright (c) 2023 Ventana Micro Systems Inc.
++ */
++
++#include <linux/linkage.h>
++#include <asm/asm.h>
++#include <asm/alternative-macros.h>
++#include <asm/hwcap.h>
++#include <asm/insn-def.h>
++#include <asm/page.h>
++
++/* void clear_page(void *page) */
++ENTRY(__clear_page)
++WEAK(clear_page)
++	li	a2, PAGE_SIZE
++	ALTERNATIVE("j .Lno_zicboz", "nop",
++		    0, RISCV_ISA_EXT_ZICBOZ, CONFIG_RISCV_ISA_ZICBOZ)
++	la	a1, riscv_cboz_block_size
++	lw	a1, 0(a1)
++	add	a2, a0, a2
++.Lzero_loop:
++	CBO_zero(a0)
++	add	a0, a0, a1
++	CBO_zero(a0)
++	add	a0, a0, a1
++	CBO_zero(a0)
++	add	a0, a0, a1
++	CBO_zero(a0)
++	add	a0, a0, a1
++	bltu	a0, a2, .Lzero_loop
++	ret
++.Lno_zicboz:
++	li	a1, 0
++	tail	__memset
++END(__clear_page)
 -- 
 2.39.0
 
