@@ -1,27 +1,48 @@
-From: David Matlack <dmatlack@google.com>
-Date: Tue, 24 Jan 2023 09:28:29 -0800
-Subject: [PATCH 2/7] KVM: arm64: Use kvm_arch_flush_remote_tlbs()
-In-Reply-To: <Y9ASmOvJutgGLVnT@google.com>
-References: <20230119173559.2517103-1-dmatlack@google.com> <20230119173559.2517103-3-dmatlack@google.com>
- <Y9ASmOvJutgGLVnT@google.com>
-Message-ID: <CALzav=fbzgpktnCX9Z7G_gN=yVVLuwB5Of3_pq3LHrQGySbHsg@mail.gmail.com>
+From: Atish Patra <atishp@atishpatra.org>
+Date: Tue, 24 Jan 2023 12:41:33 -0800
+Subject: [PATCH v2 01/11] RISC-V: Define helper functions expose hpm
+ counter width and count
+In-Reply-To: <20230113072255.34cnyautbwiy25p5@orel>
+References: <20221215170046.2010255-1-atishp@rivosinc.com> <20221215170046.2010255-2-atishp@rivosinc.com>
+ <20230112100608.d7tnvhbotjfctlgk@orel> <CAHBxVyESkQ9Krmn-44f-A8hYzMrZBtBfq15fdx-sHDQfkBMtKQ@mail.gmail.com>
+ <20230113072255.34cnyautbwiy25p5@orel>
+Message-ID: <CAOnJCU+UBG-AouAc1M4J-i9Y_nPE9RfrFZfNyLSxhKbNF55AMQ@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Jan 24, 2023 at 9:17 AM Oliver Upton <oliver.upton@linux.dev> wrote:
-> On Thu, Jan 19, 2023 at 09:35:54AM -0800, David Matlack wrote:
-> >
-> >  arch/arm64/include/asm/kvm_host.h | 3 +++
-> >  arch/arm64/kvm/Kconfig            | 1 -
-> >  arch/arm64/kvm/mmu.c              | 6 +++---
-> >  virt/kvm/kvm_main.c               | 2 --
-> >  4 files changed, 6 insertions(+), 6 deletions(-)
+On Thu, Jan 12, 2023 at 11:22 PM Andrew Jones <ajones@ventanamicro.com> wrote:
 >
-> I think you're missing the diff that actually drops the Kconfig opton
-> from virt/kvm/Kconfig.
+> On Thu, Jan 12, 2023 at 10:18:05AM -0800, Atish Kumar Patra wrote:
+> > On Thu, Jan 12, 2023 at 2:06 AM Andrew Jones <ajones@ventanamicro.com> wrote:
+> > >
+> > > On Thu, Dec 15, 2022 at 09:00:36AM -0800, Atish Patra wrote:
+> ...
+> > > > +EXPORT_SYMBOL(riscv_pmu_get_hpm_info);
+> > >
+> > > EXPORT_SYMBOL_GPL ?
+> > >
+> >
+> > Is that mandatory ? I have seen usage of both in arch/riscv and other
+> > places though.
+> > I am also not sure if any other non-GPL module should/need access to this.
+>
+> TBH, I'm not sure what the best policy is, but I presumed we should use
+> _GPL when we aren't aware of anything non-GPL and then when a day comes
+> that something non-GPL would like this to be exported, the patch that
+> flips it will provide the justification in its commit message.
+>
 
-Indeed I am, thanks for catching that!
+Sgtm. Changed it to EXPORT_SYMBOL_GPL for now.
+
+> Thanks,
+> drew
+
+
+
+-- 
+Regards,
+Atish
 
