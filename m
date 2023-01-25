@@ -1,157 +1,443 @@
 From: Andy Chiu <andy.chiu@sifive.com>
-Date: Wed, 25 Jan 2023 14:20:52 +0000
-Subject: [PATCH -next v13 15/19] riscv: Fix a kernel panic issue if $s2 is set to a specific value before entering Linux
+Date: Wed, 25 Jan 2023 14:20:54 +0000
+Subject: [PATCH -next v13 17/19] riscv: KVM: Add vector lazy save/restore support
 In-Reply-To: <20230125142056.18356-1-andy.chiu@sifive.com>
 References: <20230125142056.18356-1-andy.chiu@sifive.com>
-Message-ID: <20230125142056.18356-16-andy.chiu@sifive.com>
+Message-ID: <20230125142056.18356-18-andy.chiu@sifive.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Greentime Hu <greentime.hu@sifive.com>
+From: Vincent Chen <vincent.chen@sifive.com>
 
-Panic log:
-[    0.018707] Unable to handle kernel NULL pointer dereference at virtual address 0000000000000000
-[    0.023060] Oops [#1]
-[    0.023214] Modules linked in:
-[    0.023725] CPU: 0 PID: 0 Comm: swapper/0 Not tainted 5.14.0 #33
-[    0.023955] Hardware name: SiFive,FU800 (DT)
-[    0.024150] epc : __vstate_save+0x1c/0x48
-[    0.024654]  ra : arch_dup_task_struct+0x70/0x108
-[    0.024815] epc : ffffffff80005ad8 ra : ffffffff800035a8 sp : ffffffff81203d50
-[    0.025020]  gp : ffffffff812e8290 tp : ffffffff8120bdc0 t0 : 0000000000000000
-[    0.025216]  t1 : 0000000000000000 t2 : 0000000000000000 s0 : ffffffff81203d80
-[    0.025424]  s1 : ffffffff8120bdc0 a0 : ffffffff8120c820 a1 : 0000000000000000
-[    0.025659]  a2 : 0000000000001000 a3 : 0000000000000000 a4 : 0000000000000600
-[    0.025869]  a5 : ffffffff8120cdc0 a6 : ffffffe00160b400 a7 : ffffffff80a1fe60
-[    0.026069]  s2 : ffffffe0016b8000 s3 : ffffffff81204000 s4 : 0000000000004000
-[    0.026267]  s5 : 0000000000000000 s6 : ffffffe0016b8000 s7 : ffffffe0016b9000
-[    0.026475]  s8 : ffffffff81203ee0 s9 : 0000000000800300 s10: ffffffff812e9088
-[    0.026689]  s11: ffffffd004008000 t3 : 0000000000000000 t4 : 0000000000000100
-[    0.026900]  t5 : 0000000000000600 t6 : ffffffe00167bcc4
-[    0.027057] status: 8000000000000720 badaddr: 0000000000000000 cause: 000000000000000f
-[    0.027344] [<ffffffff80005ad8>] __vstate_save+0x1c/0x48
-[    0.027567] [<ffffffff8000abe8>] copy_process+0x266/0x11a0
-[    0.027739] [<ffffffff8000bc98>] kernel_clone+0x90/0x2aa
-[    0.027915] [<ffffffff8000c062>] kernel_thread+0x76/0x92
-[    0.028075] [<ffffffff8072e34c>] rest_init+0x26/0xfc
-[    0.028242] [<ffffffff80800638>] arch_call_rest_init+0x10/0x18
-[    0.028423] [<ffffffff80800c4a>] start_kernel+0x5ce/0x5fe
-[    0.029188] ---[ end trace 9a59af33f7ba3df4 ]---
-[    0.029479] Kernel panic - not syncing: Attempted to kill the idle task!
-[    0.029907] ---[ end Kernel panic - not syncing: Attempted to kill the idle task! ]---
+This patch adds vector context save/restore for guest VCPUs. To reduce the
+impact on KVM performance, the implementation imitates the FP context
+switch mechanism to lazily store and restore the vector context only when
+the kernel enters/exits the in-kernel run loop and not during the KVM
+world switch.
 
-The NULL pointer accessing caused the kernel panic. There is a NULL
-pointer is because in vstate_save() function it will check
-(regs->status & SR_VS) == SR_VS_DIRTY and this is true, but it shouldn't
-be true because vector is not used here. Since vector is not used, datap
-won't be allocated so it is NULL. The reason why regs->status is set to
-a wrong value is because pt_regs->status is put in stack and it is polluted
-after setup_vm() called.
-
-In prologue of setup_vm(), we can observe it will save s2 to stack however
-s2 is meaningless here because the caller is assembly code and s2 is just
-some value from previous stage. The compiler will base on calling
-convention to save the register to stack. Then 0x80008638 in s2 is saved
-to stack. It might be any value. In this failure case it is 0x80008638 and
-it will accidentally cause SR_VS_DIRTY to call the vstate_save() function.
-
-(gdb) info addr setup_vm
-Symbol "setup_vm" is a function at address 0xffffffff80802c8a.
-(gdb) va2pa 0xffffffff80802c8a
-$64 = 0x80a02c8a
-(gdb) x/10i 0x80a02c8a
-   0x80a02c8a:  addi    sp,sp,-48
-   0x80a02c8c:  li      a3,-1
-   0x80a02c8e:  auipc   a5,0xff7fd
-   0x80a02c92:  addi    a5,a5,882
-   0x80a02c96:  sd      s0,32(sp)
-   0x80a02c98:  sd      s2,16(sp) <-- store to stack
-
-After returning from setup_vm()
-(gdb) x/20i  0x0000000080201138
-   0x80201138:  mv      a0,s1
-   0x8020113a:  auipc   ra,0x802
-   0x8020113e:  jalr    -1200(ra)    <-- jump to setup_vm()
-   0x80201142:  auipc   a0,0xa03
-(gdb) p/x $sp
-$70 = 0x81404000
-(gdb) p/x *(struct pt_regs*)($sp-0x120)
-$71 = {
-  epc = 0x0,
-  ra = 0x0,
-  sp = 0x0,
-  gp = 0x0,
-  tp = 0x0,
-  t0 = 0x0,
-  t1 = 0x0,
-  t2 = 0x0,
-  s0 = 0x0,
-  s1 = 0x0,
-  a0 = 0x0,
-  a1 = 0x0,
-  a2 = 0x0,
-  a3 = 0x81403f90,
-  a4 = 0x80c04000,
-  a5 = 0x1,
-  a6 = 0xffffffff81337000,
-  a7 = 0x81096700,
-  s2 = 0x81400000,
-  s3 = 0xffffffff81200000,
-  s4 = 0x81403fd0,
-  s5 = 0x80a02c6c,
-  s6 = 0x8000000000006800,
-  s7 = 0x0,
-  s8 = 0xfffffffffffffff3,
-  s9 = 0x80c01000,
-  s10 = 0x81096700,
-  s11 = 0x82200000,
-  t3 = 0x81404000,
-  t4 = 0x80a02dea,
-  t5 = 0x0,
-  t6 = 0x82200000,
-  status = 0x80008638, <- Wrong value in stack!!!
-  badaddr = 0x82200000,
-  cause = 0x0,
-  orig_a0 = 0x80201142
-}
-(gdb) p/x $pc
-$72 = 0x80201142
-(gdb) p/x sizeof(struct pt_regs)
-$73 = 0x120
-
-Co-developed-by: ShihPo Hung <shihpo.hung@sifive.com>
-Signed-off-by: ShihPo Hung <shihpo.hung@sifive.com>
-Co-developed-by: Vincent Chen <vincent.chen@sifive.com>
 Signed-off-by: Vincent Chen <vincent.chen@sifive.com>
 Signed-off-by: Greentime Hu <greentime.hu@sifive.com>
 Signed-off-by: Andy Chiu <andy.chiu@sifive.com>
 ---
- arch/riscv/kernel/head.S | 2 ++
- 1 file changed, 2 insertions(+)
+ arch/riscv/include/asm/kvm_host.h        |   2 +
+ arch/riscv/include/asm/kvm_vcpu_vector.h |  77 ++++++++++
+ arch/riscv/include/uapi/asm/kvm.h        |   7 +
+ arch/riscv/kvm/Makefile                  |   1 +
+ arch/riscv/kvm/vcpu.c                    |  30 ++++
+ arch/riscv/kvm/vcpu_vector.c             | 177 +++++++++++++++++++++++
+ 6 files changed, 294 insertions(+)
+ create mode 100644 arch/riscv/include/asm/kvm_vcpu_vector.h
+ create mode 100644 arch/riscv/kvm/vcpu_vector.c
 
-diff --git a/arch/riscv/kernel/head.S b/arch/riscv/kernel/head.S
-index 7cc975ce619d..512ebad013aa 100644
---- a/arch/riscv/kernel/head.S
-+++ b/arch/riscv/kernel/head.S
-@@ -301,6 +301,7 @@ clear_bss_done:
- 	la tp, init_task
- 	la sp, init_thread_union + THREAD_SIZE
- 	XIP_FIXUP_OFFSET sp
-+	addi sp, sp, -PT_SIZE
- #ifdef CONFIG_BUILTIN_DTB
- 	la a0, __dtb_start
- 	XIP_FIXUP_OFFSET a0
-@@ -318,6 +319,7 @@ clear_bss_done:
- 	/* Restore C environment */
- 	la tp, init_task
- 	la sp, init_thread_union + THREAD_SIZE
-+	addi sp, sp, -PT_SIZE
+diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
+index 93f43a3e7886..f96c3f8d9586 100644
+--- a/arch/riscv/include/asm/kvm_host.h
++++ b/arch/riscv/include/asm/kvm_host.h
+@@ -14,6 +14,7 @@
+ #include <linux/kvm_types.h>
+ #include <linux/spinlock.h>
+ #include <asm/hwcap.h>
++#include <asm/ptrace.h>
+ #include <asm/kvm_vcpu_fp.h>
+ #include <asm/kvm_vcpu_insn.h>
+ #include <asm/kvm_vcpu_sbi.h>
+@@ -140,6 +141,7 @@ struct kvm_cpu_context {
+ 	unsigned long sstatus;
+ 	unsigned long hstatus;
+ 	union __riscv_fp_state fp;
++	struct __riscv_v_state vector;
+ };
  
- #ifdef CONFIG_KASAN
- 	call kasan_early_init
+ struct kvm_vcpu_csr {
+diff --git a/arch/riscv/include/asm/kvm_vcpu_vector.h b/arch/riscv/include/asm/kvm_vcpu_vector.h
+new file mode 100644
+index 000000000000..b0cc6ed25642
+--- /dev/null
++++ b/arch/riscv/include/asm/kvm_vcpu_vector.h
+@@ -0,0 +1,77 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/*
++ * Copyright (C) 2021 Western Digital Corporation or its affiliates.
++ * Copyright (C) 2022 SiFive
++ *
++ * Authors:
++ *     Atish Patra <atish.patra@wdc.com>
++ *     Anup Patel <anup.patel@wdc.com>
++ *     Vincent Chen <vincent.chen@sifive.com>
++ *     Greentime Hu <greentime.hu@sifive.com>
++ */
++
++#ifndef __KVM_VCPU_RISCV_VECTOR_H
++#define __KVM_VCPU_RISCV_VECTOR_H
++
++#include <linux/types.h>
++
++#ifdef CONFIG_RISCV_ISA_V
++#include <asm/vector.h>
++#include <asm/kvm_host.h>
++
++static __always_inline void __kvm_riscv_vector_save(struct kvm_cpu_context *context)
++{
++	__vstate_save(&context->vector, context->vector.datap);
++}
++
++static __always_inline void __kvm_riscv_vector_restore(struct kvm_cpu_context *context)
++{
++	__vstate_restore(&context->vector, context->vector.datap);
++}
++
++void kvm_riscv_vcpu_vector_reset(struct kvm_vcpu *vcpu);
++void kvm_riscv_vcpu_guest_vector_save(struct kvm_cpu_context *cntx,
++				      unsigned long *isa);
++void kvm_riscv_vcpu_guest_vector_restore(struct kvm_cpu_context *cntx,
++					 unsigned long *isa);
++void kvm_riscv_vcpu_host_vector_save(struct kvm_cpu_context *cntx);
++void kvm_riscv_vcpu_host_vector_restore(struct kvm_cpu_context *cntx);
++void kvm_riscv_vcpu_free_vector_context(struct kvm_vcpu *vcpu);
++#else
++
++struct kvm_cpu_context;
++
++static inline void kvm_riscv_vcpu_vector_reset(struct kvm_vcpu *vcpu)
++{
++}
++
++static inline void kvm_riscv_vcpu_guest_vector_save(struct kvm_cpu_context *cntx,
++						    unsigned long *isa)
++{
++}
++
++static inline void kvm_riscv_vcpu_guest_vector_restore(struct kvm_cpu_context *cntx,
++						       unsigned long *isa)
++{
++}
++
++static inline void kvm_riscv_vcpu_host_vector_save(struct kvm_cpu_context *cntx)
++{
++}
++
++static inline void kvm_riscv_vcpu_host_vector_restore(struct kvm_cpu_context *cntx)
++{
++}
++
++static inline void kvm_riscv_vcpu_free_vector_context(struct kvm_vcpu *vcpu)
++{
++}
++#endif
++
++int kvm_riscv_vcpu_get_reg_vector(struct kvm_vcpu *vcpu,
++				  const struct kvm_one_reg *reg,
++				  unsigned long rtype);
++int kvm_riscv_vcpu_set_reg_vector(struct kvm_vcpu *vcpu,
++				  const struct kvm_one_reg *reg,
++				  unsigned long rtype);
++#endif
+diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
+index e7c9183ad4af..f82fc17fef27 100644
+--- a/arch/riscv/include/uapi/asm/kvm.h
++++ b/arch/riscv/include/uapi/asm/kvm.h
+@@ -153,6 +153,13 @@ enum KVM_RISCV_ISA_EXT_ID {
+ /* ISA Extension registers are mapped as type 7 */
+ #define KVM_REG_RISCV_ISA_EXT		(0x07 << KVM_REG_RISCV_TYPE_SHIFT)
+ 
++/* V extension registers are mapped as type 8 */
++#define KVM_REG_RISCV_VECTOR		(0x08 << KVM_REG_RISCV_TYPE_SHIFT)
++#define KVM_REG_RISCV_VECTOR_CSR_REG(name)	\
++		(offsetof(struct __riscv_v_state, name) / sizeof(unsigned long))
++#define KVM_REG_RISCV_VECTOR_REG(n)	\
++		((n) + sizeof(struct __riscv_v_state) / sizeof(unsigned long))
++
+ #endif
+ 
+ #endif /* __LINUX_KVM_RISCV_H */
+diff --git a/arch/riscv/kvm/Makefile b/arch/riscv/kvm/Makefile
+index 019df9208bdd..b26bc605a267 100644
+--- a/arch/riscv/kvm/Makefile
++++ b/arch/riscv/kvm/Makefile
+@@ -17,6 +17,7 @@ kvm-y += mmu.o
+ kvm-y += vcpu.o
+ kvm-y += vcpu_exit.o
+ kvm-y += vcpu_fp.o
++kvm-y += vcpu_vector.o
+ kvm-y += vcpu_insn.o
+ kvm-y += vcpu_switch.o
+ kvm-y += vcpu_sbi.o
+diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+index b060d26ab783..0bbf67bd76f4 100644
+--- a/arch/riscv/kvm/vcpu.c
++++ b/arch/riscv/kvm/vcpu.c
+@@ -22,6 +22,8 @@
+ #include <asm/cacheflush.h>
+ #include <asm/hwcap.h>
+ #include <asm/sbi.h>
++#include <asm/vector.h>
++#include <asm/kvm_vcpu_vector.h>
+ 
+ const struct _kvm_stats_desc kvm_vcpu_stats_desc[] = {
+ 	KVM_GENERIC_VCPU_STATS(),
+@@ -134,6 +136,8 @@ static void kvm_riscv_reset_vcpu(struct kvm_vcpu *vcpu)
+ 
+ 	kvm_riscv_vcpu_fp_reset(vcpu);
+ 
++	kvm_riscv_vcpu_vector_reset(vcpu);
++
+ 	kvm_riscv_vcpu_timer_reset(vcpu);
+ 
+ 	WRITE_ONCE(vcpu->arch.irqs_pending, 0);
+@@ -189,6 +193,15 @@ int kvm_arch_vcpu_create(struct kvm_vcpu *vcpu)
+ 	cntx->hstatus |= HSTATUS_SPVP;
+ 	cntx->hstatus |= HSTATUS_SPV;
+ 
++	if (has_vector()) {
++		cntx->vector.datap = kmalloc(riscv_vsize, GFP_KERNEL);
++		if (!cntx->vector.datap)
++			return -ENOMEM;
++		vcpu->arch.host_context.vector.datap = kzalloc(riscv_vsize, GFP_KERNEL);
++		if (!vcpu->arch.host_context.vector.datap)
++			return -ENOMEM;
++	}
++
+ 	/* By default, make CY, TM, and IR counters accessible in VU mode */
+ 	reset_csr->scounteren = 0x7;
+ 
+@@ -219,6 +232,9 @@ void kvm_arch_vcpu_destroy(struct kvm_vcpu *vcpu)
+ 
+ 	/* Free unused pages pre-allocated for G-stage page table mappings */
+ 	kvm_mmu_free_memory_cache(&vcpu->arch.mmu_page_cache);
++
++	/* Free vector context space for host and guest kernel */
++	kvm_riscv_vcpu_free_vector_context(vcpu);
+ }
+ 
+ int kvm_cpu_has_pending_timer(struct kvm_vcpu *vcpu)
+@@ -595,6 +611,9 @@ static int kvm_riscv_vcpu_set_reg(struct kvm_vcpu *vcpu,
+ 						 KVM_REG_RISCV_FP_D);
+ 	case KVM_REG_RISCV_ISA_EXT:
+ 		return kvm_riscv_vcpu_set_reg_isa_ext(vcpu, reg);
++	case KVM_REG_RISCV_VECTOR:
++		return kvm_riscv_vcpu_set_reg_vector(vcpu, reg,
++						 KVM_REG_RISCV_VECTOR);
+ 	default:
+ 		break;
+ 	}
+@@ -622,6 +641,9 @@ static int kvm_riscv_vcpu_get_reg(struct kvm_vcpu *vcpu,
+ 						 KVM_REG_RISCV_FP_D);
+ 	case KVM_REG_RISCV_ISA_EXT:
+ 		return kvm_riscv_vcpu_get_reg_isa_ext(vcpu, reg);
++	case KVM_REG_RISCV_VECTOR:
++		return kvm_riscv_vcpu_get_reg_vector(vcpu, reg,
++						 KVM_REG_RISCV_VECTOR);
+ 	default:
+ 		break;
+ 	}
+@@ -888,6 +910,9 @@ void kvm_arch_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
+ 	kvm_riscv_vcpu_host_fp_save(&vcpu->arch.host_context);
+ 	kvm_riscv_vcpu_guest_fp_restore(&vcpu->arch.guest_context,
+ 					vcpu->arch.isa);
++	kvm_riscv_vcpu_host_vector_save(&vcpu->arch.host_context);
++	kvm_riscv_vcpu_guest_vector_restore(&vcpu->arch.guest_context,
++					    vcpu->arch.isa);
+ 
+ 	vcpu->cpu = cpu;
+ }
+@@ -903,6 +928,11 @@ void kvm_arch_vcpu_put(struct kvm_vcpu *vcpu)
+ 	kvm_riscv_vcpu_host_fp_restore(&vcpu->arch.host_context);
+ 
+ 	kvm_riscv_vcpu_timer_save(vcpu);
++	kvm_riscv_vcpu_guest_vector_save(&vcpu->arch.guest_context,
++					 vcpu->arch.isa);
++	kvm_riscv_vcpu_host_vector_restore(&vcpu->arch.host_context);
++
++	csr_write(CSR_HGATP, 0);
+ 
+ 	csr->vsstatus = csr_read(CSR_VSSTATUS);
+ 	csr->vsie = csr_read(CSR_VSIE);
+diff --git a/arch/riscv/kvm/vcpu_vector.c b/arch/riscv/kvm/vcpu_vector.c
+new file mode 100644
+index 000000000000..a5e6bb126460
+--- /dev/null
++++ b/arch/riscv/kvm/vcpu_vector.c
+@@ -0,0 +1,177 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Copyright (C) 2021 Western Digital Corporation or its affiliates.
++ * Copyright (C) 2022 SiFive
++ *
++ * Authors:
++ *     Atish Patra <atish.patra@wdc.com>
++ *     Anup Patel <anup.patel@wdc.com>
++ *     Vincent Chen <vincent.chen@sifive.com>
++ *     Greentime Hu <greentime.hu@sifive.com>
++ */
++
++#include <linux/errno.h>
++#include <linux/err.h>
++#include <linux/kvm_host.h>
++#include <linux/uaccess.h>
++#include <asm/hwcap.h>
++#include <asm/kvm_vcpu_vector.h>
++
++#ifdef CONFIG_RISCV_ISA_V
++extern unsigned long riscv_vsize;
++void kvm_riscv_vcpu_vector_reset(struct kvm_vcpu *vcpu)
++{
++	unsigned long *isa = vcpu->arch.isa;
++	struct kvm_cpu_context *cntx = &vcpu->arch.guest_context;
++
++	cntx->sstatus &= ~SR_VS;
++	if (riscv_isa_extension_available(isa, v)) {
++		cntx->sstatus |= SR_VS_INITIAL;
++		WARN_ON(!cntx->vector.datap);
++		memset(cntx->vector.datap, 0, riscv_vsize);
++	} else {
++		cntx->sstatus |= SR_VS_OFF;
++	}
++}
++
++static void kvm_riscv_vcpu_vector_clean(struct kvm_cpu_context *cntx)
++{
++	cntx->sstatus &= ~SR_VS;
++	cntx->sstatus |= SR_VS_CLEAN;
++}
++
++void kvm_riscv_vcpu_guest_vector_save(struct kvm_cpu_context *cntx,
++				      unsigned long *isa)
++{
++	if ((cntx->sstatus & SR_VS) == SR_VS_DIRTY) {
++		if (riscv_isa_extension_available(isa, v))
++			__kvm_riscv_vector_save(cntx);
++		kvm_riscv_vcpu_vector_clean(cntx);
++	}
++}
++
++void kvm_riscv_vcpu_guest_vector_restore(struct kvm_cpu_context *cntx,
++					 unsigned long *isa)
++{
++	if ((cntx->sstatus & SR_VS) != SR_VS_OFF) {
++		if (riscv_isa_extension_available(isa, v))
++			__kvm_riscv_vector_restore(cntx);
++		kvm_riscv_vcpu_vector_clean(cntx);
++	}
++}
++
++void kvm_riscv_vcpu_host_vector_save(struct kvm_cpu_context *cntx)
++{
++	/* No need to check host sstatus as it can be modified outside */
++	if (riscv_isa_extension_available(NULL, v))
++		__kvm_riscv_vector_save(cntx);
++}
++
++void kvm_riscv_vcpu_host_vector_restore(struct kvm_cpu_context *cntx)
++{
++	if (riscv_isa_extension_available(NULL, v))
++		__kvm_riscv_vector_restore(cntx);
++}
++
++void kvm_riscv_vcpu_free_vector_context(struct kvm_vcpu *vcpu)
++{
++	kfree(vcpu->arch.guest_reset_context.vector.datap);
++	kfree(vcpu->arch.host_context.vector.datap);
++}
++#else
++#define riscv_vsize (0)
++#endif
++
++static void *kvm_riscv_vcpu_vreg_addr(struct kvm_vcpu *vcpu,
++				      unsigned long reg_num,
++				      size_t reg_size)
++{
++	struct kvm_cpu_context *cntx = &vcpu->arch.guest_context;
++	void *reg_val;
++	size_t vlenb = riscv_vsize / 32;
++
++	if (reg_num < KVM_REG_RISCV_VECTOR_REG(0)) {
++		if (reg_size != sizeof(unsigned long))
++			return NULL;
++		switch (reg_num) {
++		case KVM_REG_RISCV_VECTOR_CSR_REG(vstart):
++			reg_val = &cntx->vector.vstart;
++			break;
++		case KVM_REG_RISCV_VECTOR_CSR_REG(vl):
++			reg_val = &cntx->vector.vl;
++			break;
++		case KVM_REG_RISCV_VECTOR_CSR_REG(vtype):
++			reg_val = &cntx->vector.vtype;
++			break;
++		case KVM_REG_RISCV_VECTOR_CSR_REG(vcsr):
++			reg_val = &cntx->vector.vcsr;
++			break;
++		case KVM_REG_RISCV_VECTOR_CSR_REG(datap):
++		default:
++			return NULL;
++		}
++	} else if (reg_num <= KVM_REG_RISCV_VECTOR_REG(31)) {
++		if (reg_size != vlenb)
++			return NULL;
++		reg_val = cntx->vector.datap
++			  + (reg_num - KVM_REG_RISCV_VECTOR_REG(0)) * vlenb;
++	} else {
++		return NULL;
++	}
++
++	return reg_val;
++}
++
++int kvm_riscv_vcpu_get_reg_vector(struct kvm_vcpu *vcpu,
++				  const struct kvm_one_reg *reg,
++				  unsigned long rtype)
++{
++	unsigned long *isa = vcpu->arch.isa;
++	unsigned long __user *uaddr =
++			(unsigned long __user *)(unsigned long)reg->addr;
++	unsigned long reg_num = reg->id & ~(KVM_REG_ARCH_MASK |
++					    KVM_REG_SIZE_MASK |
++					    rtype);
++	void *reg_val = NULL;
++	size_t reg_size = KVM_REG_SIZE(reg->id);
++
++	if (rtype == KVM_REG_RISCV_VECTOR &&
++	    riscv_isa_extension_available(isa, v)) {
++		reg_val = kvm_riscv_vcpu_vreg_addr(vcpu, reg_num, reg_size);
++	}
++
++	if (!reg_val)
++		return -EINVAL;
++
++	if (copy_to_user(uaddr, reg_val, reg_size))
++		return -EFAULT;
++
++	return 0;
++}
++
++int kvm_riscv_vcpu_set_reg_vector(struct kvm_vcpu *vcpu,
++				  const struct kvm_one_reg *reg,
++				  unsigned long rtype)
++{
++	unsigned long *isa = vcpu->arch.isa;
++	unsigned long __user *uaddr =
++			(unsigned long __user *)(unsigned long)reg->addr;
++	unsigned long reg_num = reg->id & ~(KVM_REG_ARCH_MASK |
++					    KVM_REG_SIZE_MASK |
++					    rtype);
++	void *reg_val = NULL;
++	size_t reg_size = KVM_REG_SIZE(reg->id);
++
++	if (rtype == KVM_REG_RISCV_VECTOR &&
++	    riscv_isa_extension_available(isa, v)) {
++		reg_val = kvm_riscv_vcpu_vreg_addr(vcpu, reg_num, reg_size);
++	}
++
++	if (!reg_val)
++		return -EINVAL;
++
++	if (copy_from_user(reg_val, uaddr, reg_size))
++		return -EFAULT;
++
++	return 0;
++}
 -- 
 2.17.1
 
