@@ -1,82 +1,59 @@
 From: Andy Chiu <andy.chiu@sifive.com>
-Date: Wed, 25 Jan 2023 14:20:42 +0000
-Subject: [PATCH -next v13 05/19] riscv: Disable Vector Instructions for kernel itself
+Date: Wed, 25 Jan 2023 14:20:43 +0000
+Subject: [PATCH -next v13 06/19] riscv: Introduce Vector enable/disable helpers
 In-Reply-To: <20230125142056.18356-1-andy.chiu@sifive.com>
 References: <20230125142056.18356-1-andy.chiu@sifive.com>
-Message-ID: <20230125142056.18356-6-andy.chiu@sifive.com>
+Message-ID: <20230125142056.18356-7-andy.chiu@sifive.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Disable vector instructions execution for kernel mode at its entrances.
+These are small and likely to be frequently called so implement as
+inline routines (vs. function call).
 
+Co-developed-by: Guo Ren <guoren@linux.alibaba.com>
 Signed-off-by: Guo Ren <guoren@linux.alibaba.com>
 Co-developed-by: Vincent Chen <vincent.chen@sifive.com>
 Signed-off-by: Vincent Chen <vincent.chen@sifive.com>
-Co-developed-by: Han-Kuan Chen <hankuan.chen@sifive.com>
-Signed-off-by: Han-Kuan Chen <hankuan.chen@sifive.com>
-Co-developed-by: Greentime Hu <greentime.hu@sifive.com>
 Signed-off-by: Greentime Hu <greentime.hu@sifive.com>
 Signed-off-by: Vineet Gupta <vineetg@rivosinc.com>
-[vineetg: split off vecreg file clearing]
+[vineetg: create new patch from meshup, introduced asm variant]
 Signed-off-by: Andy Chiu <andy.chiu@sifive.com>
+[andy.chiu: remove calls from asm thus remove asm vaiant]
 ---
- arch/riscv/kernel/entry.S |  6 +++---
- arch/riscv/kernel/head.S  | 12 ++++++------
- 2 files changed, 9 insertions(+), 9 deletions(-)
+ arch/riscv/include/asm/vector.h | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-diff --git a/arch/riscv/kernel/entry.S b/arch/riscv/kernel/entry.S
-index 99d38fdf8b18..e38676d9a0d6 100644
---- a/arch/riscv/kernel/entry.S
-+++ b/arch/riscv/kernel/entry.S
-@@ -77,10 +77,10 @@ _save_context:
- 	 * Disable user-mode memory access as it should only be set in the
- 	 * actual user copy routines.
- 	 *
--	 * Disable the FPU to detect illegal usage of floating point in kernel
--	 * space.
-+	 * Disable the FPU/Vector to detect illegal usage of floating point
-+	 * or vector in kernel space.
- 	 */
--	li t0, SR_SUM | SR_FS
-+	li t0, SR_SUM | SR_FS_VS
+diff --git a/arch/riscv/include/asm/vector.h b/arch/riscv/include/asm/vector.h
+index 917c8867e702..0fda0faf5277 100644
+--- a/arch/riscv/include/asm/vector.h
++++ b/arch/riscv/include/asm/vector.h
+@@ -11,12 +11,23 @@
+ #ifdef CONFIG_RISCV_ISA_V
  
- 	REG_L s0, TASK_TI_USER_SP(tp)
- 	csrrc s1, CSR_STATUS, t0
-diff --git a/arch/riscv/kernel/head.S b/arch/riscv/kernel/head.S
-index ea803c96eeff..7cc975ce619d 100644
---- a/arch/riscv/kernel/head.S
-+++ b/arch/riscv/kernel/head.S
-@@ -140,10 +140,10 @@ secondary_start_sbi:
- 	.option pop
+ #include <asm/hwcap.h>
++#include <asm/csr.h>
  
- 	/*
--	 * Disable FPU to detect illegal usage of
--	 * floating point in kernel space
-+	 * Disable FPU & VECTOR to detect illegal usage of
-+	 * floating point or vector in kernel space
- 	 */
--	li t0, SR_FS
-+	li t0, SR_FS_VS
- 	csrc CSR_STATUS, t0
+ static __always_inline bool has_vector(void)
+ {
+ 	return static_branch_likely(&riscv_isa_ext_keys[RISCV_ISA_EXT_KEY_VECTOR]);
+ }
  
- 	/* Set trap vector to spin forever to help debug */
-@@ -234,10 +234,10 @@ pmp_done:
- .option pop
++static __always_inline void rvv_enable(void)
++{
++	csr_set(CSR_SSTATUS, SR_VS);
++}
++
++static __always_inline void rvv_disable(void)
++{
++	csr_clear(CSR_SSTATUS, SR_VS);
++}
++
+ #else /* ! CONFIG_RISCV_ISA_V  */
  
- 	/*
--	 * Disable FPU to detect illegal usage of
--	 * floating point in kernel space
-+	 * Disable FPU & VECTOR to detect illegal usage of
-+	 * floating point or vector in kernel space
- 	 */
--	li t0, SR_FS
-+	li t0, SR_FS_VS
- 	csrc CSR_STATUS, t0
- 
- #ifdef CONFIG_RISCV_BOOT_SPINWAIT
+ static __always_inline bool has_vector(void) { return false; }
 -- 
 2.17.1
 
