@@ -1,54 +1,63 @@
-From: Oliver Upton <oliver.upton@linux.dev>
-Date: Wed, 25 Jan 2023 00:51:33 +0000
-Subject: [PATCH 0/7] KVM: Add a common API for range-based TLB
- invalidation
-In-Reply-To: <Y9B8A+/FSPCrAANT@google.com>
-References: <20230119173559.2517103-1-dmatlack@google.com>
- <Y9B8A+/FSPCrAANT@google.com>
-Message-ID: <Y9B9FZReDVwdNNrS@google.com>
+From: patchwork-bot+linux-riscv@kernel.org <patchwork-bot+linux-riscv@kernel.org>
+Date: Wed, 25 Jan 2023 03:50:18 +0000
+Subject: [PATCH v4 00/13] riscv: improve boot time isa extensions handling
+In-Reply-To: <20230115154953.831-1-jszhang@kernel.org>
+References: <20230115154953.831-1-jszhang@kernel.org>
+Message-ID: <167461861886.411.4529941581273369452.git-patchwork-notify@kernel.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Jan 25, 2023 at 12:46:59AM +0000, Sean Christopherson wrote:
-> On Thu, Jan 19, 2023, David Matlack wrote:
-> > This series introduces a common API for performing range-based TLB
-> > invalidation. This is then used to supplant
-> > kvm_arch_flush_remote_tlbs_memslot() and pave the way for two other
-> > patch series:
-> > 
-> > 1. https://lore.kernel.org/kvm/20230109215347.3119271-1-rananta at google.com/
-> > 
-> >   Adds ARM support for range-based TLB invalidation and needs a
-> >   mechanism to invoke it from common code. This series provides such a
-> >   mechanism via kvm_arch_flush_remote_tlbs_range().
-> > 
-> > 2. https://lore.kernel.org/kvm/20221208193857.4090582-1-dmatlack at google.com/
-> > 
-> >   Refactors the TDP MMU into common code, which requires an API for
-> >   range-based TLB invaliation.
-> > 
-> > This series is based on patches 29-33 from (2.), but I made some further
-> > cleanups after looking at it a second time.
-> > 
-> > Tested on x86_64 and ARM64 using KVM selftests.
+Hello:
+
+This series was applied to riscv/linux.git (for-next)
+by Palmer Dabbelt <palmer@rivosinc.com>:
+
+On Sun, 15 Jan 2023 23:49:40 +0800 you wrote:
+> Generally, riscv ISA extensions are fixed for any specific hardware
+> platform, so a hart's features won't change after booting, this
+> chacteristic makes it straightforward to use a static branch to check
+> a specific ISA extension is supported or not to optimize performance.
 > 
-> Did a quick read through, didn't see anything I disagree with.
+> However, some ISA extensions such as SVPBMT and ZICBOM are handled
+> via. the alternative sequences.
+> 
+> [...]
 
-LGTM for the tiny amount of arm64 changes, though I imagine David will
-do a v2 to completely get rid of the affected Kconfig.
+Here is the summary with links:
+  - [v4,01/13] riscv: fix jal offsets in patched alternatives
+    https://git.kernel.org/riscv/c/9d5567ccf96f
+  - [v4,02/13] riscv: move riscv_noncoherent_supported() out of ZICBOM probe
+    (no matching commit)
+  - [v4,03/13] riscv: cpufeature: detect RISCV_ALTERNATIVES_EARLY_BOOT earlier
+    (no matching commit)
+  - [v4,04/13] riscv: hwcap: make ISA extension ids can be used in asm
+    (no matching commit)
+  - [v4,05/13] riscv: cpufeature: extend riscv_cpufeature_patch_func to all ISA extensions
+    (no matching commit)
+  - [v4,06/13] riscv: introduce riscv_has_extension_[un]likely()
+    (no matching commit)
+  - [v4,07/13] riscv: fpu: switch has_fpu() to riscv_has_extension_likely()
+    (no matching commit)
+  - [v4,08/13] riscv: module: move find_section to module.h
+    (no matching commit)
+  - [v4,09/13] riscv: switch to relative alternative entries
+    (no matching commit)
+  - [v4,10/13] riscv: alternative: patch alternatives in the vDSO
+    (no matching commit)
+  - [v4,11/13] riscv: cpu_relax: switch to riscv_has_extension_likely()
+    (no matching commit)
+  - [v4,12/13] riscv: KVM: Switch has_svinval() to riscv_has_extension_unlikely()
+    (no matching commit)
+  - [v4,13/13] riscv: remove riscv_isa_ext_keys[] array and related usage
+    (no matching commit)
 
-> Is there any urgency to getting this merged?  If not, due to the dependencies
-> with x86 stuff queued for 6.3, and because of the cross-architecture changes, it
-> might be easiest to plan on landing this in 6.4.  That would allow Paolo to create
-> an immutable topic branch fairly early on.
+You are awesome, thank you!
+-- 
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/patchwork/pwbot.html
 
-+1, that buys us some time to go through the rounds on the arm64 side
-such that we could possibly stack the TLBIRANGE work on top.
 
---
-Thanks,
-Oliver
 
