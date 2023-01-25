@@ -1,77 +1,40 @@
-From: Andy Chiu <andy.chiu@sifive.com>
-Date: Wed, 25 Jan 2023 14:20:55 +0000
-Subject: [PATCH -next v13 18/19] riscv: kvm: redirect illegal instruction traps to guests
-In-Reply-To: <20230125142056.18356-1-andy.chiu@sifive.com>
-References: <20230125142056.18356-1-andy.chiu@sifive.com>
-Message-ID: <20230125142056.18356-19-andy.chiu@sifive.com>
+From: David Matlack <dmatlack@google.com>
+Date: Wed, 25 Jan 2023 09:21:34 -0800
+Subject: [PATCH 0/7] KVM: Add a common API for range-based TLB invalidation
+In-Reply-To: <Y9B9FZReDVwdNNrS@google.com>
+References: <20230119173559.2517103-1-dmatlack@google.com> <Y9B8A+/FSPCrAANT@google.com>
+ <Y9B9FZReDVwdNNrS@google.com>
+Message-ID: <CALzav=fAVF5VDj76Pd9m+G+-A+UdvCS1tTVGCyvnvtgq4eFOSg@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Running below m-mode, an illegal instruction trap where m-mode could not
-handle would be redirected back to s-mode. However, kvm running in hs-mode
-terminates the vs-mode software when it receive such exception code.
-Instead, it should redirect the trap back to vs-mode, and let vs-mode trap
-handler decide the next step.
+On Tue, Jan 24, 2023 at 4:51 PM Oliver Upton <oliver.upton@linux.dev> wrote:
+> On Wed, Jan 25, 2023 at 12:46:59AM +0000, Sean Christopherson wrote:
+> > On Thu, Jan 19, 2023, David Matlack wrote:
+> >
+> > Did a quick read through, didn't see anything I disagree with.
+>
+> LGTM for the tiny amount of arm64 changes, though I imagine David will
+> do a v2 to completely get rid of the affected Kconfig.
 
-Besides, hs-mode should run transparently to vs-mode. So terminating
-guest OS breaks assumption for the kernel running in vs-mode.
+Thanks both for taking a look.
 
-We use first-use trap to enable Vector for user space processes. This
-means that the user process running in u- or vu- mode will take an
-illegal instruction trap for the first time using V. Then the s- or vs-
-mode kernel would allocate V for the process. Thus, we must redirect the
-trap back to vs-mode in order to get the first-use trap working for guest
-OSes here.
+> > Is there any urgency to getting this merged?  If not, due to the dependencies
+> > with x86 stuff queued for 6.3, and because of the cross-architecture changes, it
+> > might be easiest to plan on landing this in 6.4.  That would allow Paolo to create
+> > an immutable topic branch fairly early on.
+>
+> +1, that buys us some time to go through the rounds on the arm64 side
+> such that we could possibly stack the TLBIRANGE work on top.
 
-Signed-off-by: Andy Chiu <andy.chiu@sifive.com>
----
- arch/riscv/kvm/vcpu_exit.c | 15 +++++++++++++++
- 1 file changed, 15 insertions(+)
+The main benefit of merging in 6.3 would be to make Raghavendra's life
+simpler/easier so he can build the next version of his arm64 TLBI
+series on top. But I guess he can still do that with a topic branch.
 
-diff --git a/arch/riscv/kvm/vcpu_exit.c b/arch/riscv/kvm/vcpu_exit.c
-index c9f741ab26f5..2a02cb750892 100644
---- a/arch/riscv/kvm/vcpu_exit.c
-+++ b/arch/riscv/kvm/vcpu_exit.c
-@@ -162,6 +162,16 @@ void kvm_riscv_vcpu_trap_redirect(struct kvm_vcpu *vcpu,
- 	vcpu->arch.guest_context.sepc = csr_read(CSR_VSTVEC);
- }
- 
-+static int vcpu_trap_redirect_vs(struct kvm_vcpu *vcpu,
-+				 struct kvm_cpu_trap *trap)
-+{
-+	/* set up trap handler and trap info when it gets back to vs */
-+	kvm_riscv_vcpu_trap_redirect(vcpu, trap);
-+	/* return to s-mode by setting vcpu's SPP */
-+	vcpu->arch.guest_context.sstatus |= SR_SPP;
-+	return 1;
-+}
-+
- /*
-  * Return > 0 to return to guest, < 0 on error, 0 (and set exit_reason) on
-  * proper exit to userspace.
-@@ -179,6 +189,10 @@ int kvm_riscv_vcpu_exit(struct kvm_vcpu *vcpu, struct kvm_run *run,
- 	ret = -EFAULT;
- 	run->exit_reason = KVM_EXIT_UNKNOWN;
- 	switch (trap->scause) {
-+	case EXC_INST_ILLEGAL:
-+		if (vcpu->arch.guest_context.hstatus & HSTATUS_SPV)
-+			ret = vcpu_trap_redirect_vs(vcpu, trap);
-+		break;
- 	case EXC_VIRTUAL_INST_FAULT:
- 		if (vcpu->arch.guest_context.hstatus & HSTATUS_SPV)
- 			ret = kvm_riscv_vcpu_virtual_insn(vcpu, run, trap);
-@@ -206,6 +220,7 @@ int kvm_riscv_vcpu_exit(struct kvm_vcpu *vcpu, struct kvm_run *run,
- 			vcpu->arch.guest_context.hstatus);
- 		kvm_err("SCAUSE=0x%lx STVAL=0x%lx HTVAL=0x%lx HTINST=0x%lx\n",
- 			trap->scause, trap->stval, trap->htval, trap->htinst);
-+		asm volatile ("ebreak\n\t");
- 	}
- 
- 	return ret;
--- 
-2.17.1
-
+I'll go ahead and send a v2 on top of the changes from Hou you queued
+for 6.3, Sean, and we can plan on landing that in 6.4 (barring any
+further feedback or conflicts).
 
