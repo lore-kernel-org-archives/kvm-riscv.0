@@ -1,52 +1,76 @@
 From: Andy Chiu <andy.chiu@sifive.com>
-Date: Wed, 25 Jan 2023 14:20:53 +0000
-Subject: [PATCH -next v13 16/19] riscv: Add V extension to KVM ISA
+Date: Wed, 25 Jan 2023 14:20:55 +0000
+Subject: [PATCH -next v13 18/19] riscv: kvm: redirect illegal instruction traps to guests
 In-Reply-To: <20230125142056.18356-1-andy.chiu@sifive.com>
 References: <20230125142056.18356-1-andy.chiu@sifive.com>
-Message-ID: <20230125142056.18356-17-andy.chiu@sifive.com>
+Message-ID: <20230125142056.18356-19-andy.chiu@sifive.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Vincent Chen <vincent.chen@sifive.com>
+Running below m-mode, an illegal instruction trap where m-mode could not
+handle would be redirected back to s-mode. However, kvm running in hs-mode
+terminates the vs-mode software when it receive such exception code.
+Instead, it should redirect the trap back to vs-mode, and let vs-mode trap
+handler decide the next step.
 
-Add V extension to KVM isa extension list to enable supporting of V
-extension on VCPUs.
+Besides, hs-mode should run transparently to vs-mode. So terminating
+guest OS breaks assumption for the kernel running in vs-mode.
 
-Signed-off-by: Vincent Chen <vincent.chen@sifive.com>
-Signed-off-by: Greentime Hu <greentime.hu@sifive.com>
+We use first-use trap to enable Vector for user space processes. This
+means that the user process running in u- or vu- mode will take an
+illegal instruction trap for the first time using V. Then the s- or vs-
+mode kernel would allocate V for the process. Thus, we must redirect the
+trap back to vs-mode in order to get the first-use trap working for guest
+OSes here.
+
 Signed-off-by: Andy Chiu <andy.chiu@sifive.com>
 ---
- arch/riscv/include/uapi/asm/kvm.h | 1 +
- arch/riscv/kvm/vcpu.c             | 1 +
- 2 files changed, 2 insertions(+)
+ arch/riscv/kvm/vcpu_exit.c | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
 
-diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
-index 92af6f3f057c..e7c9183ad4af 100644
---- a/arch/riscv/include/uapi/asm/kvm.h
-+++ b/arch/riscv/include/uapi/asm/kvm.h
-@@ -100,6 +100,7 @@ enum KVM_RISCV_ISA_EXT_ID {
- 	KVM_RISCV_ISA_EXT_H,
- 	KVM_RISCV_ISA_EXT_I,
- 	KVM_RISCV_ISA_EXT_M,
-+	KVM_RISCV_ISA_EXT_V,
- 	KVM_RISCV_ISA_EXT_SVPBMT,
- 	KVM_RISCV_ISA_EXT_SSTC,
- 	KVM_RISCV_ISA_EXT_SVINVAL,
-diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-index 7c08567097f0..b060d26ab783 100644
---- a/arch/riscv/kvm/vcpu.c
-+++ b/arch/riscv/kvm/vcpu.c
-@@ -57,6 +57,7 @@ static const unsigned long kvm_isa_ext_arr[] = {
- 	[KVM_RISCV_ISA_EXT_H] = RISCV_ISA_EXT_h,
- 	[KVM_RISCV_ISA_EXT_I] = RISCV_ISA_EXT_i,
- 	[KVM_RISCV_ISA_EXT_M] = RISCV_ISA_EXT_m,
-+	[KVM_RISCV_ISA_EXT_V] = RISCV_ISA_EXT_v,
+diff --git a/arch/riscv/kvm/vcpu_exit.c b/arch/riscv/kvm/vcpu_exit.c
+index c9f741ab26f5..2a02cb750892 100644
+--- a/arch/riscv/kvm/vcpu_exit.c
++++ b/arch/riscv/kvm/vcpu_exit.c
+@@ -162,6 +162,16 @@ void kvm_riscv_vcpu_trap_redirect(struct kvm_vcpu *vcpu,
+ 	vcpu->arch.guest_context.sepc = csr_read(CSR_VSTVEC);
+ }
  
- 	KVM_ISA_EXT_ARR(SSTC),
- 	KVM_ISA_EXT_ARR(SVINVAL),
++static int vcpu_trap_redirect_vs(struct kvm_vcpu *vcpu,
++				 struct kvm_cpu_trap *trap)
++{
++	/* set up trap handler and trap info when it gets back to vs */
++	kvm_riscv_vcpu_trap_redirect(vcpu, trap);
++	/* return to s-mode by setting vcpu's SPP */
++	vcpu->arch.guest_context.sstatus |= SR_SPP;
++	return 1;
++}
++
+ /*
+  * Return > 0 to return to guest, < 0 on error, 0 (and set exit_reason) on
+  * proper exit to userspace.
+@@ -179,6 +189,10 @@ int kvm_riscv_vcpu_exit(struct kvm_vcpu *vcpu, struct kvm_run *run,
+ 	ret = -EFAULT;
+ 	run->exit_reason = KVM_EXIT_UNKNOWN;
+ 	switch (trap->scause) {
++	case EXC_INST_ILLEGAL:
++		if (vcpu->arch.guest_context.hstatus & HSTATUS_SPV)
++			ret = vcpu_trap_redirect_vs(vcpu, trap);
++		break;
+ 	case EXC_VIRTUAL_INST_FAULT:
+ 		if (vcpu->arch.guest_context.hstatus & HSTATUS_SPV)
+ 			ret = kvm_riscv_vcpu_virtual_insn(vcpu, run, trap);
+@@ -206,6 +220,7 @@ int kvm_riscv_vcpu_exit(struct kvm_vcpu *vcpu, struct kvm_run *run,
+ 			vcpu->arch.guest_context.hstatus);
+ 		kvm_err("SCAUSE=0x%lx STVAL=0x%lx HTVAL=0x%lx HTINST=0x%lx\n",
+ 			trap->scause, trap->stval, trap->htval, trap->htinst);
++		asm volatile ("ebreak\n\t");
+ 	}
+ 
+ 	return ret;
 -- 
 2.17.1
 
