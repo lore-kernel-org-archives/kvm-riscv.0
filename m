@@ -1,70 +1,52 @@
 From: Andy Chiu <andy.chiu@sifive.com>
-Date: Wed, 25 Jan 2023 14:20:56 +0000
-Subject: [PATCH -next v13 19/19] riscv: Enable Vector code to be built
+Date: Wed, 25 Jan 2023 14:20:53 +0000
+Subject: [PATCH -next v13 16/19] riscv: Add V extension to KVM ISA
 In-Reply-To: <20230125142056.18356-1-andy.chiu@sifive.com>
 References: <20230125142056.18356-1-andy.chiu@sifive.com>
-Message-ID: <20230125142056.18356-20-andy.chiu@sifive.com>
+Message-ID: <20230125142056.18356-17-andy.chiu@sifive.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Guo Ren <guoren@linux.alibaba.com>
+From: Vincent Chen <vincent.chen@sifive.com>
 
-This patch adds a config which enables vector feature from the kernel
-space.
+Add V extension to KVM isa extension list to enable supporting of V
+extension on VCPUs.
 
-Signed-off-by: Guo Ren <guoren@linux.alibaba.com>
-Co-developed-by: Greentime Hu <greentime.hu@sifive.com>
+Signed-off-by: Vincent Chen <vincent.chen@sifive.com>
 Signed-off-by: Greentime Hu <greentime.hu@sifive.com>
-Suggested-by: Vineet Gupta <vineetg@rivosinc.com>
-Suggested-by: Atish Patra <atishp@atishpatra.org>
 Signed-off-by: Andy Chiu <andy.chiu@sifive.com>
 ---
- arch/riscv/Kconfig  | 10 ++++++++++
- arch/riscv/Makefile |  7 +++++++
- 2 files changed, 17 insertions(+)
+ arch/riscv/include/uapi/asm/kvm.h | 1 +
+ arch/riscv/kvm/vcpu.c             | 1 +
+ 2 files changed, 2 insertions(+)
 
-diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
-index e2b656043abf..f4299ba9a843 100644
---- a/arch/riscv/Kconfig
-+++ b/arch/riscv/Kconfig
-@@ -416,6 +416,16 @@ config RISCV_ISA_SVPBMT
+diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
+index 92af6f3f057c..e7c9183ad4af 100644
+--- a/arch/riscv/include/uapi/asm/kvm.h
++++ b/arch/riscv/include/uapi/asm/kvm.h
+@@ -100,6 +100,7 @@ enum KVM_RISCV_ISA_EXT_ID {
+ 	KVM_RISCV_ISA_EXT_H,
+ 	KVM_RISCV_ISA_EXT_I,
+ 	KVM_RISCV_ISA_EXT_M,
++	KVM_RISCV_ISA_EXT_V,
+ 	KVM_RISCV_ISA_EXT_SVPBMT,
+ 	KVM_RISCV_ISA_EXT_SSTC,
+ 	KVM_RISCV_ISA_EXT_SVINVAL,
+diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+index 7c08567097f0..b060d26ab783 100644
+--- a/arch/riscv/kvm/vcpu.c
++++ b/arch/riscv/kvm/vcpu.c
+@@ -57,6 +57,7 @@ static const unsigned long kvm_isa_ext_arr[] = {
+ 	[KVM_RISCV_ISA_EXT_H] = RISCV_ISA_EXT_h,
+ 	[KVM_RISCV_ISA_EXT_I] = RISCV_ISA_EXT_i,
+ 	[KVM_RISCV_ISA_EXT_M] = RISCV_ISA_EXT_m,
++	[KVM_RISCV_ISA_EXT_V] = RISCV_ISA_EXT_v,
  
- 	   If you don't know what to do here, say Y.
- 
-+config RISCV_ISA_V
-+	bool "VECTOR extension support"
-+	depends on GCC_VERSION >= 120000 || CLANG_VERSION >= 130000
-+	default n
-+	help
-+	  Say N here if you want to disable all vector related procedure
-+	  in the kernel.
-+
-+	  If you don't know what to do here, say Y.
-+
- config TOOLCHAIN_HAS_ZICBOM
- 	bool
- 	default y
-diff --git a/arch/riscv/Makefile b/arch/riscv/Makefile
-index 12d91b0a73d8..67411cdc836f 100644
---- a/arch/riscv/Makefile
-+++ b/arch/riscv/Makefile
-@@ -52,6 +52,13 @@ riscv-march-$(CONFIG_ARCH_RV32I)	:= rv32ima
- riscv-march-$(CONFIG_ARCH_RV64I)	:= rv64ima
- riscv-march-$(CONFIG_FPU)		:= $(riscv-march-y)fd
- riscv-march-$(CONFIG_RISCV_ISA_C)	:= $(riscv-march-y)c
-+riscv-march-$(CONFIG_RISCV_ISA_V)	:= $(riscv-march-y)v
-+
-+ifeq ($(CONFIG_RISCV_ISA_V), y)
-+ifeq ($(CONFIG_CC_IS_CLANG), y)
-+        riscv-march-y += -mno-implicit-float -menable-experimental-extensions
-+endif
-+endif
- 
- # Newer binutils versions default to ISA spec version 20191213 which moves some
- # instructions from the I extension to the Zicsr and Zifencei extensions.
+ 	KVM_ISA_EXT_ARR(SSTC),
+ 	KVM_ISA_EXT_ARR(SVINVAL),
 -- 
 2.17.1
 
