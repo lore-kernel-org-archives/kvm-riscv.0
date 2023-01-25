@@ -1,200 +1,167 @@
 From: Andy Chiu <andy.chiu@sifive.com>
-Date: Wed, 25 Jan 2023 14:20:47 +0000
-Subject: [PATCH -next v13 10/19] riscv: Allocate user's vector context in the first-use trap
+Date: Wed, 25 Jan 2023 14:20:48 +0000
+Subject: [PATCH -next v13 11/19] riscv: Add ptrace vector support
 In-Reply-To: <20230125142056.18356-1-andy.chiu@sifive.com>
 References: <20230125142056.18356-1-andy.chiu@sifive.com>
-Message-ID: <20230125142056.18356-11-andy.chiu@sifive.com>
+Message-ID: <20230125142056.18356-12-andy.chiu@sifive.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Vector unit is disabled by default for all user processes. Thus, a
-process will take a trap (illegal instruction) into kernel at the first
-time when it uses Vector. Only after then, the kernel allocates V
-context and starts take care of the context for that user process.
+From: Greentime Hu <greentime.hu@sifive.com>
 
-Suggested-by: Richard Henderson <richard.henderson@linaro.org>
-Link: https://lore.kernel.org/r/3923eeee-e4dc-0911-40bf-84c34aee962d at linaro.org
+This patch adds ptrace support for riscv vector. The vector registers will
+be saved in datap pointer of __riscv_v_state. This pointer will be set
+right after the __riscv_v_state data structure then it will be put in ubuf
+for ptrace system call to get or set. It will check if the datap got from
+ubuf is set to the correct address or not when the ptrace system call is
+trying to set the vector registers.
+
+Co-developed-by: Vincent Chen <vincent.chen@sifive.com>
+Signed-off-by: Vincent Chen <vincent.chen@sifive.com>
+Signed-off-by: Greentime Hu <greentime.hu@sifive.com>
 Signed-off-by: Andy Chiu <andy.chiu@sifive.com>
 ---
- arch/riscv/include/asm/insn.h   | 24 +++++++++
- arch/riscv/include/asm/vector.h |  2 +
- arch/riscv/kernel/Makefile      |  1 +
- arch/riscv/kernel/vector.c      | 89 +++++++++++++++++++++++++++++++++
- 4 files changed, 116 insertions(+)
- create mode 100644 arch/riscv/kernel/vector.c
+ arch/riscv/include/uapi/asm/ptrace.h |  7 +++
+ arch/riscv/kernel/ptrace.c           | 71 ++++++++++++++++++++++++++++
+ include/uapi/linux/elf.h             |  1 +
+ 3 files changed, 79 insertions(+)
 
-diff --git a/arch/riscv/include/asm/insn.h b/arch/riscv/include/asm/insn.h
-index 25ef9c0b19e7..b1ef3617881f 100644
---- a/arch/riscv/include/asm/insn.h
-+++ b/arch/riscv/include/asm/insn.h
-@@ -133,6 +133,24 @@
- #define RVG_OPCODE_JALR		0x67
- #define RVG_OPCODE_JAL		0x6f
- #define RVG_OPCODE_SYSTEM	0x73
-+#define RVG_SYSTEM_CSR_OFF	20
-+#define RVG_SYSTEM_CSR_MASK	GENMASK(12, 0)
-+
-+/* parts of opcode for RVV */
-+#define OPCODE_VECTOR		0x57
-+#define LSFP_WIDTH_RVV_8	0
-+#define LSFP_WIDTH_RVV_16	5
-+#define LSFP_WIDTH_RVV_32	6
-+#define LSFP_WIDTH_RVV_64	7
-+
-+/* parts of opcode for RVF, RVD and RVQ */
-+#define LSFP_WIDTH_OFF		12
-+#define LSFP_WIDTH_MASK		GENMASK(3, 0)
-+#define LSFP_WIDTH_FP_W		2
-+#define LSFP_WIDTH_FP_D		3
-+#define LSFP_WIDTH_FP_Q		4
-+#define OPCODE_LOADFP		0x07
-+#define OPCODE_STOREFP		0x27
+diff --git a/arch/riscv/include/uapi/asm/ptrace.h b/arch/riscv/include/uapi/asm/ptrace.h
+index 6ee1ca2edfa7..2c86d017c142 100644
+--- a/arch/riscv/include/uapi/asm/ptrace.h
++++ b/arch/riscv/include/uapi/asm/ptrace.h
+@@ -94,6 +94,13 @@ struct __riscv_v_state {
+ 	 */
+ };
  
- /* parts of opcode for RVC*/
- #define RVC_OPCODE_C0		0x0
-@@ -291,6 +309,12 @@ static __always_inline bool riscv_insn_is_branch(u32 code)
- 	(RVC_X(x_, RVC_B_IMM_7_6_OPOFF, RVC_B_IMM_7_6_MASK) << RVC_B_IMM_7_6_OFF) | \
- 	(RVC_IMM_SIGN(x_) << RVC_B_IMM_SIGN_OFF); })
- 
-+#define EXTRACT_LOAD_STORE_FP_WIDTH(x) \
-+	({typeof(x) x_ = (x); RV_X(x_, LSFP_WIDTH_OFF, LSFP_WIDTH_MASK); })
-+
-+#define EXTRACT_SYSTEM_CSR(x) \
-+	({typeof(x) x_ = (x); RV_X(x_, RVG_SYSTEM_CSR_OFF, RVG_SYSTEM_CSR_MASK); })
-+
- /*
-  * Get the immediate from a J-type instruction.
-  *
-diff --git a/arch/riscv/include/asm/vector.h b/arch/riscv/include/asm/vector.h
-index f8a9e37c4374..7c77696d704a 100644
---- a/arch/riscv/include/asm/vector.h
-+++ b/arch/riscv/include/asm/vector.h
-@@ -19,6 +19,7 @@
- #define CSR_STR(x) __ASM_STR(x)
- 
- extern unsigned long riscv_vsize;
-+bool rvv_first_use_handler(struct pt_regs *regs);
- 
- static __always_inline bool has_vector(void)
- {
-@@ -138,6 +139,7 @@ static inline void vstate_restore(struct task_struct *task,
- struct pt_regs;
- 
- static __always_inline bool has_vector(void) { return false; }
-+static inline bool rvv_first_use_handler(struct pt_regs *regs) { return false; }
- static inline bool vstate_query(struct pt_regs *regs) { return false; }
- #define riscv_vsize (0)
- #define vstate_save(task, regs)		do {} while (0)
-diff --git a/arch/riscv/kernel/Makefile b/arch/riscv/kernel/Makefile
-index 4cf303a779ab..48d345a5f326 100644
---- a/arch/riscv/kernel/Makefile
-+++ b/arch/riscv/kernel/Makefile
-@@ -55,6 +55,7 @@ obj-$(CONFIG_MMU) += vdso.o vdso/
- 
- obj-$(CONFIG_RISCV_M_MODE)	+= traps_misaligned.o
- obj-$(CONFIG_FPU)		+= fpu.o
-+obj-$(CONFIG_RISCV_ISA_V)	+= vector.o
- obj-$(CONFIG_SMP)		+= smpboot.o
- obj-$(CONFIG_SMP)		+= smp.o
- obj-$(CONFIG_SMP)		+= cpu_ops.o
-diff --git a/arch/riscv/kernel/vector.c b/arch/riscv/kernel/vector.c
-new file mode 100644
-index 000000000000..cdd58d1c8b3c
---- /dev/null
-+++ b/arch/riscv/kernel/vector.c
-@@ -0,0 +1,89 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
 +/*
-+ * Copyright (C) 2023 SiFive
-+ * Author: Andy Chiu <andy.chiu@sifive.com>
++ * According to spec: The number of bits in a single vector register,
++ * VLEN >= ELEN, which must be a power of 2, and must be no greater than
++ * 2^16 = 65536bits = 8192bytes
 + */
-+#include <linux/sched/signal.h>
-+#include <linux/types.h>
-+#include <linux/slab.h>
-+#include <linux/sched.h>
-+#include <linux/uaccess.h>
++#define RISCV_MAX_VLENB (8192)
 +
-+#include <asm/thread_info.h>
-+#include <asm/processor.h>
-+#include <asm/insn.h>
+ #endif /* __ASSEMBLY__ */
+ 
+ #endif /* _UAPI_ASM_RISCV_PTRACE_H */
+diff --git a/arch/riscv/kernel/ptrace.c b/arch/riscv/kernel/ptrace.c
+index 2ae8280ae475..da1f9259959d 100644
+--- a/arch/riscv/kernel/ptrace.c
++++ b/arch/riscv/kernel/ptrace.c
+@@ -7,6 +7,7 @@
+  * Copied from arch/tile/kernel/ptrace.c
+  */
+ 
 +#include <asm/vector.h>
-+#include <asm/ptrace.h>
-+#include <asm/bug.h>
-+
-+static bool insn_is_vector(u32 insn_buf)
+ #include <asm/ptrace.h>
+ #include <asm/syscall.h>
+ #include <asm/thread_info.h>
+@@ -27,6 +28,9 @@ enum riscv_regset {
+ #ifdef CONFIG_FPU
+ 	REGSET_F,
+ #endif
++#ifdef CONFIG_RISCV_ISA_V
++	REGSET_V,
++#endif
+ };
+ 
+ static int riscv_gpr_get(struct task_struct *target,
+@@ -83,6 +87,62 @@ static int riscv_fpr_set(struct task_struct *target,
+ }
+ #endif
+ 
++#ifdef CONFIG_RISCV_ISA_V
++static int riscv_vr_get(struct task_struct *target,
++			const struct user_regset *regset,
++			struct membuf to)
 +{
-+	u32 opcode = insn_buf & __INSN_OPCODE_MASK;
++	struct __riscv_v_state *vstate = &target->thread.vstate;
++
++	if (!vstate_query(task_pt_regs(target)))
++		return -EINVAL;
 +	/*
-+	 * All V-related instructions, including CSR operations are 4-Byte. So,
-+	 * do not handle if the instruction length is not 4-Byte.
++	 * Ensure the vector registers have been saved to the memory before
++	 * copying them to membuf.
 +	 */
-+	if (unlikely(GET_INSN_LENGTH(insn_buf) != 4))
-+		return false;
-+	if (opcode == OPCODE_VECTOR) {
-+		return true;
-+	} else if (opcode == OPCODE_LOADFP || opcode == OPCODE_STOREFP) {
-+		u32 width = EXTRACT_LOAD_STORE_FP_WIDTH(insn_buf);
++	if (target == current)
++		vstate_save(current, task_pt_regs(current));
 +
-+		if (width == LSFP_WIDTH_RVV_8 || width == LSFP_WIDTH_RVV_16 ||
-+		    width == LSFP_WIDTH_RVV_32 || width == LSFP_WIDTH_RVV_64)
-+			return true;
-+	} else if (opcode == RVG_OPCODE_SYSTEM) {
-+		u32 csr = EXTRACT_SYSTEM_CSR(insn_buf);
++	/* Copy vector header from vstate. */
++	membuf_write(&to, vstate, offsetof(struct __riscv_v_state, datap));
++	membuf_zero(&to, sizeof(void *));
++#if __riscv_xlen == 32
++	membuf_zero(&to, sizeof(__u32));
++#endif
 +
-+		if ((csr >= CSR_VSTART && csr <= CSR_VCSR) ||
-+		    (csr >= CSR_VL && csr <= CSR_VLENB))
-+			return true;
-+	}
-+	return false;
++	/* Copy all the vector registers from vstate. */
++	return membuf_write(&to, vstate->datap, riscv_vsize);
 +}
 +
-+int rvv_thread_zalloc(void)
++static int riscv_vr_set(struct task_struct *target,
++			const struct user_regset *regset,
++			unsigned int pos, unsigned int count,
++			const void *kbuf, const void __user *ubuf)
 +{
-+	void *datap;
++	int ret, size;
++	struct __riscv_v_state *vstate = &target->thread.vstate;
 +
-+	datap = kzalloc(riscv_vsize, GFP_KERNEL);
-+	if (!datap)
-+		return -ENOMEM;
-+	current->thread.vstate.datap = datap;
-+	memset(&current->thread.vstate, 0, offsetof(struct __riscv_v_state,
-+						    datap));
-+	return 0;
++	if (!vstate_query(task_pt_regs(target)))
++		return -EINVAL;
++	/* Copy rest of the vstate except datap */
++	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf, vstate, 0,
++				 offsetof(struct __riscv_v_state, datap));
++	if (unlikely(ret))
++		return ret;
++
++	/* Skip copy datap. */
++	size = sizeof(vstate->datap);
++	count -= size;
++	ubuf += size;
++
++	/* Copy all the vector registers. */
++	pos = 0;
++	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf, vstate->datap,
++				 0, riscv_vsize);
++	return ret;
 +}
++#endif
 +
-+bool rvv_first_use_handler(struct pt_regs *regs)
-+{
-+	__user u32 *epc = (u32 *)regs->epc;
-+	u32 tval = (u32)regs->badaddr;
-+
-+	/* If V has been enabled then it is not the first-use trap */
-+	if (vstate_query(regs))
-+		return false;
-+	/* Get the instruction */
-+	if (!tval) {
-+		if (__get_user(tval, epc))
-+			return false;
-+	}
-+	/* Filter out non-V instructions */
-+	if (!insn_is_vector(tval))
-+		return false;
-+	/* Sanity check. datap should be null by the time of the first-use trap */
-+	WARN_ON(current->thread.vstate.datap);
-+	/*
-+	 * Now we sure that this is a V instruction. And it executes in the
-+	 * context where VS has been off. So, try to allocate the user's V
-+	 * context and resume execution.
-+	 */
-+	if (rvv_thread_zalloc()) {
-+		force_sig(SIGKILL);
-+		return true;
-+	}
-+	vstate_on(regs);
-+	return true;
-+}
-+
+ static const struct user_regset riscv_user_regset[] = {
+ 	[REGSET_X] = {
+ 		.core_note_type = NT_PRSTATUS,
+@@ -102,6 +162,17 @@ static const struct user_regset riscv_user_regset[] = {
+ 		.set = riscv_fpr_set,
+ 	},
+ #endif
++#ifdef CONFIG_RISCV_ISA_V
++	[REGSET_V] = {
++		.core_note_type = NT_RISCV_VECTOR,
++		.align = 16,
++		.n = ((32 * RISCV_MAX_VLENB) +
++		      sizeof(struct __riscv_v_state)) / sizeof(__u32),
++		.size = sizeof(__u32),
++		.regset_get = riscv_vr_get,
++		.set = riscv_vr_set,
++	},
++#endif
+ };
+ 
+ static const struct user_regset_view riscv_user_native_view = {
+diff --git a/include/uapi/linux/elf.h b/include/uapi/linux/elf.h
+index 4c6a8fa5e7ed..eeb65ccb5550 100644
+--- a/include/uapi/linux/elf.h
++++ b/include/uapi/linux/elf.h
+@@ -439,6 +439,7 @@ typedef struct elf64_shdr {
+ #define NT_MIPS_DSP	0x800		/* MIPS DSP ASE registers */
+ #define NT_MIPS_FP_MODE	0x801		/* MIPS floating-point mode */
+ #define NT_MIPS_MSA	0x802		/* MIPS SIMD registers */
++#define NT_RISCV_VECTOR	0x900		/* RISC-V vector registers */
+ #define NT_LOONGARCH_CPUCFG	0xa00	/* LoongArch CPU config registers */
+ #define NT_LOONGARCH_CSR	0xa01	/* LoongArch control and status registers */
+ #define NT_LOONGARCH_LSX	0xa02	/* LoongArch Loongson SIMD Extension registers */
 -- 
 2.17.1
 
