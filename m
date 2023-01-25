@@ -1,78 +1,59 @@
 From: Andy Chiu <andy.chiu@sifive.com>
-Date: Wed, 25 Jan 2023 14:20:40 +0000
-Subject: [PATCH -next v13 03/19] riscv: Add new csr defines related to vector extension
+Date: Wed, 25 Jan 2023 14:20:41 +0000
+Subject: [PATCH -next v13 04/19] riscv: Clear vector regfile on bootup
 In-Reply-To: <20230125142056.18356-1-andy.chiu@sifive.com>
 References: <20230125142056.18356-1-andy.chiu@sifive.com>
-Message-ID: <20230125142056.18356-4-andy.chiu@sifive.com>
+Message-ID: <20230125142056.18356-5-andy.chiu@sifive.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Greentime Hu <greentime.hu@sifive.com>
+clear vector registers on boot if kernel supports V.
 
-Follow the riscv vector spec to add new csr numbers.
-
-[guoren at linux.alibaba.com: first porting for new vector related csr]
-Acked-by: Guo Ren <guoren@kernel.org>
-Co-developed-by: Guo Ren <guoren@linux.alibaba.com>
-Signed-off-by: Guo Ren <guoren@linux.alibaba.com>
-Co-developed-by: Vincent Chen <vincent.chen@sifive.com>
-Signed-off-by: Vincent Chen <vincent.chen@sifive.com>
 Signed-off-by: Greentime Hu <greentime.hu@sifive.com>
-Reviewed-by: Palmer Dabbelt <palmer@rivosinc.com>
-Suggested-by: Vineet Gupta <vineetg@rivosinc.com>
+Signed-off-by: Vineet Gupta <vineetg@rivosinc.com>
+[vineetg: broke this out to a seperate patch]
 Signed-off-by: Andy Chiu <andy.chiu@sifive.com>
-[andyc: added SR_FS_VS]
 ---
- arch/riscv/include/asm/csr.h | 18 ++++++++++++++++--
- 1 file changed, 16 insertions(+), 2 deletions(-)
+ arch/riscv/kernel/head.S | 23 +++++++++++++++++++++++
+ 1 file changed, 23 insertions(+)
 
-diff --git a/arch/riscv/include/asm/csr.h b/arch/riscv/include/asm/csr.h
-index 0e571f6483d9..add51662b7c3 100644
---- a/arch/riscv/include/asm/csr.h
-+++ b/arch/riscv/include/asm/csr.h
-@@ -24,16 +24,24 @@
- #define SR_FS_CLEAN	_AC(0x00004000, UL)
- #define SR_FS_DIRTY	_AC(0x00006000, UL)
- 
-+#define SR_VS           _AC(0x00000600, UL) /* Vector Status */
-+#define SR_VS_OFF       _AC(0x00000000, UL)
-+#define SR_VS_INITIAL   _AC(0x00000200, UL)
-+#define SR_VS_CLEAN     _AC(0x00000400, UL)
-+#define SR_VS_DIRTY     _AC(0x00000600, UL)
+diff --git a/arch/riscv/kernel/head.S b/arch/riscv/kernel/head.S
+index b865046e4dbb..ea803c96eeff 100644
+--- a/arch/riscv/kernel/head.S
++++ b/arch/riscv/kernel/head.S
+@@ -431,6 +431,29 @@ ENTRY(reset_regs)
+ 	csrw	fcsr, 0
+ 	/* note that the caller must clear SR_FS */
+ #endif /* CONFIG_FPU */
 +
- #define SR_XS		_AC(0x00018000, UL) /* Extension Status */
- #define SR_XS_OFF	_AC(0x00000000, UL)
- #define SR_XS_INITIAL	_AC(0x00008000, UL)
- #define SR_XS_CLEAN	_AC(0x00010000, UL)
- #define SR_XS_DIRTY	_AC(0x00018000, UL)
- 
-+#define SR_FS_VS	(SR_FS | SR_VS) /* Vector and Floating-Point Unit */
++#ifdef CONFIG_RISCV_ISA_V
++	csrr	t0, CSR_MISA
++	li	t1, COMPAT_HWCAP_ISA_V
++	and	t0, t0, t1
++	beqz	t0, .Lreset_regs_done
 +
- #ifndef CONFIG_64BIT
--#define SR_SD		_AC(0x80000000, UL) /* FS/XS dirty */
-+#define SR_SD		_AC(0x80000000, UL) /* FS/VS/XS dirty */
- #else
--#define SR_SD		_AC(0x8000000000000000, UL) /* FS/XS dirty */
-+#define SR_SD		_AC(0x8000000000000000, UL) /* FS/VS/XS dirty */
- #endif
- 
- #ifdef CONFIG_64BIT
-@@ -297,6 +305,12 @@
- #define CSR_MIMPID		0xf13
- #define CSR_MHARTID		0xf14
- 
-+#define CSR_VSTART		0x8
-+#define CSR_VCSR		0xf
-+#define CSR_VL			0xc20
-+#define CSR_VTYPE		0xc21
-+#define CSR_VLENB		0xc22
++	/*
++	 * Clear vector registers and reset vcsr
++	 * VLMAX has a defined value, VLEN is a constant,
++	 * and this form of vsetvli is defined to set vl to VLMAX.
++	 */
++	li	t1, SR_VS
++	csrs	CSR_STATUS, t1
++	csrs	CSR_VCSR, x0
++	vsetvli t1, x0, e8, m8, ta, ma
++	vmv.v.i v0, 0
++	vmv.v.i v8, 0
++	vmv.v.i v16, 0
++	vmv.v.i v24, 0
++	/* note that the caller must clear SR_VS */
++#endif /* CONFIG_RISCV_ISA_V */
 +
- #ifdef CONFIG_RISCV_M_MODE
- # define CSR_STATUS	CSR_MSTATUS
- # define CSR_IE		CSR_MIE
+ .Lreset_regs_done:
+ 	ret
+ END(reset_regs)
 -- 
 2.17.1
 
