@@ -1,109 +1,104 @@
 From: Conor Dooley <conor@kernel.org>
-Date: Mon, 23 Jan 2023 18:25:22 +0000
-Subject: [PATCH v2 2/6] dt-bindings: riscv: Document cboz-block-size
-In-Reply-To: <20230123155404.oqcfufnot4f2vjw7@orel>
-References: <20230122191328.1193885-1-ajones@ventanamicro.com>
- <20230122191328.1193885-3-ajones@ventanamicro.com>
- <CAL_Jsq+SqFOVYZdf5YCELNo7nnU-T32V_Ec1C+RmUv_eLiR0Ng@mail.gmail.com>
- <20230123155404.oqcfufnot4f2vjw7@orel>
-Message-ID: <Y87REk8M/lDbQUhb@spud>
+Date: Wed, 25 Jan 2023 21:04:45 +0000
+Subject: [PATCH -next v13 19/19] riscv: Enable Vector code to be built
+In-Reply-To: <20230125142056.18356-20-andy.chiu@sifive.com>
+References: <20230125142056.18356-1-andy.chiu@sifive.com>
+ <20230125142056.18356-20-andy.chiu@sifive.com>
+Message-ID: <Y9GZbVrZxEZAraVu@spud>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hey Drew, Rob,
+Hey Andy,
 
-On Mon, Jan 23, 2023 at 04:54:04PM +0100, Andrew Jones wrote:
-> On Mon, Jan 23, 2023 at 08:33:56AM -0600, Rob Herring wrote:
-> > On Sun, Jan 22, 2023 at 1:13 PM Andrew Jones <ajones@ventanamicro.com> wrote:
-> > >
-> > > The Zicboz operates on a block-size defined for the cpu-core,
-> > > which does not necessarily match other cache-sizes used.
-> > 
-> > Please use get_maintainers.pl and send patches to the correct lists.
-> 
-> Yup, Conor also pointed out that I forgot to update the CC list when
-> adding this patch to the series.
-> 
-> > 
-> > I have no idea what Zicboz is. How does it relate to Zicbom for which
-> > we already have a block size property? I really hate one by one
-> > property additions because they lead to poorly designed bindings. So
-> > what's next? What other information might be needed?
-> 
-> Zicbom and Zicboz are both RISC-V ISA extensions for cache-block operation
-> (CBO) instructions. Zicbom defines the instructions cbo.inval, cbo.clean,
-> and cbo.flush while Zicboz only defines cbo.zero. While it's probably
-> likely that the cache block sizes which Zicbom and Zicboz use will be
-> the same when both are implemented, the specification does not require it.
-> With that in mind, it makes sense to me that Zicbom has its own property
-> and that Zicboz could follow Zicbom's pattern with its own property as
-> well.
-> 
-> That said, having a generic block size property which is used in the
-> absence of the per-extension block size properties would allow DTs to only
-> specify the size once when they're the same. In my reply to Conor, I
-> suggested introducing a cbo-block-size property for this purpose, but Anup
-> suggests we just expand the purpose of cbom-block-size. Expanding cbom-
-> block-size's purpose would allow its size to be used with cbo.zero in the
-> absence of a cboz-block-size property. Additionally, we could defer the
-> introduction of the cboz-block-size property until some system needs it,
-> which may be never.
-> 
-> As far as to what's coming next, I'm not aware of a plan for more of these
-> types of properties at this time, but the CMO spec also describes prefetch
-> instructions, which are defined under the Zicbop extension. If Zicbop
-> support is added, then it should follow the same pattern as we agree for
-> Zicboz, which is either
-> 
->  a. Add cboz-block-size and require it (as this series currently does)
+Thanks for respinning this, I think a lot of people will be happy to see
+it!
 
-heh, be careful with the word "require", in dt-binding terms it's not
-required - we just get a pr_err() and the feature is disabled, right?
+On Wed, Jan 25, 2023 at 02:20:56PM +0000, Andy Chiu wrote:
 
-This is most clear of the options though, even if it will likely be
-superfluous most of the time...
+> diff --git a/arch/riscv/Makefile b/arch/riscv/Makefile
+> index 12d91b0a73d8..67411cdc836f 100644
+> --- a/arch/riscv/Makefile
+> +++ b/arch/riscv/Makefile
+> @@ -52,6 +52,13 @@ riscv-march-$(CONFIG_ARCH_RV32I)	:= rv32ima
+>  riscv-march-$(CONFIG_ARCH_RV64I)	:= rv64ima
+>  riscv-march-$(CONFIG_FPU)		:= $(riscv-march-y)fd
+>  riscv-march-$(CONFIG_RISCV_ISA_C)	:= $(riscv-march-y)c
+> +riscv-march-$(CONFIG_RISCV_ISA_V)	:= $(riscv-march-y)v
+> +
+> +ifeq ($(CONFIG_RISCV_ISA_V), y)
+> +ifeq ($(CONFIG_CC_IS_CLANG), y)
+> +        riscv-march-y += -mno-implicit-float -menable-experimental-extensions
+> +endif
+> +endif
 
->  c. Don't add cboz-block-size, only expand the function of cbom-block-size
->     and use it. If a need arises for cboz-block-size some day, then it
->     can be added at that time.
+Uh, so I don't think this was actually tested with (a recent version of)
+clang:
+clang-15: error: unknown argument: '-menable-experimental-extensions_zicbom_zihintpause'
 
-I don't really think that this one makes much sense. It'd be perfectly
-okay to have Zicboz without Zicbom, even if that scenario may be
-unlikely.
-Having a system with Zicboz in the isa string, a cbom-block-size just
-sounds like a source of confusion.
-IMO, there's enough potential crud that "random" extensions may bring
-going forward that I'd rather not make decisions here that complicate
-matters more.
+Firstly, no-implicit-float is a CFLAG, so why add it to march?
+There is an existing patch on the list for enabling this flag, but I
+recall Palmer saying that it was not actually needed?
+Palmer, do you remember why that was?
 
->  b. Add cboz-block-size, expand the function of cbom-block-size to be
->     a fallback, and fallback to cbom-block-size when cboz-block-size is
->     absent
+I dunno what enable-experimental-extensions is, but I can guess. Do we
+really want to enable vector for toolchains where the support is
+considered experimental? I'm not au fait with the details of clang
+versions nor versions of the Vector spec, so take the following with a
+bit of a pinch of salt...
+Since you've allowed this to be built with anything later than clang 13,
+does that mean that different versions of clang may generate vector code
+that are not compatible?
+I'm especially concerned by:
+https://github.com/riscv/riscv-v-spec/releases/tag/0.9
+which appears to be most recently released version of the spec, prior to
+clang/llvm 13 being released.
 
-I personally think that this one is pretty fair. I won't even try to
-claim knowledge of what decisions hardware folk will make, but I think
-it is likely that cbo.zero will share its block size with the other
-three cbo instructions that we already support.
+> diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
+> index e2b656043abf..f4299ba9a843 100644
+> --- a/arch/riscv/Kconfig
+> +++ b/arch/riscv/Kconfig
+> @@ -416,6 +416,16 @@ config RISCV_ISA_SVPBMT
+>  
+>  	   If you don't know what to do here, say Y.
+>  
+> +config RISCV_ISA_V
+> +	bool "VECTOR extension support"
+> +	depends on GCC_VERSION >= 120000 || CLANG_VERSION >= 130000
 
-idk if you can refer to other properties in a binding, but effectively I
-am suggesting:
-  riscv,cboz-block-size:
-    $ref: /schemas/types.yaml#/definitions/uint32
-    default: riscv,cbom-block-size
-    description:
-      The blocksize in bytes for the Zicboz cache operations.
+Are these definitely the versions you want to support?
+What are the earliest (upstream) versions that support the frozen
+version of the vector spec?
 
->  d. ??
+Also, please copy what has been done with "TOOLCHAIN_HAS_FOO" for other
+extensions and check this support with cc-option instead. Similarly,
+you'll need to gate this support on the linker being capable of
+accepting vector:
+/stuff/toolchains/gcc-11/bin/riscv64-unknown-linux-gnu-ld: -march=rv64i2p0_m2p0_a2p0_f2p0_d2p0_c2p0_v1p0_zihintpause2p0_zve32f1p0_zve32x1p0_zve64d1p0_zve64f1p0_zve64x1p0_zvl128b1p0_zvl32b1p0_zvl64b1p0: prefixed ISA extension must separate with _
+/stuff/toolchains/gcc-11/bin/riscv64-unknown-linux-gnu-ld: failed to merge target specific data of file arch/riscv/kernel/vdso/vgettimeofday.o
 
-Have both properties and default them to the regular old cache block
-sizes, thereby allowing Zicbom/Zicboz in the ISA string without either
-property at all?
-Or is that one an ABI break? And if it is, do we care since there
-doesn't appear to be a linux-capable, Zicbo* compatible SoC yet?
+> +	default n
 
+I forget, but is the reason for this being default n, when the others
+are default y a conscious choice?
+I'm a bit of a goldfish sometimes memory wise, and I don't remember if
+that was an outcome of the previous discussions.
+If it is intentionally different, that needs to be in the changelog IMO.
+
+> +	help
+> +	  Say N here if you want to disable all vector related procedure
+> +	  in the kernel.
+> +
+> +	  If you don't know what to do here, say Y.
+> +
+>  config TOOLCHAIN_HAS_ZICBOM
+
+^ you can use this one here as an example :)
+
+I'll reply here again once the patchwork automation has given the series
+a once over and see if it comes up with any other build issues.
 Thanks,
 Conor.
 
@@ -113,4 +108,4 @@ Name: signature.asc
 Type: application/pgp-signature
 Size: 228 bytes
 Desc: not available
-URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20230123/80e3c33a/attachment-0001.sig>
+URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20230125/6467e834/attachment-0001.sig>
