@@ -1,59 +1,184 @@
 From: Andy Chiu <andy.chiu@sifive.com>
-Date: Wed, 25 Jan 2023 14:20:43 +0000
-Subject: [PATCH -next v13 06/19] riscv: Introduce Vector enable/disable helpers
+Date: Wed, 25 Jan 2023 14:20:45 +0000
+Subject: [PATCH -next v13 08/19] riscv: Introduce struct/helpers to save/restore per-task Vector state
 In-Reply-To: <20230125142056.18356-1-andy.chiu@sifive.com>
 References: <20230125142056.18356-1-andy.chiu@sifive.com>
-Message-ID: <20230125142056.18356-7-andy.chiu@sifive.com>
+Message-ID: <20230125142056.18356-9-andy.chiu@sifive.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-These are small and likely to be frequently called so implement as
-inline routines (vs. function call).
+From: Greentime Hu <greentime.hu@sifive.com>
 
-Co-developed-by: Guo Ren <guoren@linux.alibaba.com>
-Signed-off-by: Guo Ren <guoren@linux.alibaba.com>
+Add vector state context struct to be added later in thread_struct. And
+prepare low-level helper functions to save/restore vector contexts.
+
+This include Vector Regfile and CSRs holding dynamic configuration state
+(vstart, vl, vtype, vcsr). The Vec Register width could be implementation
+defined, but same for all processes, so that is saved separately.
+
+This is not yet wired into final thread_struct - will be done when
+__switch_to actually starts doing this in later patches.
+
+Given the variable (and potentially large) size of regfile, they are
+saved in dynamically allocated memory, pointed to by datap pointer in
+__riscv_v_state.
+
 Co-developed-by: Vincent Chen <vincent.chen@sifive.com>
 Signed-off-by: Vincent Chen <vincent.chen@sifive.com>
 Signed-off-by: Greentime Hu <greentime.hu@sifive.com>
 Signed-off-by: Vineet Gupta <vineetg@rivosinc.com>
-[vineetg: create new patch from meshup, introduced asm variant]
+[vineetg: merged bits from 2 different patches]
 Signed-off-by: Andy Chiu <andy.chiu@sifive.com>
-[andy.chiu: remove calls from asm thus remove asm vaiant]
+[andy.chiu: use inline asm to save/restore context, remove asm vaiant]
 ---
- arch/riscv/include/asm/vector.h | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+ arch/riscv/include/asm/vector.h      | 84 ++++++++++++++++++++++++++++
+ arch/riscv/include/uapi/asm/ptrace.h | 17 ++++++
+ 2 files changed, 101 insertions(+)
 
 diff --git a/arch/riscv/include/asm/vector.h b/arch/riscv/include/asm/vector.h
-index 917c8867e702..0fda0faf5277 100644
+index 16cb4a1c1230..842a859609b5 100644
 --- a/arch/riscv/include/asm/vector.h
 +++ b/arch/riscv/include/asm/vector.h
-@@ -11,12 +11,23 @@
- #ifdef CONFIG_RISCV_ISA_V
+@@ -12,6 +12,9 @@
  
  #include <asm/hwcap.h>
-+#include <asm/csr.h>
+ #include <asm/csr.h>
++#include <asm/asm.h>
++
++#define CSR_STR(x) __ASM_STR(x)
  
- static __always_inline bool has_vector(void)
- {
+ extern unsigned long riscv_vsize;
+ 
+@@ -20,6 +23,26 @@ static __always_inline bool has_vector(void)
  	return static_branch_likely(&riscv_isa_ext_keys[RISCV_ISA_EXT_KEY_VECTOR]);
  }
  
-+static __always_inline void rvv_enable(void)
++static inline void __vstate_clean(struct pt_regs *regs)
 +{
-+	csr_set(CSR_SSTATUS, SR_VS);
++	regs->status = (regs->status & ~(SR_VS)) | SR_VS_CLEAN;
 +}
 +
-+static __always_inline void rvv_disable(void)
++static inline void vstate_off(struct pt_regs *regs)
 +{
-+	csr_clear(CSR_SSTATUS, SR_VS);
++	regs->status = (regs->status & ~SR_VS) | SR_VS_OFF;
++}
++
++static inline void vstate_on(struct pt_regs *regs)
++{
++	regs->status = (regs->status & ~(SR_VS)) | SR_VS_INITIAL;
++}
++
++static inline bool vstate_query(struct pt_regs *regs)
++{
++	return (regs->status & SR_VS) != 0;
++}
++
+ static __always_inline void rvv_enable(void)
+ {
+ 	csr_set(CSR_SSTATUS, SR_VS);
+@@ -30,10 +53,71 @@ static __always_inline void rvv_disable(void)
+ 	csr_clear(CSR_SSTATUS, SR_VS);
+ }
+ 
++static __always_inline void __vstate_csr_save(struct __riscv_v_state *dest)
++{
++	asm volatile (
++		"csrr	%0, " CSR_STR(CSR_VSTART) "\n\t"
++		"csrr	%1, " CSR_STR(CSR_VTYPE) "\n\t"
++		"csrr	%2, " CSR_STR(CSR_VL) "\n\t"
++		"csrr	%3, " CSR_STR(CSR_VCSR) "\n\t"
++		: "=r" (dest->vstart), "=r" (dest->vtype), "=r" (dest->vl),
++		  "=r" (dest->vcsr) : :);
++}
++
++static __always_inline void __vstate_csr_restore(struct __riscv_v_state *src)
++{
++	asm volatile (
++		"vsetvl	 x0, %2, %1\n\t"
++		"csrw	" CSR_STR(CSR_VSTART) ", %0\n\t"
++		"csrw	" CSR_STR(CSR_VCSR) ", %3\n\t"
++		: : "r" (src->vstart), "r" (src->vtype), "r" (src->vl),
++		    "r" (src->vcsr) :);
++}
++
++static inline void __vstate_save(struct __riscv_v_state *save_to, void *datap)
++{
++	rvv_enable();
++	__vstate_csr_save(save_to);
++	asm volatile (
++		"vsetvli	t4, x0, e8, m8, ta, ma\n\t"
++		"vse8.v		v0, (%0)\n\t"
++		"add		%0, %0, t4\n\t"
++		"vse8.v		v8, (%0)\n\t"
++		"add		%0, %0, t4\n\t"
++		"vse8.v		v16, (%0)\n\t"
++		"add		%0, %0, t4\n\t"
++		"vse8.v		v24, (%0)\n\t"
++		: : "r" (datap) : "t4", "memory");
++	rvv_disable();
++}
++
++static inline void __vstate_restore(struct __riscv_v_state *restore_from,
++				    void *datap)
++{
++	rvv_enable();
++	asm volatile (
++		"vsetvli	t4, x0, e8, m8, ta, ma\n\t"
++		"vle8.v		v0, (%0)\n\t"
++		"add		%0, %0, t4\n\t"
++		"vle8.v		v8, (%0)\n\t"
++		"add		%0, %0, t4\n\t"
++		"vle8.v		v16, (%0)\n\t"
++		"add		%0, %0, t4\n\t"
++		"vle8.v		v24, (%0)\n\t"
++		: : "r" (datap) : "t4");
++	__vstate_csr_restore(restore_from);
++	rvv_disable();
 +}
 +
  #else /* ! CONFIG_RISCV_ISA_V  */
  
++struct pt_regs;
++
  static __always_inline bool has_vector(void) { return false; }
++static inline bool vstate_query(struct pt_regs *regs) { return false; }
+ #define riscv_vsize (0)
++#define vstate_off(regs)		do {} while (0)
++#define vstate_on(regs)			do {} while (0)
+ 
+ #endif /* CONFIG_RISCV_ISA_V */
+ 
+diff --git a/arch/riscv/include/uapi/asm/ptrace.h b/arch/riscv/include/uapi/asm/ptrace.h
+index 882547f6bd5c..6ee1ca2edfa7 100644
+--- a/arch/riscv/include/uapi/asm/ptrace.h
++++ b/arch/riscv/include/uapi/asm/ptrace.h
+@@ -77,6 +77,23 @@ union __riscv_fp_state {
+ 	struct __riscv_q_ext_state q;
+ };
+ 
++struct __riscv_v_state {
++	unsigned long vstart;
++	unsigned long vl;
++	unsigned long vtype;
++	unsigned long vcsr;
++	void *datap;
++	/*
++	 * In signal handler, datap will be set a correct user stack offset
++	 * and vector registers will be copied to the address of datap
++	 * pointer.
++	 *
++	 * In ptrace syscall, datap will be set to zero and the vector
++	 * registers will be copied to the address right after this
++	 * structure.
++	 */
++};
++
+ #endif /* __ASSEMBLY__ */
+ 
+ #endif /* _UAPI_ASM_RISCV_PTRACE_H */
 -- 
 2.17.1
 
