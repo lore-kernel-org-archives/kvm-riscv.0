@@ -1,254 +1,200 @@
 From: Andy Chiu <andy.chiu@sifive.com>
-Date: Wed, 25 Jan 2023 14:20:46 +0000
-Subject: [PATCH -next v13 09/19] riscv: Add task switch support for vector
+Date: Wed, 25 Jan 2023 14:20:47 +0000
+Subject: [PATCH -next v13 10/19] riscv: Allocate user's vector context in the first-use trap
 In-Reply-To: <20230125142056.18356-1-andy.chiu@sifive.com>
 References: <20230125142056.18356-1-andy.chiu@sifive.com>
-Message-ID: <20230125142056.18356-10-andy.chiu@sifive.com>
+Message-ID: <20230125142056.18356-11-andy.chiu@sifive.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Greentime Hu <greentime.hu@sifive.com>
+Vector unit is disabled by default for all user processes. Thus, a
+process will take a trap (illegal instruction) into kernel at the first
+time when it uses Vector. Only after then, the kernel allocates V
+context and starts take care of the context for that user process.
 
-This patch adds task switch support for vector. It also supports all
-lengths of vlen.
-
-[guoren at linux.alibaba.com: First available porting to support vector
-context switching]
-[nick.knight at sifive.com: Rewrite vector.S to support dynamic vlen, xlen and
-code refine]
-[vincent.chen at sifive.com: Fix the might_sleep issue in vstate_save,
-vstate_restore]
-[andrew at sifive.com: Optimize task switch codes of vector]
-[ruinland.tsai at sifive.com: Fix the arch_release_task_struct free wrong
-datap issue]
-[vineetg: Fixed lkp warning with W=1 build]
-[andy.chiu: Use inline asm for task switches]
-
-Suggested-by: Andrew Waterman <andrew@sifive.com>
-Co-developed-by: Nick Knight <nick.knight@sifive.com>
-Signed-off-by: Nick Knight <nick.knight@sifive.com>
-Co-developed-by: Guo Ren <guoren@linux.alibaba.com>
-Signed-off-by: Guo Ren <guoren@linux.alibaba.com>
-Co-developed-by: Vincent Chen <vincent.chen@sifive.com>
-Signed-off-by: Vincent Chen <vincent.chen@sifive.com>
-Co-developed-by: Ruinland Tsai <ruinland.tsai@sifive.com>
-Signed-off-by: Ruinland Tsai <ruinland.tsai@sifive.com>
-Signed-off-by: Greentime Hu <greentime.hu@sifive.com>
-Signed-off-by: Vineet Gupta <vineetg@rivosinc.com>
+Suggested-by: Richard Henderson <richard.henderson@linaro.org>
+Link: https://lore.kernel.org/r/3923eeee-e4dc-0911-40bf-84c34aee962d at linaro.org
 Signed-off-by: Andy Chiu <andy.chiu@sifive.com>
 ---
- arch/riscv/include/asm/processor.h   |  1 +
- arch/riscv/include/asm/switch_to.h   | 18 ++++++++++++++++++
- arch/riscv/include/asm/thread_info.h |  3 +++
- arch/riscv/include/asm/vector.h      | 26 ++++++++++++++++++++++++++
- arch/riscv/kernel/process.c          | 18 ++++++++++++++++++
- arch/riscv/kernel/traps.c            | 14 ++++++++++++--
- 6 files changed, 78 insertions(+), 2 deletions(-)
+ arch/riscv/include/asm/insn.h   | 24 +++++++++
+ arch/riscv/include/asm/vector.h |  2 +
+ arch/riscv/kernel/Makefile      |  1 +
+ arch/riscv/kernel/vector.c      | 89 +++++++++++++++++++++++++++++++++
+ 4 files changed, 116 insertions(+)
+ create mode 100644 arch/riscv/kernel/vector.c
 
-diff --git a/arch/riscv/include/asm/processor.h b/arch/riscv/include/asm/processor.h
-index 94a0590c6971..44d2eb381ca6 100644
---- a/arch/riscv/include/asm/processor.h
-+++ b/arch/riscv/include/asm/processor.h
-@@ -39,6 +39,7 @@ struct thread_struct {
- 	unsigned long s[12];	/* s[0]: frame pointer */
- 	struct __riscv_d_ext_state fstate;
- 	unsigned long bad_cause;
-+	struct __riscv_v_state vstate;
- };
- 
- /* Whitelist the fstate from the task_struct for hardened usercopy */
-diff --git a/arch/riscv/include/asm/switch_to.h b/arch/riscv/include/asm/switch_to.h
-index df1aa589b7fd..69e24140195d 100644
---- a/arch/riscv/include/asm/switch_to.h
-+++ b/arch/riscv/include/asm/switch_to.h
-@@ -8,6 +8,7 @@
- 
- #include <linux/jump_label.h>
- #include <linux/sched/task_stack.h>
-+#include <asm/vector.h>
- #include <asm/hwcap.h>
- #include <asm/processor.h>
- #include <asm/ptrace.h>
-@@ -68,6 +69,21 @@ static __always_inline bool has_fpu(void) { return false; }
- #define __switch_to_fpu(__prev, __next) do { } while (0)
- #endif
- 
-+#ifdef CONFIG_RISCV_ISA_V
-+static inline void __switch_to_vector(struct task_struct *prev,
-+				      struct task_struct *next)
-+{
-+	struct pt_regs *regs;
+diff --git a/arch/riscv/include/asm/insn.h b/arch/riscv/include/asm/insn.h
+index 25ef9c0b19e7..b1ef3617881f 100644
+--- a/arch/riscv/include/asm/insn.h
++++ b/arch/riscv/include/asm/insn.h
+@@ -133,6 +133,24 @@
+ #define RVG_OPCODE_JALR		0x67
+ #define RVG_OPCODE_JAL		0x6f
+ #define RVG_OPCODE_SYSTEM	0x73
++#define RVG_SYSTEM_CSR_OFF	20
++#define RVG_SYSTEM_CSR_MASK	GENMASK(12, 0)
 +
-+	regs = task_pt_regs(prev);
-+	if (unlikely(regs->status & SR_SD))
-+		vstate_save(prev, regs);
-+	vstate_restore(next, task_pt_regs(next));
-+}
-+#else /* ! CONFIG_RISCV_ISA_V  */
-+#define __switch_to_vector(__prev, __next) do { } while (0)
-+#endif /* CONFIG_RISCV_ISA_V  */
++/* parts of opcode for RVV */
++#define OPCODE_VECTOR		0x57
++#define LSFP_WIDTH_RVV_8	0
++#define LSFP_WIDTH_RVV_16	5
++#define LSFP_WIDTH_RVV_32	6
++#define LSFP_WIDTH_RVV_64	7
 +
- extern struct task_struct *__switch_to(struct task_struct *,
- 				       struct task_struct *);
++/* parts of opcode for RVF, RVD and RVQ */
++#define LSFP_WIDTH_OFF		12
++#define LSFP_WIDTH_MASK		GENMASK(3, 0)
++#define LSFP_WIDTH_FP_W		2
++#define LSFP_WIDTH_FP_D		3
++#define LSFP_WIDTH_FP_Q		4
++#define OPCODE_LOADFP		0x07
++#define OPCODE_STOREFP		0x27
  
-@@ -77,6 +93,8 @@ do {							\
- 	struct task_struct *__next = (next);		\
- 	if (has_fpu())					\
- 		__switch_to_fpu(__prev, __next);	\
-+	if (has_vector())					\
-+		__switch_to_vector(__prev, __next);	\
- 	((last) = __switch_to(__prev, __next));		\
- } while (0)
+ /* parts of opcode for RVC*/
+ #define RVC_OPCODE_C0		0x0
+@@ -291,6 +309,12 @@ static __always_inline bool riscv_insn_is_branch(u32 code)
+ 	(RVC_X(x_, RVC_B_IMM_7_6_OPOFF, RVC_B_IMM_7_6_MASK) << RVC_B_IMM_7_6_OFF) | \
+ 	(RVC_IMM_SIGN(x_) << RVC_B_IMM_SIGN_OFF); })
  
-diff --git a/arch/riscv/include/asm/thread_info.h b/arch/riscv/include/asm/thread_info.h
-index 67322f878e0d..2f0f0d7d0fc0 100644
---- a/arch/riscv/include/asm/thread_info.h
-+++ b/arch/riscv/include/asm/thread_info.h
-@@ -79,6 +79,9 @@ struct thread_info {
- 	.preempt_count	= INIT_PREEMPT_COUNT,	\
- }
- 
-+void arch_release_task_struct(struct task_struct *tsk);
-+int arch_dup_task_struct(struct task_struct *dst, struct task_struct *src);
++#define EXTRACT_LOAD_STORE_FP_WIDTH(x) \
++	({typeof(x) x_ = (x); RV_X(x_, LSFP_WIDTH_OFF, LSFP_WIDTH_MASK); })
 +
- #endif /* !__ASSEMBLY__ */
- 
++#define EXTRACT_SYSTEM_CSR(x) \
++	({typeof(x) x_ = (x); RV_X(x_, RVG_SYSTEM_CSR_OFF, RVG_SYSTEM_CSR_MASK); })
++
  /*
+  * Get the immediate from a J-type instruction.
+  *
 diff --git a/arch/riscv/include/asm/vector.h b/arch/riscv/include/asm/vector.h
-index 842a859609b5..f8a9e37c4374 100644
+index f8a9e37c4374..7c77696d704a 100644
 --- a/arch/riscv/include/asm/vector.h
 +++ b/arch/riscv/include/asm/vector.h
-@@ -10,6 +10,8 @@
+@@ -19,6 +19,7 @@
+ #define CSR_STR(x) __ASM_STR(x)
  
- #ifdef CONFIG_RISCV_ISA_V
+ extern unsigned long riscv_vsize;
++bool rvv_first_use_handler(struct pt_regs *regs);
  
-+#include <linux/sched.h>
-+#include <asm/ptrace.h>
- #include <asm/hwcap.h>
- #include <asm/csr.h>
- #include <asm/asm.h>
-@@ -109,6 +111,28 @@ static inline void __vstate_restore(struct __riscv_v_state *restore_from,
- 	rvv_disable();
- }
- 
-+static inline void vstate_save(struct task_struct *task,
-+			       struct pt_regs *regs)
-+{
-+	if ((regs->status & SR_VS) == SR_VS_DIRTY) {
-+		struct __riscv_v_state *vstate = &task->thread.vstate;
-+
-+		__vstate_save(vstate, vstate->datap);
-+		__vstate_clean(regs);
-+	}
-+}
-+
-+static inline void vstate_restore(struct task_struct *task,
-+				  struct pt_regs *regs)
-+{
-+	if ((regs->status & SR_VS) != SR_VS_OFF) {
-+		struct __riscv_v_state *vstate = &task->thread.vstate;
-+
-+		__vstate_restore(vstate, vstate->datap);
-+		__vstate_clean(regs);
-+	}
-+}
-+
- #else /* ! CONFIG_RISCV_ISA_V  */
- 
+ static __always_inline bool has_vector(void)
+ {
+@@ -138,6 +139,7 @@ static inline void vstate_restore(struct task_struct *task,
  struct pt_regs;
-@@ -116,6 +140,8 @@ struct pt_regs;
+ 
  static __always_inline bool has_vector(void) { return false; }
++static inline bool rvv_first_use_handler(struct pt_regs *regs) { return false; }
  static inline bool vstate_query(struct pt_regs *regs) { return false; }
  #define riscv_vsize (0)
-+#define vstate_save(task, regs)		do {} while (0)
-+#define vstate_restore(task, regs)	do {} while (0)
- #define vstate_off(regs)		do {} while (0)
- #define vstate_on(regs)			do {} while (0)
+ #define vstate_save(task, regs)		do {} while (0)
+diff --git a/arch/riscv/kernel/Makefile b/arch/riscv/kernel/Makefile
+index 4cf303a779ab..48d345a5f326 100644
+--- a/arch/riscv/kernel/Makefile
++++ b/arch/riscv/kernel/Makefile
+@@ -55,6 +55,7 @@ obj-$(CONFIG_MMU) += vdso.o vdso/
  
-diff --git a/arch/riscv/kernel/process.c b/arch/riscv/kernel/process.c
-index 8955f2432c2d..d4860c6c5197 100644
---- a/arch/riscv/kernel/process.c
-+++ b/arch/riscv/kernel/process.c
-@@ -24,6 +24,7 @@
- #include <asm/switch_to.h>
- #include <asm/thread_info.h>
- #include <asm/cpuidle.h>
+ obj-$(CONFIG_RISCV_M_MODE)	+= traps_misaligned.o
+ obj-$(CONFIG_FPU)		+= fpu.o
++obj-$(CONFIG_RISCV_ISA_V)	+= vector.o
+ obj-$(CONFIG_SMP)		+= smpboot.o
+ obj-$(CONFIG_SMP)		+= smp.o
+ obj-$(CONFIG_SMP)		+= cpu_ops.o
+diff --git a/arch/riscv/kernel/vector.c b/arch/riscv/kernel/vector.c
+new file mode 100644
+index 000000000000..cdd58d1c8b3c
+--- /dev/null
++++ b/arch/riscv/kernel/vector.c
+@@ -0,0 +1,89 @@
++// SPDX-License-Identifier: GPL-2.0-or-later
++/*
++ * Copyright (C) 2023 SiFive
++ * Author: Andy Chiu <andy.chiu@sifive.com>
++ */
++#include <linux/sched/signal.h>
++#include <linux/types.h>
++#include <linux/slab.h>
++#include <linux/sched.h>
++#include <linux/uaccess.h>
++
++#include <asm/thread_info.h>
++#include <asm/processor.h>
++#include <asm/insn.h>
 +#include <asm/vector.h>
- 
- register unsigned long gp_in_global __asm__("gp");
- 
-@@ -148,12 +149,28 @@ void flush_thread(void)
- 	fstate_off(current, task_pt_regs(current));
- 	memset(&current->thread.fstate, 0, sizeof(current->thread.fstate));
- #endif
-+#ifdef CONFIG_RISCV_ISA_V
-+	/* Reset vector state */
-+	vstate_off(task_pt_regs(current));
-+	kfree(current->thread.vstate.datap);
-+	memset(&current->thread.vstate, 0, sizeof(struct __riscv_v_state));
-+#endif
-+}
++#include <asm/ptrace.h>
++#include <asm/bug.h>
 +
-+void arch_release_task_struct(struct task_struct *tsk)
++static bool insn_is_vector(u32 insn_buf)
 +{
-+	/* Free the vector context of datap. */
-+	if (has_vector() && tsk->thread.vstate.datap)
-+		kfree(tsk->thread.vstate.datap);
- }
- 
- int arch_dup_task_struct(struct task_struct *dst, struct task_struct *src)
- {
- 	fstate_save(src, task_pt_regs(src));
- 	*dst = *src;
-+	/* clear entire V context, including datap for a new task */
-+	memset(&dst->thread.vstate, 0, sizeof(struct __riscv_v_state));
++	u32 opcode = insn_buf & __INSN_OPCODE_MASK;
++	/*
++	 * All V-related instructions, including CSR operations are 4-Byte. So,
++	 * do not handle if the instruction length is not 4-Byte.
++	 */
++	if (unlikely(GET_INSN_LENGTH(insn_buf) != 4))
++		return false;
++	if (opcode == OPCODE_VECTOR) {
++		return true;
++	} else if (opcode == OPCODE_LOADFP || opcode == OPCODE_STOREFP) {
++		u32 width = EXTRACT_LOAD_STORE_FP_WIDTH(insn_buf);
 +
- 	return 0;
- }
- 
-@@ -186,6 +203,7 @@ int copy_thread(struct task_struct *p, const struct kernel_clone_args *args)
- 		childregs->a0 = 0; /* Return value of fork() */
- 		p->thread.ra = (unsigned long)ret_from_fork;
- 	}
-+	vstate_off(childregs);
- 	p->thread.sp = (unsigned long)childregs; /* kernel sp */
- 	return 0;
- }
-diff --git a/arch/riscv/kernel/traps.c b/arch/riscv/kernel/traps.c
-index 549bde5c970a..1a48ff89b2b5 100644
---- a/arch/riscv/kernel/traps.c
-+++ b/arch/riscv/kernel/traps.c
-@@ -24,6 +24,7 @@
- #include <asm/processor.h>
- #include <asm/ptrace.h>
- #include <asm/thread_info.h>
-+#include <asm/vector.h>
- 
- int show_unhandled_signals = 1;
- 
-@@ -111,8 +112,17 @@ DO_ERROR_INFO(do_trap_insn_misaligned,
- 	SIGBUS, BUS_ADRALN, "instruction address misaligned");
- DO_ERROR_INFO(do_trap_insn_fault,
- 	SIGSEGV, SEGV_ACCERR, "instruction access fault");
--DO_ERROR_INFO(do_trap_insn_illegal,
--	SIGILL, ILL_ILLOPC, "illegal instruction");
++		if (width == LSFP_WIDTH_RVV_8 || width == LSFP_WIDTH_RVV_16 ||
++		    width == LSFP_WIDTH_RVV_32 || width == LSFP_WIDTH_RVV_64)
++			return true;
++	} else if (opcode == RVG_OPCODE_SYSTEM) {
++		u32 csr = EXTRACT_SYSTEM_CSR(insn_buf);
 +
-+asmlinkage __visible __trap_section void do_trap_insn_illegal(struct pt_regs *regs)
-+{
-+	if (has_vector() && user_mode(regs)) {
-+		if (rvv_first_use_handler(regs))
-+			return;
++		if ((csr >= CSR_VSTART && csr <= CSR_VCSR) ||
++		    (csr >= CSR_VL && csr <= CSR_VLENB))
++			return true;
 +	}
-+	do_trap_error(regs, SIGILL, ILL_ILLOPC, regs->epc,
-+		      "Oops - illegal instruction");
++	return false;
 +}
 +
- DO_ERROR_INFO(do_trap_load_fault,
- 	SIGSEGV, SEGV_ACCERR, "load access fault");
- #ifndef CONFIG_RISCV_M_MODE
++int rvv_thread_zalloc(void)
++{
++	void *datap;
++
++	datap = kzalloc(riscv_vsize, GFP_KERNEL);
++	if (!datap)
++		return -ENOMEM;
++	current->thread.vstate.datap = datap;
++	memset(&current->thread.vstate, 0, offsetof(struct __riscv_v_state,
++						    datap));
++	return 0;
++}
++
++bool rvv_first_use_handler(struct pt_regs *regs)
++{
++	__user u32 *epc = (u32 *)regs->epc;
++	u32 tval = (u32)regs->badaddr;
++
++	/* If V has been enabled then it is not the first-use trap */
++	if (vstate_query(regs))
++		return false;
++	/* Get the instruction */
++	if (!tval) {
++		if (__get_user(tval, epc))
++			return false;
++	}
++	/* Filter out non-V instructions */
++	if (!insn_is_vector(tval))
++		return false;
++	/* Sanity check. datap should be null by the time of the first-use trap */
++	WARN_ON(current->thread.vstate.datap);
++	/*
++	 * Now we sure that this is a V instruction. And it executes in the
++	 * context where VS has been off. So, try to allocate the user's V
++	 * context and resume execution.
++	 */
++	if (rvv_thread_zalloc()) {
++		force_sig(SIGKILL);
++		return true;
++	}
++	vstate_on(regs);
++	return true;
++}
++
 -- 
 2.17.1
 
