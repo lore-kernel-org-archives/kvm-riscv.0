@@ -1,137 +1,115 @@
-From: David Matlack <dmatlack@google.com>
-Date: Thu, 26 Jan 2023 10:40:24 -0800
-Subject: [PATCH v2 6/7] KVM: Allow range-based TLB invalidation from common code
-In-Reply-To: <20230126184025.2294823-1-dmatlack@google.com>
-References: <20230126184025.2294823-1-dmatlack@google.com>
-Message-ID: <20230126184025.2294823-7-dmatlack@google.com>
+From: Conor Dooley <conor@kernel.org>
+Date: Thu, 26 Jan 2023 19:33:28 +0000
+Subject: [PATCH v4 09/13] riscv: switch to relative alternative entries
+In-Reply-To: <20230120183418.ngdppppvwzysqtcr@orel>
+References: <20230115154953.831-1-jszhang@kernel.org>
+ <20230115154953.831-10-jszhang@kernel.org>
+ <20230120183418.ngdppppvwzysqtcr@orel>
+Message-ID: <Y9LViAD0aPSBwi5t@spud>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Make kvm_flush_remote_tlbs_range() visible in common code and create a
-default implementation that just invalidates the whole TLB.
+On Fri, Jan 20, 2023 at 07:34:18PM +0100, Andrew Jones wrote:
+> On Sun, Jan 15, 2023 at 11:49:49PM +0800, Jisheng Zhang wrote:
+> ...
+> >  #define ALT_ENTRY(oldptr, newptr, vendor_id, errata_id, newlen)		\
+> > -	RISCV_PTR " " oldptr "\n"					\
+> > -	RISCV_PTR " " newptr "\n"					\
+> > -	REG_ASM " " vendor_id "\n"					\
+> > -	REG_ASM " " newlen "\n"						\
+> > -	".word " errata_id "\n"
+> > +	".4byte	((" oldptr ") - .) \n"					\
+> > +	".4byte	((" newptr ") - .) \n"					\
+> > +	".2byte	" vendor_id "\n"					\
+> > +	".2byte " newlen "\n"						\
+> > +	".4byte	" errata_id "\n"
+> >
+> 
+> Hi Jisheng,
+> 
+> This patch breaks loading the KVM module for me. I got "kvm: Unknown
+> relocation type 34". My guess is that these 2 byte fields are inspiring
+> the compiler to emit 16-bit relocation types. The patch below fixes
+> things for me. If you agree with fixing it this way, rather than
+> changing something in alternatives, like not using 2 byte fields,
+> then please pick the below patch up in your series.
+> 
+> Thanks,
+> drew
+> 
+> From 4d203697aa745a0cd3a9217d547a9fb7fa2a87c7 Mon Sep 17 00:00:00 2001
+> From: Andrew Jones <ajones@ventanamicro.com>
+> Date: Fri, 20 Jan 2023 19:05:44 +0100
+> Subject: [PATCH] riscv: module: Add ADD16 and SUB16 rela types
+> Content-type: text/plain
+> 
+> To prepare for 16-bit relocation types to be emitted in alternatives
+> add support for ADD16 and SUB16.
+> 
+> Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
 
-This paves the way for several future features/cleanups:
+For the fixup:
+Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
 
- - Introduction of range-based TLBI on ARM.
- - Eliminating kvm_arch_flush_remote_tlbs_memslot()
- - Moving the KVM/x86 TDP MMU to common code.
+Thanks!
 
-No functional change intended.
-
-Signed-off-by: David Matlack <dmatlack@google.com>
----
- arch/x86/include/asm/kvm_host.h |  3 +++
- arch/x86/kvm/mmu/mmu.c          |  5 ++---
- arch/x86/kvm/mmu/mmu_internal.h |  2 --
- include/linux/kvm_host.h        |  9 +++++++++
- virt/kvm/kvm_main.c             | 13 +++++++++++++
- 5 files changed, 27 insertions(+), 5 deletions(-)
-
-diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
-index 561d31d9a7da..6b2d6ced87ef 100644
---- a/arch/x86/include/asm/kvm_host.h
-+++ b/arch/x86/include/asm/kvm_host.h
-@@ -1816,6 +1816,9 @@ static inline int kvm_arch_flush_remote_tlbs(struct kvm *kvm)
- 		return -ENOTSUPP;
- }
- 
-+#define __KVM_HAVE_ARCH_FLUSH_REMOTE_TLBS_RANGE
-+int kvm_arch_flush_remote_tlbs_range(struct kvm *kvm, gfn_t start_gfn, u64 pages);
-+
- #define kvm_arch_pmi_in_guest(vcpu) \
- 	((vcpu) && (vcpu)->arch.handling_intr_from_guest)
- 
-diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
-index 34b670e719af..284c812db63b 100644
---- a/arch/x86/kvm/mmu/mmu.c
-+++ b/arch/x86/kvm/mmu/mmu.c
-@@ -247,7 +247,7 @@ static inline bool kvm_available_flush_tlb_with_range(void)
- 	return kvm_x86_ops.tlb_remote_flush_with_range;
- }
- 
--void kvm_flush_remote_tlbs_range(struct kvm *kvm, gfn_t start_gfn, u64 pages)
-+int kvm_arch_flush_remote_tlbs_range(struct kvm *kvm, gfn_t start_gfn, u64 pages)
- {
- 	struct kvm_tlb_range range;
- 	int ret = -EOPNOTSUPP;
-@@ -258,8 +258,7 @@ void kvm_flush_remote_tlbs_range(struct kvm *kvm, gfn_t start_gfn, u64 pages)
- 	if (kvm_x86_ops.tlb_remote_flush_with_range)
- 		ret = static_call(kvm_x86_tlb_remote_flush_with_range)(kvm, &range);
- 
--	if (ret)
--		kvm_flush_remote_tlbs(kvm);
-+	return ret;
- }
- 
- static gfn_t kvm_mmu_page_get_gfn(struct kvm_mmu_page *sp, int index);
-diff --git a/arch/x86/kvm/mmu/mmu_internal.h b/arch/x86/kvm/mmu/mmu_internal.h
-index 0dba4d8304a6..45de82d8e162 100644
---- a/arch/x86/kvm/mmu/mmu_internal.h
-+++ b/arch/x86/kvm/mmu/mmu_internal.h
-@@ -170,8 +170,6 @@ bool kvm_mmu_slot_gfn_write_protect(struct kvm *kvm,
- 				    struct kvm_memory_slot *slot, u64 gfn,
- 				    int min_level);
- 
--void kvm_flush_remote_tlbs_range(struct kvm *kvm, gfn_t start_gfn, u64 pages);
--
- /* Flush the given page (huge or not) of guest memory. */
- static inline void kvm_flush_remote_tlbs_gfn(struct kvm *kvm, gfn_t gfn, int level)
- {
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index 9366fea46e30..276187f084c8 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -1356,6 +1356,7 @@ int kvm_vcpu_yield_to(struct kvm_vcpu *target);
- void kvm_vcpu_on_spin(struct kvm_vcpu *vcpu, bool yield_to_kernel_mode);
- 
- void kvm_flush_remote_tlbs(struct kvm *kvm);
-+void kvm_flush_remote_tlbs_range(struct kvm *kvm, gfn_t gfn, u64 pages);
- 
- #ifdef KVM_ARCH_NR_OBJS_PER_MEMORY_CACHE
- int kvm_mmu_topup_memory_cache(struct kvm_mmu_memory_cache *mc, int min);
-@@ -1484,6 +1485,14 @@ static inline int kvm_arch_flush_remote_tlbs(struct kvm *kvm)
- }
- #endif
- 
-+#ifndef __KVM_HAVE_ARCH_FLUSH_REMOTE_TLBS_RANGE
-+static inline int kvm_arch_flush_remote_tlbs_range(struct kvm *kvm,
-+						   gfn_t gfn, u64 pages)
-+{
-+	return -EOPNOTSUPP;
-+}
-+#endif
-+
- #ifdef __KVM_HAVE_ARCH_NONCOHERENT_DMA
- void kvm_arch_register_noncoherent_dma(struct kvm *kvm);
- void kvm_arch_unregister_noncoherent_dma(struct kvm *kvm);
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index fefd3e3c8fe1..c9fc693a39d9 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -368,6 +368,19 @@ void kvm_flush_remote_tlbs(struct kvm *kvm)
- }
- EXPORT_SYMBOL_GPL(kvm_flush_remote_tlbs);
- 
-+void kvm_flush_remote_tlbs_range(struct kvm *kvm, gfn_t gfn, u64 pages)
-+{
-+	if (!kvm_arch_flush_remote_tlbs_range(kvm, gfn, pages))
-+		return;
-+
-+	/*
-+	 * Fall back to a flushing entire TLBs if the architecture range-based
-+	 * TLB invalidation is unsupported or can't be performed for whatever
-+	 * reason.
-+	 */
-+	kvm_flush_remote_tlbs(kvm);
-+}
-+
- static void kvm_flush_shadow_all(struct kvm *kvm)
- {
- 	kvm_arch_flush_shadow_all(kvm);
--- 
-2.39.1.456.gfc5497dd1b-goog
-
-
+> ---
+>  arch/riscv/kernel/module.c | 16 ++++++++++++++++
+>  1 file changed, 16 insertions(+)
+> 
+> diff --git a/arch/riscv/kernel/module.c b/arch/riscv/kernel/module.c
+> index 76f4b9c2ec5b..7c651d55fcbd 100644
+> --- a/arch/riscv/kernel/module.c
+> +++ b/arch/riscv/kernel/module.c
+> @@ -268,6 +268,13 @@ static int apply_r_riscv_align_rela(struct module *me, u32 *location,
+>  	return -EINVAL;
+>  }
+>  
+> +static int apply_r_riscv_add16_rela(struct module *me, u32 *location,
+> +				    Elf_Addr v)
+> +{
+> +	*(u16 *)location += (u16)v;
+> +	return 0;
+> +}
+> +
+>  static int apply_r_riscv_add32_rela(struct module *me, u32 *location,
+>  				    Elf_Addr v)
+>  {
+> @@ -282,6 +289,13 @@ static int apply_r_riscv_add64_rela(struct module *me, u32 *location,
+>  	return 0;
+>  }
+>  
+> +static int apply_r_riscv_sub16_rela(struct module *me, u32 *location,
+> +				    Elf_Addr v)
+> +{
+> +	*(u16 *)location -= (u16)v;
+> +	return 0;
+> +}
+> +
+>  static int apply_r_riscv_sub32_rela(struct module *me, u32 *location,
+>  				    Elf_Addr v)
+>  {
+> @@ -315,8 +329,10 @@ static int (*reloc_handlers_rela[]) (struct module *me, u32 *location,
+>  	[R_RISCV_CALL]			= apply_r_riscv_call_rela,
+>  	[R_RISCV_RELAX]			= apply_r_riscv_relax_rela,
+>  	[R_RISCV_ALIGN]			= apply_r_riscv_align_rela,
+> +	[R_RISCV_ADD16]			= apply_r_riscv_add16_rela,
+>  	[R_RISCV_ADD32]			= apply_r_riscv_add32_rela,
+>  	[R_RISCV_ADD64]			= apply_r_riscv_add64_rela,
+> +	[R_RISCV_SUB16]			= apply_r_riscv_sub16_rela,
+>  	[R_RISCV_SUB32]			= apply_r_riscv_sub32_rela,
+>  	[R_RISCV_SUB64]			= apply_r_riscv_sub64_rela,
+>  };
+> -- 
+> 2.39.0
+> 
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 228 bytes
+Desc: not available
+URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20230126/94bf811f/attachment-0001.sig>
