@@ -1,115 +1,78 @@
 From: Conor Dooley <conor@kernel.org>
-Date: Thu, 26 Jan 2023 19:33:28 +0000
-Subject: [PATCH v4 09/13] riscv: switch to relative alternative entries
-In-Reply-To: <20230120183418.ngdppppvwzysqtcr@orel>
-References: <20230115154953.831-1-jszhang@kernel.org>
- <20230115154953.831-10-jszhang@kernel.org>
- <20230120183418.ngdppppvwzysqtcr@orel>
-Message-ID: <Y9LViAD0aPSBwi5t@spud>
+Date: Thu, 26 Jan 2023 21:06:49 +0000
+Subject: [PATCH -next v13 06/19] riscv: Introduce Vector enable/disable
+ helpers
+In-Reply-To: <20230125142056.18356-7-andy.chiu@sifive.com>
+References: <20230125142056.18356-1-andy.chiu@sifive.com>
+ <20230125142056.18356-7-andy.chiu@sifive.com>
+Message-ID: <Y9LraUk0SZfYWu+O@spud>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Jan 20, 2023 at 07:34:18PM +0100, Andrew Jones wrote:
-> On Sun, Jan 15, 2023 at 11:49:49PM +0800, Jisheng Zhang wrote:
-> ...
-> >  #define ALT_ENTRY(oldptr, newptr, vendor_id, errata_id, newlen)		\
-> > -	RISCV_PTR " " oldptr "\n"					\
-> > -	RISCV_PTR " " newptr "\n"					\
-> > -	REG_ASM " " vendor_id "\n"					\
-> > -	REG_ASM " " newlen "\n"						\
-> > -	".word " errata_id "\n"
-> > +	".4byte	((" oldptr ") - .) \n"					\
-> > +	".4byte	((" newptr ") - .) \n"					\
-> > +	".2byte	" vendor_id "\n"					\
-> > +	".2byte " newlen "\n"						\
-> > +	".4byte	" errata_id "\n"
-> >
-> 
-> Hi Jisheng,
-> 
-> This patch breaks loading the KVM module for me. I got "kvm: Unknown
-> relocation type 34". My guess is that these 2 byte fields are inspiring
-> the compiler to emit 16-bit relocation types. The patch below fixes
-> things for me. If you agree with fixing it this way, rather than
-> changing something in alternatives, like not using 2 byte fields,
-> then please pick the below patch up in your series.
-> 
-> Thanks,
-> drew
-> 
-> From 4d203697aa745a0cd3a9217d547a9fb7fa2a87c7 Mon Sep 17 00:00:00 2001
-> From: Andrew Jones <ajones@ventanamicro.com>
-> Date: Fri, 20 Jan 2023 19:05:44 +0100
-> Subject: [PATCH] riscv: module: Add ADD16 and SUB16 rela types
-> Content-type: text/plain
-> 
-> To prepare for 16-bit relocation types to be emitted in alternatives
-> add support for ADD16 and SUB16.
-> 
-> Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
+Hey Andy,
 
-For the fixup:
-Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
+On Wed, Jan 25, 2023 at 02:20:43PM +0000, Andy Chiu wrote:
+> These are small and likely to be frequently called so implement as
+> inline routines (vs. function call).
+> 
+> Co-developed-by: Guo Ren <guoren@linux.alibaba.com>
+> Signed-off-by: Guo Ren <guoren@linux.alibaba.com>
+> Co-developed-by: Vincent Chen <vincent.chen@sifive.com>
+> Signed-off-by: Vincent Chen <vincent.chen@sifive.com>
+> Signed-off-by: Greentime Hu <greentime.hu@sifive.com>
+> Signed-off-by: Vineet Gupta <vineetg@rivosinc.com>
+> [vineetg: create new patch from meshup, introduced asm variant]
+> Signed-off-by: Andy Chiu <andy.chiu@sifive.com>
+> [andy.chiu: remove calls from asm thus remove asm vaiant]
 
-Thanks!
+Again, these chains are odd but a reflection of the series' history I
+guess.
 
 > ---
->  arch/riscv/kernel/module.c | 16 ++++++++++++++++
->  1 file changed, 16 insertions(+)
+>  arch/riscv/include/asm/vector.h | 11 +++++++++++
+>  1 file changed, 11 insertions(+)
 > 
-> diff --git a/arch/riscv/kernel/module.c b/arch/riscv/kernel/module.c
-> index 76f4b9c2ec5b..7c651d55fcbd 100644
-> --- a/arch/riscv/kernel/module.c
-> +++ b/arch/riscv/kernel/module.c
-> @@ -268,6 +268,13 @@ static int apply_r_riscv_align_rela(struct module *me, u32 *location,
->  	return -EINVAL;
+> diff --git a/arch/riscv/include/asm/vector.h b/arch/riscv/include/asm/vector.h
+> index 917c8867e702..0fda0faf5277 100644
+> --- a/arch/riscv/include/asm/vector.h
+> +++ b/arch/riscv/include/asm/vector.h
+> @@ -11,12 +11,23 @@
+>  #ifdef CONFIG_RISCV_ISA_V
+>  
+>  #include <asm/hwcap.h>
+> +#include <asm/csr.h>
+>  
+>  static __always_inline bool has_vector(void)
+>  {
+>  	return static_branch_likely(&riscv_isa_ext_keys[RISCV_ISA_EXT_KEY_VECTOR]);
+
+This likely will need to drop the static branch due to Jisheng's series.
+See here for what the equivalent change to has_fpu() was:
+https://lore.kernel.org/all/20230115154953.831-1-jszhang at kernel.org/
+Hopefully that series has been queued by the time you are resubmitting
+this one.
+
 >  }
 >  
-> +static int apply_r_riscv_add16_rela(struct module *me, u32 *location,
-> +				    Elf_Addr v)
-> +{
-> +	*(u16 *)location += (u16)v;
-> +	return 0;
-> +}
-> +
->  static int apply_r_riscv_add32_rela(struct module *me, u32 *location,
->  				    Elf_Addr v)
->  {
-> @@ -282,6 +289,13 @@ static int apply_r_riscv_add64_rela(struct module *me, u32 *location,
->  	return 0;
->  }
->  
-> +static int apply_r_riscv_sub16_rela(struct module *me, u32 *location,
-> +				    Elf_Addr v)
-> +{
-> +	*(u16 *)location -= (u16)v;
-> +	return 0;
-> +}
-> +
->  static int apply_r_riscv_sub32_rela(struct module *me, u32 *location,
->  				    Elf_Addr v)
->  {
-> @@ -315,8 +329,10 @@ static int (*reloc_handlers_rela[]) (struct module *me, u32 *location,
->  	[R_RISCV_CALL]			= apply_r_riscv_call_rela,
->  	[R_RISCV_RELAX]			= apply_r_riscv_relax_rela,
->  	[R_RISCV_ALIGN]			= apply_r_riscv_align_rela,
-> +	[R_RISCV_ADD16]			= apply_r_riscv_add16_rela,
->  	[R_RISCV_ADD32]			= apply_r_riscv_add32_rela,
->  	[R_RISCV_ADD64]			= apply_r_riscv_add64_rela,
-> +	[R_RISCV_SUB16]			= apply_r_riscv_sub16_rela,
->  	[R_RISCV_SUB32]			= apply_r_riscv_sub32_rela,
->  	[R_RISCV_SUB64]			= apply_r_riscv_sub64_rela,
->  };
-> -- 
-> 2.39.0
-> 
+> +static __always_inline void rvv_enable(void)
+
+I'm not keen on these function names. IMO, they should be
+riscv_v_{en,dis}able() to match other riscv specific functions, like
+those of zicbom or sbi stuff.
+Other parts of this series use riscv_v_foo & riscv_vfoo. Some of the kvm
+bits spell out vector rather than v. Consistent naming of functions etc
+would be appreciated.
+
+Thanks,
+Conor.
+
 -------------- next part --------------
 A non-text attachment was scrubbed...
 Name: signature.asc
 Type: application/pgp-signature
 Size: 228 bytes
 Desc: not available
-URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20230126/94bf811f/attachment-0001.sig>
+URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20230126/53a3caaf/attachment-0001.sig>
