@@ -1,125 +1,103 @@
 From: David Matlack <dmatlack@google.com>
-Date: Thu, 26 Jan 2023 10:40:20 -0800
-Subject: [PATCH v2 2/7] KVM: arm64: Use kvm_arch_flush_remote_tlbs()
+Date: Thu, 26 Jan 2023 10:40:19 -0800
+Subject: [PATCH v2 1/7] KVM: Rename kvm_arch_flush_remote_tlb() to kvm_arch_flush_remote_tlbs()
 In-Reply-To: <20230126184025.2294823-1-dmatlack@google.com>
 References: <20230126184025.2294823-1-dmatlack@google.com>
-Message-ID: <20230126184025.2294823-3-dmatlack@google.com>
+Message-ID: <20230126184025.2294823-2-dmatlack@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Use kvm_arch_flush_remote_tlbs() instead of
-CONFIG_HAVE_KVM_ARCH_TLB_FLUSH_ALL. The two mechanisms solve the same
-problem, allowing architecture-specific code to provide a non-IPI
-implementation of remote TLB flushing.
+Rename kvm_arch_flush_remote_tlb() and the associated macro
+__KVM_HAVE_ARCH_FLUSH_REMOTE_TLB to kvm_arch_flush_remote_tlbs() and
+__KVM_HAVE_ARCH_FLUSH_REMOTE_TLBS respectively.
 
-Dropping CONFIG_HAVE_KVM_ARCH_TLB_FLUSH_ALL allows KVM to standardize
-all architectures on kvm_arch_flush_remote_tlbs() instead of maintaining
-two mechanisms.
-
-Opt to standardize on kvm_arch_flush_remote_tlbs() since it avoids
-duplicating the generic TLB stats across architectures that implement
-their own remote TLB flush.
-
-This adds an extra function call to the ARM64 kvm_flush_remote_tlbs()
-path, but that is a small cost in comparison to flushing remote TLBs.
+Making the name plural matches kvm_flush_remote_tlbs() and makes it more
+clear that this function can affect more than one remote TLB.
 
 No functional change intended.
 
 Signed-off-by: David Matlack <dmatlack@google.com>
 ---
- arch/arm64/include/asm/kvm_host.h | 3 +++
- arch/arm64/kvm/Kconfig            | 1 -
- arch/arm64/kvm/mmu.c              | 6 +++---
- virt/kvm/Kconfig                  | 3 ---
- virt/kvm/kvm_main.c               | 2 --
- 5 files changed, 6 insertions(+), 9 deletions(-)
+ arch/mips/include/asm/kvm_host.h | 4 ++--
+ arch/mips/kvm/mips.c             | 2 +-
+ arch/x86/include/asm/kvm_host.h  | 4 ++--
+ include/linux/kvm_host.h         | 4 ++--
+ virt/kvm/kvm_main.c              | 2 +-
+ 5 files changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/arch/arm64/include/asm/kvm_host.h b/arch/arm64/include/asm/kvm_host.h
-index 113e20fdbb56..062800f1dc54 100644
---- a/arch/arm64/include/asm/kvm_host.h
-+++ b/arch/arm64/include/asm/kvm_host.h
-@@ -998,6 +998,9 @@ int __init kvm_set_ipa_limit(void);
- #define __KVM_HAVE_ARCH_VM_ALLOC
- struct kvm *kvm_arch_alloc_vm(void);
+diff --git a/arch/mips/include/asm/kvm_host.h b/arch/mips/include/asm/kvm_host.h
+index 2803c9c21ef9..849eb482ad15 100644
+--- a/arch/mips/include/asm/kvm_host.h
++++ b/arch/mips/include/asm/kvm_host.h
+@@ -896,7 +896,7 @@ static inline void kvm_arch_sched_in(struct kvm_vcpu *vcpu, int cpu) {}
+ static inline void kvm_arch_vcpu_blocking(struct kvm_vcpu *vcpu) {}
+ static inline void kvm_arch_vcpu_unblocking(struct kvm_vcpu *vcpu) {}
  
+-#define __KVM_HAVE_ARCH_FLUSH_REMOTE_TLB
+-int kvm_arch_flush_remote_tlb(struct kvm *kvm);
 +#define __KVM_HAVE_ARCH_FLUSH_REMOTE_TLBS
 +int kvm_arch_flush_remote_tlbs(struct kvm *kvm);
-+
- static inline bool kvm_vm_is_protected(struct kvm *kvm)
- {
- 	return false;
-diff --git a/arch/arm64/kvm/Kconfig b/arch/arm64/kvm/Kconfig
-index ca6eadeb7d1a..e9ac57098a0b 100644
---- a/arch/arm64/kvm/Kconfig
-+++ b/arch/arm64/kvm/Kconfig
-@@ -25,7 +25,6 @@ menuconfig KVM
- 	select MMU_NOTIFIER
- 	select PREEMPT_NOTIFIERS
- 	select HAVE_KVM_CPU_RELAX_INTERCEPT
--	select HAVE_KVM_ARCH_TLB_FLUSH_ALL
- 	select KVM_MMIO
- 	select KVM_GENERIC_DIRTYLOG_READ_PROTECT
- 	select KVM_XFER_TO_GUEST_WORK
-diff --git a/arch/arm64/kvm/mmu.c b/arch/arm64/kvm/mmu.c
-index 01352f5838a0..8840f65e0e40 100644
---- a/arch/arm64/kvm/mmu.c
-+++ b/arch/arm64/kvm/mmu.c
-@@ -80,15 +80,15 @@ static bool memslot_is_logging(struct kvm_memory_slot *memslot)
+ 
+ #endif /* __MIPS_KVM_HOST_H__ */
+diff --git a/arch/mips/kvm/mips.c b/arch/mips/kvm/mips.c
+index 36c8991b5d39..2e54e5fd8daa 100644
+--- a/arch/mips/kvm/mips.c
++++ b/arch/mips/kvm/mips.c
+@@ -981,7 +981,7 @@ void kvm_arch_sync_dirty_log(struct kvm *kvm, struct kvm_memory_slot *memslot)
+ 
  }
  
- /**
-- * kvm_flush_remote_tlbs() - flush all VM TLB entries for v7/8
-+ * kvm_arch_flush_remote_tlbs() - flush all VM TLB entries for v7/8
-  * @kvm:	pointer to kvm structure.
-  *
-  * Interface to HYP function to flush all VM TLB entries
-  */
--void kvm_flush_remote_tlbs(struct kvm *kvm)
+-int kvm_arch_flush_remote_tlb(struct kvm *kvm)
 +int kvm_arch_flush_remote_tlbs(struct kvm *kvm)
  {
--	++kvm->stat.generic.remote_tlb_flush_requests;
- 	kvm_call_hyp(__kvm_tlb_flush_vmid, &kvm->arch.mmu);
-+	return 0;
+ 	kvm_mips_callbacks->prepare_flush_shadow(kvm);
+ 	return 1;
+diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
+index c837b06258f5..561d31d9a7da 100644
+--- a/arch/x86/include/asm/kvm_host.h
++++ b/arch/x86/include/asm/kvm_host.h
+@@ -1806,8 +1806,8 @@ static inline struct kvm *kvm_arch_alloc_vm(void)
+ #define __KVM_HAVE_ARCH_VM_FREE
+ void kvm_arch_free_vm(struct kvm *kvm);
+ 
+-#define __KVM_HAVE_ARCH_FLUSH_REMOTE_TLB
+-static inline int kvm_arch_flush_remote_tlb(struct kvm *kvm)
++#define __KVM_HAVE_ARCH_FLUSH_REMOTE_TLBS
++static inline int kvm_arch_flush_remote_tlbs(struct kvm *kvm)
+ {
+ 	if (kvm_x86_ops.tlb_remote_flush &&
+ 	    !static_call(kvm_x86_tlb_remote_flush)(kvm))
+diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+index a7d6a6111f5e..9366fea46e30 100644
+--- a/include/linux/kvm_host.h
++++ b/include/linux/kvm_host.h
+@@ -1477,8 +1477,8 @@ static inline void kvm_arch_free_vm(struct kvm *kvm)
  }
+ #endif
  
- static bool kvm_is_device_pfn(unsigned long pfn)
-diff --git a/virt/kvm/Kconfig b/virt/kvm/Kconfig
-index b74916de5183..484d0873061c 100644
---- a/virt/kvm/Kconfig
-+++ b/virt/kvm/Kconfig
-@@ -62,9 +62,6 @@ config HAVE_KVM_CPU_RELAX_INTERCEPT
- config KVM_VFIO
-        bool
- 
--config HAVE_KVM_ARCH_TLB_FLUSH_ALL
--       bool
--
- config HAVE_KVM_INVALID_WAKEUPS
-        bool
- 
+-#ifndef __KVM_HAVE_ARCH_FLUSH_REMOTE_TLB
+-static inline int kvm_arch_flush_remote_tlb(struct kvm *kvm)
++#ifndef __KVM_HAVE_ARCH_FLUSH_REMOTE_TLBS
++static inline int kvm_arch_flush_remote_tlbs(struct kvm *kvm)
+ {
+ 	return -ENOTSUPP;
+ }
 diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 277507463678..fefd3e3c8fe1 100644
+index d255964ec331..277507463678 100644
 --- a/virt/kvm/kvm_main.c
 +++ b/virt/kvm/kvm_main.c
-@@ -347,7 +347,6 @@ bool kvm_make_all_cpus_request(struct kvm *kvm, unsigned int req)
- }
- EXPORT_SYMBOL_GPL(kvm_make_all_cpus_request);
- 
--#ifndef CONFIG_HAVE_KVM_ARCH_TLB_FLUSH_ALL
- void kvm_flush_remote_tlbs(struct kvm *kvm)
- {
- 	++kvm->stat.generic.remote_tlb_flush_requests;
-@@ -368,7 +367,6 @@ void kvm_flush_remote_tlbs(struct kvm *kvm)
+@@ -363,7 +363,7 @@ void kvm_flush_remote_tlbs(struct kvm *kvm)
+ 	 * kvm_make_all_cpus_request() reads vcpu->mode. We reuse that
+ 	 * barrier here.
+ 	 */
+-	if (!kvm_arch_flush_remote_tlb(kvm)
++	if (!kvm_arch_flush_remote_tlbs(kvm)
+ 	    || kvm_make_all_cpus_request(kvm, KVM_REQ_TLB_FLUSH))
  		++kvm->stat.generic.remote_tlb_flush;
  }
- EXPORT_SYMBOL_GPL(kvm_flush_remote_tlbs);
--#endif
- 
- static void kvm_flush_shadow_all(struct kvm *kvm)
- {
 -- 
 2.39.1.456.gfc5497dd1b-goog
 
