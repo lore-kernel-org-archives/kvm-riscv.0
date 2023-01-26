@@ -1,78 +1,123 @@
 From: Conor Dooley <conor@kernel.org>
-Date: Thu, 26 Jan 2023 21:06:49 +0000
-Subject: [PATCH -next v13 06/19] riscv: Introduce Vector enable/disable
- helpers
-In-Reply-To: <20230125142056.18356-7-andy.chiu@sifive.com>
+Date: Thu, 26 Jan 2023 21:24:38 +0000
+Subject: [PATCH -next v13 07/19] riscv: Introduce riscv_vsize to record
+ size of Vector context
+In-Reply-To: <20230125142056.18356-8-andy.chiu@sifive.com>
 References: <20230125142056.18356-1-andy.chiu@sifive.com>
- <20230125142056.18356-7-andy.chiu@sifive.com>
-Message-ID: <Y9LraUk0SZfYWu+O@spud>
+ <20230125142056.18356-8-andy.chiu@sifive.com>
+Message-ID: <Y9LvltKhEIa5q3Ji@spud>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hey Andy,
+Hey again Andy!
 
-On Wed, Jan 25, 2023 at 02:20:43PM +0000, Andy Chiu wrote:
-> These are small and likely to be frequently called so implement as
-> inline routines (vs. function call).
+On Wed, Jan 25, 2023 at 02:20:44PM +0000, Andy Chiu wrote:
+> From: Greentime Hu <greentime.hu@sifive.com>
 > 
+> This patch is used to detect the size of CPU vector registers and use
+> riscv_vsize to save the size of all the vector registers. It assumes all
+> harts has the same capabilities in a SMP system.
+> 
+> [guoren at linux.alibaba.com: add has_vector checking]
 > Co-developed-by: Guo Ren <guoren@linux.alibaba.com>
 > Signed-off-by: Guo Ren <guoren@linux.alibaba.com>
 > Co-developed-by: Vincent Chen <vincent.chen@sifive.com>
 > Signed-off-by: Vincent Chen <vincent.chen@sifive.com>
 > Signed-off-by: Greentime Hu <greentime.hu@sifive.com>
-> Signed-off-by: Vineet Gupta <vineetg@rivosinc.com>
-> [vineetg: create new patch from meshup, introduced asm variant]
 > Signed-off-by: Andy Chiu <andy.chiu@sifive.com>
-> [andy.chiu: remove calls from asm thus remove asm vaiant]
-
-Again, these chains are odd but a reflection of the series' history I
-guess.
-
 > ---
->  arch/riscv/include/asm/vector.h | 11 +++++++++++
->  1 file changed, 11 insertions(+)
+>  arch/riscv/include/asm/vector.h |  3 +++
+>  arch/riscv/kernel/cpufeature.c  | 12 +++++++++++-
+>  2 files changed, 14 insertions(+), 1 deletion(-)
 > 
 > diff --git a/arch/riscv/include/asm/vector.h b/arch/riscv/include/asm/vector.h
-> index 917c8867e702..0fda0faf5277 100644
+> index 0fda0faf5277..16cb4a1c1230 100644
 > --- a/arch/riscv/include/asm/vector.h
 > +++ b/arch/riscv/include/asm/vector.h
-> @@ -11,12 +11,23 @@
->  #ifdef CONFIG_RISCV_ISA_V
->  
+> @@ -13,6 +13,8 @@
 >  #include <asm/hwcap.h>
-> +#include <asm/csr.h>
+>  #include <asm/csr.h>
 >  
+> +extern unsigned long riscv_vsize;
+
+Hmm, naming this with a riscv_v_ prefix too would be good I think.
+
+> +
 >  static __always_inline bool has_vector(void)
 >  {
 >  	return static_branch_likely(&riscv_isa_ext_keys[RISCV_ISA_EXT_KEY_VECTOR]);
-
-This likely will need to drop the static branch due to Jisheng's series.
-See here for what the equivalent change to has_fpu() was:
-https://lore.kernel.org/all/20230115154953.831-1-jszhang at kernel.org/
-Hopefully that series has been queued by the time you are resubmitting
-this one.
-
->  }
+> @@ -31,6 +33,7 @@ static __always_inline void rvv_disable(void)
+>  #else /* ! CONFIG_RISCV_ISA_V  */
 >  
-> +static __always_inline void rvv_enable(void)
+>  static __always_inline bool has_vector(void) { return false; }
+> +#define riscv_vsize (0)
+>  
+>  #endif /* CONFIG_RISCV_ISA_V */
+>  
+> diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
+> index c433899542ff..3aaae4e0b963 100644
+> --- a/arch/riscv/kernel/cpufeature.c
+> +++ b/arch/riscv/kernel/cpufeature.c
+> @@ -21,6 +21,7 @@
+>  #include <asm/processor.h>
+>  #include <asm/smp.h>
+>  #include <asm/switch_to.h>
+> +#include <asm/vector.h>
+>  
+>  #define NUM_ALPHA_EXTS ('z' - 'a' + 1)
+>  
+> @@ -31,6 +32,10 @@ static DECLARE_BITMAP(riscv_isa, RISCV_ISA_EXT_MAX) __read_mostly;
+>  
+>  DEFINE_STATIC_KEY_ARRAY_FALSE(riscv_isa_ext_keys, RISCV_ISA_EXT_KEY_MAX);
+>  EXPORT_SYMBOL(riscv_isa_ext_keys);
+> +#ifdef CONFIG_RISCV_ISA_V
+> +unsigned long riscv_vsize __read_mostly;
+> +EXPORT_SYMBOL_GPL(riscv_vsize);
+> +#endif
 
-I'm not keen on these function names. IMO, they should be
-riscv_v_{en,dis}able() to match other riscv specific functions, like
-those of zicbom or sbi stuff.
-Other parts of this series use riscv_v_foo & riscv_vfoo. Some of the kvm
-bits spell out vector rather than v. Consistent naming of functions etc
-would be appreciated.
+I really don't think that this should be in here at all. IMO, this
+should be moved out to vector.c or something along those lines and...
+
+>  
+>  /**
+>   * riscv_isa_extension_base() - Get base extension word
+> @@ -258,7 +263,12 @@ void __init riscv_fill_hwcap(void)
+>  	}
+>  
+>  	if (elf_hwcap & COMPAT_HWCAP_ISA_V) {
+> -#ifndef CONFIG_RISCV_ISA_V
+> +#ifdef CONFIG_RISCV_ISA_V
+> +		/* There are 32 vector registers with vlenb length. */
+> +		rvv_enable();
+> +		riscv_vsize = csr_read(CSR_VLENB) * 32;
+> +		rvv_disable();
+> +#else
+
+...so should all of this code, especially the csr_read(). vector.c
+would then provide the actual implementation, and vector.h would provide
+an implementation with an empty function body.
+The code here could the, following my previous suggestion of
+IS_ENABLED() look along the lines of:
+	if (elf_hwcap & COMPAT_HWCAP_ISA_V) {
+		if (IS_ENABLED(CONFIG_RISCV_ISA_V))
+			riscv_v_setup_vsize();
+		else
+			elf_hwcap &= ~COMPAT_HWCAP_ISA_V;
+	}
+
+Having the csr_read() in particular looks rather out of place to me in
+this file. Better off keeping the vector stuff together & having
+unneeded ifdefs is my pet peeve ;)
 
 Thanks,
 Conor.
-
 -------------- next part --------------
 A non-text attachment was scrubbed...
 Name: signature.asc
 Type: application/pgp-signature
 Size: 228 bytes
 Desc: not available
-URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20230126/53a3caaf/attachment-0001.sig>
+URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20230126/da828ac0/attachment-0001.sig>
