@@ -1,88 +1,42 @@
 From: Atish Patra <atishp@rivosinc.com>
-Date: Fri, 27 Jan 2023 10:25:46 -0800
-Subject: [PATCH v3 02/14] perf: RISC-V: Improve privilege mode filtering for perf
+Date: Fri, 27 Jan 2023 10:25:49 -0800
+Subject: [PATCH v3 05/14] RISC-V: KVM: Return correct code for hsm stop function
 In-Reply-To: <20230127182558.2416400-1-atishp@rivosinc.com>
 References: <20230127182558.2416400-1-atishp@rivosinc.com>
-Message-ID: <20230127182558.2416400-3-atishp@rivosinc.com>
+Message-ID: <20230127182558.2416400-6-atishp@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Currently, the host driver doesn't have any method to identify if the
-requested perf event is from kvm or bare metal. As KVM runs in HS
-mode, there are no separate hypervisor privilege mode to distinguish
-between the attributes for guest/host.
+According to the SBI specification, the stop function can only
+return error code SBI_ERR_FAILED. However, currently it returns
+-EINVAL which will be mapped SBI_ERR_INVALID_PARAM.
 
-Improve the privilege mode filtering by using the event specific
-config1 field.
+Return an linux error code that maps to SBI_ERR_FAILED i.e doesn't map
+to any other SBI error code. While EACCES is not the best error code
+to describe the situation, it is close enough and will be replaced
+with SBI error codes directly anyways.
 
-Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
 Signed-off-by: Atish Patra <atishp@rivosinc.com>
 ---
- drivers/perf/riscv_pmu_sbi.c   | 27 ++++++++++++++++++++++-----
- include/linux/perf/riscv_pmu.h |  2 ++
- 2 files changed, 24 insertions(+), 5 deletions(-)
+ arch/riscv/kvm/vcpu_sbi_hsm.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/perf/riscv_pmu_sbi.c b/drivers/perf/riscv_pmu_sbi.c
-index 6b53adc..e862b13 100644
---- a/drivers/perf/riscv_pmu_sbi.c
-+++ b/drivers/perf/riscv_pmu_sbi.c
-@@ -301,6 +301,27 @@ int riscv_pmu_get_hpm_info(u32 *hw_ctr_width, u32 *num_hw_ctr)
- }
- EXPORT_SYMBOL_GPL(riscv_pmu_get_hpm_info);
- 
-+static unsigned long pmu_sbi_get_filter_flags(struct perf_event *event)
-+{
-+	unsigned long cflags = 0;
-+	bool guest_events = false;
-+
-+	if (event->attr.config1 & RISCV_KVM_PMU_CONFIG1_GUEST_EVENTS)
-+		guest_events = true;
-+	if (event->attr.exclude_kernel)
-+		cflags |= guest_events ? SBI_PMU_CFG_FLAG_SET_VSINH : SBI_PMU_CFG_FLAG_SET_SINH;
-+	if (event->attr.exclude_user)
-+		cflags |= guest_events ? SBI_PMU_CFG_FLAG_SET_VUINH : SBI_PMU_CFG_FLAG_SET_UINH;
-+	if (guest_events && event->attr.exclude_hv)
-+		cflags |= SBI_PMU_CFG_FLAG_SET_SINH;
-+	if (event->attr.exclude_host)
-+		cflags |= SBI_PMU_CFG_FLAG_SET_UINH | SBI_PMU_CFG_FLAG_SET_SINH;
-+	if (event->attr.exclude_guest)
-+		cflags |= SBI_PMU_CFG_FLAG_SET_VSINH | SBI_PMU_CFG_FLAG_SET_VUINH;
-+
-+	return cflags;
-+}
-+
- static int pmu_sbi_ctr_get_idx(struct perf_event *event)
+diff --git a/arch/riscv/kvm/vcpu_sbi_hsm.c b/arch/riscv/kvm/vcpu_sbi_hsm.c
+index 2e915ca..619ac0f 100644
+--- a/arch/riscv/kvm/vcpu_sbi_hsm.c
++++ b/arch/riscv/kvm/vcpu_sbi_hsm.c
+@@ -42,7 +42,7 @@ static int kvm_sbi_hsm_vcpu_start(struct kvm_vcpu *vcpu)
+ static int kvm_sbi_hsm_vcpu_stop(struct kvm_vcpu *vcpu)
  {
- 	struct hw_perf_event *hwc = &event->hw;
-@@ -311,11 +332,7 @@ static int pmu_sbi_ctr_get_idx(struct perf_event *event)
- 	uint64_t cbase = 0;
- 	unsigned long cflags = 0;
+ 	if (vcpu->arch.power_off)
+-		return -EINVAL;
++		return -EACCES;
  
--	if (event->attr.exclude_kernel)
--		cflags |= SBI_PMU_CFG_FLAG_SET_SINH;
--	if (event->attr.exclude_user)
--		cflags |= SBI_PMU_CFG_FLAG_SET_UINH;
--
-+	cflags = pmu_sbi_get_filter_flags(event);
- 	/* retrieve the available counter index */
- #if defined(CONFIG_32BIT)
- 	ret = sbi_ecall(SBI_EXT_PMU, SBI_EXT_PMU_COUNTER_CFG_MATCH, cbase,
-diff --git a/include/linux/perf/riscv_pmu.h b/include/linux/perf/riscv_pmu.h
-index a1c3f77..1c42146 100644
---- a/include/linux/perf/riscv_pmu.h
-+++ b/include/linux/perf/riscv_pmu.h
-@@ -26,6 +26,8 @@
+ 	kvm_riscv_vcpu_power_off(vcpu);
  
- #define RISCV_PMU_STOP_FLAG_RESET 1
- 
-+#define RISCV_KVM_PMU_CONFIG1_GUEST_EVENTS 0x1
-+
- struct cpu_hw_events {
- 	/* currently enabled events */
- 	int			n_events;
 -- 
 2.25.1
 
