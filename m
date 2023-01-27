@@ -1,266 +1,115 @@
-From: Anup Patel <apatel@ventanamicro.com>
-Date: Fri, 27 Jan 2023 21:25:23 +0530
-Subject: [PATCH 5/7] RISC-V: KVM: Add ONE_REG interface for AIA CSRs
-In-Reply-To: <20230126171938.la5jswt6gr4qanl5@orel>
-References: <20230112140304.1830648-1-apatel@ventanamicro.com>
- <20230112140304.1830648-6-apatel@ventanamicro.com> <20230126171938.la5jswt6gr4qanl5@orel>
-Message-ID: <CAK9=C2VQF8kKfVztBR2hrANb63Q8s0+Md6ZDXFjLWjWED1A2zA@mail.gmail.com>
+From: Atish Patra <atishp@rivosinc.com>
+Date: Fri, 27 Jan 2023 10:25:45 -0800
+Subject: [PATCH v3 01/14] perf: RISC-V: Define helper functions expose hpm counter width and count
+In-Reply-To: <20230127182558.2416400-1-atishp@rivosinc.com>
+References: <20230127182558.2416400-1-atishp@rivosinc.com>
+Message-ID: <20230127182558.2416400-2-atishp@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Jan 26, 2023 at 10:49 PM Andrew Jones <ajones@ventanamicro.com> wrote:
->
-> On Thu, Jan 12, 2023 at 07:33:02PM +0530, Anup Patel wrote:
-> > We extend the CSR ONE_REG interface to access both general CSRs and
-> > AIA CSRs. To achieve this, we introduce "subtype" field in the ONE_REG
-> > id which can be used for grouping registers within a particular "type"
-> > of ONE_REG registers.
-> >
-> > Signed-off-by: Anup Patel <apatel@ventanamicro.com>
-> > ---
-> >  arch/riscv/include/uapi/asm/kvm.h | 15 ++++-
-> >  arch/riscv/kvm/vcpu.c             | 96 ++++++++++++++++++++++++-------
-> >  2 files changed, 89 insertions(+), 22 deletions(-)
-> >
-> > diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
-> > index 71992ff1f9dd..d0704eff0121 100644
-> > --- a/arch/riscv/include/uapi/asm/kvm.h
-> > +++ b/arch/riscv/include/uapi/asm/kvm.h
-> > @@ -64,7 +64,7 @@ struct kvm_riscv_core {
-> >  #define KVM_RISCV_MODE_S     1
-> >  #define KVM_RISCV_MODE_U     0
-> >
-> > -/* CSR registers for KVM_GET_ONE_REG and KVM_SET_ONE_REG */
-> > +/* General CSR registers for KVM_GET_ONE_REG and KVM_SET_ONE_REG */
-> >  struct kvm_riscv_csr {
-> >       unsigned long sstatus;
-> >       unsigned long sie;
-> > @@ -78,6 +78,10 @@ struct kvm_riscv_csr {
-> >       unsigned long scounteren;
-> >  };
-> >
-> > +/* AIA CSR registers for KVM_GET_ONE_REG and KVM_SET_ONE_REG */
-> > +struct kvm_riscv_aia_csr {
-> > +};
-> > +
-> >  /* TIMER registers for KVM_GET_ONE_REG and KVM_SET_ONE_REG */
-> >  struct kvm_riscv_timer {
-> >       __u64 frequency;
-> > @@ -105,6 +109,7 @@ enum KVM_RISCV_ISA_EXT_ID {
-> >       KVM_RISCV_ISA_EXT_SVINVAL,
-> >       KVM_RISCV_ISA_EXT_ZIHINTPAUSE,
-> >       KVM_RISCV_ISA_EXT_ZICBOM,
-> > +     KVM_RISCV_ISA_EXT_SSAIA,
-> >       KVM_RISCV_ISA_EXT_MAX,
-> >  };
-> >
-> > @@ -134,6 +139,8 @@ enum KVM_RISCV_SBI_EXT_ID {
-> >  /* If you need to interpret the index values, here is the key: */
-> >  #define KVM_REG_RISCV_TYPE_MASK              0x00000000FF000000
-> >  #define KVM_REG_RISCV_TYPE_SHIFT     24
-> > +#define KVM_REG_RISCV_SUBTYPE_MASK   0x0000000000FF0000
-> > +#define KVM_REG_RISCV_SUBTYPE_SHIFT  16
->
-> We could just define a new AIA_CSR type, rather than introduce CSR
-> subtypes. While grouping all CSRs together under the CSR type also
-> makes sense, having to teach all userspaces about subtypes may not
-> be worth the organizational benefits.
+KVM module needs to know how many hardware counters and the counter
+width that the platform supports. Otherwise, it will not be able to show
+optimal value of virtual counters to the guest. The virtual hardware
+counters also need to have the same width as the logical hardware
+counters for simplicity. However, there shouldn't be mapping between
+virtual hardware counters and logical hardware counters. As we don't
+support hetergeneous harts or counters with different width as of now,
+the implementation relies on the counter width of the first available
+programmable counter.
 
-My main concern is that we have chosen a 8-bit wide "type" field
-in ONE_REG id which can't be changed now and it will be consumed
-very fast if we start adding separate "type" for each ISA extension.
-This "type" field is shared with SBI extensions and we will be also
-having separate nested CSR state for various ISA extensions.
+Signed-off-by: Atish Patra <atishp@rivosinc.com>
+---
+ drivers/perf/riscv_pmu_sbi.c   | 37 ++++++++++++++++++++++++++++++++--
+ include/linux/perf/riscv_pmu.h |  3 +++
+ 2 files changed, 38 insertions(+), 2 deletions(-)
 
-Since KVM RISC-V is young, I think it is better to introduce a
-"subtype" field now so that we have ample space for the future.
+diff --git a/drivers/perf/riscv_pmu_sbi.c b/drivers/perf/riscv_pmu_sbi.c
+index f6507ef..6b53adc 100644
+--- a/drivers/perf/riscv_pmu_sbi.c
++++ b/drivers/perf/riscv_pmu_sbi.c
+@@ -44,7 +44,7 @@ static const struct attribute_group *riscv_pmu_attr_groups[] = {
+ };
+ 
+ /*
+- * RISC-V doesn't have hetergenous harts yet. This need to be part of
++ * RISC-V doesn't have heterogeneous harts yet. This need to be part of
+  * per_cpu in case of harts with different pmu counters
+  */
+ static union sbi_pmu_ctr_info *pmu_ctr_list;
+@@ -52,6 +52,9 @@ static bool riscv_pmu_use_irq;
+ static unsigned int riscv_pmu_irq_num;
+ static unsigned int riscv_pmu_irq;
+ 
++/* Cache the available counters in a bitmask */
++static unsigned long cmask;
++
+ struct sbi_pmu_event_data {
+ 	union {
+ 		union {
+@@ -267,6 +270,37 @@ static bool pmu_sbi_ctr_is_fw(int cidx)
+ 	return (info->type == SBI_PMU_CTR_TYPE_FW) ? true : false;
+ }
+ 
++/*
++ * Returns the counter width of a programmable counter and number of hardware
++ * counters. As we don't support heterogeneous CPUs yet, it is okay to just
++ * return the counter width of the first programmable counter.
++ */
++int riscv_pmu_get_hpm_info(u32 *hw_ctr_width, u32 *num_hw_ctr)
++{
++	int i;
++	union sbi_pmu_ctr_info *info;
++	u32 hpm_width = 0, hpm_count = 0;
++
++	if (!cmask)
++		return -EINVAL;
++
++	for_each_set_bit(i, &cmask, RISCV_MAX_COUNTERS) {
++		info = &pmu_ctr_list[i];
++		if (!info)
++			continue;
++		if (!hpm_width && info->csr != CSR_CYCLE && info->csr != CSR_INSTRET)
++			hpm_width = info->width;
++		if (info->type == SBI_PMU_CTR_TYPE_HW)
++			hpm_count++;
++	}
++
++	*hw_ctr_width = hpm_width;
++	*num_hw_ctr = hpm_count;
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(riscv_pmu_get_hpm_info);
++
+ static int pmu_sbi_ctr_get_idx(struct perf_event *event)
+ {
+ 	struct hw_perf_event *hwc = &event->hw;
+@@ -812,7 +846,6 @@ static void riscv_pmu_destroy(struct riscv_pmu *pmu)
+ static int pmu_sbi_device_probe(struct platform_device *pdev)
+ {
+ 	struct riscv_pmu *pmu = NULL;
+-	unsigned long cmask = 0;
+ 	int ret = -ENODEV;
+ 	int num_counters;
+ 
+diff --git a/include/linux/perf/riscv_pmu.h b/include/linux/perf/riscv_pmu.h
+index e17e86a..a1c3f77 100644
+--- a/include/linux/perf/riscv_pmu.h
++++ b/include/linux/perf/riscv_pmu.h
+@@ -73,6 +73,9 @@ void riscv_pmu_legacy_skip_init(void);
+ static inline void riscv_pmu_legacy_skip_init(void) {};
+ #endif
+ struct riscv_pmu *riscv_pmu_alloc(void);
++#ifdef CONFIG_RISCV_PMU_SBI
++int riscv_pmu_get_hpm_info(u32 *hw_ctr_width, u32 *num_hw_ctr);
++#endif
+ 
+ #endif /* CONFIG_RISCV_PMU */
+ 
+-- 
+2.25.1
 
-Also, both ONE_REG "type" and "subtype" are arch specific fields
-of ONE_REG id so all KVM user space changes will be contained
-in RISC-V specific code.
-
->
-> >
-> >  /* Config registers are mapped as type 1 */
-> >  #define KVM_REG_RISCV_CONFIG         (0x01 << KVM_REG_RISCV_TYPE_SHIFT)
-> > @@ -147,8 +154,12 @@ enum KVM_RISCV_SBI_EXT_ID {
-> >
-> >  /* Control and status registers are mapped as type 3 */
-> >  #define KVM_REG_RISCV_CSR            (0x03 << KVM_REG_RISCV_TYPE_SHIFT)
-> > +#define KVM_REG_RISCV_CSR_GENERAL    0x0
-> > +#define KVM_REG_RISCV_CSR_AIA                0x1
-> >  #define KVM_REG_RISCV_CSR_REG(name)  \
-> > -             (offsetof(struct kvm_riscv_csr, name) / sizeof(unsigned long))
-> > +     (offsetof(struct kvm_riscv_csr, name) / sizeof(unsigned long))
-> > +#define KVM_REG_RISCV_CSR_AIA_REG(name)      \
-> > +     (offsetof(struct kvm_riscv_aia_csr, name) / sizeof(unsigned long))
-> >
-> >  /* Timer registers are mapped as type 4 */
-> >  #define KVM_REG_RISCV_TIMER          (0x04 << KVM_REG_RISCV_TYPE_SHIFT)
-> > diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-> > index 3cf50eadc8ce..37933ea20274 100644
-> > --- a/arch/riscv/kvm/vcpu.c
-> > +++ b/arch/riscv/kvm/vcpu.c
-> > @@ -58,6 +58,7 @@ static const unsigned long kvm_isa_ext_arr[] = {
-> >       [KVM_RISCV_ISA_EXT_I] = RISCV_ISA_EXT_i,
-> >       [KVM_RISCV_ISA_EXT_M] = RISCV_ISA_EXT_m,
-> >
-> > +     KVM_ISA_EXT_ARR(SSAIA),
-> >       KVM_ISA_EXT_ARR(SSTC),
-> >       KVM_ISA_EXT_ARR(SVINVAL),
-> >       KVM_ISA_EXT_ARR(SVPBMT),
-> > @@ -96,6 +97,7 @@ static bool kvm_riscv_vcpu_isa_disable_allowed(unsigned long ext)
-> >       case KVM_RISCV_ISA_EXT_C:
-> >       case KVM_RISCV_ISA_EXT_I:
-> >       case KVM_RISCV_ISA_EXT_M:
-> > +     case KVM_RISCV_ISA_EXT_SSAIA:
-> >       case KVM_RISCV_ISA_EXT_SSTC:
-> >       case KVM_RISCV_ISA_EXT_SVINVAL:
-> >       case KVM_RISCV_ISA_EXT_ZIHINTPAUSE:
-> > @@ -451,30 +453,79 @@ static int kvm_riscv_vcpu_set_reg_core(struct kvm_vcpu *vcpu,
-> >       return 0;
-> >  }
-> >
-> > +static int kvm_riscv_vcpu_general_get_csr(struct kvm_vcpu *vcpu,
-> > +                                       unsigned long reg_num,
-> > +                                       unsigned long *out_val)
-> > +{
-> > +     struct kvm_vcpu_csr *csr = &vcpu->arch.guest_csr;
-> > +
-> > +     if (reg_num >= sizeof(struct kvm_riscv_csr) / sizeof(unsigned long))
-> > +             return -EINVAL;
-> > +
-> > +     if (reg_num == KVM_REG_RISCV_CSR_REG(sip)) {
-> > +             kvm_riscv_vcpu_flush_interrupts(vcpu);
-> > +             *out_val = (csr->hvip >> VSIP_TO_HVIP_SHIFT) & VSIP_VALID_MASK;
-> > +     } else
-> > +             *out_val = ((unsigned long *)csr)[reg_num];
-> > +
-> > +     return 0;
-> > +}
-> > +
-> >  static int kvm_riscv_vcpu_get_reg_csr(struct kvm_vcpu *vcpu,
-> >                                     const struct kvm_one_reg *reg)
-> >  {
-> > -     struct kvm_vcpu_csr *csr = &vcpu->arch.guest_csr;
-> > +     int rc;
-> >       unsigned long __user *uaddr =
-> >                       (unsigned long __user *)(unsigned long)reg->addr;
-> >       unsigned long reg_num = reg->id & ~(KVM_REG_ARCH_MASK |
-> >                                           KVM_REG_SIZE_MASK |
-> >                                           KVM_REG_RISCV_CSR);
-> > -     unsigned long reg_val;
-> > +     unsigned long reg_val, reg_subtype;
-> >
-> >       if (KVM_REG_SIZE(reg->id) != sizeof(unsigned long))
-> >               return -EINVAL;
-> > +
-> > +     reg_subtype = (reg_num & KVM_REG_RISCV_SUBTYPE_MASK)
-> > +                     >> KVM_REG_RISCV_SUBTYPE_SHIFT;
-> > +     reg_num &= ~KVM_REG_RISCV_SUBTYPE_MASK;
-> > +     switch (reg_subtype) {
-> > +     case KVM_REG_RISCV_CSR_GENERAL:
-> > +             rc = kvm_riscv_vcpu_general_get_csr(vcpu, reg_num, &reg_val);
-> > +             break;
-> > +     case KVM_REG_RISCV_CSR_AIA:
-> > +             rc = kvm_riscv_vcpu_aia_get_csr(vcpu, reg_num, &reg_val);
-> > +             break;
-> > +     default:
-> > +             rc = -EINVAL;
-> > +             break;
-> > +     }
-> > +     if (rc)
-> > +             return rc;
-> > +
-> > +     if (copy_to_user(uaddr, &reg_val, KVM_REG_SIZE(reg->id)))
-> > +             return -EFAULT;
-> > +
-> > +     return 0;
-> > +}
-> > +
-> > +static inline int kvm_riscv_vcpu_general_set_csr(struct kvm_vcpu *vcpu,
-> > +                                              unsigned long reg_num,
-> > +                                              unsigned long reg_val)
-> > +{
-> > +     struct kvm_vcpu_csr *csr = &vcpu->arch.guest_csr;
-> > +
-> >       if (reg_num >= sizeof(struct kvm_riscv_csr) / sizeof(unsigned long))
-> >               return -EINVAL;
-> >
-> >       if (reg_num == KVM_REG_RISCV_CSR_REG(sip)) {
-> > -             kvm_riscv_vcpu_flush_interrupts(vcpu);
-> > -             reg_val = (csr->hvip >> VSIP_TO_HVIP_SHIFT) & VSIP_VALID_MASK;
-> > -     } else
-> > -             reg_val = ((unsigned long *)csr)[reg_num];
-> > +             reg_val &= VSIP_VALID_MASK;
-> > +             reg_val <<= VSIP_TO_HVIP_SHIFT;
-> > +     }
-> >
-> > -     if (copy_to_user(uaddr, &reg_val, KVM_REG_SIZE(reg->id)))
-> > -             return -EFAULT;
-> > +     ((unsigned long *)csr)[reg_num] = reg_val;
-> > +
-> > +     if (reg_num == KVM_REG_RISCV_CSR_REG(sip))
-> > +             WRITE_ONCE(vcpu->arch.irqs_pending_mask, 0);
-> >
-> >       return 0;
-> >  }
-> > @@ -482,31 +533,36 @@ static int kvm_riscv_vcpu_get_reg_csr(struct kvm_vcpu *vcpu,
-> >  static int kvm_riscv_vcpu_set_reg_csr(struct kvm_vcpu *vcpu,
-> >                                     const struct kvm_one_reg *reg)
-> >  {
-> > -     struct kvm_vcpu_csr *csr = &vcpu->arch.guest_csr;
-> > +     int rc;
-> >       unsigned long __user *uaddr =
-> >                       (unsigned long __user *)(unsigned long)reg->addr;
-> >       unsigned long reg_num = reg->id & ~(KVM_REG_ARCH_MASK |
-> >                                           KVM_REG_SIZE_MASK |
-> >                                           KVM_REG_RISCV_CSR);
-> > -     unsigned long reg_val;
-> > +     unsigned long reg_val, reg_subtype;
-> >
-> >       if (KVM_REG_SIZE(reg->id) != sizeof(unsigned long))
-> >               return -EINVAL;
-> > -     if (reg_num >= sizeof(struct kvm_riscv_csr) / sizeof(unsigned long))
-> > -             return -EINVAL;
-> >
-> >       if (copy_from_user(&reg_val, uaddr, KVM_REG_SIZE(reg->id)))
-> >               return -EFAULT;
-> >
-> > -     if (reg_num == KVM_REG_RISCV_CSR_REG(sip)) {
-> > -             reg_val &= VSIP_VALID_MASK;
-> > -             reg_val <<= VSIP_TO_HVIP_SHIFT;
-> > +     reg_subtype = (reg_num & KVM_REG_RISCV_SUBTYPE_MASK)
-> > +                     >> KVM_REG_RISCV_SUBTYPE_SHIFT;
-> > +     reg_num &= ~KVM_REG_RISCV_SUBTYPE_MASK;
-> > +     switch (reg_subtype) {
-> > +     case KVM_REG_RISCV_CSR_GENERAL:
-> > +             rc = kvm_riscv_vcpu_general_set_csr(vcpu, reg_num, reg_val);
-> > +             break;
-> > +     case KVM_REG_RISCV_CSR_AIA:
-> > +             rc = kvm_riscv_vcpu_aia_set_csr(vcpu, reg_num, reg_val);
-> > +             break;
-> > +     default:
-> > +             rc = -EINVAL;
-> > +             break;
-> >       }
-> > -
-> > -     ((unsigned long *)csr)[reg_num] = reg_val;
-> > -
-> > -     if (reg_num == KVM_REG_RISCV_CSR_REG(sip))
-> > -             WRITE_ONCE(vcpu->arch.irqs_pending_mask, 0);
-> > +     if (rc)
-> > +             return rc;
-> >
-> >       return 0;
-> >  }
-> > --
-> > 2.34.1
-> >
->
-> Thanks,
-> drew
 
