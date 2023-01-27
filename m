@@ -1,128 +1,89 @@
 From: Atish Patra <atishp@rivosinc.com>
-Date: Fri, 27 Jan 2023 10:25:44 -0800
-Subject: [PATCH v3 00/14] KVM perf support 
-Message-ID: <20230127182558.2416400-1-atishp@rivosinc.com>
+Date: Fri, 27 Jan 2023 10:25:46 -0800
+Subject: [PATCH v3 02/14] perf: RISC-V: Improve privilege mode filtering for perf
+In-Reply-To: <20230127182558.2416400-1-atishp@rivosinc.com>
+References: <20230127182558.2416400-1-atishp@rivosinc.com>
+Message-ID: <20230127182558.2416400-3-atishp@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This series extends perf support for KVM. The KVM implementation relies
-on the SBI PMU extension and trap n emulation of hpmcounter CSRs.
-The KVM implementation exposes the virtual counters to the guest and internally
-manage the counters using kernel perf counters. 
+Currently, the host driver doesn't have any method to identify if the
+requested perf event is from kvm or bare metal. As KVM runs in HS
+mode, there are no separate hypervisor privilege mode to distinguish
+between the attributes for guest/host.
 
-This series doesn't support the counter overflow as the Sscofpmf extension
-doesn't allow trap & emulation mechanism of scountovf CSR yet. The required
-changes to allow that are being under discussions. Supporting overflow interrupt
-also requires AIA interrupt filtering support.
+Improve the privilege mode filtering by using the event specific
+config1 field.
 
-1. PATCH 1-5 are generic KVM/PMU driver improvements.
-2. PATCH 9 disables hpmcounter for now. It will be enabled to maintain ABI
-requirement once the ONE reg interface is settled. 
+Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+Signed-off-by: Atish Patra <atishp@rivosinc.com>
+---
+ drivers/perf/riscv_pmu_sbi.c   | 27 ++++++++++++++++++++++-----
+ include/linux/perf/riscv_pmu.h |  2 ++
+ 2 files changed, 24 insertions(+), 5 deletions(-)
 
-perf stat works in kvm guests with this series. 
-
-Here is example of running perf stat in a guest running in KVM.
-
-===========================================================================
-/ # /host/apps/perf stat -e instructions -e cycles -e r8000000000000005 \
-> -e r8000000000000006 -e r8000000000000007 -e r8000000000000008 \
-> -e r800000000000000a perf bench sched messaging -g 10 -l 10
-
-# Running 'sched/messaging' benchmark:
-# 20 sender and receiver processes per group
-# 10 groups == 400 processes run
-
-     Total time: 7.769 [sec]
-                 
- Performance counter stats for 'perf bench sched messaging -g 10 -l 10':
-
-       73556259604      cycles
-       73387266056      instructions              #    1.00  insn per cycle
-                 0      dTLB-store-misses
-                 0      iTLB-load-misses
-                 0      r8000000000000005
-              2595      r8000000000000006
-              2272      r8000000000000007
-                10      r8000000000000008
-                 0      r800000000000000a
-
-      12.173720400 seconds time elapsed
-
-       1.002716000 seconds user
-      21.931047000 seconds sys
-
-
-Note: The SBI_PMU_FW_SET_TIMER (eventid : r8000000000000005) is zero
-as kvm guest supports sstc now. 
-
-This series can be found here as well.
-https://github.com/atishp04/linux/tree/kvm_perf_v3
-
-TODO:
-1. Add sscofpmf support.
-2. Add One reg interface for the following operations:
-	1. Enable/Disable PMU (should it at VM level rather than vcpu ?)
-	2. Number of hpmcounter and width of the counters
-	3. Init PMU
-	4. Allow guest user to access cycle & instret without trapping
-
-Changes v2->v3:
-1. Changed the exported functions to GPL only export.
-2. Addressed all the nit comments on v2.
-3. Split non-kvm related changes into separate patches.
-4. Reorgainze the PATCH 11 and 10 based on Drew's suggestions.
-
-Changes from v1->v2:
-1. Addressed comments from Andrew.
-2. Removed kvpmu sanity check.
-3. Added a kvm pmu init flag and the sanity check to probe function.
-4. Improved the linux vs sbi error code handling.
+diff --git a/drivers/perf/riscv_pmu_sbi.c b/drivers/perf/riscv_pmu_sbi.c
+index 6b53adc..e862b13 100644
+--- a/drivers/perf/riscv_pmu_sbi.c
++++ b/drivers/perf/riscv_pmu_sbi.c
+@@ -301,6 +301,27 @@ int riscv_pmu_get_hpm_info(u32 *hw_ctr_width, u32 *num_hw_ctr)
+ }
+ EXPORT_SYMBOL_GPL(riscv_pmu_get_hpm_info);
  
-
-Atish Patra (14):
-perf: RISC-V: Define helper functions expose hpm counter width and
-count
-perf: RISC-V: Improve privilege mode filtering for perf
-RISC-V: Improve SBI PMU extension related definitions
-RISC-V: KVM: Define a probe function for SBI extension data structures
-RISC-V: KVM: Return correct code for hsm stop function
-RISC-V: KVM: Modify SBI extension handler to return SBI error code
-RISC-V: KVM: Add skeleton support for perf
-RISC-V: KVM: Add SBI PMU extension support
-RISC-V: KVM: Make PMU functionality depend on Sscofpmf
-RISC-V: KVM: Disable all hpmcounter access for VS/VU mode
-RISC-V: KVM: Implement trap & emulate for hpmcounters
-RISC-V: KVM: Implement perf support without sampling
-RISC-V: KVM: Support firmware events
-RISC-V: KVM: Increment firmware pmu events
-
-arch/riscv/include/asm/kvm_host.h     |   3 +
-arch/riscv/include/asm/kvm_vcpu_pmu.h | 108 +++++
-arch/riscv/include/asm/kvm_vcpu_sbi.h |  13 +-
-arch/riscv/include/asm/sbi.h          |   5 +-
-arch/riscv/kvm/Makefile               |   1 +
-arch/riscv/kvm/main.c                 |   3 +-
-arch/riscv/kvm/tlb.c                  |   4 +
-arch/riscv/kvm/vcpu.c                 |   5 +
-arch/riscv/kvm/vcpu_insn.c            |   4 +-
-arch/riscv/kvm/vcpu_pmu.c             | 622 ++++++++++++++++++++++++++
-arch/riscv/kvm/vcpu_sbi.c             |  57 ++-
-arch/riscv/kvm/vcpu_sbi_base.c        |  45 +-
-arch/riscv/kvm/vcpu_sbi_hsm.c         |  29 +-
-arch/riscv/kvm/vcpu_sbi_pmu.c         |  86 ++++
-arch/riscv/kvm/vcpu_sbi_replace.c     |  54 ++-
-arch/riscv/kvm/vcpu_sbi_v01.c         |  11 +-
-drivers/perf/riscv_pmu_sbi.c          |  64 ++-
-include/linux/perf/riscv_pmu.h        |   5 +
-18 files changed, 1013 insertions(+), 106 deletions(-)
-create mode 100644 arch/riscv/include/asm/kvm_vcpu_pmu.h
-create mode 100644 arch/riscv/kvm/vcpu_pmu.c
-create mode 100644 arch/riscv/kvm/vcpu_sbi_pmu.c
-
---
++static unsigned long pmu_sbi_get_filter_flags(struct perf_event *event)
++{
++	unsigned long cflags = 0;
++	bool guest_events = false;
++
++	if (event->attr.config1 & RISCV_KVM_PMU_CONFIG1_GUEST_EVENTS)
++		guest_events = true;
++	if (event->attr.exclude_kernel)
++		cflags |= guest_events ? SBI_PMU_CFG_FLAG_SET_VSINH : SBI_PMU_CFG_FLAG_SET_SINH;
++	if (event->attr.exclude_user)
++		cflags |= guest_events ? SBI_PMU_CFG_FLAG_SET_VUINH : SBI_PMU_CFG_FLAG_SET_UINH;
++	if (guest_events && event->attr.exclude_hv)
++		cflags |= SBI_PMU_CFG_FLAG_SET_SINH;
++	if (event->attr.exclude_host)
++		cflags |= SBI_PMU_CFG_FLAG_SET_UINH | SBI_PMU_CFG_FLAG_SET_SINH;
++	if (event->attr.exclude_guest)
++		cflags |= SBI_PMU_CFG_FLAG_SET_VSINH | SBI_PMU_CFG_FLAG_SET_VUINH;
++
++	return cflags;
++}
++
+ static int pmu_sbi_ctr_get_idx(struct perf_event *event)
+ {
+ 	struct hw_perf_event *hwc = &event->hw;
+@@ -311,11 +332,7 @@ static int pmu_sbi_ctr_get_idx(struct perf_event *event)
+ 	uint64_t cbase = 0;
+ 	unsigned long cflags = 0;
+ 
+-	if (event->attr.exclude_kernel)
+-		cflags |= SBI_PMU_CFG_FLAG_SET_SINH;
+-	if (event->attr.exclude_user)
+-		cflags |= SBI_PMU_CFG_FLAG_SET_UINH;
+-
++	cflags = pmu_sbi_get_filter_flags(event);
+ 	/* retrieve the available counter index */
+ #if defined(CONFIG_32BIT)
+ 	ret = sbi_ecall(SBI_EXT_PMU, SBI_EXT_PMU_COUNTER_CFG_MATCH, cbase,
+diff --git a/include/linux/perf/riscv_pmu.h b/include/linux/perf/riscv_pmu.h
+index a1c3f77..1c42146 100644
+--- a/include/linux/perf/riscv_pmu.h
++++ b/include/linux/perf/riscv_pmu.h
+@@ -26,6 +26,8 @@
+ 
+ #define RISCV_PMU_STOP_FLAG_RESET 1
+ 
++#define RISCV_KVM_PMU_CONFIG1_GUEST_EVENTS 0x1
++
+ struct cpu_hw_events {
+ 	/* currently enabled events */
+ 	int			n_events;
+-- 
 2.25.1
 
 
