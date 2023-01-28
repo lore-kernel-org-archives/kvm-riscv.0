@@ -1,96 +1,66 @@
-From: Guo Ren <guoren@kernel.org>
-Date: Sat, 28 Jan 2023 15:09:18 +0800
-Subject: [PATCH -next v13 02/19] riscv: Extending cpufeature.c to detect V-extension
-In-Reply-To: <Y9GgKiF8q2k9eRdh@spud>
-References: <20230125142056.18356-1-andy.chiu@sifive.com> <20230125142056.18356-3-andy.chiu@sifive.com>
- <Y9GgKiF8q2k9eRdh@spud>
-Message-ID: <CAJF2gTS11DcKuSBRQfn9AkU0YP=ry-FV=cH=Au5m3Us=1gVTQQ@mail.gmail.com>
+From: Anup Patel <apatel@ventanamicro.com>
+Date: Sat, 28 Jan 2023 12:57:30 +0530
+Subject: [PATCH v2 0/7] RISC-V KVM virtualize AIA CSRs
+Message-ID: <20230128072737.2995881-1-apatel@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Jan 26, 2023 at 5:33 AM Conor Dooley <conor@kernel.org> wrote:
->
-> On Wed, Jan 25, 2023 at 02:20:39PM +0000, Andy Chiu wrote:
-> > From: Guo Ren <ren_guo@c-sky.com>
-> >
-> > Add V-extension into riscv_isa_ext_keys array and detect it with isa
-> > string parsing.
-> >
-> > Signed-off-by: Guo Ren <ren_guo@c-sky.com>
-> > Signed-off-by: Guo Ren <guoren@linux.alibaba.com>
-> > Signed-off-by: Greentime Hu <greentime.hu@sifive.com>
-> > Suggested-by: Vineet Gupta <vineetg@rivosinc.com>
-> > Signed-off-by: Andy Chiu <andy.chiu@sifive.com>
-> > ---
-> >  arch/riscv/include/asm/hwcap.h      |  4 ++++
-> >  arch/riscv/include/asm/vector.h     | 26 ++++++++++++++++++++++++++
-> >  arch/riscv/include/uapi/asm/hwcap.h |  1 +
-> >  arch/riscv/kernel/cpufeature.c      | 12 ++++++++++++
-> >  4 files changed, 43 insertions(+)
-> >  create mode 100644 arch/riscv/include/asm/vector.h
-> >
-> > diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
-> > index 57439da71c77..f413db6118e5 100644
-> > --- a/arch/riscv/include/asm/hwcap.h
-> > +++ b/arch/riscv/include/asm/hwcap.h
-> > @@ -35,6 +35,7 @@ extern unsigned long elf_hwcap;
-> >  #define RISCV_ISA_EXT_m              ('m' - 'a')
-> >  #define RISCV_ISA_EXT_s              ('s' - 'a')
-> >  #define RISCV_ISA_EXT_u              ('u' - 'a')
-> > +#define RISCV_ISA_EXT_v              ('v' - 'a')
-> >
-> >  /*
-> >   * Increse this to higher value as kernel support more ISA extensions.
-> > @@ -73,6 +74,7 @@ static_assert(RISCV_ISA_EXT_ID_MAX <= RISCV_ISA_EXT_MAX);
-> >  enum riscv_isa_ext_key {
-> >       RISCV_ISA_EXT_KEY_FPU,          /* For 'F' and 'D' */
-> >       RISCV_ISA_EXT_KEY_SVINVAL,
-> > +     RISCV_ISA_EXT_KEY_VECTOR,       /* For 'V' */
->
-> That's obvious surely, no?
->
-> >       RISCV_ISA_EXT_KEY_ZIHINTPAUSE,
-> >       RISCV_ISA_EXT_KEY_MAX,
-> >  };
-> > @@ -95,6 +97,8 @@ static __always_inline int riscv_isa_ext2key(int num)
->
-> You should probably check out Jisheng's series that deletes whole
-> sections of this code, including this whole function.
-> https://lore.kernel.org/all/20230115154953.831-3-jszhang at kernel.org/T/#u
-Has that patch merged? It could be solved during the rebase for-next naturally.
+The RISC-V AIA specification is now frozen as-per the RISC-V international
+process. The latest frozen specifcation can be found at:
+https://github.com/riscv/riscv-aia/releases/download/1.0-RC1/riscv-interrupts-1.0-RC1.pdf
 
->
->
-> > @@ -256,6 +257,17 @@ void __init riscv_fill_hwcap(void)
-> >               elf_hwcap &= ~COMPAT_HWCAP_ISA_F;
-> >       }
-> >
-> > +     if (elf_hwcap & COMPAT_HWCAP_ISA_V) {
-> > +#ifndef CONFIG_RISCV_ISA_V
-> > +             /*
-> > +              * ISA string in device tree might have 'v' flag, but
-> > +              * CONFIG_RISCV_ISA_V is disabled in kernel.
-> > +              * Clear V flag in elf_hwcap if CONFIG_RISCV_ISA_V is disabled.
-> > +              */
-> > +             elf_hwcap &= ~COMPAT_HWCAP_ISA_V;
-> > +#endif
-       if (elf_hwcap & COMPAT_HWCAP_ISA_V && !IS_ENABLED(CONFIG_RISCV_ISA_V)) {
+This series implements first phase of AIA virtualization which targets
+virtualizing AIA CSRs. This also provides a foundation for the second
+phase of AIA virtualization which will target in-kernel AIA irqchip
+(including both IMSIC and APLIC).
 
-right?
->
-> I know that a later patch in this series calls rvv_enable() here, which
-> I'll comment on there, but I'd rather see IS_ENABLED as opposed to
-> ifdefs in C files where possible.
->
-> Thanks,
-> Conor.
->
+The first two patches are shared with the "Linux RISC-V AIA Support"
+series which adds AIA driver support.
 
+To test this series, use AIA drivers from the "Linux RISC-V AIA Support"
+series and use KVMTOOL from the riscv_aia_v1 branch at:
+https://github.com/avpatel/kvmtool.git
+
+These patches can also be found in the riscv_kvm_aia_csr_v2 branch at:
+https://github.com/avpatel/linux.git
+
+Changes since v1:
+ - Addressed from Drew and Conor in PATCH1
+ - Use alphabetical ordering for SMAIA and SSAIA enum in PATCH2
+ - Use GENMASK() in PATCH3
+
+Anup Patel (7):
+  RISC-V: Add AIA related CSR defines
+  RISC-V: Detect AIA CSRs from ISA string
+  RISC-V: KVM: Drop the _MASK suffix from hgatp.VMID mask defines
+  RISC-V: KVM: Initial skeletal support for AIA
+  RISC-V: KVM: Add ONE_REG interface for AIA CSRs
+  RISC-V: KVM: Virtualize per-HART AIA CSRs
+  RISC-V: KVM: Implement guest external interrupt line management
+
+ arch/riscv/include/asm/csr.h      | 107 ++++-
+ arch/riscv/include/asm/hwcap.h    |   8 +
+ arch/riscv/include/asm/kvm_aia.h  | 137 +++++++
+ arch/riscv/include/asm/kvm_host.h |  14 +-
+ arch/riscv/include/uapi/asm/kvm.h |  22 +-
+ arch/riscv/kernel/cpu.c           |   2 +
+ arch/riscv/kernel/cpufeature.c    |   2 +
+ arch/riscv/kvm/Makefile           |   1 +
+ arch/riscv/kvm/aia.c              | 624 ++++++++++++++++++++++++++++++
+ arch/riscv/kvm/main.c             |  14 +
+ arch/riscv/kvm/mmu.c              |   3 +-
+ arch/riscv/kvm/vcpu.c             | 185 +++++++--
+ arch/riscv/kvm/vcpu_insn.c        |   4 +-
+ arch/riscv/kvm/vm.c               |   4 +
+ arch/riscv/kvm/vmid.c             |   4 +-
+ 15 files changed, 1075 insertions(+), 56 deletions(-)
+ create mode 100644 arch/riscv/include/asm/kvm_aia.h
+ create mode 100644 arch/riscv/kvm/aia.c
 
 -- 
-Best Regards
- Guo Ren
+2.34.1
+
 
