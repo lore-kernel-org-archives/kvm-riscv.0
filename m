@@ -1,10 +1,10 @@
 From: Anup Patel <anup@brainfault.org>
-Date: Sat, 28 Jan 2023 20:17:59 +0530
-Subject: [PATCH v3 02/14] perf: RISC-V: Improve privilege mode filtering
- for perf
-In-Reply-To: <20230127182558.2416400-3-atishp@rivosinc.com>
-References: <20230127182558.2416400-1-atishp@rivosinc.com> <20230127182558.2416400-3-atishp@rivosinc.com>
-Message-ID: <CAAhSdy3pCcbscpYa82Daji4bXT0EdosmH3Xn7MjeJPk-zTA_Yg@mail.gmail.com>
+Date: Sat, 28 Jan 2023 20:20:34 +0530
+Subject: [PATCH v3 04/14] RISC-V: KVM: Define a probe function for SBI
+ extension data structures
+In-Reply-To: <20230127182558.2416400-5-atishp@rivosinc.com>
+References: <20230127182558.2416400-1-atishp@rivosinc.com> <20230127182558.2416400-5-atishp@rivosinc.com>
+Message-ID: <CAAhSdy1MHE29vwTU1Tafo+g7fmi2JXznAUe5_pGv-boW0M8oFA@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -13,91 +13,74 @@ Content-Transfer-Encoding: 7bit
 
 On Fri, Jan 27, 2023 at 11:56 PM Atish Patra <atishp@rivosinc.com> wrote:
 >
-> Currently, the host driver doesn't have any method to identify if the
-> requested perf event is from kvm or bare metal. As KVM runs in HS
-> mode, there are no separate hypervisor privilege mode to distinguish
-> between the attributes for guest/host.
+> Currently the probe function just checks if an SBI extension is
+> registered or not. However, the extension may not want to advertise
+> itself depending on some other condition.
+> An additional extension specific probe function will allow
+> extensions to decide if they want to be advertised to the caller or
+> not. Any extension that does not require additional dependency checks
+> can avoid implementing this function.
 >
-> Improve the privilege mode filtering by using the event specific
-> config1 field.
->
-> Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
 > Signed-off-by: Atish Patra <atishp@rivosinc.com>
-> ---
->  drivers/perf/riscv_pmu_sbi.c   | 27 ++++++++++++++++++++++-----
->  include/linux/perf/riscv_pmu.h |  2 ++
->  2 files changed, 24 insertions(+), 5 deletions(-)
->
-> diff --git a/drivers/perf/riscv_pmu_sbi.c b/drivers/perf/riscv_pmu_sbi.c
-> index 6b53adc..e862b13 100644
-> --- a/drivers/perf/riscv_pmu_sbi.c
-> +++ b/drivers/perf/riscv_pmu_sbi.c
-> @@ -301,6 +301,27 @@ int riscv_pmu_get_hpm_info(u32 *hw_ctr_width, u32 *num_hw_ctr)
->  }
->  EXPORT_SYMBOL_GPL(riscv_pmu_get_hpm_info);
->
-> +static unsigned long pmu_sbi_get_filter_flags(struct perf_event *event)
-> +{
-> +       unsigned long cflags = 0;
-> +       bool guest_events = false;
-> +
-> +       if (event->attr.config1 & RISCV_KVM_PMU_CONFIG1_GUEST_EVENTS)
-> +               guest_events = true;
-> +       if (event->attr.exclude_kernel)
-> +               cflags |= guest_events ? SBI_PMU_CFG_FLAG_SET_VSINH : SBI_PMU_CFG_FLAG_SET_SINH;
-> +       if (event->attr.exclude_user)
-> +               cflags |= guest_events ? SBI_PMU_CFG_FLAG_SET_VUINH : SBI_PMU_CFG_FLAG_SET_UINH;
-> +       if (guest_events && event->attr.exclude_hv)
-> +               cflags |= SBI_PMU_CFG_FLAG_SET_SINH;
-> +       if (event->attr.exclude_host)
-> +               cflags |= SBI_PMU_CFG_FLAG_SET_UINH | SBI_PMU_CFG_FLAG_SET_SINH;
-> +       if (event->attr.exclude_guest)
-> +               cflags |= SBI_PMU_CFG_FLAG_SET_VSINH | SBI_PMU_CFG_FLAG_SET_VUINH;
-> +
-> +       return cflags;
-> +}
-> +
->  static int pmu_sbi_ctr_get_idx(struct perf_event *event)
->  {
->         struct hw_perf_event *hwc = &event->hw;
-> @@ -311,11 +332,7 @@ static int pmu_sbi_ctr_get_idx(struct perf_event *event)
->         uint64_t cbase = 0;
->         unsigned long cflags = 0;
->
-> -       if (event->attr.exclude_kernel)
-> -               cflags |= SBI_PMU_CFG_FLAG_SET_SINH;
-> -       if (event->attr.exclude_user)
-> -               cflags |= SBI_PMU_CFG_FLAG_SET_UINH;
-> -
-> +       cflags = pmu_sbi_get_filter_flags(event);
->         /* retrieve the available counter index */
->  #if defined(CONFIG_32BIT)
->         ret = sbi_ecall(SBI_EXT_PMU, SBI_EXT_PMU_COUNTER_CFG_MATCH, cbase,
-> diff --git a/include/linux/perf/riscv_pmu.h b/include/linux/perf/riscv_pmu.h
-> index a1c3f77..1c42146 100644
-> --- a/include/linux/perf/riscv_pmu.h
-> +++ b/include/linux/perf/riscv_pmu.h
-> @@ -26,6 +26,8 @@
->
->  #define RISCV_PMU_STOP_FLAG_RESET 1
->
-> +#define RISCV_KVM_PMU_CONFIG1_GUEST_EVENTS 0x1
 
-For consistency other defines in this header:
-s/RISCV_KVM_PMU_CONFIG1_GUEST_EVENTS/RISCV_PMU_CONFIG1_GUEST_EVENTS/
-
-> +
->  struct cpu_hw_events {
->         /* currently enabled events */
->         int                     n_events;
-> --
-> 2.25.1
->
-
-Otherwise, it looks good to me.
+Looks good to me.
 
 Reviewed-by: Anup Patel <anup@brainfault.org>
 
 Regards,
 Anup
+
+> ---
+>  arch/riscv/include/asm/kvm_vcpu_sbi.h |  3 +++
+>  arch/riscv/kvm/vcpu_sbi_base.c        | 13 +++++++++++--
+>  2 files changed, 14 insertions(+), 2 deletions(-)
+>
+> diff --git a/arch/riscv/include/asm/kvm_vcpu_sbi.h b/arch/riscv/include/asm/kvm_vcpu_sbi.h
+> index f79478a..45ba341 100644
+> --- a/arch/riscv/include/asm/kvm_vcpu_sbi.h
+> +++ b/arch/riscv/include/asm/kvm_vcpu_sbi.h
+> @@ -29,6 +29,9 @@ struct kvm_vcpu_sbi_extension {
+>         int (*handler)(struct kvm_vcpu *vcpu, struct kvm_run *run,
+>                        unsigned long *out_val, struct kvm_cpu_trap *utrap,
+>                        bool *exit);
+> +
+> +       /* Extension specific probe function */
+> +       unsigned long (*probe)(struct kvm_vcpu *vcpu);
+>  };
+>
+>  void kvm_riscv_vcpu_sbi_forward(struct kvm_vcpu *vcpu, struct kvm_run *run);
+> diff --git a/arch/riscv/kvm/vcpu_sbi_base.c b/arch/riscv/kvm/vcpu_sbi_base.c
+> index 5d65c63..846d518 100644
+> --- a/arch/riscv/kvm/vcpu_sbi_base.c
+> +++ b/arch/riscv/kvm/vcpu_sbi_base.c
+> @@ -19,6 +19,7 @@ static int kvm_sbi_ext_base_handler(struct kvm_vcpu *vcpu, struct kvm_run *run,
+>  {
+>         int ret = 0;
+>         struct kvm_cpu_context *cp = &vcpu->arch.guest_context;
+> +       const struct kvm_vcpu_sbi_extension *sbi_ext;
+>
+>         switch (cp->a6) {
+>         case SBI_EXT_BASE_GET_SPEC_VERSION:
+> @@ -43,8 +44,16 @@ static int kvm_sbi_ext_base_handler(struct kvm_vcpu *vcpu, struct kvm_run *run,
+>                          */
+>                         kvm_riscv_vcpu_sbi_forward(vcpu, run);
+>                         *exit = true;
+> -               } else
+> -                       *out_val = kvm_vcpu_sbi_find_ext(cp->a0) ? 1 : 0;
+> +               } else {
+> +                       sbi_ext = kvm_vcpu_sbi_find_ext(cp->a0);
+> +                       if (sbi_ext) {
+> +                               if (sbi_ext->probe)
+> +                                       *out_val = sbi_ext->probe(vcpu);
+> +                               else
+> +                                       *out_val = 1;
+> +                       } else
+> +                               *out_val = 0;
+> +               }
+>                 break;
+>         case SBI_EXT_BASE_GET_MVENDORID:
+>                 *out_val = vcpu->arch.mvendorid;
+> --
+> 2.25.1
+>
 
