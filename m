@@ -1,52 +1,42 @@
 From: Jisheng Zhang <jszhang@kernel.org>
-Date: Sun, 29 Jan 2023 01:28:44 +0800
-Subject: [PATCH v5 01/13] riscv: move riscv_noncoherent_supported() out of ZICBOM probe
+Date: Sun, 29 Jan 2023 01:28:45 +0800
+Subject: [PATCH v5 02/13] riscv: cpufeature: detect RISCV_ALTERNATIVES_EARLY_BOOT earlier
 In-Reply-To: <20230128172856.3814-1-jszhang@kernel.org>
 References: <20230128172856.3814-1-jszhang@kernel.org>
-Message-ID: <20230128172856.3814-2-jszhang@kernel.org>
+Message-ID: <20230128172856.3814-3-jszhang@kernel.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-It's a bit weird to call riscv_noncoherent_supported() each time when
-insmoding a module. Move the calling out of feature patch func.
+Currently riscv_cpufeature_patch_func() does nothing at the
+RISCV_ALTERNATIVES_EARLY_BOOT stage. Add a check to detect whether we
+are in this stage and exit early. This will allow us to use
+riscv_cpufeature_patch_func() for scanning of all ISA extensions.
 
 Signed-off-by: Jisheng Zhang <jszhang@kernel.org>
 Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+Reviewed-by: Heiko Stuebner <heiko@sntech.de>
 Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
 ---
- arch/riscv/kernel/cpufeature.c | 1 -
- arch/riscv/kernel/setup.c      | 3 +++
- 2 files changed, 3 insertions(+), 1 deletion(-)
+ arch/riscv/kernel/cpufeature.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
 diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
-index dde0e91d7668..62443fd32fa7 100644
+index 62443fd32fa7..59e20cad1b3d 100644
 --- a/arch/riscv/kernel/cpufeature.c
 +++ b/arch/riscv/kernel/cpufeature.c
-@@ -298,7 +298,6 @@ static bool __init_or_module cpufeature_probe_zicbom(unsigned int stage)
- 	if (!riscv_isa_extension_available(NULL, ZICBOM))
- 		return false;
+@@ -330,6 +330,9 @@ void __init_or_module riscv_cpufeature_patch_func(struct alt_entry *begin,
+ 	struct alt_entry *alt;
+ 	u32 tmp;
  
--	riscv_noncoherent_supported();
- 	return true;
- }
- 
-diff --git a/arch/riscv/kernel/setup.c b/arch/riscv/kernel/setup.c
-index 86acd690d529..376d2827e736 100644
---- a/arch/riscv/kernel/setup.c
-+++ b/arch/riscv/kernel/setup.c
-@@ -300,6 +300,9 @@ void __init setup_arch(char **cmdline_p)
- 	riscv_init_cbom_blocksize();
- 	riscv_fill_hwcap();
- 	apply_boot_alternatives();
-+	if (IS_ENABLED(CONFIG_RISCV_ISA_ZICBOM) &&
-+	    riscv_isa_extension_available(NULL, ZICBOM))
-+		riscv_noncoherent_supported();
- }
- 
- static int __init topology_init(void)
++	if (stage == RISCV_ALTERNATIVES_EARLY_BOOT)
++		return;
++
+ 	for (alt = begin; alt < end; alt++) {
+ 		if (alt->vendor_id != 0)
+ 			continue;
 -- 
 2.38.1
 
