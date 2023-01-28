@@ -1,10 +1,9 @@
 From: Anup Patel <anup@brainfault.org>
-Date: Sat, 28 Jan 2023 20:20:34 +0530
-Subject: [PATCH v3 04/14] RISC-V: KVM: Define a probe function for SBI
- extension data structures
-In-Reply-To: <20230127182558.2416400-5-atishp@rivosinc.com>
-References: <20230127182558.2416400-1-atishp@rivosinc.com> <20230127182558.2416400-5-atishp@rivosinc.com>
-Message-ID: <CAAhSdy1MHE29vwTU1Tafo+g7fmi2JXznAUe5_pGv-boW0M8oFA@mail.gmail.com>
+Date: Sat, 28 Jan 2023 20:22:31 +0530
+Subject: [PATCH v3 05/14] RISC-V: KVM: Return correct code for hsm stop function
+In-Reply-To: <20230127182558.2416400-6-atishp@rivosinc.com>
+References: <20230127182558.2416400-1-atishp@rivosinc.com> <20230127182558.2416400-6-atishp@rivosinc.com>
+Message-ID: <CAAhSdy1XKbb47OOQshy5NZjVZrS_eJUFeEWmDgJ2MigSKpVpzQ@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -13,13 +12,14 @@ Content-Transfer-Encoding: 7bit
 
 On Fri, Jan 27, 2023 at 11:56 PM Atish Patra <atishp@rivosinc.com> wrote:
 >
-> Currently the probe function just checks if an SBI extension is
-> registered or not. However, the extension may not want to advertise
-> itself depending on some other condition.
-> An additional extension specific probe function will allow
-> extensions to decide if they want to be advertised to the caller or
-> not. Any extension that does not require additional dependency checks
-> can avoid implementing this function.
+> According to the SBI specification, the stop function can only
+> return error code SBI_ERR_FAILED. However, currently it returns
+> -EINVAL which will be mapped SBI_ERR_INVALID_PARAM.
+>
+> Return an linux error code that maps to SBI_ERR_FAILED i.e doesn't map
+> to any other SBI error code. While EACCES is not the best error code
+> to describe the situation, it is close enough and will be replaced
+> with SBI error codes directly anyways.
 >
 > Signed-off-by: Atish Patra <atishp@rivosinc.com>
 
@@ -31,55 +31,22 @@ Regards,
 Anup
 
 > ---
->  arch/riscv/include/asm/kvm_vcpu_sbi.h |  3 +++
->  arch/riscv/kvm/vcpu_sbi_base.c        | 13 +++++++++++--
->  2 files changed, 14 insertions(+), 2 deletions(-)
+>  arch/riscv/kvm/vcpu_sbi_hsm.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 >
-> diff --git a/arch/riscv/include/asm/kvm_vcpu_sbi.h b/arch/riscv/include/asm/kvm_vcpu_sbi.h
-> index f79478a..45ba341 100644
-> --- a/arch/riscv/include/asm/kvm_vcpu_sbi.h
-> +++ b/arch/riscv/include/asm/kvm_vcpu_sbi.h
-> @@ -29,6 +29,9 @@ struct kvm_vcpu_sbi_extension {
->         int (*handler)(struct kvm_vcpu *vcpu, struct kvm_run *run,
->                        unsigned long *out_val, struct kvm_cpu_trap *utrap,
->                        bool *exit);
-> +
-> +       /* Extension specific probe function */
-> +       unsigned long (*probe)(struct kvm_vcpu *vcpu);
->  };
->
->  void kvm_riscv_vcpu_sbi_forward(struct kvm_vcpu *vcpu, struct kvm_run *run);
-> diff --git a/arch/riscv/kvm/vcpu_sbi_base.c b/arch/riscv/kvm/vcpu_sbi_base.c
-> index 5d65c63..846d518 100644
-> --- a/arch/riscv/kvm/vcpu_sbi_base.c
-> +++ b/arch/riscv/kvm/vcpu_sbi_base.c
-> @@ -19,6 +19,7 @@ static int kvm_sbi_ext_base_handler(struct kvm_vcpu *vcpu, struct kvm_run *run,
+> diff --git a/arch/riscv/kvm/vcpu_sbi_hsm.c b/arch/riscv/kvm/vcpu_sbi_hsm.c
+> index 2e915ca..619ac0f 100644
+> --- a/arch/riscv/kvm/vcpu_sbi_hsm.c
+> +++ b/arch/riscv/kvm/vcpu_sbi_hsm.c
+> @@ -42,7 +42,7 @@ static int kvm_sbi_hsm_vcpu_start(struct kvm_vcpu *vcpu)
+>  static int kvm_sbi_hsm_vcpu_stop(struct kvm_vcpu *vcpu)
 >  {
->         int ret = 0;
->         struct kvm_cpu_context *cp = &vcpu->arch.guest_context;
-> +       const struct kvm_vcpu_sbi_extension *sbi_ext;
+>         if (vcpu->arch.power_off)
+> -               return -EINVAL;
+> +               return -EACCES;
 >
->         switch (cp->a6) {
->         case SBI_EXT_BASE_GET_SPEC_VERSION:
-> @@ -43,8 +44,16 @@ static int kvm_sbi_ext_base_handler(struct kvm_vcpu *vcpu, struct kvm_run *run,
->                          */
->                         kvm_riscv_vcpu_sbi_forward(vcpu, run);
->                         *exit = true;
-> -               } else
-> -                       *out_val = kvm_vcpu_sbi_find_ext(cp->a0) ? 1 : 0;
-> +               } else {
-> +                       sbi_ext = kvm_vcpu_sbi_find_ext(cp->a0);
-> +                       if (sbi_ext) {
-> +                               if (sbi_ext->probe)
-> +                                       *out_val = sbi_ext->probe(vcpu);
-> +                               else
-> +                                       *out_val = 1;
-> +                       } else
-> +                               *out_val = 0;
-> +               }
->                 break;
->         case SBI_EXT_BASE_GET_MVENDORID:
->                 *out_val = vcpu->arch.mvendorid;
+>         kvm_riscv_vcpu_power_off(vcpu);
+>
 > --
 > 2.25.1
 >
