@@ -1,97 +1,89 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Mon, 30 Jan 2023 13:01:22 +0100
-Subject: [PATCH v3 0/6] RISC-V: Apply Zicboz to clear_page
-Message-ID: <20230130120128.1349464-1-ajones@ventanamicro.com>
+Date: Mon, 30 Jan 2023 13:01:23 +0100
+Subject: [PATCH v3 1/6] RISC-V: Factor out body of riscv_init_cbom_blocksize loop
+In-Reply-To: <20230130120128.1349464-1-ajones@ventanamicro.com>
+References: <20230130120128.1349464-1-ajones@ventanamicro.com>
+Message-ID: <20230130120128.1349464-2-ajones@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-When the Zicboz extension is available we can more rapidly zero naturally
-aligned Zicboz block sized chunks of memory. As pages are always page
-aligned and are larger than any Zicboz block size will be, then
-clear_page() appears to be a good candidate for the extension. While cycle
-count and energy consumption should also be considered, we can be pretty
-certain that implementing clear_page() with the Zicboz extension is a win
-by comparing the new dynamic instruction count with its current count[1].
-Doing so we see that the new count is just over a quarter of the old count
-(see patch4's commit message for more details).
+Refactor riscv_init_cbom_blocksize() to prepare for it to be used
+for both cbom block size and cboz block size.
 
-For those of you who reviewed v1[2], you may be looking for the memset()
-patches. As pointed out in v1, and a couple follow-up emails, it's not
-clear that patching memset() is a win yet. When I get a chance to test
-on real hardware with a comprehensive benchmark collection then I can
-post the memset() patches separately (assuming the benchmarks show it's
-worthwhile).
+Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
+Reviewed-by: Heiko Stuebner <heiko@sntech.de>
+Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
+---
+ arch/riscv/mm/cacheflush.c | 45 +++++++++++++++++++++-----------------
+ 1 file changed, 25 insertions(+), 20 deletions(-)
 
-Dependencies:
-  - "[PATCH v5 00/13] riscv: improve boot time isa extensions handling"
-    https://lore.kernel.org/all/20230128172856.3814-1-jszhang at kernel.org/
-  - "[PATCH v1 0/3] Remove toolchain dependencies for Zicbom"
-    https://lore.kernel.org/all/20230108163356.3063839-1-conor at kernel.org/
-
-The patches are also available here
-https://github.com/jones-drew/linux/commits/riscv/zicboz-v3
-
-To test over QEMU this branch may be used to enable Zicboz
-https://gitlab.com/jones-drew/qemu/-/commits/riscv/zicboz
-
-To test running a KVM guest with Zicboz this kvmtool branch may be used
-https://github.com/jones-drew/kvmtool/commits/riscv/zicboz
-
-Thanks,
-drew
-
-[1] I ported the functions under test to userspace and linked them with
-    a test program. Then, I ran them under gdb with a script[3] which
-    counted instructions by single stepping.
-[2] https://lore.kernel.org/all/20221027130247.31634-1-ajones at ventanamicro.com/
-[3] https://gist.github.com/jones-drew/487791c956ceca8c18adc2847eec9c60
-
-v3:
-  - CC'ed DT list
-  - Improved commit message of DT bindings patch to point out relationship
-    with cbom-block-size
-  - Picked up an a-b from Conor
-
-v2:
-  - s/blksz/block_size/, improved commit message for "RISC-V: Add Zicboz
-    detection and block size parsing", isa ext sorting [Conor]
-  - Added dt binding patch [Heiko]
-  - Picked up r-b's from Conor, Heiko, and Anup
-  - Moved config symbol and CBO_zero() introduction to "RISC-V: Use Zicboz
-    in clear_page when available" and improved its commit message and
-    implementation (unrolled four times) [drew]
-  - Dropped memset() patches [drew]
-  - Rebased on ae4d39f75308 ("Merge patch "RISC-V: fix incorrect type of
-    ARCH_CANAAN_K210_DTB_SOURCE"") plus the dependencies
-
-Andrew Jones (6):
-  RISC-V: Factor out body of riscv_init_cbom_blocksize loop
-  dt-bindings: riscv: Document cboz-block-size
-  RISC-V: Add Zicboz detection and block size parsing
-  RISC-V: Use Zicboz in clear_page when available
-  RISC-V: KVM: Provide UAPI for Zicboz block size
-  RISC-V: KVM: Expose Zicboz to the guest
-
- .../devicetree/bindings/riscv/cpus.yaml       |  5 ++
- arch/riscv/Kconfig                            | 13 ++++
- arch/riscv/include/asm/cacheflush.h           |  3 +-
- arch/riscv/include/asm/hwcap.h                |  1 +
- arch/riscv/include/asm/insn-def.h             |  4 ++
- arch/riscv/include/asm/page.h                 |  6 +-
- arch/riscv/include/uapi/asm/kvm.h             |  2 +
- arch/riscv/kernel/cpu.c                       |  1 +
- arch/riscv/kernel/cpufeature.c                | 10 +++
- arch/riscv/kernel/setup.c                     |  2 +-
- arch/riscv/kvm/vcpu.c                         | 11 ++++
- arch/riscv/lib/Makefile                       |  1 +
- arch/riscv/lib/clear_page.S                   | 36 +++++++++++
- arch/riscv/mm/cacheflush.c                    | 64 +++++++++++--------
- 14 files changed, 130 insertions(+), 29 deletions(-)
- create mode 100644 arch/riscv/lib/clear_page.S
-
+diff --git a/arch/riscv/mm/cacheflush.c b/arch/riscv/mm/cacheflush.c
+index 3cc07ed45aeb..eaf23fc14966 100644
+--- a/arch/riscv/mm/cacheflush.c
++++ b/arch/riscv/mm/cacheflush.c
+@@ -98,34 +98,39 @@ void flush_icache_pte(pte_t pte)
+ unsigned int riscv_cbom_block_size;
+ EXPORT_SYMBOL_GPL(riscv_cbom_block_size);
+ 
++static void cbo_get_block_size(struct device_node *node,
++			       const char *name, u32 *block_size,
++			       unsigned long *first_hartid)
++{
++	unsigned long hartid;
++	u32 val;
++
++	if (riscv_of_processor_hartid(node, &hartid))
++		return;
++
++	if (of_property_read_u32(node, name, &val))
++		return;
++
++	if (!*block_size) {
++		*block_size = val;
++		*first_hartid = hartid;
++	} else if (*block_size != val) {
++		pr_warn("%s mismatched between harts %lu and %lu\n",
++			name, *first_hartid, hartid);
++	}
++}
++
+ void riscv_init_cbom_blocksize(void)
+ {
+ 	struct device_node *node;
+ 	unsigned long cbom_hartid;
+-	u32 val, probed_block_size;
+-	int ret;
++	u32 probed_block_size;
+ 
+ 	probed_block_size = 0;
+ 	for_each_of_cpu_node(node) {
+-		unsigned long hartid;
+-
+-		ret = riscv_of_processor_hartid(node, &hartid);
+-		if (ret)
+-			continue;
+-
+ 		/* set block-size for cbom extension if available */
+-		ret = of_property_read_u32(node, "riscv,cbom-block-size", &val);
+-		if (ret)
+-			continue;
+-
+-		if (!probed_block_size) {
+-			probed_block_size = val;
+-			cbom_hartid = hartid;
+-		} else {
+-			if (probed_block_size != val)
+-				pr_warn("cbom-block-size mismatched between harts %lu and %lu\n",
+-					cbom_hartid, hartid);
+-		}
++		cbo_get_block_size(node, "riscv,cbom-block-size",
++				   &probed_block_size, &cbom_hartid);
+ 	}
+ 
+ 	if (probed_block_size)
 -- 
 2.39.1
 
