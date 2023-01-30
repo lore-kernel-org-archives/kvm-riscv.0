@@ -1,65 +1,46 @@
 From: Conor Dooley <conor.dooley@microchip.com>
-Date: Mon, 30 Jan 2023 12:25:39 +0000
-Subject: [PATCH v3 2/6] dt-bindings: riscv: Document cboz-block-size
-In-Reply-To: <20230130120128.1349464-3-ajones@ventanamicro.com>
-References: <20230130120128.1349464-1-ajones@ventanamicro.com>
- <20230130120128.1349464-3-ajones@ventanamicro.com>
-Message-ID: <Y9e3Q5M8J8pTWZja@wendy>
+Date: Mon, 30 Jan 2023 08:13:20 +0000
+Subject: [PATCH -next v13 19/19] riscv: Enable Vector code to be built
+In-Reply-To: <CABgGipW430Cs0OgYO94RqfwrBFJOPV3HeS24Rv3nHgr4yOVaPQ@mail.gmail.com>
+References: <20230125142056.18356-1-andy.chiu@sifive.com>
+ <20230125142056.18356-20-andy.chiu@sifive.com>
+ <Y9GZbVrZxEZAraVu@spud>
+ <CABgGipW430Cs0OgYO94RqfwrBFJOPV3HeS24Rv3nHgr4yOVaPQ@mail.gmail.com>
+Message-ID: <Y9d8IBqXyep+PJTq@wendy>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hey!
-
-On Mon, Jan 30, 2023 at 01:01:24PM +0100, Andrew Jones wrote:
-> The Zicboz operation (cbo.zero) operates on a block-size defined
-> for the cpu-core. While we already have the riscv,cbom-block-size
-> property, it only provides the block size for Zicbom operations.
-> Even though it's likely Zicboz and Zicbom will use the same size,
-> that's not specified.
-
-If you end up respinning for some other reason, perhaps:
-s/that's not specified/that's not required by the specification/ or
-some other wording to that effect?
-I'm assuming by "specified" you're referring to the cmobase spec, but
-that wording I don't think is particular clear.
-
-> Create another property specifically for
-> Zicboz.
+On Mon, Jan 30, 2023 at 03:46:32PM +0800, Andy Chiu wrote:
+> On Thu, Jan 26, 2023 at 5:04 AM Conor Dooley <conor@kernel.org> wrote:
+> > Firstly, no-implicit-float is a CFLAG, so why add it to march?
+> I placed it in march because I thought we need the flag in vdso. And,
+> KBUILD_CFLAGS is not enough for vdso. However, I think we don't need
+> this flag in vdso since it is run in user space anyway.
+> > There is an existing patch on the list for enabling this flag, but I
+> > recall Palmer saying that it was not actually needed?
+> The flag is needed for clang builds to prevent auto-vectorization from
+> using V in the kernel code [1].
 > 
-> Cc: Rob Herring <robh@kernel.org>
-> Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
-> ---
->  Documentation/devicetree/bindings/riscv/cpus.yaml | 5 +++++
->  1 file changed, 5 insertions(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/riscv/cpus.yaml b/Documentation/devicetree/bindings/riscv/cpus.yaml
-> index c6720764e765..f4ee70f8e1cf 100644
-> --- a/Documentation/devicetree/bindings/riscv/cpus.yaml
-> +++ b/Documentation/devicetree/bindings/riscv/cpus.yaml
-> @@ -72,6 +72,11 @@ properties:
->      description:
->        The blocksize in bytes for the Zicbom cache operations.
->  
-> +  riscv,cboz-block-size:
-> +    $ref: /schemas/types.yaml#/definitions/uint32
-> +    description:
-> +      The blocksize in bytes for the Zicboz cache operations.
-> +
+> > Palmer, do you remember why that was?
+> The discussion[2] suggested that we need this flag, IIUC. But somehow
+> the patch did make it into the tree.
 
-I was happy with either keeping them apart entirely or a having this one
-default to the value of cbom-block-size, so:
-Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
+I know, in [1] I left an R-b as the patch seemed reasonable to me.
+Palmer mentioned some reason for not thinking it was actually needed but
+not on-list, so I was hoping he'd comment!
 
-Thanks,
-Conor.
+And I suppose, it never got any further attention as it isn't needed by
+any in-tree code?
 
+> [1]https://lore.kernel.org/all/CAOnJCULtT-y9vo6YhW7bW9XyKRdod-hvFfr02jHVamR_LcsKdA at mail.gmail.com/
+> [2]https://lore.kernel.org/all/20221216185012.2342675-1-abdulras at google.com/
 -------------- next part --------------
 A non-text attachment was scrubbed...
 Name: signature.asc
 Type: application/pgp-signature
 Size: 228 bytes
 Desc: not available
-URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20230130/7b887020/attachment-0001.sig>
+URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20230130/c4808e56/attachment-0001.sig>
