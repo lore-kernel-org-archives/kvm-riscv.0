@@ -1,51 +1,41 @@
 From: Atish Patra <atishp@atishpatra.org>
-Date: Tue, 31 Jan 2023 00:41:35 -0800
-Subject: [PATCH v3 2/2] RISC-V: KVM: Redirect illegal instruction traps to guest
-In-Reply-To: <20230128082847.3055316-2-apatel@ventanamicro.com>
-References: <20230128082847.3055316-1-apatel@ventanamicro.com> <20230128082847.3055316-2-apatel@ventanamicro.com>
-Message-ID: <CAOnJCU+77AG55TTpekDKYVeeXjpR5QPw-CJ1zQq0ogB_rtP8dg@mail.gmail.com>
+Date: Tue, 31 Jan 2023 00:41:58 -0800
+Subject: [PATCH v3 1/2] RISC-V: KVM: Fix privilege mode setting in kvm_riscv_vcpu_trap_redirect()
+In-Reply-To: <20230128082847.3055316-1-apatel@ventanamicro.com>
+References: <20230128082847.3055316-1-apatel@ventanamicro.com>
+Message-ID: <CAOnJCUKQwKpEPYgTG7OQtRDsmHBPpLYLPg5v6XM7AZqsrYupRA@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sat, Jan 28, 2023 at 12:29 AM Anup Patel <apatel@ventanamicro.com> wrote:
+On Sat, Jan 28, 2023 at 12:28 AM Anup Patel <apatel@ventanamicro.com> wrote:
 >
-> From: Andy Chiu <andy.chiu@sifive.com>
+> The kvm_riscv_vcpu_trap_redirect() should set guest privilege mode
+> to supervisor mode because guest traps/interrupts are always handled
+> in virtual supervisor mode.
 >
-> The M-mode redirects an unhandled illegal instruction trap back
-> to S-mode. However, KVM running in HS-mode terminates the VS-mode
-> software when it receives illegal instruction trap. Instead, KVM
-> should redirect the illegal instruction trap back to VS-mode, and
-> let VS-mode trap handler decide the next step. This futher allows
-> guest kernel to implement on-demand enabling of vector extension
-> for a guest user space process upon first-use.
->
-> Signed-off-by: Andy Chiu <andy.chiu@sifive.com>
+> Fixes: 9f7013265112 ("RISC-V: KVM: Handle MMIO exits for VCPU")
 > Signed-off-by: Anup Patel <apatel@ventanamicro.com>
-> Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
 > ---
->  arch/riscv/kvm/vcpu_exit.c | 6 ++++++
->  1 file changed, 6 insertions(+)
+>  arch/riscv/kvm/vcpu_exit.c | 3 +++
+>  1 file changed, 3 insertions(+)
 >
 > diff --git a/arch/riscv/kvm/vcpu_exit.c b/arch/riscv/kvm/vcpu_exit.c
-> index af7c4bc07929..4ea101a73d8b 100644
+> index c9f741ab26f5..af7c4bc07929 100644
 > --- a/arch/riscv/kvm/vcpu_exit.c
 > +++ b/arch/riscv/kvm/vcpu_exit.c
-> @@ -182,6 +182,12 @@ int kvm_riscv_vcpu_exit(struct kvm_vcpu *vcpu, struct kvm_run *run,
->         ret = -EFAULT;
->         run->exit_reason = KVM_EXIT_UNKNOWN;
->         switch (trap->scause) {
-> +       case EXC_INST_ILLEGAL:
-> +               if (vcpu->arch.guest_context.hstatus & HSTATUS_SPV) {
-> +                       kvm_riscv_vcpu_trap_redirect(vcpu, trap);
-> +                       ret = 1;
-> +               }
-> +               break;
->         case EXC_VIRTUAL_INST_FAULT:
->                 if (vcpu->arch.guest_context.hstatus & HSTATUS_SPV)
->                         ret = kvm_riscv_vcpu_virtual_insn(vcpu, run, trap);
+> @@ -160,6 +160,9 @@ void kvm_riscv_vcpu_trap_redirect(struct kvm_vcpu *vcpu,
+>
+>         /* Set Guest PC to Guest exception vector */
+>         vcpu->arch.guest_context.sepc = csr_read(CSR_VSTVEC);
+> +
+> +       /* Set Guest privilege mode to supervisor */
+> +       vcpu->arch.guest_context.sstatus |= SR_SPP;
+>  }
+>
+>  /*
 > --
 > 2.34.1
 >
