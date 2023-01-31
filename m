@@ -1,46 +1,40 @@
-From: Andy Chiu <andy.chiu@sifive.com>
-Date: Tue, 31 Jan 2023 20:34:00 +0800
-Subject: [PATCH -next v13 14/19] riscv: signal: Report signal frame size
- to userspace via auxv
-In-Reply-To: <Y9MKeqtT+PEe7KTY@spud>
-References: <20230125142056.18356-1-andy.chiu@sifive.com> <20230125142056.18356-15-andy.chiu@sifive.com>
- <Y9MKeqtT+PEe7KTY@spud>
-Message-ID: <CABgGipW1E3922+TM6tgWEeAsDbogrNxB1rBxFdshqjdP3oO=Mw@mail.gmail.com>
+From: Oliver Upton <oliver.upton@linux.dev>
+Date: Tue, 31 Jan 2023 18:05:43 +0000
+Subject: [PATCH v2 2/7] KVM: arm64: Use kvm_arch_flush_remote_tlbs()
+In-Reply-To: <20230126184025.2294823-3-dmatlack@google.com>
+References: <20230126184025.2294823-1-dmatlack@google.com>
+ <20230126184025.2294823-3-dmatlack@google.com>
+Message-ID: <Y9lYd1ONY06BEnBk@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Jan 27, 2023 at 7:19 AM Conor Dooley <conor@kernel.org> wrote:
->
-> On Wed, Jan 25, 2023 at 02:20:51PM +0000, Andy Chiu wrote:
-> > diff --git a/arch/riscv/include/asm/processor.h b/arch/riscv/include/asm/processor.h
-> > index 44d2eb381ca6..4f36c553605e 100644
-> > --- a/arch/riscv/include/asm/processor.h
-> > +++ b/arch/riscv/include/asm/processor.h
-> > @@ -7,6 +7,7 @@
-> >  #define _ASM_RISCV_PROCESSOR_H
-> >
-> >  #include <linux/const.h>
-> > +#include <linux/cache.h>
->
-> What have I missed that is the reason for adding this header?
->
-__ro_after_init is defined in linux/cache.h, so we need that header.
-> >  #include <vdso/processor.h>
-> >
-> > @@ -203,8 +205,10 @@ static size_t cal_rt_frame_size(void)
-> >
-> >       frame_size = sizeof(*frame);
-> >
-> > -     if (has_vector() && vstate_query(task_pt_regs(current)))
-> > -             total_context_size += rvv_sc_size;
->
-> Usual naming comment here about rvv.
-Ok, changing it to riscv_v_
->
-> Thanks,
-> Conor.
->
+On Thu, Jan 26, 2023 at 10:40:20AM -0800, David Matlack wrote:
+> Use kvm_arch_flush_remote_tlbs() instead of
+> CONFIG_HAVE_KVM_ARCH_TLB_FLUSH_ALL. The two mechanisms solve the same
+> problem, allowing architecture-specific code to provide a non-IPI
+> implementation of remote TLB flushing.
+> 
+> Dropping CONFIG_HAVE_KVM_ARCH_TLB_FLUSH_ALL allows KVM to standardize
+> all architectures on kvm_arch_flush_remote_tlbs() instead of maintaining
+> two mechanisms.
+> 
+> Opt to standardize on kvm_arch_flush_remote_tlbs() since it avoids
+> duplicating the generic TLB stats across architectures that implement
+> their own remote TLB flush.
+> 
+> This adds an extra function call to the ARM64 kvm_flush_remote_tlbs()
+> path, but that is a small cost in comparison to flushing remote TLBs.
+> 
+> No functional change intended.
+> 
+> Signed-off-by: David Matlack <dmatlack@google.com>
+
+Acked-by: Oliver Upton <oliver.upton@linux.dev>
+
+-- 
+Thanks,
+Oliver
 
