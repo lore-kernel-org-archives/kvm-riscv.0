@@ -1,40 +1,49 @@
-From: Oliver Upton <oliver.upton@linux.dev>
-Date: Tue, 31 Jan 2023 18:05:43 +0000
-Subject: [PATCH v2 2/7] KVM: arm64: Use kvm_arch_flush_remote_tlbs()
-In-Reply-To: <20230126184025.2294823-3-dmatlack@google.com>
-References: <20230126184025.2294823-1-dmatlack@google.com>
- <20230126184025.2294823-3-dmatlack@google.com>
-Message-ID: <Y9lYd1ONY06BEnBk@google.com>
+From: Atish Patra <atishp@atishpatra.org>
+Date: Tue, 31 Jan 2023 11:30:18 -0800
+Subject: [PATCH v3 03/14] RISC-V: Improve SBI PMU extension related definitions
+In-Reply-To: <Y9RV0cOMld20EFBI@spud>
+References: <20230127182558.2416400-1-atishp@rivosinc.com> <20230127182558.2416400-4-atishp@rivosinc.com>
+ <Y9RV0cOMld20EFBI@spud>
+Message-ID: <CAOnJCU+16EEe0OrNY3ZW_FS591+KmG5ap1OTjOL+gtqGtr7nLw@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Jan 26, 2023 at 10:40:20AM -0800, David Matlack wrote:
-> Use kvm_arch_flush_remote_tlbs() instead of
-> CONFIG_HAVE_KVM_ARCH_TLB_FLUSH_ALL. The two mechanisms solve the same
-> problem, allowing architecture-specific code to provide a non-IPI
-> implementation of remote TLB flushing.
-> 
-> Dropping CONFIG_HAVE_KVM_ARCH_TLB_FLUSH_ALL allows KVM to standardize
-> all architectures on kvm_arch_flush_remote_tlbs() instead of maintaining
-> two mechanisms.
-> 
-> Opt to standardize on kvm_arch_flush_remote_tlbs() since it avoids
-> duplicating the generic TLB stats across architectures that implement
-> their own remote TLB flush.
-> 
-> This adds an extra function call to the ARM64 kvm_flush_remote_tlbs()
-> path, but that is a small cost in comparison to flushing remote TLBs.
-> 
-> No functional change intended.
-> 
-> Signed-off-by: David Matlack <dmatlack@google.com>
+On Fri, Jan 27, 2023 at 2:53 PM Conor Dooley <conor@kernel.org> wrote:
+>
+> Yo Atish,
+>
+> On Fri, Jan 27, 2023 at 10:25:47AM -0800, Atish Patra wrote:
+> > This patch fixes/improve few minor things in SBI PMU extension
+> > definition.
+> >
+> > 1. Align all the firmware event names.
+>
+> > @@ -171,7 +171,7 @@ enum sbi_pmu_fw_generic_events_t {
+> >       SBI_PMU_FW_IPI_RECVD            = 7,
+> > -     SBI_PMU_FW_FENCE_I_RECVD        = 9,
+> > +     SBI_PMU_FW_FENCE_I_RCVD         = 9,
+> >       SBI_PMU_FW_SFENCE_VMA_RCVD      = 11,
+>
+> Alignment looks incomplete to me! Looks like you went from 2 RECVD and
+> 1 RCVD to 2 RCVD and 1 RECVD! FWIW, the spec uses RECEIVED for all of
 
-Acked-by: Oliver Upton <oliver.upton@linux.dev>
+Ahh I missed the other one. I have changed everything to RCVD just to
+keep it short.
+"RECEIVED" is too long :)
+
+
+> these:
+> https://github.com/riscv-non-isa/riscv-sbi-doc/blob/master/riscv-sbi.adoc#114-event-firmware-events-type-15
+>
+> Thanks,
+> Conor.
+>
+
 
 -- 
-Thanks,
-Oliver
+Regards,
+Atish
 
