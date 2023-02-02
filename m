@@ -1,330 +1,161 @@
-From: Anup Patel <anup@brainfault.org>
-Date: Thu, 2 Feb 2023 09:32:52 +0530
-Subject: [PATCH v4 07/14] RISC-V: KVM: Add skeleton support for perf
-In-Reply-To: <20230201231250.3806412-8-atishp@rivosinc.com>
-References: <20230201231250.3806412-1-atishp@rivosinc.com> <20230201231250.3806412-8-atishp@rivosinc.com>
-Message-ID: <CAAhSdy2CegXrUBsbLJtXZ3yGwxSPAbp=W_iW-_FuD1e1tkZM2g@mail.gmail.com>
+From: Palmer Dabbelt <palmer@dabbelt.com>
+Date: Wed, 01 Feb 2023 20:35:54 -0800 (PST)
+Subject: [PATCH v3 4/6] RISC-V: Use Zicboz in clear_page when available
+In-Reply-To: <20230130120128.1349464-5-ajones@ventanamicro.com>
+Message-ID: <mhng-39982208-6bbb-4be7-83c6-5c05da8bebc1@palmer-ri-x1c9>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Feb 2, 2023 at 4:42 AM Atish Patra <atishp@rivosinc.com> wrote:
+On Mon, 30 Jan 2023 04:01:26 PST (-0800), ajones at ventanamicro.com wrote:
+> Using memset() to zero a 4K page takes 563 total instructions
+> where 20 are branches. clear_page() with Zicboz takes 150 total
+> instructions where 16 are branches. We could reduce the numbers
+> by further unrolling, but, since the cboz block size isn't fixed,
+> we'd need a Duff device to ensure we don't execute too many
+> unrolled steps. Also, cbo.zero doesn't take an offset, so each
+> unrolled step requires it and an add instruction. This increases
+> the chance for icache misses if we unroll many times. For these
+> reasons we only unroll four times. Unrolling four times should be
+> safe as it supports cboz block sizes up to 1K when used with 4K
+> pages and it's only 24 to 32 bytes of unrolled instructions.
 >
-> This patch only adds barebone structure of perf implementation. Most of
-> the function returns zero at this point and will be implemented
-> fully in the future.
+> Another note about the Duff device idea is that it would probably
+> be best to store the number of steps needed at boot time and then
+> load the value in clear_page(). Calculating it in clear_page(),
+> particularly without the Zbb extension, would not be efficient.
 >
-> Signed-off-by: Atish Patra <atishp@rivosinc.com>
-
-Looks good to me.
-
-Reviewed-by: Anup Patel <anup@brainfault.org>
-
-Regards,
-Anup
-
+> Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
+> Acked-by: Conor Dooley <conor.dooley@microchip.com>
 > ---
->  arch/riscv/include/asm/kvm_host.h     |   4 +
->  arch/riscv/include/asm/kvm_vcpu_pmu.h |  78 +++++++++++++++
->  arch/riscv/kvm/Makefile               |   1 +
->  arch/riscv/kvm/vcpu.c                 |   7 ++
->  arch/riscv/kvm/vcpu_pmu.c             | 136 ++++++++++++++++++++++++++
->  5 files changed, 226 insertions(+)
->  create mode 100644 arch/riscv/include/asm/kvm_vcpu_pmu.h
->  create mode 100644 arch/riscv/kvm/vcpu_pmu.c
+>  arch/riscv/Kconfig                | 13 +++++++++++
+>  arch/riscv/include/asm/insn-def.h |  4 ++++
+>  arch/riscv/include/asm/page.h     |  6 +++++-
+>  arch/riscv/lib/Makefile           |  1 +
+>  arch/riscv/lib/clear_page.S       | 36 +++++++++++++++++++++++++++++++
+>  5 files changed, 59 insertions(+), 1 deletion(-)
+>  create mode 100644 arch/riscv/lib/clear_page.S
 >
-> diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
-> index 93f43a3..b90be9a 100644
-> --- a/arch/riscv/include/asm/kvm_host.h
-> +++ b/arch/riscv/include/asm/kvm_host.h
-> @@ -18,6 +18,7 @@
->  #include <asm/kvm_vcpu_insn.h>
->  #include <asm/kvm_vcpu_sbi.h>
->  #include <asm/kvm_vcpu_timer.h>
-> +#include <asm/kvm_vcpu_pmu.h>
+> diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
+> index 33bbdc33cef8..3759a2f6edd5 100644
+> --- a/arch/riscv/Kconfig
+> +++ b/arch/riscv/Kconfig
+> @@ -432,6 +432,19 @@ config RISCV_ISA_ZICBOM
 >
->  #define KVM_MAX_VCPUS                  1024
+>  	   If you don't know what to do here, say Y.
 >
-> @@ -228,6 +229,9 @@ struct kvm_vcpu_arch {
->
->         /* Don't run the VCPU (blocked) */
->         bool pause;
+> +config RISCV_ISA_ZICBOZ
+> +	bool "Zicboz extension support for faster zeroing of memory"
+> +	depends on !XIP_KERNEL && MMU
+> +	select RISCV_ALTERNATIVE
+> +	default y
+> +	help
+> +	   Enable the use of the ZICBOZ extension (cbo.zero instruction)
+> +	   when available.
 > +
-> +       /* Performance monitoring context */
-> +       struct kvm_pmu pmu_context;
->  };
+> +	   The Zicboz extension is used for faster zeroing of memory.
+> +
+> +	   If you don't know what to do here, say Y.
+> +
+>  config TOOLCHAIN_HAS_ZIHINTPAUSE
+>  	bool
+>  	default y
+> diff --git a/arch/riscv/include/asm/insn-def.h b/arch/riscv/include/asm/insn-def.h
+> index e01ab51f50d2..6960beb75f32 100644
+> --- a/arch/riscv/include/asm/insn-def.h
+> +++ b/arch/riscv/include/asm/insn-def.h
+> @@ -192,4 +192,8 @@
+>  	INSN_I(OPCODE_MISC_MEM, FUNC3(2), __RD(0),		\
+>  	       RS1(base), SIMM12(2))
 >
->  static inline void kvm_arch_hardware_unsetup(void) {}
-> diff --git a/arch/riscv/include/asm/kvm_vcpu_pmu.h b/arch/riscv/include/asm/kvm_vcpu_pmu.h
+> +#define CBO_zero(base)						\
+> +	INSN_I(OPCODE_MISC_MEM, FUNC3(2), __RD(0),		\
+> +	       RS1(base), SIMM12(4))
+> +
+>  #endif /* __ASM_INSN_DEF_H */
+> diff --git a/arch/riscv/include/asm/page.h b/arch/riscv/include/asm/page.h
+> index 9f432c1b5289..ccd168fe29d2 100644
+> --- a/arch/riscv/include/asm/page.h
+> +++ b/arch/riscv/include/asm/page.h
+> @@ -49,10 +49,14 @@
+>
+>  #ifndef __ASSEMBLY__
+>
+> +#ifdef CONFIG_RISCV_ISA_ZICBOZ
+> +void clear_page(void *page);
+> +#else
+>  #define clear_page(pgaddr)			memset((pgaddr), 0, PAGE_SIZE)
+> +#endif
+>  #define copy_page(to, from)			memcpy((to), (from), PAGE_SIZE)
+>
+> -#define clear_user_page(pgaddr, vaddr, page)	memset((pgaddr), 0, PAGE_SIZE)
+> +#define clear_user_page(pgaddr, vaddr, page)	clear_page(pgaddr)
+>  #define copy_user_page(vto, vfrom, vaddr, topg) \
+>  			memcpy((vto), (vfrom), PAGE_SIZE)
+>
+> diff --git a/arch/riscv/lib/Makefile b/arch/riscv/lib/Makefile
+> index 25d5c9664e57..9ee5e2ab5143 100644
+> --- a/arch/riscv/lib/Makefile
+> +++ b/arch/riscv/lib/Makefile
+> @@ -5,5 +5,6 @@ lib-y			+= memset.o
+>  lib-y			+= memmove.o
+>  lib-$(CONFIG_MMU)	+= uaccess.o
+>  lib-$(CONFIG_64BIT)	+= tishift.o
+> +lib-$(CONFIG_RISCV_ISA_ZICBOZ)	+= clear_page.o
+>
+>  obj-$(CONFIG_FUNCTION_ERROR_INJECTION) += error-inject.o
+> diff --git a/arch/riscv/lib/clear_page.S b/arch/riscv/lib/clear_page.S
 > new file mode 100644
-> index 0000000..e2b4038
+> index 000000000000..49f29139a5b6
 > --- /dev/null
-> +++ b/arch/riscv/include/asm/kvm_vcpu_pmu.h
-> @@ -0,0 +1,78 @@
+> +++ b/arch/riscv/lib/clear_page.S
+> @@ -0,0 +1,36 @@
 > +/* SPDX-License-Identifier: GPL-2.0-only */
 > +/*
-> + * Copyright (c) 2023 Rivos Inc
-> + *
-> + * Authors:
-> + *     Atish Patra <atishp@rivosinc.com>
+> + * Copyright (c) 2023 Ventana Micro Systems Inc.
 > + */
 > +
-> +#ifndef __KVM_VCPU_RISCV_PMU_H
-> +#define __KVM_VCPU_RISCV_PMU_H
+> +#include <linux/linkage.h>
+> +#include <asm/asm.h>
+> +#include <asm/alternative-macros.h>
+> +#include <asm/hwcap.h>
+> +#include <asm/insn-def.h>
+> +#include <asm/page.h>
 > +
-> +#include <linux/perf/riscv_pmu.h>
-> +#include <asm/kvm_vcpu_sbi.h>
-> +#include <asm/sbi.h>
-> +
-> +#ifdef CONFIG_RISCV_PMU_SBI
-> +#define RISCV_KVM_MAX_FW_CTRS  32
-> +
-> +#if RISCV_KVM_MAX_FW_CTRS > 32
-> +#error "Maximum firmware counter can't exceed 32 without increasing the RISCV_MAX_COUNTERS"
-> +#endif
-> +
-> +#define RISCV_MAX_COUNTERS      64
-> +
-> +/* Per virtual pmu counter data */
-> +struct kvm_pmc {
-> +       u8 idx;
-> +       struct perf_event *perf_event;
-> +       uint64_t counter_val;
-> +       union sbi_pmu_ctr_info cinfo;
-> +       /* Event monitoring status */
-> +       bool started;
-> +};
-> +
-> +/* PMU data structure per vcpu */
-> +struct kvm_pmu {
-> +       struct kvm_pmc pmc[RISCV_MAX_COUNTERS];
-> +       /* Number of the virtual firmware counters available */
-> +       int num_fw_ctrs;
-> +       /* Number of the virtual hardware counters available */
-> +       int num_hw_ctrs;
-> +       /* A flag to indicate that pmu initialization is done */
-> +       bool init_done;
-> +       /* Bit map of all the virtual counter used */
-> +       DECLARE_BITMAP(pmc_in_use, RISCV_MAX_COUNTERS);
-> +};
-> +
-> +#define vcpu_to_pmu(vcpu) (&(vcpu)->arch.pmu_context)
-> +#define pmu_to_vcpu(pmu)  (container_of((pmu), struct kvm_vcpu, arch.pmu_context))
-> +
-> +int kvm_riscv_vcpu_pmu_num_ctrs(struct kvm_vcpu *vcpu, struct kvm_vcpu_sbi_return *retdata);
-> +int kvm_riscv_vcpu_pmu_ctr_info(struct kvm_vcpu *vcpu, unsigned long cidx,
-> +                               struct kvm_vcpu_sbi_return *retdata);
-> +int kvm_riscv_vcpu_pmu_ctr_start(struct kvm_vcpu *vcpu, unsigned long ctr_base,
-> +                                unsigned long ctr_mask, unsigned long flag, uint64_t ival,
-> +                                struct kvm_vcpu_sbi_return *retdata);
-> +int kvm_riscv_vcpu_pmu_ctr_stop(struct kvm_vcpu *vcpu, unsigned long ctr_base,
-> +                               unsigned long ctr_mask, unsigned long flag,
-> +                               struct kvm_vcpu_sbi_return *retdata);
-> +int kvm_riscv_vcpu_pmu_ctr_cfg_match(struct kvm_vcpu *vcpu, unsigned long ctr_base,
-> +                                    unsigned long ctr_mask, unsigned long flag,
-> +                                    unsigned long eidx, uint64_t evtdata,
-> +                                    struct kvm_vcpu_sbi_return *retdata);
-> +int kvm_riscv_vcpu_pmu_ctr_read(struct kvm_vcpu *vcpu, unsigned long cidx,
-> +                               struct kvm_vcpu_sbi_return *retdata);
-> +void kvm_riscv_vcpu_pmu_init(struct kvm_vcpu *vcpu);
-> +void kvm_riscv_vcpu_pmu_deinit(struct kvm_vcpu *vcpu);
-> +void kvm_riscv_vcpu_pmu_reset(struct kvm_vcpu *vcpu);
-> +
-> +#else
-> +struct kvm_pmu {
-> +};
-> +
-> +static inline void kvm_riscv_vcpu_pmu_init(struct kvm_vcpu *vcpu) {}
-> +static inline void kvm_riscv_vcpu_pmu_deinit(struct kvm_vcpu *vcpu) {}
-> +static inline void kvm_riscv_vcpu_pmu_reset(struct kvm_vcpu *vcpu) {}
-> +#endif /* CONFIG_RISCV_PMU_SBI */
-> +#endif /* !__KVM_VCPU_RISCV_PMU_H */
-> diff --git a/arch/riscv/kvm/Makefile b/arch/riscv/kvm/Makefile
-> index 019df920..5de1053 100644
-> --- a/arch/riscv/kvm/Makefile
-> +++ b/arch/riscv/kvm/Makefile
-> @@ -25,3 +25,4 @@ kvm-y += vcpu_sbi_base.o
->  kvm-y += vcpu_sbi_replace.o
->  kvm-y += vcpu_sbi_hsm.o
->  kvm-y += vcpu_timer.o
-> +kvm-$(CONFIG_RISCV_PMU_SBI) += vcpu_pmu.o
-> diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-> index 7c08567..7d010b0 100644
-> --- a/arch/riscv/kvm/vcpu.c
-> +++ b/arch/riscv/kvm/vcpu.c
-> @@ -138,6 +138,8 @@ static void kvm_riscv_reset_vcpu(struct kvm_vcpu *vcpu)
->         WRITE_ONCE(vcpu->arch.irqs_pending, 0);
->         WRITE_ONCE(vcpu->arch.irqs_pending_mask, 0);
->
-> +       kvm_riscv_vcpu_pmu_reset(vcpu);
-> +
->         vcpu->arch.hfence_head = 0;
->         vcpu->arch.hfence_tail = 0;
->         memset(vcpu->arch.hfence_queue, 0, sizeof(vcpu->arch.hfence_queue));
-> @@ -194,6 +196,9 @@ int kvm_arch_vcpu_create(struct kvm_vcpu *vcpu)
->         /* Setup VCPU timer */
->         kvm_riscv_vcpu_timer_init(vcpu);
->
-> +       /* setup performance monitoring */
-> +       kvm_riscv_vcpu_pmu_init(vcpu);
-> +
->         /* Reset VCPU */
->         kvm_riscv_reset_vcpu(vcpu);
->
-> @@ -216,6 +221,8 @@ void kvm_arch_vcpu_destroy(struct kvm_vcpu *vcpu)
->         /* Cleanup VCPU timer */
->         kvm_riscv_vcpu_timer_deinit(vcpu);
->
-> +       kvm_riscv_vcpu_pmu_deinit(vcpu);
-> +
->         /* Free unused pages pre-allocated for G-stage page table mappings */
->         kvm_mmu_free_memory_cache(&vcpu->arch.mmu_page_cache);
->  }
-> diff --git a/arch/riscv/kvm/vcpu_pmu.c b/arch/riscv/kvm/vcpu_pmu.c
-> new file mode 100644
-> index 0000000..2dad37f
-> --- /dev/null
-> +++ b/arch/riscv/kvm/vcpu_pmu.c
-> @@ -0,0 +1,136 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +/*
-> + * Copyright (c) 2023 Rivos Inc
-> + *
-> + * Authors:
-> + *     Atish Patra <atishp@rivosinc.com>
-> + */
-> +
-> +#include <linux/errno.h>
-> +#include <linux/err.h>
-> +#include <linux/kvm_host.h>
-> +#include <linux/perf/riscv_pmu.h>
-> +#include <asm/csr.h>
-> +#include <asm/kvm_vcpu_sbi.h>
-> +#include <asm/kvm_vcpu_pmu.h>
-> +#include <linux/kvm_host.h>
-> +
-> +#define kvm_pmu_num_counters(pmu) ((pmu)->num_hw_ctrs + (pmu)->num_fw_ctrs)
-> +
-> +int kvm_riscv_vcpu_pmu_num_ctrs(struct kvm_vcpu *vcpu, struct kvm_vcpu_sbi_return *retdata)
-> +{
-> +       struct kvm_pmu *kvpmu = vcpu_to_pmu(vcpu);
-> +
-> +       retdata->out_val = kvm_pmu_num_counters(kvpmu);
-> +
-> +       return 0;
-> +}
-> +
-> +int kvm_riscv_vcpu_pmu_ctr_info(struct kvm_vcpu *vcpu, unsigned long cidx,
-> +                               struct kvm_vcpu_sbi_return *retdata)
-> +{
-> +       struct kvm_pmu *kvpmu = vcpu_to_pmu(vcpu);
-> +
-> +       if (cidx > RISCV_MAX_COUNTERS || cidx == 1) {
-> +               retdata->err_val = SBI_ERR_INVALID_PARAM;
-> +               return 0;
-> +       }
-> +
-> +       retdata->out_val = kvpmu->pmc[cidx].cinfo.value;
-> +
-> +       return 0;
-> +}
-> +
-> +int kvm_riscv_vcpu_pmu_ctr_start(struct kvm_vcpu *vcpu, unsigned long ctr_base,
-> +                                unsigned long ctr_mask, unsigned long flag, uint64_t ival,
-> +                                struct kvm_vcpu_sbi_return *retdata)
-> +{
-> +       /* TODO */
-> +       return 0;
-> +}
-> +
-> +int kvm_riscv_vcpu_pmu_ctr_stop(struct kvm_vcpu *vcpu, unsigned long ctr_base,
-> +                               unsigned long ctr_mask, unsigned long flag,
-> +                               struct kvm_vcpu_sbi_return *retdata)
-> +{
-> +       /* TODO */
-> +       return 0;
-> +}
-> +
-> +int kvm_riscv_vcpu_pmu_ctr_cfg_match(struct kvm_vcpu *vcpu, unsigned long ctr_base,
-> +                                    unsigned long ctr_mask, unsigned long flag,
-> +                                    unsigned long eidx, uint64_t evtdata,
-> +                                    struct kvm_vcpu_sbi_return *retdata)
-> +{
-> +       /* TODO */
-> +       return 0;
-> +}
-> +
-> +int kvm_riscv_vcpu_pmu_ctr_read(struct kvm_vcpu *vcpu, unsigned long cidx,
-> +                               struct kvm_vcpu_sbi_return *retdata)
-> +{
-> +       /* TODO */
-> +       return 0;
-> +}
-> +
-> +void kvm_riscv_vcpu_pmu_init(struct kvm_vcpu *vcpu)
-> +{
-> +       int i = 0, ret, num_hw_ctrs = 0, hpm_width = 0;
-> +       struct kvm_pmu *kvpmu = vcpu_to_pmu(vcpu);
-> +       struct kvm_pmc *pmc;
-> +
-> +       ret = riscv_pmu_get_hpm_info(&hpm_width, &num_hw_ctrs);
-> +       if (ret < 0 || !hpm_width || !num_hw_ctrs)
-> +               return;
-> +
-> +       /*
-> +        * It is guranteed that RISCV_KVM_MAX_FW_CTRS can't exceed 32 as
-> +        * that may exceed total number of counters more than RISCV_MAX_COUNTERS
-> +        */
-> +       kvpmu->num_hw_ctrs = num_hw_ctrs;
-> +       kvpmu->num_fw_ctrs = RISCV_KVM_MAX_FW_CTRS;
-> +
-> +       /*
-> +        * There is no correlation between the logical hardware counter and virtual counters.
-> +        * However, we need to encode a hpmcounter CSR in the counter info field so that
-> +        * KVM can trap n emulate the read. This works well in the migration use case as
-> +        * KVM doesn't care if the actual hpmcounter is available in the hardware or not.
-> +        */
-> +       for (i = 0; i < kvm_pmu_num_counters(kvpmu); i++) {
-> +               /* TIME CSR shouldn't be read from perf interface */
-> +               if (i == 1)
-> +                       continue;
-> +               pmc = &kvpmu->pmc[i];
-> +               pmc->idx = i;
-> +               if (i < kvpmu->num_hw_ctrs) {
-> +                       pmc->cinfo.type = SBI_PMU_CTR_TYPE_HW;
-> +                       if (i < 3)
-> +                               /* CY, IR counters */
-> +                               pmc->cinfo.width = 63;
-> +                       else
-> +                               pmc->cinfo.width = hpm_width;
-> +                       /*
-> +                        * The CSR number doesn't have any relation with the logical
-> +                        * hardware counters. The CSR numbers are encoded sequentially
-> +                        * to avoid maintaining a map between the virtual counter
-> +                        * and CSR number.
-> +                        */
-> +                       pmc->cinfo.csr = CSR_CYCLE + i;
-> +               } else {
-> +                       pmc->cinfo.type = SBI_PMU_CTR_TYPE_FW;
-> +                       pmc->cinfo.width = BITS_PER_LONG - 1;
-> +               }
-> +       }
-> +
-> +       kvpmu->init_done = true;
-> +}
-> +
-> +void kvm_riscv_vcpu_pmu_deinit(struct kvm_vcpu *vcpu)
-> +{
-> +       /* TODO */
-> +}
-> +
-> +void kvm_riscv_vcpu_pmu_reset(struct kvm_vcpu *vcpu)
-> +{
-> +       kvm_riscv_vcpu_pmu_deinit(vcpu);
-> +}
-> --
-> 2.25.1
->
+> +/* void clear_page(void *page) */
+> +ENTRY(__clear_page)
+> +WEAK(clear_page)
+> +	li	a2, PAGE_SIZE
+> +	ALTERNATIVE("j .Lno_zicboz", "nop",
+> +		    0, RISCV_ISA_EXT_ZICBOZ, CONFIG_RISCV_ISA_ZICBOZ)
+> +	la	a1, riscv_cboz_block_size
+> +	lw	a1, 0(a1)
+
+You should be able to just "lw a1, riscv_cboz_block_size", which can 
+sometimes generate better code.
+
+> +	add	a2, a0, a2
+> +.Lzero_loop:
+> +	CBO_zero(a0)
+> +	add	a0, a0, a1
+> +	CBO_zero(a0)
+> +	add	a0, a0, a1
+
+We were talking about this in the patchwork call: this risks overflow if 
+the block size is bigger than a quarter of a page.  That's probably 
+pretty rare, but given that there's already an alternative for the jump 
+it's easy to check.
+
+> +	CBO_zero(a0)
+> +	add	a0, a0, a1
+> +	CBO_zero(a0)
+> +	add	a0, a0, a1
+> +	bltu	a0, a2, .Lzero_loop
+> +	ret
+> +.Lno_zicboz:
+> +	li	a1, 0
+> +	tail	__memset
+> +END(__clear_page)
 
