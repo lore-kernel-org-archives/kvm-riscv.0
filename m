@@ -1,181 +1,41 @@
 From: Conor Dooley <conor.dooley@microchip.com>
-Date: Thu, 2 Feb 2023 07:52:37 +0000
-Subject: [PATCH v4 08/14] RISC-V: KVM: Add SBI PMU extension support
-In-Reply-To: <20230201231250.3806412-9-atishp@rivosinc.com>
+Date: Thu, 2 Feb 2023 11:33:53 +0000
+Subject: [PATCH v4 07/14] RISC-V: KVM: Add skeleton support for perf
+In-Reply-To: <20230201231250.3806412-8-atishp@rivosinc.com>
 References: <20230201231250.3806412-1-atishp@rivosinc.com>
- <20230201231250.3806412-9-atishp@rivosinc.com>
-Message-ID: <Y9trxX9hj6/pi1b1@wendy>
+ <20230201231250.3806412-8-atishp@rivosinc.com>
+Message-ID: <Y9ufoeZ/4obZDJz6@wendy>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hey Atish,
-
-On Wed, Feb 01, 2023 at 03:12:44PM -0800, Atish Patra wrote:
-> SBI PMU extension allows KVM guests to configure/start/stop/query about
-> the PMU counters in virtualized enviornment as well.
+On Wed, Feb 01, 2023 at 03:12:43PM -0800, Atish Patra wrote:
+> This patch only adds barebone structure of perf implementation. Most of
+> the function returns zero at this point and will be implemented
+> fully in the future.
 > 
-> In order to allow that, KVM implements the entire SBI PMU extension.
-> 
-> Reviewed-by: Anup Patel <anup@brainfault.org>
 > Signed-off-by: Atish Patra <atishp@rivosinc.com>
+> +/* Per virtual pmu counter data */
+> +struct kvm_pmc {
+> +	u8 idx;
+> +	struct perf_event *perf_event;
+> +	uint64_t counter_val;
 
-Could complaints from CI for you:
-
-+      1 ../arch/riscv/kvm/vcpu_sbi_pmu.c:73:15: warning: no previous prototype for 'kvm_sbi_ext_pmu_probe' [-Wmissing-prototypes]
-+      1 ../arch/riscv/kvm/vcpu_sbi_pmu.c:73:15: warning: symbol 'kvm_sbi_ext_pmu_probe' was not declared. Should it be static?
-+      1 ../arch/riscv/kvm/vcpu_sbi_pmu.c:80:37: warning: symbol 'vcpu_sbi_ext_pmu' was not declared. Should it be static?
+CI also complained that here, and elsewhere, you used uint64_t rather
+than u64. Am I missing a reason for not using the regular types?
 
 Thanks,
 Conor.
 
-> ---
->  arch/riscv/kvm/Makefile       |  2 +-
->  arch/riscv/kvm/vcpu_sbi.c     | 11 +++++
->  arch/riscv/kvm/vcpu_sbi_pmu.c | 85 +++++++++++++++++++++++++++++++++++
->  3 files changed, 97 insertions(+), 1 deletion(-)
->  create mode 100644 arch/riscv/kvm/vcpu_sbi_pmu.c
-> 
-> diff --git a/arch/riscv/kvm/Makefile b/arch/riscv/kvm/Makefile
-> index 5de1053..278e97c 100644
-> --- a/arch/riscv/kvm/Makefile
-> +++ b/arch/riscv/kvm/Makefile
-> @@ -25,4 +25,4 @@ kvm-y += vcpu_sbi_base.o
->  kvm-y += vcpu_sbi_replace.o
->  kvm-y += vcpu_sbi_hsm.o
->  kvm-y += vcpu_timer.o
-> -kvm-$(CONFIG_RISCV_PMU_SBI) += vcpu_pmu.o
-> +kvm-$(CONFIG_RISCV_PMU_SBI) += vcpu_pmu.o vcpu_sbi_pmu.o
-> diff --git a/arch/riscv/kvm/vcpu_sbi.c b/arch/riscv/kvm/vcpu_sbi.c
-> index fe2897e..15fde15 100644
-> --- a/arch/riscv/kvm/vcpu_sbi.c
-> +++ b/arch/riscv/kvm/vcpu_sbi.c
-> @@ -20,6 +20,16 @@ static const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_v01 = {
->  };
->  #endif
->  
-> +#ifdef CONFIG_RISCV_PMU_SBI
-> +extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_pmu;
-> +#else
-> +static const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_pmu = {
-> +	.extid_start = -1UL,
-> +	.extid_end = -1UL,
-> +	.handler = NULL,
-> +};
-> +#endif
-> +
->  static const struct kvm_vcpu_sbi_extension *sbi_ext[] = {
->  	&vcpu_sbi_ext_v01,
->  	&vcpu_sbi_ext_base,
-> @@ -28,6 +38,7 @@ static const struct kvm_vcpu_sbi_extension *sbi_ext[] = {
->  	&vcpu_sbi_ext_rfence,
->  	&vcpu_sbi_ext_srst,
->  	&vcpu_sbi_ext_hsm,
-> +	&vcpu_sbi_ext_pmu,
->  	&vcpu_sbi_ext_experimental,
->  	&vcpu_sbi_ext_vendor,
->  };
-> diff --git a/arch/riscv/kvm/vcpu_sbi_pmu.c b/arch/riscv/kvm/vcpu_sbi_pmu.c
-> new file mode 100644
-> index 0000000..e028b0a
-> --- /dev/null
-> +++ b/arch/riscv/kvm/vcpu_sbi_pmu.c
-> @@ -0,0 +1,85 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +/*
-> + * Copyright (c) 2023 Rivos Inc
-> + *
-> + * Authors:
-> + *     Atish Patra <atishp@rivosinc.com>
-> + */
-> +
-> +#include <linux/errno.h>
-> +#include <linux/err.h>
-> +#include <linux/kvm_host.h>
-> +#include <asm/csr.h>
-> +#include <asm/sbi.h>
-> +#include <asm/kvm_vcpu_sbi.h>
-> +
-> +static int kvm_sbi_ext_pmu_handler(struct kvm_vcpu *vcpu, struct kvm_run *run,
-> +				   struct kvm_vcpu_sbi_return *retdata)
-> +{
-> +	int ret = 0;
-> +	struct kvm_cpu_context *cp = &vcpu->arch.guest_context;
-> +	struct kvm_pmu *kvpmu = vcpu_to_pmu(vcpu);
-> +	unsigned long funcid = cp->a6;
-> +	uint64_t temp;
-> +
-> +	/* Return not supported if PMU is not initialized */
-> +	if (!kvpmu->init_done)
-> +		return -EINVAL;
-> +
-> +	switch (funcid) {
-> +	case SBI_EXT_PMU_NUM_COUNTERS:
-> +		ret = kvm_riscv_vcpu_pmu_num_ctrs(vcpu, retdata);
-> +		break;
-> +	case SBI_EXT_PMU_COUNTER_GET_INFO:
-> +		ret = kvm_riscv_vcpu_pmu_ctr_info(vcpu, cp->a0, retdata);
-> +		break;
-> +	case SBI_EXT_PMU_COUNTER_CFG_MATCH:
-> +#if defined(CONFIG_32BIT)
-> +		temp = ((uint64_t)cp->a5 << 32) | cp->a4;
-> +#else
-> +		temp = cp->a4;
-> +#endif
-> +		/*
-> +		 * This can fail if perf core framework fails to create an event.
-> +		 * Forward the error to the user space because its an error happened
-> +		 * within host kernel. The other option would be convert this to
-> +		 * an SBI error and forward to the guest.
-> +		 */
-> +		ret = kvm_riscv_vcpu_pmu_ctr_cfg_match(vcpu, cp->a0, cp->a1,
-> +						       cp->a2, cp->a3, temp, retdata);
-> +		break;
-> +	case SBI_EXT_PMU_COUNTER_START:
-> +#if defined(CONFIG_32BIT)
-> +		temp = ((uint64_t)cp->a4 << 32) | cp->a3;
-> +#else
-> +		temp = cp->a3;
-> +#endif
-> +		ret = kvm_riscv_vcpu_pmu_ctr_start(vcpu, cp->a0, cp->a1, cp->a2,
-> +						   temp, retdata);
-> +		break;
-> +	case SBI_EXT_PMU_COUNTER_STOP:
-> +		ret = kvm_riscv_vcpu_pmu_ctr_stop(vcpu, cp->a0, cp->a1, cp->a2, retdata);
-> +		break;
-> +	case SBI_EXT_PMU_COUNTER_FW_READ:
-> +		ret = kvm_riscv_vcpu_pmu_ctr_read(vcpu, cp->a0, retdata);
-> +		break;
-> +	default:
-> +		retdata->err_val = SBI_ERR_NOT_SUPPORTED;
-> +	}
-> +
-> +	return ret;
-> +}
-> +
-> +unsigned long kvm_sbi_ext_pmu_probe(struct kvm_vcpu *vcpu)
-> +{
-> +	struct kvm_pmu *kvpmu = vcpu_to_pmu(vcpu);
-> +
-> +	return kvpmu->init_done;
-> +}
-> +
-> +const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_pmu = {
-> +	.extid_start = SBI_EXT_PMU,
-> +	.extid_end = SBI_EXT_PMU,
-> +	.handler = kvm_sbi_ext_pmu_handler,
-> +	.probe = kvm_sbi_ext_pmu_probe,
-> +};
-> -- 
-> 2.25.1
-> 
-> 
+> +	union sbi_pmu_ctr_info cinfo;
+> +	/* Event monitoring status */
+> +	bool started;
 -------------- next part --------------
 A non-text attachment was scrubbed...
 Name: signature.asc
 Type: application/pgp-signature
 Size: 228 bytes
 Desc: not available
-URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20230202/00bcd875/attachment-0001.sig>
+URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20230202/cbf4587b/attachment-0001.sig>
