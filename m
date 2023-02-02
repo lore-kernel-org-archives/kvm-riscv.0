@@ -1,178 +1,50 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Thu, 2 Feb 2023 18:29:27 +0100
-Subject: [PATCH v4 08/14] RISC-V: KVM: Add SBI PMU extension support
-In-Reply-To: <20230201231250.3806412-9-atishp@rivosinc.com>
+Date: Thu, 2 Feb 2023 18:30:40 +0100
+Subject: [PATCH v4 09/14] RISC-V: KVM: Make PMU functionality depend on
+ Sscofpmf
+In-Reply-To: <20230201231250.3806412-10-atishp@rivosinc.com>
 References: <20230201231250.3806412-1-atishp@rivosinc.com>
- <20230201231250.3806412-9-atishp@rivosinc.com>
-Message-ID: <20230202172927.jlwjkv6nbvhzcakw@orel>
+ <20230201231250.3806412-10-atishp@rivosinc.com>
+Message-ID: <20230202173040.e4rdrkdeuq7vdauk@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Feb 01, 2023 at 03:12:44PM -0800, Atish Patra wrote:
-> SBI PMU extension allows KVM guests to configure/start/stop/query about
-> the PMU counters in virtualized enviornment as well.
-> 
-> In order to allow that, KVM implements the entire SBI PMU extension.
+On Wed, Feb 01, 2023 at 03:12:45PM -0800, Atish Patra wrote:
+> The privilege mode filtering feature must be available in the host so
+> that the host can inhibit the counters while the execution is in HS mode.
+> Otherwise, the guests may have access to critical guest information.
 > 
 > Reviewed-by: Anup Patel <anup@brainfault.org>
 > Signed-off-by: Atish Patra <atishp@rivosinc.com>
 > ---
->  arch/riscv/kvm/Makefile       |  2 +-
->  arch/riscv/kvm/vcpu_sbi.c     | 11 +++++
->  arch/riscv/kvm/vcpu_sbi_pmu.c | 85 +++++++++++++++++++++++++++++++++++
->  3 files changed, 97 insertions(+), 1 deletion(-)
->  create mode 100644 arch/riscv/kvm/vcpu_sbi_pmu.c
+>  arch/riscv/kvm/vcpu_pmu.c | 8 ++++++++
+>  1 file changed, 8 insertions(+)
 > 
-> diff --git a/arch/riscv/kvm/Makefile b/arch/riscv/kvm/Makefile
-> index 5de1053..278e97c 100644
-> --- a/arch/riscv/kvm/Makefile
-> +++ b/arch/riscv/kvm/Makefile
-> @@ -25,4 +25,4 @@ kvm-y += vcpu_sbi_base.o
->  kvm-y += vcpu_sbi_replace.o
->  kvm-y += vcpu_sbi_hsm.o
->  kvm-y += vcpu_timer.o
-> -kvm-$(CONFIG_RISCV_PMU_SBI) += vcpu_pmu.o
-> +kvm-$(CONFIG_RISCV_PMU_SBI) += vcpu_pmu.o vcpu_sbi_pmu.o
-> diff --git a/arch/riscv/kvm/vcpu_sbi.c b/arch/riscv/kvm/vcpu_sbi.c
-> index fe2897e..15fde15 100644
-> --- a/arch/riscv/kvm/vcpu_sbi.c
-> +++ b/arch/riscv/kvm/vcpu_sbi.c
-> @@ -20,6 +20,16 @@ static const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_v01 = {
->  };
->  #endif
+> diff --git a/arch/riscv/kvm/vcpu_pmu.c b/arch/riscv/kvm/vcpu_pmu.c
+> index 2dad37f..9a531fe 100644
+> --- a/arch/riscv/kvm/vcpu_pmu.c
+> +++ b/arch/riscv/kvm/vcpu_pmu.c
+> @@ -79,6 +79,14 @@ void kvm_riscv_vcpu_pmu_init(struct kvm_vcpu *vcpu)
+>  	struct kvm_pmu *kvpmu = vcpu_to_pmu(vcpu);
+>  	struct kvm_pmc *pmc;
 >  
-> +#ifdef CONFIG_RISCV_PMU_SBI
-> +extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_pmu;
-> +#else
-> +static const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_pmu = {
-> +	.extid_start = -1UL,
-> +	.extid_end = -1UL,
-> +	.handler = NULL,
-> +};
-> +#endif
+> +	/*
+> +	 * PMU functionality should be only available to guests if privilege mode
+> +	 * filtering is available in the host. Otherwise, guest will always count
+> +	 * events while the execution is in hypervisor mode.
+> +	 */
+> +	if (!riscv_isa_extension_available(NULL, SSCOFPMF))
+> +		return;
 > +
->  static const struct kvm_vcpu_sbi_extension *sbi_ext[] = {
->  	&vcpu_sbi_ext_v01,
->  	&vcpu_sbi_ext_base,
-> @@ -28,6 +38,7 @@ static const struct kvm_vcpu_sbi_extension *sbi_ext[] = {
->  	&vcpu_sbi_ext_rfence,
->  	&vcpu_sbi_ext_srst,
->  	&vcpu_sbi_ext_hsm,
-> +	&vcpu_sbi_ext_pmu,
->  	&vcpu_sbi_ext_experimental,
->  	&vcpu_sbi_ext_vendor,
->  };
-> diff --git a/arch/riscv/kvm/vcpu_sbi_pmu.c b/arch/riscv/kvm/vcpu_sbi_pmu.c
-> new file mode 100644
-> index 0000000..e028b0a
-> --- /dev/null
-> +++ b/arch/riscv/kvm/vcpu_sbi_pmu.c
-> @@ -0,0 +1,85 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +/*
-> + * Copyright (c) 2023 Rivos Inc
-> + *
-> + * Authors:
-> + *     Atish Patra <atishp@rivosinc.com>
-> + */
-> +
-> +#include <linux/errno.h>
-> +#include <linux/err.h>
-> +#include <linux/kvm_host.h>
-> +#include <asm/csr.h>
-> +#include <asm/sbi.h>
-> +#include <asm/kvm_vcpu_sbi.h>
-> +
-> +static int kvm_sbi_ext_pmu_handler(struct kvm_vcpu *vcpu, struct kvm_run *run,
-> +				   struct kvm_vcpu_sbi_return *retdata)
-> +{
-> +	int ret = 0;
-> +	struct kvm_cpu_context *cp = &vcpu->arch.guest_context;
-> +	struct kvm_pmu *kvpmu = vcpu_to_pmu(vcpu);
-> +	unsigned long funcid = cp->a6;
-> +	uint64_t temp;
-> +
-> +	/* Return not supported if PMU is not initialized */
-> +	if (!kvpmu->init_done)
-> +		return -EINVAL;
-
-Shouldn't this be the following?
-
-  if (!kvpmu->init_done)
-     retdata->err_val = SBI_ERR_NOT_SUPPORTED;
-     return 0;
-  }
-
-> +
-> +	switch (funcid) {
-> +	case SBI_EXT_PMU_NUM_COUNTERS:
-> +		ret = kvm_riscv_vcpu_pmu_num_ctrs(vcpu, retdata);
-> +		break;
-> +	case SBI_EXT_PMU_COUNTER_GET_INFO:
-> +		ret = kvm_riscv_vcpu_pmu_ctr_info(vcpu, cp->a0, retdata);
-> +		break;
-> +	case SBI_EXT_PMU_COUNTER_CFG_MATCH:
-> +#if defined(CONFIG_32BIT)
-> +		temp = ((uint64_t)cp->a5 << 32) | cp->a4;
-> +#else
-> +		temp = cp->a4;
-> +#endif
-> +		/*
-> +		 * This can fail if perf core framework fails to create an event.
-> +		 * Forward the error to the user space because its an error happened
-
-"Forward the error to userspace because it's an error which happened within
- the host kernel."
-                                        
-> +		 * within host kernel. The other option would be convert this to
-                                                                ^ to
-> +		 * an SBI error and forward to the guest.
-> +		 */
-> +		ret = kvm_riscv_vcpu_pmu_ctr_cfg_match(vcpu, cp->a0, cp->a1,
-> +						       cp->a2, cp->a3, temp, retdata);
-> +		break;
-> +	case SBI_EXT_PMU_COUNTER_START:
-> +#if defined(CONFIG_32BIT)
-> +		temp = ((uint64_t)cp->a4 << 32) | cp->a3;
-> +#else
-> +		temp = cp->a3;
-> +#endif
-> +		ret = kvm_riscv_vcpu_pmu_ctr_start(vcpu, cp->a0, cp->a1, cp->a2,
-> +						   temp, retdata);
-> +		break;
-> +	case SBI_EXT_PMU_COUNTER_STOP:
-> +		ret = kvm_riscv_vcpu_pmu_ctr_stop(vcpu, cp->a0, cp->a1, cp->a2, retdata);
-> +		break;
-> +	case SBI_EXT_PMU_COUNTER_FW_READ:
-> +		ret = kvm_riscv_vcpu_pmu_ctr_read(vcpu, cp->a0, retdata);
-> +		break;
-> +	default:
-> +		retdata->err_val = SBI_ERR_NOT_SUPPORTED;
-> +	}
-> +
-> +	return ret;
-> +}
-> +
-> +unsigned long kvm_sbi_ext_pmu_probe(struct kvm_vcpu *vcpu)
-> +{
-> +	struct kvm_pmu *kvpmu = vcpu_to_pmu(vcpu);
-> +
-> +	return kvpmu->init_done;
-> +}
-> +
-> +const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_pmu = {
-> +	.extid_start = SBI_EXT_PMU,
-> +	.extid_end = SBI_EXT_PMU,
-> +	.handler = kvm_sbi_ext_pmu_handler,
-> +	.probe = kvm_sbi_ext_pmu_probe,
-> +};
+>  	ret = riscv_pmu_get_hpm_info(&hpm_width, &num_hw_ctrs);
+>  	if (ret < 0 || !hpm_width || !num_hw_ctrs)
+>  		return;
 > -- 
 > 2.25.1
 >
 
-Thanks,
-drew
+Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
 
