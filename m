@@ -1,203 +1,57 @@
-From: Atish Patra <atishp@atishpatra.org>
-Date: Fri, 3 Feb 2023 01:07:57 -0800
-Subject: [PATCH v4 08/14] RISC-V: KVM: Add SBI PMU extension support
-In-Reply-To: <20230202172927.jlwjkv6nbvhzcakw@orel>
-References: <20230201231250.3806412-1-atishp@rivosinc.com> <20230201231250.3806412-9-atishp@rivosinc.com>
- <20230202172927.jlwjkv6nbvhzcakw@orel>
-Message-ID: <CAOnJCULStHjnFX70QjVemdt4fqr5HKBiNFaf89nabF19E_kYZw@mail.gmail.com>
+From: Thomas Huth <thuth@redhat.com>
+Date: Fri,  3 Feb 2023 10:42:23 +0100
+Subject: [PATCH 0/7] KVM: Standardize on "int" return types instead of "long"
+Message-ID: <20230203094230.266952-1-thuth@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Feb 2, 2023 at 9:29 AM Andrew Jones <ajones@ventanamicro.com> wrote:
->
-> On Wed, Feb 01, 2023 at 03:12:44PM -0800, Atish Patra wrote:
-> > SBI PMU extension allows KVM guests to configure/start/stop/query about
-> > the PMU counters in virtualized enviornment as well.
-> >
-> > In order to allow that, KVM implements the entire SBI PMU extension.
-> >
-> > Reviewed-by: Anup Patel <anup@brainfault.org>
-> > Signed-off-by: Atish Patra <atishp@rivosinc.com>
-> > ---
-> >  arch/riscv/kvm/Makefile       |  2 +-
-> >  arch/riscv/kvm/vcpu_sbi.c     | 11 +++++
-> >  arch/riscv/kvm/vcpu_sbi_pmu.c | 85 +++++++++++++++++++++++++++++++++++
-> >  3 files changed, 97 insertions(+), 1 deletion(-)
-> >  create mode 100644 arch/riscv/kvm/vcpu_sbi_pmu.c
-> >
-> > diff --git a/arch/riscv/kvm/Makefile b/arch/riscv/kvm/Makefile
-> > index 5de1053..278e97c 100644
-> > --- a/arch/riscv/kvm/Makefile
-> > +++ b/arch/riscv/kvm/Makefile
-> > @@ -25,4 +25,4 @@ kvm-y += vcpu_sbi_base.o
-> >  kvm-y += vcpu_sbi_replace.o
-> >  kvm-y += vcpu_sbi_hsm.o
-> >  kvm-y += vcpu_timer.o
-> > -kvm-$(CONFIG_RISCV_PMU_SBI) += vcpu_pmu.o
-> > +kvm-$(CONFIG_RISCV_PMU_SBI) += vcpu_pmu.o vcpu_sbi_pmu.o
-> > diff --git a/arch/riscv/kvm/vcpu_sbi.c b/arch/riscv/kvm/vcpu_sbi.c
-> > index fe2897e..15fde15 100644
-> > --- a/arch/riscv/kvm/vcpu_sbi.c
-> > +++ b/arch/riscv/kvm/vcpu_sbi.c
-> > @@ -20,6 +20,16 @@ static const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_v01 = {
-> >  };
-> >  #endif
-> >
-> > +#ifdef CONFIG_RISCV_PMU_SBI
-> > +extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_pmu;
-> > +#else
-> > +static const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_pmu = {
-> > +     .extid_start = -1UL,
-> > +     .extid_end = -1UL,
-> > +     .handler = NULL,
-> > +};
-> > +#endif
-> > +
-> >  static const struct kvm_vcpu_sbi_extension *sbi_ext[] = {
-> >       &vcpu_sbi_ext_v01,
-> >       &vcpu_sbi_ext_base,
-> > @@ -28,6 +38,7 @@ static const struct kvm_vcpu_sbi_extension *sbi_ext[] = {
-> >       &vcpu_sbi_ext_rfence,
-> >       &vcpu_sbi_ext_srst,
-> >       &vcpu_sbi_ext_hsm,
-> > +     &vcpu_sbi_ext_pmu,
-> >       &vcpu_sbi_ext_experimental,
-> >       &vcpu_sbi_ext_vendor,
-> >  };
-> > diff --git a/arch/riscv/kvm/vcpu_sbi_pmu.c b/arch/riscv/kvm/vcpu_sbi_pmu.c
-> > new file mode 100644
-> > index 0000000..e028b0a
-> > --- /dev/null
-> > +++ b/arch/riscv/kvm/vcpu_sbi_pmu.c
-> > @@ -0,0 +1,85 @@
-> > +// SPDX-License-Identifier: GPL-2.0
-> > +/*
-> > + * Copyright (c) 2023 Rivos Inc
-> > + *
-> > + * Authors:
-> > + *     Atish Patra <atishp@rivosinc.com>
-> > + */
-> > +
-> > +#include <linux/errno.h>
-> > +#include <linux/err.h>
-> > +#include <linux/kvm_host.h>
-> > +#include <asm/csr.h>
-> > +#include <asm/sbi.h>
-> > +#include <asm/kvm_vcpu_sbi.h>
-> > +
-> > +static int kvm_sbi_ext_pmu_handler(struct kvm_vcpu *vcpu, struct kvm_run *run,
-> > +                                struct kvm_vcpu_sbi_return *retdata)
-> > +{
-> > +     int ret = 0;
-> > +     struct kvm_cpu_context *cp = &vcpu->arch.guest_context;
-> > +     struct kvm_pmu *kvpmu = vcpu_to_pmu(vcpu);
-> > +     unsigned long funcid = cp->a6;
-> > +     uint64_t temp;
-> > +
-> > +     /* Return not supported if PMU is not initialized */
-> > +     if (!kvpmu->init_done)
-> > +             return -EINVAL;
->
-> Shouldn't this be the following?
->
->   if (!kvpmu->init_done)
->      retdata->err_val = SBI_ERR_NOT_SUPPORTED;
->      return 0;
->   }
->
+This patch series is a follow-up from one of my patches in 2022 and
+Sean's reply here:
 
-This condition presents an additional sanity check and indicates a bug
-in the guest code
-where it invokes PMU extension calls when the probe function already
-returns NOT_SUPPORTED.
+ https://lore.kernel.org/kvm/YpZu6%2Fk+8EydfBKf at google.com/
 
-Earlier, I was in two minds whether this should just return not
-supported to the guest or report an
-error. However, given that it's just a driver in the guest, the error
-shouldn't be fatal. It should just
-return the sbi error back to the guest.
+KVM functions use "long" return values for functions that are wired up
+to "struct file_operations", but otherwise use "int" return values for
+functions that can return 0/-errno in order to avoid unintentional
+divergences between 32-bit and 64-bit kernels. Some related functions
+that are not part of a "struct file_operations" still use "long", though,
+which can cause confusion or even subtle problems (see second patch).
+Thus let's standardize on using "int" for return values in these functions
+to avoid such problems in the future.
 
-Thanks for catching this. I have fixed it in v5.
+Thomas Huth (7):
+  KVM: Standardize on "int" return types instead of "long" in kvm_main.c
+  KVM: x86: Improve return type handling in
+    kvm_vm_ioctl_get_nr_mmu_pages()
+  KVM: Move KVM_GET_NR_MMU_PAGES into the deprecation section
+  KVM: PPC: Standardize on "int" return types in the powerpc KVM code
+  KVM: s390: Use "int" as return type for kvm_s390_get/set_skeys()
+  KVM: arm64: Change return type of kvm_vm_ioctl_mte_copy_tags() to
+    "int"
+  KVM: Change return type of kvm_arch_vm_ioctl() to "int"
 
-> > +
-> > +     switch (funcid) {
-> > +     case SBI_EXT_PMU_NUM_COUNTERS:
-> > +             ret = kvm_riscv_vcpu_pmu_num_ctrs(vcpu, retdata);
-> > +             break;
-> > +     case SBI_EXT_PMU_COUNTER_GET_INFO:
-> > +             ret = kvm_riscv_vcpu_pmu_ctr_info(vcpu, cp->a0, retdata);
-> > +             break;
-> > +     case SBI_EXT_PMU_COUNTER_CFG_MATCH:
-> > +#if defined(CONFIG_32BIT)
-> > +             temp = ((uint64_t)cp->a5 << 32) | cp->a4;
-> > +#else
-> > +             temp = cp->a4;
-> > +#endif
-> > +             /*
-> > +              * This can fail if perf core framework fails to create an event.
-> > +              * Forward the error to the user space because its an error happened
->
-> "Forward the error to userspace because it's an error which happened within
->  the host kernel."
->
-
-Fixed.
-
-> > +              * within host kernel. The other option would be convert this to
->                                                                 ^ to
-> > +              * an SBI error and forward to the guest.
-> > +              */
-> > +             ret = kvm_riscv_vcpu_pmu_ctr_cfg_match(vcpu, cp->a0, cp->a1,
-> > +                                                    cp->a2, cp->a3, temp, retdata);
-> > +             break;
-> > +     case SBI_EXT_PMU_COUNTER_START:
-> > +#if defined(CONFIG_32BIT)
-> > +             temp = ((uint64_t)cp->a4 << 32) | cp->a3;
-> > +#else
-> > +             temp = cp->a3;
-> > +#endif
-> > +             ret = kvm_riscv_vcpu_pmu_ctr_start(vcpu, cp->a0, cp->a1, cp->a2,
-> > +                                                temp, retdata);
-> > +             break;
-> > +     case SBI_EXT_PMU_COUNTER_STOP:
-> > +             ret = kvm_riscv_vcpu_pmu_ctr_stop(vcpu, cp->a0, cp->a1, cp->a2, retdata);
-> > +             break;
-> > +     case SBI_EXT_PMU_COUNTER_FW_READ:
-> > +             ret = kvm_riscv_vcpu_pmu_ctr_read(vcpu, cp->a0, retdata);
-> > +             break;
-> > +     default:
-> > +             retdata->err_val = SBI_ERR_NOT_SUPPORTED;
-> > +     }
-> > +
-> > +     return ret;
-> > +}
-> > +
-> > +unsigned long kvm_sbi_ext_pmu_probe(struct kvm_vcpu *vcpu)
-> > +{
-> > +     struct kvm_pmu *kvpmu = vcpu_to_pmu(vcpu);
-> > +
-> > +     return kvpmu->init_done;
-> > +}
-> > +
-> > +const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_pmu = {
-> > +     .extid_start = SBI_EXT_PMU,
-> > +     .extid_end = SBI_EXT_PMU,
-> > +     .handler = kvm_sbi_ext_pmu_handler,
-> > +     .probe = kvm_sbi_ext_pmu_probe,
-> > +};
-> > --
-> > 2.25.1
-> >
->
-> Thanks,
-> drew
-
-
+ arch/arm64/include/asm/kvm_host.h   |  4 ++--
+ arch/arm64/kvm/arm.c                |  3 +--
+ arch/arm64/kvm/guest.c              |  4 ++--
+ arch/mips/kvm/mips.c                |  4 ++--
+ arch/powerpc/include/asm/kvm_ppc.h  | 14 +++++++-------
+ arch/powerpc/kvm/book3s_64_mmu_hv.c | 14 +++++++-------
+ arch/powerpc/kvm/book3s_64_vio.c    |  4 ++--
+ arch/powerpc/kvm/book3s_hv.c        |  6 +++---
+ arch/powerpc/kvm/book3s_pr.c        |  4 ++--
+ arch/powerpc/kvm/powerpc.c          |  5 ++---
+ arch/riscv/kvm/vm.c                 |  3 +--
+ arch/s390/kvm/kvm-s390.c            |  7 +++----
+ arch/x86/kvm/x86.c                  |  8 +++++---
+ include/linux/kvm_host.h            |  3 +--
+ include/uapi/linux/kvm.h            |  3 ++-
+ virt/kvm/kvm_main.c                 |  4 ++--
+ 16 files changed, 44 insertions(+), 46 deletions(-)
 
 -- 
-Regards,
-Atish
+2.31.1
+
 
