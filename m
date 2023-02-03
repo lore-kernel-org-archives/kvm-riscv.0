@@ -1,51 +1,353 @@
-From: Thomas Huth <thuth@redhat.com>
-Date: Fri,  3 Feb 2023 10:42:24 +0100
-Subject: [PATCH 1/7] KVM: Standardize on "int" return types instead of "long" in kvm_main.c
-In-Reply-To: <20230203094230.266952-1-thuth@redhat.com>
-References: <20230203094230.266952-1-thuth@redhat.com>
-Message-ID: <20230203094230.266952-2-thuth@redhat.com>
+From: Andrew Jones <ajones@ventanamicro.com>
+Date: Fri, 3 Feb 2023 11:14:21 +0100
+Subject: [PATCH v4 13/14] RISC-V: KVM: Support firmware events
+In-Reply-To: <20230201231250.3806412-14-atishp@rivosinc.com>
+References: <20230201231250.3806412-1-atishp@rivosinc.com>
+ <20230201231250.3806412-14-atishp@rivosinc.com>
+Message-ID: <20230203101421.gykyklow3sbllaou@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-KVM functions use "long" return values for functions that are wired up
-to "struct file_operations", but otherwise use "int" return values for
-functions that can return 0/-errno in order to avoid unintentional
-divergences between 32-bit and 64-bit kernels.
-Some code still uses "long" in unnecessary spots, though, which can
-cause a little bit of confusion and unnecessary size casts. Let's
-change these spots to use "int" types, too.
+On Wed, Feb 01, 2023 at 03:12:49PM -0800, Atish Patra wrote:
+> SBI PMU extension defines a set of firmware events which can provide
+> useful information to guests about the number of SBI calls. As
+> hypervisor implements the SBI PMU extension, these firmware events
+> correspond to ecall invocations between VS->HS mode. All other firmware
+> events will always report zero if monitored as KVM doesn't implement them.
+> 
+> This patch adds all the infrastructure required to support firmware
+> events.
+> 
+> Reviewed-by: Anup Patel <anup@brainfault.org>
+> Signed-off-by: Atish Patra <atishp@rivosinc.com>
+> ---
+>  arch/riscv/include/asm/kvm_vcpu_pmu.h |  17 +++
+>  arch/riscv/kvm/vcpu_pmu.c             | 142 ++++++++++++++++++++------
+>  2 files changed, 125 insertions(+), 34 deletions(-)
+> 
+> diff --git a/arch/riscv/include/asm/kvm_vcpu_pmu.h b/arch/riscv/include/asm/kvm_vcpu_pmu.h
+> index 2afaaf5..a1d8b7d 100644
+> --- a/arch/riscv/include/asm/kvm_vcpu_pmu.h
+> +++ b/arch/riscv/include/asm/kvm_vcpu_pmu.h
+> @@ -22,6 +22,14 @@
+>  
+>  #define RISCV_MAX_COUNTERS      64
+>  
+> +struct kvm_fw_event {
+> +	/* Current value of the event */
+> +	unsigned long value;
+> +
+> +	/* Event monitoring status */
+> +	bool started;
+> +};
+> +
+>  /* Per virtual pmu counter data */
+>  struct kvm_pmc {
+>  	u8 idx;
+> @@ -30,11 +38,14 @@ struct kvm_pmc {
+>  	union sbi_pmu_ctr_info cinfo;
+>  	/* Event monitoring status */
+>  	bool started;
+> +	/* Monitoring event ID */
+> +	unsigned long event_idx;
+>  };
+>  
+>  /* PMU data structure per vcpu */
+>  struct kvm_pmu {
+>  	struct kvm_pmc pmc[RISCV_MAX_COUNTERS];
+> +	struct kvm_fw_event fw_event[RISCV_KVM_MAX_FW_CTRS];
+>  	/* Number of the virtual firmware counters available */
+>  	int num_fw_ctrs;
+>  	/* Number of the virtual hardware counters available */
+> @@ -57,6 +68,7 @@ struct kvm_pmu {
+>  { .base = CSR_CYCLE,      .count = 31, .func = kvm_riscv_vcpu_pmu_read_hpm },
+>  #endif
+>  
+> +int kvm_riscv_vcpu_pmu_incr_fw(struct kvm_vcpu *vcpu, unsigned long fid);
+>  int kvm_riscv_vcpu_pmu_read_hpm(struct kvm_vcpu *vcpu, unsigned int csr_num,
+>  				unsigned long *val, unsigned long new_val,
+>  				unsigned long wr_mask);
+> @@ -87,6 +99,11 @@ struct kvm_pmu {
+>  { .base = 0,      .count = 0, .func = NULL },
+>  
+>  static inline void kvm_riscv_vcpu_pmu_init(struct kvm_vcpu *vcpu) {}
+> +static inline int kvm_riscv_vcpu_pmu_incr_fw(struct kvm_vcpu *vcpu, unsigned long fid)
+> +{
+> +	return 0;
+> +}
+> +
+>  static inline void kvm_riscv_vcpu_pmu_deinit(struct kvm_vcpu *vcpu) {}
+>  static inline void kvm_riscv_vcpu_pmu_reset(struct kvm_vcpu *vcpu) {}
+>  #endif /* CONFIG_RISCV_PMU_SBI */
+> diff --git a/arch/riscv/kvm/vcpu_pmu.c b/arch/riscv/kvm/vcpu_pmu.c
+> index 473ad80..dd16e60 100644
+> --- a/arch/riscv/kvm/vcpu_pmu.c
+> +++ b/arch/riscv/kvm/vcpu_pmu.c
+> @@ -202,12 +202,15 @@ static int pmu_ctr_read(struct kvm_vcpu *vcpu, unsigned long cidx,
+>  	struct kvm_pmu *kvpmu = vcpu_to_pmu(vcpu);
+>  	struct kvm_pmc *pmc;
+>  	u64 enabled, running;
+> +	int fevent_code;
+>  
+>  	pmc = &kvpmu->pmc[cidx];
+> -	if (!pmc->perf_event)
+> -		return -EINVAL;
+>  
+> -	pmc->counter_val += perf_event_read_value(pmc->perf_event, &enabled, &running);
+> +	if (pmc->cinfo.type == SBI_PMU_CTR_TYPE_FW) {
+> +		fevent_code = get_event_code(pmc->event_idx);
+> +		pmc->counter_val = kvpmu->fw_event[fevent_code].value;
+> +	} else if (pmc->perf_event)
+> +		pmc->counter_val += perf_event_read_value(pmc->perf_event, &enabled, &running);
 
-Signed-off-by: Thomas Huth <thuth@redhat.com>
----
- virt/kvm/kvm_main.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+We also need 
 
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 9c60384b5ae0..cd46467252a9 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -4475,7 +4475,7 @@ static int kvm_ioctl_create_device(struct kvm *kvm,
- 	return 0;
- }
- 
--static long kvm_vm_ioctl_check_extension_generic(struct kvm *kvm, long arg)
-+static int kvm_vm_ioctl_check_extension_generic(struct kvm *kvm, long arg)
- {
- 	switch (arg) {
- 	case KVM_CAP_USER_MEMORY:
-@@ -5053,7 +5053,7 @@ static int kvm_dev_ioctl_create_vm(unsigned long type)
- static long kvm_dev_ioctl(struct file *filp,
- 			  unsigned int ioctl, unsigned long arg)
- {
--	long r = -EINVAL;
-+	int r = -EINVAL;
- 
- 	switch (ioctl) {
- 	case KVM_GET_API_VERSION:
--- 
-2.31.1
+       else {
+           return -EINVAL;
+       }
 
+>  	*out_val = pmc->counter_val;
+>  
+>  	return 0;
+> @@ -223,6 +226,55 @@ static int kvm_pmu_validate_counter_mask(struct kvm_pmu *kvpmu, unsigned long ct
+>  	return 0;
+>  }
+>  
+> +static int kvm_pmu_create_perf_event(struct kvm_pmc *pmc, int ctr_idx,
+> +				     struct perf_event_attr *attr, unsigned long flag,
+> +				     unsigned long eidx, unsigned long evtdata)
+> +{
+> +	struct perf_event *event;
+> +
+> +	kvm_pmu_release_perf_event(pmc);
+> +	pmc->idx = ctr_idx;
+> +
+> +	attr->config = kvm_pmu_get_perf_event_config(eidx, evtdata);
+> +	if (flag & SBI_PMU_CFG_FLAG_CLEAR_VALUE) {
+> +		//TODO: Do we really want to clear the value in hardware counter
+> +		pmc->counter_val = 0;
+> +	}
+> +
+> +	/*
+> +	 * Set the default sample_period for now. The guest specified value
+> +	 * will be updated in the start call.
+> +	 */
+> +	attr->sample_period = kvm_pmu_get_sample_period(pmc);
+> +
+> +	event = perf_event_create_kernel_counter(attr, -1, current, NULL, pmc);
+> +	if (IS_ERR(event)) {
+> +		pr_err("kvm pmu event creation failed for eidx %lx: %ld\n", eidx, PTR_ERR(event));
+> +		return PTR_ERR(event);
+> +	}
+> +
+> +	pmc->perf_event = event;
+> +	if (flag & SBI_PMU_CFG_FLAG_AUTO_START)
+> +		perf_event_enable(pmc->perf_event);
+> +
+> +	return 0;
+> +}
+> +
+> +int kvm_riscv_vcpu_pmu_incr_fw(struct kvm_vcpu *vcpu, unsigned long fid)
+> +{
+> +	struct kvm_pmu *kvpmu = vcpu_to_pmu(vcpu);
+> +	struct kvm_fw_event *fevent;
+> +
+> +	if (!kvpmu || fid >= SBI_PMU_FW_MAX)
+> +		return -EINVAL;
+> +
+> +	fevent = &kvpmu->fw_event[fid];
+> +	if (fevent->started)
+> +		fevent->value++;
+> +
+> +	return 0;
+> +}
+> +
+>  int kvm_riscv_vcpu_pmu_read_hpm(struct kvm_vcpu *vcpu, unsigned int csr_num,
+>  				unsigned long *val, unsigned long new_val,
+>  				unsigned long wr_mask)
+> @@ -289,6 +341,7 @@ int kvm_riscv_vcpu_pmu_ctr_start(struct kvm_vcpu *vcpu, unsigned long ctr_base,
+>  	struct kvm_pmu *kvpmu = vcpu_to_pmu(vcpu);
+>  	int i, pmc_index, sbiret = 0;
+>  	struct kvm_pmc *pmc;
+> +	int fevent_code;
+>  
+>  	if (kvm_pmu_validate_counter_mask(kvpmu, ctr_base, ctr_mask) < 0) {
+>  		sbiret = SBI_ERR_INVALID_PARAM;
+> @@ -303,7 +356,22 @@ int kvm_riscv_vcpu_pmu_ctr_start(struct kvm_vcpu *vcpu, unsigned long ctr_base,
+>  		pmc = &kvpmu->pmc[pmc_index];
+>  		if (flag & SBI_PMU_START_FLAG_SET_INIT_VALUE)
+>  			pmc->counter_val = ival;
+> -		if (pmc->perf_event) {
+> +		if (pmc->cinfo.type == SBI_PMU_CTR_TYPE_FW) {
+> +			fevent_code = get_event_code(pmc->event_idx);
+> +			if (fevent_code >= SBI_PMU_FW_MAX) {
+> +				sbiret = SBI_ERR_INVALID_PARAM;
+> +				goto out;
+> +			}
+> +
+> +			/* Check if the counter was already started for some reason */
+> +			if (kvpmu->fw_event[fevent_code].started) {
+> +				sbiret = SBI_ERR_ALREADY_STARTED;
+> +				continue;
+> +			}
+> +
+> +			kvpmu->fw_event[fevent_code].started = true;
+> +			kvpmu->fw_event[fevent_code].value = pmc->counter_val;
+> +		} else if (pmc->perf_event) {
+>  			if (unlikely(pmc->started)) {
+>  				sbiret = SBI_ERR_ALREADY_STARTED;
+>  				continue;
+> @@ -330,6 +398,7 @@ int kvm_riscv_vcpu_pmu_ctr_stop(struct kvm_vcpu *vcpu, unsigned long ctr_base,
+>  	int i, pmc_index, sbiret = 0;
+>  	u64 enabled, running;
+>  	struct kvm_pmc *pmc;
+> +	int fevent_code;
+>  
+>  	if (kvm_pmu_validate_counter_mask(kvpmu, ctr_base, ctr_mask) < 0) {
+>  		sbiret = SBI_ERR_INVALID_PARAM;
+> @@ -342,7 +411,18 @@ int kvm_riscv_vcpu_pmu_ctr_stop(struct kvm_vcpu *vcpu, unsigned long ctr_base,
+>  		if (!test_bit(pmc_index, kvpmu->pmc_in_use))
+>  			continue;
+>  		pmc = &kvpmu->pmc[pmc_index];
+> -		if (pmc->perf_event) {
+> +		if (pmc->cinfo.type == SBI_PMU_CTR_TYPE_FW) {
+> +			fevent_code = get_event_code(pmc->event_idx);
+> +			if (fevent_code >= SBI_PMU_FW_MAX) {
+> +				sbiret = SBI_ERR_INVALID_PARAM;
+> +				goto out;
+> +			}
+> +
+> +			if (!kvpmu->fw_event[fevent_code].started)
+> +				sbiret = SBI_ERR_ALREADY_STOPPED;
+> +
+> +			kvpmu->fw_event[fevent_code].started = false;
+> +		} else if (pmc->perf_event) {
+>  			if (pmc->started) {
+>  				/* Stop counting the counter */
+>  				perf_event_disable(pmc->perf_event);
+> @@ -355,11 +435,14 @@ int kvm_riscv_vcpu_pmu_ctr_stop(struct kvm_vcpu *vcpu, unsigned long ctr_base,
+>  				pmc->counter_val += perf_event_read_value(pmc->perf_event,
+>  									  &enabled, &running);
+>  				kvm_pmu_release_perf_event(pmc);
+> -				clear_bit(pmc_index, kvpmu->pmc_in_use);
+>  			}
+>  		} else {
+>  			sbiret = SBI_ERR_INVALID_PARAM;
+>  		}
+> +		if (flag & SBI_PMU_STOP_FLAG_RESET) {
+> +			pmc->event_idx = SBI_PMU_EVENT_IDX_INVALID;
+> +			clear_bit(pmc_index, kvpmu->pmc_in_use);
+> +		}
+>  	}
+>  
+>  out:
+> @@ -373,12 +456,12 @@ int kvm_riscv_vcpu_pmu_ctr_cfg_match(struct kvm_vcpu *vcpu, unsigned long ctr_ba
+>  				     unsigned long eidx, uint64_t evtdata,
+>  				     struct kvm_vcpu_sbi_return *retdata)
+>  {
+> -	int ctr_idx, sbiret = 0;
+> -	u64 config;
+> +	int ctr_idx, ret, sbiret = 0;
+> +	bool is_fevent;
+> +	unsigned long event_code;
+>  	u32 etype = kvm_pmu_get_perf_event_type(eidx);
+>  	struct kvm_pmu *kvpmu = vcpu_to_pmu(vcpu);
+> -	struct perf_event *event;
+> -	struct kvm_pmc *pmc;
+> +	struct kvm_pmc *pmc = NULL;
+
+I don't think this change initializing pmc is necessary, but OK.
+
+>  	struct perf_event_attr attr = {
+>  		.type = etype,
+>  		.size = sizeof(struct perf_event_attr),
+> @@ -399,7 +482,9 @@ int kvm_riscv_vcpu_pmu_ctr_cfg_match(struct kvm_vcpu *vcpu, unsigned long ctr_ba
+>  		goto out;
+>  	}
+>  
+> -	if (kvm_pmu_is_fw_event(eidx)) {
+> +	event_code = get_event_code(eidx);
+> +	is_fevent = kvm_pmu_is_fw_event(eidx);
+> +	if (is_fevent && event_code >= SBI_PMU_FW_MAX) {
+>  		sbiret = SBI_ERR_NOT_SUPPORTED;
+>  		goto out;
+>  	}
+> @@ -424,33 +509,18 @@ int kvm_riscv_vcpu_pmu_ctr_cfg_match(struct kvm_vcpu *vcpu, unsigned long ctr_ba
+>  	}
+>  
+>  	pmc = &kvpmu->pmc[ctr_idx];
+> -	kvm_pmu_release_perf_event(pmc);
+> -	pmc->idx = ctr_idx;
+> -
+> -	config = kvm_pmu_get_perf_event_config(eidx, evtdata);
+> -	attr.config = config;
+> -	if (flag & SBI_PMU_CFG_FLAG_CLEAR_VALUE) {
+> -		//TODO: Do we really want to clear the value in hardware counter
+> -		pmc->counter_val = 0;
+> -	}
+> -
+> -	/*
+> -	 * Set the default sample_period for now. The guest specified value
+> -	 * will be updated in the start call.
+> -	 */
+> -	attr.sample_period = kvm_pmu_get_sample_period(pmc);
+> -
+> -	event = perf_event_create_kernel_counter(&attr, -1, current, NULL, pmc);
+> -	if (IS_ERR(event)) {
+> -		pr_err("kvm pmu event creation failed for eidx %lx: %ld\n", eidx, PTR_ERR(event));
+> -		return PTR_ERR(event);
+> +	if (is_fevent) {
+> +		if (flag & SBI_PMU_CFG_FLAG_AUTO_START)
+> +			kvpmu->fw_event[event_code].started = true;
+> +	} else {
+> +		ret = kvm_pmu_create_perf_event(pmc, ctr_idx, &attr, flag, eidx, evtdata);
+> +		if (ret)
+> +			return ret;
+>  	}
+>  
+>  	set_bit(ctr_idx, kvpmu->pmc_in_use);
+> -	pmc->perf_event = event;
+> -	if (flag & SBI_PMU_CFG_FLAG_AUTO_START)
+> -		perf_event_enable(pmc->perf_event);
+>  
+> +	pmc->event_idx = eidx;
+>  	retdata->out_val = ctr_idx;
+>  out:
+>  	retdata->err_val = sbiret;
+> @@ -494,6 +564,7 @@ void kvm_riscv_vcpu_pmu_init(struct kvm_vcpu *vcpu)
+>  	 */
+>  	kvpmu->num_hw_ctrs = num_hw_ctrs;
+>  	kvpmu->num_fw_ctrs = RISCV_KVM_MAX_FW_CTRS;
+> +	memset(&kvpmu->fw_event, 0, SBI_PMU_FW_MAX * sizeof(struct kvm_fw_event));
+>  
+>  	/*
+>  	 * There is no correlation between the logical hardware counter and virtual counters.
+> @@ -507,6 +578,7 @@ void kvm_riscv_vcpu_pmu_init(struct kvm_vcpu *vcpu)
+>  			continue;
+>  		pmc = &kvpmu->pmc[i];
+>  		pmc->idx = i;
+> +		pmc->event_idx = SBI_PMU_EVENT_IDX_INVALID;
+>  		if (i < kvpmu->num_hw_ctrs) {
+>  			pmc->cinfo.type = SBI_PMU_CTR_TYPE_HW;
+>  			if (i < 3)
+> @@ -543,8 +615,10 @@ void kvm_riscv_vcpu_pmu_deinit(struct kvm_vcpu *vcpu)
+>  		pmc = &kvpmu->pmc[i];
+>  		pmc->counter_val = 0;
+>  		kvm_pmu_release_perf_event(pmc);
+> +		pmc->event_idx = SBI_PMU_EVENT_IDX_INVALID;
+>  	}
+>  	bitmap_zero(kvpmu->pmc_in_use, RISCV_MAX_COUNTERS);
+> +	memset(&kvpmu->fw_event, 0, SBI_PMU_FW_MAX * sizeof(struct kvm_fw_event));
+>  }
+>  
+>  void kvm_riscv_vcpu_pmu_reset(struct kvm_vcpu *vcpu)
+> -- 
+> 2.25.1
+>
+
+Thanks,
+drew
 
