@@ -1,36 +1,35 @@
-From: Nicholas Piggin <npiggin@gmail.com>
-Date: Fri, 03 Feb 2023 20:21:55 +1000
-Subject: [PATCH 4/7] KVM: PPC: Standardize on "int" return types in the
- powerpc KVM code
-In-Reply-To: <20230203094230.266952-5-thuth@redhat.com>
+From: Thomas Huth <thuth@redhat.com>
+Date: Fri, 3 Feb 2023 11:54:52 +0100
+Subject: [PATCH 3/7] KVM: Move KVM_GET_NR_MMU_PAGES into the deprecation
+ section
+In-Reply-To: <CQ8UM1FTPEUZ.3F2RONR3AJ5YP@bobo>
 References: <20230203094230.266952-1-thuth@redhat.com>
- <20230203094230.266952-5-thuth@redhat.com>
-Message-ID: <CQ8UPZX0BERP.2TFM4914IGJZF@bobo>
+ <20230203094230.266952-4-thuth@redhat.com> <CQ8UM1FTPEUZ.3F2RONR3AJ5YP@bobo>
+Message-ID: <2c37f524-593f-a155-a01f-57a68b2e362c@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri Feb 3, 2023 at 7:42 PM AEST, Thomas Huth wrote:
-> Most functions that are related to kvm_arch_vm_ioctl() already use
-> "int" as return type to pass error values back to the caller. Some
-> outlier functions use "long" instead for no good reason (they do not
-> really require long values here). Let's standardize on "int" here to
-> avoid casting the values back and forth between the two types.
->
-> Signed-off-by: Thomas Huth <thuth@redhat.com>
+On 03/02/2023 11.16, Nicholas Piggin wrote:
+> On Fri Feb 3, 2023 at 7:42 PM AEST, Thomas Huth wrote:
+>> The KVM_GET_NR_MMU_PAGES ioctl is quite questionable on 64-bit hosts
+>> since it fails to return the full 64 bits of the value that can be
+>> set with the corresponding KVM_SET_NR_MMU_PAGES call. This ioctl
+>> likely has also never really been used by userspace applications
+>> (at least not by QEMU and kvmtool which I checked), so it's better
+>> to move it to the deprecation section in kvm.h to make it clear for
+>> developers that this also should not be used in new code in the
+>> future anymore.
+> 
+> Did this get included in the series inadvertently?
 
-Thanks for the patch. It looks fine to me, it should be okay to
-go via Paolo's tree if he's going to take the series.
+No, it's here on purpose, as a second step to patch 2/7 (and a follow up 
+from the discussion last year, see 
+https://lore.kernel.org/kvm/YpZu6%2Fk+8EydfBKf at google.com/ ) ... sorry, I 
+should have elaborated on this in the cover letter, too.
 
-Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+  Thomas
 
-> ---
->  arch/powerpc/include/asm/kvm_ppc.h  | 14 +++++++-------
->  arch/powerpc/kvm/book3s_64_mmu_hv.c | 14 +++++++-------
->  arch/powerpc/kvm/book3s_64_vio.c    |  4 ++--
->  arch/powerpc/kvm/book3s_hv.c        |  6 +++---
->  arch/powerpc/kvm/book3s_pr.c        |  4 ++--
->  5 files changed, 21 insertions(+), 21 deletions(-)
 
