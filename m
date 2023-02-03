@@ -1,82 +1,47 @@
-From: Palmer Dabbelt <palmer@dabbelt.com>
-Date: Thu, 02 Feb 2023 16:24:43 -0800 (PST)
-Subject: [PATCH v2 2/7] RISC-V: Detect AIA CSRs from ISA string
-In-Reply-To: <20230128072737.2995881-3-apatel@ventanamicro.com>
-Message-ID: <mhng-0f9bdf58-5289-4db4-8fd7-38898824c44f@palmer-ri-x1c9>
+From: Atish Patra <atishp@atishpatra.org>
+Date: Fri, 3 Feb 2023 00:04:00 -0800
+Subject: [PATCH v4 07/14] RISC-V: KVM: Add skeleton support for perf
+In-Reply-To: <Y9ufoeZ/4obZDJz6@wendy>
+References: <20230201231250.3806412-1-atishp@rivosinc.com> <20230201231250.3806412-8-atishp@rivosinc.com>
+ <Y9ufoeZ/4obZDJz6@wendy>
+Message-ID: <CAOnJCUKVXGXsFBUE753-HOr_CtN-5Nsq+yBQj1eT13WyU2r54g@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, 27 Jan 2023 23:27:32 PST (-0800), apatel at ventanamicro.com wrote:
-> We have two extension names for AIA ISA support: Smaia (M-mode AIA CSRs)
-> and Ssaia (S-mode AIA CSRs).
-
-This has pretty much the same problem that we had with the other 
-AIA-related ISA string patches, where there's that ambiguity with the 
-non-ratified chapters.  IIRC when this came up in GCC the rough idea was 
-to try and document that we're going to interpret the standard ISA 
-strings that way, but now that we're doing custom ISA extensions it 
-seems saner to just define on here that removes the ambiguity.
-
-I just sent
-<https://lore.kernel.org/r/20230203001201.14770-1-palmer@rivosinc.com/> 
-which documents that.
-
-> We extend the ISA string parsing to detect Smaia and Ssaia extensions.
+On Thu, Feb 2, 2023 at 3:34 AM Conor Dooley <conor.dooley@microchip.com> wrote:
 >
-> Signed-off-by: Anup Patel <apatel@ventanamicro.com>
-> Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
-> ---
->  arch/riscv/include/asm/hwcap.h | 2 ++
->  arch/riscv/kernel/cpu.c        | 2 ++
->  arch/riscv/kernel/cpufeature.c | 2 ++
->  3 files changed, 6 insertions(+)
+> On Wed, Feb 01, 2023 at 03:12:43PM -0800, Atish Patra wrote:
+> > This patch only adds barebone structure of perf implementation. Most of
+> > the function returns zero at this point and will be implemented
+> > fully in the future.
+> >
+> > Signed-off-by: Atish Patra <atishp@rivosinc.com>
+> > +/* Per virtual pmu counter data */
+> > +struct kvm_pmc {
+> > +     u8 idx;
+> > +     struct perf_event *perf_event;
+> > +     uint64_t counter_val;
 >
-> diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
-> index 86328e3acb02..341ef30a3718 100644
-> --- a/arch/riscv/include/asm/hwcap.h
-> +++ b/arch/riscv/include/asm/hwcap.h
-> @@ -59,6 +59,8 @@ enum riscv_isa_ext_id {
->  	RISCV_ISA_EXT_ZIHINTPAUSE,
->  	RISCV_ISA_EXT_SSTC,
->  	RISCV_ISA_EXT_SVINVAL,
-> +	RISCV_ISA_EXT_SMAIA,
-> +	RISCV_ISA_EXT_SSAIA,
->  	RISCV_ISA_EXT_ID_MAX
->  };
->  static_assert(RISCV_ISA_EXT_ID_MAX <= RISCV_ISA_EXT_MAX);
-> diff --git a/arch/riscv/kernel/cpu.c b/arch/riscv/kernel/cpu.c
-> index 1b9a5a66e55a..a215ec929160 100644
-> --- a/arch/riscv/kernel/cpu.c
-> +++ b/arch/riscv/kernel/cpu.c
-> @@ -162,6 +162,8 @@ arch_initcall(riscv_cpuinfo_init);
->   *    extensions by an underscore.
->   */
->  static struct riscv_isa_ext_data isa_ext_arr[] = {
-> +	__RISCV_ISA_EXT_DATA(smaia, RISCV_ISA_EXT_SMAIA),
-> +	__RISCV_ISA_EXT_DATA(ssaia, RISCV_ISA_EXT_SSAIA),
+> CI also complained that here, and elsewhere, you used uint64_t rather
+> than u64. Am I missing a reason for not using the regular types?
+>
 
-This will conflict with that ISA string refactoring I just merged.  It 
-should be a pretty mechanical merge conflict, but if you want we can do 
-a shared tag with the first few patches and I can handle the merge 
-conflict locally.
+Nope. It was a simple oversight. I will fix it.
+Do you have a link to the CI report so that I can address them all in v5 ?
 
->  	__RISCV_ISA_EXT_DATA(sscofpmf, RISCV_ISA_EXT_SSCOFPMF),
->  	__RISCV_ISA_EXT_DATA(sstc, RISCV_ISA_EXT_SSTC),
->  	__RISCV_ISA_EXT_DATA(svinval, RISCV_ISA_EXT_SVINVAL),
-> diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
-> index 93e45560af30..3c5b51f519d5 100644
-> --- a/arch/riscv/kernel/cpufeature.c
-> +++ b/arch/riscv/kernel/cpufeature.c
-> @@ -228,6 +228,8 @@ void __init riscv_fill_hwcap(void)
->  				SET_ISA_EXT_MAP("zihintpause", RISCV_ISA_EXT_ZIHINTPAUSE);
->  				SET_ISA_EXT_MAP("sstc", RISCV_ISA_EXT_SSTC);
->  				SET_ISA_EXT_MAP("svinval", RISCV_ISA_EXT_SVINVAL);
-> +				SET_ISA_EXT_MAP("smaia", RISCV_ISA_EXT_SMAIA);
-> +				SET_ISA_EXT_MAP("ssaia", RISCV_ISA_EXT_SSAIA);
->  			}
->  #undef SET_ISA_EXT_MAP
->  		}
+> Thanks,
+> Conor.
+>
+> > +     union sbi_pmu_ctr_info cinfo;
+> > +     /* Event monitoring status */
+> > +     bool started;
+
+
+
+-- 
+Regards,
+Atish
 
