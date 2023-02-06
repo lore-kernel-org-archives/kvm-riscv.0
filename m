@@ -1,64 +1,174 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Mon, 6 Feb 2023 12:54:45 +0100
-Subject: [PATCH v5 11/14] RISC-V: KVM: Implement trap & emulate for
- hpmcounters
-In-Reply-To: <20230205011515.1284674-12-atishp@rivosinc.com>
-References: <20230205011515.1284674-1-atishp@rivosinc.com>
- <20230205011515.1284674-12-atishp@rivosinc.com>
-Message-ID: <20230206115445.4deembtvetojslee@orel>
+From: Andy Chiu <andy.chiu@sifive.com>
+Date: Mon, 6 Feb 2023 20:00:00 +0800
+Subject: [PATCH -next v13 10/19] riscv: Allocate user's vector context in
+ the first-use trap
+In-Reply-To: <Y9MIr2iR5rzlIGKQ@spud>
+References: <20230125142056.18356-1-andy.chiu@sifive.com> <20230125142056.18356-11-andy.chiu@sifive.com>
+ <Y9MIr2iR5rzlIGKQ@spud>
+Message-ID: <CABgGipW_3tBbc3G91dqiAZCGeN-PbUvLS3n=bU0nWz0rRX9T8Q@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sat, Feb 04, 2023 at 05:15:12PM -0800, Atish Patra wrote:
-> As the KVM guests only see the virtual PMU counters, all hpmcounter
-> access should trap and KVM emulates the read access on behalf of guests.
-> 
-> Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
-> Signed-off-by: Atish Patra <atishp@rivosinc.com>
-> ---
->  arch/riscv/include/asm/kvm_vcpu_pmu.h | 16 ++++++++
->  arch/riscv/kvm/vcpu_insn.c            |  4 +-
->  arch/riscv/kvm/vcpu_pmu.c             | 59 ++++++++++++++++++++++++++-
->  3 files changed, 77 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/riscv/include/asm/kvm_vcpu_pmu.h b/arch/riscv/include/asm/kvm_vcpu_pmu.h
-> index 40905db..344a3ad 100644
-> --- a/arch/riscv/include/asm/kvm_vcpu_pmu.h
-> +++ b/arch/riscv/include/asm/kvm_vcpu_pmu.h
-> @@ -48,6 +48,19 @@ struct kvm_pmu {
->  #define vcpu_to_pmu(vcpu) (&(vcpu)->arch.pmu_context)
->  #define pmu_to_vcpu(pmu)  (container_of((pmu), struct kvm_vcpu, arch.pmu_context))
->  
-> +#if defined(CONFIG_32BIT)
-> +#define KVM_RISCV_VCPU_HPMCOUNTER_CSR_FUNCS \
-> +{.base = CSR_CYCLEH,     .count = 31, .func = kvm_riscv_vcpu_pmu_read_hpm }, \
-> +{.base = CSR_CYCLE,      .count = 31, .func = kvm_riscv_vcpu_pmu_read_hpm },
-                      ^ should be tabs?
-
-> +#else
-> +#define KVM_RISCV_VCPU_HPMCOUNTER_CSR_FUNCS \
-> +{.base = CSR_CYCLE,      .count = 31, .func = kvm_riscv_vcpu_pmu_read_hpm },
-                      ^ here too
-> +#endif
-> +
-> +int kvm_riscv_vcpu_pmu_read_hpm(struct kvm_vcpu *vcpu, unsigned int csr_num,
-> +				unsigned long *val, unsigned long new_val,
-> +				unsigned long wr_mask);
-> +
->  int kvm_riscv_vcpu_pmu_num_ctrs(struct kvm_vcpu *vcpu, struct kvm_vcpu_sbi_return *retdata);
->  int kvm_riscv_vcpu_pmu_ctr_info(struct kvm_vcpu *vcpu, unsigned long cidx,
->  				struct kvm_vcpu_sbi_return *retdata);
-> @@ -71,6 +84,9 @@ void kvm_riscv_vcpu_pmu_reset(struct kvm_vcpu *vcpu);
->  struct kvm_pmu {
->  };
->  
-> +#define KVM_RISCV_VCPU_HPMCOUNTER_CSR_FUNCS \
-> +{ .base = 0,      .count = 0, .func = NULL },
-               ^ and here and aligned with the ones above?
-
+On Fri, Jan 27, 2023 at 7:11 AM Conor Dooley <conor@kernel.org> wrote:
+> > +
+> > +/* parts of opcode for RVV */
+> > +#define OPCODE_VECTOR                0x57
+> > +#define LSFP_WIDTH_RVV_8     0
+> > +#define LSFP_WIDTH_RVV_16    5
+> > +#define LSFP_WIDTH_RVV_32    6
+> > +#define LSFP_WIDTH_RVV_64    7
+>
+> All of this needs a prefix though, not the almost-postfix you've added.
+> IOW, move the RVV to the start.
+Thanks for the note. Changing to RVV_VL_VS_WIDTH_*
+>
+> > +
+> > +/* parts of opcode for RVF, RVD and RVQ */
+> > +#define LSFP_WIDTH_OFF               12
+> > +#define LSFP_WIDTH_MASK              GENMASK(3, 0)
+>
+> These all get an RVG_ prefix, no? Or does the Q prevent that? Either
+> way, they do need a prefix.
+>
+> > +#define LSFP_WIDTH_FP_W              2
+> > +#define LSFP_WIDTH_FP_D              3
+> > +#define LSFP_WIDTH_FP_Q              4
+>
+> LSFP isn't something that has hits in the spec, which is annoying for
+> cross checking IMO. If it were me, I'd likely do something like
+> RVG_FLW_FSW_WIDTH since then it is abundantly clear what this is the
+> width of.
+Ok, s/LSFP_WIDTH_/RVFDQ_FL_FS_WIDTH_/
+>
+> > +#define OPCODE_LOADFP                0x07
+> > +#define OPCODE_STOREFP               0x27
+>
+> Same comment about prefix here. I'd be tempted to make these names match
+> the spec too, but it is clear enough to me what this are at the moment.
+>
+These will be changed to RVFDQ_OPCODE_{FL|FS} In the next revision.
+> > +#define EXTRACT_LOAD_STORE_FP_WIDTH(x) \
+> > +#define EXTRACT_SYSTEM_CSR(x) \
+>
+> Prefixes again here please!
+Adding RVG prefix and changing to RVFDQ_EXRACT_FL_FS_WIDTH
+> > +     if (opcode == OPCODE_VECTOR) {
+> > +             return true;
+> > +     }
+>
+>        if (opcode == OPCODE_LOADFP || opcode == OPCODE_STOREFP) {
+> The above returns, so there's no need for the else
+>
+> > +             u32 width = EXTRACT_LOAD_STORE_FP_WIDTH(insn_buf);
+> > +
+> > +             if (width == LSFP_WIDTH_RVV_8 || width == LSFP_WIDTH_RVV_16 ||
+> > +                 width == LSFP_WIDTH_RVV_32 || width == LSFP_WIDTH_RVV_64)
+> > +                     return true;
+>
+> I suppose you could also add else return false, thereby dropping the
+> else in the line below too, but that's a matter of preference :)
+>
+> > +     } else if (opcode == RVG_OPCODE_SYSTEM) {
+> > +             u32 csr = EXTRACT_SYSTEM_CSR(insn_buf);
+> > +
+> > +             if ((csr >= CSR_VSTART && csr <= CSR_VCSR) ||
+> > +                 (csr >= CSR_VL && csr <= CSR_VLENB))
+> > +                     return true;
+> > +     }
+> > +     return false;
+> > +}
+Changing it to a switch statement for better structuring.
+> I would like Heiko to take a look at this function!
+> I know we have the RISCV_INSN_FUNCS stuff that got newly added, but that's
+> for single, named instructions. I'm just curious if there may be a neater
+> way to go about doing this. AFAICT, the widths are all in funct3 - but it
+> is a shame that 0b100 is Q and 0 is vector, as the macro works for matches
+> and we can't use the upper bit for that.
+> There's prob something you could do with XORing and XNORing bits, but at
+> that point it'd not be adding any clarity at all & it'd not be a
+> RISCV_INSN_FUNCS anymore!
+> The actual opcode checks probably could be extracted though, but would
+> love to know what Heiko thinks, even if that is "leave it as is".
+I've checked the RISCV_INSN_FUNCS part recently. It seems good to
+match a single type of instruction, such as vector with OP-V opcode.
+However, I did not find an easy way of matching whole instructions
+introduced by RVV, which includes CSR operations on multiple CSRs and
+load/store with different widths. Yes, it would be great if we could
+distinguish VL and VS out by the upper bit of the width. Or even
+better if we could match CSR numbers for Vector this way. But I didn't
+find it.
+>
+> > +
+> > +int rvv_thread_zalloc(void)
+>
+> riscv_v_... and so on down the file
+>
+> > +{
+> > +     void *datap;
+> > +
+> > +     datap = kzalloc(riscv_vsize, GFP_KERNEL);
+> > +     if (!datap)
+> > +             return -ENOMEM;
+> > +     current->thread.vstate.datap = datap;
+> > +     memset(&current->thread.vstate, 0, offsetof(struct __riscv_v_state,
+> > +                                                 datap));
+> > +     return 0;
+> > +}
+> > +
+> > +bool rvv_first_use_handler(struct pt_regs *regs)
+> > +{
+> > +     __user u32 *epc = (u32 *)regs->epc;
+> > +     u32 tval = (u32)regs->badaddr;
+>
+> I'm dumb, what's the t here? This variable holds an instruction, right?
+> Why not call it `insn` so it conveys some meaning?
+tval is the trap value register. I think it is the same as badaddr but
+you're right. `insn` has a better meaning here.
+>
+> > +     /* If V has been enabled then it is not the first-use trap */
+> > +     if (vstate_query(regs))
+> > +             return false;
+> > +     /* Get the instruction */
+> > +     if (!tval) {
+> > +             if (__get_user(tval, epc))
+> > +                     return false;
+> > +     }
+> > +     /* Filter out non-V instructions */
+> > +     if (!insn_is_vector(tval))
+> > +             return false;
+> > +     /* Sanity check. datap should be null by the time of the first-use trap */
+> > +     WARN_ON(current->thread.vstate.datap);
+>
+> Is a WARN_ON sufficient here? If on the first use trap, it's non-null
+> should we return false and trigger the trap error too?
+If we'd run into this warning message then there is a bug in kernel
+space. For example, if we did not properly free and clear the datap
+pointer. Or if we allocated datap somewhere else and did not set VS
+accordingly. Normally, current user space programs would not expect to
+run into this point, so I guess returning false here is not
+meaningful. This warning message is intended for kernel debugging
+only. Or, should we just strip out this check?
+>
+> > +     /*
+> > +      * Now we sure that this is a V instruction. And it executes in the
+> > +      * context where VS has been off. So, try to allocate the user's V
+> > +      * context and resume execution.
+> > +      */
+> > +     if (rvv_thread_zalloc()) {
+> > +             force_sig(SIGKILL);
+> > +             return true;
+> > +     }
+> > +     vstate_on(regs);
+> > +     return true;
+>
+> Otherwise this looks sane to me!
+>
+> Thanks,
+> Conor.
+>
 Thanks,
-drew
+Andy.
 
