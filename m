@@ -1,175 +1,131 @@
-From: Conor Dooley <conor@kernel.org>
-Date: Sun, 05 Feb 2023 11:30:56 +0100
-Subject: [PATCH v5 08/14] RISC-V: KVM: Add SBI PMU extension support
-In-Reply-To: <20230205011515.1284674-9-atishp@rivosinc.com>
-References: <20230205011515.1284674-1-atishp@rivosinc.com> <20230205011515.1284674-9-atishp@rivosinc.com>
-Message-ID: <F8326D42-00ED-4639-91E7-5CF8E84469E7@kernel.org>
+From: Andrew Jones <ajones@ventanamicro.com>
+Date: Mon, 6 Feb 2023 10:22:04 +0100
+Subject: [PATCH v4 07/14] RISC-V: KVM: Add skeleton support for perf
+In-Reply-To: <CAOnJCUKn_pLKqYO71S6MrZd=rnTdSShZk+XksX2uxTiVtthmTA@mail.gmail.com>
+References: <20230201231250.3806412-1-atishp@rivosinc.com>
+ <20230201231250.3806412-8-atishp@rivosinc.com>
+ <20230202170345.uwi72dauzunlzxex@orel>
+ <CAOnJCUJfc8y729GiUdtqhv+PZu8v9rH+kfpwPwdW=GQPEs9FNw@mail.gmail.com>
+ <CAOnJCUKn_pLKqYO71S6MrZd=rnTdSShZk+XksX2uxTiVtthmTA@mail.gmail.com>
+Message-ID: <20230206092204.aiyo43uxlm4xdmgn@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-
-
-On 5 February 2023 02:15:09 GMT+01:00, Atish Patra <atishp@rivosinc.com> wrote:
->SBI PMU extension allows KVM guests to configure/start/stop/query about
->the PMU counters in virtualized enviornment as well.
->
->In order to allow that, KVM implements the entire SBI PMU extension.
->
->Reviewed-by: Anup Patel <anup@brainfault.org>
->Signed-off-by: Atish Patra <atishp@rivosinc.com>
-
-Hey Atish,
-CI is still complaining about something in this patch:
-https://gist.github.com/conor-pwbot/8f8d6a60a65b0b44d96c9c3b220e3efd
-
-I'm without a laptop this weekend, so apologies for
-the lack of investigation as to whether there's a
-reason for it.
-
-Cheers,
-Conor.
-
-
->---
-> arch/riscv/kvm/Makefile       |  2 +-
-> arch/riscv/kvm/vcpu_sbi.c     | 11 +++++
-> arch/riscv/kvm/vcpu_sbi_pmu.c | 87 +++++++++++++++++++++++++++++++++++
-> 3 files changed, 99 insertions(+), 1 deletion(-)
-> create mode 100644 arch/riscv/kvm/vcpu_sbi_pmu.c
->
->diff --git a/arch/riscv/kvm/Makefile b/arch/riscv/kvm/Makefile
->index 5de1053..278e97c 100644
->--- a/arch/riscv/kvm/Makefile
->+++ b/arch/riscv/kvm/Makefile
->@@ -25,4 +25,4 @@ kvm-y += vcpu_sbi_base.o
-> kvm-y += vcpu_sbi_replace.o
-> kvm-y += vcpu_sbi_hsm.o
-> kvm-y += vcpu_timer.o
->-kvm-$(CONFIG_RISCV_PMU_SBI) += vcpu_pmu.o
->+kvm-$(CONFIG_RISCV_PMU_SBI) += vcpu_pmu.o vcpu_sbi_pmu.o
->diff --git a/arch/riscv/kvm/vcpu_sbi.c b/arch/riscv/kvm/vcpu_sbi.c
->index fe2897e..15fde15 100644
->--- a/arch/riscv/kvm/vcpu_sbi.c
->+++ b/arch/riscv/kvm/vcpu_sbi.c
->@@ -20,6 +20,16 @@ static const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_v01 = {
-> };
-> #endif
+On Sat, Feb 04, 2023 at 11:37:47PM -0800, Atish Patra wrote:
+> On Fri, Feb 3, 2023 at 12:47 AM Atish Patra <atishp@atishpatra.org> wrote:
+> >
+> > On Thu, Feb 2, 2023 at 9:03 AM Andrew Jones <ajones@ventanamicro.com> wrote:
+> > >
+> > > On Wed, Feb 01, 2023 at 03:12:43PM -0800, Atish Patra wrote:
+> > > > This patch only adds barebone structure of perf implementation. Most of
+> > > > the function returns zero at this point and will be implemented
+> > > > fully in the future.
+> > > >
+> > > > Signed-off-by: Atish Patra <atishp@rivosinc.com>
+> > > > ---
+> > > >  arch/riscv/include/asm/kvm_host.h     |   4 +
+> > > >  arch/riscv/include/asm/kvm_vcpu_pmu.h |  78 +++++++++++++++
+> > > >  arch/riscv/kvm/Makefile               |   1 +
+> > > >  arch/riscv/kvm/vcpu.c                 |   7 ++
+> > > >  arch/riscv/kvm/vcpu_pmu.c             | 136 ++++++++++++++++++++++++++
+> > > >  5 files changed, 226 insertions(+)
+> > > >  create mode 100644 arch/riscv/include/asm/kvm_vcpu_pmu.h
+> > > >  create mode 100644 arch/riscv/kvm/vcpu_pmu.c
+> > > >
+> > > > diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
+> > > > index 93f43a3..b90be9a 100644
+> > > > --- a/arch/riscv/include/asm/kvm_host.h
+> > > > +++ b/arch/riscv/include/asm/kvm_host.h
+> > > > @@ -18,6 +18,7 @@
+> > > >  #include <asm/kvm_vcpu_insn.h>
+> > > >  #include <asm/kvm_vcpu_sbi.h>
+> > > >  #include <asm/kvm_vcpu_timer.h>
+> > > > +#include <asm/kvm_vcpu_pmu.h>
+> > > >
+> > > >  #define KVM_MAX_VCPUS                        1024
+> > > >
+> > > > @@ -228,6 +229,9 @@ struct kvm_vcpu_arch {
+> > > >
+> > > >       /* Don't run the VCPU (blocked) */
+> > > >       bool pause;
+> > > > +
+> > > > +     /* Performance monitoring context */
+> > > > +     struct kvm_pmu pmu_context;
+> > > >  };
+> > > >
+> > > >  static inline void kvm_arch_hardware_unsetup(void) {}
+> > > > diff --git a/arch/riscv/include/asm/kvm_vcpu_pmu.h b/arch/riscv/include/asm/kvm_vcpu_pmu.h
+> > > > new file mode 100644
+> > > > index 0000000..e2b4038
+> > > > --- /dev/null
+> > > > +++ b/arch/riscv/include/asm/kvm_vcpu_pmu.h
+> > > > @@ -0,0 +1,78 @@
+> > > > +/* SPDX-License-Identifier: GPL-2.0-only */
+> > > > +/*
+> > > > + * Copyright (c) 2023 Rivos Inc
+> > > > + *
+> > > > + * Authors:
+> > > > + *     Atish Patra <atishp@rivosinc.com>
+> > > > + */
+> > > > +
+> > > > +#ifndef __KVM_VCPU_RISCV_PMU_H
+> > > > +#define __KVM_VCPU_RISCV_PMU_H
+> > > > +
+> > > > +#include <linux/perf/riscv_pmu.h>
+> > > > +#include <asm/kvm_vcpu_sbi.h>
+> > > > +#include <asm/sbi.h>
+> > > > +
+> > > > +#ifdef CONFIG_RISCV_PMU_SBI
+> > > > +#define RISCV_KVM_MAX_FW_CTRS        32
+> > > > +
+> > > > +#if RISCV_KVM_MAX_FW_CTRS > 32
+> > > > +#error "Maximum firmware counter can't exceed 32 without increasing the RISCV_MAX_COUNTERS"
+> > >
+> > > "The number of firmware counters cannot exceed 32 without increasing RISCV_MAX_COUNTERS"
+> > >
+> > > > +#endif
+> > > > +
+> > > > +#define RISCV_MAX_COUNTERS      64
+> > >
+> > > But instead of that message, what I think we need is something like
+> > >
+> > >  #define RISCV_KVM_MAX_HW_CTRS  32
+> > >  #define RISCV_KVM_MAX_FW_CTRS  32
+> > >  #define RISCV_MAX_COUNTERS     (RISCV_KVM_MAX_HW_CTRS + RISCV_KVM_MAX_FW_CTRS)
+> > >
+> > >  static_assert(RISCV_MAX_COUNTERS <= 64)
+> > >
+> > > And then in pmu_sbi_device_probe() should ensure
+> > >
+> > >   num_counters <= RISCV_MAX_COUNTERS
+> > >
+> > > and pmu_sbi_get_ctrinfo() should ensure
+> > >
+> > >   num_hw_ctr <= RISCV_KVM_MAX_HW_CTRS
+> > >   num_fw_ctr <= RISCV_KVM_MAX_FW_CTRS
+> > >
+> > > which has to be done at runtime.
+> > >
+> >
+> > Sure. I will add the additional sanity checks.
+> >
 > 
->+#ifdef CONFIG_RISCV_PMU_SBI
->+extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_pmu;
->+#else
->+static const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_pmu = {
->+	.extid_start = -1UL,
->+	.extid_end = -1UL,
->+	.handler = NULL,
->+};
->+#endif
->+
-> static const struct kvm_vcpu_sbi_extension *sbi_ext[] = {
-> 	&vcpu_sbi_ext_v01,
-> 	&vcpu_sbi_ext_base,
->@@ -28,6 +38,7 @@ static const struct kvm_vcpu_sbi_extension *sbi_ext[] = {
-> 	&vcpu_sbi_ext_rfence,
-> 	&vcpu_sbi_ext_srst,
-> 	&vcpu_sbi_ext_hsm,
->+	&vcpu_sbi_ext_pmu,
-> 	&vcpu_sbi_ext_experimental,
-> 	&vcpu_sbi_ext_vendor,
-> };
->diff --git a/arch/riscv/kvm/vcpu_sbi_pmu.c b/arch/riscv/kvm/vcpu_sbi_pmu.c
->new file mode 100644
->index 0000000..9fdc1e1
->--- /dev/null
->+++ b/arch/riscv/kvm/vcpu_sbi_pmu.c
->@@ -0,0 +1,87 @@
->+// SPDX-License-Identifier: GPL-2.0
->+/*
->+ * Copyright (c) 2023 Rivos Inc
->+ *
->+ * Authors:
->+ *     Atish Patra <atishp@rivosinc.com>
->+ */
->+
->+#include <linux/errno.h>
->+#include <linux/err.h>
->+#include <linux/kvm_host.h>
->+#include <asm/csr.h>
->+#include <asm/sbi.h>
->+#include <asm/kvm_vcpu_sbi.h>
->+
->+static int kvm_sbi_ext_pmu_handler(struct kvm_vcpu *vcpu, struct kvm_run *run,
->+				   struct kvm_vcpu_sbi_return *retdata)
->+{
->+	int ret = 0;
->+	struct kvm_cpu_context *cp = &vcpu->arch.guest_context;
->+	struct kvm_pmu *kvpmu = vcpu_to_pmu(vcpu);
->+	unsigned long funcid = cp->a6;
->+	u64 temp;
->+
->+	/* Return not supported if PMU is not initialized */
->+	if (!kvpmu->init_done) {
->+		retdata->err_val = SBI_ERR_NOT_SUPPORTED;
->+		return 0;
->+	}
->+
->+	switch (funcid) {
->+	case SBI_EXT_PMU_NUM_COUNTERS:
->+		ret = kvm_riscv_vcpu_pmu_num_ctrs(vcpu, retdata);
->+		break;
->+	case SBI_EXT_PMU_COUNTER_GET_INFO:
->+		ret = kvm_riscv_vcpu_pmu_ctr_info(vcpu, cp->a0, retdata);
->+		break;
->+	case SBI_EXT_PMU_COUNTER_CFG_MATCH:
->+#if defined(CONFIG_32BIT)
->+		temp = ((uint64_t)cp->a5 << 32) | cp->a4;
->+#else
->+		temp = cp->a4;
->+#endif
->+		/*
->+		 * This can fail if perf core framework fails to create an event.
->+		 * Forward the error to userspace because it's an error happened
->+		 * within the host kernel. The other option would be to convert
->+		 * this an SBI error and forward to the guest.
->+		 */
->+		ret = kvm_riscv_vcpu_pmu_ctr_cfg_match(vcpu, cp->a0, cp->a1,
->+						       cp->a2, cp->a3, temp, retdata);
->+		break;
->+	case SBI_EXT_PMU_COUNTER_START:
->+#if defined(CONFIG_32BIT)
->+		temp = ((uint64_t)cp->a4 << 32) | cp->a3;
->+#else
->+		temp = cp->a3;
->+#endif
->+		ret = kvm_riscv_vcpu_pmu_ctr_start(vcpu, cp->a0, cp->a1, cp->a2,
->+						   temp, retdata);
->+		break;
->+	case SBI_EXT_PMU_COUNTER_STOP:
->+		ret = kvm_riscv_vcpu_pmu_ctr_stop(vcpu, cp->a0, cp->a1, cp->a2, retdata);
->+		break;
->+	case SBI_EXT_PMU_COUNTER_FW_READ:
->+		ret = kvm_riscv_vcpu_pmu_ctr_read(vcpu, cp->a0, retdata);
->+		break;
->+	default:
->+		retdata->err_val = SBI_ERR_NOT_SUPPORTED;
->+	}
->+
->+	return ret;
->+}
->+
->+static unsigned long kvm_sbi_ext_pmu_probe(struct kvm_vcpu *vcpu)
->+{
->+	struct kvm_pmu *kvpmu = vcpu_to_pmu(vcpu);
->+
->+	return kvpmu->init_done;
->+}
->+
->+const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_pmu = {
->+	.extid_start = SBI_EXT_PMU,
->+	.extid_end = SBI_EXT_PMU,
->+	.handler = kvm_sbi_ext_pmu_handler,
->+	.probe = kvm_sbi_ext_pmu_probe,
->+};
+> As explained above, I feel we shouldn't mix the firmware number of
+> counters that the host gets and it exposes to a guest.
+> So I have not included this suggestion in the v5.
+> I have changed the num_fw_ctrs to PMU_FW_MAX though to accurately
+> reflect the firmware counters KVM is actually using.
+
+Sounds good
+
+> I don't know if there is any benefit of static_assert over #error.
+> Please let me know if you feel strongly about that.
+
+One "normal" line vs. three #-lines?
+
+Thanks,
+drew
 
