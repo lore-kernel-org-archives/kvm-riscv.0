@@ -1,172 +1,121 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Tue, 7 Feb 2023 11:43:50 +0100
-Subject: [PATCH v6 2/8] RISC-V: KVM: Add SBI PMU extension support
-In-Reply-To: <20230207095529.1787260-3-atishp@rivosinc.com>
-References: <20230207095529.1787260-1-atishp@rivosinc.com>
- <20230207095529.1787260-3-atishp@rivosinc.com>
-Message-ID: <20230207104350.ekjklgxehrc7qtil@orel>
+From: Björn Töpel <bjorn@kernel.org>
+Date: Tue, 07 Feb 2023 15:36:59 +0100
+Subject: [PATCH -next v13 10/19] riscv: Allocate user's vector context
+ in the first-use trap
+In-Reply-To: <20230125142056.18356-11-andy.chiu@sifive.com>
+References: <20230125142056.18356-1-andy.chiu@sifive.com>
+ <20230125142056.18356-11-andy.chiu@sifive.com>
+Message-ID: <875ycdy22c.fsf@all.your.base.are.belong.to.us>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Feb 07, 2023 at 01:55:23AM -0800, Atish Patra wrote:
-> SBI PMU extension allows KVM guests to configure/start/stop/query about
-> the PMU counters in virtualized enviornment as well.
-> 
-> In order to allow that, KVM implements the entire SBI PMU extension.
-> 
-> Reviewed-by: Anup Patel <anup@brainfault.org>
-> Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
-> Signed-off-by: Atish Patra <atishp@rivosinc.com>
-> ---
->  arch/riscv/kvm/Makefile       |  2 +-
->  arch/riscv/kvm/vcpu_sbi.c     | 11 +++++
->  arch/riscv/kvm/vcpu_sbi_pmu.c | 86 +++++++++++++++++++++++++++++++++++
->  3 files changed, 98 insertions(+), 1 deletion(-)
->  create mode 100644 arch/riscv/kvm/vcpu_sbi_pmu.c
-> 
-> diff --git a/arch/riscv/kvm/Makefile b/arch/riscv/kvm/Makefile
-> index 5de1053..278e97c 100644
-> --- a/arch/riscv/kvm/Makefile
-> +++ b/arch/riscv/kvm/Makefile
-> @@ -25,4 +25,4 @@ kvm-y += vcpu_sbi_base.o
->  kvm-y += vcpu_sbi_replace.o
->  kvm-y += vcpu_sbi_hsm.o
->  kvm-y += vcpu_timer.o
-> -kvm-$(CONFIG_RISCV_PMU_SBI) += vcpu_pmu.o
-> +kvm-$(CONFIG_RISCV_PMU_SBI) += vcpu_pmu.o vcpu_sbi_pmu.o
-> diff --git a/arch/riscv/kvm/vcpu_sbi.c b/arch/riscv/kvm/vcpu_sbi.c
-> index fe2897e..15fde15 100644
-> --- a/arch/riscv/kvm/vcpu_sbi.c
-> +++ b/arch/riscv/kvm/vcpu_sbi.c
-> @@ -20,6 +20,16 @@ static const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_v01 = {
->  };
->  #endif
->  
-> +#ifdef CONFIG_RISCV_PMU_SBI
-> +extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_pmu;
-> +#else
-> +static const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_pmu = {
-> +	.extid_start = -1UL,
-> +	.extid_end = -1UL,
-> +	.handler = NULL,
-> +};
-> +#endif
-> +
->  static const struct kvm_vcpu_sbi_extension *sbi_ext[] = {
->  	&vcpu_sbi_ext_v01,
->  	&vcpu_sbi_ext_base,
-> @@ -28,6 +38,7 @@ static const struct kvm_vcpu_sbi_extension *sbi_ext[] = {
->  	&vcpu_sbi_ext_rfence,
->  	&vcpu_sbi_ext_srst,
->  	&vcpu_sbi_ext_hsm,
-> +	&vcpu_sbi_ext_pmu,
->  	&vcpu_sbi_ext_experimental,
->  	&vcpu_sbi_ext_vendor,
->  };
-> diff --git a/arch/riscv/kvm/vcpu_sbi_pmu.c b/arch/riscv/kvm/vcpu_sbi_pmu.c
+Andy,
+
+(Keeping the huge Cc:-list for now...)
+
+Andy Chiu <andy.chiu@sifive.com> writes:
+
+> diff --git a/arch/riscv/kernel/vector.c b/arch/riscv/kernel/vector.c
 > new file mode 100644
-> index 0000000..38efadb
+> index 000000000000..cdd58d1c8b3c
 > --- /dev/null
-> +++ b/arch/riscv/kvm/vcpu_sbi_pmu.c
-> @@ -0,0 +1,86 @@
-> +// SPDX-License-Identifier: GPL-2.0
+> +++ b/arch/riscv/kernel/vector.c
+> @@ -0,0 +1,89 @@
+> +// SPDX-License-Identifier: GPL-2.0-or-later
 > +/*
-> + * Copyright (c) 2023 Rivos Inc
-> + *
-> + * Authors:
-> + *     Atish Patra <atishp@rivosinc.com>
+> + * Copyright (C) 2023 SiFive
+> + * Author: Andy Chiu <andy.chiu@sifive.com>
 > + */
+> +#include <linux/sched/signal.h>
+> +#include <linux/types.h>
+> +#include <linux/slab.h>
+> +#include <linux/sched.h>
+> +#include <linux/uaccess.h>
 > +
-> +#include <linux/errno.h>
-> +#include <linux/err.h>
-> +#include <linux/kvm_host.h>
-> +#include <asm/csr.h>
-> +#include <asm/sbi.h>
-> +#include <asm/kvm_vcpu_sbi.h>
+> +#include <asm/thread_info.h>
+> +#include <asm/processor.h>
+> +#include <asm/insn.h>
+> +#include <asm/vector.h>
+> +#include <asm/ptrace.h>
+> +#include <asm/bug.h>
 > +
-> +static int kvm_sbi_ext_pmu_handler(struct kvm_vcpu *vcpu, struct kvm_run *run,
-> +				   struct kvm_vcpu_sbi_return *retdata)
+> +static bool insn_is_vector(u32 insn_buf)
 > +{
-> +	int ret = 0;
-> +	struct kvm_cpu_context *cp = &vcpu->arch.guest_context;
-> +	struct kvm_pmu *kvpmu = vcpu_to_pmu(vcpu);
-> +	unsigned long funcid = cp->a6;
-> +	u64 temp;
+> +	u32 opcode = insn_buf & __INSN_OPCODE_MASK;
+> +	/*
+> +	 * All V-related instructions, including CSR operations are 4-Byte. So,
+> +	 * do not handle if the instruction length is not 4-Byte.
+> +	 */
+> +	if (unlikely(GET_INSN_LENGTH(insn_buf) != 4))
+> +		return false;
+> +	if (opcode == OPCODE_VECTOR) {
+> +		return true;
+> +	} else if (opcode == OPCODE_LOADFP || opcode == OPCODE_STOREFP) {
+> +		u32 width = EXTRACT_LOAD_STORE_FP_WIDTH(insn_buf);
 > +
-> +	if (!kvpmu->init_done) {
-> +		retdata->err_val = SBI_ERR_NOT_SUPPORTED;
-> +		return 0;
+> +		if (width == LSFP_WIDTH_RVV_8 || width == LSFP_WIDTH_RVV_16 ||
+> +		    width == LSFP_WIDTH_RVV_32 || width == LSFP_WIDTH_RVV_64)
+> +			return true;
+> +	} else if (opcode == RVG_OPCODE_SYSTEM) {
+> +		u32 csr = EXTRACT_SYSTEM_CSR(insn_buf);
+> +
+> +		if ((csr >= CSR_VSTART && csr <= CSR_VCSR) ||
+> +		    (csr >= CSR_VL && csr <= CSR_VLENB))
+> +			return true;
 > +	}
-> +
-> +	switch (funcid) {
-> +	case SBI_EXT_PMU_NUM_COUNTERS:
-> +		ret = kvm_riscv_vcpu_pmu_num_ctrs(vcpu, retdata);
-> +		break;
-> +	case SBI_EXT_PMU_COUNTER_GET_INFO:
-> +		ret = kvm_riscv_vcpu_pmu_ctr_info(vcpu, cp->a0, retdata);
-> +		break;
-> +	case SBI_EXT_PMU_COUNTER_CFG_MATCH:
-> +#if defined(CONFIG_32BIT)
-> +		temp = ((uint64_t)cp->a5 << 32) | cp->a4;
-> +#else
-> +		temp = cp->a4;
-> +#endif
-> +		/*
-> +		 * This can fail if perf core framework fails to create an event.
-> +		 * Forward the error to userspace which is an error happened
-
-"Forward the error to userspace because it's an error which happened..."
-
-(Can probably be fixed up on merge.)
-
-> +		 * within the host kernel. The other option would be to convert
-> +		 * to an SBI error and forward to the guest.
-> +		 */
-> +		ret = kvm_riscv_vcpu_pmu_ctr_cfg_match(vcpu, cp->a0, cp->a1,
-> +						       cp->a2, cp->a3, temp, retdata);
-> +		break;
-> +	case SBI_EXT_PMU_COUNTER_START:
-> +#if defined(CONFIG_32BIT)
-> +		temp = ((uint64_t)cp->a4 << 32) | cp->a3;
-> +#else
-> +		temp = cp->a3;
-> +#endif
-> +		ret = kvm_riscv_vcpu_pmu_ctr_start(vcpu, cp->a0, cp->a1, cp->a2,
-> +						   temp, retdata);
-> +		break;
-> +	case SBI_EXT_PMU_COUNTER_STOP:
-> +		ret = kvm_riscv_vcpu_pmu_ctr_stop(vcpu, cp->a0, cp->a1, cp->a2, retdata);
-> +		break;
-> +	case SBI_EXT_PMU_COUNTER_FW_READ:
-> +		ret = kvm_riscv_vcpu_pmu_ctr_read(vcpu, cp->a0, retdata);
-> +		break;
-> +	default:
-> +		retdata->err_val = SBI_ERR_NOT_SUPPORTED;
-> +	}
-> +
-> +	return ret;
+> +	return false;
 > +}
 > +
-> +static unsigned long kvm_sbi_ext_pmu_probe(struct kvm_vcpu *vcpu)
+> +int rvv_thread_zalloc(void)
 > +{
-> +	struct kvm_pmu *kvpmu = vcpu_to_pmu(vcpu);
+> +	void *datap;
 > +
-> +	return kvpmu->init_done;
+> +	datap = kzalloc(riscv_vsize, GFP_KERNEL);
+> +	if (!datap)
+> +		return -ENOMEM;
+> +	current->thread.vstate.datap = datap;
+> +	memset(&current->thread.vstate, 0, offsetof(struct __riscv_v_state,
+> +						    datap));
+> +	return 0;
 > +}
 > +
-> +const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_pmu = {
-> +	.extid_start = SBI_EXT_PMU,
-> +	.extid_end = SBI_EXT_PMU,
-> +	.handler = kvm_sbi_ext_pmu_handler,
-> +	.probe = kvm_sbi_ext_pmu_probe,
-> +};
-> -- 
-> 2.25.1
->
+> +bool rvv_first_use_handler(struct pt_regs *regs)
+> +{
+> +	__user u32 *epc = (u32 *)regs->epc;
+> +	u32 tval = (u32)regs->badaddr;
+> +
+> +	/* If V has been enabled then it is not the first-use trap */
+> +	if (vstate_query(regs))
+> +		return false;
+> +	/* Get the instruction */
+> +	if (!tval) {
+> +		if (__get_user(tval, epc))
+> +			return false;
+> +	}
+> +	/* Filter out non-V instructions */
+> +	if (!insn_is_vector(tval))
+> +		return false;
+> +	/* Sanity check. datap should be null by the time of the first-use trap */
+> +	WARN_ON(current->thread.vstate.datap);
+> +	/*
+> +	 * Now we sure that this is a V instruction. And it executes in the
+> +	 * context where VS has been off. So, try to allocate the user's V
+> +	 * context and resume execution.
+> +	 */
+> +	if (rvv_thread_zalloc()) {
+> +		force_sig(SIGKILL);
+> +		return true;
+> +	}
 
-Thanks,
-drew
+Should the altstack size be taken into consideration, like x86 does in
+validate_sigaltstack() (see __xstate_request_perm()).
+
+Related; Would it make sense to implement sigaltstack_size_valid() for
+riscv, analogous to x86?
+
+
+Bj?rn
 
