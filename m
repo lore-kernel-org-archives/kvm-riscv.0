@@ -1,170 +1,62 @@
-From: Atish Patra <atishp@atishpatra.org>
-Date: Tue, 7 Feb 2023 01:20:12 -0800
-Subject: [PATCH v4 07/14] RISC-V: KVM: Add skeleton support for perf
-In-Reply-To: <20230206113945.vcnrokltvzgifsqu@orel>
-References: <20230201231250.3806412-1-atishp@rivosinc.com> <20230201231250.3806412-8-atishp@rivosinc.com>
- <20230202170345.uwi72dauzunlzxex@orel> <CAOnJCUJfc8y729GiUdtqhv+PZu8v9rH+kfpwPwdW=GQPEs9FNw@mail.gmail.com>
- <CAOnJCUKn_pLKqYO71S6MrZd=rnTdSShZk+XksX2uxTiVtthmTA@mail.gmail.com>
- <20230206092204.aiyo43uxlm4xdmgn@orel> <20230206113945.vcnrokltvzgifsqu@orel>
-Message-ID: <CAOnJCUK8FUFYGgTh0Zx=_nN8BwZ1rnCXccg212y=dVKkOXuwww@mail.gmail.com>
+From: Thomas Huth <thuth@redhat.com>
+Date: Tue, 7 Feb 2023 10:26:39 +0100
+Subject: [PATCH 2/7] KVM: x86: Improve return type handling in
+ kvm_vm_ioctl_get_nr_mmu_pages()
+In-Reply-To: <Y91JAb0kKBYQjO8a@google.com>
+References: <20230203094230.266952-1-thuth@redhat.com>
+ <20230203094230.266952-3-thuth@redhat.com> <Y91JAb0kKBYQjO8a@google.com>
+Message-ID: <579f432d-6100-0ba1-5ba4-f72349ec9173@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Feb 6, 2023 at 3:39 AM Andrew Jones <ajones@ventanamicro.com> wrote:
->
-> On Mon, Feb 06, 2023 at 10:22:04AM +0100, Andrew Jones wrote:
-> > On Sat, Feb 04, 2023 at 11:37:47PM -0800, Atish Patra wrote:
-> > > On Fri, Feb 3, 2023 at 12:47 AM Atish Patra <atishp@atishpatra.org> wrote:
-> > > >
-> > > > On Thu, Feb 2, 2023 at 9:03 AM Andrew Jones <ajones@ventanamicro.com> wrote:
-> > > > >
-> > > > > On Wed, Feb 01, 2023 at 03:12:43PM -0800, Atish Patra wrote:
-> > > > > > This patch only adds barebone structure of perf implementation. Most of
-> > > > > > the function returns zero at this point and will be implemented
-> > > > > > fully in the future.
-> > > > > >
-> > > > > > Signed-off-by: Atish Patra <atishp@rivosinc.com>
-> > > > > > ---
-> > > > > >  arch/riscv/include/asm/kvm_host.h     |   4 +
-> > > > > >  arch/riscv/include/asm/kvm_vcpu_pmu.h |  78 +++++++++++++++
-> > > > > >  arch/riscv/kvm/Makefile               |   1 +
-> > > > > >  arch/riscv/kvm/vcpu.c                 |   7 ++
-> > > > > >  arch/riscv/kvm/vcpu_pmu.c             | 136 ++++++++++++++++++++++++++
-> > > > > >  5 files changed, 226 insertions(+)
-> > > > > >  create mode 100644 arch/riscv/include/asm/kvm_vcpu_pmu.h
-> > > > > >  create mode 100644 arch/riscv/kvm/vcpu_pmu.c
-> > > > > >
-> > > > > > diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
-> > > > > > index 93f43a3..b90be9a 100644
-> > > > > > --- a/arch/riscv/include/asm/kvm_host.h
-> > > > > > +++ b/arch/riscv/include/asm/kvm_host.h
-> > > > > > @@ -18,6 +18,7 @@
-> > > > > >  #include <asm/kvm_vcpu_insn.h>
-> > > > > >  #include <asm/kvm_vcpu_sbi.h>
-> > > > > >  #include <asm/kvm_vcpu_timer.h>
-> > > > > > +#include <asm/kvm_vcpu_pmu.h>
-> > > > > >
-> > > > > >  #define KVM_MAX_VCPUS                        1024
-> > > > > >
-> > > > > > @@ -228,6 +229,9 @@ struct kvm_vcpu_arch {
-> > > > > >
-> > > > > >       /* Don't run the VCPU (blocked) */
-> > > > > >       bool pause;
-> > > > > > +
-> > > > > > +     /* Performance monitoring context */
-> > > > > > +     struct kvm_pmu pmu_context;
-> > > > > >  };
-> > > > > >
-> > > > > >  static inline void kvm_arch_hardware_unsetup(void) {}
-> > > > > > diff --git a/arch/riscv/include/asm/kvm_vcpu_pmu.h b/arch/riscv/include/asm/kvm_vcpu_pmu.h
-> > > > > > new file mode 100644
-> > > > > > index 0000000..e2b4038
-> > > > > > --- /dev/null
-> > > > > > +++ b/arch/riscv/include/asm/kvm_vcpu_pmu.h
-> > > > > > @@ -0,0 +1,78 @@
-> > > > > > +/* SPDX-License-Identifier: GPL-2.0-only */
-> > > > > > +/*
-> > > > > > + * Copyright (c) 2023 Rivos Inc
-> > > > > > + *
-> > > > > > + * Authors:
-> > > > > > + *     Atish Patra <atishp@rivosinc.com>
-> > > > > > + */
-> > > > > > +
-> > > > > > +#ifndef __KVM_VCPU_RISCV_PMU_H
-> > > > > > +#define __KVM_VCPU_RISCV_PMU_H
-> > > > > > +
-> > > > > > +#include <linux/perf/riscv_pmu.h>
-> > > > > > +#include <asm/kvm_vcpu_sbi.h>
-> > > > > > +#include <asm/sbi.h>
-> > > > > > +
-> > > > > > +#ifdef CONFIG_RISCV_PMU_SBI
-> > > > > > +#define RISCV_KVM_MAX_FW_CTRS        32
-> > > > > > +
-> > > > > > +#if RISCV_KVM_MAX_FW_CTRS > 32
-> > > > > > +#error "Maximum firmware counter can't exceed 32 without increasing the RISCV_MAX_COUNTERS"
-> > > > >
-> > > > > "The number of firmware counters cannot exceed 32 without increasing RISCV_MAX_COUNTERS"
-> > > > >
-> > > > > > +#endif
-> > > > > > +
-> > > > > > +#define RISCV_MAX_COUNTERS      64
-> > > > >
-> > > > > But instead of that message, what I think we need is something like
-> > > > >
-> > > > >  #define RISCV_KVM_MAX_HW_CTRS  32
-> > > > >  #define RISCV_KVM_MAX_FW_CTRS  32
-> > > > >  #define RISCV_MAX_COUNTERS     (RISCV_KVM_MAX_HW_CTRS + RISCV_KVM_MAX_FW_CTRS)
-> > > > >
-> > > > >  static_assert(RISCV_MAX_COUNTERS <= 64)
-> > > > >
-> > > > > And then in pmu_sbi_device_probe() should ensure
-> > > > >
-> > > > >   num_counters <= RISCV_MAX_COUNTERS
-> > > > >
-> > > > > and pmu_sbi_get_ctrinfo() should ensure
-> > > > >
-> > > > >   num_hw_ctr <= RISCV_KVM_MAX_HW_CTRS
-> > > > >   num_fw_ctr <= RISCV_KVM_MAX_FW_CTRS
-> > > > >
-> > > > > which has to be done at runtime.
-> > > > >
-> > > >
-> > > > Sure. I will add the additional sanity checks.
-> > > >
-> > >
-> > > As explained above, I feel we shouldn't mix the firmware number of
-> > > counters that the host gets and it exposes to a guest.
-> > > So I have not included this suggestion in the v5.
-> > > I have changed the num_fw_ctrs to PMU_FW_MAX though to accurately
-> > > reflect the firmware counters KVM is actually using.
-> >
-> > Sounds good
->
-> I just looked at v5. IMO, much of what I proposed above still makes
-> sense, since what I'm proposing is that the relationship between
-> RISCV_KVM_MAX_HW_CTRS, RISCV_KVM_MAX_FW_CTRS, RISCV_MAX_COUNTERS, and 64
-> (our current max bitmap size) be explicitly checked. So, even if we want
-> RISCV_KVM_MAX_FW_CTRS to be SBI_PMU_FW_MAX, it'd be good to have
->
-> #define RISCV_KVM_MAX_HW_CTRS  32
->
-> (And a runtime check confirming num_hw_ctrs + 1 <= RISCV_KVM_MAX_HW_CTRS,
->  and then either silently capping or issuing a warning and capping)
->
-> And, to be sure the sum of RISCV_KVM_MAX_FW_CTRS and RISCV_KVM_MAX_HW_CTRS
-> doesn't exceed the size of the bitmap
->
-> #define RISCV_KVM_MAX_FW_CTRS   SBI_PMU_FW_MAX
-> #define RISCV_MAX_COUNTERS      (RISCV_KVM_MAX_HW_CTRS + RISCV_KVM_MAX_FW_CTRS)
-> static_assert(RISCV_MAX_COUNTERS <= 64)
->
+On 03/02/2023 18.48, Sean Christopherson wrote:
+> On Fri, Feb 03, 2023, Thomas Huth wrote:
+>> kvm_vm_ioctl_get_nr_mmu_pages() tries to return a "unsigned long" value,
+>> but its caller only stores ther return value in an "int" - which is also
+>> what all the other kvm_vm_ioctl_*() functions are returning. So returning
+>> values that do not fit into a 32-bit integer anymore does not work here.
+>> It's better to adjust the return type, add a sanity check and return an
+>> error instead if the value is too big.
+>>
+>> Signed-off-by: Thomas Huth <thuth@redhat.com>
+>> ---
+>>   arch/x86/kvm/x86.c | 5 ++++-
+>>   1 file changed, 4 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+>> index da4bbd043a7b..caa2541833dd 100644
+>> --- a/arch/x86/kvm/x86.c
+>> +++ b/arch/x86/kvm/x86.c
+>> @@ -6007,8 +6007,11 @@ static int kvm_vm_ioctl_set_nr_mmu_pages(struct kvm *kvm,
+>>   	return 0;
+>>   }
+>>   
+>> -static unsigned long kvm_vm_ioctl_get_nr_mmu_pages(struct kvm *kvm)
+>> +static int kvm_vm_ioctl_get_nr_mmu_pages(struct kvm *kvm)
+>>   {
+>> +	if (kvm->arch.n_max_mmu_pages > INT_MAX)
+>> +		return -EOVERFLOW;
+>> +
+>>   	return kvm->arch.n_max_mmu_pages;
+>>   }
+> 
+> My vote is to skip this patch, skip deprecation, and go straight to deleting
+> KVM_GET_NR_MMU_PAGES.  The ioctl() has never worked[*], and none of the VMMs I
+> checked use it (QEMU, Google's internal VMM, kvmtool, CrosVM).
 
-ok. I have added those changes but I have modified RISCV_MAX_COUNTERS
-to RISCV_KVM_MAX_COUNTERS,
-to avoid overlapping with the RISCV_MAX_COUNTERS defined in the host.
-Logically, the host and the guest can have separate counters anyways.
+I guess I'm living too much in the QEMU world where things need to be 
+deprecated first before removing them ;-)
+But sure, if everybody agrees that removing this directly is fine, too, I 
+can do this in v2.
 
-> Thanks,
-> drew
->
-> >
-> > > I don't know if there is any benefit of static_assert over #error.
-> > > Please let me know if you feel strongly about that.
-> >
-> > One "normal" line vs. three #-lines?
-> >
-
-Fair enough. Fixed.
-
-> > Thanks,
-> > drew
+  Thomas
 
 
+PS: Has there ever been a discussion about the other deprecated interfaces 
+in include/uapi/linux/kvm.h ? Most of the stuff there seems to be from 2009 
+... so maybe it's time now to remove that, too?
 
--- 
-Regards,
-Atish
 
