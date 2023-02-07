@@ -1,45 +1,45 @@
 From: Atish Patra <atishp@rivosinc.com>
-Date: Tue,  7 Feb 2023 01:55:24 -0800
-Subject: [PATCH v6 3/8] RISC-V: KVM: Make PMU functionality depend on Sscofpmf
+Date: Tue,  7 Feb 2023 01:55:25 -0800
+Subject: [PATCH v6 4/8] RISC-V: KVM: Disable all hpmcounter access for VS/VU mode
 In-Reply-To: <20230207095529.1787260-1-atishp@rivosinc.com>
 References: <20230207095529.1787260-1-atishp@rivosinc.com>
-Message-ID: <20230207095529.1787260-4-atishp@rivosinc.com>
+Message-ID: <20230207095529.1787260-5-atishp@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The privilege mode filtering feature must be available in the host so
-that the host can inhibit the counters while the execution is in HS mode.
-Otherwise, the guests may have access to critical guest information.
+Any guest must not get access to any hpmcounter including cycle/instret
+without any checks. We achieve that by disabling all the bits except TM
+bit in hcounteren.
 
-Reviewed-by: Anup Patel <anup@brainfault.org>
+However, instret and cycle access for guest user space can be enabled
+upon explicit request (via ONE REG) or on first trap from VU mode
+to maintain ABI requirement in the future. This patch doesn't support
+that as ONE REG interface is not settled yet.
+
 Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+Reviewed-by: Anup Patel <anup@brainfault.org>
 Signed-off-by: Atish Patra <atishp@rivosinc.com>
 ---
- arch/riscv/kvm/vcpu_pmu.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ arch/riscv/kvm/main.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/arch/riscv/kvm/vcpu_pmu.c b/arch/riscv/kvm/vcpu_pmu.c
-index e79721b..6c1f073 100644
---- a/arch/riscv/kvm/vcpu_pmu.c
-+++ b/arch/riscv/kvm/vcpu_pmu.c
-@@ -79,6 +79,14 @@ void kvm_riscv_vcpu_pmu_init(struct kvm_vcpu *vcpu)
- 	struct kvm_pmu *kvpmu = vcpu_to_pmu(vcpu);
- 	struct kvm_pmc *pmc;
+diff --git a/arch/riscv/kvm/main.c b/arch/riscv/kvm/main.c
+index 58c5489..c5d400f 100644
+--- a/arch/riscv/kvm/main.c
++++ b/arch/riscv/kvm/main.c
+@@ -49,7 +49,8 @@ int kvm_arch_hardware_enable(void)
+ 	hideleg |= (1UL << IRQ_VS_EXT);
+ 	csr_write(CSR_HIDELEG, hideleg);
  
-+	/*
-+	 * PMU functionality should be only available to guests if privilege mode
-+	 * filtering is available in the host. Otherwise, guest will always count
-+	 * events while the execution is in hypervisor mode.
-+	 */
-+	if (!riscv_isa_extension_available(NULL, SSCOFPMF))
-+		return;
-+
- 	ret = riscv_pmu_get_hpm_info(&hpm_width, &num_hw_ctrs);
- 	if (ret < 0 || !hpm_width || !num_hw_ctrs)
- 		return;
+-	csr_write(CSR_HCOUNTEREN, -1UL);
++	/* VS should access only the time counter directly. Everything else should trap */
++	csr_write(CSR_HCOUNTEREN, 0x02);
+ 
+ 	csr_write(CSR_HVIP, 0);
+ 
 -- 
 2.25.1
 
