@@ -1,121 +1,345 @@
-From: Björn Töpel <bjorn@kernel.org>
-Date: Tue, 07 Feb 2023 15:36:59 +0100
-Subject: [PATCH -next v13 10/19] riscv: Allocate user's vector context
- in the first-use trap
-In-Reply-To: <20230125142056.18356-11-andy.chiu@sifive.com>
-References: <20230125142056.18356-1-andy.chiu@sifive.com>
- <20230125142056.18356-11-andy.chiu@sifive.com>
-Message-ID: <875ycdy22c.fsf@all.your.base.are.belong.to.us>
+From: Anup Patel <anup@brainfault.org>
+Date: Tue, 7 Feb 2023 20:27:03 +0530
+Subject: [PATCH v6 1/8] RISC-V: KVM: Add skeleton support for perf
+In-Reply-To: <20230207103727.jqgkyugsufgmsjrt@orel>
+References: <20230207095529.1787260-1-atishp@rivosinc.com> <20230207095529.1787260-2-atishp@rivosinc.com>
+ <20230207103727.jqgkyugsufgmsjrt@orel>
+Message-ID: <CAAhSdy0f7K5G_v_54jABAUr5dEcWsNLMNGTYXHaDbit71bqZvQ@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Andy,
+Hi Drew,
 
-(Keeping the huge Cc:-list for now...)
+On Tue, Feb 7, 2023 at 4:07 PM Andrew Jones <ajones@ventanamicro.com> wrote:
+>
+> On Tue, Feb 07, 2023 at 01:55:22AM -0800, Atish Patra wrote:
+> > This patch only adds barebone structure of perf implementation. Most of
+> > the function returns zero at this point and will be implemented
+> > fully in the future.
+> >
+> > Reviewed-by: Anup Patel <anup@brainfault.org>
+> > Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+> > Signed-off-by: Atish Patra <atishp@rivosinc.com>
 
-Andy Chiu <andy.chiu@sifive.com> writes:
+I will address your comments at the time of merging this patch.
 
-> diff --git a/arch/riscv/kernel/vector.c b/arch/riscv/kernel/vector.c
-> new file mode 100644
-> index 000000000000..cdd58d1c8b3c
-> --- /dev/null
-> +++ b/arch/riscv/kernel/vector.c
-> @@ -0,0 +1,89 @@
-> +// SPDX-License-Identifier: GPL-2.0-or-later
-> +/*
-> + * Copyright (C) 2023 SiFive
-> + * Author: Andy Chiu <andy.chiu@sifive.com>
-> + */
-> +#include <linux/sched/signal.h>
-> +#include <linux/types.h>
-> +#include <linux/slab.h>
-> +#include <linux/sched.h>
-> +#include <linux/uaccess.h>
-> +
-> +#include <asm/thread_info.h>
-> +#include <asm/processor.h>
-> +#include <asm/insn.h>
-> +#include <asm/vector.h>
-> +#include <asm/ptrace.h>
-> +#include <asm/bug.h>
-> +
-> +static bool insn_is_vector(u32 insn_buf)
-> +{
-> +	u32 opcode = insn_buf & __INSN_OPCODE_MASK;
-> +	/*
-> +	 * All V-related instructions, including CSR operations are 4-Byte. So,
-> +	 * do not handle if the instruction length is not 4-Byte.
-> +	 */
-> +	if (unlikely(GET_INSN_LENGTH(insn_buf) != 4))
-> +		return false;
-> +	if (opcode == OPCODE_VECTOR) {
-> +		return true;
-> +	} else if (opcode == OPCODE_LOADFP || opcode == OPCODE_STOREFP) {
-> +		u32 width = EXTRACT_LOAD_STORE_FP_WIDTH(insn_buf);
-> +
-> +		if (width == LSFP_WIDTH_RVV_8 || width == LSFP_WIDTH_RVV_16 ||
-> +		    width == LSFP_WIDTH_RVV_32 || width == LSFP_WIDTH_RVV_64)
-> +			return true;
-> +	} else if (opcode == RVG_OPCODE_SYSTEM) {
-> +		u32 csr = EXTRACT_SYSTEM_CSR(insn_buf);
-> +
-> +		if ((csr >= CSR_VSTART && csr <= CSR_VCSR) ||
-> +		    (csr >= CSR_VL && csr <= CSR_VLENB))
-> +			return true;
-> +	}
-> +	return false;
-> +}
-> +
-> +int rvv_thread_zalloc(void)
-> +{
-> +	void *datap;
-> +
-> +	datap = kzalloc(riscv_vsize, GFP_KERNEL);
-> +	if (!datap)
-> +		return -ENOMEM;
-> +	current->thread.vstate.datap = datap;
-> +	memset(&current->thread.vstate, 0, offsetof(struct __riscv_v_state,
-> +						    datap));
-> +	return 0;
-> +}
-> +
-> +bool rvv_first_use_handler(struct pt_regs *regs)
-> +{
-> +	__user u32 *epc = (u32 *)regs->epc;
-> +	u32 tval = (u32)regs->badaddr;
-> +
-> +	/* If V has been enabled then it is not the first-use trap */
-> +	if (vstate_query(regs))
-> +		return false;
-> +	/* Get the instruction */
-> +	if (!tval) {
-> +		if (__get_user(tval, epc))
-> +			return false;
-> +	}
-> +	/* Filter out non-V instructions */
-> +	if (!insn_is_vector(tval))
-> +		return false;
-> +	/* Sanity check. datap should be null by the time of the first-use trap */
-> +	WARN_ON(current->thread.vstate.datap);
-> +	/*
-> +	 * Now we sure that this is a V instruction. And it executes in the
-> +	 * context where VS has been off. So, try to allocate the user's V
-> +	 * context and resume execution.
-> +	 */
-> +	if (rvv_thread_zalloc()) {
-> +		force_sig(SIGKILL);
-> +		return true;
-> +	}
+Thanks,
+Anup
 
-Should the altstack size be taken into consideration, like x86 does in
-validate_sigaltstack() (see __xstate_request_perm()).
-
-Related; Would it make sense to implement sigaltstack_size_valid() for
-riscv, analogous to x86?
-
-
-Bj?rn
+> > ---
+> >  arch/riscv/include/asm/kvm_host.h     |   4 +
+> >  arch/riscv/include/asm/kvm_vcpu_pmu.h |  75 ++++++++++++++
+> >  arch/riscv/kvm/Makefile               |   1 +
+> >  arch/riscv/kvm/vcpu.c                 |   7 ++
+> >  arch/riscv/kvm/vcpu_pmu.c             | 138 ++++++++++++++++++++++++++
+> >  5 files changed, 225 insertions(+)
+> >  create mode 100644 arch/riscv/include/asm/kvm_vcpu_pmu.h
+> >  create mode 100644 arch/riscv/kvm/vcpu_pmu.c
+> >
+> > diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
+> > index 93f43a3..b90be9a 100644
+> > --- a/arch/riscv/include/asm/kvm_host.h
+> > +++ b/arch/riscv/include/asm/kvm_host.h
+> > @@ -18,6 +18,7 @@
+> >  #include <asm/kvm_vcpu_insn.h>
+> >  #include <asm/kvm_vcpu_sbi.h>
+> >  #include <asm/kvm_vcpu_timer.h>
+> > +#include <asm/kvm_vcpu_pmu.h>
+> >
+> >  #define KVM_MAX_VCPUS                        1024
+> >
+> > @@ -228,6 +229,9 @@ struct kvm_vcpu_arch {
+> >
+> >       /* Don't run the VCPU (blocked) */
+> >       bool pause;
+> > +
+> > +     /* Performance monitoring context */
+> > +     struct kvm_pmu pmu_context;
+> >  };
+> >
+> >  static inline void kvm_arch_hardware_unsetup(void) {}
+> > diff --git a/arch/riscv/include/asm/kvm_vcpu_pmu.h b/arch/riscv/include/asm/kvm_vcpu_pmu.h
+> > new file mode 100644
+> > index 0000000..0b86a47
+> > --- /dev/null
+> > +++ b/arch/riscv/include/asm/kvm_vcpu_pmu.h
+> > @@ -0,0 +1,75 @@
+> > +/* SPDX-License-Identifier: GPL-2.0-only */
+> > +/*
+> > + * Copyright (c) 2023 Rivos Inc
+> > + *
+> > + * Authors:
+> > + *     Atish Patra <atishp@rivosinc.com>
+> > + */
+> > +
+> > +#ifndef __KVM_VCPU_RISCV_PMU_H
+> > +#define __KVM_VCPU_RISCV_PMU_H
+> > +
+> > +#include <linux/perf/riscv_pmu.h>
+> > +#include <asm/kvm_vcpu_sbi.h>
+> > +#include <asm/sbi.h>
+> > +
+> > +#ifdef CONFIG_RISCV_PMU_SBI
+> > +#define RISCV_KVM_MAX_FW_CTRS        32
+> > +#define RISCV_KVM_MAX_HW_CTRS        32
+> > +#define RISCV_KVM_MAX_COUNTERS       (RISCV_KVM_MAX_HW_CTRS + RISCV_KVM_MAX_FW_CTRS)
+> > +static_assert(RISCV_KVM_MAX_COUNTERS <= 64);
+> > +
+> > +/* Per virtual pmu counter data */
+> > +struct kvm_pmc {
+> > +     u8 idx;
+> > +     struct perf_event *perf_event;
+> > +     u64 counter_val;
+> > +     union sbi_pmu_ctr_info cinfo;
+> > +     /* Event monitoring status */
+> > +     bool started;
+> > +};
+> > +
+> > +/* PMU data structure per vcpu */
+> > +struct kvm_pmu {
+> > +     struct kvm_pmc pmc[RISCV_KVM_MAX_COUNTERS];
+> > +     /* Number of the virtual firmware counters available */
+> > +     int num_fw_ctrs;
+> > +     /* Number of the virtual hardware counters available */
+> > +     int num_hw_ctrs;
+> > +     /* A flag to indicate that pmu initialization is done */
+> > +     bool init_done;
+> > +     /* Bit map of all the virtual counter used */
+> > +     DECLARE_BITMAP(pmc_in_use, RISCV_KVM_MAX_COUNTERS);
+> > +};
+> > +
+> > +#define vcpu_to_pmu(vcpu) (&(vcpu)->arch.pmu_context)
+> > +#define pmu_to_vcpu(pmu)  (container_of((pmu), struct kvm_vcpu, arch.pmu_context))
+> > +
+> > +int kvm_riscv_vcpu_pmu_num_ctrs(struct kvm_vcpu *vcpu, struct kvm_vcpu_sbi_return *retdata);
+> > +int kvm_riscv_vcpu_pmu_ctr_info(struct kvm_vcpu *vcpu, unsigned long cidx,
+> > +                             struct kvm_vcpu_sbi_return *retdata);
+> > +int kvm_riscv_vcpu_pmu_ctr_start(struct kvm_vcpu *vcpu, unsigned long ctr_base,
+> > +                              unsigned long ctr_mask, unsigned long flags, u64 ival,
+> > +                              struct kvm_vcpu_sbi_return *retdata);
+> > +int kvm_riscv_vcpu_pmu_ctr_stop(struct kvm_vcpu *vcpu, unsigned long ctr_base,
+> > +                             unsigned long ctr_mask, unsigned long flags,
+> > +                             struct kvm_vcpu_sbi_return *retdata);
+> > +int kvm_riscv_vcpu_pmu_ctr_cfg_match(struct kvm_vcpu *vcpu, unsigned long ctr_base,
+> > +                                  unsigned long ctr_mask, unsigned long flags,
+> > +                                  unsigned long eidx, u64 evtdata,
+> > +                                  struct kvm_vcpu_sbi_return *retdata);
+> > +int kvm_riscv_vcpu_pmu_ctr_read(struct kvm_vcpu *vcpu, unsigned long cidx,
+> > +                             struct kvm_vcpu_sbi_return *retdata);
+> > +void kvm_riscv_vcpu_pmu_init(struct kvm_vcpu *vcpu);
+> > +void kvm_riscv_vcpu_pmu_deinit(struct kvm_vcpu *vcpu);
+> > +void kvm_riscv_vcpu_pmu_reset(struct kvm_vcpu *vcpu);
+> > +
+> > +#else
+> > +struct kvm_pmu {
+> > +};
+> > +
+> > +static inline void kvm_riscv_vcpu_pmu_init(struct kvm_vcpu *vcpu) {}
+> > +static inline void kvm_riscv_vcpu_pmu_deinit(struct kvm_vcpu *vcpu) {}
+> > +static inline void kvm_riscv_vcpu_pmu_reset(struct kvm_vcpu *vcpu) {}
+> > +#endif /* CONFIG_RISCV_PMU_SBI */
+> > +#endif /* !__KVM_VCPU_RISCV_PMU_H */
+> > diff --git a/arch/riscv/kvm/Makefile b/arch/riscv/kvm/Makefile
+> > index 019df920..5de1053 100644
+> > --- a/arch/riscv/kvm/Makefile
+> > +++ b/arch/riscv/kvm/Makefile
+> > @@ -25,3 +25,4 @@ kvm-y += vcpu_sbi_base.o
+> >  kvm-y += vcpu_sbi_replace.o
+> >  kvm-y += vcpu_sbi_hsm.o
+> >  kvm-y += vcpu_timer.o
+> > +kvm-$(CONFIG_RISCV_PMU_SBI) += vcpu_pmu.o
+> > diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+> > index 7c08567..7d010b0 100644
+> > --- a/arch/riscv/kvm/vcpu.c
+> > +++ b/arch/riscv/kvm/vcpu.c
+> > @@ -138,6 +138,8 @@ static void kvm_riscv_reset_vcpu(struct kvm_vcpu *vcpu)
+> >       WRITE_ONCE(vcpu->arch.irqs_pending, 0);
+> >       WRITE_ONCE(vcpu->arch.irqs_pending_mask, 0);
+> >
+> > +     kvm_riscv_vcpu_pmu_reset(vcpu);
+> > +
+> >       vcpu->arch.hfence_head = 0;
+> >       vcpu->arch.hfence_tail = 0;
+> >       memset(vcpu->arch.hfence_queue, 0, sizeof(vcpu->arch.hfence_queue));
+> > @@ -194,6 +196,9 @@ int kvm_arch_vcpu_create(struct kvm_vcpu *vcpu)
+> >       /* Setup VCPU timer */
+> >       kvm_riscv_vcpu_timer_init(vcpu);
+> >
+> > +     /* setup performance monitoring */
+> > +     kvm_riscv_vcpu_pmu_init(vcpu);
+> > +
+> >       /* Reset VCPU */
+> >       kvm_riscv_reset_vcpu(vcpu);
+> >
+> > @@ -216,6 +221,8 @@ void kvm_arch_vcpu_destroy(struct kvm_vcpu *vcpu)
+> >       /* Cleanup VCPU timer */
+> >       kvm_riscv_vcpu_timer_deinit(vcpu);
+> >
+> > +     kvm_riscv_vcpu_pmu_deinit(vcpu);
+> > +
+> >       /* Free unused pages pre-allocated for G-stage page table mappings */
+> >       kvm_mmu_free_memory_cache(&vcpu->arch.mmu_page_cache);
+> >  }
+> > diff --git a/arch/riscv/kvm/vcpu_pmu.c b/arch/riscv/kvm/vcpu_pmu.c
+> > new file mode 100644
+> > index 0000000..e79721b
+> > --- /dev/null
+> > +++ b/arch/riscv/kvm/vcpu_pmu.c
+> > @@ -0,0 +1,138 @@
+> > +// SPDX-License-Identifier: GPL-2.0
+> > +/*
+> > + * Copyright (c) 2023 Rivos Inc
+> > + *
+> > + * Authors:
+> > + *     Atish Patra <atishp@rivosinc.com>
+> > + */
+> > +
+> > +#include <linux/errno.h>
+> > +#include <linux/err.h>
+> > +#include <linux/kvm_host.h>
+> > +#include <linux/perf/riscv_pmu.h>
+> > +#include <asm/csr.h>
+> > +#include <asm/kvm_vcpu_sbi.h>
+> > +#include <asm/kvm_vcpu_pmu.h>
+> > +#include <linux/kvm_host.h>
+> > +
+> > +#define kvm_pmu_num_counters(pmu) ((pmu)->num_hw_ctrs + (pmu)->num_fw_ctrs)
+> > +
+> > +int kvm_riscv_vcpu_pmu_num_ctrs(struct kvm_vcpu *vcpu, struct kvm_vcpu_sbi_return *retdata)
+> > +{
+> > +     struct kvm_pmu *kvpmu = vcpu_to_pmu(vcpu);
+> > +
+> > +     retdata->out_val = kvm_pmu_num_counters(kvpmu);
+> > +
+> > +     return 0;
+> > +}
+> > +
+> > +int kvm_riscv_vcpu_pmu_ctr_info(struct kvm_vcpu *vcpu, unsigned long cidx,
+> > +                             struct kvm_vcpu_sbi_return *retdata)
+> > +{
+> > +     struct kvm_pmu *kvpmu = vcpu_to_pmu(vcpu);
+> > +
+> > +     if (cidx > RISCV_KVM_MAX_COUNTERS || cidx == 1) {
+> > +             retdata->err_val = SBI_ERR_INVALID_PARAM;
+> > +             return 0;
+> > +     }
+> > +
+> > +     retdata->out_val = kvpmu->pmc[cidx].cinfo.value;
+> > +
+> > +     return 0;
+> > +}
+> > +
+> > +int kvm_riscv_vcpu_pmu_ctr_start(struct kvm_vcpu *vcpu, unsigned long ctr_base,
+> > +                              unsigned long ctr_mask, unsigned long flags, u64 ival,
+> > +                              struct kvm_vcpu_sbi_return *retdata)
+> > +{
+> > +     /* TODO */
+> > +     return 0;
+> > +}
+> > +
+> > +int kvm_riscv_vcpu_pmu_ctr_stop(struct kvm_vcpu *vcpu, unsigned long ctr_base,
+> > +                             unsigned long ctr_mask, unsigned long flags,
+> > +                             struct kvm_vcpu_sbi_return *retdata)
+> > +{
+> > +     /* TODO */
+> > +     return 0;
+> > +}
+> > +
+> > +int kvm_riscv_vcpu_pmu_ctr_cfg_match(struct kvm_vcpu *vcpu, unsigned long ctr_base,
+> > +                                  unsigned long ctr_mask, unsigned long flags,
+> > +                                  unsigned long eidx, u64 evtdata,
+> > +                                  struct kvm_vcpu_sbi_return *retdata)
+> > +{
+> > +     /* TODO */
+> > +     return 0;
+> > +}
+> > +
+> > +int kvm_riscv_vcpu_pmu_ctr_read(struct kvm_vcpu *vcpu, unsigned long cidx,
+> > +                             struct kvm_vcpu_sbi_return *retdata)
+> > +{
+> > +     /* TODO */
+> > +     return 0;
+> > +}
+> > +
+> > +void kvm_riscv_vcpu_pmu_init(struct kvm_vcpu *vcpu)
+> > +{
+> > +     int i = 0, ret, num_hw_ctrs = 0, hpm_width = 0;
+> > +     struct kvm_pmu *kvpmu = vcpu_to_pmu(vcpu);
+> > +     struct kvm_pmc *pmc;
+> > +
+> > +     ret = riscv_pmu_get_hpm_info(&hpm_width, &num_hw_ctrs);
+> > +     if (ret < 0 || !hpm_width || !num_hw_ctrs)
+> > +             return;
+>
+> need blank line here
+>
+> > +     /*
+> > +      * Increase the number of hardware counters to offset the time counter.
+> > +      */
+> > +     kvpmu->num_hw_ctrs = num_hw_ctrs + 1;
+> > +     kvpmu->num_fw_ctrs = SBI_PMU_FW_MAX;
+> > +
+> > +     if (kvpmu->num_hw_ctrs > RISCV_KVM_MAX_HW_CTRS) {
+> > +             pr_warn("Limiting the hardware counters to 32 as specified by the ISA");
+>
+> pr_warn_once() and we need to set the prefix.
+>
+> > +             kvpmu->num_hw_ctrs = RISCV_KVM_MAX_HW_CTRS;
+> > +     }
+>
+> need blank line here
+>
+> > +     /*
+> > +      * There is no correlation between the logical hardware counter and virtual counters.
+> > +      * However, we need to encode a hpmcounter CSR in the counter info field so that
+> > +      * KVM can trap n emulate the read. This works well in the migration use case as
+> > +      * KVM doesn't care if the actual hpmcounter is available in the hardware or not.
+> > +      */
+> > +     for (i = 0; i < kvm_pmu_num_counters(kvpmu); i++) {
+> > +             /* TIME CSR shouldn't be read from perf interface */
+> > +             if (i == 1)
+> > +                     continue;
+> > +             pmc = &kvpmu->pmc[i];
+> > +             pmc->idx = i;
+> > +             if (i < kvpmu->num_hw_ctrs) {
+> > +                     pmc->cinfo.type = SBI_PMU_CTR_TYPE_HW;
+> > +                     if (i < 3)
+> > +                             /* CY, IR counters */
+> > +                             pmc->cinfo.width = 63;
+> > +                     else
+> > +                             pmc->cinfo.width = hpm_width;
+> > +                     /*
+> > +                      * The CSR number doesn't have any relation with the logical
+> > +                      * hardware counters. The CSR numbers are encoded sequentially
+> > +                      * to avoid maintaining a map between the virtual counter
+> > +                      * and CSR number.
+> > +                      */
+> > +                     pmc->cinfo.csr = CSR_CYCLE + i;
+> > +             } else {
+> > +                     pmc->cinfo.type = SBI_PMU_CTR_TYPE_FW;
+> > +                     pmc->cinfo.width = BITS_PER_LONG - 1;
+> > +             }
+> > +     }
+> > +
+> > +     kvpmu->init_done = true;
+> > +}
+> > +
+> > +void kvm_riscv_vcpu_pmu_deinit(struct kvm_vcpu *vcpu)
+> > +{
+> > +     /* TODO */
+> > +}
+> > +
+> > +void kvm_riscv_vcpu_pmu_reset(struct kvm_vcpu *vcpu)
+> > +{
+> > +     kvm_riscv_vcpu_pmu_deinit(vcpu);
+> > +}
+> > --
+> > 2.25.1
+> >
+>
+> Thanks,
+> drew
 
