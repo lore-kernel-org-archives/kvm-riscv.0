@@ -1,410 +1,169 @@
-From: Atish Patra <atishp@atishpatra.org>
-Date: Tue, 7 Feb 2023 16:15:22 -0800
-Subject: [PATCH v2 7/7] RISC-V: KVM: Implement guest external interrupt
- line management
-In-Reply-To: <20230128072737.2995881-8-apatel@ventanamicro.com>
-References: <20230128072737.2995881-1-apatel@ventanamicro.com> <20230128072737.2995881-8-apatel@ventanamicro.com>
-Message-ID: <CAOnJCUKxWw86mwWvQ=4kO=AGvk8_GH1Y80wu+oux4DL385dqNg@mail.gmail.com>
+From: Anup Patel <apatel@ventanamicro.com>
+Date: Wed, 8 Feb 2023 08:36:22 +0530
+Subject: [PATCH v2 2/7] RISC-V: Detect AIA CSRs from ISA string
+In-Reply-To: <CAOnJCUKKRRCrKN17ytczYXVLTcMkFaZsg6QXKjPUuSk=PqL6JQ@mail.gmail.com>
+References: <20230128072737.2995881-3-apatel@ventanamicro.com>
+ <mhng-0f9bdf58-5289-4db4-8fd7-38898824c44f@palmer-ri-x1c9>
+ <CAK9=C2X8C4yswGhDwe1OzQXTELXQxp8=ayiFxh1aVMk4TxeDjw@mail.gmail.com>
+ <Y+KS16ZNXrDU+xun@spud> <CAOnJCUKKRRCrKN17ytczYXVLTcMkFaZsg6QXKjPUuSk=PqL6JQ@mail.gmail.com>
+Message-ID: <CAK9=C2XAaB0GXh1tO060dWxZR2pSAVJhejUaa+W=Q+9nk_gYKA@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Jan 27, 2023 at 11:28 PM Anup Patel <apatel@ventanamicro.com> wrote:
+On Tue, Feb 7, 2023 at 11:45 PM Atish Patra <atishp@atishpatra.org> wrote:
 >
-> The RISC-V host will have one guest external interrupt line for each
-> VS-level IMSICs associated with a HART. The guest external interrupt
-> lines are per-HART resources and hypervisor can use HGEIE, HGEIP, and
-> HIE CSRs to manage these guest external interrupt lines.
+> On Tue, Feb 7, 2023 at 10:05 AM Conor Dooley <conor@kernel.org> wrote:
+> >
+> > Hey Anup, Palmer,
+> >
+> > On Fri, Feb 03, 2023 at 05:31:01PM +0530, Anup Patel wrote:
+> > > On Fri, Feb 3, 2023 at 5:54 AM Palmer Dabbelt <palmer@dabbelt.com> wrote:
+> > > >
+> > > > On Fri, 27 Jan 2023 23:27:32 PST (-0800), apatel at ventanamicro.com wrote:
+> > > > > We have two extension names for AIA ISA support: Smaia (M-mode AIA CSRs)
+> > > > > and Ssaia (S-mode AIA CSRs).
+> > > >
+> > > > This has pretty much the same problem that we had with the other
+> > > > AIA-related ISA string patches, where there's that ambiguity with the
+> > > > non-ratified chapters.  IIRC when this came up in GCC the rough idea was
+> > > > to try and document that we're going to interpret the standard ISA
+> > > > strings that way, but now that we're doing custom ISA extensions it
+> > > > seems saner to just define on here that removes the ambiguity.
+> > > >
+> > > > I just sent
+> > > > <https://lore.kernel.org/r/20230203001201.14770-1-palmer@rivosinc.com/>
+> > > > which documents that.
+> > >
+> > > I am not sure why you say that these are custom extensions.
+> > >
+> > > Multiple folks have clarified that both Smaia and Ssaia are frozen
+> > > ISA extensions as-per RVI process. The individual chapters which
+> > > are in the draft state have nothing to do with Smaia and Ssaia CSRs.
+> > >
+> > > Please refer:
+> > > https://github.com/riscv/riscv-aia/pull/36
+> > > https://lists.riscv.org/g/tech-aia/message/336
+> > > https://lists.riscv.org/g/tech-aia/message/337
+> >
+> > All of these links seem to discuss the draft chapters somehow being
+> > incompatible with the non-draft ones. I would very expect that that,
+> > as pointed out in several places there, that the draft chapters
+> > finalisation would not lead to meaningful (and incompatible!) changes
+> > being made to the non-draft chapters.
+> >
 >
-> Signed-off-by: Anup Patel <apatel@ventanamicro.com>
-> ---
->  arch/riscv/include/asm/kvm_aia.h |  10 ++
->  arch/riscv/kvm/aia.c             | 241 +++++++++++++++++++++++++++++++
->  arch/riscv/kvm/main.c            |   3 +-
->  arch/riscv/kvm/vcpu.c            |   2 +
->  4 files changed, 255 insertions(+), 1 deletion(-)
+> Here is the status of all RVI specs. It states that the Smaia, Ssaia
+> extensions are frozen (i.e. public review complete).
+> https://wiki.riscv.org/display/HOME/Specification+Status
 >
-> diff --git a/arch/riscv/include/asm/kvm_aia.h b/arch/riscv/include/asm/kvm_aia.h
-> index 1de0717112e5..0938e0cadf80 100644
-> --- a/arch/riscv/include/asm/kvm_aia.h
-> +++ b/arch/riscv/include/asm/kvm_aia.h
-> @@ -44,10 +44,15 @@ struct kvm_vcpu_aia {
+> I have added stephano/Jeff to confirm the same.
 >
->  #define irqchip_in_kernel(k)           ((k)->arch.aia.in_kernel)
+> AFAIK, IOMMU spec is close to the public review phase and should be
+> frozen in this or next quarter.
+> IIRC, this chapter in AIA will be frozen along with IOMMU spec.
 >
-> +extern unsigned int kvm_riscv_aia_nr_hgei;
->  DECLARE_STATIC_KEY_FALSE(kvm_riscv_aia_available);
->  #define kvm_riscv_aia_available() \
->         static_branch_unlikely(&kvm_riscv_aia_available)
->
-> +static inline void kvm_riscv_vcpu_aia_imsic_release(struct kvm_vcpu *vcpu)
-> +{
-> +}
-> +
->  #define KVM_RISCV_AIA_IMSIC_TOPEI      (ISELECT_MASK + 1)
->  static inline int kvm_riscv_vcpu_aia_imsic_rmw(struct kvm_vcpu *vcpu,
->                                                unsigned long isel,
-> @@ -119,6 +124,11 @@ static inline void kvm_riscv_aia_destroy_vm(struct kvm *kvm)
->  {
->  }
->
-> +int kvm_riscv_aia_alloc_hgei(int cpu, struct kvm_vcpu *owner,
-> +                            void __iomem **hgei_va, phys_addr_t *hgei_pa);
-> +void kvm_riscv_aia_free_hgei(int cpu, int hgei);
-> +void kvm_riscv_aia_wakeon_hgei(struct kvm_vcpu *owner, bool enable);
-> +
->  void kvm_riscv_aia_enable(void);
->  void kvm_riscv_aia_disable(void);
->  int kvm_riscv_aia_init(void);
-> diff --git a/arch/riscv/kvm/aia.c b/arch/riscv/kvm/aia.c
-> index 3d68189e0bb1..f375069fdaf4 100644
-> --- a/arch/riscv/kvm/aia.c
-> +++ b/arch/riscv/kvm/aia.c
-> @@ -7,11 +7,46 @@
->   *     Anup Patel <apatel@ventanamicro.com>
->   */
->
-> +#include <linux/bitops.h>
-> +#include <linux/irq.h>
-> +#include <linux/irqdomain.h>
->  #include <linux/kvm_host.h>
-> +#include <linux/percpu.h>
-> +#include <linux/spinlock.h>
->  #include <asm/hwcap.h>
->
-> +struct aia_hgei_control {
-> +       raw_spinlock_t lock;
-> +       unsigned long free_bitmap;
-> +       struct kvm_vcpu *owners[BITS_PER_LONG];
-> +};
-> +static DEFINE_PER_CPU(struct aia_hgei_control, aia_hgei);
-> +static int hgei_parent_irq;
-> +
-> +unsigned int kvm_riscv_aia_nr_hgei;
->  DEFINE_STATIC_KEY_FALSE(kvm_riscv_aia_available);
->
-> +static int aia_find_hgei(struct kvm_vcpu *owner)
-> +{
-> +       int i, hgei;
-> +       unsigned long flags;
-> +       struct aia_hgei_control *hgctrl = this_cpu_ptr(&aia_hgei);
-> +
-> +       raw_spin_lock_irqsave(&hgctrl->lock, flags);
-> +
-> +       hgei = -1;
-> +       for (i = 1; i <= kvm_riscv_aia_nr_hgei; i++) {
-> +               if (hgctrl->owners[i] == owner) {
-> +                       hgei = i;
-> +                       break;
-> +               }
-> +       }
-> +
-> +       raw_spin_unlock_irqrestore(&hgctrl->lock, flags);
-> +
-> +       return hgei;
-> +}
-> +
->  static void aia_set_hvictl(bool ext_irq_pending)
->  {
->         unsigned long hvictl;
-> @@ -55,6 +90,7 @@ void kvm_riscv_vcpu_aia_sync_interrupts(struct kvm_vcpu *vcpu)
->
->  bool kvm_riscv_vcpu_aia_has_interrupts(struct kvm_vcpu *vcpu, u64 mask)
->  {
-> +       int hgei;
->         unsigned long seip;
->
->         if (!kvm_riscv_aia_available())
-> @@ -72,6 +108,10 @@ bool kvm_riscv_vcpu_aia_has_interrupts(struct kvm_vcpu *vcpu, u64 mask)
->         if (!kvm_riscv_aia_initialized(vcpu->kvm) || !seip)
->                 return false;
->
-> +       hgei = aia_find_hgei(vcpu);
-> +       if (hgei > 0)
-> +               return (csr_read(CSR_HGEIP) & BIT(hgei)) ? true : false;
-> +
->         return false;
->  }
->
-> @@ -343,6 +383,144 @@ int kvm_riscv_vcpu_aia_rmw_ireg(struct kvm_vcpu *vcpu, unsigned int csr_num,
->         return KVM_INSN_EXIT_TO_USER_SPACE;
->  }
->
-> +int kvm_riscv_aia_alloc_hgei(int cpu, struct kvm_vcpu *owner,
-> +                            void __iomem **hgei_va, phys_addr_t *hgei_pa)
-> +{
-> +       int ret = -ENOENT;
-> +       unsigned long flags;
-> +       struct aia_hgei_control *hgctrl = per_cpu_ptr(&aia_hgei, cpu);
-> +
-> +       if (!kvm_riscv_aia_available())
-> +               return -ENODEV;
-> +       if (!hgctrl)
-> +               return -ENODEV;
-> +
-> +       raw_spin_lock_irqsave(&hgctrl->lock, flags);
-> +
-> +       if (hgctrl->free_bitmap) {
-> +               ret = __ffs(hgctrl->free_bitmap);
-> +               hgctrl->free_bitmap &= ~BIT(ret);
-> +               hgctrl->owners[ret] = owner;
-> +       }
-> +
-> +       raw_spin_unlock_irqrestore(&hgctrl->lock, flags);
-> +
-> +       /* TODO: To be updated later by AIA in-kernel irqchip support */
-> +       if (hgei_va)
-> +               *hgei_va = NULL;
-> +       if (hgei_pa)
-> +               *hgei_pa = 0;
-> +
-> +       return ret;
-> +}
-> +
-> +void kvm_riscv_aia_free_hgei(int cpu, int hgei)
-> +{
-> +       unsigned long flags;
-> +       struct aia_hgei_control *hgctrl = per_cpu_ptr(&aia_hgei, cpu);
-> +
-> +       if (!kvm_riscv_aia_available() || !hgctrl)
-> +               return;
-> +
-> +       raw_spin_lock_irqsave(&hgctrl->lock, flags);
-> +
-> +       if (hgei > 0 && hgei <= kvm_riscv_aia_nr_hgei) {
-> +               if (!(hgctrl->free_bitmap & BIT(hgei))) {
-> +                       hgctrl->free_bitmap |= BIT(hgei);
-> +                       hgctrl->owners[hgei] = NULL;
-> +               }
-> +       }
-> +
-> +       raw_spin_unlock_irqrestore(&hgctrl->lock, flags);
-> +}
-> +
-> +void kvm_riscv_aia_wakeon_hgei(struct kvm_vcpu *owner, bool enable)
-> +{
-> +       int hgei;
-> +
-> +       if (!kvm_riscv_aia_available())
-> +               return;
-> +
-> +       hgei = aia_find_hgei(owner);
-> +       if (hgei > 0) {
-> +               if (enable)
-> +                       csr_set(CSR_HGEIE, BIT(hgei));
-> +               else
-> +                       csr_clear(CSR_HGEIE, BIT(hgei));
-> +       }
-> +}
-> +
-> +static irqreturn_t hgei_interrupt(int irq, void *dev_id)
-> +{
-> +       int i;
-> +       unsigned long hgei_mask, flags;
-> +       struct aia_hgei_control *hgctrl = this_cpu_ptr(&aia_hgei);
-> +
-> +       hgei_mask = csr_read(CSR_HGEIP) & csr_read(CSR_HGEIE);
-> +       csr_clear(CSR_HGEIE, hgei_mask);
-> +
-> +       raw_spin_lock_irqsave(&hgctrl->lock, flags);
-> +
-> +       for_each_set_bit(i, &hgei_mask, BITS_PER_LONG) {
-> +               if (hgctrl->owners[i])
-> +                       kvm_vcpu_kick(hgctrl->owners[i]);
-> +       }
-> +
-> +       raw_spin_unlock_irqrestore(&hgctrl->lock, flags);
-> +
-> +       return IRQ_HANDLED;
-> +}
-> +
-> +static int aia_hgei_init(void)
-> +{
-> +       int cpu, rc;
-> +       struct irq_domain *domain;
-> +       struct aia_hgei_control *hgctrl;
-> +
-> +       /* Initialize per-CPU guest external interrupt line management */
-> +       for_each_possible_cpu(cpu) {
-> +               hgctrl = per_cpu_ptr(&aia_hgei, cpu);
-> +               raw_spin_lock_init(&hgctrl->lock);
-> +               if (kvm_riscv_aia_nr_hgei) {
-> +                       hgctrl->free_bitmap =
-> +                               BIT(kvm_riscv_aia_nr_hgei + 1) - 1;
-> +                       hgctrl->free_bitmap &= ~BIT(0);
-> +               } else
-> +                       hgctrl->free_bitmap = 0;
-> +       }
-> +
-> +       /* Find INTC irq domain */
-> +       domain = irq_find_matching_fwnode(riscv_get_intc_hwnode(),
-> +                                         DOMAIN_BUS_ANY);
-> +       if (!domain) {
-> +               kvm_err("unable to find INTC domain\n");
-> +               return -ENOENT;
-> +       }
-> +
-> +       /* Map per-CPU SGEI interrupt from INTC domain */
-> +       hgei_parent_irq = irq_create_mapping(domain, IRQ_S_GEXT);
-> +       if (!hgei_parent_irq) {
-> +               kvm_err("unable to map SGEI IRQ\n");
-> +               return -ENOMEM;
-> +       }
-> +
-> +       /* Request per-CPU SGEI interrupt */
-> +       rc = request_percpu_irq(hgei_parent_irq, hgei_interrupt,
-> +                               "riscv-kvm", &aia_hgei);
-> +       if (rc) {
-> +               kvm_err("failed to request SGEI IRQ\n");
-> +               return rc;
-> +       }
-> +
-> +       return 0;
-> +}
-> +
-> +static void aia_hgei_exit(void)
-> +{
-> +       /* Free per-CPU SGEI interrupt */
-> +       free_percpu_irq(hgei_parent_irq, &aia_hgei);
-> +}
-> +
->  void kvm_riscv_aia_enable(void)
->  {
->         if (!kvm_riscv_aia_available())
-> @@ -357,21 +535,79 @@ void kvm_riscv_aia_enable(void)
->         csr_write(CSR_HVIPRIO1H, 0x0);
->         csr_write(CSR_HVIPRIO2H, 0x0);
->  #endif
-> +
-> +       /* Enable per-CPU SGEI interrupt */
-> +       enable_percpu_irq(hgei_parent_irq,
-> +                         irq_get_trigger_type(hgei_parent_irq));
-> +       csr_set(CSR_HIE, BIT(IRQ_S_GEXT));
->  }
->
->  void kvm_riscv_aia_disable(void)
->  {
-> +       int i;
-> +       unsigned long flags;
-> +       struct kvm_vcpu *vcpu;
-> +       struct aia_hgei_control *hgctrl = this_cpu_ptr(&aia_hgei);
-> +
->         if (!kvm_riscv_aia_available())
->                 return;
->
-> +       /* Disable per-CPU SGEI interrupt */
-> +       csr_clear(CSR_HIE, BIT(IRQ_S_GEXT));
-> +       disable_percpu_irq(hgei_parent_irq);
-> +
->         aia_set_hvictl(false);
-> +
-> +       raw_spin_lock_irqsave(&hgctrl->lock, flags);
-> +
-> +       for (i = 0; i <= kvm_riscv_aia_nr_hgei; i++) {
-> +               vcpu = hgctrl->owners[i];
-> +               if (!vcpu)
-> +                       continue;
-> +
-> +               /*
-> +                * We release hgctrl->lock before notifying IMSIC
-> +                * so that we don't have lock ordering issues.
-> +                */
-> +               raw_spin_unlock_irqrestore(&hgctrl->lock, flags);
-> +
-> +               /* Notify IMSIC */
-> +               kvm_riscv_vcpu_aia_imsic_release(vcpu);
-> +
-> +               /*
-> +                * Wakeup VCPU if it was blocked so that it can
-> +                * run on other HARTs
-> +                */
-> +               if (csr_read(CSR_HGEIE) & BIT(i)) {
-> +                       csr_clear(CSR_HGEIE, BIT(i));
-> +                       kvm_vcpu_kick(vcpu);
-> +               }
-> +
-> +               raw_spin_lock_irqsave(&hgctrl->lock, flags);
-> +       }
-> +
+> Anup: Please correct me if that's not correct.
 
-We shouldn't access vcpu related data here as
-kvm_arch_destroy_vm/kvm_destroy_vcpus
-is called before hardware_disable_all is invoked.
+Yes, that's correct.
 
-> +       raw_spin_unlock_irqrestore(&hgctrl->lock, flags);
->  }
 >
->  int kvm_riscv_aia_init(void)
->  {
-> +       int rc;
-> +
->         if (!riscv_isa_extension_available(NULL, SxAIA))
->                 return -ENODEV;
+> > Maybe yourself and Palmer are looking at this from different
+> > perspectives? Looking at his patch from Friday:
+> > https://lore.kernel.org/linux-riscv/20230203001201.14770-1-palmer at rivosinc.com/
+> > He specifically mentioned this aspect, as opposed to the aspect that
+> > your links refer to.
+> >
+> > Surely a duo-plic, if that ever comes to be, could be detected from
+> > compatible strings in DT or w/e - but how do you intend differentiating
+> > between an implementation of S*aia that contains the IOMMU support in
+> > Chapter 9 in a finalised form, versus an implementation that may make
+> > "different decisions" when it comes to that chapter of the spec?
 >
-> +       /* Figure-out number of bits in HGEIE */
-> +       csr_write(CSR_HGEIE, -1UL);
-> +       kvm_riscv_aia_nr_hgei = fls_long(csr_read(CSR_HGEIE));
-> +       csr_write(CSR_HGEIE, 0);
-> +       if (kvm_riscv_aia_nr_hgei)
-> +               kvm_riscv_aia_nr_hgei--;
-> +
-> +       /* Initialize guest external interrupt line management */
-> +       rc = aia_hgei_init();
-> +       if (rc)
-> +               return rc;
-> +
->         /* Enable KVM AIA support */
->         static_branch_enable(&kvm_riscv_aia_available);
+> We will most likely have an extension specific to iommu spec as well.
 >
-> @@ -380,4 +616,9 @@ int kvm_riscv_aia_init(void)
+> > I thought that would be handled by extension versions, but I am told
+> > that those are not a thing any more.
+> > If that's not true, and there'll be a version number that we can pull in
+> > from a DT and parse which will distinguish between the two, then please
+> > correct my misunderstanding here!
+> >
+> > Thanks,
+> > Conor.
+> >
+> > > > > We extend the ISA string parsing to detect Smaia and Ssaia extensions.
+> > > > >
+> > > > > Signed-off-by: Anup Patel <apatel@ventanamicro.com>
+> > > > > Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+> > > > > ---
+> > > > >  arch/riscv/include/asm/hwcap.h | 2 ++
+> > > > >  arch/riscv/kernel/cpu.c        | 2 ++
+> > > > >  arch/riscv/kernel/cpufeature.c | 2 ++
+> > > > >  3 files changed, 6 insertions(+)
+> > > > >
+> > > > > diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
+> > > > > index 86328e3acb02..341ef30a3718 100644
+> > > > > --- a/arch/riscv/include/asm/hwcap.h
+> > > > > +++ b/arch/riscv/include/asm/hwcap.h
+> > > > > @@ -59,6 +59,8 @@ enum riscv_isa_ext_id {
+> > > > >       RISCV_ISA_EXT_ZIHINTPAUSE,
+> > > > >       RISCV_ISA_EXT_SSTC,
+> > > > >       RISCV_ISA_EXT_SVINVAL,
+> > > > > +     RISCV_ISA_EXT_SMAIA,
+> > > > > +     RISCV_ISA_EXT_SSAIA,
+> > > > >       RISCV_ISA_EXT_ID_MAX
+> > > > >  };
+> > > > >  static_assert(RISCV_ISA_EXT_ID_MAX <= RISCV_ISA_EXT_MAX);
+> > > > > diff --git a/arch/riscv/kernel/cpu.c b/arch/riscv/kernel/cpu.c
+> > > > > index 1b9a5a66e55a..a215ec929160 100644
+> > > > > --- a/arch/riscv/kernel/cpu.c
+> > > > > +++ b/arch/riscv/kernel/cpu.c
+> > > > > @@ -162,6 +162,8 @@ arch_initcall(riscv_cpuinfo_init);
+> > > > >   *    extensions by an underscore.
+> > > > >   */
+> > > > >  static struct riscv_isa_ext_data isa_ext_arr[] = {
+> > > > > +     __RISCV_ISA_EXT_DATA(smaia, RISCV_ISA_EXT_SMAIA),
+> > > > > +     __RISCV_ISA_EXT_DATA(ssaia, RISCV_ISA_EXT_SSAIA),
+> > > >
+> > > > This will conflict with that ISA string refactoring I just merged.  It
+> > > > should be a pretty mechanical merge conflict, but if you want we can do
+> > > > a shared tag with the first few patches and I can handle the merge
+> > > > conflict locally.
+> > >
+> > > I am planning to send this series as a second PR for Linux-6.3 after your
+> > > PR (which includes ISA string refactoring) is merged. Is that okay with you?
+> > >
+> > > With that said, it would request you to ACK this patch as well.
+> > >
+> > > >
+> > > > >       __RISCV_ISA_EXT_DATA(sscofpmf, RISCV_ISA_EXT_SSCOFPMF),
+> > > > >       __RISCV_ISA_EXT_DATA(sstc, RISCV_ISA_EXT_SSTC),
+> > > > >       __RISCV_ISA_EXT_DATA(svinval, RISCV_ISA_EXT_SVINVAL),
+> > > > > diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
+> > > > > index 93e45560af30..3c5b51f519d5 100644
+> > > > > --- a/arch/riscv/kernel/cpufeature.c
+> > > > > +++ b/arch/riscv/kernel/cpufeature.c
+> > > > > @@ -228,6 +228,8 @@ void __init riscv_fill_hwcap(void)
+> > > > >                               SET_ISA_EXT_MAP("zihintpause", RISCV_ISA_EXT_ZIHINTPAUSE);
+> > > > >                               SET_ISA_EXT_MAP("sstc", RISCV_ISA_EXT_SSTC);
+> > > > >                               SET_ISA_EXT_MAP("svinval", RISCV_ISA_EXT_SVINVAL);
+> > > > > +                             SET_ISA_EXT_MAP("smaia", RISCV_ISA_EXT_SMAIA);
+> > > > > +                             SET_ISA_EXT_MAP("ssaia", RISCV_ISA_EXT_SSAIA);
+> > > > >                       }
+> > > > >  #undef SET_ISA_EXT_MAP
+> > > > >               }
+> > >
+> > > Thanks,
+> > > Anup
 >
->  void kvm_riscv_aia_exit(void)
->  {
-> +       if (!kvm_riscv_aia_available())
-> +               return;
-> +
-> +       /* Cleanup the HGEI state */
-> +       aia_hgei_exit();
->  }
-> diff --git a/arch/riscv/kvm/main.c b/arch/riscv/kvm/main.c
-> index d8ff44eb04ca..5cf37dbe8a38 100644
-> --- a/arch/riscv/kvm/main.c
-> +++ b/arch/riscv/kvm/main.c
-> @@ -125,7 +125,8 @@ int kvm_arch_init(void *opaque)
->         kvm_info("VMID %ld bits available\n", kvm_riscv_gstage_vmid_bits());
 >
->         if (kvm_riscv_aia_available())
-> -               kvm_info("AIA available\n");
-> +               kvm_info("AIA available with %d guest external interrupts\n",
-> +                        kvm_riscv_aia_nr_hgei);
 >
->         return 0;
->  }
-> diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-> index 151b35b3b05f..1daa1936b642 100644
-> --- a/arch/riscv/kvm/vcpu.c
-> +++ b/arch/riscv/kvm/vcpu.c
-> @@ -240,10 +240,12 @@ int kvm_cpu_has_pending_timer(struct kvm_vcpu *vcpu)
->
->  void kvm_arch_vcpu_blocking(struct kvm_vcpu *vcpu)
->  {
-> +       kvm_riscv_aia_wakeon_hgei(vcpu, true);
->  }
->
->  void kvm_arch_vcpu_unblocking(struct kvm_vcpu *vcpu)
->  {
-> +       kvm_riscv_aia_wakeon_hgei(vcpu, false);
->  }
->
->  int kvm_arch_vcpu_runnable(struct kvm_vcpu *vcpu)
 > --
-> 2.34.1
->
+> Regards,
+> Atish
 
-
--- 
 Regards,
-Atish
+Anup
 
