@@ -1,140 +1,84 @@
-From: Marc Zyngier <maz@kernel.org>
-Date: Wed, 08 Feb 2023 10:00:06 +0000
-Subject: [PATCH v2 2/7] KVM: arm64: Use kvm_arch_flush_remote_tlbs()
-In-Reply-To: <20230126184025.2294823-3-dmatlack@google.com>
-References: <20230126184025.2294823-1-dmatlack@google.com>
-	<20230126184025.2294823-3-dmatlack@google.com>
-Message-ID: <86o7q4zdcp.wl-maz@kernel.org>
+From: Steven Price <steven.price@arm.com>
+Date: Wed, 8 Feb 2023 11:51:30 +0000
+Subject: [PATCH 6/7] KVM: arm64: Change return type of
+ kvm_vm_ioctl_mte_copy_tags() to "int"
+In-Reply-To: <87zg9oleyb.fsf@redhat.com>
+References: <20230203094230.266952-1-thuth@redhat.com>
+ <20230203094230.266952-7-thuth@redhat.com>
+ <c6e605fe-f251-d8b6-64ed-bd1e17e79512@redhat.com>
+ <7b32d58b-846f-b8d7-165b-9f505e5f00f0@redhat.com>
+ <d0b3a1e7-0864-f169-cdea-60ad95951b3f@redhat.com> <87zg9oleyb.fsf@redhat.com>
+Message-ID: <ce11001e-dbe5-8694-71a5-841f4d614456@arm.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, 26 Jan 2023 18:40:20 +0000,
-David Matlack <dmatlack@google.com> wrote:
+On 08/02/2023 08:49, Cornelia Huck wrote:
+> On Wed, Feb 08 2023, Gavin Shan <gshan@redhat.com> wrote:
 > 
-> Use kvm_arch_flush_remote_tlbs() instead of
-> CONFIG_HAVE_KVM_ARCH_TLB_FLUSH_ALL. The two mechanisms solve the same
-> problem, allowing architecture-specific code to provide a non-IPI
-> implementation of remote TLB flushing.
-> 
-> Dropping CONFIG_HAVE_KVM_ARCH_TLB_FLUSH_ALL allows KVM to standardize
-> all architectures on kvm_arch_flush_remote_tlbs() instead of maintaining
-> two mechanisms.
-> 
-> Opt to standardize on kvm_arch_flush_remote_tlbs() since it avoids
-> duplicating the generic TLB stats across architectures that implement
-> their own remote TLB flush.
-> 
-> This adds an extra function call to the ARM64 kvm_flush_remote_tlbs()
-> path, but that is a small cost in comparison to flushing remote TLBs.
-> 
-> No functional change intended.
-> 
-> Signed-off-by: David Matlack <dmatlack@google.com>
-> ---
->  arch/arm64/include/asm/kvm_host.h | 3 +++
->  arch/arm64/kvm/Kconfig            | 1 -
->  arch/arm64/kvm/mmu.c              | 6 +++---
->  virt/kvm/Kconfig                  | 3 ---
->  virt/kvm/kvm_main.c               | 2 --
->  5 files changed, 6 insertions(+), 9 deletions(-)
-> 
-> diff --git a/arch/arm64/include/asm/kvm_host.h b/arch/arm64/include/asm/kvm_host.h
-> index 113e20fdbb56..062800f1dc54 100644
-> --- a/arch/arm64/include/asm/kvm_host.h
-> +++ b/arch/arm64/include/asm/kvm_host.h
-> @@ -998,6 +998,9 @@ int __init kvm_set_ipa_limit(void);
->  #define __KVM_HAVE_ARCH_VM_ALLOC
->  struct kvm *kvm_arch_alloc_vm(void);
->  
-> +#define __KVM_HAVE_ARCH_FLUSH_REMOTE_TLBS
-> +int kvm_arch_flush_remote_tlbs(struct kvm *kvm);
-> +
->  static inline bool kvm_vm_is_protected(struct kvm *kvm)
->  {
->  	return false;
-> diff --git a/arch/arm64/kvm/Kconfig b/arch/arm64/kvm/Kconfig
-> index ca6eadeb7d1a..e9ac57098a0b 100644
-> --- a/arch/arm64/kvm/Kconfig
-> +++ b/arch/arm64/kvm/Kconfig
-> @@ -25,7 +25,6 @@ menuconfig KVM
->  	select MMU_NOTIFIER
->  	select PREEMPT_NOTIFIERS
->  	select HAVE_KVM_CPU_RELAX_INTERCEPT
-> -	select HAVE_KVM_ARCH_TLB_FLUSH_ALL
->  	select KVM_MMIO
->  	select KVM_GENERIC_DIRTYLOG_READ_PROTECT
->  	select KVM_XFER_TO_GUEST_WORK
-> diff --git a/arch/arm64/kvm/mmu.c b/arch/arm64/kvm/mmu.c
-> index 01352f5838a0..8840f65e0e40 100644
-> --- a/arch/arm64/kvm/mmu.c
-> +++ b/arch/arm64/kvm/mmu.c
-> @@ -80,15 +80,15 @@ static bool memslot_is_logging(struct kvm_memory_slot *memslot)
->  }
->  
->  /**
-> - * kvm_flush_remote_tlbs() - flush all VM TLB entries for v7/8
-> + * kvm_arch_flush_remote_tlbs() - flush all VM TLB entries for v7/8
->   * @kvm:	pointer to kvm structure.
->   *
->   * Interface to HYP function to flush all VM TLB entries
->   */
-> -void kvm_flush_remote_tlbs(struct kvm *kvm)
-> +int kvm_arch_flush_remote_tlbs(struct kvm *kvm)
->  {
-> -	++kvm->stat.generic.remote_tlb_flush_requests;
->  	kvm_call_hyp(__kvm_tlb_flush_vmid, &kvm->arch.mmu);
-> +	return 0;
->  }
->  
->  static bool kvm_is_device_pfn(unsigned long pfn)
-> diff --git a/virt/kvm/Kconfig b/virt/kvm/Kconfig
-> index b74916de5183..484d0873061c 100644
-> --- a/virt/kvm/Kconfig
-> +++ b/virt/kvm/Kconfig
-> @@ -62,9 +62,6 @@ config HAVE_KVM_CPU_RELAX_INTERCEPT
->  config KVM_VFIO
->         bool
->  
-> -config HAVE_KVM_ARCH_TLB_FLUSH_ALL
-> -       bool
-> -
->  config HAVE_KVM_INVALID_WAKEUPS
->         bool
->  
-> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-> index 277507463678..fefd3e3c8fe1 100644
-> --- a/virt/kvm/kvm_main.c
-> +++ b/virt/kvm/kvm_main.c
-> @@ -347,7 +347,6 @@ bool kvm_make_all_cpus_request(struct kvm *kvm, unsigned int req)
->  }
->  EXPORT_SYMBOL_GPL(kvm_make_all_cpus_request);
->  
-> -#ifndef CONFIG_HAVE_KVM_ARCH_TLB_FLUSH_ALL
->  void kvm_flush_remote_tlbs(struct kvm *kvm)
->  {
->  	++kvm->stat.generic.remote_tlb_flush_requests;
-> @@ -368,7 +367,6 @@ void kvm_flush_remote_tlbs(struct kvm *kvm)
->  		++kvm->stat.generic.remote_tlb_flush;
->  }
+>> On 2/7/23 9:09 PM, Thomas Huth wrote:
+>>> Oh, drat, I thought I had checked all return statements ... this must have fallen through the cracks, sorry!
+>>>
+>>> Anyway, this is already a problem now: The function is called from kvm_arch_vm_ioctl() (which still returns a long), which in turn is called from kvm_vm_ioctl() in virt/kvm/kvm_main.c. And that functions stores the return value in an "int r" variable. So the upper bits are already lost there.
 
-For context, we currently have this:
+Sorry about that, I was caught out by kvm_arch_vm_ioctl() returning long...
 
-	if (!kvm_arch_flush_remote_tlb(kvm)
-	    || kvm_make_all_cpus_request(kvm, KVM_REQ_TLB_FLUSH))
-		++kvm->stat.generic.remote_tlb_flush;
+>>> Also, how is this supposed to work from user space? The normal "ioctl()" libc function just returns an "int" ? Is this ioctl already used in a userspace application somewhere? ... at least in QEMU, I didn't spot it yet...
+>>>
+> 
+> We will need it in QEMU to implement migration with MTE (the current
+> proposal simply adds a migration blocker when MTE is enabled, as there
+> are various other things that need to be figured out for this to work.)
+> But maybe other VMMs already use it (and have been lucky because they
+> always dealt with shorter lengths?)
+> 
+>>
+>> The ioctl command KVM_ARM_MTE_COPY_TAGS was merged recently and not used
+>> by QEMU yet. I think struct kvm_arm_copy_mte_tags::length needs to be
+>> '__u32' instead of '__u64' in order to standardize the return value.
+>> Something like below. Documentation/virt/kvm/api.rst::section-4.130
+>> needs update accordingly.
+>>
+>>     struct kvm_arm_copy_mte_tags {
+>>          __u64 guest_ipa;
+>>          __u32 pad;
+>>          __u32 length;
+>>          void __user *addr;
+>>          __u64 flags;
+>>          __u64 reserved[2];
+>>    };
+> 
+> Can we do this in a more compatible way, as we are dealing with an API?
+> Like returning -EINVAL if length is too big?
+> 
 
-Is there any reason why we shouldn't move the KVM_REQ_TLB_FLUSH call
-into the arch-specific helpers? This is architecture specific, even if
-the majority of the supported architecture cannot do broadcast
-invalidation like arm64 does.
+I agree the simplest fix for the problem is simply to reject any
+lengths>INT_MAX:
 
-Thanks,
+diff --git a/arch/arm64/kvm/guest.c b/arch/arm64/kvm/guest.c
+index cf4c495a4321..94aed7ce85c4 100644
+--- a/arch/arm64/kvm/guest.c
++++ b/arch/arm64/kvm/guest.c
+@@ -1032,6 +1032,13 @@ long kvm_vm_ioctl_mte_copy_tags(struct kvm *kvm,
+ 	if (copy_tags->flags & ~KVM_ARM_TAGS_FROM_GUEST)
+ 		return -EINVAL;
 
-	M.
++	/*
++	 * ioctl returns int, so lengths above INT_MAX cannot be
++	 * represented in the return value
++	 */
++	if (length > INT_MAX)
++		return -EINVAL;
++
+ 	if (length & ~PAGE_MASK || guest_ipa & ~PAGE_MASK)
+ 		return -EINVAL;
 
--- 
-Without deviation from the norm, progress is not possible.
+This could also be fixed in a useable way by including a new flag which
+returns the length in an output field of the ioctl structure. I'm
+guessing a 2GB limit would be annoying to work around.
+
+Steve
+
 
