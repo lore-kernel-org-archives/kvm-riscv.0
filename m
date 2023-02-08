@@ -1,53 +1,51 @@
-From: Cornelia Huck <cohuck@redhat.com>
-Date: Wed, 08 Feb 2023 09:49:16 +0100
-Subject: [PATCH 6/7] KVM: arm64: Change return type of
- kvm_vm_ioctl_mte_copy_tags() to "int"
-In-Reply-To: <d0b3a1e7-0864-f169-cdea-60ad95951b3f@redhat.com>
-References: <20230203094230.266952-1-thuth@redhat.com>
- <20230203094230.266952-7-thuth@redhat.com>
- <c6e605fe-f251-d8b6-64ed-bd1e17e79512@redhat.com>
- <7b32d58b-846f-b8d7-165b-9f505e5f00f0@redhat.com>
- <d0b3a1e7-0864-f169-cdea-60ad95951b3f@redhat.com>
-Message-ID: <87zg9oleyb.fsf@redhat.com>
+From: Björn Töpel <bjorn@kernel.org>
+Date: Wed, 08 Feb 2023 10:20:02 +0100
+Subject: [PATCH -next v13 10/19] riscv: Allocate user's vector context
+ in the first-use trap
+In-Reply-To: <91cd3bf5-9c68-df1e-32a8-55f2cfedd84a@rivosinc.com>
+References: <20230125142056.18356-1-andy.chiu@sifive.com>
+ <20230125142056.18356-11-andy.chiu@sifive.com>
+ <91cd3bf5-9c68-df1e-32a8-55f2cfedd84a@rivosinc.com>
+Message-ID: <87zg9o1pkt.fsf@all.your.base.are.belong.to.us>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Feb 08 2023, Gavin Shan <gshan@redhat.com> wrote:
+Vineet Gupta <vineetg@rivosinc.com> writes:
 
-> On 2/7/23 9:09 PM, Thomas Huth wrote:
->> Oh, drat, I thought I had checked all return statements ... this must have fallen through the cracks, sorry!
->> 
->> Anyway, this is already a problem now: The function is called from kvm_arch_vm_ioctl() (which still returns a long), which in turn is called from kvm_vm_ioctl() in virt/kvm/kvm_main.c. And that functions stores the return value in an "int r" variable. So the upper bits are already lost there.
->> 
->> Also, how is this supposed to work from user space? The normal "ioctl()" libc function just returns an "int" ? Is this ioctl already used in a userspace application somewhere? ... at least in QEMU, I didn't spot it yet...
->> 
-
-We will need it in QEMU to implement migration with MTE (the current
-proposal simply adds a migration blocker when MTE is enabled, as there
-are various other things that need to be figured out for this to work.)
-But maybe other VMMs already use it (and have been lucky because they
-always dealt with shorter lengths?)
-
+> Hi Andy,
 >
-> The ioctl command KVM_ARM_MTE_COPY_TAGS was merged recently and not used
-> by QEMU yet. I think struct kvm_arm_copy_mte_tags::length needs to be
-> '__u32' instead of '__u64' in order to standardize the return value.
-> Something like below. Documentation/virt/kvm/api.rst::section-4.130
-> needs update accordingly.
+> On 1/25/23 06:20, Andy Chiu wrote:
+>> +static bool insn_is_vector(u32 insn_buf)
+>> +{
+>> +	u32 opcode = insn_buf & __INSN_OPCODE_MASK;
+>> +	/*
+>> +	 * All V-related instructions, including CSR operations are 4-Byte. So,
+>> +	 * do not handle if the instruction length is not 4-Byte.
+>> +	 */
+>> +	if (unlikely(GET_INSN_LENGTH(insn_buf) != 4))
+>> +		return false;
+>> +	if (opcode == OPCODE_VECTOR) {
+>> +		return true;
+>> +	} else if (opcode == OPCODE_LOADFP || opcode == OPCODE_STOREFP) {
+>> +		u32 width = EXTRACT_LOAD_STORE_FP_WIDTH(insn_buf);
+>> +
+>> +		if (width == LSFP_WIDTH_RVV_8 || width == LSFP_WIDTH_RVV_16 ||
+>> +		    width == LSFP_WIDTH_RVV_32 || width == LSFP_WIDTH_RVV_64)
+>> +			return true;
 >
->     struct kvm_arm_copy_mte_tags {
->          __u64 guest_ipa;
->          __u32 pad;
->          __u32 length;
->          void __user *addr;
->          __u64 flags;
->          __u64 reserved[2];
->    };
+> What is the purpose of checking FP opcodes here ?
 
-Can we do this in a more compatible way, as we are dealing with an API?
-Like returning -EINVAL if length is too big?
+From [1]: "The instructions in the vector extension fit under two
+existing major opcodes (LOAD-FP and STORE-FP) and one new major opcode
+(OP-V)."
 
+[2] highlights the width encoding.
+
+(And Zvamo is out from the spec, which used AMO,0x2f)
+
+[1] https://github.com/riscv/riscv-v-spec/blob/master/v-spec.adoc#5-vector-instruction-formats
+[2] https://github.com/riscv/riscv-v-spec/blob/master/v-spec.adoc#73-vector-loadstore-width-encoding
 
