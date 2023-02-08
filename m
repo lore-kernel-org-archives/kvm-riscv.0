@@ -1,105 +1,250 @@
-From: Conor Dooley <conor@kernel.org>
-Date: Tue, 7 Feb 2023 20:39:51 +0000
-Subject: [PATCH v2 2/7] RISC-V: Detect AIA CSRs from ISA string
-In-Reply-To: <CAOnJCUKKRRCrKN17ytczYXVLTcMkFaZsg6QXKjPUuSk=PqL6JQ@mail.gmail.com>
-References: <20230128072737.2995881-3-apatel@ventanamicro.com>
- <mhng-0f9bdf58-5289-4db4-8fd7-38898824c44f@palmer-ri-x1c9>
- <CAK9=C2X8C4yswGhDwe1OzQXTELXQxp8=ayiFxh1aVMk4TxeDjw@mail.gmail.com>
- <Y+KS16ZNXrDU+xun@spud>
- <CAOnJCUKKRRCrKN17ytczYXVLTcMkFaZsg6QXKjPUuSk=PqL6JQ@mail.gmail.com>
-Message-ID: <Y+K3FyGrNUQJZao8@spud>
+From: Atish Patra <atishp@atishpatra.org>
+Date: Tue, 7 Feb 2023 16:04:35 -0800
+Subject: [PATCH v2 5/7] RISC-V: KVM: Add ONE_REG interface for AIA CSRs
+In-Reply-To: <20230128072737.2995881-6-apatel@ventanamicro.com>
+References: <20230128072737.2995881-1-apatel@ventanamicro.com> <20230128072737.2995881-6-apatel@ventanamicro.com>
+Message-ID: <CAOnJCUKh6s6v0TK=4KRZk9GXN23ebvPuy2OHtWBtTOpnN4g9dg@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Feb 07, 2023 at 10:15:22AM -0800, Atish Patra wrote:
-> On Tue, Feb 7, 2023 at 10:05 AM Conor Dooley <conor@kernel.org> wrote:
-> > On Fri, Feb 03, 2023 at 05:31:01PM +0530, Anup Patel wrote:
-> > > On Fri, Feb 3, 2023 at 5:54 AM Palmer Dabbelt <palmer@dabbelt.com> wrote:
-> > > >
-> > > > On Fri, 27 Jan 2023 23:27:32 PST (-0800), apatel at ventanamicro.com wrote:
-> > > > > We have two extension names for AIA ISA support: Smaia (M-mode AIA CSRs)
-> > > > > and Ssaia (S-mode AIA CSRs).
-> > > >
-> > > > This has pretty much the same problem that we had with the other
-> > > > AIA-related ISA string patches, where there's that ambiguity with the
-> > > > non-ratified chapters.  IIRC when this came up in GCC the rough idea was
-> > > > to try and document that we're going to interpret the standard ISA
-> > > > strings that way, but now that we're doing custom ISA extensions it
-> > > > seems saner to just define on here that removes the ambiguity.
-> > > >
-> > > > I just sent
-> > > > <https://lore.kernel.org/r/20230203001201.14770-1-palmer@rivosinc.com/>
-> > > > which documents that.
-> > >
-> > > I am not sure why you say that these are custom extensions.
-> > >
-> > > Multiple folks have clarified that both Smaia and Ssaia are frozen
-> > > ISA extensions as-per RVI process. The individual chapters which
-> > > are in the draft state have nothing to do with Smaia and Ssaia CSRs.
-> > >
-> > > Please refer:
-> > > https://github.com/riscv/riscv-aia/pull/36
-> > > https://lists.riscv.org/g/tech-aia/message/336
-> > > https://lists.riscv.org/g/tech-aia/message/337
-> >
-> > All of these links seem to discuss the draft chapters somehow being
-> > incompatible with the non-draft ones. I would very expect that that,
-> > as pointed out in several places there, that the draft chapters
-> > finalisation would not lead to meaningful (and incompatible!) changes
-> > being made to the non-draft chapters.
-> >
-> 
-> Here is the status of all RVI specs. It states that the Smaia, Ssaia
-> extensions are frozen (i.e. public review complete).
-> https://wiki.riscv.org/display/HOME/Specification+Status
-> 
-> I have added stephano/Jeff to confirm the same.
-> 
-> AFAIK, IOMMU spec is close to the public review phase and should be
-> frozen in this or next quarter.
-> IIRC, this chapter in AIA will be frozen along with IOMMU spec.
-> 
-> Anup: Please correct me if that's not correct.
-> 
-> > Maybe yourself and Palmer are looking at this from different
-> > perspectives? Looking at his patch from Friday:
-> > https://lore.kernel.org/linux-riscv/20230203001201.14770-1-palmer at rivosinc.com/
-> > He specifically mentioned this aspect, as opposed to the aspect that
-> > your links refer to.
-> >
-> > Surely a duo-plic, if that ever comes to be, could be detected from
-> > compatible strings in DT or w/e - but how do you intend differentiating
-> > between an implementation of S*aia that contains the IOMMU support in
-> > Chapter 9 in a finalised form, versus an implementation that may make
-> > "different decisions" when it comes to that chapter of the spec?
-> 
-> We will most likely have an extension specific to iommu spec as well.
+On Fri, Jan 27, 2023 at 11:28 PM Anup Patel <apatel@ventanamicro.com> wrote:
+>
+> We extend the CSR ONE_REG interface to access both general CSRs and
+> AIA CSRs. To achieve this, we introduce "subtype" field in the ONE_REG
+> id which can be used for grouping registers within a particular "type"
+> of ONE_REG registers.
+>
+> Signed-off-by: Anup Patel <apatel@ventanamicro.com>
+> ---
+>  arch/riscv/include/uapi/asm/kvm.h | 15 ++++-
+>  arch/riscv/kvm/vcpu.c             | 96 ++++++++++++++++++++++++-------
+>  2 files changed, 89 insertions(+), 22 deletions(-)
+>
+> diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
+> index 71992ff1f9dd..d0704eff0121 100644
+> --- a/arch/riscv/include/uapi/asm/kvm.h
+> +++ b/arch/riscv/include/uapi/asm/kvm.h
+> @@ -64,7 +64,7 @@ struct kvm_riscv_core {
+>  #define KVM_RISCV_MODE_S       1
+>  #define KVM_RISCV_MODE_U       0
+>
+> -/* CSR registers for KVM_GET_ONE_REG and KVM_SET_ONE_REG */
+> +/* General CSR registers for KVM_GET_ONE_REG and KVM_SET_ONE_REG */
+>  struct kvm_riscv_csr {
+>         unsigned long sstatus;
+>         unsigned long sie;
+> @@ -78,6 +78,10 @@ struct kvm_riscv_csr {
+>         unsigned long scounteren;
+>  };
+>
+> +/* AIA CSR registers for KVM_GET_ONE_REG and KVM_SET_ONE_REG */
+> +struct kvm_riscv_aia_csr {
+> +};
+> +
+>  /* TIMER registers for KVM_GET_ONE_REG and KVM_SET_ONE_REG */
+>  struct kvm_riscv_timer {
+>         __u64 frequency;
+> @@ -105,6 +109,7 @@ enum KVM_RISCV_ISA_EXT_ID {
+>         KVM_RISCV_ISA_EXT_SVINVAL,
+>         KVM_RISCV_ISA_EXT_ZIHINTPAUSE,
+>         KVM_RISCV_ISA_EXT_ZICBOM,
+> +       KVM_RISCV_ISA_EXT_SSAIA,
+>         KVM_RISCV_ISA_EXT_MAX,
+>  };
+>
+> @@ -134,6 +139,8 @@ enum KVM_RISCV_SBI_EXT_ID {
+>  /* If you need to interpret the index values, here is the key: */
+>  #define KVM_REG_RISCV_TYPE_MASK                0x00000000FF000000
+>  #define KVM_REG_RISCV_TYPE_SHIFT       24
+> +#define KVM_REG_RISCV_SUBTYPE_MASK     0x0000000000FF0000
+> +#define KVM_REG_RISCV_SUBTYPE_SHIFT    16
+>
+>  /* Config registers are mapped as type 1 */
+>  #define KVM_REG_RISCV_CONFIG           (0x01 << KVM_REG_RISCV_TYPE_SHIFT)
+> @@ -147,8 +154,12 @@ enum KVM_RISCV_SBI_EXT_ID {
+>
+>  /* Control and status registers are mapped as type 3 */
+>  #define KVM_REG_RISCV_CSR              (0x03 << KVM_REG_RISCV_TYPE_SHIFT)
+> +#define KVM_REG_RISCV_CSR_GENERAL      0x0
+> +#define KVM_REG_RISCV_CSR_AIA          0x1
+>  #define KVM_REG_RISCV_CSR_REG(name)    \
+> -               (offsetof(struct kvm_riscv_csr, name) / sizeof(unsigned long))
+> +       (offsetof(struct kvm_riscv_csr, name) / sizeof(unsigned long))
+> +#define KVM_REG_RISCV_CSR_AIA_REG(name)        \
+> +       (offsetof(struct kvm_riscv_aia_csr, name) / sizeof(unsigned long))
+>
+>  /* Timer registers are mapped as type 4 */
+>  #define KVM_REG_RISCV_TIMER            (0x04 << KVM_REG_RISCV_TYPE_SHIFT)
+> diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+> index 3cf50eadc8ce..37933ea20274 100644
+> --- a/arch/riscv/kvm/vcpu.c
+> +++ b/arch/riscv/kvm/vcpu.c
+> @@ -58,6 +58,7 @@ static const unsigned long kvm_isa_ext_arr[] = {
+>         [KVM_RISCV_ISA_EXT_I] = RISCV_ISA_EXT_i,
+>         [KVM_RISCV_ISA_EXT_M] = RISCV_ISA_EXT_m,
+>
+> +       KVM_ISA_EXT_ARR(SSAIA),
+>         KVM_ISA_EXT_ARR(SSTC),
+>         KVM_ISA_EXT_ARR(SVINVAL),
+>         KVM_ISA_EXT_ARR(SVPBMT),
+> @@ -96,6 +97,7 @@ static bool kvm_riscv_vcpu_isa_disable_allowed(unsigned long ext)
+>         case KVM_RISCV_ISA_EXT_C:
+>         case KVM_RISCV_ISA_EXT_I:
+>         case KVM_RISCV_ISA_EXT_M:
+> +       case KVM_RISCV_ISA_EXT_SSAIA:
+>         case KVM_RISCV_ISA_EXT_SSTC:
+>         case KVM_RISCV_ISA_EXT_SVINVAL:
+>         case KVM_RISCV_ISA_EXT_ZIHINTPAUSE:
+> @@ -451,30 +453,79 @@ static int kvm_riscv_vcpu_set_reg_core(struct kvm_vcpu *vcpu,
+>         return 0;
+>  }
+>
+> +static int kvm_riscv_vcpu_general_get_csr(struct kvm_vcpu *vcpu,
+> +                                         unsigned long reg_num,
+> +                                         unsigned long *out_val)
+> +{
+> +       struct kvm_vcpu_csr *csr = &vcpu->arch.guest_csr;
+> +
+> +       if (reg_num >= sizeof(struct kvm_riscv_csr) / sizeof(unsigned long))
+> +               return -EINVAL;
+> +
+> +       if (reg_num == KVM_REG_RISCV_CSR_REG(sip)) {
+> +               kvm_riscv_vcpu_flush_interrupts(vcpu);
+> +               *out_val = (csr->hvip >> VSIP_TO_HVIP_SHIFT) & VSIP_VALID_MASK;
+> +       } else
+> +               *out_val = ((unsigned long *)csr)[reg_num];
+> +
+> +       return 0;
+> +}
+> +
+>  static int kvm_riscv_vcpu_get_reg_csr(struct kvm_vcpu *vcpu,
+>                                       const struct kvm_one_reg *reg)
+>  {
+> -       struct kvm_vcpu_csr *csr = &vcpu->arch.guest_csr;
+> +       int rc;
+>         unsigned long __user *uaddr =
+>                         (unsigned long __user *)(unsigned long)reg->addr;
+>         unsigned long reg_num = reg->id & ~(KVM_REG_ARCH_MASK |
+>                                             KVM_REG_SIZE_MASK |
+>                                             KVM_REG_RISCV_CSR);
+> -       unsigned long reg_val;
+> +       unsigned long reg_val, reg_subtype;
+>
+>         if (KVM_REG_SIZE(reg->id) != sizeof(unsigned long))
+>                 return -EINVAL;
+> +
+> +       reg_subtype = (reg_num & KVM_REG_RISCV_SUBTYPE_MASK)
+> +                       >> KVM_REG_RISCV_SUBTYPE_SHIFT;
+> +       reg_num &= ~KVM_REG_RISCV_SUBTYPE_MASK;
+> +       switch (reg_subtype) {
+> +       case KVM_REG_RISCV_CSR_GENERAL:
+> +               rc = kvm_riscv_vcpu_general_get_csr(vcpu, reg_num, &reg_val);
+> +               break;
+> +       case KVM_REG_RISCV_CSR_AIA:
+> +               rc = kvm_riscv_vcpu_aia_get_csr(vcpu, reg_num, &reg_val);
+> +               break;
+> +       default:
+> +               rc = -EINVAL;
+> +               break;
+> +       }
+> +       if (rc)
+> +               return rc;
+> +
+> +       if (copy_to_user(uaddr, &reg_val, KVM_REG_SIZE(reg->id)))
+> +               return -EFAULT;
+> +
+> +       return 0;
+> +}
+> +
+> +static inline int kvm_riscv_vcpu_general_set_csr(struct kvm_vcpu *vcpu,
+> +                                                unsigned long reg_num,
+> +                                                unsigned long reg_val)
+> +{
+> +       struct kvm_vcpu_csr *csr = &vcpu->arch.guest_csr;
+> +
+>         if (reg_num >= sizeof(struct kvm_riscv_csr) / sizeof(unsigned long))
+>                 return -EINVAL;
+>
+>         if (reg_num == KVM_REG_RISCV_CSR_REG(sip)) {
+> -               kvm_riscv_vcpu_flush_interrupts(vcpu);
+> -               reg_val = (csr->hvip >> VSIP_TO_HVIP_SHIFT) & VSIP_VALID_MASK;
+> -       } else
+> -               reg_val = ((unsigned long *)csr)[reg_num];
+> +               reg_val &= VSIP_VALID_MASK;
+> +               reg_val <<= VSIP_TO_HVIP_SHIFT;
+> +       }
+>
+> -       if (copy_to_user(uaddr, &reg_val, KVM_REG_SIZE(reg->id)))
+> -               return -EFAULT;
+> +       ((unsigned long *)csr)[reg_num] = reg_val;
+> +
+> +       if (reg_num == KVM_REG_RISCV_CSR_REG(sip))
+> +               WRITE_ONCE(vcpu->arch.irqs_pending_mask, 0);
+>
+>         return 0;
+>  }
+> @@ -482,31 +533,36 @@ static int kvm_riscv_vcpu_get_reg_csr(struct kvm_vcpu *vcpu,
+>  static int kvm_riscv_vcpu_set_reg_csr(struct kvm_vcpu *vcpu,
+>                                       const struct kvm_one_reg *reg)
+>  {
+> -       struct kvm_vcpu_csr *csr = &vcpu->arch.guest_csr;
+> +       int rc;
+>         unsigned long __user *uaddr =
+>                         (unsigned long __user *)(unsigned long)reg->addr;
+>         unsigned long reg_num = reg->id & ~(KVM_REG_ARCH_MASK |
+>                                             KVM_REG_SIZE_MASK |
+>                                             KVM_REG_RISCV_CSR);
+> -       unsigned long reg_val;
+> +       unsigned long reg_val, reg_subtype;
+>
+>         if (KVM_REG_SIZE(reg->id) != sizeof(unsigned long))
+>                 return -EINVAL;
+> -       if (reg_num >= sizeof(struct kvm_riscv_csr) / sizeof(unsigned long))
+> -               return -EINVAL;
+>
+>         if (copy_from_user(&reg_val, uaddr, KVM_REG_SIZE(reg->id)))
+>                 return -EFAULT;
+>
+> -       if (reg_num == KVM_REG_RISCV_CSR_REG(sip)) {
+> -               reg_val &= VSIP_VALID_MASK;
+> -               reg_val <<= VSIP_TO_HVIP_SHIFT;
+> +       reg_subtype = (reg_num & KVM_REG_RISCV_SUBTYPE_MASK)
+> +                       >> KVM_REG_RISCV_SUBTYPE_SHIFT;
+> +       reg_num &= ~KVM_REG_RISCV_SUBTYPE_MASK;
+> +       switch (reg_subtype) {
+> +       case KVM_REG_RISCV_CSR_GENERAL:
+> +               rc = kvm_riscv_vcpu_general_set_csr(vcpu, reg_num, reg_val);
+> +               break;
+> +       case KVM_REG_RISCV_CSR_AIA:
+> +               rc = kvm_riscv_vcpu_aia_set_csr(vcpu, reg_num, reg_val);
+> +               break;
+> +       default:
+> +               rc = -EINVAL;
+> +               break;
+>         }
+> -
+> -       ((unsigned long *)csr)[reg_num] = reg_val;
+> -
+> -       if (reg_num == KVM_REG_RISCV_CSR_REG(sip))
+> -               WRITE_ONCE(vcpu->arch.irqs_pending_mask, 0);
+> +       if (rc)
+> +               return rc;
+>
+>         return 0;
+>  }
+> --
+> 2.34.1
+>
 
-Right, but unless I am misunderstanding you, that is an extension for the
-IOMMU spec, not for Chapter 9 of the AIA spec?
+This can be split into two patches. The first patch can just modify
+the existing implementation
+to parse subtypes for general CSRs. AIA support can be added in the next one.
 
-I would say that it is likely that if you have AIA and IOMMU that you'd
-want to be implementing Chapter 9, but that would not appear sufficient to
-draw a conclusion from.
 
-Maybe the RVI lads that you've added (or Anup for that matter!) can
-clarify if there is a requirement that if you do AIA and IOMMU that you
-must do Chapter 9.
-If not, my prior question about a differentiation mechanism still applies
-I think!
+-- 
+Regards,
+Atish
 
-> > I thought that would be handled by extension versions, but I am told
-> > that those are not a thing any more.
-> > If that's not true, and there'll be a version number that we can pull in
-> > from a DT and parse which will distinguish between the two, then please
-> > correct my misunderstanding here!
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 228 bytes
-Desc: not available
-URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20230207/82dcf185/attachment-0001.sig>
