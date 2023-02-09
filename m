@@ -1,89 +1,57 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Thu,  9 Feb 2023 16:26:22 +0100
-Subject: [PATCH v4 2/8] RISC-V: Factor out body of riscv_init_cbom_blocksize loop
+Date: Thu,  9 Feb 2023 16:26:21 +0100
+Subject: [PATCH v4 1/8] RISC-V: alternatives: Support patching multiple insns in assembly
 In-Reply-To: <20230209152628.129914-1-ajones@ventanamicro.com>
 References: <20230209152628.129914-1-ajones@ventanamicro.com>
-Message-ID: <20230209152628.129914-3-ajones@ventanamicro.com>
+Message-ID: <20230209152628.129914-2-ajones@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Refactor riscv_init_cbom_blocksize() to prepare for it to be used
-for both cbom block size and cboz block size.
+As pointed out in commit d374a16539b1 ("RISC-V: fix compile error
+from deduplicated __ALTERNATIVE_CFG_2"), we need quotes around
+parameters passed to macros within macros to avoid spaces being
+interpreted as separators. ALT_NEW_CONTENT was trying to handle
+this by defining new_c has a vararg, but this isn't sufficient
+for calling ALTERNATIVE() from assembly with multiple instructions
+in the new/old sequences. Remove the vararg "hack" and use quotes.
 
 Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
-Reviewed-by: Heiko Stuebner <heiko@sntech.de>
-Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
 ---
- arch/riscv/mm/cacheflush.c | 45 +++++++++++++++++++++-----------------
- 1 file changed, 25 insertions(+), 20 deletions(-)
+ arch/riscv/include/asm/alternative-macros.h | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/arch/riscv/mm/cacheflush.c b/arch/riscv/mm/cacheflush.c
-index 3cc07ed45aeb..eaf23fc14966 100644
---- a/arch/riscv/mm/cacheflush.c
-+++ b/arch/riscv/mm/cacheflush.c
-@@ -98,34 +98,39 @@ void flush_icache_pte(pte_t pte)
- unsigned int riscv_cbom_block_size;
- EXPORT_SYMBOL_GPL(riscv_cbom_block_size);
+diff --git a/arch/riscv/include/asm/alternative-macros.h b/arch/riscv/include/asm/alternative-macros.h
+index 51c6867e02f3..7bc52f33f95f 100644
+--- a/arch/riscv/include/asm/alternative-macros.h
++++ b/arch/riscv/include/asm/alternative-macros.h
+@@ -14,7 +14,7 @@
+ 	.4byte \errata_id
+ .endm
  
-+static void cbo_get_block_size(struct device_node *node,
-+			       const char *name, u32 *block_size,
-+			       unsigned long *first_hartid)
-+{
-+	unsigned long hartid;
-+	u32 val;
-+
-+	if (riscv_of_processor_hartid(node, &hartid))
-+		return;
-+
-+	if (of_property_read_u32(node, name, &val))
-+		return;
-+
-+	if (!*block_size) {
-+		*block_size = val;
-+		*first_hartid = hartid;
-+	} else if (*block_size != val) {
-+		pr_warn("%s mismatched between harts %lu and %lu\n",
-+			name, *first_hartid, hartid);
-+	}
-+}
-+
- void riscv_init_cbom_blocksize(void)
- {
- 	struct device_node *node;
- 	unsigned long cbom_hartid;
--	u32 val, probed_block_size;
--	int ret;
-+	u32 probed_block_size;
+-.macro ALT_NEW_CONTENT vendor_id, errata_id, enable = 1, new_c : vararg
++.macro ALT_NEW_CONTENT vendor_id, errata_id, enable = 1, new_c
+ 	.if \enable
+ 	.pushsection .alternative, "a"
+ 	ALT_ENTRY 886b, 888f, \vendor_id, \errata_id, 889f - 888f
+@@ -41,13 +41,13 @@
+ 	\old_c
+ 	.option pop
+ 887 :
+-	ALT_NEW_CONTENT \vendor_id, \errata_id, \enable, \new_c
++	ALT_NEW_CONTENT \vendor_id, \errata_id, \enable, "\new_c"
+ .endm
  
- 	probed_block_size = 0;
- 	for_each_of_cpu_node(node) {
--		unsigned long hartid;
--
--		ret = riscv_of_processor_hartid(node, &hartid);
--		if (ret)
--			continue;
--
- 		/* set block-size for cbom extension if available */
--		ret = of_property_read_u32(node, "riscv,cbom-block-size", &val);
--		if (ret)
--			continue;
--
--		if (!probed_block_size) {
--			probed_block_size = val;
--			cbom_hartid = hartid;
--		} else {
--			if (probed_block_size != val)
--				pr_warn("cbom-block-size mismatched between harts %lu and %lu\n",
--					cbom_hartid, hartid);
--		}
-+		cbo_get_block_size(node, "riscv,cbom-block-size",
-+				   &probed_block_size, &cbom_hartid);
- 	}
+ .macro ALTERNATIVE_CFG_2 old_c, new_c_1, vendor_id_1, errata_id_1, enable_1,	\
+ 				new_c_2, vendor_id_2, errata_id_2, enable_2
+ 	ALTERNATIVE_CFG "\old_c", "\new_c_1", \vendor_id_1, \errata_id_1, \enable_1
+-	ALT_NEW_CONTENT \vendor_id_2, \errata_id_2, \enable_2, \new_c_2
++	ALT_NEW_CONTENT \vendor_id_2, \errata_id_2, \enable_2, "\new_c_2"
+ .endm
  
- 	if (probed_block_size)
+ #define __ALTERNATIVE_CFG(...)		ALTERNATIVE_CFG __VA_ARGS__
 -- 
 2.39.1
 
