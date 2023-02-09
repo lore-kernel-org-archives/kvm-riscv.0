@@ -1,142 +1,90 @@
-From: Claudio Imbrenda <imbrenda@linux.ibm.com>
-Date: Wed, 8 Feb 2023 18:35:49 +0100
-Subject: [PATCH 7/7] KVM: Change return type of kvm_arch_vm_ioctl() to
- "int"
-In-Reply-To: <20230203094230.266952-8-thuth@redhat.com>
-References: <20230203094230.266952-1-thuth@redhat.com>
-	<20230203094230.266952-8-thuth@redhat.com>
-Message-ID: <20230208183549.145b708d@p-imbrenda>
+From: Andrew Jones <ajones@ventanamicro.com>
+Date: Thu,  9 Feb 2023 16:26:22 +0100
+Subject: [PATCH v4 2/8] RISC-V: Factor out body of riscv_init_cbom_blocksize loop
+In-Reply-To: <20230209152628.129914-1-ajones@ventanamicro.com>
+References: <20230209152628.129914-1-ajones@ventanamicro.com>
+Message-ID: <20230209152628.129914-3-ajones@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri,  3 Feb 2023 10:42:30 +0100
-Thomas Huth <thuth@redhat.com> wrote:
+Refactor riscv_init_cbom_blocksize() to prepare for it to be used
+for both cbom block size and cboz block size.
 
-> All kvm_arch_vm_ioctl() implementations now only deal with "int"
-> types as return values, so we can change the return type of these
-> functions to use "int" instead of "long".
-> 
-> Signed-off-by: Thomas Huth <thuth@redhat.com>
+Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
+Reviewed-by: Heiko Stuebner <heiko@sntech.de>
+Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
+---
+ arch/riscv/mm/cacheflush.c | 45 +++++++++++++++++++++-----------------
+ 1 file changed, 25 insertions(+), 20 deletions(-)
 
-Acked-by: Claudio Imbrenda <imbrenda@linux.ibm.com>
-
-> ---
->  arch/arm64/kvm/arm.c       | 3 +--
->  arch/mips/kvm/mips.c       | 4 ++--
->  arch/powerpc/kvm/powerpc.c | 5 ++---
->  arch/riscv/kvm/vm.c        | 3 +--
->  arch/s390/kvm/kvm-s390.c   | 3 +--
->  arch/x86/kvm/x86.c         | 3 +--
->  include/linux/kvm_host.h   | 3 +--
->  7 files changed, 9 insertions(+), 15 deletions(-)
-> 
-> diff --git a/arch/arm64/kvm/arm.c b/arch/arm64/kvm/arm.c
-> index 9c5573bc4614..e791ad6137b8 100644
-> --- a/arch/arm64/kvm/arm.c
-> +++ b/arch/arm64/kvm/arm.c
-> @@ -1449,8 +1449,7 @@ static int kvm_vm_ioctl_set_device_addr(struct kvm *kvm,
->  	}
->  }
->  
-> -long kvm_arch_vm_ioctl(struct file *filp,
-> -		       unsigned int ioctl, unsigned long arg)
-> +int kvm_arch_vm_ioctl(struct file *filp, unsigned int ioctl, unsigned long arg)
->  {
->  	struct kvm *kvm = filp->private_data;
->  	void __user *argp = (void __user *)arg;
-> diff --git a/arch/mips/kvm/mips.c b/arch/mips/kvm/mips.c
-> index a25e0b73ee70..84cadaa2c2d3 100644
-> --- a/arch/mips/kvm/mips.c
-> +++ b/arch/mips/kvm/mips.c
-> @@ -1003,9 +1003,9 @@ void kvm_arch_flush_remote_tlbs_memslot(struct kvm *kvm,
->  	kvm_flush_remote_tlbs(kvm);
->  }
->  
-> -long kvm_arch_vm_ioctl(struct file *filp, unsigned int ioctl, unsigned long arg)
-> +int kvm_arch_vm_ioctl(struct file *filp, unsigned int ioctl, unsigned long arg)
->  {
-> -	long r;
-> +	int r;
->  
->  	switch (ioctl) {
->  	default:
-> diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-> index 04494a4fb37a..6f6ba55c224f 100644
-> --- a/arch/powerpc/kvm/powerpc.c
-> +++ b/arch/powerpc/kvm/powerpc.c
-> @@ -2386,12 +2386,11 @@ static int kvmppc_get_cpu_char(struct kvm_ppc_cpu_char *cp)
->  }
->  #endif
->  
-> -long kvm_arch_vm_ioctl(struct file *filp,
-> -                       unsigned int ioctl, unsigned long arg)
-> +int kvm_arch_vm_ioctl(struct file *filp, unsigned int ioctl, unsigned long arg)
->  {
->  	struct kvm *kvm __maybe_unused = filp->private_data;
->  	void __user *argp = (void __user *)arg;
-> -	long r;
-> +	int r;
->  
->  	switch (ioctl) {
->  	case KVM_PPC_GET_PVINFO: {
-> diff --git a/arch/riscv/kvm/vm.c b/arch/riscv/kvm/vm.c
-> index 65a964d7e70d..c13130ab459a 100644
-> --- a/arch/riscv/kvm/vm.c
-> +++ b/arch/riscv/kvm/vm.c
-> @@ -87,8 +87,7 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
->  	return r;
->  }
->  
-> -long kvm_arch_vm_ioctl(struct file *filp,
-> -		       unsigned int ioctl, unsigned long arg)
-> +int kvm_arch_vm_ioctl(struct file *filp, unsigned int ioctl, unsigned long arg)
->  {
->  	return -EINVAL;
->  }
-> diff --git a/arch/s390/kvm/kvm-s390.c b/arch/s390/kvm/kvm-s390.c
-> index 8ad1972b8a73..86ca49814983 100644
-> --- a/arch/s390/kvm/kvm-s390.c
-> +++ b/arch/s390/kvm/kvm-s390.c
-> @@ -2850,8 +2850,7 @@ static int kvm_s390_vm_mem_op(struct kvm *kvm, struct kvm_s390_mem_op *mop)
->  	return r;
->  }
->  
-> -long kvm_arch_vm_ioctl(struct file *filp,
-> -		       unsigned int ioctl, unsigned long arg)
-> +int kvm_arch_vm_ioctl(struct file *filp, unsigned int ioctl, unsigned long arg)
->  {
->  	struct kvm *kvm = filp->private_data;
->  	void __user *argp = (void __user *)arg;
-> diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-> index caa2541833dd..c03363efc774 100644
-> --- a/arch/x86/kvm/x86.c
-> +++ b/arch/x86/kvm/x86.c
-> @@ -6653,8 +6653,7 @@ static int kvm_vm_ioctl_set_clock(struct kvm *kvm, void __user *argp)
->  	return 0;
->  }
->  
-> -long kvm_arch_vm_ioctl(struct file *filp,
-> -		       unsigned int ioctl, unsigned long arg)
-> +int kvm_arch_vm_ioctl(struct file *filp, unsigned int ioctl, unsigned long arg)
->  {
->  	struct kvm *kvm = filp->private_data;
->  	void __user *argp = (void __user *)arg;
-> diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-> index 4f26b244f6d0..ed2f1f02976b 100644
-> --- a/include/linux/kvm_host.h
-> +++ b/include/linux/kvm_host.h
-> @@ -1398,8 +1398,7 @@ int kvm_vm_ioctl_irq_line(struct kvm *kvm, struct kvm_irq_level *irq_level,
->  			bool line_status);
->  int kvm_vm_ioctl_enable_cap(struct kvm *kvm,
->  			    struct kvm_enable_cap *cap);
-> -long kvm_arch_vm_ioctl(struct file *filp,
-> -		       unsigned int ioctl, unsigned long arg);
-> +int kvm_arch_vm_ioctl(struct file *filp, unsigned int ioctl, unsigned long arg);
->  long kvm_arch_vm_compat_ioctl(struct file *filp, unsigned int ioctl,
->  			      unsigned long arg);
->  
+diff --git a/arch/riscv/mm/cacheflush.c b/arch/riscv/mm/cacheflush.c
+index 3cc07ed45aeb..eaf23fc14966 100644
+--- a/arch/riscv/mm/cacheflush.c
++++ b/arch/riscv/mm/cacheflush.c
+@@ -98,34 +98,39 @@ void flush_icache_pte(pte_t pte)
+ unsigned int riscv_cbom_block_size;
+ EXPORT_SYMBOL_GPL(riscv_cbom_block_size);
+ 
++static void cbo_get_block_size(struct device_node *node,
++			       const char *name, u32 *block_size,
++			       unsigned long *first_hartid)
++{
++	unsigned long hartid;
++	u32 val;
++
++	if (riscv_of_processor_hartid(node, &hartid))
++		return;
++
++	if (of_property_read_u32(node, name, &val))
++		return;
++
++	if (!*block_size) {
++		*block_size = val;
++		*first_hartid = hartid;
++	} else if (*block_size != val) {
++		pr_warn("%s mismatched between harts %lu and %lu\n",
++			name, *first_hartid, hartid);
++	}
++}
++
+ void riscv_init_cbom_blocksize(void)
+ {
+ 	struct device_node *node;
+ 	unsigned long cbom_hartid;
+-	u32 val, probed_block_size;
+-	int ret;
++	u32 probed_block_size;
+ 
+ 	probed_block_size = 0;
+ 	for_each_of_cpu_node(node) {
+-		unsigned long hartid;
+-
+-		ret = riscv_of_processor_hartid(node, &hartid);
+-		if (ret)
+-			continue;
+-
+ 		/* set block-size for cbom extension if available */
+-		ret = of_property_read_u32(node, "riscv,cbom-block-size", &val);
+-		if (ret)
+-			continue;
+-
+-		if (!probed_block_size) {
+-			probed_block_size = val;
+-			cbom_hartid = hartid;
+-		} else {
+-			if (probed_block_size != val)
+-				pr_warn("cbom-block-size mismatched between harts %lu and %lu\n",
+-					cbom_hartid, hartid);
+-		}
++		cbo_get_block_size(node, "riscv,cbom-block-size",
++				   &probed_block_size, &cbom_hartid);
+ 	}
+ 
+ 	if (probed_block_size)
+-- 
+2.39.1
 
 
