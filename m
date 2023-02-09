@@ -1,83 +1,83 @@
 From: Conor Dooley <conor@kernel.org>
-Date: Thu, 09 Feb 2023 17:45:59 -0000
-Subject: [PATCH v4 0/8] RISC-V: Apply Zicboz to clear_page
-In-Reply-To: <20230209152628.129914-1-ajones@ventanamicro.com>
+Date: Thu, 09 Feb 2023 18:03:09 -0000
+Subject: [PATCH v4 1/8] RISC-V: alternatives: Support patching multiple
+ insns in assembly
+In-Reply-To: <20230209152628.129914-2-ajones@ventanamicro.com>
 References: <20230209152628.129914-1-ajones@ventanamicro.com>
-Message-ID: <Y+UxTBmegHqqHDCQ@spud>
+ <20230209152628.129914-2-ajones@ventanamicro.com>
+Message-ID: <Y+U1UfV0oLOIHe63@spud>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hey Drew,
+On Thu, Feb 09, 2023 at 04:26:21PM +0100, Andrew Jones wrote:
+> As pointed out in commit d374a16539b1 ("RISC-V: fix compile error
+> from deduplicated __ALTERNATIVE_CFG_2"), we need quotes around
+> parameters passed to macros within macros to avoid spaces being
+> interpreted as separators. ALT_NEW_CONTENT was trying to handle
+> this by defining new_c has a vararg, but this isn't sufficient
+> for calling ALTERNATIVE() from assembly with multiple instructions
+> in the new/old sequences. Remove the vararg "hack" and use quotes.
+> 
+> Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
+> ---
+>  arch/riscv/include/asm/alternative-macros.h | 6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
+> 
+> diff --git a/arch/riscv/include/asm/alternative-macros.h b/arch/riscv/include/asm/alternative-macros.h
+> index 51c6867e02f3..7bc52f33f95f 100644
+> --- a/arch/riscv/include/asm/alternative-macros.h
+> +++ b/arch/riscv/include/asm/alternative-macros.h
+> @@ -14,7 +14,7 @@
+>  	.4byte \errata_id
+>  .endm
+>  
+> -.macro ALT_NEW_CONTENT vendor_id, errata_id, enable = 1, new_c : vararg
+> +.macro ALT_NEW_CONTENT vendor_id, errata_id, enable = 1, new_c
+>  	.if \enable
+>  	.pushsection .alternative, "a"
+>  	ALT_ENTRY 886b, 888f, \vendor_id, \errata_id, 889f - 888f
+> @@ -41,13 +41,13 @@
+>  	\old_c
+>  	.option pop
+>  887 :
+> -	ALT_NEW_CONTENT \vendor_id, \errata_id, \enable, \new_c
+> +	ALT_NEW_CONTENT \vendor_id, \errata_id, \enable, "\new_c"
 
-On Thu, Feb 09, 2023 at 04:26:20PM +0100, Andrew Jones wrote:
-> When the Zicboz extension is available we can more rapidly zero naturally
-> aligned Zicboz block sized chunks of memory. As pages are always page
-> aligned and are larger than any Zicboz block size will be, then
-> clear_page() appears to be a good candidate for the extension. While cycle
-> count and energy consumption should also be considered, we can be pretty
-> certain that implementing clear_page() with the Zicboz extension is a win
-> by comparing the new dynamic instruction count with its current count[1].
-> Doing so we see that the new count is just over a quarter of the old count
-> (see patch4's commit message for more details).
-> 
-> For those of you who reviewed v1[2], you may be looking for the memset()
-> patches. As pointed out in v1, and a couple follow-up emails, it's not
-> clear that patching memset() is a win yet. When I get a chance to test
-> on real hardware with a comprehensive benchmark collection then I can
-> post the memset() patches separately (assuming the benchmarks show it's
-> worthwhile).
-> 
-> Based on riscv-linux/for-next plus the dependencies listed below.
-> 
-> Dependencies:
-> https://lore.kernel.org/all/20230108163356.3063839-1-conor at kernel.org/
-> https://lore.kernel.org/all/20230105192610.1940841-1-heiko at sntech.de/
+The rationale above seems pretty reasonable to me.
+My main thought is that vararg seems intentional, while the "s don't
+really?
+Given how much churn there is here at the moment, I think it's fairly
+likely that the immediate blame will be lost quickly too.
+Usually I'd err on the side of "try to explain the black magic parts of
+the cosebase to mere mortals" (like me!), but this is going in with a
+user & things will quickly blow up if it gets accidentally removed by
+someone who doesn't see their value.
 
-I've had a short (due to FOSDEM) & busy week since we discussed the
-automagic dependency collection. I'll try to get to it in the next few
-days.
-
-> The patches are also available here
-> https://github.com/jones-drew/linux/commits/riscv/zicboz-v4
-> 
-> To test over QEMU this branch may be used to enable Zicboz
-> https://gitlab.com/jones-drew/qemu/-/commits/riscv/zicboz
-> 
-> To test running a KVM guest with Zicboz this kvmtool branch may be used
-> https://github.com/jones-drew/kvmtool/commits/riscv/zicboz
-> 
-> Thanks,
-> drew
-> 
-> [1] I ported the functions under test to userspace and linked them with
->     a test program. Then, I ran them under gdb with a script[3] which
->     counted instructions by single stepping.
-> [2] https://lore.kernel.org/all/20221027130247.31634-1-ajones at ventanamicro.com/
-> [3] https://gist.github.com/jones-drew/487791c956ceca8c18adc2847eec9c60
-> 
-> v4:
->   - Rebased on latest for-next which allowed dropping one dependency
->   - Added "RISC-V: alternatives: Support patching multiple insns in assembly"
->     since I needed to use more than one instruction in an ALTERNATIVE call
->     from assembly. I can post this patch separately as a fix if desired.
->   - Improved the dt-binding patch commit message [Conor]
->   - Picked up some tags from Conor and Rob (I kept Conor's a-b on the
->     clear_page patch, even though there are several changes to it, because
->     I interpreted the a-b as "OK by me to implement a Zicboz clear_page")
-
-Yea, it was a "I am far from qualified to review your implementation,
-but I am okay with it existing and the remainder of the patch".
+Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
 
 Cheers,
 Conor.
 
+>  .endm
+>  
+>  .macro ALTERNATIVE_CFG_2 old_c, new_c_1, vendor_id_1, errata_id_1, enable_1,	\
+>  				new_c_2, vendor_id_2, errata_id_2, enable_2
+>  	ALTERNATIVE_CFG "\old_c", "\new_c_1", \vendor_id_1, \errata_id_1, \enable_1
+> -	ALT_NEW_CONTENT \vendor_id_2, \errata_id_2, \enable_2, \new_c_2
+> +	ALT_NEW_CONTENT \vendor_id_2, \errata_id_2, \enable_2, "\new_c_2"
+>  .endm
+>  
+>  #define __ALTERNATIVE_CFG(...)		ALTERNATIVE_CFG __VA_ARGS__
+> -- 
+> 2.39.1
+> 
 -------------- next part --------------
 A non-text attachment was scrubbed...
 Name: signature.asc
 Type: application/pgp-signature
 Size: 228 bytes
 Desc: not available
-URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20230209/f2ef3df8/attachment-0001.sig>
+URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20230209/3c0b0f64/attachment-0001.sig>
