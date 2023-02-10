@@ -1,23 +1,57 @@
-From: Andy Chiu <andy.chiu@sifive.com>
-Date: Fri, 10 Feb 2023 20:00:00 +0800
-Subject: [PATCH -next v13 10/19] riscv: Allocate user's vector context in
- the first-use trap
-In-Reply-To: <36A0C855-5EA7-49B5-B92E-B28E684AC3D8@kernel.org>
-References: <20230125142056.18356-1-andy.chiu@sifive.com> <20230125142056.18356-11-andy.chiu@sifive.com>
- <Y9MIr2iR5rzlIGKQ@spud> <CABgGipW_3tBbc3G91dqiAZCGeN-PbUvLS3n=bU0nWz0rRX9T8Q@mail.gmail.com>
- <36A0C855-5EA7-49B5-B92E-B28E684AC3D8@kernel.org>
-Message-ID: <CABgGipXMwnVPFY3D34zVQ1_MObYiYze-vvU23_yC12Q+xN+1ew@mail.gmail.com>
+From: Rajnesh Kanwal <rkanwal@rivosinc.com>
+Date: Fri, 10 Feb 2023 13:51:36 +0000
+Subject: [PATCH 1/1] riscv/kvm: Fix VM hang in case of timer delta being zero.
+Message-ID: <20230210135136.1115213-1-rkanwal@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Feb 6, 2023 at 9:40 PM Conor Dooley <conor@kernel.org> wrote:
-> I suppose my question was "is it safe to warn and carry on, rather than disallow use of vector in this situation".
-Yes, I think it is safe to warn and carry on. This is a check for
-memory leak if future code did not allocate/free datap correctly.
+In case when VCPU is blocked due to WFI, we schedule the timer
+from `kvm_riscv_vcpu_timer_blocking()` to keep timer interrupt
+ticking.
 
-Thanks,
-Andy
+But in case when delta_ns comes to be zero, we never schedule
+the timer and VCPU keeps sleeping indefinitely until any activity
+is done with VM console.
+
+This is easily reproduce-able using kvmtool.
+./lkvm-static run -c1 --console virtio -p "earlycon root=/dev/vda" \
+         -k ./Image -d rootfs.ext4
+
+Also, just add a print in kvm_riscv_vcpu_vstimer_expired() to
+check the interrupt delivery and run `top` or similar auto-upating
+cmd from guest. Within sometime one can notice that print from
+timer expiry routine stops and the `top` cmd output will stop
+updating.
+
+This change fixes this by making sure we schedule the timer even
+with delta_ns being zero to bring the VCPU out of sleep immediately.
+
+Signed-off-by: Rajnesh Kanwal <rkanwal@rivosinc.com>
+---
+ arch/riscv/kvm/vcpu_timer.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
+
+diff --git a/arch/riscv/kvm/vcpu_timer.c b/arch/riscv/kvm/vcpu_timer.c
+index ad34519c8a13..3ac2ff6a65da 100644
+--- a/arch/riscv/kvm/vcpu_timer.c
++++ b/arch/riscv/kvm/vcpu_timer.c
+@@ -147,10 +147,8 @@ static void kvm_riscv_vcpu_timer_blocking(struct kvm_vcpu *vcpu)
+ 		return;
+ 
+ 	delta_ns = kvm_riscv_delta_cycles2ns(t->next_cycles, gt, t);
+-	if (delta_ns) {
+-		hrtimer_start(&t->hrt, ktime_set(0, delta_ns), HRTIMER_MODE_REL);
+-		t->next_set = true;
+-	}
++	hrtimer_start(&t->hrt, ktime_set(0, delta_ns), HRTIMER_MODE_REL);
++	t->next_set = true;
+ }
+ 
+ static void kvm_riscv_vcpu_timer_unblocking(struct kvm_vcpu *vcpu)
+-- 
+2.25.1
+
 
