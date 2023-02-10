@@ -1,66 +1,79 @@
-From: Conor Dooley <conor@kernel.org>
-Date: Thu, 09 Feb 2023 23:31:36 -0000
-Subject: [PATCH v2 2/7] RISC-V: Detect AIA CSRs from ISA string
-In-Reply-To: <CAK9=C2VeyJMHocZMQTZoULveAcH0kdH2vBKZYFt5kq9dMYP_Bw@mail.gmail.com>
-References: <20230128072737.2995881-3-apatel@ventanamicro.com>
- <mhng-0f9bdf58-5289-4db4-8fd7-38898824c44f@palmer-ri-x1c9>
- <CAK9=C2X8C4yswGhDwe1OzQXTELXQxp8=ayiFxh1aVMk4TxeDjw@mail.gmail.com>
- <Y+KS16ZNXrDU+xun@spud>
- <CAOnJCUKKRRCrKN17ytczYXVLTcMkFaZsg6QXKjPUuSk=PqL6JQ@mail.gmail.com>
- <Y+K3FyGrNUQJZao8@spud>
- <CAK9=C2VnkK5GNO4D1AWpiNcTE=OrSueN9NAyhR7rj9csuUi4Mg@mail.gmail.com>
- <Y+OcId2PZ0pi5T08@wendy>
- <CAK9=C2VeyJMHocZMQTZoULveAcH0kdH2vBKZYFt5kq9dMYP_Bw@mail.gmail.com>
-Message-ID: <Y+WCTDgtTwLB/8re@spud>
+From: Conor Dooley <conor.dooley@microchip.com>
+Date: Fri, 10 Feb 2023 09:05:42 -0000
+Subject: [PATCH v4 6/8] RISC-V: Use Zicboz in clear_page when available
+In-Reply-To: <20230210080515.lbguxxg4efxudjzg@orel>
+References: <20230209152628.129914-1-ajones@ventanamicro.com>
+ <20230209152628.129914-7-ajones@ventanamicro.com>
+ <Y+VFAUZ2smkKO0EZ@spud>
+ <20230210080515.lbguxxg4efxudjzg@orel>
+Message-ID: <Y+YIu0tqF4N3SA4d@wendy>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hey all,
-
-Just circling back to this one, since the reply from Palmer was to
-another thread with a much smaller CC list.
-
-On Wed, Feb 08, 2023 at 08:27:23PM +0530, Anup Patel wrote:
-> On Wed, Feb 8, 2023 at 6:27 PM Conor Dooley <conor.dooley@microchip.com> wrote:
-> > On Wed, Feb 08, 2023 at 09:24:28AM +0530, Anup Patel wrote:
-
-> > > The presence of S*aia in ISA string only implies that AIA extended
-> > > local interrupt CSRs are implemented by the underlying RISC-V
-> > > implementation.
-> >
-> > Would you mind linking to where this is documented & explaining in your
-> > commit message why it is okay operate on the basis of s*aia in the ISA
-> > string only mandates the presence of the CSRs and nothing more.
-> >
-> > I think when I was reading it last night, I saw some commentary in this
-> > vein in Section 1.6 of the rc2 spec. Although IIRC it noted changes in
-> > interrupt behaviour there too, so I'm not sure if that section is what you
-> > are referring to here.
-> >
-> > Perhaps this is all just a good argument for providing more information
-> > in commit messages ;)
+On Fri, Feb 10, 2023 at 09:05:15AM +0100, Andrew Jones wrote:
+> On Thu, Feb 09, 2023 at 07:09:53PM +0000, Conor Dooley wrote:
+> > On Thu, Feb 09, 2023 at 04:26:26PM +0100, Andrew Jones wrote:
+> > > Using memset() to zero a 4K page takes 563 total instructions, where
+> > > 20 are branches. clear_page(), with Zicboz and a 64 byte block size,
+> > > takes 169 total instructions, where 4 are branches and 33 are nops.
+> > > Even though the block size is a variable, thanks to alternatives, we
+> > > can still implement a Duff device without having to do any preliminary
+> > > calculations. This is achieved by taking advantage of 'vendor_id'
+> > > being used as application-specific data for alternatives, enabling us
+> > > to stop patching / unrolling when 4K bytes have been zeroed (we would
+> > > loop and continue after 4K if the page size would be larger)
+> > > 
+> > > For 4K pages, unrolling 16 times allows block sizes of 64 and 128 to
+> > > only loop a few times and larger block sizes to not loop at all. Since
+> > > cbo.zero doesn't take an offset, we also need an 'add' after each
+> > > instruction, making the loop body 112 to 160 bytes. Hopefully this
+> > > is small enough to not cause icache misses.
+> > > 
+> > > Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
+> > > Acked-by: Conor Dooley <conor.dooley@microchip.com>
+> > 
+> > > diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
+> > > index 74736b4f0624..42246bbfa532 100644
+> > > --- a/arch/riscv/kernel/cpufeature.c
+> > > +++ b/arch/riscv/kernel/cpufeature.c
+> > > @@ -280,6 +280,17 @@ void __init riscv_fill_hwcap(void)
+> > >  #ifdef CONFIG_RISCV_ALTERNATIVE
+> > >  static bool riscv_cpufeature_application_check(u32 feature, u16 data)
+> > >  {
+> > > +	switch (feature) {
+> > > +	case RISCV_ISA_EXT_ZICBOZ:
+> > > +		/*
+> > > +		 * Zicboz alternative applications provide the maximum
+> > 
+> > I like the comment, rather than this being some wizardry.
+> > I find the word "applications" to be a little unclear, perhaps, iff this
+> > series needs a respin, this would work better as "Users of the Zicboz
+> > alternative provide..." (or s/Users/Callers)?
 > 
-> Sure, I am anyway going to send v3 after rebase so I will cite the
-> Section 1.6 of AIA spec in the commit description.
+> Right, "applications" is an overloaded word. "users" is probably a better
+> choice. "callers" isn't quite right, to me, since it's a code patching
+> "application" / "use". Do you think the function name should change as
+> well?
 
-We had a nice conversation about this on during the weekly patchwork
-sync call :)
-The end result of that one was "inconclusive" and the outcome appears to
-be that we will wait until the entire spec is frozen before doing
-anything here.
-Palmer left a comment in response to another thread to that effect:
-https://lore.kernel.org/linux-riscv/mhng-474f7ecd-65b8-4cfa-8b75-e51b896cc58e at palmer-ri-x1c9/
+I was initially going to suggest that too, but then couldn't really
+think of something better. s/application_check/check_applies/ maybe?
 
-Cheers,
-Conor.
-
+> > > +		 * supported block size order, or zero when it doesn't
+> > > +		 * matter. If the current block size exceeds the maximum,
+> > > +		 * then the alternative cannot be applied.
+> > > +		 */
+> > > +		return data == 0 || riscv_cboz_block_size <= (1U << data);
+> > > +	}
+> > > +
+> > >  	return data == 0;
+> > >  }
 -------------- next part --------------
 A non-text attachment was scrubbed...
 Name: signature.asc
 Type: application/pgp-signature
 Size: 228 bytes
 Desc: not available
-URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20230209/39f3aed1/attachment-0001.sig>
+URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20230210/b89e8e8c/attachment-0001.sig>
