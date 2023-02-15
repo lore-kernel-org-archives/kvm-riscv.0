@@ -1,90 +1,118 @@
-From: Andy Chiu <andy.chiu@sifive.com>
-Date: Wed, 15 Feb 2023 22:39:36 +0800
-Subject: [PATCH -next v13 10/19] riscv: Allocate user's vector context in
- the first-use trap
-In-Reply-To: <87wn4jjt8f.fsf@all.your.base.are.belong.to.us>
-References: <20230125142056.18356-1-andy.chiu@sifive.com> <20230125142056.18356-11-andy.chiu@sifive.com>
- <875ycdy22c.fsf@all.your.base.are.belong.to.us> <82551518-7b7e-8ac9-7325-5d99d3be0406@rivosinc.com>
- <87sff8ags6.fsf@all.your.base.are.belong.to.us> <CABgGipXSsqgtTx9bCy-gt7CTBkXN--t1wHgLfCxA3=vs6y+qUw@mail.gmail.com>
- <873578faxg.fsf@all.your.base.are.belong.to.us> <5e440cfa-27c5-f216-5529-350ac19c07ff@rivosinc.com>
- <87wn4jjt8f.fsf@all.your.base.are.belong.to.us>
-Message-ID: <CABgGipVvDXdeEfaUivevQJ+dphayPbFh0X3TNCKhHCyFZakZ1Q@mail.gmail.com>
+From: Christoph Müllner <christoph.muellner@vrull.eu>
+Date: Wed, 15 Feb 2023 16:41:29 +0100
+Subject: [PATCH v2 2/7] RISC-V: Detect AIA CSRs from ISA string
+In-Reply-To: <mhng-0f9bdf58-5289-4db4-8fd7-38898824c44f@palmer-ri-x1c9>
+References: <20230128072737.2995881-3-apatel@ventanamicro.com> <mhng-0f9bdf58-5289-4db4-8fd7-38898824c44f@palmer-ri-x1c9>
+Message-ID: <CAEg0e7hrQFu+cdZy+3QO1ML9FNTPBehZwOOBnr1F-5ABYDnkGg@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Feb 15, 2023 at 3:14 PM Bj?rn T?pel <bjorn@kernel.org> wrote:
+On Fri, Feb 3, 2023 at 1:25 AM Palmer Dabbelt <palmer@dabbelt.com> wrote:
 >
-> Vineet Gupta <vineetg@rivosinc.com> writes:
+> On Fri, 27 Jan 2023 23:27:32 PST (-0800), apatel at ventanamicro.com wrote:
+> > We have two extension names for AIA ISA support: Smaia (M-mode AIA CSRs)
+> > and Ssaia (S-mode AIA CSRs).
 >
-> > On 2/14/23 08:50, Bj?rn T?pel wrote:
-> >> Andy Chiu <andy.chiu@sifive.com> writes:
-> >>
-> >>> Hey Bj?rn,
-> >>>
-> >>> On Tue, Feb 14, 2023 at 2:43 PM Bj?rn T?pel <bjorn@kernel.org> wrote:
-> >>>> So, two changes:
-> >>>>
-> >>>> 1. Disallow V-enablement if the existing altstack does not fit a V-sized
-> >>>>     frame.
-> >>> This could potentially break old programs (non-V) that load new system
-> >>> libraries (with V), If the program sets a small alt stack and takes
-> >>> the fault in some libraries that use V. However, existing
-> >>> implementation will also kill the process when the signal arrives,
-> >>> finding insufficient stack frame in such cases. I'd choose the second
-> >>> one if we only have these two options, because there is a chance that
-> >>> the signal handler may not even run.
-> >> I think we might have different views here. A process has a pre-V, a and
-> >> post-V state. Is allowing a process to enter V without the correct
-> >> preconditions a good idea? Allow to run with V turned on, but not able
-> >> to correctly handle a signal (the stack is too small)?
-> >
-> > The requirement is sane, but the issue is user experience: User trying
-> > to bring up some V code has no clue that deep in some startup code some
-> > alt stack had been setup and causing his process to be terminated on
-> > first V code.
-> >
-> >>
-> >> This was the same argument that the Intel folks had when enabling
-> >> AMX. Sure, AMX requires *explicit* enablement, but same rules should
-> >> apply, no?
-> >>
-> >>>> 2. Sanitize altstack changes when V is enabled.
-> >>> Yes, I'd like to have this. But it may be tricky when it comes to
-> >>> deciding whether V is enabled, due to the first-use trap. If V is
-> >>> commonly used in system libraries then it is likely that V will be
-> >>> enabled before an user set an altstack. Sanitizing this case would be
-> >>> easy and straightforward.
-> >
-> > Good. Lets have this in v14 as it seems reasonably easy to implement.
-> >
-> >>> But what if the user sets an altstack before
-> >>> enabling V in the first-use trap? This could happen on a statically
-> >>> program that has hand-written V routines. This takes us to the 1st
-> >>> question above, should we fail the user program immediately if the
-> >>> altstack is set too small?
-> >
-> > Please lets not cross threads. We discussed this already at top. While
-> > ideally required, seems tricky so lets start with post-V alt stack check.
-> >
-> >> For me it's obvious to fail (always) "if the altstack is too small to
-> >> enable V", because it allows to execute V without proper preconditions.
-> >>
-> >> Personally, I prefer a stricter model. Only enter V if you can, and
-> >> after entering it disallow changing the altstack.
-> >>
-> >> Then again, this is *my* opinion and concern. What do other people
-> >> think? I don't want to stall the series.
-> >
-> > I concur that the alt stack checking requirements are sensible in the
-> > long run. We can add the obvious check for post-V case and see if there
-> > is a sane way to flag pre-V case to.
->
-> Reasonable. @Andy does this resonate with you as well?
-Yes, it makes sense to me. I am making this happen on v14 :)
+> This has pretty much the same problem that we had with the other
+> AIA-related ISA string patches, where there's that ambiguity with the
+> non-ratified chapters.  IIRC when this came up in GCC the rough idea was
+> to try and document that we're going to interpret the standard ISA
+> strings that way, but now that we're doing custom ISA extensions it
+> seems saner to just define on here that removes the ambiguity.
 
-Thanks,
-Andy
+
+To avoid the impression that I did not work on that, here is the v2
+from November,
+that attempts to document this:
+  https://gcc.gnu.org/pipermail/gcc-patches/2022-November/607326.html
+
+My proposed text was:
++Note, that AIA support (@samp{Smaia} and @samp{Ssaia}) is based on an AIA
++specification, which is frozen but contains draft chapters ("Duo-PLIC" and
++"IOMMU Support").
+
+Btw, I did not get any feedback on that patch.
+
+I also tried to address this on spec level (the PR has been linked) and raised
+that to tech-aia (the conversation has been linked).
+
+Another thing that I want to highlight, since it was discussed a lot recently
+(e.g. just a few minutes ago in tech-chairs).
+There is a chance of a last-minute spec change of AIA:
+  https://github.com/riscv/riscv-aia/pull/37
+
+BR
+Christoph
+
+
+
+>
+>
+> I just sent
+> <https://lore.kernel.org/r/20230203001201.14770-1-palmer@rivosinc.com/>
+> which documents that.
+>
+> > We extend the ISA string parsing to detect Smaia and Ssaia extensions.
+> >
+> > Signed-off-by: Anup Patel <apatel@ventanamicro.com>
+> > Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+> > ---
+> >  arch/riscv/include/asm/hwcap.h | 2 ++
+> >  arch/riscv/kernel/cpu.c        | 2 ++
+> >  arch/riscv/kernel/cpufeature.c | 2 ++
+> >  3 files changed, 6 insertions(+)
+> >
+> > diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
+> > index 86328e3acb02..341ef30a3718 100644
+> > --- a/arch/riscv/include/asm/hwcap.h
+> > +++ b/arch/riscv/include/asm/hwcap.h
+> > @@ -59,6 +59,8 @@ enum riscv_isa_ext_id {
+> >       RISCV_ISA_EXT_ZIHINTPAUSE,
+> >       RISCV_ISA_EXT_SSTC,
+> >       RISCV_ISA_EXT_SVINVAL,
+> > +     RISCV_ISA_EXT_SMAIA,
+> > +     RISCV_ISA_EXT_SSAIA,
+> >       RISCV_ISA_EXT_ID_MAX
+> >  };
+> >  static_assert(RISCV_ISA_EXT_ID_MAX <= RISCV_ISA_EXT_MAX);
+> > diff --git a/arch/riscv/kernel/cpu.c b/arch/riscv/kernel/cpu.c
+> > index 1b9a5a66e55a..a215ec929160 100644
+> > --- a/arch/riscv/kernel/cpu.c
+> > +++ b/arch/riscv/kernel/cpu.c
+> > @@ -162,6 +162,8 @@ arch_initcall(riscv_cpuinfo_init);
+> >   *    extensions by an underscore.
+> >   */
+> >  static struct riscv_isa_ext_data isa_ext_arr[] = {
+> > +     __RISCV_ISA_EXT_DATA(smaia, RISCV_ISA_EXT_SMAIA),
+> > +     __RISCV_ISA_EXT_DATA(ssaia, RISCV_ISA_EXT_SSAIA),
+>
+> This will conflict with that ISA string refactoring I just merged.  It
+> should be a pretty mechanical merge conflict, but if you want we can do
+> a shared tag with the first few patches and I can handle the merge
+> conflict locally.
+>
+> >       __RISCV_ISA_EXT_DATA(sscofpmf, RISCV_ISA_EXT_SSCOFPMF),
+> >       __RISCV_ISA_EXT_DATA(sstc, RISCV_ISA_EXT_SSTC),
+> >       __RISCV_ISA_EXT_DATA(svinval, RISCV_ISA_EXT_SVINVAL),
+> > diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
+> > index 93e45560af30..3c5b51f519d5 100644
+> > --- a/arch/riscv/kernel/cpufeature.c
+> > +++ b/arch/riscv/kernel/cpufeature.c
+> > @@ -228,6 +228,8 @@ void __init riscv_fill_hwcap(void)
+> >                               SET_ISA_EXT_MAP("zihintpause", RISCV_ISA_EXT_ZIHINTPAUSE);
+> >                               SET_ISA_EXT_MAP("sstc", RISCV_ISA_EXT_SSTC);
+> >                               SET_ISA_EXT_MAP("svinval", RISCV_ISA_EXT_SVINVAL);
+> > +                             SET_ISA_EXT_MAP("smaia", RISCV_ISA_EXT_SMAIA);
+> > +                             SET_ISA_EXT_MAP("ssaia", RISCV_ISA_EXT_SSAIA);
+> >                       }
+> >  #undef SET_ISA_EXT_MAP
+> >               }
+>
+> _______________________________________________
+> linux-riscv mailing list
+> linux-riscv at lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-riscv
 
