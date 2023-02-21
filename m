@@ -1,89 +1,59 @@
-From: Conor Dooley <conor@kernel.org>
-Date: Sun, 12 Feb 2023 20:40:03 -0000
-Subject: [PATCH v5 00/13] riscv: improve boot time isa extensions handling
-In-Reply-To: <89c99d4a-8f0a-4e7e-9f93-2dc9f881ab9f@roeck-us.net>
-References: <20230212154333.GA3760469@roeck-us.net>
- <Y+kM//nuDv29Z9qJ@spud>
- <Y+kU9nDBTttZRLLq@spud>
- <Y+kcgcncQO/2DNLo@spud>
- <Y+kqi8bQE+8hLfOF@spud>
- <a059a815-dcb0-c575-b5a4-f9433e268e9b@roeck-us.net>
- <Y+kt04c1iRlzUNLA@spud>
- <48d2ac96-abdd-23bc-b167-08dc2c1a1dbe@roeck-us.net>
- <Y+kzy1y3Z3j3Ohs9@spud>
- <89c99d4a-8f0a-4e7e-9f93-2dc9f881ab9f@roeck-us.net>
-Message-ID: <Y+lOmmdakfHH6ENr@spud>
+From: Conor Dooley <conor.dooley@microchip.com>
+Date: Tue, 21 Feb 2023 10:41:14 -0000
+Subject: [PATCH v2 2/7] RISC-V: Detect AIA CSRs from ISA string
+In-Reply-To: <CAEg0e7hRjMSgYZbPTQztbQ3bGZf-r8wAfCK5ZnDXOcx27HcTCA@mail.gmail.com>
+References: <20230128072737.2995881-3-apatel@ventanamicro.com>
+ <mhng-0f9bdf58-5289-4db4-8fd7-38898824c44f@palmer-ri-x1c9>
+ <CAEg0e7hrQFu+cdZy+3QO1ML9FNTPBehZwOOBnr1F-5ABYDnkGg@mail.gmail.com>
+ <CAEg0e7hRjMSgYZbPTQztbQ3bGZf-r8wAfCK5ZnDXOcx27HcTCA@mail.gmail.com>
+Message-ID: <Y/Sfpb2c/LS0LCiA@wendy>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sun, Feb 12, 2023 at 12:27:10PM -0800, Guenter Roeck wrote:
-> On 2/12/23 10:45, Conor Dooley wrote:
-> ...
-> > 
-> > > However, I still see that the patch series
-> > > results in boot hangs with the sifive_u qemu emulation, where
-> > > the log ends with "Oops - illegal instruction". Is that problem
-> > > being addressed as well ?
-> > 
-> > Hmm, if it died on the last commit in this series, then I am not sure.
-> > If you meant with riscv/for-next or linux-next that's fixed by a patch
-> > from Samuel:
-> > https://patchwork.kernel.org/project/linux-riscv/patch/20230212021534.59121-3-samuel at sholland.org/
-> > 
-> 
-> It failed after the merge, so it looks like it may have been merge damage.
-> 
-> Anyway, I applied
-> 
-> RISC-V: Don't check text_mutex during stop_machine
+Hey Christoph,
 
-That being:
-https://lore.kernel.org/all/20220322022331.32136-1-palmer at rivosinc.com/
-Which handles the lockdep assertion during stop_machine...
-
-> riscv: Fix early alternative patching
-> riscv: Fix Zbb alternative IDs
+On Tue, Feb 21, 2023 at 08:12:58AM +0100, Christoph M?llner wrote:
+> Hi all,
 > 
-> and the sifive_u emulation no longer crashes. However, I still get
-> 
-> [    0.000000] ------------[ cut here ]------------
-> [    0.000000] WARNING: CPU: 0 PID: 0 at arch/riscv/kernel/patch.c:71 patch_insn_write+0x222/0x2f6
+> The RISC-V Architectural Review Committee has discussed the concerns
+> regarding the non-ratified chapters in the AIA specification.
 
-...but doesn't prevent the early "spam" of assertion failures from the
-code patching for alternatives. I sent a patch to take the lock during
-the alternative patching which should get rid of them for you. It did
-for me at least!
-https://lore.kernel.org/all/20230212194735.491785-1-conor at kernel.org
+Thanks for the update!
 
-> repeated several times.
-> 
-> I then also tested
-> 
-> riscv: patch: Fixup lockdep warning in stop_machine
+> Here is the relevant quote from the meeting minutes:
+> """
+> Although the Advanced Interrupt Architecture (AIA) has already passed
+> Architecture Review (with a minor edit still pending), the committee
+> has some suggestions about its final steps to ratification, to avoid
+> the AIA document having a mixture of ratified and non-ratified content:
 
-This one just deletes the lockdep check, so I would expect it to remove
-the complaints.
+> - The AIA document's remaining draft chapter on the Duo-PLIC, which is
+>   not currently on a path to ratification, can be removed to a separate
+>   document.
 
-> riscv: Fix early alternative patching
-> riscv: Fix Zbb alternative IDs
-> 
-> which works fine (no warning backtrace) for sifive_u, but gives me
-> 
-> WARNING: CPU: 0 PID: 0 at kernel/trace/trace_events.c:433 trace_event_raw_init+0xde/0x642
+That sounds promising...
 
-Hmm, do you have the full splat for this one handy?
+> - Ratification of the full AIA (without Duo-PLIC) can be postponed to
+>   coincide with ratification of the IOMMU specification, given that
+>   the latter is now expected in a reasonable time, and the AIA's last
+>   chapter concerning IOMMUs is already scheduled to go through public
+>   review and be ratified only together with the IOMMU specification.
+> """
 
-> and a whole lot of
-> 
-> event btrfs_clear_extent_bit has unsafe dereference of argument 1
-> 
-> and similar messages when running the "virt" emulation. That was there before,
-> but drowned in the noise. Ok, guess I'll need another round of bisect.
+...and so does this. AIA stuff's acceptability only depending on the
+IOMMU spec's freeze (and thus Chapter 9's) seems like a vast improvement
+on the status quo to me!
 
-Thanks for all of your testing :)
+> The full meeting minutes can be found here:
+>   https://lists.riscv.org/g/tech-chairs/message/1381
+
+This link is non functional unfortunately :/
+
+Cheers,
+Conor.
 
 -------------- next part --------------
 A non-text attachment was scrubbed...
@@ -91,4 +61,4 @@ Name: signature.asc
 Type: application/pgp-signature
 Size: 228 bytes
 Desc: not available
-URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20230212/de94317e/attachment-0001.sig>
+URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20230221/5b60c2f5/attachment-0001.sig>
