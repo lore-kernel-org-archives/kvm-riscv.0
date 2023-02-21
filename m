@@ -1,158 +1,213 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Tue, 21 Feb 2023 20:09:12 +0100
-Subject: [PATCH v5 4/8] RISC-V: Add Zicboz detection and block size parsing
+Date: Tue, 21 Feb 2023 20:09:14 +0100
+Subject: [PATCH v5 6/8] RISC-V: Use Zicboz in clear_page when available
 In-Reply-To: <20230221190916.572454-1-ajones@ventanamicro.com>
 References: <20230221190916.572454-1-ajones@ventanamicro.com>
-Message-ID: <20230221190916.572454-5-ajones@ventanamicro.com>
+Message-ID: <20230221190916.572454-7-ajones@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Parse "riscv,cboz-block-size" from the DT by piggybacking on Zicbom's
-riscv_init_cbom_blocksize(). Additionally check the DT for the presence
-of the "zicboz" extension and, when it's present, validate the parsed
-cboz block size as we do Zicbom's cbom block size with
-riscv_isa_extension_check().
+Using memset() to zero a 4K page takes 563 total instructions, where
+20 are branches. clear_page(), with Zicboz and a 64 byte block size,
+takes 169 total instructions, where 4 are branches and 33 are nops.
+Even though the block size is a variable, thanks to alternatives, we
+can still implement a Duff device without having to do any preliminary
+calculations. This is achieved by using the alternatives' cpufeature
+value (the upper 16 bits of patch_id). The value used is the maximum
+zicboz block size order accepted at the patch site. This enables us
+to stop patching / unrolling when 4K bytes have been zeroed (we would
+loop and continue after 4K if the page size would be larger)
+
+For 4K pages, unrolling 16 times allows block sizes of 64 and 128 to
+only loop a few times and larger block sizes to not loop at all. Since
+cbo.zero doesn't take an offset, we also need an 'add' after each
+instruction, making the loop body 112 to 160 bytes. Hopefully this
+is small enough to not cause icache misses.
 
 Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
-Reviewed-by: Heiko Stuebner <heiko@sntech.de>
-Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
+Acked-by: Conor Dooley <conor.dooley@microchip.com>
 ---
- arch/riscv/include/asm/cacheflush.h |  3 ++-
- arch/riscv/include/asm/hwcap.h      |  1 +
- arch/riscv/kernel/cpu.c             |  1 +
- arch/riscv/kernel/cpufeature.c      | 10 ++++++++++
- arch/riscv/kernel/setup.c           |  2 +-
- arch/riscv/mm/cacheflush.c          | 23 +++++++++++++++--------
- 6 files changed, 30 insertions(+), 10 deletions(-)
+ arch/riscv/Kconfig                | 13 ++++++
+ arch/riscv/include/asm/insn-def.h |  4 ++
+ arch/riscv/include/asm/page.h     |  6 ++-
+ arch/riscv/kernel/cpufeature.c    | 11 +++++
+ arch/riscv/lib/Makefile           |  1 +
+ arch/riscv/lib/clear_page.S       | 73 +++++++++++++++++++++++++++++++
+ 6 files changed, 107 insertions(+), 1 deletion(-)
+ create mode 100644 arch/riscv/lib/clear_page.S
 
-diff --git a/arch/riscv/include/asm/cacheflush.h b/arch/riscv/include/asm/cacheflush.h
-index 03e3b95ae6da..8091b8bf4883 100644
---- a/arch/riscv/include/asm/cacheflush.h
-+++ b/arch/riscv/include/asm/cacheflush.h
-@@ -50,7 +50,8 @@ void flush_icache_mm(struct mm_struct *mm, bool local);
- #endif /* CONFIG_SMP */
+diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
+index 0c494c36e911..c9006bcf912d 100644
+--- a/arch/riscv/Kconfig
++++ b/arch/riscv/Kconfig
+@@ -456,6 +456,19 @@ config RISCV_ISA_ZICBOM
  
- extern unsigned int riscv_cbom_block_size;
--void riscv_init_cbom_blocksize(void);
-+extern unsigned int riscv_cboz_block_size;
-+void riscv_init_cbo_blocksizes(void);
+ 	   If you don't know what to do here, say Y.
  
- #ifdef CONFIG_RISCV_DMA_NONCOHERENT
- void riscv_noncoherent_supported(void);
-diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
-index ee9c80fe0062..bd025e918a08 100644
---- a/arch/riscv/include/asm/hwcap.h
-+++ b/arch/riscv/include/asm/hwcap.h
-@@ -47,6 +47,7 @@
- #define RISCV_ISA_EXT_ZBB              30
- #define RISCV_ISA_EXT_ZICBOM           31
- #define RISCV_ISA_EXT_ZIHINTPAUSE      32
-+#define RISCV_ISA_EXT_ZICBOZ           33
++config RISCV_ISA_ZICBOZ
++	bool "Zicboz extension support for faster zeroing of memory"
++	depends on !XIP_KERNEL && MMU
++	select RISCV_ALTERNATIVE
++	default y
++	help
++	   Enable the use of the ZICBOZ extension (cbo.zero instruction)
++	   when available.
++
++	   The Zicboz extension is used for faster zeroing of memory.
++
++	   If you don't know what to do here, say Y.
++
+ config TOOLCHAIN_HAS_ZIHINTPAUSE
+ 	bool
+ 	default y
+diff --git a/arch/riscv/include/asm/insn-def.h b/arch/riscv/include/asm/insn-def.h
+index e01ab51f50d2..6960beb75f32 100644
+--- a/arch/riscv/include/asm/insn-def.h
++++ b/arch/riscv/include/asm/insn-def.h
+@@ -192,4 +192,8 @@
+ 	INSN_I(OPCODE_MISC_MEM, FUNC3(2), __RD(0),		\
+ 	       RS1(base), SIMM12(2))
+ 
++#define CBO_zero(base)						\
++	INSN_I(OPCODE_MISC_MEM, FUNC3(2), __RD(0),		\
++	       RS1(base), SIMM12(4))
++
+ #endif /* __ASM_INSN_DEF_H */
+diff --git a/arch/riscv/include/asm/page.h b/arch/riscv/include/asm/page.h
+index 9f432c1b5289..ccd168fe29d2 100644
+--- a/arch/riscv/include/asm/page.h
++++ b/arch/riscv/include/asm/page.h
+@@ -49,10 +49,14 @@
  
  #ifndef __ASSEMBLY__
  
-diff --git a/arch/riscv/kernel/cpu.c b/arch/riscv/kernel/cpu.c
-index 420228e219f7..7a3065544dcb 100644
---- a/arch/riscv/kernel/cpu.c
-+++ b/arch/riscv/kernel/cpu.c
-@@ -187,6 +187,7 @@ arch_initcall(riscv_cpuinfo_init);
- static struct riscv_isa_ext_data isa_ext_arr[] = {
- 	__RISCV_ISA_EXT_DATA(zbb, RISCV_ISA_EXT_ZBB),
- 	__RISCV_ISA_EXT_DATA(zicbom, RISCV_ISA_EXT_ZICBOM),
-+	__RISCV_ISA_EXT_DATA(zicboz, RISCV_ISA_EXT_ZICBOZ),
- 	__RISCV_ISA_EXT_DATA(zihintpause, RISCV_ISA_EXT_ZIHINTPAUSE),
- 	__RISCV_ISA_EXT_DATA(sscofpmf, RISCV_ISA_EXT_SSCOFPMF),
- 	__RISCV_ISA_EXT_DATA(sstc, RISCV_ISA_EXT_SSTC),
++#ifdef CONFIG_RISCV_ISA_ZICBOZ
++void clear_page(void *page);
++#else
+ #define clear_page(pgaddr)			memset((pgaddr), 0, PAGE_SIZE)
++#endif
+ #define copy_page(to, from)			memcpy((to), (from), PAGE_SIZE)
+ 
+-#define clear_user_page(pgaddr, vaddr, page)	memset((pgaddr), 0, PAGE_SIZE)
++#define clear_user_page(pgaddr, vaddr, page)	clear_page(pgaddr)
+ #define copy_user_page(vto, vfrom, vaddr, topg) \
+ 			memcpy((vto), (vfrom), PAGE_SIZE)
+ 
 diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
-index 151e1a715db9..6102b6bb5db3 100644
+index 0594989ead63..4a496552b812 100644
 --- a/arch/riscv/kernel/cpufeature.c
 +++ b/arch/riscv/kernel/cpufeature.c
-@@ -73,6 +73,15 @@ static bool riscv_isa_extension_check(int id)
- 			return false;
- 		}
+@@ -292,6 +292,17 @@ static bool riscv_cpufeature_patch_check(u16 id, u16 value)
+ 	if (!value)
  		return true;
+ 
++	switch (id) {
 +	case RISCV_ISA_EXT_ZICBOZ:
-+		if (!riscv_cboz_block_size) {
-+			pr_err("Zicboz detected in ISA string, but no cboz-block-size found\n");
-+			return false;
-+		} else if (!is_power_of_2(riscv_cboz_block_size)) {
-+			pr_err("cboz-block-size present, but is not a power-of-2\n");
-+			return false;
-+		}
-+		return true;
- 	}
- 
- 	return true;
-@@ -221,6 +230,7 @@ void __init riscv_fill_hwcap(void)
- 				SET_ISA_EXT_MAP("svpbmt", RISCV_ISA_EXT_SVPBMT);
- 				SET_ISA_EXT_MAP("zbb", RISCV_ISA_EXT_ZBB);
- 				SET_ISA_EXT_MAP("zicbom", RISCV_ISA_EXT_ZICBOM);
-+				SET_ISA_EXT_MAP("zicboz", RISCV_ISA_EXT_ZICBOZ);
- 				SET_ISA_EXT_MAP("zihintpause", RISCV_ISA_EXT_ZIHINTPAUSE);
- 			}
- #undef SET_ISA_EXT_MAP
-diff --git a/arch/riscv/kernel/setup.c b/arch/riscv/kernel/setup.c
-index 376d2827e736..5d3184cbf518 100644
---- a/arch/riscv/kernel/setup.c
-+++ b/arch/riscv/kernel/setup.c
-@@ -297,7 +297,7 @@ void __init setup_arch(char **cmdline_p)
- 	setup_smp();
- #endif
- 
--	riscv_init_cbom_blocksize();
-+	riscv_init_cbo_blocksizes();
- 	riscv_fill_hwcap();
- 	apply_boot_alternatives();
- 	if (IS_ENABLED(CONFIG_RISCV_ISA_ZICBOM) &&
-diff --git a/arch/riscv/mm/cacheflush.c b/arch/riscv/mm/cacheflush.c
-index eaf23fc14966..ba4832bb949b 100644
---- a/arch/riscv/mm/cacheflush.c
-+++ b/arch/riscv/mm/cacheflush.c
-@@ -98,6 +98,9 @@ void flush_icache_pte(pte_t pte)
- unsigned int riscv_cbom_block_size;
- EXPORT_SYMBOL_GPL(riscv_cbom_block_size);
- 
-+unsigned int riscv_cboz_block_size;
-+EXPORT_SYMBOL_GPL(riscv_cboz_block_size);
++		/*
++		 * Zicboz alternative applications provide the maximum
++		 * supported block size order, or zero when it doesn't
++		 * matter. If the current block size exceeds the maximum,
++		 * then the alternative cannot be applied.
++		 */
++		return riscv_cboz_block_size <= (1U << value);
++	}
 +
- static void cbo_get_block_size(struct device_node *node,
- 			       const char *name, u32 *block_size,
- 			       unsigned long *first_hartid)
-@@ -120,19 +123,23 @@ static void cbo_get_block_size(struct device_node *node,
- 	}
+ 	return false;
  }
  
--void riscv_init_cbom_blocksize(void)
-+void riscv_init_cbo_blocksizes(void)
- {
-+	unsigned long cbom_hartid, cboz_hartid;
-+	u32 cbom_block_size = 0, cboz_block_size = 0;
- 	struct device_node *node;
--	unsigned long cbom_hartid;
--	u32 probed_block_size;
+diff --git a/arch/riscv/lib/Makefile b/arch/riscv/lib/Makefile
+index 6c74b0bedd60..26cb2502ecf8 100644
+--- a/arch/riscv/lib/Makefile
++++ b/arch/riscv/lib/Makefile
+@@ -8,5 +8,6 @@ lib-y			+= strlen.o
+ lib-y			+= strncmp.o
+ lib-$(CONFIG_MMU)	+= uaccess.o
+ lib-$(CONFIG_64BIT)	+= tishift.o
++lib-$(CONFIG_RISCV_ISA_ZICBOZ)	+= clear_page.o
  
--	probed_block_size = 0;
- 	for_each_of_cpu_node(node) {
--		/* set block-size for cbom extension if available */
-+		/* set block-size for cbom and/or cboz extension if available */
- 		cbo_get_block_size(node, "riscv,cbom-block-size",
--				   &probed_block_size, &cbom_hartid);
-+				   &cbom_block_size, &cbom_hartid);
-+		cbo_get_block_size(node, "riscv,cboz-block-size",
-+				   &cboz_block_size, &cboz_hartid);
- 	}
- 
--	if (probed_block_size)
--		riscv_cbom_block_size = probed_block_size;
-+	if (cbom_block_size)
-+		riscv_cbom_block_size = cbom_block_size;
+ obj-$(CONFIG_FUNCTION_ERROR_INJECTION) += error-inject.o
+diff --git a/arch/riscv/lib/clear_page.S b/arch/riscv/lib/clear_page.S
+new file mode 100644
+index 000000000000..7c7fa45b5ab5
+--- /dev/null
++++ b/arch/riscv/lib/clear_page.S
+@@ -0,0 +1,73 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/*
++ * Copyright (c) 2023 Ventana Micro Systems Inc.
++ */
 +
-+	if (cboz_block_size)
-+		riscv_cboz_block_size = cboz_block_size;
- }
++#include <linux/linkage.h>
++#include <asm/asm.h>
++#include <asm/alternative-macros.h>
++#include <asm/hwcap.h>
++#include <asm/insn-def.h>
++#include <asm/page.h>
++
++#define CBOZ_ALT(order, old, new)				\
++	ALTERNATIVE(old, new, 0,				\
++		    ((order) << 16) | RISCV_ISA_EXT_ZICBOZ,	\
++		    CONFIG_RISCV_ISA_ZICBOZ)
++
++/* void clear_page(void *page) */
++ENTRY(__clear_page)
++WEAK(clear_page)
++	li	a2, PAGE_SIZE
++
++	/*
++	 * If Zicboz isn't present, or somehow has a block
++	 * size larger than 4K, then fallback to memset.
++	 */
++	CBOZ_ALT(12, "j .Lno_zicboz", "nop")
++
++	lw	a1, riscv_cboz_block_size
++	add	a2, a0, a2
++.Lzero_loop:
++	CBO_zero(a0)
++	add	a0, a0, a1
++	CBOZ_ALT(11, "bltu a0, a2, .Lzero_loop; ret", "nop; nop")
++	CBO_zero(a0)
++	add	a0, a0, a1
++	CBOZ_ALT(10, "bltu a0, a2, .Lzero_loop; ret", "nop; nop")
++	CBO_zero(a0)
++	add	a0, a0, a1
++	CBO_zero(a0)
++	add	a0, a0, a1
++	CBOZ_ALT(9, "bltu a0, a2, .Lzero_loop; ret", "nop; nop")
++	CBO_zero(a0)
++	add	a0, a0, a1
++	CBO_zero(a0)
++	add	a0, a0, a1
++	CBO_zero(a0)
++	add	a0, a0, a1
++	CBO_zero(a0)
++	add	a0, a0, a1
++	CBOZ_ALT(8, "bltu a0, a2, .Lzero_loop; ret", "nop; nop")
++	CBO_zero(a0)
++	add	a0, a0, a1
++	CBO_zero(a0)
++	add	a0, a0, a1
++	CBO_zero(a0)
++	add	a0, a0, a1
++	CBO_zero(a0)
++	add	a0, a0, a1
++	CBO_zero(a0)
++	add	a0, a0, a1
++	CBO_zero(a0)
++	add	a0, a0, a1
++	CBO_zero(a0)
++	add	a0, a0, a1
++	CBO_zero(a0)
++	add	a0, a0, a1
++	bltu	a0, a2, .Lzero_loop
++	ret
++.Lno_zicboz:
++	li	a1, 0
++	tail	__memset
++END(__clear_page)
 -- 
 2.39.1
 
