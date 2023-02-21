@@ -1,42 +1,90 @@
-From: Christoph Müllner <christoph.muellner@vrull.eu>
-Date: Tue, 21 Feb 2023 12:03:45 +0100
-Subject: [PATCH v2 2/7] RISC-V: Detect AIA CSRs from ISA string
-In-Reply-To: <Y/SkES28TNBz02wM@wendy>
-References: <20230128072737.2995881-3-apatel@ventanamicro.com>
- <mhng-0f9bdf58-5289-4db4-8fd7-38898824c44f@palmer-ri-x1c9>
- <CAEg0e7hrQFu+cdZy+3QO1ML9FNTPBehZwOOBnr1F-5ABYDnkGg@mail.gmail.com>
- <CAEg0e7hRjMSgYZbPTQztbQ3bGZf-r8wAfCK5ZnDXOcx27HcTCA@mail.gmail.com>
- <Y/Sfpb2c/LS0LCiA@wendy> <F80EBB4C-29C4-472D-B213-EFD220EF9B1F@jrtc27.com> <Y/SkES28TNBz02wM@wendy>
-Message-ID: <CAEg0e7i3=Zg5pxG4HCEfFkzpot5-u6yHoTSFKPBuCGU+djZ5uw@mail.gmail.com>
+From: Andrew Jones <ajones@ventanamicro.com>
+Date: Tue, 21 Feb 2023 20:09:10 +0100
+Subject: [PATCH v5 2/8] RISC-V: Factor out body of riscv_init_cbom_blocksize loop
+In-Reply-To: <20230221190916.572454-1-ajones@ventanamicro.com>
+References: <20230221190916.572454-1-ajones@ventanamicro.com>
+Message-ID: <20230221190916.572454-3-ajones@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Feb 21, 2023 at 12:00 PM Conor Dooley
-<conor.dooley@microchip.com> wrote:
->
-> On Tue, Feb 21, 2023 at 10:51:13AM +0000, Jessica Clarke wrote:
-> > On 21 Feb 2023, at 10:40, Conor Dooley <conor.dooley@microchip.com> wrote:
-> > > On Tue, Feb 21, 2023 at 08:12:58AM +0100, Christoph M?llner wrote:
-> > >> The full meeting minutes can be found here:
-> > >>  https://lists.riscv.org/g/tech-chairs/message/1381
-> > >
-> > > This link is non functional unfortunately :/
-> >
-> > tech-chairs is private, for (co-)chairs only... not sure why it went
-> > there rather than tech-privileged.
->
-> Yah, that's what I was getting at.. This is a conversation on a public
-> ML, so it'd be annoying enough for some readers if it was gated around
-> RVI membership, but gating on membership of the inner circle makes it
-> kinda useless!
+Refactor riscv_init_cbom_blocksize() to prepare for it to be used
+for both cbom block size and cboz block size.
 
-The mail was forwarded there as well (and to tech-unprivileged):
-  https://lists.riscv.org/g/tech-privileged/message/1294
-  https://lists.riscv.org/g/tech-unprivileged/message/430
+Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
+Reviewed-by: Heiko Stuebner <heiko@sntech.de>
+Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
+---
+ arch/riscv/mm/cacheflush.c | 45 +++++++++++++++++++++-----------------
+ 1 file changed, 25 insertions(+), 20 deletions(-)
 
-BR
-Christoph
+diff --git a/arch/riscv/mm/cacheflush.c b/arch/riscv/mm/cacheflush.c
+index 3cc07ed45aeb..eaf23fc14966 100644
+--- a/arch/riscv/mm/cacheflush.c
++++ b/arch/riscv/mm/cacheflush.c
+@@ -98,34 +98,39 @@ void flush_icache_pte(pte_t pte)
+ unsigned int riscv_cbom_block_size;
+ EXPORT_SYMBOL_GPL(riscv_cbom_block_size);
+ 
++static void cbo_get_block_size(struct device_node *node,
++			       const char *name, u32 *block_size,
++			       unsigned long *first_hartid)
++{
++	unsigned long hartid;
++	u32 val;
++
++	if (riscv_of_processor_hartid(node, &hartid))
++		return;
++
++	if (of_property_read_u32(node, name, &val))
++		return;
++
++	if (!*block_size) {
++		*block_size = val;
++		*first_hartid = hartid;
++	} else if (*block_size != val) {
++		pr_warn("%s mismatched between harts %lu and %lu\n",
++			name, *first_hartid, hartid);
++	}
++}
++
+ void riscv_init_cbom_blocksize(void)
+ {
+ 	struct device_node *node;
+ 	unsigned long cbom_hartid;
+-	u32 val, probed_block_size;
+-	int ret;
++	u32 probed_block_size;
+ 
+ 	probed_block_size = 0;
+ 	for_each_of_cpu_node(node) {
+-		unsigned long hartid;
+-
+-		ret = riscv_of_processor_hartid(node, &hartid);
+-		if (ret)
+-			continue;
+-
+ 		/* set block-size for cbom extension if available */
+-		ret = of_property_read_u32(node, "riscv,cbom-block-size", &val);
+-		if (ret)
+-			continue;
+-
+-		if (!probed_block_size) {
+-			probed_block_size = val;
+-			cbom_hartid = hartid;
+-		} else {
+-			if (probed_block_size != val)
+-				pr_warn("cbom-block-size mismatched between harts %lu and %lu\n",
+-					cbom_hartid, hartid);
+-		}
++		cbo_get_block_size(node, "riscv,cbom-block-size",
++				   &probed_block_size, &cbom_hartid);
+ 	}
+ 
+ 	if (probed_block_size)
+-- 
+2.39.1
+
 
