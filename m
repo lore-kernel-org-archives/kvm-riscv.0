@@ -1,54 +1,141 @@
-From: Conor Dooley <conor.dooley@microchip.com>
-Date: Tue, 21 Feb 2023 11:22:45 -0000
-Subject: [PATCH v2 2/7] RISC-V: Detect AIA CSRs from ISA string
-In-Reply-To: <CAEg0e7i3=Zg5pxG4HCEfFkzpot5-u6yHoTSFKPBuCGU+djZ5uw@mail.gmail.com>
-References: <20230128072737.2995881-3-apatel@ventanamicro.com>
- <mhng-0f9bdf58-5289-4db4-8fd7-38898824c44f@palmer-ri-x1c9>
- <CAEg0e7hrQFu+cdZy+3QO1ML9FNTPBehZwOOBnr1F-5ABYDnkGg@mail.gmail.com>
- <CAEg0e7hRjMSgYZbPTQztbQ3bGZf-r8wAfCK5ZnDXOcx27HcTCA@mail.gmail.com>
- <Y/Sfpb2c/LS0LCiA@wendy>
- <F80EBB4C-29C4-472D-B213-EFD220EF9B1F@jrtc27.com>
- <Y/SkES28TNBz02wM@wendy>
- <CAEg0e7i3=Zg5pxG4HCEfFkzpot5-u6yHoTSFKPBuCGU+djZ5uw@mail.gmail.com>
-Message-ID: <Y/SpZHRdUXCiV4KT@wendy>
+From: Conor Dooley <conor@kernel.org>
+Date: Wed, 22 Feb 2023 17:28:04 -0000
+Subject: [PATCH v5 5/8] riscv: cpufeatures: Put the upper 16 bits of
+ patch ID to work
+In-Reply-To: <20230221190916.572454-6-ajones@ventanamicro.com>
+References: <20230221190916.572454-1-ajones@ventanamicro.com>
+ <20230221190916.572454-6-ajones@ventanamicro.com>
+Message-ID: <Y/ZQk0ifXPEnenoe@spud>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Feb 21, 2023 at 12:03:45PM +0100, Christoph M?llner wrote:
-> On Tue, Feb 21, 2023 at 12:00 PM Conor Dooley
-> <conor.dooley@microchip.com> wrote:
-> >
-> > On Tue, Feb 21, 2023 at 10:51:13AM +0000, Jessica Clarke wrote:
-> > > On 21 Feb 2023, at 10:40, Conor Dooley <conor.dooley@microchip.com> wrote:
-> > > > On Tue, Feb 21, 2023 at 08:12:58AM +0100, Christoph M?llner wrote:
-> > > >> The full meeting minutes can be found here:
-> > > >>  https://lists.riscv.org/g/tech-chairs/message/1381
-> > > >
-> > > > This link is non functional unfortunately :/
-> > >
-> > > tech-chairs is private, for (co-)chairs only... not sure why it went
-> > > there rather than tech-privileged.
-> >
-> > Yah, that's what I was getting at.. This is a conversation on a public
-> > ML, so it'd be annoying enough for some readers if it was gated around
-> > RVI membership, but gating on membership of the inner circle makes it
-> > kinda useless!
+On Tue, Feb 21, 2023 at 08:09:13PM +0100, Andrew Jones wrote:
+> cpufeature IDs are consecutive integers starting at 26, so a 32-bit
+> patch ID allows an aircraft carrier load of feature IDs. Repurposing
+> the upper 16 bits still leaves a boat load of feature IDs and gains
+> 16 bits which may be used to control patching on a per patch-site
+> basis.
 > 
-> The mail was forwarded there as well (and to tech-unprivileged):
->   https://lists.riscv.org/g/tech-privileged/message/1294
->   https://lists.riscv.org/g/tech-unprivileged/message/430
+> This will be initially used in Zicboz's application to clear_page(),
+> as Zicboz's block size must also be considered. In that case, the
+> upper 16-bit value's role will be to convey the maximum block size
+> which the Zicboz clear_page() implementation supports.
+> 
+> cpufeature patch sites which need to check for the existence or
+> absence of other cpufeatures may also be able to make use of this.
+> 
+> Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
+> ---
+>  arch/riscv/include/asm/alternative.h |  3 +++
+>  arch/riscv/kernel/cpufeature.c       | 37 +++++++++++++++++++++++++---
+>  2 files changed, 36 insertions(+), 4 deletions(-)
+> 
+> diff --git a/arch/riscv/include/asm/alternative.h b/arch/riscv/include/asm/alternative.h
+> index 8f39d4e8598d..f2cb543b0bd2 100644
+> --- a/arch/riscv/include/asm/alternative.h
+> +++ b/arch/riscv/include/asm/alternative.h
+> @@ -17,6 +17,9 @@
+>  #include <linux/stddef.h>
+>  #include <asm/hwcap.h>
+>  
+> +#define PATCH_ID_CPUFEATURE_ID(p)		((u16)((u32)(p) & 0xffff))
+> +#define PATCH_ID_CPUFEATURE_VALUE(p)		((u16)(((u32)(p) >> 16) & 0xffff))
 
-Great, those I can actually read. Thanks for sharing with the unwashed!
+I was just fiddling around a bit with macros, I think these do the same
+thing:
+#define PATCH_ID_CPUFEATURE_ID(p)		((p) & GENMASK(15, 0))
+#define PATCH_ID_CPUFEATURE_VALUE(p)		FIELD_GET(GENMASK(31, 16), (p))
+Although without the same care about types - is there a specific reason
+you were casting like that?
 
+Either way, I think I prefer this approach to the vendor_id stuffing!
+If we do end up needing to fit an aircraft carrier, we can come back and
+revisit another parameter in the alternatives I suppose...
+
+I don't really know if the macros do anything to help with
+understandability, so with or without trying to use macros:
+Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
+
+Thanks,
 Conor.
 
+>  #define RISCV_ALTERNATIVES_BOOT		0 /* alternatives applied during regular boot */
+>  #define RISCV_ALTERNATIVES_MODULE	1 /* alternatives applied during module-init */
+>  #define RISCV_ALTERNATIVES_EARLY_BOOT	2 /* alternatives applied before mmu start */
+> diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
+> index 6102b6bb5db3..0594989ead63 100644
+> --- a/arch/riscv/kernel/cpufeature.c
+> +++ b/arch/riscv/kernel/cpufeature.c
+> @@ -273,12 +273,35 @@ void __init riscv_fill_hwcap(void)
+>  }
+>  
+>  #ifdef CONFIG_RISCV_ALTERNATIVE
+> +/*
+> + * Alternative patch sites consider 48 bits when determining when to patch
+> + * the old instruction sequence with the new. These bits are broken into a
+> + * 16-bit vendor ID and a 32-bit patch ID. A non-zero vendor ID means the
+> + * patch site is for an erratum, identified by the 32-bit patch ID. When
+> + * the vendor ID is zero, the patch site is for a cpufeature. cpufeatures
+> + * further break down patch ID into two 16-bit numbers. The lower 16 bits
+> + * are the cpufeature ID and the upper 16 bits are used for a value specific
+> + * to the cpufeature and patch site. If the upper 16 bits are zero, then it
+> + * implies no specific value is specified. cpufeatures that want to control
+> + * patching on a per-site basis will provide non-zero values and implement
+> + * checks here. The checks return true when patching should be done, and
+> + * false otherwise.
+> + */
+> +static bool riscv_cpufeature_patch_check(u16 id, u16 value)
+> +{
+> +	if (!value)
+> +		return true;
+> +
+> +	return false;
+> +}
+> +
+>  void __init_or_module riscv_cpufeature_patch_func(struct alt_entry *begin,
+>  						  struct alt_entry *end,
+>  						  unsigned int stage)
+>  {
+>  	struct alt_entry *alt;
+>  	void *oldptr, *altptr;
+> +	u16 id, value;
+>  
+>  	if (stage == RISCV_ALTERNATIVES_EARLY_BOOT)
+>  		return;
+> @@ -286,13 +309,19 @@ void __init_or_module riscv_cpufeature_patch_func(struct alt_entry *begin,
+>  	for (alt = begin; alt < end; alt++) {
+>  		if (alt->vendor_id != 0)
+>  			continue;
+> -		if (alt->patch_id >= RISCV_ISA_EXT_MAX) {
+> -			WARN(1, "This extension id:%d is not in ISA extension list",
+> -				alt->patch_id);
+> +
+> +		id = PATCH_ID_CPUFEATURE_ID(alt->patch_id);
+> +
+> +		if (id >= RISCV_ISA_EXT_MAX) {
+> +			WARN(1, "This extension id:%d is not in ISA extension list", id);
+>  			continue;
+>  		}
+>  
+> -		if (!__riscv_isa_extension_available(NULL, alt->patch_id))
+> +		if (!__riscv_isa_extension_available(NULL, id))
+> +			continue;
+> +
+> +		value = PATCH_ID_CPUFEATURE_VALUE(alt->patch_id);
+> +		if (!riscv_cpufeature_patch_check(id, value))
+>  			continue;
+>  
+>  		oldptr = ALT_OLD_PTR(alt);
+> -- 
+> 2.39.1
+> 
 -------------- next part --------------
 A non-text attachment was scrubbed...
 Name: signature.asc
 Type: application/pgp-signature
 Size: 228 bytes
 Desc: not available
-URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20230221/f0ef66d5/attachment-0001.sig>
+URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20230222/e2efc39e/attachment-0001.sig>
