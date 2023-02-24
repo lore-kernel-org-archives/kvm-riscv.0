@@ -1,64 +1,214 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Fri, 24 Feb 2023 17:26:31 +0100
-Subject: [PATCH v6 8/8] RISC-V: KVM: Expose Zicboz to the guest
-In-Reply-To: <20230224162631.405473-1-ajones@ventanamicro.com>
-References: <20230224162631.405473-1-ajones@ventanamicro.com>
-Message-ID: <20230224162631.405473-9-ajones@ventanamicro.com>
+From: Andy Chiu <andy.chiu@sifive.com>
+Date: Fri, 24 Feb 2023 17:00:59 +0000
+Subject: [PATCH -next v14 00/19] riscv: Add vector ISA support
+Message-ID: <20230224170118.16766-1-andy.chiu@sifive.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Guests may use the cbo.zero instruction when the CPU has the Zicboz
-extension and the hypervisor sets henvcfg.CBZE.
+This patchset is implemented based on vector 1.0 spec to add vector support
+in riscv Linux kernel. There are some assumptions for this implementations.
 
-Add Zicboz support for KVM guests which may be enabled and
-disabled from KVM userspace using the ISA extension ONE_REG API.
+1. We assume all harts has the same ISA in the system.
+2. We disable vector in both kernel andy user space [1] by default. Only
+   enable an user's vector after an illegal instruction trap where it
+   actually starts executing vector (the first-use trap [2]).
+3. We detect "riscv,isa" to determine whether vector is support or not.
 
-Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
-Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
-Reviewed-by: Anup Patel <anup@brainfault.org>
+We defined a new structure __riscv_v_ext_state in struct thread_struct to
+save/restore the vector related registers. It is used for both kernel space
+and user space.
+ - In kernel space, the datap pointer in __riscv_v_ext_state will be
+   allocated to save vector registers.
+ - In user space,
+	- In signal handler of user space, the structure is placed
+	  right after __riscv_ctx_hdr, which is embedded in fp reserved
+	  aera. This is required to avoid ABI break [2]. And datap points
+	  to the end of __riscv_v_ext_state.
+	- In ptrace, the data will be put in ubuf in which we use
+	  riscv_vr_get()/riscv_vr_set() to get or set the
+	  __riscv_v_ext_state data structure from/to it, datap pointer
+	  would be zeroed and vector registers will be copied to the
+	  address right after the __riscv_v_ext_state structure in ubuf.
+
+This patchset is rebased to v6.2-rc6 and it is tested by running several
+vector programs simultaneously. It delivers signals correctly in a test
+where we can see a valid ucontext_t in a signal handler, and a correct V
+context returing back from it. And the ptrace interface is tested by
+PTRACE_{GET,SET}REGSET. Lastly, KVM is tested by running above tests in
+a guest using the same kernel image. All tests are done on a rv64gcv
+virt QEMU.
+
+Specail thanks to Conor and Vineet for kindly giving help on- and off-list.
+
+Source tree: https://github.com/sifive/riscv-linux/tree/riscv/for-next/vector-v14
+Links:
+ - [1] https://lore.kernel.org/all/20220921214439.1491510-17-stillson at rivosinc.com/
+ - [2] https://lore.kernel.org/all/73c0124c-4794-6e40-460c-b26df407f322 at rivosinc.com/T/#u
+ - [3] https://lore.kernel.org/all/20230128082847.3055316-1-apatel at ventanamicro.com/
 ---
- arch/riscv/include/uapi/asm/kvm.h | 1 +
- arch/riscv/kvm/vcpu.c             | 4 ++++
- 2 files changed, 5 insertions(+)
+Changelog V14
+ - Rebase to risc-v -next (v6.2-rc7)
+ - Use TOOLCHAIN_HAS_V to detect if we can enable Vector. And refine
+   KBUILD_CFLAGS to remove v from default compile option.
+ - Drop illegal instruction handling patch in kvm and leave it to a
+   independent series[3]. The series is currently queued for 6.3
+ - Move KVM_RISCV_ISA_EXT_V to the end of enum to prevent potential ABI
+   breaks.
+ - Use PT_SIZE_ON_STACK instead of PT_SIZE to fit alignment. Also,
+   remove panic log from v13 (15/19) because it is no longer relevant.
+ - Rewrite insn_is_vector for better structuring (change if-else chain to
+   a switch)
+ - Fix compilation error in the middle of the series
+ - Validate size of the alternative signal frame if V is enabled
+   whenever:
+     - The user call sigaltstack to update altstack
+     - A signal is being delivered
+ - Rename __riscv_v_state to __riscv_v_ext_state.
+ - Add riscv_v_ prefix and rename rvv appropriately
+ - Organize riscv_v_vsize setup code into vector.c
+ - Address the issue mentioned by Heiko on !FPU case
+ - Honor orignal authors that got changed accidentally in v13 4,5,6
 
-diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
-index c1a1bb0fa91c..e44c1e90eaa7 100644
---- a/arch/riscv/include/uapi/asm/kvm.h
-+++ b/arch/riscv/include/uapi/asm/kvm.h
-@@ -106,6 +106,7 @@ enum KVM_RISCV_ISA_EXT_ID {
- 	KVM_RISCV_ISA_EXT_SVINVAL,
- 	KVM_RISCV_ISA_EXT_ZIHINTPAUSE,
- 	KVM_RISCV_ISA_EXT_ZICBOM,
-+	KVM_RISCV_ISA_EXT_ZICBOZ,
- 	KVM_RISCV_ISA_EXT_MAX,
- };
- 
-diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-index e5126cefbc87..198ee86cad38 100644
---- a/arch/riscv/kvm/vcpu.c
-+++ b/arch/riscv/kvm/vcpu.c
-@@ -63,6 +63,7 @@ static const unsigned long kvm_isa_ext_arr[] = {
- 	KVM_ISA_EXT_ARR(SVPBMT),
- 	KVM_ISA_EXT_ARR(ZIHINTPAUSE),
- 	KVM_ISA_EXT_ARR(ZICBOM),
-+	KVM_ISA_EXT_ARR(ZICBOZ),
- };
- 
- static unsigned long kvm_riscv_vcpu_base2isa_ext(unsigned long base_ext)
-@@ -865,6 +866,9 @@ static void kvm_riscv_vcpu_update_config(const unsigned long *isa)
- 	if (riscv_isa_extension_available(isa, ZICBOM))
- 		henvcfg |= (ENVCFG_CBIE | ENVCFG_CBCFE);
- 
-+	if (riscv_isa_extension_available(isa, ZICBOZ))
-+		henvcfg |= ENVCFG_CBZE;
-+
- 	csr_write(CSR_HENVCFG, henvcfg);
- #ifdef CONFIG_32BIT
- 	csr_write(CSR_HENVCFGH, henvcfg >> 32);
+Changelog V13
+ - Rebase to latest risc-v next (v6.2-rc1)
+ - Re-organize the series to comply with bisect-ability
+ - Improve task switch with inline assembly
+ - Re-structure the signal frame to avoid user ABI break.
+ - Implemnt first-use trap and drop prctl for per-task V state
+   enablement. Also, redirect this trap from hs to vs for kvm setup.
+ - Do not expose V context in ptrace/sigframe until the task start using
+   V. But still reserve V context for size ofsigframe reported by auxv.
+ - Drop the kernel mode vector and leave it to another (future) series.
+
+Changelog V12 (Chris)
+ - rebases to some point after v5.18-rc6
+ - add prctl to control per-process V state
+
+Chnagelog V10
+ - Rebase to v5.18-rc6
+ - Merge several patches
+ - Refine codes
+ - Fix bugs
+ - Add kvm vector support
+
+Changelog V9
+ - Rebase to v5.15
+ - Merge several patches
+ - Refine codes
+ - Fix a kernel panic issue
+
+Changelog V8
+ - Rebase to v5.14
+ - Refine struct __riscv_v_ext_state with struct __riscv_ctx_hdr
+ - Refine has_vector into a static key
+ - Defined __reserved space in struct sigcontext for vector and future extensions
+
+Changelog V7
+ - Add support for kernel mode vector
+ - Add vector extension XOR implementation
+ - Optimize task switch codes of vector
+ - Allocate space for vector registers in start_thread()
+ - Fix an illegal instruction exception when accessing vlenb
+ - Optimize vector registers initialization
+ - Initialize vector registers with proper vsetvli then it can work normally
+ - Refine ptrace porting due to generic API changed
+ - Code clean up
+
+Changelog V6
+ - Replace vle.v/vse.v instructions with vle8.v/vse8.v based on 0.9 spec
+ - Add comments based on mailinglist feedback
+ - Fix rv32 build error
+
+Changelog V5
+ - Using regset_size() correctly in generic ptrace
+ - Fix the ptrace porting
+ - Fix compile warning
+
+Changelog V4
+ - Support dynamic vlen
+ - Fix bugs: lazy save/resotre, not saving vtype
+ - Update VS bit offset based on latest vector spec
+ - Add new vector csr based on latest vector spec
+ - Code refine and removed unused macros
+
+Changelog V3
+ - Rebase linux-5.6-rc3 and tested with qemu
+ - Seperate patches with Anup's advice
+ - Give out a ABI puzzle with unlimited vlen
+
+Changelog V2
+ - Fixup typo "vecotr, fstate_save->vstate_save".
+ - Fixup wrong saved registers' length in vector.S.
+ - Seperate unrelated patches from this one.
+
+Andy Chiu (3):
+  riscv: Allocate user's vector context in the first-use trap
+  riscv: signal: check fp-reserved words unconditionally
+  riscv: signal: validate altstack to reflect Vector
+
+Greentime Hu (9):
+  riscv: Add new csr defines related to vector extension
+  riscv: Clear vector regfile on bootup
+  riscv: Introduce Vector enable/disable helpers
+  riscv: Introduce riscv_v_vsize to record size of Vector context
+  riscv: Introduce struct/helpers to save/restore per-task Vector state
+  riscv: Add task switch support for vector
+  riscv: Add ptrace vector support
+  riscv: signal: Add sigcontext save/restore for vector
+  riscv: prevent stack corruption by reserving task_pt_regs(p) early
+
+Guo Ren (4):
+  riscv: Rename __switch_to_aux -> fpu
+  riscv: Extending cpufeature.c to detect V-extension
+  riscv: Disable Vector Instructions for kernel itself
+  riscv: Enable Vector code to be built
+
+Vincent Chen (3):
+  riscv: signal: Report signal frame size to userspace via auxv
+  riscv: kvm: Add V extension to KVM ISA
+  riscv: KVM: Add vector lazy save/restore support
+
+ arch/riscv/Kconfig                       |  18 ++
+ arch/riscv/Makefile                      |   3 +-
+ arch/riscv/include/asm/csr.h             |  18 +-
+ arch/riscv/include/asm/elf.h             |   9 +
+ arch/riscv/include/asm/hwcap.h           |   1 +
+ arch/riscv/include/asm/insn.h            |  29 +++
+ arch/riscv/include/asm/kvm_host.h        |   2 +
+ arch/riscv/include/asm/kvm_vcpu_vector.h |  77 ++++++++
+ arch/riscv/include/asm/processor.h       |   3 +
+ arch/riscv/include/asm/switch_to.h       |   9 +-
+ arch/riscv/include/asm/thread_info.h     |   3 +
+ arch/riscv/include/asm/vector.h          | 167 +++++++++++++++++
+ arch/riscv/include/uapi/asm/auxvec.h     |   1 +
+ arch/riscv/include/uapi/asm/hwcap.h      |   1 +
+ arch/riscv/include/uapi/asm/kvm.h        |   8 +
+ arch/riscv/include/uapi/asm/ptrace.h     |  39 ++++
+ arch/riscv/include/uapi/asm/sigcontext.h |  16 +-
+ arch/riscv/kernel/Makefile               |   1 +
+ arch/riscv/kernel/cpufeature.c           |  13 ++
+ arch/riscv/kernel/entry.S                |   6 +-
+ arch/riscv/kernel/head.S                 |  41 ++++-
+ arch/riscv/kernel/process.c              |  18 ++
+ arch/riscv/kernel/ptrace.c               |  71 ++++++++
+ arch/riscv/kernel/setup.c                |   3 +
+ arch/riscv/kernel/signal.c               | 221 ++++++++++++++++++++---
+ arch/riscv/kernel/traps.c                |  14 +-
+ arch/riscv/kernel/vector.c               | 112 ++++++++++++
+ arch/riscv/kvm/Makefile                  |   1 +
+ arch/riscv/kvm/vcpu.c                    |  31 ++++
+ arch/riscv/kvm/vcpu_vector.c             | 177 ++++++++++++++++++
+ include/uapi/linux/elf.h                 |   1 +
+ 31 files changed, 1066 insertions(+), 48 deletions(-)
+ create mode 100644 arch/riscv/include/asm/kvm_vcpu_vector.h
+ create mode 100644 arch/riscv/include/asm/vector.h
+ create mode 100644 arch/riscv/kernel/vector.c
+ create mode 100644 arch/riscv/kvm/vcpu_vector.c
+
 -- 
-2.39.1
+2.17.1
 
 
