@@ -1,58 +1,46 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Fri, 24 Feb 2023 17:26:24 +0100
-Subject: [PATCH v6 1/8] RISC-V: alternatives: Support patching multiple insns in assembly
+Date: Fri, 24 Feb 2023 17:26:26 +0100
+Subject: [PATCH v6 3/8] dt-bindings: riscv: Document cboz-block-size
 In-Reply-To: <20230224162631.405473-1-ajones@ventanamicro.com>
 References: <20230224162631.405473-1-ajones@ventanamicro.com>
-Message-ID: <20230224162631.405473-2-ajones@ventanamicro.com>
+Message-ID: <20230224162631.405473-4-ajones@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-As pointed out in commit d374a16539b1 ("RISC-V: fix compile error
-from deduplicated __ALTERNATIVE_CFG_2"), we need quotes around
-parameters passed to macros within macros to avoid spaces being
-interpreted as separators. ALT_NEW_CONTENT was trying to handle
-this by defining new_c has a vararg, but this isn't sufficient
-for calling ALTERNATIVE() from assembly with multiple instructions
-in the new/old sequences. Remove the vararg "hack" and use quotes.
+The Zicboz operation (cbo.zero) operates on a block-size defined
+for the cpu-core. While we already have the riscv,cbom-block-size
+property, it only provides the block size for Zicbom operations.
+Even though it's likely Zicboz and Zicbom will use the same size,
+that's not required by the specification. Create another property
+specifically for Zicboz.
 
+Cc: Rob Herring <robh@kernel.org>
 Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
 Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
+Reviewed-by: Rob Herring <robh@kernel.org>
 ---
- arch/riscv/include/asm/alternative-macros.h | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ Documentation/devicetree/bindings/riscv/cpus.yaml | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/arch/riscv/include/asm/alternative-macros.h b/arch/riscv/include/asm/alternative-macros.h
-index 993a44a8fdac..b8c55fb3ab2c 100644
---- a/arch/riscv/include/asm/alternative-macros.h
-+++ b/arch/riscv/include/asm/alternative-macros.h
-@@ -14,7 +14,7 @@
- 	.4byte \patch_id
- .endm
+diff --git a/Documentation/devicetree/bindings/riscv/cpus.yaml b/Documentation/devicetree/bindings/riscv/cpus.yaml
+index 001931d526ec..f24cf9601c6e 100644
+--- a/Documentation/devicetree/bindings/riscv/cpus.yaml
++++ b/Documentation/devicetree/bindings/riscv/cpus.yaml
+@@ -72,6 +72,11 @@ properties:
+     description:
+       The blocksize in bytes for the Zicbom cache operations.
  
--.macro ALT_NEW_CONTENT vendor_id, patch_id, enable = 1, new_c : vararg
-+.macro ALT_NEW_CONTENT vendor_id, patch_id, enable = 1, new_c
- 	.if \enable
- 	.pushsection .alternative, "a"
- 	ALT_ENTRY 886b, 888f, \vendor_id, \patch_id, 889f - 888f
-@@ -41,13 +41,13 @@
- 	\old_c
- 	.option pop
- 887 :
--	ALT_NEW_CONTENT \vendor_id, \patch_id, \enable, \new_c
-+	ALT_NEW_CONTENT \vendor_id, \patch_id, \enable, "\new_c"
- .endm
- 
- .macro ALTERNATIVE_CFG_2 old_c, new_c_1, vendor_id_1, patch_id_1, enable_1,	\
- 				new_c_2, vendor_id_2, patch_id_2, enable_2
- 	ALTERNATIVE_CFG "\old_c", "\new_c_1", \vendor_id_1, \patch_id_1, \enable_1
--	ALT_NEW_CONTENT \vendor_id_2, \patch_id_2, \enable_2, \new_c_2
-+	ALT_NEW_CONTENT \vendor_id_2, \patch_id_2, \enable_2, "\new_c_2"
- .endm
- 
- #define __ALTERNATIVE_CFG(...)		ALTERNATIVE_CFG __VA_ARGS__
++  riscv,cboz-block-size:
++    $ref: /schemas/types.yaml#/definitions/uint32
++    description:
++      The blocksize in bytes for the Zicboz cache operations.
++
+   riscv,isa:
+     description:
+       Identifies the specific RISC-V instruction set architecture
 -- 
 2.39.1
 
