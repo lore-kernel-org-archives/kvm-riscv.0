@@ -1,115 +1,140 @@
-From: Darius Rad <darius@bluespec.com>
-Date: Mon, 27 Feb 2023 08:40:46 -0500
-Subject: [PATCH -next v14 19/19] riscv: Enable Vector code to be built
-In-Reply-To: <Y/yDeurep0ZBnLdR@wendy>
-References: <20230224170118.16766-1-andy.chiu@sifive.com>
- <20230224170118.16766-20-andy.chiu@sifive.com>
- <Y/yDeurep0ZBnLdR@wendy>
-Message-ID: <Y/yy3sDX2AxvBD0f@bruce.bluespec.com>
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Date: Tue, 28 Feb 2023 17:17:52 +1100
+Subject: [PATCH kernel v4] KVM: PPC: Make KVM_CAP_IRQFD_RESAMPLE support
+ platform dependent
+In-Reply-To: <cea59fc2-1052-53fd-42b0-ac53f5699aa9@ozlabs.ru>
+References: <20221003235722.2085145-1-aik@ozlabs.ru>
+ <7a790aa8-c643-1098-4d28-bd3b10399fcd@ozlabs.ru>
+ <5178485f-60d8-0f16-558b-05207102a37e@ozlabs.ru>
+ <cea59fc2-1052-53fd-42b0-ac53f5699aa9@ozlabs.ru>
+Message-ID: <1ccefa65-ed72-ba7a-158f-05b832cd5210@ozlabs.ru>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Feb 27, 2023 at 10:18:34AM +0000, Conor Dooley wrote:
-> Hey Andy,
-> 
-> On Fri, Feb 24, 2023 at 05:01:18PM +0000, Andy Chiu wrote:
-> > From: Guo Ren <guoren@linux.alibaba.com>
-> > 
-> > This patch adds a config which enables vector feature from the kernel
-> > space.
-> > 
-> > Signed-off-by: Guo Ren <guoren@linux.alibaba.com>
-> > Co-developed-by: Greentime Hu <greentime.hu@sifive.com>
-> > Signed-off-by: Greentime Hu <greentime.hu@sifive.com>
-> > Suggested-by: Vineet Gupta <vineetg@rivosinc.com>
-> > Suggested-by: Atish Patra <atishp@atishpatra.org>
-> > Signed-off-by: Andy Chiu <andy.chiu@sifive.com>
-> 
-> At this point, you've basically re-written this patch and should be
-> listed as a co-author at the very least!
-> 
-> > ---
-> >  arch/riscv/Kconfig  | 18 ++++++++++++++++++
-> >  arch/riscv/Makefile |  3 ++-
-> >  2 files changed, 20 insertions(+), 1 deletion(-)
-> > 
-> > diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
-> > index 81eb031887d2..19deeb3bb36b 100644
-> > --- a/arch/riscv/Kconfig
-> > +++ b/arch/riscv/Kconfig
-> > @@ -418,6 +418,24 @@ config RISCV_ISA_SVPBMT
-> >  
-> >  	   If you don't know what to do here, say Y.
-> >  
-> > +config TOOLCHAIN_HAS_V
-> > +	bool
-> > +	default y
-> > +	depends on !64BIT || $(cc-option,-mabi=lp64 -march=rv64iv)
-> > +	depends on !32BIT || $(cc-option,-mabi=ilp32 -march=rv32iv)
-> > +	depends on LLD_VERSION >= 140000 || LD_VERSION >= 23800
-> > +
-> > +config RISCV_ISA_V
-> > +	bool "VECTOR extension support"
-> > +	depends on TOOLCHAIN_HAS_V
-> > +	select DYNAMIC_SIGFRAME
-> 
-> So, nothing here makes V depend on CONFIG_FPU...
-> 
-> > +	default y
-> > +	help
-> > +	  Say N here if you want to disable all vector related procedure
-> > +	  in the kernel.
-> > +
-> > +	  If you don't know what to do here, say Y.
-> > +
-> >  config TOOLCHAIN_HAS_ZBB
-> >  	bool
-> >  	default y
-> > diff --git a/arch/riscv/Makefile b/arch/riscv/Makefile
-> > index 76989561566b..375a048b11cb 100644
-> > --- a/arch/riscv/Makefile
-> > +++ b/arch/riscv/Makefile
-> > @@ -56,6 +56,7 @@ riscv-march-$(CONFIG_ARCH_RV32I)	:= rv32ima
-> >  riscv-march-$(CONFIG_ARCH_RV64I)	:= rv64ima
-> >  riscv-march-$(CONFIG_FPU)		:= $(riscv-march-y)fd
-> 
-> ...but march only contains fd if CONFIG_FPU is enabled...
-> 
-> >  riscv-march-$(CONFIG_RISCV_ISA_C)	:= $(riscv-march-y)c
-> > +riscv-march-$(CONFIG_RISCV_ISA_V)	:= $(riscv-march-y)v
-> >  
-> >  # Newer binutils versions default to ISA spec version 20191213 which moves some
-> >  # instructions from the I extension to the Zicsr and Zifencei extensions.
-> > @@ -65,7 +66,7 @@ riscv-march-$(toolchain-need-zicsr-zifencei) := $(riscv-march-y)_zicsr_zifencei
-> >  # Check if the toolchain supports Zihintpause extension
-> >  riscv-march-$(CONFIG_TOOLCHAIN_HAS_ZIHINTPAUSE) := $(riscv-march-y)_zihintpause
-> >  
-> > -KBUILD_CFLAGS += -march=$(subst fd,,$(riscv-march-y))
-> > +KBUILD_CFLAGS += -march=$(subst fdv,,$(riscv-march-y))
-> 
-> ...so I think this will not work if !CONFIG_FPU && RISCV_ISA_V.
-> IIRC, vector uses some floating point opcodes, but does it (or Linux's
-> implementation) actually depend on having floating point support in the
-> kernel?
+Anyone, ping?
 
-Yes.
-
-"The V extension requires the scalar processor implements the F and D
-extensions", RISC-V "V" Vector Extension, Section 18.3. V: Vector Extension
-for Application Processors.
-
-> If not, this cannot be done in a oneliner. Otherwise, CONFIG_RISCV_ISA_V
-> should explicitly depend on CONFIG_FPU.
+On 02/01/2023 11:43, Alexey Kardashevskiy wrote:
+> Paolo, ping?
 > 
-> >  KBUILD_AFLAGS += -march=$(riscv-march-y)
-> >  
-> >  KBUILD_CFLAGS += -mno-save-restore
-> > -- 
-> > 2.17.1
-> > 
-> > 
+> 
+> On 06/12/2022 15:39, Alexey Kardashevskiy wrote:
+>> Paolo, ping? :)
+>>
+>>
+>> On 27/10/2022 18:38, Alexey Kardashevskiy wrote:
+>>> Paolo, ping?
+>>>
+>>>
+>>> On 04/10/2022 10:57, Alexey Kardashevskiy wrote:
+>>>> When introduced, IRQFD resampling worked on POWER8 with XICS. However
+>>>> KVM on POWER9 has never implemented it - the compatibility mode code
+>>>> ("XICS-on-XIVE") misses the kvm_notify_acked_irq() call and the native
+>>>> XIVE mode does not handle INTx in KVM at all.
+>>>>
+>>>> This moved the capability support advertising to platforms and stops
+>>>> advertising it on XIVE, i.e. POWER9 and later.
+>>>>
+>>>> This should cause no behavioural change for other architectures.
+>>>>
+>>>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>>>> Acked-by: Nicholas Piggin <npiggin@gmail.com>
+>>>> Acked-by: Marc Zyngier <maz@kernel.org>
+>>>> ---
+>>>> Changes:
+>>>> v4:
+>>>> * removed incorrect clause about changing behavoir on MIPS and RISCV
+>>>>
+>>>> v3:
+>>>> * removed all ifdeferry
+>>>> * removed the capability for MIPS and RISCV
+>>>> * adjusted the commit log about MIPS and RISCV
+>>>>
+>>>> v2:
+>>>> * removed ifdef for ARM64.
+>>>> ---
+>>>> ? arch/arm64/kvm/arm.c?????? | 1 +
+>>>> ? arch/powerpc/kvm/powerpc.c | 6 ++++++
+>>>> ? arch/s390/kvm/kvm-s390.c?? | 1 +
+>>>> ? arch/x86/kvm/x86.c???????? | 1 +
+>>>> ? virt/kvm/kvm_main.c??????? | 1 -
+>>>> ? 5 files changed, 9 insertions(+), 1 deletion(-)
+>>>>
+>>>> diff --git a/arch/arm64/kvm/arm.c b/arch/arm64/kvm/arm.c
+>>>> index 2ff0ef62abad..d2daa4d375b5 100644
+>>>> --- a/arch/arm64/kvm/arm.c
+>>>> +++ b/arch/arm64/kvm/arm.c
+>>>> @@ -218,6 +218,7 @@ int kvm_vm_ioctl_check_extension(struct kvm 
+>>>> *kvm, long ext)
+>>>> ????? case KVM_CAP_VCPU_ATTRIBUTES:
+>>>> ????? case KVM_CAP_PTP_KVM:
+>>>> ????? case KVM_CAP_ARM_SYSTEM_SUSPEND:
+>>>> +??? case KVM_CAP_IRQFD_RESAMPLE:
+>>>> ????????? r = 1;
+>>>> ????????? break;
+>>>> ????? case KVM_CAP_SET_GUEST_DEBUG2:
+>>>> diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+>>>> index fb1490761c87..908ce8bd91c9 100644
+>>>> --- a/arch/powerpc/kvm/powerpc.c
+>>>> +++ b/arch/powerpc/kvm/powerpc.c
+>>>> @@ -593,6 +593,12 @@ int kvm_vm_ioctl_check_extension(struct kvm 
+>>>> *kvm, long ext)
+>>>> ????????? break;
+>>>> ? #endif
+>>>> +#ifdef CONFIG_HAVE_KVM_IRQFD
+>>>> +??? case KVM_CAP_IRQFD_RESAMPLE:
+>>>> +??????? r = !xive_enabled();
+>>>> +??????? break;
+>>>> +#endif
+>>>> +
+>>>> ????? case KVM_CAP_PPC_ALLOC_HTAB:
+>>>> ????????? r = hv_enabled;
+>>>> ????????? break;
+>>>> diff --git a/arch/s390/kvm/kvm-s390.c b/arch/s390/kvm/kvm-s390.c
+>>>> index edfd4bbd0cba..7521adadb81b 100644
+>>>> --- a/arch/s390/kvm/kvm-s390.c
+>>>> +++ b/arch/s390/kvm/kvm-s390.c
+>>>> @@ -577,6 +577,7 @@ int kvm_vm_ioctl_check_extension(struct kvm 
+>>>> *kvm, long ext)
+>>>> ????? case KVM_CAP_SET_GUEST_DEBUG:
+>>>> ????? case KVM_CAP_S390_DIAG318:
+>>>> ????? case KVM_CAP_S390_MEM_OP_EXTENSION:
+>>>> +??? case KVM_CAP_IRQFD_RESAMPLE:
+>>>> ????????? r = 1;
+>>>> ????????? break;
+>>>> ????? case KVM_CAP_SET_GUEST_DEBUG2:
+>>>> diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+>>>> index 43a6a7efc6ec..2d6c5a8fdf14 100644
+>>>> --- a/arch/x86/kvm/x86.c
+>>>> +++ b/arch/x86/kvm/x86.c
+>>>> @@ -4395,6 +4395,7 @@ int kvm_vm_ioctl_check_extension(struct kvm 
+>>>> *kvm, long ext)
+>>>> ????? case KVM_CAP_VAPIC:
+>>>> ????? case KVM_CAP_ENABLE_CAP:
+>>>> ????? case KVM_CAP_VM_DISABLE_NX_HUGE_PAGES:
+>>>> +??? case KVM_CAP_IRQFD_RESAMPLE:
+>>>> ????????? r = 1;
+>>>> ????????? break;
+>>>> ????? case KVM_CAP_EXIT_HYPERCALL:
+>>>> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+>>>> index 584a5bab3af3..05cf94013f02 100644
+>>>> --- a/virt/kvm/kvm_main.c
+>>>> +++ b/virt/kvm/kvm_main.c
+>>>> @@ -4447,7 +4447,6 @@ static long 
+>>>> kvm_vm_ioctl_check_extension_generic(struct kvm *kvm, long arg)
+>>>> ? #endif
+>>>> ? #ifdef CONFIG_HAVE_KVM_IRQFD
+>>>> ????? case KVM_CAP_IRQFD:
+>>>> -??? case KVM_CAP_IRQFD_RESAMPLE:
+>>>> ? #endif
+>>>> ????? case KVM_CAP_IOEVENTFD_ANY_LENGTH:
+>>>> ????? case KVM_CAP_CHECK_EXTENSION_VM:
+>>>
+>>
+> 
 
+-- 
+Alexey
 
