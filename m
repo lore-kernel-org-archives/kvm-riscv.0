@@ -1,54 +1,83 @@
-From: Sean Christopherson <seanjc@google.com>
-Date: Wed, 15 Mar 2023 10:16:45 -0700
-Subject: [PATCH kernel v4] KVM: PPC: Make KVM_CAP_IRQFD_RESAMPLE support
- platform dependent
-In-Reply-To: <20221003235722.2085145-1-aik@ozlabs.ru>
-References: <20221003235722.2085145-1-aik@ozlabs.ru>
-Message-ID: <ZBH9fZ3aMnHKtrZj@google.com>
+From: Conor Dooley <conor@kernel.org>
+Date: Wed, 1 Mar 2023 16:41:27 +0000
+Subject: [PATCH -next v14 09/19] riscv: Add task switch support for vector
+In-Reply-To: <20230224170118.16766-10-andy.chiu@sifive.com>
+References: <20230224170118.16766-1-andy.chiu@sifive.com>
+ <20230224170118.16766-10-andy.chiu@sifive.com>
+Message-ID: <Y/+AN0e5netDShxx@spud>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-+Michael and KVM s390 maintainers
+Hey Andy,
 
-On Tue, Oct 04, 2022, Alexey Kardashevskiy wrote:
-> When introduced, IRQFD resampling worked on POWER8 with XICS. However
-> KVM on POWER9 has never implemented it - the compatibility mode code
-> ("XICS-on-XIVE") misses the kvm_notify_acked_irq() call and the native
-> XIVE mode does not handle INTx in KVM at all.
+On Fri, Feb 24, 2023 at 05:01:08PM +0000, Andy Chiu wrote:
+> From: Greentime Hu <greentime.hu@sifive.com>
 > 
-> This moved the capability support advertising to platforms and stops
-> advertising it on XIVE, i.e. POWER9 and later.
+> This patch adds task switch support for vector. It also supports all
+> lengths of vlen.
 > 
-> This should cause no behavioural change for other architectures.
-> 
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> Acked-by: Nicholas Piggin <npiggin@gmail.com>
-> Acked-by: Marc Zyngier <maz@kernel.org>
+> [guoren at linux.alibaba.com: First available porting to support vector
+> context switching]
+> [nick.knight at sifive.com: Rewrite vector.S to support dynamic vlen, xlen and
+> code refine]
+> [vincent.chen at sifive.com: Fix the might_sleep issue in riscv_v_vstate_save,
+> riscv_v_vstate_restore]
+> [andrew at sifive.com: Optimize task switch codes of vector]
+> [ruinland.tsai at sifive.com: Fix the arch_release_task_struct free wrong
+> datap issue]
+> [vineetg: Fixed lkp warning with W=1 build]
+> [andy.chiu: Use inline asm for task switches]
+
+Can we *please* get rid of these silly changelogs in the commit messages?
+Either someone did something worthy of being a co-developer on the
+patch, or this belongs under the --- line.
+It's a bit ridiculous I think to have a 15 word commit message for the
+patch, but have like 8 different bits of per-version changelogs...
+
+> Suggested-by: Andrew Waterman <andrew@sifive.com>
+> Co-developed-by: Nick Knight <nick.knight@sifive.com>
+> Signed-off-by: Nick Knight <nick.knight@sifive.com>
+> Co-developed-by: Guo Ren <guoren@linux.alibaba.com>
+> Signed-off-by: Guo Ren <guoren@linux.alibaba.com>
+> Co-developed-by: Vincent Chen <vincent.chen@sifive.com>
+> Signed-off-by: Vincent Chen <vincent.chen@sifive.com>
+> Co-developed-by: Ruinland Tsai <ruinland.tsai@sifive.com>
+> Signed-off-by: Ruinland Tsai <ruinland.tsai@sifive.com>
+> Signed-off-by: Greentime Hu <greentime.hu@sifive.com>
+> Signed-off-by: Vineet Gupta <vineetg@rivosinc.com>
+> Signed-off-by: Andy Chiu <andy.chiu@sifive.com>
 > ---
+>  arch/riscv/include/asm/processor.h   |  1 +
+>  arch/riscv/include/asm/switch_to.h   |  3 ++
+>  arch/riscv/include/asm/thread_info.h |  3 ++
+>  arch/riscv/include/asm/vector.h      | 43 ++++++++++++++++++++++++++--
+>  arch/riscv/kernel/process.c          | 18 ++++++++++++
+>  5 files changed, 66 insertions(+), 2 deletions(-)
 
-If no one objects, I'll grab this for 6.4 and route it through kvm-x86/generic.
+> @@ -118,6 +154,9 @@ static __always_inline bool has_vector(void) { return false; }
+>  static inline bool riscv_v_vstate_query(struct pt_regs *regs) { return false; }
+>  #define riscv_v_vsize (0)
+>  #define riscv_v_setup_vsize()	 do {} while (0)
+> +#define riscv_v_vstate_save(task, regs)		do {} while (0)
+> +#define riscv_v_vstate_restore(task, regs)	do {} while (0)
+> +#define __switch_to_vector(__prev, __next)	do {} while (0)
+>  #define riscv_v_vstate_off(regs)		do {} while (0)
+>  #define riscv_v_vstate_on(regs)			do {} while (0)
 
-> diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-> index fb1490761c87..908ce8bd91c9 100644
-> --- a/arch/powerpc/kvm/powerpc.c
-> +++ b/arch/powerpc/kvm/powerpc.c
-> @@ -593,6 +593,12 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
->                 break;
->  #endif
->
-> +#ifdef CONFIG_HAVE_KVM_IRQFD
-> +       case KVM_CAP_IRQFD_RESAMPLE:
-> +               r = !xive_enabled();
-> +               break;
-> +#endif
+While you're at it, you pay as well tab out all the do {} while (0) so
+that they align. That's my OCD showing though.
 
-@PPC folks, do you want to avoid the #ifdef?  If so, I can tweak to this when
-applying.
+Other than my complaint about the changelogs, this looks grand.
 
-	case KVM_CAP_IRQFD_RESAMPLE:
-		r = IS_ENABLED(CONFIG_HAVE_KVM_IRQFD) && !xive_enabled();
-		break;
-
+Thanks,
+Conor.
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 228 bytes
+Desc: not available
+URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20230301/6c64a154/attachment-0001.sig>
