@@ -1,176 +1,152 @@
 From: Conor Dooley <conor@kernel.org>
-Date: Wed, 1 Mar 2023 18:27:31 +0000
-Subject: [PATCH -next v14 13/19] riscv: signal: Add sigcontext
- save/restore for vector
-In-Reply-To: <20230224170118.16766-14-andy.chiu@sifive.com>
-References: <20230224170118.16766-1-andy.chiu@sifive.com>
- <20230224170118.16766-14-andy.chiu@sifive.com>
-Message-ID: <Y/+ZE1j2usg5C1Uv@spud>
+Date: Wed, 1 Mar 2023 18:44:38 +0000
+Subject: [PATCH -next v14 19/19] riscv: Enable Vector code to be built
+In-Reply-To: <Y/+SoGfspjGwlH7g@dev-arch.thelio-3990X>
+References: <20230224170118.16766-20-andy.chiu@sifive.com>
+ <202302250924.ukv4ZxOc-lkp@intel.com>
+ <Y/+SoGfspjGwlH7g@dev-arch.thelio-3990X>
+Message-ID: <Y/+dFpdbOdLRUmY5@spud>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Feb 24, 2023 at 05:01:12PM +0000, Andy Chiu wrote:
-> From: Greentime Hu <greentime.hu@sifive.com>
+On Wed, Mar 01, 2023 at 11:00:00AM -0700, Nathan Chancellor wrote:
+> Hi Andy,
 > 
-> This patch facilitates the existing fp-reserved words for placement of
-> the first extension's context header on the user's sigframe. A context
-> header consists of a distinct magic word and the size, including the
-> header itself, of an extension on the stack. Then, the frame is followed
-> by the context of that extension, and then a header + context body for
-> another extension if exists. If there is no more extension to come, then
-> the frame must be ended with a null context header. A special case is
-> rv64gc, where the kernel support no extensions requiring to expose
-> additional regfile to the user. In such case the kernel would place the
-> null context header right after the first reserved word of
-> __riscv_q_ext_state when saving sigframe. And the kernel would check if
-> all reserved words are zeros when a signal handler returns.
+> On Sat, Feb 25, 2023 at 09:33:30AM +0800, kernel test robot wrote:
+> > Hi Andy,
+> > 
+> > I love your patch! Perhaps something to improve:
+> > 
+> > [auto build test WARNING on next-20230224]
+> > 
+> > url:    https://github.com/intel-lab-lkp/linux/commits/Andy-Chiu/riscv-Rename-__switch_to_aux-fpu/20230225-011059
+> > patch link:    https://lore.kernel.org/r/20230224170118.16766-20-andy.chiu%40sifive.com
+> > patch subject: [PATCH -next v14 19/19] riscv: Enable Vector code to be built
+> > config: riscv-randconfig-r014-20230222 (https://download.01.org/0day-ci/archive/20230225/202302250924.ukv4ZxOc-lkp at intel.com/config)
+> > compiler: clang version 17.0.0 (https://github.com/llvm/llvm-project db89896bbbd2251fff457699635acbbedeead27f)
+> > reproduce (this is a W=1 build):
+> >         wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+> >         chmod +x ~/bin/make.cross
+> >         # install riscv cross compiling tool for clang build
+> >         # apt-get install binutils-riscv64-linux-gnu
+> >         # https://github.com/intel-lab-lkp/linux/commit/cd0ad21a9ef9d63f1eef80fd3b09ae6e0d884ce3
+> >         git remote add linux-review https://github.com/intel-lab-lkp/linux
+> >         git fetch --no-tags linux-review Andy-Chiu/riscv-Rename-__switch_to_aux-fpu/20230225-011059
+> >         git checkout cd0ad21a9ef9d63f1eef80fd3b09ae6e0d884ce3
+> >         # save the config file
+> >         mkdir build_dir && cp config build_dir/.config
+> >         COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross W=1 O=build_dir ARCH=riscv olddefconfig
+> >         COMPILER_INSTALL_PATH=$HOME/0day COMPILER=clang make.cross W=1 O=build_dir ARCH=riscv SHELL=/bin/bash lib/zstd/
+> > 
+> > If you fix the issue, kindly add following tag where applicable
+> > | Reported-by: kernel test robot <lkp@intel.com>
+> > | Link: https://lore.kernel.org/oe-kbuild-all/202302250924.ukv4ZxOc-lkp at intel.com/
+> > 
+> > All warnings (new ones prefixed by >>):
+> > 
+> > >> warning: Invalid size request on a scalable vector; Cannot implicitly convert a scalable size to a fixed-width size in `TypeSize::operator ScalarTy()`
 > 
-> __riscv_q_ext_state---->|	|<-__riscv_extra_ext_header
-> 			~	~
-> 	.reserved[0]--->|0	|<-	.reserved
-> 		<-------|magic	|<-	.hdr
-> 		|	|size	|_______ end of sc_fpregs
-> 		|	|ext-bdy|
-> 		|	~	~
-> 	+)size	------->|magic	|<- another context header
-> 			|size	|
-> 			|ext-bdy|
-> 			~	~
-> 			|magic:0|<- null context header
-> 			|size:0	|
+> Please consider adding the following diff to patch 19 to avoid this
+> issue (see the upstream bug report for more details):
 > 
-> The vector registers will be saved in datap pointer. The datap pointer
-> will be allocated dynamically when the task needs in kernel space. On
-> the other hand, datap pointer on the sigframe will be set right after
-> the __riscv_v_ext_state data structure.
-> 
-> Co-developed-by: Vincent Chen <vincent.chen@sifive.com>
-> Signed-off-by: Vincent Chen <vincent.chen@sifive.com>
-> Signed-off-by: Greentime Hu <greentime.hu@sifive.com>
-> Suggested-by: Vineet Gupta <vineetg@rivosinc.com>
-> Suggested-by: Richard Henderson <richard.henderson@linaro.org>
-> Signed-off-by: Andy Chiu <andy.chiu@sifive.com>
-> ---
+> diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
+> index eb691dd8ee4f..187cd6c1d8c9 100644
+> --- a/arch/riscv/Kconfig
+> +++ b/arch/riscv/Kconfig
+> @@ -423,6 +423,8 @@ config TOOLCHAIN_HAS_V
+>  	depends on !64BIT || $(cc-option,-mabi=lp64 -march=rv64iv)
+>  	depends on !32BIT || $(cc-option,-mabi=ilp32 -march=rv32iv)
+>  	depends on LLD_VERSION >= 140000 || LD_VERSION >= 23800
+> +	# https://github.com/llvm/llvm-project/issues/61096
+> +	depends on !(CC_IS_CLANG && CLANG_VERSION >= 160000 && KASAN)
 
-> +static long save_v_state(struct pt_regs *regs, void **sc_vec)
-> +{
-> +	/*
-> +	 * Put __sc_riscv_v_state to the user's signal context space pointed
-> +	 * by sc_vec and the datap point the address right
-> +	 * after __sc_riscv_v_state.
-> +	 */
+Please don't! As far as I can tell, this is what I was warning about in:
+https://lore.kernel.org/linux-riscv/20230224170118.16766-1-andy.chiu at sifive.com/T/#m2c0e6128230d407c843e10406305da9ff5dca902
 
-AFAIU, this comment describes the assignments here. I think it would be
-significantly clearer if you defined the variables here & moved the
-assignment and comment further down the function.
+The randconfig has RISCV_ISA_C enabled, so you're getting an ISA string
+containing "fdcv" and `fdv,,$(riscv-march-y)` fails to remove either fd,
+or v.
 
-> +	struct __riscv_ctx_hdr __user *hdr = (struct __riscv_ctx_hdr *)(*sc_vec);
-> +	struct __sc_riscv_v_state __user *state = (struct __sc_riscv_v_state *)(hdr + 1);
-> +	void __user *datap = state + 1;
-> +	long err;
-> +
-> +	/* datap is designed to be 16 byte aligned for better performance */
-> +	WARN_ON(unlikely(!IS_ALIGNED((unsigned long)datap, 16)));
-> +
-> +	riscv_v_vstate_save(current, regs);
-> +	/* Copy everything of vstate but datap. */
-> +	err = __copy_to_user(&state->v_state, &current->thread.vstate,
-> +			     offsetof(struct __riscv_v_ext_state, datap));
-> +	/* Copy the pointer datap itself. */
-> +	err |= __put_user(datap, &state->v_state.datap);
-> +	/* Copy the whole vector content to user space datap. */
-> +	err |= __copy_to_user(datap, current->thread.vstate.datap, riscv_v_vsize);
-> +	/* Copy magic to the user space after saving  all vector conetext */
-> +	err |= __put_user(RISCV_V_MAGIC, &hdr->magic);
-> +	err |= __put_user(riscv_v_sc_size, &hdr->size);
-> +	if (unlikely(err))
-> +		return err;
-> +
-> +	/* Only progress the sv_vec if everything has done successfully  */
-> +	*sc_vec += riscv_v_sc_size;
-> +	return 0;
-> +}
->  static long restore_sigcontext(struct pt_regs *regs,
->  	struct sigcontext __user *sc)
->  {
-> +	void *sc_ext_ptr = &sc->sc_extdesc.hdr;
-> +	__u32 rsvd;
->  	long err;
-> -	size_t i;
-> -
->  	/* sc_regs is structured the same as the start of pt_regs */
->  	err = __copy_from_user(regs, &sc->sc_regs, sizeof(sc->sc_regs));
->  	if (unlikely(err))
-> -		return err;
-> +		goto done;
->  	/* Restore the floating-point state. */
->  	if (has_fpu()) {
->  		err = restore_fp_state(regs, &sc->sc_fpregs);
->  		if (unlikely(err))
-> -			return err;
-> +			goto done;
->  	}
+The below is very much valid though, please test v15 with clang/llvm
+Andy!
+
+> Additionally, with older versions of clang 15.x and older, I see:
+> 
+>   arch/riscv/kernel/vector.c:50:3: error: expected expression
+>                   u32 width = RVV_EXRACT_VL_VS_WIDTH(insn_buf);
+>                   ^
+>   arch/riscv/kernel/vector.c:52:7: error: use of undeclared identifier 'width'
+>                   if (width == RVV_VL_VS_WIDTH_8 || width == RVV_VL_VS_WIDTH_16 ||
+>                       ^
+>   arch/riscv/kernel/vector.c:52:37: error: use of undeclared identifier 'width'
+>                   if (width == RVV_VL_VS_WIDTH_8 || width == RVV_VL_VS_WIDTH_16 ||
+>                                                     ^
+>   arch/riscv/kernel/vector.c:53:7: error: use of undeclared identifier 'width'
+>                       width == RVV_VL_VS_WIDTH_32 || width == RVV_VL_VS_WIDTH_64)
+>                       ^
+>   arch/riscv/kernel/vector.c:53:38: error: use of undeclared identifier 'width'
+>                       width == RVV_VL_VS_WIDTH_32 || width == RVV_VL_VS_WIDTH_64)
+>                                                      ^
+>   arch/riscv/kernel/vector.c:57:3: error: expected expression
+>                   u32 csr = RVG_EXTRACT_SYSTEM_CSR(insn_buf);
+>                   ^
+>   arch/riscv/kernel/vector.c:59:8: error: use of undeclared identifier 'csr'
+>                   if ((csr >= CSR_VSTART && csr <= CSR_VCSR) ||
+>                        ^
+>   arch/riscv/kernel/vector.c:59:29: error: use of undeclared identifier 'csr'
+>                   if ((csr >= CSR_VSTART && csr <= CSR_VCSR) ||
+>                                             ^
+>   arch/riscv/kernel/vector.c:60:8: error: use of undeclared identifier 'csr'
+>                       (csr >= CSR_VL && csr <= CSR_VLENB))
+>                        ^
+>   arch/riscv/kernel/vector.c:60:25: error: use of undeclared identifier 'csr'
+>                       (csr >= CSR_VL && csr <= CSR_VLENB))
+>                                         ^
+>   10 errors generated.
+> 
+> which is fixed by:
+> 
+> diff --git a/arch/riscv/kernel/vector.c b/arch/riscv/kernel/vector.c
+> index 585e2c51b28e..8c98db9c0ae1 100644
+> --- a/arch/riscv/kernel/vector.c
+> +++ b/arch/riscv/kernel/vector.c
+> @@ -46,14 +46,15 @@ static bool insn_is_vector(u32 insn_buf)
+>  		is_vector = true;
+>  		break;
+>  	case RVV_OPCODE_VL:
+> -	case RVV_OPCODE_VS:
+> +	case RVV_OPCODE_VS: {
+>  		u32 width = RVV_EXRACT_VL_VS_WIDTH(insn_buf);
 >  
-> -	/* We support no other extension state at this time. */
-> -	for (i = 0; i < ARRAY_SIZE(sc->sc_fpregs.q.reserved); i++) {
-> -		u32 value;
-> -
-> -		err = __get_user(value, &sc->sc_fpregs.q.reserved[i]);
-> -		if (unlikely(err))
-> +	/* Check the reserved word before extensions parsing */
-> +	err = __get_user(rsvd, &sc->sc_extdesc.reserved);
-> +	if (unlikely(err))
-> +		goto done;
-> +	if (unlikely(rsvd))
-> +		goto invalid;
-> +
-> +	while (1 && !err) {
-
-This is just while (!err), no?
-
-> +		__u32 magic, size;
-> +		struct __riscv_ctx_hdr *head = (struct __riscv_ctx_hdr *)sc_ext_ptr;
-> +
-> +		err |= __get_user(magic, &head->magic);
-> +		err |= __get_user(size, &head->size);
-> +		if (err)
-> +			goto done;
-> +
-> +		sc_ext_ptr += sizeof(struct __riscv_ctx_hdr);
-> +		switch (magic) {
-> +		case END_MAGIC:
-> +			if (size != END_HDR_SIZE)
-> +				goto invalid;
-> +			goto done;
-> +		case RISCV_V_MAGIC:
-> +			if (!has_vector() || !riscv_v_vstate_query(regs))
-> +				goto invalid;
-> +			if (size != riscv_v_sc_size)
-> +				goto invalid;
-> +			err = __restore_v_state(regs, sc_ext_ptr);
->  			break;
-> -		if (value != 0)
-> -			return -EINVAL;
-> +		default:
-> +			goto invalid;
-
-Why does this need a goto, rather than returning -EINVAL directly?
-
-> +		}
-> +		sc_ext_ptr = ((void *)(head) + size);
+>  		if (width == RVV_VL_VS_WIDTH_8 || width == RVV_VL_VS_WIDTH_16 ||
+>  		    width == RVV_VL_VS_WIDTH_32 || width == RVV_VL_VS_WIDTH_64)
+>  			is_vector = true;
+>  		break;
+> -	case RVG_OPCODE_SYSTEM:
+> +	}
+> +	case RVG_OPCODE_SYSTEM: {
+>  		u32 csr = RVG_EXTRACT_SYSTEM_CSR(insn_buf);
+>  
+>  		if ((csr >= CSR_VSTART && csr <= CSR_VCSR) ||
+> @@ -61,6 +62,7 @@ static bool insn_is_vector(u32 insn_buf)
+>  			is_vector = true;
+>  		break;
 >  	}
-> +done:
->  	return err;
-> +invalid:
-> +	return -EINVAL;
-> +}
+> +	}
+>  	return is_vector;
+>  }
+>  
+> ---
+> 
+> Cheers,
+> Nathan
 -------------- next part --------------
 A non-text attachment was scrubbed...
 Name: signature.asc
 Type: application/pgp-signature
 Size: 228 bytes
 Desc: not available
-URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20230301/77380d28/attachment-0001.sig>
+URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20230301/06500313/attachment-0001.sig>
