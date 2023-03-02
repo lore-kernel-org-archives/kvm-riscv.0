@@ -1,11 +1,10 @@
 From: Björn Töpel <bjorn@kernel.org>
-Date: Thu, 02 Mar 2023 12:12:59 +0100
-Subject: [PATCH -next v14 08/19] riscv: Introduce struct/helpers to
- save/restore per-task Vector state
-In-Reply-To: <20230224170118.16766-9-andy.chiu@sifive.com>
+Date: Thu, 02 Mar 2023 12:27:45 +0100
+Subject: [PATCH -next v14 11/19] riscv: Add ptrace vector support
+In-Reply-To: <20230224170118.16766-12-andy.chiu@sifive.com>
 References: <20230224170118.16766-1-andy.chiu@sifive.com>
- <20230224170118.16766-9-andy.chiu@sifive.com>
-Message-ID: <87r0u74dac.fsf@all.your.base.are.belong.to.us>
+ <20230224170118.16766-12-andy.chiu@sifive.com>
+Message-ID: <87mt4v4clq.fsf@all.your.base.are.belong.to.us>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -14,69 +13,39 @@ Content-Transfer-Encoding: 7bit
 
 Andy Chiu <andy.chiu@sifive.com> writes:
 
-> diff --git a/arch/riscv/include/asm/vector.h b/arch/riscv/include/asm/vector.h
-> index 692d3ee2d2d3..9c025f2efdc3 100644
-> --- a/arch/riscv/include/asm/vector.h
-> +++ b/arch/riscv/include/asm/vector.h
-> @@ -31,11 +54,72 @@ static __always_inline void riscv_v_disable(void)
->  	csr_clear(CSR_SSTATUS, SR_VS);
+> diff --git a/arch/riscv/kernel/ptrace.c b/arch/riscv/kernel/ptrace.c
+> index 2ae8280ae475..3c0e01d7f8fb 100644
+> --- a/arch/riscv/kernel/ptrace.c
+> +++ b/arch/riscv/kernel/ptrace.c
+> @@ -83,6 +87,62 @@ static int riscv_fpr_set(struct task_struct *target,
 >  }
+>  #endif
 >  
-> +static __always_inline void __vstate_csr_save(struct __riscv_v_ext_state *dest)
+> +#ifdef CONFIG_RISCV_ISA_V
+> +static int riscv_vr_get(struct task_struct *target,
+> +			const struct user_regset *regset,
+> +			struct membuf to)
 > +{
-> +	asm volatile (
-> +		"csrr	%0, " CSR_STR(CSR_VSTART) "\n\t"
-> +		"csrr	%1, " CSR_STR(CSR_VTYPE) "\n\t"
-> +		"csrr	%2, " CSR_STR(CSR_VL) "\n\t"
-> +		"csrr	%3, " CSR_STR(CSR_VCSR) "\n\t"
-> +		: "=r" (dest->vstart), "=r" (dest->vtype), "=r" (dest->vl),
-> +		  "=r" (dest->vcsr) : :);
-> +}
+> +	struct __riscv_v_ext_state *vstate = &target->thread.vstate;
 > +
-> +static __always_inline void __vstate_csr_restore(struct __riscv_v_ext_state *src)
-> +{
-> +	asm volatile (
-> +		"vsetvl	 x0, %2, %1\n\t"
-> +		"csrw	" CSR_STR(CSR_VSTART) ", %0\n\t"
-> +		"csrw	" CSR_STR(CSR_VCSR) ", %3\n\t"
-> +		: : "r" (src->vstart), "r" (src->vtype), "r" (src->vl),
-> +		    "r" (src->vcsr) :);
-> +}
+> +	if (!riscv_v_vstate_query(task_pt_regs(target)))
+> +		return -EINVAL;
+> +	/*
+> +	 * Ensure the vector registers have been saved to the memory before
+> +	 * copying them to membuf.
+> +	 */
+> +	if (target == current)
+> +		riscv_v_vstate_save(current, task_pt_regs(current));
 > +
-> +static inline void __riscv_v_vstate_save(struct __riscv_v_ext_state *save_to, void *datap)
-> +{
-> +	riscv_v_enable();
-> +	__vstate_csr_save(save_to);
-> +	asm volatile (
-> +		"vsetvli	t4, x0, e8, m8, ta, ma\n\t"
-> +		"vse8.v		v0, (%0)\n\t"
-> +		"add		%0, %0, t4\n\t"
-> +		"vse8.v		v8, (%0)\n\t"
-> +		"add		%0, %0, t4\n\t"
-> +		"vse8.v		v16, (%0)\n\t"
-> +		"add		%0, %0, t4\n\t"
-> +		"vse8.v		v24, (%0)\n\t"
-> +		: : "r" (datap) : "t4", "memory");
-> +	riscv_v_disable();
-> +}
-> +
-> +static inline void __riscv_v_vstate_restore(struct __riscv_v_ext_state *restore_from,
-> +				    void *datap)
-> +{
-> +	riscv_v_enable();
-> +	asm volatile (
-> +		"vsetvli	t4, x0, e8, m8, ta, ma\n\t"
-> +		"vle8.v		v0, (%0)\n\t"
-> +		"add		%0, %0, t4\n\t"
-> +		"vle8.v		v8, (%0)\n\t"
-> +		"add		%0, %0, t4\n\t"
-> +		"vle8.v		v16, (%0)\n\t"
-> +		"add		%0, %0, t4\n\t"
-> +		"vle8.v		v24, (%0)\n\t"
-> +		: : "r" (datap) : "t4");
+> +	/* Copy vector header from vstate. */
+> +	membuf_write(&to, vstate, offsetof(struct __riscv_v_ext_state, datap));
+> +	membuf_zero(&to, sizeof(void *));
+> +#if __riscv_xlen == 32
+> +	membuf_zero(&to, sizeof(__u32));
+> +#endif
 
-Nit/question: For both enable/disable; Any reason to clobber t4, instead
-of using a scratch reg?
+Remind me why the extra care is needed for 32b?
+
 
 Bj?rn
 
