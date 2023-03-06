@@ -1,62 +1,112 @@
 From: David Matlack <dmatlack@google.com>
-Date: Mon,  6 Mar 2023 11:01:52 -0800
-Subject: [PATCH v2 0/4] KVM: Refactor KVM stats macros and enable custom stat names
-Message-ID: <20230306190156.434452-1-dmatlack@google.com>
+Date: Mon,  6 Mar 2023 11:01:54 -0800
+Subject: [PATCH v2 2/4] KVM: Refactor designated initializer macros for struct _kvm_stats_desc
+In-Reply-To: <20230306190156.434452-1-dmatlack@google.com>
+References: <20230306190156.434452-1-dmatlack@google.com>
+Message-ID: <20230306190156.434452-3-dmatlack@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This series refactors the KVM stats macros to reduce duplication and
-adds the support for choosing custom names for stats.
+Refactor the macros that generate struct _kvm_stats_desc designated
+initializers to cut down on duplication.
 
-Custom name makes it possible to decouple the userspace-visible stat
-names from their internal representation in C. This can allow future
-commits to refactor the various stats structs without impacting
-userspace tools that read KVM stats.
+No functional change intended.
 
-This also allows stats to be stored in data structures such as arrays,
-without needing unions to access specific stats. Case in point, the last
-patch in this series removes the pages_{4k,2m,1g} union, which is a
-useful cleanup to prepare for sharing paging code across architectures
-[1].
+Signed-off-by: David Matlack <dmatlack@google.com>
+---
+ include/linux/kvm_host.h | 75 +++++++++++++++++++---------------------
+ 1 file changed, 35 insertions(+), 40 deletions(-)
 
-And for full transparency, another motivation for this series it that at
-Google we have several out-of-tree stats that use arrays. Custom name
-support is something we added internally and it reduces our technical
-debt to get the support merged upstream.
-
-Tested on x86. Compile tested on ARM. Not yet tested on any other
-architectures.
-
-Link: https://lore.kernel.org/kvm/20221208193857.4090582-1-dmatlack at google.com/
-
-v2:
- - Refactor stat macros (patch 1) to reduce duplication and make it
-   simpler to add custom name support [Sean]
-
-v1: https://lore.kernel.org/kvm/20230118175300.790835-1-dmatlack at google.com/
-
-David Matlack (4):
-  KVM: Refactor stats descriptor generation macros
-  KVM: Refactor designated initializer macros for struct _kvm_stats_desc
-  KVM: Allow custom names for KVM_STAT()
-  KVM: x86: Drop union for pages_{4k,2m,1g} stats
-
- arch/arm64/kvm/guest.c          |  14 +--
- arch/mips/kvm/mips.c            |  54 ++++-----
- arch/powerpc/kvm/book3s.c       |  62 +++++-----
- arch/powerpc/kvm/booke.c        |  48 ++++----
- arch/riscv/kvm/vcpu.c           |  16 +--
- arch/s390/kvm/kvm-s390.c        | 198 ++++++++++++++++----------------
- arch/x86/include/asm/kvm_host.h |   9 +-
- arch/x86/kvm/x86.c              |  94 +++++++--------
- include/linux/kvm_host.h        | 179 +++++++++++------------------
- 9 files changed, 314 insertions(+), 360 deletions(-)
-
-
-base-commit: 45dd9bc75d9adc9483f0c7d662ba6e73ed698a0b
+diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+index 02b1151c2753..6673ae757c4e 100644
+--- a/include/linux/kvm_host.h
++++ b/include/linux/kvm_host.h
+@@ -1744,47 +1744,42 @@ struct _kvm_stats_desc {
+ 	char name[KVM_STATS_NAME_SIZE];
+ };
+ 
+-#define STATS_DESC_COMMON(type, unit, base, exp, sz, bsz)		       \
+-	.flags = type | unit | base |					       \
+-		 BUILD_BUG_ON_ZERO(type & ~KVM_STATS_TYPE_MASK) |	       \
+-		 BUILD_BUG_ON_ZERO(unit & ~KVM_STATS_UNIT_MASK) |	       \
+-		 BUILD_BUG_ON_ZERO(base & ~KVM_STATS_BASE_MASK),	       \
+-	.exponent = exp,						       \
+-	.size = sz,							       \
+-	.bucket_size = bsz
+-
+-#define VM_GENERIC_STATS_DESC(stat, type, unit, base, exp, sz, bsz)	       \
++/* Generates a designated initializer list for a struct _kvm_stats_desc. */
++#define _KVM_STATS_DESC(_struct, _field, _name, _type, _unit, _base,	       \
++			_exponent, _size, _bucket_size)			       \
++{									       \
+ 	{								       \
+-		{							       \
+-			STATS_DESC_COMMON(type, unit, base, exp, sz, bsz),     \
+-			.offset = offsetof(struct kvm_vm_stat, generic.stat)   \
+-		},							       \
+-		.name = #stat,						       \
+-	}
+-#define VCPU_GENERIC_STATS_DESC(stat, type, unit, base, exp, sz, bsz)	       \
+-	{								       \
+-		{							       \
+-			STATS_DESC_COMMON(type, unit, base, exp, sz, bsz),     \
+-			.offset = offsetof(struct kvm_vcpu_stat, generic.stat) \
+-		},							       \
+-		.name = #stat,						       \
+-	}
+-#define VM_STATS_DESC(stat, type, unit, base, exp, sz, bsz)		       \
+-	{								       \
+-		{							       \
+-			STATS_DESC_COMMON(type, unit, base, exp, sz, bsz),     \
+-			.offset = offsetof(struct kvm_vm_stat, stat)	       \
+-		},							       \
+-		.name = #stat,						       \
+-	}
+-#define VCPU_STATS_DESC(stat, type, unit, base, exp, sz, bsz)		       \
+-	{								       \
+-		{							       \
+-			STATS_DESC_COMMON(type, unit, base, exp, sz, bsz),     \
+-			.offset = offsetof(struct kvm_vcpu_stat, stat)	       \
+-		},							       \
+-		.name = #stat,						       \
+-	}
++		.flags = _type | _unit | _base |			       \
++			 BUILD_BUG_ON_ZERO(_type & ~KVM_STATS_TYPE_MASK) |     \
++			 BUILD_BUG_ON_ZERO(_unit & ~KVM_STATS_UNIT_MASK) |     \
++			 BUILD_BUG_ON_ZERO(_base & ~KVM_STATS_BASE_MASK),      \
++		.exponent = _exponent,					       \
++		.size = _size,						       \
++		.bucket_size = _bucket_size,				       \
++		.offset = offsetof(_struct, _field),			       \
++	},								       \
++	.name = _name,							       \
++}
++
++#define VM_GENERIC_STATS_DESC(_stat, _type, _unit, _base, _exponent, _size,    \
++			      _bucket_size)				       \
++	_KVM_STATS_DESC(struct kvm_vm_stat, generic._stat, #_stat, _type,      \
++			_unit, _base, _exponent, _size, _bucket_size)
++
++#define VCPU_GENERIC_STATS_DESC(_stat, _type, _unit, _base, _exponent, _size,  \
++				_bucket_size)				       \
++	_KVM_STATS_DESC(struct kvm_vcpu_stat, generic._stat, #_stat, _type,    \
++			_unit, _base, _exponent, _size, _bucket_size)
++
++#define VM_STATS_DESC(_stat, _type, _unit, _base, _exponent, _size,	       \
++		      _bucket_size)					       \
++	_KVM_STATS_DESC(struct kvm_vm_stat, _stat, #_stat, _type, _unit,       \
++			_base, _exponent, _size, _bucket_size)
++
++#define VCPU_STATS_DESC(_stat, _type, _unit, _base, _exponent, _size,	       \
++			_bucket_size)					       \
++	_KVM_STATS_DESC(struct kvm_vcpu_stat, _stat, #_stat, _type, _unit,     \
++			_base, _exponent, _size, _bucket_size)
+ 
+ /* SCOPE: VM, VM_GENERIC, VCPU, VCPU_GENERIC */
+ #define STATS_DESC(SCOPE, stat, type, unit, base, exp, sz, bsz)		       \
 -- 
 2.40.0.rc0.216.gc4246ad0f0-goog
 
