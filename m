@@ -1,78 +1,63 @@
-From: Anup Patel <apatel@ventanamicro.com>
-Date: Mon, 6 Mar 2023 19:01:23 +0530
-Subject: [PATCH v2 1/1] riscv/kvm: Fix VM hang in case of timer delta
- being zero.
-In-Reply-To: <20230210142711.1177212-1-rkanwal@rivosinc.com>
-References: <20230210142711.1177212-1-rkanwal@rivosinc.com>
-Message-ID: <CAK9=C2XzTD95W-QfwF0px26DyDD9AAx_qX3we-zeMzOK7EHr4Q@mail.gmail.com>
+From: David Matlack <dmatlack@google.com>
+Date: Mon,  6 Mar 2023 11:01:52 -0800
+Subject: [PATCH v2 0/4] KVM: Refactor KVM stats macros and enable custom stat names
+Message-ID: <20230306190156.434452-1-dmatlack@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Feb 10, 2023 at 7:57?PM Rajnesh Kanwal <rkanwal@rivosinc.com> wrote:
->
-> In case when VCPU is blocked due to WFI, we schedule the timer
-> from `kvm_riscv_vcpu_timer_blocking()` to keep timer interrupt
-> ticking.
->
-> But in case when delta_ns comes to be zero, we never schedule
-> the timer and VCPU keeps sleeping indefinitely until any activity
-> is done with VM console.
->
-> This is easily reproduce-able using kvmtool.
-> ./lkvm-static run -c1 --console virtio -p "earlycon root=/dev/vda" \
->          -k ./Image -d rootfs.ext4
->
-> Also, just add a print in kvm_riscv_vcpu_vstimer_expired() to
-> check the interrupt delivery and run `top` or similar auto-upating
-> cmd from guest. Within sometime one can notice that print from
-> timer expiry routine stops and the `top` cmd output will stop
-> updating.
->
-> This change fixes this by making sure we schedule the timer even
-> with delta_ns being zero to bring the VCPU out of sleep immediately.
->
-> Fixes: 8f5cb44b1bae ("RISC-V: KVM: Support sstc extension")
-> Signed-off-by: Rajnesh Kanwal <rkanwal@rivosinc.com>
+This series refactors the KVM stats macros to reduce duplication and
+adds the support for choosing custom names for stats.
 
-Queued this patch for Linux-6.3 fixes.
+Custom name makes it possible to decouple the userspace-visible stat
+names from their internal representation in C. This can allow future
+commits to refactor the various stats structs without impacting
+userspace tools that read KVM stats.
 
-Thanks,
-Anup
+This also allows stats to be stored in data structures such as arrays,
+without needing unions to access specific stats. Case in point, the last
+patch in this series removes the pages_{4k,2m,1g} union, which is a
+useful cleanup to prepare for sharing paging code across architectures
+[1].
 
-> ---
-> v2: Added Fixes tag in commit message.
->
-> v1: https://lore.kernel.org/all/20230210135136.1115213-1-rkanwal at rivosinc.com/
->
->  arch/riscv/kvm/vcpu_timer.c | 6 ++----
->  1 file changed, 2 insertions(+), 4 deletions(-)
->
-> diff --git a/arch/riscv/kvm/vcpu_timer.c b/arch/riscv/kvm/vcpu_timer.c
-> index ad34519c8a13..3ac2ff6a65da 100644
-> --- a/arch/riscv/kvm/vcpu_timer.c
-> +++ b/arch/riscv/kvm/vcpu_timer.c
-> @@ -147,10 +147,8 @@ static void kvm_riscv_vcpu_timer_blocking(struct kvm_vcpu *vcpu)
->                 return;
->
->         delta_ns = kvm_riscv_delta_cycles2ns(t->next_cycles, gt, t);
-> -       if (delta_ns) {
-> -               hrtimer_start(&t->hrt, ktime_set(0, delta_ns), HRTIMER_MODE_REL);
-> -               t->next_set = true;
-> -       }
-> +       hrtimer_start(&t->hrt, ktime_set(0, delta_ns), HRTIMER_MODE_REL);
-> +       t->next_set = true;
->  }
->
->  static void kvm_riscv_vcpu_timer_unblocking(struct kvm_vcpu *vcpu)
-> --
-> 2.25.1
->
->
-> --
-> kvm-riscv mailing list
-> kvm-riscv at lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/kvm-riscv
+And for full transparency, another motivation for this series it that at
+Google we have several out-of-tree stats that use arrays. Custom name
+support is something we added internally and it reduces our technical
+debt to get the support merged upstream.
+
+Tested on x86. Compile tested on ARM. Not yet tested on any other
+architectures.
+
+Link: https://lore.kernel.org/kvm/20221208193857.4090582-1-dmatlack at google.com/
+
+v2:
+ - Refactor stat macros (patch 1) to reduce duplication and make it
+   simpler to add custom name support [Sean]
+
+v1: https://lore.kernel.org/kvm/20230118175300.790835-1-dmatlack at google.com/
+
+David Matlack (4):
+  KVM: Refactor stats descriptor generation macros
+  KVM: Refactor designated initializer macros for struct _kvm_stats_desc
+  KVM: Allow custom names for KVM_STAT()
+  KVM: x86: Drop union for pages_{4k,2m,1g} stats
+
+ arch/arm64/kvm/guest.c          |  14 +--
+ arch/mips/kvm/mips.c            |  54 ++++-----
+ arch/powerpc/kvm/book3s.c       |  62 +++++-----
+ arch/powerpc/kvm/booke.c        |  48 ++++----
+ arch/riscv/kvm/vcpu.c           |  16 +--
+ arch/s390/kvm/kvm-s390.c        | 198 ++++++++++++++++----------------
+ arch/x86/include/asm/kvm_host.h |   9 +-
+ arch/x86/kvm/x86.c              |  94 +++++++--------
+ include/linux/kvm_host.h        | 179 +++++++++++------------------
+ 9 files changed, 314 insertions(+), 360 deletions(-)
+
+
+base-commit: 45dd9bc75d9adc9483f0c7d662ba6e73ed698a0b
+-- 
+2.40.0.rc0.216.gc4246ad0f0-goog
+
 
