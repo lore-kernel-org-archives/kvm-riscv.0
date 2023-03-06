@@ -1,114 +1,78 @@
-From: Björn Töpel <bjorn@kernel.org>
-Date: Thu, 02 Mar 2023 13:47:33 +0100
-Subject: [PATCH -next v14 14/19] riscv: signal: Report signal frame size
- to userspace via auxv
-In-Reply-To: <20230224170118.16766-15-andy.chiu@sifive.com>
-References: <20230224170118.16766-1-andy.chiu@sifive.com>
- <20230224170118.16766-15-andy.chiu@sifive.com>
-Message-ID: <877cvz48wq.fsf@all.your.base.are.belong.to.us>
+From: Anup Patel <apatel@ventanamicro.com>
+Date: Mon, 6 Mar 2023 19:01:23 +0530
+Subject: [PATCH v2 1/1] riscv/kvm: Fix VM hang in case of timer delta
+ being zero.
+In-Reply-To: <20230210142711.1177212-1-rkanwal@rivosinc.com>
+References: <20230210142711.1177212-1-rkanwal@rivosinc.com>
+Message-ID: <CAK9=C2XzTD95W-QfwF0px26DyDD9AAx_qX3we-zeMzOK7EHr4Q@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Andy Chiu <andy.chiu@sifive.com> writes:
+On Fri, Feb 10, 2023 at 7:57?PM Rajnesh Kanwal <rkanwal@rivosinc.com> wrote:
+>
+> In case when VCPU is blocked due to WFI, we schedule the timer
+> from `kvm_riscv_vcpu_timer_blocking()` to keep timer interrupt
+> ticking.
+>
+> But in case when delta_ns comes to be zero, we never schedule
+> the timer and VCPU keeps sleeping indefinitely until any activity
+> is done with VM console.
+>
+> This is easily reproduce-able using kvmtool.
+> ./lkvm-static run -c1 --console virtio -p "earlycon root=/dev/vda" \
+>          -k ./Image -d rootfs.ext4
+>
+> Also, just add a print in kvm_riscv_vcpu_vstimer_expired() to
+> check the interrupt delivery and run `top` or similar auto-upating
+> cmd from guest. Within sometime one can notice that print from
+> timer expiry routine stops and the `top` cmd output will stop
+> updating.
+>
+> This change fixes this by making sure we schedule the timer even
+> with delta_ns being zero to bring the VCPU out of sleep immediately.
+>
+> Fixes: 8f5cb44b1bae ("RISC-V: KVM: Support sstc extension")
+> Signed-off-by: Rajnesh Kanwal <rkanwal@rivosinc.com>
 
-> From: Vincent Chen <vincent.chen@sifive.com>
->
-> The vector register belongs to the signal context. They need to be stored
-> and restored as entering and leaving the signal handler. According to the
-> V-extension specification, the maximum length of the vector registers can
-> be 2^(XLEN-1). Hence, if userspace refers to the MINSIGSTKSZ to create a
-> sigframe, it may not be enough. To resolve this problem, this patch refers
-> to the commit 94b07c1f8c39c
-> ("arm64: signal: Report signal frame size to userspace via auxv") to enable
-> userspace to know the minimum required sigframe size through the auxiliary
-> vector and use it to allocate enough memory for signal context.
->
-> Note that auxv always reports size of the sigframe as if V exists for
-> all starting processes, whenever the kernel has CONFIG_RISCV_ISA_V. The
-> reason is that users usually reference this value to allocate an
-> alternative signal stack, and the user may use V anytime. So the user
-> must reserve a space for V-context in sigframe in case that the signal
-> handler invokes after the kernel allocating V.
->
-> Signed-off-by: Greentime Hu <greentime.hu@sifive.com>
-> Signed-off-by: Vincent Chen <vincent.chen@sifive.com>
-> Signed-off-by: Andy Chiu <andy.chiu@sifive.com>
+Queued this patch for Linux-6.3 fixes.
+
+Thanks,
+Anup
+
 > ---
->  arch/riscv/include/asm/elf.h         |  9 +++++++++
->  arch/riscv/include/asm/processor.h   |  2 ++
->  arch/riscv/include/uapi/asm/auxvec.h |  1 +
->  arch/riscv/kernel/signal.c           | 20 +++++++++++++++-----
->  4 files changed, 27 insertions(+), 5 deletions(-)
+> v2: Added Fixes tag in commit message.
 >
-> diff --git a/arch/riscv/include/asm/elf.h b/arch/riscv/include/asm/elf.h
-> index 30e7d2455960..ca23c4f6c440 100644
-> --- a/arch/riscv/include/asm/elf.h
-> +++ b/arch/riscv/include/asm/elf.h
-> @@ -105,6 +105,15 @@ do {								\
->  		get_cache_size(3, CACHE_TYPE_UNIFIED));		\
->  	NEW_AUX_ENT(AT_L3_CACHEGEOMETRY,			\
->  		get_cache_geometry(3, CACHE_TYPE_UNIFIED));	\
-> +	/*							 \
-> +	 * Should always be nonzero unless there's a kernel bug. \
-> +	 * If we haven't determined a sensible value to give to	 \
-> +	 * userspace, omit the entry:				 \
-> +	 */							 \
-> +	if (likely(signal_minsigstksz))				 \
-> +		NEW_AUX_ENT(AT_MINSIGSTKSZ, signal_minsigstksz); \
-> +	else							 \
-> +		NEW_AUX_ENT(AT_IGNORE, 0);			 \
->  } while (0)
->  #define ARCH_HAS_SETUP_ADDITIONAL_PAGES
->  struct linux_binprm;
-> diff --git a/arch/riscv/include/asm/processor.h b/arch/riscv/include/asm/processor.h
-> index f0ddf691ac5e..38ded8c5f207 100644
-> --- a/arch/riscv/include/asm/processor.h
-> +++ b/arch/riscv/include/asm/processor.h
-> @@ -7,6 +7,7 @@
->  #define _ASM_RISCV_PROCESSOR_H
->  
->  #include <linux/const.h>
-> +#include <linux/cache.h>
->  
->  #include <vdso/processor.h>
->  
-> @@ -81,6 +82,7 @@ int riscv_of_parent_hartid(struct device_node *node, unsigned long *hartid);
->  extern void riscv_fill_hwcap(void);
->  extern int arch_dup_task_struct(struct task_struct *dst, struct task_struct *src);
->  
-> +extern unsigned long signal_minsigstksz __ro_after_init;
->  #endif /* __ASSEMBLY__ */
->  
->  #endif /* _ASM_RISCV_PROCESSOR_H */
-> diff --git a/arch/riscv/include/uapi/asm/auxvec.h b/arch/riscv/include/uapi/asm/auxvec.h
-> index fb187a33ce58..2c50d9ca30e0 100644
-> --- a/arch/riscv/include/uapi/asm/auxvec.h
-> +++ b/arch/riscv/include/uapi/asm/auxvec.h
-> @@ -35,5 +35,6 @@
->  
->  /* entries in ARCH_DLINFO */
->  #define AT_VECTOR_SIZE_ARCH	9
-> +#define AT_MINSIGSTKSZ 51
-
-Proper tab alignment missing.
-
->  
->  #endif /* _UAPI_ASM_RISCV_AUXVEC_H */
-> diff --git a/arch/riscv/kernel/signal.c b/arch/riscv/kernel/signal.c
-> index 76c0480ee4cd..aa8ee95dee2d 100644
-> --- a/arch/riscv/kernel/signal.c
-> +++ b/arch/riscv/kernel/signal.c
-> @@ -21,6 +21,8 @@
->  #include <asm/vector.h>
->  #include <asm/csr.h>
->  
-> +unsigned long __ro_after_init signal_minsigstksz;
-
-Nit: __ro_after_init placement insistent with the declaration above.
-
-
-Bj?rn
+> v1: https://lore.kernel.org/all/20230210135136.1115213-1-rkanwal at rivosinc.com/
+>
+>  arch/riscv/kvm/vcpu_timer.c | 6 ++----
+>  1 file changed, 2 insertions(+), 4 deletions(-)
+>
+> diff --git a/arch/riscv/kvm/vcpu_timer.c b/arch/riscv/kvm/vcpu_timer.c
+> index ad34519c8a13..3ac2ff6a65da 100644
+> --- a/arch/riscv/kvm/vcpu_timer.c
+> +++ b/arch/riscv/kvm/vcpu_timer.c
+> @@ -147,10 +147,8 @@ static void kvm_riscv_vcpu_timer_blocking(struct kvm_vcpu *vcpu)
+>                 return;
+>
+>         delta_ns = kvm_riscv_delta_cycles2ns(t->next_cycles, gt, t);
+> -       if (delta_ns) {
+> -               hrtimer_start(&t->hrt, ktime_set(0, delta_ns), HRTIMER_MODE_REL);
+> -               t->next_set = true;
+> -       }
+> +       hrtimer_start(&t->hrt, ktime_set(0, delta_ns), HRTIMER_MODE_REL);
+> +       t->next_set = true;
+>  }
+>
+>  static void kvm_riscv_vcpu_timer_unblocking(struct kvm_vcpu *vcpu)
+> --
+> 2.25.1
+>
+>
+> --
+> kvm-riscv mailing list
+> kvm-riscv at lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/kvm-riscv
 
