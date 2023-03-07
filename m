@@ -1,73 +1,146 @@
-From: David Matlack <dmatlack@google.com>
-Date: Mon,  6 Mar 2023 11:01:56 -0800
-Subject: [PATCH v2 4/4] KVM: x86: Drop union for pages_{4k,2m,1g} stats
-In-Reply-To: <20230306190156.434452-1-dmatlack@google.com>
-References: <20230306190156.434452-1-dmatlack@google.com>
-Message-ID: <20230306190156.434452-5-dmatlack@google.com>
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Date: Tue, 7 Mar 2023 11:24:16 +1100
+Subject: [PATCH kernel v4] KVM: PPC: Make KVM_CAP_IRQFD_RESAMPLE support
+ platform dependent
+In-Reply-To: <1ccefa65-ed72-ba7a-158f-05b832cd5210@ozlabs.ru>
+References: <20221003235722.2085145-1-aik@ozlabs.ru>
+ <7a790aa8-c643-1098-4d28-bd3b10399fcd@ozlabs.ru>
+ <5178485f-60d8-0f16-558b-05207102a37e@ozlabs.ru>
+ <cea59fc2-1052-53fd-42b0-ac53f5699aa9@ozlabs.ru>
+ <1ccefa65-ed72-ba7a-158f-05b832cd5210@ozlabs.ru>
+Message-ID: <7a38ddcb-9819-b9f4-a58e-ac21511aa7c3@ozlabs.ru>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Drop the union for the pages_{4k,2m,1g} stats. The union is no longer
-necessary now that KVM supports choosing a custom name for stats.
+Sean, can you help please with this? Thanks,
 
-Eliminating the union also would allow future commits to more easily
-move pages[] into common code, e.g. if KVM ever gains support for a
-common page table code.
 
-An alternative would be to drop pages[] and have kvm_update_page_stats()
-update pages_{4k,2m,1g} directly. But that's not a good direction to go
-in since other architectures use other page sizes.
+On 28/02/2023 17:17, Alexey Kardashevskiy wrote:
+> Anyone, ping?
+> 
+> On 02/01/2023 11:43, Alexey Kardashevskiy wrote:
+>> Paolo, ping?
+>>
+>>
+>> On 06/12/2022 15:39, Alexey Kardashevskiy wrote:
+>>> Paolo, ping? :)
+>>>
+>>>
+>>> On 27/10/2022 18:38, Alexey Kardashevskiy wrote:
+>>>> Paolo, ping?
+>>>>
+>>>>
+>>>> On 04/10/2022 10:57, Alexey Kardashevskiy wrote:
+>>>>> When introduced, IRQFD resampling worked on POWER8 with XICS. However
+>>>>> KVM on POWER9 has never implemented it - the compatibility mode code
+>>>>> ("XICS-on-XIVE") misses the kvm_notify_acked_irq() call and the native
+>>>>> XIVE mode does not handle INTx in KVM at all.
+>>>>>
+>>>>> This moved the capability support advertising to platforms and stops
+>>>>> advertising it on XIVE, i.e. POWER9 and later.
+>>>>>
+>>>>> This should cause no behavioural change for other architectures.
+>>>>>
+>>>>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>>>>> Acked-by: Nicholas Piggin <npiggin@gmail.com>
+>>>>> Acked-by: Marc Zyngier <maz@kernel.org>
+>>>>> ---
+>>>>> Changes:
+>>>>> v4:
+>>>>> * removed incorrect clause about changing behavoir on MIPS and RISCV
+>>>>>
+>>>>> v3:
+>>>>> * removed all ifdeferry
+>>>>> * removed the capability for MIPS and RISCV
+>>>>> * adjusted the commit log about MIPS and RISCV
+>>>>>
+>>>>> v2:
+>>>>> * removed ifdef for ARM64.
+>>>>> ---
+>>>>> ? arch/arm64/kvm/arm.c?????? | 1 +
+>>>>> ? arch/powerpc/kvm/powerpc.c | 6 ++++++
+>>>>> ? arch/s390/kvm/kvm-s390.c?? | 1 +
+>>>>> ? arch/x86/kvm/x86.c???????? | 1 +
+>>>>> ? virt/kvm/kvm_main.c??????? | 1 -
+>>>>> ? 5 files changed, 9 insertions(+), 1 deletion(-)
+>>>>>
+>>>>> diff --git a/arch/arm64/kvm/arm.c b/arch/arm64/kvm/arm.c
+>>>>> index 2ff0ef62abad..d2daa4d375b5 100644
+>>>>> --- a/arch/arm64/kvm/arm.c
+>>>>> +++ b/arch/arm64/kvm/arm.c
+>>>>> @@ -218,6 +218,7 @@ int kvm_vm_ioctl_check_extension(struct kvm 
+>>>>> *kvm, long ext)
+>>>>> ????? case KVM_CAP_VCPU_ATTRIBUTES:
+>>>>> ????? case KVM_CAP_PTP_KVM:
+>>>>> ????? case KVM_CAP_ARM_SYSTEM_SUSPEND:
+>>>>> +??? case KVM_CAP_IRQFD_RESAMPLE:
+>>>>> ????????? r = 1;
+>>>>> ????????? break;
+>>>>> ????? case KVM_CAP_SET_GUEST_DEBUG2:
+>>>>> diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+>>>>> index fb1490761c87..908ce8bd91c9 100644
+>>>>> --- a/arch/powerpc/kvm/powerpc.c
+>>>>> +++ b/arch/powerpc/kvm/powerpc.c
+>>>>> @@ -593,6 +593,12 @@ int kvm_vm_ioctl_check_extension(struct kvm 
+>>>>> *kvm, long ext)
+>>>>> ????????? break;
+>>>>> ? #endif
+>>>>> +#ifdef CONFIG_HAVE_KVM_IRQFD
+>>>>> +??? case KVM_CAP_IRQFD_RESAMPLE:
+>>>>> +??????? r = !xive_enabled();
+>>>>> +??????? break;
+>>>>> +#endif
+>>>>> +
+>>>>> ????? case KVM_CAP_PPC_ALLOC_HTAB:
+>>>>> ????????? r = hv_enabled;
+>>>>> ????????? break;
+>>>>> diff --git a/arch/s390/kvm/kvm-s390.c b/arch/s390/kvm/kvm-s390.c
+>>>>> index edfd4bbd0cba..7521adadb81b 100644
+>>>>> --- a/arch/s390/kvm/kvm-s390.c
+>>>>> +++ b/arch/s390/kvm/kvm-s390.c
+>>>>> @@ -577,6 +577,7 @@ int kvm_vm_ioctl_check_extension(struct kvm 
+>>>>> *kvm, long ext)
+>>>>> ????? case KVM_CAP_SET_GUEST_DEBUG:
+>>>>> ????? case KVM_CAP_S390_DIAG318:
+>>>>> ????? case KVM_CAP_S390_MEM_OP_EXTENSION:
+>>>>> +??? case KVM_CAP_IRQFD_RESAMPLE:
+>>>>> ????????? r = 1;
+>>>>> ????????? break;
+>>>>> ????? case KVM_CAP_SET_GUEST_DEBUG2:
+>>>>> diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+>>>>> index 43a6a7efc6ec..2d6c5a8fdf14 100644
+>>>>> --- a/arch/x86/kvm/x86.c
+>>>>> +++ b/arch/x86/kvm/x86.c
+>>>>> @@ -4395,6 +4395,7 @@ int kvm_vm_ioctl_check_extension(struct kvm 
+>>>>> *kvm, long ext)
+>>>>> ????? case KVM_CAP_VAPIC:
+>>>>> ????? case KVM_CAP_ENABLE_CAP:
+>>>>> ????? case KVM_CAP_VM_DISABLE_NX_HUGE_PAGES:
+>>>>> +??? case KVM_CAP_IRQFD_RESAMPLE:
+>>>>> ????????? r = 1;
+>>>>> ????????? break;
+>>>>> ????? case KVM_CAP_EXIT_HYPERCALL:
+>>>>> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+>>>>> index 584a5bab3af3..05cf94013f02 100644
+>>>>> --- a/virt/kvm/kvm_main.c
+>>>>> +++ b/virt/kvm/kvm_main.c
+>>>>> @@ -4447,7 +4447,6 @@ static long 
+>>>>> kvm_vm_ioctl_check_extension_generic(struct kvm *kvm, long arg)
+>>>>> ? #endif
+>>>>> ? #ifdef CONFIG_HAVE_KVM_IRQFD
+>>>>> ????? case KVM_CAP_IRQFD:
+>>>>> -??? case KVM_CAP_IRQFD_RESAMPLE:
+>>>>> ? #endif
+>>>>> ????? case KVM_CAP_IOEVENTFD_ANY_LENGTH:
+>>>>> ????? case KVM_CAP_CHECK_EXTENSION_VM:
+>>>>
+>>>
+>>
+> 
 
-No functional change intended.
-
-Link: https://lore.kernel.org/kvm/20221208193857.4090582-1-dmatlack at google.com/
-Signed-off-by: David Matlack <dmatlack@google.com>
----
- arch/x86/include/asm/kvm_host.h | 9 +--------
- arch/x86/kvm/x86.c              | 6 +++---
- 2 files changed, 4 insertions(+), 11 deletions(-)
-
-diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
-index 808c292ad3f4..a59e41355ef4 100644
---- a/arch/x86/include/asm/kvm_host.h
-+++ b/arch/x86/include/asm/kvm_host.h
-@@ -1473,14 +1473,7 @@ struct kvm_vm_stat {
- 	u64 mmu_recycled;
- 	u64 mmu_cache_miss;
- 	u64 mmu_unsync;
--	union {
--		struct {
--			atomic64_t pages_4k;
--			atomic64_t pages_2m;
--			atomic64_t pages_1g;
--		};
--		atomic64_t pages[KVM_NR_PAGE_SIZES];
--	};
-+	atomic64_t pages[KVM_NR_PAGE_SIZES];
- 	u64 nx_lpage_splits;
- 	u64 max_mmu_page_hash_collisions;
- 	u64 max_mmu_rmap_size;
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 072f5ba83170..101ad6b7e7b6 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -240,9 +240,9 @@ const struct _kvm_stats_desc kvm_vm_stats_desc[] = {
- 	KVM_STAT(VM, CUMULATIVE, NONE, mmu_recycled),
- 	KVM_STAT(VM, CUMULATIVE, NONE, mmu_cache_miss),
- 	KVM_STAT(VM, INSTANT, NONE, mmu_unsync),
--	KVM_STAT(VM, INSTANT, NONE, pages_4k),
--	KVM_STAT(VM, INSTANT, NONE, pages_2m),
--	KVM_STAT(VM, INSTANT, NONE, pages_1g),
-+	__KVM_STAT(VM, INSTANT, NONE, pages[PG_LEVEL_4K - 1], "pages_4k"),
-+	__KVM_STAT(VM, INSTANT, NONE, pages[PG_LEVEL_2M - 1], "pages_2m"),
-+	__KVM_STAT(VM, INSTANT, NONE, pages[PG_LEVEL_1G - 1], "pages_1g"),
- 	KVM_STAT(VM, INSTANT, NONE, nx_lpage_splits),
- 	KVM_STAT(VM, PEAK, NONE, max_mmu_rmap_size),
- 	KVM_STAT(VM, PEAK, NONE, max_mmu_page_hash_collisions)
 -- 
-2.40.0.rc0.216.gc4246ad0f0-goog
-
+Alexey
 
