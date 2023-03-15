@@ -1,100 +1,90 @@
 From: Andy Chiu <andy.chiu@sifive.com>
-Date: Wed, 15 Mar 2023 12:00:00 +0800
+Date: Wed, 15 Mar 2023 12:05:00 +0800
 Subject: [PATCH -next v14 08/19] riscv: Introduce struct/helpers to
  save/restore per-task Vector state
-In-Reply-To: <Y/6HmORLbsFWsEbu@spud>
+In-Reply-To: <87r0u74dac.fsf@all.your.base.are.belong.to.us>
 References: <20230224170118.16766-1-andy.chiu@sifive.com> <20230224170118.16766-9-andy.chiu@sifive.com>
- <Y/6HmORLbsFWsEbu@spud>
-Message-ID: <CABgGipWBGgs-enRr=_HToW4wxTVGeUnJ4imLagdwThFiQ4xG2w@mail.gmail.com>
+ <87r0u74dac.fsf@all.your.base.are.belong.to.us>
+Message-ID: <CABgGipXQcLvcSqHWoaZZEMW+7cwxEyOYPAEvr5cCtJMPFGva0w@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Mar 1, 2023 at 7:00?AM Conor Dooley <conor@kernel.org> wrote:
+On Thu, Mar 2, 2023 at 7:13?PM Bj?rn T?pel <bjorn@kernel.org> wrote:
 >
-> On Fri, Feb 24, 2023 at 05:01:07PM +0000, Andy Chiu wrote:
-> > From: Greentime Hu <greentime.hu@sifive.com>
-> >
-> > Add vector state context struct to be added later in thread_struct. And
-> > prepare low-level helper functions to save/restore vector contexts.
-> >
-> > This include Vector Regfile and CSRs holding dynamic configuration state
-> > (vstart, vl, vtype, vcsr). The Vec Register width could be implementation
-> > defined, but same for all processes, so that is saved separately.
-> >
-> > This is not yet wired into final thread_struct - will be done when
-> > __switch_to actually starts doing this in later patches.
-> >
-> > Given the variable (and potentially large) size of regfile, they are
-> > saved in dynamically allocated memory, pointed to by datap pointer in
-> > __riscv_v_ext_state.
-> >
-> > Co-developed-by: Vincent Chen <vincent.chen@sifive.com>
-> > Signed-off-by: Vincent Chen <vincent.chen@sifive.com>
-> > Signed-off-by: Greentime Hu <greentime.hu@sifive.com>
-> > Signed-off-by: Vineet Gupta <vineetg@rivosinc.com>
-> > [vineetg: merged bits from 2 different patches]
-> > Signed-off-by: Andy Chiu <andy.chiu@sifive.com>
-> > [andy.chiu: use inline asm to save/restore context, remove asm vaiant]
-> > ---
-> >  arch/riscv/include/asm/vector.h      | 84 ++++++++++++++++++++++++++++
-> >  arch/riscv/include/uapi/asm/ptrace.h | 17 ++++++
-> >  2 files changed, 101 insertions(+)
-> >
+> Andy Chiu <andy.chiu@sifive.com> writes:
+>
 > > diff --git a/arch/riscv/include/asm/vector.h b/arch/riscv/include/asm/vector.h
 > > index 692d3ee2d2d3..9c025f2efdc3 100644
 > > --- a/arch/riscv/include/asm/vector.h
 > > +++ b/arch/riscv/include/asm/vector.h
-> > @@ -12,6 +12,9 @@
-> >
-> >  #include <asm/hwcap.h>
-> >  #include <asm/csr.h>
-> > +#include <asm/asm.h>
-> > +
-> > +#define CSR_STR(x) __ASM_STR(x)
->
-> TBH, I'm not really sure what this definition adds.
->
-
-Agree, I'm going to drop this #define and use __ASM_STR directly.
-However, we should not replace the inline asm to csr_read because
-csr_read clobbers memory and we don't.
-
-> >  extern unsigned long riscv_v_vsize;
-> >  void riscv_v_setup_vsize(void);
-> > @@ -21,6 +24,26 @@ static __always_inline bool has_vector(void)
-> >       return riscv_has_extension_likely(RISCV_ISA_EXT_v);
+> > @@ -31,11 +54,72 @@ static __always_inline void riscv_v_disable(void)
+> >       csr_clear(CSR_SSTATUS, SR_VS);
 > >  }
 > >
-> > +static inline void __riscv_v_vstate_clean(struct pt_regs *regs)
+> > +static __always_inline void __vstate_csr_save(struct __riscv_v_ext_state *dest)
 > > +{
-> > +     regs->status = (regs->status & ~(SR_VS)) | SR_VS_CLEAN;
+> > +     asm volatile (
+> > +             "csrr   %0, " CSR_STR(CSR_VSTART) "\n\t"
+> > +             "csrr   %1, " CSR_STR(CSR_VTYPE) "\n\t"
+> > +             "csrr   %2, " CSR_STR(CSR_VL) "\n\t"
+> > +             "csrr   %3, " CSR_STR(CSR_VCSR) "\n\t"
+> > +             : "=r" (dest->vstart), "=r" (dest->vtype), "=r" (dest->vl),
+> > +               "=r" (dest->vcsr) : :);
 > > +}
 > > +
-> > +static inline void riscv_v_vstate_off(struct pt_regs *regs)
+> > +static __always_inline void __vstate_csr_restore(struct __riscv_v_ext_state *src)
 > > +{
-> > +     regs->status = (regs->status & ~SR_VS) | SR_VS_OFF;
->
-> Inconsistent use of brackets here compared to the other items.
-> They're not actually needed anywhere here, are they?
->
-
-Yes, there is no need for brackets at SR_VS because it expands to one
-constant value.
-
-
-
-
+> > +     asm volatile (
+> > +             "vsetvl  x0, %2, %1\n\t"
+> > +             "csrw   " CSR_STR(CSR_VSTART) ", %0\n\t"
+> > +             "csrw   " CSR_STR(CSR_VCSR) ", %3\n\t"
+> > +             : : "r" (src->vstart), "r" (src->vtype), "r" (src->vl),
+> > +                 "r" (src->vcsr) :);
 > > +}
 > > +
-> > +static inline void riscv_v_vstate_on(struct pt_regs *regs)
+> > +static inline void __riscv_v_vstate_save(struct __riscv_v_ext_state *save_to, void *datap)
 > > +{
-> > +     regs->status = (regs->status & ~(SR_VS)) | SR_VS_INITIAL;
+> > +     riscv_v_enable();
+> > +     __vstate_csr_save(save_to);
+> > +     asm volatile (
+> > +             "vsetvli        t4, x0, e8, m8, ta, ma\n\t"
+> > +             "vse8.v         v0, (%0)\n\t"
+> > +             "add            %0, %0, t4\n\t"
+> > +             "vse8.v         v8, (%0)\n\t"
+> > +             "add            %0, %0, t4\n\t"
+> > +             "vse8.v         v16, (%0)\n\t"
+> > +             "add            %0, %0, t4\n\t"
+> > +             "vse8.v         v24, (%0)\n\t"
+> > +             : : "r" (datap) : "t4", "memory");
+> > +     riscv_v_disable();
 > > +}
+> > +
+> > +static inline void __riscv_v_vstate_restore(struct __riscv_v_ext_state *restore_from,
+> > +                                 void *datap)
+> > +{
+> > +     riscv_v_enable();
+> > +     asm volatile (
+> > +             "vsetvli        t4, x0, e8, m8, ta, ma\n\t"
+> > +             "vle8.v         v0, (%0)\n\t"
+> > +             "add            %0, %0, t4\n\t"
+> > +             "vle8.v         v8, (%0)\n\t"
+> > +             "add            %0, %0, t4\n\t"
+> > +             "vle8.v         v16, (%0)\n\t"
+> > +             "add            %0, %0, t4\n\t"
+> > +             "vle8.v         v24, (%0)\n\t"
+> > +             : : "r" (datap) : "t4");
 >
-> Other than that, this seems fine? I only really had a quick check of the
-> asm though, so with the brackets thing fixed up:
-> Acked-by: Conor Dooley <conor.dooley@microchip.com>
+> Nit/question: For both enable/disable; Any reason to clobber t4, instead
+> of using a scratch reg?
+>
+
+Yes, it is better to use a scratch register here in order to gain
+benefit from inline asm.
+
+> Bj?rn
+
+Andy
 
