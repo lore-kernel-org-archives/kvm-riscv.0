@@ -1,32 +1,54 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Wed, 15 Mar 2023 09:53:56 +0100
-Subject: [PATCH v6 0/8] RISC-V: Apply Zicboz to clear_page
-In-Reply-To: <mhng-72607fed-a923-4921-896f-7f703434083a@palmer-ri-x1c9a>
-References: <20230224162631.405473-1-ajones@ventanamicro.com>
- <mhng-72607fed-a923-4921-896f-7f703434083a@palmer-ri-x1c9a>
-Message-ID: <20230315085356.zlmiz5qkz44d5ndf@orel>
+From: Sean Christopherson <seanjc@google.com>
+Date: Wed, 15 Mar 2023 10:16:45 -0700
+Subject: [PATCH kernel v4] KVM: PPC: Make KVM_CAP_IRQFD_RESAMPLE support
+ platform dependent
+In-Reply-To: <20221003235722.2085145-1-aik@ozlabs.ru>
+References: <20221003235722.2085145-1-aik@ozlabs.ru>
+Message-ID: <ZBH9fZ3aMnHKtrZj@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Mar 14, 2023 at 09:35:09PM -0700, Palmer Dabbelt wrote:
-> On Fri, 24 Feb 2023 08:26:23 PST (-0800), ajones at ventanamicro.com wrote:
-> > When the Zicboz extension is available we can more rapidly zero naturally
-> > aligned Zicboz block sized chunks of memory. As pages are always page
-> 
-> I guess we're sort of in a grey area here: this is just a performance thing
-> so in theory some sort of benchmark should be required, but IMO it's OK to
-> just hand wave this one away -- if the "zero a cache block" instruction
-> doesn't make "zero a page" go faster then something has gone so far off the
-> rails it's probably better to just pretend the machine doesn't implement
-> Zicboz.
-> 
-> This all LGTM, so unless anyone's opposed or it blows up on testing
-> overnight then it'll be on for-next.
++Michael and KVM s390 maintainers
 
-Thanks, Palmer!
+On Tue, Oct 04, 2022, Alexey Kardashevskiy wrote:
+> When introduced, IRQFD resampling worked on POWER8 with XICS. However
+> KVM on POWER9 has never implemented it - the compatibility mode code
+> ("XICS-on-XIVE") misses the kvm_notify_acked_irq() call and the native
+> XIVE mode does not handle INTx in KVM at all.
+> 
+> This moved the capability support advertising to platforms and stops
+> advertising it on XIVE, i.e. POWER9 and later.
+> 
+> This should cause no behavioural change for other architectures.
+> 
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> Acked-by: Nicholas Piggin <npiggin@gmail.com>
+> Acked-by: Marc Zyngier <maz@kernel.org>
+> ---
 
-drew
+If no one objects, I'll grab this for 6.4 and route it through kvm-x86/generic.
+
+> diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+> index fb1490761c87..908ce8bd91c9 100644
+> --- a/arch/powerpc/kvm/powerpc.c
+> +++ b/arch/powerpc/kvm/powerpc.c
+> @@ -593,6 +593,12 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
+>                 break;
+>  #endif
+>
+> +#ifdef CONFIG_HAVE_KVM_IRQFD
+> +       case KVM_CAP_IRQFD_RESAMPLE:
+> +               r = !xive_enabled();
+> +               break;
+> +#endif
+
+@PPC folks, do you want to avoid the #ifdef?  If so, I can tweak to this when
+applying.
+
+	case KVM_CAP_IRQFD_RESAMPLE:
+		r = IS_ENABLED(CONFIG_HAVE_KVM_IRQFD) && !xive_enabled();
+		break;
 
