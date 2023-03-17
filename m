@@ -1,47 +1,60 @@
 From: Andy Chiu <andy.chiu@sifive.com>
-Date: Fri, 17 Mar 2023 11:35:34 +0000
-Subject: [PATCH -next v15 15/19] riscv: signal: validate altstack to reflect Vector
+Date: Fri, 17 Mar 2023 11:35:35 +0000
+Subject: [PATCH -next v15 16/19] riscv: prevent stack corruption by reserving task_pt_regs(p) early
 In-Reply-To: <20230317113538.10878-1-andy.chiu@sifive.com>
 References: <20230317113538.10878-1-andy.chiu@sifive.com>
-Message-ID: <20230317113538.10878-16-andy.chiu@sifive.com>
+Message-ID: <20230317113538.10878-17-andy.chiu@sifive.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Some extensions, such as Vector, dynamically change footprint on a
-signal frame, so MINSIGSTKSZ is no longer accurate. For example, an
-RV64V implementation with vlen = 512 may occupy 2K + 40 + 12 Bytes of a
-signal frame with the upcoming support. And processes that do not
-execute any vector instructions do not need to reserve the extra
-sigframe. So we need a way to guard the allocation size of the sigframe
-at process runtime according to current status of V.
+From: Greentime Hu <greentime.hu@sifive.com>
 
-Thus, provide the function sigaltstack_size_valid() to validate its size
-based on current allocation status of supported extensions.
+Early function calls, such as setup_vm(), relocate_enable_mmu(),
+soc_early_init() etc, are free to operate on stack. However,
+PT_SIZE_ON_STACK bytes at the head of the kernel stack are purposedly
+reserved for the placement of per-task register context pointed by
+task_pt_regs(p). Those functions may corrupt task_pt_regs if we overlap
+the $sp with it. In fact, we had accidentally corrupted sstatus.VS in some
+tests, treating the kernel to save V context before V was actually
+allocated, resulting in a kernel panic.
 
+Thus, we should skip PT_SIZE_ON_STACK for $sp before making C function
+calls from the top-level assembly.
+
+Co-developed-by: ShihPo Hung <shihpo.hung@sifive.com>
+Signed-off-by: ShihPo Hung <shihpo.hung@sifive.com>
+Co-developed-by: Vincent Chen <vincent.chen@sifive.com>
+Signed-off-by: Vincent Chen <vincent.chen@sifive.com>
+Signed-off-by: Greentime Hu <greentime.hu@sifive.com>
 Signed-off-by: Andy Chiu <andy.chiu@sifive.com>
+Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
 ---
- arch/riscv/kernel/signal.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ arch/riscv/kernel/head.S | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/arch/riscv/kernel/signal.c b/arch/riscv/kernel/signal.c
-index d2d9232498ca..b8ad9a7fc0ad 100644
---- a/arch/riscv/kernel/signal.c
-+++ b/arch/riscv/kernel/signal.c
-@@ -494,3 +494,11 @@ void __init init_rt_signal_env(void)
- 	 */
- 	signal_minsigstksz = get_rt_frame_size(true);
- }
-+
-+#ifdef CONFIG_DYNAMIC_SIGFRAME
-+bool sigaltstack_size_valid(size_t ss_size)
-+{
-+	return ss_size > get_rt_frame_size(false);
-+}
-+#endif /* CONFIG_DYNAMIC_SIGFRAME */
-+
+diff --git a/arch/riscv/kernel/head.S b/arch/riscv/kernel/head.S
+index e16bb2185d55..11c3b94c4534 100644
+--- a/arch/riscv/kernel/head.S
++++ b/arch/riscv/kernel/head.S
+@@ -301,6 +301,7 @@ clear_bss_done:
+ 	la tp, init_task
+ 	la sp, init_thread_union + THREAD_SIZE
+ 	XIP_FIXUP_OFFSET sp
++	addi sp, sp, -PT_SIZE_ON_STACK
+ #ifdef CONFIG_BUILTIN_DTB
+ 	la a0, __dtb_start
+ 	XIP_FIXUP_OFFSET a0
+@@ -318,6 +319,7 @@ clear_bss_done:
+ 	/* Restore C environment */
+ 	la tp, init_task
+ 	la sp, init_thread_union + THREAD_SIZE
++	addi sp, sp, -PT_SIZE_ON_STACK
+ 
+ #ifdef CONFIG_KASAN
+ 	call kasan_early_init
 -- 
 2.17.1
 
