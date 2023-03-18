@@ -1,95 +1,55 @@
-From: David Matlack <dmatlack@google.com>
-Date: Fri, 17 Mar 2023 14:11:06 -0700
-Subject: [PATCH] KVM: RISC-V: Retry fault if vma_lookup() results become invalid
-Message-ID: <20230317211106.1234484-1-dmatlack@google.com>
+From: patchwork-bot+linux-riscv@kernel.org <patchwork-bot+linux-riscv@kernel.org>
+Date: Sat, 18 Mar 2023 01:00:21 +0000
+Subject: [PATCH v6 0/8] RISC-V: Apply Zicboz to clear_page
+In-Reply-To: <20230224162631.405473-1-ajones@ventanamicro.com>
+References: <20230224162631.405473-1-ajones@ventanamicro.com>
+Message-ID: <167910122129.24496.10588514847374462522.git-patchwork-notify@kernel.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Read mmu_invalidate_seq before dropping the mmap_lock so that KVM can
-detect if the results of vma_lookup() (e.g. vma_shift) become stale
-before it acquires kvm->mmu_lock. This fixes a theoretical bug where a
-VMA could be changed by userspace after vma_lookup() and before KVM
-reads the mmu_invalidate_seq, causing KVM to install page table entries
-based on a (possibly) no-longer-valid vma_shift.
+Hello:
 
-Re-order the MMU cache top-up to earlier in user_mem_abort() so that it
-is not done after KVM has read mmu_invalidate_seq (i.e. so as to avoid
-inducing spurious fault retries).
+This series was applied to riscv/linux.git (for-next)
+by Palmer Dabbelt <palmer@rivosinc.com>:
 
-It's unlikely that any sane userspace currently modifies VMAs in such a
-way as to trigger this race. And even with directed testing I was unable
-to reproduce it. But a sufficiently motivated host userspace might be
-able to exploit this race.
+On Fri, 24 Feb 2023 17:26:23 +0100 you wrote:
+> When the Zicboz extension is available we can more rapidly zero naturally
+> aligned Zicboz block sized chunks of memory. As pages are always page
+> aligned and are larger than any Zicboz block size will be, then
+> clear_page() appears to be a good candidate for the extension. While cycle
+> count and energy consumption should also be considered, we can be pretty
+> certain that implementing clear_page() with the Zicboz extension is a win
+> by comparing the new dynamic instruction count with its current count[1].
+> Doing so we see that the new count is just over a quarter of the old count
+> (see patch6's commit message for more details).
+> 
+> [...]
 
-Note KVM/ARM had the same bug and was fixed in a separate, near
-identical patch (see Link).
+Here is the summary with links:
+  - [v6,1/8] RISC-V: alternatives: Support patching multiple insns in assembly
+    https://git.kernel.org/riscv/c/0b2f658f5370
+  - [v6,2/8] RISC-V: Factor out body of riscv_init_cbom_blocksize loop
+    https://git.kernel.org/riscv/c/8b05e7d0408a
+  - [v6,3/8] dt-bindings: riscv: Document cboz-block-size
+    https://git.kernel.org/riscv/c/ea20f117ab99
+  - [v6,4/8] RISC-V: Add Zicboz detection and block size parsing
+    https://git.kernel.org/riscv/c/7ea5a73617e9
+  - [v6,5/8] RISC-V: cpufeatures: Put the upper 16 bits of patch ID to work
+    https://git.kernel.org/riscv/c/d25f256332cc
+  - [v6,6/8] RISC-V: Use Zicboz in clear_page when available
+    https://git.kernel.org/riscv/c/ab0f77465e3e
+  - [v6,7/8] RISC-V: KVM: Provide UAPI for Zicboz block size
+    https://git.kernel.org/riscv/c/665fd8862413
+  - [v6,8/8] RISC-V: KVM: Expose Zicboz to the guest
+    https://git.kernel.org/riscv/c/b20f67994f35
 
-Link: https://lore.kernel.org/kvm/20230313235454.2964067-1-dmatlack at google.com/
-Fixes: 9955371cc014 ("RISC-V: KVM: Implement MMU notifiers")
-Cc: stable at vger.kernel.org
-Signed-off-by: David Matlack <dmatlack@google.com>
----
-Note: Compile-tested only.
-
- arch/riscv/kvm/mmu.c | 25 ++++++++++++++++---------
- 1 file changed, 16 insertions(+), 9 deletions(-)
-
-diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
-index 78211aed36fa..46d692995830 100644
---- a/arch/riscv/kvm/mmu.c
-+++ b/arch/riscv/kvm/mmu.c
-@@ -628,6 +628,13 @@ int kvm_riscv_gstage_map(struct kvm_vcpu *vcpu,
- 			!(memslot->flags & KVM_MEM_READONLY)) ? true : false;
- 	unsigned long vma_pagesize, mmu_seq;
- 
-+	/* We need minimum second+third level pages */
-+	ret = kvm_mmu_topup_memory_cache(pcache, gstage_pgd_levels);
-+	if (ret) {
-+		kvm_err("Failed to topup G-stage cache\n");
-+		return ret;
-+	}
-+
- 	mmap_read_lock(current->mm);
- 
- 	vma = vma_lookup(current->mm, hva);
-@@ -648,6 +655,15 @@ int kvm_riscv_gstage_map(struct kvm_vcpu *vcpu,
- 	if (vma_pagesize == PMD_SIZE || vma_pagesize == PUD_SIZE)
- 		gfn = (gpa & huge_page_mask(hstate_vma(vma))) >> PAGE_SHIFT;
- 
-+	/*
-+	 * Read mmu_invalidate_seq so that KVM can detect if the results of
-+	 * vma_lookup() or gfn_to_pfn_prot() become stale priort to acquiring
-+	 * kvm->mmu_lock.
-+	 *
-+	 * Rely on mmap_read_unlock() for an implicit smp_rmb(), which pairs
-+	 * with the smp_wmb() in kvm_mmu_invalidate_end().
-+	 */
-+	mmu_seq = kvm->mmu_invalidate_seq;
- 	mmap_read_unlock(current->mm);
- 
- 	if (vma_pagesize != PUD_SIZE &&
-@@ -657,15 +673,6 @@ int kvm_riscv_gstage_map(struct kvm_vcpu *vcpu,
- 		return -EFAULT;
- 	}
- 
--	/* We need minimum second+third level pages */
--	ret = kvm_mmu_topup_memory_cache(pcache, gstage_pgd_levels);
--	if (ret) {
--		kvm_err("Failed to topup G-stage cache\n");
--		return ret;
--	}
--
--	mmu_seq = kvm->mmu_invalidate_seq;
--
- 	hfn = gfn_to_pfn_prot(kvm, gfn, is_write, &writable);
- 	if (hfn == KVM_PFN_ERR_HWPOISON) {
- 		send_sig_mceerr(BUS_MCEERR_AR, (void __user *)hva,
-
-base-commit: eeac8ede17557680855031c6f305ece2378af326
+You are awesome, thank you!
 -- 
-2.40.0.rc2.332.ga46443480c-goog
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/patchwork/pwbot.html
+
 
 
