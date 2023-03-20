@@ -1,55 +1,53 @@
-From: patchwork-bot+linux-riscv@kernel.org <patchwork-bot+linux-riscv@kernel.org>
-Date: Sat, 18 Mar 2023 01:00:21 +0000
-Subject: [PATCH v6 0/8] RISC-V: Apply Zicboz to clear_page
-In-Reply-To: <20230224162631.405473-1-ajones@ventanamicro.com>
-References: <20230224162631.405473-1-ajones@ventanamicro.com>
-Message-ID: <167910122129.24496.10588514847374462522.git-patchwork-notify@kernel.org>
+From: Andy Chiu <andy.chiu@sifive.com>
+Date: Mon, 20 Mar 2023 22:46:57 +0800
+Subject: [PATCH -next v15 08/19] riscv: Introduce struct/helpers to
+ save/restore per-task Vector state
+In-Reply-To: <456a8e61-c6b7-46d5-a25c-c466820912d7@spud>
+References: <20230317113538.10878-1-andy.chiu@sifive.com> <20230317113538.10878-9-andy.chiu@sifive.com>
+ <456a8e61-c6b7-46d5-a25c-c466820912d7@spud>
+Message-ID: <CABgGipVf3eTc9pj58wMYQr7NBcic+-m3fECEttqvPcn9Zu3qJw@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello:
+On Mon, Mar 20, 2023 at 9:05?PM Conor Dooley <conor.dooley@microchip.com> wrote:
+>
+> On Fri, Mar 17, 2023 at 11:35:27AM +0000, Andy Chiu wrote:
+> > From: Greentime Hu <greentime.hu@sifive.com>
+> >
+> > Add vector state context struct to be added later in thread_struct. And
+> > prepare low-level helper functions to save/restore vector contexts.
+> >
+> > This include Vector Regfile and CSRs holding dynamic configuration state
+> > (vstart, vl, vtype, vcsr). The Vec Register width could be implementation
+> > defined, but same for all processes, so that is saved separately.
+> >
+> > This is not yet wired into final thread_struct - will be done when
+> > __switch_to actually starts doing this in later patches.
+> >
+> > Given the variable (and potentially large) size of regfile, they are
+> > saved in dynamically allocated memory, pointed to by datap pointer in
+> > __riscv_v_ext_state.
+> >
+> > Co-developed-by: Vincent Chen <vincent.chen@sifive.com>
+> > Signed-off-by: Vincent Chen <vincent.chen@sifive.com>
+> > Signed-off-by: Greentime Hu <greentime.hu@sifive.com>
+> > Signed-off-by: Vineet Gupta <vineetg@rivosinc.com>
+> > Signed-off-by: Andy Chiu <andy.chiu@sifive.com>
+>
+> I think you missed a:
+> Acked-by: Conor Dooley <conor.dooley@microchip.com>
+>
+> Thanks,
+> Conor.
+>
 
-This series was applied to riscv/linux.git (for-next)
-by Palmer Dabbelt <palmer@rivosinc.com>:
+Yes, removed it on purpose because I changed some inline assembly in
+this submission. So I think you may want to take a look in case I did
+something silly.
 
-On Fri, 24 Feb 2023 17:26:23 +0100 you wrote:
-> When the Zicboz extension is available we can more rapidly zero naturally
-> aligned Zicboz block sized chunks of memory. As pages are always page
-> aligned and are larger than any Zicboz block size will be, then
-> clear_page() appears to be a good candidate for the extension. While cycle
-> count and energy consumption should also be considered, we can be pretty
-> certain that implementing clear_page() with the Zicboz extension is a win
-> by comparing the new dynamic instruction count with its current count[1].
-> Doing so we see that the new count is just over a quarter of the old count
-> (see patch6's commit message for more details).
-> 
-> [...]
-
-Here is the summary with links:
-  - [v6,1/8] RISC-V: alternatives: Support patching multiple insns in assembly
-    https://git.kernel.org/riscv/c/0b2f658f5370
-  - [v6,2/8] RISC-V: Factor out body of riscv_init_cbom_blocksize loop
-    https://git.kernel.org/riscv/c/8b05e7d0408a
-  - [v6,3/8] dt-bindings: riscv: Document cboz-block-size
-    https://git.kernel.org/riscv/c/ea20f117ab99
-  - [v6,4/8] RISC-V: Add Zicboz detection and block size parsing
-    https://git.kernel.org/riscv/c/7ea5a73617e9
-  - [v6,5/8] RISC-V: cpufeatures: Put the upper 16 bits of patch ID to work
-    https://git.kernel.org/riscv/c/d25f256332cc
-  - [v6,6/8] RISC-V: Use Zicboz in clear_page when available
-    https://git.kernel.org/riscv/c/ab0f77465e3e
-  - [v6,7/8] RISC-V: KVM: Provide UAPI for Zicboz block size
-    https://git.kernel.org/riscv/c/665fd8862413
-  - [v6,8/8] RISC-V: KVM: Expose Zicboz to the guest
-    https://git.kernel.org/riscv/c/b20f67994f35
-
-You are awesome, thank you!
--- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/patchwork/pwbot.html
-
-
+Thanks,
+Andy.
 
