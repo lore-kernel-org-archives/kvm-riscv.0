@@ -1,71 +1,35 @@
 From: Conor Dooley <conor@kernel.org>
-Date: Wed, 22 Mar 2023 15:17:23 -0000
-Subject: [PATCH] riscv: require alternatives framework when selecting FPU
- support
-In-Reply-To: <20230322124631.7p67thzeblrawsqj@orel>
-References: <ZBruFRwt3rUVngPu@zx2c4.com>
- <20230322120907.2968494-1-Jason@zx2c4.com>
- <20230322124631.7p67thzeblrawsqj@orel>
-Message-ID: <1884bd96-2783-4556-bc57-8b733758baff@spud>
+Date: Wed, 22 Mar 2023 19:40:23 -0000
+Subject: [PATCH 0/2] RISC-V: KVM: Require alternatives
+In-Reply-To: <20230322192858.1189272-1-ajones@ventanamicro.com>
+References: <20230322192858.1189272-1-ajones@ventanamicro.com>
+Message-ID: <6d263b50-e2f0-4331-b930-c54e27f52fcc@spud>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Mar 22, 2023 at 01:46:31PM +0100, Andrew Jones wrote:
-> On Wed, Mar 22, 2023 at 01:09:07PM +0100, Jason A. Donenfeld wrote:
-> > When moving switch_to's has_fpu() over to using riscv_has_extension_
-> > likely() rather than static branchs, the FPU code gained a dependency on
-> > the alternatives framework. If CONFIG_RISCV_ALTERNATIVE isn't selected
-> > when CONFIG_FPU is, then has_fpu() returns false, and switch_to does not
-> > work as intended. So select CONFIG_RISCV_ALTERNATIVE when CONFIG_FPU is
-> > selected.
-> > 
-> > Fixes: 702e64550b12 ("riscv: fpu: switch has_fpu() to riscv_has_extension_likely()")
-> > Link: https://lore.kernel.org/all/ZBruFRwt3rUVngPu at zx2c4.com/
-> > Cc: Jisheng Zhang <jszhang@kernel.org>
-> > Cc: Andrew Jones <ajones@ventanamicro.com>
-> > Cc: Heiko Stuebner <heiko@sntech.de>
-> > Cc: Conor Dooley <conor.dooley@microchip.com>
+On Wed, Mar 22, 2023 at 08:28:56PM +0100, Andrew Jones wrote:
+> KVM makes use of riscv_has_extension_unlikely() to check for the
+> svinval extension. riscv_has_extension_unlikely() is built on
+> alternatives, which means KVM should ensure alternatives support
+> is available.
+> 
+> The first patch takes the opportunity to cleanup KVM's select
+> list. The second patch selects RISCV_ALTERNATIVE.
 
-Thanks for fixing it!
+Reminds me, I need to re-submit my patch doing that for the top-level
+RISC-V Kconfig...
+For the pair:
 Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
 
-> > Signed-off-by: Jason A. Donenfeld <Jason@zx2c4.com>
-> > ---
-> >  arch/riscv/Kconfig | 1 +
-> >  1 file changed, 1 insertion(+)
-> > 
-> > diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
-> > index c5e42cc37604..0f59350c699d 100644
-> > --- a/arch/riscv/Kconfig
-> > +++ b/arch/riscv/Kconfig
-> > @@ -467,6 +467,7 @@ config TOOLCHAIN_HAS_ZIHINTPAUSE
-> >  config FPU
-> >  	bool "FPU support"
-> >  	default y
-> > +	select RISCV_ALTERNATIVE
-> >  	help
-> >  	  Say N here if you want to disable all floating-point related procedure
-> >  	  in the kernel.
-> > -- 
-> > 2.40.0
-> >
-> 
-> Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
-> 
-> I took a look to see if we missed anything else and see that we should
-> do the same patch for KVM. I'll send one.
-> 
-> (It's tempting to just select RISCV_ALTERNATIVE from RISCV, but maybe we
->  can defer that wedding a bit longer.)
-
-At that point, the config option should just go away entirely, no?
+Thanks,
+Conor.
 -------------- next part --------------
 A non-text attachment was scrubbed...
 Name: signature.asc
 Type: application/pgp-signature
 Size: 228 bytes
 Desc: not available
-URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20230322/8d70ed54/attachment-0001.sig>
+URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20230322/5f47598b/attachment-0001.sig>
