@@ -1,209 +1,73 @@
-From: Guo Ren <guoren@kernel.org>
-Date: Wed, 22 Mar 2023 09:54:16 +0800
-Subject: [PATCH -next v15 08/19] riscv: Introduce struct/helpers to
- save/restore per-task Vector state
-In-Reply-To: <20230317113538.10878-9-andy.chiu@sifive.com>
-References: <20230317113538.10878-1-andy.chiu@sifive.com> <20230317113538.10878-9-andy.chiu@sifive.com>
-Message-ID: <CAJF2gTSSbbQ_ec0GA7w9KMT4VPUV2vX=rF8LLKjGevfsytaSRA@mail.gmail.com>
+From: Jason A. Donenfeld <Jason@zx2c4.com>
+Date: Wed, 22 Mar 2023 13:01:25 +0100
+Subject: [PATCH v5 06/13] riscv: fpu: switch has_fpu() to
+ riscv_has_extension_likely()
+In-Reply-To: <20230128172856.3814-7-jszhang@kernel.org>
+References: <20230128172856.3814-1-jszhang@kernel.org>
+ <20230128172856.3814-7-jszhang@kernel.org>
+Message-ID: <ZBruFRwt3rUVngPu@zx2c4.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Mar 17, 2023 at 7:37?PM Andy Chiu <andy.chiu@sifive.com> wrote:
->
-> From: Greentime Hu <greentime.hu@sifive.com>
->
-> Add vector state context struct to be added later in thread_struct. And
-> prepare low-level helper functions to save/restore vector contexts.
->
-> This include Vector Regfile and CSRs holding dynamic configuration state
-> (vstart, vl, vtype, vcsr). The Vec Register width could be implementation
-> defined, but same for all processes, so that is saved separately.
->
-> This is not yet wired into final thread_struct - will be done when
-> __switch_to actually starts doing this in later patches.
->
-> Given the variable (and potentially large) size of regfile, they are
-> saved in dynamically allocated memory, pointed to by datap pointer in
-> __riscv_v_ext_state.
->
-> Co-developed-by: Vincent Chen <vincent.chen@sifive.com>
-> Signed-off-by: Vincent Chen <vincent.chen@sifive.com>
-> Signed-off-by: Greentime Hu <greentime.hu@sifive.com>
-> Signed-off-by: Vineet Gupta <vineetg@rivosinc.com>
-> Signed-off-by: Andy Chiu <andy.chiu@sifive.com>
+Hi,
+
+On Sun, Jan 29, 2023 at 01:28:49AM +0800, Jisheng Zhang wrote:
+> Switch has_fpu() from static branch to the new helper
+> riscv_has_extension_likely().
+> 
+> Signed-off-by: Jisheng Zhang <jszhang@kernel.org>
+> Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+> Reviewed-by: Heiko Stuebner <heiko@sntech.de>
+> Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
 > ---
->  arch/riscv/include/asm/vector.h      | 97 ++++++++++++++++++++++++++++
->  arch/riscv/include/uapi/asm/ptrace.h | 17 +++++
->  2 files changed, 114 insertions(+)
->
-> diff --git a/arch/riscv/include/asm/vector.h b/arch/riscv/include/asm/vector.h
-> index 18448e24d77b..c7143b7d64d1 100644
-> --- a/arch/riscv/include/asm/vector.h
-> +++ b/arch/riscv/include/asm/vector.h
-> @@ -10,8 +10,10 @@
->
->  #ifdef CONFIG_RISCV_ISA_V
->
-> +#include <linux/stringify.h>
->  #include <asm/hwcap.h>
->  #include <asm/csr.h>
-> +#include <asm/asm.h>
->
->  extern unsigned long riscv_v_vsize;
->  void riscv_v_setup_vsize(void);
-> @@ -21,6 +23,26 @@ static __always_inline bool has_vector(void)
->         return riscv_has_extension_likely(RISCV_ISA_EXT_v);
->  }
->
-> +static inline void __riscv_v_vstate_clean(struct pt_regs *regs)
-> +{
-> +       regs->status = (regs->status & ~SR_VS) | SR_VS_CLEAN;
-> +}
-> +
-> +static inline void riscv_v_vstate_off(struct pt_regs *regs)
-> +{
-> +       regs->status = (regs->status & ~SR_VS) | SR_VS_OFF;
-> +}
-> +
-> +static inline void riscv_v_vstate_on(struct pt_regs *regs)
-> +{
-> +       regs->status = (regs->status & ~SR_VS) | SR_VS_INITIAL;
-> +}
-> +
-> +static inline bool riscv_v_vstate_query(struct pt_regs *regs)
-> +{
-> +       return (regs->status & SR_VS) != 0;
-> +}
-> +
->  static __always_inline void riscv_v_enable(void)
+>  arch/riscv/include/asm/switch_to.h | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/riscv/include/asm/switch_to.h b/arch/riscv/include/asm/switch_to.h
+> index 11463489fec6..60f8ca01d36e 100644
+> --- a/arch/riscv/include/asm/switch_to.h
+> +++ b/arch/riscv/include/asm/switch_to.h
+> @@ -59,7 +59,8 @@ static inline void __switch_to_aux(struct task_struct *prev,
+>  
+>  static __always_inline bool has_fpu(void)
 >  {
->         csr_set(CSR_SSTATUS, SR_VS);
-> @@ -31,11 +53,86 @@ static __always_inline void riscv_v_disable(void)
->         csr_clear(CSR_SSTATUS, SR_VS);
->  }
->
-> +static __always_inline void __vstate_csr_save(struct __riscv_v_ext_state *dest)
-> +{
-> +       asm volatile (
-> +               "csrr   %0, " __stringify(CSR_VSTART) "\n\t"
-> +               "csrr   %1, " __stringify(CSR_VTYPE) "\n\t"
-> +               "csrr   %2, " __stringify(CSR_VL) "\n\t"
-> +               "csrr   %3, " __stringify(CSR_VCSR) "\n\t"
-> +               : "=r" (dest->vstart), "=r" (dest->vtype), "=r" (dest->vl),
-> +                 "=r" (dest->vcsr) : :);
-> +}
-> +
-> +static __always_inline void __vstate_csr_restore(struct __riscv_v_ext_state *src)
-> +{
-> +       asm volatile (
-> +               ".option push\n\t"
-> +               ".option arch, +v\n\t"
-> +               "vsetvl  x0, %2, %1\n\t"
-> +               ".option pop\n\t"
-> +               "csrw   " __stringify(CSR_VSTART) ", %0\n\t"
-> +               "csrw   " __stringify(CSR_VCSR) ", %3\n\t"
-> +               : : "r" (src->vstart), "r" (src->vtype), "r" (src->vl),
-> +                   "r" (src->vcsr) :);
-> +}
-> +
-> +static inline void __riscv_v_vstate_save(struct __riscv_v_ext_state *save_to,
-> +                                        void *datap)
-> +{
-> +       unsigned long vl;
-> +
-> +       riscv_v_enable();
-> +       __vstate_csr_save(save_to);
-> +       asm volatile (
-> +               ".option push\n\t"
-> +               ".option arch, +v\n\t"
-> +               "vsetvli        %0, x0, e8, m8, ta, ma\n\t"
-> +               "vse8.v         v0, (%1)\n\t"
-> +               "add            %1, %1, %0\n\t"
-> +               "vse8.v         v8, (%1)\n\t"
-> +               "add            %1, %1, %0\n\t"
-> +               "vse8.v         v16, (%1)\n\t"
-> +               "add            %1, %1, %0\n\t"
-> +               "vse8.v         v24, (%1)\n\t"
-> +               ".option pop\n\t"
-> +               : "=&r" (vl) : "r" (datap) : "memory");
-> +       riscv_v_disable();
-> +}
-> +
-> +static inline void __riscv_v_vstate_restore(struct __riscv_v_ext_state *restore_from,
-> +                                           void *datap)
-> +{
-> +       unsigned long vl;
-> +
-> +       riscv_v_enable();
-> +       asm volatile (
-> +               ".option push\n\t"
-> +               ".option arch, +v\n\t"
-> +               "vsetvli        %0, x0, e8, m8, ta, ma\n\t"
-> +               "vle8.v         v0, (%1)\n\t"
-> +               "add            %1, %1, %0\n\t"
-> +               "vle8.v         v8, (%1)\n\t"
-> +               "add            %1, %1, %0\n\t"
-> +               "vle8.v         v16, (%1)\n\t"
-> +               "add            %1, %1, %0\n\t"
-> +               "vle8.v         v24, (%1)\n\t"
-> +               ".option pop\n\t"
-> +               : "=&r" (vl) : "r" (datap) : "memory");
-> +       __vstate_csr_restore(restore_from);
-> +       riscv_v_disable();
-> +}
-> +
->  #else /* ! CONFIG_RISCV_ISA_V  */
->
-> +struct pt_regs;
-> +
->  static __always_inline bool has_vector(void) { return false; }
-> +static inline bool riscv_v_vstate_query(struct pt_regs *regs) { return false; }
->  #define riscv_v_vsize (0)
->  #define riscv_v_setup_vsize()                  do {} while (0)
-> +#define riscv_v_vstate_off(regs)               do {} while (0)
-> +#define riscv_v_vstate_on(regs)                        do {} while (0)
->
->  #endif /* CONFIG_RISCV_ISA_V */
->
-> diff --git a/arch/riscv/include/uapi/asm/ptrace.h b/arch/riscv/include/uapi/asm/ptrace.h
-> index 882547f6bd5c..586786d023c4 100644
-> --- a/arch/riscv/include/uapi/asm/ptrace.h
-> +++ b/arch/riscv/include/uapi/asm/ptrace.h
-> @@ -77,6 +77,23 @@ union __riscv_fp_state {
->         struct __riscv_q_ext_state q;
->  };
->
-> +struct __riscv_v_ext_state {
-> +       unsigned long vstart;
-> +       unsigned long vl;
-> +       unsigned long vtype;
-> +       unsigned long vcsr;
-> +       void *datap;
-> +       /*
-> +        * In signal handler, datap will be set a correct user stack offset
-> +        * and vector registers will be copied to the address of datap
-> +        * pointer.
-> +        *
-> +        * In ptrace syscall, datap will be set to zero and the vector
-> +        * registers will be copied to the address right after this
-> +        * structure.
-> +        */
-> +};
-> +
->  #endif /* __ASSEMBLY__ */
->
->  #endif /* _UAPI_ASM_RISCV_PTRACE_H */
-Reviewed-by: Guo Ren <guoren@kernel.org>
+> -	return static_branch_likely(&riscv_isa_ext_keys[RISCV_ISA_EXT_KEY_FPU]);
+> +	return riscv_has_extension_likely(RISCV_ISA_EXT_f) ||
+> +		riscv_has_extension_likely(RISCV_ISA_EXT_d);
 
-> --
-> 2.17.1
->
+This causes programs to crash on kernels that are compiled with
+CONFIG_RISCV_ALTERNATIVE=n. Since CONFIG_RISCV_ALTERNATIVE isn't
+selectable, this is a problem.
 
+You can try this out for yourself using the WireGuard test suite:
 
--- 
-Best Regards
- Guo Ren
+    ARCH=riscv64 make -C tools/testing/selftests/wireguard/qemu -j$(nproc)
+
+And you'll see the crash:
+
+[    2.172093] init.sh[45]: unhandled signal 4 code 0x1 at 0x00ffffff945a2170 in libc.so[ffffff94562000+8c000]
+[    2.174306] CPU: 0 PID: 45 Comm: init.sh Not tainted 6.3.0-rc3+ #1
+[    2.174981] Hardware name: riscv-virtio,qemu (DT)
+[    2.175639] epc : 00ffffff945a2170 ra : 00aaaaaae7332820 sp : 00fffffffd3e6c00
+[    2.176287]  gp : 00aaaaaae73aff40 tp : 00ffffff945f1a50 t0 : 0000000000000000
+[    2.176858]  t1 : 00aaaaaae7331f9c t2 : 0000000000000002 s0 : 00fffffffd3e6de0
+[    2.177427]  s1 : 0000000000000002 a0 : 00aaaaaae73b7380 a1 : 00fffffffd3e6dc8
+[    2.177990]  a2 : 00fffffffd3e6de0 a3 : 0000000000000000 a4 : 0000000000000000
+[    2.178524]  a5 : 0000000000000002 a6 : 000000000000008b a7 : 0000000000000010
+[    2.179081]  s2 : 00aaaaaae73327f0 s3 : 00ffffff945ef990 s4 : 00ffffff945f1988
+[    2.179796]  s5 : 00ffffff945f1b48 s6 : 0000000000000000 s7 : 00000000000000e0
+[    2.180366]  s8 : 00ffffff945f1d58 s9 : 00ffffff945ecb88 s10: 00ffffff945f17e0
+[    2.185464]  s11: 0000000000000001 t3 : 00ffffff945a213c t4 : 0000000300000000
+[    2.186106]  t5 : 0000000000000003 t6 : ffffffffffffffff
+[    2.186520] status: 0000000200000020 badaddr: 000000000000b920 cause: 0000000000000002
+
+I bisected it to this commit:
+
+    702e64550b12 ("riscv: fpu: switch has_fpu() to riscv_has_extension_likely()")
+
+Thanks,
+Jason
 
