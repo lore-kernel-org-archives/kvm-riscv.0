@@ -1,145 +1,83 @@
 From: Conor Dooley <conor.dooley@microchip.com>
-Date: Thu, 23 Mar 2023 14:50:10 -0000
-Subject: [PATCH] riscv: require alternatives framework when selecting FPU
- support
-In-Reply-To: <CAHmME9qEbUP7cq-iofN=ruSWhsHUva+qqavfEpNzDK_BjQVqxw@mail.gmail.com>
-References: <ZBruFRwt3rUVngPu@zx2c4.com>
- <20230322120907.2968494-1-Jason@zx2c4.com>
- <20230322124631.7p67thzeblrawsqj@orel>
- <1884bd96-2783-4556-bc57-8b733758baff@spud>
- <20230322192610.sad42xau33ye5ayn@orel>
- <2a3b08ce-5ab1-41b6-ad58-edbeff7b1acb@spud>
- <ad445951-3d13-4644-94d9-e0989cda39c3@spud>
- <CAHmME9qEbUP7cq-iofN=ruSWhsHUva+qqavfEpNzDK_BjQVqxw@mail.gmail.com>
-Message-ID: <af690061-f962-498e-b2df-d2e6119292cf@spud>
+Date: Thu, 23 Mar 2023 15:26:45 -0000
+Subject: [PATCH -next v16 19/20] riscv: detect assembler support for
+ .option arch
+In-Reply-To: <20230323145924.4194-20-andy.chiu@sifive.com>
+References: <20230323145924.4194-1-andy.chiu@sifive.com>
+ <20230323145924.4194-20-andy.chiu@sifive.com>
+Message-ID: <04cc3420-26a7-4263-b120-677c758eabea@spud>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Mar 22, 2023 at 09:19:50PM +0100, Jason A. Donenfeld wrote:
-> On Wed, Mar 22, 2023 at 9:05?PM Conor Dooley <conor@kernel.org> wrote:
-> >
-> > On Wed, Mar 22, 2023 at 07:44:13PM +0000, Conor Dooley wrote:
-> > > On Wed, Mar 22, 2023 at 08:26:10PM +0100, Andrew Jones wrote:
-> > > > On Wed, Mar 22, 2023 at 03:17:13PM +0000, Conor Dooley wrote:
-> > > > > On Wed, Mar 22, 2023 at 01:46:31PM +0100, Andrew Jones wrote:
-> > >
-> > > > > > (It's tempting to just select RISCV_ALTERNATIVE from RISCV, but maybe we
-> > > > > >  can defer that wedding a bit longer.)
-> > > > >
-> > > > > At that point, the config option should just go away entirely, no?
-> > > >
-> > > > Ah, yes, and that makes the idea even more attractive, as we could remove
-> > > > several ifdefs.
-> > >
-> > > I went and did the cursory check, it's not compatible with XIP_KERNEL so
-> > > dropping the option entirely probably isn't a possibility :/
-> >
-> > What I said is only now sinking in. We're now going to be disabling FPU
-> > support on XIP kernels with this patch.
-> > Well, technically not this patch since it wouldn't have built without
-> > Jason's changes, but that doesn't seem like the right thing to do...
+On Thu, Mar 23, 2023 at 02:59:23PM +0000, Andy Chiu wrote:
+> Some extensions use .option arch directive to selectively enable certain
+> extensions in parts of its assembly code. For example, Zbb uses it to
+> inform assmebler to emit bit manipulation instructions. However,
+> supporting of this directive only exist on GNU assembler and has not
+> landed on clang at the moment, making TOOLCHAIN_HAS_ZBB depend on
+> AS_IS_GNU.
 > 
-> I suppose you could have riscv_has_extension_*() fall back to
-> something that doesn't use alternatives on XIP kernels.
+> While it is still under review at https://reviews.llvm.org/D123515, the
+> upcoming Vector patch also requires this feature in assembler. Thus,
+> provide Kconfig AS_HAS_OPTION_ARCH to detect such feature. Then
+> TOOLCHAIN_HAS_XXX will be turned on automatically when the feature land.
+> 
+> Suggested-by: Nathan Chancellor <nathan@kernel.org>
+> Signed-off-by: Andy Chiu <andy.chiu@sifive.com>
+> ---
+>  arch/riscv/Kconfig | 8 +++++++-
+>  1 file changed, 7 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
+> index 36a5b6fed0d3..4f8fd4002f1d 100644
+> --- a/arch/riscv/Kconfig
+> +++ b/arch/riscv/Kconfig
+> @@ -244,6 +244,12 @@ config RISCV_DMA_NONCOHERENT
+>  config AS_HAS_INSN
+>  	def_bool $(as-instr,.insn r 51$(comma) 0$(comma) 0$(comma) t0$(comma) t0$(comma) zero)
+>  
+> +config AS_HAS_OPTION_ARCH
+> +	# https://reviews.llvm.org/D123515
+> +	def_bool y
+> +	depends on $(as-instr, .option arch$(comma) +m)
+> +	depends on !$(as-instr, .option arch$(comma) -i)
 
-Yah, something like the below I guess? Probably overlooking something
-silly & it's lost the benefit of the static branch that it used to have,
-but with the infra that we have at the moment this seemed like the
-sanest thing to do?
+Oh cool, I didn't expect this to work given what Nathan said in his
+mail, but I gave it a whirl and it does seem to.
+I suppose:
+Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
 
-This would requiring picking up your patch Jason, but with an
-"if !XIP_KERNEL" added to the select.
+I'd rather it be this way so that it is "hands off", as opposed to the
+version check that would need updating in the future. And I guess it
+means that support for V & IAS will automatically turn on for stable
+kernels too once the LLVM change lands, which is nice ;)
 
-It's only had the lightest of build tests, but I can go make it a real
-patch if there's not something obviously amiss.
+Thanks Andy!
 
-diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
-index e3021b2590de..6263a0de1c6a 100644
---- a/arch/riscv/include/asm/hwcap.h
-+++ b/arch/riscv/include/asm/hwcap.h
-@@ -57,18 +57,31 @@ struct riscv_isa_ext_data {
- 	unsigned int isa_ext_id;
- };
- 
-+unsigned long riscv_isa_extension_base(const unsigned long *isa_bitmap);
-+
-+#define riscv_isa_extension_mask(ext) BIT_MASK(RISCV_ISA_EXT_##ext)
-+
-+bool __riscv_isa_extension_available(const unsigned long *isa_bitmap, int bit);
-+#define riscv_isa_extension_available(isa_bitmap, ext)	\
-+	__riscv_isa_extension_available(isa_bitmap, RISCV_ISA_EXT_##ext)
-+
- static __always_inline bool
- riscv_has_extension_likely(const unsigned long ext)
- {
- 	compiletime_assert(ext < RISCV_ISA_EXT_MAX,
- 			   "ext must be < RISCV_ISA_EXT_MAX");
- 
--	asm_volatile_goto(
--	ALTERNATIVE("j	%l[l_no]", "nop", 0, %[ext], 1)
--	:
--	: [ext] "i" (ext)
--	:
--	: l_no);
-+	if (IS_ENABLED(CONFIG_RISCV_ALTERNATIVE)) {
-+		asm_volatile_goto(
-+		ALTERNATIVE("j	%l[l_no]", "nop", 0, %[ext], 1)
-+		:
-+		: [ext] "i" (ext)
-+		:
-+		: l_no);
-+	} else {
-+		if (!__riscv_isa_extension_available(NULL, ext))
-+			goto l_no;
-+	}
- 
- 	return true;
- l_no:
-@@ -81,26 +94,23 @@ riscv_has_extension_unlikely(const unsigned long ext)
- 	compiletime_assert(ext < RISCV_ISA_EXT_MAX,
- 			   "ext must be < RISCV_ISA_EXT_MAX");
- 
--	asm_volatile_goto(
--	ALTERNATIVE("nop", "j	%l[l_yes]", 0, %[ext], 1)
--	:
--	: [ext] "i" (ext)
--	:
--	: l_yes);
-+	if (IS_ENABLED(CONFIG_RISCV_ALTERNATIVE)) {
-+		asm_volatile_goto(
-+		ALTERNATIVE("nop", "j	%l[l_yes]", 0, %[ext], 1)
-+		:
-+		: [ext] "i" (ext)
-+		:
-+		: l_yes);
-+	} else {
-+		if (__riscv_isa_extension_available(NULL, ext))
-+			goto l_yes;
-+	}
- 
- 	return false;
- l_yes:
- 	return true;
- }
- 
--unsigned long riscv_isa_extension_base(const unsigned long *isa_bitmap);
--
--#define riscv_isa_extension_mask(ext) BIT_MASK(RISCV_ISA_EXT_##ext)
--
--bool __riscv_isa_extension_available(const unsigned long *isa_bitmap, int bit);
--#define riscv_isa_extension_available(isa_bitmap, ext)	\
--	__riscv_isa_extension_available(isa_bitmap, RISCV_ISA_EXT_##ext)
--
- #endif
- 
- #endif /* _ASM_RISCV_HWCAP_H */
+> +
+>  source "arch/riscv/Kconfig.socs"
+>  source "arch/riscv/Kconfig.errata"
+>  
+> @@ -442,7 +448,7 @@ config TOOLCHAIN_HAS_ZBB
+>  	depends on !64BIT || $(cc-option,-mabi=lp64 -march=rv64ima_zbb)
+>  	depends on !32BIT || $(cc-option,-mabi=ilp32 -march=rv32ima_zbb)
+>  	depends on LLD_VERSION >= 150000 || LD_VERSION >= 23900
+> -	depends on AS_IS_GNU
+> +	depends on AS_HAS_OPTION_ARCH
+>  
+>  config RISCV_ISA_ZBB
+>  	bool "Zbb extension support for bit manipulation instructions"
+> -- 
+> 2.17.1
+> 
+> 
 -------------- next part --------------
 A non-text attachment was scrubbed...
 Name: signature.asc
 Type: application/pgp-signature
 Size: 228 bytes
 Desc: not available
-URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20230323/18fa9406/attachment-0001.sig>
+URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20230323/4449ebe4/attachment-0001.sig>
