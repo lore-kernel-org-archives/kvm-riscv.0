@@ -1,57 +1,42 @@
-From: Andy Chiu <andy.chiu@sifive.com>
-Date: Thu, 23 Mar 2023 15:50:14 +0800
-Subject: [PATCH -next v15 13/19] riscv: signal: Add sigcontext save/restore for vector
-In-Reply-To: <e0b5df49-4d78-4a0f-8509-ff29085486cf@spud>
-References: <e0b5df49-4d78-4a0f-8509-ff29085486cf@spud>
-Message-ID: <20230323075014.2135132-1-andy.chiu@sifive.com>
+From: Björn Töpel <bjorn@kernel.org>
+Date: Thu, 23 Mar 2023 11:21:11 +0100
+Subject: [PATCH -next v15 08/19] riscv: Introduce struct/helpers to
+ save/restore per-task Vector state
+In-Reply-To: <20230317113538.10878-9-andy.chiu@sifive.com>
+References: <20230317113538.10878-1-andy.chiu@sifive.com>
+ <20230317113538.10878-9-andy.chiu@sifive.com>
+Message-ID: <877cv7wyy0.fsf@all.your.base.are.belong.to.us>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Mar 20, 2023 at 9:37???PM Conor Dooley <conor.dooley@microchip.com> wrote:
-> Sparse, or at least Palmer's hacked up version of it that I am running
-> [1] complains a bit about this patch, that you've added a few:
-> + ?? ?? ??1 ../arch/riscv/kernel/signal.c:145:29: warning: incorrect type in initializer (different address spaces)
-> + ?? ?? ??1 ../arch/riscv/kernel/signal.c:171:24: warning: incorrect type in initializer (different address spaces)
-> + ?? ?? ??1 ../arch/riscv/kernel/signal.c:172:24: warning: incorrect type in initializer (different address spaces)
-> + ?? ?? ??1 ../arch/riscv/kernel/signal.c:268:47: warning: incorrect type in initializer (different address spaces)
-> + ?? ?? ??1 ../arch/riscv/kernel/signal.c:282:16: warning: incorrect type in initializer (different address spaces)
-> + ?? ?? ??1 ../arch/riscv/kernel/signal.c:283:16: warning: incorrect type in initializer (different address spaces)
-> Please have a look at those, and check whether they're valid complaints.
+Andy Chiu <andy.chiu@sifive.com> writes:
 
-Yes, they are valid. Meanwhile, running sparse locally, I found the 
-following, which are also reported at 19/19 patch:
-arch/riscv/kernel/signal.c:78:13: warning: incorrect type in assignment (different address spaces) ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ??
-arch/riscv/kernel/signal.c:80:18: warning: cast removes address space '__user' of expression
-arch/riscv/kernel/signal.c:92:16: warning: incorrect type in initializer (different address spaces)
-arch/riscv/kernel/signal.c:114:51: warning: incorrect type in initializer (different address spaces)
-
-And these need to be fixed, while not found by your sparse:
-arch/riscv/kernel/vector.c:81:28: warning: incorrect type in initializer (different address spaces)
-arch/riscv/kernel/vector.c:81:28:    expected unsigned int [noderef] [usertype] __user *epc
-arch/riscv/kernel/vector.c:81:28:    got unsigned int [usertype] *
-
-However, there is no way to get around signal.c:92 though. The copying of
-__user pointer to a __user address should be valid.
-
-+static long save_v_state(struct pt_regs *regs, void **sc_vec)
-+{
-...
-+	/* Copy the pointer datap itself. */
-+	err |= __put_user(datap, &state->v_state.datap); 
-...
-
+> From: Greentime Hu <greentime.hu@sifive.com>
 >
-> Otherwise, this version of this patch seems a lot nicer than the last
-> version, so that makes me happy at least, even if sparse isn't..
+> Add vector state context struct to be added later in thread_struct. And
+> prepare low-level helper functions to save/restore vector contexts.
 >
-> Acked-by: Conor Dooley <conor.dooley@microchip.com>
+> This include Vector Regfile and CSRs holding dynamic configuration state
+> (vstart, vl, vtype, vcsr). The Vec Register width could be implementation
+> defined, but same for all processes, so that is saved separately.
 >
-> Cheers,
-> Conor.
+> This is not yet wired into final thread_struct - will be done when
+> __switch_to actually starts doing this in later patches.
+>
+> Given the variable (and potentially large) size of regfile, they are
+> saved in dynamically allocated memory, pointed to by datap pointer in
+> __riscv_v_ext_state.
+>
+> Co-developed-by: Vincent Chen <vincent.chen@sifive.com>
+> Signed-off-by: Vincent Chen <vincent.chen@sifive.com>
+> Signed-off-by: Greentime Hu <greentime.hu@sifive.com>
+> Signed-off-by: Vineet Gupta <vineetg@rivosinc.com>
+> Signed-off-by: Andy Chiu <andy.chiu@sifive.com>
 
-Thanks,
-Andy
+Thank you for doing the scratch reg change!
+
+Reviewed-by: Bj?rn T?pel <bjorn@rivosinc.com>
 
