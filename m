@@ -1,9 +1,9 @@
 From: Andy Chiu <andy.chiu@sifive.com>
-Date: Thu, 23 Mar 2023 14:59:11 +0000
-Subject: [PATCH -next v16 07/20] riscv: Introduce riscv_v_vsize to record size of Vector context
+Date: Thu, 23 Mar 2023 14:59:12 +0000
+Subject: [PATCH -next v16 08/20] riscv: Introduce struct/helpers to save/restore per-task Vector state
 In-Reply-To: <20230323145924.4194-1-andy.chiu@sifive.com>
 References: <20230323145924.4194-1-andy.chiu@sifive.com>
-Message-ID: <20230323145924.4194-8-andy.chiu@sifive.com>
+Message-ID: <20230323145924.4194-9-andy.chiu@sifive.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -12,106 +12,190 @@ Content-Transfer-Encoding: 7bit
 
 From: Greentime Hu <greentime.hu@sifive.com>
 
-This patch is used to detect the size of CPU vector registers and use
-riscv_v_vsize to save the size of all the vector registers. It assumes all
-harts has the same capabilities in a SMP system.
+Add vector state context struct to be added later in thread_struct. And
+prepare low-level helper functions to save/restore vector contexts.
 
-Co-developed-by: Guo Ren <guoren@linux.alibaba.com>
-Signed-off-by: Guo Ren <guoren@linux.alibaba.com>
+This include Vector Regfile and CSRs holding dynamic configuration state
+(vstart, vl, vtype, vcsr). The Vec Register width could be implementation
+defined, but same for all processes, so that is saved separately.
+
+This is not yet wired into final thread_struct - will be done when
+__switch_to actually starts doing this in later patches.
+
+Given the variable (and potentially large) size of regfile, they are
+saved in dynamically allocated memory, pointed to by datap pointer in
+__riscv_v_ext_state.
+
 Co-developed-by: Vincent Chen <vincent.chen@sifive.com>
 Signed-off-by: Vincent Chen <vincent.chen@sifive.com>
 Signed-off-by: Greentime Hu <greentime.hu@sifive.com>
+Signed-off-by: Vineet Gupta <vineetg@rivosinc.com>
 Signed-off-by: Andy Chiu <andy.chiu@sifive.com>
-Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
+Acked-by: Conor Dooley <conor.dooley@microchip.com>
+Reviewed-by: Guo Ren <guoren@kernel.org>
+Reviewed-by: Bj?rn T?pel <bjorn@rivosinc.com>
 ---
- arch/riscv/include/asm/vector.h |  5 +++++
- arch/riscv/kernel/Makefile      |  1 +
- arch/riscv/kernel/cpufeature.c  |  2 ++
- arch/riscv/kernel/vector.c      | 20 ++++++++++++++++++++
- 4 files changed, 28 insertions(+)
- create mode 100644 arch/riscv/kernel/vector.c
+ arch/riscv/include/asm/vector.h      | 97 ++++++++++++++++++++++++++++
+ arch/riscv/include/uapi/asm/ptrace.h | 17 +++++
+ 2 files changed, 114 insertions(+)
 
 diff --git a/arch/riscv/include/asm/vector.h b/arch/riscv/include/asm/vector.h
-index dfe5a321b2b4..e433ba3cd4da 100644
+index e433ba3cd4da..cb60637443be 100644
 --- a/arch/riscv/include/asm/vector.h
 +++ b/arch/riscv/include/asm/vector.h
-@@ -13,6 +13,9 @@
+@@ -10,8 +10,10 @@
+ 
+ #ifdef CONFIG_RISCV_ISA_V
+ 
++#include <linux/stringify.h>
  #include <asm/hwcap.h>
  #include <asm/csr.h>
++#include <asm/asm.h>
  
-+extern unsigned long riscv_v_vsize;
-+void riscv_v_setup_vsize(void);
-+
- static __always_inline bool has_vector(void)
- {
+ extern unsigned long riscv_v_vsize;
+ void riscv_v_setup_vsize(void);
+@@ -21,6 +23,26 @@ static __always_inline bool has_vector(void)
  	return riscv_has_extension_likely(RISCV_ISA_EXT_v);
-@@ -31,6 +34,8 @@ static __always_inline void riscv_v_disable(void)
+ }
+ 
++static inline void __riscv_v_vstate_clean(struct pt_regs *regs)
++{
++	regs->status = (regs->status & ~SR_VS) | SR_VS_CLEAN;
++}
++
++static inline void riscv_v_vstate_off(struct pt_regs *regs)
++{
++	regs->status = (regs->status & ~SR_VS) | SR_VS_OFF;
++}
++
++static inline void riscv_v_vstate_on(struct pt_regs *regs)
++{
++	regs->status = (regs->status & ~SR_VS) | SR_VS_INITIAL;
++}
++
++static inline bool riscv_v_vstate_query(struct pt_regs *regs)
++{
++	return (regs->status & SR_VS) != 0;
++}
++
+ static __always_inline void riscv_v_enable(void)
+ {
+ 	csr_set(CSR_SSTATUS, SR_VS);
+@@ -31,11 +53,86 @@ static __always_inline void riscv_v_disable(void)
+ 	csr_clear(CSR_SSTATUS, SR_VS);
+ }
+ 
++static __always_inline void __vstate_csr_save(struct __riscv_v_ext_state *dest)
++{
++	asm volatile (
++		"csrr	%0, " __stringify(CSR_VSTART) "\n\t"
++		"csrr	%1, " __stringify(CSR_VTYPE) "\n\t"
++		"csrr	%2, " __stringify(CSR_VL) "\n\t"
++		"csrr	%3, " __stringify(CSR_VCSR) "\n\t"
++		: "=r" (dest->vstart), "=r" (dest->vtype), "=r" (dest->vl),
++		  "=r" (dest->vcsr) : :);
++}
++
++static __always_inline void __vstate_csr_restore(struct __riscv_v_ext_state *src)
++{
++	asm volatile (
++		".option push\n\t"
++		".option arch, +v\n\t"
++		"vsetvl	 x0, %2, %1\n\t"
++		".option pop\n\t"
++		"csrw	" __stringify(CSR_VSTART) ", %0\n\t"
++		"csrw	" __stringify(CSR_VCSR) ", %3\n\t"
++		: : "r" (src->vstart), "r" (src->vtype), "r" (src->vl),
++		    "r" (src->vcsr) :);
++}
++
++static inline void __riscv_v_vstate_save(struct __riscv_v_ext_state *save_to,
++					 void *datap)
++{
++	unsigned long vl;
++
++	riscv_v_enable();
++	__vstate_csr_save(save_to);
++	asm volatile (
++		".option push\n\t"
++		".option arch, +v\n\t"
++		"vsetvli	%0, x0, e8, m8, ta, ma\n\t"
++		"vse8.v		v0, (%1)\n\t"
++		"add		%1, %1, %0\n\t"
++		"vse8.v		v8, (%1)\n\t"
++		"add		%1, %1, %0\n\t"
++		"vse8.v		v16, (%1)\n\t"
++		"add		%1, %1, %0\n\t"
++		"vse8.v		v24, (%1)\n\t"
++		".option pop\n\t"
++		: "=&r" (vl) : "r" (datap) : "memory");
++	riscv_v_disable();
++}
++
++static inline void __riscv_v_vstate_restore(struct __riscv_v_ext_state *restore_from,
++					    void *datap)
++{
++	unsigned long vl;
++
++	riscv_v_enable();
++	asm volatile (
++		".option push\n\t"
++		".option arch, +v\n\t"
++		"vsetvli	%0, x0, e8, m8, ta, ma\n\t"
++		"vle8.v		v0, (%1)\n\t"
++		"add		%1, %1, %0\n\t"
++		"vle8.v		v8, (%1)\n\t"
++		"add		%1, %1, %0\n\t"
++		"vle8.v		v16, (%1)\n\t"
++		"add		%1, %1, %0\n\t"
++		"vle8.v		v24, (%1)\n\t"
++		".option pop\n\t"
++		: "=&r" (vl) : "r" (datap) : "memory");
++	__vstate_csr_restore(restore_from);
++	riscv_v_disable();
++}
++
  #else /* ! CONFIG_RISCV_ISA_V  */
  
++struct pt_regs;
++
  static __always_inline bool has_vector(void) { return false; }
-+#define riscv_v_vsize (0)
-+#define riscv_v_setup_vsize()			do {} while (0)
++static inline bool riscv_v_vstate_query(struct pt_regs *regs) { return false; }
+ #define riscv_v_vsize (0)
+ #define riscv_v_setup_vsize()			do {} while (0)
++#define riscv_v_vstate_off(regs)		do {} while (0)
++#define riscv_v_vstate_on(regs)			do {} while (0)
  
  #endif /* CONFIG_RISCV_ISA_V */
  
-diff --git a/arch/riscv/kernel/Makefile b/arch/riscv/kernel/Makefile
-index 4cf303a779ab..48d345a5f326 100644
---- a/arch/riscv/kernel/Makefile
-+++ b/arch/riscv/kernel/Makefile
-@@ -55,6 +55,7 @@ obj-$(CONFIG_MMU) += vdso.o vdso/
+diff --git a/arch/riscv/include/uapi/asm/ptrace.h b/arch/riscv/include/uapi/asm/ptrace.h
+index 882547f6bd5c..586786d023c4 100644
+--- a/arch/riscv/include/uapi/asm/ptrace.h
++++ b/arch/riscv/include/uapi/asm/ptrace.h
+@@ -77,6 +77,23 @@ union __riscv_fp_state {
+ 	struct __riscv_q_ext_state q;
+ };
  
- obj-$(CONFIG_RISCV_M_MODE)	+= traps_misaligned.o
- obj-$(CONFIG_FPU)		+= fpu.o
-+obj-$(CONFIG_RISCV_ISA_V)	+= vector.o
- obj-$(CONFIG_SMP)		+= smpboot.o
- obj-$(CONFIG_SMP)		+= smp.o
- obj-$(CONFIG_SMP)		+= cpu_ops.o
-diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
-index 923ca75f2192..267070f3cc9e 100644
---- a/arch/riscv/kernel/cpufeature.c
-+++ b/arch/riscv/kernel/cpufeature.c
-@@ -17,6 +17,7 @@
- #include <asm/hwcap.h>
- #include <asm/patch.h>
- #include <asm/processor.h>
-+#include <asm/vector.h>
- 
- #define NUM_ALPHA_EXTS ('z' - 'a' + 1)
- 
-@@ -263,6 +264,7 @@ void __init riscv_fill_hwcap(void)
- 	}
- 
- 	if (elf_hwcap & COMPAT_HWCAP_ISA_V) {
-+		riscv_v_setup_vsize();
- 		/*
- 		 * ISA string in device tree might have 'v' flag, but
- 		 * CONFIG_RISCV_ISA_V is disabled in kernel.
-diff --git a/arch/riscv/kernel/vector.c b/arch/riscv/kernel/vector.c
-new file mode 100644
-index 000000000000..03582e2ade83
---- /dev/null
-+++ b/arch/riscv/kernel/vector.c
-@@ -0,0 +1,20 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
-+/*
-+ * Copyright (C) 2023 SiFive
-+ * Author: Andy Chiu <andy.chiu@sifive.com>
-+ */
-+#include <linux/export.h>
++struct __riscv_v_ext_state {
++	unsigned long vstart;
++	unsigned long vl;
++	unsigned long vtype;
++	unsigned long vcsr;
++	void *datap;
++	/*
++	 * In signal handler, datap will be set a correct user stack offset
++	 * and vector registers will be copied to the address of datap
++	 * pointer.
++	 *
++	 * In ptrace syscall, datap will be set to zero and the vector
++	 * registers will be copied to the address right after this
++	 * structure.
++	 */
++};
 +
-+#include <asm/vector.h>
-+#include <asm/csr.h>
-+
-+unsigned long riscv_v_vsize __read_mostly;
-+EXPORT_SYMBOL_GPL(riscv_v_vsize);
-+
-+void riscv_v_setup_vsize(void)
-+{
-+	/* There are 32 vector registers with vlenb length. */
-+	riscv_v_enable();
-+	riscv_v_vsize = csr_read(CSR_VLENB) * 32;
-+	riscv_v_disable();
-+}
+ #endif /* __ASSEMBLY__ */
+ 
+ #endif /* _UAPI_ASM_RISCV_PTRACE_H */
 -- 
 2.17.1
 
