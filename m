@@ -1,11 +1,10 @@
 From: Björn Töpel <bjorn@kernel.org>
-Date: Thu, 23 Mar 2023 11:21:11 +0100
-Subject: [PATCH -next v15 08/19] riscv: Introduce struct/helpers to
- save/restore per-task Vector state
-In-Reply-To: <20230317113538.10878-9-andy.chiu@sifive.com>
+Date: Thu, 23 Mar 2023 11:23:39 +0100
+Subject: [PATCH -next v15 09/19] riscv: Add task switch support for vector
+In-Reply-To: <20230317113538.10878-10-andy.chiu@sifive.com>
 References: <20230317113538.10878-1-andy.chiu@sifive.com>
- <20230317113538.10878-9-andy.chiu@sifive.com>
-Message-ID: <877cv7wyy0.fsf@all.your.base.are.belong.to.us>
+ <20230317113538.10878-10-andy.chiu@sifive.com>
+Message-ID: <87355vwytw.fsf@all.your.base.are.belong.to.us>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -16,27 +15,21 @@ Andy Chiu <andy.chiu@sifive.com> writes:
 
 > From: Greentime Hu <greentime.hu@sifive.com>
 >
-> Add vector state context struct to be added later in thread_struct. And
-> prepare low-level helper functions to save/restore vector contexts.
+> This patch adds task switch support for vector. It also supports all
+> lengths of vlen.
 >
-> This include Vector Regfile and CSRs holding dynamic configuration state
-> (vstart, vl, vtype, vcsr). The Vec Register width could be implementation
-> defined, but same for all processes, so that is saved separately.
->
-> This is not yet wired into final thread_struct - will be done when
-> __switch_to actually starts doing this in later patches.
->
-> Given the variable (and potentially large) size of regfile, they are
-> saved in dynamically allocated memory, pointed to by datap pointer in
-> __riscv_v_ext_state.
->
+> Suggested-by: Andrew Waterman <andrew@sifive.com>
+> Co-developed-by: Nick Knight <nick.knight@sifive.com>
+> Signed-off-by: Nick Knight <nick.knight@sifive.com>
+> Co-developed-by: Guo Ren <guoren@linux.alibaba.com>
+> Signed-off-by: Guo Ren <guoren@linux.alibaba.com>
 > Co-developed-by: Vincent Chen <vincent.chen@sifive.com>
 > Signed-off-by: Vincent Chen <vincent.chen@sifive.com>
+> Co-developed-by: Ruinland Tsai <ruinland.tsai@sifive.com>
+> Signed-off-by: Ruinland Tsai <ruinland.tsai@sifive.com>
 > Signed-off-by: Greentime Hu <greentime.hu@sifive.com>
 > Signed-off-by: Vineet Gupta <vineetg@rivosinc.com>
 > Signed-off-by: Andy Chiu <andy.chiu@sifive.com>
-
-Thank you for doing the scratch reg change!
 
 Reviewed-by: Bj?rn T?pel <bjorn@rivosinc.com>
 
