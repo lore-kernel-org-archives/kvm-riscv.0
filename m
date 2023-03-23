@@ -1,10 +1,9 @@
 From: Björn Töpel <bjorn@kernel.org>
-Date: Thu, 23 Mar 2023 11:23:39 +0100
-Subject: [PATCH -next v15 09/19] riscv: Add task switch support for vector
-In-Reply-To: <20230317113538.10878-10-andy.chiu@sifive.com>
-References: <20230317113538.10878-1-andy.chiu@sifive.com>
- <20230317113538.10878-10-andy.chiu@sifive.com>
-Message-ID: <87355vwytw.fsf@all.your.base.are.belong.to.us>
+Date: Thu, 23 Mar 2023 11:29:37 +0100
+Subject: [PATCH -next v15 10/19] riscv: Allocate user's vector context
+ in the first-use trap
+In-Reply-To: <20230317113538.10878-11-andy.chiu@sifive.com>
+Message-ID: <87edpf4v72.fsf@all.your.base.are.belong.to.us>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -13,22 +12,13 @@ Content-Transfer-Encoding: 7bit
 
 Andy Chiu <andy.chiu@sifive.com> writes:
 
-> From: Greentime Hu <greentime.hu@sifive.com>
+> Vector unit is disabled by default for all user processes. Thus, a
+> process will take a trap (illegal instruction) into kernel at the first
+> time when it uses Vector. Only after then, the kernel allocates V
+> context and starts take care of the context for that user process.
 >
-> This patch adds task switch support for vector. It also supports all
-> lengths of vlen.
->
-> Suggested-by: Andrew Waterman <andrew@sifive.com>
-> Co-developed-by: Nick Knight <nick.knight@sifive.com>
-> Signed-off-by: Nick Knight <nick.knight@sifive.com>
-> Co-developed-by: Guo Ren <guoren@linux.alibaba.com>
-> Signed-off-by: Guo Ren <guoren@linux.alibaba.com>
-> Co-developed-by: Vincent Chen <vincent.chen@sifive.com>
-> Signed-off-by: Vincent Chen <vincent.chen@sifive.com>
-> Co-developed-by: Ruinland Tsai <ruinland.tsai@sifive.com>
-> Signed-off-by: Ruinland Tsai <ruinland.tsai@sifive.com>
-> Signed-off-by: Greentime Hu <greentime.hu@sifive.com>
-> Signed-off-by: Vineet Gupta <vineetg@rivosinc.com>
+> Suggested-by: Richard Henderson <richard.henderson@linaro.org>
+> Link: https://lore.kernel.org/r/3923eeee-e4dc-0911-40bf-84c34aee962d at linaro.org
 > Signed-off-by: Andy Chiu <andy.chiu@sifive.com>
 
 Reviewed-by: Bj?rn T?pel <bjorn@rivosinc.com>
