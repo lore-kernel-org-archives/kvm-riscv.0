@@ -1,41 +1,57 @@
-From: Jason A. Donenfeld <Jason@zx2c4.com>
-Date: Wed, 22 Mar 2023 21:19:50 +0100
-Subject: [PATCH] riscv: require alternatives framework when selecting FPU support
-In-Reply-To: <ad445951-3d13-4644-94d9-e0989cda39c3@spud>
-References: <ZBruFRwt3rUVngPu@zx2c4.com> <20230322120907.2968494-1-Jason@zx2c4.com>
- <20230322124631.7p67thzeblrawsqj@orel> <1884bd96-2783-4556-bc57-8b733758baff@spud>
- <20230322192610.sad42xau33ye5ayn@orel> <2a3b08ce-5ab1-41b6-ad58-edbeff7b1acb@spud>
- <ad445951-3d13-4644-94d9-e0989cda39c3@spud>
-Message-ID: <CAHmME9qEbUP7cq-iofN=ruSWhsHUva+qqavfEpNzDK_BjQVqxw@mail.gmail.com>
+From: Andy Chiu <andy.chiu@sifive.com>
+Date: Thu, 23 Mar 2023 15:50:14 +0800
+Subject: [PATCH -next v15 13/19] riscv: signal: Add sigcontext save/restore for vector
+In-Reply-To: <e0b5df49-4d78-4a0f-8509-ff29085486cf@spud>
+References: <e0b5df49-4d78-4a0f-8509-ff29085486cf@spud>
+Message-ID: <20230323075014.2135132-1-andy.chiu@sifive.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Mar 22, 2023 at 9:05?PM Conor Dooley <conor@kernel.org> wrote:
->
-> On Wed, Mar 22, 2023 at 07:44:13PM +0000, Conor Dooley wrote:
-> > On Wed, Mar 22, 2023 at 08:26:10PM +0100, Andrew Jones wrote:
-> > > On Wed, Mar 22, 2023 at 03:17:13PM +0000, Conor Dooley wrote:
-> > > > On Wed, Mar 22, 2023 at 01:46:31PM +0100, Andrew Jones wrote:
-> >
-> > > > > (It's tempting to just select RISCV_ALTERNATIVE from RISCV, but maybe we
-> > > > >  can defer that wedding a bit longer.)
-> > > >
-> > > > At that point, the config option should just go away entirely, no?
-> > >
-> > > Ah, yes, and that makes the idea even more attractive, as we could remove
-> > > several ifdefs.
-> >
-> > I went and did the cursory check, it's not compatible with XIP_KERNEL so
-> > dropping the option entirely probably isn't a possibility :/
->
-> What I said is only now sinking in. We're now going to be disabling FPU
-> support on XIP kernels with this patch.
-> Well, technically not this patch since it wouldn't have built without
-> Jason's changes, but that doesn't seem like the right thing to do...
+On Mon, Mar 20, 2023 at 9:37???PM Conor Dooley <conor.dooley@microchip.com> wrote:
+> Sparse, or at least Palmer's hacked up version of it that I am running
+> [1] complains a bit about this patch, that you've added a few:
+> + ?? ?? ??1 ../arch/riscv/kernel/signal.c:145:29: warning: incorrect type in initializer (different address spaces)
+> + ?? ?? ??1 ../arch/riscv/kernel/signal.c:171:24: warning: incorrect type in initializer (different address spaces)
+> + ?? ?? ??1 ../arch/riscv/kernel/signal.c:172:24: warning: incorrect type in initializer (different address spaces)
+> + ?? ?? ??1 ../arch/riscv/kernel/signal.c:268:47: warning: incorrect type in initializer (different address spaces)
+> + ?? ?? ??1 ../arch/riscv/kernel/signal.c:282:16: warning: incorrect type in initializer (different address spaces)
+> + ?? ?? ??1 ../arch/riscv/kernel/signal.c:283:16: warning: incorrect type in initializer (different address spaces)
+> Please have a look at those, and check whether they're valid complaints.
 
-I suppose you could have riscv_has_extension_*() fall back to
-something that doesn't use alternatives on XIP kernels.
+Yes, they are valid. Meanwhile, running sparse locally, I found the 
+following, which are also reported at 19/19 patch:
+arch/riscv/kernel/signal.c:78:13: warning: incorrect type in assignment (different address spaces) ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ??
+arch/riscv/kernel/signal.c:80:18: warning: cast removes address space '__user' of expression
+arch/riscv/kernel/signal.c:92:16: warning: incorrect type in initializer (different address spaces)
+arch/riscv/kernel/signal.c:114:51: warning: incorrect type in initializer (different address spaces)
+
+And these need to be fixed, while not found by your sparse:
+arch/riscv/kernel/vector.c:81:28: warning: incorrect type in initializer (different address spaces)
+arch/riscv/kernel/vector.c:81:28:    expected unsigned int [noderef] [usertype] __user *epc
+arch/riscv/kernel/vector.c:81:28:    got unsigned int [usertype] *
+
+However, there is no way to get around signal.c:92 though. The copying of
+__user pointer to a __user address should be valid.
+
++static long save_v_state(struct pt_regs *regs, void **sc_vec)
++{
+...
++	/* Copy the pointer datap itself. */
++	err |= __put_user(datap, &state->v_state.datap); 
+...
+
+>
+> Otherwise, this version of this patch seems a lot nicer than the last
+> version, so that makes me happy at least, even if sparse isn't..
+>
+> Acked-by: Conor Dooley <conor.dooley@microchip.com>
+>
+> Cheers,
+> Conor.
+
+Thanks,
+Andy
 
