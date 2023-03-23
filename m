@@ -1,47 +1,46 @@
 From: Conor Dooley <conor@kernel.org>
-Date: Wed, 22 Mar 2023 20:05:11 -0000
-Subject: [PATCH] riscv: require alternatives framework when selecting FPU
- support
-In-Reply-To: <2a3b08ce-5ab1-41b6-ad58-edbeff7b1acb@spud>
-References: <ZBruFRwt3rUVngPu@zx2c4.com>
- <20230322120907.2968494-1-Jason@zx2c4.com>
- <20230322124631.7p67thzeblrawsqj@orel>
- <1884bd96-2783-4556-bc57-8b733758baff@spud>
- <20230322192610.sad42xau33ye5ayn@orel>
- <2a3b08ce-5ab1-41b6-ad58-edbeff7b1acb@spud>
-Message-ID: <ad445951-3d13-4644-94d9-e0989cda39c3@spud>
+Date: Thu, 23 Mar 2023 17:57:21 -0000
+Subject: [PATCH 0/2] RISC-V: KVM: Require alternatives
+In-Reply-To: <6d263b50-e2f0-4331-b930-c54e27f52fcc@spud>
+References: <20230322192858.1189272-1-ajones@ventanamicro.com>
+ <6d263b50-e2f0-4331-b930-c54e27f52fcc@spud>
+Message-ID: <427628e0-4c6d-4934-b873-fa1b81b7daa0@spud>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Mar 22, 2023 at 07:44:13PM +0000, Conor Dooley wrote:
-> On Wed, Mar 22, 2023 at 08:26:10PM +0100, Andrew Jones wrote:
-> > On Wed, Mar 22, 2023 at 03:17:13PM +0000, Conor Dooley wrote:
-> > > On Wed, Mar 22, 2023 at 01:46:31PM +0100, Andrew Jones wrote:
-> 
-> > > > (It's tempting to just select RISCV_ALTERNATIVE from RISCV, but maybe we
-> > > >  can defer that wedding a bit longer.)
-> > > 
-> > > At that point, the config option should just go away entirely, no?
+On Wed, Mar 22, 2023 at 07:40:14PM +0000, Conor Dooley wrote:
+> On Wed, Mar 22, 2023 at 08:28:56PM +0100, Andrew Jones wrote:
+> > KVM makes use of riscv_has_extension_unlikely() to check for the
+> > svinval extension. riscv_has_extension_unlikely() is built on
+> > alternatives, which means KVM should ensure alternatives support
+> > is available.
 > > 
-> > Ah, yes, and that makes the idea even more attractive, as we could remove
-> > several ifdefs.
+> > The first patch takes the opportunity to cleanup KVM's select
+> > list. The second patch selects RISCV_ALTERNATIVE.
 > 
-> I went and did the cursory check, it's not compatible with XIP_KERNEL so
-> dropping the option entirely probably isn't a possibility :/
+> Reminds me, I need to re-submit my patch doing that for the top-level
+> RISC-V Kconfig...
+> For the pair:
+> Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
 
-What I said is only now sinking in. We're now going to be disabling FPU
-support on XIP kernels with this patch.
-Well, technically not this patch since it wouldn't have built without
-Jason's changes, but that doesn't seem like the right thing to do...
+Actually, I would like to take this back for patch 2.
+Per the discussion on the other thread about XIP [1], I don't think
+that KVM should be selecting alternatives like this.
+Would you mind if I picked up these patches & submitted them as a v2,
+alongside a patch trying to make sure that we do not clip the wings of
+of XIP kernels by selecting RISCV_ALTERNATIVE?
 
+Cheers,
+Conor.
 
+1 - https://lore.kernel.org/all/20230322120907.2968494-1-Jason at zx2c4.com/
 -------------- next part --------------
 A non-text attachment was scrubbed...
 Name: signature.asc
 Type: application/pgp-signature
 Size: 228 bytes
 Desc: not available
-URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20230322/6df7ae3c/attachment-0001.sig>
+URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20230323/c4a44a6e/attachment-0001.sig>
