@@ -1,167 +1,138 @@
 From: Andy Chiu <andy.chiu@sifive.com>
-Date: Thu, 23 Mar 2023 14:59:15 +0000
-Subject: [PATCH -next v16 11/20] riscv: Add ptrace vector support
+Date: Thu, 23 Mar 2023 14:59:16 +0000
+Subject: [PATCH -next v16 12/20] riscv: signal: check fp-reserved words unconditionally
 In-Reply-To: <20230323145924.4194-1-andy.chiu@sifive.com>
 References: <20230323145924.4194-1-andy.chiu@sifive.com>
-Message-ID: <20230323145924.4194-12-andy.chiu@sifive.com>
+Message-ID: <20230323145924.4194-13-andy.chiu@sifive.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Greentime Hu <greentime.hu@sifive.com>
+In order to let kernel/user locate and identify an extension context on
+the existing sigframe, we are going to utilize reserved space of fp and
+encode the information there. And since the sigcontext has already
+preserved a space for fp context w or w/o CONFIG_FPU, we move those
+reserved words checking/setting routine back into generic code.
 
-This patch adds ptrace support for riscv vector. The vector registers will
-be saved in datap pointer of __riscv_v_ext_state. This pointer will be set
-right after the __riscv_v_ext_state data structure then it will be put in
-ubuf for ptrace system call to get or set. It will check if the datap got
-from ubuf is set to the correct address or not when the ptrace system call
-is trying to set the vector registers.
+This commit also undone an additional logical change carried by the
+refactor commit 007f5c3589578
+("Refactor FPU code in signal setup/return procedures"). Originally we
+did not restore fp context if restoring of gpr have failed. And it was
+fine on the other side. In such way the kernel could keep the regfiles
+intact, and potentially react at the failing point of restore.
 
-Co-developed-by: Vincent Chen <vincent.chen@sifive.com>
-Signed-off-by: Vincent Chen <vincent.chen@sifive.com>
-Signed-off-by: Greentime Hu <greentime.hu@sifive.com>
 Signed-off-by: Andy Chiu <andy.chiu@sifive.com>
-Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
+Acked-by: Conor Dooley <conor.dooley@microchip.com>
 ---
- arch/riscv/include/uapi/asm/ptrace.h |  7 +++
- arch/riscv/kernel/ptrace.c           | 70 ++++++++++++++++++++++++++++
- include/uapi/linux/elf.h             |  1 +
- 3 files changed, 78 insertions(+)
+ arch/riscv/kernel/signal.c | 55 +++++++++++++++++++-------------------
+ 1 file changed, 28 insertions(+), 27 deletions(-)
 
-diff --git a/arch/riscv/include/uapi/asm/ptrace.h b/arch/riscv/include/uapi/asm/ptrace.h
-index 586786d023c4..e8d127ec5cf7 100644
---- a/arch/riscv/include/uapi/asm/ptrace.h
-+++ b/arch/riscv/include/uapi/asm/ptrace.h
-@@ -94,6 +94,13 @@ struct __riscv_v_ext_state {
- 	 */
- };
+diff --git a/arch/riscv/kernel/signal.c b/arch/riscv/kernel/signal.c
+index bfb2afa4135f..eefc78d74055 100644
+--- a/arch/riscv/kernel/signal.c
++++ b/arch/riscv/kernel/signal.c
+@@ -38,26 +38,13 @@ static long restore_fp_state(struct pt_regs *regs,
+ {
+ 	long err;
+ 	struct __riscv_d_ext_state __user *state = &sc_fpregs->d;
+-	size_t i;
  
-+/*
-+ * According to spec: The number of bits in a single vector register,
-+ * VLEN >= ELEN, which must be a power of 2, and must be no greater than
-+ * 2^16 = 65536bits = 8192bytes
-+ */
-+#define RISCV_MAX_VLENB (8192)
-+
- #endif /* __ASSEMBLY__ */
+ 	err = __copy_from_user(&current->thread.fstate, state, sizeof(*state));
+ 	if (unlikely(err))
+ 		return err;
  
- #endif /* _UAPI_ASM_RISCV_PTRACE_H */
-diff --git a/arch/riscv/kernel/ptrace.c b/arch/riscv/kernel/ptrace.c
-index 2ae8280ae475..84df5be90742 100644
---- a/arch/riscv/kernel/ptrace.c
-+++ b/arch/riscv/kernel/ptrace.c
-@@ -7,6 +7,7 @@
-  * Copied from arch/tile/kernel/ptrace.c
-  */
- 
-+#include <asm/vector.h>
- #include <asm/ptrace.h>
- #include <asm/syscall.h>
- #include <asm/thread_info.h>
-@@ -27,6 +28,9 @@ enum riscv_regset {
- #ifdef CONFIG_FPU
- 	REGSET_F,
- #endif
-+#ifdef CONFIG_RISCV_ISA_V
-+	REGSET_V,
-+#endif
- };
- 
- static int riscv_gpr_get(struct task_struct *target,
-@@ -83,6 +87,61 @@ static int riscv_fpr_set(struct task_struct *target,
+ 	fstate_restore(current, regs);
+-
+-	/* We support no other extension state at this time. */
+-	for (i = 0; i < ARRAY_SIZE(sc_fpregs->q.reserved); i++) {
+-		u32 value;
+-
+-		err = __get_user(value, &sc_fpregs->q.reserved[i]);
+-		if (unlikely(err))
+-			break;
+-		if (value != 0)
+-			return -EINVAL;
+-	}
+-
+-	return err;
++	return 0;
  }
- #endif
  
-+#ifdef CONFIG_RISCV_ISA_V
-+static int riscv_vr_get(struct task_struct *target,
-+			const struct user_regset *regset,
-+			struct membuf to)
-+{
-+	struct __riscv_v_ext_state *vstate = &target->thread.vstate;
-+
-+	if (!riscv_v_vstate_query(task_pt_regs(target)))
-+		return -EINVAL;
-+
-+	/*
-+	 * Ensure the vector registers have been saved to the memory before
-+	 * copying them to membuf.
-+	 */
-+	if (target == current)
-+		riscv_v_vstate_save(current, task_pt_regs(current));
-+
-+	/* Copy vector header from vstate. */
-+	membuf_write(&to, vstate, offsetof(struct __riscv_v_ext_state, datap));
-+	membuf_zero(&to, sizeof(void *));
-+
-+	/* Copy all the vector registers from vstate. */
-+	return membuf_write(&to, vstate->datap, riscv_v_vsize);
-+}
-+
-+static int riscv_vr_set(struct task_struct *target,
-+			const struct user_regset *regset,
-+			unsigned int pos, unsigned int count,
-+			const void *kbuf, const void __user *ubuf)
-+{
-+	int ret, size;
-+	struct __riscv_v_ext_state *vstate = &target->thread.vstate;
-+
-+	if (!riscv_v_vstate_query(task_pt_regs(target)))
-+		return -EINVAL;
-+
-+	/* Copy rest of the vstate except datap */
-+	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf, vstate, 0,
-+				 offsetof(struct __riscv_v_ext_state, datap));
-+	if (unlikely(ret))
-+		return ret;
-+
-+	/* Skip copy datap. */
-+	size = sizeof(vstate->datap);
-+	count -= size;
-+	ubuf += size;
-+
-+	/* Copy all the vector registers. */
-+	pos = 0;
-+	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf, vstate->datap,
-+				 0, riscv_v_vsize);
-+	return ret;
-+}
-+#endif
-+
- static const struct user_regset riscv_user_regset[] = {
- 	[REGSET_X] = {
- 		.core_note_type = NT_PRSTATUS,
-@@ -102,6 +161,17 @@ static const struct user_regset riscv_user_regset[] = {
- 		.set = riscv_fpr_set,
- 	},
- #endif
-+#ifdef CONFIG_RISCV_ISA_V
-+	[REGSET_V] = {
-+		.core_note_type = NT_RISCV_VECTOR,
-+		.align = 16,
-+		.n = ((32 * RISCV_MAX_VLENB) +
-+		      sizeof(struct __riscv_v_ext_state)) / sizeof(__u32),
-+		.size = sizeof(__u32),
-+		.regset_get = riscv_vr_get,
-+		.set = riscv_vr_set,
-+	},
-+#endif
- };
+ static long save_fp_state(struct pt_regs *regs,
+@@ -65,20 +52,9 @@ static long save_fp_state(struct pt_regs *regs,
+ {
+ 	long err;
+ 	struct __riscv_d_ext_state __user *state = &sc_fpregs->d;
+-	size_t i;
  
- static const struct user_regset_view riscv_user_native_view = {
-diff --git a/include/uapi/linux/elf.h b/include/uapi/linux/elf.h
-index ac3da855fb19..7d8d9ae36615 100644
---- a/include/uapi/linux/elf.h
-+++ b/include/uapi/linux/elf.h
-@@ -440,6 +440,7 @@ typedef struct elf64_shdr {
- #define NT_MIPS_DSP	0x800		/* MIPS DSP ASE registers */
- #define NT_MIPS_FP_MODE	0x801		/* MIPS floating-point mode */
- #define NT_MIPS_MSA	0x802		/* MIPS SIMD registers */
-+#define NT_RISCV_VECTOR	0x900		/* RISC-V vector registers */
- #define NT_LOONGARCH_CPUCFG	0xa00	/* LoongArch CPU config registers */
- #define NT_LOONGARCH_CSR	0xa01	/* LoongArch control and status registers */
- #define NT_LOONGARCH_LSX	0xa02	/* LoongArch Loongson SIMD Extension registers */
+ 	fstate_save(current, regs);
+ 	err = __copy_to_user(state, &current->thread.fstate, sizeof(*state));
+-	if (unlikely(err))
+-		return err;
+-
+-	/* We support no other extension state at this time. */
+-	for (i = 0; i < ARRAY_SIZE(sc_fpregs->q.reserved); i++) {
+-		err = __put_user(0, &sc_fpregs->q.reserved[i]);
+-		if (unlikely(err))
+-			break;
+-	}
+-
+ 	return err;
+ }
+ #else
+@@ -90,11 +66,30 @@ static long restore_sigcontext(struct pt_regs *regs,
+ 	struct sigcontext __user *sc)
+ {
+ 	long err;
++	size_t i;
++
+ 	/* sc_regs is structured the same as the start of pt_regs */
+ 	err = __copy_from_user(regs, &sc->sc_regs, sizeof(sc->sc_regs));
++	if (unlikely(err))
++		return err;
++
+ 	/* Restore the floating-point state. */
+-	if (has_fpu())
+-		err |= restore_fp_state(regs, &sc->sc_fpregs);
++	if (has_fpu()) {
++		err = restore_fp_state(regs, &sc->sc_fpregs);
++		if (unlikely(err))
++			return err;
++	}
++
++	/* We support no other extension state at this time. */
++	for (i = 0; i < ARRAY_SIZE(sc->sc_fpregs.q.reserved); i++) {
++		u32 value;
++
++		err = __get_user(value, &sc->sc_fpregs.q.reserved[i]);
++		if (unlikely(err))
++			break;
++		if (value != 0)
++			return -EINVAL;
++	}
+ 	return err;
+ }
+ 
+@@ -145,11 +140,17 @@ static long setup_sigcontext(struct rt_sigframe __user *frame,
+ {
+ 	struct sigcontext __user *sc = &frame->uc.uc_mcontext;
+ 	long err;
++	size_t i;
++
+ 	/* sc_regs is structured the same as the start of pt_regs */
+ 	err = __copy_to_user(&sc->sc_regs, regs, sizeof(sc->sc_regs));
+ 	/* Save the floating-point state. */
+ 	if (has_fpu())
+ 		err |= save_fp_state(regs, &sc->sc_fpregs);
++	/* We support no other extension state at this time. */
++	for (i = 0; i < ARRAY_SIZE(sc->sc_fpregs.q.reserved); i++)
++		err |= __put_user(0, &sc->sc_fpregs.q.reserved[i]);
++
+ 	return err;
+ }
+ 
 -- 
 2.17.1
 
