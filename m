@@ -1,63 +1,145 @@
 From: Conor Dooley <conor.dooley@microchip.com>
-Date: Mon, 20 Mar 2023 14:55:20 -0000
-Subject: [PATCH -next v15 08/19] riscv: Introduce struct/helpers to
- save/restore per-task Vector state
-In-Reply-To: <CABgGipVf3eTc9pj58wMYQr7NBcic+-m3fECEttqvPcn9Zu3qJw@mail.gmail.com>
-References: <20230317113538.10878-1-andy.chiu@sifive.com>
- <20230317113538.10878-9-andy.chiu@sifive.com>
- <456a8e61-c6b7-46d5-a25c-c466820912d7@spud>
- <CABgGipVf3eTc9pj58wMYQr7NBcic+-m3fECEttqvPcn9Zu3qJw@mail.gmail.com>
-Message-ID: <bcf933bc-b8d6-4b34-82ac-e6f542542e25@spud>
+Date: Thu, 23 Mar 2023 14:50:10 -0000
+Subject: [PATCH] riscv: require alternatives framework when selecting FPU
+ support
+In-Reply-To: <CAHmME9qEbUP7cq-iofN=ruSWhsHUva+qqavfEpNzDK_BjQVqxw@mail.gmail.com>
+References: <ZBruFRwt3rUVngPu@zx2c4.com>
+ <20230322120907.2968494-1-Jason@zx2c4.com>
+ <20230322124631.7p67thzeblrawsqj@orel>
+ <1884bd96-2783-4556-bc57-8b733758baff@spud>
+ <20230322192610.sad42xau33ye5ayn@orel>
+ <2a3b08ce-5ab1-41b6-ad58-edbeff7b1acb@spud>
+ <ad445951-3d13-4644-94d9-e0989cda39c3@spud>
+ <CAHmME9qEbUP7cq-iofN=ruSWhsHUva+qqavfEpNzDK_BjQVqxw@mail.gmail.com>
+Message-ID: <af690061-f962-498e-b2df-d2e6119292cf@spud>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Mar 20, 2023 at 10:46:57PM +0800, Andy Chiu wrote:
-> On Mon, Mar 20, 2023 at 9:05?PM Conor Dooley <conor.dooley@microchip.com> wrote:
+On Wed, Mar 22, 2023 at 09:19:50PM +0100, Jason A. Donenfeld wrote:
+> On Wed, Mar 22, 2023 at 9:05?PM Conor Dooley <conor@kernel.org> wrote:
 > >
-> > On Fri, Mar 17, 2023 at 11:35:27AM +0000, Andy Chiu wrote:
-> > > From: Greentime Hu <greentime.hu@sifive.com>
+> > On Wed, Mar 22, 2023 at 07:44:13PM +0000, Conor Dooley wrote:
+> > > On Wed, Mar 22, 2023 at 08:26:10PM +0100, Andrew Jones wrote:
+> > > > On Wed, Mar 22, 2023 at 03:17:13PM +0000, Conor Dooley wrote:
+> > > > > On Wed, Mar 22, 2023 at 01:46:31PM +0100, Andrew Jones wrote:
 > > >
-> > > Add vector state context struct to be added later in thread_struct. And
-> > > prepare low-level helper functions to save/restore vector contexts.
+> > > > > > (It's tempting to just select RISCV_ALTERNATIVE from RISCV, but maybe we
+> > > > > >  can defer that wedding a bit longer.)
+> > > > >
+> > > > > At that point, the config option should just go away entirely, no?
+> > > >
+> > > > Ah, yes, and that makes the idea even more attractive, as we could remove
+> > > > several ifdefs.
 > > >
-> > > This include Vector Regfile and CSRs holding dynamic configuration state
-> > > (vstart, vl, vtype, vcsr). The Vec Register width could be implementation
-> > > defined, but same for all processes, so that is saved separately.
-> > >
-> > > This is not yet wired into final thread_struct - will be done when
-> > > __switch_to actually starts doing this in later patches.
-> > >
-> > > Given the variable (and potentially large) size of regfile, they are
-> > > saved in dynamically allocated memory, pointed to by datap pointer in
-> > > __riscv_v_ext_state.
-> > >
-> > > Co-developed-by: Vincent Chen <vincent.chen@sifive.com>
-> > > Signed-off-by: Vincent Chen <vincent.chen@sifive.com>
-> > > Signed-off-by: Greentime Hu <greentime.hu@sifive.com>
-> > > Signed-off-by: Vineet Gupta <vineetg@rivosinc.com>
-> > > Signed-off-by: Andy Chiu <andy.chiu@sifive.com>
+> > > I went and did the cursory check, it's not compatible with XIP_KERNEL so
+> > > dropping the option entirely probably isn't a possibility :/
 > >
-> > I think you missed a:
-> > Acked-by: Conor Dooley <conor.dooley@microchip.com>
-> >
-> > Thanks,
-> > Conor.
-> >
+> > What I said is only now sinking in. We're now going to be disabling FPU
+> > support on XIP kernels with this patch.
+> > Well, technically not this patch since it wouldn't have built without
+> > Jason's changes, but that doesn't seem like the right thing to do...
 > 
-> Yes, removed it on purpose because I changed some inline assembly in
-> this submission. So I think you may want to take a look in case I did
-> something silly.
+> I suppose you could have riscv_has_extension_*() fall back to
+> something that doesn't use alternatives on XIP kernels.
 
-Heh, inline asm is usually why I do "acked-by" rather than "reviewed-by"
-as I am not particular confident in that realm ;)
-No harm in being careful and dropping tags I suppose!
+Yah, something like the below I guess? Probably overlooking something
+silly & it's lost the benefit of the static branch that it used to have,
+but with the infra that we have at the moment this seemed like the
+sanest thing to do?
+
+This would requiring picking up your patch Jason, but with an
+"if !XIP_KERNEL" added to the select.
+
+It's only had the lightest of build tests, but I can go make it a real
+patch if there's not something obviously amiss.
+
+diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
+index e3021b2590de..6263a0de1c6a 100644
+--- a/arch/riscv/include/asm/hwcap.h
++++ b/arch/riscv/include/asm/hwcap.h
+@@ -57,18 +57,31 @@ struct riscv_isa_ext_data {
+ 	unsigned int isa_ext_id;
+ };
+ 
++unsigned long riscv_isa_extension_base(const unsigned long *isa_bitmap);
++
++#define riscv_isa_extension_mask(ext) BIT_MASK(RISCV_ISA_EXT_##ext)
++
++bool __riscv_isa_extension_available(const unsigned long *isa_bitmap, int bit);
++#define riscv_isa_extension_available(isa_bitmap, ext)	\
++	__riscv_isa_extension_available(isa_bitmap, RISCV_ISA_EXT_##ext)
++
+ static __always_inline bool
+ riscv_has_extension_likely(const unsigned long ext)
+ {
+ 	compiletime_assert(ext < RISCV_ISA_EXT_MAX,
+ 			   "ext must be < RISCV_ISA_EXT_MAX");
+ 
+-	asm_volatile_goto(
+-	ALTERNATIVE("j	%l[l_no]", "nop", 0, %[ext], 1)
+-	:
+-	: [ext] "i" (ext)
+-	:
+-	: l_no);
++	if (IS_ENABLED(CONFIG_RISCV_ALTERNATIVE)) {
++		asm_volatile_goto(
++		ALTERNATIVE("j	%l[l_no]", "nop", 0, %[ext], 1)
++		:
++		: [ext] "i" (ext)
++		:
++		: l_no);
++	} else {
++		if (!__riscv_isa_extension_available(NULL, ext))
++			goto l_no;
++	}
+ 
+ 	return true;
+ l_no:
+@@ -81,26 +94,23 @@ riscv_has_extension_unlikely(const unsigned long ext)
+ 	compiletime_assert(ext < RISCV_ISA_EXT_MAX,
+ 			   "ext must be < RISCV_ISA_EXT_MAX");
+ 
+-	asm_volatile_goto(
+-	ALTERNATIVE("nop", "j	%l[l_yes]", 0, %[ext], 1)
+-	:
+-	: [ext] "i" (ext)
+-	:
+-	: l_yes);
++	if (IS_ENABLED(CONFIG_RISCV_ALTERNATIVE)) {
++		asm_volatile_goto(
++		ALTERNATIVE("nop", "j	%l[l_yes]", 0, %[ext], 1)
++		:
++		: [ext] "i" (ext)
++		:
++		: l_yes);
++	} else {
++		if (__riscv_isa_extension_available(NULL, ext))
++			goto l_yes;
++	}
+ 
+ 	return false;
+ l_yes:
+ 	return true;
+ }
+ 
+-unsigned long riscv_isa_extension_base(const unsigned long *isa_bitmap);
+-
+-#define riscv_isa_extension_mask(ext) BIT_MASK(RISCV_ISA_EXT_##ext)
+-
+-bool __riscv_isa_extension_available(const unsigned long *isa_bitmap, int bit);
+-#define riscv_isa_extension_available(isa_bitmap, ext)	\
+-	__riscv_isa_extension_available(isa_bitmap, RISCV_ISA_EXT_##ext)
+-
+ #endif
+ 
+ #endif /* _ASM_RISCV_HWCAP_H */
 -------------- next part --------------
 A non-text attachment was scrubbed...
 Name: signature.asc
 Type: application/pgp-signature
 Size: 228 bytes
 Desc: not available
-URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20230320/62c2be0a/attachment-0001.sig>
+URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20230323/18fa9406/attachment-0001.sig>
