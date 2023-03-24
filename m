@@ -1,73 +1,108 @@
 From: Anup Patel <anup@brainfault.org>
-Date: Fri, 24 Mar 2023 17:51:16 +0530
-Subject: [PATCH 0/2] RISC-V: KVM: Require alternatives
-In-Reply-To: <20230324115658.lqkdsdzntorchmso@orel>
-References: <20230322192858.1189272-1-ajones@ventanamicro.com>
- <6d263b50-e2f0-4331-b930-c54e27f52fcc@spud> <427628e0-4c6d-4934-b873-fa1b81b7daa0@spud>
- <20230324113259.jbfncctnclvkzjkz@orel> <a58c463e-a3f3-4a4c-8c6e-df707bbd76e0@spud>
- <20230324115658.lqkdsdzntorchmso@orel>
-Message-ID: <CAAhSdy1nMjD5EXcxvkmC_Mqjok=2Dxy3uJw1f_0kxvPzn=Pc1w@mail.gmail.com>
+Date: Fri, 24 Mar 2023 17:54:27 +0530
+Subject: [PATCH] KVM: RISC-V: Retry fault if vma_lookup() results become invalid
+In-Reply-To: <20230317211106.1234484-1-dmatlack@google.com>
+References: <20230317211106.1234484-1-dmatlack@google.com>
+Message-ID: <CAAhSdy3RJvsCTTfr6mCJe+=on-B0QOM10dTchAR7rKq0tyVWEA@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Mar 24, 2023 at 5:26?PM Andrew Jones <ajones@ventanamicro.com> wrote:
+On Sat, Mar 18, 2023 at 2:41?AM David Matlack <dmatlack@google.com> wrote:
 >
-> On Fri, Mar 24, 2023 at 11:52:13AM +0000, Conor Dooley wrote:
-> > On Fri, Mar 24, 2023 at 12:32:59PM +0100, Andrew Jones wrote:
-> > > On Thu, Mar 23, 2023 at 05:57:14PM +0000, Conor Dooley wrote:
-> > > > On Wed, Mar 22, 2023 at 07:40:14PM +0000, Conor Dooley wrote:
-> > > > > On Wed, Mar 22, 2023 at 08:28:56PM +0100, Andrew Jones wrote:
-> > > > > > KVM makes use of riscv_has_extension_unlikely() to check for the
-> > > > > > svinval extension. riscv_has_extension_unlikely() is built on
-> > > > > > alternatives, which means KVM should ensure alternatives support
-> > > > > > is available.
-> > > > > >
-> > > > > > The first patch takes the opportunity to cleanup KVM's select
-> > > > > > list. The second patch selects RISCV_ALTERNATIVE.
-> > > > >
-> > > > > Reminds me, I need to re-submit my patch doing that for the top-level
-> > > > > RISC-V Kconfig...
-> > > > > For the pair:
-> > > > > Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
-> > > >
-> > > > Actually, I would like to take this back for patch 2.
-> > > > Per the discussion on the other thread about XIP [1], I don't think
-> > > > that KVM should be selecting alternatives like this.
-> > > > Would you mind if I picked up these patches & submitted them as a v2,
-> > > > alongside a patch trying to make sure that we do not clip the wings of
-> > > > of XIP kernels by selecting RISCV_ALTERNATIVE?
-> > >
-> > > Hi Conor,
-> > >
-> > > I take it that resubmitting these patches is no longer part of the plan.
-> >
-> > Ah crap, sorry. I meant to reply here after submitting and forgot.
-> >
-> > > Should I rebase on "[PATCH v1 0/2] RISC-V: Fixes for
-> > > riscv_has_extension[un]likely()'s alternative dependency" and change the
-> > > select to a depends on?
-> >
-> > I don't think you need to. Does KVM actually make use of alternatives,
-> > other than for riscv_has_extension_unlikely(), that are not gated by
-> > extension/erratum specific config options?
-> >
-> > With my patch 2/2, alternatives are always enabled for !XIP_KERNEL
-> > builds, and will fall back to the "slow" path in
-> > riscv_has_extension_unlikely() otherwise.
-> > If KVM doesn't need alternatives for another reason, I don't think you
-> > need to introduce a dependency on them and just inherit the decision
-> > made by CONFIG_RISCV.
+> Read mmu_invalidate_seq before dropping the mmap_lock so that KVM can
+> detect if the results of vma_lookup() (e.g. vma_shift) become stale
+> before it acquires kvm->mmu_lock. This fixes a theoretical bug where a
+> VMA could be changed by userspace after vma_lookup() and before KVM
+> reads the mmu_invalidate_seq, causing KVM to install page table entries
+> based on a (possibly) no-longer-valid vma_shift.
 >
-> Ack, thanks, Conor.
+> Re-order the MMU cache top-up to earlier in user_mem_abort() so that it
+> is not done after KVM has read mmu_invalidate_seq (i.e. so as to avoid
+> inducing spurious fault retries).
 >
-> Anup, we can either drop patch 2/2 or the whole series, as you like.
+> It's unlikely that any sane userspace currently modifies VMAs in such a
+> way as to trigger this race. And even with directed testing I was unable
+> to reproduce it. But a sufficiently motivated host userspace might be
+> able to exploit this race.
+>
+> Note KVM/ARM had the same bug and was fixed in a separate, near
+> identical patch (see Link).
+>
+> Link: https://lore.kernel.org/kvm/20230313235454.2964067-1-dmatlack at google.com/
+> Fixes: 9955371cc014 ("RISC-V: KVM: Implement MMU notifiers")
+> Cc: stable at vger.kernel.org
+> Signed-off-by: David Matlack <dmatlack@google.com>
 
-If alternatives are going to be always enabled for !XIP_KERNEL then
-we can drop PATCH2. I am okay taking PATCH1.
+I have tested this patch for both QEMU RV64 and RV32 so,
+Tested-by: Anup Patel <anup@brainfault.org>
 
-Regards,
+Queued this patch as fixes for Linux-6.3
+
+Thanks,
 Anup
+
+> ---
+> Note: Compile-tested only.
+>
+>  arch/riscv/kvm/mmu.c | 25 ++++++++++++++++---------
+>  1 file changed, 16 insertions(+), 9 deletions(-)
+>
+> diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
+> index 78211aed36fa..46d692995830 100644
+> --- a/arch/riscv/kvm/mmu.c
+> +++ b/arch/riscv/kvm/mmu.c
+> @@ -628,6 +628,13 @@ int kvm_riscv_gstage_map(struct kvm_vcpu *vcpu,
+>                         !(memslot->flags & KVM_MEM_READONLY)) ? true : false;
+>         unsigned long vma_pagesize, mmu_seq;
+>
+> +       /* We need minimum second+third level pages */
+> +       ret = kvm_mmu_topup_memory_cache(pcache, gstage_pgd_levels);
+> +       if (ret) {
+> +               kvm_err("Failed to topup G-stage cache\n");
+> +               return ret;
+> +       }
+> +
+>         mmap_read_lock(current->mm);
+>
+>         vma = vma_lookup(current->mm, hva);
+> @@ -648,6 +655,15 @@ int kvm_riscv_gstage_map(struct kvm_vcpu *vcpu,
+>         if (vma_pagesize == PMD_SIZE || vma_pagesize == PUD_SIZE)
+>                 gfn = (gpa & huge_page_mask(hstate_vma(vma))) >> PAGE_SHIFT;
+>
+> +       /*
+> +        * Read mmu_invalidate_seq so that KVM can detect if the results of
+> +        * vma_lookup() or gfn_to_pfn_prot() become stale priort to acquiring
+> +        * kvm->mmu_lock.
+> +        *
+> +        * Rely on mmap_read_unlock() for an implicit smp_rmb(), which pairs
+> +        * with the smp_wmb() in kvm_mmu_invalidate_end().
+> +        */
+> +       mmu_seq = kvm->mmu_invalidate_seq;
+>         mmap_read_unlock(current->mm);
+>
+>         if (vma_pagesize != PUD_SIZE &&
+> @@ -657,15 +673,6 @@ int kvm_riscv_gstage_map(struct kvm_vcpu *vcpu,
+>                 return -EFAULT;
+>         }
+>
+> -       /* We need minimum second+third level pages */
+> -       ret = kvm_mmu_topup_memory_cache(pcache, gstage_pgd_levels);
+> -       if (ret) {
+> -               kvm_err("Failed to topup G-stage cache\n");
+> -               return ret;
+> -       }
+> -
+> -       mmu_seq = kvm->mmu_invalidate_seq;
+> -
+>         hfn = gfn_to_pfn_prot(kvm, gfn, is_write, &writable);
+>         if (hfn == KVM_PFN_ERR_HWPOISON) {
+>                 send_sig_mceerr(BUS_MCEERR_AR, (void __user *)hva,
+>
+> base-commit: eeac8ede17557680855031c6f305ece2378af326
+> --
+> 2.40.0.rc2.332.ga46443480c-goog
+>
 
