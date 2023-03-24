@@ -1,83 +1,66 @@
 From: Conor Dooley <conor.dooley@microchip.com>
-Date: Thu, 23 Mar 2023 15:26:45 -0000
-Subject: [PATCH -next v16 19/20] riscv: detect assembler support for
- .option arch
-In-Reply-To: <20230323145924.4194-20-andy.chiu@sifive.com>
-References: <20230323145924.4194-1-andy.chiu@sifive.com>
- <20230323145924.4194-20-andy.chiu@sifive.com>
-Message-ID: <04cc3420-26a7-4263-b120-677c758eabea@spud>
+Date: Fri, 24 Mar 2023 11:52:37 -0000
+Subject: [PATCH 0/2] RISC-V: KVM: Require alternatives
+In-Reply-To: <20230324113259.jbfncctnclvkzjkz@orel>
+References: <20230322192858.1189272-1-ajones@ventanamicro.com>
+ <6d263b50-e2f0-4331-b930-c54e27f52fcc@spud>
+ <427628e0-4c6d-4934-b873-fa1b81b7daa0@spud>
+ <20230324113259.jbfncctnclvkzjkz@orel>
+Message-ID: <a58c463e-a3f3-4a4c-8c6e-df707bbd76e0@spud>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Mar 23, 2023 at 02:59:23PM +0000, Andy Chiu wrote:
-> Some extensions use .option arch directive to selectively enable certain
-> extensions in parts of its assembly code. For example, Zbb uses it to
-> inform assmebler to emit bit manipulation instructions. However,
-> supporting of this directive only exist on GNU assembler and has not
-> landed on clang at the moment, making TOOLCHAIN_HAS_ZBB depend on
-> AS_IS_GNU.
+On Fri, Mar 24, 2023 at 12:32:59PM +0100, Andrew Jones wrote:
+> On Thu, Mar 23, 2023 at 05:57:14PM +0000, Conor Dooley wrote:
+> > On Wed, Mar 22, 2023 at 07:40:14PM +0000, Conor Dooley wrote:
+> > > On Wed, Mar 22, 2023 at 08:28:56PM +0100, Andrew Jones wrote:
+> > > > KVM makes use of riscv_has_extension_unlikely() to check for the
+> > > > svinval extension. riscv_has_extension_unlikely() is built on
+> > > > alternatives, which means KVM should ensure alternatives support
+> > > > is available.
+> > > > 
+> > > > The first patch takes the opportunity to cleanup KVM's select
+> > > > list. The second patch selects RISCV_ALTERNATIVE.
+> > > 
+> > > Reminds me, I need to re-submit my patch doing that for the top-level
+> > > RISC-V Kconfig...
+> > > For the pair:
+> > > Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
+> > 
+> > Actually, I would like to take this back for patch 2.
+> > Per the discussion on the other thread about XIP [1], I don't think
+> > that KVM should be selecting alternatives like this.
+> > Would you mind if I picked up these patches & submitted them as a v2,
+> > alongside a patch trying to make sure that we do not clip the wings of
+> > of XIP kernels by selecting RISCV_ALTERNATIVE?
 > 
-> While it is still under review at https://reviews.llvm.org/D123515, the
-> upcoming Vector patch also requires this feature in assembler. Thus,
-> provide Kconfig AS_HAS_OPTION_ARCH to detect such feature. Then
-> TOOLCHAIN_HAS_XXX will be turned on automatically when the feature land.
+> Hi Conor,
 > 
-> Suggested-by: Nathan Chancellor <nathan@kernel.org>
-> Signed-off-by: Andy Chiu <andy.chiu@sifive.com>
-> ---
->  arch/riscv/Kconfig | 8 +++++++-
->  1 file changed, 7 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
-> index 36a5b6fed0d3..4f8fd4002f1d 100644
-> --- a/arch/riscv/Kconfig
-> +++ b/arch/riscv/Kconfig
-> @@ -244,6 +244,12 @@ config RISCV_DMA_NONCOHERENT
->  config AS_HAS_INSN
->  	def_bool $(as-instr,.insn r 51$(comma) 0$(comma) 0$(comma) t0$(comma) t0$(comma) zero)
->  
-> +config AS_HAS_OPTION_ARCH
-> +	# https://reviews.llvm.org/D123515
-> +	def_bool y
-> +	depends on $(as-instr, .option arch$(comma) +m)
-> +	depends on !$(as-instr, .option arch$(comma) -i)
+> I take it that resubmitting these patches is no longer part of the plan.
 
-Oh cool, I didn't expect this to work given what Nathan said in his
-mail, but I gave it a whirl and it does seem to.
-I suppose:
-Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
+Ah crap, sorry. I meant to reply here after submitting and forgot.
 
-I'd rather it be this way so that it is "hands off", as opposed to the
-version check that would need updating in the future. And I guess it
-means that support for V & IAS will automatically turn on for stable
-kernels too once the LLVM change lands, which is nice ;)
+> Should I rebase on "[PATCH v1 0/2] RISC-V: Fixes for
+> riscv_has_extension[un]likely()'s alternative dependency" and change the
+> select to a depends on?
 
-Thanks Andy!
+I don't think you need to. Does KVM actually make use of alternatives,
+other than for riscv_has_extension_unlikely(), that are not gated by
+extension/erratum specific config options?
 
-> +
->  source "arch/riscv/Kconfig.socs"
->  source "arch/riscv/Kconfig.errata"
->  
-> @@ -442,7 +448,7 @@ config TOOLCHAIN_HAS_ZBB
->  	depends on !64BIT || $(cc-option,-mabi=lp64 -march=rv64ima_zbb)
->  	depends on !32BIT || $(cc-option,-mabi=ilp32 -march=rv32ima_zbb)
->  	depends on LLD_VERSION >= 150000 || LD_VERSION >= 23900
-> -	depends on AS_IS_GNU
-> +	depends on AS_HAS_OPTION_ARCH
->  
->  config RISCV_ISA_ZBB
->  	bool "Zbb extension support for bit manipulation instructions"
-> -- 
-> 2.17.1
-> 
-> 
+With my patch 2/2, alternatives are always enabled for !XIP_KERNEL
+builds, and will fall back to the "slow" path in
+riscv_has_extension_unlikely() otherwise.
+If KVM doesn't need alternatives for another reason, I don't think you
+need to introduce a dependency on them and just inherit the decision
+made by CONFIG_RISCV.
 -------------- next part --------------
 A non-text attachment was scrubbed...
 Name: signature.asc
 Type: application/pgp-signature
 Size: 228 bytes
 Desc: not available
-URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20230323/4449ebe4/attachment-0001.sig>
+URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20230324/d18529fd/attachment-0001.sig>
