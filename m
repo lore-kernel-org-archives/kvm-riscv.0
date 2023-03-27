@@ -1,83 +1,55 @@
-From: Björn Töpel <bjorn@kernel.org>
-Date: Mon, 27 Mar 2023 08:21:22 +0200
-Subject: [PATCH -next v16 00/20] riscv: Add vector ISA support
-In-Reply-To: <20230323145924.4194-1-andy.chiu@sifive.com>
-References: <20230323145924.4194-1-andy.chiu@sifive.com>
-Message-ID: <87tty6ww7x.fsf@all.your.base.are.belong.to.us>
+From: Paolo Bonzini <pbonzini@redhat.com>
+Date: Mon, 27 Mar 2023 16:24:10 +0200
+Subject: [GIT PULL] KVM/riscv fixes for 6.3, take #1
+In-Reply-To: <CAAhSdy320bsv7=EBLcdiXyJcO6NWUFK9_XUvwF_KvFF8v91RpA@mail.gmail.com>
+References: <CAAhSdy320bsv7=EBLcdiXyJcO6NWUFK9_XUvwF_KvFF8v91RpA@mail.gmail.com>
+Message-ID: <CABgObfaCR0NDj7ipZg2YYHnv4vQbOW4yz9140e+nyZBnF0QgyA@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Andy Chiu <andy.chiu@sifive.com> writes:
+Pulled, thanks.
 
-> This patchset is implemented based on vector 1.0 spec to add vector support
-> in riscv Linux kernel. There are some assumptions for this implementations.
->
-> 1. We assume all harts has the same ISA in the system.
-> 2. We disable vector in both kernel andy user space [1] by default. Only
->    enable an user's vector after an illegal instruction trap where it
->    actually starts executing vector (the first-use trap [2]).
-> 3. We detect "riscv,isa" to determine whether vector is support or not.
->
-> We defined a new structure __riscv_v_ext_state in struct thread_struct to
-> save/restore the vector related registers. It is used for both kernel space
-> and user space.
->  - In kernel space, the datap pointer in __riscv_v_ext_state will be
->    allocated to save vector registers.
->  - In user space,
-> 	- In signal handler of user space, the structure is placed
-> 	  right after __riscv_ctx_hdr, which is embedded in fp reserved
-> 	  aera. This is required to avoid ABI break [2]. And datap points
-> 	  to the end of __riscv_v_ext_state.
-> 	- In ptrace, the data will be put in ubuf in which we use
-> 	  riscv_vr_get()/riscv_vr_set() to get or set the
-> 	  __riscv_v_ext_state data structure from/to it, datap pointer
-> 	  would be zeroed and vector registers will be copied to the
-> 	  address right after the __riscv_v_ext_state structure in ubuf.
->
-> This patchset is rebased to v6.3-rc1 and it is tested by running several
-> vector programs simultaneously. It delivers signals correctly in a test
-> where we can see a valid ucontext_t in a signal handler, and a correct V
-> context returing back from it. And the ptrace interface is tested by
-> PTRACE_{GET,SET}REGSET. Lastly, KVM is tested by running above tests in
-> a guest using the same kernel image. All tests are done on an rv64gcv
-> virt QEMU.
->
-> Note: please apply the patch at [4] due to a regression introduced by
-> commit 596ff4a09b89 ("cpumask: re-introduce constant-sized cpumask
-> optimizations") before testing the series.
->
-> Specail thanks to Conor and Vineet for kindly giving help on- and off-list.
->
-> Source tree:
-> https://github.com/sifive/riscv-linux/tree/riscv/for-next/vector-v16
->
-> Links:
->  - [1] https://lore.kernel.org/all/20220921214439.1491510-17-stillson at rivosinc.com/
->  - [2] https://lore.kernel.org/all/73c0124c-4794-6e40-460c-b26df407f322 at rivosinc.com/T/#u
->  - [3] https://lore.kernel.org/all/20230128082847.3055316-1-apatel at ventanamicro.com/
->  - [4] https://lore.kernel.org/all/CAHk-=wiAxtKyxs6BPEzirrXw1kXJ-7ZyGpgOrbzhmC=ud-6jBA at mail.gmail.com/
-> ---
-> Changelog V16
->  - Rebase to the latest for-next:
->    - Solve conflicts at 7, and 17
->  - Use as-instr to detect if assembler supports .option arch directive
->    and remove dependency from GAS, for both ZBB and V.
->  - Cleanup code in KVM vector
->  - Address issue reported by sparse
->  - Refine code:
->    - Fix a mixed-use of space/tab
->    - Remove new lines at the end of file
+Paolo
 
-Andy,
+On Fri, Mar 17, 2023 at 12:33?PM Anup Patel <anup@brainfault.org> wrote:
+>
+> Hi Paolo,
+>
+> We have one KVM RISC-V fix for 6.3:
+> 1) Fix VM hang in case of timer delta being zero
+>
+> Please pull.
+>
+> Regards,
+> Anup
+>
+> The following changes since commit eeac8ede17557680855031c6f305ece2378af326:
+>
+>   Linux 6.3-rc2 (2023-03-12 16:36:44 -0700)
+>
+> are available in the Git repository at:
+>
+>   https://github.com/kvm-riscv/linux.git tags/kvm-riscv-fixes-6.3-1
+>
+> for you to fetch changes up to 6eff38048944cadc3cddcf117acfa5199ec32490:
+>
+>   riscv/kvm: Fix VM hang in case of timer delta being zero.
+> (2023-03-17 13:32:54 +0530)
+>
+> ----------------------------------------------------------------
+> KVM/riscv fixes for 6.3, take #1
+>
+> - Fix VM hang in case of timer delta being zero
+>
+> ----------------------------------------------------------------
+> Rajnesh Kanwal (1):
+>       riscv/kvm: Fix VM hang in case of timer delta being zero.
+>
+>  arch/riscv/kvm/vcpu_timer.c | 6 ++----
+>  1 file changed, 2 insertions(+), 4 deletions(-)
+>
 
-The generic entry series was applied to for-next, which conflicts with
-yours. One more spin... :-(
-
-https://patchwork.kernel.org/project/linux-riscv/patch/20230323145924.4194-2-andy.chiu at sifive.com/
-
-
-Bj?rn
 
