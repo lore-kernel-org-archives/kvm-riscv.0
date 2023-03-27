@@ -1,98 +1,83 @@
-From: Nathan Chancellor <nathan@kernel.org>
-Date: Fri, 24 Mar 2023 07:59:34 -0700
-Subject: [PATCH -next v16 19/20] riscv: detect assembler support for
- .option arch
-In-Reply-To: <04cc3420-26a7-4263-b120-677c758eabea@spud>
+From: Björn Töpel <bjorn@kernel.org>
+Date: Mon, 27 Mar 2023 08:21:22 +0200
+Subject: [PATCH -next v16 00/20] riscv: Add vector ISA support
+In-Reply-To: <20230323145924.4194-1-andy.chiu@sifive.com>
 References: <20230323145924.4194-1-andy.chiu@sifive.com>
- <20230323145924.4194-20-andy.chiu@sifive.com>
- <04cc3420-26a7-4263-b120-677c758eabea@spud>
-Message-ID: <20230324145934.GB428955@dev-arch.thelio-3990X>
+Message-ID: <87tty6ww7x.fsf@all.your.base.are.belong.to.us>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Mar 23, 2023 at 03:26:14PM +0000, Conor Dooley wrote:
-> On Thu, Mar 23, 2023 at 02:59:23PM +0000, Andy Chiu wrote:
-> > Some extensions use .option arch directive to selectively enable certain
-> > extensions in parts of its assembly code. For example, Zbb uses it to
-> > inform assmebler to emit bit manipulation instructions. However,
-> > supporting of this directive only exist on GNU assembler and has not
-> > landed on clang at the moment, making TOOLCHAIN_HAS_ZBB depend on
-> > AS_IS_GNU.
-> > 
-> > While it is still under review at https://reviews.llvm.org/D123515, the
-> > upcoming Vector patch also requires this feature in assembler. Thus,
-> > provide Kconfig AS_HAS_OPTION_ARCH to detect such feature. Then
-> > TOOLCHAIN_HAS_XXX will be turned on automatically when the feature land.
-> > 
-> > Suggested-by: Nathan Chancellor <nathan@kernel.org>
-> > Signed-off-by: Andy Chiu <andy.chiu@sifive.com>
-> > ---
-> >  arch/riscv/Kconfig | 8 +++++++-
-> >  1 file changed, 7 insertions(+), 1 deletion(-)
-> > 
-> > diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
-> > index 36a5b6fed0d3..4f8fd4002f1d 100644
-> > --- a/arch/riscv/Kconfig
-> > +++ b/arch/riscv/Kconfig
-> > @@ -244,6 +244,12 @@ config RISCV_DMA_NONCOHERENT
-> >  config AS_HAS_INSN
-> >  	def_bool $(as-instr,.insn r 51$(comma) 0$(comma) 0$(comma) t0$(comma) t0$(comma) zero)
-> >  
-> > +config AS_HAS_OPTION_ARCH
-> > +	# https://reviews.llvm.org/D123515
-> > +	def_bool y
-> > +	depends on $(as-instr, .option arch$(comma) +m)
-> > +	depends on !$(as-instr, .option arch$(comma) -i)
-> 
-> Oh cool, I didn't expect this to work given what Nathan said in his
-> mail, but I gave it a whirl and it does seem to.
+Andy Chiu <andy.chiu@sifive.com> writes:
 
-The second line is the clever part of this option that I had not
-considered, as it checks for something that should error in addition to
-something that shouldn't::
+> This patchset is implemented based on vector 1.0 spec to add vector support
+> in riscv Linux kernel. There are some assumptions for this implementations.
+>
+> 1. We assume all harts has the same ISA in the system.
+> 2. We disable vector in both kernel andy user space [1] by default. Only
+>    enable an user's vector after an illegal instruction trap where it
+>    actually starts executing vector (the first-use trap [2]).
+> 3. We detect "riscv,isa" to determine whether vector is support or not.
+>
+> We defined a new structure __riscv_v_ext_state in struct thread_struct to
+> save/restore the vector related registers. It is used for both kernel space
+> and user space.
+>  - In kernel space, the datap pointer in __riscv_v_ext_state will be
+>    allocated to save vector registers.
+>  - In user space,
+> 	- In signal handler of user space, the structure is placed
+> 	  right after __riscv_ctx_hdr, which is embedded in fp reserved
+> 	  aera. This is required to avoid ABI break [2]. And datap points
+> 	  to the end of __riscv_v_ext_state.
+> 	- In ptrace, the data will be put in ubuf in which we use
+> 	  riscv_vr_get()/riscv_vr_set() to get or set the
+> 	  __riscv_v_ext_state data structure from/to it, datap pointer
+> 	  would be zeroed and vector registers will be copied to the
+> 	  address right after the __riscv_v_ext_state structure in ubuf.
+>
+> This patchset is rebased to v6.3-rc1 and it is tested by running several
+> vector programs simultaneously. It delivers signals correctly in a test
+> where we can see a valid ucontext_t in a signal handler, and a correct V
+> context returing back from it. And the ptrace interface is tested by
+> PTRACE_{GET,SET}REGSET. Lastly, KVM is tested by running above tests in
+> a guest using the same kernel image. All tests are done on an rv64gcv
+> virt QEMU.
+>
+> Note: please apply the patch at [4] due to a regression introduced by
+> commit 596ff4a09b89 ("cpumask: re-introduce constant-sized cpumask
+> optimizations") before testing the series.
+>
+> Specail thanks to Conor and Vineet for kindly giving help on- and off-list.
+>
+> Source tree:
+> https://github.com/sifive/riscv-linux/tree/riscv/for-next/vector-v16
+>
+> Links:
+>  - [1] https://lore.kernel.org/all/20220921214439.1491510-17-stillson at rivosinc.com/
+>  - [2] https://lore.kernel.org/all/73c0124c-4794-6e40-460c-b26df407f322 at rivosinc.com/T/#u
+>  - [3] https://lore.kernel.org/all/20230128082847.3055316-1-apatel at ventanamicro.com/
+>  - [4] https://lore.kernel.org/all/CAHk-=wiAxtKyxs6BPEzirrXw1kXJ-7ZyGpgOrbzhmC=ud-6jBA at mail.gmail.com/
+> ---
+> Changelog V16
+>  - Rebase to the latest for-next:
+>    - Solve conflicts at 7, and 17
+>  - Use as-instr to detect if assembler supports .option arch directive
+>    and remove dependency from GAS, for both ZBB and V.
+>  - Cleanup code in KVM vector
+>  - Address issue reported by sparse
+>  - Refine code:
+>    - Fix a mixed-use of space/tab
+>    - Remove new lines at the end of file
 
-$ echo '.option arch, -i' | riscv64-linux-gcc -c -o /dev/null -x assembler -
-{standard input}: Assembler messages:
-{standard input}:1: Error: cannot + or - base extension `i' in .option arch `-i'
+Andy,
 
-Looking at D123515, I see this same option test is present and appears
-to error in the same manner so this should work when that change is
-merged.
+The generic entry series was applied to for-next, which conflicts with
+yours. One more spin... :-(
 
-Reviewed-by: Nathan Chancellor <nathan@kernel.org>
-
-> I suppose:
-> Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
-> 
-> I'd rather it be this way so that it is "hands off", as opposed to the
-> version check that would need updating in the future. And I guess it
-> means that support for V & IAS will automatically turn on for stable
-> kernels too once the LLVM change lands, which is nice ;)
-
-Very much agreed!
-
-> Thanks Andy!
-> 
-> > +
-> >  source "arch/riscv/Kconfig.socs"
-> >  source "arch/riscv/Kconfig.errata"
-> >  
-> > @@ -442,7 +448,7 @@ config TOOLCHAIN_HAS_ZBB
-> >  	depends on !64BIT || $(cc-option,-mabi=lp64 -march=rv64ima_zbb)
-> >  	depends on !32BIT || $(cc-option,-mabi=ilp32 -march=rv32ima_zbb)
-> >  	depends on LLD_VERSION >= 150000 || LD_VERSION >= 23900
-> > -	depends on AS_IS_GNU
-> > +	depends on AS_HAS_OPTION_ARCH
-> >  
-> >  config RISCV_ISA_ZBB
-> >  	bool "Zbb extension support for bit manipulation instructions"
-> > -- 
-> > 2.17.1
-> > 
-> > 
+https://patchwork.kernel.org/project/linux-riscv/patch/20230323145924.4194-2-andy.chiu at sifive.com/
 
 
+Bj?rn
 
