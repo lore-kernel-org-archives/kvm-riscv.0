@@ -1,62 +1,66 @@
-From: Andy Chiu <andy.chiu@sifive.com>
-Date: Mon, 27 Mar 2023 16:49:39 +0000
-Subject: [PATCH -next v17 19/20] riscv: detect assembler support for .option arch
-In-Reply-To: <20230327164941.20491-1-andy.chiu@sifive.com>
-References: <20230327164941.20491-1-andy.chiu@sifive.com>
-Message-ID: <20230327164941.20491-20-andy.chiu@sifive.com>
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Date: Tue, 28 Mar 2023 15:30:59 +1100
+Subject: [PATCH kernel v4] KVM: PPC: Make KVM_CAP_IRQFD_RESAMPLE support
+ platform dependent
+In-Reply-To: <ZBH9fZ3aMnHKtrZj@google.com>
+References: <20221003235722.2085145-1-aik@ozlabs.ru>
+ <ZBH9fZ3aMnHKtrZj@google.com>
+Message-ID: <67d99abd-19bd-8c01-2cac-80102878fa77@ozlabs.ru>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Some extensions use .option arch directive to selectively enable certain
-extensions in parts of its assembly code. For example, Zbb uses it to
-inform assmebler to emit bit manipulation instructions. However,
-supporting of this directive only exist on GNU assembler and has not
-landed on clang at the moment, making TOOLCHAIN_HAS_ZBB depend on
-AS_IS_GNU.
 
-While it is still under review at https://reviews.llvm.org/D123515, the
-upcoming Vector patch also requires this feature in assembler. Thus,
-provide Kconfig AS_HAS_OPTION_ARCH to detect such feature. Then
-TOOLCHAIN_HAS_XXX will be turned on automatically when the feature land.
 
-Suggested-by: Nathan Chancellor <nathan@kernel.org>
-Signed-off-by: Andy Chiu <andy.chiu@sifive.com>
-Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
-Reviewed-by: Nathan Chancellor <nathan@kernel.org>
----
- arch/riscv/Kconfig | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+On 16/03/2023 04:16, Sean Christopherson wrote:
+> +Michael and KVM s390 maintainers
+> 
+> On Tue, Oct 04, 2022, Alexey Kardashevskiy wrote:
+>> When introduced, IRQFD resampling worked on POWER8 with XICS. However
+>> KVM on POWER9 has never implemented it - the compatibility mode code
+>> ("XICS-on-XIVE") misses the kvm_notify_acked_irq() call and the native
+>> XIVE mode does not handle INTx in KVM at all.
+>>
+>> This moved the capability support advertising to platforms and stops
+>> advertising it on XIVE, i.e. POWER9 and later.
+>>
+>> This should cause no behavioural change for other architectures.
+>>
+>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>> Acked-by: Nicholas Piggin <npiggin@gmail.com>
+>> Acked-by: Marc Zyngier <maz@kernel.org>
+>> ---
+> 
+> If no one objects, I'll grab this for 6.4 and route it through kvm-x86/generic.
+> >> diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+>> index fb1490761c87..908ce8bd91c9 100644
+>> --- a/arch/powerpc/kvm/powerpc.c
+>> +++ b/arch/powerpc/kvm/powerpc.c
+>> @@ -593,6 +593,12 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
+>>                  break;
+>>   #endif
+>>
+>> +#ifdef CONFIG_HAVE_KVM_IRQFD
+>> +       case KVM_CAP_IRQFD_RESAMPLE:
+>> +               r = !xive_enabled();
+>> +               break;
+>> +#endif
+> 
+> @PPC folks, do you want to avoid the #ifdef?  If so, I can tweak to this when
+> applying.
 
-diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
-index d7252ced4ae6..91d5f2731f06 100644
---- a/arch/riscv/Kconfig
-+++ b/arch/riscv/Kconfig
-@@ -245,6 +245,12 @@ config RISCV_DMA_NONCOHERENT
- config AS_HAS_INSN
- 	def_bool $(as-instr,.insn r 51$(comma) 0$(comma) 0$(comma) t0$(comma) t0$(comma) zero)
- 
-+config AS_HAS_OPTION_ARCH
-+	# https://reviews.llvm.org/D123515
-+	def_bool y
-+	depends on $(as-instr, .option arch$(comma) +m)
-+	depends on !$(as-instr, .option arch$(comma) -i)
-+
- source "arch/riscv/Kconfig.socs"
- source "arch/riscv/Kconfig.errata"
- 
-@@ -443,7 +449,7 @@ config TOOLCHAIN_HAS_ZBB
- 	depends on !64BIT || $(cc-option,-mabi=lp64 -march=rv64ima_zbb)
- 	depends on !32BIT || $(cc-option,-mabi=ilp32 -march=rv32ima_zbb)
- 	depends on LLD_VERSION >= 150000 || LD_VERSION >= 23900
--	depends on AS_IS_GNU
-+	depends on AS_HAS_OPTION_ARCH
- 
- config RISCV_ISA_ZBB
- 	bool "Zbb extension support for bit manipulation instructions"
+
+I am not PPC folks anymore (this is just my backlog) but I do not see 
+why not (get rid of ifdef), it is just that file uses #ifdef lot more 
+than IS_ENABLED. Thanks,
+
+
+> 	case KVM_CAP_IRQFD_RESAMPLE:
+> 		r = IS_ENABLED(CONFIG_HAVE_KVM_IRQFD) && !xive_enabled();
+> 		break;
+
 -- 
-2.17.1
-
+Alexey
 
