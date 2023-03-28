@@ -1,91 +1,107 @@
 From: Andy Chiu <andy.chiu@sifive.com>
-Date: Tue, 28 Mar 2023 14:46:24 +0800
-Subject: [PATCH -next v17 11/20] riscv: Add ptrace vector support
-In-Reply-To: <5660672.DvuYhMxLoT@devpool47.emlix.com>
-References: <20230327164941.20491-1-andy.chiu@sifive.com> <20230327164941.20491-12-andy.chiu@sifive.com>
- <5660672.DvuYhMxLoT@devpool47.emlix.com>
-Message-ID: <CABgGipWcK6kAARBMCT8JGxV-9_yav_p0HME9+28vcv195R6_ww@mail.gmail.com>
+Date: Tue, 28 Mar 2023 20:55:00 +0800
+Subject: [PATCH -next v16 19/20] riscv: detect assembler support for
+ .option arch
+In-Reply-To: <20230324145934.GB428955@dev-arch.thelio-3990X>
+References: <20230323145924.4194-1-andy.chiu@sifive.com> <20230323145924.4194-20-andy.chiu@sifive.com>
+ <04cc3420-26a7-4263-b120-677c758eabea@spud> <20230324145934.GB428955@dev-arch.thelio-3990X>
+Message-ID: <CABgGipWr8y-Of=brW2=_yiGb6EYu=b7FfXxF0sEkU=9xQ=11aA@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Mar 28, 2023 at 1:53?PM Rolf Eike Beer <eb@emlix.com> wrote:
+On Fri, Mar 24, 2023 at 10:59?PM Nathan Chancellor <nathan@kernel.org> wrote:
 >
-> On Montag, 27. M?rz 2023 18:49:31 CEST Andy Chiu wrote:
-> > From: Greentime Hu <greentime.hu@sifive.com>
+> On Thu, Mar 23, 2023 at 03:26:14PM +0000, Conor Dooley wrote:
+> > On Thu, Mar 23, 2023 at 02:59:23PM +0000, Andy Chiu wrote:
+> > > Some extensions use .option arch directive to selectively enable certain
+> > > extensions in parts of its assembly code. For example, Zbb uses it to
+> > > inform assmebler to emit bit manipulation instructions. However,
+> > > supporting of this directive only exist on GNU assembler and has not
+> > > landed on clang at the moment, making TOOLCHAIN_HAS_ZBB depend on
+> > > AS_IS_GNU.
+> > >
+> > > While it is still under review at https://reviews.llvm.org/D123515, the
+> > > upcoming Vector patch also requires this feature in assembler. Thus,
+> > > provide Kconfig AS_HAS_OPTION_ARCH to detect such feature. Then
+> > > TOOLCHAIN_HAS_XXX will be turned on automatically when the feature land.
+> > >
+> > > Suggested-by: Nathan Chancellor <nathan@kernel.org>
+> > > Signed-off-by: Andy Chiu <andy.chiu@sifive.com>
+> > > ---
+> > >  arch/riscv/Kconfig | 8 +++++++-
+> > >  1 file changed, 7 insertions(+), 1 deletion(-)
+> > >
+> > > diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
+> > > index 36a5b6fed0d3..4f8fd4002f1d 100644
+> > > --- a/arch/riscv/Kconfig
+> > > +++ b/arch/riscv/Kconfig
+> > > @@ -244,6 +244,12 @@ config RISCV_DMA_NONCOHERENT
+> > >  config AS_HAS_INSN
+> > >     def_bool $(as-instr,.insn r 51$(comma) 0$(comma) 0$(comma) t0$(comma) t0$(comma) zero)
+> > >
+> > > +config AS_HAS_OPTION_ARCH
+> > > +   # https://reviews.llvm.org/D123515
+> > > +   def_bool y
+> > > +   depends on $(as-instr, .option arch$(comma) +m)
+> > > +   depends on !$(as-instr, .option arch$(comma) -i)
 > >
-> > This patch adds ptrace support for riscv vector. The vector registers will
-> > be saved in datap pointer of __riscv_v_ext_state. This pointer will be set
-> > right after the __riscv_v_ext_state data structure then it will be put in
-> > ubuf for ptrace system call to get or set. It will check if the datap got
-> > from ubuf is set to the correct address or not when the ptrace system call
-> > is trying to set the vector registers.
-> >
-> > Co-developed-by: Vincent Chen <vincent.chen@sifive.com>
-> > Signed-off-by: Vincent Chen <vincent.chen@sifive.com>
-> > Signed-off-by: Greentime Hu <greentime.hu@sifive.com>
-> > Signed-off-by: Andy Chiu <andy.chiu@sifive.com>
+> > Oh cool, I didn't expect this to work given what Nathan said in his
+> > mail, but I gave it a whirl and it does seem to.
+>
+> The second line is the clever part of this option that I had not
+> considered, as it checks for something that should error in addition to
+> something that shouldn't::
+>
+> $ echo '.option arch, -i' | riscv64-linux-gcc -c -o /dev/null -x assembler -
+> {standard input}: Assembler messages:
+> {standard input}:1: Error: cannot + or - base extension `i' in .option arch `-i'
+>
+> Looking at D123515, I see this same option test is present and appears
+> to error in the same manner so this should work when that change is
+> merged.
+
+Thanks for checking D123515 Nathan. It was just lucky that It gets the
+same test coverage in Clang. I would take a look at that aspect in the
+future if the same happens.
+
+>
+> Reviewed-by: Nathan Chancellor <nathan@kernel.org>
+>
+> > I suppose:
 > > Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
-> > ---
-> >  arch/riscv/include/uapi/asm/ptrace.h |  7 +++
-> >  arch/riscv/kernel/ptrace.c           | 70 ++++++++++++++++++++++++++++
-> >  include/uapi/linux/elf.h             |  1 +
-> >  3 files changed, 78 insertions(+)
 > >
-> > diff --git a/arch/riscv/kernel/ptrace.c b/arch/riscv/kernel/ptrace.c
-> > index 23c48b14a0e7..75e66c040b64 100644
-> > --- a/arch/riscv/kernel/ptrace.c
-> > +++ b/arch/riscv/kernel/ptrace.c
-> > @@ -80,6 +84,61 @@ static int riscv_fpr_set(struct task_struct *target,
-> >  }
-> >  #endif
+> > I'd rather it be this way so that it is "hands off", as opposed to the
+> > version check that would need updating in the future. And I guess it
+> > means that support for V & IAS will automatically turn on for stable
+> > kernels too once the LLVM change lands, which is nice ;)
+>
+> Very much agreed!
+>
+> > Thanks Andy!
 > >
-> > +#ifdef CONFIG_RISCV_ISA_V
-> > +static int riscv_vr_get(struct task_struct *target,
-> > +                     const struct user_regset *regset,
-> > +                     struct membuf to)
-> > +{
-> > +     struct __riscv_v_ext_state *vstate = &target->thread.vstate;
-> > +
-> > +     if (!riscv_v_vstate_query(task_pt_regs(target)))
-> > +             return -EINVAL;
-> > +
-> > +     /*
-> > +      * Ensure the vector registers have been saved to the memory before
-> > +      * copying them to membuf.
-> > +      */
-> > +     if (target == current)
-> > +             riscv_v_vstate_save(current, task_pt_regs(current));
-> > +
-> > +     /* Copy vector header from vstate. */
-> > +     membuf_write(&to, vstate, offsetof(struct __riscv_v_ext_state,
-> datap));
-> > +     membuf_zero(&to, sizeof(void *));
+> > > +
+> > >  source "arch/riscv/Kconfig.socs"
+> > >  source "arch/riscv/Kconfig.errata"
+> > >
+> > > @@ -442,7 +448,7 @@ config TOOLCHAIN_HAS_ZBB
+> > >     depends on !64BIT || $(cc-option,-mabi=lp64 -march=rv64ima_zbb)
+> > >     depends on !32BIT || $(cc-option,-mabi=ilp32 -march=rv32ima_zbb)
+> > >     depends on LLD_VERSION >= 150000 || LD_VERSION >= 23900
+> > > -   depends on AS_IS_GNU
+> > > +   depends on AS_HAS_OPTION_ARCH
+> > >
+> > >  config RISCV_ISA_ZBB
+> > >     bool "Zbb extension support for bit manipulation instructions"
+> > > --
+> > > 2.17.1
+> > >
+> > >
 >
-> No idea why I have not seen it in any previous version, but this "sizeof(void
-> *)" just made me thing "what is going on here?". I personally would have
-> written something like "sizeof(to.var)" or "offsetof(to.buf)" or something like
-> that. That makes it easier for me to understand what is skipped/zeroed here,
-> let alone making it a bit more fool proof when someone changes one of the
-> struct layouts. YMMV.
 >
 
-Thanks for the finding. Fixing it now
-
-> Regards,
->
-> Eike
-> --
-> Rolf Eike Beer, emlix GmbH, http://www.emlix.com
-> Fon +49 551 30664-0, Fax +49 551 30664-11
-> Gothaer Platz 3, 37083 G?ttingen, Germany
-> Sitz der Gesellschaft: G?ttingen, Amtsgericht G?ttingen HR B 3160
-> Gesch?ftsf?hrung: Heike Jordan, Dr. Uwe Kracke ? Ust-IdNr.: DE 205 198 055
->
-> emlix - smart embedded open source
-
-Cheers,
+Regards,
 Andy
 
