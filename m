@@ -1,100 +1,232 @@
-From: Anup Patel <anup@brainfault.org>
-Date: Fri, 31 Mar 2023 18:23:11 +0530
-Subject: [PATCH v2 2/7] RISC-V: Detect AIA CSRs from ISA string
-In-Reply-To: <mhng-0f9bdf58-5289-4db4-8fd7-38898824c44f@palmer-ri-x1c9>
-References: <20230128072737.2995881-3-apatel@ventanamicro.com> <mhng-0f9bdf58-5289-4db4-8fd7-38898824c44f@palmer-ri-x1c9>
-Message-ID: <CAAhSdy3vPQw1OcRx3kQwt8UHgKa+18Ut-SzZkb8gQTHDRK7e2w@mail.gmail.com>
+From: Heiko Stübner <heiko@sntech.de>
+Date: Fri, 31 Mar 2023 15:08:37 +0200
+Subject: [PATCH -next v17 10/20] riscv: Allocate user's vector context in the
+ first-use trap
+In-Reply-To: <20230327164941.20491-11-andy.chiu@sifive.com>
+References: <20230327164941.20491-1-andy.chiu@sifive.com>
+ <20230327164941.20491-11-andy.chiu@sifive.com>
+Message-ID: <2409883.jE0xQCEvom@diego>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Palmer
+Am Montag, 27. M?rz 2023, 18:49:30 CEST schrieb Andy Chiu:
+> Vector unit is disabled by default for all user processes. Thus, a
+> process will take a trap (illegal instruction) into kernel at the first
+> time when it uses Vector. Only after then, the kernel allocates V
+> context and starts take care of the context for that user process.
+> 
+> Suggested-by: Richard Henderson <richard.henderson@linaro.org>
+> Link: https://lore.kernel.org/r/3923eeee-e4dc-0911-40bf-84c34aee962d at linaro.org
+> Signed-off-by: Andy Chiu <andy.chiu@sifive.com>
+> ---
+>  arch/riscv/include/asm/insn.h   | 29 +++++++++++
+>  arch/riscv/include/asm/vector.h |  2 +
+>  arch/riscv/kernel/traps.c       | 26 +++++++++-
+>  arch/riscv/kernel/vector.c      | 90 +++++++++++++++++++++++++++++++++
+>  4 files changed, 145 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/riscv/include/asm/insn.h b/arch/riscv/include/asm/insn.h
+> index 8d5c84f2d5ef..4e1505cef8aa 100644
+> --- a/arch/riscv/include/asm/insn.h
+> +++ b/arch/riscv/include/asm/insn.h
+> @@ -137,6 +137,26 @@
+>  #define RVG_OPCODE_JALR		0x67
+>  #define RVG_OPCODE_JAL		0x6f
+>  #define RVG_OPCODE_SYSTEM	0x73
+> +#define RVG_SYSTEM_CSR_OFF	20
+> +#define RVG_SYSTEM_CSR_MASK	GENMASK(12, 0)
 
-On Fri, Feb 3, 2023 at 5:54?AM Palmer Dabbelt <palmer@dabbelt.com> wrote:
->
-> On Fri, 27 Jan 2023 23:27:32 PST (-0800), apatel at ventanamicro.com wrote:
-> > We have two extension names for AIA ISA support: Smaia (M-mode AIA CSRs)
-> > and Ssaia (S-mode AIA CSRs).
->
-> This has pretty much the same problem that we had with the other
-> AIA-related ISA string patches, where there's that ambiguity with the
-> non-ratified chapters.  IIRC when this came up in GCC the rough idea was
-> to try and document that we're going to interpret the standard ISA
-> strings that way, but now that we're doing custom ISA extensions it
-> seems saner to just define on here that removes the ambiguity.
->
-> I just sent
-> <https://lore.kernel.org/r/20230203001201.14770-1-palmer@rivosinc.com/>
-> which documents that.
+The CSR instructions are all I-type instructions it seems, but I do
+understand where this is coming from, as for CSRs this is not an IMM
+but an unsigned value
 
-The IOMMU and AIA chapter8 are frozen and in public review.
-Refer, https://lists.riscv.org/g/tech-aia/message/346
+> +/* parts of opcode for RVF, RVD and RVQ */
+> +#define RVFDQ_FL_FS_WIDTH_OFF	12
+> +#define RVFDQ_FL_FS_WIDTH_MASK	GENMASK(3, 0)
+> +#define RVFDQ_FL_FS_WIDTH_W	2
+> +#define RVFDQ_FL_FS_WIDTH_D	3
+> +#define RVFDQ_LS_FS_WIDTH_Q	4
+> +#define RVFDQ_OPCODE_FL		0x07
+> +#define RVFDQ_OPCODE_FS		0x27
 
-This means the entire AIA specification is now frozen (i.e. no
-chapters in draft state).
 
-I will rebase this series and send-out v3. It would be great if you
-can ACK the PATCH2 of this series.
+> +/* parts of opcode for RVV */
+> +#define RVV_OPCODE_VECTOR	0x57
+> +#define RVV_VL_VS_WIDTH_8	0
+> +#define RVV_VL_VS_WIDTH_16	5
+> +#define RVV_VL_VS_WIDTH_32	6
+> +#define RVV_VL_VS_WIDTH_64	7
+> +#define RVV_OPCODE_VL		RVFDQ_OPCODE_FL
+> +#define RVV_OPCODE_VS		RVFDQ_OPCODE_FS
 
-Thanks,
-Anup
+Same issue for those (FL_FS + VL_VS), but those even don't declare
+being part of any *-type scheme in the spec.
 
->
-> > We extend the ISA string parsing to detect Smaia and Ssaia extensions.
-> >
-> > Signed-off-by: Anup Patel <apatel@ventanamicro.com>
-> > Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
-> > ---
-> >  arch/riscv/include/asm/hwcap.h | 2 ++
-> >  arch/riscv/kernel/cpu.c        | 2 ++
-> >  arch/riscv/kernel/cpufeature.c | 2 ++
-> >  3 files changed, 6 insertions(+)
-> >
-> > diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
-> > index 86328e3acb02..341ef30a3718 100644
-> > --- a/arch/riscv/include/asm/hwcap.h
-> > +++ b/arch/riscv/include/asm/hwcap.h
-> > @@ -59,6 +59,8 @@ enum riscv_isa_ext_id {
-> >       RISCV_ISA_EXT_ZIHINTPAUSE,
-> >       RISCV_ISA_EXT_SSTC,
-> >       RISCV_ISA_EXT_SVINVAL,
-> > +     RISCV_ISA_EXT_SMAIA,
-> > +     RISCV_ISA_EXT_SSAIA,
-> >       RISCV_ISA_EXT_ID_MAX
-> >  };
-> >  static_assert(RISCV_ISA_EXT_ID_MAX <= RISCV_ISA_EXT_MAX);
-> > diff --git a/arch/riscv/kernel/cpu.c b/arch/riscv/kernel/cpu.c
-> > index 1b9a5a66e55a..a215ec929160 100644
-> > --- a/arch/riscv/kernel/cpu.c
-> > +++ b/arch/riscv/kernel/cpu.c
-> > @@ -162,6 +162,8 @@ arch_initcall(riscv_cpuinfo_init);
-> >   *    extensions by an underscore.
-> >   */
-> >  static struct riscv_isa_ext_data isa_ext_arr[] = {
-> > +     __RISCV_ISA_EXT_DATA(smaia, RISCV_ISA_EXT_SMAIA),
-> > +     __RISCV_ISA_EXT_DATA(ssaia, RISCV_ISA_EXT_SSAIA),
->
-> This will conflict with that ISA string refactoring I just merged.  It
-> should be a pretty mechanical merge conflict, but if you want we can do
-> a shared tag with the first few patches and I can handle the merge
-> conflict locally.
->
-> >       __RISCV_ISA_EXT_DATA(sscofpmf, RISCV_ISA_EXT_SSCOFPMF),
-> >       __RISCV_ISA_EXT_DATA(sstc, RISCV_ISA_EXT_SSTC),
-> >       __RISCV_ISA_EXT_DATA(svinval, RISCV_ISA_EXT_SVINVAL),
-> > diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
-> > index 93e45560af30..3c5b51f519d5 100644
-> > --- a/arch/riscv/kernel/cpufeature.c
-> > +++ b/arch/riscv/kernel/cpufeature.c
-> > @@ -228,6 +228,8 @@ void __init riscv_fill_hwcap(void)
-> >                               SET_ISA_EXT_MAP("zihintpause", RISCV_ISA_EXT_ZIHINTPAUSE);
-> >                               SET_ISA_EXT_MAP("sstc", RISCV_ISA_EXT_SSTC);
-> >                               SET_ISA_EXT_MAP("svinval", RISCV_ISA_EXT_SVINVAL);
-> > +                             SET_ISA_EXT_MAP("smaia", RISCV_ISA_EXT_SMAIA);
-> > +                             SET_ISA_EXT_MAP("ssaia", RISCV_ISA_EXT_SSAIA);
-> >                       }
-> >  #undef SET_ISA_EXT_MAP
-> >               }
+So all of them mix content-definitions (RV*_OPCODE_*) with structure-
+definitions and right now I don't know how to feel about that ;-) .
+
+On the one hand I like the original separation, but on the other hand it
+doesn't feel useful to put these single-use definitions somewhere above.
+
+
+>  /* parts of opcode for RVC*/
+>  #define RVC_OPCODE_C0		0x0
+> @@ -304,6 +324,15 @@ static __always_inline bool riscv_insn_is_branch(u32 code)
+>  	(RVC_X(x_, RVC_B_IMM_7_6_OPOFF, RVC_B_IMM_7_6_MASK) << RVC_B_IMM_7_6_OFF) | \
+>  	(RVC_IMM_SIGN(x_) << RVC_B_IMM_SIGN_OFF); })
+>  
+> +#define RVG_EXTRACT_SYSTEM_CSR(x) \
+> +	({typeof(x) x_ = (x); RV_X(x_, RVG_SYSTEM_CSR_OFF, RVG_SYSTEM_CSR_MASK); })
+> +
+> +#define RVFDQ_EXTRACT_FL_FS_WIDTH(x) \
+> +	({typeof(x) x_ = (x); RV_X(x_, RVFDQ_FL_FS_WIDTH_OFF, \
+> +				   RVFDQ_FL_FS_WIDTH_MASK); })
+> +
+> +#define RVV_EXRACT_VL_VS_WIDTH(x) RVFDQ_EXTRACT_FL_FS_WIDTH(x)
+> +
+>  /*
+>   * Get the immediate from a J-type instruction.
+>   *
+
+
+> diff --git a/arch/riscv/kernel/vector.c b/arch/riscv/kernel/vector.c
+> index 03582e2ade83..ea59f32adf46 100644
+> --- a/arch/riscv/kernel/vector.c
+> +++ b/arch/riscv/kernel/vector.c
+> @@ -4,9 +4,19 @@
+>   * Author: Andy Chiu <andy.chiu@sifive.com>
+>   */
+>  #include <linux/export.h>
+> +#include <linux/sched/signal.h>
+> +#include <linux/types.h>
+> +#include <linux/slab.h>
+> +#include <linux/sched.h>
+> +#include <linux/uaccess.h>
+>  
+> +#include <asm/thread_info.h>
+> +#include <asm/processor.h>
+> +#include <asm/insn.h>
+>  #include <asm/vector.h>
+>  #include <asm/csr.h>
+> +#include <asm/ptrace.h>
+> +#include <asm/bug.h>
+>  
+>  unsigned long riscv_v_vsize __read_mostly;
+>  EXPORT_SYMBOL_GPL(riscv_v_vsize);
+> @@ -18,3 +28,83 @@ void riscv_v_setup_vsize(void)
+>  	riscv_v_vsize = csr_read(CSR_VLENB) * 32;
+>  	riscv_v_disable();
+>  }
+> +
+> +static bool insn_is_vector(u32 insn_buf)
+> +{
+> +	u32 opcode = insn_buf & __INSN_OPCODE_MASK;
+> +	bool is_vector = false;
+> +	u32 width, csr;
+> +
+> +	/*
+> +	 * All V-related instructions, including CSR operations are 4-Byte. So,
+> +	 * do not handle if the instruction length is not 4-Byte.
+> +	 */
+> +	if (unlikely(GET_INSN_LENGTH(insn_buf) != 4))
+> +		return false;
+> +
+> +	switch (opcode) {
+> +	case RVV_OPCODE_VECTOR:
+> +		is_vector = true;
+> +		break;
+> +	case RVV_OPCODE_VL:
+> +	case RVV_OPCODE_VS:
+> +		width = RVV_EXRACT_VL_VS_WIDTH(insn_buf);
+> +		if (width == RVV_VL_VS_WIDTH_8 || width == RVV_VL_VS_WIDTH_16 ||
+> +		    width == RVV_VL_VS_WIDTH_32 || width == RVV_VL_VS_WIDTH_64)
+> +			is_vector = true;
+> +		break;
+> +	case RVG_OPCODE_SYSTEM:
+> +		csr = RVG_EXTRACT_SYSTEM_CSR(insn_buf);
+> +		if ((csr >= CSR_VSTART && csr <= CSR_VCSR) ||
+> +		    (csr >= CSR_VL && csr <= CSR_VLENB))
+> +			is_vector = true;
+> +		break;
+> +	}
+
+blank line?
+
+> +	return is_vector;
+
+I guess a matter of style-preference, but the other option would be to
+just return true from inside the case elements, and simply false here.
+
+
+> +}
+> +
+> +static int riscv_v_thread_zalloc(void)
+> +{
+> +	void *datap;
+> +
+> +	datap = kzalloc(riscv_v_vsize, GFP_KERNEL);
+> +	if (!datap)
+> +		return -ENOMEM;
+
+blank line?
+
+> +	current->thread.vstate.datap = datap;
+> +	memset(&current->thread.vstate, 0, offsetof(struct __riscv_v_ext_state,
+> +						    datap));
+> +	return 0;
+> +}
+> +
+> +bool riscv_v_first_use_handler(struct pt_regs *regs)
+> +{
+> +	u32 __user *epc = (u32 __user *)regs->epc;
+> +	u32 insn = (u32)regs->badaddr;
+> +
+> +	/* If V has been enabled then it is not the first-use trap */
+> +	if (riscv_v_vstate_query(regs))
+> +		return false;
+> +
+> +	/* Get the instruction */
+> +	if (!insn) {
+> +		if (__get_user(insn, epc))
+> +			return false;
+> +	}
+
+blank?
+
+> +	/* Filter out non-V instructions */
+> +	if (!insn_is_vector(insn))
+> +		return false;
+> +
+> +	/* Sanity check. datap should be null by the time of the first-use trap */
+> +	WARN_ON(current->thread.vstate.datap);
+
+blank?
+
+> +	/*
+> +	 * Now we sure that this is a V instruction. And it executes in the
+> +	 * context where VS has been off. So, try to allocate the user's V
+> +	 * context and resume execution.
+> +	 */
+> +	if (riscv_v_thread_zalloc()) {
+> +		force_sig(SIGKILL);
+> +		return true;
+> +	}
+> +	riscv_v_vstate_on(regs);
+> +	return true;
+> +}
+> 
+
+in any case,
+
+Acked-by: Heiko Stuebner <heiko.stuebner@vrull.eu>
+Tested-by: Heiko Stuebner <heiko.stuebner@vrull.eu>
+
+
+Heiko
+
+
+
 
