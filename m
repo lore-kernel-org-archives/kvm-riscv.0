@@ -1,55 +1,47 @@
-From: Anup Patel <apatel@ventanamicro.com>
-Date: Sat,  1 Apr 2023 16:57:30 +0530
-Subject: [PATCH] RISC-V: KVM: Allow Zbb extension for Guest/VM
-Message-ID: <20230401112730.2105240-1-apatel@ventanamicro.com>
+From: Heiko Stübner <heiko@sntech.de>
+Date: Sun, 02 Apr 2023 00:19:49 +0200
+Subject: [PATCH -next v17 14/20] riscv: signal: Report signal frame size to
+ userspace via auxv
+In-Reply-To: <20230327164941.20491-15-andy.chiu@sifive.com>
+References: <20230327164941.20491-1-andy.chiu@sifive.com>
+ <20230327164941.20491-15-andy.chiu@sifive.com>
+Message-ID: <37344569.XM6RcZxFsP@diego>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-We extend the KVM ISA extension ONE_REG interface to allow KVM
-user space to detect and enable Zbb extension for Guest/VM.
+Am Montag, 27. M?rz 2023, 18:49:34 CEST schrieb Andy Chiu:
+> From: Vincent Chen <vincent.chen@sifive.com>
+> 
+> The vector register belongs to the signal context. They need to be stored
+> and restored as entering and leaving the signal handler. According to the
+> V-extension specification, the maximum length of the vector registers can
+> be 2^16. Hence, if userspace refers to the MINSIGSTKSZ to create a
+> sigframe, it may not be enough. To resolve this problem, this patch refers
+> to the commit 94b07c1f8c39c
+> ("arm64: signal: Report signal frame size to userspace via auxv") to enable
+> userspace to know the minimum required sigframe size through the auxiliary
+> vector and use it to allocate enough memory for signal context.
+> 
+> Note that auxv always reports size of the sigframe as if V exists for
+> all starting processes, whenever the kernel has CONFIG_RISCV_ISA_V. The
+> reason is that users usually reference this value to allocate an
+> alternative signal stack, and the user may use V anytime. So the user
+> must reserve a space for V-context in sigframe in case that the signal
+> handler invokes after the kernel allocating V.
+> 
+> Signed-off-by: Greentime Hu <greentime.hu@sifive.com>
+> Signed-off-by: Vincent Chen <vincent.chen@sifive.com>
+> Signed-off-by: Andy Chiu <andy.chiu@sifive.com>
+> Acked-by: Conor Dooley <conor.dooley@microchip.com>
+> Reviewed-by: Bj?rn T?pel <bjorn@rivosinc.com>
+> Reviewed-by: Guo Ren <guoren@kernel.org>
 
-Signed-off-by: Anup Patel <apatel@ventanamicro.com>
----
- arch/riscv/include/uapi/asm/kvm.h | 1 +
- arch/riscv/kvm/vcpu.c             | 2 ++
- 2 files changed, 3 insertions(+)
+Reviewed-by: Heiko Stuebner <heiko.stuebner@vrull.eu>
+Tested-by: Heiko Stuebner <heiko.stuebner@vrull.eu>
 
-diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
-index d8ead5952ed9..47a7c3958229 100644
---- a/arch/riscv/include/uapi/asm/kvm.h
-+++ b/arch/riscv/include/uapi/asm/kvm.h
-@@ -106,6 +106,7 @@ enum KVM_RISCV_ISA_EXT_ID {
- 	KVM_RISCV_ISA_EXT_SVINVAL,
- 	KVM_RISCV_ISA_EXT_ZIHINTPAUSE,
- 	KVM_RISCV_ISA_EXT_ZICBOM,
-+	KVM_RISCV_ISA_EXT_ZBB,
- 	KVM_RISCV_ISA_EXT_MAX,
- };
- 
-diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-index 3112697cb12d..02b49cb94561 100644
---- a/arch/riscv/kvm/vcpu.c
-+++ b/arch/riscv/kvm/vcpu.c
-@@ -61,6 +61,7 @@ static const unsigned long kvm_isa_ext_arr[] = {
- 	KVM_ISA_EXT_ARR(SSTC),
- 	KVM_ISA_EXT_ARR(SVINVAL),
- 	KVM_ISA_EXT_ARR(SVPBMT),
-+	KVM_ISA_EXT_ARR(ZBB),
- 	KVM_ISA_EXT_ARR(ZIHINTPAUSE),
- 	KVM_ISA_EXT_ARR(ZICBOM),
- };
-@@ -99,6 +100,7 @@ static bool kvm_riscv_vcpu_isa_disable_allowed(unsigned long ext)
- 	case KVM_RISCV_ISA_EXT_SSTC:
- 	case KVM_RISCV_ISA_EXT_SVINVAL:
- 	case KVM_RISCV_ISA_EXT_ZIHINTPAUSE:
-+	case KVM_RISCV_ISA_EXT_ZBB:
- 		return false;
- 	default:
- 		break;
--- 
-2.34.1
+
 
 
