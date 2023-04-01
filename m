@@ -1,51 +1,55 @@
-From: Sean Christopherson <seanjc@google.com>
-Date: Mon, 30 Sep 2024 15:48:25 -0700
-Subject: [PATCH v2 03/13] KVM: selftests: Fudge around an apparent gcc bug
- in arm64's PMU test
-In-Reply-To: <ZvseoZLzmaS4MEbc@google.com>
-References: <20240911204158.2034295-1-seanjc@google.com> <20240911204158.2034295-4-seanjc@google.com>
- <ZvseoZLzmaS4MEbc@google.com>
-Message-ID: <Zvsquaq-Lo4umoTI@google.com>
+From: Anup Patel <apatel@ventanamicro.com>
+Date: Sat,  1 Apr 2023 16:57:30 +0530
+Subject: [PATCH] RISC-V: KVM: Allow Zbb extension for Guest/VM
+Message-ID: <20230401112730.2105240-1-apatel@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Sep 30, 2024, Sean Christopherson wrote:
-> On Wed, Sep 11, 2024, Sean Christopherson wrote:
-> > Use u64_replace_bits() instead of u64p_replace_bits() to set PMCR.N in
-> > arm64's vPMU counter access test to fudge around what appears to be a gcc
-> > bug.  With the recent change to have vcpu_get_reg() return a value in lieu
-> > of an out-param, some versions of gcc completely ignore the operation
-> > performed by set_pmcr_n(), i.e. ignore the output param.
-> 
-> Filed a gcc bug: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=116912
-> 
-> I'll report back if anything interesting comes out of that bug.
+We extend the KVM ISA extension ONE_REG interface to allow KVM
+user space to detect and enable Zbb extension for Guest/VM.
 
-Well, there goes several hours that I'll never get back.  Selftests are compiled
-with -O2, which enables strict-aliasing optimizations, and "unsigned long" and
-"unsigned long long" technically don't alias despite being the same size on 64-bit
-builds, so the compiler is allowed to optimize away the load.  *sigh*
+Signed-off-by: Anup Patel <apatel@ventanamicro.com>
+---
+ arch/riscv/include/uapi/asm/kvm.h | 1 +
+ arch/riscv/kvm/vcpu.c             | 2 ++
+ 2 files changed, 3 insertions(+)
 
-I'll replace this with a patch to disable strict-aliasing, which the kernel has
-done since forever (literally predates git).  Grr.
+diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
+index d8ead5952ed9..47a7c3958229 100644
+--- a/arch/riscv/include/uapi/asm/kvm.h
++++ b/arch/riscv/include/uapi/asm/kvm.h
+@@ -106,6 +106,7 @@ enum KVM_RISCV_ISA_EXT_ID {
+ 	KVM_RISCV_ISA_EXT_SVINVAL,
+ 	KVM_RISCV_ISA_EXT_ZIHINTPAUSE,
+ 	KVM_RISCV_ISA_EXT_ZICBOM,
++	KVM_RISCV_ISA_EXT_ZBB,
+ 	KVM_RISCV_ISA_EXT_MAX,
+ };
+ 
+diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+index 3112697cb12d..02b49cb94561 100644
+--- a/arch/riscv/kvm/vcpu.c
++++ b/arch/riscv/kvm/vcpu.c
+@@ -61,6 +61,7 @@ static const unsigned long kvm_isa_ext_arr[] = {
+ 	KVM_ISA_EXT_ARR(SSTC),
+ 	KVM_ISA_EXT_ARR(SVINVAL),
+ 	KVM_ISA_EXT_ARR(SVPBMT),
++	KVM_ISA_EXT_ARR(ZBB),
+ 	KVM_ISA_EXT_ARR(ZIHINTPAUSE),
+ 	KVM_ISA_EXT_ARR(ZICBOM),
+ };
+@@ -99,6 +100,7 @@ static bool kvm_riscv_vcpu_isa_disable_allowed(unsigned long ext)
+ 	case KVM_RISCV_ISA_EXT_SSTC:
+ 	case KVM_RISCV_ISA_EXT_SVINVAL:
+ 	case KVM_RISCV_ISA_EXT_ZIHINTPAUSE:
++	case KVM_RISCV_ISA_EXT_ZBB:
+ 		return false;
+ 	default:
+ 		break;
+-- 
+2.34.1
 
-diff --git a/tools/testing/selftests/kvm/Makefile b/tools/testing/selftests/kvm/Makefile
-index 48d32c5aa3eb..a6f92129bb02 100644
---- a/tools/testing/selftests/kvm/Makefile
-+++ b/tools/testing/selftests/kvm/Makefile
-@@ -235,10 +235,10 @@ CFLAGS += -Wall -Wstrict-prototypes -Wuninitialized -O2 -g -std=gnu99 \
-        -Wno-gnu-variable-sized-type-not-at-end -MD -MP -DCONFIG_64BIT \
-        -fno-builtin-memcmp -fno-builtin-memcpy \
-        -fno-builtin-memset -fno-builtin-strnlen \
--       -fno-stack-protector -fno-PIE -I$(LINUX_TOOL_INCLUDE) \
--       -I$(LINUX_TOOL_ARCH_INCLUDE) -I$(LINUX_HDR_PATH) -Iinclude \
--       -I$(<D) -Iinclude/$(ARCH_DIR) -I ../rseq -I.. $(EXTRA_CFLAGS) \
--       $(KHDR_INCLUDES)
-+       -fno-stack-protector -fno-PIE -fno-strict-aliasing \
-+       -I$(LINUX_TOOL_INCLUDE) -I$(LINUX_TOOL_ARCH_INCLUDE) \
-+       -I$(LINUX_HDR_PATH) -Iinclude -I$(<D) -Iinclude/$(ARCH_DIR) \
-+       -I ../rseq -I.. $(EXTRA_CFLAGS) $(KHDR_INCLUDES)
 
