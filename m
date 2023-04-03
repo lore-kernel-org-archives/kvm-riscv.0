@@ -1,397 +1,444 @@
-From: Anup Patel <apatel@ventanamicro.com>
-Date: Mon,  3 Apr 2023 15:03:10 +0530
-Subject: [PATCH v3 8/8] RISC-V: KVM: Implement guest external interrupt line management
-In-Reply-To: <20230403093310.2271142-1-apatel@ventanamicro.com>
-References: <20230403093310.2271142-1-apatel@ventanamicro.com>
-Message-ID: <20230403093310.2271142-9-apatel@ventanamicro.com>
+From: Andrew Jones <ajones@ventanamicro.com>
+Date: Mon, 3 Apr 2023 11:41:15 +0200
+Subject: [PATCH v4 1/1] RISC-V: KVM: Add ONE_REG interface to
+ enable/disable SBI extensions
+In-Reply-To: <20230331174542.2067560-2-apatel@ventanamicro.com>
+References: <20230331174542.2067560-1-apatel@ventanamicro.com>
+ <20230331174542.2067560-2-apatel@ventanamicro.com>
+Message-ID: <2uo44xbgwhzyqyea757omu4ndjzuwahvx7bfktjhp3ffibxqb4@bpc2stn2qqgy>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The RISC-V host will have one guest external interrupt line for each
-VS-level IMSICs associated with a HART. The guest external interrupt
-lines are per-HART resources and hypervisor can use HGEIE, HGEIP, and
-HIE CSRs to manage these guest external interrupt lines.
+On Fri, Mar 31, 2023 at 11:15:42PM +0530, Anup Patel wrote:
+> We add ONE_REG interface to enable/disable SBI extensions (just
+> like the ONE_REG interface for ISA extensions). This allows KVM
+> user-space to decide the set of SBI extension enabled for a Guest
+> and by default all SBI extensions are enabled.
+> 
+> Signed-off-by: Anup Patel <apatel@ventanamicro.com>
+> ---
+>  arch/riscv/include/asm/kvm_vcpu_sbi.h |   8 +-
+>  arch/riscv/include/uapi/asm/kvm.h     |  32 ++++
+>  arch/riscv/kvm/vcpu.c                 |   4 +
+>  arch/riscv/kvm/vcpu_sbi.c             | 247 ++++++++++++++++++++++++--
+>  arch/riscv/kvm/vcpu_sbi_base.c        |   2 +-
+>  5 files changed, 274 insertions(+), 19 deletions(-)
+> 
+> diff --git a/arch/riscv/include/asm/kvm_vcpu_sbi.h b/arch/riscv/include/asm/kvm_vcpu_sbi.h
+> index 8425556af7d1..4278125a38a5 100644
+> --- a/arch/riscv/include/asm/kvm_vcpu_sbi.h
+> +++ b/arch/riscv/include/asm/kvm_vcpu_sbi.h
+> @@ -16,6 +16,7 @@
+>  
+>  struct kvm_vcpu_sbi_context {
+>  	int return_handled;
+> +	bool extension_disabled[KVM_RISCV_SBI_EXT_MAX];
+>  };
+>  
+>  struct kvm_vcpu_sbi_return {
+> @@ -45,7 +46,12 @@ void kvm_riscv_vcpu_sbi_system_reset(struct kvm_vcpu *vcpu,
+>  				     struct kvm_run *run,
+>  				     u32 type, u64 flags);
+>  int kvm_riscv_vcpu_sbi_return(struct kvm_vcpu *vcpu, struct kvm_run *run);
+> -const struct kvm_vcpu_sbi_extension *kvm_vcpu_sbi_find_ext(unsigned long extid);
+> +int kvm_riscv_vcpu_set_reg_sbi_ext(struct kvm_vcpu *vcpu,
+> +				   const struct kvm_one_reg *reg);
+> +int kvm_riscv_vcpu_get_reg_sbi_ext(struct kvm_vcpu *vcpu,
+> +				   const struct kvm_one_reg *reg);
+> +const struct kvm_vcpu_sbi_extension *kvm_vcpu_sbi_find_ext(
+> +				struct kvm_vcpu *vcpu, unsigned long extid);
+>  int kvm_riscv_vcpu_sbi_ecall(struct kvm_vcpu *vcpu, struct kvm_run *run);
+>  
+>  #ifdef CONFIG_RISCV_SBI_V01
+> diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
+> index 92af6f3f057c..d8ead5952ed9 100644
+> --- a/arch/riscv/include/uapi/asm/kvm.h
+> +++ b/arch/riscv/include/uapi/asm/kvm.h
+> @@ -12,6 +12,7 @@
+>  #ifndef __ASSEMBLY__
+>  
+>  #include <linux/types.h>
+> +#include <asm/bitsperlong.h>
+>  #include <asm/ptrace.h>
+>  
+>  #define __KVM_HAVE_READONLY_MEM
+> @@ -108,6 +109,23 @@ enum KVM_RISCV_ISA_EXT_ID {
+>  	KVM_RISCV_ISA_EXT_MAX,
+>  };
+>  
+> +/*
+> + * SBI extension IDs specific to KVM. This is not the same as the SBI
+> + * extension IDs defined by the RISC-V SBI specification.
+> + */
+> +enum KVM_RISCV_SBI_EXT_ID {
+> +	KVM_RISCV_SBI_EXT_V01 = 0,
+> +	KVM_RISCV_SBI_EXT_TIME,
+> +	KVM_RISCV_SBI_EXT_IPI,
+> +	KVM_RISCV_SBI_EXT_RFENCE,
+> +	KVM_RISCV_SBI_EXT_SRST,
+> +	KVM_RISCV_SBI_EXT_HSM,
+> +	KVM_RISCV_SBI_EXT_PMU,
+> +	KVM_RISCV_SBI_EXT_EXPERIMENTAL,
+> +	KVM_RISCV_SBI_EXT_VENDOR,
+> +	KVM_RISCV_SBI_EXT_MAX,
+> +};
+> +
+>  /* Possible states for kvm_riscv_timer */
+>  #define KVM_RISCV_TIMER_STATE_OFF	0
+>  #define KVM_RISCV_TIMER_STATE_ON	1
+> @@ -118,6 +136,8 @@ enum KVM_RISCV_ISA_EXT_ID {
+>  /* If you need to interpret the index values, here is the key: */
+>  #define KVM_REG_RISCV_TYPE_MASK		0x00000000FF000000
+>  #define KVM_REG_RISCV_TYPE_SHIFT	24
+> +#define KVM_REG_RISCV_SUBTYPE_MASK	0x0000000000FF0000
+> +#define KVM_REG_RISCV_SUBTYPE_SHIFT	16
+>  
+>  /* Config registers are mapped as type 1 */
+>  #define KVM_REG_RISCV_CONFIG		(0x01 << KVM_REG_RISCV_TYPE_SHIFT)
+> @@ -152,6 +172,18 @@ enum KVM_RISCV_ISA_EXT_ID {
+>  /* ISA Extension registers are mapped as type 7 */
+>  #define KVM_REG_RISCV_ISA_EXT		(0x07 << KVM_REG_RISCV_TYPE_SHIFT)
+>  
+> +/* SBI extension registers are mapped as type 8 */
+> +#define KVM_REG_RISCV_SBI_EXT		(0x08 << KVM_REG_RISCV_TYPE_SHIFT)
+> +#define KVM_REG_RISCV_SBI_SINGLE	(0x0 << KVM_REG_RISCV_SUBTYPE_SHIFT)
+> +#define KVM_REG_RISCV_SBI_MULTI_EN	(0x1 << KVM_REG_RISCV_SUBTYPE_SHIFT)
+> +#define KVM_REG_RISCV_SBI_MULTI_DIS	(0x2 << KVM_REG_RISCV_SUBTYPE_SHIFT)
+> +#define KVM_REG_RISCV_SBI_MULTI_REG(__ext_id)	\
+> +		((__ext_id) / __BITS_PER_LONG)
+> +#define KVM_REG_RISCV_SBI_MULTI_MASK(__ext_id)	\
+> +		(1UL << ((__ext_id) % __BITS_PER_LONG))
+> +#define KVM_REG_RISCV_SBI_MULTI_REG_LAST	\
+> +		KVM_REG_RISCV_SBI_MULTI_REG(KVM_RISCV_SBI_EXT_MAX - 1)
+> +
+>  #endif
+>  
+>  #endif /* __LINUX_KVM_RISCV_H */
+> diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+> index 7d010b0be54e..3112697cb12d 100644
+> --- a/arch/riscv/kvm/vcpu.c
+> +++ b/arch/riscv/kvm/vcpu.c
+> @@ -601,6 +601,8 @@ static int kvm_riscv_vcpu_set_reg(struct kvm_vcpu *vcpu,
+>  						 KVM_REG_RISCV_FP_D);
+>  	case KVM_REG_RISCV_ISA_EXT:
+>  		return kvm_riscv_vcpu_set_reg_isa_ext(vcpu, reg);
+> +	case KVM_REG_RISCV_SBI_EXT:
+> +		return kvm_riscv_vcpu_set_reg_sbi_ext(vcpu, reg);
+>  	default:
+>  		break;
+>  	}
+> @@ -628,6 +630,8 @@ static int kvm_riscv_vcpu_get_reg(struct kvm_vcpu *vcpu,
+>  						 KVM_REG_RISCV_FP_D);
+>  	case KVM_REG_RISCV_ISA_EXT:
+>  		return kvm_riscv_vcpu_get_reg_isa_ext(vcpu, reg);
+> +	case KVM_REG_RISCV_SBI_EXT:
+> +		return kvm_riscv_vcpu_get_reg_sbi_ext(vcpu, reg);
+>  	default:
+>  		break;
+>  	}
+> diff --git a/arch/riscv/kvm/vcpu_sbi.c b/arch/riscv/kvm/vcpu_sbi.c
+> index 15fde15f9fb8..223f34c63ea1 100644
+> --- a/arch/riscv/kvm/vcpu_sbi.c
+> +++ b/arch/riscv/kvm/vcpu_sbi.c
+> @@ -30,17 +30,52 @@ static const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_pmu = {
+>  };
+>  #endif
+>  
+> -static const struct kvm_vcpu_sbi_extension *sbi_ext[] = {
+> -	&vcpu_sbi_ext_v01,
+> -	&vcpu_sbi_ext_base,
+> -	&vcpu_sbi_ext_time,
+> -	&vcpu_sbi_ext_ipi,
+> -	&vcpu_sbi_ext_rfence,
+> -	&vcpu_sbi_ext_srst,
+> -	&vcpu_sbi_ext_hsm,
+> -	&vcpu_sbi_ext_pmu,
+> -	&vcpu_sbi_ext_experimental,
+> -	&vcpu_sbi_ext_vendor,
+> +struct kvm_riscv_sbi_extension_entry {
+> +	enum KVM_RISCV_SBI_EXT_ID dis_idx;
+> +	const struct kvm_vcpu_sbi_extension *ext_ptr;
+> +};
+> +
+> +static const struct kvm_riscv_sbi_extension_entry sbi_ext[] = {
+> +	{
+> +		.dis_idx = KVM_RISCV_SBI_EXT_V01,
+> +		.ext_ptr = &vcpu_sbi_ext_v01,
+> +	},
+> +	{
+> +		.dis_idx = KVM_RISCV_SBI_EXT_MAX, /* Can't be disabled */
+> +		.ext_ptr = &vcpu_sbi_ext_base,
+> +	},
+> +	{
+> +		.dis_idx = KVM_RISCV_SBI_EXT_TIME,
+> +		.ext_ptr = &vcpu_sbi_ext_time,
+> +	},
+> +	{
+> +		.dis_idx = KVM_RISCV_SBI_EXT_IPI,
+> +		.ext_ptr = &vcpu_sbi_ext_ipi,
+> +	},
+> +	{
+> +		.dis_idx = KVM_RISCV_SBI_EXT_RFENCE,
+> +		.ext_ptr = &vcpu_sbi_ext_rfence,
+> +	},
+> +	{
+> +		.dis_idx = KVM_RISCV_SBI_EXT_SRST,
+> +		.ext_ptr = &vcpu_sbi_ext_srst,
+> +	},
+> +	{
+> +		.dis_idx = KVM_RISCV_SBI_EXT_HSM,
+> +		.ext_ptr = &vcpu_sbi_ext_hsm,
+> +	},
+> +	{
+> +		.dis_idx = KVM_RISCV_SBI_EXT_PMU,
+> +		.ext_ptr = &vcpu_sbi_ext_pmu,
+> +	},
+> +	{
+> +		.dis_idx = KVM_RISCV_SBI_EXT_EXPERIMENTAL,
+> +		.ext_ptr = &vcpu_sbi_ext_experimental,
+> +	},
+> +	{
+> +		.dis_idx = KVM_RISCV_SBI_EXT_VENDOR,
+> +		.ext_ptr = &vcpu_sbi_ext_vendor,
+> +	},
+>  };
+>  
+>  void kvm_riscv_vcpu_sbi_forward(struct kvm_vcpu *vcpu, struct kvm_run *run)
+> @@ -99,14 +134,192 @@ int kvm_riscv_vcpu_sbi_return(struct kvm_vcpu *vcpu, struct kvm_run *run)
+>  	return 0;
+>  }
+>  
+> -const struct kvm_vcpu_sbi_extension *kvm_vcpu_sbi_find_ext(unsigned long extid)
+> +static int riscv_vcpu_set_sbi_ext_single(struct kvm_vcpu *vcpu,
+> +					 unsigned long reg_num,
+> +					 unsigned long reg_val)
+> +{
+> +	unsigned long i;
+> +	const struct kvm_riscv_sbi_extension_entry *sext = NULL;
+> +	struct kvm_vcpu_sbi_context *scontext = &vcpu->arch.sbi_context;
+> +
+> +	if (reg_num >= KVM_RISCV_SBI_EXT_MAX ||
+> +	    (reg_val != 1 && reg_val != 0))
+> +		return -EINVAL;
+> +
+> +	for (i = 0; i < ARRAY_SIZE(sbi_ext); i++) {
+> +		if (sbi_ext[i].dis_idx == reg_num) {
+> +			sext = &sbi_ext[i];
+> +			break;
+> +		}
+> +	}
+> +	if (!sext)
+> +		return -ENOENT;
+> +
+> +	scontext->extension_disabled[sext->dis_idx] = !reg_val;
+> +
+> +	return 0;
+> +}
+> +
+> +static int riscv_vcpu_get_sbi_ext_single(struct kvm_vcpu *vcpu,
+> +					 unsigned long reg_num,
+> +					 unsigned long *reg_val)
+> +{
+> +	unsigned long i;
+> +	const struct kvm_riscv_sbi_extension_entry *sext = NULL;
+> +	struct kvm_vcpu_sbi_context *scontext = &vcpu->arch.sbi_context;
+> +
+> +	if (reg_num >= KVM_RISCV_SBI_EXT_MAX)
+> +		return -EINVAL;
+> +
+> +	for (i = 0; i < ARRAY_SIZE(sbi_ext); i++) {
+> +		if (sbi_ext[i].dis_idx == reg_num) {
+> +			sext = &sbi_ext[i];
+> +			break;
+> +		}
+> +	}
+> +	if (!sext)
+> +		return -ENOENT;
+> +
+> +	*reg_val = !scontext->extension_disabled[sext->dis_idx];
+> +
+> +	return 0;
+> +}
+> +
+> +static int riscv_vcpu_set_sbi_ext_multi(struct kvm_vcpu *vcpu,
+> +					unsigned long reg_num,
+> +					unsigned long reg_val, bool enable)
+> +{
+> +	unsigned long i, ext_id;
+> +
+> +	if (reg_num > KVM_REG_RISCV_SBI_MULTI_REG_LAST)
+> +		return -EINVAL;
+> +
+> +	for_each_set_bit(i, &reg_val, BITS_PER_LONG) {
+> +		ext_id = i + reg_num * BITS_PER_LONG;
+> +		if (ext_id >= KVM_RISCV_SBI_EXT_MAX)
+> +			break;
+> +
+> +		riscv_vcpu_set_sbi_ext_single(vcpu, ext_id, enable);
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static int riscv_vcpu_get_sbi_ext_multi(struct kvm_vcpu *vcpu,
+> +					unsigned long reg_num,
+> +					unsigned long *reg_val)
+> +{
+> +	unsigned long i, ext_id, ext_val;
+> +
+> +	if (reg_num > KVM_REG_RISCV_SBI_MULTI_REG_LAST)
+> +		return -EINVAL;
+> +
+> +	for (i = 0; i < BITS_PER_LONG; i++) {
+> +		ext_id = i + reg_num * BITS_PER_LONG;
+> +		if (ext_id >= KVM_RISCV_SBI_EXT_MAX)
+> +			break;
+> +
+> +		ext_val = 0;
+> +		riscv_vcpu_get_sbi_ext_single(vcpu, ext_id, &ext_val);
+> +		if (ext_val)
+> +			*reg_val |= KVM_REG_RISCV_SBI_MULTI_MASK(ext_id);
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +int kvm_riscv_vcpu_set_reg_sbi_ext(struct kvm_vcpu *vcpu,
+> +				   const struct kvm_one_reg *reg)
+> +{
+> +	unsigned long __user *uaddr =
+> +			(unsigned long __user *)(unsigned long)reg->addr;
+> +	unsigned long reg_num = reg->id & ~(KVM_REG_ARCH_MASK |
+> +					    KVM_REG_SIZE_MASK |
+> +					    KVM_REG_RISCV_SBI_EXT);
+> +	unsigned long reg_val, reg_subtype;
+> +
+> +	if (KVM_REG_SIZE(reg->id) != sizeof(unsigned long))
+> +		return -EINVAL;
+> +
+> +	if (vcpu->arch.ran_atleast_once)
+> +		return -EBUSY;
+> +
+> +	reg_subtype = reg_num & KVM_REG_RISCV_SUBTYPE_MASK;
+> +	reg_num &= ~KVM_REG_RISCV_SUBTYPE_MASK;
+> +
+> +	if (copy_from_user(&reg_val, uaddr, KVM_REG_SIZE(reg->id)))
+> +		return -EFAULT;
+> +
+> +	switch (reg_subtype) {
+> +	case KVM_REG_RISCV_SBI_SINGLE:
+> +		return riscv_vcpu_set_sbi_ext_single(vcpu, reg_num, reg_val);
+> +	case KVM_REG_RISCV_SBI_MULTI_EN:
+> +		return riscv_vcpu_set_sbi_ext_multi(vcpu, reg_num, reg_val, true);
+> +	case KVM_REG_RISCV_SBI_MULTI_DIS:
+> +		return riscv_vcpu_set_sbi_ext_multi(vcpu, reg_num, reg_val, false);
+> +	default:
+> +		return -EINVAL;
+> +	};
+         ^ unnecessary ;
 
-Signed-off-by: Anup Patel <apatel@ventanamicro.com>
----
- arch/riscv/include/asm/kvm_aia.h |  10 ++
- arch/riscv/kvm/aia.c             | 241 +++++++++++++++++++++++++++++++
- arch/riscv/kvm/main.c            |   3 +-
- arch/riscv/kvm/vcpu.c            |   2 +
- 4 files changed, 255 insertions(+), 1 deletion(-)
+> +
+> +	return 0;
+> +}
+> +
+> +int kvm_riscv_vcpu_get_reg_sbi_ext(struct kvm_vcpu *vcpu,
+> +				   const struct kvm_one_reg *reg)
+> +{
+> +	int rc;
+> +	unsigned long __user *uaddr =
+> +			(unsigned long __user *)(unsigned long)reg->addr;
+> +	unsigned long reg_num = reg->id & ~(KVM_REG_ARCH_MASK |
+> +					    KVM_REG_SIZE_MASK |
+> +					    KVM_REG_RISCV_SBI_EXT);
+> +	unsigned long reg_val, reg_subtype;
+> +
+> +	if (KVM_REG_SIZE(reg->id) != sizeof(unsigned long))
+> +		return -EINVAL;
+> +
+> +	reg_subtype = reg_num & KVM_REG_RISCV_SUBTYPE_MASK;
+> +	reg_num &= ~KVM_REG_RISCV_SUBTYPE_MASK;
+> +
+> +	reg_val = 0;
+> +	switch (reg_subtype) {
+> +	case KVM_REG_RISCV_SBI_SINGLE:
+> +		rc = riscv_vcpu_get_sbi_ext_single(vcpu, reg_num, &reg_val);
+> +		break;
+> +	case KVM_REG_RISCV_SBI_MULTI_EN:
+> +	case KVM_REG_RISCV_SBI_MULTI_DIS:
+> +		rc = riscv_vcpu_get_sbi_ext_multi(vcpu, reg_num, &reg_val);
+> +		if (!rc && reg_subtype == KVM_REG_RISCV_SBI_MULTI_DIS)
+> +			reg_val = ~reg_val;
+> +		break;
+> +	default:
+> +		rc = -EINVAL;
+> +	};
+         ^ unnecessary ;
 
-diff --git a/arch/riscv/include/asm/kvm_aia.h b/arch/riscv/include/asm/kvm_aia.h
-index 1de0717112e5..0938e0cadf80 100644
---- a/arch/riscv/include/asm/kvm_aia.h
-+++ b/arch/riscv/include/asm/kvm_aia.h
-@@ -44,10 +44,15 @@ struct kvm_vcpu_aia {
- 
- #define irqchip_in_kernel(k)		((k)->arch.aia.in_kernel)
- 
-+extern unsigned int kvm_riscv_aia_nr_hgei;
- DECLARE_STATIC_KEY_FALSE(kvm_riscv_aia_available);
- #define kvm_riscv_aia_available() \
- 	static_branch_unlikely(&kvm_riscv_aia_available)
- 
-+static inline void kvm_riscv_vcpu_aia_imsic_release(struct kvm_vcpu *vcpu)
-+{
-+}
-+
- #define KVM_RISCV_AIA_IMSIC_TOPEI	(ISELECT_MASK + 1)
- static inline int kvm_riscv_vcpu_aia_imsic_rmw(struct kvm_vcpu *vcpu,
- 					       unsigned long isel,
-@@ -119,6 +124,11 @@ static inline void kvm_riscv_aia_destroy_vm(struct kvm *kvm)
- {
- }
- 
-+int kvm_riscv_aia_alloc_hgei(int cpu, struct kvm_vcpu *owner,
-+			     void __iomem **hgei_va, phys_addr_t *hgei_pa);
-+void kvm_riscv_aia_free_hgei(int cpu, int hgei);
-+void kvm_riscv_aia_wakeon_hgei(struct kvm_vcpu *owner, bool enable);
-+
- void kvm_riscv_aia_enable(void);
- void kvm_riscv_aia_disable(void);
- int kvm_riscv_aia_init(void);
-diff --git a/arch/riscv/kvm/aia.c b/arch/riscv/kvm/aia.c
-index d530912f28bc..1264783e7c4d 100644
---- a/arch/riscv/kvm/aia.c
-+++ b/arch/riscv/kvm/aia.c
-@@ -7,11 +7,46 @@
-  *	Anup Patel <apatel@ventanamicro.com>
-  */
- 
-+#include <linux/bitops.h>
-+#include <linux/irq.h>
-+#include <linux/irqdomain.h>
- #include <linux/kvm_host.h>
-+#include <linux/percpu.h>
-+#include <linux/spinlock.h>
- #include <asm/hwcap.h>
- 
-+struct aia_hgei_control {
-+	raw_spinlock_t lock;
-+	unsigned long free_bitmap;
-+	struct kvm_vcpu *owners[BITS_PER_LONG];
-+};
-+static DEFINE_PER_CPU(struct aia_hgei_control, aia_hgei);
-+static int hgei_parent_irq;
-+
-+unsigned int kvm_riscv_aia_nr_hgei;
- DEFINE_STATIC_KEY_FALSE(kvm_riscv_aia_available);
- 
-+static int aia_find_hgei(struct kvm_vcpu *owner)
-+{
-+	int i, hgei;
-+	unsigned long flags;
-+	struct aia_hgei_control *hgctrl = this_cpu_ptr(&aia_hgei);
-+
-+	raw_spin_lock_irqsave(&hgctrl->lock, flags);
-+
-+	hgei = -1;
-+	for (i = 1; i <= kvm_riscv_aia_nr_hgei; i++) {
-+		if (hgctrl->owners[i] == owner) {
-+			hgei = i;
-+			break;
-+		}
-+	}
-+
-+	raw_spin_unlock_irqrestore(&hgctrl->lock, flags);
-+
-+	return hgei;
-+}
-+
- static void aia_set_hvictl(bool ext_irq_pending)
- {
- 	unsigned long hvictl;
-@@ -55,6 +90,7 @@ void kvm_riscv_vcpu_aia_sync_interrupts(struct kvm_vcpu *vcpu)
- 
- bool kvm_riscv_vcpu_aia_has_interrupts(struct kvm_vcpu *vcpu, u64 mask)
- {
-+	int hgei;
- 	unsigned long seip;
- 
- 	if (!kvm_riscv_aia_available())
-@@ -72,6 +108,10 @@ bool kvm_riscv_vcpu_aia_has_interrupts(struct kvm_vcpu *vcpu, u64 mask)
- 	if (!kvm_riscv_aia_initialized(vcpu->kvm) || !seip)
- 		return false;
- 
-+	hgei = aia_find_hgei(vcpu);
-+	if (hgei > 0)
-+		return (csr_read(CSR_HGEIP) & BIT(hgei)) ? true : false;
-+
- 	return false;
- }
- 
-@@ -343,6 +383,144 @@ int kvm_riscv_vcpu_aia_rmw_ireg(struct kvm_vcpu *vcpu, unsigned int csr_num,
- 	return KVM_INSN_EXIT_TO_USER_SPACE;
- }
- 
-+int kvm_riscv_aia_alloc_hgei(int cpu, struct kvm_vcpu *owner,
-+			     void __iomem **hgei_va, phys_addr_t *hgei_pa)
-+{
-+	int ret = -ENOENT;
-+	unsigned long flags;
-+	struct aia_hgei_control *hgctrl = per_cpu_ptr(&aia_hgei, cpu);
-+
-+	if (!kvm_riscv_aia_available())
-+		return -ENODEV;
-+	if (!hgctrl)
-+		return -ENODEV;
-+
-+	raw_spin_lock_irqsave(&hgctrl->lock, flags);
-+
-+	if (hgctrl->free_bitmap) {
-+		ret = __ffs(hgctrl->free_bitmap);
-+		hgctrl->free_bitmap &= ~BIT(ret);
-+		hgctrl->owners[ret] = owner;
-+	}
-+
-+	raw_spin_unlock_irqrestore(&hgctrl->lock, flags);
-+
-+	/* TODO: To be updated later by AIA in-kernel irqchip support */
-+	if (hgei_va)
-+		*hgei_va = NULL;
-+	if (hgei_pa)
-+		*hgei_pa = 0;
-+
-+	return ret;
-+}
-+
-+void kvm_riscv_aia_free_hgei(int cpu, int hgei)
-+{
-+	unsigned long flags;
-+	struct aia_hgei_control *hgctrl = per_cpu_ptr(&aia_hgei, cpu);
-+
-+	if (!kvm_riscv_aia_available() || !hgctrl)
-+		return;
-+
-+	raw_spin_lock_irqsave(&hgctrl->lock, flags);
-+
-+	if (hgei > 0 && hgei <= kvm_riscv_aia_nr_hgei) {
-+		if (!(hgctrl->free_bitmap & BIT(hgei))) {
-+			hgctrl->free_bitmap |= BIT(hgei);
-+			hgctrl->owners[hgei] = NULL;
-+		}
-+	}
-+
-+	raw_spin_unlock_irqrestore(&hgctrl->lock, flags);
-+}
-+
-+void kvm_riscv_aia_wakeon_hgei(struct kvm_vcpu *owner, bool enable)
-+{
-+	int hgei;
-+
-+	if (!kvm_riscv_aia_available())
-+		return;
-+
-+	hgei = aia_find_hgei(owner);
-+	if (hgei > 0) {
-+		if (enable)
-+			csr_set(CSR_HGEIE, BIT(hgei));
-+		else
-+			csr_clear(CSR_HGEIE, BIT(hgei));
-+	}
-+}
-+
-+static irqreturn_t hgei_interrupt(int irq, void *dev_id)
-+{
-+	int i;
-+	unsigned long hgei_mask, flags;
-+	struct aia_hgei_control *hgctrl = this_cpu_ptr(&aia_hgei);
-+
-+	hgei_mask = csr_read(CSR_HGEIP) & csr_read(CSR_HGEIE);
-+	csr_clear(CSR_HGEIE, hgei_mask);
-+
-+	raw_spin_lock_irqsave(&hgctrl->lock, flags);
-+
-+	for_each_set_bit(i, &hgei_mask, BITS_PER_LONG) {
-+		if (hgctrl->owners[i])
-+			kvm_vcpu_kick(hgctrl->owners[i]);
-+	}
-+
-+	raw_spin_unlock_irqrestore(&hgctrl->lock, flags);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static int aia_hgei_init(void)
-+{
-+	int cpu, rc;
-+	struct irq_domain *domain;
-+	struct aia_hgei_control *hgctrl;
-+
-+	/* Initialize per-CPU guest external interrupt line management */
-+	for_each_possible_cpu(cpu) {
-+		hgctrl = per_cpu_ptr(&aia_hgei, cpu);
-+		raw_spin_lock_init(&hgctrl->lock);
-+		if (kvm_riscv_aia_nr_hgei) {
-+			hgctrl->free_bitmap =
-+				BIT(kvm_riscv_aia_nr_hgei + 1) - 1;
-+			hgctrl->free_bitmap &= ~BIT(0);
-+		} else
-+			hgctrl->free_bitmap = 0;
-+	}
-+
-+	/* Find INTC irq domain */
-+	domain = irq_find_matching_fwnode(riscv_get_intc_hwnode(),
-+					  DOMAIN_BUS_ANY);
-+	if (!domain) {
-+		kvm_err("unable to find INTC domain\n");
-+		return -ENOENT;
-+	}
-+
-+	/* Map per-CPU SGEI interrupt from INTC domain */
-+	hgei_parent_irq = irq_create_mapping(domain, IRQ_S_GEXT);
-+	if (!hgei_parent_irq) {
-+		kvm_err("unable to map SGEI IRQ\n");
-+		return -ENOMEM;
-+	}
-+
-+	/* Request per-CPU SGEI interrupt */
-+	rc = request_percpu_irq(hgei_parent_irq, hgei_interrupt,
-+				"riscv-kvm", &aia_hgei);
-+	if (rc) {
-+		kvm_err("failed to request SGEI IRQ\n");
-+		return rc;
-+	}
-+
-+	return 0;
-+}
-+
-+static void aia_hgei_exit(void)
-+{
-+	/* Free per-CPU SGEI interrupt */
-+	free_percpu_irq(hgei_parent_irq, &aia_hgei);
-+}
-+
- void kvm_riscv_aia_enable(void)
- {
- 	if (!kvm_riscv_aia_available())
-@@ -357,21 +535,79 @@ void kvm_riscv_aia_enable(void)
- 	csr_write(CSR_HVIPRIO1H, 0x0);
- 	csr_write(CSR_HVIPRIO2H, 0x0);
- #endif
-+
-+	/* Enable per-CPU SGEI interrupt */
-+	enable_percpu_irq(hgei_parent_irq,
-+			  irq_get_trigger_type(hgei_parent_irq));
-+	csr_set(CSR_HIE, BIT(IRQ_S_GEXT));
- }
- 
- void kvm_riscv_aia_disable(void)
- {
-+	int i;
-+	unsigned long flags;
-+	struct kvm_vcpu *vcpu;
-+	struct aia_hgei_control *hgctrl = this_cpu_ptr(&aia_hgei);
-+
- 	if (!kvm_riscv_aia_available())
- 		return;
- 
-+	/* Disable per-CPU SGEI interrupt */
-+	csr_clear(CSR_HIE, BIT(IRQ_S_GEXT));
-+	disable_percpu_irq(hgei_parent_irq);
-+
- 	aia_set_hvictl(false);
-+
-+	raw_spin_lock_irqsave(&hgctrl->lock, flags);
-+
-+	for (i = 0; i <= kvm_riscv_aia_nr_hgei; i++) {
-+		vcpu = hgctrl->owners[i];
-+		if (!vcpu)
-+			continue;
-+
-+		/*
-+		 * We release hgctrl->lock before notifying IMSIC
-+		 * so that we don't have lock ordering issues.
-+		 */
-+		raw_spin_unlock_irqrestore(&hgctrl->lock, flags);
-+
-+		/* Notify IMSIC */
-+		kvm_riscv_vcpu_aia_imsic_release(vcpu);
-+
-+		/*
-+		 * Wakeup VCPU if it was blocked so that it can
-+		 * run on other HARTs
-+		 */
-+		if (csr_read(CSR_HGEIE) & BIT(i)) {
-+			csr_clear(CSR_HGEIE, BIT(i));
-+			kvm_vcpu_kick(vcpu);
-+		}
-+
-+		raw_spin_lock_irqsave(&hgctrl->lock, flags);
-+	}
-+
-+	raw_spin_unlock_irqrestore(&hgctrl->lock, flags);
- }
- 
- int kvm_riscv_aia_init(void)
- {
-+	int rc;
-+
- 	if (!riscv_isa_extension_available(NULL, SxAIA))
- 		return -ENODEV;
- 
-+	/* Figure-out number of bits in HGEIE */
-+	csr_write(CSR_HGEIE, -1UL);
-+	kvm_riscv_aia_nr_hgei = fls_long(csr_read(CSR_HGEIE));
-+	csr_write(CSR_HGEIE, 0);
-+	if (kvm_riscv_aia_nr_hgei)
-+		kvm_riscv_aia_nr_hgei--;
-+
-+	/* Initialize guest external interrupt line management */
-+	rc = aia_hgei_init();
-+	if (rc)
-+		return rc;
-+
- 	/* Enable KVM AIA support */
- 	static_branch_enable(&kvm_riscv_aia_available);
- 
-@@ -380,4 +616,9 @@ int kvm_riscv_aia_init(void)
- 
- void kvm_riscv_aia_exit(void)
- {
-+	if (!kvm_riscv_aia_available())
-+		return;
-+
-+	/* Cleanup the HGEI state */
-+	aia_hgei_exit();
- }
-diff --git a/arch/riscv/kvm/main.c b/arch/riscv/kvm/main.c
-index 6396352b4e4d..b0b46f48f31e 100644
---- a/arch/riscv/kvm/main.c
-+++ b/arch/riscv/kvm/main.c
-@@ -116,7 +116,8 @@ static int __init riscv_kvm_init(void)
- 	kvm_info("VMID %ld bits available\n", kvm_riscv_gstage_vmid_bits());
- 
- 	if (kvm_riscv_aia_available())
--		kvm_info("AIA available\n");
-+		kvm_info("AIA available with %d guest external interrupts\n",
-+			 kvm_riscv_aia_nr_hgei);
- 
- 	rc = kvm_init(sizeof(struct kvm_vcpu), 0, THIS_MODULE);
- 	if (rc) {
-diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-index 30acf3ebdc3d..eace51dd896f 100644
---- a/arch/riscv/kvm/vcpu.c
-+++ b/arch/riscv/kvm/vcpu.c
-@@ -249,10 +249,12 @@ int kvm_cpu_has_pending_timer(struct kvm_vcpu *vcpu)
- 
- void kvm_arch_vcpu_blocking(struct kvm_vcpu *vcpu)
- {
-+	kvm_riscv_aia_wakeon_hgei(vcpu, true);
- }
- 
- void kvm_arch_vcpu_unblocking(struct kvm_vcpu *vcpu)
- {
-+	kvm_riscv_aia_wakeon_hgei(vcpu, false);
- }
- 
- int kvm_arch_vcpu_runnable(struct kvm_vcpu *vcpu)
--- 
-2.34.1
+> +	if (rc)
+> +		return rc;
+> +
+> +	if (copy_to_user(uaddr, &reg_val, KVM_REG_SIZE(reg->id)))
+> +		return -EFAULT;
+> +
+> +	return 0;
+> +}
+> +
+> +const struct kvm_vcpu_sbi_extension *kvm_vcpu_sbi_find_ext(
+> +				struct kvm_vcpu *vcpu, unsigned long extid)
+>  {
+> -	int i = 0;
+> +	int i;
+> +	const struct kvm_riscv_sbi_extension_entry *sext;
+> +	struct kvm_vcpu_sbi_context *scontext = &vcpu->arch.sbi_context;
+>  
+>  	for (i = 0; i < ARRAY_SIZE(sbi_ext); i++) {
+> -		if (sbi_ext[i]->extid_start <= extid &&
+> -		    sbi_ext[i]->extid_end >= extid)
+> -			return sbi_ext[i];
+> +		sext = &sbi_ext[i];
+> +		if (sext->ext_ptr->extid_start <= extid &&
+> +		    sext->ext_ptr->extid_end >= extid) {
+> +			if (sext->dis_idx < KVM_RISCV_SBI_EXT_MAX &&
+> +			    scontext->extension_disabled[sext->dis_idx])
+> +				return NULL;
+> +			return sbi_ext[i].ext_ptr;
+> +		}
+>  	}
+>  
+>  	return NULL;
+> @@ -126,7 +339,7 @@ int kvm_riscv_vcpu_sbi_ecall(struct kvm_vcpu *vcpu, struct kvm_run *run)
+>  	};
+>  	bool ext_is_v01 = false;
+>  
+> -	sbi_ext = kvm_vcpu_sbi_find_ext(cp->a7);
+> +	sbi_ext = kvm_vcpu_sbi_find_ext(vcpu, cp->a7);
+>  	if (sbi_ext && sbi_ext->handler) {
+>  #ifdef CONFIG_RISCV_SBI_V01
+>  		if (cp->a7 >= SBI_EXT_0_1_SET_TIMER &&
+> diff --git a/arch/riscv/kvm/vcpu_sbi_base.c b/arch/riscv/kvm/vcpu_sbi_base.c
+> index 9945aff34c14..5bc570b984f4 100644
+> --- a/arch/riscv/kvm/vcpu_sbi_base.c
+> +++ b/arch/riscv/kvm/vcpu_sbi_base.c
+> @@ -44,7 +44,7 @@ static int kvm_sbi_ext_base_handler(struct kvm_vcpu *vcpu, struct kvm_run *run,
+>  			kvm_riscv_vcpu_sbi_forward(vcpu, run);
+>  			retdata->uexit = true;
+>  		} else {
+> -			sbi_ext = kvm_vcpu_sbi_find_ext(cp->a0);
+> +			sbi_ext = kvm_vcpu_sbi_find_ext(vcpu, cp->a0);
+>  			*out_val = sbi_ext && sbi_ext->probe ?
+>  					   sbi_ext->probe(vcpu) : !!sbi_ext;
+>  		}
+> -- 
+> 2.34.1
+>
 
+Other than the ;'s
+
+Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+
+Thanks,
+drew
 
