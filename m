@@ -1,65 +1,25 @@
-From: Atish Patra <atishp@atishpatra.org>
-Date: Mon, 3 Apr 2023 09:54:47 +0530
+From: Andrew Jones <ajones@ventanamicro.com>
+Date: Mon, 3 Apr 2023 10:44:13 +0200
 Subject: [PATCH] RISC-V: KVM: Allow Zbb extension for Guest/VM
 In-Reply-To: <20230401112730.2105240-1-apatel@ventanamicro.com>
 References: <20230401112730.2105240-1-apatel@ventanamicro.com>
-Message-ID: <CAOnJCUJ9zgEjMDVo+rBuhzfaBWY1iaCL6Dy0Og+-QU3x4+GSmA@mail.gmail.com>
+Message-ID: <mhrkfb5qtqlmzvivljo4y4o2ii4r6ucjdyeq4orn2gxpbrxzel@eemujnzws5xt>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sat, Apr 1, 2023 at 4:57?PM Anup Patel <apatel@ventanamicro.com> wrote:
->
+On Sat, Apr 01, 2023 at 04:57:30PM +0530, Anup Patel wrote:
 > We extend the KVM ISA extension ONE_REG interface to allow KVM
 > user space to detect and enable Zbb extension for Guest/VM.
->
+> 
 > Signed-off-by: Anup Patel <apatel@ventanamicro.com>
 > ---
 >  arch/riscv/include/uapi/asm/kvm.h | 1 +
 >  arch/riscv/kvm/vcpu.c             | 2 ++
 >  2 files changed, 3 insertions(+)
 >
-> diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
-> index d8ead5952ed9..47a7c3958229 100644
-> --- a/arch/riscv/include/uapi/asm/kvm.h
-> +++ b/arch/riscv/include/uapi/asm/kvm.h
-> @@ -106,6 +106,7 @@ enum KVM_RISCV_ISA_EXT_ID {
->         KVM_RISCV_ISA_EXT_SVINVAL,
->         KVM_RISCV_ISA_EXT_ZIHINTPAUSE,
->         KVM_RISCV_ISA_EXT_ZICBOM,
-> +       KVM_RISCV_ISA_EXT_ZBB,
->         KVM_RISCV_ISA_EXT_MAX,
->  };
->
-> diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-> index 3112697cb12d..02b49cb94561 100644
-> --- a/arch/riscv/kvm/vcpu.c
-> +++ b/arch/riscv/kvm/vcpu.c
-> @@ -61,6 +61,7 @@ static const unsigned long kvm_isa_ext_arr[] = {
->         KVM_ISA_EXT_ARR(SSTC),
->         KVM_ISA_EXT_ARR(SVINVAL),
->         KVM_ISA_EXT_ARR(SVPBMT),
-> +       KVM_ISA_EXT_ARR(ZBB),
->         KVM_ISA_EXT_ARR(ZIHINTPAUSE),
->         KVM_ISA_EXT_ARR(ZICBOM),
->  };
-> @@ -99,6 +100,7 @@ static bool kvm_riscv_vcpu_isa_disable_allowed(unsigned long ext)
->         case KVM_RISCV_ISA_EXT_SSTC:
->         case KVM_RISCV_ISA_EXT_SVINVAL:
->         case KVM_RISCV_ISA_EXT_ZIHINTPAUSE:
-> +       case KVM_RISCV_ISA_EXT_ZBB:
->                 return false;
->         default:
->                 break;
-> --
-> 2.34.1
->
 
-Reviewed-by: Atish Patra <atishp@rivosinc.com>
-
--- 
-Regards,
-Atish
+Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
 
