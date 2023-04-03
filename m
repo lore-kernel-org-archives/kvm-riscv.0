@@ -1,70 +1,97 @@
 From: Anup Patel <apatel@ventanamicro.com>
-Date: Mon,  3 Apr 2023 15:03:02 +0530
-Subject: [PATCH v3 0/8] RISC-V KVM virtualize AIA CSRs
-Message-ID: <20230403093310.2271142-1-apatel@ventanamicro.com>
+Date: Mon,  3 Apr 2023 15:03:05 +0530
+Subject: [PATCH v3 3/8] RISC-V: KVM: Drop the _MASK suffix from hgatp.VMID mask defines
+In-Reply-To: <20230403093310.2271142-1-apatel@ventanamicro.com>
+References: <20230403093310.2271142-1-apatel@ventanamicro.com>
+Message-ID: <20230403093310.2271142-4-apatel@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The RISC-V AIA specification is now frozen as-per the RISC-V international
-process. The latest frozen specifcation can be found at:
-https://github.com/riscv/riscv-aia/releases/download/1.0-RC3/riscv-interrupts-1.0-RC3.pdf
+The hgatp.VMID mask defines are used before shifting when extracting
+VMID value from hgatp CSR value so based on the convention followed
+in the other parts of asm/csr.h, the hgatp.VMID mask defines should
+not have a _MASK suffix.
 
-This series implements first phase of AIA virtualization which targets
-virtualizing AIA CSRs. This also provides a foundation for the second
-phase of AIA virtualization which will target in-kernel AIA irqchip
-(including both IMSIC and APLIC).
+While we are here, let's use GENMASK() for hgatp.VMID and hgatp.PPN.
 
-The first two patches are shared with the "Linux RISC-V AIA Support"
-series which adds AIA driver support.
+Signed-off-by: Anup Patel <apatel@ventanamicro.com>
+Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+Reviewed-by: Atish Patra <atishp@rivosinc.com>
+---
+ arch/riscv/include/asm/csr.h | 12 ++++++------
+ arch/riscv/kvm/mmu.c         |  3 +--
+ arch/riscv/kvm/vmid.c        |  4 ++--
+ 3 files changed, 9 insertions(+), 10 deletions(-)
 
-To test this series, use AIA drivers from the "Linux RISC-V AIA Support"
-series and use KVMTOOL from the riscv_aia_v1 branch at:
-https://github.com/avpatel/kvmtool.git
-
-These patches can also be found in the riscv_kvm_aia_csr_v3 branch at:
-https://github.com/avpatel/linux.git
-
-Changes since v2:
- - Rebased on Linux-6.3-rc5
- - Split PATCH5 into two separate patches as suggested by Atish.
-
-Changes since v1:
- - Addressed from Drew and Conor in PATCH1
- - Use alphabetical ordering for SMAIA and SSAIA enum in PATCH2
- - Use GENMASK() in PATCH3
-
-Anup Patel (8):
-  RISC-V: Add AIA related CSR defines
-  RISC-V: Detect AIA CSRs from ISA string
-  RISC-V: KVM: Drop the _MASK suffix from hgatp.VMID mask defines
-  RISC-V: KVM: Initial skeletal support for AIA
-  RISC-V: KVM: Implement subtype for CSR ONE_REG interface
-  RISC-V: KVM: Add ONE_REG interface for AIA CSRs
-  RISC-V: KVM: Virtualize per-HART AIA CSRs
-  RISC-V: KVM: Implement guest external interrupt line management
-
- arch/riscv/include/asm/csr.h      | 107 ++++-
- arch/riscv/include/asm/hwcap.h    |   8 +
- arch/riscv/include/asm/kvm_aia.h  | 137 +++++++
- arch/riscv/include/asm/kvm_host.h |  14 +-
- arch/riscv/include/uapi/asm/kvm.h |  18 +-
- arch/riscv/kernel/cpu.c           |   2 +
- arch/riscv/kernel/cpufeature.c    |   2 +
- arch/riscv/kvm/Makefile           |   1 +
- arch/riscv/kvm/aia.c              | 624 ++++++++++++++++++++++++++++++
- arch/riscv/kvm/main.c             |  23 +-
- arch/riscv/kvm/mmu.c              |   3 +-
- arch/riscv/kvm/vcpu.c             | 185 +++++++--
- arch/riscv/kvm/vcpu_insn.c        |   1 +
- arch/riscv/kvm/vm.c               |   4 +
- arch/riscv/kvm/vmid.c             |   4 +-
- 15 files changed, 1077 insertions(+), 56 deletions(-)
- create mode 100644 arch/riscv/include/asm/kvm_aia.h
- create mode 100644 arch/riscv/kvm/aia.c
-
+diff --git a/arch/riscv/include/asm/csr.h b/arch/riscv/include/asm/csr.h
+index 3c8d68152bce..3176355cf4e9 100644
+--- a/arch/riscv/include/asm/csr.h
++++ b/arch/riscv/include/asm/csr.h
+@@ -131,25 +131,25 @@
+ 
+ #define HGATP32_MODE_SHIFT	31
+ #define HGATP32_VMID_SHIFT	22
+-#define HGATP32_VMID_MASK	_AC(0x1FC00000, UL)
+-#define HGATP32_PPN		_AC(0x003FFFFF, UL)
++#define HGATP32_VMID		GENMASK(28, 22)
++#define HGATP32_PPN		GENMASK(21, 0)
+ 
+ #define HGATP64_MODE_SHIFT	60
+ #define HGATP64_VMID_SHIFT	44
+-#define HGATP64_VMID_MASK	_AC(0x03FFF00000000000, UL)
+-#define HGATP64_PPN		_AC(0x00000FFFFFFFFFFF, UL)
++#define HGATP64_VMID		GENMASK(57, 44)
++#define HGATP64_PPN		GENMASK(43, 0)
+ 
+ #define HGATP_PAGE_SHIFT	12
+ 
+ #ifdef CONFIG_64BIT
+ #define HGATP_PPN		HGATP64_PPN
+ #define HGATP_VMID_SHIFT	HGATP64_VMID_SHIFT
+-#define HGATP_VMID_MASK		HGATP64_VMID_MASK
++#define HGATP_VMID		HGATP64_VMID
+ #define HGATP_MODE_SHIFT	HGATP64_MODE_SHIFT
+ #else
+ #define HGATP_PPN		HGATP32_PPN
+ #define HGATP_VMID_SHIFT	HGATP32_VMID_SHIFT
+-#define HGATP_VMID_MASK		HGATP32_VMID_MASK
++#define HGATP_VMID		HGATP32_VMID
+ #define HGATP_MODE_SHIFT	HGATP32_MODE_SHIFT
+ #endif
+ 
+diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
+index 46d692995830..f2eb47925806 100644
+--- a/arch/riscv/kvm/mmu.c
++++ b/arch/riscv/kvm/mmu.c
+@@ -755,8 +755,7 @@ void kvm_riscv_gstage_update_hgatp(struct kvm_vcpu *vcpu)
+ 	unsigned long hgatp = gstage_mode;
+ 	struct kvm_arch *k = &vcpu->kvm->arch;
+ 
+-	hgatp |= (READ_ONCE(k->vmid.vmid) << HGATP_VMID_SHIFT) &
+-		 HGATP_VMID_MASK;
++	hgatp |= (READ_ONCE(k->vmid.vmid) << HGATP_VMID_SHIFT) & HGATP_VMID;
+ 	hgatp |= (k->pgd_phys >> PAGE_SHIFT) & HGATP_PPN;
+ 
+ 	csr_write(CSR_HGATP, hgatp);
+diff --git a/arch/riscv/kvm/vmid.c b/arch/riscv/kvm/vmid.c
+index 5246da1c9167..ddc98714ce8e 100644
+--- a/arch/riscv/kvm/vmid.c
++++ b/arch/riscv/kvm/vmid.c
+@@ -26,9 +26,9 @@ void __init kvm_riscv_gstage_vmid_detect(void)
+ 
+ 	/* Figure-out number of VMID bits in HW */
+ 	old = csr_read(CSR_HGATP);
+-	csr_write(CSR_HGATP, old | HGATP_VMID_MASK);
++	csr_write(CSR_HGATP, old | HGATP_VMID);
+ 	vmid_bits = csr_read(CSR_HGATP);
+-	vmid_bits = (vmid_bits & HGATP_VMID_MASK) >> HGATP_VMID_SHIFT;
++	vmid_bits = (vmid_bits & HGATP_VMID) >> HGATP_VMID_SHIFT;
+ 	vmid_bits = fls_long(vmid_bits);
+ 	csr_write(CSR_HGATP, old);
+ 
 -- 
 2.34.1
 
