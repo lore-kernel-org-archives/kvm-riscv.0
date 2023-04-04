@@ -1,31 +1,24 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Tue, 4 Apr 2023 18:31:49 +0200
-Subject: [PATCH v4 9/9] RISC-V: KVM: Implement guest external interrupt
- line management
-In-Reply-To: <20230404153452.2405681-10-apatel@ventanamicro.com>
+From: Anup Patel <anup@brainfault.org>
+Date: Tue, 4 Apr 2023 22:25:49 +0530
+Subject: [PATCH v4 2/9] RISC-V: Detect AIA CSRs from ISA string
+In-Reply-To: <20230404-facecloth-curdle-f2d5d46e1375@spud>
 References: <20230404153452.2405681-1-apatel@ventanamicro.com>
- <20230404153452.2405681-10-apatel@ventanamicro.com>
-Message-ID: <buomdae5cjxjctzleywsjqejf2k3d3zuwqi7zyrjq4fc2xzng5@mdxdojrdkm4j>
+ <20230404153452.2405681-3-apatel@ventanamicro.com> <20230404-facecloth-curdle-f2d5d46e1375@spud>
+Message-ID: <CAAhSdy1Qk2offdz3zn0gNQKbhBy6a5MmRG0i0pgRCDZBH3dn6g@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Apr 04, 2023 at 09:04:52PM +0530, Anup Patel wrote:
-> The RISC-V host will have one guest external interrupt line for each
-> VS-level IMSICs associated with a HART. The guest external interrupt
-> lines are per-HART resources and hypervisor can use HGEIE, HGEIP, and
-> HIE CSRs to manage these guest external interrupt lines.
-> 
-> Signed-off-by: Anup Patel <apatel@ventanamicro.com>
-> ---
->  arch/riscv/include/asm/kvm_aia.h |  10 ++
->  arch/riscv/kvm/aia.c             | 239 +++++++++++++++++++++++++++++++
->  arch/riscv/kvm/main.c            |   3 +-
->  arch/riscv/kvm/vcpu.c            |   2 +
->  4 files changed, 253 insertions(+), 1 deletion(-)
+On Tue, Apr 4, 2023 at 10:16?PM Conor Dooley <conor@kernel.org> wrote:
 >
+> Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
+>
+> Thanks for fixing up the order Anup.
 
-Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+I forgot to mention this in the change log.
+
+Regards,
+Anup
 
