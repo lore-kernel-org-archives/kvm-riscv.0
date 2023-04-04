@@ -1,68 +1,97 @@
 From: Anup Patel <apatel@ventanamicro.com>
-Date: Tue,  4 Apr 2023 21:04:45 +0530
-Subject: [PATCH v4 2/9] RISC-V: Detect AIA CSRs from ISA string
+Date: Tue,  4 Apr 2023 21:04:46 +0530
+Subject: [PATCH v4 3/9] RISC-V: KVM: Drop the _MASK suffix from hgatp.VMID mask defines
 In-Reply-To: <20230404153452.2405681-1-apatel@ventanamicro.com>
 References: <20230404153452.2405681-1-apatel@ventanamicro.com>
-Message-ID: <20230404153452.2405681-3-apatel@ventanamicro.com>
+Message-ID: <20230404153452.2405681-4-apatel@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-We have two extension names for AIA ISA support: Smaia (M-mode AIA CSRs)
-and Ssaia (S-mode AIA CSRs).
+The hgatp.VMID mask defines are used before shifting when extracting
+VMID value from hgatp CSR value so based on the convention followed
+in the other parts of asm/csr.h, the hgatp.VMID mask defines should
+not have a _MASK suffix.
 
-We extend the ISA string parsing to detect Smaia and Ssaia extensions.
+While we are here, let's use GENMASK() for hgatp.VMID and hgatp.PPN.
 
 Signed-off-by: Anup Patel <apatel@ventanamicro.com>
 Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
 Reviewed-by: Atish Patra <atishp@rivosinc.com>
 ---
- arch/riscv/include/asm/hwcap.h | 2 ++
- arch/riscv/kernel/cpu.c        | 2 ++
- arch/riscv/kernel/cpufeature.c | 2 ++
- 3 files changed, 6 insertions(+)
+ arch/riscv/include/asm/csr.h | 12 ++++++------
+ arch/riscv/kvm/mmu.c         |  3 +--
+ arch/riscv/kvm/vmid.c        |  4 ++--
+ 3 files changed, 9 insertions(+), 10 deletions(-)
 
-diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
-index 6263a0de1c6a..74f5dab2148f 100644
---- a/arch/riscv/include/asm/hwcap.h
-+++ b/arch/riscv/include/asm/hwcap.h
-@@ -42,6 +42,8 @@
- #define RISCV_ISA_EXT_ZBB		30
- #define RISCV_ISA_EXT_ZICBOM		31
- #define RISCV_ISA_EXT_ZIHINTPAUSE	32
-+#define RISCV_ISA_EXT_SMAIA		33
-+#define RISCV_ISA_EXT_SSAIA		34
+diff --git a/arch/riscv/include/asm/csr.h b/arch/riscv/include/asm/csr.h
+index 3c8d68152bce..3176355cf4e9 100644
+--- a/arch/riscv/include/asm/csr.h
++++ b/arch/riscv/include/asm/csr.h
+@@ -131,25 +131,25 @@
  
- #define RISCV_ISA_EXT_MAX		64
- #define RISCV_ISA_EXT_NAME_LEN_MAX	32
-diff --git a/arch/riscv/kernel/cpu.c b/arch/riscv/kernel/cpu.c
-index 8400f0cc9704..ae1e7bbf9344 100644
---- a/arch/riscv/kernel/cpu.c
-+++ b/arch/riscv/kernel/cpu.c
-@@ -188,6 +188,8 @@ static struct riscv_isa_ext_data isa_ext_arr[] = {
- 	__RISCV_ISA_EXT_DATA(zicbom, RISCV_ISA_EXT_ZICBOM),
- 	__RISCV_ISA_EXT_DATA(zihintpause, RISCV_ISA_EXT_ZIHINTPAUSE),
- 	__RISCV_ISA_EXT_DATA(zbb, RISCV_ISA_EXT_ZBB),
-+	__RISCV_ISA_EXT_DATA(smaia, RISCV_ISA_EXT_SMAIA),
-+	__RISCV_ISA_EXT_DATA(ssaia, RISCV_ISA_EXT_SSAIA),
- 	__RISCV_ISA_EXT_DATA(sscofpmf, RISCV_ISA_EXT_SSCOFPMF),
- 	__RISCV_ISA_EXT_DATA(sstc, RISCV_ISA_EXT_SSTC),
- 	__RISCV_ISA_EXT_DATA(svinval, RISCV_ISA_EXT_SVINVAL),
-diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
-index 59d58ee0f68d..9e92e23f6f82 100644
---- a/arch/riscv/kernel/cpufeature.c
-+++ b/arch/riscv/kernel/cpufeature.c
-@@ -221,6 +221,8 @@ void __init riscv_fill_hwcap(void)
- 				}
- 			} else {
- 				/* sorted alphabetically */
-+				SET_ISA_EXT_MAP("smaia", RISCV_ISA_EXT_SMAIA);
-+				SET_ISA_EXT_MAP("ssaia", RISCV_ISA_EXT_SSAIA);
- 				SET_ISA_EXT_MAP("sscofpmf", RISCV_ISA_EXT_SSCOFPMF);
- 				SET_ISA_EXT_MAP("sstc", RISCV_ISA_EXT_SSTC);
- 				SET_ISA_EXT_MAP("svinval", RISCV_ISA_EXT_SVINVAL);
+ #define HGATP32_MODE_SHIFT	31
+ #define HGATP32_VMID_SHIFT	22
+-#define HGATP32_VMID_MASK	_AC(0x1FC00000, UL)
+-#define HGATP32_PPN		_AC(0x003FFFFF, UL)
++#define HGATP32_VMID		GENMASK(28, 22)
++#define HGATP32_PPN		GENMASK(21, 0)
+ 
+ #define HGATP64_MODE_SHIFT	60
+ #define HGATP64_VMID_SHIFT	44
+-#define HGATP64_VMID_MASK	_AC(0x03FFF00000000000, UL)
+-#define HGATP64_PPN		_AC(0x00000FFFFFFFFFFF, UL)
++#define HGATP64_VMID		GENMASK(57, 44)
++#define HGATP64_PPN		GENMASK(43, 0)
+ 
+ #define HGATP_PAGE_SHIFT	12
+ 
+ #ifdef CONFIG_64BIT
+ #define HGATP_PPN		HGATP64_PPN
+ #define HGATP_VMID_SHIFT	HGATP64_VMID_SHIFT
+-#define HGATP_VMID_MASK		HGATP64_VMID_MASK
++#define HGATP_VMID		HGATP64_VMID
+ #define HGATP_MODE_SHIFT	HGATP64_MODE_SHIFT
+ #else
+ #define HGATP_PPN		HGATP32_PPN
+ #define HGATP_VMID_SHIFT	HGATP32_VMID_SHIFT
+-#define HGATP_VMID_MASK		HGATP32_VMID_MASK
++#define HGATP_VMID		HGATP32_VMID
+ #define HGATP_MODE_SHIFT	HGATP32_MODE_SHIFT
+ #endif
+ 
+diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
+index 46d692995830..f2eb47925806 100644
+--- a/arch/riscv/kvm/mmu.c
++++ b/arch/riscv/kvm/mmu.c
+@@ -755,8 +755,7 @@ void kvm_riscv_gstage_update_hgatp(struct kvm_vcpu *vcpu)
+ 	unsigned long hgatp = gstage_mode;
+ 	struct kvm_arch *k = &vcpu->kvm->arch;
+ 
+-	hgatp |= (READ_ONCE(k->vmid.vmid) << HGATP_VMID_SHIFT) &
+-		 HGATP_VMID_MASK;
++	hgatp |= (READ_ONCE(k->vmid.vmid) << HGATP_VMID_SHIFT) & HGATP_VMID;
+ 	hgatp |= (k->pgd_phys >> PAGE_SHIFT) & HGATP_PPN;
+ 
+ 	csr_write(CSR_HGATP, hgatp);
+diff --git a/arch/riscv/kvm/vmid.c b/arch/riscv/kvm/vmid.c
+index 5246da1c9167..ddc98714ce8e 100644
+--- a/arch/riscv/kvm/vmid.c
++++ b/arch/riscv/kvm/vmid.c
+@@ -26,9 +26,9 @@ void __init kvm_riscv_gstage_vmid_detect(void)
+ 
+ 	/* Figure-out number of VMID bits in HW */
+ 	old = csr_read(CSR_HGATP);
+-	csr_write(CSR_HGATP, old | HGATP_VMID_MASK);
++	csr_write(CSR_HGATP, old | HGATP_VMID);
+ 	vmid_bits = csr_read(CSR_HGATP);
+-	vmid_bits = (vmid_bits & HGATP_VMID_MASK) >> HGATP_VMID_SHIFT;
++	vmid_bits = (vmid_bits & HGATP_VMID) >> HGATP_VMID_SHIFT;
+ 	vmid_bits = fls_long(vmid_bits);
+ 	csr_write(CSR_HGATP, old);
+ 
 -- 
 2.34.1
 
