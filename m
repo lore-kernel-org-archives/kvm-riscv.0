@@ -1,65 +1,35 @@
-From: Anup Patel <anup@brainfault.org>
-Date: Fri, 7 Apr 2023 17:22:42 +0530
-Subject: [PATCH] RISC-V: KVM: Allow Zbb extension for Guest/VM
-In-Reply-To: <20230401112730.2105240-1-apatel@ventanamicro.com>
-References: <20230401112730.2105240-1-apatel@ventanamicro.com>
-Message-ID: <CAAhSdy1rFdCDOajCo+_07=S1n1LC-4ZdK1u1Bz4Zi5KxrcuHeQ@mail.gmail.com>
+From: Sean Christopherson <seanjc@google.com>
+Date: Fri, 7 Apr 2023 16:30:44 -0700
+Subject: [PATCH v2 0/4] KVM: Refactor KVM stats macros and enable custom
+ stat names
+In-Reply-To: <20230306190156.434452-1-dmatlack@google.com>
+References: <20230306190156.434452-1-dmatlack@google.com>
+Message-ID: <ZDCnpAd0fh2cKcpS@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sat, Apr 1, 2023 at 4:57?PM Anup Patel <apatel@ventanamicro.com> wrote:
->
-> We extend the KVM ISA extension ONE_REG interface to allow KVM
-> user space to detect and enable Zbb extension for Guest/VM.
->
-> Signed-off-by: Anup Patel <apatel@ventanamicro.com>
+On Mon, Mar 06, 2023, David Matlack wrote:
+> David Matlack (4):
+>   KVM: Refactor stats descriptor generation macros
+>   KVM: Refactor designated initializer macros for struct _kvm_stats_desc
+>   KVM: Allow custom names for KVM_STAT()
+>   KVM: x86: Drop union for pages_{4k,2m,1g} stats
+> 
+>  arch/arm64/kvm/guest.c          |  14 +--
+>  arch/mips/kvm/mips.c            |  54 ++++-----
+>  arch/powerpc/kvm/book3s.c       |  62 +++++-----
+>  arch/powerpc/kvm/booke.c        |  48 ++++----
+>  arch/riscv/kvm/vcpu.c           |  16 +--
+>  arch/s390/kvm/kvm-s390.c        | 198 ++++++++++++++++----------------
+>  arch/x86/include/asm/kvm_host.h |   9 +-
+>  arch/x86/kvm/x86.c              |  94 +++++++--------
+>  include/linux/kvm_host.h        | 179 +++++++++++------------------
+>  9 files changed, 314 insertions(+), 360 deletions(-)
 
-Queued this patch for Linux-6.4
+For the series,
 
-Thanks,
-Anup
-
-> ---
->  arch/riscv/include/uapi/asm/kvm.h | 1 +
->  arch/riscv/kvm/vcpu.c             | 2 ++
->  2 files changed, 3 insertions(+)
->
-> diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
-> index d8ead5952ed9..47a7c3958229 100644
-> --- a/arch/riscv/include/uapi/asm/kvm.h
-> +++ b/arch/riscv/include/uapi/asm/kvm.h
-> @@ -106,6 +106,7 @@ enum KVM_RISCV_ISA_EXT_ID {
->         KVM_RISCV_ISA_EXT_SVINVAL,
->         KVM_RISCV_ISA_EXT_ZIHINTPAUSE,
->         KVM_RISCV_ISA_EXT_ZICBOM,
-> +       KVM_RISCV_ISA_EXT_ZBB,
->         KVM_RISCV_ISA_EXT_MAX,
->  };
->
-> diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-> index 3112697cb12d..02b49cb94561 100644
-> --- a/arch/riscv/kvm/vcpu.c
-> +++ b/arch/riscv/kvm/vcpu.c
-> @@ -61,6 +61,7 @@ static const unsigned long kvm_isa_ext_arr[] = {
->         KVM_ISA_EXT_ARR(SSTC),
->         KVM_ISA_EXT_ARR(SVINVAL),
->         KVM_ISA_EXT_ARR(SVPBMT),
-> +       KVM_ISA_EXT_ARR(ZBB),
->         KVM_ISA_EXT_ARR(ZIHINTPAUSE),
->         KVM_ISA_EXT_ARR(ZICBOM),
->  };
-> @@ -99,6 +100,7 @@ static bool kvm_riscv_vcpu_isa_disable_allowed(unsigned long ext)
->         case KVM_RISCV_ISA_EXT_SSTC:
->         case KVM_RISCV_ISA_EXT_SVINVAL:
->         case KVM_RISCV_ISA_EXT_ZIHINTPAUSE:
-> +       case KVM_RISCV_ISA_EXT_ZBB:
->                 return false;
->         default:
->                 break;
-> --
-> 2.34.1
->
+Reviewed-by: Sean Christopherson <seanjc@google.com>
 
