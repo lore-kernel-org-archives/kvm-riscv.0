@@ -1,56 +1,119 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Mon, 17 Apr 2023 12:33:50 +0200
-Subject: [RFC PATCH 02/14] RISC-V: Add SBI STA extension definitions
+Date: Mon, 17 Apr 2023 12:33:51 +0200
+Subject: [RFC PATCH 03/14] RISC-V: paravirt: Implement steal-time support
 In-Reply-To: <20230417103402.798596-1-ajones@ventanamicro.com>
 References: <20230417103402.798596-1-ajones@ventanamicro.com>
-Message-ID: <20230417103402.798596-3-ajones@ventanamicro.com>
+Message-ID: <20230417103402.798596-4-ajones@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The SBI STA extension enables steal-time accounting. Add the
-definitions it specifies.
+When the SBI STA extension exists we can use it to implement
+paravirt steal-time support. Fill in the empty pv-time functions
+with an SBI STA implementation.
 
 Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
 ---
- arch/riscv/include/asm/sbi.h | 15 +++++++++++++++
- 1 file changed, 15 insertions(+)
+ arch/riscv/kernel/paravirt.c | 56 ++++++++++++++++++++++++++++++++++--
+ 1 file changed, 53 insertions(+), 3 deletions(-)
 
-diff --git a/arch/riscv/include/asm/sbi.h b/arch/riscv/include/asm/sbi.h
-index 945b7be249c1..485b9ec20399 100644
---- a/arch/riscv/include/asm/sbi.h
-+++ b/arch/riscv/include/asm/sbi.h
-@@ -30,6 +30,7 @@ enum sbi_ext_id {
- 	SBI_EXT_HSM = 0x48534D,
- 	SBI_EXT_SRST = 0x53525354,
- 	SBI_EXT_PMU = 0x504D55,
-+	SBI_EXT_STA = 0x535441,
+diff --git a/arch/riscv/kernel/paravirt.c b/arch/riscv/kernel/paravirt.c
+index 141dbcc36fa2..5f8d96b919e4 100644
+--- a/arch/riscv/kernel/paravirt.c
++++ b/arch/riscv/kernel/paravirt.c
+@@ -6,12 +6,21 @@
+ #define pr_fmt(fmt) "riscv-pv: " fmt
  
- 	/* Experimentals extensions must lie within this range */
- 	SBI_EXT_EXPERIMENTAL_START = 0x08000000,
-@@ -236,6 +237,20 @@ enum sbi_pmu_ctr_type {
- /* Flags defined for counter stop function */
- #define SBI_PMU_STOP_FLAG_RESET (1 << 0)
+ #include <linux/cpuhotplug.h>
++#include <linux/compiler.h>
++#include <linux/errno.h>
+ #include <linux/init.h>
+ #include <linux/jump_label.h>
++#include <linux/kconfig.h>
++#include <linux/kernel.h>
++#include <linux/percpu-defs.h>
+ #include <linux/printk.h>
+ #include <linux/static_call.h>
+ #include <linux/types.h>
  
-+/* SBI STA (steal-time accounting) extension */
-+enum sbi_ext_sta_fid {
-+	SBI_EXT_STA_SET_STEAL_TIME_SHMEM = 0,
-+};
++#include <asm/barrier.h>
++#include <asm/page.h>
++#include <asm/sbi.h>
 +
-+struct sbi_sta_struct {
-+	__le32 sequence;
-+	__le32 flags;
-+	__le64 steal;
-+	u8 preempted;
-+	u8 pad[47];
-+} __packed;
+ struct static_key paravirt_steal_enabled;
+ struct static_key paravirt_steal_rq_enabled;
+ 
+@@ -31,24 +40,65 @@ static int __init parse_no_stealacc(char *arg)
+ 
+ early_param("no-steal-acc", parse_no_stealacc);
+ 
++DEFINE_PER_CPU(struct sbi_sta_struct, steal_time) __aligned(64);
 +
-+/* SBI spec version fields */
- #define SBI_SPEC_VERSION_DEFAULT	0x1
- #define SBI_SPEC_VERSION_MAJOR_SHIFT	24
- #define SBI_SPEC_VERSION_MAJOR_MASK	0x7f
+ static bool __init has_pv_steal_clock(void)
+ {
++	if (sbi_probe_extension(SBI_EXT_STA) > 0) {
++		pr_info("SBI STA extension detected\n");
++		return true;
++	}
++
+ 	return false;
+ }
+ 
+-static int pv_time_cpu_online(unsigned int cpu)
++static int sbi_sta_set_steal_time_shmem(unsigned long lo, unsigned long hi,
++					unsigned long flags)
+ {
++	struct sbiret ret;
++
++	ret = sbi_ecall(SBI_EXT_STA, SBI_EXT_STA_SET_STEAL_TIME_SHMEM,
++			lo, hi, flags, 0, 0, 0);
++	if (ret.error) {
++		if (lo == -1 && hi == -1)
++			pr_warn("Failed to disable steal-time shmem");
++		else
++			pr_warn("Failed to set steal-time shmem");
++		return -ENOMEM;
++	}
++
+ 	return 0;
+ }
+ 
++static int pv_time_cpu_online(unsigned int cpu)
++{
++	struct sbi_sta_struct *st = this_cpu_ptr(&steal_time);
++	phys_addr_t pa = __pa(st);
++	unsigned long lo = (unsigned long)pa;
++	unsigned long hi = IS_ENABLED(CONFIG_32BIT) ? upper_32_bits((u64)pa) : 0;
++
++	return sbi_sta_set_steal_time_shmem(lo, hi, 0);
++}
++
+ static int pv_time_cpu_down_prepare(unsigned int cpu)
+ {
+-	return 0;
++	return sbi_sta_set_steal_time_shmem(-1, -1, 0);
+ }
+ 
+ static u64 pv_time_steal_clock(int cpu)
+ {
+-	return 0;
++	struct sbi_sta_struct *st = per_cpu_ptr(&steal_time, cpu);
++	u32 sequence;
++	u64 steal;
++
++	do {
++		sequence = st->sequence;
++		virt_rmb();
++		steal = st->steal;
++		virt_rmb();
++	} while ((sequence & 1) || (sequence != st->sequence));
++
++	return steal;
+ }
+ 
+ int __init pv_time_init(void)
 -- 
 2.39.2
 
