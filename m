@@ -1,85 +1,31 @@
 From: Conor Dooley <conor@kernel.org>
-Date: Tue, 18 Apr 2023 19:02:15 -0000
-Subject: [RFC PATCH 03/14] RISC-V: paravirt: Implement steal-time support
-In-Reply-To: <20230417103402.798596-4-ajones@ventanamicro.com>
+Date: Tue, 18 Apr 2023 19:09:07 -0000
+Subject: [RFC PATCH 04/14] RISC-V: paravirt: Add kconfigs
+In-Reply-To: <20230417103402.798596-5-ajones@ventanamicro.com>
 References: <20230417103402.798596-1-ajones@ventanamicro.com>
- <20230417103402.798596-4-ajones@ventanamicro.com>
-Message-ID: <20230418-earthlike-estrogen-a8ca785b382a@spud>
+ <20230417103402.798596-5-ajones@ventanamicro.com>
+Message-ID: <20230418-bonded-deduct-b771c133ccf4@spud>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Apr 17, 2023 at 12:33:51PM +0200, Andrew Jones wrote:
+On Mon, Apr 17, 2023 at 12:33:52PM +0200, Andrew Jones wrote:
+> Now that we can support steal-time accounting, add the kconfig
+> knobs allowing it to be enabled.
+> 
+> Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
 
-> +static int pv_time_cpu_online(unsigned int cpu)
-> +{
-> +	struct sbi_sta_struct *st = this_cpu_ptr(&steal_time);
-> +	phys_addr_t pa = __pa(st);
-> +	unsigned long lo = (unsigned long)pa;
-> +	unsigned long hi = IS_ENABLED(CONFIG_32BIT) ? upper_32_bits((u64)pa) : 0;
-> +
-> +	return sbi_sta_set_steal_time_shmem(lo, hi, 0);
-> +}
-> +
->  static int pv_time_cpu_down_prepare(unsigned int cpu)
->  {
-> -	return 0;
-> +	return sbi_sta_set_steal_time_shmem(-1, -1, 0);
+Surely this won't change even if the SBI spec proposal does, right...
+Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
 
-I'm not really a fan of this -1s without an explanation of what passing
--1 to the ecall does.
-
->  }
->  
->  static u64 pv_time_steal_clock(int cpu)
->  {
-> -	return 0;
-> +	struct sbi_sta_struct *st = per_cpu_ptr(&steal_time, cpu);
-> +	u32 sequence;
-> +	u64 steal;
-> +
-> +	do {
-> +		sequence = st->sequence;
-> +		virt_rmb();
-> +		steal = st->steal;
-> +		virt_rmb();
-> +	} while ((sequence & 1) || (sequence != st->sequence));
-
-Call me a bit anal, but should we yoink your:
-| The supervisor-mode software MUST check this field
-| before and after reading the `steal` field, and
-| repeat the read if they are different or odd
-and add it here so that is it immediately obvious without reading the
-SBI spec what is going on here? Or it is a case of "go read the SBI spec
-if you have questions about what the kernel is doing w/ SBI stuff?
-
-(sidenote, s/they are/it is/?)
-
-Guess both of my comments are in the same vein, but would make
-at-a-glance understanding easier IMO.
-
-Cheers,
+Thanks,
 Conor.
-
-> +
-> +	return steal;
->  }
->  
->  int __init pv_time_init(void)
-> -- 
-> 2.39.2
-> 
-> 
-> _______________________________________________
-> linux-riscv mailing list
-> linux-riscv at lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-riscv
 -------------- next part --------------
 A non-text attachment was scrubbed...
 Name: signature.asc
 Type: application/pgp-signature
 Size: 228 bytes
 Desc: not available
-URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20230418/acadb863/attachment-0001.sig>
+URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20230418/6fbdfae1/attachment-0001.sig>
