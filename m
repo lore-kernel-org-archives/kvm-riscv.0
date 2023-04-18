@@ -1,56 +1,83 @@
-From: Conor Dooley <conor.dooley@microchip.com>
-Date: Wed, 05 Apr 2023 09:28:26 -0000
-Subject: [PATCH v3 6/8] RISC-V: KVM: Add ONE_REG interface for AIA CSRs
-In-Reply-To: <20230404-5cfffb017198773dc3e81dab@wendy>
-References: <20230403093310.2271142-1-apatel@ventanamicro.com>
- <20230403093310.2271142-7-apatel@ventanamicro.com>
- <osrpjiywxtkgxb5i6mfvxzfrzrnjv75uqzvlu3fouo4mqsktgj@blcmyjt3twqg>
- <CAAhSdy1JEQBiO55iCy97arO63VjGc+NicUvvwzTpK97W97LmJg@mail.gmail.com>
- <ejt3x4p7xhxfvwiafnogfwdn5dzd4qyowlht22utnbvzefsbyh@7dch4mebwckm>
- <uogikq56rf7jytuufhsutdedb73b3rh67biwpzsz6ngg5rudco@qcwt7plumwpb>
- <20230404-5cfffb017198773dc3e81dab@wendy>
-Message-ID: <20230405-icon-arrogance-62bf7d627a5d@wendy>
+From: Conor Dooley <conor@kernel.org>
+Date: Tue, 18 Apr 2023 18:44:00 -0000
+Subject: [RFC PATCH 02/14] RISC-V: Add SBI STA extension definitions
+In-Reply-To: <20230417103402.798596-3-ajones@ventanamicro.com>
+References: <20230417103402.798596-1-ajones@ventanamicro.com>
+ <20230417103402.798596-3-ajones@ventanamicro.com>
+Message-ID: <20230418-elliptic-headboard-6a18fcccdf07@spud>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Apr 04, 2023 at 12:58:41PM +0100, Conor Dooley wrote:
-> On Tue, Apr 04, 2023 at 01:52:43PM +0200, Andrew Jones wrote:
-> > On Mon, Apr 03, 2023 at 02:23:01PM +0200, Andrew Jones wrote:
+On Mon, Apr 17, 2023 at 12:33:50PM +0200, Andrew Jones wrote:
+> The SBI STA extension enables steal-time accounting. Add the
+> definitions it specifies.
 > 
-> > > It's probably best if neither depend on each other, since they're
-> > > independent, but otherwise the order doesn't matter. It'd be nice to call
-> > > the order out in the cover letter to give patchwork a chance at automatic
-> > > build testing, though. To call it out, I believe adding
-> > > 
-> > > Based-on: 20230401112730.2105240-1-apatel at ventanamicro.com
-> > > 
-> > > to the cover letter should work.
-> > 
-> > I also just noticed that this based on "RISC-V: KVM: Add ONE_REG
-> > interface to enable/disable SBI extensions"[1] and it needs to be
-> > in order to pick up the KVM_REG_RISCV_SUBTYPE_MASK and
-> > KVM_REG_RISCV_SUBTYPE_SHIFT defines. It'd be good to call that
-> > patch out with Based-on.
-> > 
-> > [1]: 20230331174542.2067560-2-apatel at ventanamicro.com
+> Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
+> ---
+>  arch/riscv/include/asm/sbi.h | 15 +++++++++++++++
+>  1 file changed, 15 insertions(+)
 > 
-> I've been waiting for a review on that for a while.. It's been 3
-> weeks, so just gonna merge it and see what breaks!
+> diff --git a/arch/riscv/include/asm/sbi.h b/arch/riscv/include/asm/sbi.h
+> index 945b7be249c1..485b9ec20399 100644
+> --- a/arch/riscv/include/asm/sbi.h
+> +++ b/arch/riscv/include/asm/sbi.h
+> @@ -30,6 +30,7 @@ enum sbi_ext_id {
+>  	SBI_EXT_HSM = 0x48534D,
+>  	SBI_EXT_SRST = 0x53525354,
+>  	SBI_EXT_PMU = 0x504D55,
+> +	SBI_EXT_STA = 0x535441,
 
-I did in fact break some stuff, but the output was no worse than if the
-dependencies had not been specified...
-I've fixed it (I think!) and told it to ignore the old state, so it'll
-re-run against the stuff it missed.
+What is the sort order of this? Matching the spec ordering, or just
+append-at-the-end?
+
+Unrelated, but in checking that I saw that your SUSP stuff is in
+master - you planning on resending that series?
+
+Anyways, this does match the docs - but I'm quite hesitant to leave an
+R-b when it's not merged yet.
 
 Cheers,
 Conor.
+
+>  
+>  	/* Experimentals extensions must lie within this range */
+>  	SBI_EXT_EXPERIMENTAL_START = 0x08000000,
+> @@ -236,6 +237,20 @@ enum sbi_pmu_ctr_type {
+>  /* Flags defined for counter stop function */
+>  #define SBI_PMU_STOP_FLAG_RESET (1 << 0)
+>  
+> +/* SBI STA (steal-time accounting) extension */
+> +enum sbi_ext_sta_fid {
+> +	SBI_EXT_STA_SET_STEAL_TIME_SHMEM = 0,
+> +};
+> +
+> +struct sbi_sta_struct {
+> +	__le32 sequence;
+> +	__le32 flags;
+> +	__le64 steal;
+> +	u8 preempted;
+> +	u8 pad[47];
+> +} __packed;
+> +
+> +/* SBI spec version fields */
+>  #define SBI_SPEC_VERSION_DEFAULT	0x1
+>  #define SBI_SPEC_VERSION_MAJOR_SHIFT	24
+>  #define SBI_SPEC_VERSION_MAJOR_MASK	0x7f
+> -- 
+> 2.39.2
+> 
+> 
+> _______________________________________________
+> linux-riscv mailing list
+> linux-riscv at lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-riscv
 -------------- next part --------------
 A non-text attachment was scrubbed...
 Name: signature.asc
 Type: application/pgp-signature
 Size: 228 bytes
 Desc: not available
-URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20230405/4c1a511b/attachment-0001.sig>
+URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20230418/725fa408/attachment-0001.sig>
