@@ -1,62 +1,100 @@
 From: Atish Patra <atishp@rivosinc.com>
-Date: Wed, 19 Apr 2023 15:23:44 -0700
-Subject: [RFC kvmtool 04/10] riscv: Invoke measure region for VM images
+Date: Wed, 19 Apr 2023 15:23:43 -0700
+Subject: [RFC kvmtool 03/10] riscv: Define a measure region IOCTL
 In-Reply-To: <20230419222350.3604274-1-atishp@rivosinc.com>
 References: <20230419222350.3604274-1-atishp@rivosinc.com>
-Message-ID: <20230419222350.3604274-5-atishp@rivosinc.com>
+Message-ID: <20230419222350.3604274-4-atishp@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The DT, initrd and kernel images needs to be measured before a CoVE VM
-can be started to validate its authenticity.
-
-Hookup the measure region API for these three components.
+CoVE VM images needs to be measured by the TSM. The VMM updates
+the host about these images via a new IOCTL. The host makes appropriate
+ecalls for TSM to perform the measurement.
 
 Signed-off-by: Atish Patra <atishp@rivosinc.com>
 ---
- riscv/fdt.c | 3 +++
- riscv/kvm.c | 4 ++++
- 2 files changed, 7 insertions(+)
+ include/linux/kvm.h          |  2 ++
+ riscv/include/asm/kvm.h      |  6 ++++++
+ riscv/include/kvm/kvm-arch.h |  2 ++
+ riscv/kvm.c                  | 21 +++++++++++++++++++++
+ 4 files changed, 31 insertions(+)
 
-diff --git a/riscv/fdt.c b/riscv/fdt.c
-index 61a28bb..07ec336 100644
---- a/riscv/fdt.c
-+++ b/riscv/fdt.c
-@@ -254,6 +254,9 @@ static int setup_fdt(struct kvm *kvm)
+diff --git a/include/linux/kvm.h b/include/linux/kvm.h
+index 000d2b9..d4969a0 100644
+--- a/include/linux/kvm.h
++++ b/include/linux/kvm.h
+@@ -1547,6 +1547,8 @@ struct kvm_s390_ucas_mapping {
+ #define KVM_PPC_SVM_OFF		  _IO(KVMIO,  0xb3)
+ #define KVM_ARM_MTE_COPY_TAGS	  _IOR(KVMIO,  0xb4, struct kvm_arm_copy_mte_tags)
  
- 	if (kvm->cfg.arch.dump_dtb_filename)
- 		dump_fdt(kvm->cfg.arch.dump_dtb_filename, fdt_dest);
++#define KVM_RISCV_COVE_MEASURE_REGION _IOR(KVMIO, 0xb5, struct kvm_riscv_cove_measure_region)
 +
-+	kvm_cove_measure_region(kvm, (unsigned long)fdt_dest,
-+				kvm->arch.dtb_guest_start, FDT_MAX_SIZE);
- 	return 0;
- }
- late_init(setup_fdt);
+ /* ioctl for vm fd */
+ #define KVM_CREATE_DEVICE	  _IOWR(KVMIO,  0xe0, struct kvm_create_device)
+ 
+diff --git a/riscv/include/asm/kvm.h b/riscv/include/asm/kvm.h
+index 1dce9a4..2bacc38 100644
+--- a/riscv/include/asm/kvm.h
++++ b/riscv/include/asm/kvm.h
+@@ -98,6 +98,12 @@ struct kvm_riscv_timer {
+ 	__u64 state;
+ };
+ 
++struct kvm_riscv_cove_measure_region {
++	unsigned long user_addr;
++	unsigned long gpa;
++	unsigned long size;
++};
++
+ /*
+  * ISA extension IDs specific to KVM. This is not the same as the host ISA
+  * extension IDs as that is internal to the host and should not be exposed
+diff --git a/riscv/include/kvm/kvm-arch.h b/riscv/include/kvm/kvm-arch.h
+index 9f2159f..08ac54a 100644
+--- a/riscv/include/kvm/kvm-arch.h
++++ b/riscv/include/kvm/kvm-arch.h
+@@ -120,4 +120,6 @@ void riscv__generate_irq_prop(void *fdt, u8 irq, enum irq_type irq_type);
+ 
+ void riscv__irqchip_create(struct kvm *kvm);
+ 
++void kvm_cove_measure_region(struct kvm *kvm, unsigned long uaddr,
++			      unsigned long gpa, unsigned long rsize);
+ #endif /* KVM__KVM_ARCH_H */
 diff --git a/riscv/kvm.c b/riscv/kvm.c
-index 99b253e..d59e8bc 100644
+index a9ade1f..99b253e 100644
 --- a/riscv/kvm.c
 +++ b/riscv/kvm.c
-@@ -148,6 +148,8 @@ bool kvm__arch_load_kernel_image(struct kvm *kvm, int fd_kernel, int fd_initrd,
- 	pr_debug("Loaded kernel to 0x%llx (%zd bytes)",
- 		 kvm->arch.kern_guest_start, file_size);
+@@ -13,6 +13,27 @@ struct kvm_ext kvm_req_ext[] = {
+ 	{ 0, 0 },
+ };
  
-+	kvm_cove_measure_region(kvm, (unsigned long)pos, kvm->arch.kern_guest_start,
-+			       file_size);
- 	/* Place FDT just after kernel at FDT_ALIGN address */
- 	pos = kernel_end + FDT_ALIGN;
- 	guest_addr = ALIGN(host_to_guest_flat(kvm, pos), FDT_ALIGN);
-@@ -188,6 +190,8 @@ bool kvm__arch_load_kernel_image(struct kvm *kvm, int fd_kernel, int fd_initrd,
- 		pr_debug("Loaded initrd to 0x%llx (%llu bytes)",
- 			 kvm->arch.initrd_guest_start,
- 			 kvm->arch.initrd_size);
-+		kvm_cove_measure_region(kvm, (unsigned long)pos, initrd_start,
-+				       file_size);
- 	} else {
- 		kvm->arch.initrd_size = 0;
- 	}
++void kvm_cove_measure_region(struct kvm *kvm, unsigned long uaddr,
++			      unsigned long gpa, unsigned long rsize)
++{
++	int ret;
++
++	if (!kvm->cfg.arch.cove_vm)
++		return;
++
++	struct kvm_riscv_cove_measure_region mr = {
++		.user_addr = uaddr,
++		.gpa = gpa,
++		.size = rsize,
++	};
++
++	ret = ioctl(kvm->vm_fd, KVM_RISCV_COVE_MEASURE_REGION, &mr);
++	if (ret < 0) {
++		ret = -errno;
++		die("Setting measure region failed for CoVE VM\n");
++	}
++}
++
+ u64 kvm__arch_default_ram_address(void)
+ {
+ 	return RISCV_RAM;
 -- 
 2.25.1
 
