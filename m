@@ -1,94 +1,107 @@
 From: Atish Patra <atishp@rivosinc.com>
-Date: Wed, 19 Apr 2023 15:16:57 -0700
-Subject: [RFC 29/48] RISC-V: KVM: Skip AIA CSR updates for TVMs
+Date: Wed, 19 Apr 2023 15:17:15 -0700
+Subject: [RFC 47/48] RISC-V: Add shared bounce buffer to support DBCN for CoVE Guest.
 In-Reply-To: <20230419221716.3603068-1-atishp@rivosinc.com>
 References: <20230419221716.3603068-1-atishp@rivosinc.com>
-Message-ID: <20230419221716.3603068-30-atishp@rivosinc.com>
+Message-ID: <20230419221716.3603068-48-atishp@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-For TVMs, the host must not support AIA CSR emulation. In addition to
-that, during vcpu load/put the CSR updates are not necessary as the CSR
-state must not be visible to the host.
+From: Rajnesh Kanwal <rkanwal@rivosinc.com>
 
+Early console buffer needs to be shared with the host for CoVE Guest.
+
+Signed-off-by: Rajnesh Kanwal <rkanwal@rivosinc.com>
 Signed-off-by: Atish Patra <atishp@rivosinc.com>
 ---
- arch/riscv/kvm/aia.c | 17 ++++++++++++++---
- 1 file changed, 14 insertions(+), 3 deletions(-)
+ drivers/tty/serial/earlycon-riscv-sbi.c | 51 ++++++++++++++++++++++++-
+ 1 file changed, 49 insertions(+), 2 deletions(-)
 
-diff --git a/arch/riscv/kvm/aia.c b/arch/riscv/kvm/aia.c
-index 71216e1..e3da661 100644
---- a/arch/riscv/kvm/aia.c
-+++ b/arch/riscv/kvm/aia.c
-@@ -15,6 +15,7 @@
- #include <linux/percpu.h>
- #include <linux/spinlock.h>
- #include <asm/hwcap.h>
-+#include <asm/kvm_cove.h>
- 
- struct aia_hgei_control {
- 	raw_spinlock_t lock;
-@@ -134,7 +135,7 @@ void kvm_riscv_vcpu_aia_load(struct kvm_vcpu *vcpu, int cpu)
- {
- 	struct kvm_vcpu_aia_csr *csr = &vcpu->arch.aia_context.guest_csr;
- 
--	if (!kvm_riscv_aia_available())
-+	if (!kvm_riscv_aia_available() || is_cove_vcpu(vcpu))
- 		return;
- 
- 	csr_write(CSR_VSISELECT, csr->vsiselect);
-@@ -152,7 +153,7 @@ void kvm_riscv_vcpu_aia_put(struct kvm_vcpu *vcpu)
- {
- 	struct kvm_vcpu_aia_csr *csr = &vcpu->arch.aia_context.guest_csr;
- 
--	if (!kvm_riscv_aia_available())
-+	if (!kvm_riscv_aia_available() || is_cove_vcpu(vcpu))
- 		return;
- 
- 	csr->vsiselect = csr_read(CSR_VSISELECT);
-@@ -370,6 +371,10 @@ int kvm_riscv_vcpu_aia_rmw_ireg(struct kvm_vcpu *vcpu, unsigned int csr_num,
- 	if (!kvm_riscv_aia_available())
- 		return KVM_INSN_ILLEGAL_TRAP;
- 
-+	/* TVMs do not support AIA emulation */
-+	if (is_cove_vcpu(vcpu))
-+		return KVM_INSN_EXIT_TO_USER_SPACE;
+diff --git a/drivers/tty/serial/earlycon-riscv-sbi.c b/drivers/tty/serial/earlycon-riscv-sbi.c
+index 311a4f8..9033cca 100644
+--- a/drivers/tty/serial/earlycon-riscv-sbi.c
++++ b/drivers/tty/serial/earlycon-riscv-sbi.c
+@@ -9,6 +9,14 @@
+ #include <linux/init.h>
+ #include <linux/serial_core.h>
+ #include <asm/sbi.h>
++#include <asm/cove.h>
++#include <asm/covg_sbi.h>
++#include <linux/memblock.h>
 +
- 	/* First try to emulate in kernel space */
- 	isel = csr_read(CSR_VSISELECT) & ISELECT_MASK;
- 	if (isel >= ISELECT_IPRIO0 && isel <= ISELECT_IPRIO15)
-@@ -529,6 +534,9 @@ void kvm_riscv_aia_enable(void)
- 	if (!kvm_riscv_aia_available())
- 		return;
++#ifdef CONFIG_RISCV_COVE_GUEST
++#define DBCN_BOUNCE_BUF_SIZE (PAGE_SIZE)
++static char dbcn_buf[DBCN_BOUNCE_BUF_SIZE] __aligned(PAGE_SIZE);
++#endif
  
-+	if (unlikely(kvm_riscv_cove_enabled()))
-+		goto enable_gext;
-+
- 	aia_set_hvictl(false);
- 	csr_write(CSR_HVIPRIO1, 0x0);
- 	csr_write(CSR_HVIPRIO2, 0x0);
-@@ -539,6 +547,7 @@ void kvm_riscv_aia_enable(void)
- 	csr_write(CSR_HVIPRIO2H, 0x0);
+ #ifdef CONFIG_RISCV_SBI_V01
+ static void sbi_putc(struct uart_port *port, unsigned char c)
+@@ -24,6 +32,33 @@ static void sbi_0_1_console_write(struct console *con,
+ }
  #endif
  
-+enable_gext:
- 	/* Enable per-CPU SGEI interrupt */
- 	enable_percpu_irq(hgei_parent_irq,
- 			  irq_get_trigger_type(hgei_parent_irq));
-@@ -559,7 +568,9 @@ void kvm_riscv_aia_disable(void)
- 	csr_clear(CSR_HIE, BIT(IRQ_S_GEXT));
- 	disable_percpu_irq(hgei_parent_irq);
++#ifdef CONFIG_RISCV_COVE_GUEST
++static void sbi_dbcn_console_write_cove(struct console *con, const char *s,
++					unsigned int n)
++{
++	phys_addr_t pa = __pa(dbcn_buf);
++	unsigned int off = 0;
++
++	while (off < n) {
++		const unsigned int rem = n - off;
++		const unsigned int size =
++			rem > DBCN_BOUNCE_BUF_SIZE ? DBCN_BOUNCE_BUF_SIZE : rem;
++
++		memcpy(dbcn_buf, &s[off], size);
++
++		sbi_ecall(SBI_EXT_DBCN, SBI_EXT_DBCN_CONSOLE_WRITE,
++#ifdef CONFIG_32BIT
++			  size, pa, (u64)pa >> 32,
++#else
++			  size, pa, 0,
++#endif
++			  0, 0, 0);
++
++		off += size;
++	}
++}
++#endif
++
+ static void sbi_dbcn_console_write(struct console *con,
+ 				   const char *s, unsigned n)
+ {
+@@ -45,14 +80,26 @@ static int __init early_sbi_setup(struct earlycon_device *device,
  
--	aia_set_hvictl(false);
-+	/* The host is not allowed modify hvictl for TVMs */
-+	if (!unlikely(kvm_riscv_cove_enabled()))
-+		aia_set_hvictl(false);
+ 	/* TODO: Check for SBI debug console (DBCN) extension */
+ 	if ((sbi_spec_version >= sbi_mk_version(1, 0)) &&
+-	    (sbi_probe_extension(SBI_EXT_DBCN) > 0))
++	    (sbi_probe_extension(SBI_EXT_DBCN) > 0)) {
++#ifdef CONFIG_RISCV_COVE_GUEST
++		if (is_cove_guest()) {
++			ret = sbi_covg_share_memory(__pa(dbcn_buf),
++						    DBCN_BOUNCE_BUF_SIZE);
++			if (ret)
++				return ret;
++
++			device->con->write = sbi_dbcn_console_write_cove;
++			return 0;
++		}
++#endif
+ 		device->con->write = sbi_dbcn_console_write;
+-	else
++	} else {
+ #ifdef CONFIG_RISCV_SBI_V01
+ 		device->con->write = sbi_0_1_console_write;
+ #else
+ 		ret = -ENODEV;
+ #endif
++	}
  
- 	raw_spin_lock_irqsave(&hgctrl->lock, flags);
- 
+ 	return ret;
+ }
 -- 
 2.25.1
 
