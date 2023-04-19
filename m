@@ -1,82 +1,124 @@
-From: Palmer Dabbelt <palmer@dabbelt.com>
-Date: Wed, 19 Apr 2023 07:22:20 -0700 (PDT)
-Subject: [PATCH v4 0/9] RISC-V KVM virtualize AIA CSRs
-In-Reply-To: <20230404153452.2405681-1-apatel@ventanamicro.com>
-Message-ID: <mhng-72b96cbf-6edd-4b37-9549-200e2a3cb35d@palmer-ri-x1c9>
+From: Björn Töpel <bjorn@kernel.org>
+Date: Wed, 19 Apr 2023 16:54:23 +0200
+Subject: [PATCH -next v18 00/20] riscv: Add vector ISA support
+In-Reply-To: <87cz4048rp.fsf@all.your.base.are.belong.to.us>
+References: <20230414155843.12963-1-andy.chiu@sifive.com>
+ <87cz4048rp.fsf@all.your.base.are.belong.to.us>
+Message-ID: <87leinq5wg.fsf@all.your.base.are.belong.to.us>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, 04 Apr 2023 08:34:43 PDT (-0700), apatel at ventanamicro.com wrote:
-> The RISC-V AIA specification is now frozen as-per the RISC-V international
-> process. The latest frozen specifcation can be found at:
-> https://github.com/riscv/riscv-aia/releases/download/1.0-RC3/riscv-interrupts-1.0-RC3.pdf
->
-> This series implements first phase of AIA virtualization which targets
-> virtualizing AIA CSRs. This also provides a foundation for the second
-> phase of AIA virtualization which will target in-kernel AIA irqchip
-> (including both IMSIC and APLIC).
->
-> The first two patches are shared with the "Linux RISC-V AIA Support"
-> series which adds AIA driver support.
->
-> To test this series, use AIA drivers from the "Linux RISC-V AIA Support"
-> series and use KVMTOOL from the riscv_aia_v1 branch at:
-> https://github.com/avpatel/kvmtool.git
->
-> These patches can also be found in the riscv_kvm_aia_csr_v4 branch at:
-> https://github.com/avpatel/linux.git
->
-> Based-on: 20230401112730.2105240-1-apatel at ventanamicro.com
-> (https://lore.kernel.org/lkml/20230401112730.2105240-1-apatel at ventanamicro.com/)
->
-> Based-on: 20230403121527.2286489-1-apatel at ventanamicro.com
-> (https://lore.kernel.org/lkml/20230403121527.2286489-1-apatel at ventanamicro.com/)
->
-> Changes since v3:
->  - Split PATCH7 into two patches
->  - Addressed comments in PATCH7, PATCH8 and PATCH9
->
-> Changes since v2:
->  - Rebased on Linux-6.3-rc5
->  - Split PATCH5 into two separate patches as suggested by Atish.
->
-> Changes since v1:
->  - Addressed from Drew and Conor in PATCH1
->  - Use alphabetical ordering for SMAIA and SSAIA enum in PATCH2
->  - Use GENMASK() in PATCH3
->
-> Anup Patel (9):
->   RISC-V: Add AIA related CSR defines
->   RISC-V: Detect AIA CSRs from ISA string
->   RISC-V: KVM: Drop the _MASK suffix from hgatp.VMID mask defines
->   RISC-V: KVM: Initial skeletal support for AIA
->   RISC-V: KVM: Implement subtype for CSR ONE_REG interface
->   RISC-V: KVM: Add ONE_REG interface for AIA CSRs
->   RISC-V: KVM: Use bitmap for irqs_pending and irqs_pending_mask
->   RISC-V: KVM: Virtualize per-HART AIA CSRs
->   RISC-V: KVM: Implement guest external interrupt line management
->
->  arch/riscv/include/asm/csr.h      | 107 ++++-
->  arch/riscv/include/asm/hwcap.h    |   8 +
->  arch/riscv/include/asm/kvm_aia.h  | 137 +++++++
->  arch/riscv/include/asm/kvm_host.h |  14 +-
->  arch/riscv/include/uapi/asm/kvm.h |  18 +-
->  arch/riscv/kernel/cpu.c           |   2 +
->  arch/riscv/kernel/cpufeature.c    |   2 +
->  arch/riscv/kvm/Makefile           |   1 +
->  arch/riscv/kvm/aia.c              | 627 ++++++++++++++++++++++++++++++
->  arch/riscv/kvm/main.c             |  23 +-
->  arch/riscv/kvm/mmu.c              |   3 +-
->  arch/riscv/kvm/vcpu.c             | 190 +++++++--
->  arch/riscv/kvm/vcpu_insn.c        |   1 +
->  arch/riscv/kvm/vm.c               |   4 +
->  arch/riscv/kvm/vmid.c             |   4 +-
->  15 files changed, 1083 insertions(+), 58 deletions(-)
->  create mode 100644 arch/riscv/include/asm/kvm_aia.h
->  create mode 100644 arch/riscv/kvm/aia.c
+Bj?rn T?pel <bjorn@kernel.org> writes:
 
-Acked-by: Palmer Dabbelt <palmer@rivosinc.com>
+> Andy Chiu <andy.chiu@sifive.com> writes:
+>
+>> This patchset is implemented based on vector 1.0 spec to add vector support
+>> in riscv Linux kernel. There are some assumptions for this implementations.
+>>
+>> 1. We assume all harts has the same ISA in the system.
+>> 2. We disable vector in both kernel and user space [1] by default. Only
+>>    enable an user's vector after an illegal instruction trap where it
+>>    actually starts executing vector (the first-use trap [2]).
+>> 3. We detect "riscv,isa" to determine whether vector is support or not.
+>>
+>> We defined a new structure __riscv_v_ext_state in struct thread_struct to
+>> save/restore the vector related registers. It is used for both kernel space
+>> and user space.
+>>  - In kernel space, the datap pointer in __riscv_v_ext_state will be
+>>    allocated to save vector registers.
+>>  - In user space,
+>> 	- In signal handler of user space, the structure is placed
+>> 	  right after __riscv_ctx_hdr, which is embedded in fp reserved
+>> 	  aera. This is required to avoid ABI break [2]. And datap points
+>> 	  to the end of __riscv_v_ext_state.
+>> 	- In ptrace, the data will be put in ubuf in which we use
+>> 	  riscv_vr_get()/riscv_vr_set() to get or set the
+>> 	  __riscv_v_ext_state data structure from/to it, datap pointer
+>> 	  would be zeroed and vector registers will be copied to the
+>> 	  address right after the __riscv_v_ext_state structure in ubuf.
+>>
+>> This patchset is rebased to v6.3-rc1 and it is tested by running several
+>> vector programs simultaneously. It delivers signals correctly in a test
+>> where we can see a valid ucontext_t in a signal handler, and a correct V
+>> context returing back from it. And the ptrace interface is tested by
+>> PTRACE_{GET,SET}REGSET. Lastly, KVM is tested by running above tests in
+>> a guest using the same kernel image. All tests are done on an rv64gcv
+>> virt QEMU.
+>>
+>> Note: please apply the patch at [4] due to a regression introduced by
+>> commit 596ff4a09b89 ("cpumask: re-introduce constant-sized cpumask
+>> optimizations") before testing the series.
+>>
+>> Source tree:
+>> https://github.com/sifive/riscv-linux/tree/riscv/for-next/vector-v18
+>
+> After some offlist discussions, we might have a identified a
+> potential libc->application ABI break.
+>
+> Given an application that does custom task scheduling via a signal
+> handler. The application binary is not vector aware, but libc is. Libc
+> is using vector registers for memcpy. It's an "old application, new
+> library, new kernel"-scenario.
+>
+>  | ...
+>  | struct context *p1_ctx;
+>  | struct context *p2_ctx;
+>  | 
+>  | void sighandler(int sig, siginfo_t *info, void *ucontext)
+>  | {
+>  |   if (p1_running)
+>  |     switch_to(p1_ctx, p2_ctx);
+>  |   if (p2_running)
+>  |     switch_to(p2_ctx, p1_ctx);
+>  | }
+>  | 
+>  | void p1(void)
+>  | {
+>  |   memcpy(foo, bar, 17);
+>  | }
+>  | 
+>  | void p2(void)
+>  | {
+>  |   ...
+>  | }
+>  | ...
+>
+> The switch_to() function schedules p1() and p2(). E.g., the
+> application (assumes that it) saves the complete task state from
+> sigcontext (ucontext) to p1_ctx, and restores sigcontext to p2_ctx, so
+> when sigreturn is called, p2() is running, and p1() has been
+> interrupted.
+>
+> The "old application" which is not aware of vector, is now run on a
+> vector enabled kernel/glibc.
+>
+> Assume that the sighandler is hit, and p1() is in the middle of the
+> vector memcpy. The switch_to() function will not save the vector
+> state, and next time p2() is scheduled to run it will have incorrect
+> machine state.
+>
+> Now:
+>
+> Is this an actual or theoretical problem (i.e. are there any
+> applications in the wild)? I'd be surprised if it would not be the
+> latter...
+>
+> Regardless, a kernel knob for disabling vector (sysctl/prctl) to avoid
+> these kind of breaks is needed (right?). Could this knob be a
+> follow-up patch to the existing v18 series?
+>
+> Note that arm64 does not suffer from this with SVE, because the default
+> vector length (vl==0/128b*32) fits in the "legacy" sigcontext.
+
+Andy, to clarify from the patchwork call; In
+Documentation/arm64/sve.rst:
+
+There's a per-process prctl (section 6), and a system runtime conf
+(section 9).
+
+
+Bj?rn
 
