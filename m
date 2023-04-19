@@ -1,9 +1,9 @@
 From: Atish Patra <atishp@rivosinc.com>
-Date: Wed, 19 Apr 2023 15:17:09 -0700
-Subject: [RFC 41/48] RISC-V: KVM: Add host side support to handle COVG SBI calls.
+Date: Wed, 19 Apr 2023 15:17:11 -0700
+Subject: [RFC 43/48] RISC-V: Add base memory encryption functions.
 In-Reply-To: <20230419221716.3603068-1-atishp@rivosinc.com>
 References: <20230419221716.3603068-1-atishp@rivosinc.com>
-Message-ID: <20230419221716.3603068-42-atishp@rivosinc.com>
+Message-ID: <20230419221716.3603068-44-atishp@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -12,290 +12,144 @@ Content-Transfer-Encoding: 7bit
 
 From: Rajnesh Kanwal <rkanwal@rivosinc.com>
 
-Adding host side support to allow memory sharing/unsharing.
-Host needs to check if the page has been already assigned
-(converted) to a TVM or not. If yes, that page needs to be
-reclaimed before sharing that page.
+Devices like virtio use shared memory buffers to transfer
+data. These buffers are part of the guest memory region.
+For CoVE guest this is not possible as host can not access
+guest memory.
 
-For the remaining ECALLs host doesn't really need to do anything
-and we just return in those cases.
+This is solved by VIRTIO_F_ACCESS_PLATFORM feature and SWIOTLB
+bounce buffers. Guest only allow devices with VIRTIO_F_ACCESS_PLATFORM
+feature which leads to guest using DMA API and from there moving
+to SWIOTLB bounce buffer due to SWIOTLB_FORCE flag set for TEE VM.
+
+set_memory_encrypted and set_memory_decrypted sit in this allocation
+path. Based on if a buffer is being decrypted we mark it shared and
+if it's being encrypted we mark it unshared using hypercalls.
 
 Signed-off-by: Rajnesh Kanwal <rkanwal@rivosinc.com>
 Signed-off-by: Atish Patra <atishp@rivosinc.com>
 ---
- arch/riscv/include/asm/kvm_cove.h     |  11 +-
- arch/riscv/include/asm/kvm_cove_sbi.h |   4 +
- arch/riscv/include/asm/kvm_vcpu_sbi.h |   3 +
- arch/riscv/include/uapi/asm/kvm.h     |   1 +
- arch/riscv/kvm/Makefile               |   2 +-
- arch/riscv/kvm/cove.c                 |  48 +++++-
- arch/riscv/kvm/cove_sbi.c             |  18 ++
- arch/riscv/kvm/vcpu_exit.c            |   2 +-
- arch/riscv/kvm/vcpu_sbi.c             |  14 ++
- arch/riscv/kvm/vcpu_sbi_covg.c        | 232 ++++++++++++++++++++++++++
- 10 files changed, 328 insertions(+), 7 deletions(-)
- create mode 100644 arch/riscv/kvm/vcpu_sbi_covg.c
+ arch/riscv/Kconfig                   |  7 ++++
+ arch/riscv/include/asm/mem_encrypt.h | 26 +++++++++++++
+ arch/riscv/mm/Makefile               |  2 +
+ arch/riscv/mm/init.c                 | 17 ++++++++-
+ arch/riscv/mm/mem_encrypt.c          | 57 ++++++++++++++++++++++++++++
+ 5 files changed, 108 insertions(+), 1 deletion(-)
+ create mode 100644 arch/riscv/include/asm/mem_encrypt.h
+ create mode 100644 arch/riscv/mm/mem_encrypt.c
 
-diff --git a/arch/riscv/include/asm/kvm_cove.h b/arch/riscv/include/asm/kvm_cove.h
-index 4367281..afaea7c 100644
---- a/arch/riscv/include/asm/kvm_cove.h
-+++ b/arch/riscv/include/asm/kvm_cove.h
-@@ -31,6 +31,9 @@
+diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
+index 49c3006..414cee1 100644
+--- a/arch/riscv/Kconfig
++++ b/arch/riscv/Kconfig
+@@ -163,6 +163,11 @@ config ARCH_MMAP_RND_BITS_MAX
+ config ARCH_MMAP_RND_COMPAT_BITS_MAX
+ 	default 17
  
- #define get_order_num_pages(n) (get_order(n << PAGE_SHIFT))
- 
-+#define get_gpr_index(goffset) \
-+	((goffset - KVM_ARCH_GUEST_ZERO) / (__riscv_xlen / 8))
++config RISCV_MEM_ENCRYPT
++	select ARCH_HAS_MEM_ENCRYPT
++	select ARCH_HAS_FORCE_DMA_UNENCRYPTED
++	def_bool n
 +
- /* Describe a confidential or shared memory region */
- struct kvm_riscv_cove_mem_region {
- 	unsigned long hva;
-@@ -139,7 +142,8 @@ int kvm_riscv_cove_vcpu_sbi_ecall(struct kvm_vcpu *vcpu, struct kvm_run *run);
+ # set if we run in machine mode, cleared if we run in supervisor mode
+ config RISCV_M_MODE
+ 	bool
+@@ -515,6 +520,8 @@ config RISCV_COVE_HOST
+ config RISCV_COVE_GUEST
+ 	bool "Guest Support for Confidential VM Extension(CoVE)"
+ 	default n
++	select SWIOTLB
++	select RISCV_MEM_ENCRYPT
+ 	help
+ 	  Enables support for running TVMs on platforms supporting CoVE.
  
- int kvm_riscv_cove_vm_measure_pages(struct kvm *kvm, struct kvm_riscv_cove_measure_region *mr);
- int kvm_riscv_cove_vm_add_memreg(struct kvm *kvm, unsigned long gpa, unsigned long size);
--int kvm_riscv_cove_gstage_map(struct kvm_vcpu *vcpu, gpa_t gpa, unsigned long hva);
-+int kvm_riscv_cove_handle_pagefault(struct kvm_vcpu *vcpu, gpa_t gpa,
-+				    unsigned long hva);
- /* Fence related function */
- int kvm_riscv_cove_tvm_fence(struct kvm_vcpu *vcpu);
- 
-@@ -179,8 +183,9 @@ static inline int kvm_riscv_cove_vm_measure_pages(struct kvm *kvm,
- {
- 	return -1;
- }
--static inline int kvm_riscv_cove_gstage_map(struct kvm_vcpu *vcpu,
--					    gpa_t gpa, unsigned long hva) {return -1; }
-+static inline int kvm_riscv_cove_handle_pagefault(struct kvm_vcpu *vcpu,
-+						  gpa_t gpa, unsigned long hva) { return -1; }
-+
- /* TVM interrupt managenet via AIA functions */
- static inline int kvm_riscv_cove_aia_init(struct kvm *kvm) { return -1; }
- static inline int kvm_riscv_cove_vcpu_inject_interrupt(struct kvm_vcpu *vcpu,
-diff --git a/arch/riscv/include/asm/kvm_cove_sbi.h b/arch/riscv/include/asm/kvm_cove_sbi.h
-index b554a8d..c930265 100644
---- a/arch/riscv/include/asm/kvm_cove_sbi.h
-+++ b/arch/riscv/include/asm/kvm_cove_sbi.h
-@@ -59,6 +59,10 @@ int sbi_covh_create_tvm_vcpu(unsigned long tvmid, unsigned long tvm_vcpuid,
- 
- int sbi_covh_run_tvm_vcpu(unsigned long tvmid, unsigned long tvm_vcpuid);
- 
-+int sbi_covh_add_shared_pages(unsigned long tvmid, unsigned long page_addr_phys,
-+			      enum sbi_cove_page_type ptype,
-+			      unsigned long npages,
-+			      unsigned long tvm_base_page_addr);
- int sbi_covh_tvm_invalidate_pages(unsigned long tvmid,
- 			     unsigned long tvm_base_page_addr,
- 			     unsigned long len);
-diff --git a/arch/riscv/include/asm/kvm_vcpu_sbi.h b/arch/riscv/include/asm/kvm_vcpu_sbi.h
-index b10c896..5b37a12 100644
---- a/arch/riscv/include/asm/kvm_vcpu_sbi.h
-+++ b/arch/riscv/include/asm/kvm_vcpu_sbi.h
-@@ -66,5 +66,8 @@ extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_hsm;
- extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_dbcn;
- extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_experimental;
- extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_vendor;
-+#ifdef CONFIG_RISCV_COVE_HOST
-+extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_covg;
-+#endif
- 
- #endif /* __RISCV_KVM_VCPU_SBI_H__ */
-diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
-index ac3def0..2a24341 100644
---- a/arch/riscv/include/uapi/asm/kvm.h
-+++ b/arch/riscv/include/uapi/asm/kvm.h
-@@ -148,6 +148,7 @@ enum KVM_RISCV_SBI_EXT_ID {
- 	KVM_RISCV_SBI_EXT_EXPERIMENTAL,
- 	KVM_RISCV_SBI_EXT_VENDOR,
- 	KVM_RISCV_SBI_EXT_DBCN,
-+	KVM_RISCV_SBI_EXT_COVG,
- 	KVM_RISCV_SBI_EXT_MAX,
- };
- 
-diff --git a/arch/riscv/kvm/Makefile b/arch/riscv/kvm/Makefile
-index 8c91551..31f4dbd 100644
---- a/arch/riscv/kvm/Makefile
-+++ b/arch/riscv/kvm/Makefile
-@@ -31,4 +31,4 @@ kvm-y += aia.o
- kvm-y += aia_device.o
- kvm-y += aia_aplic.o
- kvm-y += aia_imsic.o
--kvm-$(CONFIG_RISCV_COVE_HOST) += cove_sbi.o cove.o
-+kvm-$(CONFIG_RISCV_COVE_HOST) += cove_sbi.o cove.o vcpu_sbi_covg.o
-diff --git a/arch/riscv/kvm/cove.c b/arch/riscv/kvm/cove.c
-index 154b01a..ba596b7 100644
---- a/arch/riscv/kvm/cove.c
-+++ b/arch/riscv/kvm/cove.c
-@@ -44,6 +44,18 @@ static void kvm_cove_local_fence(void *info)
- 		kvm_err("local fence for TSM failed %d on cpu %d\n", rc, smp_processor_id());
- }
- 
-+static void cove_delete_shared_pinned_page_list(struct kvm *kvm,
-+						struct list_head *tpages)
-+{
-+	struct kvm_riscv_cove_page *tpage, *temp;
-+
-+	list_for_each_entry_safe(tpage, temp, tpages, link) {
-+		unpin_user_pages_dirty_lock(&tpage->page, 1, true);
-+		list_del(&tpage->link);
-+		kfree(tpage);
-+	}
-+}
-+
- static void cove_delete_page_list(struct kvm *kvm, struct list_head *tpages, bool unpin)
- {
- 	struct kvm_riscv_cove_page *tpage, *temp;
-@@ -425,7 +437,8 @@ int kvm_riscv_cove_vcpu_sbi_ecall(struct kvm_vcpu *vcpu, struct kvm_run *run)
- 
- 	sbi_ext = kvm_vcpu_sbi_find_ext(vcpu, cp->a7);
- 	if ((sbi_ext && sbi_ext->handler) && ((cp->a7 == SBI_EXT_DBCN) ||
--	    (cp->a7 == SBI_EXT_HSM) || (cp->a7 == SBI_EXT_SRST) || ext_is_01)) {
-+	    (cp->a7 == SBI_EXT_HSM) || (cp->a7 == SBI_EXT_SRST) ||
-+	    (cp->a7 == SBI_EXT_COVG) || ext_is_01)) {
- 		ret = sbi_ext->handler(vcpu, run, &sbi_ret);
- 	} else {
- 		kvm_err("%s: SBI EXT %lx not supported for TVM\n", __func__, cp->a7);
-@@ -451,7 +464,8 @@ int kvm_riscv_cove_vcpu_sbi_ecall(struct kvm_vcpu *vcpu, struct kvm_run *run)
- 	return ret;
- }
- 
--int kvm_riscv_cove_gstage_map(struct kvm_vcpu *vcpu, gpa_t gpa, unsigned long hva)
-+static int kvm_riscv_cove_gstage_map(struct kvm_vcpu *vcpu, gpa_t gpa,
-+				     unsigned long hva)
- {
- 	struct kvm_riscv_cove_page *tpage;
- 	struct mm_struct *mm = current->mm;
-@@ -517,6 +531,35 @@ int kvm_riscv_cove_gstage_map(struct kvm_vcpu *vcpu, gpa_t gpa, unsigned long hv
- 	return rc;
- }
- 
-+int kvm_riscv_cove_handle_pagefault(struct kvm_vcpu *vcpu, gpa_t gpa,
-+				    unsigned long hva)
-+{
-+	struct kvm_cove_tvm_context *tvmc = vcpu->kvm->arch.tvmc;
-+	struct kvm_riscv_cove_page *tpage, *next;
-+	bool shared = false;
-+
-+	/* TODO: Implement a better approach to track regions to avoid
-+	 * traversing the whole list on each fault.
-+	 */
-+	spin_lock(&vcpu->kvm->mmu_lock);
-+	list_for_each_entry_safe(tpage, next, &tvmc->shared_pages, link) {
-+		if (tpage->gpa == (gpa & PAGE_MASK)) {
-+			shared = true;
-+			break;
-+		}
-+	}
-+	spin_unlock(&vcpu->kvm->mmu_lock);
-+
-+	if (shared) {
-+		return sbi_covh_add_shared_pages(tvmc->tvm_guest_id,
-+						 page_to_phys(tpage->page),
-+						 SBI_COVE_PAGE_4K, 1,
-+						 gpa & PAGE_MASK);
-+	}
-+
-+	return kvm_riscv_cove_gstage_map(vcpu, gpa, hva);
-+}
-+
- void noinstr kvm_riscv_cove_vcpu_switchto(struct kvm_vcpu *vcpu, struct kvm_cpu_trap *trap)
- {
- 	int rc;
-@@ -804,6 +847,7 @@ void kvm_riscv_cove_vm_destroy(struct kvm *kvm)
- 	cove_delete_page_list(kvm, &tvmc->reclaim_pending_pages, false);
- 	cove_delete_page_list(kvm, &tvmc->measured_pages, false);
- 	cove_delete_page_list(kvm, &tvmc->zero_pages, true);
-+	cove_delete_shared_pinned_page_list(kvm, &tvmc->shared_pages);
- 
- 	/* Reclaim and Free the pages for tvm state management */
- 	rc = sbi_covh_tsm_reclaim_pages(page_to_phys(tvmc->tvm_state.page), tvmc->tvm_state.npages);
-diff --git a/arch/riscv/kvm/cove_sbi.c b/arch/riscv/kvm/cove_sbi.c
-index 01dc260..4759b49 100644
---- a/arch/riscv/kvm/cove_sbi.c
-+++ b/arch/riscv/kvm/cove_sbi.c
-@@ -380,6 +380,24 @@ int sbi_covh_add_zero_pages(unsigned long tvmid, unsigned long page_addr_phys,
- 	return 0;
- }
- 
-+int sbi_covh_add_shared_pages(unsigned long tvmid, unsigned long page_addr_phys,
-+			      enum sbi_cove_page_type ptype,
-+			      unsigned long npages,
-+			      unsigned long tvm_base_page_addr)
-+{
-+	struct sbiret ret;
-+
-+	if (!PAGE_ALIGNED(page_addr_phys))
-+		return -EINVAL;
-+
-+	ret = sbi_ecall(SBI_EXT_COVH, SBI_EXT_COVH_TVM_ADD_SHARED_PAGES, tvmid,
-+			page_addr_phys, ptype, npages, tvm_base_page_addr, 0);
-+	if (ret.error)
-+		return sbi_err_map_linux_errno(ret.error);
-+
-+	return 0;
-+}
-+
- int sbi_covh_create_tvm_vcpu(unsigned long tvmid, unsigned long vcpuid,
- 			     unsigned long vcpu_state_paddr)
- {
-diff --git a/arch/riscv/kvm/vcpu_exit.c b/arch/riscv/kvm/vcpu_exit.c
-index c46e7f2..51eb434 100644
---- a/arch/riscv/kvm/vcpu_exit.c
-+++ b/arch/riscv/kvm/vcpu_exit.c
-@@ -43,7 +43,7 @@ static int gstage_page_fault(struct kvm_vcpu *vcpu, struct kvm_run *run,
- 
- 	if (is_cove_vcpu(vcpu)) {
- 		/* CoVE doesn't care about PTE prots now. No need to compute the prots */
--		ret = kvm_riscv_cove_gstage_map(vcpu, fault_addr, hva);
-+		ret = kvm_riscv_cove_handle_pagefault(vcpu, fault_addr, hva);
- 	} else {
- 		ret = kvm_riscv_gstage_map(vcpu, memslot, fault_addr, hva,
- 			(trap->scause == EXC_STORE_GUEST_PAGE_FAULT) ? true : false);
-diff --git a/arch/riscv/kvm/vcpu_sbi.c b/arch/riscv/kvm/vcpu_sbi.c
-index d2f43bc..8bc7d73 100644
---- a/arch/riscv/kvm/vcpu_sbi.c
-+++ b/arch/riscv/kvm/vcpu_sbi.c
-@@ -13,6 +13,8 @@
- #include <asm/kvm_nacl.h>
- #include <asm/kvm_cove_sbi.h>
- #include <asm/kvm_vcpu_sbi.h>
-+#include <asm/asm-offsets.h>
-+#include <asm/kvm_cove.h>
- 
- #ifndef CONFIG_RISCV_SBI_V01
- static const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_v01 = {
-@@ -32,6 +34,14 @@ static const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_pmu = {
- };
- #endif
- 
-+#ifndef CONFIG_RISCV_COVE_HOST
-+static const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_covg = {
-+	.extid_start = -1UL,
-+	.extid_end = -1UL,
-+	.handler = NULL,
-+};
-+#endif
-+
- struct kvm_riscv_sbi_extension_entry {
- 	enum KVM_RISCV_SBI_EXT_ID dis_idx;
- 	const struct kvm_vcpu_sbi_extension *ext_ptr;
-@@ -82,6 +92,10 @@ static const struct kvm_riscv_sbi_extension_entry sbi_ext[] = {
- 		.dis_idx = KVM_RISCV_SBI_EXT_VENDOR,
- 		.ext_ptr = &vcpu_sbi_ext_vendor,
- 	},
-+	{
-+		.dis_idx = KVM_RISCV_SBI_EXT_COVG,
-+		.ext_ptr = &vcpu_sbi_ext_covg,
-+	},
- };
- 
- void kvm_riscv_vcpu_sbi_forward(struct kvm_vcpu *vcpu, struct kvm_run *run)
-diff --git a/arch/riscv/kvm/vcpu_sbi_covg.c b/arch/riscv/kvm/vcpu_sbi_covg.c
+diff --git a/arch/riscv/include/asm/mem_encrypt.h b/arch/riscv/include/asm/mem_encrypt.h
 new file mode 100644
-index 0000000..44a3b06
+index 0000000..0dc3fe8
 --- /dev/null
-+++ b/arch/riscv/kvm/vcpu_sbi_covg.c
-@@ -0,0 +1,232 @@
++++ b/arch/riscv/include/asm/mem_encrypt.h
+@@ -0,0 +1,26 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/*
++ * RISCV Memory Encryption Support.
++ *
++ * Copyright (c) 2023 Rivos Inc.
++ *
++ * Authors:
++ *     Rajnesh Kanwal <rkanwal@rivosinc.com>
++ */
++
++#ifndef __RISCV_MEM_ENCRYPT_H__
++#define __RISCV_MEM_ENCRYPT_H__
++
++#include <linux/init.h>
++
++struct device;
++
++bool force_dma_unencrypted(struct device *dev);
++
++/* Architecture __weak replacement functions */
++void __init mem_encrypt_init(void);
++
++int set_memory_encrypted(unsigned long addr, int numpages);
++int set_memory_decrypted(unsigned long addr, int numpages);
++
++#endif /* __RISCV_MEM_ENCRYPT_H__ */
+diff --git a/arch/riscv/mm/Makefile b/arch/riscv/mm/Makefile
+index 2ac177c..1fd9b60 100644
+--- a/arch/riscv/mm/Makefile
++++ b/arch/riscv/mm/Makefile
+@@ -33,3 +33,5 @@ endif
+ 
+ obj-$(CONFIG_DEBUG_VIRTUAL) += physaddr.o
+ obj-$(CONFIG_RISCV_DMA_NONCOHERENT) += dma-noncoherent.o
++
++obj-$(CONFIG_RISCV_MEM_ENCRYPT)	+= mem_encrypt.o
+diff --git a/arch/riscv/mm/init.c b/arch/riscv/mm/init.c
+index 478d676..b5edd8e 100644
+--- a/arch/riscv/mm/init.c
++++ b/arch/riscv/mm/init.c
+@@ -21,6 +21,7 @@
+ #include <linux/crash_dump.h>
+ #include <linux/hugetlb.h>
+ 
++#include <asm/cove.h>
+ #include <asm/fixmap.h>
+ #include <asm/tlbflush.h>
+ #include <asm/sections.h>
+@@ -156,11 +157,25 @@ static void print_vm_layout(void) { }
+ 
+ void __init mem_init(void)
+ {
++	unsigned int flags = SWIOTLB_VERBOSE;
++	bool swiotlb_en;
++
++	if (is_cove_guest()) {
++		/* Since the guest memory is inaccessible to the host, devices
++		 * always need to use the SWIOTLB buffer for DMA even if
++		 * dma_capable() says otherwise.
++		 */
++		flags |= SWIOTLB_FORCE;
++		swiotlb_en = true;
++	} else {
++		swiotlb_en = !!(max_pfn > PFN_DOWN(dma32_phys_limit));
++	}
++
+ #ifdef CONFIG_FLATMEM
+ 	BUG_ON(!mem_map);
+ #endif /* CONFIG_FLATMEM */
+ 
+-	swiotlb_init(max_pfn > PFN_DOWN(dma32_phys_limit), SWIOTLB_VERBOSE);
++	swiotlb_init(swiotlb_en, flags);
+ 	memblock_free_all();
+ 
+ 	print_vm_layout();
+diff --git a/arch/riscv/mm/mem_encrypt.c b/arch/riscv/mm/mem_encrypt.c
+new file mode 100644
+index 0000000..8207a5c
+--- /dev/null
++++ b/arch/riscv/mm/mem_encrypt.c
+@@ -0,0 +1,57 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * Copyright (c) 2023 Rivos Inc.
@@ -304,230 +158,55 @@ index 0000000..44a3b06
 + *     Rajnesh Kanwal <rkanwal@rivosinc.com>
 + */
 +
-+#include <linux/errno.h>
-+#include <linux/err.h>
-+#include <linux/kvm_host.h>
-+#include <linux/list.h>
-+#include <linux/mm.h>
-+#include <linux/spinlock.h>
-+#include <asm/csr.h>
-+#include <asm/sbi.h>
-+#include <asm/kvm_vcpu_sbi.h>
-+#include <asm/kvm_cove.h>
-+#include <asm/kvm_cove_sbi.h>
++#include <linux/dma-direct.h>
++#include <linux/swiotlb.h>
++#include <linux/cc_platform.h>
++#include <linux/mem_encrypt.h>
++#include <asm/covg_sbi.h>
 +
-+static int cove_share_converted_page(struct kvm_vcpu *vcpu, gpa_t gpa,
-+				     struct kvm_riscv_cove_page *tpage)
++/* Override for DMA direct allocation check - ARCH_HAS_FORCE_DMA_UNENCRYPTED */
++bool force_dma_unencrypted(struct device *dev)
 +{
-+	struct kvm *kvm = vcpu->kvm;
-+	struct kvm_cove_tvm_context *tvmc = kvm->arch.tvmc;
-+	int rc;
-+
-+	rc = sbi_covh_tvm_invalidate_pages(tvmc->tvm_guest_id, gpa, PAGE_SIZE);
-+	if (rc)
-+		return rc;
-+
-+	rc = kvm_riscv_cove_tvm_fence(vcpu);
-+	if (rc)
-+		goto err;
-+
-+	rc = sbi_covh_tvm_remove_pages(tvmc->tvm_guest_id, gpa, PAGE_SIZE);
-+	if (rc)
-+		goto err;
-+
-+	rc = sbi_covh_tsm_reclaim_page(page_to_phys(tpage->page));
-+	if (rc)
-+		return rc;
-+
-+	spin_lock(&kvm->mmu_lock);
-+	list_del(&tpage->link);
-+	list_add(&tpage->link, &tvmc->shared_pages);
-+	spin_unlock(&kvm->mmu_lock);
-+
-+	return 0;
-+
-+err:
-+	sbi_covh_tvm_validate_pages(tvmc->tvm_guest_id, gpa, PAGE_SIZE);
-+
-+	return rc;
-+}
-+
-+static int cove_share_page(struct kvm_vcpu *vcpu, gpa_t gpa,
-+			   unsigned long *sbi_err)
-+{
-+	unsigned long hva = gfn_to_hva(vcpu->kvm, gpa >> PAGE_SHIFT);
-+	struct kvm_cove_tvm_context *tvmc = vcpu->kvm->arch.tvmc;
-+	struct mm_struct *mm = current->mm;
-+	struct kvm_riscv_cove_page *tpage;
-+	struct page *page;
-+	int rc;
-+
-+	if (kvm_is_error_hva(hva)) {
-+		/* Address is out of the guest ram memory region. */
-+		*sbi_err = SBI_ERR_INVALID_PARAM;
-+		return 0;
-+	}
-+
-+	tpage = kmalloc(sizeof(*tpage), GFP_KERNEL_ACCOUNT);
-+	if (!tpage)
-+		return -ENOMEM;
-+
-+	mmap_read_lock(mm);
-+	rc = pin_user_pages(hva, 1, FOLL_LONGTERM | FOLL_WRITE, &page, NULL);
-+	mmap_read_unlock(mm);
-+
-+	if (rc != 1) {
-+		rc = -EINVAL;
-+		goto free_tpage;
-+	} else if (!PageSwapBacked(page)) {
-+		rc = -EIO;
-+		goto free_tpage;
-+	}
-+
-+	tpage->page = page;
-+	tpage->gpa = gpa;
-+	tpage->hva = hva;
-+	INIT_LIST_HEAD(&tpage->link);
-+
-+	spin_lock(&vcpu->kvm->mmu_lock);
-+	list_add(&tpage->link, &tvmc->shared_pages);
-+	spin_unlock(&vcpu->kvm->mmu_lock);
-+
-+	return 0;
-+
-+free_tpage:
-+	kfree(tpage);
-+
-+	return rc;
-+}
-+
-+static int kvm_riscv_cove_share_page(struct kvm_vcpu *vcpu, gpa_t gpa,
-+				     unsigned long *sbi_err)
-+{
-+	struct kvm_cove_tvm_context *tvmc = vcpu->kvm->arch.tvmc;
-+	struct kvm_riscv_cove_page *tpage, *next;
-+	bool converted = false;
-+
 +	/*
-+	 * Check if the shared memory is part of the pages already assigned
-+	 * to the TVM.
-+	 *
-+	 * TODO: Implement a better approach to track regions to avoid
-+	 * traversing the whole list.
++	 * For authorized devices in trusted guest, all DMA must be to/from
++	 * unencrypted addresses.
 +	 */
-+	spin_lock(&vcpu->kvm->mmu_lock);
-+	list_for_each_entry_safe(tpage, next, &tvmc->zero_pages, link) {
-+		if (tpage->gpa == gpa) {
-+			converted = true;
-+			break;
-+		}
-+	}
-+	spin_unlock(&vcpu->kvm->mmu_lock);
-+
-+	if (converted)
-+		return cove_share_converted_page(vcpu, gpa, tpage);
-+
-+	return cove_share_page(vcpu, gpa, sbi_err);
++	return cc_platform_has(CC_ATTR_GUEST_MEM_ENCRYPT);
 +}
 +
-+static int kvm_riscv_cove_unshare_page(struct kvm_vcpu *vcpu, gpa_t gpa)
++int set_memory_encrypted(unsigned long addr, int numpages)
 +{
-+	struct kvm_riscv_cove_page *tpage, *next;
-+	struct kvm *kvm = vcpu->kvm;
-+	struct kvm_cove_tvm_context *tvmc = kvm->arch.tvmc;
-+	struct page *page = NULL;
-+	int rc;
++	if (!cc_platform_has(CC_ATTR_MEM_ENCRYPT))
++		return 0;
 +
-+	spin_lock(&kvm->mmu_lock);
-+	list_for_each_entry_safe(tpage, next, &tvmc->shared_pages, link) {
-+		if (tpage->gpa == gpa) {
-+			page = tpage->page;
-+			break;
-+		}
-+	}
-+	spin_unlock(&kvm->mmu_lock);
-+
-+	if (unlikely(!page))
++	if (!PAGE_ALIGNED(addr))
 +		return -EINVAL;
 +
-+	rc = sbi_covh_tvm_invalidate_pages(tvmc->tvm_guest_id, gpa, PAGE_SIZE);
-+	if (rc)
-+		return rc;
-+
-+	rc = kvm_riscv_cove_tvm_fence(vcpu);
-+	if (rc)
-+		return rc;
-+
-+	rc = sbi_covh_tvm_remove_pages(tvmc->tvm_guest_id, gpa, PAGE_SIZE);
-+	if (rc)
-+		return rc;
-+
-+	unpin_user_pages_dirty_lock(&page, 1, true);
-+
-+	spin_lock(&kvm->mmu_lock);
-+	list_del(&tpage->link);
-+	spin_unlock(&kvm->mmu_lock);
-+
-+	kfree(tpage);
-+
-+	return 0;
++	return sbi_covg_unshare_memory(__pa(addr), numpages * PAGE_SIZE);
 +}
++EXPORT_SYMBOL_GPL(set_memory_encrypted);
 +
-+static int kvm_sbi_ext_covg_handler(struct kvm_vcpu *vcpu, struct kvm_run *run,
-+				    struct kvm_vcpu_sbi_return *retdata)
++int set_memory_decrypted(unsigned long addr, int numpages)
 +{
-+	struct kvm_cpu_context *cp = &vcpu->arch.guest_context;
-+	uint32_t num_pages = cp->a1 / PAGE_SIZE;
-+	unsigned long funcid = cp->a6;
-+	unsigned long *err_val = &retdata->err_val;
-+	uint32_t i;
-+	int ret;
-+
-+	switch (funcid) {
-+	case SBI_EXT_COVG_SHARE_MEMORY:
-+		for (i = 0; i < num_pages; i++) {
-+			ret = kvm_riscv_cove_share_page(
-+				vcpu, cp->a0 + i * PAGE_SIZE, err_val);
-+			if (ret || *err_val != SBI_SUCCESS)
-+				return ret;
-+		}
++	if (!cc_platform_has(CC_ATTR_MEM_ENCRYPT))
 +		return 0;
 +
-+	case SBI_EXT_COVG_UNSHARE_MEMORY:
-+		for (i = 0; i < num_pages; i++) {
-+			ret = kvm_riscv_cove_unshare_page(
-+				vcpu, cp->a0 + i * PAGE_SIZE);
-+			if (ret)
-+				return ret;
-+		}
-+		return 0;
++	if (!PAGE_ALIGNED(addr))
++		return -EINVAL;
 +
-+	case SBI_EXT_COVG_ADD_MMIO_REGION:
-+	case SBI_EXT_COVG_REMOVE_MMIO_REGION:
-+	case SBI_EXT_COVG_ALLOW_EXT_INTERRUPT:
-+	case SBI_EXT_COVG_DENY_EXT_INTERRUPT:
-+		/* We don't really need to do anything here for now. */
-+		return 0;
-+
-+	default:
-+		kvm_err("%s: Unsupported guest SBI %ld.\n", __func__, funcid);
-+		retdata->err_val = SBI_ERR_NOT_SUPPORTED;
-+		return -EOPNOTSUPP;
-+	}
++	return sbi_covg_share_memory(__pa(addr), numpages * PAGE_SIZE);
 +}
++EXPORT_SYMBOL_GPL(set_memory_decrypted);
 +
-+unsigned long kvm_sbi_ext_covg_probe(struct kvm_vcpu *vcpu)
++/* Architecture __weak replacement functions */
++void __init mem_encrypt_init(void)
 +{
-+	/* KVM COVG SBI handler is only meant for handling calls from TSM */
-+	return 0;
-+}
++	if (!cc_platform_has(CC_ATTR_MEM_ENCRYPT))
++		return;
 +
-+const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_covg = {
-+	.extid_start = SBI_EXT_COVG,
-+	.extid_end = SBI_EXT_COVG,
-+	.handler = kvm_sbi_ext_covg_handler,
-+	.probe = kvm_sbi_ext_covg_probe,
-+};
++	/* Call into SWIOTLB to update the SWIOTLB DMA buffers */
++	swiotlb_update_mem_attributes();
++}
 -- 
 2.25.1
 
