@@ -1,115 +1,95 @@
-From: Björn Töpel <bjorn@kernel.org>
-Date: Wed, 19 Apr 2023 09:43:22 +0200
-Subject: [PATCH -next v18 00/20] riscv: Add vector ISA support
-In-Reply-To: <20230414155843.12963-1-andy.chiu@sifive.com>
-References: <20230414155843.12963-1-andy.chiu@sifive.com>
-Message-ID: <87cz4048rp.fsf@all.your.base.are.belong.to.us>
+From: Andrew Jones <ajones@ventanamicro.com>
+Date: Wed, 19 Apr 2023 10:15:54 +0200
+Subject: [RFC PATCH 02/14] RISC-V: Add SBI STA extension definitions
+In-Reply-To: <20230418-elliptic-headboard-6a18fcccdf07@spud>
+References: <20230417103402.798596-1-ajones@ventanamicro.com>
+ <20230417103402.798596-3-ajones@ventanamicro.com>
+ <20230418-elliptic-headboard-6a18fcccdf07@spud>
+Message-ID: <bl7i54kgkzvxzhritql4vtzpymepx7hmtio7pjnbmipv3dxwgi@dtmqpnkdlwl5>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Andy Chiu <andy.chiu@sifive.com> writes:
+On Tue, Apr 18, 2023 at 07:43:51PM +0100, Conor Dooley wrote:
+> On Mon, Apr 17, 2023 at 12:33:50PM +0200, Andrew Jones wrote:
+> > The SBI STA extension enables steal-time accounting. Add the
+> > definitions it specifies.
+> > 
+> > Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
+> > ---
+> >  arch/riscv/include/asm/sbi.h | 15 +++++++++++++++
+> >  1 file changed, 15 insertions(+)
+> > 
+> > diff --git a/arch/riscv/include/asm/sbi.h b/arch/riscv/include/asm/sbi.h
+> > index 945b7be249c1..485b9ec20399 100644
+> > --- a/arch/riscv/include/asm/sbi.h
+> > +++ b/arch/riscv/include/asm/sbi.h
+> > @@ -30,6 +30,7 @@ enum sbi_ext_id {
+> >  	SBI_EXT_HSM = 0x48534D,
+> >  	SBI_EXT_SRST = 0x53525354,
+> >  	SBI_EXT_PMU = 0x504D55,
+> > +	SBI_EXT_STA = 0x535441,
+> 
+> What is the sort order of this? Matching the spec ordering, or just
+> append-at-the-end?
 
-> This patchset is implemented based on vector 1.0 spec to add vector support
-> in riscv Linux kernel. There are some assumptions for this implementations.
->
-> 1. We assume all harts has the same ISA in the system.
-> 2. We disable vector in both kernel and user space [1] by default. Only
->    enable an user's vector after an illegal instruction trap where it
->    actually starts executing vector (the first-use trap [2]).
-> 3. We detect "riscv,isa" to determine whether vector is support or not.
->
-> We defined a new structure __riscv_v_ext_state in struct thread_struct to
-> save/restore the vector related registers. It is used for both kernel space
-> and user space.
->  - In kernel space, the datap pointer in __riscv_v_ext_state will be
->    allocated to save vector registers.
->  - In user space,
-> 	- In signal handler of user space, the structure is placed
-> 	  right after __riscv_ctx_hdr, which is embedded in fp reserved
-> 	  aera. This is required to avoid ABI break [2]. And datap points
-> 	  to the end of __riscv_v_ext_state.
-> 	- In ptrace, the data will be put in ubuf in which we use
-> 	  riscv_vr_get()/riscv_vr_set() to get or set the
-> 	  __riscv_v_ext_state data structure from/to it, datap pointer
-> 	  would be zeroed and vector registers will be copied to the
-> 	  address right after the __riscv_v_ext_state structure in ubuf.
->
-> This patchset is rebased to v6.3-rc1 and it is tested by running several
-> vector programs simultaneously. It delivers signals correctly in a test
-> where we can see a valid ucontext_t in a signal handler, and a correct V
-> context returing back from it. And the ptrace interface is tested by
-> PTRACE_{GET,SET}REGSET. Lastly, KVM is tested by running above tests in
-> a guest using the same kernel image. All tests are done on an rv64gcv
-> virt QEMU.
->
-> Note: please apply the patch at [4] due to a regression introduced by
-> commit 596ff4a09b89 ("cpumask: re-introduce constant-sized cpumask
-> optimizations") before testing the series.
->
-> Source tree:
-> https://github.com/sifive/riscv-linux/tree/riscv/for-next/vector-v18
+I don't believe there's an established order. I've been going for spec
+order, I think.
 
-After some offlist discussions, we might have a identified a
-potential libc->application ABI break.
+> 
+> Unrelated, but in checking that I saw that your SUSP stuff is in
+> master - you planning on resending that series?
 
-Given an application that does custom task scheduling via a signal
-handler. The application binary is not vector aware, but libc is. Libc
-is using vector registers for memcpy. It's an "old application, new
-library, new kernel"-scenario.
+I think I need to wait until it's been ratified.
 
- | ...
- | struct context *p1_ctx;
- | struct context *p2_ctx;
- | 
- | void sighandler(int sig, siginfo_t *info, void *ucontext)
- | {
- |   if (p1_running)
- |     switch_to(p1_ctx, p2_ctx);
- |   if (p2_running)
- |     switch_to(p2_ctx, p1_ctx);
- | }
- | 
- | void p1(void)
- | {
- |   memcpy(foo, bar, 17);
- | }
- | 
- | void p2(void)
- | {
- |   ...
- | }
- | ...
+> 
+> Anyways, this does match the docs - but I'm quite hesitant to leave an
+> R-b when it's not merged yet.
 
-The switch_to() function schedules p1() and p2(). E.g., the
-application (assumes that it) saves the complete task state from
-sigcontext (ucontext) to p1_ctx, and restores sigcontext to p2_ctx, so
-when sigreturn is called, p2() is running, and p1() has been
-interrupted.
+I could take your R-b now, and then if the spec changes, I'd drop it
+when reposting the PoC after reworking it.
 
-The "old application" which is not aware of vector, is now run on a
-vector enabled kernel/glibc.
+Thanks,
+drew
 
-Assume that the sighandler is hit, and p1() is in the middle of the
-vector memcpy. The switch_to() function will not save the vector
-state, and next time p2() is scheduled to run it will have incorrect
-machine state.
-
-Now:
-
-Is this an actual or theoretical problem (i.e. are there any
-applications in the wild)? I'd be surprised if it would not be the
-latter...
-
-Regardless, a kernel knob for disabling vector (sysctl/prctl) to avoid
-these kind of breaks is needed (right?). Could this knob be a
-follow-up patch to the existing v18 series?
-
-Note that arm64 does not suffer from this with SVE, because the default
-vector length (vl==0/128b*32) fits in the "legacy" sigcontext.
+> 
+> Cheers,
+> Conor.
+> 
+> >  
+> >  	/* Experimentals extensions must lie within this range */
+> >  	SBI_EXT_EXPERIMENTAL_START = 0x08000000,
+> > @@ -236,6 +237,20 @@ enum sbi_pmu_ctr_type {
+> >  /* Flags defined for counter stop function */
+> >  #define SBI_PMU_STOP_FLAG_RESET (1 << 0)
+> >  
+> > +/* SBI STA (steal-time accounting) extension */
+> > +enum sbi_ext_sta_fid {
+> > +	SBI_EXT_STA_SET_STEAL_TIME_SHMEM = 0,
+> > +};
+> > +
+> > +struct sbi_sta_struct {
+> > +	__le32 sequence;
+> > +	__le32 flags;
+> > +	__le64 steal;
+> > +	u8 preempted;
+> > +	u8 pad[47];
+> > +} __packed;
+> > +
+> > +/* SBI spec version fields */
+> >  #define SBI_SPEC_VERSION_DEFAULT	0x1
+> >  #define SBI_SPEC_VERSION_MAJOR_SHIFT	24
+> >  #define SBI_SPEC_VERSION_MAJOR_MASK	0x7f
+> > -- 
+> > 2.39.2
+> > 
+> > 
+> > _______________________________________________
+> > linux-riscv mailing list
+> > linux-riscv at lists.infradead.org
+> > http://lists.infradead.org/mailman/listinfo/linux-riscv
 
 
-Bj?rn
 
