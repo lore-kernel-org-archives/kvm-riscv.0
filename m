@@ -1,9 +1,9 @@
 From: Atish Patra <atishp@rivosinc.com>
-Date: Wed, 19 Apr 2023 15:17:13 -0700
-Subject: [RFC 45/48] RISC-V: ioremap: Implement for arch specific ioremap hooks
+Date: Wed, 19 Apr 2023 15:17:12 -0700
+Subject: [RFC 44/48] RISC-V: Add cc_platform_has() for RISC-V for CoVE
 In-Reply-To: <20230419221716.3603068-1-atishp@rivosinc.com>
 References: <20230419221716.3603068-1-atishp@rivosinc.com>
-Message-ID: <20230419221716.3603068-46-atishp@rivosinc.com>
+Message-ID: <20230419221716.3603068-45-atishp@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -12,80 +12,52 @@ Content-Transfer-Encoding: 7bit
 
 From: Rajnesh Kanwal <rkanwal@rivosinc.com>
 
-The guests running in CoVE must notify the host about its mmio regions
-so that host can enable mmio emulation.
+All the confidential computing solutions uses the arch specific
+cc_platform_has function to enable memory encryption/decryption.
+Implement the same for RISC-V to support that as well.
 
 Signed-off-by: Rajnesh Kanwal <rkanwal@rivosinc.com>
 Signed-off-by: Atish Patra <atishp@rivosinc.com>
 ---
- arch/riscv/mm/Makefile  |  1 +
- arch/riscv/mm/ioremap.c | 45 +++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 46 insertions(+)
- create mode 100644 arch/riscv/mm/ioremap.c
+ arch/riscv/Kconfig     |  1 +
+ arch/riscv/cove/core.c | 12 ++++++++++++
+ 2 files changed, 13 insertions(+)
 
-diff --git a/arch/riscv/mm/Makefile b/arch/riscv/mm/Makefile
-index 1fd9b60..721b557 100644
---- a/arch/riscv/mm/Makefile
-+++ b/arch/riscv/mm/Makefile
-@@ -15,6 +15,7 @@ obj-y += cacheflush.o
- obj-y += context.o
- obj-y += pgtable.o
- obj-y += pmem.o
-+obj-y += ioremap.o
+diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
+index 414cee1..2ca9e01 100644
+--- a/arch/riscv/Kconfig
++++ b/arch/riscv/Kconfig
+@@ -522,6 +522,7 @@ config RISCV_COVE_GUEST
+ 	default n
+ 	select SWIOTLB
+ 	select RISCV_MEM_ENCRYPT
++	select ARCH_HAS_CC_PLATFORM
+ 	help
+ 	  Enables support for running TVMs on platforms supporting CoVE.
  
- ifeq ($(CONFIG_MMU),y)
- obj-$(CONFIG_SMP) += tlbflush.o
-diff --git a/arch/riscv/mm/ioremap.c b/arch/riscv/mm/ioremap.c
-new file mode 100644
-index 0000000..0d4e026
---- /dev/null
-+++ b/arch/riscv/mm/ioremap.c
-@@ -0,0 +1,45 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Copyright (c) 2023 Rivos Inc.
-+ *
-+ * Authors:
-+ *     Rajnesh Kanwal <rkanwal@rivosinc.com>
-+ */
-+
-+#include <linux/export.h>
-+#include <linux/mm.h>
-+#include <linux/vmalloc.h>
-+#include <linux/io.h>
-+#include <asm/covg_sbi.h>
-+#include <asm/cove.h>
-+#include <asm-generic/io.h>
-+
-+void ioremap_phys_range_hook(phys_addr_t addr, size_t size, pgprot_t prot)
+diff --git a/arch/riscv/cove/core.c b/arch/riscv/cove/core.c
+index 7218fe7..582feb1c 100644
+--- a/arch/riscv/cove/core.c
++++ b/arch/riscv/cove/core.c
+@@ -21,6 +21,18 @@ bool is_cove_guest(void)
+ }
+ EXPORT_SYMBOL_GPL(is_cove_guest);
+ 
++bool cc_platform_has(enum cc_attr attr)
 +{
-+	unsigned long offset;
-+
-+	if (!is_cove_guest())
-+		return;
-+
-+	/* Page-align address and size. */
-+	offset = addr & (~PAGE_MASK);
-+	addr -= offset;
-+	size = PAGE_ALIGN(size + offset);
-+
-+	sbi_covg_add_mmio_region(addr, size);
++	switch (attr) {
++	case CC_ATTR_GUEST_MEM_ENCRYPT:
++	case CC_ATTR_MEM_ENCRYPT:
++		return is_cove_guest();
++	default:
++		return false;
++	}
 +}
++EXPORT_SYMBOL_GPL(cc_platform_has);
 +
-+void iounmap_phys_range_hook(phys_addr_t addr, size_t size)
-+{
-+	unsigned long offset;
-+
-+	if (!is_cove_guest())
-+		return;
-+
-+	/* Page-align address and size. */
-+	offset = addr & (~PAGE_MASK);
-+	addr -= offset;
-+	size = PAGE_ALIGN(size + offset);
-+
-+	sbi_covg_remove_mmio_region(addr, size);
-+}
+ void riscv_cove_sbi_init(void)
+ {
+ 	if (sbi_probe_extension(SBI_EXT_COVG) > 0)
 -- 
 2.25.1
 
