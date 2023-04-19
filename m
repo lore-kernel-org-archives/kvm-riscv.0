@@ -1,9 +1,9 @@
 From: Atish Patra <atishp@rivosinc.com>
-Date: Wed, 19 Apr 2023 15:17:14 -0700
-Subject: [RFC 46/48] riscv/virtio: Have CoVE guests enforce restricted virtio memory access.
+Date: Wed, 19 Apr 2023 15:17:13 -0700
+Subject: [RFC 45/48] RISC-V: ioremap: Implement for arch specific ioremap hooks
 In-Reply-To: <20230419221716.3603068-1-atishp@rivosinc.com>
 References: <20230419221716.3603068-1-atishp@rivosinc.com>
-Message-ID: <20230419221716.3603068-47-atishp@rivosinc.com>
+Message-ID: <20230419221716.3603068-46-atishp@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -12,38 +12,80 @@ Content-Transfer-Encoding: 7bit
 
 From: Rajnesh Kanwal <rkanwal@rivosinc.com>
 
-CoVE guest requires that virtio devices use the DMA API to allow the
-hypervisor to successfully access guest memory as needed.
-
-The VIRTIO_F_VERSION_1 and VIRTIO_F_ACCESS_PLATFORM features tell virtio
-to use the DMA API. Force to check for these features to fail the device
-probe if these features have not been set when running as an TEE guest.
+The guests running in CoVE must notify the host about its mmio regions
+so that host can enable mmio emulation.
 
 Signed-off-by: Rajnesh Kanwal <rkanwal@rivosinc.com>
+Signed-off-by: Atish Patra <atishp@rivosinc.com>
 ---
- arch/riscv/mm/mem_encrypt.c | 4 ++++
- 1 file changed, 4 insertions(+)
+ arch/riscv/mm/Makefile  |  1 +
+ arch/riscv/mm/ioremap.c | 45 +++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 46 insertions(+)
+ create mode 100644 arch/riscv/mm/ioremap.c
 
-diff --git a/arch/riscv/mm/mem_encrypt.c b/arch/riscv/mm/mem_encrypt.c
-index 8207a5c..8523c50 100644
---- a/arch/riscv/mm/mem_encrypt.c
-+++ b/arch/riscv/mm/mem_encrypt.c
-@@ -10,6 +10,7 @@
- #include <linux/swiotlb.h>
- #include <linux/cc_platform.h>
- #include <linux/mem_encrypt.h>
-+#include <linux/virtio_anchor.h>
- #include <asm/covg_sbi.h>
+diff --git a/arch/riscv/mm/Makefile b/arch/riscv/mm/Makefile
+index 1fd9b60..721b557 100644
+--- a/arch/riscv/mm/Makefile
++++ b/arch/riscv/mm/Makefile
+@@ -15,6 +15,7 @@ obj-y += cacheflush.o
+ obj-y += context.o
+ obj-y += pgtable.o
+ obj-y += pmem.o
++obj-y += ioremap.o
  
- /* Override for DMA direct allocation check - ARCH_HAS_FORCE_DMA_UNENCRYPTED */
-@@ -54,4 +55,7 @@ void __init mem_encrypt_init(void)
- 
- 	/* Call into SWIOTLB to update the SWIOTLB DMA buffers */
- 	swiotlb_update_mem_attributes();
+ ifeq ($(CONFIG_MMU),y)
+ obj-$(CONFIG_SMP) += tlbflush.o
+diff --git a/arch/riscv/mm/ioremap.c b/arch/riscv/mm/ioremap.c
+new file mode 100644
+index 0000000..0d4e026
+--- /dev/null
++++ b/arch/riscv/mm/ioremap.c
+@@ -0,0 +1,45 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Copyright (c) 2023 Rivos Inc.
++ *
++ * Authors:
++ *     Rajnesh Kanwal <rkanwal@rivosinc.com>
++ */
 +
-+	/* Set restricted memory access for virtio. */
-+	virtio_set_mem_acc_cb(virtio_require_restricted_mem_acc);
- }
++#include <linux/export.h>
++#include <linux/mm.h>
++#include <linux/vmalloc.h>
++#include <linux/io.h>
++#include <asm/covg_sbi.h>
++#include <asm/cove.h>
++#include <asm-generic/io.h>
++
++void ioremap_phys_range_hook(phys_addr_t addr, size_t size, pgprot_t prot)
++{
++	unsigned long offset;
++
++	if (!is_cove_guest())
++		return;
++
++	/* Page-align address and size. */
++	offset = addr & (~PAGE_MASK);
++	addr -= offset;
++	size = PAGE_ALIGN(size + offset);
++
++	sbi_covg_add_mmio_region(addr, size);
++}
++
++void iounmap_phys_range_hook(phys_addr_t addr, size_t size)
++{
++	unsigned long offset;
++
++	if (!is_cove_guest())
++		return;
++
++	/* Page-align address and size. */
++	offset = addr & (~PAGE_MASK);
++	addr -= offset;
++	size = PAGE_ALIGN(size + offset);
++
++	sbi_covg_remove_mmio_region(addr, size);
++}
 -- 
 2.25.1
 
