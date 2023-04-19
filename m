@@ -1,70 +1,79 @@
-From: Andy Chiu <andy.chiu@sifive.com>
-Date: Tue, 18 Apr 2023 00:26:37 +0800
-Subject: [PATCH -next v18 00/20] riscv: Add vector ISA support
-In-Reply-To: <eae19ece-0d56-a91c-3417-f00b9b71f04d@codethink.co.uk>
-References: <20230414155843.12963-1-andy.chiu@sifive.com> <eae19ece-0d56-a91c-3417-f00b9b71f04d@codethink.co.uk>
-Message-ID: <CABgGipWwj=3pCefAUkv0fHDKoyqXxuXfqji4KGPo=2hixTgv_A@mail.gmail.com>
+From: Anup Patel <anup@brainfault.org>
+Date: Wed, 19 Apr 2023 08:16:37 +0530
+Subject: [PATCH v4 2/9] RISC-V: Detect AIA CSRs from ISA string
+In-Reply-To: <20230404153452.2405681-3-apatel@ventanamicro.com>
+References: <20230404153452.2405681-1-apatel@ventanamicro.com> <20230404153452.2405681-3-apatel@ventanamicro.com>
+Message-ID: <CAAhSdy1FKKt-RpE5f8ZEaQyoJL4oEr=YB3MfKDdHqFmL+AyrHg@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Ben,
+Hi Palmer,
 
-On Mon, Apr 17, 2023 at 11:56?PM Ben Dooks <ben.dooks@codethink.co.uk> wrote:
+On Tue, Apr 4, 2023 at 9:05?PM Anup Patel <apatel@ventanamicro.com> wrote:
 >
-> On 14/04/2023 16:58, Andy Chiu wrote:
-> > This patchset is implemented based on vector 1.0 spec to add vector support
-> > in riscv Linux kernel. There are some assumptions for this implementations.
-> >
-> > 1. We assume all harts has the same ISA in the system.
-> > 2. We disable vector in both kernel and user space [1] by default. Only
-> >     enable an user's vector after an illegal instruction trap where it
-> >     actually starts executing vector (the first-use trap [2]).
-> > 3. We detect "riscv,isa" to determine whether vector is support or not.
-> >
-> > We defined a new structure __riscv_v_ext_state in struct thread_struct to
-> > save/restore the vector related registers. It is used for both kernel space
-> > and user space.
-> >   - In kernel space, the datap pointer in __riscv_v_ext_state will be
-> >     allocated to save vector registers.
-> >   - In user space,
-> >       - In signal handler of user space, the structure is placed
-> >         right after __riscv_ctx_hdr, which is embedded in fp reserved
-> >         aera. This is required to avoid ABI break [2]. And datap points
-> >         to the end of __riscv_v_ext_state.
-> >       - In ptrace, the data will be put in ubuf in which we use
-> >         riscv_vr_get()/riscv_vr_set() to get or set the
-> >         __riscv_v_ext_state data structure from/to it, datap pointer
-> >         would be zeroed and vector registers will be copied to the
-> >         address right after the __riscv_v_ext_state structure in ubuf.
-> >
-> > This patchset is rebased to v6.3-rc1 and it is tested by running several
-> > vector programs simultaneously. It delivers signals correctly in a test
-> > where we can see a valid ucontext_t in a signal handler, and a correct V
-> > context returing back from it. And the ptrace interface is tested by
-> > PTRACE_{GET,SET}REGSET. Lastly, KVM is tested by running above tests in
-> > a guest using the same kernel image. All tests are done on an rv64gcv
-> > virt QEMU.
+> We have two extension names for AIA ISA support: Smaia (M-mode AIA CSRs)
+> and Ssaia (S-mode AIA CSRs).
 >
-> Ok, are there plans for in-kernel vector patches, or have I missed
-> something in this list? I expect once things like the vector-crypto
-> hit then people will be wanting in-kernel accelerators.
+> We extend the ISA string parsing to detect Smaia and Ssaia extensions.
 >
+> Signed-off-by: Anup Patel <apatel@ventanamicro.com>
+> Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+> Reviewed-by: Atish Patra <atishp@rivosinc.com>
 
-Yes, I am redesigning and planning to submit the in-kernel Vector
-support recently. Currently the original one is carried by Heiko's
-vector crypto series. The API interface of the refined one should
-remain the same but with some optimizations.
+Can you please ACK this patch so that I can include it in Linux-6.4 PR ?
 
+Regards,
+Anup
+
+> ---
+>  arch/riscv/include/asm/hwcap.h | 2 ++
+>  arch/riscv/kernel/cpu.c        | 2 ++
+>  arch/riscv/kernel/cpufeature.c | 2 ++
+>  3 files changed, 6 insertions(+)
+>
+> diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
+> index 6263a0de1c6a..74f5dab2148f 100644
+> --- a/arch/riscv/include/asm/hwcap.h
+> +++ b/arch/riscv/include/asm/hwcap.h
+> @@ -42,6 +42,8 @@
+>  #define RISCV_ISA_EXT_ZBB              30
+>  #define RISCV_ISA_EXT_ZICBOM           31
+>  #define RISCV_ISA_EXT_ZIHINTPAUSE      32
+> +#define RISCV_ISA_EXT_SMAIA            33
+> +#define RISCV_ISA_EXT_SSAIA            34
+>
+>  #define RISCV_ISA_EXT_MAX              64
+>  #define RISCV_ISA_EXT_NAME_LEN_MAX     32
+> diff --git a/arch/riscv/kernel/cpu.c b/arch/riscv/kernel/cpu.c
+> index 8400f0cc9704..ae1e7bbf9344 100644
+> --- a/arch/riscv/kernel/cpu.c
+> +++ b/arch/riscv/kernel/cpu.c
+> @@ -188,6 +188,8 @@ static struct riscv_isa_ext_data isa_ext_arr[] = {
+>         __RISCV_ISA_EXT_DATA(zicbom, RISCV_ISA_EXT_ZICBOM),
+>         __RISCV_ISA_EXT_DATA(zihintpause, RISCV_ISA_EXT_ZIHINTPAUSE),
+>         __RISCV_ISA_EXT_DATA(zbb, RISCV_ISA_EXT_ZBB),
+> +       __RISCV_ISA_EXT_DATA(smaia, RISCV_ISA_EXT_SMAIA),
+> +       __RISCV_ISA_EXT_DATA(ssaia, RISCV_ISA_EXT_SSAIA),
+>         __RISCV_ISA_EXT_DATA(sscofpmf, RISCV_ISA_EXT_SSCOFPMF),
+>         __RISCV_ISA_EXT_DATA(sstc, RISCV_ISA_EXT_SSTC),
+>         __RISCV_ISA_EXT_DATA(svinval, RISCV_ISA_EXT_SVINVAL),
+> diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
+> index 59d58ee0f68d..9e92e23f6f82 100644
+> --- a/arch/riscv/kernel/cpufeature.c
+> +++ b/arch/riscv/kernel/cpufeature.c
+> @@ -221,6 +221,8 @@ void __init riscv_fill_hwcap(void)
+>                                 }
+>                         } else {
+>                                 /* sorted alphabetically */
+> +                               SET_ISA_EXT_MAP("smaia", RISCV_ISA_EXT_SMAIA);
+> +                               SET_ISA_EXT_MAP("ssaia", RISCV_ISA_EXT_SSAIA);
+>                                 SET_ISA_EXT_MAP("sscofpmf", RISCV_ISA_EXT_SSCOFPMF);
+>                                 SET_ISA_EXT_MAP("sstc", RISCV_ISA_EXT_SSTC);
+>                                 SET_ISA_EXT_MAP("svinval", RISCV_ISA_EXT_SVINVAL);
 > --
-> Ben Dooks                               http://www.codethink.co.uk/
-> Senior Engineer                         Codethink - Providing Genius
+> 2.34.1
 >
-> https://www.codethink.co.uk/privacy.html
->
-
-Cheers,
-Andy
 
