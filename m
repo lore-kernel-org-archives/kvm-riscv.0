@@ -1,160 +1,55 @@
 From: Atish Patra <atishp@rivosinc.com>
-Date: Wed, 19 Apr 2023 15:17:08 -0700
-Subject: [RFC 40/48] RISC-V: COVE: Add COVH invalidate, validate, promote, demote and remove APIs.
+Date: Wed, 19 Apr 2023 15:16:44 -0700
+Subject: [RFC 16/48] RISC-V: KVM: Skip most VCPU requests for TVMs
 In-Reply-To: <20230419221716.3603068-1-atishp@rivosinc.com>
 References: <20230419221716.3603068-1-atishp@rivosinc.com>
-Message-ID: <20230419221716.3603068-41-atishp@rivosinc.com>
+Message-ID: <20230419221716.3603068-17-atishp@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Rajnesh Kanwal <rkanwal@rivosinc.com>
+Currently, KVM manages TLB shootdown, hgatp updates and
+fence.i through vcpu requests.
 
-SBI_EXT_COVH_TVM_INVALIDATE_PAGES: Invalidates the pages in the specified
-range of guest physical address space. The host can now work upon the
-range without TVM's interaction. Any access from TVM to the range will
-result in a page-fault which will be reported to the host.
-
-SBI_EXT_COVH_TVM_VALIDATE_PAGES: Marks the invalidated pages in the
-specified range of guest physical address space as present and TVM
-can now access the pages.
-
-SBI_EXT_COVH_TVM_PROMOTE_PAGES: Promotes a set of contiguous mappings
-to the requested page size. This is mainly to support huge-pages.
-
-SBI_EXT_COVH_TVM_DEMOTE_PAGES: Demotes a huge page mapping to a set
-of contiguous mappings at the target size.
-
-SBI_EXT_COVH_TVM_REMOVE_PAGES: Removes mappings from a TVM. The range
-to be unmapped must already have been invalidated and fenced, and must
-lie within a removable region of guest physical address space.
+TLB shootdown for the TVMs happens in co-ordination with TSM.
+The fence.i & hgatp updates are directly managed by the TSM.
+There is no need to issue these requests directly for TVMs.
 
 Signed-off-by: Atish Patra <atishp@rivosinc.com>
-Signed-off-by: Rajnesh Kanwal <rkanwal@rivosinc.com>
 ---
- arch/riscv/include/asm/kvm_cove_sbi.h | 16 +++++++
- arch/riscv/include/asm/sbi.h          |  5 +++
- arch/riscv/kvm/cove_sbi.c             | 65 +++++++++++++++++++++++++++
- 3 files changed, 86 insertions(+)
+ arch/riscv/kvm/vcpu.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-diff --git a/arch/riscv/include/asm/kvm_cove_sbi.h b/arch/riscv/include/asm/kvm_cove_sbi.h
-index 0759f70..b554a8d 100644
---- a/arch/riscv/include/asm/kvm_cove_sbi.h
-+++ b/arch/riscv/include/asm/kvm_cove_sbi.h
-@@ -59,6 +59,22 @@ int sbi_covh_create_tvm_vcpu(unsigned long tvmid, unsigned long tvm_vcpuid,
+diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+index c53bf98..3b600c6 100644
+--- a/arch/riscv/kvm/vcpu.c
++++ b/arch/riscv/kvm/vcpu.c
+@@ -22,6 +22,7 @@
+ #include <asm/kvm_nacl.h>
+ #include <asm/hwcap.h>
+ #include <asm/sbi.h>
++#include <asm/kvm_cove.h>
  
- int sbi_covh_run_tvm_vcpu(unsigned long tvmid, unsigned long tvm_vcpuid);
+ const struct _kvm_stats_desc kvm_vcpu_stats_desc[] = {
+ 	KVM_GENERIC_VCPU_STATS(),
+@@ -1078,6 +1079,15 @@ static void kvm_riscv_check_vcpu_requests(struct kvm_vcpu *vcpu)
+ 		if (kvm_check_request(KVM_REQ_VCPU_RESET, vcpu))
+ 			kvm_riscv_reset_vcpu(vcpu);
  
-+int sbi_covh_tvm_invalidate_pages(unsigned long tvmid,
-+			     unsigned long tvm_base_page_addr,
-+			     unsigned long len);
-+int sbi_covh_tvm_validate_pages(unsigned long tvmid,
-+			       unsigned long tvm_base_page_addr,
-+			       unsigned long len);
-+int sbi_covh_tvm_promote_page(unsigned long tvmid,
-+			      unsigned long tvm_base_page_addr,
-+			      enum sbi_cove_page_type ptype);
-+int sbi_covh_tvm_demote_page(unsigned long tvmid,
-+			     unsigned long tvm_base_page_addr,
-+			     enum sbi_cove_page_type ptype);
-+int sbi_covh_tvm_remove_pages(unsigned long tvmid,
-+			      unsigned long tvm_base_page_addr,
-+			      unsigned long len);
++		if (is_cove_vcpu(vcpu)) {
++			/*
++			 * KVM doesn't need to do anything special here
++			 * as the TSM is expected track the tlb version and issue
++			 * hfence when vcpu is scheduled again.
++			 */
++			return;
++		}
 +
- /* Functions related to CoVE Interrupt Management(COVI) Extension */
- int sbi_covi_tvm_aia_init(unsigned long tvm_gid, struct sbi_cove_tvm_aia_params *tvm_aia_params);
- int sbi_covi_set_vcpu_imsic_addr(unsigned long tvm_gid, unsigned long vcpu_id,
-diff --git a/arch/riscv/include/asm/sbi.h b/arch/riscv/include/asm/sbi.h
-index e02ee75..03b0cc8 100644
---- a/arch/riscv/include/asm/sbi.h
-+++ b/arch/riscv/include/asm/sbi.h
-@@ -369,6 +369,11 @@ enum sbi_ext_covh_fid {
- 	SBI_EXT_COVH_TVM_CREATE_VCPU,
- 	SBI_EXT_COVH_TVM_VCPU_RUN,
- 	SBI_EXT_COVH_TVM_INITIATE_FENCE,
-+	SBI_EXT_COVH_TVM_INVALIDATE_PAGES,
-+	SBI_EXT_COVH_TVM_VALIDATE_PAGES,
-+	SBI_EXT_COVH_TVM_PROMOTE_PAGE,
-+	SBI_EXT_COVH_TVM_DEMOTE_PAGE,
-+	SBI_EXT_COVH_TVM_REMOVE_PAGES,
- };
+ 		if (kvm_check_request(KVM_REQ_UPDATE_HGATP, vcpu))
+ 			kvm_riscv_gstage_update_hgatp(vcpu);
  
- enum sbi_ext_covi_fid {
-diff --git a/arch/riscv/kvm/cove_sbi.c b/arch/riscv/kvm/cove_sbi.c
-index a8901ac..01dc260 100644
---- a/arch/riscv/kvm/cove_sbi.c
-+++ b/arch/riscv/kvm/cove_sbi.c
-@@ -405,3 +405,68 @@ int sbi_covh_run_tvm_vcpu(unsigned long tvmid, unsigned long vcpuid)
- 
- 	return 0;
- }
-+
-+int sbi_covh_tvm_invalidate_pages(unsigned long tvmid,
-+			     unsigned long tvm_base_page_addr,
-+			     unsigned long len)
-+{
-+	struct sbiret ret = sbi_ecall(SBI_EXT_COVH,
-+				      SBI_EXT_COVH_TVM_INVALIDATE_PAGES, tvmid,
-+				      tvm_base_page_addr, len, 0, 0, 0);
-+	if (ret.error)
-+		return sbi_err_map_linux_errno(ret.error);
-+
-+	return 0;
-+}
-+
-+int sbi_covh_tvm_validate_pages(unsigned long tvmid,
-+			       unsigned long tvm_base_page_addr,
-+			       unsigned long len)
-+{
-+	struct sbiret ret = sbi_ecall(SBI_EXT_COVH,
-+				      SBI_EXT_COVH_TVM_VALIDATE_PAGES, tvmid,
-+				      tvm_base_page_addr, len, 0, 0, 0);
-+	if (ret.error)
-+		return sbi_err_map_linux_errno(ret.error);
-+
-+	return 0;
-+}
-+
-+int sbi_covh_tvm_promote_page(unsigned long tvmid,
-+			      unsigned long tvm_base_page_addr,
-+			      enum sbi_cove_page_type ptype)
-+{
-+	struct sbiret ret = sbi_ecall(SBI_EXT_COVH,
-+				      SBI_EXT_COVH_TVM_PROMOTE_PAGE, tvmid,
-+				      tvm_base_page_addr, ptype, 0, 0, 0);
-+	if (ret.error)
-+		return sbi_err_map_linux_errno(ret.error);
-+
-+	return 0;
-+}
-+
-+int sbi_covh_tvm_demote_page(unsigned long tvmid,
-+			     unsigned long tvm_base_page_addr,
-+			     enum sbi_cove_page_type ptype)
-+{
-+	struct sbiret ret = sbi_ecall(SBI_EXT_COVH,
-+				      SBI_EXT_COVH_TVM_DEMOTE_PAGE, tvmid,
-+				      tvm_base_page_addr, ptype, 0, 0, 0);
-+	if (ret.error)
-+		return sbi_err_map_linux_errno(ret.error);
-+
-+	return 0;
-+}
-+
-+int sbi_covh_tvm_remove_pages(unsigned long tvmid,
-+			      unsigned long tvm_base_page_addr,
-+			      unsigned long len)
-+{
-+	struct sbiret ret = sbi_ecall(SBI_EXT_COVH,
-+				      SBI_EXT_COVH_TVM_REMOVE_PAGES, tvmid,
-+				      tvm_base_page_addr, len, 0, 0, 0);
-+	if (ret.error)
-+		return sbi_err_map_linux_errno(ret.error);
-+
-+	return 0;
-+}
 -- 
 2.25.1
 
