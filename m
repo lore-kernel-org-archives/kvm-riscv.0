@@ -1,128 +1,133 @@
 From: Atish Patra <atishp@rivosinc.com>
-Date: Wed, 19 Apr 2023 15:16:48 -0700
-Subject: [RFC 20/48] RISC-V: KVM: Add gstage mapping for TVMs
+Date: Wed, 19 Apr 2023 15:16:52 -0700
+Subject: [RFC 24/48] RISC-V: KVM: Update timer functionality for TVMs.
 In-Reply-To: <20230419221716.3603068-1-atishp@rivosinc.com>
 References: <20230419221716.3603068-1-atishp@rivosinc.com>
-Message-ID: <20230419221716.3603068-21-atishp@rivosinc.com>
+Message-ID: <20230419221716.3603068-25-atishp@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-For TVM, the gstage mapping is managed by the TSM via COVH SBI
-calls. The host is responsible for allocating page that must be pinned
-to avoid swapping. The page is converted it to confidential before
-handing over to the TSM for gstage mapping.
+From: Rajnesh Kanwal <rkanwal@rivosinc.com>
 
+TSM manages the htimedelta/vstimecmp for the TVM and shares it
+with the host to properly schedule hrtimer to keep timer interrupt ticking.
+TSM only sets htimedetla when first VCPU is run to make sure host
+is not able to control the start time of the VM. TSM updates vstimemcp
+at every vmexit and ignores any write to vstimecmp from the host.
+
+Signed-off-by: Rajnesh Kanwal <rkanwal@rivosinc.com>
 Signed-off-by: Atish Patra <atishp@rivosinc.com>
 ---
- arch/riscv/kvm/cove.c      | 63 +++++++++++++++++++++++++++++++++++++-
- arch/riscv/kvm/vcpu_exit.c |  9 ++++--
- 2 files changed, 69 insertions(+), 3 deletions(-)
+ arch/riscv/kvm/cove.c       |  8 ++++++++
+ arch/riscv/kvm/vcpu_timer.c | 26 +++++++++++++++++++++++++-
+ 2 files changed, 33 insertions(+), 1 deletion(-)
 
 diff --git a/arch/riscv/kvm/cove.c b/arch/riscv/kvm/cove.c
-index 4efcae3..44095f6 100644
+index c11db7a..4a8a8db 100644
 --- a/arch/riscv/kvm/cove.c
 +++ b/arch/riscv/kvm/cove.c
-@@ -149,8 +149,68 @@ void kvm_riscv_cove_vcpu_put(struct kvm_vcpu *vcpu)
+@@ -282,6 +282,7 @@ void noinstr kvm_riscv_cove_vcpu_switchto(struct kvm_vcpu *vcpu, struct kvm_cpu_
+ 	struct kvm_cove_tvm_context *tvmc;
+ 	struct kvm_cpu_context *cntx = &vcpu->arch.guest_context;
+ 	void *nshmem;
++	struct kvm_guest_timer *gt = &kvm->arch.timer;
  
- int kvm_riscv_cove_gstage_map(struct kvm_vcpu *vcpu, gpa_t gpa, unsigned long hva)
- {
--	/* TODO */
-+	struct kvm_riscv_cove_page *tpage;
-+	struct mm_struct *mm = current->mm;
-+	struct kvm *kvm = vcpu->kvm;
-+	unsigned int flags = FOLL_LONGTERM | FOLL_WRITE | FOLL_HWPOISON;
-+	struct page *page;
-+	int rc;
-+	struct kvm_cove_tvm_context *tvmc = kvm->arch.tvmc;
+ 	if (!kvm->arch.tvmc)
+ 		return;
+@@ -305,6 +306,13 @@ void noinstr kvm_riscv_cove_vcpu_switchto(struct kvm_vcpu *vcpu, struct kvm_cpu_
+ 		trap->scause = EXC_CUSTOM_KVM_COVE_RUN_FAIL;
+ 		return;
+ 	}
 +
-+	tpage = kmalloc(sizeof(*tpage), GFP_KERNEL_ACCOUNT);
-+	if (!tpage)
-+		return -ENOMEM;
-+
-+	mmap_read_lock(mm);
-+	rc = pin_user_pages(hva, 1, flags, &page, NULL);
-+	mmap_read_unlock(mm);
-+
-+	if (rc == -EHWPOISON) {
-+		send_sig_mceerr(BUS_MCEERR_AR, (void __user *)hva,
-+				PAGE_SHIFT, current);
-+		rc = 0;
-+		goto free_tpage;
-+	} else if (rc != 1) {
-+		rc = -EFAULT;
-+		goto free_tpage;
-+	} else if (!PageSwapBacked(page)) {
-+		rc = -EIO;
-+		goto free_tpage;
-+	}
-+
-+	rc = cove_convert_pages(page_to_phys(page), 1, true);
-+	if (rc)
-+		goto unpin_page;
-+
-+	rc = sbi_covh_add_zero_pages(tvmc->tvm_guest_id, page_to_phys(page),
-+				     SBI_COVE_PAGE_4K, 1, gpa);
-+	if (rc) {
-+		pr_err("%s: Adding zero pages failed %d\n", __func__, rc);
-+		goto zero_page_failed;
-+	}
-+	tpage->page = page;
-+	tpage->npages = 1;
-+	tpage->is_mapped = true;
-+	tpage->gpa = gpa;
-+	tpage->hva = hva;
-+	INIT_LIST_HEAD(&tpage->link);
-+
-+	spin_lock(&kvm->mmu_lock);
-+	list_add(&tpage->link, &kvm->arch.tvmc->zero_pages);
-+	spin_unlock(&kvm->mmu_lock);
-+
- 	return 0;
-+
-+zero_page_failed:
-+	//TODO: Do we need to reclaim the page now or VM gets destroyed ?
-+
-+unpin_page:
-+	unpin_user_pages(&page, 1);
-+
-+free_tpage:
-+	kfree(tpage);
-+
-+	return rc;
++	/* Read htimedelta from shmem. Given it's written by TSM only when we
++	 * run first VCPU, we need to update this here rather than in timer
++	 * init.
++	 */
++	if (unlikely(!gt->time_delta))
++		gt->time_delta = nacl_shmem_csr_read(nshmem, CSR_HTIMEDELTA);
  }
  
- void kvm_riscv_cove_vcpu_switchto(struct kvm_vcpu *vcpu, struct kvm_cpu_trap *trap)
-@@ -390,6 +450,7 @@ void kvm_riscv_cove_vm_destroy(struct kvm *kvm)
+ void kvm_riscv_cove_vcpu_destroy(struct kvm_vcpu *vcpu)
+diff --git a/arch/riscv/kvm/vcpu_timer.c b/arch/riscv/kvm/vcpu_timer.c
+index 71a4560..f059e14 100644
+--- a/arch/riscv/kvm/vcpu_timer.c
++++ b/arch/riscv/kvm/vcpu_timer.c
+@@ -14,6 +14,7 @@
+ #include <asm/delay.h>
+ #include <asm/kvm_nacl.h>
+ #include <asm/kvm_vcpu_timer.h>
++#include <asm/kvm_cove.h>
  
- 	cove_delete_page_list(kvm, &tvmc->reclaim_pending_pages, false);
- 	cove_delete_page_list(kvm, &tvmc->measured_pages, false);
-+	cove_delete_page_list(kvm, &tvmc->zero_pages, true);
+ static u64 kvm_riscv_current_cycles(struct kvm_guest_timer *gt)
+ {
+@@ -71,6 +72,10 @@ static int kvm_riscv_vcpu_timer_cancel(struct kvm_vcpu_timer *t)
  
- 	/* Reclaim and Free the pages for tvm state management */
- 	rc = sbi_covh_tsm_reclaim_pages(page_to_phys(tvmc->tvm_state.page), tvmc->tvm_state.npages);
-diff --git a/arch/riscv/kvm/vcpu_exit.c b/arch/riscv/kvm/vcpu_exit.c
-index 0d0c895..d00b9ee5 100644
---- a/arch/riscv/kvm/vcpu_exit.c
-+++ b/arch/riscv/kvm/vcpu_exit.c
-@@ -41,8 +41,13 @@ static int gstage_page_fault(struct kvm_vcpu *vcpu, struct kvm_run *run,
- 		};
- 	}
+ static int kvm_riscv_vcpu_update_vstimecmp(struct kvm_vcpu *vcpu, u64 ncycles)
+ {
++	/* Host is not allowed to update the vstimecmp for the TVM */
++	if (is_cove_vcpu(vcpu))
++		return 0;
++
+ #if defined(CONFIG_32BIT)
+ 	nacl_csr_write(CSR_VSTIMECMP, ncycles & 0xFFFFFFFF);
+ 	nacl_csr_write(CSR_VSTIMECMPH, ncycles >> 32);
+@@ -221,6 +226,11 @@ int kvm_riscv_vcpu_set_reg_timer(struct kvm_vcpu *vcpu,
+ 		ret = -EOPNOTSUPP;
+ 		break;
+ 	case KVM_REG_RISCV_TIMER_REG(time):
++		/* For trusted VMs we can not update htimedelta. We can just
++		 * read it from shared memory.
++		 */
++		if (is_cove_vcpu(vcpu))
++			return -EOPNOTSUPP;
+ 		gt->time_delta = reg_val - get_cycles64();
+ 		break;
+ 	case KVM_REG_RISCV_TIMER_REG(compare):
+@@ -287,6 +297,7 @@ static void kvm_riscv_vcpu_update_timedelta(struct kvm_vcpu *vcpu)
+ {
+ 	struct kvm_guest_timer *gt = &vcpu->kvm->arch.timer;
  
--	ret = kvm_riscv_gstage_map(vcpu, memslot, fault_addr, hva,
--		(trap->scause == EXC_STORE_GUEST_PAGE_FAULT) ? true : false);
-+	if (is_cove_vcpu(vcpu)) {
-+		/* CoVE doesn't care about PTE prots now. No need to compute the prots */
-+		ret = kvm_riscv_cove_gstage_map(vcpu, fault_addr, hva);
++
+ #if defined(CONFIG_32BIT)
+ 	nacl_csr_write(CSR_HTIMEDELTA, (u32)(gt->time_delta));
+ 	nacl_csr_write(CSR_HTIMEDELTAH, (u32)(gt->time_delta >> 32));
+@@ -299,6 +310,10 @@ void kvm_riscv_vcpu_timer_restore(struct kvm_vcpu *vcpu)
+ {
+ 	struct kvm_vcpu_timer *t = &vcpu->arch.timer;
+ 
++	/* While in CoVE, HOST must not manage HTIMEDELTA or VSTIMECMP for TVM */
++	if (is_cove_vcpu(vcpu))
++		goto skip_hcsr_update;
++
+ 	kvm_riscv_vcpu_update_timedelta(vcpu);
+ 
+ 	if (!t->sstc_enabled)
+@@ -311,6 +326,7 @@ void kvm_riscv_vcpu_timer_restore(struct kvm_vcpu *vcpu)
+ 	nacl_csr_write(CSR_VSTIMECMP, t->next_cycles);
+ #endif
+ 
++skip_hcsr_update:
+ 	/* timer should be enabled for the remaining operations */
+ 	if (unlikely(!t->init_done))
+ 		return;
+@@ -358,5 +374,13 @@ void kvm_riscv_guest_timer_init(struct kvm *kvm)
+ 	struct kvm_guest_timer *gt = &kvm->arch.timer;
+ 
+ 	riscv_cs_get_mult_shift(&gt->nsec_mult, &gt->nsec_shift);
+-	gt->time_delta = -get_cycles64();
++	if (is_cove_vm(kvm)) {
++		/* For TVMs htimedelta is managed by TSM and it's communicated using
++		 * NACL shmem interface when first time VCPU is run. so we read it in
++		 * kvm_riscv_cove_vcpu_switchto() where we enter VCPUs.
++		 */
++		gt->time_delta = 0;
 +	} else {
-+		ret = kvm_riscv_gstage_map(vcpu, memslot, fault_addr, hva,
-+			(trap->scause == EXC_STORE_GUEST_PAGE_FAULT) ? true : false);
++		gt->time_delta = -get_cycles64();
 +	}
- 	if (ret < 0)
- 		return ret;
- 
+ }
 -- 
 2.25.1
 
