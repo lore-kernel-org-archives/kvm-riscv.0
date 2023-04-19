@@ -1,76 +1,58 @@
 From: Atish Patra <atishp@rivosinc.com>
-Date: Wed, 19 Apr 2023 15:16:29 -0700
-Subject: [RFC 01/48] mm/vmalloc: Introduce arch hooks to notify ioremap/unmap changes
+Date: Wed, 19 Apr 2023 15:16:30 -0700
+Subject: [RFC 02/48] RISC-V: KVM: Improve KVM error reporting to the user space
 In-Reply-To: <20230419221716.3603068-1-atishp@rivosinc.com>
 References: <20230419221716.3603068-1-atishp@rivosinc.com>
-Message-ID: <20230419221716.3603068-2-atishp@rivosinc.com>
+Message-ID: <20230419221716.3603068-3-atishp@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Rajnesh Kanwal <rkanwal@rivosinc.com>
+This patch adds RISC-V specific cause for ioctl run failure.
+For now, it will be used for the below two cases:
 
-In virtualization, the guest may need notify the host about the ioremap
-regions. This is a common usecase in confidential computing where the
-host only provides MMIO emulation for the regions specified by the guest.
+1. Insufficient IMSIC files if VM is configured to run in HWACCEL mode
+2. TSM is unable to run run_vcpu SBI call for TVMs
 
-Add a pair if arch specific callbacks to track the ioremapped regions.
+KVM also uses a custom scause bit(48) to distinguish this case
+from regular vcpu exit causes.
 
-This patch is based on pkvm patches. A generic arch config can be added
-similar to pkvm if this is going to be the final solution. The device
-authorization/filtering approach is very different from this and we
-may prefer that one as it provides more flexibility in terms of which
-devices are allowed for the confidential guests.
-
-Signed-off-by: Rajnesh Kanwal <rkanwal@rivosinc.com>
 Signed-off-by: Atish Patra <atishp@rivosinc.com>
 ---
- mm/vmalloc.c | 16 ++++++++++++++++
- 1 file changed, 16 insertions(+)
+ arch/riscv/include/asm/csr.h      | 2 ++
+ arch/riscv/include/uapi/asm/kvm.h | 4 ++++
+ 2 files changed, 6 insertions(+)
 
-diff --git a/mm/vmalloc.c b/mm/vmalloc.c
-index bef6cf2..023630e 100644
---- a/mm/vmalloc.c
-+++ b/mm/vmalloc.c
-@@ -304,6 +304,14 @@ static int vmap_range_noflush(unsigned long addr, unsigned long end,
- 	return err;
- }
+diff --git a/arch/riscv/include/asm/csr.h b/arch/riscv/include/asm/csr.h
+index 3176355..e78503a 100644
+--- a/arch/riscv/include/asm/csr.h
++++ b/arch/riscv/include/asm/csr.h
+@@ -96,6 +96,8 @@
+ #define EXC_VIRTUAL_INST_FAULT		22
+ #define EXC_STORE_GUEST_PAGE_FAULT	23
  
-+__weak void ioremap_phys_range_hook(phys_addr_t phys_addr, size_t size, pgprot_t prot)
-+{
-+}
++#define EXC_CUSTOM_KVM_COVE_RUN_FAIL	48
 +
-+__weak void iounmap_phys_range_hook(phys_addr_t phys_addr, size_t size)
-+{
-+}
-+
- int ioremap_page_range(unsigned long addr, unsigned long end,
- 		phys_addr_t phys_addr, pgprot_t prot)
- {
-@@ -315,6 +323,10 @@ int ioremap_page_range(unsigned long addr, unsigned long end,
- 	if (!err)
- 		kmsan_ioremap_page_range(addr, end, phys_addr, prot,
- 					 ioremap_max_page_shift);
-+
-+	if (!err)
-+		ioremap_phys_range_hook(phys_addr, end - addr, prot);
-+
- 	return err;
- }
+ /* PMP configuration */
+ #define PMP_R			0x01
+ #define PMP_W			0x02
+diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
+index b41d0e7..11440df 100644
+--- a/arch/riscv/include/uapi/asm/kvm.h
++++ b/arch/riscv/include/uapi/asm/kvm.h
+@@ -245,6 +245,10 @@ enum KVM_RISCV_SBI_EXT_ID {
+ /* One single KVM irqchip, ie. the AIA */
+ #define KVM_NR_IRQCHIPS			1
  
-@@ -2772,6 +2784,10 @@ void vunmap(const void *addr)
- 				addr);
- 		return;
- 	}
++/* run->fail_entry.hardware_entry_failure_reason codes. */
++#define KVM_EXIT_FAIL_ENTRY_IMSIC_FILE_UNAVAILABLE (1ULL << 0)
++#define KVM_EXIT_FAIL_ENTRY_COVE_RUN_VCPU          (1ULL << 1)
 +
-+	if (vm->flags & VM_IOREMAP)
-+		iounmap_phys_range_hook(vm->phys_addr, get_vm_area_size(vm));
-+
- 	kfree(vm);
- }
- EXPORT_SYMBOL(vunmap);
+ #endif
+ 
+ #endif /* __LINUX_KVM_RISCV_H */
 -- 
 2.25.1
 
