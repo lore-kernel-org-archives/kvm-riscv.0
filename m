@@ -1,87 +1,125 @@
 From: Atish Patra <atishp@rivosinc.com>
-Date: Wed, 19 Apr 2023 15:16:43 -0700
-Subject: [RFC 15/48] RISC-V: KVM: Add a helper function to trigger fence ops
+Date: Wed, 19 Apr 2023 15:16:45 -0700
+Subject: [RFC 17/48] RISC-V : KVM: Skip vmid/hgatp management for TVMs
 In-Reply-To: <20230419221716.3603068-1-atishp@rivosinc.com>
 References: <20230419221716.3603068-1-atishp@rivosinc.com>
-Message-ID: <20230419221716.3603068-16-atishp@rivosinc.com>
+Message-ID: <20230419221716.3603068-18-atishp@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-When Cove is enabled in RISC-V, the TLB shootdown happens in co-ordination
-with TSM. The host must not issue hfence directly. It relies on TSM
-to do that instead. It just needs to initiate the process and make
-sure that all the running vcpus exit the guest mode. As a result, it
-traps to TSM and TSM issues hfence on behalf of the host.
+The TSM manages the vmid for the guests running in CoVE. The host
+doesn't need to update vmid at all. As a result, the host doesn't
+need to update the hgatp as well.
+
+Return early for vmid/hgatp management functions for confidential
+guests.
 
 Signed-off-by: Atish Patra <atishp@rivosinc.com>
 ---
- arch/riscv/include/asm/kvm_cove.h |  2 ++
- arch/riscv/kvm/cove.c             | 36 +++++++++++++++++++++++++++++++
- 2 files changed, 38 insertions(+)
+ arch/riscv/include/asm/kvm_host.h |  2 +-
+ arch/riscv/kvm/mmu.c              |  4 ++++
+ arch/riscv/kvm/vcpu.c             |  2 +-
+ arch/riscv/kvm/vmid.c             | 17 ++++++++++++-----
+ 4 files changed, 18 insertions(+), 7 deletions(-)
 
-diff --git a/arch/riscv/include/asm/kvm_cove.h b/arch/riscv/include/asm/kvm_cove.h
-index 4ea1df1..fc8633d 100644
---- a/arch/riscv/include/asm/kvm_cove.h
-+++ b/arch/riscv/include/asm/kvm_cove.h
-@@ -130,6 +130,8 @@ void kvm_riscv_cove_vcpu_switchto(struct kvm_vcpu *vcpu, struct kvm_cpu_trap *tr
- int kvm_riscv_cove_vm_measure_pages(struct kvm *kvm, struct kvm_riscv_cove_measure_region *mr);
- int kvm_riscv_cove_vm_add_memreg(struct kvm *kvm, unsigned long gpa, unsigned long size);
- int kvm_riscv_cove_gstage_map(struct kvm_vcpu *vcpu, gpa_t gpa, unsigned long hva);
-+/* Fence related function */
-+int kvm_riscv_cove_tvm_fence(struct kvm_vcpu *vcpu);
- #else
- static inline bool kvm_riscv_cove_enabled(void) {return false; };
- static inline int kvm_riscv_cove_init(void) { return -1; }
-diff --git a/arch/riscv/kvm/cove.c b/arch/riscv/kvm/cove.c
-index 5b4d9ba..4efcae3 100644
---- a/arch/riscv/kvm/cove.c
-+++ b/arch/riscv/kvm/cove.c
-@@ -78,6 +78,42 @@ static int kvm_riscv_cove_fence(void)
- 	return rc;
+diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
+index ca2ebe3..047e046 100644
+--- a/arch/riscv/include/asm/kvm_host.h
++++ b/arch/riscv/include/asm/kvm_host.h
+@@ -325,7 +325,7 @@ unsigned long kvm_riscv_gstage_pgd_size(void);
+ void __init kvm_riscv_gstage_vmid_detect(void);
+ unsigned long kvm_riscv_gstage_vmid_bits(void);
+ int kvm_riscv_gstage_vmid_init(struct kvm *kvm);
+-bool kvm_riscv_gstage_vmid_ver_changed(struct kvm_vmid *vmid);
++bool kvm_riscv_gstage_vmid_ver_changed(struct kvm *kvm);
+ void kvm_riscv_gstage_vmid_update(struct kvm_vcpu *vcpu);
+ 
+ int kvm_riscv_setup_default_irq_routing(struct kvm *kvm, u32 lines);
+diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
+index 1d5e4ed..4b0f09e 100644
+--- a/arch/riscv/kvm/mmu.c
++++ b/arch/riscv/kvm/mmu.c
+@@ -778,6 +778,10 @@ void kvm_riscv_gstage_update_hgatp(struct kvm_vcpu *vcpu)
+ 	unsigned long hgatp = gstage_mode;
+ 	struct kvm_arch *k = &vcpu->kvm->arch;
+ 
++	/* COVE VCPU hgatp is managed by TSM. */
++	if (is_cove_vcpu(vcpu))
++		return;
++
+ 	hgatp |= (READ_ONCE(k->vmid.vmid) << HGATP_VMID_SHIFT) & HGATP_VMID;
+ 	hgatp |= (k->pgd_phys >> PAGE_SHIFT) & HGATP_PPN;
+ 
+diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+index 3b600c6..8cf462c 100644
+--- a/arch/riscv/kvm/vcpu.c
++++ b/arch/riscv/kvm/vcpu.c
+@@ -1288,7 +1288,7 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
+ 		kvm_riscv_update_hvip(vcpu);
+ 
+ 		if (ret <= 0 ||
+-		    kvm_riscv_gstage_vmid_ver_changed(&vcpu->kvm->arch.vmid) ||
++		    kvm_riscv_gstage_vmid_ver_changed(vcpu->kvm) ||
+ 		    kvm_request_pending(vcpu) ||
+ 		    xfer_to_guest_mode_work_pending()) {
+ 			vcpu->mode = OUTSIDE_GUEST_MODE;
+diff --git a/arch/riscv/kvm/vmid.c b/arch/riscv/kvm/vmid.c
+index ddc9871..dc03601 100644
+--- a/arch/riscv/kvm/vmid.c
++++ b/arch/riscv/kvm/vmid.c
+@@ -14,6 +14,7 @@
+ #include <linux/smp.h>
+ #include <linux/kvm_host.h>
+ #include <asm/csr.h>
++#include <asm/kvm_cove.h>
+ 
+ static unsigned long vmid_version = 1;
+ static unsigned long vmid_next;
+@@ -54,12 +55,13 @@ int kvm_riscv_gstage_vmid_init(struct kvm *kvm)
+ 	return 0;
  }
  
-+int kvm_riscv_cove_tvm_fence(struct kvm_vcpu *vcpu)
-+{
-+	struct kvm *kvm = vcpu->kvm;
-+	struct kvm_cove_tvm_context *tvmc = kvm->arch.tvmc;
-+	DECLARE_BITMAP(vcpu_mask, KVM_MAX_VCPUS);
-+	unsigned long i;
-+	struct kvm_vcpu *temp_vcpu;
-+	int ret;
-+
-+	if (!tvmc)
-+		return -EINVAL;
-+
-+	spin_lock(&tvmc->tvm_fence_lock);
-+	ret = sbi_covh_tvm_initiate_fence(tvmc->tvm_guest_id);
-+	if (ret) {
-+		spin_unlock(&tvmc->tvm_fence_lock);
-+		return ret;
-+	}
-+
-+	bitmap_clear(vcpu_mask, 0, KVM_MAX_VCPUS);
-+	kvm_for_each_vcpu(i, temp_vcpu, kvm) {
-+		if (temp_vcpu != vcpu)
-+			bitmap_set(vcpu_mask, i, 1);
-+	}
-+
-+	/*
-+	 * The host just needs to make sure that the running vcpus exit the
-+	 * guest mode and traps into TSM so that it can issue hfence.
-+	 */
-+	kvm_make_vcpus_request_mask(kvm, KVM_REQ_OUTSIDE_GUEST_MODE, vcpu_mask);
-+	spin_unlock(&tvmc->tvm_fence_lock);
-+
-+	return 0;
-+}
-+
-+
- static int cove_convert_pages(unsigned long phys_addr, unsigned long npages, bool fence)
+-bool kvm_riscv_gstage_vmid_ver_changed(struct kvm_vmid *vmid)
++bool kvm_riscv_gstage_vmid_ver_changed(struct kvm *kvm)
  {
- 	int rc;
+-	if (!vmid_bits)
++	/* VMID version can't be changed by the host for TVMs */
++	if (!vmid_bits || is_cove_vm(kvm))
+ 		return false;
+ 
+-	return unlikely(READ_ONCE(vmid->vmid_version) !=
++	return unlikely(READ_ONCE(kvm->arch.vmid.vmid_version) !=
+ 			READ_ONCE(vmid_version));
+ }
+ 
+@@ -72,9 +74,14 @@ void kvm_riscv_gstage_vmid_update(struct kvm_vcpu *vcpu)
+ {
+ 	unsigned long i;
+ 	struct kvm_vcpu *v;
++	struct kvm *kvm = vcpu->kvm;
+ 	struct kvm_vmid *vmid = &vcpu->kvm->arch.vmid;
+ 
+-	if (!kvm_riscv_gstage_vmid_ver_changed(vmid))
++	/* No VMID management for TVMs by the host */
++	if (is_cove_vcpu(vcpu))
++		return;
++
++	if (!kvm_riscv_gstage_vmid_ver_changed(kvm))
+ 		return;
+ 
+ 	spin_lock(&vmid_lock);
+@@ -83,7 +90,7 @@ void kvm_riscv_gstage_vmid_update(struct kvm_vcpu *vcpu)
+ 	 * We need to re-check the vmid_version here to ensure that if
+ 	 * another vcpu already allocated a valid vmid for this vm.
+ 	 */
+-	if (!kvm_riscv_gstage_vmid_ver_changed(vmid)) {
++	if (!kvm_riscv_gstage_vmid_ver_changed(kvm)) {
+ 		spin_unlock(&vmid_lock);
+ 		return;
+ 	}
 -- 
 2.25.1
 
