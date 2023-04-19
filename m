@@ -1,118 +1,184 @@
 From: Atish Patra <atishp@rivosinc.com>
-Date: Wed, 19 Apr 2023 15:16:41 -0700
-Subject: [RFC 13/48] RISC-V: KVM: Return early for gstage modifications
+Date: Wed, 19 Apr 2023 15:16:38 -0700
+Subject: [RFC 10/48] RISC-V: KVM: Implement static memory region measurement
 In-Reply-To: <20230419221716.3603068-1-atishp@rivosinc.com>
 References: <20230419221716.3603068-1-atishp@rivosinc.com>
-Message-ID: <20230419221716.3603068-14-atishp@rivosinc.com>
+Message-ID: <20230419221716.3603068-11-atishp@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The gstage entries for CoVE VM is managed by the TSM. Return
-early for any gstage pte modification operations.
+To support attestation of any images loaded by the VMM, the COVH allows
+measuring these memory regions. Currently, it will be used for the
+kernel image, device tree and initrd images.
 
 Signed-off-by: Atish Patra <atishp@rivosinc.com>
 ---
- arch/riscv/kvm/mmu.c | 28 ++++++++++++++++++++++++----
- 1 file changed, 24 insertions(+), 4 deletions(-)
+ arch/riscv/include/asm/kvm_cove.h |   6 ++
+ arch/riscv/kvm/cove.c             | 110 ++++++++++++++++++++++++++++++
+ 2 files changed, 116 insertions(+)
 
-diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
-index 6b037f7..9693897 100644
---- a/arch/riscv/kvm/mmu.c
-+++ b/arch/riscv/kvm/mmu.c
-@@ -16,6 +16,9 @@
- #include <linux/kvm_host.h>
- #include <linux/sched/signal.h>
- #include <asm/kvm_nacl.h>
-+#include <asm/csr.h>
-+#include <asm/kvm_host.h>
-+#include <asm/kvm_cove.h>
- #include <asm/page.h>
- #include <asm/pgtable.h>
+diff --git a/arch/riscv/include/asm/kvm_cove.h b/arch/riscv/include/asm/kvm_cove.h
+index 3bf1bcd..4ea1df1 100644
+--- a/arch/riscv/include/asm/kvm_cove.h
++++ b/arch/riscv/include/asm/kvm_cove.h
+@@ -127,6 +127,7 @@ void kvm_riscv_cove_vcpu_load(struct kvm_vcpu *vcpu);
+ void kvm_riscv_cove_vcpu_put(struct kvm_vcpu *vcpu);
+ void kvm_riscv_cove_vcpu_switchto(struct kvm_vcpu *vcpu, struct kvm_cpu_trap *trap);
  
-@@ -356,6 +359,11 @@ int kvm_riscv_gstage_ioremap(struct kvm *kvm, gpa_t gpa,
- 		.gfp_zero = __GFP_ZERO,
- 	};
++int kvm_riscv_cove_vm_measure_pages(struct kvm *kvm, struct kvm_riscv_cove_measure_region *mr);
+ int kvm_riscv_cove_vm_add_memreg(struct kvm *kvm, unsigned long gpa, unsigned long size);
+ int kvm_riscv_cove_gstage_map(struct kvm_vcpu *vcpu, gpa_t gpa, unsigned long hva);
+ #else
+@@ -147,6 +148,11 @@ static inline void kvm_riscv_cove_vcpu_put(struct kvm_vcpu *vcpu) {}
+ static inline void kvm_riscv_cove_vcpu_switchto(struct kvm_vcpu *vcpu, struct kvm_cpu_trap *trap) {}
+ static inline int kvm_riscv_cove_vm_add_memreg(struct kvm *kvm, unsigned long gpa,
+ 					       unsigned long size) {return -1; }
++static inline int kvm_riscv_cove_vm_measure_pages(struct kvm *kvm,
++						  struct kvm_riscv_cove_measure_region *mr)
++{
++	return -1;
++}
+ static inline int kvm_riscv_cove_gstage_map(struct kvm_vcpu *vcpu,
+ 					    gpa_t gpa, unsigned long hva) {return -1; }
+ #endif /* CONFIG_RISCV_COVE_HOST */
+diff --git a/arch/riscv/kvm/cove.c b/arch/riscv/kvm/cove.c
+index d001e36..5b4d9ba 100644
+--- a/arch/riscv/kvm/cove.c
++++ b/arch/riscv/kvm/cove.c
+@@ -27,6 +27,12 @@ static DEFINE_SPINLOCK(cove_fence_lock);
  
-+	if (is_cove_vm(kvm)) {
-+		kvm_debug("%s: KVM doesn't support ioremap for TVM io regions\n", __func__);
-+		return -EPERM;
+ static bool riscv_cove_enabled;
+ 
++static inline bool cove_is_within_region(unsigned long addr1, unsigned long size1,
++				       unsigned long addr2, unsigned long size2)
++{
++	return ((addr1 <= addr2) && ((addr1 + size1) >= (addr2 + size2)));
++}
++
+ static void kvm_cove_local_fence(void *info)
+ {
+ 	int rc;
+@@ -192,6 +198,109 @@ int kvm_riscv_cove_vcpu_init(struct kvm_vcpu *vcpu)
+ 	return rc;
+ }
+ 
++int kvm_riscv_cove_vm_measure_pages(struct kvm *kvm, struct kvm_riscv_cove_measure_region *mr)
++{
++	struct kvm_cove_tvm_context *tvmc = kvm->arch.tvmc;
++	int rc = 0, idx, num_pages;
++	struct kvm_riscv_cove_mem_region *conf;
++	struct page *pinned_page, *conf_page;
++	struct kvm_riscv_cove_page *cpage;
++
++	if (!tvmc)
++		return -EFAULT;
++
++	if (tvmc->finalized_done) {
++		kvm_err("measured_mr pages can not be added after finalize\n");
++		return -EINVAL;
 +	}
 +
- 	end = (gpa + size + PAGE_SIZE - 1) & PAGE_MASK;
- 	pfn = __phys_to_pfn(hpa);
- 
-@@ -385,6 +393,10 @@ int kvm_riscv_gstage_ioremap(struct kvm *kvm, gpa_t gpa,
- 
- void kvm_riscv_gstage_iounmap(struct kvm *kvm, gpa_t gpa, unsigned long size)
- {
-+	/* KVM doesn't map any IO region in gstage for TVM */
-+	if (is_cove_vm(kvm))
-+		return;
++	num_pages = bytes_to_pages(mr->size);
++	conf = &tvmc->confidential_region;
 +
- 	spin_lock(&kvm->mmu_lock);
- 	gstage_unmap_range(kvm, gpa, size, false);
- 	spin_unlock(&kvm->mmu_lock);
-@@ -431,6 +443,10 @@ void kvm_arch_flush_shadow_memslot(struct kvm *kvm,
- 	gpa_t gpa = slot->base_gfn << PAGE_SHIFT;
- 	phys_addr_t size = slot->npages << PAGE_SHIFT;
- 
-+	/* No need to unmap gstage as it is managed by TSM */
-+	if (is_cove_vm(kvm))
-+		return;
++	if (!IS_ALIGNED(mr->userspace_addr, PAGE_SIZE) ||
++	    !IS_ALIGNED(mr->gpa, PAGE_SIZE) || !mr->size ||
++	    !cove_is_within_region(conf->gpa, conf->npages << PAGE_SHIFT, mr->gpa, mr->size))
++		return -EINVAL;
 +
- 	spin_lock(&kvm->mmu_lock);
- 	gstage_unmap_range(kvm, gpa, size, false);
- 	spin_unlock(&kvm->mmu_lock);
-@@ -547,7 +563,7 @@ int kvm_arch_prepare_memory_region(struct kvm *kvm,
- 
- bool kvm_unmap_gfn_range(struct kvm *kvm, struct kvm_gfn_range *range)
- {
--	if (!kvm->arch.pgd)
-+	if (!kvm->arch.pgd || is_cove_vm(kvm))
- 		return false;
- 
- 	gstage_unmap_range(kvm, range->start << PAGE_SHIFT,
-@@ -561,7 +577,7 @@ bool kvm_set_spte_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
- 	int ret;
- 	kvm_pfn_t pfn = pte_pfn(range->pte);
- 
--	if (!kvm->arch.pgd)
-+	if (!kvm->arch.pgd || is_cove_vm(kvm))
- 		return false;
- 
- 	WARN_ON(range->end - range->start != 1);
-@@ -582,7 +598,7 @@ bool kvm_age_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
- 	u32 ptep_level = 0;
- 	u64 size = (range->end - range->start) << PAGE_SHIFT;
- 
--	if (!kvm->arch.pgd)
-+	if (!kvm->arch.pgd || is_cove_vm(kvm))
- 		return false;
- 
- 	WARN_ON(size != PAGE_SIZE && size != PMD_SIZE && size != PUD_SIZE);
-@@ -600,7 +616,7 @@ bool kvm_test_age_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
- 	u32 ptep_level = 0;
- 	u64 size = (range->end - range->start) << PAGE_SHIFT;
- 
--	if (!kvm->arch.pgd)
-+	if (!kvm->arch.pgd || is_cove_vm(kvm))
- 		return false;
- 
- 	WARN_ON(size != PAGE_SIZE && size != PMD_SIZE && size != PUD_SIZE);
-@@ -737,6 +753,10 @@ void kvm_riscv_gstage_free_pgd(struct kvm *kvm)
- {
- 	void *pgd = NULL;
- 
-+	/* PGD is mapped in TSM */
-+	if (is_cove_vm(kvm))
-+		return;
++	idx = srcu_read_lock(&kvm->srcu);
 +
- 	spin_lock(&kvm->mmu_lock);
- 	if (kvm->arch.pgd) {
- 		gstage_unmap_range(kvm, 0UL, gstage_gpa_size, false);
++	/*TODO: Iterate one page at a time as pinning multiple pages fail with unmapped panic
++	 * with a virtual address range belonging to vmalloc region for some reason.
++	 */
++	while (num_pages) {
++		if (signal_pending(current)) {
++			rc = -ERESTARTSYS;
++			break;
++		}
++
++		if (need_resched())
++			cond_resched();
++
++		rc = get_user_pages_fast(mr->userspace_addr, 1, 0, &pinned_page);
++		if (rc < 0) {
++			kvm_err("Pinning the userpsace addr %lx failed\n", mr->userspace_addr);
++			break;
++		}
++
++		/* Enough pages are not available to be pinned */
++		if (rc != 1) {
++			rc = -ENOMEM;
++			break;
++		}
++		conf_page = alloc_page(GFP_KERNEL | __GFP_ZERO);
++		if (!conf_page) {
++			rc = -ENOMEM;
++			break;
++		}
++
++		rc = cove_convert_pages(page_to_phys(conf_page), 1, true);
++		if (rc)
++			break;
++
++		/*TODO: Support other pages sizes */
++		rc = sbi_covh_add_measured_pages(tvmc->tvm_guest_id, page_to_phys(pinned_page),
++						 page_to_phys(conf_page), SBI_COVE_PAGE_4K,
++						 1, mr->gpa);
++		if (rc)
++			break;
++
++		/* Unpin the page now */
++		put_page(pinned_page);
++
++		cpage = kmalloc(sizeof(*cpage), GFP_KERNEL_ACCOUNT);
++		if (!cpage) {
++			rc = -ENOMEM;
++			break;
++		}
++
++		cpage->page = conf_page;
++		cpage->npages = 1;
++		cpage->gpa = mr->gpa;
++		cpage->hva = mr->userspace_addr;
++		cpage->is_mapped = true;
++		INIT_LIST_HEAD(&cpage->link);
++		list_add(&cpage->link, &tvmc->measured_pages);
++
++		mr->userspace_addr += PAGE_SIZE;
++		mr->gpa += PAGE_SIZE;
++		num_pages--;
++		conf_page = NULL;
++
++		continue;
++	}
++	srcu_read_unlock(&kvm->srcu, idx);
++
++	if (rc < 0) {
++		/* We don't to need unpin pages as it is allocated by the hypervisor itself */
++		cove_delete_page_list(kvm, &tvmc->measured_pages, false);
++		/* Free the last allocated page for which conversion/measurement failed */
++		kfree(conf_page);
++		kvm_err("Adding/Converting measured pages failed %d\n", num_pages);
++	}
++
++	return rc;
++}
++
+ int kvm_riscv_cove_vm_add_memreg(struct kvm *kvm, unsigned long gpa, unsigned long size)
+ {
+ 	int rc;
+@@ -244,6 +353,7 @@ void kvm_riscv_cove_vm_destroy(struct kvm *kvm)
+ 	}
+ 
+ 	cove_delete_page_list(kvm, &tvmc->reclaim_pending_pages, false);
++	cove_delete_page_list(kvm, &tvmc->measured_pages, false);
+ 
+ 	/* Reclaim and Free the pages for tvm state management */
+ 	rc = sbi_covh_tsm_reclaim_pages(page_to_phys(tvmc->tvm_state.page), tvmc->tvm_state.npages);
 -- 
 2.25.1
 
