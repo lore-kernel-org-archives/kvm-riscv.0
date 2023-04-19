@@ -1,75 +1,125 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Wed, 19 Apr 2023 10:24:27 +0200
+Date: Wed, 19 Apr 2023 10:42:16 +0200
 Subject: [RFC PATCH 03/14] RISC-V: paravirt: Implement steal-time support
-In-Reply-To: <20230418-earthlike-estrogen-a8ca785b382a@spud>
+In-Reply-To: <20230417103402.798596-4-ajones@ventanamicro.com>
 References: <20230417103402.798596-1-ajones@ventanamicro.com>
  <20230417103402.798596-4-ajones@ventanamicro.com>
- <20230418-earthlike-estrogen-a8ca785b382a@spud>
-Message-ID: <stn3ql2b5s6fkfo7udn4dcylyidbayiodfqvccrbgno2vylqwt@bi2ft2lv6crd>
+Message-ID: <245mmbzeqcap7i6cjmoaaitpmecefjo2ul63qjmodjv77uz54e@tizorx3p64fz>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Apr 18, 2023 at 08:02:06PM +0100, Conor Dooley wrote:
-> On Mon, Apr 17, 2023 at 12:33:51PM +0200, Andrew Jones wrote:
+On Mon, Apr 17, 2023 at 12:33:51PM +0200, Andrew Jones wrote:
+> When the SBI STA extension exists we can use it to implement
+> paravirt steal-time support. Fill in the empty pv-time functions
+> with an SBI STA implementation.
 > 
-> > +static int pv_time_cpu_online(unsigned int cpu)
-> > +{
-> > +	struct sbi_sta_struct *st = this_cpu_ptr(&steal_time);
-> > +	phys_addr_t pa = __pa(st);
-> > +	unsigned long lo = (unsigned long)pa;
-> > +	unsigned long hi = IS_ENABLED(CONFIG_32BIT) ? upper_32_bits((u64)pa) : 0;
-> > +
-> > +	return sbi_sta_set_steal_time_shmem(lo, hi, 0);
-> > +}
-> > +
-> >  static int pv_time_cpu_down_prepare(unsigned int cpu)
-> >  {
-> > -	return 0;
-> > +	return sbi_sta_set_steal_time_shmem(-1, -1, 0);
+> Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
+> ---
+>  arch/riscv/kernel/paravirt.c | 56 ++++++++++++++++++++++++++++++++++--
+>  1 file changed, 53 insertions(+), 3 deletions(-)
 > 
-> I'm not really a fan of this -1s without an explanation of what passing
-> -1 to the ecall does.
-> 
-> >  }
-> >  
-> >  static u64 pv_time_steal_clock(int cpu)
-> >  {
-> > -	return 0;
-> > +	struct sbi_sta_struct *st = per_cpu_ptr(&steal_time, cpu);
-> > +	u32 sequence;
-> > +	u64 steal;
-> > +
-> > +	do {
-> > +		sequence = st->sequence;
-> > +		virt_rmb();
-> > +		steal = st->steal;
-> > +		virt_rmb();
-> > +	} while ((sequence & 1) || (sequence != st->sequence));
-> 
-> Call me a bit anal, but should we yoink your:
-> | The supervisor-mode software MUST check this field
-> | before and after reading the `steal` field, and
-> | repeat the read if they are different or odd
-> and add it here so that is it immediately obvious without reading the
-> SBI spec what is going on here? Or it is a case of "go read the SBI spec
-> if you have questions about what the kernel is doing w/ SBI stuff?
-> 
-> (sidenote, s/they are/it is/?)
+> diff --git a/arch/riscv/kernel/paravirt.c b/arch/riscv/kernel/paravirt.c
+> index 141dbcc36fa2..5f8d96b919e4 100644
+> --- a/arch/riscv/kernel/paravirt.c
+> +++ b/arch/riscv/kernel/paravirt.c
+> @@ -6,12 +6,21 @@
+>  #define pr_fmt(fmt) "riscv-pv: " fmt
+>  
+>  #include <linux/cpuhotplug.h>
+> +#include <linux/compiler.h>
+> +#include <linux/errno.h>
+>  #include <linux/init.h>
+>  #include <linux/jump_label.h>
+> +#include <linux/kconfig.h>
+> +#include <linux/kernel.h>
+> +#include <linux/percpu-defs.h>
+>  #include <linux/printk.h>
+>  #include <linux/static_call.h>
+>  #include <linux/types.h>
+>  
+> +#include <asm/barrier.h>
+> +#include <asm/page.h>
+> +#include <asm/sbi.h>
+> +
+>  struct static_key paravirt_steal_enabled;
+>  struct static_key paravirt_steal_rq_enabled;
+>  
+> @@ -31,24 +40,65 @@ static int __init parse_no_stealacc(char *arg)
+>  
+>  early_param("no-steal-acc", parse_no_stealacc);
+>  
+> +DEFINE_PER_CPU(struct sbi_sta_struct, steal_time) __aligned(64);
+> +
+>  static bool __init has_pv_steal_clock(void)
+>  {
+> +	if (sbi_probe_extension(SBI_EXT_STA) > 0) {
+> +		pr_info("SBI STA extension detected\n");
+> +		return true;
+> +	}
+> +
+>  	return false;
+>  }
+>  
+> -static int pv_time_cpu_online(unsigned int cpu)
+> +static int sbi_sta_set_steal_time_shmem(unsigned long lo, unsigned long hi,
+> +					unsigned long flags)
+>  {
+> +	struct sbiret ret;
+> +
+> +	ret = sbi_ecall(SBI_EXT_STA, SBI_EXT_STA_SET_STEAL_TIME_SHMEM,
+> +			lo, hi, flags, 0, 0, 0);
+> +	if (ret.error) {
+> +		if (lo == -1 && hi == -1)
+> +			pr_warn("Failed to disable steal-time shmem");
+> +		else
+> +			pr_warn("Failed to set steal-time shmem");
+> +		return -ENOMEM;
+> +	}
+> +
+>  	return 0;
+>  }
+>  
+> +static int pv_time_cpu_online(unsigned int cpu)
+> +{
+> +	struct sbi_sta_struct *st = this_cpu_ptr(&steal_time);
+> +	phys_addr_t pa = __pa(st);
+> +	unsigned long lo = (unsigned long)pa;
+> +	unsigned long hi = IS_ENABLED(CONFIG_32BIT) ? upper_32_bits((u64)pa) : 0;
+> +
+> +	return sbi_sta_set_steal_time_shmem(lo, hi, 0);
+> +}
+> +
+>  static int pv_time_cpu_down_prepare(unsigned int cpu)
+>  {
+> -	return 0;
+> +	return sbi_sta_set_steal_time_shmem(-1, -1, 0);
+>  }
+>  
+>  static u64 pv_time_steal_clock(int cpu)
+>  {
+> -	return 0;
+> +	struct sbi_sta_struct *st = per_cpu_ptr(&steal_time, cpu);
+> +	u32 sequence;
+> +	u64 steal;
+> +
+> +	do {
+> +		sequence = st->sequence;
+> +		virt_rmb();
+> +		steal = st->steal;
+> +		virt_rmb();
+> +	} while ((sequence & 1) || (sequence != st->sequence));
+> +
+> +	return steal;
+>  }
 
-Thanks, I updated the spec for its v3 posting. Before posting v3,
-I'd be happy to take more comments on it over on its v2 posting.
-
-> 
-> Guess both of my comments are in the same vein, but would make
-> at-a-glance understanding easier IMO.
-
-I'm inclined to say "go read the spec" for everything, since the KVM
-implementation would otherwise also require several comments which
-duplicate the spec, but I'm also OK with adding the comments you've
-suggested here. I'll do that for rfc-v2.
+So anybody poking around the implementations for other architectures will
+see that I shamelessly ripped this off from x86's implementation. However,
+looking at it again, I think all the references to the steal-time info
+should be wrapped in READ_ONCE(). I'll write a patch for x86/kvm to
+add READ_ONCE's and also update this patch for rfc-v2.
 
 Thanks,
 drew
