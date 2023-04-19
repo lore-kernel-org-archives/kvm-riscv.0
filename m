@@ -1,81 +1,129 @@
 From: Atish Patra <atishp@rivosinc.com>
-Date: Wed, 19 Apr 2023 15:16:54 -0700
-Subject: [RFC 26/48] RISC-V: Add COVI extension definitions
+Date: Wed, 19 Apr 2023 15:16:51 -0700
+Subject: [RFC 23/48] RISC-V: KVM: Wireup TVM world switch
 In-Reply-To: <20230419221716.3603068-1-atishp@rivosinc.com>
 References: <20230419221716.3603068-1-atishp@rivosinc.com>
-Message-ID: <20230419221716.3603068-27-atishp@rivosinc.com>
+Message-ID: <20230419221716.3603068-24-atishp@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Rajnesh Kanwal <rkanwal@rivosinc.com>
-
-This patch adds the CoVE interrupt management extension(COVI) details
-to the sbi header file.
+TVM worlds switch takes a different path from regular VM world switch as
+it needs to make an ecall to TSM and TSM actually does the world switch.
+The host doesn't need to save/restore any context as TSM is expected
+to do that on behalf of the host. The TSM updatess the trap
+information in the shared memory which host uses to figure out the
+cause of the guest exit.
 
 Signed-off-by: Atish Patra <atishp@rivosinc.com>
-Signed-off-by: Rajnesh Kanwal <rkanwal@rivosinc.com>
 ---
- arch/riscv/include/asm/sbi.h | 30 ++++++++++++++++++++++++++++++
- 1 file changed, 30 insertions(+)
+ arch/riscv/kvm/cove.c      | 31 +++++++++++++++++++++++++++++--
+ arch/riscv/kvm/vcpu.c      | 11 +++++++++++
+ arch/riscv/kvm/vcpu_exit.c | 10 ++++++++++
+ 3 files changed, 50 insertions(+), 2 deletions(-)
 
-diff --git a/arch/riscv/include/asm/sbi.h b/arch/riscv/include/asm/sbi.h
-index c5a5526..bbea922 100644
---- a/arch/riscv/include/asm/sbi.h
-+++ b/arch/riscv/include/asm/sbi.h
-@@ -33,6 +33,7 @@ enum sbi_ext_id {
- 	SBI_EXT_DBCN = 0x4442434E,
- 	SBI_EXT_NACL = 0x4E41434C,
- 	SBI_EXT_COVH = 0x434F5648,
-+	SBI_EXT_COVI = 0x434F5649,
+diff --git a/arch/riscv/kvm/cove.c b/arch/riscv/kvm/cove.c
+index c93de9b..c11db7a 100644
+--- a/arch/riscv/kvm/cove.c
++++ b/arch/riscv/kvm/cove.c
+@@ -275,9 +275,36 @@ int kvm_riscv_cove_gstage_map(struct kvm_vcpu *vcpu, gpa_t gpa, unsigned long hv
+ 	return rc;
+ }
  
- 	/* Experimentals extensions must lie within this range */
- 	SBI_EXT_EXPERIMENTAL_START = 0x08000000,
-@@ -369,6 +370,20 @@ enum sbi_ext_covh_fid {
- 	SBI_EXT_COVH_TVM_INITIATE_FENCE,
- };
- 
-+enum sbi_ext_covi_fid {
-+	SBI_EXT_COVI_TVM_AIA_INIT,
-+	SBI_EXT_COVI_TVM_CPU_SET_IMSIC_ADDR,
-+	SBI_EXT_COVI_TVM_CONVERT_IMSIC,
-+	SBI_EXT_COVI_TVM_RECLAIM_IMSIC,
-+	SBI_EXT_COVI_TVM_CPU_BIND_IMSIC,
-+	SBI_EXT_COVI_TVM_CPU_UNBIND_IMSIC_BEGIN,
-+	SBI_EXT_COVI_TVM_CPU_UNBIND_IMSIC_END,
-+	SBI_EXT_COVI_TVM_CPU_INJECT_EXT_INTERRUPT,
-+	SBI_EXT_COVI_TVM_REBIND_IMSIC_BEGIN,
-+	SBI_EXT_COVI_TVM_REBIND_IMSIC_CLONE,
-+	SBI_EXT_COVI_TVM_REBIND_IMSIC_END,
-+};
+-void kvm_riscv_cove_vcpu_switchto(struct kvm_vcpu *vcpu, struct kvm_cpu_trap *trap)
++void noinstr kvm_riscv_cove_vcpu_switchto(struct kvm_vcpu *vcpu, struct kvm_cpu_trap *trap)
+ {
+-	/* TODO */
++	int rc;
++	struct kvm *kvm = vcpu->kvm;
++	struct kvm_cove_tvm_context *tvmc;
++	struct kvm_cpu_context *cntx = &vcpu->arch.guest_context;
++	void *nshmem;
 +
- enum sbi_cove_page_type {
- 	SBI_COVE_PAGE_4K,
- 	SBI_COVE_PAGE_2MB,
-@@ -409,6 +424,21 @@ struct sbi_cove_tvm_create_params {
- 	unsigned long tvm_state_addr;
- };
- 
-+struct sbi_cove_tvm_aia_params {
-+	/* The base address is the address of the IMSIC with group ID, hart ID, and guest ID of 0 */
-+	uint64_t imsic_base_addr;
-+	/* The number of group index bits in an IMSIC address */
-+	uint32_t group_index_bits;
-+	/* The location of the group index in an IMSIC address. Must be >= 24i. */
-+	uint32_t group_index_shift;
-+	/* The number of hart index bits in an IMSIC address */
-+	uint32_t hart_index_bits;
-+	/* The number of guest index bits in an IMSIC address. Must be >= log2(guests/hart + 1) */
-+	uint32_t guest_index_bits;
-+	/* The number of guest interrupt files to be implemented per vCPU */
-+	uint32_t guests_per_hart;
-+};
++	if (!kvm->arch.tvmc)
++		return;
 +
- #define SBI_SPEC_VERSION_DEFAULT	0x1
- #define SBI_SPEC_VERSION_MAJOR_SHIFT	24
- #define SBI_SPEC_VERSION_MAJOR_MASK	0x7f
++	tvmc = kvm->arch.tvmc;
++
++	nshmem = nacl_shmem();
++	/* Invoke finalize to mark TVM is ready run for the first time */
++	if (unlikely(!tvmc->finalized_done)) {
++
++		rc = sbi_covh_tsm_finalize_tvm(tvmc->tvm_guest_id, cntx->sepc, cntx->a1);
++		if (rc) {
++			kvm_err("TVM Finalized failed with %d\n", rc);
++			return;
++		}
++		tvmc->finalized_done = true;
++	}
++
++	rc = sbi_covh_run_tvm_vcpu(tvmc->tvm_guest_id, vcpu->vcpu_idx);
++	if (rc) {
++		trap->scause = EXC_CUSTOM_KVM_COVE_RUN_FAIL;
++		return;
++	}
+ }
+ 
+ void kvm_riscv_cove_vcpu_destroy(struct kvm_vcpu *vcpu)
+diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+index 3e04b78..43a0b8c 100644
+--- a/arch/riscv/kvm/vcpu.c
++++ b/arch/riscv/kvm/vcpu.c
+@@ -1042,6 +1042,11 @@ void kvm_arch_vcpu_put(struct kvm_vcpu *vcpu)
+ 	kvm_riscv_vcpu_timer_save(vcpu);
+ 
+ 	if (kvm_riscv_nacl_available()) {
++		/**
++		 * For TVMs, we don't need a separate case as TSM only updates
++		 * the required CSRs during the world switch. All other CSR
++		 * value should be zeroed out by TSM anyways.
++		 */
+ 		nshmem = nacl_shmem();
+ 		csr->vsstatus = nacl_shmem_csr_read(nshmem, CSR_VSSTATUS);
+ 		csr->vsie = nacl_shmem_csr_read(nshmem, CSR_VSIE);
+@@ -1191,6 +1196,12 @@ static void noinstr kvm_riscv_vcpu_enter_exit(struct kvm_vcpu *vcpu,
+ 			gcntx->hstatus = csr_swap(CSR_HSTATUS, hcntx->hstatus);
+ 		}
+ 
++		trap->htval = nacl_shmem_csr_read(nshmem, CSR_HTVAL);
++		trap->htinst = nacl_shmem_csr_read(nshmem, CSR_HTINST);
++	} else if (is_cove_vcpu(vcpu)) {
++		nshmem = nacl_shmem();
++		kvm_riscv_cove_vcpu_switchto(vcpu, trap);
++
+ 		trap->htval = nacl_shmem_csr_read(nshmem, CSR_HTVAL);
+ 		trap->htinst = nacl_shmem_csr_read(nshmem, CSR_HTINST);
+ 	} else {
+diff --git a/arch/riscv/kvm/vcpu_exit.c b/arch/riscv/kvm/vcpu_exit.c
+index 8944e29..c46e7f2 100644
+--- a/arch/riscv/kvm/vcpu_exit.c
++++ b/arch/riscv/kvm/vcpu_exit.c
+@@ -218,6 +218,15 @@ int kvm_riscv_vcpu_exit(struct kvm_vcpu *vcpu, struct kvm_run *run,
+ 		else if (vcpu->arch.guest_context.hstatus & HSTATUS_SPV)
+ 			ret = kvm_riscv_vcpu_sbi_ecall(vcpu, run);
+ 		break;
++	case EXC_CUSTOM_KVM_COVE_RUN_FAIL:
++		if (likely(is_cove_vcpu(vcpu))) {
++			ret = -EACCES;
++			run->fail_entry.hardware_entry_failure_reason =
++				KVM_EXIT_FAIL_ENTRY_COVE_RUN_VCPU;
++			run->fail_entry.cpu = vcpu->cpu;
++			run->exit_reason = KVM_EXIT_FAIL_ENTRY;
++		}
++		break;
+ 	default:
+ 		break;
+ 	}
+@@ -225,6 +234,7 @@ int kvm_riscv_vcpu_exit(struct kvm_vcpu *vcpu, struct kvm_run *run,
+ 	/* Print details in-case of error */
+ 	if (ret < 0) {
+ 		kvm_err("VCPU exit error %d\n", ret);
++		//TODO: These values are bogus/stale for a TVM. Improve it
+ 		kvm_err("SEPC=0x%lx SSTATUS=0x%lx HSTATUS=0x%lx\n",
+ 			vcpu->arch.guest_context.sepc,
+ 			vcpu->arch.guest_context.sstatus,
 -- 
 2.25.1
 
