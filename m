@@ -1,59 +1,93 @@
 From: Atish Patra <atishp@rivosinc.com>
-Date: Wed, 19 Apr 2023 15:17:16 -0700
-Subject: [RFC 48/48] drivers/hvc: sbi: Disable HVC console for TVMs
+Date: Wed, 19 Apr 2023 15:16:50 -0700
+Subject: [RFC 22/48] RISC-V: KVM: Implement vcpu load/put functions for CoVE guests
 In-Reply-To: <20230419221716.3603068-1-atishp@rivosinc.com>
 References: <20230419221716.3603068-1-atishp@rivosinc.com>
-Message-ID: <20230419221716.3603068-49-atishp@rivosinc.com>
+Message-ID: <20230419221716.3603068-23-atishp@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-If two same type of console is used in command line, kernel
-picks up the first registered one instead of the preferred one.
-The fix was proposed and NACK'ed due to a possible regression
-for other users.
+The TSM takes care of most of the H extension CSR/fp save/restore
+for any guest running in CoVE. It may choose to do the fp save/restore
+lazily as well. The host has to do minimal operations such timer
+save/restore and interrupt state restore during vcpu load/put.
 
-https://lore.kernel.org/all/Y+tziG0Uo5ey+Ocy at alley/
-
-HVC sbi console makes it impossible to use virtio console
-which is preferred anyways. We could have disabled HVC console
-for TVMs but same kernel image must work on both host and the
-the guest. There are genuine reasons for requiring the hvc sbi
-cosnole for the host.
-
-Do not initialize the hvc console for the TVMs so that virtio
-console can be used.
-
+Signed-off-by: Rajnesh Kanwal <rkanwal@rivosinc.com>
 Signed-off-by: Atish Patra <atishp@rivosinc.com>
 ---
- drivers/tty/hvc/hvc_riscv_sbi.c | 5 +++++
- 1 file changed, 5 insertions(+)
+ arch/riscv/kvm/cove.c | 12 ++++++++++--
+ arch/riscv/kvm/vcpu.c | 12 +++++++++++-
+ 2 files changed, 21 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/tty/hvc/hvc_riscv_sbi.c b/drivers/tty/hvc/hvc_riscv_sbi.c
-index 83cfe00..dee96c5 100644
---- a/drivers/tty/hvc/hvc_riscv_sbi.c
-+++ b/drivers/tty/hvc/hvc_riscv_sbi.c
-@@ -11,6 +11,7 @@
- #include <linux/moduleparam.h>
- #include <linux/types.h>
+diff --git a/arch/riscv/kvm/cove.c b/arch/riscv/kvm/cove.c
+index 87fa04b..c93de9b 100644
+--- a/arch/riscv/kvm/cove.c
++++ b/arch/riscv/kvm/cove.c
+@@ -139,12 +139,20 @@ __always_inline bool kvm_riscv_cove_enabled(void)
  
-+#include <asm/cove.h>
- #include <asm/sbi.h>
- 
- #include "hvc_console.h"
-@@ -103,6 +104,10 @@ static int __init hvc_sbi_init(void)
+ void kvm_riscv_cove_vcpu_load(struct kvm_vcpu *vcpu)
  {
- 	int err;
+-	/* TODO */
++	kvm_riscv_vcpu_timer_restore(vcpu);
+ }
  
-+	/* Prefer virtio console as hvc console for guests */
-+	if (is_cove_guest())
-+		return 0;
+ void kvm_riscv_cove_vcpu_put(struct kvm_vcpu *vcpu)
+ {
+-	/* TODO */
++	void *nshmem;
++	struct kvm_vcpu_csr *csr = &vcpu->arch.guest_csr;
 +
- 	if ((sbi_spec_version >= sbi_mk_version(1, 0)) &&
- 	    (sbi_probe_extension(SBI_EXT_DBCN) > 0)) {
- 		err = PTR_ERR_OR_ZERO(hvc_alloc(0, 0, &hvc_sbi_dbcn_ops, 16));
++	kvm_riscv_vcpu_timer_save(vcpu);
++	/* NACL is mandatory for CoVE */
++	nshmem = nacl_shmem();
++
++	/* Only VSIE needs to be read to manage the interrupt stuff */
++	csr->vsie = nacl_shmem_csr_read(nshmem, CSR_VSIE);
+ }
+ 
+ int kvm_riscv_cove_vcpu_sbi_ecall(struct kvm_vcpu *vcpu, struct kvm_run *run)
+diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+index 8cf462c..3e04b78 100644
+--- a/arch/riscv/kvm/vcpu.c
++++ b/arch/riscv/kvm/vcpu.c
+@@ -972,6 +972,11 @@ void kvm_arch_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
+ 	u64 henvcfg = kvm_riscv_vcpu_get_henvcfg(vcpu->arch.isa);
+ 	struct kvm_vcpu_csr *csr = &vcpu->arch.guest_csr;
+ 
++	if (is_cove_vcpu(vcpu)) {
++		kvm_riscv_cove_vcpu_load(vcpu);
++		goto skip_load;
++	}
++
+ 	if (kvm_riscv_nacl_sync_csr_available()) {
+ 		nshmem = nacl_shmem();
+ 		nacl_shmem_csr_write(nshmem, CSR_VSSTATUS, csr->vsstatus);
+@@ -1010,9 +1015,9 @@ void kvm_arch_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
+ 	kvm_riscv_vcpu_host_fp_save(&vcpu->arch.host_context);
+ 	kvm_riscv_vcpu_guest_fp_restore(&vcpu->arch.guest_context,
+ 					vcpu->arch.isa);
+-
+ 	kvm_riscv_vcpu_aia_load(vcpu, cpu);
+ 
++skip_load:
+ 	vcpu->cpu = cpu;
+ }
+ 
+@@ -1023,6 +1028,11 @@ void kvm_arch_vcpu_put(struct kvm_vcpu *vcpu)
+ 
+ 	vcpu->cpu = -1;
+ 
++	if (is_cove_vcpu(vcpu)) {
++		kvm_riscv_cove_vcpu_put(vcpu);
++		return;
++	}
++
+ 	kvm_riscv_vcpu_aia_put(vcpu);
+ 
+ 	kvm_riscv_vcpu_guest_fp_save(&vcpu->arch.guest_context,
 -- 
 2.25.1
 
