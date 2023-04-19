@@ -1,129 +1,153 @@
 From: Atish Patra <atishp@rivosinc.com>
-Date: Wed, 19 Apr 2023 15:16:51 -0700
-Subject: [RFC 23/48] RISC-V: KVM: Wireup TVM world switch
+Date: Wed, 19 Apr 2023 15:16:49 -0700
+Subject: [RFC 21/48] RISC-V: KVM: Handle SBI call forward from the TSM
 In-Reply-To: <20230419221716.3603068-1-atishp@rivosinc.com>
 References: <20230419221716.3603068-1-atishp@rivosinc.com>
-Message-ID: <20230419221716.3603068-24-atishp@rivosinc.com>
+Message-ID: <20230419221716.3603068-22-atishp@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-TVM worlds switch takes a different path from regular VM world switch as
-it needs to make an ecall to TSM and TSM actually does the world switch.
-The host doesn't need to save/restore any context as TSM is expected
-to do that on behalf of the host. The TSM updatess the trap
-information in the shared memory which host uses to figure out the
-cause of the guest exit.
+TSM may forward the some SBI calls to the host as the host
+is the best place to handle these calls. Any calls related to hart
+state management or console or guest side interface (COVG) falls under
+this category.
+
+Add a cove specific ecall handler to take appropriate actions upon
+receiving these SBI calls.
 
 Signed-off-by: Atish Patra <atishp@rivosinc.com>
 ---
- arch/riscv/kvm/cove.c      | 31 +++++++++++++++++++++++++++++--
- arch/riscv/kvm/vcpu.c      | 11 +++++++++++
- arch/riscv/kvm/vcpu_exit.c | 10 ++++++++++
- 3 files changed, 50 insertions(+), 2 deletions(-)
+ arch/riscv/include/asm/kvm_cove.h |  5 +++
+ arch/riscv/kvm/cove.c             | 54 +++++++++++++++++++++++++++++++
+ arch/riscv/kvm/vcpu_exit.c        |  6 +++-
+ arch/riscv/kvm/vcpu_sbi.c         |  2 ++
+ 4 files changed, 66 insertions(+), 1 deletion(-)
 
+diff --git a/arch/riscv/include/asm/kvm_cove.h b/arch/riscv/include/asm/kvm_cove.h
+index fc8633d..b63682f 100644
+--- a/arch/riscv/include/asm/kvm_cove.h
++++ b/arch/riscv/include/asm/kvm_cove.h
+@@ -126,6 +126,7 @@ int kvm_riscv_cove_vcpu_init(struct kvm_vcpu *vcpu);
+ void kvm_riscv_cove_vcpu_load(struct kvm_vcpu *vcpu);
+ void kvm_riscv_cove_vcpu_put(struct kvm_vcpu *vcpu);
+ void kvm_riscv_cove_vcpu_switchto(struct kvm_vcpu *vcpu, struct kvm_cpu_trap *trap);
++int kvm_riscv_cove_vcpu_sbi_ecall(struct kvm_vcpu *vcpu, struct kvm_run *run);
+ 
+ int kvm_riscv_cove_vm_measure_pages(struct kvm *kvm, struct kvm_riscv_cove_measure_region *mr);
+ int kvm_riscv_cove_vm_add_memreg(struct kvm *kvm, unsigned long gpa, unsigned long size);
+@@ -148,6 +149,10 @@ static inline int kvm_riscv_cove_vcpu_init(struct kvm_vcpu *vcpu) {return -1; }
+ static inline void kvm_riscv_cove_vcpu_load(struct kvm_vcpu *vcpu) {}
+ static inline void kvm_riscv_cove_vcpu_put(struct kvm_vcpu *vcpu) {}
+ static inline void kvm_riscv_cove_vcpu_switchto(struct kvm_vcpu *vcpu, struct kvm_cpu_trap *trap) {}
++static inline int kvm_riscv_cove_vcpu_sbi_ecall(struct kvm_vcpu *vcpu, struct kvm_run *run)
++{
++	return -1;
++}
+ static inline int kvm_riscv_cove_vm_add_memreg(struct kvm *kvm, unsigned long gpa,
+ 					       unsigned long size) {return -1; }
+ static inline int kvm_riscv_cove_vm_measure_pages(struct kvm *kvm,
 diff --git a/arch/riscv/kvm/cove.c b/arch/riscv/kvm/cove.c
-index c93de9b..c11db7a 100644
+index 44095f6..87fa04b 100644
 --- a/arch/riscv/kvm/cove.c
 +++ b/arch/riscv/kvm/cove.c
-@@ -275,9 +275,36 @@ int kvm_riscv_cove_gstage_map(struct kvm_vcpu *vcpu, gpa_t gpa, unsigned long hv
- 	return rc;
+@@ -147,6 +147,60 @@ void kvm_riscv_cove_vcpu_put(struct kvm_vcpu *vcpu)
+ 	/* TODO */
  }
  
--void kvm_riscv_cove_vcpu_switchto(struct kvm_vcpu *vcpu, struct kvm_cpu_trap *trap)
-+void noinstr kvm_riscv_cove_vcpu_switchto(struct kvm_vcpu *vcpu, struct kvm_cpu_trap *trap)
- {
--	/* TODO */
-+	int rc;
-+	struct kvm *kvm = vcpu->kvm;
-+	struct kvm_cove_tvm_context *tvmc;
-+	struct kvm_cpu_context *cntx = &vcpu->arch.guest_context;
++int kvm_riscv_cove_vcpu_sbi_ecall(struct kvm_vcpu *vcpu, struct kvm_run *run)
++{
 +	void *nshmem;
-+
-+	if (!kvm->arch.tvmc)
-+		return;
-+
-+	tvmc = kvm->arch.tvmc;
++	const struct kvm_vcpu_sbi_extension *sbi_ext;
++	struct kvm_cpu_context *cp = &vcpu->arch.guest_context;
++	struct kvm_cpu_trap utrap = { 0 };
++	struct kvm_vcpu_sbi_return sbi_ret = {
++		.out_val = 0,
++		.err_val = 0,
++		.utrap = &utrap,
++	};
++	bool ext_is_01 = false;
++	int ret = 1;
 +
 +	nshmem = nacl_shmem();
-+	/* Invoke finalize to mark TVM is ready run for the first time */
-+	if (unlikely(!tvmc->finalized_done)) {
++	cp->a0 = nacl_shmem_gpr_read_cove(nshmem, KVM_ARCH_GUEST_A0);
++	cp->a1 = nacl_shmem_gpr_read_cove(nshmem, KVM_ARCH_GUEST_A1);
++	cp->a6 = nacl_shmem_gpr_read_cove(nshmem, KVM_ARCH_GUEST_A6);
++	cp->a7 = nacl_shmem_gpr_read_cove(nshmem, KVM_ARCH_GUEST_A7);
 +
-+		rc = sbi_covh_tsm_finalize_tvm(tvmc->tvm_guest_id, cntx->sepc, cntx->a1);
-+		if (rc) {
-+			kvm_err("TVM Finalized failed with %d\n", rc);
-+			return;
-+		}
-+		tvmc->finalized_done = true;
++	/* TSM will only forward legacy console to the host */
++#ifdef CONFIG_RISCV_SBI_V01
++	if (cp->a7 == SBI_EXT_0_1_CONSOLE_PUTCHAR)
++		ext_is_01 = true;
++#endif
++
++	sbi_ext = kvm_vcpu_sbi_find_ext(vcpu, cp->a7);
++	if ((sbi_ext && sbi_ext->handler) && ((cp->a7 == SBI_EXT_DBCN) ||
++	    (cp->a7 == SBI_EXT_HSM) || (cp->a7 == SBI_EXT_SRST) || ext_is_01)) {
++		ret = sbi_ext->handler(vcpu, run, &sbi_ret);
++	} else {
++		kvm_err("%s: SBI EXT %lx not supported for TVM\n", __func__, cp->a7);
++		/* Return error for unsupported SBI calls */
++		sbi_ret.err_val = SBI_ERR_NOT_SUPPORTED;
++		goto ecall_done;
 +	}
 +
-+	rc = sbi_covh_run_tvm_vcpu(tvmc->tvm_guest_id, vcpu->vcpu_idx);
-+	if (rc) {
-+		trap->scause = EXC_CUSTOM_KVM_COVE_RUN_FAIL;
-+		return;
-+	}
- }
- 
- void kvm_riscv_cove_vcpu_destroy(struct kvm_vcpu *vcpu)
-diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-index 3e04b78..43a0b8c 100644
---- a/arch/riscv/kvm/vcpu.c
-+++ b/arch/riscv/kvm/vcpu.c
-@@ -1042,6 +1042,11 @@ void kvm_arch_vcpu_put(struct kvm_vcpu *vcpu)
- 	kvm_riscv_vcpu_timer_save(vcpu);
- 
- 	if (kvm_riscv_nacl_available()) {
-+		/**
-+		 * For TVMs, we don't need a separate case as TSM only updates
-+		 * the required CSRs during the world switch. All other CSR
-+		 * value should be zeroed out by TSM anyways.
-+		 */
- 		nshmem = nacl_shmem();
- 		csr->vsstatus = nacl_shmem_csr_read(nshmem, CSR_VSSTATUS);
- 		csr->vsie = nacl_shmem_csr_read(nshmem, CSR_VSIE);
-@@ -1191,6 +1196,12 @@ static void noinstr kvm_riscv_vcpu_enter_exit(struct kvm_vcpu *vcpu,
- 			gcntx->hstatus = csr_swap(CSR_HSTATUS, hcntx->hstatus);
- 		}
- 
-+		trap->htval = nacl_shmem_csr_read(nshmem, CSR_HTVAL);
-+		trap->htinst = nacl_shmem_csr_read(nshmem, CSR_HTINST);
-+	} else if (is_cove_vcpu(vcpu)) {
-+		nshmem = nacl_shmem();
-+		kvm_riscv_cove_vcpu_switchto(vcpu, trap);
++	if (ret < 0)
++		goto ecall_done;
 +
- 		trap->htval = nacl_shmem_csr_read(nshmem, CSR_HTVAL);
- 		trap->htinst = nacl_shmem_csr_read(nshmem, CSR_HTINST);
- 	} else {
++	ret = (sbi_ret.uexit) ? 0 : 1;
++
++ecall_done:
++	/*
++	 * No need to update the sepc as TSM will take care of SEPC increment
++	 * for ECALLS that won't be forwarded to the user space (e.g. console)
++	 */
++	nacl_shmem_gpr_write_cove(nshmem, KVM_ARCH_GUEST_A0, sbi_ret.err_val);
++	if (!ext_is_01)
++		nacl_shmem_gpr_write_cove(nshmem, KVM_ARCH_GUEST_A1, sbi_ret.out_val);
++
++	return ret;
++}
++
+ int kvm_riscv_cove_gstage_map(struct kvm_vcpu *vcpu, gpa_t gpa, unsigned long hva)
+ {
+ 	struct kvm_riscv_cove_page *tpage;
 diff --git a/arch/riscv/kvm/vcpu_exit.c b/arch/riscv/kvm/vcpu_exit.c
-index 8944e29..c46e7f2 100644
+index d00b9ee5..8944e29 100644
 --- a/arch/riscv/kvm/vcpu_exit.c
 +++ b/arch/riscv/kvm/vcpu_exit.c
-@@ -218,6 +218,15 @@ int kvm_riscv_vcpu_exit(struct kvm_vcpu *vcpu, struct kvm_run *run,
- 		else if (vcpu->arch.guest_context.hstatus & HSTATUS_SPV)
+@@ -207,11 +207,15 @@ int kvm_riscv_vcpu_exit(struct kvm_vcpu *vcpu, struct kvm_run *run,
+ 	case EXC_INST_GUEST_PAGE_FAULT:
+ 	case EXC_LOAD_GUEST_PAGE_FAULT:
+ 	case EXC_STORE_GUEST_PAGE_FAULT:
++		//TODO: If the host runs in HS mode, this won't work as we don't
++		//read hstatus from the shared memory yet
+ 		if (vcpu->arch.guest_context.hstatus & HSTATUS_SPV)
+ 			ret = gstage_page_fault(vcpu, run, trap);
+ 		break;
+ 	case EXC_SUPERVISOR_SYSCALL:
+-		if (vcpu->arch.guest_context.hstatus & HSTATUS_SPV)
++		if (is_cove_vcpu(vcpu))
++			ret = kvm_riscv_cove_vcpu_sbi_ecall(vcpu, run);
++		else if (vcpu->arch.guest_context.hstatus & HSTATUS_SPV)
  			ret = kvm_riscv_vcpu_sbi_ecall(vcpu, run);
  		break;
-+	case EXC_CUSTOM_KVM_COVE_RUN_FAIL:
-+		if (likely(is_cove_vcpu(vcpu))) {
-+			ret = -EACCES;
-+			run->fail_entry.hardware_entry_failure_reason =
-+				KVM_EXIT_FAIL_ENTRY_COVE_RUN_VCPU;
-+			run->fail_entry.cpu = vcpu->cpu;
-+			run->exit_reason = KVM_EXIT_FAIL_ENTRY;
-+		}
-+		break;
  	default:
- 		break;
- 	}
-@@ -225,6 +234,7 @@ int kvm_riscv_vcpu_exit(struct kvm_vcpu *vcpu, struct kvm_run *run,
- 	/* Print details in-case of error */
- 	if (ret < 0) {
- 		kvm_err("VCPU exit error %d\n", ret);
-+		//TODO: These values are bogus/stale for a TVM. Improve it
- 		kvm_err("SEPC=0x%lx SSTATUS=0x%lx HSTATUS=0x%lx\n",
- 			vcpu->arch.guest_context.sepc,
- 			vcpu->arch.guest_context.sstatus,
+diff --git a/arch/riscv/kvm/vcpu_sbi.c b/arch/riscv/kvm/vcpu_sbi.c
+index 047ba10..d2f43bc 100644
+--- a/arch/riscv/kvm/vcpu_sbi.c
++++ b/arch/riscv/kvm/vcpu_sbi.c
+@@ -10,6 +10,8 @@
+ #include <linux/err.h>
+ #include <linux/kvm_host.h>
+ #include <asm/sbi.h>
++#include <asm/kvm_nacl.h>
++#include <asm/kvm_cove_sbi.h>
+ #include <asm/kvm_vcpu_sbi.h>
+ 
+ #ifndef CONFIG_RISCV_SBI_V01
 -- 
 2.25.1
 
