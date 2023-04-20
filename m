@@ -1,189 +1,105 @@
-From: Atish Kumar Patra <atishp@rivosinc.com>
-Date: Fri, 21 Apr 2023 00:43:49 +0530
-Subject: [RFC 00/48] RISC-V CoVE support
-In-Reply-To: <ZEFopfs5Ij/AIkee@google.com>
-References: <20230419221716.3603068-1-atishp@rivosinc.com> <ZEFopfs5Ij/AIkee@google.com>
-Message-ID: <CAHBxVyE+SkQ-jpbupmJU4fpuiXY_GufnANDBUuO5bMHDsudeYg@mail.gmail.com>
+From: Lorenzo Stoakes <lstoakes@gmail.com>
+Date: Thu, 20 Apr 2023 20:42:42 +0100
+Subject: [RFC 01/48] mm/vmalloc: Introduce arch hooks to notify
+ ioremap/unmap changes
+In-Reply-To: <20230419221716.3603068-2-atishp@rivosinc.com>
+References: <20230419221716.3603068-1-atishp@rivosinc.com>
+ <20230419221716.3603068-2-atishp@rivosinc.com>
+Message-ID: <b58eadb7-c80c-42fe-b803-09f2f466c0bd@lucifer.local>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Apr 20, 2023 at 10:00?PM Sean Christopherson <seanjc@google.com> wrote:
+I'm a vmalloc reviewer too now -next/mm-unstable get_maintainer.pl should say
+so, but forgivable because perhaps you ran against another tree but FYI for
+future I'd appreciate a cc- :)
+
+On Wed, Apr 19, 2023 at 03:16:29PM -0700, Atish Patra wrote:
+> From: Rajnesh Kanwal <rkanwal@rivosinc.com>
 >
-> On Wed, Apr 19, 2023, Atish Patra wrote:
-> > 2. Lazy gstage page allocation vs upfront allocation with page pool.
-> > Currently, all gstage mappings happen at runtime during the fault. This is expensive
-> > as we need to convert that page to confidential memory as well. A page pool framework
-> > may be a better choice which can hold all the confidential pages which can be
-> > pre-allocated upfront. A generic page pool infrastructure may benefit other CC solutions ?
+> In virtualization, the guest may need notify the host about the ioremap
+> regions. This is a common usecase in confidential computing where the
+> host only provides MMIO emulation for the regions specified by the guest.
 >
-> I'm sorry, what?  Do y'all really not pay any attention to what is happening
-> outside of the RISC-V world?
+> Add a pair if arch specific callbacks to track the ioremapped regions.
+
+Nit: typo if -> of.
+
 >
-> We, where "we" is KVM x86 and ARM, with folks contributing from 5+ companines,
-> have been working on this problem for going on three *years*.  And that's just
-> from the first public posting[1], there have been discussions about how to approach
-> this for even longer.  There have been multiple related presentations at KVM Forum,
-> something like 4 or 5 just at KVM Forum 2022 alone.
+> This patch is based on pkvm patches. A generic arch config can be added
+> similar to pkvm if this is going to be the final solution. The device
+> authorization/filtering approach is very different from this and we
+> may prefer that one as it provides more flexibility in terms of which
+> devices are allowed for the confidential guests.
+
+So it's an RFC that assumes existing patches are already applied or do you mean
+something else here? What do I need to do to get to a vmalloc.c with your patch
+applied?
+
+I guess this is pretty nitty since your changes are small here but be good to
+know!
+
 >
-
-Yes. We are following the restrictedmem effort and was reviewing the
-v10 this week.
-I did mention about that in the 1st item in the TODO list. We are
-planning to use the restrictedmen
-feature once it is closer to upstream (which seems to be the case
-looking at v10).
-Another reason is that this initial series is based on kvmtool only.
-We are working on qemu-kvm
-right now but have some RISC-V specific dependencies(interrupt
-controller stuff) which are not there yet.
-As the restrictedmem patches are already available in qemu-kvm too,
-our plan was to support CoVE
-in qemu-kvm first and work on restrictedmem after that.
-
-This item was just based on this RFC implementation which uses a lazy
-gstage page allocation.
-The idea was to check if there is any interest at all in this
-approach. I should have mentioned about
-restrictedmem plan in this section as well. Sorry for the confusion.
-
-Thanks for your suggestion. It seems we should just directly move to
-restrictedmem asap.
-
-> Patch 1 says "This patch is based on pkvm patches", so clearly you are at least
-> aware that there is other work going on in this space.
+> Signed-off-by: Rajnesh Kanwal <rkanwal@rivosinc.com>
+> Signed-off-by: Atish Patra <atishp@rivosinc.com>
+> ---
+>  mm/vmalloc.c | 16 ++++++++++++++++
+>  1 file changed, 16 insertions(+)
 >
-
-Yes. We have been following pkvm, tdx & CCA patches. The MMIO section
-has more details
-on TDX/pkvm related aspects.
-
-> At a very quick glance, this series is suffers from all of the same flaws that SNP,
-> TDX, and pKVM have encountered.  E.g. assuming guest memory is backed by struct page
-> memory, relying on pinning to solve all problems (hint, it doesn't), and so on and
-> so forth.
+> diff --git a/mm/vmalloc.c b/mm/vmalloc.c
+> index bef6cf2..023630e 100644
+> --- a/mm/vmalloc.c
+> +++ b/mm/vmalloc.c
+> @@ -304,6 +304,14 @@ static int vmap_range_noflush(unsigned long addr, unsigned long end,
+>  	return err;
+>  }
 >
-> And to make things worse, this series is riddled with bugs.  E.g. patch 19 alone
-> manages to squeeze in multiple fatal bugs in five new lines of code: deadlock due
-> to not releasing mmap_lock on failure, failure to correcty handle MOVE, failure to
+> +__weak void ioremap_phys_range_hook(phys_addr_t phys_addr, size_t size, pgprot_t prot)
+> +{
+> +}
+> +
+> +__weak void iounmap_phys_range_hook(phys_addr_t phys_addr, size_t size)
+> +{
+> +}
+> +
 
-That's an oversight. Apologies for that. Thanks for pointing it out.
+I'm not sure if this is for efficiency by using a weak reference, however, and
+perhaps a nit, but I'd prefer an arch_*() that's defined in a header somewhere,
+as it does hide the call paths quite effectively.
 
-> handle DELETE at all, failure to honor (or reject) READONLY, and probably several
-> others.
+>  int ioremap_page_range(unsigned long addr, unsigned long end,
+>  		phys_addr_t phys_addr, pgprot_t prot)
+>  {
+> @@ -315,6 +323,10 @@ int ioremap_page_range(unsigned long addr, unsigned long end,
+>  	if (!err)
+>  		kmsan_ioremap_page_range(addr, end, phys_addr, prot,
+>  					 ioremap_max_page_shift);
+> +
+> +	if (!err)
+> +		ioremap_phys_range_hook(phys_addr, end - addr, prot);
+> +
+>  	return err;
+>  }
 >
-It should be rejected for READONLY as our APIs don't have any
-permission flags yet.
-I think we should add that to enable CoVE APIs to support as well ?
+> @@ -2772,6 +2784,10 @@ void vunmap(const void *addr)
+>  				addr);
+>  		return;
+>  	}
+> +
+> +	if (vm->flags & VM_IOREMAP)
+> +		iounmap_phys_range_hook(vm->phys_addr, get_vm_area_size(vm));
+> +
 
-Same goes for DELETE ops as we don't have an API to delete any
-confidential memory region
-yet. I was not very sure about the use case for MOVE though (migration
-possibly ?)
+There are places other than ioremap_page_range() that can set VM_IOREMAP,
+e.g. vmap_pfn(), so this may trigger with addresses other than those specified
+in the original hook. Is this intended?
 
-kvm_riscv_cove_vm_add_memreg should have been invoked only for CREATE
-& reject others for now.
-I will revise the patch accordingly and leave a TODO comment for the
-future about API updates.
-
-> diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
-> index 4b0f09e..63889d9 100644
-> --- a/arch/riscv/kvm/mmu.c
-> +++ b/arch/riscv/kvm/mmu.c
-> @@ -499,6 +499,11 @@ int kvm_arch_prepare_memory_region(struct kvm *kvm,
+>  	kfree(vm);
+>  }
+>  EXPORT_SYMBOL(vunmap);
+> --
+> 2.25.1
 >
->         mmap_read_lock(current->mm);
->
-> +       if (is_cove_vm(kvm)) {
-> +               ret = kvm_riscv_cove_vm_add_memreg(kvm, base_gpa, size);
-> +               if (ret)
-> +                       return ret;
-> +       }
->         /*
->          * A memory region could potentially cover multiple VMAs, and
->          * any holes between them, so iterate over all of them to find
->
-> I get that this is an RFC, but for a series of this size, operating in an area that
-> is under heavy development by multiple other architectures, to have a diffstat that
-> shows _zero_ changes to common KVM is simply unacceptable.
->
-
-Thanks for the valuable feedback. This is pretty much pre-RFC as the
-spec is very much
-in draft state. We want to share with the larger linux community to
-gather feedback sooner
-than later so that we can incorporate that feedback into the spec if any.
-
-> Please, go look at restrictedmem[2] and work on building CoVE support on top of
-> that.  If the current proposal doesn't fit CoVE's needs, then we need to know _before_
-> all of that code gets merged.
->
-
-Absolutely. That has always been the plan.
-
-> [1] https://lore.kernel.org/linux-mm/20200522125214.31348-1-kirill.shutemov at linux.intel.com
-> [2] https://lkml.kernel.org/r/20221202061347.1070246-1-chao.p.peng%40linux.intel.com
->
-> > arch/riscv/Kbuild                       |    2 +
-> > arch/riscv/Kconfig                      |   27 +
-> > arch/riscv/cove/Makefile                |    2 +
-> > arch/riscv/cove/core.c                  |   40 +
-> > arch/riscv/cove/cove_guest_sbi.c        |  109 +++
-> > arch/riscv/include/asm/cove.h           |   27 +
-> > arch/riscv/include/asm/covg_sbi.h       |   38 +
-> > arch/riscv/include/asm/csr.h            |    2 +
-> > arch/riscv/include/asm/kvm_cove.h       |  206 +++++
-> > arch/riscv/include/asm/kvm_cove_sbi.h   |  101 +++
-> > arch/riscv/include/asm/kvm_host.h       |   10 +-
-> > arch/riscv/include/asm/kvm_vcpu_sbi.h   |    3 +
-> > arch/riscv/include/asm/mem_encrypt.h    |   26 +
-> > arch/riscv/include/asm/sbi.h            |  107 +++
-> > arch/riscv/include/uapi/asm/kvm.h       |   17 +
-> > arch/riscv/kernel/irq.c                 |   12 +
-> > arch/riscv/kernel/setup.c               |    2 +
-> > arch/riscv/kvm/Makefile                 |    1 +
-> > arch/riscv/kvm/aia.c                    |  101 ++-
-> > arch/riscv/kvm/aia_device.c             |   41 +-
-> > arch/riscv/kvm/aia_imsic.c              |  127 ++-
-> > arch/riscv/kvm/cove.c                   | 1005 +++++++++++++++++++++++
-> > arch/riscv/kvm/cove_sbi.c               |  490 +++++++++++
-> > arch/riscv/kvm/main.c                   |   30 +-
-> > arch/riscv/kvm/mmu.c                    |   45 +-
-> > arch/riscv/kvm/tlb.c                    |   11 +-
-> > arch/riscv/kvm/vcpu.c                   |   69 +-
-> > arch/riscv/kvm/vcpu_exit.c              |   34 +-
-> > arch/riscv/kvm/vcpu_insn.c              |  115 ++-
-> > arch/riscv/kvm/vcpu_sbi.c               |   16 +
-> > arch/riscv/kvm/vcpu_sbi_covg.c          |  232 ++++++
-> > arch/riscv/kvm/vcpu_timer.c             |   26 +-
-> > arch/riscv/kvm/vm.c                     |   34 +-
-> > arch/riscv/kvm/vmid.c                   |   17 +-
-> > arch/riscv/mm/Makefile                  |    3 +
-> > arch/riscv/mm/init.c                    |   17 +-
-> > arch/riscv/mm/ioremap.c                 |   45 +
-> > arch/riscv/mm/mem_encrypt.c             |   61 ++
-> > drivers/tty/hvc/hvc_riscv_sbi.c         |    5 +
-> > drivers/tty/serial/earlycon-riscv-sbi.c |   51 +-
-> > include/uapi/linux/kvm.h                |    8 +
-> > mm/vmalloc.c                            |   16 +
-> > 42 files changed, 3222 insertions(+), 109 deletions(-)
-> > create mode 100644 arch/riscv/cove/Makefile
-> > create mode 100644 arch/riscv/cove/core.c
-> > create mode 100644 arch/riscv/cove/cove_guest_sbi.c
-> > create mode 100644 arch/riscv/include/asm/cove.h
-> > create mode 100644 arch/riscv/include/asm/covg_sbi.h
-> > create mode 100644 arch/riscv/include/asm/kvm_cove.h
-> > create mode 100644 arch/riscv/include/asm/kvm_cove_sbi.h
-> > create mode 100644 arch/riscv/include/asm/mem_encrypt.h
-> > create mode 100644 arch/riscv/kvm/cove.c
-> > create mode 100644 arch/riscv/kvm/cove_sbi.c
-> > create mode 100644 arch/riscv/kvm/vcpu_sbi_covg.c
-> > create mode 100644 arch/riscv/mm/ioremap.c
-> > create mode 100644 arch/riscv/mm/mem_encrypt.c
-> >
-> > --
-> > 2.25.1
-> >
 
