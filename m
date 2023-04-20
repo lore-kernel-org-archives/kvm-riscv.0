@@ -1,114 +1,134 @@
-From: Atish Patra <atishp@rivosinc.com>
-Date: Wed, 19 Apr 2023 15:16:33 -0700
-Subject: [RFC 05/48] RISC-V: Add COVH SBI extensions definitions
-In-Reply-To: <20230419221716.3603068-1-atishp@rivosinc.com>
-References: <20230419221716.3603068-1-atishp@rivosinc.com>
-Message-ID: <20230419221716.3603068-6-atishp@rivosinc.com>
+From: Sean Christopherson <seanjc@google.com>
+Date: Thu, 20 Apr 2023 08:17:29 -0700
+Subject: [RFC 10/48] RISC-V: KVM: Implement static memory region measurement
+In-Reply-To: <20230419221716.3603068-11-atishp@rivosinc.com>
+References: <20230419221716.3603068-1-atishp@rivosinc.com> <20230419221716.3603068-11-atishp@rivosinc.com>
+Message-ID: <ZEFXiXu+0XLSdRkQ@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-RISC-V Confidential Virtualization Extension(COVE) specification defines
-following 3 SBI extensions.
+On Wed, Apr 19, 2023, Atish Patra wrote:
+> +int kvm_riscv_cove_vm_measure_pages(struct kvm *kvm, struct kvm_riscv_cove_measure_region *mr)
+> +{
+> +	struct kvm_cove_tvm_context *tvmc = kvm->arch.tvmc;
+> +	int rc = 0, idx, num_pages;
+> +	struct kvm_riscv_cove_mem_region *conf;
+> +	struct page *pinned_page, *conf_page;
+> +	struct kvm_riscv_cove_page *cpage;
+> +
+> +	if (!tvmc)
+> +		return -EFAULT;
+> +
+> +	if (tvmc->finalized_done) {
+> +		kvm_err("measured_mr pages can not be added after finalize\n");
+> +		return -EINVAL;
+> +	}
+> +
+> +	num_pages = bytes_to_pages(mr->size);
+> +	conf = &tvmc->confidential_region;
+> +
+> +	if (!IS_ALIGNED(mr->userspace_addr, PAGE_SIZE) ||
+> +	    !IS_ALIGNED(mr->gpa, PAGE_SIZE) || !mr->size ||
+> +	    !cove_is_within_region(conf->gpa, conf->npages << PAGE_SHIFT, mr->gpa, mr->size))
+> +		return -EINVAL;
+> +
+> +	idx = srcu_read_lock(&kvm->srcu);
+> +
+> +	/*TODO: Iterate one page at a time as pinning multiple pages fail with unmapped panic
+> +	 * with a virtual address range belonging to vmalloc region for some reason.
 
-COVH (Host side interface)
-COVG (Guest side interface)
-COVI (Interrupt management interface)
+I've no idea what code you had, but I suspect the fact that vmalloc'd memory isn't
+guaranteed to be physically contiguous is relevant to the panic.
 
-Few acronyms introduced in this patch:
+> +	 */
+> +	while (num_pages) {
+> +		if (signal_pending(current)) {
+> +			rc = -ERESTARTSYS;
+> +			break;
+> +		}
+> +
+> +		if (need_resched())
+> +			cond_resched();
+> +
+> +		rc = get_user_pages_fast(mr->userspace_addr, 1, 0, &pinned_page);
+> +		if (rc < 0) {
+> +			kvm_err("Pinning the userpsace addr %lx failed\n", mr->userspace_addr);
+> +			break;
+> +		}
+> +
+> +		/* Enough pages are not available to be pinned */
+> +		if (rc != 1) {
+> +			rc = -ENOMEM;
+> +			break;
+> +		}
+> +		conf_page = alloc_page(GFP_KERNEL | __GFP_ZERO);
+> +		if (!conf_page) {
+> +			rc = -ENOMEM;
+> +			break;
+> +		}
+> +
+> +		rc = cove_convert_pages(page_to_phys(conf_page), 1, true);
+> +		if (rc)
+> +			break;
+> +
+> +		/*TODO: Support other pages sizes */
+> +		rc = sbi_covh_add_measured_pages(tvmc->tvm_guest_id, page_to_phys(pinned_page),
+> +						 page_to_phys(conf_page), SBI_COVE_PAGE_4K,
+> +						 1, mr->gpa);
+> +		if (rc)
+> +			break;
+> +
+> +		/* Unpin the page now */
+> +		put_page(pinned_page);
+> +
+> +		cpage = kmalloc(sizeof(*cpage), GFP_KERNEL_ACCOUNT);
+> +		if (!cpage) {
+> +			rc = -ENOMEM;
+> +			break;
+> +		}
+> +
+> +		cpage->page = conf_page;
+> +		cpage->npages = 1;
+> +		cpage->gpa = mr->gpa;
+> +		cpage->hva = mr->userspace_addr;
 
-TSM - TEE Security Manager
-TVM - TEE VM
+Snapshotting the userspace address for the _source_ page can't possibly be useful.
 
-This patch adds the definitions for COVH extension only.
+> +		cpage->is_mapped = true;
+> +		INIT_LIST_HEAD(&cpage->link);
+> +		list_add(&cpage->link, &tvmc->measured_pages);
+> +
+> +		mr->userspace_addr += PAGE_SIZE;
+> +		mr->gpa += PAGE_SIZE;
+> +		num_pages--;
+> +		conf_page = NULL;
+> +
+> +		continue;
+> +	}
+> +	srcu_read_unlock(&kvm->srcu, idx);
+> +
+> +	if (rc < 0) {
+> +		/* We don't to need unpin pages as it is allocated by the hypervisor itself */
 
-Signed-off-by: Atish Patra <atishp@rivosinc.com>
----
- arch/riscv/include/asm/sbi.h | 61 ++++++++++++++++++++++++++++++++++++
- 1 file changed, 61 insertions(+)
+This comment makes no sense.  The above code is doing all of the allocation and
+pinning, which strongly suggests that KVM is the hypervisor.  But this comment
+implies that KVM is not the hypervisor.
 
-diff --git a/arch/riscv/include/asm/sbi.h b/arch/riscv/include/asm/sbi.h
-index 62d00c7..c5a5526 100644
---- a/arch/riscv/include/asm/sbi.h
-+++ b/arch/riscv/include/asm/sbi.h
-@@ -32,6 +32,7 @@ enum sbi_ext_id {
- 	SBI_EXT_PMU = 0x504D55,
- 	SBI_EXT_DBCN = 0x4442434E,
- 	SBI_EXT_NACL = 0x4E41434C,
-+	SBI_EXT_COVH = 0x434F5648,
- 
- 	/* Experimentals extensions must lie within this range */
- 	SBI_EXT_EXPERIMENTAL_START = 0x08000000,
-@@ -348,6 +349,66 @@ enum sbi_ext_nacl_feature {
- #define SBI_NACL_SHMEM_SRET_X(__i)		((__riscv_xlen / 8) * (__i))
- #define SBI_NACL_SHMEM_SRET_X_LAST		31
- 
-+/* SBI COVH extension data structures */
-+enum sbi_ext_covh_fid {
-+	SBI_EXT_COVH_TSM_GET_INFO = 0,
-+	SBI_EXT_COVH_TSM_CONVERT_PAGES,
-+	SBI_EXT_COVH_TSM_RECLAIM_PAGES,
-+	SBI_EXT_COVH_TSM_INITIATE_FENCE,
-+	SBI_EXT_COVH_TSM_LOCAL_FENCE,
-+	SBI_EXT_COVH_CREATE_TVM,
-+	SBI_EXT_COVH_FINALIZE_TVM,
-+	SBI_EXT_COVH_DESTROY_TVM,
-+	SBI_EXT_COVH_TVM_ADD_MEMORY_REGION,
-+	SBI_EXT_COVH_TVM_ADD_PGT_PAGES,
-+	SBI_EXT_COVH_TVM_ADD_MEASURED_PAGES,
-+	SBI_EXT_COVH_TVM_ADD_ZERO_PAGES,
-+	SBI_EXT_COVH_TVM_ADD_SHARED_PAGES,
-+	SBI_EXT_COVH_TVM_CREATE_VCPU,
-+	SBI_EXT_COVH_TVM_VCPU_RUN,
-+	SBI_EXT_COVH_TVM_INITIATE_FENCE,
-+};
-+
-+enum sbi_cove_page_type {
-+	SBI_COVE_PAGE_4K,
-+	SBI_COVE_PAGE_2MB,
-+	SBI_COVE_PAGE_1GB,
-+	SBI_COVE_PAGE_512GB,
-+};
-+
-+enum sbi_cove_tsm_state {
-+	/* TSM has not been loaded yet */
-+	TSM_NOT_LOADED,
-+	/* TSM has been loaded but not initialized yet */
-+	TSM_LOADED,
-+	/* TSM has been initialized and ready to run */
-+	TSM_READY,
-+};
-+
-+struct sbi_cove_tsm_info {
-+	/* Current state of the TSM */
-+	enum sbi_cove_tsm_state tstate;
-+
-+	/* Version of the loaded TSM */
-+	uint32_t version;
-+
-+	/* Number of 4K pages required per TVM */
-+	unsigned long tvm_pages_needed;
-+
-+	/* Maximum VCPUs supported per TVM */
-+	unsigned long tvm_max_vcpus;
-+
-+	/* Number of 4K pages each vcpu per TVM */
-+	unsigned long tvcpu_pages_needed;
-+};
-+
-+struct sbi_cove_tvm_create_params {
-+	/* Root page directory for TVM's page table management */
-+	unsigned long tvm_page_directory_addr;
-+	/* Confidential memory address used to store TVM state information. Must be page aligned */
-+	unsigned long tvm_state_addr;
-+};
-+
- #define SBI_SPEC_VERSION_DEFAULT	0x1
- #define SBI_SPEC_VERSION_MAJOR_SHIFT	24
- #define SBI_SPEC_VERSION_MAJOR_MASK	0x7f
--- 
-2.25.1
+And "pinned_page" is cleared unpinned in the loop after the page is added+measured,
+which looks to be the same model as TDX where "pinned_page" is the source and
+"conf_page" is gifted to the hypervisor.  But on failure, e.g. when allocating
+"conf_page", that reference is not put.
 
+> +		cove_delete_page_list(kvm, &tvmc->measured_pages, false);
+> +		/* Free the last allocated page for which conversion/measurement failed */
+> +		kfree(conf_page);
+
+Assuming my guesses about how the architecture works are correct, this is broken
+if sbi_covh_add_measured_pages() fails.  The page has already been gifted to the
+TSM by cove_convert_pages(), but there is no call to sbi_covh_tsm_reclaim_pages(),
+which I'm guessing is necesary to transition the page back to a state where it can
+be safely used by the host.
 
