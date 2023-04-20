@@ -1,9 +1,9 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Thu, 20 Apr 2023 08:17:29 -0700
-Subject: [RFC 10/48] RISC-V: KVM: Implement static memory region measurement
-In-Reply-To: <20230419221716.3603068-11-atishp@rivosinc.com>
-References: <20230419221716.3603068-1-atishp@rivosinc.com> <20230419221716.3603068-11-atishp@rivosinc.com>
-Message-ID: <ZEFXiXu+0XLSdRkQ@google.com>
+Date: Thu, 20 Apr 2023 09:30:29 -0700
+Subject: [RFC 00/48] RISC-V CoVE support
+In-Reply-To: <20230419221716.3603068-1-atishp@rivosinc.com>
+References: <20230419221716.3603068-1-atishp@rivosinc.com>
+Message-ID: <ZEFopfs5Ij/AIkee@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -11,124 +11,121 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 On Wed, Apr 19, 2023, Atish Patra wrote:
-> +int kvm_riscv_cove_vm_measure_pages(struct kvm *kvm, struct kvm_riscv_cove_measure_region *mr)
-> +{
-> +	struct kvm_cove_tvm_context *tvmc = kvm->arch.tvmc;
-> +	int rc = 0, idx, num_pages;
-> +	struct kvm_riscv_cove_mem_region *conf;
-> +	struct page *pinned_page, *conf_page;
-> +	struct kvm_riscv_cove_page *cpage;
-> +
-> +	if (!tvmc)
-> +		return -EFAULT;
-> +
-> +	if (tvmc->finalized_done) {
-> +		kvm_err("measured_mr pages can not be added after finalize\n");
-> +		return -EINVAL;
-> +	}
-> +
-> +	num_pages = bytes_to_pages(mr->size);
-> +	conf = &tvmc->confidential_region;
-> +
-> +	if (!IS_ALIGNED(mr->userspace_addr, PAGE_SIZE) ||
-> +	    !IS_ALIGNED(mr->gpa, PAGE_SIZE) || !mr->size ||
-> +	    !cove_is_within_region(conf->gpa, conf->npages << PAGE_SHIFT, mr->gpa, mr->size))
-> +		return -EINVAL;
-> +
-> +	idx = srcu_read_lock(&kvm->srcu);
-> +
-> +	/*TODO: Iterate one page at a time as pinning multiple pages fail with unmapped panic
-> +	 * with a virtual address range belonging to vmalloc region for some reason.
+> 2. Lazy gstage page allocation vs upfront allocation with page pool.
+> Currently, all gstage mappings happen at runtime during the fault. This is expensive
+> as we need to convert that page to confidential memory as well. A page pool framework
+> may be a better choice which can hold all the confidential pages which can be
+> pre-allocated upfront. A generic page pool infrastructure may benefit other CC solutions ?
 
-I've no idea what code you had, but I suspect the fact that vmalloc'd memory isn't
-guaranteed to be physically contiguous is relevant to the panic.
+I'm sorry, what?  Do y'all really not pay any attention to what is happening
+outside of the RISC-V world?
 
-> +	 */
-> +	while (num_pages) {
-> +		if (signal_pending(current)) {
-> +			rc = -ERESTARTSYS;
-> +			break;
-> +		}
-> +
-> +		if (need_resched())
-> +			cond_resched();
-> +
-> +		rc = get_user_pages_fast(mr->userspace_addr, 1, 0, &pinned_page);
-> +		if (rc < 0) {
-> +			kvm_err("Pinning the userpsace addr %lx failed\n", mr->userspace_addr);
-> +			break;
-> +		}
-> +
-> +		/* Enough pages are not available to be pinned */
-> +		if (rc != 1) {
-> +			rc = -ENOMEM;
-> +			break;
-> +		}
-> +		conf_page = alloc_page(GFP_KERNEL | __GFP_ZERO);
-> +		if (!conf_page) {
-> +			rc = -ENOMEM;
-> +			break;
-> +		}
-> +
-> +		rc = cove_convert_pages(page_to_phys(conf_page), 1, true);
-> +		if (rc)
-> +			break;
-> +
-> +		/*TODO: Support other pages sizes */
-> +		rc = sbi_covh_add_measured_pages(tvmc->tvm_guest_id, page_to_phys(pinned_page),
-> +						 page_to_phys(conf_page), SBI_COVE_PAGE_4K,
-> +						 1, mr->gpa);
-> +		if (rc)
-> +			break;
-> +
-> +		/* Unpin the page now */
-> +		put_page(pinned_page);
-> +
-> +		cpage = kmalloc(sizeof(*cpage), GFP_KERNEL_ACCOUNT);
-> +		if (!cpage) {
-> +			rc = -ENOMEM;
-> +			break;
-> +		}
-> +
-> +		cpage->page = conf_page;
-> +		cpage->npages = 1;
-> +		cpage->gpa = mr->gpa;
-> +		cpage->hva = mr->userspace_addr;
+We, where "we" is KVM x86 and ARM, with folks contributing from 5+ companines,
+have been working on this problem for going on three *years*.  And that's just
+from the first public posting[1], there have been discussions about how to approach
+this for even longer.  There have been multiple related presentations at KVM Forum,
+something like 4 or 5 just at KVM Forum 2022 alone.
 
-Snapshotting the userspace address for the _source_ page can't possibly be useful.
+Patch 1 says "This patch is based on pkvm patches", so clearly you are at least
+aware that there is other work going on in this space.
 
-> +		cpage->is_mapped = true;
-> +		INIT_LIST_HEAD(&cpage->link);
-> +		list_add(&cpage->link, &tvmc->measured_pages);
-> +
-> +		mr->userspace_addr += PAGE_SIZE;
-> +		mr->gpa += PAGE_SIZE;
-> +		num_pages--;
-> +		conf_page = NULL;
-> +
-> +		continue;
-> +	}
-> +	srcu_read_unlock(&kvm->srcu, idx);
-> +
-> +	if (rc < 0) {
-> +		/* We don't to need unpin pages as it is allocated by the hypervisor itself */
+At a very quick glance, this series is suffers from all of the same flaws that SNP,
+TDX, and pKVM have encountered.  E.g. assuming guest memory is backed by struct page
+memory, relying on pinning to solve all problems (hint, it doesn't), and so on and
+so forth.
 
-This comment makes no sense.  The above code is doing all of the allocation and
-pinning, which strongly suggests that KVM is the hypervisor.  But this comment
-implies that KVM is not the hypervisor.
+And to make things worse, this series is riddled with bugs.  E.g. patch 19 alone
+manages to squeeze in multiple fatal bugs in five new lines of code: deadlock due
+to not releasing mmap_lock on failure, failure to correcty handle MOVE, failure to
+handle DELETE at all, failure to honor (or reject) READONLY, and probably several
+others.
 
-And "pinned_page" is cleared unpinned in the loop after the page is added+measured,
-which looks to be the same model as TDX where "pinned_page" is the source and
-"conf_page" is gifted to the hypervisor.  But on failure, e.g. when allocating
-"conf_page", that reference is not put.
+diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
+index 4b0f09e..63889d9 100644
+--- a/arch/riscv/kvm/mmu.c
++++ b/arch/riscv/kvm/mmu.c
+@@ -499,6 +499,11 @@ int kvm_arch_prepare_memory_region(struct kvm *kvm,
 
-> +		cove_delete_page_list(kvm, &tvmc->measured_pages, false);
-> +		/* Free the last allocated page for which conversion/measurement failed */
-> +		kfree(conf_page);
+        mmap_read_lock(current->mm);
 
-Assuming my guesses about how the architecture works are correct, this is broken
-if sbi_covh_add_measured_pages() fails.  The page has already been gifted to the
-TSM by cove_convert_pages(), but there is no call to sbi_covh_tsm_reclaim_pages(),
-which I'm guessing is necesary to transition the page back to a state where it can
-be safely used by the host.
++       if (is_cove_vm(kvm)) {
++               ret = kvm_riscv_cove_vm_add_memreg(kvm, base_gpa, size);
++               if (ret)
++                       return ret;
++       }
+        /*
+         * A memory region could potentially cover multiple VMAs, and
+         * any holes between them, so iterate over all of them to find
+
+I get that this is an RFC, but for a series of this size, operating in an area that
+is under heavy development by multiple other architectures, to have a diffstat that
+shows _zero_ changes to common KVM is simply unacceptable.
+
+Please, go look at restrictedmem[2] and work on building CoVE support on top of
+that.  If the current proposal doesn't fit CoVE's needs, then we need to know _before_
+all of that code gets merged.
+
+[1] https://lore.kernel.org/linux-mm/20200522125214.31348-1-kirill.shutemov at linux.intel.com
+[2] https://lkml.kernel.org/r/20221202061347.1070246-1-chao.p.peng%40linux.intel.com
+
+> arch/riscv/Kbuild                       |    2 +
+> arch/riscv/Kconfig                      |   27 +
+> arch/riscv/cove/Makefile                |    2 +
+> arch/riscv/cove/core.c                  |   40 +
+> arch/riscv/cove/cove_guest_sbi.c        |  109 +++
+> arch/riscv/include/asm/cove.h           |   27 +
+> arch/riscv/include/asm/covg_sbi.h       |   38 +
+> arch/riscv/include/asm/csr.h            |    2 +
+> arch/riscv/include/asm/kvm_cove.h       |  206 +++++
+> arch/riscv/include/asm/kvm_cove_sbi.h   |  101 +++
+> arch/riscv/include/asm/kvm_host.h       |   10 +-
+> arch/riscv/include/asm/kvm_vcpu_sbi.h   |    3 +
+> arch/riscv/include/asm/mem_encrypt.h    |   26 +
+> arch/riscv/include/asm/sbi.h            |  107 +++
+> arch/riscv/include/uapi/asm/kvm.h       |   17 +
+> arch/riscv/kernel/irq.c                 |   12 +
+> arch/riscv/kernel/setup.c               |    2 +
+> arch/riscv/kvm/Makefile                 |    1 +
+> arch/riscv/kvm/aia.c                    |  101 ++-
+> arch/riscv/kvm/aia_device.c             |   41 +-
+> arch/riscv/kvm/aia_imsic.c              |  127 ++-
+> arch/riscv/kvm/cove.c                   | 1005 +++++++++++++++++++++++
+> arch/riscv/kvm/cove_sbi.c               |  490 +++++++++++
+> arch/riscv/kvm/main.c                   |   30 +-
+> arch/riscv/kvm/mmu.c                    |   45 +-
+> arch/riscv/kvm/tlb.c                    |   11 +-
+> arch/riscv/kvm/vcpu.c                   |   69 +-
+> arch/riscv/kvm/vcpu_exit.c              |   34 +-
+> arch/riscv/kvm/vcpu_insn.c              |  115 ++-
+> arch/riscv/kvm/vcpu_sbi.c               |   16 +
+> arch/riscv/kvm/vcpu_sbi_covg.c          |  232 ++++++
+> arch/riscv/kvm/vcpu_timer.c             |   26 +-
+> arch/riscv/kvm/vm.c                     |   34 +-
+> arch/riscv/kvm/vmid.c                   |   17 +-
+> arch/riscv/mm/Makefile                  |    3 +
+> arch/riscv/mm/init.c                    |   17 +-
+> arch/riscv/mm/ioremap.c                 |   45 +
+> arch/riscv/mm/mem_encrypt.c             |   61 ++
+> drivers/tty/hvc/hvc_riscv_sbi.c         |    5 +
+> drivers/tty/serial/earlycon-riscv-sbi.c |   51 +-
+> include/uapi/linux/kvm.h                |    8 +
+> mm/vmalloc.c                            |   16 +
+> 42 files changed, 3222 insertions(+), 109 deletions(-)
+> create mode 100644 arch/riscv/cove/Makefile
+> create mode 100644 arch/riscv/cove/core.c
+> create mode 100644 arch/riscv/cove/cove_guest_sbi.c
+> create mode 100644 arch/riscv/include/asm/cove.h
+> create mode 100644 arch/riscv/include/asm/covg_sbi.h
+> create mode 100644 arch/riscv/include/asm/kvm_cove.h
+> create mode 100644 arch/riscv/include/asm/kvm_cove_sbi.h
+> create mode 100644 arch/riscv/include/asm/mem_encrypt.h
+> create mode 100644 arch/riscv/kvm/cove.c
+> create mode 100644 arch/riscv/kvm/cove_sbi.c
+> create mode 100644 arch/riscv/kvm/vcpu_sbi_covg.c
+> create mode 100644 arch/riscv/mm/ioremap.c
+> create mode 100644 arch/riscv/mm/mem_encrypt.c
+> 
+> --
+> 2.25.1
+> 
 
