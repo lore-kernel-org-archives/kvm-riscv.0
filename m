@@ -1,71 +1,140 @@
-From: kernel test robot <lkp@intel.com>
-Date: Sat, 22 Apr 2023 03:43:03 +0800
-Subject: [PATCH 7/9] KVM: mmu: Move mmu lock/unlock to arch code for
- clear dirty log
-In-Reply-To: <20230421165305.804301-8-vipinsh@google.com>
-References: <20230421165305.804301-8-vipinsh@google.com>
-Message-ID: <202304220315.bpwbgH5n-lkp@intel.com>
+From: Paolo Bonzini <pbonzini@redhat.com>
+Date: Sat, 22 Apr 2023 01:38:54 +0200
+Subject: [GIT PULL] KVM/riscv changes for 6.4
+In-Reply-To: <CAAhSdy2RLinG5Gx-sfOqrYDAT=xDa3WAk8r1jTu8ReO5Jo0LVA@mail.gmail.com>
+References: <CAAhSdy2RLinG5Gx-sfOqrYDAT=xDa3WAk8r1jTu8ReO5Jo0LVA@mail.gmail.com>
+Message-ID: <CABgObfbPB2NYwDLHnQSW0gtw0AX96KbeNOQsszw0NqytObyfaQ@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Vipin,
+Hi Anup,
 
-kernel test robot noticed the following build warnings:
+while you did fix the bug that caused the mailing list date to
+disappear, I noticed that these patches have been _applied_ (not just
+rebased) earlier today, just a few hours before sending the pull
+request.
 
-[auto build test WARNING on 95b9779c1758f03cf494e8550d6249a40089ed1c]
+The pull request was sent around midnight, Indian time, while the
+patches were applied around 5-6pm. I  recognized that this is not a
+rebase because the commit dates are grouped according to the topicsL
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Vipin-Sharma/KVM-selftests-Allow-dirty_log_perf_test-to-clear-dirty-memory-in-chunks/20230422-005708
-base:   95b9779c1758f03cf494e8550d6249a40089ed1c
-patch link:    https://lore.kernel.org/r/20230421165305.804301-8-vipinsh%40google.com
-patch subject: [PATCH 7/9] KVM: mmu: Move mmu lock/unlock to arch code for clear dirty log
-config: riscv-allyesconfig (https://download.01.org/0day-ci/archive/20230422/202304220315.bpwbgH5n-lkp at intel.com/config)
-compiler: riscv64-linux-gcc (GCC) 12.1.0
-reproduce (this is a W=1 build):
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        # https://github.com/intel-lab-lkp/linux/commit/e7505b53d53e3bb5e7f1c43233ef3644673edb75
-        git remote add linux-review https://github.com/intel-lab-lkp/linux
-        git fetch --no-tags linux-review Vipin-Sharma/KVM-selftests-Allow-dirty_log_perf_test-to-clear-dirty-memory-in-chunks/20230422-005708
-        git checkout e7505b53d53e3bb5e7f1c43233ef3644673edb75
-        # save the config file
-        mkdir build_dir && cp config build_dir/.config
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-12.1.0 make.cross W=1 O=build_dir ARCH=riscv olddefconfig
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-12.1.0 make.cross W=1 O=build_dir ARCH=riscv SHELL=/bin/bash arch/riscv/kvm/
+17:38:40 +0530 KVM: RISC-V: Retry fault if vma_lookup() results become invalid
+17:38:42 +0530 RISC-V: KVM: Alphabetize selects
+17:38:44 +0530 RISC-V: KVM: Add ONE_REG interface to enable/disable
+SBI extensions
+17:38:46 +0530 RISC-V: KVM: Allow Zbb extension for Guest/VM
 
-If you fix the issue, kindly add following tag where applicable
-| Reported-by: kernel test robot <lkp@intel.com>
-| Link: https://lore.kernel.org/oe-kbuild-all/202304220315.bpwbgH5n-lkp at intel.com/
+17:45:39 +0530 RISC-V: Add AIA related CSR defines
+17:45:42 +0530 RISC-V: Detect AIA CSRs from ISA string
+17:45:44 +0530 RISC-V: KVM: Drop the _MASK suffix from hgatp.VMID mask defines
+17:45:48 +0530 RISC-V: KVM: Initial skeletal support for AIA
+17:45:51 +0530 RISC-V: KVM: Implement subtype for CSR ONE_REG interface
+17:45:54 +0530 RISC-V: KVM: Add ONE_REG interface for AIA CSRs
+17:45:58 +0530 RISC-V: KVM: Use bitmap for irqs_pending and irqs_pending_mask
 
-All warnings (new ones prefixed by >>):
+18:10:27 2023 +0530 RISC-V: KVM: Virtualize per-HART AIA CSRs
 
-   arch/riscv/kvm/mmu.c: In function 'kvm_arch_mmu_enable_log_dirty_pt_masked':
->> arch/riscv/kvm/mmu.c:399:9: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
-     399 |         phys_addr_t base_gfn = slot->base_gfn + gfn_offset;
-         |         ^~~~~~~~~~~
+What this means, is that there is no way that these patches have been
+tested by anyone except you. Please try to push to the kvm-riscv/next
+branch as soon as patches are ready, since that makes it easier to
+spot conflicts between architectures.
 
+In fact, since RISC-V is still pretty small, feel free to send me pull
+requests even early in the development period, as soon as some patches
+are ready.
 
-vim +399 arch/riscv/kvm/mmu.c
+Paolo
 
-c9d57373fc87a3 Anup Patel   2022-07-29  392  
-9d05c1fee83757 Anup Patel   2021-09-27  393  void kvm_arch_mmu_enable_log_dirty_pt_masked(struct kvm *kvm,
-9d05c1fee83757 Anup Patel   2021-09-27  394  					     struct kvm_memory_slot *slot,
-9d05c1fee83757 Anup Patel   2021-09-27  395  					     gfn_t gfn_offset,
-9d05c1fee83757 Anup Patel   2021-09-27  396  					     unsigned long mask)
-9d05c1fee83757 Anup Patel   2021-09-27  397  {
-e7505b53d53e3b Vipin Sharma 2023-04-21  398  	spin_lock(&kvm->mmu_lock);
-9d05c1fee83757 Anup Patel   2021-09-27 @399  	phys_addr_t base_gfn = slot->base_gfn + gfn_offset;
-9d05c1fee83757 Anup Patel   2021-09-27  400  	phys_addr_t start = (base_gfn +  __ffs(mask)) << PAGE_SHIFT;
-9d05c1fee83757 Anup Patel   2021-09-27  401  	phys_addr_t end = (base_gfn + __fls(mask) + 1) << PAGE_SHIFT;
-9d05c1fee83757 Anup Patel   2021-09-27  402  
-26708234eb12e7 Anup Patel   2022-05-09  403  	gstage_wp_range(kvm, start, end);
-e7505b53d53e3b Vipin Sharma 2023-04-21  404  	spin_unlock(&kvm->mmu_lock);
-9d05c1fee83757 Anup Patel   2021-09-27  405  }
-99cdc6c18c2d81 Anup Patel   2021-09-27  406  
+On Fri, Apr 21, 2023 at 7:34?PM Anup Patel <anup@brainfault.org> wrote:
+>
+> Hi Paolo,
+>
+> We have the following KVM RISC-V changes for 6.4:
+> 1) ONE_REG interface to enable/disable SBI extensions
+> 2) Zbb extension for Guest/VM
+> 3) AIA CSR virtualization
+> 4) Few minor cleanups and fixes
+>
+> Please pull.
+>
+> Please note that the Zicboz series has been taken by
+> Palmer through the RISC-V tree which results in few
+> minor conflicts in the following files:
+> arch/riscv/include/asm/hwcap.h
+> arch/riscv/include/uapi/asm/kvm.h
+> arch/riscv/kernel/cpu.c
+> arch/riscv/kernel/cpufeature.c
+> arch/riscv/kvm/vcpu.c
+>
+> I am not sure if a shared tag can make things easy
+> for you or Palmer.
+>
+> Regards,
+> Anup
+>
+> The following changes since commit 6a8f57ae2eb07ab39a6f0ccad60c760743051026:
+>
+>   Linux 6.3-rc7 (2023-04-16 15:23:53 -0700)
+>
+> are available in the Git repository at:
+>
+>   https://github.com/kvm-riscv/linux.git tags/kvm-riscv-6.4-1
+>
+> for you to fetch changes up to 2f4d58f7635aec014428e73ef6120c4d0377c430:
+>
+>   RISC-V: KVM: Virtualize per-HART AIA CSRs (2023-04-21 18:10:27 +0530)
+>
+> ----------------------------------------------------------------
+> KVM/riscv changes for 6.4
+>
+> - ONE_REG interface to enable/disable SBI extensions
+> - Zbb extension for Guest/VM
+> - AIA CSR virtualization
+>
+> ----------------------------------------------------------------
+> Andrew Jones (1):
+>       RISC-V: KVM: Alphabetize selects
+>
+> Anup Patel (10):
+>       RISC-V: KVM: Add ONE_REG interface to enable/disable SBI extensions
+>       RISC-V: KVM: Allow Zbb extension for Guest/VM
+>       RISC-V: Add AIA related CSR defines
+>       RISC-V: Detect AIA CSRs from ISA string
+>       RISC-V: KVM: Drop the _MASK suffix from hgatp.VMID mask defines
+>       RISC-V: KVM: Initial skeletal support for AIA
+>       RISC-V: KVM: Implement subtype for CSR ONE_REG interface
+>       RISC-V: KVM: Add ONE_REG interface for AIA CSRs
+>       RISC-V: KVM: Use bitmap for irqs_pending and irqs_pending_mask
+>       RISC-V: KVM: Virtualize per-HART AIA CSRs
+>
+> David Matlack (1):
+>       KVM: RISC-V: Retry fault if vma_lookup() results become invalid
+>
+>  arch/riscv/include/asm/csr.h          | 107 +++++++++-
+>  arch/riscv/include/asm/hwcap.h        |   8 +
+>  arch/riscv/include/asm/kvm_aia.h      | 127 +++++++++++
+>  arch/riscv/include/asm/kvm_host.h     |  14 +-
+>  arch/riscv/include/asm/kvm_vcpu_sbi.h |   8 +-
+>  arch/riscv/include/uapi/asm/kvm.h     |  51 ++++-
+>  arch/riscv/kernel/cpu.c               |   2 +
+>  arch/riscv/kernel/cpufeature.c        |   2 +
+>  arch/riscv/kvm/Kconfig                |  10 +-
+>  arch/riscv/kvm/Makefile               |   1 +
+>  arch/riscv/kvm/aia.c                  | 388 ++++++++++++++++++++++++++++++++++
+>  arch/riscv/kvm/main.c                 |  22 +-
+>  arch/riscv/kvm/mmu.c                  |  28 ++-
+>  arch/riscv/kvm/vcpu.c                 | 194 +++++++++++++----
+>  arch/riscv/kvm/vcpu_insn.c            |   1 +
+>  arch/riscv/kvm/vcpu_sbi.c             | 247 ++++++++++++++++++++--
+>  arch/riscv/kvm/vcpu_sbi_base.c        |   2 +-
+>  arch/riscv/kvm/vm.c                   |   4 +
+>  arch/riscv/kvm/vmid.c                 |   4 +-
+>  19 files changed, 1129 insertions(+), 91 deletions(-)
+>  create mode 100644 arch/riscv/include/asm/kvm_aia.h
+>  create mode 100644 arch/riscv/kvm/aia.c
+>
 
--- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests
 
