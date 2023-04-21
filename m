@@ -1,160 +1,61 @@
 From: Atish Kumar Patra <atishp@rivosinc.com>
-Date: Sat, 22 Apr 2023 00:20:08 +0530
-Subject: [RFC 10/48] RISC-V: KVM: Implement static memory region measurement
-In-Reply-To: <ZEFXiXu+0XLSdRkQ@google.com>
-References: <20230419221716.3603068-1-atishp@rivosinc.com> <20230419221716.3603068-11-atishp@rivosinc.com>
- <ZEFXiXu+0XLSdRkQ@google.com>
-Message-ID: <CAHBxVyGGsvYrRpx1=ahW-5ALskAQJsgjF=9a=BMreuQov0En6Q@mail.gmail.com>
+Date: Sat, 22 Apr 2023 00:54:41 +0530
+Subject: [RFC 45/48] RISC-V: ioremap: Implement for arch specific ioremap hooks
+In-Reply-To: <69ba1760-a079-fd8f-b079-fcb01e3eedec@intel.com>
+References: <20230419221716.3603068-1-atishp@rivosinc.com> <20230419221716.3603068-46-atishp@rivosinc.com>
+ <69ba1760-a079-fd8f-b079-fcb01e3eedec@intel.com>
+Message-ID: <CAHBxVyFhDapAeMQ8quBqWZ10jWSHw1CdE227ciyKQpULHYzffA@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Apr 20, 2023 at 8:47?PM Sean Christopherson <seanjc@google.com> wrote:
+On Fri, Apr 21, 2023 at 3:46?AM Dave Hansen <dave.hansen@intel.com> wrote:
 >
-> On Wed, Apr 19, 2023, Atish Patra wrote:
-> > +int kvm_riscv_cove_vm_measure_pages(struct kvm *kvm, struct kvm_riscv_cove_measure_region *mr)
-> > +{
-> > +     struct kvm_cove_tvm_context *tvmc = kvm->arch.tvmc;
-> > +     int rc = 0, idx, num_pages;
-> > +     struct kvm_riscv_cove_mem_region *conf;
-> > +     struct page *pinned_page, *conf_page;
-> > +     struct kvm_riscv_cove_page *cpage;
-> > +
-> > +     if (!tvmc)
-> > +             return -EFAULT;
-> > +
-> > +     if (tvmc->finalized_done) {
-> > +             kvm_err("measured_mr pages can not be added after finalize\n");
-> > +             return -EINVAL;
-> > +     }
-> > +
-> > +     num_pages = bytes_to_pages(mr->size);
-> > +     conf = &tvmc->confidential_region;
-> > +
-> > +     if (!IS_ALIGNED(mr->userspace_addr, PAGE_SIZE) ||
-> > +         !IS_ALIGNED(mr->gpa, PAGE_SIZE) || !mr->size ||
-> > +         !cove_is_within_region(conf->gpa, conf->npages << PAGE_SHIFT, mr->gpa, mr->size))
-> > +             return -EINVAL;
-> > +
-> > +     idx = srcu_read_lock(&kvm->srcu);
-> > +
-> > +     /*TODO: Iterate one page at a time as pinning multiple pages fail with unmapped panic
-> > +      * with a virtual address range belonging to vmalloc region for some reason.
+> On 4/19/23 15:17, Atish Patra wrote:
+> > The guests running in CoVE must notify the host about its mmio regions
+> > so that host can enable mmio emulation.
 >
-> I've no idea what code you had, but I suspect the fact that vmalloc'd memory isn't
-> guaranteed to be physically contiguous is relevant to the panic.
+> This one doesn't make a lot of sense to me.
+>
+> The guest and host must agree about the guest's physical layout up
+> front.  In general, the host gets to dictate that layout.  It tells the
+> guest, up front, what is present in the guest physical address space.
 >
 
-Ahh. That makes sense. Thanks.
+That is passed through DT/ACPI (which will be measured) to the guest.
 
-> > +      */
-> > +     while (num_pages) {
-> > +             if (signal_pending(current)) {
-> > +                     rc = -ERESTARTSYS;
-> > +                     break;
-> > +             }
-> > +
-> > +             if (need_resched())
-> > +                     cond_resched();
-> > +
-> > +             rc = get_user_pages_fast(mr->userspace_addr, 1, 0, &pinned_page);
-> > +             if (rc < 0) {
-> > +                     kvm_err("Pinning the userpsace addr %lx failed\n", mr->userspace_addr);
-> > +                     break;
-> > +             }
-> > +
-> > +             /* Enough pages are not available to be pinned */
-> > +             if (rc != 1) {
-> > +                     rc = -ENOMEM;
-> > +                     break;
-> > +             }
-> > +             conf_page = alloc_page(GFP_KERNEL | __GFP_ZERO);
-> > +             if (!conf_page) {
-> > +                     rc = -ENOMEM;
-> > +                     break;
-> > +             }
-> > +
-> > +             rc = cove_convert_pages(page_to_phys(conf_page), 1, true);
-> > +             if (rc)
-> > +                     break;
-> > +
-> > +             /*TODO: Support other pages sizes */
-> > +             rc = sbi_covh_add_measured_pages(tvmc->tvm_guest_id, page_to_phys(pinned_page),
-> > +                                              page_to_phys(conf_page), SBI_COVE_PAGE_4K,
-> > +                                              1, mr->gpa);
-> > +             if (rc)
-> > +                     break;
-> > +
-> > +             /* Unpin the page now */
-> > +             put_page(pinned_page);
-> > +
-> > +             cpage = kmalloc(sizeof(*cpage), GFP_KERNEL_ACCOUNT);
-> > +             if (!cpage) {
-> > +                     rc = -ENOMEM;
-> > +                     break;
-> > +             }
-> > +
-> > +             cpage->page = conf_page;
-> > +             cpage->npages = 1;
-> > +             cpage->gpa = mr->gpa;
-> > +             cpage->hva = mr->userspace_addr;
+> This callback appears to say to the host:
 >
-> Snapshotting the userspace address for the _source_ page can't possibly be useful.
+>         Hey, I (the guest) am treating this guest physical area as MMIO.
+>
+> But the host and guest have to agree _somewhere_ what the MMIO is used
+> for, not just that it is being used as MMIO.
 >
 
-Yeah. Currently, the hva in the kvm_riscv_cove_page is not used
-anywhere in the code. We can remove it.
+Yes. The TSM (TEE Security Manager) which is equivalent to TDX also
+needs to be aware
+of the MMIO regions so that it can forward the faults accordingly.
+Most of the MMIO is emulated in the host (userspace or kernel
+emulation if present).
+The host is outside the trust boundary of the guest. Thus, guest needs
+to make sure the host
+only emulates the designated MMIO region. Otherwise, it opens an
+attack surface from a malicious host.
 
-> > +             cpage->is_mapped = true;
-> > +             INIT_LIST_HEAD(&cpage->link);
-> > +             list_add(&cpage->link, &tvmc->measured_pages);
-> > +
-> > +             mr->userspace_addr += PAGE_SIZE;
-> > +             mr->gpa += PAGE_SIZE;
-> > +             num_pages--;
-> > +             conf_page = NULL;
-> > +
-> > +             continue;
-> > +     }
-> > +     srcu_read_unlock(&kvm->srcu, idx);
-> > +
-> > +     if (rc < 0) {
-> > +             /* We don't to need unpin pages as it is allocated by the hypervisor itself */
+All other confidential computing solutions also depend on guest
+initiated MMIO as well. AFAIK, the TDX & SEV
+relies on #VE like exceptions to invoke that while this patch is
+similar to what pkvm does.
+This approach lets the enlightened guest control which MMIO regions it
+wants the host to emulate.
+It can be a subset of the region's host provided the layout. The guest
+device filtering solution is based on
+this idea as well [1].
+
+[1] https://lore.kernel.org/all/20210930010511.3387967-1-sathyanarayanan.kuppuswamy at linux.intel.com/
+
+
 >
-> This comment makes no sense.  The above code is doing all of the allocation and
-> pinning, which strongly suggests that KVM is the hypervisor.  But this comment
-> implies that KVM is not the hypervisor.
->
-
-I mean to say here the conf_page is allocated in the kernel using
-alloc_page. So no pinning/unpinning is required.
-It seems the comment is probably misleading & confusing at best. I
-will remove it.
-
-> And "pinned_page" is cleared unpinned in the loop after the page is added+measured,
-> which looks to be the same model as TDX where "pinned_page" is the source and
-> "conf_page" is gifted to the hypervisor.  But on failure, e.g. when allocating
-> "conf_page", that reference is not put.
->
-
-Thanks. Will fix it.
-
-> > +             cove_delete_page_list(kvm, &tvmc->measured_pages, false);
-> > +             /* Free the last allocated page for which conversion/measurement failed */
-> > +             kfree(conf_page);
->
-> Assuming my guesses about how the architecture works are correct, this is broken
-> if sbi_covh_add_measured_pages() fails. The page has already been gifted to the
-
-Yeah. The last conf_page should be reclaimed as well if measured_pages
-fail at any point in the loop.
-All other allocated ones would be reclaimed as a part of cove_delete_page_list.
-
-
-
-> TSM by cove_convert_pages(), but there is no call to sbi_covh_tsm_reclaim_pages(),
-> which I'm guessing is necesary to transition the page back to a state where it can
-> be safely used by the host.
 
