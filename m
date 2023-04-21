@@ -1,61 +1,71 @@
-From: Atish Kumar Patra <atishp@rivosinc.com>
-Date: Sat, 22 Apr 2023 00:54:41 +0530
-Subject: [RFC 45/48] RISC-V: ioremap: Implement for arch specific ioremap hooks
-In-Reply-To: <69ba1760-a079-fd8f-b079-fcb01e3eedec@intel.com>
-References: <20230419221716.3603068-1-atishp@rivosinc.com> <20230419221716.3603068-46-atishp@rivosinc.com>
- <69ba1760-a079-fd8f-b079-fcb01e3eedec@intel.com>
-Message-ID: <CAHBxVyFhDapAeMQ8quBqWZ10jWSHw1CdE227ciyKQpULHYzffA@mail.gmail.com>
+From: kernel test robot <lkp@intel.com>
+Date: Sat, 22 Apr 2023 03:43:03 +0800
+Subject: [PATCH 7/9] KVM: mmu: Move mmu lock/unlock to arch code for
+ clear dirty log
+In-Reply-To: <20230421165305.804301-8-vipinsh@google.com>
+References: <20230421165305.804301-8-vipinsh@google.com>
+Message-ID: <202304220315.bpwbgH5n-lkp@intel.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Apr 21, 2023 at 3:46?AM Dave Hansen <dave.hansen@intel.com> wrote:
->
-> On 4/19/23 15:17, Atish Patra wrote:
-> > The guests running in CoVE must notify the host about its mmio regions
-> > so that host can enable mmio emulation.
->
-> This one doesn't make a lot of sense to me.
->
-> The guest and host must agree about the guest's physical layout up
-> front.  In general, the host gets to dictate that layout.  It tells the
-> guest, up front, what is present in the guest physical address space.
->
+Hi Vipin,
 
-That is passed through DT/ACPI (which will be measured) to the guest.
+kernel test robot noticed the following build warnings:
 
-> This callback appears to say to the host:
->
->         Hey, I (the guest) am treating this guest physical area as MMIO.
->
-> But the host and guest have to agree _somewhere_ what the MMIO is used
-> for, not just that it is being used as MMIO.
->
+[auto build test WARNING on 95b9779c1758f03cf494e8550d6249a40089ed1c]
 
-Yes. The TSM (TEE Security Manager) which is equivalent to TDX also
-needs to be aware
-of the MMIO regions so that it can forward the faults accordingly.
-Most of the MMIO is emulated in the host (userspace or kernel
-emulation if present).
-The host is outside the trust boundary of the guest. Thus, guest needs
-to make sure the host
-only emulates the designated MMIO region. Otherwise, it opens an
-attack surface from a malicious host.
+url:    https://github.com/intel-lab-lkp/linux/commits/Vipin-Sharma/KVM-selftests-Allow-dirty_log_perf_test-to-clear-dirty-memory-in-chunks/20230422-005708
+base:   95b9779c1758f03cf494e8550d6249a40089ed1c
+patch link:    https://lore.kernel.org/r/20230421165305.804301-8-vipinsh%40google.com
+patch subject: [PATCH 7/9] KVM: mmu: Move mmu lock/unlock to arch code for clear dirty log
+config: riscv-allyesconfig (https://download.01.org/0day-ci/archive/20230422/202304220315.bpwbgH5n-lkp at intel.com/config)
+compiler: riscv64-linux-gcc (GCC) 12.1.0
+reproduce (this is a W=1 build):
+        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        # https://github.com/intel-lab-lkp/linux/commit/e7505b53d53e3bb5e7f1c43233ef3644673edb75
+        git remote add linux-review https://github.com/intel-lab-lkp/linux
+        git fetch --no-tags linux-review Vipin-Sharma/KVM-selftests-Allow-dirty_log_perf_test-to-clear-dirty-memory-in-chunks/20230422-005708
+        git checkout e7505b53d53e3bb5e7f1c43233ef3644673edb75
+        # save the config file
+        mkdir build_dir && cp config build_dir/.config
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-12.1.0 make.cross W=1 O=build_dir ARCH=riscv olddefconfig
+        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-12.1.0 make.cross W=1 O=build_dir ARCH=riscv SHELL=/bin/bash arch/riscv/kvm/
 
-All other confidential computing solutions also depend on guest
-initiated MMIO as well. AFAIK, the TDX & SEV
-relies on #VE like exceptions to invoke that while this patch is
-similar to what pkvm does.
-This approach lets the enlightened guest control which MMIO regions it
-wants the host to emulate.
-It can be a subset of the region's host provided the layout. The guest
-device filtering solution is based on
-this idea as well [1].
+If you fix the issue, kindly add following tag where applicable
+| Reported-by: kernel test robot <lkp@intel.com>
+| Link: https://lore.kernel.org/oe-kbuild-all/202304220315.bpwbgH5n-lkp at intel.com/
 
-[1] https://lore.kernel.org/all/20210930010511.3387967-1-sathyanarayanan.kuppuswamy at linux.intel.com/
+All warnings (new ones prefixed by >>):
+
+   arch/riscv/kvm/mmu.c: In function 'kvm_arch_mmu_enable_log_dirty_pt_masked':
+>> arch/riscv/kvm/mmu.c:399:9: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
+     399 |         phys_addr_t base_gfn = slot->base_gfn + gfn_offset;
+         |         ^~~~~~~~~~~
 
 
->
+vim +399 arch/riscv/kvm/mmu.c
+
+c9d57373fc87a3 Anup Patel   2022-07-29  392  
+9d05c1fee83757 Anup Patel   2021-09-27  393  void kvm_arch_mmu_enable_log_dirty_pt_masked(struct kvm *kvm,
+9d05c1fee83757 Anup Patel   2021-09-27  394  					     struct kvm_memory_slot *slot,
+9d05c1fee83757 Anup Patel   2021-09-27  395  					     gfn_t gfn_offset,
+9d05c1fee83757 Anup Patel   2021-09-27  396  					     unsigned long mask)
+9d05c1fee83757 Anup Patel   2021-09-27  397  {
+e7505b53d53e3b Vipin Sharma 2023-04-21  398  	spin_lock(&kvm->mmu_lock);
+9d05c1fee83757 Anup Patel   2021-09-27 @399  	phys_addr_t base_gfn = slot->base_gfn + gfn_offset;
+9d05c1fee83757 Anup Patel   2021-09-27  400  	phys_addr_t start = (base_gfn +  __ffs(mask)) << PAGE_SHIFT;
+9d05c1fee83757 Anup Patel   2021-09-27  401  	phys_addr_t end = (base_gfn + __fls(mask) + 1) << PAGE_SHIFT;
+9d05c1fee83757 Anup Patel   2021-09-27  402  
+26708234eb12e7 Anup Patel   2022-05-09  403  	gstage_wp_range(kvm, start, end);
+e7505b53d53e3b Vipin Sharma 2023-04-21  404  	spin_unlock(&kvm->mmu_lock);
+9d05c1fee83757 Anup Patel   2021-09-27  405  }
+99cdc6c18c2d81 Anup Patel   2021-09-27  406  
+
+-- 
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests
 
