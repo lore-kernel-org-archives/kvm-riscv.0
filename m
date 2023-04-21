@@ -1,85 +1,150 @@
 From: Vipin Sharma <vipinsh@google.com>
-Date: Fri, 21 Apr 2023 09:52:59 -0700
-Subject: [PATCH 3/9] KVM: selftests: Pass count of read and write accesses
- from guest to host
+Date: Fri, 21 Apr 2023 09:53:01 -0700
+Subject: [PATCH 5/9]  KVM: selftests: Allow independent execution of vCPUs in dirty_log_perf_test
 In-Reply-To: <20230421165305.804301-1-vipinsh@google.com>
 References: <20230421165305.804301-1-vipinsh@google.com>
-Message-ID: <20230421165305.804301-4-vipinsh@google.com>
+Message-ID: <20230421165305.804301-6-vipinsh@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Pass number of read and write accesses done in the memstress' guest code
-to userspace.
+Allow vCPUs to execute independent of dirty log iterations after
+initialization is complete. Hide this feature behind the new option
+"-j".
 
-These counts will be one way to measure vCPU performances during
-memstress and dirty logging related tests. For example, in
-dirty_log_perf_test this can be used to measure impact of dirty and
-clear log APIs on vCPUs performances.
-
-In current dirty_log_perf_test, each vCPU executes in lockstep to the
-current iteration in userspace, therefore, these access counts will not
-provide much useful information except for observing individual vCPUs
-read vs write accesses.
-
-However, in future commits, dirty_log_perf_test behavior will be changed
-to allow vCPUs to execute independent of userspace iterations. This will
-mimic real world workload where guest keeps on executing while VMM is
-collecting and clearing dirty logs separately. With read and write
-accesses known for each vCPU, impact of get and clear dirty log APIs can
-be quantified. Note that these access counts will not be 100% reliable
-in knowing vCPUs performances since vCPUs scheduling can impact
-the progress.
+This change makes dirty_log_perf_test execute like real world workflows
+where guest vCPUs keep on executing while VMM collects dirty logs. Total
+pages touched during execution of test will give good estimate of how
+vCPUs are performing while dirty logging is enabled.
 
 Signed-off-by: Vipin Sharma <vipinsh@google.com>
 ---
- tools/testing/selftests/kvm/lib/memstress.c | 13 ++++++++++---
- 1 file changed, 10 insertions(+), 3 deletions(-)
+ .../selftests/kvm/dirty_log_perf_test.c       | 60 ++++++++++++-------
+ 1 file changed, 40 insertions(+), 20 deletions(-)
 
-diff --git a/tools/testing/selftests/kvm/lib/memstress.c b/tools/testing/selftests/kvm/lib/memstress.c
-index 483ecbc53a5b..9c2e360e610f 100644
---- a/tools/testing/selftests/kvm/lib/memstress.c
-+++ b/tools/testing/selftests/kvm/lib/memstress.c
-@@ -50,6 +50,8 @@ void memstress_guest_code(uint32_t vcpu_idx)
- 	struct memstress_args *args = &memstress_args;
- 	struct memstress_vcpu_args *vcpu_args = &args->vcpu_args[vcpu_idx];
- 	struct guest_random_state rand_state;
-+	uint64_t write_access;
-+	uint64_t read_access;
- 	uint64_t gva;
- 	uint64_t pages;
- 	uint64_t addr;
-@@ -65,6 +67,8 @@ void memstress_guest_code(uint32_t vcpu_idx)
- 	GUEST_ASSERT(vcpu_args->vcpu_idx == vcpu_idx);
+diff --git a/tools/testing/selftests/kvm/dirty_log_perf_test.c b/tools/testing/selftests/kvm/dirty_log_perf_test.c
+index 0a08a3d21123..ffdad535fdaa 100644
+--- a/tools/testing/selftests/kvm/dirty_log_perf_test.c
++++ b/tools/testing/selftests/kvm/dirty_log_perf_test.c
+@@ -69,6 +69,7 @@ static int iteration;
+ static int vcpu_last_completed_iteration[KVM_MAX_VCPUS];
+ static atomic_ullong total_reads;
+ static atomic_ullong total_writes;
++static bool lockstep_iterations;
  
- 	while (true) {
-+		write_access = 0;
-+		read_access = 0;
- 		for (i = 0; i < pages; i++) {
- 			if (args->random_access)
- 				page = guest_random_u32(&rand_state) % pages;
-@@ -73,13 +77,16 @@ void memstress_guest_code(uint32_t vcpu_idx)
+ static void vcpu_worker(struct memstress_vcpu_args *vcpu_args)
+ {
+@@ -83,12 +84,16 @@ static void vcpu_worker(struct memstress_vcpu_args *vcpu_args)
+ 	struct timespec total = (struct timespec){0};
+ 	struct timespec avg;
+ 	struct ucall uc = {};
++	int current_iteration = -1;
+ 	int ret;
  
- 			addr = gva + (page * args->guest_page_size);
+ 	run = vcpu->run;
  
--			if (guest_random_u32(&rand_state) % 100 < args->write_percent)
-+			if (guest_random_u32(&rand_state) % 100 < args->write_percent) {
- 				*(uint64_t *)addr = 0x0123456789ABCDEF;
--			else
-+				write_access++;
-+			} else {
- 				READ_ONCE(*(uint64_t *)addr);
-+				read_access++;
-+			}
+ 	while (!READ_ONCE(host_quit)) {
+-		int current_iteration = READ_ONCE(iteration);
++		if (lockstep_iterations)
++			current_iteration = READ_ONCE(iteration);
++		else
++			current_iteration++;
+ 
+ 		clock_gettime(CLOCK_MONOTONIC, &start);
+ 		ret = _vcpu_run(vcpu);
+@@ -118,13 +123,19 @@ static void vcpu_worker(struct memstress_vcpu_args *vcpu_args)
+ 				ts_diff.tv_nsec);
  		}
  
--		GUEST_SYNC(1);
-+		GUEST_SYNC_ARGS(1, read_access, write_access, 0, 0);
+-		/*
+-		 * Keep running the guest while dirty logging is being disabled
+-		 * (iteration is negative) so that vCPUs are accessing memory
+-		 * for the entire duration of zapping collapsible SPTEs.
+-		 */
+-		while (current_iteration == READ_ONCE(iteration) &&
+-		       READ_ONCE(iteration) >= 0 && !READ_ONCE(host_quit)) {}
++		if (lockstep_iterations) {
++			/*
++			 * Keep running the guest while dirty logging is being disabled
++			 * (iteration is negative) so that vCPUs are accessing memory
++			 * for the entire duration of zapping collapsible SPTEs.
++			 */
++			while (current_iteration == READ_ONCE(iteration) &&
++			       READ_ONCE(iteration) >= 0 && !READ_ONCE(host_quit))
++				;
++		} else {
++			while (!READ_ONCE(iteration))
++				;
++		}
  	}
- }
  
+ 	avg = timespec_div(total, vcpu_last_completed_iteration[vcpu_idx]);
+@@ -238,17 +249,19 @@ static void run_test(enum vm_guest_mode mode, void *arg)
+ 		clock_gettime(CLOCK_MONOTONIC, &start);
+ 		iteration++;
+ 
+-		pr_debug("Starting iteration %d\n", iteration);
+-		for (i = 0; i < nr_vcpus; i++) {
+-			while (READ_ONCE(vcpu_last_completed_iteration[i])
+-			       != iteration)
+-				;
+-		}
++		if (lockstep_iterations) {
++			pr_debug("Starting iteration %d\n", iteration);
++			for (i = 0; i < nr_vcpus; i++) {
++				while (READ_ONCE(vcpu_last_completed_iteration[i])
++				       != iteration)
++					;
++			}
+ 
+-		ts_diff = timespec_elapsed(start);
+-		vcpu_dirty_total = timespec_add(vcpu_dirty_total, ts_diff);
+-		pr_info("Iteration %d dirty memory time: %ld.%.9lds\n",
+-			iteration, ts_diff.tv_sec, ts_diff.tv_nsec);
++			ts_diff = timespec_elapsed(start);
++			vcpu_dirty_total = timespec_add(vcpu_dirty_total, ts_diff);
++			pr_info("Iteration %d dirty memory time: %ld.%.9lds\n",
++				iteration, ts_diff.tv_sec, ts_diff.tv_nsec);
++		}
+ 
+ 		clock_gettime(CLOCK_MONOTONIC, &start);
+ 		memstress_get_dirty_log(vm, bitmaps, p->slots);
+@@ -365,6 +378,10 @@ static void help(char *name)
+ 	       "     To leave the application task unpinned, drop the final entry:\n\n"
+ 	       "         ./dirty_log_perf_test -v 3 -c 22,23,24\n\n"
+ 	       "     (default: no pinning)\n");
++	printf(" -j: Execute vCPUs independent of dirty log iterations\n"
++	       "     Independent vCPUs execution will allow them to continuously\n"
++	       "     dirty memory while main thread is collecting and clearing\n"
++	       "     dirty logs in the main thread's iterations.\n");
+ 	printf(" -k: Specify the chunk size in which dirty memory gets cleared\n"
+ 	       "     in memslots in each iteration. If the size is bigger than\n"
+ 	       "     the memslot size then whole memslot is cleared in one call.\n"
+@@ -399,10 +416,10 @@ int main(int argc, char *argv[])
+ 		kvm_check_cap(KVM_CAP_MANUAL_DIRTY_LOG_PROTECT2);
+ 	dirty_log_manual_caps &= (KVM_DIRTY_LOG_MANUAL_PROTECT_ENABLE |
+ 				  KVM_DIRTY_LOG_INITIALLY_SET);
+-
++	lockstep_iterations = true;
+ 	guest_modes_append_default();
+ 
+-	while ((opt = getopt(argc, argv, "ab:c:eghi:k:l:m:nop:r:s:v:x:w:")) != -1) {
++	while ((opt = getopt(argc, argv, "ab:c:eghi:jk:l:m:nop:r:s:v:x:w:")) != -1) {
+ 		switch (opt) {
+ 		case 'a':
+ 			p.random_access = true;
+@@ -426,6 +443,9 @@ int main(int argc, char *argv[])
+ 		case 'i':
+ 			p.iterations = atoi_positive("Number of iterations", optarg);
+ 			break;
++		case 'j':
++			lockstep_iterations = false;
++			break;
+ 		case 'k':
+ 			p.clear_chunk_size = parse_size(optarg);
+ 			break;
 -- 
 2.40.0.634.g4ca3ef3211-goog
 
