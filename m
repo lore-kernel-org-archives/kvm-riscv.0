@@ -1,86 +1,160 @@
-From: Vipin Sharma <vipinsh@google.com>
-Date: Fri, 21 Apr 2023 09:53:05 -0700
-Subject: [PATCH 9/9] KVM: arm64: Run clear-dirty-log under MMU read lock
-In-Reply-To: <20230421165305.804301-1-vipinsh@google.com>
-References: <20230421165305.804301-1-vipinsh@google.com>
-Message-ID: <20230421165305.804301-10-vipinsh@google.com>
+From: Atish Kumar Patra <atishp@rivosinc.com>
+Date: Sat, 22 Apr 2023 00:20:08 +0530
+Subject: [RFC 10/48] RISC-V: KVM: Implement static memory region measurement
+In-Reply-To: <ZEFXiXu+0XLSdRkQ@google.com>
+References: <20230419221716.3603068-1-atishp@rivosinc.com> <20230419221716.3603068-11-atishp@rivosinc.com>
+ <ZEFXiXu+0XLSdRkQ@google.com>
+Message-ID: <CAHBxVyGGsvYrRpx1=ahW-5ALskAQJsgjF=9a=BMreuQov0En6Q@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Take MMU read lock for write protecting PTEs and use shared page table
-walker for clearing dirty logs.
+On Thu, Apr 20, 2023 at 8:47?PM Sean Christopherson <seanjc@google.com> wrote:
+>
+> On Wed, Apr 19, 2023, Atish Patra wrote:
+> > +int kvm_riscv_cove_vm_measure_pages(struct kvm *kvm, struct kvm_riscv_cove_measure_region *mr)
+> > +{
+> > +     struct kvm_cove_tvm_context *tvmc = kvm->arch.tvmc;
+> > +     int rc = 0, idx, num_pages;
+> > +     struct kvm_riscv_cove_mem_region *conf;
+> > +     struct page *pinned_page, *conf_page;
+> > +     struct kvm_riscv_cove_page *cpage;
+> > +
+> > +     if (!tvmc)
+> > +             return -EFAULT;
+> > +
+> > +     if (tvmc->finalized_done) {
+> > +             kvm_err("measured_mr pages can not be added after finalize\n");
+> > +             return -EINVAL;
+> > +     }
+> > +
+> > +     num_pages = bytes_to_pages(mr->size);
+> > +     conf = &tvmc->confidential_region;
+> > +
+> > +     if (!IS_ALIGNED(mr->userspace_addr, PAGE_SIZE) ||
+> > +         !IS_ALIGNED(mr->gpa, PAGE_SIZE) || !mr->size ||
+> > +         !cove_is_within_region(conf->gpa, conf->npages << PAGE_SHIFT, mr->gpa, mr->size))
+> > +             return -EINVAL;
+> > +
+> > +     idx = srcu_read_lock(&kvm->srcu);
+> > +
+> > +     /*TODO: Iterate one page at a time as pinning multiple pages fail with unmapped panic
+> > +      * with a virtual address range belonging to vmalloc region for some reason.
+>
+> I've no idea what code you had, but I suspect the fact that vmalloc'd memory isn't
+> guaranteed to be physically contiguous is relevant to the panic.
+>
 
-Clearing dirty logs are currently performed under MMU write locks. This
-means vCPUs write protection fault, which also take MMU read lock,  will
-be blocked during this operation. This causes guest degradation and
-especially noticeable on VMs with lot of vCPUs.
+Ahh. That makes sense. Thanks.
 
-Taking MMU read lock will allow vCPUs to execute parallelly and reduces
-the impact on vCPUs performance.
+> > +      */
+> > +     while (num_pages) {
+> > +             if (signal_pending(current)) {
+> > +                     rc = -ERESTARTSYS;
+> > +                     break;
+> > +             }
+> > +
+> > +             if (need_resched())
+> > +                     cond_resched();
+> > +
+> > +             rc = get_user_pages_fast(mr->userspace_addr, 1, 0, &pinned_page);
+> > +             if (rc < 0) {
+> > +                     kvm_err("Pinning the userpsace addr %lx failed\n", mr->userspace_addr);
+> > +                     break;
+> > +             }
+> > +
+> > +             /* Enough pages are not available to be pinned */
+> > +             if (rc != 1) {
+> > +                     rc = -ENOMEM;
+> > +                     break;
+> > +             }
+> > +             conf_page = alloc_page(GFP_KERNEL | __GFP_ZERO);
+> > +             if (!conf_page) {
+> > +                     rc = -ENOMEM;
+> > +                     break;
+> > +             }
+> > +
+> > +             rc = cove_convert_pages(page_to_phys(conf_page), 1, true);
+> > +             if (rc)
+> > +                     break;
+> > +
+> > +             /*TODO: Support other pages sizes */
+> > +             rc = sbi_covh_add_measured_pages(tvmc->tvm_guest_id, page_to_phys(pinned_page),
+> > +                                              page_to_phys(conf_page), SBI_COVE_PAGE_4K,
+> > +                                              1, mr->gpa);
+> > +             if (rc)
+> > +                     break;
+> > +
+> > +             /* Unpin the page now */
+> > +             put_page(pinned_page);
+> > +
+> > +             cpage = kmalloc(sizeof(*cpage), GFP_KERNEL_ACCOUNT);
+> > +             if (!cpage) {
+> > +                     rc = -ENOMEM;
+> > +                     break;
+> > +             }
+> > +
+> > +             cpage->page = conf_page;
+> > +             cpage->npages = 1;
+> > +             cpage->gpa = mr->gpa;
+> > +             cpage->hva = mr->userspace_addr;
+>
+> Snapshotting the userspace address for the _source_ page can't possibly be useful.
+>
 
-Tested improvement on a ARM Ampere Altra host (64 CPUs, 256 GB
-memory and single NUMA node) via dirty_log_perf_test for 48 vCPU, 96
-GB memory, 8GB clear chunk size, 1 second wait between Clear-Dirty-Log
-calls and configuration:
+Yeah. Currently, the hva in the kvm_riscv_cove_page is not used
+anywhere in the code. We can remove it.
 
-Test command:
-./dirty_log_perf_test -s anonymous_hugetlb_2mb -b 2G -v 48 -l 1 -k 8G -j -m 2
+> > +             cpage->is_mapped = true;
+> > +             INIT_LIST_HEAD(&cpage->link);
+> > +             list_add(&cpage->link, &tvmc->measured_pages);
+> > +
+> > +             mr->userspace_addr += PAGE_SIZE;
+> > +             mr->gpa += PAGE_SIZE;
+> > +             num_pages--;
+> > +             conf_page = NULL;
+> > +
+> > +             continue;
+> > +     }
+> > +     srcu_read_unlock(&kvm->srcu, idx);
+> > +
+> > +     if (rc < 0) {
+> > +             /* We don't to need unpin pages as it is allocated by the hypervisor itself */
+>
+> This comment makes no sense.  The above code is doing all of the allocation and
+> pinning, which strongly suggests that KVM is the hypervisor.  But this comment
+> implies that KVM is not the hypervisor.
+>
 
-Before:
-Total pages touched: 50331648 (Reads: 0, Writes: 50331648)
+I mean to say here the conf_page is allocated in the kernel using
+alloc_page. So no pinning/unpinning is required.
+It seems the comment is probably misleading & confusing at best. I
+will remove it.
 
-After:
-Total pages touched: 125304832 (Reads: 0, Writes: 125304832)
+> And "pinned_page" is cleared unpinned in the loop after the page is added+measured,
+> which looks to be the same model as TDX where "pinned_page" is the source and
+> "conf_page" is gifted to the hypervisor.  But on failure, e.g. when allocating
+> "conf_page", that reference is not put.
+>
 
-Signed-off-by: Vipin Sharma <vipinsh@google.com>
----
- arch/arm64/kvm/mmu.c | 14 +++++++++-----
- 1 file changed, 9 insertions(+), 5 deletions(-)
+Thanks. Will fix it.
 
-diff --git a/arch/arm64/kvm/mmu.c b/arch/arm64/kvm/mmu.c
-index e0189cdda43d..3f2117d93998 100644
---- a/arch/arm64/kvm/mmu.c
-+++ b/arch/arm64/kvm/mmu.c
-@@ -67,8 +67,12 @@ static int stage2_apply_range(struct kvm_s2_mmu *mmu, phys_addr_t addr,
- 		if (ret)
- 			break;
- 
--		if (resched && next != end)
--			cond_resched_rwlock_write(&kvm->mmu_lock);
-+		if (resched && next != end) {
-+			if (flags & KVM_PGTABLE_WALK_SHARED)
-+				cond_resched_rwlock_read(&kvm->mmu_lock);
-+			else
-+				cond_resched_rwlock_write(&kvm->mmu_lock);
-+		}
- 	} while (addr = next, addr != end);
- 
- 	return ret;
-@@ -994,7 +998,7 @@ static void kvm_mmu_write_protect_pt_masked(struct kvm *kvm,
- 	phys_addr_t start = (base_gfn +  __ffs(mask)) << PAGE_SHIFT;
- 	phys_addr_t end = (base_gfn + __fls(mask) + 1) << PAGE_SHIFT;
- 
--	stage2_wp_range(&kvm->arch.mmu, start, end, 0);
-+	stage2_wp_range(&kvm->arch.mmu, start, end, KVM_PGTABLE_WALK_SHARED);
- }
- 
- /*
-@@ -1008,9 +1012,9 @@ void kvm_arch_mmu_enable_log_dirty_pt_masked(struct kvm *kvm,
- 		struct kvm_memory_slot *slot,
- 		gfn_t gfn_offset, unsigned long mask)
- {
--	write_lock(&kvm->mmu_lock);
-+	read_lock(&kvm->mmu_lock);
- 	kvm_mmu_write_protect_pt_masked(kvm, slot, gfn_offset, mask);
--	write_unlock(&kvm->mmu_lock);
-+	read_unlock(&kvm->mmu_lock);
- }
- 
- static void kvm_send_hwpoison_signal(unsigned long address, short lsb)
--- 
-2.40.0.634.g4ca3ef3211-goog
+> > +             cove_delete_page_list(kvm, &tvmc->measured_pages, false);
+> > +             /* Free the last allocated page for which conversion/measurement failed */
+> > +             kfree(conf_page);
+>
+> Assuming my guesses about how the architecture works are correct, this is broken
+> if sbi_covh_add_measured_pages() fails. The page has already been gifted to the
 
+Yeah. The last conf_page should be reclaimed as well if measured_pages
+fail at any point in the loop.
+All other allocated ones would be reclaimed as a part of cove_delete_page_list.
+
+
+
+> TSM by cove_convert_pages(), but there is no call to sbi_covh_tsm_reclaim_pages(),
+> which I'm guessing is necesary to transition the page back to a state where it can
+> be safely used by the host.
 
