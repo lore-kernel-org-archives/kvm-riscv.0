@@ -1,28 +1,45 @@
-From: Vipin Sharma <vipinsh@google.com>
-Date: Mon, 24 Apr 2023 09:45:18 -0700
-Subject: [PATCH 7/9] KVM: mmu: Move mmu lock/unlock to arch code for clear
- dirty log
-In-Reply-To: <202304220315.bpwbgH5n-lkp@intel.com>
-References: <20230421165305.804301-8-vipinsh@google.com> <202304220315.bpwbgH5n-lkp@intel.com>
-Message-ID: <CAHVum0cp=wfDmuK87jq7+2t5FnK09v1LownwqgS41EisT4Gc1g@mail.gmail.com>
+From: Anup Patel <apatel@ventanamicro.com>
+Date: Mon, 24 Apr 2023 22:36:40 +0530
+Subject: [GIT PULL] KVM/riscv changes for 6.4
+In-Reply-To: <CABgObfbS7ej9pqmV05DKwq1929QD10EQ9XdkEb_Qhtbm1WrkeQ@mail.gmail.com>
+References: <CAAhSdy2RLinG5Gx-sfOqrYDAT=xDa3WAk8r1jTu8ReO5Jo0LVA@mail.gmail.com>
+ <CABgObfbS7ej9pqmV05DKwq1929QD10EQ9XdkEb_Qhtbm1WrkeQ@mail.gmail.com>
+Message-ID: <CAK9=C2XBkOh2FdY08mXXaVjOFSikbSJUULAohrq3M4qWrNWvew@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Apr 21, 2023 at 12:43?PM kernel test robot <lkp@intel.com> wrote:
->
-> Hi Vipin,
->
-> All warnings (new ones prefixed by >>):
->
->    arch/riscv/kvm/mmu.c: In function 'kvm_arch_mmu_enable_log_dirty_pt_masked':
-> >> arch/riscv/kvm/mmu.c:399:9: warning: ISO C90 forbids mixed declarations and code [-Wdeclaration-after-statement]
->      399 |         phys_addr_t base_gfn = slot->base_gfn + gfn_offset;
->          |         ^~~~~~~~~~~
->
->
+Hi Paolo,
 
-I will fix it in v2.
+On Sat, Apr 22, 2023 at 5:17?AM Paolo Bonzini <pbonzini@redhat.com> wrote:
+>
+> On Fri, Apr 21, 2023 at 7:34?PM Anup Patel <anup@brainfault.org> wrote:
+> > Please note that the Zicboz series has been taken by
+> > Palmer through the RISC-V tree which results in few
+> > minor conflicts in the following files:
+> > arch/riscv/include/asm/hwcap.h
+> > arch/riscv/include/uapi/asm/kvm.h
+> > arch/riscv/kernel/cpu.c
+> > arch/riscv/kernel/cpufeature.c
+> > arch/riscv/kvm/vcpu.c
+> >
+> > I am not sure if a shared tag can make things easy for you or Palmer.
+>
+> It's not just making it easier, it is a requirement because I prefer
+> to keep an eye on changes to uapi.h and especially to avoid that
+> conflicts in KVM files reach Linus.
+>
+> The conflicts may be minor, but they are a symptom of overlooking
+> "something" in the workflow.
+>
+> If I can get the shared tag from Palmer then good, otherwise I suppose
+> this PR will also have to be delayed to the second week of the merge
+> window.
+
+I think it is better to delay this PR to the second week of the merge window.
+
+Regards,
+Anup
 
