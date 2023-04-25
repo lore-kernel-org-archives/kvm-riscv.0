@@ -1,125 +1,113 @@
-From: David Matlack <dmatlack@google.com>
-Date: Mon, 24 Apr 2023 15:33:40 -0700
-Subject: RFC: Common MMU Recommendation
-Message-ID: <CALzav=eBXp7CBN1hLVmyH0A4Ukt3MXR7=0__xPSOx1X1tw4iSw@mail.gmail.com>
+From: Atish Kumar Patra <atishp@rivosinc.com>
+Date: Tue, 25 Apr 2023 13:30:06 +0530
+Subject: [RFC 45/48] RISC-V: ioremap: Implement for arch specific ioremap hooks
+In-Reply-To: <81c476f4-ef62-e4a6-0033-8a46a15379fd@intel.com>
+References: <20230419221716.3603068-1-atishp@rivosinc.com> <20230419221716.3603068-46-atishp@rivosinc.com>
+ <69ba1760-a079-fd8f-b079-fcb01e3eedec@intel.com> <CAHBxVyFhDapAeMQ8quBqWZ10jWSHw1CdE227ciyKQpULHYzffA@mail.gmail.com>
+ <81c476f4-ef62-e4a6-0033-8a46a15379fd@intel.com>
+Message-ID: <CAHBxVyHg7vTaQJWKoVSD8budVZEYSo1eDOyZyZK7gcJApR7SbA@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Apologies for the long delay since the last Common MMU update. I've
-been swamped with Google-internal stuff the past few months. But I
-have some updates to share on the strategy I think we should take
-going forward.
+On Mon, Apr 24, 2023 at 7:18?PM Dave Hansen <dave.hansen@intel.com> wrote:
+>
+> On 4/21/23 12:24, Atish Kumar Patra wrote:
+> > On Fri, Apr 21, 2023 at 3:46?AM Dave Hansen <dave.hansen@intel.com> wrote:>> This callback appears to say to the host:
+> >>
+> >>         Hey, I (the guest) am treating this guest physical area as MMIO.
+> >>
+> >> But the host and guest have to agree _somewhere_ what the MMIO is used
+> >> for, not just that it is being used as MMIO.
+> >
+> > Yes. The TSM (TEE Security Manager) which is equivalent to TDX also
+> > needs to be aware of the MMIO regions so that it can forward the
+> > faults accordingly. Most of the MMIO is emulated in the host
+> > (userspace or kernel emulation if present). The host is outside the
+> > trust boundary of the guest. Thus, guest needs to make sure the host
+> > only emulates the designated MMIO region. Otherwise, it opens an
+> > attack surface from a malicious host.
+> How does this mechanism stop the host from emulating something outside
+> the designated region?
+>
+> On TDX, for instance, the guest page table have a shared/private bit.
+> Private pages get TDX protections to (among other things) keep the page
+> contents confidential from the host.  Shared pages can be used for MMIO
+> and don't have those protections.
+>
+> If the host goes and tries to flip a page from private->shared, TDX
+> protections will kick in and prevent it.
+>
+> None of this requires the guest to tell the host where it expects MMIO
+> to be located.
+>
+> > All other confidential computing solutions also depend on guest
+> > initiated MMIO as well. AFAIK, the TDX & SEV relies on #VE like
+> > exceptions to invoke that while this patch is similar to what pkvm
+> > does. This approach lets the enlightened guest control which MMIO
+> > regions it wants the host to emulate.
+>
+> I'm not _quite_ sure what "guest initiated" means.  But SEV and TDX
+> don't require an ioremap hook like this.  So, even if they *are* "guest
+> initiated", the question still remains how they work without this patch,
+> or what they are missing without it.
+>
 
-The "Common TDP MMU" Approach
-=============================
+Maybe I misunderstood your question earlier. Are you concerned about guests
+invoking any MMIO region specific calls in the ioremap path or passing
+that information to the host ?
+Earlier, I assumed the former but it seems you are also concerned
+about the latter as well. Sorry for the confusion in that case.
+The guest initiation is necessary while the host notification can be
+made optional.
+The "guest initiated" means the guest tells the TSM (equivalent of TDX
+module in RISC-V) the MMIO region details.
+The TSM keeps a track of this and any page faults that happen in that
+region are forwarded
+to the host by the TSM after the instruction decoding. Thus TSM can
+make sure that only ioremapped regions are
+considered MMIO regions. Otherwise, all memory outside the guest
+physical region will be considered as the MMIO region.
 
-In December 2022 I sent an RFC[1] to demonstrate that it is possible
-to refactor the KVM/x86 TDP MMU into common code, i.e. introduce a
-Common TDP MMU. The intent behind this was to eventually use this to
-replace the KVM/ARM and KVM/RISC-V MMU code. This may be a viable
-approach for sharing code with RISC-V, but after further
-consideration, this is a dead-end for ARM.
+In the current CoVE implementation, that MMIO region information is also
+passed to the host to provide additional flexibility. The host may
+choose to do additional
+sanity check and bail if the fault address does not belong to
+requested MMIO regions without
+going to the userspace. This is purely an optimization and may not be mandatory.
 
-The KVM/x86 TDP MMU does not support all of the ARM use-cases
-(notably, managing Stage-1 page tables or compiling into the hyp). So
-a Common TDP MMU would have to exist alongside the current ARM page
-table code (not replace it) for years. This would increase our
-maintenance costs by having to support both the Common MMU and ARM MMU
-when adding support for new ARM architectural features.
 
-The Common TDP MMU approach is too all-or-nothing, rather than
-providing incremental benefit. ARM and x86 are constantly evolving
-(e.g. ARM support for Nested Virtualization and Confidential Computing
-are under development, both of which require changes to the page table
-code). And we know 128-bit ARM page tables are coming. The Common TDP
-MMU would be constantly trying to "catch-up" to the ARM MMU, and might
-never get there.
+> > It can be a subset of the region's host provided the layout. The
+> > guest device filtering solution is based on this idea as well [1].
+> >
+> > [1] https://lore.kernel.org/all/20210930010511.3387967-1-sathyanarayanan.kuppuswamy at linux.intel.com/
+>
+> I don't really see the connection.  Even if that series was going
+> forward (I'm not sure it is) there is no ioremap hook there.  There's
+> also no guest->host communication in that series.  The guest doesn't
+> _tell_ the host where the MMIO is, it just declines to run code for
+> devices that it didn't expect to see.
+>
 
-Lastly, ARM and x86 have significantly different TLB and cache
-maintenance requirements. Future versions of the ARM architecture make
-it behave more like x86, but KVM still has to support older versions.
-It's highly likely that certain optimizations and patterns we use in
-the TDP MMU won't work for ARM.
+This is a recent version of the above series from tdx github. This is
+a WIP as well and has not been posted to
+the mailing list. Thus, it may be going under revisions as well.
+As per my understanding the above ioremap changes for TDX mark the
+ioremapped pages as shared.
+The guest->host communication happen in the #VE exception handler
+where the guest converts this to a hypercall by invoking TDG.VP.VMCALL
+with an EPT violation set. The host would emulate an MMIO address if
+it gets an VMCALL with EPT violation.
+Please correct me if I am wrong.
 
-For all these reasons, continuing to invest in refactoring the KVM/x86
-TDP MMU common right now is not worth it for ARM. It still could be
-viable for RISC-V, but we (Google) don't have enough resources to
-continue this work. I'd be happy to help provide reviews and guidance
-to anyone that wants to pick it up.
+As I said above, the objective here is to notify the TSM where the
+MMIO is. Notifying the host
+is just an optimization that we choose to add. In fact, in this series
+the KVM code doesn't do anything with that information.
+The commit text probably can be improved to clarify that.
 
-Looking Forward
-===============
-I still believe that sharing KVM MMU code across architectures is a
-worthwhile pursuit. But I think we should look for more incremental
-ways to do it.
 
-For new features, we (Google) plan to upstream both x86 and ARM
-support whenever possible, to limit further divergence and to increase
-the probability of sharing code whenever possible. Note: x86 and ARM
-support won't be upstreamed in a single series due to
-architecture-specific maintainers and trees. But we aim to design them
-considering both architectures from the beginning.
-
-As for de-duplicating existing code, there will be opportunities to
-organically share more code that we should take. The new common
-range-based TLB flushing APIs is one example[2].
-
-I also think there are two areas that would be worth investing in:
-
-Determining Host Huge Page Size
--------------------------------
-When handling a fault, KVM needs to figure out what size mapping it
-can use to map the memory. KVM/x86 figures this out (in part) by
-walking the Linux stage-1 page tables. KVM/ARM and KVM/RISC-V perform
-a vma_lookup() under the mmap_lock and inspect the VMA.
-
-The latter approach has scalability downsides (mmap_lock) and also
-does not work with HugeTLB High Granularity Mapping[3], where Linux
-can map HugeTLB memory with smaller mappings to enable demand fetching
-4KiB at a time (and KVM must do the same).
-
-I'd like to unify the architectures to use a common Linux stage-1 page
-table walk to fix the HGM use-case, and share more code. It may even
-be possible to avoid the vma_lookup() eventually [4].
-
-KVM Page Table Iterators
-------------------------
-To have any hope of sharing MMU code, we have to invest in sharing
-page table code.
-
-A good place to start here would be a common page table walker (x86
-folks: think tdp_iter.c). Page tables are relatively simple data
-structures, and walking through them is just a tree traversal.
-Differences in page table layout can be parameterized in the walker
-and architecture-specific code can handle parsing the PTEs. But the
-actual walking and, more perhaps importantly, the _interface_ for
-walking the page tables can be common.
-
-Consider the x86 and ARM MMU code today. They use very different code
-for walking page tables: x86 uses pre-order traversals with for-loop
-macros. ARM uses pre-order and post-order traversals using callbacks
-and function recursion. The stark difference in how the tables are
-walked makes it very difficult to work across the architectures.
-
-Next Steps
-==========
-I will be on paternity leave from May to September. So there likely
-won't be much progress from me for a while. But I'm going to see if we
-can find someone to work on the common Linux stage-1 walker while I'm
-out.
-
----
-
-Thanks to Oliver Upton, Sean Christopherson, and Marc Zyngier for
-their input on this recommendation.
-
-[1] https://lore.kernel.org/kvm/20221208193857.4090582-1-dmatlack at google.com/
-[2] https://lore.kernel.org/kvm/20230126184025.2294823-1-dmatlack at google.com/
-[3] https://lore.kernel.org/linux-mm/20230218002819.1486479-1-jthoughton at google.com/
-[4] ARM also uses the VMA lookup to map PFNMAP VMAs with huge pages.
-We might need to keep that around until Linux Stage-1 also uses huge
-pages for PFNMAP VMAs (if it doesn't already).
+> I'm still rather confused here.
 
