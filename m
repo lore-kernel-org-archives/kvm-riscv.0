@@ -1,140 +1,87 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Wed, 26 Apr 2023 19:13:27 +0200
-Subject: [PATCH 2/3] RISC-V: KVM: Rename dis_idx to ext_idx
+Date: Wed, 26 Apr 2023 19:13:28 +0200
+Subject: [PATCH 3/3] RISC-V: KVM: Introduce extension_enabled
 In-Reply-To: <20230426171328.69663-1-ajones@ventanamicro.com>
 References: <20230426171328.69663-1-ajones@ventanamicro.com>
-Message-ID: <20230426171328.69663-3-ajones@ventanamicro.com>
+Message-ID: <20230426171328.69663-4-ajones@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Make the name of the extension_disabled[] index more general in
-order to expand its application.
+We need three SBI extension status values (uninitialized, enabled,
+and disabled). Pairing another boolean array, extension_enabled[],
+with the boolean array extension_disabled[] provides four states.
+Using a pair of boolean arrays, which may eventually be changed to
+a pair of bitmaps, is more space efficient than using one enum
+status field. Apply the new (enabled=1,disabled=0) state, which
+means either the extension doesn't have a probe function or that
+its probe was successful, to avoid more than one probe of the
+extension.
 
 Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
 ---
- arch/riscv/kvm/vcpu_sbi.c | 36 ++++++++++++++++++------------------
- 1 file changed, 18 insertions(+), 18 deletions(-)
+ arch/riscv/include/asm/kvm_vcpu_sbi.h |  9 +++++++++
+ arch/riscv/kvm/vcpu_sbi.c             | 11 ++++++++++-
+ 2 files changed, 19 insertions(+), 1 deletion(-)
 
+diff --git a/arch/riscv/include/asm/kvm_vcpu_sbi.h b/arch/riscv/include/asm/kvm_vcpu_sbi.h
+index 4278125a38a5..e3c5e1d15e93 100644
+--- a/arch/riscv/include/asm/kvm_vcpu_sbi.h
++++ b/arch/riscv/include/asm/kvm_vcpu_sbi.h
+@@ -16,6 +16,15 @@
+ 
+ struct kvm_vcpu_sbi_context {
+ 	int return_handled;
++	/*
++	 * extension_enabled[] and extension_disabled[] provide SBI
++	 * extensions four status values, of which we need three:
++	 * (0,0) uninitialized, (1,0) enabled, (0,1) disabled. Using
++	 * a pair of boolean arrays, which may eventually be changed
++	 * to a pair of bitmaps, is more space efficient than using
++	 * one enum status field.
++	 */
++	bool extension_enabled[KVM_RISCV_SBI_EXT_MAX];
+ 	bool extension_disabled[KVM_RISCV_SBI_EXT_MAX];
+ };
+ 
 diff --git a/arch/riscv/kvm/vcpu_sbi.c b/arch/riscv/kvm/vcpu_sbi.c
-index aa3c126d2e3c..a1a82f0fbad2 100644
+index a1a82f0fbad2..344d38bbe06a 100644
 --- a/arch/riscv/kvm/vcpu_sbi.c
 +++ b/arch/riscv/kvm/vcpu_sbi.c
-@@ -31,49 +31,49 @@ static const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_pmu = {
- #endif
- 
- struct kvm_riscv_sbi_extension_entry {
--	enum KVM_RISCV_SBI_EXT_ID dis_idx;
-+	enum KVM_RISCV_SBI_EXT_ID ext_idx;
- 	const struct kvm_vcpu_sbi_extension *ext_ptr;
- };
- 
- static const struct kvm_riscv_sbi_extension_entry sbi_ext[] = {
- 	{
--		.dis_idx = KVM_RISCV_SBI_EXT_V01,
-+		.ext_idx = KVM_RISCV_SBI_EXT_V01,
- 		.ext_ptr = &vcpu_sbi_ext_v01,
- 	},
- 	{
--		.dis_idx = KVM_RISCV_SBI_EXT_MAX, /* Can't be disabled */
-+		.ext_idx = KVM_RISCV_SBI_EXT_MAX, /* Can't be disabled */
- 		.ext_ptr = &vcpu_sbi_ext_base,
- 	},
- 	{
--		.dis_idx = KVM_RISCV_SBI_EXT_TIME,
-+		.ext_idx = KVM_RISCV_SBI_EXT_TIME,
- 		.ext_ptr = &vcpu_sbi_ext_time,
- 	},
- 	{
--		.dis_idx = KVM_RISCV_SBI_EXT_IPI,
-+		.ext_idx = KVM_RISCV_SBI_EXT_IPI,
- 		.ext_ptr = &vcpu_sbi_ext_ipi,
- 	},
- 	{
--		.dis_idx = KVM_RISCV_SBI_EXT_RFENCE,
-+		.ext_idx = KVM_RISCV_SBI_EXT_RFENCE,
- 		.ext_ptr = &vcpu_sbi_ext_rfence,
- 	},
- 	{
--		.dis_idx = KVM_RISCV_SBI_EXT_SRST,
-+		.ext_idx = KVM_RISCV_SBI_EXT_SRST,
- 		.ext_ptr = &vcpu_sbi_ext_srst,
- 	},
- 	{
--		.dis_idx = KVM_RISCV_SBI_EXT_HSM,
-+		.ext_idx = KVM_RISCV_SBI_EXT_HSM,
- 		.ext_ptr = &vcpu_sbi_ext_hsm,
- 	},
- 	{
--		.dis_idx = KVM_RISCV_SBI_EXT_PMU,
-+		.ext_idx = KVM_RISCV_SBI_EXT_PMU,
- 		.ext_ptr = &vcpu_sbi_ext_pmu,
- 	},
- 	{
--		.dis_idx = KVM_RISCV_SBI_EXT_EXPERIMENTAL,
-+		.ext_idx = KVM_RISCV_SBI_EXT_EXPERIMENTAL,
- 		.ext_ptr = &vcpu_sbi_ext_experimental,
- 	},
- 	{
--		.dis_idx = KVM_RISCV_SBI_EXT_VENDOR,
-+		.ext_idx = KVM_RISCV_SBI_EXT_VENDOR,
- 		.ext_ptr = &vcpu_sbi_ext_vendor,
- 	},
- };
-@@ -147,7 +147,7 @@ static int riscv_vcpu_set_sbi_ext_single(struct kvm_vcpu *vcpu,
- 		return -EINVAL;
- 
- 	for (i = 0; i < ARRAY_SIZE(sbi_ext); i++) {
--		if (sbi_ext[i].dis_idx == reg_num) {
-+		if (sbi_ext[i].ext_idx == reg_num) {
- 			sext = &sbi_ext[i];
- 			break;
- 		}
-@@ -155,7 +155,7 @@ static int riscv_vcpu_set_sbi_ext_single(struct kvm_vcpu *vcpu,
+@@ -155,6 +155,12 @@ static int riscv_vcpu_set_sbi_ext_single(struct kvm_vcpu *vcpu,
  	if (!sext)
  		return -ENOENT;
  
--	scontext->extension_disabled[sext->dis_idx] = !reg_val;
-+	scontext->extension_disabled[sext->ext_idx] = !reg_val;
++	/*
++	 * We can't set scontext->extension_enabled[] to reg_val since the
++	 * extension may have a probe() function which needs to confirm
++	 * enablement first. Only set extension_disabled[] here and leave
++	 * the extension_enabled[] setting to kvm_vcpu_sbi_find_ext().
++	 */
+ 	scontext->extension_disabled[sext->ext_idx] = !reg_val;
  
  	return 0;
- }
-@@ -172,7 +172,7 @@ static int riscv_vcpu_get_sbi_ext_single(struct kvm_vcpu *vcpu,
- 		return -EINVAL;
- 
- 	for (i = 0; i < ARRAY_SIZE(sbi_ext); i++) {
--		if (sbi_ext[i].dis_idx == reg_num) {
-+		if (sbi_ext[i].ext_idx == reg_num) {
- 			sext = &sbi_ext[i];
- 			break;
- 		}
-@@ -180,7 +180,7 @@ static int riscv_vcpu_get_sbi_ext_single(struct kvm_vcpu *vcpu,
- 	if (!sext)
- 		return -ENOENT;
- 
--	*reg_val = !scontext->extension_disabled[sext->dis_idx];
-+	*reg_val = !scontext->extension_disabled[sext->ext_idx];
- 
- 	return 0;
- }
-@@ -317,12 +317,12 @@ const struct kvm_vcpu_sbi_extension *kvm_vcpu_sbi_find_ext(
+@@ -317,7 +323,8 @@ const struct kvm_vcpu_sbi_extension *kvm_vcpu_sbi_find_ext(
  		ext = entry->ext_ptr;
  
  		if (ext->extid_start <= extid && ext->extid_end >= extid) {
--			if (entry->dis_idx >= KVM_RISCV_SBI_EXT_MAX)
-+			if (entry->ext_idx >= KVM_RISCV_SBI_EXT_MAX)
+-			if (entry->ext_idx >= KVM_RISCV_SBI_EXT_MAX)
++			if (entry->ext_idx >= KVM_RISCV_SBI_EXT_MAX ||
++			    scontext->extension_enabled[entry->ext_idx])
  				return ext;
--			if (scontext->extension_disabled[entry->dis_idx])
-+			if (scontext->extension_disabled[entry->ext_idx])
+ 			if (scontext->extension_disabled[entry->ext_idx])
  				return NULL;
- 			if (ext->probe && !ext->probe(vcpu)) {
--				scontext->extension_disabled[entry->dis_idx] = true;
-+				scontext->extension_disabled[entry->ext_idx] = true;
+@@ -325,6 +332,8 @@ const struct kvm_vcpu_sbi_extension *kvm_vcpu_sbi_find_ext(
+ 				scontext->extension_disabled[entry->ext_idx] = true;
  				return NULL;
  			}
++
++			scontext->extension_enabled[entry->ext_idx] = true;
  			return ext;
+ 		}
+ 	}
 -- 
 2.39.2
 
