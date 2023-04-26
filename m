@@ -1,88 +1,41 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Wed, 26 Apr 2023 19:13:28 +0200
-Subject: [PATCH 3/3] RISC-V: KVM: Introduce extension_enabled
-In-Reply-To: <20230426171328.69663-1-ajones@ventanamicro.com>
-References: <20230426171328.69663-1-ajones@ventanamicro.com>
-Message-ID: <20230426171328.69663-4-ajones@ventanamicro.com>
+From: Oliver Upton <oliver.upton@linux.dev>
+Date: Wed, 26 Apr 2023 17:21:58 +0000
+Subject: [PATCH v2 0/4] KVM: Refactor KVM stats macros and enable custom
+ stat names
+In-Reply-To: <20230306190156.434452-1-dmatlack@google.com>
+References: <20230306190156.434452-1-dmatlack@google.com>
+Message-ID: <ZEldtrUVBgmlrFOl@linux.dev>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-We need three SBI extension status values (uninitialized, enabled,
-and disabled). Pairing another boolean array, extension_enabled[],
-with the boolean array extension_disabled[] provides four states.
-Using a pair of boolean arrays, which may eventually be changed to
-a pair of bitmaps, is more space efficient than using one enum
-status field. Apply the new (enabled=1,disabled=0) state, which
-means either the extension doesn't have a probe function or that
-its probe was successful, to avoid more than one probe of the
-extension.
+On Mon, Mar 06, 2023 at 11:01:52AM -0800, David Matlack wrote:
+> This series refactors the KVM stats macros to reduce duplication and
+> adds the support for choosing custom names for stats.
+> 
+> Custom name makes it possible to decouple the userspace-visible stat
+> names from their internal representation in C. This can allow future
+> commits to refactor the various stats structs without impacting
+> userspace tools that read KVM stats.
+> 
+> This also allows stats to be stored in data structures such as arrays,
+> without needing unions to access specific stats. Case in point, the last
+> patch in this series removes the pages_{4k,2m,1g} union, which is a
+> useful cleanup to prepare for sharing paging code across architectures
+> [1].
+> 
+> And for full transparency, another motivation for this series it that at
+> Google we have several out-of-tree stats that use arrays. Custom name
+> support is something we added internally and it reduces our technical
+> debt to get the support merged upstream.
 
-Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
----
- arch/riscv/include/asm/kvm_vcpu_sbi.h |  9 +++++++++
- arch/riscv/kvm/vcpu_sbi.c             | 11 ++++++++++-
- 2 files changed, 19 insertions(+), 1 deletion(-)
+For the series:
 
-diff --git a/arch/riscv/include/asm/kvm_vcpu_sbi.h b/arch/riscv/include/asm/kvm_vcpu_sbi.h
-index 4278125a38a5..e3c5e1d15e93 100644
---- a/arch/riscv/include/asm/kvm_vcpu_sbi.h
-+++ b/arch/riscv/include/asm/kvm_vcpu_sbi.h
-@@ -16,6 +16,15 @@
- 
- struct kvm_vcpu_sbi_context {
- 	int return_handled;
-+	/*
-+	 * extension_enabled[] and extension_disabled[] provide SBI
-+	 * extensions four status values, of which we need three:
-+	 * (0,0) uninitialized, (1,0) enabled, (0,1) disabled. Using
-+	 * a pair of boolean arrays, which may eventually be changed
-+	 * to a pair of bitmaps, is more space efficient than using
-+	 * one enum status field.
-+	 */
-+	bool extension_enabled[KVM_RISCV_SBI_EXT_MAX];
- 	bool extension_disabled[KVM_RISCV_SBI_EXT_MAX];
- };
- 
-diff --git a/arch/riscv/kvm/vcpu_sbi.c b/arch/riscv/kvm/vcpu_sbi.c
-index a1a82f0fbad2..344d38bbe06a 100644
---- a/arch/riscv/kvm/vcpu_sbi.c
-+++ b/arch/riscv/kvm/vcpu_sbi.c
-@@ -155,6 +155,12 @@ static int riscv_vcpu_set_sbi_ext_single(struct kvm_vcpu *vcpu,
- 	if (!sext)
- 		return -ENOENT;
- 
-+	/*
-+	 * We can't set scontext->extension_enabled[] to reg_val since the
-+	 * extension may have a probe() function which needs to confirm
-+	 * enablement first. Only set extension_disabled[] here and leave
-+	 * the extension_enabled[] setting to kvm_vcpu_sbi_find_ext().
-+	 */
- 	scontext->extension_disabled[sext->ext_idx] = !reg_val;
- 
- 	return 0;
-@@ -317,7 +323,8 @@ const struct kvm_vcpu_sbi_extension *kvm_vcpu_sbi_find_ext(
- 		ext = entry->ext_ptr;
- 
- 		if (ext->extid_start <= extid && ext->extid_end >= extid) {
--			if (entry->ext_idx >= KVM_RISCV_SBI_EXT_MAX)
-+			if (entry->ext_idx >= KVM_RISCV_SBI_EXT_MAX ||
-+			    scontext->extension_enabled[entry->ext_idx])
- 				return ext;
- 			if (scontext->extension_disabled[entry->ext_idx])
- 				return NULL;
-@@ -325,6 +332,8 @@ const struct kvm_vcpu_sbi_extension *kvm_vcpu_sbi_find_ext(
- 				scontext->extension_disabled[entry->ext_idx] = true;
- 				return NULL;
- 			}
-+
-+			scontext->extension_enabled[entry->ext_idx] = true;
- 			return ext;
- 		}
- 	}
+Reviewed-by: Oliver Upton <oliver.upton@linux.dev>
+
 -- 
-2.39.2
-
+Thanks,
+Oliver
 
