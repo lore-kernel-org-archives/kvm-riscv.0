@@ -1,50 +1,36 @@
-From: Vipin Sharma <vipinsh@google.com>
-Date: Fri, 5 May 2023 17:55:26 -0700
-Subject: [PATCH 9/9] KVM: arm64: Run clear-dirty-log under MMU read lock
-In-Reply-To: <86pm7xjh3y.wl-maz@kernel.org>
-References: <20230421165305.804301-1-vipinsh@google.com> <20230421165305.804301-10-vipinsh@google.com>
- <86pm7xjh3y.wl-maz@kernel.org>
-Message-ID: <CAHVum0d4W0emmyS0G8_nCXQuvgZN-8utDiT6TMYrOq7dF60aAw@mail.gmail.com>
+From: ye.xingchen@zte.com.cn <ye.xingchen@zte.com.cn>
+Date: Sat, 6 May 2023 17:10:30 +0800 (CST)
+Subject: =?UTF-8?B?W1BBVENIXSBSSVNDLVY6IEtWTTogdXNlIGJpdG1hcF96ZXJvKCkgQVBJ?=
+Message-ID: <202305061710302032748@zte.com.cn>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Apr 21, 2023 at 10:11?AM Marc Zyngier <maz@kernel.org> wrote:
->
-> On Fri, 21 Apr 2023 17:53:05 +0100,
-> Vipin Sharma <vipinsh@google.com> wrote:
-> >
-> > Take MMU read lock for write protecting PTEs and use shared page table
-> > walker for clearing dirty logs.
-> >
-> > Clearing dirty logs are currently performed under MMU write locks. This
-> > means vCPUs write protection fault, which also take MMU read lock,  will
-> > be blocked during this operation. This causes guest degradation and
-> > especially noticeable on VMs with lot of vCPUs.
-> >
-> > Taking MMU read lock will allow vCPUs to execute parallelly and reduces
-> > the impact on vCPUs performance.
->
-> Sure. Taking no lock whatsoever would be even better.
->
-> What I don't see is the detailed explanation that gives me the warm
-> feeling that this is safe and correct. Such an explanation is the
-> minimum condition for me to even read the patch.
->
+From: Ye Xingchen <ye.xingchen@zte.com.cn>
 
-Thanks for freaking me out. Your not getting warm feeling hunch was
-right, stage2_attr_walker() and stage2_update_leaf_attrs() combo do
-not retry if cmpxchg fails for write protection. Write protection
-callers don't check what the return status of the API is and just
-ignores cmpxchg failure. This means a vCPU (MMU read lock user) can
-cause cmpxchg to fail for write protection operation (under read lock,
-which this patch does) and clear ioctl will happily return as if
-everything is good.
+bitmap_zero() is faster than bitmap_clear(), so use bitmap_zero()
+instead of bitmap_clear().
 
-I will update the series and also work on validating the correctness
-to instill more confidence.
+Signed-off-by: Ye Xingchen <ye.xingchen@zte.com.cn>
+---
+ arch/riscv/kvm/tlb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Thanks
+diff --git a/arch/riscv/kvm/tlb.c b/arch/riscv/kvm/tlb.c
+index 0e5479600695..44bc324aeeb0 100644
+--- a/arch/riscv/kvm/tlb.c
++++ b/arch/riscv/kvm/tlb.c
+@@ -296,7 +296,7 @@ static void make_xfence_request(struct kvm *kvm,
+ 	unsigned int actual_req = req;
+ 	DECLARE_BITMAP(vcpu_mask, KVM_MAX_VCPUS);
+
+-	bitmap_clear(vcpu_mask, 0, KVM_MAX_VCPUS);
++	bitmap_zero(vcpu_mask, KVM_MAX_VCPUS);
+ 	kvm_for_each_vcpu(i, vcpu, kvm) {
+ 		if (hbase != -1UL) {
+ 			if (vcpu->vcpu_id < hbase)
+-- 
+2.25.1
 
