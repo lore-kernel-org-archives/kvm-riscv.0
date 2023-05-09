@@ -1,118 +1,164 @@
 From: Andy Chiu <andy.chiu@sifive.com>
-Date: Wed, 10 May 2023 00:11:45 +0800
-Subject: [PATCH -next v19 20/24] riscv: Add prctl controls for userspace
- vector management
-In-Reply-To: <2629220.BddDVKsqQX@diego>
-References: <20230509103033.11285-1-andy.chiu@sifive.com> <20230509103033.11285-21-andy.chiu@sifive.com>
- <2629220.BddDVKsqQX@diego>
-Message-ID: <CABgGipXN2vsdEMJFX-e8EgVNvnDr7v6zixyWErfaq31ghWkGRw@mail.gmail.com>
+Date: Wed, 10 May 2023 00:41:35 +0800
+Subject: [PATCH -next v19 03/24] riscv: hwprobe: Add support for RISCV_HWPROBE_BASE_BEHAVIOR_V
+In-Reply-To: <2172277.NgBsaNRSFp@diego>
+References: <20230509103033.11285-1-andy.chiu@sifive.com> <20230509103033.11285-4-andy.chiu@sifive.com>
+ <2172277.NgBsaNRSFp@diego>
+Message-ID: <CABgGipW0U6=4AhaM9zWPDKZYdKEYDi04Gm-uRmf_WoOioTaf6w@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, May 9, 2023 at 7:14?PM Heiko St?bner <heiko@sntech.de> wrote:
+On Tue, May 9, 2023 at 7:05?PM Heiko St?bner <heiko@sntech.de> wrote:
 >
-> Hi,
->
-> need to poke this more, but one issue popped up at first compile.
->
-> Am Dienstag, 9. Mai 2023, 12:30:29 CEST schrieb Andy Chiu:
-> > This patch add two riscv-specific prctls, to allow usespace control the
-> > use of vector unit:
-> >
-> >  * PR_RISCV_V_SET_CONTROL: control the permission to use Vector at next,
-> >    or all following execve for a thread. Turning off a thread's Vector
-> >    live is not possible since libraries may have registered ifunc that
-> >    may execute Vector instructions.
-> >  * PR_RISCV_V_GET_CONTROL: get the same permission setting for the
-> >    current thread, and the setting for following execve(s).
+> Am Dienstag, 9. Mai 2023, 12:30:12 CEST schrieb Andy Chiu:
+> > Probing kernel support for Vector extension is available now.
 > >
 > > Signed-off-by: Andy Chiu <andy.chiu@sifive.com>
-> > Reviewed-by: Greentime Hu <greentime.hu@sifive.com>
-> > Reviewed-by: Vincent Chen <vincent.chen@sifive.com>
+> > ---
+> >  Documentation/riscv/hwprobe.rst       | 10 ++++++++++
+> >  arch/riscv/include/asm/hwprobe.h      |  2 +-
+> >  arch/riscv/include/uapi/asm/hwprobe.h |  3 +++
+> >  arch/riscv/kernel/sys_riscv.c         |  9 +++++++++
+> >  4 files changed, 23 insertions(+), 1 deletion(-)
+> >
+> > diff --git a/Documentation/riscv/hwprobe.rst b/Documentation/riscv/hwprobe.rst
+> > index 9f0dd62dcb5d..b8755e180fbf 100644
+> > --- a/Documentation/riscv/hwprobe.rst
+> > +++ b/Documentation/riscv/hwprobe.rst
+> > @@ -53,6 +53,9 @@ The following keys are defined:
+> >        programs (it may still be executed in userspace via a
+> >        kernel-controlled mechanism such as the vDSO).
+> >
+> > +  * :c:macro:`RISCV_HWPROBE_BASE_BEHAVIOR_V`: Support for Vector extension, as
+> > +    defined by verion 1.0 of the RISC-V Vector extension.
 >
+>         ^^ version [missing the S]
 >
-> > diff --git a/arch/riscv/kernel/vector.c b/arch/riscv/kernel/vector.c
-> > index 960a343799c6..16ccb35625a9 100644
-> > --- a/arch/riscv/kernel/vector.c
-> > +++ b/arch/riscv/kernel/vector.c
-> > @@ -9,6 +9,7 @@
-> >  #include <linux/slab.h>
-> >  #include <linux/sched.h>
-> >  #include <linux/uaccess.h>
-> > +#include <linux/prctl.h>
+> > +
+> >  * :c:macro:`RISCV_HWPROBE_KEY_IMA_EXT_0`: A bitmask containing the extensions
+> >    that are compatible with the :c:macro:`RISCV_HWPROBE_BASE_BEHAVIOR_IMA`:
+> >    base system behavior.
+> > @@ -64,6 +67,13 @@ The following keys are defined:
+> >    * :c:macro:`RISCV_HWPROBE_IMA_C`: The C extension is supported, as defined
+> >      by version 2.2 of the RISC-V ISA manual.
 > >
-> >  #include <asm/thread_info.h>
-> >  #include <asm/processor.h>
-> > @@ -19,6 +20,8 @@
-> >  #include <asm/ptrace.h>
-> >  #include <asm/bug.h>
-> >
-> > +static bool riscv_v_implicit_uacc = !IS_ENABLED(CONFIG_RISCV_V_DISABLE);
+> > +* :c:macro:`RISCV_HWPROBE_KEY_V_EXT_0`: A bitmask containing the extensions
+> > +   that are compatible with the :c:macro:`RISCV_HWPROBE_BASE_BEHAVIOR_V`: base
+> > +   system behavior.
 > > +
-> >  unsigned long riscv_v_vsize __read_mostly;
-> >  EXPORT_SYMBOL_GPL(riscv_v_vsize);
-> >
-> > @@ -91,11 +94,51 @@ static int riscv_v_thread_zalloc(void)
-> >       return 0;
-> >  }
-> >
-> > +#define VSTATE_CTRL_GET_CUR(x) ((x) & PR_RISCV_V_VSTATE_CTRL_CUR_MASK)
-> > +#define VSTATE_CTRL_GET_NEXT(x) (((x) & PR_RISCV_V_VSTATE_CTRL_NEXT_MASK) >> 2)
-> > +#define VSTATE_CTRL_MAKE_NEXT(x) (((x) << 2) & PR_RISCV_V_VSTATE_CTRL_NEXT_MASK)
-> > +#define VSTATE_CTRL_GET_INHERIT(x) (!!((x) & PR_RISCV_V_VSTATE_CTRL_INHERIT))
-> > +static inline int riscv_v_get_cur_ctrl(struct task_struct *tsk)
-> > +{
-> > +     return VSTATE_CTRL_GET_CUR(tsk->thread.vstate_ctrl);
-> > +}
+> > +  * :c:macro:`RISCV_HWPROBE_V`: The V extension is supported, as defined by
+> > +    version 1.0 of the RISC-V Vector extension manual.
 > > +
-> > +static inline int riscv_v_get_next_ctrl(struct task_struct *tsk)
-> > +{
-> > +     return VSTATE_CTRL_GET_NEXT(tsk->thread.vstate_ctrl);
-> > +}
-> > +
-> > +static inline bool riscv_v_test_ctrl_inherit(struct task_struct *tsk)
-> > +{
-> > +     return VSTATE_CTRL_GET_INHERIT(tsk->thread.vstate_ctrl);
-> > +}
-> > +
-> > +static inline void riscv_v_set_ctrl(struct task_struct *tsk, int cur, int nxt,
-> > +                                 bool inherit)
-> > +{
-> > +     unsigned long ctrl;
-> > +
-> > +     ctrl = cur & PR_RISCV_V_VSTATE_CTRL_CUR_MASK;
-> > +     ctrl |= VSTATE_CTRL_MAKE_NEXT(nxt);
-> > +     if (inherit)
-> > +             ctrl |= PR_RISCV_V_VSTATE_CTRL_INHERIT;
-> > +     tsk->thread.vstate_ctrl = ctrl;
-> > +}
-> > +
-> > +bool riscv_v_user_allowed(void)
-> > +{
-> > +     return riscv_v_get_cur_ctrl(current) == PR_RISCV_V_VSTATE_CTRL_ON;
-> > +}
 >
-> EXPORT_SYMBOL(riscv_v_user_allowed);
+> this seems to be doubling the RISCV_HWPROBE_BASE_BEHAVIOR_V state without
+> adding additional information? Both essentially tell the system that
+> V extension "defined by verion 1.0 of the RISC-V Vector extension" is supported.
 
-It's a shame. KVM is a builtin on my test platform so I missed this
-obvious thing. Or, maybe we should make them inline functions or
-macros at the header file because of the size. And because other
-modules may rarely use them.
+I was thinking that RISCV_HWPROBE_BASE_BEHAVIOR_V indicates the kernel
+has a probe for vector (just like RISCV_HWPROBE_BASE_BEHAVIOR_IMA) and
+RISCV_HWPROBE_KEY_V_EXT_0 is where the kernel reports what exactly the
+extension is. This maps to the condition matching of F,D, and C in
+IMA. If that is not the case then I think there is no need for this
+entry.
 
 >
-> kvm is allowed to be built as module, so you could end up with:
+> I don't question that we'll probably need a key for deeper vector-
+> specifics but I guess I'd the commit message should definitly explain
+> why there is a duplication here.
+
+I suppose something like Zvfh should fall into the category of
+RISCV_HWPROBE_KEY_V_EXT_0. I will add this example into the commit
+message if you agree that is a good example.
+
 >
-> ERROR: modpost: "riscv_v_user_allowed" [arch/riscv/kvm/kvm.ko] undefined!
-> make[2]: *** [../scripts/Makefile.modpost:136: Module.symvers] Fehler 1
-> make[1]: *** [/home/devel/hstuebner/00_git-repos/linux-riscv/Makefile:1978: modpost] Fehler 2
-> make[1]: Verzeichnis ?/home/devel/hstuebner/00_git-repos/linux-riscv/_build-riscv64? wird verlassen
-> make: *** [Makefile:226: __sub-make] Fehler 2
 >
+> >  * :c:macro:`RISCV_HWPROBE_KEY_CPUPERF_0`: A bitmask that contains performance
+> >    information about the selected set of processors.
+> >
+> > diff --git a/arch/riscv/include/asm/hwprobe.h b/arch/riscv/include/asm/hwprobe.h
+> > index 78936f4ff513..39df8604fea1 100644
+> > --- a/arch/riscv/include/asm/hwprobe.h
+> > +++ b/arch/riscv/include/asm/hwprobe.h
+> > @@ -8,6 +8,6 @@
+> >
+> >  #include <uapi/asm/hwprobe.h>
+> >
+> > -#define RISCV_HWPROBE_MAX_KEY 5
+> > +#define RISCV_HWPROBE_MAX_KEY 6
+> >
+> >  #endif
+> > diff --git a/arch/riscv/include/uapi/asm/hwprobe.h b/arch/riscv/include/uapi/asm/hwprobe.h
+> > index 8d745a4ad8a2..93a7fd3fd341 100644
+> > --- a/arch/riscv/include/uapi/asm/hwprobe.h
+> > +++ b/arch/riscv/include/uapi/asm/hwprobe.h
+> > @@ -22,6 +22,7 @@ struct riscv_hwprobe {
+> >  #define RISCV_HWPROBE_KEY_MIMPID     2
+> >  #define RISCV_HWPROBE_KEY_BASE_BEHAVIOR      3
+> >  #define              RISCV_HWPROBE_BASE_BEHAVIOR_IMA (1 << 0)
+> > +#define              RISCV_HWPROBE_BASE_BEHAVIOR_V   (1 << 1)
+> >  #define RISCV_HWPROBE_KEY_IMA_EXT_0  4
+> >  #define              RISCV_HWPROBE_IMA_FD            (1 << 0)
+> >  #define              RISCV_HWPROBE_IMA_C             (1 << 1)
+> > @@ -32,6 +33,8 @@ struct riscv_hwprobe {
+> >  #define              RISCV_HWPROBE_MISALIGNED_FAST           (3 << 0)
+> >  #define              RISCV_HWPROBE_MISALIGNED_UNSUPPORTED    (4 << 0)
+> >  #define              RISCV_HWPROBE_MISALIGNED_MASK           (7 << 0)
+> > +#define RISCV_HWPROBE_KEY_V_EXT_0    6
+> > +#define              RISCV_HWPROBE_V                 (1 << 0)
+> >  /* Increase RISCV_HWPROBE_MAX_KEY when adding items. */
+> >
+> >  #endif
+> > diff --git a/arch/riscv/kernel/sys_riscv.c b/arch/riscv/kernel/sys_riscv.c
+> > index 5db29683ebee..6280a7f778b3 100644
+> > --- a/arch/riscv/kernel/sys_riscv.c
+> > +++ b/arch/riscv/kernel/sys_riscv.c
+> > @@ -10,6 +10,7 @@
+> >  #include <asm/cpufeature.h>
+> >  #include <asm/hwprobe.h>
+> >  #include <asm/sbi.h>
+> > +#include <asm/vector.h>
+> >  #include <asm/switch_to.h>
+> >  #include <asm/uaccess.h>
+> >  #include <asm/unistd.h>
+> > @@ -161,6 +162,7 @@ static void hwprobe_one_pair(struct riscv_hwprobe *pair,
+> >        */
+> >       case RISCV_HWPROBE_KEY_BASE_BEHAVIOR:
+> >               pair->value = RISCV_HWPROBE_BASE_BEHAVIOR_IMA;
+> > +             pair->value |= RISCV_HWPROBE_BASE_BEHAVIOR_V;
+>
+> Doesn't this also need a
+>         if (has_vector())
+>
+
+If the RISCV_HWPROBE_KEY_BASE_BEHAVIOR part just tells whether hwprobe
+supports probing of a set of extensions then I think we should not add
+the if statement here, but maybe I misunderstood something..
+
 >
 > Heiko
+>
+> >               break;
+> >
+> >       case RISCV_HWPROBE_KEY_IMA_EXT_0:
+> > @@ -173,6 +175,13 @@ static void hwprobe_one_pair(struct riscv_hwprobe *pair,
+> >
+> >               break;
+> >
+> > +     case RISCV_HWPROBE_KEY_V_EXT_0:
+> > +             pair->value = 0;
+> > +             if (has_vector())
+> > +                     pair->value |= RISCV_HWPROBE_V;
+> > +
+> > +             break;
+> > +
+> >       case RISCV_HWPROBE_KEY_CPUPERF_0:
+> >               pair->value = hwprobe_misaligned(cpus);
+> >               break;
+> >
+>
 >
 >
 >
