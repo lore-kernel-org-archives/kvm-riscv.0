@@ -1,80 +1,63 @@
 From: Andy Chiu <andy.chiu@sifive.com>
-Date: Tue,  9 May 2023 10:30:30 +0000
-Subject: [PATCH -next v19 21/24] riscv: Add sysctl to set the default vector rule for new processes
+Date: Tue,  9 May 2023 10:30:31 +0000
+Subject: [PATCH -next v19 22/24] riscv: detect assembler support for .option arch
 In-Reply-To: <20230509103033.11285-1-andy.chiu@sifive.com>
 References: <20230509103033.11285-1-andy.chiu@sifive.com>
-Message-ID: <20230509103033.11285-22-andy.chiu@sifive.com>
+Message-ID: <20230509103033.11285-23-andy.chiu@sifive.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-To support Vector extension, the series exports variable-length vector
-registers on the signal frame. However, this potentially breaks abi if
-processing vector registers is required in the signal handler for old
-binaries. For example, there is such need if user-level context switch
-is triggerred via signals[1].
+Some extensions use .option arch directive to selectively enable certain
+extensions in parts of its assembly code. For example, Zbb uses it to
+inform assmebler to emit bit manipulation instructions. However,
+supporting of this directive only exist on GNU assembler and has not
+landed on clang at the moment, making TOOLCHAIN_HAS_ZBB depend on
+AS_IS_GNU.
 
-For this reason, it is best to leave a decision to distro maintainers,
-where the enablement of userspace Vector for new launching programs can
-be controlled. Developers may also need the switch to experiment with.
-The parameter is configurable through sysctl interface so a distro may
-turn off Vector early at init script if the break really happens in the
-wild.
+While it is still under review at https://reviews.llvm.org/D123515, the
+upcoming Vector patch also requires this feature in assembler. Thus,
+provide Kconfig AS_HAS_OPTION_ARCH to detect such feature. Then
+TOOLCHAIN_HAS_XXX will be turned on automatically when the feature land.
 
-The switch will only take effects on new execve() calls once set. This
-will not effect existing processes that do not call execve(), nor
-processes which has been set with a non-default vstate_ctrl by making
-explicit PR_RISCV_V_SET_CONTROL prctl() calls.
-
-Link: https://lore.kernel.org/all/87cz4048rp.fsf at all.your.base.are.belong.to.us/
+Suggested-by: Nathan Chancellor <nathan@kernel.org>
 Signed-off-by: Andy Chiu <andy.chiu@sifive.com>
-Reviewed-by: Greentime Hu <greentime.hu@sifive.com>
-Reviewed-by: Vincent Chen <vincent.chen@sifive.com>
+Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
+Reviewed-by: Nathan Chancellor <nathan@kernel.org>
+Reviewed-by: Heiko Stuebner <heiko.stuebner@vrull.eu>
+Tested-by: Heiko Stuebner <heiko.stuebner@vrull.eu>
 ---
- arch/riscv/kernel/vector.c | 31 +++++++++++++++++++++++++++++++
- 1 file changed, 31 insertions(+)
+ arch/riscv/Kconfig | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
-diff --git a/arch/riscv/kernel/vector.c b/arch/riscv/kernel/vector.c
-index 16ccb35625a9..1c4ac821e008 100644
---- a/arch/riscv/kernel/vector.c
-+++ b/arch/riscv/kernel/vector.c
-@@ -233,3 +233,34 @@ unsigned int riscv_v_vstate_ctrl_set_current(unsigned long arg)
+diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
+index 348c0fa1fc8c..1019b519d590 100644
+--- a/arch/riscv/Kconfig
++++ b/arch/riscv/Kconfig
+@@ -262,6 +262,12 @@ config RISCV_DMA_NONCOHERENT
+ config AS_HAS_INSN
+ 	def_bool $(as-instr,.insn r 51$(comma) 0$(comma) 0$(comma) t0$(comma) t0$(comma) zero)
  
- 	return -EINVAL;
- }
++config AS_HAS_OPTION_ARCH
++	# https://reviews.llvm.org/D123515
++	def_bool y
++	depends on $(as-instr, .option arch$(comma) +m)
++	depends on !$(as-instr, .option arch$(comma) -i)
 +
-+#ifdef CONFIG_SYSCTL
-+
-+static struct ctl_table riscv_v_default_vstate_table[] = {
-+	{
-+		.procname	= "riscv_v_default_allow",
-+		.data		= &riscv_v_implicit_uacc,
-+		.maxlen		= sizeof(riscv_v_implicit_uacc),
-+		.mode		= 0644,
-+		.proc_handler	= proc_dobool,
-+	},
-+	{ }
-+};
-+
-+static int __init riscv_v_sysctl_init(void)
-+{
-+	if (has_vector())
-+		if (!register_sysctl("abi", riscv_v_default_vstate_table))
-+			return -EINVAL;
-+	return 0;
-+}
-+
-+#else /* ! CONFIG_SYSCTL */
-+static int __init riscv_v_sysctl_init(void) { return 0; }
-+#endif /* ! CONFIG_SYSCTL */
-+
-+static int riscv_v_init(void)
-+{
-+	return riscv_v_sysctl_init();
-+}
-+core_initcall(riscv_v_init);
+ source "arch/riscv/Kconfig.socs"
+ source "arch/riscv/Kconfig.errata"
+ 
+@@ -466,7 +472,7 @@ config TOOLCHAIN_HAS_ZBB
+ 	depends on !64BIT || $(cc-option,-mabi=lp64 -march=rv64ima_zbb)
+ 	depends on !32BIT || $(cc-option,-mabi=ilp32 -march=rv32ima_zbb)
+ 	depends on LLD_VERSION >= 150000 || LD_VERSION >= 23900
+-	depends on AS_IS_GNU
++	depends on AS_HAS_OPTION_ARCH
+ 
+ config RISCV_ISA_ZBB
+ 	bool "Zbb extension support for bit manipulation instructions"
 -- 
 2.17.1
 
