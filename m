@@ -1,454 +1,173 @@
 From: Andy Chiu <andy.chiu@sifive.com>
-Date: Tue,  9 May 2023 10:30:28 +0000
-Subject: [PATCH -next v19 19/24] riscv: KVM: Add vector lazy save/restore support
+Date: Tue,  9 May 2023 10:30:33 +0000
+Subject: [PATCH -next v19 24/24] riscv: Add documentation for Vector
 In-Reply-To: <20230509103033.11285-1-andy.chiu@sifive.com>
 References: <20230509103033.11285-1-andy.chiu@sifive.com>
-Message-ID: <20230509103033.11285-20-andy.chiu@sifive.com>
+Message-ID: <20230509103033.11285-25-andy.chiu@sifive.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Vincent Chen <vincent.chen@sifive.com>
+This patch add a brief documentation of the userspace interface in
+regard to the RISC-V Vector extension.
 
-This patch adds vector context save/restore for guest VCPUs. To reduce the
-impact on KVM performance, the implementation imitates the FP context
-switch mechanism to lazily store and restore the vector context only when
-the kernel enters/exits the in-kernel run loop and not during the KVM
-world switch.
-
-Signed-off-by: Vincent Chen <vincent.chen@sifive.com>
-Signed-off-by: Greentime Hu <greentime.hu@sifive.com>
 Signed-off-by: Andy Chiu <andy.chiu@sifive.com>
-Reviewed-by: Anup Patel <anup@brainfault.org>
-Acked-by: Anup Patel <anup@brainfault.org>
+Reviewed-by: Greentime Hu <greentime.hu@sifive.com>
+Reviewed-by: Vincent Chen <vincent.chen@sifive.com>
 ---
-Changelog V19:
- - remap V extension registers as type 9 in uapi/asm/kvm.h
+ Documentation/riscv/index.rst  |   1 +
+ Documentation/riscv/vector.rst | 128 +++++++++++++++++++++++++++++++++
+ 2 files changed, 129 insertions(+)
+ create mode 100644 Documentation/riscv/vector.rst
 
- arch/riscv/include/asm/kvm_host.h        |   2 +
- arch/riscv/include/asm/kvm_vcpu_vector.h |  82 ++++++++++
- arch/riscv/include/uapi/asm/kvm.h        |   7 +
- arch/riscv/kvm/Makefile                  |   1 +
- arch/riscv/kvm/vcpu.c                    |  22 +++
- arch/riscv/kvm/vcpu_vector.c             | 186 +++++++++++++++++++++++
- 6 files changed, 300 insertions(+)
- create mode 100644 arch/riscv/include/asm/kvm_vcpu_vector.h
- create mode 100644 arch/riscv/kvm/vcpu_vector.c
-
-diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
-index ee0acccb1d3b..bd47a1dc2ff8 100644
---- a/arch/riscv/include/asm/kvm_host.h
-+++ b/arch/riscv/include/asm/kvm_host.h
-@@ -15,6 +15,7 @@
- #include <linux/spinlock.h>
- #include <asm/hwcap.h>
- #include <asm/kvm_aia.h>
-+#include <asm/ptrace.h>
- #include <asm/kvm_vcpu_fp.h>
- #include <asm/kvm_vcpu_insn.h>
- #include <asm/kvm_vcpu_sbi.h>
-@@ -145,6 +146,7 @@ struct kvm_cpu_context {
- 	unsigned long sstatus;
- 	unsigned long hstatus;
- 	union __riscv_fp_state fp;
-+	struct __riscv_v_ext_state vector;
- };
+diff --git a/Documentation/riscv/index.rst b/Documentation/riscv/index.rst
+index 175a91db0200..95cf9c1e1da1 100644
+--- a/Documentation/riscv/index.rst
++++ b/Documentation/riscv/index.rst
+@@ -10,6 +10,7 @@ RISC-V architecture
+     hwprobe
+     patch-acceptance
+     uabi
++    vector
  
- struct kvm_vcpu_csr {
-diff --git a/arch/riscv/include/asm/kvm_vcpu_vector.h b/arch/riscv/include/asm/kvm_vcpu_vector.h
+     features
+ 
+diff --git a/Documentation/riscv/vector.rst b/Documentation/riscv/vector.rst
 new file mode 100644
-index 000000000000..ff994fdd6d0d
+index 000000000000..d4d626721921
 --- /dev/null
-+++ b/arch/riscv/include/asm/kvm_vcpu_vector.h
-@@ -0,0 +1,82 @@
-+/* SPDX-License-Identifier: GPL-2.0-only */
-+/*
-+ * Copyright (C) 2022 SiFive
-+ *
-+ * Authors:
-+ *     Vincent Chen <vincent.chen@sifive.com>
-+ *     Greentime Hu <greentime.hu@sifive.com>
-+ */
++++ b/Documentation/riscv/vector.rst
+@@ -0,0 +1,128 @@
++.. SPDX-License-Identifier: GPL-2.0
++=========================================
++Vector Extension Support for RISC-V Linux
++=========================================
 +
-+#ifndef __KVM_VCPU_RISCV_VECTOR_H
-+#define __KVM_VCPU_RISCV_VECTOR_H
++This document briefly outlines the interface provided to userspace by Linux in
++order to support the use of the RISC-V Vector Extension.
 +
-+#include <linux/types.h>
++1.  prctl() Interface
++---------------------
 +
-+#ifdef CONFIG_RISCV_ISA_V
-+#include <asm/vector.h>
-+#include <asm/kvm_host.h>
++Two new prctl() calls are added to allow programs to manage the enablement
++status for the use of Vector in userspace:
 +
-+static __always_inline void __kvm_riscv_vector_save(struct kvm_cpu_context *context)
-+{
-+	__riscv_v_vstate_save(&context->vector, context->vector.datap);
-+}
++prctl(PR_RISCV_V_SET_CONTROL, unsigned long arg)
 +
-+static __always_inline void __kvm_riscv_vector_restore(struct kvm_cpu_context *context)
-+{
-+	__riscv_v_vstate_restore(&context->vector, context->vector.datap);
-+}
++    Sets the Vector enablement status of the calling thread, where the control
++    argument consists of two 2-bit enablement statuses and a bit for inheritance
++    model. Other threads of the calling process are unaffected.
 +
-+void kvm_riscv_vcpu_vector_reset(struct kvm_vcpu *vcpu);
-+void kvm_riscv_vcpu_guest_vector_save(struct kvm_cpu_context *cntx,
-+				      unsigned long *isa);
-+void kvm_riscv_vcpu_guest_vector_restore(struct kvm_cpu_context *cntx,
-+					 unsigned long *isa);
-+void kvm_riscv_vcpu_host_vector_save(struct kvm_cpu_context *cntx);
-+void kvm_riscv_vcpu_host_vector_restore(struct kvm_cpu_context *cntx);
-+int kvm_riscv_vcpu_alloc_vector_context(struct kvm_vcpu *vcpu,
-+					struct kvm_cpu_context *cntx);
-+void kvm_riscv_vcpu_free_vector_context(struct kvm_vcpu *vcpu);
-+#else
++    Enablement status is a tri-state value each occupying 2-bit of space in
++    the control argument:
 +
-+struct kvm_cpu_context;
++    * :c:macro:`PR_RISCV_V_VSTATE_CTRL_DEFAULT`: Use the system-wide default
++      enablement status on execve(). The system-wide default setting can be
++      controlled via sysctl interface (see sysctl section below).
 +
-+static inline void kvm_riscv_vcpu_vector_reset(struct kvm_vcpu *vcpu)
-+{
-+}
++    * :c:macro:`PR_RISCV_V_VSTATE_CTRL_ON`: Allow Vector to be run for the
++      thread.
 +
-+static inline void kvm_riscv_vcpu_guest_vector_save(struct kvm_cpu_context *cntx,
-+						    unsigned long *isa)
-+{
-+}
++    * :c:macro:`PR_RISCV_V_VSTATE_CTRL_OFF`: Disallow Vector. Executing Vector
++      instructions under such condition will trap and casuse the termination of the thread.
 +
-+static inline void kvm_riscv_vcpu_guest_vector_restore(struct kvm_cpu_context *cntx,
-+						       unsigned long *isa)
-+{
-+}
++    arg: The control argument is a 5-bit value consisting of 3 parts, which can
++    be interpreted as the following structure, and accessed by 3 masks
++    respectively.
 +
-+static inline void kvm_riscv_vcpu_host_vector_save(struct kvm_cpu_context *cntx)
-+{
-+}
++    struct control_argument {
++        // Located by PR_RISCV_V_VSTATE_CTRL_CUR_MASK
++        int current_enablement_status : 2;
++        // Located by PR_RISCV_V_VSTATE_CTRL_NEXT_MASK
++        int next_enablement_status : 2;
++        // Located by PR_RISCV_V_VSTATE_CTRL_INHERIT
++        bool inherit_mode : 1;
++    }
 +
-+static inline void kvm_riscv_vcpu_host_vector_restore(struct kvm_cpu_context *cntx)
-+{
-+}
++    The 3 masks, PR_RISCV_V_VSTATE_CTRL_CUR_MASK,
++    PR_RISCV_V_VSTATE_CTRL_NEXT_MASK, and PR_RISCV_V_VSTATE_CTRL_INHERIT
++    represents bit[1:0], bit[3:2], and bit[4] respectively. bit[1:0] and
++    accounts for the enablement status of current thread, and bit[3:2] the
++    setting for when next execve() happens. bit[4] defines the inheritance model
++    of the setting in bit[3:2]
 +
-+static inline int kvm_riscv_vcpu_alloc_vector_context(struct kvm_vcpu *vcpu,
-+						      struct kvm_cpu_context *cntx)
-+{
-+	return 0;
-+}
++        * :c:macro:`PR_RISCV_V_VSTATE_CTRL_CUR_MASK`: bit[1:0]: Account for the
++          Vector enablement status for the calling thread. The calling thread is
++          not able to turn off Vector once it has been enabled. The prctl() call
++          fails with EPERM if the value in this mask is PR_RISCV_V_VSTATE_CTRL_OFF
++          but the current enablement status is not off. Setting
++          PR_RISCV_V_VSTATE_CTRL_DEFAULT here takes no effect but to set back
++          the original enablement status.
 +
-+static inline void kvm_riscv_vcpu_free_vector_context(struct kvm_vcpu *vcpu)
-+{
-+}
-+#endif
++        * :c:macro:`PR_RISCV_V_VSTATE_CTRL_NEXT_MASK`: bit[3:2]: Account for the
++          Vector enablement setting for the calling thread at the next execve()
++          system call. If PR_RISCV_V_VSTATE_CTRL_DEFAULT is used in this mask,
++          then the enablement status will be decided by the system-wide
++          enablement status when execve() happen.
 +
-+int kvm_riscv_vcpu_get_reg_vector(struct kvm_vcpu *vcpu,
-+				  const struct kvm_one_reg *reg,
-+				  unsigned long rtype);
-+int kvm_riscv_vcpu_set_reg_vector(struct kvm_vcpu *vcpu,
-+				  const struct kvm_one_reg *reg,
-+				  unsigned long rtype);
-+#endif
-diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
-index 8feb57c4c2e8..855c047e86d4 100644
---- a/arch/riscv/include/uapi/asm/kvm.h
-+++ b/arch/riscv/include/uapi/asm/kvm.h
-@@ -204,6 +204,13 @@ enum KVM_RISCV_SBI_EXT_ID {
- #define KVM_REG_RISCV_SBI_MULTI_REG_LAST	\
- 		KVM_REG_RISCV_SBI_MULTI_REG(KVM_RISCV_SBI_EXT_MAX - 1)
- 
-+/* V extension registers are mapped as type 9 */
-+#define KVM_REG_RISCV_VECTOR		(0x09 << KVM_REG_RISCV_TYPE_SHIFT)
-+#define KVM_REG_RISCV_VECTOR_CSR_REG(name)	\
-+		(offsetof(struct __riscv_v_ext_state, name) / sizeof(unsigned long))
-+#define KVM_REG_RISCV_VECTOR_REG(n)	\
-+		((n) + sizeof(struct __riscv_v_ext_state) / sizeof(unsigned long))
++        * :c:macro:`PR_RISCV_V_VSTATE_CTRL_INHERIT`: bit[4]: the inheritance
++          model for the setting at PR_RISCV_V_VSTATE_CTRL_NEXT_MASK. If the bit
++          is set then the following execve() will not clear the setting in both
++          PR_RISCV_V_VSTATE_CTRL_NEXT_MASK and PR_RISCV_V_VSTATE_CTRL_INHERIT.
++          This setting persists across changes in the system-wide default value.
 +
- #endif
- 
- #endif /* __LINUX_KVM_RISCV_H */
-diff --git a/arch/riscv/kvm/Makefile b/arch/riscv/kvm/Makefile
-index 8031b8912a0d..7b4c21f9aa6a 100644
---- a/arch/riscv/kvm/Makefile
-+++ b/arch/riscv/kvm/Makefile
-@@ -17,6 +17,7 @@ kvm-y += mmu.o
- kvm-y += vcpu.o
- kvm-y += vcpu_exit.o
- kvm-y += vcpu_fp.o
-+kvm-y += vcpu_vector.o
- kvm-y += vcpu_insn.o
- kvm-y += vcpu_switch.o
- kvm-y += vcpu_sbi.o
-diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-index f3282ff371ca..e5e045852e6a 100644
---- a/arch/riscv/kvm/vcpu.c
-+++ b/arch/riscv/kvm/vcpu.c
-@@ -22,6 +22,8 @@
- #include <asm/cacheflush.h>
- #include <asm/hwcap.h>
- #include <asm/sbi.h>
-+#include <asm/vector.h>
-+#include <asm/kvm_vcpu_vector.h>
- 
- const struct _kvm_stats_desc kvm_vcpu_stats_desc[] = {
- 	KVM_GENERIC_VCPU_STATS(),
-@@ -139,6 +141,8 @@ static void kvm_riscv_reset_vcpu(struct kvm_vcpu *vcpu)
- 
- 	kvm_riscv_vcpu_fp_reset(vcpu);
- 
-+	kvm_riscv_vcpu_vector_reset(vcpu);
++    Return value: return 0 on success, or a negative error value:
++        EINVAL: Vector not supported, invalid enablement status for current or
++                next mask
++        EPERM: Turning off Vector in PR_RISCV_V_VSTATE_CTRL_CUR_MASK if Vector
++                was enabled for the calling thread.
 +
- 	kvm_riscv_vcpu_timer_reset(vcpu);
- 
- 	kvm_riscv_vcpu_aia_reset(vcpu);
-@@ -199,6 +203,9 @@ int kvm_arch_vcpu_create(struct kvm_vcpu *vcpu)
- 	cntx->hstatus |= HSTATUS_SPVP;
- 	cntx->hstatus |= HSTATUS_SPV;
- 
-+	if (kvm_riscv_vcpu_alloc_vector_context(vcpu, cntx))
-+		return -ENOMEM;
++    On success:
++        * A valid setting for PR_RISCV_V_VSTATE_CTRL_CUR_MASK takes place
++          immediately. The enablement status specified in
++          PR_RISCV_V_VSTATE_CTRL_NEXT_MASK happens at the next execve() call, or
++          all following execve() calls if PR_RISCV_V_VSTATE_CTRL_INHERIT bit is
++          set.
++        * Every successful call overwrites a previous setting for the calling
++          thread.
 +
- 	/* By default, make CY, TM, and IR counters accessible in VU mode */
- 	reset_csr->scounteren = 0x7;
- 
-@@ -242,6 +249,9 @@ void kvm_arch_vcpu_destroy(struct kvm_vcpu *vcpu)
- 
- 	/* Free unused pages pre-allocated for G-stage page table mappings */
- 	kvm_mmu_free_memory_cache(&vcpu->arch.mmu_page_cache);
++prctl(PR_RISCV_V_SET_CONTROL)
 +
-+	/* Free vector context space for host and guest kernel */
-+	kvm_riscv_vcpu_free_vector_context(vcpu);
- }
- 
- int kvm_cpu_has_pending_timer(struct kvm_vcpu *vcpu)
-@@ -680,6 +690,9 @@ static int kvm_riscv_vcpu_set_reg(struct kvm_vcpu *vcpu,
- 		return kvm_riscv_vcpu_set_reg_isa_ext(vcpu, reg);
- 	case KVM_REG_RISCV_SBI_EXT:
- 		return kvm_riscv_vcpu_set_reg_sbi_ext(vcpu, reg);
-+	case KVM_REG_RISCV_VECTOR:
-+		return kvm_riscv_vcpu_set_reg_vector(vcpu, reg,
-+						 KVM_REG_RISCV_VECTOR);
- 	default:
- 		break;
- 	}
-@@ -709,6 +722,9 @@ static int kvm_riscv_vcpu_get_reg(struct kvm_vcpu *vcpu,
- 		return kvm_riscv_vcpu_get_reg_isa_ext(vcpu, reg);
- 	case KVM_REG_RISCV_SBI_EXT:
- 		return kvm_riscv_vcpu_get_reg_sbi_ext(vcpu, reg);
-+	case KVM_REG_RISCV_VECTOR:
-+		return kvm_riscv_vcpu_get_reg_vector(vcpu, reg,
-+						 KVM_REG_RISCV_VECTOR);
- 	default:
- 		break;
- 	}
-@@ -1003,6 +1019,9 @@ void kvm_arch_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
- 	kvm_riscv_vcpu_host_fp_save(&vcpu->arch.host_context);
- 	kvm_riscv_vcpu_guest_fp_restore(&vcpu->arch.guest_context,
- 					vcpu->arch.isa);
-+	kvm_riscv_vcpu_host_vector_save(&vcpu->arch.host_context);
-+	kvm_riscv_vcpu_guest_vector_restore(&vcpu->arch.guest_context,
-+					    vcpu->arch.isa);
- 
- 	kvm_riscv_vcpu_aia_load(vcpu, cpu);
- 
-@@ -1022,6 +1041,9 @@ void kvm_arch_vcpu_put(struct kvm_vcpu *vcpu)
- 	kvm_riscv_vcpu_host_fp_restore(&vcpu->arch.host_context);
- 
- 	kvm_riscv_vcpu_timer_save(vcpu);
-+	kvm_riscv_vcpu_guest_vector_save(&vcpu->arch.guest_context,
-+					 vcpu->arch.isa);
-+	kvm_riscv_vcpu_host_vector_restore(&vcpu->arch.host_context);
- 
- 	csr->vsstatus = csr_read(CSR_VSSTATUS);
- 	csr->vsie = csr_read(CSR_VSIE);
-diff --git a/arch/riscv/kvm/vcpu_vector.c b/arch/riscv/kvm/vcpu_vector.c
-new file mode 100644
-index 000000000000..edd2eecbddc2
---- /dev/null
-+++ b/arch/riscv/kvm/vcpu_vector.c
-@@ -0,0 +1,186 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Copyright (C) 2022 SiFive
-+ *
-+ * Authors:
-+ *     Vincent Chen <vincent.chen@sifive.com>
-+ *     Greentime Hu <greentime.hu@sifive.com>
-+ */
++    Gets the same Vector enablement status for the calling thread. Setting for
++    next execve() call and the inheritance bit are all OR-ed together.
 +
-+#include <linux/errno.h>
-+#include <linux/err.h>
-+#include <linux/kvm_host.h>
-+#include <linux/uaccess.h>
-+#include <asm/hwcap.h>
-+#include <asm/kvm_vcpu_vector.h>
-+#include <asm/vector.h>
++    Return value: a nonnegative value on success, or a negative error value:
++        EINVAL: Vector not supported.
 +
-+#ifdef CONFIG_RISCV_ISA_V
-+void kvm_riscv_vcpu_vector_reset(struct kvm_vcpu *vcpu)
-+{
-+	unsigned long *isa = vcpu->arch.isa;
-+	struct kvm_cpu_context *cntx = &vcpu->arch.guest_context;
++2.  System runtime configuration (sysctl)
++-----------------------------------------
 +
-+	cntx->sstatus &= ~SR_VS;
-+	if (riscv_isa_extension_available(isa, v)) {
-+		cntx->sstatus |= SR_VS_INITIAL;
-+		WARN_ON(!cntx->vector.datap);
-+		memset(cntx->vector.datap, 0, riscv_v_vsize);
-+	} else {
-+		cntx->sstatus |= SR_VS_OFF;
-+	}
-+}
++ * To mitigate the ABI impact of expansion of the signal stack, a
++   policy mechanism is provided to the administrators, distro maintainers, and
++   developers to control the default Vector enablement status for userspace
++   processes:
 +
-+static void kvm_riscv_vcpu_vector_clean(struct kvm_cpu_context *cntx)
-+{
-+	cntx->sstatus &= ~SR_VS;
-+	cntx->sstatus |= SR_VS_CLEAN;
-+}
++/proc/sys/abi/riscv_v_default_allow
 +
-+void kvm_riscv_vcpu_guest_vector_save(struct kvm_cpu_context *cntx,
-+				      unsigned long *isa)
-+{
-+	if ((cntx->sstatus & SR_VS) == SR_VS_DIRTY) {
-+		if (riscv_isa_extension_available(isa, v))
-+			__kvm_riscv_vector_save(cntx);
-+		kvm_riscv_vcpu_vector_clean(cntx);
-+	}
-+}
++    Writing the text representation of 0 or 1 to this file sets the default
++    system enablement status for new starting userspace programs. A valid value
++    should be:
 +
-+void kvm_riscv_vcpu_guest_vector_restore(struct kvm_cpu_context *cntx,
-+					 unsigned long *isa)
-+{
-+	if ((cntx->sstatus & SR_VS) != SR_VS_OFF) {
-+		if (riscv_isa_extension_available(isa, v))
-+			__kvm_riscv_vector_restore(cntx);
-+		kvm_riscv_vcpu_vector_clean(cntx);
-+	}
-+}
++    0: Do not allow Vector code to be executed as the default for new processes.
 +
-+void kvm_riscv_vcpu_host_vector_save(struct kvm_cpu_context *cntx)
-+{
-+	/* No need to check host sstatus as it can be modified outside */
-+	if (riscv_isa_extension_available(NULL, v))
-+		__kvm_riscv_vector_save(cntx);
-+}
++    1: Allow Vector code to be executed as the default for new processes.
 +
-+void kvm_riscv_vcpu_host_vector_restore(struct kvm_cpu_context *cntx)
-+{
-+	if (riscv_isa_extension_available(NULL, v))
-+		__kvm_riscv_vector_restore(cntx);
-+}
++    Reading this file returns the current system default enablement status.
 +
-+int kvm_riscv_vcpu_alloc_vector_context(struct kvm_vcpu *vcpu,
-+					struct kvm_cpu_context *cntx)
-+{
-+	cntx->vector.datap = kmalloc(riscv_v_vsize, GFP_KERNEL);
-+	if (!cntx->vector.datap)
-+		return -ENOMEM;
++* At every execve() call, a new enablement status of the new process is set to
++  the system default, unless:
 +
-+	vcpu->arch.host_context.vector.datap = kzalloc(riscv_v_vsize, GFP_KERNEL);
-+	if (!vcpu->arch.host_context.vector.datap)
-+		return -ENOMEM;
++      * PR_RISCV_V_VSTATE_CTRL_INHERIT is set for the calling process, and the
++        setting in PR_RISCV_V_VSTATE_CTRL_NEXT_MASK is not
++        PR_RISCV_V_VSTATE_CTRL_DEFAULT. Or,
 +
-+	return 0;
-+}
++      * The setting in PR_RISCV_V_VSTATE_CTRL_NEXT_MASK is not
++        PR_RISCV_V_VSTATE_CTRL_DEFAULT.
 +
-+void kvm_riscv_vcpu_free_vector_context(struct kvm_vcpu *vcpu)
-+{
-+	kfree(vcpu->arch.guest_reset_context.vector.datap);
-+	kfree(vcpu->arch.host_context.vector.datap);
-+}
-+#endif
-+
-+static void *kvm_riscv_vcpu_vreg_addr(struct kvm_vcpu *vcpu,
-+				      unsigned long reg_num,
-+				      size_t reg_size)
-+{
-+	struct kvm_cpu_context *cntx = &vcpu->arch.guest_context;
-+	void *reg_val;
-+	size_t vlenb = riscv_v_vsize / 32;
-+
-+	if (reg_num < KVM_REG_RISCV_VECTOR_REG(0)) {
-+		if (reg_size != sizeof(unsigned long))
-+			return NULL;
-+		switch (reg_num) {
-+		case KVM_REG_RISCV_VECTOR_CSR_REG(vstart):
-+			reg_val = &cntx->vector.vstart;
-+			break;
-+		case KVM_REG_RISCV_VECTOR_CSR_REG(vl):
-+			reg_val = &cntx->vector.vl;
-+			break;
-+		case KVM_REG_RISCV_VECTOR_CSR_REG(vtype):
-+			reg_val = &cntx->vector.vtype;
-+			break;
-+		case KVM_REG_RISCV_VECTOR_CSR_REG(vcsr):
-+			reg_val = &cntx->vector.vcsr;
-+			break;
-+		case KVM_REG_RISCV_VECTOR_CSR_REG(datap):
-+		default:
-+			return NULL;
-+		}
-+	} else if (reg_num <= KVM_REG_RISCV_VECTOR_REG(31)) {
-+		if (reg_size != vlenb)
-+			return NULL;
-+		reg_val = cntx->vector.datap
-+			  + (reg_num - KVM_REG_RISCV_VECTOR_REG(0)) * vlenb;
-+	} else {
-+		return NULL;
-+	}
-+
-+	return reg_val;
-+}
-+
-+int kvm_riscv_vcpu_get_reg_vector(struct kvm_vcpu *vcpu,
-+				  const struct kvm_one_reg *reg,
-+				  unsigned long rtype)
-+{
-+	unsigned long *isa = vcpu->arch.isa;
-+	unsigned long __user *uaddr =
-+			(unsigned long __user *)(unsigned long)reg->addr;
-+	unsigned long reg_num = reg->id & ~(KVM_REG_ARCH_MASK |
-+					    KVM_REG_SIZE_MASK |
-+					    rtype);
-+	void *reg_val = NULL;
-+	size_t reg_size = KVM_REG_SIZE(reg->id);
-+
-+	if (rtype == KVM_REG_RISCV_VECTOR &&
-+	    riscv_isa_extension_available(isa, v)) {
-+		reg_val = kvm_riscv_vcpu_vreg_addr(vcpu, reg_num, reg_size);
-+	}
-+
-+	if (!reg_val)
-+		return -EINVAL;
-+
-+	if (copy_to_user(uaddr, reg_val, reg_size))
-+		return -EFAULT;
-+
-+	return 0;
-+}
-+
-+int kvm_riscv_vcpu_set_reg_vector(struct kvm_vcpu *vcpu,
-+				  const struct kvm_one_reg *reg,
-+				  unsigned long rtype)
-+{
-+	unsigned long *isa = vcpu->arch.isa;
-+	unsigned long __user *uaddr =
-+			(unsigned long __user *)(unsigned long)reg->addr;
-+	unsigned long reg_num = reg->id & ~(KVM_REG_ARCH_MASK |
-+					    KVM_REG_SIZE_MASK |
-+					    rtype);
-+	void *reg_val = NULL;
-+	size_t reg_size = KVM_REG_SIZE(reg->id);
-+
-+	if (rtype == KVM_REG_RISCV_VECTOR &&
-+	    riscv_isa_extension_available(isa, v)) {
-+		reg_val = kvm_riscv_vcpu_vreg_addr(vcpu, reg_num, reg_size);
-+	}
-+
-+	if (!reg_val)
-+		return -EINVAL;
-+
-+	if (copy_from_user(reg_val, uaddr, reg_size))
-+		return -EFAULT;
-+
-+	return 0;
-+}
++* Modifying the system default enablement status does not affect the enablement
++  status of any existing process of thread that do not make an execve() call.
 -- 
 2.17.1
 
