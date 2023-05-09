@@ -1,117 +1,122 @@
 From: Andy Chiu <andy.chiu@sifive.com>
-Date: Wed, 10 May 2023 00:04:12 +0800
-Subject: [PATCH -next v19 23/24] riscv: Enable Vector code to be built
-In-Reply-To: <20230509-resilient-lagoon-265e851e5bf8@wendy>
-References: <20230509103033.11285-1-andy.chiu@sifive.com> <20230509103033.11285-24-andy.chiu@sifive.com>
- <20230509-resilient-lagoon-265e851e5bf8@wendy>
-Message-ID: <CABgGipXvVw8GWeVLTuTJT9Hus-pEPUcgRhO3oovKYOAZK3fAEg@mail.gmail.com>
+Date: Wed, 10 May 2023 00:11:45 +0800
+Subject: [PATCH -next v19 20/24] riscv: Add prctl controls for userspace
+ vector management
+In-Reply-To: <2629220.BddDVKsqQX@diego>
+References: <20230509103033.11285-1-andy.chiu@sifive.com> <20230509103033.11285-21-andy.chiu@sifive.com>
+ <2629220.BddDVKsqQX@diego>
+Message-ID: <CABgGipXN2vsdEMJFX-e8EgVNvnDr7v6zixyWErfaq31ghWkGRw@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, May 9, 2023 at 8:35?PM Conor Dooley <conor.dooley@microchip.com> wrote:
+On Tue, May 9, 2023 at 7:14?PM Heiko St?bner <heiko@sntech.de> wrote:
 >
-> Hey Andy,
+> Hi,
 >
-> On Tue, May 09, 2023 at 10:30:32AM +0000, Andy Chiu wrote:
-> > From: Guo Ren <guoren@linux.alibaba.com>
+> need to poke this more, but one issue popped up at first compile.
+>
+> Am Dienstag, 9. Mai 2023, 12:30:29 CEST schrieb Andy Chiu:
+> > This patch add two riscv-specific prctls, to allow usespace control the
+> > use of vector unit:
 > >
-> > This patch adds a config which enables vector feature from the kernel
-> > space.
->
-> This commit message probably needs to change, it's not exactly doing
-> that anymore!
-
-Yes, I totally missed that part. I will get commit messages updated
-when it's time for the next revision.
-
->
-> > Signed-off-by: Guo Ren <guoren@linux.alibaba.com>
-> > Co-developed-by: Greentime Hu <greentime.hu@sifive.com>
-> > Signed-off-by: Greentime Hu <greentime.hu@sifive.com>
->
-> > Suggested-by: Vineet Gupta <vineetg@rivosinc.com>
-> > Suggested-by: Atish Patra <atishp@atishpatra.org>
->
-> And I suspect that these two are also likely inaccurate at this point,
-> but IDC.
-
-Agree. I am going to drop these.
-
->
-> > Co-developed-by: Andy Chiu <andy.chiu@sifive.com>
+> >  * PR_RISCV_V_SET_CONTROL: control the permission to use Vector at next,
+> >    or all following execve for a thread. Turning off a thread's Vector
+> >    live is not possible since libraries may have registered ifunc that
+> >    may execute Vector instructions.
+> >  * PR_RISCV_V_GET_CONTROL: get the same permission setting for the
+> >    current thread, and the setting for following execve(s).
+> >
 > > Signed-off-by: Andy Chiu <andy.chiu@sifive.com>
-> > ---
-> > Changelog V19:
-> >  - Add RISCV_V_DISABLE to set compile-time default.
-> >
-> >  arch/riscv/Kconfig  | 31 +++++++++++++++++++++++++++++++
-> >  arch/riscv/Makefile |  6 +++++-
-> >  2 files changed, 36 insertions(+), 1 deletion(-)
-> >
-> > diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
-> > index 1019b519d590..fa256f2e23c1 100644
-> > --- a/arch/riscv/Kconfig
-> > +++ b/arch/riscv/Kconfig
-> > @@ -466,6 +466,37 @@ config RISCV_ISA_SVPBMT
-> >
-> >          If you don't know what to do here, say Y.
-> >
-> > +config TOOLCHAIN_HAS_V
-> > +     bool
-> > +     default y
-> > +     depends on !64BIT || $(cc-option,-mabi=lp64 -march=rv64iv)
-> > +     depends on !32BIT || $(cc-option,-mabi=ilp32 -march=rv32iv)
-> > +     depends on LLD_VERSION >= 140000 || LD_VERSION >= 23800
-> > +     depends on AS_HAS_OPTION_ARCH
-> > +
-> > +config RISCV_ISA_V
-> > +     bool "VECTOR extension support"
-> > +     depends on TOOLCHAIN_HAS_V
-> > +     depends on FPU
-> > +     select DYNAMIC_SIGFRAME
-> > +     default y
-> > +     help
-> > +       Say N here if you want to disable all vector related procedure
-> > +       in the kernel.
-> > +
-> > +       If you don't know what to do here, say Y.
-> > +
-> > +config RISCV_V_DISABLE
-> > +     bool "Disable userspace Vector by default"
-> > +     depends on RISCV_ISA_V
-> > +     default n
-> > +     help
-> > +       Say Y here if you want to disable default enablement state of Vector
-> > +       in u-mode. This way userspace has to make explicit prctl() call to
-> > +       enable Vector, or enable it via sysctl interface.
+> > Reviewed-by: Greentime Hu <greentime.hu@sifive.com>
+> > Reviewed-by: Vincent Chen <vincent.chen@sifive.com>
 >
-> If we are worried about breaking userspace, why is the default for this
-> option not y? Or further,
 >
-> config RISCV_ISA_V_DEFAULT_ENABLE
->         bool "Enable userspace Vector by default"
->         depends on RISCV_ISA_V
->         help
->           Say Y here to allow use of Vector in userspace by default.
->           Otherwise, userspace has to make an explicit prctl() call to
->           enable Vector, or enable it via the sysctl interface.
+> > diff --git a/arch/riscv/kernel/vector.c b/arch/riscv/kernel/vector.c
+> > index 960a343799c6..16ccb35625a9 100644
+> > --- a/arch/riscv/kernel/vector.c
+> > +++ b/arch/riscv/kernel/vector.c
+> > @@ -9,6 +9,7 @@
+> >  #include <linux/slab.h>
+> >  #include <linux/sched.h>
+> >  #include <linux/uaccess.h>
+> > +#include <linux/prctl.h>
+> >
+> >  #include <asm/thread_info.h>
+> >  #include <asm/processor.h>
+> > @@ -19,6 +20,8 @@
+> >  #include <asm/ptrace.h>
+> >  #include <asm/bug.h>
+> >
+> > +static bool riscv_v_implicit_uacc = !IS_ENABLED(CONFIG_RISCV_V_DISABLE);
+> > +
+> >  unsigned long riscv_v_vsize __read_mostly;
+> >  EXPORT_SYMBOL_GPL(riscv_v_vsize);
+> >
+> > @@ -91,11 +94,51 @@ static int riscv_v_thread_zalloc(void)
+> >       return 0;
+> >  }
+> >
+> > +#define VSTATE_CTRL_GET_CUR(x) ((x) & PR_RISCV_V_VSTATE_CTRL_CUR_MASK)
+> > +#define VSTATE_CTRL_GET_NEXT(x) (((x) & PR_RISCV_V_VSTATE_CTRL_NEXT_MASK) >> 2)
+> > +#define VSTATE_CTRL_MAKE_NEXT(x) (((x) << 2) & PR_RISCV_V_VSTATE_CTRL_NEXT_MASK)
+> > +#define VSTATE_CTRL_GET_INHERIT(x) (!!((x) & PR_RISCV_V_VSTATE_CTRL_INHERIT))
+> > +static inline int riscv_v_get_cur_ctrl(struct task_struct *tsk)
+> > +{
+> > +     return VSTATE_CTRL_GET_CUR(tsk->thread.vstate_ctrl);
+> > +}
+> > +
+> > +static inline int riscv_v_get_next_ctrl(struct task_struct *tsk)
+> > +{
+> > +     return VSTATE_CTRL_GET_NEXT(tsk->thread.vstate_ctrl);
+> > +}
+> > +
+> > +static inline bool riscv_v_test_ctrl_inherit(struct task_struct *tsk)
+> > +{
+> > +     return VSTATE_CTRL_GET_INHERIT(tsk->thread.vstate_ctrl);
+> > +}
+> > +
+> > +static inline void riscv_v_set_ctrl(struct task_struct *tsk, int cur, int nxt,
+> > +                                 bool inherit)
+> > +{
+> > +     unsigned long ctrl;
+> > +
+> > +     ctrl = cur & PR_RISCV_V_VSTATE_CTRL_CUR_MASK;
+> > +     ctrl |= VSTATE_CTRL_MAKE_NEXT(nxt);
+> > +     if (inherit)
+> > +             ctrl |= PR_RISCV_V_VSTATE_CTRL_INHERIT;
+> > +     tsk->thread.vstate_ctrl = ctrl;
+> > +}
+> > +
+> > +bool riscv_v_user_allowed(void)
+> > +{
+> > +     return riscv_v_get_cur_ctrl(current) == PR_RISCV_V_VSTATE_CTRL_ON;
+> > +}
 >
->           If you don't know what to do here, say N.
+> EXPORT_SYMBOL(riscv_v_user_allowed);
+
+It's a shame. KVM is a builtin on my test platform so I missed this
+obvious thing. Or, maybe we should make them inline functions or
+macros at the header file because of the size. And because other
+modules may rarely use them.
+
+>
+> kvm is allowed to be built as module, so you could end up with:
+>
+> ERROR: modpost: "riscv_v_user_allowed" [arch/riscv/kvm/kvm.ko] undefined!
+> make[2]: *** [../scripts/Makefile.modpost:136: Module.symvers] Fehler 1
+> make[1]: *** [/home/devel/hstuebner/00_git-repos/linux-riscv/Makefile:1978: modpost] Fehler 2
+> make[1]: Verzeichnis ?/home/devel/hstuebner/00_git-repos/linux-riscv/_build-riscv64? wird verlassen
+> make: *** [Makefile:226: __sub-make] Fehler 2
+>
+>
+> Heiko
+>
+>
 >
 
-Yes, expressing the option, where Y means "on", is more direct. But I
-have a little concern if we make the default as "off". Yes, we create
-this option in the worries of breaking userspace. But given that the
-break case might be rare, is it worth making userspace Vector harder
-to use by doing this? I assume in an ideal world that nothing would
-break and programs could just use V without bothering with prctl(), or
-sysctl. But on the other hand, to make a program robust enough, we
-must check the status with the prctl() anyway. So I have no answer
-here.
-
-> Thanks,
-> Conor.
+Thanks,
+Andy
 
