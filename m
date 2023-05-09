@@ -1,9 +1,9 @@
 From: Andy Chiu <andy.chiu@sifive.com>
-Date: Tue,  9 May 2023 10:30:14 +0000
-Subject: [PATCH -next v19 05/24] riscv: Clear vector regfile on bootup
+Date: Tue,  9 May 2023 10:30:16 +0000
+Subject: [PATCH -next v19 07/24] riscv: Introduce Vector enable/disable helpers
 In-Reply-To: <20230509103033.11285-1-andy.chiu@sifive.com>
 References: <20230509103033.11285-1-andy.chiu@sifive.com>
-Message-ID: <20230509103033.11285-6-andy.chiu@sifive.com>
+Message-ID: <20230509103033.11285-8-andy.chiu@sifive.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -12,64 +12,51 @@ Content-Transfer-Encoding: 7bit
 
 From: Greentime Hu <greentime.hu@sifive.com>
 
-clear vector registers on boot if kernel supports V.
+These are small and likely to be frequently called so implement as
+inline routines (vs. function call).
 
+Co-developed-by: Guo Ren <guoren@linux.alibaba.com>
+Signed-off-by: Guo Ren <guoren@linux.alibaba.com>
+Co-developed-by: Vincent Chen <vincent.chen@sifive.com>
+Signed-off-by: Vincent Chen <vincent.chen@sifive.com>
 Signed-off-by: Greentime Hu <greentime.hu@sifive.com>
 Signed-off-by: Vineet Gupta <vineetg@rivosinc.com>
 Signed-off-by: Andy Chiu <andy.chiu@sifive.com>
-Acked-by: Conor Dooley <conor.dooley@microchip.com>
+Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
 Reviewed-by: Heiko Stuebner <heiko.stuebner@vrull.eu>
 Tested-by: Heiko Stuebner <heiko.stuebner@vrull.eu>
 ---
- arch/riscv/kernel/head.S | 27 +++++++++++++++++++++++++--
- 1 file changed, 25 insertions(+), 2 deletions(-)
+ arch/riscv/include/asm/vector.h | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-diff --git a/arch/riscv/kernel/head.S b/arch/riscv/kernel/head.S
-index 4bf6c449d78b..3fd6a4bd9c3e 100644
---- a/arch/riscv/kernel/head.S
-+++ b/arch/riscv/kernel/head.S
-@@ -392,7 +392,7 @@ ENTRY(reset_regs)
- #ifdef CONFIG_FPU
- 	csrr	t0, CSR_MISA
- 	andi	t0, t0, (COMPAT_HWCAP_ISA_F | COMPAT_HWCAP_ISA_D)
--	beqz	t0, .Lreset_regs_done
-+	beqz	t0, .Lreset_regs_done_fpu
+diff --git a/arch/riscv/include/asm/vector.h b/arch/riscv/include/asm/vector.h
+index 427a3b51df72..dfe5a321b2b4 100644
+--- a/arch/riscv/include/asm/vector.h
++++ b/arch/riscv/include/asm/vector.h
+@@ -11,12 +11,23 @@
+ #ifdef CONFIG_RISCV_ISA_V
  
- 	li	t1, SR_FS
- 	csrs	CSR_STATUS, t1
-@@ -430,8 +430,31 @@ ENTRY(reset_regs)
- 	fmv.s.x	f31, zero
- 	csrw	fcsr, 0
- 	/* note that the caller must clear SR_FS */
-+.Lreset_regs_done_fpu:
- #endif /* CONFIG_FPU */
--.Lreset_regs_done:
+ #include <asm/hwcap.h>
++#include <asm/csr.h>
+ 
+ static __always_inline bool has_vector(void)
+ {
+ 	return riscv_has_extension_likely(RISCV_ISA_EXT_v);
+ }
+ 
++static __always_inline void riscv_v_enable(void)
++{
++	csr_set(CSR_SSTATUS, SR_VS);
++}
 +
-+#ifdef CONFIG_RISCV_ISA_V
-+	csrr	t0, CSR_MISA
-+	li	t1, COMPAT_HWCAP_ISA_V
-+	and	t0, t0, t1
-+	beqz	t0, .Lreset_regs_done_vector
++static __always_inline void riscv_v_disable(void)
++{
++	csr_clear(CSR_SSTATUS, SR_VS);
++}
 +
-+	/*
-+	 * Clear vector registers and reset vcsr
-+	 * VLMAX has a defined value, VLEN is a constant,
-+	 * and this form of vsetvli is defined to set vl to VLMAX.
-+	 */
-+	li	t1, SR_VS
-+	csrs	CSR_STATUS, t1
-+	csrs	CSR_VCSR, x0
-+	vsetvli t1, x0, e8, m8, ta, ma
-+	vmv.v.i v0, 0
-+	vmv.v.i v8, 0
-+	vmv.v.i v16, 0
-+	vmv.v.i v24, 0
-+	/* note that the caller must clear SR_VS */
-+.Lreset_regs_done_vector:
-+#endif /* CONFIG_RISCV_ISA_V */
- 	ret
- END(reset_regs)
- #endif /* CONFIG_RISCV_M_MODE */
+ #else /* ! CONFIG_RISCV_ISA_V  */
+ 
+ static __always_inline bool has_vector(void) { return false; }
 -- 
 2.17.1
 
