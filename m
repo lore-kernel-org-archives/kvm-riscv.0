@@ -1,48 +1,52 @@
-From: kernel test robot <lkp@intel.com>
-Date: Wed, 10 May 2023 06:14:45 +0800
-Subject: [PATCH -next v19 23/24] riscv: Enable Vector code to be built
-In-Reply-To: <20230509103033.11285-24-andy.chiu@sifive.com>
-References: <20230509103033.11285-24-andy.chiu@sifive.com>
-Message-ID: <202305100615.JXidADRN-lkp@intel.com>
+From: Anup Patel <apatel@ventanamicro.com>
+Date: Wed, 10 May 2023 14:07:40 +0530
+Subject: [PATCH kvmtool 0/8] RISC-V SBI enable/disable, Zbb, Zicboz, and Ssaia support
+Message-ID: <20230510083748.1056704-1-apatel@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Andy,
+The latest KVM in Linux-6.4-rc1 has support for:
+1) Enabling/disabling SBI extensions from KVM user-space
+2) Zbb ISA extension support
+3) Zicboz ISA extension support
+4) Ssaia ISA extension support
 
-kernel test robot noticed the following build errors:
+This series adds corresponding changes in KVMTOOL to use the above
+mentioned features for Guest/VM.
 
-[auto build test ERROR on next-20230509]
+These patches can also be found in the riscv_sbi_zbb_zicboz_ssaia_v1
+branch at: https://github.com/avpatel/kvmtool.git
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Andy-Chiu/riscv-Rename-__switch_to_aux-fpu/20230509-183621
-base:   next-20230509
-patch link:    https://lore.kernel.org/r/20230509103033.11285-24-andy.chiu%40sifive.com
-patch subject: [PATCH -next v19 23/24] riscv: Enable Vector code to be built
-config: riscv-defconfig (https://download.01.org/0day-ci/archive/20230510/202305100615.JXidADRN-lkp at intel.com/config)
-compiler: riscv64-linux-gcc (GCC) 12.1.0
-reproduce (this is a W=1 build):
-        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        # https://github.com/intel-lab-lkp/linux/commit/cacd7c504c93b48a44b87516cfdbe417dca4d007
-        git remote add linux-review https://github.com/intel-lab-lkp/linux
-        git fetch --no-tags linux-review Andy-Chiu/riscv-Rename-__switch_to_aux-fpu/20230509-183621
-        git checkout cacd7c504c93b48a44b87516cfdbe417dca4d007
-        # save the config file
-        mkdir build_dir && cp config build_dir/.config
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-12.1.0 make.cross W=1 O=build_dir ARCH=riscv olddefconfig
-        COMPILER_INSTALL_PATH=$HOME/0day COMPILER=gcc-12.1.0 make.cross W=1 O=build_dir ARCH=riscv SHELL=/bin/bash
+Andrew Jones (1):
+  riscv: Add Zicboz extension support
 
-If you fix the issue, kindly add following tag where applicable
-| Reported-by: kernel test robot <lkp@intel.com>
-| Link: https://lore.kernel.org/oe-kbuild-all/202305100615.JXidADRN-lkp at intel.com/
+Anup Patel (7):
+  Sync-up headers with Linux-6.4-rc1
+  riscv: Allow setting custom mvendorid, marchid, and mimpid
+  riscv: Allow disabling SBI extensions for Guest
+  riscv: Sort the ISA extension array alphabetically
+  riscv: Add zbb extension support
+  riscv: Add Ssaia extension support
+  riscv: Fix guest RAM alloc size computation for RV32
 
-All errors (new ones prefixed by >>, old ones prefixed by <<):
-
->> ERROR: modpost: "riscv_v_user_allowed" [arch/riscv/kvm/kvm.ko] undefined!
+ arm/aarch64/include/asm/kvm.h       |  38 ++++++++++
+ include/linux/kvm.h                 |  57 +++++++++------
+ include/linux/virtio_blk.h          | 105 ++++++++++++++++++++++++++++
+ include/linux/virtio_config.h       |   6 ++
+ include/linux/virtio_net.h          |   5 ++
+ riscv/fdt.c                         |  19 ++++-
+ riscv/include/asm/kvm.h             |  56 ++++++++++++++-
+ riscv/include/kvm/kvm-config-arch.h |  51 +++++++++++++-
+ riscv/include/kvm/kvm-cpu-arch.h    |  19 +++--
+ riscv/kvm-cpu.c                     |  45 +++++++++++-
+ riscv/kvm.c                         |  15 +++-
+ x86/include/asm/kvm.h               |  50 ++++++++++---
+ 12 files changed, 419 insertions(+), 47 deletions(-)
 
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests
+2.34.1
+
 
