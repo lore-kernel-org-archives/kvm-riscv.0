@@ -1,58 +1,35 @@
-From: Anup Patel <apatel@ventanamicro.com>
-Date: Wed, 10 May 2023 14:07:48 +0530
-Subject: [PATCH kvmtool 8/8] riscv: Fix guest RAM alloc size computation for RV32
-In-Reply-To: <20230510083748.1056704-1-apatel@ventanamicro.com>
-References: <20230510083748.1056704-1-apatel@ventanamicro.com>
-Message-ID: <20230510083748.1056704-9-apatel@ventanamicro.com>
+From: Haibo Xu <haibo1.xu@intel.com>
+Date: Thu, 11 May 2023 17:22:47 +0800
+Subject: [PATCH 0/2] RISCV: Add KVM_GET_REG_LIST API
+Message-ID: <cover.1683791148.git.haibo1.xu@intel.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Currently, we ensure that guest RAM alloc size is at least 2M for
-THP which works well for RV64 but breaks hugepage support for RV32.
-To fix this, we use 4M as hugepage size for RV32.
+KVM_GET_REG_LIST will dump all register IDs that are available to
+KVM_GET/SET_ONE_REG and It's very useful to identify some platform
+regression issue during VM migration.
 
-Fixes: 867159a7963b ("riscv: Implement Guest/VM arch functions")
-Signed-off-by: Anup Patel <apatel@ventanamicro.com>
----
- riscv/kvm.c | 15 ++++++++++++---
- 1 file changed, 12 insertions(+), 3 deletions(-)
+Patch 1 enabled the KVM_GET_REG_LIST API in riscv and patch 2 added
+the corresponding kselftest for checking possible register regressions.
 
-diff --git a/riscv/kvm.c b/riscv/kvm.c
-index 4d6f5cb..8daad94 100644
---- a/riscv/kvm.c
-+++ b/riscv/kvm.c
-@@ -61,16 +61,25 @@ void kvm__arch_set_cmdline(char *cmdline, bool video)
- {
- }
- 
-+#if __riscv_xlen == 64
-+#define HUGEPAGE_SIZE	SZ_2M
-+#else
-+#define HUGEPAGE_SIZE	SZ_4M
-+#endif
-+
- void kvm__arch_init(struct kvm *kvm)
- {
- 	/*
- 	 * Allocate guest memory. We must align our buffer to 64K to
- 	 * correlate with the maximum guest page size for virtio-mmio.
--	 * If using THP, then our minimal alignment becomes 2M.
--	 * 2M trumps 64K, so let's go with that.
-+	 * If using THP, then our minimal alignment becomes hugepage
-+	 * size. The hugepage size is always greater than 64K, so
-+	 * let's go with that.
- 	 */
- 	kvm->ram_size = min(kvm->cfg.ram_size, (u64)RISCV_MAX_MEMORY(kvm));
--	kvm->arch.ram_alloc_size = kvm->ram_size + SZ_2M;
-+	kvm->arch.ram_alloc_size = kvm->ram_size;
-+	if (!kvm->cfg.hugetlbfs_path)
-+		kvm->arch.ram_alloc_size += HUGEPAGE_SIZE;
- 	kvm->arch.ram_alloc_start = mmap_anon_or_hugetlbfs(kvm,
- 						kvm->cfg.hugetlbfs_path,
- 						kvm->arch.ram_alloc_size);
+Both patches were ported from arm64 and tested with Linux 6.4-rc1 on a
+Qemu riscv virt machine.
+
+Haibo Xu (2):
+  riscv: kvm: Add KVM_GET_REG_LIST API support
+  KVM: selftests: Add riscv get-reg-list test
+
+ Documentation/virt/kvm/api.rst                |   2 +-
+ arch/riscv/kvm/vcpu.c                         | 346 +++++++
+ tools/testing/selftests/kvm/Makefile          |   3 +
+ .../selftests/kvm/include/riscv/processor.h   |   3 +
+ .../selftests/kvm/riscv/get-reg-list.c        | 869 ++++++++++++++++++
+ 5 files changed, 1222 insertions(+), 1 deletion(-)
+ create mode 100644 tools/testing/selftests/kvm/riscv/get-reg-list.c
+
 -- 
 2.34.1
 
