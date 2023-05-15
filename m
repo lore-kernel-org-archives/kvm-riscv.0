@@ -1,70 +1,449 @@
-From: Sean Christopherson <seanjc@google.com>
-Date: Fri, 12 May 2023 16:31:27 -0700
-Subject: [PATCH v2 2/2] KVM: Don't enable hardware after a restart/shutdown is initiated
-In-Reply-To: <20230512233127.804012-1-seanjc@google.com>
-References: <20230512233127.804012-1-seanjc@google.com>
-Message-ID: <20230512233127.804012-3-seanjc@google.com>
+From: Haibo Xu <xiaobo55x@gmail.com>
+Date: Mon, 15 May 2023 14:21:17 +0800
+Subject: [PATCH 1/2] riscv: kvm: Add KVM_GET_REG_LIST API support
+In-Reply-To: <20230511-5e8b478be55881a754cc2002@orel>
+References: <cover.1683791148.git.haibo1.xu@intel.com> <921fc2e1a91887170e277acb1b52df57480a5736.1683791148.git.haibo1.xu@intel.com>
+ <20230511-5e8b478be55881a754cc2002@orel>
+Message-ID: <CAJve8on5CxNkzmfEPfmDSX=0quJL6iAoqMP+twBBw43QmTqdFg@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Reject hardware enabling, i.e. VM creation, if a restart/shutdown has
-been initiated to avoid re-enabling hardware between kvm_reboot() and
-machine_{halt,power_off,restart}().  The restart case is especially
-problematic (for x86) as enabling VMX (or clearing GIF in KVM_RUN on
-SVM) blocks INIT, which results in the restart/reboot hanging as BIOS
-is unable to wake and rendezvous with APs.
+On Thu, May 11, 2023 at 6:44?PM Andrew Jones <ajones@ventanamicro.com> wrote:
+>
+> On Thu, May 11, 2023 at 05:22:48PM +0800, Haibo Xu wrote:
+> > KVM_GET_REG_LIST API will return all registers that are available to
+> > KVM_GET/SET_ONE_REG APIs. It's very useful to identify some platform
+> > regression issue during VM migration.
+> >
+> > Since this API was already supported on arm64, it'd be straightforward
+>
+> s/it'd be/it is/
+>
+> > to enable it on riscv with similar code structure.
+> >
+> > Signed-off-by: Haibo Xu <haibo1.xu@intel.com>
+> > ---
+> >  Documentation/virt/kvm/api.rst |   2 +-
+> >  arch/riscv/kvm/vcpu.c          | 346 +++++++++++++++++++++++++++++++++
+> >  2 files changed, 347 insertions(+), 1 deletion(-)
+> >
+> > diff --git a/Documentation/virt/kvm/api.rst b/Documentation/virt/kvm/api.rst
+> > index add067793b90..280e89abd004 100644
+> > --- a/Documentation/virt/kvm/api.rst
+> > +++ b/Documentation/virt/kvm/api.rst
+> > @@ -3499,7 +3499,7 @@ VCPU matching underlying host.
+> >  ---------------------
+> >
+> >  :Capability: basic
+> > -:Architectures: arm64, mips
+> > +:Architectures: arm64, mips, riscv
+> >  :Type: vcpu ioctl
+> >  :Parameters: struct kvm_reg_list (in/out)
+> >  :Returns: 0 on success; -1 on error
+> > diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+> > index 8bd9f2a8a0b9..fb8834e4fa15 100644
+> > --- a/arch/riscv/kvm/vcpu.c
+> > +++ b/arch/riscv/kvm/vcpu.c
+> > @@ -657,6 +657,334 @@ static int kvm_riscv_vcpu_set_reg_isa_ext(struct kvm_vcpu *vcpu,
+> >       return 0;
+> >  }
+> >
+> > +static inline unsigned long num_config_regs(void)
+> > +{
+> > +     return sizeof(struct kvm_riscv_config) / sizeof(unsigned long);
+> > +}
+> > +
+> > +static int copy_config_reg_indices(u64 __user *uindices)
+> > +{
+> > +     unsigned int i;
+> > +     int n = num_config_regs();
+> > +
+> > +     for (i = 0; i < n; i++) {
+> > +             u64 reg = KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CONFIG | i;
+>                                           ^ this should be
+>                                           size-ulong
+>
+>   u64 size = IS_ENABLED(CONFIG_32BIT) ? KVM_REG_SIZE_U32 : KVM_REG_SIZE_U64;
+>   u64 reg = KVM_REG_RISCV | size | KVM_REG_RISCV_CONFIG | i;
+>
+> > +
+> > +             if (uindices) {
+> > +                     if (put_user(reg, uindices))
+> > +                             return -EFAULT;
+> > +                     uindices++;
+> > +             }
+> > +     }
+> > +
+> > +     return n;
+> > +}
+> > +
+> > +static inline unsigned long num_core_regs(void)
+> > +{
+> > +     return sizeof(struct kvm_riscv_core) / sizeof(unsigned long);
+> > +}
+> > +
+> > +static int copy_core_reg_indices(u64 __user *uindices)
+> > +{
+> > +     unsigned int i;
+> > +     int n = num_core_regs();
+> > +
+> > +     for (i = 0; i < n; i++) {
+> > +             u64 reg = KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CORE | i;
+>                                           ^ size-ulong
+>
+> > +
+> > +             if (uindices) {
+> > +                     if (put_user(reg, uindices))
+> > +                             return -EFAULT;
+> > +                     uindices++;
+> > +             }
+> > +     }
+> > +
+> > +     return n;
+> > +}
+> > +
+> > +static inline unsigned long num_csr_regs(void)
+> > +{
+> > +     unsigned long n = sizeof(struct kvm_riscv_csr) / sizeof(unsigned long);
+> > +
+> > +     if (kvm_riscv_aia_available())
+> > +             n += sizeof(struct kvm_riscv_aia_csr) / sizeof(unsigned long);
+> > +
+> > +     return n;
+> > +}
+> > +
+> > +static int copy_csr_reg_indices(u64 __user *uindices)
+> > +{
+> > +     unsigned int i;
+> > +     int n1 = sizeof(struct kvm_riscv_csr) / sizeof(unsigned long);
+> > +     int n2 = 0;
+> > +
+> > +     /* copy general csr regs */
+> > +     for (i = 0; i < n1; i++) {
+> > +             u64 reg = KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CSR |
+>                                           ^ size-ulong
+>
+> > +                               KVM_REG_RISCV_CSR_GENERAL | i;
+> > +
+> > +             if (uindices) {
+> > +                     if (put_user(reg, uindices))
+> > +                             return -EFAULT;
+> > +                     uindices++;
+> > +             }
+> > +     }
+> > +
+> > +     /* copy AIA csr regs */
+> > +     if (kvm_riscv_aia_available()) {
+> > +             n2 = sizeof(struct kvm_riscv_aia_csr) / sizeof(unsigned long);
+> > +
+> > +             for (i = 0; i < n2; i++) {
+> > +                     u64 reg = KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CSR |
+>                                                   ^ size-ulong
+>
+> > +                                       KVM_REG_RISCV_CSR_AIA | i;
+> > +
+> > +                     if (uindices) {
+> > +                             if (put_user(reg, uindices))
+> > +                                     return -EFAULT;
+> > +                             uindices++;
+> > +                     }
+> > +             }
+> > +     }
+> > +
+> > +     return n1 + n2;
+> > +}
+> > +
+> > +static inline unsigned long num_timer_regs(void)
+> > +{
+> > +     return sizeof(struct kvm_riscv_timer) / sizeof(unsigned long);
+> > +}
+> > +
+> > +static int copy_timer_reg_indices(u64 __user *uindices)
+> > +{
+> > +     unsigned int i;
+> > +     int n = num_timer_regs();
+> > +
+> > +     for (i = 0; i < n; i++) {
+> > +             u64 reg = KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_TIMER | i;
+> > +
+> > +             if (uindices) {
+> > +                     if (put_user(reg, uindices))
+> > +                             return -EFAULT;
+> > +                     uindices++;
+> > +             }
+> > +     }
+> > +
+> > +     return n;
+> > +}
+> > +
+> > +static inline unsigned long num_fp_f_regs(const struct kvm_vcpu *vcpu)
+> > +{
+> > +     const struct kvm_cpu_context *cntx = &vcpu->arch.guest_context;
+> > +
+> > +     if (riscv_isa_extension_available(vcpu->arch.isa, f))
+> > +             return sizeof(cntx->fp.f) / sizeof(u32);
+> > +     else
+> > +             return 0;
+> > +}
+> > +
+> > +static int copy_fp_f_reg_indices(const struct kvm_vcpu *vcpu,
+> > +                                     u64 __user *uindices)
+> > +{
+> > +     unsigned int i;
+> > +     int n = num_fp_f_regs(vcpu);
+> > +
+> > +     for (i = 0; i < n; i++) {
+> > +             u64 reg = KVM_REG_RISCV | KVM_REG_SIZE_U32 | KVM_REG_RISCV_FP_F | i;
+> > +
+> > +             if (uindices) {
+> > +                     if (put_user(reg, uindices))
+> > +                             return -EFAULT;
+> > +                     uindices++;
+> > +             }
+> > +     }
+> > +
+> > +     return n;
+> > +}
+> > +
+> > +static inline unsigned long num_fp_d_regs(const struct kvm_vcpu *vcpu)
+> > +{
+> > +     const struct kvm_cpu_context *cntx = &vcpu->arch.guest_context;
+> > +
+> > +     if (riscv_isa_extension_available(vcpu->arch.isa, d))
+> > +             return sizeof(cntx->fp.d.f) / sizeof(u64) + 1;
+> > +     else
+> > +             return 0;
+> > +}
+> > +
+> > +static int copy_fp_d_reg_indices(const struct kvm_vcpu *vcpu,
+> > +                                     u64 __user *uindices)
+> > +{
+> > +     unsigned int i;
+> > +     int n = num_fp_d_regs(vcpu);
+> > +     u64 reg;
+> > +
+> > +     /* copy fp.d.f indeices */
+>
+> indices
+>
+> > +     for (i = 0; i < n-1; i++) {
+> > +             reg = KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_FP_D | i;
+> > +
+> > +             if (uindices) {
+> > +                     if (put_user(reg, uindices))
+> > +                             return -EFAULT;
+> > +                     uindices++;
+> > +             }
+> > +     }
+> > +
+> > +     /* copy fp.d.fcsr indeices */
+>
+> indices
+>
+> > +     reg = KVM_REG_RISCV | KVM_REG_SIZE_U32 | KVM_REG_RISCV_FP_D | i;
+> > +     if (uindices) {
+> > +             if (put_user(reg, uindices))
+> > +                     return -EFAULT;
+> > +     }
+> > +
+> > +     return n;
+> > +}
+> > +
+> > +static inline unsigned long num_isa_ext_regs(void)
+> > +{
+> > +     return KVM_RISCV_ISA_EXT_MAX;
+> > +}
+> > +
+> > +static int copy_isa_ext_reg_indices(u64 __user *uindices)
+> > +{
+> > +     unsigned int i;
+> > +     int n = num_isa_ext_regs();
+> > +
+> > +     for (i = 0; i < n; i++) {
+> > +             u64 reg = KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_ISA_EXT | i;
+>                                           ^ size-ulong
+>
+> > +
+> > +             if (uindices) {
+> > +                     if (put_user(reg, uindices))
+> > +                             return -EFAULT;
+> > +                     uindices++;
+> > +             }
+> > +     }
+> > +
+> > +     return n;
+> > +}
+> > +
+> > +static inline unsigned long num_sbi_ext_regs(void)
+> > +{
+> > +     /* number of KVM_REG_RISCV_SBI_SINGLE +
+> > +      *  2x(number of KVM_REG_RISCV_SBI_MULTI)
+> > +      */
+>
+> Please use an opening wing '/*' on comments.
+>
+> > +     return KVM_RISCV_SBI_EXT_MAX + 2*(KVM_REG_RISCV_SBI_MULTI_REG_LAST+1);
+> > +}
+> > +
+> > +static int copy_sbi_ext_reg_indices(u64 __user *uindices)
+> > +{
+> > +     unsigned int i;
+> > +     int n;
+> > +
+> > +     /* copy KVM_REG_RISCV_SBI_SINGLE */
+> > +     n = KVM_RISCV_SBI_EXT_MAX;
+> > +     for (i = 0; i < n; i++) {
+> > +             u64 reg = KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_SBI_EXT |
+>                                           ^ size-ulong
+>
+> > +                               KVM_REG_RISCV_SBI_SINGLE | i;
+> > +
+> > +             if (uindices) {
+> > +                     if (put_user(reg, uindices))
+> > +                             return -EFAULT;
+> > +                     uindices++;
+> > +             }
+> > +     }
+> > +
+> > +     /* copy KVM_REG_RISCV_SBI_MULTI */
+> > +     n = KVM_REG_RISCV_SBI_MULTI_REG_LAST + 1;
+> > +     for (i = 0; i < n; i++) {
+> > +             u64 reg = KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_SBI_EXT |
+>                                           ^ size-ulong
+>
+> > +                               KVM_REG_RISCV_SBI_MULTI_EN | i;
+> > +
+> > +             if (uindices) {
+> > +                     if (put_user(reg, uindices))
+> > +                             return -EFAULT;
+> > +                     uindices++;
+> > +             }
+> > +
+> > +             reg = KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_SBI_EXT |
+> > +                       KVM_REG_RISCV_SBI_MULTI_DIS | i;
+> > +
+> > +             if (uindices) {
+> > +                     if (put_user(reg, uindices))
+> > +                             return -EFAULT;
+> > +                     uindices++;
+> > +             }
+> > +     }
+> > +
+> > +     return num_sbi_ext_regs();
+> > +}
+> > +
+> > +/**
+> > + * kvm_riscv_vcpu_num_regs - how many registers do we present via KVM_GET/SET_ONE_REG
+> > + *
+> > + * This is for all registers.
+> > + */
+> > +static unsigned long kvm_riscv_vcpu_num_regs(struct kvm_vcpu *vcpu)
+> > +{
+> > +     unsigned long res = 0;
+> > +
+> > +     res += num_config_regs();
+> > +     res += num_core_regs();
+> > +     res += num_csr_regs();
+> > +     res += num_timer_regs();
+> > +     res += num_fp_f_regs(vcpu);
+> > +     res += num_fp_d_regs(vcpu);
+> > +     res += num_isa_ext_regs();
+> > +     res += num_sbi_ext_regs();
+> > +
+> > +     return res;
+> > +}
+> > +
+> > +/**
+> > + * kvm_riscv_vcpu_copy_reg_indices - get indices of all registers.
+> > + */
+> > +static int kvm_riscv_vcpu_copy_reg_indices(struct kvm_vcpu *vcpu,
+> > +                             u64 __user *uindices)
+> > +{
+> > +     int ret;
+> > +
+> > +     ret = copy_config_reg_indices(uindices);
+> > +     if (ret < 0)
+> > +             return ret;
+> > +     uindices += ret;
+> > +
+> > +     ret = copy_core_reg_indices(uindices);
+> > +     if (ret < 0)
+> > +             return ret;
+> > +     uindices += ret;
+> > +
+> > +     ret = copy_csr_reg_indices(uindices);
+> > +     if (ret < 0)
+> > +             return ret;
+> > +     uindices += ret;
+> > +
+> > +     ret = copy_timer_reg_indices(uindices);
+> > +     if (ret < 0)
+> > +             return ret;
+> > +     uindices += ret;
+> > +
+> > +     ret = copy_fp_f_reg_indices(vcpu, uindices);
+> > +     if (ret < 0)
+> > +             return ret;
+> > +     uindices += ret;
+> > +
+> > +     ret = copy_fp_d_reg_indices(vcpu, uindices);
+> > +     if (ret < 0)
+> > +             return ret;
+> > +     uindices += ret;
+> > +
+> > +     ret = copy_isa_ext_reg_indices(uindices);
+> > +     if (ret < 0)
+> > +             return ret;
+> > +     uindices += ret;
+> > +
+> > +     ret = copy_sbi_ext_reg_indices(uindices);
+> > +     if (ret < 0)
+> > +             return ret;
+> > +
+> > +     return 0;
+> > +}
+> > +
+> >  static int kvm_riscv_vcpu_set_reg(struct kvm_vcpu *vcpu,
+> >                                 const struct kvm_one_reg *reg)
+> >  {
+> > @@ -758,6 +1086,24 @@ long kvm_arch_vcpu_ioctl(struct file *filp,
+> >                       r = kvm_riscv_vcpu_get_reg(vcpu, &reg);
+> >               break;
+> >       }
+> > +     case KVM_GET_REG_LIST: {
+> > +             struct kvm_reg_list __user *user_list = argp;
+> > +             struct kvm_reg_list reg_list;
+> > +             unsigned int n;
+> > +
+> > +             r = -EFAULT;
+> > +             if (copy_from_user(&reg_list, user_list, sizeof(reg_list)))
+> > +                     break;
+> > +             n = reg_list.n;
+> > +             reg_list.n = kvm_riscv_vcpu_num_regs(vcpu);
+> > +             if (copy_to_user(user_list, &reg_list, sizeof(reg_list)))
+> > +                     break;
+> > +             r = -E2BIG;
+> > +             if (n < reg_list.n)
+> > +                     break;
+> > +             r = kvm_riscv_vcpu_copy_reg_indices(vcpu, user_list->reg);
+> > +             break;
+> > +     }
+> >       default:
+> >               break;
+> >       }
+> > --
+> > 2.34.1
+> >
+>
+> Otherwise,
+>
+> Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+>
+> Thanks,
+> drew
 
-Note, this bug, and the original issue that motivated the addition of
-kvm_reboot(), is effectively limited to a forced reboot, e.g. `reboot -f`.
-In a "normal" reboot, userspace will gracefully teardown userspace before
-triggering the kernel reboot (modulo bugs, errors, etc), i.e. any process
-that might do ioctl(KVM_CREATE_VM) is long gone.
-
-Fixes: 8e1c18157d87 ("KVM: VMX: Disable VMX when system shutdown")
-Signed-off-by: Sean Christopherson <seanjc@google.com>
----
- virt/kvm/kvm_main.c | 17 ++++++++++++++++-
- 1 file changed, 16 insertions(+), 1 deletion(-)
-
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index e771b6a013c9..cc36a7fc8a86 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -5182,7 +5182,20 @@ static void hardware_disable_all(void)
- static int hardware_enable_all(void)
- {
- 	atomic_t failed = ATOMIC_INIT(0);
--	int r = 0;
-+	int r;
-+
-+	/*
-+	 * Do not enable hardware virtualization if the system is going down.
-+	 * If userspace initiated a forced reboot, e.g. reboot -f, then it's
-+	 * possible for an in-flight KVM_CREATE_VM to trigger hardware enabling
-+	 * after kvm_reboot() is called.  Note, this relies on system_state
-+	 * being set _before_ kvm_reboot(), which is why KVM uses a syscore ops
-+	 * hook instead of registering a dedicated reboot notifier (the latter
-+	 * runs before system_state is updated).
-+	 */
-+	if (system_state == SYSTEM_HALT || system_state == SYSTEM_POWER_OFF ||
-+	    system_state == SYSTEM_RESTART)
-+		return -EBUSY;
- 
- 	/*
- 	 * When onlining a CPU, cpu_online_mask is set before kvm_online_cpu()
-@@ -5195,6 +5208,8 @@ static int hardware_enable_all(void)
- 	cpus_read_lock();
- 	mutex_lock(&kvm_lock);
- 
-+	r = 0;
-+
- 	kvm_usage_count++;
- 	if (kvm_usage_count == 1) {
- 		on_each_cpu(hardware_enable_nolock, &failed, 1);
--- 
-2.40.1.606.ga4b1b128d6-goog
-
+Thanks for your review, Andrew! The comments will be addressed in next version.
 
