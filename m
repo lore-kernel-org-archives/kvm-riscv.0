@@ -1,32 +1,31 @@
 From: Anup Patel <apatel@ventanamicro.com>
-Date: Wed, 17 May 2023 16:21:27 +0530
-Subject: [PATCH 02/10] RISC-V: KVM: Add IMSIC related defines
+Date: Wed, 17 May 2023 16:21:28 +0530
+Subject: [PATCH 03/10] RISC-V: KVM: Add APLIC related defines
 In-Reply-To: <20230517105135.1871868-1-apatel@ventanamicro.com>
 References: <20230517105135.1871868-1-apatel@ventanamicro.com>
-Message-ID: <20230517105135.1871868-3-apatel@ventanamicro.com>
+Message-ID: <20230517105135.1871868-4-apatel@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-We add IMSIC related defines in a separate header so that different
+We add APLIC related defines in a separate header so that different
 parts of KVM code can share it. Once AIA drivers are merged will
-have a common IMSIC header shared by both KVM and IRQCHIP driver.
+have a common APLIC header shared by both KVM and IRQCHIP driver.
 
 Signed-off-by: Anup Patel <apatel@ventanamicro.com>
 ---
- arch/riscv/include/asm/kvm_aia_imsic.h | 38 ++++++++++++++++++++++++++
- arch/riscv/kvm/aia.c                   |  3 +-
- 2 files changed, 39 insertions(+), 2 deletions(-)
- create mode 100644 arch/riscv/include/asm/kvm_aia_imsic.h
+ arch/riscv/include/asm/kvm_aia_aplic.h | 58 ++++++++++++++++++++++++++
+ 1 file changed, 58 insertions(+)
+ create mode 100644 arch/riscv/include/asm/kvm_aia_aplic.h
 
-diff --git a/arch/riscv/include/asm/kvm_aia_imsic.h b/arch/riscv/include/asm/kvm_aia_imsic.h
+diff --git a/arch/riscv/include/asm/kvm_aia_aplic.h b/arch/riscv/include/asm/kvm_aia_aplic.h
 new file mode 100644
-index 000000000000..da5881d2bde0
+index 000000000000..6dd1a4809ec1
 --- /dev/null
-+++ b/arch/riscv/include/asm/kvm_aia_imsic.h
-@@ -0,0 +1,38 @@
++++ b/arch/riscv/include/asm/kvm_aia_aplic.h
+@@ -0,0 +1,58 @@
 +/* SPDX-License-Identifier: GPL-2.0-only */
 +/*
 + * Copyright (C) 2021 Western Digital Corporation or its affiliates.
@@ -35,57 +34,56 @@ index 000000000000..da5881d2bde0
 +#ifndef __KVM_RISCV_AIA_IMSIC_H
 +#define __KVM_RISCV_AIA_IMSIC_H
 +
-+#include <linux/types.h>
-+#include <asm/csr.h>
++#include <linux/bitops.h>
 +
-+#define IMSIC_MMIO_PAGE_SHIFT		12
-+#define IMSIC_MMIO_PAGE_SZ		(1UL << IMSIC_MMIO_PAGE_SHIFT)
-+#define IMSIC_MMIO_PAGE_LE		0x00
-+#define IMSIC_MMIO_PAGE_BE		0x04
++#define APLIC_MAX_IDC			BIT(14)
++#define APLIC_MAX_SOURCE		1024
 +
-+#define IMSIC_MIN_ID			63
-+#define IMSIC_MAX_ID			2048
++#define APLIC_DOMAINCFG			0x0000
++#define APLIC_DOMAINCFG_RDONLY		0x80000000
++#define APLIC_DOMAINCFG_IE		BIT(8)
++#define APLIC_DOMAINCFG_DM		BIT(2)
++#define APLIC_DOMAINCFG_BE		BIT(0)
 +
-+#define IMSIC_EIDELIVERY		0x70
++#define APLIC_SOURCECFG_BASE		0x0004
++#define APLIC_SOURCECFG_D		BIT(10)
++#define APLIC_SOURCECFG_CHILDIDX_MASK	0x000003ff
++#define APLIC_SOURCECFG_SM_MASK	0x00000007
++#define APLIC_SOURCECFG_SM_INACTIVE	0x0
++#define APLIC_SOURCECFG_SM_DETACH	0x1
++#define APLIC_SOURCECFG_SM_EDGE_RISE	0x4
++#define APLIC_SOURCECFG_SM_EDGE_FALL	0x5
++#define APLIC_SOURCECFG_SM_LEVEL_HIGH	0x6
++#define APLIC_SOURCECFG_SM_LEVEL_LOW	0x7
 +
-+#define IMSIC_EITHRESHOLD		0x72
++#define APLIC_IRQBITS_PER_REG		32
 +
-+#define IMSIC_EIP0			0x80
-+#define IMSIC_EIP63			0xbf
-+#define IMSIC_EIPx_BITS			32
++#define APLIC_SETIP_BASE		0x1c00
++#define APLIC_SETIPNUM			0x1cdc
 +
-+#define IMSIC_EIE0			0xc0
-+#define IMSIC_EIE63			0xff
-+#define IMSIC_EIEx_BITS			32
++#define APLIC_CLRIP_BASE		0x1d00
++#define APLIC_CLRIPNUM			0x1ddc
 +
-+#define IMSIC_FIRST			IMSIC_EIDELIVERY
-+#define IMSIC_LAST			IMSIC_EIE63
++#define APLIC_SETIE_BASE		0x1e00
++#define APLIC_SETIENUM			0x1edc
 +
-+#define IMSIC_MMIO_SETIPNUM_LE		0x00
-+#define IMSIC_MMIO_SETIPNUM_BE		0x04
++#define APLIC_CLRIE_BASE		0x1f00
++#define APLIC_CLRIENUM			0x1fdc
++
++#define APLIC_SETIPNUM_LE		0x2000
++#define APLIC_SETIPNUM_BE		0x2004
++
++#define APLIC_GENMSI			0x3000
++
++#define APLIC_TARGET_BASE		0x3004
++#define APLIC_TARGET_HART_IDX_SHIFT	18
++#define APLIC_TARGET_HART_IDX_MASK	0x3fff
++#define APLIC_TARGET_GUEST_IDX_SHIFT	12
++#define APLIC_TARGET_GUEST_IDX_MASK	0x3f
++#define APLIC_TARGET_IPRIO_MASK	0xff
++#define APLIC_TARGET_EIID_MASK	0x7ff
 +
 +#endif
-diff --git a/arch/riscv/kvm/aia.c b/arch/riscv/kvm/aia.c
-index 1cee75a8c883..c78c06d99e39 100644
---- a/arch/riscv/kvm/aia.c
-+++ b/arch/riscv/kvm/aia.c
-@@ -15,6 +15,7 @@
- #include <linux/percpu.h>
- #include <linux/spinlock.h>
- #include <asm/hwcap.h>
-+#include <asm/kvm_aia_imsic.h>
- 
- struct aia_hgei_control {
- 	raw_spinlock_t lock;
-@@ -364,8 +365,6 @@ static int aia_rmw_iprio(struct kvm_vcpu *vcpu, unsigned int isel,
- 	return KVM_INSN_CONTINUE_NEXT_SEPC;
- }
- 
--#define IMSIC_FIRST	0x70
--#define IMSIC_LAST	0xff
- int kvm_riscv_vcpu_aia_rmw_ireg(struct kvm_vcpu *vcpu, unsigned int csr_num,
- 				unsigned long *val, unsigned long new_val,
- 				unsigned long wr_mask)
 -- 
 2.34.1
 
