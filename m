@@ -1,1012 +1,1018 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Wed, 17 May 2023 13:06:38 +0200
-Subject: [PATCH 2/2] KVM: selftests: Add riscv get-reg-list test
-In-Reply-To: <751a84a9691c86df0e65cdb02abf1e073892d1ca.1683791148.git.haibo1.xu@intel.com>
-References: <cover.1683791148.git.haibo1.xu@intel.com>
- <751a84a9691c86df0e65cdb02abf1e073892d1ca.1683791148.git.haibo1.xu@intel.com>
-Message-ID: <20230511-28ec368a8168342c68ca2187@orel>
+From: Anup Patel <apatel@ventanamicro.com>
+Date: Wed, 17 May 2023 16:21:34 +0530
+Subject: [PATCH 09/10] RISC-V: KVM: Add in-kernel virtualization of AIA IMSIC
+In-Reply-To: <20230517105135.1871868-1-apatel@ventanamicro.com>
+References: <20230517105135.1871868-1-apatel@ventanamicro.com>
+Message-ID: <20230517105135.1871868-10-apatel@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, May 11, 2023 at 05:22:49PM +0800, Haibo Xu wrote:
-> get-reg-list test is used to check for KVM registers regressions
-> during VM migration which happens when destination host kernel
-> missing registers that the source host kernel has. The blessed
-> list registers was created by running on v6.2.
+We can have AIA IMSIC support for both HS-level and VS-level but
+the VS-level IMSICs are optional. We use the VS-level IMSICs for
+Guest/VM whenever available otherwise we fallback to software
+emulation of AIA IMSIC.
 
-v6.2? But get-reg-list is getting introduced with this patch, so it'll
-land in a 6.4 rc at the earliest. I don't see how can we generate the
-initial blessed list with anything earlier?
+This patch adds in-kernel virtualization of AIA IMSIC.
 
-> 
-> Signed-off-by: Haibo Xu <haibo1.xu@intel.com>
-> ---
->  tools/testing/selftests/kvm/Makefile          |   3 +
->  .../selftests/kvm/include/riscv/processor.h   |   3 +
->  .../selftests/kvm/riscv/get-reg-list.c        | 869 ++++++++++++++++++
->  3 files changed, 875 insertions(+)
->  create mode 100644 tools/testing/selftests/kvm/riscv/get-reg-list.c
-> 
-> diff --git a/tools/testing/selftests/kvm/Makefile b/tools/testing/selftests/kvm/Makefile
-> index 7a5ff646e7e7..fbb2e984297a 100644
-> --- a/tools/testing/selftests/kvm/Makefile
-> +++ b/tools/testing/selftests/kvm/Makefile
-> @@ -13,6 +13,8 @@ else ifeq ($(ARCH),arm64)
->  	ARCH_DIR := aarch64
->  else ifeq ($(ARCH),s390)
->  	ARCH_DIR := s390x
-> +else ifeq ($(ARCH),riscv)
-> +	ARCH_DIR := riscv
->  else
->  	ARCH_DIR := $(ARCH)
->  endif
-> @@ -171,6 +173,7 @@ TEST_GEN_PROGS_s390x += rseq_test
->  TEST_GEN_PROGS_s390x += set_memory_region_test
->  TEST_GEN_PROGS_s390x += kvm_binary_stats_test
->  
-> +TEST_GEN_PROGS_riscv += riscv/get-reg-list
->  TEST_GEN_PROGS_riscv += demand_paging_test
->  TEST_GEN_PROGS_riscv += dirty_log_test
->  TEST_GEN_PROGS_riscv += kvm_create_max_vcpus
-> diff --git a/tools/testing/selftests/kvm/include/riscv/processor.h b/tools/testing/selftests/kvm/include/riscv/processor.h
-> index d00d213c3805..0adf9cb34126 100644
-> --- a/tools/testing/selftests/kvm/include/riscv/processor.h
-> +++ b/tools/testing/selftests/kvm/include/riscv/processor.h
-> @@ -38,6 +38,9 @@ static inline uint64_t __kvm_reg_id(uint64_t type, uint64_t idx,
->  					     KVM_REG_RISCV_TIMER_REG(name), \
->  					     KVM_REG_SIZE_U64)
->  
-> +#define RISCV_ISA_EXT_REG(idx)	__kvm_reg_id(KVM_REG_RISCV_ISA_EXT, \
-> +					     idx, KVM_REG_SIZE_U64)
+Signed-off-by: Anup Patel <apatel@ventanamicro.com>
+---
+ arch/riscv/include/asm/kvm_aia.h |  46 +-
+ arch/riscv/kvm/Makefile          |   1 +
+ arch/riscv/kvm/aia_imsic.c       | 913 +++++++++++++++++++++++++++++++
+ 3 files changed, 924 insertions(+), 36 deletions(-)
+ create mode 100644 arch/riscv/kvm/aia_imsic.c
 
-                                                  ^ KVM_REG_SIZE_ULONG
+diff --git a/arch/riscv/include/asm/kvm_aia.h b/arch/riscv/include/asm/kvm_aia.h
+index ba939c0054aa..a4f6ebf90e31 100644
+--- a/arch/riscv/include/asm/kvm_aia.h
++++ b/arch/riscv/include/asm/kvm_aia.h
+@@ -90,44 +90,18 @@ DECLARE_STATIC_KEY_FALSE(kvm_riscv_aia_available);
+ 
+ extern struct kvm_device_ops kvm_riscv_aia_device_ops;
+ 
+-static inline void kvm_riscv_vcpu_aia_imsic_release(struct kvm_vcpu *vcpu)
+-{
+-}
+-
+-static inline int kvm_riscv_vcpu_aia_imsic_update(struct kvm_vcpu *vcpu)
+-{
+-	return 1;
+-}
++void kvm_riscv_vcpu_aia_imsic_release(struct kvm_vcpu *vcpu);
++int kvm_riscv_vcpu_aia_imsic_update(struct kvm_vcpu *vcpu);
+ 
+ #define KVM_RISCV_AIA_IMSIC_TOPEI	(ISELECT_MASK + 1)
+-static inline int kvm_riscv_vcpu_aia_imsic_rmw(struct kvm_vcpu *vcpu,
+-					       unsigned long isel,
+-					       unsigned long *val,
+-					       unsigned long new_val,
+-					       unsigned long wr_mask)
+-{
+-	return 0;
+-}
+-
+-static inline void kvm_riscv_vcpu_aia_imsic_reset(struct kvm_vcpu *vcpu)
+-{
+-}
+-
+-static inline int kvm_riscv_vcpu_aia_imsic_inject(struct kvm_vcpu *vcpu,
+-						  u32 guest_index, u32 offset,
+-						  u32 iid)
+-{
+-	return 0;
+-}
+-
+-static inline int kvm_riscv_vcpu_aia_imsic_init(struct kvm_vcpu *vcpu)
+-{
+-	return 0;
+-}
+-
+-static inline void kvm_riscv_vcpu_aia_imsic_cleanup(struct kvm_vcpu *vcpu)
+-{
+-}
++int kvm_riscv_vcpu_aia_imsic_rmw(struct kvm_vcpu *vcpu, unsigned long isel,
++				 unsigned long *val, unsigned long new_val,
++				 unsigned long wr_mask);
++void kvm_riscv_vcpu_aia_imsic_reset(struct kvm_vcpu *vcpu);
++int kvm_riscv_vcpu_aia_imsic_inject(struct kvm_vcpu *vcpu,
++				    u32 guest_index, u32 offset, u32 iid);
++int kvm_riscv_vcpu_aia_imsic_init(struct kvm_vcpu *vcpu);
++void kvm_riscv_vcpu_aia_imsic_cleanup(struct kvm_vcpu *vcpu);
+ 
+ int kvm_riscv_aia_aplic_set_attr(struct kvm *kvm, unsigned long type, u32 v);
+ int kvm_riscv_aia_aplic_get_attr(struct kvm *kvm, unsigned long type, u32 *v);
+diff --git a/arch/riscv/kvm/Makefile b/arch/riscv/kvm/Makefile
+index 94c43702c765..c1d1356387ff 100644
+--- a/arch/riscv/kvm/Makefile
++++ b/arch/riscv/kvm/Makefile
+@@ -29,3 +29,4 @@ kvm-$(CONFIG_RISCV_PMU_SBI) += vcpu_pmu.o vcpu_sbi_pmu.o
+ kvm-y += aia.o
+ kvm-y += aia_device.o
+ kvm-y += aia_aplic.o
++kvm-y += aia_imsic.o
+diff --git a/arch/riscv/kvm/aia_imsic.c b/arch/riscv/kvm/aia_imsic.c
+new file mode 100644
+index 000000000000..2dc09dcb8ab5
+--- /dev/null
++++ b/arch/riscv/kvm/aia_imsic.c
+@@ -0,0 +1,913 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Copyright (C) 2021 Western Digital Corporation or its affiliates.
++ * Copyright (C) 2022 Ventana Micro Systems Inc.
++ *
++ * Authors:
++ *	Anup Patel <apatel@ventanamicro.com>
++ */
++
++#include <linux/bitmap.h>
++#include <linux/kvm_host.h>
++#include <linux/math.h>
++#include <linux/spinlock.h>
++#include <linux/swab.h>
++#include <kvm/iodev.h>
++#include <asm/csr.h>
++#include <asm/kvm_aia_imsic.h>
++
++#define IMSIC_MAX_EIX	(IMSIC_MAX_ID / BITS_PER_TYPE(u64))
++
++struct imsic_mrif_eix {
++	unsigned long eip[BITS_PER_TYPE(u64) / BITS_PER_LONG];
++	unsigned long eie[BITS_PER_TYPE(u64) / BITS_PER_LONG];
++};
++
++struct imsic_mrif {
++	struct imsic_mrif_eix eix[IMSIC_MAX_EIX];
++	unsigned long eithreshold;
++	unsigned long eidelivery;
++};
++
++struct imsic {
++	struct kvm_io_device iodev;
++
++	u32 nr_msis;
++	u32 nr_eix;
++	u32 nr_hw_eix;
++
++	/*
++	 * At any point in time, the register state is in
++	 * one of the following places:
++	 *
++	 * 1) Hardware: IMSIC VS-file (vsfile_cpu >= 0)
++	 * 2) Software: IMSIC SW-file (vsfile_cpu < 0)
++	 */
++
++	/* IMSIC VS-file */
++	rwlock_t vsfile_lock;
++	int vsfile_cpu;
++	int vsfile_hgei;
++	void __iomem *vsfile_va;
++	phys_addr_t vsfile_pa;
++
++	/* IMSIC SW-file */
++	struct imsic_mrif *swfile;
++	phys_addr_t swfile_pa;
++};
++
++#define imsic_vs_csr_read(__c)			\
++({						\
++	unsigned long __r;			\
++	csr_write(CSR_VSISELECT, __c);		\
++	__r = csr_read(CSR_VSIREG);		\
++	__r;					\
++})
++
++#define imsic_read_switchcase(__ireg)			\
++	case __ireg:					\
++		return imsic_vs_csr_read(__ireg);
++#define imsic_read_switchcase_2(__ireg)			\
++	imsic_read_switchcase(__ireg + 0)		\
++	imsic_read_switchcase(__ireg + 1)
++#define imsic_read_switchcase_4(__ireg)			\
++	imsic_read_switchcase_2(__ireg + 0)		\
++	imsic_read_switchcase_2(__ireg + 2)
++#define imsic_read_switchcase_8(__ireg)			\
++	imsic_read_switchcase_4(__ireg + 0)		\
++	imsic_read_switchcase_4(__ireg + 4)
++#define imsic_read_switchcase_16(__ireg)		\
++	imsic_read_switchcase_8(__ireg + 0)		\
++	imsic_read_switchcase_8(__ireg + 8)
++#define imsic_read_switchcase_32(__ireg)		\
++	imsic_read_switchcase_16(__ireg + 0)		\
++	imsic_read_switchcase_16(__ireg + 16)
++#define imsic_read_switchcase_64(__ireg)		\
++	imsic_read_switchcase_32(__ireg + 0)		\
++	imsic_read_switchcase_32(__ireg + 32)
++
++static unsigned long imsic_eix_read(int ireg)
++{
++	switch (ireg) {
++	imsic_read_switchcase_64(IMSIC_EIP0)
++	imsic_read_switchcase_64(IMSIC_EIE0)
++	};
++
++	return 0;
++}
++
++#define imsic_vs_csr_swap(__c, __v)		\
++({						\
++	unsigned long __r;			\
++	csr_write(CSR_VSISELECT, __c);		\
++	__r = csr_swap(CSR_VSIREG, __v);	\
++	__r;					\
++})
++
++#define imsic_swap_switchcase(__ireg, __v)		\
++	case __ireg:					\
++		return imsic_vs_csr_swap(__ireg, __v);
++#define imsic_swap_switchcase_2(__ireg, __v)		\
++	imsic_swap_switchcase(__ireg + 0, __v)		\
++	imsic_swap_switchcase(__ireg + 1, __v)
++#define imsic_swap_switchcase_4(__ireg, __v)		\
++	imsic_swap_switchcase_2(__ireg + 0, __v)	\
++	imsic_swap_switchcase_2(__ireg + 2, __v)
++#define imsic_swap_switchcase_8(__ireg, __v)		\
++	imsic_swap_switchcase_4(__ireg + 0, __v)	\
++	imsic_swap_switchcase_4(__ireg + 4, __v)
++#define imsic_swap_switchcase_16(__ireg, __v)		\
++	imsic_swap_switchcase_8(__ireg + 0, __v)	\
++	imsic_swap_switchcase_8(__ireg + 8, __v)
++#define imsic_swap_switchcase_32(__ireg, __v)		\
++	imsic_swap_switchcase_16(__ireg + 0, __v)	\
++	imsic_swap_switchcase_16(__ireg + 16, __v)
++#define imsic_swap_switchcase_64(__ireg, __v)		\
++	imsic_swap_switchcase_32(__ireg + 0, __v)	\
++	imsic_swap_switchcase_32(__ireg + 32, __v)
++
++static unsigned long imsic_eix_swap(int ireg, unsigned long val)
++{
++	switch (ireg) {
++	imsic_swap_switchcase_64(IMSIC_EIP0, val)
++	imsic_swap_switchcase_64(IMSIC_EIE0, val)
++	};
++
++	return 0;
++}
++
++#define imsic_vs_csr_write(__c, __v)		\
++do {						\
++	csr_write(CSR_VSISELECT, __c);		\
++	csr_write(CSR_VSIREG, __v);		\
++} while (0)
++
++#define imsic_write_switchcase(__ireg, __v)		\
++	case __ireg:					\
++		imsic_vs_csr_write(__ireg, __v);	\
++		break;
++#define imsic_write_switchcase_2(__ireg, __v)		\
++	imsic_write_switchcase(__ireg + 0, __v)		\
++	imsic_write_switchcase(__ireg + 1, __v)
++#define imsic_write_switchcase_4(__ireg, __v)		\
++	imsic_write_switchcase_2(__ireg + 0, __v)	\
++	imsic_write_switchcase_2(__ireg + 2, __v)
++#define imsic_write_switchcase_8(__ireg, __v)		\
++	imsic_write_switchcase_4(__ireg + 0, __v)	\
++	imsic_write_switchcase_4(__ireg + 4, __v)
++#define imsic_write_switchcase_16(__ireg, __v)		\
++	imsic_write_switchcase_8(__ireg + 0, __v)	\
++	imsic_write_switchcase_8(__ireg + 8, __v)
++#define imsic_write_switchcase_32(__ireg, __v)		\
++	imsic_write_switchcase_16(__ireg + 0, __v)	\
++	imsic_write_switchcase_16(__ireg + 16, __v)
++#define imsic_write_switchcase_64(__ireg, __v)		\
++	imsic_write_switchcase_32(__ireg + 0, __v)	\
++	imsic_write_switchcase_32(__ireg + 32, __v)
++
++static void imsic_eix_write(int ireg, unsigned long val)
++{
++	switch (ireg) {
++	imsic_write_switchcase_64(IMSIC_EIP0, val)
++	imsic_write_switchcase_64(IMSIC_EIE0, val)
++	};
++}
++
++#define imsic_vs_csr_set(__c, __v)		\
++do {						\
++	csr_write(CSR_VSISELECT, __c);		\
++	csr_set(CSR_VSIREG, __v);		\
++} while (0)
++
++#define imsic_set_switchcase(__ireg, __v)		\
++	case __ireg:					\
++		imsic_vs_csr_set(__ireg, __v);		\
++		break;
++#define imsic_set_switchcase_2(__ireg, __v)		\
++	imsic_set_switchcase(__ireg + 0, __v)		\
++	imsic_set_switchcase(__ireg + 1, __v)
++#define imsic_set_switchcase_4(__ireg, __v)		\
++	imsic_set_switchcase_2(__ireg + 0, __v)		\
++	imsic_set_switchcase_2(__ireg + 2, __v)
++#define imsic_set_switchcase_8(__ireg, __v)		\
++	imsic_set_switchcase_4(__ireg + 0, __v)		\
++	imsic_set_switchcase_4(__ireg + 4, __v)
++#define imsic_set_switchcase_16(__ireg, __v)		\
++	imsic_set_switchcase_8(__ireg + 0, __v)		\
++	imsic_set_switchcase_8(__ireg + 8, __v)
++#define imsic_set_switchcase_32(__ireg, __v)		\
++	imsic_set_switchcase_16(__ireg + 0, __v)	\
++	imsic_set_switchcase_16(__ireg + 16, __v)
++#define imsic_set_switchcase_64(__ireg, __v)		\
++	imsic_set_switchcase_32(__ireg + 0, __v)	\
++	imsic_set_switchcase_32(__ireg + 32, __v)
++
++static void imsic_eix_set(int ireg, unsigned long val)
++{
++	switch (ireg) {
++	imsic_set_switchcase_64(IMSIC_EIP0, val)
++	imsic_set_switchcase_64(IMSIC_EIE0, val)
++	};
++}
++
++static unsigned long imsic_mrif_atomic_rmw(struct imsic_mrif *mrif,
++					   unsigned long *ptr,
++					   unsigned long new_val,
++					   unsigned long wr_mask)
++{
++	unsigned long old_val = 0, tmp = 0;
++
++	__asm__ __volatile__ (
++		"0:	lr.w.aq   %1, %0\n"
++		"	and       %2, %1, %3\n"
++		"	or        %2, %2, %4\n"
++		"	sc.w.rl   %2, %2, %0\n"
++		"	bnez      %2, 0b"
++		: "+A" (*ptr), "+r" (old_val), "+r" (tmp)
++		: "r" (~wr_mask), "r" (new_val & wr_mask)
++		: "memory");
++
++	return old_val;
++}
++
++static unsigned long imsic_mrif_atomic_or(struct imsic_mrif *mrif,
++					  unsigned long *ptr,
++					  unsigned long val)
++{
++	return arch_atomic_long_fetch_or(val, (atomic_long_t *)ptr);
++}
++
++#define imsic_mrif_atomic_write(__mrif, __ptr, __new_val)	\
++		imsic_mrif_atomic_rmw(__mrif, __ptr, __new_val, -1UL)
++#define imsic_mrif_atomic_read(__mrif, __ptr)			\
++		imsic_mrif_atomic_or(__mrif, __ptr, 0)
++
++static u32 imsic_mrif_topei(struct imsic_mrif *mrif, u32 nr_eix, u32 nr_msis)
++{
++	struct imsic_mrif_eix *eix;
++	u32 i, imin, imax, ei, max_msi;
++	unsigned long eipend[BITS_PER_TYPE(u64) / BITS_PER_LONG];
++	unsigned long eithreshold = imsic_mrif_atomic_read(mrif,
++							&mrif->eithreshold);
++
++	max_msi = (eithreshold && (eithreshold <= nr_msis)) ?
++		   eithreshold : nr_msis;
++	for (ei = 0; ei < nr_eix; ei++) {
++		eix = &mrif->eix[ei];
++		eipend[0] = imsic_mrif_atomic_read(mrif, &eix->eie[0]) &
++			    imsic_mrif_atomic_read(mrif, &eix->eip[0]);
++#ifdef CONFIG_32BIT
++		eipend[1] = imsic_mrif_atomic_read(mrif, &eix->eie[1]) &
++			    imsic_mrif_atomic_read(mrif, &eix->eip[1]);
++		if (!eipend[0] && !eipend[1])
++#else
++		if (!eipend[0])
++#endif
++			continue;
++
++		imin = ei * BITS_PER_TYPE(u64);
++		imax = ((imin + BITS_PER_TYPE(u64)) < max_msi) ?
++			imin + BITS_PER_TYPE(u64) : max_msi;
++		for (i = (!imin) ? 1 : imin; i < imax; i++) {
++			if (test_bit(i - imin, eipend))
++				return (i << TOPEI_ID_SHIFT) | i;
++		}
++	}
++
++	return 0;
++}
++
++static int imsic_mrif_rmw(struct imsic_mrif *mrif, u32 nr_eix,
++			  unsigned long isel, unsigned long *val,
++			  unsigned long new_val, unsigned long wr_mask)
++{
++	bool pend;
++	struct imsic_mrif_eix *eix;
++	unsigned long *ei, num, old_val = 0;
++
++	switch (isel) {
++	case IMSIC_EIDELIVERY:
++		old_val = imsic_mrif_atomic_rmw(mrif, &mrif->eidelivery,
++						new_val, wr_mask & 0x1);
++		break;
++	case IMSIC_EITHRESHOLD:
++		old_val = imsic_mrif_atomic_rmw(mrif, &mrif->eithreshold,
++				new_val, wr_mask & (IMSIC_MAX_ID - 1));
++		break;
++	case IMSIC_EIP0 ... IMSIC_EIP63:
++	case IMSIC_EIE0 ... IMSIC_EIE63:
++		if (isel >= IMSIC_EIP0 && isel <= IMSIC_EIP63) {
++			pend = true;
++			num = isel - IMSIC_EIP0;
++		} else {
++			pend = false;
++			num = isel - IMSIC_EIE0;
++		}
++
++		if ((num / 2) >= nr_eix)
++			return -EINVAL;
++		eix = &mrif->eix[num / 2];
++
++#ifndef CONFIG_32BIT
++		if (num & 0x1)
++			return -EINVAL;
++		ei = (pend) ? &eix->eip[0] : &eix->eie[0];
++#else
++		ei = (pend) ? &eix->eip[num & 0x1] : &eix->eie[num & 0x1];
++#endif
++
++		/* Bit0 of EIP0 or EIE0 is read-only */
++		if (!num)
++			wr_mask &= ~BIT(0);
++
++		old_val = imsic_mrif_atomic_rmw(mrif, ei, new_val, wr_mask);
++		break;
++	default:
++		return -ENOENT;
++	};
++
++	if (val)
++		*val = old_val;
++
++	return 0;
++}
++
++struct imsic_vsfile_read_data {
++	int hgei;
++	u32 nr_eix;
++	bool clear;
++	struct imsic_mrif *mrif;
++};
++
++static void imsic_vsfile_local_read(void *data)
++{
++	u32 i;
++	struct imsic_mrif_eix *eix;
++	struct imsic_vsfile_read_data *idata = data;
++	struct imsic_mrif *mrif = idata->mrif;
++	unsigned long new_hstatus, old_hstatus, old_vsiselect;
++
++	old_vsiselect = csr_read(CSR_VSISELECT);
++	old_hstatus = csr_read(CSR_HSTATUS);
++	new_hstatus = old_hstatus & ~HSTATUS_VGEIN;
++	new_hstatus |= ((unsigned long)idata->hgei) << HSTATUS_VGEIN_SHIFT;
++	csr_write(CSR_HSTATUS, new_hstatus);
++
++	/*
++	 * We don't use imsic_mrif_atomic_xyz() functions to store
++	 * values in MRIF because imsic_vsfile_read() is always called
++	 * with pointer to temporary MRIF on stack.
++	 */
++
++	if (idata->clear) {
++		mrif->eidelivery = imsic_vs_csr_swap(IMSIC_EIDELIVERY, 0);
++		mrif->eithreshold = imsic_vs_csr_swap(IMSIC_EITHRESHOLD, 0);
++		for (i = 0; i < idata->nr_eix; i++) {
++			eix = &mrif->eix[i];
++			eix->eip[0] = imsic_eix_swap(IMSIC_EIP0 + i * 2, 0);
++			eix->eie[0] = imsic_eix_swap(IMSIC_EIE0 + i * 2, 0);
++#ifdef CONFIG_32BIT
++			eix->eip[1] = imsic_eix_swap(IMSIC_EIP0 + i * 2 + 1, 0);
++			eix->eie[1] = imsic_eix_swap(IMSIC_EIE0 + i * 2 + 1, 0);
++#endif
++		}
++	} else {
++		mrif->eidelivery = imsic_vs_csr_read(IMSIC_EIDELIVERY);
++		mrif->eithreshold = imsic_vs_csr_read(IMSIC_EITHRESHOLD);
++		for (i = 0; i < idata->nr_eix; i++) {
++			eix = &mrif->eix[i];
++			eix->eip[0] = imsic_eix_read(IMSIC_EIP0 + i * 2);
++			eix->eie[0] = imsic_eix_read(IMSIC_EIE0 + i * 2);
++#ifdef CONFIG_32BIT
++			eix->eip[1] = imsic_eix_read(IMSIC_EIP0 + i * 2 + 1);
++			eix->eie[1] = imsic_eix_read(IMSIC_EIE0 + i * 2 + 1);
++#endif
++		}
++	}
++
++	csr_write(CSR_HSTATUS, old_hstatus);
++	csr_write(CSR_VSISELECT, old_vsiselect);
++}
++
++static void imsic_vsfile_read(int vsfile_hgei, int vsfile_cpu, u32 nr_eix,
++			      bool clear, struct imsic_mrif *mrif)
++{
++	struct imsic_vsfile_read_data idata;
++
++	/* We can only read clear if we have a IMSIC VS-file */
++	if (vsfile_cpu < 0 || vsfile_hgei <= 0)
++		return;
++
++	/* We can only read clear on local CPU */
++	idata.hgei = vsfile_hgei;
++	idata.nr_eix = nr_eix;
++	idata.clear = clear;
++	idata.mrif = mrif;
++	on_each_cpu_mask(cpumask_of(vsfile_cpu),
++			 imsic_vsfile_local_read, &idata, 1);
++}
++
++static void imsic_vsfile_local_clear(int vsfile_hgei, u32 nr_eix)
++{
++	u32 i;
++	unsigned long new_hstatus, old_hstatus, old_vsiselect;
++
++	/* We can only zero-out if we have a IMSIC VS-file */
++	if (vsfile_hgei <= 0)
++		return;
++
++	old_vsiselect = csr_read(CSR_VSISELECT);
++	old_hstatus = csr_read(CSR_HSTATUS);
++	new_hstatus = old_hstatus & ~HSTATUS_VGEIN;
++	new_hstatus |= ((unsigned long)vsfile_hgei) << HSTATUS_VGEIN_SHIFT;
++	csr_write(CSR_HSTATUS, new_hstatus);
++
++	imsic_vs_csr_write(IMSIC_EIDELIVERY, 0);
++	imsic_vs_csr_write(IMSIC_EITHRESHOLD, 0);
++	for (i = 0; i < nr_eix; i++) {
++		imsic_eix_write(IMSIC_EIP0 + i * 2, 0);
++		imsic_eix_write(IMSIC_EIE0 + i * 2, 0);
++#ifdef CONFIG_32BIT
++		imsic_eix_write(IMSIC_EIP0 + i * 2 + 1, 0);
++		imsic_eix_write(IMSIC_EIE0 + i * 2 + 1, 0);
++#endif
++	}
++
++	csr_write(CSR_HSTATUS, old_hstatus);
++	csr_write(CSR_VSISELECT, old_vsiselect);
++}
++
++static void imsic_vsfile_local_update(int vsfile_hgei, u32 nr_eix,
++				      struct imsic_mrif *mrif)
++{
++	u32 i;
++	struct imsic_mrif_eix *eix;
++	unsigned long new_hstatus, old_hstatus, old_vsiselect;
++
++	/* We can only update if we have a HW IMSIC context */
++	if (vsfile_hgei <= 0)
++		return;
++
++	/*
++	 * We don't use imsic_mrif_atomic_xyz() functions to read values
++	 * from MRIF in this function because it is always called with
++	 * pointer to temporary MRIF on stack.
++	 */
++
++	old_vsiselect = csr_read(CSR_VSISELECT);
++	old_hstatus = csr_read(CSR_HSTATUS);
++	new_hstatus = old_hstatus & ~HSTATUS_VGEIN;
++	new_hstatus |= ((unsigned long)vsfile_hgei) << HSTATUS_VGEIN_SHIFT;
++	csr_write(CSR_HSTATUS, new_hstatus);
++
++	for (i = 0; i < nr_eix; i++) {
++		eix = &mrif->eix[i];
++		imsic_eix_set(IMSIC_EIP0 + i * 2, eix->eip[0]);
++		imsic_eix_set(IMSIC_EIE0 + i * 2, eix->eie[0]);
++#ifdef CONFIG_32BIT
++		imsic_eix_set(IMSIC_EIP0 + i * 2 + 1, eix->eip[1]);
++		imsic_eix_set(IMSIC_EIE0 + i * 2 + 1, eix->eie[1]);
++#endif
++	}
++	imsic_vs_csr_write(IMSIC_EITHRESHOLD, mrif->eithreshold);
++	imsic_vs_csr_write(IMSIC_EIDELIVERY, mrif->eidelivery);
++
++	csr_write(CSR_HSTATUS, old_hstatus);
++	csr_write(CSR_VSISELECT, old_vsiselect);
++}
++
++static void imsic_vsfile_cleanup(struct imsic *imsic)
++{
++	int old_vsfile_hgei, old_vsfile_cpu;
++	unsigned long flags;
++
++	/*
++	 * We don't use imsic_mrif_atomic_xyz() functions to clear the
++	 * SW-file in this function because it is always called when the
++	 * VCPU is being destroyed.
++	 */
++
++	write_lock_irqsave(&imsic->vsfile_lock, flags);
++	old_vsfile_hgei = imsic->vsfile_hgei;
++	old_vsfile_cpu = imsic->vsfile_cpu;
++	imsic->vsfile_cpu = imsic->vsfile_hgei = -1;
++	imsic->vsfile_va = NULL;
++	imsic->vsfile_pa = 0;
++	write_unlock_irqrestore(&imsic->vsfile_lock, flags);
++
++	memset(imsic->swfile, 0, sizeof(*imsic->swfile));
++
++	if (old_vsfile_cpu >= 0)
++		kvm_riscv_aia_free_hgei(old_vsfile_cpu, old_vsfile_hgei);
++}
++
++static void imsic_swfile_extirq_update(struct kvm_vcpu *vcpu)
++{
++	struct imsic *imsic = vcpu->arch.aia_context.imsic_state;
++	struct imsic_mrif *mrif = imsic->swfile;
++
++	if (imsic_mrif_atomic_read(mrif, &mrif->eidelivery) &&
++	    imsic_mrif_topei(mrif, imsic->nr_eix, imsic->nr_msis))
++		kvm_riscv_vcpu_set_interrupt(vcpu, IRQ_VS_EXT);
++	else
++		kvm_riscv_vcpu_unset_interrupt(vcpu, IRQ_VS_EXT);
++}
++
++static void imsic_swfile_read(struct kvm_vcpu *vcpu, bool clear,
++			      struct imsic_mrif *mrif)
++{
++	struct imsic *imsic = vcpu->arch.aia_context.imsic_state;
++
++	/*
++	 * We don't use imsic_mrif_atomic_xyz() functions to read and
++	 * write SW-file and MRIF in this function because it is always
++	 * called when VCPU is not using SW-file and the MRIF points to
++	 * a temporary MRIF on stack.
++	 */
++
++	memcpy(mrif, imsic->swfile, sizeof(*mrif));
++	if (clear) {
++		memset(imsic->swfile, 0, sizeof(*imsic->swfile));
++		kvm_riscv_vcpu_unset_interrupt(vcpu, IRQ_VS_EXT);
++	}
++}
++
++static void imsic_swfile_update(struct kvm_vcpu *vcpu,
++				struct imsic_mrif *mrif)
++{
++	u32 i;
++	struct imsic_mrif_eix *seix, *eix;
++	struct imsic *imsic = vcpu->arch.aia_context.imsic_state;
++	struct imsic_mrif *smrif = imsic->swfile;
++
++	imsic_mrif_atomic_write(smrif, &smrif->eidelivery, mrif->eidelivery);
++	imsic_mrif_atomic_write(smrif, &smrif->eithreshold, mrif->eithreshold);
++	for (i = 0; i < imsic->nr_eix; i++) {
++		seix = &smrif->eix[i];
++		eix = &mrif->eix[i];
++		imsic_mrif_atomic_or(smrif, &seix->eip[0], eix->eip[0]);
++		imsic_mrif_atomic_or(smrif, &seix->eie[0], eix->eie[0]);
++#ifdef CONFIG_32BIT
++		imsic_mrif_atomic_or(smrif, &seix->eip[1], eix->eip[1]);
++		imsic_mrif_atomic_or(smrif, &seix->eie[1], eix->eie[1]);
++#endif
++	}
++
++	imsic_swfile_extirq_update(vcpu);
++}
++
++void kvm_riscv_vcpu_aia_imsic_release(struct kvm_vcpu *vcpu)
++{
++	unsigned long flags;
++	struct imsic_mrif tmrif;
++	int old_vsfile_hgei, old_vsfile_cpu;
++	struct imsic *imsic = vcpu->arch.aia_context.imsic_state;
++
++	/* Read and clear IMSIC VS-file details */
++	write_lock_irqsave(&imsic->vsfile_lock, flags);
++	old_vsfile_hgei = imsic->vsfile_hgei;
++	old_vsfile_cpu = imsic->vsfile_cpu;
++	imsic->vsfile_cpu = imsic->vsfile_hgei = -1;
++	imsic->vsfile_va = NULL;
++	imsic->vsfile_pa = 0;
++	write_unlock_irqrestore(&imsic->vsfile_lock, flags);
++
++	/* Do nothing, if no IMSIC VS-file to release */
++	if (old_vsfile_cpu < 0)
++		return;
++
++	/*
++	 * At this point, all interrupt producers are still using
++	 * the old IMSIC VS-file so we first re-direct all interrupt
++	 * producers.
++	 */
++
++	/* Purge the G-stage mapping */
++	kvm_riscv_gstage_iounmap(vcpu->kvm,
++				 vcpu->arch.aia_context.imsic_addr,
++				 IMSIC_MMIO_PAGE_SZ);
++
++	/* TODO: Purge the IOMMU mapping ??? */
++
++	/*
++	 * At this point, all interrupt producers have been re-directed
++	 * to somewhere else so we move register state from the old IMSIC
++	 * VS-file to the IMSIC SW-file.
++	 */
++
++	/* Read and clear register state from old IMSIC VS-file */
++	memset(&tmrif, 0, sizeof(tmrif));
++	imsic_vsfile_read(old_vsfile_hgei, old_vsfile_cpu, imsic->nr_hw_eix,
++			  true, &tmrif);
++
++	/* Update register state in IMSIC SW-file */
++	imsic_swfile_update(vcpu, &tmrif);
++
++	/* Free-up old IMSIC VS-file */
++	kvm_riscv_aia_free_hgei(old_vsfile_cpu, old_vsfile_hgei);
++}
++
++int kvm_riscv_vcpu_aia_imsic_update(struct kvm_vcpu *vcpu)
++{
++	unsigned long flags;
++	phys_addr_t new_vsfile_pa;
++	struct imsic_mrif tmrif;
++	void __iomem *new_vsfile_va;
++	struct kvm *kvm = vcpu->kvm;
++	struct kvm_run *run = vcpu->run;
++	struct kvm_vcpu_aia *vaia = &vcpu->arch.aia_context;
++	struct imsic *imsic = vaia->imsic_state;
++	int ret = 0, new_vsfile_hgei = -1, old_vsfile_hgei, old_vsfile_cpu;
++
++	/* Do nothing for emulation mode */
++	if (kvm->arch.aia.mode == KVM_DEV_RISCV_AIA_MODE_EMUL)
++		return 1;
++
++	/* Read old IMSIC VS-file details */
++	read_lock_irqsave(&imsic->vsfile_lock, flags);
++	old_vsfile_hgei = imsic->vsfile_hgei;
++	old_vsfile_cpu = imsic->vsfile_cpu;
++	read_unlock_irqrestore(&imsic->vsfile_lock, flags);
++
++	/* Do nothing if we are continuing on same CPU */
++	if (old_vsfile_cpu == vcpu->cpu)
++		return 1;
++
++	/* Allocate new IMSIC VS-file */
++	ret = kvm_riscv_aia_alloc_hgei(vcpu->cpu, vcpu,
++				       &new_vsfile_va, &new_vsfile_pa);
++	if (ret <= 0) {
++		/* For HW acceleration mode, we can't continue */
++		if (kvm->arch.aia.mode == KVM_DEV_RISCV_AIA_MODE_HWACCEL) {
++			run->fail_entry.hardware_entry_failure_reason =
++								CSR_HSTATUS;
++			run->fail_entry.cpu = vcpu->cpu;
++			run->exit_reason = KVM_EXIT_FAIL_ENTRY;
++			return 0;
++		}
++
++		/* Release old IMSIC VS-file */
++		if (old_vsfile_cpu >= 0)
++			kvm_riscv_vcpu_aia_imsic_release(vcpu);
++
++		/* For automatic mode, we continue */
++		goto done;
++	}
++	new_vsfile_hgei = ret;
++
++	/*
++	 * At this point, all interrupt producers are still using
++	 * to the old IMSIC VS-file so we first move all interrupt
++	 * producers to the new IMSIC VS-file.
++	 */
++
++	/* Zero-out new IMSIC VS-file */
++	imsic_vsfile_local_clear(new_vsfile_hgei, imsic->nr_hw_eix);
++
++	/* Update G-stage mapping for the new IMSIC VS-file */
++	ret = kvm_riscv_gstage_ioremap(kvm, vcpu->arch.aia_context.imsic_addr,
++				       new_vsfile_pa, IMSIC_MMIO_PAGE_SZ,
++				       true, true);
++	if (ret)
++		goto fail_free_vsfile_hgei;
++
++	/* TODO: Update the IOMMU mapping ??? */
++
++	/* Update new IMSIC VS-file details in IMSIC context */
++	write_lock_irqsave(&imsic->vsfile_lock, flags);
++	imsic->vsfile_hgei = new_vsfile_hgei;
++	imsic->vsfile_cpu = vcpu->cpu;
++	imsic->vsfile_va = new_vsfile_va;
++	imsic->vsfile_pa = new_vsfile_pa;
++	write_unlock_irqrestore(&imsic->vsfile_lock, flags);
++
++	/*
++	 * At this point, all interrupt producers have been moved
++	 * to the new IMSIC VS-file so we move register state from
++	 * the old IMSIC VS/SW-file to the new IMSIC VS-file.
++	 */
++
++	memset(&tmrif, 0, sizeof(tmrif));
++	if (old_vsfile_cpu >= 0) {
++		/* Read and clear register state from old IMSIC VS-file */
++		imsic_vsfile_read(old_vsfile_hgei, old_vsfile_cpu,
++				  imsic->nr_hw_eix, true, &tmrif);
++
++		/* Free-up old IMSIC VS-file */
++		kvm_riscv_aia_free_hgei(old_vsfile_cpu, old_vsfile_hgei);
++	} else {
++		/* Read and clear register state from IMSIC SW-file */
++		imsic_swfile_read(vcpu, true, &tmrif);
++	}
++
++	/* Restore register state in the new IMSIC VS-file */
++	imsic_vsfile_local_update(new_vsfile_hgei, imsic->nr_hw_eix, &tmrif);
++
++done:
++	/* Set VCPU HSTATUS.VGEIN to new IMSIC VS-file */
++	vcpu->arch.guest_context.hstatus &= ~HSTATUS_VGEIN;
++	if (new_vsfile_hgei > 0)
++		vcpu->arch.guest_context.hstatus |=
++			((unsigned long)new_vsfile_hgei) << HSTATUS_VGEIN_SHIFT;
++
++	/* Continue run-loop */
++	return 1;
++
++fail_free_vsfile_hgei:
++	kvm_riscv_aia_free_hgei(vcpu->cpu, new_vsfile_hgei);
++	return ret;
++}
++
++int kvm_riscv_vcpu_aia_imsic_rmw(struct kvm_vcpu *vcpu, unsigned long isel,
++				 unsigned long *val, unsigned long new_val,
++				 unsigned long wr_mask)
++{
++	u32 topei;
++	struct imsic_mrif_eix *eix;
++	int r, rc = KVM_INSN_CONTINUE_NEXT_SEPC;
++	struct imsic *imsic = vcpu->arch.aia_context.imsic_state;
++
++	if (isel == KVM_RISCV_AIA_IMSIC_TOPEI) {
++		/* Read pending and enabled interrupt with highest priority */
++		topei = imsic_mrif_topei(imsic->swfile, imsic->nr_eix,
++					 imsic->nr_msis);
++		if (val)
++			*val = topei;
++
++		/* Writes ignore value and clear top pending interrupt */
++		if (topei && wr_mask) {
++			topei >>= TOPEI_ID_SHIFT;
++			if (topei) {
++				eix = &imsic->swfile->eix[topei /
++							  BITS_PER_TYPE(u64)];
++				clear_bit(topei & (BITS_PER_TYPE(u64) - 1),
++					  eix->eip);
++			}
++		}
++	} else {
++		r = imsic_mrif_rmw(imsic->swfile, imsic->nr_eix, isel,
++				   val, new_val, wr_mask);
++		/* Forward unknown IMSIC register to user-space */
++		if (r)
++			rc = (r == -ENOENT) ? 0 : KVM_INSN_ILLEGAL_TRAP;
++	}
++
++	if (wr_mask)
++		imsic_swfile_extirq_update(vcpu);
++
++	return rc;
++}
++
++void kvm_riscv_vcpu_aia_imsic_reset(struct kvm_vcpu *vcpu)
++{
++	struct imsic *imsic = vcpu->arch.aia_context.imsic_state;
++
++	if (!imsic)
++		return;
++
++	kvm_riscv_vcpu_aia_imsic_release(vcpu);
++
++	memset(imsic->swfile, 0, sizeof(*imsic->swfile));
++}
++
++int kvm_riscv_vcpu_aia_imsic_inject(struct kvm_vcpu *vcpu,
++				    u32 guest_index, u32 offset, u32 iid)
++{
++	unsigned long flags;
++	struct imsic_mrif_eix *eix;
++	struct imsic *imsic = vcpu->arch.aia_context.imsic_state;
++
++	/* We only emulate one IMSIC MMIO page for each Guest VCPU */
++	if (!imsic || !iid || guest_index ||
++	    (offset != IMSIC_MMIO_SETIPNUM_LE &&
++	     offset != IMSIC_MMIO_SETIPNUM_BE))
++		return -ENODEV;
++
++	iid = (offset == IMSIC_MMIO_SETIPNUM_BE) ? __swab32(iid) : iid;
++	if (imsic->nr_msis <= iid)
++		return -EINVAL;
++
++	read_lock_irqsave(&imsic->vsfile_lock, flags);
++
++	if (imsic->vsfile_cpu >= 0) {
++		writel(iid, imsic->vsfile_va + IMSIC_MMIO_SETIPNUM_LE);
++		kvm_vcpu_kick(vcpu);
++	} else {
++		eix = &imsic->swfile->eix[iid / BITS_PER_TYPE(u64)];
++		set_bit(iid & (BITS_PER_TYPE(u64) - 1), eix->eip);
++		imsic_swfile_extirq_update(vcpu);
++	}
++
++	read_unlock_irqrestore(&imsic->vsfile_lock, flags);
++
++	return 0;
++}
++
++static int imsic_mmio_read(struct kvm_vcpu *vcpu, struct kvm_io_device *dev,
++			   gpa_t addr, int len, void *val)
++{
++	if (len != 4 || (addr & 0x3) != 0)
++		return -EOPNOTSUPP;
++
++	*((u32 *)val) = 0;
++
++	return 0;
++}
++
++static int imsic_mmio_write(struct kvm_vcpu *vcpu, struct kvm_io_device *dev,
++			    gpa_t addr, int len, const void *val)
++{
++	struct kvm_msi msi = { 0 };
++
++	if (len != 4 || (addr & 0x3) != 0)
++		return -EOPNOTSUPP;
++
++	msi.address_hi = addr >> 32;
++	msi.address_lo = (u32)addr;
++	msi.data = *((const u32 *)val);
++	kvm_riscv_aia_inject_msi(vcpu->kvm, &msi);
++
++	return 0;
++};
++
++static struct kvm_io_device_ops imsic_iodoev_ops = {
++	.read = imsic_mmio_read,
++	.write = imsic_mmio_write,
++};
++
++int kvm_riscv_vcpu_aia_imsic_init(struct kvm_vcpu *vcpu)
++{
++	int ret = 0;
++	struct imsic *imsic;
++	struct page *swfile_page;
++	struct kvm *kvm = vcpu->kvm;
++
++	/* Fail if we have zero IDs */
++	if (!kvm->arch.aia.nr_ids)
++		return -EINVAL;
++
++	/* Allocate IMSIC context */
++	imsic = kzalloc(sizeof(*imsic), GFP_KERNEL);
++	if (!imsic)
++		return -ENOMEM;
++	vcpu->arch.aia_context.imsic_state = imsic;
++
++	/* Setup IMSIC context  */
++	imsic->nr_msis = kvm->arch.aia.nr_ids + 1;
++	rwlock_init(&imsic->vsfile_lock);
++	imsic->nr_eix = BITS_TO_U64(imsic->nr_msis);
++	imsic->nr_hw_eix = BITS_TO_U64(kvm_riscv_aia_max_ids);
++	imsic->vsfile_hgei = imsic->vsfile_cpu = -1;
++
++	/* Setup IMSIC SW-file */
++	swfile_page = alloc_pages(GFP_KERNEL | __GFP_ZERO,
++				  get_order(sizeof(*imsic->swfile)));
++	if (!swfile_page) {
++		ret = -ENOMEM;
++		goto fail_free_imsic;
++	}
++	imsic->swfile = page_to_virt(swfile_page);
++	imsic->swfile_pa = page_to_phys(swfile_page);
++
++	/* Setup IO device */
++	kvm_iodevice_init(&imsic->iodev, &imsic_iodoev_ops);
++	mutex_lock(&kvm->slots_lock);
++	ret = kvm_io_bus_register_dev(kvm, KVM_MMIO_BUS,
++				      vcpu->arch.aia_context.imsic_addr,
++				      KVM_DEV_RISCV_IMSIC_SIZE,
++				      &imsic->iodev);
++	mutex_unlock(&kvm->slots_lock);
++	if (ret)
++		goto fail_free_swfile;
++
++	return 0;
++
++fail_free_swfile:
++	free_pages((unsigned long)imsic->swfile,
++		   get_order(sizeof(*imsic->swfile)));
++fail_free_imsic:
++	vcpu->arch.aia_context.imsic_state = NULL;
++	kfree(imsic);
++	return ret;
++}
++
++void kvm_riscv_vcpu_aia_imsic_cleanup(struct kvm_vcpu *vcpu)
++{
++	struct kvm *kvm = vcpu->kvm;
++	struct imsic *imsic = vcpu->arch.aia_context.imsic_state;
++
++	if (!imsic)
++		return;
++
++	imsic_vsfile_cleanup(imsic);
++
++	mutex_lock(&kvm->slots_lock);
++	kvm_io_bus_unregister_dev(kvm, KVM_MMIO_BUS, &imsic->iodev);
++	mutex_unlock(&kvm->slots_lock);
++
++	free_pages((unsigned long)imsic->swfile,
++		   get_order(sizeof(*imsic->swfile)));
++
++	vcpu->arch.aia_context.imsic_state = NULL;
++	kfree(imsic);
++}
+-- 
+2.34.1
 
-> +
->  /* L3 index Bit[47:39] */
->  #define PGTBL_L3_INDEX_MASK			0x0000FF8000000000ULL
->  #define PGTBL_L3_INDEX_SHIFT			39
-> diff --git a/tools/testing/selftests/kvm/riscv/get-reg-list.c b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-> new file mode 100644
-> index 000000000000..dec1df0c6e72
-> --- /dev/null
-> +++ b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-> @@ -0,0 +1,869 @@
-> +// SPDX-License-Identifier: GPL-2.0
-> +/*
-> + * Check for KVM_GET_REG_LIST regressions.
-> + *
-> + * Copyright (C) 2020, Red Hat, Inc.
-> + * Copyright (c) 2023 Intel Corporation
-> + *
-> + * The test was port from the get-reg-list.c on aarch64.
-> + */
-> +#include <stdio.h>
-> +#include <stdlib.h>
-> +#include <string.h>
-> +#include <unistd.h>
-> +#include <sys/types.h>
-> +#include <sys/wait.h>
-> +#include "kvm_util.h"
-> +#include "test_util.h"
-> +#include "processor.h"
-> +
-> +static struct kvm_reg_list *reg_list;
-> +static __u64 *blessed_reg, blessed_n;
-> +
-> +struct reg_sublist {
-> +	const char *name;
-> +	long capability;
-> +	__u64 *regs;
-> +	__u64 regs_n;
-> +	__u64 *rejects_set;
-> +	__u64 rejects_set_n;
-> +};
-> +
-> +struct vcpu_config {
-> +	char *name;
-> +	struct reg_sublist sublists[];
-> +};
-> +
-> +static struct vcpu_config *vcpu_configs[];
-> +static int vcpu_configs_n;
-> +
-> +#define for_each_sublist(c, s)						\
-> +	for ((s) = &(c)->sublists[0]; (s)->regs; ++(s))
-> +
-> +#define for_each_reg(i)								\
-> +	for ((i) = 0; (i) < reg_list->n; ++(i))
-> +
-> +#define for_each_missing_reg(i)						\
-> +	for ((i) = 0; (i) < blessed_n; ++(i))			\
-> +		if (!find_reg(reg_list->reg, reg_list->n, blessed_reg[i]))
-> +
-> +#define for_each_new_reg(i)							\
-> +	for_each_reg(i)									\
-> +		if (!find_reg(blessed_reg, blessed_n, reg_list->reg[i]))
-> +
-> +static const char *config_name(struct vcpu_config *c)
-> +{
-> +	struct reg_sublist *s;
-> +	int len = 0;
-> +
-> +	if (c->name)
-> +		return c->name;
-> +
-> +	for_each_sublist(c, s)
-> +		len += strlen(s->name) + 1;
-> +
-> +	c->name = malloc(len);
-> +
-> +	len = 0;
-> +	for_each_sublist(c, s) {
-> +		if (!strcmp(s->name, "base"))
-> +			continue;
-> +		strcat(c->name + len, s->name);
-> +		len += strlen(s->name) + 1;
-> +		c->name[len - 1] = '+';
-> +	}
-> +	c->name[len - 1] = '\0';
-> +
-> +	return c->name;
-> +}
-> +
-> +static bool find_reg(__u64 regs[], __u64 nr_regs, __u64 reg)
-> +{
-> +	int i;
-> +
-> +	for (i = 0; i < nr_regs; ++i)
-> +		if (reg == regs[i])
-> +			return true;
-> +	return false;
-> +}
-> +
-> +static const char *str_with_index(const char *template, __u64 index)
-> +{
-> +	char *str, *p;
-> +	int n;
-> +
-> +	str = strdup(template);
-> +	p = strstr(str, "##");
-> +	n = sprintf(p, "%lld", index);
-> +	strcat(p + n, strstr(template, "##") + 2);
-> +
-> +	return (const char *)str;
-> +}
-> +
-> +#define REG_MASK (KVM_REG_ARCH_MASK | KVM_REG_SIZE_MASK)
-> +
-> +static const char *config_id_to_str(struct vcpu_config *c, __u64 id)
-> +{
-> +	__u64 reg_off = id & ~(REG_MASK | KVM_REG_RISCV_CONFIG);
-> +
-> +	/*
-> +	 * reg_off is the offset into struct kvm_riscv_config
-> +	 */
-> +	switch (reg_off) {
-> +	case KVM_REG_RISCV_CONFIG_REG(isa):
-> +		return "KVM_REG_RISCV_CONFIG_REG(isa)";
-> +	case KVM_REG_RISCV_CONFIG_REG(zicbom_block_size):
-> +		return "KVM_REG_RISCV_CONFIG_REG(zicbom_block_size)";
-> +	case KVM_REG_RISCV_CONFIG_REG(zicboz_block_size):
-> +		return "KVM_REG_RISCV_CONFIG_REG(zicboz_block_size)";
-> +	case KVM_REG_RISCV_CONFIG_REG(mvendorid):
-> +		return "KVM_REG_RISCV_CONFIG_REG(mvendorid)";
-> +	case KVM_REG_RISCV_CONFIG_REG(marchid):
-> +		return "KVM_REG_RISCV_CONFIG_REG(marchid)";
-> +	case KVM_REG_RISCV_CONFIG_REG(mimpid):
-> +		return "KVM_REG_RISCV_CONFIG_REG(mimpid)";
-> +	default:
-> +		/* Config regs would grow regularly with new pseudo reg added, so
-> +		 * just show "##UNKNOWN##" to indicate a new pseudo config reg.
-> +		 */
-> +		printf("%s: Unknown config reg id: 0x%llx", config_name(c), id);
-> +		return "##UNKNOWN##";
-
-The idea of these *to_str functions is to dump output that can be
-copy+pasted into a reg array (hence the trailing commas in print_reg
-lines). So we can't just print random lines here or return '##UNKOWN##',
-as that won't compile. Instead, the default should return
-
-  str_with_index("KVM_REG_RISCV_CONFIG_REG(##)", reg_off)
-
-> +	}
-> +}
-> +
-> +static const char *core_id_to_str(struct vcpu_config *c, __u64 id)
-> +{
-> +	__u64 reg_off = id & ~(REG_MASK | KVM_REG_RISCV_CORE);
-> +
-> +	/*
-> +	 * reg_off is the offset into struct kvm_riscv_core
-> +	 */
-> +	switch (reg_off) {
-> +	case KVM_REG_RISCV_CORE_REG(regs.pc):
-> +		return "KVM_REG_RISCV_CORE_REG(regs.pc)";
-> +	case KVM_REG_RISCV_CORE_REG(regs.ra) ...
-> +	     KVM_REG_RISCV_CORE_REG(regs.t6):
-> +		return str_with_index("KVM_REG_RISCV_CORE_REG(regs.regs[##])", reg_off);
-> +	case KVM_REG_RISCV_CORE_REG(mode):
-> +		return "KVM_REG_RISCV_CORE_REG(mode)";
-> +	}
-> +
-> +	TEST_FAIL("%s: Unknown core reg id: 0x%llx", config_name(c), id);
-> +	return NULL;
-> +}
-> +
-> +static const char *general_csr_id_to_str(__u64 reg_off)
-> +{
-> +	/*
-> +	 * reg_off is the offset into struct kvm_riscv_csr
-> +	 */
-> +	switch (reg_off) {
-> +	case KVM_REG_RISCV_CSR_REG(sstatus):
-> +		return "KVM_REG_RISCV_CSR_REG(sstatus)";
-
-We also need the subtype. So this should be something like
-
- #define CSR_GENERAL(csr) \
-     "KVM_REG_RISCV_CSR_GENERAL | KVM_REG_RISCV_CSR_REG(" #csr ")"
-
-  return CSR_GENERAL(sstatus);
-
-and similar below for the AIA CSRs.
-
-> +	case KVM_REG_RISCV_CSR_REG(sie):
-> +		return "KVM_REG_RISCV_CSR_REG(sie)";
-> +	case KVM_REG_RISCV_CSR_REG(stvec):
-> +		return "KVM_REG_RISCV_CSR_REG(stvec)";
-> +	case KVM_REG_RISCV_CSR_REG(sscratch):
-> +		return "KVM_REG_RISCV_CSR_REG(sscratch)";
-> +	case KVM_REG_RISCV_CSR_REG(sepc):
-> +		return "KVM_REG_RISCV_CSR_REG(sepc)";
-> +	case KVM_REG_RISCV_CSR_REG(scause):
-> +		return "KVM_REG_RISCV_CSR_REG(scause)";
-> +	case KVM_REG_RISCV_CSR_REG(stval):
-> +		return "KVM_REG_RISCV_CSR_REG(stval)";
-> +	case KVM_REG_RISCV_CSR_REG(sip):
-> +		return "KVM_REG_RISCV_CSR_REG(sip)";
-> +	case KVM_REG_RISCV_CSR_REG(satp):
-> +		return "KVM_REG_RISCV_CSR_REG(satp)";
-> +	case KVM_REG_RISCV_CSR_REG(scounteren):
-> +		return "KVM_REG_RISCV_CSR_REG(scounteren)";
-> +	default:
-> +		TEST_FAIL("Unknown general csr reg: 0x%llx", reg_off);
-> +		return NULL;
-
-nit: It'd be nice to have a pattern for this TEST_FAIL. Either
-outside the switch and not have a default or always the default.
-It seems to be changing function by function.
-
-> +	}
-> +}
-> +
-> +static const char *aia_csr_id_to_str(__u64 reg_off)
-> +{
-> +	/*
-> +	 * reg_off is the offset into struct kvm_riscv_aia_csr
-> +	 */
-> +	switch (reg_off) {
-> +	case KVM_REG_RISCV_CSR_AIA_REG(siselect):
-> +		return "KVM_REG_RISCV_CSR_AIA_REG(siselect)";
-> +	case KVM_REG_RISCV_CSR_AIA_REG(iprio1):
-> +		return "KVM_REG_RISCV_CSR_AIA_REG(iprio1)";
-> +	case KVM_REG_RISCV_CSR_AIA_REG(iprio2):
-> +		return "KVM_REG_RISCV_CSR_AIA_REG(iprio2)";
-> +	case KVM_REG_RISCV_CSR_AIA_REG(sieh):
-> +		return "KVM_REG_RISCV_CSR_AIA_REG(sieh)";
-> +	case KVM_REG_RISCV_CSR_AIA_REG(siph):
-> +		return "KVM_REG_RISCV_CSR_AIA_REG(siph)";
-> +	case KVM_REG_RISCV_CSR_AIA_REG(iprio1h):
-> +		return "KVM_REG_RISCV_CSR_AIA_REG(iprio1h)";
-> +	case KVM_REG_RISCV_CSR_AIA_REG(iprio2h):
-> +		return "KVM_REG_RISCV_CSR_AIA_REG(iprio2h)";
-> +	default:
-> +		TEST_FAIL("Unknown aia csr reg: 0x%llx", reg_off);
-> +		return NULL;
-> +	}
-> +}
-> +
-> +static const char *csr_id_to_str(struct vcpu_config *c, __u64 id)
-> +{
-> +	__u64 reg_off = id & ~(REG_MASK | KVM_REG_RISCV_CSR);
-> +	__u64 reg_subtype = reg_off & KVM_REG_RISCV_SUBTYPE_MASK;
-> +
-> +	reg_off &= ~KVM_REG_RISCV_SUBTYPE_MASK;
-> +
-> +	switch (reg_subtype) {
-> +	case KVM_REG_RISCV_CSR_GENERAL:
-> +		return general_csr_id_to_str(reg_off);
-> +	case KVM_REG_RISCV_CSR_AIA:
-> +		return aia_csr_id_to_str(reg_off);
-> +	default:
-> +		TEST_FAIL("%s: Unknown csr reg id: 0x%llx", config_name(c), id);
-
-Maybe better to report "unknown subtype"?
-
-> +		return NULL;
-> +	}
-> +}
-> +
-> +static const char *timer_id_to_str(struct vcpu_config *c, __u64 id)
-> +{
-> +	__u64 reg_off = id & ~(REG_MASK | KVM_REG_RISCV_TIMER);
-> +
-> +	/*
-> +	 * reg_off is the offset into struct kvm_riscv_timer
-> +	 */
-> +	switch (reg_off) {
-> +	case KVM_REG_RISCV_TIMER_REG(frequency):
-> +		return "KVM_REG_RISCV_TIMER_REG(frequency)";
-> +	case KVM_REG_RISCV_TIMER_REG(time):
-> +		return "KVM_REG_RISCV_TIMER_REG(time)";
-> +	case KVM_REG_RISCV_TIMER_REG(compare):
-> +		return "KVM_REG_RISCV_TIMER_REG(compare)";
-> +	case KVM_REG_RISCV_TIMER_REG(state):
-> +		return "KVM_REG_RISCV_TIMER_REG(state)";
-> +	}
-> +
-> +	TEST_FAIL("%s: Unknown timer reg id: 0x%llx", config_name(c), id);
-> +	return NULL;
-> +}
-> +
-> +static const char *fp_f_id_to_str(struct vcpu_config *c, __u64 id)
-> +{
-> +	__u64 reg_off = id & ~(REG_MASK | KVM_REG_RISCV_FP_F);
-> +
-> +	/*
-> +	 * reg_off is the offset into struct __riscv_f_ext_state
-> +	 */
-> +	switch (reg_off) {
-> +	case KVM_REG_RISCV_FP_F_REG(f[0]) ...
-> +	     KVM_REG_RISCV_FP_F_REG(f[31]):
-> +		return str_with_index("KVM_REG_RISCV_FP_F_REG(f[##])", reg_off);
-> +	case KVM_REG_RISCV_FP_F_REG(fcsr):
-> +		return "KVM_REG_RISCV_FP_F_REG(fcsr)";
-> +	}
-> +
-> +	TEST_FAIL("%s: Unknown fp_f reg id: 0x%llx", config_name(c), id);
-> +	return NULL;
-> +}
-> +
-> +static const char *fp_d_id_to_str(struct vcpu_config *c, __u64 id)
-> +{
-> +	__u64 reg_off = id & ~(REG_MASK | KVM_REG_RISCV_FP_D);
-> +
-> +	/*
-> +	 * reg_off is the offset into struct __riscv_d_ext_state
-> +	 */
-> +	switch (reg_off) {
-> +	case KVM_REG_RISCV_FP_D_REG(f[0]) ...
-> +	     KVM_REG_RISCV_FP_D_REG(f[31]):
-> +		return str_with_index("KVM_REG_RISCV_FP_D_REG(f[##])", reg_off);
-> +	case KVM_REG_RISCV_FP_D_REG(fcsr):
-> +		return "KVM_REG_RISCV_FP_D_REG(fcsr)";
-> +	}
-> +
-> +	TEST_FAIL("%s: Unknown fp_d reg id: 0x%llx", config_name(c), id);
-> +	return NULL;
-> +}
-> +
-> +static const char *isa_ext_id_to_str(struct vcpu_config *c, __u64 id)
-> +{
-> +	/*
-> +	 * reg_off is the offset into unsigned long kvm_isa_ext_arr[]
-> +	 */
-> +	__u64 reg_off = id & ~(REG_MASK | KVM_REG_RISCV_ISA_EXT);
-> +
-> +	static const char * const kvm_isa_ext_reg_name[] = {
-> +		"KVM_RISCV_ISA_EXT_A",
-> +		"KVM_RISCV_ISA_EXT_C",
-> +		"KVM_RISCV_ISA_EXT_D",
-> +		"KVM_RISCV_ISA_EXT_F",
-> +		"KVM_RISCV_ISA_EXT_H",
-> +		"KVM_RISCV_ISA_EXT_I",
-> +		"KVM_RISCV_ISA_EXT_M",
-> +		"KVM_RISCV_ISA_EXT_SVPBMT",
-> +		"KVM_RISCV_ISA_EXT_SSTC",
-> +		"KVM_RISCV_ISA_EXT_SVINVAL",
-> +		"KVM_RISCV_ISA_EXT_ZIHINTPAUSE",
-> +		"KVM_RISCV_ISA_EXT_ZICBOM",
-> +		"KVM_RISCV_ISA_EXT_ZICBOZ",
-> +		"KVM_RISCV_ISA_EXT_ZBB",
-> +		"KVM_RISCV_ISA_EXT_SSAIA",
-> +	};
-> +
-> +	if (reg_off >= ARRAY_SIZE(kvm_isa_ext_reg_name)) {
-> +		/* isa_ext regs would grow regularly with new isa extension added, so
-> +		 * just show "##UNKNOWN##" to indicate a new extension.
-> +		 */
-> +		printf("%s: Unsupported isa ext reg id 0x%llx", config_name(c), id);
-> +		return "##UNKNOWN##";
-
-This should be
-
-  return str_with_index("##", id);
-
-so it can compile.
-
-> +	}
-> +
-> +	return kvm_isa_ext_reg_name[reg_off];
-> +}
-> +
-> +static const char *sbi_ext_single_id_to_str(__u64 reg_off)
-> +{
-> +	/*
-> +	 * reg_off is KVM_RISCV_SBI_EXT_ID
-> +	 */
-> +	static const char * const kvm_sbi_ext_reg_name[] = {
-> +		"KVM_RISCV_SBI_EXT_V01",
-> +		"KVM_RISCV_SBI_EXT_TIME",
-> +		"KVM_RISCV_SBI_EXT_IPI",
-> +		"KVM_RISCV_SBI_EXT_RFENCE",
-> +		"KVM_RISCV_SBI_EXT_SRST",
-> +		"KVM_RISCV_SBI_EXT_HSM",
-> +		"KVM_RISCV_SBI_EXT_PMU",
-> +		"KVM_RISCV_SBI_EXT_EXPERIMENTAL",
-> +		"KVM_RISCV_SBI_EXT_VENDOR",
-> +	};
-> +
-> +	if (reg_off >= KVM_RISCV_SBI_EXT_MAX) {
-> +		/* sbi_ext regs would grow regularly with new sbi extension added, so
-> +		 * just show "##UNKNOWN##" to indicate a new extension.
-> +		 */
-> +		printf("Unsupported sbi ext single reg 0x%llx", reg_off);
-> +		return "##UNKNOWN##";
-
-  return str_with_index("##", id);
-
-> +	}
-> +
-> +	return kvm_sbi_ext_reg_name[reg_off];
-> +}
-> +
-> +static const char *sbi_ext_multi_id_to_str(__u64 reg_subtype, __u64 reg_off)
-> +{
-> +	if (reg_off > KVM_REG_RISCV_SBI_MULTI_REG_LAST) {
-> +		/* sbi_ext regs would grow regularly with new sbi extension added, so
-> +		 * just show "##UNKNOWN##" to indicate a new extension.
-
-It'll only grow every 64 SBI extensions, so it won't be very regular.
-
-> +		 */
-> +		printf("Unsupported sbi ext multi reg: 0x%llx", reg_off);
-> +		return "##UNKNOWN##";
-> +	}
-> +
-> +	switch (reg_subtype) {
-> +	case KVM_REG_RISCV_SBI_MULTI_EN:
-> +		return str_with_index("KVM_RISCV_SBI_MULTI_EN[##]", reg_off);
-
-KVM_RISCV_SBI_MULTI_EN[] doesn't exist, so that won't compile. This should
-be
-
-  str_with_index("KVM_REG_RISCV_SBI_MULTI_EN | ##", reg_off)
-
-> +	case KVM_REG_RISCV_SBI_MULTI_DIS:
-> +		return str_with_index("KVM_RISCV_SBI_MULTI_DIS[##]", reg_off);
-
-  str_with_index("KVM_REG_RISCV_SBI_MULTI_DIS | ##", reg_off)
-
-> +	}
-> +
-> +	return NULL;
-> +}
-> +
-> +static const char *sbi_ext_id_to_str(struct vcpu_config *c, __u64 id)
-> +{
-> +	__u64 reg_off = id & ~(REG_MASK | KVM_REG_RISCV_SBI_EXT);
-> +	__u64 reg_subtype = reg_off & KVM_REG_RISCV_SUBTYPE_MASK;
-> +
-> +	reg_off &= ~KVM_REG_RISCV_SUBTYPE_MASK;
-> +
-> +	switch (reg_subtype) {
-> +	case KVM_REG_RISCV_SBI_SINGLE:
-> +		return sbi_ext_single_id_to_str(reg_off);
-> +	case KVM_REG_RISCV_SBI_MULTI_EN:
-> +	case KVM_REG_RISCV_SBI_MULTI_DIS:
-> +		return sbi_ext_multi_id_to_str(reg_subtype, reg_off);
-> +	}
-> +
-> +	TEST_FAIL("%s: Unknown sbi ext reg id: 0x%llx", config_name(c), id);
-
-Maybe better to report "unknown subtype"?
-
-> +	return NULL;
-> +}
-> +
-> +static void print_reg(struct vcpu_config *c, __u64 id)
-> +{
-> +	const char *reg_size = NULL;
-> +
-> +	TEST_ASSERT((id & KVM_REG_ARCH_MASK) == KVM_REG_RISCV,
-> +		    "%s: KVM_REG_RISCV missing in reg id: 0x%llx", config_name(c), id);
-> +
-> +	switch (id & KVM_REG_SIZE_MASK) {
-> +	case KVM_REG_SIZE_U32:
-> +		reg_size = "KVM_REG_SIZE_U32";
-> +		break;
-> +	case KVM_REG_SIZE_U64:
-> +		reg_size = "KVM_REG_SIZE_U64";
-> +		break;
-> +	case KVM_REG_SIZE_U128:
-> +		reg_size = "KVM_REG_SIZE_U128";
-> +		break;
-> +	default:
-> +		TEST_FAIL("%s: Unexpected reg size: 0x%llx in reg id: 0x%llx",
-> +			  config_name(c), (id & KVM_REG_SIZE_MASK) >> KVM_REG_SIZE_SHIFT, id);
-> +	}
-> +
-> +	switch (id & KVM_REG_RISCV_TYPE_MASK) {
-> +	case KVM_REG_RISCV_CONFIG:
-> +		printf("\tKVM_REG_RISCV | %s | KVM_REG_RISCV_CONFIG | %s,\n",
-> +				reg_size, config_id_to_str(c, id));
-> +		break;
-> +	case KVM_REG_RISCV_CORE:
-> +		printf("\tKVM_REG_RISCV | %s | KVM_REG_RISCV_CORE | %s,\n",
-> +				reg_size, core_id_to_str(c, id));
-> +		break;
-> +	case KVM_REG_RISCV_CSR:
-> +		printf("\tKVM_REG_RISCV | %s | KVM_REG_RISCV_CSR | %s,\n",
-> +				reg_size, csr_id_to_str(c, id));
-> +		break;
-> +	case KVM_REG_RISCV_TIMER:
-> +		printf("\tKVM_REG_RISCV | %s | KVM_REG_RISCV_TIMER | %s,\n",
-> +				reg_size, timer_id_to_str(c, id));
-> +		break;
-> +	case KVM_REG_RISCV_FP_F:
-> +		printf("\tKVM_REG_RISCV | %s | KVM_REG_RISCV_FP_F | %s,\n",
-> +				reg_size, fp_f_id_to_str(c, id));
-> +		break;
-> +	case KVM_REG_RISCV_FP_D:
-> +		printf("\tKVM_REG_RISCV | %s | KVM_REG_RISCV_FP_D | %s,\n",
-> +				reg_size, fp_d_id_to_str(c, id));
-> +		break;
-> +	case KVM_REG_RISCV_ISA_EXT:
-> +		printf("\tKVM_REG_RISCV | %s | KVM_REG_RISCV_ISA_EXT | %s,\n",
-> +				reg_size, isa_ext_id_to_str(c, id));
-> +		break;
-> +	case KVM_REG_RISCV_SBI_EXT:
-> +		printf("\tKVM_REG_RISCV | %s | KVM_REG_RISCV_SBI_EXT | %s,\n",
-> +				reg_size, sbi_ext_id_to_str(c, id));
-> +		break;
-> +	default:
-> +		TEST_FAIL("%s: Unexpected reg type: 0x%llx in reg id: 0x%llx", config_name(c),
-> +				(id & KVM_REG_RISCV_TYPE_MASK) >> KVM_REG_RISCV_TYPE_SHIFT, id);
-> +	}
-> +}
-> +
-> +static inline bool vcpu_has_ext(struct kvm_vcpu *vcpu, long cap)
-> +{
-> +	int ret;
-> +	unsigned long value;
-> +
-> +	ret = __vcpu_get_reg(vcpu, RISCV_ISA_EXT_REG(cap), &value);
-> +	if (ret) {
-> +		printf("Failed to get cap %ld", cap);
-> +		return false;
-> +	}
-> +
-> +	return !!value;
-> +}
-> +
-> +static void check_supported(struct kvm_vcpu *vcpu, struct vcpu_config *c)
-> +{
-> +	struct reg_sublist *s;
-> +
-> +	for_each_sublist(c, s) {
-> +		if (!s->capability)
-> +			continue;
-> +
-> +		__TEST_REQUIRE(vcpu_has_ext(vcpu, s->capability),
-> +			       "%s: %s not available, skipping tests\n",
-> +			       config_name(c), s->name);
-> +	}
-> +}
-> +
-> +static bool print_list;
-> +
-> +static void run_test(struct vcpu_config *c)
-> +{
-> +	int new_regs = 0, missing_regs = 0, i, n;
-> +	int failed_get = 0, failed_set = 0;
-> +	struct kvm_vcpu *vcpu;
-> +	struct kvm_vm *vm;
-> +	struct reg_sublist *s;
-> +
-> +	vm = vm_create_barebones();
-> +	vcpu = __vm_vcpu_add(vm, 0);
-> +
-> +	check_supported(vcpu, c);
-> +
-> +	reg_list = vcpu_get_reg_list(vcpu);
-> +
-> +	if (print_list) {
-> +		putchar('\n');
-> +		for_each_reg(i) {
-> +			__u64 id = reg_list->reg[i];
-> +
-> +			if (print_list)
-> +				print_reg(c, id);
-> +		}
-> +		putchar('\n');
-> +		return;
-> +	}
-> +
-> +	/*
-> +	 * We only test that we can get the register and then write back the
-> +	 * same value.
-> +	 */
-> +	for_each_reg(i) {
-> +		uint8_t addr[128 / 8];
-> +		struct kvm_one_reg reg = {
-> +			.id = reg_list->reg[i],
-> +			.addr = (__u64)&addr,
-> +		};
-> +		bool reject_reg = false;
-> +		int ret;
-> +
-> +		ret = __vcpu_get_reg(vcpu, reg_list->reg[i], &addr);
-> +		if (ret) {
-> +			printf("%s: Failed to get ", config_name(c));
-> +			print_reg(c, reg.id);
-> +			putchar('\n');
-> +			++failed_get;
-> +		}
-> +
-> +		/* rejects_set registers are skipped for setting test */
-> +		for_each_sublist(c, s) {
-> +			if (s->rejects_set && find_reg(s->rejects_set, s->rejects_set_n, reg.id)) {
-> +				reject_reg = true;
-> +				break;
-> +			}
-> +		}
-> +
-> +		if (!reject_reg) {
-> +			ret = __vcpu_ioctl(vcpu, KVM_SET_ONE_REG, &reg);
-> +			/* Registers that don't support set operation should pass */
-> +			if (ret && errno != EOPNOTSUPP) {
-> +				printf("%s: Failed to set ", config_name(c));
-> +				print_reg(c, reg.id);
-> +				putchar('\n');
-> +				++failed_set;
-> +			}
-> +		}
-> +	}
-> +
-> +	for_each_sublist(c, s)
-> +		blessed_n += s->regs_n;
-> +	blessed_reg = calloc(blessed_n, sizeof(__u64));
-> +
-> +	n = 0;
-> +	for_each_sublist(c, s) {
-> +		for (i = 0; i < s->regs_n; ++i)
-> +			blessed_reg[n++] = s->regs[i];
-> +	}
-> +
-> +	for_each_new_reg(i)
-> +		++new_regs;
-> +
-> +	for_each_missing_reg(i)
-> +		++missing_regs;
-> +
-> +	if (new_regs || missing_regs) {
-> +		printf("%s: Number blessed registers: %5lld\n", config_name(c), blessed_n);
-> +		printf("%s: Number registers:         %5lld\n", config_name(c), reg_list->n);
-> +	}
-> +
-> +	if (new_regs) {
-> +		printf("\n%s: There are %d new registers.\n"
-> +		       "Consider adding them to the blessed reg "
-> +		       "list with the following lines:\n\n", config_name(c), new_regs);
-> +		for_each_new_reg(i)
-> +			print_reg(c, reg_list->reg[i]);
-> +		putchar('\n');
-> +	}
-> +
-> +	if (missing_regs) {
-> +		printf("\n%s: There are %d missing registers.\n"
-> +		       "The following lines are missing registers:\n\n",
-> +				config_name(c), missing_regs);
-> +		for_each_missing_reg(i)
-> +			print_reg(c, blessed_reg[i]);
-> +		putchar('\n');
-> +	}
-> +
-> +	TEST_ASSERT(!missing_regs && !failed_get && !failed_set,
-> +		    "%s: There are %d missing registers; "
-> +		    "%d registers failed get; %d registers failed set.",
-> +		    config_name(c), missing_regs, failed_get, failed_set);
-> +
-> +	pr_info("%s: PASS\n", config_name(c));
-> +	blessed_n = 0;
-> +	free(blessed_reg);
-> +	free(reg_list);
-> +	kvm_vm_free(vm);
-> +}
-> +
-> +static void help(void)
-> +{
-> +	struct vcpu_config *c;
-> +	int i;
-> +
-> +	printf(
-> +	"\n"
-> +	"usage: get-reg-list [--config=<selection>] [--list]\n\n"
-> +	" --config=<selection>        Used to select a specific vcpu configuration for the test/listing\n"
-> +	"                             '<selection>' may be\n");
-> +
-> +	for (i = 0; i < vcpu_configs_n; ++i) {
-> +		c = vcpu_configs[i];
-> +		printf(
-> +	"                               '%s'\n", config_name(c));
-> +	}
-> +
-> +	printf(
-> +	"\n"
-> +	" --list                      Print the register list rather than test it (requires --config)\n"
-> +	"\n"
-> +	);
-> +}
-> +
-> +static struct vcpu_config *parse_config(const char *config)
-> +{
-> +	struct vcpu_config *c;
-> +	int i;
-> +
-> +	if (config[8] != '=')
-> +		help(), exit(1);
-> +
-> +	for (i = 0; i < vcpu_configs_n; ++i) {
-> +		c = vcpu_configs[i];
-> +		if (strcmp(config_name(c), &config[9]) == 0)
-> +			break;
-> +	}
-> +
-> +	if (i == vcpu_configs_n)
-> +		help(), exit(1);
-> +
-> +	return c;
-> +}
-> +
-> +int main(int ac, char **av)
-> +{
-> +	struct vcpu_config *c, *sel = NULL;
-> +	int i, ret = 0;
-> +	pid_t pid;
-> +
-> +	for (i = 1; i < ac; ++i) {
-> +		if (strncmp(av[i], "--config", 8) == 0)
-> +			sel = parse_config(av[i]);
-> +		else if (strcmp(av[i], "--list") == 0)
-> +			print_list = true;
-> +		else if (strcmp(av[i], "--help") == 0 || strcmp(av[1], "-h") == 0)
-> +			help(), exit(0);
-> +		else
-> +			help(), exit(1);
-> +	}
-> +
-> +	if (print_list) {
-> +		/*
-> +		 * We only want to print the register list of a single config.
-> +		 */
-> +		if (!sel)
-> +			help(), exit(1);
-> +	}
-> +
-> +	for (i = 0; i < vcpu_configs_n; ++i) {
-> +		c = vcpu_configs[i];
-> +		if (sel && c != sel)
-> +			continue;
-> +
-> +		pid = fork();
-> +
-> +		if (!pid) {
-> +			run_test(c);
-> +			exit(0);
-> +		} else {
-> +			int wstatus;
-> +			pid_t wpid = wait(&wstatus);
-> +
-> +			TEST_ASSERT(wpid == pid && WIFEXITED(wstatus), "wait: Unexpected return");
-> +			if (WEXITSTATUS(wstatus) && WEXITSTATUS(wstatus) != KSFT_SKIP)
-> +				ret = KSFT_FAIL;
-> +		}
-> +	}
-> +
-> +	return ret;
-> +}
-
-We should share all the code above, except print_reg(), with aarch64.
-I'll send a patch series that splits the arch-neutral code out of
-the aarch64 test that you can base this test on.
-
-> +
-> +/*
-> + * The current blessed list was primed with the output of kernel version
-> + * v6.2 and then later updated with new registers.
-> + */
-> +static __u64 base_regs[] = {
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CONFIG | KVM_REG_RISCV_CONFIG_REG(isa),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CONFIG | KVM_REG_RISCV_CONFIG_REG(zicbom_block_size),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CONFIG | KVM_REG_RISCV_CONFIG_REG(mvendorid),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CONFIG | KVM_REG_RISCV_CONFIG_REG(marchid),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CONFIG | KVM_REG_RISCV_CONFIG_REG(mimpid),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CORE | KVM_REG_RISCV_CORE_REG(regs.pc),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CORE | KVM_REG_RISCV_CORE_REG(regs.ra),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CORE | KVM_REG_RISCV_CORE_REG(regs.sp),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CORE | KVM_REG_RISCV_CORE_REG(regs.gp),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CORE | KVM_REG_RISCV_CORE_REG(regs.tp),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CORE | KVM_REG_RISCV_CORE_REG(regs.t0),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CORE | KVM_REG_RISCV_CORE_REG(regs.t1),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CORE | KVM_REG_RISCV_CORE_REG(regs.t2),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CORE | KVM_REG_RISCV_CORE_REG(regs.s0),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CORE | KVM_REG_RISCV_CORE_REG(regs.s1),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CORE | KVM_REG_RISCV_CORE_REG(regs.a0),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CORE | KVM_REG_RISCV_CORE_REG(regs.a1),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CORE | KVM_REG_RISCV_CORE_REG(regs.a2),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CORE | KVM_REG_RISCV_CORE_REG(regs.a3),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CORE | KVM_REG_RISCV_CORE_REG(regs.a4),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CORE | KVM_REG_RISCV_CORE_REG(regs.a5),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CORE | KVM_REG_RISCV_CORE_REG(regs.a6),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CORE | KVM_REG_RISCV_CORE_REG(regs.a7),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CORE | KVM_REG_RISCV_CORE_REG(regs.s2),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CORE | KVM_REG_RISCV_CORE_REG(regs.s3),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CORE | KVM_REG_RISCV_CORE_REG(regs.s4),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CORE | KVM_REG_RISCV_CORE_REG(regs.s5),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CORE | KVM_REG_RISCV_CORE_REG(regs.s6),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CORE | KVM_REG_RISCV_CORE_REG(regs.s7),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CORE | KVM_REG_RISCV_CORE_REG(regs.s8),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CORE | KVM_REG_RISCV_CORE_REG(regs.s9),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CORE | KVM_REG_RISCV_CORE_REG(regs.s10),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CORE | KVM_REG_RISCV_CORE_REG(regs.s11),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CORE | KVM_REG_RISCV_CORE_REG(regs.t3),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CORE | KVM_REG_RISCV_CORE_REG(regs.t4),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CORE | KVM_REG_RISCV_CORE_REG(regs.t5),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CORE | KVM_REG_RISCV_CORE_REG(regs.t6),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CORE | KVM_REG_RISCV_CORE_REG(mode),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_REG(sstatus),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_REG(sie),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_REG(stvec),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_REG(sscratch),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_REG(sepc),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_REG(scause),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_REG(stval),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_REG(sip),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_REG(satp),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_REG(scounteren),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_TIMER | KVM_REG_RISCV_TIMER_REG(frequency),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_TIMER | KVM_REG_RISCV_TIMER_REG(time),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_TIMER | KVM_REG_RISCV_TIMER_REG(compare),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_TIMER | KVM_REG_RISCV_TIMER_REG(state),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_A,
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_C,
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_D,
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_F,
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_H,
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_I,
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_M,
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_SVPBMT,
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_SSTC,
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_SVINVAL,
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZIHINTPAUSE,
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZICBOM,
-
-Any register that depends on the host having the extension, like zicbom,
-means it shouldn't be in the base register set.
-
-> +};
-> +
-> +/*
-> + * The rejects_set list registers that should skip set test.
-> + *  - KVM_REG_RISCV_TIMER_REG(state): set would fail if it was not initialized properly.
-> + */
-> +static __u64 base_rejects_set[] = {
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_TIMER | KVM_REG_RISCV_TIMER_REG(state),
-> +};
-> +
-> +static __u64 fp_f_regs[] = {
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U32 | KVM_REG_RISCV_FP_F | KVM_REG_RISCV_FP_F_REG(f[0]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U32 | KVM_REG_RISCV_FP_F | KVM_REG_RISCV_FP_F_REG(f[1]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U32 | KVM_REG_RISCV_FP_F | KVM_REG_RISCV_FP_F_REG(f[2]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U32 | KVM_REG_RISCV_FP_F | KVM_REG_RISCV_FP_F_REG(f[3]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U32 | KVM_REG_RISCV_FP_F | KVM_REG_RISCV_FP_F_REG(f[4]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U32 | KVM_REG_RISCV_FP_F | KVM_REG_RISCV_FP_F_REG(f[5]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U32 | KVM_REG_RISCV_FP_F | KVM_REG_RISCV_FP_F_REG(f[6]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U32 | KVM_REG_RISCV_FP_F | KVM_REG_RISCV_FP_F_REG(f[7]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U32 | KVM_REG_RISCV_FP_F | KVM_REG_RISCV_FP_F_REG(f[8]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U32 | KVM_REG_RISCV_FP_F | KVM_REG_RISCV_FP_F_REG(f[9]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U32 | KVM_REG_RISCV_FP_F | KVM_REG_RISCV_FP_F_REG(f[10]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U32 | KVM_REG_RISCV_FP_F | KVM_REG_RISCV_FP_F_REG(f[11]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U32 | KVM_REG_RISCV_FP_F | KVM_REG_RISCV_FP_F_REG(f[12]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U32 | KVM_REG_RISCV_FP_F | KVM_REG_RISCV_FP_F_REG(f[13]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U32 | KVM_REG_RISCV_FP_F | KVM_REG_RISCV_FP_F_REG(f[14]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U32 | KVM_REG_RISCV_FP_F | KVM_REG_RISCV_FP_F_REG(f[15]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U32 | KVM_REG_RISCV_FP_F | KVM_REG_RISCV_FP_F_REG(f[16]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U32 | KVM_REG_RISCV_FP_F | KVM_REG_RISCV_FP_F_REG(f[17]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U32 | KVM_REG_RISCV_FP_F | KVM_REG_RISCV_FP_F_REG(f[18]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U32 | KVM_REG_RISCV_FP_F | KVM_REG_RISCV_FP_F_REG(f[19]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U32 | KVM_REG_RISCV_FP_F | KVM_REG_RISCV_FP_F_REG(f[20]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U32 | KVM_REG_RISCV_FP_F | KVM_REG_RISCV_FP_F_REG(f[21]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U32 | KVM_REG_RISCV_FP_F | KVM_REG_RISCV_FP_F_REG(f[22]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U32 | KVM_REG_RISCV_FP_F | KVM_REG_RISCV_FP_F_REG(f[23]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U32 | KVM_REG_RISCV_FP_F | KVM_REG_RISCV_FP_F_REG(f[24]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U32 | KVM_REG_RISCV_FP_F | KVM_REG_RISCV_FP_F_REG(f[25]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U32 | KVM_REG_RISCV_FP_F | KVM_REG_RISCV_FP_F_REG(f[26]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U32 | KVM_REG_RISCV_FP_F | KVM_REG_RISCV_FP_F_REG(f[27]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U32 | KVM_REG_RISCV_FP_F | KVM_REG_RISCV_FP_F_REG(f[28]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U32 | KVM_REG_RISCV_FP_F | KVM_REG_RISCV_FP_F_REG(f[29]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U32 | KVM_REG_RISCV_FP_F | KVM_REG_RISCV_FP_F_REG(f[30]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U32 | KVM_REG_RISCV_FP_F | KVM_REG_RISCV_FP_F_REG(f[31]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U32 | KVM_REG_RISCV_FP_F | KVM_REG_RISCV_FP_F_REG(fcsr),
-> +};
-> +
-> +static __u64 fp_d_regs[] = {
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_FP_D | KVM_REG_RISCV_FP_D_REG(f[0]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_FP_D | KVM_REG_RISCV_FP_D_REG(f[1]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_FP_D | KVM_REG_RISCV_FP_D_REG(f[2]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_FP_D | KVM_REG_RISCV_FP_D_REG(f[3]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_FP_D | KVM_REG_RISCV_FP_D_REG(f[4]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_FP_D | KVM_REG_RISCV_FP_D_REG(f[5]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_FP_D | KVM_REG_RISCV_FP_D_REG(f[6]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_FP_D | KVM_REG_RISCV_FP_D_REG(f[7]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_FP_D | KVM_REG_RISCV_FP_D_REG(f[8]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_FP_D | KVM_REG_RISCV_FP_D_REG(f[9]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_FP_D | KVM_REG_RISCV_FP_D_REG(f[10]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_FP_D | KVM_REG_RISCV_FP_D_REG(f[11]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_FP_D | KVM_REG_RISCV_FP_D_REG(f[12]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_FP_D | KVM_REG_RISCV_FP_D_REG(f[13]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_FP_D | KVM_REG_RISCV_FP_D_REG(f[14]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_FP_D | KVM_REG_RISCV_FP_D_REG(f[15]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_FP_D | KVM_REG_RISCV_FP_D_REG(f[16]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_FP_D | KVM_REG_RISCV_FP_D_REG(f[17]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_FP_D | KVM_REG_RISCV_FP_D_REG(f[18]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_FP_D | KVM_REG_RISCV_FP_D_REG(f[19]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_FP_D | KVM_REG_RISCV_FP_D_REG(f[20]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_FP_D | KVM_REG_RISCV_FP_D_REG(f[21]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_FP_D | KVM_REG_RISCV_FP_D_REG(f[22]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_FP_D | KVM_REG_RISCV_FP_D_REG(f[23]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_FP_D | KVM_REG_RISCV_FP_D_REG(f[24]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_FP_D | KVM_REG_RISCV_FP_D_REG(f[25]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_FP_D | KVM_REG_RISCV_FP_D_REG(f[26]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_FP_D | KVM_REG_RISCV_FP_D_REG(f[27]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_FP_D | KVM_REG_RISCV_FP_D_REG(f[28]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_FP_D | KVM_REG_RISCV_FP_D_REG(f[29]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_FP_D | KVM_REG_RISCV_FP_D_REG(f[30]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_FP_D | KVM_REG_RISCV_FP_D_REG(f[31]),
-> +	KVM_REG_RISCV | KVM_REG_SIZE_U32 | KVM_REG_RISCV_FP_D | KVM_REG_RISCV_FP_D_REG(fcsr),
-> +};
-> +
-> +#define BASE_SUBLIST \
-> +	{"base", .regs = base_regs, .regs_n = ARRAY_SIZE(base_regs), .rejects_set = base_rejects_set, \
-> +		.rejects_set_n = ARRAY_SIZE(base_rejects_set),}
-> +#define FP_F_REGS_SUBLIST \
-> +	{"fp_f_regs", .capability = KVM_RISCV_ISA_EXT_F, .regs = fp_f_regs, \
-> +		.regs_n = ARRAY_SIZE(fp_f_regs),}
-> +#define FP_D_REGS_SUBLIST \
-> +	{"fp_d_regs", .capability = KVM_RISCV_ISA_EXT_D, .regs = fp_d_regs, \
-> +		.regs_n = ARRAY_SIZE(fp_d_regs),}
-> +
-> +static struct vcpu_config fp_f_d_config = {
-> +	.sublists = {
-> +	BASE_SUBLIST,
-> +	FP_F_REGS_SUBLIST,
-> +	FP_D_REGS_SUBLIST,
-> +	{0},
-> +	},
-> +};
-> +
-> +static struct vcpu_config *vcpu_configs[] = {
-> +	&fp_f_d_config,
-> +};
-> +static int vcpu_configs_n = ARRAY_SIZE(vcpu_configs);
-> -- 
-> 2.34.1
->
-
-Thanks,
-drew
 
