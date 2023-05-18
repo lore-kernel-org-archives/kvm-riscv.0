@@ -1,78 +1,79 @@
 From: Andy Chiu <andy.chiu@sifive.com>
-Date: Thu, 18 May 2023 16:19:26 +0000
-Subject: [PATCH -next v20 03/26] riscv: hwprobe: Add support for probing V in RISCV_HWPROBE_KEY_IMA_EXT_0
+Date: Thu, 18 May 2023 16:19:27 +0000
+Subject: [PATCH -next v20 04/26] riscv: Add new csr defines related to vector extension
 In-Reply-To: <20230518161949.11203-1-andy.chiu@sifive.com>
 References: <20230518161949.11203-1-andy.chiu@sifive.com>
-Message-ID: <20230518161949.11203-4-andy.chiu@sifive.com>
+Message-ID: <20230518161949.11203-5-andy.chiu@sifive.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Probing kernel support for Vector extension is available now. This only
-add detection for V only. Extenions like Zvfh, Zk are not in this scope.
+From: Greentime Hu <greentime.hu@sifive.com>
 
+Follow the riscv vector spec to add new csr numbers.
+
+Acked-by: Guo Ren <guoren@kernel.org>
+Co-developed-by: Guo Ren <guoren@linux.alibaba.com>
+Signed-off-by: Guo Ren <guoren@linux.alibaba.com>
+Co-developed-by: Vincent Chen <vincent.chen@sifive.com>
+Signed-off-by: Vincent Chen <vincent.chen@sifive.com>
+Signed-off-by: Greentime Hu <greentime.hu@sifive.com>
+Reviewed-by: Palmer Dabbelt <palmer@rivosinc.com>
+Suggested-by: Vineet Gupta <vineetg@rivosinc.com>
 Signed-off-by: Andy Chiu <andy.chiu@sifive.com>
+Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
+Reviewed-by: Heiko Stuebner <heiko.stuebner@vrull.eu>
+Tested-by: Heiko Stuebner <heiko.stuebner@vrull.eu>
 ---
-Changelog v20:
- - Fix a typo in document, and remove duplicated probes (Heiko)
- - probe V extension in RISCV_HWPROBE_KEY_IMA_EXT_0 key only (Palmer,
-   Evan)
----
- Documentation/riscv/hwprobe.rst       | 3 +++
- arch/riscv/include/uapi/asm/hwprobe.h | 1 +
- arch/riscv/kernel/sys_riscv.c         | 4 ++++
- 3 files changed, 8 insertions(+)
+ arch/riscv/include/asm/csr.h | 18 ++++++++++++++++--
+ 1 file changed, 16 insertions(+), 2 deletions(-)
 
-diff --git a/Documentation/riscv/hwprobe.rst b/Documentation/riscv/hwprobe.rst
-index 9f0dd62dcb5d..7431d9d01c73 100644
---- a/Documentation/riscv/hwprobe.rst
-+++ b/Documentation/riscv/hwprobe.rst
-@@ -64,6 +64,9 @@ The following keys are defined:
-   * :c:macro:`RISCV_HWPROBE_IMA_C`: The C extension is supported, as defined
-     by version 2.2 of the RISC-V ISA manual.
+diff --git a/arch/riscv/include/asm/csr.h b/arch/riscv/include/asm/csr.h
+index b6acb7ed115f..b98b3b6c9da2 100644
+--- a/arch/riscv/include/asm/csr.h
++++ b/arch/riscv/include/asm/csr.h
+@@ -24,16 +24,24 @@
+ #define SR_FS_CLEAN	_AC(0x00004000, UL)
+ #define SR_FS_DIRTY	_AC(0x00006000, UL)
  
-+  * :c:macro:`RISCV_HWPROBE_IMA_V`: The V extension is supported, as defined by
-+    version 1.0 of the RISC-V Vector extension manual.
++#define SR_VS		_AC(0x00000600, UL) /* Vector Status */
++#define SR_VS_OFF	_AC(0x00000000, UL)
++#define SR_VS_INITIAL	_AC(0x00000200, UL)
++#define SR_VS_CLEAN	_AC(0x00000400, UL)
++#define SR_VS_DIRTY	_AC(0x00000600, UL)
 +
- * :c:macro:`RISCV_HWPROBE_KEY_CPUPERF_0`: A bitmask that contains performance
-   information about the selected set of processors.
+ #define SR_XS		_AC(0x00018000, UL) /* Extension Status */
+ #define SR_XS_OFF	_AC(0x00000000, UL)
+ #define SR_XS_INITIAL	_AC(0x00008000, UL)
+ #define SR_XS_CLEAN	_AC(0x00010000, UL)
+ #define SR_XS_DIRTY	_AC(0x00018000, UL)
  
-diff --git a/arch/riscv/include/uapi/asm/hwprobe.h b/arch/riscv/include/uapi/asm/hwprobe.h
-index 8d745a4ad8a2..7c6fdcf7ced5 100644
---- a/arch/riscv/include/uapi/asm/hwprobe.h
-+++ b/arch/riscv/include/uapi/asm/hwprobe.h
-@@ -25,6 +25,7 @@ struct riscv_hwprobe {
- #define RISCV_HWPROBE_KEY_IMA_EXT_0	4
- #define		RISCV_HWPROBE_IMA_FD		(1 << 0)
- #define		RISCV_HWPROBE_IMA_C		(1 << 1)
-+#define		RISCV_HWPROBE_IMA_V		(1 << 2)
- #define RISCV_HWPROBE_KEY_CPUPERF_0	5
- #define		RISCV_HWPROBE_MISALIGNED_UNKNOWN	(0 << 0)
- #define		RISCV_HWPROBE_MISALIGNED_EMULATED	(1 << 0)
-diff --git a/arch/riscv/kernel/sys_riscv.c b/arch/riscv/kernel/sys_riscv.c
-index 5db29683ebee..88357a848797 100644
---- a/arch/riscv/kernel/sys_riscv.c
-+++ b/arch/riscv/kernel/sys_riscv.c
-@@ -10,6 +10,7 @@
- #include <asm/cpufeature.h>
- #include <asm/hwprobe.h>
- #include <asm/sbi.h>
-+#include <asm/vector.h>
- #include <asm/switch_to.h>
- #include <asm/uaccess.h>
- #include <asm/unistd.h>
-@@ -171,6 +172,9 @@ static void hwprobe_one_pair(struct riscv_hwprobe *pair,
- 		if (riscv_isa_extension_available(NULL, c))
- 			pair->value |= RISCV_HWPROBE_IMA_C;
- 
-+		if (has_vector())
-+			pair->value |= RISCV_HWPROBE_IMA_V;
++#define SR_FS_VS	(SR_FS | SR_VS) /* Vector and Floating-Point Unit */
 +
- 		break;
+ #ifndef CONFIG_64BIT
+-#define SR_SD		_AC(0x80000000, UL) /* FS/XS dirty */
++#define SR_SD		_AC(0x80000000, UL) /* FS/VS/XS dirty */
+ #else
+-#define SR_SD		_AC(0x8000000000000000, UL) /* FS/XS dirty */
++#define SR_SD		_AC(0x8000000000000000, UL) /* FS/VS/XS dirty */
+ #endif
  
- 	case RISCV_HWPROBE_KEY_CPUPERF_0:
+ #ifdef CONFIG_64BIT
+@@ -375,6 +383,12 @@
+ #define CSR_MVIPH		0x319
+ #define CSR_MIPH		0x354
+ 
++#define CSR_VSTART		0x8
++#define CSR_VCSR		0xf
++#define CSR_VL			0xc20
++#define CSR_VTYPE		0xc21
++#define CSR_VLENB		0xc22
++
+ #ifdef CONFIG_RISCV_M_MODE
+ # define CSR_STATUS	CSR_MSTATUS
+ # define CSR_IE		CSR_MIE
 -- 
 2.17.1
 
