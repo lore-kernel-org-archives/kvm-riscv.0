@@ -1,105 +1,170 @@
 From: Andy Chiu <andy.chiu@sifive.com>
-Date: Thu, 18 May 2023 16:19:46 +0000
-Subject: [PATCH -next v20 23/26] riscv: Enable Vector code to be built
+Date: Thu, 18 May 2023 16:19:35 +0000
+Subject: [PATCH -next v20 12/26] riscv: Add ptrace vector support
 In-Reply-To: <20230518161949.11203-1-andy.chiu@sifive.com>
 References: <20230518161949.11203-1-andy.chiu@sifive.com>
-Message-ID: <20230518161949.11203-24-andy.chiu@sifive.com>
+Message-ID: <20230518161949.11203-13-andy.chiu@sifive.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Guo Ren <guoren@linux.alibaba.com>
+From: Greentime Hu <greentime.hu@sifive.com>
 
-This patch adds configs for building Vector code. First it detects the
-reqired toolchain support for building the code. Then it provides an
-option setting whether Vector is implicitly enabled to userspace.
+This patch adds ptrace support for riscv vector. The vector registers will
+be saved in datap pointer of __riscv_v_ext_state. This pointer will be set
+right after the __riscv_v_ext_state data structure then it will be put in
+ubuf for ptrace system call to get or set. It will check if the datap got
+from ubuf is set to the correct address or not when the ptrace system call
+is trying to set the vector registers.
 
-Signed-off-by: Guo Ren <guoren@linux.alibaba.com>
-Co-developed-by: Greentime Hu <greentime.hu@sifive.com>
+Co-developed-by: Vincent Chen <vincent.chen@sifive.com>
+Signed-off-by: Vincent Chen <vincent.chen@sifive.com>
 Signed-off-by: Greentime Hu <greentime.hu@sifive.com>
-Suggested-by: Conor Dooley <conor.dooley@microchip.com>>
-Co-developed-by: Andy Chiu <andy.chiu@sifive.com>
 Signed-off-by: Andy Chiu <andy.chiu@sifive.com>
+Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
 ---
-Changelog v20:
- - s/RISCV_V_DISABLE/RISCV_ISA_V_DEFAULT_ENABLE/ for better
-   understanding (Conor)
- - Update commit message (Conor)
-Changelog V19:
- - Add RISCV_V_DISABLE to set compile-time default.
+Changelog V18:
+ - Use sizeof(vstate->datap) instead of sizeof(void*) (Eike)
 ---
- arch/riscv/Kconfig  | 31 +++++++++++++++++++++++++++++++
- arch/riscv/Makefile |  6 +++++-
- 2 files changed, 36 insertions(+), 1 deletion(-)
+ arch/riscv/include/uapi/asm/ptrace.h |  7 +++
+ arch/riscv/kernel/ptrace.c           | 70 ++++++++++++++++++++++++++++
+ include/uapi/linux/elf.h             |  1 +
+ 3 files changed, 78 insertions(+)
 
-diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
-index 1019b519d590..f3ba0a8b085e 100644
---- a/arch/riscv/Kconfig
-+++ b/arch/riscv/Kconfig
-@@ -466,6 +466,37 @@ config RISCV_ISA_SVPBMT
+diff --git a/arch/riscv/include/uapi/asm/ptrace.h b/arch/riscv/include/uapi/asm/ptrace.h
+index 586786d023c4..e8d127ec5cf7 100644
+--- a/arch/riscv/include/uapi/asm/ptrace.h
++++ b/arch/riscv/include/uapi/asm/ptrace.h
+@@ -94,6 +94,13 @@ struct __riscv_v_ext_state {
+ 	 */
+ };
  
- 	   If you don't know what to do here, say Y.
++/*
++ * According to spec: The number of bits in a single vector register,
++ * VLEN >= ELEN, which must be a power of 2, and must be no greater than
++ * 2^16 = 65536bits = 8192bytes
++ */
++#define RISCV_MAX_VLENB (8192)
++
+ #endif /* __ASSEMBLY__ */
  
-+config TOOLCHAIN_HAS_V
-+	bool
-+	default y
-+	depends on !64BIT || $(cc-option,-mabi=lp64 -march=rv64iv)
-+	depends on !32BIT || $(cc-option,-mabi=ilp32 -march=rv32iv)
-+	depends on LLD_VERSION >= 140000 || LD_VERSION >= 23800
-+	depends on AS_HAS_OPTION_ARCH
-+
-+config RISCV_ISA_V
-+	bool "VECTOR extension support"
-+	depends on TOOLCHAIN_HAS_V
-+	depends on FPU
-+	select DYNAMIC_SIGFRAME
-+	default y
-+	help
-+	  Say N here if you want to disable all vector related procedure
-+	  in the kernel.
-+
-+	  If you don't know what to do here, say Y.
-+
-+config RISCV_ISA_V_DEFAULT_ENABLE
-+	bool "Enable userspace Vector by default"
-+	depends on RISCV_ISA_V
-+	default y
-+	help
-+	  Say Y here if you want to enable Vector in userspace by default.
-+	  Otherwise, userspace has to make explicit prctl() call to enable
-+	  Vector, or enable it via the sysctl interface.
-+
-+	  If you don't know what to do here, say Y.
-+
- config TOOLCHAIN_HAS_ZBB
- 	bool
- 	default y
-diff --git a/arch/riscv/Makefile b/arch/riscv/Makefile
-index 0fb256bf8270..6ec6d52a4180 100644
---- a/arch/riscv/Makefile
-+++ b/arch/riscv/Makefile
-@@ -60,6 +60,7 @@ riscv-march-$(CONFIG_ARCH_RV32I)	:= rv32ima
- riscv-march-$(CONFIG_ARCH_RV64I)	:= rv64ima
- riscv-march-$(CONFIG_FPU)		:= $(riscv-march-y)fd
- riscv-march-$(CONFIG_RISCV_ISA_C)	:= $(riscv-march-y)c
-+riscv-march-$(CONFIG_RISCV_ISA_V)	:= $(riscv-march-y)v
+ #endif /* _UAPI_ASM_RISCV_PTRACE_H */
+diff --git a/arch/riscv/kernel/ptrace.c b/arch/riscv/kernel/ptrace.c
+index 23c48b14a0e7..1d572cf3140f 100644
+--- a/arch/riscv/kernel/ptrace.c
++++ b/arch/riscv/kernel/ptrace.c
+@@ -7,6 +7,7 @@
+  * Copied from arch/tile/kernel/ptrace.c
+  */
  
- ifdef CONFIG_TOOLCHAIN_NEEDS_OLD_ISA_SPEC
- KBUILD_CFLAGS += -Wa,-misa-spec=2.2
-@@ -71,7 +72,10 @@ endif
- # Check if the toolchain supports Zihintpause extension
- riscv-march-$(CONFIG_TOOLCHAIN_HAS_ZIHINTPAUSE) := $(riscv-march-y)_zihintpause
++#include <asm/vector.h>
+ #include <asm/ptrace.h>
+ #include <asm/syscall.h>
+ #include <asm/thread_info.h>
+@@ -24,6 +25,9 @@ enum riscv_regset {
+ #ifdef CONFIG_FPU
+ 	REGSET_F,
+ #endif
++#ifdef CONFIG_RISCV_ISA_V
++	REGSET_V,
++#endif
+ };
  
--KBUILD_CFLAGS += -march=$(subst fd,,$(riscv-march-y))
-+# Remove F,D,V from isa string for all. Keep extensions between "fd" and "v" by
-+# matching non-v and non-multi-letter extensions out with the filter ([^v_]*)
-+KBUILD_CFLAGS += -march=$(shell echo $(riscv-march-y) | sed -E 's/(rv32ima|rv64ima)fd([^v_]*)v?/\1\2/')
+ static int riscv_gpr_get(struct task_struct *target,
+@@ -80,6 +84,61 @@ static int riscv_fpr_set(struct task_struct *target,
+ }
+ #endif
+ 
++#ifdef CONFIG_RISCV_ISA_V
++static int riscv_vr_get(struct task_struct *target,
++			const struct user_regset *regset,
++			struct membuf to)
++{
++	struct __riscv_v_ext_state *vstate = &target->thread.vstate;
 +
- KBUILD_AFLAGS += -march=$(riscv-march-y)
++	if (!riscv_v_vstate_query(task_pt_regs(target)))
++		return -EINVAL;
++
++	/*
++	 * Ensure the vector registers have been saved to the memory before
++	 * copying them to membuf.
++	 */
++	if (target == current)
++		riscv_v_vstate_save(current, task_pt_regs(current));
++
++	/* Copy vector header from vstate. */
++	membuf_write(&to, vstate, offsetof(struct __riscv_v_ext_state, datap));
++	membuf_zero(&to, sizeof(vstate->datap));
++
++	/* Copy all the vector registers from vstate. */
++	return membuf_write(&to, vstate->datap, riscv_v_vsize);
++}
++
++static int riscv_vr_set(struct task_struct *target,
++			const struct user_regset *regset,
++			unsigned int pos, unsigned int count,
++			const void *kbuf, const void __user *ubuf)
++{
++	int ret, size;
++	struct __riscv_v_ext_state *vstate = &target->thread.vstate;
++
++	if (!riscv_v_vstate_query(task_pt_regs(target)))
++		return -EINVAL;
++
++	/* Copy rest of the vstate except datap */
++	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf, vstate, 0,
++				 offsetof(struct __riscv_v_ext_state, datap));
++	if (unlikely(ret))
++		return ret;
++
++	/* Skip copy datap. */
++	size = sizeof(vstate->datap);
++	count -= size;
++	ubuf += size;
++
++	/* Copy all the vector registers. */
++	pos = 0;
++	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf, vstate->datap,
++				 0, riscv_v_vsize);
++	return ret;
++}
++#endif
++
+ static const struct user_regset riscv_user_regset[] = {
+ 	[REGSET_X] = {
+ 		.core_note_type = NT_PRSTATUS,
+@@ -99,6 +158,17 @@ static const struct user_regset riscv_user_regset[] = {
+ 		.set = riscv_fpr_set,
+ 	},
+ #endif
++#ifdef CONFIG_RISCV_ISA_V
++	[REGSET_V] = {
++		.core_note_type = NT_RISCV_VECTOR,
++		.align = 16,
++		.n = ((32 * RISCV_MAX_VLENB) +
++		      sizeof(struct __riscv_v_ext_state)) / sizeof(__u32),
++		.size = sizeof(__u32),
++		.regset_get = riscv_vr_get,
++		.set = riscv_vr_set,
++	},
++#endif
+ };
  
- KBUILD_CFLAGS += -mno-save-restore
+ static const struct user_regset_view riscv_user_native_view = {
+diff --git a/include/uapi/linux/elf.h b/include/uapi/linux/elf.h
+index ac3da855fb19..7d8d9ae36615 100644
+--- a/include/uapi/linux/elf.h
++++ b/include/uapi/linux/elf.h
+@@ -440,6 +440,7 @@ typedef struct elf64_shdr {
+ #define NT_MIPS_DSP	0x800		/* MIPS DSP ASE registers */
+ #define NT_MIPS_FP_MODE	0x801		/* MIPS floating-point mode */
+ #define NT_MIPS_MSA	0x802		/* MIPS SIMD registers */
++#define NT_RISCV_VECTOR	0x900		/* RISC-V vector registers */
+ #define NT_LOONGARCH_CPUCFG	0xa00	/* LoongArch CPU config registers */
+ #define NT_LOONGARCH_CSR	0xa01	/* LoongArch control and status registers */
+ #define NT_LOONGARCH_LSX	0xa02	/* LoongArch Loongson SIMD Extension registers */
 -- 
 2.17.1
 
