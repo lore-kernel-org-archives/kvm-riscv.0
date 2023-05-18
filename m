@@ -1,170 +1,92 @@
 From: Andy Chiu <andy.chiu@sifive.com>
-Date: Thu, 18 May 2023 16:19:35 +0000
-Subject: [PATCH -next v20 12/26] riscv: Add ptrace vector support
+Date: Thu, 18 May 2023 16:19:44 +0000
+Subject: [PATCH -next v20 21/26] riscv: Add sysctl to set the default vector rule for new processes
 In-Reply-To: <20230518161949.11203-1-andy.chiu@sifive.com>
 References: <20230518161949.11203-1-andy.chiu@sifive.com>
-Message-ID: <20230518161949.11203-13-andy.chiu@sifive.com>
+Message-ID: <20230518161949.11203-22-andy.chiu@sifive.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Greentime Hu <greentime.hu@sifive.com>
+To support Vector extension, the series exports variable-length vector
+registers on the signal frame. However, this potentially breaks abi if
+processing vector registers is required in the signal handler for old
+binaries. For example, there is such need if user-level context switch
+is triggerred via signals[1].
 
-This patch adds ptrace support for riscv vector. The vector registers will
-be saved in datap pointer of __riscv_v_ext_state. This pointer will be set
-right after the __riscv_v_ext_state data structure then it will be put in
-ubuf for ptrace system call to get or set. It will check if the datap got
-from ubuf is set to the correct address or not when the ptrace system call
-is trying to set the vector registers.
+For this reason, it is best to leave a decision to distro maintainers,
+where the enablement of userspace Vector for new launching programs can
+be controlled. Developers may also need the switch to experiment with.
+The parameter is configurable through sysctl interface so a distro may
+turn off Vector early at init script if the break really happens in the
+wild.
 
-Co-developed-by: Vincent Chen <vincent.chen@sifive.com>
-Signed-off-by: Vincent Chen <vincent.chen@sifive.com>
-Signed-off-by: Greentime Hu <greentime.hu@sifive.com>
+The switch will only take effects on new execve() calls once set. This
+will not effect existing processes that do not call execve(), nor
+processes which has been set with a non-default vstate_ctrl by making
+explicit PR_RISCV_V_SET_CONTROL prctl() calls.
+
+Link: https://lore.kernel.org/all/87cz4048rp.fsf at all.your.base.are.belong.to.us/
 Signed-off-by: Andy Chiu <andy.chiu@sifive.com>
-Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
+Reviewed-by: Greentime Hu <greentime.hu@sifive.com>
+Reviewed-by: Vincent Chen <vincent.chen@sifive.com>
 ---
-Changelog V18:
- - Use sizeof(vstate->datap) instead of sizeof(void*) (Eike)
+Changelog v20:
+ - Use READ_ONCE to access riscv_v_implicit_uacc (Bj?rn)
 ---
- arch/riscv/include/uapi/asm/ptrace.h |  7 +++
- arch/riscv/kernel/ptrace.c           | 70 ++++++++++++++++++++++++++++
- include/uapi/linux/elf.h             |  1 +
- 3 files changed, 78 insertions(+)
+ arch/riscv/kernel/vector.c | 33 ++++++++++++++++++++++++++++++++-
+ 1 file changed, 32 insertions(+), 1 deletion(-)
 
-diff --git a/arch/riscv/include/uapi/asm/ptrace.h b/arch/riscv/include/uapi/asm/ptrace.h
-index 586786d023c4..e8d127ec5cf7 100644
---- a/arch/riscv/include/uapi/asm/ptrace.h
-+++ b/arch/riscv/include/uapi/asm/ptrace.h
-@@ -94,6 +94,13 @@ struct __riscv_v_ext_state {
- 	 */
- };
+diff --git a/arch/riscv/kernel/vector.c b/arch/riscv/kernel/vector.c
+index 9bee7a201106..25c7f5c93b00 100644
+--- a/arch/riscv/kernel/vector.c
++++ b/arch/riscv/kernel/vector.c
+@@ -184,7 +184,7 @@ void riscv_v_vstate_ctrl_init(struct task_struct *tsk)
  
-+/*
-+ * According to spec: The number of bits in a single vector register,
-+ * VLEN >= ELEN, which must be a power of 2, and must be no greater than
-+ * 2^16 = 65536bits = 8192bytes
-+ */
-+#define RISCV_MAX_VLENB (8192)
-+
- #endif /* __ASSEMBLY__ */
+ 	next = riscv_v_ctrl_get_next(tsk);
+ 	if (!next) {
+-		if (riscv_v_implicit_uacc)
++		if (READ_ONCE(riscv_v_implicit_uacc))
+ 			cur = PR_RISCV_V_VSTATE_CTRL_ON;
+ 		else
+ 			cur = PR_RISCV_V_VSTATE_CTRL_OFF;
+@@ -247,3 +247,34 @@ long riscv_v_vstate_ctrl_set_current(unsigned long arg)
  
- #endif /* _UAPI_ASM_RISCV_PTRACE_H */
-diff --git a/arch/riscv/kernel/ptrace.c b/arch/riscv/kernel/ptrace.c
-index 23c48b14a0e7..1d572cf3140f 100644
---- a/arch/riscv/kernel/ptrace.c
-+++ b/arch/riscv/kernel/ptrace.c
-@@ -7,6 +7,7 @@
-  * Copied from arch/tile/kernel/ptrace.c
-  */
- 
-+#include <asm/vector.h>
- #include <asm/ptrace.h>
- #include <asm/syscall.h>
- #include <asm/thread_info.h>
-@@ -24,6 +25,9 @@ enum riscv_regset {
- #ifdef CONFIG_FPU
- 	REGSET_F,
- #endif
-+#ifdef CONFIG_RISCV_ISA_V
-+	REGSET_V,
-+#endif
- };
- 
- static int riscv_gpr_get(struct task_struct *target,
-@@ -80,6 +84,61 @@ static int riscv_fpr_set(struct task_struct *target,
+ 	return -EINVAL;
  }
- #endif
- 
-+#ifdef CONFIG_RISCV_ISA_V
-+static int riscv_vr_get(struct task_struct *target,
-+			const struct user_regset *regset,
-+			struct membuf to)
-+{
-+	struct __riscv_v_ext_state *vstate = &target->thread.vstate;
 +
-+	if (!riscv_v_vstate_query(task_pt_regs(target)))
-+		return -EINVAL;
++#ifdef CONFIG_SYSCTL
 +
-+	/*
-+	 * Ensure the vector registers have been saved to the memory before
-+	 * copying them to membuf.
-+	 */
-+	if (target == current)
-+		riscv_v_vstate_save(current, task_pt_regs(current));
-+
-+	/* Copy vector header from vstate. */
-+	membuf_write(&to, vstate, offsetof(struct __riscv_v_ext_state, datap));
-+	membuf_zero(&to, sizeof(vstate->datap));
-+
-+	/* Copy all the vector registers from vstate. */
-+	return membuf_write(&to, vstate->datap, riscv_v_vsize);
-+}
-+
-+static int riscv_vr_set(struct task_struct *target,
-+			const struct user_regset *regset,
-+			unsigned int pos, unsigned int count,
-+			const void *kbuf, const void __user *ubuf)
-+{
-+	int ret, size;
-+	struct __riscv_v_ext_state *vstate = &target->thread.vstate;
-+
-+	if (!riscv_v_vstate_query(task_pt_regs(target)))
-+		return -EINVAL;
-+
-+	/* Copy rest of the vstate except datap */
-+	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf, vstate, 0,
-+				 offsetof(struct __riscv_v_ext_state, datap));
-+	if (unlikely(ret))
-+		return ret;
-+
-+	/* Skip copy datap. */
-+	size = sizeof(vstate->datap);
-+	count -= size;
-+	ubuf += size;
-+
-+	/* Copy all the vector registers. */
-+	pos = 0;
-+	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf, vstate->datap,
-+				 0, riscv_v_vsize);
-+	return ret;
-+}
-+#endif
-+
- static const struct user_regset riscv_user_regset[] = {
- 	[REGSET_X] = {
- 		.core_note_type = NT_PRSTATUS,
-@@ -99,6 +158,17 @@ static const struct user_regset riscv_user_regset[] = {
- 		.set = riscv_fpr_set,
- 	},
- #endif
-+#ifdef CONFIG_RISCV_ISA_V
-+	[REGSET_V] = {
-+		.core_note_type = NT_RISCV_VECTOR,
-+		.align = 16,
-+		.n = ((32 * RISCV_MAX_VLENB) +
-+		      sizeof(struct __riscv_v_ext_state)) / sizeof(__u32),
-+		.size = sizeof(__u32),
-+		.regset_get = riscv_vr_get,
-+		.set = riscv_vr_set,
++static struct ctl_table riscv_v_default_vstate_table[] = {
++	{
++		.procname	= "riscv_v_default_allow",
++		.data		= &riscv_v_implicit_uacc,
++		.maxlen		= sizeof(riscv_v_implicit_uacc),
++		.mode		= 0644,
++		.proc_handler	= proc_dobool,
 +	},
-+#endif
- };
- 
- static const struct user_regset_view riscv_user_native_view = {
-diff --git a/include/uapi/linux/elf.h b/include/uapi/linux/elf.h
-index ac3da855fb19..7d8d9ae36615 100644
---- a/include/uapi/linux/elf.h
-+++ b/include/uapi/linux/elf.h
-@@ -440,6 +440,7 @@ typedef struct elf64_shdr {
- #define NT_MIPS_DSP	0x800		/* MIPS DSP ASE registers */
- #define NT_MIPS_FP_MODE	0x801		/* MIPS floating-point mode */
- #define NT_MIPS_MSA	0x802		/* MIPS SIMD registers */
-+#define NT_RISCV_VECTOR	0x900		/* RISC-V vector registers */
- #define NT_LOONGARCH_CPUCFG	0xa00	/* LoongArch CPU config registers */
- #define NT_LOONGARCH_CSR	0xa01	/* LoongArch control and status registers */
- #define NT_LOONGARCH_LSX	0xa02	/* LoongArch Loongson SIMD Extension registers */
++	{ }
++};
++
++static int __init riscv_v_sysctl_init(void)
++{
++	if (has_vector())
++		if (!register_sysctl("abi", riscv_v_default_vstate_table))
++			return -EINVAL;
++	return 0;
++}
++
++#else /* ! CONFIG_SYSCTL */
++static int __init riscv_v_sysctl_init(void) { return 0; }
++#endif /* ! CONFIG_SYSCTL */
++
++static int riscv_v_init(void)
++{
++	return riscv_v_sysctl_init();
++}
++core_initcall(riscv_v_init);
 -- 
 2.17.1
 
