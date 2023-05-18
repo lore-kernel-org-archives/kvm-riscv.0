@@ -1,63 +1,171 @@
 From: Andy Chiu <andy.chiu@sifive.com>
-Date: Thu, 18 May 2023 16:19:45 +0000
-Subject: [PATCH -next v20 22/26] riscv: detect assembler support for .option arch
+Date: Thu, 18 May 2023 16:19:47 +0000
+Subject: [PATCH -next v20 24/26] riscv: Add documentation for Vector
 In-Reply-To: <20230518161949.11203-1-andy.chiu@sifive.com>
 References: <20230518161949.11203-1-andy.chiu@sifive.com>
-Message-ID: <20230518161949.11203-23-andy.chiu@sifive.com>
+Message-ID: <20230518161949.11203-25-andy.chiu@sifive.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Some extensions use .option arch directive to selectively enable certain
-extensions in parts of its assembly code. For example, Zbb uses it to
-inform assmebler to emit bit manipulation instructions. However,
-supporting of this directive only exist on GNU assembler and has not
-landed on clang at the moment, making TOOLCHAIN_HAS_ZBB depend on
-AS_IS_GNU.
+This patch add a brief documentation of the userspace interface in
+regard to the RISC-V Vector extension.
 
-While it is still under review at https://reviews.llvm.org/D123515, the
-upcoming Vector patch also requires this feature in assembler. Thus,
-provide Kconfig AS_HAS_OPTION_ARCH to detect such feature. Then
-TOOLCHAIN_HAS_XXX will be turned on automatically when the feature land.
-
-Suggested-by: Nathan Chancellor <nathan@kernel.org>
 Signed-off-by: Andy Chiu <andy.chiu@sifive.com>
-Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
-Reviewed-by: Nathan Chancellor <nathan@kernel.org>
-Reviewed-by: Heiko Stuebner <heiko.stuebner@vrull.eu>
-Tested-by: Heiko Stuebner <heiko.stuebner@vrull.eu>
+Reviewed-by: Greentime Hu <greentime.hu@sifive.com>
+Reviewed-by: Vincent Chen <vincent.chen@sifive.com>
+Co-developed-by: Bagas Sanjaya <bagasdotme@gmail.com>
+Signed-off-by: Bagas Sanjaya <bagasdotme@gmail.com>
 ---
- arch/riscv/Kconfig | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+Changelog v20:
+ - Drop bit-field repressentation and typos (Bj?rn)
+ - Fix document styling (Bagas)
+---
+ Documentation/riscv/index.rst  |   1 +
+ Documentation/riscv/vector.rst | 120 +++++++++++++++++++++++++++++++++
+ 2 files changed, 121 insertions(+)
+ create mode 100644 Documentation/riscv/vector.rst
 
-diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
-index 348c0fa1fc8c..1019b519d590 100644
---- a/arch/riscv/Kconfig
-+++ b/arch/riscv/Kconfig
-@@ -262,6 +262,12 @@ config RISCV_DMA_NONCOHERENT
- config AS_HAS_INSN
- 	def_bool $(as-instr,.insn r 51$(comma) 0$(comma) 0$(comma) t0$(comma) t0$(comma) zero)
+diff --git a/Documentation/riscv/index.rst b/Documentation/riscv/index.rst
+index 175a91db0200..95cf9c1e1da1 100644
+--- a/Documentation/riscv/index.rst
++++ b/Documentation/riscv/index.rst
+@@ -10,6 +10,7 @@ RISC-V architecture
+     hwprobe
+     patch-acceptance
+     uabi
++    vector
  
-+config AS_HAS_OPTION_ARCH
-+	# https://reviews.llvm.org/D123515
-+	def_bool y
-+	depends on $(as-instr, .option arch$(comma) +m)
-+	depends on !$(as-instr, .option arch$(comma) -i)
+     features
+ 
+diff --git a/Documentation/riscv/vector.rst b/Documentation/riscv/vector.rst
+new file mode 100644
+index 000000000000..5d37fd212720
+--- /dev/null
++++ b/Documentation/riscv/vector.rst
+@@ -0,0 +1,120 @@
++.. SPDX-License-Identifier: GPL-2.0
 +
- source "arch/riscv/Kconfig.socs"
- source "arch/riscv/Kconfig.errata"
- 
-@@ -466,7 +472,7 @@ config TOOLCHAIN_HAS_ZBB
- 	depends on !64BIT || $(cc-option,-mabi=lp64 -march=rv64ima_zbb)
- 	depends on !32BIT || $(cc-option,-mabi=ilp32 -march=rv32ima_zbb)
- 	depends on LLD_VERSION >= 150000 || LD_VERSION >= 23900
--	depends on AS_IS_GNU
-+	depends on AS_HAS_OPTION_ARCH
- 
- config RISCV_ISA_ZBB
- 	bool "Zbb extension support for bit manipulation instructions"
++=========================================
++Vector Extension Support for RISC-V Linux
++=========================================
++
++This document briefly outlines the interface provided to userspace by Linux in
++order to support the use of the RISC-V Vector Extension.
++
++1.  prctl() Interface
++---------------------
++
++Two new prctl() calls are added to allow programs to manage the enablement
++status for the use of Vector in userspace:
++
++* prctl(PR_RISCV_V_SET_CONTROL, unsigned long arg)
++
++    Sets the Vector enablement status of the calling thread, where the control
++    argument consists of two 2-bit enablement statuses and a bit for inheritance
++    mode. Other threads of the calling process are unaffected.
++
++    Enablement status is a tri-state value each occupying 2-bit of space in
++    the control argument:
++
++    * :c:macro:`PR_RISCV_V_VSTATE_CTRL_DEFAULT`: Use the system-wide default
++      enablement status on execve(). The system-wide default setting can be
++      controlled via sysctl interface (see sysctl section below).
++
++    * :c:macro:`PR_RISCV_V_VSTATE_CTRL_ON`: Allow Vector to be run for the
++      thread.
++
++    * :c:macro:`PR_RISCV_V_VSTATE_CTRL_OFF`: Disallow Vector. Executing Vector
++      instructions under such condition will trap and casuse the termination of the thread.
++
++    arg: The control argument is a 5-bit value consisting of 3 parts, and
++    accessed by 3 masks respectively.
++
++    The 3 masks, PR_RISCV_V_VSTATE_CTRL_CUR_MASK,
++    PR_RISCV_V_VSTATE_CTRL_NEXT_MASK, and PR_RISCV_V_VSTATE_CTRL_INHERIT
++    represents bit[1:0], bit[3:2], and bit[4]. bit[1:0] accounts for the
++    enablement status of current thread, and the setting at bit[3:2] takes place
++    at next execve(). bit[4] defines the inheritance mode of the setting in
++    bit[3:2].
++
++        * :c:macro:`PR_RISCV_V_VSTATE_CTRL_CUR_MASK`: bit[1:0]: Account for the
++          Vector enablement status for the calling thread. The calling thread is
++          not able to turn off Vector once it has been enabled. The prctl() call
++          fails with EPERM if the value in this mask is PR_RISCV_V_VSTATE_CTRL_OFF
++          but the current enablement status is not off. Setting
++          PR_RISCV_V_VSTATE_CTRL_DEFAULT here takes no effect but to set back
++          the original enablement status.
++
++        * :c:macro:`PR_RISCV_V_VSTATE_CTRL_NEXT_MASK`: bit[3:2]: Account for the
++          Vector enablement setting for the calling thread at the next execve()
++          system call. If PR_RISCV_V_VSTATE_CTRL_DEFAULT is used in this mask,
++          then the enablement status will be decided by the system-wide
++          enablement status when execve() happen.
++
++        * :c:macro:`PR_RISCV_V_VSTATE_CTRL_INHERIT`: bit[4]: the inheritance
++          mode for the setting at PR_RISCV_V_VSTATE_CTRL_NEXT_MASK. If the bit
++          is set then the following execve() will not clear the setting in both
++          PR_RISCV_V_VSTATE_CTRL_NEXT_MASK and PR_RISCV_V_VSTATE_CTRL_INHERIT.
++          This setting persists across changes in the system-wide default value.
++
++    Return value:
++        * 0 on success;
++        * EINVAL: Vector not supported, invalid enablement status for current or
++          next mask;
++        * EPERM: Turning off Vector in PR_RISCV_V_VSTATE_CTRL_CUR_MASK if Vector
++          was enabled for the calling thread.
++
++    On success:
++        * A valid setting for PR_RISCV_V_VSTATE_CTRL_CUR_MASK takes place
++          immediately. The enablement status specified in
++          PR_RISCV_V_VSTATE_CTRL_NEXT_MASK happens at the next execve() call, or
++          all following execve() calls if PR_RISCV_V_VSTATE_CTRL_INHERIT bit is
++          set.
++        * Every successful call overwrites a previous setting for the calling
++          thread.
++
++* prctl(PR_RISCV_V_GET_CONTROL)
++
++    Gets the same Vector enablement status for the calling thread. Setting for
++    next execve() call and the inheritance bit are all OR-ed together.
++
++    Return value:
++        * a nonnegative value on success;
++        * EINVAL: Vector not supported.
++
++2.  System runtime configuration (sysctl)
++-----------------------------------------
++
++To mitigate the ABI impact of expansion of the signal stack, a
++policy mechanism is provided to the administrators, distro maintainers, and
++developers to control the default Vector enablement status for userspace
++processes in form of sysctl knob:
++
++* /proc/sys/abi/riscv_v_default_allow
++
++    Writing the text representation of 0 or 1 to this file sets the default
++    system enablement status for new starting userspace programs. Valid values
++    are:
++
++    * 0: Do not allow Vector code to be executed as the default for new processes.
++    * 1: Allow Vector code to be executed as the default for new processes.
++
++    Reading this file returns the current system default enablement status.
++
++    At every execve() call, a new enablement status of the new process is set to
++    the system default, unless:
++
++      * PR_RISCV_V_VSTATE_CTRL_INHERIT is set for the calling process, and the
++        setting in PR_RISCV_V_VSTATE_CTRL_NEXT_MASK is not
++        PR_RISCV_V_VSTATE_CTRL_DEFAULT. Or,
++
++      * The setting in PR_RISCV_V_VSTATE_CTRL_NEXT_MASK is not
++        PR_RISCV_V_VSTATE_CTRL_DEFAULT.
++
++    Modifying the system default enablement status does not affect the enablement
++    status of any existing process of thread that do not make an execve() call.
 -- 
 2.17.1
 
