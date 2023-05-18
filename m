@@ -1,140 +1,62 @@
 From: Andy Chiu <andy.chiu@sifive.com>
-Date: Thu, 18 May 2023 16:19:36 +0000
-Subject: [PATCH -next v20 13/26] riscv: signal: check fp-reserved words unconditionally
+Date: Thu, 18 May 2023 16:19:40 +0000
+Subject: [PATCH -next v20 17/26] riscv: prevent stack corruption by reserving task_pt_regs(p) early
 In-Reply-To: <20230518161949.11203-1-andy.chiu@sifive.com>
 References: <20230518161949.11203-1-andy.chiu@sifive.com>
-Message-ID: <20230518161949.11203-14-andy.chiu@sifive.com>
+Message-ID: <20230518161949.11203-18-andy.chiu@sifive.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-In order to let kernel/user locate and identify an extension context on
-the existing sigframe, we are going to utilize reserved space of fp and
-encode the information there. And since the sigcontext has already
-preserved a space for fp context w or w/o CONFIG_FPU, we move those
-reserved words checking/setting routine back into generic code.
+From: Greentime Hu <greentime.hu@sifive.com>
 
-This commit also undone an additional logical change carried by the
-refactor commit 007f5c3589578
-("Refactor FPU code in signal setup/return procedures"). Originally we
-did not restore fp context if restoring of gpr have failed. And it was
-fine on the other side. In such way the kernel could keep the regfiles
-intact, and potentially react at the failing point of restore.
+Early function calls, such as setup_vm(), relocate_enable_mmu(),
+soc_early_init() etc, are free to operate on stack. However,
+PT_SIZE_ON_STACK bytes at the head of the kernel stack are purposedly
+reserved for the placement of per-task register context pointed by
+task_pt_regs(p). Those functions may corrupt task_pt_regs if we overlap
+the $sp with it. In fact, we had accidentally corrupted sstatus.VS in some
+tests, treating the kernel to save V context before V was actually
+allocated, resulting in a kernel panic.
 
+Thus, we should skip PT_SIZE_ON_STACK for $sp before making C function
+calls from the top-level assembly.
+
+Co-developed-by: ShihPo Hung <shihpo.hung@sifive.com>
+Signed-off-by: ShihPo Hung <shihpo.hung@sifive.com>
+Co-developed-by: Vincent Chen <vincent.chen@sifive.com>
+Signed-off-by: Vincent Chen <vincent.chen@sifive.com>
+Signed-off-by: Greentime Hu <greentime.hu@sifive.com>
 Signed-off-by: Andy Chiu <andy.chiu@sifive.com>
-Acked-by: Conor Dooley <conor.dooley@microchip.com>
-Acked-by: Heiko Stuebner <heiko.stuebner@vrull.eu>
+Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
+Reviewed-by: Heiko Stuebner <heiko.stuebner@vrull.eu>
 Tested-by: Heiko Stuebner <heiko.stuebner@vrull.eu>
 ---
- arch/riscv/kernel/signal.c | 55 +++++++++++++++++++-------------------
- 1 file changed, 28 insertions(+), 27 deletions(-)
+ arch/riscv/kernel/head.S | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/arch/riscv/kernel/signal.c b/arch/riscv/kernel/signal.c
-index 9aff9d720590..6b4a5c90bd87 100644
---- a/arch/riscv/kernel/signal.c
-+++ b/arch/riscv/kernel/signal.c
-@@ -40,26 +40,13 @@ static long restore_fp_state(struct pt_regs *regs,
- {
- 	long err;
- 	struct __riscv_d_ext_state __user *state = &sc_fpregs->d;
--	size_t i;
+diff --git a/arch/riscv/kernel/head.S b/arch/riscv/kernel/head.S
+index e16bb2185d55..11c3b94c4534 100644
+--- a/arch/riscv/kernel/head.S
++++ b/arch/riscv/kernel/head.S
+@@ -301,6 +301,7 @@ clear_bss_done:
+ 	la tp, init_task
+ 	la sp, init_thread_union + THREAD_SIZE
+ 	XIP_FIXUP_OFFSET sp
++	addi sp, sp, -PT_SIZE_ON_STACK
+ #ifdef CONFIG_BUILTIN_DTB
+ 	la a0, __dtb_start
+ 	XIP_FIXUP_OFFSET a0
+@@ -318,6 +319,7 @@ clear_bss_done:
+ 	/* Restore C environment */
+ 	la tp, init_task
+ 	la sp, init_thread_union + THREAD_SIZE
++	addi sp, sp, -PT_SIZE_ON_STACK
  
- 	err = __copy_from_user(&current->thread.fstate, state, sizeof(*state));
- 	if (unlikely(err))
- 		return err;
- 
- 	fstate_restore(current, regs);
--
--	/* We support no other extension state at this time. */
--	for (i = 0; i < ARRAY_SIZE(sc_fpregs->q.reserved); i++) {
--		u32 value;
--
--		err = __get_user(value, &sc_fpregs->q.reserved[i]);
--		if (unlikely(err))
--			break;
--		if (value != 0)
--			return -EINVAL;
--	}
--
--	return err;
-+	return 0;
- }
- 
- static long save_fp_state(struct pt_regs *regs,
-@@ -67,20 +54,9 @@ static long save_fp_state(struct pt_regs *regs,
- {
- 	long err;
- 	struct __riscv_d_ext_state __user *state = &sc_fpregs->d;
--	size_t i;
- 
- 	fstate_save(current, regs);
- 	err = __copy_to_user(state, &current->thread.fstate, sizeof(*state));
--	if (unlikely(err))
--		return err;
--
--	/* We support no other extension state at this time. */
--	for (i = 0; i < ARRAY_SIZE(sc_fpregs->q.reserved); i++) {
--		err = __put_user(0, &sc_fpregs->q.reserved[i]);
--		if (unlikely(err))
--			break;
--	}
--
- 	return err;
- }
- #else
-@@ -92,11 +68,30 @@ static long restore_sigcontext(struct pt_regs *regs,
- 	struct sigcontext __user *sc)
- {
- 	long err;
-+	size_t i;
-+
- 	/* sc_regs is structured the same as the start of pt_regs */
- 	err = __copy_from_user(regs, &sc->sc_regs, sizeof(sc->sc_regs));
-+	if (unlikely(err))
-+		return err;
-+
- 	/* Restore the floating-point state. */
--	if (has_fpu())
--		err |= restore_fp_state(regs, &sc->sc_fpregs);
-+	if (has_fpu()) {
-+		err = restore_fp_state(regs, &sc->sc_fpregs);
-+		if (unlikely(err))
-+			return err;
-+	}
-+
-+	/* We support no other extension state at this time. */
-+	for (i = 0; i < ARRAY_SIZE(sc->sc_fpregs.q.reserved); i++) {
-+		u32 value;
-+
-+		err = __get_user(value, &sc->sc_fpregs.q.reserved[i]);
-+		if (unlikely(err))
-+			break;
-+		if (value != 0)
-+			return -EINVAL;
-+	}
- 	return err;
- }
- 
-@@ -147,11 +142,17 @@ static long setup_sigcontext(struct rt_sigframe __user *frame,
- {
- 	struct sigcontext __user *sc = &frame->uc.uc_mcontext;
- 	long err;
-+	size_t i;
-+
- 	/* sc_regs is structured the same as the start of pt_regs */
- 	err = __copy_to_user(&sc->sc_regs, regs, sizeof(sc->sc_regs));
- 	/* Save the floating-point state. */
- 	if (has_fpu())
- 		err |= save_fp_state(regs, &sc->sc_fpregs);
-+	/* We support no other extension state at this time. */
-+	for (i = 0; i < ARRAY_SIZE(sc->sc_fpregs.q.reserved); i++)
-+		err |= __put_user(0, &sc->sc_fpregs.q.reserved[i]);
-+
- 	return err;
- }
- 
+ #ifdef CONFIG_KASAN
+ 	call kasan_early_init
 -- 
 2.17.1
 
