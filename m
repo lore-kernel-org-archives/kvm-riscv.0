@@ -1,59 +1,45 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Thu, 18 May 2023 09:32:55 +0200
-Subject: [PATCH 2/2] KVM: selftests: Add riscv get-reg-list test
-In-Reply-To: <CAJve8okVFr-m6go6dCg7Cf=Uq3Yt9Xmxi0Z3B2vbWvahvx4GgA@mail.gmail.com>
-References: <cover.1683791148.git.haibo1.xu@intel.com>
- <751a84a9691c86df0e65cdb02abf1e073892d1ca.1683791148.git.haibo1.xu@intel.com>
- <20230511-28ec368a8168342c68ca2187@orel>
- <CAJve8okVFr-m6go6dCg7Cf=Uq3Yt9Xmxi0Z3B2vbWvahvx4GgA@mail.gmail.com>
-Message-ID: <20230518-60da3b82641bdaccec589b8b@orel>
+From: Marc Zyngier <maz@kernel.org>
+Date: Thu, 18 May 2023 08:38:20 +0100
+Subject: [PATCH v2 0/2] KVM: Fix race between reboot and hardware enabling
+In-Reply-To: <20230512233127.804012-1-seanjc@google.com>
+References: <20230512233127.804012-1-seanjc@google.com>
+Message-ID: <86jzx6ks2b.wl-maz@kernel.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, May 18, 2023 at 12:17:18PM +0800, Haibo Xu wrote:
-...
-> > The idea of these *to_str functions is to dump output that can be
-> > copy+pasted into a reg array (hence the trailing commas in print_reg
-> > lines). So we can't just print random lines here or return '##UNKOWN##',
-> > as that won't compile. Instead, the default should return
-> >
-> >   str_with_index("KVM_REG_RISCV_CONFIG_REG(##)", reg_off)
-> >
+On Sat, 13 May 2023 00:31:25 +0100,
+Sean Christopherson <seanjc@google.com> wrote:
 > 
-> Thanks for sharing the detailed idea, will fix it in next version!
-
-I guess we could also return a string like,
-
-"KVM_REG_RISCV_CONFIG_REG(##) /* UNKNOWN */"
-
-as that would still compile and also convey the message that this
-register doesn't have a name because the test doesn't know it yet.
-
-...
-> > We should share all the code above, except print_reg(), with aarch64.
-> > I'll send a patch series that splits the arch-neutral code out of
-> > the aarch64 test that you can base this test on.
-> >
+> Fix a bug where enabling hardware virtualization can race with a forced
+> reboot, e.g. `reboot -f`, and result in virt hardware being enabled when
+> the reboot is attempted, and thus hanging the reboot.
 > 
-> Good idea! I will rebase the patch based on your work.
->
+> Found by inspection, confirmed by hacking the reboot flow to wait until
+> KVM loads (the problematic window is ridiculously small).
+> 
+> Fully tested only on x86, compile tested on other architectures.
+> 
+> v2:
+>  - Rename KVM's callback to kvm_shutdown() to match the hook. [Marc]
+>  - Don't add a spurious newline. [Marc]
+> 
+> v1: https://lore.kernel.org/all/20230310221414.811690-1-seanjc at google.com
+> 
+> Sean Christopherson (2):
+>   KVM: Use syscore_ops instead of reboot_notifier to hook
+>     restart/shutdown
+>   KVM: Don't enable hardware after a restart/shutdown is initiated
+> 
+>  virt/kvm/kvm_main.c | 43 +++++++++++++++++++++++++++----------------
+>  1 file changed, 27 insertions(+), 16 deletions(-)
 
-Ok, I've pushed patches to [1]. This series introduces two things to KVM
-selftests. Primarily it splits the aarch64/get-reg-list test into a
-cross-arch get-reg-list test and an $ARCH_DIR/get-reg-list.o object file,
-which the cross-arch test depends on. To do that, it also introduces the
-concept of a "split test", a test that has a cross-arch part which depends
-on an arch-specific part. Using a split test is cleaner than the
-#ifdeffery we usually do for cross-arch tests.
+Acked-by: Marc Zyngier <maz@kernel.org>
 
-I've added kvmarm at lists.linux.dev, Marc, Oliver, and Sean to the CC of
-this message. You'll want to add them when you post v2 as well.
+	M.
 
-[1] https://github.com/jones-drew/linux/commits/arm64/kself/get-reg-list
-
-Thanks,
-drew
+-- 
+Without deviation from the norm, progress is not possible.
 
