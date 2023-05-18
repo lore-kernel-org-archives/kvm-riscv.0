@@ -1,49 +1,105 @@
 From: Andy Chiu <andy.chiu@sifive.com>
-Date: Thu, 18 May 2023 16:19:39 +0000
-Subject: [PATCH -next v20 16/26] riscv: signal: validate altstack to reflect Vector
+Date: Thu, 18 May 2023 16:19:46 +0000
+Subject: [PATCH -next v20 23/26] riscv: Enable Vector code to be built
 In-Reply-To: <20230518161949.11203-1-andy.chiu@sifive.com>
 References: <20230518161949.11203-1-andy.chiu@sifive.com>
-Message-ID: <20230518161949.11203-17-andy.chiu@sifive.com>
+Message-ID: <20230518161949.11203-24-andy.chiu@sifive.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Some extensions, such as Vector, dynamically change footprint on a
-signal frame, so MINSIGSTKSZ is no longer accurate. For example, an
-RV64V implementation with vlen = 512 may occupy 2K + 40 + 12 Bytes of a
-signal frame with the upcoming support. And processes that do not
-execute any vector instructions do not need to reserve the extra
-sigframe. So we need a way to guard the allocation size of the sigframe
-at process runtime according to current status of V.
+From: Guo Ren <guoren@linux.alibaba.com>
 
-Thus, provide the function sigaltstack_size_valid() to validate its size
-based on current allocation status of supported extensions.
+This patch adds configs for building Vector code. First it detects the
+reqired toolchain support for building the code. Then it provides an
+option setting whether Vector is implicitly enabled to userspace.
 
+Signed-off-by: Guo Ren <guoren@linux.alibaba.com>
+Co-developed-by: Greentime Hu <greentime.hu@sifive.com>
+Signed-off-by: Greentime Hu <greentime.hu@sifive.com>
+Suggested-by: Conor Dooley <conor.dooley@microchip.com>>
+Co-developed-by: Andy Chiu <andy.chiu@sifive.com>
 Signed-off-by: Andy Chiu <andy.chiu@sifive.com>
-Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
-Reviewed-by: Heiko Stuebner <heiko.stuebner@vrull.eu>
-Tested-by: Heiko Stuebner <heiko.stuebner@vrull.eu>
 ---
- arch/riscv/kernel/signal.c | 7 +++++++
- 1 file changed, 7 insertions(+)
+Changelog v20:
+ - s/RISCV_V_DISABLE/RISCV_ISA_V_DEFAULT_ENABLE/ for better
+   understanding (Conor)
+ - Update commit message (Conor)
+Changelog V19:
+ - Add RISCV_V_DISABLE to set compile-time default.
+---
+ arch/riscv/Kconfig  | 31 +++++++++++++++++++++++++++++++
+ arch/riscv/Makefile |  6 +++++-
+ 2 files changed, 36 insertions(+), 1 deletion(-)
 
-diff --git a/arch/riscv/kernel/signal.c b/arch/riscv/kernel/signal.c
-index f117641c1c49..180d951d3624 100644
---- a/arch/riscv/kernel/signal.c
-+++ b/arch/riscv/kernel/signal.c
-@@ -476,3 +476,10 @@ void __init init_rt_signal_env(void)
- 	 */
- 	signal_minsigstksz = get_rt_frame_size(true);
- }
+diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
+index 1019b519d590..f3ba0a8b085e 100644
+--- a/arch/riscv/Kconfig
++++ b/arch/riscv/Kconfig
+@@ -466,6 +466,37 @@ config RISCV_ISA_SVPBMT
+ 
+ 	   If you don't know what to do here, say Y.
+ 
++config TOOLCHAIN_HAS_V
++	bool
++	default y
++	depends on !64BIT || $(cc-option,-mabi=lp64 -march=rv64iv)
++	depends on !32BIT || $(cc-option,-mabi=ilp32 -march=rv32iv)
++	depends on LLD_VERSION >= 140000 || LD_VERSION >= 23800
++	depends on AS_HAS_OPTION_ARCH
 +
-+#ifdef CONFIG_DYNAMIC_SIGFRAME
-+bool sigaltstack_size_valid(size_t ss_size)
-+{
-+	return ss_size > get_rt_frame_size(false);
-+}
-+#endif /* CONFIG_DYNAMIC_SIGFRAME */
++config RISCV_ISA_V
++	bool "VECTOR extension support"
++	depends on TOOLCHAIN_HAS_V
++	depends on FPU
++	select DYNAMIC_SIGFRAME
++	default y
++	help
++	  Say N here if you want to disable all vector related procedure
++	  in the kernel.
++
++	  If you don't know what to do here, say Y.
++
++config RISCV_ISA_V_DEFAULT_ENABLE
++	bool "Enable userspace Vector by default"
++	depends on RISCV_ISA_V
++	default y
++	help
++	  Say Y here if you want to enable Vector in userspace by default.
++	  Otherwise, userspace has to make explicit prctl() call to enable
++	  Vector, or enable it via the sysctl interface.
++
++	  If you don't know what to do here, say Y.
++
+ config TOOLCHAIN_HAS_ZBB
+ 	bool
+ 	default y
+diff --git a/arch/riscv/Makefile b/arch/riscv/Makefile
+index 0fb256bf8270..6ec6d52a4180 100644
+--- a/arch/riscv/Makefile
++++ b/arch/riscv/Makefile
+@@ -60,6 +60,7 @@ riscv-march-$(CONFIG_ARCH_RV32I)	:= rv32ima
+ riscv-march-$(CONFIG_ARCH_RV64I)	:= rv64ima
+ riscv-march-$(CONFIG_FPU)		:= $(riscv-march-y)fd
+ riscv-march-$(CONFIG_RISCV_ISA_C)	:= $(riscv-march-y)c
++riscv-march-$(CONFIG_RISCV_ISA_V)	:= $(riscv-march-y)v
+ 
+ ifdef CONFIG_TOOLCHAIN_NEEDS_OLD_ISA_SPEC
+ KBUILD_CFLAGS += -Wa,-misa-spec=2.2
+@@ -71,7 +72,10 @@ endif
+ # Check if the toolchain supports Zihintpause extension
+ riscv-march-$(CONFIG_TOOLCHAIN_HAS_ZIHINTPAUSE) := $(riscv-march-y)_zihintpause
+ 
+-KBUILD_CFLAGS += -march=$(subst fd,,$(riscv-march-y))
++# Remove F,D,V from isa string for all. Keep extensions between "fd" and "v" by
++# matching non-v and non-multi-letter extensions out with the filter ([^v_]*)
++KBUILD_CFLAGS += -march=$(shell echo $(riscv-march-y) | sed -E 's/(rv32ima|rv64ima)fd([^v_]*)v?/\1\2/')
++
+ KBUILD_AFLAGS += -march=$(riscv-march-y)
+ 
+ KBUILD_CFLAGS += -mno-save-restore
 -- 
 2.17.1
 
