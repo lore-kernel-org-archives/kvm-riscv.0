@@ -1,96 +1,100 @@
 From: Anup Patel <anup@brainfault.org>
-Date: Fri, 19 May 2023 20:32:59 +0530
-Subject: [PATCH 1/3] RISC-V: KVM: Disable SBI extension when its probe fails
-In-Reply-To: <CAAhSdy2_SO5C=aofct0ZYzivcEJmti3e69Pivy0PKEhOyXZ-jw@mail.gmail.com>
-References: <20230426171328.69663-1-ajones@ventanamicro.com>
- <20230426171328.69663-2-ajones@ventanamicro.com> <CAAhSdy2_SO5C=aofct0ZYzivcEJmti3e69Pivy0PKEhOyXZ-jw@mail.gmail.com>
-Message-ID: <CAAhSdy3fi0vk7fLTL=0kL-nYgTEzQ0iBx=4BBDbeuR4WmJgNFw@mail.gmail.com>
+Date: Fri, 19 May 2023 20:35:31 +0530
+Subject: [PATCH 3/3] RISC-V: KVM: Introduce extension_enabled
+In-Reply-To: <20230426171328.69663-4-ajones@ventanamicro.com>
+References: <20230426171328.69663-1-ajones@ventanamicro.com> <20230426171328.69663-4-ajones@ventanamicro.com>
+Message-ID: <CAAhSdy0e5Uc0LP3YOy5Lz7hh4G7pSn70pLXSicy7aj6v90C00Q@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, May 19, 2023 at 8:27?PM Anup Patel <anup@brainfault.org> wrote:
+On Wed, Apr 26, 2023 at 10:43?PM Andrew Jones <ajones@ventanamicro.com> wrote:
 >
-> On Wed, Apr 26, 2023 at 10:43?PM Andrew Jones <ajones@ventanamicro.com> wrote:
-> >
-> > When an SBI extension specific probe function exists and fails, then
-> > use the extension_disabled context to disable the extension. This
-> > ensures the extension's functions cannot be invoked. Doing the
-> > disabling in kvm_vcpu_sbi_find_ext() allows it to be done lazily
-> > on its first use. Checking extension_disabled prior to probing
-> > ensures the probe is only executed once for disabled extensions.
-> > Later patches ensure we only execute probe once for enabled
-> > extensions as well.
-> >
-> > Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
-> > ---
-> >  arch/riscv/kvm/vcpu_sbi.c | 23 +++++++++++++++--------
-> >  1 file changed, 15 insertions(+), 8 deletions(-)
-> >
-> > diff --git a/arch/riscv/kvm/vcpu_sbi.c b/arch/riscv/kvm/vcpu_sbi.c
-> > index e52fde504433..aa3c126d2e3c 100644
-> > --- a/arch/riscv/kvm/vcpu_sbi.c
-> > +++ b/arch/riscv/kvm/vcpu_sbi.c
-> > @@ -307,18 +307,25 @@ int kvm_riscv_vcpu_get_reg_sbi_ext(struct kvm_vcpu *vcpu,
-> >  const struct kvm_vcpu_sbi_extension *kvm_vcpu_sbi_find_ext(
-> >                                 struct kvm_vcpu *vcpu, unsigned long extid)
-> >  {
-> > -       int i;
-> > -       const struct kvm_riscv_sbi_extension_entry *sext;
-> >         struct kvm_vcpu_sbi_context *scontext = &vcpu->arch.sbi_context;
-> > +       const struct kvm_riscv_sbi_extension_entry *entry;
-> > +       const struct kvm_vcpu_sbi_extension *ext;
-> > +       int i;
-> >
-> >         for (i = 0; i < ARRAY_SIZE(sbi_ext); i++) {
-> > -               sext = &sbi_ext[i];
-> > -               if (sext->ext_ptr->extid_start <= extid &&
-> > -                   sext->ext_ptr->extid_end >= extid) {
-> > -                       if (sext->dis_idx < KVM_RISCV_SBI_EXT_MAX &&
-> > -                           scontext->extension_disabled[sext->dis_idx])
-> > +               entry = &sbi_ext[i];
-> > +               ext = entry->ext_ptr;
-> > +
-> > +               if (ext->extid_start <= extid && ext->extid_end >= extid) {
-> > +                       if (entry->dis_idx >= KVM_RISCV_SBI_EXT_MAX)
-> > +                               return ext;
-> > +                       if (scontext->extension_disabled[entry->dis_idx])
-> > +                               return NULL;
-> > +                       if (ext->probe && !ext->probe(vcpu)) {
+> We need three SBI extension status values (uninitialized, enabled,
+> and disabled). Pairing another boolean array, extension_enabled[],
+> with the boolean array extension_disabled[] provides four states.
+> Using a pair of boolean arrays, which may eventually be changed to
+> a pair of bitmaps, is more space efficient than using one enum
+> status field. Apply the new (enabled=1,disabled=0) state, which
+> means either the extension doesn't have a probe function or that
+> its probe was successful, to avoid more than one probe of the
+> extension.
 >
-> Calling probe() upon every kvm_vcpu_sbi_find_ext() will simply slow down
-> all SBI calls.
+> Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
+> ---
+>  arch/riscv/include/asm/kvm_vcpu_sbi.h |  9 +++++++++
+>  arch/riscv/kvm/vcpu_sbi.c             | 11 ++++++++++-
+>  2 files changed, 19 insertions(+), 1 deletion(-)
 >
-> How about caching probe return values in "struct kvm_vcpu_sbi_context"
-> as an array?
+> diff --git a/arch/riscv/include/asm/kvm_vcpu_sbi.h b/arch/riscv/include/asm/kvm_vcpu_sbi.h
+> index 4278125a38a5..e3c5e1d15e93 100644
+> --- a/arch/riscv/include/asm/kvm_vcpu_sbi.h
+> +++ b/arch/riscv/include/asm/kvm_vcpu_sbi.h
+> @@ -16,6 +16,15 @@
 >
-> Maybe we can have two arrays:
-> 1) probe_done[] : Boolean array to check whether probe was done.
-> 2) probe_retval[] : Cached probe() return values.
->
-> The SBI_EXT_BASE_PROBE_EXT call should also return the
-> cached value.
+>  struct kvm_vcpu_sbi_context {
+>         int return_handled;
+> +       /*
+> +        * extension_enabled[] and extension_disabled[] provide SBI
+> +        * extensions four status values, of which we need three:
+> +        * (0,0) uninitialized, (1,0) enabled, (0,1) disabled. Using
+> +        * a pair of boolean arrays, which may eventually be changed
+> +        * to a pair of bitmaps, is more space efficient than using
+> +        * one enum status field.
+> +        */
+> +       bool extension_enabled[KVM_RISCV_SBI_EXT_MAX];
 
-Ignore this comment. Your PATCH3 does the same thing.
+The extension_enabled[] is not an appropriate name.
+
+How about extension_probe_allowed[] ?
+
+Any better name ?
 
 Regards,
 Anup
 
+>         bool extension_disabled[KVM_RISCV_SBI_EXT_MAX];
+>  };
 >
-> > +                               scontext->extension_disabled[entry->dis_idx] = true;
-> >                                 return NULL;
-> > -                       return sbi_ext[i].ext_ptr;
-> > +                       }
-> > +                       return ext;
-> >                 }
-> >         }
-> >
-> > --
-> > 2.39.2
-> >
+> diff --git a/arch/riscv/kvm/vcpu_sbi.c b/arch/riscv/kvm/vcpu_sbi.c
+> index a1a82f0fbad2..344d38bbe06a 100644
+> --- a/arch/riscv/kvm/vcpu_sbi.c
+> +++ b/arch/riscv/kvm/vcpu_sbi.c
+> @@ -155,6 +155,12 @@ static int riscv_vcpu_set_sbi_ext_single(struct kvm_vcpu *vcpu,
+>         if (!sext)
+>                 return -ENOENT;
 >
-> Regards,
-> Anup
+> +       /*
+> +        * We can't set scontext->extension_enabled[] to reg_val since the
+> +        * extension may have a probe() function which needs to confirm
+> +        * enablement first. Only set extension_disabled[] here and leave
+> +        * the extension_enabled[] setting to kvm_vcpu_sbi_find_ext().
+> +        */
+>         scontext->extension_disabled[sext->ext_idx] = !reg_val;
+>
+>         return 0;
+> @@ -317,7 +323,8 @@ const struct kvm_vcpu_sbi_extension *kvm_vcpu_sbi_find_ext(
+>                 ext = entry->ext_ptr;
+>
+>                 if (ext->extid_start <= extid && ext->extid_end >= extid) {
+> -                       if (entry->ext_idx >= KVM_RISCV_SBI_EXT_MAX)
+> +                       if (entry->ext_idx >= KVM_RISCV_SBI_EXT_MAX ||
+> +                           scontext->extension_enabled[entry->ext_idx])
+>                                 return ext;
+>                         if (scontext->extension_disabled[entry->ext_idx])
+>                                 return NULL;
+> @@ -325,6 +332,8 @@ const struct kvm_vcpu_sbi_extension *kvm_vcpu_sbi_find_ext(
+>                                 scontext->extension_disabled[entry->ext_idx] = true;
+>                                 return NULL;
+>                         }
+> +
+> +                       scontext->extension_enabled[entry->ext_idx] = true;
+>                         return ext;
+>                 }
+>         }
+> --
+> 2.39.2
+>
 
