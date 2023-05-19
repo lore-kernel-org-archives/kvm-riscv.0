@@ -1,31 +1,44 @@
-From: Evan Green <evan@rivosinc.com>
-Date: Fri, 19 May 2023 09:50:06 -0700
-Subject: [PATCH -next v20 03/26] riscv: hwprobe: Add support for probing V
- in RISCV_HWPROBE_KEY_IMA_EXT_0
-In-Reply-To: <20230518161949.11203-4-andy.chiu@sifive.com>
-References: <20230518161949.11203-1-andy.chiu@sifive.com> <20230518161949.11203-4-andy.chiu@sifive.com>
-Message-ID: <CALs-HstHyZ055SDu8s_KyACERufD1tU8_hxM1UckN4YF4ms2Cg@mail.gmail.com>
+From: Paolo Bonzini <pbonzini@redhat.com>
+Date: Fri, 19 May 2023 19:41:57 +0200
+Subject: [PATCH v2 0/2] KVM: Fix race between reboot and hardware enabling
+In-Reply-To: <20230512233127.804012-1-seanjc@google.com>
+References: <20230512233127.804012-1-seanjc@google.com>
+Message-ID: <c4d8e54e-28da-f788-5569-e5274b19c34e@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, May 18, 2023 at 9:20?AM Andy Chiu <andy.chiu@sifive.com> wrote:
->
-> Probing kernel support for Vector extension is available now. This only
-> add detection for V only. Extenions like Zvfh, Zk are not in this scope.
->
-> Signed-off-by: Andy Chiu <andy.chiu@sifive.com>
-Thanks Andy!
+On 5/13/23 01:31, Sean Christopherson wrote:
+> Fix a bug where enabling hardware virtualization can race with a forced
+> reboot, e.g. `reboot -f`, and result in virt hardware being enabled when
+> the reboot is attempted, and thus hanging the reboot.
+> 
+> Found by inspection, confirmed by hacking the reboot flow to wait until
+> KVM loads (the problematic window is ridiculously small).
+> 
+> Fully tested only on x86, compile tested on other architectures.
+> 
+> v2:
+>   - Rename KVM's callback to kvm_shutdown() to match the hook. [Marc]
+>   - Don't add a spurious newline. [Marc]
+> 
+> v1: https://lore.kernel.org/all/20230310221414.811690-1-seanjc at google.com
+> 
+> Sean Christopherson (2):
+>    KVM: Use syscore_ops instead of reboot_notifier to hook
+>      restart/shutdown
+>    KVM: Don't enable hardware after a restart/shutdown is initiated
+> 
+>   virt/kvm/kvm_main.c | 43 +++++++++++++++++++++++++++----------------
+>   1 file changed, 27 insertions(+), 16 deletions(-)
+> 
+> 
+> base-commit: b3c98052d46948a8d65d2778c7f306ff38366aac
 
-Reviewed-by: Evan Green <evan@rivosinc.com>
+Queued, thanks.
 
-ps- This will end up conflicting with my patch which moves that hunk
-to a helper function, and also allocates the same hwprobe bit [1].
-The fixup is very straightforward for a human, so the ordering isn't a big
-deal either way. But I thought I'd give you a heads up so you weren't
-surprised if someone mentioned it.
+Paolo
 
-[1] https://lore.kernel.org/lkml/20230509182504.2997252-4-evan at rivosinc.com/
 
