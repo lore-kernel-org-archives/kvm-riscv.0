@@ -1,77 +1,44 @@
-From: Andy Chiu <andy.chiu@sifive.com>
-Date: Mon, 22 May 2023 17:40:04 +0800
-Subject: [PATCH -next v20 11/26] riscv: Allocate user's vector context in
- the first-use trap
-In-Reply-To: <20230518-external-sixteen-f2d2ae444547@spud>
-References: <20230518161949.11203-1-andy.chiu@sifive.com> <20230518161949.11203-12-andy.chiu@sifive.com>
- <20230518-external-sixteen-f2d2ae444547@spud>
-Message-ID: <CABgGipUcuQTBbJkA5276NH57FWPxDT14my8NpwDL9VHycL6+5w@mail.gmail.com>
+From: Björn Töpel <bjorn@kernel.org>
+Date: Tue, 23 May 2023 15:45:40 +0200
+Subject: [PATCH -next v20 21/26] riscv: Add sysctl to set the default
+ vector rule for new processes
+In-Reply-To: <20230518161949.11203-22-andy.chiu@sifive.com>
+References: <20230518161949.11203-1-andy.chiu@sifive.com>
+ <20230518161949.11203-22-andy.chiu@sifive.com>
+Message-ID: <87wn0zb1q3.fsf@all.your.base.are.belong.to.us>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Conor,
+Andy Chiu <andy.chiu@sifive.com> writes:
 
-On Fri, May 19, 2023 at 1:47?AM Conor Dooley <conor@kernel.org> wrote:
+> To support Vector extension, the series exports variable-length vector
+> registers on the signal frame. However, this potentially breaks abi if
+> processing vector registers is required in the signal handler for old
+> binaries. For example, there is such need if user-level context switch
+> is triggerred via signals[1].
 >
-> On Thu, May 18, 2023 at 04:19:34PM +0000, Andy Chiu wrote:
-> > Vector unit is disabled by default for all user processes. Thus, a
-> > process will take a trap (illegal instruction) into kernel at the first
-> > time when it uses Vector. Only after then, the kernel allocates V
-> > context and starts take care of the context for that user process.
-> >
-> > Suggested-by: Richard Henderson <richard.henderson@linaro.org>
-> > Link: https://lore.kernel.org/r/3923eeee-e4dc-0911-40bf-84c34aee962d at linaro.org
-> > Signed-off-by: Andy Chiu <andy.chiu@sifive.com>
-> > ---
-> > Hey Heiko and Conor, I am dropping you guys' A-b, T-b, and R-b because I
-> > added a check in riscv_v_first_use_handler().
+> For this reason, it is best to leave a decision to distro maintainers,
+> where the enablement of userspace Vector for new launching programs can
+> be controlled. Developers may also need the switch to experiment with.
+> The parameter is configurable through sysctl interface so a distro may
+> turn off Vector early at init script if the break really happens in the
+> wild.
 >
-> > +bool riscv_v_first_use_handler(struct pt_regs *regs)
-> > +{
-> > +     u32 __user *epc = (u32 __user *)regs->epc;
-> > +     u32 insn = (u32)regs->badaddr;
-> > +
-> > +     /* Do not handle if V is not supported, or disabled */
-> > +     if (!has_vector() || !(elf_hwcap & COMPAT_HWCAP_ISA_V))
-> > +             return false;
+> The switch will only take effects on new execve() calls once set. This
+> will not effect existing processes that do not call execve(), nor
+> processes which has been set with a non-default vstate_ctrl by making
+> explicit PR_RISCV_V_SET_CONTROL prctl() calls.
 >
-> Remind me please, in what situation is this actually even possible?
-> The COMPAT_HWCAP_ISA_V flag only gets set if CONFIG_RISCV_ISA_V is
-> enabled & v is in the DT.
-> has_vector() is backed by different things whether alternatives are
-> enabled or not. With alternatives, it depends on the bit being set in
-> the riscv_isa bitmap & the Kconfig option.
-> Without alternatives it is backed by __riscv_isa_extension_available()
-> which only depends in the riscv_isa bitmap.
-> Since the bit in the bitmap does not get cleared if CONFIG_RISCV_ISA_V
-> is not set, unlike the elf_hwcap bit which does, it seems like this
-> might be the condition you are trying to prevent?
->
+> Link: https://lore.kernel.org/all/87cz4048rp.fsf at all.your.base.are.belong.to.us/
+> Signed-off-by: Andy Chiu <andy.chiu@sifive.com>
+> Reviewed-by: Greentime Hu <greentime.hu@sifive.com>
+> Reviewed-by: Vincent Chen <vincent.chen@sifive.com>
+> ---
+> Changelog v20:
+>  - Use READ_ONCE to access riscv_v_implicit_uacc (Bj?rn)
 
-In fact the case you mentioned is prevented by Kconfig itself. To be
-more specific, riscv_v_first_use_handler() always returns false if
-CONFIG_RISCV_ISA_V is not set. In such config, the function is defined
-as an inline that returns false in include/asm/vector.h, and
-kernl/vector.c is not compiled.
-
-The case that I intended to protect is another scenario. e.g. If a
-multicore system has different VLENs across cores, with
-CONFIG_RISCV_ISA_V set. Since this series assumes an SMP system, it
-turns off V in ELF_HWCAP if it detects uneven VLENs during smp boot.
-In this case we must not handle the first-use trap if the user still
-executes V instruction anyway.
-
-> If so,
-> Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
->
-> Otherwise, please let me know where I have gone wrong!
->
-> Thanks,
-> Conor.
-
-Thanks,
-Andy
+Reviewed-by: Bj?rn T?pel <bjorn@rivosinc.com>
 
