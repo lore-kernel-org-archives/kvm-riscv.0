@@ -1,41 +1,78 @@
 From: Palmer Dabbelt <palmer@dabbelt.com>
-Date: Tue, 23 May 2023 17:22:03 -0700 (PDT)
-Subject: [PATCH -next v20 23/26] riscv: Enable Vector code to be built
-In-Reply-To: <20230518-rented-jogging-b84c705f7d76@spud>
-Message-ID: <mhng-4f11f1da-100c-452f-8717-e059d6e1d44b@palmer-ri-x1c9a>
+Date: Tue, 23 May 2023 17:48:58 -0700 (PDT)
+Subject: [PATCH -next v20 03/26] riscv: hwprobe: Add support for probing V in RISCV_HWPROBE_KEY_IMA_EXT_0
+In-Reply-To: <20230518161949.11203-4-andy.chiu@sifive.com>
+Message-ID: <mhng-3514bc07-d24f-474b-994f-b2b03253e103@palmer-ri-x1c9a>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, 18 May 2023 10:31:37 PDT (-0700), Conor Dooley wrote:
-> On Thu, May 18, 2023 at 04:19:46PM +0000, Andy Chiu wrote:
->> From: Guo Ren <guoren@linux.alibaba.com>
->> 
->> This patch adds configs for building Vector code. First it detects the
->> reqired toolchain support for building the code. Then it provides an
->> option setting whether Vector is implicitly enabled to userspace.
->> 
->> Signed-off-by: Guo Ren <guoren@linux.alibaba.com>
->> Co-developed-by: Greentime Hu <greentime.hu@sifive.com>
->> Signed-off-by: Greentime Hu <greentime.hu@sifive.com>
+On Thu, 18 May 2023 09:19:26 PDT (-0700), andy.chiu at sifive.com wrote:
+> Probing kernel support for Vector extension is available now. This only
+> add detection for V only. Extenions like Zvfh, Zk are not in this scope.
 >
->> Suggested-by: Conor Dooley <conor.dooley@microchip.com>>
+> Signed-off-by: Andy Chiu <andy.chiu@sifive.com>
+> ---
+> Changelog v20:
+>  - Fix a typo in document, and remove duplicated probes (Heiko)
+>  - probe V extension in RISCV_HWPROBE_KEY_IMA_EXT_0 key only (Palmer,
+>    Evan)
+> ---
+>  Documentation/riscv/hwprobe.rst       | 3 +++
+>  arch/riscv/include/uapi/asm/hwprobe.h | 1 +
+>  arch/riscv/kernel/sys_riscv.c         | 4 ++++
+>  3 files changed, 8 insertions(+)
 >
-> You can drop this tag if you respin, I just provided review comments ;)
-> Also, it has an extra > at the end.
+> diff --git a/Documentation/riscv/hwprobe.rst b/Documentation/riscv/hwprobe.rst
+> index 9f0dd62dcb5d..7431d9d01c73 100644
+> --- a/Documentation/riscv/hwprobe.rst
+> +++ b/Documentation/riscv/hwprobe.rst
+> @@ -64,6 +64,9 @@ The following keys are defined:
+>    * :c:macro:`RISCV_HWPROBE_IMA_C`: The C extension is supported, as defined
+>      by version 2.2 of the RISC-V ISA manual.
 >
-> Otherwise, I am still not sold on the "default y", but we can always
-> flip it if there is in fact a regression.
+> +  * :c:macro:`RISCV_HWPROBE_IMA_V`: The V extension is supported, as defined by
+> +    version 1.0 of the RISC-V Vector extension manual.
+> +
+>  * :c:macro:`RISCV_HWPROBE_KEY_CPUPERF_0`: A bitmask that contains performance
+>    information about the selected set of processors.
+>
+> diff --git a/arch/riscv/include/uapi/asm/hwprobe.h b/arch/riscv/include/uapi/asm/hwprobe.h
+> index 8d745a4ad8a2..7c6fdcf7ced5 100644
+> --- a/arch/riscv/include/uapi/asm/hwprobe.h
+> +++ b/arch/riscv/include/uapi/asm/hwprobe.h
+> @@ -25,6 +25,7 @@ struct riscv_hwprobe {
+>  #define RISCV_HWPROBE_KEY_IMA_EXT_0	4
+>  #define		RISCV_HWPROBE_IMA_FD		(1 << 0)
+>  #define		RISCV_HWPROBE_IMA_C		(1 << 1)
+> +#define		RISCV_HWPROBE_IMA_V		(1 << 2)
+>  #define RISCV_HWPROBE_KEY_CPUPERF_0	5
+>  #define		RISCV_HWPROBE_MISALIGNED_UNKNOWN	(0 << 0)
+>  #define		RISCV_HWPROBE_MISALIGNED_EMULATED	(1 << 0)
+> diff --git a/arch/riscv/kernel/sys_riscv.c b/arch/riscv/kernel/sys_riscv.c
+> index 5db29683ebee..88357a848797 100644
+> --- a/arch/riscv/kernel/sys_riscv.c
+> +++ b/arch/riscv/kernel/sys_riscv.c
+> @@ -10,6 +10,7 @@
+>  #include <asm/cpufeature.h>
+>  #include <asm/hwprobe.h>
+>  #include <asm/sbi.h>
+> +#include <asm/vector.h>
+>  #include <asm/switch_to.h>
+>  #include <asm/uaccess.h>
+>  #include <asm/unistd.h>
+> @@ -171,6 +172,9 @@ static void hwprobe_one_pair(struct riscv_hwprobe *pair,
+>  		if (riscv_isa_extension_available(NULL, c))
+>  			pair->value |= RISCV_HWPROBE_IMA_C;
+>
+> +		if (has_vector())
+> +			pair->value |= RISCV_HWPROBE_IMA_V;
+> +
+>  		break;
+>
+>  	case RISCV_HWPROBE_KEY_CPUPERF_0:
 
-It's definately the riskier of the options, but the uABI issue will only 
-manifest on systems that have V hardware.  Those don't exist yet, so 
-aside from folks running QEMU (who probably want V) we're only risking 
-tripping up users on pre-release silicion -- and that's always a 
-headache, so whatever ;)
-
-> Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
->
-> Thanks.
+Reviewed-by: Palmer Dabbelt <palmer@rivosinc.com>
 
