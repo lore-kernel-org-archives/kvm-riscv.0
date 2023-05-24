@@ -1,78 +1,203 @@
 From: Palmer Dabbelt <palmer@dabbelt.com>
-Date: Tue, 23 May 2023 17:48:58 -0700 (PDT)
-Subject: [PATCH -next v20 03/26] riscv: hwprobe: Add support for probing V in RISCV_HWPROBE_KEY_IMA_EXT_0
-In-Reply-To: <20230518161949.11203-4-andy.chiu@sifive.com>
-Message-ID: <mhng-3514bc07-d24f-474b-994f-b2b03253e103@palmer-ri-x1c9a>
+Date: Tue, 23 May 2023 17:49:00 -0700 (PDT)
+Subject: [PATCH -next v20 09/26] riscv: Introduce struct/helpers to save/restore per-task Vector state
+In-Reply-To: <20230518161949.11203-10-andy.chiu@sifive.com>
+Message-ID: <mhng-ea968659-052d-429b-861e-1f616337f802@palmer-ri-x1c9a>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, 18 May 2023 09:19:26 PDT (-0700), andy.chiu at sifive.com wrote:
-> Probing kernel support for Vector extension is available now. This only
-> add detection for V only. Extenions like Zvfh, Zk are not in this scope.
+On Thu, 18 May 2023 09:19:32 PDT (-0700), andy.chiu at sifive.com wrote:
+> From: Greentime Hu <greentime.hu@sifive.com>
 >
+> Add vector state context struct to be added later in thread_struct. And
+> prepare low-level helper functions to save/restore vector contexts.
+>
+> This include Vector Regfile and CSRs holding dynamic configuration state
+> (vstart, vl, vtype, vcsr). The Vec Register width could be implementation
+> defined, but same for all processes, so that is saved separately.
+>
+> This is not yet wired into final thread_struct - will be done when
+> __switch_to actually starts doing this in later patches.
+>
+> Given the variable (and potentially large) size of regfile, they are
+> saved in dynamically allocated memory, pointed to by datap pointer in
+> __riscv_v_ext_state.
+>
+> Co-developed-by: Vincent Chen <vincent.chen@sifive.com>
+> Signed-off-by: Vincent Chen <vincent.chen@sifive.com>
+> Signed-off-by: Greentime Hu <greentime.hu@sifive.com>
+> Signed-off-by: Vineet Gupta <vineetg@rivosinc.com>
 > Signed-off-by: Andy Chiu <andy.chiu@sifive.com>
+> Acked-by: Conor Dooley <conor.dooley@microchip.com>
+> Reviewed-by: Guo Ren <guoren@kernel.org>
+> Reviewed-by: Bj?rn T?pel <bjorn@rivosinc.com>
+> Reviewed-by: Heiko Stuebner <heiko.stuebner@vrull.eu>
+> Tested-by: Heiko Stuebner <heiko.stuebner@vrull.eu>
 > ---
-> Changelog v20:
->  - Fix a typo in document, and remove duplicated probes (Heiko)
->  - probe V extension in RISCV_HWPROBE_KEY_IMA_EXT_0 key only (Palmer,
->    Evan)
-> ---
->  Documentation/riscv/hwprobe.rst       | 3 +++
->  arch/riscv/include/uapi/asm/hwprobe.h | 1 +
->  arch/riscv/kernel/sys_riscv.c         | 4 ++++
->  3 files changed, 8 insertions(+)
+>  arch/riscv/include/asm/vector.h      | 95 ++++++++++++++++++++++++++++
+>  arch/riscv/include/uapi/asm/ptrace.h | 17 +++++
+>  2 files changed, 112 insertions(+)
 >
-> diff --git a/Documentation/riscv/hwprobe.rst b/Documentation/riscv/hwprobe.rst
-> index 9f0dd62dcb5d..7431d9d01c73 100644
-> --- a/Documentation/riscv/hwprobe.rst
-> +++ b/Documentation/riscv/hwprobe.rst
-> @@ -64,6 +64,9 @@ The following keys are defined:
->    * :c:macro:`RISCV_HWPROBE_IMA_C`: The C extension is supported, as defined
->      by version 2.2 of the RISC-V ISA manual.
+> diff --git a/arch/riscv/include/asm/vector.h b/arch/riscv/include/asm/vector.h
+> index df3b5caecc87..3c29f4eb552a 100644
+> --- a/arch/riscv/include/asm/vector.h
+> +++ b/arch/riscv/include/asm/vector.h
+> @@ -11,8 +11,10 @@
 >
-> +  * :c:macro:`RISCV_HWPROBE_IMA_V`: The V extension is supported, as defined by
-> +    version 1.0 of the RISC-V Vector extension manual.
+>  #ifdef CONFIG_RISCV_ISA_V
+>
+> +#include <linux/stringify.h>
+>  #include <asm/hwcap.h>
+>  #include <asm/csr.h>
+> +#include <asm/asm.h>
+>
+>  extern unsigned long riscv_v_vsize;
+>  int riscv_v_setup_vsize(void);
+> @@ -22,6 +24,26 @@ static __always_inline bool has_vector(void)
+>  	return riscv_has_extension_unlikely(RISCV_ISA_EXT_v);
+>  }
+>
+> +static inline void __riscv_v_vstate_clean(struct pt_regs *regs)
+> +{
+> +	regs->status = (regs->status & ~SR_VS) | SR_VS_CLEAN;
+> +}
 > +
->  * :c:macro:`RISCV_HWPROBE_KEY_CPUPERF_0`: A bitmask that contains performance
->    information about the selected set of processors.
->
-> diff --git a/arch/riscv/include/uapi/asm/hwprobe.h b/arch/riscv/include/uapi/asm/hwprobe.h
-> index 8d745a4ad8a2..7c6fdcf7ced5 100644
-> --- a/arch/riscv/include/uapi/asm/hwprobe.h
-> +++ b/arch/riscv/include/uapi/asm/hwprobe.h
-> @@ -25,6 +25,7 @@ struct riscv_hwprobe {
->  #define RISCV_HWPROBE_KEY_IMA_EXT_0	4
->  #define		RISCV_HWPROBE_IMA_FD		(1 << 0)
->  #define		RISCV_HWPROBE_IMA_C		(1 << 1)
-> +#define		RISCV_HWPROBE_IMA_V		(1 << 2)
->  #define RISCV_HWPROBE_KEY_CPUPERF_0	5
->  #define		RISCV_HWPROBE_MISALIGNED_UNKNOWN	(0 << 0)
->  #define		RISCV_HWPROBE_MISALIGNED_EMULATED	(1 << 0)
-> diff --git a/arch/riscv/kernel/sys_riscv.c b/arch/riscv/kernel/sys_riscv.c
-> index 5db29683ebee..88357a848797 100644
-> --- a/arch/riscv/kernel/sys_riscv.c
-> +++ b/arch/riscv/kernel/sys_riscv.c
-> @@ -10,6 +10,7 @@
->  #include <asm/cpufeature.h>
->  #include <asm/hwprobe.h>
->  #include <asm/sbi.h>
-> +#include <asm/vector.h>
->  #include <asm/switch_to.h>
->  #include <asm/uaccess.h>
->  #include <asm/unistd.h>
-> @@ -171,6 +172,9 @@ static void hwprobe_one_pair(struct riscv_hwprobe *pair,
->  		if (riscv_isa_extension_available(NULL, c))
->  			pair->value |= RISCV_HWPROBE_IMA_C;
->
-> +		if (has_vector())
-> +			pair->value |= RISCV_HWPROBE_IMA_V;
+> +static inline void riscv_v_vstate_off(struct pt_regs *regs)
+> +{
+> +	regs->status = (regs->status & ~SR_VS) | SR_VS_OFF;
+> +}
 > +
->  		break;
+> +static inline void riscv_v_vstate_on(struct pt_regs *regs)
+> +{
+> +	regs->status = (regs->status & ~SR_VS) | SR_VS_INITIAL;
+> +}
+> +
+> +static inline bool riscv_v_vstate_query(struct pt_regs *regs)
+> +{
+> +	return (regs->status & SR_VS) != 0;
+> +}
+> +
+>  static __always_inline void riscv_v_enable(void)
+>  {
+>  	csr_set(CSR_SSTATUS, SR_VS);
+> @@ -32,13 +54,86 @@ static __always_inline void riscv_v_disable(void)
+>  	csr_clear(CSR_SSTATUS, SR_VS);
+>  }
 >
->  	case RISCV_HWPROBE_KEY_CPUPERF_0:
+> +static __always_inline void __vstate_csr_save(struct __riscv_v_ext_state *dest)
+> +{
+> +	asm volatile (
+> +		"csrr	%0, " __stringify(CSR_VSTART) "\n\t"
+> +		"csrr	%1, " __stringify(CSR_VTYPE) "\n\t"
+> +		"csrr	%2, " __stringify(CSR_VL) "\n\t"
+> +		"csrr	%3, " __stringify(CSR_VCSR) "\n\t"
+> +		: "=r" (dest->vstart), "=r" (dest->vtype), "=r" (dest->vl),
+> +		  "=r" (dest->vcsr) : :);
+> +}
+> +
+> +static __always_inline void __vstate_csr_restore(struct __riscv_v_ext_state *src)
+> +{
+> +	asm volatile (
+> +		".option push\n\t"
+> +		".option arch, +v\n\t"
+> +		"vsetvl	 x0, %2, %1\n\t"
+> +		".option pop\n\t"
+> +		"csrw	" __stringify(CSR_VSTART) ", %0\n\t"
+> +		"csrw	" __stringify(CSR_VCSR) ", %3\n\t"
+> +		: : "r" (src->vstart), "r" (src->vtype), "r" (src->vl),
+> +		    "r" (src->vcsr) :);
+> +}
+> +
+> +static inline void __riscv_v_vstate_save(struct __riscv_v_ext_state *save_to,
+> +					 void *datap)
+> +{
+> +	unsigned long vl;
+> +
+> +	riscv_v_enable();
+> +	__vstate_csr_save(save_to);
+> +	asm volatile (
+> +		".option push\n\t"
+> +		".option arch, +v\n\t"
+> +		"vsetvli	%0, x0, e8, m8, ta, ma\n\t"
+> +		"vse8.v		v0, (%1)\n\t"
+> +		"add		%1, %1, %0\n\t"
+> +		"vse8.v		v8, (%1)\n\t"
+> +		"add		%1, %1, %0\n\t"
+> +		"vse8.v		v16, (%1)\n\t"
+> +		"add		%1, %1, %0\n\t"
+> +		"vse8.v		v24, (%1)\n\t"
+> +		".option pop\n\t"
+> +		: "=&r" (vl) : "r" (datap) : "memory");
+> +	riscv_v_disable();
+> +}
+> +
+> +static inline void __riscv_v_vstate_restore(struct __riscv_v_ext_state *restore_from,
+> +					    void *datap)
+> +{
+> +	unsigned long vl;
+> +
+> +	riscv_v_enable();
+> +	asm volatile (
+> +		".option push\n\t"
+> +		".option arch, +v\n\t"
+> +		"vsetvli	%0, x0, e8, m8, ta, ma\n\t"
+> +		"vle8.v		v0, (%1)\n\t"
+> +		"add		%1, %1, %0\n\t"
+> +		"vle8.v		v8, (%1)\n\t"
+> +		"add		%1, %1, %0\n\t"
+> +		"vle8.v		v16, (%1)\n\t"
+> +		"add		%1, %1, %0\n\t"
+> +		"vle8.v		v24, (%1)\n\t"
+> +		".option pop\n\t"
+> +		: "=&r" (vl) : "r" (datap) : "memory");
+> +	__vstate_csr_restore(restore_from);
+> +	riscv_v_disable();
+> +}
+> +
+>  #else /* ! CONFIG_RISCV_ISA_V  */
+>
+>  struct pt_regs;
+>
+>  static inline int riscv_v_setup_vsize(void) { return -EOPNOTSUPP; }
+>  static __always_inline bool has_vector(void) { return false; }
+> +static inline bool riscv_v_vstate_query(struct pt_regs *regs) { return false; }
+>  #define riscv_v_vsize (0)
+> +#define riscv_v_vstate_off(regs)		do {} while (0)
+> +#define riscv_v_vstate_on(regs)			do {} while (0)
+>
+>  #endif /* CONFIG_RISCV_ISA_V */
+>
+> diff --git a/arch/riscv/include/uapi/asm/ptrace.h b/arch/riscv/include/uapi/asm/ptrace.h
+> index 882547f6bd5c..586786d023c4 100644
+> --- a/arch/riscv/include/uapi/asm/ptrace.h
+> +++ b/arch/riscv/include/uapi/asm/ptrace.h
+> @@ -77,6 +77,23 @@ union __riscv_fp_state {
+>  	struct __riscv_q_ext_state q;
+>  };
+>
+> +struct __riscv_v_ext_state {
+> +	unsigned long vstart;
+> +	unsigned long vl;
+> +	unsigned long vtype;
+> +	unsigned long vcsr;
+> +	void *datap;
+> +	/*
+> +	 * In signal handler, datap will be set a correct user stack offset
+> +	 * and vector registers will be copied to the address of datap
+> +	 * pointer.
+> +	 *
+> +	 * In ptrace syscall, datap will be set to zero and the vector
+> +	 * registers will be copied to the address right after this
+> +	 * structure.
+> +	 */
+> +};
+> +
+>  #endif /* __ASSEMBLY__ */
+>
+>  #endif /* _UAPI_ASM_RISCV_PTRACE_H */
 
 Reviewed-by: Palmer Dabbelt <palmer@rivosinc.com>
 
