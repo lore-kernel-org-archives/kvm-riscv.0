@@ -1,132 +1,117 @@
-From: Anup Patel <apatel@ventanamicro.com>
-Date: Thu, 25 May 2023 21:28:27 +0530
-Subject: [PATCH 3/3] RISC-V: KVM: Introduce extension_enabled
-In-Reply-To: <20230522-4612f847d03e6e281e7ef84f@orel>
-References: <20230426171328.69663-1-ajones@ventanamicro.com>
- <20230426171328.69663-4-ajones@ventanamicro.com> <CAAhSdy0e5Uc0LP3YOy5Lz7hh4G7pSn70pLXSicy7aj6v90C00Q@mail.gmail.com>
- <20230522-4612f847d03e6e281e7ef84f@orel>
-Message-ID: <CAK9=C2WYfbDdWtfoaW757RpATnP61EuU+mPT1GYXGfc9QCKRhg@mail.gmail.com>
+From: Andrew Jones <ajones@ventanamicro.com>
+Date: Thu, 25 May 2023 18:40:07 +0200
+Subject: [PATCH v2 09/11] KVM: riscv: selftests: Make check_supported
+ arch specific
+In-Reply-To: <26dea518fc5e8da51e61db279d175364bfecd009.1684999824.git.haibo1.xu@intel.com>
+References: <cover.1684999824.git.haibo1.xu@intel.com>
+ <26dea518fc5e8da51e61db279d175364bfecd009.1684999824.git.haibo1.xu@intel.com>
+Message-ID: <20230525-705ddcbcd43aa63e3fd356c8@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, May 22, 2023 at 2:59?PM Andrew Jones <ajones@ventanamicro.com> wrote:
->
-> On Fri, May 19, 2023 at 08:35:31PM +0530, Anup Patel wrote:
-> > On Wed, Apr 26, 2023 at 10:43?PM Andrew Jones <ajones@ventanamicro.com> wrote:
-> > >
-> > > We need three SBI extension status values (uninitialized, enabled,
-> > > and disabled). Pairing another boolean array, extension_enabled[],
-> > > with the boolean array extension_disabled[] provides four states.
-> > > Using a pair of boolean arrays, which may eventually be changed to
-> > > a pair of bitmaps, is more space efficient than using one enum
-> > > status field. Apply the new (enabled=1,disabled=0) state, which
-> > > means either the extension doesn't have a probe function or that
-> > > its probe was successful, to avoid more than one probe of the
-> > > extension.
-> > >
-> > > Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
-> > > ---
-> > >  arch/riscv/include/asm/kvm_vcpu_sbi.h |  9 +++++++++
-> > >  arch/riscv/kvm/vcpu_sbi.c             | 11 ++++++++++-
-> > >  2 files changed, 19 insertions(+), 1 deletion(-)
-> > >
-> > > diff --git a/arch/riscv/include/asm/kvm_vcpu_sbi.h b/arch/riscv/include/asm/kvm_vcpu_sbi.h
-> > > index 4278125a38a5..e3c5e1d15e93 100644
-> > > --- a/arch/riscv/include/asm/kvm_vcpu_sbi.h
-> > > +++ b/arch/riscv/include/asm/kvm_vcpu_sbi.h
-> > > @@ -16,6 +16,15 @@
-> > >
-> > >  struct kvm_vcpu_sbi_context {
-> > >         int return_handled;
-> > > +       /*
-> > > +        * extension_enabled[] and extension_disabled[] provide SBI
-> > > +        * extensions four status values, of which we need three:
-> > > +        * (0,0) uninitialized, (1,0) enabled, (0,1) disabled. Using
-> > > +        * a pair of boolean arrays, which may eventually be changed
-> > > +        * to a pair of bitmaps, is more space efficient than using
-> > > +        * one enum status field.
-> > > +        */
-> > > +       bool extension_enabled[KVM_RISCV_SBI_EXT_MAX];
-> >
-> > The extension_enabled[] is not an appropriate name.
-> >
-> > How about extension_probe_allowed[] ?
->
-> "probe allowed" sounds to me like "we may call probe", but the meaning we
-> want is "we've already called probe and it succeeded, so the extension
-> is available" (or that we don't have probe, meaning the extension is
-> assumed available). I prefer 'available' for extensions over 'enabled',
-> but we already have 'disabled', so 'enabled' appeared to fit better.
-> Actually, it's probably best to improve the readability and simplicity,
-> at the expense of size, by dropping both the extension_enabled and
-> extension_disabled boolean arrays and switching to an 'extension_status'
-> enum, where we have SBI_EXT_UNINITIALIZED, SBI_EXT_AVAILABLE, and
-> SBI_EXT_UNAVAILABLE.
+On Thu, May 25, 2023 at 03:38:33PM +0800, Haibo Xu wrote:
+> check_supported() was used to verify whether a feature/extension was
+> supported in a guest in the get-reg-list test. Currently this info
+> can be retrieved through the KVM_CAP_ARM_* API in aarch64, but in
+> riscv, this info was only exposed through the KVM_GET_ONE_REG on
+> KVM_REG_RISCV_ISA_EXT pseudo registers.
+> 
+> Signed-off-by: Haibo Xu <haibo1.xu@intel.com>
+> ---
+>  tools/testing/selftests/kvm/get-reg-list.c | 32 +++++++++++-----------
+>  1 file changed, 16 insertions(+), 16 deletions(-)
+> 
+> diff --git a/tools/testing/selftests/kvm/get-reg-list.c b/tools/testing/selftests/kvm/get-reg-list.c
+> index f6ad7991a812..f1fc113e9719 100644
+> --- a/tools/testing/selftests/kvm/get-reg-list.c
+> +++ b/tools/testing/selftests/kvm/get-reg-list.c
+> @@ -99,6 +99,20 @@ void __weak print_reg(const char *prefix, __u64 id)
+>  }
+>  
+>  #ifdef __aarch64__
+> +static void check_supported(struct vcpu_reg_list *c)
+> +{
+> +	struct vcpu_reg_sublist *s;
+> +
+> +	for_each_sublist(c, s) {
+> +		if (!s->capability)
+> +			continue;
 
-I agree. Let's switch to enum.
+I was going to say that making this function aarch64 shouldn't be
+necessary, since riscv leaves capability set to zero and this function
+doesn't do anything, but then looking ahead I see riscv is abusing
+capability by putting isa extensions in it. IMO, capability should
+only be set to KVM_CAP_* values. Since riscv doesn't use it, then it
+should be left zero.
 
-Regards,
-Anup
+If we're going to abuse something, then I'd rather abuse the 'feature'
+member, but since it's only an int (not an unsigned long), then let's
+just add an 'unsigned long extension' member.
 
->
-> Thanks,
-> drew
->
->
-> >
-> > Any better name ?
-> >
-> > Regards,
-> > Anup
-> >
-> > >         bool extension_disabled[KVM_RISCV_SBI_EXT_MAX];
-> > >  };
-> > >
-> > > diff --git a/arch/riscv/kvm/vcpu_sbi.c b/arch/riscv/kvm/vcpu_sbi.c
-> > > index a1a82f0fbad2..344d38bbe06a 100644
-> > > --- a/arch/riscv/kvm/vcpu_sbi.c
-> > > +++ b/arch/riscv/kvm/vcpu_sbi.c
-> > > @@ -155,6 +155,12 @@ static int riscv_vcpu_set_sbi_ext_single(struct kvm_vcpu *vcpu,
-> > >         if (!sext)
-> > >                 return -ENOENT;
-> > >
-> > > +       /*
-> > > +        * We can't set scontext->extension_enabled[] to reg_val since the
-> > > +        * extension may have a probe() function which needs to confirm
-> > > +        * enablement first. Only set extension_disabled[] here and leave
-> > > +        * the extension_enabled[] setting to kvm_vcpu_sbi_find_ext().
-> > > +        */
-> > >         scontext->extension_disabled[sext->ext_idx] = !reg_val;
-> > >
-> > >         return 0;
-> > > @@ -317,7 +323,8 @@ const struct kvm_vcpu_sbi_extension *kvm_vcpu_sbi_find_ext(
-> > >                 ext = entry->ext_ptr;
-> > >
-> > >                 if (ext->extid_start <= extid && ext->extid_end >= extid) {
-> > > -                       if (entry->ext_idx >= KVM_RISCV_SBI_EXT_MAX)
-> > > +                       if (entry->ext_idx >= KVM_RISCV_SBI_EXT_MAX ||
-> > > +                           scontext->extension_enabled[entry->ext_idx])
-> > >                                 return ext;
-> > >                         if (scontext->extension_disabled[entry->ext_idx])
-> > >                                 return NULL;
-> > > @@ -325,6 +332,8 @@ const struct kvm_vcpu_sbi_extension *kvm_vcpu_sbi_find_ext(
-> > >                                 scontext->extension_disabled[entry->ext_idx] = true;
-> > >                                 return NULL;
-> > >                         }
-> > > +
-> > > +                       scontext->extension_enabled[entry->ext_idx] = true;
-> > >                         return ext;
-> > >                 }
-> > >         }
-> > > --
-> > > 2.39.2
-> > >
->
-> --
-> kvm-riscv mailing list
-> kvm-riscv at lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/kvm-riscv
+Then, the finalize_vcpu() call can be moved back to run_test(), from
+aarch64's vcpu_config_get_vcpu(). Both aarch64 and riscv will call it
+right after vcpu_config_get_vcpu() and the riscv version of it will
+do what your current riscv check_supported() is doing, using the
+new 'extension' member instead of 'capability'.
+
+And this patch gets dropped.
+
+Thanks,
+drew
+
+> +
+> +		__TEST_REQUIRE(kvm_has_cap(s->capability),
+> +			       "%s: %s not available, skipping tests\n",
+> +			       config_name(c), s->name);
+> +	}
+> +}
+> +
+>  static void prepare_vcpu_init(struct vcpu_reg_list *c, struct kvm_vcpu_init *init)
+>  {
+>  	struct vcpu_reg_sublist *s;
+> @@ -126,6 +140,8 @@ static struct kvm_vcpu *vcpu_config_get_vcpu(struct vcpu_reg_list *c, struct kvm
+>  	struct kvm_vcpu_init init = { .target = -1, };
+>  	struct kvm_vcpu *vcpu;
+>  
+> +	check_supported(c);
+> +
+>  	prepare_vcpu_init(c, &init);
+>  	vcpu = __vm_vcpu_add(vm, 0);
+>  	aarch64_vcpu_setup(vcpu, &init);
+> @@ -140,20 +156,6 @@ static struct kvm_vcpu *vcpu_config_get_vcpu(struct vcpu_reg_list *c, struct kvm
+>  }
+>  #endif
+>  
+> -static void check_supported(struct vcpu_reg_list *c)
+> -{
+> -	struct vcpu_reg_sublist *s;
+> -
+> -	for_each_sublist(c, s) {
+> -		if (!s->capability)
+> -			continue;
+> -
+> -		__TEST_REQUIRE(kvm_has_cap(s->capability),
+> -			       "%s: %s not available, skipping tests\n",
+> -			       config_name(c), s->name);
+> -	}
+> -}
+> -
+>  static bool print_list;
+>  static bool print_filtered;
+>  
+> @@ -165,8 +167,6 @@ static void run_test(struct vcpu_reg_list *c)
+>  	struct kvm_vm *vm;
+>  	struct vcpu_reg_sublist *s;
+>  
+> -	check_supported(c);
+> -
+>  	vm = vm_create_barebones();
+>  	vcpu = vcpu_config_get_vcpu(c, vm);
+>  
+> -- 
+> 2.34.1
+> 
 
