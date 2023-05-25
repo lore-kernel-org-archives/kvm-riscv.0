@@ -1,9 +1,9 @@
 From: Haibo Xu <haibo1.xu@intel.com>
-Date: Thu, 25 May 2023 15:38:29 +0800
-Subject: [PATCH v2 05/11] KVM: arm64: selftests: Delete core_reg_fixup
+Date: Thu, 25 May 2023 15:38:31 +0800
+Subject: [PATCH v2 07/11] KVM: arm64: selftests: Finish generalizing get-reg-list
 In-Reply-To: <cover.1684999824.git.haibo1.xu@intel.com>
 References: <cover.1684999824.git.haibo1.xu@intel.com>
-Message-ID: <2cdacf18888f9cfe020d218adc94e4b3b657d3e8.1684999824.git.haibo1.xu@intel.com>
+Message-ID: <87f433096a95d21bcefe440629e74cd2a2d44470.1684999824.git.haibo1.xu@intel.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -12,163 +12,75 @@ Content-Transfer-Encoding: 7bit
 
 From: Andrew Jones <ajones@ventanamicro.com>
 
-core_reg_fixup() complicates sharing the get-reg-list test with
-other architectures. Rather than work at keeping it, with plenty
-of #ifdeffery, just delete it, as it's unlikely to test a kernel
-based on anything older than v5.2 with the get-reg-list test,
-which is a test meant to check for regressions in new kernels.
-(And, an older version of the test can still be used for older
-kernels if necessary.)
+Add some unfortunate #ifdeffery to ensure the common get-reg-list.c
+can be compiled and run with other architectures. The next
+architecture to support get-reg-list should now only need to provide
+$(ARCH_DIR)/get-reg-list.c where arch-specific print_reg() and
+vcpu_configs[] get defined.
 
 Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
 ---
- .../selftests/kvm/aarch64/get-reg-list.c      | 83 +++----------------
- 1 file changed, 10 insertions(+), 73 deletions(-)
+ tools/testing/selftests/kvm/get-reg-list.c | 26 +++++++++++++++++-----
+ 1 file changed, 21 insertions(+), 5 deletions(-)
 
-diff --git a/tools/testing/selftests/kvm/aarch64/get-reg-list.c b/tools/testing/selftests/kvm/aarch64/get-reg-list.c
-index aae2056379f7..c8b44389d2ee 100644
---- a/tools/testing/selftests/kvm/aarch64/get-reg-list.c
-+++ b/tools/testing/selftests/kvm/aarch64/get-reg-list.c
-@@ -17,12 +17,10 @@
-  * by running the test with the --list command line argument.
-  *
-  * Note, the blessed list should be created from the oldest possible
-- * kernel. We can't go older than v4.15, though, because that's the first
-- * release to expose the ID system registers in KVM_GET_REG_LIST, see
-- * commit 93390c0a1b20 ("arm64: KVM: Hide unsupported AArch64 CPU features
-- * from guests"). Also, one must use the --core-reg-fixup command line
-- * option when running on an older kernel that doesn't include df205b5c6328
-- * ("KVM: arm64: Filter out invalid core register IDs in KVM_GET_REG_LIST")
-+ * kernel. We can't go older than v5.2, though, because that's the first
-+ * release which includes df205b5c6328 ("KVM: arm64: Filter out invalid
-+ * core register IDs in KVM_GET_REG_LIST"). Without that commit the core
-+ * registers won't match expectations.
-  */
- #include <stdio.h>
- #include <stdlib.h>
-@@ -269,63 +267,6 @@ static void print_reg(const char *prefix, __u64 id)
- 	}
+diff --git a/tools/testing/selftests/kvm/get-reg-list.c b/tools/testing/selftests/kvm/get-reg-list.c
+index 69bb91087081..f6ad7991a812 100644
+--- a/tools/testing/selftests/kvm/get-reg-list.c
++++ b/tools/testing/selftests/kvm/get-reg-list.c
+@@ -98,6 +98,7 @@ void __weak print_reg(const char *prefix, __u64 id)
+ 	printf("\t0x%llx,\n", id);
  }
  
--/*
-- * Older kernels listed each 32-bit word of CORE registers separately.
-- * For 64 and 128-bit registers we need to ignore the extra words. We
-- * also need to fixup the sizes, because the older kernels stated all
-- * registers were 64-bit, even when they weren't.
-- */
--static void core_reg_fixup(void)
--{
--	struct kvm_reg_list *tmp;
--	__u64 id, core_off;
--	int i;
--
--	tmp = calloc(1, sizeof(*tmp) + reg_list->n * sizeof(__u64));
--
--	for (i = 0; i < reg_list->n; ++i) {
--		id = reg_list->reg[i];
--
--		if ((id & KVM_REG_ARM_COPROC_MASK) != KVM_REG_ARM_CORE) {
--			tmp->reg[tmp->n++] = id;
--			continue;
--		}
--
--		core_off = id & ~REG_MASK;
--
--		switch (core_off) {
--		case 0x52: case 0xd2: case 0xd6:
--			/*
--			 * These offsets are pointing at padding.
--			 * We need to ignore them too.
--			 */
--			continue;
--		case KVM_REG_ARM_CORE_REG(fp_regs.vregs[0]) ...
--		     KVM_REG_ARM_CORE_REG(fp_regs.vregs[31]):
--			if (core_off & 3)
--				continue;
--			id &= ~KVM_REG_SIZE_MASK;
--			id |= KVM_REG_SIZE_U128;
--			tmp->reg[tmp->n++] = id;
--			continue;
--		case KVM_REG_ARM_CORE_REG(fp_regs.fpsr):
--		case KVM_REG_ARM_CORE_REG(fp_regs.fpcr):
--			id &= ~KVM_REG_SIZE_MASK;
--			id |= KVM_REG_SIZE_U32;
--			tmp->reg[tmp->n++] = id;
--			continue;
--		default:
--			if (core_off & 1)
--				continue;
--			tmp->reg[tmp->n++] = id;
--			break;
--		}
--	}
--
--	free(reg_list);
--	reg_list = tmp;
--}
--
++#ifdef __aarch64__
  static void prepare_vcpu_init(struct vcpu_reg_list *c, struct kvm_vcpu_init *init)
  {
  	struct vcpu_reg_sublist *s;
-@@ -364,7 +305,6 @@ static void check_supported(struct vcpu_reg_list *c)
+@@ -120,6 +121,25 @@ static void finalize_vcpu(struct kvm_vcpu *vcpu, struct vcpu_reg_list *c)
+ 	}
+ }
  
- static bool print_list;
- static bool print_filtered;
--static bool fixup_core_regs;
++static struct kvm_vcpu *vcpu_config_get_vcpu(struct vcpu_reg_list *c, struct kvm_vm *vm)
++{
++	struct kvm_vcpu_init init = { .target = -1, };
++	struct kvm_vcpu *vcpu;
++
++	prepare_vcpu_init(c, &init);
++	vcpu = __vm_vcpu_add(vm, 0);
++	aarch64_vcpu_setup(vcpu, &init);
++	finalize_vcpu(vcpu, c);
++
++	return vcpu;
++}
++#else
++static struct kvm_vcpu *vcpu_config_get_vcpu(struct vcpu_reg_list *c, struct kvm_vm *vm)
++{
++	return __vm_vcpu_add(vm, 0);
++}
++#endif
++
+ static void check_supported(struct vcpu_reg_list *c)
+ {
+ 	struct vcpu_reg_sublist *s;
+@@ -139,7 +159,6 @@ static bool print_filtered;
  
  static void run_test(struct vcpu_reg_list *c)
  {
-@@ -385,9 +325,6 @@ static void run_test(struct vcpu_reg_list *c)
+-	struct kvm_vcpu_init init = { .target = -1, };
+ 	int new_regs = 0, missing_regs = 0, i, n;
+ 	int failed_get = 0, failed_set = 0, failed_reject = 0;
+ 	struct kvm_vcpu *vcpu;
+@@ -149,10 +168,7 @@ static void run_test(struct vcpu_reg_list *c)
+ 	check_supported(c);
+ 
+ 	vm = vm_create_barebones();
+-	prepare_vcpu_init(c, &init);
+-	vcpu = __vm_vcpu_add(vm, 0);
+-	aarch64_vcpu_setup(vcpu, &init);
+-	finalize_vcpu(vcpu, c);
++	vcpu = vcpu_config_get_vcpu(c, vm);
  
  	reg_list = vcpu_get_reg_list(vcpu);
  
--	if (fixup_core_regs)
--		core_reg_fixup();
--
- 	if (print_list || print_filtered) {
- 		putchar('\n');
- 		for_each_reg(i) {
-@@ -515,7 +452,7 @@ static void help(void)
- 
- 	printf(
- 	"\n"
--	"usage: get-reg-list [--config=<selection>] [--list] [--list-filtered] [--core-reg-fixup]\n\n"
-+	"usage: get-reg-list [--config=<selection>] [--list] [--list-filtered]\n\n"
- 	" --config=<selection>        Used to select a specific vcpu configuration for the test/listing\n"
- 	"                             '<selection>' may be\n");
- 
-@@ -529,7 +466,6 @@ static void help(void)
- 	"\n"
- 	" --list                      Print the register list rather than test it (requires --config)\n"
- 	" --list-filtered             Print registers that would normally be filtered out (requires --config)\n"
--	" --core-reg-fixup            Needed when running on old kernels with broken core reg listings\n"
- 	"\n"
- 	);
- }
-@@ -561,9 +497,7 @@ int main(int ac, char **av)
- 	pid_t pid;
- 
- 	for (i = 1; i < ac; ++i) {
--		if (strcmp(av[i], "--core-reg-fixup") == 0)
--			fixup_core_regs = true;
--		else if (strncmp(av[i], "--config", 8) == 0)
-+		if (strncmp(av[i], "--config", 8) == 0)
- 			sel = parse_config(av[i]);
- 		else if (strcmp(av[i], "--list") == 0)
- 			print_list = true;
-@@ -606,8 +540,11 @@ int main(int ac, char **av)
- }
- 
- /*
-- * The current blessed list was primed with the output of kernel version
-+ * The original blessed list was primed with the output of kernel version
-  * v4.15 with --core-reg-fixup and then later updated with new registers.
-+ * (The --core-reg-fixup option and it's fixup function have been removed
-+ * from the test, as it's unlikely to use this type of test on a kernel
-+ * older than v5.2.)
-  *
-  * The blessed list is up to date with kernel version v6.4 (or so we hope)
-  */
 -- 
 2.34.1
 
