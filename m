@@ -1,50 +1,126 @@
 From: Haibo Xu <xiaobo55x@gmail.com>
-Date: Fri, 26 May 2023 14:22:52 +0800
-Subject: [PATCH v2 00/11] RISCV: Add KVM_GET_REG_LIST API
-In-Reply-To: <20230525-6e0855eb07086a96eaa82362@orel>
-References: <cover.1684999824.git.haibo1.xu@intel.com> <20230525-6e0855eb07086a96eaa82362@orel>
-Message-ID: <CAJve8o=SdjMvsVn=3Vqw3QG5SuU8nqLVC_MRAgPX+GuFZj6jvA@mail.gmail.com>
+Date: Fri, 26 May 2023 15:50:32 +0800
+Subject: [PATCH v2 09/11] KVM: riscv: selftests: Make check_supported arch specific
+In-Reply-To: <20230525-705ddcbcd43aa63e3fd356c8@orel>
+References: <cover.1684999824.git.haibo1.xu@intel.com> <26dea518fc5e8da51e61db279d175364bfecd009.1684999824.git.haibo1.xu@intel.com>
+ <20230525-705ddcbcd43aa63e3fd356c8@orel>
+Message-ID: <CAJve8onF9MFuaVsThFnhjWr6ZomB0Lhr9WXGvMiJDt5vrjeKLg@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, May 26, 2023 at 1:20?AM Andrew Jones <ajones@ventanamicro.com> wrote:
+On Fri, May 26, 2023 at 12:40?AM Andrew Jones <ajones@ventanamicro.com> wrote:
 >
-> On Thu, May 25, 2023 at 03:38:24PM +0800, Haibo Xu wrote:
-> > KVM_GET_REG_LIST will dump all register IDs that are available to
-> > KVM_GET/SET_ONE_REG and It's very useful to identify some platform
-> > regression issue during VM migration.
+> On Thu, May 25, 2023 at 03:38:33PM +0800, Haibo Xu wrote:
+> > check_supported() was used to verify whether a feature/extension was
+> > supported in a guest in the get-reg-list test. Currently this info
+> > can be retrieved through the KVM_CAP_ARM_* API in aarch64, but in
+> > riscv, this info was only exposed through the KVM_GET_ONE_REG on
+> > KVM_REG_RISCV_ISA_EXT pseudo registers.
 > >
-> > Patch 1-7 re-structured the get-reg-list test in aarch64 to make some
-> > of the code as common test framework that can be shared by riscv.
-> >
-> > Patch 8 enabled the KVM_GET_REG_LIST API in riscv and patch 9-11 added
-> > the corresponding kselftest for checking possible register regressions.
-> >
-> > The get-reg-list kvm selftest was ported from aarch64 and tested with
-> > Linux 6.4-rc1 on a Qemu riscv virt machine.
-> >
+> > Signed-off-by: Haibo Xu <haibo1.xu@intel.com>
 > > ---
-> > Changed since v1:
-> >   * rebase to Andrew's changes
-> >   * fix coding style
+> >  tools/testing/selftests/kvm/get-reg-list.c | 32 +++++++++++-----------
+> >  1 file changed, 16 insertions(+), 16 deletions(-)
 > >
-> > Andrew Jones (7):
-> >   KVM: arm64: selftests: Replace str_with_index with strdup_printf
-> >   KVM: arm64: selftests: Drop SVE cap check in print_reg
-> >   KVM: arm64: selftests: Remove print_reg's dependency on vcpu_config
-> >   KVM: arm64: selftests: Rename vcpu_config and add to kvm_util.h
-> >   KVM: arm64: selftests: Delete core_reg_fixup
-> >   KVM: arm64: selftests: Split get-reg-list test code
-> >   KVM: arm64: selftests: Finish generalizing get-reg-list
+> > diff --git a/tools/testing/selftests/kvm/get-reg-list.c b/tools/testing/selftests/kvm/get-reg-list.c
+> > index f6ad7991a812..f1fc113e9719 100644
+> > --- a/tools/testing/selftests/kvm/get-reg-list.c
+> > +++ b/tools/testing/selftests/kvm/get-reg-list.c
+> > @@ -99,6 +99,20 @@ void __weak print_reg(const char *prefix, __u64 id)
+> >  }
+> >
+> >  #ifdef __aarch64__
+> > +static void check_supported(struct vcpu_reg_list *c)
+> > +{
+> > +     struct vcpu_reg_sublist *s;
+> > +
+> > +     for_each_sublist(c, s) {
+> > +             if (!s->capability)
+> > +                     continue;
 >
-> All the patches above should also have your s-o-b since your posting them.
+> I was going to say that making this function aarch64 shouldn't be
+> necessary, since riscv leaves capability set to zero and this function
+> doesn't do anything, but then looking ahead I see riscv is abusing
+> capability by putting isa extensions in it. IMO, capability should
+> only be set to KVM_CAP_* values. Since riscv doesn't use it, then it
+> should be left zero.
+>
+> If we're going to abuse something, then I'd rather abuse the 'feature'
+> member, but since it's only an int (not an unsigned long), then let's
+> just add an 'unsigned long extension' member.
 >
 
-Sure.
+Good idea!
 
+For the new 'extension' member in riscv, I think its use case should be
+identical to the 'feature' member in aarch64(KVM_RISCV_ISA_EXT_F
+was similar to KVM_ARM_VCPU_SVE)? If so, I think we can just reuse
+the 'feature' member since the data type was not a big deal.
+
+> Then, the finalize_vcpu() call can be moved back to run_test(), from
+> aarch64's vcpu_config_get_vcpu(). Both aarch64 and riscv will call it
+> right after vcpu_config_get_vcpu() and the riscv version of it will
+> do what your current riscv check_supported() is doing, using the
+> new 'extension' member instead of 'capability'.
+>
+> And this patch gets dropped.
+>
 > Thanks,
 > drew
+>
+> > +
+> > +             __TEST_REQUIRE(kvm_has_cap(s->capability),
+> > +                            "%s: %s not available, skipping tests\n",
+> > +                            config_name(c), s->name);
+> > +     }
+> > +}
+> > +
+> >  static void prepare_vcpu_init(struct vcpu_reg_list *c, struct kvm_vcpu_init *init)
+> >  {
+> >       struct vcpu_reg_sublist *s;
+> > @@ -126,6 +140,8 @@ static struct kvm_vcpu *vcpu_config_get_vcpu(struct vcpu_reg_list *c, struct kvm
+> >       struct kvm_vcpu_init init = { .target = -1, };
+> >       struct kvm_vcpu *vcpu;
+> >
+> > +     check_supported(c);
+> > +
+> >       prepare_vcpu_init(c, &init);
+> >       vcpu = __vm_vcpu_add(vm, 0);
+> >       aarch64_vcpu_setup(vcpu, &init);
+> > @@ -140,20 +156,6 @@ static struct kvm_vcpu *vcpu_config_get_vcpu(struct vcpu_reg_list *c, struct kvm
+> >  }
+> >  #endif
+> >
+> > -static void check_supported(struct vcpu_reg_list *c)
+> > -{
+> > -     struct vcpu_reg_sublist *s;
+> > -
+> > -     for_each_sublist(c, s) {
+> > -             if (!s->capability)
+> > -                     continue;
+> > -
+> > -             __TEST_REQUIRE(kvm_has_cap(s->capability),
+> > -                            "%s: %s not available, skipping tests\n",
+> > -                            config_name(c), s->name);
+> > -     }
+> > -}
+> > -
+> >  static bool print_list;
+> >  static bool print_filtered;
+> >
+> > @@ -165,8 +167,6 @@ static void run_test(struct vcpu_reg_list *c)
+> >       struct kvm_vm *vm;
+> >       struct vcpu_reg_sublist *s;
+> >
+> > -     check_supported(c);
+> > -
+> >       vm = vm_create_barebones();
+> >       vcpu = vcpu_config_get_vcpu(c, vm);
+> >
+> > --
+> > 2.34.1
+> >
 
