@@ -1,290 +1,94 @@
-From: Guo Ren <guoren@kernel.org>
-Date: Wed, 31 May 2023 00:51:43 +0800
-Subject: [PATCH -next v20 11/26] riscv: Allocate user's vector context in
- the first-use trap
-In-Reply-To: <20230518161949.11203-12-andy.chiu@sifive.com>
-References: <20230518161949.11203-1-andy.chiu@sifive.com> <20230518161949.11203-12-andy.chiu@sifive.com>
-Message-ID: <CAJF2gTTQz8kOkHUBqh50PBLTBY0-MTBGLJbuC7-YavCMz=V31Q@mail.gmail.com>
+From: Anup Patel <anup@brainfault.org>
+Date: Tue, 30 May 2023 22:28:16 +0530
+Subject: [PATCH v2 2/3] RISC-V: KVM: Convert extension_disabled[] to ext_status[]
+In-Reply-To: <20230526102540.105013-3-ajones@ventanamicro.com>
+References: <20230526102540.105013-1-ajones@ventanamicro.com> <20230526102540.105013-3-ajones@ventanamicro.com>
+Message-ID: <CAAhSdy01s_89rhzhPtxg4HYqyjiHkUpddc8WcttgZC8dndxF-w@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, May 19, 2023 at 12:21?AM Andy Chiu <andy.chiu@sifive.com> wrote:
+On Fri, May 26, 2023 at 3:55?PM Andrew Jones <ajones@ventanamicro.com> wrote:
 >
-> Vector unit is disabled by default for all user processes. Thus, a
-> process will take a trap (illegal instruction) into kernel at the first
-> time when it uses Vector. Only after then, the kernel allocates V
-> context and starts take care of the context for that user process.
+> Change the boolean extension_disabled[] array to an array of enums,
+> ext_status[]. For now, the enum only has two states, which correspond
+> to the previous boolean states, so this patch has no intended
+> functional change. The next patch will add another state, expanding
+> the purpose of ext_status[].
 >
-> Suggested-by: Richard Henderson <richard.henderson@linaro.org>
-> Link: https://lore.kernel.org/r/3923eeee-e4dc-0911-40bf-84c34aee962d at linaro.org
-> Signed-off-by: Andy Chiu <andy.chiu@sifive.com>
+> Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
 > ---
-> Hey Heiko and Conor, I am dropping you guys' A-b, T-b, and R-b because I
-> added a check in riscv_v_first_use_handler().
+>  arch/riscv/include/asm/kvm_vcpu_sbi.h | 7 ++++++-
+>  arch/riscv/kvm/vcpu_sbi.c             | 9 ++++++---
+>  2 files changed, 12 insertions(+), 4 deletions(-)
 >
-> Changelog v20:
->  - move has_vector() into vector.c for better code readibility
->  - check elf_hwcap in the first-use trap because it might get turned off
->    if cores have different VLENs.
+> diff --git a/arch/riscv/include/asm/kvm_vcpu_sbi.h b/arch/riscv/include/asm/kvm_vcpu_sbi.h
+> index 4278125a38a5..cda99fc3d897 100644
+> --- a/arch/riscv/include/asm/kvm_vcpu_sbi.h
+> +++ b/arch/riscv/include/asm/kvm_vcpu_sbi.h
+> @@ -14,9 +14,14 @@
+>  #define KVM_SBI_VERSION_MAJOR 1
+>  #define KVM_SBI_VERSION_MINOR 0
 >
-> Changelog v18:
->  - Add blank lines (Heiko)
->  - Return immediately in insn_is_vector() if an insn matches (Heiko)
-> ---
->  arch/riscv/include/asm/insn.h   | 29 ++++++++++
->  arch/riscv/include/asm/vector.h |  2 +
->  arch/riscv/kernel/traps.c       | 26 ++++++++-
->  arch/riscv/kernel/vector.c      | 95 +++++++++++++++++++++++++++++++++
->  4 files changed, 150 insertions(+), 2 deletions(-)
+> +enum KVM_RISCV_SBI_EXT_STATUS {
+
+This upper-case name of enum looks odd.
+
+> +       KVM_RISCV_SBI_EXT_AVAILABLE,
+> +       KVM_RISCV_SBI_EXT_UNAVAILABLE,
+> +};
+> +
+>  struct kvm_vcpu_sbi_context {
+>         int return_handled;
+> -       bool extension_disabled[KVM_RISCV_SBI_EXT_MAX];
+> +       enum KVM_RISCV_SBI_EXT_STATUS ext_status[KVM_RISCV_SBI_EXT_MAX];
+>  };
 >
-> diff --git a/arch/riscv/include/asm/insn.h b/arch/riscv/include/asm/insn.h
-> index 8d5c84f2d5ef..4e1505cef8aa 100644
-> --- a/arch/riscv/include/asm/insn.h
-> +++ b/arch/riscv/include/asm/insn.h
-> @@ -137,6 +137,26 @@
->  #define RVG_OPCODE_JALR                0x67
->  #define RVG_OPCODE_JAL         0x6f
->  #define RVG_OPCODE_SYSTEM      0x73
-> +#define RVG_SYSTEM_CSR_OFF     20
-> +#define RVG_SYSTEM_CSR_MASK    GENMASK(12, 0)
-> +
-> +/* parts of opcode for RVF, RVD and RVQ */
-> +#define RVFDQ_FL_FS_WIDTH_OFF  12
-> +#define RVFDQ_FL_FS_WIDTH_MASK GENMASK(3, 0)
-> +#define RVFDQ_FL_FS_WIDTH_W    2
-> +#define RVFDQ_FL_FS_WIDTH_D    3
-> +#define RVFDQ_LS_FS_WIDTH_Q    4
-> +#define RVFDQ_OPCODE_FL                0x07
-> +#define RVFDQ_OPCODE_FS                0x27
-> +
-> +/* parts of opcode for RVV */
-> +#define RVV_OPCODE_VECTOR      0x57
-> +#define RVV_VL_VS_WIDTH_8      0
-> +#define RVV_VL_VS_WIDTH_16     5
-> +#define RVV_VL_VS_WIDTH_32     6
-> +#define RVV_VL_VS_WIDTH_64     7
-> +#define RVV_OPCODE_VL          RVFDQ_OPCODE_FL
-> +#define RVV_OPCODE_VS          RVFDQ_OPCODE_FS
+>  struct kvm_vcpu_sbi_return {
+> diff --git a/arch/riscv/kvm/vcpu_sbi.c b/arch/riscv/kvm/vcpu_sbi.c
+> index 6aa15f1b97d9..28e55ba023dc 100644
+> --- a/arch/riscv/kvm/vcpu_sbi.c
+> +++ b/arch/riscv/kvm/vcpu_sbi.c
+> @@ -155,7 +155,8 @@ static int riscv_vcpu_set_sbi_ext_single(struct kvm_vcpu *vcpu,
+>         if (!sext)
+>                 return -ENOENT;
 >
->  /* parts of opcode for RVC*/
->  #define RVC_OPCODE_C0          0x0
-> @@ -304,6 +324,15 @@ static __always_inline bool riscv_insn_is_branch(u32 code)
->         (RVC_X(x_, RVC_B_IMM_7_6_OPOFF, RVC_B_IMM_7_6_MASK) << RVC_B_IMM_7_6_OFF) | \
->         (RVC_IMM_SIGN(x_) << RVC_B_IMM_SIGN_OFF); })
->
-> +#define RVG_EXTRACT_SYSTEM_CSR(x) \
-> +       ({typeof(x) x_ = (x); RV_X(x_, RVG_SYSTEM_CSR_OFF, RVG_SYSTEM_CSR_MASK); })
-> +
-> +#define RVFDQ_EXTRACT_FL_FS_WIDTH(x) \
-> +       ({typeof(x) x_ = (x); RV_X(x_, RVFDQ_FL_FS_WIDTH_OFF, \
-> +                                  RVFDQ_FL_FS_WIDTH_MASK); })
-> +
-> +#define RVV_EXRACT_VL_VS_WIDTH(x) RVFDQ_EXTRACT_FL_FS_WIDTH(x)
-> +
->  /*
->   * Get the immediate from a J-type instruction.
->   *
-> diff --git a/arch/riscv/include/asm/vector.h b/arch/riscv/include/asm/vector.h
-> index ce6a75e9cf62..8e56da67b5cf 100644
-> --- a/arch/riscv/include/asm/vector.h
-> +++ b/arch/riscv/include/asm/vector.h
-> @@ -21,6 +21,7 @@
->
->  extern unsigned long riscv_v_vsize;
->  int riscv_v_setup_vsize(void);
-> +bool riscv_v_first_use_handler(struct pt_regs *regs);
->
->  static __always_inline bool has_vector(void)
->  {
-> @@ -165,6 +166,7 @@ struct pt_regs;
->
->  static inline int riscv_v_setup_vsize(void) { return -EOPNOTSUPP; }
->  static __always_inline bool has_vector(void) { return false; }
-> +static inline bool riscv_v_first_use_handler(struct pt_regs *regs) { return false; }
->  static inline bool riscv_v_vstate_query(struct pt_regs *regs) { return false; }
->  #define riscv_v_vsize (0)
->  #define riscv_v_vstate_save(task, regs)                do {} while (0)
-> diff --git a/arch/riscv/kernel/traps.c b/arch/riscv/kernel/traps.c
-> index 8c258b78c925..05ffdcd1424e 100644
-> --- a/arch/riscv/kernel/traps.c
-> +++ b/arch/riscv/kernel/traps.c
-> @@ -26,6 +26,7 @@
->  #include <asm/ptrace.h>
->  #include <asm/syscall.h>
->  #include <asm/thread_info.h>
-> +#include <asm/vector.h>
->
->  int show_unhandled_signals = 1;
->
-> @@ -145,8 +146,29 @@ DO_ERROR_INFO(do_trap_insn_misaligned,
->         SIGBUS, BUS_ADRALN, "instruction address misaligned");
->  DO_ERROR_INFO(do_trap_insn_fault,
->         SIGSEGV, SEGV_ACCERR, "instruction access fault");
-> -DO_ERROR_INFO(do_trap_insn_illegal,
-> -       SIGILL, ILL_ILLOPC, "illegal instruction");
-> +
-> +asmlinkage __visible __trap_section void do_trap_insn_illegal(struct pt_regs *regs)
-> +{
-> +       if (user_mode(regs)) {
-> +               irqentry_enter_from_user_mode(regs);
-> +
-> +               local_irq_enable();
-> +
-> +               if (!riscv_v_first_use_handler(regs))
-> +                       do_trap_error(regs, SIGILL, ILL_ILLOPC, regs->epc,
-> +                                     "Oops - illegal instruction");
-> +
-> +               irqentry_exit_to_user_mode(regs);
-> +       } else {
-> +               irqentry_state_t state = irqentry_nmi_enter(regs);
-> +
-> +               do_trap_error(regs, SIGILL, ILL_ILLOPC, regs->epc,
-> +                             "Oops - illegal instruction");
-> +
-> +               irqentry_nmi_exit(regs, state);
-> +       }
-> +}
-> +
->  DO_ERROR_INFO(do_trap_load_fault,
->         SIGSEGV, SEGV_ACCERR, "load access fault");
->  #ifndef CONFIG_RISCV_M_MODE
-> diff --git a/arch/riscv/kernel/vector.c b/arch/riscv/kernel/vector.c
-> index 120f1ce9abf9..0080798e8d2e 100644
-> --- a/arch/riscv/kernel/vector.c
-> +++ b/arch/riscv/kernel/vector.c
-> @@ -4,10 +4,19 @@
->   * Author: Andy Chiu <andy.chiu@sifive.com>
->   */
->  #include <linux/export.h>
-> +#include <linux/sched/signal.h>
-> +#include <linux/types.h>
-> +#include <linux/slab.h>
-> +#include <linux/sched.h>
-> +#include <linux/uaccess.h>
->
-> +#include <asm/thread_info.h>
-> +#include <asm/processor.h>
-> +#include <asm/insn.h>
->  #include <asm/vector.h>
->  #include <asm/csr.h>
->  #include <asm/elf.h>
-> +#include <asm/ptrace.h>
->  #include <asm/bug.h>
->
->  unsigned long riscv_v_vsize __read_mostly;
-> @@ -34,3 +43,89 @@ int riscv_v_setup_vsize(void)
+> -       scontext->extension_disabled[sext->ext_idx] = !reg_val;
+> +       scontext->ext_status[sext->ext_idx] = reg_val ?
+> +               KVM_RISCV_SBI_EXT_AVAILABLE : KVM_RISCV_SBI_EXT_UNAVAILABLE;
 >
 >         return 0;
 >  }
-> +
-> +static bool insn_is_vector(u32 insn_buf)
-> +{
-> +       u32 opcode = insn_buf & __INSN_OPCODE_MASK;
-> +       u32 width, csr;
-> +
-> +       /*
-> +        * All V-related instructions, including CSR operations are 4-Byte. So,
-> +        * do not handle if the instruction length is not 4-Byte.
-> +        */
-> +       if (unlikely(GET_INSN_LENGTH(insn_buf) != 4))
-> +               return false;
-> +
-> +       switch (opcode) {
-> +       case RVV_OPCODE_VECTOR:
-> +               return true;
-> +       case RVV_OPCODE_VL:
-> +       case RVV_OPCODE_VS:
-> +               width = RVV_EXRACT_VL_VS_WIDTH(insn_buf);
-> +               if (width == RVV_VL_VS_WIDTH_8 || width == RVV_VL_VS_WIDTH_16 ||
-> +                   width == RVV_VL_VS_WIDTH_32 || width == RVV_VL_VS_WIDTH_64)
-> +                       return true;
-> +
-> +               break;
-> +       case RVG_OPCODE_SYSTEM:
-> +               csr = RVG_EXTRACT_SYSTEM_CSR(insn_buf);
-> +               if ((csr >= CSR_VSTART && csr <= CSR_VCSR) ||
-> +                   (csr >= CSR_VL && csr <= CSR_VLENB))
-> +                       return true;
-> +       }
-> +
-> +       return false;
-> +}
-> +
-> +static int riscv_v_thread_zalloc(void)
-> +{
-> +       void *datap;
-> +
-> +       datap = kzalloc(riscv_v_vsize, GFP_KERNEL);
-> +       if (!datap)
-> +               return -ENOMEM;
-> +
-> +       current->thread.vstate.datap = datap;
-> +       memset(&current->thread.vstate, 0, offsetof(struct __riscv_v_ext_state,
-> +                                                   datap));
-> +       return 0;
-> +}
-> +
-> +bool riscv_v_first_use_handler(struct pt_regs *regs)
-> +{
-> +       u32 __user *epc = (u32 __user *)regs->epc;
-> +       u32 insn = (u32)regs->badaddr;
-> +
-> +       /* Do not handle if V is not supported, or disabled */
-> +       if (!has_vector() || !(elf_hwcap & COMPAT_HWCAP_ISA_V))
-> +               return false;
-> +
-> +       /* If V has been enabled then it is not the first-use trap */
-> +       if (riscv_v_vstate_query(regs))
-> +               return false;
-> +
-> +       /* Get the instruction */
-> +       if (!insn) {
-> +               if (__get_user(insn, epc))
-> +                       return false;
-> +       }
-
-As spec has said:
-4.1.11 Supervisor Trap Value (stval) Register
-...
-On an illegal instruction trap, stval may be written with the rst XLEN
-or ILEN bits of the faulting
-instruction as described below.
-
-So
-u32 insn = (u32)regs->badaddr;
-is enough.
-
-Do you need an ALTERNATIVE fixup here?
-
-> +
-> +       /* Filter out non-V instructions */
-> +       if (!insn_is_vector(insn))
-> +               return false;
-> +
-> +       /* Sanity check. datap should be null by the time of the first-use trap */
-> +       WARN_ON(current->thread.vstate.datap);
-> +
-> +       /*
-> +        * Now we sure that this is a V instruction. And it executes in the
-> +        * context where VS has been off. So, try to allocate the user's V
-> +        * context and resume execution.
-> +        */
-> +       if (riscv_v_thread_zalloc()) {
-> +               force_sig(SIGKILL);
-> +               return true;
-> +       }
-> +       riscv_v_vstate_on(regs);
-> +       return true;
-> +}
+> @@ -180,7 +181,8 @@ static int riscv_vcpu_get_sbi_ext_single(struct kvm_vcpu *vcpu,
+>         if (!sext)
+>                 return -ENOENT;
+>
+> -       *reg_val = !scontext->extension_disabled[sext->ext_idx];
+> +       *reg_val = scontext->ext_status[sext->ext_idx] ==
+> +                               KVM_RISCV_SBI_EXT_AVAILABLE;
+>
+>         return 0;
+>  }
+> @@ -316,7 +318,8 @@ const struct kvm_vcpu_sbi_extension *kvm_vcpu_sbi_find_ext(
+>                 if (sext->ext_ptr->extid_start <= extid &&
+>                     sext->ext_ptr->extid_end >= extid) {
+>                         if (sext->ext_idx < KVM_RISCV_SBI_EXT_MAX &&
+> -                           scontext->extension_disabled[sext->ext_idx])
+> +                           scontext->ext_status[sext->ext_idx] ==
+> +                                               KVM_RISCV_SBI_EXT_UNAVAILABLE)
+>                                 return NULL;
+>                         return sbi_ext[i].ext_ptr;
+>                 }
 > --
-> 2.17.1
+> 2.40.1
 >
 
+Otherwise, this looks good to me.
 
--- 
-Best Regards
- Guo Ren
+Reviewed-by: Anup Patel <anup@brainfault.org>
+
+Regards,
+Anup
 
