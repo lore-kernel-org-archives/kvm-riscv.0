@@ -1,124 +1,89 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Tue, 30 May 2023 19:50:24 +0200
-Subject: [PATCH v3 3/3] RISC-V: KVM: Probe for SBI extension status
-In-Reply-To: <20230530175024.354527-1-ajones@ventanamicro.com>
-References: <20230530175024.354527-1-ajones@ventanamicro.com>
-Message-ID: <20230530175024.354527-4-ajones@ventanamicro.com>
+From: Guo Ren <guoren@kernel.org>
+Date: Thu, 1 Jun 2023 12:46:10 +0800
+Subject: [PATCH -next v20 03/26] riscv: hwprobe: Add support for probing V
+ in RISCV_HWPROBE_KEY_IMA_EXT_0
+In-Reply-To: <20230518161949.11203-4-andy.chiu@sifive.com>
+References: <20230518161949.11203-1-andy.chiu@sifive.com> <20230518161949.11203-4-andy.chiu@sifive.com>
+Message-ID: <CAJF2gTRpTdXeDXczaVCmZdd0fNQADBPpd3+VMnYsd+XcudHSXg@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Rather than defaulting the status to available and allowing the user
-to set availability, default to uninitialized and only allow the user
-to set the status to unavailable. Then, when an extension is first
-used, ensure it is available by invoking its probe function, if it
-has one (an extension is assumed available if it doesn't have a probe
-function). Checking the status in kvm_vcpu_sbi_find_ext() ensures
-extension functions cannot be invoked when they're unavailable.
+On Fri, May 19, 2023 at 12:20?AM Andy Chiu <andy.chiu@sifive.com> wrote:
+>
+> Probing kernel support for Vector extension is available now. This only
+> add detection for V only. Extenions like Zvfh, Zk are not in this scope.
+>
+> Signed-off-by: Andy Chiu <andy.chiu@sifive.com>
+Reviewed-by: Guo Ren <guoren@kernel.org>
 
-Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
-Reviewed-by: Anup Patel <anup@brainfault.org>
----
- arch/riscv/include/asm/kvm_vcpu_sbi.h |  1 +
- arch/riscv/kvm/vcpu_sbi.c             | 51 ++++++++++++++++++++-------
- 2 files changed, 40 insertions(+), 12 deletions(-)
+> ---
+> Changelog v20:
+>  - Fix a typo in document, and remove duplicated probes (Heiko)
+>  - probe V extension in RISCV_HWPROBE_KEY_IMA_EXT_0 key only (Palmer,
+>    Evan)
+> ---
+>  Documentation/riscv/hwprobe.rst       | 3 +++
+>  arch/riscv/include/uapi/asm/hwprobe.h | 1 +
+>  arch/riscv/kernel/sys_riscv.c         | 4 ++++
+>  3 files changed, 8 insertions(+)
+>
+> diff --git a/Documentation/riscv/hwprobe.rst b/Documentation/riscv/hwprobe.rst
+> index 9f0dd62dcb5d..7431d9d01c73 100644
+> --- a/Documentation/riscv/hwprobe.rst
+> +++ b/Documentation/riscv/hwprobe.rst
+> @@ -64,6 +64,9 @@ The following keys are defined:
+>    * :c:macro:`RISCV_HWPROBE_IMA_C`: The C extension is supported, as defined
+>      by version 2.2 of the RISC-V ISA manual.
+>
+> +  * :c:macro:`RISCV_HWPROBE_IMA_V`: The V extension is supported, as defined by
+> +    version 1.0 of the RISC-V Vector extension manual.
+> +
+>  * :c:macro:`RISCV_HWPROBE_KEY_CPUPERF_0`: A bitmask that contains performance
+>    information about the selected set of processors.
+>
+> diff --git a/arch/riscv/include/uapi/asm/hwprobe.h b/arch/riscv/include/uapi/asm/hwprobe.h
+> index 8d745a4ad8a2..7c6fdcf7ced5 100644
+> --- a/arch/riscv/include/uapi/asm/hwprobe.h
+> +++ b/arch/riscv/include/uapi/asm/hwprobe.h
+> @@ -25,6 +25,7 @@ struct riscv_hwprobe {
+>  #define RISCV_HWPROBE_KEY_IMA_EXT_0    4
+>  #define                RISCV_HWPROBE_IMA_FD            (1 << 0)
+>  #define                RISCV_HWPROBE_IMA_C             (1 << 1)
+> +#define                RISCV_HWPROBE_IMA_V             (1 << 2)
+>  #define RISCV_HWPROBE_KEY_CPUPERF_0    5
+>  #define                RISCV_HWPROBE_MISALIGNED_UNKNOWN        (0 << 0)
+>  #define                RISCV_HWPROBE_MISALIGNED_EMULATED       (1 << 0)
+> diff --git a/arch/riscv/kernel/sys_riscv.c b/arch/riscv/kernel/sys_riscv.c
+> index 5db29683ebee..88357a848797 100644
+> --- a/arch/riscv/kernel/sys_riscv.c
+> +++ b/arch/riscv/kernel/sys_riscv.c
+> @@ -10,6 +10,7 @@
+>  #include <asm/cpufeature.h>
+>  #include <asm/hwprobe.h>
+>  #include <asm/sbi.h>
+> +#include <asm/vector.h>
+>  #include <asm/switch_to.h>
+>  #include <asm/uaccess.h>
+>  #include <asm/unistd.h>
+> @@ -171,6 +172,9 @@ static void hwprobe_one_pair(struct riscv_hwprobe *pair,
+>                 if (riscv_isa_extension_available(NULL, c))
+>                         pair->value |= RISCV_HWPROBE_IMA_C;
+>
+> +               if (has_vector())
+> +                       pair->value |= RISCV_HWPROBE_IMA_V;
+> +
+>                 break;
+>
+>         case RISCV_HWPROBE_KEY_CPUPERF_0:
+> --
+> 2.17.1
+>
 
-diff --git a/arch/riscv/include/asm/kvm_vcpu_sbi.h b/arch/riscv/include/asm/kvm_vcpu_sbi.h
-index ad1588d6064b..14ee03df252d 100644
---- a/arch/riscv/include/asm/kvm_vcpu_sbi.h
-+++ b/arch/riscv/include/asm/kvm_vcpu_sbi.h
-@@ -15,6 +15,7 @@
- #define KVM_SBI_VERSION_MINOR 0
- 
- enum kvm_riscv_sbi_ext_status {
-+	KVM_RISCV_SBI_EXT_UNINITIALIZED,
- 	KVM_RISCV_SBI_EXT_AVAILABLE,
- 	KVM_RISCV_SBI_EXT_UNAVAILABLE,
- };
-diff --git a/arch/riscv/kvm/vcpu_sbi.c b/arch/riscv/kvm/vcpu_sbi.c
-index 28e55ba023dc..b3e92c11e54f 100644
---- a/arch/riscv/kvm/vcpu_sbi.c
-+++ b/arch/riscv/kvm/vcpu_sbi.c
-@@ -155,8 +155,15 @@ static int riscv_vcpu_set_sbi_ext_single(struct kvm_vcpu *vcpu,
- 	if (!sext)
- 		return -ENOENT;
- 
--	scontext->ext_status[sext->ext_idx] = reg_val ?
--		KVM_RISCV_SBI_EXT_AVAILABLE : KVM_RISCV_SBI_EXT_UNAVAILABLE;
-+	/*
-+	 * We can't set the extension status to available here, since it may
-+	 * have a probe() function which needs to confirm availability first,
-+	 * but it may be too early to call that here. We can set the status to
-+	 * unavailable, though.
-+	 */
-+	if (!reg_val)
-+		scontext->ext_status[sext->ext_idx] =
-+			KVM_RISCV_SBI_EXT_UNAVAILABLE;
- 
- 	return 0;
- }
-@@ -181,8 +188,15 @@ static int riscv_vcpu_get_sbi_ext_single(struct kvm_vcpu *vcpu,
- 	if (!sext)
- 		return -ENOENT;
- 
--	*reg_val = scontext->ext_status[sext->ext_idx] ==
--				KVM_RISCV_SBI_EXT_AVAILABLE;
-+	/*
-+	 * If the extension status is still uninitialized, then we should probe
-+	 * to determine if it's available, but it may be too early to do that
-+	 * here. The best we can do is report that the extension has not been
-+	 * disabled, i.e. we return 1 when the extension is available and also
-+	 * when it only may be available.
-+	 */
-+	*reg_val = scontext->ext_status[sext->ext_idx] !=
-+				KVM_RISCV_SBI_EXT_UNAVAILABLE;
- 
- 	return 0;
- }
-@@ -309,19 +323,32 @@ int kvm_riscv_vcpu_get_reg_sbi_ext(struct kvm_vcpu *vcpu,
- const struct kvm_vcpu_sbi_extension *kvm_vcpu_sbi_find_ext(
- 				struct kvm_vcpu *vcpu, unsigned long extid)
- {
--	int i;
--	const struct kvm_riscv_sbi_extension_entry *sext;
- 	struct kvm_vcpu_sbi_context *scontext = &vcpu->arch.sbi_context;
-+	const struct kvm_riscv_sbi_extension_entry *entry;
-+	const struct kvm_vcpu_sbi_extension *ext;
-+	int i;
- 
- 	for (i = 0; i < ARRAY_SIZE(sbi_ext); i++) {
--		sext = &sbi_ext[i];
--		if (sext->ext_ptr->extid_start <= extid &&
--		    sext->ext_ptr->extid_end >= extid) {
--			if (sext->ext_idx < KVM_RISCV_SBI_EXT_MAX &&
--			    scontext->ext_status[sext->ext_idx] ==
-+		entry = &sbi_ext[i];
-+		ext = entry->ext_ptr;
-+
-+		if (ext->extid_start <= extid && ext->extid_end >= extid) {
-+			if (entry->ext_idx >= KVM_RISCV_SBI_EXT_MAX ||
-+			    scontext->ext_status[entry->ext_idx] ==
-+						KVM_RISCV_SBI_EXT_AVAILABLE)
-+				return ext;
-+			if (scontext->ext_status[entry->ext_idx] ==
- 						KVM_RISCV_SBI_EXT_UNAVAILABLE)
- 				return NULL;
--			return sbi_ext[i].ext_ptr;
-+			if (ext->probe && !ext->probe(vcpu)) {
-+				scontext->ext_status[entry->ext_idx] =
-+					KVM_RISCV_SBI_EXT_UNAVAILABLE;
-+				return NULL;
-+			}
-+
-+			scontext->ext_status[entry->ext_idx] =
-+				KVM_RISCV_SBI_EXT_AVAILABLE;
-+			return ext;
- 		}
- 	}
- 
+
 -- 
-2.40.1
-
+Best Regards
+ Guo Ren
 
