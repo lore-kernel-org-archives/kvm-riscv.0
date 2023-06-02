@@ -1,89 +1,156 @@
 From: Vipin Sharma <vipinsh@google.com>
-Date: Fri,  2 Jun 2023 09:09:01 -0700
-Subject: [PATCH v2 03/16] KVM: selftests: Pass the count of read and write
- accesses from guest to host
+Date: Fri,  2 Jun 2023 09:09:05 -0700
+Subject: [PATCH v2 07/16] KVM: mmu: Move mmu lock/unlock to arch code for
+ clear dirty log
 In-Reply-To: <20230602160914.4011728-1-vipinsh@google.com>
 References: <20230602160914.4011728-1-vipinsh@google.com>
-Message-ID: <20230602160914.4011728-4-vipinsh@google.com>
+Message-ID: <20230602160914.4011728-8-vipinsh@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Pass the number of read and write accesses done in the memstress guest
-code to userspace.
+Move mmu_lock lock and unlock calls from common code in
+kvm_clear_dirty_log_protect() to arch specific code in
+kvm_arch_mmu_enable_log_dirty_pt_masked(). None of the other code inside
+the for loop of kvm_arch_mmu_enable_log_dirty_pt_masked() needs mmu_lock
+exclusivity apart from the arch specific API call.
 
-These counts will provide a  way to measure vCPUs performance during
-memstress and dirty logging related tests. For example, in
-dirty_log_perf_test this can be used to measure how much progress vCPUs
-are able to do while VMM is getting and clearing dirty logs.
+Future commits will change clear dirty log operations under mmu read
+lock instead of write lock for ARM and, potentially, x86 architectures.
 
-In dirty_log_perf_test, each vCPU runs once and then waits until
-iteration value is incremented by main thread, therefore, these access
-counts will not provide much useful information except for observing
-read vs write counts.
-
-However, in future commits, dirty_log_perf_test behavior will be changed
-to allow vCPUs to execute independent of userspace iterations. This will
-mimic real world workload where guest keeps on executing while VMM is
-collecting and clearing dirty logs separately. With read and write
-accesses known for each vCPU, impact of get and clear dirty log APIs can
-be quantified.
-
-Note that access counts will not be 100% reliable in knowing vCPUs
-performances. Few things which can affect vCPU progress:
-1. vCPUs are scheduled less by host
-2. Userspace operations run for longer time which end up giving vCPUs
-   more time to execute.
+No functional changes intended.
 
 Signed-off-by: Vipin Sharma <vipinsh@google.com>
 ---
- tools/testing/selftests/kvm/lib/memstress.c | 13 ++++++++++---
- 1 file changed, 10 insertions(+), 3 deletions(-)
+ arch/arm64/kvm/mmu.c   | 2 ++
+ arch/mips/kvm/mmu.c    | 2 ++
+ arch/riscv/kvm/mmu.c   | 2 ++
+ arch/x86/kvm/mmu/mmu.c | 3 +++
+ virt/kvm/dirty_ring.c  | 2 --
+ virt/kvm/kvm_main.c    | 4 ----
+ 6 files changed, 9 insertions(+), 6 deletions(-)
 
-diff --git a/tools/testing/selftests/kvm/lib/memstress.c b/tools/testing/selftests/kvm/lib/memstress.c
-index 5f1d3173c238..ac53cc6e36d7 100644
---- a/tools/testing/selftests/kvm/lib/memstress.c
-+++ b/tools/testing/selftests/kvm/lib/memstress.c
-@@ -49,6 +49,8 @@ void memstress_guest_code(uint32_t vcpu_idx)
- 	struct memstress_args *args = &memstress_args;
- 	struct memstress_vcpu_args *vcpu_args = &args->vcpu_args[vcpu_idx];
- 	struct guest_random_state rand_state;
-+	uint64_t write_access;
-+	uint64_t read_access;
- 	uint64_t gva;
- 	uint64_t pages;
- 	uint64_t addr;
-@@ -64,6 +66,8 @@ void memstress_guest_code(uint32_t vcpu_idx)
- 	GUEST_ASSERT(vcpu_args->vcpu_idx == vcpu_idx);
+diff --git a/arch/arm64/kvm/mmu.c b/arch/arm64/kvm/mmu.c
+index 6db9ef288ec3..0c2c2c0846f1 100644
+--- a/arch/arm64/kvm/mmu.c
++++ b/arch/arm64/kvm/mmu.c
+@@ -1125,6 +1125,7 @@ void kvm_arch_mmu_enable_log_dirty_pt_masked(struct kvm *kvm,
+ 	phys_addr_t start = (base_gfn +  __ffs(mask)) << PAGE_SHIFT;
+ 	phys_addr_t end = (base_gfn + __fls(mask) + 1) << PAGE_SHIFT;
  
- 	while (true) {
-+		write_access = 0;
-+		read_access = 0;
- 		for (i = 0; i < pages; i++) {
- 			if (args->random_access)
- 				page = guest_random_u32(&rand_state) % pages;
-@@ -72,13 +76,16 @@ void memstress_guest_code(uint32_t vcpu_idx)
++	write_lock(&kvm->mmu_lock);
+ 	lockdep_assert_held_write(&kvm->mmu_lock);
  
- 			addr = gva + (page * args->guest_page_size);
- 
--			if (guest_random_u32(&rand_state) % 100 < args->write_percent)
-+			if (guest_random_u32(&rand_state) % 100 < args->write_percent) {
- 				*(uint64_t *)addr = 0x0123456789ABCDEF;
--			else
-+				write_access++;
-+			} else {
- 				READ_ONCE(*(uint64_t *)addr);
-+				read_access++;
-+			}
- 		}
- 
--		GUEST_SYNC(1);
-+		GUEST_SYNC_ARGS(1, read_access, write_access, 0, 0);
- 	}
+ 	stage2_wp_range(&kvm->arch.mmu, start, end);
+@@ -1139,6 +1140,7 @@ void kvm_arch_mmu_enable_log_dirty_pt_masked(struct kvm *kvm,
+ 	 */
+ 	if (kvm_dirty_log_manual_protect_and_init_set(kvm))
+ 		kvm_mmu_split_huge_pages(kvm, start, end);
++	write_unlock(&kvm->mmu_lock);
  }
  
+ static void kvm_send_hwpoison_signal(unsigned long address, short lsb)
+diff --git a/arch/mips/kvm/mmu.c b/arch/mips/kvm/mmu.c
+index e8c08988ed37..33c5af333ff9 100644
+--- a/arch/mips/kvm/mmu.c
++++ b/arch/mips/kvm/mmu.c
+@@ -419,7 +419,9 @@ void kvm_arch_mmu_enable_log_dirty_pt_masked(struct kvm *kvm,
+ 	gfn_t start = base_gfn +  __ffs(mask);
+ 	gfn_t end = base_gfn + __fls(mask);
+ 
++	spin_lock(&kvm->mmu_lock);
+ 	kvm_mips_mkclean_gpa_pt(kvm, start, end);
++	spin_unlock(&kvm->mmu_lock);
+ }
+ 
+ /*
+diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
+index f2eb47925806..fe026ff5eb65 100644
+--- a/arch/riscv/kvm/mmu.c
++++ b/arch/riscv/kvm/mmu.c
+@@ -399,7 +399,9 @@ void kvm_arch_mmu_enable_log_dirty_pt_masked(struct kvm *kvm,
+ 	phys_addr_t start = (base_gfn +  __ffs(mask)) << PAGE_SHIFT;
+ 	phys_addr_t end = (base_gfn + __fls(mask) + 1) << PAGE_SHIFT;
+ 
++	spin_lock(&kvm->mmu_lock);
+ 	gstage_wp_range(kvm, start, end);
++	spin_unlock(&kvm->mmu_lock);
+ }
+ 
+ void kvm_arch_sync_dirty_log(struct kvm *kvm, struct kvm_memory_slot *memslot)
+diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
+index c8961f45e3b1..6fff4228e31c 100644
+--- a/arch/x86/kvm/mmu/mmu.c
++++ b/arch/x86/kvm/mmu/mmu.c
+@@ -1382,6 +1382,7 @@ void kvm_arch_mmu_enable_log_dirty_pt_masked(struct kvm *kvm,
+ 				struct kvm_memory_slot *slot,
+ 				gfn_t gfn_offset, unsigned long mask)
+ {
++	write_lock(&kvm->mmu_lock);
+ 	/*
+ 	 * Huge pages are NOT write protected when we start dirty logging in
+ 	 * initially-all-set mode; must write protect them here so that they
+@@ -1412,6 +1413,8 @@ void kvm_arch_mmu_enable_log_dirty_pt_masked(struct kvm *kvm,
+ 		kvm_mmu_clear_dirty_pt_masked(kvm, slot, gfn_offset, mask);
+ 	else
+ 		kvm_mmu_write_protect_pt_masked(kvm, slot, gfn_offset, mask);
++
++	write_unlock(&kvm->mmu_lock);
+ }
+ 
+ int kvm_cpu_dirty_log_size(void)
+diff --git a/virt/kvm/dirty_ring.c b/virt/kvm/dirty_ring.c
+index c1cd7dfe4a90..d894c58d2152 100644
+--- a/virt/kvm/dirty_ring.c
++++ b/virt/kvm/dirty_ring.c
+@@ -66,9 +66,7 @@ static void kvm_reset_dirty_gfn(struct kvm *kvm, u32 slot, u64 offset, u64 mask)
+ 	if (!memslot || (offset + __fls(mask)) >= memslot->npages)
+ 		return;
+ 
+-	KVM_MMU_LOCK(kvm);
+ 	kvm_arch_mmu_enable_log_dirty_pt_masked(kvm, memslot, offset, mask);
+-	KVM_MMU_UNLOCK(kvm);
+ }
+ 
+ int kvm_dirty_ring_alloc(struct kvm_dirty_ring *ring, int index, u32 size)
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index 13aed654111a..747bfa2f1dd3 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -2160,7 +2160,6 @@ static int kvm_get_dirty_log_protect(struct kvm *kvm, struct kvm_dirty_log *log)
+ 		dirty_bitmap_buffer = kvm_second_dirty_bitmap(memslot);
+ 		memset(dirty_bitmap_buffer, 0, n);
+ 
+-		KVM_MMU_LOCK(kvm);
+ 		for (i = 0; i < n / sizeof(long); i++) {
+ 			unsigned long mask;
+ 			gfn_t offset;
+@@ -2176,7 +2175,6 @@ static int kvm_get_dirty_log_protect(struct kvm *kvm, struct kvm_dirty_log *log)
+ 			kvm_arch_mmu_enable_log_dirty_pt_masked(kvm, memslot,
+ 								offset, mask);
+ 		}
+-		KVM_MMU_UNLOCK(kvm);
+ 	}
+ 
+ 	if (flush)
+@@ -2271,7 +2269,6 @@ static int kvm_clear_dirty_log_protect(struct kvm *kvm,
+ 	if (copy_from_user(dirty_bitmap_buffer, log->dirty_bitmap, n))
+ 		return -EFAULT;
+ 
+-	KVM_MMU_LOCK(kvm);
+ 	for (offset = log->first_page, i = offset / BITS_PER_LONG,
+ 		 n = DIV_ROUND_UP(log->num_pages, BITS_PER_LONG); n--;
+ 	     i++, offset += BITS_PER_LONG) {
+@@ -2294,7 +2291,6 @@ static int kvm_clear_dirty_log_protect(struct kvm *kvm,
+ 								offset, mask);
+ 		}
+ 	}
+-	KVM_MMU_UNLOCK(kvm);
+ 
+ 	if (flush)
+ 		kvm_arch_flush_remote_tlbs_memslot(kvm, memslot);
 -- 
 2.41.0.rc0.172.g3f132b7071-goog
 
