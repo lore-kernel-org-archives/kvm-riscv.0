@@ -1,41 +1,51 @@
 From: Vipin Sharma <vipinsh@google.com>
-Date: Fri,  2 Jun 2023 09:09:04 -0700
-Subject: [PATCH v2 06/16] KVM: arm64: Correct the kvm_pgtable_stage2_flush() documentation
+Date: Fri,  2 Jun 2023 09:09:09 -0700
+Subject: [PATCH v2 11/16] KVM: arm64: Use KVM_PGTABLE_WALK_SHARED flag instead
+ of KVM_PGTABLE_WALK_HANDLE_FAULT
 In-Reply-To: <20230602160914.4011728-1-vipinsh@google.com>
 References: <20230602160914.4011728-1-vipinsh@google.com>
-Message-ID: <20230602160914.4011728-7-vipinsh@google.com>
+Message-ID: <20230602160914.4011728-12-vipinsh@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Remove _range suffix from kvm_pgtable_stage2_flush_range which is used
-in documentation of kvm_pgtable_stage2_flush(). There is no function
-named kvm_pgtable_stage2_flush_range().
+Check against shared page table walker flag instead of fault handler
+flag when determining if walk should continue or not.
 
-Fixes: 93c66b40d728 ("KVM: arm64: Add support for stage-2 cache flushing in generic page-table")
+vCPU page fault handlers uses shared page walker and there are no
+other shared page walkers in Arm. This will change in future commit when
+clear-dirty-log will use shared page walker and continue, retry or
+terminate logic for a walk will change between shared page walkers.
+
 Signed-off-by: Vipin Sharma <vipinsh@google.com>
 ---
- arch/arm64/include/asm/kvm_pgtable.h | 5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+ arch/arm64/kvm/hyp/pgtable.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/arm64/include/asm/kvm_pgtable.h b/arch/arm64/include/asm/kvm_pgtable.h
-index 850d65f705fa..d542a671c564 100644
---- a/arch/arm64/include/asm/kvm_pgtable.h
-+++ b/arch/arm64/include/asm/kvm_pgtable.h
-@@ -657,9 +657,8 @@ int kvm_pgtable_stage2_relax_perms(struct kvm_pgtable *pgt, u64 addr,
- bool kvm_pgtable_stage2_is_young(struct kvm_pgtable *pgt, u64 addr);
+diff --git a/arch/arm64/kvm/hyp/pgtable.c b/arch/arm64/kvm/hyp/pgtable.c
+index bc8c5c4ac1cf..7f80e953b502 100644
+--- a/arch/arm64/kvm/hyp/pgtable.c
++++ b/arch/arm64/kvm/hyp/pgtable.c
+@@ -191,7 +191,7 @@ static bool kvm_pgtable_walk_continue(const struct kvm_pgtable_walker *walker,
+ 	 * Callbacks can also return ENOENT when PTE which is visited is not
+ 	 * valid.
+ 	 *
+-	 * In the context of a fault handler interpret these as a signal
++	 * In the context of a shared walker interpret these as a signal
+ 	 * to retry guest execution.
+ 	 *
+ 	 * Ignore these return codes altogether for walkers outside a fault
+@@ -199,7 +199,7 @@ static bool kvm_pgtable_walk_continue(const struct kvm_pgtable_walker *walker,
+ 	 * with the page table walk.
+ 	 */
+ 	if (r == -EAGAIN || r == -ENOENT)
+-		return !(walker->flags & KVM_PGTABLE_WALK_HANDLE_FAULT);
++		return !(walker->flags & KVM_PGTABLE_WALK_SHARED);
  
- /**
-- * kvm_pgtable_stage2_flush_range() - Clean and invalidate data cache to Point
-- * 				      of Coherency for guest stage-2 address
-- *				      range.
-+ * kvm_pgtable_stage2_flush() - Clean and invalidate data cache to Point of
-+ *				Coherency for guest stage-2 address range.
-  * @pgt:	Page-table structure initialised by kvm_pgtable_stage2_init*().
-  * @addr:	Intermediate physical address from which to flush.
-  * @size:	Size of the range.
+ 	return !r;
+ }
 -- 
 2.41.0.rc0.172.g3f132b7071-goog
 
