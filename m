@@ -1,146 +1,124 @@
 From: Vipin Sharma <vipinsh@google.com>
-Date: Fri,  2 Jun 2023 09:09:10 -0700
-Subject: [PATCH v2 12/16] KVM: arm64: Retry shared page table walks outside of
- fault handler
+Date: Fri,  2 Jun 2023 09:09:08 -0700
+Subject: [PATCH v2 10/16] KVM: arm64: Return -ENOENT if PTE is not valid in stage2_attr_walker
 In-Reply-To: <20230602160914.4011728-1-vipinsh@google.com>
 References: <20230602160914.4011728-1-vipinsh@google.com>
-Message-ID: <20230602160914.4011728-13-vipinsh@google.com>
+Message-ID: <20230602160914.4011728-11-vipinsh@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-For a shared page walker which is not fault handler, retry the walk if
-walker callback function returns -EAGAIN, or continue to the next SPTE
-if callback function return -ENOENT. Update the kvm_pgtable_walk
-documentation.
+Return -ENOENT from stage2_attr_walker for invalid PTE. Continue page
+table walk if walker callback returns -ENOENT outside of the fault
+handler path else terminate the walk. In fault handler path, similar to
+-EAGAIN in user_mem_abort, retry guest execution.
 
-For fault handler logic remains same, i.e. exit the walk and resume the
-guest when getting -EAGAIN and -ENOENT errors from walker callback
-function.
+stage2_attr_walker() is used from multiple places like, write
+protection, MMU notifier callbacks, and relaxing permission during vCPU
+faults. This function returns -EAGAIN for different cases:
+1. When PTE is not valid.
+2. When cmpxchg() fails while setting new SPTE.
 
-Currently, there is no page walker which is shared and not a fault
-handler, but this will change in future patches when clear-dirty-log
-walker will use MMU read lock and run via shared walker.
+For non-shared walkers, like write protection and MMU notifier, above 2
+cases are just ignored by walker and it moves to the next SPTE. #2 will
+never happen for non-shared walkers as they don't use cmpxchg() for
+updating SPTEs.
+
+For shared walkers, like vCPU fault handler, above 2 cases results in
+walk termination.
+
+In future commits, clear-dirty-log walker will write protect SPTEs under
+MMU read lock and use shared page table walker. This will result in two
+shared page table walkers type, vCPUs fault handler and clear-dirty-log,
+competing with each other and sometime causing cmpxchg() failure. So,
+-EAGAIN in clear-dirty-log walker due to cmpxchg() failure must be
+retried. Whereas, -EAGAIN in the clear-dirty-log due to invalid SPTE
+must be ignored instead of exiting as per the current logic of shared
+page table walker. This is not needed for vCPU fault handler which also
+runs via shared page table walker and terminates walk on getting -EAGAIN
+due to invalid SPTE.
+
+To handle all these scenarios, stage2_attr_walker must return different
+error codes for invalid SPTEs and cmxchg() failure. -ENOENT for invalid
+SPTE is chosen because it is not used by any other shared walker. When
+clear-dirty-log will be changed to use shared page table walker, it will
+be possible to differentiate cases of retrying, continuing or
+terminating the walk for shared fault handler and shared
+clear-dirty-log.
 
 Signed-off-by: Vipin Sharma <vipinsh@google.com>
 ---
- arch/arm64/include/asm/kvm_pgtable.h | 23 ++++++++++-------
- arch/arm64/kvm/hyp/pgtable.c         | 38 +++++++++++++++++++++++-----
- 2 files changed, 46 insertions(+), 15 deletions(-)
+ arch/arm64/include/asm/kvm_pgtable.h |  1 +
+ arch/arm64/kvm/hyp/pgtable.c         | 19 ++++++++++++-------
+ arch/arm64/kvm/mmu.c                 |  2 +-
+ 3 files changed, 14 insertions(+), 8 deletions(-)
 
 diff --git a/arch/arm64/include/asm/kvm_pgtable.h b/arch/arm64/include/asm/kvm_pgtable.h
-index 23e7e7851f1d..145be12a5fc2 100644
+index 957bc20dab00..23e7e7851f1d 100644
 --- a/arch/arm64/include/asm/kvm_pgtable.h
 +++ b/arch/arm64/include/asm/kvm_pgtable.h
-@@ -716,15 +716,20 @@ int kvm_pgtable_stage2_split(struct kvm_pgtable *pgt, u64 addr, u64 size,
-  * type of the walker, i.e. shared walker (vCPU fault handlers) or non-shared
-  * walker.
-  *
-- * Walker Type  | Callback         | Walker action
-- * -------------|------------------|--------------
-- * Non-Shared   | 0                | Continue
-- * Non-Shared   | -EAGAIN          | Continue
-- * Non-Shared   | -ENOENT          | Continue
-- * Non-Shared   | Any other        | Exit
-- * -------------|------------------|--------------
-- * Shared       | 0                | Continue
-- * Shared       | Any other        | Exit
-+ * Walker Type            | Callback         | Walker action
-+ * -----------------------|------------------|--------------
-+ * Non-Shared             | 0                | Continue
-+ * Non-Shared             | -EAGAIN          | Continue
-+ * Non-Shared             | -ENOENT          | Continue
-+ * Non-Shared             | Any other        | Exit
-+ * -----------------------|------------------|--------------
-+ * Shared                 | 0                | Continue
-+ * Shared                 | -EAGAIN          | Retry
-+ * Shared                 | -ENOENT          | Continue
-+ * Shared                 | Any other        | Exit
-+ * -----------------------|------------------|--------------
-+ * Shared (Fault Handler) | 0                | Continue
-+ * Shared (Fault Handler) | Any other        | Exit
-  *
-  * Return: 0 on success, negative error code on failure.
-  */
+@@ -720,6 +720,7 @@ int kvm_pgtable_stage2_split(struct kvm_pgtable *pgt, u64 addr, u64 size,
+  * -------------|------------------|--------------
+  * Non-Shared   | 0                | Continue
+  * Non-Shared   | -EAGAIN          | Continue
++ * Non-Shared   | -ENOENT          | Continue
+  * Non-Shared   | Any other        | Exit
+  * -------------|------------------|--------------
+  * Shared       | 0                | Continue
 diff --git a/arch/arm64/kvm/hyp/pgtable.c b/arch/arm64/kvm/hyp/pgtable.c
-index 7f80e953b502..23cda3de2dd4 100644
+index a3a0812b2301..bc8c5c4ac1cf 100644
 --- a/arch/arm64/kvm/hyp/pgtable.c
 +++ b/arch/arm64/kvm/hyp/pgtable.c
-@@ -191,15 +191,21 @@ static bool kvm_pgtable_walk_continue(const struct kvm_pgtable_walker *walker,
- 	 * Callbacks can also return ENOENT when PTE which is visited is not
- 	 * valid.
+@@ -186,14 +186,19 @@ static bool kvm_pgtable_walk_continue(const struct kvm_pgtable_walker *walker,
+ 	/*
+ 	 * Visitor callbacks return EAGAIN when the conditions that led to a
+ 	 * fault are no longer reflected in the page tables due to a race to
+-	 * update a PTE. In the context of a fault handler this is interpreted
+-	 * as a signal to retry guest execution.
++	 * update a PTE.
  	 *
--	 * In the context of a shared walker interpret these as a signal
-+	 * In the context of a fault handler interpret these as a signal
- 	 * to retry guest execution.
- 	 *
--	 * Ignore these return codes altogether for walkers outside a fault
--	 * handler (e.g. write protecting a range of memory) and chug along
-+	 * In the context of a shared walker which is not fault handler
-+	 * interpret:
-+	 * 1. EAGAIN - A signal to retry walk again.
-+	 * 2. ENOENT - A signal to ignore and move on to next SPTE.
+-	 * Ignore the return code altogether for walkers outside a fault handler
+-	 * (e.g. write protecting a range of memory) and chug along with the
+-	 * page table walk.
++	 * Callbacks can also return ENOENT when PTE which is visited is not
++	 * valid.
 +	 *
-+	 * Ignore these return codes altogether for other walkers and chug along
- 	 * with the page table walk.
++	 * In the context of a fault handler interpret these as a signal
++	 * to retry guest execution.
++	 *
++	 * Ignore these return codes altogether for walkers outside a fault
++	 * handler (e.g. write protecting a range of memory) and chug along
++	 * with the page table walk.
  	 */
--	if (r == -EAGAIN || r == -ENOENT)
-+	if (r == -EAGAIN)
- 		return !(walker->flags & KVM_PGTABLE_WALK_SHARED);
-+	if (r == -ENOENT)
-+		return !(walker->flags & KVM_PGTABLE_WALK_HANDLE_FAULT);
+-	if (r == -EAGAIN)
++	if (r == -EAGAIN || r == -ENOENT)
+ 		return !(walker->flags & KVM_PGTABLE_WALK_HANDLE_FAULT);
  
  	return !r;
+@@ -1072,7 +1077,7 @@ static int stage2_attr_walker(const struct kvm_pgtable_visit_ctx *ctx,
+ 	struct kvm_pgtable_mm_ops *mm_ops = ctx->mm_ops;
+ 
+ 	if (!kvm_pte_valid(ctx->old))
+-		return -EAGAIN;
++		return -ENOENT;
+ 
+ 	data->level = ctx->level;
+ 	data->pte = pte;
+diff --git a/arch/arm64/kvm/mmu.c b/arch/arm64/kvm/mmu.c
+index 1030921d89f8..356dc4131023 100644
+--- a/arch/arm64/kvm/mmu.c
++++ b/arch/arm64/kvm/mmu.c
+@@ -1551,7 +1551,7 @@ static int user_mem_abort(struct kvm_vcpu *vcpu, phys_addr_t fault_ipa,
+ 	read_unlock(&kvm->mmu_lock);
+ 	kvm_set_pfn_accessed(pfn);
+ 	kvm_release_pfn_clean(pfn);
+-	return ret != -EAGAIN ? ret : 0;
++	return (ret != -EAGAIN && ret != -ENOENT) ? ret : 0;
  }
-@@ -260,24 +266,44 @@ static inline int __kvm_pgtable_visit(struct kvm_pgtable_walk_data *data,
- 	return ret;
- }
  
-+static bool kvm_pgtable_walk_retry(const struct kvm_pgtable_walker *walker,
-+				   int r)
-+{
-+	/*
-+	 * All shared page table walks where visitor callbacks return -EAGAIN
-+	 * should be retried with the exception of fault handler. In case of
-+	 * fault handler retry is achieved by resuming the guest.
-+	 */
-+	if (r == -EAGAIN)
-+		return (walker->flags & KVM_PGTABLE_WALK_SHARED) &&
-+				!(walker->flags & KVM_PGTABLE_WALK_HANDLE_FAULT);
-+
-+	return !r;
-+}
-+
- static int __kvm_pgtable_walk(struct kvm_pgtable_walk_data *data,
- 			      struct kvm_pgtable_mm_ops *mm_ops, kvm_pteref_t pgtable, u32 level)
- {
- 	u32 idx;
- 	int ret = 0;
-+	kvm_pteref_t pteref;
- 
- 	if (WARN_ON_ONCE(level >= KVM_PGTABLE_MAX_LEVELS))
- 		return -EINVAL;
- 
- 	for (idx = kvm_pgtable_idx(data, level); idx < PTRS_PER_PTE; ++idx) {
--		kvm_pteref_t pteref = &pgtable[idx];
-+retry:
-+		pteref = &pgtable[idx];
- 
- 		if (data->addr >= data->end)
- 			break;
- 
- 		ret = __kvm_pgtable_visit(data, mm_ops, pteref, level);
--		if (ret)
-+		if (ret) {
-+			if (kvm_pgtable_walk_retry(data->walker, ret))
-+				goto retry;
- 			break;
-+		}
- 	}
- 
- 	return ret;
+ /* Resolve the access fault by making the page young again. */
 -- 
 2.41.0.rc0.172.g3f132b7071-goog
 
