@@ -1,113 +1,89 @@
 From: Vipin Sharma <vipinsh@google.com>
-Date: Fri,  2 Jun 2023 09:09:02 -0700
-Subject: [PATCH v2 04/16] KVM: selftests: Print read-write progress by vCPUs
- in dirty_log_perf_test
+Date: Fri,  2 Jun 2023 09:09:01 -0700
+Subject: [PATCH v2 03/16] KVM: selftests: Pass the count of read and write
+ accesses from guest to host
 In-Reply-To: <20230602160914.4011728-1-vipinsh@google.com>
 References: <20230602160914.4011728-1-vipinsh@google.com>
-Message-ID: <20230602160914.4011728-5-vipinsh@google.com>
+Message-ID: <20230602160914.4011728-4-vipinsh@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Fetch count of read and write accesses from guest code and print sum of
-these values across all vCPUs in dirty_log_perf_test.
+Pass the number of read and write accesses done in the memstress guest
+code to userspace.
 
-This data provides progress made by vCPUs during dirty logging
-operations. Since, vCPUs execute in lockstep with userspace dirty log
-iterations, this metric is not very interesting. However, in future
-commits when dirty_log_perf_test can execute vCPUs independently from
-dirty log iterations then this metric can give good measure of vCPUs
-performance during dirty logging.
+These counts will provide a  way to measure vCPUs performance during
+memstress and dirty logging related tests. For example, in
+dirty_log_perf_test this can be used to measure how much progress vCPUs
+are able to do while VMM is getting and clearing dirty logs.
+
+In dirty_log_perf_test, each vCPU runs once and then waits until
+iteration value is incremented by main thread, therefore, these access
+counts will not provide much useful information except for observing
+read vs write counts.
+
+However, in future commits, dirty_log_perf_test behavior will be changed
+to allow vCPUs to execute independent of userspace iterations. This will
+mimic real world workload where guest keeps on executing while VMM is
+collecting and clearing dirty logs separately. With read and write
+accesses known for each vCPU, impact of get and clear dirty log APIs can
+be quantified.
+
+Note that access counts will not be 100% reliable in knowing vCPUs
+performances. Few things which can affect vCPU progress:
+1. vCPUs are scheduled less by host
+2. Userspace operations run for longer time which end up giving vCPUs
+   more time to execute.
 
 Signed-off-by: Vipin Sharma <vipinsh@google.com>
 ---
- .../selftests/kvm/dirty_log_perf_test.c        | 18 +++++++++++++++++-
- 1 file changed, 17 insertions(+), 1 deletion(-)
+ tools/testing/selftests/kvm/lib/memstress.c | 13 ++++++++++---
+ 1 file changed, 10 insertions(+), 3 deletions(-)
 
-diff --git a/tools/testing/selftests/kvm/dirty_log_perf_test.c b/tools/testing/selftests/kvm/dirty_log_perf_test.c
-index 2e31f13aaba6..14b012a0dcb1 100644
---- a/tools/testing/selftests/kvm/dirty_log_perf_test.c
-+++ b/tools/testing/selftests/kvm/dirty_log_perf_test.c
-@@ -12,6 +12,7 @@
- #include <stdlib.h>
- #include <time.h>
- #include <pthread.h>
-+#include <stdatomic.h>
- #include <linux/bitmap.h>
+diff --git a/tools/testing/selftests/kvm/lib/memstress.c b/tools/testing/selftests/kvm/lib/memstress.c
+index 5f1d3173c238..ac53cc6e36d7 100644
+--- a/tools/testing/selftests/kvm/lib/memstress.c
++++ b/tools/testing/selftests/kvm/lib/memstress.c
+@@ -49,6 +49,8 @@ void memstress_guest_code(uint32_t vcpu_idx)
+ 	struct memstress_args *args = &memstress_args;
+ 	struct memstress_vcpu_args *vcpu_args = &args->vcpu_args[vcpu_idx];
+ 	struct guest_random_state rand_state;
++	uint64_t write_access;
++	uint64_t read_access;
+ 	uint64_t gva;
+ 	uint64_t pages;
+ 	uint64_t addr;
+@@ -64,6 +66,8 @@ void memstress_guest_code(uint32_t vcpu_idx)
+ 	GUEST_ASSERT(vcpu_args->vcpu_idx == vcpu_idx);
  
- #include "kvm_util.h"
-@@ -66,17 +67,22 @@ static u64 dirty_log_manual_caps;
- static bool host_quit;
- static int iteration;
- static int vcpu_last_completed_iteration[KVM_MAX_VCPUS];
-+static atomic_ullong total_reads;
-+static atomic_ullong total_writes;
+ 	while (true) {
++		write_access = 0;
++		read_access = 0;
+ 		for (i = 0; i < pages; i++) {
+ 			if (args->random_access)
+ 				page = guest_random_u32(&rand_state) % pages;
+@@ -72,13 +76,16 @@ void memstress_guest_code(uint32_t vcpu_idx)
  
- static void vcpu_worker(struct memstress_vcpu_args *vcpu_args)
- {
- 	struct kvm_vcpu *vcpu = vcpu_args->vcpu;
- 	int vcpu_idx = vcpu_args->vcpu_idx;
- 	uint64_t pages_count = 0;
-+	uint64_t reads = 0;
-+	uint64_t writes = 0;
- 	struct kvm_run *run;
- 	struct timespec start;
- 	struct timespec ts_diff;
- 	struct timespec total = (struct timespec){0};
- 	struct timespec avg;
-+	struct ucall uc = {};
- 	int ret;
+ 			addr = gva + (page * args->guest_page_size);
  
- 	run = vcpu->run;
-@@ -89,7 +95,7 @@ static void vcpu_worker(struct memstress_vcpu_args *vcpu_args)
- 		ts_diff = timespec_elapsed(start);
+-			if (guest_random_u32(&rand_state) % 100 < args->write_percent)
++			if (guest_random_u32(&rand_state) % 100 < args->write_percent) {
+ 				*(uint64_t *)addr = 0x0123456789ABCDEF;
+-			else
++				write_access++;
++			} else {
+ 				READ_ONCE(*(uint64_t *)addr);
++				read_access++;
++			}
+ 		}
  
- 		TEST_ASSERT(ret == 0, "vcpu_run failed: %d\n", ret);
--		TEST_ASSERT(get_ucall(vcpu, NULL) == UCALL_SYNC,
-+		TEST_ASSERT(get_ucall(vcpu, &uc) == UCALL_SYNC,
- 			    "Invalid guest sync status: exit_reason=%s\n",
- 			    exit_reason_str(run->exit_reason));
- 
-@@ -101,6 +107,8 @@ static void vcpu_worker(struct memstress_vcpu_args *vcpu_args)
- 		if (current_iteration) {
- 			pages_count += vcpu_args->pages;
- 			total = timespec_add(total, ts_diff);
-+			reads += uc.args[2];
-+			writes += uc.args[3];
- 			pr_debug("vCPU %d iteration %d dirty memory time: %ld.%.9lds\n",
- 				vcpu_idx, current_iteration, ts_diff.tv_sec,
- 				ts_diff.tv_nsec);
-@@ -123,6 +131,8 @@ static void vcpu_worker(struct memstress_vcpu_args *vcpu_args)
- 	pr_debug("\nvCPU %d dirtied 0x%lx pages over %d iterations in %ld.%.9lds. (Avg %ld.%.9lds/iteration)\n",
- 		vcpu_idx, pages_count, vcpu_last_completed_iteration[vcpu_idx],
- 		total.tv_sec, total.tv_nsec, avg.tv_sec, avg.tv_nsec);
-+	atomic_fetch_add(&total_reads, reads);
-+	atomic_fetch_add(&total_writes, writes);
+-		GUEST_SYNC(1);
++		GUEST_SYNC_ARGS(1, read_access, write_access, 0, 0);
+ 	}
  }
  
- struct test_params {
-@@ -270,6 +280,8 @@ static void run_test(enum vm_guest_mode mode, void *arg)
- 			      dirty_log_manual_caps);
- 
- 	arch_setup_vm(vm, nr_vcpus);
-+	atomic_store(&total_reads, 0);
-+	atomic_store(&total_writes, 0);
- 
- 	/* Start the iterations */
- 	iteration = 0;
-@@ -388,6 +400,10 @@ static void run_test(enum vm_guest_mode mode, void *arg)
- 			clear_dirty_log_total.tv_nsec, avg.tv_sec, avg.tv_nsec);
- 	}
- 
-+	pr_info("Total pages touched: %llu (Reads: %llu, Writes: %llu)\n",
-+		atomic_load(&total_reads) + atomic_load(&total_writes),
-+		atomic_load(&total_reads), atomic_load(&total_writes));
-+
- 	free_bitmaps(bitmaps, p->slots);
- 	arch_cleanup_vm(vm);
- 	memstress_destroy_vm(vm);
 -- 
 2.41.0.rc0.172.g3f132b7071-goog
 
