@@ -1,132 +1,113 @@
 From: Vipin Sharma <vipinsh@google.com>
-Date: Fri,  2 Jun 2023 09:09:00 -0700
-Subject: [PATCH v2 02/16] KVM: selftests: Add optional delay between
- consecutive clear-dirty-log calls
+Date: Fri,  2 Jun 2023 09:09:02 -0700
+Subject: [PATCH v2 04/16] KVM: selftests: Print read-write progress by vCPUs
+ in dirty_log_perf_test
 In-Reply-To: <20230602160914.4011728-1-vipinsh@google.com>
 References: <20230602160914.4011728-1-vipinsh@google.com>
-Message-ID: <20230602160914.4011728-3-vipinsh@google.com>
+Message-ID: <20230602160914.4011728-5-vipinsh@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-In dirty_log_perf_test, add option "-l" to wait between consecutive
-clear-dirty-log calls. Accept delay from user in milliseconds. If option
-is not provided then fallback to no wait between clear calls.
+Fetch count of read and write accesses from guest code and print sum of
+these values across all vCPUs in dirty_log_perf_test.
 
-This allows dirty_log_perf_test to mimic real world use where after
-clearing dirty memory, some time is spent in transferring memory before
-making a subsequeunt clear-dirty-log call.
+This data provides progress made by vCPUs during dirty logging
+operations. Since, vCPUs execute in lockstep with userspace dirty log
+iterations, this metric is not very interesting. However, in future
+commits when dirty_log_perf_test can execute vCPUs independently from
+dirty log iterations then this metric can give good measure of vCPUs
+performance during dirty logging.
 
 Signed-off-by: Vipin Sharma <vipinsh@google.com>
 ---
- .../selftests/kvm/dirty_log_perf_test.c       | 35 +++++++++++++++----
- 1 file changed, 29 insertions(+), 6 deletions(-)
+ .../selftests/kvm/dirty_log_perf_test.c        | 18 +++++++++++++++++-
+ 1 file changed, 17 insertions(+), 1 deletion(-)
 
 diff --git a/tools/testing/selftests/kvm/dirty_log_perf_test.c b/tools/testing/selftests/kvm/dirty_log_perf_test.c
-index 119ddfc7306e..2e31f13aaba6 100644
+index 2e31f13aaba6..14b012a0dcb1 100644
 --- a/tools/testing/selftests/kvm/dirty_log_perf_test.c
 +++ b/tools/testing/selftests/kvm/dirty_log_perf_test.c
-@@ -135,6 +135,7 @@ struct test_params {
- 	uint32_t random_seed;
- 	bool random_access;
- 	uint64_t clear_chunk_size;
-+	int clear_chunk_wait_time_ms;
- };
+@@ -12,6 +12,7 @@
+ #include <stdlib.h>
+ #include <time.h>
+ #include <pthread.h>
++#include <stdatomic.h>
+ #include <linux/bitmap.h>
  
- static void toggle_dirty_logging(struct kvm_vm *vm, int slots, bool enable)
-@@ -173,8 +174,14 @@ static void get_dirty_log(struct kvm_vm *vm, unsigned long *bitmaps[], int slots
- static void clear_dirty_log_in_chunks(struct kvm_vm *vm,
- 				      unsigned long *bitmaps[], int slots,
- 				      uint64_t pages_per_slot,
--				      uint64_t pages_per_clear)
-+				      uint64_t pages_per_clear, int wait_ms,
-+				      struct timespec *time_taken)
+ #include "kvm_util.h"
+@@ -66,17 +67,22 @@ static u64 dirty_log_manual_caps;
+ static bool host_quit;
+ static int iteration;
+ static int vcpu_last_completed_iteration[KVM_MAX_VCPUS];
++static atomic_ullong total_reads;
++static atomic_ullong total_writes;
+ 
+ static void vcpu_worker(struct memstress_vcpu_args *vcpu_args)
  {
-+	struct timespec wait = {
-+		.tv_sec = wait_ms / 1000,
-+		.tv_nsec = (wait_ms % 1000) * 1000000ull,
-+	};
-+	struct timespec start, end;
- 	uint64_t from, clear_pages_count;
- 	int i, slot;
+ 	struct kvm_vcpu *vcpu = vcpu_args->vcpu;
+ 	int vcpu_idx = vcpu_args->vcpu_idx;
+ 	uint64_t pages_count = 0;
++	uint64_t reads = 0;
++	uint64_t writes = 0;
+ 	struct kvm_run *run;
+ 	struct timespec start;
+ 	struct timespec ts_diff;
+ 	struct timespec total = (struct timespec){0};
+ 	struct timespec avg;
++	struct ucall uc = {};
+ 	int ret;
  
-@@ -186,12 +193,17 @@ static void clear_dirty_log_in_chunks(struct kvm_vm *vm,
- 		while (from < pages_per_slot) {
- 			if (from + clear_pages_count > pages_per_slot)
- 				clear_pages_count = pages_per_slot - from;
-+			clock_gettime(CLOCK_MONOTONIC, &start);
- 			kvm_vm_clear_dirty_log(vm, slot, bitmaps[i], from,
- 					       clear_pages_count);
-+			end = timespec_elapsed(start);
-+			*time_taken = timespec_add(*time_taken, end);
- 			from += clear_pages_count;
-+			if (wait_ms)
-+				nanosleep(&wait, NULL);
-+
- 		}
+ 	run = vcpu->run;
+@@ -89,7 +95,7 @@ static void vcpu_worker(struct memstress_vcpu_args *vcpu_args)
+ 		ts_diff = timespec_elapsed(start);
+ 
+ 		TEST_ASSERT(ret == 0, "vcpu_run failed: %d\n", ret);
+-		TEST_ASSERT(get_ucall(vcpu, NULL) == UCALL_SYNC,
++		TEST_ASSERT(get_ucall(vcpu, &uc) == UCALL_SYNC,
+ 			    "Invalid guest sync status: exit_reason=%s\n",
+ 			    exit_reason_str(run->exit_reason));
+ 
+@@ -101,6 +107,8 @@ static void vcpu_worker(struct memstress_vcpu_args *vcpu_args)
+ 		if (current_iteration) {
+ 			pages_count += vcpu_args->pages;
+ 			total = timespec_add(total, ts_diff);
++			reads += uc.args[2];
++			writes += uc.args[3];
+ 			pr_debug("vCPU %d iteration %d dirty memory time: %ld.%.9lds\n",
+ 				vcpu_idx, current_iteration, ts_diff.tv_sec,
+ 				ts_diff.tv_nsec);
+@@ -123,6 +131,8 @@ static void vcpu_worker(struct memstress_vcpu_args *vcpu_args)
+ 	pr_debug("\nvCPU %d dirtied 0x%lx pages over %d iterations in %ld.%.9lds. (Avg %ld.%.9lds/iteration)\n",
+ 		vcpu_idx, pages_count, vcpu_last_completed_iteration[vcpu_idx],
+ 		total.tv_sec, total.tv_nsec, avg.tv_sec, avg.tv_nsec);
++	atomic_fetch_add(&total_reads, reads);
++	atomic_fetch_add(&total_writes, writes);
+ }
+ 
+ struct test_params {
+@@ -270,6 +280,8 @@ static void run_test(enum vm_guest_mode mode, void *arg)
+ 			      dirty_log_manual_caps);
+ 
+ 	arch_setup_vm(vm, nr_vcpus);
++	atomic_store(&total_reads, 0);
++	atomic_store(&total_writes, 0);
+ 
+ 	/* Start the iterations */
+ 	iteration = 0;
+@@ -388,6 +400,10 @@ static void run_test(enum vm_guest_mode mode, void *arg)
+ 			clear_dirty_log_total.tv_nsec, avg.tv_sec, avg.tv_nsec);
  	}
--
- }
  
- static unsigned long **alloc_bitmaps(int slots, uint64_t pages_per_slot)
-@@ -329,11 +341,11 @@ static void run_test(enum vm_guest_mode mode, void *arg)
- 			iteration, ts_diff.tv_sec, ts_diff.tv_nsec);
- 
- 		if (dirty_log_manual_caps) {
--			clock_gettime(CLOCK_MONOTONIC, &start);
- 			clear_dirty_log_in_chunks(vm, bitmaps, p->slots,
- 						  pages_per_slot,
--						  pages_per_clear);
--			ts_diff = timespec_elapsed(start);
-+						  pages_per_clear,
-+						  p->clear_chunk_wait_time_ms,
-+						  &ts_diff);
- 			clear_dirty_log_total = timespec_add(clear_dirty_log_total,
- 							     ts_diff);
- 			pr_info("Iteration %d clear dirty log time: %ld.%.9lds\n",
-@@ -435,6 +447,11 @@ static void help(char *name)
- 	       "     the memslot size then whole memslot is cleared in one call.\n"
- 	       "     Size must be aligned to the host page size. e.g. 10M or 3G\n"
- 	       "     (default: UINT64_MAX, clears whole memslot in one call)\n");
-+	printf(" -l: Specify time in milliseconds to wait after Clear-Dirty-Log\n"
-+	       "     call. This allows to mimic use cases where flow is to get\n"
-+	       "     dirty log followed by multiple clear dirty log calls and\n"
-+	       "     sending corresponding memory to destination (in this test\n"
-+	       "     sending will be just idle waiting)\n");
- 	puts("");
- 	exit(0);
- }
-@@ -451,6 +468,7 @@ int main(int argc, char *argv[])
- 		.random_seed = 1,
- 		.write_percent = 100,
- 		.clear_chunk_size = UINT64_MAX,
-+		.clear_chunk_wait_time_ms = 0,
- 	};
- 	int opt;
- 
-@@ -461,7 +479,7 @@ int main(int argc, char *argv[])
- 
- 	guest_modes_append_default();
- 
--	while ((opt = getopt(argc, argv, "ab:c:eghi:k:m:nop:r:s:v:x:w:")) != -1) {
-+	while ((opt = getopt(argc, argv, "ab:c:eghi:k:l:m:nop:r:s:v:x:w:")) != -1) {
- 		switch (opt) {
- 		case 'a':
- 			p.random_access = true;
-@@ -488,6 +506,11 @@ int main(int argc, char *argv[])
- 		case 'k':
- 			p.clear_chunk_size = parse_size(optarg);
- 			break;
-+		case 'l':
-+			p.clear_chunk_wait_time_ms =
-+					atoi_non_negative("Clear dirty log chunks wait time",
-+							  optarg);
-+			break;
- 		case 'm':
- 			guest_modes_cmdline(optarg);
- 			break;
++	pr_info("Total pages touched: %llu (Reads: %llu, Writes: %llu)\n",
++		atomic_load(&total_reads) + atomic_load(&total_writes),
++		atomic_load(&total_reads), atomic_load(&total_writes));
++
+ 	free_bitmaps(bitmaps, p->slots);
+ 	arch_cleanup_vm(vm);
+ 	memstress_destroy_vm(vm);
 -- 
 2.41.0.rc0.172.g3f132b7071-goog
 
