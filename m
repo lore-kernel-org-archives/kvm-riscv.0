@@ -1,59 +1,76 @@
-From: Anup Patel <apatel@ventanamicro.com>
-Date: Mon,  5 Jun 2023 19:32:08 +0530
-Subject: [PATCH v2 8/8] riscv: Fix guest RAM alloc size computation for RV32
-In-Reply-To: <20230605140208.272027-1-apatel@ventanamicro.com>
-References: <20230605140208.272027-1-apatel@ventanamicro.com>
-Message-ID: <20230605140208.272027-9-apatel@ventanamicro.com>
+From: Zhi Wang <zhi.wang.linux@gmail.com>
+Date: Mon, 5 Jun 2023 22:35:20 +0800
+Subject: [PATCH v2 09/16] KVM: arm64: Document the page table walker
+ actions based on the callback's return value
+In-Reply-To: <20230602160914.4011728-10-vipinsh@google.com>
+References: <20230602160914.4011728-1-vipinsh@google.com>
+	<20230602160914.4011728-10-vipinsh@google.com>
+Message-ID: <20230605223520.00007fbd.zhi.wang.linux@gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Currently, we ensure that guest RAM alloc size is at least 2M for
-THP which works well for RV64 but breaks hugepage support for RV32.
-To fix this, we use 4M as hugepage size for RV32.
+On Fri,  2 Jun 2023 09:09:07 -0700
+Vipin Sharma <vipinsh@google.com> wrote:
 
-Fixes: 867159a7963b ("riscv: Implement Guest/VM arch functions")
-Signed-off-by: Anup Patel <apatel@ventanamicro.com>
----
- riscv/kvm.c | 15 ++++++++++++---
- 1 file changed, 12 insertions(+), 3 deletions(-)
+> Document what the page table walker do when walker callback function returns
+> a value.
+> 
+> Current documentation is not correct as negative error of -EAGAIN on a
+> non-shared page table walker doesn't terminate the walker and continues
+> to the next step.
+> 
+> There might be a better place to keep this information, for now this
+> documentation will work as a reference guide until a better way is
+> found.
+>
 
-diff --git a/riscv/kvm.c b/riscv/kvm.c
-index 4d6f5cb..8daad94 100644
---- a/riscv/kvm.c
-+++ b/riscv/kvm.c
-@@ -61,16 +61,25 @@ void kvm__arch_set_cmdline(char *cmdline, bool video)
- {
- }
- 
-+#if __riscv_xlen == 64
-+#define HUGEPAGE_SIZE	SZ_2M
-+#else
-+#define HUGEPAGE_SIZE	SZ_4M
-+#endif
-+
- void kvm__arch_init(struct kvm *kvm)
- {
- 	/*
- 	 * Allocate guest memory. We must align our buffer to 64K to
- 	 * correlate with the maximum guest page size for virtio-mmio.
--	 * If using THP, then our minimal alignment becomes 2M.
--	 * 2M trumps 64K, so let's go with that.
-+	 * If using THP, then our minimal alignment becomes hugepage
-+	 * size. The hugepage size is always greater than 64K, so
-+	 * let's go with that.
- 	 */
- 	kvm->ram_size = min(kvm->cfg.ram_size, (u64)RISCV_MAX_MEMORY(kvm));
--	kvm->arch.ram_alloc_size = kvm->ram_size + SZ_2M;
-+	kvm->arch.ram_alloc_size = kvm->ram_size;
-+	if (!kvm->cfg.hugetlbfs_path)
-+		kvm->arch.ram_alloc_size += HUGEPAGE_SIZE;
- 	kvm->arch.ram_alloc_start = mmap_anon_or_hugetlbfs(kvm,
- 						kvm->cfg.hugetlbfs_path,
- 						kvm->arch.ram_alloc_size);
--- 
-2.34.1
+After reading the whole patch series, I was thinking it might be a good
+time to improve the way how the visitor function and page table walker
+talk to each other. The error code is good enough before, but its meaning
+seems limited and vague when the visitor function wants to express more about
+what exactly happens inside. I am not sure if it is a good idea to continue
+that way: 1. found a new situation. 2. choosing a error code for visitor
+function. 3. walker translates the error code into the situation to
+handle. 4. document the error code and its actual meaning.
+
+Eventually I am afraid that we are going to abuse the error code.
+
+What about introducing a set of flags for the visitor function to express
+what happened and simplify the existing error code?
+
+> Signed-off-by: Vipin Sharma <vipinsh@google.com>
+> ---
+>  arch/arm64/include/asm/kvm_pgtable.h | 15 +++++++++++++--
+>  1 file changed, 13 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/arm64/include/asm/kvm_pgtable.h b/arch/arm64/include/asm/kvm_pgtable.h
+> index 8ef7e8f3f054..957bc20dab00 100644
+> --- a/arch/arm64/include/asm/kvm_pgtable.h
+> +++ b/arch/arm64/include/asm/kvm_pgtable.h
+> @@ -711,8 +711,19 @@ int kvm_pgtable_stage2_split(struct kvm_pgtable *pgt, u64 addr, u64 size,
+>   * after invoking the walker callback, allowing the walker to descend into
+>   * a newly installed table.
+>   *
+> - * Returning a negative error code from the walker callback function will
+> - * terminate the walk immediately with the same error code.
+> + * Depending on the return value from the walker callback function, the page
+> + * table walk will continue or exit the walk. This is also dependent on the
+> + * type of the walker, i.e. shared walker (vCPU fault handlers) or non-shared
+> + * walker.
+> + *
+> + * Walker Type  | Callback         | Walker action
+> + * -------------|------------------|--------------
+> + * Non-Shared   | 0                | Continue
+> + * Non-Shared   | -EAGAIN          | Continue
+> + * Non-Shared   | Any other        | Exit
+> + * -------------|------------------|--------------
+> + * Shared       | 0                | Continue
+> + * Shared       | Any other        | Exit
+>   *
+>   * Return: 0 on success, negative error code on failure.
+>   */
 
 
