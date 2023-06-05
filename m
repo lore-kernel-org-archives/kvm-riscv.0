@@ -1,93 +1,105 @@
 From: Andy Chiu <andy.chiu@sifive.com>
-Date: Mon,  5 Jun 2023 11:07:19 +0000
-Subject: [PATCH -next v21 22/27] riscv: Add sysctl to set the default vector rule for new processes
+Date: Mon,  5 Jun 2023 11:07:21 +0000
+Subject: [PATCH -next v21 24/27] riscv: Enable Vector code to be built
 In-Reply-To: <20230605110724.21391-1-andy.chiu@sifive.com>
 References: <20230605110724.21391-1-andy.chiu@sifive.com>
-Message-ID: <20230605110724.21391-23-andy.chiu@sifive.com>
+Message-ID: <20230605110724.21391-25-andy.chiu@sifive.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-To support Vector extension, the series exports variable-length vector
-registers on the signal frame. However, this potentially breaks abi if
-processing vector registers is required in the signal handler for old
-binaries. For example, there is such need if user-level context switch
-is triggerred via signals[1].
+From: Guo Ren <guoren@linux.alibaba.com>
 
-For this reason, it is best to leave a decision to distro maintainers,
-where the enablement of userspace Vector for new launching programs can
-be controlled. Developers may also need the switch to experiment with.
-The parameter is configurable through sysctl interface so a distro may
-turn off Vector early at init script if the break really happens in the
-wild.
+This patch adds configs for building Vector code. First it detects the
+reqired toolchain support for building the code. Then it provides an
+option setting whether Vector is implicitly enabled to userspace.
 
-The switch will only take effects on new execve() calls once set. This
-will not effect existing processes that do not call execve(), nor
-processes which has been set with a non-default vstate_ctrl by making
-explicit PR_RISCV_V_SET_CONTROL prctl() calls.
-
-Link: https://lore.kernel.org/all/87cz4048rp.fsf at all.your.base.are.belong.to.us/
+Signed-off-by: Guo Ren <guoren@linux.alibaba.com>
+Co-developed-by: Greentime Hu <greentime.hu@sifive.com>
+Signed-off-by: Greentime Hu <greentime.hu@sifive.com>
+Co-developed-by: Andy Chiu <andy.chiu@sifive.com>
 Signed-off-by: Andy Chiu <andy.chiu@sifive.com>
-Reviewed-by: Greentime Hu <greentime.hu@sifive.com>
-Reviewed-by: Vincent Chen <vincent.chen@sifive.com>
-Reviewed-by: Bj?rn T?pel <bjorn@rivosinc.com>
+Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
 ---
 Changelog v20:
- - Use READ_ONCE to access riscv_v_implicit_uacc (Bj?rn)
+ - s/RISCV_V_DISABLE/RISCV_ISA_V_DEFAULT_ENABLE/ for better
+   understanding (Conor)
+ - Update commit message (Conor)
+Changelog V19:
+ - Add RISCV_V_DISABLE to set compile-time default.
 ---
- arch/riscv/kernel/vector.c | 33 ++++++++++++++++++++++++++++++++-
- 1 file changed, 32 insertions(+), 1 deletion(-)
+ arch/riscv/Kconfig  | 31 +++++++++++++++++++++++++++++++
+ arch/riscv/Makefile |  6 +++++-
+ 2 files changed, 36 insertions(+), 1 deletion(-)
 
-diff --git a/arch/riscv/kernel/vector.c b/arch/riscv/kernel/vector.c
-index a7dec9230164..f9c8e19ab301 100644
---- a/arch/riscv/kernel/vector.c
-+++ b/arch/riscv/kernel/vector.c
-@@ -180,7 +180,7 @@ void riscv_v_vstate_ctrl_init(struct task_struct *tsk)
+diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
+index 1019b519d590..f3ba0a8b085e 100644
+--- a/arch/riscv/Kconfig
++++ b/arch/riscv/Kconfig
+@@ -466,6 +466,37 @@ config RISCV_ISA_SVPBMT
  
- 	next = riscv_v_ctrl_get_next(tsk);
- 	if (!next) {
--		if (riscv_v_implicit_uacc)
-+		if (READ_ONCE(riscv_v_implicit_uacc))
- 			cur = PR_RISCV_V_VSTATE_CTRL_ON;
- 		else
- 			cur = PR_RISCV_V_VSTATE_CTRL_OFF;
-@@ -243,3 +243,34 @@ long riscv_v_vstate_ctrl_set_current(unsigned long arg)
+ 	   If you don't know what to do here, say Y.
  
- 	return -EINVAL;
- }
++config TOOLCHAIN_HAS_V
++	bool
++	default y
++	depends on !64BIT || $(cc-option,-mabi=lp64 -march=rv64iv)
++	depends on !32BIT || $(cc-option,-mabi=ilp32 -march=rv32iv)
++	depends on LLD_VERSION >= 140000 || LD_VERSION >= 23800
++	depends on AS_HAS_OPTION_ARCH
 +
-+#ifdef CONFIG_SYSCTL
++config RISCV_ISA_V
++	bool "VECTOR extension support"
++	depends on TOOLCHAIN_HAS_V
++	depends on FPU
++	select DYNAMIC_SIGFRAME
++	default y
++	help
++	  Say N here if you want to disable all vector related procedure
++	  in the kernel.
 +
-+static struct ctl_table riscv_v_default_vstate_table[] = {
-+	{
-+		.procname	= "riscv_v_default_allow",
-+		.data		= &riscv_v_implicit_uacc,
-+		.maxlen		= sizeof(riscv_v_implicit_uacc),
-+		.mode		= 0644,
-+		.proc_handler	= proc_dobool,
-+	},
-+	{ }
-+};
++	  If you don't know what to do here, say Y.
 +
-+static int __init riscv_v_sysctl_init(void)
-+{
-+	if (has_vector())
-+		if (!register_sysctl("abi", riscv_v_default_vstate_table))
-+			return -EINVAL;
-+	return 0;
-+}
++config RISCV_ISA_V_DEFAULT_ENABLE
++	bool "Enable userspace Vector by default"
++	depends on RISCV_ISA_V
++	default y
++	help
++	  Say Y here if you want to enable Vector in userspace by default.
++	  Otherwise, userspace has to make explicit prctl() call to enable
++	  Vector, or enable it via the sysctl interface.
 +
-+#else /* ! CONFIG_SYSCTL */
-+static int __init riscv_v_sysctl_init(void) { return 0; }
-+#endif /* ! CONFIG_SYSCTL */
++	  If you don't know what to do here, say Y.
 +
-+static int riscv_v_init(void)
-+{
-+	return riscv_v_sysctl_init();
-+}
-+core_initcall(riscv_v_init);
+ config TOOLCHAIN_HAS_ZBB
+ 	bool
+ 	default y
+diff --git a/arch/riscv/Makefile b/arch/riscv/Makefile
+index 0fb256bf8270..6ec6d52a4180 100644
+--- a/arch/riscv/Makefile
++++ b/arch/riscv/Makefile
+@@ -60,6 +60,7 @@ riscv-march-$(CONFIG_ARCH_RV32I)	:= rv32ima
+ riscv-march-$(CONFIG_ARCH_RV64I)	:= rv64ima
+ riscv-march-$(CONFIG_FPU)		:= $(riscv-march-y)fd
+ riscv-march-$(CONFIG_RISCV_ISA_C)	:= $(riscv-march-y)c
++riscv-march-$(CONFIG_RISCV_ISA_V)	:= $(riscv-march-y)v
+ 
+ ifdef CONFIG_TOOLCHAIN_NEEDS_OLD_ISA_SPEC
+ KBUILD_CFLAGS += -Wa,-misa-spec=2.2
+@@ -71,7 +72,10 @@ endif
+ # Check if the toolchain supports Zihintpause extension
+ riscv-march-$(CONFIG_TOOLCHAIN_HAS_ZIHINTPAUSE) := $(riscv-march-y)_zihintpause
+ 
+-KBUILD_CFLAGS += -march=$(subst fd,,$(riscv-march-y))
++# Remove F,D,V from isa string for all. Keep extensions between "fd" and "v" by
++# matching non-v and non-multi-letter extensions out with the filter ([^v_]*)
++KBUILD_CFLAGS += -march=$(shell echo $(riscv-march-y) | sed -E 's/(rv32ima|rv64ima)fd([^v_]*)v?/\1\2/')
++
+ KBUILD_AFLAGS += -march=$(riscv-march-y)
+ 
+ KBUILD_CFLAGS += -mno-save-restore
 -- 
 2.17.1
 
