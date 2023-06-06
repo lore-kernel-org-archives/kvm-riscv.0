@@ -1,64 +1,46 @@
-From: Andy Chiu <andy.chiu@sifive.com>
-Date: Mon,  5 Jun 2023 11:07:20 +0000
-Subject: [PATCH -next v21 23/27] riscv: detect assembler support for .option arch
-In-Reply-To: <20230605110724.21391-1-andy.chiu@sifive.com>
-References: <20230605110724.21391-1-andy.chiu@sifive.com>
-Message-ID: <20230605110724.21391-24-andy.chiu@sifive.com>
+From: Anup Patel <anup@brainfault.org>
+Date: Tue, 6 Jun 2023 09:01:25 +0530
+Subject: [PATCH] RISC-V: KVM: use bitmap_zero() API
+In-Reply-To: <202305061710302032748@zte.com.cn>
+References: <202305061710302032748@zte.com.cn>
+Message-ID: <CAAhSdy3isg4788uz=fP6DCTD3LgVbXz9Ud7aoi2VmEbRKYkW6w@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Some extensions use .option arch directive to selectively enable certain
-extensions in parts of its assembly code. For example, Zbb uses it to
-inform assmebler to emit bit manipulation instructions. However,
-supporting of this directive only exist on GNU assembler and has not
-landed on clang at the moment, making TOOLCHAIN_HAS_ZBB depend on
-AS_IS_GNU.
+On Sat, May 6, 2023 at 2:40?PM <ye.xingchen@zte.com.cn> wrote:
+>
+> From: Ye Xingchen <ye.xingchen@zte.com.cn>
+>
+> bitmap_zero() is faster than bitmap_clear(), so use bitmap_zero()
+> instead of bitmap_clear().
+>
+> Signed-off-by: Ye Xingchen <ye.xingchen@zte.com.cn>
 
-While it is still under review at https://reviews.llvm.org/D123515, the
-upcoming Vector patch also requires this feature in assembler. Thus,
-provide Kconfig AS_HAS_OPTION_ARCH to detect such feature. Then
-TOOLCHAIN_HAS_XXX will be turned on automatically when the feature land.
+Queued this patch for 6.5
 
-Suggested-by: Nathan Chancellor <nathan@kernel.org>
-Signed-off-by: Andy Chiu <andy.chiu@sifive.com>
-Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
-Reviewed-by: Nathan Chancellor <nathan@kernel.org>
-Reviewed-by: Heiko Stuebner <heiko.stuebner@vrull.eu>
-Tested-by: Heiko Stuebner <heiko.stuebner@vrull.eu>
----
- arch/riscv/Kconfig | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+Thanks,
+Anup
 
-diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
-index 348c0fa1fc8c..1019b519d590 100644
---- a/arch/riscv/Kconfig
-+++ b/arch/riscv/Kconfig
-@@ -262,6 +262,12 @@ config RISCV_DMA_NONCOHERENT
- config AS_HAS_INSN
- 	def_bool $(as-instr,.insn r 51$(comma) 0$(comma) 0$(comma) t0$(comma) t0$(comma) zero)
- 
-+config AS_HAS_OPTION_ARCH
-+	# https://reviews.llvm.org/D123515
-+	def_bool y
-+	depends on $(as-instr, .option arch$(comma) +m)
-+	depends on !$(as-instr, .option arch$(comma) -i)
-+
- source "arch/riscv/Kconfig.socs"
- source "arch/riscv/Kconfig.errata"
- 
-@@ -466,7 +472,7 @@ config TOOLCHAIN_HAS_ZBB
- 	depends on !64BIT || $(cc-option,-mabi=lp64 -march=rv64ima_zbb)
- 	depends on !32BIT || $(cc-option,-mabi=ilp32 -march=rv32ima_zbb)
- 	depends on LLD_VERSION >= 150000 || LD_VERSION >= 23900
--	depends on AS_IS_GNU
-+	depends on AS_HAS_OPTION_ARCH
- 
- config RISCV_ISA_ZBB
- 	bool "Zbb extension support for bit manipulation instructions"
--- 
-2.17.1
-
+> ---
+>  arch/riscv/kvm/tlb.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/arch/riscv/kvm/tlb.c b/arch/riscv/kvm/tlb.c
+> index 0e5479600695..44bc324aeeb0 100644
+> --- a/arch/riscv/kvm/tlb.c
+> +++ b/arch/riscv/kvm/tlb.c
+> @@ -296,7 +296,7 @@ static void make_xfence_request(struct kvm *kvm,
+>         unsigned int actual_req = req;
+>         DECLARE_BITMAP(vcpu_mask, KVM_MAX_VCPUS);
+>
+> -       bitmap_clear(vcpu_mask, 0, KVM_MAX_VCPUS);
+> +       bitmap_zero(vcpu_mask, KVM_MAX_VCPUS);
+>         kvm_for_each_vcpu(i, vcpu, kvm) {
+>                 if (hbase != -1UL) {
+>                         if (vcpu->vcpu_id < hbase)
+> --
+> 2.25.1
 
