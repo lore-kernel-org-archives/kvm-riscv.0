@@ -1,23 +1,27 @@
 From: Anup Patel <anup@brainfault.org>
-Date: Tue, 6 Jun 2023 09:01:25 +0530
-Subject: [PATCH] RISC-V: KVM: use bitmap_zero() API
-In-Reply-To: <202305061710302032748@zte.com.cn>
-References: <202305061710302032748@zte.com.cn>
-Message-ID: <CAAhSdy3isg4788uz=fP6DCTD3LgVbXz9Ud7aoi2VmEbRKYkW6w@mail.gmail.com>
+Date: Tue, 6 Jun 2023 09:05:53 +0530
+Subject: [PATCH] RISC-V: KVM: Redirect AMO load/store misaligned traps to guest
+In-Reply-To: <20230520150116.7451-1-waylingII@gmail.com>
+References: <20230520150116.7451-1-waylingII@gmail.com>
+Message-ID: <CAAhSdy1H7MWLRCct=Q_Sa=g+MfcFCU7OVAFaL0tQyMDp6GT8DQ@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sat, May 6, 2023 at 2:40?PM <ye.xingchen@zte.com.cn> wrote:
+On Sat, May 20, 2023 at 8:31?PM wchen <waylingii@gmail.com> wrote:
 >
-> From: Ye Xingchen <ye.xingchen@zte.com.cn>
+> The M-mode redirects an unhandled misaligned trap back
+> to S-mode when not delegating it to VS-mode(hedeleg).
+> However, KVM running in HS-mode terminates the VS-mode
+> software when back from M-mode.
+> The KVM should redirect the trap back to VS-mode, and
+> let VS-mode trap handler decide the next step.
+> Here is a way to handle misaligned traps in KVM,
+> not only directing them to VS-mode or terminate it.
 >
-> bitmap_zero() is faster than bitmap_clear(), so use bitmap_zero()
-> instead of bitmap_clear().
->
-> Signed-off-by: Ye Xingchen <ye.xingchen@zte.com.cn>
+> Signed-off-by: wchen <waylingII@gmail.com>
 
 Queued this patch for 6.5
 
@@ -25,22 +29,38 @@ Thanks,
 Anup
 
 > ---
->  arch/riscv/kvm/tlb.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  arch/riscv/include/asm/csr.h | 2 ++
+>  arch/riscv/kvm/vcpu_exit.c   | 2 ++
+>  2 files changed, 4 insertions(+)
 >
-> diff --git a/arch/riscv/kvm/tlb.c b/arch/riscv/kvm/tlb.c
-> index 0e5479600695..44bc324aeeb0 100644
-> --- a/arch/riscv/kvm/tlb.c
-> +++ b/arch/riscv/kvm/tlb.c
-> @@ -296,7 +296,7 @@ static void make_xfence_request(struct kvm *kvm,
->         unsigned int actual_req = req;
->         DECLARE_BITMAP(vcpu_mask, KVM_MAX_VCPUS);
->
-> -       bitmap_clear(vcpu_mask, 0, KVM_MAX_VCPUS);
-> +       bitmap_zero(vcpu_mask, KVM_MAX_VCPUS);
->         kvm_for_each_vcpu(i, vcpu, kvm) {
->                 if (hbase != -1UL) {
->                         if (vcpu->vcpu_id < hbase)
+> diff --git a/arch/riscv/include/asm/csr.h b/arch/riscv/include/asm/csr.h
+> index b6acb7ed1..917814a0f 100644
+> --- a/arch/riscv/include/asm/csr.h
+> +++ b/arch/riscv/include/asm/csr.h
+> @@ -82,7 +82,9 @@
+>  #define EXC_INST_ACCESS                1
+>  #define EXC_INST_ILLEGAL       2
+>  #define EXC_BREAKPOINT         3
+> +#define EXC_LOAD_MISALIGNED    4
+>  #define EXC_LOAD_ACCESS                5
+> +#define EXC_STORE_MISALIGNED   6
+>  #define EXC_STORE_ACCESS       7
+>  #define EXC_SYSCALL            8
+>  #define EXC_HYPERVISOR_SYSCALL 9
+> diff --git a/arch/riscv/kvm/vcpu_exit.c b/arch/riscv/kvm/vcpu_exit.c
+> index 4ea101a73..2415722c0 100644
+> --- a/arch/riscv/kvm/vcpu_exit.c
+> +++ b/arch/riscv/kvm/vcpu_exit.c
+> @@ -183,6 +183,8 @@ int kvm_riscv_vcpu_exit(struct kvm_vcpu *vcpu, struct kvm_run *run,
+>         run->exit_reason = KVM_EXIT_UNKNOWN;
+>         switch (trap->scause) {
+>         case EXC_INST_ILLEGAL:
+> +       case EXC_LOAD_MISALIGNED:
+> +       case EXC_STORE_MISALIGNED:
+>                 if (vcpu->arch.guest_context.hstatus & HSTATUS_SPV) {
+>                         kvm_riscv_vcpu_trap_redirect(vcpu, trap);
+>                         ret = 1;
 > --
-> 2.25.1
+> 2.34.1
+>
 
