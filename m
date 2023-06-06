@@ -1,66 +1,43 @@
 From: Anup Patel <anup@brainfault.org>
-Date: Tue, 6 Jun 2023 09:05:53 +0530
-Subject: [PATCH] RISC-V: KVM: Redirect AMO load/store misaligned traps to guest
-In-Reply-To: <20230520150116.7451-1-waylingII@gmail.com>
-References: <20230520150116.7451-1-waylingII@gmail.com>
-Message-ID: <CAAhSdy1H7MWLRCct=Q_Sa=g+MfcFCU7OVAFaL0tQyMDp6GT8DQ@mail.gmail.com>
+Date: Tue, 6 Jun 2023 09:28:47 +0530
+Subject: [PATCH v3 0/3] RISC-V: KVM: Ensure SBI extension is enabled
+In-Reply-To: <20230530175024.354527-1-ajones@ventanamicro.com>
+References: <20230530175024.354527-1-ajones@ventanamicro.com>
+Message-ID: <CAAhSdy2wPbRzRv2uUuq-Gtpxbx472EysRh-hvayBsuJGcxbXRg@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sat, May 20, 2023 at 8:31?PM wchen <waylingii@gmail.com> wrote:
+On Tue, May 30, 2023 at 11:20?PM Andrew Jones <ajones@ventanamicro.com> wrote:
 >
-> The M-mode redirects an unhandled misaligned trap back
-> to S-mode when not delegating it to VS-mode(hedeleg).
-> However, KVM running in HS-mode terminates the VS-mode
-> software when back from M-mode.
-> The KVM should redirect the trap back to VS-mode, and
-> let VS-mode trap handler decide the next step.
-> Here is a way to handle misaligned traps in KVM,
-> not only directing them to VS-mode or terminate it.
+> Ensure guests can't attempt to invoke SBI extension functions when the
+> SBI extension's probe function has stated that the extension is not
+> available.
 >
-> Signed-off-by: wchen <waylingII@gmail.com>
+> v3:
+>  - used lowercase for enum
+>
+> v2:
+>  - Reworked it to use an enum array instead of two boolean arrays
+>
+> Andrew Jones (3):
+>   RISC-V: KVM: Rename dis_idx to ext_idx
+>   RISC-V: KVM: Convert extension_disabled[] to ext_status[]
+>   RISC-V: KVM: Probe for SBI extension status
 
-Queued this patch for 6.5
+Queued this series for 6.5
 
 Thanks,
 Anup
 
-> ---
->  arch/riscv/include/asm/csr.h | 2 ++
->  arch/riscv/kvm/vcpu_exit.c   | 2 ++
->  2 files changed, 4 insertions(+)
 >
-> diff --git a/arch/riscv/include/asm/csr.h b/arch/riscv/include/asm/csr.h
-> index b6acb7ed1..917814a0f 100644
-> --- a/arch/riscv/include/asm/csr.h
-> +++ b/arch/riscv/include/asm/csr.h
-> @@ -82,7 +82,9 @@
->  #define EXC_INST_ACCESS                1
->  #define EXC_INST_ILLEGAL       2
->  #define EXC_BREAKPOINT         3
-> +#define EXC_LOAD_MISALIGNED    4
->  #define EXC_LOAD_ACCESS                5
-> +#define EXC_STORE_MISALIGNED   6
->  #define EXC_STORE_ACCESS       7
->  #define EXC_SYSCALL            8
->  #define EXC_HYPERVISOR_SYSCALL 9
-> diff --git a/arch/riscv/kvm/vcpu_exit.c b/arch/riscv/kvm/vcpu_exit.c
-> index 4ea101a73..2415722c0 100644
-> --- a/arch/riscv/kvm/vcpu_exit.c
-> +++ b/arch/riscv/kvm/vcpu_exit.c
-> @@ -183,6 +183,8 @@ int kvm_riscv_vcpu_exit(struct kvm_vcpu *vcpu, struct kvm_run *run,
->         run->exit_reason = KVM_EXIT_UNKNOWN;
->         switch (trap->scause) {
->         case EXC_INST_ILLEGAL:
-> +       case EXC_LOAD_MISALIGNED:
-> +       case EXC_STORE_MISALIGNED:
->                 if (vcpu->arch.guest_context.hstatus & HSTATUS_SPV) {
->                         kvm_riscv_vcpu_trap_redirect(vcpu, trap);
->                         ret = 1;
+>  arch/riscv/include/asm/kvm_vcpu_sbi.h |  8 ++-
+>  arch/riscv/kvm/vcpu_sbi.c             | 76 +++++++++++++++++++--------
+>  2 files changed, 60 insertions(+), 24 deletions(-)
+>
 > --
-> 2.34.1
+> 2.40.1
 >
 
