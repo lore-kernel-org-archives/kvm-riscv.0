@@ -1,969 +1,1026 @@
-From: Anup Patel <apatel@ventanamicro.com>
-Date: Wed, 7 Jun 2023 19:53:12 +0530
-Subject: [PATCH 06/10] RISC-V: KVM: Implement device interface for AIA irqchip
-In-Reply-To: <CAOnJCUKzN-s3iSfYYvSZsLmUDzYuJXSHOpv412+g1_9rw3QWMw@mail.gmail.com>
-References: <20230517105135.1871868-1-apatel@ventanamicro.com>
- <20230517105135.1871868-7-apatel@ventanamicro.com> <CAOnJCUKzN-s3iSfYYvSZsLmUDzYuJXSHOpv412+g1_9rw3QWMw@mail.gmail.com>
-Message-ID: <CAK9=C2WWf6z+B5TFc_x9rqC5Ls0cXqAYD-QG7rB3mRmn-SJadQ@mail.gmail.com>
+From: Atish Patra <atishp@atishpatra.org>
+Date: Wed, 7 Jun 2023 16:16:14 -0700
+Subject: [PATCH 09/10] RISC-V: KVM: Add in-kernel virtualization of AIA IMSIC
+In-Reply-To: <20230517105135.1871868-10-apatel@ventanamicro.com>
+References: <20230517105135.1871868-1-apatel@ventanamicro.com> <20230517105135.1871868-10-apatel@ventanamicro.com>
+Message-ID: <CAOnJCU+jq-oZCpZcLQ-KWgWXzwiaswdouLrwYGXDGGNJ3yyG8g@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Jun 7, 2023 at 5:44?AM Atish Patra <atishp@atishpatra.org> wrote:
+On Wed, May 17, 2023 at 3:52?AM Anup Patel <apatel@ventanamicro.com> wrote:
 >
-> On Wed, May 17, 2023 at 3:52?AM Anup Patel <apatel@ventanamicro.com> wrote:
-> >
-> > We implement KVM device interface for in-kernel AIA irqchip so that
-> > user-space can use KVM device ioctls to create, configure, and destroy
-> > in-kernel AIA irqchip.
-> >
-> > Signed-off-by: Anup Patel <apatel@ventanamicro.com>
-> > ---
-> >  arch/riscv/include/asm/kvm_aia.h  | 132 +++++--
-> >  arch/riscv/include/uapi/asm/kvm.h |  36 ++
-> >  arch/riscv/kvm/Makefile           |   1 +
-> >  arch/riscv/kvm/aia.c              |  11 +
-> >  arch/riscv/kvm/aia_device.c       | 622 ++++++++++++++++++++++++++++++
-> >  include/uapi/linux/kvm.h          |   2 +
-> >  6 files changed, 762 insertions(+), 42 deletions(-)
-> >  create mode 100644 arch/riscv/kvm/aia_device.c
-> >
-> > diff --git a/arch/riscv/include/asm/kvm_aia.h b/arch/riscv/include/asm/kvm_aia.h
-> > index 3bc0a0e47a15..a1281ebc9b92 100644
-> > --- a/arch/riscv/include/asm/kvm_aia.h
-> > +++ b/arch/riscv/include/asm/kvm_aia.h
-> > @@ -20,6 +20,33 @@ struct kvm_aia {
-> >
-> >         /* In-kernel irqchip initialized */
-> >         bool            initialized;
-> > +
-> > +       /* Virtualization mode (Emulation, HW Accelerated, or Auto) */
-> > +       u32             mode;
-> > +
-> > +       /* Number of MSIs */
-> > +       u32             nr_ids;
-> > +
-> > +       /* Number of wired IRQs */
-> > +       u32             nr_sources;
-> > +
-> > +       /* Number of group bits in IMSIC address */
-> > +       u32             nr_group_bits;
-> > +
-> > +       /* Position of group bits in IMSIC address */
-> > +       u32             nr_group_shift;
-> > +
-> > +       /* Number of hart bits in IMSIC address */
-> > +       u32             nr_hart_bits;
-> > +
-> > +       /* Number of guest bits in IMSIC address */
-> > +       u32             nr_guest_bits;
-> > +
-> > +       /* Guest physical address of APLIC */
-> > +       gpa_t           aplic_addr;
-> > +
-> > +       /* Internal state of APLIC */
-> > +       void            *aplic_state;
-> >  };
-> >
-> >  struct kvm_vcpu_aia_csr {
-> > @@ -38,8 +65,19 @@ struct kvm_vcpu_aia {
-> >
-> >         /* CPU AIA CSR context upon Guest VCPU reset */
-> >         struct kvm_vcpu_aia_csr guest_reset_csr;
-> > +
-> > +       /* Guest physical address of IMSIC for this VCPU */
-> > +       gpa_t           imsic_addr;
-> > +
-> > +       /* HART index of IMSIC extacted from guest physical address */
-> > +       u32             hart_index;
-> > +
-> > +       /* Internal state of IMSIC for this VCPU */
-> > +       void            *imsic_state;
-> >  };
-> >
-> > +#define KVM_RISCV_AIA_UNDEF_ADDR       (-1)
-> > +
-> >  #define kvm_riscv_aia_initialized(k)   ((k)->arch.aia.initialized)
-> >
-> >  #define irqchip_in_kernel(k)           ((k)->arch.aia.in_kernel)
-> > @@ -50,10 +88,17 @@ DECLARE_STATIC_KEY_FALSE(kvm_riscv_aia_available);
-> >  #define kvm_riscv_aia_available() \
-> >         static_branch_unlikely(&kvm_riscv_aia_available)
-> >
-> > +extern struct kvm_device_ops kvm_riscv_aia_device_ops;
-> > +
-> >  static inline void kvm_riscv_vcpu_aia_imsic_release(struct kvm_vcpu *vcpu)
-> >  {
-> >  }
-> >
-> > +static inline int kvm_riscv_vcpu_aia_imsic_update(struct kvm_vcpu *vcpu)
-> > +{
-> > +       return 1;
-> > +}
-> > +
-> >  #define KVM_RISCV_AIA_IMSIC_TOPEI      (ISELECT_MASK + 1)
-> >  static inline int kvm_riscv_vcpu_aia_imsic_rmw(struct kvm_vcpu *vcpu,
-> >                                                unsigned long isel,
-> > @@ -64,6 +109,41 @@ static inline int kvm_riscv_vcpu_aia_imsic_rmw(struct kvm_vcpu *vcpu,
-> >         return 0;
-> >  }
-> >
-> > +static inline void kvm_riscv_vcpu_aia_imsic_reset(struct kvm_vcpu *vcpu)
-> > +{
-> > +}
-> > +
-> > +static inline int kvm_riscv_vcpu_aia_imsic_inject(struct kvm_vcpu *vcpu,
-> > +                                                 u32 guest_index, u32 offset,
-> > +                                                 u32 iid)
-> > +{
-> > +       return 0;
-> > +}
-> > +
-> > +static inline int kvm_riscv_vcpu_aia_imsic_init(struct kvm_vcpu *vcpu)
-> > +{
-> > +       return 0;
-> > +}
-> > +
-> > +static inline void kvm_riscv_vcpu_aia_imsic_cleanup(struct kvm_vcpu *vcpu)
-> > +{
-> > +}
-> > +
-> > +static inline int kvm_riscv_aia_aplic_inject(struct kvm *kvm,
-> > +                                            u32 source, bool level)
-> > +{
-> > +       return 0;
-> > +}
-> > +
-> > +static inline int kvm_riscv_aia_aplic_init(struct kvm *kvm)
-> > +{
-> > +       return 0;
-> > +}
-> > +
-> > +static inline void kvm_riscv_aia_aplic_cleanup(struct kvm *kvm)
-> > +{
-> > +}
-> > +
-> >  #ifdef CONFIG_32BIT
-> >  void kvm_riscv_vcpu_aia_flush_interrupts(struct kvm_vcpu *vcpu);
-> >  void kvm_riscv_vcpu_aia_sync_interrupts(struct kvm_vcpu *vcpu);
-> > @@ -99,50 +179,18 @@ int kvm_riscv_vcpu_aia_rmw_ireg(struct kvm_vcpu *vcpu, unsigned int csr_num,
-> >  { .base = CSR_SIREG,      .count = 1, .func = kvm_riscv_vcpu_aia_rmw_ireg }, \
-> >  { .base = CSR_STOPEI,     .count = 1, .func = kvm_riscv_vcpu_aia_rmw_topei },
-> >
-> > -static inline int kvm_riscv_vcpu_aia_update(struct kvm_vcpu *vcpu)
-> > -{
-> > -       return 1;
-> > -}
-> > -
-> > -static inline void kvm_riscv_vcpu_aia_reset(struct kvm_vcpu *vcpu)
-> > -{
-> > -}
-> > -
-> > -static inline int kvm_riscv_vcpu_aia_init(struct kvm_vcpu *vcpu)
-> > -{
-> > -       return 0;
-> > -}
-> > -
-> > -static inline void kvm_riscv_vcpu_aia_deinit(struct kvm_vcpu *vcpu)
-> > -{
-> > -}
-> > -
-> > -static inline int kvm_riscv_aia_inject_msi_by_id(struct kvm *kvm,
-> > -                                                u32 hart_index,
-> > -                                                u32 guest_index, u32 iid)
-> > -{
-> > -       return 0;
-> > -}
-> > -
-> > -static inline int kvm_riscv_aia_inject_msi(struct kvm *kvm,
-> > -                                          struct kvm_msi *msi)
-> > -{
-> > -       return 0;
-> > -}
-> > +int kvm_riscv_vcpu_aia_update(struct kvm_vcpu *vcpu);
-> > +void kvm_riscv_vcpu_aia_reset(struct kvm_vcpu *vcpu);
-> > +int kvm_riscv_vcpu_aia_init(struct kvm_vcpu *vcpu);
-> > +void kvm_riscv_vcpu_aia_deinit(struct kvm_vcpu *vcpu);
-> >
-> > -static inline int kvm_riscv_aia_inject_irq(struct kvm *kvm,
-> > -                                          unsigned int irq, bool level)
-> > -{
-> > -       return 0;
-> > -}
-> > +int kvm_riscv_aia_inject_msi_by_id(struct kvm *kvm, u32 hart_index,
-> > +                                  u32 guest_index, u32 iid);
-> > +int kvm_riscv_aia_inject_msi(struct kvm *kvm, struct kvm_msi *msi);
-> > +int kvm_riscv_aia_inject_irq(struct kvm *kvm, unsigned int irq, bool level);
-> >
-> > -static inline void kvm_riscv_aia_init_vm(struct kvm *kvm)
-> > -{
-> > -}
-> > -
-> > -static inline void kvm_riscv_aia_destroy_vm(struct kvm *kvm)
-> > -{
-> > -}
-> > +void kvm_riscv_aia_init_vm(struct kvm *kvm);
-> > +void kvm_riscv_aia_destroy_vm(struct kvm *kvm);
-> >
-> >  int kvm_riscv_aia_alloc_hgei(int cpu, struct kvm_vcpu *owner,
-> >                              void __iomem **hgei_va, phys_addr_t *hgei_pa);
-> > diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
-> > index 332d4a274891..57f8d8bb498e 100644
-> > --- a/arch/riscv/include/uapi/asm/kvm.h
-> > +++ b/arch/riscv/include/uapi/asm/kvm.h
-> > @@ -204,6 +204,42 @@ enum KVM_RISCV_SBI_EXT_ID {
-> >  #define KVM_REG_RISCV_SBI_MULTI_REG_LAST       \
-> >                 KVM_REG_RISCV_SBI_MULTI_REG(KVM_RISCV_SBI_EXT_MAX - 1)
-> >
-> > +/* Device Control API: RISC-V AIA */
-> > +#define KVM_DEV_RISCV_APLIC_ALIGN              0x1000
-> > +#define KVM_DEV_RISCV_APLIC_SIZE               0x4000
-> > +#define KVM_DEV_RISCV_APLIC_MAX_HARTS          0x4000
-> > +#define KVM_DEV_RISCV_IMSIC_ALIGN              0x1000
-> > +#define KVM_DEV_RISCV_IMSIC_SIZE               0x1000
-> > +
-> > +#define KVM_DEV_RISCV_AIA_GRP_CONFIG           0
-> > +#define KVM_DEV_RISCV_AIA_CONFIG_MODE          0
-> > +#define KVM_DEV_RISCV_AIA_CONFIG_IDS           1
-> > +#define KVM_DEV_RISCV_AIA_CONFIG_SRCS          2
-> > +#define KVM_DEV_RISCV_AIA_CONFIG_GROUP_BITS    3
-> > +#define KVM_DEV_RISCV_AIA_CONFIG_GROUP_SHIFT   4
-> > +#define KVM_DEV_RISCV_AIA_CONFIG_HART_BITS     5
-> > +#define KVM_DEV_RISCV_AIA_CONFIG_GUEST_BITS    6
+> We can have AIA IMSIC support for both HS-level and VS-level but
+> the VS-level IMSICs are optional. We use the VS-level IMSICs for
+> Guest/VM whenever available otherwise we fallback to software
+> emulation of AIA IMSIC.
 >
-> nit: Space here and some comment about each mode would be useful.
-
-Okay, I will update.
-
+> This patch adds in-kernel virtualization of AIA IMSIC.
 >
-> > +#define KVM_DEV_RISCV_AIA_MODE_EMUL            0
-> > +#define KVM_DEV_RISCV_AIA_MODE_HWACCEL         1
-> > +#define KVM_DEV_RISCV_AIA_MODE_AUTO            2
+> Signed-off-by: Anup Patel <apatel@ventanamicro.com>
+> ---
+>  arch/riscv/include/asm/kvm_aia.h |  46 +-
+>  arch/riscv/kvm/Makefile          |   1 +
+>  arch/riscv/kvm/aia_imsic.c       | 913 +++++++++++++++++++++++++++++++
+>  3 files changed, 924 insertions(+), 36 deletions(-)
+>  create mode 100644 arch/riscv/kvm/aia_imsic.c
 >
+> diff --git a/arch/riscv/include/asm/kvm_aia.h b/arch/riscv/include/asm/kvm_aia.h
+> index ba939c0054aa..a4f6ebf90e31 100644
+> --- a/arch/riscv/include/asm/kvm_aia.h
+> +++ b/arch/riscv/include/asm/kvm_aia.h
+> @@ -90,44 +90,18 @@ DECLARE_STATIC_KEY_FALSE(kvm_riscv_aia_available);
 >
-> > +#define KVM_DEV_RISCV_AIA_IDS_MIN              63
-> > +#define KVM_DEV_RISCV_AIA_IDS_MAX              2048
-> > +#define KVM_DEV_RISCV_AIA_SRCS_MAX             1024
-> > +#define KVM_DEV_RISCV_AIA_GROUP_BITS_MAX       8
-> > +#define KVM_DEV_RISCV_AIA_GROUP_SHIFT_MIN      24
-> > +#define KVM_DEV_RISCV_AIA_GROUP_SHIFT_MAX      56
-> > +#define KVM_DEV_RISCV_AIA_HART_BITS_MAX        16
-> > +#define KVM_DEV_RISCV_AIA_GUEST_BITS_MAX       8
-> > +
-> > +#define KVM_DEV_RISCV_AIA_GRP_ADDR             1
-> > +#define KVM_DEV_RISCV_AIA_ADDR_APLIC           0
-> > +#define KVM_DEV_RISCV_AIA_ADDR_IMSIC(__vcpu)   (1 + (__vcpu))
-> > +#define KVM_DEV_RISCV_AIA_ADDR_MAX             \
-> > +               (1 + KVM_DEV_RISCV_APLIC_MAX_HARTS)
-> > +
-> > +#define KVM_DEV_RISCV_AIA_GRP_CTRL             2
+>  extern struct kvm_device_ops kvm_riscv_aia_device_ops;
 >
-> Why not keep all KVM_DEV_RISCV_AIA_GRP_* items together ?
-> There are two more KVM_DEV_RISCV_AIA_GRP_APLIC/IMSIC defined in the
-> other patches.
+> -static inline void kvm_riscv_vcpu_aia_imsic_release(struct kvm_vcpu *vcpu)
+> -{
+> -}
+> -
+> -static inline int kvm_riscv_vcpu_aia_imsic_update(struct kvm_vcpu *vcpu)
+> -{
+> -       return 1;
+> -}
+> +void kvm_riscv_vcpu_aia_imsic_release(struct kvm_vcpu *vcpu);
+> +int kvm_riscv_vcpu_aia_imsic_update(struct kvm_vcpu *vcpu);
 >
-> I think it would be good to keep the uapi changes in one patch if possible.
-
-I have divided changes among patches based on where the
-defines are used.
-
+>  #define KVM_RISCV_AIA_IMSIC_TOPEI      (ISELECT_MASK + 1)
+> -static inline int kvm_riscv_vcpu_aia_imsic_rmw(struct kvm_vcpu *vcpu,
+> -                                              unsigned long isel,
+> -                                              unsigned long *val,
+> -                                              unsigned long new_val,
+> -                                              unsigned long wr_mask)
+> -{
+> -       return 0;
+> -}
+> -
+> -static inline void kvm_riscv_vcpu_aia_imsic_reset(struct kvm_vcpu *vcpu)
+> -{
+> -}
+> -
+> -static inline int kvm_riscv_vcpu_aia_imsic_inject(struct kvm_vcpu *vcpu,
+> -                                                 u32 guest_index, u32 offset,
+> -                                                 u32 iid)
+> -{
+> -       return 0;
+> -}
+> -
+> -static inline int kvm_riscv_vcpu_aia_imsic_init(struct kvm_vcpu *vcpu)
+> -{
+> -       return 0;
+> -}
+> -
+> -static inline void kvm_riscv_vcpu_aia_imsic_cleanup(struct kvm_vcpu *vcpu)
+> -{
+> -}
+> +int kvm_riscv_vcpu_aia_imsic_rmw(struct kvm_vcpu *vcpu, unsigned long isel,
+> +                                unsigned long *val, unsigned long new_val,
+> +                                unsigned long wr_mask);
+> +void kvm_riscv_vcpu_aia_imsic_reset(struct kvm_vcpu *vcpu);
+> +int kvm_riscv_vcpu_aia_imsic_inject(struct kvm_vcpu *vcpu,
+> +                                   u32 guest_index, u32 offset, u32 iid);
+> +int kvm_riscv_vcpu_aia_imsic_init(struct kvm_vcpu *vcpu);
+> +void kvm_riscv_vcpu_aia_imsic_cleanup(struct kvm_vcpu *vcpu);
 >
-> > +#define KVM_DEV_RISCV_AIA_CTRL_INIT            0
-> > +
-> >  /* One single KVM irqchip, ie. the AIA */
-> >  #define KVM_NR_IRQCHIPS                        1
-> >
-> > diff --git a/arch/riscv/kvm/Makefile b/arch/riscv/kvm/Makefile
-> > index 8031b8912a0d..dd69ebe098bd 100644
-> > --- a/arch/riscv/kvm/Makefile
-> > +++ b/arch/riscv/kvm/Makefile
-> > @@ -27,3 +27,4 @@ kvm-y += vcpu_sbi_hsm.o
-> >  kvm-y += vcpu_timer.o
-> >  kvm-$(CONFIG_RISCV_PMU_SBI) += vcpu_pmu.o vcpu_sbi_pmu.o
-> >  kvm-y += aia.o
-> > +kvm-y += aia_device.o
-> > diff --git a/arch/riscv/kvm/aia.c b/arch/riscv/kvm/aia.c
-> > index 18c442c15ff2..585a3b42c52c 100644
-> > --- a/arch/riscv/kvm/aia.c
-> > +++ b/arch/riscv/kvm/aia.c
-> > @@ -631,6 +631,14 @@ int kvm_riscv_aia_init(void)
-> >         if (rc)
-> >                 return rc;
-> >
-> > +       /* Register device operations */
-> > +       rc = kvm_register_device_ops(&kvm_riscv_aia_device_ops,
-> > +                                    KVM_DEV_TYPE_RISCV_AIA);
-> > +       if (rc) {
-> > +               aia_hgei_exit();
-> > +               return rc;
-> > +       }
-> > +
-> >         /* Enable KVM AIA support */
-> >         static_branch_enable(&kvm_riscv_aia_available);
-> >
-> > @@ -642,6 +650,9 @@ void kvm_riscv_aia_exit(void)
-> >         if (!kvm_riscv_aia_available())
-> >                 return;
-> >
-> > +       /* Unregister device operations */
-> > +       kvm_unregister_device_ops(KVM_DEV_TYPE_RISCV_AIA);
-> > +
-> >         /* Cleanup the HGEI state */
-> >         aia_hgei_exit();
-> >  }
-> > diff --git a/arch/riscv/kvm/aia_device.c b/arch/riscv/kvm/aia_device.c
-> > new file mode 100644
-> > index 000000000000..a151fb357887
-> > --- /dev/null
-> > +++ b/arch/riscv/kvm/aia_device.c
-> > @@ -0,0 +1,622 @@
-> > +// SPDX-License-Identifier: GPL-2.0
-> > +/*
-> > + * Copyright (C) 2021 Western Digital Corporation or its affiliates.
-> > + * Copyright (C) 2022 Ventana Micro Systems Inc.
-> > + *
-> > + * Authors:
-> > + *     Anup Patel <apatel@ventanamicro.com>
-> > + */
-> > +
-> > +#include <linux/bits.h>
-> > +#include <linux/kvm_host.h>
-> > +#include <linux/uaccess.h>
-> > +#include <asm/kvm_aia_imsic.h>
-> > +
-> > +static void unlock_vcpus(struct kvm *kvm, int vcpu_lock_idx)
-> > +{
-> > +       struct kvm_vcpu *tmp_vcpu;
-> > +
-> > +       for (; vcpu_lock_idx >= 0; vcpu_lock_idx--) {
-> > +               tmp_vcpu = kvm_get_vcpu(kvm, vcpu_lock_idx);
-> > +               mutex_unlock(&tmp_vcpu->mutex);
-> > +       }
-> > +}
-> > +
-> > +static void unlock_all_vcpus(struct kvm *kvm)
-> > +{
-> > +       unlock_vcpus(kvm, atomic_read(&kvm->online_vcpus) - 1);
-> > +}
-> > +
-> > +static bool lock_all_vcpus(struct kvm *kvm)
-> > +{
-> > +       struct kvm_vcpu *tmp_vcpu;
-> > +       unsigned long c;
-> > +
-> > +       kvm_for_each_vcpu(c, tmp_vcpu, kvm) {
-> > +               if (!mutex_trylock(&tmp_vcpu->mutex)) {
-> > +                       unlock_vcpus(kvm, c - 1);
-> > +                       return false;
-> > +               }
-> > +       }
-> > +
-> > +       return true;
-> > +}
-> > +
-> > +static int aia_create(struct kvm_device *dev, u32 type)
-> > +{
-> > +       int ret;
-> > +       unsigned long i;
-> > +       struct kvm *kvm = dev->kvm;
-> > +       struct kvm_vcpu *vcpu;
-> > +
-> > +       if (irqchip_in_kernel(kvm))
-> > +               return -EEXIST;
-> > +
-> > +       ret = -EBUSY;
-> > +       if (!lock_all_vcpus(kvm))
-> > +               return ret;
-> > +
-> > +       kvm_for_each_vcpu(i, vcpu, kvm) {
-> > +               if (vcpu->arch.ran_atleast_once)
-> > +                       goto out_unlock;
-> > +       }
-> > +       ret = 0;
-> > +
-> > +       kvm->arch.aia.in_kernel = true;
-> > +
-> > +out_unlock:
-> > +       unlock_all_vcpus(kvm);
-> > +       return ret;
-> > +}
-> > +
-> > +static void aia_destroy(struct kvm_device *dev)
-> > +{
-> > +       kfree(dev);
-> > +}
-> > +
-> > +static int aia_config(struct kvm *kvm, unsigned long type,
-> > +                     u32 *nr, bool write)
-> > +{
-> > +       struct kvm_aia *aia = &kvm->arch.aia;
-> > +
-> > +       /* Writes can only be done before irqchip is initialized */
-> > +       if (write && kvm_riscv_aia_initialized(kvm))
-> > +               return -EBUSY;
-> > +
-> > +       switch (type) {
-> > +       case KVM_DEV_RISCV_AIA_CONFIG_MODE:
-> > +               if (write) {
-> > +                       switch (*nr) {
-> > +                       case KVM_DEV_RISCV_AIA_MODE_EMUL:
-> > +                               break;
-> > +                       case KVM_DEV_RISCV_AIA_MODE_HWACCEL:
-> > +                       case KVM_DEV_RISCV_AIA_MODE_AUTO:
-> > +                               /*
-> > +                                * HW Acceleration and Auto modes only
-> > +                                * supported on host with non-zero guest
-> > +                                * external interrupts (i.e. non-zero
-> > +                                * VS-level IMSIC pages).
-> > +                                */
-> > +                               if (!kvm_riscv_aia_nr_hgei)
-> > +                                       return -EINVAL;
-> > +                               break;
-> > +                       default:
-> > +                               return -EINVAL;
-> > +                       };
-> > +                       aia->mode = *nr;
-> > +               } else
-> > +                       *nr = aia->mode;
-> > +               break;
-> > +       case KVM_DEV_RISCV_AIA_CONFIG_IDS:
-> > +               if (write) {
-> > +                       if ((*nr < KVM_DEV_RISCV_AIA_IDS_MIN) ||
-> > +                           (*nr >= KVM_DEV_RISCV_AIA_IDS_MAX) ||
-> > +                           (*nr & KVM_DEV_RISCV_AIA_IDS_MIN) ||
-> > +                           (kvm_riscv_aia_max_ids <= *nr))
-> > +                               return -EINVAL;
-> > +                       aia->nr_ids = *nr;
-> > +               } else
-> > +                       *nr = aia->nr_ids;
-> > +               break;
-> > +       case KVM_DEV_RISCV_AIA_CONFIG_SRCS:
-> > +               if (write) {
-> > +                       if ((*nr >= KVM_DEV_RISCV_AIA_SRCS_MAX) ||
-> > +                           (*nr >= kvm_riscv_aia_max_ids))
-> > +                               return -EINVAL;
-> > +                       aia->nr_sources = *nr;
-> > +               } else
-> > +                       *nr = aia->nr_sources;
-> > +               break;
-> > +       case KVM_DEV_RISCV_AIA_CONFIG_GROUP_BITS:
-> > +               if (write) {
-> > +                       if (*nr >= KVM_DEV_RISCV_AIA_GROUP_BITS_MAX)
-> > +                               return -EINVAL;
-> > +                       aia->nr_group_bits = *nr;
-> > +               } else
-> > +                       *nr = aia->nr_group_bits;
-> > +               break;
-> > +       case KVM_DEV_RISCV_AIA_CONFIG_GROUP_SHIFT:
-> > +               if (write) {
-> > +                       if ((*nr < KVM_DEV_RISCV_AIA_GROUP_SHIFT_MIN) ||
-> > +                           (*nr >= KVM_DEV_RISCV_AIA_GROUP_SHIFT_MAX))
-> > +                               return -EINVAL;
-> > +                       aia->nr_group_shift = *nr;
-> > +               } else
-> > +                       *nr = aia->nr_group_shift;
-> > +               break;
-> > +       case KVM_DEV_RISCV_AIA_CONFIG_HART_BITS:
-> > +               if (write) {
-> > +                       if (*nr >= KVM_DEV_RISCV_AIA_HART_BITS_MAX)
-> > +                               return -EINVAL;
-> > +                       aia->nr_hart_bits = *nr;
-> > +               } else
-> > +                       *nr = aia->nr_hart_bits;
-> > +               break;
-> > +       case KVM_DEV_RISCV_AIA_CONFIG_GUEST_BITS:
-> > +               if (write) {
-> > +                       if (*nr >= KVM_DEV_RISCV_AIA_GUEST_BITS_MAX)
-> > +                               return -EINVAL;
-> > +                       aia->nr_guest_bits = *nr;
-> > +               } else
-> > +                       *nr = aia->nr_guest_bits;
-> > +               break;
-> > +       default:
-> > +               return -ENXIO;
-> > +       };
-> > +
-> > +       return 0;
-> > +}
-> > +
-> > +static int aia_aplic_addr(struct kvm *kvm, u64 *addr, bool write)
-> > +{
-> > +       struct kvm_aia *aia = &kvm->arch.aia;
-> > +
-> > +       if (write) {
-> > +               /* Writes can only be done before irqchip is initialized */
-> > +               if (kvm_riscv_aia_initialized(kvm))
-> > +                       return -EBUSY;
-> > +
-> > +               if (*addr & (KVM_DEV_RISCV_APLIC_ALIGN - 1))
-> > +                       return -EINVAL;
-> > +
-> > +               aia->aplic_addr = *addr;
-> > +       } else
-> > +               *addr = aia->aplic_addr;
-> > +
-> > +       return 0;
-> > +}
-> > +
-> > +static int aia_imsic_addr(struct kvm *kvm, u64 *addr,
-> > +                         unsigned long vcpu_idx, bool write)
-> > +{
-> > +       struct kvm_vcpu *vcpu;
-> > +       struct kvm_vcpu_aia *vcpu_aia;
-> > +
-> > +       vcpu = kvm_get_vcpu(kvm, vcpu_idx);
-> > +       if (!vcpu)
-> > +               return -EINVAL;
-> > +       vcpu_aia = &vcpu->arch.aia_context;
-> > +
-> > +       if (write) {
-> > +               /* Writes can only be done before irqchip is initialized */
-> > +               if (kvm_riscv_aia_initialized(kvm))
-> > +                       return -EBUSY;
-> > +
-> > +               if (*addr & (KVM_DEV_RISCV_IMSIC_ALIGN - 1))
-> > +                       return -EINVAL;
-> > +       }
-> > +
-> > +       mutex_lock(&vcpu->mutex);
-> > +       if (write)
-> > +               vcpu_aia->imsic_addr = *addr;
-> > +       else
-> > +               *addr = vcpu_aia->imsic_addr;
-> > +       mutex_unlock(&vcpu->mutex);
-> > +
-> > +       return 0;
-> > +}
-> > +
-> > +static gpa_t aia_imsic_ppn(struct kvm_aia *aia, gpa_t addr)
-> > +{
-> > +       u32 h, l;
-> > +       gpa_t mask = 0;
-> > +
-> > +       h = aia->nr_hart_bits + aia->nr_guest_bits +
-> > +           IMSIC_MMIO_PAGE_SHIFT - 1;
-> > +       mask = GENMASK_ULL(h, 0);
-> > +
-> > +       if (aia->nr_group_bits) {
-> > +               h = aia->nr_group_bits + aia->nr_group_shift - 1;
-> > +               l = aia->nr_group_shift;
-> > +               mask |= GENMASK_ULL(h, l);
-> > +       }
-> > +
-> > +       return (addr & ~mask) >> IMSIC_MMIO_PAGE_SHIFT;
-> > +}
-> > +
-> > +static u32 aia_imsic_hart_index(struct kvm_aia *aia, gpa_t addr)
-> > +{
-> > +       u32 hart, group = 0;
-> > +
-> > +       hart = (addr >> (aia->nr_guest_bits + IMSIC_MMIO_PAGE_SHIFT)) &
-> > +               GENMASK_ULL(aia->nr_hart_bits - 1, 0);
-> > +       if (aia->nr_group_bits)
-> > +               group = (addr >> aia->nr_group_shift) &
-> > +                       GENMASK_ULL(aia->nr_group_bits - 1, 0);
-> > +
-> > +       return (group << aia->nr_hart_bits) | hart;
-> > +}
-> > +
-> > +static int aia_init(struct kvm *kvm)
-> > +{
-> > +       int ret, i;
-> > +       unsigned long idx;
-> > +       struct kvm_vcpu *vcpu;
-> > +       struct kvm_vcpu_aia *vaia;
-> > +       struct kvm_aia *aia = &kvm->arch.aia;
-> > +       gpa_t base_ppn = KVM_RISCV_AIA_UNDEF_ADDR;
-> > +
-> > +       /* Irqchip can be initialized only once */
-> > +       if (kvm_riscv_aia_initialized(kvm))
-> > +               return -EBUSY;
-> > +
-> > +       /* We might be in the middle of creating a VCPU? */
-> > +       if (kvm->created_vcpus != atomic_read(&kvm->online_vcpus))
-> > +               return -EBUSY;
-> > +
-> > +       /* Number of sources should be less than or equals number of IDs */
-> > +       if (aia->nr_ids < aia->nr_sources)
-> > +               return -EINVAL;
-> > +
-> > +       /* APLIC base is required for non-zero number of sources */
-> > +       if (aia->nr_sources && aia->aplic_addr == KVM_RISCV_AIA_UNDEF_ADDR)
-> > +               return -EINVAL;
-> > +
-> > +       /* Initialize APLIC */
-> > +       ret = kvm_riscv_aia_aplic_init(kvm);
-> > +       if (ret)
-> > +               return ret;
-> > +
-> > +       /* Iterate over each VCPU */
-> > +       kvm_for_each_vcpu(idx, vcpu, kvm) {
-> > +               vaia = &vcpu->arch.aia_context;
-> > +
-> > +               /* IMSIC base is required */
-> > +               if (vaia->imsic_addr == KVM_RISCV_AIA_UNDEF_ADDR) {
-> > +                       ret = -EINVAL;
-> > +                       goto fail_cleanup_imsics;
-> > +               }
-> > +
-> > +               /* All IMSICs should have matching base PPN */
-> > +               if (base_ppn == KVM_RISCV_AIA_UNDEF_ADDR)
-> > +                       base_ppn = aia_imsic_ppn(aia, vaia->imsic_addr);
-> > +               if (base_ppn != aia_imsic_ppn(aia, vaia->imsic_addr)) {
-> > +                       ret = -EINVAL;
-> > +                       goto fail_cleanup_imsics;
-> > +               }
-> > +
-> > +               /* Update HART index of the IMSIC based on IMSIC base */
-> > +               vaia->hart_index = aia_imsic_hart_index(aia,
-> > +                                                       vaia->imsic_addr);
-> > +
-> > +               /* Initialize IMSIC for this VCPU */
-> > +               ret = kvm_riscv_vcpu_aia_imsic_init(vcpu);
-> > +               if (ret)
-> > +                       goto fail_cleanup_imsics;
-> > +       }
-> > +
-> > +       /* Set the initialized flag */
-> > +       kvm->arch.aia.initialized = true;
-> > +
-> > +       return 0;
-> > +
-> > +fail_cleanup_imsics:
-> > +       for (i = idx - 1; i >= 0; i--) {
-> > +               vcpu = kvm_get_vcpu(kvm, i);
-> > +               if (!vcpu)
-> > +                       continue;
-> > +               kvm_riscv_vcpu_aia_imsic_cleanup(vcpu);
-> > +       }
-> > +       kvm_riscv_aia_aplic_cleanup(kvm);
-> > +       return ret;
-> > +}
-> > +
-> > +static int aia_set_attr(struct kvm_device *dev, struct kvm_device_attr *attr)
-> > +{
-> > +       u32 nr;
-> > +       u64 addr;
-> > +       int nr_vcpus, r = -ENXIO;
-> > +       unsigned long type = (unsigned long)attr->attr;
-> > +       void __user *uaddr = (void __user *)(long)attr->addr;
-> > +
-> > +       switch (attr->group) {
-> > +       case KVM_DEV_RISCV_AIA_GRP_CONFIG:
-> > +               if (copy_from_user(&nr, uaddr, sizeof(nr)))
-> > +                       return -EFAULT;
-> > +
-> > +               mutex_lock(&dev->kvm->lock);
-> > +               r = aia_config(dev->kvm, type, &nr, true);
-> > +               mutex_unlock(&dev->kvm->lock);
-> > +
-> > +               break;
-> > +
-> > +       case KVM_DEV_RISCV_AIA_GRP_ADDR:
-> > +               if (copy_from_user(&addr, uaddr, sizeof(addr)))
-> > +                       return -EFAULT;
-> > +
-> > +               nr_vcpus = atomic_read(&dev->kvm->online_vcpus);
-> > +               mutex_lock(&dev->kvm->lock);
-> > +               if (type == KVM_DEV_RISCV_AIA_ADDR_APLIC)
-> > +                       r = aia_aplic_addr(dev->kvm, &addr, true);
-> > +               else if (type < KVM_DEV_RISCV_AIA_ADDR_IMSIC(nr_vcpus))
-> > +                       r = aia_imsic_addr(dev->kvm, &addr,
-> > +                           type - KVM_DEV_RISCV_AIA_ADDR_IMSIC(0), true);
-> > +               mutex_unlock(&dev->kvm->lock);
-> > +
-> > +               break;
-> > +
-> > +       case KVM_DEV_RISCV_AIA_GRP_CTRL:
-> > +               switch (type) {
-> > +               case KVM_DEV_RISCV_AIA_CTRL_INIT:
-> > +                       mutex_lock(&dev->kvm->lock);
-> > +                       r = aia_init(dev->kvm);
-> > +                       mutex_unlock(&dev->kvm->lock);
-> > +                       break;
-> > +               }
-> > +
-> > +               break;
-> > +       }
-> > +
-> > +       return r;
-> > +}
-> > +
-> > +static int aia_get_attr(struct kvm_device *dev, struct kvm_device_attr *attr)
-> > +{
-> > +       u32 nr;
-> > +       u64 addr;
-> > +       int nr_vcpus, r = -ENXIO;
-> > +       void __user *uaddr = (void __user *)(long)attr->addr;
-> > +       unsigned long type = (unsigned long)attr->attr;
-> > +
-> > +       switch (attr->group) {
-> > +       case KVM_DEV_RISCV_AIA_GRP_CONFIG:
-> > +               if (copy_from_user(&nr, uaddr, sizeof(nr)))
-> > +                       return -EFAULT;
-> > +
-> > +               mutex_lock(&dev->kvm->lock);
-> > +               r = aia_config(dev->kvm, type, &nr, false);
-> > +               mutex_unlock(&dev->kvm->lock);
-> > +               if (r)
-> > +                       return r;
-> > +
-> > +               if (copy_to_user(uaddr, &nr, sizeof(nr)))
-> > +                       return -EFAULT;
-> > +
-> > +               break;
-> > +       case KVM_DEV_RISCV_AIA_GRP_ADDR:
-> > +               if (copy_from_user(&addr, uaddr, sizeof(addr)))
-> > +                       return -EFAULT;
-> > +
-> > +               nr_vcpus = atomic_read(&dev->kvm->online_vcpus);
-> > +               mutex_lock(&dev->kvm->lock);
-> > +               if (type == KVM_DEV_RISCV_AIA_ADDR_APLIC)
-> > +                       r = aia_aplic_addr(dev->kvm, &addr, false);
-> > +               else if (type < KVM_DEV_RISCV_AIA_ADDR_IMSIC(nr_vcpus))
-> > +                       r = aia_imsic_addr(dev->kvm, &addr,
-> > +                           type - KVM_DEV_RISCV_AIA_ADDR_IMSIC(0), false);
-> > +               mutex_unlock(&dev->kvm->lock);
-> > +               if (r)
-> > +                       return r;
-> > +
-> > +               if (copy_to_user(uaddr, &addr, sizeof(addr)))
-> > +                       return -EFAULT;
-> > +
-> > +               break;
-> > +       }
-> > +
-> > +       return r;
-> > +}
-> > +
-> > +static int aia_has_attr(struct kvm_device *dev, struct kvm_device_attr *attr)
-> > +{
-> > +       int nr_vcpus;
-> > +
-> > +       switch (attr->group) {
-> > +       case KVM_DEV_RISCV_AIA_GRP_CONFIG:
-> > +               switch (attr->attr) {
-> > +               case KVM_DEV_RISCV_AIA_CONFIG_MODE:
-> > +               case KVM_DEV_RISCV_AIA_CONFIG_IDS:
-> > +               case KVM_DEV_RISCV_AIA_CONFIG_SRCS:
-> > +               case KVM_DEV_RISCV_AIA_CONFIG_GROUP_BITS:
-> > +               case KVM_DEV_RISCV_AIA_CONFIG_GROUP_SHIFT:
-> > +               case KVM_DEV_RISCV_AIA_CONFIG_HART_BITS:
-> > +               case KVM_DEV_RISCV_AIA_CONFIG_GUEST_BITS:
-> > +                       return 0;
-> > +               }
-> > +               break;
-> > +       case KVM_DEV_RISCV_AIA_GRP_ADDR:
-> > +               nr_vcpus = atomic_read(&dev->kvm->online_vcpus);
-> > +               if (attr->attr == KVM_DEV_RISCV_AIA_ADDR_APLIC)
-> > +                       return 0;
-> > +               else if (attr->attr < KVM_DEV_RISCV_AIA_ADDR_IMSIC(nr_vcpus))
-> > +                       return 0;
-> > +               break;
-> > +       case KVM_DEV_RISCV_AIA_GRP_CTRL:
-> > +               switch (attr->attr) {
-> > +               case KVM_DEV_RISCV_AIA_CTRL_INIT:
-> > +                       return 0;
-> > +               }
-> > +               break;
-> > +       }
-> > +
-> > +       return -ENXIO;
-> > +}
-> > +
-> > +struct kvm_device_ops kvm_riscv_aia_device_ops = {
-> > +       .name = "kvm-riscv-aia",
-> > +       .create = aia_create,
-> > +       .destroy = aia_destroy,
-> > +       .set_attr = aia_set_attr,
-> > +       .get_attr = aia_get_attr,
-> > +       .has_attr = aia_has_attr,
-> > +};
-> > +
-> > +int kvm_riscv_vcpu_aia_update(struct kvm_vcpu *vcpu)
-> > +{
-> > +       /* Proceed only if AIA was initialized successfully */
-> > +       if (!kvm_riscv_aia_initialized(vcpu->kvm))
-> > +               return 1;
-> > +
-> > +       /* Update the IMSIC HW state before entering guest mode */
-> > +       return kvm_riscv_vcpu_aia_imsic_update(vcpu);
-> > +}
-> > +
-> > +void kvm_riscv_vcpu_aia_reset(struct kvm_vcpu *vcpu)
-> > +{
-> > +       struct kvm_vcpu_aia_csr *csr = &vcpu->arch.aia_context.guest_csr;
-> > +       struct kvm_vcpu_aia_csr *reset_csr =
-> > +                               &vcpu->arch.aia_context.guest_reset_csr;
-> > +
-> > +       if (!kvm_riscv_aia_available())
-> > +               return;
-> > +       memcpy(csr, reset_csr, sizeof(*csr));
-> > +
-> > +       /* Proceed only if AIA was initialized successfully */
-> > +       if (!kvm_riscv_aia_initialized(vcpu->kvm))
-> > +               return;
-> > +
-> > +       /* Reset the IMSIC context */
-> > +       kvm_riscv_vcpu_aia_imsic_reset(vcpu);
-> > +}
-> > +
-> > +int kvm_riscv_vcpu_aia_init(struct kvm_vcpu *vcpu)
-> > +{
-> > +       struct kvm_vcpu_aia *vaia = &vcpu->arch.aia_context;
-> > +
-> > +       if (!kvm_riscv_aia_available())
-> > +               return 0;
-> > +
-> > +       /*
-> > +        * We don't do any memory allocations over here because these
-> > +        * will be done after AIA device is initialized by the user-space.
-> > +        *
-> > +        * Refer, aia_init() implementation for more details.
-> > +        */
-> > +
-> > +       /* Initialize default values in AIA vcpu context */
-> > +       vaia->imsic_addr = KVM_RISCV_AIA_UNDEF_ADDR;
-> > +       vaia->hart_index = vcpu->vcpu_idx;
-> > +
-> > +       return 0;
-> > +}
-> > +
-> > +void kvm_riscv_vcpu_aia_deinit(struct kvm_vcpu *vcpu)
-> > +{
-> > +       /* Proceed only if AIA was initialized successfully */
-> > +       if (!kvm_riscv_aia_initialized(vcpu->kvm))
-> > +               return;
-> > +
-> > +       /* Cleanup IMSIC context */
-> > +       kvm_riscv_vcpu_aia_imsic_cleanup(vcpu);
-> > +}
-> > +
-> > +int kvm_riscv_aia_inject_msi_by_id(struct kvm *kvm, u32 hart_index,
-> > +                                  u32 guest_index, u32 iid)
-> > +{
-> > +       unsigned long idx;
-> > +       struct kvm_vcpu *vcpu;
-> > +
-> > +       /* Proceed only if AIA was initialized successfully */
-> > +       if (!kvm_riscv_aia_initialized(kvm))
-> > +               return -EBUSY;
-> > +
-> > +       /* Inject MSI to matching VCPU */
-> > +       kvm_for_each_vcpu(idx, vcpu, kvm) {
-> > +               if (vcpu->arch.aia_context.hart_index == hart_index)
-> > +                       return kvm_riscv_vcpu_aia_imsic_inject(vcpu,
-> > +                                                              guest_index,
-> > +                                                              0, iid);
-> > +       }
-> > +
-> > +       return 0;
-> > +}
-> > +
-> > +int kvm_riscv_aia_inject_msi(struct kvm *kvm, struct kvm_msi *msi)
-> > +{
-> > +       gpa_t tppn, ippn;
-> > +       unsigned long idx;
-> > +       struct kvm_vcpu *vcpu;
-> > +       u32 g, toff, iid = msi->data;
-> > +       struct kvm_aia *aia = &kvm->arch.aia;
-> > +       gpa_t target = (((gpa_t)msi->address_hi) << 32) | msi->address_lo;
-> > +
-> > +       /* Proceed only if AIA was initialized successfully */
-> > +       if (!kvm_riscv_aia_initialized(kvm))
-> > +               return -EBUSY;
-> > +
-> > +       /* Convert target address to target PPN */
-> > +       tppn = target >> IMSIC_MMIO_PAGE_SHIFT;
-> > +
-> > +       /* Extract and clear Guest ID from target PPN */
-> > +       g = tppn & (BIT(aia->nr_guest_bits) - 1);
-> > +       tppn &= ~((gpa_t)(BIT(aia->nr_guest_bits) - 1));
-> > +
-> > +       /* Inject MSI to matching VCPU */
-> > +       kvm_for_each_vcpu(idx, vcpu, kvm) {
-> > +               ippn = vcpu->arch.aia_context.imsic_addr >>
-> > +                                       IMSIC_MMIO_PAGE_SHIFT;
-> > +               if (ippn == tppn) {
-> > +                       toff = target & (IMSIC_MMIO_PAGE_SZ - 1);
-> > +                       return kvm_riscv_vcpu_aia_imsic_inject(vcpu, g,
-> > +                                                              toff, iid);
-> > +               }
-> > +       }
-> > +
-> > +       return 0;
-> > +}
-> > +
-> > +int kvm_riscv_aia_inject_irq(struct kvm *kvm, unsigned int irq, bool level)
-> > +{
-> > +       /* Proceed only if AIA was initialized successfully */
-> > +       if (!kvm_riscv_aia_initialized(kvm))
-> > +               return -EBUSY;
-> > +
-> > +       /* Inject interrupt level change in APLIC */
-> > +       return kvm_riscv_aia_aplic_inject(kvm, irq, level);
-> > +}
-> > +
-> > +void kvm_riscv_aia_init_vm(struct kvm *kvm)
-> > +{
-> > +       struct kvm_aia *aia = &kvm->arch.aia;
-> > +
-> > +       if (!kvm_riscv_aia_available())
-> > +               return;
-> > +
-> > +       /*
-> > +        * We don't do any memory allocations over here because these
-> > +        * will be done after AIA device is initialized by the user-space.
-> > +        *
-> > +        * Refer, aia_init() implementation for more details.
-> > +        */
-> > +
-> > +       /* Initialize default values in AIA global context */
-> > +       aia->mode = (kvm_riscv_aia_nr_hgei) ?
-> > +               KVM_DEV_RISCV_AIA_MODE_AUTO : KVM_DEV_RISCV_AIA_MODE_EMUL;
-> > +       aia->nr_ids = kvm_riscv_aia_max_ids - 1;
-> > +       aia->nr_sources = 0;
-> > +       aia->nr_group_bits = 0;
-> > +       aia->nr_group_shift = KVM_DEV_RISCV_AIA_GROUP_SHIFT_MIN;
-> > +       aia->nr_hart_bits = 0;
-> > +       aia->nr_guest_bits = 0;
-> > +       aia->aplic_addr = KVM_RISCV_AIA_UNDEF_ADDR;
-> > +}
-> > +
-> > +void kvm_riscv_aia_destroy_vm(struct kvm *kvm)
-> > +{
-> > +       /* Proceed only if AIA was initialized successfully */
-> > +       if (!kvm_riscv_aia_initialized(kvm))
-> > +               return;
-> > +
-> > +       /* Cleanup APLIC context */
-> > +       kvm_riscv_aia_aplic_cleanup(kvm);
-> > +}
-> > diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
-> > index 737318b1c1d9..27ccd07898e1 100644
-> > --- a/include/uapi/linux/kvm.h
-> > +++ b/include/uapi/linux/kvm.h
-> > @@ -1442,6 +1442,8 @@ enum kvm_device_type {
-> >  #define KVM_DEV_TYPE_XIVE              KVM_DEV_TYPE_XIVE
-> >         KVM_DEV_TYPE_ARM_PV_TIME,
-> >  #define KVM_DEV_TYPE_ARM_PV_TIME       KVM_DEV_TYPE_ARM_PV_TIME
-> > +       KVM_DEV_TYPE_RISCV_AIA,
-> > +#define KVM_DEV_TYPE_RISCV_AIA         KVM_DEV_TYPE_RISCV_AIA
-> >         KVM_DEV_TYPE_MAX,
-> >  };
-> >
-> > --
-> > 2.34.1
-> >
->
-> Apart from the above comments, LGTM.
->
+>  int kvm_riscv_aia_aplic_set_attr(struct kvm *kvm, unsigned long type, u32 v);
+>  int kvm_riscv_aia_aplic_get_attr(struct kvm *kvm, unsigned long type, u32 *v);
+> diff --git a/arch/riscv/kvm/Makefile b/arch/riscv/kvm/Makefile
+> index 94c43702c765..c1d1356387ff 100644
+> --- a/arch/riscv/kvm/Makefile
+> +++ b/arch/riscv/kvm/Makefile
+> @@ -29,3 +29,4 @@ kvm-$(CONFIG_RISCV_PMU_SBI) += vcpu_pmu.o vcpu_sbi_pmu.o
+>  kvm-y += aia.o
+>  kvm-y += aia_device.o
+>  kvm-y += aia_aplic.o
+> +kvm-y += aia_imsic.o
+> diff --git a/arch/riscv/kvm/aia_imsic.c b/arch/riscv/kvm/aia_imsic.c
+> new file mode 100644
+> index 000000000000..2dc09dcb8ab5
+> --- /dev/null
+> +++ b/arch/riscv/kvm/aia_imsic.c
+> @@ -0,0 +1,913 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +/*
+> + * Copyright (C) 2021 Western Digital Corporation or its affiliates.
+> + * Copyright (C) 2022 Ventana Micro Systems Inc.
+> + *
+> + * Authors:
+> + *     Anup Patel <apatel@ventanamicro.com>
+> + */
+> +
+> +#include <linux/bitmap.h>
+> +#include <linux/kvm_host.h>
+> +#include <linux/math.h>
+> +#include <linux/spinlock.h>
+> +#include <linux/swab.h>
+> +#include <kvm/iodev.h>
+> +#include <asm/csr.h>
+> +#include <asm/kvm_aia_imsic.h>
+> +
+> +#define IMSIC_MAX_EIX  (IMSIC_MAX_ID / BITS_PER_TYPE(u64))
+> +
+> +struct imsic_mrif_eix {
+> +       unsigned long eip[BITS_PER_TYPE(u64) / BITS_PER_LONG];
+> +       unsigned long eie[BITS_PER_TYPE(u64) / BITS_PER_LONG];
+> +};
+> +
+> +struct imsic_mrif {
+> +       struct imsic_mrif_eix eix[IMSIC_MAX_EIX];
+> +       unsigned long eithreshold;
+> +       unsigned long eidelivery;
+> +};
+> +
+> +struct imsic {
+> +       struct kvm_io_device iodev;
+> +
+> +       u32 nr_msis;
+> +       u32 nr_eix;
+> +       u32 nr_hw_eix;
+> +
+> +       /*
+> +        * At any point in time, the register state is in
+> +        * one of the following places:
+> +        *
+> +        * 1) Hardware: IMSIC VS-file (vsfile_cpu >= 0)
+> +        * 2) Software: IMSIC SW-file (vsfile_cpu < 0)
+> +        */
+> +
+> +       /* IMSIC VS-file */
+> +       rwlock_t vsfile_lock;
+> +       int vsfile_cpu;
+> +       int vsfile_hgei;
+> +       void __iomem *vsfile_va;
+> +       phys_addr_t vsfile_pa;
+> +
+> +       /* IMSIC SW-file */
+> +       struct imsic_mrif *swfile;
+> +       phys_addr_t swfile_pa;
+> +};
+> +
+> +#define imsic_vs_csr_read(__c)                 \
+> +({                                             \
+> +       unsigned long __r;                      \
+> +       csr_write(CSR_VSISELECT, __c);          \
+> +       __r = csr_read(CSR_VSIREG);             \
+> +       __r;                                    \
+> +})
+> +
+> +#define imsic_read_switchcase(__ireg)                  \
+> +       case __ireg:                                    \
+> +               return imsic_vs_csr_read(__ireg);
+> +#define imsic_read_switchcase_2(__ireg)                        \
+> +       imsic_read_switchcase(__ireg + 0)               \
+> +       imsic_read_switchcase(__ireg + 1)
+> +#define imsic_read_switchcase_4(__ireg)                        \
+> +       imsic_read_switchcase_2(__ireg + 0)             \
+> +       imsic_read_switchcase_2(__ireg + 2)
+> +#define imsic_read_switchcase_8(__ireg)                        \
+> +       imsic_read_switchcase_4(__ireg + 0)             \
+> +       imsic_read_switchcase_4(__ireg + 4)
+> +#define imsic_read_switchcase_16(__ireg)               \
+> +       imsic_read_switchcase_8(__ireg + 0)             \
+> +       imsic_read_switchcase_8(__ireg + 8)
+> +#define imsic_read_switchcase_32(__ireg)               \
+> +       imsic_read_switchcase_16(__ireg + 0)            \
+> +       imsic_read_switchcase_16(__ireg + 16)
+> +#define imsic_read_switchcase_64(__ireg)               \
+> +       imsic_read_switchcase_32(__ireg + 0)            \
+> +       imsic_read_switchcase_32(__ireg + 32)
+> +
+> +static unsigned long imsic_eix_read(int ireg)
+> +{
+> +       switch (ireg) {
+> +       imsic_read_switchcase_64(IMSIC_EIP0)
+> +       imsic_read_switchcase_64(IMSIC_EIE0)
+> +       };
+> +
+> +       return 0;
+> +}
+> +
+> +#define imsic_vs_csr_swap(__c, __v)            \
+> +({                                             \
+> +       unsigned long __r;                      \
+> +       csr_write(CSR_VSISELECT, __c);          \
+> +       __r = csr_swap(CSR_VSIREG, __v);        \
+> +       __r;                                    \
+> +})
+> +
+> +#define imsic_swap_switchcase(__ireg, __v)             \
+> +       case __ireg:                                    \
+> +               return imsic_vs_csr_swap(__ireg, __v);
+> +#define imsic_swap_switchcase_2(__ireg, __v)           \
+> +       imsic_swap_switchcase(__ireg + 0, __v)          \
+> +       imsic_swap_switchcase(__ireg + 1, __v)
+> +#define imsic_swap_switchcase_4(__ireg, __v)           \
+> +       imsic_swap_switchcase_2(__ireg + 0, __v)        \
+> +       imsic_swap_switchcase_2(__ireg + 2, __v)
+> +#define imsic_swap_switchcase_8(__ireg, __v)           \
+> +       imsic_swap_switchcase_4(__ireg + 0, __v)        \
+> +       imsic_swap_switchcase_4(__ireg + 4, __v)
+> +#define imsic_swap_switchcase_16(__ireg, __v)          \
+> +       imsic_swap_switchcase_8(__ireg + 0, __v)        \
+> +       imsic_swap_switchcase_8(__ireg + 8, __v)
+> +#define imsic_swap_switchcase_32(__ireg, __v)          \
+> +       imsic_swap_switchcase_16(__ireg + 0, __v)       \
+> +       imsic_swap_switchcase_16(__ireg + 16, __v)
+> +#define imsic_swap_switchcase_64(__ireg, __v)          \
+> +       imsic_swap_switchcase_32(__ireg + 0, __v)       \
+> +       imsic_swap_switchcase_32(__ireg + 32, __v)
+> +
+> +static unsigned long imsic_eix_swap(int ireg, unsigned long val)
+> +{
+> +       switch (ireg) {
+> +       imsic_swap_switchcase_64(IMSIC_EIP0, val)
+> +       imsic_swap_switchcase_64(IMSIC_EIE0, val)
+> +       };
+> +
+> +       return 0;
+> +}
+> +
+> +#define imsic_vs_csr_write(__c, __v)           \
+> +do {                                           \
+> +       csr_write(CSR_VSISELECT, __c);          \
+> +       csr_write(CSR_VSIREG, __v);             \
+> +} while (0)
+> +
+> +#define imsic_write_switchcase(__ireg, __v)            \
+> +       case __ireg:                                    \
+> +               imsic_vs_csr_write(__ireg, __v);        \
+> +               break;
+> +#define imsic_write_switchcase_2(__ireg, __v)          \
+> +       imsic_write_switchcase(__ireg + 0, __v)         \
+> +       imsic_write_switchcase(__ireg + 1, __v)
+> +#define imsic_write_switchcase_4(__ireg, __v)          \
+> +       imsic_write_switchcase_2(__ireg + 0, __v)       \
+> +       imsic_write_switchcase_2(__ireg + 2, __v)
+> +#define imsic_write_switchcase_8(__ireg, __v)          \
+> +       imsic_write_switchcase_4(__ireg + 0, __v)       \
+> +       imsic_write_switchcase_4(__ireg + 4, __v)
+> +#define imsic_write_switchcase_16(__ireg, __v)         \
+> +       imsic_write_switchcase_8(__ireg + 0, __v)       \
+> +       imsic_write_switchcase_8(__ireg + 8, __v)
+> +#define imsic_write_switchcase_32(__ireg, __v)         \
+> +       imsic_write_switchcase_16(__ireg + 0, __v)      \
+> +       imsic_write_switchcase_16(__ireg + 16, __v)
+> +#define imsic_write_switchcase_64(__ireg, __v)         \
+> +       imsic_write_switchcase_32(__ireg + 0, __v)      \
+> +       imsic_write_switchcase_32(__ireg + 32, __v)
+> +
+> +static void imsic_eix_write(int ireg, unsigned long val)
+> +{
+> +       switch (ireg) {
+> +       imsic_write_switchcase_64(IMSIC_EIP0, val)
+> +       imsic_write_switchcase_64(IMSIC_EIE0, val)
+> +       };
+> +}
+> +
+> +#define imsic_vs_csr_set(__c, __v)             \
+> +do {                                           \
+> +       csr_write(CSR_VSISELECT, __c);          \
+> +       csr_set(CSR_VSIREG, __v);               \
+> +} while (0)
+> +
+> +#define imsic_set_switchcase(__ireg, __v)              \
+> +       case __ireg:                                    \
+> +               imsic_vs_csr_set(__ireg, __v);          \
+> +               break;
+> +#define imsic_set_switchcase_2(__ireg, __v)            \
+> +       imsic_set_switchcase(__ireg + 0, __v)           \
+> +       imsic_set_switchcase(__ireg + 1, __v)
+> +#define imsic_set_switchcase_4(__ireg, __v)            \
+> +       imsic_set_switchcase_2(__ireg + 0, __v)         \
+> +       imsic_set_switchcase_2(__ireg + 2, __v)
+> +#define imsic_set_switchcase_8(__ireg, __v)            \
+> +       imsic_set_switchcase_4(__ireg + 0, __v)         \
+> +       imsic_set_switchcase_4(__ireg + 4, __v)
+> +#define imsic_set_switchcase_16(__ireg, __v)           \
+> +       imsic_set_switchcase_8(__ireg + 0, __v)         \
+> +       imsic_set_switchcase_8(__ireg + 8, __v)
+> +#define imsic_set_switchcase_32(__ireg, __v)           \
+> +       imsic_set_switchcase_16(__ireg + 0, __v)        \
+> +       imsic_set_switchcase_16(__ireg + 16, __v)
+> +#define imsic_set_switchcase_64(__ireg, __v)           \
+> +       imsic_set_switchcase_32(__ireg + 0, __v)        \
+> +       imsic_set_switchcase_32(__ireg + 32, __v)
+> +
+> +static void imsic_eix_set(int ireg, unsigned long val)
+> +{
+> +       switch (ireg) {
+> +       imsic_set_switchcase_64(IMSIC_EIP0, val)
+> +       imsic_set_switchcase_64(IMSIC_EIE0, val)
+> +       };
+> +}
+> +
+> +static unsigned long imsic_mrif_atomic_rmw(struct imsic_mrif *mrif,
+> +                                          unsigned long *ptr,
+> +                                          unsigned long new_val,
+> +                                          unsigned long wr_mask)
+> +{
+> +       unsigned long old_val = 0, tmp = 0;
+> +
+> +       __asm__ __volatile__ (
+> +               "0:     lr.w.aq   %1, %0\n"
+> +               "       and       %2, %1, %3\n"
+> +               "       or        %2, %2, %4\n"
+> +               "       sc.w.rl   %2, %2, %0\n"
+> +               "       bnez      %2, 0b"
+> +               : "+A" (*ptr), "+r" (old_val), "+r" (tmp)
+> +               : "r" (~wr_mask), "r" (new_val & wr_mask)
+> +               : "memory");
+> +
+> +       return old_val;
+> +}
+> +
+> +static unsigned long imsic_mrif_atomic_or(struct imsic_mrif *mrif,
+> +                                         unsigned long *ptr,
+> +                                         unsigned long val)
+> +{
+> +       return arch_atomic_long_fetch_or(val, (atomic_long_t *)ptr);
+> +}
+> +
+> +#define imsic_mrif_atomic_write(__mrif, __ptr, __new_val)      \
+> +               imsic_mrif_atomic_rmw(__mrif, __ptr, __new_val, -1UL)
+> +#define imsic_mrif_atomic_read(__mrif, __ptr)                  \
+> +               imsic_mrif_atomic_or(__mrif, __ptr, 0)
+> +
+> +static u32 imsic_mrif_topei(struct imsic_mrif *mrif, u32 nr_eix, u32 nr_msis)
+> +{
+> +       struct imsic_mrif_eix *eix;
+> +       u32 i, imin, imax, ei, max_msi;
+> +       unsigned long eipend[BITS_PER_TYPE(u64) / BITS_PER_LONG];
+> +       unsigned long eithreshold = imsic_mrif_atomic_read(mrif,
+> +                                                       &mrif->eithreshold);
+> +
+> +       max_msi = (eithreshold && (eithreshold <= nr_msis)) ?
+> +                  eithreshold : nr_msis;
+> +       for (ei = 0; ei < nr_eix; ei++) {
+> +               eix = &mrif->eix[ei];
+> +               eipend[0] = imsic_mrif_atomic_read(mrif, &eix->eie[0]) &
+> +                           imsic_mrif_atomic_read(mrif, &eix->eip[0]);
+> +#ifdef CONFIG_32BIT
+> +               eipend[1] = imsic_mrif_atomic_read(mrif, &eix->eie[1]) &
+> +                           imsic_mrif_atomic_read(mrif, &eix->eip[1]);
+> +               if (!eipend[0] && !eipend[1])
+> +#else
+> +               if (!eipend[0])
+> +#endif
+> +                       continue;
+> +
+> +               imin = ei * BITS_PER_TYPE(u64);
+> +               imax = ((imin + BITS_PER_TYPE(u64)) < max_msi) ?
+> +                       imin + BITS_PER_TYPE(u64) : max_msi;
+> +               for (i = (!imin) ? 1 : imin; i < imax; i++) {
+> +                       if (test_bit(i - imin, eipend))
+> +                               return (i << TOPEI_ID_SHIFT) | i;
+> +               }
+> +       }
+> +
+> +       return 0;
+> +}
+> +
+> +static int imsic_mrif_rmw(struct imsic_mrif *mrif, u32 nr_eix,
+> +                         unsigned long isel, unsigned long *val,
+> +                         unsigned long new_val, unsigned long wr_mask)
+> +{
+> +       bool pend;
+> +       struct imsic_mrif_eix *eix;
+> +       unsigned long *ei, num, old_val = 0;
+> +
+> +       switch (isel) {
+> +       case IMSIC_EIDELIVERY:
+> +               old_val = imsic_mrif_atomic_rmw(mrif, &mrif->eidelivery,
+> +                                               new_val, wr_mask & 0x1);
+> +               break;
+> +       case IMSIC_EITHRESHOLD:
+> +               old_val = imsic_mrif_atomic_rmw(mrif, &mrif->eithreshold,
+> +                               new_val, wr_mask & (IMSIC_MAX_ID - 1));
+> +               break;
+> +       case IMSIC_EIP0 ... IMSIC_EIP63:
+> +       case IMSIC_EIE0 ... IMSIC_EIE63:
+> +               if (isel >= IMSIC_EIP0 && isel <= IMSIC_EIP63) {
+> +                       pend = true;
+> +                       num = isel - IMSIC_EIP0;
+> +               } else {
+> +                       pend = false;
+> +                       num = isel - IMSIC_EIE0;
+> +               }
+> +
+> +               if ((num / 2) >= nr_eix)
+> +                       return -EINVAL;
+> +               eix = &mrif->eix[num / 2];
+> +
+> +#ifndef CONFIG_32BIT
+> +               if (num & 0x1)
+> +                       return -EINVAL;
+> +               ei = (pend) ? &eix->eip[0] : &eix->eie[0];
+> +#else
+> +               ei = (pend) ? &eix->eip[num & 0x1] : &eix->eie[num & 0x1];
+> +#endif
+> +
+> +               /* Bit0 of EIP0 or EIE0 is read-only */
+> +               if (!num)
+> +                       wr_mask &= ~BIT(0);
+> +
+> +               old_val = imsic_mrif_atomic_rmw(mrif, ei, new_val, wr_mask);
+> +               break;
+> +       default:
+> +               return -ENOENT;
+> +       };
+> +
+> +       if (val)
+> +               *val = old_val;
+> +
+> +       return 0;
+> +}
+> +
+> +struct imsic_vsfile_read_data {
+> +       int hgei;
+> +       u32 nr_eix;
+> +       bool clear;
+> +       struct imsic_mrif *mrif;
+> +};
+> +
+> +static void imsic_vsfile_local_read(void *data)
+> +{
+> +       u32 i;
+> +       struct imsic_mrif_eix *eix;
+> +       struct imsic_vsfile_read_data *idata = data;
+> +       struct imsic_mrif *mrif = idata->mrif;
+> +       unsigned long new_hstatus, old_hstatus, old_vsiselect;
+> +
+> +       old_vsiselect = csr_read(CSR_VSISELECT);
+> +       old_hstatus = csr_read(CSR_HSTATUS);
+> +       new_hstatus = old_hstatus & ~HSTATUS_VGEIN;
+> +       new_hstatus |= ((unsigned long)idata->hgei) << HSTATUS_VGEIN_SHIFT;
+> +       csr_write(CSR_HSTATUS, new_hstatus);
+> +
+> +       /*
+> +        * We don't use imsic_mrif_atomic_xyz() functions to store
+> +        * values in MRIF because imsic_vsfile_read() is always called
+> +        * with pointer to temporary MRIF on stack.
+> +        */
+> +
+> +       if (idata->clear) {
+> +               mrif->eidelivery = imsic_vs_csr_swap(IMSIC_EIDELIVERY, 0);
+> +               mrif->eithreshold = imsic_vs_csr_swap(IMSIC_EITHRESHOLD, 0);
+> +               for (i = 0; i < idata->nr_eix; i++) {
+> +                       eix = &mrif->eix[i];
+> +                       eix->eip[0] = imsic_eix_swap(IMSIC_EIP0 + i * 2, 0);
+> +                       eix->eie[0] = imsic_eix_swap(IMSIC_EIE0 + i * 2, 0);
+> +#ifdef CONFIG_32BIT
+> +                       eix->eip[1] = imsic_eix_swap(IMSIC_EIP0 + i * 2 + 1, 0);
+> +                       eix->eie[1] = imsic_eix_swap(IMSIC_EIE0 + i * 2 + 1, 0);
+> +#endif
+> +               }
+> +       } else {
+> +               mrif->eidelivery = imsic_vs_csr_read(IMSIC_EIDELIVERY);
+> +               mrif->eithreshold = imsic_vs_csr_read(IMSIC_EITHRESHOLD);
+> +               for (i = 0; i < idata->nr_eix; i++) {
+> +                       eix = &mrif->eix[i];
+> +                       eix->eip[0] = imsic_eix_read(IMSIC_EIP0 + i * 2);
+> +                       eix->eie[0] = imsic_eix_read(IMSIC_EIE0 + i * 2);
+> +#ifdef CONFIG_32BIT
+> +                       eix->eip[1] = imsic_eix_read(IMSIC_EIP0 + i * 2 + 1);
+> +                       eix->eie[1] = imsic_eix_read(IMSIC_EIE0 + i * 2 + 1);
+> +#endif
+> +               }
+> +       }
+> +
+> +       csr_write(CSR_HSTATUS, old_hstatus);
+> +       csr_write(CSR_VSISELECT, old_vsiselect);
+> +}
+> +
+> +static void imsic_vsfile_read(int vsfile_hgei, int vsfile_cpu, u32 nr_eix,
+> +                             bool clear, struct imsic_mrif *mrif)
+> +{
+> +       struct imsic_vsfile_read_data idata;
+> +
+> +       /* We can only read clear if we have a IMSIC VS-file */
+> +       if (vsfile_cpu < 0 || vsfile_hgei <= 0)
+> +               return;
+> +
+> +       /* We can only read clear on local CPU */
+> +       idata.hgei = vsfile_hgei;
+> +       idata.nr_eix = nr_eix;
+> +       idata.clear = clear;
+> +       idata.mrif = mrif;
+> +       on_each_cpu_mask(cpumask_of(vsfile_cpu),
+> +                        imsic_vsfile_local_read, &idata, 1);
+> +}
+> +
+> +static void imsic_vsfile_local_clear(int vsfile_hgei, u32 nr_eix)
+> +{
+> +       u32 i;
+> +       unsigned long new_hstatus, old_hstatus, old_vsiselect;
+> +
+> +       /* We can only zero-out if we have a IMSIC VS-file */
+> +       if (vsfile_hgei <= 0)
+> +               return;
+> +
+> +       old_vsiselect = csr_read(CSR_VSISELECT);
+> +       old_hstatus = csr_read(CSR_HSTATUS);
+> +       new_hstatus = old_hstatus & ~HSTATUS_VGEIN;
+> +       new_hstatus |= ((unsigned long)vsfile_hgei) << HSTATUS_VGEIN_SHIFT;
+> +       csr_write(CSR_HSTATUS, new_hstatus);
+> +
+> +       imsic_vs_csr_write(IMSIC_EIDELIVERY, 0);
+> +       imsic_vs_csr_write(IMSIC_EITHRESHOLD, 0);
+> +       for (i = 0; i < nr_eix; i++) {
+> +               imsic_eix_write(IMSIC_EIP0 + i * 2, 0);
+> +               imsic_eix_write(IMSIC_EIE0 + i * 2, 0);
+> +#ifdef CONFIG_32BIT
+> +               imsic_eix_write(IMSIC_EIP0 + i * 2 + 1, 0);
+> +               imsic_eix_write(IMSIC_EIE0 + i * 2 + 1, 0);
+> +#endif
+> +       }
+> +
+> +       csr_write(CSR_HSTATUS, old_hstatus);
+> +       csr_write(CSR_VSISELECT, old_vsiselect);
+> +}
+> +
+> +static void imsic_vsfile_local_update(int vsfile_hgei, u32 nr_eix,
+> +                                     struct imsic_mrif *mrif)
+> +{
+> +       u32 i;
+> +       struct imsic_mrif_eix *eix;
+> +       unsigned long new_hstatus, old_hstatus, old_vsiselect;
+> +
+> +       /* We can only update if we have a HW IMSIC context */
+> +       if (vsfile_hgei <= 0)
+> +               return;
+> +
+> +       /*
+> +        * We don't use imsic_mrif_atomic_xyz() functions to read values
+> +        * from MRIF in this function because it is always called with
+> +        * pointer to temporary MRIF on stack.
+> +        */
+> +
+> +       old_vsiselect = csr_read(CSR_VSISELECT);
+> +       old_hstatus = csr_read(CSR_HSTATUS);
+> +       new_hstatus = old_hstatus & ~HSTATUS_VGEIN;
+> +       new_hstatus |= ((unsigned long)vsfile_hgei) << HSTATUS_VGEIN_SHIFT;
+> +       csr_write(CSR_HSTATUS, new_hstatus);
+> +
+> +       for (i = 0; i < nr_eix; i++) {
+> +               eix = &mrif->eix[i];
+> +               imsic_eix_set(IMSIC_EIP0 + i * 2, eix->eip[0]);
+> +               imsic_eix_set(IMSIC_EIE0 + i * 2, eix->eie[0]);
+> +#ifdef CONFIG_32BIT
+> +               imsic_eix_set(IMSIC_EIP0 + i * 2 + 1, eix->eip[1]);
+> +               imsic_eix_set(IMSIC_EIE0 + i * 2 + 1, eix->eie[1]);
+> +#endif
+> +       }
+> +       imsic_vs_csr_write(IMSIC_EITHRESHOLD, mrif->eithreshold);
+> +       imsic_vs_csr_write(IMSIC_EIDELIVERY, mrif->eidelivery);
+> +
+> +       csr_write(CSR_HSTATUS, old_hstatus);
+> +       csr_write(CSR_VSISELECT, old_vsiselect);
+> +}
+> +
+> +static void imsic_vsfile_cleanup(struct imsic *imsic)
+> +{
+> +       int old_vsfile_hgei, old_vsfile_cpu;
+> +       unsigned long flags;
+> +
+> +       /*
+> +        * We don't use imsic_mrif_atomic_xyz() functions to clear the
+> +        * SW-file in this function because it is always called when the
+> +        * VCPU is being destroyed.
+> +        */
+> +
+> +       write_lock_irqsave(&imsic->vsfile_lock, flags);
+> +       old_vsfile_hgei = imsic->vsfile_hgei;
+> +       old_vsfile_cpu = imsic->vsfile_cpu;
+> +       imsic->vsfile_cpu = imsic->vsfile_hgei = -1;
+> +       imsic->vsfile_va = NULL;
+> +       imsic->vsfile_pa = 0;
+> +       write_unlock_irqrestore(&imsic->vsfile_lock, flags);
+> +
+> +       memset(imsic->swfile, 0, sizeof(*imsic->swfile));
+> +
+> +       if (old_vsfile_cpu >= 0)
+> +               kvm_riscv_aia_free_hgei(old_vsfile_cpu, old_vsfile_hgei);
+> +}
+> +
+> +static void imsic_swfile_extirq_update(struct kvm_vcpu *vcpu)
+> +{
+> +       struct imsic *imsic = vcpu->arch.aia_context.imsic_state;
+> +       struct imsic_mrif *mrif = imsic->swfile;
+> +
+> +       if (imsic_mrif_atomic_read(mrif, &mrif->eidelivery) &&
+> +           imsic_mrif_topei(mrif, imsic->nr_eix, imsic->nr_msis))
+> +               kvm_riscv_vcpu_set_interrupt(vcpu, IRQ_VS_EXT);
+> +       else
+> +               kvm_riscv_vcpu_unset_interrupt(vcpu, IRQ_VS_EXT);
+> +}
+> +
+> +static void imsic_swfile_read(struct kvm_vcpu *vcpu, bool clear,
+> +                             struct imsic_mrif *mrif)
+> +{
+> +       struct imsic *imsic = vcpu->arch.aia_context.imsic_state;
+> +
+> +       /*
+> +        * We don't use imsic_mrif_atomic_xyz() functions to read and
+> +        * write SW-file and MRIF in this function because it is always
+> +        * called when VCPU is not using SW-file and the MRIF points to
+> +        * a temporary MRIF on stack.
+> +        */
+> +
+> +       memcpy(mrif, imsic->swfile, sizeof(*mrif));
+> +       if (clear) {
+> +               memset(imsic->swfile, 0, sizeof(*imsic->swfile));
+> +               kvm_riscv_vcpu_unset_interrupt(vcpu, IRQ_VS_EXT);
+> +       }
+> +}
+> +
+> +static void imsic_swfile_update(struct kvm_vcpu *vcpu,
+> +                               struct imsic_mrif *mrif)
+> +{
+> +       u32 i;
+> +       struct imsic_mrif_eix *seix, *eix;
+> +       struct imsic *imsic = vcpu->arch.aia_context.imsic_state;
+> +       struct imsic_mrif *smrif = imsic->swfile;
+> +
+> +       imsic_mrif_atomic_write(smrif, &smrif->eidelivery, mrif->eidelivery);
+> +       imsic_mrif_atomic_write(smrif, &smrif->eithreshold, mrif->eithreshold);
+> +       for (i = 0; i < imsic->nr_eix; i++) {
+> +               seix = &smrif->eix[i];
+> +               eix = &mrif->eix[i];
+> +               imsic_mrif_atomic_or(smrif, &seix->eip[0], eix->eip[0]);
+> +               imsic_mrif_atomic_or(smrif, &seix->eie[0], eix->eie[0]);
+> +#ifdef CONFIG_32BIT
+> +               imsic_mrif_atomic_or(smrif, &seix->eip[1], eix->eip[1]);
+> +               imsic_mrif_atomic_or(smrif, &seix->eie[1], eix->eie[1]);
+> +#endif
+> +       }
+> +
+> +       imsic_swfile_extirq_update(vcpu);
+> +}
+> +
+> +void kvm_riscv_vcpu_aia_imsic_release(struct kvm_vcpu *vcpu)
+> +{
+> +       unsigned long flags;
+> +       struct imsic_mrif tmrif;
+> +       int old_vsfile_hgei, old_vsfile_cpu;
+> +       struct imsic *imsic = vcpu->arch.aia_context.imsic_state;
+> +
+> +       /* Read and clear IMSIC VS-file details */
+> +       write_lock_irqsave(&imsic->vsfile_lock, flags);
+> +       old_vsfile_hgei = imsic->vsfile_hgei;
+> +       old_vsfile_cpu = imsic->vsfile_cpu;
+> +       imsic->vsfile_cpu = imsic->vsfile_hgei = -1;
+> +       imsic->vsfile_va = NULL;
+> +       imsic->vsfile_pa = 0;
+> +       write_unlock_irqrestore(&imsic->vsfile_lock, flags);
+> +
+> +       /* Do nothing, if no IMSIC VS-file to release */
+> +       if (old_vsfile_cpu < 0)
+> +               return;
+> +
+> +       /*
+> +        * At this point, all interrupt producers are still using
+> +        * the old IMSIC VS-file so we first re-direct all interrupt
+> +        * producers.
+> +        */
+> +
+> +       /* Purge the G-stage mapping */
+> +       kvm_riscv_gstage_iounmap(vcpu->kvm,
+> +                                vcpu->arch.aia_context.imsic_addr,
+> +                                IMSIC_MMIO_PAGE_SZ);
+> +
+> +       /* TODO: Purge the IOMMU mapping ??? */
+> +
+> +       /*
+> +        * At this point, all interrupt producers have been re-directed
+> +        * to somewhere else so we move register state from the old IMSIC
+> +        * VS-file to the IMSIC SW-file.
+> +        */
+> +
+> +       /* Read and clear register state from old IMSIC VS-file */
+> +       memset(&tmrif, 0, sizeof(tmrif));
+> +       imsic_vsfile_read(old_vsfile_hgei, old_vsfile_cpu, imsic->nr_hw_eix,
+> +                         true, &tmrif);
+> +
+> +       /* Update register state in IMSIC SW-file */
+> +       imsic_swfile_update(vcpu, &tmrif);
+> +
+> +       /* Free-up old IMSIC VS-file */
+> +       kvm_riscv_aia_free_hgei(old_vsfile_cpu, old_vsfile_hgei);
+> +}
+> +
+> +int kvm_riscv_vcpu_aia_imsic_update(struct kvm_vcpu *vcpu)
+> +{
+> +       unsigned long flags;
+> +       phys_addr_t new_vsfile_pa;
+> +       struct imsic_mrif tmrif;
+> +       void __iomem *new_vsfile_va;
+> +       struct kvm *kvm = vcpu->kvm;
+> +       struct kvm_run *run = vcpu->run;
+> +       struct kvm_vcpu_aia *vaia = &vcpu->arch.aia_context;
+> +       struct imsic *imsic = vaia->imsic_state;
+> +       int ret = 0, new_vsfile_hgei = -1, old_vsfile_hgei, old_vsfile_cpu;
+> +
+> +       /* Do nothing for emulation mode */
+> +       if (kvm->arch.aia.mode == KVM_DEV_RISCV_AIA_MODE_EMUL)
+> +               return 1;
+> +
+> +       /* Read old IMSIC VS-file details */
+> +       read_lock_irqsave(&imsic->vsfile_lock, flags);
+> +       old_vsfile_hgei = imsic->vsfile_hgei;
+> +       old_vsfile_cpu = imsic->vsfile_cpu;
+> +       read_unlock_irqrestore(&imsic->vsfile_lock, flags);
+> +
+> +       /* Do nothing if we are continuing on same CPU */
+> +       if (old_vsfile_cpu == vcpu->cpu)
+> +               return 1;
+> +
+> +       /* Allocate new IMSIC VS-file */
+> +       ret = kvm_riscv_aia_alloc_hgei(vcpu->cpu, vcpu,
+> +                                      &new_vsfile_va, &new_vsfile_pa);
+> +       if (ret <= 0) {
+> +               /* For HW acceleration mode, we can't continue */
+> +               if (kvm->arch.aia.mode == KVM_DEV_RISCV_AIA_MODE_HWACCEL) {
+> +                       run->fail_entry.hardware_entry_failure_reason =
+> +                                                               CSR_HSTATUS;
+> +                       run->fail_entry.cpu = vcpu->cpu;
+> +                       run->exit_reason = KVM_EXIT_FAIL_ENTRY;
+> +                       return 0;
+> +               }
+> +
+> +               /* Release old IMSIC VS-file */
+> +               if (old_vsfile_cpu >= 0)
+> +                       kvm_riscv_vcpu_aia_imsic_release(vcpu);
+> +
+> +               /* For automatic mode, we continue */
+> +               goto done;
+> +       }
+> +       new_vsfile_hgei = ret;
+> +
+> +       /*
+> +        * At this point, all interrupt producers are still using
+> +        * to the old IMSIC VS-file so we first move all interrupt
+> +        * producers to the new IMSIC VS-file.
+> +        */
+> +
+> +       /* Zero-out new IMSIC VS-file */
+> +       imsic_vsfile_local_clear(new_vsfile_hgei, imsic->nr_hw_eix);
+> +
+> +       /* Update G-stage mapping for the new IMSIC VS-file */
+> +       ret = kvm_riscv_gstage_ioremap(kvm, vcpu->arch.aia_context.imsic_addr,
+> +                                      new_vsfile_pa, IMSIC_MMIO_PAGE_SZ,
+> +                                      true, true);
+> +       if (ret)
+> +               goto fail_free_vsfile_hgei;
+> +
+> +       /* TODO: Update the IOMMU mapping ??? */
+> +
+> +       /* Update new IMSIC VS-file details in IMSIC context */
+> +       write_lock_irqsave(&imsic->vsfile_lock, flags);
+> +       imsic->vsfile_hgei = new_vsfile_hgei;
+> +       imsic->vsfile_cpu = vcpu->cpu;
+> +       imsic->vsfile_va = new_vsfile_va;
+> +       imsic->vsfile_pa = new_vsfile_pa;
+> +       write_unlock_irqrestore(&imsic->vsfile_lock, flags);
+> +
+> +       /*
+> +        * At this point, all interrupt producers have been moved
+> +        * to the new IMSIC VS-file so we move register state from
+> +        * the old IMSIC VS/SW-file to the new IMSIC VS-file.
+> +        */
+> +
+> +       memset(&tmrif, 0, sizeof(tmrif));
+> +       if (old_vsfile_cpu >= 0) {
+> +               /* Read and clear register state from old IMSIC VS-file */
+> +               imsic_vsfile_read(old_vsfile_hgei, old_vsfile_cpu,
+> +                                 imsic->nr_hw_eix, true, &tmrif);
+> +
+> +               /* Free-up old IMSIC VS-file */
+> +               kvm_riscv_aia_free_hgei(old_vsfile_cpu, old_vsfile_hgei);
+> +       } else {
+> +               /* Read and clear register state from IMSIC SW-file */
+> +               imsic_swfile_read(vcpu, true, &tmrif);
+> +       }
+> +
+> +       /* Restore register state in the new IMSIC VS-file */
+> +       imsic_vsfile_local_update(new_vsfile_hgei, imsic->nr_hw_eix, &tmrif);
+> +
+> +done:
+> +       /* Set VCPU HSTATUS.VGEIN to new IMSIC VS-file */
+> +       vcpu->arch.guest_context.hstatus &= ~HSTATUS_VGEIN;
+> +       if (new_vsfile_hgei > 0)
+> +               vcpu->arch.guest_context.hstatus |=
+> +                       ((unsigned long)new_vsfile_hgei) << HSTATUS_VGEIN_SHIFT;
+> +
+> +       /* Continue run-loop */
+> +       return 1;
+> +
+> +fail_free_vsfile_hgei:
+> +       kvm_riscv_aia_free_hgei(vcpu->cpu, new_vsfile_hgei);
+> +       return ret;
+> +}
+> +
+> +int kvm_riscv_vcpu_aia_imsic_rmw(struct kvm_vcpu *vcpu, unsigned long isel,
+> +                                unsigned long *val, unsigned long new_val,
+> +                                unsigned long wr_mask)
+> +{
+> +       u32 topei;
+> +       struct imsic_mrif_eix *eix;
+> +       int r, rc = KVM_INSN_CONTINUE_NEXT_SEPC;
+> +       struct imsic *imsic = vcpu->arch.aia_context.imsic_state;
+> +
+> +       if (isel == KVM_RISCV_AIA_IMSIC_TOPEI) {
+> +               /* Read pending and enabled interrupt with highest priority */
+> +               topei = imsic_mrif_topei(imsic->swfile, imsic->nr_eix,
+> +                                        imsic->nr_msis);
+> +               if (val)
+> +                       *val = topei;
+> +
+> +               /* Writes ignore value and clear top pending interrupt */
+> +               if (topei && wr_mask) {
+> +                       topei >>= TOPEI_ID_SHIFT;
+> +                       if (topei) {
+> +                               eix = &imsic->swfile->eix[topei /
+> +                                                         BITS_PER_TYPE(u64)];
+> +                               clear_bit(topei & (BITS_PER_TYPE(u64) - 1),
+> +                                         eix->eip);
+> +                       }
+> +               }
+> +       } else {
+> +               r = imsic_mrif_rmw(imsic->swfile, imsic->nr_eix, isel,
+> +                                  val, new_val, wr_mask);
+> +               /* Forward unknown IMSIC register to user-space */
+> +               if (r)
+> +                       rc = (r == -ENOENT) ? 0 : KVM_INSN_ILLEGAL_TRAP;
+> +       }
+> +
+> +       if (wr_mask)
+> +               imsic_swfile_extirq_update(vcpu);
+> +
+> +       return rc;
+> +}
+> +
+> +void kvm_riscv_vcpu_aia_imsic_reset(struct kvm_vcpu *vcpu)
+> +{
+> +       struct imsic *imsic = vcpu->arch.aia_context.imsic_state;
+> +
+> +       if (!imsic)
+> +               return;
+> +
+> +       kvm_riscv_vcpu_aia_imsic_release(vcpu);
+> +
+> +       memset(imsic->swfile, 0, sizeof(*imsic->swfile));
+> +}
+> +
+> +int kvm_riscv_vcpu_aia_imsic_inject(struct kvm_vcpu *vcpu,
+> +                                   u32 guest_index, u32 offset, u32 iid)
+> +{
+> +       unsigned long flags;
+> +       struct imsic_mrif_eix *eix;
+> +       struct imsic *imsic = vcpu->arch.aia_context.imsic_state;
+> +
+> +       /* We only emulate one IMSIC MMIO page for each Guest VCPU */
+> +       if (!imsic || !iid || guest_index ||
+> +           (offset != IMSIC_MMIO_SETIPNUM_LE &&
+> +            offset != IMSIC_MMIO_SETIPNUM_BE))
+> +               return -ENODEV;
+> +
+> +       iid = (offset == IMSIC_MMIO_SETIPNUM_BE) ? __swab32(iid) : iid;
+> +       if (imsic->nr_msis <= iid)
+> +               return -EINVAL;
+> +
+> +       read_lock_irqsave(&imsic->vsfile_lock, flags);
+> +
+> +       if (imsic->vsfile_cpu >= 0) {
+> +               writel(iid, imsic->vsfile_va + IMSIC_MMIO_SETIPNUM_LE);
+> +               kvm_vcpu_kick(vcpu);
+> +       } else {
+> +               eix = &imsic->swfile->eix[iid / BITS_PER_TYPE(u64)];
+> +               set_bit(iid & (BITS_PER_TYPE(u64) - 1), eix->eip);
+> +               imsic_swfile_extirq_update(vcpu);
+> +       }
+> +
+> +       read_unlock_irqrestore(&imsic->vsfile_lock, flags);
+> +
+> +       return 0;
+> +}
+> +
+> +static int imsic_mmio_read(struct kvm_vcpu *vcpu, struct kvm_io_device *dev,
+> +                          gpa_t addr, int len, void *val)
+> +{
+> +       if (len != 4 || (addr & 0x3) != 0)
+> +               return -EOPNOTSUPP;
+> +
+> +       *((u32 *)val) = 0;
+> +
+> +       return 0;
+> +}
+> +
+> +static int imsic_mmio_write(struct kvm_vcpu *vcpu, struct kvm_io_device *dev,
+> +                           gpa_t addr, int len, const void *val)
+> +{
+> +       struct kvm_msi msi = { 0 };
+> +
+> +       if (len != 4 || (addr & 0x3) != 0)
+> +               return -EOPNOTSUPP;
+> +
+> +       msi.address_hi = addr >> 32;
+> +       msi.address_lo = (u32)addr;
+> +       msi.data = *((const u32 *)val);
+> +       kvm_riscv_aia_inject_msi(vcpu->kvm, &msi);
+> +
+> +       return 0;
+> +};
+> +
+> +static struct kvm_io_device_ops imsic_iodoev_ops = {
+> +       .read = imsic_mmio_read,
+> +       .write = imsic_mmio_write,
+> +};
+> +
+> +int kvm_riscv_vcpu_aia_imsic_init(struct kvm_vcpu *vcpu)
+> +{
+> +       int ret = 0;
+> +       struct imsic *imsic;
+> +       struct page *swfile_page;
+> +       struct kvm *kvm = vcpu->kvm;
+> +
+> +       /* Fail if we have zero IDs */
+> +       if (!kvm->arch.aia.nr_ids)
+> +               return -EINVAL;
+> +
+> +       /* Allocate IMSIC context */
+> +       imsic = kzalloc(sizeof(*imsic), GFP_KERNEL);
+> +       if (!imsic)
+> +               return -ENOMEM;
+> +       vcpu->arch.aia_context.imsic_state = imsic;
+> +
+> +       /* Setup IMSIC context  */
+> +       imsic->nr_msis = kvm->arch.aia.nr_ids + 1;
+> +       rwlock_init(&imsic->vsfile_lock);
+> +       imsic->nr_eix = BITS_TO_U64(imsic->nr_msis);
+> +       imsic->nr_hw_eix = BITS_TO_U64(kvm_riscv_aia_max_ids);
+> +       imsic->vsfile_hgei = imsic->vsfile_cpu = -1;
+> +
+> +       /* Setup IMSIC SW-file */
+> +       swfile_page = alloc_pages(GFP_KERNEL | __GFP_ZERO,
+> +                                 get_order(sizeof(*imsic->swfile)));
+> +       if (!swfile_page) {
+> +               ret = -ENOMEM;
+> +               goto fail_free_imsic;
+> +       }
+> +       imsic->swfile = page_to_virt(swfile_page);
+> +       imsic->swfile_pa = page_to_phys(swfile_page);
+> +
+> +       /* Setup IO device */
+> +       kvm_iodevice_init(&imsic->iodev, &imsic_iodoev_ops);
+> +       mutex_lock(&kvm->slots_lock);
+> +       ret = kvm_io_bus_register_dev(kvm, KVM_MMIO_BUS,
+> +                                     vcpu->arch.aia_context.imsic_addr,
+> +                                     KVM_DEV_RISCV_IMSIC_SIZE,
+> +                                     &imsic->iodev);
+> +       mutex_unlock(&kvm->slots_lock);
+> +       if (ret)
+> +               goto fail_free_swfile;
+> +
+> +       return 0;
+> +
+> +fail_free_swfile:
+> +       free_pages((unsigned long)imsic->swfile,
+> +                  get_order(sizeof(*imsic->swfile)));
+> +fail_free_imsic:
+> +       vcpu->arch.aia_context.imsic_state = NULL;
+> +       kfree(imsic);
+> +       return ret;
+> +}
+> +
+> +void kvm_riscv_vcpu_aia_imsic_cleanup(struct kvm_vcpu *vcpu)
+> +{
+> +       struct kvm *kvm = vcpu->kvm;
+> +       struct imsic *imsic = vcpu->arch.aia_context.imsic_state;
+> +
+> +       if (!imsic)
+> +               return;
+> +
+> +       imsic_vsfile_cleanup(imsic);
+> +
+> +       mutex_lock(&kvm->slots_lock);
+> +       kvm_io_bus_unregister_dev(kvm, KVM_MMIO_BUS, &imsic->iodev);
+> +       mutex_unlock(&kvm->slots_lock);
+> +
+> +       free_pages((unsigned long)imsic->swfile,
+> +                  get_order(sizeof(*imsic->swfile)));
+> +
+> +       vcpu->arch.aia_context.imsic_state = NULL;
+> +       kfree(imsic);
+> +}
 > --
-> Regards,
-> Atish
+> 2.34.1
+>
 
+
+Reviewed-by: Atish Patra <atishp@rivosinc.com>
+-- 
 Regards,
-Anup
+Atish
 
