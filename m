@@ -1,337 +1,74 @@
-From: Atish Patra <atishp@atishpatra.org>
-Date: Wed, 7 Jun 2023 16:17:14 -0700
-Subject: [PATCH 10/10] RISC-V: KVM: Expose IMSIC registers as attributes
- of AIA irqchip
-In-Reply-To: <20230517105135.1871868-11-apatel@ventanamicro.com>
-References: <20230517105135.1871868-1-apatel@ventanamicro.com> <20230517105135.1871868-11-apatel@ventanamicro.com>
-Message-ID: <CAOnJCUKm9hK5tVvRV8-mS7w4nZc9T6U47e1Lsh6JRaBPDpVfug@mail.gmail.com>
+From: Haibo Xu <xiaobo55x@gmail.com>
+Date: Thu, 8 Jun 2023 17:45:21 +0800
+Subject: [PATCH v2 11/11] KVM: riscv: selftests: Add get-reg-list test
+In-Reply-To: <20230525-2bab5376987792eab73507ac@orel>
+References: <cover.1684999824.git.haibo1.xu@intel.com> <da390e6200e838fce320a2a43b2f87951b4e0bbb.1684999824.git.haibo1.xu@intel.com>
+ <20230525-2bab5376987792eab73507ac@orel>
+Message-ID: <CAJve8okR_iH4vF9DV9zTkDaeYe25kP7KUcKQphmjG5q-iVb-KA@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, May 17, 2023 at 3:52?AM Anup Patel <apatel@ventanamicro.com> wrote:
->
-> We expose IMSIC registers as KVM device attributes of the in-kernel
-> AIA irqchip device. This will allow KVM user-space to save/restore
-> IMISC state of each VCPU using KVM device ioctls().
->
-> Signed-off-by: Anup Patel <apatel@ventanamicro.com>
-> ---
->  arch/riscv/include/asm/kvm_aia.h  |   3 +
->  arch/riscv/include/uapi/asm/kvm.h |  12 +++
->  arch/riscv/kvm/aia_device.c       |  29 ++++-
->  arch/riscv/kvm/aia_imsic.c        | 170 ++++++++++++++++++++++++++++++
->  4 files changed, 212 insertions(+), 2 deletions(-)
->
-> diff --git a/arch/riscv/include/asm/kvm_aia.h b/arch/riscv/include/asm/kvm_aia.h
-> index a4f6ebf90e31..1f37b600ca47 100644
-> --- a/arch/riscv/include/asm/kvm_aia.h
-> +++ b/arch/riscv/include/asm/kvm_aia.h
-> @@ -97,6 +97,9 @@ int kvm_riscv_vcpu_aia_imsic_update(struct kvm_vcpu *vcpu);
->  int kvm_riscv_vcpu_aia_imsic_rmw(struct kvm_vcpu *vcpu, unsigned long isel,
->                                  unsigned long *val, unsigned long new_val,
->                                  unsigned long wr_mask);
-> +int kvm_riscv_aia_imsic_rw_attr(struct kvm *kvm, unsigned long type,
-> +                               bool write, unsigned long *val);
-> +int kvm_riscv_aia_imsic_has_attr(struct kvm *kvm, unsigned long type);
->  void kvm_riscv_vcpu_aia_imsic_reset(struct kvm_vcpu *vcpu);
->  int kvm_riscv_vcpu_aia_imsic_inject(struct kvm_vcpu *vcpu,
->                                     u32 guest_index, u32 offset, u32 iid);
-> diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
-> index e80210c2220b..624784bb21dd 100644
-> --- a/arch/riscv/include/uapi/asm/kvm.h
-> +++ b/arch/riscv/include/uapi/asm/kvm.h
-> @@ -242,6 +242,18 @@ enum KVM_RISCV_SBI_EXT_ID {
->
->  #define KVM_DEV_RISCV_AIA_GRP_APLIC            3
->
-> +#define KVM_DEV_RISCV_AIA_GRP_IMSIC            4
-> +#define KVM_DEV_RISCV_AIA_IMSIC_ISEL_BITS      12
-> +#define KVM_DEV_RISCV_AIA_IMSIC_ISEL_MASK      \
-> +               ((1U << KVM_DEV_RISCV_AIA_IMSIC_ISEL_BITS) - 1)
-> +#define KVM_DEV_RISCV_AIA_IMSIC_MKATTR(__vcpu, __isel) \
-> +               (((__vcpu) << KVM_DEV_RISCV_AIA_IMSIC_ISEL_BITS) | \
-> +                ((__isel) & KVM_DEV_RISCV_AIA_IMSIC_ISEL_MASK))
-> +#define KVM_DEV_RISCV_AIA_IMSIC_GET_ISEL(__attr)       \
-> +               ((__attr) & KVM_DEV_RISCV_AIA_IMSIC_ISEL_MASK)
-> +#define KVM_DEV_RISCV_AIA_IMSIC_GET_VCPU(__attr)       \
-> +               ((__attr) >> KVM_DEV_RISCV_AIA_IMSIC_ISEL_BITS)
-> +
->  /* One single KVM irqchip, ie. the AIA */
->  #define KVM_NR_IRQCHIPS                        1
->
-> diff --git a/arch/riscv/kvm/aia_device.c b/arch/riscv/kvm/aia_device.c
-> index 17dba92a90e1..ac7bd98301a3 100644
-> --- a/arch/riscv/kvm/aia_device.c
-> +++ b/arch/riscv/kvm/aia_device.c
-> @@ -326,7 +326,7 @@ static int aia_set_attr(struct kvm_device *dev, struct kvm_device_attr *attr)
->         u32 nr;
->         u64 addr;
->         int nr_vcpus, r = -ENXIO;
-> -       unsigned long type = (unsigned long)attr->attr;
-> +       unsigned long v, type = (unsigned long)attr->attr;
->         void __user *uaddr = (void __user *)(long)attr->addr;
->
->         switch (attr->group) {
-> @@ -373,6 +373,15 @@ static int aia_set_attr(struct kvm_device *dev, struct kvm_device_attr *attr)
->                 r = kvm_riscv_aia_aplic_set_attr(dev->kvm, type, nr);
->                 mutex_unlock(&dev->kvm->lock);
->
-> +               break;
-> +       case KVM_DEV_RISCV_AIA_GRP_IMSIC:
-> +               if (copy_from_user(&v, uaddr, sizeof(v)))
-> +                       return -EFAULT;
-> +
-> +               mutex_lock(&dev->kvm->lock);
-> +               r = kvm_riscv_aia_imsic_rw_attr(dev->kvm, type, true, &v);
-> +               mutex_unlock(&dev->kvm->lock);
-> +
->                 break;
->         }
->
-> @@ -385,7 +394,7 @@ static int aia_get_attr(struct kvm_device *dev, struct kvm_device_attr *attr)
->         u64 addr;
->         int nr_vcpus, r = -ENXIO;
->         void __user *uaddr = (void __user *)(long)attr->addr;
-> -       unsigned long type = (unsigned long)attr->attr;
-> +       unsigned long v, type = (unsigned long)attr->attr;
->
->         switch (attr->group) {
->         case KVM_DEV_RISCV_AIA_GRP_CONFIG:
-> @@ -434,6 +443,20 @@ static int aia_get_attr(struct kvm_device *dev, struct kvm_device_attr *attr)
->                 if (copy_to_user(uaddr, &nr, sizeof(nr)))
->                         return -EFAULT;
->
-> +               break;
-> +       case KVM_DEV_RISCV_AIA_GRP_IMSIC:
-> +               if (copy_from_user(&v, uaddr, sizeof(v)))
-> +                       return -EFAULT;
-> +
-> +               mutex_lock(&dev->kvm->lock);
-> +               r = kvm_riscv_aia_imsic_rw_attr(dev->kvm, type, false, &v);
-> +               mutex_unlock(&dev->kvm->lock);
-> +               if (r)
-> +                       return r;
-> +
-> +               if (copy_to_user(uaddr, &v, sizeof(v)))
-> +                       return -EFAULT;
-> +
->                 break;
->         }
->
-> @@ -472,6 +495,8 @@ static int aia_has_attr(struct kvm_device *dev, struct kvm_device_attr *attr)
->                 break;
->         case KVM_DEV_RISCV_AIA_GRP_APLIC:
->                 return kvm_riscv_aia_aplic_has_attr(dev->kvm, attr->attr);
-> +       case KVM_DEV_RISCV_AIA_GRP_IMSIC:
-> +               return kvm_riscv_aia_imsic_has_attr(dev->kvm, attr->attr);
->         }
->
->         return -ENXIO;
-> diff --git a/arch/riscv/kvm/aia_imsic.c b/arch/riscv/kvm/aia_imsic.c
-> index 2dc09dcb8ab5..8f108cfa80e5 100644
-> --- a/arch/riscv/kvm/aia_imsic.c
-> +++ b/arch/riscv/kvm/aia_imsic.c
-> @@ -277,6 +277,33 @@ static u32 imsic_mrif_topei(struct imsic_mrif *mrif, u32 nr_eix, u32 nr_msis)
->         return 0;
->  }
->
-> +static int imsic_mrif_isel_check(u32 nr_eix, unsigned long isel)
-> +{
-> +       u32 num = 0;
-> +
-> +       switch (isel) {
-> +       case IMSIC_EIDELIVERY:
-> +       case IMSIC_EITHRESHOLD:
-> +               break;
-> +       case IMSIC_EIP0 ... IMSIC_EIP63:
-> +               num = isel - IMSIC_EIP0;
-> +               break;
-> +       case IMSIC_EIE0 ... IMSIC_EIE63:
-> +               num = isel - IMSIC_EIE0;
-> +               break;
-> +       default:
-> +               return -ENOENT;
-> +       };
-> +#ifndef CONFIG_32BIT
-> +       if (num & 0x1)
-> +               return -EINVAL;
-> +#endif
-> +       if ((num / 2) >= nr_eix)
-> +               return -EINVAL;
-> +
-> +       return 0;
-> +}
-> +
->  static int imsic_mrif_rmw(struct imsic_mrif *mrif, u32 nr_eix,
->                           unsigned long isel, unsigned long *val,
->                           unsigned long new_val, unsigned long wr_mask)
-> @@ -407,6 +434,86 @@ static void imsic_vsfile_read(int vsfile_hgei, int vsfile_cpu, u32 nr_eix,
->                          imsic_vsfile_local_read, &idata, 1);
->  }
->
-> +struct imsic_vsfile_rw_data {
-> +       int hgei;
-> +       int isel;
-> +       bool write;
-> +       unsigned long val;
-> +};
-> +
-> +static void imsic_vsfile_local_rw(void *data)
-> +{
-> +       struct imsic_vsfile_rw_data *idata = data;
-> +       unsigned long new_hstatus, old_hstatus, old_vsiselect;
-> +
-> +       old_vsiselect = csr_read(CSR_VSISELECT);
-> +       old_hstatus = csr_read(CSR_HSTATUS);
-> +       new_hstatus = old_hstatus & ~HSTATUS_VGEIN;
-> +       new_hstatus |= ((unsigned long)idata->hgei) << HSTATUS_VGEIN_SHIFT;
-> +       csr_write(CSR_HSTATUS, new_hstatus);
-> +
-> +       switch (idata->isel) {
-> +       case IMSIC_EIDELIVERY:
-> +               if (idata->write)
-> +                       imsic_vs_csr_write(IMSIC_EIDELIVERY, idata->val);
-> +               else
-> +                       idata->val = imsic_vs_csr_read(IMSIC_EIDELIVERY);
-> +               break;
-> +       case IMSIC_EITHRESHOLD:
-> +               if (idata->write)
-> +                       imsic_vs_csr_write(IMSIC_EITHRESHOLD, idata->val);
-> +               else
-> +                       idata->val = imsic_vs_csr_read(IMSIC_EITHRESHOLD);
-> +               break;
-> +       case IMSIC_EIP0 ... IMSIC_EIP63:
-> +       case IMSIC_EIE0 ... IMSIC_EIE63:
-> +#ifndef CONFIG_32BIT
-> +               if (idata->isel & 0x1)
-> +                       break;
-> +#endif
-> +               if (idata->write)
-> +                       imsic_eix_write(idata->isel, idata->val);
-> +               else
-> +                       idata->val = imsic_eix_read(idata->isel);
-> +               break;
-> +       default:
-> +               break;
-> +       }
-> +
-> +       csr_write(CSR_HSTATUS, old_hstatus);
-> +       csr_write(CSR_VSISELECT, old_vsiselect);
-> +}
-> +
-> +static int imsic_vsfile_rw(int vsfile_hgei, int vsfile_cpu, u32 nr_eix,
-> +                          unsigned long isel, bool write,
-> +                          unsigned long *val)
-> +{
-> +       int rc;
-> +       struct imsic_vsfile_rw_data rdata;
-> +
-> +       /* We can only access register if we have a IMSIC VS-file */
-> +       if (vsfile_cpu < 0 || vsfile_hgei <= 0)
-> +               return -EINVAL;
-> +
-> +       /* Check IMSIC register iselect */
-> +       rc = imsic_mrif_isel_check(nr_eix, isel);
-> +       if (rc)
-> +               return rc;
-> +
-> +       /* We can only access register on local CPU */
-> +       rdata.hgei = vsfile_hgei;
-> +       rdata.isel = isel;
-> +       rdata.write = write;
-> +       rdata.val = (write) ? *val : 0;
-> +       on_each_cpu_mask(cpumask_of(vsfile_cpu),
-> +                        imsic_vsfile_local_rw, &rdata, 1);
-> +
-> +       if (!write)
-> +               *val = rdata.val;
-> +
-> +       return 0;
-> +}
-> +
->  static void imsic_vsfile_local_clear(int vsfile_hgei, u32 nr_eix)
->  {
->         u32 i;
-> @@ -758,6 +865,69 @@ int kvm_riscv_vcpu_aia_imsic_rmw(struct kvm_vcpu *vcpu, unsigned long isel,
->         return rc;
->  }
->
-> +int kvm_riscv_aia_imsic_rw_attr(struct kvm *kvm, unsigned long type,
-> +                               bool write, unsigned long *val)
-> +{
-> +       u32 isel, vcpu_id;
-> +       unsigned long flags;
-> +       struct imsic *imsic;
-> +       struct kvm_vcpu *vcpu;
-> +       int rc, vsfile_hgei, vsfile_cpu;
-> +
-> +       if (!kvm_riscv_aia_initialized(kvm))
-> +               return -ENODEV;
-> +
-> +       vcpu_id = KVM_DEV_RISCV_AIA_IMSIC_GET_VCPU(type);
-> +       vcpu = kvm_get_vcpu_by_id(kvm, vcpu_id);
-> +       if (!vcpu)
-> +               return -ENODEV;
-> +
-> +       isel = KVM_DEV_RISCV_AIA_IMSIC_GET_ISEL(type);
-> +       imsic = vcpu->arch.aia_context.imsic_state;
-> +
-> +       read_lock_irqsave(&imsic->vsfile_lock, flags);
-> +
-> +       rc = 0;
-> +       vsfile_hgei = imsic->vsfile_hgei;
-> +       vsfile_cpu = imsic->vsfile_cpu;
-> +       if (vsfile_cpu < 0) {
-> +               if (write) {
-> +                       rc = imsic_mrif_rmw(imsic->swfile, imsic->nr_eix,
-> +                                           isel, NULL, *val, -1UL);
-> +                       imsic_swfile_extirq_update(vcpu);
-> +               } else
-> +                       rc = imsic_mrif_rmw(imsic->swfile, imsic->nr_eix,
-> +                                           isel, val, 0, 0);
-> +       }
-> +
-> +       read_unlock_irqrestore(&imsic->vsfile_lock, flags);
-> +
-> +       if (!rc && vsfile_cpu >= 0)
-> +               rc = imsic_vsfile_rw(vsfile_hgei, vsfile_cpu, imsic->nr_eix,
-> +                                    isel, write, val);
-> +
-> +       return rc;
-> +}
-> +
-> +int kvm_riscv_aia_imsic_has_attr(struct kvm *kvm, unsigned long type)
-> +{
-> +       u32 isel, vcpu_id;
-> +       struct imsic *imsic;
-> +       struct kvm_vcpu *vcpu;
-> +
-> +       if (!kvm_riscv_aia_initialized(kvm))
-> +               return -ENODEV;
-> +
-> +       vcpu_id = KVM_DEV_RISCV_AIA_IMSIC_GET_VCPU(type);
-> +       vcpu = kvm_get_vcpu_by_id(kvm, vcpu_id);
-> +       if (!vcpu)
-> +               return -ENODEV;
-> +
-> +       isel = KVM_DEV_RISCV_AIA_IMSIC_GET_ISEL(type);
-> +       imsic = vcpu->arch.aia_context.imsic_state;
-> +       return imsic_mrif_isel_check(imsic->nr_eix, isel);
-> +}
-> +
->  void kvm_riscv_vcpu_aia_imsic_reset(struct kvm_vcpu *vcpu)
->  {
->         struct imsic *imsic = vcpu->arch.aia_context.imsic_state;
-> --
-> 2.34.1
+On Fri, May 26, 2023 at 1:18?AM Andrew Jones <ajones@ventanamicro.com> wrote:
 >
 
+> > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CORE | KVM_REG_RISCV_CORE_REG(mode),
+> > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_REG(sstatus),
+> > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_REG(sie),
+> > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_REG(stvec),
+> > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_REG(sscratch),
+> > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_REG(sepc),
+> > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_REG(scause),
+> > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_REG(stval),
+> > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_REG(sip),
+> > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_REG(satp),
+> > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_REG(scounteren),
+> > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_TIMER | KVM_REG_RISCV_TIMER_REG(frequency),
+> > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_TIMER | KVM_REG_RISCV_TIMER_REG(time),
+> > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_TIMER | KVM_REG_RISCV_TIMER_REG(compare),
+> > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_TIMER | KVM_REG_RISCV_TIMER_REG(state),
+> > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_A,
+> > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_C,
+> > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_D,
+> > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_F,
+> > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_H,
+> > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_I,
+> > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_M,
+>
+> I think all the above should have the size KVM_REG_SIZE_ULONG. Please also
+> test with a 32-bit host.
+>
 
-Reviewed-by: Atish Patra <atishp@rivosinc.com>
--- 
+Hi Andrew,
+
+Just noticed the RISC-V 32-bit kvm selftests was not supported currently.
+Even though I tried to remove the below check for 32-bit, there were
+still many warning and error messages during compiling.
+It seems 32-bit KVM selftests was not supported either for ARM/x86. Do
+we have a plan to support it on risc-v?
+
 Regards,
-Atish
+Haibo
+
+diff --git a/tools/testing/selftests/kvm/include/kvm_util_base.h
+b/tools/testing/selftests/kvm/include/kvm_util_base.h
+index ac4aaa21deee..a32ccc06435b 100644
+--- a/tools/testing/selftests/kvm/include/kvm_util_base.h
++++ b/tools/testing/selftests/kvm/include/kvm_util_base.h
+@@ -205,9 +205,9 @@ extern enum vm_guest_mode vm_mode_default;
+
+ #elif defined(__riscv)
+
+-#if __riscv_xlen == 32
+-#error "RISC-V 32-bit kvm selftests not supported"
+-#endif
++//#if __riscv_xlen == 32
++//#error "RISC-V 32-bit kvm selftests not supported"
++//#endif
+
+>
+> Thanks,
+> drew
 
