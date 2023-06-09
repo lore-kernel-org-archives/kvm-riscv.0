@@ -1,133 +1,70 @@
-From: Vipin Sharma <vipinsh@google.com>
-Date: Thu, 8 Jun 2023 13:17:08 -0700
-Subject: [PATCH v2 09/16] KVM: arm64: Document the page table walker
- actions based on the callback's return value
-In-Reply-To: <20230607203711.000054ae.zhi.wang.linux@gmail.com>
-References: <20230602160914.4011728-1-vipinsh@google.com> <20230602160914.4011728-10-vipinsh@google.com>
- <20230605223520.00007fbd.zhi.wang.linux@gmail.com> <ZH9tQjQk7QLyhUQR@google.com>
- <20230607203711.000054ae.zhi.wang.linux@gmail.com>
-Message-ID: <CAHVum0dtZ2wW+itsOE=a7wwATu4VcGN-dQH1zF7Pz1LYy7J4UQ@mail.gmail.com>
+From: Haibo Xu <xiaobo55x@gmail.com>
+Date: Fri, 9 Jun 2023 09:20:50 +0800
+Subject: [PATCH v2 11/11] KVM: riscv: selftests: Add get-reg-list test
+In-Reply-To: <20230608-344953a953eeb63ef6c26fb8@orel>
+References: <cover.1684999824.git.haibo1.xu@intel.com> <da390e6200e838fce320a2a43b2f87951b4e0bbb.1684999824.git.haibo1.xu@intel.com>
+ <20230525-2bab5376987792eab73507ac@orel> <CAJve8okR_iH4vF9DV9zTkDaeYe25kP7KUcKQphmjG5q-iVb-KA@mail.gmail.com>
+ <20230608-344953a953eeb63ef6c26fb8@orel>
+Message-ID: <CAJve8o=xhANzM7qPsyC-4rc8oB9TWTxBJKtiqNxe-w_+w_d-1g@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Jun 7, 2023 at 5:37?AM Zhi Wang <zhi.wang.linux@gmail.com> wrote:
+On Thu, Jun 8, 2023 at 5:58?PM Andrew Jones <ajones@ventanamicro.com> wrote:
 >
-> On Tue, 6 Jun 2023 10:30:42 -0700
-> Vipin Sharma <vipinsh@google.com> wrote:
->
-> > On Mon, Jun 05, 2023 at 10:35:20PM +0800, Zhi Wang wrote:
-> > > On Fri,  2 Jun 2023 09:09:07 -0700
-> > > Vipin Sharma <vipinsh@google.com> wrote:
-> > >
-> > > > Document what the page table walker do when walker callback function returns
-> > > > a value.
-> > > >
-> > > > Current documentation is not correct as negative error of -EAGAIN on a
-> > > > non-shared page table walker doesn't terminate the walker and continues
-> > > > to the next step.
-> > > >
-> > > > There might be a better place to keep this information, for now this
-> > > > documentation will work as a reference guide until a better way is
-> > > > found.
-> > > >
-> > >
-> > > After reading the whole patch series, I was thinking it might be a good
-> > > time to improve the way how the visitor function and page table walker
-> > > talk to each other. The error code is good enough before, but its meaning
-> > > seems limited and vague when the visitor function wants to express more about
-> > > what exactly happens inside. I am not sure if it is a good idea to continue
-> > > that way: 1. found a new situation. 2. choosing a error code for visitor
-> > > function. 3. walker translates the error code into the situation to
-> > > handle. 4. document the error code and its actual meaning.
-> > >
-> > > Eventually I am afraid that we are going to abuse the error code.
-> >
-> > I agree that error numbers are not sufficient and this will become more
-> > difficult and cumbersome for more cases in future if we need different
-> > behavior based on different error codes for different visitor functions.
-> >
-> > >
-> > > What about introducing a set of flags for the visitor function to express
-> > > what happened and simplify the existing error code?
+> On Thu, Jun 08, 2023 at 05:45:21PM +0800, Haibo Xu wrote:
+> > On Fri, May 26, 2023 at 1:18?AM Andrew Jones <ajones@ventanamicro.com> wrote:
 > > >
 > >
-> > If I understood correctly what you meant, I think this will also end up
-> > having the same issue down the line, we are just switching errors with
-> > flags as they might not be able to express everything.
+> > > > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CORE | KVM_REG_RISCV_CORE_REG(mode),
+> > > > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_REG(sstatus),
+> > > > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_REG(sie),
+> > > > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_REG(stvec),
+> > > > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_REG(sscratch),
+> > > > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_REG(sepc),
+> > > > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_REG(scause),
+> > > > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_REG(stval),
+> > > > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_REG(sip),
+> > > > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_REG(satp),
+> > > > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_REG(scounteren),
+> > > > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_TIMER | KVM_REG_RISCV_TIMER_REG(frequency),
+> > > > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_TIMER | KVM_REG_RISCV_TIMER_REG(time),
+> > > > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_TIMER | KVM_REG_RISCV_TIMER_REG(compare),
+> > > > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_TIMER | KVM_REG_RISCV_TIMER_REG(state),
+> > > > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_A,
+> > > > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_C,
+> > > > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_D,
+> > > > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_F,
+> > > > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_H,
+> > > > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_I,
+> > > > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_M,
+> > >
+> > > I think all the above should have the size KVM_REG_SIZE_ULONG. Please also
+> > > test with a 32-bit host.
+> > >
 > >
-> > "Flags for visitor function to express what happened"  - This is what
-> > ret val and errors do.
+> > Hi Andrew,
 > >
+> > Just noticed the RISC-V 32-bit kvm selftests was not supported currently.
 >
-> Thanks so much for the efforts of the sample code.
+> Oh, right.
 >
-> But when the "ret val" is an error code for pgtable matters, It turns vague.
-> We have -EAGAIN to represent "retry" and "-ENONET" to represent PTE not there,
-> and they seems end up with different behaviors in different types of pgtable
-> walk. That is what I feels off.
+> > Even though I tried to remove the below check for 32-bit, there were
+> > still many warning and error messages during compiling.
+> > It seems 32-bit KVM selftests was not supported either for ARM/x86. Do
+> > we have a plan to support it on risc-v?
 >
-> visitor_cb has two different requirements of returning the status: 1)
-> something wrong happens *not* related to the pgtable, e.g. failing to
-> allocate memory. 2) something happens related to the pgtable. e.g PTE doesn't
-> exists.
->
-> For 1) It is natural to return an error code and the caller might just bail out
-> via its error handling path.
->
-> I think the core problem is: the two different usages are mixed and they don't
-> actually fit with each other. 2) is requiring more details in the future other
-> than a simple error code.
->
->
-> For 2) I think it is better have a set of flags. the name of the flags can
-> carry more explicit meanings than error code. E.g.:
->
-> ------------------
->
-> diff --git a/arch/arm64/include/asm/kvm_pgtable.h b/arch/arm64/include/asm/kvm_pgtable.h
-> index 4cd6762bda80..b3f24b321cd7 100644
-> --- a/arch/arm64/include/asm/kvm_pgtable.h
-> +++ b/arch/arm64/include/asm/kvm_pgtable.h
-> @@ -204,6 +204,15 @@ enum kvm_pgtable_walk_flags {
->         KVM_PGTABLE_WALK_HANDLE_FAULT           = BIT(4),
->  };
->
-> +struct kvm_pgtable_walk_status {
-> +       union {
-> +               u8 raw;
-> +               struct {
-> +                       unsigned retry:1;
-> +                       unsigned stop:1;
-> +                       unsigned ignore:1;
-> +                       /* more to come */
-> +               };
-> +       };
-> +};
-> +
->  struct kvm_pgtable_visit_ctx {
->         kvm_pte_t                               *ptep;
->         kvm_pte_t                               old;
-> @@ -213,8 +222,10 @@ struct kvm_pgtable_visit_ctx {
->         u64                                     end;
->         u32                                     level;
->         enum kvm_pgtable_walk_flags             flags;
-> +       struct kvm_pgtable_walk_status          *status;
->  };
->
->  typedef int (*kvm_pgtable_visitor_fn_t)(const struct kvm_pgtable_visit_ctx *ctx,
->                                         enum kvm_pgtable_walk_flags visit);
->
-> ----------------
->
-> Visitor functions sets the flags via ctx->status and kvm_pgtable_walk_xxx can
-> check the bits in the ctx to decide what to do for the next.
->
-> I can cook a patch for re-factoring this part if we think it is a good idea.
+> No plan and, if there was, it would be super low priority. So for stuff
+> like using KVM_REG_SIZE_ULONG, we'll just have to try and get it right
+> without testing. If somebody adds 32-bit support to these tests someday,
+> then, hopefully, it'll just work (I'm allowed one overly optimistic
+> comment per day).
 >
 
-This can also be one option. I will wait till others also weigh in on
-how to make walkers and callbacks work together for more use cases.
+Sure, Will try to get it right for a 32-bit system.
+
+> Thanks,
+> drew
 
