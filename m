@@ -1,70 +1,70 @@
-From: Haibo Xu <xiaobo55x@gmail.com>
-Date: Fri, 9 Jun 2023 09:20:50 +0800
-Subject: [PATCH v2 11/11] KVM: riscv: selftests: Add get-reg-list test
-In-Reply-To: <20230608-344953a953eeb63ef6c26fb8@orel>
-References: <cover.1684999824.git.haibo1.xu@intel.com> <da390e6200e838fce320a2a43b2f87951b4e0bbb.1684999824.git.haibo1.xu@intel.com>
- <20230525-2bab5376987792eab73507ac@orel> <CAJve8okR_iH4vF9DV9zTkDaeYe25kP7KUcKQphmjG5q-iVb-KA@mail.gmail.com>
- <20230608-344953a953eeb63ef6c26fb8@orel>
-Message-ID: <CAJve8o=xhANzM7qPsyC-4rc8oB9TWTxBJKtiqNxe-w_+w_d-1g@mail.gmail.com>
+From: Haibo Xu <haibo1.xu@intel.com>
+Date: Fri,  9 Jun 2023 10:12:08 +0800
+Subject: [PATCH v3 00/10] RISCV: Add KVM_GET_REG_LIST API
+Message-ID: <cover.1686275310.git.haibo1.xu@intel.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Jun 8, 2023 at 5:58?PM Andrew Jones <ajones@ventanamicro.com> wrote:
->
-> On Thu, Jun 08, 2023 at 05:45:21PM +0800, Haibo Xu wrote:
-> > On Fri, May 26, 2023 at 1:18?AM Andrew Jones <ajones@ventanamicro.com> wrote:
-> > >
-> >
-> > > > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CORE | KVM_REG_RISCV_CORE_REG(mode),
-> > > > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_REG(sstatus),
-> > > > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_REG(sie),
-> > > > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_REG(stvec),
-> > > > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_REG(sscratch),
-> > > > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_REG(sepc),
-> > > > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_REG(scause),
-> > > > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_REG(stval),
-> > > > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_REG(sip),
-> > > > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_REG(satp),
-> > > > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_REG(scounteren),
-> > > > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_TIMER | KVM_REG_RISCV_TIMER_REG(frequency),
-> > > > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_TIMER | KVM_REG_RISCV_TIMER_REG(time),
-> > > > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_TIMER | KVM_REG_RISCV_TIMER_REG(compare),
-> > > > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_TIMER | KVM_REG_RISCV_TIMER_REG(state),
-> > > > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_A,
-> > > > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_C,
-> > > > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_D,
-> > > > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_F,
-> > > > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_H,
-> > > > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_I,
-> > > > +     KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_M,
-> > >
-> > > I think all the above should have the size KVM_REG_SIZE_ULONG. Please also
-> > > test with a 32-bit host.
-> > >
-> >
-> > Hi Andrew,
-> >
-> > Just noticed the RISC-V 32-bit kvm selftests was not supported currently.
->
-> Oh, right.
->
-> > Even though I tried to remove the below check for 32-bit, there were
-> > still many warning and error messages during compiling.
-> > It seems 32-bit KVM selftests was not supported either for ARM/x86. Do
-> > we have a plan to support it on risc-v?
->
-> No plan and, if there was, it would be super low priority. So for stuff
-> like using KVM_REG_SIZE_ULONG, we'll just have to try and get it right
-> without testing. If somebody adds 32-bit support to these tests someday,
-> then, hopefully, it'll just work (I'm allowed one overly optimistic
-> comment per day).
->
+KVM_GET_REG_LIST will dump all register IDs that are available to
+KVM_GET/SET_ONE_REG and It's very useful to identify some platform
+regression issue during VM migration.
 
-Sure, Will try to get it right for a 32-bit system.
+Patch 1-7 re-structured the get-reg-list test in aarch64 to make some
+of the code as common test framework that can be shared by riscv.
 
-> Thanks,
-> drew
+Patch 8 enabled the KVM_GET_REG_LIST API in riscv and patch 9-10 added
+the corresponding kselftest for checking possible register regressions.
+
+The get-reg-list kvm selftest was ported from aarch64 and tested with
+Linux 6.4-rc5 on a Qemu riscv64 virt machine.
+
+---
+Changed since v2:
+  * Rebase to Linux 6.4-rc5
+  * Filter out ZICBO* config and ISA_EXT registers report if the
+    extensions were not supported in host
+  * Enable AIA CSR test
+  * Move vCPU extension check_supported() to finalize_vcpu() per
+    Andrew's suggestion
+  * Switch to use KVM_REG_SIZE_ULONG for most registers' definition
+
+---
+Changed since v1:
+   * rebase to Andrew's changes
+   * fix coding style
+
+Andrew Jones (7):
+  KVM: arm64: selftests: Replace str_with_index with strdup_printf
+  KVM: arm64: selftests: Drop SVE cap check in print_reg
+  KVM: arm64: selftests: Remove print_reg's dependency on vcpu_config
+  KVM: arm64: selftests: Rename vcpu_config and add to kvm_util.h
+  KVM: arm64: selftests: Delete core_reg_fixup
+  KVM: arm64: selftests: Split get-reg-list test code
+  KVM: arm64: selftests: Finish generalizing get-reg-list
+
+Haibo Xu (3):
+  KVM: riscv: Add KVM_GET_REG_LIST API support
+  KVM: riscv: selftests: Skip some registers set operation
+  KVM: riscv: selftests: Add get-reg-list test
+
+ Documentation/virt/kvm/api.rst                |   2 +-
+ arch/riscv/kvm/vcpu.c                         | 378 +++++++++++
+ tools/testing/selftests/kvm/Makefile          |  11 +-
+ .../selftests/kvm/aarch64/get-reg-list.c      | 540 ++--------------
+ tools/testing/selftests/kvm/get-reg-list.c    | 421 ++++++++++++
+ .../selftests/kvm/include/kvm_util_base.h     |  16 +
+ .../selftests/kvm/include/riscv/processor.h   |   3 +
+ .../testing/selftests/kvm/include/test_util.h |   2 +
+ tools/testing/selftests/kvm/lib/test_util.c   |  15 +
+ .../selftests/kvm/riscv/get-reg-list.c        | 611 ++++++++++++++++++
+ 10 files changed, 1499 insertions(+), 500 deletions(-)
+ create mode 100644 tools/testing/selftests/kvm/get-reg-list.c
+ create mode 100644 tools/testing/selftests/kvm/riscv/get-reg-list.c
+
+-- 
+2.34.1
+
 
