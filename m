@@ -1,91 +1,107 @@
-From: patchwork-bot+linux-riscv@kernel.org <patchwork-bot+linux-riscv@kernel.org>
-Date: Fri, 09 Jun 2023 14:50:27 +0000
-Subject: [PATCH -next v21 00/27] riscv: Add vector ISA support
-In-Reply-To: <20230605110724.21391-1-andy.chiu@sifive.com>
-References: <20230605110724.21391-1-andy.chiu@sifive.com>
-Message-ID: <168632222790.22856.6029833581193982930.git-patchwork-notify@kernel.org>
+From: Haibo Xu <xiaobo55x@gmail.com>
+Date: Sat, 10 Jun 2023 10:35:24 +0800
+Subject: [PATCH v3 09/10] KVM: riscv: selftests: Skip some registers set operation
+In-Reply-To: <20230609-05521f954b0485c69612f00b@orel>
+References: <cover.1686275310.git.haibo1.xu@intel.com> <73045958d9ab71d5266d012f1e13061afa8c5331.1686275310.git.haibo1.xu@intel.com>
+ <20230609-05521f954b0485c69612f00b@orel>
+Message-ID: <CAJve8omPV_XgCSvw8POZwisb6uTOFMJU4FyAKArryui2SAsqtw@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello:
+On Fri, Jun 9, 2023 at 5:24?PM Andrew Jones <ajones@ventanamicro.com> wrote:
+>
+> On Fri, Jun 09, 2023 at 10:12:17AM +0800, Haibo Xu wrote:
+> > Set operation on some riscv registers(mostly pesudo ones) was not
+> > supported and should be skipped in the get-reg-list test. Just
+> > reuse the rejects_set utilities to handle it in riscv.
+> >
+> > Signed-off-by: Haibo Xu <haibo1.xu@intel.com>
+> > Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+> > ---
+> >  tools/testing/selftests/kvm/get-reg-list.c | 20 +++++++++++++-------
+> >  1 file changed, 13 insertions(+), 7 deletions(-)
+> >
+> > diff --git a/tools/testing/selftests/kvm/get-reg-list.c b/tools/testing/selftests/kvm/get-reg-list.c
+> > index c4bd5a5259da..abacb95c21c6 100644
+> > --- a/tools/testing/selftests/kvm/get-reg-list.c
+> > +++ b/tools/testing/selftests/kvm/get-reg-list.c
+> > @@ -211,16 +211,22 @@ static void run_test(struct vcpu_reg_list *c)
+> >                       ++failed_get;
+> >               }
+> >
+> > -             /* rejects_set registers are rejected after KVM_ARM_VCPU_FINALIZE */
+> > +             /*
+> > +              * rejects_set registers are rejected after KVM_ARM_VCPU_FINALIZE on aarch64,
+> > +              * or registers that should skip set operation on riscv.
+> > +              */
+> >               for_each_sublist(c, s) {
+> >                       if (s->rejects_set && find_reg(s->rejects_set, s->rejects_set_n, reg.id)) {
+> >                               reject_reg = true;
+> > -                             ret = __vcpu_ioctl(vcpu, KVM_SET_ONE_REG, &reg);
+> > -                             if (ret != -1 || errno != EPERM) {
+> > -                                     printf("%s: Failed to reject (ret=%d, errno=%d) ", config_name(c), ret, errno);
+> > -                                     print_reg(config_name(c), reg.id);
+> > -                                     putchar('\n');
+> > -                                     ++failed_reject;
+> > +                             if ((reg.id & KVM_REG_ARCH_MASK) == KVM_REG_ARM64) {
+> > +                                     ret = __vcpu_ioctl(vcpu, KVM_SET_ONE_REG, &reg);
+> > +                                     if (ret != -1 || errno != EPERM) {
+> > +                                             printf("%s: Failed to reject (ret=%d, errno=%d) ",
+> > +                                                             config_name(c), ret, errno);
+> > +                                             print_reg(config_name(c), reg.id);
+> > +                                             putchar('\n');
+> > +                                             ++failed_reject;
+> > +                                     }
+>
+> Thinking about this some more, shouldn't we attempt the set ioctl for
+> riscv reject registers as well, but look for different error numbers?
+>
 
-This series was applied to riscv/linux.git (for-next)
-by Palmer Dabbelt <palmer@rivosinc.com>:
+Yes, we can. Currently, 2 different errno(EOPNOTSUPP/EINVAL) would be
+reported for the rejected registers in risc-v.
+These 2 errnos can be handled specially like below:
 
-On Mon,  5 Jun 2023 11:06:57 +0000 you wrote:
-> This is the v21 patch series for adding Vector extension support in
-> Linux. Please refer to [1] for the introduction of the patchset. The
-> v21 patch series was aimed to solve build issues from v19, provide usage
-> guideline for the prctl interface, and address review comments on v20.
-> 
-> Thank every one who has been reviewing, suggesting on the topic. Hope
-> this get a step closer to the final merge.
-> 
-> [...]
+diff --git a/tools/testing/selftests/kvm/get-reg-list.c
+b/tools/testing/selftests/kvm/get-reg-list.c
+index 73f40e0842b8..f3f2c4519318 100644
+--- a/tools/testing/selftests/kvm/get-reg-list.c
++++ b/tools/testing/selftests/kvm/get-reg-list.c
+@@ -255,6 +255,15 @@ static void run_test(struct vcpu_reg_list *c)
+                                                putchar('\n');
+                                                ++failed_reject;
+                                        }
++                } else {
++                                       ret = __vcpu_ioctl(vcpu,
+KVM_SET_ONE_REG, &reg);
++                                       if (ret != -1 || (errno !=
+EINVAL && errno != EOPNOTSUPP)) {
++                                               printf("%s: Failed to
+reject (ret=%d, errno=%d) ",
++
+config_name(c), ret, errno);
++
+print_reg(config_name(c), reg.id);
++                                               putchar('\n');
++                                               ++failed_reject;
++                                       }
 
-Here is the summary with links:
-  - [-next,v21,01/27] riscv: Rename __switch_to_aux() -> fpu
-    https://git.kernel.org/riscv/c/419d5d38ac5d
-  - [-next,v21,02/27] riscv: Extending cpufeature.c to detect V-extension
-    https://git.kernel.org/riscv/c/dc6667a4e7e3
-  - [-next,v21,03/27] riscv: hwprobe: Add support for probing V in RISCV_HWPROBE_KEY_IMA_EXT_0
-    https://git.kernel.org/riscv/c/162e4df137c1
-  - [-next,v21,04/27] riscv: Add new csr defines related to vector extension
-    https://git.kernel.org/riscv/c/b5665d2a9432
-  - [-next,v21,05/27] riscv: Clear vector regfile on bootup
-    https://git.kernel.org/riscv/c/6b533828726a
-  - [-next,v21,06/27] riscv: Disable Vector Instructions for kernel itself
-    https://git.kernel.org/riscv/c/74abe5a39d3a
-  - [-next,v21,07/27] riscv: Introduce Vector enable/disable helpers
-    https://git.kernel.org/riscv/c/0a3381a01dcc
-  - [-next,v21,08/27] riscv: Introduce riscv_v_vsize to record size of Vector context
-    https://git.kernel.org/riscv/c/7017858eb2d7
-  - [-next,v21,09/27] riscv: Introduce struct/helpers to save/restore per-task Vector state
-    https://git.kernel.org/riscv/c/03c3fcd9941a
-  - [-next,v21,10/27] riscv: Add task switch support for vector
-    https://git.kernel.org/riscv/c/3a2df6323def
-  - [-next,v21,11/27] riscv: Allocate user's vector context in the first-use trap
-    https://git.kernel.org/riscv/c/cd054837243b
-  - [-next,v21,12/27] riscv: Add ptrace vector support
-    https://git.kernel.org/riscv/c/0c59922c769a
-  - [-next,v21,13/27] riscv: signal: check fp-reserved words unconditionally
-    https://git.kernel.org/riscv/c/a45cedaa1ac0
-  - [-next,v21,14/27] riscv: signal: Add sigcontext save/restore for vector
-    https://git.kernel.org/riscv/c/8ee0b41898fa
-  - [-next,v21,15/27] riscv: signal: Report signal frame size to userspace via auxv
-    https://git.kernel.org/riscv/c/e92f469b0771
-  - [-next,v21,16/27] riscv: signal: validate altstack to reflect Vector
-    https://git.kernel.org/riscv/c/76e22fdc2c26
-  - [-next,v21,17/27] riscv: prevent stack corruption by reserving task_pt_regs(p) early
-    https://git.kernel.org/riscv/c/c7cdd96eca28
-  - [-next,v21,18/27] riscv: kvm: Add V extension to KVM ISA
-    https://git.kernel.org/riscv/c/bf78f1ea6e51
-  - [-next,v21,19/27] riscv: KVM: Add vector lazy save/restore support
-    https://git.kernel.org/riscv/c/0f4b82579716
-  - [-next,v21,20/27] riscv: hwcap: change ELF_HWCAP to a function
-    https://git.kernel.org/riscv/c/50724efcb370
-  - [-next,v21,21/27] riscv: Add prctl controls for userspace vector management
-    https://git.kernel.org/riscv/c/1fd96a3e9d5d
-  - [-next,v21,22/27] riscv: Add sysctl to set the default vector rule for new processes
-    https://git.kernel.org/riscv/c/7ca7a7b9b635
-  - [-next,v21,23/27] riscv: detect assembler support for .option arch
-    https://git.kernel.org/riscv/c/e4bb020f3dbb
-  - [-next,v21,24/27] riscv: Enable Vector code to be built
-    https://git.kernel.org/riscv/c/fa8e7cce55da
-  - [-next,v21,25/27] riscv: Add documentation for Vector
-    https://git.kernel.org/riscv/c/04a4722eeede
-  - [-next,v21,26/27] selftests: Test RISC-V Vector prctl interface
-    https://git.kernel.org/riscv/c/7cf6198ce22d
-  - [-next,v21,27/27] selftests: add .gitignore file for RISC-V hwprobe
-    https://git.kernel.org/riscv/c/1e72695137ef
+One possible issue for the above change is that when new registers
+that don't support sets were added, we need
+to add them to the reject registers list, or the test would fail.
 
-You are awesome, thank you!
--- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/patchwork/pwbot.html
+Initially, in the v1 patch, the design was to just skip the EOPNOTSUPP
+errno in set operations for all registers
+since it's a known errno for registers that don't support sets. This
+change cover all the registers even for future
+new ones.
 
+What's your opinion?
 
+Thanks,
+Haibo
+> Thanks,
+> drew
 
