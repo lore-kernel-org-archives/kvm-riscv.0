@@ -1,56 +1,121 @@
-From: Anup Patel <apatel@ventanamicro.com>
-Date: Mon, 12 Jun 2023 16:40:44 +0530
-Subject: [PATCH] RISC-V: KVM: Allow Svnapot extension for Guest/VM
-Message-ID: <20230612111044.87775-1-apatel@ventanamicro.com>
+From: Rémi Denis-Courmont <remi@remlab.net>
+Date: Mon, 12 Jun 2023 17:32:40 +0300
+Subject: [PATCH -next v21 09/27] riscv: Introduce struct/helpers to save/restore
+ per-task Vector state
+In-Reply-To: <20230605110724.21391-10-andy.chiu@sifive.com>
+References: <20230605110724.21391-1-andy.chiu@sifive.com>
+ <20230605110724.21391-10-andy.chiu@sifive.com>
+Message-ID: <5271851.rBgCu3BfMA@basile.remlab.net>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-We extend the KVM ISA extension ONE_REG interface to allow KVM
-user space to detect and enable Svnapot extension for Guest/VM.
+Le maanantaina 5. kes?kuuta 2023, 14.07.06 EEST Andy Chiu a ?crit :
+> @@ -32,13 +54,86 @@ static __always_inline void riscv_v_disable(void)
+>  	csr_clear(CSR_SSTATUS, SR_VS);
+>  }
+> 
+> +static __always_inline void __vstate_csr_save(struct __riscv_v_ext_state
+> *dest) +{
+> +	asm volatile (
+> +		"csrr	%0, " __stringify(CSR_VSTART) "\n\t"
+> +		"csrr	%1, " __stringify(CSR_VTYPE) "\n\t"
+> +		"csrr	%2, " __stringify(CSR_VL) "\n\t"
+> +		"csrr	%3, " __stringify(CSR_VCSR) "\n\t"
+> +		: "=r" (dest->vstart), "=r" (dest->vtype), "=r" (dest-
+>vl),
+> +		  "=r" (dest->vcsr) : :);
+> +}
+> +
+> +static __always_inline void __vstate_csr_restore(struct __riscv_v_ext_state
+> *src) +{
+> +	asm volatile (
+> +		".option push\n\t"
+> +		".option arch, +v\n\t"
+> +		"vsetvl	 x0, %2, %1\n\t"
+> +		".option pop\n\t"
+> +		"csrw	" __stringify(CSR_VSTART) ", %0\n\t"
+> +		"csrw	" __stringify(CSR_VCSR) ", %3\n\t"
+> +		: : "r" (src->vstart), "r" (src->vtype), "r" (src->vl),
+> +		    "r" (src->vcsr) :);
+> +}
+> +
+> +static inline void __riscv_v_vstate_save(struct __riscv_v_ext_state
+> *save_to, +					 void *datap)
+> +{
+> +	unsigned long vl;
+> +
+> +	riscv_v_enable();
+> +	__vstate_csr_save(save_to);
+> +	asm volatile (
+> +		".option push\n\t"
+> +		".option arch, +v\n\t"
+> +		"vsetvli	%0, x0, e8, m8, ta, ma\n\t"
+> +		"vse8.v		v0, (%1)\n\t"
+> +		"add		%1, %1, %0\n\t"
+> +		"vse8.v		v8, (%1)\n\t"
+> +		"add		%1, %1, %0\n\t"
+> +		"vse8.v		v16, (%1)\n\t"
+> +		"add		%1, %1, %0\n\t"
+> +		"vse8.v		v24, (%1)\n\t"
+> +		".option pop\n\t"
+> +		: "=&r" (vl) : "r" (datap) : "memory");
+> +	riscv_v_disable();
+> +}
 
-Signed-off-by: Anup Patel <apatel@ventanamicro.com>
-Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
----
- arch/riscv/include/uapi/asm/kvm.h | 1 +
- arch/riscv/kvm/vcpu.c             | 2 ++
- 2 files changed, 3 insertions(+)
+Shouldn't this use `vs8r.v` rather than `vse8.v`, and do away with `vsetvli`? 
+This seems like a textbook use case for the whole-register store instruction, 
+no?
 
-diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
-index 61d7fecc4899..a1ca18408bbd 100644
---- a/arch/riscv/include/uapi/asm/kvm.h
-+++ b/arch/riscv/include/uapi/asm/kvm.h
-@@ -122,6 +122,7 @@ enum KVM_RISCV_ISA_EXT_ID {
- 	KVM_RISCV_ISA_EXT_ZICBOZ,
- 	KVM_RISCV_ISA_EXT_ZBB,
- 	KVM_RISCV_ISA_EXT_SSAIA,
-+	KVM_RISCV_ISA_EXT_SVNAPOT,
- 	KVM_RISCV_ISA_EXT_MAX,
- };
- 
-diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-index 2db62c6c0d3e..7b355900f235 100644
---- a/arch/riscv/kvm/vcpu.c
-+++ b/arch/riscv/kvm/vcpu.c
-@@ -61,6 +61,7 @@ static const unsigned long kvm_isa_ext_arr[] = {
- 	KVM_ISA_EXT_ARR(SSAIA),
- 	KVM_ISA_EXT_ARR(SSTC),
- 	KVM_ISA_EXT_ARR(SVINVAL),
-+	KVM_ISA_EXT_ARR(SVNAPOT),
- 	KVM_ISA_EXT_ARR(SVPBMT),
- 	KVM_ISA_EXT_ARR(ZBB),
- 	KVM_ISA_EXT_ARR(ZIHINTPAUSE),
-@@ -102,6 +103,7 @@ static bool kvm_riscv_vcpu_isa_disable_allowed(unsigned long ext)
- 	case KVM_RISCV_ISA_EXT_SSAIA:
- 	case KVM_RISCV_ISA_EXT_SSTC:
- 	case KVM_RISCV_ISA_EXT_SVINVAL:
-+	case KVM_RISCV_ISA_EXT_SVNAPOT:
- 	case KVM_RISCV_ISA_EXT_ZIHINTPAUSE:
- 	case KVM_RISCV_ISA_EXT_ZBB:
- 		return false;
+> +
+> +static inline void __riscv_v_vstate_restore(struct __riscv_v_ext_state
+> *restore_from, +					    void 
+*datap)
+> +{
+> +	unsigned long vl;
+> +
+> +	riscv_v_enable();
+> +	asm volatile (
+> +		".option push\n\t"
+> +		".option arch, +v\n\t"
+> +		"vsetvli	%0, x0, e8, m8, ta, ma\n\t"
+> +		"vle8.v		v0, (%1)\n\t"
+> +		"add		%1, %1, %0\n\t"
+> +		"vle8.v		v8, (%1)\n\t"
+> +		"add		%1, %1, %0\n\t"
+> +		"vle8.v		v16, (%1)\n\t"
+> +		"add		%1, %1, %0\n\t"
+> +		"vle8.v		v24, (%1)\n\t"
+> +		".option pop\n\t"
+> +		: "=&r" (vl) : "r" (datap) : "memory");
+> +	__vstate_csr_restore(restore_from);
+> +	riscv_v_disable();
+> +}
+> +
+
+Ditto but `vl8r.v`.
+
+>  #else /* ! CONFIG_RISCV_ISA_V  */
+> 
+>  struct pt_regs;
+> 
+>  static inline int riscv_v_setup_vsize(void) { return -EOPNOTSUPP; }
+>  static __always_inline bool has_vector(void) { return false; }
+> +static inline bool riscv_v_vstate_query(struct pt_regs *regs) { return
+> false; } #define riscv_v_vsize (0)
+> +#define riscv_v_vstate_off(regs)		do {} while (0)
+> +#define riscv_v_vstate_on(regs)			do {} while (0)
+> 
+>  #endif /* CONFIG_RISCV_ISA_V */
+> 
+
+
 -- 
-2.34.1
+???? ????-??????
+http://www.remlab.net/
+
+
 
 
