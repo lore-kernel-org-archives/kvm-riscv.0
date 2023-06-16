@@ -1,172 +1,54 @@
-From: Atish Patra <atishp@atishpatra.org>
-Date: Fri, 16 Jun 2023 00:34:58 -0700
-Subject: [PATCH v3 08/10] RISC-V: KVM: Expose APLIC registers as
- attributes of AIA irqchip
-In-Reply-To: <20230615073353.85435-9-apatel@ventanamicro.com>
-References: <20230615073353.85435-1-apatel@ventanamicro.com> <20230615073353.85435-9-apatel@ventanamicro.com>
-Message-ID: <CAOnJCUJG9ewVvFP7H+6++m0x=Mkc5RLMnBTdiSvcu61vZSvapw@mail.gmail.com>
+From: Ben Dooks <ben.dooks@codethink.co.uk>
+Date: Fri, 16 Jun 2023 12:54:10 +0100
+Subject: [PATCH] riscv: kvm: define vcpu_sbi_ext_pmu in header
+Message-ID: <20230616115410.166244-1-ben.dooks@codethink.co.uk>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Jun 15, 2023 at 12:34?AM Anup Patel <apatel@ventanamicro.com> wrote:
->
-> We expose APLIC registers as KVM device attributes of the in-kernel
-> AIA irqchip device. This will allow KVM user-space to save/restore
-> APLIC state using KVM device ioctls().
->
-> Signed-off-by: Anup Patel <apatel@ventanamicro.com>
-> ---
->  arch/riscv/include/asm/kvm_aia.h  |  3 +++
->  arch/riscv/include/uapi/asm/kvm.h |  6 +++++
->  arch/riscv/kvm/aia_aplic.c        | 43 +++++++++++++++++++++++++++++++
->  arch/riscv/kvm/aia_device.c       | 25 ++++++++++++++++++
->  4 files changed, 77 insertions(+)
->
-> diff --git a/arch/riscv/include/asm/kvm_aia.h b/arch/riscv/include/asm/kvm_aia.h
-> index f6bd8523395f..ba939c0054aa 100644
-> --- a/arch/riscv/include/asm/kvm_aia.h
-> +++ b/arch/riscv/include/asm/kvm_aia.h
-> @@ -129,6 +129,9 @@ static inline void kvm_riscv_vcpu_aia_imsic_cleanup(struct kvm_vcpu *vcpu)
->  {
->  }
->
-> +int kvm_riscv_aia_aplic_set_attr(struct kvm *kvm, unsigned long type, u32 v);
-> +int kvm_riscv_aia_aplic_get_attr(struct kvm *kvm, unsigned long type, u32 *v);
-> +int kvm_riscv_aia_aplic_has_attr(struct kvm *kvm, unsigned long type);
->  int kvm_riscv_aia_aplic_inject(struct kvm *kvm, u32 source, bool level);
->  int kvm_riscv_aia_aplic_init(struct kvm *kvm);
->  void kvm_riscv_aia_aplic_cleanup(struct kvm *kvm);
-> diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
-> index 047c8fc5bd71..9ed822fc5589 100644
-> --- a/arch/riscv/include/uapi/asm/kvm.h
-> +++ b/arch/riscv/include/uapi/asm/kvm.h
-> @@ -249,6 +249,12 @@ enum KVM_RISCV_SBI_EXT_ID {
->  #define KVM_DEV_RISCV_AIA_GRP_CTRL             2
->  #define KVM_DEV_RISCV_AIA_CTRL_INIT            0
->
-> +/*
-> + * The device attribute type contains the memory mapped offset of the
-> + * APLIC register (range 0x0000-0x3FFF) and it must be 4-byte aligned.
-> + */
-> +#define KVM_DEV_RISCV_AIA_GRP_APLIC            3
-> +
->  /* One single KVM irqchip, ie. the AIA */
->  #define KVM_NR_IRQCHIPS                        1
->
-> diff --git a/arch/riscv/kvm/aia_aplic.c b/arch/riscv/kvm/aia_aplic.c
-> index eecd8f4abe21..39e72aa016a4 100644
-> --- a/arch/riscv/kvm/aia_aplic.c
-> +++ b/arch/riscv/kvm/aia_aplic.c
-> @@ -501,6 +501,49 @@ static struct kvm_io_device_ops aplic_iodoev_ops = {
->         .write = aplic_mmio_write,
->  };
->
-> +int kvm_riscv_aia_aplic_set_attr(struct kvm *kvm, unsigned long type, u32 v)
-> +{
-> +       int rc;
-> +
-> +       if (!kvm->arch.aia.aplic_state)
-> +               return -ENODEV;
-> +
-> +       rc = aplic_mmio_write_offset(kvm, type, v);
-> +       if (rc)
-> +               return rc;
-> +
-> +       return 0;
-> +}
-> +
-> +int kvm_riscv_aia_aplic_get_attr(struct kvm *kvm, unsigned long type, u32 *v)
-> +{
-> +       int rc;
-> +
-> +       if (!kvm->arch.aia.aplic_state)
-> +               return -ENODEV;
-> +
-> +       rc = aplic_mmio_read_offset(kvm, type, v);
-> +       if (rc)
-> +               return rc;
-> +
-> +       return 0;
-> +}
-> +
-> +int kvm_riscv_aia_aplic_has_attr(struct kvm *kvm, unsigned long type)
-> +{
-> +       int rc;
-> +       u32 val;
-> +
-> +       if (!kvm->arch.aia.aplic_state)
-> +               return -ENODEV;
-> +
-> +       rc = aplic_mmio_read_offset(kvm, type, &val);
-> +       if (rc)
-> +               return rc;
-> +
-> +       return 0;
-> +}
-> +
->  int kvm_riscv_aia_aplic_init(struct kvm *kvm)
->  {
->         int i, ret = 0;
-> diff --git a/arch/riscv/kvm/aia_device.c b/arch/riscv/kvm/aia_device.c
-> index 7ab555121872..c649ad6e8e0a 100644
-> --- a/arch/riscv/kvm/aia_device.c
-> +++ b/arch/riscv/kvm/aia_device.c
-> @@ -365,6 +365,15 @@ static int aia_set_attr(struct kvm_device *dev, struct kvm_device_attr *attr)
->                         break;
->                 }
->
-> +               break;
-> +       case KVM_DEV_RISCV_AIA_GRP_APLIC:
-> +               if (copy_from_user(&nr, uaddr, sizeof(nr)))
-> +                       return -EFAULT;
-> +
-> +               mutex_lock(&dev->kvm->lock);
-> +               r = kvm_riscv_aia_aplic_set_attr(dev->kvm, type, nr);
-> +               mutex_unlock(&dev->kvm->lock);
-> +
->                 break;
->         }
->
-> @@ -412,6 +421,20 @@ static int aia_get_attr(struct kvm_device *dev, struct kvm_device_attr *attr)
->                 if (copy_to_user(uaddr, &addr, sizeof(addr)))
->                         return -EFAULT;
->
-> +               break;
-> +       case KVM_DEV_RISCV_AIA_GRP_APLIC:
-> +               if (copy_from_user(&nr, uaddr, sizeof(nr)))
-> +                       return -EFAULT;
-> +
-> +               mutex_lock(&dev->kvm->lock);
-> +               r = kvm_riscv_aia_aplic_get_attr(dev->kvm, type, &nr);
-> +               mutex_unlock(&dev->kvm->lock);
-> +               if (r)
-> +                       return r;
-> +
-> +               if (copy_to_user(uaddr, &nr, sizeof(nr)))
-> +                       return -EFAULT;
-> +
->                 break;
->         }
->
-> @@ -448,6 +471,8 @@ static int aia_has_attr(struct kvm_device *dev, struct kvm_device_attr *attr)
->                         return 0;
->                 }
->                 break;
-> +       case KVM_DEV_RISCV_AIA_GRP_APLIC:
-> +               return kvm_riscv_aia_aplic_has_attr(dev->kvm, attr->attr);
->         }
->
->         return -ENXIO;
-> --
-> 2.34.1
->
+Sparse is giving a warning about vcpu_sbi_ext_pmu not being
+defined, so add a definition to the relevant header to fix
+the following:
 
+arch/riscv/kvm/vcpu_sbi_pmu.c:81:37: warning: symbol 'vcpu_sbi_ext_pmu' was not declared. Should it be static?
 
-Reviewed-by: Atish Patra <atishp@rivosinc.com>
+Fixes: 3e5e56c60a1477 ("riscv: kvm: move extern sbi_ext declarations to a header")
+Signed-off-by: Ben Dooks <ben.dooks@codethink.co.uk>
+---
+ arch/riscv/include/asm/kvm_vcpu_sbi.h | 3 +++
+ arch/riscv/kvm/vcpu_sbi.c             | 4 +---
+ 2 files changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/arch/riscv/include/asm/kvm_vcpu_sbi.h b/arch/riscv/include/asm/kvm_vcpu_sbi.h
+index 4278125a38a5..b94c7e958da7 100644
+--- a/arch/riscv/include/asm/kvm_vcpu_sbi.h
++++ b/arch/riscv/include/asm/kvm_vcpu_sbi.h
+@@ -66,4 +66,7 @@ extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_hsm;
+ extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_experimental;
+ extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_vendor;
+ 
++#ifdef CONFIG_RISCV_PMU_SBI
++extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_pmu;
++#endif
+ #endif /* __RISCV_KVM_VCPU_SBI_H__ */
+diff --git a/arch/riscv/kvm/vcpu_sbi.c b/arch/riscv/kvm/vcpu_sbi.c
+index e52fde504433..c973d92a0ba5 100644
+--- a/arch/riscv/kvm/vcpu_sbi.c
++++ b/arch/riscv/kvm/vcpu_sbi.c
+@@ -20,9 +20,7 @@ static const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_v01 = {
+ };
+ #endif
+ 
+-#ifdef CONFIG_RISCV_PMU_SBI
+-extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_pmu;
+-#else
++#ifndef CONFIG_RISCV_PMU_SBI
+ static const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_pmu = {
+ 	.extid_start = -1UL,
+ 	.extid_end = -1UL,
 -- 
-Regards,
-Atish
+2.39.2
+
 
