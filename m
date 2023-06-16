@@ -1,334 +1,655 @@
-From: Anup Patel <apatel@ventanamicro.com>
-Date: Thu, 15 Jun 2023 13:03:53 +0530
-Subject: [PATCH v3 10/10] RISC-V: KVM: Expose IMSIC registers as attributes of AIA irqchip
-In-Reply-To: <20230615073353.85435-1-apatel@ventanamicro.com>
-References: <20230615073353.85435-1-apatel@ventanamicro.com>
-Message-ID: <20230615073353.85435-11-apatel@ventanamicro.com>
+From: Atish Patra <atishp@atishpatra.org>
+Date: Fri, 16 Jun 2023 00:33:55 -0700
+Subject: [PATCH v3 07/10] RISC-V: KVM: Add in-kernel emulation of AIA APLIC
+In-Reply-To: <20230615073353.85435-8-apatel@ventanamicro.com>
+References: <20230615073353.85435-1-apatel@ventanamicro.com> <20230615073353.85435-8-apatel@ventanamicro.com>
+Message-ID: <CAOnJCUJQFVhUBkHExpEKZhoa_ztVrEjtacy72QCz_-VsYgC1+A@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-We expose IMSIC registers as KVM device attributes of the in-kernel
-AIA irqchip device. This will allow KVM user-space to save/restore
-IMISC state of each VCPU using KVM device ioctls().
+On Thu, Jun 15, 2023 at 12:34?AM Anup Patel <apatel@ventanamicro.com> wrote:
+>
+> There is no virtualization support in AIA APLIC so we add in-kernel
+> emulation of AIA APLIC which only supports MSI-mode (i.e. wired
+> interrupts forwarded to AIA IMSIC as MSIs).
+>
+> Signed-off-by: Anup Patel <apatel@ventanamicro.com>
+> ---
+>  arch/riscv/include/asm/kvm_aia.h |  17 +-
+>  arch/riscv/kvm/Makefile          |   1 +
+>  arch/riscv/kvm/aia_aplic.c       | 576 +++++++++++++++++++++++++++++++
+>  3 files changed, 580 insertions(+), 14 deletions(-)
+>  create mode 100644 arch/riscv/kvm/aia_aplic.c
+>
+> diff --git a/arch/riscv/include/asm/kvm_aia.h b/arch/riscv/include/asm/kvm_aia.h
+> index a1281ebc9b92..f6bd8523395f 100644
+> --- a/arch/riscv/include/asm/kvm_aia.h
+> +++ b/arch/riscv/include/asm/kvm_aia.h
+> @@ -129,20 +129,9 @@ static inline void kvm_riscv_vcpu_aia_imsic_cleanup(struct kvm_vcpu *vcpu)
+>  {
+>  }
+>
+> -static inline int kvm_riscv_aia_aplic_inject(struct kvm *kvm,
+> -                                            u32 source, bool level)
+> -{
+> -       return 0;
+> -}
+> -
+> -static inline int kvm_riscv_aia_aplic_init(struct kvm *kvm)
+> -{
+> -       return 0;
+> -}
+> -
+> -static inline void kvm_riscv_aia_aplic_cleanup(struct kvm *kvm)
+> -{
+> -}
+> +int kvm_riscv_aia_aplic_inject(struct kvm *kvm, u32 source, bool level);
+> +int kvm_riscv_aia_aplic_init(struct kvm *kvm);
+> +void kvm_riscv_aia_aplic_cleanup(struct kvm *kvm);
+>
+>  #ifdef CONFIG_32BIT
+>  void kvm_riscv_vcpu_aia_flush_interrupts(struct kvm_vcpu *vcpu);
+> diff --git a/arch/riscv/kvm/Makefile b/arch/riscv/kvm/Makefile
+> index dd69ebe098bd..94c43702c765 100644
+> --- a/arch/riscv/kvm/Makefile
+> +++ b/arch/riscv/kvm/Makefile
+> @@ -28,3 +28,4 @@ kvm-y += vcpu_timer.o
+>  kvm-$(CONFIG_RISCV_PMU_SBI) += vcpu_pmu.o vcpu_sbi_pmu.o
+>  kvm-y += aia.o
+>  kvm-y += aia_device.o
+> +kvm-y += aia_aplic.o
+> diff --git a/arch/riscv/kvm/aia_aplic.c b/arch/riscv/kvm/aia_aplic.c
+> new file mode 100644
+> index 000000000000..eecd8f4abe21
+> --- /dev/null
+> +++ b/arch/riscv/kvm/aia_aplic.c
+> @@ -0,0 +1,576 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +/*
+> + * Copyright (C) 2021 Western Digital Corporation or its affiliates.
+> + * Copyright (C) 2022 Ventana Micro Systems Inc.
+> + *
+> + * Authors:
+> + *     Anup Patel <apatel@ventanamicro.com>
+> + */
+> +
+> +#include <linux/kvm_host.h>
+> +#include <linux/math.h>
+> +#include <linux/spinlock.h>
+> +#include <linux/swab.h>
+> +#include <kvm/iodev.h>
+> +#include <asm/kvm_aia_aplic.h>
+> +
+> +struct aplic_irq {
+> +       raw_spinlock_t lock;
+> +       u32 sourcecfg;
+> +       u32 state;
+> +#define APLIC_IRQ_STATE_PENDING                BIT(0)
+> +#define APLIC_IRQ_STATE_ENABLED                BIT(1)
+> +#define APLIC_IRQ_STATE_ENPEND         (APLIC_IRQ_STATE_PENDING | \
+> +                                        APLIC_IRQ_STATE_ENABLED)
+> +#define APLIC_IRQ_STATE_INPUT          BIT(8)
+> +       u32 target;
+> +};
+> +
+> +struct aplic {
+> +       struct kvm_io_device iodev;
+> +
+> +       u32 domaincfg;
+> +       u32 genmsi;
+> +
+> +       u32 nr_irqs;
+> +       u32 nr_words;
+> +       struct aplic_irq *irqs;
+> +};
+> +
+> +static u32 aplic_read_sourcecfg(struct aplic *aplic, u32 irq)
+> +{
+> +       u32 ret;
+> +       unsigned long flags;
+> +       struct aplic_irq *irqd;
+> +
+> +       if (!irq || aplic->nr_irqs <= irq)
+> +               return 0;
+> +       irqd = &aplic->irqs[irq];
+> +
+> +       raw_spin_lock_irqsave(&irqd->lock, flags);
+> +       ret = irqd->sourcecfg;
+> +       raw_spin_unlock_irqrestore(&irqd->lock, flags);
+> +
+> +       return ret;
+> +}
+> +
+> +static void aplic_write_sourcecfg(struct aplic *aplic, u32 irq, u32 val)
+> +{
+> +       unsigned long flags;
+> +       struct aplic_irq *irqd;
+> +
+> +       if (!irq || aplic->nr_irqs <= irq)
+> +               return;
+> +       irqd = &aplic->irqs[irq];
+> +
+> +       if (val & APLIC_SOURCECFG_D)
+> +               val = 0;
+> +       else
+> +               val &= APLIC_SOURCECFG_SM_MASK;
+> +
+> +       raw_spin_lock_irqsave(&irqd->lock, flags);
+> +       irqd->sourcecfg = val;
+> +       raw_spin_unlock_irqrestore(&irqd->lock, flags);
+> +}
+> +
+> +static u32 aplic_read_target(struct aplic *aplic, u32 irq)
+> +{
+> +       u32 ret;
+> +       unsigned long flags;
+> +       struct aplic_irq *irqd;
+> +
+> +       if (!irq || aplic->nr_irqs <= irq)
+> +               return 0;
+> +       irqd = &aplic->irqs[irq];
+> +
+> +       raw_spin_lock_irqsave(&irqd->lock, flags);
+> +       ret = irqd->target;
+> +       raw_spin_unlock_irqrestore(&irqd->lock, flags);
+> +
+> +       return ret;
+> +}
+> +
+> +static void aplic_write_target(struct aplic *aplic, u32 irq, u32 val)
+> +{
+> +       unsigned long flags;
+> +       struct aplic_irq *irqd;
+> +
+> +       if (!irq || aplic->nr_irqs <= irq)
+> +               return;
+> +       irqd = &aplic->irqs[irq];
+> +
+> +       val &= APLIC_TARGET_EIID_MASK |
+> +              (APLIC_TARGET_HART_IDX_MASK << APLIC_TARGET_HART_IDX_SHIFT) |
+> +              (APLIC_TARGET_GUEST_IDX_MASK << APLIC_TARGET_GUEST_IDX_SHIFT);
+> +
+> +       raw_spin_lock_irqsave(&irqd->lock, flags);
+> +       irqd->target = val;
+> +       raw_spin_unlock_irqrestore(&irqd->lock, flags);
+> +}
+> +
+> +static bool aplic_read_pending(struct aplic *aplic, u32 irq)
+> +{
+> +       bool ret;
+> +       unsigned long flags;
+> +       struct aplic_irq *irqd;
+> +
+> +       if (!irq || aplic->nr_irqs <= irq)
+> +               return false;
+> +       irqd = &aplic->irqs[irq];
+> +
+> +       raw_spin_lock_irqsave(&irqd->lock, flags);
+> +       ret = (irqd->state & APLIC_IRQ_STATE_PENDING) ? true : false;
+> +       raw_spin_unlock_irqrestore(&irqd->lock, flags);
+> +
+> +       return ret;
+> +}
+> +
+> +static void aplic_write_pending(struct aplic *aplic, u32 irq, bool pending)
+> +{
+> +       unsigned long flags, sm;
+> +       struct aplic_irq *irqd;
+> +
+> +       if (!irq || aplic->nr_irqs <= irq)
+> +               return;
+> +       irqd = &aplic->irqs[irq];
+> +
+> +       raw_spin_lock_irqsave(&irqd->lock, flags);
+> +
+> +       sm = irqd->sourcecfg & APLIC_SOURCECFG_SM_MASK;
+> +       if (!pending &&
+> +           ((sm == APLIC_SOURCECFG_SM_LEVEL_HIGH) ||
+> +            (sm == APLIC_SOURCECFG_SM_LEVEL_LOW)))
+> +               goto skip_write_pending;
+> +
+> +       if (pending)
+> +               irqd->state |= APLIC_IRQ_STATE_PENDING;
+> +       else
+> +               irqd->state &= ~APLIC_IRQ_STATE_PENDING;
+> +
+> +skip_write_pending:
+> +       raw_spin_unlock_irqrestore(&irqd->lock, flags);
+> +}
+> +
+> +static bool aplic_read_enabled(struct aplic *aplic, u32 irq)
+> +{
+> +       bool ret;
+> +       unsigned long flags;
+> +       struct aplic_irq *irqd;
+> +
+> +       if (!irq || aplic->nr_irqs <= irq)
+> +               return false;
+> +       irqd = &aplic->irqs[irq];
+> +
+> +       raw_spin_lock_irqsave(&irqd->lock, flags);
+> +       ret = (irqd->state & APLIC_IRQ_STATE_ENABLED) ? true : false;
+> +       raw_spin_unlock_irqrestore(&irqd->lock, flags);
+> +
+> +       return ret;
+> +}
+> +
+> +static void aplic_write_enabled(struct aplic *aplic, u32 irq, bool enabled)
+> +{
+> +       unsigned long flags;
+> +       struct aplic_irq *irqd;
+> +
+> +       if (!irq || aplic->nr_irqs <= irq)
+> +               return;
+> +       irqd = &aplic->irqs[irq];
+> +
+> +       raw_spin_lock_irqsave(&irqd->lock, flags);
+> +       if (enabled)
+> +               irqd->state |= APLIC_IRQ_STATE_ENABLED;
+> +       else
+> +               irqd->state &= ~APLIC_IRQ_STATE_ENABLED;
+> +       raw_spin_unlock_irqrestore(&irqd->lock, flags);
+> +}
+> +
+> +static bool aplic_read_input(struct aplic *aplic, u32 irq)
+> +{
+> +       bool ret;
+> +       unsigned long flags;
+> +       struct aplic_irq *irqd;
+> +
+> +       if (!irq || aplic->nr_irqs <= irq)
+> +               return false;
+> +       irqd = &aplic->irqs[irq];
+> +
+> +       raw_spin_lock_irqsave(&irqd->lock, flags);
+> +       ret = (irqd->state & APLIC_IRQ_STATE_INPUT) ? true : false;
+> +       raw_spin_unlock_irqrestore(&irqd->lock, flags);
+> +
+> +       return ret;
+> +}
+> +
+> +static void aplic_inject_msi(struct kvm *kvm, u32 irq, u32 target)
+> +{
+> +       u32 hart_idx, guest_idx, eiid;
+> +
+> +       hart_idx = target >> APLIC_TARGET_HART_IDX_SHIFT;
+> +       hart_idx &= APLIC_TARGET_HART_IDX_MASK;
+> +       guest_idx = target >> APLIC_TARGET_GUEST_IDX_SHIFT;
+> +       guest_idx &= APLIC_TARGET_GUEST_IDX_MASK;
+> +       eiid = target & APLIC_TARGET_EIID_MASK;
+> +       kvm_riscv_aia_inject_msi_by_id(kvm, hart_idx, guest_idx, eiid);
+> +}
+> +
+> +static void aplic_update_irq_range(struct kvm *kvm, u32 first, u32 last)
+> +{
+> +       bool inject;
+> +       u32 irq, target;
+> +       unsigned long flags;
+> +       struct aplic_irq *irqd;
+> +       struct aplic *aplic = kvm->arch.aia.aplic_state;
+> +
+> +       if (!(aplic->domaincfg & APLIC_DOMAINCFG_IE))
+> +               return;
+> +
+> +       for (irq = first; irq <= last; irq++) {
+> +               if (!irq || aplic->nr_irqs <= irq)
+> +                       continue;
+> +               irqd = &aplic->irqs[irq];
+> +
+> +               raw_spin_lock_irqsave(&irqd->lock, flags);
+> +
+> +               inject = false;
+> +               target = irqd->target;
+> +               if ((irqd->state & APLIC_IRQ_STATE_ENPEND) ==
+> +                   APLIC_IRQ_STATE_ENPEND) {
+> +                       irqd->state &= ~APLIC_IRQ_STATE_PENDING;
+> +                       inject = true;
+> +               }
+> +
+> +               raw_spin_unlock_irqrestore(&irqd->lock, flags);
+> +
+> +               if (inject)
+> +                       aplic_inject_msi(kvm, irq, target);
+> +       }
+> +}
+> +
+> +int kvm_riscv_aia_aplic_inject(struct kvm *kvm, u32 source, bool level)
+> +{
+> +       u32 target;
+> +       bool inject = false, ie;
+> +       unsigned long flags;
+> +       struct aplic_irq *irqd;
+> +       struct aplic *aplic = kvm->arch.aia.aplic_state;
+> +
+> +       if (!aplic || !source || (aplic->nr_irqs <= source))
+> +               return -ENODEV;
+> +       irqd = &aplic->irqs[source];
+> +       ie = (aplic->domaincfg & APLIC_DOMAINCFG_IE) ? true : false;
+> +
+> +       raw_spin_lock_irqsave(&irqd->lock, flags);
+> +
+> +       if (irqd->sourcecfg & APLIC_SOURCECFG_D)
+> +               goto skip_unlock;
+> +
+> +       switch (irqd->sourcecfg & APLIC_SOURCECFG_SM_MASK) {
+> +       case APLIC_SOURCECFG_SM_EDGE_RISE:
+> +               if (level && !(irqd->state & APLIC_IRQ_STATE_INPUT) &&
+> +                   !(irqd->state & APLIC_IRQ_STATE_PENDING))
+> +                       irqd->state |= APLIC_IRQ_STATE_PENDING;
+> +               break;
+> +       case APLIC_SOURCECFG_SM_EDGE_FALL:
+> +               if (!level && (irqd->state & APLIC_IRQ_STATE_INPUT) &&
+> +                   !(irqd->state & APLIC_IRQ_STATE_PENDING))
+> +                       irqd->state |= APLIC_IRQ_STATE_PENDING;
+> +               break;
+> +       case APLIC_SOURCECFG_SM_LEVEL_HIGH:
+> +               if (level && !(irqd->state & APLIC_IRQ_STATE_PENDING))
+> +                       irqd->state |= APLIC_IRQ_STATE_PENDING;
+> +               break;
+> +       case APLIC_SOURCECFG_SM_LEVEL_LOW:
+> +               if (!level && !(irqd->state & APLIC_IRQ_STATE_PENDING))
+> +                       irqd->state |= APLIC_IRQ_STATE_PENDING;
+> +               break;
+> +       }
+> +
+> +       if (level)
+> +               irqd->state |= APLIC_IRQ_STATE_INPUT;
+> +       else
+> +               irqd->state &= ~APLIC_IRQ_STATE_INPUT;
+> +
+> +       target = irqd->target;
+> +       if (ie && ((irqd->state & APLIC_IRQ_STATE_ENPEND) ==
+> +                  APLIC_IRQ_STATE_ENPEND)) {
+> +               irqd->state &= ~APLIC_IRQ_STATE_PENDING;
+> +               inject = true;
+> +       }
+> +
+> +skip_unlock:
+> +       raw_spin_unlock_irqrestore(&irqd->lock, flags);
+> +
+> +       if (inject)
+> +               aplic_inject_msi(kvm, source, target);
+> +
+> +       return 0;
+> +}
+> +
+> +static u32 aplic_read_input_word(struct aplic *aplic, u32 word)
+> +{
+> +       u32 i, ret = 0;
+> +
+> +       for (i = 0; i < 32; i++)
+> +               ret |= aplic_read_input(aplic, word * 32 + i) ? BIT(i) : 0;
+> +
+> +       return ret;
+> +}
+> +
+> +static u32 aplic_read_pending_word(struct aplic *aplic, u32 word)
+> +{
+> +       u32 i, ret = 0;
+> +
+> +       for (i = 0; i < 32; i++)
+> +               ret |= aplic_read_pending(aplic, word * 32 + i) ? BIT(i) : 0;
+> +
+> +       return ret;
+> +}
+> +
+> +static void aplic_write_pending_word(struct aplic *aplic, u32 word,
+> +                                    u32 val, bool pending)
+> +{
+> +       u32 i;
+> +
+> +       for (i = 0; i < 32; i++) {
+> +               if (val & BIT(i))
+> +                       aplic_write_pending(aplic, word * 32 + i, pending);
+> +       }
+> +}
+> +
+> +static u32 aplic_read_enabled_word(struct aplic *aplic, u32 word)
+> +{
+> +       u32 i, ret = 0;
+> +
+> +       for (i = 0; i < 32; i++)
+> +               ret |= aplic_read_enabled(aplic, word * 32 + i) ? BIT(i) : 0;
+> +
+> +       return ret;
+> +}
+> +
+> +static void aplic_write_enabled_word(struct aplic *aplic, u32 word,
+> +                                    u32 val, bool enabled)
+> +{
+> +       u32 i;
+> +
+> +       for (i = 0; i < 32; i++) {
+> +               if (val & BIT(i))
+> +                       aplic_write_enabled(aplic, word * 32 + i, enabled);
+> +       }
+> +}
+> +
+> +static int aplic_mmio_read_offset(struct kvm *kvm, gpa_t off, u32 *val32)
+> +{
+> +       u32 i;
+> +       struct aplic *aplic = kvm->arch.aia.aplic_state;
+> +
+> +       if ((off & 0x3) != 0)
+> +               return -EOPNOTSUPP;
+> +
+> +       if (off == APLIC_DOMAINCFG) {
+> +               *val32 = APLIC_DOMAINCFG_RDONLY |
+> +                        aplic->domaincfg | APLIC_DOMAINCFG_DM;
+> +       } else if ((off >= APLIC_SOURCECFG_BASE) &&
+> +                (off < (APLIC_SOURCECFG_BASE + (aplic->nr_irqs - 1) * 4))) {
+> +               i = ((off - APLIC_SOURCECFG_BASE) >> 2) + 1;
+> +               *val32 = aplic_read_sourcecfg(aplic, i);
+> +       } else if ((off >= APLIC_SETIP_BASE) &&
+> +                  (off < (APLIC_SETIP_BASE + aplic->nr_words * 4))) {
+> +               i = (off - APLIC_SETIP_BASE) >> 2;
+> +               *val32 = aplic_read_pending_word(aplic, i);
+> +       } else if (off == APLIC_SETIPNUM) {
+> +               *val32 = 0;
+> +       } else if ((off >= APLIC_CLRIP_BASE) &&
+> +                  (off < (APLIC_CLRIP_BASE + aplic->nr_words * 4))) {
+> +               i = (off - APLIC_CLRIP_BASE) >> 2;
+> +               *val32 = aplic_read_input_word(aplic, i);
+> +       } else if (off == APLIC_CLRIPNUM) {
+> +               *val32 = 0;
+> +       } else if ((off >= APLIC_SETIE_BASE) &&
+> +                  (off < (APLIC_SETIE_BASE + aplic->nr_words * 4))) {
+> +               i = (off - APLIC_SETIE_BASE) >> 2;
+> +               *val32 = aplic_read_enabled_word(aplic, i);
+> +       } else if (off == APLIC_SETIENUM) {
+> +               *val32 = 0;
+> +       } else if ((off >= APLIC_CLRIE_BASE) &&
+> +                  (off < (APLIC_CLRIE_BASE + aplic->nr_words * 4))) {
+> +               *val32 = 0;
+> +       } else if (off == APLIC_CLRIENUM) {
+> +               *val32 = 0;
+> +       } else if (off == APLIC_SETIPNUM_LE) {
+> +               *val32 = 0;
+> +       } else if (off == APLIC_SETIPNUM_BE) {
+> +               *val32 = 0;
+> +       } else if (off == APLIC_GENMSI) {
+> +               *val32 = aplic->genmsi;
+> +       } else if ((off >= APLIC_TARGET_BASE) &&
+> +                  (off < (APLIC_TARGET_BASE + (aplic->nr_irqs - 1) * 4))) {
+> +               i = ((off - APLIC_TARGET_BASE) >> 2) + 1;
+> +               *val32 = aplic_read_target(aplic, i);
+> +       } else
+> +               return -ENODEV;
+> +
+> +       return 0;
+> +}
+> +
+> +static int aplic_mmio_read(struct kvm_vcpu *vcpu, struct kvm_io_device *dev,
+> +                          gpa_t addr, int len, void *val)
+> +{
+> +       if (len != 4)
+> +               return -EOPNOTSUPP;
+> +
+> +       return aplic_mmio_read_offset(vcpu->kvm,
+> +                                     addr - vcpu->kvm->arch.aia.aplic_addr,
+> +                                     val);
+> +}
+> +
+> +static int aplic_mmio_write_offset(struct kvm *kvm, gpa_t off, u32 val32)
+> +{
+> +       u32 i;
+> +       struct aplic *aplic = kvm->arch.aia.aplic_state;
+> +
+> +       if ((off & 0x3) != 0)
+> +               return -EOPNOTSUPP;
+> +
+> +       if (off == APLIC_DOMAINCFG) {
+> +               /* Only IE bit writeable */
+> +               aplic->domaincfg = val32 & APLIC_DOMAINCFG_IE;
+> +       } else if ((off >= APLIC_SOURCECFG_BASE) &&
+> +                (off < (APLIC_SOURCECFG_BASE + (aplic->nr_irqs - 1) * 4))) {
+> +               i = ((off - APLIC_SOURCECFG_BASE) >> 2) + 1;
+> +               aplic_write_sourcecfg(aplic, i, val32);
+> +       } else if ((off >= APLIC_SETIP_BASE) &&
+> +                  (off < (APLIC_SETIP_BASE + aplic->nr_words * 4))) {
+> +               i = (off - APLIC_SETIP_BASE) >> 2;
+> +               aplic_write_pending_word(aplic, i, val32, true);
+> +       } else if (off == APLIC_SETIPNUM) {
+> +               aplic_write_pending(aplic, val32, true);
+> +       } else if ((off >= APLIC_CLRIP_BASE) &&
+> +                  (off < (APLIC_CLRIP_BASE + aplic->nr_words * 4))) {
+> +               i = (off - APLIC_CLRIP_BASE) >> 2;
+> +               aplic_write_pending_word(aplic, i, val32, false);
+> +       } else if (off == APLIC_CLRIPNUM) {
+> +               aplic_write_pending(aplic, val32, false);
+> +       } else if ((off >= APLIC_SETIE_BASE) &&
+> +                  (off < (APLIC_SETIE_BASE + aplic->nr_words * 4))) {
+> +               i = (off - APLIC_SETIE_BASE) >> 2;
+> +               aplic_write_enabled_word(aplic, i, val32, true);
+> +       } else if (off == APLIC_SETIENUM) {
+> +               aplic_write_enabled(aplic, val32, true);
+> +       } else if ((off >= APLIC_CLRIE_BASE) &&
+> +                  (off < (APLIC_CLRIE_BASE + aplic->nr_words * 4))) {
+> +               i = (off - APLIC_CLRIE_BASE) >> 2;
+> +               aplic_write_enabled_word(aplic, i, val32, false);
+> +       } else if (off == APLIC_CLRIENUM) {
+> +               aplic_write_enabled(aplic, val32, false);
+> +       } else if (off == APLIC_SETIPNUM_LE) {
+> +               aplic_write_pending(aplic, val32, true);
+> +       } else if (off == APLIC_SETIPNUM_BE) {
+> +               aplic_write_pending(aplic, __swab32(val32), true);
+> +       } else if (off == APLIC_GENMSI) {
+> +               aplic->genmsi = val32 & ~(APLIC_TARGET_GUEST_IDX_MASK <<
+> +                                         APLIC_TARGET_GUEST_IDX_SHIFT);
+> +               kvm_riscv_aia_inject_msi_by_id(kvm,
+> +                               val32 >> APLIC_TARGET_HART_IDX_SHIFT, 0,
+> +                               val32 & APLIC_TARGET_EIID_MASK);
+> +       } else if ((off >= APLIC_TARGET_BASE) &&
+> +                  (off < (APLIC_TARGET_BASE + (aplic->nr_irqs - 1) * 4))) {
+> +               i = ((off - APLIC_TARGET_BASE) >> 2) + 1;
+> +               aplic_write_target(aplic, i, val32);
+> +       } else
+> +               return -ENODEV;
+> +
+> +       aplic_update_irq_range(kvm, 1, aplic->nr_irqs - 1);
+> +
+> +       return 0;
+> +}
+> +
+> +static int aplic_mmio_write(struct kvm_vcpu *vcpu, struct kvm_io_device *dev,
+> +                           gpa_t addr, int len, const void *val)
+> +{
+> +       if (len != 4)
+> +               return -EOPNOTSUPP;
+> +
+> +       return aplic_mmio_write_offset(vcpu->kvm,
+> +                                      addr - vcpu->kvm->arch.aia.aplic_addr,
+> +                                      *((const u32 *)val));
+> +}
+> +
+> +static struct kvm_io_device_ops aplic_iodoev_ops = {
+> +       .read = aplic_mmio_read,
+> +       .write = aplic_mmio_write,
+> +};
+> +
+> +int kvm_riscv_aia_aplic_init(struct kvm *kvm)
+> +{
+> +       int i, ret = 0;
+> +       struct aplic *aplic;
+> +
+> +       /* Do nothing if we have zero sources */
+> +       if (!kvm->arch.aia.nr_sources)
+> +               return 0;
+> +
+> +       /* Allocate APLIC global state */
+> +       aplic = kzalloc(sizeof(*aplic), GFP_KERNEL);
+> +       if (!aplic)
+> +               return -ENOMEM;
+> +       kvm->arch.aia.aplic_state = aplic;
+> +
+> +       /* Setup APLIC IRQs */
+> +       aplic->nr_irqs = kvm->arch.aia.nr_sources + 1;
+> +       aplic->nr_words = DIV_ROUND_UP(aplic->nr_irqs, 32);
+> +       aplic->irqs = kcalloc(aplic->nr_irqs,
+> +                             sizeof(*aplic->irqs), GFP_KERNEL);
+> +       if (!aplic->irqs) {
+> +               ret = -ENOMEM;
+> +               goto fail_free_aplic;
+> +       }
+> +       for (i = 0; i < aplic->nr_irqs; i++)
+> +               raw_spin_lock_init(&aplic->irqs[i].lock);
+> +
+> +       /* Setup IO device */
+> +       kvm_iodevice_init(&aplic->iodev, &aplic_iodoev_ops);
+> +       mutex_lock(&kvm->slots_lock);
+> +       ret = kvm_io_bus_register_dev(kvm, KVM_MMIO_BUS,
+> +                                     kvm->arch.aia.aplic_addr,
+> +                                     KVM_DEV_RISCV_APLIC_SIZE,
+> +                                     &aplic->iodev);
+> +       mutex_unlock(&kvm->slots_lock);
+> +       if (ret)
+> +               goto fail_free_aplic_irqs;
+> +
+> +       /* Setup default IRQ routing */
+> +       ret = kvm_riscv_setup_default_irq_routing(kvm, aplic->nr_irqs);
+> +       if (ret)
+> +               goto fail_unreg_iodev;
+> +
+> +       return 0;
+> +
+> +fail_unreg_iodev:
+> +       mutex_lock(&kvm->slots_lock);
+> +       kvm_io_bus_unregister_dev(kvm, KVM_MMIO_BUS, &aplic->iodev);
+> +       mutex_unlock(&kvm->slots_lock);
+> +fail_free_aplic_irqs:
+> +       kfree(aplic->irqs);
+> +fail_free_aplic:
+> +       kvm->arch.aia.aplic_state = NULL;
+> +       kfree(aplic);
+> +       return ret;
+> +}
+> +
+> +void kvm_riscv_aia_aplic_cleanup(struct kvm *kvm)
+> +{
+> +       struct aplic *aplic = kvm->arch.aia.aplic_state;
+> +
+> +       if (!aplic)
+> +               return;
+> +
+> +       mutex_lock(&kvm->slots_lock);
+> +       kvm_io_bus_unregister_dev(kvm, KVM_MMIO_BUS, &aplic->iodev);
+> +       mutex_unlock(&kvm->slots_lock);
+> +
+> +       kfree(aplic->irqs);
+> +
+> +       kvm->arch.aia.aplic_state = NULL;
+> +       kfree(aplic);
+> +}
+> --
+> 2.34.1
+>
 
-Signed-off-by: Anup Patel <apatel@ventanamicro.com>
+
 Reviewed-by: Atish Patra <atishp@rivosinc.com>
----
- arch/riscv/include/asm/kvm_aia.h  |   3 +
- arch/riscv/include/uapi/asm/kvm.h |  17 +++
- arch/riscv/kvm/aia_device.c       |  29 ++++-
- arch/riscv/kvm/aia_imsic.c        | 170 ++++++++++++++++++++++++++++++
- 4 files changed, 217 insertions(+), 2 deletions(-)
-
-diff --git a/arch/riscv/include/asm/kvm_aia.h b/arch/riscv/include/asm/kvm_aia.h
-index a4f6ebf90e31..1f37b600ca47 100644
---- a/arch/riscv/include/asm/kvm_aia.h
-+++ b/arch/riscv/include/asm/kvm_aia.h
-@@ -97,6 +97,9 @@ int kvm_riscv_vcpu_aia_imsic_update(struct kvm_vcpu *vcpu);
- int kvm_riscv_vcpu_aia_imsic_rmw(struct kvm_vcpu *vcpu, unsigned long isel,
- 				 unsigned long *val, unsigned long new_val,
- 				 unsigned long wr_mask);
-+int kvm_riscv_aia_imsic_rw_attr(struct kvm *kvm, unsigned long type,
-+				bool write, unsigned long *val);
-+int kvm_riscv_aia_imsic_has_attr(struct kvm *kvm, unsigned long type);
- void kvm_riscv_vcpu_aia_imsic_reset(struct kvm_vcpu *vcpu);
- int kvm_riscv_vcpu_aia_imsic_inject(struct kvm_vcpu *vcpu,
- 				    u32 guest_index, u32 offset, u32 iid);
-diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
-index 9ed822fc5589..61d7fecc4899 100644
---- a/arch/riscv/include/uapi/asm/kvm.h
-+++ b/arch/riscv/include/uapi/asm/kvm.h
-@@ -255,6 +255,23 @@ enum KVM_RISCV_SBI_EXT_ID {
-  */
- #define KVM_DEV_RISCV_AIA_GRP_APLIC		3
- 
-+/*
-+ * The lower 12-bits of the device attribute type contains the iselect
-+ * value of the IMSIC register (range 0x70-0xFF) whereas the higher order
-+ * bits contains the VCPU id.
-+ */
-+#define KVM_DEV_RISCV_AIA_GRP_IMSIC		4
-+#define KVM_DEV_RISCV_AIA_IMSIC_ISEL_BITS	12
-+#define KVM_DEV_RISCV_AIA_IMSIC_ISEL_MASK	\
-+		((1U << KVM_DEV_RISCV_AIA_IMSIC_ISEL_BITS) - 1)
-+#define KVM_DEV_RISCV_AIA_IMSIC_MKATTR(__vcpu, __isel)	\
-+		(((__vcpu) << KVM_DEV_RISCV_AIA_IMSIC_ISEL_BITS) | \
-+		 ((__isel) & KVM_DEV_RISCV_AIA_IMSIC_ISEL_MASK))
-+#define KVM_DEV_RISCV_AIA_IMSIC_GET_ISEL(__attr)	\
-+		((__attr) & KVM_DEV_RISCV_AIA_IMSIC_ISEL_MASK)
-+#define KVM_DEV_RISCV_AIA_IMSIC_GET_VCPU(__attr)	\
-+		((__attr) >> KVM_DEV_RISCV_AIA_IMSIC_ISEL_BITS)
-+
- /* One single KVM irqchip, ie. the AIA */
- #define KVM_NR_IRQCHIPS			1
- 
-diff --git a/arch/riscv/kvm/aia_device.c b/arch/riscv/kvm/aia_device.c
-index c649ad6e8e0a..84dae351b6d7 100644
---- a/arch/riscv/kvm/aia_device.c
-+++ b/arch/riscv/kvm/aia_device.c
-@@ -327,7 +327,7 @@ static int aia_set_attr(struct kvm_device *dev, struct kvm_device_attr *attr)
- 	u32 nr;
- 	u64 addr;
- 	int nr_vcpus, r = -ENXIO;
--	unsigned long type = (unsigned long)attr->attr;
-+	unsigned long v, type = (unsigned long)attr->attr;
- 	void __user *uaddr = (void __user *)(long)attr->addr;
- 
- 	switch (attr->group) {
-@@ -374,6 +374,15 @@ static int aia_set_attr(struct kvm_device *dev, struct kvm_device_attr *attr)
- 		r = kvm_riscv_aia_aplic_set_attr(dev->kvm, type, nr);
- 		mutex_unlock(&dev->kvm->lock);
- 
-+		break;
-+	case KVM_DEV_RISCV_AIA_GRP_IMSIC:
-+		if (copy_from_user(&v, uaddr, sizeof(v)))
-+			return -EFAULT;
-+
-+		mutex_lock(&dev->kvm->lock);
-+		r = kvm_riscv_aia_imsic_rw_attr(dev->kvm, type, true, &v);
-+		mutex_unlock(&dev->kvm->lock);
-+
- 		break;
- 	}
- 
-@@ -386,7 +395,7 @@ static int aia_get_attr(struct kvm_device *dev, struct kvm_device_attr *attr)
- 	u64 addr;
- 	int nr_vcpus, r = -ENXIO;
- 	void __user *uaddr = (void __user *)(long)attr->addr;
--	unsigned long type = (unsigned long)attr->attr;
-+	unsigned long v, type = (unsigned long)attr->attr;
- 
- 	switch (attr->group) {
- 	case KVM_DEV_RISCV_AIA_GRP_CONFIG:
-@@ -435,6 +444,20 @@ static int aia_get_attr(struct kvm_device *dev, struct kvm_device_attr *attr)
- 		if (copy_to_user(uaddr, &nr, sizeof(nr)))
- 			return -EFAULT;
- 
-+		break;
-+	case KVM_DEV_RISCV_AIA_GRP_IMSIC:
-+		if (copy_from_user(&v, uaddr, sizeof(v)))
-+			return -EFAULT;
-+
-+		mutex_lock(&dev->kvm->lock);
-+		r = kvm_riscv_aia_imsic_rw_attr(dev->kvm, type, false, &v);
-+		mutex_unlock(&dev->kvm->lock);
-+		if (r)
-+			return r;
-+
-+		if (copy_to_user(uaddr, &v, sizeof(v)))
-+			return -EFAULT;
-+
- 		break;
- 	}
- 
-@@ -473,6 +496,8 @@ static int aia_has_attr(struct kvm_device *dev, struct kvm_device_attr *attr)
- 		break;
- 	case KVM_DEV_RISCV_AIA_GRP_APLIC:
- 		return kvm_riscv_aia_aplic_has_attr(dev->kvm, attr->attr);
-+	case KVM_DEV_RISCV_AIA_GRP_IMSIC:
-+		return kvm_riscv_aia_imsic_has_attr(dev->kvm, attr->attr);
- 	}
- 
- 	return -ENXIO;
-diff --git a/arch/riscv/kvm/aia_imsic.c b/arch/riscv/kvm/aia_imsic.c
-index 2dc09dcb8ab5..8f108cfa80e5 100644
---- a/arch/riscv/kvm/aia_imsic.c
-+++ b/arch/riscv/kvm/aia_imsic.c
-@@ -277,6 +277,33 @@ static u32 imsic_mrif_topei(struct imsic_mrif *mrif, u32 nr_eix, u32 nr_msis)
- 	return 0;
- }
- 
-+static int imsic_mrif_isel_check(u32 nr_eix, unsigned long isel)
-+{
-+	u32 num = 0;
-+
-+	switch (isel) {
-+	case IMSIC_EIDELIVERY:
-+	case IMSIC_EITHRESHOLD:
-+		break;
-+	case IMSIC_EIP0 ... IMSIC_EIP63:
-+		num = isel - IMSIC_EIP0;
-+		break;
-+	case IMSIC_EIE0 ... IMSIC_EIE63:
-+		num = isel - IMSIC_EIE0;
-+		break;
-+	default:
-+		return -ENOENT;
-+	};
-+#ifndef CONFIG_32BIT
-+	if (num & 0x1)
-+		return -EINVAL;
-+#endif
-+	if ((num / 2) >= nr_eix)
-+		return -EINVAL;
-+
-+	return 0;
-+}
-+
- static int imsic_mrif_rmw(struct imsic_mrif *mrif, u32 nr_eix,
- 			  unsigned long isel, unsigned long *val,
- 			  unsigned long new_val, unsigned long wr_mask)
-@@ -407,6 +434,86 @@ static void imsic_vsfile_read(int vsfile_hgei, int vsfile_cpu, u32 nr_eix,
- 			 imsic_vsfile_local_read, &idata, 1);
- }
- 
-+struct imsic_vsfile_rw_data {
-+	int hgei;
-+	int isel;
-+	bool write;
-+	unsigned long val;
-+};
-+
-+static void imsic_vsfile_local_rw(void *data)
-+{
-+	struct imsic_vsfile_rw_data *idata = data;
-+	unsigned long new_hstatus, old_hstatus, old_vsiselect;
-+
-+	old_vsiselect = csr_read(CSR_VSISELECT);
-+	old_hstatus = csr_read(CSR_HSTATUS);
-+	new_hstatus = old_hstatus & ~HSTATUS_VGEIN;
-+	new_hstatus |= ((unsigned long)idata->hgei) << HSTATUS_VGEIN_SHIFT;
-+	csr_write(CSR_HSTATUS, new_hstatus);
-+
-+	switch (idata->isel) {
-+	case IMSIC_EIDELIVERY:
-+		if (idata->write)
-+			imsic_vs_csr_write(IMSIC_EIDELIVERY, idata->val);
-+		else
-+			idata->val = imsic_vs_csr_read(IMSIC_EIDELIVERY);
-+		break;
-+	case IMSIC_EITHRESHOLD:
-+		if (idata->write)
-+			imsic_vs_csr_write(IMSIC_EITHRESHOLD, idata->val);
-+		else
-+			idata->val = imsic_vs_csr_read(IMSIC_EITHRESHOLD);
-+		break;
-+	case IMSIC_EIP0 ... IMSIC_EIP63:
-+	case IMSIC_EIE0 ... IMSIC_EIE63:
-+#ifndef CONFIG_32BIT
-+		if (idata->isel & 0x1)
-+			break;
-+#endif
-+		if (idata->write)
-+			imsic_eix_write(idata->isel, idata->val);
-+		else
-+			idata->val = imsic_eix_read(idata->isel);
-+		break;
-+	default:
-+		break;
-+	}
-+
-+	csr_write(CSR_HSTATUS, old_hstatus);
-+	csr_write(CSR_VSISELECT, old_vsiselect);
-+}
-+
-+static int imsic_vsfile_rw(int vsfile_hgei, int vsfile_cpu, u32 nr_eix,
-+			   unsigned long isel, bool write,
-+			   unsigned long *val)
-+{
-+	int rc;
-+	struct imsic_vsfile_rw_data rdata;
-+
-+	/* We can only access register if we have a IMSIC VS-file */
-+	if (vsfile_cpu < 0 || vsfile_hgei <= 0)
-+		return -EINVAL;
-+
-+	/* Check IMSIC register iselect */
-+	rc = imsic_mrif_isel_check(nr_eix, isel);
-+	if (rc)
-+		return rc;
-+
-+	/* We can only access register on local CPU */
-+	rdata.hgei = vsfile_hgei;
-+	rdata.isel = isel;
-+	rdata.write = write;
-+	rdata.val = (write) ? *val : 0;
-+	on_each_cpu_mask(cpumask_of(vsfile_cpu),
-+			 imsic_vsfile_local_rw, &rdata, 1);
-+
-+	if (!write)
-+		*val = rdata.val;
-+
-+	return 0;
-+}
-+
- static void imsic_vsfile_local_clear(int vsfile_hgei, u32 nr_eix)
- {
- 	u32 i;
-@@ -758,6 +865,69 @@ int kvm_riscv_vcpu_aia_imsic_rmw(struct kvm_vcpu *vcpu, unsigned long isel,
- 	return rc;
- }
- 
-+int kvm_riscv_aia_imsic_rw_attr(struct kvm *kvm, unsigned long type,
-+				bool write, unsigned long *val)
-+{
-+	u32 isel, vcpu_id;
-+	unsigned long flags;
-+	struct imsic *imsic;
-+	struct kvm_vcpu *vcpu;
-+	int rc, vsfile_hgei, vsfile_cpu;
-+
-+	if (!kvm_riscv_aia_initialized(kvm))
-+		return -ENODEV;
-+
-+	vcpu_id = KVM_DEV_RISCV_AIA_IMSIC_GET_VCPU(type);
-+	vcpu = kvm_get_vcpu_by_id(kvm, vcpu_id);
-+	if (!vcpu)
-+		return -ENODEV;
-+
-+	isel = KVM_DEV_RISCV_AIA_IMSIC_GET_ISEL(type);
-+	imsic = vcpu->arch.aia_context.imsic_state;
-+
-+	read_lock_irqsave(&imsic->vsfile_lock, flags);
-+
-+	rc = 0;
-+	vsfile_hgei = imsic->vsfile_hgei;
-+	vsfile_cpu = imsic->vsfile_cpu;
-+	if (vsfile_cpu < 0) {
-+		if (write) {
-+			rc = imsic_mrif_rmw(imsic->swfile, imsic->nr_eix,
-+					    isel, NULL, *val, -1UL);
-+			imsic_swfile_extirq_update(vcpu);
-+		} else
-+			rc = imsic_mrif_rmw(imsic->swfile, imsic->nr_eix,
-+					    isel, val, 0, 0);
-+	}
-+
-+	read_unlock_irqrestore(&imsic->vsfile_lock, flags);
-+
-+	if (!rc && vsfile_cpu >= 0)
-+		rc = imsic_vsfile_rw(vsfile_hgei, vsfile_cpu, imsic->nr_eix,
-+				     isel, write, val);
-+
-+	return rc;
-+}
-+
-+int kvm_riscv_aia_imsic_has_attr(struct kvm *kvm, unsigned long type)
-+{
-+	u32 isel, vcpu_id;
-+	struct imsic *imsic;
-+	struct kvm_vcpu *vcpu;
-+
-+	if (!kvm_riscv_aia_initialized(kvm))
-+		return -ENODEV;
-+
-+	vcpu_id = KVM_DEV_RISCV_AIA_IMSIC_GET_VCPU(type);
-+	vcpu = kvm_get_vcpu_by_id(kvm, vcpu_id);
-+	if (!vcpu)
-+		return -ENODEV;
-+
-+	isel = KVM_DEV_RISCV_AIA_IMSIC_GET_ISEL(type);
-+	imsic = vcpu->arch.aia_context.imsic_state;
-+	return imsic_mrif_isel_check(imsic->nr_eix, isel);
-+}
-+
- void kvm_riscv_vcpu_aia_imsic_reset(struct kvm_vcpu *vcpu)
- {
- 	struct imsic *imsic = vcpu->arch.aia_context.imsic_state;
 -- 
-2.34.1
-
+Regards,
+Atish
 
