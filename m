@@ -1,67 +1,89 @@
 From: Anup Patel <anup@brainfault.org>
-Date: Fri, 16 Jun 2023 20:06:14 +0530
-Subject: [PATCH v2] riscv: kvm: define vcpu_sbi_ext_pmu in header
-In-Reply-To: <20230616142203.168996-1-ben.dooks@codethink.co.uk>
-References: <20230616142203.168996-1-ben.dooks@codethink.co.uk>
-Message-ID: <CAAhSdy0Yu6965Q1eS8gZq3-CkiD=s5hqdsC=VwHU7fnrJq=M9A@mail.gmail.com>
+Date: Sun, 18 Jun 2023 21:32:12 +0530
+Subject: [PATCH v3 00/10] RISC-V KVM in-kernel AIA irqchip
+In-Reply-To: <20230615073353.85435-1-apatel@ventanamicro.com>
+References: <20230615073353.85435-1-apatel@ventanamicro.com>
+Message-ID: <CAAhSdy3UL97dnBttjedFv3EztC0oyrNOLuTQK+JituLY7h0FYA@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Jun 16, 2023 at 7:52?PM Ben Dooks <ben.dooks@codethink.co.uk> wrote:
+On Thu, Jun 15, 2023 at 1:04?PM Anup Patel <apatel@ventanamicro.com> wrote:
 >
-> Sparse is giving a warning about vcpu_sbi_ext_pmu not being
-> defined, so add a definition to the relevant header to fix
-> the following:
+> This series adds in-kernel AIA irqchip to KVM RISC-V which trap-n-emulate
+> IMSIC and APLIC MSI-mode for Guest. The APLIC MSI-mode trap-n-emulate is
+> optional so KVM user space can emulate APLIC entirely in user space.
 >
-> arch/riscv/kvm/vcpu_sbi_pmu.c:81:37: warning: symbol 'vcpu_sbi_ext_pmu' was not declared. Should it be static?
+> The use of IMSIC HW guest files to accelerate IMSIC virtualization will be
+> done as separate series since this depends on AIA irqchip drivers to be
+> upstreamed. This series has no dependency on the AIA irqchip drivers.
 >
-> Fixes: cbddc4c4cb9e ("RISC-V: KVM: Add SBI PMU extension support")
-> Signed-off-by: Ben Dooks <ben.dooks@codethink.co.uk>
+> There is also a KVM AIA irq-bypass (or device MSI virtualization) series
+> under development which depends on this series and upcoming IOMMU driver
+> series.
+>
+> These patches (or this series) can also be found in the
+> riscv_kvm_aia_irqchip_v3 branch at: https://github.com/avpatel/linux.git
+>
+> Changes since v2:
+>  - Added KVM_CAP_IRQCHIP in PATCH5
+>  - Fix check for KVM_DEV_RISCV_AIA_CONFIG_IDS write in PATCH6
+>  - Fix APLIC_IRQ_STATE_ENPEND usage in PATCH7
+>
+> Changes since v1:
+>  - Rebased on Linux-6.4-rc6
+>  - Addressed Atish's comment in PATCH6
+>  - Added comments in arch/riscv/include/uapi/asm/kvm.h about APLIC and
+>    IMSIC device attribute type
+>
+> Anup Patel (10):
+>   RISC-V: KVM: Implement guest external interrupt line management
+>   RISC-V: KVM: Add IMSIC related defines
+>   RISC-V: KVM: Add APLIC related defines
+>   RISC-V: KVM: Set kvm_riscv_aia_nr_hgei to zero
+>   RISC-V: KVM: Skeletal in-kernel AIA irqchip support
+>   RISC-V: KVM: Implement device interface for AIA irqchip
+>   RISC-V: KVM: Add in-kernel emulation of AIA APLIC
+>   RISC-V: KVM: Expose APLIC registers as attributes of AIA irqchip
+>   RISC-V: KVM: Add in-kernel virtualization of AIA IMSIC
+>   RISC-V: KVM: Expose IMSIC registers as attributes of AIA irqchip
 
-Please include Reviewed-by tags obtained on previous version
+Queued this series for 6.5
 
 Regards,
 Anup
 
-> ---
-> v2:
->   - correct the fixes tag as suggested by Conor Dooley
-> ---
->  arch/riscv/include/asm/kvm_vcpu_sbi.h | 3 +++
->  arch/riscv/kvm/vcpu_sbi.c             | 4 +---
->  2 files changed, 4 insertions(+), 3 deletions(-)
 >
-> diff --git a/arch/riscv/include/asm/kvm_vcpu_sbi.h b/arch/riscv/include/asm/kvm_vcpu_sbi.h
-> index 4278125a38a5..b94c7e958da7 100644
-> --- a/arch/riscv/include/asm/kvm_vcpu_sbi.h
-> +++ b/arch/riscv/include/asm/kvm_vcpu_sbi.h
-> @@ -66,4 +66,7 @@ extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_hsm;
->  extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_experimental;
->  extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_vendor;
+>  arch/riscv/include/asm/kvm_aia.h       |  107 ++-
+>  arch/riscv/include/asm/kvm_aia_aplic.h |   58 ++
+>  arch/riscv/include/asm/kvm_aia_imsic.h |   38 +
+>  arch/riscv/include/asm/kvm_host.h      |    4 +
+>  arch/riscv/include/uapi/asm/kvm.h      |   72 ++
+>  arch/riscv/kvm/Kconfig                 |    4 +
+>  arch/riscv/kvm/Makefile                |    3 +
+>  arch/riscv/kvm/aia.c                   |  274 +++++-
+>  arch/riscv/kvm/aia_aplic.c             |  619 ++++++++++++++
+>  arch/riscv/kvm/aia_device.c            |  673 +++++++++++++++
+>  arch/riscv/kvm/aia_imsic.c             | 1083 ++++++++++++++++++++++++
+>  arch/riscv/kvm/main.c                  |    3 +-
+>  arch/riscv/kvm/vcpu.c                  |    2 +
+>  arch/riscv/kvm/vm.c                    |  118 +++
+>  include/uapi/linux/kvm.h               |    2 +
+>  15 files changed, 3027 insertions(+), 33 deletions(-)
+>  create mode 100644 arch/riscv/include/asm/kvm_aia_aplic.h
+>  create mode 100644 arch/riscv/include/asm/kvm_aia_imsic.h
+>  create mode 100644 arch/riscv/kvm/aia_aplic.c
+>  create mode 100644 arch/riscv/kvm/aia_device.c
+>  create mode 100644 arch/riscv/kvm/aia_imsic.c
 >
-> +#ifdef CONFIG_RISCV_PMU_SBI
-> +extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_pmu;
-> +#endif
->  #endif /* __RISCV_KVM_VCPU_SBI_H__ */
-> diff --git a/arch/riscv/kvm/vcpu_sbi.c b/arch/riscv/kvm/vcpu_sbi.c
-> index e52fde504433..c973d92a0ba5 100644
-> --- a/arch/riscv/kvm/vcpu_sbi.c
-> +++ b/arch/riscv/kvm/vcpu_sbi.c
-> @@ -20,9 +20,7 @@ static const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_v01 = {
->  };
->  #endif
->
-> -#ifdef CONFIG_RISCV_PMU_SBI
-> -extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_pmu;
-> -#else
-> +#ifndef CONFIG_RISCV_PMU_SBI
->  static const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_pmu = {
->         .extid_start = -1UL,
->         .extid_end = -1UL,
 > --
-> 2.39.2
+> 2.34.1
 >
+>
+> --
+> kvm-riscv mailing list
+> kvm-riscv at lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/kvm-riscv
 
