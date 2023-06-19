@@ -1,67 +1,71 @@
 From: Anup Patel <anup@brainfault.org>
-Date: Sun, 18 Jun 2023 21:32:39 +0530
-Subject: [PATCH v2] riscv: kvm: define vcpu_sbi_ext_pmu in header
-In-Reply-To: <20230616142203.168996-1-ben.dooks@codethink.co.uk>
-References: <20230616142203.168996-1-ben.dooks@codethink.co.uk>
-Message-ID: <CAAhSdy2Hb7aMbOdw12GZCtZCc0WcJn3-hxZmvgpMfmYhuZs-EQ@mail.gmail.com>
+Date: Mon, 19 Jun 2023 14:34:33 +0530
+Subject: [PATCH] RISC-V: KVM: Allow Svnapot extension for Guest/VM
+In-Reply-To: <20230612111044.87775-1-apatel@ventanamicro.com>
+References: <20230612111044.87775-1-apatel@ventanamicro.com>
+Message-ID: <CAAhSdy2H8fhb84Q7kn==6pdRod_CcZ1hWyr3niDBGKfr4e-mQg@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Jun 16, 2023 at 7:52?PM Ben Dooks <ben.dooks@codethink.co.uk> wrote:
+On Mon, Jun 12, 2023 at 4:41?PM Anup Patel <apatel@ventanamicro.com> wrote:
 >
-> Sparse is giving a warning about vcpu_sbi_ext_pmu not being
-> defined, so add a definition to the relevant header to fix
-> the following:
+> We extend the KVM ISA extension ONE_REG interface to allow KVM
+> user space to detect and enable Svnapot extension for Guest/VM.
 >
-> arch/riscv/kvm/vcpu_sbi_pmu.c:81:37: warning: symbol 'vcpu_sbi_ext_pmu' was not declared. Should it be static?
->
-> Fixes: cbddc4c4cb9e ("RISC-V: KVM: Add SBI PMU extension support")
-> Signed-off-by: Ben Dooks <ben.dooks@codethink.co.uk>
+> Signed-off-by: Anup Patel <apatel@ventanamicro.com>
+> Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
 
-Queued this for 6.5
+Queued this patch for Linux-6.5
 
 Thanks,
 Anup
 
 > ---
-> v2:
->   - correct the fixes tag as suggested by Conor Dooley
-> ---
->  arch/riscv/include/asm/kvm_vcpu_sbi.h | 3 +++
->  arch/riscv/kvm/vcpu_sbi.c             | 4 +---
->  2 files changed, 4 insertions(+), 3 deletions(-)
+>  arch/riscv/include/uapi/asm/kvm.h | 1 +
+>  arch/riscv/kvm/vcpu.c             | 2 ++
+>  2 files changed, 3 insertions(+)
 >
-> diff --git a/arch/riscv/include/asm/kvm_vcpu_sbi.h b/arch/riscv/include/asm/kvm_vcpu_sbi.h
-> index 4278125a38a5..b94c7e958da7 100644
-> --- a/arch/riscv/include/asm/kvm_vcpu_sbi.h
-> +++ b/arch/riscv/include/asm/kvm_vcpu_sbi.h
-> @@ -66,4 +66,7 @@ extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_hsm;
->  extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_experimental;
->  extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_vendor;
->
-> +#ifdef CONFIG_RISCV_PMU_SBI
-> +extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_pmu;
-> +#endif
->  #endif /* __RISCV_KVM_VCPU_SBI_H__ */
-> diff --git a/arch/riscv/kvm/vcpu_sbi.c b/arch/riscv/kvm/vcpu_sbi.c
-> index e52fde504433..c973d92a0ba5 100644
-> --- a/arch/riscv/kvm/vcpu_sbi.c
-> +++ b/arch/riscv/kvm/vcpu_sbi.c
-> @@ -20,9 +20,7 @@ static const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_v01 = {
+> diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
+> index 61d7fecc4899..a1ca18408bbd 100644
+> --- a/arch/riscv/include/uapi/asm/kvm.h
+> +++ b/arch/riscv/include/uapi/asm/kvm.h
+> @@ -122,6 +122,7 @@ enum KVM_RISCV_ISA_EXT_ID {
+>         KVM_RISCV_ISA_EXT_ZICBOZ,
+>         KVM_RISCV_ISA_EXT_ZBB,
+>         KVM_RISCV_ISA_EXT_SSAIA,
+> +       KVM_RISCV_ISA_EXT_SVNAPOT,
+>         KVM_RISCV_ISA_EXT_MAX,
 >  };
->  #endif
 >
-> -#ifdef CONFIG_RISCV_PMU_SBI
-> -extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_pmu;
-> -#else
-> +#ifndef CONFIG_RISCV_PMU_SBI
->  static const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_pmu = {
->         .extid_start = -1UL,
->         .extid_end = -1UL,
+> diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+> index 2db62c6c0d3e..7b355900f235 100644
+> --- a/arch/riscv/kvm/vcpu.c
+> +++ b/arch/riscv/kvm/vcpu.c
+> @@ -61,6 +61,7 @@ static const unsigned long kvm_isa_ext_arr[] = {
+>         KVM_ISA_EXT_ARR(SSAIA),
+>         KVM_ISA_EXT_ARR(SSTC),
+>         KVM_ISA_EXT_ARR(SVINVAL),
+> +       KVM_ISA_EXT_ARR(SVNAPOT),
+>         KVM_ISA_EXT_ARR(SVPBMT),
+>         KVM_ISA_EXT_ARR(ZBB),
+>         KVM_ISA_EXT_ARR(ZIHINTPAUSE),
+> @@ -102,6 +103,7 @@ static bool kvm_riscv_vcpu_isa_disable_allowed(unsigned long ext)
+>         case KVM_RISCV_ISA_EXT_SSAIA:
+>         case KVM_RISCV_ISA_EXT_SSTC:
+>         case KVM_RISCV_ISA_EXT_SVINVAL:
+> +       case KVM_RISCV_ISA_EXT_SVNAPOT:
+>         case KVM_RISCV_ISA_EXT_ZIHINTPAUSE:
+>         case KVM_RISCV_ISA_EXT_ZBB:
+>                 return false;
 > --
-> 2.39.2
+> 2.34.1
 >
+>
+> --
+> kvm-riscv mailing list
+> kvm-riscv at lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/kvm-riscv
 
