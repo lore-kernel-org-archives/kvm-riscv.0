@@ -1,147 +1,103 @@
-From: Raghavendra Rao Ananta <rananta@google.com>
-Date: Wed, 21 Jun 2023 17:50:02 +0000
-Subject: [RESEND PATCH v5 11/11] KVM: arm64: Use TLBI range-based intructions
- for unmap
-In-Reply-To: <20230621175002.2832640-1-rananta@google.com>
-References: <20230621175002.2832640-1-rananta@google.com>
-Message-ID: <20230621175002.2832640-12-rananta@google.com>
+From: Anup Patel <anup@brainfault.org>
+Date: Thu, 22 Jun 2023 19:43:17 +0530
+Subject: [GIT PULL] KVM/riscv changes for 6.5
+Message-ID: <CAAhSdy1iT=SbjSvv_7SDygSo0HhmgLjD-y+DU1_Q+6tnki7w+A@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The current implementation of the stage-2 unmap walker traverses
-the given range and, as a part of break-before-make, performs
-TLB invalidations with a DSB for every PTE. A multitude of this
-combination could cause a performance bottleneck on some systems.
+Hi Paolo,
 
-Hence, if the system supports FEAT_TLBIRANGE, defer the TLB
-invalidations until the entire walk is finished, and then
-use range-based instructions to invalidate the TLBs in one go.
-Condition deferred TLB invalidation on the system supporting FWB,
-as the optimization is entirely pointless when the unmap walker
-needs to perform CMOs.
+We have the following KVM RISC-V changes for 6.5:
+1) Redirect AMO load/store misaligned traps to KVM guest
+2) Trap-n-emulate AIA in-kernel irqchip for KVM guest
+3) Svnapot support for KVM Guest
 
-Rename stage2_put_pte() to stage2_unmap_put_pte() as the function
-now serves the stage-2 unmap walker specifically, rather than
-acting generic.
+Please pull.
 
-Signed-off-by: Raghavendra Rao Ananta <rananta@google.com>
----
- arch/arm64/kvm/hyp/pgtable.c | 67 +++++++++++++++++++++++++++++++-----
- 1 file changed, 58 insertions(+), 9 deletions(-)
+Please note that there is a minor conflict with the RISC-V
+tree in the arch/riscv/include/uapi/asm/kvm.h header due to
+KVM vector virtualization going through the RISC-V tree.
 
-diff --git a/arch/arm64/kvm/hyp/pgtable.c b/arch/arm64/kvm/hyp/pgtable.c
-index 50ef7623c54db..1451f9011590d 100644
---- a/arch/arm64/kvm/hyp/pgtable.c
-+++ b/arch/arm64/kvm/hyp/pgtable.c
-@@ -789,16 +789,54 @@ static void stage2_make_pte(const struct kvm_pgtable_visit_ctx *ctx, kvm_pte_t n
- 	smp_store_release(ctx->ptep, new);
- }
- 
--static void stage2_put_pte(const struct kvm_pgtable_visit_ctx *ctx, struct kvm_s2_mmu *mmu,
--			   struct kvm_pgtable_mm_ops *mm_ops)
-+struct stage2_unmap_data {
-+	struct kvm_pgtable *pgt;
-+	bool defer_tlb_flush_init;
-+};
-+
-+static bool __stage2_unmap_defer_tlb_flush(struct kvm_pgtable *pgt)
-+{
-+	/*
-+	 * If FEAT_TLBIRANGE is implemented, defer the individual
-+	 * TLB invalidations until the entire walk is finished, and
-+	 * then use the range-based TLBI instructions to do the
-+	 * invalidations. Condition deferred TLB invalidation on the
-+	 * system supporting FWB, as the optimization is entirely
-+	 * pointless when the unmap walker needs to perform CMOs.
-+	 */
-+	return system_supports_tlb_range() && stage2_has_fwb(pgt);
-+}
-+
-+static bool stage2_unmap_defer_tlb_flush(struct stage2_unmap_data *unmap_data)
-+{
-+	bool defer_tlb_flush = __stage2_unmap_defer_tlb_flush(unmap_data->pgt);
-+
-+	/*
-+	 * Since __stage2_unmap_defer_tlb_flush() is based on alternative
-+	 * patching and the TLBIs' operations behavior depend on this,
-+	 * track if there's any change in the state during the unmap sequence.
-+	 */
-+	WARN_ON(unmap_data->defer_tlb_flush_init != defer_tlb_flush);
-+	return defer_tlb_flush;
-+}
-+
-+static void stage2_unmap_put_pte(const struct kvm_pgtable_visit_ctx *ctx,
-+				struct kvm_s2_mmu *mmu,
-+				struct kvm_pgtable_mm_ops *mm_ops)
- {
-+	struct stage2_unmap_data *unmap_data = ctx->arg;
-+
- 	/*
--	 * Clear the existing PTE, and perform break-before-make with
--	 * TLB maintenance if it was valid.
-+	 * Clear the existing PTE, and perform break-before-make if it was
-+	 * valid. Depending on the system support, the TLB maintenance for
-+	 * the same can be deferred until the entire unmap is completed.
- 	 */
- 	if (kvm_pte_valid(ctx->old)) {
- 		kvm_clear_pte(ctx->ptep);
--		kvm_call_hyp(__kvm_tlb_flush_vmid_ipa, mmu, ctx->addr, ctx->level);
-+
-+		if (!stage2_unmap_defer_tlb_flush(unmap_data))
-+			kvm_call_hyp(__kvm_tlb_flush_vmid_ipa, mmu,
-+					ctx->addr, ctx->level);
- 	}
- 
- 	mm_ops->put_page(ctx->ptep);
-@@ -1005,7 +1043,8 @@ int kvm_pgtable_stage2_set_owner(struct kvm_pgtable *pgt, u64 addr, u64 size,
- static int stage2_unmap_walker(const struct kvm_pgtable_visit_ctx *ctx,
- 			       enum kvm_pgtable_walk_flags visit)
- {
--	struct kvm_pgtable *pgt = ctx->arg;
-+	struct stage2_unmap_data *unmap_data = ctx->arg;
-+	struct kvm_pgtable *pgt = unmap_data->pgt;
- 	struct kvm_s2_mmu *mmu = pgt->mmu;
- 	struct kvm_pgtable_mm_ops *mm_ops = ctx->mm_ops;
- 	kvm_pte_t *childp = NULL;
-@@ -1033,7 +1072,7 @@ static int stage2_unmap_walker(const struct kvm_pgtable_visit_ctx *ctx,
- 	 * block entry and rely on the remaining portions being faulted
- 	 * back lazily.
- 	 */
--	stage2_put_pte(ctx, mmu, mm_ops);
-+	stage2_unmap_put_pte(ctx, mmu, mm_ops);
- 
- 	if (need_flush && mm_ops->dcache_clean_inval_poc)
- 		mm_ops->dcache_clean_inval_poc(kvm_pte_follow(ctx->old, mm_ops),
-@@ -1047,13 +1086,23 @@ static int stage2_unmap_walker(const struct kvm_pgtable_visit_ctx *ctx,
- 
- int kvm_pgtable_stage2_unmap(struct kvm_pgtable *pgt, u64 addr, u64 size)
- {
-+	int ret;
-+	struct stage2_unmap_data unmap_data = {
-+		.pgt = pgt,
-+		.defer_tlb_flush_init = __stage2_unmap_defer_tlb_flush(pgt),
-+	};
- 	struct kvm_pgtable_walker walker = {
- 		.cb	= stage2_unmap_walker,
--		.arg	= pgt,
-+		.arg	= &unmap_data,
- 		.flags	= KVM_PGTABLE_WALK_LEAF | KVM_PGTABLE_WALK_TABLE_POST,
- 	};
- 
--	return kvm_pgtable_walk(pgt, addr, size, &walker);
-+	ret = kvm_pgtable_walk(pgt, addr, size, &walker);
-+	if (stage2_unmap_defer_tlb_flush(&unmap_data))
-+		/* Perform the deferred TLB invalidations */
-+		kvm_tlb_flush_vmid_range(pgt->mmu, addr, size);
-+
-+	return ret;
- }
- 
- struct stage2_attr_data {
--- 
-2.41.0.162.gfafddb0af9-goog
+Regards,
+Anup
 
+The following changes since commit 9561de3a55bed6bdd44a12820ba81ec416e705a7:
+
+  Linux 6.4-rc5 (2023-06-04 14:04:27 -0400)
+
+are available in the Git repository at:
+
+  https://github.com/kvm-riscv/linux.git tags/kvm-riscv-6.5-1
+
+for you to fetch changes up to 07f225b5842420ae9c18cba17873fc71ed69c28e:
+
+  RISC-V: KVM: Remove unneeded semicolon (2023-06-20 10:48:38 +0530)
+
+----------------------------------------------------------------
+KVM/riscv changes for 6.5
+
+- Redirect AMO load/store misaligned traps to KVM guest
+- Trap-n-emulate AIA in-kernel irqchip for KVM guest
+- Svnapot support for KVM Guest
+
+----------------------------------------------------------------
+Andrew Jones (3):
+      RISC-V: KVM: Rename dis_idx to ext_idx
+      RISC-V: KVM: Convert extension_disabled[] to ext_status[]
+      RISC-V: KVM: Probe for SBI extension status
+
+Anup Patel (11):
+      RISC-V: KVM: Implement guest external interrupt line management
+      RISC-V: KVM: Add IMSIC related defines
+      RISC-V: KVM: Add APLIC related defines
+      RISC-V: KVM: Set kvm_riscv_aia_nr_hgei to zero
+      RISC-V: KVM: Skeletal in-kernel AIA irqchip support
+      RISC-V: KVM: Implement device interface for AIA irqchip
+      RISC-V: KVM: Add in-kernel emulation of AIA APLIC
+      RISC-V: KVM: Expose APLIC registers as attributes of AIA irqchip
+      RISC-V: KVM: Add in-kernel virtualization of AIA IMSIC
+      RISC-V: KVM: Expose IMSIC registers as attributes of AIA irqchip
+      RISC-V: KVM: Allow Svnapot extension for Guest/VM
+
+Ben Dooks (1):
+      riscv: kvm: define vcpu_sbi_ext_pmu in header
+
+Yang Li (1):
+      RISC-V: KVM: Remove unneeded semicolon
+
+Ye Xingchen (1):
+      RISC-V: KVM: use bitmap_zero() API
+
+wchen (1):
+      RISC-V: KVM: Redirect AMO load/store misaligned traps to guest
+
+ arch/riscv/include/asm/csr.h           |    2 +
+ arch/riscv/include/asm/kvm_aia.h       |  107 +++-
+ arch/riscv/include/asm/kvm_aia_aplic.h |   58 ++
+ arch/riscv/include/asm/kvm_aia_imsic.h |   38 ++
+ arch/riscv/include/asm/kvm_host.h      |    4 +
+ arch/riscv/include/asm/kvm_vcpu_sbi.h  |   11 +-
+ arch/riscv/include/uapi/asm/kvm.h      |   73 +++
+ arch/riscv/kvm/Kconfig                 |    4 +
+ arch/riscv/kvm/Makefile                |    3 +
+ arch/riscv/kvm/aia.c                   |  274 +++++++-
+ arch/riscv/kvm/aia_aplic.c             |  619 ++++++++++++++++++
+ arch/riscv/kvm/aia_device.c            |  673 ++++++++++++++++++++
+ arch/riscv/kvm/aia_imsic.c             | 1084 ++++++++++++++++++++++++++++++++
+ arch/riscv/kvm/main.c                  |    3 +-
+ arch/riscv/kvm/tlb.c                   |    2 +-
+ arch/riscv/kvm/vcpu.c                  |    4 +
+ arch/riscv/kvm/vcpu_exit.c             |    2 +
+ arch/riscv/kvm/vcpu_sbi.c              |   80 ++-
+ arch/riscv/kvm/vm.c                    |  118 ++++
+ include/uapi/linux/kvm.h               |    2 +
+ 20 files changed, 3100 insertions(+), 61 deletions(-)
+ create mode 100644 arch/riscv/include/asm/kvm_aia_aplic.h
+ create mode 100644 arch/riscv/include/asm/kvm_aia_imsic.h
+ create mode 100644 arch/riscv/kvm/aia_aplic.c
+ create mode 100644 arch/riscv/kvm/aia_device.c
+ create mode 100644 arch/riscv/kvm/aia_imsic.c
 
