@@ -1,89 +1,114 @@
-From: Guo Ren <guoren@kernel.org>
-Date: Thu, 1 Jun 2023 12:46:10 +0800
-Subject: [PATCH -next v20 03/26] riscv: hwprobe: Add support for probing V
- in RISCV_HWPROBE_KEY_IMA_EXT_0
-In-Reply-To: <20230518161949.11203-4-andy.chiu@sifive.com>
-References: <20230518161949.11203-1-andy.chiu@sifive.com> <20230518161949.11203-4-andy.chiu@sifive.com>
-Message-ID: <CAJF2gTRpTdXeDXczaVCmZdd0fNQADBPpd3+VMnYsd+XcudHSXg@mail.gmail.com>
+From: Paolo Bonzini <pbonzini@redhat.com>
+Date: Sat, 1 Jul 2023 13:04:08 +0200
+Subject: [GIT PULL] KVM/riscv changes for 6.5
+In-Reply-To: <CAAhSdy1iT=SbjSvv_7SDygSo0HhmgLjD-y+DU1_Q+6tnki7w+A@mail.gmail.com>
+References: <CAAhSdy1iT=SbjSvv_7SDygSo0HhmgLjD-y+DU1_Q+6tnki7w+A@mail.gmail.com>
+Message-ID: <CABgObfZ5E58OpEzmRgVQ8axSZdoW-mfsq1wbPp=cfOX304O6uw@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, May 19, 2023 at 12:20?AM Andy Chiu <andy.chiu@sifive.com> wrote:
+On Thu, Jun 22, 2023 at 4:13?PM Anup Patel <anup@brainfault.org> wrote:
 >
-> Probing kernel support for Vector extension is available now. This only
-> add detection for V only. Extenions like Zvfh, Zk are not in this scope.
+> Hi Paolo,
 >
-> Signed-off-by: Andy Chiu <andy.chiu@sifive.com>
-Reviewed-by: Guo Ren <guoren@kernel.org>
+> We have the following KVM RISC-V changes for 6.5:
+> 1) Redirect AMO load/store misaligned traps to KVM guest
+> 2) Trap-n-emulate AIA in-kernel irqchip for KVM guest
+> 3) Svnapot support for KVM Guest
+>
+> Please pull.
+>
+> Please note that there is a minor conflict with the RISC-V
+> tree in the arch/riscv/include/uapi/asm/kvm.h header due to
+> KVM vector virtualization going through the RISC-V tree.
 
-> ---
-> Changelog v20:
->  - Fix a typo in document, and remove duplicated probes (Heiko)
->  - probe V extension in RISCV_HWPROBE_KEY_IMA_EXT_0 key only (Palmer,
->    Evan)
-> ---
->  Documentation/riscv/hwprobe.rst       | 3 +++
->  arch/riscv/include/uapi/asm/hwprobe.h | 1 +
->  arch/riscv/kernel/sys_riscv.c         | 4 ++++
->  3 files changed, 8 insertions(+)
+Thanks for the heads up. I also appreciate that you have fixed the
+workflow and the author/committer date are now okay!
+
+Paolo
+
+> Regards,
+> Anup
 >
-> diff --git a/Documentation/riscv/hwprobe.rst b/Documentation/riscv/hwprobe.rst
-> index 9f0dd62dcb5d..7431d9d01c73 100644
-> --- a/Documentation/riscv/hwprobe.rst
-> +++ b/Documentation/riscv/hwprobe.rst
-> @@ -64,6 +64,9 @@ The following keys are defined:
->    * :c:macro:`RISCV_HWPROBE_IMA_C`: The C extension is supported, as defined
->      by version 2.2 of the RISC-V ISA manual.
+> The following changes since commit 9561de3a55bed6bdd44a12820ba81ec416e705a7:
 >
-> +  * :c:macro:`RISCV_HWPROBE_IMA_V`: The V extension is supported, as defined by
-> +    version 1.0 of the RISC-V Vector extension manual.
-> +
->  * :c:macro:`RISCV_HWPROBE_KEY_CPUPERF_0`: A bitmask that contains performance
->    information about the selected set of processors.
+>   Linux 6.4-rc5 (2023-06-04 14:04:27 -0400)
 >
-> diff --git a/arch/riscv/include/uapi/asm/hwprobe.h b/arch/riscv/include/uapi/asm/hwprobe.h
-> index 8d745a4ad8a2..7c6fdcf7ced5 100644
-> --- a/arch/riscv/include/uapi/asm/hwprobe.h
-> +++ b/arch/riscv/include/uapi/asm/hwprobe.h
-> @@ -25,6 +25,7 @@ struct riscv_hwprobe {
->  #define RISCV_HWPROBE_KEY_IMA_EXT_0    4
->  #define                RISCV_HWPROBE_IMA_FD            (1 << 0)
->  #define                RISCV_HWPROBE_IMA_C             (1 << 1)
-> +#define                RISCV_HWPROBE_IMA_V             (1 << 2)
->  #define RISCV_HWPROBE_KEY_CPUPERF_0    5
->  #define                RISCV_HWPROBE_MISALIGNED_UNKNOWN        (0 << 0)
->  #define                RISCV_HWPROBE_MISALIGNED_EMULATED       (1 << 0)
-> diff --git a/arch/riscv/kernel/sys_riscv.c b/arch/riscv/kernel/sys_riscv.c
-> index 5db29683ebee..88357a848797 100644
-> --- a/arch/riscv/kernel/sys_riscv.c
-> +++ b/arch/riscv/kernel/sys_riscv.c
-> @@ -10,6 +10,7 @@
->  #include <asm/cpufeature.h>
->  #include <asm/hwprobe.h>
->  #include <asm/sbi.h>
-> +#include <asm/vector.h>
->  #include <asm/switch_to.h>
->  #include <asm/uaccess.h>
->  #include <asm/unistd.h>
-> @@ -171,6 +172,9 @@ static void hwprobe_one_pair(struct riscv_hwprobe *pair,
->                 if (riscv_isa_extension_available(NULL, c))
->                         pair->value |= RISCV_HWPROBE_IMA_C;
+> are available in the Git repository at:
 >
-> +               if (has_vector())
-> +                       pair->value |= RISCV_HWPROBE_IMA_V;
-> +
->                 break;
+>   https://github.com/kvm-riscv/linux.git tags/kvm-riscv-6.5-1
 >
->         case RISCV_HWPROBE_KEY_CPUPERF_0:
-> --
-> 2.17.1
+> for you to fetch changes up to 07f225b5842420ae9c18cba17873fc71ed69c28e:
+>
+>   RISC-V: KVM: Remove unneeded semicolon (2023-06-20 10:48:38 +0530)
+>
+> ----------------------------------------------------------------
+> KVM/riscv changes for 6.5
+>
+> - Redirect AMO load/store misaligned traps to KVM guest
+> - Trap-n-emulate AIA in-kernel irqchip for KVM guest
+> - Svnapot support for KVM Guest
+>
+> ----------------------------------------------------------------
+> Andrew Jones (3):
+>       RISC-V: KVM: Rename dis_idx to ext_idx
+>       RISC-V: KVM: Convert extension_disabled[] to ext_status[]
+>       RISC-V: KVM: Probe for SBI extension status
+>
+> Anup Patel (11):
+>       RISC-V: KVM: Implement guest external interrupt line management
+>       RISC-V: KVM: Add IMSIC related defines
+>       RISC-V: KVM: Add APLIC related defines
+>       RISC-V: KVM: Set kvm_riscv_aia_nr_hgei to zero
+>       RISC-V: KVM: Skeletal in-kernel AIA irqchip support
+>       RISC-V: KVM: Implement device interface for AIA irqchip
+>       RISC-V: KVM: Add in-kernel emulation of AIA APLIC
+>       RISC-V: KVM: Expose APLIC registers as attributes of AIA irqchip
+>       RISC-V: KVM: Add in-kernel virtualization of AIA IMSIC
+>       RISC-V: KVM: Expose IMSIC registers as attributes of AIA irqchip
+>       RISC-V: KVM: Allow Svnapot extension for Guest/VM
+>
+> Ben Dooks (1):
+>       riscv: kvm: define vcpu_sbi_ext_pmu in header
+>
+> Yang Li (1):
+>       RISC-V: KVM: Remove unneeded semicolon
+>
+> Ye Xingchen (1):
+>       RISC-V: KVM: use bitmap_zero() API
+>
+> wchen (1):
+>       RISC-V: KVM: Redirect AMO load/store misaligned traps to guest
+>
+>  arch/riscv/include/asm/csr.h           |    2 +
+>  arch/riscv/include/asm/kvm_aia.h       |  107 +++-
+>  arch/riscv/include/asm/kvm_aia_aplic.h |   58 ++
+>  arch/riscv/include/asm/kvm_aia_imsic.h |   38 ++
+>  arch/riscv/include/asm/kvm_host.h      |    4 +
+>  arch/riscv/include/asm/kvm_vcpu_sbi.h  |   11 +-
+>  arch/riscv/include/uapi/asm/kvm.h      |   73 +++
+>  arch/riscv/kvm/Kconfig                 |    4 +
+>  arch/riscv/kvm/Makefile                |    3 +
+>  arch/riscv/kvm/aia.c                   |  274 +++++++-
+>  arch/riscv/kvm/aia_aplic.c             |  619 ++++++++++++++++++
+>  arch/riscv/kvm/aia_device.c            |  673 ++++++++++++++++++++
+>  arch/riscv/kvm/aia_imsic.c             | 1084 ++++++++++++++++++++++++++++++++
+>  arch/riscv/kvm/main.c                  |    3 +-
+>  arch/riscv/kvm/tlb.c                   |    2 +-
+>  arch/riscv/kvm/vcpu.c                  |    4 +
+>  arch/riscv/kvm/vcpu_exit.c             |    2 +
+>  arch/riscv/kvm/vcpu_sbi.c              |   80 ++-
+>  arch/riscv/kvm/vm.c                    |  118 ++++
+>  include/uapi/linux/kvm.h               |    2 +
+>  20 files changed, 3100 insertions(+), 61 deletions(-)
+>  create mode 100644 arch/riscv/include/asm/kvm_aia_aplic.h
+>  create mode 100644 arch/riscv/include/asm/kvm_aia_imsic.h
+>  create mode 100644 arch/riscv/kvm/aia_aplic.c
+>  create mode 100644 arch/riscv/kvm/aia_device.c
+>  create mode 100644 arch/riscv/kvm/aia_imsic.c
 >
 
-
--- 
-Best Regards
- Guo Ren
 
