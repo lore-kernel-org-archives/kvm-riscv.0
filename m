@@ -1,52 +1,50 @@
-From: Haibo Xu <xiaobo55x@gmail.com>
-Date: Mon, 3 Jul 2023 10:53:15 +0800
-Subject: [PATCH v5 00/13] RISCV: Add KVM_GET_REG_LIST API
-In-Reply-To: <20230701-e1bff47a0ed38ec3ab6ca252@orel>
-References: <cover.1688010022.git.haibo1.xu@intel.com> <20230701-e1bff47a0ed38ec3ab6ca252@orel>
-Message-ID: <CAJve8on_SRbPmQ4U16imMUjrqs_abLsW64xJotBxRSv65WJa-w@mail.gmail.com>
+From: Andrew Jones <ajones@ventanamicro.com>
+Date: Mon, 3 Jul 2023 10:18:35 +0200
+Subject: [PATCH v5 10/13] KVM: selftests: Only do get/set tests on
+ present blessed list
+In-Reply-To: <f44c3aa46971d524319c6340f9ce1b00c0182fd2.1688010022.git.haibo1.xu@intel.com>
+References: <cover.1688010022.git.haibo1.xu@intel.com>
+ <f44c3aa46971d524319c6340f9ce1b00c0182fd2.1688010022.git.haibo1.xu@intel.com>
+Message-ID: <20230702-49c5545eb1ae2d0cf11c7b95@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sat, Jul 1, 2023 at 10:53?PM Andrew Jones <ajones@ventanamicro.com> wrote:
->
-> On Sat, Jul 01, 2023 at 09:42:48PM +0800, Haibo Xu wrote:
-> > KVM_GET_REG_LIST will dump all register IDs that are available to
-> > KVM_GET/SET_ONE_REG and It's very useful to identify some platform
-> > regression issue during VM migration.
-> >
-> > Patch 1-7 re-structured the get-reg-list test in aarch64 to make some
-> > of the code as common test framework that can be shared by riscv.
-> >
-> > Patch 8 move reject_set check logic to a function so as to check for
-> > different errno for different registers.
-> > Patch 9 move finalize_vcpu back to run_test so that riscv can implement
-> > its specific operation.
-> > Patch 10 change to do the get/set operation only on present-blessed list.
-> > Patch 11 add the skip_set facilities so that riscv can skip set operation
-> > on some registers.
-> > Patch 12 enabled the KVM_GET_REG_LIST API in riscv.
-> > patch 13 added the corresponding kselftest for checking possible
-> > register regressions.
-> >
-> > The get-reg-list kvm selftest was ported from aarch64 and tested with
-> > Linux v6.4 on a Qemu riscv64 virt machine.
->
-> Hi Haibo,
->
-> This series needs a rebase on top of these recent patches
->
->  commit ee053e03b08e ("KVM: selftests: get-reg-list: support ID register features")
->  commit 5f0419a0083b ("KVM: selftests: get-reg-list: add Permission Indirection registers")
->
-> The conflicts will be in my patches, which do the splitting of the test.
-> I'll do the rebase and push it to a branch for you to pick up.
->
+On Sat, Jul 01, 2023 at 09:42:58PM +0800, Haibo Xu wrote:
+> Only do the get/set tests on present and blessed registers
+> since we don't know the capabilities of any new ones.
+> 
+> Suggested-by: Andrew Jones <ajones@ventanamicro.com>
+> Signed-off-by: Haibo Xu <haibo1.xu@intel.com>
+> Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+> ---
+>  tools/testing/selftests/kvm/get-reg-list.c | 29 ++++++++++++++--------
+>  1 file changed, 18 insertions(+), 11 deletions(-)
+> 
+> diff --git a/tools/testing/selftests/kvm/get-reg-list.c b/tools/testing/selftests/kvm/get-reg-list.c
+> index c61090806007..74fb6f6fdd09 100644
+> --- a/tools/testing/selftests/kvm/get-reg-list.c
+> +++ b/tools/testing/selftests/kvm/get-reg-list.c
+> @@ -49,6 +49,10 @@ extern int vcpu_configs_n;
+>  	for_each_reg_filtered(i)						\
+>  		if (!find_reg(blessed_reg, blessed_n, reg_list->reg[i]))
+>  
+> +#define for_each_present_blessed_reg(i)			\
+> +	for ((i) = 0; (i) < blessed_n; ++(i))		\
+> +		if (find_reg(reg_list->reg, reg_list->n, blessed_reg[i]))
 
-Thanks for the heads up. I will include your changes in v6.
+I just realized this is backwards. We need 'i' to index reg_list->reg in
+the body of the loop. That means we need to write this as
 
-> Thanks,
-> drew
+#define for_each_present_blessed_reg(i)                                         \
+        for_each_reg(i)                                                         \
+                if (find_reg(blessed_reg, blessed_n, reg_list->reg[i]))
+
+(Which, in hindsight, makes sense since we're replacing a for_each_reg()
+loop.)
+
+Thanks,
+drew
 
