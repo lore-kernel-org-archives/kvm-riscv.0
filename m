@@ -1,44 +1,47 @@
-From: Will Deacon <will@kernel.org>
-Date: Wed, 12 Jul 2023 17:10:54 +0100
-Subject: [kvmtool PATCH v3 0/8] RISC-V SBI enable/disable, Zbb, Zicboz,
- and Ssaia support
-In-Reply-To: <20230706173804.1237348-1-apatel@ventanamicro.com>
-References: <20230706173804.1237348-1-apatel@ventanamicro.com>
-Message-ID: <20230712161053.GA2986@willie-the-truck>
+From: Anup Patel <apatel@ventanamicro.com>
+Date: Wed, 12 Jul 2023 21:40:40 +0530
+Subject: [PATCH 0/7] KVM RISC-V ONE_REG ISA extension improvements
+Message-ID: <20230712161047.1764756-1-apatel@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Jul 06, 2023 at 11:07:56PM +0530, Anup Patel wrote:
-> The latest KVM in Linux-6.4 has support for:
-> 1) Enabling/disabling SBI extensions from KVM user-space
-> 2) Zbb ISA extension support
-> 3) Zicboz ISA extension support
-> 4) Ssaia ISA extension support
-> 
-> This series adds corresponding changes in KVMTOOL to use the above
-> mentioned features for Guest/VM.
-> 
-> These patches can also be found in the riscv_sbi_zbb_zicboz_ssaia_v3
-> branch at: https://github.com/avpatel/kvmtool.git
-> 
-> Changes since v2:
->  - Rebased on commit 0b5e55fc032d1c6394b8ec7fe02d842813c903df
->  - Updated PATCH1 to sync-up header with released Linux-6.4
+This series improves the ISA extension ONE_REG interface in following ways:
+1) Move ONE_REG related code to dedicated source file
+2) Allow multiple ISA extensions to be enabled/disabled in one ioctl
+3) Add more ISA extensions to the ONE_REG interface
 
-Bah, now we're back to the __DECLARE_FLEX_ARRAY breakage :(
+The series has following dependencies:
+1) PATCH6 depends on
+https://lore.kernel.org/linux-riscv/20230712084134.1648008-1-sameo at rivosinc.com/
+2) PATCH7 depends on
+https://lore.kernel.org/linux-riscv/20230711153743.1970625-1-heiko at sntech.de/
 
-In file included from include/linux/kvm.h:15,
-                 from x86/include/kvm/kvm-cpu-arch.h:6,
-                 from include/kvm/kvm-cpu.h:4,
-                 from include/kvm/ioport.h:4,
-                 from hw/rtc.c:4:
-x86/include/asm/kvm.h:511:17: error: expected specifier-qualifier-list before ?__DECLARE_FLEX_ARRAY?
-  511 |                 __DECLARE_FLEX_ARRAY(struct kvm_vmx_nested_state_data, vmx);
-      |                 ^~~~~~~~~~~~~~~~~~~~
+The PATCH1 to PATCH5 of this series don't depend on any patches.
 
+These patches can also be found in the riscv_kvm_onereg_imp_v1 branch at:
+https://github.com/avpatel/linux.git
 
-Will
+Anup Patel (7):
+  RISC-V: KVM: Factor-out ONE_REG related code to its own source file
+  RISC-V: KVM: Extend ONE_REG to enable/disable multiple ISA extensions
+  RISC-V: KVM: Allow Zba and Zbs extensions for Guest/VM
+  RISC-V: KVM: Allow Zicntr, Zicsr, Zifencei, and Zihpm for Guest/VM
+  RISC-V: KVM: Sort ISA extensions alphabetically in ONE_REG interface
+  RISC-V: KVM: Allow Zbc, Zbk* and Zk* extensions for Guest/VM
+  RISC-V: KVM: Allow Zvb* and Zvk* extensions for Guest/VM
+
+ arch/riscv/include/asm/kvm_host.h |   6 +
+ arch/riscv/include/uapi/asm/kvm.h |  35 ++
+ arch/riscv/kvm/Makefile           |   1 +
+ arch/riscv/kvm/vcpu.c             | 529 +----------------------
+ arch/riscv/kvm/vcpu_onereg.c      | 695 ++++++++++++++++++++++++++++++
+ 5 files changed, 738 insertions(+), 528 deletions(-)
+ create mode 100644 arch/riscv/kvm/vcpu_onereg.c
+
+-- 
+2.34.1
+
 
