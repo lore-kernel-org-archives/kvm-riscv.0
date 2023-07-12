@@ -1,59 +1,44 @@
-From: Anup Patel <apatel@ventanamicro.com>
-Date: Thu,  6 Jul 2023 23:08:04 +0530
-Subject: [kvmtool PATCH v3 8/8] riscv: Fix guest RAM alloc size computation for RV32
+From: Will Deacon <will@kernel.org>
+Date: Wed, 12 Jul 2023 17:10:54 +0100
+Subject: [kvmtool PATCH v3 0/8] RISC-V SBI enable/disable, Zbb, Zicboz,
+ and Ssaia support
 In-Reply-To: <20230706173804.1237348-1-apatel@ventanamicro.com>
 References: <20230706173804.1237348-1-apatel@ventanamicro.com>
-Message-ID: <20230706173804.1237348-9-apatel@ventanamicro.com>
+Message-ID: <20230712161053.GA2986@willie-the-truck>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Currently, we ensure that guest RAM alloc size is at least 2M for
-THP which works well for RV64 but breaks hugepage support for RV32.
-To fix this, we use 4M as hugepage size for RV32.
+On Thu, Jul 06, 2023 at 11:07:56PM +0530, Anup Patel wrote:
+> The latest KVM in Linux-6.4 has support for:
+> 1) Enabling/disabling SBI extensions from KVM user-space
+> 2) Zbb ISA extension support
+> 3) Zicboz ISA extension support
+> 4) Ssaia ISA extension support
+> 
+> This series adds corresponding changes in KVMTOOL to use the above
+> mentioned features for Guest/VM.
+> 
+> These patches can also be found in the riscv_sbi_zbb_zicboz_ssaia_v3
+> branch at: https://github.com/avpatel/kvmtool.git
+> 
+> Changes since v2:
+>  - Rebased on commit 0b5e55fc032d1c6394b8ec7fe02d842813c903df
+>  - Updated PATCH1 to sync-up header with released Linux-6.4
 
-Fixes: 867159a7963b ("riscv: Implement Guest/VM arch functions")
-Signed-off-by: Anup Patel <apatel@ventanamicro.com>
----
- riscv/kvm.c | 15 ++++++++++++---
- 1 file changed, 12 insertions(+), 3 deletions(-)
+Bah, now we're back to the __DECLARE_FLEX_ARRAY breakage :(
 
-diff --git a/riscv/kvm.c b/riscv/kvm.c
-index 4d6f5cb..8daad94 100644
---- a/riscv/kvm.c
-+++ b/riscv/kvm.c
-@@ -61,16 +61,25 @@ void kvm__arch_set_cmdline(char *cmdline, bool video)
- {
- }
- 
-+#if __riscv_xlen == 64
-+#define HUGEPAGE_SIZE	SZ_2M
-+#else
-+#define HUGEPAGE_SIZE	SZ_4M
-+#endif
-+
- void kvm__arch_init(struct kvm *kvm)
- {
- 	/*
- 	 * Allocate guest memory. We must align our buffer to 64K to
- 	 * correlate with the maximum guest page size for virtio-mmio.
--	 * If using THP, then our minimal alignment becomes 2M.
--	 * 2M trumps 64K, so let's go with that.
-+	 * If using THP, then our minimal alignment becomes hugepage
-+	 * size. The hugepage size is always greater than 64K, so
-+	 * let's go with that.
- 	 */
- 	kvm->ram_size = min(kvm->cfg.ram_size, (u64)RISCV_MAX_MEMORY(kvm));
--	kvm->arch.ram_alloc_size = kvm->ram_size + SZ_2M;
-+	kvm->arch.ram_alloc_size = kvm->ram_size;
-+	if (!kvm->cfg.hugetlbfs_path)
-+		kvm->arch.ram_alloc_size += HUGEPAGE_SIZE;
- 	kvm->arch.ram_alloc_start = mmap_anon_or_hugetlbfs(kvm,
- 						kvm->cfg.hugetlbfs_path,
- 						kvm->arch.ram_alloc_size);
--- 
-2.34.1
+In file included from include/linux/kvm.h:15,
+                 from x86/include/kvm/kvm-cpu-arch.h:6,
+                 from include/kvm/kvm-cpu.h:4,
+                 from include/kvm/ioport.h:4,
+                 from hw/rtc.c:4:
+x86/include/asm/kvm.h:511:17: error: expected specifier-qualifier-list before ?__DECLARE_FLEX_ARRAY?
+  511 |                 __DECLARE_FLEX_ARRAY(struct kvm_vmx_nested_state_data, vmx);
+      |                 ^~~~~~~~~~~~~~~~~~~~
 
+
+Will
 
