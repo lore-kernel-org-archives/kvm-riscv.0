@@ -1,82 +1,51 @@
-From: Anup Patel <apatel@ventanamicro.com>
-Date: Wed, 12 Jul 2023 21:40:47 +0530
-Subject: [PATCH 7/7] RISC-V: KVM: Allow Zvb* and Zvk* extensions for Guest/VM
-In-Reply-To: <20230712161047.1764756-1-apatel@ventanamicro.com>
-References: <20230712161047.1764756-1-apatel@ventanamicro.com>
-Message-ID: <20230712161047.1764756-8-apatel@ventanamicro.com>
+From: Anup Patel <anup@brainfault.org>
+Date: Wed, 12 Jul 2023 22:03:57 +0530
+Subject: [kvmtool PATCH v3 0/8] RISC-V SBI enable/disable, Zbb, Zicboz,
+ and Ssaia support
+In-Reply-To: <20230712161053.GA2986@willie-the-truck>
+References: <20230706173804.1237348-1-apatel@ventanamicro.com> <20230712161053.GA2986@willie-the-truck>
+Message-ID: <CAAhSdy3o8a=Dsxw53rXJR3h4QP_tMD4bUgwLuU-2c68aCit4_Q@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-We extend the KVM ISA extension ONE_REG interface to allow KVM
-user space to detect and enable Zvb* and Zvk* extensions for
-Guest/VM.
+On Wed, Jul 12, 2023 at 9:41?PM Will Deacon <will@kernel.org> wrote:
+>
+> On Thu, Jul 06, 2023 at 11:07:56PM +0530, Anup Patel wrote:
+> > The latest KVM in Linux-6.4 has support for:
+> > 1) Enabling/disabling SBI extensions from KVM user-space
+> > 2) Zbb ISA extension support
+> > 3) Zicboz ISA extension support
+> > 4) Ssaia ISA extension support
+> >
+> > This series adds corresponding changes in KVMTOOL to use the above
+> > mentioned features for Guest/VM.
+> >
+> > These patches can also be found in the riscv_sbi_zbb_zicboz_ssaia_v3
+> > branch at: https://github.com/avpatel/kvmtool.git
+> >
+> > Changes since v2:
+> >  - Rebased on commit 0b5e55fc032d1c6394b8ec7fe02d842813c903df
+> >  - Updated PATCH1 to sync-up header with released Linux-6.4
+>
+> Bah, now we're back to the __DECLARE_FLEX_ARRAY breakage :(
+>
+> In file included from include/linux/kvm.h:15,
+>                  from x86/include/kvm/kvm-cpu-arch.h:6,
+>                  from include/kvm/kvm-cpu.h:4,
+>                  from include/kvm/ioport.h:4,
+>                  from hw/rtc.c:4:
+> x86/include/asm/kvm.h:511:17: error: expected specifier-qualifier-list before ?__DECLARE_FLEX_ARRAY?
+>   511 |                 __DECLARE_FLEX_ARRAY(struct kvm_vmx_nested_state_data, vmx);
+>       |                 ^~~~~~~~~~~~~~~~~~~~
 
-Signed-off-by: Anup Patel <apatel@ventanamicro.com>
----
- arch/riscv/include/uapi/asm/kvm.h |  9 +++++++++
- arch/riscv/kvm/vcpu_onereg.c      | 18 ++++++++++++++++++
- 2 files changed, 27 insertions(+)
+My bad, the fix for this error was folded in the header sync patch of v2
+which got accidently dropped in this version.
 
-diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
-index 182e7bdfc842..3929d3a7bd24 100644
---- a/arch/riscv/include/uapi/asm/kvm.h
-+++ b/arch/riscv/include/uapi/asm/kvm.h
-@@ -141,6 +141,15 @@ enum KVM_RISCV_ISA_EXT_ID {
- 	KVM_RISCV_ISA_EXT_ZKSED,
- 	KVM_RISCV_ISA_EXT_ZKSH,
- 	KVM_RISCV_ISA_EXT_ZKT,
-+	KVM_RISCV_ISA_EXT_ZVBB,
-+	KVM_RISCV_ISA_EXT_ZVBC,
-+	KVM_RISCV_ISA_EXT_ZVKG,
-+	KVM_RISCV_ISA_EXT_ZVKNED,
-+	KVM_RISCV_ISA_EXT_ZVKNHA,
-+	KVM_RISCV_ISA_EXT_ZVKNHB,
-+	KVM_RISCV_ISA_EXT_ZVKSED,
-+	KVM_RISCV_ISA_EXT_ZVKSH,
-+	KVM_RISCV_ISA_EXT_ZVKT,
- 	KVM_RISCV_ISA_EXT_MAX,
- };
- 
-diff --git a/arch/riscv/kvm/vcpu_onereg.c b/arch/riscv/kvm/vcpu_onereg.c
-index 08e077260214..89efa5e3e3f1 100644
---- a/arch/riscv/kvm/vcpu_onereg.c
-+++ b/arch/riscv/kvm/vcpu_onereg.c
-@@ -59,6 +59,15 @@ static const unsigned long kvm_isa_ext_arr[] = {
- 	KVM_ISA_EXT_ARR(ZKSED),
- 	KVM_ISA_EXT_ARR(ZKSH),
- 	KVM_ISA_EXT_ARR(ZKT),
-+	KVM_ISA_EXT_ARR(ZVBB),
-+	KVM_ISA_EXT_ARR(ZVBC),
-+	KVM_ISA_EXT_ARR(ZVKG),
-+	KVM_ISA_EXT_ARR(ZVKNED),
-+	KVM_ISA_EXT_ARR(ZVKNHA),
-+	KVM_ISA_EXT_ARR(ZVKNHB),
-+	KVM_ISA_EXT_ARR(ZVKSED),
-+	KVM_ISA_EXT_ARR(ZVKSH),
-+	KVM_ISA_EXT_ARR(ZVKT),
- };
- 
- static unsigned long kvm_riscv_vcpu_base2isa_ext(unsigned long base_ext)
-@@ -117,6 +126,15 @@ static bool kvm_riscv_vcpu_isa_disable_allowed(unsigned long ext)
- 	case KVM_RISCV_ISA_EXT_ZKSED:
- 	case KVM_RISCV_ISA_EXT_ZKSH:
- 	case KVM_RISCV_ISA_EXT_ZKT:
-+	case KVM_RISCV_ISA_EXT_ZVBB:
-+	case KVM_RISCV_ISA_EXT_ZVBC:
-+	case KVM_RISCV_ISA_EXT_ZVKG:
-+	case KVM_RISCV_ISA_EXT_ZVKNED:
-+	case KVM_RISCV_ISA_EXT_ZVKNHA:
-+	case KVM_RISCV_ISA_EXT_ZVKNHB:
-+	case KVM_RISCV_ISA_EXT_ZVKSED:
-+	case KVM_RISCV_ISA_EXT_ZVKSH:
-+	case KVM_RISCV_ISA_EXT_ZVKT:
- 		return false;
- 	default:
- 		break;
--- 
-2.34.1
+I will send v4 with the compile error fix as a separate patch.
 
+Regards,
+Anup
 
