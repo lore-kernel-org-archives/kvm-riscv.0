@@ -1,59 +1,32 @@
-From: Anup Patel <apatel@ventanamicro.com>
-Date: Wed, 12 Jul 2023 22:05:01 +0530
-Subject: [kvmtool PATCH v4 9/9] riscv: Fix guest RAM alloc size computation for RV32
-In-Reply-To: <20230712163501.1769737-1-apatel@ventanamicro.com>
-References: <20230712163501.1769737-1-apatel@ventanamicro.com>
-Message-ID: <20230712163501.1769737-10-apatel@ventanamicro.com>
+From: Andrew Jones <ajones@ventanamicro.com>
+Date: Thu, 13 Jul 2023 12:57:07 +0200
+Subject: [PATCH 1/7] RISC-V: KVM: Factor-out ONE_REG related code to its
+ own source file
+In-Reply-To: <20230712161047.1764756-2-apatel@ventanamicro.com>
+References: <20230712161047.1764756-1-apatel@ventanamicro.com>
+ <20230712161047.1764756-2-apatel@ventanamicro.com>
+Message-ID: <20230713-40f6804b248987add29f83aa@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Currently, we ensure that guest RAM alloc size is at least 2M for
-THP which works well for RV64 but breaks hugepage support for RV32.
-To fix this, we use 4M as hugepage size for RV32.
+On Wed, Jul 12, 2023 at 09:40:41PM +0530, Anup Patel wrote:
+> The VCPU ONE_REG interface has grown over time and it will continue
+> to grow with new ISA extensions and other features. Let us move all
+> ONE_REG related code to its own source file so that vcpu.c only
+> focuses only on high-level VCPU functions.
+> 
+> Signed-off-by: Anup Patel <apatel@ventanamicro.com>
+> ---
+>  arch/riscv/include/asm/kvm_host.h |   6 +
+>  arch/riscv/kvm/Makefile           |   1 +
+>  arch/riscv/kvm/vcpu.c             | 529 +----------------------------
+>  arch/riscv/kvm/vcpu_onereg.c      | 547 ++++++++++++++++++++++++++++++
+>  4 files changed, 555 insertions(+), 528 deletions(-)
+>  create mode 100644 arch/riscv/kvm/vcpu_onereg.c
+>
 
-Fixes: 867159a7963b ("riscv: Implement Guest/VM arch functions")
-Signed-off-by: Anup Patel <apatel@ventanamicro.com>
----
- riscv/kvm.c | 15 ++++++++++++---
- 1 file changed, 12 insertions(+), 3 deletions(-)
-
-diff --git a/riscv/kvm.c b/riscv/kvm.c
-index 4d6f5cb..8daad94 100644
---- a/riscv/kvm.c
-+++ b/riscv/kvm.c
-@@ -61,16 +61,25 @@ void kvm__arch_set_cmdline(char *cmdline, bool video)
- {
- }
- 
-+#if __riscv_xlen == 64
-+#define HUGEPAGE_SIZE	SZ_2M
-+#else
-+#define HUGEPAGE_SIZE	SZ_4M
-+#endif
-+
- void kvm__arch_init(struct kvm *kvm)
- {
- 	/*
- 	 * Allocate guest memory. We must align our buffer to 64K to
- 	 * correlate with the maximum guest page size for virtio-mmio.
--	 * If using THP, then our minimal alignment becomes 2M.
--	 * 2M trumps 64K, so let's go with that.
-+	 * If using THP, then our minimal alignment becomes hugepage
-+	 * size. The hugepage size is always greater than 64K, so
-+	 * let's go with that.
- 	 */
- 	kvm->ram_size = min(kvm->cfg.ram_size, (u64)RISCV_MAX_MEMORY(kvm));
--	kvm->arch.ram_alloc_size = kvm->ram_size + SZ_2M;
-+	kvm->arch.ram_alloc_size = kvm->ram_size;
-+	if (!kvm->cfg.hugetlbfs_path)
-+		kvm->arch.ram_alloc_size += HUGEPAGE_SIZE;
- 	kvm->arch.ram_alloc_start = mmap_anon_or_hugetlbfs(kvm,
- 						kvm->cfg.hugetlbfs_path,
- 						kvm->arch.ram_alloc_size);
--- 
-2.34.1
-
+Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
 
