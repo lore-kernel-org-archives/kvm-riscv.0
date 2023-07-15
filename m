@@ -1,41 +1,46 @@
 From: Raghavendra Rao Ananta <rananta@google.com>
-Date: Sat, 15 Jul 2023 00:54:03 +0000
-Subject: [PATCH v6 09/11] KVM: arm64: Flush only the memslot after write-protect
+Date: Sat, 15 Jul 2023 00:54:04 +0000
+Subject: [PATCH v6 10/11] KVM: arm64: Invalidate the table entries upon a range
 In-Reply-To: <20230715005405.3689586-1-rananta@google.com>
 References: <20230715005405.3689586-1-rananta@google.com>
-Message-ID: <20230715005405.3689586-10-rananta@google.com>
+Message-ID: <20230715005405.3689586-11-rananta@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-After write-protecting the region, currently KVM invalidates
-the entire TLB entries using kvm_flush_remote_tlbs(). Instead,
-scope the invalidation only to the targeted memslot. If
-supported, the architecture would use the range-based TLBI
-instructions to flush the memslot or else fallback to flushing
-all of the TLBs.
+Currently, during the operations such as a hugepage collapse,
+KVM would flush the entire VM's context using 'vmalls12e1is'
+TLBI operation. Specifically, if the VM is faulting on many
+hugepages (say after dirty-logging), it creates a performance
+penalty for the guest whose pages have already been faulted
+earlier as they would have to refill their TLBs again.
+
+Instead, leverage kvm_tlb_flush_vmid_range() for table entries.
+If the system supports it, only the required range will be
+flushed. Else, it'll fallback to the previous mechanism.
 
 Signed-off-by: Raghavendra Rao Ananta <rananta@google.com>
 Reviewed-by: Gavin Shan <gshan@redhat.com>
 ---
- arch/arm64/kvm/mmu.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/arm64/kvm/hyp/pgtable.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm64/kvm/mmu.c b/arch/arm64/kvm/mmu.c
-index 387f2215fde7..985f605e2abc 100644
---- a/arch/arm64/kvm/mmu.c
-+++ b/arch/arm64/kvm/mmu.c
-@@ -1082,7 +1082,7 @@ static void kvm_mmu_wp_memory_region(struct kvm *kvm, int slot)
- 	write_lock(&kvm->mmu_lock);
- 	stage2_wp_range(&kvm->arch.mmu, start, end);
- 	write_unlock(&kvm->mmu_lock);
--	kvm_flush_remote_tlbs(kvm);
-+	kvm_flush_remote_tlbs_memslot(kvm, memslot);
- }
- 
- /**
+diff --git a/arch/arm64/kvm/hyp/pgtable.c b/arch/arm64/kvm/hyp/pgtable.c
+index 5d14d5d5819a..5ef098af1736 100644
+--- a/arch/arm64/kvm/hyp/pgtable.c
++++ b/arch/arm64/kvm/hyp/pgtable.c
+@@ -806,7 +806,8 @@ static bool stage2_try_break_pte(const struct kvm_pgtable_visit_ctx *ctx,
+ 		 * evicted pte value (if any).
+ 		 */
+ 		if (kvm_pte_table(ctx->old, ctx->level))
+-			kvm_call_hyp(__kvm_tlb_flush_vmid, mmu);
++			kvm_tlb_flush_vmid_range(mmu, ctx->addr,
++						kvm_granule_size(ctx->level));
+ 		else if (kvm_pte_valid(ctx->old))
+ 			kvm_call_hyp(__kvm_tlb_flush_vmid_ipa, mmu,
+ 				     ctx->addr, ctx->level);
 -- 
 2.41.0.455.g037347b96a-goog
 
