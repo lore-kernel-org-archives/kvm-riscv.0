@@ -1,279 +1,172 @@
-From: Sean Christopherson <seanjc@google.com>
-Date: Tue, 18 Jul 2023 16:44:52 -0700
-Subject: [RFC PATCH v11 09/29] KVM: x86: Disallow hugepages when memory
- attributes are mixed
-In-Reply-To: <20230718234512.1690985-1-seanjc@google.com>
-References: <20230718234512.1690985-1-seanjc@google.com>
-Message-ID: <20230718234512.1690985-10-seanjc@google.com>
+From: Shaoqin Huang <shahuang@redhat.com>
+Date: Tue, 18 Jul 2023 14:21:30 +0800
+Subject: [PATCH v6 05/11] arm64: tlb: Refactor the core flush algorithm of
+ __flush_tlb_range
+In-Reply-To: <20230715005405.3689586-6-rananta@google.com>
+References: <20230715005405.3689586-1-rananta@google.com>
+ <20230715005405.3689586-6-rananta@google.com>
+Message-ID: <8987d68b-d62a-7a9b-3aa3-cd5cc7ad551c@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Chao Peng <chao.p.peng@linux.intel.com>
 
-Disallow creating hugepages with mixed memory attributes, e.g. shared
-versus private, as mapping a hugepage in this case would allow the guest
-to access memory with the wrong attributes, e.g. overlaying private memory
-with a shared hugepage.
 
-Tracking whether or not attributes are mixed via the existing
-disallow_lpage field, but use the most significant bit in 'disallow_lpage'
-to indicate a hugepage has mixed attributes instead using the normal
-refcounting.  Whether or not attributes are mixed is binary; either they
-are or they aren't.  Attempting to squeeze that info into the refcount is
-unnecessarily complex as it would require knowing the previous state of
-the mixed count when updating attributes.  Using a flag means KVM just
-needs to ensure the current status is reflected in the memslots.
+On 7/15/23 08:53, Raghavendra Rao Ananta wrote:
+> Currently, the core TLB flush functionality of __flush_tlb_range()
+> hardcodes vae1is (and variants) for the flush operation. In the
+> upcoming patches, the KVM code reuses this core algorithm with
+> ipas2e1is for range based TLB invalidations based on the IPA.
+> Hence, extract the core flush functionality of __flush_tlb_range()
+> into its own macro that accepts an 'op' argument to pass any
+> TLBI operation, such that other callers (KVM) can benefit.
+> 
+> No functional changes intended.
+> 
+> Signed-off-by: Raghavendra Rao Ananta <rananta@google.com>
+> Reviewed-by: Catalin Marinas <catalin.marinas@arm.com>
+> Reviewed-by: Gavin Shan <gshan@redhat.com>
+Reviewed-by: Shaoqin Huang <shahuang@redhat.com>
+> ---
+>   arch/arm64/include/asm/tlbflush.h | 109 +++++++++++++++---------------
+>   1 file changed, 56 insertions(+), 53 deletions(-)
+> 
+> diff --git a/arch/arm64/include/asm/tlbflush.h b/arch/arm64/include/asm/tlbflush.h
+> index 412a3b9a3c25..f7fafba25add 100644
+> --- a/arch/arm64/include/asm/tlbflush.h
+> +++ b/arch/arm64/include/asm/tlbflush.h
+> @@ -278,14 +278,62 @@ static inline void flush_tlb_page(struct vm_area_struct *vma,
+>    */
+>   #define MAX_TLBI_OPS	PTRS_PER_PTE
+>   
+> +/* When the CPU does not support TLB range operations, flush the TLB
+> + * entries one by one at the granularity of 'stride'. If the TLB
+> + * range ops are supported, then:
+> + *
+> + * 1. If 'pages' is odd, flush the first page through non-range
+> + *    operations;
+> + *
+> + * 2. For remaining pages: the minimum range granularity is decided
+> + *    by 'scale', so multiple range TLBI operations may be required.
+> + *    Start from scale = 0, flush the corresponding number of pages
+> + *    ((num+1)*2^(5*scale+1) starting from 'addr'), then increase it
+> + *    until no pages left.
+> + *
+> + * Note that certain ranges can be represented by either num = 31 and
+> + * scale or num = 0 and scale + 1. The loop below favours the latter
+> + * since num is limited to 30 by the __TLBI_RANGE_NUM() macro.
+> + */
+> +#define __flush_tlb_range_op(op, start, pages, stride,			\
+> +				asid, tlb_level, tlbi_user)		\
+> +do {									\
+> +	int num = 0;							\
+> +	int scale = 0;							\
+> +	unsigned long addr;						\
+> +									\
+> +	while (pages > 0) {						\
+> +		if (!system_supports_tlb_range() ||			\
+> +		    pages % 2 == 1) {					\
+> +			addr = __TLBI_VADDR(start, asid);		\
+> +			__tlbi_level(op, addr, tlb_level);		\
+> +			if (tlbi_user)					\
+> +				__tlbi_user_level(op, addr, tlb_level);	\
+> +			start += stride;				\
+> +			pages -= stride >> PAGE_SHIFT;			\
+> +			continue;					\
+> +		}							\
+> +									\
+> +		num = __TLBI_RANGE_NUM(pages, scale);			\
+> +		if (num >= 0) {						\
+> +			addr = __TLBI_VADDR_RANGE(start, asid, scale,	\
+> +						  num, tlb_level);	\
+> +			__tlbi(r##op, addr);				\
+> +			if (tlbi_user)					\
+> +				__tlbi_user(r##op, addr);		\
+> +			start += __TLBI_RANGE_PAGES(num, scale) << PAGE_SHIFT; \
+> +			pages -= __TLBI_RANGE_PAGES(num, scale);	\
+> +		}							\
+> +		scale++;						\
+> +	}								\
+> +} while (0)
+> +
+>   static inline void __flush_tlb_range(struct vm_area_struct *vma,
+>   				     unsigned long start, unsigned long end,
+>   				     unsigned long stride, bool last_level,
+>   				     int tlb_level)
+>   {
+> -	int num = 0;
+> -	int scale = 0;
+> -	unsigned long asid, addr, pages;
+> +	unsigned long asid, pages;
+>   
+>   	start = round_down(start, stride);
+>   	end = round_up(end, stride);
+> @@ -307,56 +355,11 @@ static inline void __flush_tlb_range(struct vm_area_struct *vma,
+>   	dsb(ishst);
+>   	asid = ASID(vma->vm_mm);
+>   
+> -	/*
+> -	 * When the CPU does not support TLB range operations, flush the TLB
+> -	 * entries one by one at the granularity of 'stride'. If the TLB
+> -	 * range ops are supported, then:
+> -	 *
+> -	 * 1. If 'pages' is odd, flush the first page through non-range
+> -	 *    operations;
+> -	 *
+> -	 * 2. For remaining pages: the minimum range granularity is decided
+> -	 *    by 'scale', so multiple range TLBI operations may be required.
+> -	 *    Start from scale = 0, flush the corresponding number of pages
+> -	 *    ((num+1)*2^(5*scale+1) starting from 'addr'), then increase it
+> -	 *    until no pages left.
+> -	 *
+> -	 * Note that certain ranges can be represented by either num = 31 and
+> -	 * scale or num = 0 and scale + 1. The loop below favours the latter
+> -	 * since num is limited to 30 by the __TLBI_RANGE_NUM() macro.
+> -	 */
+> -	while (pages > 0) {
+> -		if (!system_supports_tlb_range() ||
+> -		    pages % 2 == 1) {
+> -			addr = __TLBI_VADDR(start, asid);
+> -			if (last_level) {
+> -				__tlbi_level(vale1is, addr, tlb_level);
+> -				__tlbi_user_level(vale1is, addr, tlb_level);
+> -			} else {
+> -				__tlbi_level(vae1is, addr, tlb_level);
+> -				__tlbi_user_level(vae1is, addr, tlb_level);
+> -			}
+> -			start += stride;
+> -			pages -= stride >> PAGE_SHIFT;
+> -			continue;
+> -		}
+> -
+> -		num = __TLBI_RANGE_NUM(pages, scale);
+> -		if (num >= 0) {
+> -			addr = __TLBI_VADDR_RANGE(start, asid, scale,
+> -						  num, tlb_level);
+> -			if (last_level) {
+> -				__tlbi(rvale1is, addr);
+> -				__tlbi_user(rvale1is, addr);
+> -			} else {
+> -				__tlbi(rvae1is, addr);
+> -				__tlbi_user(rvae1is, addr);
+> -			}
+> -			start += __TLBI_RANGE_PAGES(num, scale) << PAGE_SHIFT;
+> -			pages -= __TLBI_RANGE_PAGES(num, scale);
+> -		}
+> -		scale++;
+> -	}
+> +	if (last_level)
+> +		__flush_tlb_range_op(vale1is, start, pages, stride, asid, tlb_level, true);
+> +	else
+> +		__flush_tlb_range_op(vae1is, start, pages, stride, asid, tlb_level, true);
+> +
+>   	dsb(ish);
+>   }
+>   
 
-Signed-off-by: Chao Peng <chao.p.peng@linux.intel.com>
-Co-developed-by: Sean Christopherson <seanjc@google.com>
-Signed-off-by: Sean Christopherson <seanjc@google.com>
----
- arch/x86/include/asm/kvm_host.h |   3 +
- arch/x86/kvm/mmu/mmu.c          | 185 +++++++++++++++++++++++++++++++-
- arch/x86/kvm/x86.c              |   4 +
- 3 files changed, 190 insertions(+), 2 deletions(-)
-
-diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
-index f9a927296d85..b87ff7b601fa 100644
---- a/arch/x86/include/asm/kvm_host.h
-+++ b/arch/x86/include/asm/kvm_host.h
-@@ -1816,6 +1816,9 @@ int kvm_mmu_create(struct kvm_vcpu *vcpu);
- int kvm_mmu_init_vm(struct kvm *kvm);
- void kvm_mmu_uninit_vm(struct kvm *kvm);
- 
-+void kvm_mmu_init_memslot_memory_attributes(struct kvm *kvm,
-+					    struct kvm_memory_slot *slot);
-+
- void kvm_mmu_after_set_cpuid(struct kvm_vcpu *vcpu);
- void kvm_mmu_reset_context(struct kvm_vcpu *vcpu);
- void kvm_mmu_slot_remove_write_access(struct kvm *kvm,
-diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
-index b034727c4cf9..aefe67185637 100644
---- a/arch/x86/kvm/mmu/mmu.c
-+++ b/arch/x86/kvm/mmu/mmu.c
-@@ -803,16 +803,27 @@ static struct kvm_lpage_info *lpage_info_slot(gfn_t gfn,
- 	return &slot->arch.lpage_info[level - 2][idx];
- }
- 
-+/*
-+ * The most significant bit in disallow_lpage tracks whether or not memory
-+ * attributes are mixed, i.e. not identical for all gfns at the current level.
-+ * The lower order bits are used to refcount other cases where a hugepage is
-+ * disallowed, e.g. if KVM has shadow a page table at the gfn.
-+ */
-+#define KVM_LPAGE_MIXED_FLAG	BIT(31)
-+
- static void update_gfn_disallow_lpage_count(const struct kvm_memory_slot *slot,
- 					    gfn_t gfn, int count)
- {
- 	struct kvm_lpage_info *linfo;
--	int i;
-+	int old, i;
- 
- 	for (i = PG_LEVEL_2M; i <= KVM_MAX_HUGEPAGE_LEVEL; ++i) {
- 		linfo = lpage_info_slot(gfn, slot, i);
-+
-+		old = linfo->disallow_lpage;
- 		linfo->disallow_lpage += count;
--		WARN_ON(linfo->disallow_lpage < 0);
-+
-+		WARN_ON_ONCE((old ^ linfo->disallow_lpage) & KVM_LPAGE_MIXED_FLAG);
- 	}
- }
- 
-@@ -7223,3 +7234,173 @@ void kvm_mmu_pre_destroy_vm(struct kvm *kvm)
- 	if (kvm->arch.nx_huge_page_recovery_thread)
- 		kthread_stop(kvm->arch.nx_huge_page_recovery_thread);
- }
-+
-+#ifdef CONFIG_KVM_GENERIC_MEMORY_ATTRIBUTES
-+static bool hugepage_test_mixed(struct kvm_memory_slot *slot, gfn_t gfn,
-+				int level)
-+{
-+	return lpage_info_slot(gfn, slot, level)->disallow_lpage & KVM_LPAGE_MIXED_FLAG;
-+}
-+
-+static void hugepage_clear_mixed(struct kvm_memory_slot *slot, gfn_t gfn,
-+				 int level)
-+{
-+	lpage_info_slot(gfn, slot, level)->disallow_lpage &= ~KVM_LPAGE_MIXED_FLAG;
-+}
-+
-+static void hugepage_set_mixed(struct kvm_memory_slot *slot, gfn_t gfn,
-+			       int level)
-+{
-+	lpage_info_slot(gfn, slot, level)->disallow_lpage |= KVM_LPAGE_MIXED_FLAG;
-+}
-+
-+static bool range_has_attrs(struct kvm *kvm, gfn_t start, gfn_t end,
-+			    unsigned long attrs)
-+{
-+	XA_STATE(xas, &kvm->mem_attr_array, start);
-+	unsigned long index;
-+	bool has_attrs;
-+	void *entry;
-+
-+	rcu_read_lock();
-+
-+	if (!attrs) {
-+		has_attrs = !xas_find(&xas, end);
-+		goto out;
-+	}
-+
-+	has_attrs = true;
-+	for (index = start; index < end; index++) {
-+		do {
-+			entry = xas_next(&xas);
-+		} while (xas_retry(&xas, entry));
-+
-+		if (xas.xa_index != index || xa_to_value(entry) != attrs) {
-+			has_attrs = false;
-+			break;
-+		}
-+	}
-+
-+out:
-+	rcu_read_unlock();
-+	return has_attrs;
-+}
-+
-+static bool hugepage_has_attrs(struct kvm *kvm, struct kvm_memory_slot *slot,
-+			       gfn_t gfn, int level, unsigned long attrs)
-+{
-+	const unsigned long start = gfn;
-+	const unsigned long end = start + KVM_PAGES_PER_HPAGE(level);
-+
-+	if (level == PG_LEVEL_2M)
-+		return range_has_attrs(kvm, start, end, attrs);
-+
-+	for (gfn = start; gfn < end; gfn += KVM_PAGES_PER_HPAGE(level - 1)) {
-+		if (hugepage_test_mixed(slot, gfn, level - 1) ||
-+		    attrs != kvm_get_memory_attributes(kvm, gfn))
-+			return false;
-+	}
-+	return true;
-+}
-+
-+bool kvm_arch_post_set_memory_attributes(struct kvm *kvm,
-+					 struct kvm_gfn_range *range)
-+{
-+	unsigned long attrs = range->arg.attributes;
-+	struct kvm_memory_slot *slot = range->slot;
-+	int level;
-+
-+	lockdep_assert_held_write(&kvm->mmu_lock);
-+	lockdep_assert_held(&kvm->slots_lock);
-+
-+	/*
-+	 * KVM x86 currently only supports KVM_MEMORY_ATTRIBUTE_PRIVATE, skip
-+	 * the slot if the slot will never consume the PRIVATE attribute.
-+	 */
-+	if (!kvm_slot_can_be_private(slot))
-+		return false;
-+
-+	/*
-+	 * The sequence matters here: upper levels consume the result of lower
-+	 * level's scanning.
-+	 */
-+	for (level = PG_LEVEL_2M; level <= KVM_MAX_HUGEPAGE_LEVEL; level++) {
-+		gfn_t nr_pages = KVM_PAGES_PER_HPAGE(level);
-+		gfn_t gfn = gfn_round_for_level(range->start, level);
-+
-+		/* Process the head page if it straddles the range. */
-+		if (gfn != range->start || gfn + nr_pages > range->end) {
-+			/*
-+			 * Skip mixed tracking if the aligned gfn isn't covered
-+			 * by the memslot, KVM can't use a hugepage due to the
-+			 * misaligned address regardless of memory attributes.
-+			 */
-+			if (gfn >= slot->base_gfn) {
-+				if (hugepage_has_attrs(kvm, slot, gfn, level, attrs))
-+					hugepage_clear_mixed(slot, gfn, level);
-+				else
-+					hugepage_set_mixed(slot, gfn, level);
-+			}
-+			gfn += nr_pages;
-+		}
-+
-+		/*
-+		 * Pages entirely covered by the range are guaranteed to have
-+		 * only the attributes which were just set.
-+		 */
-+		for ( ; gfn + nr_pages <= range->end; gfn += nr_pages)
-+			hugepage_clear_mixed(slot, gfn, level);
-+
-+		/*
-+		 * Process the last tail page if it straddles the range and is
-+		 * contained by the memslot.  Like the head page, KVM can't
-+		 * create a hugepage if the slot size is misaligned.
-+		 */
-+		if (gfn < range->end &&
-+		    (gfn + nr_pages) <= (slot->base_gfn + slot->npages)) {
-+			if (hugepage_has_attrs(kvm, slot, gfn, level, attrs))
-+				hugepage_clear_mixed(slot, gfn, level);
-+			else
-+				hugepage_set_mixed(slot, gfn, level);
-+		}
-+	}
-+	return false;
-+}
-+
-+void kvm_mmu_init_memslot_memory_attributes(struct kvm *kvm,
-+					    struct kvm_memory_slot *slot)
-+{
-+	int level;
-+
-+	if (!kvm_slot_can_be_private(slot))
-+		return;
-+
-+	for (level = PG_LEVEL_2M; level <= KVM_MAX_HUGEPAGE_LEVEL; level++) {
-+		/*
-+		 * Don't bother tracking mixed attributes for pages that can't
-+		 * be huge due to alignment, i.e. process only pages that are
-+		 * entirely contained by the memslot.
-+		 */
-+		gfn_t end = gfn_round_for_level(slot->base_gfn + slot->npages, level);
-+		gfn_t start = gfn_round_for_level(slot->base_gfn, level);
-+		gfn_t nr_pages = KVM_PAGES_PER_HPAGE(level);
-+		gfn_t gfn;
-+
-+		if (start < slot->base_gfn)
-+			start += nr_pages;
-+
-+		/*
-+		 * Unlike setting attributes, every potential hugepage needs to
-+		 * be manually checked as the attributes may already be mixed.
-+		 */
-+		for (gfn = start; gfn < end; gfn += nr_pages) {
-+			unsigned long attrs = kvm_get_memory_attributes(kvm, gfn);
-+
-+			if (hugepage_has_attrs(kvm, slot, gfn, level, attrs))
-+				hugepage_clear_mixed(slot, gfn, level);
-+			else
-+				hugepage_set_mixed(slot, gfn, level);
-+		}
-+	}
-+}
-+#endif
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 92e77afd3ffd..dd7cefe78815 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -12570,6 +12570,10 @@ static int kvm_alloc_memslot_metadata(struct kvm *kvm,
- 		}
- 	}
- 
-+#ifdef CONFIG_KVM_GENERIC_MEMORY_ATTRIBUTES
-+	kvm_mmu_init_memslot_memory_attributes(kvm, slot);
-+#endif
-+
- 	if (kvm_page_track_create_memslot(kvm, slot, npages))
- 		goto out_free;
- 
 -- 
-2.41.0.255.g8b1d071c50-goog
+Shaoqin
 
 
