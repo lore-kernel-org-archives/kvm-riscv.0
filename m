@@ -1,171 +1,164 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Tue, 18 Jul 2023 16:45:12 -0700
-Subject: [RFC PATCH v11 29/29] KVM: selftests: Test KVM exit behavior for
- private memory/access
+Date: Tue, 18 Jul 2023 16:45:11 -0700
+Subject: [RFC PATCH v11 28/29] KVM: selftests: Add basic selftest for guest_memfd()
 In-Reply-To: <20230718234512.1690985-1-seanjc@google.com>
 References: <20230718234512.1690985-1-seanjc@google.com>
-Message-ID: <20230718234512.1690985-30-seanjc@google.com>
+Message-ID: <20230718234512.1690985-29-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Ackerley Tng <ackerleytng@google.com>
+Add a selftest to verify the basic functionality of guest_memfd():
 
-"Testing private access when memslot gets deleted" tests the behavior
-of KVM when a private memslot gets deleted while the VM is using the
-private memslot. When KVM looks up the deleted (slot = NULL) memslot,
-KVM should exit to userspace with KVM_EXIT_MEMORY_FAULT.
++ file descriptor created with the guest_memfd() ioctl does not allow
+  read/write/mmap operations
++ file size and block size as returned from fstat are as expected
++ fallocate on the fd checks that offset/length on
+  fallocate(FALLOC_FL_PUNCH_HOLE) should be page aligned
 
-In the second test, upon a private access to non-private memslot, KVM
-should also exit to userspace with KVM_EXIT_MEMORY_FAULT.
-
-sean: These testcases belong in set_memory_region_test.c, they're private
-variants on existing testscases and aren't as robust, e.g. don't ensure
-the vCPU is actually running and accessing memory when converting and
-deleting.
-
+Signed-off-by: Chao Peng <chao.p.peng@linux.intel.com>
+Co-developed-by: Ackerley Tng <ackerleytng@google.com>
 Signed-off-by: Ackerley Tng <ackerleytng@google.com>
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
  tools/testing/selftests/kvm/Makefile          |   1 +
- .../kvm/x86_64/private_mem_kvm_exits_test.c   | 115 ++++++++++++++++++
- 2 files changed, 116 insertions(+)
- create mode 100644 tools/testing/selftests/kvm/x86_64/private_mem_kvm_exits_test.c
+ .../testing/selftests/kvm/guest_memfd_test.c  | 114 ++++++++++++++++++
+ 2 files changed, 115 insertions(+)
+ create mode 100644 tools/testing/selftests/kvm/guest_memfd_test.c
 
 diff --git a/tools/testing/selftests/kvm/Makefile b/tools/testing/selftests/kvm/Makefile
-index 18c43336ede3..cb9450022302 100644
+index fdc7dff8d6ae..18c43336ede3 100644
 --- a/tools/testing/selftests/kvm/Makefile
 +++ b/tools/testing/selftests/kvm/Makefile
-@@ -81,6 +81,7 @@ TEST_GEN_PROGS_x86_64 += x86_64/nested_exceptions_test
- TEST_GEN_PROGS_x86_64 += x86_64/platform_info_test
- TEST_GEN_PROGS_x86_64 += x86_64/pmu_event_filter_test
- TEST_GEN_PROGS_x86_64 += x86_64/private_mem_conversions_test
-+TEST_GEN_PROGS_x86_64 += x86_64/private_mem_kvm_exits_test
- TEST_GEN_PROGS_x86_64 += x86_64/set_boot_cpu_id
- TEST_GEN_PROGS_x86_64 += x86_64/set_sregs_test
- TEST_GEN_PROGS_x86_64 += x86_64/smaller_maxphyaddr_emulation_test
-diff --git a/tools/testing/selftests/kvm/x86_64/private_mem_kvm_exits_test.c b/tools/testing/selftests/kvm/x86_64/private_mem_kvm_exits_test.c
+@@ -123,6 +123,7 @@ TEST_GEN_PROGS_x86_64 += access_tracking_perf_test
+ TEST_GEN_PROGS_x86_64 += demand_paging_test
+ TEST_GEN_PROGS_x86_64 += dirty_log_test
+ TEST_GEN_PROGS_x86_64 += dirty_log_perf_test
++TEST_GEN_PROGS_x86_64 += guest_memfd_test
+ TEST_GEN_PROGS_x86_64 += hardware_disable_test
+ TEST_GEN_PROGS_x86_64 += kvm_create_max_vcpus
+ TEST_GEN_PROGS_x86_64 += kvm_page_table_test
+diff --git a/tools/testing/selftests/kvm/guest_memfd_test.c b/tools/testing/selftests/kvm/guest_memfd_test.c
 new file mode 100644
-index 000000000000..8daaa08c0d90
+index 000000000000..d698f9fde987
 --- /dev/null
-+++ b/tools/testing/selftests/kvm/x86_64/private_mem_kvm_exits_test.c
-@@ -0,0 +1,115 @@
-+// SPDX-License-Identifier: GPL-2.0-only
++++ b/tools/testing/selftests/kvm/guest_memfd_test.c
+@@ -0,0 +1,114 @@
++// SPDX-License-Identifier: GPL-2.0
 +/*
-+ * Copyright (C) 2022, Google LLC.
++ * Copyright Intel Corporation, 2023
++ *
++ * Author: Chao Peng <chao.p.peng@linux.intel.com>
 + */
-+#include <linux/kvm.h>
-+#include <pthread.h>
-+#include <stdint.h>
 +
-+#include "kvm_util.h"
-+#include "processor.h"
++#define _GNU_SOURCE
 +#include "test_util.h"
++#include "kvm_util_base.h"
++#include <linux/falloc.h>
++#include <sys/mman.h>
++#include <sys/types.h>
++#include <sys/stat.h>
 +
-+/* Arbitrarily selected to avoid overlaps with anything else */
-+#define EXITS_TEST_GVA 0xc0000000
-+#define EXITS_TEST_GPA EXITS_TEST_GVA
-+#define EXITS_TEST_NPAGES 1
-+#define EXITS_TEST_SIZE (EXITS_TEST_NPAGES * PAGE_SIZE)
-+#define EXITS_TEST_SLOT 10
++#include <stdlib.h>
++#include <string.h>
++#include <unistd.h>
++#include <errno.h>
++#include <stdio.h>
++#include <fcntl.h>
 +
-+static uint64_t guest_repeatedly_read(void)
++static void test_file_read_write(int fd)
 +{
-+	volatile uint64_t value;
++	char buf[64];
 +
-+	while (true)
-+		value = *((uint64_t *) EXITS_TEST_GVA);
-+
-+	return value;
++	TEST_ASSERT(read(fd, buf, sizeof(buf)) < 0,
++		    "read on a guest_mem fd should fail");
++	TEST_ASSERT(write(fd, buf, sizeof(buf)) < 0,
++		    "write on a guest_mem fd should fail");
++	TEST_ASSERT(pread(fd, buf, sizeof(buf), 0) < 0,
++		    "pread on a guest_mem fd should fail");
++	TEST_ASSERT(pwrite(fd, buf, sizeof(buf), 0) < 0,
++		    "pwrite on a guest_mem fd should fail");
 +}
 +
-+static uint32_t run_vcpu_get_exit_reason(struct kvm_vcpu *vcpu)
++static void test_mmap(int fd, size_t page_size)
 +{
-+	vcpu_run(vcpu);
++	char *mem;
 +
-+	return vcpu->run->exit_reason;
++	mem = mmap(NULL, page_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
++	ASSERT_EQ(mem, MAP_FAILED);
 +}
 +
-+const struct vm_shape protected_vm_shape = {
-+	.mode = VM_MODE_DEFAULT,
-+	.type = KVM_X86_SW_PROTECTED_VM,
-+};
-+
-+static void test_private_access_memslot_deleted(void)
++static void test_file_size(int fd, size_t page_size, size_t total_size)
 +{
-+	struct kvm_vm *vm;
-+	struct kvm_vcpu *vcpu;
-+	pthread_t vm_thread;
-+	void *thread_return;
-+	uint32_t exit_reason;
++	struct stat sb;
++	int ret;
 +
-+	vm = vm_create_shape_with_one_vcpu(protected_vm_shape, &vcpu,
-+					   guest_repeatedly_read);
-+
-+	vm_userspace_mem_region_add(vm, VM_MEM_SRC_ANONYMOUS,
-+				    EXITS_TEST_GPA, EXITS_TEST_SLOT,
-+				    EXITS_TEST_NPAGES,
-+				    KVM_MEM_PRIVATE);
-+
-+	virt_map(vm, EXITS_TEST_GVA, EXITS_TEST_GPA, EXITS_TEST_NPAGES);
-+
-+	/* Request to access page privately */
-+	vm_mem_set_private(vm, EXITS_TEST_GPA, EXITS_TEST_SIZE);
-+
-+	pthread_create(&vm_thread, NULL,
-+		       (void *(*)(void *))run_vcpu_get_exit_reason,
-+		       (void *)vcpu);
-+
-+	vm_mem_region_delete(vm, EXITS_TEST_SLOT);
-+
-+	pthread_join(vm_thread, &thread_return);
-+	exit_reason = (uint32_t)(uint64_t)thread_return;
-+
-+	ASSERT_EQ(exit_reason, KVM_EXIT_MEMORY_FAULT);
-+	ASSERT_EQ(vcpu->run->memory.flags, KVM_MEMORY_EXIT_FLAG_PRIVATE);
-+	ASSERT_EQ(vcpu->run->memory.gpa, EXITS_TEST_GPA);
-+	ASSERT_EQ(vcpu->run->memory.size, EXITS_TEST_SIZE);
-+
-+	kvm_vm_free(vm);
++	ret = fstat(fd, &sb);
++	TEST_ASSERT(!ret, "fstat should succeed");
++	ASSERT_EQ(sb.st_size, total_size);
++	ASSERT_EQ(sb.st_blksize, page_size);
 +}
 +
-+static void test_private_access_memslot_not_private(void)
++static void test_fallocate(int fd, size_t page_size, size_t total_size)
 +{
-+	struct kvm_vm *vm;
-+	struct kvm_vcpu *vcpu;
-+	uint32_t exit_reason;
++	int ret;
 +
-+	vm = vm_create_shape_with_one_vcpu(protected_vm_shape, &vcpu,
-+					   guest_repeatedly_read);
++	ret = fallocate(fd, FALLOC_FL_KEEP_SIZE, 0, total_size);
++	TEST_ASSERT(!ret, "fallocate with aligned offset and size should succeed");
 +
-+	/* Add a non-private memslot (flags = 0) */
-+	vm_userspace_mem_region_add(vm, VM_MEM_SRC_ANONYMOUS,
-+				    EXITS_TEST_GPA, EXITS_TEST_SLOT,
-+				    EXITS_TEST_NPAGES, 0);
++	ret = fallocate(fd, FALLOC_FL_KEEP_SIZE | FALLOC_FL_PUNCH_HOLE,
++			page_size - 1, page_size);
++	TEST_ASSERT(ret, "fallocate with unaligned offset should fail");
 +
-+	virt_map(vm, EXITS_TEST_GVA, EXITS_TEST_GPA, EXITS_TEST_NPAGES);
++	ret = fallocate(fd, FALLOC_FL_KEEP_SIZE, total_size, page_size);
++	TEST_ASSERT(ret, "fallocate beginning at total_size should fail");
 +
-+	/* Request to access page privately */
-+	vm_mem_set_private(vm, EXITS_TEST_GPA, EXITS_TEST_SIZE);
++	ret = fallocate(fd, FALLOC_FL_KEEP_SIZE, total_size + page_size, page_size);
++	TEST_ASSERT(ret, "fallocate beginning at total_size should fail");
 +
-+	exit_reason = run_vcpu_get_exit_reason(vcpu);
++	ret = fallocate(fd, FALLOC_FL_KEEP_SIZE | FALLOC_FL_PUNCH_HOLE,
++			total_size, page_size);
++	TEST_ASSERT(!ret, "fallocate(PUNCH_HOLE)@total_size should succeed");
 +
-+	ASSERT_EQ(exit_reason, KVM_EXIT_MEMORY_FAULT);
-+	ASSERT_EQ(vcpu->run->memory.flags, KVM_MEMORY_EXIT_FLAG_PRIVATE);
-+	ASSERT_EQ(vcpu->run->memory.gpa, EXITS_TEST_GPA);
-+	ASSERT_EQ(vcpu->run->memory.size, EXITS_TEST_SIZE);
++	ret = fallocate(fd, FALLOC_FL_KEEP_SIZE | FALLOC_FL_PUNCH_HOLE,
++			total_size + page_size, page_size);
++	TEST_ASSERT(!ret, "fallocate(PUNCH_HOLE) after total_size should succeed");
 +
-+	kvm_vm_free(vm);
++	ret = fallocate(fd, FALLOC_FL_KEEP_SIZE | FALLOC_FL_PUNCH_HOLE,
++			page_size, page_size - 1);
++	TEST_ASSERT(ret, "fallocate with unaligned size should fail");
++
++	ret = fallocate(fd, FALLOC_FL_KEEP_SIZE | FALLOC_FL_PUNCH_HOLE,
++			page_size, page_size);
++	TEST_ASSERT(!ret, "fallocate(PUNCH_HOLE) with aligned offset and size should succeed");
++
++	ret = fallocate(fd, FALLOC_FL_KEEP_SIZE, page_size, page_size);
++	TEST_ASSERT(!ret, "fallocate to restore punched hole should succeed");
 +}
++
 +
 +int main(int argc, char *argv[])
 +{
-+	TEST_REQUIRE(kvm_check_cap(KVM_CAP_VM_TYPES) & BIT(KVM_X86_SW_PROTECTED_VM));
++	size_t page_size;
++	size_t total_size;
++	int fd;
++	struct kvm_vm *vm;
 +
-+	test_private_access_memslot_deleted();
-+	test_private_access_memslot_not_private();
++	page_size = getpagesize();
++	total_size = page_size * 4;
++
++	vm = vm_create_barebones();
++
++	fd = vm_create_guest_memfd(vm, total_size, 0);
++
++	test_file_read_write(fd);
++	test_mmap(fd, page_size);
++	test_file_size(fd, page_size, total_size);
++	test_fallocate(fd, page_size, total_size);
++
++	close(fd);
 +}
 -- 
 2.41.0.255.g8b1d071c50-goog
