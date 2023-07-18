@@ -1,470 +1,308 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Tue, 18 Jul 2023 16:45:08 -0700
-Subject: [RFC PATCH v11 25/29] KVM: selftests: Add x86-only selftest for
- private memory conversions
+Date: Tue, 18 Jul 2023 16:45:06 -0700
+Subject: [RFC PATCH v11 23/29] KVM: selftests: Introduce VM "shape" to allow
+ tests to specify the VM type
 In-Reply-To: <20230718234512.1690985-1-seanjc@google.com>
 References: <20230718234512.1690985-1-seanjc@google.com>
-Message-ID: <20230718234512.1690985-26-seanjc@google.com>
+Message-ID: <20230718234512.1690985-24-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Vishal Annapurve <vannapurve@google.com>
-
-Add a selftest to exercise implicit/explicit conversion functionality
-within KVM and verify:
-
- - Shared memory is visible to host userspace
- - Private memory is not visible to host userspace
- - Host userspace and guest can communicate over shared memory
- - Data in shared backing is preserved across conversions (test's
-   host userspace doesn't free the data)
- - Private memory is bound to the lifetime of the VM
-
-TODO: rewrite this to allow backing a single region of guest memory with
-multiple memslots for _all_ backing types and shapes, i.e. make the code
-for using a single backing fd across multiple memslots apply to regular
-memory as well.
-
-Signed-off-by: Vishal Annapurve <vannapurve@google.com>
-Co-developed-by: Ackerley Tng <ackerleytng@google.com>
-Signed-off-by: Ackerley Tng <ackerleytng@google.com>
-Co-developed-by: Sean Christopherson <seanjc@google.com>
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- tools/testing/selftests/kvm/Makefile          |   1 +
- .../kvm/x86_64/private_mem_conversions_test.c | 408 ++++++++++++++++++
- 2 files changed, 409 insertions(+)
- create mode 100644 tools/testing/selftests/kvm/x86_64/private_mem_conversions_test.c
+ tools/testing/selftests/kvm/dirty_log_test.c  |  2 +-
+ .../selftests/kvm/include/kvm_util_base.h     | 54 +++++++++++++++----
+ .../selftests/kvm/kvm_page_table_test.c       |  2 +-
+ tools/testing/selftests/kvm/lib/kvm_util.c    | 43 +++++++--------
+ tools/testing/selftests/kvm/lib/memstress.c   |  3 +-
+ .../kvm/x86_64/ucna_injection_test.c          |  2 +-
+ 6 files changed, 72 insertions(+), 34 deletions(-)
 
-diff --git a/tools/testing/selftests/kvm/Makefile b/tools/testing/selftests/kvm/Makefile
-index c692cc86e7da..fdc7dff8d6ae 100644
---- a/tools/testing/selftests/kvm/Makefile
-+++ b/tools/testing/selftests/kvm/Makefile
-@@ -80,6 +80,7 @@ TEST_GEN_PROGS_x86_64 += x86_64/monitor_mwait_test
- TEST_GEN_PROGS_x86_64 += x86_64/nested_exceptions_test
- TEST_GEN_PROGS_x86_64 += x86_64/platform_info_test
- TEST_GEN_PROGS_x86_64 += x86_64/pmu_event_filter_test
-+TEST_GEN_PROGS_x86_64 += x86_64/private_mem_conversions_test
- TEST_GEN_PROGS_x86_64 += x86_64/set_boot_cpu_id
- TEST_GEN_PROGS_x86_64 += x86_64/set_sregs_test
- TEST_GEN_PROGS_x86_64 += x86_64/smaller_maxphyaddr_emulation_test
-diff --git a/tools/testing/selftests/kvm/x86_64/private_mem_conversions_test.c b/tools/testing/selftests/kvm/x86_64/private_mem_conversions_test.c
-new file mode 100644
-index 000000000000..40ec5f9cc256
---- /dev/null
-+++ b/tools/testing/selftests/kvm/x86_64/private_mem_conversions_test.c
-@@ -0,0 +1,408 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Copyright (C) 2022, Google LLC.
-+ */
-+#define _GNU_SOURCE /* for program_invocation_short_name */
-+#include <fcntl.h>
-+#include <limits.h>
-+#include <pthread.h>
-+#include <sched.h>
-+#include <signal.h>
-+#include <stdio.h>
-+#include <stdlib.h>
-+#include <string.h>
-+#include <sys/ioctl.h>
-+
-+#include <linux/compiler.h>
-+#include <linux/kernel.h>
-+#include <linux/kvm_para.h>
-+#include <linux/memfd.h>
-+#include <linux/sizes.h>
-+
-+#include <test_util.h>
-+#include <kvm_util.h>
-+#include <processor.h>
-+
-+#define BASE_DATA_SLOT		10
-+#define BASE_DATA_GPA		((uint64_t)(1ull << 32))
-+#define PER_CPU_DATA_SIZE	((uint64_t)(SZ_2M + PAGE_SIZE))
-+
-+/* Horrific macro so that the line info is captured accurately :-( */
-+#define memcmp_g(gpa, pattern,  size)				\
-+do {								\
-+	uint8_t *mem = (uint8_t *)gpa;				\
-+	size_t i;						\
-+								\
-+	for (i = 0; i < size; i++)				\
-+		GUEST_ASSERT_4(mem[i] == pattern,		\
-+			       gpa, i, mem[i], pattern);	\
-+} while (0)
-+
-+static void memcmp_h(uint8_t *mem, uint8_t pattern, size_t size)
-+{
-+	size_t i;
-+
-+	for (i = 0; i < size; i++)
-+		TEST_ASSERT(mem[i] == pattern,
-+			    "Expected 0x%x@offset %lu, got 0x%x",
-+			    pattern, i, mem[i]);
-+}
-+
-+/*
-+ * Run memory conversion tests with explicit conversion:
-+ * Execute KVM hypercall to map/unmap gpa range which will cause userspace exit
-+ * to back/unback private memory. Subsequent accesses by guest to the gpa range
-+ * will not cause exit to userspace.
-+ *
-+ * Test memory conversion scenarios with following steps:
-+ * 1) Access private memory using private access and verify that memory contents
-+ *   are not visible to userspace.
-+ * 2) Convert memory to shared using explicit conversions and ensure that
-+ *   userspace is able to access the shared regions.
-+ * 3) Convert memory back to private using explicit conversions and ensure that
-+ *   userspace is again not able to access converted private regions.
-+ */
-+
-+#define GUEST_STAGE(o, s) { .offset = o, .size = s }
-+
-+enum ucall_syncs {
-+	SYNC_SHARED,
-+	SYNC_PRIVATE,
+diff --git a/tools/testing/selftests/kvm/dirty_log_test.c b/tools/testing/selftests/kvm/dirty_log_test.c
+index 936f3a8d1b83..6cbecf499767 100644
+--- a/tools/testing/selftests/kvm/dirty_log_test.c
++++ b/tools/testing/selftests/kvm/dirty_log_test.c
+@@ -699,7 +699,7 @@ static struct kvm_vm *create_vm(enum vm_guest_mode mode, struct kvm_vcpu **vcpu,
+ 
+ 	pr_info("Testing guest mode: %s\n", vm_guest_mode_string(mode));
+ 
+-	vm = __vm_create(mode, 1, extra_mem_pages);
++	vm = __vm_create(VM_SHAPE(mode), 1, extra_mem_pages);
+ 
+ 	log_mode_create_vm_done(vm);
+ 	*vcpu = vm_vcpu_add(vm, 0, guest_code);
+diff --git a/tools/testing/selftests/kvm/include/kvm_util_base.h b/tools/testing/selftests/kvm/include/kvm_util_base.h
+index 1819787b773b..856440294013 100644
+--- a/tools/testing/selftests/kvm/include/kvm_util_base.h
++++ b/tools/testing/selftests/kvm/include/kvm_util_base.h
+@@ -167,6 +167,23 @@ enum vm_guest_mode {
+ 	NUM_VM_MODES,
+ };
+ 
++struct vm_shape {
++	enum vm_guest_mode mode;
++	unsigned int type;
 +};
 +
-+static void guest_sync_shared(uint64_t gpa, uint64_t size,
-+			      uint8_t current_pattern, uint8_t new_pattern)
++#define VM_TYPE_DEFAULT			0
++
++#define VM_SHAPE(__mode)			\
++({						\
++	struct vm_shape shape = {		\
++		.mode = (__mode),		\
++		.type = VM_TYPE_DEFAULT		\
++	};					\
++						\
++	shape;					\
++})
++
+ #if defined(__aarch64__)
+ 
+ extern enum vm_guest_mode vm_mode_default;
+@@ -199,6 +216,8 @@ extern enum vm_guest_mode vm_mode_default;
+ 
+ #endif
+ 
++#define VM_SHAPE_DEFAULT	VM_SHAPE(VM_MODE_DEFAULT)
++
+ #define MIN_PAGE_SIZE		(1U << MIN_PAGE_SHIFT)
+ #define PTES_PER_MIN_PAGE	ptes_per_page(MIN_PAGE_SIZE)
+ 
+@@ -754,21 +773,21 @@ vm_paddr_t vm_alloc_page_table(struct kvm_vm *vm);
+  * __vm_create() does NOT create vCPUs, @nr_runnable_vcpus is used purely to
+  * calculate the amount of memory needed for per-vCPU data, e.g. stacks.
+  */
+-struct kvm_vm *____vm_create(enum vm_guest_mode mode);
+-struct kvm_vm *__vm_create(enum vm_guest_mode mode, uint32_t nr_runnable_vcpus,
++struct kvm_vm *____vm_create(struct vm_shape shape);
++struct kvm_vm *__vm_create(struct vm_shape shape, uint32_t nr_runnable_vcpus,
+ 			   uint64_t nr_extra_pages);
+ 
+ static inline struct kvm_vm *vm_create_barebones(void)
+ {
+-	return ____vm_create(VM_MODE_DEFAULT);
++	return ____vm_create(VM_SHAPE_DEFAULT);
+ }
+ 
+ static inline struct kvm_vm *vm_create(uint32_t nr_runnable_vcpus)
+ {
+-	return __vm_create(VM_MODE_DEFAULT, nr_runnable_vcpus, 0);
++	return __vm_create(VM_SHAPE_DEFAULT, nr_runnable_vcpus, 0);
+ }
+ 
+-struct kvm_vm *__vm_create_with_vcpus(enum vm_guest_mode mode, uint32_t nr_vcpus,
++struct kvm_vm *__vm_create_with_vcpus(struct vm_shape shape, uint32_t nr_vcpus,
+ 				      uint64_t extra_mem_pages,
+ 				      void *guest_code, struct kvm_vcpu *vcpus[]);
+ 
+@@ -776,17 +795,27 @@ static inline struct kvm_vm *vm_create_with_vcpus(uint32_t nr_vcpus,
+ 						  void *guest_code,
+ 						  struct kvm_vcpu *vcpus[])
+ {
+-	return __vm_create_with_vcpus(VM_MODE_DEFAULT, nr_vcpus, 0,
++	return __vm_create_with_vcpus(VM_SHAPE_DEFAULT, nr_vcpus, 0,
+ 				      guest_code, vcpus);
+ }
+ 
++
++struct kvm_vm *__vm_create_shape_with_one_vcpu(struct vm_shape shape,
++					       struct kvm_vcpu **vcpu,
++					       uint64_t extra_mem_pages,
++					       void *guest_code);
++
+ /*
+  * Create a VM with a single vCPU with reasonable defaults and @extra_mem_pages
+  * additional pages of guest memory.  Returns the VM and vCPU (via out param).
+  */
+-struct kvm_vm *__vm_create_with_one_vcpu(struct kvm_vcpu **vcpu,
+-					 uint64_t extra_mem_pages,
+-					 void *guest_code);
++static inline struct kvm_vm *__vm_create_with_one_vcpu(struct kvm_vcpu **vcpu,
++						       uint64_t extra_mem_pages,
++						       void *guest_code)
 +{
-+	GUEST_SYNC5(SYNC_SHARED, gpa, size, current_pattern, new_pattern);
++	return __vm_create_shape_with_one_vcpu(VM_SHAPE_DEFAULT, vcpu,
++					       extra_mem_pages, guest_code);
++}
+ 
+ static inline struct kvm_vm *vm_create_with_one_vcpu(struct kvm_vcpu **vcpu,
+ 						     void *guest_code)
+@@ -794,6 +823,13 @@ static inline struct kvm_vm *vm_create_with_one_vcpu(struct kvm_vcpu **vcpu,
+ 	return __vm_create_with_one_vcpu(vcpu, 0, guest_code);
+ }
+ 
++static inline struct kvm_vm *vm_create_shape_with_one_vcpu(struct vm_shape shape,
++							   struct kvm_vcpu **vcpu,
++							   void *guest_code)
++{
++	return __vm_create_shape_with_one_vcpu(shape, vcpu, 0, guest_code);
 +}
 +
-+static void guest_sync_private(uint64_t gpa, uint64_t size, uint8_t pattern)
-+{
-+	GUEST_SYNC4(SYNC_PRIVATE, gpa, size, pattern);
-+}
-+
-+/* Arbitrary values, KVM doesn't care about the attribute flags. */
-+#define MAP_GPA_SHARED		BIT(0)
-+#define MAP_GPA_DO_FALLOCATE	BIT(1)
-+
-+static void guest_map_mem(uint64_t gpa, uint64_t size, bool map_shared,
-+			  bool do_fallocate)
-+{
-+	uint64_t flags = 0;
-+
-+	if (map_shared)
-+		flags |= MAP_GPA_SHARED;
-+	if (do_fallocate)
-+		flags |= MAP_GPA_DO_FALLOCATE;
-+	kvm_hypercall_map_gpa_range(gpa, size, flags);
-+}
-+
-+static void guest_map_shared(uint64_t gpa, uint64_t size, bool do_fallocate)
-+{
-+	guest_map_mem(gpa, size, true, do_fallocate);
-+}
-+
-+static void guest_map_private(uint64_t gpa, uint64_t size, bool do_fallocate)
-+{
-+	guest_map_mem(gpa, size, false, do_fallocate);
-+}
-+
-+static void guest_run_test(uint64_t base_gpa, bool do_fallocate)
-+{
-+	struct {
-+		uint64_t offset;
-+		uint64_t size;
-+		uint8_t pattern;
-+	} stages[] = {
-+		GUEST_STAGE(0, PAGE_SIZE),
-+		GUEST_STAGE(0, SZ_2M),
-+		GUEST_STAGE(PAGE_SIZE, PAGE_SIZE),
-+		GUEST_STAGE(PAGE_SIZE, SZ_2M),
-+		GUEST_STAGE(SZ_2M, PAGE_SIZE),
-+	};
-+	const uint8_t init_p = 0xcc;
-+	uint64_t j;
-+	int i;
-+
-+	/* Memory should be shared by default. */
-+	memset((void *)base_gpa, ~init_p, PER_CPU_DATA_SIZE);
-+	guest_sync_shared(base_gpa, PER_CPU_DATA_SIZE, (uint8_t)~init_p, init_p);
-+	memcmp_g(base_gpa, init_p, PER_CPU_DATA_SIZE);
-+
-+	for (i = 0; i < ARRAY_SIZE(stages); i++) {
-+		uint64_t gpa = base_gpa + stages[i].offset;
-+		uint64_t size = stages[i].size;
-+		uint8_t p1 = 0x11;
-+		uint8_t p2 = 0x22;
-+		uint8_t p3 = 0x33;
-+		uint8_t p4 = 0x44;
-+
-+		/*
-+		 * Set the test region to pattern one to differentiate it from
-+		 * the data range as a whole (contains the initial pattern).
-+		 */
-+		memset((void *)gpa, p1, size);
-+
-+		/*
-+		 * Convert to private, set and verify the private data, and
-+		 * then verify that the rest of the data (map shared) still
-+		 * holds the initial pattern, and that the host always sees the
-+		 * shared memory (initial pattern).  Unlike shared memory,
-+		 * punching a hole in private memory is destructive, i.e.
-+		 * previous values aren't guaranteed to be preserved.
-+		 */
-+		guest_map_private(gpa, size, do_fallocate);
-+
-+		if (size > PAGE_SIZE) {
-+			memset((void *)gpa, p2, PAGE_SIZE);
-+			goto skip;
-+		}
-+
-+		memset((void *)gpa, p2, size);
-+		guest_sync_private(gpa, size, p1);
-+
-+		/*
-+		 * Verify that the private memory was set to pattern two, and
-+		 * that shared memory still holds the initial pattern.
-+		 */
-+		memcmp_g(gpa, p2, size);
-+		if (gpa > base_gpa)
-+			memcmp_g(base_gpa, init_p, gpa - base_gpa);
-+		if (gpa + size < base_gpa + PER_CPU_DATA_SIZE)
-+			memcmp_g(gpa + size, init_p,
-+				 (base_gpa + PER_CPU_DATA_SIZE) - (gpa + size));
-+
-+		/*
-+		 * Convert odd-number page frames back to shared to verify KVM
-+		 * also correctly handles holes in private ranges.
-+		 */
-+		for (j = 0; j < size; j += PAGE_SIZE) {
-+			if ((j >> PAGE_SHIFT) & 1) {
-+				guest_map_shared(gpa + j, PAGE_SIZE, do_fallocate);
-+				guest_sync_shared(gpa + j, PAGE_SIZE, p1, p3);
-+
-+				memcmp_g(gpa + j, p3, PAGE_SIZE);
-+			} else {
-+				guest_sync_private(gpa + j, PAGE_SIZE, p1);
-+			}
-+		}
-+
-+skip:
-+		/*
-+		 * Convert the entire region back to shared, explicitly write
-+		 * pattern three to fill in the even-number frames before
-+		 * asking the host to verify (and write pattern four).
-+		 */
-+		guest_map_shared(gpa, size, do_fallocate);
-+		memset((void *)gpa, p3, size);
-+		guest_sync_shared(gpa, size, p3, p4);
-+		memcmp_g(gpa, p4, size);
-+
-+		/* Reset the shared memory back to the initial pattern. */
-+		memset((void *)gpa, init_p, size);
-+
-+		/*
-+		 * Free (via PUNCH_HOLE) *all* private memory so that the next
-+		 * iteration starts from a clean slate, e.g. with respect to
-+		 * whether or not there are pages/folios in guest_mem.
-+		 */
-+		guest_map_shared(base_gpa, PER_CPU_DATA_SIZE, true);
-+	}
-+}
-+
-+static void guest_code(uint64_t base_gpa)
-+{
-+	/*
-+	 * Run everything twice, with and without doing fallocate() on the
-+	 * guest_memfd backing when converting between shared and private.
-+	 */
-+	guest_run_test(base_gpa, false);
-+	guest_run_test(base_gpa, true);
-+	GUEST_DONE();
-+}
-+
-+static void handle_exit_hypercall(struct kvm_vcpu *vcpu)
-+{
-+	struct kvm_run *run = vcpu->run;
-+	uint64_t gpa = run->hypercall.args[0];
-+	uint64_t size = run->hypercall.args[1] * PAGE_SIZE;
-+	bool map_shared = run->hypercall.args[2] & MAP_GPA_SHARED;
-+	bool do_fallocate = run->hypercall.args[2] & MAP_GPA_DO_FALLOCATE;
-+	struct kvm_vm *vm = vcpu->vm;
-+
-+	TEST_ASSERT(run->hypercall.nr == KVM_HC_MAP_GPA_RANGE,
-+		    "Wanted MAP_GPA_RANGE (%u), got '%llu'",
-+		    KVM_HC_MAP_GPA_RANGE, run->hypercall.nr);
-+
-+	if (do_fallocate)
-+		vm_guest_mem_fallocate(vm, gpa, size, map_shared);
-+
-+	vm_set_memory_attributes(vm, gpa, size,
-+				 map_shared ? 0 : KVM_MEMORY_ATTRIBUTE_PRIVATE);
-+	run->hypercall.ret = 0;
-+}
-+
-+static bool run_vcpus;
-+
-+static void *__test_mem_conversions(void *__vcpu)
-+{
-+	struct kvm_vcpu *vcpu = __vcpu;
-+	struct kvm_run *run = vcpu->run;
-+	struct kvm_vm *vm = vcpu->vm;
-+	struct ucall uc;
-+
-+	while (!READ_ONCE(run_vcpus))
-+		;
-+
-+	for ( ;; ) {
-+		vcpu_run(vcpu);
-+
-+		if (run->exit_reason == KVM_EXIT_HYPERCALL) {
-+			handle_exit_hypercall(vcpu);
-+			continue;
-+		}
-+
-+		TEST_ASSERT(run->exit_reason == KVM_EXIT_IO,
-+			    "Wanted KVM_EXIT_IO, got exit reason: %u (%s)",
-+			    run->exit_reason, exit_reason_str(run->exit_reason));
-+
-+		switch (get_ucall(vcpu, &uc)) {
-+		case UCALL_ABORT:
-+			REPORT_GUEST_ASSERT_4(uc, "%lx %lx %lx %lx");
-+		case UCALL_SYNC: {
-+			uint8_t *hva = addr_gpa2hva(vm, uc.args[1]);
-+			uint64_t size = uc.args[2];
-+
-+			TEST_ASSERT(uc.args[0] == SYNC_SHARED ||
-+				    uc.args[0] == SYNC_PRIVATE,
-+				    "Unknown sync command '%ld'", uc.args[0]);
-+
-+			/* In all cases, the host should observe the shared data. */
-+			memcmp_h(hva, uc.args[3], size);
-+
-+			/* For shared, write the new pattern to guest memory. */
-+			if (uc.args[0] == SYNC_SHARED)
-+				memset(hva, uc.args[4], size);
-+			break;
-+		}
-+		case UCALL_DONE:
-+			return NULL;
-+		default:
-+			TEST_FAIL("Unknown ucall 0x%lx.", uc.cmd);
-+		}
-+	}
-+}
-+
-+static void test_mem_conversions(enum vm_mem_backing_src_type src_type, uint32_t nr_vcpus,
-+				 uint32_t nr_memslots)
-+{
-+	/*
-+	 * Allocate enough memory so that each vCPU's chunk of memory can be
-+	 * naturally aligned with respect to the size of the backing store.
-+	 */
-+	const size_t size = align_up(PER_CPU_DATA_SIZE, get_backing_src_pagesz(src_type));
-+	const size_t memfd_size = size * nr_vcpus;
-+	struct kvm_vcpu *vcpus[KVM_MAX_VCPUS];
-+	pthread_t threads[KVM_MAX_VCPUS];
-+	uint64_t gmem_flags;
-+	struct kvm_vm *vm;
-+	int memfd, i, r;
-+
-+	const struct vm_shape shape = {
-+		.mode = VM_MODE_DEFAULT,
-+		.type = KVM_X86_SW_PROTECTED_VM,
-+	};
-+
-+	vm = __vm_create_with_vcpus(shape, nr_vcpus, 0, guest_code, vcpus);
-+
-+	vm_enable_cap(vm, KVM_CAP_EXIT_HYPERCALL, (1 << KVM_HC_MAP_GPA_RANGE));
-+
-+	if (backing_src_can_be_huge(src_type))
-+		gmem_flags = KVM_GUEST_MEMFD_ALLOW_HUGEPAGE;
-+	else
-+		gmem_flags = 0;
-+	memfd = vm_create_guest_memfd(vm, memfd_size, gmem_flags);
-+
-+	for (i = 0; i < nr_memslots; i++)
-+		vm_mem_add(vm, src_type, BASE_DATA_GPA + size * i,
-+			   BASE_DATA_SLOT + i, size / vm->page_size,
-+			   KVM_MEM_PRIVATE, memfd, size * i);
-+
-+	for (i = 0; i < nr_vcpus; i++) {
-+		uint64_t gpa =  BASE_DATA_GPA + i * size;
-+
-+		vcpu_args_set(vcpus[i], 1, gpa);
-+
-+		virt_map(vm, gpa, gpa, size / vm->page_size);
-+
-+		pthread_create(&threads[i], NULL, __test_mem_conversions, vcpus[i]);
-+	}
-+
-+	WRITE_ONCE(run_vcpus, true);
-+
-+	for (i = 0; i < nr_vcpus; i++)
-+		pthread_join(threads[i], NULL);
-+
-+	kvm_vm_free(vm);
-+
-+	/*
-+	 * Allocate and free memory from the guest_memfd after closing the VM
-+	 * fd.  The guest_memfd is gifted a reference to its owning VM, i.e.
-+	 * should prevent the VM from being fully destroyed until the last
-+	 * reference to the guest_memfd is also put.
-+	 */
-+	r = fallocate(memfd, FALLOC_FL_KEEP_SIZE | FALLOC_FL_PUNCH_HOLE, 0, memfd_size);
-+	TEST_ASSERT(!r, __KVM_SYSCALL_ERROR("fallocate()", r));
-+
-+	r = fallocate(memfd, FALLOC_FL_KEEP_SIZE, 0, memfd_size);
-+	TEST_ASSERT(!r, __KVM_SYSCALL_ERROR("fallocate()", r));
-+}
-+
-+static void usage(const char *cmd)
-+{
-+	puts("");
-+	printf("usage: %s [-h] [-m] [-s mem_type] [-n nr_vcpus]\n", cmd);
-+	puts("");
-+	backing_src_help("-s");
-+	puts("");
-+	puts(" -n: specify the number of vcpus (default: 1)");
-+	puts("");
-+	puts(" -m: use multiple memslots (default: 1)");
-+	puts("");
-+}
-+
-+int main(int argc, char *argv[])
-+{
-+	enum vm_mem_backing_src_type src_type = DEFAULT_VM_MEM_SRC;
-+	bool use_multiple_memslots = false;
-+	uint32_t nr_vcpus = 1;
-+	uint32_t nr_memslots;
-+	int opt;
-+
-+	TEST_REQUIRE(kvm_has_cap(KVM_CAP_EXIT_HYPERCALL));
-+	TEST_REQUIRE(kvm_check_cap(KVM_CAP_VM_TYPES) & BIT(KVM_X86_SW_PROTECTED_VM));
-+
-+	while ((opt = getopt(argc, argv, "hms:n:")) != -1) {
-+		switch (opt) {
-+		case 's':
-+			src_type = parse_backing_src_type(optarg);
-+			break;
-+		case 'n':
-+			nr_vcpus = atoi_positive("nr_vcpus", optarg);
-+			break;
-+		case 'm':
-+			use_multiple_memslots = true;
-+			break;
-+		case 'h':
-+		default:
-+			usage(argv[0]);
-+			exit(0);
-+		}
-+	}
-+
-+	nr_memslots = use_multiple_memslots ? nr_vcpus : 1;
-+
-+	test_mem_conversions(src_type, nr_vcpus, nr_memslots);
-+
-+	return 0;
-+}
+ struct kvm_vcpu *vm_recreate_with_one_vcpu(struct kvm_vm *vm);
+ 
+ void kvm_pin_this_task_to_pcpu(uint32_t pcpu);
+diff --git a/tools/testing/selftests/kvm/kvm_page_table_test.c b/tools/testing/selftests/kvm/kvm_page_table_test.c
+index b3b00be1ef82..e8c2aabbca2b 100644
+--- a/tools/testing/selftests/kvm/kvm_page_table_test.c
++++ b/tools/testing/selftests/kvm/kvm_page_table_test.c
+@@ -254,7 +254,7 @@ static struct kvm_vm *pre_init_before_test(enum vm_guest_mode mode, void *arg)
+ 
+ 	/* Create a VM with enough guest pages */
+ 	guest_num_pages = test_mem_size / guest_page_size;
+-	vm = __vm_create_with_vcpus(mode, nr_vcpus, guest_num_pages,
++	vm = __vm_create_with_vcpus(VM_SHAPE(mode), nr_vcpus, guest_num_pages,
+ 				    guest_code, test_args.vcpus);
+ 
+ 	/* Align down GPA of the testing memslot */
+diff --git a/tools/testing/selftests/kvm/lib/kvm_util.c b/tools/testing/selftests/kvm/lib/kvm_util.c
+index 1283e24b76f1..64221c320389 100644
+--- a/tools/testing/selftests/kvm/lib/kvm_util.c
++++ b/tools/testing/selftests/kvm/lib/kvm_util.c
+@@ -209,7 +209,7 @@ __weak void vm_vaddr_populate_bitmap(struct kvm_vm *vm)
+ 		(1ULL << (vm->va_bits - 1)) >> vm->page_shift);
+ }
+ 
+-struct kvm_vm *____vm_create(enum vm_guest_mode mode)
++struct kvm_vm *____vm_create(struct vm_shape shape)
+ {
+ 	struct kvm_vm *vm;
+ 
+@@ -221,13 +221,13 @@ struct kvm_vm *____vm_create(enum vm_guest_mode mode)
+ 	vm->regions.hva_tree = RB_ROOT;
+ 	hash_init(vm->regions.slot_hash);
+ 
+-	vm->mode = mode;
+-	vm->type = 0;
++	vm->mode = shape.mode;
++	vm->type = shape.type;
+ 
+-	vm->pa_bits = vm_guest_mode_params[mode].pa_bits;
+-	vm->va_bits = vm_guest_mode_params[mode].va_bits;
+-	vm->page_size = vm_guest_mode_params[mode].page_size;
+-	vm->page_shift = vm_guest_mode_params[mode].page_shift;
++	vm->pa_bits = vm_guest_mode_params[vm->mode].pa_bits;
++	vm->va_bits = vm_guest_mode_params[vm->mode].va_bits;
++	vm->page_size = vm_guest_mode_params[vm->mode].page_size;
++	vm->page_shift = vm_guest_mode_params[vm->mode].page_shift;
+ 
+ 	/* Setup mode specific traits. */
+ 	switch (vm->mode) {
+@@ -265,7 +265,7 @@ struct kvm_vm *____vm_create(enum vm_guest_mode mode)
+ 		/*
+ 		 * Ignore KVM support for 5-level paging (vm->va_bits == 57),
+ 		 * it doesn't take effect unless a CR4.LA57 is set, which it
+-		 * isn't for this VM_MODE.
++		 * isn't for this mode (48-bit virtual address space).
+ 		 */
+ 		TEST_ASSERT(vm->va_bits == 48 || vm->va_bits == 57,
+ 			    "Linear address width (%d bits) not supported",
+@@ -285,10 +285,11 @@ struct kvm_vm *____vm_create(enum vm_guest_mode mode)
+ 		vm->pgtable_levels = 5;
+ 		break;
+ 	default:
+-		TEST_FAIL("Unknown guest mode, mode: 0x%x", mode);
++		TEST_FAIL("Unknown guest mode: 0x%x", vm->mode);
+ 	}
+ 
+ #ifdef __aarch64__
++	TEST_ASSERT(!vm->type, "ARM doesn't support test-provided types");
+ 	if (vm->pa_bits != 40)
+ 		vm->type = KVM_VM_TYPE_ARM_IPA_SIZE(vm->pa_bits);
+ #endif
+@@ -343,19 +344,19 @@ static uint64_t vm_nr_pages_required(enum vm_guest_mode mode,
+ 	return vm_adjust_num_guest_pages(mode, nr_pages);
+ }
+ 
+-struct kvm_vm *__vm_create(enum vm_guest_mode mode, uint32_t nr_runnable_vcpus,
++struct kvm_vm *__vm_create(struct vm_shape shape, uint32_t nr_runnable_vcpus,
+ 			   uint64_t nr_extra_pages)
+ {
+-	uint64_t nr_pages = vm_nr_pages_required(mode, nr_runnable_vcpus,
++	uint64_t nr_pages = vm_nr_pages_required(shape.mode, nr_runnable_vcpus,
+ 						 nr_extra_pages);
+ 	struct userspace_mem_region *slot0;
+ 	struct kvm_vm *vm;
+ 	int i;
+ 
+-	pr_debug("%s: mode='%s' pages='%ld'\n", __func__,
+-		 vm_guest_mode_string(mode), nr_pages);
++	pr_debug("%s: mode='%s' type='%d', pages='%ld'\n", __func__,
++		 vm_guest_mode_string(shape.mode), shape.type, nr_pages);
+ 
+-	vm = ____vm_create(mode);
++	vm = ____vm_create(shape);
+ 
+ 	vm_userspace_mem_region_add(vm, VM_MEM_SRC_ANONYMOUS, 0, 0, nr_pages, 0);
+ 	for (i = 0; i < NR_MEM_REGIONS; i++)
+@@ -396,7 +397,7 @@ struct kvm_vm *__vm_create(enum vm_guest_mode mode, uint32_t nr_runnable_vcpus,
+  * extra_mem_pages is only used to calculate the maximum page table size,
+  * no real memory allocation for non-slot0 memory in this function.
+  */
+-struct kvm_vm *__vm_create_with_vcpus(enum vm_guest_mode mode, uint32_t nr_vcpus,
++struct kvm_vm *__vm_create_with_vcpus(struct vm_shape shape, uint32_t nr_vcpus,
+ 				      uint64_t extra_mem_pages,
+ 				      void *guest_code, struct kvm_vcpu *vcpus[])
+ {
+@@ -405,7 +406,7 @@ struct kvm_vm *__vm_create_with_vcpus(enum vm_guest_mode mode, uint32_t nr_vcpus
+ 
+ 	TEST_ASSERT(!nr_vcpus || vcpus, "Must provide vCPU array");
+ 
+-	vm = __vm_create(mode, nr_vcpus, extra_mem_pages);
++	vm = __vm_create(shape, nr_vcpus, extra_mem_pages);
+ 
+ 	for (i = 0; i < nr_vcpus; ++i)
+ 		vcpus[i] = vm_vcpu_add(vm, i, guest_code);
+@@ -413,15 +414,15 @@ struct kvm_vm *__vm_create_with_vcpus(enum vm_guest_mode mode, uint32_t nr_vcpus
+ 	return vm;
+ }
+ 
+-struct kvm_vm *__vm_create_with_one_vcpu(struct kvm_vcpu **vcpu,
+-					 uint64_t extra_mem_pages,
+-					 void *guest_code)
++struct kvm_vm *__vm_create_shape_with_one_vcpu(struct vm_shape shape,
++					       struct kvm_vcpu **vcpu,
++					       uint64_t extra_mem_pages,
++					       void *guest_code)
+ {
+ 	struct kvm_vcpu *vcpus[1];
+ 	struct kvm_vm *vm;
+ 
+-	vm = __vm_create_with_vcpus(VM_MODE_DEFAULT, 1, extra_mem_pages,
+-				    guest_code, vcpus);
++	vm = __vm_create_with_vcpus(shape, 1, extra_mem_pages, guest_code, vcpus);
+ 
+ 	*vcpu = vcpus[0];
+ 	return vm;
+diff --git a/tools/testing/selftests/kvm/lib/memstress.c b/tools/testing/selftests/kvm/lib/memstress.c
+index df457452d146..d05487e5a371 100644
+--- a/tools/testing/selftests/kvm/lib/memstress.c
++++ b/tools/testing/selftests/kvm/lib/memstress.c
+@@ -168,7 +168,8 @@ struct kvm_vm *memstress_create_vm(enum vm_guest_mode mode, int nr_vcpus,
+ 	 * The memory is also added to memslot 0, but that's a benign side
+ 	 * effect as KVM allows aliasing HVAs in meslots.
+ 	 */
+-	vm = __vm_create_with_vcpus(mode, nr_vcpus, slot0_pages + guest_num_pages,
++	vm = __vm_create_with_vcpus(VM_SHAPE(mode), nr_vcpus,
++				    slot0_pages + guest_num_pages,
+ 				    memstress_guest_code, vcpus);
+ 
+ 	args->vm = vm;
+diff --git a/tools/testing/selftests/kvm/x86_64/ucna_injection_test.c b/tools/testing/selftests/kvm/x86_64/ucna_injection_test.c
+index 85f34ca7e49e..0ed32ec903d0 100644
+--- a/tools/testing/selftests/kvm/x86_64/ucna_injection_test.c
++++ b/tools/testing/selftests/kvm/x86_64/ucna_injection_test.c
+@@ -271,7 +271,7 @@ int main(int argc, char *argv[])
+ 
+ 	kvm_check_cap(KVM_CAP_MCE);
+ 
+-	vm = __vm_create(VM_MODE_DEFAULT, 3, 0);
++	vm = __vm_create(VM_SHAPE_DEFAULT, 3, 0);
+ 
+ 	kvm_ioctl(vm->kvm_fd, KVM_X86_GET_MCE_CAP_SUPPORTED,
+ 		  &supported_mcg_caps);
 -- 
 2.41.0.255.g8b1d071c50-goog
 
