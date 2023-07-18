@@ -1,172 +1,189 @@
-From: Shaoqin Huang <shahuang@redhat.com>
-Date: Tue, 18 Jul 2023 14:21:30 +0800
-Subject: [PATCH v6 05/11] arm64: tlb: Refactor the core flush algorithm of
- __flush_tlb_range
-In-Reply-To: <20230715005405.3689586-6-rananta@google.com>
-References: <20230715005405.3689586-1-rananta@google.com>
- <20230715005405.3689586-6-rananta@google.com>
-Message-ID: <8987d68b-d62a-7a9b-3aa3-cd5cc7ad551c@redhat.com>
+From: Sean Christopherson <seanjc@google.com>
+Date: Tue, 18 Jul 2023 16:44:44 -0700
+Subject: [RFC PATCH v11 01/29] KVM: Wrap kvm_gfn_range.pte in a per-action union
+In-Reply-To: <20230718234512.1690985-1-seanjc@google.com>
+References: <20230718234512.1690985-1-seanjc@google.com>
+Message-ID: <20230718234512.1690985-2-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+Signed-off-by: Sean Christopherson <seanjc@google.com>
+---
+ arch/arm64/kvm/mmu.c       |  2 +-
+ arch/mips/kvm/mmu.c        |  2 +-
+ arch/riscv/kvm/mmu.c       |  2 +-
+ arch/x86/kvm/mmu/mmu.c     |  2 +-
+ arch/x86/kvm/mmu/tdp_mmu.c |  6 +++---
+ include/linux/kvm_host.h   |  5 ++++-
+ virt/kvm/kvm_main.c        | 16 ++++++++++------
+ 7 files changed, 21 insertions(+), 14 deletions(-)
 
-
-On 7/15/23 08:53, Raghavendra Rao Ananta wrote:
-> Currently, the core TLB flush functionality of __flush_tlb_range()
-> hardcodes vae1is (and variants) for the flush operation. In the
-> upcoming patches, the KVM code reuses this core algorithm with
-> ipas2e1is for range based TLB invalidations based on the IPA.
-> Hence, extract the core flush functionality of __flush_tlb_range()
-> into its own macro that accepts an 'op' argument to pass any
-> TLBI operation, such that other callers (KVM) can benefit.
-> 
-> No functional changes intended.
-> 
-> Signed-off-by: Raghavendra Rao Ananta <rananta@google.com>
-> Reviewed-by: Catalin Marinas <catalin.marinas@arm.com>
-> Reviewed-by: Gavin Shan <gshan@redhat.com>
-Reviewed-by: Shaoqin Huang <shahuang@redhat.com>
-> ---
->   arch/arm64/include/asm/tlbflush.h | 109 +++++++++++++++---------------
->   1 file changed, 56 insertions(+), 53 deletions(-)
-> 
-> diff --git a/arch/arm64/include/asm/tlbflush.h b/arch/arm64/include/asm/tlbflush.h
-> index 412a3b9a3c25..f7fafba25add 100644
-> --- a/arch/arm64/include/asm/tlbflush.h
-> +++ b/arch/arm64/include/asm/tlbflush.h
-> @@ -278,14 +278,62 @@ static inline void flush_tlb_page(struct vm_area_struct *vma,
->    */
->   #define MAX_TLBI_OPS	PTRS_PER_PTE
->   
-> +/* When the CPU does not support TLB range operations, flush the TLB
-> + * entries one by one at the granularity of 'stride'. If the TLB
-> + * range ops are supported, then:
-> + *
-> + * 1. If 'pages' is odd, flush the first page through non-range
-> + *    operations;
-> + *
-> + * 2. For remaining pages: the minimum range granularity is decided
-> + *    by 'scale', so multiple range TLBI operations may be required.
-> + *    Start from scale = 0, flush the corresponding number of pages
-> + *    ((num+1)*2^(5*scale+1) starting from 'addr'), then increase it
-> + *    until no pages left.
-> + *
-> + * Note that certain ranges can be represented by either num = 31 and
-> + * scale or num = 0 and scale + 1. The loop below favours the latter
-> + * since num is limited to 30 by the __TLBI_RANGE_NUM() macro.
-> + */
-> +#define __flush_tlb_range_op(op, start, pages, stride,			\
-> +				asid, tlb_level, tlbi_user)		\
-> +do {									\
-> +	int num = 0;							\
-> +	int scale = 0;							\
-> +	unsigned long addr;						\
-> +									\
-> +	while (pages > 0) {						\
-> +		if (!system_supports_tlb_range() ||			\
-> +		    pages % 2 == 1) {					\
-> +			addr = __TLBI_VADDR(start, asid);		\
-> +			__tlbi_level(op, addr, tlb_level);		\
-> +			if (tlbi_user)					\
-> +				__tlbi_user_level(op, addr, tlb_level);	\
-> +			start += stride;				\
-> +			pages -= stride >> PAGE_SHIFT;			\
-> +			continue;					\
-> +		}							\
-> +									\
-> +		num = __TLBI_RANGE_NUM(pages, scale);			\
-> +		if (num >= 0) {						\
-> +			addr = __TLBI_VADDR_RANGE(start, asid, scale,	\
-> +						  num, tlb_level);	\
-> +			__tlbi(r##op, addr);				\
-> +			if (tlbi_user)					\
-> +				__tlbi_user(r##op, addr);		\
-> +			start += __TLBI_RANGE_PAGES(num, scale) << PAGE_SHIFT; \
-> +			pages -= __TLBI_RANGE_PAGES(num, scale);	\
-> +		}							\
-> +		scale++;						\
-> +	}								\
-> +} while (0)
-> +
->   static inline void __flush_tlb_range(struct vm_area_struct *vma,
->   				     unsigned long start, unsigned long end,
->   				     unsigned long stride, bool last_level,
->   				     int tlb_level)
->   {
-> -	int num = 0;
-> -	int scale = 0;
-> -	unsigned long asid, addr, pages;
-> +	unsigned long asid, pages;
->   
->   	start = round_down(start, stride);
->   	end = round_up(end, stride);
-> @@ -307,56 +355,11 @@ static inline void __flush_tlb_range(struct vm_area_struct *vma,
->   	dsb(ishst);
->   	asid = ASID(vma->vm_mm);
->   
-> -	/*
-> -	 * When the CPU does not support TLB range operations, flush the TLB
-> -	 * entries one by one at the granularity of 'stride'. If the TLB
-> -	 * range ops are supported, then:
-> -	 *
-> -	 * 1. If 'pages' is odd, flush the first page through non-range
-> -	 *    operations;
-> -	 *
-> -	 * 2. For remaining pages: the minimum range granularity is decided
-> -	 *    by 'scale', so multiple range TLBI operations may be required.
-> -	 *    Start from scale = 0, flush the corresponding number of pages
-> -	 *    ((num+1)*2^(5*scale+1) starting from 'addr'), then increase it
-> -	 *    until no pages left.
-> -	 *
-> -	 * Note that certain ranges can be represented by either num = 31 and
-> -	 * scale or num = 0 and scale + 1. The loop below favours the latter
-> -	 * since num is limited to 30 by the __TLBI_RANGE_NUM() macro.
-> -	 */
-> -	while (pages > 0) {
-> -		if (!system_supports_tlb_range() ||
-> -		    pages % 2 == 1) {
-> -			addr = __TLBI_VADDR(start, asid);
-> -			if (last_level) {
-> -				__tlbi_level(vale1is, addr, tlb_level);
-> -				__tlbi_user_level(vale1is, addr, tlb_level);
-> -			} else {
-> -				__tlbi_level(vae1is, addr, tlb_level);
-> -				__tlbi_user_level(vae1is, addr, tlb_level);
-> -			}
-> -			start += stride;
-> -			pages -= stride >> PAGE_SHIFT;
-> -			continue;
-> -		}
-> -
-> -		num = __TLBI_RANGE_NUM(pages, scale);
-> -		if (num >= 0) {
-> -			addr = __TLBI_VADDR_RANGE(start, asid, scale,
-> -						  num, tlb_level);
-> -			if (last_level) {
-> -				__tlbi(rvale1is, addr);
-> -				__tlbi_user(rvale1is, addr);
-> -			} else {
-> -				__tlbi(rvae1is, addr);
-> -				__tlbi_user(rvae1is, addr);
-> -			}
-> -			start += __TLBI_RANGE_PAGES(num, scale) << PAGE_SHIFT;
-> -			pages -= __TLBI_RANGE_PAGES(num, scale);
-> -		}
-> -		scale++;
-> -	}
-> +	if (last_level)
-> +		__flush_tlb_range_op(vale1is, start, pages, stride, asid, tlb_level, true);
-> +	else
-> +		__flush_tlb_range_op(vae1is, start, pages, stride, asid, tlb_level, true);
-> +
->   	dsb(ish);
->   }
->   
-
+diff --git a/arch/arm64/kvm/mmu.c b/arch/arm64/kvm/mmu.c
+index 6db9ef288ec3..55f03a68f1cd 100644
+--- a/arch/arm64/kvm/mmu.c
++++ b/arch/arm64/kvm/mmu.c
+@@ -1721,7 +1721,7 @@ bool kvm_unmap_gfn_range(struct kvm *kvm, struct kvm_gfn_range *range)
+ 
+ bool kvm_set_spte_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
+ {
+-	kvm_pfn_t pfn = pte_pfn(range->pte);
++	kvm_pfn_t pfn = pte_pfn(range->arg.pte);
+ 
+ 	if (!kvm->arch.mmu.pgt)
+ 		return false;
+diff --git a/arch/mips/kvm/mmu.c b/arch/mips/kvm/mmu.c
+index e8c08988ed37..7b2ac1319d70 100644
+--- a/arch/mips/kvm/mmu.c
++++ b/arch/mips/kvm/mmu.c
+@@ -447,7 +447,7 @@ bool kvm_unmap_gfn_range(struct kvm *kvm, struct kvm_gfn_range *range)
+ bool kvm_set_spte_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
+ {
+ 	gpa_t gpa = range->start << PAGE_SHIFT;
+-	pte_t hva_pte = range->pte;
++	pte_t hva_pte = range->arg.pte;
+ 	pte_t *gpa_pte = kvm_mips_pte_for_gpa(kvm, NULL, gpa);
+ 	pte_t old_pte;
+ 
+diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
+index f2eb47925806..857f4312b0f8 100644
+--- a/arch/riscv/kvm/mmu.c
++++ b/arch/riscv/kvm/mmu.c
+@@ -559,7 +559,7 @@ bool kvm_unmap_gfn_range(struct kvm *kvm, struct kvm_gfn_range *range)
+ bool kvm_set_spte_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
+ {
+ 	int ret;
+-	kvm_pfn_t pfn = pte_pfn(range->pte);
++	kvm_pfn_t pfn = pte_pfn(range->arg.pte);
+ 
+ 	if (!kvm->arch.pgd)
+ 		return false;
+diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
+index ec169f5c7dce..d72f2b20f430 100644
+--- a/arch/x86/kvm/mmu/mmu.c
++++ b/arch/x86/kvm/mmu/mmu.c
+@@ -1588,7 +1588,7 @@ static __always_inline bool kvm_handle_gfn_range(struct kvm *kvm,
+ 	for_each_slot_rmap_range(range->slot, PG_LEVEL_4K, KVM_MAX_HUGEPAGE_LEVEL,
+ 				 range->start, range->end - 1, &iterator)
+ 		ret |= handler(kvm, iterator.rmap, range->slot, iterator.gfn,
+-			       iterator.level, range->pte);
++			       iterator.level, range->arg.pte);
+ 
+ 	return ret;
+ }
+diff --git a/arch/x86/kvm/mmu/tdp_mmu.c b/arch/x86/kvm/mmu/tdp_mmu.c
+index 512163d52194..6250bd3d20c1 100644
+--- a/arch/x86/kvm/mmu/tdp_mmu.c
++++ b/arch/x86/kvm/mmu/tdp_mmu.c
+@@ -1241,7 +1241,7 @@ static bool set_spte_gfn(struct kvm *kvm, struct tdp_iter *iter,
+ 	u64 new_spte;
+ 
+ 	/* Huge pages aren't expected to be modified without first being zapped. */
+-	WARN_ON(pte_huge(range->pte) || range->start + 1 != range->end);
++	WARN_ON(pte_huge(range->arg.pte) || range->start + 1 != range->end);
+ 
+ 	if (iter->level != PG_LEVEL_4K ||
+ 	    !is_shadow_present_pte(iter->old_spte))
+@@ -1255,9 +1255,9 @@ static bool set_spte_gfn(struct kvm *kvm, struct tdp_iter *iter,
+ 	 */
+ 	tdp_mmu_iter_set_spte(kvm, iter, 0);
+ 
+-	if (!pte_write(range->pte)) {
++	if (!pte_write(range->arg.pte)) {
+ 		new_spte = kvm_mmu_changed_pte_notifier_make_spte(iter->old_spte,
+-								  pte_pfn(range->pte));
++								  pte_pfn(range->arg.pte));
+ 
+ 		tdp_mmu_iter_set_spte(kvm, iter, new_spte);
+ 	}
+diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+index 9d3ac7720da9..b901571ab61e 100644
+--- a/include/linux/kvm_host.h
++++ b/include/linux/kvm_host.h
+@@ -260,7 +260,10 @@ struct kvm_gfn_range {
+ 	struct kvm_memory_slot *slot;
+ 	gfn_t start;
+ 	gfn_t end;
+-	pte_t pte;
++	union {
++		pte_t pte;
++		u64 raw;
++	} arg;
+ 	bool may_block;
+ };
+ bool kvm_unmap_gfn_range(struct kvm *kvm, struct kvm_gfn_range *range);
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index dfbaafbe3a00..d58b7a506d27 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -526,7 +526,10 @@ typedef void (*on_unlock_fn_t)(struct kvm *kvm);
+ struct kvm_hva_range {
+ 	unsigned long start;
+ 	unsigned long end;
+-	pte_t pte;
++	union {
++		pte_t pte;
++		u64 raw;
++	} arg;
+ 	hva_handler_t handler;
+ 	on_lock_fn_t on_lock;
+ 	on_unlock_fn_t on_unlock;
+@@ -562,6 +565,10 @@ static __always_inline int __kvm_handle_hva_range(struct kvm *kvm,
+ 	struct kvm_memslots *slots;
+ 	int i, idx;
+ 
++	BUILD_BUG_ON(sizeof(gfn_range.arg) != sizeof(gfn_range.arg.raw));
++	BUILD_BUG_ON(sizeof(range->arg) != sizeof(range->arg.raw));
++	BUILD_BUG_ON(sizeof(gfn_range.arg) != sizeof(range->arg));
++
+ 	if (WARN_ON_ONCE(range->end <= range->start))
+ 		return 0;
+ 
+@@ -591,7 +598,7 @@ static __always_inline int __kvm_handle_hva_range(struct kvm *kvm,
+ 			 * bother making these conditional (to avoid writes on
+ 			 * the second or later invocation of the handler).
+ 			 */
+-			gfn_range.pte = range->pte;
++			gfn_range.arg.raw = range->arg.raw;
+ 			gfn_range.may_block = range->may_block;
+ 
+ 			/*
+@@ -639,7 +646,7 @@ static __always_inline int kvm_handle_hva_range(struct mmu_notifier *mn,
+ 	const struct kvm_hva_range range = {
+ 		.start		= start,
+ 		.end		= end,
+-		.pte		= pte,
++		.arg.pte	= pte,
+ 		.handler	= handler,
+ 		.on_lock	= (void *)kvm_null_fn,
+ 		.on_unlock	= (void *)kvm_null_fn,
+@@ -659,7 +666,6 @@ static __always_inline int kvm_handle_hva_range_no_flush(struct mmu_notifier *mn
+ 	const struct kvm_hva_range range = {
+ 		.start		= start,
+ 		.end		= end,
+-		.pte		= __pte(0),
+ 		.handler	= handler,
+ 		.on_lock	= (void *)kvm_null_fn,
+ 		.on_unlock	= (void *)kvm_null_fn,
+@@ -747,7 +753,6 @@ static int kvm_mmu_notifier_invalidate_range_start(struct mmu_notifier *mn,
+ 	const struct kvm_hva_range hva_range = {
+ 		.start		= range->start,
+ 		.end		= range->end,
+-		.pte		= __pte(0),
+ 		.handler	= kvm_unmap_gfn_range,
+ 		.on_lock	= kvm_mmu_invalidate_begin,
+ 		.on_unlock	= kvm_arch_guest_memory_reclaimed,
+@@ -812,7 +817,6 @@ static void kvm_mmu_notifier_invalidate_range_end(struct mmu_notifier *mn,
+ 	const struct kvm_hva_range hva_range = {
+ 		.start		= range->start,
+ 		.end		= range->end,
+-		.pte		= __pte(0),
+ 		.handler	= (void *)kvm_null_fn,
+ 		.on_lock	= kvm_mmu_invalidate_end,
+ 		.on_unlock	= (void *)kvm_null_fn,
 -- 
-Shaoqin
+2.41.0.255.g8b1d071c50-goog
 
 
