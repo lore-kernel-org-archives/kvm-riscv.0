@@ -1,10 +1,10 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Tue, 18 Jul 2023 16:45:05 -0700
-Subject: [RFC PATCH v11 22/29] KVM: selftests: Add helpers to do
- KVM_HC_MAP_GPA_RANGE hypercalls (x86)
+Date: Tue, 18 Jul 2023 16:45:04 -0700
+Subject: [RFC PATCH v11 21/29] KVM: selftests: Add helpers to convert guest
+ memory b/w private and shared
 In-Reply-To: <20230718234512.1690985-1-seanjc@google.com>
 References: <20230718234512.1690985-1-seanjc@google.com>
-Message-ID: <20230718234512.1690985-23-seanjc@google.com>
+Message-ID: <20230718234512.1690985-22-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -14,45 +14,109 @@ Content-Transfer-Encoding: 7bit
 From: Vishal Annapurve <vannapurve@google.com>
 
 Signed-off-by: Vishal Annapurve <vannapurve@google.com>
-[sean: drop shared/private helpers (let tests specify flags)]
+Co-developed-by: Sean Christopherson <seanjc@google.com>
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- .../selftests/kvm/include/x86_64/processor.h      | 15 +++++++++++++++
- 1 file changed, 15 insertions(+)
+ .../selftests/kvm/include/kvm_util_base.h     | 48 +++++++++++++++++++
+ tools/testing/selftests/kvm/lib/kvm_util.c    | 26 ++++++++++
+ 2 files changed, 74 insertions(+)
 
-diff --git a/tools/testing/selftests/kvm/include/x86_64/processor.h b/tools/testing/selftests/kvm/include/x86_64/processor.h
-index aa434c8f19c5..8857143d400a 100644
---- a/tools/testing/selftests/kvm/include/x86_64/processor.h
-+++ b/tools/testing/selftests/kvm/include/x86_64/processor.h
-@@ -15,6 +15,7 @@
- #include <asm/msr-index.h>
- #include <asm/prctl.h>
+diff --git a/tools/testing/selftests/kvm/include/kvm_util_base.h b/tools/testing/selftests/kvm/include/kvm_util_base.h
+index f1de6a279561..1819787b773b 100644
+--- a/tools/testing/selftests/kvm/include/kvm_util_base.h
++++ b/tools/testing/selftests/kvm/include/kvm_util_base.h
+@@ -312,6 +312,54 @@ static inline void vm_enable_cap(struct kvm_vm *vm, uint32_t cap, uint64_t arg0)
+ 	vm_ioctl(vm, KVM_ENABLE_CAP, &enable_cap);
+ }
  
-+#include <linux/kvm_para.h>
- #include <linux/stringify.h>
- 
- #include "../kvm_util.h"
-@@ -1166,6 +1167,20 @@ uint64_t kvm_hypercall(uint64_t nr, uint64_t a0, uint64_t a1, uint64_t a2,
- uint64_t __xen_hypercall(uint64_t nr, uint64_t a0, void *a1);
- void xen_hypercall(uint64_t nr, uint64_t a0, void *a1);
- 
-+static inline uint64_t __kvm_hypercall_map_gpa_range(uint64_t gpa,
-+						     uint64_t size, uint64_t flags)
++static inline void vm_set_memory_attributes(struct kvm_vm *vm, uint64_t gpa,
++					    uint64_t size, uint64_t attributes)
 +{
-+	return kvm_hypercall(KVM_HC_MAP_GPA_RANGE, gpa, size >> PAGE_SHIFT, flags, 0);
++	struct kvm_memory_attributes attr = {
++		.attributes = attributes,
++		.address = gpa,
++		.size = size,
++		.flags = 0,
++	};
++
++	/*
++	 * KVM_SET_MEMORY_ATTRIBUTES overwrites _all_ attributes.  These flows
++	 * need significant enhancements to support multiple attributes.
++	 */
++	TEST_ASSERT(!attributes || attributes == KVM_MEMORY_ATTRIBUTE_PRIVATE,
++		    "Update me to support multiple attributes!");
++
++	vm_ioctl(vm, KVM_SET_MEMORY_ATTRIBUTES, &attr);
 +}
 +
-+static inline void kvm_hypercall_map_gpa_range(uint64_t gpa, uint64_t size,
-+					       uint64_t flags)
-+{
-+	uint64_t ret = __kvm_hypercall_map_gpa_range(gpa, size, flags);
 +
-+	GUEST_ASSERT_1(!ret, ret);
++static inline void vm_mem_set_private(struct kvm_vm *vm, uint64_t gpa,
++				      uint64_t size)
++{
++	vm_set_memory_attributes(vm, gpa, size, KVM_MEMORY_ATTRIBUTE_PRIVATE);
 +}
 +
- void __vm_xsave_require_permission(uint64_t xfeature, const char *name);
++static inline void vm_mem_set_shared(struct kvm_vm *vm, uint64_t gpa,
++				     uint64_t size)
++{
++	vm_set_memory_attributes(vm, gpa, size, 0);
++}
++
++void vm_guest_mem_fallocate(struct kvm_vm *vm, uint64_t gpa, uint64_t size,
++			    bool punch_hole);
++
++static inline void vm_guest_mem_punch_hole(struct kvm_vm *vm, uint64_t gpa,
++					   uint64_t size)
++{
++	vm_guest_mem_fallocate(vm, gpa, size, true);
++}
++
++static inline void vm_guest_mem_allocate(struct kvm_vm *vm, uint64_t gpa,
++					 uint64_t size)
++{
++	vm_guest_mem_fallocate(vm, gpa, size, false);
++}
++
+ void vm_enable_dirty_ring(struct kvm_vm *vm, uint32_t ring_size);
+ const char *vm_guest_mode_string(uint32_t i);
  
- #define vm_xsave_require_permission(xfeature)	\
+diff --git a/tools/testing/selftests/kvm/lib/kvm_util.c b/tools/testing/selftests/kvm/lib/kvm_util.c
+index b93717e62325..1283e24b76f1 100644
+--- a/tools/testing/selftests/kvm/lib/kvm_util.c
++++ b/tools/testing/selftests/kvm/lib/kvm_util.c
+@@ -1171,6 +1171,32 @@ void vm_mem_region_delete(struct kvm_vm *vm, uint32_t slot)
+ 	__vm_mem_region_delete(vm, memslot2region(vm, slot), true);
+ }
+ 
++void vm_guest_mem_fallocate(struct kvm_vm *vm, uint64_t gpa, uint64_t size,
++			    bool punch_hole)
++{
++	struct userspace_mem_region *region;
++	uint64_t end = gpa + size - 1;
++	off_t fd_offset;
++	int mode, ret;
++
++	region = userspace_mem_region_find(vm, gpa, gpa);
++	TEST_ASSERT(region && region->region.flags & KVM_MEM_PRIVATE,
++		    "Private memory region not found for GPA 0x%lx", gpa);
++
++	TEST_ASSERT(region == userspace_mem_region_find(vm, end, end),
++		    "fallocate() for guest_memfd must act on a single memslot");
++
++	fd_offset = region->region.gmem_offset +
++		    (gpa - region->region.guest_phys_addr);
++
++	mode = FALLOC_FL_KEEP_SIZE | (punch_hole ? FALLOC_FL_PUNCH_HOLE : 0);
++
++	ret = fallocate(region->region.gmem_fd, mode, fd_offset, size);
++	TEST_ASSERT(!ret, "fallocate() failed to %s at %lx[%lu], fd = %d, mode = %x, offset = %lx\n",
++		     punch_hole ? "punch hole" : "allocate", gpa, size,
++		     region->region.gmem_fd, mode, fd_offset);
++}
++
+ /* Returns the size of a vCPU's kvm_run structure. */
+ static int vcpu_mmap_sz(void)
+ {
 -- 
 2.41.0.255.g8b1d071c50-goog
 
