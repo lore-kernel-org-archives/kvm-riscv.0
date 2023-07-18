@@ -1,10 +1,9 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Tue, 18 Jul 2023 16:45:10 -0700
-Subject: [RFC PATCH v11 27/29] KVM: selftests: Expand set_memory_region_test
- to validate guest_memfd()
+Date: Tue, 18 Jul 2023 16:45:09 -0700
+Subject: [RFC PATCH v11 26/29] KVM: selftests: Add KVM_SET_USER_MEMORY_REGION2 helper
 In-Reply-To: <20230718234512.1690985-1-seanjc@google.com>
 References: <20230718234512.1690985-1-seanjc@google.com>
-Message-ID: <20230718234512.1690985-28-seanjc@google.com>
+Message-ID: <20230718234512.1690985-27-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -13,162 +12,74 @@ Content-Transfer-Encoding: 7bit
 
 From: Chao Peng <chao.p.peng@linux.intel.com>
 
-Expand set_memory_region_test to exercise various positive and negative
-testcases for private memory.
-
- - Non-guest_memfd() file descriptor for private memory
- - guest_memfd() from different VM
- - Overlapping bindings
- - Unaligned bindings
+Provide a raw version as well as an assert-success version to reduce
+the amount of boilerplate code need for basic usage.
 
 Signed-off-by: Chao Peng <chao.p.peng@linux.intel.com>
-Co-developed-by: Ackerley Tng <ackerleytng@google.com>
 Signed-off-by: Ackerley Tng <ackerleytng@google.com>
-[sean: trim the testcases to remove duplicate coverage]
-Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- .../selftests/kvm/include/kvm_util_base.h     | 10 ++
- .../selftests/kvm/set_memory_region_test.c    | 99 +++++++++++++++++++
- 2 files changed, 109 insertions(+)
+ .../selftests/kvm/include/kvm_util_base.h     |  7 +++++
+ tools/testing/selftests/kvm/lib/kvm_util.c    | 29 +++++++++++++++++++
+ 2 files changed, 36 insertions(+)
 
 diff --git a/tools/testing/selftests/kvm/include/kvm_util_base.h b/tools/testing/selftests/kvm/include/kvm_util_base.h
-index 334df27a6f43..39b38c75b99c 100644
+index 856440294013..334df27a6f43 100644
 --- a/tools/testing/selftests/kvm/include/kvm_util_base.h
 +++ b/tools/testing/selftests/kvm/include/kvm_util_base.h
-@@ -789,6 +789,16 @@ static inline struct kvm_vm *vm_create_barebones(void)
- 	return ____vm_create(VM_SHAPE_DEFAULT);
+@@ -492,6 +492,13 @@ void vm_set_user_memory_region(struct kvm_vm *vm, uint32_t slot, uint32_t flags,
+ 			       uint64_t gpa, uint64_t size, void *hva);
+ int __vm_set_user_memory_region(struct kvm_vm *vm, uint32_t slot, uint32_t flags,
+ 				uint64_t gpa, uint64_t size, void *hva);
++void vm_set_user_memory_region2(struct kvm_vm *vm, uint32_t slot,
++				uint32_t flags, uint64_t gpa, uint64_t size,
++				void *hva, uint32_t gmem_fd, uint64_t gmem_offset);
++int __vm_set_user_memory_region2(struct kvm_vm *vm, uint32_t slot,
++				 uint32_t flags, uint64_t gpa, uint64_t size,
++				 void *hva, uint32_t gmem_fd, uint64_t gmem_offset);
++
+ void vm_userspace_mem_region_add(struct kvm_vm *vm,
+ 	enum vm_mem_backing_src_type src_type,
+ 	uint64_t guest_paddr, uint32_t slot, uint64_t npages,
+diff --git a/tools/testing/selftests/kvm/lib/kvm_util.c b/tools/testing/selftests/kvm/lib/kvm_util.c
+index 64221c320389..f7b8b5eb3e8f 100644
+--- a/tools/testing/selftests/kvm/lib/kvm_util.c
++++ b/tools/testing/selftests/kvm/lib/kvm_util.c
+@@ -868,6 +868,35 @@ void vm_set_user_memory_region(struct kvm_vm *vm, uint32_t slot, uint32_t flags,
+ 		    errno, strerror(errno));
  }
  
-+static inline struct kvm_vm *vm_create_barebones_protected_vm(void)
++int __vm_set_user_memory_region2(struct kvm_vm *vm, uint32_t slot,
++				 uint32_t flags, uint64_t gpa, uint64_t size,
++				 void *hva, uint32_t gmem_fd, uint64_t gmem_offset)
 +{
-+	const struct vm_shape shape = {
-+		.mode = VM_MODE_DEFAULT,
-+		.type = KVM_X86_SW_PROTECTED_VM,
++	struct kvm_userspace_memory_region2 region = {
++		.slot = slot,
++		.flags = flags,
++		.guest_phys_addr = gpa,
++		.memory_size = size,
++		.userspace_addr = (uintptr_t)hva,
++		.gmem_fd = gmem_fd,
++		.gmem_offset = gmem_offset,
 +	};
 +
-+	return ____vm_create(shape);
++	return ioctl(vm->fd, KVM_SET_USER_MEMORY_REGION2, &region);
 +}
 +
- static inline struct kvm_vm *vm_create(uint32_t nr_runnable_vcpus)
- {
- 	return __vm_create(VM_SHAPE_DEFAULT, nr_runnable_vcpus, 0);
-diff --git a/tools/testing/selftests/kvm/set_memory_region_test.c b/tools/testing/selftests/kvm/set_memory_region_test.c
-index a849ce23ca97..ca2ca6947376 100644
---- a/tools/testing/selftests/kvm/set_memory_region_test.c
-+++ b/tools/testing/selftests/kvm/set_memory_region_test.c
-@@ -382,6 +382,98 @@ static void test_add_max_memory_regions(void)
- 	kvm_vm_free(vm);
- }
- 
-+
-+static void test_invalid_guest_memfd(struct kvm_vm *vm, int memfd,
-+				     size_t offset, const char *msg)
++void vm_set_user_memory_region2(struct kvm_vm *vm, uint32_t slot,
++				uint32_t flags, uint64_t gpa, uint64_t size,
++				void *hva, uint32_t gmem_fd, uint64_t gmem_offset)
 +{
-+	int r = __vm_set_user_memory_region2(vm, MEM_REGION_SLOT, KVM_MEM_PRIVATE,
-+					     MEM_REGION_GPA, MEM_REGION_SIZE,
-+					     0, memfd, offset);
-+	TEST_ASSERT(r == -1 && errno == EINVAL, "%s", msg);
++	int ret = __vm_set_user_memory_region2(vm, slot, flags, gpa, size, hva,
++					       gmem_fd, gmem_offset);
++
++	TEST_ASSERT(!ret, "KVM_SET_USER_MEMORY_REGION2 failed, errno = %d (%s)",
++		    errno, strerror(errno));
 +}
 +
-+static void test_add_private_memory_region(void)
-+{
-+	struct kvm_vm *vm, *vm2;
-+	int memfd, i;
 +
-+	pr_info("Testing ADD of KVM_MEM_PRIVATE memory regions\n");
-+
-+	vm = vm_create_barebones_protected_vm();
-+
-+	test_invalid_guest_memfd(vm, vm->kvm_fd, 0, "KVM fd should fail");
-+	test_invalid_guest_memfd(vm, vm->fd, 0, "VM's fd should fail");
-+
-+	memfd = kvm_memfd_alloc(MEM_REGION_SIZE, false);
-+	test_invalid_guest_memfd(vm, vm->fd, 0, "Regular memfd() should fail");
-+	close(memfd);
-+
-+	vm2 = vm_create_barebones_protected_vm();
-+	memfd = vm_create_guest_memfd(vm2, MEM_REGION_SIZE, 0);
-+	test_invalid_guest_memfd(vm, memfd, 0, "Other VM's guest_memfd() should fail");
-+
-+	vm_set_user_memory_region2(vm2, MEM_REGION_SLOT, KVM_MEM_PRIVATE,
-+				   MEM_REGION_GPA, MEM_REGION_SIZE, 0, memfd, 0);
-+	close(memfd);
-+	kvm_vm_free(vm2);
-+
-+	memfd = vm_create_guest_memfd(vm, MEM_REGION_SIZE, 0);
-+	for (i = 1; i < PAGE_SIZE; i++)
-+		test_invalid_guest_memfd(vm, memfd, i, "Unaligned offset should fail");
-+
-+	vm_set_user_memory_region2(vm, MEM_REGION_SLOT, KVM_MEM_PRIVATE,
-+				   MEM_REGION_GPA, MEM_REGION_SIZE, 0, memfd, 0);
-+	close(memfd);
-+
-+	kvm_vm_free(vm);
-+}
-+
-+static void test_add_overlapping_private_memory_regions(void)
-+{
-+	struct kvm_vm *vm;
-+	int memfd;
-+	int r;
-+
-+	pr_info("Testing ADD of overlapping KVM_MEM_PRIVATE memory regions\n");
-+
-+	vm = vm_create_barebones_protected_vm();
-+
-+	memfd = vm_create_guest_memfd(vm, MEM_REGION_SIZE * 4, 0);
-+
-+	vm_set_user_memory_region2(vm, MEM_REGION_SLOT, KVM_MEM_PRIVATE,
-+				   MEM_REGION_GPA, MEM_REGION_SIZE * 2, 0, memfd, 0);
-+
-+	vm_set_user_memory_region2(vm, MEM_REGION_SLOT + 1, KVM_MEM_PRIVATE,
-+				   MEM_REGION_GPA * 2, MEM_REGION_SIZE * 2,
-+				   0, memfd, MEM_REGION_SIZE * 2);
-+
-+	/*
-+	 * Delete the first memslot, and then attempt to recreate it except
-+	 * with a "bad" offset that results in overlap in the guest_memfd().
-+	 */
-+	vm_set_user_memory_region2(vm, MEM_REGION_SLOT, KVM_MEM_PRIVATE,
-+				   MEM_REGION_GPA, 0, NULL, -1, 0);
-+
-+	/* Overlap the front half of the other slot. */
-+	r = __vm_set_user_memory_region2(vm, MEM_REGION_SLOT, KVM_MEM_PRIVATE,
-+					 MEM_REGION_GPA * 2 - MEM_REGION_SIZE,
-+					 MEM_REGION_SIZE * 2,
-+					 0, memfd, 0);
-+	TEST_ASSERT(r == -1 && errno == EEXIST, "%s",
-+		    "Overlapping guest_memfd() bindings should fail with EEXIST");
-+
-+	/* And now the back half of the other slot. */
-+	r = __vm_set_user_memory_region2(vm, MEM_REGION_SLOT, KVM_MEM_PRIVATE,
-+					 MEM_REGION_GPA * 2 + MEM_REGION_SIZE,
-+					 MEM_REGION_SIZE * 2,
-+					 0, memfd, 0);
-+	TEST_ASSERT(r == -1 && errno == EEXIST, "%s",
-+		    "Overlapping guest_memfd() bindings should fail with EEXIST");
-+
-+	close(memfd);
-+	kvm_vm_free(vm);
-+}
-+
- int main(int argc, char *argv[])
- {
- #ifdef __x86_64__
-@@ -398,6 +490,13 @@ int main(int argc, char *argv[])
- 
- 	test_add_max_memory_regions();
- 
-+	if (kvm_check_cap(KVM_CAP_VM_TYPES) & BIT(KVM_X86_SW_PROTECTED_VM)) {
-+		test_add_private_memory_region();
-+		test_add_overlapping_private_memory_regions();
-+	} else {
-+		pr_info("Skipping tests for KVM_MEM_PRIVATE memory regions\n");
-+	}
-+
- #ifdef __x86_64__
- 	if (argc > 1)
- 		loops = atoi_positive("Number of iterations", argv[1]);
+ /* FIXME: This thing needs to be ripped apart and rewritten. */
+ void vm_mem_add(struct kvm_vm *vm, enum vm_mem_backing_src_type src_type,
+ 		uint64_t guest_paddr, uint32_t slot, uint64_t npages,
 -- 
 2.41.0.255.g8b1d071c50-goog
 
