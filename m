@@ -1,278 +1,149 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Tue, 18 Jul 2023 16:44:46 -0700
-Subject: [RFC PATCH v11 03/29] KVM: Use gfn instead of hva for mmu_notifier_retry
-In-Reply-To: <20230718234512.1690985-1-seanjc@google.com>
-References: <20230718234512.1690985-1-seanjc@google.com>
-Message-ID: <20230718234512.1690985-4-seanjc@google.com>
+Date: Tue, 18 Jul 2023 16:44:43 -0700
+Subject: [RFC PATCH v11 00/29]  KVM: guest_memfd() and per-page attributes
+Message-ID: <20230718234512.1690985-1-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Chao Peng <chao.p.peng@linux.intel.com>
+This is the next iteration of implementing fd-based (instead of vma-based)
+memory for KVM guests.  If you want the full background of why we are doing
+this, please go read the v10 cover letter[1].
 
-Currently in mmu_notifier invalidate path, hva range is recorded and
-then checked against by mmu_notifier_retry_hva() in the page fault
-handling path. However, for the to be introduced private memory, a page
-fault may not have a hva associated, checking gfn(gpa) makes more sense.
+The biggest change from v10 is to implement the backing storage in KVM
+itself, and expose it via a KVM ioctl() instead of a "generic" sycall.
+See link[2] for details on why we pivoted to a KVM-specific approach.
 
-For existing hva based shared memory, gfn is expected to also work. The
-only downside is when aliasing multiple gfns to a single hva, the
-current algorithm of checking multiple ranges could result in a much
-larger range being rejected. Such aliasing should be uncommon, so the
-impact is expected small.
+Key word is "biggest".  Relative to v10, there are many big changes.
+Highlights below (I can't remember everything that got changed at
+this point).
 
-Suggested-by: Sean Christopherson <seanjc@google.com>
-Signed-off-by: Chao Peng <chao.p.peng@linux.intel.com>
-Reviewed-by: Fuad Tabba <tabba@google.com>
-Tested-by: Fuad Tabba <tabba@google.com>
-[sean: convert vmx_set_apic_access_page_addr() to gfn-based API]
-Signed-off-by: Sean Christopherson <seanjc@google.com>
----
- arch/x86/kvm/mmu/mmu.c   | 10 ++++++----
- arch/x86/kvm/vmx/vmx.c   | 11 +++++------
- include/linux/kvm_host.h | 33 +++++++++++++++++++++------------
- virt/kvm/kvm_main.c      | 40 +++++++++++++++++++++++++++++++---------
- 4 files changed, 63 insertions(+), 31 deletions(-)
+Tagged RFC as there are a lot of empty changelogs, and a lot of missing
+documentation.  And ideally, we'll have even more tests before merging.
+There are also several gaps/opens (to be discussed in tomorrow's PUCK).
 
-diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
-index d72f2b20f430..b034727c4cf9 100644
---- a/arch/x86/kvm/mmu/mmu.c
-+++ b/arch/x86/kvm/mmu/mmu.c
-@@ -3087,7 +3087,7 @@ static void direct_pte_prefetch(struct kvm_vcpu *vcpu, u64 *sptep)
-  *
-  * There are several ways to safely use this helper:
-  *
-- * - Check mmu_invalidate_retry_hva() after grabbing the mapping level, before
-+ * - Check mmu_invalidate_retry_gfn() after grabbing the mapping level, before
-  *   consuming it.  In this case, mmu_lock doesn't need to be held during the
-  *   lookup, but it does need to be held while checking the MMU notifier.
-  *
-@@ -4400,7 +4400,7 @@ static bool is_page_fault_stale(struct kvm_vcpu *vcpu,
- 		return true;
- 
- 	return fault->slot &&
--	       mmu_invalidate_retry_hva(vcpu->kvm, fault->mmu_seq, fault->hva);
-+	       mmu_invalidate_retry_gfn(vcpu->kvm, fault->mmu_seq, fault->gfn);
- }
- 
- static int direct_page_fault(struct kvm_vcpu *vcpu, struct kvm_page_fault *fault)
-@@ -6301,7 +6301,9 @@ void kvm_zap_gfn_range(struct kvm *kvm, gfn_t gfn_start, gfn_t gfn_end)
- 
- 	write_lock(&kvm->mmu_lock);
- 
--	kvm_mmu_invalidate_begin(kvm, 0, -1ul);
-+	kvm_mmu_invalidate_begin(kvm);
-+
-+	kvm_mmu_invalidate_range_add(kvm, gfn_start, gfn_end);
- 
- 	flush = kvm_rmap_zap_gfn_range(kvm, gfn_start, gfn_end);
- 
-@@ -6314,7 +6316,7 @@ void kvm_zap_gfn_range(struct kvm *kvm, gfn_t gfn_start, gfn_t gfn_end)
- 	if (flush)
- 		kvm_flush_remote_tlbs_range(kvm, gfn_start, gfn_end - gfn_start);
- 
--	kvm_mmu_invalidate_end(kvm, 0, -1ul);
-+	kvm_mmu_invalidate_end(kvm);
- 
- 	write_unlock(&kvm->mmu_lock);
- }
-diff --git a/arch/x86/kvm/vmx/vmx.c b/arch/x86/kvm/vmx/vmx.c
-index 0ecf4be2c6af..946380b53cf5 100644
---- a/arch/x86/kvm/vmx/vmx.c
-+++ b/arch/x86/kvm/vmx/vmx.c
-@@ -6729,10 +6729,10 @@ static void vmx_set_apic_access_page_addr(struct kvm_vcpu *vcpu)
- 		return;
- 
- 	/*
--	 * Grab the memslot so that the hva lookup for the mmu_notifier retry
--	 * is guaranteed to use the same memslot as the pfn lookup, i.e. rely
--	 * on the pfn lookup's validation of the memslot to ensure a valid hva
--	 * is used for the retry check.
-+	 * Explicitly grab the memslot using KVM's internal slot ID to ensure
-+	 * KVM doesn't unintentionally grab a userspace memslot.  It _should_
-+	 * be impossible for userspace to create a memslot for the APIC when
-+	 * APICv is enabled, but paranoia won't hurt in this case.
- 	 */
- 	slot = id_to_memslot(slots, APIC_ACCESS_PAGE_PRIVATE_MEMSLOT);
- 	if (!slot || slot->flags & KVM_MEMSLOT_INVALID)
-@@ -6757,8 +6757,7 @@ static void vmx_set_apic_access_page_addr(struct kvm_vcpu *vcpu)
- 		return;
- 
- 	read_lock(&vcpu->kvm->mmu_lock);
--	if (mmu_invalidate_retry_hva(kvm, mmu_seq,
--				     gfn_to_hva_memslot(slot, gfn))) {
-+	if (mmu_invalidate_retry_gfn(kvm, mmu_seq, gfn)) {
- 		kvm_make_request(KVM_REQ_APIC_PAGE_RELOAD, vcpu);
- 		read_unlock(&vcpu->kvm->mmu_lock);
- 		goto out;
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index b901571ab61e..90a0be261a5c 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -788,8 +788,8 @@ struct kvm {
- 	struct mmu_notifier mmu_notifier;
- 	unsigned long mmu_invalidate_seq;
- 	long mmu_invalidate_in_progress;
--	unsigned long mmu_invalidate_range_start;
--	unsigned long mmu_invalidate_range_end;
-+	gfn_t mmu_invalidate_range_start;
-+	gfn_t mmu_invalidate_range_end;
- #endif
- 	struct list_head devices;
- 	u64 manual_dirty_log_protect;
-@@ -1371,10 +1371,9 @@ void kvm_mmu_free_memory_cache(struct kvm_mmu_memory_cache *mc);
- void *kvm_mmu_memory_cache_alloc(struct kvm_mmu_memory_cache *mc);
- #endif
- 
--void kvm_mmu_invalidate_begin(struct kvm *kvm, unsigned long start,
--			      unsigned long end);
--void kvm_mmu_invalidate_end(struct kvm *kvm, unsigned long start,
--			    unsigned long end);
-+void kvm_mmu_invalidate_begin(struct kvm *kvm);
-+void kvm_mmu_invalidate_range_add(struct kvm *kvm, gfn_t start, gfn_t end);
-+void kvm_mmu_invalidate_end(struct kvm *kvm);
- 
- long kvm_arch_dev_ioctl(struct file *filp,
- 			unsigned int ioctl, unsigned long arg);
-@@ -1940,9 +1939,9 @@ static inline int mmu_invalidate_retry(struct kvm *kvm, unsigned long mmu_seq)
- 	return 0;
- }
- 
--static inline int mmu_invalidate_retry_hva(struct kvm *kvm,
-+static inline int mmu_invalidate_retry_gfn(struct kvm *kvm,
- 					   unsigned long mmu_seq,
--					   unsigned long hva)
-+					   gfn_t gfn)
- {
- 	lockdep_assert_held(&kvm->mmu_lock);
- 	/*
-@@ -1951,10 +1950,20 @@ static inline int mmu_invalidate_retry_hva(struct kvm *kvm,
- 	 * that might be being invalidated. Note that it may include some false
- 	 * positives, due to shortcuts when handing concurrent invalidations.
- 	 */
--	if (unlikely(kvm->mmu_invalidate_in_progress) &&
--	    hva >= kvm->mmu_invalidate_range_start &&
--	    hva < kvm->mmu_invalidate_range_end)
--		return 1;
-+	if (unlikely(kvm->mmu_invalidate_in_progress)) {
-+		/*
-+		 * Dropping mmu_lock after bumping mmu_invalidate_in_progress
-+		 * but before updating the range is a KVM bug.
-+		 */
-+		if (WARN_ON_ONCE(kvm->mmu_invalidate_range_start == INVALID_GPA ||
-+				 kvm->mmu_invalidate_range_end == INVALID_GPA))
-+			return 1;
-+
-+		if (gfn >= kvm->mmu_invalidate_range_start &&
-+		    gfn < kvm->mmu_invalidate_range_end)
-+			return 1;
-+	}
-+
- 	if (kvm->mmu_invalidate_seq != mmu_seq)
- 		return 1;
- 	return 0;
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 50aea855eeae..8101b11a13ba 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -518,9 +518,7 @@ static inline struct kvm *mmu_notifier_to_kvm(struct mmu_notifier *mn)
- 
- typedef bool (*gfn_handler_t)(struct kvm *kvm, struct kvm_gfn_range *range);
- 
--typedef void (*on_lock_fn_t)(struct kvm *kvm, unsigned long start,
--			     unsigned long end);
--
-+typedef void (*on_lock_fn_t)(struct kvm *kvm);
- typedef void (*on_unlock_fn_t)(struct kvm *kvm);
- 
- struct kvm_mmu_notifier_range {
-@@ -617,7 +615,8 @@ static __always_inline int __kvm_handle_hva_range(struct kvm *kvm,
- 				locked = true;
- 				KVM_MMU_LOCK(kvm);
- 				if (!IS_KVM_NULL_FN(range->on_lock))
--					range->on_lock(kvm, range->start, range->end);
-+					range->on_lock(kvm);
-+
- 				if (IS_KVM_NULL_FN(range->handler))
- 					break;
- 			}
-@@ -721,15 +720,26 @@ static void kvm_mmu_notifier_change_pte(struct mmu_notifier *mn,
- 	kvm_handle_hva_range(mn, address, address + 1, pte, kvm_change_spte_gfn);
- }
- 
--void kvm_mmu_invalidate_begin(struct kvm *kvm, unsigned long start,
--			      unsigned long end)
-+void kvm_mmu_invalidate_begin(struct kvm *kvm)
- {
-+	lockdep_assert_held_write(&kvm->mmu_lock);
- 	/*
- 	 * The count increase must become visible at unlock time as no
- 	 * spte can be established without taking the mmu_lock and
- 	 * count is also read inside the mmu_lock critical section.
- 	 */
- 	kvm->mmu_invalidate_in_progress++;
-+
-+	if (likely(kvm->mmu_invalidate_in_progress == 1))
-+		kvm->mmu_invalidate_range_start = INVALID_GPA;
-+}
-+
-+void kvm_mmu_invalidate_range_add(struct kvm *kvm, gfn_t start, gfn_t end)
-+{
-+	lockdep_assert_held_write(&kvm->mmu_lock);
-+
-+	WARN_ON_ONCE(!kvm->mmu_invalidate_in_progress);
-+
- 	if (likely(kvm->mmu_invalidate_in_progress == 1)) {
- 		kvm->mmu_invalidate_range_start = start;
- 		kvm->mmu_invalidate_range_end = end;
-@@ -750,6 +760,12 @@ void kvm_mmu_invalidate_begin(struct kvm *kvm, unsigned long start,
- 	}
- }
- 
-+static bool kvm_mmu_unmap_gfn_range(struct kvm *kvm, struct kvm_gfn_range *range)
-+{
-+	kvm_mmu_invalidate_range_add(kvm, range->start, range->end);
-+	return kvm_unmap_gfn_range(kvm, range);
-+}
-+
- static int kvm_mmu_notifier_invalidate_range_start(struct mmu_notifier *mn,
- 					const struct mmu_notifier_range *range)
- {
-@@ -757,7 +773,7 @@ static int kvm_mmu_notifier_invalidate_range_start(struct mmu_notifier *mn,
- 	const struct kvm_mmu_notifier_range hva_range = {
- 		.start		= range->start,
- 		.end		= range->end,
--		.handler	= kvm_unmap_gfn_range,
-+		.handler	= kvm_mmu_unmap_gfn_range,
- 		.on_lock	= kvm_mmu_invalidate_begin,
- 		.on_unlock	= kvm_arch_guest_memory_reclaimed,
- 		.flush_on_ret	= true,
-@@ -796,8 +812,7 @@ static int kvm_mmu_notifier_invalidate_range_start(struct mmu_notifier *mn,
- 	return 0;
- }
- 
--void kvm_mmu_invalidate_end(struct kvm *kvm, unsigned long start,
--			    unsigned long end)
-+void kvm_mmu_invalidate_end(struct kvm *kvm)
- {
- 	/*
- 	 * This sequence increase will notify the kvm page fault that
-@@ -812,6 +827,13 @@ void kvm_mmu_invalidate_end(struct kvm *kvm, unsigned long start,
- 	 * in conjunction with the smp_rmb in mmu_invalidate_retry().
- 	 */
- 	kvm->mmu_invalidate_in_progress--;
-+
-+	/*
-+	 * Assert that at least one range must be added between start() and
-+	 * end().  Not adding a range isn't fatal, but it is a KVM bug.
-+	 */
-+	WARN_ON_ONCE(kvm->mmu_invalidate_in_progress &&
-+		     kvm->mmu_invalidate_range_start == INVALID_GPA);
- }
- 
- static void kvm_mmu_notifier_invalidate_range_end(struct mmu_notifier *mn,
+v11:
+ - Test private<=>shared conversions *without* doing fallocate()
+ - PUNCH_HOLE all memory between iterations of the conversion test so that
+   KVM doesn't retain pages in the guest_memfd
+ - Rename hugepage control to be a very generic ALLOW_HUGEPAGE, instead of
+   giving it a THP or PMD specific name.
+ - Fold in fixes from a lot of people (thank you!)
+ - Zap SPTEs *before* updating attributes to ensure no weirdness, e.g. if
+   KVM handles a page fault and looks at inconsistent attributes
+ - Refactor MMU interaction with attributes updates to reuse much of KVM's
+   framework for mmu_notifiers.
+
+[1] https://lore.kernel.org/all/20221202061347.1070246-1-chao.p.peng at linux.intel.com
+[2] https://lore.kernel.org/all/ZEM5Zq8oo+xnApW9 at google.com
+
+Ackerley Tng (1):
+  KVM: selftests: Test KVM exit behavior for private memory/access
+
+Chao Peng (7):
+  KVM: Use gfn instead of hva for mmu_notifier_retry
+  KVM: Add KVM_EXIT_MEMORY_FAULT exit
+  KVM: Introduce per-page memory attributes
+  KVM: x86: Disallow hugepages when memory attributes are mixed
+  KVM: x86/mmu: Handle page fault for private memory
+  KVM: selftests: Add KVM_SET_USER_MEMORY_REGION2 helper
+  KVM: selftests: Expand set_memory_region_test to validate
+    guest_memfd()
+
+Sean Christopherson (18):
+  KVM: Wrap kvm_gfn_range.pte in a per-action union
+  KVM: Tweak kvm_hva_range and hva_handler_t to allow reusing for gfn
+    ranges
+  KVM: PPC: Drop dead code related to KVM_ARCH_WANT_MMU_NOTIFIER
+  KVM: Convert KVM_ARCH_WANT_MMU_NOTIFIER to
+    CONFIG_KVM_GENERIC_MMU_NOTIFIER
+  KVM: Introduce KVM_SET_USER_MEMORY_REGION2
+  mm: Add AS_UNMOVABLE to mark mapping as completely unmovable
+  security: Export security_inode_init_security_anon() for use by KVM
+  KVM: Add KVM_CREATE_GUEST_MEMFD ioctl() for guest-specific backing
+    memory
+  KVM: Add transparent hugepage support for dedicated guest memory
+  KVM: Drop superfluous __KVM_VCPU_MULTIPLE_ADDRESS_SPACE macro
+  KVM: Allow arch code to track number of memslot address spaces per VM
+  KVM: x86: Add support for "protected VMs" that can utilize private
+    memory
+  KVM: selftests: Drop unused kvm_userspace_memory_region_find() helper
+  KVM: selftests: Convert lib's mem regions to
+    KVM_SET_USER_MEMORY_REGION2
+  KVM: selftests: Add support for creating private memslots
+  KVM: selftests: Introduce VM "shape" to allow tests to specify the VM
+    type
+  KVM: selftests: Add GUEST_SYNC[1-6] macros for synchronizing more data
+  KVM: selftests: Add basic selftest for guest_memfd()
+
+Vishal Annapurve (3):
+  KVM: selftests: Add helpers to convert guest memory b/w private and
+    shared
+  KVM: selftests: Add helpers to do KVM_HC_MAP_GPA_RANGE hypercalls
+    (x86)
+  KVM: selftests: Add x86-only selftest for private memory conversions
+
+ Documentation/virt/kvm/api.rst                | 114 ++++
+ arch/arm64/include/asm/kvm_host.h             |   2 -
+ arch/arm64/kvm/Kconfig                        |   2 +-
+ arch/arm64/kvm/mmu.c                          |   2 +-
+ arch/mips/include/asm/kvm_host.h              |   2 -
+ arch/mips/kvm/Kconfig                         |   2 +-
+ arch/mips/kvm/mmu.c                           |   2 +-
+ arch/powerpc/include/asm/kvm_host.h           |   2 -
+ arch/powerpc/kvm/Kconfig                      |   8 +-
+ arch/powerpc/kvm/book3s_hv.c                  |   2 +-
+ arch/powerpc/kvm/powerpc.c                    |   5 +-
+ arch/riscv/include/asm/kvm_host.h             |   2 -
+ arch/riscv/kvm/Kconfig                        |   2 +-
+ arch/riscv/kvm/mmu.c                          |   2 +-
+ arch/x86/include/asm/kvm_host.h               |  17 +-
+ arch/x86/include/uapi/asm/kvm.h               |   3 +
+ arch/x86/kvm/Kconfig                          |  14 +-
+ arch/x86/kvm/debugfs.c                        |   2 +-
+ arch/x86/kvm/mmu/mmu.c                        | 287 +++++++-
+ arch/x86/kvm/mmu/mmu_internal.h               |   4 +
+ arch/x86/kvm/mmu/mmutrace.h                   |   1 +
+ arch/x86/kvm/mmu/tdp_mmu.c                    |   8 +-
+ arch/x86/kvm/vmx/vmx.c                        |  11 +-
+ arch/x86/kvm/x86.c                            |  24 +-
+ include/linux/kvm_host.h                      | 129 +++-
+ include/linux/pagemap.h                       |  11 +
+ include/uapi/linux/kvm.h                      |  50 ++
+ include/uapi/linux/magic.h                    |   1 +
+ mm/compaction.c                               |   4 +
+ mm/migrate.c                                  |   2 +
+ security/security.c                           |   1 +
+ tools/testing/selftests/kvm/Makefile          |   3 +
+ tools/testing/selftests/kvm/dirty_log_test.c  |   2 +-
+ .../testing/selftests/kvm/guest_memfd_test.c  | 114 ++++
+ .../selftests/kvm/include/kvm_util_base.h     | 141 +++-
+ .../testing/selftests/kvm/include/test_util.h |   5 +
+ .../selftests/kvm/include/ucall_common.h      |  12 +
+ .../selftests/kvm/include/x86_64/processor.h  |  15 +
+ .../selftests/kvm/kvm_page_table_test.c       |   2 +-
+ tools/testing/selftests/kvm/lib/kvm_util.c    | 230 ++++---
+ tools/testing/selftests/kvm/lib/memstress.c   |   3 +-
+ .../selftests/kvm/set_memory_region_test.c    |  99 +++
+ .../kvm/x86_64/private_mem_conversions_test.c | 408 +++++++++++
+ .../kvm/x86_64/private_mem_kvm_exits_test.c   | 115 ++++
+ .../kvm/x86_64/ucna_injection_test.c          |   2 +-
+ virt/kvm/Kconfig                              |  17 +
+ virt/kvm/Makefile.kvm                         |   1 +
+ virt/kvm/dirty_ring.c                         |   2 +-
+ virt/kvm/guest_mem.c                          | 635 ++++++++++++++++++
+ virt/kvm/kvm_main.c                           | 384 +++++++++--
+ virt/kvm/kvm_mm.h                             |  38 ++
+ 51 files changed, 2700 insertions(+), 246 deletions(-)
+ create mode 100644 tools/testing/selftests/kvm/guest_memfd_test.c
+ create mode 100644 tools/testing/selftests/kvm/x86_64/private_mem_conversions_test.c
+ create mode 100644 tools/testing/selftests/kvm/x86_64/private_mem_kvm_exits_test.c
+ create mode 100644 virt/kvm/guest_mem.c
+
+
+base-commit: fdf0eaf11452d72945af31804e2a1048ee1b574c
 -- 
 2.41.0.255.g8b1d071c50-goog
 
