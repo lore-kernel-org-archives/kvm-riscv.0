@@ -1,10 +1,10 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Tue, 18 Jul 2023 16:45:00 -0700
-Subject: [RFC PATCH v11 17/29] KVM: x86: Add support for "protected VMs" that
- can utilize private memory
+Date: Tue, 18 Jul 2023 16:44:59 -0700
+Subject: [RFC PATCH v11 16/29] KVM: Allow arch code to track number of memslot
+ address spaces per VM
 In-Reply-To: <20230718234512.1690985-1-seanjc@google.com>
 References: <20230718234512.1690985-1-seanjc@google.com>
-Message-ID: <20230718234512.1690985-18-seanjc@google.com>
+Message-ID: <20230718234512.1690985-17-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -13,227 +13,299 @@ Content-Transfer-Encoding: 7bit
 
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- Documentation/virt/kvm/api.rst  | 32 ++++++++++++++++++++++++++++++++
- arch/x86/include/asm/kvm_host.h | 15 +++++++++------
- arch/x86/include/uapi/asm/kvm.h |  3 +++
- arch/x86/kvm/Kconfig            | 12 ++++++++++++
- arch/x86/kvm/mmu/mmu_internal.h |  1 +
- arch/x86/kvm/x86.c              | 16 +++++++++++++++-
- include/uapi/linux/kvm.h        |  1 +
- virt/kvm/Kconfig                |  5 +++++
- 8 files changed, 78 insertions(+), 7 deletions(-)
+ arch/powerpc/kvm/book3s_hv.c    |  2 +-
+ arch/x86/include/asm/kvm_host.h |  8 +++++++-
+ arch/x86/kvm/debugfs.c          |  2 +-
+ arch/x86/kvm/mmu/mmu.c          |  8 ++++----
+ arch/x86/kvm/mmu/tdp_mmu.c      |  2 +-
+ arch/x86/kvm/x86.c              |  2 +-
+ include/linux/kvm_host.h        | 17 +++++++++++------
+ virt/kvm/dirty_ring.c           |  2 +-
+ virt/kvm/kvm_main.c             | 24 ++++++++++++------------
+ 9 files changed, 39 insertions(+), 28 deletions(-)
 
-diff --git a/Documentation/virt/kvm/api.rst b/Documentation/virt/kvm/api.rst
-index 0ca8561775ac..9f7b95327c2a 100644
---- a/Documentation/virt/kvm/api.rst
-+++ b/Documentation/virt/kvm/api.rst
-@@ -147,10 +147,29 @@ described as 'basic' will be available.
- The new VM has no virtual cpus and no memory.
- You probably want to use 0 as machine type.
+diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+index 130bafdb1430..9b0eaa17275a 100644
+--- a/arch/powerpc/kvm/book3s_hv.c
++++ b/arch/powerpc/kvm/book3s_hv.c
+@@ -6084,7 +6084,7 @@ static int kvmhv_svm_off(struct kvm *kvm)
+ 	}
  
-+X86:
-+^^^^
-+
-+Supported X86 VM types can be queried via KVM_CAP_VM_TYPES.
-+
-+S390:
-+^^^^^
-+
- In order to create user controlled virtual machines on S390, check
- KVM_CAP_S390_UCONTROL and use the flag KVM_VM_S390_UCONTROL as
- privileged user (CAP_SYS_ADMIN).
- 
-+MIPS:
-+^^^^^
-+
-+To use hardware assisted virtualization on MIPS (VZ ASE) rather than
-+the default trap & emulate implementation (which changes the virtual
-+memory layout to fit in user mode), check KVM_CAP_MIPS_VZ and use the
-+flag KVM_VM_MIPS_VZ.
-+
-+ARM64:
-+^^^^^^
-+
- On arm64, the physical address size for a VM (IPA Size limit) is limited
- to 40bits by default. The limit can be configured if the host supports the
- extension KVM_CAP_ARM_VM_IPA_SIZE. When supported, use
-@@ -8554,6 +8573,19 @@ block sizes is exposed in KVM_CAP_ARM_SUPPORTED_BLOCK_SIZES as a
- This capability indicates KVM supports per-page memory attributes and ioctls
- KVM_GET_SUPPORTED_MEMORY_ATTRIBUTES/KVM_SET_MEMORY_ATTRIBUTES are available.
- 
-+8.41 KVM_CAP_VM_TYPES
-+---------------------
-+
-+:Capability: KVM_CAP_MEMORY_ATTRIBUTES
-+:Architectures: x86
-+:Type: system ioctl
-+
-+This capability returns a bitmap of support VM types.  The 1-setting of bit @n
-+means the VM type with value @n is supported.  Possible values of @n are::
-+
-+  #define KVM_X86_DEFAULT_VM	0
-+  #define KVM_X86_SW_PROTECTED_VM	1
-+
- 9. Known KVM API problems
- =========================
- 
+ 	srcu_idx = srcu_read_lock(&kvm->srcu);
+-	for (i = 0; i < KVM_ADDRESS_SPACE_NUM; i++) {
++	for (i = 0; i < kvm_arch_nr_memslot_as_ids(kvm); i++) {
+ 		struct kvm_memory_slot *memslot;
+ 		struct kvm_memslots *slots = __kvm_memslots(kvm, i);
+ 		int bkt;
 diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
-index 08b44544a330..bbefd79b7950 100644
+index 7a905e033932..08b44544a330 100644
 --- a/arch/x86/include/asm/kvm_host.h
 +++ b/arch/x86/include/asm/kvm_host.h
-@@ -1227,6 +1227,7 @@ enum kvm_apicv_inhibit {
- };
- 
- struct kvm_arch {
-+	unsigned long vm_type;
- 	unsigned long n_used_mmu_pages;
- 	unsigned long n_requested_mmu_pages;
- 	unsigned long n_max_mmu_pages;
-@@ -2058,6 +2059,12 @@ void kvm_mmu_new_pgd(struct kvm_vcpu *vcpu, gpa_t new_pgd);
- void kvm_configure_mmu(bool enable_tdp, int tdp_forced_root_level,
- 		       int tdp_max_root_level, int tdp_huge_page_level);
- 
-+#ifdef CONFIG_KVM_PRIVATE_MEM
-+#define kvm_arch_has_private_mem(kvm) ((kvm)->arch.vm_type != KVM_X86_DEFAULT_VM)
-+#else
-+#define kvm_arch_has_private_mem(kvm) false
-+#endif
-+
- static inline u16 kvm_read_ldt(void)
- {
- 	u16 ldt;
-@@ -2106,14 +2113,10 @@ enum {
+@@ -2105,9 +2105,15 @@ enum {
+ #define HF_SMM_MASK		(1 << 1)
  #define HF_SMM_INSIDE_NMI_MASK	(1 << 2)
  
- # define KVM_MAX_NR_ADDRESS_SPACES	2
-+/* SMM is currently unsupported for guests with private memory. */
-+# define kvm_arch_nr_memslot_as_ids(kvm) (kvm_arch_has_private_mem(kvm) ? 1 : 2)
+-# define KVM_ADDRESS_SPACE_NUM 2
++# define KVM_MAX_NR_ADDRESS_SPACES	2
  # define kvm_arch_vcpu_memslots_id(vcpu) ((vcpu)->arch.hflags & HF_SMM_MASK ? 1 : 0)
  # define kvm_memslots_for_spte_role(kvm, role) __kvm_memslots(kvm, (role).smm)
--
--static inline int kvm_arch_nr_memslot_as_ids(struct kvm *kvm)
--{
--	return KVM_MAX_NR_ADDRESS_SPACES;
--}
--
++
++static inline int kvm_arch_nr_memslot_as_ids(struct kvm *kvm)
++{
++	return KVM_MAX_NR_ADDRESS_SPACES;
++}
++
  #else
  # define kvm_memslots_for_spte_role(kvm, role) __kvm_memslots(kvm, 0)
  #endif
-diff --git a/arch/x86/include/uapi/asm/kvm.h b/arch/x86/include/uapi/asm/kvm.h
-index 1a6a1f987949..a448d0964fc0 100644
---- a/arch/x86/include/uapi/asm/kvm.h
-+++ b/arch/x86/include/uapi/asm/kvm.h
-@@ -562,4 +562,7 @@ struct kvm_pmu_event_filter {
- /* x86-specific KVM_EXIT_HYPERCALL flags. */
- #define KVM_EXIT_HYPERCALL_LONG_MODE	BIT(0)
+diff --git a/arch/x86/kvm/debugfs.c b/arch/x86/kvm/debugfs.c
+index ee8c4c3496ed..42026b3f3ff3 100644
+--- a/arch/x86/kvm/debugfs.c
++++ b/arch/x86/kvm/debugfs.c
+@@ -111,7 +111,7 @@ static int kvm_mmu_rmaps_stat_show(struct seq_file *m, void *v)
+ 	mutex_lock(&kvm->slots_lock);
+ 	write_lock(&kvm->mmu_lock);
  
-+#define KVM_X86_DEFAULT_VM	0
-+#define KVM_X86_SW_PROTECTED_VM	1
-+
- #endif /* _ASM_X86_KVM_H */
-diff --git a/arch/x86/kvm/Kconfig b/arch/x86/kvm/Kconfig
-index a7eb2bdbfb18..029c76bcd1a5 100644
---- a/arch/x86/kvm/Kconfig
-+++ b/arch/x86/kvm/Kconfig
-@@ -77,6 +77,18 @@ config KVM_WERROR
+-	for (i = 0; i < KVM_ADDRESS_SPACE_NUM; i++) {
++	for (i = 0; i < kvm_arch_nr_memslot_as_ids(kvm); i++) {
+ 		int bkt;
  
- 	  If in doubt, say "N".
+ 		slots = __kvm_memslots(kvm, i);
+diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
+index 4cf73a579ee1..05943ccb55a4 100644
+--- a/arch/x86/kvm/mmu/mmu.c
++++ b/arch/x86/kvm/mmu/mmu.c
+@@ -3801,7 +3801,7 @@ static int mmu_first_shadow_root_alloc(struct kvm *kvm)
+ 	    kvm_page_track_write_tracking_enabled(kvm))
+ 		goto out_success;
  
-+config KVM_SW_PROTECTED_VM
-+	bool "Enable support for KVM software-protected VMs"
-+	depends on EXPERT
-+	depends on X86_64
-+	select KVM_GENERIC_PRIVATE_MEM
-+	help
-+	  Enable support for KVM software-protected VMs.  Currently "protected"
-+	  means the VM can be backed with memory provided by
-+	  KVM_CREATE_GUEST_MEMFD.
-+
-+	  If unsure, say "N".
-+
- config KVM_INTEL
- 	tristate "KVM for Intel (and compatible) processors support"
- 	depends on KVM && IA32_FEAT_CTL
-diff --git a/arch/x86/kvm/mmu/mmu_internal.h b/arch/x86/kvm/mmu/mmu_internal.h
-index 268b517e88cb..f1786698ae00 100644
---- a/arch/x86/kvm/mmu/mmu_internal.h
-+++ b/arch/x86/kvm/mmu/mmu_internal.h
-@@ -301,6 +301,7 @@ static inline int kvm_mmu_do_page_fault(struct kvm_vcpu *vcpu, gpa_t cr2_or_gpa,
- 		.max_level = KVM_MAX_HUGEPAGE_LEVEL,
- 		.req_level = PG_LEVEL_4K,
- 		.goal_level = PG_LEVEL_4K,
-+		.is_private = kvm_mem_is_private(vcpu->kvm, cr2_or_gpa >> PAGE_SHIFT),
- 	};
- 	int r;
+-	for (i = 0; i < KVM_ADDRESS_SPACE_NUM; i++) {
++	for (i = 0; i < kvm_arch_nr_memslot_as_ids(kvm); i++) {
+ 		slots = __kvm_memslots(kvm, i);
+ 		kvm_for_each_memslot(slot, bkt, slots) {
+ 			/*
+@@ -6351,7 +6351,7 @@ static bool kvm_rmap_zap_gfn_range(struct kvm *kvm, gfn_t gfn_start, gfn_t gfn_e
+ 	if (!kvm_memslots_have_rmaps(kvm))
+ 		return flush;
  
+-	for (i = 0; i < KVM_ADDRESS_SPACE_NUM; i++) {
++	for (i = 0; i < kvm_arch_nr_memslot_as_ids(kvm); i++) {
+ 		slots = __kvm_memslots(kvm, i);
+ 
+ 		kvm_for_each_memslot_in_gfn_range(&iter, slots, gfn_start, gfn_end) {
+@@ -6391,7 +6391,7 @@ void kvm_zap_gfn_range(struct kvm *kvm, gfn_t gfn_start, gfn_t gfn_end)
+ 	flush = kvm_rmap_zap_gfn_range(kvm, gfn_start, gfn_end);
+ 
+ 	if (tdp_mmu_enabled) {
+-		for (i = 0; i < KVM_ADDRESS_SPACE_NUM; i++)
++		for (i = 0; i < kvm_arch_nr_memslot_as_ids(kvm); i++)
+ 			flush = kvm_tdp_mmu_zap_leafs(kvm, i, gfn_start,
+ 						      gfn_end, true, flush);
+ 	}
+@@ -6855,7 +6855,7 @@ void kvm_mmu_invalidate_mmio_sptes(struct kvm *kvm, u64 gen)
+ 	 * modifier prior to checking for a wrap of the MMIO generation so
+ 	 * that a wrap in any address space is detected.
+ 	 */
+-	gen &= ~((u64)KVM_ADDRESS_SPACE_NUM - 1);
++	gen &= ~((u64)kvm_arch_nr_memslot_as_ids(kvm) - 1);
+ 
+ 	/*
+ 	 * The very rare case: if the MMIO generation number has wrapped,
+diff --git a/arch/x86/kvm/mmu/tdp_mmu.c b/arch/x86/kvm/mmu/tdp_mmu.c
+index 6250bd3d20c1..70052f59cfdf 100644
+--- a/arch/x86/kvm/mmu/tdp_mmu.c
++++ b/arch/x86/kvm/mmu/tdp_mmu.c
+@@ -905,7 +905,7 @@ void kvm_tdp_mmu_zap_all(struct kvm *kvm)
+ 	 * is being destroyed or the userspace VMM has exited.  In both cases,
+ 	 * KVM_RUN is unreachable, i.e. no vCPUs will ever service the request.
+ 	 */
+-	for (i = 0; i < KVM_ADDRESS_SPACE_NUM; i++) {
++	for (i = 0; i < kvm_arch_nr_memslot_as_ids(kvm); i++) {
+ 		for_each_tdp_mmu_root_yield_safe(kvm, root, i)
+ 			tdp_mmu_zap_root(kvm, root, false);
+ 	}
 diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 463ecf70cec0..de195ad83ec0 100644
+index dd7cefe78815..463ecf70cec0 100644
 --- a/arch/x86/kvm/x86.c
 +++ b/arch/x86/kvm/x86.c
-@@ -4427,6 +4427,13 @@ static int kvm_ioctl_get_supported_hv_cpuid(struct kvm_vcpu *vcpu,
- 	return 0;
- }
+@@ -12419,7 +12419,7 @@ void __user * __x86_set_memory_region(struct kvm *kvm, int id, gpa_t gpa,
+ 		hva = slot->userspace_addr;
+ 	}
  
-+static bool kvm_is_vm_type_supported(unsigned long type)
+-	for (i = 0; i < KVM_ADDRESS_SPACE_NUM; i++) {
++	for (i = 0; i < kvm_arch_nr_memslot_as_ids(kvm); i++) {
+ 		struct kvm_userspace_memory_region2 m;
+ 
+ 		m.slot = id | (i << 16);
+diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+index 5839ef44e145..091bc89ae805 100644
+--- a/include/linux/kvm_host.h
++++ b/include/linux/kvm_host.h
+@@ -80,8 +80,8 @@
+ /* Two fragments for cross MMIO pages. */
+ #define KVM_MAX_MMIO_FRAGMENTS	2
+ 
+-#ifndef KVM_ADDRESS_SPACE_NUM
+-#define KVM_ADDRESS_SPACE_NUM	1
++#ifndef KVM_MAX_NR_ADDRESS_SPACES
++#define KVM_MAX_NR_ADDRESS_SPACES	1
+ #endif
+ 
+ /*
+@@ -693,7 +693,12 @@ bool kvm_arch_irqchip_in_kernel(struct kvm *kvm);
+ #define KVM_MEM_SLOTS_NUM SHRT_MAX
+ #define KVM_USER_MEM_SLOTS (KVM_MEM_SLOTS_NUM - KVM_INTERNAL_MEM_SLOTS)
+ 
+-#if KVM_ADDRESS_SPACE_NUM == 1
++#if KVM_MAX_NR_ADDRESS_SPACES == 1
++static inline int kvm_arch_nr_memslot_as_ids(struct kvm *kvm)
 +{
-+	return type == KVM_X86_DEFAULT_VM ||
-+	       (type == KVM_X86_SW_PROTECTED_VM &&
-+		IS_ENABLED(CONFIG_KVM_SW_PROTECTED_VM) && tdp_enabled);
++	return KVM_MAX_NR_ADDRESS_SPACES;
 +}
 +
- int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
+ static inline int kvm_arch_vcpu_memslots_id(struct kvm_vcpu *vcpu)
  {
- 	int r = 0;
-@@ -4617,6 +4624,11 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
- 	case KVM_CAP_X86_NOTIFY_VMEXIT:
- 		r = kvm_caps.has_notify_vmexit;
- 		break;
-+	case KVM_CAP_VM_TYPES:
-+		r = BIT(KVM_X86_DEFAULT_VM);
-+		if (kvm_is_vm_type_supported(KVM_X86_SW_PROTECTED_VM))
-+			r |= BIT(KVM_X86_SW_PROTECTED_VM);
-+		break;
- 	default:
- 		break;
- 	}
-@@ -12274,9 +12286,11 @@ int kvm_arch_init_vm(struct kvm *kvm, unsigned long type)
- 	int ret;
- 	unsigned long flags;
+ 	return 0;
+@@ -748,9 +753,9 @@ struct kvm {
+ 	struct mm_struct *mm; /* userspace tied to this vm */
+ 	unsigned long nr_memslot_pages;
+ 	/* The two memslot sets - active and inactive (per address space) */
+-	struct kvm_memslots __memslots[KVM_ADDRESS_SPACE_NUM][2];
++	struct kvm_memslots __memslots[KVM_MAX_NR_ADDRESS_SPACES][2];
+ 	/* The current active memslot set for each address space */
+-	struct kvm_memslots __rcu *memslots[KVM_ADDRESS_SPACE_NUM];
++	struct kvm_memslots __rcu *memslots[KVM_MAX_NR_ADDRESS_SPACES];
+ 	struct xarray vcpu_array;
+ 	/*
+ 	 * Protected by slots_lock, but can be read outside if an
+@@ -1000,7 +1005,7 @@ void kvm_put_kvm_no_destroy(struct kvm *kvm);
  
--	if (type)
-+	if (!kvm_is_vm_type_supported(type))
+ static inline struct kvm_memslots *__kvm_memslots(struct kvm *kvm, int as_id)
+ {
+-	as_id = array_index_nospec(as_id, KVM_ADDRESS_SPACE_NUM);
++	as_id = array_index_nospec(as_id, KVM_MAX_NR_ADDRESS_SPACES);
+ 	return srcu_dereference_check(kvm->memslots[as_id], &kvm->srcu,
+ 			lockdep_is_held(&kvm->slots_lock) ||
+ 			!refcount_read(&kvm->users_count));
+diff --git a/virt/kvm/dirty_ring.c b/virt/kvm/dirty_ring.c
+index c1cd7dfe4a90..86d267db87bb 100644
+--- a/virt/kvm/dirty_ring.c
++++ b/virt/kvm/dirty_ring.c
+@@ -58,7 +58,7 @@ static void kvm_reset_dirty_gfn(struct kvm *kvm, u32 slot, u64 offset, u64 mask)
+ 	as_id = slot >> 16;
+ 	id = (u16)slot;
+ 
+-	if (as_id >= KVM_ADDRESS_SPACE_NUM || id >= KVM_USER_MEM_SLOTS)
++	if (as_id >= kvm_arch_nr_memslot_as_ids(kvm) || id >= KVM_USER_MEM_SLOTS)
+ 		return;
+ 
+ 	memslot = id_to_memslot(__kvm_memslots(kvm, as_id), id);
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index a8686e8473a4..ee331cf8ba54 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -582,7 +582,7 @@ static __always_inline int __kvm_handle_hva_range(struct kvm *kvm,
+ 
+ 	idx = srcu_read_lock(&kvm->srcu);
+ 
+-	for (i = 0; i < KVM_ADDRESS_SPACE_NUM; i++) {
++	for (i = 0; i < kvm_arch_nr_memslot_as_ids(kvm); i++) {
+ 		struct interval_tree_node *node;
+ 
+ 		slots = __kvm_memslots(kvm, i);
+@@ -1206,7 +1206,7 @@ static struct kvm *kvm_create_vm(unsigned long type, const char *fdname)
+ 		goto out_err_no_irq_srcu;
+ 
+ 	refcount_set(&kvm->users_count, 1);
+-	for (i = 0; i < KVM_ADDRESS_SPACE_NUM; i++) {
++	for (i = 0; i < kvm_arch_nr_memslot_as_ids(kvm); i++) {
+ 		for (j = 0; j < 2; j++) {
+ 			slots = &kvm->__memslots[i][j];
+ 
+@@ -1349,7 +1349,7 @@ static void kvm_destroy_vm(struct kvm *kvm)
+ #endif
+ 	kvm_arch_destroy_vm(kvm);
+ 	kvm_destroy_devices(kvm);
+-	for (i = 0; i < KVM_ADDRESS_SPACE_NUM; i++) {
++	for (i = 0; i < kvm_arch_nr_memslot_as_ids(kvm); i++) {
+ 		kvm_free_memslots(kvm, &kvm->__memslots[i][0]);
+ 		kvm_free_memslots(kvm, &kvm->__memslots[i][1]);
+ 	}
+@@ -1632,7 +1632,7 @@ static void kvm_swap_active_memslots(struct kvm *kvm, int as_id)
+ 	 * space 0 will use generations 0, 2, 4, ... while address space 1 will
+ 	 * use generations 1, 3, 5, ...
+ 	 */
+-	gen += KVM_ADDRESS_SPACE_NUM;
++	gen += kvm_arch_nr_memslot_as_ids(kvm);
+ 
+ 	kvm_arch_memslots_updated(kvm, gen);
+ 
+@@ -2002,7 +2002,7 @@ int __kvm_set_memory_region(struct kvm *kvm,
+ 	    (mem->gmem_offset & (PAGE_SIZE - 1) ||
+ 	     mem->gmem_offset + mem->memory_size < mem->gmem_offset))
+ 		return -EINVAL;
+-	if (as_id >= KVM_ADDRESS_SPACE_NUM || id >= KVM_MEM_SLOTS_NUM)
++	if (as_id >= kvm_arch_nr_memslot_as_ids(kvm) || id >= KVM_MEM_SLOTS_NUM)
+ 		return -EINVAL;
+ 	if (mem->guest_phys_addr + mem->memory_size < mem->guest_phys_addr)
+ 		return -EINVAL;
+@@ -2138,7 +2138,7 @@ int kvm_get_dirty_log(struct kvm *kvm, struct kvm_dirty_log *log,
+ 
+ 	as_id = log->slot >> 16;
+ 	id = (u16)log->slot;
+-	if (as_id >= KVM_ADDRESS_SPACE_NUM || id >= KVM_USER_MEM_SLOTS)
++	if (as_id >= kvm_arch_nr_memslot_as_ids(kvm) || id >= KVM_USER_MEM_SLOTS)
  		return -EINVAL;
  
-+	kvm->arch.vm_type = type;
-+
- 	ret = kvm_page_track_init(kvm);
- 	if (ret)
- 		goto out;
-diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
-index 17b12ee8b70e..eb900344a054 100644
---- a/include/uapi/linux/kvm.h
-+++ b/include/uapi/linux/kvm.h
-@@ -1216,6 +1216,7 @@ struct kvm_ppc_resize_hpt {
- #define KVM_CAP_ARM_SUPPORTED_BLOCK_SIZES 229
- #define KVM_CAP_USER_MEMORY2 230
- #define KVM_CAP_MEMORY_ATTRIBUTES 231
-+#define KVM_CAP_VM_TYPES 232
+ 	slots = __kvm_memslots(kvm, as_id);
+@@ -2200,7 +2200,7 @@ static int kvm_get_dirty_log_protect(struct kvm *kvm, struct kvm_dirty_log *log)
  
- #ifdef KVM_CAP_IRQ_ROUTING
+ 	as_id = log->slot >> 16;
+ 	id = (u16)log->slot;
+-	if (as_id >= KVM_ADDRESS_SPACE_NUM || id >= KVM_USER_MEM_SLOTS)
++	if (as_id >= kvm_arch_nr_memslot_as_ids(kvm) || id >= KVM_USER_MEM_SLOTS)
+ 		return -EINVAL;
  
-diff --git a/virt/kvm/Kconfig b/virt/kvm/Kconfig
-index 3ee3205e0b39..1a48cb530092 100644
---- a/virt/kvm/Kconfig
-+++ b/virt/kvm/Kconfig
-@@ -107,3 +107,8 @@ config KVM_GENERIC_MEMORY_ATTRIBUTES
- config KVM_PRIVATE_MEM
-        select XARRAY_MULTI
-        bool
-+
-+config KVM_GENERIC_PRIVATE_MEM
-+       select KVM_GENERIC_MEMORY_ATTRIBUTES
-+       select KVM_PRIVATE_MEM
-+       bool
+ 	slots = __kvm_memslots(kvm, as_id);
+@@ -2312,7 +2312,7 @@ static int kvm_clear_dirty_log_protect(struct kvm *kvm,
+ 
+ 	as_id = log->slot >> 16;
+ 	id = (u16)log->slot;
+-	if (as_id >= KVM_ADDRESS_SPACE_NUM || id >= KVM_USER_MEM_SLOTS)
++	if (as_id >= kvm_arch_nr_memslot_as_ids(kvm) || id >= KVM_USER_MEM_SLOTS)
+ 		return -EINVAL;
+ 
+ 	if (log->first_page & 63)
+@@ -2406,7 +2406,7 @@ static __always_inline void kvm_handle_gfn_range(struct kvm *kvm,
+ 	gfn_range.arg.raw = range->arg.raw;
+ 	gfn_range.may_block = range->may_block;
+ 
+-	for (i = 0; i < KVM_ADDRESS_SPACE_NUM; i++) {
++	for (i = 0; i < kvm_arch_nr_memslot_as_ids(kvm); i++) {
+ 		slots = __kvm_memslots(kvm, i);
+ 
+ 		kvm_for_each_memslot_in_gfn_range(&iter, slots, range->start, range->end) {
+@@ -4725,9 +4725,9 @@ static int kvm_vm_ioctl_check_extension_generic(struct kvm *kvm, long arg)
+ 	case KVM_CAP_IRQ_ROUTING:
+ 		return KVM_MAX_IRQ_ROUTES;
+ #endif
+-#if KVM_ADDRESS_SPACE_NUM > 1
++#if KVM_MAX_NR_ADDRESS_SPACES > 1
+ 	case KVM_CAP_MULTI_ADDRESS_SPACE:
+-		return KVM_ADDRESS_SPACE_NUM;
++		return KVM_MAX_NR_ADDRESS_SPACES;
+ #endif
+ 	case KVM_CAP_NR_MEMSLOTS:
+ 		return KVM_USER_MEM_SLOTS;
+@@ -4827,7 +4827,7 @@ bool kvm_are_all_memslots_empty(struct kvm *kvm)
+ 
+ 	lockdep_assert_held(&kvm->slots_lock);
+ 
+-	for (i = 0; i < KVM_ADDRESS_SPACE_NUM; i++) {
++	for (i = 0; i < kvm_arch_nr_memslot_as_ids(kvm); i++) {
+ 		if (!kvm_memslots_empty(__kvm_memslots(kvm, i)))
+ 			return false;
+ 	}
 -- 
 2.41.0.255.g8b1d071c50-goog
 
