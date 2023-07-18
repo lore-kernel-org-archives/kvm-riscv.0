@@ -1,165 +1,174 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Tue, 18 Jul 2023 16:45:11 -0700
-Subject: [RFC PATCH v11 28/29] KVM: selftests: Add basic selftest for guest_memfd()
+Date: Tue, 18 Jul 2023 16:45:10 -0700
+Subject: [RFC PATCH v11 27/29] KVM: selftests: Expand set_memory_region_test
+ to validate guest_memfd()
 In-Reply-To: <20230718234512.1690985-1-seanjc@google.com>
 References: <20230718234512.1690985-1-seanjc@google.com>
-Message-ID: <20230718234512.1690985-29-seanjc@google.com>
+Message-ID: <20230718234512.1690985-28-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add a selftest to verify the basic functionality of guest_memfd():
+From: Chao Peng <chao.p.peng@linux.intel.com>
 
-+ file descriptor created with the guest_memfd() ioctl does not allow
-  read/write/mmap operations
-+ file size and block size as returned from fstat are as expected
-+ fallocate on the fd checks that offset/length on
-  fallocate(FALLOC_FL_PUNCH_HOLE) should be page aligned
+Expand set_memory_region_test to exercise various positive and negative
+testcases for private memory.
+
+ - Non-guest_memfd() file descriptor for private memory
+ - guest_memfd() from different VM
+ - Overlapping bindings
+ - Unaligned bindings
 
 Signed-off-by: Chao Peng <chao.p.peng@linux.intel.com>
 Co-developed-by: Ackerley Tng <ackerleytng@google.com>
 Signed-off-by: Ackerley Tng <ackerleytng@google.com>
+[sean: trim the testcases to remove duplicate coverage]
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- tools/testing/selftests/kvm/Makefile          |   1 +
- .../testing/selftests/kvm/guest_memfd_test.c  | 114 ++++++++++++++++++
- 2 files changed, 115 insertions(+)
- create mode 100644 tools/testing/selftests/kvm/guest_memfd_test.c
+ .../selftests/kvm/include/kvm_util_base.h     | 10 ++
+ .../selftests/kvm/set_memory_region_test.c    | 99 +++++++++++++++++++
+ 2 files changed, 109 insertions(+)
 
-diff --git a/tools/testing/selftests/kvm/Makefile b/tools/testing/selftests/kvm/Makefile
-index fdc7dff8d6ae..18c43336ede3 100644
---- a/tools/testing/selftests/kvm/Makefile
-+++ b/tools/testing/selftests/kvm/Makefile
-@@ -123,6 +123,7 @@ TEST_GEN_PROGS_x86_64 += access_tracking_perf_test
- TEST_GEN_PROGS_x86_64 += demand_paging_test
- TEST_GEN_PROGS_x86_64 += dirty_log_test
- TEST_GEN_PROGS_x86_64 += dirty_log_perf_test
-+TEST_GEN_PROGS_x86_64 += guest_memfd_test
- TEST_GEN_PROGS_x86_64 += hardware_disable_test
- TEST_GEN_PROGS_x86_64 += kvm_create_max_vcpus
- TEST_GEN_PROGS_x86_64 += kvm_page_table_test
-diff --git a/tools/testing/selftests/kvm/guest_memfd_test.c b/tools/testing/selftests/kvm/guest_memfd_test.c
-new file mode 100644
-index 000000000000..d698f9fde987
---- /dev/null
-+++ b/tools/testing/selftests/kvm/guest_memfd_test.c
-@@ -0,0 +1,114 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Copyright Intel Corporation, 2023
-+ *
-+ * Author: Chao Peng <chao.p.peng@linux.intel.com>
-+ */
-+
-+#define _GNU_SOURCE
-+#include "test_util.h"
-+#include "kvm_util_base.h"
-+#include <linux/falloc.h>
-+#include <sys/mman.h>
-+#include <sys/types.h>
-+#include <sys/stat.h>
-+
-+#include <stdlib.h>
-+#include <string.h>
-+#include <unistd.h>
-+#include <errno.h>
-+#include <stdio.h>
-+#include <fcntl.h>
-+
-+static void test_file_read_write(int fd)
+diff --git a/tools/testing/selftests/kvm/include/kvm_util_base.h b/tools/testing/selftests/kvm/include/kvm_util_base.h
+index 334df27a6f43..39b38c75b99c 100644
+--- a/tools/testing/selftests/kvm/include/kvm_util_base.h
++++ b/tools/testing/selftests/kvm/include/kvm_util_base.h
+@@ -789,6 +789,16 @@ static inline struct kvm_vm *vm_create_barebones(void)
+ 	return ____vm_create(VM_SHAPE_DEFAULT);
+ }
+ 
++static inline struct kvm_vm *vm_create_barebones_protected_vm(void)
 +{
-+	char buf[64];
++	const struct vm_shape shape = {
++		.mode = VM_MODE_DEFAULT,
++		.type = KVM_X86_SW_PROTECTED_VM,
++	};
 +
-+	TEST_ASSERT(read(fd, buf, sizeof(buf)) < 0,
-+		    "read on a guest_mem fd should fail");
-+	TEST_ASSERT(write(fd, buf, sizeof(buf)) < 0,
-+		    "write on a guest_mem fd should fail");
-+	TEST_ASSERT(pread(fd, buf, sizeof(buf), 0) < 0,
-+		    "pread on a guest_mem fd should fail");
-+	TEST_ASSERT(pwrite(fd, buf, sizeof(buf), 0) < 0,
-+		    "pwrite on a guest_mem fd should fail");
++	return ____vm_create(shape);
 +}
 +
-+static void test_mmap(int fd, size_t page_size)
-+{
-+	char *mem;
+ static inline struct kvm_vm *vm_create(uint32_t nr_runnable_vcpus)
+ {
+ 	return __vm_create(VM_SHAPE_DEFAULT, nr_runnable_vcpus, 0);
+diff --git a/tools/testing/selftests/kvm/set_memory_region_test.c b/tools/testing/selftests/kvm/set_memory_region_test.c
+index a849ce23ca97..ca2ca6947376 100644
+--- a/tools/testing/selftests/kvm/set_memory_region_test.c
++++ b/tools/testing/selftests/kvm/set_memory_region_test.c
+@@ -382,6 +382,98 @@ static void test_add_max_memory_regions(void)
+ 	kvm_vm_free(vm);
+ }
+ 
 +
-+	mem = mmap(NULL, page_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-+	ASSERT_EQ(mem, MAP_FAILED);
++static void test_invalid_guest_memfd(struct kvm_vm *vm, int memfd,
++				     size_t offset, const char *msg)
++{
++	int r = __vm_set_user_memory_region2(vm, MEM_REGION_SLOT, KVM_MEM_PRIVATE,
++					     MEM_REGION_GPA, MEM_REGION_SIZE,
++					     0, memfd, offset);
++	TEST_ASSERT(r == -1 && errno == EINVAL, "%s", msg);
 +}
 +
-+static void test_file_size(int fd, size_t page_size, size_t total_size)
++static void test_add_private_memory_region(void)
 +{
-+	struct stat sb;
-+	int ret;
++	struct kvm_vm *vm, *vm2;
++	int memfd, i;
 +
-+	ret = fstat(fd, &sb);
-+	TEST_ASSERT(!ret, "fstat should succeed");
-+	ASSERT_EQ(sb.st_size, total_size);
-+	ASSERT_EQ(sb.st_blksize, page_size);
++	pr_info("Testing ADD of KVM_MEM_PRIVATE memory regions\n");
++
++	vm = vm_create_barebones_protected_vm();
++
++	test_invalid_guest_memfd(vm, vm->kvm_fd, 0, "KVM fd should fail");
++	test_invalid_guest_memfd(vm, vm->fd, 0, "VM's fd should fail");
++
++	memfd = kvm_memfd_alloc(MEM_REGION_SIZE, false);
++	test_invalid_guest_memfd(vm, vm->fd, 0, "Regular memfd() should fail");
++	close(memfd);
++
++	vm2 = vm_create_barebones_protected_vm();
++	memfd = vm_create_guest_memfd(vm2, MEM_REGION_SIZE, 0);
++	test_invalid_guest_memfd(vm, memfd, 0, "Other VM's guest_memfd() should fail");
++
++	vm_set_user_memory_region2(vm2, MEM_REGION_SLOT, KVM_MEM_PRIVATE,
++				   MEM_REGION_GPA, MEM_REGION_SIZE, 0, memfd, 0);
++	close(memfd);
++	kvm_vm_free(vm2);
++
++	memfd = vm_create_guest_memfd(vm, MEM_REGION_SIZE, 0);
++	for (i = 1; i < PAGE_SIZE; i++)
++		test_invalid_guest_memfd(vm, memfd, i, "Unaligned offset should fail");
++
++	vm_set_user_memory_region2(vm, MEM_REGION_SLOT, KVM_MEM_PRIVATE,
++				   MEM_REGION_GPA, MEM_REGION_SIZE, 0, memfd, 0);
++	close(memfd);
++
++	kvm_vm_free(vm);
 +}
 +
-+static void test_fallocate(int fd, size_t page_size, size_t total_size)
++static void test_add_overlapping_private_memory_regions(void)
 +{
-+	int ret;
-+
-+	ret = fallocate(fd, FALLOC_FL_KEEP_SIZE, 0, total_size);
-+	TEST_ASSERT(!ret, "fallocate with aligned offset and size should succeed");
-+
-+	ret = fallocate(fd, FALLOC_FL_KEEP_SIZE | FALLOC_FL_PUNCH_HOLE,
-+			page_size - 1, page_size);
-+	TEST_ASSERT(ret, "fallocate with unaligned offset should fail");
-+
-+	ret = fallocate(fd, FALLOC_FL_KEEP_SIZE, total_size, page_size);
-+	TEST_ASSERT(ret, "fallocate beginning at total_size should fail");
-+
-+	ret = fallocate(fd, FALLOC_FL_KEEP_SIZE, total_size + page_size, page_size);
-+	TEST_ASSERT(ret, "fallocate beginning at total_size should fail");
-+
-+	ret = fallocate(fd, FALLOC_FL_KEEP_SIZE | FALLOC_FL_PUNCH_HOLE,
-+			total_size, page_size);
-+	TEST_ASSERT(!ret, "fallocate(PUNCH_HOLE)@total_size should succeed");
-+
-+	ret = fallocate(fd, FALLOC_FL_KEEP_SIZE | FALLOC_FL_PUNCH_HOLE,
-+			total_size + page_size, page_size);
-+	TEST_ASSERT(!ret, "fallocate(PUNCH_HOLE) after total_size should succeed");
-+
-+	ret = fallocate(fd, FALLOC_FL_KEEP_SIZE | FALLOC_FL_PUNCH_HOLE,
-+			page_size, page_size - 1);
-+	TEST_ASSERT(ret, "fallocate with unaligned size should fail");
-+
-+	ret = fallocate(fd, FALLOC_FL_KEEP_SIZE | FALLOC_FL_PUNCH_HOLE,
-+			page_size, page_size);
-+	TEST_ASSERT(!ret, "fallocate(PUNCH_HOLE) with aligned offset and size should succeed");
-+
-+	ret = fallocate(fd, FALLOC_FL_KEEP_SIZE, page_size, page_size);
-+	TEST_ASSERT(!ret, "fallocate to restore punched hole should succeed");
-+}
-+
-+
-+int main(int argc, char *argv[])
-+{
-+	size_t page_size;
-+	size_t total_size;
-+	int fd;
 +	struct kvm_vm *vm;
++	int memfd;
++	int r;
 +
-+	page_size = getpagesize();
-+	total_size = page_size * 4;
++	pr_info("Testing ADD of overlapping KVM_MEM_PRIVATE memory regions\n");
 +
-+	vm = vm_create_barebones();
++	vm = vm_create_barebones_protected_vm();
 +
-+	fd = vm_create_guest_memfd(vm, total_size, 0);
++	memfd = vm_create_guest_memfd(vm, MEM_REGION_SIZE * 4, 0);
 +
-+	test_file_read_write(fd);
-+	test_mmap(fd, page_size);
-+	test_file_size(fd, page_size, total_size);
-+	test_fallocate(fd, page_size, total_size);
++	vm_set_user_memory_region2(vm, MEM_REGION_SLOT, KVM_MEM_PRIVATE,
++				   MEM_REGION_GPA, MEM_REGION_SIZE * 2, 0, memfd, 0);
 +
-+	close(fd);
++	vm_set_user_memory_region2(vm, MEM_REGION_SLOT + 1, KVM_MEM_PRIVATE,
++				   MEM_REGION_GPA * 2, MEM_REGION_SIZE * 2,
++				   0, memfd, MEM_REGION_SIZE * 2);
++
++	/*
++	 * Delete the first memslot, and then attempt to recreate it except
++	 * with a "bad" offset that results in overlap in the guest_memfd().
++	 */
++	vm_set_user_memory_region2(vm, MEM_REGION_SLOT, KVM_MEM_PRIVATE,
++				   MEM_REGION_GPA, 0, NULL, -1, 0);
++
++	/* Overlap the front half of the other slot. */
++	r = __vm_set_user_memory_region2(vm, MEM_REGION_SLOT, KVM_MEM_PRIVATE,
++					 MEM_REGION_GPA * 2 - MEM_REGION_SIZE,
++					 MEM_REGION_SIZE * 2,
++					 0, memfd, 0);
++	TEST_ASSERT(r == -1 && errno == EEXIST, "%s",
++		    "Overlapping guest_memfd() bindings should fail with EEXIST");
++
++	/* And now the back half of the other slot. */
++	r = __vm_set_user_memory_region2(vm, MEM_REGION_SLOT, KVM_MEM_PRIVATE,
++					 MEM_REGION_GPA * 2 + MEM_REGION_SIZE,
++					 MEM_REGION_SIZE * 2,
++					 0, memfd, 0);
++	TEST_ASSERT(r == -1 && errno == EEXIST, "%s",
++		    "Overlapping guest_memfd() bindings should fail with EEXIST");
++
++	close(memfd);
++	kvm_vm_free(vm);
 +}
++
+ int main(int argc, char *argv[])
+ {
+ #ifdef __x86_64__
+@@ -398,6 +490,13 @@ int main(int argc, char *argv[])
+ 
+ 	test_add_max_memory_regions();
+ 
++	if (kvm_check_cap(KVM_CAP_VM_TYPES) & BIT(KVM_X86_SW_PROTECTED_VM)) {
++		test_add_private_memory_region();
++		test_add_overlapping_private_memory_regions();
++	} else {
++		pr_info("Skipping tests for KVM_MEM_PRIVATE memory regions\n");
++	}
++
+ #ifdef __x86_64__
+ 	if (argc > 1)
+ 		loops = atoi_positive("Number of iterations", argv[1]);
 -- 
 2.41.0.255.g8b1d071c50-goog
 
