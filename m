@@ -1,34 +1,176 @@
-From: Sean Christopherson <seanjc@google.com>
-Date: Tue, 18 Jul 2023 16:44:54 -0700
-Subject: [RFC PATCH v11 11/29] security: Export security_inode_init_security_anon()
- for use by KVM
-In-Reply-To: <20230718234512.1690985-1-seanjc@google.com>
-References: <20230718234512.1690985-1-seanjc@google.com>
-Message-ID: <20230718234512.1690985-12-seanjc@google.com>
+From: Shaoqin Huang <shahuang@redhat.com>
+Date: Tue, 18 Jul 2023 10:49:30 +0800
+Subject: [PATCH v6 03/11] KVM: Allow range-based TLB invalidation from
+ common code
+In-Reply-To: <CAJHc60zhVco3uTq97vDHMk8cgg1psPtwHT6MN1eKP1Yr18d9cw@mail.gmail.com>
+References: <20230715005405.3689586-1-rananta@google.com>
+ <20230715005405.3689586-4-rananta@google.com>
+ <199d18de-1214-7683-b87a-03cc7e49719a@redhat.com>
+ <CAJHc60zhVco3uTq97vDHMk8cgg1psPtwHT6MN1eKP1Yr18d9cw@mail.gmail.com>
+Message-ID: <fb52139b-5854-6370-7de3-bd87b31e3148@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Signed-off-by: Sean Christopherson <seanjc@google.com>
----
- security/security.c | 1 +
- 1 file changed, 1 insertion(+)
 
-diff --git a/security/security.c b/security/security.c
-index b720424ca37d..7fc78f0f3622 100644
---- a/security/security.c
-+++ b/security/security.c
-@@ -1654,6 +1654,7 @@ int security_inode_init_security_anon(struct inode *inode,
- 	return call_int_hook(inode_init_security_anon, 0, inode, name,
- 			     context_inode);
- }
-+EXPORT_SYMBOL_GPL(security_inode_init_security_anon);
- 
- #ifdef CONFIG_SECURITY_PATH
- /**
+
+On 7/18/23 00:37, Raghavendra Rao Ananta wrote:
+> On Mon, Jul 17, 2023 at 4:40?AM Shaoqin Huang <shahuang@redhat.com> wrote:
+>>
+>>
+>>
+>> On 7/15/23 08:53, Raghavendra Rao Ananta wrote:
+>>> From: David Matlack <dmatlack@google.com>
+>>>
+>>> Make kvm_flush_remote_tlbs_range() visible in common code and create a
+>>> default implementation that just invalidates the whole TLB.
+>>>
+>>> This paves the way for several future features/cleanups:
+>>>
+>>>    - Introduction of range-based TLBI on ARM.
+>>>    - Eliminating kvm_arch_flush_remote_tlbs_memslot()
+>>>    - Moving the KVM/x86 TDP MMU to common code.
+>>>
+>>> No functional change intended.
+>>>
+>>> Signed-off-by: David Matlack <dmatlack@google.com>
+>>> Signed-off-by: Raghavendra Rao Ananta <rananta@google.com>
+>>> Reviewed-by: Gavin Shan <gshan@redhat.com>
+>>> ---
+>>>    arch/x86/include/asm/kvm_host.h |  3 +++
+>>>    arch/x86/kvm/mmu/mmu.c          |  9 ++++-----
+>>>    arch/x86/kvm/mmu/mmu_internal.h |  3 ---
+>>>    include/linux/kvm_host.h        |  9 +++++++++
+>>>    virt/kvm/kvm_main.c             | 13 +++++++++++++
+>>>    5 files changed, 29 insertions(+), 8 deletions(-)
+>>>
+>>> diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
+>>> index a2d3cfc2eb75..08900afbf2ad 100644
+>>> --- a/arch/x86/include/asm/kvm_host.h
+>>> +++ b/arch/x86/include/asm/kvm_host.h
+>>> @@ -1804,6 +1804,9 @@ static inline int kvm_arch_flush_remote_tlbs(struct kvm *kvm)
+>>>                return -ENOTSUPP;
+>>>    }
+>>>
+>>> +#define __KVM_HAVE_ARCH_FLUSH_REMOTE_TLBS_RANGE
+>>> +int kvm_arch_flush_remote_tlbs_range(struct kvm *kvm, gfn_t start_gfn, u64 pages);
+>>> +
+>>>    #define kvm_arch_pmi_in_guest(vcpu) \
+>>>        ((vcpu) && (vcpu)->arch.handling_intr_from_guest)
+>>>
+>>> diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
+>>> index ec169f5c7dce..aaa5e336703a 100644
+>>> --- a/arch/x86/kvm/mmu/mmu.c
+>>> +++ b/arch/x86/kvm/mmu/mmu.c
+>>> @@ -278,16 +278,15 @@ static inline bool kvm_available_flush_remote_tlbs_range(void)
+>>>        return kvm_x86_ops.flush_remote_tlbs_range;
+>>>    }
+>>>
+>>> -void kvm_flush_remote_tlbs_range(struct kvm *kvm, gfn_t start_gfn,
+>>> -                              gfn_t nr_pages)
+>>> +int kvm_arch_flush_remote_tlbs_range(struct kvm *kvm, gfn_t start_gfn, u64 pages)
+>>>    {
+>>>        int ret = -EOPNOTSUPP;
+>>>
+>>>        if (kvm_x86_ops.flush_remote_tlbs_range)
+>>>                ret = static_call(kvm_x86_flush_remote_tlbs_range)(kvm, start_gfn,
+>>> -                                                                nr_pages);
+>>> -     if (ret)
+>>> -             kvm_flush_remote_tlbs(kvm);
+>>> +                                                                     pages);
+>> This will be good if parameter pages aligned with parameter kvm.
+>>
+> Agreed, but pulling 'pages' above brings the char count to 83. If
+> that's acceptable, I'm happy to do it in v7.
+> Hi Raghavendra,
+
+no need to pulling 'pages' above, just delete one tab, and add some 
+space before the pages, just like the original `nr_pages` position.
+
+Thanks,
+Shaoqin
+> Thank you.
+> Raghavendra
+>> Reviewed-by: Shaoqin Huang <shahuang@redhat.com>
+>>> +
+>>> +     return ret;
+>>>    }
+>>>
+>>>    static gfn_t kvm_mmu_page_get_gfn(struct kvm_mmu_page *sp, int index);
+>>> diff --git a/arch/x86/kvm/mmu/mmu_internal.h b/arch/x86/kvm/mmu/mmu_internal.h
+>>> index d39af5639ce9..86cb83bb3480 100644
+>>> --- a/arch/x86/kvm/mmu/mmu_internal.h
+>>> +++ b/arch/x86/kvm/mmu/mmu_internal.h
+>>> @@ -170,9 +170,6 @@ bool kvm_mmu_slot_gfn_write_protect(struct kvm *kvm,
+>>>                                    struct kvm_memory_slot *slot, u64 gfn,
+>>>                                    int min_level);
+>>>
+>>> -void kvm_flush_remote_tlbs_range(struct kvm *kvm, gfn_t start_gfn,
+>>> -                              gfn_t nr_pages);
+>>> -
+>>>    /* Flush the given page (huge or not) of guest memory. */
+>>>    static inline void kvm_flush_remote_tlbs_gfn(struct kvm *kvm, gfn_t gfn, int level)
+>>>    {
+>>> diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+>>> index e3f968b38ae9..a731967b24ff 100644
+>>> --- a/include/linux/kvm_host.h
+>>> +++ b/include/linux/kvm_host.h
+>>> @@ -1359,6 +1359,7 @@ int kvm_vcpu_yield_to(struct kvm_vcpu *target);
+>>>    void kvm_vcpu_on_spin(struct kvm_vcpu *vcpu, bool yield_to_kernel_mode);
+>>>
+>>>    void kvm_flush_remote_tlbs(struct kvm *kvm);
+>>> +void kvm_flush_remote_tlbs_range(struct kvm *kvm, gfn_t gfn, u64 pages);
+>>>
+>>>    #ifdef KVM_ARCH_NR_OBJS_PER_MEMORY_CACHE
+>>>    int kvm_mmu_topup_memory_cache(struct kvm_mmu_memory_cache *mc, int min);
+>>> @@ -1486,6 +1487,14 @@ static inline int kvm_arch_flush_remote_tlbs(struct kvm *kvm)
+>>>    }
+>>>    #endif
+>>>
+>>> +#ifndef __KVM_HAVE_ARCH_FLUSH_REMOTE_TLBS_RANGE
+>>> +static inline int kvm_arch_flush_remote_tlbs_range(struct kvm *kvm,
+>>> +                                                gfn_t gfn, u64 pages)
+>>> +{
+>>> +     return -EOPNOTSUPP;
+>>> +}
+>>> +#endif
+>>> +
+>>>    #ifdef __KVM_HAVE_ARCH_NONCOHERENT_DMA
+>>>    void kvm_arch_register_noncoherent_dma(struct kvm *kvm);
+>>>    void kvm_arch_unregister_noncoherent_dma(struct kvm *kvm);
+>>> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+>>> index d6b050786155..804470fccac7 100644
+>>> --- a/virt/kvm/kvm_main.c
+>>> +++ b/virt/kvm/kvm_main.c
+>>> @@ -366,6 +366,19 @@ void kvm_flush_remote_tlbs(struct kvm *kvm)
+>>>    }
+>>>    EXPORT_SYMBOL_GPL(kvm_flush_remote_tlbs);
+>>>
+>>> +void kvm_flush_remote_tlbs_range(struct kvm *kvm, gfn_t gfn, u64 pages)
+>>> +{
+>>> +     if (!kvm_arch_flush_remote_tlbs_range(kvm, gfn, pages))
+>>> +             return;
+>>> +
+>>> +     /*
+>>> +      * Fall back to a flushing entire TLBs if the architecture range-based
+>>> +      * TLB invalidation is unsupported or can't be performed for whatever
+>>> +      * reason.
+>>> +      */
+>>> +     kvm_flush_remote_tlbs(kvm);
+>>> +}
+>>> +
+>>>    static void kvm_flush_shadow_all(struct kvm *kvm)
+>>>    {
+>>>        kvm_arch_flush_shadow_all(kvm);
+>>
+>> --
+>> Shaoqin
+>>
+> 
+
 -- 
-2.41.0.255.g8b1d071c50-goog
+Shaoqin
 
 
