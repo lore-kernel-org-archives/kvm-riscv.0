@@ -1,10 +1,9 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Tue, 18 Jul 2023 16:45:03 -0700
-Subject: [RFC PATCH v11 20/29] KVM: selftests: Add support for creating
- private memslots
+Date: Tue, 18 Jul 2023 16:45:02 -0700
+Subject: [RFC PATCH v11 19/29] KVM: selftests: Convert lib's mem regions to KVM_SET_USER_MEMORY_REGION2
 In-Reply-To: <20230718234512.1690985-1-seanjc@google.com>
 References: <20230718234512.1690985-1-seanjc@google.com>
-Message-ID: <20230718234512.1690985-21-seanjc@google.com>
+Message-ID: <20230718234512.1690985-20-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -13,203 +12,82 @@ Content-Transfer-Encoding: 7bit
 
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- .../selftests/kvm/include/kvm_util_base.h     | 16 ++++
- .../testing/selftests/kvm/include/test_util.h |  5 ++
- tools/testing/selftests/kvm/lib/kvm_util.c    | 85 ++++++++++++-------
- 3 files changed, 75 insertions(+), 31 deletions(-)
+ .../selftests/kvm/include/kvm_util_base.h      |  2 +-
+ tools/testing/selftests/kvm/lib/kvm_util.c     | 18 +++++++++---------
+ 2 files changed, 10 insertions(+), 10 deletions(-)
 
 diff --git a/tools/testing/selftests/kvm/include/kvm_util_base.h b/tools/testing/selftests/kvm/include/kvm_util_base.h
-index d4a9925d6815..f1de6a279561 100644
+index 6aeb008dd668..d4a9925d6815 100644
 --- a/tools/testing/selftests/kvm/include/kvm_util_base.h
 +++ b/tools/testing/selftests/kvm/include/kvm_util_base.h
-@@ -407,6 +407,19 @@ static inline uint64_t vm_get_stat(struct kvm_vm *vm, const char *stat_name)
- }
+@@ -43,7 +43,7 @@ typedef uint64_t vm_paddr_t; /* Virtual Machine (Guest) physical address */
+ typedef uint64_t vm_vaddr_t; /* Virtual Machine (Guest) virtual address */
  
- void vm_create_irqchip(struct kvm_vm *vm);
-+static inline int vm_create_guest_memfd(struct kvm_vm *vm, uint64_t size,
-+					uint64_t flags)
-+{
-+	struct kvm_create_guest_memfd gmem = {
-+		.size = size,
-+		.flags = flags,
-+	};
-+
-+	int fd = __vm_ioctl(vm, KVM_CREATE_GUEST_MEMFD, &gmem);
-+
-+	TEST_ASSERT(fd >= 0, KVM_IOCTL_ERROR(KVM_CREATE_GUEST_MEMFD, fd));
-+	return fd;
-+}
- 
- void vm_set_user_memory_region(struct kvm_vm *vm, uint32_t slot, uint32_t flags,
- 			       uint64_t gpa, uint64_t size, void *hva);
-@@ -416,6 +429,9 @@ void vm_userspace_mem_region_add(struct kvm_vm *vm,
- 	enum vm_mem_backing_src_type src_type,
- 	uint64_t guest_paddr, uint32_t slot, uint64_t npages,
- 	uint32_t flags);
-+void vm_mem_add(struct kvm_vm *vm, enum vm_mem_backing_src_type src_type,
-+		uint64_t guest_paddr, uint32_t slot, uint64_t npages,
-+		uint32_t flags, int gmem_fd, uint64_t gmem_offset);
- 
- void vm_mem_region_set_flags(struct kvm_vm *vm, uint32_t slot, uint32_t flags);
- void vm_mem_region_move(struct kvm_vm *vm, uint32_t slot, uint64_t new_gpa);
-diff --git a/tools/testing/selftests/kvm/include/test_util.h b/tools/testing/selftests/kvm/include/test_util.h
-index a6e9f215ce70..f3088d27f3ce 100644
---- a/tools/testing/selftests/kvm/include/test_util.h
-+++ b/tools/testing/selftests/kvm/include/test_util.h
-@@ -143,6 +143,11 @@ static inline bool backing_src_is_shared(enum vm_mem_backing_src_type t)
- 	return vm_mem_backing_src_alias(t)->flag & MAP_SHARED;
- }
- 
-+static inline bool backing_src_can_be_huge(enum vm_mem_backing_src_type t)
-+{
-+	return t != VM_MEM_SRC_ANONYMOUS && t != VM_MEM_SRC_SHMEM;
-+}
-+
- /* Aligns x up to the next multiple of size. Size must be a power of 2. */
- static inline uint64_t align_up(uint64_t x, uint64_t size)
- {
+ struct userspace_mem_region {
+-	struct kvm_userspace_memory_region region;
++	struct kvm_userspace_memory_region2 region;
+ 	struct sparsebit *unused_phy_pages;
+ 	int fd;
+ 	off_t offset;
 diff --git a/tools/testing/selftests/kvm/lib/kvm_util.c b/tools/testing/selftests/kvm/lib/kvm_util.c
-index c1e4de53d082..b93717e62325 100644
+index 45d21e052db0..c1e4de53d082 100644
 --- a/tools/testing/selftests/kvm/lib/kvm_util.c
 +++ b/tools/testing/selftests/kvm/lib/kvm_util.c
-@@ -664,6 +664,8 @@ static void __vm_mem_region_delete(struct kvm_vm *vm,
- 		TEST_ASSERT(!ret, __KVM_SYSCALL_ERROR("munmap()", ret));
- 		close(region->fd);
- 	}
-+	if (region->region.gmem_fd >= 0)
-+		close(region->region.gmem_fd);
+@@ -449,8 +449,8 @@ void kvm_vm_restart(struct kvm_vm *vmp)
+ 		vm_create_irqchip(vmp);
  
- 	free(region);
- }
-@@ -865,36 +867,15 @@ void vm_set_user_memory_region(struct kvm_vm *vm, uint32_t slot, uint32_t flags,
- 		    errno, strerror(errno));
- }
- 
--/*
-- * VM Userspace Memory Region Add
-- *
-- * Input Args:
-- *   vm - Virtual Machine
-- *   src_type - Storage source for this region.
-- *              NULL to use anonymous memory.
-- *   guest_paddr - Starting guest physical address
-- *   slot - KVM region slot
-- *   npages - Number of physical pages
-- *   flags - KVM memory region flags (e.g. KVM_MEM_LOG_DIRTY_PAGES)
-- *
-- * Output Args: None
-- *
-- * Return: None
-- *
-- * Allocates a memory area of the number of pages specified by npages
-- * and maps it to the VM specified by vm, at a starting physical address
-- * given by guest_paddr.  The region is created with a KVM region slot
-- * given by slot, which must be unique and < KVM_MEM_SLOTS_NUM.  The
-- * region is created with the flags given by flags.
-- */
--void vm_userspace_mem_region_add(struct kvm_vm *vm,
--	enum vm_mem_backing_src_type src_type,
--	uint64_t guest_paddr, uint32_t slot, uint64_t npages,
--	uint32_t flags)
-+/* FIXME: This thing needs to be ripped apart and rewritten. */
-+void vm_mem_add(struct kvm_vm *vm, enum vm_mem_backing_src_type src_type,
-+		uint64_t guest_paddr, uint32_t slot, uint64_t npages,
-+		uint32_t flags, int gmem_fd, uint64_t gmem_offset)
- {
- 	int ret;
- 	struct userspace_mem_region *region;
- 	size_t backing_src_pagesz = get_backing_src_pagesz(src_type);
-+	size_t mem_size = npages * vm->page_size;
- 	size_t alignment;
- 
- 	TEST_ASSERT(vm_adjust_num_guest_pages(vm->mode, npages) == npages,
-@@ -947,7 +928,7 @@ void vm_userspace_mem_region_add(struct kvm_vm *vm,
- 	/* Allocate and initialize new mem region structure. */
- 	region = calloc(1, sizeof(*region));
- 	TEST_ASSERT(region != NULL, "Insufficient Memory");
--	region->mmap_size = npages * vm->page_size;
-+	region->mmap_size = mem_size;
- 
- #ifdef __s390x__
- 	/* On s390x, the host address must be aligned to 1M (due to PGSTEs) */
-@@ -994,14 +975,47 @@ void vm_userspace_mem_region_add(struct kvm_vm *vm,
- 	/* As needed perform madvise */
- 	if ((src_type == VM_MEM_SRC_ANONYMOUS ||
- 	     src_type == VM_MEM_SRC_ANONYMOUS_THP) && thp_configured()) {
--		ret = madvise(region->host_mem, npages * vm->page_size,
-+		ret = madvise(region->host_mem, mem_size,
- 			      src_type == VM_MEM_SRC_ANONYMOUS ? MADV_NOHUGEPAGE : MADV_HUGEPAGE);
- 		TEST_ASSERT(ret == 0, "madvise failed, addr: %p length: 0x%lx src_type: %s",
--			    region->host_mem, npages * vm->page_size,
-+			    region->host_mem, mem_size,
- 			    vm_mem_backing_src_alias(src_type)->name);
+ 	hash_for_each(vmp->regions.slot_hash, ctr, region, slot_node) {
+-		int ret = ioctl(vmp->fd, KVM_SET_USER_MEMORY_REGION, &region->region);
+-		TEST_ASSERT(ret == 0, "KVM_SET_USER_MEMORY_REGION IOCTL failed,\n"
++		int ret = ioctl(vmp->fd, KVM_SET_USER_MEMORY_REGION2, &region->region);
++		TEST_ASSERT(ret == 0, "KVM_SET_USER_MEMORY_REGION2 IOCTL failed,\n"
+ 			    "  rc: %i errno: %i\n"
+ 			    "  slot: %u flags: 0x%x\n"
+ 			    "  guest_phys_addr: 0x%llx size: 0x%llx",
+@@ -653,7 +653,7 @@ static void __vm_mem_region_delete(struct kvm_vm *vm,
  	}
  
- 	region->backing_src_type = src_type;
-+
-+	if (flags & KVM_MEM_PRIVATE) {
-+		if (gmem_fd < 0) {
-+			uint32_t gmem_flags = 0;
-+
-+			/*
-+			 * Allow hugepages for the guest memfd backing if the
-+			 * "normal" backing is allowed/required to be huge.
-+			 */
-+			if (src_type != VM_MEM_SRC_ANONYMOUS &&
-+			    src_type != VM_MEM_SRC_SHMEM)
-+				gmem_flags |= KVM_GUEST_MEMFD_ALLOW_HUGEPAGE;
-+
-+			TEST_ASSERT(!gmem_offset,
-+				    "Offset must be zero when creating new guest_memfd");
-+			gmem_fd = vm_create_guest_memfd(vm, mem_size, gmem_flags);
-+		} else {
-+			/*
-+			 * Install a unique fd for each memslot so that the fd
-+			 * can be closed when the region is deleted without
-+			 * needing to track if the fd is owned by the framework
-+			 * or by the caller.
-+			 */
-+			gmem_fd = dup(gmem_fd);
-+			TEST_ASSERT(gmem_fd >= 0, __KVM_SYSCALL_ERROR("dup()", gmem_fd));
-+		}
-+
-+		region->region.gmem_fd = gmem_fd;
-+		region->region.gmem_offset = gmem_offset;
-+	} else {
-+		region->region.gmem_fd = -1;
-+	}
-+
- 	region->unused_phy_pages = sparsebit_alloc();
- 	sparsebit_set_num(region->unused_phy_pages,
- 		guest_paddr >> vm->page_shift, npages);
-@@ -1014,9 +1028,10 @@ void vm_userspace_mem_region_add(struct kvm_vm *vm,
- 	TEST_ASSERT(ret == 0, "KVM_SET_USER_MEMORY_REGION2 IOCTL failed,\n"
+ 	region->region.memory_size = 0;
+-	vm_ioctl(vm, KVM_SET_USER_MEMORY_REGION, &region->region);
++	vm_ioctl(vm, KVM_SET_USER_MEMORY_REGION2, &region->region);
+ 
+ 	sparsebit_free(&region->unused_phy_pages);
+ 	ret = munmap(region->mmap_start, region->mmap_size);
+@@ -1010,8 +1010,8 @@ void vm_userspace_mem_region_add(struct kvm_vm *vm,
+ 	region->region.guest_phys_addr = guest_paddr;
+ 	region->region.memory_size = npages * vm->page_size;
+ 	region->region.userspace_addr = (uintptr_t) region->host_mem;
+-	ret = __vm_ioctl(vm, KVM_SET_USER_MEMORY_REGION, &region->region);
+-	TEST_ASSERT(ret == 0, "KVM_SET_USER_MEMORY_REGION IOCTL failed,\n"
++	ret = __vm_ioctl(vm, KVM_SET_USER_MEMORY_REGION2, &region->region);
++	TEST_ASSERT(ret == 0, "KVM_SET_USER_MEMORY_REGION2 IOCTL failed,\n"
  		"  rc: %i errno: %i\n"
  		"  slot: %u flags: 0x%x\n"
--		"  guest_phys_addr: 0x%lx size: 0x%lx",
-+		"  guest_phys_addr: 0x%lx size: 0x%lx guest_memfd: %d\n",
- 		ret, errno, slot, flags,
--		guest_paddr, (uint64_t) region->region.memory_size);
-+		guest_paddr, (uint64_t) region->region.memory_size,
-+		region->region.gmem_fd);
+ 		"  guest_phys_addr: 0x%lx size: 0x%lx",
+@@ -1093,9 +1093,9 @@ void vm_mem_region_set_flags(struct kvm_vm *vm, uint32_t slot, uint32_t flags)
  
- 	/* Add to quick lookup data structures */
- 	vm_userspace_mem_region_gpa_insert(&vm->regions.gpa_tree, region);
-@@ -1037,6 +1052,14 @@ void vm_userspace_mem_region_add(struct kvm_vm *vm,
- 	}
+ 	region->region.flags = flags;
+ 
+-	ret = __vm_ioctl(vm, KVM_SET_USER_MEMORY_REGION, &region->region);
++	ret = __vm_ioctl(vm, KVM_SET_USER_MEMORY_REGION2, &region->region);
+ 
+-	TEST_ASSERT(ret == 0, "KVM_SET_USER_MEMORY_REGION IOCTL failed,\n"
++	TEST_ASSERT(ret == 0, "KVM_SET_USER_MEMORY_REGION2 IOCTL failed,\n"
+ 		"  rc: %i errno: %i slot: %u flags: 0x%x",
+ 		ret, errno, slot, flags);
  }
+@@ -1123,9 +1123,9 @@ void vm_mem_region_move(struct kvm_vm *vm, uint32_t slot, uint64_t new_gpa)
  
-+void vm_userspace_mem_region_add(struct kvm_vm *vm,
-+				 enum vm_mem_backing_src_type src_type,
-+				 uint64_t guest_paddr, uint32_t slot,
-+				 uint64_t npages, uint32_t flags)
-+{
-+	vm_mem_add(vm, src_type, guest_paddr, slot, npages, flags, -1, 0);
-+}
-+
- /*
-  * Memslot to region
-  *
+ 	region->region.guest_phys_addr = new_gpa;
+ 
+-	ret = __vm_ioctl(vm, KVM_SET_USER_MEMORY_REGION, &region->region);
++	ret = __vm_ioctl(vm, KVM_SET_USER_MEMORY_REGION2, &region->region);
+ 
+-	TEST_ASSERT(!ret, "KVM_SET_USER_MEMORY_REGION failed\n"
++	TEST_ASSERT(!ret, "KVM_SET_USER_MEMORY_REGION2 failed\n"
+ 		    "ret: %i errno: %i slot: %u new_gpa: 0x%lx",
+ 		    ret, errno, slot, new_gpa);
+ }
 -- 
 2.41.0.255.g8b1d071c50-goog
 
