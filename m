@@ -1,160 +1,173 @@
-From: Raghavendra Rao Ananta <rananta@google.com>
-Date: Mon, 17 Jul 2023 09:37:04 -0700
-Subject: [PATCH v6 03/11] KVM: Allow range-based TLB invalidation from
- common code
-In-Reply-To: <199d18de-1214-7683-b87a-03cc7e49719a@redhat.com>
-References: <20230715005405.3689586-1-rananta@google.com> <20230715005405.3689586-4-rananta@google.com>
- <199d18de-1214-7683-b87a-03cc7e49719a@redhat.com>
-Message-ID: <CAJHc60zhVco3uTq97vDHMk8cgg1psPtwHT6MN1eKP1Yr18d9cw@mail.gmail.com>
+From: Sean Christopherson <seanjc@google.com>
+Date: Tue, 18 Jul 2023 16:45:12 -0700
+Subject: [RFC PATCH v11 29/29] KVM: selftests: Test KVM exit behavior for
+ private memory/access
+In-Reply-To: <20230718234512.1690985-1-seanjc@google.com>
+References: <20230718234512.1690985-1-seanjc@google.com>
+Message-ID: <20230718234512.1690985-30-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Jul 17, 2023 at 4:40?AM Shaoqin Huang <shahuang@redhat.com> wrote:
->
->
->
-> On 7/15/23 08:53, Raghavendra Rao Ananta wrote:
-> > From: David Matlack <dmatlack@google.com>
-> >
-> > Make kvm_flush_remote_tlbs_range() visible in common code and create a
-> > default implementation that just invalidates the whole TLB.
-> >
-> > This paves the way for several future features/cleanups:
-> >
-> >   - Introduction of range-based TLBI on ARM.
-> >   - Eliminating kvm_arch_flush_remote_tlbs_memslot()
-> >   - Moving the KVM/x86 TDP MMU to common code.
-> >
-> > No functional change intended.
-> >
-> > Signed-off-by: David Matlack <dmatlack@google.com>
-> > Signed-off-by: Raghavendra Rao Ananta <rananta@google.com>
-> > Reviewed-by: Gavin Shan <gshan@redhat.com>
-> > ---
-> >   arch/x86/include/asm/kvm_host.h |  3 +++
-> >   arch/x86/kvm/mmu/mmu.c          |  9 ++++-----
-> >   arch/x86/kvm/mmu/mmu_internal.h |  3 ---
-> >   include/linux/kvm_host.h        |  9 +++++++++
-> >   virt/kvm/kvm_main.c             | 13 +++++++++++++
-> >   5 files changed, 29 insertions(+), 8 deletions(-)
-> >
-> > diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
-> > index a2d3cfc2eb75..08900afbf2ad 100644
-> > --- a/arch/x86/include/asm/kvm_host.h
-> > +++ b/arch/x86/include/asm/kvm_host.h
-> > @@ -1804,6 +1804,9 @@ static inline int kvm_arch_flush_remote_tlbs(struct kvm *kvm)
-> >               return -ENOTSUPP;
-> >   }
-> >
-> > +#define __KVM_HAVE_ARCH_FLUSH_REMOTE_TLBS_RANGE
-> > +int kvm_arch_flush_remote_tlbs_range(struct kvm *kvm, gfn_t start_gfn, u64 pages);
-> > +
-> >   #define kvm_arch_pmi_in_guest(vcpu) \
-> >       ((vcpu) && (vcpu)->arch.handling_intr_from_guest)
-> >
-> > diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
-> > index ec169f5c7dce..aaa5e336703a 100644
-> > --- a/arch/x86/kvm/mmu/mmu.c
-> > +++ b/arch/x86/kvm/mmu/mmu.c
-> > @@ -278,16 +278,15 @@ static inline bool kvm_available_flush_remote_tlbs_range(void)
-> >       return kvm_x86_ops.flush_remote_tlbs_range;
-> >   }
-> >
-> > -void kvm_flush_remote_tlbs_range(struct kvm *kvm, gfn_t start_gfn,
-> > -                              gfn_t nr_pages)
-> > +int kvm_arch_flush_remote_tlbs_range(struct kvm *kvm, gfn_t start_gfn, u64 pages)
-> >   {
-> >       int ret = -EOPNOTSUPP;
-> >
-> >       if (kvm_x86_ops.flush_remote_tlbs_range)
-> >               ret = static_call(kvm_x86_flush_remote_tlbs_range)(kvm, start_gfn,
-> > -                                                                nr_pages);
-> > -     if (ret)
-> > -             kvm_flush_remote_tlbs(kvm);
-> > +                                                                     pages);
-> This will be good if parameter pages aligned with parameter kvm.
->
-Agreed, but pulling 'pages' above brings the char count to 83. If
-that's acceptable, I'm happy to do it in v7.
+From: Ackerley Tng <ackerleytng@google.com>
 
-Thank you.
-Raghavendra
-> Reviewed-by: Shaoqin Huang <shahuang@redhat.com>
-> > +
-> > +     return ret;
-> >   }
-> >
-> >   static gfn_t kvm_mmu_page_get_gfn(struct kvm_mmu_page *sp, int index);
-> > diff --git a/arch/x86/kvm/mmu/mmu_internal.h b/arch/x86/kvm/mmu/mmu_internal.h
-> > index d39af5639ce9..86cb83bb3480 100644
-> > --- a/arch/x86/kvm/mmu/mmu_internal.h
-> > +++ b/arch/x86/kvm/mmu/mmu_internal.h
-> > @@ -170,9 +170,6 @@ bool kvm_mmu_slot_gfn_write_protect(struct kvm *kvm,
-> >                                   struct kvm_memory_slot *slot, u64 gfn,
-> >                                   int min_level);
-> >
-> > -void kvm_flush_remote_tlbs_range(struct kvm *kvm, gfn_t start_gfn,
-> > -                              gfn_t nr_pages);
-> > -
-> >   /* Flush the given page (huge or not) of guest memory. */
-> >   static inline void kvm_flush_remote_tlbs_gfn(struct kvm *kvm, gfn_t gfn, int level)
-> >   {
-> > diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-> > index e3f968b38ae9..a731967b24ff 100644
-> > --- a/include/linux/kvm_host.h
-> > +++ b/include/linux/kvm_host.h
-> > @@ -1359,6 +1359,7 @@ int kvm_vcpu_yield_to(struct kvm_vcpu *target);
-> >   void kvm_vcpu_on_spin(struct kvm_vcpu *vcpu, bool yield_to_kernel_mode);
-> >
-> >   void kvm_flush_remote_tlbs(struct kvm *kvm);
-> > +void kvm_flush_remote_tlbs_range(struct kvm *kvm, gfn_t gfn, u64 pages);
-> >
-> >   #ifdef KVM_ARCH_NR_OBJS_PER_MEMORY_CACHE
-> >   int kvm_mmu_topup_memory_cache(struct kvm_mmu_memory_cache *mc, int min);
-> > @@ -1486,6 +1487,14 @@ static inline int kvm_arch_flush_remote_tlbs(struct kvm *kvm)
-> >   }
-> >   #endif
-> >
-> > +#ifndef __KVM_HAVE_ARCH_FLUSH_REMOTE_TLBS_RANGE
-> > +static inline int kvm_arch_flush_remote_tlbs_range(struct kvm *kvm,
-> > +                                                gfn_t gfn, u64 pages)
-> > +{
-> > +     return -EOPNOTSUPP;
-> > +}
-> > +#endif
-> > +
-> >   #ifdef __KVM_HAVE_ARCH_NONCOHERENT_DMA
-> >   void kvm_arch_register_noncoherent_dma(struct kvm *kvm);
-> >   void kvm_arch_unregister_noncoherent_dma(struct kvm *kvm);
-> > diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-> > index d6b050786155..804470fccac7 100644
-> > --- a/virt/kvm/kvm_main.c
-> > +++ b/virt/kvm/kvm_main.c
-> > @@ -366,6 +366,19 @@ void kvm_flush_remote_tlbs(struct kvm *kvm)
-> >   }
-> >   EXPORT_SYMBOL_GPL(kvm_flush_remote_tlbs);
-> >
-> > +void kvm_flush_remote_tlbs_range(struct kvm *kvm, gfn_t gfn, u64 pages)
-> > +{
-> > +     if (!kvm_arch_flush_remote_tlbs_range(kvm, gfn, pages))
-> > +             return;
-> > +
-> > +     /*
-> > +      * Fall back to a flushing entire TLBs if the architecture range-based
-> > +      * TLB invalidation is unsupported or can't be performed for whatever
-> > +      * reason.
-> > +      */
-> > +     kvm_flush_remote_tlbs(kvm);
-> > +}
-> > +
-> >   static void kvm_flush_shadow_all(struct kvm *kvm)
-> >   {
-> >       kvm_arch_flush_shadow_all(kvm);
->
-> --
-> Shaoqin
->
+"Testing private access when memslot gets deleted" tests the behavior
+of KVM when a private memslot gets deleted while the VM is using the
+private memslot. When KVM looks up the deleted (slot = NULL) memslot,
+KVM should exit to userspace with KVM_EXIT_MEMORY_FAULT.
+
+In the second test, upon a private access to non-private memslot, KVM
+should also exit to userspace with KVM_EXIT_MEMORY_FAULT.
+
+sean: These testcases belong in set_memory_region_test.c, they're private
+variants on existing testscases and aren't as robust, e.g. don't ensure
+the vCPU is actually running and accessing memory when converting and
+deleting.
+
+Signed-off-by: Ackerley Tng <ackerleytng@google.com>
+Signed-off-by: Sean Christopherson <seanjc@google.com>
+---
+ tools/testing/selftests/kvm/Makefile          |   1 +
+ .../kvm/x86_64/private_mem_kvm_exits_test.c   | 115 ++++++++++++++++++
+ 2 files changed, 116 insertions(+)
+ create mode 100644 tools/testing/selftests/kvm/x86_64/private_mem_kvm_exits_test.c
+
+diff --git a/tools/testing/selftests/kvm/Makefile b/tools/testing/selftests/kvm/Makefile
+index 18c43336ede3..cb9450022302 100644
+--- a/tools/testing/selftests/kvm/Makefile
++++ b/tools/testing/selftests/kvm/Makefile
+@@ -81,6 +81,7 @@ TEST_GEN_PROGS_x86_64 += x86_64/nested_exceptions_test
+ TEST_GEN_PROGS_x86_64 += x86_64/platform_info_test
+ TEST_GEN_PROGS_x86_64 += x86_64/pmu_event_filter_test
+ TEST_GEN_PROGS_x86_64 += x86_64/private_mem_conversions_test
++TEST_GEN_PROGS_x86_64 += x86_64/private_mem_kvm_exits_test
+ TEST_GEN_PROGS_x86_64 += x86_64/set_boot_cpu_id
+ TEST_GEN_PROGS_x86_64 += x86_64/set_sregs_test
+ TEST_GEN_PROGS_x86_64 += x86_64/smaller_maxphyaddr_emulation_test
+diff --git a/tools/testing/selftests/kvm/x86_64/private_mem_kvm_exits_test.c b/tools/testing/selftests/kvm/x86_64/private_mem_kvm_exits_test.c
+new file mode 100644
+index 000000000000..8daaa08c0d90
+--- /dev/null
++++ b/tools/testing/selftests/kvm/x86_64/private_mem_kvm_exits_test.c
+@@ -0,0 +1,115 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Copyright (C) 2022, Google LLC.
++ */
++#include <linux/kvm.h>
++#include <pthread.h>
++#include <stdint.h>
++
++#include "kvm_util.h"
++#include "processor.h"
++#include "test_util.h"
++
++/* Arbitrarily selected to avoid overlaps with anything else */
++#define EXITS_TEST_GVA 0xc0000000
++#define EXITS_TEST_GPA EXITS_TEST_GVA
++#define EXITS_TEST_NPAGES 1
++#define EXITS_TEST_SIZE (EXITS_TEST_NPAGES * PAGE_SIZE)
++#define EXITS_TEST_SLOT 10
++
++static uint64_t guest_repeatedly_read(void)
++{
++	volatile uint64_t value;
++
++	while (true)
++		value = *((uint64_t *) EXITS_TEST_GVA);
++
++	return value;
++}
++
++static uint32_t run_vcpu_get_exit_reason(struct kvm_vcpu *vcpu)
++{
++	vcpu_run(vcpu);
++
++	return vcpu->run->exit_reason;
++}
++
++const struct vm_shape protected_vm_shape = {
++	.mode = VM_MODE_DEFAULT,
++	.type = KVM_X86_SW_PROTECTED_VM,
++};
++
++static void test_private_access_memslot_deleted(void)
++{
++	struct kvm_vm *vm;
++	struct kvm_vcpu *vcpu;
++	pthread_t vm_thread;
++	void *thread_return;
++	uint32_t exit_reason;
++
++	vm = vm_create_shape_with_one_vcpu(protected_vm_shape, &vcpu,
++					   guest_repeatedly_read);
++
++	vm_userspace_mem_region_add(vm, VM_MEM_SRC_ANONYMOUS,
++				    EXITS_TEST_GPA, EXITS_TEST_SLOT,
++				    EXITS_TEST_NPAGES,
++				    KVM_MEM_PRIVATE);
++
++	virt_map(vm, EXITS_TEST_GVA, EXITS_TEST_GPA, EXITS_TEST_NPAGES);
++
++	/* Request to access page privately */
++	vm_mem_set_private(vm, EXITS_TEST_GPA, EXITS_TEST_SIZE);
++
++	pthread_create(&vm_thread, NULL,
++		       (void *(*)(void *))run_vcpu_get_exit_reason,
++		       (void *)vcpu);
++
++	vm_mem_region_delete(vm, EXITS_TEST_SLOT);
++
++	pthread_join(vm_thread, &thread_return);
++	exit_reason = (uint32_t)(uint64_t)thread_return;
++
++	ASSERT_EQ(exit_reason, KVM_EXIT_MEMORY_FAULT);
++	ASSERT_EQ(vcpu->run->memory.flags, KVM_MEMORY_EXIT_FLAG_PRIVATE);
++	ASSERT_EQ(vcpu->run->memory.gpa, EXITS_TEST_GPA);
++	ASSERT_EQ(vcpu->run->memory.size, EXITS_TEST_SIZE);
++
++	kvm_vm_free(vm);
++}
++
++static void test_private_access_memslot_not_private(void)
++{
++	struct kvm_vm *vm;
++	struct kvm_vcpu *vcpu;
++	uint32_t exit_reason;
++
++	vm = vm_create_shape_with_one_vcpu(protected_vm_shape, &vcpu,
++					   guest_repeatedly_read);
++
++	/* Add a non-private memslot (flags = 0) */
++	vm_userspace_mem_region_add(vm, VM_MEM_SRC_ANONYMOUS,
++				    EXITS_TEST_GPA, EXITS_TEST_SLOT,
++				    EXITS_TEST_NPAGES, 0);
++
++	virt_map(vm, EXITS_TEST_GVA, EXITS_TEST_GPA, EXITS_TEST_NPAGES);
++
++	/* Request to access page privately */
++	vm_mem_set_private(vm, EXITS_TEST_GPA, EXITS_TEST_SIZE);
++
++	exit_reason = run_vcpu_get_exit_reason(vcpu);
++
++	ASSERT_EQ(exit_reason, KVM_EXIT_MEMORY_FAULT);
++	ASSERT_EQ(vcpu->run->memory.flags, KVM_MEMORY_EXIT_FLAG_PRIVATE);
++	ASSERT_EQ(vcpu->run->memory.gpa, EXITS_TEST_GPA);
++	ASSERT_EQ(vcpu->run->memory.size, EXITS_TEST_SIZE);
++
++	kvm_vm_free(vm);
++}
++
++int main(int argc, char *argv[])
++{
++	TEST_REQUIRE(kvm_check_cap(KVM_CAP_VM_TYPES) & BIT(KVM_X86_SW_PROTECTED_VM));
++
++	test_private_access_memslot_deleted();
++	test_private_access_memslot_not_private();
++}
+-- 
+2.41.0.255.g8b1d071c50-goog
+
 
