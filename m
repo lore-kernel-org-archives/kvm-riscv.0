@@ -1,126 +1,89 @@
 From: Mayuresh Chitale <mchitale@ventanamicro.com>
-Date: Wed, 19 Jul 2023 21:33:13 +0530
-Subject: [PATCH v1 3/6] RISC-V: KVM: Enable Smstateen accesses
+Date: Wed, 19 Jul 2023 21:33:14 +0530
+Subject: [PATCH v1 4/6] RISCV: KVM: Add senvcfg context save/restore
 In-Reply-To: <20230719160316.4048022-1-mchitale@ventanamicro.com>
 References: <20230719160316.4048022-1-mchitale@ventanamicro.com>
-Message-ID: <20230719160316.4048022-4-mchitale@ventanamicro.com>
+Message-ID: <20230719160316.4048022-5-mchitale@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Configure hstateen0 register so that the AIA state and envcfg are
-accessible to the vcpus. This includes registers such as siselect,
-sireg, siph, sieh and all the IMISC registers.
+Add senvcfg context save/restore for guest VCPUs and also add it to the
+ONE_REG interface to allow its access from user space.
 
 Signed-off-by: Mayuresh Chitale <mchitale@ventanamicro.com>
 ---
- arch/riscv/include/asm/csr.h      | 16 ++++++++++++++++
- arch/riscv/include/asm/kvm_host.h |  1 +
- arch/riscv/include/uapi/asm/kvm.h |  1 +
- arch/riscv/kvm/vcpu.c             | 16 ++++++++++++++++
- 4 files changed, 34 insertions(+)
+ arch/riscv/include/asm/csr.h      | 1 +
+ arch/riscv/include/asm/kvm_host.h | 2 ++
+ arch/riscv/include/uapi/asm/kvm.h | 1 +
+ arch/riscv/kvm/vcpu.c             | 4 ++++
+ 4 files changed, 8 insertions(+)
 
 diff --git a/arch/riscv/include/asm/csr.h b/arch/riscv/include/asm/csr.h
-index 7bac43a3176e..38730677dcd5 100644
+index 38730677dcd5..b52270278733 100644
 --- a/arch/riscv/include/asm/csr.h
 +++ b/arch/riscv/include/asm/csr.h
-@@ -201,6 +201,18 @@
- #define ENVCFG_CBIE_INV			_AC(0x3, UL)
- #define ENVCFG_FIOM			_AC(0x1, UL)
- 
-+/* Smstateen bits */
-+#define SMSTATEEN0_AIA_IMSIC_SHIFT	58
-+#define SMSTATEEN0_AIA_IMSIC		(_ULL(1) << SMSTATEEN0_AIA_IMSIC_SHIFT)
-+#define SMSTATEEN0_AIA_SHIFT		59
-+#define SMSTATEEN0_AIA			(_ULL(1) << SMSTATEEN0_AIA_SHIFT)
-+#define SMSTATEEN0_AIA_ISEL_SHIFT	60
-+#define SMSTATEEN0_AIA_ISEL		(_ULL(1) << SMSTATEEN0_AIA_ISEL_SHIFT)
-+#define SMSTATEEN0_HSENVCFG_SHIFT	62
-+#define SMSTATEEN0_HSENVCFG		(_ULL(1) << SMSTATEEN0_HSENVCFG_SHIFT)
-+#define SMSTATEEN0_SSTATEEN0_SHIFT	63
-+#define SMSTATEEN0_SSTATEEN0		(_ULL(1) << SMSTATEEN0_SSTATEEN0_SHIFT)
-+
- /* symbolic CSR names: */
- #define CSR_CYCLE		0xc00
- #define CSR_TIME		0xc01
-@@ -347,6 +359,10 @@
- #define CSR_VSIEH		0x214
- #define CSR_VSIPH		0x254
- 
-+/* Hypervisor stateen CSRs */
-+#define CSR_HSTATEEN0		0x60c
-+#define CSR_HSTATEEN0H		0x61c
-+
- #define CSR_MSTATUS		0x300
- #define CSR_MISA		0x301
- #define CSR_MIDELEG		0x303
+@@ -285,6 +285,7 @@
+ #define CSR_SIE			0x104
+ #define CSR_STVEC		0x105
+ #define CSR_SCOUNTEREN		0x106
++#define CSR_SENVCFG		0x10a
+ #define CSR_SSCRATCH		0x140
+ #define CSR_SEPC		0x141
+ #define CSR_SCAUSE		0x142
 diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
-index c0c50b4b3394..ee55e5fc8b84 100644
+index ee55e5fc8b84..c3cc0cb39cf8 100644
 --- a/arch/riscv/include/asm/kvm_host.h
 +++ b/arch/riscv/include/asm/kvm_host.h
-@@ -166,6 +166,7 @@ struct kvm_vcpu_csr {
+@@ -162,6 +162,7 @@ struct kvm_vcpu_csr {
+ 	unsigned long hvip;
+ 	unsigned long vsatp;
+ 	unsigned long scounteren;
++	unsigned long senvcfg;
+ };
  
  struct kvm_vcpu_config {
- 	u64 henvcfg;
-+	u64 hstateen0;
- };
+@@ -188,6 +189,7 @@ struct kvm_vcpu_arch {
+ 	unsigned long host_sscratch;
+ 	unsigned long host_stvec;
+ 	unsigned long host_scounteren;
++	unsigned long host_senvcfg;
  
- struct kvm_vcpu_arch {
+ 	/* CPU context of Host */
+ 	struct kvm_cpu_context host_context;
 diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
-index 930fdc4101cd..7bc1634b0a89 100644
+index 7bc1634b0a89..74c7f42de29d 100644
 --- a/arch/riscv/include/uapi/asm/kvm.h
 +++ b/arch/riscv/include/uapi/asm/kvm.h
-@@ -124,6 +124,7 @@ enum KVM_RISCV_ISA_EXT_ID {
- 	KVM_RISCV_ISA_EXT_SSAIA,
- 	KVM_RISCV_ISA_EXT_V,
- 	KVM_RISCV_ISA_EXT_SVNAPOT,
-+	KVM_RISCV_ISA_EXT_SMSTATEEN,
- 	KVM_RISCV_ISA_EXT_MAX,
+@@ -79,6 +79,7 @@ struct kvm_riscv_csr {
+ 	unsigned long sip;
+ 	unsigned long satp;
+ 	unsigned long scounteren;
++	unsigned long senvcfg;
  };
  
+ /* AIA CSR registers for KVM_GET_ONE_REG and KVM_SET_ONE_REG */
 diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-index e01f47bb636f..d3166b676430 100644
+index d3166b676430..37f1ed70d782 100644
 --- a/arch/riscv/kvm/vcpu.c
 +++ b/arch/riscv/kvm/vcpu.c
-@@ -70,6 +70,7 @@ static const unsigned long kvm_isa_ext_arr[] = {
- 	KVM_ISA_EXT_ARR(ZIHINTPAUSE),
- 	KVM_ISA_EXT_ARR(ZICBOM),
- 	KVM_ISA_EXT_ARR(ZICBOZ),
-+	KVM_ISA_EXT_ARR(SMSTATEEN),
- };
- 
- static unsigned long kvm_riscv_vcpu_base2isa_ext(unsigned long base_ext)
-@@ -996,6 +997,16 @@ static void kvm_riscv_vcpu_setup_config(struct kvm_vcpu *vcpu)
- 
- 	if (riscv_isa_extension_available(isa, ZICBOZ))
- 		cfg->henvcfg |= ENVCFG_CBZE;
+@@ -1138,10 +1138,14 @@ static void kvm_riscv_update_hvip(struct kvm_vcpu *vcpu)
+  */
+ static void noinstr kvm_riscv_vcpu_enter_exit(struct kvm_vcpu *vcpu)
+ {
++	struct kvm_vcpu_csr *csr = &vcpu->arch.guest_csr;
 +
-+	if (riscv_has_extension_unlikely(RISCV_ISA_EXT_SMSTATEEN)) {
-+		cfg->hstateen0 |= SMSTATEEN0_HSENVCFG;
-+		if (riscv_isa_extension_available(isa, SSAIA))
-+			cfg->hstateen0 |= SMSTATEEN0_AIA_IMSIC |
-+					  SMSTATEEN0_AIA |
-+					  SMSTATEEN0_AIA_ISEL;
-+		if (riscv_isa_extension_available(isa, SMSTATEEN))
-+			cfg->hstateen0 |= SMSTATEEN0_SSTATEEN0;
-+	}
++	vcpu->arch.host_senvcfg = csr_swap(CSR_SENVCFG, csr->senvcfg);
+ 	guest_state_enter_irqoff();
+ 	__kvm_riscv_switch_to(&vcpu->arch);
+ 	vcpu->arch.last_exit_cpu = vcpu->cpu;
+ 	guest_state_exit_irqoff();
++	csr->senvcfg = csr_swap(CSR_SENVCFG, vcpu->arch.host_senvcfg);
  }
  
- void kvm_arch_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
-@@ -1015,6 +1026,11 @@ void kvm_arch_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
- 	csr_write(CSR_HENVCFG, cfg->henvcfg);
- 	if (IS_ENABLED(CONFIG_32BIT))
- 		csr_write(CSR_HENVCFGH, cfg->henvcfg >> 32);
-+	if (riscv_has_extension_unlikely(RISCV_ISA_EXT_SMSTATEEN)) {
-+		csr_write(CSR_HSTATEEN0, cfg->hstateen0);
-+		if (IS_ENABLED(CONFIG_32BIT))
-+			csr_write(CSR_HSTATEEN0H, cfg->hstateen0 >> 32);
-+	}
- 
- 	kvm_riscv_gstage_update_hgatp(vcpu);
- 
+ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
 -- 
 2.34.1
 
