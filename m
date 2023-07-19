@@ -1,25 +1,46 @@
-From: Jarkko Sakkinen <jarkko@kernel.org>
-Date: Wed, 19 Jul 2023 16:39:23 +0300
-Subject: [RFC PATCH v11 01/29] KVM: Wrap kvm_gfn_range.pte in a
- per-action union
-In-Reply-To: <20230718234512.1690985-2-seanjc@google.com>
-References: <20230718234512.1690985-1-seanjc@google.com>
- <20230718234512.1690985-2-seanjc@google.com>
-Message-ID: <CU66VMG4IKSD.33KF2CEZJ2I1@suppilovahvero>
+From: Sean Christopherson <seanjc@google.com>
+Date: Wed, 19 Jul 2023 07:15:09 -0700
+Subject: [RFC PATCH v11 05/29] KVM: Convert KVM_ARCH_WANT_MMU_NOTIFIER to CONFIG_KVM_GENERIC_MMU_NOTIFIER
+In-Reply-To: <20230719073115.vuedo2cf3mp27xm4@yy-desk-7060>
+References: <20230718234512.1690985-1-seanjc@google.com> <20230718234512.1690985-6-seanjc@google.com>
+ <20230719073115.vuedo2cf3mp27xm4@yy-desk-7060>
+Message-ID: <ZLfv7aRq5W52ezek@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed Jul 19, 2023 at 2:44 AM EEST, Sean Christopherson wrote:
->  	/* Huge pages aren't expected to be modified without first being zapped. */
-> -	WARN_ON(pte_huge(range->pte) || range->start + 1 != range->end);
-> +	WARN_ON(pte_huge(range->arg.pte) || range->start + 1 != range->end);
+On Wed, Jul 19, 2023, Yuan Yao wrote:
+> On Tue, Jul 18, 2023 at 04:44:48PM -0700, Sean Christopherson wrote:
+> > diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+> > index 90a0be261a5c..d2d3e083ec7f 100644
+> > --- a/include/linux/kvm_host.h
+> > +++ b/include/linux/kvm_host.h
+> > @@ -255,7 +255,9 @@ bool kvm_setup_async_pf(struct kvm_vcpu *vcpu, gpa_t cr2_or_gpa,
+> >  int kvm_async_pf_wakeup_all(struct kvm_vcpu *vcpu);
+> >  #endif
+> >
+> > -#ifdef KVM_ARCH_WANT_MMU_NOTIFIER
+> > +struct kvm_gfn_range;
+> 
+> Not sure why a declaration here, it's defined for ARCHs which defined
+> KVM_ARCH_WANT_MMU_NOTIFIER before.
 
-Not familiar with this code. Just checking whether whether instead
-pr_{warn,err}() combined with return false would be a more graceful
-option?
+The forward declaration exists to handle cases where CONFIG_KVM=n, specifically
+arch/powerpc/include/asm/kvm_ppc.h's declaration of hooks to forward calls to
+uarch modules:
 
-BR, Jarkko
+	bool (*unmap_gfn_range)(struct kvm *kvm, struct kvm_gfn_range *range);
+	bool (*age_gfn)(struct kvm *kvm, struct kvm_gfn_range *range);
+	bool (*test_age_gfn)(struct kvm *kvm, struct kvm_gfn_range *range);
+	bool (*set_spte_gfn)(struct kvm *kvm, struct kvm_gfn_range *range);
+
+Prior to using a Kconfig, a forward declaration wasn't necessary because
+arch/powerpc/include/asm/kvm_host.h would #define KVM_ARCH_WANT_MMU_NOTIFIER even
+if CONFIG_KVM=n.
+
+Alternatively, kvm_ppc.h could declare the struct.  I went this route mainly to
+avoid the possibility of someone encountering the same problem on a different
+architecture.
 
