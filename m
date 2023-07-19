@@ -1,63 +1,49 @@
-From: Vishal Annapurve <vannapurve@google.com>
-Date: Wed, 19 Jul 2023 10:21:55 -0700
-Subject: [RFC PATCH v11 12/29] KVM: Add KVM_CREATE_GUEST_MEMFD ioctl() for
- guest-specific backing memory
-In-Reply-To: <20230718234512.1690985-13-seanjc@google.com>
-References: <20230718234512.1690985-1-seanjc@google.com> <20230718234512.1690985-13-seanjc@google.com>
-Message-ID: <CAGtprH9a2jX-hdww9GPuMrO9noNeXkoqE8oejtVn2vD0AZa3zA@mail.gmail.com>
+From: Paolo Bonzini <pbonzini@redhat.com>
+Date: Wed, 19 Jul 2023 19:34:22 +0200
+Subject: [RFC PATCH v11 04/29] KVM: PPC: Drop dead code related to
+ KVM_ARCH_WANT_MMU_NOTIFIER
+In-Reply-To: <20230718234512.1690985-5-seanjc@google.com>
+References: <20230718234512.1690985-1-seanjc@google.com>
+ <20230718234512.1690985-5-seanjc@google.com>
+Message-ID: <cd866d4c-839a-8606-2931-063cca4df514@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Jul 18, 2023 at 4:49?PM Sean Christopherson <seanjc@google.com> wrote:
-> ...
-> +static int kvm_gmem_error_page(struct address_space *mapping, struct page *page)
-> +{
-> +       struct list_head *gmem_list = &mapping->private_list;
-> +       struct kvm_memory_slot *slot;
-> +       struct kvm_gmem *gmem;
-> +       unsigned long index;
-> +       pgoff_t start, end;
-> +       gfn_t gfn;
-> +
-> +       filemap_invalidate_lock_shared(mapping);
-> +
-> +       start = page->index;
-> +       end = start + thp_nr_pages(page);
-> +
-> +       list_for_each_entry(gmem, gmem_list, entry) {
-> +               xa_for_each_range(&gmem->bindings, index, slot, start, end - 1) {
-> +                       for (gfn = start; gfn < end; gfn++) {
-> +                               if (WARN_ON_ONCE(gfn < slot->base_gfn ||
-> +                                               gfn >= slot->base_gfn + slot->npages))
-> +                                       continue;
-> +
-> +                               /*
-> +                                * FIXME: Tell userspace that the *private*
-> +                                * memory encountered an error.
-> +                                */
-> +                               send_sig_mceerr(BUS_MCEERR_AR,
-> +                                               (void __user *)gfn_to_hva_memslot(slot, gfn),
-> +                                               PAGE_SHIFT, current);
+On 7/19/23 01:44, Sean Christopherson wrote:
+> Signed-off-by: Sean Christopherson<seanjc@google.com>
+> ---
+>   arch/powerpc/kvm/powerpc.c | 7 ++++---
+>   1 file changed, 4 insertions(+), 3 deletions(-)
+> 
+> diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+> index 7197c8256668..5cf9e5e3112a 100644
+> --- a/arch/powerpc/kvm/powerpc.c
+> +++ b/arch/powerpc/kvm/powerpc.c
+> @@ -634,10 +634,11 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
+>   	case KVM_CAP_SYNC_MMU:
+>   #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
+>   		r = hv_enabled;
 
-Does it make sense to replicate what happens with MCE handling on
-tmpfs backed guest memory:
-1) Unmap gpa from guest
-2) On the next guest EPT fault, exit to userspace to handle/log the
-mce error for the gpa.
+This could actually be unnecessarily conservative.  Even book3s_pr.c 
+knows how to do unmap and set_spte, so it should be able to support 
+KVM_CAP_SYNC_MMU.  Alex, Nick, do you remember any of this?  This would 
+mean moving KVM_CAP_SYNC_MMU to virt/kvm/kvm_main.c, which is nice.
 
-IIUC, such MCEs could be asynchronous and "current" might not always
-be the intended recipient of this signal.
+Paolo
 
-> +                       }
-> +               }
-> +       }
-> +
-> +       filemap_invalidate_unlock_shared(mapping);
-> +
-> +       return 0;
-> +}
-> +
+> -#elif defined(KVM_ARCH_WANT_MMU_NOTIFIER)
+> -		r = 1;
+>   #else
+> -		r = 0;
+> +#ifndef KVM_ARCH_WANT_MMU_NOTIFIER
+> +		BUILD_BUG();
+> +#endif
+> +		r = 1;
+>   #endif
+>   		break;
+>   #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
+
 
