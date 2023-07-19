@@ -1,61 +1,117 @@
 From: Mayuresh Chitale <mchitale@ventanamicro.com>
-Date: Wed, 19 Jul 2023 21:33:11 +0530
-Subject: [PATCH v1 1/6] RISC-V: Detect Smstateen extension
+Date: Wed, 19 Jul 2023 21:33:12 +0530
+Subject: [PATCH v1 2/6] RISC-V: KVM: Add kvm_vcpu_config
 In-Reply-To: <20230719160316.4048022-1-mchitale@ventanamicro.com>
 References: <20230719160316.4048022-1-mchitale@ventanamicro.com>
-Message-ID: <20230719160316.4048022-2-mchitale@ventanamicro.com>
+Message-ID: <20230719160316.4048022-3-mchitale@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Extend the ISA string parsing to detect the Smstateen extension
+Add a placeholder for all registers such as henvcfg, hstateen etc
+which have 'static' configurations depending on extensions supported by
+the guest. The values are derived once and are then subsequently written
+to the corresponding CSRs while switching to the vcpu.
 
 Signed-off-by: Mayuresh Chitale <mchitale@ventanamicro.com>
 ---
- arch/riscv/include/asm/hwcap.h | 1 +
- arch/riscv/kernel/cpu.c        | 1 +
- arch/riscv/kernel/cpufeature.c | 2 ++
- 3 files changed, 4 insertions(+)
+ arch/riscv/include/asm/kvm_host.h |  7 +++++++
+ arch/riscv/kvm/vcpu.c             | 27 ++++++++++++++-------------
+ 2 files changed, 21 insertions(+), 13 deletions(-)
 
-diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
-index f041bfa7f6a0..fad1fd1fcd05 100644
---- a/arch/riscv/include/asm/hwcap.h
-+++ b/arch/riscv/include/asm/hwcap.h
-@@ -53,6 +53,7 @@
- #define RISCV_ISA_EXT_ZICSR		40
- #define RISCV_ISA_EXT_ZIFENCEI		41
- #define RISCV_ISA_EXT_ZIHPM		42
-+#define RISCV_ISA_EXT_SMSTATEEN		43
+diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
+index 2d8ee53b66c7..c0c50b4b3394 100644
+--- a/arch/riscv/include/asm/kvm_host.h
++++ b/arch/riscv/include/asm/kvm_host.h
+@@ -164,6 +164,10 @@ struct kvm_vcpu_csr {
+ 	unsigned long scounteren;
+ };
  
- #define RISCV_ISA_EXT_MAX		64
- #define RISCV_ISA_EXT_NAME_LEN_MAX	32
-diff --git a/arch/riscv/kernel/cpu.c b/arch/riscv/kernel/cpu.c
-index a2fc952318e9..fb0df651bc48 100644
---- a/arch/riscv/kernel/cpu.c
-+++ b/arch/riscv/kernel/cpu.c
-@@ -217,6 +217,7 @@ static struct riscv_isa_ext_data isa_ext_arr[] = {
- 	__RISCV_ISA_EXT_DATA(zbb, RISCV_ISA_EXT_ZBB),
- 	__RISCV_ISA_EXT_DATA(zbs, RISCV_ISA_EXT_ZBS),
- 	__RISCV_ISA_EXT_DATA(smaia, RISCV_ISA_EXT_SMAIA),
-+	__RISCV_ISA_EXT_DATA(smstateen, RISCV_ISA_EXT_SMSTATEEN),
- 	__RISCV_ISA_EXT_DATA(ssaia, RISCV_ISA_EXT_SSAIA),
- 	__RISCV_ISA_EXT_DATA(sscofpmf, RISCV_ISA_EXT_SSCOFPMF),
- 	__RISCV_ISA_EXT_DATA(sstc, RISCV_ISA_EXT_SSTC),
-diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
-index bdcf460ea53d..41c3aefcc53f 100644
---- a/arch/riscv/kernel/cpufeature.c
-+++ b/arch/riscv/kernel/cpufeature.c
-@@ -301,6 +301,8 @@ void __init riscv_fill_hwcap(void)
- 			} else {
- 				/* sorted alphabetically */
- 				SET_ISA_EXT_MAP("smaia", RISCV_ISA_EXT_SMAIA);
-+				SET_ISA_EXT_MAP("smstateen",
-+						RISCV_ISA_EXT_SMSTATEEN);
- 				SET_ISA_EXT_MAP("ssaia", RISCV_ISA_EXT_SSAIA);
- 				SET_ISA_EXT_MAP("sscofpmf", RISCV_ISA_EXT_SSCOFPMF);
- 				SET_ISA_EXT_MAP("sstc", RISCV_ISA_EXT_SSTC);
++struct kvm_vcpu_config {
++	u64 henvcfg;
++};
++
+ struct kvm_vcpu_arch {
+ 	/* VCPU ran at least once */
+ 	bool ran_atleast_once;
+@@ -244,6 +248,9 @@ struct kvm_vcpu_arch {
+ 
+ 	/* Performance monitoring context */
+ 	struct kvm_pmu pmu_context;
++
++	/* 'static' configurations which are set only once */
++	struct kvm_vcpu_config cfg;
+ };
+ 
+ static inline void kvm_arch_sync_events(struct kvm *kvm) {}
+diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+index d12ef99901fc..e01f47bb636f 100644
+--- a/arch/riscv/kvm/vcpu.c
++++ b/arch/riscv/kvm/vcpu.c
+@@ -980,31 +980,28 @@ int kvm_arch_vcpu_ioctl_set_guest_debug(struct kvm_vcpu *vcpu,
+ 	return -EINVAL;
+ }
+ 
+-static void kvm_riscv_vcpu_update_config(const unsigned long *isa)
++static void kvm_riscv_vcpu_setup_config(struct kvm_vcpu *vcpu)
+ {
+-	u64 henvcfg = 0;
++	const unsigned long *isa = vcpu->arch.isa;
++	struct kvm_vcpu_config *cfg = &vcpu->arch.cfg;
+ 
+ 	if (riscv_isa_extension_available(isa, SVPBMT))
+-		henvcfg |= ENVCFG_PBMTE;
++		cfg->henvcfg |= ENVCFG_PBMTE;
+ 
+ 	if (riscv_isa_extension_available(isa, SSTC))
+-		henvcfg |= ENVCFG_STCE;
++		cfg->henvcfg |= ENVCFG_STCE;
+ 
+ 	if (riscv_isa_extension_available(isa, ZICBOM))
+-		henvcfg |= (ENVCFG_CBIE | ENVCFG_CBCFE);
++		cfg->henvcfg |= (ENVCFG_CBIE | ENVCFG_CBCFE);
+ 
+ 	if (riscv_isa_extension_available(isa, ZICBOZ))
+-		henvcfg |= ENVCFG_CBZE;
+-
+-	csr_write(CSR_HENVCFG, henvcfg);
+-#ifdef CONFIG_32BIT
+-	csr_write(CSR_HENVCFGH, henvcfg >> 32);
+-#endif
++		cfg->henvcfg |= ENVCFG_CBZE;
+ }
+ 
+ void kvm_arch_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
+ {
+ 	struct kvm_vcpu_csr *csr = &vcpu->arch.guest_csr;
++	struct kvm_vcpu_config *cfg = &vcpu->arch.cfg;
+ 
+ 	csr_write(CSR_VSSTATUS, csr->vsstatus);
+ 	csr_write(CSR_VSIE, csr->vsie);
+@@ -1015,8 +1012,9 @@ void kvm_arch_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
+ 	csr_write(CSR_VSTVAL, csr->vstval);
+ 	csr_write(CSR_HVIP, csr->hvip);
+ 	csr_write(CSR_VSATP, csr->vsatp);
+-
+-	kvm_riscv_vcpu_update_config(vcpu->arch.isa);
++	csr_write(CSR_HENVCFG, cfg->henvcfg);
++	if (IS_ENABLED(CONFIG_32BIT))
++		csr_write(CSR_HENVCFGH, cfg->henvcfg >> 32);
+ 
+ 	kvm_riscv_gstage_update_hgatp(vcpu);
+ 
+@@ -1136,6 +1134,9 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
+ 	struct kvm_cpu_trap trap;
+ 	struct kvm_run *run = vcpu->run;
+ 
++	if (!vcpu->arch.ran_atleast_once)
++		kvm_riscv_vcpu_setup_config(vcpu);
++
+ 	/* Mark this VCPU ran at least once */
+ 	vcpu->arch.ran_atleast_once = true;
+ 
 -- 
 2.34.1
 
