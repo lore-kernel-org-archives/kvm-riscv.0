@@ -1,28 +1,34 @@
-From: Conor Dooley <conor@kernel.org>
-Date: Wed, 5 Jul 2023 15:51:45 +0100
-Subject: [PATCH] RISC-V: KVM: provide UAPI for host SATP mode
-In-Reply-To: <20230705-fondue-bagginess-66c25f1a4135@spud>
-References: <20230705091535.237765-1-dbarboza@ventanamicro.com>
- <994ae720-b3a1-1e67-ca9c-ca00e6525488@ghiti.fr>
- <029b87e1-d4bc-9deb-316b-b93c5bd2a37f@ventanamicro.com>
- <20230705-602410a4b627f419f8f9936c@orel>
- <20230705-fondue-bagginess-66c25f1a4135@spud>
-Message-ID: <20230705-bogged-remindful-b2ccef9be2ac@spud>
+From: Sean Christopherson <seanjc@google.com>
+Date: Wed, 19 Jul 2023 08:39:09 -0700
+Subject: [RFC PATCH v11 01/29] KVM: Wrap kvm_gfn_range.pte in a per-action union
+In-Reply-To: <CU66VMG4IKSD.33KF2CEZJ2I1@suppilovahvero>
+References: <20230718234512.1690985-1-seanjc@google.com> <20230718234512.1690985-2-seanjc@google.com>
+ <CU66VMG4IKSD.33KF2CEZJ2I1@suppilovahvero>
+Message-ID: <ZLgDnYJUX/QR9UJi@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Jul 05, 2023 at 03:44:02PM +0100, Conor Dooley wrote:
+On Wed, Jul 19, 2023, Jarkko Sakkinen wrote:
+> On Wed Jul 19, 2023 at 2:44 AM EEST, Sean Christopherson wrote:
+> >  	/* Huge pages aren't expected to be modified without first being zapped. */
+> > -	WARN_ON(pte_huge(range->pte) || range->start + 1 != range->end);
+> > +	WARN_ON(pte_huge(range->arg.pte) || range->start + 1 != range->end);
+> 
+> Not familiar with this code. Just checking whether whether instead
+> pr_{warn,err}()
 
-> (@Drew, I remember why now that the property is optional - nommu exists)
+The "full" WARN is desirable, this is effecitvely an assert on the contract between
+the primary MMU, generic KVM code, and x86's TDP MMU.  The .change_pte() mmu_notifier
+callback doesn't allow for hugepages, i.e. it's a (likely fatal) kernel bug if a
+hugepage is encountered at this point.  Ditto for the "start + 1 == end" check,
+if that fails then generic KVM likely has a fatal bug.
 
-Wait, no that makes no sense - there's "riscv,none" for that.
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 228 bytes
-Desc: not available
-URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20230705/cbe6f461/attachment.sig>
+> combined with return false would be a more graceful option?
+
+The return value communicates whether or not a TLB flush is needed, not whether
+or not the operation was successful, i.e. there is no way to cancel the unexpected
+PTE change.
+
