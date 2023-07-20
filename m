@@ -1,46 +1,53 @@
-From: Sean Christopherson <seanjc@google.com>
-Date: Thu, 20 Jul 2023 08:14:47 -0700
-Subject: [RFC PATCH v11 12/29] KVM: Add KVM_CREATE_GUEST_MEMFD ioctl() for
- guest-specific backing memory
-In-Reply-To: <83eb5c50-7287-7845-ffc3-a7c58e638ea5@intel.com>
-References: <20230718234512.1690985-1-seanjc@google.com> <20230718234512.1690985-13-seanjc@google.com>
- <83eb5c50-7287-7845-ffc3-a7c58e638ea5@intel.com>
-Message-ID: <ZLlLx7wkE6iPTIcI@google.com>
+From: Will Deacon <will@kernel.org>
+Date: Thu, 20 Jul 2023 17:04:39 +0100
+Subject: [kvmtool PATCH v4 0/9] RISC-V SBI enable/disable, Zbb, Zicboz, and Ssaia support
+In-Reply-To: <20230712163501.1769737-1-apatel@ventanamicro.com>
+References: <20230712163501.1769737-1-apatel@ventanamicro.com>
+Message-ID: <168986517012.3086307.1888752231956269805.b4-ty@kernel.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Jul 20, 2023, Xiaoyao Li wrote:
-> On 7/19/2023 7:44 AM, Sean Christopherson wrote:
-> > @@ -5134,6 +5167,16 @@ static long kvm_vm_ioctl(struct file *filp,
-> >   	case KVM_GET_STATS_FD:
-> >   		r = kvm_vm_ioctl_get_stats_fd(kvm);
-> >   		break;
-> > +	case KVM_CREATE_GUEST_MEMFD: {
-> > +		struct kvm_create_guest_memfd guest_memfd;
-> > +
-> > +		r = -EFAULT;
-> > +		if (copy_from_user(&guest_memfd, argp, sizeof(guest_memfd)))
-> > +			goto out;
-> > +
-> > +		r = kvm_gmem_create(kvm, &guest_memfd);
-> > +		break;
-> > +	}
+On Wed, 12 Jul 2023 22:04:52 +0530, Anup Patel wrote:
+> The latest KVM in Linux-6.4 has support for:
+> 1) Enabling/disabling SBI extensions from KVM user-space
+> 2) Zbb ISA extension support
+> 3) Zicboz ISA extension support
+> 4) Ssaia ISA extension support
 > 
-> Does it need a new CAP to indicate the support of guest_memfd?
-
-Yeah, I meant to add that to the TODO list and forgot (obviously).
-
-> This is patch series introduces 3 new CAPs and it seems any one of them can
-> serve as the indicator of guest_memfd.
+> This series adds corresponding changes in KVMTOOL to use the above
+> mentioned features for Guest/VM.
 > 
-> +#define KVM_CAP_USER_MEMORY2 230
-> +#define KVM_CAP_MEMORY_ATTRIBUTES 231
-> +#define KVM_CAP_VM_TYPES 232
+> [...]
 
-The number of new caps being added is the main why I didn't just add another one.
-On the other hand, we have room for a few billion caps, so one more isn't a big
-deal.  So yeah, KVM_CAP_GUEST_MEMFD is probably the way to go.
+Applied to kvmtool (master), thanks!
+
+[1/9] kvm tools: Add __DECLARE_FLEX_ARRAY() in include/linux/stddef.h
+      https://git.kernel.org/will/kvmtool/c/d8343698df72
+[2/9] Sync-up headers with Linux-6.4
+      https://git.kernel.org/will/kvmtool/c/be98682486a0
+[3/9] riscv: Allow setting custom mvendorid, marchid, and mimpid
+      https://git.kernel.org/will/kvmtool/c/9e9cfde59dfe
+[4/9] riscv: Allow disabling SBI extensions for Guest
+      https://git.kernel.org/will/kvmtool/c/a416fdc2e664
+[5/9] riscv: Sort the ISA extension array alphabetically
+      https://git.kernel.org/will/kvmtool/c/b346fabe6d2c
+[6/9] riscv: Add zbb extension support
+      https://git.kernel.org/will/kvmtool/c/8c1584e776a4
+[7/9] riscv: Add Zicboz extension support
+      https://git.kernel.org/will/kvmtool/c/8f1e47ca04c9
+[8/9] riscv: Add Ssaia extension support
+      https://git.kernel.org/will/kvmtool/c/8659200f6931
+[9/9] riscv: Fix guest RAM alloc size computation for RV32
+      https://git.kernel.org/will/kvmtool/c/106e2ea7756d
+
+Cheers,
+-- 
+Will
+
+https://fixes.arm64.dev
+https://next.arm64.dev
+https://will.arm64.dev
 
