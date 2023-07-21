@@ -1,51 +1,56 @@
-From: Xu Yilun <yilun.xu@intel.com>
-Date: Fri, 21 Jul 2023 18:45:26 +0800
-Subject: [RFC PATCH v11 01/29] KVM: Wrap kvm_gfn_range.pte in a
- per-action union
-In-Reply-To: <ZLolA2U83tP75Qdd@yzhao56-desk.sh.intel.com>
+From: Paolo Bonzini <pbonzini@redhat.com>
+Date: Fri, 21 Jul 2023 12:57:07 +0200
+Subject: [RFC PATCH v11 08/29] KVM: Introduce per-page memory attributes
+In-Reply-To: <20230718234512.1690985-9-seanjc@google.com>
 References: <20230718234512.1690985-1-seanjc@google.com>
- <20230718234512.1690985-2-seanjc@google.com>
- <ZLolA2U83tP75Qdd@yzhao56-desk.sh.intel.com>
-Message-ID: <ZLphxpSTL9Fpn1ye@yilunxu-OptiPlex-7050>
+ <20230718234512.1690985-9-seanjc@google.com>
+Message-ID: <0c033063-5d20-4522-87e2-80ad3cca3602@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 2023-07-21 at 14:26:11 +0800, Yan Zhao wrote:
-> On Tue, Jul 18, 2023 at 04:44:44PM -0700, Sean Christopherson wrote:
+On 7/19/23 01:44, Sean Christopherson wrote:
+> From: Chao Peng <chao.p.peng@linux.intel.com>
 > 
-> May I know why KVM now needs to register to callback .change_pte()?
-
-I can see the original purpose is to "setting a pte in the shadow page
-table directly, instead of flushing the shadow page table entry and then
-getting vmexit to set it"[1].
-
-IIUC, KVM is expected to directly make the new pte present for new
-pages in this callback, like for COW.
-
-> As also commented in kvm_mmu_notifier_change_pte(), .change_pte() must be
-> surrounded by .invalidate_range_{start,end}().
+> In confidential computing usages, whether a page is private or shared is
+> necessary information for KVM to perform operations like page fault
+> handling, page zapping etc. There are other potential use cases for
+> per-page memory attributes, e.g. to make memory read-only (or no-exec,
+> or exec-only, etc.) without having to modify memslots.
 > 
-> While kvm_mmu_notifier_invalidate_range_start() has called kvm_unmap_gfn_range()
-> to zap all leaf SPTEs, and page fault path will not install new SPTEs
-> successfully before kvm_mmu_notifier_invalidate_range_end(),
-> kvm_set_spte_gfn() should not be able to find any shadow present leaf entries to
-> update PFN.
-
-I also failed to figure out how the kvm_set_spte_gfn() could pass
-several !is_shadow_present_pte(iter.old_spte) check then write the new
-pte.
-
-
-[1] https://lore.kernel.org/all/200909222039.n8MKd4TL002696 at imap1.linux-foundation.org/
-
-Thanks,
-Yilun
-
+> Introduce two ioctls (advertised by KVM_CAP_MEMORY_ATTRIBUTES) to allow
+> userspace to operate on the per-page memory attributes.
+>    - KVM_SET_MEMORY_ATTRIBUTES to set the per-page memory attributes to
+>      a guest memory range.
+>    - KVM_GET_SUPPORTED_MEMORY_ATTRIBUTES to return the KVM supported
+>      memory attributes.
 > 
-> Or could we just delete completely
-> "kvm_handle_hva_range(mn, address, address + 1, pte, kvm_set_spte_gfn);"
-> from kvm_mmu_notifier_change_pte() ?
+> Use an xarray to store the per-page attributes internally, with a naive,
+> not fully optimized implementation, i.e. prioritize correctness over
+> performance for the initial implementation.
+> 
+> Because setting memory attributes is roughly analogous to mprotect() on
+> memory that is mapped into the guest, zap existing mappings prior to
+> updating the memory attributes.  Opportunistically provide an arch hook
+> for the post-set path (needed to complete invalidation anyways) in
+> anticipation of x86 needing the hook to update metadata related to
+> determining whether or not a given gfn can be backed with various sizes
+> of hugepages.
+> 
+> It's possible that future usages may not require an invalidation, e.g.
+> if KVM ends up supporting RWX protections and userspace grants _more_
+> protections, but again opt for simplicity and punt optimizations to
+> if/when they are needed.
+> 
+> Suggested-by: Sean Christopherson <seanjc@google.com>
+> Link: https://lore.kernel.org/all/Y2WB48kD0J4VGynX at google.com
+> Cc: Fuad Tabba <tabba@google.com>
+> Signed-off-by: Chao Peng <chao.p.peng@linux.intel.com>
+> Co-developed-by: Sean Christopherson <seanjc@google.com>
+> Signed-off-by: Sean Christopherson <seanjc@google.com>
+
+Reviewed-by: Paolo Bonzini <pbonzini@redhat.com>
+
 
