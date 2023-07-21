@@ -1,87 +1,40 @@
-From: Paolo Bonzini <pbonzini@redhat.com>
-Date: Fri, 21 Jul 2023 17:14:31 +0200
-Subject: [RFC PATCH v11 18/29] KVM: selftests: Drop unused
- kvm_userspace_memory_region_find() helper
-In-Reply-To: <20230718234512.1690985-19-seanjc@google.com>
+From: Xiaoyao Li <xiaoyao.li@intel.com>
+Date: Fri, 21 Jul 2023 23:42:04 +0800
+Subject: [RFC PATCH v11 12/29] KVM: Add KVM_CREATE_GUEST_MEMFD ioctl() for
+ guest-specific backing memory
+In-Reply-To: <fdc155f5-041b-a1b1-15aa-8f970180a13a@intel.com>
 References: <20230718234512.1690985-1-seanjc@google.com>
- <20230718234512.1690985-19-seanjc@google.com>
-Message-ID: <75f13a8a-132f-99ee-d3c6-24a12f2f23d5@redhat.com>
+ <20230718234512.1690985-13-seanjc@google.com>
+ <fdc155f5-041b-a1b1-15aa-8f970180a13a@intel.com>
+Message-ID: <29baac45-7736-a28c-3b2d-2a6e45171b8b@intel.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 7/19/23 01:45, Sean Christopherson wrote:
-> Drop kvm_userspace_memory_region_find(), it's unused and a terrible API
-> (probably why it's unused).  If anything outside of kvm_util.c needs to
-> get at the memslot, userspace_mem_region_find() can be exposed to give
-> others full access to all memory region/slot information.
+On 7/21/2023 11:05 PM, Xiaoyao Li wrote:
+> On 7/19/2023 7:44 AM, Sean Christopherson wrote:
+>> @@ -6255,12 +6298,17 @@ int kvm_init(unsigned vcpu_size, unsigned 
+>> vcpu_align, struct module *module)
+>> ????? if (r)
+>> ????????? goto err_async_pf;
+>> +??? r = kvm_gmem_init();
+>> +??? if (r)
+>> +??????? goto err_gmem;
+>> +
+>> ????? kvm_chardev_ops.owner = module;
+>> ????? kvm_preempt_ops.sched_in = kvm_sched_in;
+>> ????? kvm_preempt_ops.sched_out = kvm_sched_out;
+>> ????? kvm_init_debug();
+>> +??? kvm_gmem_init();
 > 
-> Signed-off-by: Sean Christopherson <seanjc@google.com>
-> ---
->   .../selftests/kvm/include/kvm_util_base.h     |  4 ---
->   tools/testing/selftests/kvm/lib/kvm_util.c    | 29 -------------------
->   2 files changed, 33 deletions(-)
-> 
-> diff --git a/tools/testing/selftests/kvm/include/kvm_util_base.h b/tools/testing/selftests/kvm/include/kvm_util_base.h
-> index 07732a157ccd..6aeb008dd668 100644
-> --- a/tools/testing/selftests/kvm/include/kvm_util_base.h
-> +++ b/tools/testing/selftests/kvm/include/kvm_util_base.h
-> @@ -753,10 +753,6 @@ vm_adjust_num_guest_pages(enum vm_guest_mode mode, unsigned int num_guest_pages)
->   	return n;
->   }
->   
-> -struct kvm_userspace_memory_region *
-> -kvm_userspace_memory_region_find(struct kvm_vm *vm, uint64_t start,
-> -				 uint64_t end);
-> -
->   #define sync_global_to_guest(vm, g) ({				\
->   	typeof(g) *_p = addr_gva2hva(vm, (vm_vaddr_t)&(g));	\
->   	memcpy(_p, &(g), sizeof(g));				\
-> diff --git a/tools/testing/selftests/kvm/lib/kvm_util.c b/tools/testing/selftests/kvm/lib/kvm_util.c
-> index 9741a7ff6380..45d21e052db0 100644
-> --- a/tools/testing/selftests/kvm/lib/kvm_util.c
-> +++ b/tools/testing/selftests/kvm/lib/kvm_util.c
-> @@ -586,35 +586,6 @@ userspace_mem_region_find(struct kvm_vm *vm, uint64_t start, uint64_t end)
->   	return NULL;
->   }
->   
-> -/*
-> - * KVM Userspace Memory Region Find
-> - *
-> - * Input Args:
-> - *   vm - Virtual Machine
-> - *   start - Starting VM physical address
-> - *   end - Ending VM physical address, inclusive.
-> - *
-> - * Output Args: None
-> - *
-> - * Return:
-> - *   Pointer to overlapping region, NULL if no such region.
-> - *
-> - * Public interface to userspace_mem_region_find. Allows tests to look up
-> - * the memslot datastructure for a given range of guest physical memory.
-> - */
-> -struct kvm_userspace_memory_region *
-> -kvm_userspace_memory_region_find(struct kvm_vm *vm, uint64_t start,
-> -				 uint64_t end)
-> -{
-> -	struct userspace_mem_region *region;
-> -
-> -	region = userspace_mem_region_find(vm, start, end);
-> -	if (!region)
-> -		return NULL;
-> -
-> -	return &region->region;
-> -}
-> -
->   __weak void vcpu_arch_free(struct kvm_vcpu *vcpu)
->   {
->   
+> why kvm_gmem_init() needs to be called again? by mistake?
 
-Will queue this.
+I'm sure it's a mistake.
 
-Paolo
-
+I'm testing the gmem QEMU with this series. SW_PROTECTED_VM gets stuck 
+in a loop in early OVMF code due to two shared page of OVMF get zapped 
+and re-mapped infinitely. Removing the second call of kvm_gmem_init() 
+can solve the issue, though I'm not sure about the reason.
 
