@@ -1,190 +1,148 @@
-From: Paolo Bonzini <pbonzini@redhat.com>
-Date: Fri, 21 Jul 2023 11:03:51 +0200
-Subject: [RFC PATCH v11 06/29] KVM: Introduce KVM_SET_USER_MEMORY_REGION2
-In-Reply-To: <20230718234512.1690985-7-seanjc@google.com>
-References: <20230718234512.1690985-1-seanjc@google.com>
- <20230718234512.1690985-7-seanjc@google.com>
-Message-ID: <47c5f57c-a191-1983-b4ef-6e0c59c0c446@redhat.com>
+From: Andrew Jones <ajones@ventanamicro.com>
+Date: Fri, 21 Jul 2023 11:04:46 +0200
+Subject: [PATCH v2 5/6] RISCV: KVM: Add sstateen0 context save/restore
+In-Reply-To: <20230721075439.454473-6-mchitale@ventanamicro.com>
+References: <20230721075439.454473-1-mchitale@ventanamicro.com>
+ <20230721075439.454473-6-mchitale@ventanamicro.com>
+Message-ID: <20230721-78d78a037c03f7a75c5e6525@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 7/19/23 01:44, Sean Christopherson wrote:
-> Cc: Jarkko Sakkinen <jarkko@kernel.org>
-> Signed-off-by: Sean Christopherson <seanjc@google.com>
-> ---
->   arch/x86/kvm/x86.c       |  2 +-
->   include/linux/kvm_host.h |  4 ++--
->   include/uapi/linux/kvm.h | 13 +++++++++++++
->   virt/kvm/kvm_main.c      | 38 ++++++++++++++++++++++++++++++--------
->   4 files changed, 46 insertions(+), 11 deletions(-)
+On Fri, Jul 21, 2023 at 01:24:38PM +0530, Mayuresh Chitale wrote:
+> Define sstateen0 and add sstateen0 save/restore for guest VCPUs.
 > 
-> diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-> index a6b9bea62fb8..92e77afd3ffd 100644
-> --- a/arch/x86/kvm/x86.c
-> +++ b/arch/x86/kvm/x86.c
-> @@ -12420,7 +12420,7 @@ void __user * __x86_set_memory_region(struct kvm *kvm, int id, gpa_t gpa,
->   	}
->   
->   	for (i = 0; i < KVM_ADDRESS_SPACE_NUM; i++) {
-> -		struct kvm_userspace_memory_region m;
-> +		struct kvm_userspace_memory_region2 m;
->   
->   		m.slot = id | (i << 16);
->   		m.flags = 0;
-> diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-> index d2d3e083ec7f..e9ca49d451f3 100644
-> --- a/include/linux/kvm_host.h
-> +++ b/include/linux/kvm_host.h
-> @@ -1130,9 +1130,9 @@ enum kvm_mr_change {
->   };
->   
->   int kvm_set_memory_region(struct kvm *kvm,
-> -			  const struct kvm_userspace_memory_region *mem);
-> +			  const struct kvm_userspace_memory_region2 *mem);
->   int __kvm_set_memory_region(struct kvm *kvm,
-> -			    const struct kvm_userspace_memory_region *mem);
-> +			    const struct kvm_userspace_memory_region2 *mem);
->   void kvm_arch_free_memslot(struct kvm *kvm, struct kvm_memory_slot *slot);
->   void kvm_arch_memslots_updated(struct kvm *kvm, u64 gen);
->   int kvm_arch_prepare_memory_region(struct kvm *kvm,
-> diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
-> index f089ab290978..4d4b3de8ac55 100644
-> --- a/include/uapi/linux/kvm.h
-> +++ b/include/uapi/linux/kvm.h
-> @@ -95,6 +95,16 @@ struct kvm_userspace_memory_region {
->   	__u64 userspace_addr; /* start of the userspace allocated memory */
->   };
->   
-> +/* for KVM_SET_USER_MEMORY_REGION2 */
-> +struct kvm_userspace_memory_region2 {
-> +	__u32 slot;
-> +	__u32 flags;
-> +	__u64 guest_phys_addr;
-> +	__u64 memory_size;
-> +	__u64 userspace_addr;
-> +	__u64 pad[16];
+> Signed-off-by: Mayuresh Chitale <mchitale@ventanamicro.com>
+> ---
+>  arch/riscv/include/asm/csr.h      |  1 +
+>  arch/riscv/include/asm/kvm_host.h |  8 ++++++++
+>  arch/riscv/kvm/vcpu.c             | 10 ++++++++++
+>  3 files changed, 19 insertions(+)
+> 
+> diff --git a/arch/riscv/include/asm/csr.h b/arch/riscv/include/asm/csr.h
+> index b52270278733..5168f37d8e75 100644
+> --- a/arch/riscv/include/asm/csr.h
+> +++ b/arch/riscv/include/asm/csr.h
+> @@ -286,6 +286,7 @@
+>  #define CSR_STVEC		0x105
+>  #define CSR_SCOUNTEREN		0x106
+>  #define CSR_SENVCFG		0x10a
+> +#define CSR_SSTATEEN0		0x10c
+>  #define CSR_SSCRATCH		0x140
+>  #define CSR_SEPC		0x141
+>  #define CSR_SCAUSE		0x142
+> diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
+> index c3cc0cb39cf8..c9837772b109 100644
+> --- a/arch/riscv/include/asm/kvm_host.h
+> +++ b/arch/riscv/include/asm/kvm_host.h
+> @@ -170,6 +170,10 @@ struct kvm_vcpu_config {
+>  	u64 hstateen0;
+>  };
+>  
+> +struct kvm_vcpu_smstateen_csr {
+> +	unsigned long sstateen0;
 > +};
 > +
->   /*
->    * The bit 0 ~ bit 15 of kvm_userspace_memory_region::flags are visible for
->    * userspace, other bits are reserved for kvm internal use which are defined
-> @@ -1192,6 +1202,7 @@ struct kvm_ppc_resize_hpt {
->   #define KVM_CAP_COUNTER_OFFSET 227
->   #define KVM_CAP_ARM_EAGER_SPLIT_CHUNK_SIZE 228
->   #define KVM_CAP_ARM_SUPPORTED_BLOCK_SIZES 229
-> +#define KVM_CAP_USER_MEMORY2 230
->   
->   #ifdef KVM_CAP_IRQ_ROUTING
->   
-> @@ -1466,6 +1477,8 @@ struct kvm_vfio_spapr_tce {
->   					struct kvm_userspace_memory_region)
->   #define KVM_SET_TSS_ADDR          _IO(KVMIO,   0x47)
->   #define KVM_SET_IDENTITY_MAP_ADDR _IOW(KVMIO,  0x48, __u64)
-> +#define KVM_SET_USER_MEMORY_REGION2 _IOW(KVMIO, 0x49, \
-> +					 struct kvm_userspace_memory_region2)
->   
->   /* enable ucontrol for s390 */
->   struct kvm_s390_ucas_mapping {
-> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-> index 53346bc2902a..c14adf93daec 100644
-> --- a/virt/kvm/kvm_main.c
-> +++ b/virt/kvm/kvm_main.c
-> @@ -1549,7 +1549,7 @@ static void kvm_replace_memslot(struct kvm *kvm,
->   	}
->   }
->   
-> -static int check_memory_region_flags(const struct kvm_userspace_memory_region *mem)
-> +static int check_memory_region_flags(const struct kvm_userspace_memory_region2 *mem)
->   {
->   	u32 valid_flags = KVM_MEM_LOG_DIRTY_PAGES;
->   
-> @@ -1951,7 +1951,7 @@ static bool kvm_check_memslot_overlap(struct kvm_memslots *slots, int id,
->    * Must be called holding kvm->slots_lock for write.
->    */
->   int __kvm_set_memory_region(struct kvm *kvm,
-> -			    const struct kvm_userspace_memory_region *mem)
-> +			    const struct kvm_userspace_memory_region2 *mem)
->   {
->   	struct kvm_memory_slot *old, *new;
->   	struct kvm_memslots *slots;
-> @@ -2055,7 +2055,7 @@ int __kvm_set_memory_region(struct kvm *kvm,
->   EXPORT_SYMBOL_GPL(__kvm_set_memory_region);
->   
->   int kvm_set_memory_region(struct kvm *kvm,
-> -			  const struct kvm_userspace_memory_region *mem)
-> +			  const struct kvm_userspace_memory_region2 *mem)
->   {
->   	int r;
->   
-> @@ -2067,7 +2067,7 @@ int kvm_set_memory_region(struct kvm *kvm,
->   EXPORT_SYMBOL_GPL(kvm_set_memory_region);
->   
->   static int kvm_vm_ioctl_set_memory_region(struct kvm *kvm,
-> -					  struct kvm_userspace_memory_region *mem)
-> +					  struct kvm_userspace_memory_region2 *mem)
->   {
->   	if ((u16)mem->slot >= KVM_USER_MEM_SLOTS)
->   		return -EINVAL;
-> @@ -4514,6 +4514,7 @@ static int kvm_vm_ioctl_check_extension_generic(struct kvm *kvm, long arg)
->   {
->   	switch (arg) {
->   	case KVM_CAP_USER_MEMORY:
-> +	case KVM_CAP_USER_MEMORY2:
->   	case KVM_CAP_DESTROY_MEMORY_REGION_WORKS:
->   	case KVM_CAP_JOIN_MEMORY_REGIONS_WORKS:
->   	case KVM_CAP_INTERNAL_ERROR_DATA:
-> @@ -4757,6 +4758,14 @@ static int kvm_vm_ioctl_get_stats_fd(struct kvm *kvm)
->   	return fd;
->   }
->   
-> +#define SANITY_CHECK_MEM_REGION_FIELD(field)					\
-> +do {										\
-> +	BUILD_BUG_ON(offsetof(struct kvm_userspace_memory_region, field) !=		\
-> +		     offsetof(struct kvm_userspace_memory_region2, field));	\
-> +	BUILD_BUG_ON(sizeof_field(struct kvm_userspace_memory_region, field) !=		\
-> +		     sizeof_field(struct kvm_userspace_memory_region2, field));	\
-> +} while (0)
+>  struct kvm_vcpu_arch {
+>  	/* VCPU ran at least once */
+>  	bool ran_atleast_once;
+> @@ -190,6 +194,7 @@ struct kvm_vcpu_arch {
+>  	unsigned long host_stvec;
+>  	unsigned long host_scounteren;
+>  	unsigned long host_senvcfg;
+> +	unsigned long host_sstateen0;
+>  
+>  	/* CPU context of Host */
+>  	struct kvm_cpu_context host_context;
+> @@ -200,6 +205,9 @@ struct kvm_vcpu_arch {
+>  	/* CPU CSR context of Guest VCPU */
+>  	struct kvm_vcpu_csr guest_csr;
+>  
+> +	/* CPU Smstateen CSR context of Guest VCPU */
+> +	struct kvm_vcpu_smstateen_csr smstateen_csr;
 > +
->   static long kvm_vm_ioctl(struct file *filp,
->   			   unsigned int ioctl, unsigned long arg)
->   {
-> @@ -4779,15 +4788,28 @@ static long kvm_vm_ioctl(struct file *filp,
->   		r = kvm_vm_ioctl_enable_cap_generic(kvm, &cap);
->   		break;
->   	}
-> +	case KVM_SET_USER_MEMORY_REGION2:
->   	case KVM_SET_USER_MEMORY_REGION: {
-> -		struct kvm_userspace_memory_region kvm_userspace_mem;
-> +		struct kvm_userspace_memory_region2 mem;
-> +		unsigned long size;
-> +
-> +		if (ioctl == KVM_SET_USER_MEMORY_REGION)
-> +			size = sizeof(struct kvm_userspace_memory_region);
-> +		else
-> +			size = sizeof(struct kvm_userspace_memory_region2);
-> +
-> +		/* Ensure the common parts of the two structs are identical. */
-> +		SANITY_CHECK_MEM_REGION_FIELD(slot);
-> +		SANITY_CHECK_MEM_REGION_FIELD(flags);
-> +		SANITY_CHECK_MEM_REGION_FIELD(guest_phys_addr);
-> +		SANITY_CHECK_MEM_REGION_FIELD(memory_size);
-> +		SANITY_CHECK_MEM_REGION_FIELD(userspace_addr);
->   
->   		r = -EFAULT;
-> -		if (copy_from_user(&kvm_userspace_mem, argp,
-> -						sizeof(kvm_userspace_mem)))
-> +		if (copy_from_user(&mem, argp, size))
->   			goto out;
->   
-> -		r = kvm_vm_ioctl_set_memory_region(kvm, &kvm_userspace_mem);
-> +		r = kvm_vm_ioctl_set_memory_region(kvm, &mem);
->   		break;
->   	}
->   	case KVM_GET_DIRTY_LOG: {
+>  	/* CPU context upon Guest VCPU reset */
+>  	struct kvm_cpu_context guest_reset_context;
+>  
+> diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+> index 37f1ed70d782..ae750decbefe 100644
+> --- a/arch/riscv/kvm/vcpu.c
+> +++ b/arch/riscv/kvm/vcpu.c
+> @@ -1138,14 +1138,24 @@ static void kvm_riscv_update_hvip(struct kvm_vcpu *vcpu)
+>   */
+>  static void noinstr kvm_riscv_vcpu_enter_exit(struct kvm_vcpu *vcpu)
+>  {
+> +	struct kvm_vcpu_smstateen_csr *smcsr = &vcpu->arch.smstateen_csr;
+>  	struct kvm_vcpu_csr *csr = &vcpu->arch.guest_csr;
+> +	struct kvm_vcpu_config *cfg = &vcpu->arch.cfg;
+>  
+>  	vcpu->arch.host_senvcfg = csr_swap(CSR_SENVCFG, csr->senvcfg);
+> +	if (riscv_has_extension_unlikely(RISCV_ISA_EXT_SMSTATEEN) &&
+> +	    (cfg->hstateen0 & SMSTATEEN0_SSTATEEN0))
+> +		vcpu->arch.host_sstateen0 = csr_swap(CSR_SSTATEEN0,
+> +						     smcsr->sstateen0);
+>  	guest_state_enter_irqoff();
+>  	__kvm_riscv_switch_to(&vcpu->arch);
+>  	vcpu->arch.last_exit_cpu = vcpu->cpu;
+>  	guest_state_exit_irqoff();
+>  	csr->senvcfg = csr_swap(CSR_SENVCFG, vcpu->arch.host_senvcfg);
+> +	if (riscv_has_extension_unlikely(RISCV_ISA_EXT_SMSTATEEN) &&
+> +	    (cfg->hstateen0 & SMSTATEEN0_SSTATEEN0))
+> +		smcsr->sstateen0 = csr_swap(CSR_SSTATEEN0,
+> +					    vcpu->arch.host_sstateen0);
+>  }
 
-Reviewed-by: Paolo Bonzini <pbonzini@redhat.com>
+It might be nice to keep kvm_riscv_vcpu_enter_exit() "clean", by adding
+a couple functions. Something like
 
+ static __always_inline void kvm_riscv_vcpu_swap_in_guest_state(struct kvm_vcpu *vcpu)
+ {
+   struct kvm_vcpu_smstateen_csr *smcsr = &vcpu->arch.smstateen_csr;
+   struct kvm_vcpu_csr *csr = &vcpu->arch.guest_csr;
+   struct kvm_vcpu_config *cfg = &vcpu->arch.cfg;
+
+   vcpu->arch.host_senvcfg = csr_swap(CSR_SENVCFG, csr->senvcfg);
+   if (riscv_has_extension_unlikely(RISCV_ISA_EXT_SMSTATEEN) &&
+       (cfg->hstateen0 & SMSTATEEN0_SSTATEEN0))
+          vcpu->arch.host_sstateen0 = csr_swap(CSR_SSTATEEN0,
+                                               smcsr->sstateen0);
+ }
+
+ static __always_inline void kvm_riscv_vcpu_swap_in_host_state(struct kvm_vcpu *vcpu)
+ {
+   struct kvm_vcpu_smstateen_csr *smcsr = &vcpu->arch.smstateen_csr;
+   struct kvm_vcpu_csr *csr = &vcpu->arch.guest_csr;
+   struct kvm_vcpu_config *cfg = &vcpu->arch.cfg;
+
+   csr->senvcfg = csr_swap(CSR_SENVCFG, vcpu->arch.host_senvcfg);
+   if (riscv_has_extension_unlikely(RISCV_ISA_EXT_SMSTATEEN) &&
+       (cfg->hstateen0 & SMSTATEEN0_SSTATEEN0))
+           smcsr->sstateen0 = csr_swap(CSR_SSTATEEN0,
+                                       vcpu->arch.host_sstateen0);
+ }
+
+ static void noinstr kvm_riscv_vcpu_enter_exit(struct kvm_vcpu *vcpu)
+ {
+    kvm_riscv_vcpu_swap_in_guest_state(vcpu);
+    guest_state_enter_irqoff();
+    __kvm_riscv_switch_to(&vcpu->arch);
+    vcpu->arch.last_exit_cpu = vcpu->cpu;
+    guest_state_exit_irqoff();
+    kvm_riscv_vcpu_swap_in_host_state(vcpu);
+ }
+
+>  
+>  int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
+> -- 
+> 2.34.1
+>
+
+Either way,
+
+Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+
+Thanks,
+drew
 
