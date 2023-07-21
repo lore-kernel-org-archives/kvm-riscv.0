@@ -1,148 +1,129 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Fri, 21 Jul 2023 11:04:46 +0200
-Subject: [PATCH v2 5/6] RISCV: KVM: Add sstateen0 context save/restore
-In-Reply-To: <20230721075439.454473-6-mchitale@ventanamicro.com>
+Date: Fri, 21 Jul 2023 11:13:09 +0200
+Subject: [PATCH v2 6/6] RISCV: KVM: Add sstateen0 to ONE_REG
+In-Reply-To: <20230721075439.454473-7-mchitale@ventanamicro.com>
 References: <20230721075439.454473-1-mchitale@ventanamicro.com>
- <20230721075439.454473-6-mchitale@ventanamicro.com>
-Message-ID: <20230721-78d78a037c03f7a75c5e6525@orel>
+ <20230721075439.454473-7-mchitale@ventanamicro.com>
+Message-ID: <20230721-9b2298b97fbc5223d1487202@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Jul 21, 2023 at 01:24:38PM +0530, Mayuresh Chitale wrote:
-> Define sstateen0 and add sstateen0 save/restore for guest VCPUs.
+On Fri, Jul 21, 2023 at 01:24:39PM +0530, Mayuresh Chitale wrote:
+> Add support for sstateen0 CSR to the ONE_REG interface to allow its
+> access from user space.
 > 
 > Signed-off-by: Mayuresh Chitale <mchitale@ventanamicro.com>
 > ---
->  arch/riscv/include/asm/csr.h      |  1 +
->  arch/riscv/include/asm/kvm_host.h |  8 ++++++++
->  arch/riscv/kvm/vcpu.c             | 10 ++++++++++
->  3 files changed, 19 insertions(+)
+>  arch/riscv/include/uapi/asm/kvm.h |  9 +++++++
+>  arch/riscv/kvm/vcpu.c             | 40 +++++++++++++++++++++++++++++++
+>  2 files changed, 49 insertions(+)
 > 
-> diff --git a/arch/riscv/include/asm/csr.h b/arch/riscv/include/asm/csr.h
-> index b52270278733..5168f37d8e75 100644
-> --- a/arch/riscv/include/asm/csr.h
-> +++ b/arch/riscv/include/asm/csr.h
-> @@ -286,6 +286,7 @@
->  #define CSR_STVEC		0x105
->  #define CSR_SCOUNTEREN		0x106
->  #define CSR_SENVCFG		0x10a
-> +#define CSR_SSTATEEN0		0x10c
->  #define CSR_SSCRATCH		0x140
->  #define CSR_SEPC		0x141
->  #define CSR_SCAUSE		0x142
-> diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
-> index c3cc0cb39cf8..c9837772b109 100644
-> --- a/arch/riscv/include/asm/kvm_host.h
-> +++ b/arch/riscv/include/asm/kvm_host.h
-> @@ -170,6 +170,10 @@ struct kvm_vcpu_config {
->  	u64 hstateen0;
+> diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
+> index 74c7f42de29d..bdddfb20299a 100644
+> --- a/arch/riscv/include/uapi/asm/kvm.h
+> +++ b/arch/riscv/include/uapi/asm/kvm.h
+> @@ -93,6 +93,11 @@ struct kvm_riscv_aia_csr {
+>  	unsigned long iprio2h;
 >  };
 >  
-> +struct kvm_vcpu_smstateen_csr {
+> +/* Smstateen CSR for KVM_GET_ONE_REG and KVM_SET_ONE_REG */
+> +struct kvm_riscv_smstateen_csr {
 > +	unsigned long sstateen0;
 > +};
 > +
->  struct kvm_vcpu_arch {
->  	/* VCPU ran at least once */
->  	bool ran_atleast_once;
-> @@ -190,6 +194,7 @@ struct kvm_vcpu_arch {
->  	unsigned long host_stvec;
->  	unsigned long host_scounteren;
->  	unsigned long host_senvcfg;
-> +	unsigned long host_sstateen0;
->  
->  	/* CPU context of Host */
->  	struct kvm_cpu_context host_context;
-> @@ -200,6 +205,9 @@ struct kvm_vcpu_arch {
->  	/* CPU CSR context of Guest VCPU */
->  	struct kvm_vcpu_csr guest_csr;
->  
-> +	/* CPU Smstateen CSR context of Guest VCPU */
-> +	struct kvm_vcpu_smstateen_csr smstateen_csr;
+>  /* TIMER registers for KVM_GET_ONE_REG and KVM_SET_ONE_REG */
+>  struct kvm_riscv_timer {
+>  	__u64 frequency;
+> @@ -173,10 +178,14 @@ enum KVM_RISCV_SBI_EXT_ID {
+>  #define KVM_REG_RISCV_CSR		(0x03 << KVM_REG_RISCV_TYPE_SHIFT)
+>  #define KVM_REG_RISCV_CSR_GENERAL	(0x0 << KVM_REG_RISCV_SUBTYPE_SHIFT)
+>  #define KVM_REG_RISCV_CSR_AIA		(0x1 << KVM_REG_RISCV_SUBTYPE_SHIFT)
+> +#define KVM_REG_RISCV_CSR_SMSTATEEN	(0x2 << KVM_REG_RISCV_SUBTYPE_SHIFT)
 > +
->  	/* CPU context upon Guest VCPU reset */
->  	struct kvm_cpu_context guest_reset_context;
+>  #define KVM_REG_RISCV_CSR_REG(name)	\
+>  		(offsetof(struct kvm_riscv_csr, name) / sizeof(unsigned long))
+>  #define KVM_REG_RISCV_CSR_AIA_REG(name)	\
+>  	(offsetof(struct kvm_riscv_aia_csr, name) / sizeof(unsigned long))
+> +#define KVM_REG_RISCV_CSR_SMSTATEEN_REG(name)	\
+> +	(offsetof(struct kvm_riscv_smstateen_csr, name) / sizeof(unsigned long))
 >  
+>  /* Timer registers are mapped as type 4 */
+>  #define KVM_REG_RISCV_TIMER		(0x04 << KVM_REG_RISCV_TYPE_SHIFT)
 > diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-> index 37f1ed70d782..ae750decbefe 100644
+> index ae750decbefe..af7549374c4b 100644
 > --- a/arch/riscv/kvm/vcpu.c
 > +++ b/arch/riscv/kvm/vcpu.c
-> @@ -1138,14 +1138,24 @@ static void kvm_riscv_update_hvip(struct kvm_vcpu *vcpu)
->   */
->  static void noinstr kvm_riscv_vcpu_enter_exit(struct kvm_vcpu *vcpu)
->  {
-> +	struct kvm_vcpu_smstateen_csr *smcsr = &vcpu->arch.smstateen_csr;
->  	struct kvm_vcpu_csr *csr = &vcpu->arch.guest_csr;
-> +	struct kvm_vcpu_config *cfg = &vcpu->arch.cfg;
->  
->  	vcpu->arch.host_senvcfg = csr_swap(CSR_SENVCFG, csr->senvcfg);
-> +	if (riscv_has_extension_unlikely(RISCV_ISA_EXT_SMSTATEEN) &&
-> +	    (cfg->hstateen0 & SMSTATEEN0_SSTATEEN0))
-> +		vcpu->arch.host_sstateen0 = csr_swap(CSR_SSTATEEN0,
-> +						     smcsr->sstateen0);
->  	guest_state_enter_irqoff();
->  	__kvm_riscv_switch_to(&vcpu->arch);
->  	vcpu->arch.last_exit_cpu = vcpu->cpu;
->  	guest_state_exit_irqoff();
->  	csr->senvcfg = csr_swap(CSR_SENVCFG, vcpu->arch.host_senvcfg);
-> +	if (riscv_has_extension_unlikely(RISCV_ISA_EXT_SMSTATEEN) &&
-> +	    (cfg->hstateen0 & SMSTATEEN0_SSTATEEN0))
-> +		smcsr->sstateen0 = csr_swap(CSR_SSTATEEN0,
-> +					    vcpu->arch.host_sstateen0);
+> @@ -507,6 +507,34 @@ static int kvm_riscv_vcpu_general_get_csr(struct kvm_vcpu *vcpu,
+>  	return 0;
 >  }
-
-It might be nice to keep kvm_riscv_vcpu_enter_exit() "clean", by adding
-a couple functions. Something like
-
- static __always_inline void kvm_riscv_vcpu_swap_in_guest_state(struct kvm_vcpu *vcpu)
- {
-   struct kvm_vcpu_smstateen_csr *smcsr = &vcpu->arch.smstateen_csr;
-   struct kvm_vcpu_csr *csr = &vcpu->arch.guest_csr;
-   struct kvm_vcpu_config *cfg = &vcpu->arch.cfg;
-
-   vcpu->arch.host_senvcfg = csr_swap(CSR_SENVCFG, csr->senvcfg);
-   if (riscv_has_extension_unlikely(RISCV_ISA_EXT_SMSTATEEN) &&
-       (cfg->hstateen0 & SMSTATEEN0_SSTATEEN0))
-          vcpu->arch.host_sstateen0 = csr_swap(CSR_SSTATEEN0,
-                                               smcsr->sstateen0);
- }
-
- static __always_inline void kvm_riscv_vcpu_swap_in_host_state(struct kvm_vcpu *vcpu)
- {
-   struct kvm_vcpu_smstateen_csr *smcsr = &vcpu->arch.smstateen_csr;
-   struct kvm_vcpu_csr *csr = &vcpu->arch.guest_csr;
-   struct kvm_vcpu_config *cfg = &vcpu->arch.cfg;
-
-   csr->senvcfg = csr_swap(CSR_SENVCFG, vcpu->arch.host_senvcfg);
-   if (riscv_has_extension_unlikely(RISCV_ISA_EXT_SMSTATEEN) &&
-       (cfg->hstateen0 & SMSTATEEN0_SSTATEEN0))
-           smcsr->sstateen0 = csr_swap(CSR_SSTATEEN0,
-                                       vcpu->arch.host_sstateen0);
- }
-
- static void noinstr kvm_riscv_vcpu_enter_exit(struct kvm_vcpu *vcpu)
- {
-    kvm_riscv_vcpu_swap_in_guest_state(vcpu);
-    guest_state_enter_irqoff();
-    __kvm_riscv_switch_to(&vcpu->arch);
-    vcpu->arch.last_exit_cpu = vcpu->cpu;
-    guest_state_exit_irqoff();
-    kvm_riscv_vcpu_swap_in_host_state(vcpu);
- }
-
 >  
->  int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
+> +static inline int kvm_riscv_vcpu_smstateen_set_csr(struct kvm_vcpu *vcpu,
+> +						   unsigned long reg_num,
+> +						   unsigned long reg_val)
+> +{
+> +	struct kvm_vcpu_smstateen_csr *csr = &vcpu->arch.smstateen_csr;
+> +
+> +	if (reg_num >= sizeof(struct kvm_riscv_smstateen_csr) /
+> +	    sizeof(unsigned long))
+> +		return -EINVAL;
+> +
+> +	((unsigned long *)csr)[reg_num] = reg_val;
+> +	return 0;
+> +}
+> +
+> +static int kvm_riscv_vcpu_smstateen_get_csr(struct kvm_vcpu *vcpu,
+> +					    unsigned long reg_num,
+> +					    unsigned long *out_val)
+> +{
+> +	struct kvm_vcpu_smstateen_csr *csr = &vcpu->arch.smstateen_csr;
+> +
+> +	if (reg_num >= sizeof(struct kvm_riscv_smstateen_csr) /
+> +	    sizeof(unsigned long))
+> +		return -EINVAL;
+> +
+> +	*out_val = ((unsigned long *)csr)[reg_num];
+> +	return 0;
+> +}
+> +
+>  static inline int kvm_riscv_vcpu_general_set_csr(struct kvm_vcpu *vcpu,
+>  						 unsigned long reg_num,
+>  						 unsigned long reg_val)
+> @@ -552,6 +580,12 @@ static int kvm_riscv_vcpu_get_reg_csr(struct kvm_vcpu *vcpu,
+>  	case KVM_REG_RISCV_CSR_AIA:
+>  		rc = kvm_riscv_vcpu_aia_get_csr(vcpu, reg_num, &reg_val);
+>  		break;
+> +	case KVM_REG_RISCV_CSR_SMSTATEEN:
+> +		rc = -EINVAL;
+> +		if (riscv_has_extension_unlikely(RISCV_ISA_EXT_SMSTATEEN))
+> +			rc = kvm_riscv_vcpu_smstateen_get_csr(vcpu, reg_num,
+> +							      &reg_val);
+> +		break;
+>  	default:
+>  		rc = -EINVAL;
+>  		break;
+> @@ -591,6 +625,12 @@ static int kvm_riscv_vcpu_set_reg_csr(struct kvm_vcpu *vcpu,
+>  	case KVM_REG_RISCV_CSR_AIA:
+>  		rc = kvm_riscv_vcpu_aia_set_csr(vcpu, reg_num, reg_val);
+>  		break;
+> +	case KVM_REG_RISCV_CSR_SMSTATEEN:
+> +		rc = -EINVAL;
+> +		if (riscv_has_extension_unlikely(RISCV_ISA_EXT_SMSTATEEN))
+> +			rc = kvm_riscv_vcpu_smstateen_set_csr(vcpu, reg_num,
+> +							      reg_val);
+> +		break;
+>  	default:
+>  		rc = -EINVAL;
+>  		break;
 > -- 
 > 2.34.1
 >
 
-Either way,
+The EINVAL's will get changed to ENOENT's with the get/set-one-reg error
+code rework that's coming after get-reg-list lands, but for now I guess
+it makes sense to leave them consistent with the others.
 
 Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
-
-Thanks,
-drew
 
