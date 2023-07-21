@@ -1,40 +1,46 @@
 From: Xiaoyao Li <xiaoyao.li@intel.com>
-Date: Fri, 21 Jul 2023 23:42:04 +0800
-Subject: [RFC PATCH v11 12/29] KVM: Add KVM_CREATE_GUEST_MEMFD ioctl() for
- guest-specific backing memory
-In-Reply-To: <fdc155f5-041b-a1b1-15aa-8f970180a13a@intel.com>
+Date: Fri, 21 Jul 2023 23:56:36 +0800
+Subject: [RFC PATCH v11 08/29] KVM: Introduce per-page memory attributes
+In-Reply-To: <20230718234512.1690985-9-seanjc@google.com>
 References: <20230718234512.1690985-1-seanjc@google.com>
- <20230718234512.1690985-13-seanjc@google.com>
- <fdc155f5-041b-a1b1-15aa-8f970180a13a@intel.com>
-Message-ID: <29baac45-7736-a28c-3b2d-2a6e45171b8b@intel.com>
+ <20230718234512.1690985-9-seanjc@google.com>
+Message-ID: <de4e4112-4ea4-f19b-98a9-0a65b75c2102@intel.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 7/21/2023 11:05 PM, Xiaoyao Li wrote:
-> On 7/19/2023 7:44 AM, Sean Christopherson wrote:
->> @@ -6255,12 +6298,17 @@ int kvm_init(unsigned vcpu_size, unsigned 
->> vcpu_align, struct module *module)
->> ????? if (r)
->> ????????? goto err_async_pf;
->> +??? r = kvm_gmem_init();
->> +??? if (r)
->> +??????? goto err_gmem;
->> +
->> ????? kvm_chardev_ops.owner = module;
->> ????? kvm_preempt_ops.sched_in = kvm_sched_in;
->> ????? kvm_preempt_ops.sched_out = kvm_sched_out;
->> ????? kvm_init_debug();
->> +??? kvm_gmem_init();
-> 
-> why kvm_gmem_init() needs to be called again? by mistake?
+On 7/19/2023 7:44 AM, Sean Christopherson wrote:
+> +4.140 KVM_SET_MEMORY_ATTRIBUTES
+> +-----------------------------------------
+> +
+> +:Capability: KVM_CAP_MEMORY_ATTRIBUTES
+> +:Architectures: x86
+> +:Type: vm ioctl
+> +:Parameters: struct kvm_memory_attributes(in/out)
+> +:Returns: 0 on success, <0 on error
+> +
+> +Sets memory attributes for pages in a guest memory range. Parameters are
+> +specified via the following structure::
+> +
+> +  struct kvm_memory_attributes {
+> +	__u64 address;
+> +	__u64 size;
+> +	__u64 attributes;
+> +	__u64 flags;
+> +  };
+> +
+> +The user sets the per-page memory attributes to a guest memory range indicated
+> +by address/size, and in return KVM adjusts address and size to reflect the
+> +actual pages of the memory range have been successfully set to the attributes.
+> +If the call returns 0, "address" is updated to the last successful address + 1
+> +and "size" is updated to the remaining address size that has not been set
+> +successfully. The user should check the return value as well as the size to
+> +decide if the operation succeeded for the whole range or not. The user may want
+> +to retry the operation with the returned address/size if the previous range was
+> +partially successful.
 
-I'm sure it's a mistake.
-
-I'm testing the gmem QEMU with this series. SW_PROTECTED_VM gets stuck 
-in a loop in early OVMF code due to two shared page of OVMF get zapped 
-and re-mapped infinitely. Removing the second call of kvm_gmem_init() 
-can solve the issue, though I'm not sure about the reason.
+This does not match with the implementation. Please fix either one to 
+make them consistent.
 
