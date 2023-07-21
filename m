@@ -1,40 +1,51 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Date: Fri, 21 Jul 2023 12:11:49 +0200
-Subject: [PATCH v2 1/6] RISC-V: Detect Smstateen extension
-In-Reply-To: <20230721075439.454473-2-mchitale@ventanamicro.com>
-References: <20230721075439.454473-1-mchitale@ventanamicro.com>
- <20230721075439.454473-2-mchitale@ventanamicro.com>
-Message-ID: <921a2635-e34a-47e6-17c2-818e3594d211@kernel.org>
+From: Xu Yilun <yilun.xu@intel.com>
+Date: Fri, 21 Jul 2023 18:45:26 +0800
+Subject: [RFC PATCH v11 01/29] KVM: Wrap kvm_gfn_range.pte in a
+ per-action union
+In-Reply-To: <ZLolA2U83tP75Qdd@yzhao56-desk.sh.intel.com>
+References: <20230718234512.1690985-1-seanjc@google.com>
+ <20230718234512.1690985-2-seanjc@google.com>
+ <ZLolA2U83tP75Qdd@yzhao56-desk.sh.intel.com>
+Message-ID: <ZLphxpSTL9Fpn1ye@yilunxu-OptiPlex-7050>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 21/07/2023 09:54, Mayuresh Chitale wrote:
-> Extend the ISA string parsing to detect the Smstateen extension
+On 2023-07-21 at 14:26:11 +0800, Yan Zhao wrote:
+> On Tue, Jul 18, 2023 at 04:44:44PM -0700, Sean Christopherson wrote:
 > 
-> Signed-off-by: Mayuresh Chitale <mchitale@ventanamicro.com>
-> ---
->  Documentation/devicetree/bindings/riscv/extensions.yaml | 6 ++++++
+> May I know why KVM now needs to register to callback .change_pte()?
 
-Please run scripts/checkpatch.pl and fix reported warnings. Some
-warnings can be ignored, but the code here looks like it needs a fix.
-Feel free to get in touch if the warning is not clear.
+I can see the original purpose is to "setting a pte in the shadow page
+table directly, instead of flushing the shadow page table entry and then
+getting vmexit to set it"[1].
 
-Please use scripts/get_maintainers.pl to get a list of necessary people
-and lists to CC. It might happen, that command when run on an older
-kernel, gives you outdated entries. Therefore please be sure you base
-your patches on recent Linux kernel.
+IIUC, KVM is expected to directly make the new pte present for new
+pages in this callback, like for COW.
 
-You missed at least DT list (maybe more), so this won't be tested by
-automated tooling. Performing review on untested code might be a waste
-of time, thus I will skip this patch entirely till you follow the
-process allowing the patch to be tested.
+> As also commented in kvm_mmu_notifier_change_pte(), .change_pte() must be
+> surrounded by .invalidate_range_{start,end}().
+> 
+> While kvm_mmu_notifier_invalidate_range_start() has called kvm_unmap_gfn_range()
+> to zap all leaf SPTEs, and page fault path will not install new SPTEs
+> successfully before kvm_mmu_notifier_invalidate_range_end(),
+> kvm_set_spte_gfn() should not be able to find any shadow present leaf entries to
+> update PFN.
 
-Please kindly resend and include all necessary To/Cc entries.
+I also failed to figure out how the kvm_set_spte_gfn() could pass
+several !is_shadow_present_pte(iter.old_spte) check then write the new
+pte.
 
-Best regards,
-Krzysztof
 
+[1] https://lore.kernel.org/all/200909222039.n8MKd4TL002696 at imap1.linux-foundation.org/
+
+Thanks,
+Yilun
+
+> 
+> Or could we just delete completely
+> "kvm_handle_hva_range(mn, address, address + 1, pte, kvm_set_spte_gfn);"
+> from kvm_mmu_notifier_change_pte() ?
 
