@@ -1,33 +1,30 @@
-From: Xiaoyao Li <xiaoyao.li@intel.com>
-Date: Fri, 21 Jul 2023 23:05:53 +0800
-Subject: [RFC PATCH v11 12/29] KVM: Add KVM_CREATE_GUEST_MEMFD ioctl() for
- guest-specific backing memory
-In-Reply-To: <20230718234512.1690985-13-seanjc@google.com>
+From: Paolo Bonzini <pbonzini@redhat.com>
+Date: Fri, 21 Jul 2023 17:07:27 +0200
+Subject: [RFC PATCH v11 13/29] KVM: Add transparent hugepage support for
+ dedicated guest memory
+In-Reply-To: <20230718234512.1690985-14-seanjc@google.com>
 References: <20230718234512.1690985-1-seanjc@google.com>
- <20230718234512.1690985-13-seanjc@google.com>
-Message-ID: <fdc155f5-041b-a1b1-15aa-8f970180a13a@intel.com>
+ <20230718234512.1690985-14-seanjc@google.com>
+Message-ID: <84a908ae-04c7-51c7-c9a8-119e1933a189@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 7/19/2023 7:44 AM, Sean Christopherson wrote:
-> @@ -6255,12 +6298,17 @@ int kvm_init(unsigned vcpu_size, unsigned vcpu_align, struct module *module)
->   	if (r)
->   		goto err_async_pf;
+On 7/19/23 01:44, Sean Christopherson wrote:
 >   
-> +	r = kvm_gmem_init();
-> +	if (r)
-> +		goto err_gmem;
+> @@ -413,6 +454,9 @@ int kvm_gmem_create(struct kvm *kvm, struct kvm_create_guest_memfd *args)
+>   	u64 flags = args->flags;
+>   	u64 valid_flags = 0;
+>   
+> +	if (IS_ENABLED(CONFIG_TRANSPARENT_HUGEPAGE))
+> +		valid_flags |= KVM_GUEST_MEMFD_ALLOW_HUGEPAGE;
 > +
->   	kvm_chardev_ops.owner = module;
->   
->   	kvm_preempt_ops.sched_in = kvm_sched_in;
->   	kvm_preempt_ops.sched_out = kvm_sched_out;
->   
->   	kvm_init_debug();
-> +	kvm_gmem_init();
 
-why kvm_gmem_init() needs to be called again? by mistake?
+I think it should be always allowed.  The outcome would just be "never 
+have a hugepage" if thp is not enabled in the kernel.
+
+Paolo
+
 
