@@ -1,55 +1,66 @@
-From: Paolo Bonzini <pbonzini@redhat.com>
-Date: Fri, 21 Jul 2023 13:59:36 +0200
-Subject: [RFC PATCH v11 09/29] KVM: x86: Disallow hugepages when memory
- attributes are mixed
-In-Reply-To: <20230718234512.1690985-10-seanjc@google.com>
-References: <20230718234512.1690985-1-seanjc@google.com>
- <20230718234512.1690985-10-seanjc@google.com>
-Message-ID: <6118063e-5c91-acc4-129f-3bacc19f25ce@redhat.com>
+From: Conor Dooley <conor@kernel.org>
+Date: Fri, 21 Jul 2023 10:07:37 +0100
+Subject: [PATCH v2 1/6] RISC-V: Detect Smstateen extension
+In-Reply-To: <20230721-72554b5197954b80af35a7bb@orel>
+References: <20230721075439.454473-1-mchitale@ventanamicro.com>
+ <20230721075439.454473-2-mchitale@ventanamicro.com>
+ <20230721-72554b5197954b80af35a7bb@orel>
+Message-ID: <20230721-gravy-sturdy-1555d952cfb9@spud>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 7/19/23 01:44, Sean Christopherson wrote:
-> +static bool range_has_attrs(struct kvm *kvm, gfn_t start, gfn_t end,
-> +			    unsigned long attrs)
-> +{
-> +	XA_STATE(xas, &kvm->mem_attr_array, start);
-> +	unsigned long index;
-> +	bool has_attrs;
-> +	void *entry;
-> +
-> +	rcu_read_lock();
-> +
-> +	if (!attrs) {
-> +		has_attrs = !xas_find(&xas, end);
-> +		goto out;
-> +	}
-> +
-> +	has_attrs = true;
-> +	for (index = start; index < end; index++) {
-> +		do {
-> +			entry = xas_next(&xas);
-> +		} while (xas_retry(&xas, entry));
-> +
-> +		if (xas.xa_index != index || xa_to_value(entry) != attrs) {
-> +			has_attrs = false;
-> +			break;
-> +		}
-> +	}
-> +
-> +out:
-> +	rcu_read_unlock();
-> +	return has_attrs;
-> +}
-> +
+Hey,
 
-Can you move this function to virt/kvm/kvm_main.c?
+On Fri, Jul 21, 2023 at 10:49:54AM +0200, Andrew Jones wrote:
+> On Fri, Jul 21, 2023 at 01:24:34PM +0530, Mayuresh Chitale wrote:
+> > Extend the ISA string parsing to detect the Smstateen extension
+> > 
+> > Signed-off-by: Mayuresh Chitale <mchitale@ventanamicro.com>
+> > ---
+> >  Documentation/devicetree/bindings/riscv/extensions.yaml | 6 ++++++
+> >  arch/riscv/include/asm/hwcap.h                          | 1 +
+> >  arch/riscv/kernel/cpu.c                                 | 1 +
+> >  arch/riscv/kernel/cpufeature.c                          | 1 +
+> >  4 files changed, 9 insertions(+)
+> > 
+> > diff --git a/Documentation/devicetree/bindings/riscv/extensions.yaml b/Documentation/devicetree/bindings/riscv/extensions.yaml
+> > index cc1f546fdbdc..1e6d0e182be1 100644
+> > --- a/Documentation/devicetree/bindings/riscv/extensions.yaml
+> > +++ b/Documentation/devicetree/bindings/riscv/extensions.yaml
+> > @@ -128,6 +128,12 @@ properties:
+> >              changes to interrupts as frozen at commit ccbddab ("Merge pull
+> >              request #42 from riscv/jhauser-2023-RC4") of riscv-aia.
+> >  
+> > +        - const: smstateen
+> > +          description: |
+> > +            The standard Smstateen extension for controlling accesss to CSRs
+>                                                                 ^ access
+> 
+> > +            added by other Risc-V extensions in H/S/VS/U/VU modes and as
+
+s/Risc-V/RISC-V/. Let's not invent new stylisations please.
+
+> s/and//
+> 
+> > +            ratified at commit a28bfae (Ratified (#7)).
+
+An "of riscv-state-enable" at the end might be helpful too.
+
+Either way, neither checkpatch nor get_maintainer were run on this v2
+patch, the former would have pointed out that dt-binding changes should
+be made in their own patches.
+
+The C stuff is fine, but this needs to be split in two.
 
 Thanks,
-
-Paolo
-
-
+Conor.
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 228 bytes
+Desc: not available
+URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20230721/4cb9343d/attachment.sig>
