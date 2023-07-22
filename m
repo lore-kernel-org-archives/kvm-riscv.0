@@ -1,83 +1,78 @@
 From: Raghavendra Rao Ananta <rananta@google.com>
-Date: Sat, 22 Jul 2023 02:22:41 +0000
-Subject: [PATCH v7 02/12] KVM: arm64: Use kvm_arch_flush_remote_tlbs()
+Date: Sat, 22 Jul 2023 02:22:47 +0000
+Subject: [PATCH v7 08/12] KVM: arm64: Define kvm_tlb_flush_vmid_range()
 In-Reply-To: <20230722022251.3446223-1-rananta@google.com>
 References: <20230722022251.3446223-1-rananta@google.com>
-Message-ID: <20230722022251.3446223-3-rananta@google.com>
+Message-ID: <20230722022251.3446223-9-rananta@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Stop depending on CONFIG_HAVE_KVM_ARCH_TLB_FLUSH_ALL and opt to
-standardize on kvm_arch_flush_remote_tlbs() since it avoids
-duplicating the generic TLB stats across architectures that implement
-their own remote TLB flush.
-
-This adds an extra function call to the ARM64 kvm_flush_remote_tlbs()
-path, but that is a small cost in comparison to flushing remote TLBs.
-
-In addition, instead of just incrementing remote_tlb_flush_requests
-stat, the generic interface would also increment the
-remote_tlb_flush stat.
+Implement the helper kvm_tlb_flush_vmid_range() that acts
+as a wrapper for range-based TLB invalidations. For the
+given VMID, use the range-based TLBI instructions to do
+the job or fallback to invalidating all the TLB entries.
 
 Signed-off-by: Raghavendra Rao Ananta <rananta@google.com>
+Reviewed-by: Gavin Shan <gshan@redhat.com>
+Reviewed-by: Shaoqin Huang <shahuang@redhat.com>
 ---
- arch/arm64/include/asm/kvm_host.h | 3 +++
- arch/arm64/kvm/Kconfig            | 1 -
- arch/arm64/kvm/mmu.c              | 6 +++---
- 3 files changed, 6 insertions(+), 4 deletions(-)
+ arch/arm64/include/asm/kvm_pgtable.h | 10 ++++++++++
+ arch/arm64/kvm/hyp/pgtable.c         | 20 ++++++++++++++++++++
+ 2 files changed, 30 insertions(+)
 
-diff --git a/arch/arm64/include/asm/kvm_host.h b/arch/arm64/include/asm/kvm_host.h
-index 8b6096753740..7281222f24ef 100644
---- a/arch/arm64/include/asm/kvm_host.h
-+++ b/arch/arm64/include/asm/kvm_host.h
-@@ -1111,6 +1111,9 @@ int __init kvm_set_ipa_limit(void);
- #define __KVM_HAVE_ARCH_VM_ALLOC
- struct kvm *kvm_arch_alloc_vm(void);
- 
-+#define __KVM_HAVE_ARCH_FLUSH_REMOTE_TLBS
-+int kvm_arch_flush_remote_tlbs(struct kvm *kvm);
-+
- static inline bool kvm_vm_is_protected(struct kvm *kvm)
- {
- 	return false;
-diff --git a/arch/arm64/kvm/Kconfig b/arch/arm64/kvm/Kconfig
-index f531da6b362e..6b730fcfee37 100644
---- a/arch/arm64/kvm/Kconfig
-+++ b/arch/arm64/kvm/Kconfig
-@@ -25,7 +25,6 @@ menuconfig KVM
- 	select MMU_NOTIFIER
- 	select PREEMPT_NOTIFIERS
- 	select HAVE_KVM_CPU_RELAX_INTERCEPT
--	select HAVE_KVM_ARCH_TLB_FLUSH_ALL
- 	select KVM_MMIO
- 	select KVM_GENERIC_DIRTYLOG_READ_PROTECT
- 	select KVM_XFER_TO_GUEST_WORK
-diff --git a/arch/arm64/kvm/mmu.c b/arch/arm64/kvm/mmu.c
-index 6db9ef288ec3..0ac721fa27f1 100644
---- a/arch/arm64/kvm/mmu.c
-+++ b/arch/arm64/kvm/mmu.c
-@@ -161,15 +161,15 @@ static bool memslot_is_logging(struct kvm_memory_slot *memslot)
- }
- 
- /**
-- * kvm_flush_remote_tlbs() - flush all VM TLB entries for v7/8
-+ * kvm_arch_flush_remote_tlbs() - flush all VM TLB entries for v7/8
-  * @kvm:	pointer to kvm structure.
-  *
-  * Interface to HYP function to flush all VM TLB entries
+diff --git a/arch/arm64/include/asm/kvm_pgtable.h b/arch/arm64/include/asm/kvm_pgtable.h
+index 8294a9a7e566..5e8b1ff07854 100644
+--- a/arch/arm64/include/asm/kvm_pgtable.h
++++ b/arch/arm64/include/asm/kvm_pgtable.h
+@@ -754,4 +754,14 @@ enum kvm_pgtable_prot kvm_pgtable_stage2_pte_prot(kvm_pte_t pte);
+  *	   kvm_pgtable_prot format.
   */
--void kvm_flush_remote_tlbs(struct kvm *kvm)
-+int kvm_arch_flush_remote_tlbs(struct kvm *kvm)
- {
--	++kvm->stat.generic.remote_tlb_flush_requests;
- 	kvm_call_hyp(__kvm_tlb_flush_vmid, &kvm->arch.mmu);
-+	return 0;
+ enum kvm_pgtable_prot kvm_pgtable_hyp_pte_prot(kvm_pte_t pte);
++
++/**
++ * kvm_tlb_flush_vmid_range() - Invalidate/flush a range of TLB entries
++ *
++ * @mmu:	Stage-2 KVM MMU struct
++ * @addr:	The base Intermediate physical address from which to invalidate
++ * @size:	Size of the range from the base to invalidate
++ */
++void kvm_tlb_flush_vmid_range(struct kvm_s2_mmu *mmu,
++				phys_addr_t addr, size_t size);
+ #endif	/* __ARM64_KVM_PGTABLE_H__ */
+diff --git a/arch/arm64/kvm/hyp/pgtable.c b/arch/arm64/kvm/hyp/pgtable.c
+index aa740a974e02..5d14d5d5819a 100644
+--- a/arch/arm64/kvm/hyp/pgtable.c
++++ b/arch/arm64/kvm/hyp/pgtable.c
+@@ -670,6 +670,26 @@ static bool stage2_has_fwb(struct kvm_pgtable *pgt)
+ 	return !(pgt->flags & KVM_PGTABLE_S2_NOFWB);
  }
  
- static bool kvm_is_device_pfn(unsigned long pfn)
++void kvm_tlb_flush_vmid_range(struct kvm_s2_mmu *mmu,
++				phys_addr_t addr, size_t size)
++{
++	unsigned long pages, inval_pages;
++
++	if (!system_supports_tlb_range()) {
++		kvm_call_hyp(__kvm_tlb_flush_vmid, mmu);
++		return;
++	}
++
++	pages = size >> PAGE_SHIFT;
++	while (pages > 0) {
++		inval_pages = min(pages, MAX_TLBI_RANGE_PAGES);
++		kvm_call_hyp(__kvm_tlb_flush_vmid_range, mmu, addr, inval_pages);
++
++		addr += inval_pages << PAGE_SHIFT;
++		pages -= inval_pages;
++	}
++}
++
+ #define KVM_S2_MEMATTR(pgt, attr) PAGE_S2_MEMATTR(attr, stage2_has_fwb(pgt))
+ 
+ static int stage2_set_prot_attr(struct kvm_pgtable *pgt, enum kvm_pgtable_prot prot,
 -- 
 2.41.0.487.g6d72f3e995-goog
 
