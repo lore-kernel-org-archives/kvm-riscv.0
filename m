@@ -1,50 +1,65 @@
-From: Sean Christopherson <seanjc@google.com>
-Date: Fri, 21 Jul 2023 15:33:15 -0700
-Subject: [RFC PATCH v11 12/29] KVM: Add KVM_CREATE_GUEST_MEMFD ioctl() for
- guest-specific backing memory
-In-Reply-To: <20230721222704.GJ25699@ls.amr.corp.intel.com>
-References: <20230718234512.1690985-1-seanjc@google.com> <20230718234512.1690985-13-seanjc@google.com>
- <20230721061314.3ls6stdawz53drv3@yy-desk-7060> <20230721222704.GJ25699@ls.amr.corp.intel.com>
-Message-ID: <ZLsHq69sMG7pmRiz@google.com>
+From: Raghavendra Rao Ananta <rananta@google.com>
+Date: Sat, 22 Jul 2023 02:22:42 +0000
+Subject: [PATCH v7 03/12] KVM: Remove CONFIG_HAVE_KVM_ARCH_TLB_FLUSH_ALL
+In-Reply-To: <20230722022251.3446223-1-rananta@google.com>
+References: <20230722022251.3446223-1-rananta@google.com>
+Message-ID: <20230722022251.3446223-4-rananta@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Jul 21, 2023, Isaku Yamahata wrote:
-> On Fri, Jul 21, 2023 at 02:13:14PM +0800,
-> Yuan Yao <yuan.yao@linux.intel.com> wrote:
-> > > +static int kvm_gmem_error_page(struct address_space *mapping, struct page *page)
-> > > +{
-> > > +	struct list_head *gmem_list = &mapping->private_list;
-> > > +	struct kvm_memory_slot *slot;
-> > > +	struct kvm_gmem *gmem;
-> > > +	unsigned long index;
-> > > +	pgoff_t start, end;
-> > > +	gfn_t gfn;
-> > > +
-> > > +	filemap_invalidate_lock_shared(mapping);
-> > > +
-> > > +	start = page->index;
-> > > +	end = start + thp_nr_pages(page);
-> > > +
-> > > +	list_for_each_entry(gmem, gmem_list, entry) {
-> > > +		xa_for_each_range(&gmem->bindings, index, slot, start, end - 1) {
-> > > +			for (gfn = start; gfn < end; gfn++) {
-> > 
-> > Why the start end range used as gfn here ?
+kvm_arch_flush_remote_tlbs() or CONFIG_HAVE_KVM_ARCH_TLB_FLUSH_ALL
+are two mechanisms to solve the same problem, allowing
+architecture-specific code to provide a non-IPI implementation of
+remote TLB flushing.
 
-Math is hard?  I almost always mess up these types of things, and then catch my
-bugs via tests.  But I don't have tests for this particular flow...   Which
-reminds me, we need tests for this :-)  Hopefully error injection provides most
-of what we need?
+Dropping CONFIG_HAVE_KVM_ARCH_TLB_FLUSH_ALL allows KVM to standardize
+all architectures on kvm_arch_flush_remote_tlbs() instead of
+maintaining two mechanisms.
 
-> > the page->index is offset of inode's page cache mapping and
-> > gmem address space, IIUC, gfn calculation should follow same
-> > way as kvm_gmem_invalidate_begin().
-> 
-> Also instead of sending signal multiple times, we can utilize lsb argument.
+Signed-off-by: Raghavendra Rao Ananta <rananta@google.com>
+---
+ virt/kvm/Kconfig    | 3 ---
+ virt/kvm/kvm_main.c | 2 --
+ 2 files changed, 5 deletions(-)
 
-As Vishal pointed out, this code shouldn't be sending signals in the first place.
+diff --git a/virt/kvm/Kconfig b/virt/kvm/Kconfig
+index b74916de5183..484d0873061c 100644
+--- a/virt/kvm/Kconfig
++++ b/virt/kvm/Kconfig
+@@ -62,9 +62,6 @@ config HAVE_KVM_CPU_RELAX_INTERCEPT
+ config KVM_VFIO
+        bool
+ 
+-config HAVE_KVM_ARCH_TLB_FLUSH_ALL
+-       bool
+-
+ config HAVE_KVM_INVALID_WAKEUPS
+        bool
+ 
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index 70e5479797ac..d6b050786155 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -345,7 +345,6 @@ bool kvm_make_all_cpus_request(struct kvm *kvm, unsigned int req)
+ }
+ EXPORT_SYMBOL_GPL(kvm_make_all_cpus_request);
+ 
+-#ifndef CONFIG_HAVE_KVM_ARCH_TLB_FLUSH_ALL
+ void kvm_flush_remote_tlbs(struct kvm *kvm)
+ {
+ 	++kvm->stat.generic.remote_tlb_flush_requests;
+@@ -366,7 +365,6 @@ void kvm_flush_remote_tlbs(struct kvm *kvm)
+ 		++kvm->stat.generic.remote_tlb_flush;
+ }
+ EXPORT_SYMBOL_GPL(kvm_flush_remote_tlbs);
+-#endif
+ 
+ static void kvm_flush_shadow_all(struct kvm *kvm)
+ {
+-- 
+2.41.0.487.g6d72f3e995-goog
+
 
