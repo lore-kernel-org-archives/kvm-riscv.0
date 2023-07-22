@@ -1,165 +1,145 @@
 From: Raghavendra Rao Ananta <rananta@google.com>
-Date: Sat, 22 Jul 2023 02:22:45 +0000
-Subject: [PATCH v7 06/12] arm64: tlb: Refactor the core flush algorithm of __flush_tlb_range
+Date: Sat, 22 Jul 2023 02:22:51 +0000
+Subject: [PATCH v7 12/12] KVM: arm64: Use TLBI range-based intructions for unmap
 In-Reply-To: <20230722022251.3446223-1-rananta@google.com>
 References: <20230722022251.3446223-1-rananta@google.com>
-Message-ID: <20230722022251.3446223-7-rananta@google.com>
+Message-ID: <20230722022251.3446223-13-rananta@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Currently, the core TLB flush functionality of __flush_tlb_range()
-hardcodes vae1is (and variants) for the flush operation. In the
-upcoming patches, the KVM code reuses this core algorithm with
-ipas2e1is for range based TLB invalidations based on the IPA.
-Hence, extract the core flush functionality of __flush_tlb_range()
-into its own macro that accepts an 'op' argument to pass any
-TLBI operation, such that other callers (KVM) can benefit.
+The current implementation of the stage-2 unmap walker traverses
+the given range and, as a part of break-before-make, performs
+TLB invalidations with a DSB for every PTE. A multitude of this
+combination could cause a performance bottleneck on some systems.
 
-No functional changes intended.
+Hence, if the system supports FEAT_TLBIRANGE, defer the TLB
+invalidations until the entire walk is finished, and then
+use range-based instructions to invalidate the TLBs in one go.
+Condition deferred TLB invalidation on the system supporting FWB,
+as the optimization is entirely pointless when the unmap walker
+needs to perform CMOs.
+
+Rename stage2_put_pte() to stage2_unmap_put_pte() as the function
+now serves the stage-2 unmap walker specifically, rather than
+acting generic.
 
 Signed-off-by: Raghavendra Rao Ananta <rananta@google.com>
-Reviewed-by: Catalin Marinas <catalin.marinas@arm.com>
-Reviewed-by: Gavin Shan <gshan@redhat.com>
-Reviewed-by: Shaoqin Huang <shahuang@redhat.com>
 ---
- arch/arm64/include/asm/tlbflush.h | 109 +++++++++++++++---------------
- 1 file changed, 56 insertions(+), 53 deletions(-)
+ arch/arm64/kvm/hyp/pgtable.c | 67 +++++++++++++++++++++++++++++++-----
+ 1 file changed, 58 insertions(+), 9 deletions(-)
 
-diff --git a/arch/arm64/include/asm/tlbflush.h b/arch/arm64/include/asm/tlbflush.h
-index 412a3b9a3c25..f7fafba25add 100644
---- a/arch/arm64/include/asm/tlbflush.h
-+++ b/arch/arm64/include/asm/tlbflush.h
-@@ -278,14 +278,62 @@ static inline void flush_tlb_page(struct vm_area_struct *vma,
-  */
- #define MAX_TLBI_OPS	PTRS_PER_PTE
- 
-+/* When the CPU does not support TLB range operations, flush the TLB
-+ * entries one by one at the granularity of 'stride'. If the TLB
-+ * range ops are supported, then:
-+ *
-+ * 1. If 'pages' is odd, flush the first page through non-range
-+ *    operations;
-+ *
-+ * 2. For remaining pages: the minimum range granularity is decided
-+ *    by 'scale', so multiple range TLBI operations may be required.
-+ *    Start from scale = 0, flush the corresponding number of pages
-+ *    ((num+1)*2^(5*scale+1) starting from 'addr'), then increase it
-+ *    until no pages left.
-+ *
-+ * Note that certain ranges can be represented by either num = 31 and
-+ * scale or num = 0 and scale + 1. The loop below favours the latter
-+ * since num is limited to 30 by the __TLBI_RANGE_NUM() macro.
-+ */
-+#define __flush_tlb_range_op(op, start, pages, stride,			\
-+				asid, tlb_level, tlbi_user)		\
-+do {									\
-+	int num = 0;							\
-+	int scale = 0;							\
-+	unsigned long addr;						\
-+									\
-+	while (pages > 0) {						\
-+		if (!system_supports_tlb_range() ||			\
-+		    pages % 2 == 1) {					\
-+			addr = __TLBI_VADDR(start, asid);		\
-+			__tlbi_level(op, addr, tlb_level);		\
-+			if (tlbi_user)					\
-+				__tlbi_user_level(op, addr, tlb_level);	\
-+			start += stride;				\
-+			pages -= stride >> PAGE_SHIFT;			\
-+			continue;					\
-+		}							\
-+									\
-+		num = __TLBI_RANGE_NUM(pages, scale);			\
-+		if (num >= 0) {						\
-+			addr = __TLBI_VADDR_RANGE(start, asid, scale,	\
-+						  num, tlb_level);	\
-+			__tlbi(r##op, addr);				\
-+			if (tlbi_user)					\
-+				__tlbi_user(r##op, addr);		\
-+			start += __TLBI_RANGE_PAGES(num, scale) << PAGE_SHIFT; \
-+			pages -= __TLBI_RANGE_PAGES(num, scale);	\
-+		}							\
-+		scale++;						\
-+	}								\
-+} while (0)
-+
- static inline void __flush_tlb_range(struct vm_area_struct *vma,
- 				     unsigned long start, unsigned long end,
- 				     unsigned long stride, bool last_level,
- 				     int tlb_level)
- {
--	int num = 0;
--	int scale = 0;
--	unsigned long asid, addr, pages;
-+	unsigned long asid, pages;
- 
- 	start = round_down(start, stride);
- 	end = round_up(end, stride);
-@@ -307,56 +355,11 @@ static inline void __flush_tlb_range(struct vm_area_struct *vma,
- 	dsb(ishst);
- 	asid = ASID(vma->vm_mm);
- 
--	/*
--	 * When the CPU does not support TLB range operations, flush the TLB
--	 * entries one by one at the granularity of 'stride'. If the TLB
--	 * range ops are supported, then:
--	 *
--	 * 1. If 'pages' is odd, flush the first page through non-range
--	 *    operations;
--	 *
--	 * 2. For remaining pages: the minimum range granularity is decided
--	 *    by 'scale', so multiple range TLBI operations may be required.
--	 *    Start from scale = 0, flush the corresponding number of pages
--	 *    ((num+1)*2^(5*scale+1) starting from 'addr'), then increase it
--	 *    until no pages left.
--	 *
--	 * Note that certain ranges can be represented by either num = 31 and
--	 * scale or num = 0 and scale + 1. The loop below favours the latter
--	 * since num is limited to 30 by the __TLBI_RANGE_NUM() macro.
--	 */
--	while (pages > 0) {
--		if (!system_supports_tlb_range() ||
--		    pages % 2 == 1) {
--			addr = __TLBI_VADDR(start, asid);
--			if (last_level) {
--				__tlbi_level(vale1is, addr, tlb_level);
--				__tlbi_user_level(vale1is, addr, tlb_level);
--			} else {
--				__tlbi_level(vae1is, addr, tlb_level);
--				__tlbi_user_level(vae1is, addr, tlb_level);
--			}
--			start += stride;
--			pages -= stride >> PAGE_SHIFT;
--			continue;
--		}
--
--		num = __TLBI_RANGE_NUM(pages, scale);
--		if (num >= 0) {
--			addr = __TLBI_VADDR_RANGE(start, asid, scale,
--						  num, tlb_level);
--			if (last_level) {
--				__tlbi(rvale1is, addr);
--				__tlbi_user(rvale1is, addr);
--			} else {
--				__tlbi(rvae1is, addr);
--				__tlbi_user(rvae1is, addr);
--			}
--			start += __TLBI_RANGE_PAGES(num, scale) << PAGE_SHIFT;
--			pages -= __TLBI_RANGE_PAGES(num, scale);
--		}
--		scale++;
--	}
-+	if (last_level)
-+		__flush_tlb_range_op(vale1is, start, pages, stride, asid, tlb_level, true);
-+	else
-+		__flush_tlb_range_op(vae1is, start, pages, stride, asid, tlb_level, true);
-+
- 	dsb(ish);
+diff --git a/arch/arm64/kvm/hyp/pgtable.c b/arch/arm64/kvm/hyp/pgtable.c
+index 5ef098af1736..cf88933a2ea0 100644
+--- a/arch/arm64/kvm/hyp/pgtable.c
++++ b/arch/arm64/kvm/hyp/pgtable.c
+@@ -831,16 +831,54 @@ static void stage2_make_pte(const struct kvm_pgtable_visit_ctx *ctx, kvm_pte_t n
+ 	smp_store_release(ctx->ptep, new);
  }
  
+-static void stage2_put_pte(const struct kvm_pgtable_visit_ctx *ctx, struct kvm_s2_mmu *mmu,
+-			   struct kvm_pgtable_mm_ops *mm_ops)
++struct stage2_unmap_data {
++	struct kvm_pgtable *pgt;
++	bool defer_tlb_flush_init;
++};
++
++static bool __stage2_unmap_defer_tlb_flush(struct kvm_pgtable *pgt)
++{
++	/*
++	 * If FEAT_TLBIRANGE is implemented, defer the individual
++	 * TLB invalidations until the entire walk is finished, and
++	 * then use the range-based TLBI instructions to do the
++	 * invalidations. Condition deferred TLB invalidation on the
++	 * system supporting FWB, as the optimization is entirely
++	 * pointless when the unmap walker needs to perform CMOs.
++	 */
++	return system_supports_tlb_range() && stage2_has_fwb(pgt);
++}
++
++static bool stage2_unmap_defer_tlb_flush(struct stage2_unmap_data *unmap_data)
++{
++	bool defer_tlb_flush = __stage2_unmap_defer_tlb_flush(unmap_data->pgt);
++
++	/*
++	 * Since __stage2_unmap_defer_tlb_flush() is based on alternative
++	 * patching and the TLBIs' operations behavior depend on this,
++	 * track if there's any change in the state during the unmap sequence.
++	 */
++	WARN_ON(unmap_data->defer_tlb_flush_init != defer_tlb_flush);
++	return defer_tlb_flush;
++}
++
++static void stage2_unmap_put_pte(const struct kvm_pgtable_visit_ctx *ctx,
++				struct kvm_s2_mmu *mmu,
++				struct kvm_pgtable_mm_ops *mm_ops)
+ {
++	struct stage2_unmap_data *unmap_data = ctx->arg;
++
+ 	/*
+-	 * Clear the existing PTE, and perform break-before-make with
+-	 * TLB maintenance if it was valid.
++	 * Clear the existing PTE, and perform break-before-make if it was
++	 * valid. Depending on the system support, the TLB maintenance for
++	 * the same can be deferred until the entire unmap is completed.
+ 	 */
+ 	if (kvm_pte_valid(ctx->old)) {
+ 		kvm_clear_pte(ctx->ptep);
+-		kvm_call_hyp(__kvm_tlb_flush_vmid_ipa, mmu, ctx->addr, ctx->level);
++
++		if (!stage2_unmap_defer_tlb_flush(unmap_data))
++			kvm_call_hyp(__kvm_tlb_flush_vmid_ipa, mmu,
++					ctx->addr, ctx->level);
+ 	}
+ 
+ 	mm_ops->put_page(ctx->ptep);
+@@ -1070,7 +1108,8 @@ int kvm_pgtable_stage2_set_owner(struct kvm_pgtable *pgt, u64 addr, u64 size,
+ static int stage2_unmap_walker(const struct kvm_pgtable_visit_ctx *ctx,
+ 			       enum kvm_pgtable_walk_flags visit)
+ {
+-	struct kvm_pgtable *pgt = ctx->arg;
++	struct stage2_unmap_data *unmap_data = ctx->arg;
++	struct kvm_pgtable *pgt = unmap_data->pgt;
+ 	struct kvm_s2_mmu *mmu = pgt->mmu;
+ 	struct kvm_pgtable_mm_ops *mm_ops = ctx->mm_ops;
+ 	kvm_pte_t *childp = NULL;
+@@ -1098,7 +1137,7 @@ static int stage2_unmap_walker(const struct kvm_pgtable_visit_ctx *ctx,
+ 	 * block entry and rely on the remaining portions being faulted
+ 	 * back lazily.
+ 	 */
+-	stage2_put_pte(ctx, mmu, mm_ops);
++	stage2_unmap_put_pte(ctx, mmu, mm_ops);
+ 
+ 	if (need_flush && mm_ops->dcache_clean_inval_poc)
+ 		mm_ops->dcache_clean_inval_poc(kvm_pte_follow(ctx->old, mm_ops),
+@@ -1112,13 +1151,23 @@ static int stage2_unmap_walker(const struct kvm_pgtable_visit_ctx *ctx,
+ 
+ int kvm_pgtable_stage2_unmap(struct kvm_pgtable *pgt, u64 addr, u64 size)
+ {
++	int ret;
++	struct stage2_unmap_data unmap_data = {
++		.pgt = pgt,
++		.defer_tlb_flush_init = __stage2_unmap_defer_tlb_flush(pgt),
++	};
+ 	struct kvm_pgtable_walker walker = {
+ 		.cb	= stage2_unmap_walker,
+-		.arg	= pgt,
++		.arg	= &unmap_data,
+ 		.flags	= KVM_PGTABLE_WALK_LEAF | KVM_PGTABLE_WALK_TABLE_POST,
+ 	};
+ 
+-	return kvm_pgtable_walk(pgt, addr, size, &walker);
++	ret = kvm_pgtable_walk(pgt, addr, size, &walker);
++	if (stage2_unmap_defer_tlb_flush(&unmap_data))
++		/* Perform the deferred TLB invalidations */
++		kvm_tlb_flush_vmid_range(pgt->mmu, addr, size);
++
++	return ret;
+ }
+ 
+ struct stage2_attr_data {
 -- 
 2.41.0.487.g6d72f3e995-goog
 
