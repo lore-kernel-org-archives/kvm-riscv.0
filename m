@@ -1,52 +1,47 @@
-From: Wang, Wei W <wei.w.wang@intel.com>
-Date: Tue, 25 Jul 2023 15:09:29 +0000
-Subject: [RFC PATCH v11 12/29] KVM: Add KVM_CREATE_GUEST_MEMFD ioctl() for
- guest-specific backing memory
-In-Reply-To: <20230718234512.1690985-13-seanjc@google.com>
-References: <20230718234512.1690985-1-seanjc@google.com>
- <20230718234512.1690985-13-seanjc@google.com>
-Message-ID: <DS0PR11MB637386533A4A10667BA6DF03DC03A@DS0PR11MB6373.namprd11.prod.outlook.com>
+From: Anup Patel <apatel@ventanamicro.com>
+Date: Tue, 25 Jul 2023 20:54:24 +0530
+Subject: [kvmtool PATCH 0/6] RISC-V AIA irqchip and Svnapot support
+Message-ID: <20230725152430.3351564-1-apatel@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wednesday, July 19, 2023 7:45 AM, Sean Christopherson wrote:
-> +int kvm_gmem_get_pfn(struct kvm *kvm, struct kvm_memory_slot *slot,
-> +		     gfn_t gfn, kvm_pfn_t *pfn, int *max_order) {
-> +	pgoff_t index = gfn - slot->base_gfn + slot->gmem.pgoff;
-> +	struct kvm_gmem *gmem;
-> +	struct folio *folio;
-> +	struct page *page;
-> +	struct file *file;
-> +
-> +	file = kvm_gmem_get_file(slot);
-> +	if (!file)
-> +		return -EFAULT;
-> +
-> +	gmem = file->private_data;
-> +
-> +	if (WARN_ON_ONCE(xa_load(&gmem->bindings, index) != slot)) {
-> +		fput(file);
-> +		return -EIO;
-> +	}
-> +
-> +	folio = kvm_gmem_get_folio(file_inode(file), index);
-> +	if (!folio) {
-> +		fput(file);
-> +		return -ENOMEM;
-> +	}
-> +
-> +	page = folio_file_page(folio, index);
-> +
-> +	*pfn = page_to_pfn(page);
-> +	*max_order = compound_order(compound_head(page));
+The latest KVM in Linux-6.5 has support for:
+1) Svnapot ISA extension support
+2) AIA in-kernel irqchip support
 
-Maybe better to check if caller provided a buffer to get the max_order:
-if (max_order)
-	*max_order = compound_order(compound_head(page));
+This series adds corresponding changes in KVMTOOL to use the above
+mentioned features for Guest/VM.
 
-This is what the previous version did (restrictedmem_get_page),
-so that callers who only want to get a pfn don't need to define
-an unused "order" param.
+These patches can also be found in the riscv_aia_v1 branch at:
+https://github.com/avpatel/kvmtool.git
+
+Anup Patel (6):
+  Sync-up header with Linux-6.5-rc3 for KVM RISC-V
+  riscv: Add Svnapot extension support
+  riscv: Make irqchip support pluggable
+  riscv: Add IRQFD support for in-kernel AIA irqchip
+  riscv: Use AIA in-kernel irqchip whenever KVM RISC-V supports
+  riscv: Fix guest/init linkage for multilib toolchain
+
+ Makefile                            |   3 +
+ include/linux/kvm.h                 |   6 +-
+ riscv/aia.c                         | 227 ++++++++++++++++++++++++++++
+ riscv/fdt.c                         |  15 +-
+ riscv/include/asm/kvm.h             |  81 ++++++++++
+ riscv/include/kvm/fdt-arch.h        |   8 +-
+ riscv/include/kvm/kvm-arch.h        |  38 ++++-
+ riscv/include/kvm/kvm-config-arch.h |   3 +
+ riscv/irq.c                         | 138 ++++++++++++++++-
+ riscv/kvm.c                         |   2 +
+ riscv/pci.c                         |  32 ++--
+ riscv/plic.c                        |  61 ++++----
+ 12 files changed, 563 insertions(+), 51 deletions(-)
+ create mode 100644 riscv/aia.c
+
+-- 
+2.34.1
+
+
