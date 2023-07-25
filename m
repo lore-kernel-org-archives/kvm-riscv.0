@@ -1,90 +1,52 @@
-From: Conor Dooley <conor.dooley@microchip.com>
-Date: Tue, 25 Jul 2023 11:06:54 +0100
-Subject: [PATCH v3 0/7] Risc-V Kvm Smstateen
-In-Reply-To: <CAK9=C2XXnQWqJgES2iWjatG9SFeFEUXZzLXz1gTYQ0aAh=7KJg@mail.gmail.com>
-References: <20230724142033.306538-1-mchitale@ventanamicro.com>
- <20230724-scrap-pranker-7fd120078136@spud>
- <CAK9=C2XXnQWqJgES2iWjatG9SFeFEUXZzLXz1gTYQ0aAh=7KJg@mail.gmail.com>
-Message-ID: <20230725-dwelled-obtain-24bf6a4e6964@wendy>
+From: Wang, Wei W <wei.w.wang@intel.com>
+Date: Tue, 25 Jul 2023 15:09:29 +0000
+Subject: [RFC PATCH v11 12/29] KVM: Add KVM_CREATE_GUEST_MEMFD ioctl() for
+ guest-specific backing memory
+In-Reply-To: <20230718234512.1690985-13-seanjc@google.com>
+References: <20230718234512.1690985-1-seanjc@google.com>
+ <20230718234512.1690985-13-seanjc@google.com>
+Message-ID: <DS0PR11MB637386533A4A10667BA6DF03DC03A@DS0PR11MB6373.namprd11.prod.outlook.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hey Anup,
+On Wednesday, July 19, 2023 7:45 AM, Sean Christopherson wrote:
+> +int kvm_gmem_get_pfn(struct kvm *kvm, struct kvm_memory_slot *slot,
+> +		     gfn_t gfn, kvm_pfn_t *pfn, int *max_order) {
+> +	pgoff_t index = gfn - slot->base_gfn + slot->gmem.pgoff;
+> +	struct kvm_gmem *gmem;
+> +	struct folio *folio;
+> +	struct page *page;
+> +	struct file *file;
+> +
+> +	file = kvm_gmem_get_file(slot);
+> +	if (!file)
+> +		return -EFAULT;
+> +
+> +	gmem = file->private_data;
+> +
+> +	if (WARN_ON_ONCE(xa_load(&gmem->bindings, index) != slot)) {
+> +		fput(file);
+> +		return -EIO;
+> +	}
+> +
+> +	folio = kvm_gmem_get_folio(file_inode(file), index);
+> +	if (!folio) {
+> +		fput(file);
+> +		return -ENOMEM;
+> +	}
+> +
+> +	page = folio_file_page(folio, index);
+> +
+> +	*pfn = page_to_pfn(page);
+> +	*max_order = compound_order(compound_head(page));
 
-On Tue, Jul 25, 2023 at 09:47:14AM +0530, Anup Patel wrote:
-> On Mon, Jul 24, 2023 at 10:08?PM Conor Dooley <conor@kernel.org> wrote:
-> > On Mon, Jul 24, 2023 at 07:50:26PM +0530, Mayuresh Chitale wrote:
-> > > This series adds support to detect the Smstateen extension for both, the
-> > > host and the guest vcpu. It also adds senvcfg and sstateen0 to the ONE_REG
-> > > interface and the vcpu context save/restore.
-> >
-> > There's not really an explanation in this series of where Smstateen is
-> > needed, or why it is only implemented for KVM. The spec mentions that this
-> > also applies to separate user threads, as well as to guests running in a
-> > hypervisor. As your first patch will lead to smstateen being set in
-> > /proc/cpuinfo, it could reasonably be assumed that the kernel itself
-> > supports the extension. Why does only KVM, and not the kernel, require
-> > support for smstateen?
-> 
-> Here's the motivation behind Smstateen from the spec:
-> "The implementation of optional RISC-V extensions has the potential to open
-> covert channels between separate user threads, or between separate guest
-> OSes running under a hypervisor. The problem occurs when an extension
-> adds processor state---usually explicit registers, but possibly other forms of
-> state---that the main OS or hypervisor is unaware of (and hence won?t
-> context-switch) but that can be modified/written by one user thread or
-> guest OS and perceived/examined/read by another."
+Maybe better to check if caller provided a buffer to get the max_order:
+if (max_order)
+	*max_order = compound_order(compound_head(page));
 
-This much I gathered from my (brief) reading of the spec.
-
-> Based on the above, Ssaia extension related CSRs need to be explicitly
-> enabled for HS-mode by M-mode (which OpenSBI already does) and
-> for VS-mode by HS-mode (which this series adds for KVM RISC-V).
-
-Ah right. Reading back through the patches, in [4/7] I see "Configure
-hstateen0 register so that the AIA state and envcfg are accessible to
-the vcpus". I would ask that, at least, [1/7] is updated to provide this
-motivation & the rationale for why only KVM needs to care. The
-motivation for the work should appear in the patchset somewhere, and
-probably in the cover too.
-
-> Currently, there are no new extensions addings CSRs for user-space
-> so RISC-V kernel does not need to set up sstateenX CSRs for processes
-> or tasks but in the future RISC-V kernel might touch sstateenX CSRs.
-
-Right, that is what I figured was going on, ignoring it for now, in the
-hopes that we remember to deal with it before some userspace visible
-side channel shows up.
-
-Dumb question maybe, but I find this to be quite -ENOPARSE:
-> Bit 0 of these registers is not custom state itself; it is a standard field of a standard CSR, either mstateen0,
-> hstateen0, or sstateen0. The requirements that non-standard extensions must meet to be conforming are not
-> relaxed due solely to changes in the value of this bit. In particular, if software sets this bit but does not execute
-> any custom instructions or access any custom state, the software must continue to execute as specified by all
-> relevant RISC-V standards, or the hardware is not standard-conforming.
-Does this mean that bit 0 of the CSRs mentioned in the quote controls all
-non-standard extensions at the respective privilege level? If so, does
-that not make the "ignore that we will now report the presence of this
-extension" approach flimsier, since we have little visibility into what
-may exist on that front?
-
-Granted, it is not as if delaying this patchset would benefit anyone in
-that regard, since those attempting to exploit the side channel know that
-the side channel exists, whether the kernel reports having sstateen or
-not. This probably just boils down to /proc/cpuinfo being a terrible
-interface for detecting extension support in the kernel.
-I've got some other comments about it that came up on IRC yesterday, so
-I'll go complain about it elsewhere :)
-
-Thanks,
-Conor.
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 228 bytes
-Desc: not available
-URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20230725/61a278c4/attachment.sig>
+This is what the previous version did (restrictedmem_get_page),
+so that callers who only want to get a pfn don't need to define
+an unused "order" param.
