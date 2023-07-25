@@ -1,218 +1,95 @@
-From: Raghavendra Rao Ananta <rananta@google.com>
-Date: Tue, 25 Jul 2023 10:23:29 -0700
-Subject: [PATCH v7 12/12] KVM: arm64: Use TLBI range-based intructions for unmap
-In-Reply-To: <7ea9e7a0-508d-0f00-09ae-ae468f111437@redhat.com>
-References: <20230722022251.3446223-1-rananta@google.com> <20230722022251.3446223-13-rananta@google.com>
- <0841aca6-2824-6a1b-a568-119f8bd220de@redhat.com> <CAJHc60znT5ThqKE3TgTW-0Us3oNv8+KF=81TSK0PbG3tTyJLFQ@mail.gmail.com>
- <7ea9e7a0-508d-0f00-09ae-ae468f111437@redhat.com>
-Message-ID: <CAJHc60xaygC8tX8yFnoFM9YqWg8iE6r5d+kugGwO5KZxDtG3rQ@mail.gmail.com>
+From: Sean Christopherson <seanjc@google.com>
+Date: Tue, 25 Jul 2023 11:05:29 -0700
+Subject: [RFC PATCH v11 01/29] KVM: Wrap kvm_gfn_range.pte in a per-action union
+In-Reply-To: <ZLphxpSTL9Fpn1ye@yilunxu-OptiPlex-7050>
+References: <20230718234512.1690985-1-seanjc@google.com> <20230718234512.1690985-2-seanjc@google.com>
+ <ZLolA2U83tP75Qdd@yzhao56-desk.sh.intel.com> <ZLphxpSTL9Fpn1ye@yilunxu-OptiPlex-7050>
+Message-ID: <ZMAO6bhan9l6ybQM@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Shaoqin,
+On Fri, Jul 21, 2023, Xu Yilun wrote:
+> On 2023-07-21 at 14:26:11 +0800, Yan Zhao wrote:
+> > On Tue, Jul 18, 2023 at 04:44:44PM -0700, Sean Christopherson wrote:
+> > 
+> > May I know why KVM now needs to register to callback .change_pte()?
+> 
+> I can see the original purpose is to "setting a pte in the shadow page
+> table directly, instead of flushing the shadow page table entry and then
+> getting vmexit to set it"[1].
+> 
+> IIUC, KVM is expected to directly make the new pte present for new
+> pages in this callback, like for COW.
 
-On Mon, Jul 24, 2023 at 7:32?PM Shaoqin Huang <shahuang@redhat.com> wrote:
->
->
->
-> On 7/25/23 00:47, Raghavendra Rao Ananta wrote:
-> > On Mon, Jul 24, 2023 at 2:35?AM Shaoqin Huang <shahuang@redhat.com> wrote:
-> >>
-> >> Hi Raghavendra,
-> >>
-> >> On 7/22/23 10:22, Raghavendra Rao Ananta wrote:
-> >>> The current implementation of the stage-2 unmap walker traverses
-> >>> the given range and, as a part of break-before-make, performs
-> >>> TLB invalidations with a DSB for every PTE. A multitude of this
-> >>> combination could cause a performance bottleneck on some systems.
-> >>>
-> >>> Hence, if the system supports FEAT_TLBIRANGE, defer the TLB
-> >>> invalidations until the entire walk is finished, and then
-> >>> use range-based instructions to invalidate the TLBs in one go.
-> >>> Condition deferred TLB invalidation on the system supporting FWB,
-> >>> as the optimization is entirely pointless when the unmap walker
-> >>> needs to perform CMOs.
-> >>>
-> >>> Rename stage2_put_pte() to stage2_unmap_put_pte() as the function
-> >>> now serves the stage-2 unmap walker specifically, rather than
-> >>> acting generic.
-> >>>
-> >>> Signed-off-by: Raghavendra Rao Ananta <rananta@google.com>
-> >>> ---
-> >>>    arch/arm64/kvm/hyp/pgtable.c | 67 +++++++++++++++++++++++++++++++-----
-> >>>    1 file changed, 58 insertions(+), 9 deletions(-)
-> >>>
-> >>> diff --git a/arch/arm64/kvm/hyp/pgtable.c b/arch/arm64/kvm/hyp/pgtable.c
-> >>> index 5ef098af1736..cf88933a2ea0 100644
-> >>> --- a/arch/arm64/kvm/hyp/pgtable.c
-> >>> +++ b/arch/arm64/kvm/hyp/pgtable.c
-> >>> @@ -831,16 +831,54 @@ static void stage2_make_pte(const struct kvm_pgtable_visit_ctx *ctx, kvm_pte_t n
-> >>>        smp_store_release(ctx->ptep, new);
-> >>>    }
-> >>>
-> >>> -static void stage2_put_pte(const struct kvm_pgtable_visit_ctx *ctx, struct kvm_s2_mmu *mmu,
-> >>> -                        struct kvm_pgtable_mm_ops *mm_ops)
-> >>> +struct stage2_unmap_data {
-> >>> +     struct kvm_pgtable *pgt;
-> >>> +     bool defer_tlb_flush_init;
-> >>> +};
-> >>> +
-> >>> +static bool __stage2_unmap_defer_tlb_flush(struct kvm_pgtable *pgt)
-> >>> +{
-> >>> +     /*
-> >>> +      * If FEAT_TLBIRANGE is implemented, defer the individual
-> >>> +      * TLB invalidations until the entire walk is finished, and
-> >>> +      * then use the range-based TLBI instructions to do the
-> >>> +      * invalidations. Condition deferred TLB invalidation on the
-> >>> +      * system supporting FWB, as the optimization is entirely
-> >>> +      * pointless when the unmap walker needs to perform CMOs.
-> >>> +      */
-> >>> +     return system_supports_tlb_range() && stage2_has_fwb(pgt);
-> >>> +}
-> >>> +
-> >>> +static bool stage2_unmap_defer_tlb_flush(struct stage2_unmap_data *unmap_data)
-> >>> +{
-> >>> +     bool defer_tlb_flush = __stage2_unmap_defer_tlb_flush(unmap_data->pgt);
-> >>> +
-> >>> +     /*
-> >>> +      * Since __stage2_unmap_defer_tlb_flush() is based on alternative
-> >>> +      * patching and the TLBIs' operations behavior depend on this,
-> >>> +      * track if there's any change in the state during the unmap sequence.
-> >>> +      */
-> >>> +     WARN_ON(unmap_data->defer_tlb_flush_init != defer_tlb_flush);
-> >>> +     return defer_tlb_flush;
-> >>> +}
-> >>> +
-> >>> +static void stage2_unmap_put_pte(const struct kvm_pgtable_visit_ctx *ctx,
-> >>> +                             struct kvm_s2_mmu *mmu,
-> >>> +                             struct kvm_pgtable_mm_ops *mm_ops)
-> >>>    {
-> >>> +     struct stage2_unmap_data *unmap_data = ctx->arg;
-> >>> +
-> >>>        /*
-> >>> -      * Clear the existing PTE, and perform break-before-make with
-> >>> -      * TLB maintenance if it was valid.
-> >>> +      * Clear the existing PTE, and perform break-before-make if it was
-> >>> +      * valid. Depending on the system support, the TLB maintenance for
-> >>> +      * the same can be deferred until the entire unmap is completed.
-> >>>         */
-> >>>        if (kvm_pte_valid(ctx->old)) {
-> >>>                kvm_clear_pte(ctx->ptep);
-> >>> -             kvm_call_hyp(__kvm_tlb_flush_vmid_ipa, mmu, ctx->addr, ctx->level);
-> >>> +
-> >>> +             if (!stage2_unmap_defer_tlb_flush(unmap_data))
-> >> Why not directly check (unmap_data->defer_tlb_flush_init) here?
-> >>
-> > (Re-sending the reply as the previous one was formatted as HTML and
-> > was blocked by many lists)
-> >
-> > No particular reason per say, but I was just going with the logic of
-> > determining if we need to defer the flush and the WARN_ON() parts
-> > separate.
-> > Any advantage if we directly check in stage2_unmap_put_pte() that I
-> > missed or is this purely for readability?
->
-> Hi Raghavendra,
->
-> I just wondering if before the stage2 walk, we want to defer the tlb
-> flush, but if when walk the stage2, the stage2_unmap_defer_tlb_flush()
-> trigger the WARN_ON() and return don't defer the tlb flush, it will
-> flush the ctx->addr's tlb. But before the WARN_ON() triggered, these tlb
-> will not be flushed, since when walk stage2 done in the
-> kvm_pgtable_stage2_unmap(), the stage2_unmap_defer_tlb_flush() still
-> trigger the WARN_ON() and don't use the tlb range-based flush. Thus some
-> of the tlb are not flushed.
->
-Excellent point!
-> If we directly check the (unmap_data->defer_tlb_flush_init), this isn't
-> change during walking the stage2, so the WARN_ON() should only trigger
-> in kvm_pgtable_stage2_unmap()->stage2_unmap_defer_tlb_flush().
->
-> I'm not sure if it's right since I just think once we set up use the
-> TLBI range-based flush, the result of the
-> __stage2_unmap_defer_tlb_flush() shouldn't change. Otherwise there must
-> have some stale TLB entry.
->
-One solution that I can think of is, if the code triggers the
-WARN_ON(), we flush the entire VM's TLB using
-kvm_call_hyp(__kvm_tlb_flush_vmid) after the entire walk is finished.
-In this special/rare situation, it'll be a little expensive, but we
-will at least be correct, leaving no stale TLBs behind. WDYT?
+Yes.
 
-Thank you.
-Raghavendra
-> Thanks,
-> Shaoqin
->
-> >
-> >>> +                     kvm_call_hyp(__kvm_tlb_flush_vmid_ipa, mmu,
-> >>> +                                     ctx->addr, ctx->level);
-> >> Small indent hint. The ctx->addr can align with __kvm_tlb_flush_vmid_ipa.
-> >>
-> > Ah, yes. I'll adjust this if I send out a v8.
-> >
-> > Thank you.
-> > Raghavendra
-> >> Thanks,
-> >> Shaoqin
-> >>>        }
-> >>>
-> >>>        mm_ops->put_page(ctx->ptep);
-> >>> @@ -1070,7 +1108,8 @@ int kvm_pgtable_stage2_set_owner(struct kvm_pgtable *pgt, u64 addr, u64 size,
-> >>>    static int stage2_unmap_walker(const struct kvm_pgtable_visit_ctx *ctx,
-> >>>                               enum kvm_pgtable_walk_flags visit)
-> >>>    {
-> >>> -     struct kvm_pgtable *pgt = ctx->arg;
-> >>> +     struct stage2_unmap_data *unmap_data = ctx->arg;
-> >>> +     struct kvm_pgtable *pgt = unmap_data->pgt;
-> >>>        struct kvm_s2_mmu *mmu = pgt->mmu;
-> >>>        struct kvm_pgtable_mm_ops *mm_ops = ctx->mm_ops;
-> >>>        kvm_pte_t *childp = NULL;
-> >>> @@ -1098,7 +1137,7 @@ static int stage2_unmap_walker(const struct kvm_pgtable_visit_ctx *ctx,
-> >>>         * block entry and rely on the remaining portions being faulted
-> >>>         * back lazily.
-> >>>         */
-> >>> -     stage2_put_pte(ctx, mmu, mm_ops);
-> >>> +     stage2_unmap_put_pte(ctx, mmu, mm_ops);
-> >>>
-> >>>        if (need_flush && mm_ops->dcache_clean_inval_poc)
-> >>>                mm_ops->dcache_clean_inval_poc(kvm_pte_follow(ctx->old, mm_ops),
-> >>> @@ -1112,13 +1151,23 @@ static int stage2_unmap_walker(const struct kvm_pgtable_visit_ctx *ctx,
-> >>>
-> >>>    int kvm_pgtable_stage2_unmap(struct kvm_pgtable *pgt, u64 addr, u64 size)
-> >>>    {
-> >>> +     int ret;
-> >>> +     struct stage2_unmap_data unmap_data = {
-> >>> +             .pgt = pgt,
-> >>> +             .defer_tlb_flush_init = __stage2_unmap_defer_tlb_flush(pgt),
-> >>> +     };
-> >>>        struct kvm_pgtable_walker walker = {
-> >>>                .cb     = stage2_unmap_walker,
-> >>> -             .arg    = pgt,
-> >>> +             .arg    = &unmap_data,
-> >>>                .flags  = KVM_PGTABLE_WALK_LEAF | KVM_PGTABLE_WALK_TABLE_POST,
-> >>>        };
-> >>>
-> >>> -     return kvm_pgtable_walk(pgt, addr, size, &walker);
-> >>> +     ret = kvm_pgtable_walk(pgt, addr, size, &walker);
-> >>> +     if (stage2_unmap_defer_tlb_flush(&unmap_data))
-> >>> +             /* Perform the deferred TLB invalidations */
-> >>> +             kvm_tlb_flush_vmid_range(pgt->mmu, addr, size);
-> >>> +
-> >>> +     return ret;
-> >>>    }
-> >>>
-> >>>    struct stage2_attr_data {
-> >>
-> >> --
-> >> Shaoqin
-> >>
-> >
->
-> --
-> Shaoqin
->
+> > As also commented in kvm_mmu_notifier_change_pte(), .change_pte() must be
+> > surrounded by .invalidate_range_{start,end}().
+> > 
+> > While kvm_mmu_notifier_invalidate_range_start() has called kvm_unmap_gfn_range()
+> > to zap all leaf SPTEs, and page fault path will not install new SPTEs
+> > successfully before kvm_mmu_notifier_invalidate_range_end(),
+> > kvm_set_spte_gfn() should not be able to find any shadow present leaf entries to
+> > update PFN.
+> 
+> I also failed to figure out how the kvm_set_spte_gfn() could pass
+> several !is_shadow_present_pte(iter.old_spte) check then write the new
+> pte.
+
+It can't.  .change_pte() has been dead code on x86 for 10+ years at this point,
+and if my assessment from a few years back still holds true, it's dead code on
+all architectures.
+
+The only reason I haven't formally proposed dropping the hook is that I don't want
+to risk the patch backfiring, i.e. I don't want to prompt someone to care enough
+to try and fix it.
+
+commit c13fda237f08a388ba8a0849785045944bf39834
+Author: Sean Christopherson <seanjc@google.com>
+Date:   Fri Apr 2 02:56:49 2021 +0200
+
+    KVM: Assert that notifier count is elevated in .change_pte()
+    
+    In KVM's .change_pte() notification callback, replace the notifier
+    sequence bump with a WARN_ON assertion that the notifier count is
+    elevated.  An elevated count provides stricter protections than bumping
+    the sequence, and the sequence is guarnateed to be bumped before the
+    count hits zero.
+    
+    When .change_pte() was added by commit 828502d30073 ("ksm: add
+    mmu_notifier set_pte_at_notify()"), bumping the sequence was necessary
+    as .change_pte() would be invoked without any surrounding notifications.
+    
+    However, since commit 6bdb913f0a70 ("mm: wrap calls to set_pte_at_notify
+    with invalidate_range_start and invalidate_range_end"), all calls to
+    .change_pte() are guaranteed to be surrounded by start() and end(), and
+    so are guaranteed to run with an elevated notifier count.
+    
+    Note, wrapping .change_pte() with .invalidate_range_{start,end}() is a
+    bug of sorts, as invalidating the secondary MMU's (KVM's) PTE defeats
+    the purpose of .change_pte().  Every arch's kvm_set_spte_hva() assumes
+    .change_pte() is called when the relevant SPTE is present in KVM's MMU,
+    as the original goal was to accelerate Kernel Samepage Merging (KSM) by
+    updating KVM's SPTEs without requiring a VM-Exit (due to invalidating
+    the SPTE).  I.e. it means that .change_pte() is effectively dead code
+    on _all_ architectures.
+    
+    x86 and MIPS are clearcut nops if the old SPTE is not-present, and that
+    is guaranteed due to the prior invalidation.  PPC simply unmaps the SPTE,
+    which again should be a nop due to the invalidation.  arm64 is a bit
+    murky, but it's also likely a nop because kvm_pgtable_stage2_map() is
+    called without a cache pointer, which means it will map an entry if and
+    only if an existing PTE was found.
+    
+    For now, take advantage of the bug to simplify future consolidation of
+    KVMs's MMU notifier code.   Doing so will not greatly complicate fixing
+    .change_pte(), assuming it's even worth fixing.  .change_pte() has been
+    broken for 8+ years and no one has complained.  Even if there are
+    KSM+KVM users that care deeply about its performance, the benefits of
+    avoiding VM-Exits via .change_pte() need to be reevaluated to justify
+    the added complexity and testing burden.  Ripping out .change_pte()
+    entirely would be a lot easier.
 
