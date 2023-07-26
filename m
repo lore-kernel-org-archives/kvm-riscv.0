@@ -1,95 +1,114 @@
-From: Sean Christopherson <seanjc@google.com>
-Date: Tue, 25 Jul 2023 11:05:29 -0700
-Subject: [RFC PATCH v11 01/29] KVM: Wrap kvm_gfn_range.pte in a per-action union
-In-Reply-To: <ZLphxpSTL9Fpn1ye@yilunxu-OptiPlex-7050>
-References: <20230718234512.1690985-1-seanjc@google.com> <20230718234512.1690985-2-seanjc@google.com>
- <ZLolA2U83tP75Qdd@yzhao56-desk.sh.intel.com> <ZLphxpSTL9Fpn1ye@yilunxu-OptiPlex-7050>
-Message-ID: <ZMAO6bhan9l6ybQM@google.com>
+From: Haibo Xu <xiaobo55x@gmail.com>
+Date: Wed, 26 Jul 2023 09:17:18 +0800
+Subject: [PATCH v6 06/13] KVM: arm64: selftests: Split get-reg-list test code
+In-Reply-To: <20230725-f5cf47c63abd8673d22b4936@orel>
+References: <cover.1690273969.git.haibo1.xu@intel.com> <1f25f27d1316bc91e1e31cd3d50a1d20f696759a.1690273969.git.haibo1.xu@intel.com>
+ <CAJve8okJ-HYpsOrqH4Zvn7OBtwXWa4JumC+ZsMfHKB-deVYd2A@mail.gmail.com> <20230725-f5cf47c63abd8673d22b4936@orel>
+Message-ID: <CAJve8ony79xS2qPtdex+tSSEP2uTebzBRExUob9kOiwxpC7PEg@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Jul 21, 2023, Xu Yilun wrote:
-> On 2023-07-21 at 14:26:11 +0800, Yan Zhao wrote:
-> > On Tue, Jul 18, 2023 at 04:44:44PM -0700, Sean Christopherson wrote:
-> > 
-> > May I know why KVM now needs to register to callback .change_pte()?
-> 
-> I can see the original purpose is to "setting a pte in the shadow page
-> table directly, instead of flushing the shadow page table entry and then
-> getting vmexit to set it"[1].
-> 
-> IIUC, KVM is expected to directly make the new pte present for new
-> pages in this callback, like for COW.
+On Tue, Jul 25, 2023 at 8:44?PM Andrew Jones <ajones@ventanamicro.com> wrote:
+>
+> On Tue, Jul 25, 2023 at 04:50:36PM +0800, Haibo Xu wrote:
+> > On Tue, Jul 25, 2023 at 4:37?PM Haibo Xu <haibo1.xu@intel.com> wrote:
+> > >
+> > > From: Andrew Jones <ajones@ventanamicro.com>
+> > >
+> > > Split the arch-neutral test code out of aarch64/get-reg-list.c into
+> > > get-reg-list.c. To do this we invent a new make variable
+> > > $(SPLIT_TESTS) which expects common parts to be in the KVM selftests
+> > > root and the counterparts to have the same name, but be in
+> > > $(ARCH_DIR).
+> > >
+> > > There's still some work to be done to de-aarch64 the common
+> > > get-reg-list.c, but we leave that to the next patch to avoid
+> > > modifying too much code while moving it.
+> > >
+> > > Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
+> > > Signed-off-by: Haibo Xu <haibo1.xu@intel.com>
+> > > ---
+> > >  tools/testing/selftests/kvm/Makefile          |  12 +-
+> > >  .../selftests/kvm/aarch64/get-reg-list.c      | 367 +----------------
+> > >  tools/testing/selftests/kvm/get-reg-list.c    | 377 ++++++++++++++++++
+> > >  3 files changed, 398 insertions(+), 358 deletions(-)
+> > >  create mode 100644 tools/testing/selftests/kvm/get-reg-list.c
+> > >
+> > > diff --git a/tools/testing/selftests/kvm/Makefile b/tools/testing/selftests/kvm/Makefile
+> > > index c692cc86e7da..95f180e711d5 100644
+> > > --- a/tools/testing/selftests/kvm/Makefile
+> > > +++ b/tools/testing/selftests/kvm/Makefile
+> > > @@ -140,7 +140,6 @@ TEST_GEN_PROGS_EXTENDED_x86_64 += x86_64/nx_huge_pages_test
+> > >  TEST_GEN_PROGS_aarch64 += aarch64/aarch32_id_regs
+> > >  TEST_GEN_PROGS_aarch64 += aarch64/arch_timer
+> > >  TEST_GEN_PROGS_aarch64 += aarch64/debug-exceptions
+> > > -TEST_GEN_PROGS_aarch64 += aarch64/get-reg-list
+> > >  TEST_GEN_PROGS_aarch64 += aarch64/hypercalls
+> > >  TEST_GEN_PROGS_aarch64 += aarch64/page_fault_test
+> > >  TEST_GEN_PROGS_aarch64 += aarch64/psci_test
+> > > @@ -152,6 +151,7 @@ TEST_GEN_PROGS_aarch64 += access_tracking_perf_test
+> > >  TEST_GEN_PROGS_aarch64 += demand_paging_test
+> > >  TEST_GEN_PROGS_aarch64 += dirty_log_test
+> > >  TEST_GEN_PROGS_aarch64 += dirty_log_perf_test
+> > > +TEST_GEN_PROGS_aarch64 += get-reg-list
+> > >  TEST_GEN_PROGS_aarch64 += kvm_create_max_vcpus
+> > >  TEST_GEN_PROGS_aarch64 += kvm_page_table_test
+> > >  TEST_GEN_PROGS_aarch64 += memslot_modification_stress_test
+> > > @@ -181,6 +181,8 @@ TEST_GEN_PROGS_riscv += kvm_page_table_test
+> > >  TEST_GEN_PROGS_riscv += set_memory_region_test
+> > >  TEST_GEN_PROGS_riscv += kvm_binary_stats_test
+> > >
+> > > +SPLIT_TESTS += get-reg-list
+> > > +
+> > >  TEST_PROGS += $(TEST_PROGS_$(ARCH_DIR))
+> > >  TEST_GEN_PROGS += $(TEST_GEN_PROGS_$(ARCH_DIR))
+> > >  TEST_GEN_PROGS_EXTENDED += $(TEST_GEN_PROGS_EXTENDED_$(ARCH_DIR))
+> > > @@ -228,11 +230,14 @@ LIBKVM_C_OBJ := $(patsubst %.c, $(OUTPUT)/%.o, $(LIBKVM_C))
+> > >  LIBKVM_S_OBJ := $(patsubst %.S, $(OUTPUT)/%.o, $(LIBKVM_S))
+> > >  LIBKVM_STRING_OBJ := $(patsubst %.c, $(OUTPUT)/%.o, $(LIBKVM_STRING))
+> > >  LIBKVM_OBJS = $(LIBKVM_C_OBJ) $(LIBKVM_S_OBJ) $(LIBKVM_STRING_OBJ)
+> > > +SPLIT_TESTS_TARGETS := $(patsubst %, $(OUTPUT)/%, $(SPLIT_TESTS))
+> > > +SPLIT_TESTS_OBJS := $(patsubst %, $(ARCH_DIR)/%.o, $(SPLIT_TESTS))
+> > >
+> > >  TEST_GEN_OBJ = $(patsubst %, %.o, $(TEST_GEN_PROGS))
+> > >  TEST_GEN_OBJ += $(patsubst %, %.o, $(TEST_GEN_PROGS_EXTENDED))
+> > >  TEST_DEP_FILES = $(patsubst %.o, %.d, $(TEST_GEN_OBJ))
+> > >  TEST_DEP_FILES += $(patsubst %.o, %.d, $(LIBKVM_OBJS))
+> > > +TEST_DEP_FILES += $(patsubst %.o, %.d, $(SPLIT_TESTS_OBJS))
+> > >  -include $(TEST_DEP_FILES)
+> > >
+> > >  $(TEST_GEN_PROGS) $(TEST_GEN_PROGS_EXTENDED): %: %.o
+> > > @@ -240,7 +245,10 @@ $(TEST_GEN_PROGS) $(TEST_GEN_PROGS_EXTENDED): %: %.o
+> > >  $(TEST_GEN_OBJ): $(OUTPUT)/%.o: %.c
+> > >         $(CC) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c $< -o $@
+> > >
+> > > -EXTRA_CLEAN += $(LIBKVM_OBJS) $(TEST_DEP_FILES) $(TEST_GEN_OBJ) cscope.*
+> > > +$(SPLIT_TESTS_TARGETS): %: %.o $(SPLIT_TESTS_OBJS)
+> > > +       $(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(TARGET_ARCH) $^ $(LDLIBS) -o $@
+> > > +
+> > > +EXTRA_CLEAN += $(LIBKVM_OBJS) $(TEST_DEP_FILES) $(TEST_GEN_OBJ) $(SPLIT_TESTS_OBJS) cscope.*
+> > >
+> > >  x := $(shell mkdir -p $(sort $(dir $(LIBKVM_C_OBJ) $(LIBKVM_S_OBJ))))
+> > >  $(LIBKVM_C_OBJ): $(OUTPUT)/%.o: %.c
+> >
+> > Hi @Andrew Jones,
+> >
+> > After rebasing to v6.5-rc3, some changes are needed to the SPLIT_TESTS
+> > target, or the make would fail.
+> > Please help have a look.
+> >
+>
+> I took a look and then remembered why I hate looking at Makefiles... I
+> guess it's fine, but it's a pity we need to repeat the $(CC) line.
+>
 
-Yes.
+Yes, I can't figure out a way to avoid the repeat $(CC) line.
+Let's see whether there is any suggestion from the community that can
+optimize this.
 
-> > As also commented in kvm_mmu_notifier_change_pte(), .change_pte() must be
-> > surrounded by .invalidate_range_{start,end}().
-> > 
-> > While kvm_mmu_notifier_invalidate_range_start() has called kvm_unmap_gfn_range()
-> > to zap all leaf SPTEs, and page fault path will not install new SPTEs
-> > successfully before kvm_mmu_notifier_invalidate_range_end(),
-> > kvm_set_spte_gfn() should not be able to find any shadow present leaf entries to
-> > update PFN.
-> 
-> I also failed to figure out how the kvm_set_spte_gfn() could pass
-> several !is_shadow_present_pte(iter.old_spte) check then write the new
-> pte.
-
-It can't.  .change_pte() has been dead code on x86 for 10+ years at this point,
-and if my assessment from a few years back still holds true, it's dead code on
-all architectures.
-
-The only reason I haven't formally proposed dropping the hook is that I don't want
-to risk the patch backfiring, i.e. I don't want to prompt someone to care enough
-to try and fix it.
-
-commit c13fda237f08a388ba8a0849785045944bf39834
-Author: Sean Christopherson <seanjc@google.com>
-Date:   Fri Apr 2 02:56:49 2021 +0200
-
-    KVM: Assert that notifier count is elevated in .change_pte()
-    
-    In KVM's .change_pte() notification callback, replace the notifier
-    sequence bump with a WARN_ON assertion that the notifier count is
-    elevated.  An elevated count provides stricter protections than bumping
-    the sequence, and the sequence is guarnateed to be bumped before the
-    count hits zero.
-    
-    When .change_pte() was added by commit 828502d30073 ("ksm: add
-    mmu_notifier set_pte_at_notify()"), bumping the sequence was necessary
-    as .change_pte() would be invoked without any surrounding notifications.
-    
-    However, since commit 6bdb913f0a70 ("mm: wrap calls to set_pte_at_notify
-    with invalidate_range_start and invalidate_range_end"), all calls to
-    .change_pte() are guaranteed to be surrounded by start() and end(), and
-    so are guaranteed to run with an elevated notifier count.
-    
-    Note, wrapping .change_pte() with .invalidate_range_{start,end}() is a
-    bug of sorts, as invalidating the secondary MMU's (KVM's) PTE defeats
-    the purpose of .change_pte().  Every arch's kvm_set_spte_hva() assumes
-    .change_pte() is called when the relevant SPTE is present in KVM's MMU,
-    as the original goal was to accelerate Kernel Samepage Merging (KSM) by
-    updating KVM's SPTEs without requiring a VM-Exit (due to invalidating
-    the SPTE).  I.e. it means that .change_pte() is effectively dead code
-    on _all_ architectures.
-    
-    x86 and MIPS are clearcut nops if the old SPTE is not-present, and that
-    is guaranteed due to the prior invalidation.  PPC simply unmaps the SPTE,
-    which again should be a nop due to the invalidation.  arm64 is a bit
-    murky, but it's also likely a nop because kvm_pgtable_stage2_map() is
-    called without a cache pointer, which means it will map an entry if and
-    only if an existing PTE was found.
-    
-    For now, take advantage of the bug to simplify future consolidation of
-    KVMs's MMU notifier code.   Doing so will not greatly complicate fixing
-    .change_pte(), assuming it's even worth fixing.  .change_pte() has been
-    broken for 8+ years and no one has complained.  Even if there are
-    KSM+KVM users that care deeply about its performance, the benefits of
-    avoiding VM-Exits via .change_pte() need to be reevaluated to justify
-    the added complexity and testing burden.  Ripping out .change_pte()
-    entirely would be a lot easier.
+> Thanks,
+> drew
 
