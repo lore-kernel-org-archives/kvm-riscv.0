@@ -1,72 +1,60 @@
-From: Kirill A . Shutemov <kirill.shutemov@linux.intel.com>
-Date: Wed, 26 Jul 2023 14:36:17 +0300
-Subject: [RFC PATCH v11 10/29] mm: Add AS_UNMOVABLE to mark mapping as
- completely unmovable
-In-Reply-To: <ZL/Fa4W2Ne9EVxoh@casper.infradead.org>
-References: <20230718234512.1690985-1-seanjc@google.com>
- <20230718234512.1690985-11-seanjc@google.com>
- <20230725102403.xywjqlhyqkrzjok6@box.shutemov.name>
- <ZL/Fa4W2Ne9EVxoh@casper.infradead.org>
-Message-ID: <20230726113617.432nuovswn6odcmx@box>
+From: Sean Christopherson <seanjc@google.com>
+Date: Wed, 26 Jul 2023 07:24:59 -0700
+Subject: [RFC PATCH v11 00/29] KVM: guest_memfd() and per-page attributes
+In-Reply-To: <2f98a32c-bd3d-4890-b757-4d2f67a3b1a7@amd.com>
+References: <20230718234512.1690985-1-seanjc@google.com> <110f1aa0-7fcd-1287-701a-89c2203f0ac2@amd.com>
+ <ZL6uMk/8UeuGj8CP@google.com> <2f98a32c-bd3d-4890-b757-4d2f67a3b1a7@amd.com>
+Message-ID: <ZMEsuyqHhp1DAVdR@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Jul 25, 2023 at 01:51:55PM +0100, Matthew Wilcox wrote:
-> On Tue, Jul 25, 2023 at 01:24:03PM +0300, Kirill A . Shutemov wrote:
-> > On Tue, Jul 18, 2023 at 04:44:53PM -0700, Sean Christopherson wrote:
-> > > diff --git a/mm/compaction.c b/mm/compaction.c
-> > > index dbc9f86b1934..a3d2b132df52 100644
-> > > --- a/mm/compaction.c
-> > > +++ b/mm/compaction.c
-> > > @@ -1047,6 +1047,10 @@ isolate_migratepages_block(struct compact_control *cc, unsigned long low_pfn,
-> > >  		if (!mapping && (folio_ref_count(folio) - 1) > folio_mapcount(folio))
-> > >  			goto isolate_fail_put;
-> > >  
-> > > +		/* The mapping truly isn't movable. */
-> > > +		if (mapping && mapping_unmovable(mapping))
-> > > +			goto isolate_fail_put;
-> > > +
+On Wed, Jul 26, 2023, Nikunj A. Dadhania wrote:
+> Hi Sean,
+> 
+> On 7/24/2023 10:30 PM, Sean Christopherson wrote:
+> >>   Starting an SNP guest with 40G memory with memory interleave between
+> >>   Node2 and Node3
+> >>
+> >>   $ numactl -i 2,3 ./bootg_snp.sh
+> >>
+> >>     PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND
+> >>  242179 root      20   0   40.4g  99580  51676 S  78.0   0.0   0:56.58 qemu-system-x86
+> >>
+> >>   -> Incorrect process resident memory and shared memory is reported
 > > 
-> > I doubt that it is safe to dereference mapping here. I believe the folio
-> > can be truncated from under us and the mapping freed with the inode.
+> > I don't know that I would call these "incorrect".  Shared memory definitely is
+> > correct, because by definition guest_memfd isn't shared.  RSS is less clear cut;
+> > gmem memory is resident in RAM, but if we show gmem in RSS then we'll end up with
+> > scenarios where RSS > VIRT, which will be quite confusing for unaware users (I'm
+> > assuming the 40g of VIRT here comes from QEMU mapping the shared half of gmem
+> > memslots).
+> 
+> I am not sure why will RSS exceed the VIRT, it should be at max 40G (assuming all the
+> memory is private)
+
+And also assuming that (a) userspace mmap()'d the shared side of things 1:1 with
+private memory and (b) that the shared mappings have not been populated.   Those
+assumptions will mostly probably hold true for QEMU, but kernel correctness
+shouldn't depend on assumptions about one specific userspace application.
+
+> >>   /proc/<qemu pid>/smaps
+> >>   7f528be00000-7f5c8be00000 rw-p 00000000 00:01 26629                      /memfd:memory-backend-memfd-shared (deleted)
+> >>   7f5c90200000-7f5c90220000 rw-s 00000000 00:01 44033                      /memfd:rom-backend-memfd-shared (deleted)
+> >>   7f5c90400000-7f5c90420000 rw-s 00000000 00:01 44032                      /memfd:rom-backend-memfd-shared (deleted)
+> >>   7f5c90800000-7f5c90b7c000 rw-s 00000000 00:01 1025                       /memfd:rom-backend-memfd-shared (deleted)
 > > 
-> > The folio has to be locked to dereference mapping safely (given that the
-> > mapping is still tied to the folio).
-> 
-> There's even a comment to that effect later on in the function:
-> 
->                         /*
->                          * Only pages without mappings or that have a
->                          * ->migrate_folio callback are possible to migrate
->                          * without blocking. However, we can be racing with
->                          * truncation so it's necessary to lock the page
->                          * to stabilise the mapping as truncation holds
->                          * the page lock until after the page is removed
->                          * from the page cache.
->                          */
-> 
-> (that could be reworded to make it clear how dangerous dereferencing
-> ->mapping is without the lock ... and it does need to be changed to say
-> "folio lock" instead of "page lock", so ...)
-> 
-> How does this look?
-> 
->                         /*
->                          * Only folios without mappings or that have
->                          * a ->migrate_folio callback are possible to
->                          * migrate without blocking. However, we can
->                          * be racing with truncation, which can free
->                          * the mapping.  Truncation holds the folio lock
->                          * until after the folio is removed from the page
->                          * cache so holding it ourselves is sufficient.
->                          */
-> 
+> > This is all expected, and IMO correct.  There are no userspace mappings, and so
+> > not accounting anything is working as intended.
+> Doesn't sound that correct, if 10 SNP guests are running each using 10GB, how
+> would we know who is using 100GB of memory?
 
-Looks good to me.
+It's correct with respect to what the interfaces show, which is how much memory
+is *mapped* into userspace.
 
--- 
-  Kiryl Shutsemau / Kirill A. Shutemov
+As I said (or at least tried to say) in my first reply, I am not against exposing
+memory usage to userspace via stats, only that it's not obvious to me that the
+existing VMA-based stats are the most appropriate way to surface this information.
 
