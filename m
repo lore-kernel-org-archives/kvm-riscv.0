@@ -1,157 +1,289 @@
 From: Haibo Xu <haibo1.xu@intel.com>
-Date: Thu, 27 Jul 2023 15:20:05 +0800
-Subject: [PATCH 1/4] tools: riscv: Add header file csr.h
+Date: Thu, 27 Jul 2023 15:20:06 +0800
+Subject: [PATCH 2/4] KVM: riscv: selftests: Add exception handling support
 In-Reply-To: <cover.1690364259.git.haibo1.xu@intel.com>
 References: <cover.1690364259.git.haibo1.xu@intel.com>
-Message-ID: <35ce2b9f7ca655eb3af13730b1ca9f05b518e08f.1690364259.git.haibo1.xu@intel.com>
+Message-ID: <7e9d2d5518375083f10c92a3d1acd98914f69fd8.1690364259.git.haibo1.xu@intel.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Borrow some of the csr definitions and operations from kernel's
-arch/riscv/include/asm/csr.h to tools/ for riscv.
+Add the infrastructure for exception handling in riscv selftests.
+Currently, the guest_unexp_trap handler was used by default, which
+aborts the test. Customized handlers can be enabled by calling
+vm_install_exception_handler(vector) or vm_install_interrupt_handler().
+
+The code is inspired from that of x86/arm64.
 
 Signed-off-by: Haibo Xu <haibo1.xu@intel.com>
 ---
- tools/arch/riscv/include/asm/csr.h | 127 +++++++++++++++++++++++++++++
- 1 file changed, 127 insertions(+)
- create mode 100644 tools/arch/riscv/include/asm/csr.h
+ tools/testing/selftests/kvm/Makefile          |   1 +
+ .../selftests/kvm/include/riscv/processor.h   |  49 +++++++++
+ .../selftests/kvm/lib/riscv/handlers.S        | 101 ++++++++++++++++++
+ .../selftests/kvm/lib/riscv/processor.c       |  57 ++++++++++
+ 4 files changed, 208 insertions(+)
+ create mode 100644 tools/testing/selftests/kvm/lib/riscv/handlers.S
 
-diff --git a/tools/arch/riscv/include/asm/csr.h b/tools/arch/riscv/include/asm/csr.h
+diff --git a/tools/testing/selftests/kvm/Makefile b/tools/testing/selftests/kvm/Makefile
+index c692cc86e7da..70f3a5ba991e 100644
+--- a/tools/testing/selftests/kvm/Makefile
++++ b/tools/testing/selftests/kvm/Makefile
+@@ -52,6 +52,7 @@ LIBKVM_s390x += lib/s390x/diag318_test_handler.c
+ LIBKVM_s390x += lib/s390x/processor.c
+ LIBKVM_s390x += lib/s390x/ucall.c
+ 
++LIBKVM_riscv += lib/riscv/handlers.S
+ LIBKVM_riscv += lib/riscv/processor.c
+ LIBKVM_riscv += lib/riscv/ucall.c
+ 
+diff --git a/tools/testing/selftests/kvm/include/riscv/processor.h b/tools/testing/selftests/kvm/include/riscv/processor.h
+index d00d213c3805..9ea6e7bedc61 100644
+--- a/tools/testing/selftests/kvm/include/riscv/processor.h
++++ b/tools/testing/selftests/kvm/include/riscv/processor.h
+@@ -9,6 +9,7 @@
+ 
+ #include "kvm_util.h"
+ #include <linux/stringify.h>
++#include <asm/csr.h>
+ 
+ static inline uint64_t __kvm_reg_id(uint64_t type, uint64_t idx,
+ 				    uint64_t  size)
+@@ -38,6 +39,54 @@ static inline uint64_t __kvm_reg_id(uint64_t type, uint64_t idx,
+ 					     KVM_REG_RISCV_TIMER_REG(name), \
+ 					     KVM_REG_SIZE_U64)
+ 
++struct ex_regs {
++	unsigned long ra;
++	unsigned long sp;
++	unsigned long gp;
++	unsigned long tp;
++	unsigned long t0;
++	unsigned long t1;
++	unsigned long t2;
++	unsigned long s0;
++	unsigned long s1;
++	unsigned long a0;
++	unsigned long a1;
++	unsigned long a2;
++	unsigned long a3;
++	unsigned long a4;
++	unsigned long a5;
++	unsigned long a6;
++	unsigned long a7;
++	unsigned long s2;
++	unsigned long s3;
++	unsigned long s4;
++	unsigned long s5;
++	unsigned long s6;
++	unsigned long s7;
++	unsigned long s8;
++	unsigned long s9;
++	unsigned long s10;
++	unsigned long s11;
++	unsigned long t3;
++	unsigned long t4;
++	unsigned long t5;
++	unsigned long t6;
++	unsigned long epc;
++	unsigned long status;
++	unsigned long cause;
++};
++
++#define VECTOR_NUM  2
++#define EC_NUM  32
++#define EC_MASK  (EC_NUM - 1)
++
++void vm_init_trap_vector_tables(struct kvm_vm *vm);
++void vcpu_init_trap_vector_tables(struct kvm_vcpu *vcpu);
++
++typedef void(*handler_fn)(struct ex_regs *);
++void vm_install_exception_handler(struct kvm_vm *vm, int ec, handler_fn handler);
++void vm_install_interrupt_handler(struct kvm_vm *vm, handler_fn handler);
++
+ /* L3 index Bit[47:39] */
+ #define PGTBL_L3_INDEX_MASK			0x0000FF8000000000ULL
+ #define PGTBL_L3_INDEX_SHIFT			39
+diff --git a/tools/testing/selftests/kvm/lib/riscv/handlers.S b/tools/testing/selftests/kvm/lib/riscv/handlers.S
 new file mode 100644
-index 000000000000..b437e6438216
+index 000000000000..ce0b1d5415b9
 --- /dev/null
-+++ b/tools/arch/riscv/include/asm/csr.h
-@@ -0,0 +1,127 @@
-+/* SPDX-License-Identifier: GPL-2.0-only */
++++ b/tools/testing/selftests/kvm/lib/riscv/handlers.S
+@@ -0,0 +1,101 @@
++// SPDX-License-Identifier: GPL-2.0 */
 +/*
-+ * Copyright (C) 2015 Regents of the University of California
-+ * Copyright (c) 2023, Intel Corporation.
++ * Copyright (c) 2023 Intel Corporation
 + */
 +
-+#ifndef _ASM_RISCV_CSR_H
-+#define _ASM_RISCV_CSR_H
++#include <asm/csr.h>
 +
-+#ifdef __ASSEMBLY__
-+#define __ASM_STR(x)    x
-+#else
-+#define __ASM_STR(x)    #x
-+#endif
++.macro save_context
++	addi sp, sp, (-8*34)
 +
-+/* Status register flags */
-+#define SR_SIE		_AC(0x00000002, UL) /* Supervisor Interrupt Enable */
-+#define SR_SPIE		_AC(0x00000020, UL) /* Previous Supervisor IE */
-+#define SR_SPP		_AC(0x00000100, UL) /* Previously Supervisor */
-+#define SR_SUM		_AC(0x00040000, UL) /* Supervisor User Memory Access */
++	sd x1, 0(sp)
++	sd x2, 8(sp)
++	sd x3, 16(sp)
++	sd x4, 24(sp)
++	sd x5, 32(sp)
++	sd x6, 40(sp)
++	sd x7, 48(sp)
++	sd x8, 56(sp)
++	sd x9, 64(sp)
++	sd x10, 72(sp)
++	sd x11, 80(sp)
++	sd x12, 88(sp)
++	sd x13, 96(sp)
++	sd x14, 104(sp)
++	sd x15, 112(sp)
++	sd x16, 120(sp)
++	sd x17, 128(sp)
++	sd x18, 136(sp)
++	sd x19, 144(sp)
++	sd x20, 152(sp)
++	sd x21, 160(sp)
++	sd x22, 168(sp)
++	sd x23, 176(sp)
++	sd x24, 184(sp)
++	sd x25, 192(sp)
++	sd x26, 200(sp)
++	sd x27, 208(sp)
++	sd x28, 216(sp)
++	sd x29, 224(sp)
++	sd x30, 232(sp)
++	sd x31, 240(sp)
 +
-+#define SR_FS		_AC(0x00006000, UL) /* Floating-point Status */
-+#define SR_FS_OFF	_AC(0x00000000, UL)
-+#define SR_FS_INITIAL	_AC(0x00002000, UL)
-+#define SR_FS_CLEAN	_AC(0x00004000, UL)
-+#define SR_FS_DIRTY	_AC(0x00006000, UL)
++	csrr s0, CSR_SEPC
++	csrr s1, CSR_SSTATUS
++	csrr s2, CSR_SCAUSE
++	sd s0, 248(sp)
++	sd s1, 256(sp)
++	sd s2, 264(sp)
++.endm
 +
-+#define SR_XS		_AC(0x00018000, UL) /* Extension Status */
-+#define SR_XS_OFF	_AC(0x00000000, UL)
-+#define SR_XS_INITIAL	_AC(0x00008000, UL)
-+#define SR_XS_CLEAN	_AC(0x00010000, UL)
-+#define SR_XS_DIRTY	_AC(0x00018000, UL)
++.balign 4
++.global exception_vectors
++exception_vectors:
++	save_context
++	move a0, sp
++	la ra, ret_from_exception
++	tail route_exception
 +
-+#define SR_SD		_AC(0x8000000000000000, UL) /* FS/XS dirty */
++.global ret_from_exception
++ret_from_exception:
++	ld s2, 264(sp)
++	ld s1, 256(sp)
++	ld s0, 248(sp)
++	csrw CSR_SCAUSE, s2
++	csrw CSR_SSTATUS, s1
++	csrw CSR_SEPC, s0
 +
-+#define SR_UXL		_AC(0x300000000, UL) /* XLEN mask for U-mode */
-+#define SR_UXL_32	_AC(0x100000000, UL) /* XLEN = 32 for U-mode */
-+#define SR_UXL_64	_AC(0x200000000, UL) /* XLEN = 64 for U-mode */
++	ld x31, 240(sp)
++	ld x30, 232(sp)
++	ld x29, 224(sp)
++	ld x28, 216(sp)
++	ld x27, 208(sp)
++	ld x26, 200(sp)
++	ld x25, 192(sp)
++	ld x24, 184(sp)
++	ld x23, 176(sp)
++	ld x22, 168(sp)
++	ld x21, 160(sp)
++	ld x20, 152(sp)
++	ld x19, 144(sp)
++	ld x18, 136(sp)
++	ld x17, 128(sp)
++	ld x16, 120(sp)
++	ld x15, 112(sp)
++	ld x14, 104(sp)
++	ld x13, 96(sp)
++	ld x12, 88(sp)
++	ld x11, 80(sp)
++	ld x10, 72(sp)
++	ld x9, 64(sp)
++	ld x8, 56(sp)
++	ld x7, 48(sp)
++	ld x6, 40(sp)
++	ld x5, 32(sp)
++	ld x4, 24(sp)
++	ld x3, 16(sp)
++	ld x2, 8(sp)
++	ld x1, 0(sp)
 +
-+/* Exception cause high bit - is an interrupt if set */
-+#define CAUSE_IRQ_FLAG		(_AC(1, UL) << (__riscv_xlen - 1))
++	addi sp, sp, (8*34)
++	sret
+diff --git a/tools/testing/selftests/kvm/lib/riscv/processor.c b/tools/testing/selftests/kvm/lib/riscv/processor.c
+index d146ca71e0c0..f1b0be58a5dc 100644
+--- a/tools/testing/selftests/kvm/lib/riscv/processor.c
++++ b/tools/testing/selftests/kvm/lib/riscv/processor.c
+@@ -13,6 +13,8 @@
+ 
+ #define DEFAULT_RISCV_GUEST_STACK_VADDR_MIN	0xac0000
+ 
++static vm_vaddr_t exception_handlers;
 +
-+/* Interrupt causes (minus the high bit) */
-+#define IRQ_S_SOFT		1
-+#define IRQ_S_TIMER		5
-+#define IRQ_S_EXT		9
+ static uint64_t page_align(struct kvm_vm *vm, uint64_t v)
+ {
+ 	return (v + vm->page_size) & ~(vm->page_size - 1);
+@@ -367,3 +369,58 @@ void vcpu_args_set(struct kvm_vcpu *vcpu, unsigned int num, ...)
+ void assert_on_unhandled_exception(struct kvm_vcpu *vcpu)
+ {
+ }
 +
-+/* Exception causes */
-+#define EXC_INST_MISALIGNED	0
-+#define EXC_INST_ACCESS		1
-+#define EXC_INST_ILLEGAL	2
-+#define EXC_BREAKPOINT		3
-+#define EXC_LOAD_ACCESS		5
-+#define EXC_STORE_ACCESS	7
-+#define EXC_SYSCALL		8
-+#define EXC_HYPERVISOR_SYSCALL	9
-+#define EXC_SUPERVISOR_SYSCALL	10
-+#define EXC_INST_PAGE_FAULT	12
-+#define EXC_LOAD_PAGE_FAULT	13
-+#define EXC_STORE_PAGE_FAULT	15
-+#define EXC_INST_GUEST_PAGE_FAULT	20
-+#define EXC_LOAD_GUEST_PAGE_FAULT	21
-+#define EXC_VIRTUAL_INST_FAULT		22
-+#define EXC_STORE_GUEST_PAGE_FAULT	23
++struct handlers {
++	handler_fn exception_handlers[VECTOR_NUM][EC_NUM];
++};
 +
-+/* symbolic CSR names: */
-+#define CSR_CYCLE		0xc00
-+#define CSR_TIME		0xc01
-+#define CSR_INSTRET		0xc02
++void route_exception(struct ex_regs *regs)
++{
++	struct handlers *handlers = (struct handlers *)exception_handlers;
++	int vector = 0, ec;
 +
-+#define CSR_SSTATUS		0x100
-+#define CSR_SIE			0x104
-+#define CSR_STVEC		0x105
-+#define CSR_SCOUNTEREN		0x106
-+#define CSR_SSCRATCH		0x140
-+#define CSR_SEPC		0x141
-+#define CSR_SCAUSE		0x142
-+#define CSR_STVAL		0x143
-+#define CSR_SIP			0x144
-+#define CSR_SATP		0x180
++	ec = regs->cause & ~CAUSE_IRQ_FLAG;
++	if (ec >= EC_NUM)
++		goto guest_unexpected_trap;
 +
-+#define CSR_STIMECMP		0x14D
-+#define CSR_STIMECMPH		0x15D
++	/* Use the same handler for all the interrupts */
++	if (regs->cause & CAUSE_IRQ_FLAG) {
++		vector = 1;
++		ec = 0;
++	}
 +
-+/* IE/IP (Supervisor Interrupt Enable/Pending) flags */
-+#define IE_SIE		(_AC(0x1, UL) << IRQ_S_SOFT)
-+#define IE_TIE		(_AC(0x1, UL) << IRQ_S_TIMER)
-+#define IE_EIE		(_AC(0x1, UL) << IRQ_S_EXT)
++	if (handlers && handlers->exception_handlers[vector][ec])
++		return handlers->exception_handlers[vector][ec](regs);
 +
-+#ifndef __ASSEMBLY__
++guest_unexpected_trap:
++	return guest_unexp_trap();
++}
 +
-+#define csr_read(csr)						\
-+({								\
-+	register unsigned long __v;				\
-+	__asm__ __volatile__ ("csrr %0, " __ASM_STR(csr)	\
-+			      : "=r" (__v) :			\
-+			      : "memory");			\
-+	__v;							\
-+})
++void vcpu_init_trap_vector_tables(struct kvm_vcpu *vcpu)
++{
++	extern char exception_vectors;
 +
-+#define csr_write(csr, val)					\
-+({								\
-+	unsigned long __v = (unsigned long)(val);		\
-+	__asm__ __volatile__ ("csrw " __ASM_STR(csr) ", %0"	\
-+			      : : "rK" (__v)			\
-+			      : "memory");			\
-+})
++	vcpu_set_reg(vcpu, RISCV_CSR_REG(stvec), (unsigned long)&exception_vectors);
++}
 +
-+#define csr_set(csr, val)					\
-+({								\
-+	unsigned long __v = (unsigned long)(val);		\
-+	__asm__ __volatile__ ("csrs " __ASM_STR(csr) ", %0"	\
-+			      : : "rK" (__v)			\
-+			      : "memory");			\
-+})
++void vm_init_trap_vector_tables(struct kvm_vm *vm)
++{
++	vm->handlers = __vm_vaddr_alloc(vm, sizeof(struct handlers),
++				   vm->page_size, MEM_REGION_DATA);
 +
-+#define csr_clear(csr, val)					\
-+({								\
-+	unsigned long __v = (unsigned long)(val);		\
-+	__asm__ __volatile__ ("csrc " __ASM_STR(csr) ", %0"	\
-+			      : : "rK" (__v)			\
-+			      : "memory");			\
-+})
++	*(vm_vaddr_t *)addr_gva2hva(vm, (vm_vaddr_t)(&exception_handlers)) = vm->handlers;
++}
 +
-+#endif /* __ASSEMBLY__ */
++void vm_install_exception_handler(struct kvm_vm *vm, int ec, void (*handler)(struct ex_regs *))
++{
++	struct handlers *handlers = addr_gva2hva(vm, vm->handlers);
 +
-+#endif /* _ASM_RISCV_CSR_H */
++	handlers->exception_handlers[0][ec] = handler;
++}
++
++void vm_install_interrupt_handler(struct kvm_vm *vm, void (*handler)(struct ex_regs *))
++{
++	struct handlers *handlers = addr_gva2hva(vm, vm->handlers);
++
++	handlers->exception_handlers[1][0] = handler;
++}
 -- 
 2.34.1
 
