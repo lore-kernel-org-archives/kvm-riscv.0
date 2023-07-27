@@ -1,61 +1,40 @@
-From: Marc Zyngier <maz@kernel.org>
-Date: Thu, 27 Jul 2023 11:25:25 +0100
-Subject: [PATCH v7 02/12] KVM: arm64: Use kvm_arch_flush_remote_tlbs()
-In-Reply-To: <20230722022251.3446223-3-rananta@google.com>
-References: <20230722022251.3446223-1-rananta@google.com>
-	<20230722022251.3446223-3-rananta@google.com>
-Message-ID: <87tttpr6qy.wl-maz@kernel.org>
+From: Fuad Tabba <tabba@google.com>
+Date: Thu, 27 Jul 2023 11:39:38 +0100
+Subject: [RFC PATCH v11 12/29] KVM: Add KVM_CREATE_GUEST_MEMFD ioctl() for
+ guest-specific backing memory
+In-Reply-To: <20230718234512.1690985-13-seanjc@google.com>
+References: <20230718234512.1690985-1-seanjc@google.com> <20230718234512.1690985-13-seanjc@google.com>
+Message-ID: <CA+EHjTzP2fypgkJbRpSPrKaWytW7v8ANEifofMnQCkdvYaX6Eg@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sat, 22 Jul 2023 03:22:41 +0100,
-Raghavendra Rao Ananta <rananta@google.com> wrote:
-> 
-> Stop depending on CONFIG_HAVE_KVM_ARCH_TLB_FLUSH_ALL and opt to
-> standardize on kvm_arch_flush_remote_tlbs() since it avoids
-> duplicating the generic TLB stats across architectures that implement
-> their own remote TLB flush.
-> 
-> This adds an extra function call to the ARM64 kvm_flush_remote_tlbs()
-> path, but that is a small cost in comparison to flushing remote TLBs.
+Hi Sean,
 
-Well, there is no such thing as a "remote TLB" anyway. We either have
-a non-shareable or inner-shareable invalidation. The notion of remote
-would imply that we track who potentially has a TLB, which we
-obviously don't.
+<snip>
+...
 
-More x86 nonsense...
+> @@ -5134,6 +5167,16 @@ static long kvm_vm_ioctl(struct file *filp,
+>         case KVM_GET_STATS_FD:
+>                 r = kvm_vm_ioctl_get_stats_fd(kvm);
+>                 break;
+> +       case KVM_CREATE_GUEST_MEMFD: {
+> +               struct kvm_create_guest_memfd guest_memfd;
+> +
+> +               r = -EFAULT;
+> +               if (copy_from_user(&guest_memfd, argp, sizeof(guest_memfd)))
+> +                       goto out;
+> +
+> +               r = kvm_gmem_create(kvm, &guest_memfd);
+> +               break;
+> +       }
 
->
-> In addition, instead of just incrementing remote_tlb_flush_requests
-> stat, the generic interface would also increment the
-> remote_tlb_flush stat.
-> 
-> Signed-off-by: Raghavendra Rao Ananta <rananta@google.com>
-> ---
->  arch/arm64/include/asm/kvm_host.h | 3 +++
->  arch/arm64/kvm/Kconfig            | 1 -
->  arch/arm64/kvm/mmu.c              | 6 +++---
->  3 files changed, 6 insertions(+), 4 deletions(-)
-> 
-> diff --git a/arch/arm64/include/asm/kvm_host.h b/arch/arm64/include/asm/kvm_host.h
-> index 8b6096753740..7281222f24ef 100644
-> --- a/arch/arm64/include/asm/kvm_host.h
-> +++ b/arch/arm64/include/asm/kvm_host.h
-> @@ -1111,6 +1111,9 @@ int __init kvm_set_ipa_limit(void);
->  #define __KVM_HAVE_ARCH_VM_ALLOC
->  struct kvm *kvm_arch_alloc_vm(void);
->  
-> +#define __KVM_HAVE_ARCH_FLUSH_REMOTE_TLBS
-> +int kvm_arch_flush_remote_tlbs(struct kvm *kvm);
+I'm thinking line of sight here, by having this as a vm ioctl (rather
+than a system iocl), would it complicate making it possible in the
+future to share/donate memory between VMs?
 
-See my earlier comment about making this prototype global.
-
-	M.
-
--- 
-Without deviation from the norm, progress is not possible.
+Cheers,
+/fuad
 
