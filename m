@@ -1,59 +1,58 @@
 From: Marc Zyngier <maz@kernel.org>
-Date: Thu, 27 Jul 2023 11:24:41 +0100
-Subject: [PATCH v7 01/12] KVM: Rename kvm_arch_flush_remote_tlb() to kvm_arch_flush_remote_tlbs()
-In-Reply-To: <20230722022251.3446223-2-rananta@google.com>
+Date: Thu, 27 Jul 2023 11:25:25 +0100
+Subject: [PATCH v7 02/12] KVM: arm64: Use kvm_arch_flush_remote_tlbs()
+In-Reply-To: <20230722022251.3446223-3-rananta@google.com>
 References: <20230722022251.3446223-1-rananta@google.com>
-	<20230722022251.3446223-2-rananta@google.com>
-Message-ID: <87v8e5r6s6.wl-maz@kernel.org>
+	<20230722022251.3446223-3-rananta@google.com>
+Message-ID: <87tttpr6qy.wl-maz@kernel.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sat, 22 Jul 2023 03:22:40 +0100,
+On Sat, 22 Jul 2023 03:22:41 +0100,
 Raghavendra Rao Ananta <rananta@google.com> wrote:
 > 
-> From: David Matlack <dmatlack@google.com>
+> Stop depending on CONFIG_HAVE_KVM_ARCH_TLB_FLUSH_ALL and opt to
+> standardize on kvm_arch_flush_remote_tlbs() since it avoids
+> duplicating the generic TLB stats across architectures that implement
+> their own remote TLB flush.
 > 
-> Rename kvm_arch_flush_remote_tlb() and the associated macro
-> __KVM_HAVE_ARCH_FLUSH_REMOTE_TLB to kvm_arch_flush_remote_tlbs() and
-> __KVM_HAVE_ARCH_FLUSH_REMOTE_TLBS respectively.
+> This adds an extra function call to the ARM64 kvm_flush_remote_tlbs()
+> path, but that is a small cost in comparison to flushing remote TLBs.
+
+Well, there is no such thing as a "remote TLB" anyway. We either have
+a non-shareable or inner-shareable invalidation. The notion of remote
+would imply that we track who potentially has a TLB, which we
+obviously don't.
+
+More x86 nonsense...
+
+>
+> In addition, instead of just incrementing remote_tlb_flush_requests
+> stat, the generic interface would also increment the
+> remote_tlb_flush stat.
 > 
-> Making the name plural matches kvm_flush_remote_tlbs() and makes it more
-> clear that this function can affect more than one remote TLB.
-> 
-> No functional change intended.
-> 
-> Signed-off-by: David Matlack <dmatlack@google.com>
 > Signed-off-by: Raghavendra Rao Ananta <rananta@google.com>
-> Reviewed-by: Gavin Shan <gshan@redhat.com>
-> Reviewed-by: Philippe Mathieu-Daud? <philmd@linaro.org>
-> Reviewed-by: Shaoqin Huang <shahuang@redhat.com>
 > ---
->  arch/mips/include/asm/kvm_host.h | 4 ++--
->  arch/mips/kvm/mips.c             | 2 +-
->  arch/x86/include/asm/kvm_host.h  | 4 ++--
->  include/linux/kvm_host.h         | 4 ++--
->  virt/kvm/kvm_main.c              | 2 +-
->  5 files changed, 8 insertions(+), 8 deletions(-)
+>  arch/arm64/include/asm/kvm_host.h | 3 +++
+>  arch/arm64/kvm/Kconfig            | 1 -
+>  arch/arm64/kvm/mmu.c              | 6 +++---
+>  3 files changed, 6 insertions(+), 4 deletions(-)
 > 
-> diff --git a/arch/mips/include/asm/kvm_host.h b/arch/mips/include/asm/kvm_host.h
-> index 04cedf9f8811..9b0ad8f3bf32 100644
-> --- a/arch/mips/include/asm/kvm_host.h
-> +++ b/arch/mips/include/asm/kvm_host.h
-> @@ -896,7 +896,7 @@ static inline void kvm_arch_sched_in(struct kvm_vcpu *vcpu, int cpu) {}
->  static inline void kvm_arch_vcpu_blocking(struct kvm_vcpu *vcpu) {}
->  static inline void kvm_arch_vcpu_unblocking(struct kvm_vcpu *vcpu) {}
+> diff --git a/arch/arm64/include/asm/kvm_host.h b/arch/arm64/include/asm/kvm_host.h
+> index 8b6096753740..7281222f24ef 100644
+> --- a/arch/arm64/include/asm/kvm_host.h
+> +++ b/arch/arm64/include/asm/kvm_host.h
+> @@ -1111,6 +1111,9 @@ int __init kvm_set_ipa_limit(void);
+>  #define __KVM_HAVE_ARCH_VM_ALLOC
+>  struct kvm *kvm_arch_alloc_vm(void);
 >  
-> -#define __KVM_HAVE_ARCH_FLUSH_REMOTE_TLB
-> -int kvm_arch_flush_remote_tlb(struct kvm *kvm);
 > +#define __KVM_HAVE_ARCH_FLUSH_REMOTE_TLBS
 > +int kvm_arch_flush_remote_tlbs(struct kvm *kvm);
 
-How about making this prototype global? I don't see a point in having
-it per-architecture, specially as you are adding arm64 to that mix in
-the following patch.
+See my earlier comment about making this prototype global.
 
 	M.
 
