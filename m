@@ -1,73 +1,71 @@
 From: Marc Zyngier <maz@kernel.org>
-Date: Thu, 27 Jul 2023 11:53:00 +0100
-Subject: [PATCH v7 05/12] KVM: Move kvm_arch_flush_remote_tlbs_memslot() to common code
-In-Reply-To: <20230722022251.3446223-6-rananta@google.com>
+Date: Thu, 27 Jul 2023 11:58:50 +0100
+Subject: [PATCH v7 06/12] arm64: tlb: Refactor the core flush algorithm of __flush_tlb_range
+In-Reply-To: <20230722022251.3446223-7-rananta@google.com>
 References: <20230722022251.3446223-1-rananta@google.com>
-	<20230722022251.3446223-6-rananta@google.com>
-Message-ID: <87sf99r5gz.wl-maz@kernel.org>
+	<20230722022251.3446223-7-rananta@google.com>
+Message-ID: <87r0otr579.wl-maz@kernel.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sat, 22 Jul 2023 03:22:44 +0100,
+On Sat, 22 Jul 2023 03:22:45 +0100,
 Raghavendra Rao Ananta <rananta@google.com> wrote:
 > 
-> From: David Matlack <dmatlack@google.com>
+> Currently, the core TLB flush functionality of __flush_tlb_range()
+> hardcodes vae1is (and variants) for the flush operation. In the
+> upcoming patches, the KVM code reuses this core algorithm with
+> ipas2e1is for range based TLB invalidations based on the IPA.
+> Hence, extract the core flush functionality of __flush_tlb_range()
+> into its own macro that accepts an 'op' argument to pass any
+> TLBI operation, such that other callers (KVM) can benefit.
 > 
-> Move kvm_arch_flush_remote_tlbs_memslot() to common code and drop
-> "arch_" from the name. kvm_arch_flush_remote_tlbs_memslot() is just a
-> range-based TLB invalidation where the range is defined by the memslot.
-> Now that kvm_flush_remote_tlbs_range() can be called from common code we
-> can just use that and drop a bunch of duplicate code from the arch
-> directories.
+> No functional changes intended.
 > 
-> Note this adds a lockdep assertion for slots_lock being held when
-> calling kvm_flush_remote_tlbs_memslot(), which was previously only
-> asserted on x86. MIPS has calls to kvm_flush_remote_tlbs_memslot(),
-> but they all hold the slots_lock, so the lockdep assertion continues to
-> hold true.
-> 
-> Also drop the CONFIG_KVM_GENERIC_DIRTYLOG_READ_PROTECT ifdef gating
-> kvm_flush_remote_tlbs_memslot(), since it is no longer necessary.
-> 
-> Signed-off-by: David Matlack <dmatlack@google.com>
 > Signed-off-by: Raghavendra Rao Ananta <rananta@google.com>
+> Reviewed-by: Catalin Marinas <catalin.marinas@arm.com>
 > Reviewed-by: Gavin Shan <gshan@redhat.com>
 > Reviewed-by: Shaoqin Huang <shahuang@redhat.com>
 > ---
->  arch/arm64/kvm/arm.c     |  6 ------
->  arch/mips/kvm/mips.c     | 10 ++--------
->  arch/riscv/kvm/mmu.c     |  6 ------
->  arch/x86/kvm/mmu/mmu.c   | 16 +---------------
->  arch/x86/kvm/x86.c       |  2 +-
->  include/linux/kvm_host.h |  7 +++----
->  virt/kvm/kvm_main.c      | 18 ++++++++++++++++--
->  7 files changed, 23 insertions(+), 42 deletions(-)
->
-
-[...]
-
-> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-> index 804470fccac7..58213cc4b9b9 100644
-> --- a/virt/kvm/kvm_main.c
-> +++ b/virt/kvm/kvm_main.c
-> @@ -379,6 +379,20 @@ void kvm_flush_remote_tlbs_range(struct kvm *kvm, gfn_t gfn, u64 pages)
->  	kvm_flush_remote_tlbs(kvm);
->  }
+>  arch/arm64/include/asm/tlbflush.h | 109 +++++++++++++++---------------
+>  1 file changed, 56 insertions(+), 53 deletions(-)
+> 
+> diff --git a/arch/arm64/include/asm/tlbflush.h b/arch/arm64/include/asm/tlbflush.h
+> index 412a3b9a3c25..f7fafba25add 100644
+> --- a/arch/arm64/include/asm/tlbflush.h
+> +++ b/arch/arm64/include/asm/tlbflush.h
+> @@ -278,14 +278,62 @@ static inline void flush_tlb_page(struct vm_area_struct *vma,
+>   */
+>  #define MAX_TLBI_OPS	PTRS_PER_PTE
 >  
-> +void kvm_flush_remote_tlbs_memslot(struct kvm *kvm,
-> +				   const struct kvm_memory_slot *memslot)
-> +{
-> +	/*
-> +	 * All current use cases for flushing the TLBs for a specific memslot
-> +	 * related to dirty logging, and many do the TLB flush out of mmu_lock.
+> +/* When the CPU does not support TLB range operations, flush the TLB
+> + * entries one by one at the granularity of 'stride'. If the TLB
+> + * range ops are supported, then:
 
-I appreciate this is a copy paste of an existing comment, but I can't
-parse it. My command of the English language is notoriously
-approximate, but it feels that something is missing in the first
-sentence, such as a verb.
+Comment format (the original was correct).
+
+> + *
+> + * 1. If 'pages' is odd, flush the first page through non-range
+> + *    operations;
+> + *
+> + * 2. For remaining pages: the minimum range granularity is decided
+> + *    by 'scale', so multiple range TLBI operations may be required.
+> + *    Start from scale = 0, flush the corresponding number of pages
+> + *    ((num+1)*2^(5*scale+1) starting from 'addr'), then increase it
+> + *    until no pages left.
+> + *
+> + * Note that certain ranges can be represented by either num = 31 and
+> + * scale or num = 0 and scale + 1. The loop below favours the latter
+> + * since num is limited to 30 by the __TLBI_RANGE_NUM() macro.
+> + */
+> +#define __flush_tlb_range_op(op, start, pages, stride,			\
+> +				asid, tlb_level, tlbi_user)		\
+
+If you make this a common macro, please document the parameters, and
+what the constraints are. For example, what does tlbi_user mean for an
+IPA invalidation?
 
 	M.
 
