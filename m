@@ -1,48 +1,40 @@
-From: Nikunj A. Dadhania <nikunj@amd.com>
-Date: Thu, 27 Jul 2023 12:12:11 +0530
-Subject: [RFC PATCH v11 00/29] KVM: guest_memfd() and per-page attributes
-In-Reply-To: <ZMEsuyqHhp1DAVdR@google.com>
-References: <20230718234512.1690985-1-seanjc@google.com>
- <110f1aa0-7fcd-1287-701a-89c2203f0ac2@amd.com> <ZL6uMk/8UeuGj8CP@google.com>
- <2f98a32c-bd3d-4890-b757-4d2f67a3b1a7@amd.com> <ZMEsuyqHhp1DAVdR@google.com>
-Message-ID: <66efd7f5-92ed-45ec-0550-ca7f012a6e63@amd.com>
+From: Haibo Xu <haibo1.xu@intel.com>
+Date: Thu, 27 Jul 2023 15:20:04 +0800
+Subject: [PATCH 0/4] RISCV: Add kvm Sstc timer selftest
+Message-ID: <cover.1690364259.git.haibo1.xu@intel.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 7/26/2023 7:54 PM, Sean Christopherson wrote:
-> On Wed, Jul 26, 2023, Nikunj A. Dadhania wrote:
->> On 7/24/2023 10:30 PM, Sean Christopherson wrote:
+The sstc_timer selftest is used to validate Sstc timer functionality
+in a guest, which sets up periodic timer interrupts and check the
+basic interrupt status upon its receipt.
 
->>>>   /proc/<qemu pid>/smaps
->>>>   7f528be00000-7f5c8be00000 rw-p 00000000 00:01 26629                      /memfd:memory-backend-memfd-shared (deleted)
->>>>   7f5c90200000-7f5c90220000 rw-s 00000000 00:01 44033                      /memfd:rom-backend-memfd-shared (deleted)
->>>>   7f5c90400000-7f5c90420000 rw-s 00000000 00:01 44032                      /memfd:rom-backend-memfd-shared (deleted)
->>>>   7f5c90800000-7f5c90b7c000 rw-s 00000000 00:01 1025                       /memfd:rom-backend-memfd-shared (deleted)
->>>
->>> This is all expected, and IMO correct.  There are no userspace mappings, and so
->>> not accounting anything is working as intended.
->> Doesn't sound that correct, if 10 SNP guests are running each using 10GB, how
->> would we know who is using 100GB of memory?
-> 
-> It's correct with respect to what the interfaces show, which is how much memory
-> is *mapped* into userspace.
-> 
-> As I said (or at least tried to say) in my first reply, I am not against exposing
-> memory usage to userspace via stats, only that it's not obvious to me that the
-> existing VMA-based stats are the most appropriate way to surface this information.
+This KVM selftest was ported from aarch64 arch_timer and tested
+with Linux v6.5-rc3 on a Qemu riscv64 virt machine.
 
-Right, then should we think in the line of creating a VM IOCTL for querying current memory
-usage for guest-memfd ?
+Haibo Xu (4):
+  tools: riscv: Add header file csr.h
+  KVM: riscv: selftests: Add exception handling support
+  KVM: riscv: selftests: Add guest helper to get vcpu id
+  KVM: riscv: selftests: Add sstc_timer test
 
-We could use memcg for statistics, but then memory cgroup can be disabled and so memcg 
-isn't really a dependable option.
+ tools/arch/riscv/include/asm/csr.h            | 127 ++++++
+ tools/testing/selftests/kvm/Makefile          |   2 +
+ .../selftests/kvm/include/riscv/processor.h   |  76 ++++
+ .../selftests/kvm/include/riscv/sstc_timer.h  |  70 ++++
+ .../selftests/kvm/lib/riscv/handlers.S        | 101 +++++
+ .../selftests/kvm/lib/riscv/processor.c       |  74 ++++
+ .../testing/selftests/kvm/riscv/sstc_timer.c  | 382 ++++++++++++++++++
+ 7 files changed, 832 insertions(+)
+ create mode 100644 tools/arch/riscv/include/asm/csr.h
+ create mode 100644 tools/testing/selftests/kvm/include/riscv/sstc_timer.h
+ create mode 100644 tools/testing/selftests/kvm/lib/riscv/handlers.S
+ create mode 100644 tools/testing/selftests/kvm/riscv/sstc_timer.c
 
-Do you have some ideas on how to expose the memory usage to the user space other than
-VMA-based stats ?
+-- 
+2.34.1
 
-Regards,
-Nikunj
 
