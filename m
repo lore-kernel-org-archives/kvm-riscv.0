@@ -1,137 +1,87 @@
 From: Marc Zyngier <maz@kernel.org>
-Date: Thu, 27 Jul 2023 13:40:46 +0100
-Subject: [PATCH v7 07/12] KVM: arm64: Implement  __kvm_tlb_flush_vmid_range()
-In-Reply-To: <20230722022251.3446223-8-rananta@google.com>
+Date: Thu, 27 Jul 2023 13:47:06 +0100
+Subject: [PATCH v7 08/12] KVM: arm64: Define kvm_tlb_flush_vmid_range()
+In-Reply-To: <20230722022251.3446223-9-rananta@google.com>
 References: <20230722022251.3446223-1-rananta@google.com>
-	<20230722022251.3446223-8-rananta@google.com>
-Message-ID: <87pm4dr0hd.wl-maz@kernel.org>
+	<20230722022251.3446223-9-rananta@google.com>
+Message-ID: <87o7jxr06t.wl-maz@kernel.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sat, 22 Jul 2023 03:22:46 +0100,
+On Sat, 22 Jul 2023 03:22:47 +0100,
 Raghavendra Rao Ananta <rananta@google.com> wrote:
 > 
-> Define  __kvm_tlb_flush_vmid_range() (for VHE and nVHE)
-> to flush a range of stage-2 page-tables using IPA in one go.
-> If the system supports FEAT_TLBIRANGE, the following patches
-> would conviniently replace global TLBI such as vmalls12e1is
-> in the map, unmap, and dirty-logging paths with ripas2e1is
-> instead.
+> Implement the helper kvm_tlb_flush_vmid_range() that acts
+> as a wrapper for range-based TLB invalidations. For the
+> given VMID, use the range-based TLBI instructions to do
+> the job or fallback to invalidating all the TLB entries.
 > 
 > Signed-off-by: Raghavendra Rao Ananta <rananta@google.com>
 > Reviewed-by: Gavin Shan <gshan@redhat.com>
+> Reviewed-by: Shaoqin Huang <shahuang@redhat.com>
 > ---
->  arch/arm64/include/asm/kvm_asm.h   |  3 +++
->  arch/arm64/kvm/hyp/nvhe/hyp-main.c | 11 +++++++++++
->  arch/arm64/kvm/hyp/nvhe/tlb.c      | 30 ++++++++++++++++++++++++++++++
->  arch/arm64/kvm/hyp/vhe/tlb.c       | 27 +++++++++++++++++++++++++++
->  4 files changed, 71 insertions(+)
+>  arch/arm64/include/asm/kvm_pgtable.h | 10 ++++++++++
+>  arch/arm64/kvm/hyp/pgtable.c         | 20 ++++++++++++++++++++
+>  2 files changed, 30 insertions(+)
 > 
-> diff --git a/arch/arm64/include/asm/kvm_asm.h b/arch/arm64/include/asm/kvm_asm.h
-> index 7d170aaa2db4..2c27cb8cf442 100644
-> --- a/arch/arm64/include/asm/kvm_asm.h
-> +++ b/arch/arm64/include/asm/kvm_asm.h
-> @@ -70,6 +70,7 @@ enum __kvm_host_smccc_func {
->  	__KVM_HOST_SMCCC_FUNC___kvm_tlb_flush_vmid_ipa,
->  	__KVM_HOST_SMCCC_FUNC___kvm_tlb_flush_vmid_ipa_nsh,
->  	__KVM_HOST_SMCCC_FUNC___kvm_tlb_flush_vmid,
-> +	__KVM_HOST_SMCCC_FUNC___kvm_tlb_flush_vmid_range,
->  	__KVM_HOST_SMCCC_FUNC___kvm_flush_cpu_context,
->  	__KVM_HOST_SMCCC_FUNC___kvm_timer_set_cntvoff,
->  	__KVM_HOST_SMCCC_FUNC___vgic_v3_read_vmcr,
-> @@ -229,6 +230,8 @@ extern void __kvm_tlb_flush_vmid_ipa(struct kvm_s2_mmu *mmu, phys_addr_t ipa,
->  extern void __kvm_tlb_flush_vmid_ipa_nsh(struct kvm_s2_mmu *mmu,
->  					 phys_addr_t ipa,
->  					 int level);
-> +extern void __kvm_tlb_flush_vmid_range(struct kvm_s2_mmu *mmu,
-> +					phys_addr_t start, unsigned long pages);
->  extern void __kvm_tlb_flush_vmid(struct kvm_s2_mmu *mmu);
->  
->  extern void __kvm_timer_set_cntvoff(u64 cntvoff);
-> diff --git a/arch/arm64/kvm/hyp/nvhe/hyp-main.c b/arch/arm64/kvm/hyp/nvhe/hyp-main.c
-> index a169c619db60..857d9bc04fd4 100644
-> --- a/arch/arm64/kvm/hyp/nvhe/hyp-main.c
-> +++ b/arch/arm64/kvm/hyp/nvhe/hyp-main.c
-> @@ -135,6 +135,16 @@ static void handle___kvm_tlb_flush_vmid_ipa_nsh(struct kvm_cpu_context *host_ctx
->  	__kvm_tlb_flush_vmid_ipa_nsh(kern_hyp_va(mmu), ipa, level);
+> diff --git a/arch/arm64/include/asm/kvm_pgtable.h b/arch/arm64/include/asm/kvm_pgtable.h
+> index 8294a9a7e566..5e8b1ff07854 100644
+> --- a/arch/arm64/include/asm/kvm_pgtable.h
+> +++ b/arch/arm64/include/asm/kvm_pgtable.h
+> @@ -754,4 +754,14 @@ enum kvm_pgtable_prot kvm_pgtable_stage2_pte_prot(kvm_pte_t pte);
+>   *	   kvm_pgtable_prot format.
+>   */
+>  enum kvm_pgtable_prot kvm_pgtable_hyp_pte_prot(kvm_pte_t pte);
+> +
+> +/**
+> + * kvm_tlb_flush_vmid_range() - Invalidate/flush a range of TLB entries
+> + *
+> + * @mmu:	Stage-2 KVM MMU struct
+> + * @addr:	The base Intermediate physical address from which to invalidate
+> + * @size:	Size of the range from the base to invalidate
+> + */
+> +void kvm_tlb_flush_vmid_range(struct kvm_s2_mmu *mmu,
+> +				phys_addr_t addr, size_t size);
+>  #endif	/* __ARM64_KVM_PGTABLE_H__ */
+> diff --git a/arch/arm64/kvm/hyp/pgtable.c b/arch/arm64/kvm/hyp/pgtable.c
+> index aa740a974e02..5d14d5d5819a 100644
+> --- a/arch/arm64/kvm/hyp/pgtable.c
+> +++ b/arch/arm64/kvm/hyp/pgtable.c
+> @@ -670,6 +670,26 @@ static bool stage2_has_fwb(struct kvm_pgtable *pgt)
+>  	return !(pgt->flags & KVM_PGTABLE_S2_NOFWB);
 >  }
 >  
-> +static void
-> +handle___kvm_tlb_flush_vmid_range(struct kvm_cpu_context *host_ctxt)
+> +void kvm_tlb_flush_vmid_range(struct kvm_s2_mmu *mmu,
+> +				phys_addr_t addr, size_t size)
 > +{
-> +	DECLARE_REG(struct kvm_s2_mmu *, mmu, host_ctxt, 1);
-> +	DECLARE_REG(phys_addr_t, start, host_ctxt, 2);
-> +	DECLARE_REG(unsigned long, pages, host_ctxt, 3);
+> +	unsigned long pages, inval_pages;
 > +
-> +	__kvm_tlb_flush_vmid_range(kern_hyp_va(mmu), start, pages);
+> +	if (!system_supports_tlb_range()) {
+> +		kvm_call_hyp(__kvm_tlb_flush_vmid, mmu);
+> +		return;
+> +	}
+> +
+> +	pages = size >> PAGE_SHIFT;
+> +	while (pages > 0) {
+> +		inval_pages = min(pages, MAX_TLBI_RANGE_PAGES);
+> +		kvm_call_hyp(__kvm_tlb_flush_vmid_range, mmu, addr, inval_pages);
+> +
+> +		addr += inval_pages << PAGE_SHIFT;
+> +		pages -= inval_pages;
+> +	}
 > +}
 > +
->  static void handle___kvm_tlb_flush_vmid(struct kvm_cpu_context *host_ctxt)
->  {
->  	DECLARE_REG(struct kvm_s2_mmu *, mmu, host_ctxt, 1);
-> @@ -327,6 +337,7 @@ static const hcall_t host_hcall[] = {
->  	HANDLE_FUNC(__kvm_tlb_flush_vmid_ipa),
->  	HANDLE_FUNC(__kvm_tlb_flush_vmid_ipa_nsh),
->  	HANDLE_FUNC(__kvm_tlb_flush_vmid),
-> +	HANDLE_FUNC(__kvm_tlb_flush_vmid_range),
->  	HANDLE_FUNC(__kvm_flush_cpu_context),
->  	HANDLE_FUNC(__kvm_timer_set_cntvoff),
->  	HANDLE_FUNC(__vgic_v3_read_vmcr),
-> diff --git a/arch/arm64/kvm/hyp/nvhe/tlb.c b/arch/arm64/kvm/hyp/nvhe/tlb.c
-> index b9991bbd8e3f..09347111c2cd 100644
-> --- a/arch/arm64/kvm/hyp/nvhe/tlb.c
-> +++ b/arch/arm64/kvm/hyp/nvhe/tlb.c
-> @@ -182,6 +182,36 @@ void __kvm_tlb_flush_vmid_ipa_nsh(struct kvm_s2_mmu *mmu,
->  	__tlb_switch_to_host(&cxt);
->  }
->  
-> +void __kvm_tlb_flush_vmid_range(struct kvm_s2_mmu *mmu,
-> +				phys_addr_t start, unsigned long pages)
-> +{
-> +	struct tlb_inv_context cxt;
-> +	unsigned long stride;
-> +
-> +	/*
-> +	 * Since the range of addresses may not be mapped at
-> +	 * the same level, assume the worst case as PAGE_SIZE
-> +	 */
-> +	stride = PAGE_SIZE;
-> +	start = round_down(start, stride);
-> +
-> +	/* Switch to requested VMID */
-> +	__tlb_switch_to_guest(mmu, &cxt, false);
-> +
-> +	__flush_tlb_range_op(ipas2e1is, start, pages, stride, 0, 0, false);
 
-I really think we need an abstraction here. All this ASID and user
-nonsense shouldn't appear here. Something such as
-__flush_s2_tlb_range_op(), which would pass the correct parameters
-that this code shouldn't have to worry about.
+This really shouldn't live in pgtable.c. This code gets linked into
+the EL2 object. What do you think happens if, for some reason, this
+gets called *from EL2*?
 
-I'm also a bit concerned by the fact we completely lose the level
-here. This is a massive fast-path for the CPU, and we don't make use
-of it. It'd be worth thinking of how we can make use of it if at all
-possible...
-
-> +
-> +	dsb(ish);
-> +	__tlbi(vmalle1is);
-> +	dsb(ish);
-> +	isb();
-> +
-> +	/* See the comment in __kvm_tlb_flush_vmid_ipa() */
-> +	if (icache_is_vpipt())
-> +		icache_inval_all_pou();
-> +
-> +	__tlb_switch_to_host(&cxt);
-
-Another thing is that it is high time that some of this call gets
-refactored. All these helpers are basically the same sequence, only
-differing by a couple of lines. Not something we need to do
-immediately, but eventually we'll have to bite the bullet.
+Furthermore, this doesn't deal with page tables at all. Why isn't
+mmu.c a convenient place for it, as an integral part of
+kvm_arch_flush_remote_tlbs_range?
 
 	M.
 
