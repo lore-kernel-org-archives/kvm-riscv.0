@@ -1,32 +1,32 @@
-From: Paolo Bonzini <pbonzini@redhat.com>
-Date: Fri, 28 Jul 2023 18:13:26 +0200
-Subject: [RFC PATCH v11 10/29] mm: Add AS_UNMOVABLE to mark mapping as
- completely unmovable
-In-Reply-To: <692b09f7-70d9-1119-7fe2-3e7396ec259d@suse.cz>
-References: <20230718234512.1690985-1-seanjc@google.com>
- <20230718234512.1690985-11-seanjc@google.com>
- <20230725102403.xywjqlhyqkrzjok6@box.shutemov.name>
- <ZL/Fa4W2Ne9EVxoh@casper.infradead.org>
- <692b09f7-70d9-1119-7fe2-3e7396ec259d@suse.cz>
-Message-ID: <6da710cf-2bc0-bb6e-26f1-fba14ca767db@redhat.com>
+From: Daniel Henrique Barboza <dbarboza@ventanamicro.com>
+Date: Fri, 28 Jul 2023 18:01:21 -0300
+Subject: [PATCH v2 0/1] RISC-V: KVM: provide UAPI for host SATP mode
+Message-ID: <20230728210122.175229-1-dbarboza@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 7/28/23 18:02, Vlastimil Babka wrote:
->> There's even a comment to that effect later on in the function:
-> Hmm, well spotted. But it wouldn't be so great if we now had to lock every
-> inspected page (and not just dirty pages), just to check the AS_ bit.
-> 
-> But I wonder if this is leftover from previous versions. Are the guest pages
-> even PageLRU currently? (and should they be, given how they can't be swapped
-> out or anything?) If not, isolate_migratepages_block will skip them anyway.
+Hi,
 
-No, they're not (migration or even swap-out is not excluded for the 
-future, but for now it's left for future work.
+This new version is just a rebase after the recent changes made by Anup
+that landed in riscv_kvm_queue (introduction of vcpu_onereg.c). No other
+changes were made.
 
-Paolo
+Changes from v1:
+- rebased with riscv_kvm_queue
+- v1 link: https://lore.kernel.org/kvm/20230705091535.237765-1-dbarboza at ventanamicro.com/
+
+Daniel Henrique Barboza (1):
+  RISC-V: KVM: provide UAPI for host SATP mode
+
+ arch/riscv/include/asm/csr.h      | 2 ++
+ arch/riscv/include/uapi/asm/kvm.h | 1 +
+ arch/riscv/kvm/vcpu_onereg.c      | 7 +++++++
+ 3 files changed, 10 insertions(+)
+
+-- 
+2.41.0
 
 
