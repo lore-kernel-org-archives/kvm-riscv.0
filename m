@@ -1,39 +1,44 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Fri, 28 Jul 2023 11:57:00 +0200
-Subject: [PATCH 0/4] RISCV: Add kvm Sstc timer selftest
-In-Reply-To: <CAJve8o=GZnLLedT7TvCLvgd5Z3ZxJNfM6gG03Eyc+7krtMY--g@mail.gmail.com>
-References: <cover.1690364259.git.haibo1.xu@intel.com>
- <ZMKI8RknjjZBOaxf@google.com>
- <CAJve8o=GZnLLedT7TvCLvgd5Z3ZxJNfM6gG03Eyc+7krtMY--g@mail.gmail.com>
-Message-ID: <20230728-5b0f530eba70ad08e8f4a67d@orel>
+From: Sean Christopherson <seanjc@google.com>
+Date: Fri, 28 Jul 2023 08:53:52 -0700
+Subject: [PATCH 2/4] KVM: riscv: selftests: Add exception handling support
+In-Reply-To: <20230728-21d0e3ecb0d8916fd9d9bceb@orel>
+References: <cover.1690364259.git.haibo1.xu@intel.com> <7e9d2d5518375083f10c92a3d1acd98914f69fd8.1690364259.git.haibo1.xu@intel.com>
+ <20230728-21d0e3ecb0d8916fd9d9bceb@orel>
+Message-ID: <ZMPR56RVgzI6s6Ik@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Jul 28, 2023 at 09:37:36AM +0800, Haibo Xu wrote:
-> On Thu, Jul 27, 2023 at 11:14?PM Sean Christopherson <seanjc@google.com> wrote:
-> >
-> > On Thu, Jul 27, 2023, Haibo Xu wrote:
-> > > The sstc_timer selftest is used to validate Sstc timer functionality
-> > > in a guest, which sets up periodic timer interrupts and check the
-> > > basic interrupt status upon its receipt.
-> > >
-> > > This KVM selftest was ported from aarch64 arch_timer and tested
-> > > with Linux v6.5-rc3 on a Qemu riscv64 virt machine.
-> >
-> > Would it be possible to extract the ARM bits from arch_timer and make the bulk of
-> > the test common to ARM and RISC-V?  At a glance, there is quite a bit of copy+paste.
+On Fri, Jul 28, 2023, Andrew Jones wrote:
+> On Thu, Jul 27, 2023 at 03:20:06PM +0800, Haibo Xu wrote:
+> > +void vm_init_trap_vector_tables(struct kvm_vm *vm);
+> > +void vcpu_init_trap_vector_tables(struct kvm_vcpu *vcpu);
 > 
-> Sure, I will have a try to consolidate the common code for ARM and RISC-V in v2.
->
+> I think we should use a common name for these prototypes that the other
+> architectures agree to and then put them in a common header. My vote for
+> the naming is,
 
-Yes, afaict, we should be able to make aarch64/arch_timer.c another "split
-test", like we did for aarch64/get-reg-list.c, but before we do that, I'd
-like to get an ack from the Arm maintainers on the get-reg-list split to
-be sure that approach is acceptable.
+Just allocate the tables in kvm_arch_vm_post_create().  I've been meaning to
+convert x86 and ARM, but keep getting distracted/waylaid by other things.
 
-Thanks,
-drew
+https://lore.kernel.org/all/Y8hCBOndYMD9zsDL at google.com
+
+>   void vm_init_vector_tables(struct kvm_vm *vm);
+>   void vcpu_init_vector_tables(struct kvm_vcpu *vcpu);
+> 
+> > +
+> > +typedef void(*handler_fn)(struct ex_regs *);
+> > +void vm_install_exception_handler(struct kvm_vm *vm, int ec, handler_fn handler);
+> 
+> I'd also put this typedef
+
+And rename it to (*exception_handler_fn).
+
+> and prototype in a common header (with s/ec/vector/ to what you have here)
+
+Hmm, yeah, I think it makes sense to let vm_install_exception_handler() be used
+from common code.  the vector to be installed is inherently arch specific, but
+it would be easy enough for a test to use #ifdeffery to define the correct vector.
 
