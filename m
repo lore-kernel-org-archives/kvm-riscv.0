@@ -1,30 +1,39 @@
-From: Haibo Xu <xiaobo55x@gmail.com>
-Date: Fri, 28 Jul 2023 09:37:36 +0800
-Subject: [PATCH 0/4] RISCV: Add kvm Sstc timer selftest
-In-Reply-To: <ZMKI8RknjjZBOaxf@google.com>
-References: <cover.1690364259.git.haibo1.xu@intel.com> <ZMKI8RknjjZBOaxf@google.com>
-Message-ID: <CAJve8o=GZnLLedT7TvCLvgd5Z3ZxJNfM6gG03Eyc+7krtMY--g@mail.gmail.com>
+From: Quentin Perret <qperret@google.com>
+Date: Fri, 28 Jul 2023 09:25:22 +0000
+Subject: [RFC PATCH v11 06/29] KVM: Introduce KVM_SET_USER_MEMORY_REGION2
+In-Reply-To: <20230718234512.1690985-7-seanjc@google.com>
+References: <20230718234512.1690985-1-seanjc@google.com>
+ <20230718234512.1690985-7-seanjc@google.com>
+Message-ID: <ZMOJgnyzzUNIx+Tn@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Jul 27, 2023 at 11:14?PM Sean Christopherson <seanjc@google.com> wrote:
->
-> On Thu, Jul 27, 2023, Haibo Xu wrote:
-> > The sstc_timer selftest is used to validate Sstc timer functionality
-> > in a guest, which sets up periodic timer interrupts and check the
-> > basic interrupt status upon its receipt.
-> >
-> > This KVM selftest was ported from aarch64 arch_timer and tested
-> > with Linux v6.5-rc3 on a Qemu riscv64 virt machine.
->
-> Would it be possible to extract the ARM bits from arch_timer and make the bulk of
-> the test common to ARM and RISC-V?  At a glance, there is quite a bit of copy+paste.
+On Tuesday 18 Jul 2023 at 16:44:49 (-0700), Sean Christopherson wrote:
+> --- a/include/uapi/linux/kvm.h
+> +++ b/include/uapi/linux/kvm.h
+> @@ -95,6 +95,16 @@ struct kvm_userspace_memory_region {
+>  	__u64 userspace_addr; /* start of the userspace allocated memory */
+>  };
+>  
+> +/* for KVM_SET_USER_MEMORY_REGION2 */
+> +struct kvm_userspace_memory_region2 {
+> +	__u32 slot;
+> +	__u32 flags;
+> +	__u64 guest_phys_addr;
+> +	__u64 memory_size;
+> +	__u64 userspace_addr;
+> +	__u64 pad[16];
 
-Sure, I will have a try to consolidate the common code for ARM and RISC-V in v2.
+Should we replace that pad[16] with:
 
-Thanks,
-Haibo
+	__u64 size;
+
+where 'size' is the size of the structure as seen by userspace? This is
+used in other UAPIs (see struct sched_attr for example) and is a bit
+more robust for future extensions (e.g. an 'old' kernel can correctly
+reject a newer version of the struct with additional fields it doesn't
+know about if that makes sense, etc).
 
