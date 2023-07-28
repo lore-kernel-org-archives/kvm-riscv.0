@@ -1,44 +1,76 @@
-From: Sean Christopherson <seanjc@google.com>
-Date: Fri, 28 Jul 2023 08:53:52 -0700
-Subject: [PATCH 2/4] KVM: riscv: selftests: Add exception handling support
-In-Reply-To: <20230728-21d0e3ecb0d8916fd9d9bceb@orel>
-References: <cover.1690364259.git.haibo1.xu@intel.com> <7e9d2d5518375083f10c92a3d1acd98914f69fd8.1690364259.git.haibo1.xu@intel.com>
- <20230728-21d0e3ecb0d8916fd9d9bceb@orel>
-Message-ID: <ZMPR56RVgzI6s6Ik@google.com>
+From: Vlastimil Babka <vbabka@suse.cz>
+Date: Fri, 28 Jul 2023 18:02:46 +0200
+Subject: [RFC PATCH v11 10/29] mm: Add AS_UNMOVABLE to mark mapping as
+ completely unmovable
+In-Reply-To: <ZL/Fa4W2Ne9EVxoh@casper.infradead.org>
+References: <20230718234512.1690985-1-seanjc@google.com>
+ <20230718234512.1690985-11-seanjc@google.com>
+ <20230725102403.xywjqlhyqkrzjok6@box.shutemov.name>
+ <ZL/Fa4W2Ne9EVxoh@casper.infradead.org>
+Message-ID: <692b09f7-70d9-1119-7fe2-3e7396ec259d@suse.cz>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Jul 28, 2023, Andrew Jones wrote:
-> On Thu, Jul 27, 2023 at 03:20:06PM +0800, Haibo Xu wrote:
-> > +void vm_init_trap_vector_tables(struct kvm_vm *vm);
-> > +void vcpu_init_trap_vector_tables(struct kvm_vcpu *vcpu);
+On 7/25/23 14:51, Matthew Wilcox wrote:
+> On Tue, Jul 25, 2023 at 01:24:03PM +0300, Kirill A . Shutemov wrote:
+>> On Tue, Jul 18, 2023 at 04:44:53PM -0700, Sean Christopherson wrote:
+>> > diff --git a/mm/compaction.c b/mm/compaction.c
+>> > index dbc9f86b1934..a3d2b132df52 100644
+>> > --- a/mm/compaction.c
+>> > +++ b/mm/compaction.c
+>> > @@ -1047,6 +1047,10 @@ isolate_migratepages_block(struct compact_control *cc, unsigned long low_pfn,
+>> >  		if (!mapping && (folio_ref_count(folio) - 1) > folio_mapcount(folio))
+>> >  			goto isolate_fail_put;
+>> >  
+>> > +		/* The mapping truly isn't movable. */
+>> > +		if (mapping && mapping_unmovable(mapping))
+>> > +			goto isolate_fail_put;
+>> > +
+>> 
+>> I doubt that it is safe to dereference mapping here. I believe the folio
+>> can be truncated from under us and the mapping freed with the inode.
+>> 
+>> The folio has to be locked to dereference mapping safely (given that the
+>> mapping is still tied to the folio).
 > 
-> I think we should use a common name for these prototypes that the other
-> architectures agree to and then put them in a common header. My vote for
-> the naming is,
+> There's even a comment to that effect later on in the function:
 
-Just allocate the tables in kvm_arch_vm_post_create().  I've been meaning to
-convert x86 and ARM, but keep getting distracted/waylaid by other things.
+Hmm, well spotted. But it wouldn't be so great if we now had to lock every
+inspected page (and not just dirty pages), just to check the AS_ bit.
 
-https://lore.kernel.org/all/Y8hCBOndYMD9zsDL at google.com
+But I wonder if this is leftover from previous versions. Are the guest pages
+even PageLRU currently? (and should they be, given how they can't be swapped
+out or anything?) If not, isolate_migratepages_block will skip them anyway.
 
->   void vm_init_vector_tables(struct kvm_vm *vm);
->   void vcpu_init_vector_tables(struct kvm_vcpu *vcpu);
 > 
-> > +
-> > +typedef void(*handler_fn)(struct ex_regs *);
-> > +void vm_install_exception_handler(struct kvm_vm *vm, int ec, handler_fn handler);
+>                         /*
+>                          * Only pages without mappings or that have a
+>                          * ->migrate_folio callback are possible to migrate
+>                          * without blocking. However, we can be racing with
+>                          * truncation so it's necessary to lock the page
+>                          * to stabilise the mapping as truncation holds
+>                          * the page lock until after the page is removed
+>                          * from the page cache.
+>                          */
 > 
-> I'd also put this typedef
+> (that could be reworded to make it clear how dangerous dereferencing
+> ->mapping is without the lock ... and it does need to be changed to say
+> "folio lock" instead of "page lock", so ...)
 
-And rename it to (*exception_handler_fn).
+> How does this look?
+> 
+>                         /*
+>                          * Only folios without mappings or that have
+>                          * a ->migrate_folio callback are possible to
+>                          * migrate without blocking. However, we can
+>                          * be racing with truncation, which can free
+>                          * the mapping.  Truncation holds the folio lock
+>                          * until after the folio is removed from the page
+>                          * cache so holding it ourselves is sufficient.
+>                          */
+> 
 
-> and prototype in a common header (with s/ec/vector/ to what you have here)
-
-Hmm, yeah, I think it makes sense to let vm_install_exception_handler() be used
-from common code.  the vector to be installed is inherently arch specific, but
-it would be easy enough for a test to use #ifdeffery to define the correct vector.
 
