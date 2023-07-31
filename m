@@ -1,53 +1,42 @@
 From: Daniel Henrique Barboza <dbarboza@ventanamicro.com>
-Date: Mon, 31 Jul 2023 09:04:19 -0300
-Subject: [PATCH 5/6] RISC-V: KVM: use EBUSY when !vcpu->arch.ran_atleast_once
+Date: Mon, 31 Jul 2023 09:04:18 -0300
+Subject: [PATCH 4/6] RISC-V: KVM: do not EOPNOTSUPP in set KVM_REG_RISCV_TIMER_REG
 In-Reply-To: <20230731120420.91007-1-dbarboza@ventanamicro.com>
 References: <20230731120420.91007-1-dbarboza@ventanamicro.com>
-Message-ID: <20230731120420.91007-6-dbarboza@ventanamicro.com>
+Message-ID: <20230731120420.91007-5-dbarboza@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-vcpu_set_reg_config() and vcpu_set_reg_isa_ext() is throwing an
-EOPNOTSUPP error when !vcpu->arch.ran_atleast_once. In similar cases
-we're throwing an EBUSY error, like in mvendorid/marchid/mimpid
-set_reg().
+The KVM_REG_RISCV_TIMER_REG can be read via get_one_reg(). But trying to
+write anything in this reg via set_one_reg() results in an EOPNOTSUPP.
 
-EOPNOTSUPP has a conotation of finality. EBUSY is more adequate in this
-case since its a condition/error related to the vcpu lifecycle.
+Change the API to behave like cbom_block_size: instead of always
+erroring out with EOPNOTSUPP, allow userspace to write the same value
+(riscv_timebase) back, throwing an EINVAL if a different value is
+attempted.
 
-Change these EOPNOTSUPP instances to EBUSY.
-
-Suggested-by: Andrew Jones <ajones@ventanamicro.com>
 Signed-off-by: Daniel Henrique Barboza <dbarboza@ventanamicro.com>
 ---
- arch/riscv/kvm/vcpu_onereg.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/riscv/kvm/vcpu_timer.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/arch/riscv/kvm/vcpu_onereg.c b/arch/riscv/kvm/vcpu_onereg.c
-index 42bf01ab6a8f..07ce747620f9 100644
---- a/arch/riscv/kvm/vcpu_onereg.c
-+++ b/arch/riscv/kvm/vcpu_onereg.c
-@@ -209,7 +209,7 @@ static int kvm_riscv_vcpu_set_reg_config(struct kvm_vcpu *vcpu,
- 			vcpu->arch.isa[0] = reg_val;
- 			kvm_riscv_vcpu_fp_reset(vcpu);
- 		} else {
--			return -EOPNOTSUPP;
-+			return -EBUSY;
- 		}
- 		break;
- 	case KVM_REG_RISCV_CONFIG_REG(zicbom_block_size):
-@@ -477,7 +477,7 @@ static int riscv_vcpu_set_isa_ext_single(struct kvm_vcpu *vcpu,
- 			return -EINVAL;
- 		kvm_riscv_vcpu_fp_reset(vcpu);
- 	} else {
--		return -EOPNOTSUPP;
-+		return -EBUSY;
- 	}
+diff --git a/arch/riscv/kvm/vcpu_timer.c b/arch/riscv/kvm/vcpu_timer.c
+index 527d269cafff..75486b25ac45 100644
+--- a/arch/riscv/kvm/vcpu_timer.c
++++ b/arch/riscv/kvm/vcpu_timer.c
+@@ -218,7 +218,8 @@ int kvm_riscv_vcpu_set_reg_timer(struct kvm_vcpu *vcpu,
  
- 	return 0;
+ 	switch (reg_num) {
+ 	case KVM_REG_RISCV_TIMER_REG(frequency):
+-		ret = -EOPNOTSUPP;
++		if (reg_val != riscv_timebase)
++			return -EINVAL;
+ 		break;
+ 	case KVM_REG_RISCV_TIMER_REG(time):
+ 		gt->time_delta = reg_val - get_cycles64();
 -- 
 2.41.0
 
