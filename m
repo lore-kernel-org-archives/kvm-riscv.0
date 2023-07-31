@@ -1,59 +1,113 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Mon, 31 Jul 2023 14:57:12 +0200
-Subject: [PATCH 5/6] RISC-V: KVM: use EBUSY when
- !vcpu->arch.ran_atleast_once
-In-Reply-To: <20230731120420.91007-6-dbarboza@ventanamicro.com>
-References: <20230731120420.91007-1-dbarboza@ventanamicro.com>
- <20230731120420.91007-6-dbarboza@ventanamicro.com>
-Message-ID: <20230731-a4cd05af8a738c2d1fe8a120@orel>
+From: Fuad Tabba <tabba@google.com>
+Date: Mon, 31 Jul 2023 14:46:50 +0100
+Subject: [RFC PATCH v11 12/29] KVM: Add KVM_CREATE_GUEST_MEMFD ioctl() for
+ guest-specific backing memory
+In-Reply-To: <ZMKlo+Fe8n/eLQ82@google.com>
+References: <20230718234512.1690985-1-seanjc@google.com> <20230718234512.1690985-13-seanjc@google.com>
+ <CA+EHjTzP2fypgkJbRpSPrKaWytW7v8ANEifofMnQCkdvYaX6Eg@mail.gmail.com> <ZMKlo+Fe8n/eLQ82@google.com>
+Message-ID: <CA+EHjTzySXapdQbv8ocueboBR4LnM9WGV4bLOAfipB1saQ6OjQ@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Jul 31, 2023 at 09:04:19AM -0300, Daniel Henrique Barboza wrote:
-> vcpu_set_reg_config() and vcpu_set_reg_isa_ext() is throwing an
-> EOPNOTSUPP error when !vcpu->arch.ran_atleast_once. In similar cases
-> we're throwing an EBUSY error, like in mvendorid/marchid/mimpid
-> set_reg().
-> 
-> EOPNOTSUPP has a conotation of finality. EBUSY is more adequate in this
-> case since its a condition/error related to the vcpu lifecycle.
-> 
-> Change these EOPNOTSUPP instances to EBUSY.
-> 
-> Suggested-by: Andrew Jones <ajones@ventanamicro.com>
-> Signed-off-by: Daniel Henrique Barboza <dbarboza@ventanamicro.com>
-> ---
->  arch/riscv/kvm/vcpu_onereg.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/riscv/kvm/vcpu_onereg.c b/arch/riscv/kvm/vcpu_onereg.c
-> index 42bf01ab6a8f..07ce747620f9 100644
-> --- a/arch/riscv/kvm/vcpu_onereg.c
-> +++ b/arch/riscv/kvm/vcpu_onereg.c
-> @@ -209,7 +209,7 @@ static int kvm_riscv_vcpu_set_reg_config(struct kvm_vcpu *vcpu,
->  			vcpu->arch.isa[0] = reg_val;
->  			kvm_riscv_vcpu_fp_reset(vcpu);
->  		} else {
-> -			return -EOPNOTSUPP;
-> +			return -EBUSY;
->  		}
->  		break;
->  	case KVM_REG_RISCV_CONFIG_REG(zicbom_block_size):
-> @@ -477,7 +477,7 @@ static int riscv_vcpu_set_isa_ext_single(struct kvm_vcpu *vcpu,
->  			return -EINVAL;
->  		kvm_riscv_vcpu_fp_reset(vcpu);
->  	} else {
-> -		return -EOPNOTSUPP;
-> +		return -EBUSY;
->  	}
+Hi Sean,
 
-I think we should allow these ran_atleast_once type of registers to be
-written when the value matches, as we now do for the other registers.
-EBUSY should still be returned when the value doesn't match, though.
+On Thu, Jul 27, 2023 at 6:13?PM Sean Christopherson <seanjc@google.com> wrote:
+>
+> On Thu, Jul 27, 2023, Fuad Tabba wrote:
+> > Hi Sean,
+> >
+> > <snip>
+> > ...
+> >
+> > > @@ -5134,6 +5167,16 @@ static long kvm_vm_ioctl(struct file *filp,
+> > >         case KVM_GET_STATS_FD:
+> > >                 r = kvm_vm_ioctl_get_stats_fd(kvm);
+> > >                 break;
+> > > +       case KVM_CREATE_GUEST_MEMFD: {
+> > > +               struct kvm_create_guest_memfd guest_memfd;
+> > > +
+> > > +               r = -EFAULT;
+> > > +               if (copy_from_user(&guest_memfd, argp, sizeof(guest_memfd)))
+> > > +                       goto out;
+> > > +
+> > > +               r = kvm_gmem_create(kvm, &guest_memfd);
+> > > +               break;
+> > > +       }
+> >
+> > I'm thinking line of sight here, by having this as a vm ioctl (rather
+> > than a system iocl), would it complicate making it possible in the
+> > future to share/donate memory between VMs?
+>
+> Maybe, but I hope not?
+>
+> There would still be a primary owner of the memory, i.e. the memory would still
+> need to be allocated in the context of a specific VM.  And the primary owner should
+> be able to restrict privileges, e.g. allow a different VM to read but not write
+> memory.
+>
+> My current thinking is to (a) tie the lifetime of the backing pages to the inode,
+> i.e. allow allocations to outlive the original VM, and (b) create a new file each
+> time memory is shared/donated with a different VM (or other entity in the kernel).
+>
+> That should make it fairly straightforward to provide different permissions, e.g.
+> track them per-file, and I think should also avoid the need to change the memslot
+> binding logic since each VM would have it's own view/bindings.
+>
+> Copy+pasting a relevant snippet from a lengthier response in a different thread[*]:
+>
+>   Conceptually, I think KVM should to bind to the file.  The inode is effectively
+>   the raw underlying physical storage, while the file is the VM's view of that
+>   storage.
 
-Thanks,
-drew
+I'm not aware of any implementation of sharing memory between VMs in
+KVM before (afaik, since there was no need for one). The following is
+me thinking out loud, rather than any strong opinions on my part.
+
+If an allocation can outlive the original VM, then why associate it
+with that (or a) VM to begin with? Wouldn't it be more flexible if it
+were a system-level construct, which is effectively what it was in
+previous iterations of this? This doesn't rule out binding to the
+file, and keeping the inode as the underlying physical storage.
+
+The binding of a VM to a guestmem object could happen implicitly with
+KVM_SET_USER_MEMORY_REGION2, or we could have a new ioctl specifically
+for handling binding.
+
+Cheers,
+/fuad
+
+
+>   Practically, I think that gives us a clean, intuitive way to handle intra-host
+>   migration.  Rather than transfer ownership of the file, instantiate a new file
+>   for the target VM, using the gmem inode from the source VM, i.e. create a hard
+>   link.  That'd probably require new uAPI, but I don't think that will be hugely
+>   problematic.  KVM would need to ensure the new VM's guest_memfd can't be mapped
+>   until KVM_CAP_VM_MOVE_ENC_CONTEXT_FROM (which would also need to verify the
+>   memslots/bindings are identical), but that should be easy enough to enforce.
+>
+>   That way, a VM, its memslots, and its SPTEs are tied to the file, while allowing
+>   the memory and the *contents* of memory to outlive the VM, i.e. be effectively
+>   transfered to the new target VM.  And we'll maintain the invariant that each
+>   guest_memfd is bound 1:1 with a single VM.
+>
+>   As above, that should also help us draw the line between mapping memory into a
+>   VM (file), and freeing/reclaiming the memory (inode).
+>
+>   There will be extra complexity/overhead as we'll have to play nice with the
+>   possibility of multiple files per inode, e.g. to zap mappings across all files
+>   when punching a hole, but the extra complexity is quite small, e.g. we can use
+>   address_space.private_list to keep track of the guest_memfd instances associated
+>   with the inode.
+>
+>   Setting aside TDX and SNP for the moment, as it's not clear how they'll support
+>   memory that is "private" but shared between multiple VMs, I think per-VM files
+>   would work well for sharing gmem between two VMs.  E.g. would allow a give page
+>   to be bound to a different gfn for each VM, would allow having different permissions
+>   for each file (e.g. to allow fallocate() only from the original owner).
+>
+> [*] https://lore.kernel.org/all/ZLGiEfJZTyl7M8mS at google.com
+>
 
