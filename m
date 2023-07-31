@@ -1,79 +1,70 @@
-From: Fuad Tabba <tabba@google.com>
-Date: Mon, 31 Jul 2023 17:23:33 +0100
-Subject: [RFC PATCH v11 12/29] KVM: Add KVM_CREATE_GUEST_MEMFD ioctl() for
- guest-specific backing memory
-In-Reply-To: <ZL/yb4wL4Nhf9snZ@google.com>
-References: <20230718234512.1690985-1-seanjc@google.com> <20230718234512.1690985-13-seanjc@google.com>
- <DS0PR11MB637386533A4A10667BA6DF03DC03A@DS0PR11MB6373.namprd11.prod.outlook.com>
- <ZL/yb4wL4Nhf9snZ@google.com>
-Message-ID: <CA+EHjTwGoMgoTEktL9zq2190TMY=vU29xv+oQ7X2Eeu8c8AmjQ@mail.gmail.com>
+From: Raghavendra Rao Ananta <rananta@google.com>
+Date: Mon, 31 Jul 2023 10:21:08 -0700
+Subject: [PATCH v7 01/12] KVM: Rename kvm_arch_flush_remote_tlb() to kvm_arch_flush_remote_tlbs()
+In-Reply-To: <87v8e5r6s6.wl-maz@kernel.org>
+References: <20230722022251.3446223-1-rananta@google.com> <20230722022251.3446223-2-rananta@google.com>
+ <87v8e5r6s6.wl-maz@kernel.org>
+Message-ID: <CAJHc60wtc2Usei3hKj1ykVRvBZFFCBOHMi9HCxnNvGK2dPFApA@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Sean,
-
-On Tue, Jul 25, 2023 at 5:04?PM Sean Christopherson <seanjc@google.com> wrote:
+On Thu, Jul 27, 2023 at 3:24?AM Marc Zyngier <maz@kernel.org> wrote:
 >
-> On Tue, Jul 25, 2023, Wei W Wang wrote:
-> > On Wednesday, July 19, 2023 7:45 AM, Sean Christopherson wrote:
-> > > +int kvm_gmem_get_pfn(struct kvm *kvm, struct kvm_memory_slot *slot,
-> > > +                gfn_t gfn, kvm_pfn_t *pfn, int *max_order) {
-> > > +   pgoff_t index = gfn - slot->base_gfn + slot->gmem.pgoff;
-> > > +   struct kvm_gmem *gmem;
-> > > +   struct folio *folio;
-> > > +   struct page *page;
-> > > +   struct file *file;
-> > > +
-> > > +   file = kvm_gmem_get_file(slot);
-> > > +   if (!file)
-> > > +           return -EFAULT;
-> > > +
-> > > +   gmem = file->private_data;
-> > > +
-> > > +   if (WARN_ON_ONCE(xa_load(&gmem->bindings, index) != slot)) {
-> > > +           fput(file);
-> > > +           return -EIO;
-> > > +   }
-> > > +
-> > > +   folio = kvm_gmem_get_folio(file_inode(file), index);
-> > > +   if (!folio) {
-> > > +           fput(file);
-> > > +           return -ENOMEM;
-> > > +   }
-> > > +
-> > > +   page = folio_file_page(folio, index);
-> > > +
-> > > +   *pfn = page_to_pfn(page);
-> > > +   *max_order = compound_order(compound_head(page));
+> On Sat, 22 Jul 2023 03:22:40 +0100,
+> Raghavendra Rao Ananta <rananta@google.com> wrote:
 > >
-> > Maybe better to check if caller provided a buffer to get the max_order:
-> > if (max_order)
-> >       *max_order = compound_order(compound_head(page));
+> > From: David Matlack <dmatlack@google.com>
 > >
-> > This is what the previous version did (restrictedmem_get_page),
-> > so that callers who only want to get a pfn don't need to define
-> > an unused "order" param.
+> > Rename kvm_arch_flush_remote_tlb() and the associated macro
+> > __KVM_HAVE_ARCH_FLUSH_REMOTE_TLB to kvm_arch_flush_remote_tlbs() and
+> > __KVM_HAVE_ARCH_FLUSH_REMOTE_TLBS respectively.
+> >
+> > Making the name plural matches kvm_flush_remote_tlbs() and makes it more
+> > clear that this function can affect more than one remote TLB.
+> >
+> > No functional change intended.
+> >
+> > Signed-off-by: David Matlack <dmatlack@google.com>
+> > Signed-off-by: Raghavendra Rao Ananta <rananta@google.com>
+> > Reviewed-by: Gavin Shan <gshan@redhat.com>
+> > Reviewed-by: Philippe Mathieu-Daud? <philmd@linaro.org>
+> > Reviewed-by: Shaoqin Huang <shahuang@redhat.com>
+> > ---
+> >  arch/mips/include/asm/kvm_host.h | 4 ++--
+> >  arch/mips/kvm/mips.c             | 2 +-
+> >  arch/x86/include/asm/kvm_host.h  | 4 ++--
+> >  include/linux/kvm_host.h         | 4 ++--
+> >  virt/kvm/kvm_main.c              | 2 +-
+> >  5 files changed, 8 insertions(+), 8 deletions(-)
+> >
+> > diff --git a/arch/mips/include/asm/kvm_host.h b/arch/mips/include/asm/kvm_host.h
+> > index 04cedf9f8811..9b0ad8f3bf32 100644
+> > --- a/arch/mips/include/asm/kvm_host.h
+> > +++ b/arch/mips/include/asm/kvm_host.h
+> > @@ -896,7 +896,7 @@ static inline void kvm_arch_sched_in(struct kvm_vcpu *vcpu, int cpu) {}
+> >  static inline void kvm_arch_vcpu_blocking(struct kvm_vcpu *vcpu) {}
+> >  static inline void kvm_arch_vcpu_unblocking(struct kvm_vcpu *vcpu) {}
+> >
+> > -#define __KVM_HAVE_ARCH_FLUSH_REMOTE_TLB
+> > -int kvm_arch_flush_remote_tlb(struct kvm *kvm);
+> > +#define __KVM_HAVE_ARCH_FLUSH_REMOTE_TLBS
+> > +int kvm_arch_flush_remote_tlbs(struct kvm *kvm);
 >
-> My preference would be to require @max_order.  I can kinda sorta see why a generic
-> implementation (restrictedmem) would make the param optional, but with gmem being
-> KVM-internal I think it makes sense to require the param.  Even if pKVM doesn't
-> _currently_ need/want the order of the backing allocation, presumably that's because
-> hugepage support is still on the TODO list, not because pKVM fundamentally doesn't
-> need to know the order of the backing allocation.
+> How about making this prototype global? I don't see a point in having
+> it per-architecture, specially as you are adding arm64 to that mix in
+> the following patch.
+>
+We can make it global, but I'm not sure what was the intention of the
+original author. My guess is that he was following the same style that
+we have for some of the other kvm_arch_*() functions
+(kvm_arch_free_vm() for example)?
 
-You're right that with huge pages pKVM will eventually need to know
-the order of the backing allocation, but there is at least one use
-case where it doesn't, which I ran into in the previous ports as well
-as this one. In pKVM (and in possibly other implementations), the host
-needs to access (shared) guest memory that isn't mapped. For that,
-I've used kvm_*_get_pfn(), only requiring the pfn, so get the page via
-pfn_to_page().
-
-Although it's not that big, my preference would be for max_order to be optional.
-
-Thanks!
-/fuad
+- Raghavendra
+>         M.
+>
+> --
+> Without deviation from the norm, progress is not possible.
 
