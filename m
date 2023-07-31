@@ -1,81 +1,72 @@
-From: Raghavendra Rao Ananta <rananta@google.com>
-Date: Mon, 31 Jul 2023 10:36:47 -0700
-Subject: [PATCH v7 06/12] arm64: tlb: Refactor the core flush algorithm of __flush_tlb_range
-In-Reply-To: <87r0otr579.wl-maz@kernel.org>
-References: <20230722022251.3446223-1-rananta@google.com> <20230722022251.3446223-7-rananta@google.com>
- <87r0otr579.wl-maz@kernel.org>
-Message-ID: <CAJHc60zqOeWXf3kh5hKL6DL3g4znmHaH-TqC0QDcBrWPsHAEXQ@mail.gmail.com>
+From: Oliver Upton <oliver.upton@linux.dev>
+Date: Mon, 31 Jul 2023 17:37:37 +0000
+Subject: [PATCH] KVM: Wrap kvm_{gfn,hva}_range.pte in a per-action union
+In-Reply-To: <20230729004144.1054885-1-seanjc@google.com>
+References: <20230729004144.1054885-1-seanjc@google.com>
+Message-ID: <ZMfxYR41K71UV/84@linux.dev>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Jul 27, 2023 at 3:58?AM Marc Zyngier <maz@kernel.org> wrote:
->
-> On Sat, 22 Jul 2023 03:22:45 +0100,
-> Raghavendra Rao Ananta <rananta@google.com> wrote:
-> >
-> > Currently, the core TLB flush functionality of __flush_tlb_range()
-> > hardcodes vae1is (and variants) for the flush operation. In the
-> > upcoming patches, the KVM code reuses this core algorithm with
-> > ipas2e1is for range based TLB invalidations based on the IPA.
-> > Hence, extract the core flush functionality of __flush_tlb_range()
-> > into its own macro that accepts an 'op' argument to pass any
-> > TLBI operation, such that other callers (KVM) can benefit.
-> >
-> > No functional changes intended.
-> >
-> > Signed-off-by: Raghavendra Rao Ananta <rananta@google.com>
-> > Reviewed-by: Catalin Marinas <catalin.marinas@arm.com>
-> > Reviewed-by: Gavin Shan <gshan@redhat.com>
-> > Reviewed-by: Shaoqin Huang <shahuang@redhat.com>
-> > ---
-> >  arch/arm64/include/asm/tlbflush.h | 109 +++++++++++++++---------------
-> >  1 file changed, 56 insertions(+), 53 deletions(-)
-> >
-> > diff --git a/arch/arm64/include/asm/tlbflush.h b/arch/arm64/include/asm/tlbflush.h
-> > index 412a3b9a3c25..f7fafba25add 100644
-> > --- a/arch/arm64/include/asm/tlbflush.h
-> > +++ b/arch/arm64/include/asm/tlbflush.h
-> > @@ -278,14 +278,62 @@ static inline void flush_tlb_page(struct vm_area_struct *vma,
-> >   */
-> >  #define MAX_TLBI_OPS PTRS_PER_PTE
-> >
-> > +/* When the CPU does not support TLB range operations, flush the TLB
-> > + * entries one by one at the granularity of 'stride'. If the TLB
-> > + * range ops are supported, then:
->
-> Comment format (the original was correct).
->
-Isn't the format the same as original? Or are you referring to the
-fact that it needs to be placed inside the macro definition?
-> > + *
-> > + * 1. If 'pages' is odd, flush the first page through non-range
-> > + *    operations;
-> > + *
-> > + * 2. For remaining pages: the minimum range granularity is decided
-> > + *    by 'scale', so multiple range TLBI operations may be required.
-> > + *    Start from scale = 0, flush the corresponding number of pages
-> > + *    ((num+1)*2^(5*scale+1) starting from 'addr'), then increase it
-> > + *    until no pages left.
-> > + *
-> > + * Note that certain ranges can be represented by either num = 31 and
-> > + * scale or num = 0 and scale + 1. The loop below favours the latter
-> > + * since num is limited to 30 by the __TLBI_RANGE_NUM() macro.
-> > + */
-> > +#define __flush_tlb_range_op(op, start, pages, stride,                       \
-> > +                             asid, tlb_level, tlbi_user)             \
->
-> If you make this a common macro, please document the parameters, and
-> what the constraints are. For example, what does tlbi_user mean for an
-> IPA invalidation?
->
-Sure, I'll document the parameters. That'll be helpful.
+On Fri, Jul 28, 2023 at 05:41:44PM -0700, Sean Christopherson wrote:
+> Wrap kvm_{gfn,hva}_range.pte in a union so that future notifier events can
+> pass event specific information up and down the stack without needing to
+> constantly expand and churn the APIs.  Lockless aging of SPTEs will pass
+> around a bitmap, and support for memory attributes will pass around the
+> new attributes for the range.
+> 
+> Add a "KVM_NO_ARG" placeholder to simplify handling events without an
+> argument (creating a dummy union variable is midly annoying).
+> 
+> Opportunstically drop explicit zero-initialization of the "pte" field, as
+> omitting the field (now a union) has the same effect.
+> 
+> Cc: Yu Zhao <yuzhao@google.com>
+> Link: https://lore.kernel.org/all/CAOUHufagkd2Jk3_HrVoFFptRXM=hX2CV8f+M-dka-hJU4bP8kw at mail.gmail.com
+> Signed-off-by: Sean Christopherson <seanjc@google.com>
 
-- Raghavendra
->         M.
->
-> --
-> Without deviation from the norm, progress is not possible.
+Looks good, and I don't think it'll conflict with anything on the arm64
+side.
+
+Reviewed-by: Oliver Upton <oliver.upton@linux.dev>
+
+> ---
+> 
+> If this looks good, my thought is to squeeze it into 6.6 so that the MGLRU
+> and guest_memfd() series can build on it.  Or those series could just
+> include it?
+
+Eh, I'm not a huge fan of having two series independently reposting a
+common base. It can be a bit annoying when the two authors have slightly
+different interpretations on how to improve it...
+
+> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+> index dfbaafbe3a00..f84ef9399aee 100644
+> --- a/virt/kvm/kvm_main.c
+> +++ b/virt/kvm/kvm_main.c
+> @@ -526,7 +526,7 @@ typedef void (*on_unlock_fn_t)(struct kvm *kvm);
+>  struct kvm_hva_range {
+>  	unsigned long start;
+>  	unsigned long end;
+> -	pte_t pte;
+> +	union kvm_mmu_notifier_arg arg;
+>  	hva_handler_t handler;
+>  	on_lock_fn_t on_lock;
+>  	on_unlock_fn_t on_unlock;
+> @@ -547,6 +547,8 @@ static void kvm_null_fn(void)
+>  }
+>  #define IS_KVM_NULL_FN(fn) ((fn) == (void *)kvm_null_fn)
+>  
+> +static const union kvm_mmu_notifier_arg KVM_NO_ARG;
+> +
+
+I'm guessing you were trying to keep this short, but it might be nice to
+use MMU_NOTIFIER_ (or similar) as the prefix to make the scope
+immediately obvious.
+
+-- 
+Thanks,
+Oliver
 
