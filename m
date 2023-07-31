@@ -1,242 +1,75 @@
-From: Sean Christopherson <seanjc@google.com>
-Date: Fri, 28 Jul 2023 17:41:44 -0700
-Subject: [PATCH] KVM: Wrap kvm_{gfn,hva}_range.pte in a per-action union
-Message-ID: <20230729004144.1054885-1-seanjc@google.com>
+From: Quentin Perret <qperret@google.com>
+Date: Mon, 31 Jul 2023 09:30:43 +0000
+Subject: [RFC PATCH v11 06/29] KVM: Introduce KVM_SET_USER_MEMORY_REGION2
+In-Reply-To: <ZMRXVZYaJ9wojGtS@google.com>
+References: <20230718234512.1690985-1-seanjc@google.com>
+ <20230718234512.1690985-7-seanjc@google.com>
+ <ZMOJgnyzzUNIx+Tn@google.com>
+ <ZMRXVZYaJ9wojGtS@google.com>
+Message-ID: <ZMd/Q4fytFhinDDj@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Wrap kvm_{gfn,hva}_range.pte in a union so that future notifier events can
-pass event specific information up and down the stack without needing to
-constantly expand and churn the APIs.  Lockless aging of SPTEs will pass
-around a bitmap, and support for memory attributes will pass around the
-new attributes for the range.
+On Friday 28 Jul 2023 at 17:03:33 (-0700), Sean Christopherson wrote:
+> On Fri, Jul 28, 2023, Quentin Perret wrote:
+> > On Tuesday 18 Jul 2023 at 16:44:49 (-0700), Sean Christopherson wrote:
+> > > --- a/include/uapi/linux/kvm.h
+> > > +++ b/include/uapi/linux/kvm.h
+> > > @@ -95,6 +95,16 @@ struct kvm_userspace_memory_region {
+> > >  	__u64 userspace_addr; /* start of the userspace allocated memory */
+> > >  };
+> > >  
+> > > +/* for KVM_SET_USER_MEMORY_REGION2 */
+> > > +struct kvm_userspace_memory_region2 {
+> > > +	__u32 slot;
+> > > +	__u32 flags;
+> > > +	__u64 guest_phys_addr;
+> > > +	__u64 memory_size;
+> > > +	__u64 userspace_addr;
+> > > +	__u64 pad[16];
+> > 
+> > Should we replace that pad[16] with:
+> > 
+> > 	__u64 size;
+> > 
+> > where 'size' is the size of the structure as seen by userspace? This is
+> > used in other UAPIs (see struct sched_attr for example) and is a bit
+> > more robust for future extensions (e.g. an 'old' kernel can correctly
+> > reject a newer version of the struct with additional fields it doesn't
+> > know about if that makes sense, etc).
+> 
+> "flags" serves that purpose, i.e. allows userspace to opt-in to having KVM actually
+> consume what is currently just padding.
 
-Add a "KVM_NO_ARG" placeholder to simplify handling events without an
-argument (creating a dummy union variable is midly annoying).
+Sure, I've just grown to dislike static padding of that type -- it ends
+up being either a waste a space, or is too small, while the 'superior'
+alternative (having a 'size' member) doesn't cost much and avoids those
+problems.
 
-Opportunstically drop explicit zero-initialization of the "pte" field, as
-omitting the field (now a union) has the same effect.
+But no strong opinion really, this struct really shouldn't grow much,
+so I'm sure that'll be fine in practice.
 
-Cc: Yu Zhao <yuzhao@google.com>
-Link: https://lore.kernel.org/all/CAOUHufagkd2Jk3_HrVoFFptRXM=hX2CV8f+M-dka-hJU4bP8kw at mail.gmail.com
-Signed-off-by: Sean Christopherson <seanjc@google.com>
----
+> The padding is there mainly to simplify kernel/KVM code, e.g. the number of bytes
+> that KVM needs to copy in is static.
+> 
+> But now that I think more on this, I don't know why we didn't just unconditionally
+> bump the size of kvm_userspace_memory_region.  We tried to play games with unions
+> and overlays, but that was a mess[*].
+> 
+> KVM would need to do multiple uaccess reads, but that's not a big deal.  Am I
+> missing something, or did past us just get too clever and miss the obvious solution?
+> 
+> [*] https://lkml.kernel.org/r/Y7xrtf9FCuYRYm1q%40google.com
 
-If this looks good, my thought is to squeeze it into 6.6 so that the MGLRU
-and guest_memfd() series can build on it.  Or those series could just
-include it?
+Right, so the first uaccess would get_user() the flags, based on that
+we'd figure out the size of the struct, copy_from_user() what we need,
+and then sanity check the flags are the same from both reads, or
+something along those lines?
 
- arch/arm64/kvm/mmu.c       |  2 +-
- arch/mips/kvm/mmu.c        |  2 +-
- arch/riscv/kvm/mmu.c       |  2 +-
- arch/x86/kvm/mmu/mmu.c     |  2 +-
- arch/x86/kvm/mmu/tdp_mmu.c |  6 +++---
- include/linux/kvm_host.h   |  6 +++++-
- virt/kvm/kvm_main.c        | 18 +++++++++---------
- 7 files changed, 21 insertions(+), 17 deletions(-)
-
-diff --git a/arch/arm64/kvm/mmu.c b/arch/arm64/kvm/mmu.c
-index 6db9ef288ec3..55f03a68f1cd 100644
---- a/arch/arm64/kvm/mmu.c
-+++ b/arch/arm64/kvm/mmu.c
-@@ -1721,7 +1721,7 @@ bool kvm_unmap_gfn_range(struct kvm *kvm, struct kvm_gfn_range *range)
- 
- bool kvm_set_spte_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
- {
--	kvm_pfn_t pfn = pte_pfn(range->pte);
-+	kvm_pfn_t pfn = pte_pfn(range->arg.pte);
- 
- 	if (!kvm->arch.mmu.pgt)
- 		return false;
-diff --git a/arch/mips/kvm/mmu.c b/arch/mips/kvm/mmu.c
-index e8c08988ed37..7b2ac1319d70 100644
---- a/arch/mips/kvm/mmu.c
-+++ b/arch/mips/kvm/mmu.c
-@@ -447,7 +447,7 @@ bool kvm_unmap_gfn_range(struct kvm *kvm, struct kvm_gfn_range *range)
- bool kvm_set_spte_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
- {
- 	gpa_t gpa = range->start << PAGE_SHIFT;
--	pte_t hva_pte = range->pte;
-+	pte_t hva_pte = range->arg.pte;
- 	pte_t *gpa_pte = kvm_mips_pte_for_gpa(kvm, NULL, gpa);
- 	pte_t old_pte;
- 
-diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
-index f2eb47925806..857f4312b0f8 100644
---- a/arch/riscv/kvm/mmu.c
-+++ b/arch/riscv/kvm/mmu.c
-@@ -559,7 +559,7 @@ bool kvm_unmap_gfn_range(struct kvm *kvm, struct kvm_gfn_range *range)
- bool kvm_set_spte_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
- {
- 	int ret;
--	kvm_pfn_t pfn = pte_pfn(range->pte);
-+	kvm_pfn_t pfn = pte_pfn(range->arg.pte);
- 
- 	if (!kvm->arch.pgd)
- 		return false;
-diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
-index ec169f5c7dce..d72f2b20f430 100644
---- a/arch/x86/kvm/mmu/mmu.c
-+++ b/arch/x86/kvm/mmu/mmu.c
-@@ -1588,7 +1588,7 @@ static __always_inline bool kvm_handle_gfn_range(struct kvm *kvm,
- 	for_each_slot_rmap_range(range->slot, PG_LEVEL_4K, KVM_MAX_HUGEPAGE_LEVEL,
- 				 range->start, range->end - 1, &iterator)
- 		ret |= handler(kvm, iterator.rmap, range->slot, iterator.gfn,
--			       iterator.level, range->pte);
-+			       iterator.level, range->arg.pte);
- 
- 	return ret;
- }
-diff --git a/arch/x86/kvm/mmu/tdp_mmu.c b/arch/x86/kvm/mmu/tdp_mmu.c
-index 512163d52194..6250bd3d20c1 100644
---- a/arch/x86/kvm/mmu/tdp_mmu.c
-+++ b/arch/x86/kvm/mmu/tdp_mmu.c
-@@ -1241,7 +1241,7 @@ static bool set_spte_gfn(struct kvm *kvm, struct tdp_iter *iter,
- 	u64 new_spte;
- 
- 	/* Huge pages aren't expected to be modified without first being zapped. */
--	WARN_ON(pte_huge(range->pte) || range->start + 1 != range->end);
-+	WARN_ON(pte_huge(range->arg.pte) || range->start + 1 != range->end);
- 
- 	if (iter->level != PG_LEVEL_4K ||
- 	    !is_shadow_present_pte(iter->old_spte))
-@@ -1255,9 +1255,9 @@ static bool set_spte_gfn(struct kvm *kvm, struct tdp_iter *iter,
- 	 */
- 	tdp_mmu_iter_set_spte(kvm, iter, 0);
- 
--	if (!pte_write(range->pte)) {
-+	if (!pte_write(range->arg.pte)) {
- 		new_spte = kvm_mmu_changed_pte_notifier_make_spte(iter->old_spte,
--								  pte_pfn(range->pte));
-+								  pte_pfn(range->arg.pte));
- 
- 		tdp_mmu_iter_set_spte(kvm, iter, new_spte);
- 	}
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index 9d3ac7720da9..9125d0ab642d 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -256,11 +256,15 @@ int kvm_async_pf_wakeup_all(struct kvm_vcpu *vcpu);
- #endif
- 
- #ifdef KVM_ARCH_WANT_MMU_NOTIFIER
-+union kvm_mmu_notifier_arg {
-+	pte_t pte;
-+};
-+
- struct kvm_gfn_range {
- 	struct kvm_memory_slot *slot;
- 	gfn_t start;
- 	gfn_t end;
--	pte_t pte;
-+	union kvm_mmu_notifier_arg arg;
- 	bool may_block;
- };
- bool kvm_unmap_gfn_range(struct kvm *kvm, struct kvm_gfn_range *range);
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index dfbaafbe3a00..f84ef9399aee 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -526,7 +526,7 @@ typedef void (*on_unlock_fn_t)(struct kvm *kvm);
- struct kvm_hva_range {
- 	unsigned long start;
- 	unsigned long end;
--	pte_t pte;
-+	union kvm_mmu_notifier_arg arg;
- 	hva_handler_t handler;
- 	on_lock_fn_t on_lock;
- 	on_unlock_fn_t on_unlock;
-@@ -547,6 +547,8 @@ static void kvm_null_fn(void)
- }
- #define IS_KVM_NULL_FN(fn) ((fn) == (void *)kvm_null_fn)
- 
-+static const union kvm_mmu_notifier_arg KVM_NO_ARG;
-+
- /* Iterate over each memslot intersecting [start, last] (inclusive) range */
- #define kvm_for_each_memslot_in_hva_range(node, slots, start, last)	     \
- 	for (node = interval_tree_iter_first(&slots->hva_tree, start, last); \
-@@ -591,7 +593,7 @@ static __always_inline int __kvm_handle_hva_range(struct kvm *kvm,
- 			 * bother making these conditional (to avoid writes on
- 			 * the second or later invocation of the handler).
- 			 */
--			gfn_range.pte = range->pte;
-+			gfn_range.arg = range->arg;
- 			gfn_range.may_block = range->may_block;
- 
- 			/*
-@@ -632,14 +634,14 @@ static __always_inline int __kvm_handle_hva_range(struct kvm *kvm,
- static __always_inline int kvm_handle_hva_range(struct mmu_notifier *mn,
- 						unsigned long start,
- 						unsigned long end,
--						pte_t pte,
-+						union kvm_mmu_notifier_arg arg,
- 						hva_handler_t handler)
- {
- 	struct kvm *kvm = mmu_notifier_to_kvm(mn);
- 	const struct kvm_hva_range range = {
- 		.start		= start,
- 		.end		= end,
--		.pte		= pte,
-+		.arg		= arg,
- 		.handler	= handler,
- 		.on_lock	= (void *)kvm_null_fn,
- 		.on_unlock	= (void *)kvm_null_fn,
-@@ -659,7 +661,6 @@ static __always_inline int kvm_handle_hva_range_no_flush(struct mmu_notifier *mn
- 	const struct kvm_hva_range range = {
- 		.start		= start,
- 		.end		= end,
--		.pte		= __pte(0),
- 		.handler	= handler,
- 		.on_lock	= (void *)kvm_null_fn,
- 		.on_unlock	= (void *)kvm_null_fn,
-@@ -693,6 +694,7 @@ static void kvm_mmu_notifier_change_pte(struct mmu_notifier *mn,
- 					pte_t pte)
- {
- 	struct kvm *kvm = mmu_notifier_to_kvm(mn);
-+	const union kvm_mmu_notifier_arg arg = { .pte = pte };
- 
- 	trace_kvm_set_spte_hva(address);
- 
-@@ -708,7 +710,7 @@ static void kvm_mmu_notifier_change_pte(struct mmu_notifier *mn,
- 	if (!READ_ONCE(kvm->mmu_invalidate_in_progress))
- 		return;
- 
--	kvm_handle_hva_range(mn, address, address + 1, pte, kvm_change_spte_gfn);
-+	kvm_handle_hva_range(mn, address, address + 1, arg, kvm_change_spte_gfn);
- }
- 
- void kvm_mmu_invalidate_begin(struct kvm *kvm, unsigned long start,
-@@ -747,7 +749,6 @@ static int kvm_mmu_notifier_invalidate_range_start(struct mmu_notifier *mn,
- 	const struct kvm_hva_range hva_range = {
- 		.start		= range->start,
- 		.end		= range->end,
--		.pte		= __pte(0),
- 		.handler	= kvm_unmap_gfn_range,
- 		.on_lock	= kvm_mmu_invalidate_begin,
- 		.on_unlock	= kvm_arch_guest_memory_reclaimed,
-@@ -812,7 +813,6 @@ static void kvm_mmu_notifier_invalidate_range_end(struct mmu_notifier *mn,
- 	const struct kvm_hva_range hva_range = {
- 		.start		= range->start,
- 		.end		= range->end,
--		.pte		= __pte(0),
- 		.handler	= (void *)kvm_null_fn,
- 		.on_lock	= kvm_mmu_invalidate_end,
- 		.on_unlock	= (void *)kvm_null_fn,
-@@ -845,7 +845,7 @@ static int kvm_mmu_notifier_clear_flush_young(struct mmu_notifier *mn,
- {
- 	trace_kvm_age_hva(start, end);
- 
--	return kvm_handle_hva_range(mn, start, end, __pte(0), kvm_age_gfn);
-+	return kvm_handle_hva_range(mn, start, end, KVM_NO_ARG, kvm_age_gfn);
- }
- 
- static int kvm_mmu_notifier_clear_young(struct mmu_notifier *mn,
-
-base-commit: fdf0eaf11452d72945af31804e2a1048ee1b574c
--- 
-2.41.0.487.g6d72f3e995-goog
-
+That doesn't sound too complicated to me, and as long as every extension
+to the struct does come with a new flag I can't immediately see what
+would go wrong.
 
