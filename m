@@ -1,49 +1,61 @@
 From: Daniel Henrique Barboza <dbarboza@ventanamicro.com>
-Date: Tue,  1 Aug 2023 19:26:26 -0300
-Subject: [PATCH v2 6/9] RISC-V: KVM: avoid EBUSY when writing same ISA val
+Date: Tue,  1 Aug 2023 19:26:27 -0300
+Subject: [PATCH v2 7/9] RISC-V: KVM: avoid EBUSY when writing the same machine ID val
 In-Reply-To: <20230801222629.210929-1-dbarboza@ventanamicro.com>
 References: <20230801222629.210929-1-dbarboza@ventanamicro.com>
-Message-ID: <20230801222629.210929-7-dbarboza@ventanamicro.com>
+Message-ID: <20230801222629.210929-8-dbarboza@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-kvm_riscv_vcpu_set_reg_config() will return -EBUSY if the ISA config reg
-is being written after the VCPU ran at least once.
+Right now we do not allow any write in mvendorid/marchid/mimpid if the
+vcpu already started, preventing these regs to be changed.
 
-The same restriction isn't placed in kvm_riscv_vcpu_get_reg_config(), so
-there's a chance that we'll -EBUSY out on an ISA config reg write even
-if the userspace intended no changes to it.
+However, if userspace doesn't change them, an alternative is to consider
+the reg write a no-op and avoid erroring out altogether. Userpace can
+then be oblivious about KVM internals if no changes were intended in the
+first place.
 
-We'll allow the same form of 'lazy writing' that registers such as
-zicbom/zicboz_block_size supports: avoid erroring out if userspace made
-no changes to the ISA config reg.
+Allow the same form of 'lazy writing' that registers such as
+zicbom/zicboz_block_size supports: avoid erroring out if userspace makes
+no changes in mvendorid/marchid/mimpid during reg write.
 
 Signed-off-by: Daniel Henrique Barboza <dbarboza@ventanamicro.com>
 ---
- arch/riscv/kvm/vcpu_onereg.c | 7 +++++++
- 1 file changed, 7 insertions(+)
+ arch/riscv/kvm/vcpu_onereg.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
 diff --git a/arch/riscv/kvm/vcpu_onereg.c b/arch/riscv/kvm/vcpu_onereg.c
-index 67e1e9b0fd7e..b0821f75cc61 100644
+index b0821f75cc61..1ceccc93ccdb 100644
 --- a/arch/riscv/kvm/vcpu_onereg.c
 +++ b/arch/riscv/kvm/vcpu_onereg.c
-@@ -187,6 +187,13 @@ static int kvm_riscv_vcpu_set_reg_config(struct kvm_vcpu *vcpu,
- 		if (fls(reg_val) >= RISCV_ISA_EXT_BASE)
+@@ -232,18 +232,24 @@ static int kvm_riscv_vcpu_set_reg_config(struct kvm_vcpu *vcpu,
  			return -EINVAL;
- 
-+		/*
-+		 * Return early (i.e. do nothing) if reg_val is the same
-+		 * value retrievable via kvm_riscv_vcpu_get_reg_config().
-+		 */
-+		if (reg_val == (vcpu->arch.isa[0] & KVM_RISCV_BASE_ISA_MASK))
+ 		break;
+ 	case KVM_REG_RISCV_CONFIG_REG(mvendorid):
++		if (reg_val == vcpu->arch.mvendorid)
 +			break;
-+
- 		if (!vcpu->arch.ran_atleast_once) {
- 			/* Ignore the enable/disable request for certain extensions */
- 			for (i = 0; i < RISCV_ISA_EXT_BASE; i++) {
+ 		if (!vcpu->arch.ran_atleast_once)
+ 			vcpu->arch.mvendorid = reg_val;
+ 		else
+ 			return -EBUSY;
+ 		break;
+ 	case KVM_REG_RISCV_CONFIG_REG(marchid):
++		if (reg_val == vcpu->arch.marchid)
++			break;
+ 		if (!vcpu->arch.ran_atleast_once)
+ 			vcpu->arch.marchid = reg_val;
+ 		else
+ 			return -EBUSY;
+ 		break;
+ 	case KVM_REG_RISCV_CONFIG_REG(mimpid):
++		if (reg_val == vcpu->arch.mimpid)
++			break;
+ 		if (!vcpu->arch.ran_atleast_once)
+ 			vcpu->arch.mimpid = reg_val;
+ 		else
 -- 
 2.41.0
 
