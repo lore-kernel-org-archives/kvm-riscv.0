@@ -1,53 +1,49 @@
 From: Daniel Henrique Barboza <dbarboza@ventanamicro.com>
-Date: Tue,  1 Aug 2023 19:26:25 -0300
-Subject: [PATCH v2 5/9] RISC-V: KVM: use EBUSY when !vcpu->arch.ran_atleast_once
+Date: Tue,  1 Aug 2023 19:26:26 -0300
+Subject: [PATCH v2 6/9] RISC-V: KVM: avoid EBUSY when writing same ISA val
 In-Reply-To: <20230801222629.210929-1-dbarboza@ventanamicro.com>
 References: <20230801222629.210929-1-dbarboza@ventanamicro.com>
-Message-ID: <20230801222629.210929-6-dbarboza@ventanamicro.com>
+Message-ID: <20230801222629.210929-7-dbarboza@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-vcpu_set_reg_config() and vcpu_set_reg_isa_ext() is throwing an
-EOPNOTSUPP error when !vcpu->arch.ran_atleast_once. In similar cases
-we're throwing an EBUSY error, like in mvendorid/marchid/mimpid
-set_reg().
+kvm_riscv_vcpu_set_reg_config() will return -EBUSY if the ISA config reg
+is being written after the VCPU ran at least once.
 
-EOPNOTSUPP has a conotation of finality. EBUSY is more adequate in this
-case since its a condition/error related to the vcpu lifecycle.
+The same restriction isn't placed in kvm_riscv_vcpu_get_reg_config(), so
+there's a chance that we'll -EBUSY out on an ISA config reg write even
+if the userspace intended no changes to it.
 
-Change these EOPNOTSUPP instances to EBUSY.
+We'll allow the same form of 'lazy writing' that registers such as
+zicbom/zicboz_block_size supports: avoid erroring out if userspace made
+no changes to the ISA config reg.
 
-Suggested-by: Andrew Jones <ajones@ventanamicro.com>
 Signed-off-by: Daniel Henrique Barboza <dbarboza@ventanamicro.com>
 ---
- arch/riscv/kvm/vcpu_onereg.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/riscv/kvm/vcpu_onereg.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
 diff --git a/arch/riscv/kvm/vcpu_onereg.c b/arch/riscv/kvm/vcpu_onereg.c
-index bd4998c3897b..67e1e9b0fd7e 100644
+index 67e1e9b0fd7e..b0821f75cc61 100644
 --- a/arch/riscv/kvm/vcpu_onereg.c
 +++ b/arch/riscv/kvm/vcpu_onereg.c
-@@ -209,7 +209,7 @@ static int kvm_riscv_vcpu_set_reg_config(struct kvm_vcpu *vcpu,
- 			vcpu->arch.isa[0] = reg_val;
- 			kvm_riscv_vcpu_fp_reset(vcpu);
- 		} else {
--			return -EOPNOTSUPP;
-+			return -EBUSY;
- 		}
- 		break;
- 	case KVM_REG_RISCV_CONFIG_REG(zicbom_block_size):
-@@ -477,7 +477,7 @@ static int riscv_vcpu_set_isa_ext_single(struct kvm_vcpu *vcpu,
+@@ -187,6 +187,13 @@ static int kvm_riscv_vcpu_set_reg_config(struct kvm_vcpu *vcpu,
+ 		if (fls(reg_val) >= RISCV_ISA_EXT_BASE)
  			return -EINVAL;
- 		kvm_riscv_vcpu_fp_reset(vcpu);
- 	} else {
--		return -EOPNOTSUPP;
-+		return -EBUSY;
- 	}
  
- 	return 0;
++		/*
++		 * Return early (i.e. do nothing) if reg_val is the same
++		 * value retrievable via kvm_riscv_vcpu_get_reg_config().
++		 */
++		if (reg_val == (vcpu->arch.isa[0] & KVM_RISCV_BASE_ISA_MASK))
++			break;
++
+ 		if (!vcpu->arch.ran_atleast_once) {
+ 			/* Ignore the enable/disable request for certain extensions */
+ 			for (i = 0; i < RISCV_ISA_EXT_BASE; i++) {
 -- 
 2.41.0
 
