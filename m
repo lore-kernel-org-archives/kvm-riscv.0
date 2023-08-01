@@ -1,45 +1,36 @@
 From: Daniel Henrique Barboza <dbarboza@ventanamicro.com>
-Date: Tue,  1 Aug 2023 19:26:28 -0300
-Subject: [PATCH v2 8/9] RISC-V: KVM: avoid EBUSY when writing the same isa_ext val
+Date: Tue,  1 Aug 2023 19:26:29 -0300
+Subject: [PATCH v2 9/9] docs: kvm: riscv: document EBUSY in KVM_SET_ONE_REG
 In-Reply-To: <20230801222629.210929-1-dbarboza@ventanamicro.com>
 References: <20230801222629.210929-1-dbarboza@ventanamicro.com>
-Message-ID: <20230801222629.210929-9-dbarboza@ventanamicro.com>
+Message-ID: <20230801222629.210929-10-dbarboza@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-riscv_vcpu_set_isa_ext_single() will prevent any write of isa_ext regs
-if the vcpu already started spinning.
-
-But if there's no extension state (enabled/disabled) made by the
-userspace, there's no need to -EBUSY out - we can treat the operation as
-a no-op.
-
-zicbom/zicboz_block_size, ISA config reg and mvendorid/march/mimpid
-already works in a more permissive manner w.r.t userspace writes being a
-no-op, so let's do the same with isa_ext writes.
+The EBUSY errno is being used for KVM_SET_ONE_REG as a way to tell
+userspace that a given reg can't be written after the vcpu started.
 
 Signed-off-by: Daniel Henrique Barboza <dbarboza@ventanamicro.com>
 ---
- arch/riscv/kvm/vcpu_onereg.c | 3 +++
- 1 file changed, 3 insertions(+)
+ Documentation/virt/kvm/api.rst | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/arch/riscv/kvm/vcpu_onereg.c b/arch/riscv/kvm/vcpu_onereg.c
-index 1ceccc93ccdb..c88b0c7f7f01 100644
---- a/arch/riscv/kvm/vcpu_onereg.c
-+++ b/arch/riscv/kvm/vcpu_onereg.c
-@@ -475,6 +475,9 @@ static int riscv_vcpu_set_isa_ext_single(struct kvm_vcpu *vcpu,
- 	if (!__riscv_isa_extension_available(NULL, host_isa_ext))
- 		return -ENOENT;
+diff --git a/Documentation/virt/kvm/api.rst b/Documentation/virt/kvm/api.rst
+index c0ddd3035462..229e7cc091c8 100644
+--- a/Documentation/virt/kvm/api.rst
++++ b/Documentation/virt/kvm/api.rst
+@@ -2259,6 +2259,8 @@ Errors:
+   EINVAL   invalid register ID, or no such register or used with VMs in
+            protected virtualization mode on s390
+   EPERM    (arm64) register access not allowed before vcpu finalization
++  EBUSY    (riscv) register access not allowed after the vcpu has run
++           at least once
+   ======   ============================================================
  
-+	if (reg_val == test_bit(host_isa_ext, vcpu->arch.isa))
-+		return 0;
-+
- 	if (!vcpu->arch.ran_atleast_once) {
- 		/*
- 		 * All multi-letter extension and a few single letter
+ (These error codes are indicative only: do not rely on a specific error
 -- 
 2.41.0
 
