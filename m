@@ -1,53 +1,39 @@
 From: Raghavendra Rao Ananta <rananta@google.com>
-Date: Wed, 2 Aug 2023 16:28:52 -0700
-Subject: [PATCH v7 02/12] KVM: arm64: Use kvm_arch_flush_remote_tlbs()
-In-Reply-To: <877cqdqw12.wl-maz@kernel.org>
-References: <20230722022251.3446223-1-rananta@google.com> <20230722022251.3446223-3-rananta@google.com>
- <87tttpr6qy.wl-maz@kernel.org> <ZMgsjx8dwKd4xBGe@google.com> <877cqdqw12.wl-maz@kernel.org>
-Message-ID: <CAJHc60xAUVt5fbhEkOqeC-VF8SWVOt3si=1yxVVAUW=+Hu_wNg@mail.gmail.com>
+Date: Wed, 2 Aug 2023 16:30:39 -0700
+Subject: [PATCH v7 01/12] KVM: Rename kvm_arch_flush_remote_tlb() to kvm_arch_flush_remote_tlbs()
+In-Reply-To: <ZMqABp6OdrgOtsum@google.com>
+References: <20230722022251.3446223-1-rananta@google.com> <20230722022251.3446223-2-rananta@google.com>
+ <87v8e5r6s6.wl-maz@kernel.org> <CAJHc60wtc2Usei3hKj1ykVRvBZFFCBOHMi9HCxnNvGK2dPFApA@mail.gmail.com>
+ <ZMgqueePlmKvgUId@google.com> <CAJHc60xM+KsUKxtoqORnpzrRke4T-sob2uLJRMvBKwruipxnpw@mail.gmail.com>
+ <878ratqw2l.wl-maz@kernel.org> <ZMqABp6OdrgOtsum@google.com>
+Message-ID: <CAJHc60zvKSoPU6uTzZQCY2ZAeVj18qmu3=U-rUt5er0zGLQ33Q@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Sure, I'll change it to kvm_arch_flush_vm_tlbs() in v8.
+Okay, so just the #define in the respective arch header with a global
+declaration. I'll consider this in v8.
 
 Thanks,
 Raghavendra
 
-On Wed, Aug 2, 2023 at 8:55?AM Marc Zyngier <maz@kernel.org> wrote:
+On Wed, Aug 2, 2023 at 9:10?AM Sean Christopherson <seanjc@google.com> wrote:
 >
-> On Mon, 31 Jul 2023 22:50:07 +0100,
-> Sean Christopherson <seanjc@google.com> wrote:
+> On Wed, Aug 02, 2023, Marc Zyngier wrote:
+> > On Tue, 01 Aug 2023 01:42:54 +0100,
+> > Raghavendra Rao Ananta <rananta@google.com> wrote:
+> > > Thanks for the suggestions; I can go with a common declaration. Along
+> > > with that, do we want to keep defining
+> > > __KVM_HAVE_ARCH_FLUSH_REMOTE_TLBS in the arch code that supports it or
+> > > convert it into a CONFIG_?
 > >
-> > On Thu, Jul 27, 2023, Marc Zyngier wrote:
-> > > On Sat, 22 Jul 2023 03:22:41 +0100,
-> > > Raghavendra Rao Ananta <rananta@google.com> wrote:
-> > > >
-> > > > Stop depending on CONFIG_HAVE_KVM_ARCH_TLB_FLUSH_ALL and opt to
-> > > > standardize on kvm_arch_flush_remote_tlbs() since it avoids
-> > > > duplicating the generic TLB stats across architectures that implement
-> > > > their own remote TLB flush.
-> > > >
-> > > > This adds an extra function call to the ARM64 kvm_flush_remote_tlbs()
-> > > > path, but that is a small cost in comparison to flushing remote TLBs.
-> > >
-> > > Well, there is no such thing as a "remote TLB" anyway. We either have
-> > > a non-shareable or inner-shareable invalidation. The notion of remote
-> > > would imply that we track who potentially has a TLB, which we
-> > > obviously don't.
-> >
-> > Maybe kvm_arch_flush_vm_tlbs()?  The "remote" part is misleading even on x86 when
-> > running on Hyper-V, as the flush may be done via a single hypercall and by kicking
-> > "remote" vCPUs.
+> > This isn't something that a user can select, more something that is an
+> > architectural decision. Maybe in a later patch if there is a consensus
+> > around that, but probably not as part of this series.
 >
-> Yup, this would be much better.
->
-> Thanks,
->
->         M.
->
-> --
-> Without deviation from the norm, progress is not possible.
+> +1.  I agree it's annoying that KVM uses a mix of Kconfigs and manual #defines
+> for the various "KVM_HAVE" knobs, but we have so many of both that one-off
+> conversions without a real need don't make much sense.
 
