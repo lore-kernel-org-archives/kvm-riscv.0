@@ -1,76 +1,31 @@
-From: Marc Zyngier <maz@kernel.org>
-Date: Wed, 02 Aug 2023 16:58:21 +0100
-Subject: [PATCH v7 06/12] arm64: tlb: Refactor the core flush algorithm of __flush_tlb_range
-In-Reply-To: <CAJHc60zqOeWXf3kh5hKL6DL3g4znmHaH-TqC0QDcBrWPsHAEXQ@mail.gmail.com>
-References: <20230722022251.3446223-1-rananta@google.com>
-	<20230722022251.3446223-7-rananta@google.com>
-	<87r0otr579.wl-maz@kernel.org>
-	<CAJHc60zqOeWXf3kh5hKL6DL3g4znmHaH-TqC0QDcBrWPsHAEXQ@mail.gmail.com>
-Message-ID: <875y5xqvvm.wl-maz@kernel.org>
+From: Sean Christopherson <seanjc@google.com>
+Date: Wed, 2 Aug 2023 09:10:46 -0700
+Subject: [PATCH v7 01/12] KVM: Rename kvm_arch_flush_remote_tlb() to kvm_arch_flush_remote_tlbs()
+In-Reply-To: <878ratqw2l.wl-maz@kernel.org>
+References: <20230722022251.3446223-1-rananta@google.com> <20230722022251.3446223-2-rananta@google.com>
+ <87v8e5r6s6.wl-maz@kernel.org> <CAJHc60wtc2Usei3hKj1ykVRvBZFFCBOHMi9HCxnNvGK2dPFApA@mail.gmail.com>
+ <ZMgqueePlmKvgUId@google.com> <CAJHc60xM+KsUKxtoqORnpzrRke4T-sob2uLJRMvBKwruipxnpw@mail.gmail.com>
+ <878ratqw2l.wl-maz@kernel.org>
+Message-ID: <ZMqABp6OdrgOtsum@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, 31 Jul 2023 18:36:47 +0100,
-Raghavendra Rao Ananta <rananta@google.com> wrote:
+On Wed, Aug 02, 2023, Marc Zyngier wrote:
+> On Tue, 01 Aug 2023 01:42:54 +0100,
+> Raghavendra Rao Ananta <rananta@google.com> wrote:
+> > Thanks for the suggestions; I can go with a common declaration. Along
+> > with that, do we want to keep defining
+> > __KVM_HAVE_ARCH_FLUSH_REMOTE_TLBS in the arch code that supports it or
+> > convert it into a CONFIG_?
 > 
-> On Thu, Jul 27, 2023 at 3:58?AM Marc Zyngier <maz@kernel.org> wrote:
-> >
-> > On Sat, 22 Jul 2023 03:22:45 +0100,
-> > Raghavendra Rao Ananta <rananta@google.com> wrote:
-> > >
-> > > Currently, the core TLB flush functionality of __flush_tlb_range()
-> > > hardcodes vae1is (and variants) for the flush operation. In the
-> > > upcoming patches, the KVM code reuses this core algorithm with
-> > > ipas2e1is for range based TLB invalidations based on the IPA.
-> > > Hence, extract the core flush functionality of __flush_tlb_range()
-> > > into its own macro that accepts an 'op' argument to pass any
-> > > TLBI operation, such that other callers (KVM) can benefit.
-> > >
-> > > No functional changes intended.
-> > >
-> > > Signed-off-by: Raghavendra Rao Ananta <rananta@google.com>
-> > > Reviewed-by: Catalin Marinas <catalin.marinas@arm.com>
-> > > Reviewed-by: Gavin Shan <gshan@redhat.com>
-> > > Reviewed-by: Shaoqin Huang <shahuang@redhat.com>
-> > > ---
-> > >  arch/arm64/include/asm/tlbflush.h | 109 +++++++++++++++---------------
-> > >  1 file changed, 56 insertions(+), 53 deletions(-)
-> > >
-> > > diff --git a/arch/arm64/include/asm/tlbflush.h b/arch/arm64/include/asm/tlbflush.h
-> > > index 412a3b9a3c25..f7fafba25add 100644
-> > > --- a/arch/arm64/include/asm/tlbflush.h
-> > > +++ b/arch/arm64/include/asm/tlbflush.h
-> > > @@ -278,14 +278,62 @@ static inline void flush_tlb_page(struct vm_area_struct *vma,
-> > >   */
-> > >  #define MAX_TLBI_OPS PTRS_PER_PTE
-> > >
-> > > +/* When the CPU does not support TLB range operations, flush the TLB
-> > > + * entries one by one at the granularity of 'stride'. If the TLB
-> > > + * range ops are supported, then:
-> >
-> > Comment format (the original was correct).
-> >
-> Isn't the format the same as original? Or are you referring to the
-> fact that it needs to be placed inside the macro definition?
+> This isn't something that a user can select, more something that is an
+> architectural decision. Maybe in a later patch if there is a consensus
+> around that, but probably not as part of this series.
 
-No, I'm referring to the multiline comment that starts with:
-
-	/*  When the CPU does not support TLB range operations...
-
-instead of the required:
-
-	/*
-	 * When the CPU does not support TLB range operations
-
-which was correct before the coment was moved.
-
-Thanks,
-
-	M.
-
--- 
-Without deviation from the norm, progress is not possible.
++1.  I agree it's annoying that KVM uses a mix of Kconfigs and manual #defines
+for the various "KVM_HAVE" knobs, but we have so many of both that one-off
+conversions without a real need don't make much sense.
 
