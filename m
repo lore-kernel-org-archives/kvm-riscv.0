@@ -1,140 +1,118 @@
-From: Guo Ren <guoren@kernel.org>
-Date: Wed, 2 Aug 2023 19:26:53 -0400
-Subject: [RFC PATCH 03/14] RISC-V: paravirt: Implement steal-time support
-In-Reply-To: <245mmbzeqcap7i6cjmoaaitpmecefjo2ul63qjmodjv77uz54e@tizorx3p64fz>
-References: <20230417103402.798596-1-ajones@ventanamicro.com>
- <20230417103402.798596-4-ajones@ventanamicro.com>
- <245mmbzeqcap7i6cjmoaaitpmecefjo2ul63qjmodjv77uz54e@tizorx3p64fz>
-Message-ID: <ZMrmPbJYeROizR7u@gmail.com>
+From: Marc Zyngier <maz@kernel.org>
+Date: Thu, 03 Aug 2023 00:28:12 +0100
+Subject: [PATCH v7 12/12] KVM: arm64: Use TLBI range-based intructions for unmap
+In-Reply-To: <CAJHc60zGzAqWw2iZwNEG_bWERXkz_io7ae-K_tf_kh6xcOBxLA@mail.gmail.com>
+References: <20230722022251.3446223-1-rananta@google.com>
+	<20230722022251.3446223-13-rananta@google.com>
+	<87jzulqz0v.wl-maz@kernel.org>
+	<CAJHc60zGzAqWw2iZwNEG_bWERXkz_io7ae-K_tf_kh6xcOBxLA@mail.gmail.com>
+Message-ID: <86fs5158j7.wl-maz@kernel.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Apr 19, 2023 at 10:42:16AM +0200, Andrew Jones wrote:
-> On Mon, Apr 17, 2023 at 12:33:51PM +0200, Andrew Jones wrote:
-> > When the SBI STA extension exists we can use it to implement
-> > paravirt steal-time support. Fill in the empty pv-time functions
-> > with an SBI STA implementation.
-> > 
-> > Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
-> > ---
-> >  arch/riscv/kernel/paravirt.c | 56 ++++++++++++++++++++++++++++++++++--
-> >  1 file changed, 53 insertions(+), 3 deletions(-)
-> > 
-> > diff --git a/arch/riscv/kernel/paravirt.c b/arch/riscv/kernel/paravirt.c
-> > index 141dbcc36fa2..5f8d96b919e4 100644
-> > --- a/arch/riscv/kernel/paravirt.c
-> > +++ b/arch/riscv/kernel/paravirt.c
-> > @@ -6,12 +6,21 @@
-> >  #define pr_fmt(fmt) "riscv-pv: " fmt
-> >  
-> >  #include <linux/cpuhotplug.h>
-> > +#include <linux/compiler.h>
-> > +#include <linux/errno.h>
-> >  #include <linux/init.h>
-> >  #include <linux/jump_label.h>
-> > +#include <linux/kconfig.h>
-> > +#include <linux/kernel.h>
-> > +#include <linux/percpu-defs.h>
-> >  #include <linux/printk.h>
-> >  #include <linux/static_call.h>
-> >  #include <linux/types.h>
-> >  
-> > +#include <asm/barrier.h>
-> > +#include <asm/page.h>
-> > +#include <asm/sbi.h>
-> > +
-> >  struct static_key paravirt_steal_enabled;
-> >  struct static_key paravirt_steal_rq_enabled;
-> >  
-> > @@ -31,24 +40,65 @@ static int __init parse_no_stealacc(char *arg)
-> >  
-> >  early_param("no-steal-acc", parse_no_stealacc);
-> >  
-> > +DEFINE_PER_CPU(struct sbi_sta_struct, steal_time) __aligned(64);
-> > +
-> >  static bool __init has_pv_steal_clock(void)
-> >  {
-> > +	if (sbi_probe_extension(SBI_EXT_STA) > 0) {
-> > +		pr_info("SBI STA extension detected\n");
-> > +		return true;
-> > +	}
-> > +
-> >  	return false;
-> >  }
-> >  
-> > -static int pv_time_cpu_online(unsigned int cpu)
-> > +static int sbi_sta_set_steal_time_shmem(unsigned long lo, unsigned long hi,
-> > +					unsigned long flags)
-> >  {
-> > +	struct sbiret ret;
-> > +
-> > +	ret = sbi_ecall(SBI_EXT_STA, SBI_EXT_STA_SET_STEAL_TIME_SHMEM,
-> > +			lo, hi, flags, 0, 0, 0);
-> > +	if (ret.error) {
-> > +		if (lo == -1 && hi == -1)
-> > +			pr_warn("Failed to disable steal-time shmem");
-> > +		else
-> > +			pr_warn("Failed to set steal-time shmem");
-> > +		return -ENOMEM;
-> > +	}
-> > +
-> >  	return 0;
-> >  }
-> >  
-> > +static int pv_time_cpu_online(unsigned int cpu)
-> > +{
-> > +	struct sbi_sta_struct *st = this_cpu_ptr(&steal_time);
-> > +	phys_addr_t pa = __pa(st);
-> > +	unsigned long lo = (unsigned long)pa;
-> > +	unsigned long hi = IS_ENABLED(CONFIG_32BIT) ? upper_32_bits((u64)pa) : 0;
-> > +
-> > +	return sbi_sta_set_steal_time_shmem(lo, hi, 0);
-> > +}
-> > +
-> >  static int pv_time_cpu_down_prepare(unsigned int cpu)
-> >  {
-> > -	return 0;
-> > +	return sbi_sta_set_steal_time_shmem(-1, -1, 0);
-> >  }
-> >  
-> >  static u64 pv_time_steal_clock(int cpu)
-> >  {
-> > -	return 0;
-> > +	struct sbi_sta_struct *st = per_cpu_ptr(&steal_time, cpu);
-> > +	u32 sequence;
-> > +	u64 steal;
-> > +
-> > +	do {
-> > +		sequence = st->sequence;
-> > +		virt_rmb();
-> > +		steal = st->steal;
-> > +		virt_rmb();
-> > +	} while ((sequence & 1) || (sequence != st->sequence));
-> > +
-> > +	return steal;
-> >  }
+On Mon, 31 Jul 2023 19:26:09 +0100,
+Raghavendra Rao Ananta <rananta@google.com> wrote:
 > 
-> So anybody poking around the implementations for other architectures will
-> see that I shamelessly ripped this off from x86's implementation. However,
-> looking at it again, I think all the references to the steal-time info
-> should be wrapped in READ_ONCE(). I'll write a patch for x86/kvm to
-> add READ_ONCE's and also update this patch for rfc-v2.
-Hello, what's the status of rfc-v2? The riscv paravirt_qspinlock is
-based on your series to reuse the paravirt.c and CONFIG_PARAVIRT.
+> On Thu, Jul 27, 2023 at 6:12?AM Marc Zyngier <maz@kernel.org> wrote:
+> >
+> > On Sat, 22 Jul 2023 03:22:51 +0100,
+> > Raghavendra Rao Ananta <rananta@google.com> wrote:
+> > >
+> > > The current implementation of the stage-2 unmap walker traverses
+> > > the given range and, as a part of break-before-make, performs
+> > > TLB invalidations with a DSB for every PTE. A multitude of this
+> > > combination could cause a performance bottleneck on some systems.
+> > >
+> > > Hence, if the system supports FEAT_TLBIRANGE, defer the TLB
+> > > invalidations until the entire walk is finished, and then
+> > > use range-based instructions to invalidate the TLBs in one go.
+> > > Condition deferred TLB invalidation on the system supporting FWB,
+> > > as the optimization is entirely pointless when the unmap walker
+> > > needs to perform CMOs.
+> > >
+> > > Rename stage2_put_pte() to stage2_unmap_put_pte() as the function
+> > > now serves the stage-2 unmap walker specifically, rather than
+> > > acting generic.
+> > >
+> > > Signed-off-by: Raghavendra Rao Ananta <rananta@google.com>
+> > > ---
+> > >  arch/arm64/kvm/hyp/pgtable.c | 67 +++++++++++++++++++++++++++++++-----
+> > >  1 file changed, 58 insertions(+), 9 deletions(-)
+> > >
+> > > diff --git a/arch/arm64/kvm/hyp/pgtable.c b/arch/arm64/kvm/hyp/pgtable.c
+> > > index 5ef098af1736..cf88933a2ea0 100644
+> > > --- a/arch/arm64/kvm/hyp/pgtable.c
+> > > +++ b/arch/arm64/kvm/hyp/pgtable.c
+> > > @@ -831,16 +831,54 @@ static void stage2_make_pte(const struct kvm_pgtable_visit_ctx *ctx, kvm_pte_t n
+> > >       smp_store_release(ctx->ptep, new);
+> > >  }
+> > >
+> > > -static void stage2_put_pte(const struct kvm_pgtable_visit_ctx *ctx, struct kvm_s2_mmu *mmu,
+> > > -                        struct kvm_pgtable_mm_ops *mm_ops)
+> > > +struct stage2_unmap_data {
+> > > +     struct kvm_pgtable *pgt;
+> > > +     bool defer_tlb_flush_init;
+> > > +};
+> > > +
+> > > +static bool __stage2_unmap_defer_tlb_flush(struct kvm_pgtable *pgt)
+> > > +{
+> > > +     /*
+> > > +      * If FEAT_TLBIRANGE is implemented, defer the individual
+> > > +      * TLB invalidations until the entire walk is finished, and
+> > > +      * then use the range-based TLBI instructions to do the
+> > > +      * invalidations. Condition deferred TLB invalidation on the
+> > > +      * system supporting FWB, as the optimization is entirely
+> > > +      * pointless when the unmap walker needs to perform CMOs.
+> > > +      */
+> > > +     return system_supports_tlb_range() && stage2_has_fwb(pgt);
+> > > +}
+> > > +
+> > > +static bool stage2_unmap_defer_tlb_flush(struct stage2_unmap_data *unmap_data)
+> > > +{
+> > > +     bool defer_tlb_flush = __stage2_unmap_defer_tlb_flush(unmap_data->pgt);
+> > > +
+> > > +     /*
+> > > +      * Since __stage2_unmap_defer_tlb_flush() is based on alternative
+> > > +      * patching and the TLBIs' operations behavior depend on this,
+> > > +      * track if there's any change in the state during the unmap sequence.
+> > > +      */
+> > > +     WARN_ON(unmap_data->defer_tlb_flush_init != defer_tlb_flush);
+> > > +     return defer_tlb_flush;
+> >
+> > I really don't understand what you're testing here. The ability to
+> > defer TLB invalidation is a function of the system capabilities
+> > (range+FWB) and a single flag that is only set on the host for pKVM.
+> >
+> > How could that change in the middle of the life of the system? if
+> > further begs the question about the need for the unmap_data data
+> > structure.
+> >
+> > It looks to me that we could simply pass the pgt pointer around and be
+> > done with it. Am I missing something obvious?
+> >
+> From one of the previous comments [1] (used in a different context),
+> I'm given to understand that since these feature checks are governed
+> by alternative patching, they can potentially change (at runtime?). Is
+> that not the case and I have misunderstood the idea in comment [1]
+> entirely? Is it solely used for optimization purposes and set only
+> once?
 
-https://lore.kernel.org/linux-riscv/20230802164701.192791-10-guoren at kernel.org/
-https://lore.kernel.org/linux-riscv/20230802164701.192791-17-guoren at kernel.org/
+Alternative patching, just like the static branches used to implement
+the capability stuff, is a one way street. At the point where KVM is
+initialised, these configurations are set in stone, and there is no
+going back.
 
-> 
-> Thanks,
-> drew
-> 
-> _______________________________________________
-> linux-riscv mailing list
-> linux-riscv at lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-riscv
-> 
+> If that's the case, I can get rid of the WARN_ON() and unmap_data.
+
+yes, please.
+
+Thanks,
+
+	M.
+
+-- 
+Without deviation from the norm, progress is not possible.
 
