@@ -1,116 +1,140 @@
-From: Marc Zyngier <maz@kernel.org>
-Date: Thu, 03 Aug 2023 00:25:35 +0100
-Subject: [PATCH v7 08/12] KVM: arm64: Define kvm_tlb_flush_vmid_range()
-In-Reply-To: <CAJHc60xC-Bs-0uoqkytDVcwHTxVnW7eyVxfHhO0mRrupVbdaYg@mail.gmail.com>
-References: <20230722022251.3446223-1-rananta@google.com>
-	<20230722022251.3446223-9-rananta@google.com>
-	<87o7jxr06t.wl-maz@kernel.org>
-	<87lef1qzim.wl-maz@kernel.org>
-	<CAJHc60xC-Bs-0uoqkytDVcwHTxVnW7eyVxfHhO0mRrupVbdaYg@mail.gmail.com>
-Message-ID: <86h6ph58nk.wl-maz@kernel.org>
+From: Guo Ren <guoren@kernel.org>
+Date: Wed, 2 Aug 2023 19:26:53 -0400
+Subject: [RFC PATCH 03/14] RISC-V: paravirt: Implement steal-time support
+In-Reply-To: <245mmbzeqcap7i6cjmoaaitpmecefjo2ul63qjmodjv77uz54e@tizorx3p64fz>
+References: <20230417103402.798596-1-ajones@ventanamicro.com>
+ <20230417103402.798596-4-ajones@ventanamicro.com>
+ <245mmbzeqcap7i6cjmoaaitpmecefjo2ul63qjmodjv77uz54e@tizorx3p64fz>
+Message-ID: <ZMrmPbJYeROizR7u@gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, 31 Jul 2023 19:01:53 +0100,
-Raghavendra Rao Ananta <rananta@google.com> wrote:
+On Wed, Apr 19, 2023 at 10:42:16AM +0200, Andrew Jones wrote:
+> On Mon, Apr 17, 2023 at 12:33:51PM +0200, Andrew Jones wrote:
+> > When the SBI STA extension exists we can use it to implement
+> > paravirt steal-time support. Fill in the empty pv-time functions
+> > with an SBI STA implementation.
+> > 
+> > Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
+> > ---
+> >  arch/riscv/kernel/paravirt.c | 56 ++++++++++++++++++++++++++++++++++--
+> >  1 file changed, 53 insertions(+), 3 deletions(-)
+> > 
+> > diff --git a/arch/riscv/kernel/paravirt.c b/arch/riscv/kernel/paravirt.c
+> > index 141dbcc36fa2..5f8d96b919e4 100644
+> > --- a/arch/riscv/kernel/paravirt.c
+> > +++ b/arch/riscv/kernel/paravirt.c
+> > @@ -6,12 +6,21 @@
+> >  #define pr_fmt(fmt) "riscv-pv: " fmt
+> >  
+> >  #include <linux/cpuhotplug.h>
+> > +#include <linux/compiler.h>
+> > +#include <linux/errno.h>
+> >  #include <linux/init.h>
+> >  #include <linux/jump_label.h>
+> > +#include <linux/kconfig.h>
+> > +#include <linux/kernel.h>
+> > +#include <linux/percpu-defs.h>
+> >  #include <linux/printk.h>
+> >  #include <linux/static_call.h>
+> >  #include <linux/types.h>
+> >  
+> > +#include <asm/barrier.h>
+> > +#include <asm/page.h>
+> > +#include <asm/sbi.h>
+> > +
+> >  struct static_key paravirt_steal_enabled;
+> >  struct static_key paravirt_steal_rq_enabled;
+> >  
+> > @@ -31,24 +40,65 @@ static int __init parse_no_stealacc(char *arg)
+> >  
+> >  early_param("no-steal-acc", parse_no_stealacc);
+> >  
+> > +DEFINE_PER_CPU(struct sbi_sta_struct, steal_time) __aligned(64);
+> > +
+> >  static bool __init has_pv_steal_clock(void)
+> >  {
+> > +	if (sbi_probe_extension(SBI_EXT_STA) > 0) {
+> > +		pr_info("SBI STA extension detected\n");
+> > +		return true;
+> > +	}
+> > +
+> >  	return false;
+> >  }
+> >  
+> > -static int pv_time_cpu_online(unsigned int cpu)
+> > +static int sbi_sta_set_steal_time_shmem(unsigned long lo, unsigned long hi,
+> > +					unsigned long flags)
+> >  {
+> > +	struct sbiret ret;
+> > +
+> > +	ret = sbi_ecall(SBI_EXT_STA, SBI_EXT_STA_SET_STEAL_TIME_SHMEM,
+> > +			lo, hi, flags, 0, 0, 0);
+> > +	if (ret.error) {
+> > +		if (lo == -1 && hi == -1)
+> > +			pr_warn("Failed to disable steal-time shmem");
+> > +		else
+> > +			pr_warn("Failed to set steal-time shmem");
+> > +		return -ENOMEM;
+> > +	}
+> > +
+> >  	return 0;
+> >  }
+> >  
+> > +static int pv_time_cpu_online(unsigned int cpu)
+> > +{
+> > +	struct sbi_sta_struct *st = this_cpu_ptr(&steal_time);
+> > +	phys_addr_t pa = __pa(st);
+> > +	unsigned long lo = (unsigned long)pa;
+> > +	unsigned long hi = IS_ENABLED(CONFIG_32BIT) ? upper_32_bits((u64)pa) : 0;
+> > +
+> > +	return sbi_sta_set_steal_time_shmem(lo, hi, 0);
+> > +}
+> > +
+> >  static int pv_time_cpu_down_prepare(unsigned int cpu)
+> >  {
+> > -	return 0;
+> > +	return sbi_sta_set_steal_time_shmem(-1, -1, 0);
+> >  }
+> >  
+> >  static u64 pv_time_steal_clock(int cpu)
+> >  {
+> > -	return 0;
+> > +	struct sbi_sta_struct *st = per_cpu_ptr(&steal_time, cpu);
+> > +	u32 sequence;
+> > +	u64 steal;
+> > +
+> > +	do {
+> > +		sequence = st->sequence;
+> > +		virt_rmb();
+> > +		steal = st->steal;
+> > +		virt_rmb();
+> > +	} while ((sequence & 1) || (sequence != st->sequence));
+> > +
+> > +	return steal;
+> >  }
 > 
-> On Thu, Jul 27, 2023 at 6:01?AM Marc Zyngier <maz@kernel.org> wrote:
-> >
-> > On Thu, 27 Jul 2023 13:47:06 +0100,
-> > Marc Zyngier <maz@kernel.org> wrote:
-> > >
-> > > On Sat, 22 Jul 2023 03:22:47 +0100,
-> > > Raghavendra Rao Ananta <rananta@google.com> wrote:
-> > > >
-> > > > Implement the helper kvm_tlb_flush_vmid_range() that acts
-> > > > as a wrapper for range-based TLB invalidations. For the
-> > > > given VMID, use the range-based TLBI instructions to do
-> > > > the job or fallback to invalidating all the TLB entries.
-> > > >
-> > > > Signed-off-by: Raghavendra Rao Ananta <rananta@google.com>
-> > > > Reviewed-by: Gavin Shan <gshan@redhat.com>
-> > > > Reviewed-by: Shaoqin Huang <shahuang@redhat.com>
-> > > > ---
-> > > >  arch/arm64/include/asm/kvm_pgtable.h | 10 ++++++++++
-> > > >  arch/arm64/kvm/hyp/pgtable.c         | 20 ++++++++++++++++++++
-> > > >  2 files changed, 30 insertions(+)
-> > > >
-> > > > diff --git a/arch/arm64/include/asm/kvm_pgtable.h b/arch/arm64/include/asm/kvm_pgtable.h
-> > > > index 8294a9a7e566..5e8b1ff07854 100644
-> > > > --- a/arch/arm64/include/asm/kvm_pgtable.h
-> > > > +++ b/arch/arm64/include/asm/kvm_pgtable.h
-> > > > @@ -754,4 +754,14 @@ enum kvm_pgtable_prot kvm_pgtable_stage2_pte_prot(kvm_pte_t pte);
-> > > >   *    kvm_pgtable_prot format.
-> > > >   */
-> > > >  enum kvm_pgtable_prot kvm_pgtable_hyp_pte_prot(kvm_pte_t pte);
-> > > > +
-> > > > +/**
-> > > > + * kvm_tlb_flush_vmid_range() - Invalidate/flush a range of TLB entries
-> > > > + *
-> > > > + * @mmu:   Stage-2 KVM MMU struct
-> > > > + * @addr:  The base Intermediate physical address from which to invalidate
-> > > > + * @size:  Size of the range from the base to invalidate
-> > > > + */
-> > > > +void kvm_tlb_flush_vmid_range(struct kvm_s2_mmu *mmu,
-> > > > +                           phys_addr_t addr, size_t size);
-> > > >  #endif     /* __ARM64_KVM_PGTABLE_H__ */
-> > > > diff --git a/arch/arm64/kvm/hyp/pgtable.c b/arch/arm64/kvm/hyp/pgtable.c
-> > > > index aa740a974e02..5d14d5d5819a 100644
-> > > > --- a/arch/arm64/kvm/hyp/pgtable.c
-> > > > +++ b/arch/arm64/kvm/hyp/pgtable.c
-> > > > @@ -670,6 +670,26 @@ static bool stage2_has_fwb(struct kvm_pgtable *pgt)
-> > > >     return !(pgt->flags & KVM_PGTABLE_S2_NOFWB);
-> > > >  }
-> > > >
-> > > > +void kvm_tlb_flush_vmid_range(struct kvm_s2_mmu *mmu,
-> > > > +                           phys_addr_t addr, size_t size)
-> > > > +{
-> > > > +   unsigned long pages, inval_pages;
-> > > > +
-> > > > +   if (!system_supports_tlb_range()) {
-> > > > +           kvm_call_hyp(__kvm_tlb_flush_vmid, mmu);
-> > > > +           return;
-> > > > +   }
-> > > > +
-> > > > +   pages = size >> PAGE_SHIFT;
-> > > > +   while (pages > 0) {
-> > > > +           inval_pages = min(pages, MAX_TLBI_RANGE_PAGES);
-> > > > +           kvm_call_hyp(__kvm_tlb_flush_vmid_range, mmu, addr, inval_pages);
-> > > > +
-> > > > +           addr += inval_pages << PAGE_SHIFT;
-> > > > +           pages -= inval_pages;
-> > > > +   }
-> > > > +}
-> > > > +
-> > >
-> > > This really shouldn't live in pgtable.c. This code gets linked into
-> > > the EL2 object. What do you think happens if, for some reason, this
-> > > gets called *from EL2*?
-> >
-> > Ah, actually, nothing too bad would happen, as we convert the
-> > kvm_call_hyp() into a function call.
-> >
-> > But still, we don't need two copies of this stuff, and it can live in
-> > mmu.c.
-> >
-> But since we have a couple of references in pgtable.c to
-> kvm_tlb_flush_vmid_range(), wouldn't that be an (linking) issue if we
-> moved the definition to mmu.c?
+> So anybody poking around the implementations for other architectures will
+> see that I shamelessly ripped this off from x86's implementation. However,
+> looking at it again, I think all the references to the steal-time info
+> should be wrapped in READ_ONCE(). I'll write a patch for x86/kvm to
+> add READ_ONCE's and also update this patch for rfc-v2.
+Hello, what's the status of rfc-v2? The riscv paravirt_qspinlock is
+based on your series to reuse the paravirt.c and CONFIG_PARAVIRT.
+
+https://lore.kernel.org/linux-riscv/20230802164701.192791-10-guoren at kernel.org/
+https://lore.kernel.org/linux-riscv/20230802164701.192791-17-guoren at kernel.org/
+
 > 
-> ld: error: undefined symbol: __kvm_nvhe_kvm_tlb_flush_vmid_range
-> >>> referenced by pgtable.c:1148 (./arch/arm64/kvm/hyp/nvhe/../pgtable.c:1148)
-> >>>               arch/arm64/kvm/hyp/nvhe/kvm_nvhe.o:(__kvm_nvhe_kvm_pgtable_stage2_unmap) in archive vmlinux.a
-> ...
-
-Ah crap, I missed that. What a mess. Forget it then. It really is a
-shame that all the neat separation between mmu.c and pgtable.c that we
-were aiming for is ultimately lost.
-
-	M.
-
--- 
-Without deviation from the norm, progress is not possible.
+> Thanks,
+> drew
+> 
+> _______________________________________________
+> linux-riscv mailing list
+> linux-riscv at lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-riscv
+> 
 
