@@ -1,43 +1,71 @@
 From: Marc Zyngier <maz@kernel.org>
-Date: Wed, 02 Aug 2023 16:55:05 +0100
-Subject: [PATCH v7 02/12] KVM: arm64: Use kvm_arch_flush_remote_tlbs()
-In-Reply-To: <ZMgsjx8dwKd4xBGe@google.com>
+Date: Wed, 02 Aug 2023 16:58:21 +0100
+Subject: [PATCH v7 06/12] arm64: tlb: Refactor the core flush algorithm of __flush_tlb_range
+In-Reply-To: <CAJHc60zqOeWXf3kh5hKL6DL3g4znmHaH-TqC0QDcBrWPsHAEXQ@mail.gmail.com>
 References: <20230722022251.3446223-1-rananta@google.com>
-	<20230722022251.3446223-3-rananta@google.com>
-	<87tttpr6qy.wl-maz@kernel.org>
-	<ZMgsjx8dwKd4xBGe@google.com>
-Message-ID: <877cqdqw12.wl-maz@kernel.org>
+	<20230722022251.3446223-7-rananta@google.com>
+	<87r0otr579.wl-maz@kernel.org>
+	<CAJHc60zqOeWXf3kh5hKL6DL3g4znmHaH-TqC0QDcBrWPsHAEXQ@mail.gmail.com>
+Message-ID: <875y5xqvvm.wl-maz@kernel.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, 31 Jul 2023 22:50:07 +0100,
-Sean Christopherson <seanjc@google.com> wrote:
+On Mon, 31 Jul 2023 18:36:47 +0100,
+Raghavendra Rao Ananta <rananta@google.com> wrote:
 > 
-> On Thu, Jul 27, 2023, Marc Zyngier wrote:
-> > On Sat, 22 Jul 2023 03:22:41 +0100,
+> On Thu, Jul 27, 2023 at 3:58?AM Marc Zyngier <maz@kernel.org> wrote:
+> >
+> > On Sat, 22 Jul 2023 03:22:45 +0100,
 > > Raghavendra Rao Ananta <rananta@google.com> wrote:
-> > > 
-> > > Stop depending on CONFIG_HAVE_KVM_ARCH_TLB_FLUSH_ALL and opt to
-> > > standardize on kvm_arch_flush_remote_tlbs() since it avoids
-> > > duplicating the generic TLB stats across architectures that implement
-> > > their own remote TLB flush.
-> > > 
-> > > This adds an extra function call to the ARM64 kvm_flush_remote_tlbs()
-> > > path, but that is a small cost in comparison to flushing remote TLBs.
-> > 
-> > Well, there is no such thing as a "remote TLB" anyway. We either have
-> > a non-shareable or inner-shareable invalidation. The notion of remote
-> > would imply that we track who potentially has a TLB, which we
-> > obviously don't.
-> 
-> Maybe kvm_arch_flush_vm_tlbs()?  The "remote" part is misleading even on x86 when
-> running on Hyper-V, as the flush may be done via a single hypercall and by kicking
-> "remote" vCPUs.
+> > >
+> > > Currently, the core TLB flush functionality of __flush_tlb_range()
+> > > hardcodes vae1is (and variants) for the flush operation. In the
+> > > upcoming patches, the KVM code reuses this core algorithm with
+> > > ipas2e1is for range based TLB invalidations based on the IPA.
+> > > Hence, extract the core flush functionality of __flush_tlb_range()
+> > > into its own macro that accepts an 'op' argument to pass any
+> > > TLBI operation, such that other callers (KVM) can benefit.
+> > >
+> > > No functional changes intended.
+> > >
+> > > Signed-off-by: Raghavendra Rao Ananta <rananta@google.com>
+> > > Reviewed-by: Catalin Marinas <catalin.marinas@arm.com>
+> > > Reviewed-by: Gavin Shan <gshan@redhat.com>
+> > > Reviewed-by: Shaoqin Huang <shahuang@redhat.com>
+> > > ---
+> > >  arch/arm64/include/asm/tlbflush.h | 109 +++++++++++++++---------------
+> > >  1 file changed, 56 insertions(+), 53 deletions(-)
+> > >
+> > > diff --git a/arch/arm64/include/asm/tlbflush.h b/arch/arm64/include/asm/tlbflush.h
+> > > index 412a3b9a3c25..f7fafba25add 100644
+> > > --- a/arch/arm64/include/asm/tlbflush.h
+> > > +++ b/arch/arm64/include/asm/tlbflush.h
+> > > @@ -278,14 +278,62 @@ static inline void flush_tlb_page(struct vm_area_struct *vma,
+> > >   */
+> > >  #define MAX_TLBI_OPS PTRS_PER_PTE
+> > >
+> > > +/* When the CPU does not support TLB range operations, flush the TLB
+> > > + * entries one by one at the granularity of 'stride'. If the TLB
+> > > + * range ops are supported, then:
+> >
+> > Comment format (the original was correct).
+> >
+> Isn't the format the same as original? Or are you referring to the
+> fact that it needs to be placed inside the macro definition?
 
-Yup, this would be much better.
+No, I'm referring to the multiline comment that starts with:
+
+	/*  When the CPU does not support TLB range operations...
+
+instead of the required:
+
+	/*
+	 * When the CPU does not support TLB range operations
+
+which was correct before the coment was moved.
 
 Thanks,
 
