@@ -1,52 +1,84 @@
 From: Haibo Xu <xiaobo55x@gmail.com>
-Date: Wed, 2 Aug 2023 10:01:05 +0800
-Subject: [PATCH 0/4] RISCV: Add kvm Sstc timer selftest
-In-Reply-To: <20230728-5b0f530eba70ad08e8f4a67d@orel>
-References: <cover.1690364259.git.haibo1.xu@intel.com> <ZMKI8RknjjZBOaxf@google.com>
- <CAJve8o=GZnLLedT7TvCLvgd5Z3ZxJNfM6gG03Eyc+7krtMY--g@mail.gmail.com> <20230728-5b0f530eba70ad08e8f4a67d@orel>
-Message-ID: <CAJve8onvmDtD_GsbkUChzf6Sbt37FpfNvWEd+rJr7F1NxfjnCg@mail.gmail.com>
+Date: Wed, 2 Aug 2023 10:02:07 +0800
+Subject: [PATCH 3/4] KVM: riscv: selftests: Add guest helper to get vcpu id
+In-Reply-To: <20230728-42019a78766a59dc5abdd412@orel>
+References: <cover.1690364259.git.haibo1.xu@intel.com> <36b5837e9e94465dd2b7d7a17bb84dea082f2ffa.1690364259.git.haibo1.xu@intel.com>
+ <20230728-42019a78766a59dc5abdd412@orel>
+Message-ID: <CAJve8omPWM7JR+Bqtemw0XjP8Q-C5zNbAzWxB_HMFcWKoSFuog@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Jul 28, 2023 at 5:57?PM Andrew Jones <ajones@ventanamicro.com> wrote:
+On Fri, Jul 28, 2023 at 5:49?PM Andrew Jones <ajones@ventanamicro.com> wrote:
 >
-> On Fri, Jul 28, 2023 at 09:37:36AM +0800, Haibo Xu wrote:
-> > On Thu, Jul 27, 2023 at 11:14?PM Sean Christopherson <seanjc@google.com> wrote:
-> > >
-> > > On Thu, Jul 27, 2023, Haibo Xu wrote:
-> > > > The sstc_timer selftest is used to validate Sstc timer functionality
-> > > > in a guest, which sets up periodic timer interrupts and check the
-> > > > basic interrupt status upon its receipt.
-> > > >
-> > > > This KVM selftest was ported from aarch64 arch_timer and tested
-> > > > with Linux v6.5-rc3 on a Qemu riscv64 virt machine.
-> > >
-> > > Would it be possible to extract the ARM bits from arch_timer and make the bulk of
-> > > the test common to ARM and RISC-V?  At a glance, there is quite a bit of copy+paste.
+> On Thu, Jul 27, 2023 at 03:20:07PM +0800, Haibo Xu wrote:
+> > Add guest_get_vcpuid() helper to simplify accessing to per-cpu
+> > private data. The sscratch CSR was used to store the vcpu id.
 > >
-> > Sure, I will have a try to consolidate the common code for ARM and RISC-V in v2.
+> > Signed-off-by: Haibo Xu <haibo1.xu@intel.com>
+> > ---
+> >  tools/testing/selftests/kvm/include/riscv/processor.h | 2 ++
+> >  tools/testing/selftests/kvm/lib/riscv/processor.c     | 8 ++++++++
+> >  2 files changed, 10 insertions(+)
+> >
+> > diff --git a/tools/testing/selftests/kvm/include/riscv/processor.h b/tools/testing/selftests/kvm/include/riscv/processor.h
+> > index 9ea6e7bedc61..ca53570ce6de 100644
+> > --- a/tools/testing/selftests/kvm/include/riscv/processor.h
+> > +++ b/tools/testing/selftests/kvm/include/riscv/processor.h
+> > @@ -165,4 +165,6 @@ struct sbiret sbi_ecall(int ext, int fid, unsigned long arg0,
+> >                       unsigned long arg3, unsigned long arg4,
+> >                       unsigned long arg5);
+> >
+> > +uint32_t guest_get_vcpuid(void);
+>
+> I'd also put this prototype somewhere common.
+>
+> > +
+> >  #endif /* SELFTEST_KVM_PROCESSOR_H */
+> > diff --git a/tools/testing/selftests/kvm/lib/riscv/processor.c b/tools/testing/selftests/kvm/lib/riscv/processor.c
+> > index f1b0be58a5dc..b8ad3e69a697 100644
+> > --- a/tools/testing/selftests/kvm/lib/riscv/processor.c
+> > +++ b/tools/testing/selftests/kvm/lib/riscv/processor.c
+> > @@ -316,6 +316,9 @@ struct kvm_vcpu *vm_arch_vcpu_add(struct kvm_vm *vm, uint32_t vcpu_id,
+> >       vcpu_set_reg(vcpu, RISCV_CORE_REG(regs.sp), stack_vaddr + stack_size);
+> >       vcpu_set_reg(vcpu, RISCV_CORE_REG(regs.pc), (unsigned long)guest_code);
+> >
+> > +     /* Setup scratch regiter of guest */
+>
+> typo: register
+>
+> The comment above is pretty useless since it just states what the code
+> states, but with even less information, since it doesn't state how the
+> sscratch register is getting set up. I'd either drop it or write it
+> as
+>
+>  /* Setup sscratch for guest_get_vcpuid() */
+>
+> > +     vcpu_set_reg(vcpu, RISCV_CSR_REG(sscratch), vcpu_id);
+> > +
+> >       /* Setup default exception vector of guest */
+> >       vcpu_set_reg(vcpu, RISCV_CSR_REG(stvec), (unsigned long)guest_unexp_trap);
+> >
+> > @@ -424,3 +427,8 @@ void vm_install_interrupt_handler(struct kvm_vm *vm, void (*handler)(struct ex_r
+> >
+> >       handlers->exception_handlers[1][0] = handler;
+> >  }
+> > +
+> > +uint32_t guest_get_vcpuid(void)
+> > +{
+> > +     return csr_read(CSR_SSCRATCH);
+> > +}
+> > --
+> > 2.34.1
 > >
 >
-> Yes, afaict, we should be able to make aarch64/arch_timer.c another "split
-> test", like we did for aarch64/get-reg-list.c, but before we do that, I'd
-> like to get an ack from the Arm maintainers on the get-reg-list split to
-> be sure that approach is acceptable.
->
 
-Yes, we can re-use the split method.
+Sure! will fix them in v2.
 
-Since there is less configuration data that should be handled, I think
-it may be
-easier for the timer test  to consolidate the code, since most of the
-operations
-can be overloaded for different ARCH.
-
-I'll have a try and send the v2 soon!
-
-Thanks!
+Thanks,
+Haibo
 
 > Thanks,
 > drew
