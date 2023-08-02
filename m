@@ -1,47 +1,109 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Wed, 2 Aug 2023 12:06:07 +0300
-Subject: [PATCH v2 0/9] RISC-V: KVM: change get_reg/set_reg error codes
-In-Reply-To: <20230802-c76d712d088bc4b3057e3095@orel>
-References: <20230801222629.210929-1-dbarboza@ventanamicro.com>
- <20230802-c76d712d088bc4b3057e3095@orel>
-Message-ID: <20230802-7d4fdd5978afe6f5edbf9a01@orel>
+From: Marc Zyngier <maz@kernel.org>
+Date: Wed, 02 Aug 2023 16:54:10 +0100
+Subject: [PATCH v7 01/12] KVM: Rename kvm_arch_flush_remote_tlb() to kvm_arch_flush_remote_tlbs()
+In-Reply-To: <CAJHc60xM+KsUKxtoqORnpzrRke4T-sob2uLJRMvBKwruipxnpw@mail.gmail.com>
+References: <20230722022251.3446223-1-rananta@google.com>
+	<20230722022251.3446223-2-rananta@google.com>
+	<87v8e5r6s6.wl-maz@kernel.org>
+	<CAJHc60wtc2Usei3hKj1ykVRvBZFFCBOHMi9HCxnNvGK2dPFApA@mail.gmail.com>
+	<ZMgqueePlmKvgUId@google.com>
+	<CAJHc60xM+KsUKxtoqORnpzrRke4T-sob2uLJRMvBKwruipxnpw@mail.gmail.com>
+Message-ID: <878ratqw2l.wl-maz@kernel.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Aug 02, 2023 at 12:04:25PM +0300, Andrew Jones wrote:
-> On Tue, Aug 01, 2023 at 07:26:20PM -0300, Daniel Henrique Barboza wrote:
-> > Hi,
-> > 
-> > In this new version 3 new patches (6, 7, 8) were added by Andrew's
-> > request during the v1 review.
-> > 
-> > We're now avoiding throwing an -EBUSY error if a reg write is done after
-> > the vcpu started spinning if the value being written is the same as KVM
-> > already uses. This follows the design choice made in patch 3, allowing
-> > for userspace 'lazy write' of registers.
-> > 
-> > I decided to add 3 patches instead of one because the no-op check made
-> > in patches 6 and 8 aren't just a matter of doing reg_val = host_val.
-> > They can be squashed in a single patch if required.
-> > 
-> > Please check the version 1 cover-letter [1] for the motivation behind
-> > this work. Patches were based on top of riscv_kvm_queue.
-> > 
-> > Changes from v1:
-> > - patches 6,7, 8 (new):
-> >   - make reg writes a no-op, regardless of vcpu->arch.ran_atleast_once
-> >     state, if the value being written is the same as the host
-> > - v1 link: https://lore.kernel.org/kvm/20230731120420.91007-1-dbarboza at ventanamicro.com/
-> > 
-> > [1] https://lore.kernel.org/kvm/20230731120420.91007-1-dbarboza at ventanamicro.com/
-> >
+On Tue, 01 Aug 2023 01:42:54 +0100,
+Raghavendra Rao Ananta <rananta@google.com> wrote:
 > 
-> I found three missing conversions, which are in the diff below. Also, I
-> saw that the vector registers were lacking good error returns, so I reworked
-> that and attached a completely (not even compile) tested patch for them.
-                                                   ^un
+> On Mon, Jul 31, 2023 at 2:42?PM Sean Christopherson <seanjc@google.com> wrote:
+> >
+> > On Mon, Jul 31, 2023, Raghavendra Rao Ananta wrote:
+> > > On Thu, Jul 27, 2023 at 3:24?AM Marc Zyngier <maz@kernel.org> wrote:
+> > > >
+> > > > On Sat, 22 Jul 2023 03:22:40 +0100,
+> > > > Raghavendra Rao Ananta <rananta@google.com> wrote:
+> > > > >
+> > > > > From: David Matlack <dmatlack@google.com>
+> > > > >
+> > > > > Rename kvm_arch_flush_remote_tlb() and the associated macro
+> > > > > __KVM_HAVE_ARCH_FLUSH_REMOTE_TLB to kvm_arch_flush_remote_tlbs() and
+> > > > > __KVM_HAVE_ARCH_FLUSH_REMOTE_TLBS respectively.
+> > > > >
+> > > > > Making the name plural matches kvm_flush_remote_tlbs() and makes it more
+> > > > > clear that this function can affect more than one remote TLB.
+> > > > >
+> > > > > No functional change intended.
+> > > > >
+> > > > > Signed-off-by: David Matlack <dmatlack@google.com>
+> > > > > Signed-off-by: Raghavendra Rao Ananta <rananta@google.com>
+> > > > > Reviewed-by: Gavin Shan <gshan@redhat.com>
+> > > > > Reviewed-by: Philippe Mathieu-Daud? <philmd@linaro.org>
+> > > > > Reviewed-by: Shaoqin Huang <shahuang@redhat.com>
+> > > > > ---
+> > > > >  arch/mips/include/asm/kvm_host.h | 4 ++--
+> > > > >  arch/mips/kvm/mips.c             | 2 +-
+> > > > >  arch/x86/include/asm/kvm_host.h  | 4 ++--
+> > > > >  include/linux/kvm_host.h         | 4 ++--
+> > > > >  virt/kvm/kvm_main.c              | 2 +-
+> > > > >  5 files changed, 8 insertions(+), 8 deletions(-)
+> > > > >
+> > > > > diff --git a/arch/mips/include/asm/kvm_host.h b/arch/mips/include/asm/kvm_host.h
+> > > > > index 04cedf9f8811..9b0ad8f3bf32 100644
+> > > > > --- a/arch/mips/include/asm/kvm_host.h
+> > > > > +++ b/arch/mips/include/asm/kvm_host.h
+> > > > > @@ -896,7 +896,7 @@ static inline void kvm_arch_sched_in(struct kvm_vcpu *vcpu, int cpu) {}
+> > > > >  static inline void kvm_arch_vcpu_blocking(struct kvm_vcpu *vcpu) {}
+> > > > >  static inline void kvm_arch_vcpu_unblocking(struct kvm_vcpu *vcpu) {}
+> > > > >
+> > > > > -#define __KVM_HAVE_ARCH_FLUSH_REMOTE_TLB
+> > > > > -int kvm_arch_flush_remote_tlb(struct kvm *kvm);
+> > > > > +#define __KVM_HAVE_ARCH_FLUSH_REMOTE_TLBS
+> > > > > +int kvm_arch_flush_remote_tlbs(struct kvm *kvm);
+> > > >
+> > > > How about making this prototype global? I don't see a point in having
+> > > > it per-architecture, specially as you are adding arm64 to that mix in
+> > > > the following patch.
+> > > >
+> > > We can make it global, but I'm not sure what was the intention of the
+> > > original author. My guess is that he was following the same style that
+> > > we have for some of the other kvm_arch_*() functions
+> > > (kvm_arch_free_vm() for example)?
+> >
+> > Heh, KVM has a *lot* of code that was written with questionable style.  I agree
+> > with Marc, I can't think of a single reason not to have the definition in common
+> > code.  Declaring the function doesn't preclude a "static inline" implementation,
+> > and we could even keep the prototype under an #ifdef, e.g.
+> >
+> > diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+> > index 9d3ac7720da9..5ac64f933547 100644
+> > --- a/include/linux/kvm_host.h
+> > +++ b/include/linux/kvm_host.h
+> > @@ -1484,6 +1484,8 @@ static inline int kvm_arch_flush_remote_tlb(struct kvm *kvm)
+> >  {
+> >         return -ENOTSUPP;
+> >  }
+> > +#else
+> > +int kvm_arch_flush_remote_tlb(struct kvm *kvm);
+> >  #endif
+> >
+> >  #ifdef __KVM_HAVE_ARCH_NONCOHERENT_DMA
+> >
+> Thanks for the suggestions; I can go with a common declaration. Along
+> with that, do we want to keep defining
+> __KVM_HAVE_ARCH_FLUSH_REMOTE_TLBS in the arch code that supports it or
+> convert it into a CONFIG_?
 
+This isn't something that a user can select, more something that is an
+architectural decision. Maybe in a later patch if there is a consensus
+around that, but probably not as part of this series.
+
+Thanks,
+
+	M.
+
+-- 
+Without deviation from the norm, progress is not possible.
 
