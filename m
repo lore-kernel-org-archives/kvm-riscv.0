@@ -1,84 +1,53 @@
-From: Conor Dooley <conor.dooley@microchip.com>
-Date: Thu, 3 Aug 2023 13:01:57 +0100
-Subject: [PATCH v4 1/7] RISC-V: Detect Smstateen extension
-In-Reply-To: <20230726084352.2136377-2-mchitale@ventanamicro.com>
-References: <20230726084352.2136377-1-mchitale@ventanamicro.com>
- <20230726084352.2136377-2-mchitale@ventanamicro.com>
-Message-ID: <20230803-till-rented-b4546a9b868c@wendy>
+From: Daniel Henrique Barboza <dbarboza@ventanamicro.com>
+Date: Thu,  3 Aug 2023 11:00:12 -0300
+Subject: [PATCH v3 00/10] RISC-V: KVM: change get_reg/set_reg error codes
+Message-ID: <20230803140022.399333-1-dbarboza@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Palmer, Anup,
+Hi,
 
-On Wed, Jul 26, 2023 at 02:13:46PM +0530, Mayuresh Chitale wrote:
-> Extend the ISA string parsing to detect the Smstateen extension. If the
-> extension is enabled then access to certain 'state' such as AIA CSRs in
-> VS mode is controlled by *stateen0 registers.
-> 
-> Signed-off-by: Mayuresh Chitale <mchitale@ventanamicro.com>
-> Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+This version has changes in the document patch, as suggested by Andrew
+in v2. It also has a new patch (patch 9) that handles error code changes
+in vcpu_vector.c.
 
-While I think of it, this patch may have to be shared with the riscv
-tree to avoid generating a conflict with the reworking going in this
-area.
-I ran into a similar one during one of my rebases that was not too
-difficult to solve, but generated a horrible looking confict.
+Patches rebased on top of kvm_riscv_queue.
 
-Cheers,
-Conor.
+Changes from v2:
+- patch 9 (new):
+  - change kvm error codes for vector registers
+- patch 10 (former 9):
+  - rewrite EBUSY doc to mention that the error code indicates that it
+    is not allowed to change the reg val after the vcpu started.
+- v2 link: https://lore.kernel.org/kvm/20230801222629.210929-1-dbarboza at ventanamicro.com/
 
-> ---
->  arch/riscv/include/asm/hwcap.h | 1 +
->  arch/riscv/kernel/cpu.c        | 1 +
->  arch/riscv/kernel/cpufeature.c | 1 +
->  3 files changed, 3 insertions(+)
-> 
-> diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
-> index f041bfa7f6a0..fad1fd1fcd05 100644
-> --- a/arch/riscv/include/asm/hwcap.h
-> +++ b/arch/riscv/include/asm/hwcap.h
-> @@ -53,6 +53,7 @@
->  #define RISCV_ISA_EXT_ZICSR		40
->  #define RISCV_ISA_EXT_ZIFENCEI		41
->  #define RISCV_ISA_EXT_ZIHPM		42
-> +#define RISCV_ISA_EXT_SMSTATEEN		43
->  
->  #define RISCV_ISA_EXT_MAX		64
->  #define RISCV_ISA_EXT_NAME_LEN_MAX	32
-> diff --git a/arch/riscv/kernel/cpu.c b/arch/riscv/kernel/cpu.c
-> index a2fc952318e9..fb0df651bc48 100644
-> --- a/arch/riscv/kernel/cpu.c
-> +++ b/arch/riscv/kernel/cpu.c
-> @@ -217,6 +217,7 @@ static struct riscv_isa_ext_data isa_ext_arr[] = {
->  	__RISCV_ISA_EXT_DATA(zbb, RISCV_ISA_EXT_ZBB),
->  	__RISCV_ISA_EXT_DATA(zbs, RISCV_ISA_EXT_ZBS),
->  	__RISCV_ISA_EXT_DATA(smaia, RISCV_ISA_EXT_SMAIA),
-> +	__RISCV_ISA_EXT_DATA(smstateen, RISCV_ISA_EXT_SMSTATEEN),
->  	__RISCV_ISA_EXT_DATA(ssaia, RISCV_ISA_EXT_SSAIA),
->  	__RISCV_ISA_EXT_DATA(sscofpmf, RISCV_ISA_EXT_SSCOFPMF),
->  	__RISCV_ISA_EXT_DATA(sstc, RISCV_ISA_EXT_SSTC),
-> diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
-> index a8f66c015229..c3742a765f8b 100644
-> --- a/arch/riscv/kernel/cpufeature.c
-> +++ b/arch/riscv/kernel/cpufeature.c
-> @@ -301,6 +301,7 @@ void __init riscv_fill_hwcap(void)
->  			} else {
->  				/* sorted alphabetically */
->  				SET_ISA_EXT_MAP("smaia", RISCV_ISA_EXT_SMAIA);
-> +				SET_ISA_EXT_MAP("smstateen", RISCV_ISA_EXT_SMSTATEEN);
->  				SET_ISA_EXT_MAP("ssaia", RISCV_ISA_EXT_SSAIA);
->  				SET_ISA_EXT_MAP("sscofpmf", RISCV_ISA_EXT_SSCOFPMF);
->  				SET_ISA_EXT_MAP("sstc", RISCV_ISA_EXT_SSTC);
-> -- 
-> 2.34.1
-> 
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 228 bytes
-Desc: not available
-URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20230803/30f758d2/attachment.sig>
+Andrew Jones (1):
+  RISC-V: KVM: Improve vector save/restore errors
+
+Daniel Henrique Barboza (9):
+  RISC-V: KVM: return ENOENT in *_one_reg() when reg is unknown
+  RISC-V: KVM: use ENOENT in *_one_reg() when extension is unavailable
+  RISC-V: KVM: do not EOPNOTSUPP in set_one_reg() zicbo(m|z)
+  RISC-V: KVM: do not EOPNOTSUPP in set KVM_REG_RISCV_TIMER_REG
+  RISC-V: KVM: use EBUSY when !vcpu->arch.ran_atleast_once
+  RISC-V: KVM: avoid EBUSY when writing same ISA val
+  RISC-V: KVM: avoid EBUSY when writing the same machine ID val
+  RISC-V: KVM: avoid EBUSY when writing the same isa_ext val
+  docs: kvm: riscv: document EBUSY in KVM_SET_ONE_REG
+
+ Documentation/virt/kvm/api.rst |  2 +
+ arch/riscv/kvm/aia.c           |  4 +-
+ arch/riscv/kvm/vcpu_fp.c       | 12 +++---
+ arch/riscv/kvm/vcpu_onereg.c   | 68 +++++++++++++++++++++++-----------
+ arch/riscv/kvm/vcpu_sbi.c      | 16 ++++----
+ arch/riscv/kvm/vcpu_timer.c    | 11 +++---
+ arch/riscv/kvm/vcpu_vector.c   | 60 ++++++++++++++++--------------
+ 7 files changed, 104 insertions(+), 69 deletions(-)
+
+-- 
+2.41.0
+
+
