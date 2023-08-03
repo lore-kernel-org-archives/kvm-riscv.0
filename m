@@ -1,64 +1,162 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Thu, 3 Aug 2023 09:48:26 +0300
-Subject: [RFC PATCH 02/14] RISC-V: Add SBI STA extension definitions
-In-Reply-To: <ZMsCl9LaMvx38zMY@gmail.com>
+Date: Thu, 3 Aug 2023 10:04:50 +0300
+Subject: [RFC PATCH 03/14] RISC-V: paravirt: Implement steal-time support
+In-Reply-To: <ZMrmPbJYeROizR7u@gmail.com>
 References: <20230417103402.798596-1-ajones@ventanamicro.com>
- <20230417103402.798596-3-ajones@ventanamicro.com>
- <20230418-elliptic-headboard-6a18fcccdf07@spud>
- <bl7i54kgkzvxzhritql4vtzpymepx7hmtio7pjnbmipv3dxwgi@dtmqpnkdlwl5>
- <ZMsCl9LaMvx38zMY@gmail.com>
-Message-ID: <20230803-12cf578826747ddb63046bff@orel>
+ <20230417103402.798596-4-ajones@ventanamicro.com>
+ <245mmbzeqcap7i6cjmoaaitpmecefjo2ul63qjmodjv77uz54e@tizorx3p64fz>
+ <ZMrmPbJYeROizR7u@gmail.com>
+Message-ID: <20230803-61c4bc90486e17560b338272@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Aug 02, 2023 at 09:27:51PM -0400, Guo Ren wrote:
-> On Wed, Apr 19, 2023 at 10:15:54AM +0200, Andrew Jones wrote:
-> > On Tue, Apr 18, 2023 at 07:43:51PM +0100, Conor Dooley wrote:
-> > > On Mon, Apr 17, 2023 at 12:33:50PM +0200, Andrew Jones wrote:
-> > > > The SBI STA extension enables steal-time accounting. Add the
-> > > > definitions it specifies.
-> > > > 
-> > > > Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
-> > > > ---
-> > > >  arch/riscv/include/asm/sbi.h | 15 +++++++++++++++
-> > > >  1 file changed, 15 insertions(+)
-> > > > 
-> > > > diff --git a/arch/riscv/include/asm/sbi.h b/arch/riscv/include/asm/sbi.h
-> > > > index 945b7be249c1..485b9ec20399 100644
-> > > > --- a/arch/riscv/include/asm/sbi.h
-> > > > +++ b/arch/riscv/include/asm/sbi.h
-> > > > @@ -30,6 +30,7 @@ enum sbi_ext_id {
-> > > >  	SBI_EXT_HSM = 0x48534D,
-> > > >  	SBI_EXT_SRST = 0x53525354,
-> > > >  	SBI_EXT_PMU = 0x504D55,
-> > > > +	SBI_EXT_STA = 0x535441,
+On Wed, Aug 02, 2023 at 07:26:53PM -0400, Guo Ren wrote:
+> On Wed, Apr 19, 2023 at 10:42:16AM +0200, Andrew Jones wrote:
+> > On Mon, Apr 17, 2023 at 12:33:51PM +0200, Andrew Jones wrote:
+> > > When the SBI STA extension exists we can use it to implement
+> > > paravirt steal-time support. Fill in the empty pv-time functions
+> > > with an SBI STA implementation.
 > > > 
-> > > What is the sort order of this? Matching the spec ordering, or just
-> > > append-at-the-end?
-> > 
-> > I don't believe there's an established order. I've been going for spec
-> > order, I think.
-> > 
+> > > Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
+> > > ---
+> > >  arch/riscv/kernel/paravirt.c | 56 ++++++++++++++++++++++++++++++++++--
+> > >  1 file changed, 53 insertions(+), 3 deletions(-)
 > > > 
-> > > Unrelated, but in checking that I saw that your SUSP stuff is in
-> > > master - you planning on resending that series?
+> > > diff --git a/arch/riscv/kernel/paravirt.c b/arch/riscv/kernel/paravirt.c
+> > > index 141dbcc36fa2..5f8d96b919e4 100644
+> > > --- a/arch/riscv/kernel/paravirt.c
+> > > +++ b/arch/riscv/kernel/paravirt.c
+> > > @@ -6,12 +6,21 @@
+> > >  #define pr_fmt(fmt) "riscv-pv: " fmt
+> > >  
+> > >  #include <linux/cpuhotplug.h>
+> > > +#include <linux/compiler.h>
+> > > +#include <linux/errno.h>
+> > >  #include <linux/init.h>
+> > >  #include <linux/jump_label.h>
+> > > +#include <linux/kconfig.h>
+> > > +#include <linux/kernel.h>
+> > > +#include <linux/percpu-defs.h>
+> > >  #include <linux/printk.h>
+> > >  #include <linux/static_call.h>
+> > >  #include <linux/types.h>
+> > >  
+> > > +#include <asm/barrier.h>
+> > > +#include <asm/page.h>
+> > > +#include <asm/sbi.h>
+> > > +
+> > >  struct static_key paravirt_steal_enabled;
+> > >  struct static_key paravirt_steal_rq_enabled;
+> > >  
+> > > @@ -31,24 +40,65 @@ static int __init parse_no_stealacc(char *arg)
+> > >  
+> > >  early_param("no-steal-acc", parse_no_stealacc);
+> > >  
+> > > +DEFINE_PER_CPU(struct sbi_sta_struct, steal_time) __aligned(64);
+> > > +
+> > >  static bool __init has_pv_steal_clock(void)
+> > >  {
+> > > +	if (sbi_probe_extension(SBI_EXT_STA) > 0) {
+> > > +		pr_info("SBI STA extension detected\n");
+> > > +		return true;
+> > > +	}
+> > > +
+> > >  	return false;
+> > >  }
+> > >  
+> > > -static int pv_time_cpu_online(unsigned int cpu)
+> > > +static int sbi_sta_set_steal_time_shmem(unsigned long lo, unsigned long hi,
+> > > +					unsigned long flags)
+> > >  {
+> > > +	struct sbiret ret;
+> > > +
+> > > +	ret = sbi_ecall(SBI_EXT_STA, SBI_EXT_STA_SET_STEAL_TIME_SHMEM,
+> > > +			lo, hi, flags, 0, 0, 0);
+> > > +	if (ret.error) {
+> > > +		if (lo == -1 && hi == -1)
+> > > +			pr_warn("Failed to disable steal-time shmem");
+> > > +		else
+> > > +			pr_warn("Failed to set steal-time shmem");
+> > > +		return -ENOMEM;
+> > > +	}
+> > > +
+> > >  	return 0;
+> > >  }
+> > >  
+> > > +static int pv_time_cpu_online(unsigned int cpu)
+> > > +{
+> > > +	struct sbi_sta_struct *st = this_cpu_ptr(&steal_time);
+> > > +	phys_addr_t pa = __pa(st);
+> > > +	unsigned long lo = (unsigned long)pa;
+> > > +	unsigned long hi = IS_ENABLED(CONFIG_32BIT) ? upper_32_bits((u64)pa) : 0;
+> > > +
+> > > +	return sbi_sta_set_steal_time_shmem(lo, hi, 0);
+> > > +}
+> > > +
+> > >  static int pv_time_cpu_down_prepare(unsigned int cpu)
+> > >  {
+> > > -	return 0;
+> > > +	return sbi_sta_set_steal_time_shmem(-1, -1, 0);
+> > >  }
+> > >  
+> > >  static u64 pv_time_steal_clock(int cpu)
+> > >  {
+> > > -	return 0;
+> > > +	struct sbi_sta_struct *st = per_cpu_ptr(&steal_time, cpu);
+> > > +	u32 sequence;
+> > > +	u64 steal;
+> > > +
+> > > +	do {
+> > > +		sequence = st->sequence;
+> > > +		virt_rmb();
+> > > +		steal = st->steal;
+> > > +		virt_rmb();
+> > > +	} while ((sequence & 1) || (sequence != st->sequence));
+> > > +
+> > > +	return steal;
+> > >  }
 > > 
-> > I think I need to wait until it's been ratified.
-> Did you discuss the SBI_EXT_STA number of the SBI spec? Could you share
-> the link to me? Thx.
->
+> > So anybody poking around the implementations for other architectures will
+> > see that I shamelessly ripped this off from x86's implementation. However,
+> > looking at it again, I think all the references to the steal-time info
+> > should be wrapped in READ_ONCE(). I'll write a patch for x86/kvm to
+> > add READ_ONCE's and also update this patch for rfc-v2.
+> Hello, what's the status of rfc-v2? The riscv paravirt_qspinlock is
+> based on your series to reuse the paravirt.c and CONFIG_PARAVIRT.
 
-The number is just "STA" in hex, as all SBI extensions are numbered. All
-discussion of the spec was on the tech-prs mailing list[1]. Searching for
-"steal" in the archives appears to pull up relevant threads.
+I prepared it, but then didn't bother posting, since the series has to
+stay an RFC and not be merged until the spec is frozen and the changes
+were pretty minor (mostly just name changes). The pv_time_steal_clock()
+changes described above look like this
 
-[1] https://lists.riscv.org/g/tech-prs/messages
+static u64 pv_time_steal_clock(int cpu)
+{
+        struct sbi_sta_struct *st = per_cpu_ptr(&steal_time, cpu);
+        u32 sequence;
+        u64 steal;
 
-Thanks,
+        /*
+         * Check the sequence field before and after reading the steal
+         * field. Repeat the read if it is different or odd.
+         */
+        do {
+                sequence = READ_ONCE(st->sequence);
+                virt_rmb();
+                steal = READ_ONCE(st->steal);
+                virt_rmb();
+        } while ((le32_to_cpu(sequence) & 1) || sequence != READ_ONCE(st->sequence));
+
+        return le64_to_cpu(steal);
+}
+
+> 
+> https://lore.kernel.org/linux-riscv/20230802164701.192791-10-guoren at kernel.org/
+> https://lore.kernel.org/linux-riscv/20230802164701.192791-17-guoren at kernel.org/
+
+Thanks, I'll take a look at this.
+
 drew
-
-
 
