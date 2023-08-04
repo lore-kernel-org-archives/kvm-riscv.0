@@ -1,121 +1,196 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Fri, 4 Aug 2023 12:28:28 +0300
-Subject: [PATCH 00/10] RISC-V: Refactor instructions
-In-Reply-To: <20230803-master-refactor-instructions-v4-v1-0-2128e61fa4ff@rivosinc.com>
-References: <20230803-master-refactor-instructions-v4-v1-0-2128e61fa4ff@rivosinc.com>
-Message-ID: <20230804-2c57bddd6e87fdebc20ff9d5@orel>
+Date: Fri,  4 Aug 2023 16:56:18 +0300
+Subject: [PATCH] RISC-V: KVM: Improve vector save/restore functions
+Message-ID: <20230804135617.46188-2-ajones@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Aug 03, 2023 at 07:10:25PM -0700, Charlie Jenkins wrote:
-> There are numerous systems in the kernel that rely on directly
-> modifying, creating, and reading instructions. Many of these systems
-> have rewritten code to do this. This patch will delegate all instruction
-> handling into insn.h and reg.h. All of the compressed instructions, RVI,
-> Zicsr, M, A instructions are included, as well as a subset of the F,D,Q
-> extensions.
-> 
-> ---
-> This is modifying code that https://lore.kernel.org/lkml/20230731183925.152145-1-namcaov at gmail.com/
-> is also touching.
-> 
-> ---
-> Testing:
-> 
-> There are a lot of subsystems touched and I have not tested every
-> individual instruction. I did a lot of copy-pasting from the RISC-V spec
-> so opcodes and such should be correct
+Make two nonfunctional changes to the vector get/set vector reg
+functions and their supporting function for simplification and
+readability. The first is to not pass KVM_REG_RISCV_VECTOR, but
+rather integrate it directly into the masking. The second is to
+rename reg_val to reg_addr where and address is used instead of
+a value.
 
-How about we create macros which generate each of the functions an
-instruction needs, e.g. riscv_insn_is_*(), etc. based on the output of
-[1]. I know basically nothing about that project, but it looks like it
-creates most the defines this series is creating from what we [hope] to
-be an authoritative source. I also assume that if we don't like the
-current output format, then we could probably post patches to the project
-to get the format we want. For example, we could maybe propose an "lc"
-format for "Linux C".
+Also opportunistically touch up some of the code formatting for
+a third nonfunctional change.
 
-I'd also recommend only importing the generated defines and generating
-the functions that will actually have immediate consumers or are part of
-a set of defines that have immediate consumers. Each consumer of new
-instructions will be responsible for generating and importing the defines
-and adding the respective macro invocations to generate the functions.
-This series can also take that approach, i.e. convert one set of
-instructions at a time, each in a separate patch.
+Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
+---
 
-[1] https://github.com/riscv/riscv-opcodes
+This is based on "[PATCH v4 00/10] RISC-V: KVM: change get_reg/set_reg
+error code"[1]
+[1] https://lore.kernel.org/all/20230803163302.445167-1-dbarboza at ventanamicro.com/
 
-Thanks,
-drew
+ arch/riscv/include/asm/kvm_vcpu_vector.h |  6 ++--
+ arch/riscv/kvm/vcpu_onereg.c             |  6 ++--
+ arch/riscv/kvm/vcpu_vector.c             | 46 ++++++++++--------------
+ 3 files changed, 23 insertions(+), 35 deletions(-)
 
+diff --git a/arch/riscv/include/asm/kvm_vcpu_vector.h b/arch/riscv/include/asm/kvm_vcpu_vector.h
+index ff994fdd6d0d..27f5bccdd8b0 100644
+--- a/arch/riscv/include/asm/kvm_vcpu_vector.h
++++ b/arch/riscv/include/asm/kvm_vcpu_vector.h
+@@ -74,9 +74,7 @@ static inline void kvm_riscv_vcpu_free_vector_context(struct kvm_vcpu *vcpu)
+ #endif
+ 
+ int kvm_riscv_vcpu_get_reg_vector(struct kvm_vcpu *vcpu,
+-				  const struct kvm_one_reg *reg,
+-				  unsigned long rtype);
++				  const struct kvm_one_reg *reg);
+ int kvm_riscv_vcpu_set_reg_vector(struct kvm_vcpu *vcpu,
+-				  const struct kvm_one_reg *reg,
+-				  unsigned long rtype);
++				  const struct kvm_one_reg *reg);
+ #endif
+diff --git a/arch/riscv/kvm/vcpu_onereg.c b/arch/riscv/kvm/vcpu_onereg.c
+index 989ea32dbcbe..9fee1c176fbb 100644
+--- a/arch/riscv/kvm/vcpu_onereg.c
++++ b/arch/riscv/kvm/vcpu_onereg.c
+@@ -645,8 +645,7 @@ int kvm_riscv_vcpu_set_reg(struct kvm_vcpu *vcpu,
+ 	case KVM_REG_RISCV_SBI_EXT:
+ 		return kvm_riscv_vcpu_set_reg_sbi_ext(vcpu, reg);
+ 	case KVM_REG_RISCV_VECTOR:
+-		return kvm_riscv_vcpu_set_reg_vector(vcpu, reg,
+-						 KVM_REG_RISCV_VECTOR);
++		return kvm_riscv_vcpu_set_reg_vector(vcpu, reg);
+ 	default:
+ 		break;
+ 	}
+@@ -677,8 +676,7 @@ int kvm_riscv_vcpu_get_reg(struct kvm_vcpu *vcpu,
+ 	case KVM_REG_RISCV_SBI_EXT:
+ 		return kvm_riscv_vcpu_get_reg_sbi_ext(vcpu, reg);
+ 	case KVM_REG_RISCV_VECTOR:
+-		return kvm_riscv_vcpu_get_reg_vector(vcpu, reg,
+-						 KVM_REG_RISCV_VECTOR);
++		return kvm_riscv_vcpu_get_reg_vector(vcpu, reg);
+ 	default:
+ 		break;
+ 	}
+diff --git a/arch/riscv/kvm/vcpu_vector.c b/arch/riscv/kvm/vcpu_vector.c
+index 39c5bceb4d1b..b430cbb69521 100644
+--- a/arch/riscv/kvm/vcpu_vector.c
++++ b/arch/riscv/kvm/vcpu_vector.c
+@@ -92,9 +92,9 @@ void kvm_riscv_vcpu_free_vector_context(struct kvm_vcpu *vcpu)
+ #endif
+ 
+ static int kvm_riscv_vcpu_vreg_addr(struct kvm_vcpu *vcpu,
+-				      unsigned long reg_num,
+-				      size_t reg_size,
+-				      void **reg_val)
++				    unsigned long reg_num,
++				    size_t reg_size,
++				    void **reg_addr)
+ {
+ 	struct kvm_cpu_context *cntx = &vcpu->arch.guest_context;
+ 	size_t vlenb = riscv_v_vsize / 32;
+@@ -104,16 +104,16 @@ static int kvm_riscv_vcpu_vreg_addr(struct kvm_vcpu *vcpu,
+ 			return -EINVAL;
+ 		switch (reg_num) {
+ 		case KVM_REG_RISCV_VECTOR_CSR_REG(vstart):
+-			*reg_val = &cntx->vector.vstart;
++			*reg_addr = &cntx->vector.vstart;
+ 			break;
+ 		case KVM_REG_RISCV_VECTOR_CSR_REG(vl):
+-			*reg_val = &cntx->vector.vl;
++			*reg_addr = &cntx->vector.vl;
+ 			break;
+ 		case KVM_REG_RISCV_VECTOR_CSR_REG(vtype):
+-			*reg_val = &cntx->vector.vtype;
++			*reg_addr = &cntx->vector.vtype;
+ 			break;
+ 		case KVM_REG_RISCV_VECTOR_CSR_REG(vcsr):
+-			*reg_val = &cntx->vector.vcsr;
++			*reg_addr = &cntx->vector.vcsr;
+ 			break;
+ 		case KVM_REG_RISCV_VECTOR_CSR_REG(datap):
+ 		default:
+@@ -122,8 +122,8 @@ static int kvm_riscv_vcpu_vreg_addr(struct kvm_vcpu *vcpu,
+ 	} else if (reg_num <= KVM_REG_RISCV_VECTOR_REG(31)) {
+ 		if (reg_size != vlenb)
+ 			return -EINVAL;
+-		*reg_val = cntx->vector.datap
+-			  + (reg_num - KVM_REG_RISCV_VECTOR_REG(0)) * vlenb;
++		*reg_addr = cntx->vector.datap +
++			    (reg_num - KVM_REG_RISCV_VECTOR_REG(0)) * vlenb;
+ 	} else {
+ 		return -ENOENT;
+ 	}
+@@ -132,60 +132,52 @@ static int kvm_riscv_vcpu_vreg_addr(struct kvm_vcpu *vcpu,
+ }
+ 
+ int kvm_riscv_vcpu_get_reg_vector(struct kvm_vcpu *vcpu,
+-				  const struct kvm_one_reg *reg,
+-				  unsigned long rtype)
++				  const struct kvm_one_reg *reg)
+ {
+ 	unsigned long *isa = vcpu->arch.isa;
+ 	unsigned long __user *uaddr =
+ 			(unsigned long __user *)(unsigned long)reg->addr;
+ 	unsigned long reg_num = reg->id & ~(KVM_REG_ARCH_MASK |
+ 					    KVM_REG_SIZE_MASK |
+-					    rtype);
++					    KVM_REG_RISCV_VECTOR);
+ 	size_t reg_size = KVM_REG_SIZE(reg->id);
+-	void *reg_val;
++	void *reg_addr;
+ 	int rc;
+ 
+-	if (rtype != KVM_REG_RISCV_VECTOR)
+-		return -EINVAL;
+-
+ 	if (!riscv_isa_extension_available(isa, v))
+ 		return -ENOENT;
+ 
+-	rc = kvm_riscv_vcpu_vreg_addr(vcpu, reg_num, reg_size, &reg_val);
++	rc = kvm_riscv_vcpu_vreg_addr(vcpu, reg_num, reg_size, &reg_addr);
+ 	if (rc)
+ 		return rc;
+ 
+-	if (copy_to_user(uaddr, reg_val, reg_size))
++	if (copy_to_user(uaddr, reg_addr, reg_size))
+ 		return -EFAULT;
+ 
+ 	return 0;
+ }
+ 
+ int kvm_riscv_vcpu_set_reg_vector(struct kvm_vcpu *vcpu,
+-				  const struct kvm_one_reg *reg,
+-				  unsigned long rtype)
++				  const struct kvm_one_reg *reg)
+ {
+ 	unsigned long *isa = vcpu->arch.isa;
+ 	unsigned long __user *uaddr =
+ 			(unsigned long __user *)(unsigned long)reg->addr;
+ 	unsigned long reg_num = reg->id & ~(KVM_REG_ARCH_MASK |
+ 					    KVM_REG_SIZE_MASK |
+-					    rtype);
++					    KVM_REG_RISCV_VECTOR);
+ 	size_t reg_size = KVM_REG_SIZE(reg->id);
+-	void *reg_val;
++	void *reg_addr;
+ 	int rc;
+ 
+-	if (rtype != KVM_REG_RISCV_VECTOR)
+-		return -EINVAL;
+-
+ 	if (!riscv_isa_extension_available(isa, v))
+ 		return -ENOENT;
+ 
+-	rc = kvm_riscv_vcpu_vreg_addr(vcpu, reg_num, reg_size, &reg_val);
++	rc = kvm_riscv_vcpu_vreg_addr(vcpu, reg_num, reg_size, &reg_addr);
+ 	if (rc)
+ 		return rc;
+ 
+-	if (copy_from_user(reg_val, uaddr, reg_size))
++	if (copy_from_user(reg_addr, uaddr, reg_size))
+ 		return -EFAULT;
+ 
+ 	return 0;
+-- 
+2.41.0
 
-> , but the construction of every
-> instruction is not fully tested.
-> 
-> vector: Compiled and booted
-> 
-> jump_label: Ensured static keys function as expected.
-> 
-> kgdb: Attempted to run the provided tests but they failed even without
-> my changes
-> 
-> module: Loaded and unloaded modules
-> 
-> patch.c: Ensured kernel booted
-> 
-> kprobes: Used a kprobing module to probe jalr, auipc, and branch
-> instructions
-> 
-> nommu misaligned addresses: Kernel boots
-> 
-> kvm: Ran KVM selftests
-> 
-> bpf: Kernel boots. Most of the instructions are exclusively used by BPF
-> but I am unsure of the best way of testing BPF.
-> 
-> Signed-off-by: Charlie Jenkins <charlie@rivosinc.com>
-> 
-> ---
-> Charlie Jenkins (10):
->       RISC-V: Expand instruction definitions
->       RISC-V: vector: Refactor instructions
->       RISC-V: Refactor jump label instructions
->       RISC-V: KGDB: Refactor instructions
->       RISC-V: module: Refactor instructions
->       RISC-V: Refactor patch instructions
->       RISC-V: nommu: Refactor instructions
->       RISC-V: kvm: Refactor instructions
->       RISC-V: bpf: Refactor instructions
->       RISC-V: Refactor bug and traps instructions
-> 
->  arch/riscv/include/asm/bug.h             |   18 +-
->  arch/riscv/include/asm/insn.h            | 2744 +++++++++++++++++++++++++++---
->  arch/riscv/include/asm/reg.h             |   88 +
->  arch/riscv/kernel/jump_label.c           |   13 +-
->  arch/riscv/kernel/kgdb.c                 |   13 +-
->  arch/riscv/kernel/module.c               |   80 +-
->  arch/riscv/kernel/patch.c                |    3 +-
->  arch/riscv/kernel/probes/kprobes.c       |   13 +-
->  arch/riscv/kernel/probes/simulate-insn.c |  100 +-
->  arch/riscv/kernel/probes/uprobes.c       |    5 +-
->  arch/riscv/kernel/traps.c                |    9 +-
->  arch/riscv/kernel/traps_misaligned.c     |  218 +--
->  arch/riscv/kernel/vector.c               |    5 +-
->  arch/riscv/kvm/vcpu_insn.c               |  281 +--
->  arch/riscv/net/bpf_jit.h                 |  707 +-------
->  15 files changed, 2825 insertions(+), 1472 deletions(-)
-> ---
-> base-commit: 5d0c230f1de8c7515b6567d9afba1f196fb4e2f4
-> change-id: 20230801-master-refactor-instructions-v4-433aa040da03
-> -- 
-> - Charlie
-> 
-> 
-> -- 
-> kvm-riscv mailing list
-> kvm-riscv at lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/kvm-riscv
 
