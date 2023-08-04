@@ -1,61 +1,67 @@
-From: Charlie Jenkins <charlie@rivosinc.com>
-Date: Fri, 4 Aug 2023 10:26:32 -0700
-Subject: [PATCH 01/10] RISC-V: Expand instruction definitions
-In-Reply-To: <20230804-barterer-heritage-ed191081bc47@wendy>
-References: <20230803-master-refactor-instructions-v4-v1-0-2128e61fa4ff@rivosinc.com>
- <20230803-master-refactor-instructions-v4-v1-1-2128e61fa4ff@rivosinc.com>
- <20230804-barterer-heritage-ed191081bc47@wendy>
-Message-ID: <ZM00yFKcDczO50lJ@ghost>
+From: Raghavendra Rao Ananta <rananta@google.com>
+Date: Fri, 4 Aug 2023 11:19:02 -0700
+Subject: [PATCH v7 02/12] KVM: arm64: Use kvm_arch_flush_remote_tlbs()
+In-Reply-To: <CAJHc60xAUVt5fbhEkOqeC-VF8SWVOt3si=1yxVVAUW=+Hu_wNg@mail.gmail.com>
+References: <20230722022251.3446223-1-rananta@google.com> <20230722022251.3446223-3-rananta@google.com>
+ <87tttpr6qy.wl-maz@kernel.org> <ZMgsjx8dwKd4xBGe@google.com>
+ <877cqdqw12.wl-maz@kernel.org> <CAJHc60xAUVt5fbhEkOqeC-VF8SWVOt3si=1yxVVAUW=+Hu_wNg@mail.gmail.com>
+Message-ID: <CAJHc60zN-dc2E-fS7fuXgkrfGD9bqW6tMy2GRZxbHOeZv0ZOBw@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Aug 04, 2023 at 08:59:24AM +0100, Conor Dooley wrote:
-> On Thu, Aug 03, 2023 at 07:10:26PM -0700, Charlie Jenkins wrote:
-> > There are many systems across the kernel that rely on directly creating
-> > and modifying instructions. In order to unify them, create shared
-> > definitions for instructions and registers.
-> > 
-> > Signed-off-by: Charlie Jenkins <charlie@rivosinc.com>
-> > ---
-> >  arch/riscv/include/asm/insn.h            | 2742 +++++++++++++++++++++++++++---
-> 
-> "I did a lot of copy-pasting from the RISC-V spec"
-> 
-> How is anyone supposed to cross check this when there's 1000s of lines
-> of a diff here? We've had some subtle bugs in some of the definitions in
-> the past, so I would like to be able to check at this opportune moment
-> that things are correct.
-> 
-> >  arch/riscv/include/asm/reg.h             |   88 +
-> >  arch/riscv/kernel/kgdb.c                 |    4 +-
-> >  arch/riscv/kernel/probes/simulate-insn.c |   39 +-
-> >  arch/riscv/kernel/vector.c               |    2 +-
-> 
-> You need to at least split this up. I doubt a 2742 change diff for
-> insn.h was required to make the changes in these 4 files.
-Yeah it is kind of a nightmare to look at, I will split it up.
-> 
-> Then after that, it would be so much easier to reason about these
-> changes if the additions to insn.h happened at the same time as the
-> removals from the affected locations.
-> 
-> I would probably split this so that things are done in more stages,
-> with the larger patches split between changes that require no new
-> definitions and changes that require moving things to insn.h
-> 
-> >  5 files changed, 2629 insertions(+), 246 deletions(-)
-> 
-> What you would want to see if this arrived in your inbox as a reviewer?
-> 
-> Don't get me wrong, I do like what you are doing here, the BPF JIT
-> especially is filled with "uhh okay, I guess those offsets are right",
-> so I don't mean to be discouraging.
-> 
+On Wed, Aug 2, 2023 at 4:28?PM Raghavendra Rao Ananta
+<rananta@google.com> wrote:
+>
+> Sure, I'll change it to kvm_arch_flush_vm_tlbs() in v8.
+>
+While working on the renaming, I realized that since this function is
+called from kvm_main.c's kvm_flush_remote_tlbs(). Do we want to rename
+this and the other kvm_flush_*() functions that the series introduces
+to match their kvm_arch_flush_*() counterparts?  (spiraling more into
+this, we also have the 'remote_tlb_flush_requests' and
+'remote_tlb_flush' stats)
+
+Thank you.
+Raghavendra
+
 > Thanks,
-> Conor.
-
-
+> Raghavendra
+>
+> On Wed, Aug 2, 2023 at 8:55?AM Marc Zyngier <maz@kernel.org> wrote:
+> >
+> > On Mon, 31 Jul 2023 22:50:07 +0100,
+> > Sean Christopherson <seanjc@google.com> wrote:
+> > >
+> > > On Thu, Jul 27, 2023, Marc Zyngier wrote:
+> > > > On Sat, 22 Jul 2023 03:22:41 +0100,
+> > > > Raghavendra Rao Ananta <rananta@google.com> wrote:
+> > > > >
+> > > > > Stop depending on CONFIG_HAVE_KVM_ARCH_TLB_FLUSH_ALL and opt to
+> > > > > standardize on kvm_arch_flush_remote_tlbs() since it avoids
+> > > > > duplicating the generic TLB stats across architectures that implement
+> > > > > their own remote TLB flush.
+> > > > >
+> > > > > This adds an extra function call to the ARM64 kvm_flush_remote_tlbs()
+> > > > > path, but that is a small cost in comparison to flushing remote TLBs.
+> > > >
+> > > > Well, there is no such thing as a "remote TLB" anyway. We either have
+> > > > a non-shareable or inner-shareable invalidation. The notion of remote
+> > > > would imply that we track who potentially has a TLB, which we
+> > > > obviously don't.
+> > >
+> > > Maybe kvm_arch_flush_vm_tlbs()?  The "remote" part is misleading even on x86 when
+> > > running on Hyper-V, as the flush may be done via a single hypercall and by kicking
+> > > "remote" vCPUs.
+> >
+> > Yup, this would be much better.
+> >
+> > Thanks,
+> >
+> >         M.
+> >
+> > --
+> > Without deviation from the norm, progress is not possible.
 
