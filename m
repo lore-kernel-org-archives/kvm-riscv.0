@@ -1,70 +1,62 @@
-From: kernel test robot <lkp@intel.com>
-Date: Fri, 4 Aug 2023 13:16:55 +0800
-Subject: [PATCH 10/10] RISC-V: Refactor bug and traps instructions
-In-Reply-To: <20230803-master-refactor-instructions-v4-v1-10-2128e61fa4ff@rivosinc.com>
-References: <20230803-master-refactor-instructions-v4-v1-10-2128e61fa4ff@rivosinc.com>
-Message-ID: <202308041213.o49SRQWZ-lkp@intel.com>
+From: Conor Dooley <conor.dooley@microchip.com>
+Date: Fri, 4 Aug 2023 08:59:24 +0100
+Subject: [PATCH 01/10] RISC-V: Expand instruction definitions
+In-Reply-To: <20230803-master-refactor-instructions-v4-v1-1-2128e61fa4ff@rivosinc.com>
+References: <20230803-master-refactor-instructions-v4-v1-0-2128e61fa4ff@rivosinc.com>
+ <20230803-master-refactor-instructions-v4-v1-1-2128e61fa4ff@rivosinc.com>
+Message-ID: <20230804-barterer-heritage-ed191081bc47@wendy>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Charlie,
+On Thu, Aug 03, 2023 at 07:10:26PM -0700, Charlie Jenkins wrote:
+> There are many systems across the kernel that rely on directly creating
+> and modifying instructions. In order to unify them, create shared
+> definitions for instructions and registers.
+> 
+> Signed-off-by: Charlie Jenkins <charlie@rivosinc.com>
+> ---
+>  arch/riscv/include/asm/insn.h            | 2742 +++++++++++++++++++++++++++---
 
-kernel test robot noticed the following build warnings:
+"I did a lot of copy-pasting from the RISC-V spec"
 
-[auto build test WARNING on 5d0c230f1de8c7515b6567d9afba1f196fb4e2f4]
+How is anyone supposed to cross check this when there's 1000s of lines
+of a diff here? We've had some subtle bugs in some of the definitions in
+the past, so I would like to be able to check at this opportune moment
+that things are correct.
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Charlie-Jenkins/RISC-V-Expand-instruction-definitions/20230804-101437
-base:   5d0c230f1de8c7515b6567d9afba1f196fb4e2f4
-patch link:    https://lore.kernel.org/r/20230803-master-refactor-instructions-v4-v1-10-2128e61fa4ff%40rivosinc.com
-patch subject: [PATCH 10/10] RISC-V: Refactor bug and traps instructions
-config: riscv-allyesconfig (https://download.01.org/0day-ci/archive/20230804/202308041213.o49SRQWZ-lkp at intel.com/config)
-compiler: riscv64-linux-gcc (GCC) 12.3.0
-reproduce: (https://download.01.org/0day-ci/archive/20230804/202308041213.o49SRQWZ-lkp at intel.com/reproduce)
+>  arch/riscv/include/asm/reg.h             |   88 +
+>  arch/riscv/kernel/kgdb.c                 |    4 +-
+>  arch/riscv/kernel/probes/simulate-insn.c |   39 +-
+>  arch/riscv/kernel/vector.c               |    2 +-
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202308041213.o49SRQWZ-lkp at intel.com/
+You need to at least split this up. I doubt a 2742 change diff for
+insn.h was required to make the changes in these 4 files.
 
-All warnings (new ones prefixed by >>):
+Then after that, it would be so much easier to reason about these
+changes if the additions to insn.h happened at the same time as the
+removals from the affected locations.
 
->> arch/riscv/kernel/elf_kexec.c:326: warning: "RV_X" redefined
-     326 | #define RV_X(x, s, n)  (((x) >> (s)) & ((1 << (n)) - 1))
-         | 
-   In file included from arch/riscv/include/asm/bug.h:14,
-                    from include/linux/bug.h:5,
-                    from include/linux/thread_info.h:13,
-                    from include/asm-generic/preempt.h:5,
-                    from ./arch/riscv/include/generated/asm/preempt.h:1,
-                    from include/linux/preempt.h:79,
-                    from include/linux/spinlock.h:56,
-                    from include/linux/ipc.h:5,
-                    from include/uapi/linux/sem.h:5,
-                    from include/linux/sem.h:5,
-                    from include/linux/compat.h:14,
-                    from arch/riscv/include/asm/elf.h:12,
-                    from include/linux/elf.h:6,
-                    from arch/riscv/kernel/elf_kexec.c:15:
-   arch/riscv/include/asm/insn.h:1915: note: this is the location of the previous definition
-    1915 | #define RV_X(X, s, mask)  (((X) >> (s)) & (mask))
-         | 
+I would probably split this so that things are done in more stages,
+with the larger patches split between changes that require no new
+definitions and changes that require moving things to insn.h
 
+>  5 files changed, 2629 insertions(+), 246 deletions(-)
 
-vim +/RV_X +326 arch/riscv/kernel/elf_kexec.c
+What you would want to see if this arrived in your inbox as a reviewer?
 
-6261586e0c91db1 Liao Chang 2022-04-08  325  
-838b3e28488f702 Li Zhengyu 2022-04-08 @326  #define RV_X(x, s, n)  (((x) >> (s)) & ((1 << (n)) - 1))
-838b3e28488f702 Li Zhengyu 2022-04-08  327  #define RISCV_IMM_BITS 12
-838b3e28488f702 Li Zhengyu 2022-04-08  328  #define RISCV_IMM_REACH (1LL << RISCV_IMM_BITS)
-838b3e28488f702 Li Zhengyu 2022-04-08  329  #define RISCV_CONST_HIGH_PART(x) \
-838b3e28488f702 Li Zhengyu 2022-04-08  330  	(((x) + (RISCV_IMM_REACH >> 1)) & ~(RISCV_IMM_REACH - 1))
-838b3e28488f702 Li Zhengyu 2022-04-08  331  #define RISCV_CONST_LOW_PART(x) ((x) - RISCV_CONST_HIGH_PART(x))
-838b3e28488f702 Li Zhengyu 2022-04-08  332  
+Don't get me wrong, I do like what you are doing here, the BPF JIT
+especially is filled with "uhh okay, I guess those offsets are right",
+so I don't mean to be discouraging.
 
--- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
-
+Thanks,
+Conor.
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 228 bytes
+Desc: not available
+URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20230804/f593e272/attachment.sig>
