@@ -1,72 +1,74 @@
-From: Guo Ren <guoren@kernel.org>
-Date: Sat, 5 Aug 2023 09:34:11 +0800
-Subject: [RFC PATCH 02/14] RISC-V: Add SBI STA extension definitions
-In-Reply-To: <20230803-12cf578826747ddb63046bff@orel>
-References: <20230417103402.798596-1-ajones@ventanamicro.com>
- <20230417103402.798596-3-ajones@ventanamicro.com> <20230418-elliptic-headboard-6a18fcccdf07@spud>
- <bl7i54kgkzvxzhritql4vtzpymepx7hmtio7pjnbmipv3dxwgi@dtmqpnkdlwl5>
- <ZMsCl9LaMvx38zMY@gmail.com> <20230803-12cf578826747ddb63046bff@orel>
-Message-ID: <CAJF2gTRjZAE4O60bL_hbugwHX9=-7jKXBKqPzE4fTyFShTctbA@mail.gmail.com>
+From: Anup Patel <anup@brainfault.org>
+Date: Sat, 5 Aug 2023 22:02:10 +0530
+Subject: [PATCH v4 00/10] RISC-V: KVM: change get_reg/set_reg error code
+In-Reply-To: <CAAhSdy0PoG=AwvcavJxuS1Y6nbFE8pcX5vXDuzFr6+vjhpAMkQ@mail.gmail.com>
+References: <20230803163302.445167-1-dbarboza@ventanamicro.com> <CAAhSdy0PoG=AwvcavJxuS1Y6nbFE8pcX5vXDuzFr6+vjhpAMkQ@mail.gmail.com>
+Message-ID: <CAAhSdy17pWaXWQDOzzJpwKxQPkojv4sZa4+EKrQW6OmFLrXNrw@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Aug 3, 2023 at 2:48?PM Andrew Jones <ajones@ventanamicro.com> wrote:
+On Fri, Aug 4, 2023 at 2:41?PM Anup Patel <anup@brainfault.org> wrote:
 >
-> On Wed, Aug 02, 2023 at 09:27:51PM -0400, Guo Ren wrote:
-> > On Wed, Apr 19, 2023 at 10:15:54AM +0200, Andrew Jones wrote:
-> > > On Tue, Apr 18, 2023 at 07:43:51PM +0100, Conor Dooley wrote:
-> > > > On Mon, Apr 17, 2023 at 12:33:50PM +0200, Andrew Jones wrote:
-> > > > > The SBI STA extension enables steal-time accounting. Add the
-> > > > > definitions it specifies.
-> > > > >
-> > > > > Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
-> > > > > ---
-> > > > >  arch/riscv/include/asm/sbi.h | 15 +++++++++++++++
-> > > > >  1 file changed, 15 insertions(+)
-> > > > >
-> > > > > diff --git a/arch/riscv/include/asm/sbi.h b/arch/riscv/include/asm/sbi.h
-> > > > > index 945b7be249c1..485b9ec20399 100644
-> > > > > --- a/arch/riscv/include/asm/sbi.h
-> > > > > +++ b/arch/riscv/include/asm/sbi.h
-> > > > > @@ -30,6 +30,7 @@ enum sbi_ext_id {
-> > > > >         SBI_EXT_HSM = 0x48534D,
-> > > > >         SBI_EXT_SRST = 0x53525354,
-> > > > >         SBI_EXT_PMU = 0x504D55,
-> > > > > +       SBI_EXT_STA = 0x535441,
-> > > >
-> > > > What is the sort order of this? Matching the spec ordering, or just
-> > > > append-at-the-end?
-> > >
-> > > I don't believe there's an established order. I've been going for spec
-> > > order, I think.
-> > >
-> > > >
-> > > > Unrelated, but in checking that I saw that your SUSP stuff is in
-> > > > master - you planning on resending that series?
-> > >
-> > > I think I need to wait until it's been ratified.
-> > Did you discuss the SBI_EXT_STA number of the SBI spec? Could you share
-> > the link to me? Thx.
+> On Thu, Aug 3, 2023 at 10:03?PM Daniel Henrique Barboza
+> <dbarboza@ventanamicro.com> wrote:
 > >
+> > Hi,
+> >
+> > This version includes a diff that Andrew mentioned in v2 [1] that I
+> > missed. They were squashed into patch 1.
+> >
+> > No other changes made. Patches rebased on top of riscv_kvm_queue.
+> >
+> > Changes from v3:
+> > - patch 1:
+> >   - added missing EINVAL - ENOENT conversions
+> > - v3 link: https://lore.kernel.org/kvm/20230803140022.399333-1-dbarboza at ventanamicro.com/
+> >
+> > [1] https://lore.kernel.org/kvm/20230801222629.210929-1-dbarboza at ventanamicro.com/
+> >
+> >
+> > Andrew Jones (1):
+> >   RISC-V: KVM: Improve vector save/restore errors
+> >
+> > Daniel Henrique Barboza (9):
+> >   RISC-V: KVM: return ENOENT in *_one_reg() when reg is unknown
+> >   RISC-V: KVM: use ENOENT in *_one_reg() when extension is unavailable
+> >   RISC-V: KVM: do not EOPNOTSUPP in set_one_reg() zicbo(m|z)
+> >   RISC-V: KVM: do not EOPNOTSUPP in set KVM_REG_RISCV_TIMER_REG
+> >   RISC-V: KVM: use EBUSY when !vcpu->arch.ran_atleast_once
+> >   RISC-V: KVM: avoid EBUSY when writing same ISA val
+> >   RISC-V: KVM: avoid EBUSY when writing the same machine ID val
+> >   RISC-V: KVM: avoid EBUSY when writing the same isa_ext val
+> >   docs: kvm: riscv: document EBUSY in KVM_SET_ONE_REG
 >
-> The number is just "STA" in hex, as all SBI extensions are numbered. All
-> discussion of the spec was on the tech-prs mailing list[1]. Searching for
-> "steal" in the archives appears to pull up relevant threads.
+> I have queued all patches except PATCH9 for Linux-6.6.
 >
-> [1] https://lists.riscv.org/g/tech-prs/messages
-Thx for the information; It could guide me to send the SBI_EXT_PVLOCK request.
+> Drew, please send v5 of PATCH.
+
+I have queued PATCH9 as well.
+
+Thanks,
+Anup
+
 
 >
 > Thanks,
-> drew
+> Anup
 >
->
-
-
--- 
-Best Regards
- Guo Ren
+> >
+> >  Documentation/virt/kvm/api.rst |  2 +
+> >  arch/riscv/kvm/aia.c           |  4 +-
+> >  arch/riscv/kvm/vcpu_fp.c       | 12 +++---
+> >  arch/riscv/kvm/vcpu_onereg.c   | 74 ++++++++++++++++++++++------------
+> >  arch/riscv/kvm/vcpu_sbi.c      | 16 ++++----
+> >  arch/riscv/kvm/vcpu_timer.c    | 11 ++---
+> >  arch/riscv/kvm/vcpu_vector.c   | 60 ++++++++++++++-------------
+> >  7 files changed, 107 insertions(+), 72 deletions(-)
+> >
+> > --
+> > 2.41.0
+> >
 
