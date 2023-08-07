@@ -1,10 +1,9 @@
 From: Ackerley Tng <ackerleytng@google.com>
-Date: Mon, 07 Aug 2023 23:17:49 +0000
-Subject: [RFC PATCH v11 27/29] KVM: selftests: Expand set_memory_region_test
- to validate guest_memfd()
-In-Reply-To: <20230718234512.1690985-28-seanjc@google.com> (message from Sean
- Christopherson on Tue, 18 Jul 2023 16:45:10 -0700)
-Message-ID: <diqzr0oe30iq.fsf@ackerleytng-ctop.c.googlers.com>
+Date: Mon, 07 Aug 2023 23:20:15 +0000
+Subject: [RFC PATCH v11 28/29] KVM: selftests: Add basic selftest for guest_memfd()
+In-Reply-To: <20230718234512.1690985-29-seanjc@google.com> (message from Sean
+ Christopherson on Tue, 18 Jul 2023 16:45:11 -0700)
+Message-ID: <diqzo7ji30eo.fsf@ackerleytng-ctop.c.googlers.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -13,79 +12,59 @@ Content-Transfer-Encoding: 7bit
 
 Sean Christopherson <seanjc@google.com> writes:
 
-> From: Chao Peng <chao.p.peng@linux.intel.com>
+> Add a selftest to verify the basic functionality of guest_memfd():
 >
-> Expand set_memory_region_test to exercise various positive and negative
-> testcases for private memory.
+> + file descriptor created with the guest_memfd() ioctl does not allow
+>   read/write/mmap operations
+> + file size and block size as returned from fstat are as expected
+> + fallocate on the fd checks that offset/length on
+>   fallocate(FALLOC_FL_PUNCH_HOLE) should be page aligned
 >
->  - Non-guest_memfd() file descriptor for private memory
->  - guest_memfd() from different VM
->  - Overlapping bindings
->  - Unaligned bindings
->
-> Signed-off-by: Chao Peng <chao.p.peng@linux.intel.com>
-> Co-developed-by: Ackerley Tng <ackerleytng@google.com>
-> Signed-off-by: Ackerley Tng <ackerleytng@google.com>
-> [sean: trim the testcases to remove duplicate coverage]
-> Signed-off-by: Sean Christopherson <seanjc@google.com>
-> ---
->  .../selftests/kvm/include/kvm_util_base.h     | 10 ++
->  .../selftests/kvm/set_memory_region_test.c    | 99 +++++++++++++++++++
->  2 files changed, 109 insertions(+)
->
-> diff --git a/tools/testing/selftests/kvm/include/kvm_util_base.h b/tools/testing/selftests/kvm/include/kvm_util_base.h
-> index 334df27a6f43..39b38c75b99c 100644
-> --- a/tools/testing/selftests/kvm/include/kvm_util_base.h
-> +++ b/tools/testing/selftests/kvm/include/kvm_util_base.h
-> @@ -789,6 +789,16 @@ static inline struct kvm_vm *vm_create_barebones(void)
->  	return ____vm_create(VM_SHAPE_DEFAULT);
->  }
->  
 
 > <snip>
 
 > +
-> +static void test_add_private_memory_region(void)
+> +static void test_fallocate(int fd, size_t page_size, size_t total_size)
 > +{
-> +	struct kvm_vm *vm, *vm2;
-> +	int memfd, i;
+> +	int ret;
 > +
-> +	pr_info("Testing ADD of KVM_MEM_PRIVATE memory regions\n");
+> +	ret = fallocate(fd, FALLOC_FL_KEEP_SIZE, 0, total_size);
+> +	TEST_ASSERT(!ret, "fallocate with aligned offset and size should succeed");
 > +
-> +	vm = vm_create_barebones_protected_vm();
+> +	ret = fallocate(fd, FALLOC_FL_KEEP_SIZE | FALLOC_FL_PUNCH_HOLE,
+> +			page_size - 1, page_size);
+> +	TEST_ASSERT(ret, "fallocate with unaligned offset should fail");
 > +
-> +	test_invalid_guest_memfd(vm, vm->kvm_fd, 0, "KVM fd should fail");
-> +	test_invalid_guest_memfd(vm, vm->fd, 0, "VM's fd should fail");
+> +	ret = fallocate(fd, FALLOC_FL_KEEP_SIZE, total_size, page_size);
+> +	TEST_ASSERT(ret, "fallocate beginning at total_size should fail");
 > +
-> +	memfd = kvm_memfd_alloc(MEM_REGION_SIZE, false);
-> +	test_invalid_guest_memfd(vm, vm->fd, 0, "Regular memfd() should fail");
+> +	ret = fallocate(fd, FALLOC_FL_KEEP_SIZE, total_size + page_size, page_size);
+> +	TEST_ASSERT(ret, "fallocate beginning at total_size should fail");
 
 This should be
 
-test_invalid_guest_memfd(vm, memfd, 0, "Regular memfd() should fail");
+TEST_ASSERT(ret, "fallocate beginning after total_size should fail");
 
-> +	close(memfd);
 > +
-> +	vm2 = vm_create_barebones_protected_vm();
-> +	memfd = vm_create_guest_memfd(vm2, MEM_REGION_SIZE, 0);
-> +	test_invalid_guest_memfd(vm, memfd, 0, "Other VM's guest_memfd() should fail");
+> +	ret = fallocate(fd, FALLOC_FL_KEEP_SIZE | FALLOC_FL_PUNCH_HOLE,
+> +			total_size, page_size);
+> +	TEST_ASSERT(!ret, "fallocate(PUNCH_HOLE) at total_size should succeed");
 > +
-> +	vm_set_user_memory_region2(vm2, MEM_REGION_SLOT, KVM_MEM_PRIVATE,
-> +				   MEM_REGION_GPA, MEM_REGION_SIZE, 0, memfd, 0);
-> +	close(memfd);
-> +	kvm_vm_free(vm2);
+> +	ret = fallocate(fd, FALLOC_FL_KEEP_SIZE | FALLOC_FL_PUNCH_HOLE,
+> +			total_size + page_size, page_size);
+> +	TEST_ASSERT(!ret, "fallocate(PUNCH_HOLE) after total_size should succeed");
 > +
-> +	memfd = vm_create_guest_memfd(vm, MEM_REGION_SIZE, 0);
-> +	for (i = 1; i < PAGE_SIZE; i++)
-> +		test_invalid_guest_memfd(vm, memfd, i, "Unaligned offset should fail");
+> +	ret = fallocate(fd, FALLOC_FL_KEEP_SIZE | FALLOC_FL_PUNCH_HOLE,
+> +			page_size, page_size - 1);
+> +	TEST_ASSERT(ret, "fallocate with unaligned size should fail");
 > +
-> +	vm_set_user_memory_region2(vm, MEM_REGION_SLOT, KVM_MEM_PRIVATE,
-> +				   MEM_REGION_GPA, MEM_REGION_SIZE, 0, memfd, 0);
-> +	close(memfd);
+> +	ret = fallocate(fd, FALLOC_FL_KEEP_SIZE | FALLOC_FL_PUNCH_HOLE,
+> +			page_size, page_size);
+> +	TEST_ASSERT(!ret, "fallocate(PUNCH_HOLE) with aligned offset and size should succeed");
 > +
-> +	kvm_vm_free(vm);
+> +	ret = fallocate(fd, FALLOC_FL_KEEP_SIZE, page_size, page_size);
+> +	TEST_ASSERT(!ret, "fallocate to restore punched hole should succeed");
 > +}
-> +
 
 > <snip>
 
