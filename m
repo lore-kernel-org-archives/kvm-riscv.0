@@ -1,243 +1,207 @@
-From: Anup Patel <anup@brainfault.org>
-Date: Mon, 7 Aug 2023 09:36:38 +0530
-Subject: [PATCH v7 05/12] KVM: Move kvm_arch_flush_remote_tlbs_memslot()
- to common code
-In-Reply-To: <20230722022251.3446223-6-rananta@google.com>
-References: <20230722022251.3446223-1-rananta@google.com> <20230722022251.3446223-6-rananta@google.com>
-Message-ID: <CAAhSdy1niGVbogG-dZhRC43DLasAXW+Ay3bvdKH_t73s0v5HJg@mail.gmail.com>
+From: Ackerley Tng <ackerleytng@google.com>
+Date: Mon, 07 Aug 2023 23:06:45 +0000
+Subject: [RFC PATCH v11 12/29] KVM: Add KVM_CREATE_GUEST_MEMFD ioctl() for
+ guest-specific backing memory
+In-Reply-To: <20230718234512.1690985-13-seanjc@google.com> (message from Sean
+ Christopherson on Tue, 18 Jul 2023 16:44:55 -0700)
+Message-ID: <diqzv8dq3116.fsf@ackerleytng-ctop.c.googlers.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sat, Jul 22, 2023 at 7:53?AM Raghavendra Rao Ananta
-<rananta@google.com> wrote:
->
-> From: David Matlack <dmatlack@google.com>
->
-> Move kvm_arch_flush_remote_tlbs_memslot() to common code and drop
-> "arch_" from the name. kvm_arch_flush_remote_tlbs_memslot() is just a
-> range-based TLB invalidation where the range is defined by the memslot.
-> Now that kvm_flush_remote_tlbs_range() can be called from common code we
-> can just use that and drop a bunch of duplicate code from the arch
-> directories.
->
-> Note this adds a lockdep assertion for slots_lock being held when
-> calling kvm_flush_remote_tlbs_memslot(), which was previously only
-> asserted on x86. MIPS has calls to kvm_flush_remote_tlbs_memslot(),
-> but they all hold the slots_lock, so the lockdep assertion continues to
-> hold true.
->
-> Also drop the CONFIG_KVM_GENERIC_DIRTYLOG_READ_PROTECT ifdef gating
-> kvm_flush_remote_tlbs_memslot(), since it is no longer necessary.
->
-> Signed-off-by: David Matlack <dmatlack@google.com>
-> Signed-off-by: Raghavendra Rao Ananta <rananta@google.com>
-> Reviewed-by: Gavin Shan <gshan@redhat.com>
-> Reviewed-by: Shaoqin Huang <shahuang@redhat.com>
+Sean Christopherson <seanjc@google.com> writes:
 
-For KVM RISC-V:
-Acked-by: Anup Patel <anup@brainfault.org>
+>   <snip>
 
-Thanks,
-Anup
-
-> ---
->  arch/arm64/kvm/arm.c     |  6 ------
->  arch/mips/kvm/mips.c     | 10 ++--------
->  arch/riscv/kvm/mmu.c     |  6 ------
->  arch/x86/kvm/mmu/mmu.c   | 16 +---------------
->  arch/x86/kvm/x86.c       |  2 +-
->  include/linux/kvm_host.h |  7 +++----
->  virt/kvm/kvm_main.c      | 18 ++++++++++++++++--
->  7 files changed, 23 insertions(+), 42 deletions(-)
->
-> diff --git a/arch/arm64/kvm/arm.c b/arch/arm64/kvm/arm.c
-> index c2c14059f6a8..ed7bef4d970b 100644
-> --- a/arch/arm64/kvm/arm.c
-> +++ b/arch/arm64/kvm/arm.c
-> @@ -1525,12 +1525,6 @@ void kvm_arch_sync_dirty_log(struct kvm *kvm, struct kvm_memory_slot *memslot)
->
->  }
->
-> -void kvm_arch_flush_remote_tlbs_memslot(struct kvm *kvm,
-> -                                       const struct kvm_memory_slot *memslot)
-> -{
-> -       kvm_flush_remote_tlbs(kvm);
-> -}
-> -
->  static int kvm_vm_ioctl_set_device_addr(struct kvm *kvm,
->                                         struct kvm_arm_device_addr *dev_addr)
->  {
-> diff --git a/arch/mips/kvm/mips.c b/arch/mips/kvm/mips.c
-> index 4b7bc39a4173..231ac052b506 100644
-> --- a/arch/mips/kvm/mips.c
-> +++ b/arch/mips/kvm/mips.c
-> @@ -199,7 +199,7 @@ void kvm_arch_flush_shadow_memslot(struct kvm *kvm,
->         /* Flush slot from GPA */
->         kvm_mips_flush_gpa_pt(kvm, slot->base_gfn,
->                               slot->base_gfn + slot->npages - 1);
-> -       kvm_arch_flush_remote_tlbs_memslot(kvm, slot);
-> +       kvm_flush_remote_tlbs_memslot(kvm, slot);
->         spin_unlock(&kvm->mmu_lock);
->  }
->
-> @@ -235,7 +235,7 @@ void kvm_arch_commit_memory_region(struct kvm *kvm,
->                 needs_flush = kvm_mips_mkclean_gpa_pt(kvm, new->base_gfn,
->                                         new->base_gfn + new->npages - 1);
->                 if (needs_flush)
-> -                       kvm_arch_flush_remote_tlbs_memslot(kvm, new);
-> +                       kvm_flush_remote_tlbs_memslot(kvm, new);
->                 spin_unlock(&kvm->mmu_lock);
->         }
->  }
-> @@ -987,12 +987,6 @@ int kvm_arch_flush_remote_tlbs(struct kvm *kvm)
->         return 1;
->  }
->
-> -void kvm_arch_flush_remote_tlbs_memslot(struct kvm *kvm,
-> -                                       const struct kvm_memory_slot *memslot)
-> -{
-> -       kvm_flush_remote_tlbs(kvm);
-> -}
-> -
->  int kvm_arch_vm_ioctl(struct file *filp, unsigned int ioctl, unsigned long arg)
->  {
->         int r;
-> diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
-> index f2eb47925806..97e129620686 100644
-> --- a/arch/riscv/kvm/mmu.c
-> +++ b/arch/riscv/kvm/mmu.c
-> @@ -406,12 +406,6 @@ void kvm_arch_sync_dirty_log(struct kvm *kvm, struct kvm_memory_slot *memslot)
->  {
->  }
->
-> -void kvm_arch_flush_remote_tlbs_memslot(struct kvm *kvm,
-> -                                       const struct kvm_memory_slot *memslot)
-> -{
-> -       kvm_flush_remote_tlbs(kvm);
-> -}
-> -
->  void kvm_arch_free_memslot(struct kvm *kvm, struct kvm_memory_slot *free)
->  {
->  }
-> diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
-> index eb88d25f9896..efbe394da1a6 100644
-> --- a/arch/x86/kvm/mmu/mmu.c
-> +++ b/arch/x86/kvm/mmu/mmu.c
-> @@ -6669,7 +6669,7 @@ static void kvm_rmap_zap_collapsible_sptes(struct kvm *kvm,
->          */
->         if (walk_slot_rmaps(kvm, slot, kvm_mmu_zap_collapsible_spte,
->                             PG_LEVEL_4K, KVM_MAX_HUGEPAGE_LEVEL - 1, true))
-> -               kvm_arch_flush_remote_tlbs_memslot(kvm, slot);
-> +               kvm_flush_remote_tlbs_memslot(kvm, slot);
->  }
->
->  void kvm_mmu_zap_collapsible_sptes(struct kvm *kvm,
-> @@ -6688,20 +6688,6 @@ void kvm_mmu_zap_collapsible_sptes(struct kvm *kvm,
->         }
->  }
->
-> -void kvm_arch_flush_remote_tlbs_memslot(struct kvm *kvm,
-> -                                       const struct kvm_memory_slot *memslot)
-> -{
-> -       /*
-> -        * All current use cases for flushing the TLBs for a specific memslot
-> -        * related to dirty logging, and many do the TLB flush out of mmu_lock.
-> -        * The interaction between the various operations on memslot must be
-> -        * serialized by slots_locks to ensure the TLB flush from one operation
-> -        * is observed by any other operation on the same memslot.
-> -        */
-> -       lockdep_assert_held(&kvm->slots_lock);
-> -       kvm_flush_remote_tlbs_range(kvm, memslot->base_gfn, memslot->npages);
-> -}
-> -
->  void kvm_mmu_slot_leaf_clear_dirty(struct kvm *kvm,
->                                    const struct kvm_memory_slot *memslot)
->  {
-> diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-> index a6b9bea62fb8..faeb2e307b36 100644
-> --- a/arch/x86/kvm/x86.c
-> +++ b/arch/x86/kvm/x86.c
-> @@ -12751,7 +12751,7 @@ static void kvm_mmu_slot_apply_flags(struct kvm *kvm,
->                  * See is_writable_pte() for more details (the case involving
->                  * access-tracked SPTEs is particularly relevant).
->                  */
-> -               kvm_arch_flush_remote_tlbs_memslot(kvm, new);
-> +               kvm_flush_remote_tlbs_memslot(kvm, new);
->         }
->  }
->
-> diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-> index a731967b24ff..45899ce9ed31 100644
-> --- a/include/linux/kvm_host.h
-> +++ b/include/linux/kvm_host.h
-> @@ -1360,6 +1360,8 @@ void kvm_vcpu_on_spin(struct kvm_vcpu *vcpu, bool yield_to_kernel_mode);
->
->  void kvm_flush_remote_tlbs(struct kvm *kvm);
->  void kvm_flush_remote_tlbs_range(struct kvm *kvm, gfn_t gfn, u64 pages);
-> +void kvm_flush_remote_tlbs_memslot(struct kvm *kvm,
-> +                                  const struct kvm_memory_slot *memslot);
->
->  #ifdef KVM_ARCH_NR_OBJS_PER_MEMORY_CACHE
->  int kvm_mmu_topup_memory_cache(struct kvm_mmu_memory_cache *mc, int min);
-> @@ -1388,10 +1390,7 @@ void kvm_arch_mmu_enable_log_dirty_pt_masked(struct kvm *kvm,
->                                         unsigned long mask);
->  void kvm_arch_sync_dirty_log(struct kvm *kvm, struct kvm_memory_slot *memslot);
->
-> -#ifdef CONFIG_KVM_GENERIC_DIRTYLOG_READ_PROTECT
-> -void kvm_arch_flush_remote_tlbs_memslot(struct kvm *kvm,
-> -                                       const struct kvm_memory_slot *memslot);
-> -#else /* !CONFIG_KVM_GENERIC_DIRTYLOG_READ_PROTECT */
-> +#ifndef CONFIG_KVM_GENERIC_DIRTYLOG_READ_PROTECT
->  int kvm_vm_ioctl_get_dirty_log(struct kvm *kvm, struct kvm_dirty_log *log);
->  int kvm_get_dirty_log(struct kvm *kvm, struct kvm_dirty_log *log,
->                       int *is_dirty, struct kvm_memory_slot **memslot);
-> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-> index 804470fccac7..58213cc4b9b9 100644
-> --- a/virt/kvm/kvm_main.c
-> +++ b/virt/kvm/kvm_main.c
-> @@ -379,6 +379,20 @@ void kvm_flush_remote_tlbs_range(struct kvm *kvm, gfn_t gfn, u64 pages)
->         kvm_flush_remote_tlbs(kvm);
->  }
->
-> +void kvm_flush_remote_tlbs_memslot(struct kvm *kvm,
-> +                                  const struct kvm_memory_slot *memslot)
+> +static int kvm_gmem_release(struct inode *inode, struct file *file)
 > +{
-> +       /*
-> +        * All current use cases for flushing the TLBs for a specific memslot
-> +        * related to dirty logging, and many do the TLB flush out of mmu_lock.
-> +        * The interaction between the various operations on memslot must be
-> +        * serialized by slots_locks to ensure the TLB flush from one operation
-> +        * is observed by any other operation on the same memslot.
-> +        */
-> +       lockdep_assert_held(&kvm->slots_lock);
-> +       kvm_flush_remote_tlbs_range(kvm, memslot->base_gfn, memslot->npages);
+> +	struct kvm_gmem *gmem = file->private_data;
+> +	struct kvm_memory_slot *slot;
+> +	struct kvm *kvm = gmem->kvm;
+> +	unsigned long index;
+> +
+> +	filemap_invalidate_lock(inode->i_mapping);
+> +
+> +	/*
+> +	 * Prevent concurrent attempts to *unbind* a memslot.  This is the last
+> +	 * reference to the file and thus no new bindings can be created, but
+> +	 * dereferencing the slot for existing bindings needs to be protected
+> +	 * against memslot updates, specifically so that unbind doesn't race
+> +	 * and free the memslot (kvm_gmem_get_file() will return NULL).
+> +	 */
+> +	mutex_lock(&kvm->slots_lock);
+> +
+> +	xa_for_each(&gmem->bindings, index, slot)
+> +		rcu_assign_pointer(slot->gmem.file, NULL);
+> +
+> +	synchronize_rcu();
+> +
+> +	/*
+> +	 * All in-flight operations are gone and new bindings can be created.
+> +	 * Zap all SPTEs pointed at by this file.  Do not free the backing
+> +	 * memory, as its lifetime is associated with the inode, not the file.
+> +	 */
+> +	kvm_gmem_invalidate_begin(gmem, 0, -1ul);
+> +	kvm_gmem_invalidate_end(gmem, 0, -1ul);
+> +
+> +	mutex_unlock(&kvm->slots_lock);
+> +
+> +	list_del(&gmem->entry);
+> +
+> +	filemap_invalidate_unlock(inode->i_mapping);
+> +
+> +	xa_destroy(&gmem->bindings);
+> +	kfree(gmem);
+> +
+> +	kvm_put_kvm(kvm);
+> +
+> +	return 0;
 > +}
 > +
->  static void kvm_flush_shadow_all(struct kvm *kvm)
->  {
->         kvm_arch_flush_shadow_all(kvm);
-> @@ -2191,7 +2205,7 @@ static int kvm_get_dirty_log_protect(struct kvm *kvm, struct kvm_dirty_log *log)
->         }
->
->         if (flush)
-> -               kvm_arch_flush_remote_tlbs_memslot(kvm, memslot);
-> +               kvm_flush_remote_tlbs_memslot(kvm, memslot);
->
->         if (copy_to_user(log->dirty_bitmap, dirty_bitmap_buffer, n))
->                 return -EFAULT;
-> @@ -2308,7 +2322,7 @@ static int kvm_clear_dirty_log_protect(struct kvm *kvm,
->         KVM_MMU_UNLOCK(kvm);
->
->         if (flush)
-> -               kvm_arch_flush_remote_tlbs_memslot(kvm, memslot);
-> +               kvm_flush_remote_tlbs_memslot(kvm, memslot);
->
->         return 0;
->  }
-> --
-> 2.41.0.487.g6d72f3e995-goog
->
+
+> <snip>
+
+> +
+> +int kvm_gmem_bind(struct kvm *kvm, struct kvm_memory_slot *slot,
+> +		  unsigned int fd, loff_t offset)
+> +{
+> +	loff_t size = slot->npages << PAGE_SHIFT;
+> +	unsigned long start, end, flags;
+> +	struct kvm_gmem *gmem;
+> +	struct inode *inode;
+> +	struct file *file;
+> +
+> +	BUILD_BUG_ON(sizeof(gfn_t) != sizeof(slot->gmem.pgoff));
+> +
+> +	file = fget(fd);
+> +	if (!file)
+> +		return -EINVAL;
+> +
+> +	if (file->f_op != &kvm_gmem_fops)
+> +		goto err;
+> +
+> +	gmem = file->private_data;
+> +	if (gmem->kvm != kvm)
+> +		goto err;
+> +
+> +	inode = file_inode(file);
+> +	flags = (unsigned long)inode->i_private;
+> +
+> +	/*
+> +	 * For simplicity, require the offset into the file and the size of the
+> +	 * memslot to be aligned to the largest possible page size used to back
+> +	 * the file (same as the size of the file itself).
+> +	 */
+> +	if (!kvm_gmem_is_valid_size(offset, flags) ||
+> +	    !kvm_gmem_is_valid_size(size, flags))
+> +		goto err;
+> +
+> +	if (offset + size > i_size_read(inode))
+> +		goto err;
+> +
+> +	filemap_invalidate_lock(inode->i_mapping);
+> +
+> +	start = offset >> PAGE_SHIFT;
+> +	end = start + slot->npages;
+> +
+> +	if (!xa_empty(&gmem->bindings) &&
+> +	    xa_find(&gmem->bindings, &start, end - 1, XA_PRESENT)) {
+> +		filemap_invalidate_unlock(inode->i_mapping);
+> +		goto err;
+> +	}
+> +
+> +	/*
+> +	 * No synchronize_rcu() needed, any in-flight readers are guaranteed to
+> +	 * be see either a NULL file or this new file, no need for them to go
+> +	 * away.
+> +	 */
+> +	rcu_assign_pointer(slot->gmem.file, file);
+> +	slot->gmem.pgoff = start;
+> +
+> +	xa_store_range(&gmem->bindings, start, end - 1, slot, GFP_KERNEL);
+> +	filemap_invalidate_unlock(inode->i_mapping);
+> +
+> +	/*
+> +	 * Drop the reference to the file, even on success.  The file pins KVM,
+> +	 * not the other way 'round.  Active bindings are invalidated if the
+> +	 * file is closed before memslots are destroyed.
+> +	 */
+> +	fput(file);
+> +	return 0;
+> +
+> +err:
+> +	fput(file);
+> +	return -EINVAL;
+> +}
+> +
+
+I?d like to propose an alternative to the refcounting approach between
+the gmem file and associated kvm, where we think of KVM?s memslots as
+users of the gmem file.
+
+Instead of having the gmem file pin the VM (i.e. take a refcount on
+kvm), we could let memslot take a refcount on the gmem file when the
+memslots are configured.
+
+Here?s a POC patch that flips the refcounting (and modified selftests in
+the next commit):
+https://github.com/googleprodkernel/linux-cc/commit/7f487b029b89b9f3e9b094a721bc0772f3c8c797
+
+One side effect of having the gmem file pin the VM is that now the gmem
+file becomes sort of a false handle on the VM:
+
++ Closing the file destroys the file pointers in the VM and invalidates
+  the pointers
++ Keeping the file open keeps the VM around in the kernel even though
+  the VM fd may already be closed.
+
+I feel that memslots form a natural way of managing usage of the gmem
+file. When a memslot is created, it is using the file; hence we take a
+refcount on the gmem file, and as memslots are removed, we drop
+refcounts on the gmem file.
+
+The KVM pointer is shared among all the bindings in gmem?s xarray, and we can enforce that a gmem file is used only with one VM:
+
++ When binding a memslot to the file, if a kvm pointer exists, it must
+  be the same kvm as the one in this binding
++ When the binding to the last memslot is removed from a file, NULL the
+  kvm pointer.
+
+When the VM is freed, KVM will iterate over all the memslots, removing
+them one at a time and eventually NULLing the kvm pointer.
+
+I believe the ?KVM?s memslots using the file? approach is also simpler
+because all accesses to the bindings xarray and kvm pointer can be
+serialized using filemap_invalidate_lock(), and we are already using
+this lock regardless of refcounting approach. This serialization means
+we don?t need to use RCU on file/kvm pointers since accesses are already
+serialized.
+
+There?s also no need to specially clean up the associated KVM when the
+file reference close, because by the time the .release() handler is
+called, any file references held by memslots would have been dropped,
+and so the bindings would have been removed, and the kvm pointer would
+have been NULLed out.
+
+The corollary to this approach is that at creation time, the file won?t
+be associated with any kvm, and we can use a system ioctl instead of a
+VM-specific ioctl as Fuad brought up [1] (Association with kvm before
+the file is used with memslots is possible would mean more tracking so
+that kvm can close associated files when it is closed.)
+
+One reason for binding gmem files to a specific VM on creation is to
+allow (in future) a primary VM to control permissions on the memory for
+other files [2]. This permission control can still be enforced with the
+?KVM?s memslots using the file? approach. The enforcement rules will
+just be delayed till the first binding between a VM and a gmem file.
+
+Could binding gmem files not on creation, but at memslot configuration
+time be sufficient and simpler?
+
+[1] https://lore.kernel.org/lkml/CA+EHjTzP2fypgkJbRpSPrKaWytW7v8ANEifofMnQCkdvYaX6Eg at mail.gmail.com/
+[2] https://lore.kernel.org/lkml/ZMKlo+Fe8n%2FeLQ82 at google.com/
+
+> <snip>
 
