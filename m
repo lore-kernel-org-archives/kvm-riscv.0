@@ -1,83 +1,156 @@
 From: Anup Patel <anup@brainfault.org>
-Date: Mon, 7 Aug 2023 09:18:33 +0530
-Subject: [PATCH v6 00/13] RISCV: Add KVM_GET_REG_LIST API
-In-Reply-To: <cover.1690273969.git.haibo1.xu@intel.com>
-References: <cover.1690273969.git.haibo1.xu@intel.com>
-Message-ID: <CAAhSdy0yug=J0nxnnPoLYL=0MiT0w6qgPYOcv0QwMRe+fsQn8Q@mail.gmail.com>
+Date: Mon, 7 Aug 2023 09:36:02 +0530
+Subject: [PATCH v7 04/12] KVM: Allow range-based TLB invalidation from
+ common code
+In-Reply-To: <20230722022251.3446223-5-rananta@google.com>
+References: <20230722022251.3446223-1-rananta@google.com> <20230722022251.3446223-5-rananta@google.com>
+Message-ID: <CAAhSdy3X+vtKHoYhkJ-wQ9g3BWE4Zh9FTim_XoSqXTTLYpQ2hA@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Marc, Hi Oliver,
+On Sat, Jul 22, 2023 at 7:52?AM Raghavendra Rao Ananta
+<rananta@google.com> wrote:
+>
+> From: David Matlack <dmatlack@google.com>
+>
+> Make kvm_flush_remote_tlbs_range() visible in common code and create a
+> default implementation that just invalidates the whole TLB.
+>
+> This paves the way for several future features/cleanups:
+>
+>  - Introduction of range-based TLBI on ARM.
+>  - Eliminating kvm_arch_flush_remote_tlbs_memslot()
+>  - Moving the KVM/x86 TDP MMU to common code.
+>
+> No functional change intended.
+>
+> Signed-off-by: David Matlack <dmatlack@google.com>
+> Signed-off-by: Raghavendra Rao Ananta <rananta@google.com>
+> Reviewed-by: Gavin Shan <gshan@redhat.com>
+> Reviewed-by: Shaoqin Huang <shahuang@redhat.com>
 
-On Tue, Jul 25, 2023 at 2:05?PM Haibo Xu <haibo1.xu@intel.com> wrote:
->
-> KVM_GET_REG_LIST will dump all register IDs that are available to
-> KVM_GET/SET_ONE_REG and It's very useful to identify some platform
-> regression issue during VM migration.
->
-> Patch 1-7 re-structured the get-reg-list test in aarch64 to make some
-> of the code as common test framework that can be shared by riscv.
->
-> Patch 8 move reject_set check logic to a function so as to check for
-> different errno for different registers.
-> Patch 9 move finalize_vcpu back to run_test so that riscv can implement
-> its specific operation.
-> Patch 10 change to do the get/set operation only on present-blessed list.
-> Patch 11 add the skip_set facilities so that riscv can skip set operation
-> on some registers.
-> Patch 12 enabled the KVM_GET_REG_LIST API in riscv.
-> patch 13 added the corresponding kselftest for checking possible
-> register regressions.
->
-> The get-reg-list kvm selftest was ported from aarch64 and tested with
-> Linux v6.5-rc3 on a Qemu riscv64 virt machine.
->
-> ---
-> Changed since v5:
->   * Rebase to v6.5-rc3
->   * Minor fix for Andrew's comments
->
-> Andrew Jones (7):
->   KVM: arm64: selftests: Replace str_with_index with strdup_printf
->   KVM: arm64: selftests: Drop SVE cap check in print_reg
->   KVM: arm64: selftests: Remove print_reg's dependency on vcpu_config
->   KVM: arm64: selftests: Rename vcpu_config and add to kvm_util.h
->   KVM: arm64: selftests: Delete core_reg_fixup
->   KVM: arm64: selftests: Split get-reg-list test code
->   KVM: arm64: selftests: Finish generalizing get-reg-list
->
-> Haibo Xu (6):
->   KVM: arm64: selftests: Move reject_set check logic to a function
->   KVM: arm64: selftests: Move finalize_vcpu back to run_test
->   KVM: selftests: Only do get/set tests on present blessed list
->   KVM: selftests: Add skip_set facility to get_reg_list test
->   KVM: riscv: Add KVM_GET_REG_LIST API support
->   KVM: riscv: selftests: Add get-reg-list test
-
-Are you okay for this series to go through the KVM RISC-V tree ?
+For KVM RISC-V:
+Reviewed-by: Anup Patel <anup@brainfault.org>
 
 Regards,
 Anup
 
+> ---
+>  arch/x86/include/asm/kvm_host.h |  3 +++
+>  arch/x86/kvm/mmu/mmu.c          |  9 ++++-----
+>  arch/x86/kvm/mmu/mmu_internal.h |  3 ---
+>  include/linux/kvm_host.h        |  9 +++++++++
+>  virt/kvm/kvm_main.c             | 13 +++++++++++++
+>  5 files changed, 29 insertions(+), 8 deletions(-)
 >
->  Documentation/virt/kvm/api.rst                |   2 +-
->  arch/riscv/kvm/vcpu.c                         | 375 +++++++++
->  tools/testing/selftests/kvm/Makefile          |  13 +-
->  .../selftests/kvm/aarch64/get-reg-list.c      | 554 ++-----------
->  tools/testing/selftests/kvm/get-reg-list.c    | 401 +++++++++
->  .../selftests/kvm/include/kvm_util_base.h     |  21 +
->  .../selftests/kvm/include/riscv/processor.h   |   3 +
->  .../testing/selftests/kvm/include/test_util.h |   2 +
->  tools/testing/selftests/kvm/lib/test_util.c   |  15 +
->  .../selftests/kvm/riscv/get-reg-list.c        | 780 ++++++++++++++++++
->  10 files changed, 1670 insertions(+), 496 deletions(-)
->  create mode 100644 tools/testing/selftests/kvm/get-reg-list.c
->  create mode 100644 tools/testing/selftests/kvm/riscv/get-reg-list.c
+> diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
+> index a2d3cfc2eb75..08900afbf2ad 100644
+> --- a/arch/x86/include/asm/kvm_host.h
+> +++ b/arch/x86/include/asm/kvm_host.h
+> @@ -1804,6 +1804,9 @@ static inline int kvm_arch_flush_remote_tlbs(struct kvm *kvm)
+>                 return -ENOTSUPP;
+>  }
 >
+> +#define __KVM_HAVE_ARCH_FLUSH_REMOTE_TLBS_RANGE
+> +int kvm_arch_flush_remote_tlbs_range(struct kvm *kvm, gfn_t start_gfn, u64 pages);
+> +
+>  #define kvm_arch_pmi_in_guest(vcpu) \
+>         ((vcpu) && (vcpu)->arch.handling_intr_from_guest)
+>
+> diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
+> index ec169f5c7dce..eb88d25f9896 100644
+> --- a/arch/x86/kvm/mmu/mmu.c
+> +++ b/arch/x86/kvm/mmu/mmu.c
+> @@ -278,16 +278,15 @@ static inline bool kvm_available_flush_remote_tlbs_range(void)
+>         return kvm_x86_ops.flush_remote_tlbs_range;
+>  }
+>
+> -void kvm_flush_remote_tlbs_range(struct kvm *kvm, gfn_t start_gfn,
+> -                                gfn_t nr_pages)
+> +int kvm_arch_flush_remote_tlbs_range(struct kvm *kvm, gfn_t start_gfn, u64 pages)
+>  {
+>         int ret = -EOPNOTSUPP;
+>
+>         if (kvm_x86_ops.flush_remote_tlbs_range)
+>                 ret = static_call(kvm_x86_flush_remote_tlbs_range)(kvm, start_gfn,
+> -                                                                  nr_pages);
+> -       if (ret)
+> -               kvm_flush_remote_tlbs(kvm);
+> +                                                                  pages);
+> +
+> +       return ret;
+>  }
+>
+>  static gfn_t kvm_mmu_page_get_gfn(struct kvm_mmu_page *sp, int index);
+> diff --git a/arch/x86/kvm/mmu/mmu_internal.h b/arch/x86/kvm/mmu/mmu_internal.h
+> index d39af5639ce9..86cb83bb3480 100644
+> --- a/arch/x86/kvm/mmu/mmu_internal.h
+> +++ b/arch/x86/kvm/mmu/mmu_internal.h
+> @@ -170,9 +170,6 @@ bool kvm_mmu_slot_gfn_write_protect(struct kvm *kvm,
+>                                     struct kvm_memory_slot *slot, u64 gfn,
+>                                     int min_level);
+>
+> -void kvm_flush_remote_tlbs_range(struct kvm *kvm, gfn_t start_gfn,
+> -                                gfn_t nr_pages);
+> -
+>  /* Flush the given page (huge or not) of guest memory. */
+>  static inline void kvm_flush_remote_tlbs_gfn(struct kvm *kvm, gfn_t gfn, int level)
+>  {
+> diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+> index e3f968b38ae9..a731967b24ff 100644
+> --- a/include/linux/kvm_host.h
+> +++ b/include/linux/kvm_host.h
+> @@ -1359,6 +1359,7 @@ int kvm_vcpu_yield_to(struct kvm_vcpu *target);
+>  void kvm_vcpu_on_spin(struct kvm_vcpu *vcpu, bool yield_to_kernel_mode);
+>
+>  void kvm_flush_remote_tlbs(struct kvm *kvm);
+> +void kvm_flush_remote_tlbs_range(struct kvm *kvm, gfn_t gfn, u64 pages);
+>
+>  #ifdef KVM_ARCH_NR_OBJS_PER_MEMORY_CACHE
+>  int kvm_mmu_topup_memory_cache(struct kvm_mmu_memory_cache *mc, int min);
+> @@ -1486,6 +1487,14 @@ static inline int kvm_arch_flush_remote_tlbs(struct kvm *kvm)
+>  }
+>  #endif
+>
+> +#ifndef __KVM_HAVE_ARCH_FLUSH_REMOTE_TLBS_RANGE
+> +static inline int kvm_arch_flush_remote_tlbs_range(struct kvm *kvm,
+> +                                                  gfn_t gfn, u64 pages)
+> +{
+> +       return -EOPNOTSUPP;
+> +}
+> +#endif
+> +
+>  #ifdef __KVM_HAVE_ARCH_NONCOHERENT_DMA
+>  void kvm_arch_register_noncoherent_dma(struct kvm *kvm);
+>  void kvm_arch_unregister_noncoherent_dma(struct kvm *kvm);
+> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+> index d6b050786155..804470fccac7 100644
+> --- a/virt/kvm/kvm_main.c
+> +++ b/virt/kvm/kvm_main.c
+> @@ -366,6 +366,19 @@ void kvm_flush_remote_tlbs(struct kvm *kvm)
+>  }
+>  EXPORT_SYMBOL_GPL(kvm_flush_remote_tlbs);
+>
+> +void kvm_flush_remote_tlbs_range(struct kvm *kvm, gfn_t gfn, u64 pages)
+> +{
+> +       if (!kvm_arch_flush_remote_tlbs_range(kvm, gfn, pages))
+> +               return;
+> +
+> +       /*
+> +        * Fall back to a flushing entire TLBs if the architecture range-based
+> +        * TLB invalidation is unsupported or can't be performed for whatever
+> +        * reason.
+> +        */
+> +       kvm_flush_remote_tlbs(kvm);
+> +}
+> +
+>  static void kvm_flush_shadow_all(struct kvm *kvm)
+>  {
+>         kvm_arch_flush_shadow_all(kvm);
 > --
-> 2.34.1
+> 2.41.0.487.g6d72f3e995-goog
 >
 
