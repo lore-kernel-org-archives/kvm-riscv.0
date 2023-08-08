@@ -1,76 +1,49 @@
-From: Marc Zyngier <maz@kernel.org>
-Date: Tue, 08 Aug 2023 12:12:13 +0100
-Subject: [PATCH v6 00/13] RISCV: Add KVM_GET_REG_LIST API
-In-Reply-To: <CAAhSdy0yug=J0nxnnPoLYL=0MiT0w6qgPYOcv0QwMRe+fsQn8Q@mail.gmail.com>
-References: <cover.1690273969.git.haibo1.xu@intel.com>
-	<CAAhSdy0yug=J0nxnnPoLYL=0MiT0w6qgPYOcv0QwMRe+fsQn8Q@mail.gmail.com>
-Message-ID: <87y1ilpz3m.wl-maz@kernel.org>
+From: Sean Christopherson <seanjc@google.com>
+Date: Tue, 8 Aug 2023 08:07:43 -0700
+Subject: [PATCH v7 02/12] KVM: arm64: Use kvm_arch_flush_remote_tlbs()
+In-Reply-To: <CAJHc60zN-dc2E-fS7fuXgkrfGD9bqW6tMy2GRZxbHOeZv0ZOBw@mail.gmail.com>
+References: <20230722022251.3446223-1-rananta@google.com> <20230722022251.3446223-3-rananta@google.com>
+ <87tttpr6qy.wl-maz@kernel.org> <ZMgsjx8dwKd4xBGe@google.com>
+ <877cqdqw12.wl-maz@kernel.org> <CAJHc60xAUVt5fbhEkOqeC-VF8SWVOt3si=1yxVVAUW=+Hu_wNg@mail.gmail.com>
+ <CAJHc60zN-dc2E-fS7fuXgkrfGD9bqW6tMy2GRZxbHOeZv0ZOBw@mail.gmail.com>
+Message-ID: <ZNJaPxTtPRCv0HOl@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, 07 Aug 2023 04:48:33 +0100,
-Anup Patel <anup@brainfault.org> wrote:
-> 
-> Hi Marc, Hi Oliver,
-> 
-> On Tue, Jul 25, 2023 at 2:05?PM Haibo Xu <haibo1.xu@intel.com> wrote:
+On Fri, Aug 04, 2023, Raghavendra Rao Ananta wrote:
+> On Wed, Aug 2, 2023 at 4:28?PM Raghavendra Rao Ananta
+> <rananta@google.com> wrote:
 > >
-> > KVM_GET_REG_LIST will dump all register IDs that are available to
-> > KVM_GET/SET_ONE_REG and It's very useful to identify some platform
-> > regression issue during VM migration.
+> > Sure, I'll change it to kvm_arch_flush_vm_tlbs() in v8.
 > >
-> > Patch 1-7 re-structured the get-reg-list test in aarch64 to make some
-> > of the code as common test framework that can be shared by riscv.
-> >
-> > Patch 8 move reject_set check logic to a function so as to check for
-> > different errno for different registers.
-> > Patch 9 move finalize_vcpu back to run_test so that riscv can implement
-> > its specific operation.
-> > Patch 10 change to do the get/set operation only on present-blessed list.
-> > Patch 11 add the skip_set facilities so that riscv can skip set operation
-> > on some registers.
-> > Patch 12 enabled the KVM_GET_REG_LIST API in riscv.
-> > patch 13 added the corresponding kselftest for checking possible
-> > register regressions.
-> >
-> > The get-reg-list kvm selftest was ported from aarch64 and tested with
-> > Linux v6.5-rc3 on a Qemu riscv64 virt machine.
-> >
-> > ---
-> > Changed since v5:
-> >   * Rebase to v6.5-rc3
-> >   * Minor fix for Andrew's comments
-> >
-> > Andrew Jones (7):
-> >   KVM: arm64: selftests: Replace str_with_index with strdup_printf
-> >   KVM: arm64: selftests: Drop SVE cap check in print_reg
-> >   KVM: arm64: selftests: Remove print_reg's dependency on vcpu_config
-> >   KVM: arm64: selftests: Rename vcpu_config and add to kvm_util.h
-> >   KVM: arm64: selftests: Delete core_reg_fixup
-> >   KVM: arm64: selftests: Split get-reg-list test code
-> >   KVM: arm64: selftests: Finish generalizing get-reg-list
-> >
-> > Haibo Xu (6):
-> >   KVM: arm64: selftests: Move reject_set check logic to a function
-> >   KVM: arm64: selftests: Move finalize_vcpu back to run_test
-> >   KVM: selftests: Only do get/set tests on present blessed list
-> >   KVM: selftests: Add skip_set facility to get_reg_list test
-> >   KVM: riscv: Add KVM_GET_REG_LIST API support
-> >   KVM: riscv: selftests: Add get-reg-list test
-> 
-> Are you okay for this series to go through the KVM RISC-V tree ?
+> While working on the renaming, I realized that since this function is
+> called from kvm_main.c's kvm_flush_remote_tlbs(). Do we want to rename
+> this and the other kvm_flush_*() functions that the series introduces
+> to match their kvm_arch_flush_*() counterparts?
 
-Sure, seems fine from my point of view. But please put it on an
-immutable topic branch so that we can also merge it in the arm64 tree,
-should we need to resolve any conflicts.
+Hmm, if we're going to rename one arch hook, then yes, I think it makes sense to
+rename all the common APIs and arch hooks to match.
 
-Thanks,
+However, x86 is rife with the "remote_tlbs" nomenclature, and renaming the common
+APIs will just push the inconsistencies into x86.  While I 100% agree that the
+current naming is flawed, I am not willing to end up with x86 being partially
+converted.
 
-	M.
+I think I'm ok renaming all of x86's many hooks?  But I'd definitely want input
+from more x86 folks, and the size and scope of this series would explode.  Unless
+Marc objects and/or has a better idea, the least awful option is probably to ignore
+the poor "remote_tlbs" naming and tackle it in a separate series.
 
--- 
-Without deviation from the norm, progress is not possible.
+Sorry for not noticiing this earlier, I didn't realize just how much x86 uses
+remote_tlbs.
+
+> (spiraling more into this, we also have the 'remote_tlb_flush_requests' and
+> 'remote_tlb_flush' stats)
+
+Regardless of what we decide for the APIs, definitely leave the stats alone.  The
+names are ABI.  We could preserve the names and changes the struct fields, but that
+would be a net negative IMO.
 
