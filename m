@@ -1,104 +1,76 @@
-From: Ackerley Tng <ackerleytng@google.com>
-Date: Mon, 07 Aug 2023 23:25:02 +0000
-Subject: [RFC PATCH v11 28/29] KVM: selftests: Add basic selftest for guest_memfd()
-In-Reply-To: <20230718234512.1690985-29-seanjc@google.com> (message from Sean
- Christopherson on Tue, 18 Jul 2023 16:45:11 -0700)
-Message-ID: <diqzleem306p.fsf@ackerleytng-ctop.c.googlers.com>
+From: Marc Zyngier <maz@kernel.org>
+Date: Tue, 08 Aug 2023 12:12:13 +0100
+Subject: [PATCH v6 00/13] RISCV: Add KVM_GET_REG_LIST API
+In-Reply-To: <CAAhSdy0yug=J0nxnnPoLYL=0MiT0w6qgPYOcv0QwMRe+fsQn8Q@mail.gmail.com>
+References: <cover.1690273969.git.haibo1.xu@intel.com>
+	<CAAhSdy0yug=J0nxnnPoLYL=0MiT0w6qgPYOcv0QwMRe+fsQn8Q@mail.gmail.com>
+Message-ID: <87y1ilpz3m.wl-maz@kernel.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Sean Christopherson <seanjc@google.com> writes:
+On Mon, 07 Aug 2023 04:48:33 +0100,
+Anup Patel <anup@brainfault.org> wrote:
+> 
+> Hi Marc, Hi Oliver,
+> 
+> On Tue, Jul 25, 2023 at 2:05?PM Haibo Xu <haibo1.xu@intel.com> wrote:
+> >
+> > KVM_GET_REG_LIST will dump all register IDs that are available to
+> > KVM_GET/SET_ONE_REG and It's very useful to identify some platform
+> > regression issue during VM migration.
+> >
+> > Patch 1-7 re-structured the get-reg-list test in aarch64 to make some
+> > of the code as common test framework that can be shared by riscv.
+> >
+> > Patch 8 move reject_set check logic to a function so as to check for
+> > different errno for different registers.
+> > Patch 9 move finalize_vcpu back to run_test so that riscv can implement
+> > its specific operation.
+> > Patch 10 change to do the get/set operation only on present-blessed list.
+> > Patch 11 add the skip_set facilities so that riscv can skip set operation
+> > on some registers.
+> > Patch 12 enabled the KVM_GET_REG_LIST API in riscv.
+> > patch 13 added the corresponding kselftest for checking possible
+> > register regressions.
+> >
+> > The get-reg-list kvm selftest was ported from aarch64 and tested with
+> > Linux v6.5-rc3 on a Qemu riscv64 virt machine.
+> >
+> > ---
+> > Changed since v5:
+> >   * Rebase to v6.5-rc3
+> >   * Minor fix for Andrew's comments
+> >
+> > Andrew Jones (7):
+> >   KVM: arm64: selftests: Replace str_with_index with strdup_printf
+> >   KVM: arm64: selftests: Drop SVE cap check in print_reg
+> >   KVM: arm64: selftests: Remove print_reg's dependency on vcpu_config
+> >   KVM: arm64: selftests: Rename vcpu_config and add to kvm_util.h
+> >   KVM: arm64: selftests: Delete core_reg_fixup
+> >   KVM: arm64: selftests: Split get-reg-list test code
+> >   KVM: arm64: selftests: Finish generalizing get-reg-list
+> >
+> > Haibo Xu (6):
+> >   KVM: arm64: selftests: Move reject_set check logic to a function
+> >   KVM: arm64: selftests: Move finalize_vcpu back to run_test
+> >   KVM: selftests: Only do get/set tests on present blessed list
+> >   KVM: selftests: Add skip_set facility to get_reg_list test
+> >   KVM: riscv: Add KVM_GET_REG_LIST API support
+> >   KVM: riscv: selftests: Add get-reg-list test
+> 
+> Are you okay for this series to go through the KVM RISC-V tree ?
 
-> Add a selftest to verify the basic functionality of guest_memfd():
->
-> <snip>
+Sure, seems fine from my point of view. But please put it on an
+immutable topic branch so that we can also merge it in the arm64 tree,
+should we need to resolve any conflicts.
 
-Here's one more test:
+Thanks,
 
-From 72dc6836f01bdd613d64d4c6a4f2af8f2b777ba2 Mon Sep 17 00:00:00 2001
-From: Ackerley Tng <ackerleytng@google.com>
-Date: Tue, 1 Aug 2023 18:02:50 +0000
-Subject: [PATCH] KVM: selftests: Add tests - invalid inputs for
- KVM_CREATE_GUEST_MEMFD
+	M.
 
-Test that invalid inputs for KVM_CREATE_GUEST_MEMFD, such as
-non-page-aligned page size and invalid flags, are rejected by the
-KVM_CREATE_GUEST_MEMFD with EINVAL
-
-Signed-off-by: Ackerley Tng <ackerleytng@google.com>
----
- tools/testing/selftests/kvm/guest_memfd_test.c  | 17 +++++++++++++++++
- .../selftests/kvm/include/kvm_util_base.h       | 11 +++++++++--
- 2 files changed, 26 insertions(+), 2 deletions(-)
-
-diff --git a/tools/testing/selftests/kvm/guest_memfd_test.c b/tools/testing/selftests/kvm/guest_memfd_test.c
-index eb93c608a7e0..ad20f11b2d2c 100644
---- a/tools/testing/selftests/kvm/guest_memfd_test.c
-+++ b/tools/testing/selftests/kvm/guest_memfd_test.c
-@@ -90,6 +90,21 @@ static void test_fallocate(int fd, size_t page_size, size_t total_size)
- 	TEST_ASSERT(!ret, "fallocate to restore punched hole should succeed");
- }
- 
-+static void test_create_guest_memfd_invalid(struct kvm_vm *vm, size_t page_size)
-+{
-+	int fd;
-+
-+	/* Non-page-aligned page_size */
-+	fd = __vm_create_guest_memfd(vm, 1, 0);
-+	ASSERT_EQ(fd, -1);
-+	ASSERT_EQ(errno, EINVAL);
-+
-+	/* Invalid flags */
-+	fd = __vm_create_guest_memfd(vm, page_size, 99);
-+	ASSERT_EQ(fd, -1);
-+	ASSERT_EQ(errno, EINVAL);
-+}
-+
- 
- int main(int argc, char *argv[])
- {
-@@ -103,6 +118,8 @@ int main(int argc, char *argv[])
- 
- 	vm = vm_create_barebones();
- 
-+	test_create_guest_memfd_invalid(vm, page_size);
-+
- 	fd = vm_create_guest_memfd(vm, total_size, 0);
- 
- 	test_file_read_write(fd);
-diff --git a/tools/testing/selftests/kvm/include/kvm_util_base.h b/tools/testing/selftests/kvm/include/kvm_util_base.h
-index 39b38c75b99c..8bdfadd72349 100644
---- a/tools/testing/selftests/kvm/include/kvm_util_base.h
-+++ b/tools/testing/selftests/kvm/include/kvm_util_base.h
-@@ -474,7 +474,8 @@ static inline uint64_t vm_get_stat(struct kvm_vm *vm, const char *stat_name)
- }
- 
- void vm_create_irqchip(struct kvm_vm *vm);
--static inline int vm_create_guest_memfd(struct kvm_vm *vm, uint64_t size,
-+
-+static inline int __vm_create_guest_memfd(struct kvm_vm *vm, uint64_t size,
- 					uint64_t flags)
- {
- 	struct kvm_create_guest_memfd gmem = {
-@@ -482,7 +483,13 @@ static inline int vm_create_guest_memfd(struct kvm_vm *vm, uint64_t size,
- 		.flags = flags,
- 	};
- 
--	int fd = __vm_ioctl(vm, KVM_CREATE_GUEST_MEMFD, &gmem);
-+	return __vm_ioctl(vm, KVM_CREATE_GUEST_MEMFD, &gmem);
-+}
-+
-+static inline int vm_create_guest_memfd(struct kvm_vm *vm, uint64_t size,
-+					uint64_t flags)
-+{
-+	int fd = __vm_create_guest_memfd(vm, size, flags);
- 
- 	TEST_ASSERT(fd >= 0, KVM_IOCTL_ERROR(KVM_CREATE_GUEST_MEMFD, fd));
- 	return fd;
 -- 
-2.41.0.640.ga95def55d0-goog
-
+Without deviation from the norm, progress is not possible.
 
