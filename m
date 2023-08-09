@@ -1,70 +1,104 @@
-From: Gavin Shan <gshan@redhat.com>
-Date: Wed, 9 Aug 2023 14:11:09 +1000
-Subject: [PATCH v8 04/14] KVM: Remove CONFIG_HAVE_KVM_ARCH_TLB_FLUSH_ALL
-In-Reply-To: <20230808231330.3855936-5-rananta@google.com>
-References: <20230808231330.3855936-1-rananta@google.com>
- <20230808231330.3855936-5-rananta@google.com>
-Message-ID: <79b8548e-715a-85ee-aad6-cb0b97753df6@redhat.com>
+From: Haibo Xu <xiaobo55x@gmail.com>
+Date: Wed, 9 Aug 2023 13:02:57 +0800
+Subject: [PATCH v6 00/13] RISCV: Add KVM_GET_REG_LIST API
+In-Reply-To: <CAAhSdy277PEBZ4wyUHxQPyN2TugGfhBmC5jUoFTAqMU8vwbt5w@mail.gmail.com>
+References: <cover.1690273969.git.haibo1.xu@intel.com> <CAAhSdy0yug=J0nxnnPoLYL=0MiT0w6qgPYOcv0QwMRe+fsQn8Q@mail.gmail.com>
+ <87y1ilpz3m.wl-maz@kernel.org> <CAJve8onZuOHkAUVY3=QeBPMx5n2F1fGgn57rPp7MB1Q5=vXasA@mail.gmail.com>
+ <CAAhSdy277PEBZ4wyUHxQPyN2TugGfhBmC5jUoFTAqMU8vwbt5w@mail.gmail.com>
+Message-ID: <CAJve8o=6ukbqc_8RvgRxpss2c=q8Ltzf=cNdJ2B85fhNSvNgMQ@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+On Wed, Aug 9, 2023 at 11:48?AM Anup Patel <anup@brainfault.org> wrote:
+>
+> On Wed, Aug 9, 2023 at 8:56?AM Haibo Xu <xiaobo55x@gmail.com> wrote:
+> >
+> > On Tue, Aug 8, 2023 at 7:12?PM Marc Zyngier <maz@kernel.org> wrote:
+> > >
+> > > On Mon, 07 Aug 2023 04:48:33 +0100,
+> > > Anup Patel <anup@brainfault.org> wrote:
+> > > >
+> > > > Hi Marc, Hi Oliver,
+> > > >
+> > > > On Tue, Jul 25, 2023 at 2:05?PM Haibo Xu <haibo1.xu@intel.com> wrote:
+> > > > >
+> > > > > KVM_GET_REG_LIST will dump all register IDs that are available to
+> > > > > KVM_GET/SET_ONE_REG and It's very useful to identify some platform
+> > > > > regression issue during VM migration.
+> > > > >
+> > > > > Patch 1-7 re-structured the get-reg-list test in aarch64 to make some
+> > > > > of the code as common test framework that can be shared by riscv.
+> > > > >
+> > > > > Patch 8 move reject_set check logic to a function so as to check for
+> > > > > different errno for different registers.
+> > > > > Patch 9 move finalize_vcpu back to run_test so that riscv can implement
+> > > > > its specific operation.
+> > > > > Patch 10 change to do the get/set operation only on present-blessed list.
+> > > > > Patch 11 add the skip_set facilities so that riscv can skip set operation
+> > > > > on some registers.
+> > > > > Patch 12 enabled the KVM_GET_REG_LIST API in riscv.
+> > > > > patch 13 added the corresponding kselftest for checking possible
+> > > > > register regressions.
+> > > > >
+> > > > > The get-reg-list kvm selftest was ported from aarch64 and tested with
+> > > > > Linux v6.5-rc3 on a Qemu riscv64 virt machine.
+> > > > >
+> > > > > ---
+> > > > > Changed since v5:
+> > > > >   * Rebase to v6.5-rc3
+> > > > >   * Minor fix for Andrew's comments
+> > > > >
+> > > > > Andrew Jones (7):
+> > > > >   KVM: arm64: selftests: Replace str_with_index with strdup_printf
+> > > > >   KVM: arm64: selftests: Drop SVE cap check in print_reg
+> > > > >   KVM: arm64: selftests: Remove print_reg's dependency on vcpu_config
+> > > > >   KVM: arm64: selftests: Rename vcpu_config and add to kvm_util.h
+> > > > >   KVM: arm64: selftests: Delete core_reg_fixup
+> > > > >   KVM: arm64: selftests: Split get-reg-list test code
+> > > > >   KVM: arm64: selftests: Finish generalizing get-reg-list
+> > > > >
+> > > > > Haibo Xu (6):
+> > > > >   KVM: arm64: selftests: Move reject_set check logic to a function
+> > > > >   KVM: arm64: selftests: Move finalize_vcpu back to run_test
+> > > > >   KVM: selftests: Only do get/set tests on present blessed list
+> > > > >   KVM: selftests: Add skip_set facility to get_reg_list test
+> > > > >   KVM: riscv: Add KVM_GET_REG_LIST API support
+> > > > >   KVM: riscv: selftests: Add get-reg-list test
+> > > >
+> > > > Are you okay for this series to go through the KVM RISC-V tree ?
+> > >
+> > > Sure, seems fine from my point of view. But please put it on an
+> > > immutable topic branch so that we can also merge it in the arm64 tree,
+> > > should we need to resolve any conflicts.
+> > >
+> >
+> > Hi Marc,
+> >
+> > Thanks for your review!
+> >
+> > Which topic branch do you prefer or suggest to use?
+> > I can do a rebase on it and fix any potential conflicts.
+>
+> I will share a branch with a stable commit history.
+> I have already resolved conflicts at my end.
+>
 
-On 8/9/23 09:13, Raghavendra Rao Ananta wrote:
-> kvm_arch_flush_remote_tlbs() or CONFIG_HAVE_KVM_ARCH_TLB_FLUSH_ALL
-> are two mechanisms to solve the same problem, allowing
-> architecture-specific code to provide a non-IPI implementation of
-> remote TLB flushing.
-> 
-> Dropping CONFIG_HAVE_KVM_ARCH_TLB_FLUSH_ALL allows KVM to standardize
-> all architectures on kvm_arch_flush_remote_tlbs() instead of
-> maintaining two mechanisms.
-> 
-> Signed-off-by: Raghavendra Rao Ananta <rananta@google.com>
-> Reviewed-by: Shaoqin Huang <shahuang@redhat.com>
-> ---
->   virt/kvm/Kconfig    | 3 ---
->   virt/kvm/kvm_main.c | 2 --
->   2 files changed, 5 deletions(-)
-> 
+Cool! Thanks for your help!
 
-Reviewed-by: Gavin Shan <gshan@redhat.com>
-
-> diff --git a/virt/kvm/Kconfig b/virt/kvm/Kconfig
-> index b74916de5183a..484d0873061ca 100644
-> --- a/virt/kvm/Kconfig
-> +++ b/virt/kvm/Kconfig
-> @@ -62,9 +62,6 @@ config HAVE_KVM_CPU_RELAX_INTERCEPT
->   config KVM_VFIO
->          bool
->   
-> -config HAVE_KVM_ARCH_TLB_FLUSH_ALL
-> -       bool
-> -
->   config HAVE_KVM_INVALID_WAKEUPS
->          bool
->   
-> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-> index 70e5479797ac3..d6b0507861550 100644
-> --- a/virt/kvm/kvm_main.c
-> +++ b/virt/kvm/kvm_main.c
-> @@ -345,7 +345,6 @@ bool kvm_make_all_cpus_request(struct kvm *kvm, unsigned int req)
->   }
->   EXPORT_SYMBOL_GPL(kvm_make_all_cpus_request);
->   
-> -#ifndef CONFIG_HAVE_KVM_ARCH_TLB_FLUSH_ALL
->   void kvm_flush_remote_tlbs(struct kvm *kvm)
->   {
->   	++kvm->stat.generic.remote_tlb_flush_requests;
-> @@ -366,7 +365,6 @@ void kvm_flush_remote_tlbs(struct kvm *kvm)
->   		++kvm->stat.generic.remote_tlb_flush;
->   }
->   EXPORT_SYMBOL_GPL(kvm_flush_remote_tlbs);
-> -#endif
->   
->   static void kvm_flush_shadow_all(struct kvm *kvm)
->   {
-
+> Regards,
+> Anup
+>
+> >
+> > Regards,
+> > Haibo
+> >
+> > > Thanks,
+> > >
+> > >         M.
+> > >
+> > > --
+> > > Without deviation from the norm, progress is not possible.
 
