@@ -1,82 +1,70 @@
-From: Anup Patel <anup@brainfault.org>
-Date: Wed, 9 Aug 2023 17:51:41 +0530
-Subject: [PATCH v6 00/13] RISCV: Add KVM_GET_REG_LIST API
-In-Reply-To: <87y1ilpz3m.wl-maz@kernel.org>
-References: <cover.1690273969.git.haibo1.xu@intel.com> <CAAhSdy0yug=J0nxnnPoLYL=0MiT0w6qgPYOcv0QwMRe+fsQn8Q@mail.gmail.com>
- <87y1ilpz3m.wl-maz@kernel.org>
-Message-ID: <CAAhSdy3f9cyh_b9Z9ah9QOdqWUMzhMV39hxUqVCStOc2FWRYDQ@mail.gmail.com>
+From: Raghavendra Rao Ananta <rananta@google.com>
+Date: Wed, 9 Aug 2023 09:38:49 -0700
+Subject: [PATCH v8 02/14] KVM: Declare kvm_arch_flush_remote_tlbs() globally
+In-Reply-To: <c33b0518-6e64-7acf-efa8-f404fce1ccac@redhat.com>
+References: <20230808231330.3855936-1-rananta@google.com> <20230808231330.3855936-3-rananta@google.com>
+ <c33b0518-6e64-7acf-efa8-f404fce1ccac@redhat.com>
+Message-ID: <CAJHc60yCJANBQOizaoSPhEJH9e8a9C6n68x4qdVkOhVZiiWqkw@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Marc,
+Hi Gavin,
 
-On Tue, Aug 8, 2023 at 4:42?PM Marc Zyngier <maz@kernel.org> wrote:
+On Tue, Aug 8, 2023 at 9:00?PM Gavin Shan <gshan@redhat.com> wrote:
 >
-> On Mon, 07 Aug 2023 04:48:33 +0100,
-> Anup Patel <anup@brainfault.org> wrote:
-> >
-> > Hi Marc, Hi Oliver,
-> >
-> > On Tue, Jul 25, 2023 at 2:05?PM Haibo Xu <haibo1.xu@intel.com> wrote:
-> > >
-> > > KVM_GET_REG_LIST will dump all register IDs that are available to
-> > > KVM_GET/SET_ONE_REG and It's very useful to identify some platform
-> > > regression issue during VM migration.
-> > >
-> > > Patch 1-7 re-structured the get-reg-list test in aarch64 to make some
-> > > of the code as common test framework that can be shared by riscv.
-> > >
-> > > Patch 8 move reject_set check logic to a function so as to check for
-> > > different errno for different registers.
-> > > Patch 9 move finalize_vcpu back to run_test so that riscv can implement
-> > > its specific operation.
-> > > Patch 10 change to do the get/set operation only on present-blessed list.
-> > > Patch 11 add the skip_set facilities so that riscv can skip set operation
-> > > on some registers.
-> > > Patch 12 enabled the KVM_GET_REG_LIST API in riscv.
-> > > patch 13 added the corresponding kselftest for checking possible
-> > > register regressions.
-> > >
-> > > The get-reg-list kvm selftest was ported from aarch64 and tested with
-> > > Linux v6.5-rc3 on a Qemu riscv64 virt machine.
-> > >
-> > > ---
-> > > Changed since v5:
-> > >   * Rebase to v6.5-rc3
-> > >   * Minor fix for Andrew's comments
-> > >
-> > > Andrew Jones (7):
-> > >   KVM: arm64: selftests: Replace str_with_index with strdup_printf
-> > >   KVM: arm64: selftests: Drop SVE cap check in print_reg
-> > >   KVM: arm64: selftests: Remove print_reg's dependency on vcpu_config
-> > >   KVM: arm64: selftests: Rename vcpu_config and add to kvm_util.h
-> > >   KVM: arm64: selftests: Delete core_reg_fixup
-> > >   KVM: arm64: selftests: Split get-reg-list test code
-> > >   KVM: arm64: selftests: Finish generalizing get-reg-list
-> > >
-> > > Haibo Xu (6):
-> > >   KVM: arm64: selftests: Move reject_set check logic to a function
-> > >   KVM: arm64: selftests: Move finalize_vcpu back to run_test
-> > >   KVM: selftests: Only do get/set tests on present blessed list
-> > >   KVM: selftests: Add skip_set facility to get_reg_list test
-> > >   KVM: riscv: Add KVM_GET_REG_LIST API support
-> > >   KVM: riscv: selftests: Add get-reg-list test
-> >
-> > Are you okay for this series to go through the KVM RISC-V tree ?
 >
-> Sure, seems fine from my point of view. But please put it on an
-> immutable topic branch so that we can also merge it in the arm64 tree,
-> should we need to resolve any conflicts.
+> On 8/9/23 09:13, Raghavendra Rao Ananta wrote:
+> > There's no reason for the architectures to declare
+> > kvm_arch_flush_remote_tlbs() in their own headers. Hence to
+> > avoid this duplication, make the declaration global, leaving
+> > the architectures to define only __KVM_HAVE_ARCH_FLUSH_REMOTE_TLBS
+> > as needed.
+> >
+> > Signed-off-by: Raghavendra Rao Ananta <rananta@google.com>
+> > ---
+> >   arch/mips/include/asm/kvm_host.h | 1 -
+> >   include/linux/kvm_host.h         | 2 ++
+> >   2 files changed, 2 insertions(+), 1 deletion(-)
+> >
+> > diff --git a/arch/mips/include/asm/kvm_host.h b/arch/mips/include/asm/kvm_host.h
+> > index 9b0ad8f3bf327..54a85f1d4f2c8 100644
+> > --- a/arch/mips/include/asm/kvm_host.h
+> > +++ b/arch/mips/include/asm/kvm_host.h
+> > @@ -897,6 +897,5 @@ static inline void kvm_arch_vcpu_blocking(struct kvm_vcpu *vcpu) {}
+> >   static inline void kvm_arch_vcpu_unblocking(struct kvm_vcpu *vcpu) {}
+> >
+> >   #define __KVM_HAVE_ARCH_FLUSH_REMOTE_TLBS
+> > -int kvm_arch_flush_remote_tlbs(struct kvm *kvm);
+> >
+> >   #endif /* __MIPS_KVM_HOST_H__ */
+> > diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+> > index e3f968b38ae97..ade5d4500c2ce 100644
+> > --- a/include/linux/kvm_host.h
+> > +++ b/include/linux/kvm_host.h
+> > @@ -1484,6 +1484,8 @@ static inline int kvm_arch_flush_remote_tlbs(struct kvm *kvm)
+> >   {
+> >       return -ENOTSUPP;
+> >   }
+> > +#else
+> > +int kvm_arch_flush_remote_tlbs(struct kvm *kvm);
+> >   #endif
+> >
+> >   #ifdef __KVM_HAVE_ARCH_NONCOHERENT_DMA
+>
+> Is the declaration inconsistent to that in arch/x86/include/asm/kvm_host.h?
+> In order to keep them consistent, I guess we need move kvm_arch_flush_remote_tlbs()
+> from x86's header file to arch/x86/kvm/mmu/mmu.c and 'inline' needs to be dropped.
+>
+Unsure of the original intentions, I didn't want to disturb any
+existing arrangements. If more people agree to this refactoring, I'm
+happy to move.
 
-I have created topic branch riscv_kvm_get_reg_list in the KVM RISC-V
-repo https://github.com/kvm-riscv/linux.git.
-
-This branch is based upon Linux-6.5-rc5 and also merged into the
-riscv_kvm_next branch for the upcoming merge window.
-
-Regards,
-Anup
+Thank you.
+Raghavendra
+> Thanks,
+> Gavin
+>
 
