@@ -1,37 +1,72 @@
-From: Vishal Annapurve <vannapurve@google.com>
-Date: Thu, 10 Aug 2023 16:57:36 -0700
-Subject: [RFC PATCH v11 12/29] KVM: Add KVM_CREATE_GUEST_MEMFD ioctl() for
- guest-specific backing memory
-In-Reply-To: <ZNKv9ul2I7A4V7IF@google.com>
-References: <20230718234512.1690985-13-seanjc@google.com> <diqzv8dq3116.fsf@ackerleytng-ctop.c.googlers.com>
- <ZNKv9ul2I7A4V7IF@google.com>
-Message-ID: <CAGtprH9YE50RtqhW-U+wK0Vv6aKfqqtOPn8q4s8or=UZwPXZoA@mail.gmail.com>
+From: Shaoqin Huang <shahuang@redhat.com>
+Date: Fri, 11 Aug 2023 11:03:45 +0800
+Subject: [PATCH v8 11/14] KVM: arm64: Implement
+ kvm_arch_flush_remote_tlbs_range()
+In-Reply-To: <20230808231330.3855936-12-rananta@google.com>
+References: <20230808231330.3855936-1-rananta@google.com>
+ <20230808231330.3855936-12-rananta@google.com>
+Message-ID: <d03b0f1f-2bd6-fc23-2d7a-ddb36eba93cf@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Aug 8, 2023 at 2:13?PM Sean Christopherson <seanjc@google.com> wrote:
-> ...
 
-> > + When binding a memslot to the file, if a kvm pointer exists, it must
-> >   be the same kvm as the one in this binding
-> > + When the binding to the last memslot is removed from a file, NULL the
-> >   kvm pointer.
->
-> Nullifying the KVM pointer isn't sufficient, because without additional actions
-> userspace could extract data from a VM by deleting its memslots and then binding
-> the guest_memfd to an attacker controlled VM.  Or more likely with TDX and SNP,
-> induce badness by coercing KVM into mapping memory into a guest with the wrong
-> ASID/HKID.
->
 
-TDX/SNP have mechanisms i.e. PAMT/RMP tables to ensure that the same
-memory is not assigned to two different VMs. Deleting memslots should
-also clear out the contents of the memory as the EPT tables will be
-zapped in the process and the host will reclaim the memory.
+On 8/9/23 07:13, Raghavendra Rao Ananta wrote:
+> Implement kvm_arch_flush_remote_tlbs_range() for arm64
+> to invalidate the given range in the TLB.
+> 
+> Signed-off-by: Raghavendra Rao Ananta <rananta@google.com>
+> Reviewed-by: Gavin Shan <gshan@redhat.com>
+> Reviewed-by: Shaoqin Huang <shahuang@redhat.com>
+> ---
+>   arch/arm64/include/asm/kvm_host.h | 2 ++
+>   arch/arm64/kvm/mmu.c              | 8 ++++++++
+>   2 files changed, 10 insertions(+)
+> 
+> diff --git a/arch/arm64/include/asm/kvm_host.h b/arch/arm64/include/asm/kvm_host.h
+> index 20f2ba149c70c..8f2d99eaab036 100644
+> --- a/arch/arm64/include/asm/kvm_host.h
+> +++ b/arch/arm64/include/asm/kvm_host.h
+> @@ -1113,6 +1113,8 @@ struct kvm *kvm_arch_alloc_vm(void);
+>   
+>   #define __KVM_HAVE_ARCH_FLUSH_REMOTE_TLBS
+>   
+> +#define __KVM_HAVE_ARCH_FLUSH_REMOTE_TLBS_RANGE
+> +
+>   static inline bool kvm_vm_is_protected(struct kvm *kvm)
+>   {
+>   	return false;
+> diff --git a/arch/arm64/kvm/mmu.c b/arch/arm64/kvm/mmu.c
+> index 0ac721fa27f18..294078ce16349 100644
+> --- a/arch/arm64/kvm/mmu.c
+> +++ b/arch/arm64/kvm/mmu.c
+> @@ -172,6 +172,14 @@ int kvm_arch_flush_remote_tlbs(struct kvm *kvm)
+>   	return 0;
+>   }
+>   
+> +int kvm_arch_flush_remote_tlbs_range(struct kvm *kvm,
+> +				      gfn_t gfn, u64 nr_pages)
+Hi Raghavendra,
 
-Regards,
-Vishal
+As the kernel test robot points out, the parameter `gfn` should change 
+to `start_gfn`.
+
+Thanks,
+Shaoqin
+> +{
+> +	kvm_tlb_flush_vmid_range(&kvm->arch.mmu,
+> +				start_gfn << PAGE_SHIFT, nr_pages << PAGE_SHIFT);
+> +	return 0;
+> +}
+> +
+>   static bool kvm_is_device_pfn(unsigned long pfn)
+>   {
+>   	return !pfn_is_map_memory(pfn);
+
+-- 
+Shaoqin
+
 
