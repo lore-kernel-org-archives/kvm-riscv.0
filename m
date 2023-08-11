@@ -1,114 +1,70 @@
-From: Raghavendra Rao Ananta <rananta@google.com>
-Date: Fri, 11 Aug 2023 04:51:27 +0000
-Subject: [PATCH v9 14/14] KVM: arm64: Use TLBI range-based instructions for unmap
-In-Reply-To: <20230811045127.3308641-1-rananta@google.com>
-References: <20230811045127.3308641-1-rananta@google.com>
-Message-ID: <20230811045127.3308641-15-rananta@google.com>
+From: Sean Christopherson <seanjc@google.com>
+Date: Fri, 11 Aug 2023 10:44:11 -0700
+Subject: [RFC PATCH v11 12/29] KVM: Add KVM_CREATE_GUEST_MEMFD ioctl() for
+ guest-specific backing memory
+In-Reply-To: <CAGtprH9YE50RtqhW-U+wK0Vv6aKfqqtOPn8q4s8or=UZwPXZoA@mail.gmail.com>
+References: <20230718234512.1690985-13-seanjc@google.com> <diqzv8dq3116.fsf@ackerleytng-ctop.c.googlers.com>
+ <ZNKv9ul2I7A4V7IF@google.com> <CAGtprH9YE50RtqhW-U+wK0Vv6aKfqqtOPn8q4s8or=UZwPXZoA@mail.gmail.com>
+Message-ID: <ZNZza/emWldkJC6X@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The current implementation of the stage-2 unmap walker traverses
-the given range and, as a part of break-before-make, performs
-TLB invalidations with a DSB for every PTE. A multitude of this
-combination could cause a performance bottleneck on some systems.
+On Thu, Aug 10, 2023, Vishal Annapurve wrote:
+> On Tue, Aug 8, 2023 at 2:13?PM Sean Christopherson <seanjc@google.com> wrote:
+> > ...
+> 
+> > > + When binding a memslot to the file, if a kvm pointer exists, it must
+> > >   be the same kvm as the one in this binding
+> > > + When the binding to the last memslot is removed from a file, NULL the
+> > >   kvm pointer.
+> >
+> > Nullifying the KVM pointer isn't sufficient, because without additional actions
+> > userspace could extract data from a VM by deleting its memslots and then binding
+> > the guest_memfd to an attacker controlled VM.  Or more likely with TDX and SNP,
+> > induce badness by coercing KVM into mapping memory into a guest with the wrong
+> > ASID/HKID.
+> >
+> 
+> TDX/SNP have mechanisms i.e. PAMT/RMP tables to ensure that the same
+> memory is not assigned to two different VMs.
 
-Hence, if the system supports FEAT_TLBIRANGE, defer the TLB
-invalidations until the entire walk is finished, and then
-use range-based instructions to invalidate the TLBs in one go.
-Condition deferred TLB invalidation on the system supporting FWB,
-as the optimization is entirely pointless when the unmap walker
-needs to perform CMOs.
+One of the main reasons we pivoted away from using a flag in "struct page" to
+indicate that a page was private was so that KVM could enforce 1:1 VM:page ownership
+*without* relying on hardware.
 
-Rename stage2_put_pte() to stage2_unmap_put_pte() as the function
-now serves the stage-2 unmap walker specifically, rather than
-acting generic.
+And FWIW, the PAMT provides no protection in this specific case because KVM does
+TDH.MEM.PAGE.REMOVE when zapping S-EPT entries, and that marks the page clear in
+the PAMT.  The danger there is that physical memory is still encrypted with the
+guest's HKID, and so mapping the memory into a different VM, which might not be
+a TDX guest!, could lead to corruption and/or poison #MCs.
 
-Signed-off-by: Raghavendra Rao Ananta <rananta@google.com>
-Reviewed-by: Shaoqin Huang <shahuang@redhat.com>
----
- arch/arm64/kvm/hyp/pgtable.c | 40 +++++++++++++++++++++++++++++-------
- 1 file changed, 33 insertions(+), 7 deletions(-)
+The HKID issues wouldn't be a problem if v15 is merged as-is, because zapping
+S-EPT entries also fully purges and reclaims the page, but as we discussed in
+one of the many threads, reclaiming physical memory should be tied to the inode,
+i.e. to memory truly being freed, and not to S-EPTs being zapped.  And there is
+a very good reason for wanting to do that, as it allows KVM to do the expensive
+cache flush + clear outside of mmu_lock.
 
-diff --git a/arch/arm64/kvm/hyp/pgtable.c b/arch/arm64/kvm/hyp/pgtable.c
-index 5ef098af17362..eaaae76481fa9 100644
---- a/arch/arm64/kvm/hyp/pgtable.c
-+++ b/arch/arm64/kvm/hyp/pgtable.c
-@@ -831,16 +831,36 @@ static void stage2_make_pte(const struct kvm_pgtable_visit_ctx *ctx, kvm_pte_t n
- 	smp_store_release(ctx->ptep, new);
- }
- 
--static void stage2_put_pte(const struct kvm_pgtable_visit_ctx *ctx, struct kvm_s2_mmu *mmu,
--			   struct kvm_pgtable_mm_ops *mm_ops)
-+static bool stage2_unmap_defer_tlb_flush(struct kvm_pgtable *pgt)
- {
- 	/*
--	 * Clear the existing PTE, and perform break-before-make with
--	 * TLB maintenance if it was valid.
-+	 * If FEAT_TLBIRANGE is implemented, defer the individual
-+	 * TLB invalidations until the entire walk is finished, and
-+	 * then use the range-based TLBI instructions to do the
-+	 * invalidations. Condition deferred TLB invalidation on the
-+	 * system supporting FWB as the optimization is entirely
-+	 * pointless when the unmap walker needs to perform CMOs.
-+	 */
-+	return system_supports_tlb_range() && stage2_has_fwb(pgt);
-+}
-+
-+static void stage2_unmap_put_pte(const struct kvm_pgtable_visit_ctx *ctx,
-+				struct kvm_s2_mmu *mmu,
-+				struct kvm_pgtable_mm_ops *mm_ops)
-+{
-+	struct kvm_pgtable *pgt = ctx->arg;
-+
-+	/*
-+	 * Clear the existing PTE, and perform break-before-make if it was
-+	 * valid. Depending on the system support, defer the TLB maintenance
-+	 * for the same until the entire unmap walk is completed.
- 	 */
- 	if (kvm_pte_valid(ctx->old)) {
- 		kvm_clear_pte(ctx->ptep);
--		kvm_call_hyp(__kvm_tlb_flush_vmid_ipa, mmu, ctx->addr, ctx->level);
-+
-+		if (!stage2_unmap_defer_tlb_flush(pgt))
-+			kvm_call_hyp(__kvm_tlb_flush_vmid_ipa, mmu,
-+					ctx->addr, ctx->level);
- 	}
- 
- 	mm_ops->put_page(ctx->ptep);
-@@ -1098,7 +1118,7 @@ static int stage2_unmap_walker(const struct kvm_pgtable_visit_ctx *ctx,
- 	 * block entry and rely on the remaining portions being faulted
- 	 * back lazily.
- 	 */
--	stage2_put_pte(ctx, mmu, mm_ops);
-+	stage2_unmap_put_pte(ctx, mmu, mm_ops);
- 
- 	if (need_flush && mm_ops->dcache_clean_inval_poc)
- 		mm_ops->dcache_clean_inval_poc(kvm_pte_follow(ctx->old, mm_ops),
-@@ -1112,13 +1132,19 @@ static int stage2_unmap_walker(const struct kvm_pgtable_visit_ctx *ctx,
- 
- int kvm_pgtable_stage2_unmap(struct kvm_pgtable *pgt, u64 addr, u64 size)
- {
-+	int ret;
- 	struct kvm_pgtable_walker walker = {
- 		.cb	= stage2_unmap_walker,
- 		.arg	= pgt,
- 		.flags	= KVM_PGTABLE_WALK_LEAF | KVM_PGTABLE_WALK_TABLE_POST,
- 	};
- 
--	return kvm_pgtable_walk(pgt, addr, size, &walker);
-+	ret = kvm_pgtable_walk(pgt, addr, size, &walker);
-+	if (stage2_unmap_defer_tlb_flush(pgt))
-+		/* Perform the deferred TLB invalidations */
-+		kvm_tlb_flush_vmid_range(pgt->mmu, addr, size);
-+
-+	return ret;
- }
- 
- struct stage2_attr_data {
--- 
-2.41.0.640.ga95def55d0-goog
+> Deleting memslots should also clear out the contents of the memory as the EPT
+> tables will be zapped in the process
 
+No, deleting a memslot should not clear memory.  As I said in my previous response,
+the fact that zapping S-EPT entries is destructive is a limitiation of TDX, not a
+feature we want to apply to other VM types.  And that's not even a fundamental
+property of TDX, e.g. TDX could remove the limitation, at the cost of consuming
+quite a bit more memory, by tracking the exact owner by HKID in the PAMT and
+decoupling S-EPT entries from page ownership.
+
+Or in theory, KVM could workaround the limitation by only doing TDH.MEM.RANGE.BLOCK
+when zapping S-EPTs.  Hmm, that might actually be worth looking at.
+
+> and the host will reclaim the memory.
+
+There are no guarantees that the host will reclaim the memory.  E.g. QEMU will
+delete and re-create memslots for "regular" VMs when emulating option ROMs.  Even
+if that use case is nonsensical for confidential VMs (and it probably is nonsensical),
+I don't want to define KVM's ABI based on what we *think* userspace will do.
 
