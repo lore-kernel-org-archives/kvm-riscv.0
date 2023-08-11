@@ -1,11 +1,11 @@
 From: Shaoqin Huang <shahuang@redhat.com>
-Date: Fri, 11 Aug 2023 11:03:45 +0800
-Subject: [PATCH v8 11/14] KVM: arm64: Implement
- kvm_arch_flush_remote_tlbs_range()
-In-Reply-To: <20230808231330.3855936-12-rananta@google.com>
+Date: Fri, 11 Aug 2023 11:13:46 +0800
+Subject: [PATCH v8 14/14] KVM: arm64: Use TLBI range-based intructions for
+ unmap
+In-Reply-To: <20230808231330.3855936-15-rananta@google.com>
 References: <20230808231330.3855936-1-rananta@google.com>
- <20230808231330.3855936-12-rananta@google.com>
-Message-ID: <d03b0f1f-2bd6-fc23-2d7a-ddb36eba93cf@redhat.com>
+ <20230808231330.3855936-15-rananta@google.com>
+Message-ID: <5ca5e4ed-82f0-369b-db61-7fcd1c148f1c@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -15,56 +15,104 @@ Content-Transfer-Encoding: 7bit
 
 
 On 8/9/23 07:13, Raghavendra Rao Ananta wrote:
-> Implement kvm_arch_flush_remote_tlbs_range() for arm64
-> to invalidate the given range in the TLB.
+> The current implementation of the stage-2 unmap walker traverses
+> the given range and, as a part of break-before-make, performs
+> TLB invalidations with a DSB for every PTE. A multitude of this
+> combination could cause a performance bottleneck on some systems.
+> 
+> Hence, if the system supports FEAT_TLBIRANGE, defer the TLB
+> invalidations until the entire walk is finished, and then
+> use range-based instructions to invalidate the TLBs in one go.
+> Condition deferred TLB invalidation on the system supporting FWB,
+> as the optimization is entirely pointless when the unmap walker
+> needs to perform CMOs.
+> 
+> Rename stage2_put_pte() to stage2_unmap_put_pte() as the function
+> now serves the stage-2 unmap walker specifically, rather than
+> acting generic.
 > 
 > Signed-off-by: Raghavendra Rao Ananta <rananta@google.com>
-> Reviewed-by: Gavin Shan <gshan@redhat.com>
-> Reviewed-by: Shaoqin Huang <shahuang@redhat.com>
+Reviewed-by: Shaoqin Huang <shahuang@redhat.com>
 > ---
->   arch/arm64/include/asm/kvm_host.h | 2 ++
->   arch/arm64/kvm/mmu.c              | 8 ++++++++
->   2 files changed, 10 insertions(+)
+>   arch/arm64/kvm/hyp/pgtable.c | 40 +++++++++++++++++++++++++++++-------
+>   1 file changed, 33 insertions(+), 7 deletions(-)
 > 
-> diff --git a/arch/arm64/include/asm/kvm_host.h b/arch/arm64/include/asm/kvm_host.h
-> index 20f2ba149c70c..8f2d99eaab036 100644
-> --- a/arch/arm64/include/asm/kvm_host.h
-> +++ b/arch/arm64/include/asm/kvm_host.h
-> @@ -1113,6 +1113,8 @@ struct kvm *kvm_arch_alloc_vm(void);
->   
->   #define __KVM_HAVE_ARCH_FLUSH_REMOTE_TLBS
->   
-> +#define __KVM_HAVE_ARCH_FLUSH_REMOTE_TLBS_RANGE
-> +
->   static inline bool kvm_vm_is_protected(struct kvm *kvm)
->   {
->   	return false;
-> diff --git a/arch/arm64/kvm/mmu.c b/arch/arm64/kvm/mmu.c
-> index 0ac721fa27f18..294078ce16349 100644
-> --- a/arch/arm64/kvm/mmu.c
-> +++ b/arch/arm64/kvm/mmu.c
-> @@ -172,6 +172,14 @@ int kvm_arch_flush_remote_tlbs(struct kvm *kvm)
->   	return 0;
+> diff --git a/arch/arm64/kvm/hyp/pgtable.c b/arch/arm64/kvm/hyp/pgtable.c
+> index 5ef098af17362..eaaae76481fa9 100644
+> --- a/arch/arm64/kvm/hyp/pgtable.c
+> +++ b/arch/arm64/kvm/hyp/pgtable.c
+> @@ -831,16 +831,36 @@ static void stage2_make_pte(const struct kvm_pgtable_visit_ctx *ctx, kvm_pte_t n
+>   	smp_store_release(ctx->ptep, new);
 >   }
 >   
-> +int kvm_arch_flush_remote_tlbs_range(struct kvm *kvm,
-> +				      gfn_t gfn, u64 nr_pages)
-Hi Raghavendra,
-
-As the kernel test robot points out, the parameter `gfn` should change 
-to `start_gfn`.
-
-Thanks,
-Shaoqin
-> +{
-> +	kvm_tlb_flush_vmid_range(&kvm->arch.mmu,
-> +				start_gfn << PAGE_SHIFT, nr_pages << PAGE_SHIFT);
-> +	return 0;
+> -static void stage2_put_pte(const struct kvm_pgtable_visit_ctx *ctx, struct kvm_s2_mmu *mmu,
+> -			   struct kvm_pgtable_mm_ops *mm_ops)
+> +static bool stage2_unmap_defer_tlb_flush(struct kvm_pgtable *pgt)
+>   {
+>   	/*
+> -	 * Clear the existing PTE, and perform break-before-make with
+> -	 * TLB maintenance if it was valid.
+> +	 * If FEAT_TLBIRANGE is implemented, defer the individual
+> +	 * TLB invalidations until the entire walk is finished, and
+> +	 * then use the range-based TLBI instructions to do the
+> +	 * invalidations. Condition deferred TLB invalidation on the
+> +	 * system supporting FWB as the optimization is entirely
+> +	 * pointless when the unmap walker needs to perform CMOs.
+> +	 */
+> +	return system_supports_tlb_range() && stage2_has_fwb(pgt);
 > +}
 > +
->   static bool kvm_is_device_pfn(unsigned long pfn)
+> +static void stage2_unmap_put_pte(const struct kvm_pgtable_visit_ctx *ctx,
+> +				struct kvm_s2_mmu *mmu,
+> +				struct kvm_pgtable_mm_ops *mm_ops)
+> +{
+> +	struct kvm_pgtable *pgt = ctx->arg;
+> +
+> +	/*
+> +	 * Clear the existing PTE, and perform break-before-make if it was
+> +	 * valid. Depending on the system support, defer the TLB maintenance
+> +	 * for the same until the entire unmap walk is completed.
+>   	 */
+>   	if (kvm_pte_valid(ctx->old)) {
+>   		kvm_clear_pte(ctx->ptep);
+> -		kvm_call_hyp(__kvm_tlb_flush_vmid_ipa, mmu, ctx->addr, ctx->level);
+> +
+> +		if (!stage2_unmap_defer_tlb_flush(pgt))
+> +			kvm_call_hyp(__kvm_tlb_flush_vmid_ipa, mmu,
+> +					ctx->addr, ctx->level);
+>   	}
+>   
+>   	mm_ops->put_page(ctx->ptep);
+> @@ -1098,7 +1118,7 @@ static int stage2_unmap_walker(const struct kvm_pgtable_visit_ctx *ctx,
+>   	 * block entry and rely on the remaining portions being faulted
+>   	 * back lazily.
+>   	 */
+> -	stage2_put_pte(ctx, mmu, mm_ops);
+> +	stage2_unmap_put_pte(ctx, mmu, mm_ops);
+>   
+>   	if (need_flush && mm_ops->dcache_clean_inval_poc)
+>   		mm_ops->dcache_clean_inval_poc(kvm_pte_follow(ctx->old, mm_ops),
+> @@ -1112,13 +1132,19 @@ static int stage2_unmap_walker(const struct kvm_pgtable_visit_ctx *ctx,
+>   
+>   int kvm_pgtable_stage2_unmap(struct kvm_pgtable *pgt, u64 addr, u64 size)
 >   {
->   	return !pfn_is_map_memory(pfn);
+> +	int ret;
+>   	struct kvm_pgtable_walker walker = {
+>   		.cb	= stage2_unmap_walker,
+>   		.arg	= pgt,
+>   		.flags	= KVM_PGTABLE_WALK_LEAF | KVM_PGTABLE_WALK_TABLE_POST,
+>   	};
+>   
+> -	return kvm_pgtable_walk(pgt, addr, size, &walker);
+> +	ret = kvm_pgtable_walk(pgt, addr, size, &walker);
+> +	if (stage2_unmap_defer_tlb_flush(pgt))
+> +		/* Perform the deferred TLB invalidations */
+> +		kvm_tlb_flush_vmid_range(pgt->mmu, addr, size);
+> +
+> +	return ret;
+>   }
+>   
+>   struct stage2_attr_data {
 
 -- 
 Shaoqin
