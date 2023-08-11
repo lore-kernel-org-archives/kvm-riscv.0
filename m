@@ -1,10 +1,11 @@
 From: Shaoqin Huang <shahuang@redhat.com>
-Date: Fri, 11 Aug 2023 11:16:06 +0800
-Subject: [PATCH v8 08/14] arm64: tlb: Implement __flush_s2_tlb_range_op()
-In-Reply-To: <20230808231330.3855936-9-rananta@google.com>
+Date: Fri, 11 Aug 2023 11:18:23 +0800
+Subject: [PATCH v8 02/14] KVM: Declare kvm_arch_flush_remote_tlbs()
+ globally
+In-Reply-To: <20230808231330.3855936-3-rananta@google.com>
 References: <20230808231330.3855936-1-rananta@google.com>
- <20230808231330.3855936-9-rananta@google.com>
-Message-ID: <60a2cc0e-df09-4305-6bfc-25b3d864040a@redhat.com>
+ <20230808231330.3855936-3-rananta@google.com>
+Message-ID: <60d1a498-2815-2465-ccc9-e4464791a3fb@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -14,31 +15,43 @@ Content-Transfer-Encoding: 7bit
 
 
 On 8/9/23 07:13, Raghavendra Rao Ananta wrote:
-> Define __flush_s2_tlb_range_op(), as a wrapper over
-> __flush_tlb_range_op(), for stage-2 specific range-based TLBI
-> operations that doesn't necessarily have to deal with 'asid'
-> and 'tlbi_user' arguments.
+> There's no reason for the architectures to declare
+> kvm_arch_flush_remote_tlbs() in their own headers. Hence to
+> avoid this duplication, make the declaration global, leaving
+> the architectures to define only __KVM_HAVE_ARCH_FLUSH_REMOTE_TLBS
+> as needed.
 > 
 > Signed-off-by: Raghavendra Rao Ananta <rananta@google.com>
 Reviewed-by: Shaoqin Huang <shahuang@redhat.com>
 > ---
->   arch/arm64/include/asm/tlbflush.h | 3 +++
->   1 file changed, 3 insertions(+)
+>   arch/mips/include/asm/kvm_host.h | 1 -
+>   include/linux/kvm_host.h         | 2 ++
+>   2 files changed, 2 insertions(+), 1 deletion(-)
 > 
-> diff --git a/arch/arm64/include/asm/tlbflush.h b/arch/arm64/include/asm/tlbflush.h
-> index b9475a852d5be..93f4b397f9a12 100644
-> --- a/arch/arm64/include/asm/tlbflush.h
-> +++ b/arch/arm64/include/asm/tlbflush.h
-> @@ -340,6 +340,9 @@ do {									\
->   	}								\
->   } while (0)
+> diff --git a/arch/mips/include/asm/kvm_host.h b/arch/mips/include/asm/kvm_host.h
+> index 9b0ad8f3bf327..54a85f1d4f2c8 100644
+> --- a/arch/mips/include/asm/kvm_host.h
+> +++ b/arch/mips/include/asm/kvm_host.h
+> @@ -897,6 +897,5 @@ static inline void kvm_arch_vcpu_blocking(struct kvm_vcpu *vcpu) {}
+>   static inline void kvm_arch_vcpu_unblocking(struct kvm_vcpu *vcpu) {}
 >   
-> +#define __flush_s2_tlb_range_op(op, start, pages, stride, tlb_level) \
-> +	__flush_tlb_range_op(op, start, pages, stride, 0, tlb_level, false)
-> +
->   static inline void __flush_tlb_range(struct vm_area_struct *vma,
->   				     unsigned long start, unsigned long end,
->   				     unsigned long stride, bool last_level,
+>   #define __KVM_HAVE_ARCH_FLUSH_REMOTE_TLBS
+> -int kvm_arch_flush_remote_tlbs(struct kvm *kvm);
+>   
+>   #endif /* __MIPS_KVM_HOST_H__ */
+> diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+> index e3f968b38ae97..ade5d4500c2ce 100644
+> --- a/include/linux/kvm_host.h
+> +++ b/include/linux/kvm_host.h
+> @@ -1484,6 +1484,8 @@ static inline int kvm_arch_flush_remote_tlbs(struct kvm *kvm)
+>   {
+>   	return -ENOTSUPP;
+>   }
+> +#else
+> +int kvm_arch_flush_remote_tlbs(struct kvm *kvm);
+>   #endif
+>   
+>   #ifdef __KVM_HAVE_ARCH_NONCOHERENT_DMA
 
 -- 
 Shaoqin
