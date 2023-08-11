@@ -1,11 +1,11 @@
 From: Shaoqin Huang <shahuang@redhat.com>
-Date: Fri, 11 Aug 2023 11:13:46 +0800
-Subject: [PATCH v8 14/14] KVM: arm64: Use TLBI range-based intructions for
- unmap
-In-Reply-To: <20230808231330.3855936-15-rananta@google.com>
+Date: Fri, 11 Aug 2023 11:15:07 +0800
+Subject: [PATCH v8 09/14] KVM: arm64: Implement
+ __kvm_tlb_flush_vmid_range()
+In-Reply-To: <20230808231330.3855936-10-rananta@google.com>
 References: <20230808231330.3855936-1-rananta@google.com>
- <20230808231330.3855936-15-rananta@google.com>
-Message-ID: <5ca5e4ed-82f0-369b-db61-7fcd1c148f1c@redhat.com>
+ <20230808231330.3855936-10-rananta@google.com>
+Message-ID: <ff43677a-3f47-0c3a-f3eb-3256c9a6c3f4@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -15,104 +15,153 @@ Content-Transfer-Encoding: 7bit
 
 
 On 8/9/23 07:13, Raghavendra Rao Ananta wrote:
-> The current implementation of the stage-2 unmap walker traverses
-> the given range and, as a part of break-before-make, performs
-> TLB invalidations with a DSB for every PTE. A multitude of this
-> combination could cause a performance bottleneck on some systems.
-> 
-> Hence, if the system supports FEAT_TLBIRANGE, defer the TLB
-> invalidations until the entire walk is finished, and then
-> use range-based instructions to invalidate the TLBs in one go.
-> Condition deferred TLB invalidation on the system supporting FWB,
-> as the optimization is entirely pointless when the unmap walker
-> needs to perform CMOs.
-> 
-> Rename stage2_put_pte() to stage2_unmap_put_pte() as the function
-> now serves the stage-2 unmap walker specifically, rather than
-> acting generic.
+> Define  __kvm_tlb_flush_vmid_range() (for VHE and nVHE)
+> to flush a range of stage-2 page-tables using IPA in one go.
+> If the system supports FEAT_TLBIRANGE, the following patches
+> would conviniently replace global TLBI such as vmalls12e1is
+> in the map, unmap, and dirty-logging paths with ripas2e1is
+> instead.
 > 
 > Signed-off-by: Raghavendra Rao Ananta <rananta@google.com>
+> Reviewed-by: Gavin Shan <gshan@redhat.com>
 Reviewed-by: Shaoqin Huang <shahuang@redhat.com>
 > ---
->   arch/arm64/kvm/hyp/pgtable.c | 40 +++++++++++++++++++++++++++++-------
->   1 file changed, 33 insertions(+), 7 deletions(-)
+>   arch/arm64/include/asm/kvm_asm.h   |  3 +++
+>   arch/arm64/kvm/hyp/nvhe/hyp-main.c | 11 +++++++++++
+>   arch/arm64/kvm/hyp/nvhe/tlb.c      | 30 ++++++++++++++++++++++++++++++
+>   arch/arm64/kvm/hyp/vhe/tlb.c       | 28 ++++++++++++++++++++++++++++
+>   4 files changed, 72 insertions(+)
 > 
-> diff --git a/arch/arm64/kvm/hyp/pgtable.c b/arch/arm64/kvm/hyp/pgtable.c
-> index 5ef098af17362..eaaae76481fa9 100644
-> --- a/arch/arm64/kvm/hyp/pgtable.c
-> +++ b/arch/arm64/kvm/hyp/pgtable.c
-> @@ -831,16 +831,36 @@ static void stage2_make_pte(const struct kvm_pgtable_visit_ctx *ctx, kvm_pte_t n
->   	smp_store_release(ctx->ptep, new);
+> diff --git a/arch/arm64/include/asm/kvm_asm.h b/arch/arm64/include/asm/kvm_asm.h
+> index 7d170aaa2db41..2c27cb8cf442d 100644
+> --- a/arch/arm64/include/asm/kvm_asm.h
+> +++ b/arch/arm64/include/asm/kvm_asm.h
+> @@ -70,6 +70,7 @@ enum __kvm_host_smccc_func {
+>   	__KVM_HOST_SMCCC_FUNC___kvm_tlb_flush_vmid_ipa,
+>   	__KVM_HOST_SMCCC_FUNC___kvm_tlb_flush_vmid_ipa_nsh,
+>   	__KVM_HOST_SMCCC_FUNC___kvm_tlb_flush_vmid,
+> +	__KVM_HOST_SMCCC_FUNC___kvm_tlb_flush_vmid_range,
+>   	__KVM_HOST_SMCCC_FUNC___kvm_flush_cpu_context,
+>   	__KVM_HOST_SMCCC_FUNC___kvm_timer_set_cntvoff,
+>   	__KVM_HOST_SMCCC_FUNC___vgic_v3_read_vmcr,
+> @@ -229,6 +230,8 @@ extern void __kvm_tlb_flush_vmid_ipa(struct kvm_s2_mmu *mmu, phys_addr_t ipa,
+>   extern void __kvm_tlb_flush_vmid_ipa_nsh(struct kvm_s2_mmu *mmu,
+>   					 phys_addr_t ipa,
+>   					 int level);
+> +extern void __kvm_tlb_flush_vmid_range(struct kvm_s2_mmu *mmu,
+> +					phys_addr_t start, unsigned long pages);
+>   extern void __kvm_tlb_flush_vmid(struct kvm_s2_mmu *mmu);
+>   
+>   extern void __kvm_timer_set_cntvoff(u64 cntvoff);
+> diff --git a/arch/arm64/kvm/hyp/nvhe/hyp-main.c b/arch/arm64/kvm/hyp/nvhe/hyp-main.c
+> index a169c619db60b..857d9bc04fd48 100644
+> --- a/arch/arm64/kvm/hyp/nvhe/hyp-main.c
+> +++ b/arch/arm64/kvm/hyp/nvhe/hyp-main.c
+> @@ -135,6 +135,16 @@ static void handle___kvm_tlb_flush_vmid_ipa_nsh(struct kvm_cpu_context *host_ctx
+>   	__kvm_tlb_flush_vmid_ipa_nsh(kern_hyp_va(mmu), ipa, level);
 >   }
 >   
-> -static void stage2_put_pte(const struct kvm_pgtable_visit_ctx *ctx, struct kvm_s2_mmu *mmu,
-> -			   struct kvm_pgtable_mm_ops *mm_ops)
-> +static bool stage2_unmap_defer_tlb_flush(struct kvm_pgtable *pgt)
->   {
->   	/*
-> -	 * Clear the existing PTE, and perform break-before-make with
-> -	 * TLB maintenance if it was valid.
-> +	 * If FEAT_TLBIRANGE is implemented, defer the individual
-> +	 * TLB invalidations until the entire walk is finished, and
-> +	 * then use the range-based TLBI instructions to do the
-> +	 * invalidations. Condition deferred TLB invalidation on the
-> +	 * system supporting FWB as the optimization is entirely
-> +	 * pointless when the unmap walker needs to perform CMOs.
-> +	 */
-> +	return system_supports_tlb_range() && stage2_has_fwb(pgt);
+> +static void
+> +handle___kvm_tlb_flush_vmid_range(struct kvm_cpu_context *host_ctxt)
+> +{
+> +	DECLARE_REG(struct kvm_s2_mmu *, mmu, host_ctxt, 1);
+> +	DECLARE_REG(phys_addr_t, start, host_ctxt, 2);
+> +	DECLARE_REG(unsigned long, pages, host_ctxt, 3);
+> +
+> +	__kvm_tlb_flush_vmid_range(kern_hyp_va(mmu), start, pages);
 > +}
 > +
-> +static void stage2_unmap_put_pte(const struct kvm_pgtable_visit_ctx *ctx,
-> +				struct kvm_s2_mmu *mmu,
-> +				struct kvm_pgtable_mm_ops *mm_ops)
-> +{
-> +	struct kvm_pgtable *pgt = ctx->arg;
-> +
-> +	/*
-> +	 * Clear the existing PTE, and perform break-before-make if it was
-> +	 * valid. Depending on the system support, defer the TLB maintenance
-> +	 * for the same until the entire unmap walk is completed.
->   	 */
->   	if (kvm_pte_valid(ctx->old)) {
->   		kvm_clear_pte(ctx->ptep);
-> -		kvm_call_hyp(__kvm_tlb_flush_vmid_ipa, mmu, ctx->addr, ctx->level);
-> +
-> +		if (!stage2_unmap_defer_tlb_flush(pgt))
-> +			kvm_call_hyp(__kvm_tlb_flush_vmid_ipa, mmu,
-> +					ctx->addr, ctx->level);
->   	}
->   
->   	mm_ops->put_page(ctx->ptep);
-> @@ -1098,7 +1118,7 @@ static int stage2_unmap_walker(const struct kvm_pgtable_visit_ctx *ctx,
->   	 * block entry and rely on the remaining portions being faulted
->   	 * back lazily.
->   	 */
-> -	stage2_put_pte(ctx, mmu, mm_ops);
-> +	stage2_unmap_put_pte(ctx, mmu, mm_ops);
->   
->   	if (need_flush && mm_ops->dcache_clean_inval_poc)
->   		mm_ops->dcache_clean_inval_poc(kvm_pte_follow(ctx->old, mm_ops),
-> @@ -1112,13 +1132,19 @@ static int stage2_unmap_walker(const struct kvm_pgtable_visit_ctx *ctx,
->   
->   int kvm_pgtable_stage2_unmap(struct kvm_pgtable *pgt, u64 addr, u64 size)
+>   static void handle___kvm_tlb_flush_vmid(struct kvm_cpu_context *host_ctxt)
 >   {
-> +	int ret;
->   	struct kvm_pgtable_walker walker = {
->   		.cb	= stage2_unmap_walker,
->   		.arg	= pgt,
->   		.flags	= KVM_PGTABLE_WALK_LEAF | KVM_PGTABLE_WALK_TABLE_POST,
->   	};
->   
-> -	return kvm_pgtable_walk(pgt, addr, size, &walker);
-> +	ret = kvm_pgtable_walk(pgt, addr, size, &walker);
-> +	if (stage2_unmap_defer_tlb_flush(pgt))
-> +		/* Perform the deferred TLB invalidations */
-> +		kvm_tlb_flush_vmid_range(pgt->mmu, addr, size);
-> +
-> +	return ret;
+>   	DECLARE_REG(struct kvm_s2_mmu *, mmu, host_ctxt, 1);
+> @@ -327,6 +337,7 @@ static const hcall_t host_hcall[] = {
+>   	HANDLE_FUNC(__kvm_tlb_flush_vmid_ipa),
+>   	HANDLE_FUNC(__kvm_tlb_flush_vmid_ipa_nsh),
+>   	HANDLE_FUNC(__kvm_tlb_flush_vmid),
+> +	HANDLE_FUNC(__kvm_tlb_flush_vmid_range),
+>   	HANDLE_FUNC(__kvm_flush_cpu_context),
+>   	HANDLE_FUNC(__kvm_timer_set_cntvoff),
+>   	HANDLE_FUNC(__vgic_v3_read_vmcr),
+> diff --git a/arch/arm64/kvm/hyp/nvhe/tlb.c b/arch/arm64/kvm/hyp/nvhe/tlb.c
+> index b9991bbd8e3fd..1b265713d6bed 100644
+> --- a/arch/arm64/kvm/hyp/nvhe/tlb.c
+> +++ b/arch/arm64/kvm/hyp/nvhe/tlb.c
+> @@ -182,6 +182,36 @@ void __kvm_tlb_flush_vmid_ipa_nsh(struct kvm_s2_mmu *mmu,
+>   	__tlb_switch_to_host(&cxt);
 >   }
 >   
->   struct stage2_attr_data {
+> +void __kvm_tlb_flush_vmid_range(struct kvm_s2_mmu *mmu,
+> +				phys_addr_t start, unsigned long pages)
+> +{
+> +	struct tlb_inv_context cxt;
+> +	unsigned long stride;
+> +
+> +	/*
+> +	 * Since the range of addresses may not be mapped at
+> +	 * the same level, assume the worst case as PAGE_SIZE
+> +	 */
+> +	stride = PAGE_SIZE;
+> +	start = round_down(start, stride);
+> +
+> +	/* Switch to requested VMID */
+> +	__tlb_switch_to_guest(mmu, &cxt, false);
+> +
+> +	__flush_s2_tlb_range_op(ipas2e1is, start, pages, stride, 0);
+> +
+> +	dsb(ish);
+> +	__tlbi(vmalle1is);
+> +	dsb(ish);
+> +	isb();
+> +
+> +	/* See the comment in __kvm_tlb_flush_vmid_ipa() */
+> +	if (icache_is_vpipt())
+> +		icache_inval_all_pou();
+> +
+> +	__tlb_switch_to_host(&cxt);
+> +}
+> +
+>   void __kvm_tlb_flush_vmid(struct kvm_s2_mmu *mmu)
+>   {
+>   	struct tlb_inv_context cxt;
+> diff --git a/arch/arm64/kvm/hyp/vhe/tlb.c b/arch/arm64/kvm/hyp/vhe/tlb.c
+> index e69da550cdc5b..46bd43f61d76f 100644
+> --- a/arch/arm64/kvm/hyp/vhe/tlb.c
+> +++ b/arch/arm64/kvm/hyp/vhe/tlb.c
+> @@ -143,6 +143,34 @@ void __kvm_tlb_flush_vmid_ipa_nsh(struct kvm_s2_mmu *mmu,
+>   	__tlb_switch_to_host(&cxt);
+>   }
+>   
+> +void __kvm_tlb_flush_vmid_range(struct kvm_s2_mmu *mmu,
+> +				phys_addr_t start, unsigned long pages)
+> +{
+> +	struct tlb_inv_context cxt;
+> +	unsigned long stride;
+> +
+> +	/*
+> +	 * Since the range of addresses may not be mapped at
+> +	 * the same level, assume the worst case as PAGE_SIZE
+> +	 */
+> +	stride = PAGE_SIZE;
+> +	start = round_down(start, stride);
+> +
+> +	dsb(ishst);
+> +
+> +	/* Switch to requested VMID */
+> +	__tlb_switch_to_guest(mmu, &cxt);
+> +
+> +	__flush_s2_tlb_range_op(ipas2e1is, start, pages, stride, 0);
+> +
+> +	dsb(ish);
+> +	__tlbi(vmalle1is);
+> +	dsb(ish);
+> +	isb();
+> +
+> +	__tlb_switch_to_host(&cxt);
+> +}
+> +
+>   void __kvm_tlb_flush_vmid(struct kvm_s2_mmu *mmu)
+>   {
+>   	struct tlb_inv_context cxt;
 
 -- 
 Shaoqin
