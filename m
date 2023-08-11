@@ -1,47 +1,40 @@
 From: Raghavendra Rao Ananta <rananta@google.com>
-Date: Fri, 11 Aug 2023 04:51:26 +0000
-Subject: [PATCH v9 13/14] KVM: arm64: Invalidate the table entries upon a range
+Date: Fri, 11 Aug 2023 04:51:21 +0000
+Subject: [PATCH v9 08/14] arm64: tlb: Implement __flush_s2_tlb_range_op()
 In-Reply-To: <20230811045127.3308641-1-rananta@google.com>
 References: <20230811045127.3308641-1-rananta@google.com>
-Message-ID: <20230811045127.3308641-14-rananta@google.com>
+Message-ID: <20230811045127.3308641-9-rananta@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Currently, during the operations such as a hugepage collapse,
-KVM would flush the entire VM's context using 'vmalls12e1is'
-TLBI operation. Specifically, if the VM is faulting on many
-hugepages (say after dirty-logging), it creates a performance
-penalty for the guest whose pages have already been faulted
-earlier as they would have to refill their TLBs again.
-
-Instead, leverage kvm_tlb_flush_vmid_range() for table entries.
-If the system supports it, only the required range will be
-flushed. Else, it'll fallback to the previous mechanism.
+Define __flush_s2_tlb_range_op(), as a wrapper over
+__flush_tlb_range_op(), for stage-2 specific range-based TLBI
+operations that doesn't necessarily have to deal with 'asid'
+and 'tlbi_user' arguments.
 
 Signed-off-by: Raghavendra Rao Ananta <rananta@google.com>
-Reviewed-by: Gavin Shan <gshan@redhat.com>
 Reviewed-by: Shaoqin Huang <shahuang@redhat.com>
 ---
- arch/arm64/kvm/hyp/pgtable.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ arch/arm64/include/asm/tlbflush.h | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/arch/arm64/kvm/hyp/pgtable.c b/arch/arm64/kvm/hyp/pgtable.c
-index 5d14d5d5819a1..5ef098af17362 100644
---- a/arch/arm64/kvm/hyp/pgtable.c
-+++ b/arch/arm64/kvm/hyp/pgtable.c
-@@ -806,7 +806,8 @@ static bool stage2_try_break_pte(const struct kvm_pgtable_visit_ctx *ctx,
- 		 * evicted pte value (if any).
- 		 */
- 		if (kvm_pte_table(ctx->old, ctx->level))
--			kvm_call_hyp(__kvm_tlb_flush_vmid, mmu);
-+			kvm_tlb_flush_vmid_range(mmu, ctx->addr,
-+						kvm_granule_size(ctx->level));
- 		else if (kvm_pte_valid(ctx->old))
- 			kvm_call_hyp(__kvm_tlb_flush_vmid_ipa, mmu,
- 				     ctx->addr, ctx->level);
+diff --git a/arch/arm64/include/asm/tlbflush.h b/arch/arm64/include/asm/tlbflush.h
+index b9475a852d5be..93f4b397f9a12 100644
+--- a/arch/arm64/include/asm/tlbflush.h
++++ b/arch/arm64/include/asm/tlbflush.h
+@@ -340,6 +340,9 @@ do {									\
+ 	}								\
+ } while (0)
+ 
++#define __flush_s2_tlb_range_op(op, start, pages, stride, tlb_level) \
++	__flush_tlb_range_op(op, start, pages, stride, 0, tlb_level, false)
++
+ static inline void __flush_tlb_range(struct vm_area_struct *vma,
+ 				     unsigned long start, unsigned long end,
+ 				     unsigned long stride, bool last_level,
 -- 
 2.41.0.640.ga95def55d0-goog
 
