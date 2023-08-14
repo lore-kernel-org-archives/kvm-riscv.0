@@ -1,45 +1,31 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Mon, 14 Aug 2023 14:54:32 -0700
-Subject: [RFC PATCH v11 08/29] KVM: Introduce per-page memory attributes
-In-Reply-To: <02239d95-0253-a223-28c2-016cca3ab4d2@linux.intel.com>
-References: <20230718234512.1690985-1-seanjc@google.com> <20230718234512.1690985-9-seanjc@google.com>
- <02239d95-0253-a223-28c2-016cca3ab4d2@linux.intel.com>
-Message-ID: <ZNqimGhCD+70q/lG@google.com>
+Date: Mon, 14 Aug 2023 16:16:53 -0700
+Subject: [PATCH v9 00/14] KVM: arm64: Add support for FEAT_TLBIRANGE
+In-Reply-To: <20230811045127.3308641-1-rananta@google.com>
+References: <20230811045127.3308641-1-rananta@google.com>
+Message-ID: <ZNq15SZ+53umvOfx@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Aug 14, 2023, Binbin Wu wrote:
-> 
-> On 7/19/2023 7:44 AM, Sean Christopherson wrote:
-> > +	struct kvm_mmu_notifier_range post_set_range = {
-> > +		.start = start,
-> > +		.end = end,
-> > +		.arg.attributes = attributes,
-> > +		.handler = kvm_arch_post_set_memory_attributes,
-> > +		.on_lock = (void *)kvm_null_fn,
-> > +		.on_unlock = kvm_mmu_invalidate_end,
-> > +		.may_block = true,
-> > +	};
-> > +	unsigned long i;
-> > +	void *entry;
-> > +	int r;
-> > +
-> > +	entry = attributes ? xa_mk_value(attributes) : NULL;
-> Why attributes of value 0 is considered not a value? Is it because 0 is not
-> a valid value when RWX is considered in the future?
+On Fri, Aug 11, 2023, Raghavendra Rao Ananta wrote:
+> The series is based off of upstream v6.5-rc1.
 
-0 values don't require an entry in the xarray, i.e. don't need to be stored and
-so don't consume memory.  The potential conflict with a RWX=0 entry has already
-been noted, but we'll cross that bridge when we get to it, e.g. KVM can easily
-support RWX=0 by using an internal "valid" flag.
+Lies!  :-)
 
-> Both the changelog and the document added mention that the address and size
-> of attrs will be updated to
-> "reflect the actual pages of the memory range have been successfully set to
-> the attributes", but it doesn't.
+This is based off one of the kvmarm.git topic branches (I didn't bother to figure
+out which one), not v6.5-rc1.
 
-Yeah, on the todo list, all of the changelogs are horribly stale.
+Please try to incorporate git format-patch's "--base" option into your workflow,
+e.g. I do "git format-patch --base=HEAD~$nr" where $nr is the number of patches
+I am posting.
+
+It's not foolproof, e.g. my approach doesn't help if I have a local patch that
+I'm not posting, but 99% of the time it Just Works and eliminates any ambuitity.
+
+You can also do "--base=auto", but that only does the right thing if your series
+has its upstream branch set to the base/tree that you want your patches applied
+to (I use the upstream branch for a completely different purpose for my dev branches).
 
