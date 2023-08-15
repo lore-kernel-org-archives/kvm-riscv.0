@@ -1,31 +1,64 @@
-From: Sean Christopherson <seanjc@google.com>
-Date: Mon, 14 Aug 2023 16:16:53 -0700
+From: Raghavendra Rao Ananta <rananta@google.com>
+Date: Mon, 14 Aug 2023 17:29:59 -0700
 Subject: [PATCH v9 00/14] KVM: arm64: Add support for FEAT_TLBIRANGE
-In-Reply-To: <20230811045127.3308641-1-rananta@google.com>
-References: <20230811045127.3308641-1-rananta@google.com>
-Message-ID: <ZNq15SZ+53umvOfx@google.com>
+In-Reply-To: <ZNq15SZ+53umvOfx@google.com>
+References: <20230811045127.3308641-1-rananta@google.com> <ZNq15SZ+53umvOfx@google.com>
+Message-ID: <CAJHc60wMueazp3Wm=b6-tnFPAyX0zeYuVQe9uPEJrpAm0azw2A@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Aug 11, 2023, Raghavendra Rao Ananta wrote:
-> The series is based off of upstream v6.5-rc1.
+On Mon, Aug 14, 2023 at 4:16?PM Sean Christopherson <seanjc@google.com> wrote:
+>
+> On Fri, Aug 11, 2023, Raghavendra Rao Ananta wrote:
+> > The series is based off of upstream v6.5-rc1.
+>
+> Lies!  :-)
+>
+> This is based off one of the kvmarm.git topic branches (I didn't bother to figure
+> out which one), not v6.5-rc1.
+>
+Sorry, what am I missing here? My git log is as follows:
 
-Lies!  :-)
+$ git log --oneline upstream_tlbi_range_v9
+5025857507abe (upstream_tlbi_range_v9) KVM: arm64: Use TLBI
+range-based instructions for unmap
+5c0291b99a8fc KVM: arm64: Invalidate the table entries upon a range
+8c46b54d4aaec KVM: arm64: Flush only the memslot after write-protect
+231abaeb7ffc2 KVM: arm64: Implement kvm_arch_flush_remote_tlbs_range()
+5ec291b863309 KVM: arm64: Define kvm_tlb_flush_vmid_range()
+5bcd7a085c34e KVM: arm64: Implement  __kvm_tlb_flush_vmid_range()
+ea08f9dff7e5b arm64: tlb: Implement __flush_s2_tlb_range_op()
+b3178687947c9 arm64: tlb: Refactor the core flush algorithm of __flush_tlb_range
+a4850fa988eef KVM: Move kvm_arch_flush_remote_tlbs_memslot() to common code
+306dc4e6afd37 KVM: Allow range-based TLB invalidation from common code
+d02785a0a1e01 KVM: Remove CONFIG_HAVE_KVM_ARCH_TLB_FLUSH_ALL
+136fa2d254537 KVM: arm64: Use kvm_arch_flush_remote_tlbs()
+e35c68a75170d KVM: Declare kvm_arch_flush_remote_tlbs() globally
+5d592777b9bba KVM: Rename kvm_arch_flush_remote_tlb() to
+kvm_arch_flush_remote_tlbs()
+06c2afb862f9d (tag: v6.5-rc1, tag: linux/v6.5-rc1) Linux 6.5-rc1
+c192ac7357683 MAINTAINERS 2: Electric Boogaloo
+f71f64210d698 Merge tag 'dma-mapping-6.5-2023-07-09' of
+git://git.infradead.org/users/hch/dma-mapping
+...
 
-This is based off one of the kvmarm.git topic branches (I didn't bother to figure
-out which one), not v6.5-rc1.
+Isn't the commit, 06c2afb862f9d (06c2afb862f9d (tag: v6.5-rc1, tag:
+linux/v6.5-rc1) Linux 6.5-rc1) the 'base' commit?
 
-Please try to incorporate git format-patch's "--base" option into your workflow,
-e.g. I do "git format-patch --base=HEAD~$nr" where $nr is the number of patches
-I am posting.
+Thank you.
+Raghavendra
 
-It's not foolproof, e.g. my approach doesn't help if I have a local patch that
-I'm not posting, but 99% of the time it Just Works and eliminates any ambuitity.
-
-You can also do "--base=auto", but that only does the right thing if your series
-has its upstream branch set to the base/tree that you want your patches applied
-to (I use the upstream branch for a completely different purpose for my dev branches).
+> Please try to incorporate git format-patch's "--base" option into your workflow,
+> e.g. I do "git format-patch --base=HEAD~$nr" where $nr is the number of patches
+> I am posting.
+>
+> It's not foolproof, e.g. my approach doesn't help if I have a local patch that
+> I'm not posting, but 99% of the time it Just Works and eliminates any ambuitity.
+>
+> You can also do "--base=auto", but that only does the right thing if your series
+> has its upstream branch set to the base/tree that you want your patches applied
+> to (I use the upstream branch for a completely different purpose for my dev branches).
 
