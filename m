@@ -1,33 +1,50 @@
-From: Sean Christopherson <seanjc@google.com>
-Date: Thu, 17 Aug 2023 17:08:36 -0700
-Subject: [PATCH] KVM: Wrap kvm_{gfn,hva}_range.pte in a per-action union
-In-Reply-To: <20230729004144.1054885-1-seanjc@google.com>
-References: <20230729004144.1054885-1-seanjc@google.com>
-Message-ID: <169229683179.1234886.15097906251075154792.b4-ty@google.com>
+From: Xu, Haibo1 <haibo1.xu@intel.com>
+Date: Fri, 18 Aug 2023 01:29:25 +0000
+Subject: [PATCH 1/2] MAINTAINERS: RISC-V: KVM: Add another kselftests path
+In-Reply-To: <20230817162344.17076-5-ajones@ventanamicro.com>
+References: <20230817162344.17076-4-ajones@ventanamicro.com>
+ <20230817162344.17076-5-ajones@ventanamicro.com>
+Message-ID: <BY5PR11MB390964AB15E7BB3C64EE3DA7B01BA@BY5PR11MB3909.namprd11.prod.outlook.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, 28 Jul 2023 17:41:44 -0700, Sean Christopherson wrote:
-> Wrap kvm_{gfn,hva}_range.pte in a union so that future notifier events can
-> pass event specific information up and down the stack without needing to
-> constantly expand and churn the APIs.  Lockless aging of SPTEs will pass
-> around a bitmap, and support for memory attributes will pass around the
-> new attributes for the range.
+> -----Original Message-----
+> From: Andrew Jones <ajones@ventanamicro.com>
+> Sent: Friday, August 18, 2023 12:24 AM
+> To: kvm-riscv at lists.infradead.org; linux-riscv at lists.infradead.org
+> Cc: anup at brainfault.org; atishp at atishpatra.org; Xu, Haibo1
+> <haibo1.xu@intel.com>; paul.walmsley at sifive.com; palmer at dabbelt.com;
+> aou at eecs.berkeley.edu
+> Subject: [PATCH 1/2] MAINTAINERS: RISC-V: KVM: Add another kselftests path
 > 
-> Add a "KVM_NO_ARG" placeholder to simplify handling events without an
-> argument (creating a dummy union variable is midly annoying).
+> With the introduction of the get-reg-list test for riscv, another directory has
+> been added that should be tracked by riscv kvm maintainers.
 > 
-> [...]
+> Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
+> ---
+>  MAINTAINERS | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 0f966f05fb0d..8fc9e6e7f207 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -11463,6 +11463,7 @@ F:	arch/riscv/include/asm/kvm*
+>  F:	arch/riscv/include/uapi/asm/kvm*
+>  F:	arch/riscv/kvm/
+>  F:	tools/testing/selftests/kvm/*/riscv/
+> +F:	tools/testing/selftests/kvm/riscv/
+> 
+LGTM!
 
-Applied to kvm-x86 generic, with KVM_MMU_NOTIFIER_NO_ARG as suggested by Oliver.
+Thanks,
+Haibo
+>  KERNEL VIRTUAL MACHINE for s390 (KVM/s390)
+>  M:	Christian Borntraeger <borntraeger@linux.ibm.com>
+> --
+> 2.41.0
 
-[1/1] KVM: Wrap kvm_{gfn,hva}_range.pte in a per-action union
-      https://github.com/kvm-x86/linux/commit/3e1efe2b67d3
-
---
-https://github.com/kvm-x86/linux/tree/next
-https://github.com/kvm-x86/linux/tree/fixes
 
