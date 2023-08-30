@@ -1,49 +1,189 @@
-From: Haibo Xu <xiaobo55x@gmail.com>
-Date: Tue, 29 Aug 2023 13:04:18 +0800
-Subject: [PATCH 0/4] RISCV: Add kvm Sstc timer selftest
-In-Reply-To: <ZOyqRfdvxpdtSE1c@google.com>
-References: <cover.1690364259.git.haibo1.xu@intel.com> <ZMrVrXlvu/FJEayx@google.com>
- <CAJve8onbxHjJoC-k-TtOm1BBtjm38moaW-Kk8siKsxt9nwZZZw@mail.gmail.com> <ZOyqRfdvxpdtSE1c@google.com>
-Message-ID: <CAJve8o=rFrVKxpaLLaJ8_KKQxMvyOOgVJn8qk715ymH8dpQ3MA@mail.gmail.com>
+From: Binbin Wu <binbin.wu@linux.intel.com>
+Date: Wed, 30 Aug 2023 23:12:19 +0800
+Subject: [RFC PATCH v11 12/29] KVM: Add KVM_CREATE_GUEST_MEMFD ioctl() for
+ guest-specific backing memory
+In-Reply-To: <20230718234512.1690985-13-seanjc@google.com>
+References: <20230718234512.1690985-1-seanjc@google.com>
+ <20230718234512.1690985-13-seanjc@google.com>
+Message-ID: <30ffe039-c9e2-b996-500d-5e11bf6ea789@linux.intel.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Aug 28, 2023 at 10:08?PM Sean Christopherson <seanjc@google.com> wrote:
->
-> On Sun, Aug 27, 2023, Haibo Xu wrote:
-> > On Thu, Aug 3, 2023 at 6:16?AM Sean Christopherson <seanjc@google.com> wrote:
-> > >
-> > > On Thu, Jul 27, 2023, Haibo Xu wrote:
-> > > > The sstc_timer selftest is used to validate Sstc timer functionality
-> > > > in a guest, which sets up periodic timer interrupts and check the
-> > > > basic interrupt status upon its receipt.
-> > > >
-> > > > This KVM selftest was ported from aarch64 arch_timer and tested
-> > > > with Linux v6.5-rc3 on a Qemu riscv64 virt machine.
-> > > >
-> > > > Haibo Xu (4):
-> > > >   tools: riscv: Add header file csr.h
-> > > >   KVM: riscv: selftests: Add exception handling support
-> > > >   KVM: riscv: selftests: Add guest helper to get vcpu id
-> > > >   KVM: riscv: selftests: Add sstc_timer test
-> > >
-> > > FYI, patch 4 will conflict with the in-flight guest printf changes[*], as will
-> > > reworking the existing arch_timer test.  My plan is to create an immutable tag
-> > > later this week (waiting to make sure nothing explodes).  I highly recommend basing
-> > > v2 on top of that.
-> > >
-> >
-> > Hi Sean,
-> >
-> > Could you help point me to the immutable tag for the guest printf changes?
->
-> Sorry, I forgot to create the tag until last week, probably made it a bit hard to
-> find...
->
->   https://github.com/kvm-x86/linux.git tags/kvm-x86-selftests-immutable-6.6
 
-Thanks!
+
+On 7/19/2023 7:44 AM, Sean Christopherson wrote:
+
+[...]
+> +
+> +static struct folio *kvm_gmem_get_folio(struct file *file, pgoff_t index)
+> +{
+> +	struct folio *folio;
+> +
+> +	/* TODO: Support huge pages. */
+> +	folio = filemap_grab_folio(file->f_mapping, index);
+> +	if (!folio)
+Should use? if ((IS_ERR(folio)) instead.
+
+> +		return NULL;
+> +
+> +	/*
+> +	 * Use the up-to-date flag to track whether or not the memory has been
+> +	 * zeroed before being handed off to the guest.  There is no backing
+> +	 * storage for the memory, so the folio will remain up-to-date until
+> +	 * it's removed.
+> +	 *
+> +	 * TODO: Skip clearing pages when trusted firmware will do it when
+> +	 * assigning memory to the guest.
+> +	 */
+> +	if (!folio_test_uptodate(folio)) {
+> +		unsigned long nr_pages = folio_nr_pages(folio);
+> +		unsigned long i;
+> +
+> +		for (i = 0; i < nr_pages; i++)
+> +			clear_highpage(folio_page(folio, i));
+> +
+> +		folio_mark_uptodate(folio);
+> +	}
+> +
+> +	/*
+> +	 * Ignore accessed, referenced, and dirty flags.  The memory is
+> +	 * unevictable and there is no storage to write back to.
+> +	 */
+> +	return folio;
+> +}
+[...]
+> +
+> +static long kvm_gmem_allocate(struct inode *inode, loff_t offset, loff_t len)
+> +{
+> +	struct address_space *mapping = inode->i_mapping;
+> +	pgoff_t start, index, end;
+> +	int r;
+> +
+> +	/* Dedicated guest is immutable by default. */
+> +	if (offset + len > i_size_read(inode))
+> +		return -EINVAL;
+> +
+> +	filemap_invalidate_lock_shared(mapping);
+> +
+> +	start = offset >> PAGE_SHIFT;
+> +	end = (offset + len) >> PAGE_SHIFT;
+> +
+> +	r = 0;
+> +	for (index = start; index < end; ) {
+> +		struct folio *folio;
+> +
+> +		if (signal_pending(current)) {
+> +			r = -EINTR;
+> +			break;
+> +		}
+> +
+> +		folio = kvm_gmem_get_folio(inode, index);
+> +		if (!folio) {
+> +			r = -ENOMEM;
+> +			break;
+> +		}
+> +
+> +		index = folio_next_index(folio);
+> +
+> +		folio_unlock(folio);
+> +		folio_put(folio);
+May be a dumb question, why we get the folio and then put it immediately?
+Will it make the folio be released back to the page allocator?
+
+> +
+> +		/* 64-bit only, wrapping the index should be impossible. */
+> +		if (WARN_ON_ONCE(!index))
+> +			break;
+> +
+> +		cond_resched();
+> +	}
+> +
+> +	filemap_invalidate_unlock_shared(mapping);
+> +
+> +	return r;
+> +}
+> +
+[...]
+> +
+> +int kvm_gmem_bind(struct kvm *kvm, struct kvm_memory_slot *slot,
+> +		  unsigned int fd, loff_t offset)
+> +{
+> +	loff_t size = slot->npages << PAGE_SHIFT;
+> +	unsigned long start, end, flags;
+> +	struct kvm_gmem *gmem;
+> +	struct inode *inode;
+> +	struct file *file;
+> +
+> +	BUILD_BUG_ON(sizeof(gfn_t) != sizeof(slot->gmem.pgoff));
+> +
+> +	file = fget(fd);
+> +	if (!file)
+> +		return -EINVAL;
+> +
+> +	if (file->f_op != &kvm_gmem_fops)
+> +		goto err;
+> +
+> +	gmem = file->private_data;
+> +	if (gmem->kvm != kvm)
+> +		goto err;
+> +
+> +	inode = file_inode(file);
+> +	flags = (unsigned long)inode->i_private;
+> +
+> +	/*
+> +	 * For simplicity, require the offset into the file and the size of the
+> +	 * memslot to be aligned to the largest possible page size used to back
+> +	 * the file (same as the size of the file itself).
+> +	 */
+> +	if (!kvm_gmem_is_valid_size(offset, flags) ||
+> +	    !kvm_gmem_is_valid_size(size, flags))
+> +		goto err;
+> +
+> +	if (offset + size > i_size_read(inode))
+> +		goto err;
+> +
+> +	filemap_invalidate_lock(inode->i_mapping);
+> +
+> +	start = offset >> PAGE_SHIFT;
+> +	end = start + slot->npages;
+> +
+> +	if (!xa_empty(&gmem->bindings) &&
+> +	    xa_find(&gmem->bindings, &start, end - 1, XA_PRESENT)) {
+> +		filemap_invalidate_unlock(inode->i_mapping);
+> +		goto err;
+> +	}
+> +
+> +	/*
+> +	 * No synchronize_rcu() needed, any in-flight readers are guaranteed to
+> +	 * be see either a NULL file or this new file, no need for them to go
+> +	 * away.
+> +	 */
+> +	rcu_assign_pointer(slot->gmem.file, file);
+> +	slot->gmem.pgoff = start;
+> +
+> +	xa_store_range(&gmem->bindings, start, end - 1, slot, GFP_KERNEL);
+> +	filemap_invalidate_unlock(inode->i_mapping);
+> +
+> +	/*
+> +	 * Drop the reference to the file, even on success.  The file pins KVM,
+> +	 * not the other way 'round.  Active bindings are invalidated if the
+an extra ',? or maybe around?
+
+
+> +	 * file is closed before memslots are destroyed.
+> +	 */
+> +	fput(file);
+> +	return 0;
+> +
+> +err:
+> +	fput(file);
+> +	return -EINVAL;
+> +}
+> +
+[...]
+> []
+
 
