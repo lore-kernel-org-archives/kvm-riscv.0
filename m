@@ -1,76 +1,121 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Fri, 1 Sep 2023 10:03:40 +0200
-Subject: [GIT PULL] KVM/riscv changes for 6.6
-In-Reply-To: <CABgObfbHSkoavDYqKhhotn0cOFr+x2QRYD4NN9v_55tK4nxQoQ@mail.gmail.com>
-References: <CAAhSdy2XiFD1QC+v_UZ5G0TAhmT8uH48=UQdu6=bL=EPWy+2Kg@mail.gmail.com>
- <CABgObfbHSkoavDYqKhhotn0cOFr+x2QRYD4NN9v_55tK4nxQoQ@mail.gmail.com>
-Message-ID: <20230901-a316e896c1355315c18dbe41@orel>
+From: Vlastimil Babka <vbabka@suse.cz>
+Date: Fri,  1 Sep 2023 10:20:26 +0200
+Subject: [PATCH gmem FIXUP] mm, compaction: make testing mapping_unmovable() safe
+Message-ID: <20230901082025.20548-2-vbabka@suse.cz>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Aug 31, 2023 at 07:28:41PM +0200, Paolo Bonzini wrote:
-> On Wed, Aug 23, 2023 at 7:25?PM Anup Patel <anup@brainfault.org> wrote:
-> >
-> > Hi Paolo,
-> >
-> > We have the following KVM RISC-V changes for 6.6:
-> > 1) Zba, Zbs, Zicntr, Zicsr, Zifencei, and Zihpm support for Guest/VM
-> > 2) Added ONE_REG interface for SATP mode
-> > 3) Added ONE_REG interface to enable/disable multiple ISA extensions
-> > 4) Improved error codes returned by ONE_REG interfaces
-> > 5) Added KVM_GET_REG_LIST ioctl() implementation for KVM RISC-V
-> > 6) Added get-reg-list selftest for KVM RISC-V
-> >
-> > Please pull.
-> >
-> > Regards,
-> > Anup
-> >
-> > The following changes since commit 52a93d39b17dc7eb98b6aa3edb93943248e03b2f:
-> >
-> >   Linux 6.5-rc5 (2023-08-06 15:07:51 -0700)
-> >
-> > are available in the Git repository at:
-> >
-> >   https://github.com/kvm-riscv/linux.git tags/kvm-riscv-6.6-1
-> >
-> > for you to fetch changes up to 477069398ed6e0498ee243e799cb6c68baf6ccb8:
-> >
-> >   KVM: riscv: selftests: Add get-reg-list test (2023-08-09 12:15:27 +0530)
-> >
-> > ----------------------------------------------------------------
-> > KVM/riscv changes for 6.6
-> >
-> > - Zba, Zbs, Zicntr, Zicsr, Zifencei, and Zihpm support for Guest/VM
-> > - Added ONE_REG interface for SATP mode
-> > - Added ONE_REG interface to enable/disable multiple ISA extensions
-> > - Improved error codes returned by ONE_REG interfaces
-> > - Added KVM_GET_REG_LIST ioctl() implementation for KVM RISC-V
-> > - Added get-reg-list selftest for KVM RISC-V
-> >
-> > ----------------------------------------------------------------
-> > Andrew Jones (9):
-> >       RISC-V: KVM: Improve vector save/restore errors
-> >       RISC-V: KVM: Improve vector save/restore functions
-> >       KVM: arm64: selftests: Replace str_with_index with strdup_printf
-> >       KVM: arm64: selftests: Drop SVE cap check in print_reg
-> >       KVM: arm64: selftests: Remove print_reg's dependency on vcpu_config
-> >       KVM: arm64: selftests: Rename vcpu_config and add to kvm_util.h
-> >       KVM: arm64: selftests: Delete core_reg_fixup
-> >       KVM: arm64: selftests: Split get-reg-list test code
-> >       KVM: arm64: selftests: Finish generalizing get-reg-list
-> 
-> Pulled, thanks, but I'll give a closer look to these patches after
-> kicking the long-running tests. It would have been nicer to get an
-> Acked-by from either me or Marc or Oliver, but no huge deal.
+As Kirill pointed out, mapping can be removed under us due to
+truncation. Test it under folio lock as already done for the async
+compaction / dirty folio case. To prevent locking every folio with
+mapping to do the test, do it only for unevictable folios, as we can
+expect the unmovable mapping folios are also unevictable - it is the
+case for guest memfd folios.
 
-FWIW, we got a "seems fine" from Marc [1].
+Also incorporate comment update suggested by Matthew.
 
-https://lore.kernel.org/all/87y1ilpz3m.wl-maz at kernel.org/
+Fixes: 3424873596ce ("mm: Add AS_UNMOVABLE to mark mapping as completely unmovable")
+Signed-off-by: Vlastimil Babka <vbabka@suse.cz>
+---
+Feel free to squash into 3424873596ce.
 
-Thanks,
-drew
+ mm/compaction.c | 49 ++++++++++++++++++++++++++++++++-----------------
+ 1 file changed, 32 insertions(+), 17 deletions(-)
+
+diff --git a/mm/compaction.c b/mm/compaction.c
+index a3d2b132df52..e0e439b105b5 100644
+--- a/mm/compaction.c
++++ b/mm/compaction.c
+@@ -862,6 +862,7 @@ isolate_migratepages_block(struct compact_control *cc, unsigned long low_pfn,
+ 
+ 	/* Time to isolate some pages for migration */
+ 	for (; low_pfn < end_pfn; low_pfn++) {
++		bool is_dirty, is_unevictable;
+ 
+ 		if (skip_on_failure && low_pfn >= next_skip_pfn) {
+ 			/*
+@@ -1047,10 +1048,6 @@ isolate_migratepages_block(struct compact_control *cc, unsigned long low_pfn,
+ 		if (!mapping && (folio_ref_count(folio) - 1) > folio_mapcount(folio))
+ 			goto isolate_fail_put;
+ 
+-		/* The mapping truly isn't movable. */
+-		if (mapping && mapping_unmovable(mapping))
+-			goto isolate_fail_put;
+-
+ 		/*
+ 		 * Only allow to migrate anonymous pages in GFP_NOFS context
+ 		 * because those do not depend on fs locks.
+@@ -1062,8 +1059,10 @@ isolate_migratepages_block(struct compact_control *cc, unsigned long low_pfn,
+ 		if (!folio_test_lru(folio))
+ 			goto isolate_fail_put;
+ 
++		is_unevictable = folio_test_unevictable(folio);
++
+ 		/* Compaction might skip unevictable pages but CMA takes them */
+-		if (!(mode & ISOLATE_UNEVICTABLE) && folio_test_unevictable(folio))
++		if (!(mode & ISOLATE_UNEVICTABLE) && is_unevictable)
+ 			goto isolate_fail_put;
+ 
+ 		/*
+@@ -1075,26 +1074,42 @@ isolate_migratepages_block(struct compact_control *cc, unsigned long low_pfn,
+ 		if ((mode & ISOLATE_ASYNC_MIGRATE) && folio_test_writeback(folio))
+ 			goto isolate_fail_put;
+ 
+-		if ((mode & ISOLATE_ASYNC_MIGRATE) && folio_test_dirty(folio)) {
+-			bool migrate_dirty;
++		is_dirty = folio_test_dirty(folio);
++
++		if (((mode & ISOLATE_ASYNC_MIGRATE) && is_dirty)
++		    || (mapping && is_unevictable)) {
++			bool migrate_dirty = true;
++			bool is_unmovable;
+ 
+ 			/*
+-			 * Only pages without mappings or that have a
+-			 * ->migrate_folio callback are possible to migrate
+-			 * without blocking. However, we can be racing with
+-			 * truncation so it's necessary to lock the page
+-			 * to stabilise the mapping as truncation holds
+-			 * the page lock until after the page is removed
+-			 * from the page cache.
++			 * Only folios without mappings or that have
++			 * a ->migrate_folio callback are possible to migrate
++			 * without blocking.
++			 *
++			 * Folios from unmovable mappings are not migratable.
++			 *
++			 * However, we can be racing with truncation, which can
++			 * free the mapping that we need to check. Truncation
++			 * holds the folio lock until after the folio is removed
++			 * from the page so holding it ourselves is sufficient.
++			 *
++			 * To avoid this folio locking to inspect every folio
++			 * with mapping for being unmovable, we assume every
++			 * such folio is also unevictable, which is a cheaper
++			 * test. If our assumption goes wrong, it's not a bug,
++			 * just potentially wasted cycles.
+ 			 */
+ 			if (!folio_trylock(folio))
+ 				goto isolate_fail_put;
+ 
+ 			mapping = folio_mapping(folio);
+-			migrate_dirty = !mapping ||
+-					mapping->a_ops->migrate_folio;
++			if ((mode & ISOLATE_ASYNC_MIGRATE) && is_dirty) {
++				migrate_dirty = !mapping ||
++						mapping->a_ops->migrate_folio;
++			}
++			is_unmovable = mapping && mapping_unmovable(mapping);
+ 			folio_unlock(folio);
+-			if (!migrate_dirty)
++			if (!migrate_dirty || is_unmovable)
+ 				goto isolate_fail_put;
+ 		}
+ 
+-- 
+2.41.0
+
 
