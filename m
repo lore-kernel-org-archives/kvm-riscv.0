@@ -1,37 +1,32 @@
-From: Ackerley Tng <ackerleytng@google.com>
-Date: Fri, 01 Sep 2023 16:46:31 +0000
-Subject: [RFC PATCH v11 12/29] KVM: Add KVM_CREATE_GUEST_MEMFD ioctl() for
- guest-specific backing memory
-In-Reply-To: <f7aaf097-6f83-0ee9-e16d-713d392b2299@linux.intel.com> (message
- from Binbin Wu on Fri, 1 Sep 2023 11:45:43 +0800)
-Message-ID: <diqz34zxg7tk.fsf@ackerleytng-ctop.c.googlers.com>
+From: kirill.shutemov@linux.intel.com <kirill.shutemov@linux.intel.com>
+Date: Sat, 2 Sep 2023 00:05:55 +0300
+Subject: [PATCH gmem FIXUP] mm, compaction: make testing
+ mapping_unmovable() safe
+In-Reply-To: <20230901082025.20548-2-vbabka@suse.cz>
+References: <20230901082025.20548-2-vbabka@suse.cz>
+Message-ID: <20230901210555.j5d5a4azmkxzlnn2@box.shutemov.name>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Binbin Wu <binbin.wu@linux.intel.com> writes:
+On Fri, Sep 01, 2023 at 10:20:26AM +0200, Vlastimil Babka wrote:
+> As Kirill pointed out, mapping can be removed under us due to
+> truncation. Test it under folio lock as already done for the async
+> compaction / dirty folio case. To prevent locking every folio with
+> mapping to do the test, do it only for unevictable folios, as we can
+> expect the unmovable mapping folios are also unevictable - it is the
+> case for guest memfd folios.
+> 
+> Also incorporate comment update suggested by Matthew.
+> 
+> Fixes: 3424873596ce ("mm: Add AS_UNMOVABLE to mark mapping as completely unmovable")
+> Signed-off-by: Vlastimil Babka <vbabka@suse.cz>
 
-> <snip>
->
->>
->> I'm not sure whose refcount the folio_put() in kvm_gmem_allocate() is
->> dropping though:
->>
->> + The refcount for the filemap depends on whether this is a hugepage or
->>    not, but folio_put() strictly drops a refcount of 1.
->> + The refcount for the lru list is just 1, but doesn't the page still
->>    remain in the lru list?
->
-> I guess the refcount drop here is the one get on the fresh allocation.
-> Now the filemap has grabbed the folio, so the lifecycle of the folio now 
-> is decided by the filemap/inode?
->
+Superficially looks good to me. But I don't really understand this
+code path to Ack.
 
-This makes sense! So folio_put() here is saying, I'm not using this
-folio anymore, but the filemap and the lru list are stil using the
-folio.
-
-> <snip>
+-- 
+  Kiryl Shutsemau / Kirill A. Shutemov
 
