@@ -1,27 +1,65 @@
-From: Matthew Wilcox <willy@infradead.org>
-Date: Sat, 2 Sep 2023 14:59:24 +0100
-Subject: [PATCH gmem FIXUP] mm, compaction: make testing
- mapping_unmovable() safe
-In-Reply-To: <20230901082025.20548-2-vbabka@suse.cz>
-References: <20230901082025.20548-2-vbabka@suse.cz>
-Message-ID: <ZPM/vJnwI4bi9bo2@casper.infradead.org>
+From: Andrew Jones <ajones@ventanamicro.com>
+Date: Mon, 4 Sep 2023 13:15:56 +0200
+Subject: [PATCH v2 1/8] KVM: selftests: Unify the codes for guest
+ exception handling
+In-Reply-To: <7affb0387d7272573f7093de7887872e1fb5979b.1693659382.git.haibo1.xu@intel.com>
+References: <cover.1693659382.git.haibo1.xu@intel.com>
+ <7affb0387d7272573f7093de7887872e1fb5979b.1693659382.git.haibo1.xu@intel.com>
+Message-ID: <20230904-ba5051a5bf17d17f2711d7dc@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Sep 01, 2023 at 10:20:26AM +0200, Vlastimil Babka wrote:
-> As Kirill pointed out, mapping can be removed under us due to
-> truncation. Test it under folio lock as already done for the async
-> compaction / dirty folio case. To prevent locking every folio with
-> mapping to do the test, do it only for unevictable folios, as we can
-> expect the unmovable mapping folios are also unevictable - it is the
-> case for guest memfd folios.
+On Sat, Sep 02, 2023 at 08:59:23PM +0800, Haibo Xu wrote:
+> Rename the vm_init_descriptor_tables() and vcpu_init_vector_tables()
+                                             ^ vcpu_init_descriptor_tables()
+
+> prototypes to vm_init_vector_tables() and vcpu_init_vector_tables()
+> respectively, so that we can use common names for the architectures
+> (x86/aarch64/riscv) and then put them in a common header.
 > 
-> Also incorporate comment update suggested by Matthew.
+> By the way, vm_install_exception_handler() prototype were also moved to
+> the common header since they are commonly used across the architectures.
+> 
+> The patch is a preparation to share the guest exception handling codes
+> in riscv.
+> 
+> Suggested-by: Andrew Jones <ajones@ventanamicro.com>
+> Suggested-by: Sean Christopherson <seanjc@google.com>
+> Signed-off-by: Haibo Xu <haibo1.xu@intel.com>
+> ---
+>  tools/testing/selftests/kvm/aarch64/arch_timer.c          | 4 ++--
+>  tools/testing/selftests/kvm/aarch64/debug-exceptions.c    | 4 ++--
+>  tools/testing/selftests/kvm/aarch64/page_fault_test.c     | 4 ++--
+>  tools/testing/selftests/kvm/aarch64/vgic_irq.c            | 4 ++--
+>  tools/testing/selftests/kvm/include/aarch64/processor.h   | 8 +-------
+>  tools/testing/selftests/kvm/include/kvm_util_base.h       | 7 +++++++
+>  tools/testing/selftests/kvm/include/x86_64/processor.h    | 5 -----
+>  tools/testing/selftests/kvm/lib/aarch64/processor.c       | 6 +++---
+>  tools/testing/selftests/kvm/lib/x86_64/processor.c        | 4 ++--
+>  tools/testing/selftests/kvm/x86_64/amx_test.c             | 4 ++--
+>  tools/testing/selftests/kvm/x86_64/fix_hypercall_test.c   | 4 ++--
+>  tools/testing/selftests/kvm/x86_64/hyperv_evmcs.c         | 4 ++--
+>  tools/testing/selftests/kvm/x86_64/hyperv_features.c      | 8 ++++----
+>  tools/testing/selftests/kvm/x86_64/hyperv_ipi.c           | 6 +++---
+>  tools/testing/selftests/kvm/x86_64/kvm_pv_test.c          | 4 ++--
+>  tools/testing/selftests/kvm/x86_64/monitor_mwait_test.c   | 4 ++--
+>  .../testing/selftests/kvm/x86_64/pmu_event_filter_test.c  | 8 ++++----
+>  .../kvm/x86_64/smaller_maxphyaddr_emulation_test.c        | 4 ++--
+>  tools/testing/selftests/kvm/x86_64/svm_int_ctl_test.c     | 4 ++--
+>  .../selftests/kvm/x86_64/svm_nested_shutdown_test.c       | 4 ++--
+>  .../selftests/kvm/x86_64/svm_nested_soft_inject_test.c    | 4 ++--
+>  tools/testing/selftests/kvm/x86_64/ucna_injection_test.c  | 8 ++++----
+>  .../selftests/kvm/x86_64/userspace_msr_exit_test.c        | 4 ++--
+>  .../kvm/x86_64/vmx_exception_with_invalid_guest_state.c   | 4 ++--
+>  tools/testing/selftests/kvm/x86_64/vmx_pmu_caps_test.c    | 4 ++--
+>  tools/testing/selftests/kvm/x86_64/xapic_ipi_test.c       | 4 ++--
+>  tools/testing/selftests/kvm/x86_64/xcr0_cpuid_test.c      | 4 ++--
+>  tools/testing/selftests/kvm/x86_64/xen_shinfo_test.c      | 4 ++--
+>  28 files changed, 66 insertions(+), 70 deletions(-)
+>
 
-In the meantime, 866ff80176aa went upstream earlier this merge window,
-so it's going to have some conflicts.
-
+Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
 
