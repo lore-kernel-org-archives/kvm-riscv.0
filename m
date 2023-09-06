@@ -1,32 +1,70 @@
-From: Vlastimil Babka <vbabka@suse.cz>
-Date: Wed, 6 Sep 2023 10:00:56 +0200
-Subject: [PATCH gmem FIXUP] mm, compaction: make testing
- mapping_unmovable() safe
-In-Reply-To: <ZPfAL0D95AwXD9tg@google.com>
-References: <20230901082025.20548-2-vbabka@suse.cz>
- <ZPfAL0D95AwXD9tg@google.com>
-Message-ID: <bcefb739-b45c-8349-8010-ac137ab61c29@suse.cz>
+From: Haibo Xu <xiaobo55x@gmail.com>
+Date: Wed, 6 Sep 2023 17:01:00 +0800
+Subject: [PATCH v2 2/8] KVM: arm64: selftest: Split arch_timer test code
+In-Reply-To: <20230906-3f0318fa20365f9211998bae@orel>
+References: <cover.1693659382.git.haibo1.xu@intel.com> <c87337cfd7fb135e2efed589360a78c26a402eac.1693659382.git.haibo1.xu@intel.com>
+ <20230904-11e853ffe3d8e9cf9ec6079d@orel> <CAJve8onwjBQcbVy75qyOF3A51-T0WyBkmeCV_wOZvzaPcrBVFg@mail.gmail.com>
+ <CAJve8ok-zZAG7T3t5XD-CtJn47tTE867Xaaw_YHYy1XmUL41rw@mail.gmail.com> <20230906-3f0318fa20365f9211998bae@orel>
+Message-ID: <CAJve8omsTQB04dZDCtK=0Fz3ExTuPFVQKvxz9Du5WyfqOwnuSg@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 9/6/23 01:56, Sean Christopherson wrote:
-> On Fri, Sep 01, 2023, Vlastimil Babka wrote:
->> As Kirill pointed out, mapping can be removed under us due to
->> truncation. Test it under folio lock as already done for the async
->> compaction / dirty folio case. To prevent locking every folio with
->> mapping to do the test, do it only for unevictable folios, as we can
->> expect the unmovable mapping folios are also unevictable - it is the
->> case for guest memfd folios.
-> 
-> Rather than expect/assume that unmovable mappings are always unevictable, how about
-> requiring that?  E.g. either through a VM_WARN_ON in mapping_set_unmovable(), or by
-> simply having that helper forcefully set AS_UNEVICTABLE as well.
+On Wed, Sep 6, 2023 at 3:01?PM Andrew Jones <ajones@ventanamicro.com> wrote:
+>
+> On Wed, Sep 06, 2023 at 11:44:26AM +0800, Haibo Xu wrote:
+> > On Wed, Sep 6, 2023 at 10:14?AM Haibo Xu <xiaobo55x@gmail.com> wrote:
+> > >
+> > > On Mon, Sep 4, 2023 at 9:24?PM Andrew Jones <ajones@ventanamicro.com> wrote:
+> ...
+> > > > > +
+> > > > > +enum guest_stage {
+> > > > > +     GUEST_STAGE_VTIMER_CVAL=1,
+> > > > > +     GUEST_STAGE_VTIMER_TVAL,
+> > > > > +     GUEST_STAGE_PTIMER_CVAL,
+> > > > > +     GUEST_STAGE_PTIMER_TVAL,
+> > > > > +     GUEST_STAGE_MAX,
+> > > > > +};
+> > > >
+> > > > This enum also belongs in aarch64/arch_timer.c
+> > > >
+> > >
+> > > Yes, it should be in aarch64/arch_timer.c
+> > >
+> >
+> > After moving the above enum definition to aarch64/arch_timer.c, the
+> > below errors was reported
+> > while compiling kvm/arch_timer.o
+> >
+> > include/timer_test.h:37:26: error: field ?guest_stage? has incomplete type
+> >    37 |         enum guest_stage guest_stage;
+> >         |                                        ^~~~~~~~~~~
+> >
+> > Since kvm/arch_timer.c was independent of kvm/aarch64/arch_timer.c
+> > during OBJ compiling,
+> > I think it may be not possible to move the enum definition to
+> > aarch64/arch_timer.c
+> >
+> > If we keep the definition in this header file, we can enclose it with
+> > #ifdef __aarch64__ for aarch64 only.
+> >
+>
+> Let's change struct test_vcpu_shared_data to
+>
+>  struct test_vcpu_shared_data {
+>         int nr_iter;
+>         int guest_stage;
+>         uint64_t xcnt;
+>  };
+>
+> and then let the aarch64 code treat guest_stage as an enum and the riscv
+> code can completely ignore it (no need to create an unused enum).
+>
 
-Yeah I guess we could make the helper do that, with a comment, as gmem is
-the only user right now. And if in the future somebody has case where it
-makes sense to have unmovable without unevictable, we can discuss what to do
-about it then.
+Good idea! Will fix it in v3.
+
+> Thanks,
+> drew
 
