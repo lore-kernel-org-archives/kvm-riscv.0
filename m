@@ -1,44 +1,37 @@
-From: Charlie Jenkins <charlie@rivosinc.com>
-Date: Wed, 6 Sep 2023 11:51:05 -0700
-Subject: [PATCH 00/10] RISC-V: Refactor instructions
-In-Reply-To: <20230818-63347af7195b7385c146778d@orel>
-References: <ZN5OJO/xOWUjLK2w@ghost>
- <mhng-7d609dde-ad47-42ed-a47b-6206e719020a@palmer-ri-x1c9a>
- <20230818-63347af7195b7385c146778d@orel>
-Message-ID: <ZPjKGd7VstwIKDV5@ghost>
+From: Paolo Bonzini <pbonzini@redhat.com>
+Date: Thu, 7 Sep 2023 00:10:13 +0200
+Subject: [RFC PATCH v11 13/29] KVM: Add transparent hugepage support for
+ dedicated guest memory
+In-Reply-To: <ZLq8ylTsFQ1s4BAZ@google.com>
+References: <20230718234512.1690985-1-seanjc@google.com> <20230718234512.1690985-14-seanjc@google.com>
+ <84a908ae-04c7-51c7-c9a8-119e1933a189@redhat.com> <ZLq8ylTsFQ1s4BAZ@google.com>
+Message-ID: <CABgObfYLuRx5oAfOKM1fNuyRw5BNhe127sbRYhmpoT9MsjMYQQ@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Aug 18, 2023 at 09:30:32AM +0200, Andrew Jones wrote:
-> On Thu, Aug 17, 2023 at 10:52:22AM -0700, Palmer Dabbelt wrote:
-> > On Thu, 17 Aug 2023 09:43:16 PDT (-0700), Charlie Jenkins wrote:
-> ...
-> > > It seems to me that it will be significantly more challenging to use
-> > > riscv-opcodes than it would for people to just hand create the macros
-> > > that they need.
-> > 
-> > Ya, riscv-opcodes is pretty custy.  We stopped using it elsewhere ages ago.
-> 
-> Ah, pity I didn't know the history of it or I wouldn't have suggested it,
-> wasting Charlie's time (sorry, Charlie!). So everywhere that needs
-> encodings are manually scraping them from the PDFs? Or maybe we can write
-> our own parser which converts adoc/wavedrom files[1] to Linux C?
-> 
-> [1] https://github.com/riscv/riscv-isa-manual/tree/main/src/images/wavedrom
+On Fri, Jul 21, 2023 at 7:13?PM Sean Christopherson <seanjc@google.com> wrote:
+> On Fri, Jul 21, 2023, Paolo Bonzini wrote:
+> > On 7/19/23 01:44, Sean Christopherson wrote:
+> > > @@ -413,6 +454,9 @@ int kvm_gmem_create(struct kvm *kvm, struct kvm_create_guest_memfd *args)
+> > >     u64 flags = args->flags;
+> > >     u64 valid_flags = 0;
+> > > +   if (IS_ENABLED(CONFIG_TRANSPARENT_HUGEPAGE))
+> > > +           valid_flags |= KVM_GUEST_MEMFD_ALLOW_HUGEPAGE;
+> > > +
+> >
+> > I think it should be always allowed.  The outcome would just be "never have
+> > a hugepage" if thp is not enabled in the kernel.
+>
+> I don't have a strong preference.  My thinking was that userspace would probably
+> rather have an explicit error, as opposed to silently running with a misconfigured
+> setup.
 
-The problem with the wavedrom files is that there are no standard for
-how each instruction is identified. The title of of the adoc gives some
-insight and there is generally a funct3 or specific opcode that is
-associated with the instruction but it would be kind of messy to write a
-script to parse that. I think manually constructing the instructions is
-fine. When somebody wants to add a new instruction they probably will
-not need to add very many at a time, so it should be only a couple of
-lines that they will be able to test.
+Considering that is how madvise(MADV_HUGEPAGE) behaves, your patch is
+good. I disagree but consistency is better.
 
-> 
-> Thanks,
-> drew
+Paolo
+
 
