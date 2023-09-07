@@ -1,78 +1,81 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Thu, 7 Sep 2023 11:01:42 +0200
+From: Haibo Xu <xiaobo55x@gmail.com>
+Date: Thu, 7 Sep 2023 17:18:25 +0800
 Subject: [PATCH v2 7/8] KVM: riscv: selftest: Change vcpu_has_ext to a
  common function
-In-Reply-To: <CAJve8om+dLcG+4trDfG1yx8vhj52RhPZrJoF-emWDX+OPM088A@mail.gmail.com>
-References: <cover.1693659382.git.haibo1.xu@intel.com>
- <b6ef1b031e3a581f481cf19a26623388163444b4.1693659382.git.haibo1.xu@intel.com>
- <20230904-aa8b0d8d23d391586686038a@orel>
- <CAJve8ok5cU+h1K+WJ+aDpB+u+PBo8XosUyyVbMGy-xR0XiWFdw@mail.gmail.com>
- <CAJve8om+dLcG+4trDfG1yx8vhj52RhPZrJoF-emWDX+OPM088A@mail.gmail.com>
-Message-ID: <20230907-bde62d037a3aaeedfe31f964@orel>
+In-Reply-To: <20230907-bde62d037a3aaeedfe31f964@orel>
+References: <cover.1693659382.git.haibo1.xu@intel.com> <b6ef1b031e3a581f481cf19a26623388163444b4.1693659382.git.haibo1.xu@intel.com>
+ <20230904-aa8b0d8d23d391586686038a@orel> <CAJve8ok5cU+h1K+WJ+aDpB+u+PBo8XosUyyVbMGy-xR0XiWFdw@mail.gmail.com>
+ <CAJve8om+dLcG+4trDfG1yx8vhj52RhPZrJoF-emWDX+OPM088A@mail.gmail.com> <20230907-bde62d037a3aaeedfe31f964@orel>
+Message-ID: <CAJve8okJOHofRK=0VRG8QPetOgk_WexEui_3UtEKk+4x1iPwMA@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Sep 07, 2023 at 11:57:00AM +0800, Haibo Xu wrote:
-> On Wed, Sep 6, 2023 at 6:10?PM Haibo Xu <xiaobo55x@gmail.com> wrote:
-> >
-> > On Mon, Sep 4, 2023 at 10:04?PM Andrew Jones <ajones@ventanamicro.com> wrote:
+On Thu, Sep 7, 2023 at 5:01?PM Andrew Jones <ajones@ventanamicro.com> wrote:
+>
+> On Thu, Sep 07, 2023 at 11:57:00AM +0800, Haibo Xu wrote:
+> > On Wed, Sep 6, 2023 at 6:10?PM Haibo Xu <xiaobo55x@gmail.com> wrote:
 > > >
-> > > On Sat, Sep 02, 2023 at 08:59:29PM +0800, Haibo Xu wrote:
-> > > > diff --git a/tools/testing/selftests/kvm/riscv/get-reg-list.c b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-> > > > index d8ecacd03ecf..c4028bf32e3f 100644
-> > > > --- a/tools/testing/selftests/kvm/riscv/get-reg-list.c
-> > > > +++ b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-> > > > @@ -44,20 +44,6 @@ bool check_reject_set(int err)
-> > > >       return err == EINVAL;
-> > > >  }
+> > > On Mon, Sep 4, 2023 at 10:04?PM Andrew Jones <ajones@ventanamicro.com> wrote:
 > > > >
-> > > > -static inline bool vcpu_has_ext(struct kvm_vcpu *vcpu, int ext)
-> > > > -{
-> > > > -     int ret;
-> > > > -     unsigned long value;
-> > > > -
-> > > > -     ret = __vcpu_get_reg(vcpu, RISCV_ISA_EXT_REG(ext), &value);
-> > > > -     if (ret) {
-> > > > -             printf("Failed to get ext %d", ext);
-> > > > -             return false;
-> > > > -     }
-> > > > -
-> > > > -     return !!value;
+> > > > On Sat, Sep 02, 2023 at 08:59:29PM +0800, Haibo Xu wrote:
+> > > > > diff --git a/tools/testing/selftests/kvm/riscv/get-reg-list.c b/tools/testing/selftests/kvm/riscv/get-reg-list.c
+> > > > > index d8ecacd03ecf..c4028bf32e3f 100644
+> > > > > --- a/tools/testing/selftests/kvm/riscv/get-reg-list.c
+> > > > > +++ b/tools/testing/selftests/kvm/riscv/get-reg-list.c
+> > > > > @@ -44,20 +44,6 @@ bool check_reject_set(int err)
+> > > > >       return err == EINVAL;
+> > > > >  }
+> > > > >
+> > > > > -static inline bool vcpu_has_ext(struct kvm_vcpu *vcpu, int ext)
+> > > > > -{
+> > > > > -     int ret;
+> > > > > -     unsigned long value;
+> > > > > -
+> > > > > -     ret = __vcpu_get_reg(vcpu, RISCV_ISA_EXT_REG(ext), &value);
+> > > > > -     if (ret) {
+> > > > > -             printf("Failed to get ext %d", ext);
+> > > > > -             return false;
+> > > > > -     }
+> > > > > -
+> > > > > -     return !!value;
+> > > >
+> > > > get-reg-list will now assert on get-reg when an extension isn't present,
+> > > > rather than failing the __TEST_REQUIRE(), which would do a skip instead.
+> > > > We need both the return false version and the assert version.
+> > > >
 > > >
-> > > get-reg-list will now assert on get-reg when an extension isn't present,
-> > > rather than failing the __TEST_REQUIRE(), which would do a skip instead.
-> > > We need both the return false version and the assert version.
+> > > Ok, Will keep this one for get-reg-list and add another one for
+> > > arch-timer specific usage.
 > > >
 > >
-> > Ok, Will keep this one for get-reg-list and add another one for
-> > arch-timer specific usage.
+> > Just thought about it again, maybe we only need the "return false"
+> > version for both get-reg-list
+> > and arch-timer tests since if an extension was not available, the test
+> > can be skipped with a message.
 > >
-> 
-> Just thought about it again, maybe we only need the "return false"
-> version for both get-reg-list
-> and arch-timer tests since if an extension was not available, the test
-> can be skipped with a message.
-> 
-> bool vcpu_has_ext(struct kvm_vcpu *vcpu, int ext)
-> {
->        unsigned long value = 0;
-> 
->        __vcpu_get_reg(vcpu, RISCV_ISA_EXT_REG(ext), &value);
-> 
->        return !!value;
-> }
+> > bool vcpu_has_ext(struct kvm_vcpu *vcpu, int ext)
+> > {
+> >        unsigned long value = 0;
+> >
+> >        __vcpu_get_reg(vcpu, RISCV_ISA_EXT_REG(ext), &value);
+> >
+> >        return !!value;
+> > }
+>
+> Yup, I had actually seen that when reviewing a later patch in this series,
+> but I wasn't concerned if we added the assert type anyway, since we
+> frequently end up with the two function types for KVM queries. If we don't
+> have a need for an assert type yet, then we don't need to introduce it.
+> However, we should introduce the non-assert type as __vcpu_has_ext(),
+> reserving the vcpu_has_ext() name for the assert type, per the kvm
+> selftests naming convention.
+>
 
-Yup, I had actually seen that when reviewing a later patch in this series,
-but I wasn't concerned if we added the assert type anyway, since we
-frequently end up with the two function types for KVM queries. If we don't
-have a need for an assert type yet, then we don't need to introduce it.
-However, we should introduce the non-assert type as __vcpu_has_ext(),
-reserving the vcpu_has_ext() name for the assert type, per the kvm
-selftests naming convention.
+Sure, thanks!
 
-Thanks,
-drew
+> Thanks,
+> drew
 
