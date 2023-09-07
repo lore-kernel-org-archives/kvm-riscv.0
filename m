@@ -1,48 +1,77 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Thu, 7 Sep 2023 10:51:49 +0200
-Subject: [PATCH 00/10] RISC-V: Refactor instructions
-In-Reply-To: <ZPjKGd7VstwIKDV5@ghost>
-References: <ZN5OJO/xOWUjLK2w@ghost>
- <mhng-7d609dde-ad47-42ed-a47b-6206e719020a@palmer-ri-x1c9a>
- <20230818-63347af7195b7385c146778d@orel>
- <ZPjKGd7VstwIKDV5@ghost>
-Message-ID: <20230907-304f53e7de4e0386d04f4dcf@orel>
+Date: Thu, 7 Sep 2023 11:01:42 +0200
+Subject: [PATCH v2 7/8] KVM: riscv: selftest: Change vcpu_has_ext to a
+ common function
+In-Reply-To: <CAJve8om+dLcG+4trDfG1yx8vhj52RhPZrJoF-emWDX+OPM088A@mail.gmail.com>
+References: <cover.1693659382.git.haibo1.xu@intel.com>
+ <b6ef1b031e3a581f481cf19a26623388163444b4.1693659382.git.haibo1.xu@intel.com>
+ <20230904-aa8b0d8d23d391586686038a@orel>
+ <CAJve8ok5cU+h1K+WJ+aDpB+u+PBo8XosUyyVbMGy-xR0XiWFdw@mail.gmail.com>
+ <CAJve8om+dLcG+4trDfG1yx8vhj52RhPZrJoF-emWDX+OPM088A@mail.gmail.com>
+Message-ID: <20230907-bde62d037a3aaeedfe31f964@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Sep 06, 2023 at 11:51:05AM -0700, Charlie Jenkins wrote:
-> On Fri, Aug 18, 2023 at 09:30:32AM +0200, Andrew Jones wrote:
-> > On Thu, Aug 17, 2023 at 10:52:22AM -0700, Palmer Dabbelt wrote:
-> > > On Thu, 17 Aug 2023 09:43:16 PDT (-0700), Charlie Jenkins wrote:
-> > ...
-> > > > It seems to me that it will be significantly more challenging to use
-> > > > riscv-opcodes than it would for people to just hand create the macros
-> > > > that they need.
-> > > 
-> > > Ya, riscv-opcodes is pretty custy.  We stopped using it elsewhere ages ago.
-> > 
-> > Ah, pity I didn't know the history of it or I wouldn't have suggested it,
-> > wasting Charlie's time (sorry, Charlie!). So everywhere that needs
-> > encodings are manually scraping them from the PDFs? Or maybe we can write
-> > our own parser which converts adoc/wavedrom files[1] to Linux C?
-> > 
-> > [1] https://github.com/riscv/riscv-isa-manual/tree/main/src/images/wavedrom
+On Thu, Sep 07, 2023 at 11:57:00AM +0800, Haibo Xu wrote:
+> On Wed, Sep 6, 2023 at 6:10?PM Haibo Xu <xiaobo55x@gmail.com> wrote:
+> >
+> > On Mon, Sep 4, 2023 at 10:04?PM Andrew Jones <ajones@ventanamicro.com> wrote:
+> > >
+> > > On Sat, Sep 02, 2023 at 08:59:29PM +0800, Haibo Xu wrote:
+> > > > diff --git a/tools/testing/selftests/kvm/riscv/get-reg-list.c b/tools/testing/selftests/kvm/riscv/get-reg-list.c
+> > > > index d8ecacd03ecf..c4028bf32e3f 100644
+> > > > --- a/tools/testing/selftests/kvm/riscv/get-reg-list.c
+> > > > +++ b/tools/testing/selftests/kvm/riscv/get-reg-list.c
+> > > > @@ -44,20 +44,6 @@ bool check_reject_set(int err)
+> > > >       return err == EINVAL;
+> > > >  }
+> > > >
+> > > > -static inline bool vcpu_has_ext(struct kvm_vcpu *vcpu, int ext)
+> > > > -{
+> > > > -     int ret;
+> > > > -     unsigned long value;
+> > > > -
+> > > > -     ret = __vcpu_get_reg(vcpu, RISCV_ISA_EXT_REG(ext), &value);
+> > > > -     if (ret) {
+> > > > -             printf("Failed to get ext %d", ext);
+> > > > -             return false;
+> > > > -     }
+> > > > -
+> > > > -     return !!value;
+> > >
+> > > get-reg-list will now assert on get-reg when an extension isn't present,
+> > > rather than failing the __TEST_REQUIRE(), which would do a skip instead.
+> > > We need both the return false version and the assert version.
+> > >
+> >
+> > Ok, Will keep this one for get-reg-list and add another one for
+> > arch-timer specific usage.
+> >
 > 
-> The problem with the wavedrom files is that there are no standard for
-> how each instruction is identified. The title of of the adoc gives some
-> insight and there is generally a funct3 or specific opcode that is
-> associated with the instruction but it would be kind of messy to write a
-> script to parse that. I think manually constructing the instructions is
-> fine. When somebody wants to add a new instruction they probably will
-> not need to add very many at a time, so it should be only a couple of
-> lines that they will be able to test.
->
+> Just thought about it again, maybe we only need the "return false"
+> version for both get-reg-list
+> and arch-timer tests since if an extension was not available, the test
+> can be skipped with a message.
+> 
+> bool vcpu_has_ext(struct kvm_vcpu *vcpu, int ext)
+> {
+>        unsigned long value = 0;
+> 
+>        __vcpu_get_reg(vcpu, RISCV_ISA_EXT_REG(ext), &value);
+> 
+>        return !!value;
+> }
 
-OK, we'll just have to prop our eyelids open with toothpicks to get
-through the review of the initial mass conversion.
+Yup, I had actually seen that when reviewing a later patch in this series,
+but I wasn't concerned if we added the assert type anyway, since we
+frequently end up with the two function types for KVM queries. If we don't
+have a need for an assert type yet, then we don't need to introduce it.
+However, we should introduce the non-assert type as __vcpu_has_ext(),
+reserving the vcpu_has_ext() name for the assert type, per the kvm
+selftests naming convention.
 
 Thanks,
 drew
