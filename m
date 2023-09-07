@@ -1,37 +1,75 @@
-From: Paolo Bonzini <pbonzini@redhat.com>
-Date: Thu, 7 Sep 2023 00:10:13 +0200
-Subject: [RFC PATCH v11 13/29] KVM: Add transparent hugepage support for
- dedicated guest memory
-In-Reply-To: <ZLq8ylTsFQ1s4BAZ@google.com>
-References: <20230718234512.1690985-1-seanjc@google.com> <20230718234512.1690985-14-seanjc@google.com>
- <84a908ae-04c7-51c7-c9a8-119e1933a189@redhat.com> <ZLq8ylTsFQ1s4BAZ@google.com>
-Message-ID: <CABgObfYLuRx5oAfOKM1fNuyRw5BNhe127sbRYhmpoT9MsjMYQQ@mail.gmail.com>
+From: Haibo Xu <xiaobo55x@gmail.com>
+Date: Thu, 7 Sep 2023 11:57:00 +0800
+Subject: [PATCH v2 7/8] KVM: riscv: selftest: Change vcpu_has_ext to a
+ common function
+In-Reply-To: <CAJve8ok5cU+h1K+WJ+aDpB+u+PBo8XosUyyVbMGy-xR0XiWFdw@mail.gmail.com>
+References: <cover.1693659382.git.haibo1.xu@intel.com> <b6ef1b031e3a581f481cf19a26623388163444b4.1693659382.git.haibo1.xu@intel.com>
+ <20230904-aa8b0d8d23d391586686038a@orel> <CAJve8ok5cU+h1K+WJ+aDpB+u+PBo8XosUyyVbMGy-xR0XiWFdw@mail.gmail.com>
+Message-ID: <CAJve8om+dLcG+4trDfG1yx8vhj52RhPZrJoF-emWDX+OPM088A@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Jul 21, 2023 at 7:13?PM Sean Christopherson <seanjc@google.com> wrote:
-> On Fri, Jul 21, 2023, Paolo Bonzini wrote:
-> > On 7/19/23 01:44, Sean Christopherson wrote:
-> > > @@ -413,6 +454,9 @@ int kvm_gmem_create(struct kvm *kvm, struct kvm_create_guest_memfd *args)
-> > >     u64 flags = args->flags;
-> > >     u64 valid_flags = 0;
-> > > +   if (IS_ENABLED(CONFIG_TRANSPARENT_HUGEPAGE))
-> > > +           valid_flags |= KVM_GUEST_MEMFD_ALLOW_HUGEPAGE;
-> > > +
-> >
-> > I think it should be always allowed.  The outcome would just be "never have
-> > a hugepage" if thp is not enabled in the kernel.
+On Wed, Sep 6, 2023 at 6:10?PM Haibo Xu <xiaobo55x@gmail.com> wrote:
 >
-> I don't have a strong preference.  My thinking was that userspace would probably
-> rather have an explicit error, as opposed to silently running with a misconfigured
-> setup.
+> On Mon, Sep 4, 2023 at 10:04?PM Andrew Jones <ajones@ventanamicro.com> wrote:
+> >
+> > On Sat, Sep 02, 2023 at 08:59:29PM +0800, Haibo Xu wrote:
+> > > diff --git a/tools/testing/selftests/kvm/riscv/get-reg-list.c b/tools/testing/selftests/kvm/riscv/get-reg-list.c
+> > > index d8ecacd03ecf..c4028bf32e3f 100644
+> > > --- a/tools/testing/selftests/kvm/riscv/get-reg-list.c
+> > > +++ b/tools/testing/selftests/kvm/riscv/get-reg-list.c
+> > > @@ -44,20 +44,6 @@ bool check_reject_set(int err)
+> > >       return err == EINVAL;
+> > >  }
+> > >
+> > > -static inline bool vcpu_has_ext(struct kvm_vcpu *vcpu, int ext)
+> > > -{
+> > > -     int ret;
+> > > -     unsigned long value;
+> > > -
+> > > -     ret = __vcpu_get_reg(vcpu, RISCV_ISA_EXT_REG(ext), &value);
+> > > -     if (ret) {
+> > > -             printf("Failed to get ext %d", ext);
+> > > -             return false;
+> > > -     }
+> > > -
+> > > -     return !!value;
+> >
+> > get-reg-list will now assert on get-reg when an extension isn't present,
+> > rather than failing the __TEST_REQUIRE(), which would do a skip instead.
+> > We need both the return false version and the assert version.
+> >
+>
+> Ok, Will keep this one for get-reg-list and add another one for
+> arch-timer specific usage.
+>
 
-Considering that is how madvise(MADV_HUGEPAGE) behaves, your patch is
-good. I disagree but consistency is better.
+Just thought about it again, maybe we only need the "return false"
+version for both get-reg-list
+and arch-timer tests since if an extension was not available, the test
+can be skipped with a message.
 
-Paolo
+bool vcpu_has_ext(struct kvm_vcpu *vcpu, int ext)
+{
+       unsigned long value = 0;
 
+       __vcpu_get_reg(vcpu, RISCV_ISA_EXT_REG(ext), &value);
+
+       return !!value;
+}
+
+> > > -}
+> > > -
+> > >  void finalize_vcpu(struct kvm_vcpu *vcpu, struct vcpu_reg_list *c)
+> > >  {
+> > >       struct vcpu_reg_sublist *s;
+> > > --
+> > > 2.34.1
+> > >
+> >
+> > Thanks,
+> > drew
 
