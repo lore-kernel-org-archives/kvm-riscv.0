@@ -1,92 +1,49 @@
-From: Haibo Xu <xiaobo55x@gmail.com>
-Date: Thu, 7 Sep 2023 12:20:29 +0800
-Subject: [PATCH v2 8/8] KVM: riscv: selftests: Add sstc timer test
-In-Reply-To: <20230904-a69c6a228bf4553cc58bca17@orel>
-References: <cover.1693659382.git.haibo1.xu@intel.com> <d2b3c53537fef3f0a2d27d8be663a64123d4bc3c.1693659382.git.haibo1.xu@intel.com>
- <20230904-a69c6a228bf4553cc58bca17@orel>
-Message-ID: <CAJve8ok03P-t7pTA9mH=5vvkUy4NtxHac_Z_NM88cs55YQZATg@mail.gmail.com>
+From: Andrew Jones <ajones@ventanamicro.com>
+Date: Thu, 7 Sep 2023 10:51:49 +0200
+Subject: [PATCH 00/10] RISC-V: Refactor instructions
+In-Reply-To: <ZPjKGd7VstwIKDV5@ghost>
+References: <ZN5OJO/xOWUjLK2w@ghost>
+ <mhng-7d609dde-ad47-42ed-a47b-6206e719020a@palmer-ri-x1c9a>
+ <20230818-63347af7195b7385c146778d@orel>
+ <ZPjKGd7VstwIKDV5@ghost>
+Message-ID: <20230907-304f53e7de4e0386d04f4dcf@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Sep 4, 2023 at 10:58?PM Andrew Jones <ajones@ventanamicro.com> wrote:
->
-> On Sat, Sep 02, 2023 at 08:59:30PM +0800, Haibo Xu wrote:
-> > Add a KVM selftest to validate the Sstc timer functionality.
-> > The test was ported from arm64 arch timer test.
-> >
-> > Signed-off-by: Haibo Xu <haibo1.xu@intel.com>
-> > ---
-
-> > diff --git a/tools/testing/selftests/kvm/riscv/arch_timer.c b/tools/testing/selftests/kvm/riscv/arch_timer.c
-> > new file mode 100644
-> > index 000000000000..c50a33c1e4f9
-> > --- /dev/null
-> > +++ b/tools/testing/selftests/kvm/riscv/arch_timer.c
-> > @@ -0,0 +1,130 @@
-> > +// SPDX-License-Identifier: GPL-2.0-only
-> > +/*
-> > + * arch_timer.c - Tests the riscv64 sstc timer IRQ functionality
-> > + *
-> > + * The test validates the sstc timer IRQs using vstimecmp registers.
-> > + * It's ported from the aarch64 arch_timer test.
-> > + *
-
-> guest_run[_stage]() can be shared with aarch64, we just have a single
-> stage=0 for riscv.
->
-
-Yes, we can. But if we share the guest_run[_stage]() by moving it to
-kvm/arch_timer.c
-or kvm/include/timer_test.h, we need to declare extra sub-functions
-somewhere in a
-header file(etc. guest_configure_timer_action()).
-
-> > +
-> > +static void guest_code(void)
-> > +{
-> > +     uint32_t cpu = guest_get_vcpuid();
-> > +     struct test_vcpu_shared_data *shared_data = &vcpu_shared_data[cpu];
-> > +
-> > +     local_irq_disable();
-> > +     timer_irq_disable();
-> > +     local_irq_enable();
->
-> I don't think we need to disable all interrupts when disabling the timer
-> interrupt.
+On Wed, Sep 06, 2023 at 11:51:05AM -0700, Charlie Jenkins wrote:
+> On Fri, Aug 18, 2023 at 09:30:32AM +0200, Andrew Jones wrote:
+> > On Thu, Aug 17, 2023 at 10:52:22AM -0700, Palmer Dabbelt wrote:
+> > > On Thu, 17 Aug 2023 09:43:16 PDT (-0700), Charlie Jenkins wrote:
+> > ...
+> > > > It seems to me that it will be significantly more challenging to use
+> > > > riscv-opcodes than it would for people to just hand create the macros
+> > > > that they need.
+> > > 
+> > > Ya, riscv-opcodes is pretty custy.  We stopped using it elsewhere ages ago.
+> > 
+> > Ah, pity I didn't know the history of it or I wouldn't have suggested it,
+> > wasting Charlie's time (sorry, Charlie!). So everywhere that needs
+> > encodings are manually scraping them from the PDFs? Or maybe we can write
+> > our own parser which converts adoc/wavedrom files[1] to Linux C?
+> > 
+> > [1] https://github.com/riscv/riscv-isa-manual/tree/main/src/images/wavedrom
+> 
+> The problem with the wavedrom files is that there are no standard for
+> how each instruction is identified. The title of of the adoc gives some
+> insight and there is generally a funct3 or specific opcode that is
+> associated with the instruction but it would be kind of messy to write a
+> script to parse that. I think manually constructing the instructions is
+> fine. When somebody wants to add a new instruction they probably will
+> not need to add very many at a time, so it should be only a couple of
+> lines that they will be able to test.
 >
 
-There is no local_irq_disable() protection during the initial debug
-phase, but the test always
-fail with below error messages:
+OK, we'll just have to prop our eyelids open with toothpicks to get
+through the review of the initial mass conversion.
 
-Guest assert failed,  vcpu 0; stage; 0; iter: 0
-==== Test Assertion Failure ====
-  riscv/arch_timer.c:78: config_iter + 1 == irq_iter
-  pid=585 tid=586 errno=4 - Interrupted system call
-  (stack trace empty)
-  0x1 != 0x0 (config_iter + 1 != irq_iter)
-
-To be frank, I am not quite sure why the local_irq_disable/enable() matters.
-One possible reason may be some timer irq was triggered before we set up the
-timecmp register.
-
-> > +
-> > +     guest_run(shared_data);
-> > +
-> > +     GUEST_DONE();
-> > +}
-> > +
-> > +void test_vm_cleanup(struct kvm_vm *vm)
-> > +{
-> > +     kvm_vm_free(vm);
-> > +}
-> > --
-> > 2.34.1
-> >
->
-> Thanks,
-> drew
+Thanks,
+drew
 
