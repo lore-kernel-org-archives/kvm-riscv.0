@@ -1,101 +1,153 @@
-From: Haibo Xu <xiaobo55x@gmail.com>
-Date: Fri, 8 Sep 2023 10:36:09 +0800
-Subject: [PATCH v2 8/8] KVM: riscv: selftests: Add sstc timer test
-In-Reply-To: <CAJve8om1VibbkHBuG4B+KbKY2eug42wGk9wiYtCYeF-WDY8EgQ@mail.gmail.com>
-References: <cover.1693659382.git.haibo1.xu@intel.com> <d2b3c53537fef3f0a2d27d8be663a64123d4bc3c.1693659382.git.haibo1.xu@intel.com>
- <20230904-a69c6a228bf4553cc58bca17@orel> <CAJve8ok03P-t7pTA9mH=5vvkUy4NtxHac_Z_NM88cs55YQZATg@mail.gmail.com>
- <20230907-5d3da2b6dca23bedb31b33a0@orel> <CAJve8om1VibbkHBuG4B+KbKY2eug42wGk9wiYtCYeF-WDY8EgQ@mail.gmail.com>
-Message-ID: <CAJve8o=_09khYSEapJfb2xiqzCLdM6FbR=Q9gAawZ6nhHDUZCQ@mail.gmail.com>
+From: Vlastimil Babka <vbabka@suse.cz>
+Date: Fri,  8 Sep 2023 09:42:23 +0200
+Subject: [PATCH gmem FIXUP v2] mm, compaction: make testing mapping_unmovable() safe
+Message-ID: <20230908074222.28723-2-vbabka@suse.cz>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Sep 8, 2023 at 9:19?AM Haibo Xu <xiaobo55x@gmail.com> wrote:
->
-> On Fri, Sep 8, 2023 at 3:01?AM Andrew Jones <ajones@ventanamicro.com> wrote:
-> >
-> > On Thu, Sep 07, 2023 at 12:20:29PM +0800, Haibo Xu wrote:
-> > > On Mon, Sep 4, 2023 at 10:58?PM Andrew Jones <ajones@ventanamicro.com> wrote:
-> > > >
-> > > > On Sat, Sep 02, 2023 at 08:59:30PM +0800, Haibo Xu wrote:
-> > > > > Add a KVM selftest to validate the Sstc timer functionality.
-> > > > > The test was ported from arm64 arch timer test.
-> > > > >
-> > > > > Signed-off-by: Haibo Xu <haibo1.xu@intel.com>
-> > > > > ---
-> > >
-> > > > > diff --git a/tools/testing/selftests/kvm/riscv/arch_timer.c b/tools/testing/selftests/kvm/riscv/arch_timer.c
-> > > > > new file mode 100644
-> > > > > index 000000000000..c50a33c1e4f9
-> > > > > --- /dev/null
-> > > > > +++ b/tools/testing/selftests/kvm/riscv/arch_timer.c
-> > > > > @@ -0,0 +1,130 @@
-> > > > > +// SPDX-License-Identifier: GPL-2.0-only
-> > > > > +/*
-> > > > > + * arch_timer.c - Tests the riscv64 sstc timer IRQ functionality
-> > > > > + *
-> > > > > + * The test validates the sstc timer IRQs using vstimecmp registers.
-> > > > > + * It's ported from the aarch64 arch_timer test.
+As Kirill pointed out, mapping can be removed under us due to
+truncation. Test it under folio lock as already done for the async
+compaction / dirty folio case. To prevent locking every folio with
+mapping to do the test, do it only for unevictable folios, as we can
+expect the unmovable mapping folios are also unevictable. To enforce
+that expecation, make mapping_set_unmovable() also set AS_UNEVICTABLE.
 
-> > >
-> > > > > +
-> > > > > +static void guest_code(void)
-> > > > > +{
-> > > > > +     uint32_t cpu = guest_get_vcpuid();
-> > > > > +     struct test_vcpu_shared_data *shared_data = &vcpu_shared_data[cpu];
-> > > > > +
-> > > > > +     local_irq_disable();
-> > > > > +     timer_irq_disable();
-> > > > > +     local_irq_enable();
-> > > >
-> > > > I don't think we need to disable all interrupts when disabling the timer
-> > > > interrupt.
-> > > >
-> > >
-> > > There is no local_irq_disable() protection during the initial debug
-> > > phase, but the test always
-> > > fail with below error messages:
-> > >
-> > > Guest assert failed,  vcpu 0; stage; 0; iter: 0
-> > > ==== Test Assertion Failure ====
-> > >   riscv/arch_timer.c:78: config_iter + 1 == irq_iter
-> > >   pid=585 tid=586 errno=4 - Interrupted system call
-> > >   (stack trace empty)
-> > >   0x1 != 0x0 (config_iter + 1 != irq_iter)
-> > >
-> > > To be frank, I am not quite sure why the local_irq_disable/enable() matters.
-> > > One possible reason may be some timer irq was triggered before we set up the
-> > > timecmp register.
-> >
-> > We should ensure we know the exact, expected state of the vcpu before,
-> > during, and after the test. If a state doesn't match expectations,
-> > then the test should assert and we should go investigate the test code
-> > to see if setup/checking is correct. If it is, then we've found a bug
-> > in KVM that we need to go investigate.
-> >
-> > For Sstc, a pending timer interrupt completely depends on stimecmp, so
-> > we need to watch that closely. Take a look at the attached simple timer
-> > test I pulled together to illustrate how stimecmp, timer interrupt enable,
-> > and all interrupt enable interact. You may want to use it to help port
-> > the arch_timer.
-> >
->
-> Thanks for sharing the test codes. Will have an investigation on it.
->
+Also incorporate comment update suggested by Matthew.
 
-Hi Andrew,
+Fixes: 3424873596ce ("mm: Add AS_UNMOVABLE to mark mapping as completely unmovable")
+Signed-off-by: Vlastimil Babka <vbabka@suse.cz>
+---
+v2: mapping_set_unmovable() sets also AS_UNEVICTABLE, as Sean suggested.
 
-You are right. The local_irq_disable() was not needed here.
-It's my fault that I also removed the local_irq_enable() when trying
-your suggestion.
+ include/linux/pagemap.h |  6 +++++
+ mm/compaction.c         | 49 +++++++++++++++++++++++++++--------------
+ virt/kvm/guest_mem.c    |  2 +-
+ 3 files changed, 39 insertions(+), 18 deletions(-)
 
-Thanks for your review and help on this patch set!
+diff --git a/include/linux/pagemap.h b/include/linux/pagemap.h
+index 931d2f1da7d5..4070c59e6f25 100644
+--- a/include/linux/pagemap.h
++++ b/include/linux/pagemap.h
+@@ -276,6 +276,12 @@ static inline int mapping_use_writeback_tags(struct address_space *mapping)
+ 
+ static inline void mapping_set_unmovable(struct address_space *mapping)
+ {
++	/*
++	 * It's expected unmovable mappings are also unevictable. Compaction
++	 * migrate scanner (isolate_migratepages_block()) relies on this to
++	 * reduce page locking.
++	 */
++	set_bit(AS_UNEVICTABLE, &mapping->flags);
+ 	set_bit(AS_UNMOVABLE, &mapping->flags);
+ }
+ 
+diff --git a/mm/compaction.c b/mm/compaction.c
+index a3d2b132df52..e0e439b105b5 100644
+--- a/mm/compaction.c
++++ b/mm/compaction.c
+@@ -862,6 +862,7 @@ isolate_migratepages_block(struct compact_control *cc, unsigned long low_pfn,
+ 
+ 	/* Time to isolate some pages for migration */
+ 	for (; low_pfn < end_pfn; low_pfn++) {
++		bool is_dirty, is_unevictable;
+ 
+ 		if (skip_on_failure && low_pfn >= next_skip_pfn) {
+ 			/*
+@@ -1047,10 +1048,6 @@ isolate_migratepages_block(struct compact_control *cc, unsigned long low_pfn,
+ 		if (!mapping && (folio_ref_count(folio) - 1) > folio_mapcount(folio))
+ 			goto isolate_fail_put;
+ 
+-		/* The mapping truly isn't movable. */
+-		if (mapping && mapping_unmovable(mapping))
+-			goto isolate_fail_put;
+-
+ 		/*
+ 		 * Only allow to migrate anonymous pages in GFP_NOFS context
+ 		 * because those do not depend on fs locks.
+@@ -1062,8 +1059,10 @@ isolate_migratepages_block(struct compact_control *cc, unsigned long low_pfn,
+ 		if (!folio_test_lru(folio))
+ 			goto isolate_fail_put;
+ 
++		is_unevictable = folio_test_unevictable(folio);
++
+ 		/* Compaction might skip unevictable pages but CMA takes them */
+-		if (!(mode & ISOLATE_UNEVICTABLE) && folio_test_unevictable(folio))
++		if (!(mode & ISOLATE_UNEVICTABLE) && is_unevictable)
+ 			goto isolate_fail_put;
+ 
+ 		/*
+@@ -1075,26 +1074,42 @@ isolate_migratepages_block(struct compact_control *cc, unsigned long low_pfn,
+ 		if ((mode & ISOLATE_ASYNC_MIGRATE) && folio_test_writeback(folio))
+ 			goto isolate_fail_put;
+ 
+-		if ((mode & ISOLATE_ASYNC_MIGRATE) && folio_test_dirty(folio)) {
+-			bool migrate_dirty;
++		is_dirty = folio_test_dirty(folio);
++
++		if (((mode & ISOLATE_ASYNC_MIGRATE) && is_dirty)
++		    || (mapping && is_unevictable)) {
++			bool migrate_dirty = true;
++			bool is_unmovable;
+ 
+ 			/*
+-			 * Only pages without mappings or that have a
+-			 * ->migrate_folio callback are possible to migrate
+-			 * without blocking. However, we can be racing with
+-			 * truncation so it's necessary to lock the page
+-			 * to stabilise the mapping as truncation holds
+-			 * the page lock until after the page is removed
+-			 * from the page cache.
++			 * Only folios without mappings or that have
++			 * a ->migrate_folio callback are possible to migrate
++			 * without blocking.
++			 *
++			 * Folios from unmovable mappings are not migratable.
++			 *
++			 * However, we can be racing with truncation, which can
++			 * free the mapping that we need to check. Truncation
++			 * holds the folio lock until after the folio is removed
++			 * from the page so holding it ourselves is sufficient.
++			 *
++			 * To avoid this folio locking to inspect every folio
++			 * with mapping for being unmovable, we assume every
++			 * such folio is also unevictable, which is a cheaper
++			 * test. If our assumption goes wrong, it's not a bug,
++			 * just potentially wasted cycles.
+ 			 */
+ 			if (!folio_trylock(folio))
+ 				goto isolate_fail_put;
+ 
+ 			mapping = folio_mapping(folio);
+-			migrate_dirty = !mapping ||
+-					mapping->a_ops->migrate_folio;
++			if ((mode & ISOLATE_ASYNC_MIGRATE) && is_dirty) {
++				migrate_dirty = !mapping ||
++						mapping->a_ops->migrate_folio;
++			}
++			is_unmovable = mapping && mapping_unmovable(mapping);
+ 			folio_unlock(folio);
+-			if (!migrate_dirty)
++			if (!migrate_dirty || is_unmovable)
+ 				goto isolate_fail_put;
+ 		}
+ 
+diff --git a/virt/kvm/guest_mem.c b/virt/kvm/guest_mem.c
+index c81d2bb9ae93..85903c32163f 100644
+--- a/virt/kvm/guest_mem.c
++++ b/virt/kvm/guest_mem.c
+@@ -390,7 +390,7 @@ static int __kvm_gmem_create(struct kvm *kvm, loff_t size, u64 flags,
+ 	inode->i_size = size;
+ 	mapping_set_gfp_mask(inode->i_mapping, GFP_HIGHUSER);
+ 	mapping_set_large_folios(inode->i_mapping);
+-	mapping_set_unevictable(inode->i_mapping);
++	/* this also sets the mapping as unevictable */
+ 	mapping_set_unmovable(inode->i_mapping);
+ 
+ 	fd = get_unused_fd_flags(0);
+-- 
+2.42.0
 
-Regards,
-Haibo
-
-> > Thanks,
-> > drew
 
