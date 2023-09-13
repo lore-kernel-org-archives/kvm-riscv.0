@@ -1,62 +1,50 @@
 From: Mayuresh Chitale <mchitale@ventanamicro.com>
-Date: Wed, 13 Sep 2023 22:08:58 +0530
-Subject: [PATCH v5 0/7] Risc-V Kvm Smstateen
-Message-ID: <20230913163905.480819-1-mchitale@ventanamicro.com>
+Date: Wed, 13 Sep 2023 22:08:59 +0530
+Subject: [PATCH v5 1/7] RISC-V: Detect Smstateen extension
+In-Reply-To: <20230913163905.480819-1-mchitale@ventanamicro.com>
+References: <20230913163905.480819-1-mchitale@ventanamicro.com>
+Message-ID: <20230913163905.480819-2-mchitale@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This series adds support to detect the Smstateen extension for both, the
-host and the guest vcpu. It also adds senvcfg and sstateen0 to the ONE_REG
-interface and the vcpu context save/restore.
+Extend the ISA string parsing to detect the Smstateen extension. If the
+extension is enabled then access to certain 'state' such as AIA CSRs in
+VS mode is controlled by *stateen0 registers.
 
-The motivation behind Smstateen from the spec
-(https://github.com/riscv/riscv-state-enable):
-"The implementation of optional RISC-V extensions has the potential to open
-covert channels between separate user threads, or between separate guest OSes
-running under a hypervisor. The problem occurs when an extension adds processor
-state---usually explicit registers, but possibly other forms of state---that
-the main OS or hypervisor is unaware of (and hence won?t context-switch) but
-that can be modified/written by one user thread or guest OS and perceived/
-examined/read by another."
+Signed-off-by: Mayuresh Chitale <mchitale@ventanamicro.com>
+Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+---
+ arch/riscv/include/asm/hwcap.h | 1 +
+ arch/riscv/kernel/cpufeature.c | 1 +
+ 2 files changed, 2 insertions(+)
 
-Changes in v5:
-- Rebased on latest linux master
-
-Changes in v4:
-- Update commit description for patch 1
-- Rebase to kvm_riscv_queue
-- Add reviewed-by tag
-
-Changes in v3:
-- Move DT bindings change to a separate patch
-- Move senvcfg/sstateen0 save/restore to separate function
-
-Changes in v2:
-- Add smstaeen description in riscv/extensions.yaml
-- Avoid line wrap at 80 chars
-
-Mayuresh Chitale (7):
-  RISC-V: Detect Smstateen extension
-  dt-bindings: riscv: Add smstateen entry
-  RISC-V: KVM: Add kvm_vcpu_config
-  RISC-V: KVM: Enable Smstateen accesses
-  RISCV: KVM: Add senvcfg context save/restore
-  RISCV: KVM: Add sstateen0 context save/restore
-  RISCV: KVM: Add sstateen0 to ONE_REG
-
- .../devicetree/bindings/riscv/extensions.yaml |  6 ++
- arch/riscv/include/asm/csr.h                  | 18 +++++
- arch/riscv/include/asm/hwcap.h                |  1 +
- arch/riscv/include/asm/kvm_host.h             | 18 +++++
- arch/riscv/include/uapi/asm/kvm.h             | 10 +++
- arch/riscv/kernel/cpufeature.c                |  1 +
- arch/riscv/kvm/vcpu.c                         | 70 +++++++++++++++----
- arch/riscv/kvm/vcpu_onereg.c                  | 41 +++++++++++
- 8 files changed, 152 insertions(+), 13 deletions(-)
-
+diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
+index b7b58258f6c7..0f520f7d058a 100644
+--- a/arch/riscv/include/asm/hwcap.h
++++ b/arch/riscv/include/asm/hwcap.h
+@@ -58,6 +58,7 @@
+ #define RISCV_ISA_EXT_ZICSR		40
+ #define RISCV_ISA_EXT_ZIFENCEI		41
+ #define RISCV_ISA_EXT_ZIHPM		42
++#define RISCV_ISA_EXT_SMSTATEEN		43
+ 
+ #define RISCV_ISA_EXT_MAX		64
+ 
+diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
+index 1cfbba65d11a..3755a8c2a9de 100644
+--- a/arch/riscv/kernel/cpufeature.c
++++ b/arch/riscv/kernel/cpufeature.c
+@@ -175,6 +175,7 @@ const struct riscv_isa_ext_data riscv_isa_ext[] = {
+ 	__RISCV_ISA_EXT_DATA(zbb, RISCV_ISA_EXT_ZBB),
+ 	__RISCV_ISA_EXT_DATA(zbs, RISCV_ISA_EXT_ZBS),
+ 	__RISCV_ISA_EXT_DATA(smaia, RISCV_ISA_EXT_SMAIA),
++	__RISCV_ISA_EXT_DATA(smstateen, RISCV_ISA_EXT_SMSTATEEN),
+ 	__RISCV_ISA_EXT_DATA(ssaia, RISCV_ISA_EXT_SSAIA),
+ 	__RISCV_ISA_EXT_DATA(sscofpmf, RISCV_ISA_EXT_SSCOFPMF),
+ 	__RISCV_ISA_EXT_DATA(sstc, RISCV_ISA_EXT_SSTC),
 -- 
 2.34.1
 
