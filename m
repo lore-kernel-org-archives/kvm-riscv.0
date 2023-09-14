@@ -1,341 +1,213 @@
-From: Haibo Xu <haibo1.xu@intel.com>
-Date: Thu, 14 Sep 2023 09:37:03 +0800
-Subject: [PATCH v3 9/9] KVM: riscv: selftests: Add sstc timer test
-In-Reply-To: <cover.1694421911.git.haibo1.xu@intel.com>
-References: <cover.1694421911.git.haibo1.xu@intel.com>
-Message-ID: <64e0637cd6f22dd7557ed44bd2242001e7830d1c.1694421911.git.haibo1.xu@intel.com>
+From: Sean Christopherson <seanjc@google.com>
+Date: Wed, 13 Sep 2023 18:54:58 -0700
+Subject: [RFC PATCH v12 00/33] KVM: guest_memfd() and per-page attributes
+Message-ID: <20230914015531.1419405-1-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add a KVM selftests to validate the Sstc timer functionality.
-The test was ported from arm64 arch timer test.
+This is hopefully the last RFC for implementing fd-based (instead of vma-based)
+memory for KVM guests.  If you want the full background of why we are doing
+this, please go read the v10 cover letter.  With luck, v13 will be a "normal"
+series that's ready for inclusion.
 
-Signed-off-by: Haibo Xu <haibo1.xu@intel.com>
----
- tools/testing/selftests/kvm/Makefile          |   1 +
- .../selftests/kvm/aarch64/arch_timer.c        |  12 +-
- tools/testing/selftests/kvm/arch_timer.c      |  10 +-
- .../selftests/kvm/include/riscv/arch_timer.h  |  80 +++++++++++++
- .../selftests/kvm/include/riscv/processor.h   |  10 ++
- .../selftests/kvm/include/timer_test.h        |   3 +-
- .../testing/selftests/kvm/riscv/arch_timer.c  | 107 ++++++++++++++++++
- 7 files changed, 214 insertions(+), 9 deletions(-)
- create mode 100644 tools/testing/selftests/kvm/include/riscv/arch_timer.h
- create mode 100644 tools/testing/selftests/kvm/riscv/arch_timer.c
+Tagged RFC as there are still several empty changelogs, a lot of missing
+documentation, and a handful of TODOs.  And I haven't tested or proofread this
+anywhere near as much as I normally would.  I am posting even though the
+remaining TODOs aren't _that_ big so that people can test this new version
+without having to wait a few weeks to close out the remaining TODOs, i.e. to
+give us at least some chance of hitting v6.7.
 
-diff --git a/tools/testing/selftests/kvm/Makefile b/tools/testing/selftests/kvm/Makefile
-index a5bc8e156047..73d393a5f337 100644
---- a/tools/testing/selftests/kvm/Makefile
-+++ b/tools/testing/selftests/kvm/Makefile
-@@ -180,6 +180,7 @@ TEST_GEN_PROGS_s390x += rseq_test
- TEST_GEN_PROGS_s390x += set_memory_region_test
- TEST_GEN_PROGS_s390x += kvm_binary_stats_test
- 
-+TEST_GEN_PROGS_riscv += arch_timer
- TEST_GEN_PROGS_riscv += demand_paging_test
- TEST_GEN_PROGS_riscv += dirty_log_test
- TEST_GEN_PROGS_riscv += guest_print_test
-diff --git a/tools/testing/selftests/kvm/aarch64/arch_timer.c b/tools/testing/selftests/kvm/aarch64/arch_timer.c
-index 4688b258247c..178f37737d33 100644
---- a/tools/testing/selftests/kvm/aarch64/arch_timer.c
-+++ b/tools/testing/selftests/kvm/aarch64/arch_timer.c
-@@ -190,10 +190,14 @@ struct kvm_vm *test_vm_create(void)
- 	vm_init_vector_tables(vm);
- 	vm_install_exception_handler(vm, VECTOR_IRQ_CURRENT, guest_irq_handler);
- 
--	if (!test_args.offset.reserved) {
--		if (kvm_has_cap(KVM_CAP_COUNTER_OFFSET))
--			vm_ioctl(vm, KVM_ARM_SET_COUNTER_OFFSET, &test_args.offset);
--		else
-+	if (!test_args.reserved) {
-+		if (kvm_has_cap(KVM_CAP_COUNTER_OFFSET)) {
-+			struct kvm_arm_counter_offset offset = {
-+				.counter_offset = test_args.counter_offset,
-+				.reserved = 0,
-+			};
-+			vm_ioctl(vm, KVM_ARM_SET_COUNTER_OFFSET, &offset);
-+		} else
- 			TEST_FAIL("no support for global offset\n");
- 	}
- 
-diff --git a/tools/testing/selftests/kvm/arch_timer.c b/tools/testing/selftests/kvm/arch_timer.c
-index ea3dd1a772b0..184a0f5f484d 100644
---- a/tools/testing/selftests/kvm/arch_timer.c
-+++ b/tools/testing/selftests/kvm/arch_timer.c
-@@ -33,7 +33,7 @@ struct test_args test_args = {
- 	.nr_iter = NR_TEST_ITERS_DEF,
- 	.timer_period_ms = TIMER_TEST_PERIOD_MS_DEF,
- 	.migration_freq_ms = TIMER_TEST_MIGRATION_FREQ_MS,
--	.offset = { .reserved = 1 },
-+	.reserved = 1,
- };
- 
- struct kvm_vcpu *vcpus[KVM_MAX_VCPUS];
-@@ -72,6 +72,8 @@ static void *test_vcpu_run(void *arg)
- 		TEST_FAIL("Unexpected guest exit\n");
- 	}
- 
-+	pr_info("PASS(vCPU-%d).\n", vcpu_idx);
-+
- 	return NULL;
- }
- 
-@@ -186,7 +188,7 @@ static void test_print_help(char *name)
- 		TIMER_TEST_PERIOD_MS_DEF);
- 	pr_info("\t-m: Frequency (in ms) of vCPUs to migrate to different pCPU. 0 to turn off (default: %u)\n",
- 		TIMER_TEST_MIGRATION_FREQ_MS);
--	pr_info("\t-o: Counter offset (in counter cycles, default: 0)\n");
-+	pr_info("\t-o: Counter offset (in counter cycles, default: 0)[aarch64-only]\n");
- 	pr_info("\t-h: print this help screen\n");
- }
- 
-@@ -214,8 +216,8 @@ static bool parse_args(int argc, char *argv[])
- 			test_args.migration_freq_ms = atoi_non_negative("Frequency", optarg);
- 			break;
- 		case 'o':
--			test_args.offset.counter_offset = strtol(optarg, NULL, 0);
--			test_args.offset.reserved = 0;
-+			test_args.counter_offset = strtol(optarg, NULL, 0);
-+			test_args.reserved = 0;
- 			break;
- 		case 'h':
- 		default:
-diff --git a/tools/testing/selftests/kvm/include/riscv/arch_timer.h b/tools/testing/selftests/kvm/include/riscv/arch_timer.h
-new file mode 100644
-index 000000000000..5c063df13b98
---- /dev/null
-+++ b/tools/testing/selftests/kvm/include/riscv/arch_timer.h
-@@ -0,0 +1,80 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/*
-+ * RISC-V Arch Timer(sstc) specific interface
-+ *
-+ * Copyright (c) 2023 Intel Corporation
-+ */
-+
-+#ifndef SELFTEST_KVM_ARCH_TIMER_H
-+#define SELFTEST_KVM_ARCH_TIMER_H
-+
-+#include <asm/csr.h>
-+
-+static unsigned long timer_freq;
-+
-+#define msec_to_cycles(msec)	\
-+	((timer_freq) * (uint64_t)(msec) / 1000)
-+
-+#define usec_to_cycles(usec)	\
-+	((timer_freq) * (uint64_t)(usec) / 1000000)
-+
-+#define cycles_to_usec(cycles) \
-+	((uint64_t)(cycles) * 1000000 / (timer_freq))
-+
-+static inline uint64_t timer_get_cycles(void)
-+{
-+	return csr_read(CSR_TIME);
-+}
-+
-+static inline void timer_set_cmp(uint64_t cval)
-+{
-+	csr_write(CSR_STIMECMP, cval);
-+}
-+
-+static inline uint64_t timer_get_cmp(void)
-+{
-+	return csr_read(CSR_STIMECMP);
-+}
-+
-+static inline void timer_irq_enable(void)
-+{
-+	csr_set(CSR_SIE, IE_TIE);
-+}
-+
-+static inline void timer_irq_disable(void)
-+{
-+	csr_clear(CSR_SIE, IE_TIE);
-+}
-+
-+static inline void timer_set_next_cmp_ms(uint32_t msec)
-+{
-+	uint64_t now_ct = timer_get_cycles();
-+	uint64_t next_ct = now_ct + msec_to_cycles(msec);
-+
-+	timer_set_cmp(next_ct);
-+}
-+
-+static inline void cpu_relax(void)
-+{
-+#ifdef __riscv_zihintpause
-+	asm volatile("pause" ::: "memory");
-+#else
-+	/* Encoding of the pause instruction */
-+	asm volatile(".4byte 0x100000F" ::: "memory");
-+#endif
-+}
-+
-+static inline void __delay(uint64_t cycles)
-+{
-+	uint64_t start = timer_get_cycles();
-+
-+	while ((timer_get_cycles() - start) < cycles)
-+		cpu_relax();
-+}
-+
-+static inline void udelay(unsigned long usec)
-+{
-+	__delay(usec_to_cycles(usec));
-+}
-+
-+#endif /* SELFTEST_KVM_ARCH_TIMER_H */
-diff --git a/tools/testing/selftests/kvm/include/riscv/processor.h b/tools/testing/selftests/kvm/include/riscv/processor.h
-index 7d5517648ea7..268c549f87cf 100644
---- a/tools/testing/selftests/kvm/include/riscv/processor.h
-+++ b/tools/testing/selftests/kvm/include/riscv/processor.h
-@@ -158,4 +158,14 @@ struct sbiret sbi_ecall(int ext, int fid, unsigned long arg0,
- 			unsigned long arg3, unsigned long arg4,
- 			unsigned long arg5);
- 
-+static inline void local_irq_enable(void)
-+{
-+	csr_set(CSR_SSTATUS, SR_SIE);
-+}
-+
-+static inline void local_irq_disable(void)
-+{
-+	csr_clear(CSR_SSTATUS, SR_SIE);
-+}
-+
- #endif /* SELFTEST_KVM_PROCESSOR_H */
-diff --git a/tools/testing/selftests/kvm/include/timer_test.h b/tools/testing/selftests/kvm/include/timer_test.h
-index 04e8aff2dc22..00b455235b82 100644
---- a/tools/testing/selftests/kvm/include/timer_test.h
-+++ b/tools/testing/selftests/kvm/include/timer_test.h
-@@ -22,7 +22,8 @@ struct test_args {
- 	int nr_iter;
- 	int timer_period_ms;
- 	int migration_freq_ms;
--	struct kvm_arm_counter_offset offset;
-+	uint64_t counter_offset;
-+	uint64_t reserved;
- };
- 
- /* Shared variables between host and guest */
-diff --git a/tools/testing/selftests/kvm/riscv/arch_timer.c b/tools/testing/selftests/kvm/riscv/arch_timer.c
-new file mode 100644
-index 000000000000..13bf184d1ff5
---- /dev/null
-+++ b/tools/testing/selftests/kvm/riscv/arch_timer.c
-@@ -0,0 +1,107 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/*
-+ * arch_timer.c - Tests the riscv64 sstc timer IRQ functionality
-+ *
-+ * The test validates the sstc timer IRQs using vstimecmp registers.
-+ * It's ported from the aarch64 arch_timer test.
-+ *
-+ * Copyright (c) 2023, Intel Corporation.
-+ */
-+
-+#define _GNU_SOURCE
-+
-+#include "arch_timer.h"
-+#include "kvm_util.h"
-+#include "processor.h"
-+#include "timer_test.h"
-+
-+static int timer_irq = IRQ_S_TIMER;
-+
-+static void guest_irq_handler(struct ex_regs *regs)
-+{
-+	uint64_t xcnt, xcnt_diff_us, cmp;
-+	unsigned int intid = regs->cause & ~CAUSE_IRQ_FLAG;
-+	uint32_t cpu = guest_get_vcpuid();
-+	struct test_vcpu_shared_data *shared_data = &vcpu_shared_data[cpu];
-+
-+	timer_irq_disable();
-+
-+	xcnt = timer_get_cycles();
-+	cmp = timer_get_cmp();
-+	xcnt_diff_us = cycles_to_usec(xcnt - shared_data->xcnt);
-+
-+	/* Make sure we are dealing with the correct timer IRQ */
-+	GUEST_ASSERT_EQ(intid, timer_irq);
-+
-+	__GUEST_ASSERT(xcnt >= cmp,
-+			"xcnt = 0x%llx, cmp = 0x%llx, xcnt_diff_us = 0x%llx",
-+			xcnt, cmp, xcnt_diff_us);
-+
-+	WRITE_ONCE(shared_data->nr_iter, shared_data->nr_iter + 1);
-+}
-+
-+static void guest_run(struct test_vcpu_shared_data *shared_data)
-+{
-+	uint32_t irq_iter, config_iter;
-+
-+	shared_data->nr_iter = 0;
-+	shared_data->guest_stage = 0;
-+
-+	for (config_iter = 0; config_iter < test_args.nr_iter; config_iter++) {
-+		/* Setup the next interrupt */
-+		timer_set_next_cmp_ms(test_args.timer_period_ms);
-+		shared_data->xcnt = timer_get_cycles();
-+		timer_irq_enable();
-+
-+		/* Setup a timeout for the interrupt to arrive */
-+		udelay(msecs_to_usecs(test_args.timer_period_ms) +
-+			TIMER_TEST_ERR_MARGIN_US);
-+
-+		irq_iter = READ_ONCE(shared_data->nr_iter);
-+		GUEST_ASSERT_EQ(config_iter + 1, irq_iter);
-+	}
-+}
-+
-+static void guest_code(void)
-+{
-+	uint32_t cpu = guest_get_vcpuid();
-+	struct test_vcpu_shared_data *shared_data = &vcpu_shared_data[cpu];
-+
-+	timer_irq_disable();
-+	local_irq_enable();
-+
-+	guest_run(shared_data);
-+
-+	GUEST_DONE();
-+}
-+
-+struct kvm_vm *test_vm_create(void)
-+{
-+	struct kvm_vm *vm;
-+	int nr_vcpus = test_args.nr_vcpus;
-+
-+	vm = vm_create_with_vcpus(nr_vcpus, guest_code, vcpus);
-+	__TEST_REQUIRE(__vcpu_has_ext(vcpus[0], KVM_RISCV_ISA_EXT_SSTC),
-+				   "SSTC not available, skipping test\n");
-+
-+	vm_init_vector_tables(vm);
-+	vm_install_interrupt_handler(vm, guest_irq_handler);
-+
-+	for (int i = 0; i < nr_vcpus; i++)
-+		vcpu_init_vector_tables(vcpus[i]);
-+
-+	/* Initialize guest timer frequency. */
-+	vcpu_get_reg(vcpus[0], RISCV_TIMER_REG(frequency), &timer_freq);
-+	sync_global_to_guest(vm, timer_freq);
-+	pr_debug("timer_freq: %lu\n", timer_freq);
-+
-+	/* Make all the test's cmdline args visible to the guest */
-+	sync_global_to_guest(vm, test_args);
-+
-+	return vm;
-+}
-+
-+void test_vm_cleanup(struct kvm_vm *vm)
-+{
-+	kvm_vm_free(vm);
-+}
+The most relevant TODO item for non-KVM folks is that we are planning on
+dropping the dedicated "gmem" file system.  Assuming that pans out, the patch
+to export security_inode_init_security_anon() should go away.
+
+KVM folks, there a few changes I want to highlight and get feedback on, all of
+which are directly related to the "annotated memory faults" series[*]:
+
+ - Rename kvm_run.memory to kvm_run.memory_fault
+ - Place "memory_fault" in a separate union
+ - Return -EFAULT or -EHWPOISON with exiting with KVM_EXIT_MEMORY_FAULT
+
+The first one is pretty self-explanatory, "run->memory.gpa" looks quite odd and
+would prevent ever doing something directly with memory.
+
+Putting the struct in a separate union is not at all necessary for supporting
+private memory, it's purely forward looking to Anish series, which wants to
+annotate (fill memory_fault) on all faults, even if KVM ultimately doesn't exit
+to userspace (x86 has a few unfortunate flows where KVM can clobber a previous
+exit, or suppress a memory fault exit).  Using a separate union, i.e. different
+bytes in kvm_run, allows exiting to userspace with both memory_fault and the
+"normal" union filled, e.g. if KVM starts an MMIO exit and then hits a memory
+fault exit, the MMIO exit will be preserved.  It's unlikely userspace will be
+able to do anything useful with the info in that case, but the reverse will
+likely be much more interesting, e.g. if KVM hits a memory fault and then doesn't
+report it to userspace for whatever reason.
+
+As for returning -EFAULT/-EHWPOISON, far too many helpers that touch guest
+memory, i.e. can "fault", return 0 on success, which makes it all bug impossible
+to use '0' to signal "exit to userspace".  Rather than use '0' for _just_ the
+case where the guest is accessing private vs. shared, my thought is to use
+-EFAULT everywhere except for the poisoned page case.
+
+[*] https://lore.kernel.org/all/20230908222905.1321305-1-amoorthy at google.com
+
+TODOs [owner]:
+ - Documentation [none]
+ - Changelogs [Sean]
+ - Fully anonymous inode vs. proper filesystem [Paolo]
+ - kvm_gmem_error_page() testing (my version is untested) [Isaku?]
+
+v12:
+ - Squash fixes from others. [Many people]
+ - Kill of the .on_unlock() callback and use .on_lock() when handling
+   memory attributes updates. [Isaku]
+ - Add more tests. [Ackerley]
+ - Move range_has_attrs() to common code. [Paolo]
+ - Return actually number of address spaces for the VM-scoped version of
+   KVM_CAP_MULTI_ADDRESS_SPACE. [Paolo]
+ - Move forward declaration of "struct kvm_gfn_range" to kvm_types.h. [Yuan]
+ - Plumb code to have HVA-based mmu_notifier events affect only shared
+   mappings. [Asish]
+ - Clean up kvm_vm_ioctl_set_mem_attributes() math. [Binbin]
+ - Collect a few reviews and acks. [Paolo, Paul]
+ - Unconditionally advertise a synchronized MMU on PPC. [Paolo]
+ - Check for error return from filemap_grab_folio(). [A
+ - Make max_order optional. [Fuad]
+ - Remove signal injection, zap SPTEs on memory error. [Isaku]
+ - Add KVM_CAP_GUEST_MEMFD. [Xiaoyao]
+ - Invoke kvm_arch_pre_set_memory_attributes() instead of
+   kvm_mmu_unmap_gfn_range().
+ - Rename kvm_run.memory to kvm_run.memory_fault
+ - Place "memory_fault" in a separate union
+ - Return -EFAULT and -EHWPOISON with KVM_EXIT_MEMORY_FAULT
+ - "Init" run->exit_reason in x86's vcpu_run()
+
+v11:
+ - https://lore.kernel.org/all/20230718234512.1690985-1-seanjc at google.com
+ - Test private<=>shared conversions *without* doing fallocate()
+ - PUNCH_HOLE all memory between iterations of the conversion test so that
+   KVM doesn't retain pages in the guest_memfd
+ - Rename hugepage control to be a very generic ALLOW_HUGEPAGE, instead of
+   giving it a THP or PMD specific name.
+ - Fold in fixes from a lot of people (thank you!)
+ - Zap SPTEs *before* updating attributes to ensure no weirdness, e.g. if
+   KVM handles a page fault and looks at inconsistent attributes
+ - Refactor MMU interaction with attributes updates to reuse much of KVM's
+   framework for mmu_notifiers.
+
+v10: https://lore.kernel.org/all/20221202061347.1070246-1-chao.p.peng at linux.intel.com
+
+Ackerley Tng (1):
+  KVM: selftests: Test KVM exit behavior for private memory/access
+
+Chao Peng (8):
+  KVM: Use gfn instead of hva for mmu_notifier_retry
+  KVM: Add KVM_EXIT_MEMORY_FAULT exit to report faults to userspace
+  KVM: Introduce per-page memory attributes
+  KVM: x86: Disallow hugepages when memory attributes are mixed
+  KVM: x86/mmu: Handle page fault for private memory
+  KVM: selftests: Add KVM_SET_USER_MEMORY_REGION2 helper
+  KVM: selftests: Expand set_memory_region_test to validate
+    guest_memfd()
+  KVM: selftests: Add basic selftest for guest_memfd()
+
+Sean Christopherson (21):
+  KVM: Tweak kvm_hva_range and hva_handler_t to allow reusing for gfn
+    ranges
+  KVM: PPC: Drop dead code related to KVM_ARCH_WANT_MMU_NOTIFIER
+  KVM: PPC: Return '1' unconditionally for KVM_CAP_SYNC_MMU
+  KVM: Convert KVM_ARCH_WANT_MMU_NOTIFIER to
+    CONFIG_KVM_GENERIC_MMU_NOTIFIER
+  KVM: Introduce KVM_SET_USER_MEMORY_REGION2
+  KVM: Add a dedicated mmu_notifier flag for reclaiming freed memory
+  KVM: Drop .on_unlock() mmu_notifier hook
+  KVM: Set the stage for handling only shared mappings in mmu_notifier
+    events
+  mm: Add AS_UNMOVABLE to mark mapping as completely unmovable
+  security: Export security_inode_init_security_anon() for use by KVM
+  KVM: Add KVM_CREATE_GUEST_MEMFD ioctl() for guest-specific backing
+    memory
+  KVM: Add transparent hugepage support for dedicated guest memory
+  KVM: x86: "Reset" vcpu->run->exit_reason early in KVM_RUN
+  KVM: Drop superfluous __KVM_VCPU_MULTIPLE_ADDRESS_SPACE macro
+  KVM: Allow arch code to track number of memslot address spaces per VM
+  KVM: x86: Add support for "protected VMs" that can utilize private
+    memory
+  KVM: selftests: Drop unused kvm_userspace_memory_region_find() helper
+  KVM: selftests: Convert lib's mem regions to
+    KVM_SET_USER_MEMORY_REGION2
+  KVM: selftests: Add support for creating private memslots
+  KVM: selftests: Introduce VM "shape" to allow tests to specify the VM
+    type
+  KVM: selftests: Add GUEST_SYNC[1-6] macros for synchronizing more data
+
+Vishal Annapurve (3):
+  KVM: selftests: Add helpers to convert guest memory b/w private and
+    shared
+  KVM: selftests: Add helpers to do KVM_HC_MAP_GPA_RANGE hypercalls
+    (x86)
+  KVM: selftests: Add x86-only selftest for private memory conversions
+
+ Documentation/virt/kvm/api.rst                | 116 ++++
+ arch/arm64/include/asm/kvm_host.h             |   2 -
+ arch/arm64/kvm/Kconfig                        |   2 +-
+ arch/mips/include/asm/kvm_host.h              |   2 -
+ arch/mips/kvm/Kconfig                         |   2 +-
+ arch/powerpc/include/asm/kvm_host.h           |   2 -
+ arch/powerpc/kvm/Kconfig                      |   8 +-
+ arch/powerpc/kvm/book3s_hv.c                  |   2 +-
+ arch/powerpc/kvm/powerpc.c                    |   7 +-
+ arch/riscv/include/asm/kvm_host.h             |   2 -
+ arch/riscv/kvm/Kconfig                        |   2 +-
+ arch/x86/include/asm/kvm_host.h               |  17 +-
+ arch/x86/include/uapi/asm/kvm.h               |   3 +
+ arch/x86/kvm/Kconfig                          |  14 +-
+ arch/x86/kvm/debugfs.c                        |   2 +-
+ arch/x86/kvm/mmu/mmu.c                        | 264 +++++++-
+ arch/x86/kvm/mmu/mmu_internal.h               |   2 +
+ arch/x86/kvm/mmu/tdp_mmu.c                    |   2 +-
+ arch/x86/kvm/vmx/vmx.c                        |  11 +-
+ arch/x86/kvm/x86.c                            |  25 +-
+ include/linux/kvm_host.h                      | 143 +++-
+ include/linux/kvm_types.h                     |   1 +
+ include/linux/pagemap.h                       |  19 +-
+ include/uapi/linux/kvm.h                      |  67 ++
+ include/uapi/linux/magic.h                    |   1 +
+ mm/compaction.c                               |  43 +-
+ mm/migrate.c                                  |   2 +
+ security/security.c                           |   1 +
+ tools/testing/selftests/kvm/Makefile          |   3 +
+ tools/testing/selftests/kvm/dirty_log_test.c  |   2 +-
+ .../testing/selftests/kvm/guest_memfd_test.c  | 165 +++++
+ .../selftests/kvm/include/kvm_util_base.h     | 148 +++-
+ .../testing/selftests/kvm/include/test_util.h |   5 +
+ .../selftests/kvm/include/ucall_common.h      |  11 +
+ .../selftests/kvm/include/x86_64/processor.h  |  15 +
+ .../selftests/kvm/kvm_page_table_test.c       |   2 +-
+ tools/testing/selftests/kvm/lib/kvm_util.c    | 231 ++++---
+ tools/testing/selftests/kvm/lib/memstress.c   |   3 +-
+ .../selftests/kvm/set_memory_region_test.c    | 100 +++
+ .../kvm/x86_64/private_mem_conversions_test.c | 410 +++++++++++
+ .../kvm/x86_64/private_mem_kvm_exits_test.c   | 121 ++++
+ .../kvm/x86_64/ucna_injection_test.c          |   2 +-
+ virt/kvm/Kconfig                              |  17 +
+ virt/kvm/Makefile.kvm                         |   1 +
+ virt/kvm/dirty_ring.c                         |   2 +-
+ virt/kvm/guest_mem.c                          | 637 ++++++++++++++++++
+ virt/kvm/kvm_main.c                           | 482 +++++++++++--
+ virt/kvm/kvm_mm.h                             |  38 ++
+ 48 files changed, 2888 insertions(+), 271 deletions(-)
+ create mode 100644 tools/testing/selftests/kvm/guest_memfd_test.c
+ create mode 100644 tools/testing/selftests/kvm/x86_64/private_mem_conversions_test.c
+ create mode 100644 tools/testing/selftests/kvm/x86_64/private_mem_kvm_exits_test.c
+ create mode 100644 virt/kvm/guest_mem.c
+
+
+base-commit: 0bb80ecc33a8fb5a682236443c1e740d5c917d1d
 -- 
-2.34.1
+2.42.0.283.g2d96d420d3-goog
 
 
