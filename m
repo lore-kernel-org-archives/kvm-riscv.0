@@ -1,66 +1,111 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Thu, 14 Sep 2023 10:52:08 +0200
-Subject: [PATCH v3 5/9] KVM: riscv: selftests: Switch to use macro from
- csr.h
-In-Reply-To: <6cdda82518977c67004ee01a767bc67962352c13.1694421911.git.haibo1.xu@intel.com>
+Date: Thu, 14 Sep 2023 11:05:13 +0200
+Subject: [PATCH v3 8/9] KVM: riscv: selftests: Change vcpu_has_ext to a
+ common function
+In-Reply-To: <dd81ef2b87e4cc160cb0ee782010dcf3543e065a.1694421911.git.haibo1.xu@intel.com>
 References: <cover.1694421911.git.haibo1.xu@intel.com>
- <6cdda82518977c67004ee01a767bc67962352c13.1694421911.git.haibo1.xu@intel.com>
-Message-ID: <20230914-18bfe93b679e290188e70307@orel>
+ <dd81ef2b87e4cc160cb0ee782010dcf3543e065a.1694421911.git.haibo1.xu@intel.com>
+Message-ID: <20230914-d6645bbc5ac80999674e9685@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Sep 14, 2023 at 09:36:59AM +0800, Haibo Xu wrote:
+On Thu, Sep 14, 2023 at 09:37:02AM +0800, Haibo Xu wrote:
+> Move vcpu_has_ext to the processor.c and rename it to __vcpu_has_ext
+> so that other test cases can use it for vCPU extension check.
+> 
 > Signed-off-by: Haibo Xu <haibo1.xu@intel.com>
 > ---
->  tools/testing/selftests/kvm/include/riscv/processor.h | 8 +-------
->  1 file changed, 1 insertion(+), 7 deletions(-)
+>  .../selftests/kvm/include/riscv/processor.h      |  2 ++
+>  .../testing/selftests/kvm/lib/riscv/processor.c  |  9 +++++++++
+>  tools/testing/selftests/kvm/riscv/get-reg-list.c | 16 +---------------
+>  3 files changed, 12 insertions(+), 15 deletions(-)
 > 
 > diff --git a/tools/testing/selftests/kvm/include/riscv/processor.h b/tools/testing/selftests/kvm/include/riscv/processor.h
-> index 5b62a3d2aa9b..67766baed4f7 100644
+> index 2c975d9cead2..7d5517648ea7 100644
 > --- a/tools/testing/selftests/kvm/include/riscv/processor.h
 > +++ b/tools/testing/selftests/kvm/include/riscv/processor.h
-> @@ -8,6 +8,7 @@
->  #define SELFTEST_KVM_PROCESSOR_H
+> @@ -42,6 +42,8 @@ static inline uint64_t __kvm_reg_id(uint64_t type, uint64_t idx,
+>  #define RISCV_ISA_EXT_REG(idx)	__kvm_reg_id(KVM_REG_RISCV_ISA_EXT, \
+>  					     idx, KVM_REG_SIZE_ULONG)
 >  
->  #include "kvm_util.h"
-> +#include <asm/csr.h>
->  #include <linux/stringify.h>
-
-nit: Usually we try to keep the order of our includes separated into five
-categories, listed below, where each category is sorted alphabetically. Of
-course any dependencies the includes have on each other need to be
-considered too.
-
-<library-includes-without-a-subdir>
-<library-includes-with-subdir>
-<linux/...>
-<asm/...>
-"local-includes"
-
+> +bool __vcpu_has_ext(struct kvm_vcpu *vcpu, int ext);
+> +
+>  struct ex_regs {
+>  	unsigned long ra;
+>  	unsigned long sp;
+> diff --git a/tools/testing/selftests/kvm/lib/riscv/processor.c b/tools/testing/selftests/kvm/lib/riscv/processor.c
+> index 39a1e9902dec..e527ad0abc30 100644
+> --- a/tools/testing/selftests/kvm/lib/riscv/processor.c
+> +++ b/tools/testing/selftests/kvm/lib/riscv/processor.c
+> @@ -15,6 +15,15 @@
 >  
->  static inline uint64_t __kvm_reg_id(uint64_t type, uint64_t idx,
-> @@ -95,13 +96,6 @@ static inline uint64_t __kvm_reg_id(uint64_t type, uint64_t idx,
->  #define PGTBL_PAGE_SIZE				PGTBL_L0_BLOCK_SIZE
->  #define PGTBL_PAGE_SIZE_SHIFT			PGTBL_L0_BLOCK_SHIFT
+>  static vm_vaddr_t exception_handlers;
 >  
-> -#define SATP_PPN				_AC(0x00000FFFFFFFFFFF, UL)
-> -#define SATP_MODE_39				_AC(0x8000000000000000, UL)
-> -#define SATP_MODE_48				_AC(0x9000000000000000, UL)
-> -#define SATP_ASID_BITS				16
-> -#define SATP_ASID_SHIFT				44
-> -#define SATP_ASID_MASK				_AC(0xFFFF, UL)
+> +bool __vcpu_has_ext(struct kvm_vcpu *vcpu, int ext)
+> +{
+> +	unsigned long value = 0;
+> +
+> +	__vcpu_get_reg(vcpu, RISCV_ISA_EXT_REG(ext), &value);
+> +
+> +	return !!value;
+
+I'd rather not assume that value will remain zero across a system call
+which fails. Let's write this as
+
+     unsigned long value = 0;
+     int ret;
+
+     ret = __vcpu_get_reg(vcpu, RISCV_ISA_EXT_REG(ext), &value);
+
+     return !ret && !!value;
+
+> +}
+> +
+>  static uint64_t page_align(struct kvm_vm *vm, uint64_t v)
+>  {
+>  	return (v + vm->page_size) & ~(vm->page_size - 1);
+> diff --git a/tools/testing/selftests/kvm/riscv/get-reg-list.c b/tools/testing/selftests/kvm/riscv/get-reg-list.c
+> index d8ecacd03ecf..0dcff823f287 100644
+> --- a/tools/testing/selftests/kvm/riscv/get-reg-list.c
+> +++ b/tools/testing/selftests/kvm/riscv/get-reg-list.c
+> @@ -44,20 +44,6 @@ bool check_reject_set(int err)
+>  	return err == EINVAL;
+>  }
+>  
+> -static inline bool vcpu_has_ext(struct kvm_vcpu *vcpu, int ext)
+> -{
+> -	int ret;
+> -	unsigned long value;
 > -
->  #define SBI_EXT_EXPERIMENTAL_START		0x08000000
->  #define SBI_EXT_EXPERIMENTAL_END		0x08FFFFFF
+> -	ret = __vcpu_get_reg(vcpu, RISCV_ISA_EXT_REG(ext), &value);
+> -	if (ret) {
+> -		printf("Failed to get ext %d", ext);
+> -		return false;
+> -	}
+> -
+> -	return !!value;
+> -}
+> -
+>  void finalize_vcpu(struct kvm_vcpu *vcpu, struct vcpu_reg_list *c)
+>  {
+>  	struct vcpu_reg_sublist *s;
+> @@ -77,7 +63,7 @@ void finalize_vcpu(struct kvm_vcpu *vcpu, struct vcpu_reg_list *c)
+>  		__vcpu_set_reg(vcpu, RISCV_ISA_EXT_REG(s->feature), 1);
 >  
+>  		/* Double check whether the desired extension was enabled */
+> -		__TEST_REQUIRE(vcpu_has_ext(vcpu, s->feature),
+> +		__TEST_REQUIRE(__vcpu_has_ext(vcpu, s->feature),
+>  			       "%s not available, skipping tests\n", s->name);
+>  	}
+>  }
 > -- 
 > 2.34.1
 >
 
-Assuming the CONFIG_64BIT patch will come before this, then
+Otherwise,
 
 Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
 
