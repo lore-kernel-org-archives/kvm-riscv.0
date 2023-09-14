@@ -1,179 +1,124 @@
-From: Sean Christopherson <seanjc@google.com>
-Date: Wed, 13 Sep 2023 18:55:31 -0700
-Subject: [RFC PATCH v12 33/33] KVM: selftests: Test KVM exit behavior for
- private memory/access
-In-Reply-To: <20230914015531.1419405-1-seanjc@google.com>
+From: Binbin Wu <binbin.wu@linux.intel.com>
+Date: Thu, 14 Sep 2023 11:07:12 +0800
+Subject: [RFC PATCH v12 02/33] KVM: Use gfn instead of hva for
+ mmu_notifier_retry
+In-Reply-To: <20230914015531.1419405-3-seanjc@google.com>
 References: <20230914015531.1419405-1-seanjc@google.com>
-Message-ID: <20230914015531.1419405-34-seanjc@google.com>
+ <20230914015531.1419405-3-seanjc@google.com>
+Message-ID: <54d3e6bf-d374-caa5-0920-bb2fe3b7595c@linux.intel.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Ackerley Tng <ackerleytng@google.com>
 
-"Testing private access when memslot gets deleted" tests the behavior
-of KVM when a private memslot gets deleted while the VM is using the
-private memslot. When KVM looks up the deleted (slot = NULL) memslot,
-KVM should exit to userspace with KVM_EXIT_MEMORY_FAULT.
 
-In the second test, upon a private access to non-private memslot, KVM
-should also exit to userspace with KVM_EXIT_MEMORY_FAULT.
+On 9/14/2023 9:55 AM, Sean Christopherson wrote:
+> From: Chao Peng <chao.p.peng@linux.intel.com>
+>
+> Currently in mmu_notifier invalidate path, hva range is recorded and
+> then checked against by mmu_notifier_retry_hva() in the page fault
+> handling path. However, for the to be introduced private memory, a page
+> fault may not have a hva associated, checking gfn(gpa) makes more sense.
+>
+> For existing hva based shared memory, gfn is expected to also work. The
+> only downside is when aliasing multiple gfns to a single hva, the
+> current algorithm of checking multiple ranges could result in a much
+> larger range being rejected. Such aliasing should be uncommon, so the
+> impact is expected small.
+>
+> Suggested-by: Sean Christopherson <seanjc@google.com>
+> Signed-off-by: Chao Peng <chao.p.peng@linux.intel.com>
+> Reviewed-by: Fuad Tabba <tabba@google.com>
+> Tested-by: Fuad Tabba <tabba@google.com>
+> [sean: convert vmx_set_apic_access_page_addr() to gfn-based API]
+> Signed-off-by: Sean Christopherson <seanjc@google.com>
+> ---
+>   arch/x86/kvm/mmu/mmu.c   | 10 ++++++----
+>   arch/x86/kvm/vmx/vmx.c   | 11 +++++------
+>   include/linux/kvm_host.h | 33 +++++++++++++++++++++------------
+>   virt/kvm/kvm_main.c      | 40 +++++++++++++++++++++++++++++++---------
+>   4 files changed, 63 insertions(+), 31 deletions(-)
+>
+[...]
+>   
+> -void kvm_mmu_invalidate_begin(struct kvm *kvm, unsigned long start,
+> -			      unsigned long end)
+> +void kvm_mmu_invalidate_begin(struct kvm *kvm)
+>   {
+> +	lockdep_assert_held_write(&kvm->mmu_lock);
+>   	/*
+>   	 * The count increase must become visible at unlock time as no
+>   	 * spte can be established without taking the mmu_lock and
+>   	 * count is also read inside the mmu_lock critical section.
+>   	 */
+>   	kvm->mmu_invalidate_in_progress++;
+> +
+> +	if (likely(kvm->mmu_invalidate_in_progress == 1))
+> +		kvm->mmu_invalidate_range_start = INVALID_GPA;
+> +}
+> +
+> +void kvm_mmu_invalidate_range_add(struct kvm *kvm, gfn_t start, gfn_t end)
+> +{
+> +	lockdep_assert_held_write(&kvm->mmu_lock);
+> +
+> +	WARN_ON_ONCE(!kvm->mmu_invalidate_in_progress);
+> +
+>   	if (likely(kvm->mmu_invalidate_in_progress == 1)) {
+>   		kvm->mmu_invalidate_range_start = start;
+>   		kvm->mmu_invalidate_range_end = end;
+> @@ -771,6 +781,12 @@ void kvm_mmu_invalidate_begin(struct kvm *kvm, unsigned long start,
+>   	}
+>   }
+>   
+> +static bool kvm_mmu_unmap_gfn_range(struct kvm *kvm, struct kvm_gfn_range *range)
+> +{
+> +	kvm_mmu_invalidate_range_add(kvm, range->start, range->end);
+> +	return kvm_unmap_gfn_range(kvm, range);
+> +}
+> +
+>   static int kvm_mmu_notifier_invalidate_range_start(struct mmu_notifier *mn,
+>   					const struct mmu_notifier_range *range)
+>   {
+> @@ -778,7 +794,7 @@ static int kvm_mmu_notifier_invalidate_range_start(struct mmu_notifier *mn,
+>   	const struct kvm_mmu_notifier_range hva_range = {
+>   		.start		= range->start,
+>   		.end		= range->end,
+> -		.handler	= kvm_unmap_gfn_range,
+> +		.handler	= kvm_mmu_unmap_gfn_range,
+>   		.on_lock	= kvm_mmu_invalidate_begin,
+>   		.on_unlock	= kvm_arch_guest_memory_reclaimed,
+>   		.flush_on_ret	= true,
+> @@ -817,8 +833,7 @@ static int kvm_mmu_notifier_invalidate_range_start(struct mmu_notifier *mn,
+>   	return 0;
+>   }
+>   
+> -void kvm_mmu_invalidate_end(struct kvm *kvm, unsigned long start,
+> -			    unsigned long end)
+> +void kvm_mmu_invalidate_end(struct kvm *kvm)
+>   {
+>   	/*
+>   	 * This sequence increase will notify the kvm page fault that
+> @@ -833,6 +848,13 @@ void kvm_mmu_invalidate_end(struct kvm *kvm, unsigned long start,
+>   	 * in conjunction with the smp_rmb in mmu_invalidate_retry().
+>   	 */
+>   	kvm->mmu_invalidate_in_progress--;
+> +
+> +	/*
+> +	 * Assert that at least one range must be added between start() and
+> +	 * end().  Not adding a range isn't fatal, but it is a KVM bug.
+> +	 */
+> +	WARN_ON_ONCE(kvm->mmu_invalidate_in_progress &&
+> +		     kvm->mmu_invalidate_range_start == INVALID_GPA);
+Should the check happen before the decrease of 
+kvm->mmu_invalidate_in_progress?
+Otherwise, KVM calls kvm_mmu_invalidate_begin(), then 
+kvm_mmu_invalidate_end()
+the check will not take effect.
 
-sean: These testcases belong in set_memory_region_test.c, they're private
-variants on existing testscases and aren't as robust, e.g. don't ensure
-the vCPU is actually running and accessing memory when converting and
-deleting.
-
-Signed-off-by: Ackerley Tng <ackerleytng@google.com>
-Signed-off-by: Sean Christopherson <seanjc@google.com>
----
- tools/testing/selftests/kvm/Makefile          |   1 +
- .../kvm/x86_64/private_mem_kvm_exits_test.c   | 121 ++++++++++++++++++
- 2 files changed, 122 insertions(+)
- create mode 100644 tools/testing/selftests/kvm/x86_64/private_mem_kvm_exits_test.c
-
-diff --git a/tools/testing/selftests/kvm/Makefile b/tools/testing/selftests/kvm/Makefile
-index 2b1ef809d73a..f7fdd8244547 100644
---- a/tools/testing/selftests/kvm/Makefile
-+++ b/tools/testing/selftests/kvm/Makefile
-@@ -82,6 +82,7 @@ TEST_GEN_PROGS_x86_64 += x86_64/nested_exceptions_test
- TEST_GEN_PROGS_x86_64 += x86_64/platform_info_test
- TEST_GEN_PROGS_x86_64 += x86_64/pmu_event_filter_test
- TEST_GEN_PROGS_x86_64 += x86_64/private_mem_conversions_test
-+TEST_GEN_PROGS_x86_64 += x86_64/private_mem_kvm_exits_test
- TEST_GEN_PROGS_x86_64 += x86_64/set_boot_cpu_id
- TEST_GEN_PROGS_x86_64 += x86_64/set_sregs_test
- TEST_GEN_PROGS_x86_64 += x86_64/smaller_maxphyaddr_emulation_test
-diff --git a/tools/testing/selftests/kvm/x86_64/private_mem_kvm_exits_test.c b/tools/testing/selftests/kvm/x86_64/private_mem_kvm_exits_test.c
-new file mode 100644
-index 000000000000..1a61c51c2390
---- /dev/null
-+++ b/tools/testing/selftests/kvm/x86_64/private_mem_kvm_exits_test.c
-@@ -0,0 +1,121 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/*
-+ * Copyright (C) 2022, Google LLC.
-+ */
-+#include <linux/kvm.h>
-+#include <pthread.h>
-+#include <stdint.h>
-+
-+#include "kvm_util.h"
-+#include "processor.h"
-+#include "test_util.h"
-+
-+/* Arbitrarily selected to avoid overlaps with anything else */
-+#define EXITS_TEST_GVA 0xc0000000
-+#define EXITS_TEST_GPA EXITS_TEST_GVA
-+#define EXITS_TEST_NPAGES 1
-+#define EXITS_TEST_SIZE (EXITS_TEST_NPAGES * PAGE_SIZE)
-+#define EXITS_TEST_SLOT 10
-+
-+static uint64_t guest_repeatedly_read(void)
-+{
-+	volatile uint64_t value;
-+
-+	while (true)
-+		value = *((uint64_t *) EXITS_TEST_GVA);
-+
-+	return value;
-+}
-+
-+static uint32_t run_vcpu_get_exit_reason(struct kvm_vcpu *vcpu)
-+{
-+	int r;
-+
-+	r = _vcpu_run(vcpu);
-+	if (r) {
-+		TEST_ASSERT(errno == EFAULT, KVM_IOCTL_ERROR(KVM_RUN, r));
-+		TEST_ASSERT_EQ(vcpu->run->exit_reason, KVM_EXIT_MEMORY_FAULT);
-+	}
-+	return vcpu->run->exit_reason;
-+}
-+
-+const struct vm_shape protected_vm_shape = {
-+	.mode = VM_MODE_DEFAULT,
-+	.type = KVM_X86_SW_PROTECTED_VM,
-+};
-+
-+static void test_private_access_memslot_deleted(void)
-+{
-+	struct kvm_vm *vm;
-+	struct kvm_vcpu *vcpu;
-+	pthread_t vm_thread;
-+	void *thread_return;
-+	uint32_t exit_reason;
-+
-+	vm = vm_create_shape_with_one_vcpu(protected_vm_shape, &vcpu,
-+					   guest_repeatedly_read);
-+
-+	vm_userspace_mem_region_add(vm, VM_MEM_SRC_ANONYMOUS,
-+				    EXITS_TEST_GPA, EXITS_TEST_SLOT,
-+				    EXITS_TEST_NPAGES,
-+				    KVM_MEM_PRIVATE);
-+
-+	virt_map(vm, EXITS_TEST_GVA, EXITS_TEST_GPA, EXITS_TEST_NPAGES);
-+
-+	/* Request to access page privately */
-+	vm_mem_set_private(vm, EXITS_TEST_GPA, EXITS_TEST_SIZE);
-+
-+	pthread_create(&vm_thread, NULL,
-+		       (void *(*)(void *))run_vcpu_get_exit_reason,
-+		       (void *)vcpu);
-+
-+	vm_mem_region_delete(vm, EXITS_TEST_SLOT);
-+
-+	pthread_join(vm_thread, &thread_return);
-+	exit_reason = (uint32_t)(uint64_t)thread_return;
-+
-+	TEST_ASSERT_EQ(exit_reason, KVM_EXIT_MEMORY_FAULT);
-+	TEST_ASSERT_EQ(vcpu->run->memory_fault.flags, KVM_MEMORY_EXIT_FLAG_PRIVATE);
-+	TEST_ASSERT_EQ(vcpu->run->memory_fault.gpa, EXITS_TEST_GPA);
-+	TEST_ASSERT_EQ(vcpu->run->memory_fault.size, EXITS_TEST_SIZE);
-+
-+	kvm_vm_free(vm);
-+}
-+
-+static void test_private_access_memslot_not_private(void)
-+{
-+	struct kvm_vm *vm;
-+	struct kvm_vcpu *vcpu;
-+	uint32_t exit_reason;
-+
-+	vm = vm_create_shape_with_one_vcpu(protected_vm_shape, &vcpu,
-+					   guest_repeatedly_read);
-+
-+	/* Add a non-private memslot (flags = 0) */
-+	vm_userspace_mem_region_add(vm, VM_MEM_SRC_ANONYMOUS,
-+				    EXITS_TEST_GPA, EXITS_TEST_SLOT,
-+				    EXITS_TEST_NPAGES, 0);
-+
-+	virt_map(vm, EXITS_TEST_GVA, EXITS_TEST_GPA, EXITS_TEST_NPAGES);
-+
-+	/* Request to access page privately */
-+	vm_mem_set_private(vm, EXITS_TEST_GPA, EXITS_TEST_SIZE);
-+
-+	exit_reason = run_vcpu_get_exit_reason(vcpu);
-+
-+	TEST_ASSERT_EQ(exit_reason, KVM_EXIT_MEMORY_FAULT);
-+	TEST_ASSERT_EQ(vcpu->run->memory_fault.flags, KVM_MEMORY_EXIT_FLAG_PRIVATE);
-+	TEST_ASSERT_EQ(vcpu->run->memory_fault.gpa, EXITS_TEST_GPA);
-+	TEST_ASSERT_EQ(vcpu->run->memory_fault.size, EXITS_TEST_SIZE);
-+
-+	kvm_vm_free(vm);
-+}
-+
-+int main(int argc, char *argv[])
-+{
-+	TEST_REQUIRE(kvm_has_cap(KVM_CAP_GUEST_MEMFD));
-+	TEST_REQUIRE(kvm_check_cap(KVM_CAP_VM_TYPES) & BIT(KVM_X86_SW_PROTECTED_VM));
-+
-+	test_private_access_memslot_deleted();
-+	test_private_access_memslot_not_private();
-+}
--- 
-2.42.0.283.g2d96d420d3-goog
+>   }
+>   
+>   static void kvm_mmu_notifier_invalidate_range_end(struct mmu_notifier *mn,
 
 
