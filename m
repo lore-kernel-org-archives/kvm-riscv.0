@@ -1,76 +1,59 @@
-From: Sean Christopherson <seanjc@google.com>
-Date: Thu, 14 Sep 2023 07:19:57 -0700
-Subject: [RFC PATCH v12 02/33] KVM: Use gfn instead of hva for mmu_notifier_retry
-In-Reply-To: <54d3e6bf-d374-caa5-0920-bb2fe3b7595c@linux.intel.com>
-References: <20230914015531.1419405-1-seanjc@google.com> <20230914015531.1419405-3-seanjc@google.com>
- <54d3e6bf-d374-caa5-0920-bb2fe3b7595c@linux.intel.com>
-Message-ID: <ZQMWjbt/SzKvag2K@google.com>
+From: Anup Patel <apatel@ventanamicro.com>
+Date: Thu, 14 Sep 2023 22:26:34 +0530
+Subject: [kvmtool PATCH 0/6] RISC-V AIA irqchip and Svnapot support
+In-Reply-To: <20230725152430.3351564-1-apatel@ventanamicro.com>
+References: <20230725152430.3351564-1-apatel@ventanamicro.com>
+Message-ID: <CAK9=C2WkkEpA3YM99HMNRk743mkhk2FDEpV_ffG3UWH9Vy3YkA@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Sep 14, 2023, Binbin Wu wrote:
-> 
-> On 9/14/2023 9:55 AM, Sean Christopherson wrote:
-> > +void kvm_mmu_invalidate_end(struct kvm *kvm)
-> >   {
-> >   	/*
-> >   	 * This sequence increase will notify the kvm page fault that
-> > @@ -833,6 +848,13 @@ void kvm_mmu_invalidate_end(struct kvm *kvm, unsigned long start,
-> >   	 * in conjunction with the smp_rmb in mmu_invalidate_retry().
-> >   	 */
-> >   	kvm->mmu_invalidate_in_progress--;
-> > +
-> > +	/*
-> > +	 * Assert that at least one range must be added between start() and
-> > +	 * end().  Not adding a range isn't fatal, but it is a KVM bug.
-> > +	 */
-> > +	WARN_ON_ONCE(kvm->mmu_invalidate_in_progress &&
-> > +		     kvm->mmu_invalidate_range_start == INVALID_GPA);
-> Should the check happen before the decrease of kvm->mmu_invalidate_in_progress?
-> Otherwise, KVM calls kvm_mmu_invalidate_begin(), then kvm_mmu_invalidate_end()
-> the check will not take effect.
+Hi Will,
 
-Indeed.  I'm pretty sure I added this code, not sure what I was thinking.  There's
-no reason to check mmu_invalidate_in_progress, it's not like KVM allows
-mmu_invalidate_in_progress to go negative.  The comment is also a bit funky.  I'll
-post a fixup patch to make it look like this (assuming I'm not forgetting a subtle
-reason for guarding the check with the in-progress flag):
+On Tue, Jul 25, 2023 at 8:54?PM Anup Patel <apatel@ventanamicro.com> wrote:
+>
+> The latest KVM in Linux-6.5 has support for:
+> 1) Svnapot ISA extension support
+> 2) AIA in-kernel irqchip support
+>
+> This series adds corresponding changes in KVMTOOL to use the above
+> mentioned features for Guest/VM.
+>
+> These patches can also be found in the riscv_aia_v1 branch at:
+> https://github.com/avpatel/kvmtool.git
+>
+> Anup Patel (6):
+>   Sync-up header with Linux-6.5-rc3 for KVM RISC-V
+>   riscv: Add Svnapot extension support
+>   riscv: Make irqchip support pluggable
+>   riscv: Add IRQFD support for in-kernel AIA irqchip
+>   riscv: Use AIA in-kernel irqchip whenever KVM RISC-V supports
+>   riscv: Fix guest/init linkage for multilib toolchain
 
-	/*
-	 * Assert that at least one range was added between start() and end().
-	 * Not adding a range isn't fatal, but it is a KVM bug.
-	 */
-	WARN_ON_ONCE(kvm->mmu_invalidate_range_start == INVALID_GPA);
+Friendly ping ?
 
-Regarding kvm->mmu_invalidate_in_progress, this would be a good opportunity to
-move the BUG_ON() into the common end(), e.g. as is, an end() without a start()
-from something other than the generic mmu_notifier would go unnoticed.  And I
-_think_ we can replace the BUG_ON() with a KVM_BUG_ON() without putting the
-kernel at risk.  E.g.
+Regards,
+Anup
 
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index dd948276e5d6..54480655bcce 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -870,6 +870,7 @@ void kvm_mmu_invalidate_end(struct kvm *kvm)
-         * in conjunction with the smp_rmb in mmu_invalidate_retry().
-         */
-        kvm->mmu_invalidate_in_progress--;
-+       KVM_BUG_ON(kvm->mmu_invalidate_in_progress < 0, kvm);
- 
-        /*
-         * Assert that@least one range was added between start() and end().
-@@ -905,8 +906,6 @@ static void kvm_mmu_notifier_invalidate_range_end(struct mmu_notifier *mn,
-         */
-        if (wake)
-                rcuwait_wake_up(&kvm->mn_memslots_update_rcuwait);
--
--       BUG_ON(kvm->mmu_invalidate_in_progress < 0);
- }
- 
- static int kvm_mmu_notifier_clear_flush_young(struct mmu_notifier *mn,
-
+>
+>  Makefile                            |   3 +
+>  include/linux/kvm.h                 |   6 +-
+>  riscv/aia.c                         | 227 ++++++++++++++++++++++++++++
+>  riscv/fdt.c                         |  15 +-
+>  riscv/include/asm/kvm.h             |  81 ++++++++++
+>  riscv/include/kvm/fdt-arch.h        |   8 +-
+>  riscv/include/kvm/kvm-arch.h        |  38 ++++-
+>  riscv/include/kvm/kvm-config-arch.h |   3 +
+>  riscv/irq.c                         | 138 ++++++++++++++++-
+>  riscv/kvm.c                         |   2 +
+>  riscv/pci.c                         |  32 ++--
+>  riscv/plic.c                        |  61 ++++----
+>  12 files changed, 563 insertions(+), 51 deletions(-)
+>  create mode 100644 riscv/aia.c
+>
+> --
+> 2.34.1
+>
 
