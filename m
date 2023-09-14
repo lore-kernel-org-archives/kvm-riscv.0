@@ -1,203 +1,239 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Wed, 13 Sep 2023 18:55:16 -0700
-Subject: [RFC PATCH v12 18/33] KVM: x86/mmu: Handle page fault for private memory
+Date: Wed, 13 Sep 2023 18:55:19 -0700
+Subject: [RFC PATCH v12 21/33] KVM: x86: Add support for "protected VMs" that
+ can utilize private memory
 In-Reply-To: <20230914015531.1419405-1-seanjc@google.com>
 References: <20230914015531.1419405-1-seanjc@google.com>
-Message-ID: <20230914015531.1419405-19-seanjc@google.com>
+Message-ID: <20230914015531.1419405-22-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Chao Peng <chao.p.peng@linux.intel.com>
-
-A KVM_MEM_PRIVATE memslot can include both fd-based private memory and
-hva-based shared memory. Architecture code (like TDX code) can tell
-whether the on-going fault is private or not. This patch adds a
-'is_private' field to kvm_page_fault to indicate this and architecture
-code is expected to set it.
-
-To handle page fault for such memslot, the handling logic is different
-depending on whether the fault is private or shared. KVM checks if
-'is_private' matches the host's view of the page (maintained in
-mem_attr_array).
-  - For a successful match, private pfn is obtained with
-    restrictedmem_get_page() and shared pfn is obtained with existing
-    get_user_pages().
-  - For a failed match, KVM causes a KVM_EXIT_MEMORY_FAULT exit to
-    userspace. Userspace then can convert memory between private/shared
-    in host's view and retry the fault.
-
-Co-developed-by: Yu Zhang <yu.c.zhang@linux.intel.com>
-Signed-off-by: Yu Zhang <yu.c.zhang@linux.intel.com>
-Signed-off-by: Chao Peng <chao.p.peng@linux.intel.com>
-Co-developed-by: Sean Christopherson <seanjc@google.com>
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/x86/kvm/mmu/mmu.c          | 94 +++++++++++++++++++++++++++++++--
+ Documentation/virt/kvm/api.rst  | 32 ++++++++++++++++++++++++++++++++
+ arch/x86/include/asm/kvm_host.h | 15 +++++++++------
+ arch/x86/include/uapi/asm/kvm.h |  3 +++
+ arch/x86/kvm/Kconfig            | 12 ++++++++++++
  arch/x86/kvm/mmu/mmu_internal.h |  1 +
- 2 files changed, 90 insertions(+), 5 deletions(-)
+ arch/x86/kvm/x86.c              | 16 +++++++++++++++-
+ include/uapi/linux/kvm.h        |  1 +
+ virt/kvm/Kconfig                |  5 +++++
+ 8 files changed, 78 insertions(+), 7 deletions(-)
 
-diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
-index a079f36a8bf5..9b48d8d0300b 100644
---- a/arch/x86/kvm/mmu/mmu.c
-+++ b/arch/x86/kvm/mmu/mmu.c
-@@ -3147,9 +3147,9 @@ static int host_pfn_mapping_level(struct kvm *kvm, gfn_t gfn,
- 	return level;
- }
+diff --git a/Documentation/virt/kvm/api.rst b/Documentation/virt/kvm/api.rst
+index c44ef5295a12..5e08f2a157ef 100644
+--- a/Documentation/virt/kvm/api.rst
++++ b/Documentation/virt/kvm/api.rst
+@@ -147,10 +147,29 @@ described as 'basic' will be available.
+ The new VM has no virtual cpus and no memory.
+ You probably want to use 0 as machine type.
  
--int kvm_mmu_max_mapping_level(struct kvm *kvm,
--			      const struct kvm_memory_slot *slot, gfn_t gfn,
--			      int max_level)
-+static int __kvm_mmu_max_mapping_level(struct kvm *kvm,
-+				       const struct kvm_memory_slot *slot,
-+				       gfn_t gfn, int max_level, bool is_private)
++X86:
++^^^^
++
++Supported X86 VM types can be queried via KVM_CAP_VM_TYPES.
++
++S390:
++^^^^^
++
+ In order to create user controlled virtual machines on S390, check
+ KVM_CAP_S390_UCONTROL and use the flag KVM_VM_S390_UCONTROL as
+ privileged user (CAP_SYS_ADMIN).
+ 
++MIPS:
++^^^^^
++
++To use hardware assisted virtualization on MIPS (VZ ASE) rather than
++the default trap & emulate implementation (which changes the virtual
++memory layout to fit in user mode), check KVM_CAP_MIPS_VZ and use the
++flag KVM_VM_MIPS_VZ.
++
++ARM64:
++^^^^^^
++
+ On arm64, the physical address size for a VM (IPA Size limit) is limited
+ to 40bits by default. The limit can be configured if the host supports the
+ extension KVM_CAP_ARM_VM_IPA_SIZE. When supported, use
+@@ -8558,6 +8577,19 @@ block sizes is exposed in KVM_CAP_ARM_SUPPORTED_BLOCK_SIZES as a
+ This capability indicates KVM supports per-page memory attributes and ioctls
+ KVM_GET_SUPPORTED_MEMORY_ATTRIBUTES/KVM_SET_MEMORY_ATTRIBUTES are available.
+ 
++8.41 KVM_CAP_VM_TYPES
++---------------------
++
++:Capability: KVM_CAP_MEMORY_ATTRIBUTES
++:Architectures: x86
++:Type: system ioctl
++
++This capability returns a bitmap of support VM types.  The 1-setting of bit @n
++means the VM type with value @n is supported.  Possible values of @n are::
++
++  #define KVM_X86_DEFAULT_VM	0
++  #define KVM_X86_SW_PROTECTED_VM	1
++
+ 9. Known KVM API problems
+ =========================
+ 
+diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
+index 44d67a97304e..95018cc653f5 100644
+--- a/arch/x86/include/asm/kvm_host.h
++++ b/arch/x86/include/asm/kvm_host.h
+@@ -1245,6 +1245,7 @@ enum kvm_apicv_inhibit {
+ };
+ 
+ struct kvm_arch {
++	unsigned long vm_type;
+ 	unsigned long n_used_mmu_pages;
+ 	unsigned long n_requested_mmu_pages;
+ 	unsigned long n_max_mmu_pages;
+@@ -2079,6 +2080,12 @@ void kvm_mmu_new_pgd(struct kvm_vcpu *vcpu, gpa_t new_pgd);
+ void kvm_configure_mmu(bool enable_tdp, int tdp_forced_root_level,
+ 		       int tdp_max_root_level, int tdp_huge_page_level);
+ 
++#ifdef CONFIG_KVM_PRIVATE_MEM
++#define kvm_arch_has_private_mem(kvm) ((kvm)->arch.vm_type != KVM_X86_DEFAULT_VM)
++#else
++#define kvm_arch_has_private_mem(kvm) false
++#endif
++
+ static inline u16 kvm_read_ldt(void)
  {
- 	struct kvm_lpage_info *linfo;
- 	int host_level;
-@@ -3161,6 +3161,9 @@ int kvm_mmu_max_mapping_level(struct kvm *kvm,
- 			break;
- 	}
+ 	u16 ldt;
+@@ -2127,14 +2134,10 @@ enum {
+ #define HF_SMM_INSIDE_NMI_MASK	(1 << 2)
  
-+	if (is_private)
-+		return max_level;
-+
- 	if (max_level == PG_LEVEL_4K)
- 		return PG_LEVEL_4K;
+ # define KVM_MAX_NR_ADDRESS_SPACES	2
++/* SMM is currently unsupported for guests with private memory. */
++# define kvm_arch_nr_memslot_as_ids(kvm) (kvm_arch_has_private_mem(kvm) ? 1 : 2)
+ # define kvm_arch_vcpu_memslots_id(vcpu) ((vcpu)->arch.hflags & HF_SMM_MASK ? 1 : 0)
+ # define kvm_memslots_for_spte_role(kvm, role) __kvm_memslots(kvm, (role).smm)
+-
+-static inline int kvm_arch_nr_memslot_as_ids(struct kvm *kvm)
+-{
+-	return KVM_MAX_NR_ADDRESS_SPACES;
+-}
+-
+ #else
+ # define kvm_memslots_for_spte_role(kvm, role) __kvm_memslots(kvm, 0)
+ #endif
+diff --git a/arch/x86/include/uapi/asm/kvm.h b/arch/x86/include/uapi/asm/kvm.h
+index 1a6a1f987949..a448d0964fc0 100644
+--- a/arch/x86/include/uapi/asm/kvm.h
++++ b/arch/x86/include/uapi/asm/kvm.h
+@@ -562,4 +562,7 @@ struct kvm_pmu_event_filter {
+ /* x86-specific KVM_EXIT_HYPERCALL flags. */
+ #define KVM_EXIT_HYPERCALL_LONG_MODE	BIT(0)
  
-@@ -3168,6 +3171,16 @@ int kvm_mmu_max_mapping_level(struct kvm *kvm,
- 	return min(host_level, max_level);
- }
++#define KVM_X86_DEFAULT_VM	0
++#define KVM_X86_SW_PROTECTED_VM	1
++
+ #endif /* _ASM_X86_KVM_H */
+diff --git a/arch/x86/kvm/Kconfig b/arch/x86/kvm/Kconfig
+index 091b74599c22..8452ed0228cb 100644
+--- a/arch/x86/kvm/Kconfig
++++ b/arch/x86/kvm/Kconfig
+@@ -77,6 +77,18 @@ config KVM_WERROR
  
-+int kvm_mmu_max_mapping_level(struct kvm *kvm,
-+			      const struct kvm_memory_slot *slot, gfn_t gfn,
-+			      int max_level)
-+{
-+	bool is_private = kvm_slot_can_be_private(slot) &&
-+			  kvm_mem_is_private(kvm, gfn);
-+
-+	return __kvm_mmu_max_mapping_level(kvm, slot, gfn, max_level, is_private);
-+}
-+
- void kvm_mmu_hugepage_adjust(struct kvm_vcpu *vcpu, struct kvm_page_fault *fault)
- {
- 	struct kvm_memory_slot *slot = fault->slot;
-@@ -3188,8 +3201,9 @@ void kvm_mmu_hugepage_adjust(struct kvm_vcpu *vcpu, struct kvm_page_fault *fault
- 	 * Enforce the iTLB multihit workaround after capturing the requested
- 	 * level, which will be used to do precise, accurate accounting.
- 	 */
--	fault->req_level = kvm_mmu_max_mapping_level(vcpu->kvm, slot,
--						     fault->gfn, fault->max_level);
-+	fault->req_level = __kvm_mmu_max_mapping_level(vcpu->kvm, slot,
-+						       fault->gfn, fault->max_level,
-+						       fault->is_private);
- 	if (fault->req_level == PG_LEVEL_4K || fault->huge_page_disallowed)
- 		return;
+ 	  If in doubt, say "N".
  
-@@ -4261,6 +4275,55 @@ void kvm_arch_async_page_ready(struct kvm_vcpu *vcpu, struct kvm_async_pf *work)
- 	kvm_mmu_do_page_fault(vcpu, work->cr2_or_gpa, 0, true, NULL);
- }
- 
-+static inline u8 kvm_max_level_for_order(int order)
-+{
-+	BUILD_BUG_ON(KVM_MAX_HUGEPAGE_LEVEL > PG_LEVEL_1G);
++config KVM_SW_PROTECTED_VM
++	bool "Enable support for KVM software-protected VMs"
++	depends on EXPERT
++	depends on X86_64
++	select KVM_GENERIC_PRIVATE_MEM
++	help
++	  Enable support for KVM software-protected VMs.  Currently "protected"
++	  means the VM can be backed with memory provided by
++	  KVM_CREATE_GUEST_MEMFD.
 +
-+	KVM_MMU_WARN_ON(order != KVM_HPAGE_GFN_SHIFT(PG_LEVEL_1G) &&
-+			order != KVM_HPAGE_GFN_SHIFT(PG_LEVEL_2M) &&
-+			order != KVM_HPAGE_GFN_SHIFT(PG_LEVEL_4K));
++	  If unsure, say "N".
 +
-+	if (order >= KVM_HPAGE_GFN_SHIFT(PG_LEVEL_1G))
-+		return PG_LEVEL_1G;
-+
-+	if (order >= KVM_HPAGE_GFN_SHIFT(PG_LEVEL_2M))
-+		return PG_LEVEL_2M;
-+
-+	return PG_LEVEL_4K;
-+}
-+
-+static void kvm_mmu_prepare_memory_fault_exit(struct kvm_vcpu *vcpu,
-+					      struct kvm_page_fault *fault)
-+{
-+	kvm_prepare_memory_fault_exit(vcpu, fault->gfn << PAGE_SHIFT,
-+				      PAGE_SIZE, fault->write, fault->exec,
-+				      fault->is_private);
-+}
-+
-+static int kvm_faultin_pfn_private(struct kvm_vcpu *vcpu,
-+				   struct kvm_page_fault *fault)
-+{
-+	int max_order, r;
-+
-+	if (!kvm_slot_can_be_private(fault->slot)) {
-+		kvm_mmu_prepare_memory_fault_exit(vcpu, fault);
-+		return -EFAULT;
-+	}
-+
-+	r = kvm_gmem_get_pfn(vcpu->kvm, fault->slot, fault->gfn, &fault->pfn,
-+			     &max_order);
-+	if (r) {
-+		kvm_mmu_prepare_memory_fault_exit(vcpu, fault);
-+		return r;
-+	}
-+
-+	fault->max_level = min(kvm_max_level_for_order(max_order),
-+			       fault->max_level);
-+	fault->map_writable = !(fault->slot->flags & KVM_MEM_READONLY);
-+
-+	return RET_PF_CONTINUE;
-+}
-+
- static int __kvm_faultin_pfn(struct kvm_vcpu *vcpu, struct kvm_page_fault *fault)
- {
- 	struct kvm_memory_slot *slot = fault->slot;
-@@ -4293,6 +4356,14 @@ static int __kvm_faultin_pfn(struct kvm_vcpu *vcpu, struct kvm_page_fault *fault
- 			return RET_PF_EMULATE;
- 	}
- 
-+	if (fault->is_private != kvm_mem_is_private(vcpu->kvm, fault->gfn)) {
-+		kvm_mmu_prepare_memory_fault_exit(vcpu, fault);
-+		return -EFAULT;
-+	}
-+
-+	if (fault->is_private)
-+		return kvm_faultin_pfn_private(vcpu, fault);
-+
- 	async = false;
- 	fault->pfn = __gfn_to_pfn_memslot(slot, fault->gfn, false, false, &async,
- 					  fault->write, &fault->map_writable,
-@@ -7184,6 +7255,19 @@ void kvm_mmu_pre_destroy_vm(struct kvm *kvm)
- }
- 
- #ifdef CONFIG_KVM_GENERIC_MEMORY_ATTRIBUTES
-+bool kvm_arch_pre_set_memory_attributes(struct kvm *kvm,
-+					struct kvm_gfn_range *range)
-+{
-+	/*
-+	 * KVM x86 currently only supports KVM_MEMORY_ATTRIBUTE_PRIVATE, skip
-+	 * the slot if the slot will never consume the PRIVATE attribute.
-+	 */
-+	if (!kvm_slot_can_be_private(range->slot))
-+		return false;
-+
-+	return kvm_mmu_unmap_gfn_range(kvm, range);
-+}
-+
- static bool hugepage_test_mixed(struct kvm_memory_slot *slot, gfn_t gfn,
- 				int level)
- {
+ config KVM_INTEL
+ 	tristate "KVM for Intel (and compatible) processors support"
+ 	depends on KVM && IA32_FEAT_CTL
 diff --git a/arch/x86/kvm/mmu/mmu_internal.h b/arch/x86/kvm/mmu/mmu_internal.h
-index b102014e2c60..4efbf43b4b18 100644
+index 4efbf43b4b18..71ba4f833dc1 100644
 --- a/arch/x86/kvm/mmu/mmu_internal.h
 +++ b/arch/x86/kvm/mmu/mmu_internal.h
-@@ -202,6 +202,7 @@ struct kvm_page_fault {
+@@ -298,6 +298,7 @@ static inline int kvm_mmu_do_page_fault(struct kvm_vcpu *vcpu, gpa_t cr2_or_gpa,
+ 		.max_level = KVM_MAX_HUGEPAGE_LEVEL,
+ 		.req_level = PG_LEVEL_4K,
+ 		.goal_level = PG_LEVEL_4K,
++		.is_private = kvm_mem_is_private(vcpu->kvm, cr2_or_gpa >> PAGE_SHIFT),
+ 	};
+ 	int r;
  
- 	/* Derived from mmu and global state.  */
- 	const bool is_tdp;
-+	const bool is_private;
- 	const bool nx_huge_page_workaround_enabled;
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index f1da61236670..767236b4d771 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -4441,6 +4441,13 @@ static int kvm_ioctl_get_supported_hv_cpuid(struct kvm_vcpu *vcpu,
+ 	return 0;
+ }
  
- 	/*
++static bool kvm_is_vm_type_supported(unsigned long type)
++{
++	return type == KVM_X86_DEFAULT_VM ||
++	       (type == KVM_X86_SW_PROTECTED_VM &&
++		IS_ENABLED(CONFIG_KVM_SW_PROTECTED_VM) && tdp_enabled);
++}
++
+ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
+ {
+ 	int r = 0;
+@@ -4631,6 +4638,11 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
+ 	case KVM_CAP_X86_NOTIFY_VMEXIT:
+ 		r = kvm_caps.has_notify_vmexit;
+ 		break;
++	case KVM_CAP_VM_TYPES:
++		r = BIT(KVM_X86_DEFAULT_VM);
++		if (kvm_is_vm_type_supported(KVM_X86_SW_PROTECTED_VM))
++			r |= BIT(KVM_X86_SW_PROTECTED_VM);
++		break;
+ 	default:
+ 		break;
+ 	}
+@@ -12302,9 +12314,11 @@ int kvm_arch_init_vm(struct kvm *kvm, unsigned long type)
+ 	int ret;
+ 	unsigned long flags;
+ 
+-	if (type)
++	if (!kvm_is_vm_type_supported(type))
+ 		return -EINVAL;
+ 
++	kvm->arch.vm_type = type;
++
+ 	ret = kvm_page_track_init(kvm);
+ 	if (ret)
+ 		goto out;
+diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
+index 2df18796fd8e..65fc983af840 100644
+--- a/include/uapi/linux/kvm.h
++++ b/include/uapi/linux/kvm.h
+@@ -1233,6 +1233,7 @@ struct kvm_ppc_resize_hpt {
+ #define KVM_CAP_USER_MEMORY2 230
+ #define KVM_CAP_MEMORY_ATTRIBUTES 231
+ #define KVM_CAP_GUEST_MEMFD 232
++#define KVM_CAP_VM_TYPES 233
+ 
+ #ifdef KVM_CAP_IRQ_ROUTING
+ 
+diff --git a/virt/kvm/Kconfig b/virt/kvm/Kconfig
+index 08afef022db9..2c964586aa14 100644
+--- a/virt/kvm/Kconfig
++++ b/virt/kvm/Kconfig
+@@ -104,3 +104,8 @@ config KVM_GENERIC_MEMORY_ATTRIBUTES
+ config KVM_PRIVATE_MEM
+        select XARRAY_MULTI
+        bool
++
++config KVM_GENERIC_PRIVATE_MEM
++       select KVM_GENERIC_MEMORY_ATTRIBUTES
++       select KVM_PRIVATE_MEM
++       bool
 -- 
 2.42.0.283.g2d96d420d3-goog
 
