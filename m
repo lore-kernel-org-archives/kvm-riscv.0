@@ -1,63 +1,165 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Wed, 13 Sep 2023 18:55:08 -0700
-Subject: [RFC PATCH v12 10/33] KVM: Set the stage for handling only shared
- mappings in mmu_notifier events
+Date: Wed, 13 Sep 2023 18:55:10 -0700
+Subject: [RFC PATCH v12 12/33] mm: Add AS_UNMOVABLE to mark mapping as
+ completely unmovable
 In-Reply-To: <20230914015531.1419405-1-seanjc@google.com>
 References: <20230914015531.1419405-1-seanjc@google.com>
-Message-ID: <20230914015531.1419405-11-seanjc@google.com>
+Message-ID: <20230914015531.1419405-13-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add flags to "struct kvm_gfn_range" to let notifier events target only
-shared and only private mappings, and write up the existing mmu_notifier
-events to be shared-only (private memory is never associated with a
-userspace virtual address, i.e. can't be reached via mmu_notifiers).
+Add an "unmovable" flag for mappings that cannot be migrated under any
+circumstance.  KVM will use the flag for its upcoming GUEST_MEMFD support,
+which will not support compaction/migration, at least not in the
+foreseeable future.
 
-Add two flags so that KVM can handle the three possibilities (shared,
-private, and shared+private) without needing something like a tri-state
-enum.
+Test AS_UNMOVABLE under folio lock as already done for the async
+compaction/dirty folio case, as the mapping can be removed by truncation
+while compaction is running.  To avoid having to lock every folio with a
+mapping, assume/require that unmovable mappings are also unevictable, and
+have mapping_set_unmovable() also set AS_UNEVICTABLE.
 
-Link: https://lore.kernel.org/all/ZJX0hk+KpQP0KUyB at google.com
+Cc: Matthew Wilcox <willy@infradead.org>
+Co-developed-by: Vlastimil Babka <vbabka@suse.cz>
+Signed-off-by: Vlastimil Babka <vbabka@suse.cz>
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- include/linux/kvm_host.h | 2 ++
- virt/kvm/kvm_main.c      | 7 +++++++
- 2 files changed, 9 insertions(+)
+ include/linux/pagemap.h | 19 +++++++++++++++++-
+ mm/compaction.c         | 43 +++++++++++++++++++++++++++++------------
+ mm/migrate.c            |  2 ++
+ 3 files changed, 51 insertions(+), 13 deletions(-)
 
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index d8c6ce6c8211..b5373cee2b08 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -263,6 +263,8 @@ struct kvm_gfn_range {
- 	gfn_t start;
- 	gfn_t end;
- 	union kvm_mmu_notifier_arg arg;
-+	bool only_private;
-+	bool only_shared;
- 	bool may_block;
+diff --git a/include/linux/pagemap.h b/include/linux/pagemap.h
+index 351c3b7f93a1..82c9bf506b79 100644
+--- a/include/linux/pagemap.h
++++ b/include/linux/pagemap.h
+@@ -203,7 +203,8 @@ enum mapping_flags {
+ 	/* writeback related tags are not used */
+ 	AS_NO_WRITEBACK_TAGS = 5,
+ 	AS_LARGE_FOLIO_SUPPORT = 6,
+-	AS_RELEASE_ALWAYS,	/* Call ->release_folio(), even if no private data */
++	AS_RELEASE_ALWAYS = 7,	/* Call ->release_folio(), even if no private data */
++	AS_UNMOVABLE	= 8,	/* The mapping cannot be moved, ever */
  };
- bool kvm_unmap_gfn_range(struct kvm *kvm, struct kvm_gfn_range *range);
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 174de2789657..a41f8658dfe0 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -635,6 +635,13 @@ static __always_inline kvm_mn_ret_t __kvm_handle_hva_range(struct kvm *kvm,
- 			 * the second or later invocation of the handler).
- 			 */
- 			gfn_range.arg = range->arg;
+ 
+ /**
+@@ -289,6 +290,22 @@ static inline void mapping_clear_release_always(struct address_space *mapping)
+ 	clear_bit(AS_RELEASE_ALWAYS, &mapping->flags);
+ }
+ 
++static inline void mapping_set_unmovable(struct address_space *mapping)
++{
++	/*
++	 * It's expected unmovable mappings are also unevictable. Compaction
++	 * migrate scanner (isolate_migratepages_block()) relies on this to
++	 * reduce page locking.
++	 */
++	set_bit(AS_UNEVICTABLE, &mapping->flags);
++	set_bit(AS_UNMOVABLE, &mapping->flags);
++}
 +
-+			/*
-+			 * HVA-based notifications aren't relevant to private
-+			 * mappings as they don't have a userspace mapping.
-+			 */
-+			gfn_range.only_private = false;
-+			gfn_range.only_shared = true;
- 			gfn_range.may_block = range->may_block;
++static inline bool mapping_unmovable(struct address_space *mapping)
++{
++	return test_bit(AS_UNMOVABLE, &mapping->flags);
++}
++
+ static inline gfp_t mapping_gfp_mask(struct address_space * mapping)
+ {
+ 	return mapping->gfp_mask;
+diff --git a/mm/compaction.c b/mm/compaction.c
+index 38c8d216c6a3..12b828aed7c8 100644
+--- a/mm/compaction.c
++++ b/mm/compaction.c
+@@ -883,6 +883,7 @@ isolate_migratepages_block(struct compact_control *cc, unsigned long low_pfn,
+ 
+ 	/* Time to isolate some pages for migration */
+ 	for (; low_pfn < end_pfn; low_pfn++) {
++		bool is_dirty, is_unevictable;
+ 
+ 		if (skip_on_failure && low_pfn >= next_skip_pfn) {
+ 			/*
+@@ -1080,8 +1081,10 @@ isolate_migratepages_block(struct compact_control *cc, unsigned long low_pfn,
+ 		if (!folio_test_lru(folio))
+ 			goto isolate_fail_put;
+ 
++		is_unevictable = folio_test_unevictable(folio);
++
+ 		/* Compaction might skip unevictable pages but CMA takes them */
+-		if (!(mode & ISOLATE_UNEVICTABLE) && folio_test_unevictable(folio))
++		if (!(mode & ISOLATE_UNEVICTABLE) && is_unevictable)
+ 			goto isolate_fail_put;
+ 
+ 		/*
+@@ -1093,26 +1096,42 @@ isolate_migratepages_block(struct compact_control *cc, unsigned long low_pfn,
+ 		if ((mode & ISOLATE_ASYNC_MIGRATE) && folio_test_writeback(folio))
+ 			goto isolate_fail_put;
+ 
+-		if ((mode & ISOLATE_ASYNC_MIGRATE) && folio_test_dirty(folio)) {
+-			bool migrate_dirty;
++		is_dirty = folio_test_dirty(folio);
++
++		if (((mode & ISOLATE_ASYNC_MIGRATE) && is_dirty) ||
++		    (mapping && is_unevictable)) {
++			bool migrate_dirty = true;
++			bool is_unmovable;
  
  			/*
+ 			 * Only folios without mappings or that have
+-			 * a ->migrate_folio callback are possible to
+-			 * migrate without blocking.  However, we may
+-			 * be racing with truncation, which can free
+-			 * the mapping.  Truncation holds the folio lock
+-			 * until after the folio is removed from the page
+-			 * cache so holding it ourselves is sufficient.
++			 * a ->migrate_folio callback are possible to migrate
++			 * without blocking.
++			 *
++			 * Folios from unmovable mappings are not migratable.
++			 *
++			 * However, we can be racing with truncation, which can
++			 * free the mapping that we need to check. Truncation
++			 * holds the folio lock until after the folio is removed
++			 * from the page so holding it ourselves is sufficient.
++			 *
++			 * To avoid locking the folio just to check unmovable,
++			 * assume every unmovable folio is also unevictable,
++			 * which is a cheaper test.  If our assumption goes
++			 * wrong, it's not a correctness bug, just potentially
++			 * wasted cycles.
+ 			 */
+ 			if (!folio_trylock(folio))
+ 				goto isolate_fail_put;
+ 
+ 			mapping = folio_mapping(folio);
+-			migrate_dirty = !mapping ||
+-					mapping->a_ops->migrate_folio;
++			if ((mode & ISOLATE_ASYNC_MIGRATE) && is_dirty) {
++				migrate_dirty = !mapping ||
++						mapping->a_ops->migrate_folio;
++			}
++			is_unmovable = mapping && mapping_unmovable(mapping);
+ 			folio_unlock(folio);
+-			if (!migrate_dirty)
++			if (!migrate_dirty || is_unmovable)
+ 				goto isolate_fail_put;
+ 		}
+ 
+diff --git a/mm/migrate.c b/mm/migrate.c
+index b7fa020003f3..3d25c145098d 100644
+--- a/mm/migrate.c
++++ b/mm/migrate.c
+@@ -953,6 +953,8 @@ static int move_to_new_folio(struct folio *dst, struct folio *src,
+ 
+ 		if (!mapping)
+ 			rc = migrate_folio(mapping, dst, src, mode);
++		else if (mapping_unmovable(mapping))
++			rc = -EOPNOTSUPP;
+ 		else if (mapping->a_ops->migrate_folio)
+ 			/*
+ 			 * Most folios have a mapping and most filesystems
 -- 
 2.42.0.283.g2d96d420d3-goog
 
