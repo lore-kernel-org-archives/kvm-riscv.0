@@ -1,157 +1,66 @@
-From: Sean Christopherson <seanjc@google.com>
-Date: Thu, 14 Sep 2023 17:33:53 -0700
-Subject: [RFC PATCH v11 12/29] KVM: Add KVM_CREATE_GUEST_MEMFD ioctl() for
- guest-specific backing memory
-In-Reply-To: <diqzv8ccjqbd.fsf@ackerleytng-ctop.c.googlers.com>
-References: <ZOO782YGRY0YMuPu@google.com> <diqzttsiu67n.fsf@ackerleytng-ctop.c.googlers.com>
- <ZQNN2AyDJ8dF0/6D@google.com> <diqzv8ccjqbd.fsf@ackerleytng-ctop.c.googlers.com>
-Message-ID: <ZQOmcc969s90DwNz@google.com>
+From: Haibo Xu <xiaobo55x@gmail.com>
+Date: Fri, 15 Sep 2023 14:08:41 +0800
+Subject: [PATCH v3 4/9] tools: riscv: Add header file csr.h
+In-Reply-To: <20230914-90a562a03985a9a97afd953a@orel>
+References: <cover.1694421911.git.haibo1.xu@intel.com> <119c9d06d64b7e4932c5f74a05af1e769cbe7da6.1694421911.git.haibo1.xu@intel.com>
+ <20230914-90a562a03985a9a97afd953a@orel>
+Message-ID: <CAJve8o=uZGovGBdtYYxiodGnXO-kE9jj=8pkc5+_Tk+dirQO1Q@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Sep 14, 2023, Ackerley Tng wrote:
-> Sean Christopherson <seanjc@google.com> writes:
-> 
-> > On Mon, Aug 28, 2023, Ackerley Tng wrote:
-> >> Sean Christopherson <seanjc@google.com> writes:
-> >> >> If we track struct kvm with the inode, then I think (a), (b) and (c) can
-> >> >> be independent of the refcounting method. What do you think?
-> >> >
-> >> > No go.  Because again, the inode (physical memory) is coupled to the virtual machine
-> >> > as a thing, not to a "struct kvm".  Or more concretely, the inode is coupled to an
-> >> > ASID or an HKID, and there can be multiple "struct kvm" objects associated with a
-> >> > single ASID.  And at some point in the future, I suspect we'll have multiple KVM
-> >> > objects per HKID too.
-> >> >
-> >> > The current SEV use case is for the migration helper, where two KVM objects share
-> >> > a single ASID (the "real" VM and the helper).  I suspect TDX will end up with
-> >> > similar behavior where helper "VMs" can use the HKID of the "real" VM.  For KVM,
-> >> > that means multiple struct kvm objects being associated with a single HKID.
-> >> >
-> >> > To prevent use-after-free, KVM "just" needs to ensure the helper instances can't
-> >> > outlive the real instance, i.e. can't use the HKID/ASID after the owning virtual
-> >> > machine has been destroyed.
-> >> >
-> >> > To put it differently, "struct kvm" is a KVM software construct that _usually_,
-> >> > but not always, is associated 1:1 with a virtual machine.
-> >> >
-> >> > And FWIW, stashing the pointer without holding a reference would not be a complete
-> >> > solution, because it couldn't guard against KVM reusing a pointer.  E.g. if a
-> >> > struct kvm was unbound and then freed, KVM could reuse the same memory for a new
-> >> > struct kvm, with a different ASID/HKID, and get a false negative on the rebinding
-> >> > check.
-> >> 
-> >> I agree that inode (physical memory) is coupled to the virtual machine
-> >> as a more generic concept.
-> >> 
-> >> I was hoping that in the absence of CC hardware providing a HKID/ASID,
-> >> the struct kvm pointer could act as a representation of the "virtual
-> >> machine". You're definitely right that KVM could reuse a pointer and so
-> >> that idea doesn't stand.
-> >> 
-> >> I thought about generating UUIDs to represent "virtual machines" in the
-> >> absence of CC hardware, and this UUID could be transferred during
-> >> intra-host migration, but this still doesn't take host userspace out of
-> >> the TCB. A malicious host VMM could just use the migration ioctl to copy
-> >> the UUID to a malicious dumper VM, which would then pass checks with a
-> >> gmem file linked to the malicious dumper VM. This is fine for HKID/ASIDs
-> >> because the memory is encrypted; with UUIDs there's no memory
-> >> encryption.
+On Thu, Sep 14, 2023 at 4:14?PM Andrew Jones <ajones@ventanamicro.com> wrote:
+>
+> On Thu, Sep 14, 2023 at 09:36:58AM +0800, Haibo Xu wrote:
+> > Borrow the csr definitions and operations from kernel's
+> > arch/riscv/include/asm/csr.h to tools/ for riscv. Since
+> > only 64bit was supported for RISC-V KVM selftests, add
+> > CONFIG_64BIT definition in kvm/Makefile to ensure only
+> > 64bit registers were available in csr.h.
 > >
-> > I don't understand what problem you're trying to solve.  I don't see a need to
-> > provide a single concrete representation/definition of a "virtual machine".  E.g.
-> > there's no need for a formal definition to securely perform intrahost migration,
-> > KVM just needs to ensure that the migration doesn't compromise guest security,
-> > functionality, etc.
+> > Suggested-by: Andrew Jones <ajones@ventanamicro.com>
+> > Signed-off-by: Haibo Xu <haibo1.xu@intel.com>
+> > Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+> > ---
+> >  tools/arch/riscv/include/asm/csr.h   | 521 +++++++++++++++++++++++++++
+> >  tools/testing/selftests/kvm/Makefile |   3 +
+> >  2 files changed, 524 insertions(+)
+> >  create mode 100644 tools/arch/riscv/include/asm/csr.h
 > >
-> > That gets a lot more complex if the target KVM instance (module, not "struct kvm")
-> > is a different KVM, e.g. when migrating to a different host.  Then there needs to
-> > be a way to attest that the target is trusted and whatnot, but that still doesn't
-> > require there to be a formal definition of a "virtual machine".
-> >
-> >> Circling back to the original topic, was associating the file with
-> >> struct kvm at gmem file creation time meant to constrain the use of the
-> >> gmem file to one struct kvm, or one virtual machine, or something else?
-> >
-> > It's meant to keep things as simple as possible (relatively speaking).  A 1:1
-> > association between a KVM instance and a gmem instance means we don't have to
-> > worry about the edge cases and oddities I pointed out earlier in this thread.
-> >
-> 
-> I looked through this thread again and re-read the edge cases and
-> oddities that was pointed out earlier (last paragraph at [1]) and I
-> think I understand better, and I have just one last clarification.
-> 
-> It was previously mentioned that binding on creation time simplifies the
-> lifecycle of memory:
-> 
-> "(a) prevent a different VM from *ever* binding to the gmem instance" [1]
-> 
-> Does this actually mean
-> 
-> "prevent a different struct kvm from *ever* binding to this gmem file"
-> 
-> ?
+> > diff --git a/tools/arch/riscv/include/asm/csr.h b/tools/arch/riscv/include/asm/csr.h
+> > new file mode 100644
+> > index 000000000000..4e86c82aacbd
+> > --- /dev/null
+> > +++ b/tools/arch/riscv/include/asm/csr.h
+> ...
+> > diff --git a/tools/testing/selftests/kvm/Makefile b/tools/testing/selftests/kvm/Makefile
+> > index 0102a0297b84..89ecee2fdb73 100644
+> > --- a/tools/testing/selftests/kvm/Makefile
+> > +++ b/tools/testing/selftests/kvm/Makefile
+> > @@ -222,6 +222,9 @@ CFLAGS += -Wall -Wstrict-prototypes -Wuninitialized -O2 -g -std=gnu99 \
+> >  ifeq ($(ARCH),s390)
+> >       CFLAGS += -march=z10
+> >  endif
+> > +ifeq ($(ARCH),riscv)
+> > +     CFLAGS += -DCONFIG_64BIT
+> > +endif
+>
+> This should be a separate patch, since the "import csr.h to tools" should
+> be completely separate from anything else. Also, all architectures that
+> KVM selftests supports are 64-bit, so, as another completely separate
+> patch, I think we should just add CONFIG_64BIT to CFLAGS for all builds,
+> especially since there's a chance some of the includes the other
+> architectures are using may need it. Of course we'll need sign-off and
+> testing from the other arch maintainers.
+>
 
-Yes.
+Sure. Will fix it in V4.
 
-> If so, then binding on creation
-> 
-> + Makes the gmem *file* (and just not the bindings xarray) the binding
->   between struct kvm and the file.
+Thanks,
+Haibo
 
-Yep.
-
-> + Simplifies the KVM-userspace contract to "this gmem file can only be
->   used with this struct kvm"
-
-Yep.
-
-> Binding on creation doesn't offer any way to block the contents of the
-> inode from being used with another "virtual machine" though, since we
-> can have more than one gmem file pointing to the same inode, and the
-> other gmem file is associated with another struct kvm. (And a strut kvm
-> isn't associated 1:1 with a virtual machine [2])
-
-Yep.
-
-> The point about an inode needing to be coupled to a virtual machine as a
-> thing [2] led me to try to find a single concrete representation of a
-> "virtual machine".
-> 
-> Is locking inode contents to a "virtual machine" outside the scope of
-> gmem?
-
-Yes, because it's not gmem's responsibility to define "secure" (from a guest
-perspective) or "safe" (from a platform stability and correctness perspective).
-
-E.g. inserting additional vCPUs into the VM a la the SEV migration helper thing
-is comically insecure without some way to attest the helper code.  Building policy
-into the host kernel/KVM to do that attestation or otherwise determine what code
-is/isn't safe for the guest to run is firmly out-of-scope.  KVM can certainly
-provide the tools and help with enforcement, but the policy needs to be defined
-elsewhere.  Even for something like pKVM, where KVM is in the TCB, KVM still doesn't
-define who/what to trust (though KVM is heavily involved in enforcing security
-stuff).
-
-And for platform safety, e.g. not allowing two VMs to use the same HKID (ignoring
-helpers for the moment), that's a KVM problem but NOT a gmem problem.  The point
-I raised in link[2] about a gmem inode and thus the HKID/ASID associated with the
-inode being bound to the "virtual machine" still holds true, but (a) it's not a
-1:1 correlation, e.g. a VM could utilize multiple gmem inodes (all with the same
-HKID/ASID), and (b) the safety and functional correctness aspects aren't unique
-to gmem, e.g. even when when gmem isn't in the picture, KVM needs to make sure it
-manages ASIDs correctly.  The only difference with SNP in the picture is that if
-KVM screws up ASID management, bad things happen to the host, not (just) the guest.
-
->  If so, then it is fine to bind on creation time, use a VM ioctl
-> over a system ioctl, and the method of refcounting in gmem v12 is okay.
-> 
-> [1] https://lore.kernel.org/lkml/ZNKv9ul2I7A4V7IF at google.com/
-> [2] https://lore.kernel.org/lkml/ZOO782YGRY0YMuPu at google.com/
-> 
-> > <snip>
+> Thanks,
+> drew
 
