@@ -1,45 +1,79 @@
-From: Xiaoyao Li <xiaoyao.li@intel.com>
-Date: Fri, 15 Sep 2023 14:47:13 +0800
-Subject: [RFC PATCH v12 01/33] KVM: Tweak kvm_hva_range and hva_handler_t
- to allow reusing for gfn ranges
-In-Reply-To: <20230914015531.1419405-2-seanjc@google.com>
-References: <20230914015531.1419405-1-seanjc@google.com>
- <20230914015531.1419405-2-seanjc@google.com>
-Message-ID: <d4166c97-6ab3-89a2-eb12-f492f7521f69@intel.com>
+From: Anup Patel <apatel@ventanamicro.com>
+Date: Fri, 15 Sep 2023 12:27:59 +0530
+Subject: [PATCH v5 0/7] Risc-V Kvm Smstateen
+In-Reply-To: <20230913163905.480819-1-mchitale@ventanamicro.com>
+References: <20230913163905.480819-1-mchitale@ventanamicro.com>
+Message-ID: <CAK9=C2VF0Q=sZn48fhqOCY5jBq8OR-YyJOrh6AREsYhUnivcVA@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 9/14/2023 9:54 AM, Sean Christopherson wrote:
-> Rework and rename "struct kvm_hva_range" into "kvm_mmu_notifier_range" so
-> that the structure can be used to handle notifications that operate on gfn
-> context, i.e. that aren't tied to a host virtual address.
-> 
-> Practically speaking, this is a nop for 64-bit kernels as the only
-> meaningful change is to store start+end as u64s instead of unsigned longs.
-> 
-> Reviewed-by: Paolo Bonzini <pbonzini@redhat.com>
-> Signed-off-by: Sean Christopherson <seanjc@google.com>
-> ---
->   virt/kvm/kvm_main.c | 34 +++++++++++++++++++---------------
->   1 file changed, 19 insertions(+), 15 deletions(-)
-> 
-> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-> index 486800a7024b..0524933856d4 100644
-> --- a/virt/kvm/kvm_main.c
-> +++ b/virt/kvm/kvm_main.c
-> @@ -541,18 +541,22 @@ static inline struct kvm *mmu_notifier_to_kvm(struct mmu_notifier *mn)
->   	return container_of(mn, struct kvm, mmu_notifier);
->   }
->   
-> -typedef bool (*hva_handler_t)(struct kvm *kvm, struct kvm_gfn_range *range);
-> +typedef bool (*gfn_handler_t)(struct kvm *kvm, struct kvm_gfn_range *range);
+On Wed, Sep 13, 2023 at 10:10?PM Mayuresh Chitale
+<mchitale@ventanamicro.com> wrote:
+>
+> This series adds support to detect the Smstateen extension for both, the
+> host and the guest vcpu. It also adds senvcfg and sstateen0 to the ONE_REG
+> interface and the vcpu context save/restore.
+>
+> The motivation behind Smstateen from the spec
+> (https://github.com/riscv/riscv-state-enable):
+> "The implementation of optional RISC-V extensions has the potential to open
+> covert channels between separate user threads, or between separate guest OSes
+> running under a hypervisor. The problem occurs when an extension adds processor
+> state---usually explicit registers, but possibly other forms of state---that
+> the main OS or hypervisor is unaware of (and hence won?t context-switch) but
+> that can be modified/written by one user thread or guest OS and perceived/
+> examined/read by another."
+>
+> Changes in v5:
+> - Rebased on latest linux master
+>
+> Changes in v4:
+> - Update commit description for patch 1
+> - Rebase to kvm_riscv_queue
+> - Add reviewed-by tag
+>
+> Changes in v3:
+> - Move DT bindings change to a separate patch
+> - Move senvcfg/sstateen0 save/restore to separate function
+>
+> Changes in v2:
+> - Add smstaeen description in riscv/extensions.yaml
+> - Avoid line wrap at 80 chars
+>
+> Mayuresh Chitale (7):
+>   RISC-V: Detect Smstateen extension
+>   dt-bindings: riscv: Add smstateen entry
+>   RISC-V: KVM: Add kvm_vcpu_config
+>   RISC-V: KVM: Enable Smstateen accesses
+>   RISCV: KVM: Add senvcfg context save/restore
+>   RISCV: KVM: Add sstateen0 context save/restore
+>   RISCV: KVM: Add sstateen0 to ONE_REG
 
-Is it worth mentioning the rename of it as well in changelog?
+Queued this series for Linux-6.7
 
-Anyway,
+Thanks,
+Anup
 
-Reviewed-by: Xiaoyao Li <xiaoyao.li@intel.com>
+>
+>  .../devicetree/bindings/riscv/extensions.yaml |  6 ++
+>  arch/riscv/include/asm/csr.h                  | 18 +++++
+>  arch/riscv/include/asm/hwcap.h                |  1 +
+>  arch/riscv/include/asm/kvm_host.h             | 18 +++++
+>  arch/riscv/include/uapi/asm/kvm.h             | 10 +++
+>  arch/riscv/kernel/cpufeature.c                |  1 +
+>  arch/riscv/kvm/vcpu.c                         | 70 +++++++++++++++----
+>  arch/riscv/kvm/vcpu_onereg.c                  | 41 +++++++++++
+>  8 files changed, 152 insertions(+), 13 deletions(-)
+>
+> --
+> 2.34.1
+>
+>
+> --
+> kvm-riscv mailing list
+> kvm-riscv at lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/kvm-riscv
 
