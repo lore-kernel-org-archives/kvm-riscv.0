@@ -1,66 +1,74 @@
 From: Haibo Xu <xiaobo55x@gmail.com>
-Date: Fri, 15 Sep 2023 14:08:41 +0800
-Subject: [PATCH v3 4/9] tools: riscv: Add header file csr.h
-In-Reply-To: <20230914-90a562a03985a9a97afd953a@orel>
-References: <cover.1694421911.git.haibo1.xu@intel.com> <119c9d06d64b7e4932c5f74a05af1e769cbe7da6.1694421911.git.haibo1.xu@intel.com>
- <20230914-90a562a03985a9a97afd953a@orel>
-Message-ID: <CAJve8o=uZGovGBdtYYxiodGnXO-kE9jj=8pkc5+_Tk+dirQO1Q@mail.gmail.com>
+Date: Fri, 15 Sep 2023 14:13:13 +0800
+Subject: [PATCH v3 5/9] KVM: riscv: selftests: Switch to use macro from csr.h
+In-Reply-To: <20230914-18bfe93b679e290188e70307@orel>
+References: <cover.1694421911.git.haibo1.xu@intel.com> <6cdda82518977c67004ee01a767bc67962352c13.1694421911.git.haibo1.xu@intel.com>
+ <20230914-18bfe93b679e290188e70307@orel>
+Message-ID: <CAJve8okdUtcCihGh4wRb9rHTxuL7=7_1FY8Ez0+QMr=+x7fzoQ@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Sep 14, 2023 at 4:14?PM Andrew Jones <ajones@ventanamicro.com> wrote:
+On Thu, Sep 14, 2023 at 4:52?PM Andrew Jones <ajones@ventanamicro.com> wrote:
 >
-> On Thu, Sep 14, 2023 at 09:36:58AM +0800, Haibo Xu wrote:
-> > Borrow the csr definitions and operations from kernel's
-> > arch/riscv/include/asm/csr.h to tools/ for riscv. Since
-> > only 64bit was supported for RISC-V KVM selftests, add
-> > CONFIG_64BIT definition in kvm/Makefile to ensure only
-> > 64bit registers were available in csr.h.
-> >
-> > Suggested-by: Andrew Jones <ajones@ventanamicro.com>
+> On Thu, Sep 14, 2023 at 09:36:59AM +0800, Haibo Xu wrote:
 > > Signed-off-by: Haibo Xu <haibo1.xu@intel.com>
-> > Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
 > > ---
-> >  tools/arch/riscv/include/asm/csr.h   | 521 +++++++++++++++++++++++++++
-> >  tools/testing/selftests/kvm/Makefile |   3 +
-> >  2 files changed, 524 insertions(+)
-> >  create mode 100644 tools/arch/riscv/include/asm/csr.h
+> >  tools/testing/selftests/kvm/include/riscv/processor.h | 8 +-------
+> >  1 file changed, 1 insertion(+), 7 deletions(-)
 > >
-> > diff --git a/tools/arch/riscv/include/asm/csr.h b/tools/arch/riscv/include/asm/csr.h
-> > new file mode 100644
-> > index 000000000000..4e86c82aacbd
-> > --- /dev/null
-> > +++ b/tools/arch/riscv/include/asm/csr.h
-> ...
-> > diff --git a/tools/testing/selftests/kvm/Makefile b/tools/testing/selftests/kvm/Makefile
-> > index 0102a0297b84..89ecee2fdb73 100644
-> > --- a/tools/testing/selftests/kvm/Makefile
-> > +++ b/tools/testing/selftests/kvm/Makefile
-> > @@ -222,6 +222,9 @@ CFLAGS += -Wall -Wstrict-prototypes -Wuninitialized -O2 -g -std=gnu99 \
-> >  ifeq ($(ARCH),s390)
-> >       CFLAGS += -march=z10
-> >  endif
-> > +ifeq ($(ARCH),riscv)
-> > +     CFLAGS += -DCONFIG_64BIT
-> > +endif
+> > diff --git a/tools/testing/selftests/kvm/include/riscv/processor.h b/tools/testing/selftests/kvm/include/riscv/processor.h
+> > index 5b62a3d2aa9b..67766baed4f7 100644
+> > --- a/tools/testing/selftests/kvm/include/riscv/processor.h
+> > +++ b/tools/testing/selftests/kvm/include/riscv/processor.h
+> > @@ -8,6 +8,7 @@
+> >  #define SELFTEST_KVM_PROCESSOR_H
+> >
+> >  #include "kvm_util.h"
+> > +#include <asm/csr.h>
+> >  #include <linux/stringify.h>
 >
-> This should be a separate patch, since the "import csr.h to tools" should
-> be completely separate from anything else. Also, all architectures that
-> KVM selftests supports are 64-bit, so, as another completely separate
-> patch, I think we should just add CONFIG_64BIT to CFLAGS for all builds,
-> especially since there's a chance some of the includes the other
-> architectures are using may need it. Of course we'll need sign-off and
-> testing from the other arch maintainers.
+> nit: Usually we try to keep the order of our includes separated into five
+> categories, listed below, where each category is sorted alphabetically. Of
+> course any dependencies the includes have on each other need to be
+> considered too.
+>
+> <library-includes-without-a-subdir>
+> <library-includes-with-subdir>
+> <linux/...>
+> <asm/...>
+> "local-includes"
 >
 
-Sure. Will fix it in V4.
+It's very helpful. Thanks for sharing it!
+Will fix it in v4.
 
-Thanks,
-Haibo
-
+> >
+> >  static inline uint64_t __kvm_reg_id(uint64_t type, uint64_t idx,
+> > @@ -95,13 +96,6 @@ static inline uint64_t __kvm_reg_id(uint64_t type, uint64_t idx,
+> >  #define PGTBL_PAGE_SIZE                              PGTBL_L0_BLOCK_SIZE
+> >  #define PGTBL_PAGE_SIZE_SHIFT                        PGTBL_L0_BLOCK_SHIFT
+> >
+> > -#define SATP_PPN                             _AC(0x00000FFFFFFFFFFF, UL)
+> > -#define SATP_MODE_39                         _AC(0x8000000000000000, UL)
+> > -#define SATP_MODE_48                         _AC(0x9000000000000000, UL)
+> > -#define SATP_ASID_BITS                               16
+> > -#define SATP_ASID_SHIFT                              44
+> > -#define SATP_ASID_MASK                               _AC(0xFFFF, UL)
+> > -
+> >  #define SBI_EXT_EXPERIMENTAL_START           0x08000000
+> >  #define SBI_EXT_EXPERIMENTAL_END             0x08FFFFFF
+> >
+> > --
+> > 2.34.1
+> >
+>
+> Assuming the CONFIG_64BIT patch will come before this, then
+>
+> Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+>
 > Thanks,
 > drew
 
