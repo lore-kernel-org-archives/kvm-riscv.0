@@ -1,44 +1,52 @@
-From: Haibo Xu <xiaobo55x@gmail.com>
-Date: Fri, 15 Sep 2023 14:23:37 +0800
-Subject: [PATCH v3 9/9] KVM: riscv: selftests: Add sstc timer test
-In-Reply-To: <20230914-2232dea1c6d03fb5985755e6@orel>
-References: <cover.1694421911.git.haibo1.xu@intel.com> <64e0637cd6f22dd7557ed44bd2242001e7830d1c.1694421911.git.haibo1.xu@intel.com>
- <20230914-ee133dd5e804282ce28833d6@orel> <20230914-reflector-preshow-786425ad7ae2@wendy>
- <20230914-2232dea1c6d03fb5985755e6@orel>
-Message-ID: <CAJve8ok9de0bGMU24iyUSX6V4+1tZM3ca=Ntyk=2gythd4uWCg@mail.gmail.com>
+From: Yan Zhao <yan.y.zhao@intel.com>
+Date: Fri, 15 Sep 2023 14:11:18 +0800
+Subject: [RFC PATCH v12 14/33] KVM: Add KVM_CREATE_GUEST_MEMFD ioctl()
+ for guest-specific backing memory
+In-Reply-To: <20230914015531.1419405-15-seanjc@google.com>
+References: <20230914015531.1419405-1-seanjc@google.com>
+ <20230914015531.1419405-15-seanjc@google.com>
+Message-ID: <ZQP1hiV7c9UGLRfu@yzhao56-desk.sh.intel.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Sep 14, 2023 at 6:15?PM Andrew Jones <ajones@ventanamicro.com> wrote:
->
-> On Thu, Sep 14, 2023 at 10:52:15AM +0100, Conor Dooley wrote:
-> > On Thu, Sep 14, 2023 at 11:36:01AM +0200, Andrew Jones wrote:
-> > > > +static inline void cpu_relax(void)
-> > > > +{
-> > > > +#ifdef __riscv_zihintpause
-> > > > + asm volatile("pause" ::: "memory");
-> > > > +#else
-> > > > + /* Encoding of the pause instruction */
-> > > > + asm volatile(".4byte 0x100000F" ::: "memory");
-> > > > +#endif
-> > > > +}
-> > >
-> > > cpu_relax() should go to include/riscv/processor.h
-> >
-> > Can the one from asm/vdso/processor.h be reused, or are there special
-> > considerations preventing that?
->
-> We'd need to copy it into tools/arch/riscv/include/asm, but it could be
-> done. Hmm, now that I look at it, I see we're missing the barrier() call
-> in this kvm selftests version.
->
+On Wed, Sep 13, 2023 at 06:55:12PM -0700, Sean Christopherson wrote:
+> +static struct folio *kvm_gmem_get_folio(struct file *file, pgoff_t index)
+> +{
+> +	struct folio *folio;
+> +
+> +	/* TODO: Support huge pages. */
+> +	folio = filemap_grab_folio(file->f_mapping, index);
+> +	if (IS_ERR_OR_NULL(folio))
+> +		return NULL;
+> +
+> +	/*
+> +	 * Use the up-to-date flag to track whether or not the memory has been
+> +	 * zeroed before being handed off to the guest.  There is no backing
+> +	 * storage for the memory, so the folio will remain up-to-date until
+> +	 * it's removed.
+> +	 *
+> +	 * TODO: Skip clearing pages when trusted firmware will do it when
+> +	 * assigning memory to the guest.
+> +	 */
+> +	if (!folio_test_uptodate(folio)) {
+> +		unsigned long nr_pages = folio_nr_pages(folio);
+> +		unsigned long i;
+> +
+> +		for (i = 0; i < nr_pages; i++)
+> +			clear_highpage(folio_page(folio, i));
+> +
+> +		folio_mark_uptodate(folio);
+> +	}
+> +
+> +	/*
+> +	 * Ignore accessed, referenced, and dirty flags.  The memory is
+> +	 * unevictable and there is no storage to write back to.
+> +	 */
+> +	return folio;
+> +}
+If VFIO wants to map a private page, is it required to call this function for PFN?
 
-Will reuse the one from asm/vdso/processor.h and copy it to
-tools/arch/riscv/include/asm.
-
-> Thanks,
-> drew
 
