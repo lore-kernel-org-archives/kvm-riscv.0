@@ -1,119 +1,81 @@
-From: Haibo Xu <xiaobo55x@gmail.com>
-Date: Fri, 15 Sep 2023 14:14:15 +0800
-Subject: [PATCH v3 8/9] KVM: riscv: selftests: Change vcpu_has_ext to a
- common function
-In-Reply-To: <20230914-d6645bbc5ac80999674e9685@orel>
-References: <cover.1694421911.git.haibo1.xu@intel.com> <dd81ef2b87e4cc160cb0ee782010dcf3543e065a.1694421911.git.haibo1.xu@intel.com>
- <20230914-d6645bbc5ac80999674e9685@orel>
-Message-ID: <CAJve8omvH67vBoh1tVpUad7sXxRXUgQxNZzqfXFmKj0NHqGDFQ@mail.gmail.com>
+From: Yan Zhao <yan.y.zhao@intel.com>
+Date: Fri, 15 Sep 2023 13:40:00 +0800
+Subject: [RFC PATCH v12 18/33] KVM: x86/mmu: Handle page fault for
+ private memory
+In-Reply-To: <20230914015531.1419405-19-seanjc@google.com>
+References: <20230914015531.1419405-1-seanjc@google.com>
+ <20230914015531.1419405-19-seanjc@google.com>
+Message-ID: <ZQPuMK6D/7UzDH+D@yzhao56-desk.sh.intel.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Sep 14, 2023 at 5:05?PM Andrew Jones <ajones@ventanamicro.com> wrote:
->
-> On Thu, Sep 14, 2023 at 09:37:02AM +0800, Haibo Xu wrote:
-> > Move vcpu_has_ext to the processor.c and rename it to __vcpu_has_ext
-> > so that other test cases can use it for vCPU extension check.
-> >
-> > Signed-off-by: Haibo Xu <haibo1.xu@intel.com>
-> > ---
-> >  .../selftests/kvm/include/riscv/processor.h      |  2 ++
-> >  .../testing/selftests/kvm/lib/riscv/processor.c  |  9 +++++++++
-> >  tools/testing/selftests/kvm/riscv/get-reg-list.c | 16 +---------------
-> >  3 files changed, 12 insertions(+), 15 deletions(-)
-> >
-> > diff --git a/tools/testing/selftests/kvm/include/riscv/processor.h b/tools/testing/selftests/kvm/include/riscv/processor.h
-> > index 2c975d9cead2..7d5517648ea7 100644
-> > --- a/tools/testing/selftests/kvm/include/riscv/processor.h
-> > +++ b/tools/testing/selftests/kvm/include/riscv/processor.h
-> > @@ -42,6 +42,8 @@ static inline uint64_t __kvm_reg_id(uint64_t type, uint64_t idx,
-> >  #define RISCV_ISA_EXT_REG(idx)       __kvm_reg_id(KVM_REG_RISCV_ISA_EXT, \
-> >                                            idx, KVM_REG_SIZE_ULONG)
-> >
-> > +bool __vcpu_has_ext(struct kvm_vcpu *vcpu, int ext);
-> > +
-> >  struct ex_regs {
-> >       unsigned long ra;
-> >       unsigned long sp;
-> > diff --git a/tools/testing/selftests/kvm/lib/riscv/processor.c b/tools/testing/selftests/kvm/lib/riscv/processor.c
-> > index 39a1e9902dec..e527ad0abc30 100644
-> > --- a/tools/testing/selftests/kvm/lib/riscv/processor.c
-> > +++ b/tools/testing/selftests/kvm/lib/riscv/processor.c
-> > @@ -15,6 +15,15 @@
-> >
-> >  static vm_vaddr_t exception_handlers;
-> >
-> > +bool __vcpu_has_ext(struct kvm_vcpu *vcpu, int ext)
-> > +{
-> > +     unsigned long value = 0;
-> > +
-> > +     __vcpu_get_reg(vcpu, RISCV_ISA_EXT_REG(ext), &value);
-> > +
-> > +     return !!value;
->
-> I'd rather not assume that value will remain zero across a system call
-> which fails. Let's write this as
->
->      unsigned long value = 0;
->      int ret;
->
->      ret = __vcpu_get_reg(vcpu, RISCV_ISA_EXT_REG(ext), &value);
->
->      return !ret && !!value;
->
+On Wed, Sep 13, 2023 at 06:55:16PM -0700, Sean Christopherson wrote:
+....
+> +static void kvm_mmu_prepare_memory_fault_exit(struct kvm_vcpu *vcpu,
+> +					      struct kvm_page_fault *fault)
+> +{
+> +	kvm_prepare_memory_fault_exit(vcpu, fault->gfn << PAGE_SHIFT,
+> +				      PAGE_SIZE, fault->write, fault->exec,
+> +				      fault->is_private);
+> +}
+> +
+> +static int kvm_faultin_pfn_private(struct kvm_vcpu *vcpu,
+> +				   struct kvm_page_fault *fault)
+> +{
+> +	int max_order, r;
+> +
+> +	if (!kvm_slot_can_be_private(fault->slot)) {
+> +		kvm_mmu_prepare_memory_fault_exit(vcpu, fault);
+> +		return -EFAULT;
+> +	}
+> +
+> +	r = kvm_gmem_get_pfn(vcpu->kvm, fault->slot, fault->gfn, &fault->pfn,
+> +			     &max_order);
+> +	if (r) {
+> +		kvm_mmu_prepare_memory_fault_exit(vcpu, fault);
+> +		return r;
+> +	}
+> +
+> +	fault->max_level = min(kvm_max_level_for_order(max_order),
+> +			       fault->max_level);
+> +	fault->map_writable = !(fault->slot->flags & KVM_MEM_READONLY);
+> +
+> +	return RET_PF_CONTINUE;
+> +}
+> +
+>  static int __kvm_faultin_pfn(struct kvm_vcpu *vcpu, struct kvm_page_fault *fault)
+>  {
+>  	struct kvm_memory_slot *slot = fault->slot;
+> @@ -4293,6 +4356,14 @@ static int __kvm_faultin_pfn(struct kvm_vcpu *vcpu, struct kvm_page_fault *fault
+>  			return RET_PF_EMULATE;
+>  	}
+>  
+> +	if (fault->is_private != kvm_mem_is_private(vcpu->kvm, fault->gfn)) {
+In patch 21,
+fault->is_private is set as:
+	".is_private = kvm_mem_is_private(vcpu->kvm, cr2_or_gpa >> PAGE_SHIFT)",
+then, the inequality here means memory attribute has been updated after
+last check.
+So, why an exit to user space for converting is required instead of a mere retry?
 
-Sure. Thanks for the suggestion!
+Or, is it because how .is_private is assigned in patch 21 is subjected to change
+in future? 
 
-> > +}
-> > +
-> >  static uint64_t page_align(struct kvm_vm *vm, uint64_t v)
-> >  {
-> >       return (v + vm->page_size) & ~(vm->page_size - 1);
-> > diff --git a/tools/testing/selftests/kvm/riscv/get-reg-list.c b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-> > index d8ecacd03ecf..0dcff823f287 100644
-> > --- a/tools/testing/selftests/kvm/riscv/get-reg-list.c
-> > +++ b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-> > @@ -44,20 +44,6 @@ bool check_reject_set(int err)
-> >       return err == EINVAL;
-> >  }
-> >
-> > -static inline bool vcpu_has_ext(struct kvm_vcpu *vcpu, int ext)
-> > -{
-> > -     int ret;
-> > -     unsigned long value;
-> > -
-> > -     ret = __vcpu_get_reg(vcpu, RISCV_ISA_EXT_REG(ext), &value);
-> > -     if (ret) {
-> > -             printf("Failed to get ext %d", ext);
-> > -             return false;
-> > -     }
-> > -
-> > -     return !!value;
-> > -}
-> > -
-> >  void finalize_vcpu(struct kvm_vcpu *vcpu, struct vcpu_reg_list *c)
-> >  {
-> >       struct vcpu_reg_sublist *s;
-> > @@ -77,7 +63,7 @@ void finalize_vcpu(struct kvm_vcpu *vcpu, struct vcpu_reg_list *c)
-> >               __vcpu_set_reg(vcpu, RISCV_ISA_EXT_REG(s->feature), 1);
-> >
-> >               /* Double check whether the desired extension was enabled */
-> > -             __TEST_REQUIRE(vcpu_has_ext(vcpu, s->feature),
-> > +             __TEST_REQUIRE(__vcpu_has_ext(vcpu, s->feature),
-> >                              "%s not available, skipping tests\n", s->name);
-> >       }
-> >  }
-> > --
-> > 2.34.1
-> >
->
-> Otherwise,
->
-> Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
->
-> Thanks,
-> drew
+> +		kvm_mmu_prepare_memory_fault_exit(vcpu, fault);
+> +		return -EFAULT;
+> +	}
+> +
+> +	if (fault->is_private)
+> +		return kvm_faultin_pfn_private(vcpu, fault);
+> +
+>  	async = false;
+>  	fault->pfn = __gfn_to_pfn_memslot(slot, fault->gfn, false, false, &async,
+>  					  fault->write, &fault->map_writable,
+> @@ -7184,6 +7255,19 @@ void kvm_mmu_pre_destroy_vm(struct kvm *kvm)
+>  }
+>  
+ 
 
