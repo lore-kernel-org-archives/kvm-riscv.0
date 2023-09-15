@@ -1,102 +1,76 @@
-From: Conor Dooley <conor.dooley@microchip.com>
-Date: Fri, 15 Sep 2023 09:45:16 +0100
-Subject: [PATCH 1/2] RISC-V: Detect and Enable Svadu Extension Support
-In-Reply-To: <20230915082701.3643-2-yongxuan.wang@sifive.com>
-References: <20230915082701.3643-1-yongxuan.wang@sifive.com>
- <20230915082701.3643-2-yongxuan.wang@sifive.com>
-Message-ID: <20230915-triangle-fool-e7032469d3e1@wendy>
+From: Sean Christopherson <seanjc@google.com>
+Date: Fri, 15 Sep 2023 07:26:16 -0700
+Subject: [RFC PATCH v12 18/33] KVM: x86/mmu: Handle page fault for private memory
+In-Reply-To: <ZQPuMK6D/7UzDH+D@yzhao56-desk.sh.intel.com>
+References: <20230914015531.1419405-1-seanjc@google.com> <20230914015531.1419405-19-seanjc@google.com>
+ <ZQPuMK6D/7UzDH+D@yzhao56-desk.sh.intel.com>
+Message-ID: <ZQRpiOd1DNDDJQ3r@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Sep 15, 2023 at 08:26:57AM +0000, Yong-Xuan Wang wrote:
-> We detect Svadu extension support from DTB and add arch_has_hw_pte_young()
-> to enable optimization in MGLRU and __wp_page_copy_user() if Svadu
-> extension is available.
+On Fri, Sep 15, 2023, Yan Zhao wrote:
+> On Wed, Sep 13, 2023 at 06:55:16PM -0700, Sean Christopherson wrote:
+> ....
+> > +static void kvm_mmu_prepare_memory_fault_exit(struct kvm_vcpu *vcpu,
+> > +					      struct kvm_page_fault *fault)
+> > +{
+> > +	kvm_prepare_memory_fault_exit(vcpu, fault->gfn << PAGE_SHIFT,
+> > +				      PAGE_SIZE, fault->write, fault->exec,
+> > +				      fault->is_private);
+> > +}
+> > +
+> > +static int kvm_faultin_pfn_private(struct kvm_vcpu *vcpu,
+> > +				   struct kvm_page_fault *fault)
+> > +{
+> > +	int max_order, r;
+> > +
+> > +	if (!kvm_slot_can_be_private(fault->slot)) {
+> > +		kvm_mmu_prepare_memory_fault_exit(vcpu, fault);
+> > +		return -EFAULT;
+> > +	}
+> > +
+> > +	r = kvm_gmem_get_pfn(vcpu->kvm, fault->slot, fault->gfn, &fault->pfn,
+> > +			     &max_order);
+> > +	if (r) {
+> > +		kvm_mmu_prepare_memory_fault_exit(vcpu, fault);
+> > +		return r;
+> > +	}
+> > +
+> > +	fault->max_level = min(kvm_max_level_for_order(max_order),
+> > +			       fault->max_level);
+> > +	fault->map_writable = !(fault->slot->flags & KVM_MEM_READONLY);
+> > +
+> > +	return RET_PF_CONTINUE;
+> > +}
+> > +
+> >  static int __kvm_faultin_pfn(struct kvm_vcpu *vcpu, struct kvm_page_fault *fault)
+> >  {
+> >  	struct kvm_memory_slot *slot = fault->slot;
+> > @@ -4293,6 +4356,14 @@ static int __kvm_faultin_pfn(struct kvm_vcpu *vcpu, struct kvm_page_fault *fault
+> >  			return RET_PF_EMULATE;
+> >  	}
+> >  
+> > +	if (fault->is_private != kvm_mem_is_private(vcpu->kvm, fault->gfn)) {
+> In patch 21,
+> fault->is_private is set as:
+> 	".is_private = kvm_mem_is_private(vcpu->kvm, cr2_or_gpa >> PAGE_SHIFT)",
+> then, the inequality here means memory attribute has been updated after
+> last check.
+> So, why an exit to user space for converting is required instead of a mere retry?
 > 
-> Signed-off-by: Jinyu Tang <tjytimi@163.com>
+> Or, is it because how .is_private is assigned in patch 21 is subjected to change
+> in future? 
 
-You're either missing a From: or a Co-developed-by: tag here.
+This.  Retrying on SNP or TDX would hang the guest.  I suppose we could special
+case VMs where .is_private is derived from the memory attributes, but the
+SW_PROTECTED_VM type is primary a development vehicle at this point.  I'd like to
+have it mimic SNP/TDX as much as possible; performance is a secondary concern.
 
-> Signed-off-by: Yong-Xuan Wang <yongxuan.wang@sifive.com>
-> ---
->  arch/riscv/include/asm/csr.h     | 1 +
->  arch/riscv/include/asm/hwcap.h   | 1 +
->  arch/riscv/include/asm/pgtable.h | 6 ++++++
->  arch/riscv/kernel/cpufeature.c   | 1 +
->  4 files changed, 9 insertions(+)
-> 
-> diff --git a/arch/riscv/include/asm/csr.h b/arch/riscv/include/asm/csr.h
-> index 777cb8299551..10648b372a2a 100644
-> --- a/arch/riscv/include/asm/csr.h
-> +++ b/arch/riscv/include/asm/csr.h
-> @@ -194,6 +194,7 @@
->  /* xENVCFG flags */
->  #define ENVCFG_STCE			(_AC(1, ULL) << 63)
->  #define ENVCFG_PBMTE			(_AC(1, ULL) << 62)
-> +#define ENVCFG_HADE			(_AC(1, ULL) << 61)
->  #define ENVCFG_CBZE			(_AC(1, UL) << 7)
->  #define ENVCFG_CBCFE			(_AC(1, UL) << 6)
->  #define ENVCFG_CBIE_SHIFT		4
-> diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
-> index b7b58258f6c7..1013661d6516 100644
-> --- a/arch/riscv/include/asm/hwcap.h
-> +++ b/arch/riscv/include/asm/hwcap.h
-> @@ -58,6 +58,7 @@
->  #define RISCV_ISA_EXT_ZICSR		40
->  #define RISCV_ISA_EXT_ZIFENCEI		41
->  #define RISCV_ISA_EXT_ZIHPM		42
-> +#define RISCV_ISA_EXT_SVADU		43
->  
->  #define RISCV_ISA_EXT_MAX		64
->  
-> diff --git a/arch/riscv/include/asm/pgtable.h b/arch/riscv/include/asm/pgtable.h
-> index b2ba3f79cfe9..f3d077dff8ac 100644
-> --- a/arch/riscv/include/asm/pgtable.h
-> +++ b/arch/riscv/include/asm/pgtable.h
-> @@ -629,6 +629,12 @@ static inline pgprot_t pgprot_writecombine(pgprot_t _prot)
->  	return __pgprot(prot);
->  }
->  
-> +#define arch_has_hw_pte_young arch_has_hw_pte_young
-> +static inline bool arch_has_hw_pte_young(void)
-> +{
-> +	return riscv_has_extension_likely(RISCV_ISA_EXT_SVADU);
+E.g. userspace needs to be prepared for "spurious" exits due to races on SNP and
+TDX, which this can theoretically exercise.  Though the window is quite small so
+I doubt that'll actually happen in practice; which of course also makes it less
+important to retry instead of exiting.
 
-No hardware currently has this, why is it likely?
-
-> +}
-> +
->  /*
->   * THP functions
->   */
-> diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
-> index 1cfbba65d11a..ead378c04991 100644
-> --- a/arch/riscv/kernel/cpufeature.c
-> +++ b/arch/riscv/kernel/cpufeature.c
-> @@ -178,6 +178,7 @@ const struct riscv_isa_ext_data riscv_isa_ext[] = {
->  	__RISCV_ISA_EXT_DATA(ssaia, RISCV_ISA_EXT_SSAIA),
->  	__RISCV_ISA_EXT_DATA(sscofpmf, RISCV_ISA_EXT_SSCOFPMF),
->  	__RISCV_ISA_EXT_DATA(sstc, RISCV_ISA_EXT_SSTC),
-> +	__RISCV_ISA_EXT_DATA(svadu, RISCV_ISA_EXT_SVADU),
-
-This needs to be documented in riscv/extensions.yaml.
-
-Thanks,
-Conor.
-
->  	__RISCV_ISA_EXT_DATA(svinval, RISCV_ISA_EXT_SVINVAL),
->  	__RISCV_ISA_EXT_DATA(svnapot, RISCV_ISA_EXT_SVNAPOT),
->  	__RISCV_ISA_EXT_DATA(svpbmt, RISCV_ISA_EXT_SVPBMT),
-> -- 
-> 2.17.1
-> 
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 228 bytes
-Desc: not available
-URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20230915/86bbabf6/attachment-0001.sig>
