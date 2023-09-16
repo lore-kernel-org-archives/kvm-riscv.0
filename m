@@ -1,44 +1,67 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Fri, 15 Sep 2023 14:05:27 -0700
-Subject: [RFC PATCH v12 01/33] KVM: Tweak kvm_hva_range and hva_handler_t
- to allow reusing for gfn ranges
-In-Reply-To: <d4166c97-6ab3-89a2-eb12-f492f7521f69@intel.com>
-References: <20230914015531.1419405-1-seanjc@google.com> <20230914015531.1419405-2-seanjc@google.com>
- <d4166c97-6ab3-89a2-eb12-f492f7521f69@intel.com>
-Message-ID: <ZQTHF3J+6FXwRx98@google.com>
+Date: Fri, 15 Sep 2023 17:30:53 -0700
+Subject: [PATCH 01/26] vfio: Wrap KVM helpers with CONFIG_KVM instead of CONFIG_HAVE_KVM
+In-Reply-To: <20230916003118.2540661-1-seanjc@google.com>
+References: <20230916003118.2540661-1-seanjc@google.com>
+Message-ID: <20230916003118.2540661-2-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Sep 15, 2023, Xiaoyao Li wrote:
-> On 9/14/2023 9:54 AM, Sean Christopherson wrote:
-> > Rework and rename "struct kvm_hva_range" into "kvm_mmu_notifier_range" so
-> > that the structure can be used to handle notifications that operate on gfn
-> > context, i.e. that aren't tied to a host virtual address.
-> > 
-> > Practically speaking, this is a nop for 64-bit kernels as the only
-> > meaningful change is to store start+end as u64s instead of unsigned longs.
-> > 
-> > Reviewed-by: Paolo Bonzini <pbonzini@redhat.com>
-> > Signed-off-by: Sean Christopherson <seanjc@google.com>
-> > ---
-> >   virt/kvm/kvm_main.c | 34 +++++++++++++++++++---------------
-> >   1 file changed, 19 insertions(+), 15 deletions(-)
-> > 
-> > diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-> > index 486800a7024b..0524933856d4 100644
-> > --- a/virt/kvm/kvm_main.c
-> > +++ b/virt/kvm/kvm_main.c
-> > @@ -541,18 +541,22 @@ static inline struct kvm *mmu_notifier_to_kvm(struct mmu_notifier *mn)
-> >   	return container_of(mn, struct kvm, mmu_notifier);
-> >   }
-> > -typedef bool (*hva_handler_t)(struct kvm *kvm, struct kvm_gfn_range *range);
-> > +typedef bool (*gfn_handler_t)(struct kvm *kvm, struct kvm_gfn_range *range);
-> 
-> Is it worth mentioning the rename of it as well in changelog?
+Wrap the helpers for getting references to KVM instances with a check on
+CONFIG_KVM being enabled, not on CONFIG_HAVE_KVM being defined.  PPC does
+NOT select HAVE_KVM, despite obviously supporting KVM, and guarding code
+to get references to KVM based on whether or not the architecture supports
+KVM is nonsensical.
 
-Meh, I suppose.  At some point, we do have to assume a certain level of code
-literacy though :-)
+Drop the guard around linux/kvm_host.h entirely, conditionally including a
+generic headers is completely unnecessary.
+
+Signed-off-by: Sean Christopherson <seanjc@google.com>
+---
+ drivers/vfio/vfio.h      | 2 +-
+ drivers/vfio/vfio_main.c | 4 +---
+ 2 files changed, 2 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/vfio/vfio.h b/drivers/vfio/vfio.h
+index 307e3f29b527..c26d1ad68105 100644
+--- a/drivers/vfio/vfio.h
++++ b/drivers/vfio/vfio.h
+@@ -434,7 +434,7 @@ static inline void vfio_virqfd_exit(void)
+ }
+ #endif
+ 
+-#ifdef CONFIG_HAVE_KVM
++#if IS_ENABLED(CONFIG_KVM)
+ void vfio_device_get_kvm_safe(struct vfio_device *device, struct kvm *kvm);
+ void vfio_device_put_kvm(struct vfio_device *device);
+ #else
+diff --git a/drivers/vfio/vfio_main.c b/drivers/vfio/vfio_main.c
+index 40732e8ed4c6..80e39f7a6d8f 100644
+--- a/drivers/vfio/vfio_main.c
++++ b/drivers/vfio/vfio_main.c
+@@ -16,9 +16,7 @@
+ #include <linux/fs.h>
+ #include <linux/idr.h>
+ #include <linux/iommu.h>
+-#ifdef CONFIG_HAVE_KVM
+ #include <linux/kvm_host.h>
+-#endif
+ #include <linux/list.h>
+ #include <linux/miscdevice.h>
+ #include <linux/module.h>
+@@ -383,7 +381,7 @@ void vfio_unregister_group_dev(struct vfio_device *device)
+ }
+ EXPORT_SYMBOL_GPL(vfio_unregister_group_dev);
+ 
+-#ifdef CONFIG_HAVE_KVM
++#if IS_ENABLED(CONFIG_KVM)
+ void vfio_device_get_kvm_safe(struct vfio_device *device, struct kvm *kvm)
+ {
+ 	void (*pfn)(struct kvm *kvm);
+-- 
+2.42.0.459.ge4e396fd5e-goog
+
 
