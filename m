@@ -1,60 +1,126 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Fri, 15 Sep 2023 17:30:55 -0700
-Subject: [PATCH 03/26] virt: Declare and define vfio_file_set_kvm() iff
- CONFIG_KVM is enabled
+Date: Fri, 15 Sep 2023 17:30:58 -0700
+Subject: [PATCH 06/26] KVM: Drop CONFIG_KVM_VFIO and just look at KVM+VFIO
 In-Reply-To: <20230916003118.2540661-1-seanjc@google.com>
 References: <20230916003118.2540661-1-seanjc@google.com>
-Message-ID: <20230916003118.2540661-4-seanjc@google.com>
+Message-ID: <20230916003118.2540661-7-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hide vfio_file_set_kvm() and its unique helpers if KVM is not enabled,
-nothing else in the kernel (or out of the kernel) should be using a
-KVM specific helper.
+Drop KVM's KVM_VFIO Kconfig, and instead compile in VFIO support if
+and only if VFIO itself is enabled.  Similar to the recent change to have
+VFIO stop looking at HAVE_KVM, compiling in support for talking to VFIO
+just because the architecture supports VFIO is nonsensical.
+
+This fixes a bug where RISC-V doesn't select KVM_VFIO, i.e. would silently
+fail to do connect KVM and VFIO, even though RISC-V supports VFIO.  The
+bug is benign as the only driver in all of Linux that actually uses the
+KVM reference provided by VFIO is KVM-GT, which is x86/Intel specific.
 
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- drivers/vfio/vfio_main.c | 2 +-
- include/linux/vfio.h     | 2 ++
- 2 files changed, 3 insertions(+), 1 deletion(-)
+ arch/arm64/kvm/Kconfig   | 1 -
+ arch/powerpc/kvm/Kconfig | 1 -
+ arch/s390/kvm/Kconfig    | 1 -
+ arch/x86/kvm/Kconfig     | 1 -
+ virt/kvm/Kconfig         | 3 ---
+ virt/kvm/Makefile.kvm    | 4 +++-
+ virt/kvm/vfio.h          | 2 +-
+ 7 files changed, 4 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/vfio/vfio_main.c b/drivers/vfio/vfio_main.c
-index 6368eed7b7b2..124cc88966a7 100644
---- a/drivers/vfio/vfio_main.c
-+++ b/drivers/vfio/vfio_main.c
-@@ -1352,7 +1352,6 @@ void vfio_device_put_kvm(struct vfio_device *device)
- clear:
- 	device->kvm = NULL;
- }
--#endif
+diff --git a/arch/arm64/kvm/Kconfig b/arch/arm64/kvm/Kconfig
+index 83c1e09be42e..2b5c332f157d 100644
+--- a/arch/arm64/kvm/Kconfig
++++ b/arch/arm64/kvm/Kconfig
+@@ -28,7 +28,6 @@ menuconfig KVM
+ 	select KVM_MMIO
+ 	select KVM_GENERIC_DIRTYLOG_READ_PROTECT
+ 	select KVM_XFER_TO_GUEST_WORK
+-	select KVM_VFIO
+ 	select HAVE_KVM_EVENTFD
+ 	select HAVE_KVM_IRQFD
+ 	select HAVE_KVM_DIRTY_RING_ACQ_REL
+diff --git a/arch/powerpc/kvm/Kconfig b/arch/powerpc/kvm/Kconfig
+index 902611954200..c4beb49c0eb2 100644
+--- a/arch/powerpc/kvm/Kconfig
++++ b/arch/powerpc/kvm/Kconfig
+@@ -22,7 +22,6 @@ config KVM
+ 	select PREEMPT_NOTIFIERS
+ 	select HAVE_KVM_EVENTFD
+ 	select HAVE_KVM_VCPU_ASYNC_IOCTL
+-	select KVM_VFIO
+ 	select IRQ_BYPASS_MANAGER
+ 	select HAVE_KVM_IRQ_BYPASS
+ 	select INTERVAL_TREE
+diff --git a/arch/s390/kvm/Kconfig b/arch/s390/kvm/Kconfig
+index 45fdf2a9b2e3..459d536116a6 100644
+--- a/arch/s390/kvm/Kconfig
++++ b/arch/s390/kvm/Kconfig
+@@ -31,7 +31,6 @@ config KVM
+ 	select HAVE_KVM_IRQ_ROUTING
+ 	select HAVE_KVM_INVALID_WAKEUPS
+ 	select HAVE_KVM_NO_POLL
+-	select KVM_VFIO
+ 	select INTERVAL_TREE
+ 	select MMU_NOTIFIER
+ 	help
+diff --git a/arch/x86/kvm/Kconfig b/arch/x86/kvm/Kconfig
+index ed90f148140d..0f01e5600b5f 100644
+--- a/arch/x86/kvm/Kconfig
++++ b/arch/x86/kvm/Kconfig
+@@ -45,7 +45,6 @@ config KVM
+ 	select HAVE_KVM_NO_POLL
+ 	select KVM_XFER_TO_GUEST_WORK
+ 	select KVM_GENERIC_DIRTYLOG_READ_PROTECT
+-	select KVM_VFIO
+ 	select INTERVAL_TREE
+ 	select HAVE_KVM_PM_NOTIFIER if PM
+ 	select KVM_GENERIC_HARDWARE_ENABLING
+diff --git a/virt/kvm/Kconfig b/virt/kvm/Kconfig
+index 484d0873061c..f0be3b55cea6 100644
+--- a/virt/kvm/Kconfig
++++ b/virt/kvm/Kconfig
+@@ -59,9 +59,6 @@ config HAVE_KVM_MSI
+ config HAVE_KVM_CPU_RELAX_INTERCEPT
+        bool
  
- static void vfio_device_file_set_kvm(struct file *file, struct kvm *kvm)
- {
-@@ -1388,6 +1387,7 @@ void vfio_file_set_kvm(struct file *file, struct kvm *kvm)
- 		vfio_device_file_set_kvm(file, kvm);
- }
- EXPORT_SYMBOL_GPL(vfio_file_set_kvm);
-+#endif
+-config KVM_VFIO
+-       bool
+-
+ config HAVE_KVM_INVALID_WAKEUPS
+        bool
  
- /*
-  * Sub-module support
-diff --git a/include/linux/vfio.h b/include/linux/vfio.h
-index 454e9295970c..e80955de266c 100644
---- a/include/linux/vfio.h
-+++ b/include/linux/vfio.h
-@@ -311,7 +311,9 @@ static inline bool vfio_file_has_dev(struct file *file, struct vfio_device *devi
- #endif
- bool vfio_file_is_valid(struct file *file);
- bool vfio_file_enforced_coherent(struct file *file);
-+#if IS_ENABLED(CONFIG_KVM)
- void vfio_file_set_kvm(struct file *file, struct kvm *kvm);
-+#endif
+diff --git a/virt/kvm/Makefile.kvm b/virt/kvm/Makefile.kvm
+index 2c27d5d0c367..29373b59d89a 100644
+--- a/virt/kvm/Makefile.kvm
++++ b/virt/kvm/Makefile.kvm
+@@ -6,7 +6,9 @@
+ KVM ?= ../../../virt/kvm
  
- #define VFIO_PIN_PAGES_MAX_ENTRIES	(PAGE_SIZE/sizeof(unsigned long))
+ kvm-y := $(KVM)/kvm_main.o $(KVM)/eventfd.o $(KVM)/binary_stats.o
+-kvm-$(CONFIG_KVM_VFIO) += $(KVM)/vfio.o
++ifdef CONFIG_VFIO
++kvm-y += $(KVM)/vfio.o
++endif
+ kvm-$(CONFIG_KVM_MMIO) += $(KVM)/coalesced_mmio.o
+ kvm-$(CONFIG_KVM_ASYNC_PF) += $(KVM)/async_pf.o
+ kvm-$(CONFIG_HAVE_KVM_IRQ_ROUTING) += $(KVM)/irqchip.o
+diff --git a/virt/kvm/vfio.h b/virt/kvm/vfio.h
+index e130a4a03530..af475a323965 100644
+--- a/virt/kvm/vfio.h
++++ b/virt/kvm/vfio.h
+@@ -2,7 +2,7 @@
+ #ifndef __KVM_VFIO_H
+ #define __KVM_VFIO_H
  
+-#ifdef CONFIG_KVM_VFIO
++#if IS_ENABLED(CONFIG_KVM) && IS_ENABLED(CONFIG_VFIO)
+ int kvm_vfio_ops_init(void);
+ void kvm_vfio_ops_exit(void);
+ #else
 -- 
 2.42.0.459.ge4e396fd5e-goog
 
