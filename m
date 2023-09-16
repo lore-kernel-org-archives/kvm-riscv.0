@@ -1,39 +1,43 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Fri, 15 Sep 2023 17:31:08 -0700
-Subject: [PATCH 16/26] KVM: MIPS: Stop adding virt/kvm to the arch include path
+Date: Fri, 15 Sep 2023 17:31:10 -0700
+Subject: [PATCH 18/26] KVM: s390: Stop adding virt/kvm to the arch include path
 In-Reply-To: <20230916003118.2540661-1-seanjc@google.com>
 References: <20230916003118.2540661-1-seanjc@google.com>
-Message-ID: <20230916003118.2540661-17-seanjc@google.com>
+Message-ID: <20230916003118.2540661-19-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Don't add virt/kvm to KVM MIPS' include path, the headers in virt/kvm are
+Don't add virt/kvm to KVM s390's include path, the headers in virt/kvm are
 intended to be used only by other code in virt/kvm, i.e. are "private" to
-the core KVM code.  It's not clear that MIPS *ever* included a header from
-virt/kvm, i.e. odds are good the "-Ivirt/kvm" was copied from a different
-architecture's Makefile when MIPS support was first added.
+the core KVM code.  It's not clear that s390 *ever* included a header from
+virt/kvm, i.e. odds are good the "-Ivirt/kvm" was copied from a x86's
+Makefile when s390 support was first added.
+
+The only headers in virt/kvm at the time were the x86 specific ioapic.h,
+and iodev.h, neither of which shows up as an #include in the diff for the
+commit range 37817f2982d0f..e976a2b997fc4.
 
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/mips/kvm/Makefile | 2 +-
+ arch/s390/kvm/Makefile | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/mips/kvm/Makefile b/arch/mips/kvm/Makefile
-index 805aeea2166e..96a7cd21b140 100644
---- a/arch/mips/kvm/Makefile
-+++ b/arch/mips/kvm/Makefile
-@@ -4,7 +4,7 @@
+diff --git a/arch/s390/kvm/Makefile b/arch/s390/kvm/Makefile
+index 02217fb4ae10..f17249ab2a72 100644
+--- a/arch/s390/kvm/Makefile
++++ b/arch/s390/kvm/Makefile
+@@ -5,7 +5,7 @@
  
  include $(srctree)/virt/kvm/Makefile.kvm
  
--ccflags-y += -Ivirt/kvm -Iarch/mips/kvm
-+ccflags-y += -Iarch/mips/kvm
+-ccflags-y := -Ivirt/kvm -Iarch/s390/kvm
++ccflags-y := -Iarch/s390/kvm
  
- kvm-$(CONFIG_CPU_HAS_MSA) += msa.o
- 
+ kvm-y += kvm-s390.o intercept.o interrupt.o priv.o sigp.o
+ kvm-y += diag.o gaccess.o guestdbg.o vsie.o pv.o
 -- 
 2.42.0.459.ge4e396fd5e-goog
 
