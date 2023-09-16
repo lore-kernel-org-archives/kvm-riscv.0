@@ -1,289 +1,277 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Fri, 15 Sep 2023 17:31:06 -0700
-Subject: [PATCH 14/26] KVM: arm64: Move ARM specific headers in include/kvm to
- arch directory
+Date: Fri, 15 Sep 2023 17:31:07 -0700
+Subject: [PATCH 15/26] KVM: Move include/kvm/iodev.h to include/linux as kvm_iodev.h
 In-Reply-To: <20230916003118.2540661-1-seanjc@google.com>
 References: <20230916003118.2540661-1-seanjc@google.com>
-Message-ID: <20230916003118.2540661-15-seanjc@google.com>
+Message-ID: <20230916003118.2540661-16-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Move kvm/arm_{arch_timer,pmu,vgic}.h to arch/arm64/include/asm and drop
-the "arm" prefix from all file names.  Now that KVM no longer supports
-32-bit ARM, there is no reason to expose ARM specific headers to other
-architectures beyond arm64.
+Move iodev.h, the last remaining holdout in include/kvm, to the standard
+include/linux directory as kvm_iodev.h and delete include/kvm.
 
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- .../arm64/include/asm/kvm_arch_timer.h                     | 0
- arch/arm64/include/asm/kvm_host.h                          | 7 +++----
- include/kvm/arm_pmu.h => arch/arm64/include/asm/kvm_pmu.h  | 0
- .../kvm/arm_vgic.h => arch/arm64/include/asm/kvm_vgic.h    | 0
- arch/arm64/kvm/arch_timer.c                                | 5 ++---
- arch/arm64/kvm/arm.c                                       | 3 +--
- arch/arm64/kvm/pmu-emul.c                                  | 6 +++---
- arch/arm64/kvm/reset.c                                     | 3 +--
- arch/arm64/kvm/trace_arm.h                                 | 2 +-
- arch/arm64/kvm/vgic/vgic-debug.c                           | 2 +-
- arch/arm64/kvm/vgic/vgic-init.c                            | 2 +-
- arch/arm64/kvm/vgic/vgic-irqfd.c                           | 2 +-
- arch/arm64/kvm/vgic/vgic-kvm-device.c                      | 2 +-
- arch/arm64/kvm/vgic/vgic-mmio-v2.c                         | 2 +-
- arch/arm64/kvm/vgic/vgic-mmio-v3.c                         | 2 +-
- arch/arm64/kvm/vgic/vgic-mmio.c                            | 4 ++--
- arch/arm64/kvm/vgic/vgic-v2.c                              | 2 +-
- arch/arm64/kvm/vgic/vgic-v3.c                              | 2 +-
- 18 files changed, 21 insertions(+), 25 deletions(-)
- rename include/kvm/arm_arch_timer.h => arch/arm64/include/asm/kvm_arch_timer.h (100%)
- rename include/kvm/arm_pmu.h => arch/arm64/include/asm/kvm_pmu.h (100%)
- rename include/kvm/arm_vgic.h => arch/arm64/include/asm/kvm_vgic.h (100%)
+ MAINTAINERS                                | 1 -
+ arch/arm64/include/asm/kvm_vgic.h          | 2 +-
+ arch/arm64/kvm/vgic/vgic-mmio-v2.c         | 2 +-
+ arch/arm64/kvm/vgic/vgic-mmio-v3.c         | 2 +-
+ arch/arm64/kvm/vgic/vgic-mmio.c            | 2 +-
+ arch/mips/include/asm/kvm_host.h           | 3 +--
+ arch/powerpc/kvm/mpic.c                    | 2 +-
+ arch/riscv/kvm/aia_aplic.c                 | 2 +-
+ arch/riscv/kvm/aia_imsic.c                 | 2 +-
+ arch/x86/kvm/i8254.h                       | 2 +-
+ arch/x86/kvm/ioapic.h                      | 2 +-
+ arch/x86/kvm/irq.h                         | 2 +-
+ arch/x86/kvm/lapic.h                       | 2 +-
+ include/{kvm/iodev.h => linux/kvm_iodev.h} | 0
+ virt/kvm/coalesced_mmio.c                  | 3 +--
+ virt/kvm/eventfd.c                         | 2 +-
+ virt/kvm/kvm_main.c                        | 3 +--
+ 17 files changed, 15 insertions(+), 19 deletions(-)
+ rename include/{kvm/iodev.h => linux/kvm_iodev.h} (100%)
 
-diff --git a/include/kvm/arm_arch_timer.h b/arch/arm64/include/asm/kvm_arch_timer.h
-similarity index 100%
-rename from include/kvm/arm_arch_timer.h
-rename to arch/arm64/include/asm/kvm_arch_timer.h
-diff --git a/arch/arm64/include/asm/kvm_host.h b/arch/arm64/include/asm/kvm_host.h
-index af06ccb7ee34..90cfbf420545 100644
---- a/arch/arm64/include/asm/kvm_host.h
-+++ b/arch/arm64/include/asm/kvm_host.h
-@@ -26,16 +26,15 @@
- #include <asm/daifflags.h>
- #include <asm/fpsimd.h>
- #include <asm/kvm.h>
-+#include <asm/kvm_arch_timer.h>
- #include <asm/kvm_asm.h>
-+#include <asm/kvm_pmu.h>
-+#include <asm/kvm_vgic.h>
- 
- #define __KVM_HAVE_ARCH_INTC_INITIALIZED
- 
- #define KVM_HALT_POLL_NS_DEFAULT 500000
- 
--#include <kvm/arm_vgic.h>
--#include <kvm/arm_arch_timer.h>
--#include <kvm/arm_pmu.h>
--
- #define KVM_MAX_VCPUS VGIC_V3_MAX_CPUS
- 
- #define KVM_VCPU_MAX_FEATURES 7
-diff --git a/include/kvm/arm_pmu.h b/arch/arm64/include/asm/kvm_pmu.h
-similarity index 100%
-rename from include/kvm/arm_pmu.h
-rename to arch/arm64/include/asm/kvm_pmu.h
-diff --git a/include/kvm/arm_vgic.h b/arch/arm64/include/asm/kvm_vgic.h
-similarity index 100%
-rename from include/kvm/arm_vgic.h
-rename to arch/arm64/include/asm/kvm_vgic.h
-diff --git a/arch/arm64/kvm/arch_timer.c b/arch/arm64/kvm/arch_timer.c
-index 6dcdae4d38cb..5e40bea8f3f3 100644
---- a/arch/arm64/kvm/arch_timer.c
-+++ b/arch/arm64/kvm/arch_timer.c
-@@ -14,12 +14,11 @@
- 
- #include <clocksource/arm_arch_timer.h>
- #include <asm/arch_timer.h>
-+#include <asm/kvm_arch_timer.h>
- #include <asm/kvm_emulate.h>
- #include <asm/kvm_hyp.h>
- #include <asm/kvm_nested.h>
--
--#include <kvm/arm_vgic.h>
--#include <kvm/arm_arch_timer.h>
-+#include <asm/kvm_vgic.h>
- 
- #include "trace.h"
- 
-diff --git a/arch/arm64/kvm/arm.c b/arch/arm64/kvm/arm.c
-index 6de1d63b981b..6480628197b4 100644
---- a/arch/arm64/kvm/arm.c
-+++ b/arch/arm64/kvm/arm.c
-@@ -39,10 +39,9 @@
- #include <asm/kvm_nested.h>
- #include <asm/kvm_pkvm.h>
- #include <asm/kvm_emulate.h>
-+#include <asm/kvm_pmu.h>
- #include <asm/sections.h>
- 
--#include <kvm/arm_pmu.h>
--
- #include "arm_hypercalls.h"
- #include "arm_psci.h"
- 
-diff --git a/arch/arm64/kvm/pmu-emul.c b/arch/arm64/kvm/pmu-emul.c
-index 6b066e04dc5d..b5d999adce56 100644
---- a/arch/arm64/kvm/pmu-emul.c
-+++ b/arch/arm64/kvm/pmu-emul.c
-@@ -11,10 +11,10 @@
- #include <linux/perf_event.h>
- #include <linux/perf/arm_pmu.h>
- #include <linux/uaccess.h>
--#include <asm/kvm_emulate.h>
--#include <kvm/arm_pmu.h>
--#include <kvm/arm_vgic.h>
- #include <asm/arm_pmuv3.h>
-+#include <asm/kvm_emulate.h>
-+#include <asm/kvm_pmu.h>
-+#include <asm/kvm_vgic.h>
- 
- #define PERF_ATTR_CFG1_COUNTER_64BIT	BIT(0)
- 
-diff --git a/arch/arm64/kvm/reset.c b/arch/arm64/kvm/reset.c
-index 7a65a35ee4ac..ad5e239774f1 100644
---- a/arch/arm64/kvm/reset.c
-+++ b/arch/arm64/kvm/reset.c
-@@ -17,12 +17,11 @@
- #include <linux/string.h>
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 90f13281d297..ddc8375d536c 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -11498,7 +11498,6 @@ W:	http://www.linux-kvm.org
+ T:	git git://git.kernel.org/pub/scm/virt/kvm/kvm.git
+ F:	Documentation/virt/kvm/
+ F:	include/asm-generic/kvm*
+-F:	include/kvm/iodev.h
+ F:	include/linux/kvm*
+ F:	include/trace/events/kvm.h
+ F:	include/uapi/asm-generic/kvm*
+diff --git a/arch/arm64/include/asm/kvm_vgic.h b/arch/arm64/include/asm/kvm_vgic.h
+index 5b27f94d4fad..2ca52888bc75 100644
+--- a/arch/arm64/include/asm/kvm_vgic.h
++++ b/arch/arm64/include/asm/kvm_vgic.h
+@@ -13,7 +13,7 @@
+ #include <linux/spinlock.h>
+ #include <linux/static_key.h>
  #include <linux/types.h>
+-#include <kvm/iodev.h>
++#include <linux/kvm_iodev.h>
+ #include <linux/list.h>
+ #include <linux/jump_label.h>
  
--#include <kvm/arm_arch_timer.h>
--
- #include <asm/cpufeature.h>
- #include <asm/cputype.h>
- #include <asm/fpsimd.h>
- #include <asm/ptrace.h>
-+#include <asm/kvm_arch_timer.h>
- #include <asm/kvm_arm.h>
- #include <asm/kvm_asm.h>
- #include <asm/kvm_emulate.h>
-diff --git a/arch/arm64/kvm/trace_arm.h b/arch/arm64/kvm/trace_arm.h
-index 8ad53104934d..76ef72de6133 100644
---- a/arch/arm64/kvm/trace_arm.h
-+++ b/arch/arm64/kvm/trace_arm.h
-@@ -3,7 +3,7 @@
- #define _TRACE_ARM_ARM64_KVM_H
- 
- #include <asm/kvm_emulate.h>
--#include <kvm/arm_arch_timer.h>
-+#include <asm/kvm_arch_timer.h>
- #include <linux/tracepoint.h>
- 
- #undef TRACE_SYSTEM
-diff --git a/arch/arm64/kvm/vgic/vgic-debug.c b/arch/arm64/kvm/vgic/vgic-debug.c
-index 07aa0437125a..2d542040008c 100644
---- a/arch/arm64/kvm/vgic/vgic-debug.c
-+++ b/arch/arm64/kvm/vgic/vgic-debug.c
-@@ -9,7 +9,7 @@
- #include <linux/interrupt.h>
- #include <linux/kvm_host.h>
- #include <linux/seq_file.h>
--#include <kvm/arm_vgic.h>
-+#include <asm/kvm_vgic.h>
- #include <asm/kvm_mmu.h>
- #include "vgic.h"
- 
-diff --git a/arch/arm64/kvm/vgic/vgic-init.c b/arch/arm64/kvm/vgic/vgic-init.c
-index c8c3cb812783..9f548ffac90b 100644
---- a/arch/arm64/kvm/vgic/vgic-init.c
-+++ b/arch/arm64/kvm/vgic/vgic-init.c
-@@ -7,7 +7,7 @@
- #include <linux/interrupt.h>
- #include <linux/cpu.h>
- #include <linux/kvm_host.h>
--#include <kvm/arm_vgic.h>
-+#include <asm/kvm_vgic.h>
- #include <asm/kvm_emulate.h>
- #include <asm/kvm_mmu.h>
- #include "vgic.h"
-diff --git a/arch/arm64/kvm/vgic/vgic-irqfd.c b/arch/arm64/kvm/vgic/vgic-irqfd.c
-index 475059bacedf..c35e1a138617 100644
---- a/arch/arm64/kvm/vgic/vgic-irqfd.c
-+++ b/arch/arm64/kvm/vgic/vgic-irqfd.c
-@@ -6,7 +6,7 @@
- #include <linux/kvm.h>
- #include <linux/kvm_host.h>
- #include <trace/events/kvm.h>
--#include <kvm/arm_vgic.h>
-+#include <asm/kvm_vgic.h>
- #include "vgic.h"
- 
- /**
-diff --git a/arch/arm64/kvm/vgic/vgic-kvm-device.c b/arch/arm64/kvm/vgic/vgic-kvm-device.c
-index 212b73a715c1..2c7027d675c9 100644
---- a/arch/arm64/kvm/vgic/vgic-kvm-device.c
-+++ b/arch/arm64/kvm/vgic/vgic-kvm-device.c
-@@ -6,7 +6,7 @@
-  * Author: Marc Zyngier <marc.zyngier@arm.com>
-  */
- #include <linux/kvm_host.h>
--#include <kvm/arm_vgic.h>
-+#include <asm/kvm_vgic.h>
- #include <linux/uaccess.h>
- #include <asm/kvm_mmu.h>
- #include <asm/cputype.h>
 diff --git a/arch/arm64/kvm/vgic/vgic-mmio-v2.c b/arch/arm64/kvm/vgic/vgic-mmio-v2.c
-index e070cda86e12..bba0cfeefffe 100644
+index bba0cfeefffe..646053ee892f 100644
 --- a/arch/arm64/kvm/vgic/vgic-mmio-v2.c
 +++ b/arch/arm64/kvm/vgic/vgic-mmio-v2.c
-@@ -9,7 +9,7 @@
- #include <linux/nospec.h>
- 
- #include <kvm/iodev.h>
--#include <kvm/arm_vgic.h>
-+#include <asm/kvm_vgic.h>
- 
- #include "vgic.h"
- #include "vgic-mmio.h"
-diff --git a/arch/arm64/kvm/vgic/vgic-mmio-v3.c b/arch/arm64/kvm/vgic/vgic-mmio-v3.c
-index 188d2187eede..d54a90beef61 100644
---- a/arch/arm64/kvm/vgic/vgic-mmio-v3.c
-+++ b/arch/arm64/kvm/vgic/vgic-mmio-v3.c
-@@ -9,11 +9,11 @@
- #include <linux/kvm_host.h>
- #include <linux/interrupt.h>
- #include <kvm/iodev.h>
--#include <kvm/arm_vgic.h>
- 
- #include <asm/kvm_emulate.h>
- #include <asm/kvm_arm.h>
- #include <asm/kvm_mmu.h>
-+#include <asm/kvm_vgic.h>
- 
- #include "vgic.h"
- #include "vgic-mmio.h"
-diff --git a/arch/arm64/kvm/vgic/vgic-mmio.c b/arch/arm64/kvm/vgic/vgic-mmio.c
-index ff558c05e990..68a3d8062473 100644
---- a/arch/arm64/kvm/vgic/vgic-mmio.c
-+++ b/arch/arm64/kvm/vgic/vgic-mmio.c
-@@ -10,8 +10,8 @@
- #include <linux/kvm.h>
- #include <linux/kvm_host.h>
- #include <kvm/iodev.h>
--#include <kvm/arm_arch_timer.h>
--#include <kvm/arm_vgic.h>
-+#include <asm/kvm_arch_timer.h>
-+#include <asm/kvm_vgic.h>
- 
- #include "vgic.h"
- #include "vgic-mmio.h"
-diff --git a/arch/arm64/kvm/vgic/vgic-v2.c b/arch/arm64/kvm/vgic/vgic-v2.c
-index 7e9cdb78f7ce..7eacf1c850a5 100644
---- a/arch/arm64/kvm/vgic/vgic-v2.c
-+++ b/arch/arm64/kvm/vgic/vgic-v2.c
-@@ -6,7 +6,7 @@
+@@ -6,9 +6,9 @@
  #include <linux/irqchip/arm-gic.h>
  #include <linux/kvm.h>
  #include <linux/kvm_host.h>
--#include <kvm/arm_vgic.h>
-+#include <asm/kvm_vgic.h>
- #include <asm/kvm_mmu.h>
++#include <linux/kvm_iodev.h>
+ #include <linux/nospec.h>
+ 
+-#include <kvm/iodev.h>
+ #include <asm/kvm_vgic.h>
  
  #include "vgic.h"
-diff --git a/arch/arm64/kvm/vgic/vgic-v3.c b/arch/arm64/kvm/vgic/vgic-v3.c
-index 3dfc8b84e03e..e8501828072b 100644
---- a/arch/arm64/kvm/vgic/vgic-v3.c
-+++ b/arch/arm64/kvm/vgic/vgic-v3.c
-@@ -6,7 +6,7 @@
- #include <linux/kstrtox.h>
+diff --git a/arch/arm64/kvm/vgic/vgic-mmio-v3.c b/arch/arm64/kvm/vgic/vgic-mmio-v3.c
+index d54a90beef61..b79a2e860415 100644
+--- a/arch/arm64/kvm/vgic/vgic-mmio-v3.c
++++ b/arch/arm64/kvm/vgic/vgic-mmio-v3.c
+@@ -7,8 +7,8 @@
+ #include <linux/irqchip/arm-gic-v3.h>
  #include <linux/kvm.h>
  #include <linux/kvm_host.h>
--#include <kvm/arm_vgic.h>
-+#include <asm/kvm_vgic.h>
- #include <asm/kvm_hyp.h>
- #include <asm/kvm_mmu.h>
- #include <asm/kvm_asm.h>
++#include <linux/kvm_iodev.h>
+ #include <linux/interrupt.h>
+-#include <kvm/iodev.h>
+ 
+ #include <asm/kvm_emulate.h>
+ #include <asm/kvm_arm.h>
+diff --git a/arch/arm64/kvm/vgic/vgic-mmio.c b/arch/arm64/kvm/vgic/vgic-mmio.c
+index 68a3d8062473..4feca3b1d915 100644
+--- a/arch/arm64/kvm/vgic/vgic-mmio.c
++++ b/arch/arm64/kvm/vgic/vgic-mmio.c
+@@ -9,7 +9,7 @@
+ #include <linux/irq.h>
+ #include <linux/kvm.h>
+ #include <linux/kvm_host.h>
+-#include <kvm/iodev.h>
++#include <linux/kvm_iodev.h>
+ #include <asm/kvm_arch_timer.h>
+ #include <asm/kvm_vgic.h>
+ 
+diff --git a/arch/mips/include/asm/kvm_host.h b/arch/mips/include/asm/kvm_host.h
+index 54a85f1d4f2c..f8f63d0aa399 100644
+--- a/arch/mips/include/asm/kvm_host.h
++++ b/arch/mips/include/asm/kvm_host.h
+@@ -16,6 +16,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/types.h>
+ #include <linux/kvm.h>
++#include <linux/kvm_iodev.h>
+ #include <linux/kvm_types.h>
+ #include <linux/threads.h>
+ #include <linux/spinlock.h>
+@@ -24,8 +25,6 @@
+ #include <asm/inst.h>
+ #include <asm/mipsregs.h>
+ 
+-#include <kvm/iodev.h>
+-
+ /* MIPS KVM register ids */
+ #define MIPS_CP0_32(_R, _S)					\
+ 	(KVM_REG_MIPS_CP0 | KVM_REG_SIZE_U32 | (8 * (_R) + (_S)))
+diff --git a/arch/powerpc/kvm/mpic.c b/arch/powerpc/kvm/mpic.c
+index 23e9c2bd9f27..b25a03251544 100644
+--- a/arch/powerpc/kvm/mpic.c
++++ b/arch/powerpc/kvm/mpic.c
+@@ -26,6 +26,7 @@
+ #include <linux/slab.h>
+ #include <linux/mutex.h>
+ #include <linux/kvm_host.h>
++#include <linux/kvm_iodev.h>
+ #include <linux/errno.h>
+ #include <linux/fs.h>
+ #include <linux/anon_inodes.h>
+@@ -33,7 +34,6 @@
+ #include <asm/mpic.h>
+ #include <asm/kvm_para.h>
+ #include <asm/kvm_ppc.h>
+-#include <kvm/iodev.h>
+ 
+ #define MAX_CPU     32
+ #define MAX_SRC     256
+diff --git a/arch/riscv/kvm/aia_aplic.c b/arch/riscv/kvm/aia_aplic.c
+index 39e72aa016a4..b49e747f2bad 100644
+--- a/arch/riscv/kvm/aia_aplic.c
++++ b/arch/riscv/kvm/aia_aplic.c
+@@ -11,7 +11,7 @@
+ #include <linux/math.h>
+ #include <linux/spinlock.h>
+ #include <linux/swab.h>
+-#include <kvm/iodev.h>
++#include <linux/kvm_iodev.h>
+ #include <asm/kvm_aia_aplic.h>
+ 
+ struct aplic_irq {
+diff --git a/arch/riscv/kvm/aia_imsic.c b/arch/riscv/kvm/aia_imsic.c
+index 6cf23b8adb71..586e466a1c6d 100644
+--- a/arch/riscv/kvm/aia_imsic.c
++++ b/arch/riscv/kvm/aia_imsic.c
+@@ -10,10 +10,10 @@
+ #include <linux/atomic.h>
+ #include <linux/bitmap.h>
+ #include <linux/kvm_host.h>
++#include <linux/kvm_iodev.h>
+ #include <linux/math.h>
+ #include <linux/spinlock.h>
+ #include <linux/swab.h>
+-#include <kvm/iodev.h>
+ #include <asm/csr.h>
+ #include <asm/kvm_aia_imsic.h>
+ 
+diff --git a/arch/x86/kvm/i8254.h b/arch/x86/kvm/i8254.h
+index a768212ba821..4de7a0b88e4f 100644
+--- a/arch/x86/kvm/i8254.h
++++ b/arch/x86/kvm/i8254.h
+@@ -4,7 +4,7 @@
+ 
+ #include <linux/kthread.h>
+ 
+-#include <kvm/iodev.h>
++#include <linux/kvm_iodev.h>
+ 
+ struct kvm_kpit_channel_state {
+ 	u32 count; /* can be 65536 */
+diff --git a/arch/x86/kvm/ioapic.h b/arch/x86/kvm/ioapic.h
+index 539333ac4b38..2beec2daf1a3 100644
+--- a/arch/x86/kvm/ioapic.h
++++ b/arch/x86/kvm/ioapic.h
+@@ -3,7 +3,7 @@
+ #define __KVM_IO_APIC_H
+ 
+ #include <linux/kvm_host.h>
+-#include <kvm/iodev.h>
++#include <linux/kvm_iodev.h>
+ #include "irq.h"
+ 
+ struct kvm;
+diff --git a/arch/x86/kvm/irq.h b/arch/x86/kvm/irq.h
+index c2d7cfe82d00..f9530e9a66f8 100644
+--- a/arch/x86/kvm/irq.h
++++ b/arch/x86/kvm/irq.h
+@@ -13,9 +13,9 @@
+ #include <linux/mm_types.h>
+ #include <linux/hrtimer.h>
+ #include <linux/kvm_host.h>
++#include <linux/kvm_iodev.h>
+ #include <linux/spinlock.h>
+ 
+-#include <kvm/iodev.h>
+ #include "lapic.h"
+ 
+ #define PIC_NUM_PINS 16
+diff --git a/arch/x86/kvm/lapic.h b/arch/x86/kvm/lapic.h
+index 0a0ea4b5dd8c..bfd99ad1882e 100644
+--- a/arch/x86/kvm/lapic.h
++++ b/arch/x86/kvm/lapic.h
+@@ -2,7 +2,7 @@
+ #ifndef __KVM_X86_LAPIC_H
+ #define __KVM_X86_LAPIC_H
+ 
+-#include <kvm/iodev.h>
++#include <linux/kvm_iodev.h>
+ 
+ #include <linux/kvm_host.h>
+ 
+diff --git a/include/kvm/iodev.h b/include/linux/kvm_iodev.h
+similarity index 100%
+rename from include/kvm/iodev.h
+rename to include/linux/kvm_iodev.h
+diff --git a/virt/kvm/coalesced_mmio.c b/virt/kvm/coalesced_mmio.c
+index 1b90acb6e3fe..cfcb4b84d632 100644
+--- a/virt/kvm/coalesced_mmio.c
++++ b/virt/kvm/coalesced_mmio.c
+@@ -9,8 +9,7 @@
+  *
+  */
+ 
+-#include <kvm/iodev.h>
+-
++#include <linux/kvm_iodev.h>
+ #include <linux/kvm_host.h>
+ #include <linux/slab.h>
+ #include <linux/kvm.h>
+diff --git a/virt/kvm/eventfd.c b/virt/kvm/eventfd.c
+index 89912a17f5d5..4d7cfb1095fd 100644
+--- a/virt/kvm/eventfd.c
++++ b/virt/kvm/eventfd.c
+@@ -26,7 +26,7 @@
+ #include <linux/irqbypass.h>
+ #include <trace/events/kvm.h>
+ 
+-#include <kvm/iodev.h>
++#include <linux/kvm_iodev.h>
+ 
+ #ifdef CONFIG_HAVE_KVM_IRQFD
+ 
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index 486800a7024b..f585a159b4f5 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -13,9 +13,8 @@
+  *   Yaniv Kamay  <yaniv@qumranet.com>
+  */
+ 
+-#include <kvm/iodev.h>
+-
+ #include <linux/kvm_host.h>
++#include <linux/kvm_iodev.h>
+ #include <linux/kvm.h>
+ #include <linux/module.h>
+ #include <linux/errno.h>
 -- 
 2.42.0.459.ge4e396fd5e-goog
 
