@@ -1,30 +1,40 @@
 From: Anup Patel <apatel@ventanamicro.com>
-Date: Mon, 18 Sep 2023 23:36:42 +0530
-Subject: [PATCH 0/4] KVM RISC-V fixes for ONE_REG interface
-Message-ID: <20230918180646.1398384-1-apatel@ventanamicro.com>
+Date: Mon, 18 Sep 2023 23:36:43 +0530
+Subject: [PATCH 1/4] RISC-V: KVM: Fix KVM_GET_REG_LIST API for ISA_EXT registers
+In-Reply-To: <20230918180646.1398384-1-apatel@ventanamicro.com>
+References: <20230918180646.1398384-1-apatel@ventanamicro.com>
+Message-ID: <20230918180646.1398384-2-apatel@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This series includes few assorted fixes for KVM RISC-V ONE_REG interface
-and KVM_GET_REG_LIST API.
+The ISA_EXT registers to enabled/disable ISA extensions for VCPU
+are always available when underlying host has the corresponding
+ISA extension. The copy_isa_ext_reg_indices() called by the
+KVM_GET_REG_LIST API does not align with this expectation so
+let's fix it.
 
-These patches can also be found in riscv_kvm_onereg_fixes_v1 branch at:
-https://github.com/avpatel/linux.git
+Fixes: 031f9efafc08 ("KVM: riscv: Add KVM_GET_REG_LIST API support")
+Signed-off-by: Anup Patel <apatel@ventanamicro.com>
+---
+ arch/riscv/kvm/vcpu_onereg.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Anup Patel (4):
-  RISC-V: KVM: Fix KVM_GET_REG_LIST API for ISA_EXT registers
-  RISC-V: KVM: Fix riscv_vcpu_get_isa_ext_single() for missing
-    extensions
-  KVM: riscv: selftests: Fix ISA_EXT register handling in get-reg-list
-  KVM: riscv: selftests: Selectively filter-out AIA registers
-
- arch/riscv/kvm/vcpu_onereg.c                  |  7 ++-
- .../selftests/kvm/riscv/get-reg-list.c        | 58 ++++++++++++++-----
- 2 files changed, 47 insertions(+), 18 deletions(-)
-
+diff --git a/arch/riscv/kvm/vcpu_onereg.c b/arch/riscv/kvm/vcpu_onereg.c
+index 1b7e9fa265cb..e7e833ced91b 100644
+--- a/arch/riscv/kvm/vcpu_onereg.c
++++ b/arch/riscv/kvm/vcpu_onereg.c
+@@ -842,7 +842,7 @@ static int copy_isa_ext_reg_indices(const struct kvm_vcpu *vcpu,
+ 		u64 reg = KVM_REG_RISCV | size | KVM_REG_RISCV_ISA_EXT | i;
+ 
+ 		isa_ext = kvm_isa_ext_arr[i];
+-		if (!__riscv_isa_extension_available(vcpu->arch.isa, isa_ext))
++		if (!__riscv_isa_extension_available(NULL, isa_ext))
+ 			continue;
+ 
+ 		if (uindices) {
 -- 
 2.34.1
 
