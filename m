@@ -1,39 +1,38 @@
 From: Jason Gunthorpe <jgg@ziepe.ca>
-Date: Mon, 18 Sep 2023 12:18:04 -0300
-Subject: [PATCH 03/26] virt: Declare and define vfio_file_set_kvm() iff
- CONFIG_KVM is enabled
-In-Reply-To: <20230916003118.2540661-4-seanjc@google.com>
+Date: Mon, 18 Sep 2023 12:21:10 -0300
+Subject: [PATCH 05/26] vfio: KVM: Pass get/put helpers from KVM to VFIO,
+ don't do circular lookup
+In-Reply-To: <20230916003118.2540661-6-seanjc@google.com>
 References: <20230916003118.2540661-1-seanjc@google.com>
- <20230916003118.2540661-4-seanjc@google.com>
-Message-ID: <20230918151804.GH13795@ziepe.ca>
+ <20230916003118.2540661-6-seanjc@google.com>
+Message-ID: <20230918152110.GI13795@ziepe.ca>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Sep 15, 2023 at 05:30:55PM -0700, Sean Christopherson wrote:
-> Hide vfio_file_set_kvm() and its unique helpers if KVM is not enabled,
-> nothing else in the kernel (or out of the kernel) should be using a
-> KVM specific helper.
+On Fri, Sep 15, 2023 at 05:30:57PM -0700, Sean Christopherson wrote:
+> Explicitly pass KVM's get/put helpers to VFIO when attaching a VM to
+> VFIO instead of having VFIO do a symbol lookup back into KVM.  Having both
+> KVM and VFIO do symbol lookups increases the overall complexity and places
+> an unnecessary dependency on KVM (from VFIO) without adding any value.
 > 
 > Signed-off-by: Sean Christopherson <seanjc@google.com>
 > ---
->  drivers/vfio/vfio_main.c | 2 +-
->  include/linux/vfio.h     | 2 ++
->  2 files changed, 3 insertions(+), 1 deletion(-)
+>  drivers/vfio/vfio.h      |  2 ++
+>  drivers/vfio/vfio_main.c | 74 +++++++++++++++++++---------------------
+>  include/linux/vfio.h     |  4 ++-
+>  virt/kvm/vfio.c          |  9 +++--
+>  4 files changed, 47 insertions(+), 42 deletions(-)
 
-Patch subject should be vfio not virt
+I don't mind this, but Christoph had disliked my prior attempt to do
+this with function pointers..
 
-Reviewed-by: Jason Gunthorpe <jgg@nvidia.com>
+The get can be inlined, IIRC, what about putting a pointer to the put
+inside the kvm struct?
 
-> @@ -1388,6 +1387,7 @@ void vfio_file_set_kvm(struct file *file, struct kvm *kvm)
->  		vfio_device_file_set_kvm(file, kvm);
->  }
->  EXPORT_SYMBOL_GPL(vfio_file_set_kvm);
-> +#endif
-
-We could even put this in a symbol namespace..
+The the normal kvm get/put don't have to exported symbols at all?
 
 Jason
 
