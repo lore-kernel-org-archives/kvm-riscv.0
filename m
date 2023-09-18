@@ -1,70 +1,104 @@
-From: Binbin Wu <binbin.wu@linux.intel.com>
-Date: Mon, 18 Sep 2023 09:14:13 +0800
-Subject: [RFC PATCH v12 10/33] KVM: Set the stage for handling only shared
- mappings in mmu_notifier events
-In-Reply-To: <20230914015531.1419405-11-seanjc@google.com>
+From: Yan Zhao <yan.y.zhao@intel.com>
+Date: Mon, 18 Sep 2023 08:54:55 +0800
+Subject: [RFC PATCH v12 18/33] KVM: x86/mmu: Handle page fault for
+ private memory
+In-Reply-To: <ZQRpiOd1DNDDJQ3r@google.com>
 References: <20230914015531.1419405-1-seanjc@google.com>
- <20230914015531.1419405-11-seanjc@google.com>
-Message-ID: <9925e01b-7fa9-95e4-dc21-1d760ef9cde4@linux.intel.com>
+ <20230914015531.1419405-19-seanjc@google.com>
+ <ZQPuMK6D/7UzDH+D@yzhao56-desk.sh.intel.com>
+ <ZQRpiOd1DNDDJQ3r@google.com>
+Message-ID: <ZQef3zAEYjZMkn9k@yzhao56-desk.sh.intel.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+On Fri, Sep 15, 2023 at 07:26:16AM -0700, Sean Christopherson wrote:
+> On Fri, Sep 15, 2023, Yan Zhao wrote:
+> > On Wed, Sep 13, 2023 at 06:55:16PM -0700, Sean Christopherson wrote:
+> > ....
+> > > +static void kvm_mmu_prepare_memory_fault_exit(struct kvm_vcpu *vcpu,
+> > > +					      struct kvm_page_fault *fault)
+> > > +{
+> > > +	kvm_prepare_memory_fault_exit(vcpu, fault->gfn << PAGE_SHIFT,
+> > > +				      PAGE_SIZE, fault->write, fault->exec,
+> > > +				      fault->is_private);
+> > > +}
+> > > +
+> > > +static int kvm_faultin_pfn_private(struct kvm_vcpu *vcpu,
+> > > +				   struct kvm_page_fault *fault)
+> > > +{
+> > > +	int max_order, r;
+> > > +
+> > > +	if (!kvm_slot_can_be_private(fault->slot)) {
+> > > +		kvm_mmu_prepare_memory_fault_exit(vcpu, fault);
+> > > +		return -EFAULT;
+> > > +	}
+> > > +
+> > > +	r = kvm_gmem_get_pfn(vcpu->kvm, fault->slot, fault->gfn, &fault->pfn,
+> > > +			     &max_order);
+> > > +	if (r) {
+> > > +		kvm_mmu_prepare_memory_fault_exit(vcpu, fault);
+> > > +		return r;
+> > > +	}
+> > > +
+> > > +	fault->max_level = min(kvm_max_level_for_order(max_order),
+> > > +			       fault->max_level);
+> > > +	fault->map_writable = !(fault->slot->flags & KVM_MEM_READONLY);
+> > > +
+> > > +	return RET_PF_CONTINUE;
+> > > +}
+> > > +
+> > >  static int __kvm_faultin_pfn(struct kvm_vcpu *vcpu, struct kvm_page_fault *fault)
+> > >  {
+> > >  	struct kvm_memory_slot *slot = fault->slot;
+> > > @@ -4293,6 +4356,14 @@ static int __kvm_faultin_pfn(struct kvm_vcpu *vcpu, struct kvm_page_fault *fault
+> > >  			return RET_PF_EMULATE;
+> > >  	}
+> > >  
+> > > +	if (fault->is_private != kvm_mem_is_private(vcpu->kvm, fault->gfn)) {
+> > In patch 21,
+> > fault->is_private is set as:
+> > 	".is_private = kvm_mem_is_private(vcpu->kvm, cr2_or_gpa >> PAGE_SHIFT)",
+> > then, the inequality here means memory attribute has been updated after
+> > last check.
+> > So, why an exit to user space for converting is required instead of a mere retry?
+> > 
+> > Or, is it because how .is_private is assigned in patch 21 is subjected to change
+> > in future? 
+> 
+> This.  Retrying on SNP or TDX would hang the guest.  I suppose we could special
+Is this because if the guest access a page in private way (e.g. via
+private key in TDX), the returned page must be a private page?
+
+> case VMs where .is_private is derived from the memory attributes, but the
+> SW_PROTECTED_VM type is primary a development vehicle at this point.  I'd like to
+> have it mimic SNP/TDX as much as possible; performance is a secondary concern.
+Ok. But this mimic is somewhat confusing as it may be problematic in below scenario,
+though sane guest should ensure no one is accessing a page before doing memory
+conversion.
 
 
-On 9/14/2023 9:55 AM, Sean Christopherson wrote:
-> Add flags to "struct kvm_gfn_range" to let notifier events target only
-> shared and only private mappings, and write up the existing mmu_notifier
-> events to be shared-only (private memory is never associated with a
-> userspace virtual address, i.e. can't be reached via mmu_notifiers).
->
-> Add two flags so that KVM can handle the three possibilities (shared,
-> private, and shared+private) without needing something like a tri-state
-> enum.
+CPU 0                           CPU 1
+access GFN A in private way
+fault->is_private=true
+                                convert GFN A to shared
+			        set memory attribute of A to shared
 
-How to understand the word "stage" in short log?
+faultin, mismatch and exit
+set memory attribute of A
+to private
 
+                                vCPU access GFN A in shared way
+                                fault->is_private = true
+                                faultin, match and map a private PFN B
 
->
-> Link: https://lore.kernel.org/all/ZJX0hk+KpQP0KUyB at google.com
-> Signed-off-by: Sean Christopherson <seanjc@google.com>
-> ---
->   include/linux/kvm_host.h | 2 ++
->   virt/kvm/kvm_main.c      | 7 +++++++
->   2 files changed, 9 insertions(+)
->
-> diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-> index d8c6ce6c8211..b5373cee2b08 100644
-> --- a/include/linux/kvm_host.h
-> +++ b/include/linux/kvm_host.h
-> @@ -263,6 +263,8 @@ struct kvm_gfn_range {
->   	gfn_t start;
->   	gfn_t end;
->   	union kvm_mmu_notifier_arg arg;
-> +	bool only_private;
-> +	bool only_shared;
->   	bool may_block;
->   };
->   bool kvm_unmap_gfn_range(struct kvm *kvm, struct kvm_gfn_range *range);
-> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-> index 174de2789657..a41f8658dfe0 100644
-> --- a/virt/kvm/kvm_main.c
-> +++ b/virt/kvm/kvm_main.c
-> @@ -635,6 +635,13 @@ static __always_inline kvm_mn_ret_t __kvm_handle_hva_range(struct kvm *kvm,
->   			 * the second or later invocation of the handler).
->   			 */
->   			gfn_range.arg = range->arg;
-> +
-> +			/*
-> +			 * HVA-based notifications aren't relevant to private
-> +			 * mappings as they don't have a userspace mapping.
-> +			 */
-> +			gfn_range.only_private = false;
-> +			gfn_range.only_shared = true;
->   			gfn_range.may_block = range->may_block;
->   
->   			/*
+                                vCPU accesses private PFN B in shared way
 
+> 
+> E.g. userspace needs to be prepared for "spurious" exits due to races on SNP and
+> TDX, which this can theoretically exercise.  Though the window is quite small so
+> I doubt that'll actually happen in practice; which of course also makes it less
+> important to retry instead of exiting.
 
