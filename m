@@ -1,104 +1,47 @@
-From: Yan Zhao <yan.y.zhao@intel.com>
-Date: Mon, 18 Sep 2023 08:54:55 +0800
-Subject: [RFC PATCH v12 18/33] KVM: x86/mmu: Handle page fault for
- private memory
-In-Reply-To: <ZQRpiOd1DNDDJQ3r@google.com>
-References: <20230914015531.1419405-1-seanjc@google.com>
- <20230914015531.1419405-19-seanjc@google.com>
- <ZQPuMK6D/7UzDH+D@yzhao56-desk.sh.intel.com>
- <ZQRpiOd1DNDDJQ3r@google.com>
-Message-ID: <ZQef3zAEYjZMkn9k@yzhao56-desk.sh.intel.com>
+From: Thomas Huth <thuth@redhat.com>
+Date: Mon, 18 Sep 2023 08:56:09 +0200
+Subject: [PATCH 18/26] KVM: s390: Stop adding virt/kvm to the arch include
+ path
+In-Reply-To: <20230916003118.2540661-19-seanjc@google.com>
+References: <20230916003118.2540661-1-seanjc@google.com>
+ <20230916003118.2540661-19-seanjc@google.com>
+Message-ID: <a6a77718-219f-30f6-b8de-acd7aadf3b0c@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Sep 15, 2023 at 07:26:16AM -0700, Sean Christopherson wrote:
-> On Fri, Sep 15, 2023, Yan Zhao wrote:
-> > On Wed, Sep 13, 2023 at 06:55:16PM -0700, Sean Christopherson wrote:
-> > ....
-> > > +static void kvm_mmu_prepare_memory_fault_exit(struct kvm_vcpu *vcpu,
-> > > +					      struct kvm_page_fault *fault)
-> > > +{
-> > > +	kvm_prepare_memory_fault_exit(vcpu, fault->gfn << PAGE_SHIFT,
-> > > +				      PAGE_SIZE, fault->write, fault->exec,
-> > > +				      fault->is_private);
-> > > +}
-> > > +
-> > > +static int kvm_faultin_pfn_private(struct kvm_vcpu *vcpu,
-> > > +				   struct kvm_page_fault *fault)
-> > > +{
-> > > +	int max_order, r;
-> > > +
-> > > +	if (!kvm_slot_can_be_private(fault->slot)) {
-> > > +		kvm_mmu_prepare_memory_fault_exit(vcpu, fault);
-> > > +		return -EFAULT;
-> > > +	}
-> > > +
-> > > +	r = kvm_gmem_get_pfn(vcpu->kvm, fault->slot, fault->gfn, &fault->pfn,
-> > > +			     &max_order);
-> > > +	if (r) {
-> > > +		kvm_mmu_prepare_memory_fault_exit(vcpu, fault);
-> > > +		return r;
-> > > +	}
-> > > +
-> > > +	fault->max_level = min(kvm_max_level_for_order(max_order),
-> > > +			       fault->max_level);
-> > > +	fault->map_writable = !(fault->slot->flags & KVM_MEM_READONLY);
-> > > +
-> > > +	return RET_PF_CONTINUE;
-> > > +}
-> > > +
-> > >  static int __kvm_faultin_pfn(struct kvm_vcpu *vcpu, struct kvm_page_fault *fault)
-> > >  {
-> > >  	struct kvm_memory_slot *slot = fault->slot;
-> > > @@ -4293,6 +4356,14 @@ static int __kvm_faultin_pfn(struct kvm_vcpu *vcpu, struct kvm_page_fault *fault
-> > >  			return RET_PF_EMULATE;
-> > >  	}
-> > >  
-> > > +	if (fault->is_private != kvm_mem_is_private(vcpu->kvm, fault->gfn)) {
-> > In patch 21,
-> > fault->is_private is set as:
-> > 	".is_private = kvm_mem_is_private(vcpu->kvm, cr2_or_gpa >> PAGE_SHIFT)",
-> > then, the inequality here means memory attribute has been updated after
-> > last check.
-> > So, why an exit to user space for converting is required instead of a mere retry?
-> > 
-> > Or, is it because how .is_private is assigned in patch 21 is subjected to change
-> > in future? 
+On 16/09/2023 02.31, Sean Christopherson wrote:
+> Don't add virt/kvm to KVM s390's include path, the headers in virt/kvm are
+> intended to be used only by other code in virt/kvm, i.e. are "private" to
+> the core KVM code.  It's not clear that s390 *ever* included a header from
+> virt/kvm, i.e. odds are good the "-Ivirt/kvm" was copied from a x86's
+> Makefile when s390 support was first added.
 > 
-> This.  Retrying on SNP or TDX would hang the guest.  I suppose we could special
-Is this because if the guest access a page in private way (e.g. via
-private key in TDX), the returned page must be a private page?
-
-> case VMs where .is_private is derived from the memory attributes, but the
-> SW_PROTECTED_VM type is primary a development vehicle at this point.  I'd like to
-> have it mimic SNP/TDX as much as possible; performance is a secondary concern.
-Ok. But this mimic is somewhat confusing as it may be problematic in below scenario,
-though sane guest should ensure no one is accessing a page before doing memory
-conversion.
-
-
-CPU 0                           CPU 1
-access GFN A in private way
-fault->is_private=true
-                                convert GFN A to shared
-			        set memory attribute of A to shared
-
-faultin, mismatch and exit
-set memory attribute of A
-to private
-
-                                vCPU access GFN A in shared way
-                                fault->is_private = true
-                                faultin, match and map a private PFN B
-
-                                vCPU accesses private PFN B in shared way
-
+> The only headers in virt/kvm at the time were the x86 specific ioapic.h,
+> and iodev.h, neither of which shows up as an #include in the diff for the
+> commit range 37817f2982d0f..e976a2b997fc4.
 > 
-> E.g. userspace needs to be prepared for "spurious" exits due to races on SNP and
-> TDX, which this can theoretically exercise.  Though the window is quite small so
-> I doubt that'll actually happen in practice; which of course also makes it less
-> important to retry instead of exiting.
+> Signed-off-by: Sean Christopherson <seanjc@google.com>
+> ---
+>   arch/s390/kvm/Makefile | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/arch/s390/kvm/Makefile b/arch/s390/kvm/Makefile
+> index 02217fb4ae10..f17249ab2a72 100644
+> --- a/arch/s390/kvm/Makefile
+> +++ b/arch/s390/kvm/Makefile
+> @@ -5,7 +5,7 @@
+>   
+>   include $(srctree)/virt/kvm/Makefile.kvm
+>   
+> -ccflags-y := -Ivirt/kvm -Iarch/s390/kvm
+> +ccflags-y := -Iarch/s390/kvm
+>   
+>   kvm-y += kvm-s390.o intercept.o interrupt.o priv.o sigp.o
+>   kvm-y += diag.o gaccess.o guestdbg.o vsie.o pv.o
+
+Reviewed-by: Thomas Huth <thuth@redhat.com>
+
 
