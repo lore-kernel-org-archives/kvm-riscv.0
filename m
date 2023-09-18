@@ -1,62 +1,48 @@
 From: Jason Gunthorpe <jgg@ziepe.ca>
-Date: Mon, 18 Sep 2023 13:02:58 -0300
-Subject: [PATCH 05/26] vfio: KVM: Pass get/put helpers from KVM to VFIO,
- don't do circular lookup
-In-Reply-To: <ZQhxpesyXeG+qbS6@google.com>
+Date: Mon, 18 Sep 2023 13:17:50 -0300
+Subject: [PATCH 06/26] KVM: Drop CONFIG_KVM_VFIO and just look at KVM+VFIO
+In-Reply-To: <ZQhySMjmuyW2Czas@google.com>
 References: <20230916003118.2540661-1-seanjc@google.com>
- <20230916003118.2540661-6-seanjc@google.com>
- <20230918152110.GI13795@ziepe.ca>
- <ZQhxpesyXeG+qbS6@google.com>
-Message-ID: <20230918160258.GL13795@ziepe.ca>
+ <20230916003118.2540661-7-seanjc@google.com>
+ <20230918152946.GJ13795@ziepe.ca>
+ <ZQhySMjmuyW2Czas@google.com>
+Message-ID: <20230918161750.GM13795@ziepe.ca>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Sep 18, 2023 at 08:49:57AM -0700, Sean Christopherson wrote:
-> On Mon, Sep 18, 2023, Jason Gunthorpe wrote:
-> > On Fri, Sep 15, 2023 at 05:30:57PM -0700, Sean Christopherson wrote:
-> > > Explicitly pass KVM's get/put helpers to VFIO when attaching a VM to
-> > > VFIO instead of having VFIO do a symbol lookup back into KVM.  Having both
-> > > KVM and VFIO do symbol lookups increases the overall complexity and places
-> > > an unnecessary dependency on KVM (from VFIO) without adding any value.
-> > > 
-> > > Signed-off-by: Sean Christopherson <seanjc@google.com>
-> > > ---
-> > >  drivers/vfio/vfio.h      |  2 ++
-> > >  drivers/vfio/vfio_main.c | 74 +++++++++++++++++++---------------------
-> > >  include/linux/vfio.h     |  4 ++-
-> > >  virt/kvm/vfio.c          |  9 +++--
-> > >  4 files changed, 47 insertions(+), 42 deletions(-)
-> > 
-> > I don't mind this, but Christoph had disliked my prior attempt to do
-> > this with function pointers..
-> > 
-> > The get can be inlined, IIRC, what about putting a pointer to the put
-> > inside the kvm struct?
+On Mon, Sep 18, 2023 at 08:52:40AM -0700, Sean Christopherson wrote:
+
+> > I wonder if we should be making the VFIO drivers that need the kvm to
+> > ask for it? 'select CONFIG_NEED_VFIO_KVM' or something?
 > 
-> That wouldn't allow us to achieve our goal, which is to hide the details of
-> "struct kvm" from VFIO (and the rest of the kernel).
+> I wondered the same thing, if only to make it easier to track which
+> drivers actually end up interacting directly with KVM.
 
-> What's the objection to handing VFIO a function pointer?
+There are two usages I've seen..
 
-Hmm, looks like it was this thread:
+GVT's uage is just totally broken:
 
- https://lore.kernel.org/r/0-v1-33906a626da1+16b0-vfio_kvm_no_group_jgg at nvidia.com
+https://lore.kernel.org/kvm/661447fd-b041-c08d-cedc-341b31c405f8 at intel.com/
 
-Your rational looks a little better to me.
+It is trying to use KVM to write protect IOVA DMA memory, and it just
+doesn't work. If we want to do something like this the core vfio code
+should provide this service and it should be wired into KVM
+properly.
 
-> > The the normal kvm get/put don't have to exported symbols at all?
-> 
-> The export of kvm_get_kvm_safe() can go away (I forgot to do that in this series),
-> but kvm_get_kvm() will hang around as it's needed by KVM sub-modules (PPC and x86),
-> KVMGT (x86), and drivers/s390/crypto/vfio_ap_ops.c (no idea what to call that beast).
+power and s390 have actual architectural "virtual machines" and they
+need actual arch operations to install VFIO devices into those
+things. In this regard having the arch opt into the integration would
+make some sense. I expect this will get worse in our CC future where
+VFIO devices will need to be passed into arch specific CC code
+somehow.
 
-My thought would be to keep it as an inline, there should be some way
-to do that without breaking your desire to hide the bulk of the kvm
-struct content. Like put the refcount as the first element in the
-struct and just don't ifdef it away?.
+This arch stuff isn't cleanly done, the code is sprinkled all over the
+place. Some in mdevs, some in PCI arch code, some in #ifdefs..
+
+Maybe the CC people will clean it up instead of making the mess bigger :)
 
 Jason
 
