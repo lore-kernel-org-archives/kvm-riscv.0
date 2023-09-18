@@ -1,34 +1,62 @@
-From: Sean Christopherson <seanjc@google.com>
-Date: Mon, 18 Sep 2023 08:57:45 -0700
-Subject: [RFC PATCH v12 10/33] KVM: Set the stage for handling only shared
- mappings in mmu_notifier events
-In-Reply-To: <9925e01b-7fa9-95e4-dc21-1d760ef9cde4@linux.intel.com>
-References: <20230914015531.1419405-1-seanjc@google.com> <20230914015531.1419405-11-seanjc@google.com>
- <9925e01b-7fa9-95e4-dc21-1d760ef9cde4@linux.intel.com>
-Message-ID: <ZQhzeQLbB5zz2yIc@google.com>
+From: Jason Gunthorpe <jgg@ziepe.ca>
+Date: Mon, 18 Sep 2023 13:02:58 -0300
+Subject: [PATCH 05/26] vfio: KVM: Pass get/put helpers from KVM to VFIO,
+ don't do circular lookup
+In-Reply-To: <ZQhxpesyXeG+qbS6@google.com>
+References: <20230916003118.2540661-1-seanjc@google.com>
+ <20230916003118.2540661-6-seanjc@google.com>
+ <20230918152110.GI13795@ziepe.ca>
+ <ZQhxpesyXeG+qbS6@google.com>
+Message-ID: <20230918160258.GL13795@ziepe.ca>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Sep 18, 2023, Binbin Wu wrote:
-> 
-> 
-> On 9/14/2023 9:55 AM, Sean Christopherson wrote:
-> > Add flags to "struct kvm_gfn_range" to let notifier events target only
-> > shared and only private mappings, and write up the existing mmu_notifier
-> > events to be shared-only (private memory is never associated with a
-> > userspace virtual address, i.e. can't be reached via mmu_notifiers).
+On Mon, Sep 18, 2023 at 08:49:57AM -0700, Sean Christopherson wrote:
+> On Mon, Sep 18, 2023, Jason Gunthorpe wrote:
+> > On Fri, Sep 15, 2023 at 05:30:57PM -0700, Sean Christopherson wrote:
+> > > Explicitly pass KVM's get/put helpers to VFIO when attaching a VM to
+> > > VFIO instead of having VFIO do a symbol lookup back into KVM.  Having both
+> > > KVM and VFIO do symbol lookups increases the overall complexity and places
+> > > an unnecessary dependency on KVM (from VFIO) without adding any value.
+> > > 
+> > > Signed-off-by: Sean Christopherson <seanjc@google.com>
+> > > ---
+> > >  drivers/vfio/vfio.h      |  2 ++
+> > >  drivers/vfio/vfio_main.c | 74 +++++++++++++++++++---------------------
+> > >  include/linux/vfio.h     |  4 ++-
+> > >  virt/kvm/vfio.c          |  9 +++--
+> > >  4 files changed, 47 insertions(+), 42 deletions(-)
 > > 
-> > Add two flags so that KVM can handle the three possibilities (shared,
-> > private, and shared+private) without needing something like a tri-state
-> > enum.
+> > I don't mind this, but Christoph had disliked my prior attempt to do
+> > this with function pointers..
+> > 
+> > The get can be inlined, IIRC, what about putting a pointer to the put
+> > inside the kvm struct?
 > 
-> How to understand the word "stage" in short log?
+> That wouldn't allow us to achieve our goal, which is to hide the details of
+> "struct kvm" from VFIO (and the rest of the kernel).
 
-Sorry, it's an idiom[*] that essentially means "to prepare for".  I'll rephrase
-the shortlog to be more straightforward (I have a bad habit of using idioms).
+> What's the objection to handing VFIO a function pointer?
 
-[*] https://dictionary.cambridge.org/us/dictionary/english/set-the-stage-for
+Hmm, looks like it was this thread:
+
+ https://lore.kernel.org/r/0-v1-33906a626da1+16b0-vfio_kvm_no_group_jgg at nvidia.com
+
+Your rational looks a little better to me.
+
+> > The the normal kvm get/put don't have to exported symbols at all?
+> 
+> The export of kvm_get_kvm_safe() can go away (I forgot to do that in this series),
+> but kvm_get_kvm() will hang around as it's needed by KVM sub-modules (PPC and x86),
+> KVMGT (x86), and drivers/s390/crypto/vfio_ap_ops.c (no idea what to call that beast).
+
+My thought would be to keep it as an inline, there should be some way
+to do that without breaking your desire to hide the bulk of the kvm
+struct content. Like put the refcount as the first element in the
+struct and just don't ifdef it away?.
+
+Jason
 
