@@ -1,11 +1,10 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Mon, 18 Sep 2023 08:49:57 -0700
-Subject: [PATCH 05/26] vfio: KVM: Pass get/put helpers from KVM to VFIO,
- don't do circular lookup
-In-Reply-To: <20230918152110.GI13795@ziepe.ca>
-References: <20230916003118.2540661-1-seanjc@google.com> <20230916003118.2540661-6-seanjc@google.com>
- <20230918152110.GI13795@ziepe.ca>
-Message-ID: <ZQhxpesyXeG+qbS6@google.com>
+Date: Mon, 18 Sep 2023 08:52:40 -0700
+Subject: [PATCH 06/26] KVM: Drop CONFIG_KVM_VFIO and just look at KVM+VFIO
+In-Reply-To: <20230918152946.GJ13795@ziepe.ca>
+References: <20230916003118.2540661-1-seanjc@google.com> <20230916003118.2540661-7-seanjc@google.com>
+ <20230918152946.GJ13795@ziepe.ca>
+Message-ID: <ZQhySMjmuyW2Czas@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -13,41 +12,53 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 On Mon, Sep 18, 2023, Jason Gunthorpe wrote:
-> On Fri, Sep 15, 2023 at 05:30:57PM -0700, Sean Christopherson wrote:
-> > Explicitly pass KVM's get/put helpers to VFIO when attaching a VM to
-> > VFIO instead of having VFIO do a symbol lookup back into KVM.  Having both
-> > KVM and VFIO do symbol lookups increases the overall complexity and places
-> > an unnecessary dependency on KVM (from VFIO) without adding any value.
+> On Fri, Sep 15, 2023 at 05:30:58PM -0700, Sean Christopherson wrote:
+> > Drop KVM's KVM_VFIO Kconfig, and instead compile in VFIO support if
+> > and only if VFIO itself is enabled.  Similar to the recent change to have
+> > VFIO stop looking at HAVE_KVM, compiling in support for talking to VFIO
+> > just because the architecture supports VFIO is nonsensical.
 > > 
-> > Signed-off-by: Sean Christopherson <seanjc@google.com>
-> > ---
-> >  drivers/vfio/vfio.h      |  2 ++
-> >  drivers/vfio/vfio_main.c | 74 +++++++++++++++++++---------------------
-> >  include/linux/vfio.h     |  4 ++-
-> >  virt/kvm/vfio.c          |  9 +++--
-> >  4 files changed, 47 insertions(+), 42 deletions(-)
+> > This fixes a bug where RISC-V doesn't select KVM_VFIO, i.e. would silently
+> > fail to do connect KVM and VFIO, even though RISC-V supports VFIO.  The
+> > bug is benign as the only driver in all of Linux that actually uses the
+> > KVM reference provided by VFIO is KVM-GT, which is x86/Intel specific.
 > 
-> I don't mind this, but Christoph had disliked my prior attempt to do
-> this with function pointers..
+> Hmm, I recall that all the S390 drivers need it as well.
 > 
-> The get can be inlined, IIRC, what about putting a pointer to the put
-> inside the kvm struct?
+> static int vfio_ap_mdev_open_device(struct vfio_device *vdev)
+> {
+>         struct ap_matrix_mdev *matrix_mdev =
+>                 container_of(vdev, struct ap_matrix_mdev, vdev);
+> 
+>         if (!vdev->kvm)
+>                 return -EINVAL;
+> 
+>         return vfio_ap_mdev_set_kvm(matrix_mdev, vdev->kvm);
 
-That wouldn't allow us to achieve our goal, which is to hide the details of
-"struct kvm" from VFIO (and the rest of the kernel).
+Ah, I missed that the KVM reference was routed through VFIO in that case.
 
-What's the objection to handing VFIO a function pointer?
+> I wonder if we should be making the VFIO drivers that need the kvm to
+> ask for it? 'select CONFIG_NEED_VFIO_KVM' or something?
 
-> The the normal kvm get/put don't have to exported symbols at all?
+I wondered the same thing, if only to make it easier to track which drivers actually
+end up interacting directly with KVM.
 
-The export of kvm_get_kvm_safe() can go away (I forgot to do that in this series),
-but kvm_get_kvm() will hang around as it's needed by KVM sub-modules (PPC and x86),
-KVMGT (x86), and drivers/s390/crypto/vfio_ap_ops.c (no idea what to call that beast).
+> Regardless, I fully agree with getting rid of the arch flag.
+> 
+> Reviewed-by: Jason Gunthorpe <jgg@nvidia.com>
+> 
+> > --- a/virt/kvm/Makefile.kvm
+> > +++ b/virt/kvm/Makefile.kvm
+> > @@ -6,7 +6,9 @@
+> >  KVM ?= ../../../virt/kvm
+> >  
+> >  kvm-y := $(KVM)/kvm_main.o $(KVM)/eventfd.o $(KVM)/binary_stats.o
+> > -kvm-$(CONFIG_KVM_VFIO) += $(KVM)/vfio.o
+> > +ifdef CONFIG_VFIO
+> > +kvm-y += $(KVM)/vfio.o
+> > +endif
+> 
+> I wonder if kvm-m magically works in kbuild so you don't need the ifdef?
 
-Gah, KVMGT doesn't actually need to call get/put, that can be handled by
-kvm_page_track_register_notifier().
-
-I am planning on making exports for sub-modules conditional on there actually
-being submodules, so that's 2 of the 3 gone, but tackling the s390 crypto driver
-is an entirely different story.
+Yeah, that should work, no idea why I added the ifdef.
 
