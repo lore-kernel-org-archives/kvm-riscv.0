@@ -1,40 +1,41 @@
 From: Anup Patel <apatel@ventanamicro.com>
-Date: Mon, 18 Sep 2023 23:36:43 +0530
-Subject: [PATCH 1/4] RISC-V: KVM: Fix KVM_GET_REG_LIST API for ISA_EXT registers
+Date: Mon, 18 Sep 2023 23:36:44 +0530
+Subject: [PATCH 2/4] RISC-V: KVM: Fix riscv_vcpu_get_isa_ext_single() for missing extensions
 In-Reply-To: <20230918180646.1398384-1-apatel@ventanamicro.com>
 References: <20230918180646.1398384-1-apatel@ventanamicro.com>
-Message-ID: <20230918180646.1398384-2-apatel@ventanamicro.com>
+Message-ID: <20230918180646.1398384-3-apatel@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The ISA_EXT registers to enabled/disable ISA extensions for VCPU
-are always available when underlying host has the corresponding
-ISA extension. The copy_isa_ext_reg_indices() called by the
-KVM_GET_REG_LIST API does not align with this expectation so
-let's fix it.
+The riscv_vcpu_get_isa_ext_single() should fail with -ENOENT error
+when corresponding ISA extension is not available on the host.
 
-Fixes: 031f9efafc08 ("KVM: riscv: Add KVM_GET_REG_LIST API support")
+Fixes: e98b1085be79 ("RISC-V: KVM: Factor-out ONE_REG related code to its own source file")
 Signed-off-by: Anup Patel <apatel@ventanamicro.com>
 ---
- arch/riscv/kvm/vcpu_onereg.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/riscv/kvm/vcpu_onereg.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
 diff --git a/arch/riscv/kvm/vcpu_onereg.c b/arch/riscv/kvm/vcpu_onereg.c
-index 1b7e9fa265cb..e7e833ced91b 100644
+index e7e833ced91b..b7e0e03c69b1 100644
 --- a/arch/riscv/kvm/vcpu_onereg.c
 +++ b/arch/riscv/kvm/vcpu_onereg.c
-@@ -842,7 +842,7 @@ static int copy_isa_ext_reg_indices(const struct kvm_vcpu *vcpu,
- 		u64 reg = KVM_REG_RISCV | size | KVM_REG_RISCV_ISA_EXT | i;
+@@ -460,8 +460,11 @@ static int riscv_vcpu_get_isa_ext_single(struct kvm_vcpu *vcpu,
+ 	    reg_num >= ARRAY_SIZE(kvm_isa_ext_arr))
+ 		return -ENOENT;
  
- 		isa_ext = kvm_isa_ext_arr[i];
--		if (!__riscv_isa_extension_available(vcpu->arch.isa, isa_ext))
-+		if (!__riscv_isa_extension_available(NULL, isa_ext))
- 			continue;
+-	*reg_val = 0;
+ 	host_isa_ext = kvm_isa_ext_arr[reg_num];
++	if (!__riscv_isa_extension_available(NULL, host_isa_ext))
++		return -ENOENT;
++
++	*reg_val = 0;
+ 	if (__riscv_isa_extension_available(vcpu->arch.isa, host_isa_ext))
+ 		*reg_val = 1; /* Mark the given extension as available */
  
- 		if (uindices) {
 -- 
 2.34.1
 
