@@ -1,62 +1,43 @@
-From: Binbin Wu <binbin.wu@linux.intel.com>
-Date: Mon, 18 Sep 2023 15:51:43 +0800
-Subject: [RFC PATCH v12 11/33] KVM: Introduce per-page memory attributes
-In-Reply-To: <20230914015531.1419405-12-seanjc@google.com>
-References: <20230914015531.1419405-1-seanjc@google.com>
- <20230914015531.1419405-12-seanjc@google.com>
-Message-ID: <d66795f8-e524-2912-4b71-92ca4ffe8807@linux.intel.com>
+From: Will Deacon <will@kernel.org>
+Date: Mon, 18 Sep 2023 12:16:09 +0100
+Subject: [kvmtool PATCH 0/6] RISC-V AIA irqchip and Svnapot support
+In-Reply-To: <CAK9=C2WkkEpA3YM99HMNRk743mkhk2FDEpV_ffG3UWH9Vy3YkA@mail.gmail.com>
+References: <20230725152430.3351564-1-apatel@ventanamicro.com>
+ <CAK9=C2WkkEpA3YM99HMNRk743mkhk2FDEpV_ffG3UWH9Vy3YkA@mail.gmail.com>
+Message-ID: <20230918111609.GB18214@willie-the-truck>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+On Thu, Sep 14, 2023 at 10:26:34PM +0530, Anup Patel wrote:
+> On Tue, Jul 25, 2023 at 8:54?PM Anup Patel <apatel@ventanamicro.com> wrote:
+> >
+> > The latest KVM in Linux-6.5 has support for:
+> > 1) Svnapot ISA extension support
+> > 2) AIA in-kernel irqchip support
+> >
+> > This series adds corresponding changes in KVMTOOL to use the above
+> > mentioned features for Guest/VM.
+> >
+> > These patches can also be found in the riscv_aia_v1 branch at:
+> > https://github.com/avpatel/kvmtool.git
+> >
+> > Anup Patel (6):
+> >   Sync-up header with Linux-6.5-rc3 for KVM RISC-V
+> >   riscv: Add Svnapot extension support
+> >   riscv: Make irqchip support pluggable
+> >   riscv: Add IRQFD support for in-kernel AIA irqchip
+> >   riscv: Use AIA in-kernel irqchip whenever KVM RISC-V supports
+> >   riscv: Fix guest/init linkage for multilib toolchain
+> 
+> Friendly ping ?
 
+It all looks pretty self-contained, but please send another version
+importing the headers for v6.5 now that it has been released.
 
-On 9/14/2023 9:55 AM, Sean Christopherson wrote:
-> From: Chao Peng <chao.p.peng@linux.intel.com>
-[...]
->   
-> +#ifdef CONFIG_KVM_GENERIC_MEMORY_ATTRIBUTES
-> +/*
-> + * Returns true if _all_ gfns in the range [@start, @end) have attributes
-> + * matching @attrs.
-> + */
-> +bool kvm_range_has_memory_attributes(struct kvm *kvm, gfn_t start, gfn_t end,
-> +				     unsigned long attrs)
-> +{
-> +	XA_STATE(xas, &kvm->mem_attr_array, start);
-> +	unsigned long index;
-> +	bool has_attrs;
-> +	void *entry;
-> +
-> +	rcu_read_lock();
-> +
-> +	if (!attrs) {
-> +		has_attrs = !xas_find(&xas, end);
-IIUIC, xas_find() is inclusive for "end", so here should be "end - 1" ?
+Cheers,
 
-
-> +		goto out;
-> +	}
-> +
-> +	has_attrs = true;
-> +	for (index = start; index < end; index++) {
-> +		do {
-> +			entry = xas_next(&xas);
-> +		} while (xas_retry(&xas, entry));
-> +
-> +		if (xas.xa_index != index || xa_to_value(entry) != attrs) {
-> +			has_attrs = false;
-> +			break;
-> +		}
-> +	}
-> +
-> +out:
-> +	rcu_read_unlock();
-> +	return has_attrs;
-> +}
-> +
->
-[...]
+Will
 
