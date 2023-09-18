@@ -1,41 +1,48 @@
-From: Anup Patel <apatel@ventanamicro.com>
-Date: Mon, 18 Sep 2023 18:27:30 +0530
-Subject: [kvmtool PATCH v2 6/6] riscv: Fix guest/init linkage for multilib toolchain
-In-Reply-To: <20230918125730.1371985-1-apatel@ventanamicro.com>
-References: <20230918125730.1371985-1-apatel@ventanamicro.com>
-Message-ID: <20230918125730.1371985-7-apatel@ventanamicro.com>
+From: Claudio Imbrenda <imbrenda@linux.ibm.com>
+Date: Mon, 18 Sep 2023 15:38:49 +0200
+Subject: [PATCH 18/26] KVM: s390: Stop adding virt/kvm to the arch
+ include path
+In-Reply-To: <20230916003118.2540661-19-seanjc@google.com>
+References: <20230916003118.2540661-1-seanjc@google.com>
+	<20230916003118.2540661-19-seanjc@google.com>
+Message-ID: <20230918153849.0363e8f9@p-imbrenda>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-For RISC-V multilib toolchains, we must specify -mabi and -march
-options when linking guest/init.
+On Fri, 15 Sep 2023 17:31:10 -0700
+Sean Christopherson <seanjc@google.com> wrote:
 
-Fixes: 2e99678314c2 ("riscv: Initial skeletal support")
-Signed-off-by: Anup Patel <apatel@ventanamicro.com>
----
- Makefile | 2 ++
- 1 file changed, 2 insertions(+)
+> Don't add virt/kvm to KVM s390's include path, the headers in virt/kvm are
+> intended to be used only by other code in virt/kvm, i.e. are "private" to
+> the core KVM code.  It's not clear that s390 *ever* included a header from
+> virt/kvm, i.e. odds are good the "-Ivirt/kvm" was copied from a x86's
+> Makefile when s390 support was first added.
+> 
+> The only headers in virt/kvm at the time were the x86 specific ioapic.h,
+> and iodev.h, neither of which shows up as an #include in the diff for the
+> commit range 37817f2982d0f..e976a2b997fc4.
+> 
+> Signed-off-by: Sean Christopherson <seanjc@google.com>
+> ---
+>  arch/s390/kvm/Makefile | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/arch/s390/kvm/Makefile b/arch/s390/kvm/Makefile
+> index 02217fb4ae10..f17249ab2a72 100644
+> --- a/arch/s390/kvm/Makefile
+> +++ b/arch/s390/kvm/Makefile
+> @@ -5,7 +5,7 @@
+>  
+>  include $(srctree)/virt/kvm/Makefile.kvm
+>  
+> -ccflags-y := -Ivirt/kvm -Iarch/s390/kvm
+> +ccflags-y := -Iarch/s390/kvm
+>  
+>  kvm-y += kvm-s390.o intercept.o interrupt.o priv.o sigp.o
+>  kvm-y += diag.o gaccess.o guestdbg.o vsie.o pv.o
 
-diff --git a/Makefile b/Makefile
-index acd5ffd..d84dc8e 100644
---- a/Makefile
-+++ b/Makefile
-@@ -223,9 +223,11 @@ ifeq ($(ARCH),riscv)
- 	OBJS		+= riscv/aia.o
- 	ifeq ($(RISCV_XLEN),32)
- 		CFLAGS	+= -mabi=ilp32d -march=rv32gc
-+		GUEST_INIT_FLAGS += -mabi=ilp32d -march=rv32gc
- 	endif
- 	ifeq ($(RISCV_XLEN),64)
- 		CFLAGS	+= -mabi=lp64d -march=rv64gc
-+		GUEST_INIT_FLAGS += -mabi=lp64d -march=rv64gc
- 	endif
- 
- 	ARCH_WANT_LIBFDT := y
--- 
-2.34.1
-
+Acked-by: Claudio Imbrenda <imbrenda@linux.ibm.com>
 
