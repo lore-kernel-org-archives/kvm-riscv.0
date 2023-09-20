@@ -1,84 +1,63 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Wed, 20 Sep 2023 09:44:30 +0200
-Subject: [PATCH 2/7] RISC-V: Detect Zicond from ISA string
-In-Reply-To: <20230919035343.1399389-3-apatel@ventanamicro.com>
+Date: Wed, 20 Sep 2023 09:46:02 +0200
+Subject: [PATCH 3/7] RISC-V: KVM: Allow XVentanaCondOps extension for
+ Guest/VM
+In-Reply-To: <20230919035343.1399389-4-apatel@ventanamicro.com>
 References: <20230919035343.1399389-1-apatel@ventanamicro.com>
- <20230919035343.1399389-3-apatel@ventanamicro.com>
-Message-ID: <20230920-36a5645f766ed9cce75a9e8c@orel>
+ <20230919035343.1399389-4-apatel@ventanamicro.com>
+Message-ID: <20230920-64bd7206b92e056d76cd9715@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Sep 19, 2023 at 09:23:38AM +0530, Anup Patel wrote:
-> The RISC-V integer conditional (Zicond) operation extension defines
-> standard conditional arithmetic and conditional-select/move operations
-> which are inspired from the XVentanaCondOps extension. In fact, QEMU
-> RISC-V also has support for emulating Zicond extension.
-> 
-> Let us detect Zicond extension from ISA string available through
-> DT or ACPI.
+On Tue, Sep 19, 2023 at 09:23:39AM +0530, Anup Patel wrote:
+> We extend the KVM ISA extension ONE_REG interface to allow KVM
+> user space to detect and enable XVentanaCondOps extension for
+> Guest/VM.
 > 
 > Signed-off-by: Anup Patel <apatel@ventanamicro.com>
 > ---
->  Documentation/devicetree/bindings/riscv/extensions.yaml | 6 ++++++
->  arch/riscv/include/asm/hwcap.h                          | 1 +
->  arch/riscv/kernel/cpufeature.c                          | 1 +
->  3 files changed, 8 insertions(+)
+>  arch/riscv/include/uapi/asm/kvm.h | 1 +
+>  arch/riscv/kvm/vcpu_onereg.c      | 2 ++
+>  2 files changed, 3 insertions(+)
 > 
-> diff --git a/Documentation/devicetree/bindings/riscv/extensions.yaml b/Documentation/devicetree/bindings/riscv/extensions.yaml
-> index cad8ef68eca7..7ea90e2dbc5b 100644
-> --- a/Documentation/devicetree/bindings/riscv/extensions.yaml
-> +++ b/Documentation/devicetree/bindings/riscv/extensions.yaml
-> @@ -225,6 +225,12 @@ properties:
->              ratified in the 20191213 version of the unprivileged ISA
->              specification.
+> diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
+> index b1baf6f096a3..e030c12c7dfc 100644
+> --- a/arch/riscv/include/uapi/asm/kvm.h
+> +++ b/arch/riscv/include/uapi/asm/kvm.h
+> @@ -138,6 +138,7 @@ enum KVM_RISCV_ISA_EXT_ID {
+>  	KVM_RISCV_ISA_EXT_ZIFENCEI,
+>  	KVM_RISCV_ISA_EXT_ZIHPM,
+>  	KVM_RISCV_ISA_EXT_SMSTATEEN,
+> +	KVM_RISCV_ISA_EXT_XVENTANACONDOPS,
+>  	KVM_RISCV_ISA_EXT_MAX,
+>  };
 >  
-> +        - const: zicond
-> +          description:
-> +            The standard Zicond extension for conditional arithmetic and
-> +            conditional-select/move operations as ratified in commit 8fb6694
-> +            ("Update Gemfile") of riscv-zicond.
-
-As of yesterday, v1.0 of the spec points at commit 95cf1f9 ("Add changes
-requested by Ved during signoff")
-
-> +
->          - const: zicsr
->            description: |
->              The standard Zicsr extension for control and status register
-> diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
-> index b7efe9e2fa89..15bafc02ffd4 100644
-> --- a/arch/riscv/include/asm/hwcap.h
-> +++ b/arch/riscv/include/asm/hwcap.h
-> @@ -60,6 +60,7 @@
->  #define RISCV_ISA_EXT_ZIHPM		42
->  #define RISCV_ISA_EXT_SMSTATEEN		43
->  #define RISCV_ISA_EXT_XVENTANACONDOPS	44
-> +#define RISCV_ISA_EXT_ZICOND		45
->  
->  #define RISCV_ISA_EXT_MAX		64
->  
-> diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
-> index 3a31d34fe709..49b6551f3347 100644
-> --- a/arch/riscv/kernel/cpufeature.c
-> +++ b/arch/riscv/kernel/cpufeature.c
-> @@ -174,6 +174,7 @@ const struct riscv_isa_ext_data riscv_isa_ext[] = {
->  	__RISCV_ISA_EXT_DATA(zba, RISCV_ISA_EXT_ZBA),
->  	__RISCV_ISA_EXT_DATA(zbb, RISCV_ISA_EXT_ZBB),
->  	__RISCV_ISA_EXT_DATA(zbs, RISCV_ISA_EXT_ZBS),
-> +	__RISCV_ISA_EXT_DATA(zicond, RISCV_ISA_EXT_ZICOND),
-
-Zi extensions come before Zb extensions.
-
->  	__RISCV_ISA_EXT_DATA(smaia, RISCV_ISA_EXT_SMAIA),
->  	__RISCV_ISA_EXT_DATA(smstateen, RISCV_ISA_EXT_SMSTATEEN),
->  	__RISCV_ISA_EXT_DATA(ssaia, RISCV_ISA_EXT_SSAIA),
+> diff --git a/arch/riscv/kvm/vcpu_onereg.c b/arch/riscv/kvm/vcpu_onereg.c
+> index 388599fcf684..17a847a1114b 100644
+> --- a/arch/riscv/kvm/vcpu_onereg.c
+> +++ b/arch/riscv/kvm/vcpu_onereg.c
+> @@ -40,6 +40,7 @@ static const unsigned long kvm_isa_ext_arr[] = {
+>  	KVM_ISA_EXT_ARR(SVINVAL),
+>  	KVM_ISA_EXT_ARR(SVNAPOT),
+>  	KVM_ISA_EXT_ARR(SVPBMT),
+> +	KVM_ISA_EXT_ARR(XVENTANACONDOPS),
+>  	KVM_ISA_EXT_ARR(ZBA),
+>  	KVM_ISA_EXT_ARR(ZBB),
+>  	KVM_ISA_EXT_ARR(ZBS),
+> @@ -89,6 +90,7 @@ static bool kvm_riscv_vcpu_isa_disable_allowed(unsigned long ext)
+>  	case KVM_RISCV_ISA_EXT_SSTC:
+>  	case KVM_RISCV_ISA_EXT_SVINVAL:
+>  	case KVM_RISCV_ISA_EXT_SVNAPOT:
+> +	case KVM_RISCV_ISA_EXT_XVENTANACONDOPS:
+>  	case KVM_RISCV_ISA_EXT_ZBA:
+>  	case KVM_RISCV_ISA_EXT_ZBB:
+>  	case KVM_RISCV_ISA_EXT_ZBS:
 > -- 
 > 2.34.1
 >
 
-Thanks,
-drew
+Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
 
