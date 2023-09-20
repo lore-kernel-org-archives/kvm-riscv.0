@@ -1,98 +1,106 @@
-From: Atish Patra <atishp@atishpatra.org>
-Date: Tue, 19 Sep 2023 13:12:47 -0700
-Subject: [PATCH 4/4] KVM: riscv: selftests: Selectively filter-out AIA registers
-In-Reply-To: <20230918180646.1398384-5-apatel@ventanamicro.com>
-References: <20230918180646.1398384-1-apatel@ventanamicro.com> <20230918180646.1398384-5-apatel@ventanamicro.com>
-Message-ID: <CAOnJCU+h-Y_i=HkCf194SLWp-7bqzMhRLC31q0xxQDMuLppapA@mail.gmail.com>
+From: Yong-Xuan Wang <yongxuan.wang@sifive.com>
+Date: Wed, 20 Sep 2023 11:49:41 +0800
+Subject: [PATCH 1/2] RISC-V: Detect and Enable Svadu Extension Support
+In-Reply-To: <20230915-triangle-fool-e7032469d3e1@wendy>
+References: <20230915082701.3643-1-yongxuan.wang@sifive.com>
+ <20230915082701.3643-2-yongxuan.wang@sifive.com> <20230915-triangle-fool-e7032469d3e1@wendy>
+Message-ID: <CAMWQL2jTbYDSD3y8R8fFORH2AL+1C25N+fNn7kmfc2jAZJKbeA@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Sep 18, 2023 at 11:07?AM Anup Patel <apatel@ventanamicro.com> wrote:
->
-> Currently the AIA ONE_REG registers are reported by get-reg-list
-> as new registers for various vcpu_reg_list configs whenever Ssaia
-> is available on the host because Ssaia extension can only be
-> disabled by Smstateen extension which is not always available.
->
-> To tackle this, we should filter-out AIA ONE_REG registers only
-> when Ssaia can't be disabled for a VCPU.
->
-> Fixes: 477069398ed6 ("KVM: riscv: selftests: Add get-reg-list test")
-> Signed-off-by: Anup Patel <apatel@ventanamicro.com>
-> ---
->  .../selftests/kvm/riscv/get-reg-list.c        | 23 +++++++++++++++++--
->  1 file changed, 21 insertions(+), 2 deletions(-)
->
-> diff --git a/tools/testing/selftests/kvm/riscv/get-reg-list.c b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-> index 76c0ad11e423..85907c86b835 100644
-> --- a/tools/testing/selftests/kvm/riscv/get-reg-list.c
-> +++ b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-> @@ -12,6 +12,8 @@
->
->  #define REG_MASK (KVM_REG_ARCH_MASK | KVM_REG_SIZE_MASK)
->
-> +static bool isa_ext_cant_disable[KVM_RISCV_ISA_EXT_MAX];
-> +
->  bool filter_reg(__u64 reg)
->  {
->         switch (reg & ~REG_MASK) {
-> @@ -48,6 +50,15 @@ bool filter_reg(__u64 reg)
->         case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZIFENCEI:
->         case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZIHPM:
->                 return true;
-> +       /* AIA registers are always available when Ssaia can't be disabled */
-> +       case KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_AIA | KVM_REG_RISCV_CSR_AIA_REG(siselect):
-> +       case KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_AIA | KVM_REG_RISCV_CSR_AIA_REG(iprio1):
-> +       case KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_AIA | KVM_REG_RISCV_CSR_AIA_REG(iprio2):
-> +       case KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_AIA | KVM_REG_RISCV_CSR_AIA_REG(sieh):
-> +       case KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_AIA | KVM_REG_RISCV_CSR_AIA_REG(siph):
-> +       case KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_AIA | KVM_REG_RISCV_CSR_AIA_REG(iprio1h):
-> +       case KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_AIA | KVM_REG_RISCV_CSR_AIA_REG(iprio2h):
-> +               return isa_ext_cant_disable[KVM_RISCV_ISA_EXT_SSAIA] ? true : false;
+Hi Conor,
 
-Ahh I guess. you do need the switch case for AIA CSRs but for ISA
-extensions can be avoided as it is contiguous.
-
->         default:
->                 break;
->         }
-> @@ -71,14 +82,22 @@ static inline bool vcpu_has_ext(struct kvm_vcpu *vcpu, int ext)
+On Fri, Sep 15, 2023 at 4:45?PM Conor Dooley <conor.dooley@microchip.com> wrote:
 >
->  void finalize_vcpu(struct kvm_vcpu *vcpu, struct vcpu_reg_list *c)
->  {
-> +       int rc;
->         struct vcpu_reg_sublist *s;
-> +       unsigned long isa_ext_state[KVM_RISCV_ISA_EXT_MAX] = { 0 };
-> +
-> +       for (int i = 0; i < KVM_RISCV_ISA_EXT_MAX; i++)
-> +               __vcpu_get_reg(vcpu, RISCV_ISA_EXT_REG(i), &isa_ext_state[i]);
+> On Fri, Sep 15, 2023 at 08:26:57AM +0000, Yong-Xuan Wang wrote:
+> > We detect Svadu extension support from DTB and add arch_has_hw_pte_young()
+> > to enable optimization in MGLRU and __wp_page_copy_user() if Svadu
+> > extension is available.
+> >
+> > Signed-off-by: Jinyu Tang <tjytimi@163.com>
 >
->         /*
->          * Disable all extensions which were enabled by default
->          * if they were available in the risc-v host.
->          */
-> -       for (int i = 0; i < KVM_RISCV_ISA_EXT_MAX; i++)
-> -               __vcpu_set_reg(vcpu, RISCV_ISA_EXT_REG(i), 0);
-> +       for (int i = 0; i < KVM_RISCV_ISA_EXT_MAX; i++) {
-> +               rc = __vcpu_set_reg(vcpu, RISCV_ISA_EXT_REG(i), 0);
-> +               if (rc && isa_ext_state[i])
-> +                       isa_ext_cant_disable[i] = true;
-> +       }
+> You're either missing a From: or a Co-developed-by: tag here.
 >
->         for_each_sublist(c, s) {
->                 if (!s->feature)
-> --
-> 2.34.1
+> > Signed-off-by: Yong-Xuan Wang <yongxuan.wang@sifive.com>
+> > ---
+> >  arch/riscv/include/asm/csr.h     | 1 +
+> >  arch/riscv/include/asm/hwcap.h   | 1 +
+> >  arch/riscv/include/asm/pgtable.h | 6 ++++++
+> >  arch/riscv/kernel/cpufeature.c   | 1 +
+> >  4 files changed, 9 insertions(+)
+> >
+> > diff --git a/arch/riscv/include/asm/csr.h b/arch/riscv/include/asm/csr.h
+> > index 777cb8299551..10648b372a2a 100644
+> > --- a/arch/riscv/include/asm/csr.h
+> > +++ b/arch/riscv/include/asm/csr.h
+> > @@ -194,6 +194,7 @@
+> >  /* xENVCFG flags */
+> >  #define ENVCFG_STCE                  (_AC(1, ULL) << 63)
+> >  #define ENVCFG_PBMTE                 (_AC(1, ULL) << 62)
+> > +#define ENVCFG_HADE                  (_AC(1, ULL) << 61)
+> >  #define ENVCFG_CBZE                  (_AC(1, UL) << 7)
+> >  #define ENVCFG_CBCFE                 (_AC(1, UL) << 6)
+> >  #define ENVCFG_CBIE_SHIFT            4
+> > diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
+> > index b7b58258f6c7..1013661d6516 100644
+> > --- a/arch/riscv/include/asm/hwcap.h
+> > +++ b/arch/riscv/include/asm/hwcap.h
+> > @@ -58,6 +58,7 @@
+> >  #define RISCV_ISA_EXT_ZICSR          40
+> >  #define RISCV_ISA_EXT_ZIFENCEI               41
+> >  #define RISCV_ISA_EXT_ZIHPM          42
+> > +#define RISCV_ISA_EXT_SVADU          43
+> >
+> >  #define RISCV_ISA_EXT_MAX            64
+> >
+> > diff --git a/arch/riscv/include/asm/pgtable.h b/arch/riscv/include/asm/pgtable.h
+> > index b2ba3f79cfe9..f3d077dff8ac 100644
+> > --- a/arch/riscv/include/asm/pgtable.h
+> > +++ b/arch/riscv/include/asm/pgtable.h
+> > @@ -629,6 +629,12 @@ static inline pgprot_t pgprot_writecombine(pgprot_t _prot)
+> >       return __pgprot(prot);
+> >  }
+> >
+> > +#define arch_has_hw_pte_young arch_has_hw_pte_young
+> > +static inline bool arch_has_hw_pte_young(void)
+> > +{
+> > +     return riscv_has_extension_likely(RISCV_ISA_EXT_SVADU);
+>
+> No hardware currently has this, why is it likely?
+>
+> > +}
+> > +
+> >  /*
+> >   * THP functions
+> >   */
+> > diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
+> > index 1cfbba65d11a..ead378c04991 100644
+> > --- a/arch/riscv/kernel/cpufeature.c
+> > +++ b/arch/riscv/kernel/cpufeature.c
+> > @@ -178,6 +178,7 @@ const struct riscv_isa_ext_data riscv_isa_ext[] = {
+> >       __RISCV_ISA_EXT_DATA(ssaia, RISCV_ISA_EXT_SSAIA),
+> >       __RISCV_ISA_EXT_DATA(sscofpmf, RISCV_ISA_EXT_SSCOFPMF),
+> >       __RISCV_ISA_EXT_DATA(sstc, RISCV_ISA_EXT_SSTC),
+> > +     __RISCV_ISA_EXT_DATA(svadu, RISCV_ISA_EXT_SVADU),
+>
+> This needs to be documented in riscv/extensions.yaml.
 >
 
-Otherwise, LGTM.
+Thank you! I will update these in v2 patch.
 
-Reviewed-by: Atish Patra <atishp@rivosinc.com>
-
--- 
 Regards,
-Atish
+Yong-Xuan
+
+> Thanks,
+> Conor.
+>
+> >       __RISCV_ISA_EXT_DATA(svinval, RISCV_ISA_EXT_SVINVAL),
+> >       __RISCV_ISA_EXT_DATA(svnapot, RISCV_ISA_EXT_SVNAPOT),
+> >       __RISCV_ISA_EXT_DATA(svpbmt, RISCV_ISA_EXT_SVPBMT),
+> > --
+> > 2.17.1
+> >
 
