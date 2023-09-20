@@ -1,108 +1,50 @@
-From: Anup Patel <apatel@ventanamicro.com>
-Date: Wed, 20 Sep 2023 19:21:56 +0530
-Subject: [PATCH 4/4] KVM: riscv: selftests: Selectively filter-out AIA registers
-In-Reply-To: <CAOnJCU+h-Y_i=HkCf194SLWp-7bqzMhRLC31q0xxQDMuLppapA@mail.gmail.com>
-References: <20230918180646.1398384-1-apatel@ventanamicro.com>
- <20230918180646.1398384-5-apatel@ventanamicro.com> <CAOnJCU+h-Y_i=HkCf194SLWp-7bqzMhRLC31q0xxQDMuLppapA@mail.gmail.com>
-Message-ID: <CAK9=C2XFGoZ-JZmMv4qmgzE+0Rt_pv+5k8UMJ0ivh=MaBoxxhA@mail.gmail.com>
+From: Sean Christopherson <seanjc@google.com>
+Date: Wed, 20 Sep 2023 06:55:05 -0700
+Subject: [RFC PATCH v12 02/33] KVM: Use gfn instead of hva for mmu_notifier_retry
+In-Reply-To: <ZQqMBEL61p739dpF@yilunxu-OptiPlex-7050>
+References: <20230914015531.1419405-1-seanjc@google.com> <20230914015531.1419405-3-seanjc@google.com>
+ <ZQqMBEL61p739dpF@yilunxu-OptiPlex-7050>
+Message-ID: <ZQr5uXhV6Cnx4DYT@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Sep 20, 2023 at 1:43?AM Atish Patra <atishp@atishpatra.org> wrote:
->
-> On Mon, Sep 18, 2023 at 11:07?AM Anup Patel <apatel@ventanamicro.com> wrote:
-> >
-> > Currently the AIA ONE_REG registers are reported by get-reg-list
-> > as new registers for various vcpu_reg_list configs whenever Ssaia
-> > is available on the host because Ssaia extension can only be
-> > disabled by Smstateen extension which is not always available.
-> >
-> > To tackle this, we should filter-out AIA ONE_REG registers only
-> > when Ssaia can't be disabled for a VCPU.
-> >
-> > Fixes: 477069398ed6 ("KVM: riscv: selftests: Add get-reg-list test")
-> > Signed-off-by: Anup Patel <apatel@ventanamicro.com>
-> > ---
-> >  .../selftests/kvm/riscv/get-reg-list.c        | 23 +++++++++++++++++--
-> >  1 file changed, 21 insertions(+), 2 deletions(-)
-> >
-> > diff --git a/tools/testing/selftests/kvm/riscv/get-reg-list.c b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-> > index 76c0ad11e423..85907c86b835 100644
-> > --- a/tools/testing/selftests/kvm/riscv/get-reg-list.c
-> > +++ b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-> > @@ -12,6 +12,8 @@
-> >
-> >  #define REG_MASK (KVM_REG_ARCH_MASK | KVM_REG_SIZE_MASK)
-> >
-> > +static bool isa_ext_cant_disable[KVM_RISCV_ISA_EXT_MAX];
+On Wed, Sep 20, 2023, Xu Yilun wrote:
+> On 2023-09-13 at 18:55:00 -0700, Sean Christopherson wrote:
+> > +void kvm_mmu_invalidate_range_add(struct kvm *kvm, gfn_t start, gfn_t end)
+> > +{
+> > +	lockdep_assert_held_write(&kvm->mmu_lock);
 > > +
-> >  bool filter_reg(__u64 reg)
-> >  {
-> >         switch (reg & ~REG_MASK) {
-> > @@ -48,6 +50,15 @@ bool filter_reg(__u64 reg)
-> >         case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZIFENCEI:
-> >         case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZIHPM:
-> >                 return true;
-> > +       /* AIA registers are always available when Ssaia can't be disabled */
-> > +       case KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_AIA | KVM_REG_RISCV_CSR_AIA_REG(siselect):
-> > +       case KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_AIA | KVM_REG_RISCV_CSR_AIA_REG(iprio1):
-> > +       case KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_AIA | KVM_REG_RISCV_CSR_AIA_REG(iprio2):
-> > +       case KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_AIA | KVM_REG_RISCV_CSR_AIA_REG(sieh):
-> > +       case KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_AIA | KVM_REG_RISCV_CSR_AIA_REG(siph):
-> > +       case KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_AIA | KVM_REG_RISCV_CSR_AIA_REG(iprio1h):
-> > +       case KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_AIA | KVM_REG_RISCV_CSR_AIA_REG(iprio2h):
-> > +               return isa_ext_cant_disable[KVM_RISCV_ISA_EXT_SSAIA] ? true : false;
->
-> Ahh I guess. you do need the switch case for AIA CSRs but for ISA
-> extensions can be avoided as it is contiguous.
-
-Fow now, let's leave it as-is because this way get-reg-list will
-complain if some new ONE_REG register is missed out.
-
->
-> >         default:
-> >                 break;
-> >         }
-> > @@ -71,14 +82,22 @@ static inline bool vcpu_has_ext(struct kvm_vcpu *vcpu, int ext)
-> >
-> >  void finalize_vcpu(struct kvm_vcpu *vcpu, struct vcpu_reg_list *c)
-> >  {
-> > +       int rc;
-> >         struct vcpu_reg_sublist *s;
-> > +       unsigned long isa_ext_state[KVM_RISCV_ISA_EXT_MAX] = { 0 };
+> > +	WARN_ON_ONCE(!kvm->mmu_invalidate_in_progress);
 > > +
-> > +       for (int i = 0; i < KVM_RISCV_ISA_EXT_MAX; i++)
-> > +               __vcpu_get_reg(vcpu, RISCV_ISA_EXT_REG(i), &isa_ext_state[i]);
-> >
-> >         /*
-> >          * Disable all extensions which were enabled by default
-> >          * if they were available in the risc-v host.
-> >          */
-> > -       for (int i = 0; i < KVM_RISCV_ISA_EXT_MAX; i++)
-> > -               __vcpu_set_reg(vcpu, RISCV_ISA_EXT_REG(i), 0);
-> > +       for (int i = 0; i < KVM_RISCV_ISA_EXT_MAX; i++) {
-> > +               rc = __vcpu_set_reg(vcpu, RISCV_ISA_EXT_REG(i), 0);
-> > +               if (rc && isa_ext_state[i])
-> > +                       isa_ext_cant_disable[i] = true;
-> > +       }
-> >
-> >         for_each_sublist(c, s) {
-> >                 if (!s->feature)
-> > --
-> > 2.34.1
-> >
->
-> Otherwise, LGTM.
->
-> Reviewed-by: Atish Patra <atishp@rivosinc.com>
->
-> --
-> Regards,
-> Atish
+> >  	if (likely(kvm->mmu_invalidate_in_progress == 1)) {
+> >  		kvm->mmu_invalidate_range_start = start;
+> >  		kvm->mmu_invalidate_range_end = end;
+> 
+> IIUC, Now we only add or override a part of the invalidate range in
+> these fields, IOW only the range in last slot is stored when we unlock.
 
-Regards,
-Anup
+Ouch.  Good catch!
+
+> That may break mmu_invalidate_retry_gfn() cause it can never know the
+> whole invalidate range.
+> 
+> How about we extend the mmu_invalidate_range_start/end everytime so that
+> it records the whole invalidate range:
+> 
+> if (kvm->mmu_invalidate_range_start == INVALID_GPA) {
+> 	kvm->mmu_invalidate_range_start = start;
+> 	kvm->mmu_invalidate_range_end = end;
+> } else {
+> 	kvm->mmu_invalidate_range_start =
+> 		min(kvm->mmu_invalidate_range_start, start);
+> 	kvm->mmu_invalidate_range_end =
+> 		max(kvm->mmu_invalidate_range_end, end);
+> }
+
+Yeah, that does seem to be the easiest solution.
+
+I'll post a fixup patch, unless you want the honors.
 
