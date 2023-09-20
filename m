@@ -1,133 +1,210 @@
-From: Atish Patra <atishp@atishpatra.org>
-Date: Wed, 20 Sep 2023 16:01:45 -0700
-Subject: [PATCH 3/4] KVM: riscv: selftests: Fix ISA_EXT register handling
- in get-reg-list
-In-Reply-To: <CAK9=C2UbjOGyxo8oP36Tinjhv1jRpCb+hVbZCOJ70G4-WiHw1g@mail.gmail.com>
-References: <20230918180646.1398384-1-apatel@ventanamicro.com>
- <20230918180646.1398384-4-apatel@ventanamicro.com> <CAOnJCUJYDHtbYS4js7PSAeLqT4sL5zi7DT5xeSww+5Nvs2UhcA@mail.gmail.com>
- <CAK9=C2UbjOGyxo8oP36Tinjhv1jRpCb+hVbZCOJ70G4-WiHw1g@mail.gmail.com>
-Message-ID: <CAOnJCULajHa6H6Rt75rNepYaT-3+Bo=1hQVb_oozPZK13N6yKQ@mail.gmail.com>
+From: Sean Christopherson <seanjc@google.com>
+Date: Wed, 20 Sep 2023 16:44:47 -0700
+Subject: [RFC PATCH v12 14/33] KVM: Add KVM_CREATE_GUEST_MEMFD ioctl() for
+ guest-specific backing memory
+In-Reply-To: <20230918163647.m6bjgwusc7ww5tyu@amd.com>
+References: <20230914015531.1419405-1-seanjc@google.com> <20230914015531.1419405-15-seanjc@google.com>
+ <20230918163647.m6bjgwusc7ww5tyu@amd.com>
+Message-ID: <ZQuD77vlBiSU/PE4@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Sep 20, 2023 at 6:56?AM Anup Patel <apatel@ventanamicro.com> wrote:
->
-> On Wed, Sep 20, 2023 at 1:24?AM Atish Patra <atishp@atishpatra.org> wrote:
-> >
-> > On Mon, Sep 18, 2023 at 11:07?AM Anup Patel <apatel@ventanamicro.com> wrote:
-> > >
-> > > Same set of ISA_EXT registers are not present on all host because
-> > > ISA_EXT registers are visible to the KVM user space based on the
-> > > ISA extensions available on the host. Also, disabling an ISA
-> > > extension using corresponding ISA_EXT register does not affect
-> > > the visibility of the ISA_EXT register itself.
-> > >
-> > > Based on the above, we should filter-out all ISA_EXT registers.
-> > >
-> >
-> > In that case, we don't need the switch case any more. Just a
-> > conditional check with KVM_RISCV_ISA_EXT_MAX should be sufficient.
->
-> If we compare against KVM_RISCV_ISA_EXT_MAX then we will forget
-> adding test configs for newer ISA extensions.
->
+On Mon, Sep 18, 2023, Michael Roth wrote:
+> > +static long kvm_gmem_punch_hole(struct inode *inode, loff_t offset, loff_t len)
+> > +{
+> > +	struct list_head *gmem_list = &inode->i_mapping->private_list;
+> > +	pgoff_t start = offset >> PAGE_SHIFT;
+> > +	pgoff_t end = (offset + len) >> PAGE_SHIFT;
+> > +	struct kvm_gmem *gmem;
+> > +
+> > +	/*
+> > +	 * Bindings must stable across invalidation to ensure the start+end
+> > +	 * are balanced.
+> > +	 */
+> > +	filemap_invalidate_lock(inode->i_mapping);
+> > +
+> > +	list_for_each_entry(gmem, gmem_list, entry) {
+> > +		kvm_gmem_invalidate_begin(gmem, start, end);
+> 
+> In v11 we used to call truncate_inode_pages_range() here to drop filemap's
+> reference on the folio. AFAICT the folios are only getting free'd upon
+> guest shutdown without this. Was this on purpose?
 
-I feel it just bloats the code as we may end up in hundreds of
-extensions in the future
-given the state of the extension scheme.
+Nope, I just spotted this too.  And then after scratching my head for a few minutes,
+wondering if I was having an -ENOCOFFEE moment, I finally read your mail.  *sigh*
 
-> >
-> > > Fixes: 477069398ed6 ("KVM: riscv: selftests: Add get-reg-list test")
-> > > Signed-off-by: Anup Patel <apatel@ventanamicro.com>
-> > > ---
-> > >  .../selftests/kvm/riscv/get-reg-list.c        | 35 +++++++++++--------
-> > >  1 file changed, 21 insertions(+), 14 deletions(-)
-> > >
-> > > diff --git a/tools/testing/selftests/kvm/riscv/get-reg-list.c b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-> > > index d8ecacd03ecf..76c0ad11e423 100644
-> > > --- a/tools/testing/selftests/kvm/riscv/get-reg-list.c
-> > > +++ b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-> > > @@ -14,17 +14,33 @@
-> > >
-> > >  bool filter_reg(__u64 reg)
-> > >  {
-> > > +       switch (reg & ~REG_MASK) {
-> > >         /*
-> > > -        * Some ISA extensions are optional and not present on all host,
-> > > -        * but they can't be disabled through ISA_EXT registers when present.
-> > > -        * So, to make life easy, just filtering out these kind of registers.
-> > > +        * Same set of ISA_EXT registers are not present on all host because
-> > > +        * ISA_EXT registers are visible to the KVM user space based on the
-> > > +        * ISA extensions available on the host. Also, disabling an ISA
-> > > +        * extension using corresponding ISA_EXT register does not affect
-> > > +        * the visibility of the ISA_EXT register itself.
-> > > +        *
-> > > +        * Based on above, we should filter-out all ISA_EXT registers.
-> > >          */
-> > > -       switch (reg & ~REG_MASK) {
-> > > +       case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_A:
-> > > +       case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_C:
-> > > +       case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_D:
-> > > +       case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_F:
-> > > +       case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_H:
-> > > +       case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_I:
-> > > +       case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_M:
-> > > +       case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_SVPBMT:
-> > >         case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_SSTC:
-> > >         case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_SVINVAL:
-> > >         case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZIHINTPAUSE:
-> > > +       case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZICBOM:
-> > > +       case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZICBOZ:
-> > >         case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZBB:
-> > >         case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_SSAIA:
-> > > +       case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_V:
-> > > +       case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_SVNAPOT:
-> > >         case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZBA:
-> > >         case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZBS:
-> > >         case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZICNTR:
-> > > @@ -50,12 +66,7 @@ static inline bool vcpu_has_ext(struct kvm_vcpu *vcpu, int ext)
-> > >         unsigned long value;
-> > >
-> > >         ret = __vcpu_get_reg(vcpu, RISCV_ISA_EXT_REG(ext), &value);
-> > > -       if (ret) {
-> > > -               printf("Failed to get ext %d", ext);
-> > > -               return false;
-> > > -       }
-> > > -
-> > > -       return !!value;
-> > > +       return (ret) ? false : !!value;
-> > >  }
-> > >
-> > >  void finalize_vcpu(struct kvm_vcpu *vcpu, struct vcpu_reg_list *c)
-> > > @@ -506,10 +517,6 @@ static __u64 base_regs[] = {
-> > >         KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_TIMER | KVM_REG_RISCV_TIMER_REG(time),
-> > >         KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_TIMER | KVM_REG_RISCV_TIMER_REG(compare),
-> > >         KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_TIMER | KVM_REG_RISCV_TIMER_REG(state),
-> > > -       KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_A,
-> > > -       KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_C,
-> > > -       KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_I,
-> > > -       KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_M,
-> > >         KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_SINGLE | KVM_RISCV_SBI_EXT_V01,
-> > >         KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_SINGLE | KVM_RISCV_SBI_EXT_TIME,
-> > >         KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_SINGLE | KVM_RISCV_SBI_EXT_IPI,
-> > > --
-> > > 2.34.1
-> > >
-> >
-> >
-> > --
-> > Regards,
-> > Atish
->
-> Regards,
-> Anup
+Looking at my reflog history, I'm pretty sure I deleted the wrong line when
+removing the truncation from kvm_gmem_error_page().
 
+> > +		kvm_gmem_invalidate_end(gmem, start, end);
+> > +	}
+> > +
+> > +	filemap_invalidate_unlock(inode->i_mapping);
+> > +
+> > +	return 0;
+> > +}
+> > +
+> > +static long kvm_gmem_allocate(struct inode *inode, loff_t offset, loff_t len)
+> > +{
+> > +	struct address_space *mapping = inode->i_mapping;
+> > +	pgoff_t start, index, end;
+> > +	int r;
+> > +
+> > +	/* Dedicated guest is immutable by default. */
+> > +	if (offset + len > i_size_read(inode))
+> > +		return -EINVAL;
+> > +
+> > +	filemap_invalidate_lock_shared(mapping);
+> 
+> We take the filemap lock here, but not for
+> kvm_gmem_get_pfn()->kvm_gmem_get_folio(). Is it needed there as well?
 
+No, we specifically do not want to take a rwsem when faulting in guest memory.
+Callers of kvm_gmem_get_pfn() *must* guard against concurrent invalidations via
+mmu_invalidate_seq and friends.
 
+> > +	/*
+> > +	 * For simplicity, require the offset into the file and the size of the
+> > +	 * memslot to be aligned to the largest possible page size used to back
+> > +	 * the file (same as the size of the file itself).
+> > +	 */
+> > +	if (!kvm_gmem_is_valid_size(offset, flags) ||
+> > +	    !kvm_gmem_is_valid_size(size, flags))
+> > +		goto err;
+> 
+> I needed to relax this check for SNP. KVM_GUEST_MEMFD_ALLOW_HUGEPAGE
+> applies to entire gmem inode, so it makes sense for userspace to enable
+> hugepages if start/end are hugepage-aligned, but QEMU will do things
+> like map overlapping regions for ROMs and other things on top of the
+> GPA range that the gmem inode was originally allocated for. For
+> instance:
+> 
+>   692500 at 1689108688.696338:kvm_set_user_memory AddrSpace#0 Slot#0 flags=0x4 gpa=0x0 size=0x80000000 ua=0x7fbf5be00000 ret=0 restricted_fd=19 restricted_offset=0x0
+>   692500 at 1689108688.699802:kvm_set_user_memory AddrSpace#0 Slot#1 flags=0x4 gpa=0x100000000 size=0x380000000 ua=0x7fbfdbe00000 ret=0 restricted_fd=19 restricted_offset=0x80000000
+>   692500 at 1689108688.795412:kvm_set_user_memory AddrSpace#0 Slot#0 flags=0x0 gpa=0x0 size=0x0 ua=0x7fbf5be00000 ret=0 restricted_fd=19 restricted_offset=0x0
+>   692500 at 1689108688.795550:kvm_set_user_memory AddrSpace#0 Slot#0 flags=0x4 gpa=0x0 size=0xc0000 ua=0x7fbf5be00000 ret=0 restricted_fd=19 restricted_offset=0x0
+>   692500 at 1689108688.796227:kvm_set_user_memory AddrSpace#0 Slot#6 flags=0x4 gpa=0x100000 size=0x7ff00000 ua=0x7fbf5bf00000 ret=0 restricted_fd=19 restricted_offset=0x100000
+> 
+> Because of that the KVM_SET_USER_MEMORY_REGIONs for non-THP-aligned GPAs
+> will fail. Maybe instead it should be allowed, and kvm_gmem_get_folio()
+> should handle the alignment checks on a case-by-case and simply force 4k
+> for offsets corresponding to unaligned bindings?
+
+Yeah, I wanted to keep the code simple, but disallowing small bindings/memslots
+is probably going to be a deal-breaker.  Even though I'm skeptical that QEMU
+_needs_ to play these games for SNP guests, not playing nice will make it all
+but impossible to use guest_memfd for regular VMs.
+
+And the code isn't really any more complex, so long as we punt on allowing
+hugepages on interior sub-ranges.
+
+Compile-tested only, but this?
+
+---
+ virt/kvm/guest_mem.c | 54 ++++++++++++++++++++++----------------------
+ 1 file changed, 27 insertions(+), 27 deletions(-)
+
+diff --git a/virt/kvm/guest_mem.c b/virt/kvm/guest_mem.c
+index a819367434e9..dc12e38211df 100644
+--- a/virt/kvm/guest_mem.c
++++ b/virt/kvm/guest_mem.c
+@@ -426,20 +426,6 @@ static int __kvm_gmem_create(struct kvm *kvm, loff_t size, u64 flags,
+ 	return err;
+ }
+ 
+-static bool kvm_gmem_is_valid_size(loff_t size, u64 flags)
+-{
+-	if (size < 0 || !PAGE_ALIGNED(size))
+-		return false;
+-
+-#ifdef CONFIG_TRANSPARENT_HUGEPAGE
+-	if ((flags & KVM_GUEST_MEMFD_ALLOW_HUGEPAGE) &&
+-	    !IS_ALIGNED(size, HPAGE_PMD_SIZE))
+-		return false;
+-#endif
+-
+-	return true;
+-}
+-
+ int kvm_gmem_create(struct kvm *kvm, struct kvm_create_guest_memfd *args)
+ {
+ 	loff_t size = args->size;
+@@ -452,9 +438,15 @@ int kvm_gmem_create(struct kvm *kvm, struct kvm_create_guest_memfd *args)
+ 	if (flags & ~valid_flags)
+ 		return -EINVAL;
+ 
+-	if (!kvm_gmem_is_valid_size(size, flags))
++	if (size < 0 || !PAGE_ALIGNED(size))
+ 		return -EINVAL;
+ 
++#ifdef CONFIG_TRANSPARENT_HUGEPAGE
++	if ((flags & KVM_GUEST_MEMFD_ALLOW_HUGEPAGE) &&
++	    !IS_ALIGNED(size, HPAGE_PMD_SIZE))
++		return false;
++#endif
++
+ 	return __kvm_gmem_create(kvm, size, flags, kvm_gmem_mnt);
+ }
+ 
+@@ -462,7 +454,7 @@ int kvm_gmem_bind(struct kvm *kvm, struct kvm_memory_slot *slot,
+ 		  unsigned int fd, loff_t offset)
+ {
+ 	loff_t size = slot->npages << PAGE_SHIFT;
+-	unsigned long start, end, flags;
++	unsigned long start, end;
+ 	struct kvm_gmem *gmem;
+ 	struct inode *inode;
+ 	struct file *file;
+@@ -481,16 +473,9 @@ int kvm_gmem_bind(struct kvm *kvm, struct kvm_memory_slot *slot,
+ 		goto err;
+ 
+ 	inode = file_inode(file);
+-	flags = (unsigned long)inode->i_private;
+ 
+-	/*
+-	 * For simplicity, require the offset into the file and the size of the
+-	 * memslot to be aligned to the largest possible page size used to back
+-	 * the file (same as the size of the file itself).
+-	 */
+-	if (!kvm_gmem_is_valid_size(offset, flags) ||
+-	    !kvm_gmem_is_valid_size(size, flags))
+-		goto err;
++	if (offset < 0 || !PAGE_ALIGNED(offset))
++		return -EINVAL;
+ 
+ 	if (offset + size > i_size_read(inode))
+ 		goto err;
+@@ -591,8 +576,23 @@ int kvm_gmem_get_pfn(struct kvm *kvm, struct kvm_memory_slot *slot,
+ 	page = folio_file_page(folio, index);
+ 
+ 	*pfn = page_to_pfn(page);
+-	if (max_order)
+-		*max_order = compound_order(compound_head(page));
++	if (!max_order)
++		goto success;
++
++	*max_order = compound_order(compound_head(page));
++	if (!*max_order)
++		goto success;
++
++	/*
++	 * For simplicity, allow mapping a hugepage if and only if the entire
++	 * binding is compatible, i.e. don't bother supporting mapping interior
++	 * sub-ranges with hugepages (unless userspace comes up with a *really*
++	 * strong use case for needing hugepages within unaligned bindings).
++	 */
++	if (!IS_ALIGNED(slot->gmem.pgoff, 1ull << *max_order) ||
++	    !IS_ALIGNED(slot->npages, 1ull << *max_order))
++		*max_order = 0;
++success:
+ 	r = 0;
+ 
+ out_unlock:
+
+base-commit: bc1a54ee393e0574ea422525cf0b2f1e768e38c5
 -- 
-Regards,
-Atish
+
 
