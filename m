@@ -1,35 +1,96 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Wed, 20 Sep 2023 17:59:07 +0200
-Subject: [PATCH v2 4/4] KVM: riscv: selftests: Selectively filter-out AIA
- registers
-In-Reply-To: <20230920154608.1447057-5-apatel@ventanamicro.com>
-References: <20230920154608.1447057-1-apatel@ventanamicro.com>
- <20230920154608.1447057-5-apatel@ventanamicro.com>
-Message-ID: <20230920-e3fc5272a2818c67a17cd90c@orel>
+From: Sean Christopherson <seanjc@google.com>
+Date: Wed, 20 Sep 2023 14:00:22 -0700
+Subject: [RFC PATCH v12 11/33] KVM: Introduce per-page memory attributes
+In-Reply-To: <ZQP6ZqXH81V24Lj/@yzhao56-desk.sh.intel.com>
+References: <20230914015531.1419405-1-seanjc@google.com> <20230914015531.1419405-12-seanjc@google.com>
+ <ZQP6ZqXH81V24Lj/@yzhao56-desk.sh.intel.com>
+Message-ID: <ZQtdZmJ3SekURjiQ@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Sep 20, 2023 at 09:16:08PM +0530, Anup Patel wrote:
-> Currently the AIA ONE_REG registers are reported by get-reg-list
-> as new registers for various vcpu_reg_list configs whenever Ssaia
-> is available on the host because Ssaia extension can only be
-> disabled by Smstateen extension which is not always available.
-> 
-> To tackle this, we should filter-out AIA ONE_REG registers only
-> when Ssaia can't be disabled for a VCPU.
-> 
-> Fixes: 477069398ed6 ("KVM: riscv: selftests: Add get-reg-list test")
-> Signed-off-by: Anup Patel <apatel@ventanamicro.com>
-> Reviewed-by: Atish Patra <atishp@rivosinc.com>
+On Fri, Sep 15, 2023, Yan Zhao wrote:
+> On Wed, Sep 13, 2023 at 06:55:09PM -0700, Sean Christopherson wrote:
+> > From: Chao Peng <chao.p.peng@linux.intel.com>
+> > 
+> > In confidential computing usages, whether a page is private or shared is
+> > necessary information for KVM to perform operations like page fault
+> > handling, page zapping etc. There are other potential use cases for
+> > per-page memory attributes, e.g. to make memory read-only (or no-exec,
+> > or exec-only, etc.) without having to modify memslots.
+> > 
+> ...
+> >> +bool kvm_range_has_memory_attributes(struct kvm *kvm, gfn_t start, gfn_t end,
+> > +				     unsigned long attrs)
+> > +{
+> > +	XA_STATE(xas, &kvm->mem_attr_array, start);
+> > +	unsigned long index;
+> > +	bool has_attrs;
+> > +	void *entry;
+> > +
+> > +	rcu_read_lock();
+> > +
+> > +	if (!attrs) {
+> > +		has_attrs = !xas_find(&xas, end);
+> > +		goto out;
+> > +	}
+> > +
+> > +	has_attrs = true;
+> > +	for (index = start; index < end; index++) {
+> > +		do {
+> > +			entry = xas_next(&xas);
+> > +		} while (xas_retry(&xas, entry));
+> > +
+> > +		if (xas.xa_index != index || xa_to_value(entry) != attrs) {
+> Should "xa_to_value(entry) != attrs" be "!(xa_to_value(entry) & attrs)" ?
 
-I guess you missed my reply to myself where I corrected my analysis and
-gave an r-b. Anyway, here it is again, and thanks for fixing up the nits.
+No, the exact comparsion is deliberate.  The intent of the API is to determine
+if the entire range already has the desired attributes, not if there is overlap
+between the two.
 
-Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+E.g. if/when RWX attributes are supported, the exact comparison is needed to
+handle a RW => R conversion.
 
-Thanks,
-drew
+> > +			has_attrs = false;
+> > +			break;
+> > +		}
+> > +	}
+> > +
+> > +out:
+> > +	rcu_read_unlock();
+> > +	return has_attrs;
+> > +}
+> > +
+> ...
+> > +/* Set @attributes for the gfn range [@start, @end). */
+> > +static int kvm_vm_set_mem_attributes(struct kvm *kvm, gfn_t start, gfn_t end,
+> > +				     unsigned long attributes)
+> > +{
+> > +	struct kvm_mmu_notifier_range pre_set_range = {
+> > +		.start = start,
+> > +		.end = end,
+> > +		.handler = kvm_arch_pre_set_memory_attributes,
+> > +		.on_lock = kvm_mmu_invalidate_begin,
+> > +		.flush_on_ret = true,
+> > +		.may_block = true,
+> > +	};
+> > +	struct kvm_mmu_notifier_range post_set_range = {
+> > +		.start = start,
+> > +		.end = end,
+> > +		.arg.attributes = attributes,
+> > +		.handler = kvm_arch_post_set_memory_attributes,
+> > +		.on_lock = kvm_mmu_invalidate_end,
+> > +		.may_block = true,
+> > +	};
+> > +	unsigned long i;
+> > +	void *entry;
+> > +	int r = 0;
+> > +
+> > +	entry = attributes ? xa_mk_value(attributes) : NULL;
+> Also here, do we need to get existing attributes of a GFN first ?
+
+No?  @entry is the new value that will be set for all entries.  This line doesn't
+touch the xarray in any way.  Maybe I'm just not understanding your question.
 
