@@ -1,119 +1,134 @@
-From: Anup Patel <apatel@ventanamicro.com>
-Date: Wed, 20 Sep 2023 19:26:21 +0530
-Subject: [PATCH 3/4] KVM: riscv: selftests: Fix ISA_EXT register handling
- in get-reg-list
-In-Reply-To: <CAOnJCUJYDHtbYS4js7PSAeLqT4sL5zi7DT5xeSww+5Nvs2UhcA@mail.gmail.com>
-References: <20230918180646.1398384-1-apatel@ventanamicro.com>
- <20230918180646.1398384-4-apatel@ventanamicro.com> <CAOnJCUJYDHtbYS4js7PSAeLqT4sL5zi7DT5xeSww+5Nvs2UhcA@mail.gmail.com>
-Message-ID: <CAK9=C2UbjOGyxo8oP36Tinjhv1jRpCb+hVbZCOJ70G4-WiHw1g@mail.gmail.com>
+From: Sean Christopherson <seanjc@google.com>
+Date: Wed, 20 Sep 2023 07:24:08 -0700
+Subject: [RFC PATCH v12 14/33] KVM: Add KVM_CREATE_GUEST_MEMFD ioctl() for
+ guest-specific backing memory
+In-Reply-To: <e397d30c-c6af-e68f-d18e-b4e3739c5389@linux.intel.com>
+References: <20230914015531.1419405-1-seanjc@google.com> <20230914015531.1419405-15-seanjc@google.com>
+ <e397d30c-c6af-e68f-d18e-b4e3739c5389@linux.intel.com>
+Message-ID: <ZQsAiGuw/38jIOV7@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Sep 20, 2023 at 1:24?AM Atish Patra <atishp@atishpatra.org> wrote:
->
-> On Mon, Sep 18, 2023 at 11:07?AM Anup Patel <apatel@ventanamicro.com> wrote:
-> >
-> > Same set of ISA_EXT registers are not present on all host because
-> > ISA_EXT registers are visible to the KVM user space based on the
-> > ISA extensions available on the host. Also, disabling an ISA
-> > extension using corresponding ISA_EXT register does not affect
-> > the visibility of the ISA_EXT register itself.
-> >
-> > Based on the above, we should filter-out all ISA_EXT registers.
-> >
->
-> In that case, we don't need the switch case any more. Just a
-> conditional check with KVM_RISCV_ISA_EXT_MAX should be sufficient.
+On Tue, Sep 19, 2023, Binbin Wu wrote:
+> 
+> 
+> On 9/14/2023 9:55 AM, Sean Christopherson wrote:
+> [...]
+> > +
+> > +static void kvm_gmem_invalidate_begin(struct kvm_gmem *gmem, pgoff_t start,
+> > +				      pgoff_t end)
+> > +{
+> > +	struct kvm_memory_slot *slot;
+> > +	struct kvm *kvm = gmem->kvm;
+> > +	unsigned long index;
+> > +	bool flush = false;
+> > +
+> > +	KVM_MMU_LOCK(kvm);
+> > +
+> > +	kvm_mmu_invalidate_begin(kvm);
+> > +
+> > +	xa_for_each_range(&gmem->bindings, index, slot, start, end - 1) {
+> > +		pgoff_t pgoff = slot->gmem.pgoff;
+> > +
+> > +		struct kvm_gfn_range gfn_range = {
+> > +			.start = slot->base_gfn + max(pgoff, start) - pgoff,
+> > +			.end = slot->base_gfn + min(pgoff + slot->npages, end) - pgoff,
+> > +			.slot = slot,
+> > +			.may_block = true,
+> > +		};
+> > +
+> > +		flush |= kvm_mmu_unmap_gfn_range(kvm, &gfn_range);
+> > +	}
+> > +
+> > +	if (flush)
+> > +		kvm_flush_remote_tlbs(kvm);
+> > +
+> > +	KVM_MMU_UNLOCK(kvm);
+> > +}
+> > +
+> > +static void kvm_gmem_invalidate_end(struct kvm_gmem *gmem, pgoff_t start,
+> > +				    pgoff_t end)
+> > +{
+> > +	struct kvm *kvm = gmem->kvm;
+> > +
+> > +	KVM_MMU_LOCK(kvm);
+> > +	if (xa_find(&gmem->bindings, &start, end - 1, XA_PRESENT))
+> > +		kvm_mmu_invalidate_end(kvm);
+> kvm_mmu_invalidate_begin() is called unconditionally in
+> kvm_gmem_invalidate_begin(),
+> but kvm_mmu_invalidate_end() is not here.
+> This makes the kvm_gmem_invalidate_{begin, end}() calls asymmetric.
 
-If we compare against KVM_RISCV_ISA_EXT_MAX then we will forget
-adding test configs for newer ISA extensions.
+Another ouch :-(
 
->
-> > Fixes: 477069398ed6 ("KVM: riscv: selftests: Add get-reg-list test")
-> > Signed-off-by: Anup Patel <apatel@ventanamicro.com>
-> > ---
-> >  .../selftests/kvm/riscv/get-reg-list.c        | 35 +++++++++++--------
-> >  1 file changed, 21 insertions(+), 14 deletions(-)
-> >
-> > diff --git a/tools/testing/selftests/kvm/riscv/get-reg-list.c b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-> > index d8ecacd03ecf..76c0ad11e423 100644
-> > --- a/tools/testing/selftests/kvm/riscv/get-reg-list.c
-> > +++ b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-> > @@ -14,17 +14,33 @@
-> >
-> >  bool filter_reg(__u64 reg)
-> >  {
-> > +       switch (reg & ~REG_MASK) {
-> >         /*
-> > -        * Some ISA extensions are optional and not present on all host,
-> > -        * but they can't be disabled through ISA_EXT registers when present.
-> > -        * So, to make life easy, just filtering out these kind of registers.
-> > +        * Same set of ISA_EXT registers are not present on all host because
-> > +        * ISA_EXT registers are visible to the KVM user space based on the
-> > +        * ISA extensions available on the host. Also, disabling an ISA
-> > +        * extension using corresponding ISA_EXT register does not affect
-> > +        * the visibility of the ISA_EXT register itself.
-> > +        *
-> > +        * Based on above, we should filter-out all ISA_EXT registers.
-> >          */
-> > -       switch (reg & ~REG_MASK) {
-> > +       case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_A:
-> > +       case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_C:
-> > +       case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_D:
-> > +       case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_F:
-> > +       case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_H:
-> > +       case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_I:
-> > +       case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_M:
-> > +       case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_SVPBMT:
-> >         case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_SSTC:
-> >         case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_SVINVAL:
-> >         case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZIHINTPAUSE:
-> > +       case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZICBOM:
-> > +       case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZICBOZ:
-> >         case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZBB:
-> >         case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_SSAIA:
-> > +       case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_V:
-> > +       case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_SVNAPOT:
-> >         case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZBA:
-> >         case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZBS:
-> >         case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZICNTR:
-> > @@ -50,12 +66,7 @@ static inline bool vcpu_has_ext(struct kvm_vcpu *vcpu, int ext)
-> >         unsigned long value;
-> >
-> >         ret = __vcpu_get_reg(vcpu, RISCV_ISA_EXT_REG(ext), &value);
-> > -       if (ret) {
-> > -               printf("Failed to get ext %d", ext);
-> > -               return false;
-> > -       }
-> > -
-> > -       return !!value;
-> > +       return (ret) ? false : !!value;
-> >  }
-> >
-> >  void finalize_vcpu(struct kvm_vcpu *vcpu, struct vcpu_reg_list *c)
-> > @@ -506,10 +517,6 @@ static __u64 base_regs[] = {
-> >         KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_TIMER | KVM_REG_RISCV_TIMER_REG(time),
-> >         KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_TIMER | KVM_REG_RISCV_TIMER_REG(compare),
-> >         KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_TIMER | KVM_REG_RISCV_TIMER_REG(state),
-> > -       KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_A,
-> > -       KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_C,
-> > -       KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_I,
-> > -       KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_M,
-> >         KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_SINGLE | KVM_RISCV_SBI_EXT_V01,
-> >         KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_SINGLE | KVM_RISCV_SBI_EXT_TIME,
-> >         KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_SINGLE | KVM_RISCV_SBI_EXT_IPI,
-> > --
-> > 2.34.1
-> >
->
->
-> --
-> Regards,
-> Atish
+And there should be no need to acquire mmu_lock() unconditionally, the inode's
+mutex protects the bindings, not mmu_lock.
 
-Regards,
-Anup
+I'll get a fix posted today.  I think KVM can also add a sanity check to detect
+unresolved invalidations, e.g.
+
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index 7ba1ab1832a9..2a2d18070856 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -1381,8 +1381,13 @@ static void kvm_destroy_vm(struct kvm *kvm)
+         * No threads can be waiting in kvm_swap_active_memslots() as the
+         * last reference on KVM has been dropped, but freeing
+         * memslots would deadlock without this manual intervention.
++        *
++        * If the count isn't unbalanced, i.e. KVM did NOT unregister between
++        * a start() and end(), then there shouldn't be any in-progress
++        * invalidations.
+         */
+        WARN_ON(rcuwait_active(&kvm->mn_memslots_update_rcuwait));
++       WARN_ON(!kvm->mn_active_invalidate_count && kvm->mmu_invalidate_in_progress);
+        kvm->mn_active_invalidate_count = 0;
+ #else
+        kvm_flush_shadow_all(kvm);
+
+
+or an alternative style
+
+	if (kvm->mn_active_invalidate_count)
+		kvm->mn_active_invalidate_count = 0;
+	else
+		WARN_ON(kvm->mmu_invalidate_in_progress)
+
+> > +	KVM_MMU_UNLOCK(kvm);
+> > +}
+> > +
+> > +static long kvm_gmem_punch_hole(struct inode *inode, loff_t offset, loff_t len)
+> > +{
+> > +	struct list_head *gmem_list = &inode->i_mapping->private_list;
+> > +	pgoff_t start = offset >> PAGE_SHIFT;
+> > +	pgoff_t end = (offset + len) >> PAGE_SHIFT;
+> > +	struct kvm_gmem *gmem;
+> > +
+> > +	/*
+> > +	 * Bindings must stable across invalidation to ensure the start+end
+> > +	 * are balanced.
+> > +	 */
+> > +	filemap_invalidate_lock(inode->i_mapping);
+> > +
+> > +	list_for_each_entry(gmem, gmem_list, entry) {
+> > +		kvm_gmem_invalidate_begin(gmem, start, end);
+> > +		kvm_gmem_invalidate_end(gmem, start, end);
+> > +	}
+> Why to loop for each gmem in gmem_list here?
+> 
+> IIUIC, offset is the offset according to the inode, it is only meaningful to
+> the inode passed in, i.e, it is only meaningful to the gmem binding with the
+> inode, not others.
+
+The code is structured to allow for multiple gmem instances per inode.  This isn't
+actually possible in the initial code base, but it's on the horizon[*].  I included
+the list-based infrastructure in this initial series to ensure that guest_memfd
+can actually support multiple files per inode, and to minimize the churn when the
+"link" support comes along.
+
+[*] https://lore.kernel.org/all/cover.1691446946.git.ackerleytng at google.com
+
 
