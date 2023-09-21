@@ -1,107 +1,68 @@
-From: Yan Zhao <yan.y.zhao@intel.com>
-Date: Thu, 21 Sep 2023 09:21:09 +0800
-Subject: [RFC PATCH v12 11/33] KVM: Introduce per-page memory attributes
-In-Reply-To: <ZQtdZmJ3SekURjiQ@google.com>
+From: Xu Yilun <yilun.xu@intel.com>
+Date: Thu, 21 Sep 2023 10:39:18 +0800
+Subject: [RFC PATCH v12 02/33] KVM: Use gfn instead of hva for
+ mmu_notifier_retry
+In-Reply-To: <ZQr5uXhV6Cnx4DYT@google.com>
 References: <20230914015531.1419405-1-seanjc@google.com>
- <20230914015531.1419405-12-seanjc@google.com>
- <ZQP6ZqXH81V24Lj/@yzhao56-desk.sh.intel.com>
- <ZQtdZmJ3SekURjiQ@google.com>
-Message-ID: <ZQuahXpq2fy8rMDV@yzhao56-desk.sh.intel.com>
+ <20230914015531.1419405-3-seanjc@google.com>
+ <ZQqMBEL61p739dpF@yilunxu-OptiPlex-7050>
+ <ZQr5uXhV6Cnx4DYT@google.com>
+Message-ID: <ZQus1v3AvEZjuat9@yilunxu-OptiPlex-7050>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Sep 20, 2023 at 02:00:22PM -0700, Sean Christopherson wrote:
-> On Fri, Sep 15, 2023, Yan Zhao wrote:
-> > On Wed, Sep 13, 2023 at 06:55:09PM -0700, Sean Christopherson wrote:
-> > > From: Chao Peng <chao.p.peng@linux.intel.com>
-> > > 
-> > > In confidential computing usages, whether a page is private or shared is
-> > > necessary information for KVM to perform operations like page fault
-> > > handling, page zapping etc. There are other potential use cases for
-> > > per-page memory attributes, e.g. to make memory read-only (or no-exec,
-> > > or exec-only, etc.) without having to modify memslots.
-> > > 
-> > ...
-> > >> +bool kvm_range_has_memory_attributes(struct kvm *kvm, gfn_t start, gfn_t end,
-> > > +				     unsigned long attrs)
+On 2023-09-20 at 06:55:05 -0700, Sean Christopherson wrote:
+> On Wed, Sep 20, 2023, Xu Yilun wrote:
+> > On 2023-09-13 at 18:55:00 -0700, Sean Christopherson wrote:
+> > > +void kvm_mmu_invalidate_range_add(struct kvm *kvm, gfn_t start, gfn_t end)
 > > > +{
-> > > +	XA_STATE(xas, &kvm->mem_attr_array, start);
-> > > +	unsigned long index;
-> > > +	bool has_attrs;
-> > > +	void *entry;
+> > > +	lockdep_assert_held_write(&kvm->mmu_lock);
 > > > +
-> > > +	rcu_read_lock();
+> > > +	WARN_ON_ONCE(!kvm->mmu_invalidate_in_progress);
 > > > +
-> > > +	if (!attrs) {
-> > > +		has_attrs = !xas_find(&xas, end);
-> > > +		goto out;
-> > > +	}
-> > > +
-> > > +	has_attrs = true;
-> > > +	for (index = start; index < end; index++) {
-> > > +		do {
-> > > +			entry = xas_next(&xas);
-> > > +		} while (xas_retry(&xas, entry));
-> > > +
-> > > +		if (xas.xa_index != index || xa_to_value(entry) != attrs) {
-> > Should "xa_to_value(entry) != attrs" be "!(xa_to_value(entry) & attrs)" ?
+> > >  	if (likely(kvm->mmu_invalidate_in_progress == 1)) {
+> > >  		kvm->mmu_invalidate_range_start = start;
+> > >  		kvm->mmu_invalidate_range_end = end;
+> > 
+> > IIUC, Now we only add or override a part of the invalidate range in
+> > these fields, IOW only the range in last slot is stored when we unlock.
 > 
-> No, the exact comparsion is deliberate.  The intent of the API is to determine
-> if the entire range already has the desired attributes, not if there is overlap
-> between the two.
+> Ouch.  Good catch!
 > 
-> E.g. if/when RWX attributes are supported, the exact comparison is needed to
-> handle a RW => R conversion.
+> > That may break mmu_invalidate_retry_gfn() cause it can never know the
+> > whole invalidate range.
+> > 
+> > How about we extend the mmu_invalidate_range_start/end everytime so that
+> > it records the whole invalidate range:
+> > 
+> > if (kvm->mmu_invalidate_range_start == INVALID_GPA) {
+> > 	kvm->mmu_invalidate_range_start = start;
+> > 	kvm->mmu_invalidate_range_end = end;
+> > } else {
+> > 	kvm->mmu_invalidate_range_start =
+> > 		min(kvm->mmu_invalidate_range_start, start);
+> > 	kvm->mmu_invalidate_range_end =
+> > 		max(kvm->mmu_invalidate_range_end, end);
+> > }
 > 
-> > > +			has_attrs = false;
-> > > +			break;
-> > > +		}
-> > > +	}
-> > > +
-> > > +out:
-> > > +	rcu_read_unlock();
-> > > +	return has_attrs;
-> > > +}
-> > > +
-> > ...
-> > > +/* Set @attributes for the gfn range [@start, @end). */
-> > > +static int kvm_vm_set_mem_attributes(struct kvm *kvm, gfn_t start, gfn_t end,
-> > > +				     unsigned long attributes)
-> > > +{
-> > > +	struct kvm_mmu_notifier_range pre_set_range = {
-> > > +		.start = start,
-> > > +		.end = end,
-> > > +		.handler = kvm_arch_pre_set_memory_attributes,
-> > > +		.on_lock = kvm_mmu_invalidate_begin,
-> > > +		.flush_on_ret = true,
-> > > +		.may_block = true,
-> > > +	};
-> > > +	struct kvm_mmu_notifier_range post_set_range = {
-> > > +		.start = start,
-> > > +		.end = end,
-> > > +		.arg.attributes = attributes,
-> > > +		.handler = kvm_arch_post_set_memory_attributes,
-> > > +		.on_lock = kvm_mmu_invalidate_end,
-> > > +		.may_block = true,
-> > > +	};
-> > > +	unsigned long i;
-> > > +	void *entry;
-> > > +	int r = 0;
-> > > +
-> > > +	entry = attributes ? xa_mk_value(attributes) : NULL;
-> > Also here, do we need to get existing attributes of a GFN first ?
+> Yeah, that does seem to be the easiest solution.
 > 
-> No?  @entry is the new value that will be set for all entries.  This line doesn't
-> touch the xarray in any way.  Maybe I'm just not understanding your question.
-Hmm, I thought this interface was to allow users to add/remove an attribute to a GFN
-rather than overwrite all attributes of a GFN. Now I think I misunderstood the intention.
+> I'll post a fixup patch, unless you want the honors.
 
-But I wonder if there is a way for users to just add one attribute, as I don't find
-ioctl like KVM_GET_MEMORY_ATTRIBUTES for users to get current attributes and then to
-add/remove one based on that. e.g. maybe in future, KVM wants to add one attribute in
-kernel without being told by userspace ?
+Please go ahead, cause at a second thought I'm wondering if this simple
+range extension is reasonable.
 
+When the invalidation acrosses multiple slots, I'm not sure if the
+contiguous HVA range must correspond to contiguous GFN range. If not,
+are we producing a larger range than required?
+
+And when the invalidation acrosses multiple address space, I'm almost
+sure it is wrong to merge GFN ranges from different address spaces. But
+I have no clear solution yet.
+
+Thanks,
+Yilun
 
