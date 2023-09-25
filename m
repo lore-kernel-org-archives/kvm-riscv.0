@@ -1,45 +1,58 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Mon, 25 Sep 2023 16:12:10 +0200
-Subject: [PATCH v2 3/9] dt-bindings: riscv: Add Zicond extension entry
-In-Reply-To: <20230925133859.1735879-4-apatel@ventanamicro.com>
+Date: Mon, 25 Sep 2023 16:13:40 +0200
+Subject: [PATCH v2 4/9] RISC-V: Detect Zicond from ISA string
+In-Reply-To: <20230925133859.1735879-5-apatel@ventanamicro.com>
 References: <20230925133859.1735879-1-apatel@ventanamicro.com>
- <20230925133859.1735879-4-apatel@ventanamicro.com>
-Message-ID: <20230925-4a65c32623adcdf50c496005@orel>
+ <20230925133859.1735879-5-apatel@ventanamicro.com>
+Message-ID: <20230925-434ad7cfaea0011fe0fb9989@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Sep 25, 2023 at 07:08:53PM +0530, Anup Patel wrote:
-> Add an entry for the Zicond extension to the riscv,isa-extensions property.
+On Mon, Sep 25, 2023 at 07:08:54PM +0530, Anup Patel wrote:
+> The RISC-V integer conditional (Zicond) operation extension defines
+> standard conditional arithmetic and conditional-select/move operations
+> which are inspired from the XVentanaCondOps extension. In fact, QEMU
+> RISC-V also has support for emulating Zicond extension.
+> 
+> Let us detect Zicond extension from ISA string available through
+> DT or ACPI.
 > 
 > Signed-off-by: Anup Patel <apatel@ventanamicro.com>
 > ---
->  Documentation/devicetree/bindings/riscv/extensions.yaml | 6 ++++++
->  1 file changed, 6 insertions(+)
+>  arch/riscv/include/asm/hwcap.h | 1 +
+>  arch/riscv/kernel/cpufeature.c | 1 +
+>  2 files changed, 2 insertions(+)
 > 
-> diff --git a/Documentation/devicetree/bindings/riscv/extensions.yaml b/Documentation/devicetree/bindings/riscv/extensions.yaml
-> index cad8ef68eca7..3f0b47686080 100644
-> --- a/Documentation/devicetree/bindings/riscv/extensions.yaml
-> +++ b/Documentation/devicetree/bindings/riscv/extensions.yaml
-> @@ -225,6 +225,12 @@ properties:
->              ratified in the 20191213 version of the unprivileged ISA
->              specification.
+> diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
+> index b7efe9e2fa89..15bafc02ffd4 100644
+> --- a/arch/riscv/include/asm/hwcap.h
+> +++ b/arch/riscv/include/asm/hwcap.h
+> @@ -60,6 +60,7 @@
+>  #define RISCV_ISA_EXT_ZIHPM		42
+>  #define RISCV_ISA_EXT_SMSTATEEN		43
+>  #define RISCV_ISA_EXT_XVENTANACONDOPS	44
+> +#define RISCV_ISA_EXT_ZICOND		45
 >  
-> +        - const: zicond
-> +          description:
-> +            The standard Zicond extension for conditional arithmetic and
-> +            conditional-select/move operations as ratified in commit 95cf1f9
-> +            ("Add changes requested by Ved during signoff") of riscv-zicond.
-> +
->          - const: zicsr
->            description: |
->              The standard Zicsr extension for control and status register
+>  #define RISCV_ISA_EXT_MAX		64
+>  
+> diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
+> index 3a31d34fe709..7f683916f2c2 100644
+> --- a/arch/riscv/kernel/cpufeature.c
+> +++ b/arch/riscv/kernel/cpufeature.c
+> @@ -167,6 +167,7 @@ const struct riscv_isa_ext_data riscv_isa_ext[] = {
+>  	__RISCV_ISA_EXT_DATA(zicbom, RISCV_ISA_EXT_ZICBOM),
+>  	__RISCV_ISA_EXT_DATA(zicboz, RISCV_ISA_EXT_ZICBOZ),
+>  	__RISCV_ISA_EXT_DATA(zicntr, RISCV_ISA_EXT_ZICNTR),
+> +	__RISCV_ISA_EXT_DATA(zicond, RISCV_ISA_EXT_ZICOND),
+>  	__RISCV_ISA_EXT_DATA(zicsr, RISCV_ISA_EXT_ZICSR),
+>  	__RISCV_ISA_EXT_DATA(zifencei, RISCV_ISA_EXT_ZIFENCEI),
+>  	__RISCV_ISA_EXT_DATA(zihintpause, RISCV_ISA_EXT_ZIHINTPAUSE),
 > -- 
 > 2.34.1
 >
 
 Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
-
 
