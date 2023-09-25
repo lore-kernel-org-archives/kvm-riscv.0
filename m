@@ -1,63 +1,67 @@
-From: Conor Dooley <conor@kernel.org>
-Date: Mon, 25 Sep 2023 16:36:56 +0100
-Subject: [PATCH v2 0/9] KVM RISC-V Conditional Operations
-In-Reply-To: <20230925-gorged-boxer-3804735e2d18@spud>
-References: <20230925133859.1735879-1-apatel@ventanamicro.com>
- <20230925-gorged-boxer-3804735e2d18@spud>
-Message-ID: <20230925-reappear-unkind-7f31acdd82de@spud>
+From: Sean Christopherson <seanjc@google.com>
+Date: Mon, 25 Sep 2023 10:37:42 -0700
+Subject: [RFC PATCH v12 11/33] KVM: Introduce per-page memory attributes
+In-Reply-To: <ZQuahXpq2fy8rMDV@yzhao56-desk.sh.intel.com>
+References: <20230914015531.1419405-1-seanjc@google.com> <20230914015531.1419405-12-seanjc@google.com>
+ <ZQP6ZqXH81V24Lj/@yzhao56-desk.sh.intel.com> <ZQtdZmJ3SekURjiQ@google.com> <ZQuahXpq2fy8rMDV@yzhao56-desk.sh.intel.com>
+Message-ID: <ZRHFZmaa/6HQnZD1@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Sep 25, 2023 at 04:33:15PM +0100, Conor Dooley wrote:
-> On Mon, Sep 25, 2023 at 07:08:50PM +0530, Anup Patel wrote:
-> > This series extends KVM RISC-V to allow Guest/VM discover and use
-> > conditional operations related ISA extensions (namely XVentanaCondOps
-> > and Zicond).
+On Thu, Sep 21, 2023, Yan Zhao wrote:
+> On Wed, Sep 20, 2023 at 02:00:22PM -0700, Sean Christopherson wrote:
+> > On Fri, Sep 15, 2023, Yan Zhao wrote:
+> > > On Wed, Sep 13, 2023 at 06:55:09PM -0700, Sean Christopherson wrote:
+> > > > +/* Set @attributes for the gfn range [@start, @end). */
+> > > > +static int kvm_vm_set_mem_attributes(struct kvm *kvm, gfn_t start, gfn_t end,
+> > > > +				     unsigned long attributes)
+> > > > +{
+> > > > +	struct kvm_mmu_notifier_range pre_set_range = {
+> > > > +		.start = start,
+> > > > +		.end = end,
+> > > > +		.handler = kvm_arch_pre_set_memory_attributes,
+> > > > +		.on_lock = kvm_mmu_invalidate_begin,
+> > > > +		.flush_on_ret = true,
+> > > > +		.may_block = true,
+> > > > +	};
+> > > > +	struct kvm_mmu_notifier_range post_set_range = {
+> > > > +		.start = start,
+> > > > +		.end = end,
+> > > > +		.arg.attributes = attributes,
+> > > > +		.handler = kvm_arch_post_set_memory_attributes,
+> > > > +		.on_lock = kvm_mmu_invalidate_end,
+> > > > +		.may_block = true,
+> > > > +	};
+> > > > +	unsigned long i;
+> > > > +	void *entry;
+> > > > +	int r = 0;
+> > > > +
+> > > > +	entry = attributes ? xa_mk_value(attributes) : NULL;
+> > > Also here, do we need to get existing attributes of a GFN first ?
 > > 
-> > To try these patches, use KVMTOOL from riscv_zbx_zicntr_smstateen_condops_v1
-> > branch at: https://github.com/avpatel/kvmtool.git
-> > 
-> > These patches are based upon the latest riscv_kvm_queue and can also be
-> > found in the riscv_kvm_condops_v2 branch at:
-> > https://github.com/avpatel/linux.git
-> > 
-> > Changes since v1:
-> >  - Rebased the series on riscv_kvm_queue
-> >  - Split PATCH1 and PATCH2 of v1 series into two patches
-> >  - Added separate test configs for XVentanaCondOps and Zicond in PATCH7
-> >    of v1 series.
-> > 
-> > Anup Patel (9):
-> >   dt-bindings: riscv: Add XVentanaCondOps extension entry
-> >   RISC-V: Detect XVentanaCondOps from ISA string
-> >   dt-bindings: riscv: Add Zicond extension entry
-> >   RISC-V: Detect Zicond from ISA string
+> > No?  @entry is the new value that will be set for all entries.  This line doesn't
+> > touch the xarray in any way.  Maybe I'm just not understanding your question.
+> Hmm, I thought this interface was to allow users to add/remove an attribute to a GFN
+> rather than overwrite all attributes of a GFN. Now I think I misunderstood the intention.
 > 
-> For these 4:
-> Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
+> But I wonder if there is a way for users to just add one attribute, as I don't find
+> ioctl like KVM_GET_MEMORY_ATTRIBUTES for users to get current attributes and then to
+> add/remove one based on that. e.g. maybe in future, KVM wants to add one attribute in
+> kernel without being told by userspace ?
 
-Actually, now that I think of it, I'm going to temporarily un-review this.
-From patch-acceptance.rst:
-| Additionally, the RISC-V specification allows implementers to create
-| their own custom extensions.  These custom extensions aren't required
-| to go through any review or ratification process by the RISC-V
-| Foundation.  To avoid the maintenance complexity and potential
-| performance impact of adding kernel code for implementor-specific
-| RISC-V extensions, we'll only consider patches for extensions that either:
-| 
-| - Have been officially frozen or ratified by the RISC-V Foundation, or
-| - Have been implemented in hardware that is widely available, per standard
-|   Linux practice.
+The plan is that memory attributes will be 100% userspace driven, i.e. that KVM
+will never add its own attributes.  That's why there is (currently) no
+KVM_GET_MEMORY_ATTRIBUTES, the intended usage model is that userspace is fully
+responsible for managing attributes, and so should never need to query information
+that it already knows.  If there's a compelling case for getting attributes then
+we could certainly add such an ioctl(), but I hope we never need to add a GET
+because that likely means we've made mistakes along the way.
 
-The xventanacondops bits don't qualify under the first entry, and I
-don't think they qualify under the second yet. Am I wrong?
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 228 bytes
-Desc: not available
-URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20230925/6a3609a7/attachment.sig>
+Giving userspace full control of attributes allows for a simpler uAPI, e.g. if
+userspace doesn't have full control, then setting or clearing bits requires a RMW
+operation, which means creating a more complex ioctl().  That's why its a straight
+SET operation and not an OR type operation.
+
