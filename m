@@ -1,97 +1,88 @@
 From: Anup Patel <apatel@ventanamicro.com>
-Date: Mon, 25 Sep 2023 19:00:37 +0530
-Subject: [PATCH 1/7] RISC-V: Detect XVentanaCondOps from ISA string
-In-Reply-To: <20230919-bbcb3627b6d9d0238c5ba351@fedora>
+Date: Mon, 25 Sep 2023 19:01:02 +0530
+Subject: [PATCH 2/7] RISC-V: Detect Zicond from ISA string
+In-Reply-To: <20230919-3a8fcdaa86607d0ff8399132@fedora>
 References: <20230919035343.1399389-1-apatel@ventanamicro.com>
- <20230919035343.1399389-2-apatel@ventanamicro.com> <20230919-bbcb3627b6d9d0238c5ba351@fedora>
-Message-ID: <CAK9=C2Ub7+4QOdq4rXoSOuLoYaUczeqaLoCVRZ_63dZOZwiu1w@mail.gmail.com>
+ <20230919035343.1399389-3-apatel@ventanamicro.com> <20230919-3a8fcdaa86607d0ff8399132@fedora>
+Message-ID: <CAK9=C2Wgt69Tj1U-e2eyVrpC+=JaApuKYEx56JbGJRuHn3N5gQ@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Sep 19, 2023 at 12:56?PM Conor Dooley <conor@kernel.org> wrote:
+On Tue, Sep 19, 2023 at 12:57?PM Conor Dooley <conor@kernel.org> wrote:
 >
-> Hey Anup,
->
-> On Tue, Sep 19, 2023 at 09:23:37AM +0530, Anup Patel wrote:
-> > The Veyron-V1 CPU supports custom conditional arithmetic and
-> > conditional-select/move operations referred to as XVentanaCondOps
-> > extension. In fact, QEMU RISC-V also has support for emulating
-> > XVentanaCondOps extension.
+> On Tue, Sep 19, 2023 at 09:23:38AM +0530, Anup Patel wrote:
+> > The RISC-V integer conditional (Zicond) operation extension defines
+> > standard conditional arithmetic and conditional-select/move operations
+> > which are inspired from the XVentanaCondOps extension. In fact, QEMU
+> > RISC-V also has support for emulating Zicond extension.
 > >
-> > Let us detect XVentanaCondOps extension from ISA string available
-> > through DT or ACPI.
+> > Let us detect Zicond extension from ISA string available through
+> > DT or ACPI.
 > >
 > > Signed-off-by: Anup Patel <apatel@ventanamicro.com>
+>
+> Same applies here w.r.t. splitting in two.
+
+Okay, I will update.
+
+Regards,
+Anup
+
+>
+> Thanks,
+> Conor.
+>
 > > ---
-> >  Documentation/devicetree/bindings/riscv/extensions.yaml | 7 +++++++
+> >  Documentation/devicetree/bindings/riscv/extensions.yaml | 6 ++++++
 > >  arch/riscv/include/asm/hwcap.h                          | 1 +
 > >  arch/riscv/kernel/cpufeature.c                          | 1 +
-> >  3 files changed, 9 insertions(+)
+> >  3 files changed, 8 insertions(+)
 > >
 > > diff --git a/Documentation/devicetree/bindings/riscv/extensions.yaml b/Documentation/devicetree/bindings/riscv/extensions.yaml
-> > index 36ff6749fbba..cad8ef68eca7 100644
+> > index cad8ef68eca7..7ea90e2dbc5b 100644
 > > --- a/Documentation/devicetree/bindings/riscv/extensions.yaml
 > > +++ b/Documentation/devicetree/bindings/riscv/extensions.yaml
-> > @@ -171,6 +171,13 @@ properties:
-> >              memory types as ratified in the 20191213 version of the privileged
-> >              ISA specification.
+> > @@ -225,6 +225,12 @@ properties:
+> >              ratified in the 20191213 version of the unprivileged ISA
+> >              specification.
 > >
-> > +        - const: xventanacondops
-> > +          description: |
-> > +            The Ventana specific XVentanaCondOps extension for conditional
-> > +            arithmetic and conditional-select/move operations defined by the
-> > +            Ventana custom extensions specification v1.0.1 (or higher) at
-> > +            https://github.com/ventanamicro/ventana-custom-extensions/releases.
+> > +        - const: zicond
+> > +          description:
+> > +            The standard Zicond extension for conditional arithmetic and
+> > +            conditional-select/move operations as ratified in commit 8fb6694
+> > +            ("Update Gemfile") of riscv-zicond.
 > > +
->
-> For this and the next patch, the binding change needs to be split out
-> from the code. checkpatch should've complained about it.
-
-Okay, I will split this patch.
-
->
-> >          - const: zba
+> >          - const: zicsr
 > >            description: |
-> >              The standard Zba bit-manipulation extension for address generation
+> >              The standard Zicsr extension for control and status register
 > > diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
-> > index 0f520f7d058a..b7efe9e2fa89 100644
+> > index b7efe9e2fa89..15bafc02ffd4 100644
 > > --- a/arch/riscv/include/asm/hwcap.h
 > > +++ b/arch/riscv/include/asm/hwcap.h
-> > @@ -59,6 +59,7 @@
-> >  #define RISCV_ISA_EXT_ZIFENCEI               41
+> > @@ -60,6 +60,7 @@
 > >  #define RISCV_ISA_EXT_ZIHPM          42
 > >  #define RISCV_ISA_EXT_SMSTATEEN              43
-> > +#define RISCV_ISA_EXT_XVENTANACONDOPS        44
+> >  #define RISCV_ISA_EXT_XVENTANACONDOPS        44
+> > +#define RISCV_ISA_EXT_ZICOND         45
 > >
 > >  #define RISCV_ISA_EXT_MAX            64
 > >
 > > diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
-> > index 3755a8c2a9de..3a31d34fe709 100644
+> > index 3a31d34fe709..49b6551f3347 100644
 > > --- a/arch/riscv/kernel/cpufeature.c
 > > +++ b/arch/riscv/kernel/cpufeature.c
-> > @@ -182,6 +182,7 @@ const struct riscv_isa_ext_data riscv_isa_ext[] = {
-> >       __RISCV_ISA_EXT_DATA(svinval, RISCV_ISA_EXT_SVINVAL),
-> >       __RISCV_ISA_EXT_DATA(svnapot, RISCV_ISA_EXT_SVNAPOT),
-> >       __RISCV_ISA_EXT_DATA(svpbmt, RISCV_ISA_EXT_SVPBMT),
-> > +     __RISCV_ISA_EXT_DATA(xventanacondops, RISCV_ISA_EXT_XVENTANACONDOPS),
->
-> I've been banging on for a bit about people doing weird stuff to detect
-> their vendor extensions, so nice to see it being done properly :)
->
->
-> Cheers,
-> Conor.
->
-> >  };
-> >
-> >  const size_t riscv_isa_ext_count = ARRAY_SIZE(riscv_isa_ext);
+> > @@ -174,6 +174,7 @@ const struct riscv_isa_ext_data riscv_isa_ext[] = {
+> >       __RISCV_ISA_EXT_DATA(zba, RISCV_ISA_EXT_ZBA),
+> >       __RISCV_ISA_EXT_DATA(zbb, RISCV_ISA_EXT_ZBB),
+> >       __RISCV_ISA_EXT_DATA(zbs, RISCV_ISA_EXT_ZBS),
+> > +     __RISCV_ISA_EXT_DATA(zicond, RISCV_ISA_EXT_ZICOND),
+> >       __RISCV_ISA_EXT_DATA(smaia, RISCV_ISA_EXT_SMAIA),
+> >       __RISCV_ISA_EXT_DATA(smstateen, RISCV_ISA_EXT_SMSTATEEN),
+> >       __RISCV_ISA_EXT_DATA(ssaia, RISCV_ISA_EXT_SSAIA),
 > > --
 > > 2.34.1
 > >
-
-Regards,
-Anup
 
