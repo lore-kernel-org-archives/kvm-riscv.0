@@ -1,17 +1,17 @@
 From: Anup Patel <apatel@ventanamicro.com>
-Date: Mon, 25 Sep 2023 19:01:02 +0530
+Date: Mon, 25 Sep 2023 19:01:48 +0530
 Subject: [PATCH 2/7] RISC-V: Detect Zicond from ISA string
-In-Reply-To: <20230919-3a8fcdaa86607d0ff8399132@fedora>
+In-Reply-To: <20230920-36a5645f766ed9cce75a9e8c@orel>
 References: <20230919035343.1399389-1-apatel@ventanamicro.com>
- <20230919035343.1399389-3-apatel@ventanamicro.com> <20230919-3a8fcdaa86607d0ff8399132@fedora>
-Message-ID: <CAK9=C2Wgt69Tj1U-e2eyVrpC+=JaApuKYEx56JbGJRuHn3N5gQ@mail.gmail.com>
+ <20230919035343.1399389-3-apatel@ventanamicro.com> <20230920-36a5645f766ed9cce75a9e8c@orel>
+Message-ID: <CAK9=C2XVyN7nkMW+kgELaHCAjLcQ3z-6xVdrGa_UtxfJMdm7Dg@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Sep 19, 2023 at 12:57?PM Conor Dooley <conor@kernel.org> wrote:
+On Wed, Sep 20, 2023 at 1:14?PM Andrew Jones <ajones@ventanamicro.com> wrote:
 >
 > On Tue, Sep 19, 2023 at 09:23:38AM +0530, Anup Patel wrote:
 > > The RISC-V integer conditional (Zicond) operation extension defines
@@ -23,18 +23,6 @@ On Tue, Sep 19, 2023 at 12:57?PM Conor Dooley <conor@kernel.org> wrote:
 > > DT or ACPI.
 > >
 > > Signed-off-by: Anup Patel <apatel@ventanamicro.com>
->
-> Same applies here w.r.t. splitting in two.
-
-Okay, I will update.
-
-Regards,
-Anup
-
->
-> Thanks,
-> Conor.
->
 > > ---
 > >  Documentation/devicetree/bindings/riscv/extensions.yaml | 6 ++++++
 > >  arch/riscv/include/asm/hwcap.h                          | 1 +
@@ -54,6 +42,13 @@ Anup
 > > +            The standard Zicond extension for conditional arithmetic and
 > > +            conditional-select/move operations as ratified in commit 8fb6694
 > > +            ("Update Gemfile") of riscv-zicond.
+>
+> As of yesterday, v1.0 of the spec points at commit 95cf1f9 ("Add changes
+> requested by Ved during signoff")
+
+Okay, I will update.
+
+>
 > > +
 > >          - const: zicsr
 > >            description: |
@@ -79,10 +74,22 @@ Anup
 > >       __RISCV_ISA_EXT_DATA(zbb, RISCV_ISA_EXT_ZBB),
 > >       __RISCV_ISA_EXT_DATA(zbs, RISCV_ISA_EXT_ZBS),
 > > +     __RISCV_ISA_EXT_DATA(zicond, RISCV_ISA_EXT_ZICOND),
+>
+> Zi extensions come before Zb extensions.
+
+Okay, I will update.
+
+>
 > >       __RISCV_ISA_EXT_DATA(smaia, RISCV_ISA_EXT_SMAIA),
 > >       __RISCV_ISA_EXT_DATA(smstateen, RISCV_ISA_EXT_SMSTATEEN),
 > >       __RISCV_ISA_EXT_DATA(ssaia, RISCV_ISA_EXT_SSAIA),
 > > --
 > > 2.34.1
 > >
+>
+> Thanks,
+> drew
+
+Regards,
+Anup
 
