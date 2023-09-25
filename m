@@ -1,49 +1,41 @@
 From: Anup Patel <apatel@ventanamicro.com>
-Date: Mon, 25 Sep 2023 19:08:50 +0530
-Subject: [PATCH v2 0/9] KVM RISC-V Conditional Operations
-Message-ID: <20230925133859.1735879-1-apatel@ventanamicro.com>
+Date: Mon, 25 Sep 2023 19:08:51 +0530
+Subject: [PATCH v2 1/9] dt-bindings: riscv: Add XVentanaCondOps extension entry
+In-Reply-To: <20230925133859.1735879-1-apatel@ventanamicro.com>
+References: <20230925133859.1735879-1-apatel@ventanamicro.com>
+Message-ID: <20230925133859.1735879-2-apatel@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This series extends KVM RISC-V to allow Guest/VM discover and use
-conditional operations related ISA extensions (namely XVentanaCondOps
-and Zicond).
+Add an entry for the XVentanaCondOps extension to the
+riscv,isa-extensions property.
 
-To try these patches, use KVMTOOL from riscv_zbx_zicntr_smstateen_condops_v1
-branch at: https://github.com/avpatel/kvmtool.git
+Signed-off-by: Anup Patel <apatel@ventanamicro.com>
+---
+ Documentation/devicetree/bindings/riscv/extensions.yaml | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-These patches are based upon the latest riscv_kvm_queue and can also be
-found in the riscv_kvm_condops_v2 branch at:
-https://github.com/avpatel/linux.git
-
-Changes since v1:
- - Rebased the series on riscv_kvm_queue
- - Split PATCH1 and PATCH2 of v1 series into two patches
- - Added separate test configs for XVentanaCondOps and Zicond in PATCH7
-   of v1 series.
-
-Anup Patel (9):
-  dt-bindings: riscv: Add XVentanaCondOps extension entry
-  RISC-V: Detect XVentanaCondOps from ISA string
-  dt-bindings: riscv: Add Zicond extension entry
-  RISC-V: Detect Zicond from ISA string
-  RISC-V: KVM: Allow XVentanaCondOps extension for Guest/VM
-  RISC-V: KVM: Allow Zicond extension for Guest/VM
-  KVM: riscv: selftests: Add senvcfg register to get-reg-list test
-  KVM: riscv: selftests: Add smstateen registers to get-reg-list test
-  KVM: riscv: selftests: Add condops extensions to get-reg-list test
-
- .../devicetree/bindings/riscv/extensions.yaml | 13 ++++
- arch/riscv/include/asm/hwcap.h                |  2 +
- arch/riscv/include/uapi/asm/kvm.h             |  2 +
- arch/riscv/kernel/cpufeature.c                |  2 +
- arch/riscv/kvm/vcpu_onereg.c                  |  4 ++
- .../selftests/kvm/riscv/get-reg-list.c        | 71 +++++++++++++++++++
- 6 files changed, 94 insertions(+)
-
+diff --git a/Documentation/devicetree/bindings/riscv/extensions.yaml b/Documentation/devicetree/bindings/riscv/extensions.yaml
+index 36ff6749fbba..cad8ef68eca7 100644
+--- a/Documentation/devicetree/bindings/riscv/extensions.yaml
++++ b/Documentation/devicetree/bindings/riscv/extensions.yaml
+@@ -171,6 +171,13 @@ properties:
+             memory types as ratified in the 20191213 version of the privileged
+             ISA specification.
+ 
++        - const: xventanacondops
++          description: |
++            The Ventana specific XVentanaCondOps extension for conditional
++            arithmetic and conditional-select/move operations defined by the
++            Ventana custom extensions specification v1.0.1 (or higher) at
++            https://github.com/ventanamicro/ventana-custom-extensions/releases.
++
+         - const: zba
+           description: |
+             The standard Zba bit-manipulation extension for address generation
 -- 
 2.34.1
 
