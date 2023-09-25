@@ -1,58 +1,50 @@
 From: Anup Patel <apatel@ventanamicro.com>
-Date: Mon, 25 Sep 2023 19:02:54 +0530
-Subject: [PATCH 7/7] KVM: riscv: selftests: Add condops extensions to
- get-reg-list test
-In-Reply-To: <20230920-d30b398a99804418792264c3@orel>
-References: <20230919035343.1399389-1-apatel@ventanamicro.com>
- <20230919035343.1399389-8-apatel@ventanamicro.com> <20230920-d30b398a99804418792264c3@orel>
-Message-ID: <CAK9=C2WAZWdcKEKy6DjQRhJZxMfWZmcX4hVxSuV3=_nAQnYb4A@mail.gmail.com>
+Date: Mon, 25 Sep 2023 19:08:50 +0530
+Subject: [PATCH v2 0/9] KVM RISC-V Conditional Operations
+Message-ID: <20230925133859.1735879-1-apatel@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Sep 20, 2023 at 1:48?PM Andrew Jones <ajones@ventanamicro.com> wrote:
->
-> On Tue, Sep 19, 2023 at 09:23:43AM +0530, Anup Patel wrote:
-> > We have a new conditional operations related ISA extensions so let us add
-> > these extensions to get-reg-list test.
-> >
-> > Signed-off-by: Anup Patel <apatel@ventanamicro.com>
-> > ---
-> >  tools/testing/selftests/kvm/riscv/get-reg-list.c | 4 ++++
-> >  1 file changed, 4 insertions(+)
-> >
-> > diff --git a/tools/testing/selftests/kvm/riscv/get-reg-list.c b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-> > index 9f464c7996c6..4ad4bf87fa78 100644
-> > --- a/tools/testing/selftests/kvm/riscv/get-reg-list.c
-> > +++ b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-> > @@ -50,6 +50,8 @@ bool filter_reg(__u64 reg)
-> >       case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZIFENCEI:
-> >       case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZIHPM:
-> >       case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_SMSTATEEN:
-> > +     case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_XVENTANACONDOPS:
-> > +     case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZICOND:
-> >               return true;
-> >       /* AIA registers are always available when Ssaia can't be disabled */
-> >       case KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_AIA | KVM_REG_RISCV_CSR_AIA_REG(siselect):
-> > @@ -360,6 +362,8 @@ static const char *isa_ext_id_to_str(__u64 id)
-> >               "KVM_RISCV_ISA_EXT_ZIFENCEI",
-> >               "KVM_RISCV_ISA_EXT_ZIHPM",
-> >               "KVM_RISCV_ISA_EXT_SMSTATEEN",
-> > +             "KVM_RISCV_ISA_EXT_XVENTANACONDOPS",
-> > +             "KVM_RISCV_ISA_EXT_ZICOND",
-> >       };
-> >
-> >       if (reg_off >= ARRAY_SIZE(kvm_isa_ext_reg_name)) {
-> > --
-> > 2.34.1
-> >
->
-> Don't we want to add test configs for these?
+This series extends KVM RISC-V to allow Guest/VM discover and use
+conditional operations related ISA extensions (namely XVentanaCondOps
+and Zicond).
 
-Okay, I will update.
+To try these patches, use KVMTOOL from riscv_zbx_zicntr_smstateen_condops_v1
+branch at: https://github.com/avpatel/kvmtool.git
 
-Regards,
-Anup
+These patches are based upon the latest riscv_kvm_queue and can also be
+found in the riscv_kvm_condops_v2 branch at:
+https://github.com/avpatel/linux.git
+
+Changes since v1:
+ - Rebased the series on riscv_kvm_queue
+ - Split PATCH1 and PATCH2 of v1 series into two patches
+ - Added separate test configs for XVentanaCondOps and Zicond in PATCH7
+   of v1 series.
+
+Anup Patel (9):
+  dt-bindings: riscv: Add XVentanaCondOps extension entry
+  RISC-V: Detect XVentanaCondOps from ISA string
+  dt-bindings: riscv: Add Zicond extension entry
+  RISC-V: Detect Zicond from ISA string
+  RISC-V: KVM: Allow XVentanaCondOps extension for Guest/VM
+  RISC-V: KVM: Allow Zicond extension for Guest/VM
+  KVM: riscv: selftests: Add senvcfg register to get-reg-list test
+  KVM: riscv: selftests: Add smstateen registers to get-reg-list test
+  KVM: riscv: selftests: Add condops extensions to get-reg-list test
+
+ .../devicetree/bindings/riscv/extensions.yaml | 13 ++++
+ arch/riscv/include/asm/hwcap.h                |  2 +
+ arch/riscv/include/uapi/asm/kvm.h             |  2 +
+ arch/riscv/kernel/cpufeature.c                |  2 +
+ arch/riscv/kvm/vcpu_onereg.c                  |  4 ++
+ .../selftests/kvm/riscv/get-reg-list.c        | 71 +++++++++++++++++++
+ 6 files changed, 94 insertions(+)
+
+-- 
+2.34.1
+
 
