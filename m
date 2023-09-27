@@ -1,81 +1,103 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Wed, 27 Sep 2023 09:27:09 +0200
-Subject: [PATCH v2 3/3] RISC-V: KVM: Add Svadu Extension Support for
- Guest/VM
-In-Reply-To: <20230922085701.3164-4-yongxuan.wang@sifive.com>
+From: Yong-Xuan Wang <yongxuan.wang@sifive.com>
+Date: Wed, 27 Sep 2023 19:02:58 +0800
+Subject: [PATCH v2 1/3] RISC-V: Detect and Enable Svadu Extension Support
+In-Reply-To: <20230927-62fbd3d63f4c6ffada90b7ee@orel>
 References: <20230922085701.3164-1-yongxuan.wang@sifive.com>
- <20230922085701.3164-4-yongxuan.wang@sifive.com>
-Message-ID: <20230927-408c4f85a0ee1d2caa1779f3@orel>
+ <20230922085701.3164-2-yongxuan.wang@sifive.com> <20230927-62fbd3d63f4c6ffada90b7ee@orel>
+Message-ID: <CAMWQL2jUPNag5v7hiHqMnemAu6eStd2L9Fh9dCfS9gqi6xK1cw@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Sep 22, 2023 at 08:56:49AM +0000, Yong-Xuan Wang wrote:
-> We extend the KVM ISA extension ONE_REG interface to allow VMM
-> tools  to detect and enable Svadu extension for Guest/VM.
-> 
-> Also set the HADE bit in henvcfg CSR if Svadu extension is
-> available for Guest/VM.
-> 
-> Signed-off-by: Yong-Xuan Wang <yongxuan.wang@sifive.com>
-> ---
->  arch/riscv/include/uapi/asm/kvm.h | 1 +
->  arch/riscv/kvm/vcpu.c             | 3 +++
->  arch/riscv/kvm/vcpu_onereg.c      | 1 +
->  3 files changed, 5 insertions(+)
-> 
-> diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
-> index 992c5e407104..3c7a6c762d0f 100644
-> --- a/arch/riscv/include/uapi/asm/kvm.h
-> +++ b/arch/riscv/include/uapi/asm/kvm.h
-> @@ -131,6 +131,7 @@ enum KVM_RISCV_ISA_EXT_ID {
->  	KVM_RISCV_ISA_EXT_ZICSR,
->  	KVM_RISCV_ISA_EXT_ZIFENCEI,
->  	KVM_RISCV_ISA_EXT_ZIHPM,
-> +	KVM_RISCV_ISA_EXT_SVADU,
+Hi drew,
 
-This register will show up as "new" in kselftests test[1]. We should add
-another patch to this series to update the test to handle/test it.
-
-[1] tools/testing/selftests/kvm/riscv/get-reg-list.c
-
->  	KVM_RISCV_ISA_EXT_MAX,
->  };
->  
-> diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-> index 82229db1ce73..91b92a1f4e33 100644
-> --- a/arch/riscv/kvm/vcpu.c
-> +++ b/arch/riscv/kvm/vcpu.c
-> @@ -487,6 +487,9 @@ static void kvm_riscv_vcpu_update_config(const unsigned long *isa)
->  	if (riscv_isa_extension_available(isa, ZICBOZ))
->  		henvcfg |= ENVCFG_CBZE;
->  
-> +	if (riscv_isa_extension_available(isa, SVADU))
-> +		henvcfg |= ENVCFG_HADE;
-> +
->  	csr_write(CSR_HENVCFG, henvcfg);
->  #ifdef CONFIG_32BIT
->  	csr_write(CSR_HENVCFGH, henvcfg >> 32);
-> diff --git a/arch/riscv/kvm/vcpu_onereg.c b/arch/riscv/kvm/vcpu_onereg.c
-> index 1b7e9fa265cb..211915dad677 100644
-> --- a/arch/riscv/kvm/vcpu_onereg.c
-> +++ b/arch/riscv/kvm/vcpu_onereg.c
-> @@ -36,6 +36,7 @@ static const unsigned long kvm_isa_ext_arr[] = {
->  	/* Multi letter extensions (alphabetically sorted) */
->  	KVM_ISA_EXT_ARR(SSAIA),
->  	KVM_ISA_EXT_ARR(SSTC),
-> +	KVM_ISA_EXT_ARR(SVADU),
->  	KVM_ISA_EXT_ARR(SVINVAL),
->  	KVM_ISA_EXT_ARR(SVNAPOT),
->  	KVM_ISA_EXT_ARR(SVPBMT),
-> -- 
-> 2.17.1
+On Wed, Sep 27, 2023 at 3:03?PM Andrew Jones <ajones@ventanamicro.com> wrote:
 >
+> On Fri, Sep 22, 2023 at 08:56:47AM +0000, Yong-Xuan Wang wrote:
+> > We detect Svadu extension support from DTB and add arch_has_hw_pte_young()
+> > to enable optimization in MGLRU and __wp_page_copy_user() if Svadu
+> > extension is available.
+> >
+> > Co-developed-by: Jinyu Tang <tjytimi@163.com>
+> > Signed-off-by: Jinyu Tang <tjytimi@163.com>
+> > Signed-off-by: Yong-Xuan Wang <yongxuan.wang@sifive.com>
+> > ---
+> >  arch/riscv/include/asm/csr.h     | 1 +
+> >  arch/riscv/include/asm/hwcap.h   | 1 +
+> >  arch/riscv/include/asm/pgtable.h | 6 ++++++
+> >  arch/riscv/kernel/cpufeature.c   | 1 +
+> >  4 files changed, 9 insertions(+)
+> >
+> > diff --git a/arch/riscv/include/asm/csr.h b/arch/riscv/include/asm/csr.h
+> > index 777cb8299551..10648b372a2a 100644
+> > --- a/arch/riscv/include/asm/csr.h
+> > +++ b/arch/riscv/include/asm/csr.h
+> > @@ -194,6 +194,7 @@
+> >  /* xENVCFG flags */
+> >  #define ENVCFG_STCE                  (_AC(1, ULL) << 63)
+> >  #define ENVCFG_PBMTE                 (_AC(1, ULL) << 62)
+> > +#define ENVCFG_HADE                  (_AC(1, ULL) << 61)
+>
+> This bit is named 'ADUE' in the spec. Why are we calling it HADE?
 
-Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+This bit was called HADE in v0.1 spec. I will update it to ADUE in
+patch v3. Thank you!
 
-Thanks,
-drew
+Regards,
+Yong-Xuan
+
+
+>
+> >  #define ENVCFG_CBZE                  (_AC(1, UL) << 7)
+> >  #define ENVCFG_CBCFE                 (_AC(1, UL) << 6)
+> >  #define ENVCFG_CBIE_SHIFT            4
+> > diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
+> > index b7b58258f6c7..1013661d6516 100644
+> > --- a/arch/riscv/include/asm/hwcap.h
+> > +++ b/arch/riscv/include/asm/hwcap.h
+> > @@ -58,6 +58,7 @@
+> >  #define RISCV_ISA_EXT_ZICSR          40
+> >  #define RISCV_ISA_EXT_ZIFENCEI               41
+> >  #define RISCV_ISA_EXT_ZIHPM          42
+> > +#define RISCV_ISA_EXT_SVADU          43
+> >
+> >  #define RISCV_ISA_EXT_MAX            64
+> >
+> > diff --git a/arch/riscv/include/asm/pgtable.h b/arch/riscv/include/asm/pgtable.h
+> > index b2ba3f79cfe9..028b700cd27b 100644
+> > --- a/arch/riscv/include/asm/pgtable.h
+> > +++ b/arch/riscv/include/asm/pgtable.h
+> > @@ -629,6 +629,12 @@ static inline pgprot_t pgprot_writecombine(pgprot_t _prot)
+> >       return __pgprot(prot);
+> >  }
+> >
+> > +#define arch_has_hw_pte_young arch_has_hw_pte_young
+> > +static inline bool arch_has_hw_pte_young(void)
+> > +{
+> > +     return riscv_has_extension_unlikely(RISCV_ISA_EXT_SVADU);
+> > +}
+> > +
+> >  /*
+> >   * THP functions
+> >   */
+> > diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
+> > index 1cfbba65d11a..ead378c04991 100644
+> > --- a/arch/riscv/kernel/cpufeature.c
+> > +++ b/arch/riscv/kernel/cpufeature.c
+> > @@ -178,6 +178,7 @@ const struct riscv_isa_ext_data riscv_isa_ext[] = {
+> >       __RISCV_ISA_EXT_DATA(ssaia, RISCV_ISA_EXT_SSAIA),
+> >       __RISCV_ISA_EXT_DATA(sscofpmf, RISCV_ISA_EXT_SSCOFPMF),
+> >       __RISCV_ISA_EXT_DATA(sstc, RISCV_ISA_EXT_SSTC),
+> > +     __RISCV_ISA_EXT_DATA(svadu, RISCV_ISA_EXT_SVADU),
+> >       __RISCV_ISA_EXT_DATA(svinval, RISCV_ISA_EXT_SVINVAL),
+> >       __RISCV_ISA_EXT_DATA(svnapot, RISCV_ISA_EXT_SVNAPOT),
+> >       __RISCV_ISA_EXT_DATA(svpbmt, RISCV_ISA_EXT_SVPBMT),
+> > --
+> > 2.17.1
+> >
+>
+> Thanks,
+> drew
 
