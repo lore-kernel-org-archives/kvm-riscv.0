@@ -1,44 +1,22 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Wed, 27 Sep 2023 09:04:40 +0200
-Subject: [PATCH v2 2/3] dt-bindings: riscv: Add Svadu Entry
-In-Reply-To: <20230922085701.3164-3-yongxuan.wang@sifive.com>
+From: Matthew Wilcox <willy@infradead.org>
+Date: Wed, 27 Sep 2023 08:16:47 +0100
+Subject: [PATCH v2 1/3] RISC-V: Detect and Enable Svadu Extension Support
+In-Reply-To: <20230922085701.3164-2-yongxuan.wang@sifive.com>
 References: <20230922085701.3164-1-yongxuan.wang@sifive.com>
- <20230922085701.3164-3-yongxuan.wang@sifive.com>
-Message-ID: <20230927-d524858b10298a4e338cde02@orel>
+ <20230922085701.3164-2-yongxuan.wang@sifive.com>
+Message-ID: <ZRPW3wu6tpKwwunD@casper.infradead.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Sep 22, 2023 at 08:56:48AM +0000, Yong-Xuan Wang wrote:
-> Add an entry for the Svadu extension to the riscv,isa-extensions property.
-> 
-> Signed-off-by: Yong-Xuan Wang <yongxuan.wang@sifive.com>
-> ---
->  Documentation/devicetree/bindings/riscv/extensions.yaml | 6 ++++++
->  1 file changed, 6 insertions(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/riscv/extensions.yaml b/Documentation/devicetree/bindings/riscv/extensions.yaml
-> index cc1f546fdbdc..b5a0aed0165b 100644
-> --- a/Documentation/devicetree/bindings/riscv/extensions.yaml
-> +++ b/Documentation/devicetree/bindings/riscv/extensions.yaml
-> @@ -147,6 +147,12 @@ properties:
->              ratified at commit 3f9ed34 ("Add ability to manually trigger
->              workflow. (#2)") of riscv-time-compare.
->  
-> +        - const: svadu
-> +          description: |
-> +            The standard Svadu supervisor-level extension for hardware updating
-> +            of PTE A/D bits as frozen at commit b65e07c ("move to Frozen
-> +            state") of riscv-svadu.
-> +
->          - const: svinval
->            description:
->              The standard Svinval supervisor-level extension for fine-grained
-> -- 
-> 2.17.1
->
+On Fri, Sep 22, 2023 at 08:56:47AM +0000, Yong-Xuan Wang wrote:
+> We detect Svadu extension support from DTB and add arch_has_hw_pte_young()
+> to enable optimization in MGLRU and __wp_page_copy_user() if Svadu
+> extension is available.
 
-Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+If you're going to cc people outside the RiscV space, you should probably
+explain what Svadu is.  To me, it sounds like a Great Old One, maybe a
+friend of Cthulhu?
 
