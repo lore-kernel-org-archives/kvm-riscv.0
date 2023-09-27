@@ -1,108 +1,62 @@
-From: Anup Patel <apatel@ventanamicro.com>
-Date: Wed, 27 Sep 2023 20:56:35 +0530
-Subject: [PATCH v2 0/9] KVM RISC-V Conditional Operations
-In-Reply-To: <mhng-ed1b5d0a-469c-43e3-a0fe-b8e498cde538@palmer-ri-x1c9>
-References: <20230927-snowcap-stadium-2f6aeffac59e@spud> <mhng-ed1b5d0a-469c-43e3-a0fe-b8e498cde538@palmer-ri-x1c9>
-Message-ID: <CAK9=C2Xx76i-FmTm2Qt_9PssLrLL3zUDvxOUZRyyEQZzDV7JDw@mail.gmail.com>
+From: Stefan O'Rear <sorear@fastmail.com>
+Date: Wed, 27 Sep 2023 13:24:03 -0400
+Subject: [PATCH v2 2/3] dt-bindings: riscv: Add Svadu Entry
+In-Reply-To: <20230922085701.3164-3-yongxuan.wang@sifive.com>
+References: <20230922085701.3164-1-yongxuan.wang@sifive.com>
+ <20230922085701.3164-3-yongxuan.wang@sifive.com>
+Message-ID: <d141062b-e3e0-45ce-bc61-3404417c7d7c@app.fastmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Sep 27, 2023 at 8:31?PM Palmer Dabbelt <palmer@dabbelt.com> wrote:
+On Fri, Sep 22, 2023, at 4:56 AM, Yong-Xuan Wang wrote:
+> Add an entry for the Svadu extension to the riscv,isa-extensions property.
 >
-> On Wed, 27 Sep 2023 07:45:28 PDT (-0700), Conor Dooley wrote:
-> > On Wed, Sep 27, 2023 at 07:54:49PM +0530, Anup Patel wrote:
-> >> On Mon, Sep 25, 2023 at 9:07?PM Conor Dooley <conor@kernel.org> wrote:
-> >> >
-> >> > On Mon, Sep 25, 2023 at 04:33:15PM +0100, Conor Dooley wrote:
-> >> > > On Mon, Sep 25, 2023 at 07:08:50PM +0530, Anup Patel wrote:
-> >> > > > This series extends KVM RISC-V to allow Guest/VM discover and use
-> >> > > > conditional operations related ISA extensions (namely XVentanaCondOps
-> >> > > > and Zicond).
-> >> > > >
-> >> > > > To try these patches, use KVMTOOL from riscv_zbx_zicntr_smstateen_condops_v1
-> >> > > > branch at: https://github.com/avpatel/kvmtool.git
-> >> > > >
-> >> > > > These patches are based upon the latest riscv_kvm_queue and can also be
-> >> > > > found in the riscv_kvm_condops_v2 branch at:
-> >> > > > https://github.com/avpatel/linux.git
-> >> > > >
-> >> > > > Changes since v1:
-> >> > > >  - Rebased the series on riscv_kvm_queue
-> >> > > >  - Split PATCH1 and PATCH2 of v1 series into two patches
-> >> > > >  - Added separate test configs for XVentanaCondOps and Zicond in PATCH7
-> >> > > >    of v1 series.
-> >> > > >
-> >> > > > Anup Patel (9):
-> >> > > >   dt-bindings: riscv: Add XVentanaCondOps extension entry
-> >> > > >   RISC-V: Detect XVentanaCondOps from ISA string
-> >> > > >   dt-bindings: riscv: Add Zicond extension entry
-> >> > > >   RISC-V: Detect Zicond from ISA string
-> >> > >
-> >> > > For these 4:
-> >> > > Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
-> >> >
-> >> > Actually, now that I think of it, I'm going to temporarily un-review this.
-> >> > From patch-acceptance.rst:
-> >> > | Additionally, the RISC-V specification allows implementers to create
-> >> > | their own custom extensions.  These custom extensions aren't required
-> >> > | to go through any review or ratification process by the RISC-V
-> >> > | Foundation.  To avoid the maintenance complexity and potential
-> >> > | performance impact of adding kernel code for implementor-specific
-> >> > | RISC-V extensions, we'll only consider patches for extensions that either:
-> >> > |
-> >> > | - Have been officially frozen or ratified by the RISC-V Foundation, or
-> >> > | - Have been implemented in hardware that is widely available, per standard
-> >> > |   Linux practice.
-> >> >
-> >> > The xventanacondops bits don't qualify under the first entry, and I
-> >> > don't think they qualify under the second yet. Am I wrong?
-> >>
-> >> The Ventana Veyron V1 was announced in Dec 2022 at RISC-V summit
-> >> followed by press releases:
-> >> https://www.ventanamicro.com/ventana-introduces-veyron-worlds-first-data-center-class-risc-v-cpu-product-family/
-> >> https://www.embedded.com/ventana-reveals-risc-v-cpu-compute-chiplet-for-data-center/
-> >> https://www.prnewswire.com/news-releases/ventana-introduces-veyron-worlds-first-data-center-class-risc-v-cpu-product-family-301700985.html
-> >>
-> >> @Palmer if the above looks good to you then please ack PATCH1-to-4
-> >
-> > These are announcements AFAICT & not an indication of "being implemented
-> > in hardware that is widely available".
+> Signed-off-by: Yong-Xuan Wang <yongxuan.wang@sifive.com>
+> ---
+>  Documentation/devicetree/bindings/riscv/extensions.yaml | 6 ++++++
+>  1 file changed, 6 insertions(+)
 >
-> The second two look to just be news articles quoting the first without
-> any real new information, at least just from skimming them -- sorry if I
-> missed something, though.
->
-> The article says "SDK released with necessary software already ported to
-> Veyron" and "Veyron V1 Development Platform available", but aside from
-> quotes of the press release I can't find information on either of those
-> (or anything VT1 related, as there were some naming ambiguities).
->
-> Anup said during the call that they're still bringing up the chip and
-> haven't started sampling yet, which usually means things are far from
-> publicly availiable.  I thought I heard him say that these press
-> releases would say the chip is sampling 2H23, but I can't find anything
-> in them about sampling.
->
-> Anup also said it's availiable as IP and I remember something at Hot
-> Chips talking about an example place and route for a VT1, which also
-> sounds very much like a chip that's not availiable yet -- usually if
-> there's a chip folks are a lot more concrete about that sort of thing.
->
-> So is there you can point to about this chip actually being publicly
-> availiable?
+> diff --git a/Documentation/devicetree/bindings/riscv/extensions.yaml 
+> b/Documentation/devicetree/bindings/riscv/extensions.yaml
+> index cc1f546fdbdc..b5a0aed0165b 100644
+> --- a/Documentation/devicetree/bindings/riscv/extensions.yaml
+> +++ b/Documentation/devicetree/bindings/riscv/extensions.yaml
+> @@ -147,6 +147,12 @@ properties:
+>              ratified at commit 3f9ed34 ("Add ability to manually 
+> trigger
+>              workflow. (#2)") of riscv-time-compare.
+> 
+> +        - const: svadu
+> +          description: |
+> +            The standard Svadu supervisor-level extension for hardware updating
+> +            of PTE A/D bits as frozen at commit b65e07c ("move to Frozen
+> +            state") of riscv-svadu.
+> +
 
-The Veyron V1 chiplet samples are not available publicly at the
-moment. Being available as an IP is not the same as chiplet
-samples being available.
+This is incomplete without a specification of the behavior of the HADE bit implied
+by svadu being present.
 
-If this does not satisfy patch acceptance criteria then I will
-defer/drop the XVentanaCondOps related patches for now.
+The ratified RVA20 requires page table accesses with A/D = 0 to trap, in other
+words HADE = 0 for RVA20 conformance.  If we are serious about compatibility,
+I think that we need platforms to be able to conform to both RVA20 and RVA23,
+which requires HADE = 0 at kernel entry with a SBI call to set HADE = 1.  For
+the same reason KVM should probably default to HADE = 0 so that the default
+configuration remains conformant to RVA20.
 
-Can you ack PATCH2 and PATCH3 which deals with Zicond ?
+-s
 
-Regards,
-Anup
+>          - const: svinval
+>            description:
+>              The standard Svinval supervisor-level extension for fine-grained
+> -- 
+> 2.17.1
+>
+>
+> _______________________________________________
+> linux-riscv mailing list
+> linux-riscv at lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-riscv
 
