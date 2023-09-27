@@ -1,135 +1,50 @@
-From: Charlie Jenkins <charlie@rivosinc.com>
-Date: Tue, 26 Sep 2023 19:13:24 -0700
-Subject: [PATCH v2 2/9] RISC-V: Detect XVentanaCondOps from ISA string
-In-Reply-To: <CAK9=C2X9FpLTW4mDTNUWkoRLAXZonPzhrsOD5xrCfrqKSbaLhg@mail.gmail.com>
-References: <20230925133859.1735879-1-apatel@ventanamicro.com>
- <20230925133859.1735879-3-apatel@ventanamicro.com>
- <ZRHH25IyJJLWSolC@ghost>
- <CAK9=C2UoKxM+wknB4n8=okyXCCE6t0Vvz4jU_tBW6DMm6Vb3DA@mail.gmail.com>
- <CAK9=C2X9FpLTW4mDTNUWkoRLAXZonPzhrsOD5xrCfrqKSbaLhg@mail.gmail.com>
-Message-ID: <ZROPxDPYGDcGm2J/@ghost>
+From: Binbin Wu <binbin.wu@linux.intel.com>
+Date: Wed, 27 Sep 2023 13:19:29 +0800
+Subject: [RFC PATCH v12 11/33] KVM: Introduce per-page memory attributes
+In-Reply-To: <ZQteNbPfx6P3r6B8@google.com>
+References: <20230914015531.1419405-1-seanjc@google.com>
+ <20230914015531.1419405-12-seanjc@google.com>
+ <d66795f8-e524-2912-4b71-92ca4ffe8807@linux.intel.com>
+ <ZQteNbPfx6P3r6B8@google.com>
+Message-ID: <483f9e1e-7d01-5f06-3bfa-3788d2554724@linux.intel.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Sep 26, 2023 at 09:44:38AM +0530, Anup Patel wrote:
-> On Tue, Sep 26, 2023 at 9:38?AM Anup Patel <apatel@ventanamicro.com> wrote:
-> >
-> > On Mon, Sep 25, 2023 at 11:18?PM Charlie Jenkins <charlie@rivosinc.com> wrote:
-> > >
-> > > On Mon, Sep 25, 2023 at 07:08:52PM +0530, Anup Patel wrote:
-> > > > The Veyron-V1 CPU supports custom conditional arithmetic and
-> > > > conditional-select/move operations referred to as XVentanaCondOps
-> > > > extension. In fact, QEMU RISC-V also has support for emulating
-> > > > XVentanaCondOps extension.
-> > > >
-> > > > Let us detect XVentanaCondOps extension from ISA string available
-> > > > through DT or ACPI.
-> > > >
-> > > > Signed-off-by: Anup Patel <apatel@ventanamicro.com>
-> > > > Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
-> > > > ---
-> > > >  arch/riscv/include/asm/hwcap.h | 1 +
-> > > >  arch/riscv/kernel/cpufeature.c | 1 +
-> > > >  2 files changed, 2 insertions(+)
-> > > >
-> > > > diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
-> > > > index 0f520f7d058a..b7efe9e2fa89 100644
-> > > > --- a/arch/riscv/include/asm/hwcap.h
-> > > > +++ b/arch/riscv/include/asm/hwcap.h
-> > > > @@ -59,6 +59,7 @@
-> > > >  #define RISCV_ISA_EXT_ZIFENCEI               41
-> > > >  #define RISCV_ISA_EXT_ZIHPM          42
-> > > >  #define RISCV_ISA_EXT_SMSTATEEN              43
-> > > > +#define RISCV_ISA_EXT_XVENTANACONDOPS        44
-> > > >
-> > > >  #define RISCV_ISA_EXT_MAX            64
-> > > >
-> > > > diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
-> > > > index 3755a8c2a9de..3a31d34fe709 100644
-> > > > --- a/arch/riscv/kernel/cpufeature.c
-> > > > +++ b/arch/riscv/kernel/cpufeature.c
-> > > > @@ -182,6 +182,7 @@ const struct riscv_isa_ext_data riscv_isa_ext[] = {
-> > > >       __RISCV_ISA_EXT_DATA(svinval, RISCV_ISA_EXT_SVINVAL),
-> > > >       __RISCV_ISA_EXT_DATA(svnapot, RISCV_ISA_EXT_SVNAPOT),
-> > > >       __RISCV_ISA_EXT_DATA(svpbmt, RISCV_ISA_EXT_SVPBMT),
-> > > > +     __RISCV_ISA_EXT_DATA(xventanacondops, RISCV_ISA_EXT_XVENTANACONDOPS),
-> > > >  };
-> > > >
-> > > >  const size_t riscv_isa_ext_count = ARRAY_SIZE(riscv_isa_ext);
-> > > > --
-> > > > 2.34.1
-> > > >
-> > > >
-> > > > _______________________________________________
-> > > > linux-riscv mailing list
-> > > > linux-riscv at lists.infradead.org
-> > > > http://lists.infradead.org/mailman/listinfo/linux-riscv
-> > >
-> > > I worry about storing vendor extensions in this file. Because vendor
-> > > extensions are not standardized, they can only be expected to have the
-> > > desired behavior on hardware with the appropriate vendor id. A couple
-> >
-> > Assuming that a vendor extension is only available on hardware with
-> > appropriate vendor id is not correct because:
-> > 1) vendor A can allow vendor B to implement a custom extension
-> >     defined by vendor B
-> 
-> Typo correction: "vendor A can allow vendor B to implement a custom
-> extension defined by vendor A"
-> 
-> > 2) vendor A and vendor B can jointly develop a RISC-V CPU where
-> >     both vendors integrate their custom extensions.
-> >
-> > It is best to identify a vendor extension independently with a
-> > "X<vendor_name><extension_name>" string to keep it simple
-> > and scalable.
-> >
-> > Along these lines, each T-Head custom extension should have a
-> > "XThead<xyz>" name associated with it.
-> >
-> > > months ago I sent a patch to address this by handling vector extensions
-> > > independently for each vendor [1]. I dropped the patch because it
-> > > relied upon Heiko's T-Head vector extension support that he stopped
-> > > working on. However, I can revive this patch so you can build off of it.
-> >
-> > At least, the conditional operations don't need a hwprobe interface
-> > because an application is either compiled with or without conditional
-> > operations. In other words, effective use of conditional operation is
-> > only possible if compiler generates these instructions based on
-> > code patterns.
-> >
 
-I was conflating hwprobe with hwcap when I was thinking about this.
-However, I think it might still be beneficial to split out the vendor
-extensions. It is possible for vendors to implement each other's
-extensions but I don't expect that to be the average case. Because I do
-not expect this to be the average case, riscv_isa_ext becomes needlessly
-large as it has to contain the extensions of every vendor.
 
-> > >
-> > > This scheme has the added benefit that vendors do not have to worry
-> > > about conficting extensions, and the kernel does not have to act as a
-> > > key registry for vendors.
-> >
-> > How can vendor extensions conflict if they all follow the
-> > "X<vendor_name><extension_name>" naming scheme ?
-> >
-> > >
-> > > What are your thoughts?
-> > >
-> > > - Charlie
-> > >
-> > > [1] https://lore.kernel.org/lkml/20230705-thead_vendor_extensions-v1-2-ad6915349c4d at rivosinc.com/
-> > >
-> >
-> > Regards,
-> > Anup
-> 
-> Regards,
-> Anup
+On 9/21/2023 5:03 AM, Sean Christopherson wrote:
+> On Mon, Sep 18, 2023, Binbin Wu wrote:
+>>
+>> On 9/14/2023 9:55 AM, Sean Christopherson wrote:
+>>> From: Chao Peng <chao.p.peng@linux.intel.com>
+>> [...]
+>>> +#ifdef CONFIG_KVM_GENERIC_MEMORY_ATTRIBUTES
+>>> +/*
+>>> + * Returns true if _all_ gfns in the range [@start, @end) have attributes
+>>> + * matching @attrs.
+>>> + */
+>>> +bool kvm_range_has_memory_attributes(struct kvm *kvm, gfn_t start, gfn_t end,
+>>> +				     unsigned long attrs)
+>>> +{
+>>> +	XA_STATE(xas, &kvm->mem_attr_array, start);
+>>> +	unsigned long index;
+>>> +	bool has_attrs;
+>>> +	void *entry;
+>>> +
+>>> +	rcu_read_lock();
+>>> +
+>>> +	if (!attrs) {
+>>> +		has_attrs = !xas_find(&xas, end);
+>> IIUIC, xas_find() is inclusive for "end", so here should be "end - 1" ?
+> Yes, that does appear to be the case.  Inclusive vs. exclusive on gfn ranges has
+> is the bane of my existence.
 
-- Charlie
+Seems this one is not included in the "KVM: guest_memfd fixes" patch series?
+https://lore.kernel.org/kvm/20230921203331.3746712-1-seanjc at google.com/
+
+
+
 
