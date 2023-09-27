@@ -1,50 +1,91 @@
-From: Binbin Wu <binbin.wu@linux.intel.com>
-Date: Wed, 27 Sep 2023 13:19:29 +0800
-Subject: [RFC PATCH v12 11/33] KVM: Introduce per-page memory attributes
-In-Reply-To: <ZQteNbPfx6P3r6B8@google.com>
-References: <20230914015531.1419405-1-seanjc@google.com>
- <20230914015531.1419405-12-seanjc@google.com>
- <d66795f8-e524-2912-4b71-92ca4ffe8807@linux.intel.com>
- <ZQteNbPfx6P3r6B8@google.com>
-Message-ID: <483f9e1e-7d01-5f06-3bfa-3788d2554724@linux.intel.com>
+From: Andrew Jones <ajones@ventanamicro.com>
+Date: Wed, 27 Sep 2023 09:03:38 +0200
+Subject: [PATCH v2 1/3] RISC-V: Detect and Enable Svadu Extension Support
+In-Reply-To: <20230922085701.3164-2-yongxuan.wang@sifive.com>
+References: <20230922085701.3164-1-yongxuan.wang@sifive.com>
+ <20230922085701.3164-2-yongxuan.wang@sifive.com>
+Message-ID: <20230927-62fbd3d63f4c6ffada90b7ee@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+On Fri, Sep 22, 2023 at 08:56:47AM +0000, Yong-Xuan Wang wrote:
+> We detect Svadu extension support from DTB and add arch_has_hw_pte_young()
+> to enable optimization in MGLRU and __wp_page_copy_user() if Svadu
+> extension is available.
+> 
+> Co-developed-by: Jinyu Tang <tjytimi@163.com>
+> Signed-off-by: Jinyu Tang <tjytimi@163.com>
+> Signed-off-by: Yong-Xuan Wang <yongxuan.wang@sifive.com>
+> ---
+>  arch/riscv/include/asm/csr.h     | 1 +
+>  arch/riscv/include/asm/hwcap.h   | 1 +
+>  arch/riscv/include/asm/pgtable.h | 6 ++++++
+>  arch/riscv/kernel/cpufeature.c   | 1 +
+>  4 files changed, 9 insertions(+)
+> 
+> diff --git a/arch/riscv/include/asm/csr.h b/arch/riscv/include/asm/csr.h
+> index 777cb8299551..10648b372a2a 100644
+> --- a/arch/riscv/include/asm/csr.h
+> +++ b/arch/riscv/include/asm/csr.h
+> @@ -194,6 +194,7 @@
+>  /* xENVCFG flags */
+>  #define ENVCFG_STCE			(_AC(1, ULL) << 63)
+>  #define ENVCFG_PBMTE			(_AC(1, ULL) << 62)
+> +#define ENVCFG_HADE			(_AC(1, ULL) << 61)
 
+This bit is named 'ADUE' in the spec. Why are we calling it HADE?
 
-On 9/21/2023 5:03 AM, Sean Christopherson wrote:
-> On Mon, Sep 18, 2023, Binbin Wu wrote:
->>
->> On 9/14/2023 9:55 AM, Sean Christopherson wrote:
->>> From: Chao Peng <chao.p.peng@linux.intel.com>
->> [...]
->>> +#ifdef CONFIG_KVM_GENERIC_MEMORY_ATTRIBUTES
->>> +/*
->>> + * Returns true if _all_ gfns in the range [@start, @end) have attributes
->>> + * matching @attrs.
->>> + */
->>> +bool kvm_range_has_memory_attributes(struct kvm *kvm, gfn_t start, gfn_t end,
->>> +				     unsigned long attrs)
->>> +{
->>> +	XA_STATE(xas, &kvm->mem_attr_array, start);
->>> +	unsigned long index;
->>> +	bool has_attrs;
->>> +	void *entry;
->>> +
->>> +	rcu_read_lock();
->>> +
->>> +	if (!attrs) {
->>> +		has_attrs = !xas_find(&xas, end);
->> IIUIC, xas_find() is inclusive for "end", so here should be "end - 1" ?
-> Yes, that does appear to be the case.  Inclusive vs. exclusive on gfn ranges has
-> is the bane of my existence.
+>  #define ENVCFG_CBZE			(_AC(1, UL) << 7)
+>  #define ENVCFG_CBCFE			(_AC(1, UL) << 6)
+>  #define ENVCFG_CBIE_SHIFT		4
+> diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
+> index b7b58258f6c7..1013661d6516 100644
+> --- a/arch/riscv/include/asm/hwcap.h
+> +++ b/arch/riscv/include/asm/hwcap.h
+> @@ -58,6 +58,7 @@
+>  #define RISCV_ISA_EXT_ZICSR		40
+>  #define RISCV_ISA_EXT_ZIFENCEI		41
+>  #define RISCV_ISA_EXT_ZIHPM		42
+> +#define RISCV_ISA_EXT_SVADU		43
+>  
+>  #define RISCV_ISA_EXT_MAX		64
+>  
+> diff --git a/arch/riscv/include/asm/pgtable.h b/arch/riscv/include/asm/pgtable.h
+> index b2ba3f79cfe9..028b700cd27b 100644
+> --- a/arch/riscv/include/asm/pgtable.h
+> +++ b/arch/riscv/include/asm/pgtable.h
+> @@ -629,6 +629,12 @@ static inline pgprot_t pgprot_writecombine(pgprot_t _prot)
+>  	return __pgprot(prot);
+>  }
+>  
+> +#define arch_has_hw_pte_young arch_has_hw_pte_young
+> +static inline bool arch_has_hw_pte_young(void)
+> +{
+> +	return riscv_has_extension_unlikely(RISCV_ISA_EXT_SVADU);
+> +}
+> +
+>  /*
+>   * THP functions
+>   */
+> diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
+> index 1cfbba65d11a..ead378c04991 100644
+> --- a/arch/riscv/kernel/cpufeature.c
+> +++ b/arch/riscv/kernel/cpufeature.c
+> @@ -178,6 +178,7 @@ const struct riscv_isa_ext_data riscv_isa_ext[] = {
+>  	__RISCV_ISA_EXT_DATA(ssaia, RISCV_ISA_EXT_SSAIA),
+>  	__RISCV_ISA_EXT_DATA(sscofpmf, RISCV_ISA_EXT_SSCOFPMF),
+>  	__RISCV_ISA_EXT_DATA(sstc, RISCV_ISA_EXT_SSTC),
+> +	__RISCV_ISA_EXT_DATA(svadu, RISCV_ISA_EXT_SVADU),
+>  	__RISCV_ISA_EXT_DATA(svinval, RISCV_ISA_EXT_SVINVAL),
+>  	__RISCV_ISA_EXT_DATA(svnapot, RISCV_ISA_EXT_SVNAPOT),
+>  	__RISCV_ISA_EXT_DATA(svpbmt, RISCV_ISA_EXT_SVPBMT),
+> -- 
+> 2.17.1
+>
 
-Seems this one is not included in the "KVM: guest_memfd fixes" patch series?
-https://lore.kernel.org/kvm/20230921203331.3746712-1-seanjc at google.com/
-
-
-
+Thanks,
+drew
 
