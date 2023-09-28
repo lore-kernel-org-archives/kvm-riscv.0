@@ -1,74 +1,69 @@
 From: Alex Williamson <alex.williamson@redhat.com>
-Date: Thu, 28 Sep 2023 16:21:03 -0600
-Subject: [PATCH 01/26] vfio: Wrap KVM helpers with CONFIG_KVM instead of
- CONFIG_HAVE_KVM
-In-Reply-To: <20230916003118.2540661-2-seanjc@google.com>
+Date: Thu, 28 Sep 2023 16:21:06 -0600
+Subject: [PATCH 03/26] virt: Declare and define vfio_file_set_kvm() iff
+ CONFIG_KVM is enabled
+In-Reply-To: <20230916003118.2540661-4-seanjc@google.com>
 References: <20230916003118.2540661-1-seanjc@google.com>
-	<20230916003118.2540661-2-seanjc@google.com>
-Message-ID: <20230928162103.433f03db.alex.williamson@redhat.com>
+	<20230916003118.2540661-4-seanjc@google.com>
+Message-ID: <20230928162106.0b0de53c.alex.williamson@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, 15 Sep 2023 17:30:53 -0700
+On Fri, 15 Sep 2023 17:30:55 -0700
 Sean Christopherson <seanjc@google.com> wrote:
 
-> Wrap the helpers for getting references to KVM instances with a check on
-> CONFIG_KVM being enabled, not on CONFIG_HAVE_KVM being defined.  PPC does
-> NOT select HAVE_KVM, despite obviously supporting KVM, and guarding code
-> to get references to KVM based on whether or not the architecture supports
-> KVM is nonsensical.
-> 
-> Drop the guard around linux/kvm_host.h entirely, conditionally including a
-> generic headers is completely unnecessary.
+> Hide vfio_file_set_kvm() and its unique helpers if KVM is not enabled,
+> nothing else in the kernel (or out of the kernel) should be using a
+> KVM specific helper.
 > 
 > Signed-off-by: Sean Christopherson <seanjc@google.com>
 > ---
->  drivers/vfio/vfio.h      | 2 +-
->  drivers/vfio/vfio_main.c | 4 +---
->  2 files changed, 2 insertions(+), 4 deletions(-)
+>  drivers/vfio/vfio_main.c | 2 +-
+>  include/linux/vfio.h     | 2 ++
+>  2 files changed, 3 insertions(+), 1 deletion(-)
 
+
+As Jason noted, s/virt/vfio/ in title.
 
 Reviewed-by: Alex Williamson <alex.williamson@redhat.com>
 
-
-> diff --git a/drivers/vfio/vfio.h b/drivers/vfio/vfio.h
-> index 307e3f29b527..c26d1ad68105 100644
-> --- a/drivers/vfio/vfio.h
-> +++ b/drivers/vfio/vfio.h
-> @@ -434,7 +434,7 @@ static inline void vfio_virqfd_exit(void)
->  }
->  #endif
->  
-> -#ifdef CONFIG_HAVE_KVM
-> +#if IS_ENABLED(CONFIG_KVM)
->  void vfio_device_get_kvm_safe(struct vfio_device *device, struct kvm *kvm);
->  void vfio_device_put_kvm(struct vfio_device *device);
->  #else
+ 
 > diff --git a/drivers/vfio/vfio_main.c b/drivers/vfio/vfio_main.c
-> index 40732e8ed4c6..80e39f7a6d8f 100644
+> index 6368eed7b7b2..124cc88966a7 100644
 > --- a/drivers/vfio/vfio_main.c
 > +++ b/drivers/vfio/vfio_main.c
-> @@ -16,9 +16,7 @@
->  #include <linux/fs.h>
->  #include <linux/idr.h>
->  #include <linux/iommu.h>
-> -#ifdef CONFIG_HAVE_KVM
->  #include <linux/kvm_host.h>
-> -#endif
->  #include <linux/list.h>
->  #include <linux/miscdevice.h>
->  #include <linux/module.h>
-> @@ -383,7 +381,7 @@ void vfio_unregister_group_dev(struct vfio_device *device)
+> @@ -1352,7 +1352,6 @@ void vfio_device_put_kvm(struct vfio_device *device)
+>  clear:
+>  	device->kvm = NULL;
 >  }
->  EXPORT_SYMBOL_GPL(vfio_unregister_group_dev);
+> -#endif
 >  
-> -#ifdef CONFIG_HAVE_KVM
-> +#if IS_ENABLED(CONFIG_KVM)
->  void vfio_device_get_kvm_safe(struct vfio_device *device, struct kvm *kvm)
+>  static void vfio_device_file_set_kvm(struct file *file, struct kvm *kvm)
 >  {
->  	void (*pfn)(struct kvm *kvm);
+> @@ -1388,6 +1387,7 @@ void vfio_file_set_kvm(struct file *file, struct kvm *kvm)
+>  		vfio_device_file_set_kvm(file, kvm);
+>  }
+>  EXPORT_SYMBOL_GPL(vfio_file_set_kvm);
+> +#endif
+>  
+>  /*
+>   * Sub-module support
+> diff --git a/include/linux/vfio.h b/include/linux/vfio.h
+> index 454e9295970c..e80955de266c 100644
+> --- a/include/linux/vfio.h
+> +++ b/include/linux/vfio.h
+> @@ -311,7 +311,9 @@ static inline bool vfio_file_has_dev(struct file *file, struct vfio_device *devi
+>  #endif
+>  bool vfio_file_is_valid(struct file *file);
+>  bool vfio_file_enforced_coherent(struct file *file);
+> +#if IS_ENABLED(CONFIG_KVM)
+>  void vfio_file_set_kvm(struct file *file, struct kvm *kvm);
+> +#endif
+>  
+>  #define VFIO_PIN_PAGES_MAX_ENTRIES	(PAGE_SIZE/sizeof(unsigned long))
+>  
 
 
