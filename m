@@ -1,60 +1,39 @@
 From: Alexandre Ghiti <alexghiti@rivosinc.com>
-Date: Mon,  2 Oct 2023 17:10:28 +0200
-Subject: [PATCH 2/5] mm: Introduce pudp/p4dp/pgdp_get() functions
+Date: Mon,  2 Oct 2023 17:10:29 +0200
+Subject: [PATCH 3/5] riscv: mm: Only compile pgtable.c if MMU
 In-Reply-To: <20231002151031.110551-1-alexghiti@rivosinc.com>
 References: <20231002151031.110551-1-alexghiti@rivosinc.com>
-Message-ID: <20231002151031.110551-3-alexghiti@rivosinc.com>
+Message-ID: <20231002151031.110551-4-alexghiti@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Instead of directly dereferencing page tables entries, which can cause
-issues (see commit 20a004e7b017 ("arm64: mm: Use READ_ONCE/WRITE_ONCE when
-accessing page tables"), let's introduce new functions to get the
-pud/p4d/pgd entries (the pte and pmd versions already exist).
-
-Those new functions will be used in subsequent commits by the riscv
-architecture.
+All functions defined in there depend on MMU, so no need to compile it
+for !MMU configs.
 
 Signed-off-by: Alexandre Ghiti <alexghiti@rivosinc.com>
 ---
- include/linux/pgtable.h | 21 +++++++++++++++++++++
- 1 file changed, 21 insertions(+)
+ arch/riscv/mm/Makefile | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/include/linux/pgtable.h b/include/linux/pgtable.h
-index 1fba072b3dac..4ce68bcc201d 100644
---- a/include/linux/pgtable.h
-+++ b/include/linux/pgtable.h
-@@ -284,6 +284,27 @@ static inline pmd_t pmdp_get(pmd_t *pmdp)
- }
- #endif
+diff --git a/arch/riscv/mm/Makefile b/arch/riscv/mm/Makefile
+index 9c454f90fd3d..c71d4253a171 100644
+--- a/arch/riscv/mm/Makefile
++++ b/arch/riscv/mm/Makefile
+@@ -13,10 +13,9 @@ endif
+ KCOV_INSTRUMENT_init.o := n
  
-+#ifndef pudp_get
-+static inline pud_t pudp_get(pud_t *pudp)
-+{
-+	return READ_ONCE(*pudp);
-+}
-+#endif
-+
-+#ifndef p4dp_get
-+static inline p4d_t p4dp_get(p4d_t *p4dp)
-+{
-+	return READ_ONCE(*p4dp);
-+}
-+#endif
-+
-+#ifndef pgdp_get
-+static inline pgd_t pgdp_get(pgd_t *pgdp)
-+{
-+	return READ_ONCE(*pgdp);
-+}
-+#endif
-+
- #ifndef __HAVE_ARCH_PTEP_TEST_AND_CLEAR_YOUNG
- static inline int ptep_test_and_clear_young(struct vm_area_struct *vma,
- 					    unsigned long address,
+ obj-y += init.o
+-obj-$(CONFIG_MMU) += extable.o fault.o pageattr.o
++obj-$(CONFIG_MMU) += extable.o fault.o pageattr.o pgtable.o
+ obj-y += cacheflush.o
+ obj-y += context.o
+-obj-y += pgtable.o
+ obj-y += pmem.o
+ 
+ ifeq ($(CONFIG_MMU),y)
 -- 
 2.39.2
 
