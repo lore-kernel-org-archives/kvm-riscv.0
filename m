@@ -1,51 +1,79 @@
 From: Alexandre Ghiti <alexghiti@rivosinc.com>
-Date: Mon,  2 Oct 2023 17:10:26 +0200
-Subject: [PATCH 0/5] riscv: Use READ_ONCE()/WRITE_ONCE() for pte accesses
-Message-ID: <20231002151031.110551-1-alexghiti@rivosinc.com>
+Date: Mon,  2 Oct 2023 17:10:27 +0200
+Subject: [PATCH 1/5] riscv: Use WRITE_ONCE() when setting page table entries
+In-Reply-To: <20231002151031.110551-1-alexghiti@rivosinc.com>
+References: <20231002151031.110551-1-alexghiti@rivosinc.com>
+Message-ID: <20231002151031.110551-2-alexghiti@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This series is a follow-up for riscv of a recent series from Ryan [1] which
-converts all direct dereferences of pte_t into a ptet_get() access.
+To avoid any compiler "weirdness" when accessing page table entries which
+are concurrently modified by the HW, let's use WRITE_ONCE() macro
+(commit 20a004e7b017 ("arm64: mm: Use READ_ONCE/WRITE_ONCE when accessing
+page tables") gives a great explanation with more details).
 
-The goal here for riscv is to use READ_ONCE()/WRITE_ONCE() for all page
-table entries accesses to avoid any compiler transformation when the
-hardware can concurrently modify the page tables entries (A/D bits for
-example).
+Signed-off-by: Alexandre Ghiti <alexghiti@rivosinc.com>
+---
+ arch/riscv/include/asm/pgtable-64.h | 6 +++---
+ arch/riscv/include/asm/pgtable.h    | 4 ++--
+ 2 files changed, 5 insertions(+), 5 deletions(-)
 
-I went a bit further and added pud/p4d/pgd_get() helpers as such concurrent
-modifications can happen too at those levels.
-
-[1] https://lore.kernel.org/all/20230612151545.3317766-1-ryan.roberts at arm.com/
-
-Alexandre Ghiti (5):
-  riscv: Use WRITE_ONCE() when setting page table entries
-  mm: Introduce pudp/p4dp/pgdp_get() functions
-  riscv: mm: Only compile pgtable.c if MMU
-  riscv: Suffix all page table entry pointers with 'p'
-  riscv: Use accessors to page table entries instead of direct
-    dereference
-
- arch/riscv/include/asm/kfence.h     |   6 +-
- arch/riscv/include/asm/kvm_host.h   |   2 +-
- arch/riscv/include/asm/pgalloc.h    |  86 ++++++++++----------
- arch/riscv/include/asm/pgtable-64.h |  26 +++---
- arch/riscv/include/asm/pgtable.h    |  33 ++------
- arch/riscv/kernel/efi.c             |   2 +-
- arch/riscv/kvm/mmu.c                |  44 +++++-----
- arch/riscv/mm/Makefile              |   3 +-
- arch/riscv/mm/fault.c               |  38 ++++-----
- arch/riscv/mm/hugetlbpage.c         |  80 +++++++++----------
- arch/riscv/mm/init.c                |  30 +++----
- arch/riscv/mm/kasan_init.c          | 119 ++++++++++++++--------------
- arch/riscv/mm/pageattr.c            |  74 +++++++++--------
- arch/riscv/mm/pgtable.c             |  71 +++++++++++------
- include/linux/pgtable.h             |  21 +++++
- 15 files changed, 334 insertions(+), 301 deletions(-)
-
+diff --git a/arch/riscv/include/asm/pgtable-64.h b/arch/riscv/include/asm/pgtable-64.h
+index 7a5097202e15..a65a352dcfbf 100644
+--- a/arch/riscv/include/asm/pgtable-64.h
++++ b/arch/riscv/include/asm/pgtable-64.h
+@@ -198,7 +198,7 @@ static inline int pud_user(pud_t pud)
+ 
+ static inline void set_pud(pud_t *pudp, pud_t pud)
+ {
+-	*pudp = pud;
++	WRITE_ONCE(*pudp, pud);
+ }
+ 
+ static inline void pud_clear(pud_t *pudp)
+@@ -274,7 +274,7 @@ static inline unsigned long _pmd_pfn(pmd_t pmd)
+ static inline void set_p4d(p4d_t *p4dp, p4d_t p4d)
+ {
+ 	if (pgtable_l4_enabled)
+-		*p4dp = p4d;
++		WRITE_ONCE(*p4dp, p4d);
+ 	else
+ 		set_pud((pud_t *)p4dp, (pud_t){ p4d_val(p4d) });
+ }
+@@ -347,7 +347,7 @@ static inline pud_t *pud_offset(p4d_t *p4d, unsigned long address)
+ static inline void set_pgd(pgd_t *pgdp, pgd_t pgd)
+ {
+ 	if (pgtable_l5_enabled)
+-		*pgdp = pgd;
++		WRITE_ONCE(*pgdp, pgd);
+ 	else
+ 		set_p4d((p4d_t *)pgdp, (p4d_t){ pgd_val(pgd) });
+ }
+diff --git a/arch/riscv/include/asm/pgtable.h b/arch/riscv/include/asm/pgtable.h
+index b2ba3f79cfe9..b820775f4973 100644
+--- a/arch/riscv/include/asm/pgtable.h
++++ b/arch/riscv/include/asm/pgtable.h
+@@ -248,7 +248,7 @@ static inline int pmd_leaf(pmd_t pmd)
+ 
+ static inline void set_pmd(pmd_t *pmdp, pmd_t pmd)
+ {
+-	*pmdp = pmd;
++	WRITE_ONCE(*pmdp, pmd);
+ }
+ 
+ static inline void pmd_clear(pmd_t *pmdp)
+@@ -509,7 +509,7 @@ static inline int pte_same(pte_t pte_a, pte_t pte_b)
+  */
+ static inline void set_pte(pte_t *ptep, pte_t pteval)
+ {
+-	*ptep = pteval;
++	WRITE_ONCE(*ptep, pteval);
+ }
+ 
+ void flush_icache_pte(pte_t pte);
 -- 
 2.39.2
 
