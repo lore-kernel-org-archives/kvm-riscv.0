@@ -1,88 +1,84 @@
-From: Anup Patel <apatel@ventanamicro.com>
-Date: Tue,  3 Oct 2023 09:22:26 +0530
-Subject: [PATCH v3 6/6] KVM: riscv: selftests: Add condops extensions to get-reg-list test
-In-Reply-To: <20231003035226.1945725-1-apatel@ventanamicro.com>
-References: <20231003035226.1945725-1-apatel@ventanamicro.com>
-Message-ID: <20231003035226.1945725-7-apatel@ventanamicro.com>
+From: kernel test robot <lkp@intel.com>
+Date: Tue, 3 Oct 2023 14:25:42 +0800
+Subject: [PATCH 2/5] mm: Introduce pudp/p4dp/pgdp_get() functions
+In-Reply-To: <20231002151031.110551-3-alexghiti@rivosinc.com>
+References: <20231002151031.110551-3-alexghiti@rivosinc.com>
+Message-ID: <202310031431.NkMgiRBL-lkp@intel.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-We have a new conditional operations related ISA extensions so let us
-add these extensions to get-reg-list test.
+Hi Alexandre,
 
-Signed-off-by: Anup Patel <apatel@ventanamicro.com>
-Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
----
- .../testing/selftests/kvm/riscv/get-reg-list.c  | 17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
+kernel test robot noticed the following build errors:
 
-diff --git a/tools/testing/selftests/kvm/riscv/get-reg-list.c b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-index 625118d53b74..77dc5221c465 100644
---- a/tools/testing/selftests/kvm/riscv/get-reg-list.c
-+++ b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-@@ -48,6 +48,7 @@ bool filter_reg(__u64 reg)
- 	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZICBOM:
- 	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZICBOZ:
- 	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZICNTR:
-+	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZICOND:
- 	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZICSR:
- 	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZIFENCEI:
- 	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZIHINTPAUSE:
-@@ -361,6 +362,7 @@ static const char *isa_ext_id_to_str(__u64 id)
- 		KVM_ISA_EXT_ARR(ZICBOM),
- 		KVM_ISA_EXT_ARR(ZICBOZ),
- 		KVM_ISA_EXT_ARR(ZICNTR),
-+		KVM_ISA_EXT_ARR(ZICOND),
- 		KVM_ISA_EXT_ARR(ZICSR),
- 		KVM_ISA_EXT_ARR(ZIFENCEI),
- 		KVM_ISA_EXT_ARR(ZIHINTPAUSE),
-@@ -632,6 +634,10 @@ static __u64 zicntr_regs[] = {
- 	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZICNTR,
- };
- 
-+static __u64 zicond_regs[] = {
-+	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZICOND,
-+};
-+
- static __u64 zicsr_regs[] = {
- 	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZICSR,
- };
-@@ -759,6 +765,8 @@ static __u64 fp_d_regs[] = {
- 	{"zbs", .feature = KVM_RISCV_ISA_EXT_ZBS, .regs = zbs_regs, .regs_n = ARRAY_SIZE(zbs_regs),}
- #define ZICNTR_REGS_SUBLIST \
- 	{"zicntr", .feature = KVM_RISCV_ISA_EXT_ZICNTR, .regs = zicntr_regs, .regs_n = ARRAY_SIZE(zicntr_regs),}
-+#define ZICOND_REGS_SUBLIST \
-+	{"zicond", .feature = KVM_RISCV_ISA_EXT_ZICOND, .regs = zicond_regs, .regs_n = ARRAY_SIZE(zicond_regs),}
- #define ZICSR_REGS_SUBLIST \
- 	{"zicsr", .feature = KVM_RISCV_ISA_EXT_ZICSR, .regs = zicsr_regs, .regs_n = ARRAY_SIZE(zicsr_regs),}
- #define ZIFENCEI_REGS_SUBLIST \
-@@ -864,6 +872,14 @@ static struct vcpu_reg_list zicntr_config = {
- 	},
- };
- 
-+static struct vcpu_reg_list zicond_config = {
-+	.sublists = {
-+	BASE_SUBLIST,
-+	ZICOND_REGS_SUBLIST,
-+	{0},
-+	},
-+};
-+
- static struct vcpu_reg_list zicsr_config = {
- 	.sublists = {
- 	BASE_SUBLIST,
-@@ -932,6 +948,7 @@ struct vcpu_reg_list *vcpu_configs[] = {
- 	&zbb_config,
- 	&zbs_config,
- 	&zicntr_config,
-+	&zicond_config,
- 	&zicsr_config,
- 	&zifencei_config,
- 	&zihpm_config,
+[auto build test ERROR on linus/master]
+[also build test ERROR on v6.6-rc4 next-20231003]
+[cannot apply to efi/next]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
+
+url:    https://github.com/intel-lab-lkp/linux/commits/Alexandre-Ghiti/riscv-Use-WRITE_ONCE-when-setting-page-table-entries/20231002-231725
+base:   linus/master
+patch link:    https://lore.kernel.org/r/20231002151031.110551-3-alexghiti%40rivosinc.com
+patch subject: [PATCH 2/5] mm: Introduce pudp/p4dp/pgdp_get() functions
+config: arm-allyesconfig (https://download.01.org/0day-ci/archive/20231003/202310031431.NkMgiRBL-lkp at intel.com/config)
+compiler: arm-linux-gnueabi-gcc (GCC) 13.2.0
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20231003/202310031431.NkMgiRBL-lkp at intel.com/reproduce)
+
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202310031431.NkMgiRBL-lkp at intel.com/
+
+All error/warnings (new ones prefixed by >>):
+
+   In file included from include/linux/mm.h:29,
+                    from arch/arm/kernel/asm-offsets.c:12:
+>> include/linux/pgtable.h:310:21: error: 'pgdp_get' declared as function returning an array
+     310 | static inline pgd_t pgdp_get(pgd_t *pgdp)
+         |                     ^~~~~~~~
+   In file included from ./arch/arm/include/generated/asm/rwonce.h:1,
+                    from include/linux/compiler.h:246,
+                    from arch/arm/kernel/asm-offsets.c:10:
+   include/linux/pgtable.h: In function 'pgdp_get':
+>> include/asm-generic/rwonce.h:48:2: warning: returning 'const volatile pmdval_t *' {aka 'const volatile unsigned int *'} from a function with return type 'int' makes integer from pointer without a cast [-Wint-conversion]
+      48 | ({                                                                      \
+         | ~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      49 |         compiletime_assert_rwonce_type(x);                              \
+         |         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      50 |         __READ_ONCE(x);                                                 \
+         |         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      51 | })
+         | ~~
+   include/linux/pgtable.h:312:16: note: in expansion of macro 'READ_ONCE'
+     312 |         return READ_ONCE(*pgdp);
+         |                ^~~~~~~~~
+   make[3]: *** [scripts/Makefile.build:116: arch/arm/kernel/asm-offsets.s] Error 1
+   make[3]: Target 'prepare' not remade because of errors.
+   make[2]: *** [Makefile:1202: prepare0] Error 2
+   make[2]: Target 'prepare' not remade because of errors.
+   make[1]: *** [Makefile:234: __sub-make] Error 2
+   make[1]: Target 'prepare' not remade because of errors.
+   make: *** [Makefile:234: __sub-make] Error 2
+   make: Target 'prepare' not remade because of errors.
+
+
+vim +/pgdp_get +310 include/linux/pgtable.h
+
+   308	
+   309	#ifndef pgdp_get
+ > 310	static inline pgd_t pgdp_get(pgd_t *pgdp)
+   311	{
+   312		return READ_ONCE(*pgdp);
+   313	}
+   314	#endif
+   315	
+
 -- 
-2.34.1
-
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
 
