@@ -1,63 +1,77 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Tue, 3 Oct 2023 12:28:42 +0200
-Subject: [PATCH v3 2/9] KVM: selftests: Unify the makefile rule for split
- targets
-In-Reply-To: <cda6cc71c9bdde87fe87f6c2dec4f03ca249dd62.1694421911.git.haibo1.xu@intel.com>
-References: <cover.1694421911.git.haibo1.xu@intel.com>
- <cda6cc71c9bdde87fe87f6c2dec4f03ca249dd62.1694421911.git.haibo1.xu@intel.com>
-Message-ID: <20231003-d44206f71d0b22e539833697@orel>
+From: Fuad Tabba <tabba@google.com>
+Date: Tue, 3 Oct 2023 13:47:23 +0100
+Subject: [RFC PATCH v12 11/33] KVM: Introduce per-page memory attributes
+In-Reply-To: <20230914015531.1419405-12-seanjc@google.com>
+References: <20230914015531.1419405-1-seanjc@google.com> <20230914015531.1419405-12-seanjc@google.com>
+Message-ID: <CA+EHjTzSUXx8P9gWmUERg4owxH6r6yNPm1_RL-BzS_2CNPtRKw@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Sep 14, 2023 at 09:36:56AM +0800, Haibo Xu wrote:
-> A separate makefile rule was used for split targets which was added
-> in patch(KVM: arm64: selftests: Split get-reg-list test code). This
-> could be avoided by minor changes to the recipes of current rule.
-> 
-> Signed-off-by: Haibo Xu <haibo1.xu@intel.com>
-> ---
->  tools/testing/selftests/kvm/Makefile | 6 ++----
->  1 file changed, 2 insertions(+), 4 deletions(-)
-> 
-> diff --git a/tools/testing/selftests/kvm/Makefile b/tools/testing/selftests/kvm/Makefile
-> index a3bb36fb3cfc..7972269e8c5f 100644
-> --- a/tools/testing/selftests/kvm/Makefile
-> +++ b/tools/testing/selftests/kvm/Makefile
-> @@ -249,13 +249,10 @@ TEST_DEP_FILES += $(patsubst %.o, %.d, $(SPLIT_TESTS_OBJS))
->  -include $(TEST_DEP_FILES)
->  
->  $(TEST_GEN_PROGS) $(TEST_GEN_PROGS_EXTENDED): %: %.o
-> -	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(TARGET_ARCH) $< $(LIBKVM_OBJS) $(LDLIBS) -o $@
-> +	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(TARGET_ARCH) $^ $(LDLIBS) -o $@
->  $(TEST_GEN_OBJ): $(OUTPUT)/%.o: %.c
->  	$(CC) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c $< -o $@
->  
-> -$(SPLIT_TESTS_TARGETS): %: %.o $(SPLIT_TESTS_OBJS)
-> -	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(TARGET_ARCH) $^ $(LDLIBS) -o $@
-> -
->  EXTRA_CLEAN += $(LIBKVM_OBJS) $(TEST_DEP_FILES) $(TEST_GEN_OBJ) $(SPLIT_TESTS_OBJS) cscope.*
->  
->  x := $(shell mkdir -p $(sort $(dir $(LIBKVM_C_OBJ) $(LIBKVM_S_OBJ))))
-> @@ -274,6 +271,7 @@ $(LIBKVM_STRING_OBJ): $(OUTPUT)/%.o: %.c
->  x := $(shell mkdir -p $(sort $(dir $(TEST_GEN_PROGS))))
->  $(TEST_GEN_PROGS): $(LIBKVM_OBJS)
->  $(TEST_GEN_PROGS_EXTENDED): $(LIBKVM_OBJS)
-> +$(SPLIT_TESTS_TARGETS): $(OUTPUT)/%: $(ARCH_DIR)/%.o
->  
->  cscope: include_paths = $(LINUX_TOOL_INCLUDE) $(LINUX_HDR_PATH) include lib ..
->  cscope:
-> -- 
-> 2.34.1
->
+Hi,
 
-I just noticed that with and without this patch we're building the
-arch-specific part in tools/testing/selftests/kvm/riscv even when we have
-an $(OUTPUT) directory (e.g. O=build). Those build artifacts should be in
-build/kselftest/kvm/riscv instead.
+> diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
+> index d2d913acf0df..f8642ff2eb9d 100644
+> --- a/include/uapi/linux/kvm.h
+> +++ b/include/uapi/linux/kvm.h
+> @@ -1227,6 +1227,7 @@ struct kvm_ppc_resize_hpt {
+>  #define KVM_CAP_ARM_EAGER_SPLIT_CHUNK_SIZE 228
+>  #define KVM_CAP_ARM_SUPPORTED_BLOCK_SIZES 229
+>  #define KVM_CAP_USER_MEMORY2 230
+> +#define KVM_CAP_MEMORY_ATTRIBUTES 231
+>
+>  #ifdef KVM_CAP_IRQ_ROUTING
+>
+> @@ -2293,4 +2294,17 @@ struct kvm_s390_zpci_op {
+>  /* flags for kvm_s390_zpci_op->u.reg_aen.flags */
+>  #define KVM_S390_ZPCIOP_REGAEN_HOST    (1 << 0)
+>
+> +/* Available with KVM_CAP_MEMORY_ATTRIBUTES */
+> +#define KVM_GET_SUPPORTED_MEMORY_ATTRIBUTES    _IOR(KVMIO,  0xd2, __u64)
+> +#define KVM_SET_MEMORY_ATTRIBUTES              _IOW(KVMIO,  0xd3, struct kvm_memory_attributes)
+> +
+> +struct kvm_memory_attributes {
+> +       __u64 address;
+> +       __u64 size;
+> +       __u64 attributes;
+> +       __u64 flags;
+> +};
+> +
+> +#define KVM_MEMORY_ATTRIBUTE_PRIVATE           (1ULL << 3)
+> +
+
+In pKVM, we don't want to allow setting (or clearing) of
+PRIVATE/SHARED attributes from userspace. However, we'd like to use
+the attributes xarray to track the sharing state of guest pages at the
+host kernel.
+
+Moreover, we'd rather the default guest page state be PRIVATE, and
+only specify which pages are shared. All pKVM guest pages start off as
+private, and the majority will remain so.
+
+I'm not sure if this is the best way to do this: One idea would be to
+move the definition of KVM_MEMORY_ATTRIBUTE_PRIVATE to
+arch/*/include/asm/kvm_host.h, which is where
+kvm_arch_supported_attributes() lives as well. This would allow
+different architectures to specify their own attributes (i.e., instead
+we'd have a KVM_MEMORY_ATTRIBUTE_SHARED for pKVM). This wouldn't help
+in terms of preventing userspace from clearing attributes (i.e.,
+setting a 0 attribute) though.
+
+The other thing, which we need for pKVM anyway, is to make
+kvm_vm_set_mem_attributes() global, so that it can be called from
+outside of kvm_main.c (already have a local patch for this that
+declares it in kvm_host.h), and not gate this function by
+KVM_GENERIC_MEMORY_ATTRIBUTES. This would let pKVM select only
+KVM_PRIVATE_MEM (as opposed to KVM_GENERIC_PRIVATE_MEM, which selects
+KVM_GENERIC_MEMORY_ATTRIBUTES), preventing userspace from setting
+these attributes, while allowing pKVM to call
+kvm_vm_set_mem_attributes().
+
+What do you think?
 
 Thanks,
-drew
+/fuad
 
