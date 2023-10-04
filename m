@@ -1,57 +1,54 @@
-From: Palmer Dabbelt <palmer@dabbelt.com>
-Date: Wed, 04 Oct 2023 07:07:11 -0700 (PDT)
-Subject: [PATCH v3 2/6] RISC-V: Detect Zicond from ISA string
-In-Reply-To: <20231003035226.1945725-3-apatel@ventanamicro.com>
-Message-ID: <mhng-4ec1093a-4542-429e-a9f0-8a976cff9ac4@palmer-ri-x1c9>
+From: Clément Léger <cleger@rivosinc.com>
+Date: Wed,  4 Oct 2023 16:30:49 +0200
+Subject: [PATCH 0/5] riscv: cleanup assembly usage of ENTRY()/END() and use local labels
+Message-ID: <20231004143054.482091-1-cleger@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, 02 Oct 2023 20:52:22 PDT (-0700), apatel at ventanamicro.com wrote:
-> The RISC-V integer conditional (Zicond) operation extension defines
-> standard conditional arithmetic and conditional-select/move operations
-> which are inspired from the XVentanaCondOps extension. In fact, QEMU
-> RISC-V also has support for emulating Zicond extension.
->
-> Let us detect Zicond extension from ISA string available through
-> DT or ACPI.
->
-> Signed-off-by: Anup Patel <apatel@ventanamicro.com>
-> Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
-> Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
-> ---
->  arch/riscv/include/asm/hwcap.h | 1 +
->  arch/riscv/kernel/cpufeature.c | 1 +
->  2 files changed, 2 insertions(+)
->
-> diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
-> index 0f520f7d058a..6fc51c1b34cf 100644
-> --- a/arch/riscv/include/asm/hwcap.h
-> +++ b/arch/riscv/include/asm/hwcap.h
-> @@ -59,6 +59,7 @@
->  #define RISCV_ISA_EXT_ZIFENCEI		41
->  #define RISCV_ISA_EXT_ZIHPM		42
->  #define RISCV_ISA_EXT_SMSTATEEN		43
-> +#define RISCV_ISA_EXT_ZICOND		44
->
->  #define RISCV_ISA_EXT_MAX		64
->
-> diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
-> index 3755a8c2a9de..e3803822ab5a 100644
-> --- a/arch/riscv/kernel/cpufeature.c
-> +++ b/arch/riscv/kernel/cpufeature.c
-> @@ -167,6 +167,7 @@ const struct riscv_isa_ext_data riscv_isa_ext[] = {
->  	__RISCV_ISA_EXT_DATA(zicbom, RISCV_ISA_EXT_ZICBOM),
->  	__RISCV_ISA_EXT_DATA(zicboz, RISCV_ISA_EXT_ZICBOZ),
->  	__RISCV_ISA_EXT_DATA(zicntr, RISCV_ISA_EXT_ZICNTR),
-> +	__RISCV_ISA_EXT_DATA(zicond, RISCV_ISA_EXT_ZICOND),
->  	__RISCV_ISA_EXT_DATA(zicsr, RISCV_ISA_EXT_ZICSR),
->  	__RISCV_ISA_EXT_DATA(zifencei, RISCV_ISA_EXT_ZIFENCEI),
->  	__RISCV_ISA_EXT_DATA(zihintpause, RISCV_ISA_EXT_ZIHINTPAUSE),
+This series does a cleanup of all ENTRY()/END() macros that are used in
+arch/riscv/ as well as use of local labels. This allows to remove the
+use of the now deprecated ENTRY()/END()/WEAK() macros as well as using
+the new SYM_*() ones which provide a better understanding of what is
+meant to be annotated. Some wrong usage of SYM_FUNC_START() are also
+fixed in this series by using the correct annotations. Finally a few
+labels that were meant to be local have been renamed to use the .L
+suffix and thus not to be emitted as visible symbols.
 
-Acked-by: Palmer Dabbelt <palmer@rivosinc.com>
+Note: the patches have been split between arch/riscv/ and
+arch/riscv/kvm/ due to having different maintainers.
 
-Can we do a shared tag, though?  These will conflict.
+Cl?ment L?ger (5):
+  riscv: use ".L" local labels in assembly when applicable
+  riscv: Use SYM_*() assembly macros instead of deprecated ones
+  riscv: kernel: Use correct SYM_DATA_*() macro for data
+  riscv: kvm: Use SYM_*() assembly macros instead of deprecated ones
+  riscv: kvm: use ".L" local labels in assembly when applicable
+
+ arch/riscv/kernel/copy-unaligned.S            |  8 +--
+ arch/riscv/kernel/entry.S                     | 19 +++----
+ arch/riscv/kernel/fpu.S                       |  8 +--
+ arch/riscv/kernel/head.S                      | 30 +++++-----
+ arch/riscv/kernel/hibernate-asm.S             | 12 ++--
+ arch/riscv/kernel/mcount-dyn.S                | 20 +++----
+ arch/riscv/kernel/mcount.S                    | 18 +++---
+ arch/riscv/kernel/probes/rethook_trampoline.S |  4 +-
+ arch/riscv/kernel/suspend_entry.S             |  4 +-
+ arch/riscv/kernel/vdso/flush_icache.S         |  4 +-
+ arch/riscv/kernel/vdso/getcpu.S               |  4 +-
+ arch/riscv/kernel/vdso/rt_sigreturn.S         |  4 +-
+ arch/riscv/kernel/vdso/sys_hwprobe.S          |  4 +-
+ arch/riscv/kvm/vcpu_switch.S                  | 32 +++++------
+ arch/riscv/lib/memcpy.S                       |  6 +-
+ arch/riscv/lib/memmove.S                      | 56 +++++++++----------
+ arch/riscv/lib/memset.S                       |  6 +-
+ arch/riscv/lib/uaccess.S                      | 11 ++--
+ arch/riscv/purgatory/entry.S                  | 16 ++----
+ 19 files changed, 125 insertions(+), 141 deletions(-)
+
+-- 
+2.42.0
+
 
