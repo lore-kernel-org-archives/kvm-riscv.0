@@ -1,70 +1,57 @@
-From: Sean Christopherson <seanjc@google.com>
-Date: Tue, 3 Oct 2023 16:46:26 -0700
-Subject: [RFC PATCH v12 07/33] KVM: Add KVM_EXIT_MEMORY_FAULT exit to
- report faults to userspace
-In-Reply-To: <CAF7b7mqyU059YpBBVYjTMNXf9VHSc6tbKrQ8avFXYtP6LWMh8Q@mail.gmail.com>
-References: <20230914015531.1419405-1-seanjc@google.com> <20230914015531.1419405-8-seanjc@google.com>
- <117db856-9aec-e91c-b1d4-db2b90ae563d@intel.com> <ZQ3AmLO2SYv3DszH@google.com>
- <CAF7b7mrf-y9DNdsreOAedGJueOThnYE=ascFd4=rvW0Z4rhTQg@mail.gmail.com>
- <ZRtxoaJdVF1C2Mvy@google.com> <CAF7b7mqyU059YpBBVYjTMNXf9VHSc6tbKrQ8avFXYtP6LWMh8Q@mail.gmail.com>
-Message-ID: <ZRyn0nPQpbVpz8ah@google.com>
+From: Palmer Dabbelt <palmer@dabbelt.com>
+Date: Wed, 04 Oct 2023 07:07:11 -0700 (PDT)
+Subject: [PATCH v3 2/6] RISC-V: Detect Zicond from ISA string
+In-Reply-To: <20231003035226.1945725-3-apatel@ventanamicro.com>
+Message-ID: <mhng-4ec1093a-4542-429e-a9f0-8a976cff9ac4@palmer-ri-x1c9>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Oct 03, 2023, Anish Moorthy wrote:
-> On Mon, Oct 2, 2023 at 6:43?PM Sean Christopherson <seanjc@google.com> wrote:
-> >
-> > > - I should go drop the patches annotating kvm_vcpu_read/write_page
-> > > from my series
-> >
-> > Hold up on that.  I'd prefer to keep them as there's still value in giving userspace
-> > debug information.  All I'm proposing is that we would firmly state in the
-> > documentation that those paths must be treated as informational-only.
-> 
-> Userspace would then need to know whether annotations were performed
-> from reliable/unreliable paths though, right? That'd imply another
-> flag bit beyond the current R/W/E bits.
+On Mon, 02 Oct 2023 20:52:22 PDT (-0700), apatel at ventanamicro.com wrote:
+> The RISC-V integer conditional (Zicond) operation extension defines
+> standard conditional arithmetic and conditional-select/move operations
+> which are inspired from the XVentanaCondOps extension. In fact, QEMU
+> RISC-V also has support for emulating Zicond extension.
+>
+> Let us detect Zicond extension from ISA string available through
+> DT or ACPI.
+>
+> Signed-off-by: Anup Patel <apatel@ventanamicro.com>
+> Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+> Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
+> ---
+>  arch/riscv/include/asm/hwcap.h | 1 +
+>  arch/riscv/kernel/cpufeature.c | 1 +
+>  2 files changed, 2 insertions(+)
+>
+> diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
+> index 0f520f7d058a..6fc51c1b34cf 100644
+> --- a/arch/riscv/include/asm/hwcap.h
+> +++ b/arch/riscv/include/asm/hwcap.h
+> @@ -59,6 +59,7 @@
+>  #define RISCV_ISA_EXT_ZIFENCEI		41
+>  #define RISCV_ISA_EXT_ZIHPM		42
+>  #define RISCV_ISA_EXT_SMSTATEEN		43
+> +#define RISCV_ISA_EXT_ZICOND		44
+>
+>  #define RISCV_ISA_EXT_MAX		64
+>
+> diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
+> index 3755a8c2a9de..e3803822ab5a 100644
+> --- a/arch/riscv/kernel/cpufeature.c
+> +++ b/arch/riscv/kernel/cpufeature.c
+> @@ -167,6 +167,7 @@ const struct riscv_isa_ext_data riscv_isa_ext[] = {
+>  	__RISCV_ISA_EXT_DATA(zicbom, RISCV_ISA_EXT_ZICBOM),
+>  	__RISCV_ISA_EXT_DATA(zicboz, RISCV_ISA_EXT_ZICBOZ),
+>  	__RISCV_ISA_EXT_DATA(zicntr, RISCV_ISA_EXT_ZICNTR),
+> +	__RISCV_ISA_EXT_DATA(zicond, RISCV_ISA_EXT_ZICOND),
+>  	__RISCV_ISA_EXT_DATA(zicsr, RISCV_ISA_EXT_ZICSR),
+>  	__RISCV_ISA_EXT_DATA(zifencei, RISCV_ISA_EXT_ZIFENCEI),
+>  	__RISCV_ISA_EXT_DATA(zihintpause, RISCV_ISA_EXT_ZIHINTPAUSE),
 
-No, what's missing is a guarantee in KVM that every attempt to exit will actually
-make it to userspace.  E.g. if a different exit, including another memory_fault
-exit, clobbers an attempt to exit, the "unreliable" annotation will never be seen
-by userspace.
+Acked-by: Palmer Dabbelt <palmer@rivosinc.com>
 
-The only way a KVM_EXIT_MEMORY_FAULT that actually reaches userspace could be
-"unreliable" is if something other than a memory_fault exit clobbered the union,
-but didn't signal its KVM_EXIT_* reason.  And that would be an egregious bug that
-isn't unique to KVM_EXIT_MEMORY_FAULT, i.e. the same data corruption would affect
-each and every other KVM_EXIT_* reason.
-
-The "informational only" part is that userspace can't develop features that
-*require* KVM to exit.
-
-> > > - The helper function [a] for filling the memory_fault field
-> > > (downgraded back into the current union) can drop the "has the field
-> > > already been filled?" check/WARN.
-> >
-> > That would need to be dropped regardless because it's user-triggered (sadly).
-> 
-> Well the current v5 of the series uses a non-userspace visible canary-
-> it seems like there'd still be value in that if we were to keep the
-> annotations in potentially unreliable spots. Although perhaps that
-> test failure you noticed [1] is a good counter-argument, since it
-> shows a known case where a current flow does multiple writes to the
-> memory_fault member.
-
-The problem is that anything but a WARN will go unnoticed, and we can't have any
-WARNs that are user-triggerable, at least not in upstream.  Internally, we can
-and probably should add a canary, and an aggressive one at that, but I can't think
-of a sane way to add a canary in upstream while avoiding the known offenders. :-(
-
-> [1] https://lore.kernel.org/all/202309141107.30863e9d-oliver.sang at intel.com
-> 
-> > Anyways, don't do anything just yet.
-> 
-> :salutes:
-
-LOL
+Can we do a shared tag, though?  These will conflict.
 
