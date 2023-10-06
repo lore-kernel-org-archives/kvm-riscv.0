@@ -1,55 +1,66 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Thu, 5 Oct 2023 15:46:27 -0700
-Subject: [RFC PATCH v12 07/33] KVM: Add KVM_EXIT_MEMORY_FAULT exit to
- report faults to userspace
-In-Reply-To: <CAF7b7mqYr0J-J2oaU=c-dzLys-m6Ttp7ZOb3Em7n1wUj3rhh+A@mail.gmail.com>
-References: <20230914015531.1419405-1-seanjc@google.com> <20230914015531.1419405-8-seanjc@google.com>
- <117db856-9aec-e91c-b1d4-db2b90ae563d@intel.com> <ZQ3AmLO2SYv3DszH@google.com>
- <CAF7b7mrf-y9DNdsreOAedGJueOThnYE=ascFd4=rvW0Z4rhTQg@mail.gmail.com>
- <ZRtxoaJdVF1C2Mvy@google.com> <CAF7b7mqyU059YpBBVYjTMNXf9VHSc6tbKrQ8avFXYtP6LWMh8Q@mail.gmail.com>
- <ZRyn0nPQpbVpz8ah@google.com> <CAF7b7mqYr0J-J2oaU=c-dzLys-m6Ttp7ZOb3Em7n1wUj3rhh+A@mail.gmail.com>
-Message-ID: <ZR88w9W62qsZDro-@google.com>
+Date: Thu, 5 Oct 2023 20:21:15 -0700
+Subject: [RFC PATCH v12 11/33] KVM: Introduce per-page memory attributes
+In-Reply-To: <CA+EHjTwTgEVtea7wgef5G6EEgFa0so_GbNXTMZNKyFE=ucyV0g@mail.gmail.com>
+References: <CA+EHjTwTgEVtea7wgef5G6EEgFa0so_GbNXTMZNKyFE=ucyV0g@mail.gmail.com>
+Message-ID: <ZR99K_ZuWXEtfDuR@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Oct 05, 2023, Anish Moorthy wrote:
-> On Tue, Oct 3, 2023 at 4:46?PM Sean Christopherson <seanjc@google.com> wrote:
-> >
-> > The only way a KVM_EXIT_MEMORY_FAULT that actually reaches userspace could be
-> > "unreliable" is if something other than a memory_fault exit clobbered the union,
-> > but didn't signal its KVM_EXIT_* reason.  And that would be an egregious bug that
-> > isn't unique to KVM_EXIT_MEMORY_FAULT, i.e. the same data corruption would affect
-> > each and every other KVM_EXIT_* reason.
+On Thu, Oct 05, 2023, Fuad Tabba wrote:
+> Hi Sean,
 > 
-> Keep in mind the case where an "unreliable" annotation sets up a
-> KVM_EXIT_MEMORY_FAULT, KVM_RUN ends up continuing, then something
-> unrelated comes up and causes KVM_RUN to EFAULT. Although this at
-> least is a case of "outdated" information rather than blatant
-> corruption.
+> On Tue, Oct 3, 2023 at 9:51?PM Sean Christopherson <seanjc@google.com> wrote:
+> > > Like I said, pKVM doesn't need a userspace ABI for managing PRIVATE/SHARED,
+> > > just a way of tracking in the host kernel of what is shared (as opposed to
+> > > the hypervisor, which already has the knowledge). The solution could simply
+> > > be that pKVM does not enable KVM_GENERIC_MEMORY_ATTRIBUTES, has its own
+> > > tracking of the status of the guest pages, and only selects KVM_PRIVATE_MEM.
+> >
+> > At the risk of overstepping my bounds, I think that effectively giving the guest
+> > full control over what is shared vs. private is a mistake.  It more or less locks
+> > pKVM into a single model, and even within that model, dealing with errors and/or
+> > misbehaving guests becomes unnecessarily problematic.
+> >
+> > Using KVM_SET_MEMORY_ATTRIBUTES may not provide value *today*, e.g. the userspace
+> > side of pKVM could simply "reflect" all conversion hypercalls, and terminate the
+> > VM on errors.  But the cost is very minimal, e.g. a single extra ioctl() per
+> > converion, and the upside is that pKVM won't be stuck if a use case comes along
+> > that wants to go beyond "all conversion requests either immediately succeed or
+> > terminate the guest".
+> 
+> Now that I understand the purpose of KVM_SET_MEMORY_ATTRIBUTES, I
+> agree. However, pKVM needs to track at the host kernel (i.e., EL1)
+> whether guest memory is shared or private.
 
-Drat, I managed to forget about that.
+Why does EL1 need it's own view/opinion?  E.g. is it to avoid a accessing data
+that is still private according to EL2 (on behalf of the guest)?
 
-> IIRC the last time this came up we said that there's minimal harm in
-> userspace acting on the outdated info, but it seems like another good
-> argument for just restricting the annotations to paths we know are
-> reliable. What if the second EFAULT above is fatal (as I understand
-> all are today) and sets up subsequent KVM_RUNs to crash and burn
-> somehow? Seems like that'd be a safety issue.
+Assuming that's the case, why can't EL1 wait until it gets confirmation from EL2
+that the data is fully shared before doing whatever it is that needs to be done?
 
-For your series, let's omit 
+Ah, is the problem that whether or not .mmap() is allowed keys off of the state
+of the memory attributes?  If that's so, then yeah, an internal flag in attributes
+is probably the way to go.  It doesn't need to be a "host kernel private" flag
+though, e.g. an IN_FLUX flag to capture that the attributes aren't fully realized
+might be more intuitive for readers, and might have utility for other attributes
+in the future too.
 
-  KVM: Annotate -EFAULTs from kvm_vcpu_read/write_guest_page
-
-and just fill memory_fault for the page fault paths.  That will be easier to
-document too since we can simply say that if the exit reason is KVM_EXIT_MEMORY_FAULT,
-then run->memory_fault is valid and fresh.
-
-Adding a flag or whatever to mark the data as trustworthy would be the alternative,
-but that's effectively adding ABI that says "KVM is buggy, sorry".
-
-My dream of having KVM always return useful information for -EFAULT will have to
-wait for another day.
+> One approach would be to add another flag to the attributes that
+> tracks the host kernel view. The way KVM_SET_MEMORY_ATTRIBUTES is
+> implemented now, userspace can zero it, so in that case, that
+> operation would need to be masked to avoid that.
+> 
+> Another approach would be to have a pKVM-specific xarray (or similar)
+> to do the tracking, but since there is a structure that's already
+> doing something similar (i.e.,the attributes array), it seems like it
+> would be unnecessary overhead.
+> 
+> Do you have any ideas or preferences?
+> 
+> Cheers,
+> /fuad
 
