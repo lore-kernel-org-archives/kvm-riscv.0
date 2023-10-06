@@ -1,22 +1,23 @@
 From: Atish Patra <atishp@atishpatra.org>
-Date: Fri, 6 Oct 2023 15:44:34 -0700
-Subject: Public Review: Supervisor Binary Interface(SBI) v2.0
-Message-ID: <CAOnJCUK_-svfBV2q3Sjc7T1PiDDzwMEjLWRr2hhB41vC1_4ORw@mail.gmail.com>
+Date: Fri, 6 Oct 2023 15:44:37 -0700
+Subject: Public Review: Advanced Configuration and Power Interface -
+ Functional Fixed Hardware
+Message-ID: <CAOnJCU+BdTMQSxaXChUBLiiz71yx5e6mqngOxvD+cXNxSabzSQ@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-We're excited to kick off the public review for SBI v2.0.
+We're excited to kick off the public review for ACPI FFH v1.0.0.
 
 Review Dates: 10/06/2023 to 11/06/2023
 
 Specification Details:
 
-PDF Version: https://github.com/riscv-non-isa/riscv-sbi-doc/releases/download/commit-fe4562532a9cc57e5743b6466946c5e5c98c73ca/riscv-sbi.pdf
+PDF Version: https://github.com/riscv-non-isa/riscv-acpi-ffh/releases/download/v1.0.0-rc7/riscv-ffh.pdf
 
-Source Code: https://github.com/riscv-non-isa/riscv-sbi-doc
+Source Code: https://github.com/riscv-non-isa/riscv-acpi-ffh
 
 How to Give Feedback:
 
@@ -38,7 +39,6 @@ Group: https://lists.riscv.org/g/tech-prs
 
 Task Group Chair: Atish Patra (atishp at rivosinc.com)
 Task Group Vice-chair: Sunil V L (sunilvl at ventanamicro.com)
-
 
 -- 
 Regards,
