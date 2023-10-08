@@ -1,67 +1,76 @@
-From: Haibo Xu <xiaobo55x@gmail.com>
-Date: Sun, 8 Oct 2023 10:58:57 +0800
-Subject: [PATCH v3 2/9] KVM: selftests: Unify the makefile rule for split targets
-In-Reply-To: <20231003-d44206f71d0b22e539833697@orel>
-References: <cover.1694421911.git.haibo1.xu@intel.com> <cda6cc71c9bdde87fe87f6c2dec4f03ca249dd62.1694421911.git.haibo1.xu@intel.com>
- <20231003-d44206f71d0b22e539833697@orel>
-Message-ID: <CAJve8o=Q74U0Z3PayrzY7heNc0qeTw5VYS+tdkpm=aJdefQEbQ@mail.gmail.com>
+From: Aurelien Jarno <aurelien@aurel32.net>
+Date: Sun, 8 Oct 2023 11:19:39 +0200
+Subject: [PATCH -next v21 14/27] riscv: signal: Add sigcontext
+ save/restore for vector
+In-Reply-To: <20230605110724.21391-15-andy.chiu@sifive.com>
+References: <20230605110724.21391-1-andy.chiu@sifive.com>
+ <20230605110724.21391-15-andy.chiu@sifive.com>
+Message-ID: <ZSJ0K5JFrglyJY8o@aurel32.net>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Oct 3, 2023 at 6:28?PM Andrew Jones <ajones@ventanamicro.com> wrote:
->
-> On Thu, Sep 14, 2023 at 09:36:56AM +0800, Haibo Xu wrote:
-> > A separate makefile rule was used for split targets which was added
-> > in patch(KVM: arm64: selftests: Split get-reg-list test code). This
-> > could be avoided by minor changes to the recipes of current rule.
-> >
-> > Signed-off-by: Haibo Xu <haibo1.xu@intel.com>
-> > ---
-> >  tools/testing/selftests/kvm/Makefile | 6 ++----
-> >  1 file changed, 2 insertions(+), 4 deletions(-)
-> >
-> > diff --git a/tools/testing/selftests/kvm/Makefile b/tools/testing/selftests/kvm/Makefile
-> > index a3bb36fb3cfc..7972269e8c5f 100644
-> > --- a/tools/testing/selftests/kvm/Makefile
-> > +++ b/tools/testing/selftests/kvm/Makefile
-> > @@ -249,13 +249,10 @@ TEST_DEP_FILES += $(patsubst %.o, %.d, $(SPLIT_TESTS_OBJS))
-> >  -include $(TEST_DEP_FILES)
-> >
-> >  $(TEST_GEN_PROGS) $(TEST_GEN_PROGS_EXTENDED): %: %.o
-> > -     $(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(TARGET_ARCH) $< $(LIBKVM_OBJS) $(LDLIBS) -o $@
-> > +     $(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(TARGET_ARCH) $^ $(LDLIBS) -o $@
-> >  $(TEST_GEN_OBJ): $(OUTPUT)/%.o: %.c
-> >       $(CC) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c $< -o $@
-> >
-> > -$(SPLIT_TESTS_TARGETS): %: %.o $(SPLIT_TESTS_OBJS)
-> > -     $(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(TARGET_ARCH) $^ $(LDLIBS) -o $@
-> > -
-> >  EXTRA_CLEAN += $(LIBKVM_OBJS) $(TEST_DEP_FILES) $(TEST_GEN_OBJ) $(SPLIT_TESTS_OBJS) cscope.*
-> >
-> >  x := $(shell mkdir -p $(sort $(dir $(LIBKVM_C_OBJ) $(LIBKVM_S_OBJ))))
-> > @@ -274,6 +271,7 @@ $(LIBKVM_STRING_OBJ): $(OUTPUT)/%.o: %.c
-> >  x := $(shell mkdir -p $(sort $(dir $(TEST_GEN_PROGS))))
-> >  $(TEST_GEN_PROGS): $(LIBKVM_OBJS)
-> >  $(TEST_GEN_PROGS_EXTENDED): $(LIBKVM_OBJS)
-> > +$(SPLIT_TESTS_TARGETS): $(OUTPUT)/%: $(ARCH_DIR)/%.o
-> >
-> >  cscope: include_paths = $(LINUX_TOOL_INCLUDE) $(LINUX_HDR_PATH) include lib ..
-> >  cscope:
-> > --
-> > 2.34.1
-> >
->
-> I just noticed that with and without this patch we're building the
-> arch-specific part in tools/testing/selftests/kvm/riscv even when we have
-> an $(OUTPUT) directory (e.g. O=build). Those build artifacts should be in
-> build/kselftest/kvm/riscv instead.
->
+Hi,
 
-Thanks for pointing it out. I will have a look in next week!
+On 2023-06-05 11:07, Andy Chiu wrote:
+> From: Greentime Hu <greentime.hu@sifive.com>
+> 
+> This patch facilitates the existing fp-reserved words for placement of
+> the first extension's context header on the user's sigframe. A context
+> header consists of a distinct magic word and the size, including the
+> header itself, of an extension on the stack. Then, the frame is followed
+> by the context of that extension, and then a header + context body for
+> another extension if exists. If there is no more extension to come, then
+> the frame must be ended with a null context header. A special case is
+> rv64gc, where the kernel support no extensions requiring to expose
+> additional regfile to the user. In such case the kernel would place the
+> null context header right after the first reserved word of
+> __riscv_q_ext_state when saving sigframe. And the kernel would check if
+> all reserved words are zeros when a signal handler returns.
+> 
+> __riscv_q_ext_state---->|	|<-__riscv_extra_ext_header
+> 			~	~
+> 	.reserved[0]--->|0	|<-	.reserved
+> 		<-------|magic	|<-	.hdr
+> 		|	|size	|_______ end of sc_fpregs
+> 		|	|ext-bdy|
+> 		|	~	~
+> 	+)size	------->|magic	|<- another context header
+> 			|size	|
+> 			|ext-bdy|
+> 			~	~
+> 			|magic:0|<- null context header
+> 			|size:0	|
+> 
+> The vector registers will be saved in datap pointer. The datap pointer
+> will be allocated dynamically when the task needs in kernel space. On
+> the other hand, datap pointer on the sigframe will be set right after
+> the __riscv_v_ext_state data structure.
 
-> Thanks,
-> drew
+It appears that this patch somehow breaks userland, at least the rust
+compiler. This can be observed for instance by building the rust-lsd
+package in Debian, but many other rust packages are also affected:
+
+* Failed build with kernel 6.5.3:
+  https://buildd.debian.org/status/fetch.php?pkg=rust-lsd&arch=riscv64&ver=0.23.1-7%2Bb1&stamp=1696475386&raw=0
+
+* Successful build with kernel 6.4.13:
+  https://buildd.debian.org/status/fetch.php?pkg=rust-lsd&arch=riscv64&ver=0.23.1-7%2Bb1&stamp=1696491025&raw=0
+
+It happens on hardware which does not have the V extension (in the above
+case on a Hifive Unmatched board). This can also be reproduced in a QEMU
+VM. Unfortunately disabling CONFIG_RISCV_ISA_V does not workaround the
+issue.
+
+It is not clear to me if it is a kernel issue or a wrong assumption on
+the rust side. Any hint on how to continue investigating?
+
+Regards
+Aurelien
+
+-- 
+Aurelien Jarno                          GPG: 4096R/1DDD8C9B
+aurelien at aurel32.net                     http://aurel32.net
 
