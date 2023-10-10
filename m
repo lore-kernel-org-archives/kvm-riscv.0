@@ -1,63 +1,77 @@
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Tue, 10 Oct 2023 19:15:38 +0200
-Subject: [PATCH 3/6] RISC-V: KVM: Forward SBI DBCN extension to user-space
-In-Reply-To: <20231010170503.657189-4-apatel@ventanamicro.com>
+Date: Tue, 10 Oct 2023 19:16:07 +0200
+Subject: [PATCH 4/6] tty/serial: Add RISC-V SBI debug console based
+ earlycon
+In-Reply-To: <20231010170503.657189-5-apatel@ventanamicro.com>
 References: <20231010170503.657189-1-apatel@ventanamicro.com>
- <20231010170503.657189-4-apatel@ventanamicro.com>
-Message-ID: <2023101048-attach-drift-d77b@gregkh>
+ <20231010170503.657189-5-apatel@ventanamicro.com>
+Message-ID: <2023101053-scholar-resolute-a9a0@gregkh>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Oct 10, 2023 at 10:35:00PM +0530, Anup Patel wrote:
-> The SBI DBCN extension needs to be emulated in user-space
-
-Why?
-
-> so let
-> us forward console_puts() call to user-space.
-
-What could go wrong!
-
-Why does userspace have to get involved in a console message?  Why is
-this needed at all?  The kernel can not handle userspace consoles as
-obviously they have to be re-entrant and irq safe.
-
+On Tue, Oct 10, 2023 at 10:35:01PM +0530, Anup Patel wrote:
+> We extend the existing RISC-V SBI earlycon support to use the new
+> RISC-V SBI debug console extension.
 > 
 > Signed-off-by: Anup Patel <apatel@ventanamicro.com>
 > ---
->  arch/riscv/include/asm/kvm_vcpu_sbi.h |  1 +
->  arch/riscv/include/uapi/asm/kvm.h     |  1 +
->  arch/riscv/kvm/vcpu_sbi.c             |  4 ++++
->  arch/riscv/kvm/vcpu_sbi_replace.c     | 31 +++++++++++++++++++++++++++
->  4 files changed, 37 insertions(+)
+>  drivers/tty/serial/Kconfig              |  2 +-
+>  drivers/tty/serial/earlycon-riscv-sbi.c | 35 ++++++++++++++++++++++---
+>  2 files changed, 32 insertions(+), 5 deletions(-)
 > 
-> diff --git a/arch/riscv/include/asm/kvm_vcpu_sbi.h b/arch/riscv/include/asm/kvm_vcpu_sbi.h
-> index 8d6d4dce8a5e..a85f95eb6e85 100644
-> --- a/arch/riscv/include/asm/kvm_vcpu_sbi.h
-> +++ b/arch/riscv/include/asm/kvm_vcpu_sbi.h
-> @@ -69,6 +69,7 @@ extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_ipi;
->  extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_rfence;
->  extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_srst;
->  extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_hsm;
-> +extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_dbcn;
->  extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_experimental;
->  extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_vendor;
+> diff --git a/drivers/tty/serial/Kconfig b/drivers/tty/serial/Kconfig
+> index bdc568a4ab66..cec46091a716 100644
+> --- a/drivers/tty/serial/Kconfig
+> +++ b/drivers/tty/serial/Kconfig
+> @@ -87,7 +87,7 @@ config SERIAL_EARLYCON_SEMIHOST
 >  
-> diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
-> index 917d8cc2489e..60d3b21dead7 100644
-> --- a/arch/riscv/include/uapi/asm/kvm.h
-> +++ b/arch/riscv/include/uapi/asm/kvm.h
-> @@ -156,6 +156,7 @@ enum KVM_RISCV_SBI_EXT_ID {
->  	KVM_RISCV_SBI_EXT_PMU,
->  	KVM_RISCV_SBI_EXT_EXPERIMENTAL,
->  	KVM_RISCV_SBI_EXT_VENDOR,
-> +	KVM_RISCV_SBI_EXT_DBCN,
->  	KVM_RISCV_SBI_EXT_MAX,
+>  config SERIAL_EARLYCON_RISCV_SBI
+>  	bool "Early console using RISC-V SBI"
+> -	depends on RISCV_SBI_V01
+> +	depends on RISCV_SBI
+>  	select SERIAL_CORE
+>  	select SERIAL_CORE_CONSOLE
+>  	select SERIAL_EARLYCON
+> diff --git a/drivers/tty/serial/earlycon-riscv-sbi.c b/drivers/tty/serial/earlycon-riscv-sbi.c
+> index 27afb0b74ea7..b1da34e8d8cd 100644
+> --- a/drivers/tty/serial/earlycon-riscv-sbi.c
+> +++ b/drivers/tty/serial/earlycon-riscv-sbi.c
+> @@ -10,22 +10,49 @@
+>  #include <linux/serial_core.h>
+>  #include <asm/sbi.h>
+>  
+> +#ifdef CONFIG_RISCV_SBI_V01
+>  static void sbi_putc(struct uart_port *port, unsigned char c)
+>  {
+>  	sbi_console_putchar(c);
+>  }
+>  
+> -static void sbi_console_write(struct console *con,
+> -			      const char *s, unsigned n)
+> +static void sbi_0_1_console_write(struct console *con,
+> +				  const char *s, unsigned int n)
+>  {
+>  	struct earlycon_device *dev = con->data;
+>  	uart_console_write(&dev->port, s, n, sbi_putc);
+>  }
+> +#endif
+> +
+> +static void sbi_dbcn_console_write(struct console *con,
+> +				   const char *s, unsigned int n)
+> +{
+> +	phys_addr_t pa = __pa(s);
+> +
+> +	sbi_ecall(SBI_EXT_DBCN, SBI_EXT_DBCN_CONSOLE_WRITE,
+> +#ifdef CONFIG_32BIT
+> +		  n, pa, (u64)pa >> 32,
+> +#else
+> +		  n, pa, 0,
+> +#endif
 
-You just broke a user/kernel ABI here, why?
+Again, no #ifdef in .c files please.
 
 thanks,
 
