@@ -1,79 +1,77 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Tue, 10 Oct 2023 19:16:07 +0200
-Subject: [PATCH 4/6] tty/serial: Add RISC-V SBI debug console based
- earlycon
-In-Reply-To: <20231010170503.657189-5-apatel@ventanamicro.com>
-References: <20231010170503.657189-1-apatel@ventanamicro.com>
- <20231010170503.657189-5-apatel@ventanamicro.com>
-Message-ID: <2023101053-scholar-resolute-a9a0@gregkh>
+From: David Matlack <dmatlack@google.com>
+Date: Tue, 10 Oct 2023 15:21:37 -0700
+Subject: [RFC PATCH v12 07/33] KVM: Add KVM_EXIT_MEMORY_FAULT exit to
+ report faults to userspace
+In-Reply-To: <ZR88w9W62qsZDro-@google.com>
+References: <20230914015531.1419405-1-seanjc@google.com> <20230914015531.1419405-8-seanjc@google.com>
+ <117db856-9aec-e91c-b1d4-db2b90ae563d@intel.com> <ZQ3AmLO2SYv3DszH@google.com>
+ <CAF7b7mrf-y9DNdsreOAedGJueOThnYE=ascFd4=rvW0Z4rhTQg@mail.gmail.com>
+ <ZRtxoaJdVF1C2Mvy@google.com> <CAF7b7mqyU059YpBBVYjTMNXf9VHSc6tbKrQ8avFXYtP6LWMh8Q@mail.gmail.com>
+ <ZRyn0nPQpbVpz8ah@google.com> <CAF7b7mqYr0J-J2oaU=c-dzLys-m6Ttp7ZOb3Em7n1wUj3rhh+A@mail.gmail.com>
+ <ZR88w9W62qsZDro-@google.com>
+Message-ID: <CALzav=csPcd3f5CYc=6Fa4JnsYP8UTVeSex0-7LvUBnTDpHxLQ@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Oct 10, 2023 at 10:35:01PM +0530, Anup Patel wrote:
-> We extend the existing RISC-V SBI earlycon support to use the new
-> RISC-V SBI debug console extension.
-> 
-> Signed-off-by: Anup Patel <apatel@ventanamicro.com>
-> ---
->  drivers/tty/serial/Kconfig              |  2 +-
->  drivers/tty/serial/earlycon-riscv-sbi.c | 35 ++++++++++++++++++++++---
->  2 files changed, 32 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/tty/serial/Kconfig b/drivers/tty/serial/Kconfig
-> index bdc568a4ab66..cec46091a716 100644
-> --- a/drivers/tty/serial/Kconfig
-> +++ b/drivers/tty/serial/Kconfig
-> @@ -87,7 +87,7 @@ config SERIAL_EARLYCON_SEMIHOST
->  
->  config SERIAL_EARLYCON_RISCV_SBI
->  	bool "Early console using RISC-V SBI"
-> -	depends on RISCV_SBI_V01
-> +	depends on RISCV_SBI
->  	select SERIAL_CORE
->  	select SERIAL_CORE_CONSOLE
->  	select SERIAL_EARLYCON
-> diff --git a/drivers/tty/serial/earlycon-riscv-sbi.c b/drivers/tty/serial/earlycon-riscv-sbi.c
-> index 27afb0b74ea7..b1da34e8d8cd 100644
-> --- a/drivers/tty/serial/earlycon-riscv-sbi.c
-> +++ b/drivers/tty/serial/earlycon-riscv-sbi.c
-> @@ -10,22 +10,49 @@
->  #include <linux/serial_core.h>
->  #include <asm/sbi.h>
->  
-> +#ifdef CONFIG_RISCV_SBI_V01
->  static void sbi_putc(struct uart_port *port, unsigned char c)
->  {
->  	sbi_console_putchar(c);
->  }
->  
-> -static void sbi_console_write(struct console *con,
-> -			      const char *s, unsigned n)
-> +static void sbi_0_1_console_write(struct console *con,
-> +				  const char *s, unsigned int n)
->  {
->  	struct earlycon_device *dev = con->data;
->  	uart_console_write(&dev->port, s, n, sbi_putc);
->  }
-> +#endif
-> +
-> +static void sbi_dbcn_console_write(struct console *con,
-> +				   const char *s, unsigned int n)
-> +{
-> +	phys_addr_t pa = __pa(s);
-> +
-> +	sbi_ecall(SBI_EXT_DBCN, SBI_EXT_DBCN_CONSOLE_WRITE,
-> +#ifdef CONFIG_32BIT
-> +		  n, pa, (u64)pa >> 32,
-> +#else
-> +		  n, pa, 0,
-> +#endif
+On Thu, Oct 5, 2023 at 3:46?PM Sean Christopherson <seanjc@google.com> wrote:
+>
+> On Thu, Oct 05, 2023, Anish Moorthy wrote:
+> > On Tue, Oct 3, 2023 at 4:46?PM Sean Christopherson <seanjc@google.com> wrote:
+> > >
+> > > The only way a KVM_EXIT_MEMORY_FAULT that actually reaches userspace could be
+> > > "unreliable" is if something other than a memory_fault exit clobbered the union,
+> > > but didn't signal its KVM_EXIT_* reason.  And that would be an egregious bug that
+> > > isn't unique to KVM_EXIT_MEMORY_FAULT, i.e. the same data corruption would affect
+> > > each and every other KVM_EXIT_* reason.
+> >
+> > Keep in mind the case where an "unreliable" annotation sets up a
+> > KVM_EXIT_MEMORY_FAULT, KVM_RUN ends up continuing, then something
+> > unrelated comes up and causes KVM_RUN to EFAULT. Although this at
+> > least is a case of "outdated" information rather than blatant
+> > corruption.
+>
+> Drat, I managed to forget about that.
+>
+> > IIRC the last time this came up we said that there's minimal harm in
+> > userspace acting on the outdated info, but it seems like another good
+> > argument for just restricting the annotations to paths we know are
+> > reliable. What if the second EFAULT above is fatal (as I understand
+> > all are today) and sets up subsequent KVM_RUNs to crash and burn
+> > somehow? Seems like that'd be a safety issue.
+>
+> For your series, let's omit
+>
+>   KVM: Annotate -EFAULTs from kvm_vcpu_read/write_guest_page
+>
+> and just fill memory_fault for the page fault paths.  That will be easier to
+> document too since we can simply say that if the exit reason is KVM_EXIT_MEMORY_FAULT,
+> then run->memory_fault is valid and fresh.
 
-Again, no #ifdef in .c files please.
++1
 
-thanks,
+And from a performance perspective, I don't think we care about
+kvm_vcpu_read/write_guest_page(). Our (Google) KVM Demand Paging
+implementation just sends any kvm_vcpu_read/write_guest_page()
+requests through the netlink socket, which is just a poor man's
+userfaultfd. So I think we'll be fine sending these callsites through
+uffd instead of exiting out to userspace.
 
-greg k-h
+And with that out of the way, is there any reason to keep tying
+KVM_EXIT_MEMORY_FAULT to -EFAULT? As mentioned in the patch at the top
+of this thread, -EFAULT is just a hack to allow the emulator paths to
+return out to userspace. But that's no longer necessary. I just find
+it odd that some KVM_EXIT_* correspond with KVM_RUN returning an error
+and others don't. The exit_reason is sufficient to tell userspace
+what's going on and has a firm contract, unlike -EFAULT which anything
+KVM calls into can return.
+
+>
+> Adding a flag or whatever to mark the data as trustworthy would be the alternative,
+> but that's effectively adding ABI that says "KVM is buggy, sorry".
+>
+> My dream of having KVM always return useful information for -EFAULT will have to
+> wait for another day.
 
