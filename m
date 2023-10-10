@@ -1,36 +1,104 @@
 From: Anup Patel <apatel@ventanamicro.com>
-Date: Tue, 10 Oct 2023 22:34:59 +0530
-Subject: [PATCH 2/6] RISC-V: KVM: Change the SBI specification version to v2.0
+Date: Tue, 10 Oct 2023 22:35:00 +0530
+Subject: [PATCH 3/6] RISC-V: KVM: Forward SBI DBCN extension to user-space
 In-Reply-To: <20231010170503.657189-1-apatel@ventanamicro.com>
 References: <20231010170503.657189-1-apatel@ventanamicro.com>
-Message-ID: <20231010170503.657189-3-apatel@ventanamicro.com>
+Message-ID: <20231010170503.657189-4-apatel@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-We will be implementing SBI DBCN extension for KVM RISC-V so let
-us change the KVM RISC-V SBI specification version to v2.0.
+The SBI DBCN extension needs to be emulated in user-space so let
+us forward console_puts() call to user-space.
 
 Signed-off-by: Anup Patel <apatel@ventanamicro.com>
 ---
- arch/riscv/include/asm/kvm_vcpu_sbi.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/riscv/include/asm/kvm_vcpu_sbi.h |  1 +
+ arch/riscv/include/uapi/asm/kvm.h     |  1 +
+ arch/riscv/kvm/vcpu_sbi.c             |  4 ++++
+ arch/riscv/kvm/vcpu_sbi_replace.c     | 31 +++++++++++++++++++++++++++
+ 4 files changed, 37 insertions(+)
 
 diff --git a/arch/riscv/include/asm/kvm_vcpu_sbi.h b/arch/riscv/include/asm/kvm_vcpu_sbi.h
-index cdcf0ff07be7..8d6d4dce8a5e 100644
+index 8d6d4dce8a5e..a85f95eb6e85 100644
 --- a/arch/riscv/include/asm/kvm_vcpu_sbi.h
 +++ b/arch/riscv/include/asm/kvm_vcpu_sbi.h
-@@ -11,7 +11,7 @@
+@@ -69,6 +69,7 @@ extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_ipi;
+ extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_rfence;
+ extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_srst;
+ extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_hsm;
++extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_dbcn;
+ extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_experimental;
+ extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_vendor;
  
- #define KVM_SBI_IMPID 3
+diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
+index 917d8cc2489e..60d3b21dead7 100644
+--- a/arch/riscv/include/uapi/asm/kvm.h
++++ b/arch/riscv/include/uapi/asm/kvm.h
+@@ -156,6 +156,7 @@ enum KVM_RISCV_SBI_EXT_ID {
+ 	KVM_RISCV_SBI_EXT_PMU,
+ 	KVM_RISCV_SBI_EXT_EXPERIMENTAL,
+ 	KVM_RISCV_SBI_EXT_VENDOR,
++	KVM_RISCV_SBI_EXT_DBCN,
+ 	KVM_RISCV_SBI_EXT_MAX,
+ };
  
--#define KVM_SBI_VERSION_MAJOR 1
-+#define KVM_SBI_VERSION_MAJOR 2
- #define KVM_SBI_VERSION_MINOR 0
- 
- enum kvm_riscv_sbi_ext_status {
+diff --git a/arch/riscv/kvm/vcpu_sbi.c b/arch/riscv/kvm/vcpu_sbi.c
+index 9cd97091c723..b54fe52c915a 100644
+--- a/arch/riscv/kvm/vcpu_sbi.c
++++ b/arch/riscv/kvm/vcpu_sbi.c
+@@ -66,6 +66,10 @@ static const struct kvm_riscv_sbi_extension_entry sbi_ext[] = {
+ 		.ext_idx = KVM_RISCV_SBI_EXT_PMU,
+ 		.ext_ptr = &vcpu_sbi_ext_pmu,
+ 	},
++	{
++		.ext_idx = KVM_RISCV_SBI_EXT_DBCN,
++		.ext_ptr = &vcpu_sbi_ext_dbcn,
++	},
+ 	{
+ 		.ext_idx = KVM_RISCV_SBI_EXT_EXPERIMENTAL,
+ 		.ext_ptr = &vcpu_sbi_ext_experimental,
+diff --git a/arch/riscv/kvm/vcpu_sbi_replace.c b/arch/riscv/kvm/vcpu_sbi_replace.c
+index 7c4d5d38a339..347c5856347e 100644
+--- a/arch/riscv/kvm/vcpu_sbi_replace.c
++++ b/arch/riscv/kvm/vcpu_sbi_replace.c
+@@ -175,3 +175,34 @@ const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_srst = {
+ 	.extid_end = SBI_EXT_SRST,
+ 	.handler = kvm_sbi_ext_srst_handler,
+ };
++
++static int kvm_sbi_ext_dbcn_handler(struct kvm_vcpu *vcpu,
++				    struct kvm_run *run,
++				    struct kvm_vcpu_sbi_return *retdata)
++{
++	struct kvm_cpu_context *cp = &vcpu->arch.guest_context;
++	unsigned long funcid = cp->a6;
++
++	switch (funcid) {
++	case SBI_EXT_DBCN_CONSOLE_WRITE:
++	case SBI_EXT_DBCN_CONSOLE_READ:
++	case SBI_EXT_DBCN_CONSOLE_WRITE_BYTE:
++		/*
++		 * The SBI debug console functions are unconditionally
++		 * forwarded to the userspace.
++		 */
++		kvm_riscv_vcpu_sbi_forward(vcpu, run);
++		retdata->uexit = true;
++		break;
++	default:
++		retdata->err_val = SBI_ERR_NOT_SUPPORTED;
++	}
++
++	return 0;
++}
++
++const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_dbcn = {
++	.extid_start = SBI_EXT_DBCN,
++	.extid_end = SBI_EXT_DBCN,
++	.handler = kvm_sbi_ext_dbcn_handler,
++};
 -- 
 2.34.1
 
