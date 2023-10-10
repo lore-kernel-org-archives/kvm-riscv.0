@@ -1,104 +1,95 @@
 From: Anup Patel <apatel@ventanamicro.com>
-Date: Tue, 10 Oct 2023 22:35:00 +0530
-Subject: [PATCH 3/6] RISC-V: KVM: Forward SBI DBCN extension to user-space
+Date: Tue, 10 Oct 2023 22:35:01 +0530
+Subject: [PATCH 4/6] tty/serial: Add RISC-V SBI debug console based earlycon
 In-Reply-To: <20231010170503.657189-1-apatel@ventanamicro.com>
 References: <20231010170503.657189-1-apatel@ventanamicro.com>
-Message-ID: <20231010170503.657189-4-apatel@ventanamicro.com>
+Message-ID: <20231010170503.657189-5-apatel@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The SBI DBCN extension needs to be emulated in user-space so let
-us forward console_puts() call to user-space.
+We extend the existing RISC-V SBI earlycon support to use the new
+RISC-V SBI debug console extension.
 
 Signed-off-by: Anup Patel <apatel@ventanamicro.com>
 ---
- arch/riscv/include/asm/kvm_vcpu_sbi.h |  1 +
- arch/riscv/include/uapi/asm/kvm.h     |  1 +
- arch/riscv/kvm/vcpu_sbi.c             |  4 ++++
- arch/riscv/kvm/vcpu_sbi_replace.c     | 31 +++++++++++++++++++++++++++
- 4 files changed, 37 insertions(+)
+ drivers/tty/serial/Kconfig              |  2 +-
+ drivers/tty/serial/earlycon-riscv-sbi.c | 35 ++++++++++++++++++++++---
+ 2 files changed, 32 insertions(+), 5 deletions(-)
 
-diff --git a/arch/riscv/include/asm/kvm_vcpu_sbi.h b/arch/riscv/include/asm/kvm_vcpu_sbi.h
-index 8d6d4dce8a5e..a85f95eb6e85 100644
---- a/arch/riscv/include/asm/kvm_vcpu_sbi.h
-+++ b/arch/riscv/include/asm/kvm_vcpu_sbi.h
-@@ -69,6 +69,7 @@ extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_ipi;
- extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_rfence;
- extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_srst;
- extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_hsm;
-+extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_dbcn;
- extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_experimental;
- extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_vendor;
+diff --git a/drivers/tty/serial/Kconfig b/drivers/tty/serial/Kconfig
+index bdc568a4ab66..cec46091a716 100644
+--- a/drivers/tty/serial/Kconfig
++++ b/drivers/tty/serial/Kconfig
+@@ -87,7 +87,7 @@ config SERIAL_EARLYCON_SEMIHOST
  
-diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
-index 917d8cc2489e..60d3b21dead7 100644
---- a/arch/riscv/include/uapi/asm/kvm.h
-+++ b/arch/riscv/include/uapi/asm/kvm.h
-@@ -156,6 +156,7 @@ enum KVM_RISCV_SBI_EXT_ID {
- 	KVM_RISCV_SBI_EXT_PMU,
- 	KVM_RISCV_SBI_EXT_EXPERIMENTAL,
- 	KVM_RISCV_SBI_EXT_VENDOR,
-+	KVM_RISCV_SBI_EXT_DBCN,
- 	KVM_RISCV_SBI_EXT_MAX,
- };
+ config SERIAL_EARLYCON_RISCV_SBI
+ 	bool "Early console using RISC-V SBI"
+-	depends on RISCV_SBI_V01
++	depends on RISCV_SBI
+ 	select SERIAL_CORE
+ 	select SERIAL_CORE_CONSOLE
+ 	select SERIAL_EARLYCON
+diff --git a/drivers/tty/serial/earlycon-riscv-sbi.c b/drivers/tty/serial/earlycon-riscv-sbi.c
+index 27afb0b74ea7..b1da34e8d8cd 100644
+--- a/drivers/tty/serial/earlycon-riscv-sbi.c
++++ b/drivers/tty/serial/earlycon-riscv-sbi.c
+@@ -10,22 +10,49 @@
+ #include <linux/serial_core.h>
+ #include <asm/sbi.h>
  
-diff --git a/arch/riscv/kvm/vcpu_sbi.c b/arch/riscv/kvm/vcpu_sbi.c
-index 9cd97091c723..b54fe52c915a 100644
---- a/arch/riscv/kvm/vcpu_sbi.c
-+++ b/arch/riscv/kvm/vcpu_sbi.c
-@@ -66,6 +66,10 @@ static const struct kvm_riscv_sbi_extension_entry sbi_ext[] = {
- 		.ext_idx = KVM_RISCV_SBI_EXT_PMU,
- 		.ext_ptr = &vcpu_sbi_ext_pmu,
- 	},
-+	{
-+		.ext_idx = KVM_RISCV_SBI_EXT_DBCN,
-+		.ext_ptr = &vcpu_sbi_ext_dbcn,
-+	},
- 	{
- 		.ext_idx = KVM_RISCV_SBI_EXT_EXPERIMENTAL,
- 		.ext_ptr = &vcpu_sbi_ext_experimental,
-diff --git a/arch/riscv/kvm/vcpu_sbi_replace.c b/arch/riscv/kvm/vcpu_sbi_replace.c
-index 7c4d5d38a339..347c5856347e 100644
---- a/arch/riscv/kvm/vcpu_sbi_replace.c
-+++ b/arch/riscv/kvm/vcpu_sbi_replace.c
-@@ -175,3 +175,34 @@ const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_srst = {
- 	.extid_end = SBI_EXT_SRST,
- 	.handler = kvm_sbi_ext_srst_handler,
- };
++#ifdef CONFIG_RISCV_SBI_V01
+ static void sbi_putc(struct uart_port *port, unsigned char c)
+ {
+ 	sbi_console_putchar(c);
+ }
+ 
+-static void sbi_console_write(struct console *con,
+-			      const char *s, unsigned n)
++static void sbi_0_1_console_write(struct console *con,
++				  const char *s, unsigned int n)
+ {
+ 	struct earlycon_device *dev = con->data;
+ 	uart_console_write(&dev->port, s, n, sbi_putc);
+ }
++#endif
 +
-+static int kvm_sbi_ext_dbcn_handler(struct kvm_vcpu *vcpu,
-+				    struct kvm_run *run,
-+				    struct kvm_vcpu_sbi_return *retdata)
++static void sbi_dbcn_console_write(struct console *con,
++				   const char *s, unsigned int n)
 +{
-+	struct kvm_cpu_context *cp = &vcpu->arch.guest_context;
-+	unsigned long funcid = cp->a6;
++	phys_addr_t pa = __pa(s);
 +
-+	switch (funcid) {
-+	case SBI_EXT_DBCN_CONSOLE_WRITE:
-+	case SBI_EXT_DBCN_CONSOLE_READ:
-+	case SBI_EXT_DBCN_CONSOLE_WRITE_BYTE:
-+		/*
-+		 * The SBI debug console functions are unconditionally
-+		 * forwarded to the userspace.
-+		 */
-+		kvm_riscv_vcpu_sbi_forward(vcpu, run);
-+		retdata->uexit = true;
-+		break;
-+	default:
-+		retdata->err_val = SBI_ERR_NOT_SUPPORTED;
-+	}
-+
-+	return 0;
++	sbi_ecall(SBI_EXT_DBCN, SBI_EXT_DBCN_CONSOLE_WRITE,
++#ifdef CONFIG_32BIT
++		  n, pa, (u64)pa >> 32,
++#else
++		  n, pa, 0,
++#endif
++		  0, 0, 0);
 +}
+ 
+ static int __init early_sbi_setup(struct earlycon_device *device,
+ 				  const char *opt)
+ {
+-	device->con->write = sbi_console_write;
+-	return 0;
++	int ret = 0;
 +
-+const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_dbcn = {
-+	.extid_start = SBI_EXT_DBCN,
-+	.extid_end = SBI_EXT_DBCN,
-+	.handler = kvm_sbi_ext_dbcn_handler,
-+};
++	if ((sbi_spec_version >= sbi_mk_version(2, 0)) &&
++	    (sbi_probe_extension(SBI_EXT_DBCN) > 0))
++		device->con->write = sbi_dbcn_console_write;
++	else
++#ifdef CONFIG_RISCV_SBI_V01
++		device->con->write = sbi_0_1_console_write;
++#else
++		ret = -ENODEV;
++#endif
++
++	return ret;
+ }
+ EARLYCON_DECLARE(sbi, early_sbi_setup);
 -- 
 2.34.1
 
