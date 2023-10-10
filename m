@@ -1,53 +1,41 @@
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Tue, 10 Oct 2023 19:12:42 +0200
-Subject: [PATCH 5/6] tty: Add SBI debug console support to HVC SBI driver
-In-Reply-To: <20231010170503.657189-6-apatel@ventanamicro.com>
+Date: Tue, 10 Oct 2023 19:13:40 +0200
+Subject: [PATCH 2/6] RISC-V: KVM: Change the SBI specification version to
+ v2.0
+In-Reply-To: <20231010170503.657189-3-apatel@ventanamicro.com>
 References: <20231010170503.657189-1-apatel@ventanamicro.com>
- <20231010170503.657189-6-apatel@ventanamicro.com>
-Message-ID: <2023101045-hazard-popcorn-7d19@gregkh>
+ <20231010170503.657189-3-apatel@ventanamicro.com>
+Message-ID: <2023101013-overfeed-online-7f69@gregkh>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Oct 10, 2023 at 10:35:02PM +0530, Anup Patel wrote:
-> --- a/drivers/tty/hvc/hvc_riscv_sbi.c
-> +++ b/drivers/tty/hvc/hvc_riscv_sbi.c
-> @@ -15,6 +15,7 @@
+On Tue, Oct 10, 2023 at 10:34:59PM +0530, Anup Patel wrote:
+> We will be implementing SBI DBCN extension for KVM RISC-V so let
+> us change the KVM RISC-V SBI specification version to v2.0.
+> 
+> Signed-off-by: Anup Patel <apatel@ventanamicro.com>
+> ---
+>  arch/riscv/include/asm/kvm_vcpu_sbi.h | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/arch/riscv/include/asm/kvm_vcpu_sbi.h b/arch/riscv/include/asm/kvm_vcpu_sbi.h
+> index cdcf0ff07be7..8d6d4dce8a5e 100644
+> --- a/arch/riscv/include/asm/kvm_vcpu_sbi.h
+> +++ b/arch/riscv/include/asm/kvm_vcpu_sbi.h
+> @@ -11,7 +11,7 @@
 >  
->  #include "hvc_console.h"
+>  #define KVM_SBI_IMPID 3
 >  
-> +#ifdef CONFIG_RISCV_SBI_V01
+> -#define KVM_SBI_VERSION_MAJOR 1
+> +#define KVM_SBI_VERSION_MAJOR 2
 
-Please no #ifdef in a .c file, that's not a good style for Linux code at
-all.
-
-And what if you want to build the driver for both options here?  What
-will happen?
-
-> +static int hvc_sbi_dbcn_tty_put(uint32_t vtermno, const char *buf, int count)
->  {
-> -	return PTR_ERR_OR_ZERO(hvc_alloc(0, 0, &hvc_sbi_ops, 16));
-> +	phys_addr_t pa;
-> +	struct sbiret ret;
-> +
-> +	if (is_vmalloc_addr(buf))
-> +		pa = page_to_phys(vmalloc_to_page(buf)) + offset_in_page(buf);
-> +	else
-> +		pa = __pa(buf);
-> +
-> +	ret = sbi_ecall(SBI_EXT_DBCN, SBI_EXT_DBCN_CONSOLE_WRITE,
-> +#ifdef CONFIG_32BIT
-> +		  count, pa, (u64)pa >> 32,
-> +#else
-> +		  count, pa, 0,
-> +#endif
-
-This is not how to do an api, sorry, again, please no #ifdef if you want
-to support this code for the next 20+ years.
+What does this number mean?  Who checks it?  Why do you have to keep
+incrementing it?
 
 thanks,
 
-gre gk-h
+greg k-h
 
