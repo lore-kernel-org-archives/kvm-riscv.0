@@ -1,70 +1,94 @@
 From: Anup Patel <apatel@ventanamicro.com>
-Date: Wed, 11 Oct 2023 11:49:14 +0530
-Subject: [PATCH 2/6] RISC-V: KVM: Change the SBI specification version to v2.0
-In-Reply-To: <2023101013-overfeed-online-7f69@gregkh>
+Date: Wed, 11 Oct 2023 12:02:30 +0530
+Subject: [PATCH 3/6] RISC-V: KVM: Forward SBI DBCN extension to user-space
+In-Reply-To: <2023101048-attach-drift-d77b@gregkh>
 References: <20231010170503.657189-1-apatel@ventanamicro.com>
- <20231010170503.657189-3-apatel@ventanamicro.com> <2023101013-overfeed-online-7f69@gregkh>
-Message-ID: <CAK9=C2WbW_WvoU59Ba9VrKf5GbbXmMOhB2jsiAp0a=SJYh3d7w@mail.gmail.com>
+ <20231010170503.657189-4-apatel@ventanamicro.com> <2023101048-attach-drift-d77b@gregkh>
+Message-ID: <CAK9=C2UEcQpHg8WZM3XxLa5yCEZ6wtWJj=8g5_m_0_RkiNMkTA@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Oct 10, 2023 at 10:43?PM Greg Kroah-Hartman
+On Tue, Oct 10, 2023 at 10:45?PM Greg Kroah-Hartman
 <gregkh@linuxfoundation.org> wrote:
 >
-> On Tue, Oct 10, 2023 at 10:34:59PM +0530, Anup Patel wrote:
-> > We will be implementing SBI DBCN extension for KVM RISC-V so let
-> > us change the KVM RISC-V SBI specification version to v2.0.
+> On Tue, Oct 10, 2023 at 10:35:00PM +0530, Anup Patel wrote:
+> > The SBI DBCN extension needs to be emulated in user-space
+>
+> Why?
+
+The SBI debug console is similar to a console port available to
+KVM Guest so the KVM user space tool (i.e. QEMU-KVM or
+KVMTOOL) can redirect the input/output of SBI debug console
+wherever it wants (e.g.  telnet, file, stdio, etc).
+
+We forward SBI DBCN calls to KVM user space so that the
+in-kernel KVM does not need to be aware of the guest
+console devices.
+
+>
+> > so let
+> > us forward console_puts() call to user-space.
+>
+> What could go wrong!
+>
+> Why does userspace have to get involved in a console message?  Why is
+> this needed at all?  The kernel can not handle userspace consoles as
+> obviously they have to be re-entrant and irq safe.
+
+As mentioned above, these are KVM guest console messages which
+the VMM (i.e. KVM user-space) can choose to manage on its own.
+
+This is more about providing flexibility to KVM user-space which
+allows it to manage guest console devices.
+
+>
 > >
 > > Signed-off-by: Anup Patel <apatel@ventanamicro.com>
 > > ---
-> >  arch/riscv/include/asm/kvm_vcpu_sbi.h | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> >  arch/riscv/include/asm/kvm_vcpu_sbi.h |  1 +
+> >  arch/riscv/include/uapi/asm/kvm.h     |  1 +
+> >  arch/riscv/kvm/vcpu_sbi.c             |  4 ++++
+> >  arch/riscv/kvm/vcpu_sbi_replace.c     | 31 +++++++++++++++++++++++++++
+> >  4 files changed, 37 insertions(+)
 > >
 > > diff --git a/arch/riscv/include/asm/kvm_vcpu_sbi.h b/arch/riscv/include/asm/kvm_vcpu_sbi.h
-> > index cdcf0ff07be7..8d6d4dce8a5e 100644
+> > index 8d6d4dce8a5e..a85f95eb6e85 100644
 > > --- a/arch/riscv/include/asm/kvm_vcpu_sbi.h
 > > +++ b/arch/riscv/include/asm/kvm_vcpu_sbi.h
-> > @@ -11,7 +11,7 @@
+> > @@ -69,6 +69,7 @@ extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_ipi;
+> >  extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_rfence;
+> >  extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_srst;
+> >  extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_hsm;
+> > +extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_dbcn;
+> >  extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_experimental;
+> >  extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_vendor;
 > >
-> >  #define KVM_SBI_IMPID 3
-> >
-> > -#define KVM_SBI_VERSION_MAJOR 1
-> > +#define KVM_SBI_VERSION_MAJOR 2
+> > diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
+> > index 917d8cc2489e..60d3b21dead7 100644
+> > --- a/arch/riscv/include/uapi/asm/kvm.h
+> > +++ b/arch/riscv/include/uapi/asm/kvm.h
+> > @@ -156,6 +156,7 @@ enum KVM_RISCV_SBI_EXT_ID {
+> >       KVM_RISCV_SBI_EXT_PMU,
+> >       KVM_RISCV_SBI_EXT_EXPERIMENTAL,
+> >       KVM_RISCV_SBI_EXT_VENDOR,
+> > +     KVM_RISCV_SBI_EXT_DBCN,
+> >       KVM_RISCV_SBI_EXT_MAX,
 >
-> What does this number mean?  Who checks it?  Why do you have to keep
-> incrementing it?
+> You just broke a user/kernel ABI here, why?
 
-This number is the SBI specification version implemented by KVM RISC-V
-for the Guest kernel.
-
-The original sbi_console_putchar() and sbi_console_getchar() are legacy
-functions (aka SBI v0.1) which were introduced a few years back along
-with the Linux RISC-V port.
-
-The latest SBI v2.0 specification (which is now frozen) introduces a new
-SBI debug console extension which replaces legacy sbi_console_putchar()
-and sbi_console_getchar() functions with better alternatives.
-(Refer, https://github.com/riscv-non-isa/riscv-sbi-doc/releases/download/commit-fe4562532a9cc57e5743b6466946c5e5c98c73ca/riscv-sbi.pdf)
-
-This series adds SBI debug console implementation in KVM RISC-V
-so the SBI specification version advertised by KVM RISC-V must also be
-upgraded to v2.0.
-
-Regarding who checks its, the SBI client drivers in the Linux kernel
-will check SBI specification version implemented by higher privilege
-mode (M-mode firmware or HS-mode hypervisor) before probing
-the SBI extension. For example, the HVC SBI driver (PATCH5)
-will ensure SBI spec version to be at least v2.0 before probing
-SBI debug console extension.
+The KVM_RISCV_SBI_EXT_MAX only represents the number
+of entries in "enum KVM_RISCV_SBI_EXT_ID" so we are not
+breaking "enum KVM_RISCV_SBI_EXT_ID" rather appending
+new ID to existing enum.
 
 >
 > thanks,
 >
 > greg k-h
 
-Regards,
+Thanks,
 Anup
 
