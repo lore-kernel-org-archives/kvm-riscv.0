@@ -1,48 +1,36 @@
 From: Anup Patel <apatel@ventanamicro.com>
-Date: Thu, 12 Oct 2023 10:45:02 +0530
-Subject: [PATCH v2 1/8] RISC-V: Add defines for SBI debug console extension
+Date: Thu, 12 Oct 2023 10:45:03 +0530
+Subject: [PATCH v2 2/8] RISC-V: KVM: Change the SBI specification version to v2.0
 In-Reply-To: <20231012051509.738750-1-apatel@ventanamicro.com>
 References: <20231012051509.738750-1-apatel@ventanamicro.com>
-Message-ID: <20231012051509.738750-2-apatel@ventanamicro.com>
+Message-ID: <20231012051509.738750-3-apatel@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-We add SBI debug console extension related defines/enum to the
-asm/sbi.h header.
+We will be implementing SBI DBCN extension for KVM RISC-V so let
+us change the KVM RISC-V SBI specification version to v2.0.
 
 Signed-off-by: Anup Patel <apatel@ventanamicro.com>
 ---
- arch/riscv/include/asm/sbi.h | 7 +++++++
- 1 file changed, 7 insertions(+)
+ arch/riscv/include/asm/kvm_vcpu_sbi.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/riscv/include/asm/sbi.h b/arch/riscv/include/asm/sbi.h
-index 5b4a1bf5f439..12dfda6bb924 100644
---- a/arch/riscv/include/asm/sbi.h
-+++ b/arch/riscv/include/asm/sbi.h
-@@ -30,6 +30,7 @@ enum sbi_ext_id {
- 	SBI_EXT_HSM = 0x48534D,
- 	SBI_EXT_SRST = 0x53525354,
- 	SBI_EXT_PMU = 0x504D55,
-+	SBI_EXT_DBCN = 0x4442434E,
+diff --git a/arch/riscv/include/asm/kvm_vcpu_sbi.h b/arch/riscv/include/asm/kvm_vcpu_sbi.h
+index cdcf0ff07be7..8d6d4dce8a5e 100644
+--- a/arch/riscv/include/asm/kvm_vcpu_sbi.h
++++ b/arch/riscv/include/asm/kvm_vcpu_sbi.h
+@@ -11,7 +11,7 @@
  
- 	/* Experimentals extensions must lie within this range */
- 	SBI_EXT_EXPERIMENTAL_START = 0x08000000,
-@@ -236,6 +237,12 @@ enum sbi_pmu_ctr_type {
- /* Flags defined for counter stop function */
- #define SBI_PMU_STOP_FLAG_RESET (1 << 0)
+ #define KVM_SBI_IMPID 3
  
-+enum sbi_ext_dbcn_fid {
-+	SBI_EXT_DBCN_CONSOLE_WRITE = 0,
-+	SBI_EXT_DBCN_CONSOLE_READ = 1,
-+	SBI_EXT_DBCN_CONSOLE_WRITE_BYTE = 2,
-+};
-+
- #define SBI_SPEC_VERSION_DEFAULT	0x1
- #define SBI_SPEC_VERSION_MAJOR_SHIFT	24
- #define SBI_SPEC_VERSION_MAJOR_MASK	0x7f
+-#define KVM_SBI_VERSION_MAJOR 1
++#define KVM_SBI_VERSION_MAJOR 2
+ #define KVM_SBI_VERSION_MINOR 0
+ 
+ enum kvm_riscv_sbi_ext_status {
 -- 
 2.34.1
 
