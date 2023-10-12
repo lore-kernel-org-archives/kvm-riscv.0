@@ -1,63 +1,65 @@
 From: Anup Patel <apatel@ventanamicro.com>
-Date: Thu, 12 Oct 2023 09:50:29 +0530
-Subject: [kvmtool PATCH v2 0/6] RISC-V AIA irqchip and Svnapot support
-In-Reply-To: <20230918125730.1371985-1-apatel@ventanamicro.com>
-References: <20230918125730.1371985-1-apatel@ventanamicro.com>
-Message-ID: <CAK9=C2Vvu=kcR5CtzSFFh4DFvqxMsLrLNAHpMxoxrCf8nUixbw@mail.gmail.com>
+Date: Thu, 12 Oct 2023 10:45:01 +0530
+Subject: [PATCH v2 0/8] RISC-V SBI debug console extension support
+Message-ID: <20231012051509.738750-1-apatel@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Will,
+The SBI v2.0 specification is now frozen. The SBI v2.0 specification defines
+SBI debug console (DBCN) extension which replaces the legacy SBI v0.1
+functions sbi_console_putchar() and sbi_console_getchar().
+(Refer v2.0-rc5 at https://github.com/riscv-non-isa/riscv-sbi-doc/releases)
 
-On Mon, Sep 18, 2023 at 6:27?PM Anup Patel <apatel@ventanamicro.com> wrote:
->
-> The latest KVM in Linux-6.5 has support for:
-> 1) Svnapot ISA extension support
-> 2) AIA in-kernel irqchip support
->
-> This series adds corresponding changes in KVMTOOL to use the above
-> mentioned features for Guest/VM.
->
-> These patches can also be found in the riscv_aia_v2 branch at:
-> https://github.com/avpatel/kvmtool.git
->
-> Changes since v1:
->  - Rebased on commit 9cb1b46cb765972326a46bdba867d441a842af56
->  - Updated PATCH1 to sync header with released Linux-6.5
->
-> Anup Patel (6):
->   Sync-up header with Linux-6.5 for KVM RISC-V
->   riscv: Add Svnapot extension support
->   riscv: Make irqchip support pluggable
->   riscv: Add IRQFD support for in-kernel AIA irqchip
->   riscv: Use AIA in-kernel irqchip whenever KVM RISC-V supports
->   riscv: Fix guest/init linkage for multilib toolchain
+This series adds support for SBI debug console (DBCN) extension in KVM RISC-V
+and Linux RISC-V.
 
-Friendly ping ?
+To try these patches with KVM RISC-V, use KVMTOOL from riscv_sbi_dbcn_v1
+branch at: https://github.com/avpatel/kvmtool.git
 
->
->  Makefile                            |   3 +
->  include/linux/kvm.h                 |   6 +-
->  riscv/aia.c                         | 227 ++++++++++++++++++++++++++++
->  riscv/fdt.c                         |  15 +-
->  riscv/include/asm/kvm.h             |  81 ++++++++++
->  riscv/include/kvm/fdt-arch.h        |   8 +-
->  riscv/include/kvm/kvm-arch.h        |  38 ++++-
->  riscv/include/kvm/kvm-config-arch.h |   3 +
->  riscv/irq.c                         | 138 ++++++++++++++++-
->  riscv/kvm.c                         |   2 +
->  riscv/pci.c                         |  32 ++--
->  riscv/plic.c                        |  61 ++++----
->  12 files changed, 563 insertions(+), 51 deletions(-)
->  create mode 100644 riscv/aia.c
->
-> --
-> 2.34.1
->
+These patches can also be found in the riscv_sbi_dbcn_v2 branch at:
+https://github.com/avpatel/linux.git
 
-Regards,
-Anup
+Changes since v1:
+ - Remove use of #ifdef from PATCH4 and PATCH5 of the v1 series
+ - Improved commit description of PATCH3 in v1 series
+ - Introduced new PATCH3 in this series to allow some SBI extensions
+   (such as SBI DBCN) do to disabled by default so that older KVM user space
+   work fine and newer KVM user space have to explicitly opt-in for emulating
+   SBI DBCN.
+ - Introduced new PATCH5 in this series which adds inline version of
+   sbi_console_getchar() and sbi_console_putchar() for the case where
+   CONFIG_RISCV_SBI_V01 is disabled.
+
+Anup Patel (7):
+  RISC-V: Add defines for SBI debug console extension
+  RISC-V: KVM: Change the SBI specification version to v2.0
+  RISC-V: KVM: Allow some SBI extensions to be disabled by default
+  RISC-V: KVM: Forward SBI DBCN extension to user-space
+  RISC-V: Add inline version of sbi_console_putchar/getchar() functions
+  tty/serial: Add RISC-V SBI debug console based earlycon
+  RISC-V: Enable SBI based earlycon support
+
+Atish Patra (1):
+  tty: Add SBI debug console support to HVC SBI driver
+
+ arch/riscv/configs/defconfig            |  1 +
+ arch/riscv/configs/rv32_defconfig       |  1 +
+ arch/riscv/include/asm/kvm_vcpu_sbi.h   |  7 ++-
+ arch/riscv/include/asm/sbi.h            | 12 ++++
+ arch/riscv/include/uapi/asm/kvm.h       |  1 +
+ arch/riscv/kvm/vcpu.c                   |  6 ++
+ arch/riscv/kvm/vcpu_sbi.c               | 49 +++++++++-------
+ arch/riscv/kvm/vcpu_sbi_replace.c       | 32 +++++++++++
+ drivers/tty/hvc/Kconfig                 |  2 +-
+ drivers/tty/hvc/hvc_riscv_sbi.c         | 76 ++++++++++++++++++++++---
+ drivers/tty/serial/Kconfig              |  2 +-
+ drivers/tty/serial/earlycon-riscv-sbi.c | 32 +++++++++--
+ 12 files changed, 188 insertions(+), 33 deletions(-)
+
+-- 
+2.34.1
+
 
