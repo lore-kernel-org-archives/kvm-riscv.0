@@ -1,102 +1,65 @@
-From: Björn Töpel <bjorn@kernel.org>
-Date: Thu, 12 Oct 2023 13:38:44 +0200
-Subject: [PATCH v2 7/8] tty: Add SBI debug console support to HVC SBI
- driver
-In-Reply-To: <20231012051509.738750-8-apatel@ventanamicro.com>
-References: <20231012051509.738750-1-apatel@ventanamicro.com>
- <20231012051509.738750-8-apatel@ventanamicro.com>
-Message-ID: <87fs2ghxyz.fsf@all.your.base.are.belong.to.us>
+From: Marco Elver <elver@google.com>
+Date: Thu, 12 Oct 2023 14:13:44 +0200
+Subject: [PATCH 4/5] riscv: Suffix all page table entry pointers with 'p'
+In-Reply-To: <20231002151031.110551-5-alexghiti@rivosinc.com>
+References: <20231002151031.110551-1-alexghiti@rivosinc.com> <20231002151031.110551-5-alexghiti@rivosinc.com>
+Message-ID: <CANpmjNMvQUSNU+U80nWrUWPc4sszvSTGvivJjk0HOw8LRWx1sg@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Anup Patel <apatel@ventanamicro.com> writes:
-
-> From: Atish Patra <atishp@rivosinc.com>
+On Mon, 2 Oct 2023 at 17:14, Alexandre Ghiti <alexghiti@rivosinc.com> wrote:
 >
-> RISC-V SBI specification supports advanced debug console
-> support via SBI DBCN extension.
+> That makes it more clear what the underlying type is, no functional
+> changes intended.
 >
-> Extend the HVC SBI driver to support it.
->
-> Signed-off-by: Atish Patra <atishp@rivosinc.com>
-> Signed-off-by: Anup Patel <apatel@ventanamicro.com>
+> Signed-off-by: Alexandre Ghiti <alexghiti@rivosinc.com>
 > ---
->  drivers/tty/hvc/Kconfig         |  2 +-
->  drivers/tty/hvc/hvc_riscv_sbi.c | 76 ++++++++++++++++++++++++++++++---
->  2 files changed, 70 insertions(+), 8 deletions(-)
+>  arch/riscv/include/asm/kfence.h     |  6 +-
+>  arch/riscv/include/asm/kvm_host.h   |  2 +-
+>  arch/riscv/include/asm/pgalloc.h    | 86 +++++++++++++-------------
+>  arch/riscv/include/asm/pgtable-64.h | 20 +++---
+>  arch/riscv/kvm/mmu.c                | 22 +++----
+>  arch/riscv/mm/fault.c               | 38 ++++++------
+>  arch/riscv/mm/hugetlbpage.c         | 78 +++++++++++------------
+>  arch/riscv/mm/init.c                | 30 ++++-----
+>  arch/riscv/mm/kasan_init.c          | 96 ++++++++++++++---------------
+>  arch/riscv/mm/pageattr.c            | 74 +++++++++++-----------
+>  arch/riscv/mm/pgtable.c             | 46 +++++++-------
+>  11 files changed, 251 insertions(+), 247 deletions(-)
 >
-> diff --git a/drivers/tty/hvc/Kconfig b/drivers/tty/hvc/Kconfig
-> index 4f9264d005c0..6e05c5c7bca1 100644
-> --- a/drivers/tty/hvc/Kconfig
-> +++ b/drivers/tty/hvc/Kconfig
-> @@ -108,7 +108,7 @@ config HVC_DCC_SERIALIZE_SMP
->  
->  config HVC_RISCV_SBI
->  	bool "RISC-V SBI console support"
-> -	depends on RISCV_SBI_V01
-> +	depends on RISCV_SBI
->  	select HVC_DRIVER
->  	help
->  	  This enables support for console output via RISC-V SBI calls, which
-> diff --git a/drivers/tty/hvc/hvc_riscv_sbi.c b/drivers/tty/hvc/hvc_riscv_sbi.c
-> index 31f53fa77e4a..da318d7f55c5 100644
-> --- a/drivers/tty/hvc/hvc_riscv_sbi.c
-> +++ b/drivers/tty/hvc/hvc_riscv_sbi.c
-> @@ -39,21 +39,83 @@ static int hvc_sbi_tty_get(uint32_t vtermno, char *buf, int count)
->  	return i;
->  }
->  
-> -static const struct hv_ops hvc_sbi_ops = {
-> +static const struct hv_ops hvc_sbi_v01_ops = {
->  	.get_chars = hvc_sbi_tty_get,
->  	.put_chars = hvc_sbi_tty_put,
->  };
->  
-> -static int __init hvc_sbi_init(void)
-> +static int hvc_sbi_dbcn_tty_put(uint32_t vtermno, const char *buf, int count)
+> diff --git a/arch/riscv/include/asm/kfence.h b/arch/riscv/include/asm/kfence.h
+> index 0bbffd528096..3b482d0a4633 100644
+> --- a/arch/riscv/include/asm/kfence.h
+> +++ b/arch/riscv/include/asm/kfence.h
+> @@ -15,12 +15,12 @@ static inline bool arch_kfence_init_pool(void)
+>
+>  static inline bool kfence_protect_page(unsigned long addr, bool protect)
 >  {
-> -	return PTR_ERR_OR_ZERO(hvc_alloc(0, 0, &hvc_sbi_ops, 16));
-> +	phys_addr_t pa;
-> +	struct sbiret ret;
-> +
-> +	if (is_vmalloc_addr(buf))
-> +		pa = page_to_phys(vmalloc_to_page(buf)) + offset_in_page(buf);
+> -       pte_t *pte = virt_to_kpte(addr);
+> +       pte_t *ptep = virt_to_kpte(addr);
+>
+>         if (protect)
+> -               set_pte(pte, __pte(pte_val(*pte) & ~_PAGE_PRESENT));
+> +               set_pte(ptep, __pte(pte_val(*ptep) & ~_PAGE_PRESENT));
+>         else
+> -               set_pte(pte, __pte(pte_val(*pte) | _PAGE_PRESENT));
+> +               set_pte(ptep, __pte(pte_val(*ptep) | _PAGE_PRESENT));
+>
+>         flush_tlb_kernel_range(addr, addr + PAGE_SIZE);
 
-What is assumed from buf here? If buf is crossing a page, you need to
-adjust the count, no?
+As others expressed, this seems unnecessary. It doesn't make the code
+any clearer to me.
 
-> +	else
-> +		pa = __pa(buf);
-> +
-> +	if (IS_ENABLED(CONFIG_32BIT))
-> +		ret = sbi_ecall(SBI_EXT_DBCN, SBI_EXT_DBCN_CONSOLE_WRITE,
-> +				count, lower_32_bits(pa), upper_32_bits(pa),
-> +				0, 0, 0);
-> +	else
-> +		ret = sbi_ecall(SBI_EXT_DBCN, SBI_EXT_DBCN_CONSOLE_WRITE,
-> +				count, pa, 0, 0, 0, 0);
-> +	if (ret.error)
-> +		return 0;
-> +
-> +	return count;
->  }
-> -device_initcall(hvc_sbi_init);
->  
-> -static int __init hvc_sbi_console_init(void)
-> +static int hvc_sbi_dbcn_tty_get(uint32_t vtermno, char *buf, int count)
->  {
-> -	hvc_instantiate(0, 0, &hvc_sbi_ops);
-> +	phys_addr_t pa;
-> +	struct sbiret ret;
-> +
-> +	if (is_vmalloc_addr(buf))
-> +		pa = page_to_phys(vmalloc_to_page(buf)) + offset_in_page(buf);
+However, for your subsystem you make the rules. I would just suggest
+to keep things consistent with other kernel code, although there are
+already stylistic deviations between subsystems (e.g. comment style in
+net and rcu vs rest), I'd simply vote for fewer deviations between
+subsystems.
 
-And definitely adjust count here, if we're crossing a page!
-
-
-Bj?rn
+Real downsides of stylistic changes that have unclear benefit:
+1. stable backports become more difficult.
+2. chasing a change with git blame becomes harder.
 
