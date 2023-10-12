@@ -1,65 +1,81 @@
-From: Marco Elver <elver@google.com>
-Date: Thu, 12 Oct 2023 14:13:44 +0200
-Subject: [PATCH 4/5] riscv: Suffix all page table entry pointers with 'p'
-In-Reply-To: <20231002151031.110551-5-alexghiti@rivosinc.com>
-References: <20231002151031.110551-1-alexghiti@rivosinc.com> <20231002151031.110551-5-alexghiti@rivosinc.com>
-Message-ID: <CANpmjNMvQUSNU+U80nWrUWPc4sszvSTGvivJjk0HOw8LRWx1sg@mail.gmail.com>
+From: Anup Patel <anup@brainfault.org>
+Date: Thu, 12 Oct 2023 19:34:27 +0530
+Subject: [PATCH v3 0/6] KVM RISC-V Conditional Operations
+In-Reply-To: <CAAhSdy0P=5WiFfFyMHjkd63JKCcjsTsvhLTNgUB+LOCd8A9iOQ@mail.gmail.com>
+References: <20231003035226.1945725-1-apatel@ventanamicro.com> <CAAhSdy0P=5WiFfFyMHjkd63JKCcjsTsvhLTNgUB+LOCd8A9iOQ@mail.gmail.com>
+Message-ID: <CAAhSdy2XLqB-NPVfqYdO07bPxkc2VXBpethHppiKkBms2ysvZA@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, 2 Oct 2023 at 17:14, Alexandre Ghiti <alexghiti@rivosinc.com> wrote:
->
-> That makes it more clear what the underlying type is, no functional
-> changes intended.
->
-> Signed-off-by: Alexandre Ghiti <alexghiti@rivosinc.com>
-> ---
->  arch/riscv/include/asm/kfence.h     |  6 +-
->  arch/riscv/include/asm/kvm_host.h   |  2 +-
->  arch/riscv/include/asm/pgalloc.h    | 86 +++++++++++++-------------
->  arch/riscv/include/asm/pgtable-64.h | 20 +++---
->  arch/riscv/kvm/mmu.c                | 22 +++----
->  arch/riscv/mm/fault.c               | 38 ++++++------
->  arch/riscv/mm/hugetlbpage.c         | 78 +++++++++++------------
->  arch/riscv/mm/init.c                | 30 ++++-----
->  arch/riscv/mm/kasan_init.c          | 96 ++++++++++++++---------------
->  arch/riscv/mm/pageattr.c            | 74 +++++++++++-----------
->  arch/riscv/mm/pgtable.c             | 46 +++++++-------
->  11 files changed, 251 insertions(+), 247 deletions(-)
->
-> diff --git a/arch/riscv/include/asm/kfence.h b/arch/riscv/include/asm/kfence.h
-> index 0bbffd528096..3b482d0a4633 100644
-> --- a/arch/riscv/include/asm/kfence.h
-> +++ b/arch/riscv/include/asm/kfence.h
-> @@ -15,12 +15,12 @@ static inline bool arch_kfence_init_pool(void)
->
->  static inline bool kfence_protect_page(unsigned long addr, bool protect)
->  {
-> -       pte_t *pte = virt_to_kpte(addr);
-> +       pte_t *ptep = virt_to_kpte(addr);
->
->         if (protect)
-> -               set_pte(pte, __pte(pte_val(*pte) & ~_PAGE_PRESENT));
-> +               set_pte(ptep, __pte(pte_val(*ptep) & ~_PAGE_PRESENT));
->         else
-> -               set_pte(pte, __pte(pte_val(*pte) | _PAGE_PRESENT));
-> +               set_pte(ptep, __pte(pte_val(*ptep) | _PAGE_PRESENT));
->
->         flush_tlb_kernel_range(addr, addr + PAGE_SIZE);
+Hi Palmer,
 
-As others expressed, this seems unnecessary. It doesn't make the code
-any clearer to me.
+On Thu, Oct 5, 2023 at 11:35?AM Anup Patel <anup@brainfault.org> wrote:
+>
+> On Tue, Oct 3, 2023 at 9:22?AM Anup Patel <apatel@ventanamicro.com> wrote:
+> >
+> > This series extends KVM RISC-V to allow Guest/VM discover and use
+> > conditional operations related ISA extensions (namely XVentanaCondOps
+> > and Zicond).
+> >
+> > To try these patches, use KVMTOOL from riscv_zbx_zicntr_smstateen_condops_v1
+> > branch at: https://github.com/avpatel/kvmtool.git
+> >
+> > These patches are based upon the latest riscv_kvm_queue and can also be
+> > found in the riscv_kvm_condops_v3 branch at:
+> > https://github.com/avpatel/linux.git
+> >
+> > Changes since v2:
+> >  - Dropped patch1, patch2, and patch5 since these patches don't meet
+> >    the requirements of patch acceptance policy.
+> >
+> > Changes since v1:
+> >  - Rebased the series on riscv_kvm_queue
+> >  - Split PATCH1 and PATCH2 of v1 series into two patches
+> >  - Added separate test configs for XVentanaCondOps and Zicond in PATCH7
+> >    of v1 series.
+> >
+> > Anup Patel (6):
+> >   dt-bindings: riscv: Add Zicond extension entry
+> >   RISC-V: Detect Zicond from ISA string
+> >   RISC-V: KVM: Allow Zicond extension for Guest/VM
+> >   KVM: riscv: selftests: Add senvcfg register to get-reg-list test
+> >   KVM: riscv: selftests: Add smstateen registers to get-reg-list test
+> >   KVM: riscv: selftests: Add condops extensions to get-reg-list test
+>
+> Queued this series for Linux-6.7
 
-However, for your subsystem you make the rules. I would just suggest
-to keep things consistent with other kernel code, although there are
-already stylistic deviations between subsystems (e.g. comment style in
-net and rcu vs rest), I'd simply vote for fewer deviations between
-subsystems.
+I have created shared tag kvm-riscv-shared-tag-6.7 in the
+KVM RISC-V repo at:
+https://github.com/kvm-riscv/linux.git
 
-Real downsides of stylistic changes that have unclear benefit:
-1. stable backports become more difficult.
-2. chasing a change with git blame becomes harder.
+This shared tag is based on 6.6-rc5 and contains following 4 patches:
+dt-bindings: riscv: Add Zicond extension entry
+RISC-V: Detect Zicond from ISA string
+dt-bindings: riscv: Add smstateen entry
+RISC-V: Detect Smstateen extension
+
+Thanks,
+Anup
+
+
+
+>
+> Thanks,
+> Anup
+>
+> >
+> >  .../devicetree/bindings/riscv/extensions.yaml |  6 +++
+> >  arch/riscv/include/asm/hwcap.h                |  1 +
+> >  arch/riscv/include/uapi/asm/kvm.h             |  1 +
+> >  arch/riscv/kernel/cpufeature.c                |  1 +
+> >  arch/riscv/kvm/vcpu_onereg.c                  |  2 +
+> >  .../selftests/kvm/riscv/get-reg-list.c        | 54 +++++++++++++++++++
+> >  6 files changed, 65 insertions(+)
+> >
+> > --
+> > 2.34.1
+> >
 
