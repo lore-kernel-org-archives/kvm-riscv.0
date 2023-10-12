@@ -1,103 +1,62 @@
 From: Anup Patel <apatel@ventanamicro.com>
-Date: Wed, 11 Oct 2023 21:08:10 +0530
-Subject: [PATCH 2/6] RISC-V: KVM: Change the SBI specification version to v2.0
-In-Reply-To: <2023101148-anatomy-mantis-a0f5@gregkh>
-References: <20231010170503.657189-1-apatel@ventanamicro.com>
- <20231010170503.657189-3-apatel@ventanamicro.com> <2023101013-overfeed-online-7f69@gregkh>
- <CAK9=C2WbW_WvoU59Ba9VrKf5GbbXmMOhB2jsiAp0a=SJYh3d7w@mail.gmail.com>
- <2023101107-endorse-large-ef50@gregkh> <CAK9=C2XYQ0U9CbuCg6cTf79sSsy+0BxF5mBE0R+E3s9iZFzEWw@mail.gmail.com>
- <2023101148-anatomy-mantis-a0f5@gregkh>
-Message-ID: <CAK9=C2XpfQc2eoBmrd5ZicR+HO34-2BZdvrNu_CQ5qC47WKBVw@mail.gmail.com>
+Date: Thu, 12 Oct 2023 09:50:29 +0530
+Subject: [kvmtool PATCH v2 0/6] RISC-V AIA irqchip and Svnapot support
+In-Reply-To: <20230918125730.1371985-1-apatel@ventanamicro.com>
+References: <20230918125730.1371985-1-apatel@ventanamicro.com>
+Message-ID: <CAK9=C2Vvu=kcR5CtzSFFh4DFvqxMsLrLNAHpMxoxrCf8nUixbw@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Oct 11, 2023 at 8:56?PM Greg Kroah-Hartman
-<gregkh@linuxfoundation.org> wrote:
->
-> On Wed, Oct 11, 2023 at 04:32:22PM +0530, Anup Patel wrote:
-> > On Wed, Oct 11, 2023 at 12:57?PM Greg Kroah-Hartman
-> > <gregkh@linuxfoundation.org> wrote:
-> > >
-> > > On Wed, Oct 11, 2023 at 11:49:14AM +0530, Anup Patel wrote:
-> > > > On Tue, Oct 10, 2023 at 10:43?PM Greg Kroah-Hartman
-> > > > <gregkh@linuxfoundation.org> wrote:
-> > > > >
-> > > > > On Tue, Oct 10, 2023 at 10:34:59PM +0530, Anup Patel wrote:
-> > > > > > We will be implementing SBI DBCN extension for KVM RISC-V so let
-> > > > > > us change the KVM RISC-V SBI specification version to v2.0.
-> > > > > >
-> > > > > > Signed-off-by: Anup Patel <apatel@ventanamicro.com>
-> > > > > > ---
-> > > > > >  arch/riscv/include/asm/kvm_vcpu_sbi.h | 2 +-
-> > > > > >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > > > > >
-> > > > > > diff --git a/arch/riscv/include/asm/kvm_vcpu_sbi.h b/arch/riscv/include/asm/kvm_vcpu_sbi.h
-> > > > > > index cdcf0ff07be7..8d6d4dce8a5e 100644
-> > > > > > --- a/arch/riscv/include/asm/kvm_vcpu_sbi.h
-> > > > > > +++ b/arch/riscv/include/asm/kvm_vcpu_sbi.h
-> > > > > > @@ -11,7 +11,7 @@
-> > > > > >
-> > > > > >  #define KVM_SBI_IMPID 3
-> > > > > >
-> > > > > > -#define KVM_SBI_VERSION_MAJOR 1
-> > > > > > +#define KVM_SBI_VERSION_MAJOR 2
-> > > > >
-> > > > > What does this number mean?  Who checks it?  Why do you have to keep
-> > > > > incrementing it?
-> > > >
-> > > > This number is the SBI specification version implemented by KVM RISC-V
-> > > > for the Guest kernel.
-> > > >
-> > > > The original sbi_console_putchar() and sbi_console_getchar() are legacy
-> > > > functions (aka SBI v0.1) which were introduced a few years back along
-> > > > with the Linux RISC-V port.
-> > > >
-> > > > The latest SBI v2.0 specification (which is now frozen) introduces a new
-> > > > SBI debug console extension which replaces legacy sbi_console_putchar()
-> > > > and sbi_console_getchar() functions with better alternatives.
-> > > > (Refer, https://github.com/riscv-non-isa/riscv-sbi-doc/releases/download/commit-fe4562532a9cc57e5743b6466946c5e5c98c73ca/riscv-sbi.pdf)
-> > > >
-> > > > This series adds SBI debug console implementation in KVM RISC-V
-> > > > so the SBI specification version advertised by KVM RISC-V must also be
-> > > > upgraded to v2.0.
-> > > >
-> > > > Regarding who checks its, the SBI client drivers in the Linux kernel
-> > > > will check SBI specification version implemented by higher privilege
-> > > > mode (M-mode firmware or HS-mode hypervisor) before probing
-> > > > the SBI extension. For example, the HVC SBI driver (PATCH5)
-> > > > will ensure SBI spec version to be at least v2.0 before probing
-> > > > SBI debug console extension.
-> > >
-> > > Is this api backwards compatible, or did you just break existing
-> > > userspace that only expects version 1.0?
-> >
-> > The legacy sbi_console_putchar() and sbi_console_getchar()
-> > functions have not changed so it does not break existing
-> > user-space.
-> >
-> > The new SBI DBCN functions to be implemented by KVM
-> > user space are:
-> > sbi_debug_console_write()
-> > sbi_debug_console_read()
-> > sbi_debug_console_write_byte()
->
-> And where exactly is that code for us to review that this is tested?
+Hi Will,
 
-The KVM selftests for KVM RISC-V are under development. Eventually,
-we will have dedicated KVM selftests for the SBI extensions implemented
-by KVM RISC-V.
+On Mon, Sep 18, 2023 at 6:27?PM Anup Patel <apatel@ventanamicro.com> wrote:
+>
+> The latest KVM in Linux-6.5 has support for:
+> 1) Svnapot ISA extension support
+> 2) AIA in-kernel irqchip support
+>
+> This series adds corresponding changes in KVMTOOL to use the above
+> mentioned features for Guest/VM.
+>
+> These patches can also be found in the riscv_aia_v2 branch at:
+> https://github.com/avpatel/kvmtool.git
+>
+> Changes since v1:
+>  - Rebased on commit 9cb1b46cb765972326a46bdba867d441a842af56
+>  - Updated PATCH1 to sync header with released Linux-6.5
+>
+> Anup Patel (6):
+>   Sync-up header with Linux-6.5 for KVM RISC-V
+>   riscv: Add Svnapot extension support
+>   riscv: Make irqchip support pluggable
+>   riscv: Add IRQFD support for in-kernel AIA irqchip
+>   riscv: Use AIA in-kernel irqchip whenever KVM RISC-V supports
+>   riscv: Fix guest/init linkage for multilib toolchain
 
-Until then we have KVMTOOL implementation for SBI DBCN, which is
-available in riscv_sbi_dbcn_v1 branch at:
-https://github.com/avpatel/kvmtool.git
+Friendly ping ?
 
 >
-> thanks,
+>  Makefile                            |   3 +
+>  include/linux/kvm.h                 |   6 +-
+>  riscv/aia.c                         | 227 ++++++++++++++++++++++++++++
+>  riscv/fdt.c                         |  15 +-
+>  riscv/include/asm/kvm.h             |  81 ++++++++++
+>  riscv/include/kvm/fdt-arch.h        |   8 +-
+>  riscv/include/kvm/kvm-arch.h        |  38 ++++-
+>  riscv/include/kvm/kvm-config-arch.h |   3 +
+>  riscv/irq.c                         | 138 ++++++++++++++++-
+>  riscv/kvm.c                         |   2 +
+>  riscv/pci.c                         |  32 ++--
+>  riscv/plic.c                        |  61 ++++----
+>  12 files changed, 563 insertions(+), 51 deletions(-)
+>  create mode 100644 riscv/aia.c
 >
-> greg k-h
+> --
+> 2.34.1
+>
 
 Regards,
 Anup
