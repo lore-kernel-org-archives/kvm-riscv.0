@@ -1,81 +1,43 @@
-From: Anup Patel <anup@brainfault.org>
-Date: Thu, 12 Oct 2023 19:34:27 +0530
-Subject: [PATCH v3 0/6] KVM RISC-V Conditional Operations
-In-Reply-To: <CAAhSdy0P=5WiFfFyMHjkd63JKCcjsTsvhLTNgUB+LOCd8A9iOQ@mail.gmail.com>
-References: <20231003035226.1945725-1-apatel@ventanamicro.com> <CAAhSdy0P=5WiFfFyMHjkd63JKCcjsTsvhLTNgUB+LOCd8A9iOQ@mail.gmail.com>
-Message-ID: <CAAhSdy2XLqB-NPVfqYdO07bPxkc2VXBpethHppiKkBms2ysvZA@mail.gmail.com>
+From: Andrew Jones <ajones@ventanamicro.com>
+Date: Fri, 13 Oct 2023 11:58:14 +0200
+Subject: [PATCH 4/5] riscv: Suffix all page table entry pointers with 'p'
+In-Reply-To: <20231012-exclusion-moaner-d26780f9eb00@spud>
+References: <20231002151031.110551-1-alexghiti@rivosinc.com>
+ <20231002151031.110551-5-alexghiti@rivosinc.com>
+ <20231012-envision-grooving-e6e0461099f1@spud>
+ <20231012-exclusion-moaner-d26780f9eb00@spud>
+Message-ID: <20231013-19d487ddc6b6efd6d6f62f88@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Palmer,
+On Thu, Oct 12, 2023 at 12:35:00PM +0100, Conor Dooley wrote:
+> On Thu, Oct 12, 2023 at 12:33:15PM +0100, Conor Dooley wrote:
+> > Hey Alex,
+> > 
+> > On Mon, Oct 02, 2023 at 05:10:30PM +0200, Alexandre Ghiti wrote:
+> > > That makes it more clear what the underlying type is, no functional
+> > > changes intended.
+> > 
+> > Scanning through stuff on patchwork, this really doesn't seem worth the
+> > churn. I thought this sort of Hungarian notation-esque stuff was a
+> > relic of a time before I could read & our docs even go as far as to
+> 
+> s/go/went/, I see the language got changed in more recent releases of
+> the kernel!
 
-On Thu, Oct 5, 2023 at 11:35?AM Anup Patel <anup@brainfault.org> wrote:
->
-> On Tue, Oct 3, 2023 at 9:22?AM Anup Patel <apatel@ventanamicro.com> wrote:
-> >
-> > This series extends KVM RISC-V to allow Guest/VM discover and use
-> > conditional operations related ISA extensions (namely XVentanaCondOps
-> > and Zicond).
-> >
-> > To try these patches, use KVMTOOL from riscv_zbx_zicntr_smstateen_condops_v1
-> > branch at: https://github.com/avpatel/kvmtool.git
-> >
-> > These patches are based upon the latest riscv_kvm_queue and can also be
-> > found in the riscv_kvm_condops_v3 branch at:
-> > https://github.com/avpatel/linux.git
-> >
-> > Changes since v2:
-> >  - Dropped patch1, patch2, and patch5 since these patches don't meet
-> >    the requirements of patch acceptance policy.
-> >
-> > Changes since v1:
-> >  - Rebased the series on riscv_kvm_queue
-> >  - Split PATCH1 and PATCH2 of v1 series into two patches
-> >  - Added separate test configs for XVentanaCondOps and Zicond in PATCH7
-> >    of v1 series.
-> >
-> > Anup Patel (6):
-> >   dt-bindings: riscv: Add Zicond extension entry
-> >   RISC-V: Detect Zicond from ISA string
-> >   RISC-V: KVM: Allow Zicond extension for Guest/VM
-> >   KVM: riscv: selftests: Add senvcfg register to get-reg-list test
-> >   KVM: riscv: selftests: Add smstateen registers to get-reg-list test
-> >   KVM: riscv: selftests: Add condops extensions to get-reg-list test
->
-> Queued this series for Linux-6.7
+The documentation seems to still be against it, but, despite that and
+the two very valid points raised by Marco (backporting and git-blame),
+I think ptep is special and I'm mostly in favor of this change. We may
+not need to s/r every instance, but certainly functions which need to
+refer to both the pte and the ptep representations of entries becomes
+more clear when using the 'p' convention (and then it's nice to have
+ptep used everywhere else too for consistency...)
 
-I have created shared tag kvm-riscv-shared-tag-6.7 in the
-KVM RISC-V repo at:
-https://github.com/kvm-riscv/linux.git
-
-This shared tag is based on 6.6-rc5 and contains following 4 patches:
-dt-bindings: riscv: Add Zicond extension entry
-RISC-V: Detect Zicond from ISA string
-dt-bindings: riscv: Add smstateen entry
-RISC-V: Detect Smstateen extension
+Anyway, just my 2 cents.
 
 Thanks,
-Anup
-
-
-
->
-> Thanks,
-> Anup
->
-> >
-> >  .../devicetree/bindings/riscv/extensions.yaml |  6 +++
-> >  arch/riscv/include/asm/hwcap.h                |  1 +
-> >  arch/riscv/include/uapi/asm/kvm.h             |  1 +
-> >  arch/riscv/kernel/cpufeature.c                |  1 +
-> >  arch/riscv/kvm/vcpu_onereg.c                  |  2 +
-> >  .../selftests/kvm/riscv/get-reg-list.c        | 54 +++++++++++++++++++
-> >  6 files changed, 65 insertions(+)
-> >
-> > --
-> > 2.34.1
-> >
+drew
 
