@@ -1,194 +1,73 @@
 From: Anup Patel <apatel@ventanamicro.com>
-Date: Fri, 20 Oct 2023 10:56:09 +0530
-Subject: [PATCH v2 3/8] RISC-V: KVM: Allow some SBI extensions to be
- disabled by default
-In-Reply-To: <20231019-1e6f411e1cbc4a3b0fbff3f5@orel>
-References: <20231012051509.738750-1-apatel@ventanamicro.com>
- <20231012051509.738750-4-apatel@ventanamicro.com> <20231019-1e6f411e1cbc4a3b0fbff3f5@orel>
-Message-ID: <CAK9=C2XSdrOSTp7skR4btGFkfL==0E+Su71d4bgJGXB80x6rBw@mail.gmail.com>
+Date: Fri, 20 Oct 2023 12:51:31 +0530
+Subject: [PATCH v3 0/9] RISC-V SBI debug console extension support
+Message-ID: <20231020072140.900967-1-apatel@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Oct 19, 2023 at 1:27?PM Andrew Jones <ajones@ventanamicro.com> wrote:
->
-> On Thu, Oct 12, 2023 at 10:45:04AM +0530, Anup Patel wrote:
-> > Currently, all SBI extensions are enabled by default which is
-> > problematic for SBI extensions (such as DBCN) which are forwarded
-> > to the KVM user-space because we might have an older KVM user-space
-> > which is not aware/ready to handle newer SBI extensions. Ideally,
-> > the SBI extensions forwarded to the KVM user-space must be
-> > disabled by default.
-> >
-> > To address above, we allow certain SBI extensions to be disabled
-> > by default so that KVM user-space must explicitly enable such
-> > SBI extensions to receive forwarded calls from Guest VCPU.
-> >
-> > Signed-off-by: Anup Patel <apatel@ventanamicro.com>
-> > ---
-> >  arch/riscv/include/asm/kvm_vcpu_sbi.h |  4 +++
-> >  arch/riscv/kvm/vcpu.c                 |  6 ++++
-> >  arch/riscv/kvm/vcpu_sbi.c             | 45 ++++++++++++++++-----------
-> >  3 files changed, 36 insertions(+), 19 deletions(-)
-> >
-> > diff --git a/arch/riscv/include/asm/kvm_vcpu_sbi.h b/arch/riscv/include/asm/kvm_vcpu_sbi.h
-> > index 8d6d4dce8a5e..c02bda5559d7 100644
-> > --- a/arch/riscv/include/asm/kvm_vcpu_sbi.h
-> > +++ b/arch/riscv/include/asm/kvm_vcpu_sbi.h
-> > @@ -35,6 +35,9 @@ struct kvm_vcpu_sbi_return {
-> >  struct kvm_vcpu_sbi_extension {
-> >       unsigned long extid_start;
-> >       unsigned long extid_end;
-> > +
-> > +     bool default_unavail;
-> > +
-> >       /**
-> >        * SBI extension handler. It can be defined for a given extension or group of
-> >        * extension. But it should always return linux error codes rather than SBI
-> > @@ -59,6 +62,7 @@ int kvm_riscv_vcpu_get_reg_sbi_ext(struct kvm_vcpu *vcpu,
-> >  const struct kvm_vcpu_sbi_extension *kvm_vcpu_sbi_find_ext(
-> >                               struct kvm_vcpu *vcpu, unsigned long extid);
-> >  int kvm_riscv_vcpu_sbi_ecall(struct kvm_vcpu *vcpu, struct kvm_run *run);
-> > +void kvm_riscv_vcpu_sbi_init(struct kvm_vcpu *vcpu);
-> >
-> >  #ifdef CONFIG_RISCV_SBI_V01
-> >  extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_v01;
-> > diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-> > index c061a1c5fe98..e087c809073c 100644
-> > --- a/arch/riscv/kvm/vcpu.c
-> > +++ b/arch/riscv/kvm/vcpu.c
-> > @@ -141,6 +141,12 @@ int kvm_arch_vcpu_create(struct kvm_vcpu *vcpu)
-> >       if (rc)
-> >               return rc;
-> >
-> > +     /*
-> > +      * Setup SBI extensions
-> > +      * NOTE: This must be the last thing to be initialized.
-> > +      */
-> > +     kvm_riscv_vcpu_sbi_init(vcpu);
->
-> With this, we no longer defer probing to the first access (whether that's
-> by the guest or KVM userspace). With our current small set of SBI
-> extensions where only a single one has a probe function, then this
-> simpler approach is good enough. We can always go back to the lazy
-> approach later if needed.
+The SBI v2.0 specification is now frozen. The SBI v2.0 specification defines
+SBI debug console (DBCN) extension which replaces the legacy SBI v0.1
+functions sbi_console_putchar() and sbi_console_getchar().
+(Refer v2.0-rc5 at https://github.com/riscv-non-isa/riscv-sbi-doc/releases)
 
-I agree. We can fallback to lazy probing in the future if required.
+This series adds support for SBI debug console (DBCN) extension in KVM RISC-V
+and Linux RISC-V.
 
->
-> > +
-> >       /* Reset VCPU */
-> >       kvm_riscv_reset_vcpu(vcpu);
-> >
-> > diff --git a/arch/riscv/kvm/vcpu_sbi.c b/arch/riscv/kvm/vcpu_sbi.c
-> > index 9cd97091c723..1b1cee86efda 100644
-> > --- a/arch/riscv/kvm/vcpu_sbi.c
-> > +++ b/arch/riscv/kvm/vcpu_sbi.c
-> > @@ -155,14 +155,8 @@ static int riscv_vcpu_set_sbi_ext_single(struct kvm_vcpu *vcpu,
-> >       if (!sext)
-> >               return -ENOENT;
-> >
-> > -     /*
-> > -      * We can't set the extension status to available here, since it may
-> > -      * have a probe() function which needs to confirm availability first,
-> > -      * but it may be too early to call that here. We can set the status to
-> > -      * unavailable, though.
-> > -      */
-> > -     if (!reg_val)
-> > -             scontext->ext_status[sext->ext_idx] =
-> > +     scontext->ext_status[sext->ext_idx] = (reg_val) ?
-> > +                     KVM_RISCV_SBI_EXT_AVAILABLE :
-> >                       KVM_RISCV_SBI_EXT_UNAVAILABLE;
->
-> We're missing the change to riscv_vcpu_get_sbi_ext_single() which should
-> also drop the comment block explaining the limits to status knowledge
-> without initial probing (which we now do) and then just check for
-> available, i.e.
->
-> diff --git a/arch/riscv/kvm/vcpu_sbi.c b/arch/riscv/kvm/vcpu_sbi.c
-> index bb76c3cf633f..92c42d9aba1c 100644
-> --- a/arch/riscv/kvm/vcpu_sbi.c
-> +++ b/arch/riscv/kvm/vcpu_sbi.c
-> @@ -186,15 +186,8 @@ static int riscv_vcpu_get_sbi_ext_single(struct kvm_vcpu *vcpu,
->         if (!sext)
->                 return -ENOENT;
->
-> -       /*
-> -        * If the extension status is still uninitialized, then we should probe
-> -        * to determine if it's available, but it may be too early to do that
-> -        * here. The best we can do is report that the extension has not been
-> -        * disabled, i.e. we return 1 when the extension is available and also
-> -        * when it only may be available.
-> -        */
-> -       *reg_val = scontext->ext_status[sext->ext_idx] !=
-> -                               KVM_RISCV_SBI_EXT_UNAVAILABLE;
-> +       *reg_val = scontext->ext_status[sext->ext_idx] ==
-> +                               KVM_RISCV_SBI_EXT_AVAILABLE;
->
->         return 0;
->  }
+To try these patches with KVM RISC-V, use KVMTOOL from riscv_sbi_dbcn_v1
+branch at: https://github.com/avpatel/kvmtool.git
 
-Thanks, I will include this change in the next revision.
+These patches can also be found in the riscv_sbi_dbcn_v3 branch at:
+https://github.com/avpatel/linux.git
 
->
-> >
-> >       return 0;
-> > @@ -337,18 +331,8 @@ const struct kvm_vcpu_sbi_extension *kvm_vcpu_sbi_find_ext(
-> >                           scontext->ext_status[entry->ext_idx] ==
-> >                                               KVM_RISCV_SBI_EXT_AVAILABLE)
-> >                               return ext;
-> > -                     if (scontext->ext_status[entry->ext_idx] ==
-> > -                                             KVM_RISCV_SBI_EXT_UNAVAILABLE)
-> > -                             return NULL;
-> > -                     if (ext->probe && !ext->probe(vcpu)) {
-> > -                             scontext->ext_status[entry->ext_idx] =
-> > -                                     KVM_RISCV_SBI_EXT_UNAVAILABLE;
-> > -                             return NULL;
-> > -                     }
-> >
-> > -                     scontext->ext_status[entry->ext_idx] =
-> > -                             KVM_RISCV_SBI_EXT_AVAILABLE;
-> > -                     return ext;
-> > +                     return NULL;
-> >               }
-> >       }
-> >
-> > @@ -419,3 +403,26 @@ int kvm_riscv_vcpu_sbi_ecall(struct kvm_vcpu *vcpu, struct kvm_run *run)
-> >
-> >       return ret;
-> >  }
-> > +
-> > +void kvm_riscv_vcpu_sbi_init(struct kvm_vcpu *vcpu)
-> > +{
-> > +     struct kvm_vcpu_sbi_context *scontext = &vcpu->arch.sbi_context;
-> > +     const struct kvm_riscv_sbi_extension_entry *entry;
-> > +     const struct kvm_vcpu_sbi_extension *ext;
-> > +     int i;
-> > +
-> > +     for (i = 0; i < ARRAY_SIZE(sbi_ext); i++) {
-> > +             entry = &sbi_ext[i];
-> > +             ext = entry->ext_ptr;
-> > +
-> > +             if (ext->probe && !ext->probe(vcpu)) {
-> > +                     scontext->ext_status[entry->ext_idx] =
-> > +                             KVM_RISCV_SBI_EXT_UNAVAILABLE;
-> > +                     continue;
-> > +             }
-> > +
-> > +             scontext->ext_status[entry->ext_idx] = ext->default_unavail ?
-> > +                                     KVM_RISCV_SBI_EXT_UNAVAILABLE :
-> > +                                     KVM_RISCV_SBI_EXT_AVAILABLE;
-> > +     }
-> > +}
-> > --
-> > 2.34.1
-> >
->
-> Thanks,
-> drew
+Changes since v2:
+ - Rebased on Linux-6.6-rc5
+ - Handled page-crossing in PATCH7 of v2 series
+ - Addressed Drew's comment in PATCH3 of v2 series
+ - Added new PATCH5 to make get-reg-list test aware of SBI DBCN extension
 
-Regards,
-Anup
+Changes since v1:
+ - Remove use of #ifdef from PATCH4 and PATCH5 of the v1 series
+ - Improved commit description of PATCH3 in v1 series
+ - Introduced new PATCH3 in this series to allow some SBI extensions
+   (such as SBI DBCN) do to disabled by default so that older KVM user space
+   work fine and newer KVM user space have to explicitly opt-in for emulating
+   SBI DBCN.
+ - Introduced new PATCH5 in this series which adds inline version of
+   sbi_console_getchar() and sbi_console_putchar() for the case where
+   CONFIG_RISCV_SBI_V01 is disabled.
+
+Anup Patel (8):
+  RISC-V: Add defines for SBI debug console extension
+  RISC-V: KVM: Change the SBI specification version to v2.0
+  RISC-V: KVM: Allow some SBI extensions to be disabled by default
+  RISC-V: KVM: Forward SBI DBCN extension to user-space
+  KVM: riscv: selftests: Add SBI DBCN extension to get-reg-list test
+  RISC-V: Add stubs for sbi_console_putchar/getchar()
+  tty/serial: Add RISC-V SBI debug console based earlycon
+  RISC-V: Enable SBI based earlycon support
+
+Atish Patra (1):
+  tty: Add SBI debug console support to HVC SBI driver
+
+ arch/riscv/configs/defconfig                  |  1 +
+ arch/riscv/configs/rv32_defconfig             |  1 +
+ arch/riscv/include/asm/kvm_vcpu_sbi.h         |  7 +-
+ arch/riscv/include/asm/sbi.h                  | 12 +++
+ arch/riscv/include/uapi/asm/kvm.h             |  1 +
+ arch/riscv/kvm/vcpu.c                         |  6 ++
+ arch/riscv/kvm/vcpu_sbi.c                     | 61 +++++++-------
+ arch/riscv/kvm/vcpu_sbi_replace.c             | 32 ++++++++
+ drivers/tty/hvc/Kconfig                       |  2 +-
+ drivers/tty/hvc/hvc_riscv_sbi.c               | 82 +++++++++++++++++--
+ drivers/tty/serial/Kconfig                    |  2 +-
+ drivers/tty/serial/earlycon-riscv-sbi.c       | 32 +++++++-
+ .../selftests/kvm/riscv/get-reg-list.c        |  2 +
+ 13 files changed, 198 insertions(+), 43 deletions(-)
+
+-- 
+2.34.1
+
 
