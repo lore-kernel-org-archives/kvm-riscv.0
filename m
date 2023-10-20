@@ -1,43 +1,43 @@
 From: Anup Patel <apatel@ventanamicro.com>
-Date: Fri, 20 Oct 2023 12:51:36 +0530
-Subject: [PATCH v3 5/9] KVM: riscv: selftests: Add SBI DBCN extension to get-reg-list test
+Date: Fri, 20 Oct 2023 12:51:37 +0530
+Subject: [PATCH v3 6/9] RISC-V: Add stubs for sbi_console_putchar/getchar()
 In-Reply-To: <20231020072140.900967-1-apatel@ventanamicro.com>
 References: <20231020072140.900967-1-apatel@ventanamicro.com>
-Message-ID: <20231020072140.900967-6-apatel@ventanamicro.com>
+Message-ID: <20231020072140.900967-7-apatel@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-We have a new SBI debug console (DBCN) extension supported by in-kernel
-KVM so let us add this extension to get-reg-list test.
+The functions sbi_console_putchar() and sbi_console_getchar() are
+not defined when CONFIG_RISCV_SBI_V01 is disabled so let us add
+stub of these functions to avoid "#ifdef" on user side.
 
 Signed-off-by: Anup Patel <apatel@ventanamicro.com>
+Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
 ---
- tools/testing/selftests/kvm/riscv/get-reg-list.c | 2 ++
- 1 file changed, 2 insertions(+)
+ arch/riscv/include/asm/sbi.h | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/tools/testing/selftests/kvm/riscv/get-reg-list.c b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-index 234006d035c9..6bedaea95395 100644
---- a/tools/testing/selftests/kvm/riscv/get-reg-list.c
-+++ b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-@@ -394,6 +394,7 @@ static const char *sbi_ext_single_id_to_str(__u64 reg_off)
- 		KVM_SBI_EXT_ARR(KVM_RISCV_SBI_EXT_PMU),
- 		KVM_SBI_EXT_ARR(KVM_RISCV_SBI_EXT_EXPERIMENTAL),
- 		KVM_SBI_EXT_ARR(KVM_RISCV_SBI_EXT_VENDOR),
-+		KVM_SBI_EXT_ARR(KVM_RISCV_SBI_EXT_DBCN),
- 	};
+diff --git a/arch/riscv/include/asm/sbi.h b/arch/riscv/include/asm/sbi.h
+index 12dfda6bb924..cbcefa344417 100644
+--- a/arch/riscv/include/asm/sbi.h
++++ b/arch/riscv/include/asm/sbi.h
+@@ -271,8 +271,13 @@ struct sbiret sbi_ecall(int ext, int fid, unsigned long arg0,
+ 			unsigned long arg3, unsigned long arg4,
+ 			unsigned long arg5);
  
- 	if (reg_off >= ARRAY_SIZE(kvm_sbi_ext_reg_name))
-@@ -567,6 +568,7 @@ static __u64 base_regs[] = {
- 	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_SINGLE | KVM_RISCV_SBI_EXT_PMU,
- 	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_SINGLE | KVM_RISCV_SBI_EXT_EXPERIMENTAL,
- 	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_SINGLE | KVM_RISCV_SBI_EXT_VENDOR,
-+	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_SINGLE | KVM_RISCV_SBI_EXT_DBCN,
- 	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_MULTI_EN | 0,
- 	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_MULTI_DIS | 0,
- };
++#ifdef CONFIG_RISCV_SBI_V01
+ void sbi_console_putchar(int ch);
+ int sbi_console_getchar(void);
++#else
++static inline void sbi_console_putchar(int ch) { }
++static inline int sbi_console_getchar(void) { return -1; }
++#endif
+ long sbi_get_mvendorid(void);
+ long sbi_get_marchid(void);
+ long sbi_get_mimpid(void);
 -- 
 2.34.1
 
