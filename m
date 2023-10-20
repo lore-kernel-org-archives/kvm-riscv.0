@@ -1,116 +1,43 @@
 From: Anup Patel <apatel@ventanamicro.com>
-Date: Fri, 20 Oct 2023 12:51:35 +0530
-Subject: [PATCH v3 4/9] RISC-V: KVM: Forward SBI DBCN extension to user-space
+Date: Fri, 20 Oct 2023 12:51:36 +0530
+Subject: [PATCH v3 5/9] KVM: riscv: selftests: Add SBI DBCN extension to get-reg-list test
 In-Reply-To: <20231020072140.900967-1-apatel@ventanamicro.com>
 References: <20231020072140.900967-1-apatel@ventanamicro.com>
-Message-ID: <20231020072140.900967-5-apatel@ventanamicro.com>
+Message-ID: <20231020072140.900967-6-apatel@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The frozen SBI v2.0 specification defines the SBI debug console
-(DBCN) extension which replaces the legacy SBI v0.1 console
-functions namely sbi_console_getchar() and sbi_console_putchar().
-
-The SBI DBCN extension needs to be emulated in the KVM user-space
-(i.e. QEMU-KVM or KVMTOOL) so we forward SBI DBCN calls from KVM
-guest to the KVM user-space which can then redirect the console
-input/output to wherever it wants (e.g. telnet, file, stdio, etc).
-
-The SBI debug console is simply a early console available to KVM
-guest for early prints and it does not intend to replace the proper
-console devices such as 8250, VirtIO console, etc.
+We have a new SBI debug console (DBCN) extension supported by in-kernel
+KVM so let us add this extension to get-reg-list test.
 
 Signed-off-by: Anup Patel <apatel@ventanamicro.com>
-Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
 ---
- arch/riscv/include/asm/kvm_vcpu_sbi.h |  1 +
- arch/riscv/include/uapi/asm/kvm.h     |  1 +
- arch/riscv/kvm/vcpu_sbi.c             |  4 ++++
- arch/riscv/kvm/vcpu_sbi_replace.c     | 32 +++++++++++++++++++++++++++
- 4 files changed, 38 insertions(+)
+ tools/testing/selftests/kvm/riscv/get-reg-list.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/arch/riscv/include/asm/kvm_vcpu_sbi.h b/arch/riscv/include/asm/kvm_vcpu_sbi.h
-index c02bda5559d7..6a453f7f8b56 100644
---- a/arch/riscv/include/asm/kvm_vcpu_sbi.h
-+++ b/arch/riscv/include/asm/kvm_vcpu_sbi.h
-@@ -73,6 +73,7 @@ extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_ipi;
- extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_rfence;
- extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_srst;
- extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_hsm;
-+extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_dbcn;
- extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_experimental;
- extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_vendor;
+diff --git a/tools/testing/selftests/kvm/riscv/get-reg-list.c b/tools/testing/selftests/kvm/riscv/get-reg-list.c
+index 234006d035c9..6bedaea95395 100644
+--- a/tools/testing/selftests/kvm/riscv/get-reg-list.c
++++ b/tools/testing/selftests/kvm/riscv/get-reg-list.c
+@@ -394,6 +394,7 @@ static const char *sbi_ext_single_id_to_str(__u64 reg_off)
+ 		KVM_SBI_EXT_ARR(KVM_RISCV_SBI_EXT_PMU),
+ 		KVM_SBI_EXT_ARR(KVM_RISCV_SBI_EXT_EXPERIMENTAL),
+ 		KVM_SBI_EXT_ARR(KVM_RISCV_SBI_EXT_VENDOR),
++		KVM_SBI_EXT_ARR(KVM_RISCV_SBI_EXT_DBCN),
+ 	};
  
-diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
-index 917d8cc2489e..60d3b21dead7 100644
---- a/arch/riscv/include/uapi/asm/kvm.h
-+++ b/arch/riscv/include/uapi/asm/kvm.h
-@@ -156,6 +156,7 @@ enum KVM_RISCV_SBI_EXT_ID {
- 	KVM_RISCV_SBI_EXT_PMU,
- 	KVM_RISCV_SBI_EXT_EXPERIMENTAL,
- 	KVM_RISCV_SBI_EXT_VENDOR,
-+	KVM_RISCV_SBI_EXT_DBCN,
- 	KVM_RISCV_SBI_EXT_MAX,
+ 	if (reg_off >= ARRAY_SIZE(kvm_sbi_ext_reg_name))
+@@ -567,6 +568,7 @@ static __u64 base_regs[] = {
+ 	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_SINGLE | KVM_RISCV_SBI_EXT_PMU,
+ 	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_SINGLE | KVM_RISCV_SBI_EXT_EXPERIMENTAL,
+ 	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_SINGLE | KVM_RISCV_SBI_EXT_VENDOR,
++	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_SINGLE | KVM_RISCV_SBI_EXT_DBCN,
+ 	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_MULTI_EN | 0,
+ 	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_MULTI_DIS | 0,
  };
- 
-diff --git a/arch/riscv/kvm/vcpu_sbi.c b/arch/riscv/kvm/vcpu_sbi.c
-index bda8b0b33343..a04ff98085d9 100644
---- a/arch/riscv/kvm/vcpu_sbi.c
-+++ b/arch/riscv/kvm/vcpu_sbi.c
-@@ -66,6 +66,10 @@ static const struct kvm_riscv_sbi_extension_entry sbi_ext[] = {
- 		.ext_idx = KVM_RISCV_SBI_EXT_PMU,
- 		.ext_ptr = &vcpu_sbi_ext_pmu,
- 	},
-+	{
-+		.ext_idx = KVM_RISCV_SBI_EXT_DBCN,
-+		.ext_ptr = &vcpu_sbi_ext_dbcn,
-+	},
- 	{
- 		.ext_idx = KVM_RISCV_SBI_EXT_EXPERIMENTAL,
- 		.ext_ptr = &vcpu_sbi_ext_experimental,
-diff --git a/arch/riscv/kvm/vcpu_sbi_replace.c b/arch/riscv/kvm/vcpu_sbi_replace.c
-index 7c4d5d38a339..23b57c931b15 100644
---- a/arch/riscv/kvm/vcpu_sbi_replace.c
-+++ b/arch/riscv/kvm/vcpu_sbi_replace.c
-@@ -175,3 +175,35 @@ const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_srst = {
- 	.extid_end = SBI_EXT_SRST,
- 	.handler = kvm_sbi_ext_srst_handler,
- };
-+
-+static int kvm_sbi_ext_dbcn_handler(struct kvm_vcpu *vcpu,
-+				    struct kvm_run *run,
-+				    struct kvm_vcpu_sbi_return *retdata)
-+{
-+	struct kvm_cpu_context *cp = &vcpu->arch.guest_context;
-+	unsigned long funcid = cp->a6;
-+
-+	switch (funcid) {
-+	case SBI_EXT_DBCN_CONSOLE_WRITE:
-+	case SBI_EXT_DBCN_CONSOLE_READ:
-+	case SBI_EXT_DBCN_CONSOLE_WRITE_BYTE:
-+		/*
-+		 * The SBI debug console functions are unconditionally
-+		 * forwarded to the userspace.
-+		 */
-+		kvm_riscv_vcpu_sbi_forward(vcpu, run);
-+		retdata->uexit = true;
-+		break;
-+	default:
-+		retdata->err_val = SBI_ERR_NOT_SUPPORTED;
-+	}
-+
-+	return 0;
-+}
-+
-+const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_dbcn = {
-+	.extid_start = SBI_EXT_DBCN,
-+	.extid_end = SBI_EXT_DBCN,
-+	.default_unavail = true,
-+	.handler = kvm_sbi_ext_dbcn_handler,
-+};
 -- 
 2.34.1
 
