@@ -1,88 +1,49 @@
 From: Anup Patel <apatel@ventanamicro.com>
-Date: Fri, 20 Oct 2023 12:51:38 +0530
-Subject: [PATCH v3 7/9] tty/serial: Add RISC-V SBI debug console based earlycon
+Date: Fri, 20 Oct 2023 12:51:40 +0530
+Subject: [PATCH v3 9/9] RISC-V: Enable SBI based earlycon support
 In-Reply-To: <20231020072140.900967-1-apatel@ventanamicro.com>
 References: <20231020072140.900967-1-apatel@ventanamicro.com>
-Message-ID: <20231020072140.900967-8-apatel@ventanamicro.com>
+Message-ID: <20231020072140.900967-10-apatel@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-We extend the existing RISC-V SBI earlycon support to use the new
-RISC-V SBI debug console extension.
+Let us enable SBI based earlycon support in defconfigs for both RV32
+and RV64 so that "earlycon=sbi" can be used again.
 
 Signed-off-by: Anup Patel <apatel@ventanamicro.com>
 Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
 ---
- drivers/tty/serial/Kconfig              |  2 +-
- drivers/tty/serial/earlycon-riscv-sbi.c | 32 +++++++++++++++++++++----
- 2 files changed, 29 insertions(+), 5 deletions(-)
+ arch/riscv/configs/defconfig      | 1 +
+ arch/riscv/configs/rv32_defconfig | 1 +
+ 2 files changed, 2 insertions(+)
 
-diff --git a/drivers/tty/serial/Kconfig b/drivers/tty/serial/Kconfig
-index bdc568a4ab66..cec46091a716 100644
---- a/drivers/tty/serial/Kconfig
-+++ b/drivers/tty/serial/Kconfig
-@@ -87,7 +87,7 @@ config SERIAL_EARLYCON_SEMIHOST
- 
- config SERIAL_EARLYCON_RISCV_SBI
- 	bool "Early console using RISC-V SBI"
--	depends on RISCV_SBI_V01
-+	depends on RISCV_SBI
- 	select SERIAL_CORE
- 	select SERIAL_CORE_CONSOLE
- 	select SERIAL_EARLYCON
-diff --git a/drivers/tty/serial/earlycon-riscv-sbi.c b/drivers/tty/serial/earlycon-riscv-sbi.c
-index 27afb0b74ea7..c21cdef254e7 100644
---- a/drivers/tty/serial/earlycon-riscv-sbi.c
-+++ b/drivers/tty/serial/earlycon-riscv-sbi.c
-@@ -15,17 +15,41 @@ static void sbi_putc(struct uart_port *port, unsigned char c)
- 	sbi_console_putchar(c);
- }
- 
--static void sbi_console_write(struct console *con,
--			      const char *s, unsigned n)
-+static void sbi_0_1_console_write(struct console *con,
-+				  const char *s, unsigned int n)
- {
- 	struct earlycon_device *dev = con->data;
- 	uart_console_write(&dev->port, s, n, sbi_putc);
- }
- 
-+static void sbi_dbcn_console_write(struct console *con,
-+				   const char *s, unsigned int n)
-+{
-+	phys_addr_t pa = __pa(s);
-+
-+	if (IS_ENABLED(CONFIG_32BIT))
-+		sbi_ecall(SBI_EXT_DBCN, SBI_EXT_DBCN_CONSOLE_WRITE,
-+			  n, lower_32_bits(pa), upper_32_bits(pa), 0, 0, 0);
-+	else
-+		sbi_ecall(SBI_EXT_DBCN, SBI_EXT_DBCN_CONSOLE_WRITE,
-+			  n, pa, 0, 0, 0, 0);
-+}
-+
- static int __init early_sbi_setup(struct earlycon_device *device,
- 				  const char *opt)
- {
--	device->con->write = sbi_console_write;
--	return 0;
-+	int ret = 0;
-+
-+	if ((sbi_spec_version >= sbi_mk_version(2, 0)) &&
-+	    (sbi_probe_extension(SBI_EXT_DBCN) > 0)) {
-+		device->con->write = sbi_dbcn_console_write;
-+	} else {
-+		if (IS_ENABLED(CONFIG_RISCV_SBI_V01))
-+			device->con->write = sbi_0_1_console_write;
-+		else
-+			ret = -ENODEV;
-+	}
-+
-+	return ret;
- }
- EARLYCON_DECLARE(sbi, early_sbi_setup);
+diff --git a/arch/riscv/configs/defconfig b/arch/riscv/configs/defconfig
+index ab86ec3b9eab..f82700da0056 100644
+--- a/arch/riscv/configs/defconfig
++++ b/arch/riscv/configs/defconfig
+@@ -132,6 +132,7 @@ CONFIG_SERIAL_8250_CONSOLE=y
+ CONFIG_SERIAL_8250_DW=y
+ CONFIG_SERIAL_OF_PLATFORM=y
+ CONFIG_SERIAL_SH_SCI=y
++CONFIG_SERIAL_EARLYCON_RISCV_SBI=y
+ CONFIG_VIRTIO_CONSOLE=y
+ CONFIG_HW_RANDOM=y
+ CONFIG_HW_RANDOM_VIRTIO=y
+diff --git a/arch/riscv/configs/rv32_defconfig b/arch/riscv/configs/rv32_defconfig
+index 89b601e253a6..5721af39afd1 100644
+--- a/arch/riscv/configs/rv32_defconfig
++++ b/arch/riscv/configs/rv32_defconfig
+@@ -66,6 +66,7 @@ CONFIG_INPUT_MOUSEDEV=y
+ CONFIG_SERIAL_8250=y
+ CONFIG_SERIAL_8250_CONSOLE=y
+ CONFIG_SERIAL_OF_PLATFORM=y
++CONFIG_SERIAL_EARLYCON_RISCV_SBI=y
+ CONFIG_VIRTIO_CONSOLE=y
+ CONFIG_HW_RANDOM=y
+ CONFIG_HW_RANDOM_VIRTIO=y
 -- 
 2.34.1
 
