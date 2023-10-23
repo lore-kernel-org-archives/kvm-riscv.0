@@ -1,118 +1,152 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Sat, 21 Oct 2023 18:46:19 +0200
-Subject: [PATCH v3 8/9] tty: Add SBI debug console support to HVC SBI
- driver
-In-Reply-To: <20231020072140.900967-9-apatel@ventanamicro.com>
-References: <20231020072140.900967-1-apatel@ventanamicro.com>
- <20231020072140.900967-9-apatel@ventanamicro.com>
-Message-ID: <2023102153-retread-narrow-54ee@gregkh>
+From: Andrew Jones <ajones@ventanamicro.com>
+Date: Mon, 23 Oct 2023 11:59:07 +0200
+Subject: [PATCH 2/5] riscv: Use SYM_*() assembly macros instead of
+ deprecated ones
+In-Reply-To: <20231004143054.482091-3-cleger@rivosinc.com>
+References: <20231004143054.482091-1-cleger@rivosinc.com>
+ <20231004143054.482091-3-cleger@rivosinc.com>
+Message-ID: <20231023-136cad6e15a2c5c27b6176af@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Oct 20, 2023 at 12:51:39PM +0530, Anup Patel wrote:
-> From: Atish Patra <atishp@rivosinc.com>
-> 
-> RISC-V SBI specification supports advanced debug console
-> support via SBI DBCN extension.
-> 
-> Extend the HVC SBI driver to support it.
-> 
-> Signed-off-by: Atish Patra <atishp@rivosinc.com>
-> Signed-off-by: Anup Patel <apatel@ventanamicro.com>
-> ---
->  drivers/tty/hvc/Kconfig         |  2 +-
->  drivers/tty/hvc/hvc_riscv_sbi.c | 82 ++++++++++++++++++++++++++++++---
->  2 files changed, 76 insertions(+), 8 deletions(-)
-> 
-> diff --git a/drivers/tty/hvc/Kconfig b/drivers/tty/hvc/Kconfig
-> index 4f9264d005c0..6e05c5c7bca1 100644
-> --- a/drivers/tty/hvc/Kconfig
-> +++ b/drivers/tty/hvc/Kconfig
-> @@ -108,7 +108,7 @@ config HVC_DCC_SERIALIZE_SMP
+On Wed, Oct 04, 2023 at 04:30:51PM +0200, Cl?ment L?ger wrote:
+...
+> diff --git a/arch/riscv/lib/memmove.S b/arch/riscv/lib/memmove.S
+> index 1930b388c3a0..5130033e3e02 100644
+> --- a/arch/riscv/lib/memmove.S
+> +++ b/arch/riscv/lib/memmove.S
+> @@ -7,7 +7,6 @@
+>  #include <asm/asm.h>
 >  
->  config HVC_RISCV_SBI
->  	bool "RISC-V SBI console support"
-> -	depends on RISCV_SBI_V01
-> +	depends on RISCV_SBI
->  	select HVC_DRIVER
->  	help
->  	  This enables support for console output via RISC-V SBI calls, which
-> diff --git a/drivers/tty/hvc/hvc_riscv_sbi.c b/drivers/tty/hvc/hvc_riscv_sbi.c
-> index 31f53fa77e4a..56da1a4b5aca 100644
-> --- a/drivers/tty/hvc/hvc_riscv_sbi.c
-> +++ b/drivers/tty/hvc/hvc_riscv_sbi.c
-> @@ -39,21 +39,89 @@ static int hvc_sbi_tty_get(uint32_t vtermno, char *buf, int count)
->  	return i;
->  }
+>  SYM_FUNC_START(__memmove)
+> -SYM_FUNC_START_WEAK(memmove)
+>  	/*
+>  	 * Returns
+>  	 *   a0 - dest
+> @@ -314,5 +313,6 @@ SYM_FUNC_START_WEAK(memmove)
 >  
-> -static const struct hv_ops hvc_sbi_ops = {
-> +static const struct hv_ops hvc_sbi_v01_ops = {
->  	.get_chars = hvc_sbi_tty_get,
->  	.put_chars = hvc_sbi_tty_put,
->  };
+>  SYM_FUNC_END(memmove)
+
+Should this one above be removed?
+
+>  SYM_FUNC_END(__memmove)
+> +SYM_FUNC_ALIAS_WEAK(memmove, __memmove)
+>  SYM_FUNC_ALIAS(__pi_memmove, __memmove)
+>  SYM_FUNC_ALIAS(__pi___memmove, __memmove)
+> diff --git a/arch/riscv/lib/memset.S b/arch/riscv/lib/memset.S
+> index 34c5360c6705..35f358e70bdb 100644
+> --- a/arch/riscv/lib/memset.S
+> +++ b/arch/riscv/lib/memset.S
+> @@ -8,8 +8,7 @@
+>  #include <asm/asm.h>
 >  
-> -static int __init hvc_sbi_init(void)
-> +static int hvc_sbi_dbcn_tty_put(uint32_t vtermno, const char *buf, int count)
->  {
-> -	return PTR_ERR_OR_ZERO(hvc_alloc(0, 0, &hvc_sbi_ops, 16));
-> +	phys_addr_t pa;
-> +	struct sbiret ret;
-> +
-> +	if (is_vmalloc_addr(buf)) {
-> +		pa = page_to_phys(vmalloc_to_page(buf)) + offset_in_page(buf);
-> +		if (PAGE_SIZE < (offset_in_page(buf) + count))
-> +			count = PAGE_SIZE - offset_in_page(buf);
-> +	} else {
-> +		pa = __pa(buf);
-> +	}
-> +
-> +	if (IS_ENABLED(CONFIG_32BIT))
-> +		ret = sbi_ecall(SBI_EXT_DBCN, SBI_EXT_DBCN_CONSOLE_WRITE,
-> +				count, lower_32_bits(pa), upper_32_bits(pa),
-> +				0, 0, 0);
-> +	else
-> +		ret = sbi_ecall(SBI_EXT_DBCN, SBI_EXT_DBCN_CONSOLE_WRITE,
-> +				count, pa, 0, 0, 0, 0);
-
-Again, you need a helper function here to keep you from having to keep
-this all in sync.
-
-> +	if (ret.error)
-> +		return 0;
-> +
-> +	return count;
->  }
-> -device_initcall(hvc_sbi_init);
+>  /* void *memset(void *, int, size_t) */
+> -ENTRY(__memset)
+> -WEAK(memset)
+> +SYM_FUNC_START(__memset)
+>  	move t0, a0  /* Preserve return value */
 >  
-> -static int __init hvc_sbi_console_init(void)
-> +static int hvc_sbi_dbcn_tty_get(uint32_t vtermno, char *buf, int count)
->  {
-> -	hvc_instantiate(0, 0, &hvc_sbi_ops);
-> +	phys_addr_t pa;
-> +	struct sbiret ret;
-> +
-> +	if (is_vmalloc_addr(buf)) {
-> +		pa = page_to_phys(vmalloc_to_page(buf)) + offset_in_page(buf);
-> +		if (PAGE_SIZE < (offset_in_page(buf) + count))
-> +			count = PAGE_SIZE - offset_in_page(buf);
-> +	} else {
-> +		pa = __pa(buf);
-> +	}
-> +
-> +	if (IS_ENABLED(CONFIG_32BIT))
-> +		ret = sbi_ecall(SBI_EXT_DBCN, SBI_EXT_DBCN_CONSOLE_READ,
-> +				count, lower_32_bits(pa), upper_32_bits(pa),
-> +				0, 0, 0);
-> +	else
-> +		ret = sbi_ecall(SBI_EXT_DBCN, SBI_EXT_DBCN_CONSOLE_READ,
-> +				count, pa, 0, 0, 0, 0);
+>  	/* Defer to byte-oriented fill for small sizes */
+> @@ -110,4 +109,5 @@ WEAK(memset)
+>  	bltu t0, a3, 5b
+>  6:
+>  	ret
+> -END(__memset)
+> +SYM_FUNC_END(__memset)
+> +SYM_FUNC_ALIAS_WEAK(memset, __memset)
+> diff --git a/arch/riscv/lib/uaccess.S b/arch/riscv/lib/uaccess.S
+> index 09b47ebacf2e..3ab438f30d13 100644
+> --- a/arch/riscv/lib/uaccess.S
+> +++ b/arch/riscv/lib/uaccess.S
+> @@ -10,8 +10,7 @@
+>  	_asm_extable	100b, \lbl
+>  	.endm
+>  
+> -ENTRY(__asm_copy_to_user)
+> -ENTRY(__asm_copy_from_user)
+> +SYM_FUNC_START(__asm_copy_to_user)
+>  
+>  	/* Enable access to user memory */
+>  	li t6, SR_SUM
+> @@ -181,13 +180,13 @@ ENTRY(__asm_copy_from_user)
+>  	csrc CSR_STATUS, t6
+>  	sub a0, t5, a0
+>  	ret
+> -ENDPROC(__asm_copy_to_user)
+> -ENDPROC(__asm_copy_from_user)
+> +SYM_FUNC_END(__asm_copy_to_user)
+>  EXPORT_SYMBOL(__asm_copy_to_user)
+> +SYM_FUNC_ALIAS(__asm_copy_from_user, __asm_copy_to_user)
 
-And here too.
+IIUC, we'll only have debug information for __asm_copy_to_user. I'm not
+sure what that means for debugging. Is it possible to generate something
+confusing?
 
-thanks,
+>  EXPORT_SYMBOL(__asm_copy_from_user)
+>  
+>  
+> -ENTRY(__clear_user)
+> +SYM_FUNC_START(__clear_user)
+>  
+>  	/* Enable access to user memory */
+>  	li t6, SR_SUM
+> @@ -233,5 +232,5 @@ ENTRY(__clear_user)
+>  	csrc CSR_STATUS, t6
+>  	sub a0, a3, a0
+>  	ret
+> -ENDPROC(__clear_user)
+> +SYM_FUNC_END(__clear_user)
+>  EXPORT_SYMBOL(__clear_user)
+> diff --git a/arch/riscv/purgatory/entry.S b/arch/riscv/purgatory/entry.S
+> index 0194f4554130..7befa276fb01 100644
+> --- a/arch/riscv/purgatory/entry.S
+> +++ b/arch/riscv/purgatory/entry.S
+> @@ -7,15 +7,11 @@
+>   * Author: Li Zhengyu (lizhengyu3 at huawei.com)
+>   *
+>   */
+> -
+> -.macro	size, sym:req
+> -	.size \sym, . - \sym
+> -.endm
+> +#include <linux/linkage.h>
+>  
+>  .text
+>  
+> -.globl purgatory_start
+> -purgatory_start:
+> +SYM_CODE_START(purgatory_start)
+>  
+>  	lla	sp, .Lstack
+>  	mv	s0, a0	/* The hartid of the current hart */
+> @@ -28,8 +24,7 @@ purgatory_start:
+>  	mv	a1, s1
+>  	ld	a2, riscv_kernel_entry
+>  	jr	a2
+> -
+> -size purgatory_start
+> +SYM_CODE_END(purgatory_start)
+>  
+>  .align 4
+>  	.rept	256
+> @@ -39,9 +34,8 @@ size purgatory_start
+>  
+>  .data
+>  
+> -.globl riscv_kernel_entry
+> -riscv_kernel_entry:
+> +SYM_DATA_START(riscv_kernel_entry)
+>  	.quad	0
+> -size riscv_kernel_entry
+> +SYM_DATA_END(riscv_kernel_entry)
 
-greg k-h
+I think we could also use the shorthand version for this one-liner.
+
+SYM_DATA(riscv_kernel_entry, quad 0)
+
+Thanks,
+drew
 
