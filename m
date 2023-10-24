@@ -1,99 +1,61 @@
-From: Anup Patel <anup@brainfault.org>
-Date: Tue, 24 Oct 2023 13:28:16 +0530
-Subject: [GIT PULL] KVM/riscv changes for 6.7
-Message-ID: <CAAhSdy2dg61z7=vsrOqwxHoV1GBvaAzcdUY4o6pLmTNM0WV5ig@mail.gmail.com>
+From: Clément Léger <cleger@rivosinc.com>
+Date: Tue, 24 Oct 2023 15:26:50 +0200
+Subject: [PATCH v2 0/5] riscv: cleanup assembly usage of ENTRY()/END() and use local labels
+Message-ID: <20231024132655.730417-1-cleger@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Paolo,
+This series does a cleanup of all ENTRY()/END() macros that are used in
+arch/riscv/ as well as use of local labels. This allows to remove the
+use of the now deprecated ENTRY()/END()/WEAK() macros as well as using
+the new SYM_*() ones which provide a better understanding of what is
+meant to be annotated. Some wrong usage of SYM_FUNC_START() are also
+fixed in this series by using the correct annotations. Finally a few
+labels that were meant to be local have been renamed to use the .L
+suffix and thus not to be emitted as visible symbols.
 
-We have the following KVM RISC-V changes for 6.7:
-1) Smstateen and Zicond support for Guest/VM
-2) Virtualized senvcfg CSR for Guest/VM
-3) Added Smstateen registers to the get-reg-list selftests
-4) Added Zicond to the get-reg-list selftests
-5) Virtualized SBI debug console (DBCN) for Guest/VM
-6) Added SBI debug console (DBCN) to the get-reg-list selftests
+Note: the patches have been split between arch/riscv/ and
+arch/riscv/kvm/ due to having different maintainers.
 
-Please pull.
+---
 
-Please note that the following four patches are part of the
-shared tag kvm-riscv-shared-tag-6.7 provided to Palmer:
- - dt-bindings: riscv: Add Zicond extension entry
- - RISC-V: Detect Zicond from ISA string
- - dt-bindings: riscv: Add smstateen entry
- - RISC-V: Detect Smstateen extension
+Changes in V2:
+ - Remove duplicated SYM_FUNC_END(memmove)
+ - Use SYM_DATA for simple .quad usage
+ - Added Andrew Rb:
 
-Regards,
-Anup
+Cl?ment L?ger (5):
+  riscv: use ".L" local labels in assembly when applicable
+  riscv: Use SYM_*() assembly macros instead of deprecated ones
+  riscv: kernel: Use correct SYM_DATA_*() macro for data
+  riscv: kvm: Use SYM_*() assembly macros instead of deprecated ones
+  riscv: kvm: use ".L" local labels in assembly when applicable
 
-The following changes since commit 94f6f0550c625fab1f373bb86a6669b45e9748b3:
+ arch/riscv/kernel/copy-unaligned.S            |  8 +--
+ arch/riscv/kernel/entry.S                     | 19 +++----
+ arch/riscv/kernel/fpu.S                       |  8 +--
+ arch/riscv/kernel/head.S                      | 30 +++++-----
+ arch/riscv/kernel/hibernate-asm.S             | 12 ++--
+ arch/riscv/kernel/mcount-dyn.S                | 20 +++----
+ arch/riscv/kernel/mcount.S                    | 18 +++---
+ arch/riscv/kernel/probes/rethook_trampoline.S |  4 +-
+ arch/riscv/kernel/suspend_entry.S             |  4 +-
+ arch/riscv/kernel/vdso/flush_icache.S         |  4 +-
+ arch/riscv/kernel/vdso/getcpu.S               |  4 +-
+ arch/riscv/kernel/vdso/rt_sigreturn.S         |  4 +-
+ arch/riscv/kernel/vdso/sys_hwprobe.S          |  4 +-
+ arch/riscv/kvm/vcpu_switch.S                  | 32 +++++------
+ arch/riscv/lib/memcpy.S                       |  6 +-
+ arch/riscv/lib/memmove.S                      | 57 +++++++++----------
+ arch/riscv/lib/memset.S                       |  6 +-
+ arch/riscv/lib/uaccess.S                      | 11 ++--
+ arch/riscv/purgatory/entry.S                  | 16 ++----
+ 19 files changed, 124 insertions(+), 143 deletions(-)
 
-  Linux 6.6-rc5 (2023-10-08 13:49:43 -0700)
+-- 
+2.42.0
 
-are available in the Git repository at:
-
-  https://github.com/kvm-riscv/linux.git tags/kvm-riscv-6.7-1
-
-for you to fetch changes up to d9c00f44e5de542340cce1d09e2c990e16c0ed3a:
-
-  KVM: riscv: selftests: Add SBI DBCN extension to get-reg-list test
-(2023-10-20 16:50:39 +0530)
-
-----------------------------------------------------------------
-KVM/riscv changes for 6.7
-
-- Smstateen and Zicond support for Guest/VM
-- Virtualized senvcfg CSR for Guest/VM
-- Added Smstateen registers to the get-reg-list selftests
-- Added Zicond to the get-reg-list selftests
-- Virtualized SBI debug console (DBCN) for Guest/VM
-- Added SBI debug console (DBCN) to the get-reg-list selftests
-
-----------------------------------------------------------------
-Andrew Jones (3):
-      MAINTAINERS: RISC-V: KVM: Add another kselftests path
-      KVM: selftests: Add array order helpers to riscv get-reg-list
-      KVM: riscv: selftests: get-reg-list print_reg should never fail
-
-Anup Patel (11):
-      RISC-V: Detect Zicond from ISA string
-      dt-bindings: riscv: Add Zicond extension entry
-      RISC-V: KVM: Allow Zicond extension for Guest/VM
-      KVM: riscv: selftests: Add senvcfg register to get-reg-list test
-      KVM: riscv: selftests: Add smstateen registers to get-reg-list test
-      KVM: riscv: selftests: Add condops extensions to get-reg-list test
-      RISC-V: Add defines for SBI debug console extension
-      RISC-V: KVM: Change the SBI specification version to v2.0
-      RISC-V: KVM: Allow some SBI extensions to be disabled by default
-      RISC-V: KVM: Forward SBI DBCN extension to user-space
-      KVM: riscv: selftests: Add SBI DBCN extension to get-reg-list test
-
-Mayuresh Chitale (7):
-      RISC-V: Detect Smstateen extension
-      dt-bindings: riscv: Add smstateen entry
-      RISC-V: KVM: Add kvm_vcpu_config
-      RISC-V: KVM: Enable Smstateen accesses
-      RISCV: KVM: Add senvcfg context save/restore
-      RISCV: KVM: Add sstateen0 context save/restore
-      RISCV: KVM: Add sstateen0 to ONE_REG
-
- .../devicetree/bindings/riscv/extensions.yaml      |  12 ++
- MAINTAINERS                                        |   1 +
- arch/riscv/include/asm/csr.h                       |  18 ++
- arch/riscv/include/asm/hwcap.h                     |   2 +
- arch/riscv/include/asm/kvm_host.h                  |  18 ++
- arch/riscv/include/asm/kvm_vcpu_sbi.h              |   7 +-
- arch/riscv/include/asm/sbi.h                       |   7 +
- arch/riscv/include/uapi/asm/kvm.h                  |  12 ++
- arch/riscv/kernel/cpufeature.c                     |   2 +
- arch/riscv/kvm/vcpu.c                              |  76 +++++--
- arch/riscv/kvm/vcpu_onereg.c                       |  72 ++++++-
- arch/riscv/kvm/vcpu_sbi.c                          |  61 +++---
- arch/riscv/kvm/vcpu_sbi_replace.c                  |  32 +++
- tools/testing/selftests/kvm/riscv/get-reg-list.c   | 233 +++++++++++++--------
- 14 files changed, 418 insertions(+), 135 deletions(-)
 
