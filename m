@@ -1,169 +1,99 @@
-From: Clément Léger <cleger@rivosinc.com>
-Date: Mon, 23 Oct 2023 12:08:05 +0200
-Subject: [PATCH 2/5] riscv: Use SYM_*() assembly macros instead of
- deprecated ones
-In-Reply-To: <20231023-136cad6e15a2c5c27b6176af@orel>
-References: <20231004143054.482091-1-cleger@rivosinc.com>
- <20231004143054.482091-3-cleger@rivosinc.com>
- <20231023-136cad6e15a2c5c27b6176af@orel>
-Message-ID: <435519d9-e569-4714-b50b-f46ac281478e@rivosinc.com>
+From: Anup Patel <anup@brainfault.org>
+Date: Tue, 24 Oct 2023 13:25:10 +0530
+Subject: KVM/riscv changes for 6.7
+Message-ID: <CAAhSdy2p0h8i=GPBx+=ZJVr_PSwOHhTqanJQmOc0O0bw1ffrmw@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+Hi Paolo,
 
+We have the following KVM RISC-V changes for 6.7:
+1) Smstateen and Zicond support for Guest/VM
+2) Virtualized senvcfg CSR for Guest/VM
+3) Added Smstateen registers to the get-reg-list selftests
+4) Added Zicond to the get-reg-list selftests
+5) Virtualized SBI debug console (DBCN) for Guest/VM
+6) Added SBI debug console (DBCN) to the get-reg-list selftests
 
-On 23/10/2023 11:59, Andrew Jones wrote:
-> On Wed, Oct 04, 2023 at 04:30:51PM +0200, Cl?ment L?ger wrote:
-> ...
->> diff --git a/arch/riscv/lib/memmove.S b/arch/riscv/lib/memmove.S
->> index 1930b388c3a0..5130033e3e02 100644
->> --- a/arch/riscv/lib/memmove.S
->> +++ b/arch/riscv/lib/memmove.S
->> @@ -7,7 +7,6 @@
->>  #include <asm/asm.h>
->>  
->>  SYM_FUNC_START(__memmove)
->> -SYM_FUNC_START_WEAK(memmove)
->>  	/*
->>  	 * Returns
->>  	 *   a0 - dest
->> @@ -314,5 +313,6 @@ SYM_FUNC_START_WEAK(memmove)
->>  
->>  SYM_FUNC_END(memmove)
-> 
-> Should this one above be removed?
+Please pull.
 
-Hugh :/ yeah, thanks for catching this.
+Please note that the following four patches are part of the
+shared tag kvm-riscv-shared-tag-6.7 provided to Palmer:
+ - dt-bindings: riscv: Add Zicond extension entry
+ - RISC-V: Detect Zicond from ISA string
+ - dt-bindings: riscv: Add smstateen entry
+ - RISC-V: Detect Smstateen extension
 
-> 
->>  SYM_FUNC_END(__memmove)
->> +SYM_FUNC_ALIAS_WEAK(memmove, __memmove)
->>  SYM_FUNC_ALIAS(__pi_memmove, __memmove)
->>  SYM_FUNC_ALIAS(__pi___memmove, __memmove)
->> diff --git a/arch/riscv/lib/memset.S b/arch/riscv/lib/memset.S
->> index 34c5360c6705..35f358e70bdb 100644
->> --- a/arch/riscv/lib/memset.S
->> +++ b/arch/riscv/lib/memset.S
->> @@ -8,8 +8,7 @@
->>  #include <asm/asm.h>
->>  
->>  /* void *memset(void *, int, size_t) */
->> -ENTRY(__memset)
->> -WEAK(memset)
->> +SYM_FUNC_START(__memset)
->>  	move t0, a0  /* Preserve return value */
->>  
->>  	/* Defer to byte-oriented fill for small sizes */
->> @@ -110,4 +109,5 @@ WEAK(memset)
->>  	bltu t0, a3, 5b
->>  6:
->>  	ret
->> -END(__memset)
->> +SYM_FUNC_END(__memset)
->> +SYM_FUNC_ALIAS_WEAK(memset, __memset)
->> diff --git a/arch/riscv/lib/uaccess.S b/arch/riscv/lib/uaccess.S
->> index 09b47ebacf2e..3ab438f30d13 100644
->> --- a/arch/riscv/lib/uaccess.S
->> +++ b/arch/riscv/lib/uaccess.S
->> @@ -10,8 +10,7 @@
->>  	_asm_extable	100b, \lbl
->>  	.endm
->>  
->> -ENTRY(__asm_copy_to_user)
->> -ENTRY(__asm_copy_from_user)
->> +SYM_FUNC_START(__asm_copy_to_user)
->>  
->>  	/* Enable access to user memory */
->>  	li t6, SR_SUM
->> @@ -181,13 +180,13 @@ ENTRY(__asm_copy_from_user)
->>  	csrc CSR_STATUS, t6
->>  	sub a0, t5, a0
->>  	ret
->> -ENDPROC(__asm_copy_to_user)
->> -ENDPROC(__asm_copy_from_user)
->> +SYM_FUNC_END(__asm_copy_to_user)
->>  EXPORT_SYMBOL(__asm_copy_to_user)
->> +SYM_FUNC_ALIAS(__asm_copy_from_user, __asm_copy_to_user)
-> 
-> IIUC, we'll only have debug information for __asm_copy_to_user. I'm not
-> sure what that means for debugging. Is it possible to generate something
-> confusing?
+Regards,
+Anup
 
-I'll check that with GDB to be sure we don't have anything fancy here.
+The following changes since commit 94f6f0550c625fab1f373bb86a6669b45e9748b3:
 
-> 
->>  EXPORT_SYMBOL(__asm_copy_from_user)
->>  
->>  
->> -ENTRY(__clear_user)
->> +SYM_FUNC_START(__clear_user)
->>  
->>  	/* Enable access to user memory */
->>  	li t6, SR_SUM
->> @@ -233,5 +232,5 @@ ENTRY(__clear_user)
->>  	csrc CSR_STATUS, t6
->>  	sub a0, a3, a0
->>  	ret
->> -ENDPROC(__clear_user)
->> +SYM_FUNC_END(__clear_user)
->>  EXPORT_SYMBOL(__clear_user)
->> diff --git a/arch/riscv/purgatory/entry.S b/arch/riscv/purgatory/entry.S
->> index 0194f4554130..7befa276fb01 100644
->> --- a/arch/riscv/purgatory/entry.S
->> +++ b/arch/riscv/purgatory/entry.S
->> @@ -7,15 +7,11 @@
->>   * Author: Li Zhengyu (lizhengyu3 at huawei.com)
->>   *
->>   */
->> -
->> -.macro	size, sym:req
->> -	.size \sym, . - \sym
->> -.endm
->> +#include <linux/linkage.h>
->>  
->>  .text
->>  
->> -.globl purgatory_start
->> -purgatory_start:
->> +SYM_CODE_START(purgatory_start)
->>  
->>  	lla	sp, .Lstack
->>  	mv	s0, a0	/* The hartid of the current hart */
->> @@ -28,8 +24,7 @@ purgatory_start:
->>  	mv	a1, s1
->>  	ld	a2, riscv_kernel_entry
->>  	jr	a2
->> -
->> -size purgatory_start
->> +SYM_CODE_END(purgatory_start)
->>  
->>  .align 4
->>  	.rept	256
->> @@ -39,9 +34,8 @@ size purgatory_start
->>  
->>  .data
->>  
->> -.globl riscv_kernel_entry
->> -riscv_kernel_entry:
->> +SYM_DATA_START(riscv_kernel_entry)
->>  	.quad	0
->> -size riscv_kernel_entry
->> +SYM_DATA_END(riscv_kernel_entry)
-> 
-> I think we could also use the shorthand version for this one-liner.
-> 
-> SYM_DATA(riscv_kernel_entry, quad 0)
+  Linux 6.6-rc5 (2023-10-08 13:49:43 -0700)
 
-Oh yes, nice catch.
+are available in the Git repository at:
 
-Thanks,
+  https://github.com/kvm-riscv/linux.git tags/kvm-riscv-6.7-1
 
-Cl?ment
+for you to fetch changes up to d9c00f44e5de542340cce1d09e2c990e16c0ed3a:
 
-> 
-> Thanks,
-> drew
+  KVM: riscv: selftests: Add SBI DBCN extension to get-reg-list test
+(2023-10-20 16:50:39 +0530)
+
+----------------------------------------------------------------
+KVM/riscv changes for 6.7
+
+- Smstateen and Zicond support for Guest/VM
+- Virtualized senvcfg CSR for Guest/VM
+- Added Smstateen registers to the get-reg-list selftests
+- Added Zicond to the get-reg-list selftests
+- Virtualized SBI debug console (DBCN) for Guest/VM
+- Added SBI debug console (DBCN) to the get-reg-list selftests
+
+----------------------------------------------------------------
+Andrew Jones (3):
+      MAINTAINERS: RISC-V: KVM: Add another kselftests path
+      KVM: selftests: Add array order helpers to riscv get-reg-list
+      KVM: riscv: selftests: get-reg-list print_reg should never fail
+
+Anup Patel (11):
+      RISC-V: Detect Zicond from ISA string
+      dt-bindings: riscv: Add Zicond extension entry
+      RISC-V: KVM: Allow Zicond extension for Guest/VM
+      KVM: riscv: selftests: Add senvcfg register to get-reg-list test
+      KVM: riscv: selftests: Add smstateen registers to get-reg-list test
+      KVM: riscv: selftests: Add condops extensions to get-reg-list test
+      RISC-V: Add defines for SBI debug console extension
+      RISC-V: KVM: Change the SBI specification version to v2.0
+      RISC-V: KVM: Allow some SBI extensions to be disabled by default
+      RISC-V: KVM: Forward SBI DBCN extension to user-space
+      KVM: riscv: selftests: Add SBI DBCN extension to get-reg-list test
+
+Mayuresh Chitale (7):
+      RISC-V: Detect Smstateen extension
+      dt-bindings: riscv: Add smstateen entry
+      RISC-V: KVM: Add kvm_vcpu_config
+      RISC-V: KVM: Enable Smstateen accesses
+      RISCV: KVM: Add senvcfg context save/restore
+      RISCV: KVM: Add sstateen0 context save/restore
+      RISCV: KVM: Add sstateen0 to ONE_REG
+
+ .../devicetree/bindings/riscv/extensions.yaml      |  12 ++
+ MAINTAINERS                                        |   1 +
+ arch/riscv/include/asm/csr.h                       |  18 ++
+ arch/riscv/include/asm/hwcap.h                     |   2 +
+ arch/riscv/include/asm/kvm_host.h                  |  18 ++
+ arch/riscv/include/asm/kvm_vcpu_sbi.h              |   7 +-
+ arch/riscv/include/asm/sbi.h                       |   7 +
+ arch/riscv/include/uapi/asm/kvm.h                  |  12 ++
+ arch/riscv/kernel/cpufeature.c                     |   2 +
+ arch/riscv/kvm/vcpu.c                              |  76 +++++--
+ arch/riscv/kvm/vcpu_onereg.c                       |  72 ++++++-
+ arch/riscv/kvm/vcpu_sbi.c                          |  61 +++---
+ arch/riscv/kvm/vcpu_sbi_replace.c                  |  32 +++
+ tools/testing/selftests/kvm/riscv/get-reg-list.c   | 233 +++++++++++++--------
+ 14 files changed, 418 insertions(+), 135 deletions(-)
 
