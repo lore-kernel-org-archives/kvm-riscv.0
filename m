@@ -1,51 +1,49 @@
-From: Clément Léger <cleger@rivosinc.com>
-Date: Tue, 24 Oct 2023 15:26:55 +0200
-Subject: [PATCH v2 5/5] riscv: kvm: use ".L" local labels in assembly when applicable
-In-Reply-To: <20231024132655.730417-1-cleger@rivosinc.com>
+From: Andrew Jones <ajones@ventanamicro.com>
+Date: Tue, 24 Oct 2023 17:23:56 +0200
+Subject: [PATCH v2 2/5] riscv: Use SYM_*() assembly macros instead of
+ deprecated ones
+In-Reply-To: <20231024132655.730417-3-cleger@rivosinc.com>
 References: <20231024132655.730417-1-cleger@rivosinc.com>
-Message-ID: <20231024132655.730417-6-cleger@rivosinc.com>
+ <20231024132655.730417-3-cleger@rivosinc.com>
+Message-ID: <20231024-e122c317599cd4c6db53c015@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-For the sake of coherency, use local labels in assembly when
-applicable. This also avoid kprobes being confused when applying a
-kprobe since the size of function is computed by checking where the
-next visible symbol is located. This might end up in computing some
-function size to be way shorter than expected and thus failing to apply
-kprobes to the specified offset.
+On Tue, Oct 24, 2023 at 03:26:52PM +0200, Cl?ment L?ger wrote:
+...
+> diff --git a/arch/riscv/lib/uaccess.S b/arch/riscv/lib/uaccess.S
+> index 09b47ebacf2e..3ab438f30d13 100644
+> --- a/arch/riscv/lib/uaccess.S
+> +++ b/arch/riscv/lib/uaccess.S
+> @@ -10,8 +10,7 @@
+>  	_asm_extable	100b, \lbl
+>  	.endm
+>  
+> -ENTRY(__asm_copy_to_user)
+> -ENTRY(__asm_copy_from_user)
+> +SYM_FUNC_START(__asm_copy_to_user)
+>  
+>  	/* Enable access to user memory */
+>  	li t6, SR_SUM
+> @@ -181,13 +180,13 @@ ENTRY(__asm_copy_from_user)
+>  	csrc CSR_STATUS, t6
+>  	sub a0, t5, a0
+>  	ret
+> -ENDPROC(__asm_copy_to_user)
+> -ENDPROC(__asm_copy_from_user)
+> +SYM_FUNC_END(__asm_copy_to_user)
+>  EXPORT_SYMBOL(__asm_copy_to_user)
+> +SYM_FUNC_ALIAS(__asm_copy_from_user, __asm_copy_to_user)
+>  EXPORT_SYMBOL(__asm_copy_from_user)
 
-Signed-off-by: Cl?ment L?ger <cleger@rivosinc.com>
+I didn't see any comment about the sharing of debug info among both the
+from and to functions. Assuming it isn't confusing in some way, then
+
 Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
----
- arch/riscv/kvm/vcpu_switch.S | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/riscv/kvm/vcpu_switch.S b/arch/riscv/kvm/vcpu_switch.S
-index 8b18473780ac..0c26189aa01c 100644
---- a/arch/riscv/kvm/vcpu_switch.S
-+++ b/arch/riscv/kvm/vcpu_switch.S
-@@ -45,7 +45,7 @@ SYM_FUNC_START(__kvm_riscv_switch_to)
- 	REG_L	t0, (KVM_ARCH_GUEST_SSTATUS)(a0)
- 	REG_L	t1, (KVM_ARCH_GUEST_HSTATUS)(a0)
- 	REG_L	t2, (KVM_ARCH_GUEST_SCOUNTEREN)(a0)
--	la	t4, __kvm_switch_return
-+	la	t4, .Lkvm_switch_return
- 	REG_L	t5, (KVM_ARCH_GUEST_SEPC)(a0)
- 
- 	/* Save Host and Restore Guest SSTATUS */
-@@ -113,7 +113,7 @@ SYM_FUNC_START(__kvm_riscv_switch_to)
- 
- 	/* Back to Host */
- 	.align 2
--__kvm_switch_return:
-+.Lkvm_switch_return:
- 	/* Swap Guest A0 with SSCRATCH */
- 	csrrw	a0, CSR_SSCRATCH, a0
- 
--- 
-2.42.0
-
+Thanks,
+drew
 
