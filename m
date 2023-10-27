@@ -1,60 +1,53 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Fri, 27 Oct 2023 11:21:47 -0700
-Subject: [PATCH v13 05/35] KVM: PPC: Drop dead code related to KVM_ARCH_WANT_MMU_NOTIFIER
+Date: Fri, 27 Oct 2023 11:21:46 -0700
+Subject: [PATCH v13 04/35] KVM: WARN if there are dangling MMU invalidations
+ at VM destruction
 In-Reply-To: <20231027182217.3615211-1-seanjc@google.com>
 References: <20231027182217.3615211-1-seanjc@google.com>
-Message-ID: <20231027182217.3615211-6-seanjc@google.com>
+Message-ID: <20231027182217.3615211-5-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Assert that both KVM_ARCH_WANT_MMU_NOTIFIER and CONFIG_MMU_NOTIFIER are
-defined when KVM is enabled, and return '1' unconditionally for the
-CONFIG_KVM_BOOK3S_HV_POSSIBLE=n path.  All flavors of PPC support for KVM
-select MMU_NOTIFIER, and KVM_ARCH_WANT_MMU_NOTIFIER is unconditionally
-defined by arch/powerpc/include/asm/kvm_host.h.
+Add an assertion that there are no in-progress MMU invalidations when a
+VM is being destroyed, with the exception of the scenario where KVM
+unregisters its MMU notifier between an .invalidate_range_start() call and
+the corresponding .invalidate_range_end().
 
-Effectively dropping use of KVM_ARCH_WANT_MMU_NOTIFIER will simplify a
-future cleanup to turn KVM_ARCH_WANT_MMU_NOTIFIER into a Kconfig, i.e.
-will allow combining all of the
+KVM can't detect unpaired calls from the mmu_notifier due to the above
+exception waiver, but the assertion can detect KVM bugs, e.g. such as the
+bug that *almost* escaped initial guest_memfd development.
 
-  #if defined(CONFIG_MMU_NOTIFIER) && defined(KVM_ARCH_WANT_MMU_NOTIFIER)
-
-checks into a single
-
-  #ifdef CONFIG_KVM_GENERIC_MMU_NOTIFIER
-
-without having to worry about PPC's "bare" usage of
-KVM_ARCH_WANT_MMU_NOTIFIER.
-
+Link: https://lore.kernel.org/all/e397d30c-c6af-e68f-d18e-b4e3739c5389 at linux.intel.com
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/powerpc/kvm/powerpc.c | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+ virt/kvm/kvm_main.c | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-index 7197c8256668..b0a512ede764 100644
---- a/arch/powerpc/kvm/powerpc.c
-+++ b/arch/powerpc/kvm/powerpc.c
-@@ -632,12 +632,13 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
- 		break;
- #endif
- 	case KVM_CAP_SYNC_MMU:
-+#if !defined(CONFIG_MMU_NOTIFIER) || !defined(KVM_ARCH_WANT_MMU_NOTIFIER)
-+		BUILD_BUG();
-+#endif
- #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
- 		r = hv_enabled;
--#elif defined(KVM_ARCH_WANT_MMU_NOTIFIER)
--		r = 1;
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index 1a577a25de47..4dba682586ee 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -1356,9 +1356,16 @@ static void kvm_destroy_vm(struct kvm *kvm)
+ 	 * No threads can be waiting in kvm_swap_active_memslots() as the
+ 	 * last reference on KVM has been dropped, but freeing
+ 	 * memslots would deadlock without this manual intervention.
++	 *
++	 * If the count isn't unbalanced, i.e. KVM did NOT unregister its MMU
++	 * notifier between a start() and end(), then there shouldn't be any
++	 * in-progress invalidations.
+ 	 */
+ 	WARN_ON(rcuwait_active(&kvm->mn_memslots_update_rcuwait));
+-	kvm->mn_active_invalidate_count = 0;
++	if (kvm->mn_active_invalidate_count)
++		kvm->mn_active_invalidate_count = 0;
++	else
++		WARN_ON(kvm->mmu_invalidate_in_progress);
  #else
--		r = 0;
-+		r = 1;
+ 	kvm_flush_shadow_all(kvm);
  #endif
- 		break;
- #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
 -- 
 2.42.0.820.g83a721a137-goog
 
