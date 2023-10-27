@@ -1,164 +1,204 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Fri, 27 Oct 2023 11:21:56 -0700
-Subject: [PATCH v13 14/35] mm: Add AS_UNMOVABLE to mark mapping as completely unmovable
+Date: Fri, 27 Oct 2023 11:21:59 -0700
+Subject: [PATCH v13 17/35] KVM: Add transparent hugepage support for dedicated
+ guest memory
 In-Reply-To: <20231027182217.3615211-1-seanjc@google.com>
 References: <20231027182217.3615211-1-seanjc@google.com>
-Message-ID: <20231027182217.3615211-15-seanjc@google.com>
+Message-ID: <20231027182217.3615211-18-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add an "unmovable" flag for mappings that cannot be migrated under any
-circumstance.  KVM will use the flag for its upcoming GUEST_MEMFD support,
-which will not support compaction/migration, at least not in the
-foreseeable future.
+Extended guest_memfd to allow backing guest memory with transparent
+hugepages.  Require userspace to opt-in via a flag even though there's no
+known/anticipated use case for forcing small pages as THP is optional,
+i.e. to avoid ending up in a situation where userspace is unaware that
+KVM can't provide hugepages.
 
-Test AS_UNMOVABLE under folio lock as already done for the async
-compaction/dirty folio case, as the mapping can be removed by truncation
-while compaction is running.  To avoid having to lock every folio with a
-mapping, assume/require that unmovable mappings are also unevictable, and
-have mapping_set_unmovable() also set AS_UNEVICTABLE.
+For simplicity, require the guest_memfd size to be a multiple of the
+hugepage size, e.g. so that KVM doesn't need to do bounds checking when
+deciding whether or not to allocate a huge folio.
 
-Cc: Matthew Wilcox <willy@infradead.org>
-Co-developed-by: Vlastimil Babka <vbabka@suse.cz>
-Signed-off-by: Vlastimil Babka <vbabka@suse.cz>
+When reporting the max order when KVM gets a pfn from guest_memfd, force
+order-0 pages if the hugepage is not fully contained by the memslot
+binding, e.g. if userspace requested hugepages but punches a hole in the
+memslot bindings in order to emulate x86's VGA hole.
+
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- include/linux/pagemap.h | 19 +++++++++++++++++-
- mm/compaction.c         | 43 +++++++++++++++++++++++++++++------------
- mm/migrate.c            |  2 ++
- 3 files changed, 51 insertions(+), 13 deletions(-)
+ Documentation/virt/kvm/api.rst |  7 ++++
+ include/uapi/linux/kvm.h       |  2 +
+ virt/kvm/guest_memfd.c         | 73 ++++++++++++++++++++++++++++++----
+ 3 files changed, 75 insertions(+), 7 deletions(-)
 
-diff --git a/include/linux/pagemap.h b/include/linux/pagemap.h
-index 351c3b7f93a1..82c9bf506b79 100644
---- a/include/linux/pagemap.h
-+++ b/include/linux/pagemap.h
-@@ -203,7 +203,8 @@ enum mapping_flags {
- 	/* writeback related tags are not used */
- 	AS_NO_WRITEBACK_TAGS = 5,
- 	AS_LARGE_FOLIO_SUPPORT = 6,
--	AS_RELEASE_ALWAYS,	/* Call ->release_folio(), even if no private data */
-+	AS_RELEASE_ALWAYS = 7,	/* Call ->release_folio(), even if no private data */
-+	AS_UNMOVABLE	= 8,	/* The mapping cannot be moved, ever */
+diff --git a/Documentation/virt/kvm/api.rst b/Documentation/virt/kvm/api.rst
+index e82c69d5e755..7f00c310c24a 100644
+--- a/Documentation/virt/kvm/api.rst
++++ b/Documentation/virt/kvm/api.rst
+@@ -6176,6 +6176,8 @@ and cannot be resized  (guest_memfd files do however support PUNCH_HOLE).
+ 	__u64 reserved[6];
+   };
+ 
++  #define KVM_GUEST_MEMFD_ALLOW_HUGEPAGE         (1ULL << 0)
++
+ Conceptually, the inode backing a guest_memfd file represents physical memory,
+ i.e. is coupled to the virtual machine as a thing, not to a "struct kvm".  The
+ file itself, which is bound to a "struct kvm", is that instance's view of the
+@@ -6192,6 +6194,11 @@ most one mapping per page, i.e. binding multiple memory regions to a single
+ guest_memfd range is not allowed (any number of memory regions can be bound to
+ a single guest_memfd file, but the bound ranges must not overlap).
+ 
++If KVM_GUEST_MEMFD_ALLOW_HUGEPAGE is set in flags, KVM will attempt to allocate
++and map hugepages for the guest_memfd file.  This is currently best effort.  If
++KVM_GUEST_MEMFD_ALLOW_HUGEPAGE is set, the size must be aligned to the maximum
++transparent hugepage size supported by the kernel
++
+ See KVM_SET_USER_MEMORY_REGION2 for additional details.
+ 
+ 5. The kvm_run structure
+diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
+index 25caee8d1a80..33d542de0a61 100644
+--- a/include/uapi/linux/kvm.h
++++ b/include/uapi/linux/kvm.h
+@@ -2303,4 +2303,6 @@ struct kvm_create_guest_memfd {
+ 	__u64 reserved[6];
  };
  
- /**
-@@ -289,6 +290,22 @@ static inline void mapping_clear_release_always(struct address_space *mapping)
- 	clear_bit(AS_RELEASE_ALWAYS, &mapping->flags);
++#define KVM_GUEST_MEMFD_ALLOW_HUGEPAGE		(1ULL << 0)
++
+ #endif /* __LINUX_KVM_H */
+diff --git a/virt/kvm/guest_memfd.c b/virt/kvm/guest_memfd.c
+index 98a12da80214..94bc478c26f3 100644
+--- a/virt/kvm/guest_memfd.c
++++ b/virt/kvm/guest_memfd.c
+@@ -13,14 +13,47 @@ struct kvm_gmem {
+ 	struct list_head entry;
+ };
+ 
++static struct folio *kvm_gmem_get_huge_folio(struct inode *inode, pgoff_t index)
++{
++#ifdef CONFIG_TRANSPARENT_HUGEPAGE
++	unsigned long huge_index = round_down(index, HPAGE_PMD_NR);
++	unsigned long flags = (unsigned long)inode->i_private;
++	struct address_space *mapping  = inode->i_mapping;
++	gfp_t gfp = mapping_gfp_mask(mapping);
++	struct folio *folio;
++
++	if (!(flags & KVM_GUEST_MEMFD_ALLOW_HUGEPAGE))
++		return NULL;
++
++	if (filemap_range_has_page(mapping, huge_index << PAGE_SHIFT,
++				   (huge_index + HPAGE_PMD_NR - 1) << PAGE_SHIFT))
++		return NULL;
++
++	folio = filemap_alloc_folio(gfp, HPAGE_PMD_ORDER);
++	if (!folio)
++		return NULL;
++
++	if (filemap_add_folio(mapping, folio, huge_index, gfp)) {
++		folio_put(folio);
++		return NULL;
++	}
++
++	return folio;
++#else
++	return NULL;
++#endif
++}
++
+ static struct folio *kvm_gmem_get_folio(struct inode *inode, pgoff_t index)
+ {
+ 	struct folio *folio;
+ 
+-	/* TODO: Support huge pages. */
+-	folio = filemap_grab_folio(inode->i_mapping, index);
+-	if (IS_ERR_OR_NULL(folio))
+-		return NULL;
++	folio = kvm_gmem_get_huge_folio(inode, index);
++	if (!folio) {
++		folio = filemap_grab_folio(inode->i_mapping, index);
++		if (IS_ERR_OR_NULL(folio))
++			return NULL;
++	}
+ 
+ 	/*
+ 	 * Use the up-to-date flag to track whether or not the memory has been
+@@ -373,6 +406,7 @@ static int __kvm_gmem_create(struct kvm *kvm, loff_t size, u64 flags)
+ 	inode->i_mode |= S_IFREG;
+ 	inode->i_size = size;
+ 	mapping_set_gfp_mask(inode->i_mapping, GFP_HIGHUSER);
++	mapping_set_large_folios(inode->i_mapping);
+ 	mapping_set_unmovable(inode->i_mapping);
+ 	/* Unmovable mappings are supposed to be marked unevictable as well. */
+ 	WARN_ON_ONCE(!mapping_unevictable(inode->i_mapping));
+@@ -398,12 +432,21 @@ int kvm_gmem_create(struct kvm *kvm, struct kvm_create_guest_memfd *args)
+ 	u64 flags = args->flags;
+ 	u64 valid_flags = 0;
+ 
++	if (IS_ENABLED(CONFIG_TRANSPARENT_HUGEPAGE))
++		valid_flags |= KVM_GUEST_MEMFD_ALLOW_HUGEPAGE;
++
+ 	if (flags & ~valid_flags)
+ 		return -EINVAL;
+ 
+ 	if (size < 0 || !PAGE_ALIGNED(size))
+ 		return -EINVAL;
+ 
++#ifdef CONFIG_TRANSPARENT_HUGEPAGE
++	if ((flags & KVM_GUEST_MEMFD_ALLOW_HUGEPAGE) &&
++	    !IS_ALIGNED(size, HPAGE_PMD_SIZE))
++		return -EINVAL;
++#endif
++
+ 	return __kvm_gmem_create(kvm, size, flags);
  }
  
-+static inline void mapping_set_unmovable(struct address_space *mapping)
-+{
-+	/*
-+	 * It's expected unmovable mappings are also unevictable. Compaction
-+	 * migrate scanner (isolate_migratepages_block()) relies on this to
-+	 * reduce page locking.
-+	 */
-+	set_bit(AS_UNEVICTABLE, &mapping->flags);
-+	set_bit(AS_UNMOVABLE, &mapping->flags);
-+}
-+
-+static inline bool mapping_unmovable(struct address_space *mapping)
-+{
-+	return test_bit(AS_UNMOVABLE, &mapping->flags);
-+}
-+
- static inline gfp_t mapping_gfp_mask(struct address_space * mapping)
+@@ -501,7 +544,7 @@ void kvm_gmem_unbind(struct kvm_memory_slot *slot)
+ int kvm_gmem_get_pfn(struct kvm *kvm, struct kvm_memory_slot *slot,
+ 		     gfn_t gfn, kvm_pfn_t *pfn, int *max_order)
  {
- 	return mapping->gfp_mask;
-diff --git a/mm/compaction.c b/mm/compaction.c
-index 38c8d216c6a3..12b828aed7c8 100644
---- a/mm/compaction.c
-+++ b/mm/compaction.c
-@@ -883,6 +883,7 @@ isolate_migratepages_block(struct compact_control *cc, unsigned long low_pfn,
+-	pgoff_t index = gfn - slot->base_gfn + slot->gmem.pgoff;
++	pgoff_t index, huge_index;
+ 	struct kvm_gmem *gmem;
+ 	struct folio *folio;
+ 	struct page *page;
+@@ -514,6 +557,7 @@ int kvm_gmem_get_pfn(struct kvm *kvm, struct kvm_memory_slot *slot,
  
- 	/* Time to isolate some pages for migration */
- 	for (; low_pfn < end_pfn; low_pfn++) {
-+		bool is_dirty, is_unevictable;
+ 	gmem = file->private_data;
  
- 		if (skip_on_failure && low_pfn >= next_skip_pfn) {
- 			/*
-@@ -1080,8 +1081,10 @@ isolate_migratepages_block(struct compact_control *cc, unsigned long low_pfn,
- 		if (!folio_test_lru(folio))
- 			goto isolate_fail_put;
++	index = gfn - slot->base_gfn + slot->gmem.pgoff;
+ 	if (WARN_ON_ONCE(xa_load(&gmem->bindings, index) != slot)) {
+ 		r = -EIO;
+ 		goto out_fput;
+@@ -533,9 +577,24 @@ int kvm_gmem_get_pfn(struct kvm *kvm, struct kvm_memory_slot *slot,
+ 	page = folio_file_page(folio, index);
  
-+		is_unevictable = folio_test_unevictable(folio);
+ 	*pfn = page_to_pfn(page);
+-	if (max_order)
++	if (!max_order)
++		goto success;
 +
- 		/* Compaction might skip unevictable pages but CMA takes them */
--		if (!(mode & ISOLATE_UNEVICTABLE) && folio_test_unevictable(folio))
-+		if (!(mode & ISOLATE_UNEVICTABLE) && is_unevictable)
- 			goto isolate_fail_put;
- 
- 		/*
-@@ -1093,26 +1096,42 @@ isolate_migratepages_block(struct compact_control *cc, unsigned long low_pfn,
- 		if ((mode & ISOLATE_ASYNC_MIGRATE) && folio_test_writeback(folio))
- 			goto isolate_fail_put;
- 
--		if ((mode & ISOLATE_ASYNC_MIGRATE) && folio_test_dirty(folio)) {
--			bool migrate_dirty;
-+		is_dirty = folio_test_dirty(folio);
++	*max_order = compound_order(compound_head(page));
++	if (!*max_order)
++		goto success;
 +
-+		if (((mode & ISOLATE_ASYNC_MIGRATE) && is_dirty) ||
-+		    (mapping && is_unevictable)) {
-+			bool migrate_dirty = true;
-+			bool is_unmovable;
++	/*
++	 * The folio can be mapped with a hugepage if and only if the folio is
++	 * fully contained by the range the memslot is bound to.  Note, the
++	 * caller is responsible for handling gfn alignment, this only deals
++	 * with the file binding.
++	 */
++	huge_index = ALIGN(index, 1ull << *max_order);
++	if (huge_index < ALIGN(slot->gmem.pgoff, 1ull << *max_order) ||
++	    huge_index + (1ull << *max_order) > slot->gmem.pgoff + slot->npages)
+ 		*max_order = 0;
+-
++success:
+ 	r = 0;
  
- 			/*
- 			 * Only folios without mappings or that have
--			 * a ->migrate_folio callback are possible to
--			 * migrate without blocking.  However, we may
--			 * be racing with truncation, which can free
--			 * the mapping.  Truncation holds the folio lock
--			 * until after the folio is removed from the page
--			 * cache so holding it ourselves is sufficient.
-+			 * a ->migrate_folio callback are possible to migrate
-+			 * without blocking.
-+			 *
-+			 * Folios from unmovable mappings are not migratable.
-+			 *
-+			 * However, we can be racing with truncation, which can
-+			 * free the mapping that we need to check. Truncation
-+			 * holds the folio lock until after the folio is removed
-+			 * from the page so holding it ourselves is sufficient.
-+			 *
-+			 * To avoid locking the folio just to check unmovable,
-+			 * assume every unmovable folio is also unevictable,
-+			 * which is a cheaper test.  If our assumption goes
-+			 * wrong, it's not a correctness bug, just potentially
-+			 * wasted cycles.
- 			 */
- 			if (!folio_trylock(folio))
- 				goto isolate_fail_put;
- 
- 			mapping = folio_mapping(folio);
--			migrate_dirty = !mapping ||
--					mapping->a_ops->migrate_folio;
-+			if ((mode & ISOLATE_ASYNC_MIGRATE) && is_dirty) {
-+				migrate_dirty = !mapping ||
-+						mapping->a_ops->migrate_folio;
-+			}
-+			is_unmovable = mapping && mapping_unmovable(mapping);
- 			folio_unlock(folio);
--			if (!migrate_dirty)
-+			if (!migrate_dirty || is_unmovable)
- 				goto isolate_fail_put;
- 		}
- 
-diff --git a/mm/migrate.c b/mm/migrate.c
-index 2053b54556ca..ed874e43ecd7 100644
---- a/mm/migrate.c
-+++ b/mm/migrate.c
-@@ -956,6 +956,8 @@ static int move_to_new_folio(struct folio *dst, struct folio *src,
- 
- 		if (!mapping)
- 			rc = migrate_folio(mapping, dst, src, mode);
-+		else if (mapping_unmovable(mapping))
-+			rc = -EOPNOTSUPP;
- 		else if (mapping->a_ops->migrate_folio)
- 			/*
- 			 * Most folios have a mapping and most filesystems
+ out_unlock:
 -- 
 2.42.0.820.g83a721a137-goog
 
