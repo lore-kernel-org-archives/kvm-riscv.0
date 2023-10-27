@@ -1,60 +1,285 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Fri, 27 Oct 2023 11:22:00 -0700
-Subject: [PATCH v13 18/35] KVM: x86: "Reset" vcpu->run->exit_reason early in KVM_RUN
+Date: Fri, 27 Oct 2023 11:22:02 -0700
+Subject: [PATCH v13 20/35] KVM: x86/mmu: Handle page fault for private memory
 In-Reply-To: <20231027182217.3615211-1-seanjc@google.com>
 References: <20231027182217.3615211-1-seanjc@google.com>
-Message-ID: <20231027182217.3615211-19-seanjc@google.com>
+Message-ID: <20231027182217.3615211-21-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Initialize run->exit_reason to KVM_EXIT_UNKNOWN early in KVM_RUN to reduce
-the probability of exiting to userspace with a stale run->exit_reason that
-*appears* to be valid.
+From: Chao Peng <chao.p.peng@linux.intel.com>
 
-To support fd-based guest memory (guest memory without a corresponding
-userspace virtual address), KVM will exit to userspace for various memory
-related errors, which userspace *may* be able to resolve, instead of using
-e.g. BUS_MCEERR_AR.  And in the more distant future, KVM will also likely
-utilize the same functionality to let userspace "intercept" and handle
-memory faults when the userspace mapping is missing, i.e. when fast gup()
-fails.
+Add support for resolving page faults on guest private memory for VMs
+that differentiate between "shared" and "private" memory.  For such VMs,
+KVM_MEM_PRIVATE memslots can include both fd-based private memory and
+hva-based shared memory, and KVM needs to map in the "correct" variant,
+i.e. KVM needs to map the gfn shared/private as appropriate based on the
+current state of the gfn's KVM_MEMORY_ATTRIBUTE_PRIVATE flag.
 
-Because many of KVM's internal APIs related to guest memory use '0' to
-indicate "success, continue on" and not "exit to userspace", reporting
-memory faults/errors to userspace will set run->exit_reason and
-corresponding fields in the run structure fields in conjunction with a
-a non-zero, negative return code, e.g. -EFAULT or -EHWPOISON.  And because
-KVM already returns  -EFAULT in many paths, there's a relatively high
-probability that KVM could return -EFAULT without setting run->exit_reason,
-in which case reporting KVM_EXIT_UNKNOWN is much better than reporting
-whatever exit reason happened to be in the run structure.
+For AMD's SEV-SNP and Intel's TDX, the guest effectively gets to request
+shared vs. private via a bit in the guest page tables, i.e. what the guest
+wants may conflict with the current memory attributes.  To support such
+"implicit" conversion requests, exit to user with KVM_EXIT_MEMORY_FAULT
+to forward the request to userspace.  Add a new flag for memory faults,
+KVM_MEMORY_EXIT_FLAG_PRIVATE, to communicate whether the guest wants to
+map memory as shared vs. private.
 
-Note, KVM must wait until after run->immediate_exit is serviced to
-sanitize run->exit_reason as KVM's ABI is that run->exit_reason is
-preserved across KVM_RUN when run->immediate_exit is true.
+Like KVM_MEMORY_ATTRIBUTE_PRIVATE, use bit 3 for flagging private memory
+so that KVM can use bits 0-2 for capturing RWX behavior if/when userspace
+needs such information, e.g. a likely user of KVM_EXIT_MEMORY_FAULT is to
+exit on missing mappings when handling guest page fault VM-Exits.  In
+that case, userspace will want to know RWX information in order to
+correctly/precisely resolve the fault.
 
-Link: https://lore.kernel.org/all/20230908222905.1321305-1-amoorthy at google.com
-Link: https://lore.kernel.org/all/ZFFbwOXZ5uI%2Fgdaf at google.com
+Note, private memory *must* be backed by guest_memfd, i.e. shared mappings
+always come from the host userspace page tables, and private mappings
+always come from a guest_memfd instance.
+
+Co-developed-by: Yu Zhang <yu.c.zhang@linux.intel.com>
+Signed-off-by: Yu Zhang <yu.c.zhang@linux.intel.com>
+Signed-off-by: Chao Peng <chao.p.peng@linux.intel.com>
+Co-developed-by: Sean Christopherson <seanjc@google.com>
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/x86/kvm/x86.c | 1 +
- 1 file changed, 1 insertion(+)
+ Documentation/virt/kvm/api.rst  |   8 ++-
+ arch/x86/kvm/mmu/mmu.c          | 101 ++++++++++++++++++++++++++++++--
+ arch/x86/kvm/mmu/mmu_internal.h |   1 +
+ include/linux/kvm_host.h        |   8 ++-
+ include/uapi/linux/kvm.h        |   1 +
+ 5 files changed, 110 insertions(+), 9 deletions(-)
 
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index ee3cd8c3c0ef..f41dbb1465a0 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -10963,6 +10963,7 @@ static int vcpu_run(struct kvm_vcpu *vcpu)
+diff --git a/Documentation/virt/kvm/api.rst b/Documentation/virt/kvm/api.rst
+index 7f00c310c24a..38dc1fda4f45 100644
+--- a/Documentation/virt/kvm/api.rst
++++ b/Documentation/virt/kvm/api.rst
+@@ -6837,6 +6837,7 @@ spec refer, https://github.com/riscv/riscv-sbi-doc.
+ 
+ 		/* KVM_EXIT_MEMORY_FAULT */
+ 		struct {
++  #define KVM_MEMORY_EXIT_FLAG_PRIVATE	(1ULL << 3)
+ 			__u64 flags;
+ 			__u64 gpa;
+ 			__u64 size;
+@@ -6845,8 +6846,11 @@ spec refer, https://github.com/riscv/riscv-sbi-doc.
+ KVM_EXIT_MEMORY_FAULT indicates the vCPU has encountered a memory fault that
+ could not be resolved by KVM.  The 'gpa' and 'size' (in bytes) describe the
+ guest physical address range [gpa, gpa + size) of the fault.  The 'flags' field
+-describes properties of the faulting access that are likely pertinent.
+-Currently, no flags are defined.
++describes properties of the faulting access that are likely pertinent:
++
++ - KVM_MEMORY_EXIT_FLAG_PRIVATE - When set, indicates the memory fault occurred
++   on a private memory access.  When clear, indicates the fault occurred on a
++   shared access.
+ 
+ Note!  KVM_EXIT_MEMORY_FAULT is unique among all KVM exit reasons in that it
+ accompanies a return code of '-1', not '0'!  errno will always be set to EFAULT
+diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
+index 4167d557c577..c4e758f0aebb 100644
+--- a/arch/x86/kvm/mmu/mmu.c
++++ b/arch/x86/kvm/mmu/mmu.c
+@@ -3147,9 +3147,9 @@ static int host_pfn_mapping_level(struct kvm *kvm, gfn_t gfn,
+ 	return level;
+ }
+ 
+-int kvm_mmu_max_mapping_level(struct kvm *kvm,
+-			      const struct kvm_memory_slot *slot, gfn_t gfn,
+-			      int max_level)
++static int __kvm_mmu_max_mapping_level(struct kvm *kvm,
++				       const struct kvm_memory_slot *slot,
++				       gfn_t gfn, int max_level, bool is_private)
  {
- 	int r;
+ 	struct kvm_lpage_info *linfo;
+ 	int host_level;
+@@ -3161,6 +3161,9 @@ int kvm_mmu_max_mapping_level(struct kvm *kvm,
+ 			break;
+ 	}
  
-+	vcpu->run->exit_reason = KVM_EXIT_UNKNOWN;
- 	vcpu->arch.l1tf_flush_l1d = true;
++	if (is_private)
++		return max_level;
++
+ 	if (max_level == PG_LEVEL_4K)
+ 		return PG_LEVEL_4K;
  
- 	for (;;) {
+@@ -3168,6 +3171,16 @@ int kvm_mmu_max_mapping_level(struct kvm *kvm,
+ 	return min(host_level, max_level);
+ }
+ 
++int kvm_mmu_max_mapping_level(struct kvm *kvm,
++			      const struct kvm_memory_slot *slot, gfn_t gfn,
++			      int max_level)
++{
++	bool is_private = kvm_slot_can_be_private(slot) &&
++			  kvm_mem_is_private(kvm, gfn);
++
++	return __kvm_mmu_max_mapping_level(kvm, slot, gfn, max_level, is_private);
++}
++
+ void kvm_mmu_hugepage_adjust(struct kvm_vcpu *vcpu, struct kvm_page_fault *fault)
+ {
+ 	struct kvm_memory_slot *slot = fault->slot;
+@@ -3188,8 +3201,9 @@ void kvm_mmu_hugepage_adjust(struct kvm_vcpu *vcpu, struct kvm_page_fault *fault
+ 	 * Enforce the iTLB multihit workaround after capturing the requested
+ 	 * level, which will be used to do precise, accurate accounting.
+ 	 */
+-	fault->req_level = kvm_mmu_max_mapping_level(vcpu->kvm, slot,
+-						     fault->gfn, fault->max_level);
++	fault->req_level = __kvm_mmu_max_mapping_level(vcpu->kvm, slot,
++						       fault->gfn, fault->max_level,
++						       fault->is_private);
+ 	if (fault->req_level == PG_LEVEL_4K || fault->huge_page_disallowed)
+ 		return;
+ 
+@@ -4261,6 +4275,55 @@ void kvm_arch_async_page_ready(struct kvm_vcpu *vcpu, struct kvm_async_pf *work)
+ 	kvm_mmu_do_page_fault(vcpu, work->cr2_or_gpa, 0, true, NULL);
+ }
+ 
++static inline u8 kvm_max_level_for_order(int order)
++{
++	BUILD_BUG_ON(KVM_MAX_HUGEPAGE_LEVEL > PG_LEVEL_1G);
++
++	KVM_MMU_WARN_ON(order != KVM_HPAGE_GFN_SHIFT(PG_LEVEL_1G) &&
++			order != KVM_HPAGE_GFN_SHIFT(PG_LEVEL_2M) &&
++			order != KVM_HPAGE_GFN_SHIFT(PG_LEVEL_4K));
++
++	if (order >= KVM_HPAGE_GFN_SHIFT(PG_LEVEL_1G))
++		return PG_LEVEL_1G;
++
++	if (order >= KVM_HPAGE_GFN_SHIFT(PG_LEVEL_2M))
++		return PG_LEVEL_2M;
++
++	return PG_LEVEL_4K;
++}
++
++static void kvm_mmu_prepare_memory_fault_exit(struct kvm_vcpu *vcpu,
++					      struct kvm_page_fault *fault)
++{
++	kvm_prepare_memory_fault_exit(vcpu, fault->gfn << PAGE_SHIFT,
++				      PAGE_SIZE, fault->write, fault->exec,
++				      fault->is_private);
++}
++
++static int kvm_faultin_pfn_private(struct kvm_vcpu *vcpu,
++				   struct kvm_page_fault *fault)
++{
++	int max_order, r;
++
++	if (!kvm_slot_can_be_private(fault->slot)) {
++		kvm_mmu_prepare_memory_fault_exit(vcpu, fault);
++		return -EFAULT;
++	}
++
++	r = kvm_gmem_get_pfn(vcpu->kvm, fault->slot, fault->gfn, &fault->pfn,
++			     &max_order);
++	if (r) {
++		kvm_mmu_prepare_memory_fault_exit(vcpu, fault);
++		return r;
++	}
++
++	fault->max_level = min(kvm_max_level_for_order(max_order),
++			       fault->max_level);
++	fault->map_writable = !(fault->slot->flags & KVM_MEM_READONLY);
++
++	return RET_PF_CONTINUE;
++}
++
+ static int __kvm_faultin_pfn(struct kvm_vcpu *vcpu, struct kvm_page_fault *fault)
+ {
+ 	struct kvm_memory_slot *slot = fault->slot;
+@@ -4293,6 +4356,14 @@ static int __kvm_faultin_pfn(struct kvm_vcpu *vcpu, struct kvm_page_fault *fault
+ 			return RET_PF_EMULATE;
+ 	}
+ 
++	if (fault->is_private != kvm_mem_is_private(vcpu->kvm, fault->gfn)) {
++		kvm_mmu_prepare_memory_fault_exit(vcpu, fault);
++		return -EFAULT;
++	}
++
++	if (fault->is_private)
++		return kvm_faultin_pfn_private(vcpu, fault);
++
+ 	async = false;
+ 	fault->pfn = __gfn_to_pfn_memslot(slot, fault->gfn, false, false, &async,
+ 					  fault->write, &fault->map_writable,
+@@ -7173,6 +7244,26 @@ void kvm_mmu_pre_destroy_vm(struct kvm *kvm)
+ }
+ 
+ #ifdef CONFIG_KVM_GENERIC_MEMORY_ATTRIBUTES
++bool kvm_arch_pre_set_memory_attributes(struct kvm *kvm,
++					struct kvm_gfn_range *range)
++{
++	/*
++	 * Zap SPTEs even if the slot can't be mapped PRIVATE.  KVM x86 only
++	 * supports KVM_MEMORY_ATTRIBUTE_PRIVATE, and so it *seems* like KVM
++	 * can simply ignore such slots.  But if userspace is making memory
++	 * PRIVATE, then KVM must prevent the guest from accessing the memory
++	 * as shared.  And if userspace is making memory SHARED and this point
++	 * is reached, then at least one page within the range was previously
++	 * PRIVATE, i.e. the slot's possible hugepage ranges are changing.
++	 * Zapping SPTEs in this case ensures KVM will reassess whether or not
++	 * a hugepage can be used for affected ranges.
++	 */
++	if (WARN_ON_ONCE(!kvm_arch_has_private_mem(kvm)))
++		return false;
++
++	return kvm_unmap_gfn_range(kvm, range);
++}
++
+ static bool hugepage_test_mixed(struct kvm_memory_slot *slot, gfn_t gfn,
+ 				int level)
+ {
+diff --git a/arch/x86/kvm/mmu/mmu_internal.h b/arch/x86/kvm/mmu/mmu_internal.h
+index decc1f153669..86c7cb692786 100644
+--- a/arch/x86/kvm/mmu/mmu_internal.h
++++ b/arch/x86/kvm/mmu/mmu_internal.h
+@@ -201,6 +201,7 @@ struct kvm_page_fault {
+ 
+ 	/* Derived from mmu and global state.  */
+ 	const bool is_tdp;
++	const bool is_private;
+ 	const bool nx_huge_page_workaround_enabled;
+ 
+ 	/*
+diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+index 7de93858054d..e3223cafd7db 100644
+--- a/include/linux/kvm_host.h
++++ b/include/linux/kvm_host.h
+@@ -2358,14 +2358,18 @@ static inline void kvm_account_pgtable_pages(void *virt, int nr)
+ #define  KVM_DIRTY_RING_MAX_ENTRIES  65536
+ 
+ static inline void kvm_prepare_memory_fault_exit(struct kvm_vcpu *vcpu,
+-						 gpa_t gpa, gpa_t size)
++						 gpa_t gpa, gpa_t size,
++						 bool is_write, bool is_exec,
++						 bool is_private)
+ {
+ 	vcpu->run->exit_reason = KVM_EXIT_MEMORY_FAULT;
+ 	vcpu->run->memory_fault.gpa = gpa;
+ 	vcpu->run->memory_fault.size = size;
+ 
+-	/* Flags are not (yet) defined or communicated to userspace. */
++	/* RWX flags are not (yet) defined or communicated to userspace. */
+ 	vcpu->run->memory_fault.flags = 0;
++	if (is_private)
++		vcpu->run->memory_fault.flags |= KVM_MEMORY_EXIT_FLAG_PRIVATE;
+ }
+ 
+ #ifdef CONFIG_KVM_GENERIC_MEMORY_ATTRIBUTES
+diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
+index 33d542de0a61..29e9eb51dec9 100644
+--- a/include/uapi/linux/kvm.h
++++ b/include/uapi/linux/kvm.h
+@@ -527,6 +527,7 @@ struct kvm_run {
+ 		} notify;
+ 		/* KVM_EXIT_MEMORY_FAULT */
+ 		struct {
++#define KVM_MEMORY_EXIT_FLAG_PRIVATE	(1ULL << 3)
+ 			__u64 flags;
+ 			__u64 gpa;
+ 			__u64 size;
 -- 
 2.42.0.820.g83a721a137-goog
 
