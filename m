@@ -1,169 +1,236 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Fri, 27 Oct 2023 11:21:52 -0700
-Subject: [PATCH v13 10/35] KVM: Add a dedicated mmu_notifier flag for
- reclaiming freed memory
+Date: Fri, 27 Oct 2023 11:21:50 -0700
+Subject: [PATCH v13 08/35] KVM: Introduce KVM_SET_USER_MEMORY_REGION2
 In-Reply-To: <20231027182217.3615211-1-seanjc@google.com>
 References: <20231027182217.3615211-1-seanjc@google.com>
-Message-ID: <20231027182217.3615211-11-seanjc@google.com>
+Message-ID: <20231027182217.3615211-9-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Handle AMD SEV's kvm_arch_guest_memory_reclaimed() hook by having
-__kvm_handle_hva_range() return whether or not an overlapping memslot
-was found, i.e. mmu_lock was acquired.  Using the .on_unlock() hook
-works, but kvm_arch_guest_memory_reclaimed() needs to run after dropping
-mmu_lock, which makes .on_lock() and .on_unlock() asymmetrical.
+Introduce a "version 2" of KVM_SET_USER_MEMORY_REGION so that additional
+information can be supplied without setting userspace up to fail.  The
+padding in the new kvm_userspace_memory_region2 structure will be used to
+pass a file descriptor in addition to the userspace_addr, i.e. allow
+userspace to point at a file descriptor and map memory into a guest that
+is NOT mapped into host userspace.
 
-Use a small struct to return the tuple of the notifier-specific return,
-plus whether or not overlap was found.  Because the iteration helpers are
-__always_inlined, practically speaking, the struct will never actually be
-returned from a function call (not to mention the size of the struct will
-be two bytes in practice).
+Alternatively, KVM could simply add "struct kvm_userspace_memory_region2"
+without a new ioctl(), but as Paolo pointed out, adding a new ioctl()
+makes detection of bad flags a bit more robust, e.g. if the new fd field
+is guarded only by a flag and not a new ioctl(), then a userspace bug
+(setting a "bad" flag) would generate out-of-bounds access instead of an
+-EINVAL error.
 
+Cc: Jarkko Sakkinen <jarkko@kernel.org>
+Reviewed-by: Paolo Bonzini <pbonzini@redhat.com>
+Reviewed-by: Xiaoyao Li <xiaoyao.li@intel.com>
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- virt/kvm/kvm_main.c | 53 +++++++++++++++++++++++++++++++--------------
- 1 file changed, 37 insertions(+), 16 deletions(-)
+ Documentation/virt/kvm/api.rst | 21 +++++++++++++++++++
+ arch/x86/kvm/x86.c             |  2 +-
+ include/linux/kvm_host.h       |  4 ++--
+ include/uapi/linux/kvm.h       | 13 ++++++++++++
+ virt/kvm/kvm_main.c            | 38 +++++++++++++++++++++++++++-------
+ 5 files changed, 67 insertions(+), 11 deletions(-)
 
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 3f5b7c2c5327..2bc04c8ae1f4 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -561,6 +561,19 @@ struct kvm_mmu_notifier_range {
- 	bool may_block;
- };
+diff --git a/Documentation/virt/kvm/api.rst b/Documentation/virt/kvm/api.rst
+index 21a7578142a1..ace984acc125 100644
+--- a/Documentation/virt/kvm/api.rst
++++ b/Documentation/virt/kvm/api.rst
+@@ -6070,6 +6070,27 @@ writes to the CNTVCT_EL0 and CNTPCT_EL0 registers using the SET_ONE_REG
+ interface. No error will be returned, but the resulting offset will not be
+ applied.
  
-+/*
-+ * The inner-most helper returns a tuple containing the return value from the
-+ * arch- and action-specific handler, plus a flag indicating whether or not at
-+ * least one memslot was found, i.e. if the handler found guest memory.
-+ *
-+ * Note, most notifiers are averse to booleans, so even though KVM tracks the
-+ * return from arch code as a bool, outer helpers will cast it to an int. :-(
-+ */
-+typedef struct kvm_mmu_notifier_return {
-+	bool ret;
-+	bool found_memslot;
-+} kvm_mn_ret_t;
++4.139 KVM_SET_USER_MEMORY_REGION2
++---------------------------------
 +
- /*
-  * Use a dedicated stub instead of NULL to indicate that there is no callback
-  * function/handler.  The compiler technically can't guarantee that a real
-@@ -582,22 +595,25 @@ static const union kvm_mmu_notifier_arg KVM_MMU_NOTIFIER_NO_ARG;
- 	     node;							     \
- 	     node = interval_tree_iter_next(node, start, last))	     \
++:Capability: KVM_CAP_USER_MEMORY2
++:Architectures: all
++:Type: vm ioctl
++:Parameters: struct kvm_userspace_memory_region2 (in)
++:Returns: 0 on success, -1 on error
++
++::
++
++  struct kvm_userspace_memory_region2 {
++	__u32 slot;
++	__u32 flags;
++	__u64 guest_phys_addr;
++	__u64 memory_size; /* bytes */
++	__u64 userspace_addr; /* start of the userspace allocated memory */
++  };
++
++See KVM_SET_USER_MEMORY_REGION.
++
+ 5. The kvm_run structure
+ ========================
  
--static __always_inline int __kvm_handle_hva_range(struct kvm *kvm,
--						  const struct kvm_mmu_notifier_range *range)
-+static __always_inline kvm_mn_ret_t __kvm_handle_hva_range(struct kvm *kvm,
-+							   const struct kvm_mmu_notifier_range *range)
- {
--	bool ret = false, locked = false;
-+	struct kvm_mmu_notifier_return r = {
-+		.ret = false,
-+		.found_memslot = false,
-+	};
- 	struct kvm_gfn_range gfn_range;
- 	struct kvm_memory_slot *slot;
- 	struct kvm_memslots *slots;
- 	int i, idx;
- 
- 	if (WARN_ON_ONCE(range->end <= range->start))
--		return 0;
-+		return r;
- 
- 	/* A null handler is allowed if and only if on_lock() is provided. */
- 	if (WARN_ON_ONCE(IS_KVM_NULL_FN(range->on_lock) &&
- 			 IS_KVM_NULL_FN(range->handler)))
--		return 0;
-+		return r;
- 
- 	idx = srcu_read_lock(&kvm->srcu);
- 
-@@ -631,8 +647,8 @@ static __always_inline int __kvm_handle_hva_range(struct kvm *kvm,
- 			gfn_range.end = hva_to_gfn_memslot(hva_end + PAGE_SIZE - 1, slot);
- 			gfn_range.slot = slot;
- 
--			if (!locked) {
--				locked = true;
-+			if (!r.found_memslot) {
-+				r.found_memslot = true;
- 				KVM_MMU_LOCK(kvm);
- 				if (!IS_KVM_NULL_FN(range->on_lock))
- 					range->on_lock(kvm);
-@@ -640,14 +656,14 @@ static __always_inline int __kvm_handle_hva_range(struct kvm *kvm,
- 				if (IS_KVM_NULL_FN(range->handler))
- 					break;
- 			}
--			ret |= range->handler(kvm, &gfn_range);
-+			r.ret |= range->handler(kvm, &gfn_range);
- 		}
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index 41cce5031126..6409914428ca 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -12455,7 +12455,7 @@ void __user * __x86_set_memory_region(struct kvm *kvm, int id, gpa_t gpa,
  	}
  
--	if (range->flush_on_ret && ret)
-+	if (range->flush_on_ret && r.ret)
- 		kvm_flush_remote_tlbs(kvm);
+ 	for (i = 0; i < KVM_ADDRESS_SPACE_NUM; i++) {
+-		struct kvm_userspace_memory_region m;
++		struct kvm_userspace_memory_region2 m;
  
--	if (locked) {
-+	if (r.found_memslot) {
- 		KVM_MMU_UNLOCK(kvm);
- 		if (!IS_KVM_NULL_FN(range->on_unlock))
- 			range->on_unlock(kvm);
-@@ -655,8 +671,7 @@ static __always_inline int __kvm_handle_hva_range(struct kvm *kvm,
+ 		m.slot = id | (i << 16);
+ 		m.flags = 0;
+diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+index 5faba69403ac..4e741ff27af3 100644
+--- a/include/linux/kvm_host.h
++++ b/include/linux/kvm_host.h
+@@ -1146,9 +1146,9 @@ enum kvm_mr_change {
+ };
  
- 	srcu_read_unlock(&kvm->srcu, idx);
+ int kvm_set_memory_region(struct kvm *kvm,
+-			  const struct kvm_userspace_memory_region *mem);
++			  const struct kvm_userspace_memory_region2 *mem);
+ int __kvm_set_memory_region(struct kvm *kvm,
+-			    const struct kvm_userspace_memory_region *mem);
++			    const struct kvm_userspace_memory_region2 *mem);
+ void kvm_arch_free_memslot(struct kvm *kvm, struct kvm_memory_slot *slot);
+ void kvm_arch_memslots_updated(struct kvm *kvm, u64 gen);
+ int kvm_arch_prepare_memory_region(struct kvm *kvm,
+diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
+index 13065dd96132..bd1abe067f28 100644
+--- a/include/uapi/linux/kvm.h
++++ b/include/uapi/linux/kvm.h
+@@ -95,6 +95,16 @@ struct kvm_userspace_memory_region {
+ 	__u64 userspace_addr; /* start of the userspace allocated memory */
+ };
  
--	/* The notifiers are averse to booleans. :-( */
--	return (int)ret;
-+	return r;
++/* for KVM_SET_USER_MEMORY_REGION2 */
++struct kvm_userspace_memory_region2 {
++	__u32 slot;
++	__u32 flags;
++	__u64 guest_phys_addr;
++	__u64 memory_size;
++	__u64 userspace_addr;
++	__u64 pad[16];
++};
++
+ /*
+  * The bit 0 ~ bit 15 of kvm_userspace_memory_region::flags are visible for
+  * userspace, other bits are reserved for kvm internal use which are defined
+@@ -1192,6 +1202,7 @@ struct kvm_ppc_resize_hpt {
+ #define KVM_CAP_COUNTER_OFFSET 227
+ #define KVM_CAP_ARM_EAGER_SPLIT_CHUNK_SIZE 228
+ #define KVM_CAP_ARM_SUPPORTED_BLOCK_SIZES 229
++#define KVM_CAP_USER_MEMORY2 230
+ 
+ #ifdef KVM_CAP_IRQ_ROUTING
+ 
+@@ -1473,6 +1484,8 @@ struct kvm_vfio_spapr_tce {
+ 					struct kvm_userspace_memory_region)
+ #define KVM_SET_TSS_ADDR          _IO(KVMIO,   0x47)
+ #define KVM_SET_IDENTITY_MAP_ADDR _IOW(KVMIO,  0x48, __u64)
++#define KVM_SET_USER_MEMORY_REGION2 _IOW(KVMIO, 0x49, \
++					 struct kvm_userspace_memory_region2)
+ 
+ /* enable ucontrol for s390 */
+ struct kvm_s390_ucas_mapping {
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index 6e708017064d..3f5b7c2c5327 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -1578,7 +1578,7 @@ static void kvm_replace_memslot(struct kvm *kvm,
+ 	}
  }
  
- static __always_inline int kvm_handle_hva_range(struct mmu_notifier *mn,
-@@ -677,7 +692,7 @@ static __always_inline int kvm_handle_hva_range(struct mmu_notifier *mn,
- 		.may_block	= false,
- 	};
+-static int check_memory_region_flags(const struct kvm_userspace_memory_region *mem)
++static int check_memory_region_flags(const struct kvm_userspace_memory_region2 *mem)
+ {
+ 	u32 valid_flags = KVM_MEM_LOG_DIRTY_PAGES;
  
--	return __kvm_handle_hva_range(kvm, &range);
-+	return __kvm_handle_hva_range(kvm, &range).ret;
+@@ -1980,7 +1980,7 @@ static bool kvm_check_memslot_overlap(struct kvm_memslots *slots, int id,
+  * Must be called holding kvm->slots_lock for write.
+  */
+ int __kvm_set_memory_region(struct kvm *kvm,
+-			    const struct kvm_userspace_memory_region *mem)
++			    const struct kvm_userspace_memory_region2 *mem)
+ {
+ 	struct kvm_memory_slot *old, *new;
+ 	struct kvm_memslots *slots;
+@@ -2084,7 +2084,7 @@ int __kvm_set_memory_region(struct kvm *kvm,
+ EXPORT_SYMBOL_GPL(__kvm_set_memory_region);
+ 
+ int kvm_set_memory_region(struct kvm *kvm,
+-			  const struct kvm_userspace_memory_region *mem)
++			  const struct kvm_userspace_memory_region2 *mem)
+ {
+ 	int r;
+ 
+@@ -2096,7 +2096,7 @@ int kvm_set_memory_region(struct kvm *kvm,
+ EXPORT_SYMBOL_GPL(kvm_set_memory_region);
+ 
+ static int kvm_vm_ioctl_set_memory_region(struct kvm *kvm,
+-					  struct kvm_userspace_memory_region *mem)
++					  struct kvm_userspace_memory_region2 *mem)
+ {
+ 	if ((u16)mem->slot >= KVM_USER_MEM_SLOTS)
+ 		return -EINVAL;
+@@ -4566,6 +4566,7 @@ static int kvm_vm_ioctl_check_extension_generic(struct kvm *kvm, long arg)
+ {
+ 	switch (arg) {
+ 	case KVM_CAP_USER_MEMORY:
++	case KVM_CAP_USER_MEMORY2:
+ 	case KVM_CAP_DESTROY_MEMORY_REGION_WORKS:
+ 	case KVM_CAP_JOIN_MEMORY_REGIONS_WORKS:
+ 	case KVM_CAP_INTERNAL_ERROR_DATA:
+@@ -4821,6 +4822,14 @@ static int kvm_vm_ioctl_get_stats_fd(struct kvm *kvm)
+ 	return fd;
  }
  
- static __always_inline int kvm_handle_hva_range_no_flush(struct mmu_notifier *mn,
-@@ -696,7 +711,7 @@ static __always_inline int kvm_handle_hva_range_no_flush(struct mmu_notifier *mn
- 		.may_block	= false,
- 	};
++#define SANITY_CHECK_MEM_REGION_FIELD(field)					\
++do {										\
++	BUILD_BUG_ON(offsetof(struct kvm_userspace_memory_region, field) !=		\
++		     offsetof(struct kvm_userspace_memory_region2, field));	\
++	BUILD_BUG_ON(sizeof_field(struct kvm_userspace_memory_region, field) !=		\
++		     sizeof_field(struct kvm_userspace_memory_region2, field));	\
++} while (0)
++
+ static long kvm_vm_ioctl(struct file *filp,
+ 			   unsigned int ioctl, unsigned long arg)
+ {
+@@ -4843,15 +4852,28 @@ static long kvm_vm_ioctl(struct file *filp,
+ 		r = kvm_vm_ioctl_enable_cap_generic(kvm, &cap);
+ 		break;
+ 	}
++	case KVM_SET_USER_MEMORY_REGION2:
+ 	case KVM_SET_USER_MEMORY_REGION: {
+-		struct kvm_userspace_memory_region kvm_userspace_mem;
++		struct kvm_userspace_memory_region2 mem;
++		unsigned long size;
++
++		if (ioctl == KVM_SET_USER_MEMORY_REGION)
++			size = sizeof(struct kvm_userspace_memory_region);
++		else
++			size = sizeof(struct kvm_userspace_memory_region2);
++
++		/* Ensure the common parts of the two structs are identical. */
++		SANITY_CHECK_MEM_REGION_FIELD(slot);
++		SANITY_CHECK_MEM_REGION_FIELD(flags);
++		SANITY_CHECK_MEM_REGION_FIELD(guest_phys_addr);
++		SANITY_CHECK_MEM_REGION_FIELD(memory_size);
++		SANITY_CHECK_MEM_REGION_FIELD(userspace_addr);
  
--	return __kvm_handle_hva_range(kvm, &range);
-+	return __kvm_handle_hva_range(kvm, &range).ret;
- }
+ 		r = -EFAULT;
+-		if (copy_from_user(&kvm_userspace_mem, argp,
+-						sizeof(kvm_userspace_mem)))
++		if (copy_from_user(&mem, argp, size))
+ 			goto out;
  
- static bool kvm_change_spte_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
-@@ -798,7 +813,7 @@ static int kvm_mmu_notifier_invalidate_range_start(struct mmu_notifier *mn,
- 		.end		= range->end,
- 		.handler	= kvm_mmu_unmap_gfn_range,
- 		.on_lock	= kvm_mmu_invalidate_begin,
--		.on_unlock	= kvm_arch_guest_memory_reclaimed,
-+		.on_unlock	= (void *)kvm_null_fn,
- 		.flush_on_ret	= true,
- 		.may_block	= mmu_notifier_range_blockable(range),
- 	};
-@@ -830,7 +845,13 @@ static int kvm_mmu_notifier_invalidate_range_start(struct mmu_notifier *mn,
- 	gfn_to_pfn_cache_invalidate_start(kvm, range->start, range->end,
- 					  hva_range.may_block);
- 
--	__kvm_handle_hva_range(kvm, &hva_range);
-+	/*
-+	 * If one or more memslots were found and thus zapped, notify arch code
-+	 * that guest memory has been reclaimed.  This needs to be done *after*
-+	 * dropping mmu_lock, as x86's reclaim path is slooooow.
-+	 */
-+	if (__kvm_handle_hva_range(kvm, &hva_range).found_memslot)
-+		kvm_arch_guest_memory_reclaimed(kvm);
- 
- 	return 0;
- }
+-		r = kvm_vm_ioctl_set_memory_region(kvm, &kvm_userspace_mem);
++		r = kvm_vm_ioctl_set_memory_region(kvm, &mem);
+ 		break;
+ 	}
+ 	case KVM_GET_DIRTY_LOG: {
 -- 
 2.42.0.820.g83a721a137-goog
 
