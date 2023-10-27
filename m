@@ -1,57 +1,129 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Fri, 27 Oct 2023 11:21:44 -0700
-Subject: [PATCH v13 02/35] KVM: Assert that mmu_invalidate_in_progress *never*
- goes negative
+Date: Fri, 27 Oct 2023 11:21:43 -0700
+Subject: [PATCH v13 01/35] KVM: Tweak kvm_hva_range and hva_handler_t to allow
+ reusing for gfn ranges
 In-Reply-To: <20231027182217.3615211-1-seanjc@google.com>
 References: <20231027182217.3615211-1-seanjc@google.com>
-Message-ID: <20231027182217.3615211-3-seanjc@google.com>
+Message-ID: <20231027182217.3615211-2-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Move the assertion on the in-progress invalidation count from the primary
-MMU's notifier path to KVM's common notification path, i.e. assert that
-the count doesn't go negative even when the invalidation is coming from
-KVM itself.
+Rework and rename "struct kvm_hva_range" into "kvm_mmu_notifier_range" so
+that the structure can be used to handle notifications that operate on gfn
+context, i.e. that aren't tied to a host virtual address.  Rename the
+handler typedef too (arguably it should always have been gfn_handler_t).
 
-Opportunistically convert the assertion to a KVM_BUG_ON(), i.e. kill only
-the affected VM, not the entire kernel.  A corrupted count is fatal to the
-VM, e.g. the non-zero (negative) count will cause mmu_invalidate_retry()
-to block any and all attempts to install new mappings.  But it's far from
-guaranteed that an end() without a start() is fatal or even problematic to
-anything other than the target VM, e.g. the underlying bug could simply be
-a duplicate call to end().  And it's much more likely that a missed
-invalidation, i.e. a potential use-after-free, would manifest as no
-notification whatsoever, not an end() without a start().
+Practically speaking, this is a nop for 64-bit kernels as the only
+meaningful change is to store start+end as u64s instead of unsigned longs.
 
+Reviewed-by: Paolo Bonzini <pbonzini@redhat.com>
+Reviewed-by: Xiaoyao Li <xiaoyao.li@intel.com>
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- virt/kvm/kvm_main.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ virt/kvm/kvm_main.c | 34 +++++++++++++++++++---------------
+ 1 file changed, 19 insertions(+), 15 deletions(-)
 
 diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 0524933856d4..5a97e6c7d9c2 100644
+index 486800a7024b..0524933856d4 100644
 --- a/virt/kvm/kvm_main.c
 +++ b/virt/kvm/kvm_main.c
-@@ -833,6 +833,7 @@ void kvm_mmu_invalidate_end(struct kvm *kvm, unsigned long start,
- 	 * in conjunction with the smp_rmb in mmu_invalidate_retry().
- 	 */
- 	kvm->mmu_invalidate_in_progress--;
-+	KVM_BUG_ON(kvm->mmu_invalidate_in_progress < 0, kvm);
+@@ -541,18 +541,22 @@ static inline struct kvm *mmu_notifier_to_kvm(struct mmu_notifier *mn)
+ 	return container_of(mn, struct kvm, mmu_notifier);
  }
  
- static void kvm_mmu_notifier_invalidate_range_end(struct mmu_notifier *mn,
-@@ -863,8 +864,6 @@ static void kvm_mmu_notifier_invalidate_range_end(struct mmu_notifier *mn,
- 	 */
- 	if (wake)
- 		rcuwait_wake_up(&kvm->mn_memslots_update_rcuwait);
--
--	BUG_ON(kvm->mmu_invalidate_in_progress < 0);
- }
+-typedef bool (*hva_handler_t)(struct kvm *kvm, struct kvm_gfn_range *range);
++typedef bool (*gfn_handler_t)(struct kvm *kvm, struct kvm_gfn_range *range);
  
- static int kvm_mmu_notifier_clear_flush_young(struct mmu_notifier *mn,
+ typedef void (*on_lock_fn_t)(struct kvm *kvm, unsigned long start,
+ 			     unsigned long end);
+ 
+ typedef void (*on_unlock_fn_t)(struct kvm *kvm);
+ 
+-struct kvm_hva_range {
+-	unsigned long start;
+-	unsigned long end;
++struct kvm_mmu_notifier_range {
++	/*
++	 * 64-bit addresses, as KVM notifiers can operate on host virtual
++	 * addresses (unsigned long) and guest physical addresses (64-bit).
++	 */
++	u64 start;
++	u64 end;
+ 	union kvm_mmu_notifier_arg arg;
+-	hva_handler_t handler;
++	gfn_handler_t handler;
+ 	on_lock_fn_t on_lock;
+ 	on_unlock_fn_t on_unlock;
+ 	bool flush_on_ret;
+@@ -581,7 +585,7 @@ static const union kvm_mmu_notifier_arg KVM_MMU_NOTIFIER_NO_ARG;
+ 	     node = interval_tree_iter_next(node, start, last))	     \
+ 
+ static __always_inline int __kvm_handle_hva_range(struct kvm *kvm,
+-						  const struct kvm_hva_range *range)
++						  const struct kvm_mmu_notifier_range *range)
+ {
+ 	bool ret = false, locked = false;
+ 	struct kvm_gfn_range gfn_range;
+@@ -608,9 +612,9 @@ static __always_inline int __kvm_handle_hva_range(struct kvm *kvm,
+ 			unsigned long hva_start, hva_end;
+ 
+ 			slot = container_of(node, struct kvm_memory_slot, hva_node[slots->node_idx]);
+-			hva_start = max(range->start, slot->userspace_addr);
+-			hva_end = min(range->end, slot->userspace_addr +
+-						  (slot->npages << PAGE_SHIFT));
++			hva_start = max_t(unsigned long, range->start, slot->userspace_addr);
++			hva_end = min_t(unsigned long, range->end,
++					slot->userspace_addr + (slot->npages << PAGE_SHIFT));
+ 
+ 			/*
+ 			 * To optimize for the likely case where the address
+@@ -660,10 +664,10 @@ static __always_inline int kvm_handle_hva_range(struct mmu_notifier *mn,
+ 						unsigned long start,
+ 						unsigned long end,
+ 						union kvm_mmu_notifier_arg arg,
+-						hva_handler_t handler)
++						gfn_handler_t handler)
+ {
+ 	struct kvm *kvm = mmu_notifier_to_kvm(mn);
+-	const struct kvm_hva_range range = {
++	const struct kvm_mmu_notifier_range range = {
+ 		.start		= start,
+ 		.end		= end,
+ 		.arg		= arg,
+@@ -680,10 +684,10 @@ static __always_inline int kvm_handle_hva_range(struct mmu_notifier *mn,
+ static __always_inline int kvm_handle_hva_range_no_flush(struct mmu_notifier *mn,
+ 							 unsigned long start,
+ 							 unsigned long end,
+-							 hva_handler_t handler)
++							 gfn_handler_t handler)
+ {
+ 	struct kvm *kvm = mmu_notifier_to_kvm(mn);
+-	const struct kvm_hva_range range = {
++	const struct kvm_mmu_notifier_range range = {
+ 		.start		= start,
+ 		.end		= end,
+ 		.handler	= handler,
+@@ -771,7 +775,7 @@ static int kvm_mmu_notifier_invalidate_range_start(struct mmu_notifier *mn,
+ 					const struct mmu_notifier_range *range)
+ {
+ 	struct kvm *kvm = mmu_notifier_to_kvm(mn);
+-	const struct kvm_hva_range hva_range = {
++	const struct kvm_mmu_notifier_range hva_range = {
+ 		.start		= range->start,
+ 		.end		= range->end,
+ 		.handler	= kvm_unmap_gfn_range,
+@@ -835,7 +839,7 @@ static void kvm_mmu_notifier_invalidate_range_end(struct mmu_notifier *mn,
+ 					const struct mmu_notifier_range *range)
+ {
+ 	struct kvm *kvm = mmu_notifier_to_kvm(mn);
+-	const struct kvm_hva_range hva_range = {
++	const struct kvm_mmu_notifier_range hva_range = {
+ 		.start		= range->start,
+ 		.end		= range->end,
+ 		.handler	= (void *)kvm_null_fn,
 -- 
 2.42.0.820.g83a721a137-goog
 
