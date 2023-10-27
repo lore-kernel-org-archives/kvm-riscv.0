@@ -1,472 +1,107 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Fri, 27 Oct 2023 11:21:55 -0700
-Subject: [PATCH v13 13/35] KVM: Introduce per-page memory attributes
+Date: Fri, 27 Oct 2023 11:21:53 -0700
+Subject: [PATCH v13 11/35] KVM: Drop .on_unlock() mmu_notifier hook
 In-Reply-To: <20231027182217.3615211-1-seanjc@google.com>
 References: <20231027182217.3615211-1-seanjc@google.com>
-Message-ID: <20231027182217.3615211-14-seanjc@google.com>
+Message-ID: <20231027182217.3615211-12-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Chao Peng <chao.p.peng@linux.intel.com>
+Drop the .on_unlock() mmu_notifer hook now that it's no longer used for
+notifying arch code that memory has been reclaimed.  Adding .on_unlock()
+and invoking it *after* dropping mmu_lock was a terrible idea, as doing so
+resulted in .on_lock() and .on_unlock() having divergent and asymmetric
+behavior, and set future developers up for failure, i.e. all but asked for
+bugs where KVM relied on using .on_unlock() to try to run a callback while
+holding mmu_lock.
 
-In confidential computing usages, whether a page is private or shared is
-necessary information for KVM to perform operations like page fault
-handling, page zapping etc. There are other potential use cases for
-per-page memory attributes, e.g. to make memory read-only (or no-exec,
-or exec-only, etc.) without having to modify memslots.
+Opportunistically add a lockdep assertion in kvm_mmu_invalidate_end() to
+guard against future bugs of this nature.
 
-Introduce two ioctls (advertised by KVM_CAP_MEMORY_ATTRIBUTES) to allow
-userspace to operate on the per-page memory attributes.
-  - KVM_SET_MEMORY_ATTRIBUTES to set the per-page memory attributes to
-    a guest memory range.
-  - KVM_GET_SUPPORTED_MEMORY_ATTRIBUTES to return the KVM supported
-    memory attributes.
-
-Use an xarray to store the per-page attributes internally, with a naive,
-not fully optimized implementation, i.e. prioritize correctness over
-performance for the initial implementation.
-
-Use bit 3 for the PRIVATE attribute so that KVM can use bits 0-2 for RWX
-attributes/protections in the future, e.g. to give userspace fine-grained
-control over read, write, and execute protections for guest memory.
-
-Provide arch hooks for handling attribute changes before and after common
-code sets the new attributes, e.g. x86 will use the "pre" hook to zap all
-relevant mappings, and the "post" hook to track whether or not hugepages
-can be used to map the range.
-
-To simplify the implementation wrap the entire sequence with
-kvm_mmu_invalidate_{begin,end}() even though the operation isn't strictly
-guaranteed to be an invalidation.  For the initial use case, x86 *will*
-always invalidate memory, and preventing arch code from creating new
-mappings while the attributes are in flux makes it much easier to reason
-about the correctness of consuming attributes.
-
-It's possible that future usages may not require an invalidation, e.g.
-if KVM ends up supporting RWX protections and userspace grants _more_
-protections, but again opt for simplicity and punt optimizations to
-if/when they are needed.
-
-Suggested-by: Sean Christopherson <seanjc@google.com>
-Link: https://lore.kernel.org/all/Y2WB48kD0J4VGynX at google.com
-Cc: Fuad Tabba <tabba@google.com>
-Cc: Xu Yilun <yilun.xu@intel.com>
-Cc: Micka?l Sala?n <mic@digikod.net>
-Signed-off-by: Chao Peng <chao.p.peng@linux.intel.com>
-Co-developed-by: Sean Christopherson <seanjc@google.com>
+Reported-by: Isaku Yamahata <isaku.yamahata@intel.com>
+Link: https://lore.kernel.org/all/20230802203119.GB2021422 at ls.amr.corp.intel.com
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- Documentation/virt/kvm/api.rst |  36 +++++
- include/linux/kvm_host.h       |  18 +++
- include/uapi/linux/kvm.h       |  13 ++
- virt/kvm/Kconfig               |   4 +
- virt/kvm/kvm_main.c            | 233 +++++++++++++++++++++++++++++++++
- 5 files changed, 304 insertions(+)
+ virt/kvm/kvm_main.c | 13 +++----------
+ 1 file changed, 3 insertions(+), 10 deletions(-)
 
-diff --git a/Documentation/virt/kvm/api.rst b/Documentation/virt/kvm/api.rst
-index 860216536810..e2252c748fd6 100644
---- a/Documentation/virt/kvm/api.rst
-+++ b/Documentation/virt/kvm/api.rst
-@@ -6091,6 +6091,42 @@ applied.
- 
- See KVM_SET_USER_MEMORY_REGION.
- 
-+4.140 KVM_SET_MEMORY_ATTRIBUTES
-+-------------------------------
-+
-+:Capability: KVM_CAP_MEMORY_ATTRIBUTES
-+:Architectures: x86
-+:Type: vm ioctl
-+:Parameters: struct kvm_memory_attributes(in)
-+:Returns: 0 on success, <0 on error
-+
-+KVM_SET_MEMORY_ATTRIBUTES allows userspace to set memory attributes for a range
-+of guest physical memory.
-+
-+::
-+
-+  struct kvm_memory_attributes {
-+	__u64 address;
-+	__u64 size;
-+	__u64 attributes;
-+	__u64 flags;
-+  };
-+
-+  #define KVM_MEMORY_ATTRIBUTE_PRIVATE           (1ULL << 3)
-+
-+The address and size must be page aligned.  The supported attributes can be
-+retrieved via ioctl(KVM_CHECK_EXTENSION) on KVM_CAP_MEMORY_ATTRIBUTES.  If
-+executed on a VM, KVM_CAP_MEMORY_ATTRIBUTES precisely returns the attributes
-+supported by that VM.  If executed at system scope, KVM_CAP_MEMORY_ATTRIBUTES
-+returns all attributes supported by KVM.  The only attribute defined@this
-+time is KVM_MEMORY_ATTRIBUTE_PRIVATE, which marks the associated gfn as being
-+guest private memory.
-+
-+Note, there is no "get" API.  Userspace is responsible for explicitly tracking
-+the state of a gfn/page as needed.
-+
-+The "flags" field is reserved for future extensions and must be '0'.
-+
- 5. The kvm_run structure
- ========================
- 
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index 89c1a991a3b8..df573229651b 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -256,6 +256,7 @@ int kvm_async_pf_wakeup_all(struct kvm_vcpu *vcpu);
- #ifdef CONFIG_KVM_GENERIC_MMU_NOTIFIER
- union kvm_mmu_notifier_arg {
- 	pte_t pte;
-+	unsigned long attributes;
- };
- 
- struct kvm_gfn_range {
-@@ -808,6 +809,9 @@ struct kvm {
- 
- #ifdef CONFIG_HAVE_KVM_PM_NOTIFIER
- 	struct notifier_block pm_notifier;
-+#endif
-+#ifdef CONFIG_KVM_GENERIC_MEMORY_ATTRIBUTES
-+	struct xarray mem_attr_array;
- #endif
- 	char stats_id[KVM_STATS_NAME_SIZE];
- };
-@@ -2340,4 +2344,18 @@ static inline void kvm_prepare_memory_fault_exit(struct kvm_vcpu *vcpu,
- 	vcpu->run->memory_fault.flags = 0;
- }
- 
-+#ifdef CONFIG_KVM_GENERIC_MEMORY_ATTRIBUTES
-+static inline unsigned long kvm_get_memory_attributes(struct kvm *kvm, gfn_t gfn)
-+{
-+	return xa_to_value(xa_load(&kvm->mem_attr_array, gfn));
-+}
-+
-+bool kvm_range_has_memory_attributes(struct kvm *kvm, gfn_t start, gfn_t end,
-+				     unsigned long attrs);
-+bool kvm_arch_pre_set_memory_attributes(struct kvm *kvm,
-+					struct kvm_gfn_range *range);
-+bool kvm_arch_post_set_memory_attributes(struct kvm *kvm,
-+					 struct kvm_gfn_range *range);
-+#endif /* CONFIG_KVM_GENERIC_MEMORY_ATTRIBUTES */
-+
- #endif
-diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
-index 7ae9987b48dd..547837feaa28 100644
---- a/include/uapi/linux/kvm.h
-+++ b/include/uapi/linux/kvm.h
-@@ -1211,6 +1211,7 @@ struct kvm_ppc_resize_hpt {
- #define KVM_CAP_ARM_SUPPORTED_BLOCK_SIZES 229
- #define KVM_CAP_USER_MEMORY2 230
- #define KVM_CAP_MEMORY_FAULT_INFO 231
-+#define KVM_CAP_MEMORY_ATTRIBUTES 232
- 
- #ifdef KVM_CAP_IRQ_ROUTING
- 
-@@ -2277,4 +2278,16 @@ struct kvm_s390_zpci_op {
- /* flags for kvm_s390_zpci_op->u.reg_aen.flags */
- #define KVM_S390_ZPCIOP_REGAEN_HOST    (1 << 0)
- 
-+/* Available with KVM_CAP_MEMORY_ATTRIBUTES */
-+#define KVM_SET_MEMORY_ATTRIBUTES              _IOW(KVMIO,  0xd2, struct kvm_memory_attributes)
-+
-+struct kvm_memory_attributes {
-+	__u64 address;
-+	__u64 size;
-+	__u64 attributes;
-+	__u64 flags;
-+};
-+
-+#define KVM_MEMORY_ATTRIBUTE_PRIVATE           (1ULL << 3)
-+
- #endif /* __LINUX_KVM_H */
-diff --git a/virt/kvm/Kconfig b/virt/kvm/Kconfig
-index ecae2914c97e..5bd7fcaf9089 100644
---- a/virt/kvm/Kconfig
-+++ b/virt/kvm/Kconfig
-@@ -96,3 +96,7 @@ config KVM_GENERIC_HARDWARE_ENABLING
- config KVM_GENERIC_MMU_NOTIFIER
-        select MMU_NOTIFIER
-        bool
-+
-+config KVM_GENERIC_MEMORY_ATTRIBUTES
-+       select KVM_GENERIC_MMU_NOTIFIER
-+       bool
 diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 302ccb87b4c1..78a0b09ef2a5 100644
+index 2bc04c8ae1f4..cb9376833c18 100644
 --- a/virt/kvm/kvm_main.c
 +++ b/virt/kvm/kvm_main.c
-@@ -1218,6 +1218,9 @@ static struct kvm *kvm_create_vm(unsigned long type, const char *fdname)
- 	spin_lock_init(&kvm->mn_invalidate_lock);
- 	rcuwait_init(&kvm->mn_memslots_update_rcuwait);
- 	xa_init(&kvm->vcpu_array);
-+#ifdef CONFIG_KVM_GENERIC_MEMORY_ATTRIBUTES
-+	xa_init(&kvm->mem_attr_array);
-+#endif
+@@ -544,7 +544,6 @@ static inline struct kvm *mmu_notifier_to_kvm(struct mmu_notifier *mn)
+ typedef bool (*gfn_handler_t)(struct kvm *kvm, struct kvm_gfn_range *range);
  
- 	INIT_LIST_HEAD(&kvm->gpc_list);
- 	spin_lock_init(&kvm->gpc_lock);
-@@ -1398,6 +1401,9 @@ static void kvm_destroy_vm(struct kvm *kvm)
- 	}
- 	cleanup_srcu_struct(&kvm->irq_srcu);
- 	cleanup_srcu_struct(&kvm->srcu);
-+#ifdef CONFIG_KVM_GENERIC_MEMORY_ATTRIBUTES
-+	xa_destroy(&kvm->mem_attr_array);
-+#endif
- 	kvm_arch_free_vm(kvm);
- 	preempt_notifier_dec();
- 	hardware_disable_all();
-@@ -2396,6 +2402,210 @@ static int kvm_vm_ioctl_clear_dirty_log(struct kvm *kvm,
- }
- #endif /* CONFIG_KVM_GENERIC_DIRTYLOG_READ_PROTECT */
+ typedef void (*on_lock_fn_t)(struct kvm *kvm);
+-typedef void (*on_unlock_fn_t)(struct kvm *kvm);
  
-+#ifdef CONFIG_KVM_GENERIC_MEMORY_ATTRIBUTES
-+/*
-+ * Returns true if _all_ gfns in the range [@start, @end) have attributes
-+ * matching @attrs.
-+ */
-+bool kvm_range_has_memory_attributes(struct kvm *kvm, gfn_t start, gfn_t end,
-+				     unsigned long attrs)
-+{
-+	XA_STATE(xas, &kvm->mem_attr_array, start);
-+	unsigned long index;
-+	bool has_attrs;
-+	void *entry;
-+
-+	rcu_read_lock();
-+
-+	if (!attrs) {
-+		has_attrs = !xas_find(&xas, end - 1);
-+		goto out;
-+	}
-+
-+	has_attrs = true;
-+	for (index = start; index < end; index++) {
-+		do {
-+			entry = xas_next(&xas);
-+		} while (xas_retry(&xas, entry));
-+
-+		if (xas.xa_index != index || xa_to_value(entry) != attrs) {
-+			has_attrs = false;
-+			break;
-+		}
-+	}
-+
-+out:
-+	rcu_read_unlock();
-+	return has_attrs;
-+}
-+
-+static u64 kvm_supported_mem_attributes(struct kvm *kvm)
-+{
-+	if (!kvm)
-+		return KVM_MEMORY_ATTRIBUTE_PRIVATE;
-+
-+	return 0;
-+}
-+
-+static __always_inline void kvm_handle_gfn_range(struct kvm *kvm,
-+						 struct kvm_mmu_notifier_range *range)
-+{
-+	struct kvm_gfn_range gfn_range;
-+	struct kvm_memory_slot *slot;
-+	struct kvm_memslots *slots;
-+	struct kvm_memslot_iter iter;
-+	bool found_memslot = false;
-+	bool ret = false;
-+	int i;
-+
-+	gfn_range.arg = range->arg;
-+	gfn_range.may_block = range->may_block;
-+
-+	/*
-+	 * If/when KVM supports more attributes beyond private .vs shared, this
-+	 * _could_ set only_{private,shared} appropriately if the entire target
-+	 * range already has the desired private vs. shared state (it's unclear
-+	 * if that is a net win).  For now, KVM reaches this point if and only
-+	 * if the private flag is being toggled, i.e. all mappings are in play.
-+	 */
-+	gfn_range.only_private = false;
-+	gfn_range.only_shared = false;
-+
-+	for (i = 0; i < KVM_ADDRESS_SPACE_NUM; i++) {
-+		slots = __kvm_memslots(kvm, i);
-+
-+		kvm_for_each_memslot_in_gfn_range(&iter, slots, range->start, range->end) {
-+			slot = iter.slot;
-+			gfn_range.slot = slot;
-+
-+			gfn_range.start = max(range->start, slot->base_gfn);
-+			gfn_range.end = min(range->end, slot->base_gfn + slot->npages);
-+			if (gfn_range.start >= gfn_range.end)
-+				continue;
-+
-+			if (!found_memslot) {
-+				found_memslot = true;
-+				KVM_MMU_LOCK(kvm);
-+				if (!IS_KVM_NULL_FN(range->on_lock))
-+					range->on_lock(kvm);
-+			}
-+
-+			ret |= range->handler(kvm, &gfn_range);
-+		}
-+	}
-+
-+	if (range->flush_on_ret && ret)
-+		kvm_flush_remote_tlbs(kvm);
-+
-+	if (found_memslot)
-+		KVM_MMU_UNLOCK(kvm);
-+}
-+
-+static bool kvm_pre_set_memory_attributes(struct kvm *kvm,
-+					  struct kvm_gfn_range *range)
-+{
-+	/*
-+	 * Unconditionally add the range to the invalidation set, regardless of
-+	 * whether or not the arch callback actually needs to zap SPTEs.  E.g.
-+	 * if KVM supports RWX attributes in the future and the attributes are
-+	 * going from R=>RW, zapping isn't strictly necessary.  Unconditionally
-+	 * adding the range allows KVM to require that MMU invalidations add at
-+	 * least one range between begin() and end(), e.g. allows KVM to detect
-+	 * bugs where the add() is missed.  Rexlaing the rule *might* be safe,
-+	 * but it's not obvious that allowing new mappings while the attributes
-+	 * are in flux is desirable or worth the complexity.
-+	 */
-+	kvm_mmu_invalidate_range_add(kvm, range->start, range->end);
-+
-+	return kvm_arch_pre_set_memory_attributes(kvm, range);
-+}
-+
-+/* Set @attributes for the gfn range [@start, @end). */
-+static int kvm_vm_set_mem_attributes(struct kvm *kvm, gfn_t start, gfn_t end,
-+				     unsigned long attributes)
-+{
-+	struct kvm_mmu_notifier_range pre_set_range = {
-+		.start = start,
-+		.end = end,
-+		.handler = kvm_pre_set_memory_attributes,
-+		.on_lock = kvm_mmu_invalidate_begin,
-+		.flush_on_ret = true,
-+		.may_block = true,
-+	};
-+	struct kvm_mmu_notifier_range post_set_range = {
-+		.start = start,
-+		.end = end,
-+		.arg.attributes = attributes,
-+		.handler = kvm_arch_post_set_memory_attributes,
-+		.on_lock = kvm_mmu_invalidate_end,
-+		.may_block = true,
-+	};
-+	unsigned long i;
-+	void *entry;
-+	int r = 0;
-+
-+	entry = attributes ? xa_mk_value(attributes) : NULL;
-+
-+	mutex_lock(&kvm->slots_lock);
-+
-+	/* Nothing to do if the entire range as the desired attributes. */
-+	if (kvm_range_has_memory_attributes(kvm, start, end, attributes))
-+		goto out_unlock;
-+
-+	/*
-+	 * Reserve memory ahead of time to avoid having to deal with failures
-+	 * partway through setting the new attributes.
-+	 */
-+	for (i = start; i < end; i++) {
-+		r = xa_reserve(&kvm->mem_attr_array, i, GFP_KERNEL_ACCOUNT);
-+		if (r)
-+			goto out_unlock;
-+	}
-+
-+	kvm_handle_gfn_range(kvm, &pre_set_range);
-+
-+	for (i = start; i < end; i++) {
-+		r = xa_err(xa_store(&kvm->mem_attr_array, i, entry,
-+				    GFP_KERNEL_ACCOUNT));
-+		KVM_BUG_ON(r, kvm);
-+	}
-+
-+	kvm_handle_gfn_range(kvm, &post_set_range);
-+
-+out_unlock:
-+	mutex_unlock(&kvm->slots_lock);
-+
-+	return r;
-+}
-+static int kvm_vm_ioctl_set_mem_attributes(struct kvm *kvm,
-+					   struct kvm_memory_attributes *attrs)
-+{
-+	gfn_t start, end;
-+
-+	/* flags is currently not used. */
-+	if (attrs->flags)
-+		return -EINVAL;
-+	if (attrs->attributes & ~kvm_supported_mem_attributes(kvm))
-+		return -EINVAL;
-+	if (attrs->size == 0 || attrs->address + attrs->size < attrs->address)
-+		return -EINVAL;
-+	if (!PAGE_ALIGNED(attrs->address) || !PAGE_ALIGNED(attrs->size))
-+		return -EINVAL;
-+
-+	start = attrs->address >> PAGE_SHIFT;
-+	end = (attrs->address + attrs->size) >> PAGE_SHIFT;
-+
-+	/*
-+	 * xarray tracks data using "unsigned long", and as a result so does
-+	 * KVM.  For simplicity, supports generic attributes only on 64-bit
-+	 * architectures.
-+	 */
-+	BUILD_BUG_ON(sizeof(attrs->attributes) != sizeof(unsigned long));
-+
-+	return kvm_vm_set_mem_attributes(kvm, start, end, attrs->attributes);
-+}
-+#endif /* CONFIG_KVM_GENERIC_MEMORY_ATTRIBUTES */
-+
- struct kvm_memory_slot *gfn_to_memslot(struct kvm *kvm, gfn_t gfn)
+ struct kvm_mmu_notifier_range {
+ 	/*
+@@ -556,7 +555,6 @@ struct kvm_mmu_notifier_range {
+ 	union kvm_mmu_notifier_arg arg;
+ 	gfn_handler_t handler;
+ 	on_lock_fn_t on_lock;
+-	on_unlock_fn_t on_unlock;
+ 	bool flush_on_ret;
+ 	bool may_block;
+ };
+@@ -663,11 +661,8 @@ static __always_inline kvm_mn_ret_t __kvm_handle_hva_range(struct kvm *kvm,
+ 	if (range->flush_on_ret && r.ret)
+ 		kvm_flush_remote_tlbs(kvm);
+ 
+-	if (r.found_memslot) {
++	if (r.found_memslot)
+ 		KVM_MMU_UNLOCK(kvm);
+-		if (!IS_KVM_NULL_FN(range->on_unlock))
+-			range->on_unlock(kvm);
+-	}
+ 
+ 	srcu_read_unlock(&kvm->srcu, idx);
+ 
+@@ -687,7 +682,6 @@ static __always_inline int kvm_handle_hva_range(struct mmu_notifier *mn,
+ 		.arg		= arg,
+ 		.handler	= handler,
+ 		.on_lock	= (void *)kvm_null_fn,
+-		.on_unlock	= (void *)kvm_null_fn,
+ 		.flush_on_ret	= true,
+ 		.may_block	= false,
+ 	};
+@@ -706,7 +700,6 @@ static __always_inline int kvm_handle_hva_range_no_flush(struct mmu_notifier *mn
+ 		.end		= end,
+ 		.handler	= handler,
+ 		.on_lock	= (void *)kvm_null_fn,
+-		.on_unlock	= (void *)kvm_null_fn,
+ 		.flush_on_ret	= false,
+ 		.may_block	= false,
+ 	};
+@@ -813,7 +806,6 @@ static int kvm_mmu_notifier_invalidate_range_start(struct mmu_notifier *mn,
+ 		.end		= range->end,
+ 		.handler	= kvm_mmu_unmap_gfn_range,
+ 		.on_lock	= kvm_mmu_invalidate_begin,
+-		.on_unlock	= (void *)kvm_null_fn,
+ 		.flush_on_ret	= true,
+ 		.may_block	= mmu_notifier_range_blockable(range),
+ 	};
+@@ -858,6 +850,8 @@ static int kvm_mmu_notifier_invalidate_range_start(struct mmu_notifier *mn,
+ 
+ void kvm_mmu_invalidate_end(struct kvm *kvm)
  {
- 	return __gfn_to_memslot(kvm_memslots(kvm), gfn);
-@@ -4640,6 +4850,17 @@ static int kvm_vm_ioctl_check_extension_generic(struct kvm *kvm, long arg)
- 	case KVM_CAP_BINARY_STATS_FD:
- 	case KVM_CAP_SYSTEM_EVENT_DATA:
- 		return 1;
-+#ifdef CONFIG_KVM_GENERIC_MEMORY_ATTRIBUTES
-+	case KVM_CAP_MEMORY_ATTRIBUTES:
-+		u64 attrs = kvm_supported_mem_attributes(kvm);
++	lockdep_assert_held_write(&kvm->mmu_lock);
 +
-+		r = -EFAULT;
-+		if (copy_to_user(argp, &attrs, sizeof(attrs)))
-+			goto out;
-+		r = 0;
-+		break;
-+	}
-+#endif
- 	default:
- 		break;
- 	}
-@@ -5022,6 +5243,18 @@ static long kvm_vm_ioctl(struct file *filp,
- 		break;
- 	}
- #endif /* CONFIG_HAVE_KVM_IRQ_ROUTING */
-+#ifdef CONFIG_KVM_GENERIC_MEMORY_ATTRIBUTES
-+	case KVM_SET_MEMORY_ATTRIBUTES: {
-+		struct kvm_memory_attributes attrs;
-+
-+		r = -EFAULT;
-+		if (copy_from_user(&attrs, argp, sizeof(attrs)))
-+			goto out;
-+
-+		r = kvm_vm_ioctl_set_mem_attributes(kvm, &attrs);
-+		break;
-+	}
-+#endif /* CONFIG_KVM_GENERIC_MEMORY_ATTRIBUTES */
- 	case KVM_CREATE_DEVICE: {
- 		struct kvm_create_device cd;
- 
+ 	/*
+ 	 * This sequence increase will notify the kvm page fault that
+ 	 * the page that is going to be mapped in the spte could have
+@@ -889,7 +883,6 @@ static void kvm_mmu_notifier_invalidate_range_end(struct mmu_notifier *mn,
+ 		.end		= range->end,
+ 		.handler	= (void *)kvm_null_fn,
+ 		.on_lock	= kvm_mmu_invalidate_end,
+-		.on_unlock	= (void *)kvm_null_fn,
+ 		.flush_on_ret	= false,
+ 		.may_block	= mmu_notifier_range_blockable(range),
+ 	};
 -- 
 2.42.0.820.g83a721a137-goog
 
