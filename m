@@ -1,47 +1,50 @@
 From: Paolo Bonzini <pbonzini@redhat.com>
-Date: Mon, 30 Oct 2023 18:36:07 +0100
-Subject: [PATCH v13 23/35] KVM: x86: Add support for "protected VMs" that
- can utilize private memory
-In-Reply-To: <20231027182217.3615211-24-seanjc@google.com>
+Date: Mon, 30 Oct 2023 18:39:25 +0100
+Subject: [PATCH v13 00/35] KVM: guest_memfd() and per-page attributes
+In-Reply-To: <20231027182217.3615211-1-seanjc@google.com>
 References: <20231027182217.3615211-1-seanjc@google.com>
- <20231027182217.3615211-24-seanjc@google.com>
-Message-ID: <a56e499f-c91c-45da-b404-444c22b2df24@redhat.com>
+Message-ID: <80471c15-a37e-4129-8101-d30b8f73cb9f@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 10/27/23 20:22, Sean Christopherson wrote:
-> Add a new x86 VM type, KVM_X86_SW_PROTECTED_VM, to serve as a development
-> and testing vehicle for Confidential (CoCo) VMs, and potentially to even
-> become a "real" product in the distant future, e.g. a la pKVM.
+On 10/27/23 20:21, Sean Christopherson wrote:
+> Non-KVM people, please take a gander at two small-ish patches buried in the
+> middle of this series:
 > 
-> The private memory support in KVM x86 is aimed at AMD's SEV-SNP and
-> Intel's TDX, but those technologies are extremely complex (understatement),
-> difficult to debug, don't support running as nested guests, and require
-> hardware that's isn't universally accessible.  I.e. relying SEV-SNP or TDX
-> for maintaining guest private memory isn't a realistic option.
+>    fs: Export anon_inode_getfile_secure() for use by KVM
+>    mm: Add AS_UNMOVABLE to mark mapping as completely unmovable
 > 
-> At the very least, KVM_X86_SW_PROTECTED_VM will enable a variety of
-> selftests for guest_memfd and private memory support without requiring
-> unique hardware.
-> 
-> Signed-off-by: Sean Christopherson <seanjc@google.com>
+> Our plan/hope is to take this through the KVM tree for 6.8, reviews (and acks!)
+> would be much appreciated.  Note, adding AS_UNMOVABLE isn't strictly required as
+> it's "just" an optimization, but we'd prefer to have it in place straightaway.
 
-Reviewed-by: Paolo Bonzini <pbonzini@redhat.com>
+Reporting what I wrote in the other thread, for wider distribution:
 
-with one nit:
+I'm going to wait a couple days more for reviews to come in, post a v14
+myself, and apply the series to kvm/next as soon as Linus merges the 6.7
+changes.  The series will be based on the 6.7 tags/for-linus, and when
+6.7-rc1 comes up, I'll do this to straighten the history:
 
-> +---------------------
-> +
-> +:Capability: KVM_CAP_MEMORY_ATTRIBUTES
-> +:Architectures: x86
-> +:Type: system ioctl
-> +
-> +This capability returns a bitmap of support VM types.  The 1-setting of bit @n
+	git checkout kvm/next
+	git tag -s -f kvm-gmem HEAD
+	git reset --hard v6.7-rc1
+	git merge tags/kvm-gmem
+	# fix conflict with Christian Brauner's VFS series
+	git commit
+	git push kvm
 
-s/support/supported/
+6.8 is not going to be out for four months, and I'm pretty sure that
+anything that would be discovered within "a few weeks" can also be
+applied on top, and the heaviness of a 35-patch series will outweigh any
+imperfections by a long margin.
+
+(Full disclosure: this is _also_ because I want to apply this series to
+the RHEL kernel, and Red Hat has a high level of disdain for
+non-upstream patches.  But it's mostly because I want all dependencies
+to be able to move on and be developed on top of stock kvm/next).
 
 Paolo
 
