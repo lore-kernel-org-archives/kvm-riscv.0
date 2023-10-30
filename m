@@ -1,87 +1,32 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Mon, 30 Oct 2023 15:05:56 -0700
-Subject: [PATCH v13 13/35] KVM: Introduce per-page memory attributes
-In-Reply-To: <ZT_ViJOW1p4TN_fI@google.com>
-References: <20231027182217.3615211-1-seanjc@google.com> <20231027182217.3615211-14-seanjc@google.com>
- <ZT9lQ9c7Bik6FIpw@chao-email> <ZT_ViJOW1p4TN_fI@google.com>
-Message-ID: <ZUAoxCZJnpPGWjpu@google.com>
+Date: Mon, 30 Oct 2023 15:07:30 -0700
+Subject: [PATCH v13 12/35] KVM: Prepare for handling only shared mappings
+ in mmu_notifier events
+In-Reply-To: <077cec97-7920-4d20-8bd3-fe07ab8bcc29@redhat.com>
+References: <20231027182217.3615211-1-seanjc@google.com> <20231027182217.3615211-13-seanjc@google.com>
+ <077cec97-7920-4d20-8bd3-fe07ab8bcc29@redhat.com>
+Message-ID: <ZUApIvo_gIdsfEEV@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Oct 30, 2023, Sean Christopherson wrote:
-> On Mon, Oct 30, 2023, Chao Gao wrote:
-> > On Fri, Oct 27, 2023 at 11:21:55AM -0700, Sean Christopherson wrote:
-> > >From: Chao Peng <chao.p.peng@linux.intel.com>
-> > >
-> > >In confidential computing usages, whether a page is private or shared is
-> > >necessary information for KVM to perform operations like page fault
-> > >handling, page zapping etc. There are other potential use cases for
-> > >per-page memory attributes, e.g. to make memory read-only (or no-exec,
-> > >or exec-only, etc.) without having to modify memslots.
-> > >
-> > >Introduce two ioctls (advertised by KVM_CAP_MEMORY_ATTRIBUTES) to allow
-> > >userspace to operate on the per-page memory attributes.
-> > >  - KVM_SET_MEMORY_ATTRIBUTES to set the per-page memory attributes to
-> > >    a guest memory range.
-> > 
-> > >  - KVM_GET_SUPPORTED_MEMORY_ATTRIBUTES to return the KVM supported
-> > >    memory attributes.
-> > 
-> > This ioctl() is already removed. So, the changelog is out-of-date and needs
-> > an update.
+On Mon, Oct 30, 2023, Paolo Bonzini wrote:
+> On 10/27/23 20:21, Sean Christopherson wrote:
+> > @@ -635,6 +635,13 @@ static __always_inline kvm_mn_ret_t __kvm_handle_hva_range(struct kvm *kvm,
+> >  			 * the second or later invocation of the handler).
+> >  			 */
+> >  			gfn_range.arg = range->arg;
+> > +
+> > +			/*
+> > +			 * HVA-based notifications aren't relevant to private
+> > +			 * mappings as they don't have a userspace mapping.
 > 
-> Doh, I lost track of this and the fixup for KVM_CAP_MEMORY_ATTRIBUTES below.
+> It's confusing who "they" is.  Maybe
 > 
-> > >+:Capability: KVM_CAP_MEMORY_ATTRIBUTES
-> > >+:Architectures: x86
-> > >+:Type: vm ioctl
-> > >+:Parameters: struct kvm_memory_attributes(in)
-> > 
-> > 					   ^ add one space here?
-> 
-> Ah, yeah, that does appear to be the standard.
-> > 
-> > 
-> > >+static bool kvm_pre_set_memory_attributes(struct kvm *kvm,
-> > >+					  struct kvm_gfn_range *range)
-> > >+{
-> > >+	/*
-> > >+	 * Unconditionally add the range to the invalidation set, regardless of
-> > >+	 * whether or not the arch callback actually needs to zap SPTEs.  E.g.
-> > >+	 * if KVM supports RWX attributes in the future and the attributes are
-> > >+	 * going from R=>RW, zapping isn't strictly necessary.  Unconditionally
-> > >+	 * adding the range allows KVM to require that MMU invalidations add at
-> > >+	 * least one range between begin() and end(), e.g. allows KVM to detect
-> > >+	 * bugs where the add() is missed.  Rexlaing the rule *might* be safe,
-> > 
-> > 					    ^^^^^^^^ Relaxing
-> > 
-> > >@@ -4640,6 +4850,17 @@ static int kvm_vm_ioctl_check_extension_generic(struct kvm *kvm, long arg)
-> > > 	case KVM_CAP_BINARY_STATS_FD:
-> > > 	case KVM_CAP_SYSTEM_EVENT_DATA:
-> > > 		return 1;
-> > >+#ifdef CONFIG_KVM_GENERIC_MEMORY_ATTRIBUTES
-> > >+	case KVM_CAP_MEMORY_ATTRIBUTES:
-> > >+		u64 attrs = kvm_supported_mem_attributes(kvm);
-> > >+
-> > >+		r = -EFAULT;
-> > >+		if (copy_to_user(argp, &attrs, sizeof(attrs)))
-> > >+			goto out;
-> > >+		r = 0;
-> > >+		break;
-> > 
-> > This cannot work, e.g., no @argp in this function and is fixed by a later commit:
-> > 
-> > 	fcbef1e5e5d2 ("KVM: Add KVM_CREATE_GUEST_MEMFD ioctl() for guest-specific backing memory")
-> 
-> I'll post a fixup patch for all of these, thanks much!
+> 	 * HVA-based notifications provide a userspace address,
+> 	 * and as such are only relevant for shared mappings.
 
-Heh, that was an -ENOCOFFEE.  Fixup patches for a changelog goof and an ephemeral
-bug are going to be hard to post.
-
-Paolo, do you want to take care of all of these fixups and typos, or would you
-prefer that I start a v14 branch and then hand it off to you at some point?
+Works for me.
 
