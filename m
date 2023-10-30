@@ -1,11 +1,11 @@
 From: Paolo Bonzini <pbonzini@redhat.com>
-Date: Mon, 30 Oct 2023 17:27:47 +0100
-Subject: [PATCH v13 02/35] KVM: Assert that mmu_invalidate_in_progress
- *never* goes negative
-In-Reply-To: <20231027182217.3615211-3-seanjc@google.com>
+Date: Mon, 30 Oct 2023 17:30:54 +0100
+Subject: [PATCH v13 03/35] KVM: Use gfn instead of hva for
+ mmu_notifier_retry
+In-Reply-To: <20231027182217.3615211-4-seanjc@google.com>
 References: <20231027182217.3615211-1-seanjc@google.com>
- <20231027182217.3615211-3-seanjc@google.com>
-Message-ID: <ac502d11-1fe8-45ec-bb91-02c94dbcd16d@redhat.com>
+ <20231027182217.3615211-4-seanjc@google.com>
+Message-ID: <bd49d731-9231-44bb-9950-949ee95f3b7e@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -13,48 +13,19 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 On 10/27/23 20:21, Sean Christopherson wrote:
-> Move the assertion on the in-progress invalidation count from the primary
-> MMU's notifier path to KVM's common notification path, i.e. assert that
-> the count doesn't go negative even when the invalidation is coming from
-> KVM itself.
-> 
-> Opportunistically convert the assertion to a KVM_BUG_ON(), i.e. kill only
-> the affected VM, not the entire kernel.  A corrupted count is fatal to the
-> VM, e.g. the non-zero (negative) count will cause mmu_invalidate_retry()
-> to block any and all attempts to install new mappings.  But it's far from
-> guaranteed that an end() without a start() is fatal or even problematic to
-> anything other than the target VM, e.g. the underlying bug could simply be
-> a duplicate call to end().  And it's much more likely that a missed
-> invalidation, i.e. a potential use-after-free, would manifest as no
-> notification whatsoever, not an end() without a start().
+> From: Chao Peng <chao.p.peng@linux.intel.com> Currently in mmu_notifier 
+> invalidate path, hva range is recorded and then checked against by 
+> mmu_notifier_retry_hva() in the page fault handling path. However, for 
+> the to be introduced private memory, a page fault may not have a hva 
+> associated, checking gfn(gpa) makes more sense. For existing hva based 
+> shared memory, gfn is expected to also work. The only downside is when 
+> aliasing multiple gfns to a single hva, the current algorithm of 
+> checking multiple ranges could result in a much larger range being 
+> rejected. Such aliasing should be uncommon, so the impact is expected 
+> small.
 
 Reviewed-by: Paolo Bonzini <pbonzini@redhat.com>
 
-> Signed-off-by: Sean Christopherson <seanjc@google.com>
-> ---
->   virt/kvm/kvm_main.c | 3 +--
->   1 file changed, 1 insertion(+), 2 deletions(-)
-> 
-> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-> index 0524933856d4..5a97e6c7d9c2 100644
-> --- a/virt/kvm/kvm_main.c
-> +++ b/virt/kvm/kvm_main.c
-> @@ -833,6 +833,7 @@ void kvm_mmu_invalidate_end(struct kvm *kvm, unsigned long start,
->   	 * in conjunction with the smp_rmb in mmu_invalidate_retry().
->   	 */
->   	kvm->mmu_invalidate_in_progress--;
-> +	KVM_BUG_ON(kvm->mmu_invalidate_in_progress < 0, kvm);
->   }
->   
->   static void kvm_mmu_notifier_invalidate_range_end(struct mmu_notifier *mn,
-> @@ -863,8 +864,6 @@ static void kvm_mmu_notifier_invalidate_range_end(struct mmu_notifier *mn,
->   	 */
->   	if (wake)
->   		rcuwait_wake_up(&kvm->mn_memslots_update_rcuwait);
-> -
-> -	BUG_ON(kvm->mmu_invalidate_in_progress < 0);
->   }
->   
->   static int kvm_mmu_notifier_clear_flush_young(struct mmu_notifier *mn,
+Paolo
 
 
