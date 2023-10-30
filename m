@@ -1,177 +1,75 @@
-From: Sean Christopherson <seanjc@google.com>
-Date: Fri, 27 Oct 2023 11:22:17 -0700
-Subject: [PATCH v13 35/35] KVM: selftests: Test KVM exit behavior for private memory/access
-In-Reply-To: <20231027182217.3615211-1-seanjc@google.com>
+From: Chao Gao <chao.gao@intel.com>
+Date: Mon, 30 Oct 2023 16:11:47 +0800
+Subject: [PATCH v13 13/35] KVM: Introduce per-page memory attributes
+In-Reply-To: <20231027182217.3615211-14-seanjc@google.com>
 References: <20231027182217.3615211-1-seanjc@google.com>
-Message-ID: <20231027182217.3615211-36-seanjc@google.com>
+ <20231027182217.3615211-14-seanjc@google.com>
+Message-ID: <ZT9lQ9c7Bik6FIpw@chao-email>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Ackerley Tng <ackerleytng@google.com>
+On Fri, Oct 27, 2023 at 11:21:55AM -0700, Sean Christopherson wrote:
+>From: Chao Peng <chao.p.peng@linux.intel.com>
+>
+>In confidential computing usages, whether a page is private or shared is
+>necessary information for KVM to perform operations like page fault
+>handling, page zapping etc. There are other potential use cases for
+>per-page memory attributes, e.g. to make memory read-only (or no-exec,
+>or exec-only, etc.) without having to modify memslots.
+>
+>Introduce two ioctls (advertised by KVM_CAP_MEMORY_ATTRIBUTES) to allow
+>userspace to operate on the per-page memory attributes.
+>  - KVM_SET_MEMORY_ATTRIBUTES to set the per-page memory attributes to
+>    a guest memory range.
 
-"Testing private access when memslot gets deleted" tests the behavior
-of KVM when a private memslot gets deleted while the VM is using the
-private memslot. When KVM looks up the deleted (slot = NULL) memslot,
-KVM should exit to userspace with KVM_EXIT_MEMORY_FAULT.
+>  - KVM_GET_SUPPORTED_MEMORY_ATTRIBUTES to return the KVM supported
+>    memory attributes.
 
-In the second test, upon a private access to non-private memslot, KVM
-should also exit to userspace with KVM_EXIT_MEMORY_FAULT.
+This ioctl() is already removed. So, the changelog is out-of-date and needs
+an update.
 
-Intentionally don't take a requirement on KVM_CAP_GUEST_MEMFD,
-KVM_CAP_MEMORY_FAULT_INFO, KVM_MEMORY_ATTRIBUTE_PRIVATE, etc., as it's a
-KVM bug to advertise KVM_X86_SW_PROTECTED_VM without its prerequisites.
+>
+>+
+>+:Capability: KVM_CAP_MEMORY_ATTRIBUTES
+>+:Architectures: x86
+>+:Type: vm ioctl
+>+:Parameters: struct kvm_memory_attributes(in)
 
-Signed-off-by: Ackerley Tng <ackerleytng@google.com>
-[sean: call out the similarities with set_memory_region_test]
-Signed-off-by: Sean Christopherson <seanjc@google.com>
----
- tools/testing/selftests/kvm/Makefile          |   1 +
- .../kvm/x86_64/private_mem_kvm_exits_test.c   | 120 ++++++++++++++++++
- 2 files changed, 121 insertions(+)
- create mode 100644 tools/testing/selftests/kvm/x86_64/private_mem_kvm_exits_test.c
+					   ^ add one space here?
 
-diff --git a/tools/testing/selftests/kvm/Makefile b/tools/testing/selftests/kvm/Makefile
-index 2b1ef809d73a..f7fdd8244547 100644
---- a/tools/testing/selftests/kvm/Makefile
-+++ b/tools/testing/selftests/kvm/Makefile
-@@ -82,6 +82,7 @@ TEST_GEN_PROGS_x86_64 += x86_64/nested_exceptions_test
- TEST_GEN_PROGS_x86_64 += x86_64/platform_info_test
- TEST_GEN_PROGS_x86_64 += x86_64/pmu_event_filter_test
- TEST_GEN_PROGS_x86_64 += x86_64/private_mem_conversions_test
-+TEST_GEN_PROGS_x86_64 += x86_64/private_mem_kvm_exits_test
- TEST_GEN_PROGS_x86_64 += x86_64/set_boot_cpu_id
- TEST_GEN_PROGS_x86_64 += x86_64/set_sregs_test
- TEST_GEN_PROGS_x86_64 += x86_64/smaller_maxphyaddr_emulation_test
-diff --git a/tools/testing/selftests/kvm/x86_64/private_mem_kvm_exits_test.c b/tools/testing/selftests/kvm/x86_64/private_mem_kvm_exits_test.c
-new file mode 100644
-index 000000000000..7f7ca4475745
---- /dev/null
-+++ b/tools/testing/selftests/kvm/x86_64/private_mem_kvm_exits_test.c
-@@ -0,0 +1,120 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/*
-+ * Copyright (C) 2022, Google LLC.
-+ */
-+#include <linux/kvm.h>
-+#include <pthread.h>
-+#include <stdint.h>
-+
-+#include "kvm_util.h"
-+#include "processor.h"
-+#include "test_util.h"
-+
-+/* Arbitrarily selected to avoid overlaps with anything else */
-+#define EXITS_TEST_GVA 0xc0000000
-+#define EXITS_TEST_GPA EXITS_TEST_GVA
-+#define EXITS_TEST_NPAGES 1
-+#define EXITS_TEST_SIZE (EXITS_TEST_NPAGES * PAGE_SIZE)
-+#define EXITS_TEST_SLOT 10
-+
-+static uint64_t guest_repeatedly_read(void)
-+{
-+	volatile uint64_t value;
-+
-+	while (true)
-+		value = *((uint64_t *) EXITS_TEST_GVA);
-+
-+	return value;
-+}
-+
-+static uint32_t run_vcpu_get_exit_reason(struct kvm_vcpu *vcpu)
-+{
-+	int r;
-+
-+	r = _vcpu_run(vcpu);
-+	if (r) {
-+		TEST_ASSERT(errno == EFAULT, KVM_IOCTL_ERROR(KVM_RUN, r));
-+		TEST_ASSERT_EQ(vcpu->run->exit_reason, KVM_EXIT_MEMORY_FAULT);
-+	}
-+	return vcpu->run->exit_reason;
-+}
-+
-+const struct vm_shape protected_vm_shape = {
-+	.mode = VM_MODE_DEFAULT,
-+	.type = KVM_X86_SW_PROTECTED_VM,
-+};
-+
-+static void test_private_access_memslot_deleted(void)
-+{
-+	struct kvm_vm *vm;
-+	struct kvm_vcpu *vcpu;
-+	pthread_t vm_thread;
-+	void *thread_return;
-+	uint32_t exit_reason;
-+
-+	vm = vm_create_shape_with_one_vcpu(protected_vm_shape, &vcpu,
-+					   guest_repeatedly_read);
-+
-+	vm_userspace_mem_region_add(vm, VM_MEM_SRC_ANONYMOUS,
-+				    EXITS_TEST_GPA, EXITS_TEST_SLOT,
-+				    EXITS_TEST_NPAGES,
-+				    KVM_MEM_PRIVATE);
-+
-+	virt_map(vm, EXITS_TEST_GVA, EXITS_TEST_GPA, EXITS_TEST_NPAGES);
-+
-+	/* Request to access page privately */
-+	vm_mem_set_private(vm, EXITS_TEST_GPA, EXITS_TEST_SIZE);
-+
-+	pthread_create(&vm_thread, NULL,
-+		       (void *(*)(void *))run_vcpu_get_exit_reason,
-+		       (void *)vcpu);
-+
-+	vm_mem_region_delete(vm, EXITS_TEST_SLOT);
-+
-+	pthread_join(vm_thread, &thread_return);
-+	exit_reason = (uint32_t)(uint64_t)thread_return;
-+
-+	TEST_ASSERT_EQ(exit_reason, KVM_EXIT_MEMORY_FAULT);
-+	TEST_ASSERT_EQ(vcpu->run->memory_fault.flags, KVM_MEMORY_EXIT_FLAG_PRIVATE);
-+	TEST_ASSERT_EQ(vcpu->run->memory_fault.gpa, EXITS_TEST_GPA);
-+	TEST_ASSERT_EQ(vcpu->run->memory_fault.size, EXITS_TEST_SIZE);
-+
-+	kvm_vm_free(vm);
-+}
-+
-+static void test_private_access_memslot_not_private(void)
-+{
-+	struct kvm_vm *vm;
-+	struct kvm_vcpu *vcpu;
-+	uint32_t exit_reason;
-+
-+	vm = vm_create_shape_with_one_vcpu(protected_vm_shape, &vcpu,
-+					   guest_repeatedly_read);
-+
-+	/* Add a non-private memslot (flags = 0) */
-+	vm_userspace_mem_region_add(vm, VM_MEM_SRC_ANONYMOUS,
-+				    EXITS_TEST_GPA, EXITS_TEST_SLOT,
-+				    EXITS_TEST_NPAGES, 0);
-+
-+	virt_map(vm, EXITS_TEST_GVA, EXITS_TEST_GPA, EXITS_TEST_NPAGES);
-+
-+	/* Request to access page privately */
-+	vm_mem_set_private(vm, EXITS_TEST_GPA, EXITS_TEST_SIZE);
-+
-+	exit_reason = run_vcpu_get_exit_reason(vcpu);
-+
-+	TEST_ASSERT_EQ(exit_reason, KVM_EXIT_MEMORY_FAULT);
-+	TEST_ASSERT_EQ(vcpu->run->memory_fault.flags, KVM_MEMORY_EXIT_FLAG_PRIVATE);
-+	TEST_ASSERT_EQ(vcpu->run->memory_fault.gpa, EXITS_TEST_GPA);
-+	TEST_ASSERT_EQ(vcpu->run->memory_fault.size, EXITS_TEST_SIZE);
-+
-+	kvm_vm_free(vm);
-+}
-+
-+int main(int argc, char *argv[])
-+{
-+	TEST_REQUIRE(kvm_check_cap(KVM_CAP_VM_TYPES) & BIT(KVM_X86_SW_PROTECTED_VM));
-+
-+	test_private_access_memslot_deleted();
-+	test_private_access_memslot_not_private();
-+}
--- 
-2.42.0.820.g83a721a137-goog
 
+>+static bool kvm_pre_set_memory_attributes(struct kvm *kvm,
+>+					  struct kvm_gfn_range *range)
+>+{
+>+	/*
+>+	 * Unconditionally add the range to the invalidation set, regardless of
+>+	 * whether or not the arch callback actually needs to zap SPTEs.  E.g.
+>+	 * if KVM supports RWX attributes in the future and the attributes are
+>+	 * going from R=>RW, zapping isn't strictly necessary.  Unconditionally
+>+	 * adding the range allows KVM to require that MMU invalidations add at
+>+	 * least one range between begin() and end(), e.g. allows KVM to detect
+>+	 * bugs where the add() is missed.  Rexlaing the rule *might* be safe,
+
+					    ^^^^^^^^ Relaxing
+
+>@@ -4640,6 +4850,17 @@ static int kvm_vm_ioctl_check_extension_generic(struct kvm *kvm, long arg)
+> 	case KVM_CAP_BINARY_STATS_FD:
+> 	case KVM_CAP_SYSTEM_EVENT_DATA:
+> 		return 1;
+>+#ifdef CONFIG_KVM_GENERIC_MEMORY_ATTRIBUTES
+>+	case KVM_CAP_MEMORY_ATTRIBUTES:
+>+		u64 attrs = kvm_supported_mem_attributes(kvm);
+>+
+>+		r = -EFAULT;
+>+		if (copy_to_user(argp, &attrs, sizeof(attrs)))
+>+			goto out;
+>+		r = 0;
+>+		break;
+
+This cannot work, e.g., no @argp in this function and is fixed by a later commit:
+
+	fcbef1e5e5d2 ("KVM: Add KVM_CREATE_GUEST_MEMFD ioctl() for guest-specific backing memory")
 
