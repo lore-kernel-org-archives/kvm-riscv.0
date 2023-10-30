@@ -1,11 +1,11 @@
 From: Paolo Bonzini <pbonzini@redhat.com>
-Date: Mon, 30 Oct 2023 18:34:12 +0100
-Subject: [PATCH v13 22/35] KVM: Allow arch code to track number of memslot
- address spaces per VM
-In-Reply-To: <20231027182217.3615211-23-seanjc@google.com>
+Date: Mon, 30 Oct 2023 18:36:07 +0100
+Subject: [PATCH v13 23/35] KVM: x86: Add support for "protected VMs" that
+ can utilize private memory
+In-Reply-To: <20231027182217.3615211-24-seanjc@google.com>
 References: <20231027182217.3615211-1-seanjc@google.com>
- <20231027182217.3615211-23-seanjc@google.com>
-Message-ID: <9bc69994-c98f-48e4-b956-08a8d98a6e6d@redhat.com>
+ <20231027182217.3615211-24-seanjc@google.com>
+Message-ID: <a56e499f-c91c-45da-b404-444c22b2df24@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -13,16 +13,36 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 On 10/27/23 20:22, Sean Christopherson wrote:
-> Let x86 track the number of address spaces on a per-VM basis so that KVM
-> can disallow SMM memslots for confidential VMs.  Confidentials VMs are
-> fundamentally incompatible with emulating SMM, which as the name suggests
-> requires being able to read and write guest memory and register state.
+> Add a new x86 VM type, KVM_X86_SW_PROTECTED_VM, to serve as a development
+> and testing vehicle for Confidential (CoCo) VMs, and potentially to even
+> become a "real" product in the distant future, e.g. a la pKVM.
 > 
-> Disallowing SMM will simplify support for guest private memory, as KVM
-> will not need to worry about tracking memory attributes for multiple
-> address spaces (SMM is the only "non-default" address space across all
-> architectures).
+> The private memory support in KVM x86 is aimed at AMD's SEV-SNP and
+> Intel's TDX, but those technologies are extremely complex (understatement),
+> difficult to debug, don't support running as nested guests, and require
+> hardware that's isn't universally accessible.  I.e. relying SEV-SNP or TDX
+> for maintaining guest private memory isn't a realistic option.
+> 
+> At the very least, KVM_X86_SW_PROTECTED_VM will enable a variety of
+> selftests for guest_memfd and private memory support without requiring
+> unique hardware.
+> 
+> Signed-off-by: Sean Christopherson <seanjc@google.com>
 
 Reviewed-by: Paolo Bonzini <pbonzini@redhat.com>
+
+with one nit:
+
+> +---------------------
+> +
+> +:Capability: KVM_CAP_MEMORY_ATTRIBUTES
+> +:Architectures: x86
+> +:Type: system ioctl
+> +
+> +This capability returns a bitmap of support VM types.  The 1-setting of bit @n
+
+s/support/supported/
+
+Paolo
 
 
