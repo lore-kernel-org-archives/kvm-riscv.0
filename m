@@ -1,205 +1,87 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Mon, 30 Oct 2023 13:25:50 -0700
-Subject: [PATCH v13 08/35] KVM: Introduce KVM_SET_USER_MEMORY_REGION2
-In-Reply-To: <211d093f-4023-4a39-a23f-6d8543512675@redhat.com>
-References: <20231027182217.3615211-1-seanjc@google.com> <20231027182217.3615211-9-seanjc@google.com>
- <211d093f-4023-4a39-a23f-6d8543512675@redhat.com>
-Message-ID: <ZUARTvhpChFSGF9s@google.com>
+Date: Mon, 30 Oct 2023 15:05:56 -0700
+Subject: [PATCH v13 13/35] KVM: Introduce per-page memory attributes
+In-Reply-To: <ZT_ViJOW1p4TN_fI@google.com>
+References: <20231027182217.3615211-1-seanjc@google.com> <20231027182217.3615211-14-seanjc@google.com>
+ <ZT9lQ9c7Bik6FIpw@chao-email> <ZT_ViJOW1p4TN_fI@google.com>
+Message-ID: <ZUAoxCZJnpPGWjpu@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Oct 30, 2023, Paolo Bonzini wrote:
-> On 10/27/23 20:21, Sean Christopherson wrote:
+On Mon, Oct 30, 2023, Sean Christopherson wrote:
+> On Mon, Oct 30, 2023, Chao Gao wrote:
+> > On Fri, Oct 27, 2023 at 11:21:55AM -0700, Sean Christopherson wrote:
+> > >From: Chao Peng <chao.p.peng@linux.intel.com>
+> > >
+> > >In confidential computing usages, whether a page is private or shared is
+> > >necessary information for KVM to perform operations like page fault
+> > >handling, page zapping etc. There are other potential use cases for
+> > >per-page memory attributes, e.g. to make memory read-only (or no-exec,
+> > >or exec-only, etc.) without having to modify memslots.
+> > >
+> > >Introduce two ioctls (advertised by KVM_CAP_MEMORY_ATTRIBUTES) to allow
+> > >userspace to operate on the per-page memory attributes.
+> > >  - KVM_SET_MEMORY_ATTRIBUTES to set the per-page memory attributes to
+> > >    a guest memory range.
 > > 
-> > +		if (ioctl == KVM_SET_USER_MEMORY_REGION)
-> > +			size = sizeof(struct kvm_userspace_memory_region);
+> > >  - KVM_GET_SUPPORTED_MEMORY_ATTRIBUTES to return the KVM supported
+> > >    memory attributes.
+> > 
+> > This ioctl() is already removed. So, the changelog is out-of-date and needs
+> > an update.
 > 
-> This also needs a memset(&mem, 0, sizeof(mem)), otherwise the out-of-bounds
-> access of the commit message becomes a kernel stack read.
+> Doh, I lost track of this and the fixup for KVM_CAP_MEMORY_ATTRIBUTES below.
+> 
+> > >+:Capability: KVM_CAP_MEMORY_ATTRIBUTES
+> > >+:Architectures: x86
+> > >+:Type: vm ioctl
+> > >+:Parameters: struct kvm_memory_attributes(in)
+> > 
+> > 					   ^ add one space here?
+> 
+> Ah, yeah, that does appear to be the standard.
+> > 
+> > 
+> > >+static bool kvm_pre_set_memory_attributes(struct kvm *kvm,
+> > >+					  struct kvm_gfn_range *range)
+> > >+{
+> > >+	/*
+> > >+	 * Unconditionally add the range to the invalidation set, regardless of
+> > >+	 * whether or not the arch callback actually needs to zap SPTEs.  E.g.
+> > >+	 * if KVM supports RWX attributes in the future and the attributes are
+> > >+	 * going from R=>RW, zapping isn't strictly necessary.  Unconditionally
+> > >+	 * adding the range allows KVM to require that MMU invalidations add at
+> > >+	 * least one range between begin() and end(), e.g. allows KVM to detect
+> > >+	 * bugs where the add() is missed.  Rexlaing the rule *might* be safe,
+> > 
+> > 					    ^^^^^^^^ Relaxing
+> > 
+> > >@@ -4640,6 +4850,17 @@ static int kvm_vm_ioctl_check_extension_generic(struct kvm *kvm, long arg)
+> > > 	case KVM_CAP_BINARY_STATS_FD:
+> > > 	case KVM_CAP_SYSTEM_EVENT_DATA:
+> > > 		return 1;
+> > >+#ifdef CONFIG_KVM_GENERIC_MEMORY_ATTRIBUTES
+> > >+	case KVM_CAP_MEMORY_ATTRIBUTES:
+> > >+		u64 attrs = kvm_supported_mem_attributes(kvm);
+> > >+
+> > >+		r = -EFAULT;
+> > >+		if (copy_to_user(argp, &attrs, sizeof(attrs)))
+> > >+			goto out;
+> > >+		r = 0;
+> > >+		break;
+> > 
+> > This cannot work, e.g., no @argp in this function and is fixed by a later commit:
+> > 
+> > 	fcbef1e5e5d2 ("KVM: Add KVM_CREATE_GUEST_MEMFD ioctl() for guest-specific backing memory")
+> 
+> I'll post a fixup patch for all of these, thanks much!
 
-Ouch.  There's some irony.  Might be worth doing memset(&mem, -1, sizeof(mem))
-though as '0' is a valid file descriptor and a valid file offset.
+Heh, that was an -ENOCOFFEE.  Fixup patches for a changelog goof and an ephemeral
+bug are going to be hard to post.
 
-> Probably worth adding a check on valid flags here.
-
-Definitely needed.  There's a very real bug here.  But rather than duplicate flags
-checking or plumb @ioctl all the way to __kvm_set_memory_region(), now that we
-have the fancy guard(mutex) and there are no internal calls to kvm_set_memory_region(),
-what if we:
-
-  1. Acquire/release slots_lock in __kvm_set_memory_region()
-  2. Call kvm_set_memory_region() from x86 code for the internal memslots
-  3. Disallow *any* flags for internal memslots
-  4. Open code check_memory_region_flags in kvm_vm_ioctl_set_memory_region()
-  5. Pass @ioctl to kvm_vm_ioctl_set_memory_region() and allow KVM_MEM_PRIVATE
-     only for KVM_SET_USER_MEMORY_REGION2
-
-E.g. this over ~5 patches
-
----
- arch/x86/kvm/x86.c       |  2 +-
- include/linux/kvm_host.h |  4 +--
- virt/kvm/kvm_main.c      | 65 +++++++++++++++++-----------------------
- 3 files changed, 29 insertions(+), 42 deletions(-)
-
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index e3eb608b6692..dd3e2017366c 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -12478,7 +12478,7 @@ void __user * __x86_set_memory_region(struct kvm *kvm, int id, gpa_t gpa,
- 		m.guest_phys_addr = gpa;
- 		m.userspace_addr = hva;
- 		m.memory_size = size;
--		r = __kvm_set_memory_region(kvm, &m);
-+		r = kvm_set_memory_region(kvm, &m);
- 		if (r < 0)
- 			return ERR_PTR_USR(r);
- 	}
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index 687589ce9f63..fbb98efe8200 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -1170,7 +1170,7 @@ static inline bool kvm_memslot_iter_is_valid(struct kvm_memslot_iter *iter, gfn_
-  *   -- just change its flags
-  *
-  * Since flags can be changed by some of these operations, the following
-- * differentiation is the best we can do for __kvm_set_memory_region():
-+ * differentiation is the best we can do for __kvm_set_memory_region().
-  */
- enum kvm_mr_change {
- 	KVM_MR_CREATE,
-@@ -1181,8 +1181,6 @@ enum kvm_mr_change {
- 
- int kvm_set_memory_region(struct kvm *kvm,
- 			  const struct kvm_userspace_memory_region2 *mem);
--int __kvm_set_memory_region(struct kvm *kvm,
--			    const struct kvm_userspace_memory_region2 *mem);
- void kvm_arch_free_memslot(struct kvm *kvm, struct kvm_memory_slot *slot);
- void kvm_arch_memslots_updated(struct kvm *kvm, u64 gen);
- int kvm_arch_prepare_memory_region(struct kvm *kvm,
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 23633984142f..39ceee2f67f2 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -1608,28 +1608,6 @@ static void kvm_replace_memslot(struct kvm *kvm,
- 	}
- }
- 
--static int check_memory_region_flags(struct kvm *kvm,
--				     const struct kvm_userspace_memory_region2 *mem)
--{
--	u32 valid_flags = KVM_MEM_LOG_DIRTY_PAGES;
--
--	if (kvm_arch_has_private_mem(kvm))
--		valid_flags |= KVM_MEM_PRIVATE;
--
--	/* Dirty logging private memory is not currently supported. */
--	if (mem->flags & KVM_MEM_PRIVATE)
--		valid_flags &= ~KVM_MEM_LOG_DIRTY_PAGES;
--
--#ifdef __KVM_HAVE_READONLY_MEM
--	valid_flags |= KVM_MEM_READONLY;
--#endif
--
--	if (mem->flags & ~valid_flags)
--		return -EINVAL;
--
--	return 0;
--}
--
- static void kvm_swap_active_memslots(struct kvm *kvm, int as_id)
- {
- 	struct kvm_memslots *slots = kvm_get_inactive_memslots(kvm, as_id);
-@@ -2014,11 +1992,9 @@ static bool kvm_check_memslot_overlap(struct kvm_memslots *slots, int id,
-  * space.
-  *
-  * Discontiguous memory is allowed, mostly for framebuffers.
-- *
-- * Must be called holding kvm->slots_lock for write.
-  */
--int __kvm_set_memory_region(struct kvm *kvm,
--			    const struct kvm_userspace_memory_region2 *mem)
-+static int __kvm_set_memory_region(struct kvm *kvm,
-+				   const struct kvm_userspace_memory_region2 *mem)
- {
- 	struct kvm_memory_slot *old, *new;
- 	struct kvm_memslots *slots;
-@@ -2028,9 +2004,7 @@ int __kvm_set_memory_region(struct kvm *kvm,
- 	int as_id, id;
- 	int r;
- 
--	r = check_memory_region_flags(kvm, mem);
--	if (r)
--		return r;
-+	guard(mutex)(&kvm->slots_lock);
- 
- 	as_id = mem->slot >> 16;
- 	id = (u16)mem->slot;
-@@ -2139,27 +2113,42 @@ int __kvm_set_memory_region(struct kvm *kvm,
- 	kfree(new);
- 	return r;
- }
--EXPORT_SYMBOL_GPL(__kvm_set_memory_region);
- 
- int kvm_set_memory_region(struct kvm *kvm,
- 			  const struct kvm_userspace_memory_region2 *mem)
- {
--	int r;
-+	/* Flags aren't supported for KVM-internal memslots. */
-+	if (WARN_ON_ONCE(mem->flags))
-+		return -EINVAL;
- 
--	mutex_lock(&kvm->slots_lock);
--	r = __kvm_set_memory_region(kvm, mem);
--	mutex_unlock(&kvm->slots_lock);
--	return r;
-+	return __kvm_set_memory_region(kvm, mem);
- }
- EXPORT_SYMBOL_GPL(kvm_set_memory_region);
- 
--static int kvm_vm_ioctl_set_memory_region(struct kvm *kvm,
-+static int kvm_vm_ioctl_set_memory_region(struct kvm *kvm, unsigned int ioctl,
- 					  struct kvm_userspace_memory_region2 *mem)
- {
-+	u32 valid_flags = KVM_MEM_LOG_DIRTY_PAGES;
-+
-+	if (ioctl == KVM_SET_USER_MEMORY_REGION2 &&
-+	    kvm_arch_has_private_mem(kvm))
-+		valid_flags |= KVM_MEM_PRIVATE;
-+
-+	/* Dirty logging private memory is not currently supported. */
-+	if (mem->flags & KVM_MEM_PRIVATE)
-+		valid_flags &= ~KVM_MEM_LOG_DIRTY_PAGES;
-+
-+#ifdef __KVM_HAVE_READONLY_MEM
-+	valid_flags |= KVM_MEM_READONLY;
-+#endif
-+
-+	if (mem->flags & ~valid_flags)
-+		return -EINVAL;
-+
- 	if ((u16)mem->slot >= KVM_USER_MEM_SLOTS)
- 		return -EINVAL;
- 
--	return kvm_set_memory_region(kvm, mem);
-+	return __kvm_set_memory_region(kvm, mem);
- }
- 
- #ifndef CONFIG_KVM_GENERIC_DIRTYLOG_READ_PROTECT
-@@ -5145,7 +5134,7 @@ static long kvm_vm_ioctl(struct file *filp,
- 		if (copy_from_user(&mem, argp, size))
- 			goto out;
- 
--		r = kvm_vm_ioctl_set_memory_region(kvm, &mem);
-+		r = kvm_vm_ioctl_set_memory_region(kvm, ioctl, &mem);
- 		break;
- 	}
- 	case KVM_GET_DIRTY_LOG: {
-
-base-commit: 881375a408c0f4ea451ff14545b59216d2923881
--- 
-
+Paolo, do you want to take care of all of these fixups and typos, or would you
+prefer that I start a v14 branch and then hand it off to you at some point?
 
