@@ -1,80 +1,60 @@
-From: Sean Christopherson <seanjc@google.com>
-Date: Mon, 30 Oct 2023 16:10:48 +0000
-Subject: [PATCH v13 13/35] KVM: Introduce per-page memory attributes
-In-Reply-To: <ZT9lQ9c7Bik6FIpw@chao-email>
-References: <20231027182217.3615211-1-seanjc@google.com> <20231027182217.3615211-14-seanjc@google.com>
- <ZT9lQ9c7Bik6FIpw@chao-email>
-Message-ID: <ZT_ViJOW1p4TN_fI@google.com>
+From: Paolo Bonzini <pbonzini@redhat.com>
+Date: Mon, 30 Oct 2023 17:27:47 +0100
+Subject: [PATCH v13 02/35] KVM: Assert that mmu_invalidate_in_progress
+ *never* goes negative
+In-Reply-To: <20231027182217.3615211-3-seanjc@google.com>
+References: <20231027182217.3615211-1-seanjc@google.com>
+ <20231027182217.3615211-3-seanjc@google.com>
+Message-ID: <ac502d11-1fe8-45ec-bb91-02c94dbcd16d@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Oct 30, 2023, Chao Gao wrote:
-> On Fri, Oct 27, 2023 at 11:21:55AM -0700, Sean Christopherson wrote:
-> >From: Chao Peng <chao.p.peng@linux.intel.com>
-> >
-> >In confidential computing usages, whether a page is private or shared is
-> >necessary information for KVM to perform operations like page fault
-> >handling, page zapping etc. There are other potential use cases for
-> >per-page memory attributes, e.g. to make memory read-only (or no-exec,
-> >or exec-only, etc.) without having to modify memslots.
-> >
-> >Introduce two ioctls (advertised by KVM_CAP_MEMORY_ATTRIBUTES) to allow
-> >userspace to operate on the per-page memory attributes.
-> >  - KVM_SET_MEMORY_ATTRIBUTES to set the per-page memory attributes to
-> >    a guest memory range.
+On 10/27/23 20:21, Sean Christopherson wrote:
+> Move the assertion on the in-progress invalidation count from the primary
+> MMU's notifier path to KVM's common notification path, i.e. assert that
+> the count doesn't go negative even when the invalidation is coming from
+> KVM itself.
 > 
-> >  - KVM_GET_SUPPORTED_MEMORY_ATTRIBUTES to return the KVM supported
-> >    memory attributes.
-> 
-> This ioctl() is already removed. So, the changelog is out-of-date and needs
-> an update.
+> Opportunistically convert the assertion to a KVM_BUG_ON(), i.e. kill only
+> the affected VM, not the entire kernel.  A corrupted count is fatal to the
+> VM, e.g. the non-zero (negative) count will cause mmu_invalidate_retry()
+> to block any and all attempts to install new mappings.  But it's far from
+> guaranteed that an end() without a start() is fatal or even problematic to
+> anything other than the target VM, e.g. the underlying bug could simply be
+> a duplicate call to end().  And it's much more likely that a missed
+> invalidation, i.e. a potential use-after-free, would manifest as no
+> notification whatsoever, not an end() without a start().
 
-Doh, I lost track of this and the fixup for KVM_CAP_MEMORY_ATTRIBUTES below.
+Reviewed-by: Paolo Bonzini <pbonzini@redhat.com>
 
-> >+:Capability: KVM_CAP_MEMORY_ATTRIBUTES
-> >+:Architectures: x86
-> >+:Type: vm ioctl
-> >+:Parameters: struct kvm_memory_attributes(in)
+> Signed-off-by: Sean Christopherson <seanjc@google.com>
+> ---
+>   virt/kvm/kvm_main.c | 3 +--
+>   1 file changed, 1 insertion(+), 2 deletions(-)
 > 
-> 					   ^ add one space here?
+> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+> index 0524933856d4..5a97e6c7d9c2 100644
+> --- a/virt/kvm/kvm_main.c
+> +++ b/virt/kvm/kvm_main.c
+> @@ -833,6 +833,7 @@ void kvm_mmu_invalidate_end(struct kvm *kvm, unsigned long start,
+>   	 * in conjunction with the smp_rmb in mmu_invalidate_retry().
+>   	 */
+>   	kvm->mmu_invalidate_in_progress--;
+> +	KVM_BUG_ON(kvm->mmu_invalidate_in_progress < 0, kvm);
+>   }
+>   
+>   static void kvm_mmu_notifier_invalidate_range_end(struct mmu_notifier *mn,
+> @@ -863,8 +864,6 @@ static void kvm_mmu_notifier_invalidate_range_end(struct mmu_notifier *mn,
+>   	 */
+>   	if (wake)
+>   		rcuwait_wake_up(&kvm->mn_memslots_update_rcuwait);
+> -
+> -	BUG_ON(kvm->mmu_invalidate_in_progress < 0);
+>   }
+>   
+>   static int kvm_mmu_notifier_clear_flush_young(struct mmu_notifier *mn,
 
-Ah, yeah, that does appear to be the standard.
-> 
-> 
-> >+static bool kvm_pre_set_memory_attributes(struct kvm *kvm,
-> >+					  struct kvm_gfn_range *range)
-> >+{
-> >+	/*
-> >+	 * Unconditionally add the range to the invalidation set, regardless of
-> >+	 * whether or not the arch callback actually needs to zap SPTEs.  E.g.
-> >+	 * if KVM supports RWX attributes in the future and the attributes are
-> >+	 * going from R=>RW, zapping isn't strictly necessary.  Unconditionally
-> >+	 * adding the range allows KVM to require that MMU invalidations add at
-> >+	 * least one range between begin() and end(), e.g. allows KVM to detect
-> >+	 * bugs where the add() is missed.  Rexlaing the rule *might* be safe,
-> 
-> 					    ^^^^^^^^ Relaxing
-> 
-> >@@ -4640,6 +4850,17 @@ static int kvm_vm_ioctl_check_extension_generic(struct kvm *kvm, long arg)
-> > 	case KVM_CAP_BINARY_STATS_FD:
-> > 	case KVM_CAP_SYSTEM_EVENT_DATA:
-> > 		return 1;
-> >+#ifdef CONFIG_KVM_GENERIC_MEMORY_ATTRIBUTES
-> >+	case KVM_CAP_MEMORY_ATTRIBUTES:
-> >+		u64 attrs = kvm_supported_mem_attributes(kvm);
-> >+
-> >+		r = -EFAULT;
-> >+		if (copy_to_user(argp, &attrs, sizeof(attrs)))
-> >+			goto out;
-> >+		r = 0;
-> >+		break;
-> 
-> This cannot work, e.g., no @argp in this function and is fixed by a later commit:
-> 
-> 	fcbef1e5e5d2 ("KVM: Add KVM_CREATE_GUEST_MEMFD ioctl() for guest-specific backing memory")
-
-I'll post a fixup patch for all of these, thanks much!
 
