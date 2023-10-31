@@ -1,104 +1,211 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Tue, 31 Oct 2023 14:36:37 -0700
+Date: Tue, 31 Oct 2023 15:13:23 -0700
 Subject: [PATCH v13 16/35] KVM: Add KVM_CREATE_GUEST_MEMFD ioctl() for
  guest-specific backing memory
-In-Reply-To: <ZUFGRyQEuWj4RJS0@google.com>
+In-Reply-To: <CA+EHjTzj4drYKONVOLP19DYpJ4O8kSXcFzw2AKier1QdcFKx_Q@mail.gmail.com>
 References: <20231027182217.3615211-1-seanjc@google.com> <20231027182217.3615211-17-seanjc@google.com>
- <ZUFGRyQEuWj4RJS0@google.com>
-Message-ID: <ZUFzZf-YmCRYP6qo@google.com>
+ <CA+EHjTzj4drYKONVOLP19DYpJ4O8kSXcFzw2AKier1QdcFKx_Q@mail.gmail.com>
+Message-ID: <ZUF8A5KpwpA6IKUH@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Oct 31, 2023, David Matlack wrote:
-> On 2023-10-27 11:21 AM, Sean Christopherson wrote:
-> > Introduce an ioctl(), KVM_CREATE_GUEST_MEMFD, to allow creating file-based
-> > memory that is tied to a specific KVM virtual machine and whose primary
-> > purpose is to serve guest memory.
-> > 
-> > A guest-first memory subsystem allows for optimizations and enhancements
-> > that are kludgy or outright infeasible to implement/support in a generic
-> > memory subsystem.  With guest_memfd, guest protections and mapping sizes
-> > are fully decoupled from host userspace mappings.   E.g. KVM currently
-> > doesn't support mapping memory as writable in the guest without it also
-> > being writable in host userspace, as KVM's ABI uses VMA protections to
-> > define the allow guest protection.  Userspace can fudge this by
-> > establishing two mappings, a writable mapping for the guest and readable
-> > one for itself, but that?s suboptimal on multiple fronts.
-> > 
-> > Similarly, KVM currently requires the guest mapping size to be a strict
-> > subset of the host userspace mapping size, e.g. KVM doesn?t support
-> > creating a 1GiB guest mapping unless userspace also has a 1GiB guest
-> > mapping.  Decoupling the mappings sizes would allow userspace to precisely
-> > map only what is needed without impacting guest performance, e.g. to
-> > harden against unintentional accesses to guest memory.
-> > 
-> > Decoupling guest and userspace mappings may also allow for a cleaner
-> > alternative to high-granularity mappings for HugeTLB, which has reached a
-> > bit of an impasse and is unlikely to ever be merged.
-> > 
-> > A guest-first memory subsystem also provides clearer line of sight to
-> > things like a dedicated memory pool (for slice-of-hardware VMs) and
-> > elimination of "struct page" (for offload setups where userspace _never_
-> > needs to mmap() guest memory).
+On Tue, Oct 31, 2023, Fuad Tabba wrote:
+> Hi,
 > 
-> All of these use-cases involve using guest_memfd for shared pages, but
-> this entire series sets up KVM to only use guest_memfd for private
-> pages.
+> On Fri, Oct 27, 2023 at 7:23?PM Sean Christopherson <seanjc@google.com> wrote:
 > 
-> For example, the per-page attributes are a property of a KVM VM, not the
-> underlying guest_memfd. So that implies we will need separate
-> guest_memfds for private and shared pages. But a given memslot can have
-> a mix of private and shared pages. So that implies a memslot will need
-> to support 2 guest_memfds?
-
-Yes, someday this may be true.  Allowing guest_memfd (it was probably called
-something else at that point) for "regular" memory was discussed in I think v10?
-We made a concious decision to defer supporting 2 guest_memfds because it isn't strictly
-necessary to support the TDX/SNP use cases for which all of this was initially
-designed, and adding a second guest_memfd and the infrastructure needed to let
-userspace map a guest_memfd can be done on top with minimal overhead.
-
-> But the UAPI only allows 1 and uses the HVA for shared mappings.
+> ...
 > 
-> My initial reaction after reading through this series is that the
-> per-page private/shared should be a property of the guest_memfd, not the
-> VM. Maybe it would even be cleaner in the long-run to make all memory
-> attributes a property of the guest_memfd. That way we can scope the
-> support to only guest_memfds and not have to worry about making per-page
-> attributes work with "legacy" HVA-based memslots.
+> > diff --git a/Documentation/virt/kvm/api.rst b/Documentation/virt/kvm/api.rst
+> > index e2252c748fd6..e82c69d5e755 100644
+> > --- a/Documentation/virt/kvm/api.rst
+> > +++ b/Documentation/virt/kvm/api.rst
+> > @@ -6079,6 +6079,15 @@ applied.
+> >  :Parameters: struct kvm_userspace_memory_region2 (in)
+> >  :Returns: 0 on success, -1 on error
+> >
+> > +KVM_SET_USER_MEMORY_REGION2 is an extension to KVM_SET_USER_MEMORY_REGION that
+> > +allows mapping guest_memfd memory into a guest.  All fields shared with
+> > +KVM_SET_USER_MEMORY_REGION identically.  Userspace can set KVM_MEM_PRIVATE in
+> > +flags to have KVM bind the memory region to a given guest_memfd range of
+> > +[guest_memfd_offset, guest_memfd_offset + memory_size].  The target guest_memfd
+> > +must point at a file created via KVM_CREATE_GUEST_MEMFD on the current VM, and
+> > +the target range must not be bound to any other memory region.  All standard
+> > +bounds checks apply (use common sense).
+> > +
+> 
+> Bikeshedding here: Not sure if KVM_MEM_PRIVATE is the best name for
+> this. It gets confusing with KVM_MEMORY_ATTRIBUTE_PRIVATE, i.e., that
+> a region marked as KVM_MEM_PRIVATE is only potentially private. It did
+> confuse the rest of the team when I walked them through a previous
+> version of this code once. Would something like KVM_MEM_GUESTMEM make
+> more sense?
 
-Making the private vs. shared state a property of the guest_memfd doesn't work
-for TDX and SNP.  We (upstream x86 and KVM maintainers) have taken a hard stance
-that in-place conversion will not be allowed for TDX/SNP due to the ease with
-which a misbehaving userspace and/or guest can crash the host.
+Heh, deja vu.  We discussed this back in v7[*], and I came to the conclusion that
+choosing a name that wasn't explicitly tied to private memory wasn't justified.
+But that was before a KVM-owned guest_memfd was even an idea, and thus before we
+had anything close to a real use case.
 
-We'd also be betting that there would *never* be a use case for per-gfn attributes
-for non-standard memory, e.g. virtio-gpu buffers, any kind of device memory, etc.
+Since we now know that at least pKVM will use guest_memfd for shared memory, and
+odds are quite good that "regular" VMs will also do the same, i.e. will want
+guest_memfd with the concept of private memory, I agree that we should avoid
+PRIVATE.
 
-We'd also effectively be signing up to either support swap and page migration in
-guest_memfd, or make those mutually exclusive with per-gfn attributes too.
+Though I vote for KVM_MEM_GUEST_MEMFD (or KVM_MEM_GUEST_MEMFD_VALID or
+KVM_MEM_USE_GUEST_MEMFD).  I.e. do our best to avoid ambiguity between referring
+to "guest memory" at-large and guest_memfd.
 
-guest_memfd is only intended for guest DRAM, and if I get my way, will never support
-swap (page migration is less scary).  I.e. guest_memfd isn't intended to be a
-one-size-fits-all solution, nor is it intended to wholesale replace memslots,
-which is effectively what we'd be doing by deprecating hva-based guest memory.
+Copying a few relevant points from v7 to save a click or three.
 
-And ignoring all that, the ABI would end up being rather bizarre due to way guest_memfd
-interacts with memslots.  guest_memfd itself has no real notion of gfns, i.e. the
-shared vs. private state would be tied to a file offset, not a gfn.  That's a solvable
-problem, e.g. we could make a gfn:offset binding "sticky", but that would edd extra
-complexity to the ABI, and AFAICT wouldn't buy us that much, if anything.
+ : I don't have a concrete use case (this is a recent idea on my end), but since we're
+ : already adding fd-based memory, I can't think of a good reason not make it more generic
+ : for not much extra cost.  And there are definitely classes of VMs for which fd-based
+ : memory would Just Work, e.g. large VMs that are never oversubscribed on memory don't
+ : need to support reclaim, so the fact that fd-based memslots won't support page aging
+ : (among other things) right away is a non-issue.
 
-> Maybe can you sketch out how you see this proposal being extensible to
-> using guest_memfd for shared mappings?
+...
 
-For in-place conversions, e.g. pKVM, no additional guest_memfd is needed.  What's
-missing there is the ability to (safely) mmap() guest_memfd, e.g. KVM needs to
-ensure there are no outstanding references when converting back to private.
+ : Hrm, but basing private memory on top of a generic FD_VALID would effectively require
+ : shared memory to use hva-based memslots for confidential VMs.  That'd yield a very
+ : weird API, e.g. non-confidential VMs could be backed entirely by fd-based memslots,
+ : but confidential VMs would be forced to use hva-based memslots.
+ : 
+ : Ignore this idea for now.  If there's an actual use case for generic fd-based memory
+ : then we'll want a separate flag, fd, and offset, i.e. that support could be added
+ : independent of KVM_MEM_PRIVATE.
 
-For TDX/SNP, assuming we don't find a performant and robust way to do in-place
-conversions, a second fd+offset pair would be needed.
+...
+
+ : One alternative would be to call it KVM_MEM_PROTECTED.  That shouldn't cause
+ : problems for the known use of "private" (TDX and SNP), and it gives us a little
+ : wiggle room, e.g. if we ever get a use case where VMs can share memory that is
+ : otherwise protected.
+ : 
+ : That's a pretty big "if" though, and odds are good we'd need more memslot flags and
+ : fd+offset pairs to allow differentiating "private" vs. "protected-shared" without
+ : forcing userspace to punch holes in memslots, so I don't know that hedging now will
+ : buy us anything.
+ : 
+ : So I'd say that if people think KVM_MEM_PRIVATE brings additional and meaningful
+ : clarity over KVM_MEM_PROTECTECD, then lets go with PRIVATE.  But if PROTECTED is
+ : just as good, go with PROTECTED as it gives us a wee bit of wiggle room for the
+ : future.
+
+[*] https://lore.kernel.org/all/Yuh0ikhoh+tCK6VW at google.com
+ 
+> > -See KVM_SET_USER_MEMORY_REGION.
+> > +A KVM_MEM_PRIVATE region _must_ have a valid guest_memfd (private memory) and
+> > +userspace_addr (shared memory).  However, "valid" for userspace_addr simply
+> > +means that the address itself must be a legal userspace address.  The backing
+> > +mapping for userspace_addr is not required to be valid/populated at the time of
+> > +KVM_SET_USER_MEMORY_REGION2, e.g. shared memory can be lazily mapped/allocated
+> > +on-demand.
+> 
+> Regarding requiring that a private region have both a valid
+> guest_memfd and a userspace_addr, should this be
+> implementation-specific? In pKVM at least, all regions for protected
+> VMs are private, and KVM doesn't care about the host userspace address
+> for those regions even when part of the memory is shared.
+
+Hmm, as of this patch, no, because the pKVM usage doesn't exist.  E.g. 
+
+.  Because this literally documents the current ABI.  When
+
+> > +When mapping a gfn into the guest, KVM selects shared vs. private, i.e consumes
+> > +userspace_addr vs. guest_memfd, based on the gfn's KVM_MEMORY_ATTRIBUTE_PRIVATE
+> > +state.  At VM creation time, all memory is shared, i.e. the PRIVATE attribute
+> > +is '0' for all gfns.  Userspace can control whether memory is shared/private by
+> > +toggling KVM_MEMORY_ATTRIBUTE_PRIVATE via KVM_SET_MEMORY_ATTRIBUTES as needed.
+> 
+> In pKVM, guest memory is private by default, and most of it will
+> remain so for the lifetime of the VM. Userspace could explicitly mark
+> all the guest's memory as private at initialization, but it would save
+> a slight amount of work. That said, I understand that it might be
+> better to be consistent across implementations.
+
+Yeah, we discussed this in v12[*].  The default really doesn't matter for memory
+overheads or performances once supports range-based xarray entries, and if that
+isn't sufficient, KVM can internally invert the polarity of PRIVATE.
+
+But for the ABI, I think we put a stake in the ground and say that all memory is
+shared by default.  That way CoCo VMs and regular VMs (i.e VMs without the concept
+of private memory) all have the same ABI.  Practically speaking, the cost to pKVM
+(and likely every other CoCo VM type) is a single ioctl() during VM creation to
+"convert" all memory to private.
+
+[*] https://lore.kernel.org/all/ZRw6X2BptZnRPNK7 at google.com
+
+> > --- /dev/null
+> > +++ b/virt/kvm/guest_memfd.c
+> > @@ -0,0 +1,548 @@
+> > +// SPDX-License-Identifier: GPL-2.0
+> > +#include <linux/backing-dev.h>
+> > +#include <linux/falloc.h>
+> > +#include <linux/kvm_host.h>
+> > +#include <linux/pagemap.h>
+> > +#include <linux/anon_inodes.h>
+> 
+> nit: should this include be first (to maintain alphabetical ordering
+> of the includes)?
+
+Heh, yeah.  I would argue this isn't a nit though ;-)
+
+> > +static long kvm_gmem_punch_hole(struct inode *inode, loff_t offset, loff_t len)
+> > +{
+> > +       struct list_head *gmem_list = &inode->i_mapping->private_list;
+> > +       pgoff_t start = offset >> PAGE_SHIFT;
+> > +       pgoff_t end = (offset + len) >> PAGE_SHIFT;
+> > +       struct kvm_gmem *gmem;
+> > +
+> > +       /*
+> > +        * Bindings must stable across invalidation to ensure the start+end
+> 
+> nit: Bindings must _be/stay?_ stable
+
+"be" is what's intended.
+
+> ...
+> 
+> > diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+> > index 78a0b09ef2a5..5d1a2f1b4e94 100644
+> > --- a/virt/kvm/kvm_main.c
+> > +++ b/virt/kvm/kvm_main.c
+> > @@ -798,7 +798,7 @@ void kvm_mmu_invalidate_range_add(struct kvm *kvm, gfn_t start, gfn_t end)
+> >         }
+> >  }
+> >
+> > -static bool kvm_mmu_unmap_gfn_range(struct kvm *kvm, struct kvm_gfn_range *range)
+> > +bool kvm_mmu_unmap_gfn_range(struct kvm *kvm, struct kvm_gfn_range *range)
+> >  {
+> >         kvm_mmu_invalidate_range_add(kvm, range->start, range->end);
+> >         return kvm_unmap_gfn_range(kvm, range);
+> > @@ -1034,6 +1034,9 @@ static void kvm_destroy_dirty_bitmap(struct kvm_memory_slot *memslot)
+> >  /* This does not remove the slot from struct kvm_memslots data structures */
+> >  static void kvm_free_memslot(struct kvm *kvm, struct kvm_memory_slot *slot)
+> >  {
+> > +       if (slot->flags & KVM_MEM_PRIVATE)
+> > +               kvm_gmem_unbind(slot);
+> > +
+> 
+> Should this be called after kvm_arch_free_memslot()? Arch-specific ode
+> might need some of the data before the unbinding, something I thought
+> might be necessary at one point for the pKVM port when deleting a
+> memslot, but realized later that kvm_invalidate_memslot() ->
+> kvm_arch_guest_memory_reclaimed() was the more logical place for it.
+> Also, since that seems to be the pattern for arch-specific handlers in
+> KVM.
+
+Maybe?  But only if we can about symmetry between the allocation and free paths
+I really don't think kvm_arch_free_memslot() should be doing anything beyond a
+"pure" free.  E.g. kvm_arch_free_memslot() is also called after moving a memslot,
+which hopefully we never actually have to allow for guest_memfd, but any code in
+kvm_arch_free_memslot() would bring about "what if" questions regarding memslot
+movement.  I.e. the API is intended to be a "free arch metadata associated with
+the memslot".
+
+Out of curiosity, what does pKVM need to do at kvm_arch_guest_memory_reclaimed()?
 
