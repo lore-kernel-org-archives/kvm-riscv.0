@@ -1,43 +1,117 @@
-From: Xiaoyao Li <xiaoyao.li@intel.com>
-Date: Tue, 31 Oct 2023 10:27:56 +0800
+From: Chao Gao <chao.gao@intel.com>
+Date: Tue, 31 Oct 2023 14:30:20 +0800
 Subject: [PATCH v13 16/35] KVM: Add KVM_CREATE_GUEST_MEMFD ioctl() for
  guest-specific backing memory
 In-Reply-To: <20231027182217.3615211-17-seanjc@google.com>
 References: <20231027182217.3615211-1-seanjc@google.com>
  <20231027182217.3615211-17-seanjc@google.com>
-Message-ID: <aecdc915-8541-4933-b8cd-04ce0ade68e6@intel.com>
+Message-ID: <ZUCe/PGL2Q4OzDOX@chao-email>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 10/28/2023 2:21 AM, Sean Christopherson wrote:
-...
-> +KVM_SET_USER_MEMORY_REGION2 is an extension to KVM_SET_USER_MEMORY_REGION that
-> +allows mapping guest_memfd memory into a guest.  All fields shared with
-> +KVM_SET_USER_MEMORY_REGION identically.  Userspace can set KVM_MEM_PRIVATE in
-> +flags to have KVM bind the memory region to a given guest_memfd range of
-> +[guest_memfd_offset, guest_memfd_offset + memory_size].  The target guest_memfd
-> +must point at a file created via KVM_CREATE_GUEST_MEMFD on the current VM, and
-> +the target range must not be bound to any other memory region.  All standard
-> +bounds checks apply (use common sense).
-> +
->   ::
->   
->     struct kvm_userspace_memory_region2 {
-> @@ -6087,9 +6096,24 @@ applied.
->   	__u64 guest_phys_addr;
->   	__u64 memory_size; /* bytes */
->   	__u64 userspace_addr; /* start of the userspace allocated memory */
-> +  __u64 guest_memfd_offset;
+>+int kvm_gmem_create(struct kvm *kvm, struct kvm_create_guest_memfd *args)
+>+{
+>+	loff_t size = args->size;
+>+	u64 flags = args->flags;
+>+	u64 valid_flags = 0;
+>+
+>+	if (flags & ~valid_flags)
+>+		return -EINVAL;
+>+
+>+	if (size < 0 || !PAGE_ALIGNED(size))
+>+		return -EINVAL;
 
-missing a tab
+is size == 0 a valid case?
 
-> +	__u32 guest_memfd;
-> +	__u32 pad1;
-> +	__u64 pad2[14];
->     };
->   
+>+int kvm_gmem_bind(struct kvm *kvm, struct kvm_memory_slot *slot,
+>+		  unsigned int fd, loff_t offset)
+>+{
+>+	loff_t size = slot->npages << PAGE_SHIFT;
+>+	unsigned long start, end;
+>+	struct kvm_gmem *gmem;
+>+	struct inode *inode;
+>+	struct file *file;
+>+
+>+	BUILD_BUG_ON(sizeof(gfn_t) != sizeof(slot->gmem.pgoff));
+>+
+>+	file = fget(fd);
+>+	if (!file)
+>+		return -EBADF;
+>+
+>+	if (file->f_op != &kvm_gmem_fops)
+>+		goto err;
+>+
+>+	gmem = file->private_data;
+>+	if (gmem->kvm != kvm)
+>+		goto err;
+>+
+>+	inode = file_inode(file);
+>+
+>+	if (offset < 0 || !PAGE_ALIGNED(offset))
+>+		return -EINVAL;
 
+		goto err;
+
+or hoist the check above fget().
+
+>+
+>+	if (offset + size > i_size_read(inode))
+>+		goto err;
+>+
+>+	filemap_invalidate_lock(inode->i_mapping);
+>+
+>+	start = offset >> PAGE_SHIFT;
+>+	end = start + slot->npages;
+>+
+>+	if (!xa_empty(&gmem->bindings) &&
+>+	    xa_find(&gmem->bindings, &start, end - 1, XA_PRESENT)) {
+>+		filemap_invalidate_unlock(inode->i_mapping);
+>+		goto err;
+>+	}
+>+
+>+	/*
+>+	 * No synchronize_rcu() needed, any in-flight readers are guaranteed to
+>+	 * be see either a NULL file or this new file, no need for them to go
+>+	 * away.
+>+	 */
+>+	rcu_assign_pointer(slot->gmem.file, file);
+>+	slot->gmem.pgoff = start;
+>+
+>+	xa_store_range(&gmem->bindings, start, end - 1, slot, GFP_KERNEL);
+>+	filemap_invalidate_unlock(inode->i_mapping);
+>+
+>+	/*
+>+	 * Drop the reference to the file, even on success.  The file pins KVM,
+>+	 * not the other way 'round.  Active bindings are invalidated if the
+>+	 * file is closed before memslots are destroyed.
+>+	 */
+>+	fput(file);
+>+	return 0;
+>+
+>+err:
+>+	fput(file);
+>+	return -EINVAL;
+
+The cleanup, i.e., filemap_invalidate_unlock() and fput(), is common. So, I think it
+may be slightly better to consolidate the common part e.g.,
+
+	int ret = -EINVAL;
+
+	...
+
+	xa_store_range(&gmem->bindings, start, end - 1, slot, GFP_KERNEL);
+	ret = 0;
+unlock:
+	filemap_invalidate_unlock(inode->i_mapping);
+err:
+	/*
+	 * Drop the reference to the file, even on success.  The file pins KVM,
+	 * not the other way 'round.  Active bindings are invalidated if the
+	 * file is closed before memslots are destroyed.
+	 */
+	fput(file);
+	return ret;
 
