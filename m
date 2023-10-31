@@ -1,109 +1,46 @@
-From: Paolo Bonzini <pbonzini@redhat.com>
-Date: Tue, 31 Oct 2023 15:09:59 +0100
-Subject: [GIT PULL] KVM/riscv changes for 6.7
-In-Reply-To: <CAAhSdy2dg61z7=vsrOqwxHoV1GBvaAzcdUY4o6pLmTNM0WV5ig@mail.gmail.com>
-References: <CAAhSdy2dg61z7=vsrOqwxHoV1GBvaAzcdUY4o6pLmTNM0WV5ig@mail.gmail.com>
-Message-ID: <CABgObfauR28ttiM1cmM7jU-Xn8pPM0yhcqd2pfqy-6e4xZujEQ@mail.gmail.com>
+From: Sean Christopherson <seanjc@google.com>
+Date: Tue, 31 Oct 2023 07:16:15 -0700
+Subject: [PATCH v13 17/35] KVM: Add transparent hugepage support for
+ dedicated guest memory
+In-Reply-To: <7c0844d8-6f97-4904-a140-abeabeb552c1@intel.com>
+References: <20231027182217.3615211-1-seanjc@google.com> <20231027182217.3615211-18-seanjc@google.com>
+ <7c0844d8-6f97-4904-a140-abeabeb552c1@intel.com>
+Message-ID: <ZUEML6oJXDCFJ9fg@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Oct 24, 2023 at 9:58?AM Anup Patel <anup@brainfault.org> wrote:
->
-> Hi Paolo,
->
-> We have the following KVM RISC-V changes for 6.7:
-> 1) Smstateen and Zicond support for Guest/VM
-> 2) Virtualized senvcfg CSR for Guest/VM
-> 3) Added Smstateen registers to the get-reg-list selftests
-> 4) Added Zicond to the get-reg-list selftests
-> 5) Virtualized SBI debug console (DBCN) for Guest/VM
-> 6) Added SBI debug console (DBCN) to the get-reg-list selftests
->
-> Please pull.
+On Tue, Oct 31, 2023, Xiaoyao Li wrote:
+> On 10/28/2023 2:21 AM, Sean Christopherson wrote:
+> > Extended guest_memfd to allow backing guest memory with transparent
+> > hugepages. Require userspace to opt-in via a flag even though there's no
+> > known/anticipated use case for forcing small pages as THP is optional,
+> > i.e. to avoid ending up in a situation where userspace is unaware that
+> > KVM can't provide hugepages.
+> 
+> Personally, it seems not so "transparent" if requiring userspace to opt-in.
+> 
+> People need to 1) check if the kernel built with TRANSPARENT_HUGEPAGE
+> support, or check is the sysfs of transparent hugepage exists; 2)get the
+> maximum support hugepage size 3) ensure the size satisfies the alignment;
+> before opt-in it.
+> 
+> Even simpler, userspace can blindly try to create guest memfd with
+> transparent hugapage flag. If getting error, fallback to create without the
+> transparent hugepage flag.
+> 
+> However, it doesn't look transparent to me.
 
-Done, thanks.
+The "transparent" part is referring to the underlying kernel mechanism, it's not
+saying anything about the API.  The "transparent" part of THP is that the kernel
+doesn't guarantee hugepages, i.e. whether or not hugepages are actually used is
+(mostly) transparent to userspace.
 
-Paolo
+Paolo also isn't the biggest fan[*], but there are also downsides to always
+allowing hugepages, e.g. silent failure due to lack of THP or unaligned size,
+and there's precedent in the form of MADV_HUGEPAGE.
 
-> Please note that the following four patches are part of the
-> shared tag kvm-riscv-shared-tag-6.7 provided to Palmer:
->  - dt-bindings: riscv: Add Zicond extension entry
->  - RISC-V: Detect Zicond from ISA string
->  - dt-bindings: riscv: Add smstateen entry
->  - RISC-V: Detect Smstateen extension
->
-> Regards,
-> Anup
->
-> The following changes since commit 94f6f0550c625fab1f373bb86a6669b45e9748b3:
->
->   Linux 6.6-rc5 (2023-10-08 13:49:43 -0700)
->
-> are available in the Git repository at:
->
->   https://github.com/kvm-riscv/linux.git tags/kvm-riscv-6.7-1
->
-> for you to fetch changes up to d9c00f44e5de542340cce1d09e2c990e16c0ed3a:
->
->   KVM: riscv: selftests: Add SBI DBCN extension to get-reg-list test
-> (2023-10-20 16:50:39 +0530)
->
-> ----------------------------------------------------------------
-> KVM/riscv changes for 6.7
->
-> - Smstateen and Zicond support for Guest/VM
-> - Virtualized senvcfg CSR for Guest/VM
-> - Added Smstateen registers to the get-reg-list selftests
-> - Added Zicond to the get-reg-list selftests
-> - Virtualized SBI debug console (DBCN) for Guest/VM
-> - Added SBI debug console (DBCN) to the get-reg-list selftests
->
-> ----------------------------------------------------------------
-> Andrew Jones (3):
->       MAINTAINERS: RISC-V: KVM: Add another kselftests path
->       KVM: selftests: Add array order helpers to riscv get-reg-list
->       KVM: riscv: selftests: get-reg-list print_reg should never fail
->
-> Anup Patel (11):
->       RISC-V: Detect Zicond from ISA string
->       dt-bindings: riscv: Add Zicond extension entry
->       RISC-V: KVM: Allow Zicond extension for Guest/VM
->       KVM: riscv: selftests: Add senvcfg register to get-reg-list test
->       KVM: riscv: selftests: Add smstateen registers to get-reg-list test
->       KVM: riscv: selftests: Add condops extensions to get-reg-list test
->       RISC-V: Add defines for SBI debug console extension
->       RISC-V: KVM: Change the SBI specification version to v2.0
->       RISC-V: KVM: Allow some SBI extensions to be disabled by default
->       RISC-V: KVM: Forward SBI DBCN extension to user-space
->       KVM: riscv: selftests: Add SBI DBCN extension to get-reg-list test
->
-> Mayuresh Chitale (7):
->       RISC-V: Detect Smstateen extension
->       dt-bindings: riscv: Add smstateen entry
->       RISC-V: KVM: Add kvm_vcpu_config
->       RISC-V: KVM: Enable Smstateen accesses
->       RISCV: KVM: Add senvcfg context save/restore
->       RISCV: KVM: Add sstateen0 context save/restore
->       RISCV: KVM: Add sstateen0 to ONE_REG
->
->  .../devicetree/bindings/riscv/extensions.yaml      |  12 ++
->  MAINTAINERS                                        |   1 +
->  arch/riscv/include/asm/csr.h                       |  18 ++
->  arch/riscv/include/asm/hwcap.h                     |   2 +
->  arch/riscv/include/asm/kvm_host.h                  |  18 ++
->  arch/riscv/include/asm/kvm_vcpu_sbi.h              |   7 +-
->  arch/riscv/include/asm/sbi.h                       |   7 +
->  arch/riscv/include/uapi/asm/kvm.h                  |  12 ++
->  arch/riscv/kernel/cpufeature.c                     |   2 +
->  arch/riscv/kvm/vcpu.c                              |  76 +++++--
->  arch/riscv/kvm/vcpu_onereg.c                       |  72 ++++++-
->  arch/riscv/kvm/vcpu_sbi.c                          |  61 +++---
->  arch/riscv/kvm/vcpu_sbi_replace.c                  |  32 +++
->  tools/testing/selftests/kvm/riscv/get-reg-list.c   | 233 +++++++++++++--------
->  14 files changed, 418 insertions(+), 135 deletions(-)
->
-
+[*] https://lore.kernel.org/all/84a908ae-04c7-51c7-c9a8-119e1933a189 at redhat.com
 
