@@ -1,117 +1,34 @@
-From: Chao Gao <chao.gao@intel.com>
-Date: Tue, 31 Oct 2023 14:30:20 +0800
-Subject: [PATCH v13 16/35] KVM: Add KVM_CREATE_GUEST_MEMFD ioctl() for
- guest-specific backing memory
-In-Reply-To: <20231027182217.3615211-17-seanjc@google.com>
+From: Xiaoyao Li <xiaoyao.li@intel.com>
+Date: Tue, 31 Oct 2023 16:35:08 +0800
+Subject: [PATCH v13 17/35] KVM: Add transparent hugepage support for
+ dedicated guest memory
+In-Reply-To: <20231027182217.3615211-18-seanjc@google.com>
 References: <20231027182217.3615211-1-seanjc@google.com>
- <20231027182217.3615211-17-seanjc@google.com>
-Message-ID: <ZUCe/PGL2Q4OzDOX@chao-email>
+ <20231027182217.3615211-18-seanjc@google.com>
+Message-ID: <7c0844d8-6f97-4904-a140-abeabeb552c1@intel.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
->+int kvm_gmem_create(struct kvm *kvm, struct kvm_create_guest_memfd *args)
->+{
->+	loff_t size = args->size;
->+	u64 flags = args->flags;
->+	u64 valid_flags = 0;
->+
->+	if (flags & ~valid_flags)
->+		return -EINVAL;
->+
->+	if (size < 0 || !PAGE_ALIGNED(size))
->+		return -EINVAL;
+On 10/28/2023 2:21 AM, Sean Christopherson wrote:
+> Extended guest_memfd to allow backing guest memory with transparent 
+> hugepages. Require userspace to opt-in via a flag even though there's no 
+> known/anticipated use case for forcing small pages as THP is optional, 
+> i.e. to avoid ending up in a situation where userspace is unaware that 
+> KVM can't provide hugepages.
 
-is size == 0 a valid case?
+Personally, it seems not so "transparent" if requiring userspace to opt-in.
 
->+int kvm_gmem_bind(struct kvm *kvm, struct kvm_memory_slot *slot,
->+		  unsigned int fd, loff_t offset)
->+{
->+	loff_t size = slot->npages << PAGE_SHIFT;
->+	unsigned long start, end;
->+	struct kvm_gmem *gmem;
->+	struct inode *inode;
->+	struct file *file;
->+
->+	BUILD_BUG_ON(sizeof(gfn_t) != sizeof(slot->gmem.pgoff));
->+
->+	file = fget(fd);
->+	if (!file)
->+		return -EBADF;
->+
->+	if (file->f_op != &kvm_gmem_fops)
->+		goto err;
->+
->+	gmem = file->private_data;
->+	if (gmem->kvm != kvm)
->+		goto err;
->+
->+	inode = file_inode(file);
->+
->+	if (offset < 0 || !PAGE_ALIGNED(offset))
->+		return -EINVAL;
+People need to 1) check if the kernel built with TRANSPARENT_HUGEPAGE 
+support, or check is the sysfs of transparent hugepage exists; 2)get the 
+maximum support hugepage size 3) ensure the size satisfies the 
+alignment; before opt-in it.
 
-		goto err;
+Even simpler, userspace can blindly try to create guest memfd with 
+transparent hugapage flag. If getting error, fallback to create without 
+the transparent hugepage flag.
 
-or hoist the check above fget().
-
->+
->+	if (offset + size > i_size_read(inode))
->+		goto err;
->+
->+	filemap_invalidate_lock(inode->i_mapping);
->+
->+	start = offset >> PAGE_SHIFT;
->+	end = start + slot->npages;
->+
->+	if (!xa_empty(&gmem->bindings) &&
->+	    xa_find(&gmem->bindings, &start, end - 1, XA_PRESENT)) {
->+		filemap_invalidate_unlock(inode->i_mapping);
->+		goto err;
->+	}
->+
->+	/*
->+	 * No synchronize_rcu() needed, any in-flight readers are guaranteed to
->+	 * be see either a NULL file or this new file, no need for them to go
->+	 * away.
->+	 */
->+	rcu_assign_pointer(slot->gmem.file, file);
->+	slot->gmem.pgoff = start;
->+
->+	xa_store_range(&gmem->bindings, start, end - 1, slot, GFP_KERNEL);
->+	filemap_invalidate_unlock(inode->i_mapping);
->+
->+	/*
->+	 * Drop the reference to the file, even on success.  The file pins KVM,
->+	 * not the other way 'round.  Active bindings are invalidated if the
->+	 * file is closed before memslots are destroyed.
->+	 */
->+	fput(file);
->+	return 0;
->+
->+err:
->+	fput(file);
->+	return -EINVAL;
-
-The cleanup, i.e., filemap_invalidate_unlock() and fput(), is common. So, I think it
-may be slightly better to consolidate the common part e.g.,
-
-	int ret = -EINVAL;
-
-	...
-
-	xa_store_range(&gmem->bindings, start, end - 1, slot, GFP_KERNEL);
-	ret = 0;
-unlock:
-	filemap_invalidate_unlock(inode->i_mapping);
-err:
-	/*
-	 * Drop the reference to the file, even on success.  The file pins KVM,
-	 * not the other way 'round.  Active bindings are invalidated if the
-	 * file is closed before memslots are destroyed.
-	 */
-	fput(file);
-	return ret;
+However, it doesn't look transparent to me.
 
