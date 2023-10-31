@@ -1,67 +1,109 @@
-From: Sean Christopherson <seanjc@google.com>
-Date: Tue, 31 Oct 2023 07:10:08 -0700
-Subject: [PATCH v13 16/35] KVM: Add KVM_CREATE_GUEST_MEMFD ioctl() for
- guest-specific backing memory
-In-Reply-To: <ZUCe/PGL2Q4OzDOX@chao-email>
-References: <20231027182217.3615211-1-seanjc@google.com> <20231027182217.3615211-17-seanjc@google.com>
- <ZUCe/PGL2Q4OzDOX@chao-email>
-Message-ID: <ZUEKwOQoibAEWAzU@google.com>
+From: Paolo Bonzini <pbonzini@redhat.com>
+Date: Tue, 31 Oct 2023 15:09:59 +0100
+Subject: [GIT PULL] KVM/riscv changes for 6.7
+In-Reply-To: <CAAhSdy2dg61z7=vsrOqwxHoV1GBvaAzcdUY4o6pLmTNM0WV5ig@mail.gmail.com>
+References: <CAAhSdy2dg61z7=vsrOqwxHoV1GBvaAzcdUY4o6pLmTNM0WV5ig@mail.gmail.com>
+Message-ID: <CABgObfauR28ttiM1cmM7jU-Xn8pPM0yhcqd2pfqy-6e4xZujEQ@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Oct 31, 2023, Chao Gao wrote:
-> >+int kvm_gmem_create(struct kvm *kvm, struct kvm_create_guest_memfd *args)
-> >+{
-> >+	loff_t size = args->size;
-> >+	u64 flags = args->flags;
-> >+	u64 valid_flags = 0;
-> >+
-> >+	if (flags & ~valid_flags)
-> >+		return -EINVAL;
-> >+
-> >+	if (size < 0 || !PAGE_ALIGNED(size))
-> >+		return -EINVAL;
-> 
-> is size == 0 a valid case?
+On Tue, Oct 24, 2023 at 9:58?AM Anup Patel <anup@brainfault.org> wrote:
+>
+> Hi Paolo,
+>
+> We have the following KVM RISC-V changes for 6.7:
+> 1) Smstateen and Zicond support for Guest/VM
+> 2) Virtualized senvcfg CSR for Guest/VM
+> 3) Added Smstateen registers to the get-reg-list selftests
+> 4) Added Zicond to the get-reg-list selftests
+> 5) Virtualized SBI debug console (DBCN) for Guest/VM
+> 6) Added SBI debug console (DBCN) to the get-reg-list selftests
+>
+> Please pull.
 
-Nope, this is a bug.
+Done, thanks.
 
-> >+	if (!xa_empty(&gmem->bindings) &&
-> >+	    xa_find(&gmem->bindings, &start, end - 1, XA_PRESENT)) {
-> >+		filemap_invalidate_unlock(inode->i_mapping);
-> >+		goto err;
-> >+	}
-> >+
-> >+	/*
-> >+	 * No synchronize_rcu() needed, any in-flight readers are guaranteed to
-> >+	 * be see either a NULL file or this new file, no need for them to go
-> >+	 * away.
-> >+	 */
-> >+	rcu_assign_pointer(slot->gmem.file, file);
-> >+	slot->gmem.pgoff = start;
-> >+
-> >+	xa_store_range(&gmem->bindings, start, end - 1, slot, GFP_KERNEL);
-> >+	filemap_invalidate_unlock(inode->i_mapping);
-> >+
-> >+	/*
-> >+	 * Drop the reference to the file, even on success.  The file pins KVM,
-> >+	 * not the other way 'round.  Active bindings are invalidated if the
-> >+	 * file is closed before memslots are destroyed.
-> >+	 */
-> >+	fput(file);
-> >+	return 0;
-> >+
-> >+err:
-> >+	fput(file);
-> >+	return -EINVAL;
-> 
-> The cleanup, i.e., filemap_invalidate_unlock() and fput(), is common. So, I think it
-> may be slightly better to consolidate the common part e.g.,
+Paolo
 
-I would prefer to keep this as-is.  Only goto needs the unlock, and I find it easier
-to understand the success vs. error paths with explicit returns.  But it's not a
-super strong preference.
+> Please note that the following four patches are part of the
+> shared tag kvm-riscv-shared-tag-6.7 provided to Palmer:
+>  - dt-bindings: riscv: Add Zicond extension entry
+>  - RISC-V: Detect Zicond from ISA string
+>  - dt-bindings: riscv: Add smstateen entry
+>  - RISC-V: Detect Smstateen extension
+>
+> Regards,
+> Anup
+>
+> The following changes since commit 94f6f0550c625fab1f373bb86a6669b45e9748b3:
+>
+>   Linux 6.6-rc5 (2023-10-08 13:49:43 -0700)
+>
+> are available in the Git repository at:
+>
+>   https://github.com/kvm-riscv/linux.git tags/kvm-riscv-6.7-1
+>
+> for you to fetch changes up to d9c00f44e5de542340cce1d09e2c990e16c0ed3a:
+>
+>   KVM: riscv: selftests: Add SBI DBCN extension to get-reg-list test
+> (2023-10-20 16:50:39 +0530)
+>
+> ----------------------------------------------------------------
+> KVM/riscv changes for 6.7
+>
+> - Smstateen and Zicond support for Guest/VM
+> - Virtualized senvcfg CSR for Guest/VM
+> - Added Smstateen registers to the get-reg-list selftests
+> - Added Zicond to the get-reg-list selftests
+> - Virtualized SBI debug console (DBCN) for Guest/VM
+> - Added SBI debug console (DBCN) to the get-reg-list selftests
+>
+> ----------------------------------------------------------------
+> Andrew Jones (3):
+>       MAINTAINERS: RISC-V: KVM: Add another kselftests path
+>       KVM: selftests: Add array order helpers to riscv get-reg-list
+>       KVM: riscv: selftests: get-reg-list print_reg should never fail
+>
+> Anup Patel (11):
+>       RISC-V: Detect Zicond from ISA string
+>       dt-bindings: riscv: Add Zicond extension entry
+>       RISC-V: KVM: Allow Zicond extension for Guest/VM
+>       KVM: riscv: selftests: Add senvcfg register to get-reg-list test
+>       KVM: riscv: selftests: Add smstateen registers to get-reg-list test
+>       KVM: riscv: selftests: Add condops extensions to get-reg-list test
+>       RISC-V: Add defines for SBI debug console extension
+>       RISC-V: KVM: Change the SBI specification version to v2.0
+>       RISC-V: KVM: Allow some SBI extensions to be disabled by default
+>       RISC-V: KVM: Forward SBI DBCN extension to user-space
+>       KVM: riscv: selftests: Add SBI DBCN extension to get-reg-list test
+>
+> Mayuresh Chitale (7):
+>       RISC-V: Detect Smstateen extension
+>       dt-bindings: riscv: Add smstateen entry
+>       RISC-V: KVM: Add kvm_vcpu_config
+>       RISC-V: KVM: Enable Smstateen accesses
+>       RISCV: KVM: Add senvcfg context save/restore
+>       RISCV: KVM: Add sstateen0 context save/restore
+>       RISCV: KVM: Add sstateen0 to ONE_REG
+>
+>  .../devicetree/bindings/riscv/extensions.yaml      |  12 ++
+>  MAINTAINERS                                        |   1 +
+>  arch/riscv/include/asm/csr.h                       |  18 ++
+>  arch/riscv/include/asm/hwcap.h                     |   2 +
+>  arch/riscv/include/asm/kvm_host.h                  |  18 ++
+>  arch/riscv/include/asm/kvm_vcpu_sbi.h              |   7 +-
+>  arch/riscv/include/asm/sbi.h                       |   7 +
+>  arch/riscv/include/uapi/asm/kvm.h                  |  12 ++
+>  arch/riscv/kernel/cpufeature.c                     |   2 +
+>  arch/riscv/kvm/vcpu.c                              |  76 +++++--
+>  arch/riscv/kvm/vcpu_onereg.c                       |  72 ++++++-
+>  arch/riscv/kvm/vcpu_sbi.c                          |  61 +++---
+>  arch/riscv/kvm/vcpu_sbi_replace.c                  |  32 +++
+>  tools/testing/selftests/kvm/riscv/get-reg-list.c   | 233 +++++++++++++--------
+>  14 files changed, 418 insertions(+), 135 deletions(-)
+>
+
 
