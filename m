@@ -1,58 +1,140 @@
-From: Huang, Kai <kai.huang@intel.com>
-Date: Wed, 1 Nov 2023 10:52:47 +0000
-Subject: [PATCH v13 09/35] KVM: Add KVM_EXIT_MEMORY_FAULT exit to report
- faults to userspace
-In-Reply-To: <20231027182217.3615211-10-seanjc@google.com>
-References: <20231027182217.3615211-1-seanjc@google.com>
-	 <20231027182217.3615211-10-seanjc@google.com>
-Message-ID: <482bfea6f54ea1bb7d1ad75e03541d0ba0e5be6f.camel@intel.com>
+From: Fuad Tabba <tabba@google.com>
+Date: Wed, 1 Nov 2023 12:46:02 +0000
+Subject: [PATCH v13 01/35] KVM: Tweak kvm_hva_range and hva_handler_t to
+ allow reusing for gfn ranges
+In-Reply-To: <20231027182217.3615211-2-seanjc@google.com>
+References: <20231027182217.3615211-1-seanjc@google.com> <20231027182217.3615211-2-seanjc@google.com>
+Message-ID: <CA+EHjTy5tmgGmVNGTX4a2Engb+r1AQizsMxwb8xqOi1f9+VQLA@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+On Fri, Oct 27, 2023 at 7:22?PM Sean Christopherson <seanjc@google.com> wrote:
+>
+> Rework and rename "struct kvm_hva_range" into "kvm_mmu_notifier_range" so
+> that the structure can be used to handle notifications that operate on gfn
+> context, i.e. that aren't tied to a host virtual address.  Rename the
+> handler typedef too (arguably it should always have been gfn_handler_t).
+>
+> Practically speaking, this is a nop for 64-bit kernels as the only
+> meaningful change is to store start+end as u64s instead of unsigned longs.
+>
+> Reviewed-by: Paolo Bonzini <pbonzini@redhat.com>
+> Reviewed-by: Xiaoyao Li <xiaoyao.li@intel.com>
+> Signed-off-by: Sean Christopherson <seanjc@google.com>
+> ---
 
-> +7.34 KVM_CAP_MEMORY_FAULT_INFO
-> +------------------------------
-> +
-> +:Architectures: x86
-> +:Returns: Informational only, -EINVAL on direct KVM_ENABLE_CAP.
-> +
-> +The presence of this capability indicates that KVM_RUN will fill
-> +kvm_run.memory_fault if KVM cannot resolve a guest page fault VM-Exit, e.g. if
-> +there is a valid memslot but no backing VMA for the corresponding host virtual
-> +address.
-> +
-> +The information in kvm_run.memory_fault is valid if and only if KVM_RUN returns
-> +an error with errno=EFAULT or errno=EHWPOISON *and* kvm_run.exit_reason is set
-> +to KVM_EXIT_MEMORY_FAULT.
+Reviewed-by: Fuad Tabba <tabba@google.com>
+Tested-by: Fuad Tabba <tabba@google.com>
 
-IIUC returning -EFAULT or whatever -errno is sort of KVM internal
-implementation.  Is it better to relax the validity of kvm_run.memory_fault when
-KVM_RUN returns any -errno?
-
-[...]
+Cheers,
+/fuad
 
 
-> --- a/include/linux/kvm_host.h
-> +++ b/include/linux/kvm_host.h
-> @@ -2327,4 +2327,15 @@ static inline void kvm_account_pgtable_pages(void *virt, int nr)
->  /* Max number of entries allowed for each kvm dirty ring */
->  #define  KVM_DIRTY_RING_MAX_ENTRIES  65536
->  
-> +static inline void kvm_prepare_memory_fault_exit(struct kvm_vcpu *vcpu,
-> +						 gpa_t gpa, gpa_t size)
-> +{
-> +	vcpu->run->exit_reason = KVM_EXIT_MEMORY_FAULT;
-> +	vcpu->run->memory_fault.gpa = gpa;
-> +	vcpu->run->memory_fault.size = size;
-> +
-> +	/* Flags are not (yet) defined or communicated to userspace. */
-> +	vcpu->run->memory_fault.flags = 0;
-> +}
-> +
-
-KVM_CAP_MEMORY_FAULT_INFO is x86 only, is it better to put this function to
-<asm/kvm_host.h>?
+>  virt/kvm/kvm_main.c | 34 +++++++++++++++++++---------------
+>  1 file changed, 19 insertions(+), 15 deletions(-)
+>
+> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+> index 486800a7024b..0524933856d4 100644
+> --- a/virt/kvm/kvm_main.c
+> +++ b/virt/kvm/kvm_main.c
+> @@ -541,18 +541,22 @@ static inline struct kvm *mmu_notifier_to_kvm(struct mmu_notifier *mn)
+>         return container_of(mn, struct kvm, mmu_notifier);
+>  }
+>
+> -typedef bool (*hva_handler_t)(struct kvm *kvm, struct kvm_gfn_range *range);
+> +typedef bool (*gfn_handler_t)(struct kvm *kvm, struct kvm_gfn_range *range);
+>
+>  typedef void (*on_lock_fn_t)(struct kvm *kvm, unsigned long start,
+>                              unsigned long end);
+>
+>  typedef void (*on_unlock_fn_t)(struct kvm *kvm);
+>
+> -struct kvm_hva_range {
+> -       unsigned long start;
+> -       unsigned long end;
+> +struct kvm_mmu_notifier_range {
+> +       /*
+> +        * 64-bit addresses, as KVM notifiers can operate on host virtual
+> +        * addresses (unsigned long) and guest physical addresses (64-bit).
+> +        */
+> +       u64 start;
+> +       u64 end;
+>         union kvm_mmu_notifier_arg arg;
+> -       hva_handler_t handler;
+> +       gfn_handler_t handler;
+>         on_lock_fn_t on_lock;
+>         on_unlock_fn_t on_unlock;
+>         bool flush_on_ret;
+> @@ -581,7 +585,7 @@ static const union kvm_mmu_notifier_arg KVM_MMU_NOTIFIER_NO_ARG;
+>              node = interval_tree_iter_next(node, start, last))      \
+>
+>  static __always_inline int __kvm_handle_hva_range(struct kvm *kvm,
+> -                                                 const struct kvm_hva_range *range)
+> +                                                 const struct kvm_mmu_notifier_range *range)
+>  {
+>         bool ret = false, locked = false;
+>         struct kvm_gfn_range gfn_range;
+> @@ -608,9 +612,9 @@ static __always_inline int __kvm_handle_hva_range(struct kvm *kvm,
+>                         unsigned long hva_start, hva_end;
+>
+>                         slot = container_of(node, struct kvm_memory_slot, hva_node[slots->node_idx]);
+> -                       hva_start = max(range->start, slot->userspace_addr);
+> -                       hva_end = min(range->end, slot->userspace_addr +
+> -                                                 (slot->npages << PAGE_SHIFT));
+> +                       hva_start = max_t(unsigned long, range->start, slot->userspace_addr);
+> +                       hva_end = min_t(unsigned long, range->end,
+> +                                       slot->userspace_addr + (slot->npages << PAGE_SHIFT));
+>
+>                         /*
+>                          * To optimize for the likely case where the address
+> @@ -660,10 +664,10 @@ static __always_inline int kvm_handle_hva_range(struct mmu_notifier *mn,
+>                                                 unsigned long start,
+>                                                 unsigned long end,
+>                                                 union kvm_mmu_notifier_arg arg,
+> -                                               hva_handler_t handler)
+> +                                               gfn_handler_t handler)
+>  {
+>         struct kvm *kvm = mmu_notifier_to_kvm(mn);
+> -       const struct kvm_hva_range range = {
+> +       const struct kvm_mmu_notifier_range range = {
+>                 .start          = start,
+>                 .end            = end,
+>                 .arg            = arg,
+> @@ -680,10 +684,10 @@ static __always_inline int kvm_handle_hva_range(struct mmu_notifier *mn,
+>  static __always_inline int kvm_handle_hva_range_no_flush(struct mmu_notifier *mn,
+>                                                          unsigned long start,
+>                                                          unsigned long end,
+> -                                                        hva_handler_t handler)
+> +                                                        gfn_handler_t handler)
+>  {
+>         struct kvm *kvm = mmu_notifier_to_kvm(mn);
+> -       const struct kvm_hva_range range = {
+> +       const struct kvm_mmu_notifier_range range = {
+>                 .start          = start,
+>                 .end            = end,
+>                 .handler        = handler,
+> @@ -771,7 +775,7 @@ static int kvm_mmu_notifier_invalidate_range_start(struct mmu_notifier *mn,
+>                                         const struct mmu_notifier_range *range)
+>  {
+>         struct kvm *kvm = mmu_notifier_to_kvm(mn);
+> -       const struct kvm_hva_range hva_range = {
+> +       const struct kvm_mmu_notifier_range hva_range = {
+>                 .start          = range->start,
+>                 .end            = range->end,
+>                 .handler        = kvm_unmap_gfn_range,
+> @@ -835,7 +839,7 @@ static void kvm_mmu_notifier_invalidate_range_end(struct mmu_notifier *mn,
+>                                         const struct mmu_notifier_range *range)
+>  {
+>         struct kvm *kvm = mmu_notifier_to_kvm(mn);
+> -       const struct kvm_hva_range hva_range = {
+> +       const struct kvm_mmu_notifier_range hva_range = {
+>                 .start          = range->start,
+>                 .end            = range->end,
+>                 .handler        = (void *)kvm_null_fn,
+> --
+> 2.42.0.820.g83a721a137-goog
+>
 
