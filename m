@@ -1,68 +1,87 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Wed, 1 Nov 2023 09:36:00 -0700
-Subject: [PATCH v13 17/35] KVM: Add transparent hugepage support for
- dedicated guest memory
-In-Reply-To: <CABgObfaw4Byuzj5J3k48jdwT0HCKXLJNiuaA9H8Dtg+GOq==Sw@mail.gmail.com>
-References: <20231027182217.3615211-1-seanjc@google.com> <20231027182217.3615211-18-seanjc@google.com>
- <7c0844d8-6f97-4904-a140-abeabeb552c1@intel.com> <ZUEML6oJXDCFJ9fg@google.com>
- <92ba7ddd-2bc8-4a8d-bd67-d6614b21914f@intel.com> <ZUJVfCkIYYFp5VwG@google.com>
- <CABgObfaw4Byuzj5J3k48jdwT0HCKXLJNiuaA9H8Dtg+GOq==Sw@mail.gmail.com>
-Message-ID: <ZUJ-cJfofk2d_I0B@google.com>
+Date: Wed, 1 Nov 2023 10:36:48 -0700
+Subject: [PATCH v13 09/35] KVM: Add KVM_EXIT_MEMORY_FAULT exit to report
+ faults to userspace
+In-Reply-To: <482bfea6f54ea1bb7d1ad75e03541d0ba0e5be6f.camel@intel.com>
+References: <20231027182217.3615211-1-seanjc@google.com> <20231027182217.3615211-10-seanjc@google.com>
+ <482bfea6f54ea1bb7d1ad75e03541d0ba0e5be6f.camel@intel.com>
+Message-ID: <ZUKMsOdg3N9wmEzy@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Nov 01, 2023, Paolo Bonzini wrote:
-> On Wed, Nov 1, 2023 at 2:41?PM Sean Christopherson <seanjc@google.com> wrote:
-> >
-> > On Wed, Nov 01, 2023, Xiaoyao Li wrote:
-> > > On 10/31/2023 10:16 PM, Sean Christopherson wrote:
-> > > > On Tue, Oct 31, 2023, Xiaoyao Li wrote:
-> > > > > On 10/28/2023 2:21 AM, Sean Christopherson wrote:
-> > > But it's different than MADV_HUGEPAGE, in a way. Per my understanding, the
-> > > failure of MADV_HUGEPAGE is not fatal, user space can ignore it and
-> > > continue.
-> > >
-> > > However, the failure of KVM_GUEST_MEMFD_ALLOW_HUGEPAGE is fatal, which leads
-> > > to failure of guest memfd creation.
-> >
-> > Failing KVM_CREATE_GUEST_MEMFD isn't truly fatal, it just requires different
-> > action from userspace, i.e. instead of ignoring the error, userspace could redo
-> > KVM_CREATE_GUEST_MEMFD with KVM_GUEST_MEMFD_ALLOW_HUGEPAGE=0.
-> >
-> > We could make the behavior more like MADV_HUGEPAGE, e.g. theoretically we could
-> > extend fadvise() with FADV_HUGEPAGE, or add a guest_memfd knob/ioctl() to let
-> > userspace provide advice/hints after creating a guest_memfd.  But I suspect that
-> > guest_memfd would be the only user of FADV_HUGEPAGE, and IMO a post-creation hint
-> > is actually less desirable.
-> >
-> > KVM_GUEST_MEMFD_ALLOW_HUGEPAGE will fail only if userspace didn't provide a
-> > compatible size or the kernel doesn't support THP.  An incompatible size is likely
-> > a userspace bug, and for most setups that want to utilize guest_memfd, lack of THP
-> > support is likely a configuration bug.  I.e. many/most uses *want* failures due to
-> > KVM_GUEST_MEMFD_ALLOW_HUGEPAGE to be fatal.
-> >
-> > > For current implementation, I think maybe KVM_GUEST_MEMFD_DESIRE_HUGEPAGE
-> > > fits better than KVM_GUEST_MEMFD_ALLOW_HUGEPAGE? or maybe *PREFER*?
-> >
-> > Why?  Verbs like "prefer" and "desire" aren't a good fit IMO because they suggest
-> > the flag is a hint, and hints are usually best effort only, i.e. are ignored if
-> > there is a fundamental incompatibility.
-> >
-> > "Allow" isn't perfect, e.g. I would much prefer a straight KVM_GUEST_MEMFD_USE_HUGEPAGES
-> > or KVM_GUEST_MEMFD_HUGEPAGES flag, but I wanted the name to convey that KVM doesn't
-> > (yet) guarantee hugepages.  I.e. KVM_GUEST_MEMFD_ALLOW_HUGEPAGE is stronger than
-> > a hint, but weaker than a requirement.  And if/when KVM supports a dedicated memory
-> > pool of some kind, then we can add KVM_GUEST_MEMFD_REQUIRE_HUGEPAGE.
+On Wed, Nov 01, 2023, Kai Huang wrote:
 > 
-> I think that the current patch is fine, but I will adjust it to always
-> allow the flag, and to make the size check even if !CONFIG_TRANSPARENT_HUGEPAGE.
-> If hugepages are not guaranteed, and (theoretically) you could have no
-> hugepage at all in the result, it's okay to get this result even if THP is not
-> available in the kernel.
+> > +7.34 KVM_CAP_MEMORY_FAULT_INFO
+> > +------------------------------
+> > +
+> > +:Architectures: x86
+> > +:Returns: Informational only, -EINVAL on direct KVM_ENABLE_CAP.
+> > +
+> > +The presence of this capability indicates that KVM_RUN will fill
+> > +kvm_run.memory_fault if KVM cannot resolve a guest page fault VM-Exit, e.g. if
+> > +there is a valid memslot but no backing VMA for the corresponding host virtual
+> > +address.
+> > +
+> > +The information in kvm_run.memory_fault is valid if and only if KVM_RUN returns
+> > +an error with errno=EFAULT or errno=EHWPOISON *and* kvm_run.exit_reason is set
+> > +to KVM_EXIT_MEMORY_FAULT.
+> 
+> IIUC returning -EFAULT or whatever -errno is sort of KVM internal
+> implementation.
 
-Can you post a fixup patch?  It's not clear to me exactly what behavior you intend
-to end up with.
+The errno that is returned to userspace is ABI.  In KVM, it's a _very_ poorly
+defined ABI for the vast majority of ioctls(), but it's still technically ABI.
+KVM gets away with being cavalier with errno because the vast majority of errors
+are considered fatal by userespace, i.e. in most cases, userspace simply doesn't
+care about the exact errno.
+
+A good example is KVM_RUN with -EINTR; if KVM were to return something other than
+-EINTR on a pending signal or vcpu->run->immediate_exit, userspace would fall over.
+
+> Is it better to relax the validity of kvm_run.memory_fault when
+> KVM_RUN returns any -errno?
+
+Not unless there's a need to do so, and if there is then we can update the
+documentation accordingly.  If KVM's ABI is that kvm_run.memory_fault is valid
+for any errno, then KVM would need to purge kvm_run.exit_reason super early in
+KVM_RUN, e.g. to prevent an -EINTR return due to immediate_exit from being
+misinterpreted as KVM_EXIT_MEMORY_FAULT.  And purging exit_reason super early is
+subtly tricky because KVM's (again, poorly documented) ABI is that *some* exit
+reasons are preserved across KVM_RUN with vcpu->run->immediate_exit (or with a
+pending signal).
+
+https://lore.kernel.org/all/ZFFbwOXZ5uI%2Fgdaf at google.com
+
+> [...]
+> 
+> 
+> > --- a/include/linux/kvm_host.h
+> > +++ b/include/linux/kvm_host.h
+> > @@ -2327,4 +2327,15 @@ static inline void kvm_account_pgtable_pages(void *virt, int nr)
+> >  /* Max number of entries allowed for each kvm dirty ring */
+> >  #define  KVM_DIRTY_RING_MAX_ENTRIES  65536
+> >  
+> > +static inline void kvm_prepare_memory_fault_exit(struct kvm_vcpu *vcpu,
+> > +						 gpa_t gpa, gpa_t size)
+> > +{
+> > +	vcpu->run->exit_reason = KVM_EXIT_MEMORY_FAULT;
+> > +	vcpu->run->memory_fault.gpa = gpa;
+> > +	vcpu->run->memory_fault.size = size;
+> > +
+> > +	/* Flags are not (yet) defined or communicated to userspace. */
+> > +	vcpu->run->memory_fault.flags = 0;
+> > +}
+> > +
+> 
+> KVM_CAP_MEMORY_FAULT_INFO is x86 only, is it better to put this function to
+> <asm/kvm_host.h>?
+
+I'd prefer to keep it in generic code, as it's highly likely to end up there
+sooner than later.  There's a known use case for ARM (exit to userspace on missing
+userspace mapping[*]), and I'm guessing pKVM (also ARM) will also utilize this API.
+
+[*] https://lore.kernel.org/all/20230908222905.1321305-8-amoorthy at google.com
 
