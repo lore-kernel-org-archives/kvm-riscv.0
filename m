@@ -1,87 +1,85 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Wed, 1 Nov 2023 10:36:48 -0700
-Subject: [PATCH v13 09/35] KVM: Add KVM_EXIT_MEMORY_FAULT exit to report
- faults to userspace
-In-Reply-To: <482bfea6f54ea1bb7d1ad75e03541d0ba0e5be6f.camel@intel.com>
-References: <20231027182217.3615211-1-seanjc@google.com> <20231027182217.3615211-10-seanjc@google.com>
- <482bfea6f54ea1bb7d1ad75e03541d0ba0e5be6f.camel@intel.com>
-Message-ID: <ZUKMsOdg3N9wmEzy@google.com>
+Date: Wed, 1 Nov 2023 14:55:46 -0700
+Subject: [PATCH v13 16/35] KVM: Add KVM_CREATE_GUEST_MEMFD ioctl() for
+ guest-specific backing memory
+In-Reply-To: <CA+EHjTwTT9cFzYTtwT43nLJS01Sgt0NqzUgKAnfo2fiV3tEvXg@mail.gmail.com>
+References: <20231027182217.3615211-1-seanjc@google.com> <20231027182217.3615211-17-seanjc@google.com>
+ <CA+EHjTzj4drYKONVOLP19DYpJ4O8kSXcFzw2AKier1QdcFKx_Q@mail.gmail.com>
+ <ZUF8A5KpwpA6IKUH@google.com> <CA+EHjTwTT9cFzYTtwT43nLJS01Sgt0NqzUgKAnfo2fiV3tEvXg@mail.gmail.com>
+Message-ID: <ZULJYg5cf1UrNq3e@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Nov 01, 2023, Kai Huang wrote:
+On Wed, Nov 01, 2023, Fuad Tabba wrote:
+> > > > @@ -1034,6 +1034,9 @@ static void kvm_destroy_dirty_bitmap(struct kvm_memory_slot *memslot)
+> > > >  /* This does not remove the slot from struct kvm_memslots data structures */
+> > > >  static void kvm_free_memslot(struct kvm *kvm, struct kvm_memory_slot *slot)
+> > > >  {
+> > > > +       if (slot->flags & KVM_MEM_PRIVATE)
+> > > > +               kvm_gmem_unbind(slot);
+> > > > +
+> > >
+> > > Should this be called after kvm_arch_free_memslot()? Arch-specific ode
+> > > might need some of the data before the unbinding, something I thought
+> > > might be necessary at one point for the pKVM port when deleting a
+> > > memslot, but realized later that kvm_invalidate_memslot() ->
+> > > kvm_arch_guest_memory_reclaimed() was the more logical place for it.
+> > > Also, since that seems to be the pattern for arch-specific handlers in
+> > > KVM.
+> >
+> > Maybe?  But only if we can about symmetry between the allocation and free paths
+> > I really don't think kvm_arch_free_memslot() should be doing anything beyond a
+> > "pure" free.  E.g. kvm_arch_free_memslot() is also called after moving a memslot,
+> > which hopefully we never actually have to allow for guest_memfd, but any code in
+> > kvm_arch_free_memslot() would bring about "what if" questions regarding memslot
+> > movement.  I.e. the API is intended to be a "free arch metadata associated with
+> > the memslot".
+> >
+> > Out of curiosity, what does pKVM need to do at kvm_arch_guest_memory_reclaimed()?
 > 
-> > +7.34 KVM_CAP_MEMORY_FAULT_INFO
-> > +------------------------------
-> > +
-> > +:Architectures: x86
-> > +:Returns: Informational only, -EINVAL on direct KVM_ENABLE_CAP.
-> > +
-> > +The presence of this capability indicates that KVM_RUN will fill
-> > +kvm_run.memory_fault if KVM cannot resolve a guest page fault VM-Exit, e.g. if
-> > +there is a valid memslot but no backing VMA for the corresponding host virtual
-> > +address.
-> > +
-> > +The information in kvm_run.memory_fault is valid if and only if KVM_RUN returns
-> > +an error with errno=EFAULT or errno=EHWPOISON *and* kvm_run.exit_reason is set
-> > +to KVM_EXIT_MEMORY_FAULT.
+> It's about the host reclaiming ownership of guest memory when tearing
+> down a protected guest. In pKVM, we currently teardown the guest and
+> reclaim its memory when kvm_arch_destroy_vm() is called. The problem
+> with guestmem is that kvm_gmem_unbind() could get called before that
+> happens, after which the host might try to access the unbound guest
+> memory. Since the host hasn't reclaimed ownership of the guest memory
+> from hyp, hilarity ensues (it crashes).
 > 
-> IIUC returning -EFAULT or whatever -errno is sort of KVM internal
-> implementation.
+> Initially, I hooked reclaim guest memory to kvm_free_memslot(), but
+> then I needed to move the unbind later in the function. I realized
+> later that kvm_arch_guest_memory_reclaimed() gets called earlier (at
+> the right time), and is more aptly named.
 
-The errno that is returned to userspace is ABI.  In KVM, it's a _very_ poorly
-defined ABI for the vast majority of ioctls(), but it's still technically ABI.
-KVM gets away with being cavalier with errno because the vast majority of errors
-are considered fatal by userespace, i.e. in most cases, userspace simply doesn't
-care about the exact errno.
+Aha!  I suspected that might be the case.
 
-A good example is KVM_RUN with -EINTR; if KVM were to return something other than
--EINTR on a pending signal or vcpu->run->immediate_exit, userspace would fall over.
+TDX and SNP also need to solve the same problem of "reclaiming" memory before it
+can be safely accessed by the host.  The plan is to add an arch hook (or two?)
+into guest_memfd that is invoked when memory is freed from guest_memfd.
 
-> Is it better to relax the validity of kvm_run.memory_fault when
-> KVM_RUN returns any -errno?
+Hooking kvm_arch_guest_memory_reclaimed() isn't completely correct as deleting a
+memslot doesn't *guarantee* that guest memory is actually reclaimed (which reminds
+me, we need to figure out a better name for that thing before introducing
+kvm_arch_gmem_invalidate()).
 
-Not unless there's a need to do so, and if there is then we can update the
-documentation accordingly.  If KVM's ABI is that kvm_run.memory_fault is valid
-for any errno, then KVM would need to purge kvm_run.exit_reason super early in
-KVM_RUN, e.g. to prevent an -EINTR return due to immediate_exit from being
-misinterpreted as KVM_EXIT_MEMORY_FAULT.  And purging exit_reason super early is
-subtly tricky because KVM's (again, poorly documented) ABI is that *some* exit
-reasons are preserved across KVM_RUN with vcpu->run->immediate_exit (or with a
-pending signal).
+The effective false positives aren't fatal for the current usage because the hook
+is used only for x86 SEV guests to flush caches.  An unnecessary flush can cause
+performance issues, but it doesn't affect correctness. For TDX and SNP, and IIUC
+pKVM, false positives are fatal because KVM could assign memory back to the host
+that is still owned by guest_memfd.
 
-https://lore.kernel.org/all/ZFFbwOXZ5uI%2Fgdaf at google.com
+E.g. a misbehaving userspace could prematurely delete a memslot.  And the more
+fun example is intrahost migration, where the plan is to allow pointing multiple
+guest_memfd files at a single guest_memfd inode:
+https://lore.kernel.org/all/cover.1691446946.git.ackerleytng at google.com
 
-> [...]
-> 
-> 
-> > --- a/include/linux/kvm_host.h
-> > +++ b/include/linux/kvm_host.h
-> > @@ -2327,4 +2327,15 @@ static inline void kvm_account_pgtable_pages(void *virt, int nr)
-> >  /* Max number of entries allowed for each kvm dirty ring */
-> >  #define  KVM_DIRTY_RING_MAX_ENTRIES  65536
-> >  
-> > +static inline void kvm_prepare_memory_fault_exit(struct kvm_vcpu *vcpu,
-> > +						 gpa_t gpa, gpa_t size)
-> > +{
-> > +	vcpu->run->exit_reason = KVM_EXIT_MEMORY_FAULT;
-> > +	vcpu->run->memory_fault.gpa = gpa;
-> > +	vcpu->run->memory_fault.size = size;
-> > +
-> > +	/* Flags are not (yet) defined or communicated to userspace. */
-> > +	vcpu->run->memory_fault.flags = 0;
-> > +}
-> > +
-> 
-> KVM_CAP_MEMORY_FAULT_INFO is x86 only, is it better to put this function to
-> <asm/kvm_host.h>?
+There was a lot of discussion for this, but it's scattered all over the place.
+The TL;DR is is that the inode will represent physical memory, and a file will
+represent a given "struct kvm" instance's view of that memory.  And so the memory
+isn't reclaimed until the inode is truncated/punched.
 
-I'd prefer to keep it in generic code, as it's highly likely to end up there
-sooner than later.  There's a known use case for ARM (exit to userspace on missing
-userspace mapping[*]), and I'm guessing pKVM (also ARM) will also utilize this API.
-
-[*] https://lore.kernel.org/all/20230908222905.1321305-8-amoorthy at google.com
+I _think_ this reflects the most recent plan from the guest_memfd side:
+https://lore.kernel.org/all/1233d749211c08d51f9ca5d427938d47f008af1f.1689893403.git.isaku.yamahata at intel.com
 
