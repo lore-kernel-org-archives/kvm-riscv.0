@@ -1,10 +1,10 @@
 From: Fuad Tabba <tabba@google.com>
-Date: Wed, 1 Nov 2023 12:46:25 +0000
-Subject: [PATCH v13 02/35] KVM: Assert that mmu_invalidate_in_progress
- *never* goes negative
-In-Reply-To: <20231027182217.3615211-3-seanjc@google.com>
-References: <20231027182217.3615211-1-seanjc@google.com> <20231027182217.3615211-3-seanjc@google.com>
-Message-ID: <CA+EHjTycVAL11xCKQAfm-q4NGbgSH7yMswu+c1XaJdyhUh61zw@mail.gmail.com>
+Date: Wed, 1 Nov 2023 12:50:26 +0000
+Subject: [PATCH v13 04/35] KVM: WARN if there are dangling MMU
+ invalidations at VM destruction
+In-Reply-To: <20231027182217.3615211-5-seanjc@google.com>
+References: <20231027182217.3615211-1-seanjc@google.com> <20231027182217.3615211-5-seanjc@google.com>
+Message-ID: <CA+EHjTxW3P+_fejO6emoZ1=c9EkWJUH63-ffmSumh=6P6MbTqQ@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -13,21 +13,16 @@ Content-Transfer-Encoding: 7bit
 
 On Fri, Oct 27, 2023 at 7:22?PM Sean Christopherson <seanjc@google.com> wrote:
 >
-> Move the assertion on the in-progress invalidation count from the primary
-> MMU's notifier path to KVM's common notification path, i.e. assert that
-> the count doesn't go negative even when the invalidation is coming from
-> KVM itself.
+> Add an assertion that there are no in-progress MMU invalidations when a
+> VM is being destroyed, with the exception of the scenario where KVM
+> unregisters its MMU notifier between an .invalidate_range_start() call and
+> the corresponding .invalidate_range_end().
 >
-> Opportunistically convert the assertion to a KVM_BUG_ON(), i.e. kill only
-> the affected VM, not the entire kernel.  A corrupted count is fatal to the
-> VM, e.g. the non-zero (negative) count will cause mmu_invalidate_retry()
-> to block any and all attempts to install new mappings.  But it's far from
-> guaranteed that an end() without a start() is fatal or even problematic to
-> anything other than the target VM, e.g. the underlying bug could simply be
-> a duplicate call to end().  And it's much more likely that a missed
-> invalidation, i.e. a potential use-after-free, would manifest as no
-> notification whatsoever, not an end() without a start().
+> KVM can't detect unpaired calls from the mmu_notifier due to the above
+> exception waiver, but the assertion can detect KVM bugs, e.g. such as the
+> bug that *almost* escaped initial guest_memfd development.
 >
+> Link: https://lore.kernel.org/all/e397d30c-c6af-e68f-d18e-b4e3739c5389 at linux.intel.com
 > Signed-off-by: Sean Christopherson <seanjc@google.com>
 > ---
 
@@ -37,30 +32,31 @@ Tested-by: Fuad Tabba <tabba@google.com>
 Cheers,
 /fuad
 
->  virt/kvm/kvm_main.c | 3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
+>  virt/kvm/kvm_main.c | 9 ++++++++-
+>  1 file changed, 8 insertions(+), 1 deletion(-)
 >
 > diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-> index 0524933856d4..5a97e6c7d9c2 100644
+> index 1a577a25de47..4dba682586ee 100644
 > --- a/virt/kvm/kvm_main.c
 > +++ b/virt/kvm/kvm_main.c
-> @@ -833,6 +833,7 @@ void kvm_mmu_invalidate_end(struct kvm *kvm, unsigned long start,
->          * in conjunction with the smp_rmb in mmu_invalidate_retry().
+> @@ -1356,9 +1356,16 @@ static void kvm_destroy_vm(struct kvm *kvm)
+>          * No threads can be waiting in kvm_swap_active_memslots() as the
+>          * last reference on KVM has been dropped, but freeing
+>          * memslots would deadlock without this manual intervention.
+> +        *
+> +        * If the count isn't unbalanced, i.e. KVM did NOT unregister its MMU
+> +        * notifier between a start() and end(), then there shouldn't be any
+> +        * in-progress invalidations.
 >          */
->         kvm->mmu_invalidate_in_progress--;
-> +       KVM_BUG_ON(kvm->mmu_invalidate_in_progress < 0, kvm);
->  }
->
->  static void kvm_mmu_notifier_invalidate_range_end(struct mmu_notifier *mn,
-> @@ -863,8 +864,6 @@ static void kvm_mmu_notifier_invalidate_range_end(struct mmu_notifier *mn,
->          */
->         if (wake)
->                 rcuwait_wake_up(&kvm->mn_memslots_update_rcuwait);
-> -
-> -       BUG_ON(kvm->mmu_invalidate_in_progress < 0);
->  }
->
->  static int kvm_mmu_notifier_clear_flush_young(struct mmu_notifier *mn,
+>         WARN_ON(rcuwait_active(&kvm->mn_memslots_update_rcuwait));
+> -       kvm->mn_active_invalidate_count = 0;
+> +       if (kvm->mn_active_invalidate_count)
+> +               kvm->mn_active_invalidate_count = 0;
+> +       else
+> +               WARN_ON(kvm->mmu_invalidate_in_progress);
+>  #else
+>         kvm_flush_shadow_all(kvm);
+>  #endif
 > --
 > 2.42.0.820.g83a721a137-goog
 >
