@@ -1,97 +1,247 @@
-From: Paolo Bonzini <pbonzini@redhat.com>
-Date: Wed, 1 Nov 2023 14:49:40 +0100
-Subject: [PATCH v13 17/35] KVM: Add transparent hugepage support for
- dedicated guest memory
-In-Reply-To: <ZUJVfCkIYYFp5VwG@google.com>
-References: <20231027182217.3615211-1-seanjc@google.com> <20231027182217.3615211-18-seanjc@google.com>
- <7c0844d8-6f97-4904-a140-abeabeb552c1@intel.com> <ZUEML6oJXDCFJ9fg@google.com>
- <92ba7ddd-2bc8-4a8d-bd67-d6614b21914f@intel.com> <ZUJVfCkIYYFp5VwG@google.com>
-Message-ID: <CABgObfaw4Byuzj5J3k48jdwT0HCKXLJNiuaA9H8Dtg+GOq==Sw@mail.gmail.com>
+From: Fuad Tabba <tabba@google.com>
+Date: Wed, 1 Nov 2023 14:19:26 +0000
+Subject: [PATCH v13 08/35] KVM: Introduce KVM_SET_USER_MEMORY_REGION2
+In-Reply-To: <20231027182217.3615211-9-seanjc@google.com>
+References: <20231027182217.3615211-1-seanjc@google.com> <20231027182217.3615211-9-seanjc@google.com>
+Message-ID: <CA+EHjTwEr4rLcs9VGQnhRKyBW7A_jGOjQe=zxYbmHnium5=W6Q@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Nov 1, 2023 at 2:41?PM Sean Christopherson <seanjc@google.com> wrote:
+On Fri, Oct 27, 2023 at 7:22?PM Sean Christopherson <seanjc@google.com> wrote:
 >
-> On Wed, Nov 01, 2023, Xiaoyao Li wrote:
-> > On 10/31/2023 10:16 PM, Sean Christopherson wrote:
-> > > On Tue, Oct 31, 2023, Xiaoyao Li wrote:
-> > > > On 10/28/2023 2:21 AM, Sean Christopherson wrote:
-> > > > > Extended guest_memfd to allow backing guest memory with transparent
-> > > > > hugepages. Require userspace to opt-in via a flag even though there's no
-> > > > > known/anticipated use case for forcing small pages as THP is optional,
-> > > > > i.e. to avoid ending up in a situation where userspace is unaware that
-> > > > > KVM can't provide hugepages.
-> > > >
-> > > > Personally, it seems not so "transparent" if requiring userspace to opt-in.
-> > > >
-> > > > People need to 1) check if the kernel built with TRANSPARENT_HUGEPAGE
-> > > > support, or check is the sysfs of transparent hugepage exists; 2)get the
-> > > > maximum support hugepage size 3) ensure the size satisfies the alignment;
-> > > > before opt-in it.
-> > > >
-> > > > Even simpler, userspace can blindly try to create guest memfd with
-> > > > transparent hugapage flag. If getting error, fallback to create without the
-> > > > transparent hugepage flag.
-> > > >
-> > > > However, it doesn't look transparent to me.
-> > >
-> > > The "transparent" part is referring to the underlying kernel mechanism, it's not
-> > > saying anything about the API.  The "transparent" part of THP is that the kernel
-> > > doesn't guarantee hugepages, i.e. whether or not hugepages are actually used is
-> > > (mostly) transparent to userspace.
-> > >
-> > > Paolo also isn't the biggest fan[*], but there are also downsides to always
-> > > allowing hugepages, e.g. silent failure due to lack of THP or unaligned size,
-> > > and there's precedent in the form of MADV_HUGEPAGE.
-> > >
-> > > [*] https://lore.kernel.org/all/84a908ae-04c7-51c7-c9a8-119e1933a189 at redhat.com
-> >
-> > But it's different than MADV_HUGEPAGE, in a way. Per my understanding, the
-> > failure of MADV_HUGEPAGE is not fatal, user space can ignore it and
-> > continue.
-> >
-> > However, the failure of KVM_GUEST_MEMFD_ALLOW_HUGEPAGE is fatal, which leads
-> > to failure of guest memfd creation.
+> Introduce a "version 2" of KVM_SET_USER_MEMORY_REGION so that additional
+> information can be supplied without setting userspace up to fail.  The
+> padding in the new kvm_userspace_memory_region2 structure will be used to
+> pass a file descriptor in addition to the userspace_addr, i.e. allow
+> userspace to point at a file descriptor and map memory into a guest that
+> is NOT mapped into host userspace.
 >
-> Failing KVM_CREATE_GUEST_MEMFD isn't truly fatal, it just requires different
-> action from userspace, i.e. instead of ignoring the error, userspace could redo
-> KVM_CREATE_GUEST_MEMFD with KVM_GUEST_MEMFD_ALLOW_HUGEPAGE=0.
+> Alternatively, KVM could simply add "struct kvm_userspace_memory_region2"
+> without a new ioctl(), but as Paolo pointed out, adding a new ioctl()
+> makes detection of bad flags a bit more robust, e.g. if the new fd field
+> is guarded only by a flag and not a new ioctl(), then a userspace bug
+> (setting a "bad" flag) would generate out-of-bounds access instead of an
+> -EINVAL error.
 >
-> We could make the behavior more like MADV_HUGEPAGE, e.g. theoretically we could
-> extend fadvise() with FADV_HUGEPAGE, or add a guest_memfd knob/ioctl() to let
-> userspace provide advice/hints after creating a guest_memfd.  But I suspect that
-> guest_memfd would be the only user of FADV_HUGEPAGE, and IMO a post-creation hint
-> is actually less desirable.
->
-> KVM_GUEST_MEMFD_ALLOW_HUGEPAGE will fail only if userspace didn't provide a
-> compatible size or the kernel doesn't support THP.  An incompatible size is likely
-> a userspace bug, and for most setups that want to utilize guest_memfd, lack of THP
-> support is likely a configuration bug.  I.e. many/most uses *want* failures due to
-> KVM_GUEST_MEMFD_ALLOW_HUGEPAGE to be fatal.
->
-> > For current implementation, I think maybe KVM_GUEST_MEMFD_DESIRE_HUGEPAGE
-> > fits better than KVM_GUEST_MEMFD_ALLOW_HUGEPAGE? or maybe *PREFER*?
->
-> Why?  Verbs like "prefer" and "desire" aren't a good fit IMO because they suggest
-> the flag is a hint, and hints are usually best effort only, i.e. are ignored if
-> there is a fundamental incompatibility.
->
-> "Allow" isn't perfect, e.g. I would much prefer a straight KVM_GUEST_MEMFD_USE_HUGEPAGES
-> or KVM_GUEST_MEMFD_HUGEPAGES flag, but I wanted the name to convey that KVM doesn't
-> (yet) guarantee hugepages.  I.e. KVM_GUEST_MEMFD_ALLOW_HUGEPAGE is stronger than
-> a hint, but weaker than a requirement.  And if/when KVM supports a dedicated memory
-> pool of some kind, then we can add KVM_GUEST_MEMFD_REQUIRE_HUGEPAGE.
+> Cc: Jarkko Sakkinen <jarkko@kernel.org>
+> Reviewed-by: Paolo Bonzini <pbonzini@redhat.com>
+> Reviewed-by: Xiaoyao Li <xiaoyao.li@intel.com>
+> Signed-off-by: Sean Christopherson <seanjc@google.com>
+> ---
 
-I think that the current patch is fine, but I will adjust it to always
-allow the flag,
-and to make the size check even if !CONFIG_TRANSPARENT_HUGEPAGE.
-If hugepages are not guaranteed, and (theoretically) you could have no
-hugepage at all in the result, it's okay to get this result even if THP is not
-available in the kernel.
+With the missing pad in api.rst fixed:
+Reviewed-by: Fuad Tabba <tabba@google.com>
+Tested-by: Fuad Tabba <tabba@google.com>
 
-Paolo
+Cheers,
+/fuad
 
+>  Documentation/virt/kvm/api.rst | 21 +++++++++++++++++++
+>  arch/x86/kvm/x86.c             |  2 +-
+>  include/linux/kvm_host.h       |  4 ++--
+>  include/uapi/linux/kvm.h       | 13 ++++++++++++
+>  virt/kvm/kvm_main.c            | 38 +++++++++++++++++++++++++++-------
+>  5 files changed, 67 insertions(+), 11 deletions(-)
+>
+> diff --git a/Documentation/virt/kvm/api.rst b/Documentation/virt/kvm/api.rst
+> index 21a7578142a1..ace984acc125 100644
+> --- a/Documentation/virt/kvm/api.rst
+> +++ b/Documentation/virt/kvm/api.rst
+> @@ -6070,6 +6070,27 @@ writes to the CNTVCT_EL0 and CNTPCT_EL0 registers using the SET_ONE_REG
+>  interface. No error will be returned, but the resulting offset will not be
+>  applied.
+>
+> +4.139 KVM_SET_USER_MEMORY_REGION2
+> +---------------------------------
+> +
+> +:Capability: KVM_CAP_USER_MEMORY2
+> +:Architectures: all
+> +:Type: vm ioctl
+> +:Parameters: struct kvm_userspace_memory_region2 (in)
+> +:Returns: 0 on success, -1 on error
+> +
+> +::
+> +
+> +  struct kvm_userspace_memory_region2 {
+> +       __u32 slot;
+> +       __u32 flags;
+> +       __u64 guest_phys_addr;
+> +       __u64 memory_size; /* bytes */
+> +       __u64 userspace_addr; /* start of the userspace allocated memory */
+> +  };
+> +
+> +See KVM_SET_USER_MEMORY_REGION.
+> +
+>  5. The kvm_run structure
+>  ========================
+>
+> diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+> index 41cce5031126..6409914428ca 100644
+> --- a/arch/x86/kvm/x86.c
+> +++ b/arch/x86/kvm/x86.c
+> @@ -12455,7 +12455,7 @@ void __user * __x86_set_memory_region(struct kvm *kvm, int id, gpa_t gpa,
+>         }
+>
+>         for (i = 0; i < KVM_ADDRESS_SPACE_NUM; i++) {
+> -               struct kvm_userspace_memory_region m;
+> +               struct kvm_userspace_memory_region2 m;
+>
+>                 m.slot = id | (i << 16);
+>                 m.flags = 0;
+> diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+> index 5faba69403ac..4e741ff27af3 100644
+> --- a/include/linux/kvm_host.h
+> +++ b/include/linux/kvm_host.h
+> @@ -1146,9 +1146,9 @@ enum kvm_mr_change {
+>  };
+>
+>  int kvm_set_memory_region(struct kvm *kvm,
+> -                         const struct kvm_userspace_memory_region *mem);
+> +                         const struct kvm_userspace_memory_region2 *mem);
+>  int __kvm_set_memory_region(struct kvm *kvm,
+> -                           const struct kvm_userspace_memory_region *mem);
+> +                           const struct kvm_userspace_memory_region2 *mem);
+>  void kvm_arch_free_memslot(struct kvm *kvm, struct kvm_memory_slot *slot);
+>  void kvm_arch_memslots_updated(struct kvm *kvm, u64 gen);
+>  int kvm_arch_prepare_memory_region(struct kvm *kvm,
+> diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
+> index 13065dd96132..bd1abe067f28 100644
+> --- a/include/uapi/linux/kvm.h
+> +++ b/include/uapi/linux/kvm.h
+> @@ -95,6 +95,16 @@ struct kvm_userspace_memory_region {
+>         __u64 userspace_addr; /* start of the userspace allocated memory */
+>  };
+>
+> +/* for KVM_SET_USER_MEMORY_REGION2 */
+> +struct kvm_userspace_memory_region2 {
+> +       __u32 slot;
+> +       __u32 flags;
+> +       __u64 guest_phys_addr;
+> +       __u64 memory_size;
+> +       __u64 userspace_addr;
+> +       __u64 pad[16];
+> +};
+> +
+>  /*
+>   * The bit 0 ~ bit 15 of kvm_userspace_memory_region::flags are visible for
+>   * userspace, other bits are reserved for kvm internal use which are defined
+> @@ -1192,6 +1202,7 @@ struct kvm_ppc_resize_hpt {
+>  #define KVM_CAP_COUNTER_OFFSET 227
+>  #define KVM_CAP_ARM_EAGER_SPLIT_CHUNK_SIZE 228
+>  #define KVM_CAP_ARM_SUPPORTED_BLOCK_SIZES 229
+> +#define KVM_CAP_USER_MEMORY2 230
+>
+>  #ifdef KVM_CAP_IRQ_ROUTING
+>
+> @@ -1473,6 +1484,8 @@ struct kvm_vfio_spapr_tce {
+>                                         struct kvm_userspace_memory_region)
+>  #define KVM_SET_TSS_ADDR          _IO(KVMIO,   0x47)
+>  #define KVM_SET_IDENTITY_MAP_ADDR _IOW(KVMIO,  0x48, __u64)
+> +#define KVM_SET_USER_MEMORY_REGION2 _IOW(KVMIO, 0x49, \
+> +                                        struct kvm_userspace_memory_region2)
+>
+>  /* enable ucontrol for s390 */
+>  struct kvm_s390_ucas_mapping {
+> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+> index 6e708017064d..3f5b7c2c5327 100644
+> --- a/virt/kvm/kvm_main.c
+> +++ b/virt/kvm/kvm_main.c
+> @@ -1578,7 +1578,7 @@ static void kvm_replace_memslot(struct kvm *kvm,
+>         }
+>  }
+>
+> -static int check_memory_region_flags(const struct kvm_userspace_memory_region *mem)
+> +static int check_memory_region_flags(const struct kvm_userspace_memory_region2 *mem)
+>  {
+>         u32 valid_flags = KVM_MEM_LOG_DIRTY_PAGES;
+>
+> @@ -1980,7 +1980,7 @@ static bool kvm_check_memslot_overlap(struct kvm_memslots *slots, int id,
+>   * Must be called holding kvm->slots_lock for write.
+>   */
+>  int __kvm_set_memory_region(struct kvm *kvm,
+> -                           const struct kvm_userspace_memory_region *mem)
+> +                           const struct kvm_userspace_memory_region2 *mem)
+>  {
+>         struct kvm_memory_slot *old, *new;
+>         struct kvm_memslots *slots;
+> @@ -2084,7 +2084,7 @@ int __kvm_set_memory_region(struct kvm *kvm,
+>  EXPORT_SYMBOL_GPL(__kvm_set_memory_region);
+>
+>  int kvm_set_memory_region(struct kvm *kvm,
+> -                         const struct kvm_userspace_memory_region *mem)
+> +                         const struct kvm_userspace_memory_region2 *mem)
+>  {
+>         int r;
+>
+> @@ -2096,7 +2096,7 @@ int kvm_set_memory_region(struct kvm *kvm,
+>  EXPORT_SYMBOL_GPL(kvm_set_memory_region);
+>
+>  static int kvm_vm_ioctl_set_memory_region(struct kvm *kvm,
+> -                                         struct kvm_userspace_memory_region *mem)
+> +                                         struct kvm_userspace_memory_region2 *mem)
+>  {
+>         if ((u16)mem->slot >= KVM_USER_MEM_SLOTS)
+>                 return -EINVAL;
+> @@ -4566,6 +4566,7 @@ static int kvm_vm_ioctl_check_extension_generic(struct kvm *kvm, long arg)
+>  {
+>         switch (arg) {
+>         case KVM_CAP_USER_MEMORY:
+> +       case KVM_CAP_USER_MEMORY2:
+>         case KVM_CAP_DESTROY_MEMORY_REGION_WORKS:
+>         case KVM_CAP_JOIN_MEMORY_REGIONS_WORKS:
+>         case KVM_CAP_INTERNAL_ERROR_DATA:
+> @@ -4821,6 +4822,14 @@ static int kvm_vm_ioctl_get_stats_fd(struct kvm *kvm)
+>         return fd;
+>  }
+>
+> +#define SANITY_CHECK_MEM_REGION_FIELD(field)                                   \
+> +do {                                                                           \
+> +       BUILD_BUG_ON(offsetof(struct kvm_userspace_memory_region, field) !=             \
+> +                    offsetof(struct kvm_userspace_memory_region2, field));     \
+> +       BUILD_BUG_ON(sizeof_field(struct kvm_userspace_memory_region, field) !=         \
+> +                    sizeof_field(struct kvm_userspace_memory_region2, field)); \
+> +} while (0)
+> +
+>  static long kvm_vm_ioctl(struct file *filp,
+>                            unsigned int ioctl, unsigned long arg)
+>  {
+> @@ -4843,15 +4852,28 @@ static long kvm_vm_ioctl(struct file *filp,
+>                 r = kvm_vm_ioctl_enable_cap_generic(kvm, &cap);
+>                 break;
+>         }
+> +       case KVM_SET_USER_MEMORY_REGION2:
+>         case KVM_SET_USER_MEMORY_REGION: {
+> -               struct kvm_userspace_memory_region kvm_userspace_mem;
+> +               struct kvm_userspace_memory_region2 mem;
+> +               unsigned long size;
+> +
+> +               if (ioctl == KVM_SET_USER_MEMORY_REGION)
+> +                       size = sizeof(struct kvm_userspace_memory_region);
+> +               else
+> +                       size = sizeof(struct kvm_userspace_memory_region2);
+> +
+> +               /* Ensure the common parts of the two structs are identical. */
+> +               SANITY_CHECK_MEM_REGION_FIELD(slot);
+> +               SANITY_CHECK_MEM_REGION_FIELD(flags);
+> +               SANITY_CHECK_MEM_REGION_FIELD(guest_phys_addr);
+> +               SANITY_CHECK_MEM_REGION_FIELD(memory_size);
+> +               SANITY_CHECK_MEM_REGION_FIELD(userspace_addr);
+>
+>                 r = -EFAULT;
+> -               if (copy_from_user(&kvm_userspace_mem, argp,
+> -                                               sizeof(kvm_userspace_mem)))
+> +               if (copy_from_user(&mem, argp, size))
+>                         goto out;
+>
+> -               r = kvm_vm_ioctl_set_memory_region(kvm, &kvm_userspace_mem);
+> +               r = kvm_vm_ioctl_set_memory_region(kvm, &mem);
+>                 break;
+>         }
+>         case KVM_GET_DIRTY_LOG: {
+> --
+> 2.42.0.820.g83a721a137-goog
+>
 
