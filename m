@@ -1,40 +1,58 @@
-From: Paolo Bonzini <pbonzini@redhat.com>
-Date: Thu, 2 Nov 2023 16:48:41 +0100
-Subject: [PATCH v13 16/35] KVM: Add KVM_CREATE_GUEST_MEMFD ioctl() for
- guest-specific backing memory
-In-Reply-To: <CALzav=d9eXZfK=op7A=UftbpuPpUbxqV6CmkqqxxBNuNsUU4nw@mail.gmail.com>
-References: <20231027182217.3615211-1-seanjc@google.com>
- <20231027182217.3615211-17-seanjc@google.com> <ZUFGRyQEuWj4RJS0@google.com>
- <ZUFzZf-YmCRYP6qo@google.com>
- <CALzav=d9eXZfK=op7A=UftbpuPpUbxqV6CmkqqxxBNuNsUU4nw@mail.gmail.com>
-Message-ID: <6642c379-1023-4716-904f-4bbf076744c2@redhat.com>
+From: Sean Christopherson <seanjc@google.com>
+Date: Thu, 2 Nov 2023 08:51:55 -0700
+Subject: [PATCH v13 09/35] KVM: Add KVM_EXIT_MEMORY_FAULT exit to report
+ faults to userspace
+In-Reply-To: <33686031-c1df-4ef5-a6ac-1aab7f5c656e@intel.com>
+References: <20231027182217.3615211-1-seanjc@google.com> <20231027182217.3615211-10-seanjc@google.com>
+ <482bfea6f54ea1bb7d1ad75e03541d0ba0e5be6f.camel@intel.com>
+ <ZUKMsOdg3N9wmEzy@google.com> <33686031-c1df-4ef5-a6ac-1aab7f5c656e@intel.com>
+Message-ID: <ZUPFmwWjPFlXRlPi@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 10/31/23 23:39, David Matlack wrote:
->>> Maybe can you sketch out how you see this proposal being extensible to
->>> using guest_memfd for shared mappings?
->> For in-place conversions, e.g. pKVM, no additional guest_memfd is needed.  What's
->> missing there is the ability to (safely) mmap() guest_memfd, e.g. KVM needs to
->> ensure there are no outstanding references when converting back to private.
->>
->> For TDX/SNP, assuming we don't find a performant and robust way to do in-place
->> conversions, a second fd+offset pair would be needed.
-> Is there a way to support non-in-place conversions within a single guest_memfd?
+On Thu, Nov 02, 2023, Xiaoyao Li wrote:
+> On 11/2/2023 1:36 AM, Sean Christopherson wrote:
+> > > KVM_CAP_MEMORY_FAULT_INFO is x86 only, is it better to put this function to
+> > > <asm/kvm_host.h>?
+> > I'd prefer to keep it in generic code, as it's highly likely to end up there
+> > sooner than later.  There's a known use case for ARM (exit to userspace on missing
+> > userspace mapping[*]), and I'm guessing pKVM (also ARM) will also utilize this API.
+> > 
+> > [*]https://lore.kernel.org/all/20230908222905.1321305-8-amoorthy at google.com
+> 
+> I wonder how this CAP is supposed to be checked in userspace, for guest
+> memfd case? 
 
-For TDX/SNP, you could have a hook from KVM_SET_MEMORY_ATTRIBUTES to 
-guest memory.  The hook would invalidate now-private parts if they have 
-a VMA, causing a SIGSEGV/EFAULT if the host touches them.
+It's basically useless for guest_memfd.
 
-It would forbid mappings from multiple gfns to a single offset of the 
-guest_memfd, because then the shared vs. private attribute would be tied 
-to the offset.  This should not be a problem; for example, in the case 
-of SNP, the RMP already requires a single mapping from host physical 
-address to guest physical address.
+> 	if (!kvm_check_extension(s, KVM_CAP_MEMORY_FAULT_INFO) &&
+> 	    run->exit_reason == KVM_EXIT_MEMORY_FAULT)
+> 		abort("unexpected KVM_EXIT_MEMORY_FAULT");
+> 
+> In my implementation of QEMU patches, I find it's unnecessary. When
+> userspace gets an exit with KVM_EXIT_MEMORY_FAULT, it implies
+> "KVM_CAP_MEMORY_FAULT_INFO".
+> 
+> So I don't see how it is necessary in this series. Whether it's necessary or
+> not for [*], I don't have the answer but we can leave the discussion to that
+> patch series.
 
-Paolo
+It's not strictly necessary there either.
+
+However, Oliver felt (and presumably still feels) quite strongly, and I agree,
+that neither reporting extra information shouldn't be tightly coupled to
+KVM_CAP_EXIT_ON_MISSING or KVM_CAP_GUEST_MEMFD.
+
+E.g. if userspace develops a "standalone" use case for KVM_CAP_MEMORY_FAULT_INFO,
+userspace should be able to check for support without having to take a dependency
+on KVM_CAP_GUEST_MEMFD, especially since because KVM_CAP_GUEST_MEMFD may not be
+supported, i.e. userspace should be able to do:
+
+	if (!kvm_check_extension(s, KVM_CAP_MEMORY_FAULT_INFO))
+		abort("KVM_CAP_MEMORY_FAULT_INFO required for fancy feature XYZ");
+
 
 
