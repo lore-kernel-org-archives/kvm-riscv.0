@@ -1,73 +1,106 @@
-From: Binbin Wu <binbin.wu@linux.intel.com>
-Date: Thu, 2 Nov 2023 13:59:53 +0800
-Subject: [PATCH v13 12/35] KVM: Prepare for handling only shared mappings
- in mmu_notifier events
-In-Reply-To: <20231027182217.3615211-13-seanjc@google.com>
+From: Huang, Kai <kai.huang@intel.com>
+Date: Thu, 2 Nov 2023 09:35:35 +0000
+Subject: [PATCH v13 09/35] KVM: Add KVM_EXIT_MEMORY_FAULT exit to report
+ faults to userspace
+In-Reply-To: <64e3764e36ba7a00d94cc7db1dea1ef06b620aaf.camel@intel.com>
 References: <20231027182217.3615211-1-seanjc@google.com>
- <20231027182217.3615211-13-seanjc@google.com>
-Message-ID: <9963b77c-3a38-4f89-b21e-48d0fdda8f53@linux.intel.com>
+	 <20231027182217.3615211-10-seanjc@google.com>
+	 <482bfea6f54ea1bb7d1ad75e03541d0ba0e5be6f.camel@intel.com>
+	 <ZUKMsOdg3N9wmEzy@google.com>
+	 <64e3764e36ba7a00d94cc7db1dea1ef06b620aaf.camel@intel.com>
+Message-ID: <32cb71700aedcbd1f65276cf44a601760ffc364b.camel@intel.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+On Thu, 2023-11-02 at 03:17 +0000, Huang, Kai wrote:
+> On Wed, 2023-11-01 at 10:36 -0700, Sean Christopherson wrote:
+> > On Wed, Nov 01, 2023, Kai Huang wrote:
+> > > 
+> > > > +7.34 KVM_CAP_MEMORY_FAULT_INFO
+> > > > +------------------------------
+> > > > +
+> > > > +:Architectures: x86
+> > > > +:Returns: Informational only, -EINVAL on direct KVM_ENABLE_CAP.
+> > > > +
+> > > > +The presence of this capability indicates that KVM_RUN will fill
+> > > > +kvm_run.memory_fault if KVM cannot resolve a guest page fault VM-Exit, e.g. if
+> > > > +there is a valid memslot but no backing VMA for the corresponding host virtual
+> > > > +address.
+> > > > +
+> > > > +The information in kvm_run.memory_fault is valid if and only if KVM_RUN returns
+> > > > +an error with errno=EFAULT or errno=EHWPOISON *and* kvm_run.exit_reason is set
+> > > > +to KVM_EXIT_MEMORY_FAULT.
+> > > 
+> > > IIUC returning -EFAULT or whatever -errno is sort of KVM internal
+> > > implementation.
+> > 
+> > The errno that is returned to userspace is ABI.  In KVM, it's a _very_ poorly
+> > defined ABI for the vast majority of ioctls(), but it's still technically ABI.
+> > KVM gets away with being cavalier with errno because the vast majority of errors
+> > are considered fatal by userespace, i.e. in most cases, userspace simply doesn't
+> > care about the exact errno.
+> > 
+> > A good example is KVM_RUN with -EINTR; if KVM were to return something other than
+> > -EINTR on a pending signal or vcpu->run->immediate_exit, userspace would fall over.
+> > 
+> > > Is it better to relax the validity of kvm_run.memory_fault when
+> > > KVM_RUN returns any -errno?
+> > 
+> > Not unless there's a need to do so, and if there is then we can update the
+> > documentation accordingly.  If KVM's ABI is that kvm_run.memory_fault is valid
+> > for any errno, then KVM would need to purge kvm_run.exit_reason super early in
+> > KVM_RUN, e.g. to prevent an -EINTR return due to immediate_exit from being
+> > misinterpreted as KVM_EXIT_MEMORY_FAULT.  And purging exit_reason super early is
+> > subtly tricky because KVM's (again, poorly documented) ABI is that *some* exit
+> > reasons are preserved across KVM_RUN with vcpu->run->immediate_exit (or with a
+> > pending signal).
+> > 
+> > https://lore.kernel.org/all/ZFFbwOXZ5uI%2Fgdaf at google.com
+> > 
+> > 
+> 
+> Agreed with not to relax to any errno.  However using -EFAULT as part of ABI
+> definition seems a little bit dangerous, e.g., someone could accidentally or
+> mistakenly return -EFAULT in KVM_RUN at early time and/or in a completely
+> different code path, etc. ?-EINTR has well defined meaning, but -EFAULT (which
+> is "Bad address") seems doesn't but I am not sure either. :-)
+> 
+> One example is, for backing VMA with VM_IO | VM_PFNMAP, hva_to_pfn() returns
+> KVM_PFN_ERR_FAULT when the kernel cannot get a valid PFN (e.g. when SGX vepc
+> fault handler failed to allocate EPC) and kvm_handle_error_pfn() will just
+> return -EFAULT.  If kvm_run.exit_reason isn't purged early then is it possible
+> to have some issue here?
+> 
 
+Also, regardless whether -EFAULT is too ambiguous to be part of ABI, could you
+elaborate the EHWPOISON part?  IIUC KVM can already handle the case of poisoned
+page by sending signal to user app: 
 
-On 10/28/2023 2:21 AM, Sean Christopherson wrote:
-> Add flags to "struct kvm_gfn_range" to let notifier events target only
-> shared and only private mappings, and write up the existing mmu_notifier
-> events to be shared-only (private memory is never associated with a
-> userspace virtual address, i.e. can't be reached via mmu_notifiers).
->
-> Add two flags so that KVM can handle the three possibilities (shared,
-> private, and shared+private) without needing something like a tri-state
-> enum.
-I see the two flags are set/cleared in __kvm_handle_hva_range() in this 
-patch
-and kvm_handle_gfn_range() from the later patch 13/35, but I didn't see they
-are used/read in this patch series if I didn't miss anything.? How are they
-supposed to be used in KVM?
+	static int kvm_handle_error_pfn(struct kvm_vcpu *vcpu, 
+			struct kvm_page_fault *fault)                                               
+	{       
+		...
 
+       		if (fault->pfn == KVM_PFN_ERR_HWPOISON) {
+              		kvm_send_hwpoison_signal(fault->slot, fault->gfn);
+                	return RET_PF_RETRY;                                          
+        	}
+	}
 
->
-> Link: https://lore.kernel.org/all/ZJX0hk+KpQP0KUyB at google.com
-> Signed-off-by: Sean Christopherson <seanjc@google.com>
-> ---
->   include/linux/kvm_host.h | 2 ++
->   virt/kvm/kvm_main.c      | 7 +++++++
->   2 files changed, 9 insertions(+)
->
-> diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-> index 96aa930536b1..89c1a991a3b8 100644
-> --- a/include/linux/kvm_host.h
-> +++ b/include/linux/kvm_host.h
-> @@ -263,6 +263,8 @@ struct kvm_gfn_range {
->   	gfn_t start;
->   	gfn_t end;
->   	union kvm_mmu_notifier_arg arg;
-> +	bool only_private;
-> +	bool only_shared;
->   	bool may_block;
->   };
->   bool kvm_unmap_gfn_range(struct kvm *kvm, struct kvm_gfn_range *range);
-> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-> index cb9376833c18..302ccb87b4c1 100644
-> --- a/virt/kvm/kvm_main.c
-> +++ b/virt/kvm/kvm_main.c
-> @@ -635,6 +635,13 @@ static __always_inline kvm_mn_ret_t __kvm_handle_hva_range(struct kvm *kvm,
->   			 * the second or later invocation of the handler).
->   			 */
->   			gfn_range.arg = range->arg;
-> +
-> +			/*
-> +			 * HVA-based notifications aren't relevant to private
-> +			 * mappings as they don't have a userspace mapping.
-> +			 */
-> +			gfn_range.only_private = false;
-> +			gfn_range.only_shared = true;
->   			gfn_range.may_block = range->may_block;
->   
->   			/*
+And (sorry to hijack) I am thinking whether "SGX vepc unable to allocate EPC"
+can also use this memory_fault mechanism.  Currently as mentioned above when
+vepc fault handler cannot allocate EPC page KVM returns -EFAULT to Qemu, and
+Qemu prints ...
 
+	...: Bad address
+	<dump guest cpu registers>
+
+... which is nonsense.
+
+If we can use memory_fault.flags (or is 'fault_reason' a better name?) to carry
+a specific value for EPC to let Qemu know and Qemu can then do more reasonable
+things.
 
