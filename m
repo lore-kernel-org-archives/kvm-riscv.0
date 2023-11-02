@@ -1,116 +1,79 @@
 From: Fuad Tabba <tabba@google.com>
-Date: Thu, 2 Nov 2023 13:55:42 +0000
-Subject: [PATCH v13 11/35] KVM: Drop .on_unlock() mmu_notifier hook
-In-Reply-To: <20231027182217.3615211-12-seanjc@google.com>
-References: <20231027182217.3615211-1-seanjc@google.com> <20231027182217.3615211-12-seanjc@google.com>
-Message-ID: <CA+EHjTzz2PftRAFU9pQaE1D=E3hwBDCDQpJ69O6r5akdAs0Exw@mail.gmail.com>
+Date: Thu, 2 Nov 2023 14:01:39 +0000
+Subject: [PATCH v13 12/35] KVM: Prepare for handling only shared mappings
+ in mmu_notifier events
+In-Reply-To: <20231027182217.3615211-13-seanjc@google.com>
+References: <20231027182217.3615211-1-seanjc@google.com> <20231027182217.3615211-13-seanjc@google.com>
+Message-ID: <CA+EHjTyAU9XZ3OgqXjmAKh-BKsLrH_8QtnJihQxF4fhk8WPSYg@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+Hi,
+
 On Fri, Oct 27, 2023 at 7:22?PM Sean Christopherson <seanjc@google.com> wrote:
 >
-> Drop the .on_unlock() mmu_notifer hook now that it's no longer used for
-> notifying arch code that memory has been reclaimed.  Adding .on_unlock()
-> and invoking it *after* dropping mmu_lock was a terrible idea, as doing so
-> resulted in .on_lock() and .on_unlock() having divergent and asymmetric
-> behavior, and set future developers up for failure, i.e. all but asked for
-> bugs where KVM relied on using .on_unlock() to try to run a callback while
-> holding mmu_lock.
+> Add flags to "struct kvm_gfn_range" to let notifier events target only
+> shared and only private mappings, and write up the existing mmu_notifier
+> events to be shared-only (private memory is never associated with a
+> userspace virtual address, i.e. can't be reached via mmu_notifiers).
 >
-> Opportunistically add a lockdep assertion in kvm_mmu_invalidate_end() to
-> guard against future bugs of this nature.
+> Add two flags so that KVM can handle the three possibilities (shared,
+> private, and shared+private) without needing something like a tri-state
+> enum.
 >
-> Reported-by: Isaku Yamahata <isaku.yamahata@intel.com>
-> Link: https://lore.kernel.org/all/20230802203119.GB2021422 at ls.amr.corp.intel.com
+> Link: https://lore.kernel.org/all/ZJX0hk+KpQP0KUyB at google.com
 > Signed-off-by: Sean Christopherson <seanjc@google.com>
 > ---
+>  include/linux/kvm_host.h | 2 ++
+>  virt/kvm/kvm_main.c      | 7 +++++++
+>  2 files changed, 9 insertions(+)
+>
+> diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+> index 96aa930536b1..89c1a991a3b8 100644
+> --- a/include/linux/kvm_host.h
+> +++ b/include/linux/kvm_host.h
+> @@ -263,6 +263,8 @@ struct kvm_gfn_range {
+>         gfn_t start;
+>         gfn_t end;
+>         union kvm_mmu_notifier_arg arg;
+> +       bool only_private;
+> +       bool only_shared;
 
-Reviewed-by: Fuad Tabba <tabba@google.com>
-Tested-by: Fuad Tabba <tabba@google.com>
+If these flags aren't used in this patch series, should this patch be
+moved to the other series?
+
+Also, if shared+private is a possibility, doesn't the prefix "only_"
+confuse things a bit? I.e., what is shared+private, is it when both
+are 0 or when both are 1? I assume it's the former (both are 0), but
+it might be clearer.
 
 Cheers,
 /fuad
 
->  virt/kvm/kvm_main.c | 13 +++----------
->  1 file changed, 3 insertions(+), 10 deletions(-)
->
-> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-> index 2bc04c8ae1f4..cb9376833c18 100644
-> --- a/virt/kvm/kvm_main.c
-> +++ b/virt/kvm/kvm_main.c
-> @@ -544,7 +544,6 @@ static inline struct kvm *mmu_notifier_to_kvm(struct mmu_notifier *mn)
->  typedef bool (*gfn_handler_t)(struct kvm *kvm, struct kvm_gfn_range *range);
->
->  typedef void (*on_lock_fn_t)(struct kvm *kvm);
-> -typedef void (*on_unlock_fn_t)(struct kvm *kvm);
->
->  struct kvm_mmu_notifier_range {
->         /*
-> @@ -556,7 +555,6 @@ struct kvm_mmu_notifier_range {
->         union kvm_mmu_notifier_arg arg;
->         gfn_handler_t handler;
->         on_lock_fn_t on_lock;
-> -       on_unlock_fn_t on_unlock;
->         bool flush_on_ret;
 >         bool may_block;
 >  };
-> @@ -663,11 +661,8 @@ static __always_inline kvm_mn_ret_t __kvm_handle_hva_range(struct kvm *kvm,
->         if (range->flush_on_ret && r.ret)
->                 kvm_flush_remote_tlbs(kvm);
->
-> -       if (r.found_memslot) {
-> +       if (r.found_memslot)
->                 KVM_MMU_UNLOCK(kvm);
-> -               if (!IS_KVM_NULL_FN(range->on_unlock))
-> -                       range->on_unlock(kvm);
-> -       }
->
->         srcu_read_unlock(&kvm->srcu, idx);
->
-> @@ -687,7 +682,6 @@ static __always_inline int kvm_handle_hva_range(struct mmu_notifier *mn,
->                 .arg            = arg,
->                 .handler        = handler,
->                 .on_lock        = (void *)kvm_null_fn,
-> -               .on_unlock      = (void *)kvm_null_fn,
->                 .flush_on_ret   = true,
->                 .may_block      = false,
->         };
-> @@ -706,7 +700,6 @@ static __always_inline int kvm_handle_hva_range_no_flush(struct mmu_notifier *mn
->                 .end            = end,
->                 .handler        = handler,
->                 .on_lock        = (void *)kvm_null_fn,
-> -               .on_unlock      = (void *)kvm_null_fn,
->                 .flush_on_ret   = false,
->                 .may_block      = false,
->         };
-> @@ -813,7 +806,6 @@ static int kvm_mmu_notifier_invalidate_range_start(struct mmu_notifier *mn,
->                 .end            = range->end,
->                 .handler        = kvm_mmu_unmap_gfn_range,
->                 .on_lock        = kvm_mmu_invalidate_begin,
-> -               .on_unlock      = (void *)kvm_null_fn,
->                 .flush_on_ret   = true,
->                 .may_block      = mmu_notifier_range_blockable(range),
->         };
-> @@ -858,6 +850,8 @@ static int kvm_mmu_notifier_invalidate_range_start(struct mmu_notifier *mn,
->
->  void kvm_mmu_invalidate_end(struct kvm *kvm)
->  {
-> +       lockdep_assert_held_write(&kvm->mmu_lock);
+>  bool kvm_unmap_gfn_range(struct kvm *kvm, struct kvm_gfn_range *range);
+> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+> index cb9376833c18..302ccb87b4c1 100644
+> --- a/virt/kvm/kvm_main.c
+> +++ b/virt/kvm/kvm_main.c
+> @@ -635,6 +635,13 @@ static __always_inline kvm_mn_ret_t __kvm_handle_hva_range(struct kvm *kvm,
+>                          * the second or later invocation of the handler).
+>                          */
+>                         gfn_range.arg = range->arg;
 > +
->         /*
->          * This sequence increase will notify the kvm page fault that
->          * the page that is going to be mapped in the spte could have
-> @@ -889,7 +883,6 @@ static void kvm_mmu_notifier_invalidate_range_end(struct mmu_notifier *mn,
->                 .end            = range->end,
->                 .handler        = (void *)kvm_null_fn,
->                 .on_lock        = kvm_mmu_invalidate_end,
-> -               .on_unlock      = (void *)kvm_null_fn,
->                 .flush_on_ret   = false,
->                 .may_block      = mmu_notifier_range_blockable(range),
->         };
+> +                       /*
+> +                        * HVA-based notifications aren't relevant to private
+> +                        * mappings as they don't have a userspace mapping.
+> +                        */
+> +                       gfn_range.only_private = false;
+> +                       gfn_range.only_shared = true;
+>                         gfn_range.may_block = range->may_block;
+>
+>                         /*
 > --
 > 2.42.0.820.g83a721a137-goog
 >
