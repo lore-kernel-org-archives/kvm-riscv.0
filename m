@@ -1,102 +1,180 @@
 From: Fuad Tabba <tabba@google.com>
-Date: Thu, 2 Nov 2023 13:52:23 +0000
-Subject: [PATCH v13 16/35] KVM: Add KVM_CREATE_GUEST_MEMFD ioctl() for
- guest-specific backing memory
-In-Reply-To: <ZULJYg5cf1UrNq3e@google.com>
-References: <20231027182217.3615211-1-seanjc@google.com> <20231027182217.3615211-17-seanjc@google.com>
- <CA+EHjTzj4drYKONVOLP19DYpJ4O8kSXcFzw2AKier1QdcFKx_Q@mail.gmail.com>
- <ZUF8A5KpwpA6IKUH@google.com> <CA+EHjTwTT9cFzYTtwT43nLJS01Sgt0NqzUgKAnfo2fiV3tEvXg@mail.gmail.com>
- <ZULJYg5cf1UrNq3e@google.com>
-Message-ID: <CA+EHjTzGzXnfXHh0m5iHt9m3BxerkUS56EVPDA_az6n2FRnk3w@mail.gmail.com>
+Date: Thu, 2 Nov 2023 13:55:03 +0000
+Subject: [PATCH v13 10/35] KVM: Add a dedicated mmu_notifier flag for
+ reclaiming freed memory
+In-Reply-To: <20231027182217.3615211-11-seanjc@google.com>
+References: <20231027182217.3615211-1-seanjc@google.com> <20231027182217.3615211-11-seanjc@google.com>
+Message-ID: <CA+EHjTx4dQwU3CWzoib_x1tgw66HCtBEiGW_7E8yZxttem6+vw@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Nov 1, 2023 at 9:55?PM Sean Christopherson <seanjc@google.com> wrote:
+On Fri, Oct 27, 2023 at 7:22?PM Sean Christopherson <seanjc@google.com> wrote:
 >
-> On Wed, Nov 01, 2023, Fuad Tabba wrote:
-> > > > > @@ -1034,6 +1034,9 @@ static void kvm_destroy_dirty_bitmap(struct kvm_memory_slot *memslot)
-> > > > >  /* This does not remove the slot from struct kvm_memslots data structures */
-> > > > >  static void kvm_free_memslot(struct kvm *kvm, struct kvm_memory_slot *slot)
-> > > > >  {
-> > > > > +       if (slot->flags & KVM_MEM_PRIVATE)
-> > > > > +               kvm_gmem_unbind(slot);
-> > > > > +
-> > > >
-> > > > Should this be called after kvm_arch_free_memslot()? Arch-specific ode
-> > > > might need some of the data before the unbinding, something I thought
-> > > > might be necessary at one point for the pKVM port when deleting a
-> > > > memslot, but realized later that kvm_invalidate_memslot() ->
-> > > > kvm_arch_guest_memory_reclaimed() was the more logical place for it.
-> > > > Also, since that seems to be the pattern for arch-specific handlers in
-> > > > KVM.
-> > >
-> > > Maybe?  But only if we can about symmetry between the allocation and free paths
-> > > I really don't think kvm_arch_free_memslot() should be doing anything beyond a
-> > > "pure" free.  E.g. kvm_arch_free_memslot() is also called after moving a memslot,
-> > > which hopefully we never actually have to allow for guest_memfd, but any code in
-> > > kvm_arch_free_memslot() would bring about "what if" questions regarding memslot
-> > > movement.  I.e. the API is intended to be a "free arch metadata associated with
-> > > the memslot".
-> > >
-> > > Out of curiosity, what does pKVM need to do at kvm_arch_guest_memory_reclaimed()?
-> >
-> > It's about the host reclaiming ownership of guest memory when tearing
-> > down a protected guest. In pKVM, we currently teardown the guest and
-> > reclaim its memory when kvm_arch_destroy_vm() is called. The problem
-> > with guestmem is that kvm_gmem_unbind() could get called before that
-> > happens, after which the host might try to access the unbound guest
-> > memory. Since the host hasn't reclaimed ownership of the guest memory
-> > from hyp, hilarity ensues (it crashes).
-> >
-> > Initially, I hooked reclaim guest memory to kvm_free_memslot(), but
-> > then I needed to move the unbind later in the function. I realized
-> > later that kvm_arch_guest_memory_reclaimed() gets called earlier (at
-> > the right time), and is more aptly named.
+> Handle AMD SEV's kvm_arch_guest_memory_reclaimed() hook by having
+> __kvm_handle_hva_range() return whether or not an overlapping memslot
+> was found, i.e. mmu_lock was acquired.  Using the .on_unlock() hook
+> works, but kvm_arch_guest_memory_reclaimed() needs to run after dropping
+> mmu_lock, which makes .on_lock() and .on_unlock() asymmetrical.
 >
-> Aha!  I suspected that might be the case.
+> Use a small struct to return the tuple of the notifier-specific return,
+> plus whether or not overlap was found.  Because the iteration helpers are
+> __always_inlined, practically speaking, the struct will never actually be
+> returned from a function call (not to mention the size of the struct will
+> be two bytes in practice).
 >
-> TDX and SNP also need to solve the same problem of "reclaiming" memory before it
-> can be safely accessed by the host.  The plan is to add an arch hook (or two?)
-> into guest_memfd that is invoked when memory is freed from guest_memfd.
->
-> Hooking kvm_arch_guest_memory_reclaimed() isn't completely correct as deleting a
-> memslot doesn't *guarantee* that guest memory is actually reclaimed (which reminds
-> me, we need to figure out a better name for that thing before introducing
-> kvm_arch_gmem_invalidate()).
+> Signed-off-by: Sean Christopherson <seanjc@google.com>
+> ---
 
-I see. I'd assumed that that was what you're using. I agree that it's
-not completely correct, so for the moment, I assume that if that
-happens we have a misbehaving host, teardown the guest and reclaim its
-memory.
-
-> The effective false positives aren't fatal for the current usage because the hook
-> is used only for x86 SEV guests to flush caches.  An unnecessary flush can cause
-> performance issues, but it doesn't affect correctness. For TDX and SNP, and IIUC
-> pKVM, false positives are fatal because KVM could assign memory back to the host
-> that is still owned by guest_memfd.
-
-Yup.
-
-> E.g. a misbehaving userspace could prematurely delete a memslot.  And the more
-> fun example is intrahost migration, where the plan is to allow pointing multiple
-> guest_memfd files at a single guest_memfd inode:
-> https://lore.kernel.org/all/cover.1691446946.git.ackerleytng at google.com
->
-> There was a lot of discussion for this, but it's scattered all over the place.
-> The TL;DR is is that the inode will represent physical memory, and a file will
-> represent a given "struct kvm" instance's view of that memory.  And so the memory
-> isn't reclaimed until the inode is truncated/punched.
->
-> I _think_ this reflects the most recent plan from the guest_memfd side:
-> https://lore.kernel.org/all/1233d749211c08d51f9ca5d427938d47f008af1f.1689893403.git.isaku.yamahata at intel.com
-
-Thanks for pointing that out. I think this might be the way to go.
-I'll have a closer look at this and see how to get it to work with
-pKVM.
+Reviewed-by: Fuad Tabba <tabba@google.com>
+Tested-by: Fuad Tabba <tabba@google.com>
 
 Cheers,
 /fuad
+
+
+>  virt/kvm/kvm_main.c | 53 +++++++++++++++++++++++++++++++--------------
+>  1 file changed, 37 insertions(+), 16 deletions(-)
+>
+> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+> index 3f5b7c2c5327..2bc04c8ae1f4 100644
+> --- a/virt/kvm/kvm_main.c
+> +++ b/virt/kvm/kvm_main.c
+> @@ -561,6 +561,19 @@ struct kvm_mmu_notifier_range {
+>         bool may_block;
+>  };
+>
+> +/*
+> + * The inner-most helper returns a tuple containing the return value from the
+> + * arch- and action-specific handler, plus a flag indicating whether or not at
+> + * least one memslot was found, i.e. if the handler found guest memory.
+> + *
+> + * Note, most notifiers are averse to booleans, so even though KVM tracks the
+> + * return from arch code as a bool, outer helpers will cast it to an int. :-(
+> + */
+> +typedef struct kvm_mmu_notifier_return {
+> +       bool ret;
+> +       bool found_memslot;
+> +} kvm_mn_ret_t;
+> +
+>  /*
+>   * Use a dedicated stub instead of NULL to indicate that there is no callback
+>   * function/handler.  The compiler technically can't guarantee that a real
+> @@ -582,22 +595,25 @@ static const union kvm_mmu_notifier_arg KVM_MMU_NOTIFIER_NO_ARG;
+>              node;                                                           \
+>              node = interval_tree_iter_next(node, start, last))      \
+>
+> -static __always_inline int __kvm_handle_hva_range(struct kvm *kvm,
+> -                                                 const struct kvm_mmu_notifier_range *range)
+> +static __always_inline kvm_mn_ret_t __kvm_handle_hva_range(struct kvm *kvm,
+> +                                                          const struct kvm_mmu_notifier_range *range)
+>  {
+> -       bool ret = false, locked = false;
+> +       struct kvm_mmu_notifier_return r = {
+> +               .ret = false,
+> +               .found_memslot = false,
+> +       };
+>         struct kvm_gfn_range gfn_range;
+>         struct kvm_memory_slot *slot;
+>         struct kvm_memslots *slots;
+>         int i, idx;
+>
+>         if (WARN_ON_ONCE(range->end <= range->start))
+> -               return 0;
+> +               return r;
+>
+>         /* A null handler is allowed if and only if on_lock() is provided. */
+>         if (WARN_ON_ONCE(IS_KVM_NULL_FN(range->on_lock) &&
+>                          IS_KVM_NULL_FN(range->handler)))
+> -               return 0;
+> +               return r;
+>
+>         idx = srcu_read_lock(&kvm->srcu);
+>
+> @@ -631,8 +647,8 @@ static __always_inline int __kvm_handle_hva_range(struct kvm *kvm,
+>                         gfn_range.end = hva_to_gfn_memslot(hva_end + PAGE_SIZE - 1, slot);
+>                         gfn_range.slot = slot;
+>
+> -                       if (!locked) {
+> -                               locked = true;
+> +                       if (!r.found_memslot) {
+> +                               r.found_memslot = true;
+>                                 KVM_MMU_LOCK(kvm);
+>                                 if (!IS_KVM_NULL_FN(range->on_lock))
+>                                         range->on_lock(kvm);
+> @@ -640,14 +656,14 @@ static __always_inline int __kvm_handle_hva_range(struct kvm *kvm,
+>                                 if (IS_KVM_NULL_FN(range->handler))
+>                                         break;
+>                         }
+> -                       ret |= range->handler(kvm, &gfn_range);
+> +                       r.ret |= range->handler(kvm, &gfn_range);
+>                 }
+>         }
+>
+> -       if (range->flush_on_ret && ret)
+> +       if (range->flush_on_ret && r.ret)
+>                 kvm_flush_remote_tlbs(kvm);
+>
+> -       if (locked) {
+> +       if (r.found_memslot) {
+>                 KVM_MMU_UNLOCK(kvm);
+>                 if (!IS_KVM_NULL_FN(range->on_unlock))
+>                         range->on_unlock(kvm);
+> @@ -655,8 +671,7 @@ static __always_inline int __kvm_handle_hva_range(struct kvm *kvm,
+>
+>         srcu_read_unlock(&kvm->srcu, idx);
+>
+> -       /* The notifiers are averse to booleans. :-( */
+> -       return (int)ret;
+> +       return r;
+>  }
+>
+>  static __always_inline int kvm_handle_hva_range(struct mmu_notifier *mn,
+> @@ -677,7 +692,7 @@ static __always_inline int kvm_handle_hva_range(struct mmu_notifier *mn,
+>                 .may_block      = false,
+>         };
+>
+> -       return __kvm_handle_hva_range(kvm, &range);
+> +       return __kvm_handle_hva_range(kvm, &range).ret;
+>  }
+>
+>  static __always_inline int kvm_handle_hva_range_no_flush(struct mmu_notifier *mn,
+> @@ -696,7 +711,7 @@ static __always_inline int kvm_handle_hva_range_no_flush(struct mmu_notifier *mn
+>                 .may_block      = false,
+>         };
+>
+> -       return __kvm_handle_hva_range(kvm, &range);
+> +       return __kvm_handle_hva_range(kvm, &range).ret;
+>  }
+>
+>  static bool kvm_change_spte_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
+> @@ -798,7 +813,7 @@ static int kvm_mmu_notifier_invalidate_range_start(struct mmu_notifier *mn,
+>                 .end            = range->end,
+>                 .handler        = kvm_mmu_unmap_gfn_range,
+>                 .on_lock        = kvm_mmu_invalidate_begin,
+> -               .on_unlock      = kvm_arch_guest_memory_reclaimed,
+> +               .on_unlock      = (void *)kvm_null_fn,
+>                 .flush_on_ret   = true,
+>                 .may_block      = mmu_notifier_range_blockable(range),
+>         };
+> @@ -830,7 +845,13 @@ static int kvm_mmu_notifier_invalidate_range_start(struct mmu_notifier *mn,
+>         gfn_to_pfn_cache_invalidate_start(kvm, range->start, range->end,
+>                                           hva_range.may_block);
+>
+> -       __kvm_handle_hva_range(kvm, &hva_range);
+> +       /*
+> +        * If one or more memslots were found and thus zapped, notify arch code
+> +        * that guest memory has been reclaimed.  This needs to be done *after*
+> +        * dropping mmu_lock, as x86's reclaim path is slooooow.
+> +        */
+> +       if (__kvm_handle_hva_range(kvm, &hva_range).found_memslot)
+> +               kvm_arch_guest_memory_reclaimed(kvm);
+>
+>         return 0;
+>  }
+> --
+> 2.42.0.820.g83a721a137-goog
+>
 
