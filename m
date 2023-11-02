@@ -1,104 +1,75 @@
 From: Huang, Kai <kai.huang@intel.com>
-Date: Thu, 2 Nov 2023 03:01:11 +0000
-Subject: [PATCH v13 13/35] KVM: Introduce per-page memory attributes
-In-Reply-To: <20231027182217.3615211-14-seanjc@google.com>
+Date: Thu, 2 Nov 2023 03:17:12 +0000
+Subject: [PATCH v13 09/35] KVM: Add KVM_EXIT_MEMORY_FAULT exit to report
+ faults to userspace
+In-Reply-To: <ZUKMsOdg3N9wmEzy@google.com>
 References: <20231027182217.3615211-1-seanjc@google.com>
-	 <20231027182217.3615211-14-seanjc@google.com>
-Message-ID: <b486ed5036fab6d6d4e13a6c68abddcb9541d51b.camel@intel.com>
+	 <20231027182217.3615211-10-seanjc@google.com>
+	 <482bfea6f54ea1bb7d1ad75e03541d0ba0e5be6f.camel@intel.com>
+	 <ZUKMsOdg3N9wmEzy@google.com>
+Message-ID: <64e3764e36ba7a00d94cc7db1dea1ef06b620aaf.camel@intel.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, 2023-10-27 at 11:21 -0700, Sean Christopherson wrote:
-> From: Chao Peng <chao.p.peng@linux.intel.com>
+On Wed, 2023-11-01 at 10:36 -0700, Sean Christopherson wrote:
+> On Wed, Nov 01, 2023, Kai Huang wrote:
+> > 
+> > > +7.34 KVM_CAP_MEMORY_FAULT_INFO
+> > > +------------------------------
+> > > +
+> > > +:Architectures: x86
+> > > +:Returns: Informational only, -EINVAL on direct KVM_ENABLE_CAP.
+> > > +
+> > > +The presence of this capability indicates that KVM_RUN will fill
+> > > +kvm_run.memory_fault if KVM cannot resolve a guest page fault VM-Exit, e.g. if
+> > > +there is a valid memslot but no backing VMA for the corresponding host virtual
+> > > +address.
+> > > +
+> > > +The information in kvm_run.memory_fault is valid if and only if KVM_RUN returns
+> > > +an error with errno=EFAULT or errno=EHWPOISON *and* kvm_run.exit_reason is set
+> > > +to KVM_EXIT_MEMORY_FAULT.
+> > 
+> > IIUC returning -EFAULT or whatever -errno is sort of KVM internal
+> > implementation.
 > 
-> In confidential computing usages, whether a page is private or shared is
-> necessary information for KVM to perform operations like page fault
-> handling, page zapping etc. There are other potential use cases for
-> per-page memory attributes, e.g. to make memory read-only (or no-exec,
-> or exec-only, etc.) without having to modify memslots.
+> The errno that is returned to userspace is ABI.  In KVM, it's a _very_ poorly
+> defined ABI for the vast majority of ioctls(), but it's still technically ABI.
+> KVM gets away with being cavalier with errno because the vast majority of errors
+> are considered fatal by userespace, i.e. in most cases, userspace simply doesn't
+> care about the exact errno.
 > 
-> Introduce two ioctls (advertised by KVM_CAP_MEMORY_ATTRIBUTES) to allow
-> userspace to operate on the per-page memory attributes.
->   - KVM_SET_MEMORY_ATTRIBUTES to set the per-page memory attributes to
->     a guest memory range.
->   - KVM_GET_SUPPORTED_MEMORY_ATTRIBUTES to return the KVM supported
->     memory attributes.
+> A good example is KVM_RUN with -EINTR; if KVM were to return something other than
+> -EINTR on a pending signal or vcpu->run->immediate_exit, userspace would fall over.
 > 
-> Use an xarray to store the per-page attributes internally, with a naive,
-> not fully optimized implementation, i.e. prioritize correctness over
-> performance for the initial implementation.
+> > Is it better to relax the validity of kvm_run.memory_fault when
+> > KVM_RUN returns any -errno?
 > 
-> Use bit 3 for the PRIVATE attribute so that KVM can use bits 0-2 for RWX
-> attributes/protections in the future, e.g. to give userspace fine-grained
-> control over read, write, and execute protections for guest memory.
+> Not unless there's a need to do so, and if there is then we can update the
+> documentation accordingly.  If KVM's ABI is that kvm_run.memory_fault is valid
+> for any errno, then KVM would need to purge kvm_run.exit_reason super early in
+> KVM_RUN, e.g. to prevent an -EINTR return due to immediate_exit from being
+> misinterpreted as KVM_EXIT_MEMORY_FAULT.  And purging exit_reason super early is
+> subtly tricky because KVM's (again, poorly documented) ABI is that *some* exit
+> reasons are preserved across KVM_RUN with vcpu->run->immediate_exit (or with a
+> pending signal).
 > 
-> Provide arch hooks for handling attribute changes before and after common
-> code sets the new attributes, e.g. x86 will use the "pre" hook to zap all
-> relevant mappings, and the "post" hook to track whether or not hugepages
-> can be used to map the range.
+> https://lore.kernel.org/all/ZFFbwOXZ5uI%2Fgdaf at google.com
 > 
-> To simplify the implementation wrap the entire sequence with
-> kvm_mmu_invalidate_{begin,end}() even though the operation isn't strictly
-> guaranteed to be an invalidation.  For the initial use case, x86 *will*
-> always invalidate memory, and preventing arch code from creating new
-> mappings while the attributes are in flux makes it much easier to reason
-> about the correctness of consuming attributes.
-> 
-> It's possible that future usages may not require an invalidation, e.g.
-> if KVM ends up supporting RWX protections and userspace grants _more_
-> protections, but again opt for simplicity and punt optimizations to
-> if/when they are needed.
-> 
-> Suggested-by: Sean Christopherson <seanjc@google.com>
-> Link: https://lore.kernel.org/all/Y2WB48kD0J4VGynX at google.com
-> Cc: Fuad Tabba <tabba@google.com>
-> Cc: Xu Yilun <yilun.xu@intel.com>
-> Cc: Micka?l Sala?n <mic@digikod.net>
-> Signed-off-by: Chao Peng <chao.p.peng@linux.intel.com>
-> Co-developed-by: Sean Christopherson <seanjc@google.com>
-> Signed-off-by: Sean Christopherson <seanjc@google.com>
 > 
 
-[...]
+Agreed with not to relax to any errno.  However using -EFAULT as part of ABI
+definition seems a little bit dangerous, e.g., someone could accidentally or
+mistakenly return -EFAULT in KVM_RUN at early time and/or in a completely
+different code path, etc. ?-EINTR has well defined meaning, but -EFAULT (which
+is "Bad address") seems doesn't but I am not sure either. :-)
 
-> +Note, there is no "get" API.  Userspace is responsible for explicitly tracking
-> +the state of a gfn/page as needed.
-> +
-> 
+One example is, for backing VMA with VM_IO | VM_PFNMAP, hva_to_pfn() returns
+KVM_PFN_ERR_FAULT when the kernel cannot get a valid PFN (e.g. when SGX vepc
+fault handler failed to allocate EPC) and kvm_handle_error_pfn() will just
+return -EFAULT.  If kvm_run.exit_reason isn't purged early then is it possible
+to have some issue here?
 
-[...]
-
->  
-> +#ifdef CONFIG_KVM_GENERIC_MEMORY_ATTRIBUTES
-> +static inline unsigned long kvm_get_memory_attributes(struct kvm *kvm, gfn_t gfn)
-> +{
-> +	return xa_to_value(xa_load(&kvm->mem_attr_array, gfn));
-> +}
-
-Only call xa_to_value() when xa_load() returns !NULL?
-
-> +
-> +bool kvm_range_has_memory_attributes(struct kvm *kvm, gfn_t start, gfn_t end,
-> +				     unsigned long attrs);
-
-Seems it's not immediately clear why this function is needed in this patch,
-especially when you said there is no "get" API above.  Add some material to
-changelog?
- 
-
-> +bool kvm_arch_pre_set_memory_attributes(struct kvm *kvm,
-> +					struct kvm_gfn_range *range);
-> +bool kvm_arch_post_set_memory_attributes(struct kvm *kvm,
-> +					 struct kvm_gfn_range *range);
-
-Looks if this Kconfig is on, the above two arch hooks won't have implementation.
-
-Is it better to have two __weak empty versions here in this patch?
-
-Anyway, from the changelog it seems it's not mandatory for some ARCH to provide
-the above two if one wants to turn this on, i.e., the two hooks can be empty and
-the ARCH can just use the __weak version.
 
