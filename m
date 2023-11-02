@@ -1,42 +1,40 @@
-From: Huang, Kai <kai.huang@intel.com>
-Date: Thu, 2 Nov 2023 10:55:31 +0000
-Subject: [PATCH v13 13/35] KVM: Introduce per-page memory attributes
-In-Reply-To: <a03d0e36-7b38-4841-9c62-66c9029e388d@redhat.com>
+From: Paolo Bonzini <pbonzini@redhat.com>
+Date: Thu, 2 Nov 2023 12:01:41 +0100
+Subject: [PATCH v13 09/35] KVM: Add KVM_EXIT_MEMORY_FAULT exit to report
+ faults to userspace
+In-Reply-To: <ZUKMsOdg3N9wmEzy@google.com>
 References: <20231027182217.3615211-1-seanjc@google.com>
-	 <20231027182217.3615211-14-seanjc@google.com>
-	 <b486ed5036fab6d6d4e13a6c68abddcb9541d51b.camel@intel.com>
-	 <a03d0e36-7b38-4841-9c62-66c9029e388d@redhat.com>
-Message-ID: <72e15d0a3f1b2e8ddd2b880f9f433423b6614dcb.camel@intel.com>
+ <20231027182217.3615211-10-seanjc@google.com>
+ <482bfea6f54ea1bb7d1ad75e03541d0ba0e5be6f.camel@intel.com>
+ <ZUKMsOdg3N9wmEzy@google.com>
+Message-ID: <e6025e28-ea93-458b-887f-925eab7cf260@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, 2023-11-02 at 11:32 +0100, Paolo Bonzini wrote:
-> > > +#ifdef CONFIG_KVM_GENERIC_MEMORY_ATTRIBUTES
-> > > +static inline unsigned long kvm_get_memory_attributes(struct kvm *kvm, gfn_t gfn)
-> > > +{
-> > > +	return xa_to_value(xa_load(&kvm->mem_attr_array, gfn));
-> > > +}
-> > 
-> > Only call xa_to_value() when xa_load() returns !NULL?
-> 
-> This xarray does not store a pointer, therefore xa_load() actually 
-> returns an integer that is tagged with 1 in the low bit:
-> 
-> static inline unsigned long xa_to_value(const void *entry)
-> {
-> ???????? return (unsigned long)entry >> 1;
-> }
-> 
-> Returning zero for an empty entry is okay, so the result of xa_load() 
-> can be used directly.
+On 11/1/23 18:36, Sean Christopherson wrote:
+> A good example is KVM_RUN with -EINTR; if KVM were to return something other than
+> -EINTR on a pending signal or vcpu->run->immediate_exit, userspace would fall over.
 
-Thanks for explaining.  I was thinking perhaps it's better to do:
+And dually if KVM were to return KVM_EXIT_INTR together with something 
+other than -EINTR.
 
-	void *entry = xa_load(...);
-	
-	return xa_is_value(entry) ? xa_to_value(entry) : 0;
+> And purging exit_reason super early is subtly tricky because KVM's 
+> (again, poorly documented) ABI is that *some* exit reasons are preserved 
+> across KVM_RUN with vcpu->run->immediate_exit (or with a pending 
+> signal). https://lore.kernel.org/all/ZFFbwOXZ5uI%2Fgdaf at google.com
 
-But "NULL (0) >> 1" is still 0, so yes we can use directly.
+vcpu->run->immediate_exit preserves all exit reasons, but it's not a 
+good idea that immediate_exit behaves different from a pending signal on 
+entry to KVM_RUN (remember that immediate_exit was meant to be a better 
+performing alternative to KVM_SET_SIGNAL_MASK).
+
+In principle, vcpu->run->immediate_exit could return KVM_EXIT_INTR 
+(perhaps even _should_, except that breaks selftests so at this point it 
+is ABI).
+
+Paolo
+
+
