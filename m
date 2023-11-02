@@ -1,52 +1,60 @@
 From: Zeng Guang <guang.zeng@intel.com>
-Date: Thu,  2 Nov 2023 23:51:04 +0800
-Subject: [RFC PATCH v1 1/8] KVM: selftests: x86: Fix bug in addr_arch_gva2gpa()
-In-Reply-To: <20231102155111.28821-1-guang.zeng@intel.com>
-References: <20231102155111.28821-1-guang.zeng@intel.com>
-Message-ID: <20231102155111.28821-2-guang.zeng@intel.com>
+Date: Thu,  2 Nov 2023 23:51:03 +0800
+Subject: [RFC PATCH v1 0/8] KVM: seftests: Support guest user mode execution and running
+Message-ID: <20231102155111.28821-1-guang.zeng@intel.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Fix the approach to get page map from gva to gpa.
+This patch series give a proposal to support guest VM running
+in user mode and in canonical linear address organization as
+well.
 
-If gva maps a 4-KByte page, current implementation of addr_arch_gva2gpa()
-will obtain wrong page size and cannot derive correct offset from the guest
-virtual address.
+First design to parition the 64-bit canonical linear address space
+into two half parts belonging to user-mode and supervisor-mode
+respectively, similar as the organization of linear addresses used
+in linux OS. Currently the linear addresses use 48-bit canonical
+format in which bits 63:47 of the address are identical.
 
-Meanwhile using HUGEPAGE_MASK(x) to calculate the offset within page
-(1G/2M/4K) mistakenly incorporates the upper part of 64-bit canonical
-linear address. That will work out improper guest physical address if
-translating guest virtual address in supervisor-mode address space.
+Secondly setup page table mapping the same guest physical address
+of test code and data segment onto both user-mode and supervisor-mode
+address space. It allows guest in different runtime mode, i.e.
+user or supervisor, can run one code base in the corresponding
+linear address space.
 
-Signed-off-by: Zeng Guang <guang.zeng@intel.com>
----
- tools/testing/selftests/kvm/lib/x86_64/processor.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+Also provide the runtime environment setup API for switching to
+user mode execution.     
 
-diff --git a/tools/testing/selftests/kvm/lib/x86_64/processor.c b/tools/testing/selftests/kvm/lib/x86_64/processor.c
-index d8288374078e..9f4b8c47edce 100644
---- a/tools/testing/selftests/kvm/lib/x86_64/processor.c
-+++ b/tools/testing/selftests/kvm/lib/x86_64/processor.c
-@@ -293,6 +293,7 @@ uint64_t *__vm_get_page_table_entry(struct kvm_vm *vm, uint64_t vaddr,
- 	if (vm_is_target_pte(pde, level, PG_LEVEL_2M))
- 		return pde;
- 
-+	*level = PG_LEVEL_4K;
- 	return virt_get_pte(vm, pde, vaddr, PG_LEVEL_4K);
- }
- 
-@@ -496,7 +497,7 @@ vm_paddr_t addr_arch_gva2gpa(struct kvm_vm *vm, vm_vaddr_t gva)
- 	 * No need for a hugepage mask on the PTE, x86-64 requires the "unused"
- 	 * address bits to be zero.
- 	 */
--	return PTE_GET_PA(*pte) | (gva & ~HUGEPAGE_MASK(level));
-+	return PTE_GET_PA(*pte) | (gva & (HUGEPAGE_SIZE(level) - 1));
- }
- 
- static void kvm_setup_gdt(struct kvm_vm *vm, struct kvm_dtable *dt)
+
+Zeng Guang (8):
+  KVM: selftests: x86: Fix bug in addr_arch_gva2gpa()
+  KVM: selftests: x86: Support guest running on canonical linear-address
+    organization
+  KVM: selftests: Add virt_arch_ucall_prealloc() arch specific
+    implementation
+  KVM : selftests : Adapt selftest cases to kernel canonical linear
+    address
+  KVM: selftests: x86: Prepare setup for user mode support
+  KVM: selftests: x86: Allow user to access user-mode address and I/O
+    address space
+  KVM: selftests: x86: Support vcpu run in user mode
+  KVM: selftests: x86: Add KVM forced emulation prefix capability
+
+ .../selftests/kvm/include/kvm_util_base.h     |  20 ++-
+ .../selftests/kvm/include/x86_64/processor.h  |  48 ++++++-
+ .../selftests/kvm/lib/aarch64/processor.c     |   5 +
+ tools/testing/selftests/kvm/lib/kvm_util.c    |   6 +-
+ .../selftests/kvm/lib/riscv/processor.c       |   5 +
+ .../selftests/kvm/lib/s390x/processor.c       |   5 +
+ .../testing/selftests/kvm/lib/ucall_common.c  |   2 +
+ .../selftests/kvm/lib/x86_64/processor.c      | 117 ++++++++++++++----
+ .../selftests/kvm/set_memory_region_test.c    |  13 +-
+ .../testing/selftests/kvm/x86_64/debug_regs.c |   2 +-
+ .../kvm/x86_64/userspace_msr_exit_test.c      |   9 +-
+ 11 files changed, 195 insertions(+), 37 deletions(-)
+
 -- 
 2.21.3
 
