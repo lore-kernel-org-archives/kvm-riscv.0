@@ -1,54 +1,36 @@
 From: Paolo Bonzini <pbonzini@redhat.com>
-Date: Thu, 2 Nov 2023 12:03:39 +0100
-Subject: [PATCH v13 09/35] KVM: Add KVM_EXIT_MEMORY_FAULT exit to report
- faults to userspace
-In-Reply-To: <32cb71700aedcbd1f65276cf44a601760ffc364b.camel@intel.com>
+Date: Thu, 2 Nov 2023 12:14:13 +0100
+Subject: [PATCH v13 12/35] KVM: Prepare for handling only shared mappings
+ in mmu_notifier events
+In-Reply-To: <9963b77c-3a38-4f89-b21e-48d0fdda8f53@linux.intel.com>
 References: <20231027182217.3615211-1-seanjc@google.com>
- <20231027182217.3615211-10-seanjc@google.com>
- <482bfea6f54ea1bb7d1ad75e03541d0ba0e5be6f.camel@intel.com>
- <ZUKMsOdg3N9wmEzy@google.com>
- <64e3764e36ba7a00d94cc7db1dea1ef06b620aaf.camel@intel.com>
- <32cb71700aedcbd1f65276cf44a601760ffc364b.camel@intel.com>
-Message-ID: <496b78bb-ad12-4eed-a62c-8c2fd725ec61@redhat.com>
+ <20231027182217.3615211-13-seanjc@google.com>
+ <9963b77c-3a38-4f89-b21e-48d0fdda8f53@linux.intel.com>
+Message-ID: <cbd46f04-c53b-4d22-9730-76f2ace141d9@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 11/2/23 10:35, Huang, Kai wrote:
-> IIUC KVM can already handle the case of poisoned
-> page by sending signal to user app: 
+On 11/2/23 06:59, Binbin Wu wrote:
 > 
-> 	static int kvm_handle_error_pfn(struct kvm_vcpu *vcpu, 
-> 			struct kvm_page_fault *fault)                                               
-> 	{       
-> 		...
-> 
->        		if (fault->pfn == KVM_PFN_ERR_HWPOISON) {
->               		kvm_send_hwpoison_signal(fault->slot, fault->gfn);
->                 	return RET_PF_RETRY;                                          
->         	}
-> 	}
+>> Add flags to "struct kvm_gfn_range" to let notifier events target
+>> only shared and only private mappings, and write up the existing
+>> mmu_notifier events to be shared-only (private memory is never
+>> associated with a userspace virtual address, i.e. can't be reached
+>> via mmu_notifiers).
+>> 
+>> Add two flags so that KVM can handle the three possibilities
+>> (shared, private, and shared+private) without needing something
+>> like a tri-state enum.
+>
+> I see the two flags are set/cleared in __kvm_handle_hva_range() in
+> this patch and kvm_handle_gfn_range() from the later patch 13/35, but
+> I didn't see they are used/read in this patch series if I didn't miss
+> anything.  How are they supposed to be used in KVM?
 
-EHWPOISON is not implemented by this series, so it should be left out of 
-the documentation.
-
-
-> Currently as mentioned above when
-> vepc fault handler cannot allocate EPC page KVM returns -EFAULT to Qemu, and
-> Qemu prints ...
-> 
-> 	...: Bad address
-> 	<dump guest cpu registers>
-> 
-> ... which is nonsense.
-> 
-> If we can use memory_fault.flags (or is 'fault_reason' a better name?) to carry
-> a specific value for EPC to let Qemu know and Qemu can then do more reasonable
-> things.
-
-Yes, that's a good idea that can be implemented on top.
+They are going to be used by SNP/TDX patches.
 
 Paolo
 
