@@ -1,10 +1,9 @@
 From: Fuad Tabba <tabba@google.com>
-Date: Thu, 2 Nov 2023 13:55:03 +0000
-Subject: [PATCH v13 10/35] KVM: Add a dedicated mmu_notifier flag for
- reclaiming freed memory
-In-Reply-To: <20231027182217.3615211-11-seanjc@google.com>
-References: <20231027182217.3615211-1-seanjc@google.com> <20231027182217.3615211-11-seanjc@google.com>
-Message-ID: <CA+EHjTx4dQwU3CWzoib_x1tgw66HCtBEiGW_7E8yZxttem6+vw@mail.gmail.com>
+Date: Thu, 2 Nov 2023 13:55:42 +0000
+Subject: [PATCH v13 11/35] KVM: Drop .on_unlock() mmu_notifier hook
+In-Reply-To: <20231027182217.3615211-12-seanjc@google.com>
+References: <20231027182217.3615211-1-seanjc@google.com> <20231027182217.3615211-12-seanjc@google.com>
+Message-ID: <CA+EHjTzz2PftRAFU9pQaE1D=E3hwBDCDQpJ69O6r5akdAs0Exw@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -13,18 +12,19 @@ Content-Transfer-Encoding: 7bit
 
 On Fri, Oct 27, 2023 at 7:22?PM Sean Christopherson <seanjc@google.com> wrote:
 >
-> Handle AMD SEV's kvm_arch_guest_memory_reclaimed() hook by having
-> __kvm_handle_hva_range() return whether or not an overlapping memslot
-> was found, i.e. mmu_lock was acquired.  Using the .on_unlock() hook
-> works, but kvm_arch_guest_memory_reclaimed() needs to run after dropping
-> mmu_lock, which makes .on_lock() and .on_unlock() asymmetrical.
+> Drop the .on_unlock() mmu_notifer hook now that it's no longer used for
+> notifying arch code that memory has been reclaimed.  Adding .on_unlock()
+> and invoking it *after* dropping mmu_lock was a terrible idea, as doing so
+> resulted in .on_lock() and .on_unlock() having divergent and asymmetric
+> behavior, and set future developers up for failure, i.e. all but asked for
+> bugs where KVM relied on using .on_unlock() to try to run a callback while
+> holding mmu_lock.
 >
-> Use a small struct to return the tuple of the notifier-specific return,
-> plus whether or not overlap was found.  Because the iteration helpers are
-> __always_inlined, practically speaking, the struct will never actually be
-> returned from a function call (not to mention the size of the struct will
-> be two bytes in practice).
+> Opportunistically add a lockdep assertion in kvm_mmu_invalidate_end() to
+> guard against future bugs of this nature.
 >
+> Reported-by: Isaku Yamahata <isaku.yamahata@intel.com>
+> Link: https://lore.kernel.org/all/20230802203119.GB2021422 at ls.amr.corp.intel.com
 > Signed-off-by: Sean Christopherson <seanjc@google.com>
 > ---
 
@@ -34,146 +34,83 @@ Tested-by: Fuad Tabba <tabba@google.com>
 Cheers,
 /fuad
 
-
->  virt/kvm/kvm_main.c | 53 +++++++++++++++++++++++++++++++--------------
->  1 file changed, 37 insertions(+), 16 deletions(-)
+>  virt/kvm/kvm_main.c | 13 +++----------
+>  1 file changed, 3 insertions(+), 10 deletions(-)
 >
 > diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-> index 3f5b7c2c5327..2bc04c8ae1f4 100644
+> index 2bc04c8ae1f4..cb9376833c18 100644
 > --- a/virt/kvm/kvm_main.c
 > +++ b/virt/kvm/kvm_main.c
-> @@ -561,6 +561,19 @@ struct kvm_mmu_notifier_range {
+> @@ -544,7 +544,6 @@ static inline struct kvm *mmu_notifier_to_kvm(struct mmu_notifier *mn)
+>  typedef bool (*gfn_handler_t)(struct kvm *kvm, struct kvm_gfn_range *range);
+>
+>  typedef void (*on_lock_fn_t)(struct kvm *kvm);
+> -typedef void (*on_unlock_fn_t)(struct kvm *kvm);
+>
+>  struct kvm_mmu_notifier_range {
+>         /*
+> @@ -556,7 +555,6 @@ struct kvm_mmu_notifier_range {
+>         union kvm_mmu_notifier_arg arg;
+>         gfn_handler_t handler;
+>         on_lock_fn_t on_lock;
+> -       on_unlock_fn_t on_unlock;
+>         bool flush_on_ret;
 >         bool may_block;
 >  };
->
-> +/*
-> + * The inner-most helper returns a tuple containing the return value from the
-> + * arch- and action-specific handler, plus a flag indicating whether or not at
-> + * least one memslot was found, i.e. if the handler found guest memory.
-> + *
-> + * Note, most notifiers are averse to booleans, so even though KVM tracks the
-> + * return from arch code as a bool, outer helpers will cast it to an int. :-(
-> + */
-> +typedef struct kvm_mmu_notifier_return {
-> +       bool ret;
-> +       bool found_memslot;
-> +} kvm_mn_ret_t;
-> +
->  /*
->   * Use a dedicated stub instead of NULL to indicate that there is no callback
->   * function/handler.  The compiler technically can't guarantee that a real
-> @@ -582,22 +595,25 @@ static const union kvm_mmu_notifier_arg KVM_MMU_NOTIFIER_NO_ARG;
->              node;                                                           \
->              node = interval_tree_iter_next(node, start, last))      \
->
-> -static __always_inline int __kvm_handle_hva_range(struct kvm *kvm,
-> -                                                 const struct kvm_mmu_notifier_range *range)
-> +static __always_inline kvm_mn_ret_t __kvm_handle_hva_range(struct kvm *kvm,
-> +                                                          const struct kvm_mmu_notifier_range *range)
->  {
-> -       bool ret = false, locked = false;
-> +       struct kvm_mmu_notifier_return r = {
-> +               .ret = false,
-> +               .found_memslot = false,
-> +       };
->         struct kvm_gfn_range gfn_range;
->         struct kvm_memory_slot *slot;
->         struct kvm_memslots *slots;
->         int i, idx;
->
->         if (WARN_ON_ONCE(range->end <= range->start))
-> -               return 0;
-> +               return r;
->
->         /* A null handler is allowed if and only if on_lock() is provided. */
->         if (WARN_ON_ONCE(IS_KVM_NULL_FN(range->on_lock) &&
->                          IS_KVM_NULL_FN(range->handler)))
-> -               return 0;
-> +               return r;
->
->         idx = srcu_read_lock(&kvm->srcu);
->
-> @@ -631,8 +647,8 @@ static __always_inline int __kvm_handle_hva_range(struct kvm *kvm,
->                         gfn_range.end = hva_to_gfn_memslot(hva_end + PAGE_SIZE - 1, slot);
->                         gfn_range.slot = slot;
->
-> -                       if (!locked) {
-> -                               locked = true;
-> +                       if (!r.found_memslot) {
-> +                               r.found_memslot = true;
->                                 KVM_MMU_LOCK(kvm);
->                                 if (!IS_KVM_NULL_FN(range->on_lock))
->                                         range->on_lock(kvm);
-> @@ -640,14 +656,14 @@ static __always_inline int __kvm_handle_hva_range(struct kvm *kvm,
->                                 if (IS_KVM_NULL_FN(range->handler))
->                                         break;
->                         }
-> -                       ret |= range->handler(kvm, &gfn_range);
-> +                       r.ret |= range->handler(kvm, &gfn_range);
->                 }
->         }
->
-> -       if (range->flush_on_ret && ret)
-> +       if (range->flush_on_ret && r.ret)
+> @@ -663,11 +661,8 @@ static __always_inline kvm_mn_ret_t __kvm_handle_hva_range(struct kvm *kvm,
+>         if (range->flush_on_ret && r.ret)
 >                 kvm_flush_remote_tlbs(kvm);
 >
-> -       if (locked) {
-> +       if (r.found_memslot) {
+> -       if (r.found_memslot) {
+> +       if (r.found_memslot)
 >                 KVM_MMU_UNLOCK(kvm);
->                 if (!IS_KVM_NULL_FN(range->on_unlock))
->                         range->on_unlock(kvm);
-> @@ -655,8 +671,7 @@ static __always_inline int __kvm_handle_hva_range(struct kvm *kvm,
+> -               if (!IS_KVM_NULL_FN(range->on_unlock))
+> -                       range->on_unlock(kvm);
+> -       }
 >
 >         srcu_read_unlock(&kvm->srcu, idx);
 >
-> -       /* The notifiers are averse to booleans. :-( */
-> -       return (int)ret;
-> +       return r;
->  }
->
->  static __always_inline int kvm_handle_hva_range(struct mmu_notifier *mn,
-> @@ -677,7 +692,7 @@ static __always_inline int kvm_handle_hva_range(struct mmu_notifier *mn,
+> @@ -687,7 +682,6 @@ static __always_inline int kvm_handle_hva_range(struct mmu_notifier *mn,
+>                 .arg            = arg,
+>                 .handler        = handler,
+>                 .on_lock        = (void *)kvm_null_fn,
+> -               .on_unlock      = (void *)kvm_null_fn,
+>                 .flush_on_ret   = true,
 >                 .may_block      = false,
 >         };
->
-> -       return __kvm_handle_hva_range(kvm, &range);
-> +       return __kvm_handle_hva_range(kvm, &range).ret;
->  }
->
->  static __always_inline int kvm_handle_hva_range_no_flush(struct mmu_notifier *mn,
-> @@ -696,7 +711,7 @@ static __always_inline int kvm_handle_hva_range_no_flush(struct mmu_notifier *mn
+> @@ -706,7 +700,6 @@ static __always_inline int kvm_handle_hva_range_no_flush(struct mmu_notifier *mn
+>                 .end            = end,
+>                 .handler        = handler,
+>                 .on_lock        = (void *)kvm_null_fn,
+> -               .on_unlock      = (void *)kvm_null_fn,
+>                 .flush_on_ret   = false,
 >                 .may_block      = false,
 >         };
->
-> -       return __kvm_handle_hva_range(kvm, &range);
-> +       return __kvm_handle_hva_range(kvm, &range).ret;
->  }
->
->  static bool kvm_change_spte_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
-> @@ -798,7 +813,7 @@ static int kvm_mmu_notifier_invalidate_range_start(struct mmu_notifier *mn,
+> @@ -813,7 +806,6 @@ static int kvm_mmu_notifier_invalidate_range_start(struct mmu_notifier *mn,
 >                 .end            = range->end,
 >                 .handler        = kvm_mmu_unmap_gfn_range,
 >                 .on_lock        = kvm_mmu_invalidate_begin,
-> -               .on_unlock      = kvm_arch_guest_memory_reclaimed,
-> +               .on_unlock      = (void *)kvm_null_fn,
+> -               .on_unlock      = (void *)kvm_null_fn,
 >                 .flush_on_ret   = true,
 >                 .may_block      = mmu_notifier_range_blockable(range),
 >         };
-> @@ -830,7 +845,13 @@ static int kvm_mmu_notifier_invalidate_range_start(struct mmu_notifier *mn,
->         gfn_to_pfn_cache_invalidate_start(kvm, range->start, range->end,
->                                           hva_range.may_block);
+> @@ -858,6 +850,8 @@ static int kvm_mmu_notifier_invalidate_range_start(struct mmu_notifier *mn,
 >
-> -       __kvm_handle_hva_range(kvm, &hva_range);
-> +       /*
-> +        * If one or more memslots were found and thus zapped, notify arch code
-> +        * that guest memory has been reclaimed.  This needs to be done *after*
-> +        * dropping mmu_lock, as x86's reclaim path is slooooow.
-> +        */
-> +       if (__kvm_handle_hva_range(kvm, &hva_range).found_memslot)
-> +               kvm_arch_guest_memory_reclaimed(kvm);
->
->         return 0;
->  }
+>  void kvm_mmu_invalidate_end(struct kvm *kvm)
+>  {
+> +       lockdep_assert_held_write(&kvm->mmu_lock);
+> +
+>         /*
+>          * This sequence increase will notify the kvm page fault that
+>          * the page that is going to be mapped in the spte could have
+> @@ -889,7 +883,6 @@ static void kvm_mmu_notifier_invalidate_range_end(struct mmu_notifier *mn,
+>                 .end            = range->end,
+>                 .handler        = (void *)kvm_null_fn,
+>                 .on_lock        = kvm_mmu_invalidate_end,
+> -               .on_unlock      = (void *)kvm_null_fn,
+>                 .flush_on_ret   = false,
+>                 .may_block      = mmu_notifier_range_blockable(range),
+>         };
 > --
 > 2.42.0.820.g83a721a137-goog
 >
