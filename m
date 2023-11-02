@@ -1,40 +1,104 @@
-From: Xiaoyao Li <xiaoyao.li@intel.com>
-Date: Thu, 2 Nov 2023 10:19:50 +0800
-Subject: [PATCH v13 09/35] KVM: Add KVM_EXIT_MEMORY_FAULT exit to report
- faults to userspace
-In-Reply-To: <ZUKMsOdg3N9wmEzy@google.com>
+From: Huang, Kai <kai.huang@intel.com>
+Date: Thu, 2 Nov 2023 03:01:11 +0000
+Subject: [PATCH v13 13/35] KVM: Introduce per-page memory attributes
+In-Reply-To: <20231027182217.3615211-14-seanjc@google.com>
 References: <20231027182217.3615211-1-seanjc@google.com>
- <20231027182217.3615211-10-seanjc@google.com>
- <482bfea6f54ea1bb7d1ad75e03541d0ba0e5be6f.camel@intel.com>
- <ZUKMsOdg3N9wmEzy@google.com>
-Message-ID: <33686031-c1df-4ef5-a6ac-1aab7f5c656e@intel.com>
+	 <20231027182217.3615211-14-seanjc@google.com>
+Message-ID: <b486ed5036fab6d6d4e13a6c68abddcb9541d51b.camel@intel.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 11/2/2023 1:36 AM, Sean Christopherson wrote:
->> KVM_CAP_MEMORY_FAULT_INFO is x86 only, is it better to put this function to
->> <asm/kvm_host.h>?
-> I'd prefer to keep it in generic code, as it's highly likely to end up there
-> sooner than later.  There's a known use case for ARM (exit to userspace on missing
-> userspace mapping[*]), and I'm guessing pKVM (also ARM) will also utilize this API.
+On Fri, 2023-10-27 at 11:21 -0700, Sean Christopherson wrote:
+> From: Chao Peng <chao.p.peng@linux.intel.com>
 > 
-> [*]https://lore.kernel.org/all/20230908222905.1321305-8-amoorthy at google.com
+> In confidential computing usages, whether a page is private or shared is
+> necessary information for KVM to perform operations like page fault
+> handling, page zapping etc. There are other potential use cases for
+> per-page memory attributes, e.g. to make memory read-only (or no-exec,
+> or exec-only, etc.) without having to modify memslots.
+> 
+> Introduce two ioctls (advertised by KVM_CAP_MEMORY_ATTRIBUTES) to allow
+> userspace to operate on the per-page memory attributes.
+>   - KVM_SET_MEMORY_ATTRIBUTES to set the per-page memory attributes to
+>     a guest memory range.
+>   - KVM_GET_SUPPORTED_MEMORY_ATTRIBUTES to return the KVM supported
+>     memory attributes.
+> 
+> Use an xarray to store the per-page attributes internally, with a naive,
+> not fully optimized implementation, i.e. prioritize correctness over
+> performance for the initial implementation.
+> 
+> Use bit 3 for the PRIVATE attribute so that KVM can use bits 0-2 for RWX
+> attributes/protections in the future, e.g. to give userspace fine-grained
+> control over read, write, and execute protections for guest memory.
+> 
+> Provide arch hooks for handling attribute changes before and after common
+> code sets the new attributes, e.g. x86 will use the "pre" hook to zap all
+> relevant mappings, and the "post" hook to track whether or not hugepages
+> can be used to map the range.
+> 
+> To simplify the implementation wrap the entire sequence with
+> kvm_mmu_invalidate_{begin,end}() even though the operation isn't strictly
+> guaranteed to be an invalidation.  For the initial use case, x86 *will*
+> always invalidate memory, and preventing arch code from creating new
+> mappings while the attributes are in flux makes it much easier to reason
+> about the correctness of consuming attributes.
+> 
+> It's possible that future usages may not require an invalidation, e.g.
+> if KVM ends up supporting RWX protections and userspace grants _more_
+> protections, but again opt for simplicity and punt optimizations to
+> if/when they are needed.
+> 
+> Suggested-by: Sean Christopherson <seanjc@google.com>
+> Link: https://lore.kernel.org/all/Y2WB48kD0J4VGynX at google.com
+> Cc: Fuad Tabba <tabba@google.com>
+> Cc: Xu Yilun <yilun.xu@intel.com>
+> Cc: Micka?l Sala?n <mic@digikod.net>
+> Signed-off-by: Chao Peng <chao.p.peng@linux.intel.com>
+> Co-developed-by: Sean Christopherson <seanjc@google.com>
+> Signed-off-by: Sean Christopherson <seanjc@google.com>
+> 
 
-I wonder how this CAP is supposed to be checked in userspace, for guest 
-memfd case? something like this?
+[...]
 
-	if (!kvm_check_extension(s, KVM_CAP_MEMORY_FAULT_INFO) &&
-	    run->exit_reason == KVM_EXIT_MEMORY_FAULT)
-		abort("unexpected KVM_EXIT_MEMORY_FAULT");
+> +Note, there is no "get" API.  Userspace is responsible for explicitly tracking
+> +the state of a gfn/page as needed.
+> +
+> 
 
-In my implementation of QEMU patches, I find it's unnecessary. When 
-userspace gets an exit with KVM_EXIT_MEMORY_FAULT, it implies 
-"KVM_CAP_MEMORY_FAULT_INFO".
+[...]
 
-So I don't see how it is necessary in this series. Whether it's 
-necessary or not for [*], I don't have the answer but we can leave the 
-discussion to that patch series.
+>  
+> +#ifdef CONFIG_KVM_GENERIC_MEMORY_ATTRIBUTES
+> +static inline unsigned long kvm_get_memory_attributes(struct kvm *kvm, gfn_t gfn)
+> +{
+> +	return xa_to_value(xa_load(&kvm->mem_attr_array, gfn));
+> +}
+
+Only call xa_to_value() when xa_load() returns !NULL?
+
+> +
+> +bool kvm_range_has_memory_attributes(struct kvm *kvm, gfn_t start, gfn_t end,
+> +				     unsigned long attrs);
+
+Seems it's not immediately clear why this function is needed in this patch,
+especially when you said there is no "get" API above.  Add some material to
+changelog?
+ 
+
+> +bool kvm_arch_pre_set_memory_attributes(struct kvm *kvm,
+> +					struct kvm_gfn_range *range);
+> +bool kvm_arch_post_set_memory_attributes(struct kvm *kvm,
+> +					 struct kvm_gfn_range *range);
+
+Looks if this Kconfig is on, the above two arch hooks won't have implementation.
+
+Is it better to have two __weak empty versions here in this patch?
+
+Anyway, from the changelog it seems it's not mandatory for some ARCH to provide
+the above two if one wants to turn this on, i.e., the two hooks can be empty and
+the ARCH can just use the __weak version.
 
