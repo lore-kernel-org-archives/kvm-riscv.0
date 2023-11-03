@@ -1,54 +1,37 @@
-From: Xu Yilun <yilun.xu@linux.intel.com>
-Date: Fri, 3 Nov 2023 12:09:01 +0800
-Subject: [PATCH v13 09/35] KVM: Add KVM_EXIT_MEMORY_FAULT exit to report
- faults to userspace
-In-Reply-To: <20231027182217.3615211-10-seanjc@google.com>
-References: <20231027182217.3615211-1-seanjc@google.com>
- <20231027182217.3615211-10-seanjc@google.com>
-Message-ID: <ZURyXWhZDSCBnMV1@yilunxu-OptiPlex-7050>
+From: Fuad Tabba <tabba@google.com>
+Date: Fri, 3 Nov 2023 09:42:17 +0000
+Subject: [PATCH v13 16/35] KVM: Add KVM_CREATE_GUEST_MEMFD ioctl() for
+ guest-specific backing memory
+In-Reply-To: <20231027182217.3615211-17-seanjc@google.com>
+References: <20231027182217.3615211-1-seanjc@google.com> <20231027182217.3615211-17-seanjc@google.com>
+Message-ID: <CA+EHjTxEvJpfA7urRj6EbbuwTGWAw6ZYu6NmX9sLT5Cdp5p3eA@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Oct 27, 2023 at 11:21:51AM -0700, Sean Christopherson wrote:
+Hi,
+
+...
+
+> diff --git a/Documentation/virt/kvm/api.rst b/Documentation/virt/kvm/api.rst
+> index e2252c748fd6..e82c69d5e755 100644
 > --- a/Documentation/virt/kvm/api.rst
 > +++ b/Documentation/virt/kvm/api.rst
-> @@ -6723,6 +6723,26 @@ array field represents return values. The userspace should update the return
->  values of SBI call before resuming the VCPU. For more details on RISC-V SBI
->  spec refer, https://github.com/riscv/riscv-sbi-doc.
->  
-> +::
+
+...
+
+> +4.141 KVM_CREATE_GUEST_MEMFD
+> +----------------------------
 > +
-> +		/* KVM_EXIT_MEMORY_FAULT */
-> +		struct {
-> +			__u64 flags;
-> +			__u64 gpa;
-> +			__u64 size;
-> +		} memory;
-                  ^
+> +:Capability: KVM_CAP_GUEST_MEMFD
+> +:Architectures: none
+> +:Type: vm ioctl
+> +:Parameters: struct struct kvm_create_guest_memfd(in)
 
-Should update to "memory_fault" to align with other places.
+One struct too many.
 
-[...]
-
-> @@ -520,6 +521,12 @@ struct kvm_run {
->  #define KVM_NOTIFY_CONTEXT_INVALID	(1 << 0)
->  			__u32 flags;
->  		} notify;
-> +		/* KVM_EXIT_MEMORY_FAULT */
-> +		struct {
-> +			__u64 flags;
-> +			__u64 gpa;
-> +			__u64 size;
-> +		} memory_fault;
->  		/* Fix the size of the union. */
->  		char padding[256];
->  	};
-
-Thanks,
-Yilun
-
-> 
+Cheers,
+/fuad
 
