@@ -1,9 +1,9 @@
 From: Paolo Bonzini <pbonzini@redhat.com>
-Date: Sun,  5 Nov 2023 17:30:37 +0100
-Subject: [PATCH 34/34] KVM: selftests: Add a memory region subtest to validate invalid flags
+Date: Sun,  5 Nov 2023 17:30:38 +0100
+Subject: [PATCH 35/34] KVM: Prepare for handling only shared mappings in mmu_notifier events
 In-Reply-To: <20231105163040.14904-1-pbonzini@redhat.com>
 References: <20231105163040.14904-1-pbonzini@redhat.com>
-Message-ID: <20231105163040.14904-35-pbonzini@redhat.com>
+Message-ID: <20231105163040.14904-36-pbonzini@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -12,84 +12,72 @@ Content-Transfer-Encoding: 7bit
 
 From: Sean Christopherson <seanjc@google.com>
 
-Add a subtest to set_memory_region_test to verify that KVM rejects invalid
-flags and combinations with -EINVAL.  KVM might or might not fail with
-EINVAL anyways, but we can at least try.
+Add flags to "struct kvm_gfn_range" to let notifier events target only
+shared and only private mappings, and write up the existing mmu_notifier
+events to be shared-only (private memory is never associated with a
+userspace virtual address, i.e. can't be reached via mmu_notifiers).
 
+Add two flags so that KVM can handle the three possibilities (shared,
+private, and shared+private) without needing something like a tri-state
+enum.
+
+Link: https://lore.kernel.org/all/ZJX0hk+KpQP0KUyB at google.com
 Signed-off-by: Sean Christopherson <seanjc@google.com>
-Message-Id: <20231031002049.3915752-1-seanjc@google.com>
+Message-Id: <20231027182217.3615211-13-seanjc@google.com>
 Signed-off-by: Paolo Bonzini <pbonzini@redhat.com>
 ---
- .../selftests/kvm/set_memory_region_test.c    | 49 +++++++++++++++++++
- 1 file changed, 49 insertions(+)
+ include/linux/kvm_host.h |  2 ++
+ virt/kvm/kvm_main.c      | 17 +++++++++++++++++
+ 2 files changed, 19 insertions(+)
 
-diff --git a/tools/testing/selftests/kvm/set_memory_region_test.c b/tools/testing/selftests/kvm/set_memory_region_test.c
-index 1891774eb6d4..343e807043e1 100644
---- a/tools/testing/selftests/kvm/set_memory_region_test.c
-+++ b/tools/testing/selftests/kvm/set_memory_region_test.c
-@@ -326,6 +326,53 @@ static void test_zero_memory_regions(void)
- }
- #endif /* __x86_64__ */
+diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+index 3ebc6912c54a..4d5d139b0bde 100644
+--- a/include/linux/kvm_host.h
++++ b/include/linux/kvm_host.h
+@@ -264,6 +264,8 @@ struct kvm_gfn_range {
+ 	gfn_t start;
+ 	gfn_t end;
+ 	union kvm_mmu_notifier_arg arg;
++	bool only_private;
++	bool only_shared;
+ 	bool may_block;
+ };
+ bool kvm_unmap_gfn_range(struct kvm *kvm, struct kvm_gfn_range *range);
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index 8758cb799e18..9170a61ea99f 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -635,6 +635,13 @@ static __always_inline kvm_mn_ret_t __kvm_handle_hva_range(struct kvm *kvm,
+ 			 * the second or later invocation of the handler).
+ 			 */
+ 			gfn_range.arg = range->arg;
++
++			/*
++			 * HVA-based notifications provide a userspace address,
++			 * and as such are only relevant for shared mappings.
++			 */
++			gfn_range.only_private = false;
++			gfn_range.only_shared = true;
+ 			gfn_range.may_block = range->may_block;
  
-+static void test_invalid_memory_region_flags(void)
-+{
-+	uint32_t supported_flags = KVM_MEM_LOG_DIRTY_PAGES;
-+	const uint32_t v2_only_flags = KVM_MEM_GUEST_MEMFD;
-+	struct kvm_vm *vm;
-+	int r, i;
-+
-+#ifdef __x86_64__
-+	supported_flags |= KVM_MEM_READONLY;
-+
-+	if (kvm_check_cap(KVM_CAP_VM_TYPES) & BIT(KVM_X86_SW_PROTECTED_VM))
-+		vm = vm_create_barebones_protected_vm();
-+	else
-+#endif
-+		vm = vm_create_barebones();
-+
-+	if (kvm_check_cap(KVM_CAP_MEMORY_ATTRIBUTES) & KVM_MEMORY_ATTRIBUTE_PRIVATE)
-+		supported_flags |= KVM_MEM_GUEST_MEMFD;
-+
-+	for (i = 0; i < 32; i++) {
-+		if ((supported_flags & BIT(i)) && !(v2_only_flags & BIT(i)))
-+			continue;
-+
-+		r = __vm_set_user_memory_region(vm, MEM_REGION_SLOT, BIT(i),
-+						MEM_REGION_GPA, MEM_REGION_SIZE, NULL);
-+
-+		TEST_ASSERT(r && errno == EINVAL,
-+			    "KVM_SET_USER_MEMORY_REGION should have failed on v2 only flag 0x%lx", BIT(i));
-+
-+		if (supported_flags & BIT(i))
-+			continue;
-+
-+		r = __vm_set_user_memory_region2(vm, MEM_REGION_SLOT, BIT(i),
-+						 MEM_REGION_GPA, MEM_REGION_SIZE, NULL, 0, 0);
-+		TEST_ASSERT(r && errno == EINVAL,
-+			    "KVM_SET_USER_MEMORY_REGION2 should have failed on unsupported flag 0x%lx", BIT(i));
-+	}
-+
-+	if (supported_flags & KVM_MEM_GUEST_MEMFD) {
-+		r = __vm_set_user_memory_region2(vm, MEM_REGION_SLOT,
-+						 KVM_MEM_LOG_DIRTY_PAGES | KVM_MEM_GUEST_MEMFD,
-+						 MEM_REGION_GPA, MEM_REGION_SIZE, NULL, 0, 0);
-+		TEST_ASSERT(r && errno == EINVAL,
-+			    "KVM_SET_USER_MEMORY_REGION2 should have failed, dirty logging private memory is unsupported");
-+	}
-+}
-+
- /*
-  * Test it can be added memory slots up to KVM_CAP_NR_MEMSLOTS, then any
-  * tentative to add further slots should fail.
-@@ -491,6 +538,8 @@ int main(int argc, char *argv[])
- 	test_zero_memory_regions();
- #endif
+ 			/*
+@@ -2493,6 +2500,16 @@ static __always_inline void kvm_handle_gfn_range(struct kvm *kvm,
+ 	gfn_range.arg = range->arg;
+ 	gfn_range.may_block = range->may_block;
  
-+	test_invalid_memory_region_flags();
++	/*
++	 * If/when KVM supports more attributes beyond private .vs shared, this
++	 * _could_ set only_{private,shared} appropriately if the entire target
++	 * range already has the desired private vs. shared state (it's unclear
++	 * if that is a net win).  For now, KVM reaches this point if and only
++	 * if the private flag is being toggled, i.e. all mappings are in play.
++	 */
++	gfn_range.only_private = false;
++	gfn_range.only_shared = false;
 +
- 	test_add_max_memory_regions();
+ 	for (i = 0; i < kvm_arch_nr_memslot_as_ids(kvm); i++) {
+ 		slots = __kvm_memslots(kvm, i);
  
- 	if (kvm_has_cap(KVM_CAP_GUEST_MEMFD) &&
 -- 
 2.39.1
 
