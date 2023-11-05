@@ -1,9 +1,9 @@
 From: Paolo Bonzini <pbonzini@redhat.com>
-Date: Sun,  5 Nov 2023 17:30:07 +0100
-Subject: [PATCH 04/34] KVM: WARN if there are dangling MMU invalidations at VM destruction
+Date: Sun,  5 Nov 2023 17:30:08 +0100
+Subject: [PATCH 05/34] KVM: PPC: Drop dead code related to KVM_ARCH_WANT_MMU_NOTIFIER
 In-Reply-To: <20231105163040.14904-1-pbonzini@redhat.com>
 References: <20231105163040.14904-1-pbonzini@redhat.com>
-Message-ID: <20231105163040.14904-5-pbonzini@redhat.com>
+Message-ID: <20231105163040.14904-6-pbonzini@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -12,48 +12,55 @@ Content-Transfer-Encoding: 7bit
 
 From: Sean Christopherson <seanjc@google.com>
 
-Add an assertion that there are no in-progress MMU invalidations when a
-VM is being destroyed, with the exception of the scenario where KVM
-unregisters its MMU notifier between an .invalidate_range_start() call and
-the corresponding .invalidate_range_end().
+Assert that both KVM_ARCH_WANT_MMU_NOTIFIER and CONFIG_MMU_NOTIFIER are
+defined when KVM is enabled, and return '1' unconditionally for the
+CONFIG_KVM_BOOK3S_HV_POSSIBLE=n path.  All flavors of PPC support for KVM
+select MMU_NOTIFIER, and KVM_ARCH_WANT_MMU_NOTIFIER is unconditionally
+defined by arch/powerpc/include/asm/kvm_host.h.
 
-KVM can't detect unpaired calls from the mmu_notifier due to the above
-exception waiver, but the assertion can detect KVM bugs, e.g. such as the
-bug that *almost* escaped initial guest_memfd development.
+Effectively dropping use of KVM_ARCH_WANT_MMU_NOTIFIER will simplify a
+future cleanup to turn KVM_ARCH_WANT_MMU_NOTIFIER into a Kconfig, i.e.
+will allow combining all of the
 
-Link: https://lore.kernel.org/all/e397d30c-c6af-e68f-d18e-b4e3739c5389 at linux.intel.com
+  #if defined(CONFIG_MMU_NOTIFIER) && defined(KVM_ARCH_WANT_MMU_NOTIFIER)
+
+checks into a single
+
+  #ifdef CONFIG_KVM_GENERIC_MMU_NOTIFIER
+
+without having to worry about PPC's "bare" usage of
+KVM_ARCH_WANT_MMU_NOTIFIER.
+
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 Reviewed-by: Paolo Bonzini <pbonzini@redhat.com>
 Reviewed-by: Fuad Tabba <tabba@google.com>
-Tested-by: Fuad Tabba <tabba@google.com>
-Message-Id: <20231027182217.3615211-5-seanjc@google.com>
+Message-Id: <20231027182217.3615211-6-seanjc@google.com>
 Signed-off-by: Paolo Bonzini <pbonzini@redhat.com>
 ---
- virt/kvm/kvm_main.c | 9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
+ arch/powerpc/kvm/powerpc.c | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 9cc57b23ec81..5422ce20dcba 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -1358,9 +1358,16 @@ static void kvm_destroy_vm(struct kvm *kvm)
- 	 * No threads can be waiting in kvm_swap_active_memslots() as the
- 	 * last reference on KVM has been dropped, but freeing
- 	 * memslots would deadlock without this manual intervention.
-+	 *
-+	 * If the count isn't unbalanced, i.e. KVM did NOT unregister its MMU
-+	 * notifier between a start() and end(), then there shouldn't be any
-+	 * in-progress invalidations.
- 	 */
- 	WARN_ON(rcuwait_active(&kvm->mn_memslots_update_rcuwait));
--	kvm->mn_active_invalidate_count = 0;
-+	if (kvm->mn_active_invalidate_count)
-+		kvm->mn_active_invalidate_count = 0;
-+	else
-+		WARN_ON(kvm->mmu_invalidate_in_progress);
- #else
- 	kvm_flush_shadow_all(kvm);
+diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+index 7197c8256668..b0a512ede764 100644
+--- a/arch/powerpc/kvm/powerpc.c
++++ b/arch/powerpc/kvm/powerpc.c
+@@ -632,12 +632,13 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
+ 		break;
  #endif
+ 	case KVM_CAP_SYNC_MMU:
++#if !defined(CONFIG_MMU_NOTIFIER) || !defined(KVM_ARCH_WANT_MMU_NOTIFIER)
++		BUILD_BUG();
++#endif
+ #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
+ 		r = hv_enabled;
+-#elif defined(KVM_ARCH_WANT_MMU_NOTIFIER)
+-		r = 1;
+ #else
+-		r = 0;
++		r = 1;
+ #endif
+ 		break;
+ #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
 -- 
 2.39.1
 
