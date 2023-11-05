@@ -1,178 +1,95 @@
 From: Paolo Bonzini <pbonzini@redhat.com>
-Date: Sun,  5 Nov 2023 17:30:36 +0100
-Subject: [PATCH 33/34] KVM: selftests: Test KVM exit behavior for private memory/access
+Date: Sun,  5 Nov 2023 17:30:37 +0100
+Subject: [PATCH 34/34] KVM: selftests: Add a memory region subtest to validate invalid flags
 In-Reply-To: <20231105163040.14904-1-pbonzini@redhat.com>
 References: <20231105163040.14904-1-pbonzini@redhat.com>
-Message-ID: <20231105163040.14904-34-pbonzini@redhat.com>
+Message-ID: <20231105163040.14904-35-pbonzini@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Ackerley Tng <ackerleytng@google.com>
+From: Sean Christopherson <seanjc@google.com>
 
-"Testing private access when memslot gets deleted" tests the behavior
-of KVM when a private memslot gets deleted while the VM is using the
-private memslot. When KVM looks up the deleted (slot = NULL) memslot,
-KVM should exit to userspace with KVM_EXIT_MEMORY_FAULT.
+Add a subtest to set_memory_region_test to verify that KVM rejects invalid
+flags and combinations with -EINVAL.  KVM might or might not fail with
+EINVAL anyways, but we can at least try.
 
-In the second test, upon a private access to non-private memslot, KVM
-should also exit to userspace with KVM_EXIT_MEMORY_FAULT.
-
-Intentionally don't take a requirement on KVM_CAP_GUEST_MEMFD,
-KVM_CAP_MEMORY_FAULT_INFO, KVM_MEMORY_ATTRIBUTE_PRIVATE, etc., as it's a
-KVM bug to advertise KVM_X86_SW_PROTECTED_VM without its prerequisites.
-
-Signed-off-by: Ackerley Tng <ackerleytng@google.com>
-[sean: call out the similarities with set_memory_region_test]
 Signed-off-by: Sean Christopherson <seanjc@google.com>
-Message-Id: <20231027182217.3615211-36-seanjc@google.com>
+Message-Id: <20231031002049.3915752-1-seanjc@google.com>
 Signed-off-by: Paolo Bonzini <pbonzini@redhat.com>
 ---
- tools/testing/selftests/kvm/Makefile          |   1 +
- .../kvm/x86_64/private_mem_kvm_exits_test.c   | 120 ++++++++++++++++++
- 2 files changed, 121 insertions(+)
- create mode 100644 tools/testing/selftests/kvm/x86_64/private_mem_kvm_exits_test.c
+ .../selftests/kvm/set_memory_region_test.c    | 49 +++++++++++++++++++
+ 1 file changed, 49 insertions(+)
 
-diff --git a/tools/testing/selftests/kvm/Makefile b/tools/testing/selftests/kvm/Makefile
-index fd3b30a4ca7b..69ce8e06b3a3 100644
---- a/tools/testing/selftests/kvm/Makefile
-+++ b/tools/testing/selftests/kvm/Makefile
-@@ -92,6 +92,7 @@ TEST_GEN_PROGS_x86_64 += x86_64/nested_exceptions_test
- TEST_GEN_PROGS_x86_64 += x86_64/platform_info_test
- TEST_GEN_PROGS_x86_64 += x86_64/pmu_event_filter_test
- TEST_GEN_PROGS_x86_64 += x86_64/private_mem_conversions_test
-+TEST_GEN_PROGS_x86_64 += x86_64/private_mem_kvm_exits_test
- TEST_GEN_PROGS_x86_64 += x86_64/set_boot_cpu_id
- TEST_GEN_PROGS_x86_64 += x86_64/set_sregs_test
- TEST_GEN_PROGS_x86_64 += x86_64/smaller_maxphyaddr_emulation_test
-diff --git a/tools/testing/selftests/kvm/x86_64/private_mem_kvm_exits_test.c b/tools/testing/selftests/kvm/x86_64/private_mem_kvm_exits_test.c
-new file mode 100644
-index 000000000000..2f02f6128482
---- /dev/null
-+++ b/tools/testing/selftests/kvm/x86_64/private_mem_kvm_exits_test.c
-@@ -0,0 +1,120 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/*
-+ * Copyright (C) 2022, Google LLC.
-+ */
-+#include <linux/kvm.h>
-+#include <pthread.h>
-+#include <stdint.h>
-+
-+#include "kvm_util.h"
-+#include "processor.h"
-+#include "test_util.h"
-+
-+/* Arbitrarily selected to avoid overlaps with anything else */
-+#define EXITS_TEST_GVA 0xc0000000
-+#define EXITS_TEST_GPA EXITS_TEST_GVA
-+#define EXITS_TEST_NPAGES 1
-+#define EXITS_TEST_SIZE (EXITS_TEST_NPAGES * PAGE_SIZE)
-+#define EXITS_TEST_SLOT 10
-+
-+static uint64_t guest_repeatedly_read(void)
+diff --git a/tools/testing/selftests/kvm/set_memory_region_test.c b/tools/testing/selftests/kvm/set_memory_region_test.c
+index 1891774eb6d4..343e807043e1 100644
+--- a/tools/testing/selftests/kvm/set_memory_region_test.c
++++ b/tools/testing/selftests/kvm/set_memory_region_test.c
+@@ -326,6 +326,53 @@ static void test_zero_memory_regions(void)
+ }
+ #endif /* __x86_64__ */
+ 
++static void test_invalid_memory_region_flags(void)
 +{
-+	volatile uint64_t value;
++	uint32_t supported_flags = KVM_MEM_LOG_DIRTY_PAGES;
++	const uint32_t v2_only_flags = KVM_MEM_GUEST_MEMFD;
++	struct kvm_vm *vm;
++	int r, i;
 +
-+	while (true)
-+		value = *((uint64_t *) EXITS_TEST_GVA);
++#ifdef __x86_64__
++	supported_flags |= KVM_MEM_READONLY;
 +
-+	return value;
-+}
++	if (kvm_check_cap(KVM_CAP_VM_TYPES) & BIT(KVM_X86_SW_PROTECTED_VM))
++		vm = vm_create_barebones_protected_vm();
++	else
++#endif
++		vm = vm_create_barebones();
 +
-+static uint32_t run_vcpu_get_exit_reason(struct kvm_vcpu *vcpu)
-+{
-+	int r;
++	if (kvm_check_cap(KVM_CAP_MEMORY_ATTRIBUTES) & KVM_MEMORY_ATTRIBUTE_PRIVATE)
++		supported_flags |= KVM_MEM_GUEST_MEMFD;
 +
-+	r = _vcpu_run(vcpu);
-+	if (r) {
-+		TEST_ASSERT(errno == EFAULT, KVM_IOCTL_ERROR(KVM_RUN, r));
-+		TEST_ASSERT_EQ(vcpu->run->exit_reason, KVM_EXIT_MEMORY_FAULT);
++	for (i = 0; i < 32; i++) {
++		if ((supported_flags & BIT(i)) && !(v2_only_flags & BIT(i)))
++			continue;
++
++		r = __vm_set_user_memory_region(vm, MEM_REGION_SLOT, BIT(i),
++						MEM_REGION_GPA, MEM_REGION_SIZE, NULL);
++
++		TEST_ASSERT(r && errno == EINVAL,
++			    "KVM_SET_USER_MEMORY_REGION should have failed on v2 only flag 0x%lx", BIT(i));
++
++		if (supported_flags & BIT(i))
++			continue;
++
++		r = __vm_set_user_memory_region2(vm, MEM_REGION_SLOT, BIT(i),
++						 MEM_REGION_GPA, MEM_REGION_SIZE, NULL, 0, 0);
++		TEST_ASSERT(r && errno == EINVAL,
++			    "KVM_SET_USER_MEMORY_REGION2 should have failed on unsupported flag 0x%lx", BIT(i));
 +	}
-+	return vcpu->run->exit_reason;
++
++	if (supported_flags & KVM_MEM_GUEST_MEMFD) {
++		r = __vm_set_user_memory_region2(vm, MEM_REGION_SLOT,
++						 KVM_MEM_LOG_DIRTY_PAGES | KVM_MEM_GUEST_MEMFD,
++						 MEM_REGION_GPA, MEM_REGION_SIZE, NULL, 0, 0);
++		TEST_ASSERT(r && errno == EINVAL,
++			    "KVM_SET_USER_MEMORY_REGION2 should have failed, dirty logging private memory is unsupported");
++	}
 +}
 +
-+const struct vm_shape protected_vm_shape = {
-+	.mode = VM_MODE_DEFAULT,
-+	.type = KVM_X86_SW_PROTECTED_VM,
-+};
+ /*
+  * Test it can be added memory slots up to KVM_CAP_NR_MEMSLOTS, then any
+  * tentative to add further slots should fail.
+@@ -491,6 +538,8 @@ int main(int argc, char *argv[])
+ 	test_zero_memory_regions();
+ #endif
+ 
++	test_invalid_memory_region_flags();
 +
-+static void test_private_access_memslot_deleted(void)
-+{
-+	struct kvm_vm *vm;
-+	struct kvm_vcpu *vcpu;
-+	pthread_t vm_thread;
-+	void *thread_return;
-+	uint32_t exit_reason;
-+
-+	vm = vm_create_shape_with_one_vcpu(protected_vm_shape, &vcpu,
-+					   guest_repeatedly_read);
-+
-+	vm_userspace_mem_region_add(vm, VM_MEM_SRC_ANONYMOUS,
-+				    EXITS_TEST_GPA, EXITS_TEST_SLOT,
-+				    EXITS_TEST_NPAGES,
-+				    KVM_MEM_GUEST_MEMFD);
-+
-+	virt_map(vm, EXITS_TEST_GVA, EXITS_TEST_GPA, EXITS_TEST_NPAGES);
-+
-+	/* Request to access page privately */
-+	vm_mem_set_private(vm, EXITS_TEST_GPA, EXITS_TEST_SIZE);
-+
-+	pthread_create(&vm_thread, NULL,
-+		       (void *(*)(void *))run_vcpu_get_exit_reason,
-+		       (void *)vcpu);
-+
-+	vm_mem_region_delete(vm, EXITS_TEST_SLOT);
-+
-+	pthread_join(vm_thread, &thread_return);
-+	exit_reason = (uint32_t)(uint64_t)thread_return;
-+
-+	TEST_ASSERT_EQ(exit_reason, KVM_EXIT_MEMORY_FAULT);
-+	TEST_ASSERT_EQ(vcpu->run->memory_fault.flags, KVM_MEMORY_EXIT_FLAG_PRIVATE);
-+	TEST_ASSERT_EQ(vcpu->run->memory_fault.gpa, EXITS_TEST_GPA);
-+	TEST_ASSERT_EQ(vcpu->run->memory_fault.size, EXITS_TEST_SIZE);
-+
-+	kvm_vm_free(vm);
-+}
-+
-+static void test_private_access_memslot_not_private(void)
-+{
-+	struct kvm_vm *vm;
-+	struct kvm_vcpu *vcpu;
-+	uint32_t exit_reason;
-+
-+	vm = vm_create_shape_with_one_vcpu(protected_vm_shape, &vcpu,
-+					   guest_repeatedly_read);
-+
-+	/* Add a non-private memslot (flags = 0) */
-+	vm_userspace_mem_region_add(vm, VM_MEM_SRC_ANONYMOUS,
-+				    EXITS_TEST_GPA, EXITS_TEST_SLOT,
-+				    EXITS_TEST_NPAGES, 0);
-+
-+	virt_map(vm, EXITS_TEST_GVA, EXITS_TEST_GPA, EXITS_TEST_NPAGES);
-+
-+	/* Request to access page privately */
-+	vm_mem_set_private(vm, EXITS_TEST_GPA, EXITS_TEST_SIZE);
-+
-+	exit_reason = run_vcpu_get_exit_reason(vcpu);
-+
-+	TEST_ASSERT_EQ(exit_reason, KVM_EXIT_MEMORY_FAULT);
-+	TEST_ASSERT_EQ(vcpu->run->memory_fault.flags, KVM_MEMORY_EXIT_FLAG_PRIVATE);
-+	TEST_ASSERT_EQ(vcpu->run->memory_fault.gpa, EXITS_TEST_GPA);
-+	TEST_ASSERT_EQ(vcpu->run->memory_fault.size, EXITS_TEST_SIZE);
-+
-+	kvm_vm_free(vm);
-+}
-+
-+int main(int argc, char *argv[])
-+{
-+	TEST_REQUIRE(kvm_check_cap(KVM_CAP_VM_TYPES) & BIT(KVM_X86_SW_PROTECTED_VM));
-+
-+	test_private_access_memslot_deleted();
-+	test_private_access_memslot_not_private();
-+}
+ 	test_add_max_memory_regions();
+ 
+ 	if (kvm_has_cap(KVM_CAP_GUEST_MEMFD) &&
 -- 
 2.39.1
 
