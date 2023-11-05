@@ -1,60 +1,52 @@
-From: Xu Yilun <yilun.xu@linux.intel.com>
-Date: Sun, 5 Nov 2023 21:02:32 +0800
-Subject: [PATCH v13 20/35] KVM: x86/mmu: Handle page fault for private
- memory
-In-Reply-To: <20231027182217.3615211-21-seanjc@google.com>
-References: <20231027182217.3615211-1-seanjc@google.com>
- <20231027182217.3615211-21-seanjc@google.com>
-Message-ID: <ZUeSaAKRemlSRQpO@yilunxu-OptiPlex-7050>
+From: Paolo Bonzini <pbonzini@redhat.com>
+Date: Sun, 5 Nov 2023 17:19:36 +0100
+Subject: [PATCH v13 20/35] KVM: x86/mmu: Handle page fault for private memory
+In-Reply-To: <ZUeSaAKRemlSRQpO@yilunxu-OptiPlex-7050>
+References: <20231027182217.3615211-1-seanjc@google.com> <20231027182217.3615211-21-seanjc@google.com>
+ <ZUeSaAKRemlSRQpO@yilunxu-OptiPlex-7050>
+Message-ID: <CABgObfb1Wf2ptitGhJPM6VcmkCG9haMoQj2BsttjeoV=9F0O9Q@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-> +static void kvm_mmu_prepare_memory_fault_exit(struct kvm_vcpu *vcpu,
-> +					      struct kvm_page_fault *fault)
-> +{
-> +	kvm_prepare_memory_fault_exit(vcpu, fault->gfn << PAGE_SHIFT,
-> +				      PAGE_SIZE, fault->write, fault->exec,
-> +				      fault->is_private);
-> +}
-> +
-> +static int kvm_faultin_pfn_private(struct kvm_vcpu *vcpu,
-> +				   struct kvm_page_fault *fault)
-> +{
-> +	int max_order, r;
-> +
-> +	if (!kvm_slot_can_be_private(fault->slot)) {
-> +		kvm_mmu_prepare_memory_fault_exit(vcpu, fault);
-> +		return -EFAULT;
-> +	}
-> +
-> +	r = kvm_gmem_get_pfn(vcpu->kvm, fault->slot, fault->gfn, &fault->pfn,
-> +			     &max_order);
-> +	if (r) {
-> +		kvm_mmu_prepare_memory_fault_exit(vcpu, fault);
-> +		return r;
+On Sun, Nov 5, 2023 at 2:04?PM Xu Yilun <yilun.xu@linux.intel.com> wrote:
+>
+> > +static void kvm_mmu_prepare_memory_fault_exit(struct kvm_vcpu *vcpu,
+> > +                                           struct kvm_page_fault *fault)
+> > +{
+> > +     kvm_prepare_memory_fault_exit(vcpu, fault->gfn << PAGE_SHIFT,
+> > +                                   PAGE_SIZE, fault->write, fault->exec,
+> > +                                   fault->is_private);
+> > +}
+> > +
+> > +static int kvm_faultin_pfn_private(struct kvm_vcpu *vcpu,
+> > +                                struct kvm_page_fault *fault)
+> > +{
+> > +     int max_order, r;
+> > +
+> > +     if (!kvm_slot_can_be_private(fault->slot)) {
+> > +             kvm_mmu_prepare_memory_fault_exit(vcpu, fault);
+> > +             return -EFAULT;
+> > +     }
+> > +
+> > +     r = kvm_gmem_get_pfn(vcpu->kvm, fault->slot, fault->gfn, &fault->pfn,
+> > +                          &max_order);
+> > +     if (r) {
+> > +             kvm_mmu_prepare_memory_fault_exit(vcpu, fault);
+> > +             return r;
+>
+> Why report KVM_EXIT_MEMORY_FAULT here? even with a ret != -EFAULT?
 
-Why report KVM_EXIT_MEMORY_FAULT here? even with a ret != -EFAULT? This is
-different from the decription where KVM_EXIT_MEMORY_FAULT is introduced:
+The cases are EFAULT, EHWPOISON (which can report
+KVM_EXIT_MEMORY_FAULT) and ENOMEM. I think it's fine
+that even -ENOMEM can return KVM_EXIT_MEMORY_FAULT,
+and it doesn't violate the documentation.  The docs tell you "what
+can you do if error if EFAULT or EHWPOISON?"; they don't
+exclude that other errnos result in KVM_EXIT_MEMORY_FAULT,
+it's just that you're not supposed to look at it
 
-  KVM_EXIT_MEMORY_FAULT will be used to report memory faults that appear to
-  be implicit conversions.
+Paolo
 
-  To allow for future possibilities where KVM reports KVM_EXIT_MEMORY_FAULT
-  and fills run->memory_fault on _any_ unresolved fault, KVM returns
-  "-EFAULT"
-
-Thanks,
-Yilun
-
-> +	}
-> +
-> +	fault->max_level = min(kvm_max_level_for_order(max_order),
-> +			       fault->max_level);
-> +	fault->map_writable = !(fault->slot->flags & KVM_MEM_READONLY);
-> +
-> +	return RET_PF_CONTINUE;
-> +}
 
