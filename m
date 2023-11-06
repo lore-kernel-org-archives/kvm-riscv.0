@@ -1,82 +1,95 @@
-From: Xu Yilun <yilun.xu@linux.intel.com>
-Date: Mon, 6 Nov 2023 21:29:10 +0800
-Subject: [PATCH v13 20/35] KVM: x86/mmu: Handle page fault for private
- memory
-In-Reply-To: <CABgObfb1Wf2ptitGhJPM6VcmkCG9haMoQj2BsttjeoV=9F0O9Q@mail.gmail.com>
-References: <20231027182217.3615211-1-seanjc@google.com>
- <20231027182217.3615211-21-seanjc@google.com>
- <ZUeSaAKRemlSRQpO@yilunxu-OptiPlex-7050>
- <CABgObfb1Wf2ptitGhJPM6VcmkCG9haMoQj2BsttjeoV=9F0O9Q@mail.gmail.com>
-Message-ID: <ZUjqJjz0Epf7ii8F@yilunxu-OptiPlex-7050>
+From: Paolo Bonzini <pbonzini@redhat.com>
+Date: Mon, 6 Nov 2023 15:26:44 +0100
+Subject: [PATCH 31/34] KVM: selftests: Expand set_memory_region_test to
+ validate guest_memfd()
+In-Reply-To: <20231105163040.14904-32-pbonzini@redhat.com>
+References: <20231105163040.14904-1-pbonzini@redhat.com>
+ <20231105163040.14904-32-pbonzini@redhat.com>
+Message-ID: <affca7a8-116e-4b0f-9edf-6cdc05ba65ca@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sun, Nov 05, 2023 at 05:19:36PM +0100, Paolo Bonzini wrote:
-> On Sun, Nov 5, 2023 at 2:04?PM Xu Yilun <yilun.xu@linux.intel.com> wrote:
-> >
-> > > +static void kvm_mmu_prepare_memory_fault_exit(struct kvm_vcpu *vcpu,
-> > > +                                           struct kvm_page_fault *fault)
-> > > +{
-> > > +     kvm_prepare_memory_fault_exit(vcpu, fault->gfn << PAGE_SHIFT,
-> > > +                                   PAGE_SIZE, fault->write, fault->exec,
-> > > +                                   fault->is_private);
-> > > +}
-> > > +
-> > > +static int kvm_faultin_pfn_private(struct kvm_vcpu *vcpu,
-> > > +                                struct kvm_page_fault *fault)
-> > > +{
-> > > +     int max_order, r;
-> > > +
-> > > +     if (!kvm_slot_can_be_private(fault->slot)) {
-> > > +             kvm_mmu_prepare_memory_fault_exit(vcpu, fault);
-> > > +             return -EFAULT;
-> > > +     }
-> > > +
-> > > +     r = kvm_gmem_get_pfn(vcpu->kvm, fault->slot, fault->gfn, &fault->pfn,
-> > > +                          &max_order);
-> > > +     if (r) {
-> > > +             kvm_mmu_prepare_memory_fault_exit(vcpu, fault);
-> > > +             return r;
-> >
-> > Why report KVM_EXIT_MEMORY_FAULT here? even with a ret != -EFAULT?
+On 11/5/23 17:30, Paolo Bonzini wrote:
+> From: Chao Peng <chao.p.peng@linux.intel.com>
 > 
-> The cases are EFAULT, EHWPOISON (which can report
-> KVM_EXIT_MEMORY_FAULT) and ENOMEM. I think it's fine
-> that even -ENOMEM can return KVM_EXIT_MEMORY_FAULT,
-> and it doesn't violate the documentation.  The docs tell you "what
-> can you do if error if EFAULT or EHWPOISON?"; they don't
-> exclude that other errnos result in KVM_EXIT_MEMORY_FAULT,
-> it's just that you're not supposed to look at it
+> Expand set_memory_region_test to exercise various positive and negative
+> testcases for private memory.
+> 
+>   - Non-guest_memfd() file descriptor for private memory
+>   - guest_memfd() from different VM
+>   - Overlapping bindings
+>   - Unaligned bindings
 
-Thanks, it's OK for ENOMEM + KVM_EXIT_MEMORY_FAULT.
+This needs a small fixup:
 
-Another concern is, now 3 places to report EFAULT + KVM_EXIT_MEMORY_FAULT:
-
-  if (!kvm_slot_can_be_private(fault->slot)) {
-	kvm_mmu_prepare_memory_fault_exit(vcpu, fault);
-	return -EFAULT;
+diff --git a/tools/testing/selftests/kvm/include/kvm_util_base.h b/tools/testing/selftests/kvm/include/kvm_util_base.h
+index e4d2cd9218b2..1b58f943562f 100644
+--- a/tools/testing/selftests/kvm/include/kvm_util_base.h
++++ b/tools/testing/selftests/kvm/include/kvm_util_base.h
+@@ -819,6 +819,7 @@ static inline struct kvm_vm *vm_create_barebones(void)
+  	return ____vm_create(VM_SHAPE_DEFAULT);
   }
-
-  file = kvm_gmem_get_file(slot);
-  if (!file)
-	return -EFAULT;
-
-  if (fault->is_private != kvm_mem_is_private(vcpu->kvm, fault->gfn)) {
-	kvm_mmu_prepare_memory_fault_exit(vcpu, fault);
-	return -EFAULT;
+  
++#ifdef __x86_64__
+  static inline struct kvm_vm *vm_create_barebones_protected_vm(void)
+  {
+  	const struct vm_shape shape = {
+@@ -828,6 +829,7 @@ static inline struct kvm_vm *vm_create_barebones_protected_vm(void)
+  
+  	return ____vm_create(shape);
   }
++#endif
+  
+  static inline struct kvm_vm *vm_create(uint32_t nr_runnable_vcpus)
+  {
+diff --git a/tools/testing/selftests/kvm/set_memory_region_test.c b/tools/testing/selftests/kvm/set_memory_region_test.c
+index 1891774eb6d4..302c7a46955b 100644
+--- a/tools/testing/selftests/kvm/set_memory_region_test.c
++++ b/tools/testing/selftests/kvm/set_memory_region_test.c
+@@ -386,6 +386,7 @@ static void test_add_max_memory_regions(void)
+  }
+  
+  
++#ifdef __x86_64__
+  static void test_invalid_guest_memfd(struct kvm_vm *vm, int memfd,
+  				     size_t offset, const char *msg)
+  {
+@@ -476,14 +477,13 @@ static void test_add_overlapping_private_memory_regions(void)
+  	close(memfd);
+  	kvm_vm_free(vm);
+  }
++#endif
+  
+  int main(int argc, char *argv[])
+  {
+  #ifdef __x86_64__
+  	int i, loops;
+-#endif
+  
+-#ifdef __x86_64__
+  	/*
+  	 * FIXME: the zero-memslot test fails on aarch64 and s390x because
+  	 * KVM_RUN fails with ENOEXEC or EFAULT.
+@@ -493,6 +493,7 @@ int main(int argc, char *argv[])
+  
+  	test_add_max_memory_regions();
+  
++#ifdef __x86_64__
+  	if (kvm_has_cap(KVM_CAP_GUEST_MEMFD) &&
+  	    (kvm_check_cap(KVM_CAP_VM_TYPES) & BIT(KVM_X86_SW_PROTECTED_VM))) {
+  		test_add_private_memory_region();
+@@ -501,7 +502,6 @@ int main(int argc, char *argv[])
+  		pr_info("Skipping tests for KVM_MEM_GUEST_MEMFD memory regions\n");
+  	}
+  
+-#ifdef __x86_64__
+  	if (argc > 1)
+  		loops = atoi_positive("Number of iterations", argv[1]);
+  	else
 
-They are different cases, and seems userspace should handle them
-differently, but not enough information to distinguish them.
+in order to compile successfully on non-x86 platforms.
 
-Thanks,
-Yilun
-
-> 
-> Paolo
-> 
-> 
 
