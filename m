@@ -1,10 +1,10 @@
 From: Fuad Tabba <tabba@google.com>
-Date: Mon, 6 Nov 2023 11:00:33 +0000
-Subject: [PATCH v13 23/35] KVM: x86: Add support for "protected VMs" that
- can utilize private memory
-In-Reply-To: <20231027182217.3615211-24-seanjc@google.com>
-References: <20231027182217.3615211-1-seanjc@google.com> <20231027182217.3615211-24-seanjc@google.com>
-Message-ID: <CA+EHjTwN8BP+7hDveRyx0d+D3CmQN05kHEpLdi2q27jYBuFzAw@mail.gmail.com>
+Date: Mon, 6 Nov 2023 11:01:56 +0000
+Subject: [PATCH 21/34] KVM: x86: Add support for "protected VMs" that can
+ utilize private memory
+In-Reply-To: <20231105163040.14904-22-pbonzini@redhat.com>
+References: <20231105163040.14904-1-pbonzini@redhat.com> <20231105163040.14904-22-pbonzini@redhat.com>
+Message-ID: <CA+EHjTw33hNZPeRZnoxM8snKE=s3T6ebSgOOAKqCyrb3rDPa9g@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -13,8 +13,9 @@ Content-Transfer-Encoding: 7bit
 
 Hi,
 
-
-On Fri, Oct 27, 2023 at 7:23?PM Sean Christopherson <seanjc@google.com> wrote:
+On Sun, Nov 5, 2023 at 4:33?PM Paolo Bonzini <pbonzini@redhat.com> wrote:
+>
+> From: Sean Christopherson <seanjc@google.com>
 >
 > Add a new x86 VM type, KVM_X86_SW_PROTECTED_VM, to serve as a development
 > and testing vehicle for Confidential (CoCo) VMs, and potentially to even
@@ -24,6 +25,8 @@ On Fri, Oct 27, 2023 at 7:23?PM Sean Christopherson <seanjc@google.com> wrote:
 > Intel's TDX, but those technologies are extremely complex (understatement),
 > difficult to debug, don't support running as nested guests, and require
 > hardware that's isn't universally accessible.  I.e. relying SEV-SNP or TDX
+
+(replied to v13 earlier, sorry)
 
 nit: "that isn't"
 
@@ -40,6 +43,9 @@ Cheers,
 > unique hardware.
 >
 > Signed-off-by: Sean Christopherson <seanjc@google.com>
+> Reviewed-by: Paolo Bonzini <pbonzini@redhat.com>
+> Message-Id: <20231027182217.3615211-24-seanjc@google.com>
+> Signed-off-by: Paolo Bonzini <pbonzini@redhat.com>
 > ---
 >  Documentation/virt/kvm/api.rst  | 32 ++++++++++++++++++++++++++++++++
 >  arch/x86/include/asm/kvm_host.h | 15 +++++++++------
@@ -52,7 +58,7 @@ Cheers,
 >  8 files changed, 78 insertions(+), 7 deletions(-)
 >
 > diff --git a/Documentation/virt/kvm/api.rst b/Documentation/virt/kvm/api.rst
-> index 38dc1fda4f45..00029436ac5b 100644
+> index 4a9a291380ad..38882263278d 100644
 > --- a/Documentation/virt/kvm/api.rst
 > +++ b/Documentation/virt/kvm/api.rst
 > @@ -147,10 +147,29 @@ described as 'basic' will be available.
@@ -85,7 +91,7 @@ Cheers,
 >  On arm64, the physical address size for a VM (IPA Size limit) is limited
 >  to 40bits by default. The limit can be configured if the host supports the
 >  extension KVM_CAP_ARM_VM_IPA_SIZE. When supported, use
-> @@ -8650,6 +8669,19 @@ block sizes is exposed in KVM_CAP_ARM_SUPPORTED_BLOCK_SIZES as a
+> @@ -8766,6 +8785,19 @@ block sizes is exposed in KVM_CAP_ARM_SUPPORTED_BLOCK_SIZES as a
 >  64-bit bitmap (each bit describing a block size). The default value is
 >  0, to disable the eager page splitting.
 >
@@ -106,10 +112,10 @@ Cheers,
 >  =========================
 >
 > diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
-> index f9e8d5642069..dff10051e9b6 100644
+> index 75ab0da06e64..a565a2e70f30 100644
 > --- a/arch/x86/include/asm/kvm_host.h
 > +++ b/arch/x86/include/asm/kvm_host.h
-> @@ -1244,6 +1244,7 @@ enum kvm_apicv_inhibit {
+> @@ -1255,6 +1255,7 @@ enum kvm_apicv_inhibit {
 >  };
 >
 >  struct kvm_arch {
@@ -117,7 +123,7 @@ Cheers,
 >         unsigned long n_used_mmu_pages;
 >         unsigned long n_requested_mmu_pages;
 >         unsigned long n_max_mmu_pages;
-> @@ -2077,6 +2078,12 @@ void kvm_mmu_new_pgd(struct kvm_vcpu *vcpu, gpa_t new_pgd);
+> @@ -2089,6 +2090,12 @@ void kvm_mmu_new_pgd(struct kvm_vcpu *vcpu, gpa_t new_pgd);
 >  void kvm_configure_mmu(bool enable_tdp, int tdp_forced_root_level,
 >                        int tdp_max_root_level, int tdp_huge_page_level);
 >
@@ -130,7 +136,7 @@ Cheers,
 >  static inline u16 kvm_read_ldt(void)
 >  {
 >         u16 ldt;
-> @@ -2125,14 +2132,10 @@ enum {
+> @@ -2137,14 +2144,10 @@ enum {
 >  #define HF_SMM_INSIDE_NMI_MASK (1 << 2)
 >
 >  # define KVM_MAX_NR_ADDRESS_SPACES     2
@@ -160,7 +166,7 @@ Cheers,
 > +
 >  #endif /* _ASM_X86_KVM_H */
 > diff --git a/arch/x86/kvm/Kconfig b/arch/x86/kvm/Kconfig
-> index 091b74599c22..8452ed0228cb 100644
+> index e61383674c75..c1716e83d176 100644
 > --- a/arch/x86/kvm/Kconfig
 > +++ b/arch/x86/kvm/Kconfig
 > @@ -77,6 +77,18 @@ config KVM_WERROR
@@ -195,10 +201,10 @@ Cheers,
 >         int r;
 >
 > diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-> index c4d17727b199..e3eb608b6692 100644
+> index f521c97f5c64..6d0772b47041 100644
 > --- a/arch/x86/kvm/x86.c
 > +++ b/arch/x86/kvm/x86.c
-> @@ -4441,6 +4441,13 @@ static int kvm_ioctl_get_supported_hv_cpuid(struct kvm_vcpu *vcpu,
+> @@ -4548,6 +4548,13 @@ static int kvm_ioctl_get_supported_hv_cpuid(struct kvm_vcpu *vcpu,
 >         return 0;
 >  }
 >
@@ -212,7 +218,7 @@ Cheers,
 >  int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
 >  {
 >         int r = 0;
-> @@ -4632,6 +4639,11 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
+> @@ -4739,6 +4746,11 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
 >         case KVM_CAP_X86_NOTIFY_VMEXIT:
 >                 r = kvm_caps.has_notify_vmexit;
 >                 break;
@@ -224,7 +230,7 @@ Cheers,
 >         default:
 >                 break;
 >         }
-> @@ -12314,9 +12326,11 @@ int kvm_arch_init_vm(struct kvm *kvm, unsigned long type)
+> @@ -12436,9 +12448,11 @@ int kvm_arch_init_vm(struct kvm *kvm, unsigned long type)
 >         int ret;
 >         unsigned long flags;
 >
@@ -238,14 +244,14 @@ Cheers,
 >         if (ret)
 >                 goto out;
 > diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
-> index 29e9eb51dec9..5b5820d19e71 100644
+> index 8eb10f560c69..e9cb2df67a1d 100644
 > --- a/include/uapi/linux/kvm.h
 > +++ b/include/uapi/linux/kvm.h
-> @@ -1218,6 +1218,7 @@ struct kvm_ppc_resize_hpt {
->  #define KVM_CAP_MEMORY_FAULT_INFO 231
->  #define KVM_CAP_MEMORY_ATTRIBUTES 232
->  #define KVM_CAP_GUEST_MEMFD 233
-> +#define KVM_CAP_VM_TYPES 234
+> @@ -1227,6 +1227,7 @@ struct kvm_ppc_resize_hpt {
+>  #define KVM_CAP_MEMORY_FAULT_INFO 232
+>  #define KVM_CAP_MEMORY_ATTRIBUTES 233
+>  #define KVM_CAP_GUEST_MEMFD 234
+> +#define KVM_CAP_VM_TYPES 235
 >
 >  #ifdef KVM_CAP_IRQ_ROUTING
 >
@@ -263,6 +269,7 @@ Cheers,
 > +       select KVM_PRIVATE_MEM
 > +       bool
 > --
-> 2.42.0.820.g83a721a137-goog
+> 2.39.1
+>
 >
 
