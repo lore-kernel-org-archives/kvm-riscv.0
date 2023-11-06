@@ -1,49 +1,69 @@
-From: Christian Brauner <brauner@kernel.org>
-Date: Mon, 6 Nov 2023 16:16:16 +0100
-Subject: [PATCH 14/34] fs: Rename anon_inode_getfile_secure() and
- anon_inode_getfd_secure()
-In-Reply-To: <20231105163040.14904-15-pbonzini@redhat.com>
-References: <20231105163040.14904-1-pbonzini@redhat.com>
- <20231105163040.14904-15-pbonzini@redhat.com>
-Message-ID: <20231106-kondor-anfahren-23157efabaef@brauner>
+From: Sean Christopherson <seanjc@google.com>
+Date: Mon, 6 Nov 2023 07:43:07 -0800
+Subject: [PATCH v13 16/35] KVM: Add KVM_CREATE_GUEST_MEMFD ioctl() for
+ guest-specific backing memory
+In-Reply-To: <ZUYcb6no9ADYytrx@yilunxu-OptiPlex-7050>
+References: <20231027182217.3615211-1-seanjc@google.com> <20231027182217.3615211-17-seanjc@google.com>
+ <ZUYcb6no9ADYytrx@yilunxu-OptiPlex-7050>
+Message-ID: <ZUkJiwp8VHY0ICab@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sun, Nov 05, 2023 at 05:30:17PM +0100, Paolo Bonzini wrote:
-> The call to the inode_init_security_anon() LSM hook is not the sole
-> reason to use anon_inode_getfile_secure() or anon_inode_getfd_secure().
-> For example, the functions also allow one to create a file with non-zero
-> size, without needing a full-blown filesystem.  In this case, you don't
-> need a "secure" version, just unique inodes; the current name of the
-> functions is confusing and does not explain well the difference with
-> the more "standard" anon_inode_getfile() and anon_inode_getfd().
-> 
-> Of course, there is another side of the coin; neither io_uring nor
-> userfaultfd strictly speaking need distinct inodes, and it is not
-> that clear anymore that anon_inode_create_get{file,fd}() allow the LSM
-> to intercept and block the inode's creation.  If one was so inclined,
-> anon_inode_getfile_secure() and anon_inode_getfd_secure() could be kept,
-> using the shared inode or a new one depending on CONFIG_SECURITY.
-> However, this is probably overkill, and potentially a cause of bugs in
-> different configurations.  Therefore, just add a comment to io_uring
-> and userfaultfd explaining the choice of the function.
-> 
-> While at it, remove the export for what is now anon_inode_create_getfd().
-> There is no in-tree module that uses it, and the old name is gone anyway.
+On Sat, Nov 04, 2023, Xu Yilun wrote:
+> > +KVM_SET_USER_MEMORY_REGION2 is an extension to KVM_SET_USER_MEMORY_REGION that
+> > +allows mapping guest_memfd memory into a guest.  All fields shared with
+> > +KVM_SET_USER_MEMORY_REGION identically.  Userspace can set KVM_MEM_PRIVATE in
+> > +flags to have KVM bind the memory region to a given guest_memfd range of
+> > +[guest_memfd_offset, guest_memfd_offset + memory_size].  The target guest_memfd
+>                                                         ^
+> The range end should be exclusive, is it?
 
-That's great, thanks.
+Yes, that should be a ')', not a ']'.
 
-> If anybody actually needs the symbol, they can ask or they can just use
-> anon_inode_create_getfile(), which will be exported very soon for use
-> in KVM.
+> > +static int __kvm_gmem_create(struct kvm *kvm, loff_t size, u64 flags)
+> > +{
+> > +	const char *anon_name = "[kvm-gmem]";
+> > +	struct kvm_gmem *gmem;
+> > +	struct inode *inode;
+> > +	struct file *file;
+> > +	int fd, err;
+> > +
+> > +	fd = get_unused_fd_flags(0);
+> > +	if (fd < 0)
+> > +		return fd;
+> > +
+> > +	gmem = kzalloc(sizeof(*gmem), GFP_KERNEL);
+> > +	if (!gmem) {
+> > +		err = -ENOMEM;
+> > +		goto err_fd;
+> > +	}
+> > +
+> > +	/*
+> > +	 * Use the so called "secure" variant, which creates a unique inode
+> > +	 * instead of reusing a single inode.  Each guest_memfd instance needs
+> > +	 * its own inode to track the size, flags, etc.
+> > +	 */
+> > +	file = anon_inode_getfile_secure(anon_name, &kvm_gmem_fops, gmem,
+> > +					 O_RDWR, NULL);
+> > +	if (IS_ERR(file)) {
+> > +		err = PTR_ERR(file);
+> > +		goto err_gmem;
+> > +	}
+> > +
+> > +	file->f_flags |= O_LARGEFILE;
+> > +
+> > +	inode = file->f_inode;
+> > +	WARN_ON(file->f_mapping != inode->i_mapping);
 > 
-> Suggested-by: Christian Brauner <brauner@kernel.org>
-> Signed-off-by: Paolo Bonzini <pbonzini@redhat.com>
-> ---
+> Just curious, why should we check the mapping fields which is garanteed in
+> other subsystem?
 
-Looks good to me,
-Reviewed-by: Christian Brauner <brauner@kernel.org>
+Mostly to document the behavior.  The vast majority of folks that read this code
+will be KVM developers, not file systems developers, and will likely have no clue
+about the relationship between f_mapping and i_mapping.  And in the extremely
+unlikely scenario that anon_inode_getfile_secure() no longer sets f_mapping, a
+WARN detects the issue whereas a comment does not.
 
