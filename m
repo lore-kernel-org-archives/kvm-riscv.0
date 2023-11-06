@@ -1,17 +1,17 @@
 From: Fuad Tabba <tabba@google.com>
-Date: Mon, 6 Nov 2023 11:24:54 +0000
-Subject: [PATCH 25/34] KVM: selftests: Add helpers to convert guest memory
- b/w private and shared
-In-Reply-To: <20231105163040.14904-26-pbonzini@redhat.com>
-References: <20231105163040.14904-1-pbonzini@redhat.com> <20231105163040.14904-26-pbonzini@redhat.com>
-Message-ID: <CA+EHjTxy6TWM3oBG0Q6v5090XTrs+M8_m5=6Z2E1P-HyTkrGWg@mail.gmail.com>
+Date: Mon, 6 Nov 2023 11:26:13 +0000
+Subject: [PATCH v13 27/35] KVM: selftests: Add helpers to convert guest
+ memory b/w private and shared
+In-Reply-To: <20231027182217.3615211-28-seanjc@google.com>
+References: <20231027182217.3615211-1-seanjc@google.com> <20231027182217.3615211-28-seanjc@google.com>
+Message-ID: <CA+EHjTyjeKymYaJ3kTpVzRFPLKxeDEf9B-DGo7xif_FPN1dFBQ@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sun, Nov 5, 2023 at 4:34?PM Paolo Bonzini <pbonzini@redhat.com> wrote:
+On Fri, Oct 27, 2023 at 7:23?PM Sean Christopherson <seanjc@google.com> wrote:
 >
 > From: Vishal Annapurve <vannapurve@google.com>
 >
@@ -20,7 +20,7 @@ On Sun, Nov 5, 2023 at 4:34?PM Paolo Bonzini <pbonzini@redhat.com> wrote:
 > via fallocate().  Userspace, i.e. tests, is NOT required to do fallocate()
 > when converting memory, as the attributes are the single source of true.
 
-nit: true->truth
+true->truth
 
 > Provide allocate() helpers so that tests can mimic a userspace that frees
 > private memory on conversion, e.g. to prioritize memory usage over
@@ -29,8 +29,6 @@ nit: true->truth
 > Signed-off-by: Vishal Annapurve <vannapurve@google.com>
 > Co-developed-by: Sean Christopherson <seanjc@google.com>
 > Signed-off-by: Sean Christopherson <seanjc@google.com>
-> Message-Id: <20231027182217.3615211-28-seanjc@google.com>
-> Signed-off-by: Paolo Bonzini <pbonzini@redhat.com>
 > ---
 >  .../selftests/kvm/include/kvm_util_base.h     | 48 +++++++++++++++++++
 >  tools/testing/selftests/kvm/lib/kvm_util.c    | 28 +++++++++++
@@ -96,10 +94,10 @@ nit: true->truth
 >  const char *vm_guest_mode_string(uint32_t i);
 >
 > diff --git a/tools/testing/selftests/kvm/lib/kvm_util.c b/tools/testing/selftests/kvm/lib/kvm_util.c
-> index b63500fca627..95a553400ea9 100644
+> index 45050f54701a..a140aee8d0f5 100644
 > --- a/tools/testing/selftests/kvm/lib/kvm_util.c
 > +++ b/tools/testing/selftests/kvm/lib/kvm_util.c
-> @@ -1167,6 +1167,34 @@ void vm_mem_region_delete(struct kvm_vm *vm, uint32_t slot)
+> @@ -1176,6 +1176,34 @@ void vm_mem_region_delete(struct kvm_vm *vm, uint32_t slot)
 >         __vm_mem_region_delete(vm, memslot2region(vm, slot), true);
 >  }
 >
@@ -117,7 +115,7 @@ nit: true->truth
 > +               uint64_t offset;
 > +
 > +               region = userspace_mem_region_find(vm, gpa, gpa);
-> +               TEST_ASSERT(region && region->region.flags & KVM_MEM_GUEST_MEMFD,
+> +               TEST_ASSERT(region && region->region.flags & KVM_MEM_PRIVATE,
 > +                           "Private memory region not found for GPA 0x%lx", gpa);
 > +
 > +               offset = (gpa - region->region.guest_phys_addr);
@@ -134,9 +132,6 @@ nit: why the parentheses?
 > +       }
 > +}
 > +
->  /* Returns the size of a vCPU's kvm_run structure. */
->  static int vcpu_mmap_sz(void)
->  {
 
 Nits aside:
 
@@ -146,8 +141,11 @@ Tested-by: Fuad Tabba <tabba@google.com>
 Cheers,
 /fuad
 
+
+>  /* Returns the size of a vCPU's kvm_run structure. */
+>  static int vcpu_mmap_sz(void)
+>  {
 > --
-> 2.39.1
->
+> 2.42.0.820.g83a721a137-goog
 >
 
