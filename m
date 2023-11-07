@@ -1,32 +1,89 @@
 From: Fuad Tabba <tabba@google.com>
-Date: Tue, 7 Nov 2023 12:54:10 +0000
-Subject: [PATCH 30/34] KVM: selftests: Add KVM_SET_USER_MEMORY_REGION2 helper
-In-Reply-To: <20231105163040.14904-31-pbonzini@redhat.com>
-References: <20231105163040.14904-1-pbonzini@redhat.com> <20231105163040.14904-31-pbonzini@redhat.com>
-Message-ID: <CA+EHjTyZoLLv1nRfCEY4nHrbHadphn37jw3OPS17x1dAm_YUxA@mail.gmail.com>
+Date: Tue, 7 Nov 2023 13:07:18 +0000
+Subject: [PATCH 32/34] KVM: selftests: Add basic selftest for guest_memfd()
+In-Reply-To: <20231105163040.14904-33-pbonzini@redhat.com>
+References: <20231105163040.14904-1-pbonzini@redhat.com> <20231105163040.14904-33-pbonzini@redhat.com>
+Message-ID: <CA+EHjTxMK2G3WSQsjPA5zn94+a91HsoaWXx8tz1TTGuq1tVZ5Q@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sun, Nov 5, 2023 at 4:34?PM Paolo Bonzini <pbonzini@redhat.com> wrote:
+Hi,
+
+On Sun, Nov 5, 2023 at 4:35?PM Paolo Bonzini <pbonzini@redhat.com> wrote:
 >
 > From: Chao Peng <chao.p.peng@linux.intel.com>
 >
-> Add helpers to invoke KVM_SET_USER_MEMORY_REGION2 directly so that tests
-> can validate of features that are unique to "version 2" of "set user
-> memory region", e.g. do negative testing on gmem_fd and gmem_offset.
+> Add a selftest to verify the basic functionality of guest_memfd():
 >
-> Provide a raw version as well as an assert-success version to reduce
-> the amount of boilerplate code need for basic usage.
+> + file descriptor created with the guest_memfd() ioctl does not allow
+>   read/write/mmap operations
+> + file size and block size as returned from fstat are as expected
+> + fallocate on the fd checks that offset/length on
+>   fallocate(FALLOC_FL_PUNCH_HOLE) should be page aligned
+> + invalid inputs (misaligned size, invalid flags) are rejected
+> + file size and inode are unique (the innocuous-sounding
+>   anon_inode_getfile() backs all files with a single inode...)
 >
 > Signed-off-by: Chao Peng <chao.p.peng@linux.intel.com>
+> Co-developed-by: Ackerley Tng <ackerleytng@google.com>
 > Signed-off-by: Ackerley Tng <ackerleytng@google.com>
+> Co-developed-by: Paolo Bonzini <pbonzini@redhat.com>
+> Signed-off-by: Paolo Bonzini <pbonzini@redhat.com>
+> Co-developed-by: Sean Christopherson <seanjc@google.com>
 > Signed-off-by: Sean Christopherson <seanjc@google.com>
-> Message-Id: <20231027182217.3615211-33-seanjc@google.com>
+> Message-Id: <20231027182217.3615211-35-seanjc@google.com>
 > Signed-off-by: Paolo Bonzini <pbonzini@redhat.com>
 > ---
+>  tools/testing/selftests/kvm/Makefile          |   1 +
+>  .../testing/selftests/kvm/guest_memfd_test.c  | 206 ++++++++++++++++++
+>  2 files changed, 207 insertions(+)
+>  create mode 100644 tools/testing/selftests/kvm/guest_memfd_test.c
+>
+> diff --git a/tools/testing/selftests/kvm/Makefile b/tools/testing/selftests/kvm/Makefile
+> index ecdea5e7afa8..fd3b30a4ca7b 100644
+> --- a/tools/testing/selftests/kvm/Makefile
+> +++ b/tools/testing/selftests/kvm/Makefile
+> @@ -134,6 +134,7 @@ TEST_GEN_PROGS_x86_64 += access_tracking_perf_test
+>  TEST_GEN_PROGS_x86_64 += demand_paging_test
+>  TEST_GEN_PROGS_x86_64 += dirty_log_test
+>  TEST_GEN_PROGS_x86_64 += dirty_log_perf_test
+> +TEST_GEN_PROGS_x86_64 += guest_memfd_test
+>  TEST_GEN_PROGS_x86_64 += guest_print_test
+>  TEST_GEN_PROGS_x86_64 += hardware_disable_test
+>  TEST_GEN_PROGS_x86_64 += kvm_create_max_vcpus
+> diff --git a/tools/testing/selftests/kvm/guest_memfd_test.c b/tools/testing/selftests/kvm/guest_memfd_test.c
+> new file mode 100644
+> index 000000000000..ea0ae7e25330
+> --- /dev/null
+> +++ b/tools/testing/selftests/kvm/guest_memfd_test.c
+> @@ -0,0 +1,206 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +/*
+> + * Copyright Intel Corporation, 2023
+> + *
+> + * Author: Chao Peng <chao.p.peng@linux.intel.com>
+> + */
+> +
+> +#define _GNU_SOURCE
+> +#include "test_util.h"
+> +#include "kvm_util_base.h"
+> +#include <linux/bitmap.h>
+> +#include <linux/falloc.h>
+> +#include <sys/mman.h>
+> +#include <sys/types.h>
+> +#include <sys/stat.h>
+> +
+> +#include <stdlib.h>
+> +#include <string.h>
+> +#include <unistd.h>
+> +#include <errno.h>
+> +#include <stdio.h>
+> +#include <fcntl.h>
+
+The include ordering should be fixed. Otherwise,
 
 Reviewed-by: Fuad Tabba <tabba@google.com>
 Tested-by: Fuad Tabba <tabba@google.com>
@@ -34,68 +91,191 @@ Tested-by: Fuad Tabba <tabba@google.com>
 Cheers,
 /fuad
 
->  .../selftests/kvm/include/kvm_util_base.h     |  7 +++++
->  tools/testing/selftests/kvm/lib/kvm_util.c    | 29 +++++++++++++++++++
->  2 files changed, 36 insertions(+)
->
-> diff --git a/tools/testing/selftests/kvm/include/kvm_util_base.h b/tools/testing/selftests/kvm/include/kvm_util_base.h
-> index 157508c071f3..8ec122f5fcc8 100644
-> --- a/tools/testing/selftests/kvm/include/kvm_util_base.h
-> +++ b/tools/testing/selftests/kvm/include/kvm_util_base.h
-> @@ -522,6 +522,13 @@ void vm_set_user_memory_region(struct kvm_vm *vm, uint32_t slot, uint32_t flags,
->                                uint64_t gpa, uint64_t size, void *hva);
->  int __vm_set_user_memory_region(struct kvm_vm *vm, uint32_t slot, uint32_t flags,
->                                 uint64_t gpa, uint64_t size, void *hva);
-> +void vm_set_user_memory_region2(struct kvm_vm *vm, uint32_t slot, uint32_t flags,
-> +                               uint64_t gpa, uint64_t size, void *hva,
-> +                               uint32_t guest_memfd, uint64_t guest_memfd_offset);
-> +int __vm_set_user_memory_region2(struct kvm_vm *vm, uint32_t slot, uint32_t flags,
-> +                                uint64_t gpa, uint64_t size, void *hva,
-> +                                uint32_t guest_memfd, uint64_t guest_memfd_offset);
+
 > +
->  void vm_userspace_mem_region_add(struct kvm_vm *vm,
->         enum vm_mem_backing_src_type src_type,
->         uint64_t guest_paddr, uint32_t slot, uint64_t npages,
-> diff --git a/tools/testing/selftests/kvm/lib/kvm_util.c b/tools/testing/selftests/kvm/lib/kvm_util.c
-> index 1c74310f1d44..d05d95cc3693 100644
-> --- a/tools/testing/selftests/kvm/lib/kvm_util.c
-> +++ b/tools/testing/selftests/kvm/lib/kvm_util.c
-> @@ -873,6 +873,35 @@ void vm_set_user_memory_region(struct kvm_vm *vm, uint32_t slot, uint32_t flags,
->                     errno, strerror(errno));
->  }
->
-> +int __vm_set_user_memory_region2(struct kvm_vm *vm, uint32_t slot, uint32_t flags,
-> +                                uint64_t gpa, uint64_t size, void *hva,
-> +                                uint32_t guest_memfd, uint64_t guest_memfd_offset)
+> +static void test_file_read_write(int fd)
 > +{
-> +       struct kvm_userspace_memory_region2 region = {
-> +               .slot = slot,
-> +               .flags = flags,
-> +               .guest_phys_addr = gpa,
-> +               .memory_size = size,
-> +               .userspace_addr = (uintptr_t)hva,
-> +               .guest_memfd = guest_memfd,
-> +               .guest_memfd_offset = guest_memfd_offset,
+> +       char buf[64];
+> +
+> +       TEST_ASSERT(read(fd, buf, sizeof(buf)) < 0,
+> +                   "read on a guest_mem fd should fail");
+> +       TEST_ASSERT(write(fd, buf, sizeof(buf)) < 0,
+> +                   "write on a guest_mem fd should fail");
+> +       TEST_ASSERT(pread(fd, buf, sizeof(buf), 0) < 0,
+> +                   "pread on a guest_mem fd should fail");
+> +       TEST_ASSERT(pwrite(fd, buf, sizeof(buf), 0) < 0,
+> +                   "pwrite on a guest_mem fd should fail");
+> +}
+> +
+> +static void test_mmap(int fd, size_t page_size)
+> +{
+> +       char *mem;
+> +
+> +       mem = mmap(NULL, page_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+> +       TEST_ASSERT_EQ(mem, MAP_FAILED);
+> +}
+> +
+> +static void test_file_size(int fd, size_t page_size, size_t total_size)
+> +{
+> +       struct stat sb;
+> +       int ret;
+> +
+> +       ret = fstat(fd, &sb);
+> +       TEST_ASSERT(!ret, "fstat should succeed");
+> +       TEST_ASSERT_EQ(sb.st_size, total_size);
+> +       TEST_ASSERT_EQ(sb.st_blksize, page_size);
+> +}
+> +
+> +static void test_fallocate(int fd, size_t page_size, size_t total_size)
+> +{
+> +       int ret;
+> +
+> +       ret = fallocate(fd, FALLOC_FL_KEEP_SIZE, 0, total_size);
+> +       TEST_ASSERT(!ret, "fallocate with aligned offset and size should succeed");
+> +
+> +       ret = fallocate(fd, FALLOC_FL_KEEP_SIZE | FALLOC_FL_PUNCH_HOLE,
+> +                       page_size - 1, page_size);
+> +       TEST_ASSERT(ret, "fallocate with unaligned offset should fail");
+> +
+> +       ret = fallocate(fd, FALLOC_FL_KEEP_SIZE, total_size, page_size);
+> +       TEST_ASSERT(ret, "fallocate beginning at total_size should fail");
+> +
+> +       ret = fallocate(fd, FALLOC_FL_KEEP_SIZE, total_size + page_size, page_size);
+> +       TEST_ASSERT(ret, "fallocate beginning after total_size should fail");
+> +
+> +       ret = fallocate(fd, FALLOC_FL_KEEP_SIZE | FALLOC_FL_PUNCH_HOLE,
+> +                       total_size, page_size);
+> +       TEST_ASSERT(!ret, "fallocate(PUNCH_HOLE) at total_size should succeed");
+> +
+> +       ret = fallocate(fd, FALLOC_FL_KEEP_SIZE | FALLOC_FL_PUNCH_HOLE,
+> +                       total_size + page_size, page_size);
+> +       TEST_ASSERT(!ret, "fallocate(PUNCH_HOLE) after total_size should succeed");
+> +
+> +       ret = fallocate(fd, FALLOC_FL_KEEP_SIZE | FALLOC_FL_PUNCH_HOLE,
+> +                       page_size, page_size - 1);
+> +       TEST_ASSERT(ret, "fallocate with unaligned size should fail");
+> +
+> +       ret = fallocate(fd, FALLOC_FL_KEEP_SIZE | FALLOC_FL_PUNCH_HOLE,
+> +                       page_size, page_size);
+> +       TEST_ASSERT(!ret, "fallocate(PUNCH_HOLE) with aligned offset and size should succeed");
+> +
+> +       ret = fallocate(fd, FALLOC_FL_KEEP_SIZE, page_size, page_size);
+> +       TEST_ASSERT(!ret, "fallocate to restore punched hole should succeed");
+> +}
+> +
+> +static void test_invalid_punch_hole(int fd, size_t page_size, size_t total_size)
+> +{
+> +       struct {
+> +               off_t offset;
+> +               off_t len;
+> +       } testcases[] = {
+> +               {0, 1},
+> +               {0, page_size - 1},
+> +               {0, page_size + 1},
+> +
+> +               {1, 1},
+> +               {1, page_size - 1},
+> +               {1, page_size},
+> +               {1, page_size + 1},
+> +
+> +               {page_size, 1},
+> +               {page_size, page_size - 1},
+> +               {page_size, page_size + 1},
 > +       };
+> +       int ret, i;
 > +
-> +       return ioctl(vm->fd, KVM_SET_USER_MEMORY_REGION2, &region);
+> +       for (i = 0; i < ARRAY_SIZE(testcases); i++) {
+> +               ret = fallocate(fd, FALLOC_FL_KEEP_SIZE | FALLOC_FL_PUNCH_HOLE,
+> +                               testcases[i].offset, testcases[i].len);
+> +               TEST_ASSERT(ret == -1 && errno == EINVAL,
+> +                           "PUNCH_HOLE with !PAGE_SIZE offset (%lx) and/or length (%lx) should fail",
+> +                           testcases[i].offset, testcases[i].len);
+> +       }
 > +}
 > +
-> +void vm_set_user_memory_region2(struct kvm_vm *vm, uint32_t slot, uint32_t flags,
-> +                               uint64_t gpa, uint64_t size, void *hva,
-> +                               uint32_t guest_memfd, uint64_t guest_memfd_offset)
+> +static void test_create_guest_memfd_invalid(struct kvm_vm *vm)
 > +{
-> +       int ret = __vm_set_user_memory_region2(vm, slot, flags, gpa, size, hva,
-> +                                              guest_memfd, guest_memfd_offset);
+> +       size_t page_size = getpagesize();
+> +       uint64_t flag;
+> +       size_t size;
+> +       int fd;
 > +
-> +       TEST_ASSERT(!ret, "KVM_SET_USER_MEMORY_REGION2 failed, errno = %d (%s)",
-> +                   errno, strerror(errno));
+> +       for (size = 1; size < page_size; size++) {
+> +               fd = __vm_create_guest_memfd(vm, size, 0);
+> +               TEST_ASSERT(fd == -1 && errno == EINVAL,
+> +                           "guest_memfd() with non-page-aligned page size '0x%lx' should fail with EINVAL",
+> +                           size);
+> +       }
+> +
+> +       for (flag = 1; flag; flag <<= 1) {
+> +               uint64_t bit;
+> +
+> +               fd = __vm_create_guest_memfd(vm, page_size, flag);
+> +               TEST_ASSERT(fd == -1 && errno == EINVAL,
+> +                           "guest_memfd() with flag '0x%lx' should fail with EINVAL",
+> +                           flag);
+> +
+> +               for_each_set_bit(bit, &valid_flags, 64) {
+> +                       fd = __vm_create_guest_memfd(vm, page_size, flag | BIT_ULL(bit));
+> +                       TEST_ASSERT(fd == -1 && errno == EINVAL,
+> +                                   "guest_memfd() with flags '0x%llx' should fail with EINVAL",
+> +                                   flag | BIT_ULL(bit));
+> +               }
+> +       }
 > +}
 > +
+> +static void test_create_guest_memfd_multiple(struct kvm_vm *vm)
+> +{
+> +       int fd1, fd2, ret;
+> +       struct stat st1, st2;
 > +
->  /* FIXME: This thing needs to be ripped apart and rewritten. */
->  void vm_mem_add(struct kvm_vm *vm, enum vm_mem_backing_src_type src_type,
->                 uint64_t guest_paddr, uint32_t slot, uint64_t npages,
+> +       fd1 = __vm_create_guest_memfd(vm, 4096, 0);
+> +       TEST_ASSERT(fd1 != -1, "memfd creation should succeed");
+> +
+> +       ret = fstat(fd1, &st1);
+> +       TEST_ASSERT(ret != -1, "memfd fstat should succeed");
+> +       TEST_ASSERT(st1.st_size == 4096, "memfd st_size should match requested size");
+> +
+> +       fd2 = __vm_create_guest_memfd(vm, 8192, 0);
+> +       TEST_ASSERT(fd2 != -1, "memfd creation should succeed");
+> +
+> +       ret = fstat(fd2, &st2);
+> +       TEST_ASSERT(ret != -1, "memfd fstat should succeed");
+> +       TEST_ASSERT(st2.st_size == 8192, "second memfd st_size should match requested size");
+> +
+> +       ret = fstat(fd1, &st1);
+> +       TEST_ASSERT(ret != -1, "memfd fstat should succeed");
+> +       TEST_ASSERT(st1.st_size == 4096, "first memfd st_size should still match requested size");
+> +       TEST_ASSERT(st1.st_ino != st2.st_ino, "different memfd should have different inode numbers");
+> +}
+> +
+> +int main(int argc, char *argv[])
+> +{
+> +       size_t page_size;
+> +       size_t total_size;
+> +       int fd;
+> +       struct kvm_vm *vm;
+> +
+> +       TEST_REQUIRE(kvm_has_cap(KVM_CAP_GUEST_MEMFD));
+> +
+> +       page_size = getpagesize();
+> +       total_size = page_size * 4;
+> +
+> +       vm = vm_create_barebones();
+> +
+> +       test_create_guest_memfd_invalid(vm);
+> +       test_create_guest_memfd_multiple(vm);
+> +
+> +       fd = vm_create_guest_memfd(vm, total_size, 0);
+> +
+> +       test_file_read_write(fd);
+> +       test_mmap(fd, page_size);
+> +       test_file_size(fd, page_size, total_size);
+> +       test_fallocate(fd, page_size, total_size);
+> +       test_invalid_punch_hole(fd, page_size, total_size);
+> +
+> +       close(fd);
+> +}
 > --
 > 2.39.1
 >
