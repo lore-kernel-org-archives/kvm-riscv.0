@@ -1,45 +1,51 @@
-From: Palmer Dabbelt <palmer@rivosinc.com>
-Date: Thu, 09 Nov 2023 07:45:21 -0800 (PST)
-Subject: [6.6 regression] qemu-system-riscv64: Unable to read ISA_EXT KVM register ssaia, error -1
-In-Reply-To: <mvmv8ab473b.fsf@suse.de>
-Message-ID: <mhng-b2b81553-0e94-4f02-abe4-d5eb30a05613@palmer-ri-x1c9a>
+From: Daniel Henrique Barboza <dbarboza@ventanamicro.com>
+Date: Thu, 9 Nov 2023 16:33:25 -0300
+Subject: [PATCH 1/6] RISC-V: KVM: return ENOENT in *_one_reg() when reg is
+ unknown
+In-Reply-To: <mvmr0kz469m.fsf@suse.de>
+References: <20230731120420.91007-1-dbarboza@ventanamicro.com>
+ <20230731120420.91007-2-dbarboza@ventanamicro.com> <mvmr0kz469m.fsf@suse.de>
+Message-ID: <5d60b71e-d470-449c-b23f-77ae0a6528bb@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, 09 Nov 2023 01:19:20 PST (-0800), schwab at suse.de wrote:
-> v6.6 broke KVM with qemu 8.1.2.
 
-Do you have known good commits for those?  It'd help for somone trying 
-to bisect...
 
+On 11/9/23 06:37, Andreas Schwab wrote:
+> On Jul 31 2023, Daniel Henrique Barboza wrote:
+> 
+>> Existing userspaces can be affected by this error code change. We
+>> checked a few. As of current upstream code, crosvm doesn't check for any
+>> particular errno code when using kvm_(get|set)_one_reg(). Neither does
+>> QEMU.
+> 
+> That may break qemu:
+> 
 > $ qemu-system-riscv64 -cpu rv64 -machine virt,accel=kvm
 > qemu-system-riscv64: Unable to read ISA_EXT KVM register ssaia, error -1
 
-What's the host, just QEMU of the same version?
+Which QEMU version are you using? This is a problem that was fixed upstream by:
 
-> openat(AT_FDCWD, "/dev/kvm", O_RDWR|O_CLOEXEC) = 9
-> ioctl(9, _IOC(_IOC_NONE, 0xae, 0x1, 0), 0) = 10
-> ioctl(10, _IOC(_IOC_NONE, 0xae, 0x41, 0), 0) = 11
-> ioctl(11, _IOC(_IOC_WRITE, 0xae, 0xab, 0x10), 0x7fffd101e3f8) = 0
-> ioctl(11, _IOC(_IOC_WRITE, 0xae, 0xab, 0x10), 0x7fffd101e3f8) = 0
-> ioctl(11, _IOC(_IOC_WRITE, 0xae, 0xab, 0x10), 0x7fffd101e3f8) = 0
-> ioctl(11, _IOC(_IOC_WRITE, 0xae, 0xab, 0x10), 0x7fffd101e3f8) = 0
-> ioctl(11, _IOC(_IOC_WRITE, 0xae, 0xab, 0x10), 0x7fffd101e3f8) = 0
-> ioctl(11, _IOC(_IOC_WRITE, 0xae, 0xab, 0x10), 0x7fffd101e3f8) = 0
-> ioctl(11, _IOC(_IOC_WRITE, 0xae, 0xab, 0x10), 0x7fffd101e3f8) = 0
-> ioctl(11, _IOC(_IOC_WRITE, 0xae, 0xab, 0x10), 0x7fffd101e3f8) = 0
-> ioctl(11, _IOC(_IOC_WRITE, 0xae, 0xab, 0x10), 0x7fffd101e3f8) = -1 ENOENT (No such file or directory)
-> write(2, "qemu-system-riscv64:", 20qemu-system-riscv64:)    = 20
-> write(2, " ", 1 )                        = 1
-> write(2, "Unable to read ISA_EXT KVM regis"..., 51Unable to read ISA_EXT KVM register ssaia, error -1) = 51
-> write(2, "\n", 1
-> )                       = 1
-> close(11)                               = 0
-> close(10)                               = 0
-> close(9)                                = 0
-> exit_group(1)                           = ?
-> +++ exited with 1 +++
+
+commit 608bdebb6075b757e5505f6bbc60c45a54a1390b
+Author: Daniel Henrique Barboza <dbarboza@ventanamicro.com>
+Date:   Tue Oct 3 10:21:48 2023 -0300
+
+     target/riscv/kvm: support KVM_GET_REG_LIST
+
+
+If you're getting this error with upstream QEMU let me know and I'll take a look
+there.
+
+
+Thanks,
+
+
+Daniel
+
+
+> 
 
