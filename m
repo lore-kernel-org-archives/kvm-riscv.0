@@ -1,72 +1,106 @@
-From: Xiaoyao Li <xiaoyao.li@intel.com>
-Date: Fri, 10 Nov 2023 16:49:21 +0800
-Subject: [PATCH 16/34] KVM: x86: "Reset" vcpu->run->exit_reason early in
- KVM_RUN
-In-Reply-To: <20231105163040.14904-17-pbonzini@redhat.com>
-References: <20231105163040.14904-1-pbonzini@redhat.com>
- <20231105163040.14904-17-pbonzini@redhat.com>
-Message-ID: <b4ec10ab-9d06-4784-8893-6e2e895cd9b1@intel.com>
+From: Sean Christopherson <seanjc@google.com>
+Date: Fri, 10 Nov 2023 10:22:59 -0800
+Subject: [PATCH 15/34] KVM: Add KVM_CREATE_GUEST_MEMFD ioctl() for
+ guest-specific backing memory
+In-Reply-To: <956d8ee3-8b63-4a2d-b0c4-c0d3d74a0f6f@intel.com>
+References: <20231105163040.14904-1-pbonzini@redhat.com> <20231105163040.14904-16-pbonzini@redhat.com>
+ <956d8ee3-8b63-4a2d-b0c4-c0d3d74a0f6f@intel.com>
+Message-ID: <ZU51A3U6E3aZXayC@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 11/6/2023 12:30 AM, Paolo Bonzini wrote:
-> From: Sean Christopherson <seanjc@google.com>
+On Fri, Nov 10, 2023, Xiaoyao Li wrote:
+> On 11/6/2023 12:30 AM, Paolo Bonzini wrote:
+> > diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+> > index 68a144cb7dbc..a6de526c0426 100644
+> > --- a/include/linux/kvm_host.h
+> > +++ b/include/linux/kvm_host.h
+> > @@ -589,8 +589,20 @@ struct kvm_memory_slot {
+> >   	u32 flags;
+> >   	short id;
+> >   	u16 as_id;
+> > +
+> > +#ifdef CONFIG_KVM_PRIVATE_MEM
+> > +	struct {
+> > +		struct file __rcu *file;
+> > +		pgoff_t pgoff;
+> > +	} gmem;
+> > +#endif
+> >   };
+> > +static inline bool kvm_slot_can_be_private(const struct kvm_memory_slot *slot)
+> > +{
+> > +	return slot && (slot->flags & KVM_MEM_GUEST_MEMFD);
+> > +}
+> > +
 > 
-> Initialize run->exit_reason to KVM_EXIT_UNKNOWN early in KVM_RUN to reduce
-> the probability of exiting to userspace with a stale run->exit_reason that
-> *appears* to be valid.
+> maybe we can move this block and ...
 > 
-> To support fd-based guest memory (guest memory without a corresponding
-> userspace virtual address), KVM will exit to userspace for various memory
-> related errors, which userspace *may* be able to resolve, instead of using
-> e.g. BUS_MCEERR_AR.  And in the more distant future, KVM will also likely
-> utilize the same functionality to let userspace "intercept" and handle
-> memory faults when the userspace mapping is missing, i.e. when fast gup()
-> fails.
+> <snip>
 > 
-> Because many of KVM's internal APIs related to guest memory use '0' to
-> indicate "success, continue on" and not "exit to userspace", reporting
-> memory faults/errors to userspace will set run->exit_reason and
-> corresponding fields in the run structure fields in conjunction with a
-> a non-zero, negative return code, e.g. -EFAULT or -EHWPOISON.  And because
-> KVM already returns  -EFAULT in many paths, there's a relatively high
-> probability that KVM could return -EFAULT without setting run->exit_reason,
-> in which case reporting KVM_EXIT_UNKNOWN is much better than reporting
-> whatever exit reason happened to be in the run structure.
+> > @@ -2355,6 +2379,30 @@ bool kvm_arch_pre_set_memory_attributes(struct kvm *kvm,
+> >   					struct kvm_gfn_range *range);
+> >   bool kvm_arch_post_set_memory_attributes(struct kvm *kvm,
+> >   					 struct kvm_gfn_range *range);
+> > +
+> > +static inline bool kvm_mem_is_private(struct kvm *kvm, gfn_t gfn)
+> > +{
+> > +	return IS_ENABLED(CONFIG_KVM_PRIVATE_MEM) &&
+> > +	       kvm_get_memory_attributes(kvm, gfn) & KVM_MEMORY_ATTRIBUTE_PRIVATE;
+> > +}
+> > +#else
+> > +static inline bool kvm_mem_is_private(struct kvm *kvm, gfn_t gfn)
+> > +{
+> > +	return false;
+> > +}
+> >   #endif /* CONFIG_KVM_GENERIC_MEMORY_ATTRIBUTES */
 > 
-> Note, KVM must wait until after run->immediate_exit is serviced to
-> sanitize run->exit_reason as KVM's ABI is that run->exit_reason is
-> preserved across KVM_RUN when run->immediate_exit is true.
-> 
-> Link: https://lore.kernel.org/all/20230908222905.1321305-1-amoorthy at google.com
-> Link: https://lore.kernel.org/all/ZFFbwOXZ5uI%2Fgdaf at google.com
-> Signed-off-by: Sean Christopherson <seanjc@google.com>
-> Reviewed-by: Paolo Bonzini <pbonzini@redhat.com>
-> Reviewed-by: Fuad Tabba <tabba@google.com>
-> Tested-by: Fuad Tabba <tabba@google.com>
-> Message-Id: <20231027182217.3615211-19-seanjc@google.com>
-> Signed-off-by: Paolo Bonzini <pbonzini@redhat.com>
+> this block to Patch 18?
 
-Reviewed-by: Xiaoyao Li <xiaoyao.li@intel.com>
+It would work, but my vote is to keep them here to minimize the changes to common
+KVM code in the x86 enabling.  It's not a strong preference though.  Of course,
+at this point, fiddling with this sort of thing is probably a bad idea in terms
+of landing guest_memfd.
 
-> ---
->   arch/x86/kvm/x86.c | 1 +
->   1 file changed, 1 insertion(+)
+> > @@ -4844,6 +4875,10 @@ static int kvm_vm_ioctl_check_extension_generic(struct kvm *kvm, long arg)
+> >   #ifdef CONFIG_KVM_GENERIC_MEMORY_ATTRIBUTES
+> >   	case KVM_CAP_MEMORY_ATTRIBUTES:
+> >   		return kvm_supported_mem_attributes(kvm);
+> > +#endif
+> > +#ifdef CONFIG_KVM_PRIVATE_MEM
+> > +	case KVM_CAP_GUEST_MEMFD:
+> > +		return !kvm || kvm_arch_has_private_mem(kvm);
+> >   #endif
+> >   	default:
+> >   		break;
+> > @@ -5277,6 +5312,18 @@ static long kvm_vm_ioctl(struct file *filp,
+> >   	case KVM_GET_STATS_FD:
+> >   		r = kvm_vm_ioctl_get_stats_fd(kvm);
+> >   		break;
+> > +#ifdef CONFIG_KVM_PRIVATE_MEM
+> > +	case KVM_CREATE_GUEST_MEMFD: {
+> > +		struct kvm_create_guest_memfd guest_memfd;
 > 
-> diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-> index 8f9d8939b63b..f661acb01c58 100644
-> --- a/arch/x86/kvm/x86.c
-> +++ b/arch/x86/kvm/x86.c
-> @@ -11082,6 +11082,7 @@ static int vcpu_run(struct kvm_vcpu *vcpu)
->   {
->   	int r;
->   
-> +	vcpu->run->exit_reason = KVM_EXIT_UNKNOWN;
->   	vcpu->arch.l1tf_flush_l1d = true;
->   
->   	for (;;) {
+> Do we need a guard of below?
+> 
+> 		r = -EINVAL;
+> 		if (!kvm_arch_has_private_mem(kvm))
+> 			goto out;
 
+Argh, yeah, that's weird since KVM_CAP_GUEST_MEMFD says "not supported" if the
+VM doesn't support private memory.
+
+Enforcing that would break guest_memfd_test.c though.  And having to create a
+"special" VM just to test basic guest_memfd functionality would be quite
+annoying.
+
+So my vote is to do:
+
+	case KVM_CAP_GUEST_MEMFD:
+		return IS_ENABLED(CONFIG_KVM_PRIVATE_MEM);
+
+There's no harm to KVM if userspace creates a file it can't use, and at some
+point KVM will hopefully support guest_memfd irrespective of private memory.
 
