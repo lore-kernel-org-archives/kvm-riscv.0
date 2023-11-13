@@ -1,25 +1,29 @@
 From: Andreas Schwab <schwab@suse.de>
-Date: Mon, 13 Nov 2023 09:30:06 +0100
-Subject: [PATCH 1/6] RISC-V: KVM: return ENOENT in *_one_reg() when reg
- is unknown
-In-Reply-To: <5d60b71e-d470-449c-b23f-77ae0a6528bb@ventanamicro.com> (Daniel
-	Henrique Barboza's message of "Thu, 9 Nov 2023 16:33:25 -0300")
-References: <20230731120420.91007-1-dbarboza@ventanamicro.com>
-	<20230731120420.91007-2-dbarboza@ventanamicro.com>
-	<mvmr0kz469m.fsf@suse.de>
-	<5d60b71e-d470-449c-b23f-77ae0a6528bb@ventanamicro.com>
-Message-ID: <mvmfs1a3vjl.fsf@suse.de>
+Date: Mon, 13 Nov 2023 09:45:58 +0100
+Subject: [6.6 regression] qemu-system-riscv64: Unable to read ISA_EXT
+ KVM register ssaia, error -1
+In-Reply-To: <mhng-b2b81553-0e94-4f02-abe4-d5eb30a05613@palmer-ri-x1c9a>
+	(Palmer Dabbelt's message of "Thu, 09 Nov 2023 07:45:21 -0800 (PST)")
+References: <mhng-b2b81553-0e94-4f02-abe4-d5eb30a05613@palmer-ri-x1c9a>
+Message-ID: <mvmbkby3ut5.fsf@suse.de>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Nov 09 2023, Daniel Henrique Barboza wrote:
+On Nov 09 2023, Palmer Dabbelt wrote:
 
-> Which QEMU version are you using?
+> On Thu, 09 Nov 2023 01:19:20 PST (-0800), schwab at suse.de wrote:
+>> v6.6 broke KVM with qemu 8.1.2.
+>
+> Do you have known good commits for those?
 
-The very latest release, both host and guest.
+It's a regression from 6.5, probably 2a88f38cd58d.
+
+> What's the host, just QEMU of the same version?
+
+Yes, both the same.
 
 -- 
 Andreas Schwab, SUSE Labs, schwab at suse.de
