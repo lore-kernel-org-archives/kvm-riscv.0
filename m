@@ -1,37 +1,37 @@
-From: Mark Brown <broonie@kernel.org>
-Date: Mon, 20 Nov 2023 14:09:17 +0000
-Subject: [PATCH 34/34] KVM: selftests: Add a memory region subtest to
- validate invalid flags
-In-Reply-To: <CAF7b7mpmuYLTY6OQfRRoOryfO-2e1ZumQ6SCQDHHPD5XFyhFTQ@mail.gmail.com>
-References: <20231105163040.14904-1-pbonzini@redhat.com>
- <20231105163040.14904-35-pbonzini@redhat.com>
- <CAF7b7mpmuYLTY6OQfRRoOryfO-2e1ZumQ6SCQDHHPD5XFyhFTQ@mail.gmail.com>
-Message-ID: <13677ced-e464-4cdb-82ae-4236536e169c@sirena.org.uk>
+From: Yong-Xuan Wang <yongxuan.wang@sifive.com>
+Date: Tue, 21 Nov 2023 11:12:35 +0800
+Subject: [PATCH v3 0/4] Add Svadu Extension Support
+In-Reply-To: <20231114-herald-cried-9122f8bbb218@squawk>
+References: <20231102120129.11261-1-yongxuan.wang@sifive.com> <20231114-herald-cried-9122f8bbb218@squawk>
+Message-ID: <CAMWQL2iUQDqBj=ei-SzKk0=m3W9qA0ftiJM_kbb2ev-YgaQ93A@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Nov 08, 2023 at 05:08:01PM -0800, Anish Moorthy wrote:
-> Applying [1] and [2] reveals that this also breaks non-x86 builds- the
-> MEM_REGION_GPA/SLOT definitions are guarded behind an #ifdef
-> __x86_64__, while the usages introduced here aren't.
-> 
-> Should
-> 
-> On Sun, Nov 5, 2023 at 8:35?AM Paolo Bonzini <pbonzini@redhat.com> wrote:
-> >
-> > +       test_invalid_memory_region_flags();
-> 
-> be #ifdef'd, perhaps? I'm not quite sure what the intent is.
+On Tue, Nov 14, 2023 at 11:39?PM Conor Dooley <conor@kernel.org> wrote:
+>
+> On Thu, Nov 02, 2023 at 12:01:21PM +0000, Yong-Xuan Wang wrote:
+> > Svadu is a RISC-V extension for hardware updating of PTE A/D bits. This
+> > patch set adds support to enable Svadu extension for both host and guest
+> > OS.
+>
+> From patch one onwards for rv32_defconfig:
+>   /tmp/tmp.TRw8gWHZCe/arch/riscv/include/asm/pgtable.h:636:9: error: call to undeclared function 'riscv_has_extension_unlikely'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
+>   /tmp/tmp.TRw8gWHZCe/include/linux/signal.h:97:11: warning: array index 3 is past the end of the array (that has type 'unsigned long[2]') [-Warray-bounds]
+>
+> There seem to be quite a few of these -Warray-bounds issues, all in
+> code included from signal.h. Could you please do an rv32 build and fix
+> up these build issues?
+>
+> Thanks,
+> Conor.
 
-This has been broken in -next for a week now, do we have any progress
-on a fix or should we just revert the patch?
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 488 bytes
-Desc: not available
-URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20231120/f5db95b2/attachment.sig>
+Hi Conor,
+
+Sure! I will fix it in patch v4. Thank you!
+
+Regards,
+Yong-Xuan
+
