@@ -1,37 +1,45 @@
-From: Yong-Xuan Wang <yongxuan.wang@sifive.com>
-Date: Tue, 21 Nov 2023 11:12:35 +0800
-Subject: [PATCH v3 0/4] Add Svadu Extension Support
-In-Reply-To: <20231114-herald-cried-9122f8bbb218@squawk>
-References: <20231102120129.11261-1-yongxuan.wang@sifive.com> <20231114-herald-cried-9122f8bbb218@squawk>
-Message-ID: <CAMWQL2iUQDqBj=ei-SzKk0=m3W9qA0ftiJM_kbb2ev-YgaQ93A@mail.gmail.com>
+From: Will Deacon <will@kernel.org>
+Date: Tue, 21 Nov 2023 15:39:00 +0000
+Subject: [kvmtool PATCH v3 0/6] RISC-V AIA irqchip and Svnapot support
+In-Reply-To: <20231118132847.758785-1-apatel@ventanamicro.com>
+References: <20231118132847.758785-1-apatel@ventanamicro.com>
+Message-ID: <170058078885.653754.8772378567684754603.b4-ty@kernel.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Nov 14, 2023 at 11:39?PM Conor Dooley <conor@kernel.org> wrote:
->
-> On Thu, Nov 02, 2023 at 12:01:21PM +0000, Yong-Xuan Wang wrote:
-> > Svadu is a RISC-V extension for hardware updating of PTE A/D bits. This
-> > patch set adds support to enable Svadu extension for both host and guest
-> > OS.
->
-> From patch one onwards for rv32_defconfig:
->   /tmp/tmp.TRw8gWHZCe/arch/riscv/include/asm/pgtable.h:636:9: error: call to undeclared function 'riscv_has_extension_unlikely'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
->   /tmp/tmp.TRw8gWHZCe/include/linux/signal.h:97:11: warning: array index 3 is past the end of the array (that has type 'unsigned long[2]') [-Warray-bounds]
->
-> There seem to be quite a few of these -Warray-bounds issues, all in
-> code included from signal.h. Could you please do an rv32 build and fix
-> up these build issues?
->
-> Thanks,
-> Conor.
+On Sat, 18 Nov 2023 18:58:41 +0530, Anup Patel wrote:
+> The latest KVM in Linux-6.5 has support for:
+> 1) Svnapot ISA extension support
+> 2) AIA in-kernel irqchip support
+> 
+> This series adds corresponding changes in KVMTOOL to use the above
+> mentioned features for Guest/VM.
+> 
+> [...]
 
-Hi Conor,
+Applied to kvmtool (master), thanks!
 
-Sure! I will fix it in patch v4. Thank you!
+[1/6] Sync-up header with Linux-6.6 for KVM RISC-V
+      https://git.kernel.org/will/kvmtool/c/26c85896bc3a
+[2/6] riscv: Add Svnapot extension support
+      https://git.kernel.org/will/kvmtool/c/56e2d678f578
+[3/6] riscv: Make irqchip support pluggable
+      https://git.kernel.org/will/kvmtool/c/0dff350174f8
+[4/6] riscv: Add IRQFD support for in-kernel AIA irqchip
+      https://git.kernel.org/will/kvmtool/c/17aab306ad14
+[5/6] riscv: Use AIA in-kernel irqchip whenever KVM RISC-V supports
+      https://git.kernel.org/will/kvmtool/c/328f0879eeae
+[6/6] riscv: Fix guest/init linkage for multilib toolchain
+      https://git.kernel.org/will/kvmtool/c/095773e707ae
 
-Regards,
-Yong-Xuan
+Cheers,
+-- 
+Will
+
+https://fixes.arm64.dev
+https://next.arm64.dev
+https://will.arm64.dev
 
