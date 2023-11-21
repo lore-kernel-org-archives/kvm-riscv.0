@@ -1,45 +1,37 @@
-From: Will Deacon <will@kernel.org>
-Date: Tue, 21 Nov 2023 15:39:00 +0000
-Subject: [kvmtool PATCH v3 0/6] RISC-V AIA irqchip and Svnapot support
-In-Reply-To: <20231118132847.758785-1-apatel@ventanamicro.com>
-References: <20231118132847.758785-1-apatel@ventanamicro.com>
-Message-ID: <170058078885.653754.8772378567684754603.b4-ty@kernel.org>
+From: Paolo Bonzini <pbonzini@redhat.com>
+Date: Tue, 21 Nov 2023 18:00:56 +0100
+Subject: [PATCH 34/34] KVM: selftests: Add a memory region subtest to
+ validate invalid flags
+In-Reply-To: <13677ced-e464-4cdb-82ae-4236536e169c@sirena.org.uk>
+References: <20231105163040.14904-1-pbonzini@redhat.com> <20231105163040.14904-35-pbonzini@redhat.com>
+ <CAF7b7mpmuYLTY6OQfRRoOryfO-2e1ZumQ6SCQDHHPD5XFyhFTQ@mail.gmail.com> <13677ced-e464-4cdb-82ae-4236536e169c@sirena.org.uk>
+Message-ID: <CABgObfZdk9Jn60QLJGweVZMN_yWsxo1d7W3Mu-NNTPZVO0uCnw@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sat, 18 Nov 2023 18:58:41 +0530, Anup Patel wrote:
-> The latest KVM in Linux-6.5 has support for:
-> 1) Svnapot ISA extension support
-> 2) AIA in-kernel irqchip support
-> 
-> This series adds corresponding changes in KVMTOOL to use the above
-> mentioned features for Guest/VM.
-> 
-> [...]
+On Mon, Nov 20, 2023 at 3:09?PM Mark Brown <broonie@kernel.org> wrote:
+>
+> On Wed, Nov 08, 2023 at 05:08:01PM -0800, Anish Moorthy wrote:
+> > Applying [1] and [2] reveals that this also breaks non-x86 builds- the
+> > MEM_REGION_GPA/SLOT definitions are guarded behind an #ifdef
+> > __x86_64__, while the usages introduced here aren't.
+> >
+> > Should
+> >
+> > On Sun, Nov 5, 2023 at 8:35?AM Paolo Bonzini <pbonzini@redhat.com> wrote:
+> > >
+> > > +       test_invalid_memory_region_flags();
+> >
+> > be #ifdef'd, perhaps? I'm not quite sure what the intent is.
+>
+> This has been broken in -next for a week now, do we have any progress
+> on a fix or should we just revert the patch?
 
-Applied to kvmtool (master), thanks!
+Sorry, I was away last week. I have now posted a patch.
 
-[1/6] Sync-up header with Linux-6.6 for KVM RISC-V
-      https://git.kernel.org/will/kvmtool/c/26c85896bc3a
-[2/6] riscv: Add Svnapot extension support
-      https://git.kernel.org/will/kvmtool/c/56e2d678f578
-[3/6] riscv: Make irqchip support pluggable
-      https://git.kernel.org/will/kvmtool/c/0dff350174f8
-[4/6] riscv: Add IRQFD support for in-kernel AIA irqchip
-      https://git.kernel.org/will/kvmtool/c/17aab306ad14
-[5/6] riscv: Use AIA in-kernel irqchip whenever KVM RISC-V supports
-      https://git.kernel.org/will/kvmtool/c/328f0879eeae
-[6/6] riscv: Fix guest/init linkage for multilib toolchain
-      https://git.kernel.org/will/kvmtool/c/095773e707ae
+Paolo
 
-Cheers,
--- 
-Will
-
-https://fixes.arm64.dev
-https://next.arm64.dev
-https://will.arm64.dev
 
