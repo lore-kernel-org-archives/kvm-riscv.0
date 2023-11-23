@@ -1,78 +1,84 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Wed, 22 Nov 2023 09:13:04 +0100
-Subject: [PATCH v3 2/9] KVM: selftests: Unify the makefile rule for split
- targets
-In-Reply-To: <CAJve8o=Q74U0Z3PayrzY7heNc0qeTw5VYS+tdkpm=aJdefQEbQ@mail.gmail.com>
-References: <cover.1694421911.git.haibo1.xu@intel.com>
- <cda6cc71c9bdde87fe87f6c2dec4f03ca249dd62.1694421911.git.haibo1.xu@intel.com>
- <20231003-d44206f71d0b22e539833697@orel>
- <CAJve8o=Q74U0Z3PayrzY7heNc0qeTw5VYS+tdkpm=aJdefQEbQ@mail.gmail.com>
-Message-ID: <20231122-b471122622059496906801c1@orel>
+From: Haibo Xu <xiaobo55x@gmail.com>
+Date: Thu, 23 Nov 2023 10:50:07 +0800
+Subject: [PATCH v3 2/9] KVM: selftests: Unify the makefile rule for split targets
+In-Reply-To: <20231122-b471122622059496906801c1@orel>
+References: <cover.1694421911.git.haibo1.xu@intel.com> <cda6cc71c9bdde87fe87f6c2dec4f03ca249dd62.1694421911.git.haibo1.xu@intel.com>
+ <20231003-d44206f71d0b22e539833697@orel> <CAJve8o=Q74U0Z3PayrzY7heNc0qeTw5VYS+tdkpm=aJdefQEbQ@mail.gmail.com>
+ <20231122-b471122622059496906801c1@orel>
+Message-ID: <CAJve8o=gsY=qQUce-Z25p6C2BO5eLnH9N=MxjcdX0v0hFKN8kw@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sun, Oct 08, 2023 at 10:58:57AM +0800, Haibo Xu wrote:
-> On Tue, Oct 3, 2023 at 6:28?PM Andrew Jones <ajones@ventanamicro.com> wrote:
+On Wed, Nov 22, 2023 at 4:13?PM Andrew Jones <ajones@ventanamicro.com> wrote:
+>
+> On Sun, Oct 08, 2023 at 10:58:57AM +0800, Haibo Xu wrote:
+> > On Tue, Oct 3, 2023 at 6:28?PM Andrew Jones <ajones@ventanamicro.com> wrote:
+> > >
+> > > On Thu, Sep 14, 2023 at 09:36:56AM +0800, Haibo Xu wrote:
+> > > > A separate makefile rule was used for split targets which was added
+> > > > in patch(KVM: arm64: selftests: Split get-reg-list test code). This
+> > > > could be avoided by minor changes to the recipes of current rule.
+> > > >
+> > > > Signed-off-by: Haibo Xu <haibo1.xu@intel.com>
+> > > > ---
+> > > >  tools/testing/selftests/kvm/Makefile | 6 ++----
+> > > >  1 file changed, 2 insertions(+), 4 deletions(-)
+> > > >
+> > > > diff --git a/tools/testing/selftests/kvm/Makefile b/tools/testing/selftests/kvm/Makefile
+> > > > index a3bb36fb3cfc..7972269e8c5f 100644
+> > > > --- a/tools/testing/selftests/kvm/Makefile
+> > > > +++ b/tools/testing/selftests/kvm/Makefile
+> > > > @@ -249,13 +249,10 @@ TEST_DEP_FILES += $(patsubst %.o, %.d, $(SPLIT_TESTS_OBJS))
+> > > >  -include $(TEST_DEP_FILES)
+> > > >
+> > > >  $(TEST_GEN_PROGS) $(TEST_GEN_PROGS_EXTENDED): %: %.o
+> > > > -     $(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(TARGET_ARCH) $< $(LIBKVM_OBJS) $(LDLIBS) -o $@
+> > > > +     $(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(TARGET_ARCH) $^ $(LDLIBS) -o $@
+> > > >  $(TEST_GEN_OBJ): $(OUTPUT)/%.o: %.c
+> > > >       $(CC) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c $< -o $@
+> > > >
+> > > > -$(SPLIT_TESTS_TARGETS): %: %.o $(SPLIT_TESTS_OBJS)
+> > > > -     $(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(TARGET_ARCH) $^ $(LDLIBS) -o $@
+> > > > -
+> > > >  EXTRA_CLEAN += $(LIBKVM_OBJS) $(TEST_DEP_FILES) $(TEST_GEN_OBJ) $(SPLIT_TESTS_OBJS) cscope.*
+> > > >
+> > > >  x := $(shell mkdir -p $(sort $(dir $(LIBKVM_C_OBJ) $(LIBKVM_S_OBJ))))
+> > > > @@ -274,6 +271,7 @@ $(LIBKVM_STRING_OBJ): $(OUTPUT)/%.o: %.c
+> > > >  x := $(shell mkdir -p $(sort $(dir $(TEST_GEN_PROGS))))
+> > > >  $(TEST_GEN_PROGS): $(LIBKVM_OBJS)
+> > > >  $(TEST_GEN_PROGS_EXTENDED): $(LIBKVM_OBJS)
+> > > > +$(SPLIT_TESTS_TARGETS): $(OUTPUT)/%: $(ARCH_DIR)/%.o
+> > > >
+> > > >  cscope: include_paths = $(LINUX_TOOL_INCLUDE) $(LINUX_HDR_PATH) include lib ..
+> > > >  cscope:
+> > > > --
+> > > > 2.34.1
+> > > >
+> > >
+> > > I just noticed that with and without this patch we're building the
+> > > arch-specific part in tools/testing/selftests/kvm/riscv even when we have
+> > > an $(OUTPUT) directory (e.g. O=build). Those build artifacts should be in
+> > > build/kselftest/kvm/riscv instead.
+> > >
 > >
-> > On Thu, Sep 14, 2023 at 09:36:56AM +0800, Haibo Xu wrote:
-> > > A separate makefile rule was used for split targets which was added
-> > > in patch(KVM: arm64: selftests: Split get-reg-list test code). This
-> > > could be avoided by minor changes to the recipes of current rule.
-> > >
-> > > Signed-off-by: Haibo Xu <haibo1.xu@intel.com>
-> > > ---
-> > >  tools/testing/selftests/kvm/Makefile | 6 ++----
-> > >  1 file changed, 2 insertions(+), 4 deletions(-)
-> > >
-> > > diff --git a/tools/testing/selftests/kvm/Makefile b/tools/testing/selftests/kvm/Makefile
-> > > index a3bb36fb3cfc..7972269e8c5f 100644
-> > > --- a/tools/testing/selftests/kvm/Makefile
-> > > +++ b/tools/testing/selftests/kvm/Makefile
-> > > @@ -249,13 +249,10 @@ TEST_DEP_FILES += $(patsubst %.o, %.d, $(SPLIT_TESTS_OBJS))
-> > >  -include $(TEST_DEP_FILES)
-> > >
-> > >  $(TEST_GEN_PROGS) $(TEST_GEN_PROGS_EXTENDED): %: %.o
-> > > -     $(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(TARGET_ARCH) $< $(LIBKVM_OBJS) $(LDLIBS) -o $@
-> > > +     $(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(TARGET_ARCH) $^ $(LDLIBS) -o $@
-> > >  $(TEST_GEN_OBJ): $(OUTPUT)/%.o: %.c
-> > >       $(CC) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c $< -o $@
-> > >
-> > > -$(SPLIT_TESTS_TARGETS): %: %.o $(SPLIT_TESTS_OBJS)
-> > > -     $(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(TARGET_ARCH) $^ $(LDLIBS) -o $@
-> > > -
-> > >  EXTRA_CLEAN += $(LIBKVM_OBJS) $(TEST_DEP_FILES) $(TEST_GEN_OBJ) $(SPLIT_TESTS_OBJS) cscope.*
-> > >
-> > >  x := $(shell mkdir -p $(sort $(dir $(LIBKVM_C_OBJ) $(LIBKVM_S_OBJ))))
-> > > @@ -274,6 +271,7 @@ $(LIBKVM_STRING_OBJ): $(OUTPUT)/%.o: %.c
-> > >  x := $(shell mkdir -p $(sort $(dir $(TEST_GEN_PROGS))))
-> > >  $(TEST_GEN_PROGS): $(LIBKVM_OBJS)
-> > >  $(TEST_GEN_PROGS_EXTENDED): $(LIBKVM_OBJS)
-> > > +$(SPLIT_TESTS_TARGETS): $(OUTPUT)/%: $(ARCH_DIR)/%.o
-> > >
-> > >  cscope: include_paths = $(LINUX_TOOL_INCLUDE) $(LINUX_HDR_PATH) include lib ..
-> > >  cscope:
-> > > --
-> > > 2.34.1
-> > >
+> > Thanks for pointing it out. I will have a look in next week!
 > >
-> > I just noticed that with and without this patch we're building the
-> > arch-specific part in tools/testing/selftests/kvm/riscv even when we have
-> > an $(OUTPUT) directory (e.g. O=build). Those build artifacts should be in
-> > build/kselftest/kvm/riscv instead.
-> >
-> 
-> Thanks for pointing it out. I will have a look in next week!
+>
+> Hi Haibo,
+>
+> Paolo just fixed this
+>
+> https://lore.kernel.org/all/20231121165631.1170797-1-pbonzini at redhat.com/
 >
 
-Hi Haibo,
-
-Paolo just fixed this
-
-https://lore.kernel.org/all/20231121165631.1170797-1-pbonzini at redhat.com/
+Thanks for the info! I will rebase the patch set in next version.
 
 Thanks,
-drew
+Haibo
+
+> Thanks,
+> drew
 
