@@ -1,95 +1,59 @@
 From: Anup Patel <apatel@ventanamicro.com>
-Date: Tue, 28 Nov 2023 20:23:49 +0530
-Subject: [PATCH 07/15] KVM: riscv: selftests: Add vector crypto extensions to get-reg-list test
+Date: Tue, 28 Nov 2023 20:23:50 +0530
+Subject: [PATCH 08/15] RISC-V: KVM: Allow Zfh[min] extensions for Guest/VM
 In-Reply-To: <20231128145357.413321-1-apatel@ventanamicro.com>
 References: <20231128145357.413321-1-apatel@ventanamicro.com>
-Message-ID: <20231128145357.413321-8-apatel@ventanamicro.com>
+Message-ID: <20231128145357.413321-9-apatel@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The KVM RISC-V allows vector crypto extensions for Guest/VM so let us
-add these extensions to get-reg-list test. This includes extensions
-Zvbb, Zvbc, Zvkb, Zvkg, Zvkned, Zvknha, Zvknhb, Zvksed, Zvksh, and Zvkt.
+We extend the KVM ISA extension ONE_REG interface to allow KVM
+user space to detect and enable Zfh[min] extensions for Guest/VM.
 
 Signed-off-by: Anup Patel <apatel@ventanamicro.com>
 ---
- .../selftests/kvm/riscv/get-reg-list.c        | 40 +++++++++++++++++++
- 1 file changed, 40 insertions(+)
+ arch/riscv/include/uapi/asm/kvm.h | 2 ++
+ arch/riscv/kvm/vcpu_onereg.c      | 4 ++++
+ 2 files changed, 6 insertions(+)
 
-diff --git a/tools/testing/selftests/kvm/riscv/get-reg-list.c b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-index aabc05e4b02b..04ff8836c474 100644
---- a/tools/testing/selftests/kvm/riscv/get-reg-list.c
-+++ b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-@@ -64,6 +64,16 @@ bool filter_reg(__u64 reg)
- 	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZKSED:
- 	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZKSH:
- 	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZKT:
-+	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZVBB:
-+	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZVBC:
-+	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZVKB:
-+	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZVKG:
-+	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZVKNED:
-+	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZVKNHA:
-+	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZVKNHB:
-+	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZVKSED:
-+	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZVKSH:
-+	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZVKT:
- 		return true;
- 	/* AIA registers are always available when Ssaia can't be disabled */
- 	case KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_AIA | KVM_REG_RISCV_CSR_AIA_REG(siselect):
-@@ -392,6 +402,16 @@ static const char *isa_ext_id_to_str(const char *prefix, __u64 id)
- 		KVM_ISA_EXT_ARR(ZKSED),
- 		KVM_ISA_EXT_ARR(ZKSH),
- 		KVM_ISA_EXT_ARR(ZKT),
-+		KVM_ISA_EXT_ARR(ZVBB),
-+		KVM_ISA_EXT_ARR(ZVBC),
-+		KVM_ISA_EXT_ARR(ZVKB),
-+		KVM_ISA_EXT_ARR(ZVKG),
-+		KVM_ISA_EXT_ARR(ZVKNED),
-+		KVM_ISA_EXT_ARR(ZVKNHA),
-+		KVM_ISA_EXT_ARR(ZVKNHB),
-+		KVM_ISA_EXT_ARR(ZVKSED),
-+		KVM_ISA_EXT_ARR(ZVKSH),
-+		KVM_ISA_EXT_ARR(ZVKT),
- 	};
- 
- 	if (reg_off >= ARRAY_SIZE(kvm_isa_ext_reg_name))
-@@ -781,6 +801,16 @@ KVM_ISA_EXT_SIMPLE_CONFIG(zkr, ZKR);
- KVM_ISA_EXT_SIMPLE_CONFIG(zksed, ZKSED);
- KVM_ISA_EXT_SIMPLE_CONFIG(zksh, ZKSH);
- KVM_ISA_EXT_SIMPLE_CONFIG(zkt, ZKT);
-+KVM_ISA_EXT_SIMPLE_CONFIG(zvbb, ZVBB);
-+KVM_ISA_EXT_SIMPLE_CONFIG(zvbc, ZVBC);
-+KVM_ISA_EXT_SIMPLE_CONFIG(zvkb, ZVKB);
-+KVM_ISA_EXT_SIMPLE_CONFIG(zvkg, ZVKG);
-+KVM_ISA_EXT_SIMPLE_CONFIG(zvkned, ZVKNED);
-+KVM_ISA_EXT_SIMPLE_CONFIG(zvknha, ZVKNHA);
-+KVM_ISA_EXT_SIMPLE_CONFIG(zvknhb, ZVKNHB);
-+KVM_ISA_EXT_SIMPLE_CONFIG(zvksed, ZVKSED);
-+KVM_ISA_EXT_SIMPLE_CONFIG(zvksh, ZVKSH);
-+KVM_ISA_EXT_SIMPLE_CONFIG(zvkt, ZVKT);
- 
- struct vcpu_reg_list *vcpu_configs[] = {
- 	&config_aia,
-@@ -814,5 +844,15 @@ struct vcpu_reg_list *vcpu_configs[] = {
- 	&config_zksed,
- 	&config_zksh,
- 	&config_zkt,
-+	&config_zvbb,
-+	&config_zvbc,
-+	&config_zvkb,
-+	&config_zvkg,
-+	&config_zvkned,
-+	&config_zvknha,
-+	&config_zvknhb,
-+	&config_zvksed,
-+	&config_zvksh,
-+	&config_zvkt,
+diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
+index 241632f91f73..fa1a8e01b803 100644
+--- a/arch/riscv/include/uapi/asm/kvm.h
++++ b/arch/riscv/include/uapi/asm/kvm.h
+@@ -160,6 +160,8 @@ enum KVM_RISCV_ISA_EXT_ID {
+ 	KVM_RISCV_ISA_EXT_ZVKSED,
+ 	KVM_RISCV_ISA_EXT_ZVKSH,
+ 	KVM_RISCV_ISA_EXT_ZVKT,
++	KVM_RISCV_ISA_EXT_ZFH,
++	KVM_RISCV_ISA_EXT_ZFHMIN,
+ 	KVM_RISCV_ISA_EXT_MAX,
  };
- int vcpu_configs_n = ARRAY_SIZE(vcpu_configs);
+ 
+diff --git a/arch/riscv/kvm/vcpu_onereg.c b/arch/riscv/kvm/vcpu_onereg.c
+index 4cd075f4cf9f..ba418ac47e81 100644
+--- a/arch/riscv/kvm/vcpu_onereg.c
++++ b/arch/riscv/kvm/vcpu_onereg.c
+@@ -47,6 +47,8 @@ static const unsigned long kvm_isa_ext_arr[] = {
+ 	KVM_ISA_EXT_ARR(ZBKC),
+ 	KVM_ISA_EXT_ARR(ZBKX),
+ 	KVM_ISA_EXT_ARR(ZBS),
++	KVM_ISA_EXT_ARR(ZFH),
++	KVM_ISA_EXT_ARR(ZFHMIN),
+ 	KVM_ISA_EXT_ARR(ZICBOM),
+ 	KVM_ISA_EXT_ARR(ZICBOZ),
+ 	KVM_ISA_EXT_ARR(ZICNTR),
+@@ -118,6 +120,8 @@ static bool kvm_riscv_vcpu_isa_disable_allowed(unsigned long ext)
+ 	case KVM_RISCV_ISA_EXT_ZBKC:
+ 	case KVM_RISCV_ISA_EXT_ZBKX:
+ 	case KVM_RISCV_ISA_EXT_ZBS:
++	case KVM_RISCV_ISA_EXT_ZFH:
++	case KVM_RISCV_ISA_EXT_ZFHMIN:
+ 	case KVM_RISCV_ISA_EXT_ZICNTR:
+ 	case KVM_RISCV_ISA_EXT_ZICOND:
+ 	case KVM_RISCV_ISA_EXT_ZICSR:
 -- 
 2.34.1
 
