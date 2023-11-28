@@ -1,59 +1,59 @@
 From: Anup Patel <apatel@ventanamicro.com>
-Date: Tue, 28 Nov 2023 20:23:53 +0530
-Subject: [PATCH 11/15] KVM: riscv: selftests: Add Zihintntl extension to get-reg-list test
+Date: Tue, 28 Nov 2023 20:23:54 +0530
+Subject: [PATCH 12/15] RISC-V: KVM: Allow Zvfh[min] extensions for Guest/VM
 In-Reply-To: <20231128145357.413321-1-apatel@ventanamicro.com>
 References: <20231128145357.413321-1-apatel@ventanamicro.com>
-Message-ID: <20231128145357.413321-12-apatel@ventanamicro.com>
+Message-ID: <20231128145357.413321-13-apatel@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The KVM RISC-V allows Zihintntl extension for Guest/VM so let us
-add this extension to get-reg-list test.
+We extend the KVM ISA extension ONE_REG interface to allow KVM
+user space to detect and enable Zvfh[min] extensions for Guest/VM.
 
 Signed-off-by: Anup Patel <apatel@ventanamicro.com>
 ---
- tools/testing/selftests/kvm/riscv/get-reg-list.c | 4 ++++
- 1 file changed, 4 insertions(+)
+ arch/riscv/include/uapi/asm/kvm.h | 2 ++
+ arch/riscv/kvm/vcpu_onereg.c      | 4 ++++
+ 2 files changed, 6 insertions(+)
 
-diff --git a/tools/testing/selftests/kvm/riscv/get-reg-list.c b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-index 4af0f9a750e8..e1d43cc9da16 100644
---- a/tools/testing/selftests/kvm/riscv/get-reg-list.c
-+++ b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-@@ -57,6 +57,7 @@ bool filter_reg(__u64 reg)
- 	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZICOND:
- 	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZICSR:
- 	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZIFENCEI:
-+	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZIHINTNTL:
- 	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZIHINTPAUSE:
- 	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZIHPM:
- 	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZKND:
-@@ -397,6 +398,7 @@ static const char *isa_ext_id_to_str(const char *prefix, __u64 id)
- 		KVM_ISA_EXT_ARR(ZICOND),
- 		KVM_ISA_EXT_ARR(ZICSR),
- 		KVM_ISA_EXT_ARR(ZIFENCEI),
-+		KVM_ISA_EXT_ARR(ZIHINTNTL),
- 		KVM_ISA_EXT_ARR(ZIHINTPAUSE),
- 		KVM_ISA_EXT_ARR(ZIHPM),
- 		KVM_ISA_EXT_ARR(ZKND),
-@@ -798,6 +800,7 @@ KVM_ISA_EXT_SIMPLE_CONFIG(zicntr, ZICNTR);
- KVM_ISA_EXT_SIMPLE_CONFIG(zicond, ZICOND);
- KVM_ISA_EXT_SIMPLE_CONFIG(zicsr, ZICSR);
- KVM_ISA_EXT_SIMPLE_CONFIG(zifencei, ZIFENCEI);
-+KVM_ISA_EXT_SIMPLE_CONFIG(zihintntl, ZIHINTNTL);
- KVM_ISA_EXT_SIMPLE_CONFIG(zihintpause, ZIHINTPAUSE);
- KVM_ISA_EXT_SIMPLE_CONFIG(zihpm, ZIHPM);
- KVM_ISA_EXT_SIMPLE_CONFIG(zknd, ZKND);
-@@ -843,6 +846,7 @@ struct vcpu_reg_list *vcpu_configs[] = {
- 	&config_zicond,
- 	&config_zicsr,
- 	&config_zifencei,
-+	&config_zihintntl,
- 	&config_zihintpause,
- 	&config_zihpm,
- 	&config_zknd,
+diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
+index 0ed5b0f8a230..32c7ff23ecce 100644
+--- a/arch/riscv/include/uapi/asm/kvm.h
++++ b/arch/riscv/include/uapi/asm/kvm.h
+@@ -163,6 +163,8 @@ enum KVM_RISCV_ISA_EXT_ID {
+ 	KVM_RISCV_ISA_EXT_ZFH,
+ 	KVM_RISCV_ISA_EXT_ZFHMIN,
+ 	KVM_RISCV_ISA_EXT_ZIHINTNTL,
++	KVM_RISCV_ISA_EXT_ZVFH,
++	KVM_RISCV_ISA_EXT_ZVFHMIN,
+ 	KVM_RISCV_ISA_EXT_MAX,
+ };
+ 
+diff --git a/arch/riscv/kvm/vcpu_onereg.c b/arch/riscv/kvm/vcpu_onereg.c
+index ba0a44b6b757..6b2d81c8cfe7 100644
+--- a/arch/riscv/kvm/vcpu_onereg.c
++++ b/arch/riscv/kvm/vcpu_onereg.c
+@@ -67,6 +67,8 @@ static const unsigned long kvm_isa_ext_arr[] = {
+ 	KVM_ISA_EXT_ARR(ZKT),
+ 	KVM_ISA_EXT_ARR(ZVBB),
+ 	KVM_ISA_EXT_ARR(ZVBC),
++	KVM_ISA_EXT_ARR(ZVFH),
++	KVM_ISA_EXT_ARR(ZVFHMIN),
+ 	KVM_ISA_EXT_ARR(ZVKB),
+ 	KVM_ISA_EXT_ARR(ZVKG),
+ 	KVM_ISA_EXT_ARR(ZVKNED),
+@@ -139,6 +141,8 @@ static bool kvm_riscv_vcpu_isa_disable_allowed(unsigned long ext)
+ 	case KVM_RISCV_ISA_EXT_ZKT:
+ 	case KVM_RISCV_ISA_EXT_ZVBB:
+ 	case KVM_RISCV_ISA_EXT_ZVBC:
++	case KVM_RISCV_ISA_EXT_ZVFH:
++	case KVM_RISCV_ISA_EXT_ZVFHMIN:
+ 	case KVM_RISCV_ISA_EXT_ZVKB:
+ 	case KVM_RISCV_ISA_EXT_ZVKG:
+ 	case KVM_RISCV_ISA_EXT_ZVKNED:
 -- 
 2.34.1
 
