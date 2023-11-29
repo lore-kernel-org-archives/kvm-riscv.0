@@ -1,163 +1,84 @@
-From: Anup Patel <apatel@ventanamicro.com>
-Date: Tue, 28 Nov 2023 20:26:28 +0530
-Subject: [kvmtool PATCH 10/10] riscv: Handle SBI DBCN calls from Guest/VM
-In-Reply-To: <20231128145628.413414-1-apatel@ventanamicro.com>
-References: <20231128145628.413414-1-apatel@ventanamicro.com>
-Message-ID: <20231128145628.413414-11-apatel@ventanamicro.com>
+From: Sean Christopherson <seanjc@google.com>
+Date: Wed, 29 Nov 2023 14:40:19 -0800
+Subject: [PATCH v13 17/35] KVM: Add transparent hugepage support for
+ dedicated guest memory
+In-Reply-To: <81628606-ca9b-866f-5e71-91001e856871@suse.cz>
+References: <92ba7ddd-2bc8-4a8d-bd67-d6614b21914f@intel.com>
+ <ZUJVfCkIYYFp5VwG@google.com> <CABgObfaw4Byuzj5J3k48jdwT0HCKXLJNiuaA9H8Dtg+GOq==Sw@mail.gmail.com>
+ <ZUJ-cJfofk2d_I0B@google.com> <4ca2253d-276f-43c5-8e9f-0ded5d5b2779@redhat.com>
+ <ZULSkilO-tdgDGyT@google.com> <CABgObfbq_Hg0B=jvsSDqYH3CSpX+RsxfwB-Tc-eYF4uq2Qw9cg@mail.gmail.com>
+ <ZUPCWfO1iO77-KDA@google.com> <CABgObfa=DH7FySBviF63OS9sVog_wt-AqYgtUAGKqnY5Bizivw@mail.gmail.com>
+ <81628606-ca9b-866f-5e71-91001e856871@suse.cz>
+Message-ID: <ZWe90784ek9VvHa5@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The new SBI DBCN functions are forwarded by in-kernel KVM RISC-V module
-to user-space so let us handle these calls in kvm_cpu_riscv_sbi() function.
+On Mon, Nov 27, 2023, Vlastimil Babka wrote:
+> On 11/2/23 16:46, Paolo Bonzini wrote:
+> > On Thu, Nov 2, 2023 at 4:38?PM Sean Christopherson <seanjc@google.com> wrote:
+> >> Actually, looking that this again, there's not actually a hard dependency on THP.
+> >> A THP-enabled kernel _probably_  gives a higher probability of using hugepages,
+> >> but mostly because THP selects COMPACTION, and I suppose because using THP for
+> >> other allocations reduces overall fragmentation.
+> > 
+> > Yes, that's why I didn't even bother enabling it unless THP is
+> > enabled, but it makes even more sense to just try.
+> > 
+> >> So rather than honor KVM_GUEST_MEMFD_ALLOW_HUGEPAGE iff THP is enabled, I think
+> >> we should do the below (I verified KVM can create hugepages with THP=n).  We'll
+> >> need another capability, but (a) we probably should have that anyways and (b) it
+> >> provides a cleaner path to adding PUD-sized hugepage support in the future.
+> > 
+> > I wonder if we need KVM_CAP_GUEST_MEMFD_HUGEPAGE_PMD_SIZE though. This
+> > should be a generic kernel API and in fact the sizes are available in
+> > a not-so-friendly format in /sys/kernel/mm/hugepages.
+> > 
+> > We should just add /sys/kernel/mm/hugepages/sizes that contains
+> > "2097152 1073741824" on x86 (only the former if 1G pages are not
+> > supported).
+> > 
+> > Plus: is this the best API if we need something else for 1G pages?
+> > 
+> > Let's drop *this* patch and proceed incrementally. (Again, this is
+> > what I want to do with this final review: identify places that are
+> > stil sticky, and don't let them block the rest).
+> > 
+> > Coincidentially we have an open spot next week at plumbers. Let's
+> > extend Fuad's section to cover more guestmem work.
+> 
+> Hi,
+> 
+> was there any outcome wrt this one?
 
-Signed-off-by: Anup Patel <apatel@ventanamicro.com>
----
- riscv/include/kvm/kvm-config-arch.h |  5 ++-
- riscv/include/kvm/sbi.h             | 14 ++++++-
- riscv/kvm-cpu.c                     | 57 +++++++++++++++++++++++++++++
- 3 files changed, 73 insertions(+), 3 deletions(-)
+No, we punted on hugepage support for the initial guest_memfd merge.  We definitely
+plan on adding hugeapge support sooner than later, but we haven't yet agreed on
+exactly what that will look like.
 
-diff --git a/riscv/include/kvm/kvm-config-arch.h b/riscv/include/kvm/kvm-config-arch.h
-index 48d0770..d2fc2d4 100644
---- a/riscv/include/kvm/kvm-config-arch.h
-+++ b/riscv/include/kvm/kvm-config-arch.h
-@@ -102,6 +102,9 @@ struct kvm_config_arch {
- 		    "Disable SBI Experimental Extensions"),		\
- 	OPT_BOOLEAN('\0', "disable-sbi-vendor",				\
- 		    &(cfg)->sbi_ext_disabled[KVM_RISCV_SBI_EXT_VENDOR],	\
--		    "Disable SBI Vendor Extensions"),
-+		    "Disable SBI Vendor Extensions"),			\
-+	OPT_BOOLEAN('\0', "disable-sbi-dbcn",				\
-+		    &(cfg)->sbi_ext_disabled[KVM_RISCV_SBI_EXT_DBCN],	\
-+		    "Disable SBI DBCN Extension"),
- 
- #endif /* KVM__KVM_CONFIG_ARCH_H */
-diff --git a/riscv/include/kvm/sbi.h b/riscv/include/kvm/sbi.h
-index f4b4182..a0f2c70 100644
---- a/riscv/include/kvm/sbi.h
-+++ b/riscv/include/kvm/sbi.h
-@@ -20,6 +20,7 @@ enum sbi_ext_id {
- 	SBI_EXT_0_1_REMOTE_SFENCE_VMA_ASID = 0x7,
- 	SBI_EXT_0_1_SHUTDOWN = 0x8,
- 	SBI_EXT_BASE = 0x10,
-+	SBI_EXT_DBCN = 0x4442434E,
- };
- 
- enum sbi_ext_base_fid {
-@@ -32,6 +33,12 @@ enum sbi_ext_base_fid {
- 	SBI_BASE_GET_MIMPID,
- };
- 
-+enum sbi_ext_dbcn_fid {
-+	SBI_EXT_DBCN_CONSOLE_WRITE = 0,
-+	SBI_EXT_DBCN_CONSOLE_READ = 1,
-+	SBI_EXT_DBCN_CONSOLE_WRITE_BYTE = 2,
-+};
-+
- #define SBI_SPEC_VERSION_DEFAULT	0x1
- #define SBI_SPEC_VERSION_MAJOR_OFFSET	24
- #define SBI_SPEC_VERSION_MAJOR_MASK	0x7f
-@@ -41,8 +48,11 @@ enum sbi_ext_base_fid {
- #define SBI_SUCCESS		0
- #define SBI_ERR_FAILURE		-1
- #define SBI_ERR_NOT_SUPPORTED	-2
--#define SBI_ERR_INVALID_PARAM   -3
-+#define SBI_ERR_INVALID_PARAM	-3
- #define SBI_ERR_DENIED		-4
--#define SBI_ERR_INVALID_ADDRESS -5
-+#define SBI_ERR_INVALID_ADDRESS	-5
-+#define SBI_ERR_ALREADY_AVAILABLE -6
-+#define SBI_ERR_ALREADY_STARTED -7
-+#define SBI_ERR_ALREADY_STOPPED -8
- 
- #endif
-diff --git a/riscv/kvm-cpu.c b/riscv/kvm-cpu.c
-index 540baec..c4e83c4 100644
---- a/riscv/kvm-cpu.c
-+++ b/riscv/kvm-cpu.c
-@@ -105,6 +105,17 @@ struct kvm_cpu *kvm_cpu__arch_init(struct kvm *kvm, unsigned long cpu_id)
- 			die("KVM_SET_ONE_REG failed (sbi_ext %d)", i);
- 	}
- 
-+	/* Force enable SBI debug console if not disabled from command line */
-+	if (!kvm->cfg.arch.sbi_ext_disabled[KVM_RISCV_SBI_EXT_DBCN]) {
-+		id = 1;
-+		reg.id = RISCV_SBI_EXT_REG(KVM_REG_RISCV_SBI_SINGLE,
-+					   KVM_RISCV_SBI_EXT_DBCN);
-+		reg.addr = (unsigned long)&id;
-+		if (ioctl(vcpu->vcpu_fd, KVM_SET_ONE_REG, &reg) < 0)
-+			pr_warning("KVM_SET_ONE_REG failed (sbi_ext %d)",
-+				   KVM_RISCV_SBI_EXT_DBCN);
-+	}
-+
- 	/* Populate the vcpu structure. */
- 	vcpu->kvm		= kvm;
- 	vcpu->cpu_id		= cpu_id;
-@@ -128,7 +139,9 @@ void kvm_cpu__delete(struct kvm_cpu *vcpu)
- static bool kvm_cpu_riscv_sbi(struct kvm_cpu *vcpu)
- {
- 	char ch;
-+	u64 addr;
- 	bool ret = true;
-+	char *str_start, *str_end;
- 	int dfd = kvm_cpu__get_debug_fd();
- 
- 	switch (vcpu->kvm_run->riscv_sbi.extension_id) {
-@@ -144,6 +157,50 @@ static bool kvm_cpu_riscv_sbi(struct kvm_cpu *vcpu)
- 		else
- 			vcpu->kvm_run->riscv_sbi.ret[0] = SBI_ERR_FAILURE;
- 		break;
-+	case SBI_EXT_DBCN:
-+		switch (vcpu->kvm_run->riscv_sbi.function_id) {
-+		case SBI_EXT_DBCN_CONSOLE_WRITE:
-+		case SBI_EXT_DBCN_CONSOLE_READ:
-+			addr = vcpu->kvm_run->riscv_sbi.args[1];
-+#if __riscv_xlen == 32
-+			addr |= (u64)vcpu->kvm_run->riscv_sbi.args[2] << 32;
-+#endif
-+			if (!vcpu->kvm_run->riscv_sbi.args[0])
-+				break;
-+			str_start = guest_flat_to_host(vcpu->kvm, addr);
-+			addr += vcpu->kvm_run->riscv_sbi.args[0] - 1;
-+			str_end = guest_flat_to_host(vcpu->kvm, addr);
-+			if (!str_start || !str_end) {
-+				vcpu->kvm_run->riscv_sbi.ret[0] =
-+						SBI_ERR_INVALID_PARAM;
-+				break;
-+			}
-+			vcpu->kvm_run->riscv_sbi.ret[1] = 0;
-+			while (str_start <= str_end) {
-+				if (vcpu->kvm_run->riscv_sbi.function_id ==
-+				    SBI_EXT_DBCN_CONSOLE_WRITE) {
-+					term_putc(str_start, 1, 0);
-+				} else {
-+					if (!term_readable(0))
-+						break;
-+					*str_start = term_getc(vcpu->kvm, 0);
-+				}
-+				vcpu->kvm_run->riscv_sbi.ret[1]++;
-+				str_start++;
-+			}
-+			break;
-+		case SBI_EXT_DBCN_CONSOLE_WRITE_BYTE:
-+			ch = vcpu->kvm_run->riscv_sbi.args[0];
-+			term_putc(&ch, 1, 0);
-+			vcpu->kvm_run->riscv_sbi.ret[0] = 0;
-+			vcpu->kvm_run->riscv_sbi.ret[1] = 0;
-+			break;
-+		default:
-+			vcpu->kvm_run->riscv_sbi.ret[0] =
-+						SBI_ERR_NOT_SUPPORTED;
-+			break;
-+		}
-+		break;
- 	default:
- 		dprintf(dfd, "Unhandled SBI call\n");
- 		dprintf(dfd, "extension_id=0x%lx function_id=0x%lx\n",
--- 
-2.34.1
+> Based on my experience with THP's it would be best if userspace didn't have
+> to opt-in, nor care about the supported size. If the given size is unaligned,
+> provide a mix of large pages up to an aligned size, and for the rest fallback
+> to base pages, which should be better than -EINVAL on creation (is it
+> possible with the current implementation? I'd hope so so?).
 
+guest_memfd serves a different use case than THP.  For modern VMs, and especially
+for slice-of-hardware VMs that are one of the main targets for guest_memfd, if not
+_the_ main target, guest memory should _always_ be backed by hugepages in the
+physical domain.  The actual guest mappings might not be huge, e.g. x86 needs to
+do partial mappings to skip over (legacy) memory holes, but KVM already gracefully
+handles that.
+
+In other words, for most guest_memfd use cases, if userspace wants hugepages but
+KVM can't provide hugepages, then it is much more desirable to return an error
+than to silently fall back to small pages.
+
+I 100% agree that having to opt-in is suboptimal, but IMO providing "error on an
+incompatible configuration" semantics without requiring userspace to opt-in is an
+even worse experience for userspace.
+
+> A way to opt-out from huge pages could be useful although there's always the
+> risk of some initial troubles resulting in various online sources cargo-cult
+> recommending to opt-out forever.
 
