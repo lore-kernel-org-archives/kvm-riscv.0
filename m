@@ -1,84 +1,270 @@
-From: Anup Patel <apatel@ventanamicro.com>
-Date: Thu, 30 Nov 2023 09:46:33 +0530
-Subject: [kvmtool PATCH] riscv: Fix guest poweroff when using PLIC emulation
-Message-ID: <20231130041633.78725-1-apatel@ventanamicro.com>
+From: Andrew Jones <ajones@ventanamicro.com>
+Date: Thu, 30 Nov 2023 19:39:09 +0100
+Subject: [PATCH 5/6] KVM: riscv: selftests: Use register subtypes
+In-Reply-To: <20231130183537.55203-8-ajones@ventanamicro.com>
+References: <20231130183537.55203-8-ajones@ventanamicro.com>
+Message-ID: <20231130183908.55860-2-ajones@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Recently due to commit 74af1456dfa0, the virtio device emulation
-in KVMTOOL now calls irq__update_msix_route() upon guest poweroff
-which results in KVMTOOL crash when Guest uses PLIC emulation in
-user space. This is because irq__update_msix_route() expects the
-irq_routing table to be available but the KVMTOOL PLIC emulation
-does not populate any irq_routing entries.
+Always use register subtypes in the get-reg-list test when registers
+have them. The only registers neglecting to do so were ISA extension
+registers. While we don't really need to use KVM_REG_RISCV_ISA_SINGLE
+(since it's zero), the main purpose is to avoid confusion and to
+self-document the tests. Also add print support for the multi
+registers like SBI extensions have, even though they're only used for
+debugging.
 
-Fixes: 74af1456dfa0 ("virtio: Cancel and join threads when exiting devices devices")
-Signed-off-by: Anup Patel <apatel@ventanamicro.com>
+Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
 ---
- riscv/plic.c | 32 ++++++++++++++++++++++++++++++++
- 1 file changed, 32 insertions(+)
+ .../selftests/kvm/riscv/get-reg-list.c        | 167 +++++++++++-------
+ 1 file changed, 100 insertions(+), 67 deletions(-)
 
-diff --git a/riscv/plic.c b/riscv/plic.c
-index ab7c574..6bd13ac 100644
---- a/riscv/plic.c
-+++ b/riscv/plic.c
-@@ -95,6 +95,8 @@
- 
- #define REG_SIZE		0x1000000
- 
-+#define IRQCHIP_PLIC_NR		0
-+
- struct plic_state;
- 
- struct plic_context {
-@@ -500,6 +502,33 @@ static void plic__generate_fdt_node(void *fdt, struct kvm *kvm)
- 	free(irq_cells);
+diff --git a/tools/testing/selftests/kvm/riscv/get-reg-list.c b/tools/testing/selftests/kvm/riscv/get-reg-list.c
+index 42c6244c8d6d..c3aebde0708a 100644
+--- a/tools/testing/selftests/kvm/riscv/get-reg-list.c
++++ b/tools/testing/selftests/kvm/riscv/get-reg-list.c
+@@ -28,58 +28,58 @@ bool filter_reg(__u64 reg)
+ 	 *
+ 	 * Note: The below list is alphabetically sorted.
+ 	 */
+-	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_A:
+-	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_C:
+-	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_D:
+-	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_F:
+-	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_H:
+-	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_I:
+-	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_M:
+-	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_V:
+-	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_SMSTATEEN:
+-	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_SSAIA:
+-	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_SSTC:
+-	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_SVINVAL:
+-	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_SVNAPOT:
+-	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_SVPBMT:
+-	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZBA:
+-	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZBB:
+-	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZBC:
+-	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZBKB:
+-	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZBKC:
+-	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZBKX:
+-	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZBS:
+-	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZFA:
+-	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZFH:
+-	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZFHMIN:
+-	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZICBOM:
+-	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZICBOZ:
+-	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZICNTR:
+-	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZICOND:
+-	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZICSR:
+-	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZIFENCEI:
+-	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZIHINTNTL:
+-	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZIHINTPAUSE:
+-	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZIHPM:
+-	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZKND:
+-	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZKNE:
+-	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZKNH:
+-	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZKR:
+-	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZKSED:
+-	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZKSH:
+-	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZKT:
+-	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZVBB:
+-	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZVBC:
+-	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZVFH:
+-	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZVFHMIN:
+-	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZVKB:
+-	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZVKG:
+-	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZVKNED:
+-	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZVKNHA:
+-	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZVKNHB:
+-	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZVKSED:
+-	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZVKSH:
+-	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZVKT:
++	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_A:
++	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_C:
++	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_D:
++	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_F:
++	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_H:
++	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_I:
++	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_M:
++	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_V:
++	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SMSTATEEN:
++	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SSAIA:
++	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SSTC:
++	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SVINVAL:
++	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SVNAPOT:
++	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SVPBMT:
++	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZBA:
++	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZBB:
++	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZBC:
++	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZBKB:
++	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZBKC:
++	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZBKX:
++	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZBS:
++	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZFA:
++	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZFH:
++	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZFHMIN:
++	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZICBOM:
++	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZICBOZ:
++	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZICNTR:
++	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZICOND:
++	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZICSR:
++	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZIFENCEI:
++	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZIHINTNTL:
++	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZIHINTPAUSE:
++	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZIHPM:
++	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZKND:
++	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZKNE:
++	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZKNH:
++	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZKR:
++	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZKSED:
++	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZKSH:
++	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZKT:
++	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZVBB:
++	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZVBC:
++	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZVFH:
++	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZVFHMIN:
++	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZVKB:
++	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZVKG:
++	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZVKNED:
++	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZVKNHA:
++	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZVKNHB:
++	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZVKSED:
++	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZVKSH:
++	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZVKT:
+ 		return true;
+ 	/* AIA registers are always available when Ssaia can't be disabled */
+ 	case KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_AIA | KVM_REG_RISCV_CSR_AIA_REG(siselect):
+@@ -362,15 +362,10 @@ static const char *fp_d_id_to_str(const char *prefix, __u64 id)
  }
  
-+static int plic__irq_routing_init(struct kvm *kvm)
+ #define KVM_ISA_EXT_ARR(ext)		\
+-[KVM_RISCV_ISA_EXT_##ext] = "KVM_RISCV_ISA_EXT_" #ext
++[KVM_RISCV_ISA_EXT_##ext] = "KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_" #ext
+ 
+-static const char *isa_ext_id_to_str(const char *prefix, __u64 id)
++static const char *isa_ext_single_id_to_str(__u64 reg_off)
+ {
+-	/* reg_off is the offset into unsigned long kvm_isa_ext_arr[] */
+-	__u64 reg_off = id & ~(REG_MASK | KVM_REG_RISCV_ISA_EXT);
+-
+-	assert((id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_ISA_EXT);
+-
+ 	static const char * const kvm_isa_ext_reg_name[] = {
+ 		KVM_ISA_EXT_ARR(A),
+ 		KVM_ISA_EXT_ARR(C),
+@@ -427,11 +422,48 @@ static const char *isa_ext_id_to_str(const char *prefix, __u64 id)
+ 	};
+ 
+ 	if (reg_off >= ARRAY_SIZE(kvm_isa_ext_reg_name))
+-		return strdup_printf("%lld /* UNKNOWN */", reg_off);
++		return strdup_printf("KVM_REG_RISCV_ISA_SINGLE | %lld /* UNKNOWN */", reg_off);
+ 
+ 	return kvm_isa_ext_reg_name[reg_off];
+ }
+ 
++static const char *isa_ext_multi_id_to_str(__u64 reg_subtype, __u64 reg_off)
 +{
-+	int r;
++	const char *unknown = "";
 +
-+	/*
-+	 * This describes the default routing that the kernel uses without
-+	 * any routing explicitly set up via KVM_SET_GSI_ROUTING. So we
-+	 * don't need to commit these setting right now. The first actual
-+	 * user (MSI routing) will engage these mappings then.
-+	 */
-+	for (next_gsi = 0; next_gsi < MAX_DEVICES; next_gsi++) {
-+		r = irq__allocate_routing_entry();
-+		if (r)
-+			return r;
++	if (reg_off > KVM_REG_RISCV_ISA_MULTI_REG_LAST)
++		unknown = " /* UNKNOWN */";
 +
-+		irq_routing->entries[irq_routing->nr++] =
-+			(struct kvm_irq_routing_entry) {
-+				.gsi = next_gsi,
-+				.type = KVM_IRQ_ROUTING_IRQCHIP,
-+				.u.irqchip.irqchip = IRQCHIP_PLIC_NR,
-+				.u.irqchip.pin = next_gsi,
-+		};
++	switch (reg_subtype) {
++	case KVM_REG_RISCV_ISA_MULTI_EN:
++		return strdup_printf("KVM_REG_RISCV_ISA_MULTI_EN | %lld%s", reg_off, unknown);
++	case KVM_REG_RISCV_ISA_MULTI_DIS:
++		return strdup_printf("KVM_REG_RISCV_ISA_MULTI_DIS | %lld%s", reg_off, unknown);
 +	}
 +
-+	return 0;
++	return strdup_printf("%lld | %lld /* UNKNOWN */", reg_subtype, reg_off);
 +}
 +
- static int plic__init(struct kvm *kvm)
- {
- 	u32 i;
-@@ -535,6 +564,9 @@ static int plic__init(struct kvm *kvm)
- 	if (ret)
- 		return ret;
- 
-+	/* Setup default IRQ routing */
-+	plic__irq_routing_init(kvm);
++static const char *isa_ext_id_to_str(const char *prefix, __u64 id)
++{
++	__u64 reg_off = id & ~(REG_MASK | KVM_REG_RISCV_ISA_EXT);
++	__u64 reg_subtype = reg_off & KVM_REG_RISCV_SUBTYPE_MASK;
 +
- 	plic.ready = true;
++	assert((id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_ISA_EXT);
++
++	reg_off &= ~KVM_REG_RISCV_SUBTYPE_MASK;
++
++	switch (reg_subtype) {
++	case KVM_REG_RISCV_ISA_SINGLE:
++		return isa_ext_single_id_to_str(reg_off);
++	case KVM_REG_RISCV_ISA_MULTI_EN:
++	case KVM_REG_RISCV_ISA_MULTI_DIS:
++		return isa_ext_multi_id_to_str(reg_subtype, reg_off);
++	}
++
++	return strdup_printf("%lld | %lld /* UNKNOWN */", reg_subtype, reg_off);
++}
++
+ #define KVM_SBI_EXT_ARR(ext)		\
+ [ext] = "KVM_REG_RISCV_SBI_SINGLE | " #ext
  
- 	return 0;
+@@ -635,12 +667,12 @@ static __u64 base_skips_set[] = {
+ 
+ static __u64 zicbom_regs[] = {
+ 	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_CONFIG | KVM_REG_RISCV_CONFIG_REG(zicbom_block_size),
+-	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZICBOM,
++	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZICBOM,
+ };
+ 
+ static __u64 zicboz_regs[] = {
+ 	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_CONFIG | KVM_REG_RISCV_CONFIG_REG(zicboz_block_size),
+-	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZICBOZ,
++	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZICBOZ,
+ };
+ 
+ static __u64 aia_regs[] = {
+@@ -651,12 +683,12 @@ static __u64 aia_regs[] = {
+ 	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_AIA | KVM_REG_RISCV_CSR_AIA_REG(siph),
+ 	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_AIA | KVM_REG_RISCV_CSR_AIA_REG(iprio1h),
+ 	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_AIA | KVM_REG_RISCV_CSR_AIA_REG(iprio2h),
+-	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_SSAIA,
++	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SSAIA,
+ };
+ 
+ static __u64 smstateen_regs[] = {
+ 	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_SMSTATEEN | KVM_REG_RISCV_CSR_SMSTATEEN_REG(sstateen0),
+-	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_SMSTATEEN,
++	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SMSTATEEN,
+ };
+ 
+ static __u64 fp_f_regs[] = {
+@@ -693,7 +725,7 @@ static __u64 fp_f_regs[] = {
+ 	KVM_REG_RISCV | KVM_REG_SIZE_U32 | KVM_REG_RISCV_FP_F | KVM_REG_RISCV_FP_F_REG(f[30]),
+ 	KVM_REG_RISCV | KVM_REG_SIZE_U32 | KVM_REG_RISCV_FP_F | KVM_REG_RISCV_FP_F_REG(f[31]),
+ 	KVM_REG_RISCV | KVM_REG_SIZE_U32 | KVM_REG_RISCV_FP_F | KVM_REG_RISCV_FP_F_REG(fcsr),
+-	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_F,
++	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_F,
+ };
+ 
+ static __u64 fp_d_regs[] = {
+@@ -730,7 +762,7 @@ static __u64 fp_d_regs[] = {
+ 	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_FP_D | KVM_REG_RISCV_FP_D_REG(f[30]),
+ 	KVM_REG_RISCV | KVM_REG_SIZE_U64 | KVM_REG_RISCV_FP_D | KVM_REG_RISCV_FP_D_REG(f[31]),
+ 	KVM_REG_RISCV | KVM_REG_SIZE_U32 | KVM_REG_RISCV_FP_D | KVM_REG_RISCV_FP_D_REG(fcsr),
+-	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_D,
++	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_D,
+ };
+ 
+ #define SUBLIST_BASE \
+@@ -754,7 +786,8 @@ static __u64 fp_d_regs[] = {
+ #define KVM_ISA_EXT_SIMPLE_CONFIG(ext, extu)			\
+ static __u64 regs_##ext[] = {					\
+ 	KVM_REG_RISCV | KVM_REG_SIZE_ULONG |			\
+-	KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_##extu,	\
++	KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE |	\
++	KVM_RISCV_ISA_EXT_##extu,				\
+ };								\
+ static struct vcpu_reg_list config_##ext = {			\
+ 	.sublists = {						\
 -- 
-2.34.1
+2.43.0
 
 
