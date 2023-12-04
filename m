@@ -1,31 +1,59 @@
-From: Jason Gunthorpe <jgg@ziepe.ca>
-Date: Sun, 3 Dec 2023 10:07:56 -0400
-Subject: [PATCH 05/26] vfio: KVM: Pass get/put helpers from KVM to VFIO,
- don't do circular lookup
-In-Reply-To: <ZWp_q1w01NCZi8KX@google.com>
-References: <20230916003118.2540661-1-seanjc@google.com>
- <20230916003118.2540661-6-seanjc@google.com>
- <20230918152110.GI13795@ziepe.ca>
- <ZQhxpesyXeG+qbS6@google.com>
- <20230918160258.GL13795@ziepe.ca>
- <ZWp_q1w01NCZi8KX@google.com>
-Message-ID: <20231203140756.GI1489931@ziepe.ca>
+From: Haibo Xu <xiaobo55x@gmail.com>
+Date: Mon, 4 Dec 2023 10:42:24 +0800
+Subject: [PATCH v3 9/9] KVM: riscv: selftests: Add sstc timer test
+In-Reply-To: <CAJve8onhY534T=Hyncjfi4GfdZ+0D2xM+jRSaYCAWCdaKxPUcQ@mail.gmail.com>
+References: <cover.1694421911.git.haibo1.xu@intel.com> <64e0637cd6f22dd7557ed44bd2242001e7830d1c.1694421911.git.haibo1.xu@intel.com>
+ <20230914-d2e594e7d84503ad14036e2d@orel> <CAJve8onhY534T=Hyncjfi4GfdZ+0D2xM+jRSaYCAWCdaKxPUcQ@mail.gmail.com>
+Message-ID: <CAJve8omitHDpijJaLV_wHk+5LXpsBUWF8_eTD4MeWKM-807Siw@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Dec 01, 2023 at 04:51:55PM -0800, Sean Christopherson wrote:
+On Fri, Sep 15, 2023 at 2:21?PM Haibo Xu <xiaobo55x@gmail.com> wrote:
+>
+> On Thu, Sep 14, 2023 at 5:52?PM Andrew Jones <ajones@ventanamicro.com> wrote:
+> >
+> > On Thu, Sep 14, 2023 at 09:37:03AM +0800, Haibo Xu wrote:
+> > > Add a KVM selftests to validate the Sstc timer functionality.
+> > > The test was ported from arm64 arch timer test.
+> >
+> > I just tried this test out. Running it over and over again on QEMU I see
+> > it works sometimes, but it frequently fails with the
+> > GUEST_ASSERT_EQ(config_iter + 1, irq_iter) assert and at least once I
+> > also saw the __GUEST_ASSERT(xcnt >= cmp) assert.
+> >
+>
+> Good catch!
+>
+> I can also reproduce this issue and it is a common problem for both
+> arm64 and riscv because it also happens in a arm64 Qemu VM.
+>
+> It seems like a synchronization issue between host and guest shared
+> variables. Will double check the test code.
+>
+> > Thanks,
+> > drew
 
-> There's one more wrinkle: this patch is buggy in that it doesn't ensure the liveliness
-> of KVM-the-module, i.e. nothing prevents userspace from unloading kvm.ko while VFIO
-> still holds a reference to a kvm structure, and so invoking ->put_kvm() could jump
-> into freed code.  To fix that, KVM would also need to pass along a module pointer :-(
+Hi Andrew,
 
-Maybe we should be refcounting the struct file not the struct kvm?
+After several rounds of regression testing, some findings:
+1. The intermittent failure also happened on ARM64 Qemu VM, and even
+in the initial arch_timer commit(4959d8650e9f4).
+2. it didn't happen on a ARM64 HW(but a different failure occured
+during stress test)
+3. The failure have a close relationship with
+TIMER_TEST_ERR_MARGIN_US(default 100), and after increasing
+     the macro to 300, the failure couldn't reproduced in 1000 loops
+stress test in RISC-V Qemu VM
 
-Then we don't need special helpers and it keeps the module alive correctly.
+So my suggestion is we can expose the TIMER_TEST_ERR_MARGIN_US
+parameter as an arch_timer test arg parameter
+and tune it based on a specific test environment.
 
-Jason
+What's your opinion?
+
+Regards,
+Haibo
 
