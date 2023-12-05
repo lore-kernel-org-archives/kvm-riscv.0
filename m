@@ -1,86 +1,172 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Tue,  5 Dec 2023 19:11:26 +0100
-Subject: [PATCH v1 06/14] RISC-V: KVM: Add steal-update vcpu request
+Date: Tue,  5 Dec 2023 19:11:28 +0100
+Subject: [PATCH v1 08/14] RISC-V: KVM: Add support for SBI extension registers
 In-Reply-To: <20231205181119.207204-16-ajones@ventanamicro.com>
 References: <20231205181119.207204-16-ajones@ventanamicro.com>
-Message-ID: <20231205181119.207204-22-ajones@ventanamicro.com>
+Message-ID: <20231205181119.207204-24-ajones@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add a new vcpu request to inform a vcpu that it should record its
-steal-time information. The request is made each time it has been
-detected that the vcpu task was not assigned a cpu for some time,
-which is easy to do by making the request from vcpu-load. The record
-function is just a stub for now and will be filled in with the rest
-of the steal-time support functions in following patches.
+Some SBI extensions have state that needs to be saved / restored
+when migrating the VM. Provide a get/set-one-reg register type
+for SBI extension registers. Each SBI extension that uses this type
+will have its own subtype. There are currently no subtypes defined.
+The next patch introduces the first one.
 
 Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
 ---
- arch/riscv/include/asm/kvm_host.h | 3 +++
- arch/riscv/kvm/vcpu.c             | 5 +++++
- arch/riscv/kvm/vcpu_sbi_sta.c     | 4 ++++
- 3 files changed, 12 insertions(+)
+ arch/riscv/include/uapi/asm/kvm.h |  3 +
+ arch/riscv/kvm/vcpu_onereg.c      | 92 +++++++++++++++++++++++++++++++
+ 2 files changed, 95 insertions(+)
 
-diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
-index 0eefd9c991ae..230b82c3118d 100644
---- a/arch/riscv/include/asm/kvm_host.h
-+++ b/arch/riscv/include/asm/kvm_host.h
-@@ -41,6 +41,7 @@
- 	KVM_ARCH_REQ_FLAGS(4, KVM_REQUEST_WAIT | KVM_REQUEST_NO_WAKEUP)
- #define KVM_REQ_HFENCE			\
- 	KVM_ARCH_REQ_FLAGS(5, KVM_REQUEST_WAIT | KVM_REQUEST_NO_WAKEUP)
-+#define KVM_REQ_STEAL_UPDATE		KVM_ARCH_REQ(6)
+diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
+index 85b979f7d2bd..86df125ef17f 100644
+--- a/arch/riscv/include/uapi/asm/kvm.h
++++ b/arch/riscv/include/uapi/asm/kvm.h
+@@ -269,6 +269,9 @@ enum KVM_RISCV_SBI_EXT_ID {
+ #define KVM_REG_RISCV_VECTOR_REG(n)	\
+ 		((n) + sizeof(struct __riscv_v_ext_state) / sizeof(unsigned long))
  
- enum kvm_riscv_hfence_type {
- 	KVM_RISCV_HFENCE_UNKNOWN = 0,
-@@ -372,4 +373,6 @@ bool kvm_riscv_vcpu_has_interrupts(struct kvm_vcpu *vcpu, u64 mask);
- void kvm_riscv_vcpu_power_off(struct kvm_vcpu *vcpu);
- void kvm_riscv_vcpu_power_on(struct kvm_vcpu *vcpu);
- 
-+void kvm_riscv_vcpu_record_steal_time(struct kvm_vcpu *vcpu);
++/* Registers for specific SBI extensions are mapped as type 10 */
++#define KVM_REG_RISCV_SBI		(0x0a << KVM_REG_RISCV_TYPE_SHIFT)
 +
- #endif /* __RISCV_KVM_HOST_H__ */
-diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-index e087c809073c..b77f585879b7 100644
---- a/arch/riscv/kvm/vcpu.c
-+++ b/arch/riscv/kvm/vcpu.c
-@@ -541,6 +541,8 @@ void kvm_arch_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
- 
- 	kvm_riscv_vcpu_aia_load(vcpu, cpu);
- 
-+	kvm_make_request(KVM_REQ_STEAL_UPDATE, vcpu);
-+
- 	vcpu->cpu = cpu;
+ /* Device Control API: RISC-V AIA */
+ #define KVM_DEV_RISCV_APLIC_ALIGN		0x1000
+ #define KVM_DEV_RISCV_APLIC_SIZE		0x4000
+diff --git a/arch/riscv/kvm/vcpu_onereg.c b/arch/riscv/kvm/vcpu_onereg.c
+index 62c7334f74cf..dbd8cedfd556 100644
+--- a/arch/riscv/kvm/vcpu_onereg.c
++++ b/arch/riscv/kvm/vcpu_onereg.c
+@@ -1015,6 +1015,87 @@ static unsigned long num_sbi_ext_regs(struct kvm_vcpu *vcpu)
+ 	return copy_sbi_ext_reg_indices(vcpu, NULL);
  }
  
-@@ -614,6 +616,9 @@ static void kvm_riscv_check_vcpu_requests(struct kvm_vcpu *vcpu)
- 
- 		if (kvm_check_request(KVM_REQ_HFENCE, vcpu))
- 			kvm_riscv_hfence_process(vcpu);
-+
-+		if (kvm_check_request(KVM_REQ_STEAL_UPDATE, vcpu))
-+			kvm_riscv_vcpu_record_steal_time(vcpu);
- 	}
- }
- 
-diff --git a/arch/riscv/kvm/vcpu_sbi_sta.c b/arch/riscv/kvm/vcpu_sbi_sta.c
-index 839911dcd837..e28351c9488b 100644
---- a/arch/riscv/kvm/vcpu_sbi_sta.c
-+++ b/arch/riscv/kvm/vcpu_sbi_sta.c
-@@ -8,6 +8,10 @@
- #include <asm/kvm_vcpu_sbi.h>
- #include <asm/sbi.h>
- 
-+void kvm_riscv_vcpu_record_steal_time(struct kvm_vcpu *vcpu)
++static int kvm_riscv_vcpu_get_reg_sbi(struct kvm_vcpu *vcpu,
++				      const struct kvm_one_reg *reg)
 +{
++	unsigned long __user *uaddr =
++			(unsigned long __user *)(unsigned long)reg->addr;
++	unsigned long reg_num = reg->id & ~(KVM_REG_ARCH_MASK |
++					    KVM_REG_SIZE_MASK |
++					    KVM_REG_RISCV_SBI);
++	unsigned long reg_subtype, reg_val;
++	int ret;
++
++	if (KVM_REG_SIZE(reg->id) != sizeof(unsigned long))
++		return -EINVAL;
++
++	reg_subtype = reg_num & KVM_REG_RISCV_SUBTYPE_MASK;
++	reg_num &= ~KVM_REG_RISCV_SUBTYPE_MASK;
++
++	switch (reg_subtype) {
++	default:
++		return -EINVAL;
++	}
++
++	if (ret)
++		return ret;
++
++	if (copy_to_user(uaddr, &reg_val, KVM_REG_SIZE(reg->id)))
++		return -EFAULT;
++
++	return 0;
 +}
 +
- static int kvm_sbi_sta_steal_time_set_shmem(struct kvm_vcpu *vcpu)
- {
- 	return SBI_ERR_FAILURE;
++static int kvm_riscv_vcpu_set_reg_sbi(struct kvm_vcpu *vcpu,
++				      const struct kvm_one_reg *reg)
++{
++	unsigned long __user *uaddr =
++			(unsigned long __user *)(unsigned long)reg->addr;
++	unsigned long reg_num = reg->id & ~(KVM_REG_ARCH_MASK |
++					    KVM_REG_SIZE_MASK |
++					    KVM_REG_RISCV_SBI);
++	unsigned long reg_subtype, reg_val;
++
++	if (KVM_REG_SIZE(reg->id) != sizeof(unsigned long))
++		return -EINVAL;
++
++	if (copy_from_user(&reg_val, uaddr, KVM_REG_SIZE(reg->id)))
++		return -EFAULT;
++
++	reg_subtype = reg_num & KVM_REG_RISCV_SUBTYPE_MASK;
++	reg_num &= ~KVM_REG_RISCV_SUBTYPE_MASK;
++
++	switch (reg_subtype) {
++	default:
++		return -EINVAL;
++	}
++
++	return 0;
++}
++
++static inline unsigned long num_sbi_regs(struct kvm_vcpu *vcpu)
++{
++	return 0;
++}
++
++static int copy_sbi_reg_indices(struct kvm_vcpu *vcpu, u64 __user *uindices)
++{
++	int n = num_sbi_regs(vcpu);
++
++	for (int i = 0; i < n; i++) {
++		u64 reg = KVM_REG_RISCV | KVM_REG_SIZE_U64 |
++			  KVM_REG_RISCV_SBI | i;
++
++		if (uindices) {
++			if (put_user(reg, uindices))
++				return -EFAULT;
++			uindices++;
++		}
++	}
++
++	return n;
++}
++
+ /*
+  * kvm_riscv_vcpu_num_regs - how many registers do we present via KVM_GET/SET_ONE_REG
+  *
+@@ -1032,6 +1113,7 @@ unsigned long kvm_riscv_vcpu_num_regs(struct kvm_vcpu *vcpu)
+ 	res += num_fp_d_regs(vcpu);
+ 	res += num_isa_ext_regs(vcpu);
+ 	res += num_sbi_ext_regs(vcpu);
++	res += num_sbi_regs(vcpu);
+ 
+ 	return res;
+ }
+@@ -1082,6 +1164,12 @@ int kvm_riscv_vcpu_copy_reg_indices(struct kvm_vcpu *vcpu,
+ 	ret = copy_sbi_ext_reg_indices(vcpu, uindices);
+ 	if (ret < 0)
+ 		return ret;
++	uindices += ret;
++
++	ret = copy_sbi_reg_indices(vcpu, uindices);
++	if (ret < 0)
++		return ret;
++	uindices += ret;
+ 
+ 	return 0;
+ }
+@@ -1110,6 +1198,8 @@ int kvm_riscv_vcpu_set_reg(struct kvm_vcpu *vcpu,
+ 		return kvm_riscv_vcpu_set_reg_sbi_ext(vcpu, reg);
+ 	case KVM_REG_RISCV_VECTOR:
+ 		return kvm_riscv_vcpu_set_reg_vector(vcpu, reg);
++	case KVM_REG_RISCV_SBI:
++		return kvm_riscv_vcpu_set_reg_sbi(vcpu, reg);
+ 	default:
+ 		break;
+ 	}
+@@ -1141,6 +1231,8 @@ int kvm_riscv_vcpu_get_reg(struct kvm_vcpu *vcpu,
+ 		return kvm_riscv_vcpu_get_reg_sbi_ext(vcpu, reg);
+ 	case KVM_REG_RISCV_VECTOR:
+ 		return kvm_riscv_vcpu_get_reg_vector(vcpu, reg);
++	case KVM_REG_RISCV_SBI:
++		return kvm_riscv_vcpu_get_reg_sbi(vcpu, reg);
+ 	default:
+ 		break;
+ 	}
 -- 
 2.43.0
 
