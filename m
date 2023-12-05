@@ -1,87 +1,63 @@
-From: Haibo Xu <xiaobo55x@gmail.com>
-Date: Tue, 5 Dec 2023 15:58:02 +0800
-Subject: [PATCH v3 9/9] KVM: riscv: selftests: Add sstc timer test
-In-Reply-To: <20231204-980c95cca344f718ac6a48b6@orel>
-References: <cover.1694421911.git.haibo1.xu@intel.com> <64e0637cd6f22dd7557ed44bd2242001e7830d1c.1694421911.git.haibo1.xu@intel.com>
- <20230914-d2e594e7d84503ad14036e2d@orel> <CAJve8onhY534T=Hyncjfi4GfdZ+0D2xM+jRSaYCAWCdaKxPUcQ@mail.gmail.com>
- <CAJve8omitHDpijJaLV_wHk+5LXpsBUWF8_eTD4MeWKM-807Siw@mail.gmail.com> <20231204-980c95cca344f718ac6a48b6@orel>
-Message-ID: <CAJve8okwyPwY3AZcA31=aoc1tyZN7hx_5AmF0KMmn-bZ1VnyHA@mail.gmail.com>
+From: kernel test robot <lkp@intel.com>
+Date: Tue, 5 Dec 2023 21:22:10 +0800
+Subject: [PATCH 3/3] RISC-V: KVM: add vector CSRs in KVM_GET_REG_LIST
+In-Reply-To: <20231204182905.2163676-4-dbarboza@ventanamicro.com>
+References: <20231204182905.2163676-4-dbarboza@ventanamicro.com>
+Message-ID: <202312052128.oBSS3Uus-lkp@intel.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Dec 4, 2023 at 7:32?PM Andrew Jones <ajones@ventanamicro.com> wrote:
->
-> On Mon, Dec 04, 2023 at 10:42:24AM +0800, Haibo Xu wrote:
-> > On Fri, Sep 15, 2023 at 2:21?PM Haibo Xu <xiaobo55x@gmail.com> wrote:
-> > >
-> > > On Thu, Sep 14, 2023 at 5:52?PM Andrew Jones <ajones@ventanamicro.com> wrote:
-> > > >
-> > > > On Thu, Sep 14, 2023 at 09:37:03AM +0800, Haibo Xu wrote:
-> > > > > Add a KVM selftests to validate the Sstc timer functionality.
-> > > > > The test was ported from arm64 arch timer test.
-> > > >
-> > > > I just tried this test out. Running it over and over again on QEMU I see
-> > > > it works sometimes, but it frequently fails with the
-> > > > GUEST_ASSERT_EQ(config_iter + 1, irq_iter) assert and at least once I
-> > > > also saw the __GUEST_ASSERT(xcnt >= cmp) assert.
-> > > >
-> > >
-> > > Good catch!
-> > >
-> > > I can also reproduce this issue and it is a common problem for both
-> > > arm64 and riscv because it also happens in a arm64 Qemu VM.
-> > >
-> > > It seems like a synchronization issue between host and guest shared
-> > > variables. Will double check the test code.
-> > >
-> > > > Thanks,
-> > > > drew
-> >
-> > Hi Andrew,
-> >
-> > After several rounds of regression testing, some findings:
-> > 1. The intermittent failure also happened on ARM64 Qemu VM, and even
-> > in the initial arch_timer commit(4959d8650e9f4).
-> > 2. it didn't happen on a ARM64 HW(but a different failure occured
-> > during stress test)
-> > 3. The failure have a close relationship with
-> > TIMER_TEST_ERR_MARGIN_US(default 100), and after increasing
-> >      the macro to 300, the failure couldn't reproduced in 1000 loops
-> > stress test in RISC-V Qemu VM
-> >
-> > So my suggestion is we can expose the TIMER_TEST_ERR_MARGIN_US
-> > parameter as an arch_timer test arg parameter
-> > and tune it based on a specific test environment.
-> >
-> > What's your opinion?
->
-> The concept of "timeout for an interrupt to arrive" is always going to
-> leave us exposed to random failures. Your suggestion of making the
-> timeout user configurable is probably the best we can do. I would
-> suggest also adding more descriptive failure text and a hint about
-> trying to adjust the timeout.
->
-> Or, one thing we do in kvm-unit-tests, is to reduce typical delays while
-> allowing expected delays to be longer by looping over a shorter delay and
-> a non-fatal check, i.e.
->
->  pass = false;
->  for (i = 0; i < 10; i++) {
->    udelay(100);
->    if (check(...)) {
->       pass = true;
->       break;
->    }
->  }
->  assert(pass);
->
-> We could try that approach here too.
->
-> Thanks,
-> drew
+Hi Daniel,
 
-Thanks for the feedback, I will send out patch set v4 soon!
+kernel test robot noticed the following build warnings:
+
+[auto build test WARNING on kvm/queue]
+[also build test WARNING on mst-vhost/linux-next linus/master v6.7-rc4 next-20231205]
+[cannot apply to kvm/linux-next]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
+
+url:    https://github.com/intel-lab-lkp/linux/commits/Daniel-Henrique-Barboza/RISC-V-KVM-set-vlenb-in-kvm_riscv_vcpu_alloc_vector_context/20231205-023109
+base:   https://git.kernel.org/pub/scm/virt/kvm/kvm.git queue
+patch link:    https://lore.kernel.org/r/20231204182905.2163676-4-dbarboza%40ventanamicro.com
+patch subject: [PATCH 3/3] RISC-V: KVM: add vector CSRs in KVM_GET_REG_LIST
+config: riscv-defconfig (https://download.01.org/0day-ci/archive/20231205/202312052128.oBSS3Uus-lkp at intel.com/config)
+compiler: riscv64-linux-gcc (GCC) 13.2.0
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20231205/202312052128.oBSS3Uus-lkp at intel.com/reproduce)
+
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202312052128.oBSS3Uus-lkp at intel.com/
+
+All warnings (new ones prefixed by >>):
+
+   arch/riscv/kvm/vcpu_onereg.c: In function 'num_vector_regs':
+>> arch/riscv/kvm/vcpu_onereg.c:991:39: warning: unused variable 'cntx' [-Wunused-variable]
+     991 |         const struct kvm_cpu_context *cntx = &vcpu->arch.guest_context;
+         |                                       ^~~~
+
+
+vim +/cntx +991 arch/riscv/kvm/vcpu_onereg.c
+
+   988	
+   989	static inline unsigned long num_vector_regs(const struct kvm_vcpu *vcpu)
+   990	{
+ > 991		const struct kvm_cpu_context *cntx = &vcpu->arch.guest_context;
+   992	
+   993		if (!riscv_isa_extension_available(vcpu->arch.isa, v))
+   994			return 0;
+   995	
+   996		/* vstart, vl, vtype, vcsr, vlenb; */
+   997		return 5;
+   998	}
+   999	
+
+-- 
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
 
