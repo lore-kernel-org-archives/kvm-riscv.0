@@ -1,39 +1,57 @@
 From: Daniel Henrique Barboza <dbarboza@ventanamicro.com>
-Date: Tue,  5 Dec 2023 10:50:39 -0300
-Subject: [PATCH v2 1/3] RISC-V: KVM: set 'vlenb' in kvm_riscv_vcpu_alloc_vector_context()
+Date: Tue,  5 Dec 2023 10:50:40 -0300
+Subject: [PATCH v2 2/3] RISC-V: KVM: add 'vlenb' Vector CSR
 In-Reply-To: <20231205135041.2208004-1-dbarboza@ventanamicro.com>
 References: <20231205135041.2208004-1-dbarboza@ventanamicro.com>
-Message-ID: <20231205135041.2208004-2-dbarboza@ventanamicro.com>
+Message-ID: <20231205135041.2208004-3-dbarboza@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-'vlenb', added to riscv_v_ext_state by commit c35f3aa34509 ("RISC-V:
-vector: export VLENB csr in __sc_riscv_v_state"), isn't being
-initialized in guest_context. If we export 'vlenb' as a KVM CSR,
-something we want to do in the next patch, it'll always return 0.
-
-Set 'vlenb' to riscv_v_size/32.
+Userspace requires 'vlenb' to be able to encode it in reg ID. Otherwise
+it is not possible to retrieve any vector reg since we're returning
+EINVAL if reg_size isn't vlenb (see kvm_riscv_vcpu_vreg_addr()).
 
 Signed-off-by: Daniel Henrique Barboza <dbarboza@ventanamicro.com>
 ---
- arch/riscv/kvm/vcpu_vector.c | 1 +
- 1 file changed, 1 insertion(+)
+ arch/riscv/kvm/vcpu_vector.c | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
 
 diff --git a/arch/riscv/kvm/vcpu_vector.c b/arch/riscv/kvm/vcpu_vector.c
-index b339a2682f25..530e49c588d6 100644
+index 530e49c588d6..d92d1348045c 100644
 --- a/arch/riscv/kvm/vcpu_vector.c
 +++ b/arch/riscv/kvm/vcpu_vector.c
-@@ -76,6 +76,7 @@ int kvm_riscv_vcpu_alloc_vector_context(struct kvm_vcpu *vcpu,
- 	cntx->vector.datap = kmalloc(riscv_v_vsize, GFP_KERNEL);
- 	if (!cntx->vector.datap)
- 		return -ENOMEM;
-+	cntx->vector.vlenb = riscv_v_vsize / 32;
+@@ -116,6 +116,9 @@ static int kvm_riscv_vcpu_vreg_addr(struct kvm_vcpu *vcpu,
+ 		case KVM_REG_RISCV_VECTOR_CSR_REG(vcsr):
+ 			*reg_addr = &cntx->vector.vcsr;
+ 			break;
++		case KVM_REG_RISCV_VECTOR_CSR_REG(vlenb):
++			*reg_addr = &cntx->vector.vlenb;
++			break;
+ 		case KVM_REG_RISCV_VECTOR_CSR_REG(datap):
+ 		default:
+ 			return -ENOENT;
+@@ -174,6 +177,18 @@ int kvm_riscv_vcpu_set_reg_vector(struct kvm_vcpu *vcpu,
+ 	if (!riscv_isa_extension_available(isa, v))
+ 		return -ENOENT;
  
- 	vcpu->arch.host_context.vector.datap = kzalloc(riscv_v_vsize, GFP_KERNEL);
- 	if (!vcpu->arch.host_context.vector.datap)
++	if (reg_num == KVM_REG_RISCV_VECTOR_CSR_REG(vlenb)) {
++		struct kvm_cpu_context *cntx = &vcpu->arch.guest_context;
++		unsigned long reg_val;
++
++		if (copy_from_user(&reg_val, uaddr, reg_size))
++			return -EFAULT;
++		if (reg_val != cntx->vector.vlenb)
++			return -EINVAL;
++
++		return 0;
++	}
++
+ 	rc = kvm_riscv_vcpu_vreg_addr(vcpu, reg_num, reg_size, &reg_addr);
+ 	if (rc)
+ 		return rc;
 -- 
 2.41.0
 
