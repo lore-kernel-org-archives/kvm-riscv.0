@@ -1,74 +1,99 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Tue,  5 Dec 2023 19:11:27 +0100
-Subject: [PATCH v1 07/14] RISC-V: KVM: Add SBI STA info to vcpu_arch
+Date: Tue,  5 Dec 2023 19:11:32 +0100
+Subject: [PATCH v1 12/14] RISC-V: KVM: selftests: Add guest_sbi_probe_extension
 In-Reply-To: <20231205181119.207204-16-ajones@ventanamicro.com>
 References: <20231205181119.207204-16-ajones@ventanamicro.com>
-Message-ID: <20231205181119.207204-23-ajones@ventanamicro.com>
+Message-ID: <20231205181119.207204-28-ajones@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-KVM's implementation of SBI STA needs to track the address of each
-VCPU's steal-time shared memory region as well as the amount of
-stolen time. Add a structure to vcpu_arch to contain this state
-and make sure that the address is always set to INVALID_GPA on
-vcpu reset. And, of course, ensure KVM won't try to update steal-
-time when the shared memory address is invalid.
+Add guest_sbi_probe_extension(), allowing guest code to probe for
+SBI extensions. As guest_sbi_probe_extension() needs
+SBI_ERR_NOT_SUPPORTED, take the opportunity to bring in all SBI
+error codes. We don't bring in all current extension IDs or base
+extension function IDs though, even though we need one of each,
+because we'd prefer to bring those in as necessary.
 
 Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
 ---
- arch/riscv/include/asm/kvm_host.h | 6 ++++++
- arch/riscv/kvm/vcpu.c             | 2 ++
- arch/riscv/kvm/vcpu_sbi_sta.c     | 4 ++++
- 3 files changed, 12 insertions(+)
+ .../selftests/kvm/include/riscv/processor.h   | 21 +++++++++++++++++++
+ .../selftests/kvm/lib/riscv/processor.c       | 19 +++++++++++++++++
+ 2 files changed, 40 insertions(+)
 
-diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
-index 230b82c3118d..b10026fb6412 100644
---- a/arch/riscv/include/asm/kvm_host.h
-+++ b/arch/riscv/include/asm/kvm_host.h
-@@ -263,6 +263,12 @@ struct kvm_vcpu_arch {
+diff --git a/tools/testing/selftests/kvm/include/riscv/processor.h b/tools/testing/selftests/kvm/include/riscv/processor.h
+index e70ccda2011b..dc50ad62e150 100644
+--- a/tools/testing/selftests/kvm/include/riscv/processor.h
++++ b/tools/testing/selftests/kvm/include/riscv/processor.h
+@@ -108,6 +108,17 @@ static inline uint64_t __kvm_reg_id(uint64_t type, uint64_t subtype,
+ #define SATP_ASID_SHIFT				44
+ #define SATP_ASID_MASK				_AC(0xFFFF, UL)
  
- 	/* 'static' configurations which are set only once */
- 	struct kvm_vcpu_config cfg;
++/* SBI return error codes */
++#define SBI_SUCCESS				0
++#define SBI_ERR_FAILURE				-1
++#define SBI_ERR_NOT_SUPPORTED			-2
++#define SBI_ERR_INVALID_PARAM			-3
++#define SBI_ERR_DENIED				-4
++#define SBI_ERR_INVALID_ADDRESS			-5
++#define SBI_ERR_ALREADY_AVAILABLE		-6
++#define SBI_ERR_ALREADY_STARTED			-7
++#define SBI_ERR_ALREADY_STOPPED			-8
 +
-+	/* SBI steal-time accounting */
-+	struct {
-+		gpa_t shmem;
-+		u64 last_steal;
-+	} sta;
- };
+ #define SBI_EXT_EXPERIMENTAL_START		0x08000000
+ #define SBI_EXT_EXPERIMENTAL_END		0x08FFFFFF
  
- static inline void kvm_arch_sync_events(struct kvm *kvm) {}
-diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-index b77f585879b7..fb13a05d7ec5 100644
---- a/arch/riscv/kvm/vcpu.c
-+++ b/arch/riscv/kvm/vcpu.c
-@@ -83,6 +83,8 @@ static void kvm_riscv_reset_vcpu(struct kvm_vcpu *vcpu)
- 	vcpu->arch.hfence_tail = 0;
- 	memset(vcpu->arch.hfence_queue, 0, sizeof(vcpu->arch.hfence_queue));
+@@ -115,6 +126,14 @@ static inline uint64_t __kvm_reg_id(uint64_t type, uint64_t subtype,
+ #define KVM_RISCV_SELFTESTS_SBI_UCALL		0
+ #define KVM_RISCV_SELFTESTS_SBI_UNEXP		1
  
-+	vcpu->arch.sta.shmem = INVALID_GPA;
++enum sbi_ext_id {
++	SBI_EXT_BASE = 0x10,
++};
 +
- 	/* Reset the guest CSRs for hotplug usecase */
- 	if (loaded)
- 		kvm_arch_vcpu_load(vcpu, smp_processor_id());
-diff --git a/arch/riscv/kvm/vcpu_sbi_sta.c b/arch/riscv/kvm/vcpu_sbi_sta.c
-index e28351c9488b..157c199be0b4 100644
---- a/arch/riscv/kvm/vcpu_sbi_sta.c
-+++ b/arch/riscv/kvm/vcpu_sbi_sta.c
-@@ -10,6 +10,10 @@
- 
- void kvm_riscv_vcpu_record_steal_time(struct kvm_vcpu *vcpu)
- {
-+	gpa_t shmem = vcpu->arch.sta.shmem;
++enum sbi_ext_base_fid {
++	SBI_EXT_BASE_PROBE_EXT = 3,
++};
 +
-+	if (shmem == INVALID_GPA)
-+		return;
+ struct sbiret {
+ 	long error;
+ 	long value;
+@@ -125,4 +144,6 @@ struct sbiret sbi_ecall(int ext, int fid, unsigned long arg0,
+ 			unsigned long arg3, unsigned long arg4,
+ 			unsigned long arg5);
+ 
++bool guest_sbi_probe_extension(int extid, long *out_val);
++
+ #endif /* SELFTEST_KVM_PROCESSOR_H */
+diff --git a/tools/testing/selftests/kvm/lib/riscv/processor.c b/tools/testing/selftests/kvm/lib/riscv/processor.c
+index 6905a4348380..7ca736fb4194 100644
+--- a/tools/testing/selftests/kvm/lib/riscv/processor.c
++++ b/tools/testing/selftests/kvm/lib/riscv/processor.c
+@@ -393,3 +393,22 @@ struct sbiret sbi_ecall(int ext, int fid, unsigned long arg0,
+ 
+ 	return ret;
  }
- 
- static int kvm_sbi_sta_steal_time_set_shmem(struct kvm_vcpu *vcpu)
++
++bool guest_sbi_probe_extension(int extid, long *out_val)
++{
++	struct sbiret ret;
++
++	ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_PROBE_EXT, extid,
++			0, 0, 0, 0, 0);
++
++	__GUEST_ASSERT(!ret.error || ret.error == SBI_ERR_NOT_SUPPORTED,
++		       "ret.error=%ld, ret.value=%ld\n", ret.error, ret.value);
++
++	if (ret.error == SBI_ERR_NOT_SUPPORTED)
++		return false;
++
++	if (out_val)
++		*out_val = ret.value;
++
++	return true;
++}
 -- 
 2.43.0
 
