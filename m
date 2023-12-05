@@ -1,37 +1,47 @@
 From: Atish Patra <atishp@rivosinc.com>
-Date: Mon,  4 Dec 2023 18:43:04 -0800
-Subject: [RFC 3/9] RISC-V: Add FIRMWARE_READ_HI definition
+Date: Mon,  4 Dec 2023 18:43:03 -0800
+Subject: [RFC 2/9] drivers/perf: riscv: Add a flag to indicate SBI v2.0 support
 In-Reply-To: <20231205024310.1593100-1-atishp@rivosinc.com>
 References: <20231205024310.1593100-1-atishp@rivosinc.com>
-Message-ID: <20231205024310.1593100-4-atishp@rivosinc.com>
+Message-ID: <20231205024310.1593100-3-atishp@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-SBI v2.0 added another function to SBI PMU extension to read
-the upper bits of a counter with width larger than XLEN.
-
-Add the definition for that function.
+SBI v2.0 added few functions to improve SBI PMU extension. In order
+to be backward compatible, the driver must use these functions only
+if SBI v2.0 is available.
 
 Signed-off-by: Atish Patra <atishp@rivosinc.com>
 ---
- arch/riscv/include/asm/sbi.h | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/perf/riscv_pmu_sbi.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/arch/riscv/include/asm/sbi.h b/arch/riscv/include/asm/sbi.h
-index 0892f4421bc4..f3eeca79a02d 100644
---- a/arch/riscv/include/asm/sbi.h
-+++ b/arch/riscv/include/asm/sbi.h
-@@ -121,6 +121,7 @@ enum sbi_ext_pmu_fid {
- 	SBI_EXT_PMU_COUNTER_START,
- 	SBI_EXT_PMU_COUNTER_STOP,
- 	SBI_EXT_PMU_COUNTER_FW_READ,
-+	SBI_EXT_PMU_COUNTER_FW_READ_HI,
- };
+diff --git a/drivers/perf/riscv_pmu_sbi.c b/drivers/perf/riscv_pmu_sbi.c
+index 16acd4dcdb96..40a335350d08 100644
+--- a/drivers/perf/riscv_pmu_sbi.c
++++ b/drivers/perf/riscv_pmu_sbi.c
+@@ -35,6 +35,8 @@
+ PMU_FORMAT_ATTR(event, "config:0-47");
+ PMU_FORMAT_ATTR(firmware, "config:63");
  
- union sbi_pmu_ctr_info {
++static bool sbi_v2_available;
++
+ static struct attribute *riscv_arch_formats_attr[] = {
+ 	&format_attr_event.attr,
+ 	&format_attr_firmware.attr,
+@@ -1108,6 +1110,9 @@ static int __init pmu_sbi_devinit(void)
+ 		return 0;
+ 	}
+ 
++	if (sbi_spec_version >= sbi_mk_version(2, 0))
++		sbi_v2_available = true;
++
+ 	ret = cpuhp_setup_state_multi(CPUHP_AP_PERF_RISCV_STARTING,
+ 				      "perf/riscv/pmu:starting",
+ 				      pmu_sbi_starting_cpu, pmu_sbi_dying_cpu);
 -- 
 2.34.1
 
