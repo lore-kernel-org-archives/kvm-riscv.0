@@ -1,47 +1,55 @@
 From: Atish Patra <atishp@rivosinc.com>
-Date: Mon,  4 Dec 2023 18:43:03 -0800
-Subject: [RFC 2/9] drivers/perf: riscv: Add a flag to indicate SBI v2.0 support
+Date: Mon,  4 Dec 2023 18:43:05 -0800
+Subject: [RFC 4/9] drivers/perf: riscv: Read upper bits of a firmware counter
 In-Reply-To: <20231205024310.1593100-1-atishp@rivosinc.com>
 References: <20231205024310.1593100-1-atishp@rivosinc.com>
-Message-ID: <20231205024310.1593100-3-atishp@rivosinc.com>
+Message-ID: <20231205024310.1593100-5-atishp@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-SBI v2.0 added few functions to improve SBI PMU extension. In order
-to be backward compatible, the driver must use these functions only
-if SBI v2.0 is available.
+SBI v2.0 introduced a explicit function to read the upper bits
+for any firmwar counter width that is longer than XLEN. Currently,
+this is only applicable for RV32 where firmware counter can be
+64 bit.
 
 Signed-off-by: Atish Patra <atishp@rivosinc.com>
 ---
- drivers/perf/riscv_pmu_sbi.c | 5 +++++
- 1 file changed, 5 insertions(+)
+ drivers/perf/riscv_pmu_sbi.c | 11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/perf/riscv_pmu_sbi.c b/drivers/perf/riscv_pmu_sbi.c
-index 16acd4dcdb96..40a335350d08 100644
+index 40a335350d08..1c9049e6b574 100644
 --- a/drivers/perf/riscv_pmu_sbi.c
 +++ b/drivers/perf/riscv_pmu_sbi.c
-@@ -35,6 +35,8 @@
- PMU_FORMAT_ATTR(event, "config:0-47");
- PMU_FORMAT_ATTR(firmware, "config:63");
+@@ -490,16 +490,23 @@ static u64 pmu_sbi_ctr_read(struct perf_event *event)
+ 	struct hw_perf_event *hwc = &event->hw;
+ 	int idx = hwc->idx;
+ 	struct sbiret ret;
+-	union sbi_pmu_ctr_info info;
+ 	u64 val = 0;
++	union sbi_pmu_ctr_info info = pmu_ctr_list[idx];
  
-+static bool sbi_v2_available;
-+
- static struct attribute *riscv_arch_formats_attr[] = {
- 	&format_attr_event.attr,
- 	&format_attr_firmware.attr,
-@@ -1108,6 +1110,9 @@ static int __init pmu_sbi_devinit(void)
- 		return 0;
- 	}
- 
-+	if (sbi_spec_version >= sbi_mk_version(2, 0))
-+		sbi_v2_available = true;
-+
- 	ret = cpuhp_setup_state_multi(CPUHP_AP_PERF_RISCV_STARTING,
- 				      "perf/riscv/pmu:starting",
- 				      pmu_sbi_starting_cpu, pmu_sbi_dying_cpu);
+ 	if (pmu_sbi_is_fw_event(event)) {
+ 		ret = sbi_ecall(SBI_EXT_PMU, SBI_EXT_PMU_COUNTER_FW_READ,
+ 				hwc->idx, 0, 0, 0, 0, 0);
+ 		if (!ret.error)
+ 			val = ret.value;
++#if defined(CONFIG_32BIT)
++		if (sbi_v2_available && info.width >= 32) {
++			ret = sbi_ecall(SBI_EXT_PMU, SBI_EXT_PMU_COUNTER_FW_READ_HI,
++					hwc->idx, 0, 0, 0, 0, 0);
++			if (!ret.error)
++				val = val | ((u64)ret.value << 32);
++		}
++#endif
+ 	} else {
+-		info = pmu_ctr_list[idx];
+ 		val = riscv_pmu_ctr_read_csr(info.csr);
+ 		if (IS_ENABLED(CONFIG_32BIT))
+ 			val = ((u64)riscv_pmu_ctr_read_csr(info.csr + 0x80)) << 31 | val;
 -- 
 2.34.1
 
