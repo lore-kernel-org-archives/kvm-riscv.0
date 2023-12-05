@@ -1,57 +1,102 @@
 From: Daniel Henrique Barboza <dbarboza@ventanamicro.com>
-Date: Tue,  5 Dec 2023 14:45:08 -0300
-Subject: [PATCH v3 2/3] RISC-V: KVM: add 'vlenb' Vector CSR
+Date: Tue,  5 Dec 2023 14:45:09 -0300
+Subject: [PATCH v3 3/3] RISC-V: KVM: add vector CSRs in KVM_GET_REG_LIST
 In-Reply-To: <20231205174509.2238870-1-dbarboza@ventanamicro.com>
 References: <20231205174509.2238870-1-dbarboza@ventanamicro.com>
-Message-ID: <20231205174509.2238870-3-dbarboza@ventanamicro.com>
+Message-ID: <20231205174509.2238870-4-dbarboza@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Userspace requires 'vlenb' to be able to encode it in reg ID. Otherwise
-it is not possible to retrieve any vector reg since we're returning
-EINVAL if reg_size isn't vlenb (see kvm_riscv_vcpu_vreg_addr()).
+Add all vector CSRs (vstart, vl, vtype, vcsr, vlenb) in get-reg-list.
 
 Signed-off-by: Daniel Henrique Barboza <dbarboza@ventanamicro.com>
 ---
- arch/riscv/kvm/vcpu_vector.c | 15 +++++++++++++++
- 1 file changed, 15 insertions(+)
+ arch/riscv/kvm/vcpu_onereg.c | 55 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 55 insertions(+)
 
-diff --git a/arch/riscv/kvm/vcpu_vector.c b/arch/riscv/kvm/vcpu_vector.c
-index 530e49c588d6..d92d1348045c 100644
---- a/arch/riscv/kvm/vcpu_vector.c
-+++ b/arch/riscv/kvm/vcpu_vector.c
-@@ -116,6 +116,9 @@ static int kvm_riscv_vcpu_vreg_addr(struct kvm_vcpu *vcpu,
- 		case KVM_REG_RISCV_VECTOR_CSR_REG(vcsr):
- 			*reg_addr = &cntx->vector.vcsr;
- 			break;
-+		case KVM_REG_RISCV_VECTOR_CSR_REG(vlenb):
-+			*reg_addr = &cntx->vector.vlenb;
-+			break;
- 		case KVM_REG_RISCV_VECTOR_CSR_REG(datap):
- 		default:
- 			return -ENOENT;
-@@ -174,6 +177,18 @@ int kvm_riscv_vcpu_set_reg_vector(struct kvm_vcpu *vcpu,
- 	if (!riscv_isa_extension_available(isa, v))
- 		return -ENOENT;
+diff --git a/arch/riscv/kvm/vcpu_onereg.c b/arch/riscv/kvm/vcpu_onereg.c
+index f8c9fa0c03c5..2eb4980295ae 100644
+--- a/arch/riscv/kvm/vcpu_onereg.c
++++ b/arch/riscv/kvm/vcpu_onereg.c
+@@ -986,6 +986,55 @@ static int copy_sbi_ext_reg_indices(u64 __user *uindices)
+ 	return num_sbi_ext_regs();
+ }
  
-+	if (reg_num == KVM_REG_RISCV_VECTOR_CSR_REG(vlenb)) {
-+		struct kvm_cpu_context *cntx = &vcpu->arch.guest_context;
-+		unsigned long reg_val;
-+
-+		if (copy_from_user(&reg_val, uaddr, reg_size))
-+			return -EFAULT;
-+		if (reg_val != cntx->vector.vlenb)
-+			return -EINVAL;
-+
++static inline unsigned long num_vector_regs(const struct kvm_vcpu *vcpu)
++{
++	if (!riscv_isa_extension_available(vcpu->arch.isa, v))
 +		return 0;
++
++	/* vstart, vl, vtype, vcsr, vlenb and 32 vector regs */
++	return 37;
++}
++
++static int copy_vector_reg_indices(const struct kvm_vcpu *vcpu,
++				u64 __user *uindices)
++{
++	const struct kvm_cpu_context *cntx = &vcpu->arch.guest_context;
++	int n = num_vector_regs(vcpu);
++	u64 reg, size;
++	int i;
++
++	if (n == 0)
++		return 0;
++
++	/* copy vstart, vl, vtype, vcsr and vlenb */
++	size = IS_ENABLED(CONFIG_32BIT) ? KVM_REG_SIZE_U32 : KVM_REG_SIZE_U64;
++	for (i = 0; i < 5; i++) {
++		reg = KVM_REG_RISCV | size | KVM_REG_RISCV_VECTOR | i;
++
++		if (uindices) {
++			if (put_user(reg, uindices))
++				return -EFAULT;
++			uindices++;
++		}
 +	}
 +
- 	rc = kvm_riscv_vcpu_vreg_addr(vcpu, reg_num, reg_size, &reg_addr);
- 	if (rc)
- 		return rc;
++	/* vector_regs have a variable 'vlenb' size */
++	size = __builtin_ctzl(cntx->vector.vlenb);
++	size <<= KVM_REG_SIZE_SHIFT;
++	for (i = 0; i < 32; i++) {
++		reg = KVM_REG_RISCV | KVM_REG_RISCV_VECTOR | size |
++			KVM_REG_RISCV_VECTOR_REG(i);
++
++		if (uindices) {
++			if (put_user(reg, uindices))
++				return -EFAULT;
++			uindices++;
++		}
++	}
++
++	return n;
++}
++
+ /*
+  * kvm_riscv_vcpu_num_regs - how many registers do we present via KVM_GET/SET_ONE_REG
+  *
+@@ -1001,6 +1050,7 @@ unsigned long kvm_riscv_vcpu_num_regs(struct kvm_vcpu *vcpu)
+ 	res += num_timer_regs();
+ 	res += num_fp_f_regs(vcpu);
+ 	res += num_fp_d_regs(vcpu);
++	res += num_vector_regs(vcpu);
+ 	res += num_isa_ext_regs(vcpu);
+ 	res += num_sbi_ext_regs();
+ 
+@@ -1045,6 +1095,11 @@ int kvm_riscv_vcpu_copy_reg_indices(struct kvm_vcpu *vcpu,
+ 		return ret;
+ 	uindices += ret;
+ 
++	ret = copy_vector_reg_indices(vcpu, uindices);
++	if (ret < 0)
++		return ret;
++	uindices += ret;
++
+ 	ret = copy_isa_ext_reg_indices(vcpu, uindices);
+ 	if (ret < 0)
+ 		return ret;
 -- 
 2.41.0
 
