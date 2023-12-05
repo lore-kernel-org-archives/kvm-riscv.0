@@ -1,85 +1,130 @@
-From: Daniel Henrique Barboza <dbarboza@ventanamicro.com>
-Date: Mon,  4 Dec 2023 15:29:04 -0300
-Subject: [PATCH 3/3] RISC-V: KVM: add vector CSRs in KVM_GET_REG_LIST
-In-Reply-To: <20231204182905.2163676-1-dbarboza@ventanamicro.com>
-References: <20231204182905.2163676-1-dbarboza@ventanamicro.com>
-Message-ID: <20231204182905.2163676-4-dbarboza@ventanamicro.com>
+From: Atish Patra <atishp@rivosinc.com>
+Date: Mon,  4 Dec 2023 18:43:01 -0800
+Subject: [RFC 0/9] RISC-V SBI v2.0 PMU improvements and Perf sampling in KVM guest
+Message-ID: <20231205024310.1593100-1-atishp@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add all vector CSRs (vstart, vl, vtype, vcsr, vlenb) in get-reg-list.
+This series implements SBI PMU improvements done in SBI v2.0[1] i.e. PMU snapshot
+and fw_read_hi() functions. 
 
-Signed-off-by: Daniel Henrique Barboza <dbarboza@ventanamicro.com>
----
- arch/riscv/kvm/vcpu_onereg.c | 37 ++++++++++++++++++++++++++++++++++++
- 1 file changed, 37 insertions(+)
+SBI v2.0 introduced PMU snapshot feature which allows the SBI implementation
+to provide counter information (i.e. values/overlfow status) via a shared
+memory between the SBI implementation and supervisor OS. This allows to minimize
+the number of traps in when perf being used inside a kvm guest as it relies on
+SBI PMU + trap/emulation of the counters. 
 
-diff --git a/arch/riscv/kvm/vcpu_onereg.c b/arch/riscv/kvm/vcpu_onereg.c
-index f8c9fa0c03c5..1c91615f47cc 100644
---- a/arch/riscv/kvm/vcpu_onereg.c
-+++ b/arch/riscv/kvm/vcpu_onereg.c
-@@ -986,6 +986,37 @@ static int copy_sbi_ext_reg_indices(u64 __user *uindices)
- 	return num_sbi_ext_regs();
- }
- 
-+static inline unsigned long num_vector_regs(const struct kvm_vcpu *vcpu)
-+{
-+	const struct kvm_cpu_context *cntx = &vcpu->arch.guest_context;
-+
-+	if (!riscv_isa_extension_available(vcpu->arch.isa, v))
-+		return 0;
-+
-+	/* vstart, vl, vtype, vcsr, vlenb; */
-+	return 5;
-+}
-+
-+static int copy_vector_reg_indices(const struct kvm_vcpu *vcpu,
-+				u64 __user *uindices)
-+{
-+	int n = num_vector_regs(vcpu);
-+	u64 reg, size;
-+
-+	for (int i = 0; i < n; i++) {
-+		size = IS_ENABLED(CONFIG_32BIT) ? KVM_REG_SIZE_U32 : KVM_REG_SIZE_U64;
-+		reg = KVM_REG_RISCV | size | KVM_REG_RISCV_VECTOR | i;
-+
-+		if (uindices) {
-+			if (put_user(reg, uindices))
-+				return -EFAULT;
-+			uindices++;
-+		}
-+	}
-+
-+	return n;
-+}
-+
- /*
-  * kvm_riscv_vcpu_num_regs - how many registers do we present via KVM_GET/SET_ONE_REG
-  *
-@@ -1001,6 +1032,7 @@ unsigned long kvm_riscv_vcpu_num_regs(struct kvm_vcpu *vcpu)
- 	res += num_timer_regs();
- 	res += num_fp_f_regs(vcpu);
- 	res += num_fp_d_regs(vcpu);
-+	res += num_vector_regs(vcpu);
- 	res += num_isa_ext_regs(vcpu);
- 	res += num_sbi_ext_regs();
- 
-@@ -1045,6 +1077,11 @@ int kvm_riscv_vcpu_copy_reg_indices(struct kvm_vcpu *vcpu,
- 		return ret;
- 	uindices += ret;
- 
-+	ret = copy_vector_reg_indices(vcpu, uindices);
-+	if (ret < 0)
-+		return ret;
-+	uindices += ret;
-+
- 	ret = copy_isa_ext_reg_indices(vcpu, uindices);
- 	if (ret < 0)
- 		return ret;
--- 
-2.41.0
+The current set of ratified RISC-V specification also doesn't allow scountovf
+to be trap/emulated by the hypervisor. The SBI PMU snapshot bridges the gap
+in ISA as well and enables perf sampling in the guest. However, LCOFI in the
+guest only works via IRQ filtering in AIA specification. That's why, AIA
+has to be enabled in the hardware (at least the Ssaia extension) in order to
+use the sampling support in the perf. 
+
+Here are the patch wise implementation details.
+
+PATCH 1-2 : Generic cleanups/improvements.
+PATCH 3,4,9 : FW_READ_HI function implementation
+PATCH 5-6: Add PMU snapshot feature in sbi pmu driver
+PATCH 7-8: KVM implementation for snapshot and sampling in kvm guests
+
+The series is based on v6.70-rc3 and is available at:
+
+https://github.com/atishp04/linux/tree/kvm_pmu_snapshot_v1
+
+The kvmtool patch is also available at:
+https://github.com/atishp04/kvmtool/tree/sscofpmf
+
+It also requires Ssaia ISA extension to be present in the hardware in order to
+get perf sampling support in the guest. In Qemu virt machine, it can be done
+by the following config.
+
+```
+-cpu rv64,sscofpmf=true,x-ssaia=true
+```
+
+There is no other dependancies on AIA apart from that. Thus, Ssaia must be disabled
+for the guest if AIA patches are not available. Here is the example command.
+
+```
+./lkvm-static run -m 256 -c2 --console serial -p "console=ttyS0 earlycon" --disable-ssaia -k ./Image --debug 
+```
+
+The series has been tested only in Qemu.
+Here is the snippet of the perf running inside a kvm guest.
+
+===================================================
+# perf record -e cycles -e instructions perf bench sched messaging -g 5
+...
+# Running 'sched/messaging' benchmark:
+...
+[   45.928723] perf_duration_warn: 2 callbacks suppressed
+[   45.929000] perf: interrupt took too long (484426 > 483186), lowering kernel.perf_event_max_sample_rate to 250
+# 20 sender and receiver processes per group
+# 5 groups == 200 processes run
+
+     Total time: 14.220 [sec]
+[ perf record: Woken up 1 times to write data ]
+[ perf record: Captured and wrote 0.117 MB perf.data (1942 samples) ]
+# perf report --stdio
+# To display the perf.data header info, please use --header/--header-only optio>
+#
+#
+# Total Lost Samples: 0
+#
+# Samples: 943  of event 'cycles'
+# Event count (approx.): 5128976844
+#
+# Overhead  Command          Shared Object                Symbol               >
+# ........  ...............  ...........................  .....................>
+#
+     7.59%  sched-messaging  [kernel.kallsyms]            [k] memcpy
+     5.48%  sched-messaging  [kernel.kallsyms]            [k] percpu_counter_ad>
+     5.24%  sched-messaging  [kernel.kallsyms]            [k] __sbi_rfence_v02_>
+     4.00%  sched-messaging  [kernel.kallsyms]            [k] _raw_spin_unlock_>
+     3.79%  sched-messaging  [kernel.kallsyms]            [k] set_pte_range
+     3.72%  sched-messaging  [kernel.kallsyms]            [k] next_uptodate_fol>
+     3.46%  sched-messaging  [kernel.kallsyms]            [k] filemap_map_pages
+     3.31%  sched-messaging  [kernel.kallsyms]            [k] handle_mm_fault
+     3.20%  sched-messaging  [kernel.kallsyms]            [k] finish_task_switc>
+     3.16%  sched-messaging  [kernel.kallsyms]            [k] clear_page
+     3.03%  sched-messaging  [kernel.kallsyms]            [k] mtree_range_walk
+     2.42%  sched-messaging  [kernel.kallsyms]            [k] flush_icache_pte
+
+===================================================
+
+[1] https://github.com/riscv-non-isa/riscv-sbi-doc
+
+Atish Patra (9):
+RISC-V: Fix the typo in Scountovf CSR name
+drivers/perf: riscv: Add a flag to indicate SBI v2.0 support
+RISC-V: Add FIRMWARE_READ_HI definition
+drivers/perf: riscv: Read upper bits of a firmware counter
+RISC-V: Add SBI PMU snapshot definitions
+drivers/perf: riscv: Implement SBI PMU snapshot function
+RISC-V: KVM: Implement SBI PMU Snapshot feature
+RISC-V: KVM: Add perf sampling support for guests
+RISC-V: KVM: Support 64 bit firmware counters on RV32
+
+arch/riscv/include/asm/csr.h          |   5 +-
+arch/riscv/include/asm/errata_list.h  |   2 +-
+arch/riscv/include/asm/kvm_vcpu_pmu.h |  16 +-
+arch/riscv/include/asm/sbi.h          |  11 ++
+arch/riscv/include/uapi/asm/kvm.h     |   1 +
+arch/riscv/kvm/main.c                 |   1 +
+arch/riscv/kvm/vcpu.c                 |   8 +-
+arch/riscv/kvm/vcpu_onereg.c          |   1 +
+arch/riscv/kvm/vcpu_pmu.c             | 232 ++++++++++++++++++++++++--
+arch/riscv/kvm/vcpu_sbi_pmu.c         |  10 ++
+drivers/perf/riscv_pmu.c              |   1 +
+drivers/perf/riscv_pmu_sbi.c          | 219 ++++++++++++++++++++++--
+include/linux/perf/riscv_pmu.h        |   6 +
+13 files changed, 478 insertions(+), 35 deletions(-)
+
+--
+2.34.1
 
 
