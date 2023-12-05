@@ -1,36 +1,39 @@
 From: Daniel Henrique Barboza <dbarboza@ventanamicro.com>
-Date: Tue,  5 Dec 2023 14:45:06 -0300
-Subject: [PATCH v3 0/3] RISC-V, KVM: add 'vlenb' and vector CSRs to get-reg-list
-Message-ID: <20231205174509.2238870-1-dbarboza@ventanamicro.com>
+Date: Tue,  5 Dec 2023 14:45:07 -0300
+Subject: [PATCH v3 1/3] RISC-V: KVM: set 'vlenb' in kvm_riscv_vcpu_alloc_vector_context()
+In-Reply-To: <20231205174509.2238870-1-dbarboza@ventanamicro.com>
+References: <20231205174509.2238870-1-dbarboza@ventanamicro.com>
+Message-ID: <20231205174509.2238870-2-dbarboza@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi,
+'vlenb', added to riscv_v_ext_state by commit c35f3aa34509 ("RISC-V:
+vector: export VLENB csr in __sc_riscv_v_state"), isn't being
+initialized in guest_context. If we export 'vlenb' as a KVM CSR,
+something we want to do in the next patch, it'll always return 0.
 
-In this version we're exporting all vector regs, not just vector CSRs,
-in get-reg-list. All changes were done in patch 3.
+Set 'vlenb' to riscv_v_size/32.
 
-No other changes made.
+Signed-off-by: Daniel Henrique Barboza <dbarboza@ventanamicro.com>
+---
+ arch/riscv/kvm/vcpu_vector.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-Changes from v2:
-- patch 3:
-  - check num_vector_regs() != 0 before copying vector regs
-  - export all 32 vector regs in num_vector_regs() and copy_vector_reg_indices()
-  - initialize 'size' out of the loop in copy_vector_reg_indices()
-- v2 link: https://lore.kernel.org/kvm/20231205135041.2208004-1-dbarboza at ventanamicro.com/
-
-Daniel Henrique Barboza (3):
-  RISC-V: KVM: set 'vlenb' in kvm_riscv_vcpu_alloc_vector_context()
-  RISC-V: KVM: add 'vlenb' Vector CSR
-  RISC-V: KVM: add vector CSRs in KVM_GET_REG_LIST
-
- arch/riscv/kvm/vcpu_onereg.c | 55 ++++++++++++++++++++++++++++++++++++
- arch/riscv/kvm/vcpu_vector.c | 16 +++++++++++
- 2 files changed, 71 insertions(+)
-
+diff --git a/arch/riscv/kvm/vcpu_vector.c b/arch/riscv/kvm/vcpu_vector.c
+index b339a2682f25..530e49c588d6 100644
+--- a/arch/riscv/kvm/vcpu_vector.c
++++ b/arch/riscv/kvm/vcpu_vector.c
+@@ -76,6 +76,7 @@ int kvm_riscv_vcpu_alloc_vector_context(struct kvm_vcpu *vcpu,
+ 	cntx->vector.datap = kmalloc(riscv_v_vsize, GFP_KERNEL);
+ 	if (!cntx->vector.datap)
+ 		return -ENOMEM;
++	cntx->vector.vlenb = riscv_v_vsize / 32;
+ 
+ 	vcpu->arch.host_context.vector.datap = kzalloc(riscv_v_vsize, GFP_KERNEL);
+ 	if (!vcpu->arch.host_context.vector.datap)
 -- 
 2.41.0
 
