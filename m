@@ -1,55 +1,43 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Thu,  7 Dec 2023 14:40:13 +0100
-Subject: [PATCH] KVM: riscv: selftests: Fix get-reg-list print_reg defaults
-Message-ID: <20231207134012.20428-2-ajones@ventanamicro.com>
+From: Conor Dooley <conor.dooley@microchip.com>
+Date: Thu, 7 Dec 2023 14:06:37 +0000
+Subject: [PATCH v1 03/14] RISC-V: paravirt: Implement steal-time support
+In-Reply-To: <20231205181119.207204-19-ajones@ventanamicro.com>
+References: <20231205181119.207204-16-ajones@ventanamicro.com>
+ <20231205181119.207204-19-ajones@ventanamicro.com>
+Message-ID: <20231207-kindling-upgrade-22d29116ccf3@wendy>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-print_reg() will print everything it knows when it encounters
-a register ID it's unfamiliar with in the default cases of its
-decoding switches. Fix several issues with these (until now,
-never tested) paths; missing newlines in printfs, missing
-complement operator in mask, and missing return in order to
-avoid continuing to decode.
+On Tue, Dec 05, 2023 at 07:11:23PM +0100, Andrew Jones wrote:
 
-Fixes: 62d0c458f828 ("KVM: riscv: selftests: get-reg-list print_reg should never fail")
-Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
----
- tools/testing/selftests/kvm/riscv/get-reg-list.c | 10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
+> +static int sbi_sta_steal_time_set_shmem(unsigned long lo, unsigned long hi,
+> +					unsigned long flags)
+>  {
+> +	struct sbiret ret;
+> +
+> +	ret = sbi_ecall(SBI_EXT_STA, SBI_EXT_STA_STEAL_TIME_SET_SHMEM,
+> +			lo, hi, flags, 0, 0, 0);
+> +	if (ret.error) {
+> +		if (lo == SBI_STA_SHMEM_DISABLE && hi == SBI_STA_SHMEM_DISABLE)
+> +			pr_warn("Failed to disable steal-time shmem");
+> +		else
+> +			pr_warn("Failed to set steal-time shmem");
+> +		return -ENOMEM;
 
-diff --git a/tools/testing/selftests/kvm/riscv/get-reg-list.c b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-index 6bedaea95395..25de4b8bc347 100644
---- a/tools/testing/selftests/kvm/riscv/get-reg-list.c
-+++ b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-@@ -458,8 +458,9 @@ void print_reg(const char *prefix, __u64 id)
- 		reg_size = "KVM_REG_SIZE_U128";
- 		break;
- 	default:
--		printf("\tKVM_REG_RISCV | (%lld << KVM_REG_SIZE_SHIFT) | 0x%llx /* UNKNOWN */,",
--		       (id & KVM_REG_SIZE_MASK) >> KVM_REG_SIZE_SHIFT, id & REG_MASK);
-+		printf("\tKVM_REG_RISCV | (%lld << KVM_REG_SIZE_SHIFT) | 0x%llx /* UNKNOWN */,\n",
-+		       (id & KVM_REG_SIZE_MASK) >> KVM_REG_SIZE_SHIFT, id & ~REG_MASK);
-+		return;
- 	}
- 
- 	switch (id & KVM_REG_RISCV_TYPE_MASK) {
-@@ -496,8 +497,9 @@ void print_reg(const char *prefix, __u64 id)
- 				reg_size, sbi_ext_id_to_str(prefix, id));
- 		break;
- 	default:
--		printf("\tKVM_REG_RISCV | %s | 0x%llx /* UNKNOWN */,",
--				reg_size, id & REG_MASK);
-+		printf("\tKVM_REG_RISCV | %s | 0x%llx /* UNKNOWN */,\n",
-+				reg_size, id & ~REG_MASK);
-+		return;
- 	}
- }
- 
--- 
-2.43.0
+btw, how come this is an ENOMEM and not a propagation of the error from
+the ecall?
 
-
+> +	}
+> +
+>  	return 0;
+>  }
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 228 bytes
+Desc: not available
+URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20231207/9a69294f/attachment-0001.sig>
