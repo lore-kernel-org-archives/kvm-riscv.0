@@ -1,51 +1,67 @@
-From: Gowans, James <jgowans@amazon.com>
-Date: Mon, 11 Dec 2023 10:27:15 +0000
-Subject: [PATCH v2 1/2] KVM: Use syscore_ops instead of reboot_notifier to hook
- restart/shutdown
-In-Reply-To: <a02b40d3d9ae5b3037b9a9d5921cfb0144ab5610.camel@amazon.com>
-References: <20230512233127.804012-1-seanjc@google.com>
-	 <20230512233127.804012-2-seanjc@google.com>
-	 <cfed942fc767fa7b2fabc68a3357a7b95bd6a589.camel@amazon.com>
-	 <871qbud5f9.fsf@email.froward.int.ebiederm.org>
-	 <a02b40d3d9ae5b3037b9a9d5921cfb0144ab5610.camel@amazon.com>
-Message-ID: <7e30cfc2359dfef39d038e3734f7e5e3d9e82d68.camel@amazon.com>
+From: Daniel Henrique Barboza <dbarboza@ventanamicro.com>
+Date: Mon, 11 Dec 2023 09:06:33 -0300
+Subject: [PATCH] RISC-V: KVM: remove a redundant condition in
+ kvm_arch_vcpu_ioctl_run()
+In-Reply-To: <20231211094014.4041-1-duchao@eswincomputing.com>
+References: <20231211094014.4041-1-duchao@eswincomputing.com>
+Message-ID: <94bcaa6d-fe18-4eed-b2d4-a6a5521230bf@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, 2023-12-11 at 09:54 +0200, James Gowans wrote:
-> > 
-> > What problem are you running into with your rebase that worked with
-> > reboot notifiers that is not working with syscore_shutdown?
+
+
+On 12/11/23 06:40, Chao Du wrote:
+> The latest ret value is updated by kvm_riscv_vcpu_aia_update(),
+> the loop will continue if the ret is less than or equal to zero.
+> So the later condition will never hit. Thus remove it.
+
+Good catch. There's another potential optimization to be done a little above
+this change:
+
+
+	while (ret > 0) {
+		(...)
+
+		/* Update AIA HW state before entering guest */
+		ret = kvm_riscv_vcpu_aia_update(vcpu);
+		if (ret <= 0) {
+			preempt_enable();
+			continue; <------------------
+		}
+		(...)
+
+Note that this 'continue' isn't doing much - we'll restart the loop with ret <= 0
+while requiring ret > 0 to do another iteration. I.e. this 'continue' can be
+replaced for 'break' without compromising the logic.
+
+(of course, testing it to be sure is always advised :D )
+
 > 
-> Prior to this commit [1] which changed KVM from reboot notifiers to
-> syscore_ops, KVM's reboot notifier shutdown callback was invoked on
-> kexec via kernel_restart_prepare.
+> Signed-off-by: Chao Du <duchao@eswincomputing.com>
+> ---
+
+
+Reviewed-by: Daniel Henrique Barboza <dbarboza@ventanamicro.com>
+
+
+>   arch/riscv/kvm/vcpu.c | 3 +--
+>   1 file changed, 1 insertion(+), 2 deletions(-)
 > 
-> After this commit, KVM is not being shut down because currently the
-> kexec flow does not call syscore_shutdown.
-
-I think I missed what you're asking here; you're asking for a reproducer
-for the specific failure? 
-
-1. Launch a QEMU VM with -enable-kvm flag
-
-2. Do an immediate (-f flag) kexec:
-kexec -f --reuse-cmdline ./bzImage 
-
-Somewhere after doing the RET to new kernel in the relocate_kernel asm
-function the new kernel starts triple faulting; I can't exactly figure
-out where but I think it has to do with the new kernel trying to modify
-CR3 while the VMXE bit is still set in CR4 causing the triple fault.
-
-If KVM has been shut down via the shutdown callback, or alternatively if
-the QEMU process has actually been killed first (by not doing a -f exec)
-then the VMXE bit is clear and the kexec goes smoothly.
-
-So, TL;DR: kexec -f use to work with a KVM VM active, now it goes into a
-triple fault crash.
-
-JG
+> diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+> index e087c809073c..bf3952d1a621 100644
+> --- a/arch/riscv/kvm/vcpu.c
+> +++ b/arch/riscv/kvm/vcpu.c
+> @@ -757,8 +757,7 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
+>   		/* Update HVIP CSR for current CPU */
+>   		kvm_riscv_update_hvip(vcpu);
+>   
+> -		if (ret <= 0 ||
+> -		    kvm_riscv_gstage_vmid_ver_changed(&vcpu->kvm->arch.vmid) ||
+> +		if (kvm_riscv_gstage_vmid_ver_changed(&vcpu->kvm->arch.vmid) ||
+>   		    kvm_request_pending(vcpu) ||
+>   		    xfer_to_guest_mode_work_pending()) {
+>   			vcpu->mode = OUTSIDE_GUEST_MODE;
 
