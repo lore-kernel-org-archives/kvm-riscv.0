@@ -1,47 +1,21 @@
-From: Sean Christopherson <seanjc@google.com>
-Date: Mon, 11 Dec 2023 09:51:07 -0800
-Subject: [PATCH v2 1/2] KVM: Use syscore_ops instead of reboot_notifier to
- hook restart/shutdown
+From: Gowans, James <jgowans@amazon.com>
+Date: Mon, 11 Dec 2023 18:47:50 +0000
+Subject: [PATCH v2 1/2] KVM: Use syscore_ops instead of reboot_notifier to hook
+ restart/shutdown
 In-Reply-To: <ZXdIIBUXcCIK28ys@google.com>
-References: <20230512233127.804012-1-seanjc@google.com> <20230512233127.804012-2-seanjc@google.com>
- <cfed942fc767fa7b2fabc68a3357a7b95bd6a589.camel@amazon.com> <ZXdIIBUXcCIK28ys@google.com>
-Message-ID: <ZXdMC9rCHqAx2SfF@google.com>
+References: <20230512233127.804012-1-seanjc@google.com>
+	 <20230512233127.804012-2-seanjc@google.com>
+	 <cfed942fc767fa7b2fabc68a3357a7b95bd6a589.camel@amazon.com>
+	 <ZXdIIBUXcCIK28ys@google.com>
+Message-ID: <55ef5cbf44bb73030d6387aa181393b8cb044f77.camel@amazon.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Dec 11, 2023, Sean Christopherson wrote:
+On Mon, 2023-12-11 at 09:34 -0800, Sean Christopherson wrote:
 > On Sat, Dec 09, 2023, James Gowans wrote:
-> > Hi Sean,
-> > 
-> > Blast from the past but I've just been bitten by this patch when
-> > rebasing across v6.4.
-> > 
-> > On Fri, 2023-05-12 at 16:31 -0700, Sean Christopherson wrote:
-> > > Use syscore_ops.shutdown to disable hardware virtualization during a
-> > > reboot instead of using the dedicated reboot_notifier so that KVM disables
-> > > virtualization _after_ system_state has been updated.? This will allow
-> > > fixing a race in KVM's handling of a forced reboot where KVM can end up
-> > > enabling hardware virtualization between kernel_restart_prepare() and
-> > > machine_restart().
-> > 
-> > The issue is that, AFAICT, the syscore_ops.shutdown are not called when
-> > doing a kexec. Reboot notifiers are called across kexec via:
-> > 
-> > kernel_kexec
-> >   kernel_restart_prepare
-> >     blocking_notifier_call_chain
-> >       kvm_reboot
-> > 
-> > So after this patch, KVM is not shutdown during kexec; if hardware virt
-> > mode is enabled then the kexec hangs in exactly the same manner as you
-> > describe with the reboot.
-> > 
-> > Some specific shutdown callbacks, for example IOMMU, HPET, IRQ, etc are
-> > called in native_machine_shutdown, but KVM is not one of these.
-> > 
 > > Thoughts on possible ways to fix this:
 > > a) go back to reboot notifiers
 > > b) get kexec to call syscore_shutdown() to invoke all of these callbacks
@@ -49,12 +23,12 @@ On Mon, Dec 11, 2023, Sean Christopherson wrote:
 > > need this for Intel x86, right?
 > 
 > I don't like (c).  VMX is the most sensitive/problematic, e.g. the whole blocking
-> of INIT thing, but SVM can also run afoul of EFER.SVME being cleared, and KVM really 
+> of INIT thing, but SVM can also run afoul of EFER.SVME being cleared, and KVM really
 > should leave virtualization enabled across kexec(), even if leaving virtualization
-
-*shouldn't*
-
 > enabled is relatively benign on other architectures.
+
+Good to know. Agreed that clean shutdown in all cases is best and we
+discard (c).
 > 
 > One more option would be:
 > 
@@ -76,6 +50,11 @@ On Mon, Dec 11, 2023, Sean Christopherson wrote:
 > see how leaving #MC reporting enabled across kexec can work.
 > 
 > ledtrig_cpu_syscore_shutdown() is also likely ok and arguably correct.
+
+I like your observation here that we probably have other misses like MCE
+which should be shut down too - that's a hint that adding
+syscore_shutdown() to kexec is the way to go.
+
 > 
 > The interrupt controllers though?  x86 disables IRQs at the very beginning of
 > machine_kexec(), so it's likely fine.  But every other architecture?  No clue.
@@ -83,14 +62,14 @@ On Mon, Dec 11, 2023, Sean Christopherson wrote:
 > have no idea if that can run afoul of any of the paths below.
 > 
 >         arch/powerpc/platforms/cell/spu_base.c  .shutdown = spu_shutdown,
->         arch/x86/kernel/cpu/mce/core.c	        .shutdown = mce_syscore_shutdown,
+>         arch/x86/kernel/cpu/mce/core.c          .shutdown = mce_syscore_shutdown,
 >         arch/x86/kernel/i8259.c                 .shutdown = i8259A_shutdown,
->         drivers/irqchip/irq-i8259.c	        .shutdown = i8259A_shutdown,
->         drivers/irqchip/irq-sun6i-r.c	        .shutdown = sun6i_r_intc_shutdown,
->         drivers/leds/trigger/ledtrig-cpu.c	.shutdown = ledtrig_cpu_syscore_shutdown,
->         drivers/power/reset/sc27xx-poweroff.c	.shutdown = sc27xx_poweroff_shutdown,
->         kernel/irq/generic-chip.c	        .shutdown = irq_gc_shutdown,
->         virt/kvm/kvm_main.c	                .shutdown = kvm_shutdown,
+>         drivers/irqchip/irq-i8259.c             .shutdown = i8259A_shutdown,
+>         drivers/irqchip/irq-sun6i-r.c           .shutdown = sun6i_r_intc_shutdown,
+>         drivers/leds/trigger/ledtrig-cpu.c      .shutdown = ledtrig_cpu_syscore_shutdown,
+>         drivers/power/reset/sc27xx-poweroff.c   .shutdown = sc27xx_poweroff_shutdown,
+>         kernel/irq/generic-chip.c               .shutdown = irq_gc_shutdown,
+>         virt/kvm/kvm_main.c                     .shutdown = kvm_shutdown,
 > 
 > The whole thing is a bit of a mess.  E.g. x86 treats machine_shutdown() from
 > kexec pretty much the same as shutdown for reboot, but other architectures have
@@ -98,4 +77,14 @@ On Mon, Dec 11, 2023, Sean Christopherson wrote:
 > 
 > FWIW, if we want to go with option (b), syscore_shutdown() hooks could use
 > kexec_in_progress to differentiate between "regular" shutdown/reboot and kexec.
+
+Yeah, perhaps that's the best: add syscore_shutdown to kexec and get the
+callers to handle both cases if necessary. We could get maintainers for
+all of these drivers to sign off on the change and say whether they need
+to differentiate between kexec and reboot.
+
+Eric, what are your thoughts on this approach? I can try to whip up a
+patch for this and add the maintainers for all of the drivers.
+
+JG
 
