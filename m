@@ -1,102 +1,84 @@
-From: Yong-Xuan Wang <yongxuan.wang@sifive.com>
-Date: Tue, 12 Dec 2023 05:34:59 +0000
-Subject: [PATCH 1/1] RISCV: KVM: should not be interrupted when update the external interrupt pending
-Message-ID: <20231212053501.12054-1-yongxuan.wang@sifive.com>
+From: Chao Du <duchao@eswincomputing.com>
+Date: Tue, 12 Dec 2023 15:12:22 +0800 (GMT+08:00)
+Subject: [PATCH] RISC-V: KVM: remove a redundant condition in
+ kvm_arch_vcpu_ioctl_run()
+In-Reply-To: <94bcaa6d-fe18-4eed-b2d4-a6a5521230bf@ventanamicro.com>
+References: <20231211094014.4041-1-duchao@eswincomputing.com>
+ <94bcaa6d-fe18-4eed-b2d4-a6a5521230bf@ventanamicro.com>
+Message-ID: <4840760d.ce9.18c5cde9e56.Coremail.duchao@eswincomputing.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The emulated IMSIC update the external interrupt pending depending on the
-value of eidelivery and topei. It might lose an interrupt when it is
-interrupted before setting the new value to the pending status.
 
-For example, when VCPU0 sends an IPI to VCPU1 via IMSIC:
+> -----Original Messages-----From:"Daniel Henrique Barboza" <dbarboza@ventanamicro.com>Sent Time:2023-12-11 20:06:33 (Monday)To:"Chao Du" <duchao@eswincomputing.com>, kvm at vger.kernel.org, kvm-riscv at lists.infradead.org, anup at brainfault.org, atishp at atishpatra.orgCc:Subject:Re: [PATCH] RISC-V: KVM: remove a redundant condition in kvm_arch_vcpu_ioctl_run()
+> 
+> 
+> 
+> On 12/11/23 06:40, Chao Du wrote:
+> > The latest ret value is updated by kvm_riscv_vcpu_aia_update(),
+> > the loop will continue if the ret is less than or equal to zero.
+> > So the later condition will never hit. Thus remove it.
+> 
+> Good catch. There's another potential optimization to be done a little above
+> this change:
+> 
+> 
+> 	while (ret > 0) {
+> 		(...)
+> 
+> 		/* Update AIA HW state before entering guest */
+> 		ret = kvm_riscv_vcpu_aia_update(vcpu);
+> 		if (ret <= 0) {
+> 			preempt_enable();
+> 			continue; <------------------
+> 		}
+> 		(...)
+> 
+> Note that this 'continue' isn't doing much - we'll restart the loop with ret <= 0
+> while requiring ret > 0 to do another iteration. I.e. this 'continue' can be
+> replaced for 'break' without compromising the logic.
 
-VCPU0                           VCPU1
+Yes, you are right. The 'continue' could be replaced by a 'break'.
+I also find another small point:
 
-                                CSRSWAP topei = 0
-                                The VCPU1 has claimed all the external
-                                interrupt in its interrupt handler.
+		ret = 1;
 
-                                topei of VCPU1's IMSIC = 0
+		(...)
 
-set pending in VCPU1's IMSIC
+		/* Update AIA HW state before entering guest */
+		ret = kvm_riscv_vcpu_aia_update(vcpu);
 
-topei of VCPU1' IMSIC = 1
+the assignment 'ret = 1' is somehow redundant, since it will be
+overwritten before any reference.
 
-set the external interrupt
-pending of VCPU1
-
-                                clear the external interrupt pending
-                                of VCPU1
-
-When the VCPU1 switches back to VS mode, it exits the interrupt handler
-because the result of CSRSWAP topei is 0. If there are no other external
-interrupts injected into the VCPU1's IMSIC, VCPU1 will never know this
-pending interrupt unless it initiative read the topei.
-
-If the interruption occurs between updating interrupt pending in IMSIC
-and updating external interrupt pending of VCPU, it will not cause a
-problem. Suppose that the VCPU1 clears the IPI pending in IMSIC right
-after VCPU0 sets the pending, the external interrupt pending of VCPU1
-will not be set because the topei is 0. But when the VCPU1 goes back to
-VS mode, the pending IPI will be reported by the CSRSWAP topei, it will
-not lose this interrupt.
-
-So we only need to make the external interrupt updating procedure as a
-critical section to avoid the problem.
-
-Tested-by: Roy Lin <roy.lin@sifive.com>
-Tested-by: Wayling Chen <wayling.chen@sifive.com>
-Co-developed-by: Vincent Chen <vincent.chen@sifive.com>
-Signed-off-by: Vincent Chen <vincent.chen@sifive.com>
-Signed-off-by: Yong-Xuan Wang <yongxuan.wang@sifive.com>
----
- arch/riscv/kvm/aia_imsic.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
-
-diff --git a/arch/riscv/kvm/aia_imsic.c b/arch/riscv/kvm/aia_imsic.c
-index 6cf23b8adb71..0278aa0ca16a 100644
---- a/arch/riscv/kvm/aia_imsic.c
-+++ b/arch/riscv/kvm/aia_imsic.c
-@@ -37,6 +37,8 @@ struct imsic {
- 	u32 nr_eix;
- 	u32 nr_hw_eix;
- 
-+	spinlock_t extirq_update_lock;
-+
- 	/*
- 	 * At any point in time, the register state is in
- 	 * one of the following places:
-@@ -613,12 +615,17 @@ static void imsic_swfile_extirq_update(struct kvm_vcpu *vcpu)
- {
- 	struct imsic *imsic = vcpu->arch.aia_context.imsic_state;
- 	struct imsic_mrif *mrif = imsic->swfile;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&imsic->extirq_update_lock, flags);
- 
- 	if (imsic_mrif_atomic_read(mrif, &mrif->eidelivery) &&
- 	    imsic_mrif_topei(mrif, imsic->nr_eix, imsic->nr_msis))
- 		kvm_riscv_vcpu_set_interrupt(vcpu, IRQ_VS_EXT);
- 	else
- 		kvm_riscv_vcpu_unset_interrupt(vcpu, IRQ_VS_EXT);
-+
-+	spin_unlock_irqrestore(&imsic->extirq_update_lock, flags);
- }
- 
- static void imsic_swfile_read(struct kvm_vcpu *vcpu, bool clear,
-@@ -1029,6 +1036,7 @@ int kvm_riscv_vcpu_aia_imsic_init(struct kvm_vcpu *vcpu)
- 	imsic->nr_eix = BITS_TO_U64(imsic->nr_msis);
- 	imsic->nr_hw_eix = BITS_TO_U64(kvm_riscv_aia_max_ids);
- 	imsic->vsfile_hgei = imsic->vsfile_cpu = -1;
-+	spin_lock_init(&imsic->extirq_update_lock);
- 
- 	/* Setup IMSIC SW-file */
- 	swfile_page = alloc_pages(GFP_KERNEL | __GFP_ZERO,
--- 
-2.17.1
-
-
+> 
+> (of course, testing it to be sure is always advised :D )
+> 
+> > 
+> > Signed-off-by: Chao Du <duchao@eswincomputing.com>
+> > ---
+> 
+> 
+> Reviewed-by: Daniel Henrique Barboza <dbarboza@ventanamicro.com>
+> 
+> 
+> >   arch/riscv/kvm/vcpu.c | 3 +--
+> >   1 file changed, 1 insertion(+), 2 deletions(-)
+> > 
+> > diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+> > index e087c809073c..bf3952d1a621 100644
+> > --- a/arch/riscv/kvm/vcpu.c
+> > +++ b/arch/riscv/kvm/vcpu.c
+> > @@ -757,8 +757,7 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
+> >   		/* Update HVIP CSR for current CPU */
+> >   		kvm_riscv_update_hvip(vcpu);
+> >   
+> > -		if (ret <= 0 ||
+> > -		    kvm_riscv_gstage_vmid_ver_changed(&vcpu->kvm->arch.vmid) ||
+> > +		if (kvm_riscv_gstage_vmid_ver_changed(&vcpu->kvm->arch.vmid) ||
+> >   		    kvm_request_pending(vcpu) ||
+> >   		    xfer_to_guest_mode_work_pending()) {
+> >   			vcpu->mode = OUTSIDE_GUEST_MODE;
