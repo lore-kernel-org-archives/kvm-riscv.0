@@ -1,71 +1,102 @@
 From: Haibo Xu <haibo1.xu@intel.com>
-Date: Tue, 12 Dec 2023 17:31:09 +0800
-Subject: [PATCH v4 00/11] RISCV: Add kvm Sstc timer selftests
-Message-ID: <cover.1702371136.git.haibo1.xu@intel.com>
+Date: Tue, 12 Dec 2023 17:31:10 +0800
+Subject: [PATCH v4 01/11] selftests/kvm: Fix issues with $(SPLIT_TESTS)
+In-Reply-To: <cover.1702371136.git.haibo1.xu@intel.com>
+References: <cover.1702371136.git.haibo1.xu@intel.com>
+Message-ID: <234ad46de32c345cb5b26212a27f0336ce0c9379.1702371136.git.haibo1.xu@intel.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The RISC-V arch_timer selftests is used to validate Sstc timer
-functionality in a guest, which sets up periodic timer interrupts
-and check the basic interrupt status upon its receipt.
+From: Paolo Bonzini <pbonzini@redhat.com>
 
-This KVM selftests was ported from aarch64 arch_timer and tested
-with Linux v6.7-rc4 on a Qemu riscv64 virt machine.
+From: Paolo Bonzini <pbonzini@redhat.com>
 
+The introduction of $(SPLIT_TESTS) also introduced a warning when
+building selftests on architectures that include get-reg-lists:
+
+    make: Entering directory '/root/kvm/tools/testing/selftests/kvm'
+    Makefile:272: warning: overriding recipe for target '/root/kvm/tools/testing/selftests/kvm/get-reg-list'
+    Makefile:267: warning: ignoring old recipe for target '/root/kvm/tools/testing/selftests/kvm/get-reg-list'
+    make: Leaving directory '/root/kvm/tools/testing/selftests/kvm'
+
+In addition, the rule for $(SPLIT_TESTS_TARGETS) includes _all_
+the $(SPLIT_TESTS_OBJS), which only works because there is just one.
+So fix both by adjusting the rules:
+
+- remove $(SPLIT_TESTS_TARGETS) from the $(TEST_GEN_PROGS) rules,
+  and rename it to $(SPLIT_TEST_GEN_PROGS)
+
+- fix $(SPLIT_TESTS_OBJS) so that it plays well with $(OUTPUT),
+  rename it to $(SPLIT_TEST_GEN_OBJ), and list the object file
+  explicitly in the $(SPLIT_TEST_GEN_PROGS) link rule
+
+Fixes: 17da79e009c3 ("KVM: arm64: selftests: Split get-reg-list test code", 2023-08-09)
+Signed-off-by: Paolo Bonzini <pbonzini@redhat.com>
+Tested-by: Andrew Jones <ajones@ventanamicro.com>
 ---
-Changed since v4:
-  * Rebased to Linux 6.7-rc4
-  * Included Paolo's patch(01/11) to fix issues with SPLIT_TESTS
-  * Droped the patch(KVM: selftests: Unify the makefile rule for split targets) 
-    since Paolo's patch had included the fix
-  * Added new patch(05/11) to include header file vdso/processor.h from linux
-    source tree to leverage the cpu_relax() definition - Conor/Andrew
-  * Added new patch(11/11) to enable user configuration of timer error margin
-    parameter which alleviate the intermitent failure in stress test - Andrew
-  * Other minor fixes per Andrew's comments
+ tools/testing/selftests/kvm/Makefile | 20 ++++++++++++--------
+ 1 file changed, 12 insertions(+), 8 deletions(-)
 
-Haibo Xu (10):
-  KVM: arm64: selftests: Split arch_timer test code
-  KVM: selftests: Add CONFIG_64BIT definition for the build
-  tools: riscv: Add header file csr.h
-  tools: riscv: Add header file vdso/processor.h
-  KVM: riscv: selftests: Switch to use macro from csr.h
-  KVM: riscv: selftests: Add exception handling support
-  KVM: riscv: selftests: Add guest helper to get vcpu id
-  KVM: riscv: selftests: Change vcpu_has_ext to a common function
-  KVM: riscv: selftests: Add sstc timer test
-  KVM: selftests: Enable tunning of err_margin_us in arch timer test
-
-Paolo Bonzini (1):
-  selftests/kvm: Fix issues with $(SPLIT_TESTS)
-
- tools/arch/riscv/include/asm/csr.h            | 521 ++++++++++++++++++
- tools/arch/riscv/include/asm/vdso/processor.h |  32 ++
- tools/testing/selftests/kvm/Makefile          |  27 +-
- .../selftests/kvm/aarch64/arch_timer.c        | 295 +---------
- tools/testing/selftests/kvm/arch_timer.c      | 259 +++++++++
- .../selftests/kvm/include/aarch64/processor.h |   4 -
- .../selftests/kvm/include/kvm_util_base.h     |   9 +
- .../selftests/kvm/include/riscv/arch_timer.h  |  71 +++
- .../selftests/kvm/include/riscv/processor.h   |  65 ++-
- .../testing/selftests/kvm/include/test_util.h |   2 +
- .../selftests/kvm/include/timer_test.h        |  45 ++
- .../selftests/kvm/lib/riscv/handlers.S        | 101 ++++
- .../selftests/kvm/lib/riscv/processor.c       |  87 +++
- .../testing/selftests/kvm/riscv/arch_timer.c  | 111 ++++
- .../selftests/kvm/riscv/get-reg-list.c        |  11 +-
- 15 files changed, 1333 insertions(+), 307 deletions(-)
- create mode 100644 tools/arch/riscv/include/asm/csr.h
- create mode 100644 tools/arch/riscv/include/asm/vdso/processor.h
- create mode 100644 tools/testing/selftests/kvm/arch_timer.c
- create mode 100644 tools/testing/selftests/kvm/include/riscv/arch_timer.h
- create mode 100644 tools/testing/selftests/kvm/include/timer_test.h
- create mode 100644 tools/testing/selftests/kvm/lib/riscv/handlers.S
- create mode 100644 tools/testing/selftests/kvm/riscv/arch_timer.c
-
+diff --git a/tools/testing/selftests/kvm/Makefile b/tools/testing/selftests/kvm/Makefile
+index 52c59bad7213..2200f06b740b 100644
+--- a/tools/testing/selftests/kvm/Makefile
++++ b/tools/testing/selftests/kvm/Makefile
+@@ -251,32 +251,36 @@ LIBKVM_C_OBJ := $(patsubst %.c, $(OUTPUT)/%.o, $(LIBKVM_C))
+ LIBKVM_S_OBJ := $(patsubst %.S, $(OUTPUT)/%.o, $(LIBKVM_S))
+ LIBKVM_STRING_OBJ := $(patsubst %.c, $(OUTPUT)/%.o, $(LIBKVM_STRING))
+ LIBKVM_OBJS = $(LIBKVM_C_OBJ) $(LIBKVM_S_OBJ) $(LIBKVM_STRING_OBJ)
+-SPLIT_TESTS_TARGETS := $(patsubst %, $(OUTPUT)/%, $(SPLIT_TESTS))
+-SPLIT_TESTS_OBJS := $(patsubst %, $(ARCH_DIR)/%.o, $(SPLIT_TESTS))
++SPLIT_TEST_GEN_PROGS := $(patsubst %, $(OUTPUT)/%, $(SPLIT_TESTS))
++SPLIT_TEST_GEN_OBJ := $(patsubst %, $(OUTPUT)/$(ARCH_DIR)/%.o, $(SPLIT_TESTS))
+ 
+ TEST_GEN_OBJ = $(patsubst %, %.o, $(TEST_GEN_PROGS))
+ TEST_GEN_OBJ += $(patsubst %, %.o, $(TEST_GEN_PROGS_EXTENDED))
+ TEST_DEP_FILES = $(patsubst %.o, %.d, $(TEST_GEN_OBJ))
+ TEST_DEP_FILES += $(patsubst %.o, %.d, $(LIBKVM_OBJS))
+-TEST_DEP_FILES += $(patsubst %.o, %.d, $(SPLIT_TESTS_OBJS))
++TEST_DEP_FILES += $(patsubst %.o, %.d, $(SPLIT_TEST_GEN_OBJ))
+ -include $(TEST_DEP_FILES)
+ 
+-$(TEST_GEN_PROGS) $(TEST_GEN_PROGS_EXTENDED): %: %.o
++x := $(shell mkdir -p $(sort $(OUTPUT)/$(ARCH_DIR) $(dir $(LIBKVM_C_OBJ) $(LIBKVM_S_OBJ))))
++
++$(filter-out $(SPLIT_TEST_GEN_PROGS), $(TEST_GEN_PROGS)) \
++$(TEST_GEN_PROGS_EXTENDED): %: %.o
+ 	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(TARGET_ARCH) $< $(LIBKVM_OBJS) $(LDLIBS) -o $@
+ $(TEST_GEN_OBJ): $(OUTPUT)/%.o: %.c
+ 	$(CC) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c $< -o $@
+ 
+-$(SPLIT_TESTS_TARGETS): %: %.o $(SPLIT_TESTS_OBJS)
++$(SPLIT_TEST_GEN_PROGS): $(OUTPUT)/%: $(OUTPUT)/%.o $(OUTPUT)/$(ARCH_DIR)/%.o
+ 	$(CC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(TARGET_ARCH) $^ $(LDLIBS) -o $@
++$(SPLIT_TEST_GEN_OBJ): $(OUTPUT)/$(ARCH_DIR)/%.o: $(ARCH_DIR)/%.c
++	$(CC) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c $< -o $@
+ 
+ EXTRA_CLEAN += $(GEN_HDRS) \
+ 	       $(LIBKVM_OBJS) \
+-	       $(SPLIT_TESTS_OBJS) \
++	       $(SPLIT_TEST_GEN_OBJ) \
+ 	       $(TEST_DEP_FILES) \
+ 	       $(TEST_GEN_OBJ) \
+ 	       cscope.*
+ 
+-x := $(shell mkdir -p $(sort $(dir $(LIBKVM_C_OBJ) $(LIBKVM_S_OBJ))))
+ $(LIBKVM_C_OBJ): $(OUTPUT)/%.o: %.c $(GEN_HDRS)
+ 	$(CC) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c $< -o $@
+ 
+@@ -290,7 +294,7 @@ $(LIBKVM_STRING_OBJ): $(OUTPUT)/%.o: %.c
+ 	$(CC) $(CFLAGS) $(CPPFLAGS) $(TARGET_ARCH) -c -ffreestanding $< -o $@
+ 
+ x := $(shell mkdir -p $(sort $(dir $(TEST_GEN_PROGS))))
+-$(SPLIT_TESTS_OBJS): $(GEN_HDRS)
++$(SPLIT_TEST_GEN_OBJ): $(GEN_HDRS)
+ $(TEST_GEN_PROGS): $(LIBKVM_OBJS)
+ $(TEST_GEN_PROGS_EXTENDED): $(LIBKVM_OBJS)
+ $(TEST_GEN_OBJ): $(GEN_HDRS)
 -- 
 2.34.1
 
