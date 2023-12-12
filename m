@@ -1,71 +1,102 @@
-From: Eric W. Biederman <ebiederm@xmission.com>
-Date: Mon, 11 Dec 2023 17:50:33 -0600
-Subject: [PATCH v2 1/2] KVM: Use syscore_ops instead of reboot_notifier
- to hook restart/shutdown
-In-Reply-To: <7e30cfc2359dfef39d038e3734f7e5e3d9e82d68.camel@amazon.com>
-	(James Gowans's message of "Mon, 11 Dec 2023 10:27:15 +0000")
-References: <20230512233127.804012-1-seanjc@google.com>
-	<20230512233127.804012-2-seanjc@google.com>
-	<cfed942fc767fa7b2fabc68a3357a7b95bd6a589.camel@amazon.com>
-	<871qbud5f9.fsf@email.froward.int.ebiederm.org>
-	<a02b40d3d9ae5b3037b9a9d5921cfb0144ab5610.camel@amazon.com>
-	<7e30cfc2359dfef39d038e3734f7e5e3d9e82d68.camel@amazon.com>
-Message-ID: <87wmtk9u46.fsf@email.froward.int.ebiederm.org>
+From: Yong-Xuan Wang <yongxuan.wang@sifive.com>
+Date: Tue, 12 Dec 2023 05:34:59 +0000
+Subject: [PATCH 1/1] RISCV: KVM: should not be interrupted when update the external interrupt pending
+Message-ID: <20231212053501.12054-1-yongxuan.wang@sifive.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-"Gowans, James" <jgowans@amazon.com> writes:
+The emulated IMSIC update the external interrupt pending depending on the
+value of eidelivery and topei. It might lose an interrupt when it is
+interrupted before setting the new value to the pending status.
 
-> On Mon, 2023-12-11 at 09:54 +0200, James Gowans wrote:
->> > 
->> > What problem are you running into with your rebase that worked with
->> > reboot notifiers that is not working with syscore_shutdown?
->> 
->> Prior to this commit [1] which changed KVM from reboot notifiers to
->> syscore_ops, KVM's reboot notifier shutdown callback was invoked on
->> kexec via kernel_restart_prepare.
->> 
->> After this commit, KVM is not being shut down because currently the
->> kexec flow does not call syscore_shutdown.
->
-> I think I missed what you're asking here; you're asking for a reproducer
-> for the specific failure? 
->
-> 1. Launch a QEMU VM with -enable-kvm flag
->
-> 2. Do an immediate (-f flag) kexec:
-> kexec -f --reuse-cmdline ./bzImage 
->
-> Somewhere after doing the RET to new kernel in the relocate_kernel asm
-> function the new kernel starts triple faulting; I can't exactly figure
-> out where but I think it has to do with the new kernel trying to modify
-> CR3 while the VMXE bit is still set in CR4 causing the triple fault.
->
-> If KVM has been shut down via the shutdown callback, or alternatively if
-> the QEMU process has actually been killed first (by not doing a -f exec)
-> then the VMXE bit is clear and the kexec goes smoothly.
->
-> So, TL;DR: kexec -f use to work with a KVM VM active, now it goes into a
-> triple fault crash.
+For example, when VCPU0 sends an IPI to VCPU1 via IMSIC:
 
-You mentioned I rebase so I thought your were backporting kernel patches.
-By rebase do you mean you porting your userspace to a newer kernel?
+VCPU0                           VCPU1
 
+                                CSRSWAP topei = 0
+                                The VCPU1 has claimed all the external
+                                interrupt in its interrupt handler.
 
-In any event I believe the bug with respect to kexec was introduced in
-commit 6f389a8f1dd2 ("PM / reboot: call syscore_shutdown() after
-disable_nonboot_cpus()").  That is where syscore_shutdown was removed
-from kernel_restart_prepare().
+                                topei of VCPU1's IMSIC = 0
 
-At this point it looks like someone just needs to add the missing
-syscore_shutdown call into kernel_kexec() right after
-migrate_to_reboot_cpu() is called.
+set pending in VCPU1's IMSIC
 
-That said I am not seeing the reboot notifiers being called on the kexec
-path either so your issue with kvm might be deeper.
+topei of VCPU1' IMSIC = 1
 
-Eric
+set the external interrupt
+pending of VCPU1
+
+                                clear the external interrupt pending
+                                of VCPU1
+
+When the VCPU1 switches back to VS mode, it exits the interrupt handler
+because the result of CSRSWAP topei is 0. If there are no other external
+interrupts injected into the VCPU1's IMSIC, VCPU1 will never know this
+pending interrupt unless it initiative read the topei.
+
+If the interruption occurs between updating interrupt pending in IMSIC
+and updating external interrupt pending of VCPU, it will not cause a
+problem. Suppose that the VCPU1 clears the IPI pending in IMSIC right
+after VCPU0 sets the pending, the external interrupt pending of VCPU1
+will not be set because the topei is 0. But when the VCPU1 goes back to
+VS mode, the pending IPI will be reported by the CSRSWAP topei, it will
+not lose this interrupt.
+
+So we only need to make the external interrupt updating procedure as a
+critical section to avoid the problem.
+
+Tested-by: Roy Lin <roy.lin@sifive.com>
+Tested-by: Wayling Chen <wayling.chen@sifive.com>
+Co-developed-by: Vincent Chen <vincent.chen@sifive.com>
+Signed-off-by: Vincent Chen <vincent.chen@sifive.com>
+Signed-off-by: Yong-Xuan Wang <yongxuan.wang@sifive.com>
+---
+ arch/riscv/kvm/aia_imsic.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/arch/riscv/kvm/aia_imsic.c b/arch/riscv/kvm/aia_imsic.c
+index 6cf23b8adb71..0278aa0ca16a 100644
+--- a/arch/riscv/kvm/aia_imsic.c
++++ b/arch/riscv/kvm/aia_imsic.c
+@@ -37,6 +37,8 @@ struct imsic {
+ 	u32 nr_eix;
+ 	u32 nr_hw_eix;
+ 
++	spinlock_t extirq_update_lock;
++
+ 	/*
+ 	 * At any point in time, the register state is in
+ 	 * one of the following places:
+@@ -613,12 +615,17 @@ static void imsic_swfile_extirq_update(struct kvm_vcpu *vcpu)
+ {
+ 	struct imsic *imsic = vcpu->arch.aia_context.imsic_state;
+ 	struct imsic_mrif *mrif = imsic->swfile;
++	unsigned long flags;
++
++	spin_lock_irqsave(&imsic->extirq_update_lock, flags);
+ 
+ 	if (imsic_mrif_atomic_read(mrif, &mrif->eidelivery) &&
+ 	    imsic_mrif_topei(mrif, imsic->nr_eix, imsic->nr_msis))
+ 		kvm_riscv_vcpu_set_interrupt(vcpu, IRQ_VS_EXT);
+ 	else
+ 		kvm_riscv_vcpu_unset_interrupt(vcpu, IRQ_VS_EXT);
++
++	spin_unlock_irqrestore(&imsic->extirq_update_lock, flags);
+ }
+ 
+ static void imsic_swfile_read(struct kvm_vcpu *vcpu, bool clear,
+@@ -1029,6 +1036,7 @@ int kvm_riscv_vcpu_aia_imsic_init(struct kvm_vcpu *vcpu)
+ 	imsic->nr_eix = BITS_TO_U64(imsic->nr_msis);
+ 	imsic->nr_hw_eix = BITS_TO_U64(kvm_riscv_aia_max_ids);
+ 	imsic->vsfile_hgei = imsic->vsfile_cpu = -1;
++	spin_lock_init(&imsic->extirq_update_lock);
+ 
+ 	/* Setup IMSIC SW-file */
+ 	swfile_page = alloc_pages(GFP_KERNEL | __GFP_ZERO,
+-- 
+2.17.1
+
 
