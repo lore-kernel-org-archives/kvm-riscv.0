@@ -1,30 +1,37 @@
-From: Paolo Bonzini <pbonzini@redhat.com>
-Date: Tue, 12 Dec 2023 14:38:02 +0100
-Subject: [PATCH v2 1/2] KVM: Use syscore_ops instead of reboot_notifier to
- hook restart/shutdown
-In-Reply-To: <cf9e15bf3da411ada1c5b2bbdbfdea836029a5e1.camel@amazon.com>
-References: <20230512233127.804012-1-seanjc@google.com> <20230512233127.804012-2-seanjc@google.com>
- <cfed942fc767fa7b2fabc68a3357a7b95bd6a589.camel@amazon.com>
- <871qbud5f9.fsf@email.froward.int.ebiederm.org> <a02b40d3d9ae5b3037b9a9d5921cfb0144ab5610.camel@amazon.com>
- <7e30cfc2359dfef39d038e3734f7e5e3d9e82d68.camel@amazon.com>
- <87wmtk9u46.fsf@email.froward.int.ebiederm.org> <cf9e15bf3da411ada1c5b2bbdbfdea836029a5e1.camel@amazon.com>
-Message-ID: <CABgObfZKOkUn3++g-YMkv7bsmKU77Y88NPBqt-5XoRJFLXDEFA@mail.gmail.com>
+From: Sean Christopherson <seanjc@google.com>
+Date: Tue, 12 Dec 2023 07:28:54 -0800
+Subject: [PATCH v4 10/12] KVM: x86: never write to memory from kvm_vcpu_check_block()
+In-Reply-To: <CALMp9eTT97oDmQT7pxeOMLQbt-371aMtC2Kev+-kWXVRDVrjeg@mail.gmail.com>
+References: <20220921003201.1441511-11-seanjc@google.com> <20231207010302.2240506-1-jmattson@google.com>
+ <ZXHw7tykubfG04Um@google.com> <CALMp9eTT97oDmQT7pxeOMLQbt-371aMtC2Kev+-kWXVRDVrjeg@mail.gmail.com>
+Message-ID: <ZXh8Nq_y_szj1WN0@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Dec 12, 2023 at 9:51?AM Gowans, James <jgowans@amazon.com> wrote:
-> 1. Does hardware_disable_nolock actually need to be done on *every* CPU
-> or would the offlined ones be fine to ignore because they will be reset
-> and the VMXE bit will be cleared that way? With cooperative CPU handover
-> we probably do indeed want to do this on every CPU and not depend on
-> resetting.
+On Sun, Dec 10, 2023, Jim Mattson wrote:
+> On Thu, Dec 7, 2023 at 8:21?AM Sean Christopherson <seanjc@google.com> wrote:
+> > Doh.  We got the less obvious cases and missed the obvious one.
+> >
+> > Ugh, and we also missed a related mess in kvm_guest_apic_has_interrupt().  That
+> > thing should really be folded into vmx_has_nested_events().
+> >
+> > Good gravy.  And vmx_interrupt_blocked() does the wrong thing because that
+> > specifically checks if L1 interrupts are blocked.
+> >
+> > Compile tested only, and definitely needs to be chunked into multiple patches,
+> > but I think something like this mess?
+> 
+> The proposed patch does not fix the problem. In fact, it messes things
+> up so much that I don't get any test results back.
 
-Offlined and onlined CPUs are handled via the CPU hotplug state machine,
-which calls into kvm_online_cpu and kvm_offline_cpu.
+Drat.
 
-Paolo
+> Google has an internal K-U-T test that demonstrates the problem. I
+> will post it soon.
 
+Received, I'll dig in soonish, though "soonish" might unfortunately might mean
+2024.
 
