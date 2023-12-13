@@ -1,90 +1,97 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Wed, 13 Dec 2023 15:53:34 +0100
-Subject: [PATCH v3 1/4] RISC-V: Detect and Enable Svadu Extension Support
-In-Reply-To: <20231102120129.11261-2-yongxuan.wang@sifive.com>
+Date: Wed, 13 Dec 2023 15:59:45 +0100
+Subject: [PATCH v3 4/4] KVM: riscv: selftests: Add Svadu Extension to
+ get-reg-list testt
+In-Reply-To: <20231102120129.11261-5-yongxuan.wang@sifive.com>
 References: <20231102120129.11261-1-yongxuan.wang@sifive.com>
- <20231102120129.11261-2-yongxuan.wang@sifive.com>
-Message-ID: <20231213-0160e1e392ad2172c27807c2@orel>
+ <20231102120129.11261-5-yongxuan.wang@sifive.com>
+Message-ID: <20231213-3b68f487a41af1e3f3c96cf2@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Nov 02, 2023 at 12:01:22PM +0000, Yong-Xuan Wang wrote:
-> Svadu is a RISC-V extension for hardware updating of PTE A/D bits.
+On Thu, Nov 02, 2023 at 12:01:25PM +0000, Yong-Xuan Wang wrote:
+> Update the get-reg-list test to test the Svadu Extension is available
+> for guest OS.
 > 
-> In this patch we detect Svadu extension support from DTB and
-> add arch_has_hw_pte_young() to enable optimization in MGLRU and
-> __wp_page_copy_user() if Svadu extension is available.
-> 
-> Co-developed-by: Jinyu Tang <tjytimi@163.com>
-> Signed-off-by: Jinyu Tang <tjytimi@163.com>
 > Signed-off-by: Yong-Xuan Wang <yongxuan.wang@sifive.com>
-> Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
 > ---
->  arch/riscv/include/asm/csr.h     | 1 +
->  arch/riscv/include/asm/hwcap.h   | 1 +
->  arch/riscv/include/asm/pgtable.h | 6 ++++++
->  arch/riscv/kernel/cpufeature.c   | 1 +
->  4 files changed, 9 insertions(+)
+>  .../testing/selftests/kvm/riscv/get-reg-list.c | 18 ++++++++++++++++++
+>  1 file changed, 18 insertions(+)
 > 
-> diff --git a/arch/riscv/include/asm/csr.h b/arch/riscv/include/asm/csr.h
-> index 777cb8299551..e6935fd48c0c 100644
-> --- a/arch/riscv/include/asm/csr.h
-> +++ b/arch/riscv/include/asm/csr.h
-> @@ -194,6 +194,7 @@
->  /* xENVCFG flags */
->  #define ENVCFG_STCE			(_AC(1, ULL) << 63)
->  #define ENVCFG_PBMTE			(_AC(1, ULL) << 62)
-> +#define ENVCFG_ADUE			(_AC(1, ULL) << 61)
->  #define ENVCFG_CBZE			(_AC(1, UL) << 7)
->  #define ENVCFG_CBCFE			(_AC(1, UL) << 6)
->  #define ENVCFG_CBIE_SHIFT		4
-> diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
-> index b7b58258f6c7..1013661d6516 100644
-> --- a/arch/riscv/include/asm/hwcap.h
-> +++ b/arch/riscv/include/asm/hwcap.h
-> @@ -58,6 +58,7 @@
->  #define RISCV_ISA_EXT_ZICSR		40
->  #define RISCV_ISA_EXT_ZIFENCEI		41
->  #define RISCV_ISA_EXT_ZIHPM		42
-> +#define RISCV_ISA_EXT_SVADU		43
+> diff --git a/tools/testing/selftests/kvm/riscv/get-reg-list.c b/tools/testing/selftests/kvm/riscv/get-reg-list.c
+> index 9f99ea42f45f..972538d76f48 100644
+> --- a/tools/testing/selftests/kvm/riscv/get-reg-list.c
+> +++ b/tools/testing/selftests/kvm/riscv/get-reg-list.c
+> @@ -49,6 +49,7 @@ bool filter_reg(__u64 reg)
+>  	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZICSR:
+>  	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZIFENCEI:
+>  	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZIHPM:
+> +	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_SVADU:
+>  		return true;
+>  	/* AIA registers are always available when Ssaia can't be disabled */
+>  	case KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_AIA | KVM_REG_RISCV_CSR_AIA_REG(siselect):
+> @@ -340,6 +341,7 @@ static const char *isa_ext_id_to_str(__u64 id)
+>  		"KVM_RISCV_ISA_EXT_ZICSR",
+>  		"KVM_RISCV_ISA_EXT_ZIFENCEI",
+>  		"KVM_RISCV_ISA_EXT_ZIHPM",
+> +		"KVM_RISCV_ISA_EXT_SVADU",
+>  	};
 >  
->  #define RISCV_ISA_EXT_MAX		64
+>  	if (reg_off >= ARRAY_SIZE(kvm_isa_ext_reg_name)) {
+> @@ -700,6 +702,10 @@ static __u64 fp_d_regs[] = {
+>  	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_D,
+>  };
 >  
-> diff --git a/arch/riscv/include/asm/pgtable.h b/arch/riscv/include/asm/pgtable.h
-> index b2ba3f79cfe9..028b700cd27b 100644
-> --- a/arch/riscv/include/asm/pgtable.h
-> +++ b/arch/riscv/include/asm/pgtable.h
-> @@ -629,6 +629,12 @@ static inline pgprot_t pgprot_writecombine(pgprot_t _prot)
->  	return __pgprot(prot);
->  }
->  
-> +#define arch_has_hw_pte_young arch_has_hw_pte_young
-> +static inline bool arch_has_hw_pte_young(void)
-> +{
-> +	return riscv_has_extension_unlikely(RISCV_ISA_EXT_SVADU);
-> +}
+> +static __u64 svadu_regs[] = {
+> +	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_SVADU,
+> +};
 > +
->  /*
->   * THP functions
->   */
-> diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
-> index 1cfbba65d11a..ead378c04991 100644
-> --- a/arch/riscv/kernel/cpufeature.c
-> +++ b/arch/riscv/kernel/cpufeature.c
-> @@ -178,6 +178,7 @@ const struct riscv_isa_ext_data riscv_isa_ext[] = {
->  	__RISCV_ISA_EXT_DATA(ssaia, RISCV_ISA_EXT_SSAIA),
->  	__RISCV_ISA_EXT_DATA(sscofpmf, RISCV_ISA_EXT_SSCOFPMF),
->  	__RISCV_ISA_EXT_DATA(sstc, RISCV_ISA_EXT_SSTC),
-> +	__RISCV_ISA_EXT_DATA(svadu, RISCV_ISA_EXT_SVADU),
->  	__RISCV_ISA_EXT_DATA(svinval, RISCV_ISA_EXT_SVINVAL),
->  	__RISCV_ISA_EXT_DATA(svnapot, RISCV_ISA_EXT_SVNAPOT),
->  	__RISCV_ISA_EXT_DATA(svpbmt, RISCV_ISA_EXT_SVPBMT),
+>  #define BASE_SUBLIST \
+>  	{"base", .regs = base_regs, .regs_n = ARRAY_SIZE(base_regs), \
+>  	 .skips_set = base_skips_set, .skips_set_n = ARRAY_SIZE(base_skips_set),}
+> @@ -739,6 +745,9 @@ static __u64 fp_d_regs[] = {
+>  #define FP_D_REGS_SUBLIST \
+>  	{"fp_d", .feature = KVM_RISCV_ISA_EXT_D, .regs = fp_d_regs, \
+>  		.regs_n = ARRAY_SIZE(fp_d_regs),}
+> +#define SVADU_REGS_SUBLIST \
+> +	{"svadu", .feature = KVM_RISCV_ISA_EXT_SVADU, .regs = svadu_regs, \
+> +		.regs_n = ARRAY_SIZE(svadu_regs),}
+>  
+>  static struct vcpu_reg_list h_config = {
+>  	.sublists = {
+> @@ -876,6 +885,14 @@ static struct vcpu_reg_list fp_d_config = {
+>  	},
+>  };
+>  
+> +static struct vcpu_reg_list svadu_config = {
+> +	.sublists = {
+> +	BASE_SUBLIST,
+> +	SVADU_REGS_SUBLIST,
+> +	{0},
+> +	},
+> +};
+> +
+>  struct vcpu_reg_list *vcpu_configs[] = {
+>  	&h_config,
+>  	&zicbom_config,
+> @@ -894,5 +911,6 @@ struct vcpu_reg_list *vcpu_configs[] = {
+>  	&aia_config,
+>  	&fp_f_config,
+>  	&fp_d_config,
+> +	&svadu_config,
+>  };
+>  int vcpu_configs_n = ARRAY_SIZE(vcpu_configs);
 > -- 
 > 2.17.1
 >
 
-Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+We should rebase this on [1] since it changes sublist management.
+
+[1] https://lore.kernel.org/all/20231128145357.413321-2-apatel at ventanamicro.com/
+
+Thanks,
+drew
 
