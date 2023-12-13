@@ -1,112 +1,129 @@
-From: Yong-Xuan Wang <yongxuan.wang@sifive.com>
-Date: Wed, 13 Dec 2023 06:16:09 +0000
-Subject: [PATCH v2 1/1] RISCV: KVM: update external interrupt atomically for IMSIC swfile
-Message-ID: <20231213061610.11100-1-yongxuan.wang@sifive.com>
+From: Anup Patel <apatel@ventanamicro.com>
+Date: Wed, 13 Dec 2023 11:46:19 +0530
+Subject: [PATCH v2 4/5] riscv: kvm: Use SYM_*() assembly macros instead of
+ deprecated ones
+In-Reply-To: <20231024132655.730417-5-cleger@rivosinc.com>
+References: <20231024132655.730417-1-cleger@rivosinc.com> <20231024132655.730417-5-cleger@rivosinc.com>
+Message-ID: <CAK9=C2WJv4PX5FAAPUcttK4UDDNWdyNWmLG_zXwx60WrMgXO8Q@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The emulated IMSIC update the external interrupt pending depending on the
-value of eidelivery and topei. It might lose an interrupt when it is
-interrupted before setting the new value to the pending status.
+On Tue, Oct 24, 2023 at 6:58?PM Cl?ment L?ger <cleger@rivosinc.com> wrote:
+>
+> ENTRY()/END()/WEAK() macros are deprecated and we should make use of the
+> new SYM_*() macros [1] for better annotation of symbols. Replace the
+> deprecated ones with the new ones and fix wrong usage of END()/ENDPROC()
+> to correctly describe the symbols.
+>
+> [1] https://docs.kernel.org/core-api/asm-annotations.html
+>
+> Signed-off-by: Cl?ment L?ger <cleger@rivosinc.com>
+> Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
 
-For example, when VCPU0 sends an IPI to VCPU1 via IMSIC:
+Queued this patch for Linux-6.8
 
-VCPU0                           VCPU1
+Thanks,
+Anup
 
-                                CSRSWAP topei = 0
-                                The VCPU1 has claimed all the external
-                                interrupt in its interrupt handler.
 
-                                topei of VCPU1's IMSIC = 0
-
-set pending in VCPU1's IMSIC
-
-topei of VCPU1' IMSIC = 1
-
-set the external interrupt
-pending of VCPU1
-
-                                clear the external interrupt pending
-                                of VCPU1
-
-When the VCPU1 switches back to VS mode, it exits the interrupt handler
-because the result of CSRSWAP topei is 0. If there are no other external
-interrupts injected into the VCPU1's IMSIC, VCPU1 will never know this
-pending interrupt unless it initiative read the topei.
-
-If the interruption occurs between updating interrupt pending in IMSIC
-and updating external interrupt pending of VCPU, it will not cause a
-problem. Suppose that the VCPU1 clears the IPI pending in IMSIC right
-after VCPU0 sets the pending, the external interrupt pending of VCPU1
-will not be set because the topei is 0. But when the VCPU1 goes back to
-VS mode, the pending IPI will be reported by the CSRSWAP topei, it will
-not lose this interrupt.
-
-So we only need to make the external interrupt updating procedure as a
-critical section to avoid the problem.
-
-Fixes: db8b7e97d613 ("RISC-V: KVM: Add in-kernel virtualization of AIA IMSIC")
-Tested-by: Roy Lin <roy.lin@sifive.com>
-Tested-by: Wayling Chen <wayling.chen@sifive.com>
-Co-developed-by: Vincent Chen <vincent.chen@sifive.com>
-Signed-off-by: Vincent Chen <vincent.chen@sifive.com>
-Signed-off-by: Yong-Xuan Wang <yongxuan.wang@sifive.com>
----
-Changelog
-v2:
-- rename the variable and add a short comment in the code
----
- arch/riscv/kvm/aia_imsic.c | 13 +++++++++++++
- 1 file changed, 13 insertions(+)
-
-diff --git a/arch/riscv/kvm/aia_imsic.c b/arch/riscv/kvm/aia_imsic.c
-index 6cf23b8adb71..e808723a85f1 100644
---- a/arch/riscv/kvm/aia_imsic.c
-+++ b/arch/riscv/kvm/aia_imsic.c
-@@ -55,6 +55,7 @@ struct imsic {
- 	/* IMSIC SW-file */
- 	struct imsic_mrif *swfile;
- 	phys_addr_t swfile_pa;
-+	spinlock_t swfile_extirq_lock;
- };
- 
- #define imsic_vs_csr_read(__c)			\
-@@ -613,12 +614,23 @@ static void imsic_swfile_extirq_update(struct kvm_vcpu *vcpu)
- {
- 	struct imsic *imsic = vcpu->arch.aia_context.imsic_state;
- 	struct imsic_mrif *mrif = imsic->swfile;
-+	unsigned long flags;
-+
-+	/*
-+	 * The critical section is necessary during external interrupt
-+	 * updates to avoid the risk of losing interrupts due to potential
-+	 * interruptions between reading topei and updating pending status.
-+	 */
-+
-+	spin_lock_irqsave(&imsic->swfile_extirq_lock, flags);
- 
- 	if (imsic_mrif_atomic_read(mrif, &mrif->eidelivery) &&
- 	    imsic_mrif_topei(mrif, imsic->nr_eix, imsic->nr_msis))
- 		kvm_riscv_vcpu_set_interrupt(vcpu, IRQ_VS_EXT);
- 	else
- 		kvm_riscv_vcpu_unset_interrupt(vcpu, IRQ_VS_EXT);
-+
-+	spin_unlock_irqrestore(&imsic->swfile_extirq_lock, flags);
- }
- 
- static void imsic_swfile_read(struct kvm_vcpu *vcpu, bool clear,
-@@ -1039,6 +1051,7 @@ int kvm_riscv_vcpu_aia_imsic_init(struct kvm_vcpu *vcpu)
- 	}
- 	imsic->swfile = page_to_virt(swfile_page);
- 	imsic->swfile_pa = page_to_phys(swfile_page);
-+	spin_lock_init(&imsic->swfile_extirq_lock);
- 
- 	/* Setup IO device */
- 	kvm_iodevice_init(&imsic->iodev, &imsic_iodoev_ops);
--- 
-2.17.1
-
+> ---
+>  arch/riscv/kvm/vcpu_switch.S | 28 ++++++++++++----------------
+>  1 file changed, 12 insertions(+), 16 deletions(-)
+>
+> diff --git a/arch/riscv/kvm/vcpu_switch.S b/arch/riscv/kvm/vcpu_switch.S
+> index d74df8eb4d71..8b18473780ac 100644
+> --- a/arch/riscv/kvm/vcpu_switch.S
+> +++ b/arch/riscv/kvm/vcpu_switch.S
+> @@ -15,7 +15,7 @@
+>         .altmacro
+>         .option norelax
+>
+> -ENTRY(__kvm_riscv_switch_to)
+> +SYM_FUNC_START(__kvm_riscv_switch_to)
+>         /* Save Host GPRs (except A0 and T0-T6) */
+>         REG_S   ra, (KVM_ARCH_HOST_RA)(a0)
+>         REG_S   sp, (KVM_ARCH_HOST_SP)(a0)
+> @@ -208,9 +208,9 @@ __kvm_switch_return:
+>
+>         /* Return to C code */
+>         ret
+> -ENDPROC(__kvm_riscv_switch_to)
+> +SYM_FUNC_END(__kvm_riscv_switch_to)
+>
+> -ENTRY(__kvm_riscv_unpriv_trap)
+> +SYM_CODE_START(__kvm_riscv_unpriv_trap)
+>         /*
+>          * We assume that faulting unpriv load/store instruction is
+>          * 4-byte long and blindly increment SEPC by 4.
+> @@ -231,12 +231,10 @@ ENTRY(__kvm_riscv_unpriv_trap)
+>         csrr    a1, CSR_HTINST
+>         REG_S   a1, (KVM_ARCH_TRAP_HTINST)(a0)
+>         sret
+> -ENDPROC(__kvm_riscv_unpriv_trap)
+> +SYM_CODE_END(__kvm_riscv_unpriv_trap)
+>
+>  #ifdef CONFIG_FPU
+> -       .align 3
+> -       .global __kvm_riscv_fp_f_save
+> -__kvm_riscv_fp_f_save:
+> +SYM_FUNC_START(__kvm_riscv_fp_f_save)
+>         csrr t2, CSR_SSTATUS
+>         li t1, SR_FS
+>         csrs CSR_SSTATUS, t1
+> @@ -276,10 +274,9 @@ __kvm_riscv_fp_f_save:
+>         sw t0, KVM_ARCH_FP_F_FCSR(a0)
+>         csrw CSR_SSTATUS, t2
+>         ret
+> +SYM_FUNC_END(__kvm_riscv_fp_f_save)
+>
+> -       .align 3
+> -       .global __kvm_riscv_fp_d_save
+> -__kvm_riscv_fp_d_save:
+> +SYM_FUNC_START(__kvm_riscv_fp_d_save)
+>         csrr t2, CSR_SSTATUS
+>         li t1, SR_FS
+>         csrs CSR_SSTATUS, t1
+> @@ -319,10 +316,9 @@ __kvm_riscv_fp_d_save:
+>         sw t0, KVM_ARCH_FP_D_FCSR(a0)
+>         csrw CSR_SSTATUS, t2
+>         ret
+> +SYM_FUNC_END(__kvm_riscv_fp_d_save)
+>
+> -       .align 3
+> -       .global __kvm_riscv_fp_f_restore
+> -__kvm_riscv_fp_f_restore:
+> +SYM_FUNC_START(__kvm_riscv_fp_f_restore)
+>         csrr t2, CSR_SSTATUS
+>         li t1, SR_FS
+>         lw t0, KVM_ARCH_FP_F_FCSR(a0)
+> @@ -362,10 +358,9 @@ __kvm_riscv_fp_f_restore:
+>         fscsr t0
+>         csrw CSR_SSTATUS, t2
+>         ret
+> +SYM_FUNC_END(__kvm_riscv_fp_f_restore)
+>
+> -       .align 3
+> -       .global __kvm_riscv_fp_d_restore
+> -__kvm_riscv_fp_d_restore:
+> +SYM_FUNC_START(__kvm_riscv_fp_d_restore)
+>         csrr t2, CSR_SSTATUS
+>         li t1, SR_FS
+>         lw t0, KVM_ARCH_FP_D_FCSR(a0)
+> @@ -405,4 +400,5 @@ __kvm_riscv_fp_d_restore:
+>         fscsr t0
+>         csrw CSR_SSTATUS, t2
+>         ret
+> +SYM_FUNC_END(__kvm_riscv_fp_d_restore)
+>  #endif
+> --
+> 2.42.0
+>
+>
+> --
+> kvm-riscv mailing list
+> kvm-riscv at lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/kvm-riscv
 
