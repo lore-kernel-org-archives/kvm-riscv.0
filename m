@@ -1,9 +1,9 @@
 From: Anup Patel <anup@brainfault.org>
-Date: Wed, 13 Dec 2023 22:53:51 +0530
-Subject: [PATCH v2 1/6] RISC-V: KVM: Don't add SBI multi regs in get-reg-list
-In-Reply-To: <20231213170951.93453-9-ajones@ventanamicro.com>
-References: <20231213170951.93453-8-ajones@ventanamicro.com> <20231213170951.93453-9-ajones@ventanamicro.com>
-Message-ID: <CAAhSdy0Moex5DnpDUZWTOOKDRbr9GF7NDRCf+x78pLqh=ZLRzg@mail.gmail.com>
+Date: Wed, 13 Dec 2023 22:54:13 +0530
+Subject: [PATCH v2 2/6] KVM: riscv: selftests: Drop SBI multi registers
+In-Reply-To: <20231213170951.93453-10-ajones@ventanamicro.com>
+References: <20231213170951.93453-8-ajones@ventanamicro.com> <20231213170951.93453-10-ajones@ventanamicro.com>
+Message-ID: <CAAhSdy1ch3gVvDvCPPtuS0Y2MQcmstV1a26TBCd2vNVHAoGkAw@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -12,12 +12,12 @@ Content-Transfer-Encoding: 7bit
 
 On Wed, Dec 13, 2023 at 10:39?PM Andrew Jones <ajones@ventanamicro.com> wrote:
 >
-> The multi regs are derived from the single registers. Only list the
-> single registers in get-reg-list. This also makes the SBI extension
-> register listing consistent with the ISA extension register listing.
+> These registers are no longer getting added to get-reg-list.
+> We keep sbi_ext_multi_id_to_str() for printing, even though
+> we don't expect it to normally be used, because it may be
+> useful for debug.
 >
 > Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
-> Reviewed-by: Haibo Xu <haibo1.xu@intel.com>
 
 Looks good to me.
 
@@ -27,67 +27,22 @@ Regards,
 Anup
 
 > ---
->  arch/riscv/kvm/vcpu_onereg.c | 36 ++----------------------------------
->  1 file changed, 2 insertions(+), 34 deletions(-)
+>  tools/testing/selftests/kvm/riscv/get-reg-list.c | 2 --
+>  1 file changed, 2 deletions(-)
 >
-> diff --git a/arch/riscv/kvm/vcpu_onereg.c b/arch/riscv/kvm/vcpu_onereg.c
-> index f8c9fa0c03c5..f9bfa8a5db21 100644
-> --- a/arch/riscv/kvm/vcpu_onereg.c
-> +++ b/arch/riscv/kvm/vcpu_onereg.c
-> @@ -933,20 +933,12 @@ static inline unsigned long num_isa_ext_regs(const struct kvm_vcpu *vcpu)
+> diff --git a/tools/testing/selftests/kvm/riscv/get-reg-list.c b/tools/testing/selftests/kvm/riscv/get-reg-list.c
+> index 5d86c761784e..27d07a32a1ef 100644
+> --- a/tools/testing/selftests/kvm/riscv/get-reg-list.c
+> +++ b/tools/testing/selftests/kvm/riscv/get-reg-list.c
+> @@ -571,8 +571,6 @@ static __u64 base_regs[] = {
+>         KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_SINGLE | KVM_RISCV_SBI_EXT_EXPERIMENTAL,
+>         KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_SINGLE | KVM_RISCV_SBI_EXT_VENDOR,
+>         KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_SINGLE | KVM_RISCV_SBI_EXT_DBCN,
+> -       KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_MULTI_EN | 0,
+> -       KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_MULTI_DIS | 0,
+>  };
 >
->  static inline unsigned long num_sbi_ext_regs(void)
->  {
-> -       /*
-> -        * number of KVM_REG_RISCV_SBI_SINGLE +
-> -        * 2 x (number of KVM_REG_RISCV_SBI_MULTI)
-> -        */
-> -       return KVM_RISCV_SBI_EXT_MAX + 2*(KVM_REG_RISCV_SBI_MULTI_REG_LAST+1);
-> +       return KVM_RISCV_SBI_EXT_MAX;
->  }
->
->  static int copy_sbi_ext_reg_indices(u64 __user *uindices)
->  {
-> -       int n;
-> -
-> -       /* copy KVM_REG_RISCV_SBI_SINGLE */
-> -       n = KVM_RISCV_SBI_EXT_MAX;
-> -       for (int i = 0; i < n; i++) {
-> +       for (int i = 0; i < KVM_RISCV_SBI_EXT_MAX; i++) {
->                 u64 size = IS_ENABLED(CONFIG_32BIT) ?
->                            KVM_REG_SIZE_U32 : KVM_REG_SIZE_U64;
->                 u64 reg = KVM_REG_RISCV | size | KVM_REG_RISCV_SBI_EXT |
-> @@ -959,30 +951,6 @@ static int copy_sbi_ext_reg_indices(u64 __user *uindices)
->                 }
->         }
->
-> -       /* copy KVM_REG_RISCV_SBI_MULTI */
-> -       n = KVM_REG_RISCV_SBI_MULTI_REG_LAST + 1;
-> -       for (int i = 0; i < n; i++) {
-> -               u64 size = IS_ENABLED(CONFIG_32BIT) ?
-> -                          KVM_REG_SIZE_U32 : KVM_REG_SIZE_U64;
-> -               u64 reg = KVM_REG_RISCV | size | KVM_REG_RISCV_SBI_EXT |
-> -                         KVM_REG_RISCV_SBI_MULTI_EN | i;
-> -
-> -               if (uindices) {
-> -                       if (put_user(reg, uindices))
-> -                               return -EFAULT;
-> -                       uindices++;
-> -               }
-> -
-> -               reg = KVM_REG_RISCV | size | KVM_REG_RISCV_SBI_EXT |
-> -                         KVM_REG_RISCV_SBI_MULTI_DIS | i;
-> -
-> -               if (uindices) {
-> -                       if (put_user(reg, uindices))
-> -                               return -EFAULT;
-> -                       uindices++;
-> -               }
-> -       }
-> -
->         return num_sbi_ext_regs();
->  }
->
+>  /*
 > --
 > 2.43.0
 >
