@@ -1,73 +1,94 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Wed, 13 Dec 2023 18:19:37 +0100
-Subject: [PATCH 03/15] KVM: riscv: selftests: Add Zbc extension to
- get-reg-list test
-In-Reply-To: <20231128145357.413321-4-apatel@ventanamicro.com>
-References: <20231128145357.413321-1-apatel@ventanamicro.com>
- <20231128145357.413321-4-apatel@ventanamicro.com>
-Message-ID: <20231213-1082f104e8ba65ee3db6aa3a@orel>
+From: Anup Patel <anup@brainfault.org>
+Date: Wed, 13 Dec 2023 22:53:51 +0530
+Subject: [PATCH v2 1/6] RISC-V: KVM: Don't add SBI multi regs in get-reg-list
+In-Reply-To: <20231213170951.93453-9-ajones@ventanamicro.com>
+References: <20231213170951.93453-8-ajones@ventanamicro.com> <20231213170951.93453-9-ajones@ventanamicro.com>
+Message-ID: <CAAhSdy0Moex5DnpDUZWTOOKDRbr9GF7NDRCf+x78pLqh=ZLRzg@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Nov 28, 2023 at 08:23:45PM +0530, Anup Patel wrote:
-> The KVM RISC-V allows Zbc extension for Guest/VM so let us add
-> this extension to get-reg-list test.
-> 
-> Signed-off-by: Anup Patel <apatel@ventanamicro.com>
-> ---
->  tools/testing/selftests/kvm/riscv/get-reg-list.c | 4 ++++
->  1 file changed, 4 insertions(+)
-> 
-> diff --git a/tools/testing/selftests/kvm/riscv/get-reg-list.c b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-> index b6b4b6d7dacd..4b75b011f2d8 100644
-> --- a/tools/testing/selftests/kvm/riscv/get-reg-list.c
-> +++ b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-> @@ -44,6 +44,7 @@ bool filter_reg(__u64 reg)
->  	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_SVPBMT:
->  	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZBA:
->  	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZBB:
-> +	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZBC:
-
-Assuming this gets rebased on [1] then this line becomes
-
-  case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZBC:
-
-[1] https://lore.kernel.org/linux-riscv/20231213170951.93453-8-ajones at ventanamicro.com/
-
->  	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZBS:
->  	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZICBOM:
->  	case KVM_REG_RISCV_ISA_EXT | KVM_RISCV_ISA_EXT_ZICBOZ:
-> @@ -361,6 +362,7 @@ static const char *isa_ext_id_to_str(const char *prefix, __u64 id)
->  		KVM_ISA_EXT_ARR(SVPBMT),
->  		KVM_ISA_EXT_ARR(ZBA),
->  		KVM_ISA_EXT_ARR(ZBB),
-> +		KVM_ISA_EXT_ARR(ZBC),
->  		KVM_ISA_EXT_ARR(ZBS),
->  		KVM_ISA_EXT_ARR(ZICBOM),
->  		KVM_ISA_EXT_ARR(ZICBOZ),
-> @@ -739,6 +741,7 @@ KVM_ISA_EXT_SIMPLE_CONFIG(svnapot, SVNAPOT);
->  KVM_ISA_EXT_SIMPLE_CONFIG(svpbmt, SVPBMT);
->  KVM_ISA_EXT_SIMPLE_CONFIG(zba, ZBA);
->  KVM_ISA_EXT_SIMPLE_CONFIG(zbb, ZBB);
-> +KVM_ISA_EXT_SIMPLE_CONFIG(zbc, ZBC);
->  KVM_ISA_EXT_SIMPLE_CONFIG(zbs, ZBS);
->  KVM_ISA_EXT_SUBLIST_CONFIG(zicbom, ZICBOM);
->  KVM_ISA_EXT_SUBLIST_CONFIG(zicboz, ZICBOZ);
-> @@ -761,6 +764,7 @@ struct vcpu_reg_list *vcpu_configs[] = {
->  	&config_svpbmt,
->  	&config_zba,
->  	&config_zbb,
-> +	&config_zbc,
->  	&config_zbs,
->  	&config_zicbom,
->  	&config_zicboz,
-> -- 
-> 2.34.1
+On Wed, Dec 13, 2023 at 10:39?PM Andrew Jones <ajones@ventanamicro.com> wrote:
 >
+> The multi regs are derived from the single registers. Only list the
+> single registers in get-reg-list. This also makes the SBI extension
+> register listing consistent with the ISA extension register listing.
+>
+> Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
+> Reviewed-by: Haibo Xu <haibo1.xu@intel.com>
 
-Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+Looks good to me.
 
+Reviewed-by: Anup Patel <anup@brainfault.org>
+
+Regards,
+Anup
+
+> ---
+>  arch/riscv/kvm/vcpu_onereg.c | 36 ++----------------------------------
+>  1 file changed, 2 insertions(+), 34 deletions(-)
+>
+> diff --git a/arch/riscv/kvm/vcpu_onereg.c b/arch/riscv/kvm/vcpu_onereg.c
+> index f8c9fa0c03c5..f9bfa8a5db21 100644
+> --- a/arch/riscv/kvm/vcpu_onereg.c
+> +++ b/arch/riscv/kvm/vcpu_onereg.c
+> @@ -933,20 +933,12 @@ static inline unsigned long num_isa_ext_regs(const struct kvm_vcpu *vcpu)
+>
+>  static inline unsigned long num_sbi_ext_regs(void)
+>  {
+> -       /*
+> -        * number of KVM_REG_RISCV_SBI_SINGLE +
+> -        * 2 x (number of KVM_REG_RISCV_SBI_MULTI)
+> -        */
+> -       return KVM_RISCV_SBI_EXT_MAX + 2*(KVM_REG_RISCV_SBI_MULTI_REG_LAST+1);
+> +       return KVM_RISCV_SBI_EXT_MAX;
+>  }
+>
+>  static int copy_sbi_ext_reg_indices(u64 __user *uindices)
+>  {
+> -       int n;
+> -
+> -       /* copy KVM_REG_RISCV_SBI_SINGLE */
+> -       n = KVM_RISCV_SBI_EXT_MAX;
+> -       for (int i = 0; i < n; i++) {
+> +       for (int i = 0; i < KVM_RISCV_SBI_EXT_MAX; i++) {
+>                 u64 size = IS_ENABLED(CONFIG_32BIT) ?
+>                            KVM_REG_SIZE_U32 : KVM_REG_SIZE_U64;
+>                 u64 reg = KVM_REG_RISCV | size | KVM_REG_RISCV_SBI_EXT |
+> @@ -959,30 +951,6 @@ static int copy_sbi_ext_reg_indices(u64 __user *uindices)
+>                 }
+>         }
+>
+> -       /* copy KVM_REG_RISCV_SBI_MULTI */
+> -       n = KVM_REG_RISCV_SBI_MULTI_REG_LAST + 1;
+> -       for (int i = 0; i < n; i++) {
+> -               u64 size = IS_ENABLED(CONFIG_32BIT) ?
+> -                          KVM_REG_SIZE_U32 : KVM_REG_SIZE_U64;
+> -               u64 reg = KVM_REG_RISCV | size | KVM_REG_RISCV_SBI_EXT |
+> -                         KVM_REG_RISCV_SBI_MULTI_EN | i;
+> -
+> -               if (uindices) {
+> -                       if (put_user(reg, uindices))
+> -                               return -EFAULT;
+> -                       uindices++;
+> -               }
+> -
+> -               reg = KVM_REG_RISCV | size | KVM_REG_RISCV_SBI_EXT |
+> -                         KVM_REG_RISCV_SBI_MULTI_DIS | i;
+> -
+> -               if (uindices) {
+> -                       if (put_user(reg, uindices))
+> -                               return -EFAULT;
+> -                       uindices++;
+> -               }
+> -       }
+> -
+>         return num_sbi_ext_regs();
+>  }
+>
+> --
+> 2.43.0
+>
 
