@@ -1,77 +1,39 @@
 From: Alexandre Ghiti <alexghiti@rivosinc.com>
-Date: Wed, 13 Dec 2023 21:29:59 +0100
-Subject: [PATCH v2 2/4] mm: Introduce pudp/p4dp/pgdp_get() functions
+Date: Wed, 13 Dec 2023 21:30:00 +0100
+Subject: [PATCH v2 3/4] riscv: mm: Only compile pgtable.c if MMU
 In-Reply-To: <20231213203001.179237-1-alexghiti@rivosinc.com>
 References: <20231213203001.179237-1-alexghiti@rivosinc.com>
-Message-ID: <20231213203001.179237-3-alexghiti@rivosinc.com>
+Message-ID: <20231213203001.179237-4-alexghiti@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Instead of directly dereferencing page tables entries, which can cause
-issues (see commit 20a004e7b017 ("arm64: mm: Use READ_ONCE/WRITE_ONCE when
-accessing page tables"), let's introduce new functions to get the
-pud/p4d/pgd entries (the pte and pmd versions already exist).
-
-Note that arm pgd_t is actually an array so pgdp_get() is defined as a
-macro to avoid a build error.
-
-Those new functions will be used in subsequent commits by the riscv
-architecture.
+All functions defined in there depend on MMU, so no need to compile it
+for !MMU configs.
 
 Signed-off-by: Alexandre Ghiti <alexghiti@rivosinc.com>
 ---
- arch/arm/include/asm/pgtable.h |  2 ++
- include/linux/pgtable.h        | 21 +++++++++++++++++++++
- 2 files changed, 23 insertions(+)
+ arch/riscv/mm/Makefile | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/arch/arm/include/asm/pgtable.h b/arch/arm/include/asm/pgtable.h
-index 16b02f44c7d3..d657b84b6bf7 100644
---- a/arch/arm/include/asm/pgtable.h
-+++ b/arch/arm/include/asm/pgtable.h
-@@ -151,6 +151,8 @@ extern pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
+diff --git a/arch/riscv/mm/Makefile b/arch/riscv/mm/Makefile
+index 3a4dfc8babcf..2c869f8026a8 100644
+--- a/arch/riscv/mm/Makefile
++++ b/arch/riscv/mm/Makefile
+@@ -13,10 +13,9 @@ endif
+ KCOV_INSTRUMENT_init.o := n
  
- extern pgd_t swapper_pg_dir[PTRS_PER_PGD];
+ obj-y += init.o
+-obj-$(CONFIG_MMU) += extable.o fault.o pageattr.o
++obj-$(CONFIG_MMU) += extable.o fault.o pageattr.o pgtable.o
+ obj-y += cacheflush.o
+ obj-y += context.o
+-obj-y += pgtable.o
+ obj-y += pmem.o
  
-+#define pgdp_get(pgpd)		READ_ONCE(*pgdp)
-+
- #define pud_page(pud)		pmd_page(__pmd(pud_val(pud)))
- #define pud_write(pud)		pmd_write(__pmd(pud_val(pud)))
- 
-diff --git a/include/linux/pgtable.h b/include/linux/pgtable.h
-index af7639c3b0a3..8b7daccd11be 100644
---- a/include/linux/pgtable.h
-+++ b/include/linux/pgtable.h
-@@ -292,6 +292,27 @@ static inline pmd_t pmdp_get(pmd_t *pmdp)
- }
- #endif
- 
-+#ifndef pudp_get
-+static inline pud_t pudp_get(pud_t *pudp)
-+{
-+	return READ_ONCE(*pudp);
-+}
-+#endif
-+
-+#ifndef p4dp_get
-+static inline p4d_t p4dp_get(p4d_t *p4dp)
-+{
-+	return READ_ONCE(*p4dp);
-+}
-+#endif
-+
-+#ifndef pgdp_get
-+static inline pgd_t pgdp_get(pgd_t *pgdp)
-+{
-+	return READ_ONCE(*pgdp);
-+}
-+#endif
-+
- #ifndef __HAVE_ARCH_PTEP_TEST_AND_CLEAR_YOUNG
- static inline int ptep_test_and_clear_young(struct vm_area_struct *vma,
- 					    unsigned long address,
+ ifeq ($(CONFIG_MMU),y)
 -- 
 2.39.2
 
