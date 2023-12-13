@@ -1,105 +1,123 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Wed, 13 Dec 2023 18:36:23 +0100
-Subject: [PATCH 04/15] RISC-V: KVM: Allow scalar crypto extensions for
- Guest/VM
-In-Reply-To: <20231128145357.413321-5-apatel@ventanamicro.com>
-References: <20231128145357.413321-1-apatel@ventanamicro.com>
- <20231128145357.413321-5-apatel@ventanamicro.com>
-Message-ID: <20231213-1c93d927d30feb6d09739e94@orel>
+From: Anup Patel <anup@brainfault.org>
+Date: Wed, 13 Dec 2023 23:06:58 +0530
+Subject: [PATCH v2 4/6] KVM: riscv: selftests: Add RISCV_SBI_EXT_REG
+In-Reply-To: <20231213170951.93453-12-ajones@ventanamicro.com>
+References: <20231213170951.93453-8-ajones@ventanamicro.com> <20231213170951.93453-12-ajones@ventanamicro.com>
+Message-ID: <CAAhSdy0Ctb8vTmyzGGHixihcv68f_-CT_RKqj-iYY0a_V-jaXQ@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Nov 28, 2023 at 08:23:46PM +0530, Anup Patel wrote:
-> We extend the KVM ISA extension ONE_REG interface to allow KVM
-> user space to detect and enable scalar crypto extensions for
-> Guest/VM. This includes extensions Zbkb, Zbkc, Zbkx, Zknd, Zkne,
-> Zknh, Zkr, Zksed, Zksh, and Zkt.
-> 
-> Signed-off-by: Anup Patel <apatel@ventanamicro.com>
-> ---
->  arch/riscv/include/uapi/asm/kvm.h | 10 ++++++++++
->  arch/riscv/kvm/vcpu_onereg.c      | 20 ++++++++++++++++++++
->  2 files changed, 30 insertions(+)
-> 
-> diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
-> index 518b368b41e5..7b54fa215d6d 100644
-> --- a/arch/riscv/include/uapi/asm/kvm.h
-> +++ b/arch/riscv/include/uapi/asm/kvm.h
-> @@ -140,6 +140,16 @@ enum KVM_RISCV_ISA_EXT_ID {
->  	KVM_RISCV_ISA_EXT_SMSTATEEN,
->  	KVM_RISCV_ISA_EXT_ZICOND,
->  	KVM_RISCV_ISA_EXT_ZBC,
-> +	KVM_RISCV_ISA_EXT_ZBKB,
-> +	KVM_RISCV_ISA_EXT_ZBKC,
-> +	KVM_RISCV_ISA_EXT_ZBKX,
-> +	KVM_RISCV_ISA_EXT_ZKND,
-> +	KVM_RISCV_ISA_EXT_ZKNE,
-> +	KVM_RISCV_ISA_EXT_ZKNH,
-> +	KVM_RISCV_ISA_EXT_ZKR,
-> +	KVM_RISCV_ISA_EXT_ZKSED,
-> +	KVM_RISCV_ISA_EXT_ZKSH,
-> +	KVM_RISCV_ISA_EXT_ZKT,
->  	KVM_RISCV_ISA_EXT_MAX,
->  };
->  
-> diff --git a/arch/riscv/kvm/vcpu_onereg.c b/arch/riscv/kvm/vcpu_onereg.c
-> index f789517c9fae..b0beebd4f86e 100644
-> --- a/arch/riscv/kvm/vcpu_onereg.c
-> +++ b/arch/riscv/kvm/vcpu_onereg.c
-> @@ -43,6 +43,9 @@ static const unsigned long kvm_isa_ext_arr[] = {
->  	KVM_ISA_EXT_ARR(ZBA),
->  	KVM_ISA_EXT_ARR(ZBB),
->  	KVM_ISA_EXT_ARR(ZBC),
-> +	KVM_ISA_EXT_ARR(ZBKB),
-> +	KVM_ISA_EXT_ARR(ZBKC),
-> +	KVM_ISA_EXT_ARR(ZBKX),
->  	KVM_ISA_EXT_ARR(ZBS),
->  	KVM_ISA_EXT_ARR(ZICBOM),
->  	KVM_ISA_EXT_ARR(ZICBOZ),
-> @@ -52,6 +55,13 @@ static const unsigned long kvm_isa_ext_arr[] = {
->  	KVM_ISA_EXT_ARR(ZIFENCEI),
->  	KVM_ISA_EXT_ARR(ZIHINTPAUSE),
->  	KVM_ISA_EXT_ARR(ZIHPM),
-> +	KVM_ISA_EXT_ARR(ZKND),
-> +	KVM_ISA_EXT_ARR(ZKNE),
-> +	KVM_ISA_EXT_ARR(ZKNH),
-> +	KVM_ISA_EXT_ARR(ZKR),
-> +	KVM_ISA_EXT_ARR(ZKSED),
-> +	KVM_ISA_EXT_ARR(ZKSH),
-> +	KVM_ISA_EXT_ARR(ZKT),
->  };
->  
->  static unsigned long kvm_riscv_vcpu_base2isa_ext(unsigned long base_ext)
-> @@ -94,6 +104,9 @@ static bool kvm_riscv_vcpu_isa_disable_allowed(unsigned long ext)
->  	case KVM_RISCV_ISA_EXT_ZBA:
->  	case KVM_RISCV_ISA_EXT_ZBB:
->  	case KVM_RISCV_ISA_EXT_ZBC:
-> +	case KVM_RISCV_ISA_EXT_ZBKB:
-> +	case KVM_RISCV_ISA_EXT_ZBKC:
-> +	case KVM_RISCV_ISA_EXT_ZBKX:
->  	case KVM_RISCV_ISA_EXT_ZBS:
->  	case KVM_RISCV_ISA_EXT_ZICNTR:
->  	case KVM_RISCV_ISA_EXT_ZICOND:
-> @@ -101,6 +114,13 @@ static bool kvm_riscv_vcpu_isa_disable_allowed(unsigned long ext)
->  	case KVM_RISCV_ISA_EXT_ZIFENCEI:
->  	case KVM_RISCV_ISA_EXT_ZIHINTPAUSE:
->  	case KVM_RISCV_ISA_EXT_ZIHPM:
-> +	case KVM_RISCV_ISA_EXT_ZKND:
-> +	case KVM_RISCV_ISA_EXT_ZKNE:
-> +	case KVM_RISCV_ISA_EXT_ZKNH:
-> +	case KVM_RISCV_ISA_EXT_ZKR:
-> +	case KVM_RISCV_ISA_EXT_ZKSED:
-> +	case KVM_RISCV_ISA_EXT_ZKSH:
-> +	case KVM_RISCV_ISA_EXT_ZKT:
->  		return false;
->  	/* Extensions which can be disabled using Smstateen */
->  	case KVM_RISCV_ISA_EXT_SSAIA:
-> -- 
-> 2.34.1
+On Wed, Dec 13, 2023 at 10:39?PM Andrew Jones <ajones@ventanamicro.com> wrote:
 >
+> While adding RISCV_SBI_EXT_REG(), acknowledge that some registers
+> have subtypes and extend __kvm_reg_id() to take a subtype field.
+> Then, update all macros to set the new field appropriately. The
+> general CSR macro gets renamed to include "GENERAL", but the other
+> macros, like the new RISCV_SBI_EXT_REG, just use the SINGLE subtype.
+>
+> Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
 
-Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+Looks good to me.
+
+Reviewed-by: Anup Patel <anup@brainfault.org>
+
+Regards,
+Anup
+
+> ---
+>  .../selftests/kvm/include/riscv/processor.h   | 40 +++++++++++--------
+>  .../selftests/kvm/lib/riscv/processor.c       |  4 +-
+>  2 files changed, 25 insertions(+), 19 deletions(-)
+>
+> diff --git a/tools/testing/selftests/kvm/include/riscv/processor.h b/tools/testing/selftests/kvm/include/riscv/processor.h
+> index 5b62a3d2aa9b..e70ccda2011b 100644
+> --- a/tools/testing/selftests/kvm/include/riscv/processor.h
+> +++ b/tools/testing/selftests/kvm/include/riscv/processor.h
+> @@ -10,10 +10,10 @@
+>  #include "kvm_util.h"
+>  #include <linux/stringify.h>
+>
+> -static inline uint64_t __kvm_reg_id(uint64_t type, uint64_t idx,
+> -                                   uint64_t  size)
+> +static inline uint64_t __kvm_reg_id(uint64_t type, uint64_t subtype,
+> +                                   uint64_t idx, uint64_t size)
+>  {
+> -       return KVM_REG_RISCV | type | idx | size;
+> +       return KVM_REG_RISCV | type | subtype | idx | size;
+>  }
+>
+>  #if __riscv_xlen == 64
+> @@ -22,24 +22,30 @@ static inline uint64_t __kvm_reg_id(uint64_t type, uint64_t idx,
+>  #define KVM_REG_SIZE_ULONG     KVM_REG_SIZE_U32
+>  #endif
+>
+> -#define RISCV_CONFIG_REG(name) __kvm_reg_id(KVM_REG_RISCV_CONFIG, \
+> -                                            KVM_REG_RISCV_CONFIG_REG(name), \
+> -                                            KVM_REG_SIZE_ULONG)
+> +#define RISCV_CONFIG_REG(name)         __kvm_reg_id(KVM_REG_RISCV_CONFIG, 0,           \
+> +                                                    KVM_REG_RISCV_CONFIG_REG(name),    \
+> +                                                    KVM_REG_SIZE_ULONG)
+>
+> -#define RISCV_CORE_REG(name)   __kvm_reg_id(KVM_REG_RISCV_CORE, \
+> -                                            KVM_REG_RISCV_CORE_REG(name), \
+> -                                            KVM_REG_SIZE_ULONG)
+> +#define RISCV_CORE_REG(name)           __kvm_reg_id(KVM_REG_RISCV_CORE, 0,             \
+> +                                                    KVM_REG_RISCV_CORE_REG(name),      \
+> +                                                    KVM_REG_SIZE_ULONG)
+>
+> -#define RISCV_CSR_REG(name)    __kvm_reg_id(KVM_REG_RISCV_CSR, \
+> -                                            KVM_REG_RISCV_CSR_REG(name), \
+> -                                            KVM_REG_SIZE_ULONG)
+> +#define RISCV_GENERAL_CSR_REG(name)    __kvm_reg_id(KVM_REG_RISCV_CSR,                 \
+> +                                                    KVM_REG_RISCV_CSR_GENERAL,         \
+> +                                                    KVM_REG_RISCV_CSR_REG(name),       \
+> +                                                    KVM_REG_SIZE_ULONG)
+>
+> -#define RISCV_TIMER_REG(name)  __kvm_reg_id(KVM_REG_RISCV_TIMER, \
+> -                                            KVM_REG_RISCV_TIMER_REG(name), \
+> -                                            KVM_REG_SIZE_U64)
+> +#define RISCV_TIMER_REG(name)          __kvm_reg_id(KVM_REG_RISCV_TIMER, 0,            \
+> +                                                    KVM_REG_RISCV_TIMER_REG(name),     \
+> +                                                    KVM_REG_SIZE_U64)
+>
+> -#define RISCV_ISA_EXT_REG(idx) __kvm_reg_id(KVM_REG_RISCV_ISA_EXT, \
+> -                                            idx, KVM_REG_SIZE_ULONG)
+> +#define RISCV_ISA_EXT_REG(idx)         __kvm_reg_id(KVM_REG_RISCV_ISA_EXT,             \
+> +                                                    KVM_REG_RISCV_ISA_SINGLE,          \
+> +                                                    idx, KVM_REG_SIZE_ULONG)
+> +
+> +#define RISCV_SBI_EXT_REG(idx)         __kvm_reg_id(KVM_REG_RISCV_SBI_EXT,             \
+> +                                                    KVM_REG_RISCV_SBI_SINGLE,          \
+> +                                                    idx, KVM_REG_SIZE_ULONG)
+>
+>  /* L3 index Bit[47:39] */
+>  #define PGTBL_L3_INDEX_MASK                    0x0000FF8000000000ULL
+> diff --git a/tools/testing/selftests/kvm/lib/riscv/processor.c b/tools/testing/selftests/kvm/lib/riscv/processor.c
+> index d146ca71e0c0..6c25f7843ef4 100644
+> --- a/tools/testing/selftests/kvm/lib/riscv/processor.c
+> +++ b/tools/testing/selftests/kvm/lib/riscv/processor.c
+> @@ -201,7 +201,7 @@ void riscv_vcpu_mmu_setup(struct kvm_vcpu *vcpu)
+>         satp = (vm->pgd >> PGTBL_PAGE_SIZE_SHIFT) & SATP_PPN;
+>         satp |= SATP_MODE_48;
+>
+> -       vcpu_set_reg(vcpu, RISCV_CSR_REG(satp), satp);
+> +       vcpu_set_reg(vcpu, RISCV_GENERAL_CSR_REG(satp), satp);
+>  }
+>
+>  void vcpu_arch_dump(FILE *stream, struct kvm_vcpu *vcpu, uint8_t indent)
+> @@ -315,7 +315,7 @@ struct kvm_vcpu *vm_arch_vcpu_add(struct kvm_vm *vm, uint32_t vcpu_id,
+>         vcpu_set_reg(vcpu, RISCV_CORE_REG(regs.pc), (unsigned long)guest_code);
+>
+>         /* Setup default exception vector of guest */
+> -       vcpu_set_reg(vcpu, RISCV_CSR_REG(stvec), (unsigned long)guest_unexp_trap);
+> +       vcpu_set_reg(vcpu, RISCV_GENERAL_CSR_REG(stvec), (unsigned long)guest_unexp_trap);
+>
+>         return vcpu;
+>  }
+> --
+> 2.43.0
+>
 
