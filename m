@@ -1,190 +1,90 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Wed, 13 Dec 2023 15:27:53 +0100
-Subject: [PATCH v4 11/11] KVM: selftests: Enable tunning of err_margin_us
- in arch timer test
-In-Reply-To: <0343a9e4bfa8011fbb6bca0286cee7eab1f17d5d.1702371136.git.haibo1.xu@intel.com>
-References: <cover.1702371136.git.haibo1.xu@intel.com>
- <0343a9e4bfa8011fbb6bca0286cee7eab1f17d5d.1702371136.git.haibo1.xu@intel.com>
-Message-ID: <20231213-e11bcfdf39a34099bbc48cea@orel>
+Date: Wed, 13 Dec 2023 15:53:34 +0100
+Subject: [PATCH v3 1/4] RISC-V: Detect and Enable Svadu Extension Support
+In-Reply-To: <20231102120129.11261-2-yongxuan.wang@sifive.com>
+References: <20231102120129.11261-1-yongxuan.wang@sifive.com>
+ <20231102120129.11261-2-yongxuan.wang@sifive.com>
+Message-ID: <20231213-0160e1e392ad2172c27807c2@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Dec 12, 2023 at 05:31:20PM +0800, Haibo Xu wrote:
-> There are intermittent failures occured when stressing the
-> arch-timer test in a Qemu VM:
+On Thu, Nov 02, 2023 at 12:01:22PM +0000, Yong-Xuan Wang wrote:
+> Svadu is a RISC-V extension for hardware updating of PTE A/D bits.
 > 
->  Guest assert failed,  vcpu 0; stage; 4; iter: 3
->  ==== Test Assertion Failure ====
->    aarch64/arch_timer.c:196: config_iter + 1 == irq_iter
->    pid=4048 tid=4049 errno=4 - Interrupted system call
->       1  0x000000000040253b: test_vcpu_run at arch_timer.c:248
->       2  0x0000ffffb60dd5c7: ?? ??:0
->       3  0x0000ffffb6145d1b: ?? ??:0
->    0x3 != 0x2 (config_iter + 1 != irq_iter)e
+> In this patch we detect Svadu extension support from DTB and
+> add arch_has_hw_pte_young() to enable optimization in MGLRU and
+> __wp_page_copy_user() if Svadu extension is available.
 > 
-> Further test and debug show that the timeout for an interrupt
-> to arrive do have random high fluctuation, espectially when
-> testing in an virtual environment.
-> 
-> To alleviate this issue, just expose the timeout value as user
-> configurable and print some hint message to increase the value
-> when hitting the failure..
-> 
-> Signed-off-by: Haibo Xu <haibo1.xu@intel.com>
+> Co-developed-by: Jinyu Tang <tjytimi@163.com>
+> Signed-off-by: Jinyu Tang <tjytimi@163.com>
+> Signed-off-by: Yong-Xuan Wang <yongxuan.wang@sifive.com>
+> Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
 > ---
->  .../selftests/kvm/aarch64/arch_timer.c        |  8 +++++--
->  tools/testing/selftests/kvm/arch_timer.c      | 22 +++++++++++++------
->  .../selftests/kvm/include/timer_test.h        |  1 +
->  .../testing/selftests/kvm/riscv/arch_timer.c  |  8 +++++--
->  4 files changed, 28 insertions(+), 11 deletions(-)
+>  arch/riscv/include/asm/csr.h     | 1 +
+>  arch/riscv/include/asm/hwcap.h   | 1 +
+>  arch/riscv/include/asm/pgtable.h | 6 ++++++
+>  arch/riscv/kernel/cpufeature.c   | 1 +
+>  4 files changed, 9 insertions(+)
 > 
-> diff --git a/tools/testing/selftests/kvm/aarch64/arch_timer.c b/tools/testing/selftests/kvm/aarch64/arch_timer.c
-> index 4b421d421c3f..139eecbf77e7 100644
-> --- a/tools/testing/selftests/kvm/aarch64/arch_timer.c
-> +++ b/tools/testing/selftests/kvm/aarch64/arch_timer.c
-> @@ -131,10 +131,14 @@ static void guest_run_stage(struct test_vcpu_shared_data *shared_data,
+> diff --git a/arch/riscv/include/asm/csr.h b/arch/riscv/include/asm/csr.h
+> index 777cb8299551..e6935fd48c0c 100644
+> --- a/arch/riscv/include/asm/csr.h
+> +++ b/arch/riscv/include/asm/csr.h
+> @@ -194,6 +194,7 @@
+>  /* xENVCFG flags */
+>  #define ENVCFG_STCE			(_AC(1, ULL) << 63)
+>  #define ENVCFG_PBMTE			(_AC(1, ULL) << 62)
+> +#define ENVCFG_ADUE			(_AC(1, ULL) << 61)
+>  #define ENVCFG_CBZE			(_AC(1, UL) << 7)
+>  #define ENVCFG_CBCFE			(_AC(1, UL) << 6)
+>  #define ENVCFG_CBIE_SHIFT		4
+> diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
+> index b7b58258f6c7..1013661d6516 100644
+> --- a/arch/riscv/include/asm/hwcap.h
+> +++ b/arch/riscv/include/asm/hwcap.h
+> @@ -58,6 +58,7 @@
+>  #define RISCV_ISA_EXT_ZICSR		40
+>  #define RISCV_ISA_EXT_ZIFENCEI		41
+>  #define RISCV_ISA_EXT_ZIHPM		42
+> +#define RISCV_ISA_EXT_SVADU		43
 >  
->  		/* Setup a timeout for the interrupt to arrive */
->  		udelay(msecs_to_usecs(test_args.timer_period_ms) +
-> -			TIMER_TEST_ERR_MARGIN_US);
-> +			test_args.timer_err_margin_us);
+>  #define RISCV_ISA_EXT_MAX		64
 >  
->  		irq_iter = READ_ONCE(shared_data->nr_iter);
-> -		GUEST_ASSERT_EQ(config_iter + 1, irq_iter);
-> +		__GUEST_ASSERT(config_iter + 1 == irq_iter,
-> +			"config_iter + 1 = 0x%lx, irq_iter = 0x%lx.\n"
-> +			"  Guest timer interrupt was not trigged within the specified\n"
-> +			"  interval, try to increase the error margin by [-e] option.\n",
-> +			config_iter + 1, irq_iter);
->  	}
+> diff --git a/arch/riscv/include/asm/pgtable.h b/arch/riscv/include/asm/pgtable.h
+> index b2ba3f79cfe9..028b700cd27b 100644
+> --- a/arch/riscv/include/asm/pgtable.h
+> +++ b/arch/riscv/include/asm/pgtable.h
+> @@ -629,6 +629,12 @@ static inline pgprot_t pgprot_writecombine(pgprot_t _prot)
+>  	return __pgprot(prot);
 >  }
 >  
-> diff --git a/tools/testing/selftests/kvm/arch_timer.c b/tools/testing/selftests/kvm/arch_timer.c
-> index 60963fce16f2..5050022fd345 100644
-> --- a/tools/testing/selftests/kvm/arch_timer.c
-> +++ b/tools/testing/selftests/kvm/arch_timer.c
-> @@ -5,16 +5,17 @@
->   * The guest's main thread configures the timer interrupt and waits
->   * for it to fire, with a timeout equal to the timer period.
->   * It asserts that the timeout doesn't exceed the timer period plus
-> - * an error margin of 100us.
-> + * an user configurable error margin(default to 100us).
->   *
->   * On the other hand, upon receipt of an interrupt, the guest's interrupt
->   * handler validates the interrupt by checking if the architectural state
->   * is in compliance with the specifications.
->   *
->   * The test provides command-line options to configure the timer's
-> - * period (-p), number of vCPUs (-n), and iterations per stage (-i).
-> - * To stress-test the timer stack even more, an option to migrate the
-> - * vCPUs across pCPUs (-m), at a particular rate, is also provided.
-> + * period (-p), number of vCPUs (-n), iterations per stage (-i), and timer
-> + * interrupt arrival error margin (-e). To stress-test the timer stack even
-> + * more, an option to migrate the vCPUs across pCPUs (-m), at a particular
-> + * rate, is also provided.
->   *
->   * Copyright (c) 2021, Google LLC.
+> +#define arch_has_hw_pte_young arch_has_hw_pte_young
+> +static inline bool arch_has_hw_pte_young(void)
+> +{
+> +	return riscv_has_extension_unlikely(RISCV_ISA_EXT_SVADU);
+> +}
+> +
+>  /*
+>   * THP functions
 >   */
-> @@ -34,6 +35,7 @@ struct test_args test_args = {
->  	.nr_iter = NR_TEST_ITERS_DEF,
->  	.timer_period_ms = TIMER_TEST_PERIOD_MS_DEF,
->  	.migration_freq_ms = TIMER_TEST_MIGRATION_FREQ_MS,
-> +	.timer_err_margin_us = TIMER_TEST_ERR_MARGIN_US,
->  	.reserved = 1,
->  };
->  
-> @@ -179,8 +181,9 @@ static void test_run(struct kvm_vm *vm)
->  
->  static void test_print_help(char *name)
->  {
-> -	pr_info("Usage: %s [-h] [-n nr_vcpus] [-i iterations] [-p timer_period_ms]\n",
-> -		name);
-> +	pr_info("Usage: %s [-h] [-n nr_vcpus] [-i iterations] [-p timer_period_ms]\n"
-> +	        "\t\t    [-m migration_freq_ms] [-o counter_offset]\n"
-> +	        "\t\t    [-e timer_err_margin_us]\n", name);
->  	pr_info("\t-n: Number of vCPUs to configure (default: %u; max: %u)\n",
->  		NR_VCPUS_DEF, KVM_MAX_VCPUS);
->  	pr_info("\t-i: Number of iterations per stage (default: %u)\n",
-> @@ -190,6 +193,8 @@ static void test_print_help(char *name)
->  	pr_info("\t-m: Frequency (in ms) of vCPUs to migrate to different pCPU. 0 to turn off (default: %u)\n",
->  		TIMER_TEST_MIGRATION_FREQ_MS);
->  	pr_info("\t-o: Counter offset (in counter cycles, default: 0) [aarch64-only]\n");
-> +	pr_info("\t-e: Interrupt arrival error margin(in us) of the guest timer (default: %u)\n",
-                                                     ^ need space here
-
-> +		TIMER_TEST_ERR_MARGIN_US);
->  	pr_info("\t-h: print this help screen\n");
->  }
->  
-> @@ -197,7 +202,7 @@ static bool parse_args(int argc, char *argv[])
->  {
->  	int opt;
->  
-> -	while ((opt = getopt(argc, argv, "hn:i:p:m:o:")) != -1) {
-> +	while ((opt = getopt(argc, argv, "hn:i:p:m:o:e:")) != -1) {
->  		switch (opt) {
->  		case 'n':
->  			test_args.nr_vcpus = atoi_positive("Number of vCPUs", optarg);
-> @@ -216,6 +221,9 @@ static bool parse_args(int argc, char *argv[])
->  		case 'm':
->  			test_args.migration_freq_ms = atoi_non_negative("Frequency", optarg);
->  			break;
-> +		case 'e':
-> +			test_args.timer_err_margin_us = atoi_non_negative("Error Margin", optarg);
-> +			break;
->  		case 'o':
->  			test_args.counter_offset = strtol(optarg, NULL, 0);
->  			test_args.reserved = 0;
-> diff --git a/tools/testing/selftests/kvm/include/timer_test.h b/tools/testing/selftests/kvm/include/timer_test.h
-> index 968257b893a7..b1d405e7157d 100644
-> --- a/tools/testing/selftests/kvm/include/timer_test.h
-> +++ b/tools/testing/selftests/kvm/include/timer_test.h
-> @@ -22,6 +22,7 @@ struct test_args {
->  	int nr_iter;
->  	int timer_period_ms;
->  	int migration_freq_ms;
-> +	int timer_err_margin_us;
->  	/* Members of struct kvm_arm_counter_offset */
->  	uint64_t counter_offset;
->  	uint64_t reserved;
-> diff --git a/tools/testing/selftests/kvm/riscv/arch_timer.c b/tools/testing/selftests/kvm/riscv/arch_timer.c
-> index 13bf184d1ff5..45a139dc7ce3 100644
-> --- a/tools/testing/selftests/kvm/riscv/arch_timer.c
-> +++ b/tools/testing/selftests/kvm/riscv/arch_timer.c
-> @@ -55,10 +55,14 @@ static void guest_run(struct test_vcpu_shared_data *shared_data)
->  
->  		/* Setup a timeout for the interrupt to arrive */
->  		udelay(msecs_to_usecs(test_args.timer_period_ms) +
-> -			TIMER_TEST_ERR_MARGIN_US);
-> +			test_args.timer_err_margin_us);
->  
->  		irq_iter = READ_ONCE(shared_data->nr_iter);
-> -		GUEST_ASSERT_EQ(config_iter + 1, irq_iter);
-> +		__GUEST_ASSERT(config_iter + 1 == irq_iter,
-> +			"config_iter + 1 = 0x%lx, irq_iter = 0x%lx.\n"
-> +			"  Guest timer interrupt was not trigged within the specified\n"
-> +			"  interval, try to increase the error margin by [-e] option.\n",
-> +			config_iter + 1, irq_iter);
->  	}
->  }
->  
+> diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
+> index 1cfbba65d11a..ead378c04991 100644
+> --- a/arch/riscv/kernel/cpufeature.c
+> +++ b/arch/riscv/kernel/cpufeature.c
+> @@ -178,6 +178,7 @@ const struct riscv_isa_ext_data riscv_isa_ext[] = {
+>  	__RISCV_ISA_EXT_DATA(ssaia, RISCV_ISA_EXT_SSAIA),
+>  	__RISCV_ISA_EXT_DATA(sscofpmf, RISCV_ISA_EXT_SSCOFPMF),
+>  	__RISCV_ISA_EXT_DATA(sstc, RISCV_ISA_EXT_SSTC),
+> +	__RISCV_ISA_EXT_DATA(svadu, RISCV_ISA_EXT_SVADU),
+>  	__RISCV_ISA_EXT_DATA(svinval, RISCV_ISA_EXT_SVINVAL),
+>  	__RISCV_ISA_EXT_DATA(svnapot, RISCV_ISA_EXT_SVNAPOT),
+>  	__RISCV_ISA_EXT_DATA(svpbmt, RISCV_ISA_EXT_SVPBMT),
 > -- 
-> 2.34.1
+> 2.17.1
 >
 
-I probably would have started the series with this patch since you said
-you could reproduce the problem on aarch64. Starting the series with
-this patch would allow just this patch to get picked up to fix aarch64,
-if that's necessary, and also avoids touching a couple places twice
-with the code split for riscv.
-
-But anyway, other than the missing space in the help text,
-
 Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
-
-Thanks,
-drew
 
