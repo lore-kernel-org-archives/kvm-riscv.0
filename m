@@ -1,49 +1,38 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Wed, 13 Dec 2023 18:09:52 +0100
-Subject: [PATCH v2 0/6] RISC-V: KVM: Make SBI uapi consistent with ISA uapi
-Message-ID: <20231213170951.93453-8-ajones@ventanamicro.com>
+Date: Wed, 13 Dec 2023 18:09:54 +0100
+Subject: [PATCH v2 2/6] KVM: riscv: selftests: Drop SBI multi registers
+In-Reply-To: <20231213170951.93453-8-ajones@ventanamicro.com>
+References: <20231213170951.93453-8-ajones@ventanamicro.com>
+Message-ID: <20231213170951.93453-10-ajones@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-SBI extension UAPI is currently almost the same as the ISA extension
-UAPI. This series closes the remaining gap by ensuring when an SBI
-extension is not available that its register returns ENOENT when
-accessed by userspace. We also drop the SBI multi registers from
-get-reg-list (ISA multi registers aren't there either) and make
-several improvements to the get-reg-list kselftest.
+These registers are no longer getting added to get-reg-list.
+We keep sbi_ext_multi_id_to_str() for printing, even though
+we don't expect it to normally be used, because it may be
+useful for debug.
 
-This series is based on Anup's riscv_kvm_more_exts_v1 branch.
+Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
+---
+ tools/testing/selftests/kvm/riscv/get-reg-list.c | 2 --
+ 1 file changed, 2 deletions(-)
 
-Based on kvm-riscv/riscv_kvm_queue
-
-v2:
- - Rebased on kvm-riscv/riscv_kvm_queue which is based on v6.7-rc5
-
-Thanks,
-drew
-
-
-Andrew Jones (6):
-  RISC-V: KVM: Don't add SBI multi regs in get-reg-list
-  KVM: riscv: selftests: Drop SBI multi registers
-  RISC-V: KVM: Make SBI uapi consistent with ISA uapi
-  KVM: riscv: selftests: Add RISCV_SBI_EXT_REG
-  KVM: riscv: selftests: Use register subtypes
-  RISC-V: KVM: selftests: Treat SBI ext regs like ISA ext regs
-
- arch/riscv/include/asm/kvm_vcpu_sbi.h         |  10 +-
- arch/riscv/kvm/vcpu_onereg.c                  |  53 ++---
- arch/riscv/kvm/vcpu_sbi.c                     |  75 +++---
- arch/riscv/kvm/vcpu_sbi_replace.c             |   2 +-
- .../selftests/kvm/include/kvm_util_base.h     |   1 +
- .../selftests/kvm/include/riscv/processor.h   |  40 ++--
- .../selftests/kvm/lib/riscv/processor.c       |   4 +-
- .../selftests/kvm/riscv/get-reg-list.c        | 220 +++++++++++++-----
- 8 files changed, 254 insertions(+), 151 deletions(-)
-
+diff --git a/tools/testing/selftests/kvm/riscv/get-reg-list.c b/tools/testing/selftests/kvm/riscv/get-reg-list.c
+index 5d86c761784e..27d07a32a1ef 100644
+--- a/tools/testing/selftests/kvm/riscv/get-reg-list.c
++++ b/tools/testing/selftests/kvm/riscv/get-reg-list.c
+@@ -571,8 +571,6 @@ static __u64 base_regs[] = {
+ 	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_SINGLE | KVM_RISCV_SBI_EXT_EXPERIMENTAL,
+ 	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_SINGLE | KVM_RISCV_SBI_EXT_VENDOR,
+ 	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_SINGLE | KVM_RISCV_SBI_EXT_DBCN,
+-	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_MULTI_EN | 0,
+-	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_MULTI_DIS | 0,
+ };
+ 
+ /*
 -- 
 2.43.0
 
