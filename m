@@ -1,26 +1,65 @@
 From: Anup Patel <anup@brainfault.org>
-Date: Wed, 13 Dec 2023 12:27:24 +0530
-Subject: [PATCH] KVM: riscv: selftests: Fix get-reg-list print_reg defaults
-In-Reply-To: <20231207134012.20428-2-ajones@ventanamicro.com>
-References: <20231207134012.20428-2-ajones@ventanamicro.com>
-Message-ID: <CAAhSdy3v3RXmfu__wNvEWuOX63_Apdo4kkNWEQqyAxgnC3gpDg@mail.gmail.com>
+Date: Wed, 13 Dec 2023 12:28:44 +0530
+Subject: [PATCH v2 1/1] RISCV: KVM: update external interrupt atomically
+ for IMSIC swfile
+In-Reply-To: <20231213061610.11100-1-yongxuan.wang@sifive.com>
+References: <20231213061610.11100-1-yongxuan.wang@sifive.com>
+Message-ID: <CAAhSdy11SyXB0f0TOB4jX6mxCXTS-_RTXm6bFSfyY+4PThY5bg@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Dec 7, 2023 at 7:10?PM Andrew Jones <ajones@ventanamicro.com> wrote:
+On Wed, Dec 13, 2023 at 11:46?AM Yong-Xuan Wang
+<yongxuan.wang@sifive.com> wrote:
 >
-> print_reg() will print everything it knows when it encounters
-> a register ID it's unfamiliar with in the default cases of its
-> decoding switches. Fix several issues with these (until now,
-> never tested) paths; missing newlines in printfs, missing
-> complement operator in mask, and missing return in order to
-> avoid continuing to decode.
+> The emulated IMSIC update the external interrupt pending depending on the
+> value of eidelivery and topei. It might lose an interrupt when it is
+> interrupted before setting the new value to the pending status.
 >
-> Fixes: 62d0c458f828 ("KVM: riscv: selftests: get-reg-list print_reg should never fail")
-> Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
+> For example, when VCPU0 sends an IPI to VCPU1 via IMSIC:
+>
+> VCPU0                           VCPU1
+>
+>                                 CSRSWAP topei = 0
+>                                 The VCPU1 has claimed all the external
+>                                 interrupt in its interrupt handler.
+>
+>                                 topei of VCPU1's IMSIC = 0
+>
+> set pending in VCPU1's IMSIC
+>
+> topei of VCPU1' IMSIC = 1
+>
+> set the external interrupt
+> pending of VCPU1
+>
+>                                 clear the external interrupt pending
+>                                 of VCPU1
+>
+> When the VCPU1 switches back to VS mode, it exits the interrupt handler
+> because the result of CSRSWAP topei is 0. If there are no other external
+> interrupts injected into the VCPU1's IMSIC, VCPU1 will never know this
+> pending interrupt unless it initiative read the topei.
+>
+> If the interruption occurs between updating interrupt pending in IMSIC
+> and updating external interrupt pending of VCPU, it will not cause a
+> problem. Suppose that the VCPU1 clears the IPI pending in IMSIC right
+> after VCPU0 sets the pending, the external interrupt pending of VCPU1
+> will not be set because the topei is 0. But when the VCPU1 goes back to
+> VS mode, the pending IPI will be reported by the CSRSWAP topei, it will
+> not lose this interrupt.
+>
+> So we only need to make the external interrupt updating procedure as a
+> critical section to avoid the problem.
+>
+> Fixes: db8b7e97d613 ("RISC-V: KVM: Add in-kernel virtualization of AIA IMSIC")
+> Tested-by: Roy Lin <roy.lin@sifive.com>
+> Tested-by: Wayling Chen <wayling.chen@sifive.com>
+> Co-developed-by: Vincent Chen <vincent.chen@sifive.com>
+> Signed-off-by: Vincent Chen <vincent.chen@sifive.com>
+> Signed-off-by: Yong-Xuan Wang <yongxuan.wang@sifive.com>
 
 Queued as fixes for Linux-6.7
 
@@ -28,38 +67,58 @@ Thanks,
 Anup
 
 > ---
->  tools/testing/selftests/kvm/riscv/get-reg-list.c | 10 ++++++----
->  1 file changed, 6 insertions(+), 4 deletions(-)
+> Changelog
+> v2:
+> - rename the variable and add a short comment in the code
+> ---
+>  arch/riscv/kvm/aia_imsic.c | 13 +++++++++++++
+>  1 file changed, 13 insertions(+)
 >
-> diff --git a/tools/testing/selftests/kvm/riscv/get-reg-list.c b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-> index 6bedaea95395..25de4b8bc347 100644
-> --- a/tools/testing/selftests/kvm/riscv/get-reg-list.c
-> +++ b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-> @@ -458,8 +458,9 @@ void print_reg(const char *prefix, __u64 id)
->                 reg_size = "KVM_REG_SIZE_U128";
->                 break;
->         default:
-> -               printf("\tKVM_REG_RISCV | (%lld << KVM_REG_SIZE_SHIFT) | 0x%llx /* UNKNOWN */,",
-> -                      (id & KVM_REG_SIZE_MASK) >> KVM_REG_SIZE_SHIFT, id & REG_MASK);
-> +               printf("\tKVM_REG_RISCV | (%lld << KVM_REG_SIZE_SHIFT) | 0x%llx /* UNKNOWN */,\n",
-> +                      (id & KVM_REG_SIZE_MASK) >> KVM_REG_SIZE_SHIFT, id & ~REG_MASK);
-> +               return;
->         }
+> diff --git a/arch/riscv/kvm/aia_imsic.c b/arch/riscv/kvm/aia_imsic.c
+> index 6cf23b8adb71..e808723a85f1 100644
+> --- a/arch/riscv/kvm/aia_imsic.c
+> +++ b/arch/riscv/kvm/aia_imsic.c
+> @@ -55,6 +55,7 @@ struct imsic {
+>         /* IMSIC SW-file */
+>         struct imsic_mrif *swfile;
+>         phys_addr_t swfile_pa;
+> +       spinlock_t swfile_extirq_lock;
+>  };
 >
->         switch (id & KVM_REG_RISCV_TYPE_MASK) {
-> @@ -496,8 +497,9 @@ void print_reg(const char *prefix, __u64 id)
->                                 reg_size, sbi_ext_id_to_str(prefix, id));
->                 break;
->         default:
-> -               printf("\tKVM_REG_RISCV | %s | 0x%llx /* UNKNOWN */,",
-> -                               reg_size, id & REG_MASK);
-> +               printf("\tKVM_REG_RISCV | %s | 0x%llx /* UNKNOWN */,\n",
-> +                               reg_size, id & ~REG_MASK);
-> +               return;
->         }
+>  #define imsic_vs_csr_read(__c)                 \
+> @@ -613,12 +614,23 @@ static void imsic_swfile_extirq_update(struct kvm_vcpu *vcpu)
+>  {
+>         struct imsic *imsic = vcpu->arch.aia_context.imsic_state;
+>         struct imsic_mrif *mrif = imsic->swfile;
+> +       unsigned long flags;
+> +
+> +       /*
+> +        * The critical section is necessary during external interrupt
+> +        * updates to avoid the risk of losing interrupts due to potential
+> +        * interruptions between reading topei and updating pending status.
+> +        */
+> +
+> +       spin_lock_irqsave(&imsic->swfile_extirq_lock, flags);
+>
+>         if (imsic_mrif_atomic_read(mrif, &mrif->eidelivery) &&
+>             imsic_mrif_topei(mrif, imsic->nr_eix, imsic->nr_msis))
+>                 kvm_riscv_vcpu_set_interrupt(vcpu, IRQ_VS_EXT);
+>         else
+>                 kvm_riscv_vcpu_unset_interrupt(vcpu, IRQ_VS_EXT);
+> +
+> +       spin_unlock_irqrestore(&imsic->swfile_extirq_lock, flags);
 >  }
 >
+>  static void imsic_swfile_read(struct kvm_vcpu *vcpu, bool clear,
+> @@ -1039,6 +1051,7 @@ int kvm_riscv_vcpu_aia_imsic_init(struct kvm_vcpu *vcpu)
+>         }
+>         imsic->swfile = page_to_virt(swfile_page);
+>         imsic->swfile_pa = page_to_phys(swfile_page);
+> +       spin_lock_init(&imsic->swfile_extirq_lock);
+>
+>         /* Setup IO device */
+>         kvm_iodevice_init(&imsic->iodev, &imsic_iodoev_ops);
 > --
-> 2.43.0
+> 2.17.1
 >
 
