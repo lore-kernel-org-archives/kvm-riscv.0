@@ -1,88 +1,60 @@
-From: Sean Christopherson <seanjc@google.com>
-Date: Wed, 13 Dec 2023 14:59:16 -0800
-Subject: [PATCH v4 10/12] KVM: x86: never write to memory from kvm_vcpu_check_block()
-In-Reply-To: <5ca5592b21131f515e296afae006e5bb28b1fb87.camel@redhat.com>
-References: <20220921003201.1441511-11-seanjc@google.com> <20231207010302.2240506-1-jmattson@google.com>
- <ZXHw7tykubfG04Um@google.com> <CALMp9eTT97oDmQT7pxeOMLQbt-371aMtC2Kev+-kWXVRDVrjeg@mail.gmail.com>
- <ZXh8Nq_y_szj1WN0@google.com> <5ca5592b21131f515e296afae006e5bb28b1fb87.camel@redhat.com>
-Message-ID: <ZXo3REB8g-ZecT2U@google.com>
+From: Anup Patel <anup@brainfault.org>
+Date: Thu, 14 Dec 2023 10:49:15 +0530
+Subject: [PATCH v2 0/6] RISC-V: KVM: Make SBI uapi consistent with ISA uapi
+In-Reply-To: <20231213170951.93453-8-ajones@ventanamicro.com>
+References: <20231213170951.93453-8-ajones@ventanamicro.com>
+Message-ID: <CAAhSdy1N2BaExXsTJnxn=UJ4G5cLQv0WY8mK41miZA9WNFO26w@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Dec 14, 2023, Maxim Levitsky wrote:
-> On Tue, 2023-12-12 at 07:28 -0800, Sean Christopherson wrote:
-> > On Sun, Dec 10, 2023, Jim Mattson wrote:
-> > > On Thu, Dec 7, 2023 at 8:21?AM Sean Christopherson <seanjc@google.com> wrote:
-> > > > Doh.  We got the less obvious cases and missed the obvious one.
-> > > > 
-> > > > Ugh, and we also missed a related mess in kvm_guest_apic_has_interrupt().  That
-> > > > thing should really be folded into vmx_has_nested_events().
-> > > > 
-> > > > Good gravy.  And vmx_interrupt_blocked() does the wrong thing because that
-> > > > specifically checks if L1 interrupts are blocked.
-> > > > 
-> > > > Compile tested only, and definitely needs to be chunked into multiple patches,
-> > > > but I think something like this mess?
-> > > 
-> > > The proposed patch does not fix the problem. In fact, it messes things
-> > > up so much that I don't get any test results back.
-> > 
-> > Drat.
-> > 
-> > > Google has an internal K-U-T test that demonstrates the problem. I
-> > > will post it soon.
-> > 
-> > Received, I'll dig in soonish, though "soonish" might unfortunately might mean
-> > 2024.
-> > 
-> 
-> Hi,
-> 
-> So this is what I think:
-> 
-> KVM does have kvm_guest_apic_has_interrupt() for this exact purpose,
-> to check if nested APICv has a pending interrupt before halting.
+On Wed, Dec 13, 2023 at 10:39?PM Andrew Jones <ajones@ventanamicro.com> wrote:
+>
+> SBI extension UAPI is currently almost the same as the ISA extension
+> UAPI. This series closes the remaining gap by ensuring when an SBI
+> extension is not available that its register returns ENOENT when
+> accessed by userspace. We also drop the SBI multi registers from
+> get-reg-list (ISA multi registers aren't there either) and make
+> several improvements to the get-reg-list kselftest.
+>
+> This series is based on Anup's riscv_kvm_more_exts_v1 branch.
+>
+> Based on kvm-riscv/riscv_kvm_queue
+>
+> v2:
+>  - Rebased on kvm-riscv/riscv_kvm_queue which is based on v6.7-rc5
+>
+> Thanks,
+> drew
+>
+>
+> Andrew Jones (6):
+>   RISC-V: KVM: Don't add SBI multi regs in get-reg-list
+>   KVM: riscv: selftests: Drop SBI multi registers
+>   RISC-V: KVM: Make SBI uapi consistent with ISA uapi
+>   KVM: riscv: selftests: Add RISCV_SBI_EXT_REG
+>   KVM: riscv: selftests: Use register subtypes
+>   RISC-V: KVM: selftests: Treat SBI ext regs like ISA ext regs
 
-For all intents and purposes, so was nested_ops->has_events().  I don't see
-any reason to have two APIs that do the same thing, and the call to
-kvm_guest_apic_has_interrupt() is wrong in that it doesn't verify that IRQs are
-enabled for _L2_.  That's why my preference is to fold the two together.
+Queued this series for Linux-6.8
 
-> However the problem is bigger - with APICv we have in essence 2 pending
-> interrupt bitmaps - the PIR and the IRR, and to know if the guest has a
-> pending interrupt one has in theory to copy PIR to IRR, then see if the max
-> is larger then the current PPR.
+Thanks,
+Anup
 
-Yeah, this is what my untested hack-a-patch tried to do.
-
-> Since we don't want to write to guest memory,
-
-The changelog is misleading/wrong.  Writing guest memory is ok, what isn't safe
-is blocking or sleeping, i.e. KVM must not trigger a host page fault due to
-accessing a page that's been swapped out.  Read vs. write doesn't matter.
-
-So KVM can safely read and write guest memory so long as it already mapped by 
-kvm_vcpu_map() (or I suppose if we wrapped an access with pagefault_disable(),
-but I can't think of a sane reason to do that).  E.g. nVMX can access a vCPU's
-PID mapping, but synthesizing a nested VM-Exit will cause explosions on nSVM.
-
-> and the IRR here resides in the guest memory, I guess we have to do a
-> 'dry-run' version of 'vmx_complete_nested_posted_interrupt' and call it from
-> kvm_guest_apic_has_interrupt().
-
-nested_ops->has_events() is the much better fit, e.g. the naming won't get weird
-and we can gate the whole thing on is_guest_mode().  Though we probably need a
-wrapper to handle any commonalities between nVMX and nSVM.
-
-> What do you think? I can prepare a patch for this.
-
-As above, this is what I tried to do, sort of.  Though it's obviously broken.  We
-don't need a full dry-run because KVM only needs to detect events that are unique
-to L2, e.g. nVMX's preemption timer, MTF, and pending virtual interrupts (hmm,
-I suspect nSVM's vNMI is broken too).  Things like INIT and SMI don't require
-nested virtualization awareness because the event itself is tracked for the vCPU
-as a whole.
+>
+>  arch/riscv/include/asm/kvm_vcpu_sbi.h         |  10 +-
+>  arch/riscv/kvm/vcpu_onereg.c                  |  53 ++---
+>  arch/riscv/kvm/vcpu_sbi.c                     |  75 +++---
+>  arch/riscv/kvm/vcpu_sbi_replace.c             |   2 +-
+>  .../selftests/kvm/include/kvm_util_base.h     |   1 +
+>  .../selftests/kvm/include/riscv/processor.h   |  40 ++--
+>  .../selftests/kvm/lib/riscv/processor.c       |   4 +-
+>  .../selftests/kvm/riscv/get-reg-list.c        | 220 +++++++++++++-----
+>  8 files changed, 254 insertions(+), 151 deletions(-)
+>
+> --
+> 2.43.0
+>
 
