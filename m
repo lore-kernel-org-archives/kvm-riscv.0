@@ -1,99 +1,125 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Thu, 14 Dec 2023 11:16:03 +0100
-Subject: [PATCH v2 11/13] RISC-V: KVM: selftests: Add guest_sbi_probe_extension
+Date: Thu, 14 Dec 2023 11:16:05 +0100
+Subject: [PATCH v2 13/13] RISC-V: KVM: selftests: Add get-reg-list test for STA registers
 In-Reply-To: <20231214101552.100721-15-ajones@ventanamicro.com>
 References: <20231214101552.100721-15-ajones@ventanamicro.com>
-Message-ID: <20231214101552.100721-26-ajones@ventanamicro.com>
+Message-ID: <20231214101552.100721-28-ajones@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add guest_sbi_probe_extension(), allowing guest code to probe for
-SBI extensions. As guest_sbi_probe_extension() needs
-SBI_ERR_NOT_SUPPORTED, take the opportunity to bring in all SBI
-error codes. We don't bring in all current extension IDs or base
-extension function IDs though, even though we need one of each,
-because we'd prefer to bring those in as necessary.
+Add SBI STA and its two registers to the get-reg-list test.
 
 Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
 ---
- .../selftests/kvm/include/riscv/processor.h   | 21 +++++++++++++++++++
- .../selftests/kvm/lib/riscv/processor.c       | 19 +++++++++++++++++
- 2 files changed, 40 insertions(+)
+ .../selftests/kvm/riscv/get-reg-list.c        | 43 +++++++++++++++++++
+ 1 file changed, 43 insertions(+)
 
-diff --git a/tools/testing/selftests/kvm/include/riscv/processor.h b/tools/testing/selftests/kvm/include/riscv/processor.h
-index e70ccda2011b..dc50ad62e150 100644
---- a/tools/testing/selftests/kvm/include/riscv/processor.h
-+++ b/tools/testing/selftests/kvm/include/riscv/processor.h
-@@ -108,6 +108,17 @@ static inline uint64_t __kvm_reg_id(uint64_t type, uint64_t subtype,
- #define SATP_ASID_SHIFT				44
- #define SATP_ASID_MASK				_AC(0xFFFF, UL)
- 
-+/* SBI return error codes */
-+#define SBI_SUCCESS				0
-+#define SBI_ERR_FAILURE				-1
-+#define SBI_ERR_NOT_SUPPORTED			-2
-+#define SBI_ERR_INVALID_PARAM			-3
-+#define SBI_ERR_DENIED				-4
-+#define SBI_ERR_INVALID_ADDRESS			-5
-+#define SBI_ERR_ALREADY_AVAILABLE		-6
-+#define SBI_ERR_ALREADY_STARTED			-7
-+#define SBI_ERR_ALREADY_STOPPED			-8
-+
- #define SBI_EXT_EXPERIMENTAL_START		0x08000000
- #define SBI_EXT_EXPERIMENTAL_END		0x08FFFFFF
- 
-@@ -115,6 +126,14 @@ static inline uint64_t __kvm_reg_id(uint64_t type, uint64_t subtype,
- #define KVM_RISCV_SELFTESTS_SBI_UCALL		0
- #define KVM_RISCV_SELFTESTS_SBI_UNEXP		1
- 
-+enum sbi_ext_id {
-+	SBI_EXT_BASE = 0x10,
-+};
-+
-+enum sbi_ext_base_fid {
-+	SBI_EXT_BASE_PROBE_EXT = 3,
-+};
-+
- struct sbiret {
- 	long error;
- 	long value;
-@@ -125,4 +144,6 @@ struct sbiret sbi_ecall(int ext, int fid, unsigned long arg0,
- 			unsigned long arg3, unsigned long arg4,
- 			unsigned long arg5);
- 
-+bool guest_sbi_probe_extension(int extid, long *out_val);
-+
- #endif /* SELFTEST_KVM_PROCESSOR_H */
-diff --git a/tools/testing/selftests/kvm/lib/riscv/processor.c b/tools/testing/selftests/kvm/lib/riscv/processor.c
-index 6905a4348380..7ca736fb4194 100644
---- a/tools/testing/selftests/kvm/lib/riscv/processor.c
-+++ b/tools/testing/selftests/kvm/lib/riscv/processor.c
-@@ -393,3 +393,22 @@ struct sbiret sbi_ecall(int ext, int fid, unsigned long arg0,
- 
- 	return ret;
+diff --git a/tools/testing/selftests/kvm/riscv/get-reg-list.c b/tools/testing/selftests/kvm/riscv/get-reg-list.c
+index b8da2e86bf9c..55dd1fc3c536 100644
+--- a/tools/testing/selftests/kvm/riscv/get-reg-list.c
++++ b/tools/testing/selftests/kvm/riscv/get-reg-list.c
+@@ -71,6 +71,7 @@ bool filter_reg(__u64 reg)
+ 	case KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_SINGLE | KVM_RISCV_SBI_EXT_HSM:
+ 	case KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_SINGLE | KVM_RISCV_SBI_EXT_PMU:
+ 	case KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_SINGLE | KVM_RISCV_SBI_EXT_DBCN:
++	case KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_SINGLE | KVM_RISCV_SBI_EXT_STA:
+ 	case KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_SINGLE | KVM_RISCV_SBI_EXT_EXPERIMENTAL:
+ 	case KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_SINGLE | KVM_RISCV_SBI_EXT_VENDOR:
+ 		return true;
+@@ -461,6 +462,7 @@ static const char *sbi_ext_single_id_to_str(__u64 reg_off)
+ 		KVM_SBI_EXT_ARR(KVM_RISCV_SBI_EXT_SRST),
+ 		KVM_SBI_EXT_ARR(KVM_RISCV_SBI_EXT_HSM),
+ 		KVM_SBI_EXT_ARR(KVM_RISCV_SBI_EXT_PMU),
++		KVM_SBI_EXT_ARR(KVM_RISCV_SBI_EXT_STA),
+ 		KVM_SBI_EXT_ARR(KVM_RISCV_SBI_EXT_EXPERIMENTAL),
+ 		KVM_SBI_EXT_ARR(KVM_RISCV_SBI_EXT_VENDOR),
+ 		KVM_SBI_EXT_ARR(KVM_RISCV_SBI_EXT_DBCN),
+@@ -509,6 +511,32 @@ static const char *sbi_ext_id_to_str(const char *prefix, __u64 id)
+ 	return strdup_printf("%lld | %lld /* UNKNOWN */", reg_subtype, reg_off);
  }
-+
-+bool guest_sbi_probe_extension(int extid, long *out_val)
+ 
++static const char *sbi_sta_id_to_str(__u64 reg_off)
 +{
-+	struct sbiret ret;
-+
-+	ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_PROBE_EXT, extid,
-+			0, 0, 0, 0, 0);
-+
-+	__GUEST_ASSERT(!ret.error || ret.error == SBI_ERR_NOT_SUPPORTED,
-+		       "ret.error=%ld, ret.value=%ld\n", ret.error, ret.value);
-+
-+	if (ret.error == SBI_ERR_NOT_SUPPORTED)
-+		return false;
-+
-+	if (out_val)
-+		*out_val = ret.value;
-+
-+	return true;
++	switch (reg_off) {
++	case 0: return "KVM_REG_RISCV_SBI_STA | KVM_REG_RISCV_SBI_STA_REG(shmem_lo)";
++	case 1: return "KVM_REG_RISCV_SBI_STA | KVM_REG_RISCV_SBI_STA_REG(shmem_hi)";
++	}
++	return strdup_printf("KVM_REG_RISCV_SBI_STA | %lld /* UNKNOWN */", reg_off);
 +}
++
++static const char *sbi_id_to_str(const char *prefix, __u64 id)
++{
++	__u64 reg_off = id & ~(REG_MASK | KVM_REG_RISCV_SBI);
++	__u64 reg_subtype = reg_off & KVM_REG_RISCV_SUBTYPE_MASK;
++
++	assert((id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_SBI);
++
++	reg_off &= ~KVM_REG_RISCV_SUBTYPE_MASK;
++
++	switch (reg_subtype) {
++	case KVM_REG_RISCV_SBI_STA:
++		return sbi_sta_id_to_str(reg_off);
++	}
++
++	return strdup_printf("%lld | %lld /* UNKNOWN */", reg_subtype, reg_off);
++}
++
+ void print_reg(const char *prefix, __u64 id)
+ {
+ 	const char *reg_size = NULL;
+@@ -565,6 +593,10 @@ void print_reg(const char *prefix, __u64 id)
+ 		printf("\tKVM_REG_RISCV | %s | KVM_REG_RISCV_SBI_EXT | %s,\n",
+ 				reg_size, sbi_ext_id_to_str(prefix, id));
+ 		break;
++	case KVM_REG_RISCV_SBI:
++		printf("\tKVM_REG_RISCV | %s | KVM_REG_RISCV_SBI | %s,\n",
++				reg_size, sbi_id_to_str(prefix, id));
++		break;
+ 	default:
+ 		printf("\tKVM_REG_RISCV | %s | 0x%llx /* UNKNOWN */,\n",
+ 				reg_size, id & ~REG_MASK);
+@@ -651,6 +683,12 @@ static __u64 sbi_base_regs[] = {
+ 	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_SINGLE | KVM_RISCV_SBI_EXT_VENDOR,
+ };
+ 
++static __u64 sbi_sta_regs[] = {
++	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_SINGLE | KVM_RISCV_SBI_EXT_STA,
++	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_SBI | KVM_REG_RISCV_SBI_STA | KVM_REG_RISCV_SBI_STA_REG(shmem_lo),
++	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_SBI | KVM_REG_RISCV_SBI_STA | KVM_REG_RISCV_SBI_STA_REG(shmem_hi),
++};
++
+ static __u64 zicbom_regs[] = {
+ 	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_CONFIG | KVM_REG_RISCV_CONFIG_REG(zicbom_block_size),
+ 	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZICBOM,
+@@ -757,6 +795,9 @@ static __u64 fp_d_regs[] = {
+ #define SUBLIST_SBI_BASE \
+ 	{"sbi-base", .feature_type = VCPU_FEATURE_SBI_EXT, .feature = KVM_RISCV_SBI_EXT_V01, \
+ 	 .regs = sbi_base_regs, .regs_n = ARRAY_SIZE(sbi_base_regs),}
++#define SUBLIST_SBI_STA \
++	{"sbi-sta", .feature_type = VCPU_FEATURE_SBI_EXT, .feature = KVM_RISCV_SBI_EXT_STA, \
++	 .regs = sbi_sta_regs, .regs_n = ARRAY_SIZE(sbi_sta_regs),}
+ #define SUBLIST_ZICBOM \
+ 	{"zicbom", .feature = KVM_RISCV_ISA_EXT_ZICBOM, .regs = zicbom_regs, .regs_n = ARRAY_SIZE(zicbom_regs),}
+ #define SUBLIST_ZICBOZ \
+@@ -832,6 +873,7 @@ static struct vcpu_reg_list config_sbi_##ext = {		\
+ /* Note: The below list is alphabetically sorted. */
+ 
+ KVM_SBI_EXT_SUBLIST_CONFIG(base, BASE);
++KVM_SBI_EXT_SUBLIST_CONFIG(sta, STA);
+ KVM_SBI_EXT_SIMPLE_CONFIG(pmu, PMU);
+ KVM_SBI_EXT_SIMPLE_CONFIG(dbcn, DBCN);
+ 
+@@ -858,6 +900,7 @@ KVM_ISA_EXT_SIMPLE_CONFIG(zihpm, ZIHPM);
+ 
+ struct vcpu_reg_list *vcpu_configs[] = {
+ 	&config_sbi_base,
++	&config_sbi_sta,
+ 	&config_sbi_pmu,
+ 	&config_sbi_dbcn,
+ 	&config_aia,
 -- 
 2.43.0
 
