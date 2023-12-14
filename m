@@ -1,9 +1,9 @@
 From: Anup Patel <anup@brainfault.org>
-Date: Thu, 14 Dec 2023 18:02:19 +0530
-Subject: [RFC 5/9] RISC-V: Add SBI PMU snapshot definitions
-In-Reply-To: <20231205024310.1593100-6-atishp@rivosinc.com>
-References: <20231205024310.1593100-1-atishp@rivosinc.com> <20231205024310.1593100-6-atishp@rivosinc.com>
-Message-ID: <CAAhSdy1L6smTUtjO1XJp2L=EfK-jYN9CS70h9nNa639ownKJBg@mail.gmail.com>
+Date: Thu, 14 Dec 2023 18:11:57 +0530
+Subject: [RFC 9/9] RISC-V: KVM: Support 64 bit firmware counters on RV32
+In-Reply-To: <20231205024310.1593100-10-atishp@rivosinc.com>
+References: <20231205024310.1593100-1-atishp@rivosinc.com> <20231205024310.1593100-10-atishp@rivosinc.com>
+Message-ID: <CAAhSdy24k0r7vS1MkuRkAZwu9vOM7nLz4z+_gUjQE7ppkSq15g@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -12,62 +12,140 @@ Content-Transfer-Encoding: 7bit
 
 On Tue, Dec 5, 2023 at 8:13?AM Atish Patra <atishp@rivosinc.com> wrote:
 >
-> SBI PMU Snapshot function optimizes the number of traps to
-> higher privilege mode by leveraging a shared memory between the S/VS-mode
-> and the M/HS mode. Add the definitions for that extension
+> The SBI v2.0 introduced a fw_read_hi function to read 64 bit firmware
+> counters for RV32 based systems.
+>
+> Add infrastructure to support that.
 >
 > Signed-off-by: Atish Patra <atishp@rivosinc.com>
+> ---
+>  arch/riscv/include/asm/kvm_vcpu_pmu.h |  6 ++++-
+>  arch/riscv/kvm/vcpu_pmu.c             | 38 ++++++++++++++++++++++++++-
+>  arch/riscv/kvm/vcpu_sbi_pmu.c         |  7 +++++
+>  3 files changed, 49 insertions(+), 2 deletions(-)
+>
+> diff --git a/arch/riscv/include/asm/kvm_vcpu_pmu.h b/arch/riscv/include/asm/kvm_vcpu_pmu.h
+> index 64c75acad6ba..dd655315e706 100644
+> --- a/arch/riscv/include/asm/kvm_vcpu_pmu.h
+> +++ b/arch/riscv/include/asm/kvm_vcpu_pmu.h
+> @@ -20,7 +20,7 @@ static_assert(RISCV_KVM_MAX_COUNTERS <= 64);
+>
+>  struct kvm_fw_event {
+>         /* Current value of the event */
+> -       unsigned long value;
+> +       uint64_t value;
+>
+>         /* Event monitoring status */
+>         bool started;
+> @@ -91,6 +91,10 @@ int kvm_riscv_vcpu_pmu_ctr_cfg_match(struct kvm_vcpu *vcpu, unsigned long ctr_ba
+>                                      struct kvm_vcpu_sbi_return *retdata);
+>  int kvm_riscv_vcpu_pmu_ctr_read(struct kvm_vcpu *vcpu, unsigned long cidx,
+>                                 struct kvm_vcpu_sbi_return *retdata);
+> +#if defined(CONFIG_32BIT)
+> +int kvm_riscv_vcpu_pmu_fw_ctr_read_hi(struct kvm_vcpu *vcpu, unsigned long cidx,
+> +                               struct kvm_vcpu_sbi_return *retdata);
+> +#endif
+>  void kvm_riscv_vcpu_pmu_init(struct kvm_vcpu *vcpu);
+>  int kvm_riscv_vcpu_pmu_setup_snapshot(struct kvm_vcpu *vcpu, unsigned long saddr_low,
+>                                        unsigned long saddr_high, unsigned long flags,
+> diff --git a/arch/riscv/kvm/vcpu_pmu.c b/arch/riscv/kvm/vcpu_pmu.c
+> index 86c8e92f92d3..5b4a93647256 100644
+> --- a/arch/riscv/kvm/vcpu_pmu.c
+> +++ b/arch/riscv/kvm/vcpu_pmu.c
+> @@ -195,6 +195,28 @@ static int pmu_get_pmc_index(struct kvm_pmu *pmu, unsigned long eidx,
+>
+>         return kvm_pmu_get_programmable_pmc_index(pmu, eidx, cbase, cmask);
+>  }
 
-LGTM.
+Newline here.
+
+> +#if defined(CONFIG_32BIT)
+
+Just like other patches, let's use IS_ENABLED() here.
+
+> +static int pmu_fw_ctr_read_hi(struct kvm_vcpu *vcpu, unsigned long cidx,
+> +                             unsigned long *out_val)
+> +{
+> +       struct kvm_pmu *kvpmu = vcpu_to_pmu(vcpu);
+> +       struct kvm_pmc *pmc;
+> +       u64 enabled, running;
+> +       int fevent_code;
+> +
+> +       pmc = &kvpmu->pmc[cidx];
+> +
+> +       if (pmc->cinfo.type != SBI_PMU_CTR_TYPE_FW)
+> +               return -EINVAL;
+> +
+> +       fevent_code = get_event_code(pmc->event_idx);
+> +       pmc->counter_val = kvpmu->fw_event[fevent_code].value;
+> +
+> +       *out_val = pmc->counter_val >> 32;
+> +
+> +       return 0;
+> +}
+> +#endif
+>
+>  static int pmu_ctr_read(struct kvm_vcpu *vcpu, unsigned long cidx,
+>                         unsigned long *out_val)
+> @@ -696,6 +718,20 @@ int kvm_riscv_vcpu_pmu_ctr_cfg_match(struct kvm_vcpu *vcpu, unsigned long ctr_ba
+>         return 0;
+>  }
+>
+> +#if defined(CONFIG_32BIT)
+> +int kvm_riscv_vcpu_pmu_fw_ctr_read_hi(struct kvm_vcpu *vcpu, unsigned long cidx,
+> +                                  struct kvm_vcpu_sbi_return *retdata)
+> +{
+> +       int ret;
+> +
+> +       ret = pmu_fw_ctr_read_hi(vcpu, cidx, &retdata->out_val);
+> +       if (ret == -EINVAL)
+> +               retdata->err_val = SBI_ERR_INVALID_PARAM;
+> +
+> +       return 0;
+> +}
+> +#endif
+> +
+>  int kvm_riscv_vcpu_pmu_ctr_read(struct kvm_vcpu *vcpu, unsigned long cidx,
+>                                 struct kvm_vcpu_sbi_return *retdata)
+>  {
+> @@ -769,7 +805,7 @@ void kvm_riscv_vcpu_pmu_init(struct kvm_vcpu *vcpu)
+>                         pmc->cinfo.csr = CSR_CYCLE + i;
+>                 } else {
+>                         pmc->cinfo.type = SBI_PMU_CTR_TYPE_FW;
+> -                       pmc->cinfo.width = BITS_PER_LONG - 1;
+> +                       pmc->cinfo.width = 63;
+>                 }
+>         }
+>
+> diff --git a/arch/riscv/kvm/vcpu_sbi_pmu.c b/arch/riscv/kvm/vcpu_sbi_pmu.c
+> index 77c20a61fd7d..0cd051d5a448 100644
+> --- a/arch/riscv/kvm/vcpu_sbi_pmu.c
+> +++ b/arch/riscv/kvm/vcpu_sbi_pmu.c
+> @@ -64,6 +64,13 @@ static int kvm_sbi_ext_pmu_handler(struct kvm_vcpu *vcpu, struct kvm_run *run,
+>         case SBI_EXT_PMU_COUNTER_FW_READ:
+>                 ret = kvm_riscv_vcpu_pmu_ctr_read(vcpu, cp->a0, retdata);
+>                 break;
+> +       case SBI_EXT_PMU_COUNTER_FW_READ_HI:
+> +#if defined(CONFIG_32BIT)
+
+Same as above, use IS_ENABLED() here.
+
+> +               ret = kvm_riscv_vcpu_pmu_fw_ctr_read_hi(vcpu, cp->a0, retdata);
+> +#else
+> +               retdata->out_val = 0;
+> +#endif
+> +               break;
+>         case SBI_EXT_PMU_SNAPSHOT_SET_SHMEM:
+>                 ret = kvm_riscv_vcpu_pmu_setup_snapshot(vcpu, cp->a0, cp->a1, cp->a2, retdata);
+>                 break;
+> --
+> 2.34.1
+>
+
+Apart from minor nits above, this looks good to me.
 
 Reviewed-by: Anup Patel <anup@brainfault.org>
 
 Regards,
 Anup
-
-> ---
->  arch/riscv/include/asm/sbi.h | 10 ++++++++++
->  1 file changed, 10 insertions(+)
->
-> diff --git a/arch/riscv/include/asm/sbi.h b/arch/riscv/include/asm/sbi.h
-> index f3eeca79a02d..29821addb9b7 100644
-> --- a/arch/riscv/include/asm/sbi.h
-> +++ b/arch/riscv/include/asm/sbi.h
-> @@ -122,6 +122,7 @@ enum sbi_ext_pmu_fid {
->         SBI_EXT_PMU_COUNTER_STOP,
->         SBI_EXT_PMU_COUNTER_FW_READ,
->         SBI_EXT_PMU_COUNTER_FW_READ_HI,
-> +       SBI_EXT_PMU_SNAPSHOT_SET_SHMEM,
->  };
->
->  union sbi_pmu_ctr_info {
-> @@ -138,6 +139,13 @@ union sbi_pmu_ctr_info {
->         };
->  };
->
-> +/* Data structure to contain the pmu snapshot data */
-> +struct riscv_pmu_snapshot_data {
-> +       uint64_t ctr_overflow_mask;
-> +       uint64_t ctr_values[64];
-> +       uint64_t reserved[447];
-> +};
-> +
->  #define RISCV_PMU_RAW_EVENT_MASK GENMASK_ULL(47, 0)
->  #define RISCV_PMU_RAW_EVENT_IDX 0x20000
->
-> @@ -234,9 +242,11 @@ enum sbi_pmu_ctr_type {
->
->  /* Flags defined for counter start function */
->  #define SBI_PMU_START_FLAG_SET_INIT_VALUE (1 << 0)
-> +#define SBI_PMU_START_FLAG_INIT_FROM_SNAPSHOT (1 << 1)
->
->  /* Flags defined for counter stop function */
->  #define SBI_PMU_STOP_FLAG_RESET (1 << 0)
-> +#define SBI_PMU_STOP_FLAG_TAKE_SNAPSHOT (1 << 1)
->
->  enum sbi_ext_dbcn_fid {
->         SBI_EXT_DBCN_CONSOLE_WRITE = 0,
-> --
-> 2.34.1
->
 
