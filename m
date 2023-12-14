@@ -1,176 +1,64 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Thu, 14 Dec 2023 11:16:04 +0100
-Subject: [PATCH v2 12/13] RISC-V: KVM: selftests: Add steal_time test support
-In-Reply-To: <20231214101552.100721-15-ajones@ventanamicro.com>
-References: <20231214101552.100721-15-ajones@ventanamicro.com>
-Message-ID: <20231214101552.100721-27-ajones@ventanamicro.com>
+From: Anup Patel <anup@brainfault.org>
+Date: Thu, 14 Dec 2023 17:43:09 +0530
+Subject: [RFC 1/9] RISC-V: Fix the typo in Scountovf CSR name
+In-Reply-To: <20231205024310.1593100-2-atishp@rivosinc.com>
+References: <20231205024310.1593100-1-atishp@rivosinc.com> <20231205024310.1593100-2-atishp@rivosinc.com>
+Message-ID: <CAAhSdy0j=BKfoNFr2+P+z0YK29LkudpHQ5XQUZhY_F1mfWQAug@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-With the introduction of steal-time accounting support for
-RISC-V KVM we can add RISC-V support to the steal_time test.
+On Tue, Dec 5, 2023 at 8:13?AM Atish Patra <atishp@rivosinc.com> wrote:
+>
+> The counter overflow CSR name is "scountovf" not "sscountovf".
+>
+> Fix the csr name.
+>
+> Fixes: 4905ec2fb7e6 ("RISC-V: Add sscofpmf extension support")
+>
+> Signed-off-by: Atish Patra <atishp@rivosinc.com>
 
-Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
----
- tools/testing/selftests/kvm/Makefile          |  5 +-
- .../selftests/kvm/include/riscv/processor.h   |  1 +
- tools/testing/selftests/kvm/steal_time.c      | 99 +++++++++++++++++++
- 3 files changed, 103 insertions(+), 2 deletions(-)
+LGTM.
 
-diff --git a/tools/testing/selftests/kvm/Makefile b/tools/testing/selftests/kvm/Makefile
-index 963435959a92..4bf4f52341a8 100644
---- a/tools/testing/selftests/kvm/Makefile
-+++ b/tools/testing/selftests/kvm/Makefile
-@@ -194,12 +194,13 @@ TEST_GEN_PROGS_s390x += kvm_binary_stats_test
- 
- TEST_GEN_PROGS_riscv += demand_paging_test
- TEST_GEN_PROGS_riscv += dirty_log_test
--TEST_GEN_PROGS_riscv += guest_print_test
- TEST_GEN_PROGS_riscv += get-reg-list
-+TEST_GEN_PROGS_riscv += guest_print_test
-+TEST_GEN_PROGS_riscv += kvm_binary_stats_test
- TEST_GEN_PROGS_riscv += kvm_create_max_vcpus
- TEST_GEN_PROGS_riscv += kvm_page_table_test
- TEST_GEN_PROGS_riscv += set_memory_region_test
--TEST_GEN_PROGS_riscv += kvm_binary_stats_test
-+TEST_GEN_PROGS_riscv += steal_time
- 
- SPLIT_TESTS += get-reg-list
- 
-diff --git a/tools/testing/selftests/kvm/include/riscv/processor.h b/tools/testing/selftests/kvm/include/riscv/processor.h
-index dc50ad62e150..a0f9efe5a2a8 100644
---- a/tools/testing/selftests/kvm/include/riscv/processor.h
-+++ b/tools/testing/selftests/kvm/include/riscv/processor.h
-@@ -128,6 +128,7 @@ static inline uint64_t __kvm_reg_id(uint64_t type, uint64_t subtype,
- 
- enum sbi_ext_id {
- 	SBI_EXT_BASE = 0x10,
-+	SBI_EXT_STA = 0x535441,
- };
- 
- enum sbi_ext_base_fid {
-diff --git a/tools/testing/selftests/kvm/steal_time.c b/tools/testing/selftests/kvm/steal_time.c
-index 171adfb2a6cb..bae0c5026f82 100644
---- a/tools/testing/selftests/kvm/steal_time.c
-+++ b/tools/testing/selftests/kvm/steal_time.c
-@@ -11,7 +11,9 @@
- #include <pthread.h>
- #include <linux/kernel.h>
- #include <asm/kvm.h>
-+#ifndef __riscv
- #include <asm/kvm_para.h>
-+#endif
- 
- #include "test_util.h"
- #include "kvm_util.h"
-@@ -203,6 +205,103 @@ static void steal_time_dump(struct kvm_vm *vm, uint32_t vcpu_idx)
- 	pr_info("    st_time: %ld\n", st->st_time);
- }
- 
-+#elif defined(__riscv)
-+
-+/* SBI STA shmem must have 64-byte alignment */
-+#define STEAL_TIME_SIZE		((sizeof(struct sta_struct) + 63) & ~63)
-+
-+static vm_paddr_t st_gpa[NR_VCPUS];
-+
-+struct sta_struct {
-+	uint32_t sequence;
-+	uint32_t flags;
-+	uint64_t steal;
-+	uint8_t preempted;
-+	uint8_t pad[47];
-+} __packed;
-+
-+static void sta_set_shmem(vm_paddr_t gpa, unsigned long flags)
-+{
-+	unsigned long lo = (unsigned long)gpa;
-+#if __riscv_xlen == 32
-+	unsigned long hi = (unsigned long)(gpa >> 32);
-+#else
-+	unsigned long hi = gpa == -1 ? -1 : 0;
-+#endif
-+	struct sbiret ret = sbi_ecall(SBI_EXT_STA, 0, lo, hi, flags, 0, 0, 0);
-+
-+	GUEST_ASSERT(ret.value == 0 && ret.error == 0);
-+}
-+
-+static void check_status(struct sta_struct *st)
-+{
-+	GUEST_ASSERT(!(READ_ONCE(st->sequence) & 1));
-+	GUEST_ASSERT(READ_ONCE(st->flags) == 0);
-+	GUEST_ASSERT(READ_ONCE(st->preempted) == 0);
-+}
-+
-+static void guest_code(int cpu)
-+{
-+	struct sta_struct *st = st_gva[cpu];
-+	uint32_t sequence;
-+	long out_val = 0;
-+	bool probe;
-+
-+	probe = guest_sbi_probe_extension(SBI_EXT_STA, &out_val);
-+	GUEST_ASSERT(probe && out_val == 1);
-+
-+	sta_set_shmem(st_gpa[cpu], 0);
-+	GUEST_SYNC(0);
-+
-+	check_status(st);
-+	WRITE_ONCE(guest_stolen_time[cpu], st->steal);
-+	sequence = READ_ONCE(st->sequence);
-+	check_status(st);
-+	GUEST_SYNC(1);
-+
-+	check_status(st);
-+	GUEST_ASSERT(sequence < READ_ONCE(st->sequence));
-+	WRITE_ONCE(guest_stolen_time[cpu], st->steal);
-+	check_status(st);
-+	GUEST_DONE();
-+}
-+
-+static bool is_steal_time_supported(struct kvm_vcpu *vcpu)
-+{
-+	uint64_t id = RISCV_SBI_EXT_REG(KVM_RISCV_SBI_EXT_STA);
-+	unsigned long enabled;
-+
-+	vcpu_get_reg(vcpu, id, &enabled);
-+	TEST_ASSERT(enabled == 0 || enabled == 1, "Expected boolean result");
-+
-+	return enabled;
-+}
-+
-+static void steal_time_init(struct kvm_vcpu *vcpu, uint32_t i)
-+{
-+	/* ST_GPA_BASE is identity mapped */
-+	st_gva[i] = (void *)(ST_GPA_BASE + i * STEAL_TIME_SIZE);
-+	st_gpa[i] = addr_gva2gpa(vcpu->vm, (vm_vaddr_t)st_gva[i]);
-+	sync_global_to_guest(vcpu->vm, st_gva[i]);
-+	sync_global_to_guest(vcpu->vm, st_gpa[i]);
-+}
-+
-+static void steal_time_dump(struct kvm_vm *vm, uint32_t vcpu_idx)
-+{
-+	struct sta_struct *st = addr_gva2hva(vm, (ulong)st_gva[vcpu_idx]);
-+	int i;
-+
-+	pr_info("VCPU%d:\n", vcpu_idx);
-+	pr_info("    sequence:  %d\n", st->sequence);
-+	pr_info("    flags:     %d\n", st->flags);
-+	pr_info("    steal:     %"PRIu64"\n", st->steal);
-+	pr_info("    preempted: %d\n", st->preempted);
-+	pr_info("    pad:      ");
-+	for (i = 0; i < 47; ++i)
-+		pr_info("%d", st->pad[i]);
-+	pr_info("\n");
-+}
-+
- #endif
- 
- static void *do_steal_time(void *arg)
--- 
-2.43.0
+Reviewed-by: Anup Patel <anup@brainfault.org>
 
+Regards,
+Anup
+
+> ---
+>  arch/riscv/include/asm/csr.h         | 2 +-
+>  arch/riscv/include/asm/errata_list.h | 2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/arch/riscv/include/asm/csr.h b/arch/riscv/include/asm/csr.h
+> index 306a19a5509c..88cdc8a3e654 100644
+> --- a/arch/riscv/include/asm/csr.h
+> +++ b/arch/riscv/include/asm/csr.h
+> @@ -281,7 +281,7 @@
+>  #define CSR_HPMCOUNTER30H      0xc9e
+>  #define CSR_HPMCOUNTER31H      0xc9f
+>
+> -#define CSR_SSCOUNTOVF         0xda0
+> +#define CSR_SCOUNTOVF          0xda0
+>
+>  #define CSR_SSTATUS            0x100
+>  #define CSR_SIE                        0x104
+> diff --git a/arch/riscv/include/asm/errata_list.h b/arch/riscv/include/asm/errata_list.h
+> index 83ed25e43553..7026fba12eeb 100644
+> --- a/arch/riscv/include/asm/errata_list.h
+> +++ b/arch/riscv/include/asm/errata_list.h
+> @@ -152,7 +152,7 @@ asm volatile(ALTERNATIVE_2(                                         \
+>
+>  #define ALT_SBI_PMU_OVERFLOW(__ovl)                                    \
+>  asm volatile(ALTERNATIVE(                                              \
+> -       "csrr %0, " __stringify(CSR_SSCOUNTOVF),                        \
+> +       "csrr %0, " __stringify(CSR_SCOUNTOVF),                         \
+>         "csrr %0, " __stringify(THEAD_C9XX_CSR_SCOUNTEROF),             \
+>                 THEAD_VENDOR_ID, ERRATA_THEAD_PMU,                      \
+>                 CONFIG_ERRATA_THEAD_PMU)                                \
+> --
+> 2.34.1
+>
 
