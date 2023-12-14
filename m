@@ -1,9 +1,9 @@
 From: Anup Patel <anup@brainfault.org>
-Date: Thu, 14 Dec 2023 11:32:35 +0530
-Subject: [PATCH 15/26] KVM: Move include/kvm/iodev.h to include/linux as kvm_iodev.h
-In-Reply-To: <20230916003118.2540661-16-seanjc@google.com>
-References: <20230916003118.2540661-1-seanjc@google.com> <20230916003118.2540661-16-seanjc@google.com>
-Message-ID: <CAAhSdy2aW0vUsaA_sVKROv8tr9ixuY+RZQt6XFs86bzy++AegA@mail.gmail.com>
+Date: Thu, 14 Dec 2023 11:34:49 +0530
+Subject: [PATCH 19/26] KVM: Standardize include paths across all architectures
+In-Reply-To: <20230916003118.2540661-20-seanjc@google.com>
+References: <20230916003118.2540661-1-seanjc@google.com> <20230916003118.2540661-20-seanjc@google.com>
+Message-ID: <CAAhSdy1bzQ2mxOew0iw-OuLWxzOhk3LtO+908TYw2gw+5yN3RA@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -12,8 +12,23 @@ Content-Transfer-Encoding: 7bit
 
 On Sat, Sep 16, 2023 at 6:01?AM Sean Christopherson <seanjc@google.com> wrote:
 >
-> Move iodev.h, the last remaining holdout in include/kvm, to the standard
-> include/linux directory as kvm_iodev.h and delete include/kvm.
+> Standardize KVM's include paths across all architectures by declaring
+> the KVM-specific includes in the common Makefile.kvm.  Having common KVM
+> "own" the included paths reduces the temptation to unnecessarily add
+> virt/kvm to arch include paths, and conversely if allowing arch code to
+> grab headers from virt/kvm becomes desirable, virt/kvm can be added to
+> all architecture's include path with a single line update.
+>
+> Having the common KVM makefile append to ccflags also provides a
+> convenient location to append other things, e.g. KVM-specific #defines.
+>
+> Note, this changes the behavior of s390 and PPC, as s390 and PPC
+> previously overwrote ccflags-y instead of adding on.  There is no evidence
+> that overwriting ccflags-y was necessary or even deliberate, as both s390
+> and PPC switched to the overwrite behavior without so much as a passing
+> mention when EXTRA_CFLAGS was replaced with ccflags-y (commit c73028a02887
+> ("s390: change to new flag variable") and commit 4108d9ba9091
+> ("powerpc/Makefiles: Change to new flag variables")).
 >
 > Signed-off-by: Sean Christopherson <seanjc@google.com>
 
@@ -24,263 +39,104 @@ Regards,
 Anup
 
 > ---
->  MAINTAINERS                                | 1 -
->  arch/arm64/include/asm/kvm_vgic.h          | 2 +-
->  arch/arm64/kvm/vgic/vgic-mmio-v2.c         | 2 +-
->  arch/arm64/kvm/vgic/vgic-mmio-v3.c         | 2 +-
->  arch/arm64/kvm/vgic/vgic-mmio.c            | 2 +-
->  arch/mips/include/asm/kvm_host.h           | 3 +--
->  arch/powerpc/kvm/mpic.c                    | 2 +-
->  arch/riscv/kvm/aia_aplic.c                 | 2 +-
->  arch/riscv/kvm/aia_imsic.c                 | 2 +-
->  arch/x86/kvm/i8254.h                       | 2 +-
->  arch/x86/kvm/ioapic.h                      | 2 +-
->  arch/x86/kvm/irq.h                         | 2 +-
->  arch/x86/kvm/lapic.h                       | 2 +-
->  include/{kvm/iodev.h => linux/kvm_iodev.h} | 0
->  virt/kvm/coalesced_mmio.c                  | 3 +--
->  virt/kvm/eventfd.c                         | 2 +-
->  virt/kvm/kvm_main.c                        | 3 +--
->  17 files changed, 15 insertions(+), 19 deletions(-)
->  rename include/{kvm/iodev.h => linux/kvm_iodev.h} (100%)
+>  arch/arm64/kvm/Makefile   | 2 --
+>  arch/mips/kvm/Makefile    | 2 --
+>  arch/powerpc/kvm/Makefile | 2 --
+>  arch/riscv/kvm/Makefile   | 2 --
+>  arch/s390/kvm/Makefile    | 2 --
+>  arch/x86/kvm/Makefile     | 1 -
+>  virt/kvm/Makefile.kvm     | 2 ++
+>  7 files changed, 2 insertions(+), 11 deletions(-)
 >
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 90f13281d297..ddc8375d536c 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -11498,7 +11498,6 @@ W:      http://www.linux-kvm.org
->  T:     git git://git.kernel.org/pub/scm/virt/kvm/kvm.git
->  F:     Documentation/virt/kvm/
->  F:     include/asm-generic/kvm*
-> -F:     include/kvm/iodev.h
->  F:     include/linux/kvm*
->  F:     include/trace/events/kvm.h
->  F:     include/uapi/asm-generic/kvm*
-> diff --git a/arch/arm64/include/asm/kvm_vgic.h b/arch/arm64/include/asm/kvm_vgic.h
-> index 5b27f94d4fad..2ca52888bc75 100644
-> --- a/arch/arm64/include/asm/kvm_vgic.h
-> +++ b/arch/arm64/include/asm/kvm_vgic.h
-> @@ -13,7 +13,7 @@
->  #include <linux/spinlock.h>
->  #include <linux/static_key.h>
->  #include <linux/types.h>
-> -#include <kvm/iodev.h>
-> +#include <linux/kvm_iodev.h>
->  #include <linux/list.h>
->  #include <linux/jump_label.h>
+> diff --git a/arch/arm64/kvm/Makefile b/arch/arm64/kvm/Makefile
+> index c0c050e53157..3996489baeef 100644
+> --- a/arch/arm64/kvm/Makefile
+> +++ b/arch/arm64/kvm/Makefile
+> @@ -3,8 +3,6 @@
+>  # Makefile for Kernel-based Virtual Machine module
+>  #
 >
-> diff --git a/arch/arm64/kvm/vgic/vgic-mmio-v2.c b/arch/arm64/kvm/vgic/vgic-mmio-v2.c
-> index bba0cfeefffe..646053ee892f 100644
-> --- a/arch/arm64/kvm/vgic/vgic-mmio-v2.c
-> +++ b/arch/arm64/kvm/vgic/vgic-mmio-v2.c
-> @@ -6,9 +6,9 @@
->  #include <linux/irqchip/arm-gic.h>
->  #include <linux/kvm.h>
->  #include <linux/kvm_host.h>
-> +#include <linux/kvm_iodev.h>
->  #include <linux/nospec.h>
->
-> -#include <kvm/iodev.h>
->  #include <asm/kvm_vgic.h>
->
->  #include "vgic.h"
-> diff --git a/arch/arm64/kvm/vgic/vgic-mmio-v3.c b/arch/arm64/kvm/vgic/vgic-mmio-v3.c
-> index d54a90beef61..b79a2e860415 100644
-> --- a/arch/arm64/kvm/vgic/vgic-mmio-v3.c
-> +++ b/arch/arm64/kvm/vgic/vgic-mmio-v3.c
-> @@ -7,8 +7,8 @@
->  #include <linux/irqchip/arm-gic-v3.h>
->  #include <linux/kvm.h>
->  #include <linux/kvm_host.h>
-> +#include <linux/kvm_iodev.h>
->  #include <linux/interrupt.h>
-> -#include <kvm/iodev.h>
->
->  #include <asm/kvm_emulate.h>
->  #include <asm/kvm_arm.h>
-> diff --git a/arch/arm64/kvm/vgic/vgic-mmio.c b/arch/arm64/kvm/vgic/vgic-mmio.c
-> index 68a3d8062473..4feca3b1d915 100644
-> --- a/arch/arm64/kvm/vgic/vgic-mmio.c
-> +++ b/arch/arm64/kvm/vgic/vgic-mmio.c
-> @@ -9,7 +9,7 @@
->  #include <linux/irq.h>
->  #include <linux/kvm.h>
->  #include <linux/kvm_host.h>
-> -#include <kvm/iodev.h>
-> +#include <linux/kvm_iodev.h>
->  #include <asm/kvm_arch_timer.h>
->  #include <asm/kvm_vgic.h>
->
-> diff --git a/arch/mips/include/asm/kvm_host.h b/arch/mips/include/asm/kvm_host.h
-> index 54a85f1d4f2c..f8f63d0aa399 100644
-> --- a/arch/mips/include/asm/kvm_host.h
-> +++ b/arch/mips/include/asm/kvm_host.h
-> @@ -16,6 +16,7 @@
->  #include <linux/interrupt.h>
->  #include <linux/types.h>
->  #include <linux/kvm.h>
-> +#include <linux/kvm_iodev.h>
->  #include <linux/kvm_types.h>
->  #include <linux/threads.h>
->  #include <linux/spinlock.h>
-> @@ -24,8 +25,6 @@
->  #include <asm/inst.h>
->  #include <asm/mipsregs.h>
->
-> -#include <kvm/iodev.h>
+> -ccflags-y += -I $(srctree)/$(src)
 > -
->  /* MIPS KVM register ids */
->  #define MIPS_CP0_32(_R, _S)                                    \
->         (KVM_REG_MIPS_CP0 | KVM_REG_SIZE_U32 | (8 * (_R) + (_S)))
-> diff --git a/arch/powerpc/kvm/mpic.c b/arch/powerpc/kvm/mpic.c
-> index 23e9c2bd9f27..b25a03251544 100644
-> --- a/arch/powerpc/kvm/mpic.c
-> +++ b/arch/powerpc/kvm/mpic.c
-> @@ -26,6 +26,7 @@
->  #include <linux/slab.h>
->  #include <linux/mutex.h>
->  #include <linux/kvm_host.h>
-> +#include <linux/kvm_iodev.h>
->  #include <linux/errno.h>
->  #include <linux/fs.h>
->  #include <linux/anon_inodes.h>
-> @@ -33,7 +34,6 @@
->  #include <asm/mpic.h>
->  #include <asm/kvm_para.h>
->  #include <asm/kvm_ppc.h>
-> -#include <kvm/iodev.h>
+>  include $(srctree)/virt/kvm/Makefile.kvm
 >
->  #define MAX_CPU     32
->  #define MAX_SRC     256
-> diff --git a/arch/riscv/kvm/aia_aplic.c b/arch/riscv/kvm/aia_aplic.c
-> index 39e72aa016a4..b49e747f2bad 100644
-> --- a/arch/riscv/kvm/aia_aplic.c
-> +++ b/arch/riscv/kvm/aia_aplic.c
-> @@ -11,7 +11,7 @@
->  #include <linux/math.h>
->  #include <linux/spinlock.h>
->  #include <linux/swab.h>
-> -#include <kvm/iodev.h>
-> +#include <linux/kvm_iodev.h>
->  #include <asm/kvm_aia_aplic.h>
+>  obj-$(CONFIG_KVM) += kvm.o
+> diff --git a/arch/mips/kvm/Makefile b/arch/mips/kvm/Makefile
+> index 96a7cd21b140..d198e1addea7 100644
+> --- a/arch/mips/kvm/Makefile
+> +++ b/arch/mips/kvm/Makefile
+> @@ -4,8 +4,6 @@
 >
->  struct aplic_irq {
-> diff --git a/arch/riscv/kvm/aia_imsic.c b/arch/riscv/kvm/aia_imsic.c
-> index 6cf23b8adb71..586e466a1c6d 100644
-> --- a/arch/riscv/kvm/aia_imsic.c
-> +++ b/arch/riscv/kvm/aia_imsic.c
-> @@ -10,10 +10,10 @@
->  #include <linux/atomic.h>
->  #include <linux/bitmap.h>
->  #include <linux/kvm_host.h>
-> +#include <linux/kvm_iodev.h>
->  #include <linux/math.h>
->  #include <linux/spinlock.h>
->  #include <linux/swab.h>
-> -#include <kvm/iodev.h>
->  #include <asm/csr.h>
->  #include <asm/kvm_aia_imsic.h>
+>  include $(srctree)/virt/kvm/Makefile.kvm
 >
-> diff --git a/arch/x86/kvm/i8254.h b/arch/x86/kvm/i8254.h
-> index a768212ba821..4de7a0b88e4f 100644
-> --- a/arch/x86/kvm/i8254.h
-> +++ b/arch/x86/kvm/i8254.h
-> @@ -4,7 +4,7 @@
->
->  #include <linux/kthread.h>
->
-> -#include <kvm/iodev.h>
-> +#include <linux/kvm_iodev.h>
->
->  struct kvm_kpit_channel_state {
->         u32 count; /* can be 65536 */
-> diff --git a/arch/x86/kvm/ioapic.h b/arch/x86/kvm/ioapic.h
-> index 539333ac4b38..2beec2daf1a3 100644
-> --- a/arch/x86/kvm/ioapic.h
-> +++ b/arch/x86/kvm/ioapic.h
-> @@ -3,7 +3,7 @@
->  #define __KVM_IO_APIC_H
->
->  #include <linux/kvm_host.h>
-> -#include <kvm/iodev.h>
-> +#include <linux/kvm_iodev.h>
->  #include "irq.h"
->
->  struct kvm;
-> diff --git a/arch/x86/kvm/irq.h b/arch/x86/kvm/irq.h
-> index c2d7cfe82d00..f9530e9a66f8 100644
-> --- a/arch/x86/kvm/irq.h
-> +++ b/arch/x86/kvm/irq.h
-> @@ -13,9 +13,9 @@
->  #include <linux/mm_types.h>
->  #include <linux/hrtimer.h>
->  #include <linux/kvm_host.h>
-> +#include <linux/kvm_iodev.h>
->  #include <linux/spinlock.h>
->
-> -#include <kvm/iodev.h>
->  #include "lapic.h"
->
->  #define PIC_NUM_PINS 16
-> diff --git a/arch/x86/kvm/lapic.h b/arch/x86/kvm/lapic.h
-> index 0a0ea4b5dd8c..bfd99ad1882e 100644
-> --- a/arch/x86/kvm/lapic.h
-> +++ b/arch/x86/kvm/lapic.h
-> @@ -2,7 +2,7 @@
->  #ifndef __KVM_X86_LAPIC_H
->  #define __KVM_X86_LAPIC_H
->
-> -#include <kvm/iodev.h>
-> +#include <linux/kvm_iodev.h>
->
->  #include <linux/kvm_host.h>
->
-> diff --git a/include/kvm/iodev.h b/include/linux/kvm_iodev.h
-> similarity index 100%
-> rename from include/kvm/iodev.h
-> rename to include/linux/kvm_iodev.h
-> diff --git a/virt/kvm/coalesced_mmio.c b/virt/kvm/coalesced_mmio.c
-> index 1b90acb6e3fe..cfcb4b84d632 100644
-> --- a/virt/kvm/coalesced_mmio.c
-> +++ b/virt/kvm/coalesced_mmio.c
-> @@ -9,8 +9,7 @@
->   *
->   */
->
-> -#include <kvm/iodev.h>
+> -ccflags-y += -Iarch/mips/kvm
 > -
-> +#include <linux/kvm_iodev.h>
->  #include <linux/kvm_host.h>
->  #include <linux/slab.h>
->  #include <linux/kvm.h>
-> diff --git a/virt/kvm/eventfd.c b/virt/kvm/eventfd.c
-> index 89912a17f5d5..4d7cfb1095fd 100644
-> --- a/virt/kvm/eventfd.c
-> +++ b/virt/kvm/eventfd.c
-> @@ -26,7 +26,7 @@
->  #include <linux/irqbypass.h>
->  #include <trace/events/kvm.h>
+>  kvm-$(CONFIG_CPU_HAS_MSA) += msa.o
 >
-> -#include <kvm/iodev.h>
-> +#include <linux/kvm_iodev.h>
+>  kvm-y +=    mips.o emulate.o entry.o \
+> diff --git a/arch/powerpc/kvm/Makefile b/arch/powerpc/kvm/Makefile
+> index 08a0e53d58c7..d6c6678ddf65 100644
+> --- a/arch/powerpc/kvm/Makefile
+> +++ b/arch/powerpc/kvm/Makefile
+> @@ -3,8 +3,6 @@
+>  # Makefile for Kernel-based Virtual Machine module
+>  #
 >
->  #ifdef CONFIG_HAVE_KVM_IRQFD
->
-> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-> index 486800a7024b..f585a159b4f5 100644
-> --- a/virt/kvm/kvm_main.c
-> +++ b/virt/kvm/kvm_main.c
-> @@ -13,9 +13,8 @@
->   *   Yaniv Kamay  <yaniv@qumranet.com>
->   */
->
-> -#include <kvm/iodev.h>
+> -ccflags-y := -Iarch/powerpc/kvm
 > -
->  #include <linux/kvm_host.h>
-> +#include <linux/kvm_iodev.h>
->  #include <linux/kvm.h>
->  #include <linux/module.h>
->  #include <linux/errno.h>
+>  include $(srctree)/virt/kvm/Makefile.kvm
+>
+>  common-objs-y += powerpc.o emulate_loadstore.o
+> diff --git a/arch/riscv/kvm/Makefile b/arch/riscv/kvm/Makefile
+> index 4c2067fc59fc..ff7d5f67e229 100644
+> --- a/arch/riscv/kvm/Makefile
+> +++ b/arch/riscv/kvm/Makefile
+> @@ -3,8 +3,6 @@
+>  # Makefile for RISC-V KVM support
+>  #
+>
+> -ccflags-y += -I $(srctree)/$(src)
+> -
+>  include $(srctree)/virt/kvm/Makefile.kvm
+>
+>  obj-$(CONFIG_KVM) += kvm.o
+> diff --git a/arch/s390/kvm/Makefile b/arch/s390/kvm/Makefile
+> index f17249ab2a72..f8153189e003 100644
+> --- a/arch/s390/kvm/Makefile
+> +++ b/arch/s390/kvm/Makefile
+> @@ -5,8 +5,6 @@
+>
+>  include $(srctree)/virt/kvm/Makefile.kvm
+>
+> -ccflags-y := -Iarch/s390/kvm
+> -
+>  kvm-y += kvm-s390.o intercept.o interrupt.o priv.o sigp.o
+>  kvm-y += diag.o gaccess.o guestdbg.o vsie.o pv.o
+>
+> diff --git a/arch/x86/kvm/Makefile b/arch/x86/kvm/Makefile
+> index 80e3fe184d17..d13f1a7b7b3d 100644
+> --- a/arch/x86/kvm/Makefile
+> +++ b/arch/x86/kvm/Makefile
+> @@ -1,6 +1,5 @@
+>  # SPDX-License-Identifier: GPL-2.0
+>
+> -ccflags-y += -I $(srctree)/arch/x86/kvm
+>  ccflags-$(CONFIG_KVM_WERROR) += -Werror
+>
+>  ifeq ($(CONFIG_FRAME_POINTER),y)
+> diff --git a/virt/kvm/Makefile.kvm b/virt/kvm/Makefile.kvm
+> index 29373b59d89a..e85079ad245d 100644
+> --- a/virt/kvm/Makefile.kvm
+> +++ b/virt/kvm/Makefile.kvm
+> @@ -3,6 +3,8 @@
+>  # Makefile for Kernel-based Virtual Machine module
+>  #
+>
+> +ccflags-y += -I$(srctree)/$(src)
+> +
+>  KVM ?= ../../../virt/kvm
+>
+>  kvm-y := $(KVM)/kvm_main.o $(KVM)/eventfd.o $(KVM)/binary_stats.o
 > --
 > 2.42.0.459.ge4e396fd5e-goog
 >
