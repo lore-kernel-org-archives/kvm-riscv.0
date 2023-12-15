@@ -1,270 +1,217 @@
 From: Anup Patel <anup@brainfault.org>
-Date: Thu, 14 Dec 2023 21:32:24 +0530
-Subject: [RFC 8/9] RISC-V: KVM: Add perf sampling support for guests
-In-Reply-To: <20231205024310.1593100-9-atishp@rivosinc.com>
-References: <20231205024310.1593100-1-atishp@rivosinc.com> <20231205024310.1593100-9-atishp@rivosinc.com>
-Message-ID: <CAAhSdy3SL4HhXkQ4BVNLgNodfRVGCHb8xxJ7YTs-ANJH5kgXPA@mail.gmail.com>
+Date: Fri, 15 Dec 2023 11:07:24 +0530
+Subject: [PATCH v2 01/13] RISC-V: paravirt: Add skeleton for pv-time support
+In-Reply-To: <20231214101552.100721-16-ajones@ventanamicro.com>
+References: <20231214101552.100721-15-ajones@ventanamicro.com> <20231214101552.100721-16-ajones@ventanamicro.com>
+Message-ID: <CAAhSdy0JgONbwAc_oaT6e7WAv9PjjmC-_zHGbHqpQ=BoZJQBEQ@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Dec 5, 2023 at 8:13?AM Atish Patra <atishp@rivosinc.com> wrote:
+On Thu, Dec 14, 2023 at 3:45?PM Andrew Jones <ajones@ventanamicro.com> wrote:
 >
-> KVM enables perf for guest via counter virtualization. However, the
-> sampling can not be supported as there is no mechanism to enabled
-> trap/emulate scountovf in ISA yet. Rely on the SBI PMU snapshot
-> to provide the counter overflow data via the shared memory.
+> Add the files and functions needed to support paravirt time on
+> RISC-V. Also include the common code needed for the first
+> application of pv-time, which is steal-time. In the next
+> patches we'll complete the functions to fully enable steal-time
+> support.
 >
-> In case of sampling event, the host first guest the LCOFI interrupt
-> and injects to the guest via irq filtering mechanism defined in AIA
-> specification. Thus, ssaia must be enabled in the host in order to
-> use perf sampling in the guest. No other AIA dpeendancy w.r.t kernel
+> Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
 
-s/dpeendancy/dependency/
+LGTM.
 
-> is required.
->
-> Signed-off-by: Atish Patra <atishp@rivosinc.com>
-> ---
->  arch/riscv/include/asm/csr.h      |  3 +-
->  arch/riscv/include/uapi/asm/kvm.h |  1 +
->  arch/riscv/kvm/main.c             |  1 +
->  arch/riscv/kvm/vcpu.c             |  8 ++--
->  arch/riscv/kvm/vcpu_onereg.c      |  1 +
->  arch/riscv/kvm/vcpu_pmu.c         | 69 ++++++++++++++++++++++++++++---
->  6 files changed, 73 insertions(+), 10 deletions(-)
->
-> diff --git a/arch/riscv/include/asm/csr.h b/arch/riscv/include/asm/csr.h
-> index 88cdc8a3e654..bec09b33e2f0 100644
-> --- a/arch/riscv/include/asm/csr.h
-> +++ b/arch/riscv/include/asm/csr.h
-> @@ -168,7 +168,8 @@
->  #define VSIP_TO_HVIP_SHIFT     (IRQ_VS_SOFT - IRQ_S_SOFT)
->  #define VSIP_VALID_MASK                ((_AC(1, UL) << IRQ_S_SOFT) | \
->                                  (_AC(1, UL) << IRQ_S_TIMER) | \
-> -                                (_AC(1, UL) << IRQ_S_EXT))
-> +                                (_AC(1, UL) << IRQ_S_EXT) | \
-> +                                (_AC(1, UL) << IRQ_PMU_OVF))
->
->  /* AIA CSR bits */
->  #define TOPI_IID_SHIFT         16
-> diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
-> index 60d3b21dead7..741c16f4518e 100644
-> --- a/arch/riscv/include/uapi/asm/kvm.h
-> +++ b/arch/riscv/include/uapi/asm/kvm.h
-> @@ -139,6 +139,7 @@ enum KVM_RISCV_ISA_EXT_ID {
->         KVM_RISCV_ISA_EXT_ZIHPM,
->         KVM_RISCV_ISA_EXT_SMSTATEEN,
->         KVM_RISCV_ISA_EXT_ZICOND,
-> +       KVM_RISCV_ISA_EXT_SSCOFPMF,
->         KVM_RISCV_ISA_EXT_MAX,
->  };
->
-> diff --git a/arch/riscv/kvm/main.c b/arch/riscv/kvm/main.c
-> index 225a435d9c9a..5a3a4cee0e3d 100644
-> --- a/arch/riscv/kvm/main.c
-> +++ b/arch/riscv/kvm/main.c
-> @@ -43,6 +43,7 @@ int kvm_arch_hardware_enable(void)
->         csr_write(CSR_HCOUNTEREN, 0x02);
->
->         csr_write(CSR_HVIP, 0);
-> +       csr_write(CSR_HVIEN, 1UL << IRQ_PMU_OVF);
->
->         kvm_riscv_aia_enable();
->
-> diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-> index e087c809073c..2d9f252356c3 100644
-> --- a/arch/riscv/kvm/vcpu.c
-> +++ b/arch/riscv/kvm/vcpu.c
-> @@ -380,7 +380,8 @@ int kvm_riscv_vcpu_set_interrupt(struct kvm_vcpu *vcpu, unsigned int irq)
->         if (irq < IRQ_LOCAL_MAX &&
->             irq != IRQ_VS_SOFT &&
->             irq != IRQ_VS_TIMER &&
-> -           irq != IRQ_VS_EXT)
-> +           irq != IRQ_VS_EXT &&
-> +           irq != IRQ_PMU_OVF)
->                 return -EINVAL;
->
->         set_bit(irq, vcpu->arch.irqs_pending);
-> @@ -395,14 +396,15 @@ int kvm_riscv_vcpu_set_interrupt(struct kvm_vcpu *vcpu, unsigned int irq)
->  int kvm_riscv_vcpu_unset_interrupt(struct kvm_vcpu *vcpu, unsigned int irq)
->  {
->         /*
-> -        * We only allow VS-mode software, timer, and external
-> +        * We only allow VS-mode software, timer, counter overflow and external
->          * interrupts when irq is one of the local interrupts
->          * defined by RISC-V privilege specification.
->          */
->         if (irq < IRQ_LOCAL_MAX &&
->             irq != IRQ_VS_SOFT &&
->             irq != IRQ_VS_TIMER &&
-> -           irq != IRQ_VS_EXT)
-> +           irq != IRQ_VS_EXT &&
-> +           irq != IRQ_PMU_OVF)
->                 return -EINVAL;
->
->         clear_bit(irq, vcpu->arch.irqs_pending);
-> diff --git a/arch/riscv/kvm/vcpu_onereg.c b/arch/riscv/kvm/vcpu_onereg.c
-> index f8c9fa0c03c5..19a0e4eaf0df 100644
-> --- a/arch/riscv/kvm/vcpu_onereg.c
-> +++ b/arch/riscv/kvm/vcpu_onereg.c
-> @@ -36,6 +36,7 @@ static const unsigned long kvm_isa_ext_arr[] = {
->         /* Multi letter extensions (alphabetically sorted) */
->         KVM_ISA_EXT_ARR(SMSTATEEN),
->         KVM_ISA_EXT_ARR(SSAIA),
-> +       KVM_ISA_EXT_ARR(SSCOFPMF),
-
-Sscofpmf can't be disabled for guest so we should add it to
-kvm_riscv_vcpu_isa_disable_allowed(), no ?
-
->         KVM_ISA_EXT_ARR(SSTC),
->         KVM_ISA_EXT_ARR(SVINVAL),
->         KVM_ISA_EXT_ARR(SVNAPOT),
-> diff --git a/arch/riscv/kvm/vcpu_pmu.c b/arch/riscv/kvm/vcpu_pmu.c
-> index 622c4ee89e7b..86c8e92f92d3 100644
-> --- a/arch/riscv/kvm/vcpu_pmu.c
-> +++ b/arch/riscv/kvm/vcpu_pmu.c
-> @@ -229,6 +229,47 @@ static int kvm_pmu_validate_counter_mask(struct kvm_pmu *kvpmu, unsigned long ct
->         return 0;
->  }
->
-> +static void kvm_riscv_pmu_overflow(struct perf_event *perf_event,
-> +                                 struct perf_sample_data *data,
-> +                                 struct pt_regs *regs)
-> +{
-> +       struct kvm_pmc *pmc = perf_event->overflow_handler_context;
-> +       struct kvm_vcpu *vcpu = pmc->vcpu;
-
-Ahh, the "vcpu" field is used here. Move that change from
-patch7 to this patch.
-
-> +       struct kvm_pmu *kvpmu = vcpu_to_pmu(vcpu);
-> +       struct riscv_pmu *rpmu = to_riscv_pmu(perf_event->pmu);
-> +       u64 period;
-> +
-> +       /*
-> +        * Stop the event counting by directly accessing the perf_event.
-> +        * Otherwise, this needs to deferred via a workqueue.
-> +        * That will introduce skew in the counter value because the actual
-> +        * physical counter would start after returning from this function.
-> +        * It will be stopped again once the workqueue is scheduled
-> +        */
-> +       rpmu->pmu.stop(perf_event, PERF_EF_UPDATE);
-> +
-> +       /*
-> +        * The hw counter would start automatically when this function returns.
-> +        * Thus, the host may continue to interrupts and inject it to the guest
-> +        * even without guest configuring the next event. Depending on the hardware
-> +        * the host may some sluggishness only if privilege mode filtering is not
-> +        * available. In an ideal world, where qemu is not the only capable hardware,
-> +        * this can be removed.
-> +        * FYI: ARM64 does this way while x86 doesn't do anything as such.
-> +        * TODO: Should we keep it for RISC-V ?
-> +        */
-> +       period = -(local64_read(&perf_event->count));
-> +
-> +       local64_set(&perf_event->hw.period_left, 0);
-> +       perf_event->attr.sample_period = period;
-> +       perf_event->hw.sample_period = period;
-> +
-> +       set_bit(pmc->idx, kvpmu->pmc_overflown);
-> +       kvm_riscv_vcpu_set_interrupt(vcpu, IRQ_PMU_OVF);
-> +
-> +       rpmu->pmu.start(perf_event, PERF_EF_RELOAD);
-> +}
-> +
->  static int kvm_pmu_create_perf_event(struct kvm_pmc *pmc, struct perf_event_attr *attr,
->                                      unsigned long flags, unsigned long eidx, unsigned long evtdata)
->  {
-> @@ -247,7 +288,7 @@ static int kvm_pmu_create_perf_event(struct kvm_pmc *pmc, struct perf_event_attr
->          */
->         attr->sample_period = kvm_pmu_get_sample_period(pmc);
->
-> -       event = perf_event_create_kernel_counter(attr, -1, current, NULL, pmc);
-> +       event = perf_event_create_kernel_counter(attr, -1, current, kvm_riscv_pmu_overflow, pmc);
->         if (IS_ERR(event)) {
->                 pr_err("kvm pmu event creation failed for eidx %lx: %ld\n", eidx, PTR_ERR(event));
->                 return PTR_ERR(event);
-> @@ -466,6 +507,12 @@ int kvm_riscv_vcpu_pmu_ctr_start(struct kvm_vcpu *vcpu, unsigned long ctr_base,
->                 }
->         }
->
-> +       /* The guest have serviced the interrupt and starting the counter again */
-> +       if (test_bit(IRQ_PMU_OVF, vcpu->arch.irqs_pending)) {
-> +               clear_bit(pmc_index, kvpmu->pmc_overflown);
-> +               kvm_riscv_vcpu_unset_interrupt(vcpu, IRQ_PMU_OVF);
-> +       }
-> +
->  out:
->         retdata->err_val = sbiret;
->
-> @@ -537,7 +584,12 @@ int kvm_riscv_vcpu_pmu_ctr_stop(struct kvm_vcpu *vcpu, unsigned long ctr_base,
->                 }
->
->                 if (bSnapshot && !sbiret) {
-> -                       //TODO: Add counter overflow support when sscofpmf support is added
-> +                       /* The counter and overflow indicies in the snapshot region are w.r.to
-> +                        * cbase. Modify the set bit in the counter mask instead of the pmc_index
-> +                        * which indicates the absolute counter index.
-> +                        */
-
-Use a double winged comment block here.
-
-> +                       if (test_bit(pmc_index, kvpmu->pmc_overflown))
-> +                               kvpmu->sdata->ctr_overflow_mask |= (1UL << i);
->                         kvpmu->sdata->ctr_values[i] = pmc->counter_val;
->                         kvm_vcpu_write_guest(vcpu, kvpmu->snapshot_addr, kvpmu->sdata,
->                                              sizeof(struct riscv_pmu_snapshot_data));
-> @@ -546,15 +598,19 @@ int kvm_riscv_vcpu_pmu_ctr_stop(struct kvm_vcpu *vcpu, unsigned long ctr_base,
->                 if (flags & SBI_PMU_STOP_FLAG_RESET) {
->                         pmc->event_idx = SBI_PMU_EVENT_IDX_INVALID;
->                         clear_bit(pmc_index, kvpmu->pmc_in_use);
-> +                       clear_bit(pmc_index, kvpmu->pmc_overflown);
->                         if (bSnapshot) {
->                                 /* Clear the snapshot area for the upcoming deletion event */
->                                 kvpmu->sdata->ctr_values[i] = 0;
-> +                               /* Only clear the given counter as the caller is responsible to
-> +                                * validate both the overflow mask and configured counters.
-> +                                */
-
-Use a double winged comment block here.
-
-> +                               kvpmu->sdata->ctr_overflow_mask &= ~(1UL << i);
->                                 kvm_vcpu_write_guest(vcpu, kvpmu->snapshot_addr, kvpmu->sdata,
->                                                      sizeof(struct riscv_pmu_snapshot_data));
->                         }
->                 }
->         }
-> -
->  out:
->         retdata->err_val = sbiret;
->
-> @@ -729,15 +785,16 @@ void kvm_riscv_vcpu_pmu_deinit(struct kvm_vcpu *vcpu)
->         if (!kvpmu)
->                 return;
->
-> -       for_each_set_bit(i, kvpmu->pmc_in_use, RISCV_MAX_COUNTERS) {
-> +       for_each_set_bit(i, kvpmu->pmc_in_use, RISCV_KVM_MAX_COUNTERS) {
->                 pmc = &kvpmu->pmc[i];
->                 pmc->counter_val = 0;
->                 kvm_pmu_release_perf_event(pmc);
->                 pmc->event_idx = SBI_PMU_EVENT_IDX_INVALID;
->         }
-> -       bitmap_zero(kvpmu->pmc_in_use, RISCV_MAX_COUNTERS);
-> +       bitmap_zero(kvpmu->pmc_in_use, RISCV_KVM_MAX_COUNTERS);
-> +       bitmap_zero(kvpmu->pmc_overflown, RISCV_KVM_MAX_COUNTERS);
->         memset(&kvpmu->fw_event, 0, SBI_PMU_FW_MAX * sizeof(struct kvm_fw_event));
-> -       kvpmu->snapshot_addr = INVALID_GPA;
-> +       kvm_pmu_clear_snapshot_area(vcpu);
->  }
->
->  void kvm_riscv_vcpu_pmu_reset(struct kvm_vcpu *vcpu)
-> --
-> 2.34.1
->
+Reviewed-by: Anup Patel <anup@brainfault.org>
 
 Regards,
 Anup
+
+> ---
+>  .../admin-guide/kernel-parameters.txt         |  6 +-
+>  arch/riscv/include/asm/paravirt.h             | 28 +++++++
+>  arch/riscv/include/asm/paravirt_api_clock.h   |  1 +
+>  arch/riscv/kernel/Makefile                    |  1 +
+>  arch/riscv/kernel/paravirt.c                  | 77 +++++++++++++++++++
+>  arch/riscv/kernel/time.c                      |  3 +
+>  6 files changed, 113 insertions(+), 3 deletions(-)
+>  create mode 100644 arch/riscv/include/asm/paravirt.h
+>  create mode 100644 arch/riscv/include/asm/paravirt_api_clock.h
+>  create mode 100644 arch/riscv/kernel/paravirt.c
+>
+> diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
+> index 65731b060e3f..a0d9259e4857 100644
+> --- a/Documentation/admin-guide/kernel-parameters.txt
+> +++ b/Documentation/admin-guide/kernel-parameters.txt
+> @@ -3985,9 +3985,9 @@
+>                         vulnerability. System may allow data leaks with this
+>                         option.
+>
+> -       no-steal-acc    [X86,PV_OPS,ARM64,PPC/PSERIES] Disable paravirtualized
+> -                       steal time accounting. steal time is computed, but
+> -                       won't influence scheduler behaviour
+> +       no-steal-acc    [X86,PV_OPS,ARM64,PPC/PSERIES,RISCV] Disable
+> +                       paravirtualized steal time accounting. steal time is
+> +                       computed, but won't influence scheduler behaviour
+>
+>         nosync          [HW,M68K] Disables sync negotiation for all devices.
+>
+> diff --git a/arch/riscv/include/asm/paravirt.h b/arch/riscv/include/asm/paravirt.h
+> new file mode 100644
+> index 000000000000..c0abde70fc2c
+> --- /dev/null
+> +++ b/arch/riscv/include/asm/paravirt.h
+> @@ -0,0 +1,28 @@
+> +/* SPDX-License-Identifier: GPL-2.0 */
+> +#ifndef _ASM_RISCV_PARAVIRT_H
+> +#define _ASM_RISCV_PARAVIRT_H
+> +
+> +#ifdef CONFIG_PARAVIRT
+> +#include <linux/static_call_types.h>
+> +
+> +struct static_key;
+> +extern struct static_key paravirt_steal_enabled;
+> +extern struct static_key paravirt_steal_rq_enabled;
+> +
+> +u64 dummy_steal_clock(int cpu);
+> +
+> +DECLARE_STATIC_CALL(pv_steal_clock, dummy_steal_clock);
+> +
+> +static inline u64 paravirt_steal_clock(int cpu)
+> +{
+> +       return static_call(pv_steal_clock)(cpu);
+> +}
+> +
+> +int __init pv_time_init(void);
+> +
+> +#else
+> +
+> +#define pv_time_init() do {} while (0)
+> +
+> +#endif /* CONFIG_PARAVIRT */
+> +#endif /* _ASM_RISCV_PARAVIRT_H */
+> diff --git a/arch/riscv/include/asm/paravirt_api_clock.h b/arch/riscv/include/asm/paravirt_api_clock.h
+> new file mode 100644
+> index 000000000000..65ac7cee0dad
+> --- /dev/null
+> +++ b/arch/riscv/include/asm/paravirt_api_clock.h
+> @@ -0,0 +1 @@
+> +#include <asm/paravirt.h>
+> diff --git a/arch/riscv/kernel/Makefile b/arch/riscv/kernel/Makefile
+> index fee22a3d1b53..807c2bde1f83 100644
+> --- a/arch/riscv/kernel/Makefile
+> +++ b/arch/riscv/kernel/Makefile
+> @@ -85,6 +85,7 @@ obj-$(CONFIG_SMP)             += sbi-ipi.o
+>  obj-$(CONFIG_SMP) += cpu_ops_sbi.o
+>  endif
+>  obj-$(CONFIG_HOTPLUG_CPU)      += cpu-hotplug.o
+> +obj-$(CONFIG_PARAVIRT)         += paravirt.o
+>  obj-$(CONFIG_KGDB)             += kgdb.o
+>  obj-$(CONFIG_KEXEC_CORE)       += kexec_relocate.o crash_save_regs.o machine_kexec.o
+>  obj-$(CONFIG_KEXEC_FILE)       += elf_kexec.o machine_kexec_file.o
+> diff --git a/arch/riscv/kernel/paravirt.c b/arch/riscv/kernel/paravirt.c
+> new file mode 100644
+> index 000000000000..141dbcc36fa2
+> --- /dev/null
+> +++ b/arch/riscv/kernel/paravirt.c
+> @@ -0,0 +1,77 @@
+> +// SPDX-License-Identifier: GPL-2.0-only
+> +/*
+> + * Copyright (c) 2023 Ventana Micro Systems Inc.
+> + */
+> +
+> +#define pr_fmt(fmt) "riscv-pv: " fmt
+> +
+> +#include <linux/cpuhotplug.h>
+> +#include <linux/init.h>
+> +#include <linux/jump_label.h>
+> +#include <linux/printk.h>
+> +#include <linux/static_call.h>
+> +#include <linux/types.h>
+> +
+> +struct static_key paravirt_steal_enabled;
+> +struct static_key paravirt_steal_rq_enabled;
+> +
+> +static u64 native_steal_clock(int cpu)
+> +{
+> +       return 0;
+> +}
+> +
+> +DEFINE_STATIC_CALL(pv_steal_clock, native_steal_clock);
+> +
+> +static bool steal_acc = true;
+> +static int __init parse_no_stealacc(char *arg)
+> +{
+> +       steal_acc = false;
+> +       return 0;
+> +}
+> +
+> +early_param("no-steal-acc", parse_no_stealacc);
+> +
+> +static bool __init has_pv_steal_clock(void)
+> +{
+> +       return false;
+> +}
+> +
+> +static int pv_time_cpu_online(unsigned int cpu)
+> +{
+> +       return 0;
+> +}
+> +
+> +static int pv_time_cpu_down_prepare(unsigned int cpu)
+> +{
+> +       return 0;
+> +}
+> +
+> +static u64 pv_time_steal_clock(int cpu)
+> +{
+> +       return 0;
+> +}
+> +
+> +int __init pv_time_init(void)
+> +{
+> +       int ret;
+> +
+> +       if (!has_pv_steal_clock())
+> +               return 0;
+> +
+> +       ret = cpuhp_setup_state(CPUHP_AP_ONLINE_DYN,
+> +                               "riscv/pv_time:online",
+> +                               pv_time_cpu_online,
+> +                               pv_time_cpu_down_prepare);
+> +       if (ret < 0)
+> +               return ret;
+> +
+> +       static_call_update(pv_steal_clock, pv_time_steal_clock);
+> +
+> +       static_key_slow_inc(&paravirt_steal_enabled);
+> +       if (steal_acc)
+> +               static_key_slow_inc(&paravirt_steal_rq_enabled);
+> +
+> +       pr_info("using paravirt steal-time\n");
+> +
+> +       return 0;
+> +}
+> diff --git a/arch/riscv/kernel/time.c b/arch/riscv/kernel/time.c
+> index 23641e82a9df..ba3477197789 100644
+> --- a/arch/riscv/kernel/time.c
+> +++ b/arch/riscv/kernel/time.c
+> @@ -12,6 +12,7 @@
+>  #include <asm/sbi.h>
+>  #include <asm/processor.h>
+>  #include <asm/timex.h>
+> +#include <asm/paravirt.h>
+>
+>  unsigned long riscv_timebase __ro_after_init;
+>  EXPORT_SYMBOL_GPL(riscv_timebase);
+> @@ -45,4 +46,6 @@ void __init time_init(void)
+>         timer_probe();
+>
+>         tick_setup_hrtimer_broadcast();
+> +
+> +       pv_time_init();
+>  }
+> --
+> 2.43.0
+>
 
