@@ -1,194 +1,90 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Fri, 15 Dec 2023 09:19:54 +0100
-Subject: [PATCH v2 03/13] RISC-V: paravirt: Implement steal-time support
-In-Reply-To: <CAAhSdy0zYkQLTuERqV4rePC8akQa90bvMNmG_QHm_5kHn1DVnw@mail.gmail.com>
-References: <20231214101552.100721-15-ajones@ventanamicro.com>
- <20231214101552.100721-18-ajones@ventanamicro.com>
- <CAAhSdy0zYkQLTuERqV4rePC8akQa90bvMNmG_QHm_5kHn1DVnw@mail.gmail.com>
-Message-ID: <20231215-f77bbb9f70e95c12a74c267b@orel>
+From: Anup Patel <anup@brainfault.org>
+Date: Fri, 15 Dec 2023 14:37:32 +0530
+Subject: [PATCH v2 06/13] RISC-V: KVM: Add SBI STA info to vcpu_arch
+In-Reply-To: <20231214101552.100721-21-ajones@ventanamicro.com>
+References: <20231214101552.100721-15-ajones@ventanamicro.com> <20231214101552.100721-21-ajones@ventanamicro.com>
+Message-ID: <CAAhSdy2tWPqoq=tZXtfkvsksAf4PPXeR3DOoKMvcfw-2YaDSvQ@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Dec 15, 2023 at 11:24:06AM +0530, Anup Patel wrote:
-> On Thu, Dec 14, 2023 at 3:45?PM Andrew Jones <ajones@ventanamicro.com> wrote:
-> >
-> > When the SBI STA extension exists we can use it to implement
-> > paravirt steal-time support. Fill in the empty pv-time functions
-> > with an SBI STA implementation and add the Kconfig knobs allowing
-> > it to be enabled.
-> >
-> > Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
-> > ---
-> >  arch/riscv/Kconfig           | 19 ++++++++++
-> >  arch/riscv/kernel/paravirt.c | 67 ++++++++++++++++++++++++++++++++++--
-> >  2 files changed, 83 insertions(+), 3 deletions(-)
-> >
-> > diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
-> > index 95a2a06acc6a..b99fd8129edf 100644
-> > --- a/arch/riscv/Kconfig
-> > +++ b/arch/riscv/Kconfig
-> > @@ -724,6 +724,25 @@ config COMPAT
-> >
-> >           If you want to execute 32-bit userspace applications, say Y.
-> >
-> > +config PARAVIRT
-> > +       bool "Enable paravirtualization code"
-> > +       depends on RISCV_SBI
-> > +       help
-> > +         This changes the kernel so it can modify itself when it is run
-> > +         under a hypervisor, potentially improving performance significantly
-> > +         over full virtualization.
-> > +
-> > +config PARAVIRT_TIME_ACCOUNTING
-> > +       bool "Paravirtual steal time accounting"
-> > +       depends on PARAVIRT
-> > +       help
-> > +         Select this option to enable fine granularity task steal time
-> > +         accounting. Time spent executing other tasks in parallel with
-> > +         the current vCPU is discounted from the vCPU power. To account for
-> > +         that, there can be a small performance impact.
-> > +
-> > +         If in doubt, say N here.
-> > +
-> >  config RELOCATABLE
-> >         bool "Build a relocatable kernel"
-> >         depends on MMU && 64BIT && !XIP_KERNEL
-> > diff --git a/arch/riscv/kernel/paravirt.c b/arch/riscv/kernel/paravirt.c
-> > index 141dbcc36fa2..b09dfd81bcd2 100644
-> > --- a/arch/riscv/kernel/paravirt.c
-> > +++ b/arch/riscv/kernel/paravirt.c
-> > @@ -6,12 +6,21 @@
-> >  #define pr_fmt(fmt) "riscv-pv: " fmt
-> >
-> >  #include <linux/cpuhotplug.h>
-> > +#include <linux/compiler.h>
-> > +#include <linux/errno.h>
-> >  #include <linux/init.h>
-> >  #include <linux/jump_label.h>
-> > +#include <linux/kconfig.h>
-> > +#include <linux/kernel.h>
-> > +#include <linux/percpu-defs.h>
-> >  #include <linux/printk.h>
-> >  #include <linux/static_call.h>
-> >  #include <linux/types.h>
-> >
-> > +#include <asm/barrier.h>
-> > +#include <asm/page.h>
-> > +#include <asm/sbi.h>
-> > +
-> >  struct static_key paravirt_steal_enabled;
-> >  struct static_key paravirt_steal_rq_enabled;
-> >
-> > @@ -31,24 +40,76 @@ static int __init parse_no_stealacc(char *arg)
-> >
-> >  early_param("no-steal-acc", parse_no_stealacc);
-> >
-> > +DEFINE_PER_CPU(struct sbi_sta_struct, steal_time) __aligned(64);
-> > +
-> >  static bool __init has_pv_steal_clock(void)
-> >  {
-> > +       if (sbi_spec_version >= sbi_mk_version(2, 0) &&
-> > +           sbi_probe_extension(SBI_EXT_STA) > 0) {
-> > +               pr_info("SBI STA extension detected\n");
-> > +               return true;
-> > +       }
-> > +
-> >         return false;
-> >  }
-> >
-> > -static int pv_time_cpu_online(unsigned int cpu)
-> > +static int sbi_sta_steal_time_set_shmem(unsigned long lo, unsigned long hi,
-> > +                                       unsigned long flags)
-> >  {
-> > +       struct sbiret ret;
-> > +
-> > +       ret = sbi_ecall(SBI_EXT_STA, SBI_EXT_STA_STEAL_TIME_SET_SHMEM,
-> > +                       lo, hi, flags, 0, 0, 0);
-> > +       if (ret.error) {
-> > +               if (lo == SBI_STA_SHMEM_DISABLE && hi == SBI_STA_SHMEM_DISABLE)
-> > +                       pr_warn("Failed to disable steal-time shmem");
-> > +               else
-> > +                       pr_warn("Failed to set steal-time shmem");
-> > +               return sbi_err_map_linux_errno(ret.error);
-> > +       }
-> > +
-> >         return 0;
-> >  }
-> >
-> > +static int pv_time_cpu_online(unsigned int cpu)
-> > +{
-> > +       struct sbi_sta_struct *st = this_cpu_ptr(&steal_time);
-> > +       phys_addr_t pa = __pa(st);
-> > +       unsigned long lo = (unsigned long)pa;
-> > +       unsigned long hi = IS_ENABLED(CONFIG_32BIT) ? upper_32_bits((u64)pa) : 0;
-> > +
-> > +       return sbi_sta_steal_time_set_shmem(lo, hi, 0);
-> > +}
-> > +
-> >  static int pv_time_cpu_down_prepare(unsigned int cpu)
-> >  {
-> > -       return 0;
-> > +       return sbi_sta_steal_time_set_shmem(SBI_STA_SHMEM_DISABLE,
-> > +                                           SBI_STA_SHMEM_DISABLE, 0);
-> >  }
-> >
-> >  static u64 pv_time_steal_clock(int cpu)
-> >  {
-> > -       return 0;
-> > +       struct sbi_sta_struct *st = per_cpu_ptr(&steal_time, cpu);
-> > +       u32 sequence;
-> > +       u64 steal;
-> > +
-> > +       if (IS_ENABLED(CONFIG_32BIT)) {
-> > +               /*
-> > +                * Check the sequence field before and after reading the steal
-> > +                * field. Repeat the read if it is different or odd.
-> > +                */
-> > +               do {
-> > +                       sequence = READ_ONCE(st->sequence);
-> > +                       virt_rmb();
-> > +                       steal = READ_ONCE(st->steal);
-> > +                       virt_rmb();
-> > +               } while ((le32_to_cpu(sequence) & 1) ||
-> > +                        sequence != READ_ONCE(st->sequence));
-> 
-> Actually, we should be doing this sequence for both RV64 and RV32
-> because for RV64 the steal time value is valid only when sequence is
-> an even number.
+On Thu, Dec 14, 2023 at 3:46?PM Andrew Jones <ajones@ventanamicro.com> wrote:
+>
+> KVM's implementation of SBI STA needs to track the address of each
+> VCPU's steal-time shared memory region as well as the amount of
+> stolen time. Add a structure to vcpu_arch to contain this state
+> and make sure that the address is always set to INVALID_GPA on
+> vcpu reset. And, of course, ensure KVM won't try to update steal-
+> time when the shared memory address is invalid.
+>
+> Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
+> ---
+>  arch/riscv/include/asm/kvm_host.h | 6 ++++++
+>  arch/riscv/kvm/vcpu.c             | 2 ++
+>  arch/riscv/kvm/vcpu_sbi_sta.c     | 4 ++++
+>  3 files changed, 12 insertions(+)
+>
+> diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
+> index 230b82c3118d..b10026fb6412 100644
+> --- a/arch/riscv/include/asm/kvm_host.h
+> +++ b/arch/riscv/include/asm/kvm_host.h
+> @@ -263,6 +263,12 @@ struct kvm_vcpu_arch {
+>
+>         /* 'static' configurations which are set only once */
+>         struct kvm_vcpu_config cfg;
+> +
+> +       /* SBI steal-time accounting */
+> +       struct {
+> +               gpa_t shmem;
+> +               u64 last_steal;
+> +       } sta;
+>  };
+>
+>  static inline void kvm_arch_sync_events(struct kvm *kvm) {}
+> diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+> index 6995b8b641e4..fec4f5fd0fa7 100644
+> --- a/arch/riscv/kvm/vcpu.c
+> +++ b/arch/riscv/kvm/vcpu.c
+> @@ -83,6 +83,8 @@ static void kvm_riscv_reset_vcpu(struct kvm_vcpu *vcpu)
+>         vcpu->arch.hfence_tail = 0;
+>         memset(vcpu->arch.hfence_queue, 0, sizeof(vcpu->arch.hfence_queue));
+>
+> +       vcpu->arch.sta.shmem = INVALID_GPA;
+> +
 
-Oh, right. The spec states
+I think we should also set last_steal to zero as well.
 
-"""
-The supervisor-mode software MUST check this field before
-and after reading the steal field, and repeat the read if
-it is different or odd.
-"""
+Also, let's add kvm_riscv_vcpu_sbi_sta_reset() in vcpu_sbi_sta.c
+to reset VCPU STA state.
 
-which gives the SBI implementation the freedom to update the steal bits
-non-atomically.
+>         /* Reset the guest CSRs for hotplug usecase */
+>         if (loaded)
+>                 kvm_arch_vcpu_load(vcpu, smp_processor_id());
+> diff --git a/arch/riscv/kvm/vcpu_sbi_sta.c b/arch/riscv/kvm/vcpu_sbi_sta.c
+> index e28351c9488b..157c199be0b4 100644
+> --- a/arch/riscv/kvm/vcpu_sbi_sta.c
+> +++ b/arch/riscv/kvm/vcpu_sbi_sta.c
+> @@ -10,6 +10,10 @@
+>
+>  void kvm_riscv_vcpu_record_steal_time(struct kvm_vcpu *vcpu)
+>  {
+> +       gpa_t shmem = vcpu->arch.sta.shmem;
+> +
+> +       if (shmem == INVALID_GPA)
+> +               return;
+>  }
+>
+>  static int kvm_sbi_sta_steal_time_set_shmem(struct kvm_vcpu *vcpu)
+> --
+> 2.43.0
+>
 
-I'll fix this for v3.
+Apart from the above, it looks good to me.
 
-Thanks,
-drew
+Reviewed-by: Anup Patel <anup@brainfault.org>
 
-
-> 
-> > +       } else {
-> > +               steal = READ_ONCE(st->steal);
-> > +       }
-> > +
-> > +       return le64_to_cpu(steal);
-> >  }
-> >
-> >  int __init pv_time_init(void)
-> > --
-> > 2.43.0
-> >
-> 
-> Regards,
-> Anup
+Regards,
+Anup
 
