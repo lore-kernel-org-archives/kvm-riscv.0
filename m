@@ -1,137 +1,96 @@
-From: Anup Patel <anup@brainfault.org>
-Date: Fri, 15 Dec 2023 14:57:13 +0530
-Subject: [PATCH v2 13/13] RISC-V: KVM: selftests: Add get-reg-list test
- for STA registers
-In-Reply-To: <20231214101552.100721-28-ajones@ventanamicro.com>
-References: <20231214101552.100721-15-ajones@ventanamicro.com> <20231214101552.100721-28-ajones@ventanamicro.com>
-Message-ID: <CAAhSdy1Qr8vjaHVBLypBByN-Yt4MJhPBWs=zYoX8xWJDzEM3cQ@mail.gmail.com>
+From: Andrew Jones <ajones@ventanamicro.com>
+Date: Fri, 15 Dec 2023 13:52:51 +0100
+Subject: [PATCH v2 06/13] RISC-V: KVM: Add SBI STA info to vcpu_arch
+In-Reply-To: <CAAhSdy2tWPqoq=tZXtfkvsksAf4PPXeR3DOoKMvcfw-2YaDSvQ@mail.gmail.com>
+References: <20231214101552.100721-15-ajones@ventanamicro.com>
+ <20231214101552.100721-21-ajones@ventanamicro.com>
+ <CAAhSdy2tWPqoq=tZXtfkvsksAf4PPXeR3DOoKMvcfw-2YaDSvQ@mail.gmail.com>
+Message-ID: <20231215-e338fe29468bed2a02dcdc3a@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Dec 14, 2023 at 3:46?PM Andrew Jones <ajones@ventanamicro.com> wrote:
->
-> Add SBI STA and its two registers to the get-reg-list test.
->
-> Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
+On Fri, Dec 15, 2023 at 02:37:32PM +0530, Anup Patel wrote:
+> On Thu, Dec 14, 2023 at 3:46?PM Andrew Jones <ajones@ventanamicro.com> wrote:
+> >
+> > KVM's implementation of SBI STA needs to track the address of each
+> > VCPU's steal-time shared memory region as well as the amount of
+> > stolen time. Add a structure to vcpu_arch to contain this state
+> > and make sure that the address is always set to INVALID_GPA on
+> > vcpu reset. And, of course, ensure KVM won't try to update steal-
+> > time when the shared memory address is invalid.
+> >
+> > Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
+> > ---
+> >  arch/riscv/include/asm/kvm_host.h | 6 ++++++
+> >  arch/riscv/kvm/vcpu.c             | 2 ++
+> >  arch/riscv/kvm/vcpu_sbi_sta.c     | 4 ++++
+> >  3 files changed, 12 insertions(+)
+> >
+> > diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
+> > index 230b82c3118d..b10026fb6412 100644
+> > --- a/arch/riscv/include/asm/kvm_host.h
+> > +++ b/arch/riscv/include/asm/kvm_host.h
+> > @@ -263,6 +263,12 @@ struct kvm_vcpu_arch {
+> >
+> >         /* 'static' configurations which are set only once */
+> >         struct kvm_vcpu_config cfg;
+> > +
+> > +       /* SBI steal-time accounting */
+> > +       struct {
+> > +               gpa_t shmem;
+> > +               u64 last_steal;
+> > +       } sta;
+> >  };
+> >
+> >  static inline void kvm_arch_sync_events(struct kvm *kvm) {}
+> > diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+> > index 6995b8b641e4..fec4f5fd0fa7 100644
+> > --- a/arch/riscv/kvm/vcpu.c
+> > +++ b/arch/riscv/kvm/vcpu.c
+> > @@ -83,6 +83,8 @@ static void kvm_riscv_reset_vcpu(struct kvm_vcpu *vcpu)
+> >         vcpu->arch.hfence_tail = 0;
+> >         memset(vcpu->arch.hfence_queue, 0, sizeof(vcpu->arch.hfence_queue));
+> >
+> > +       vcpu->arch.sta.shmem = INVALID_GPA;
+> > +
+> 
+> I think we should also set last_steal to zero as well.
+> 
+> Also, let's add kvm_riscv_vcpu_sbi_sta_reset() in vcpu_sbi_sta.c
+> to reset VCPU STA state.
 
-LGTM.
+Will do.
 
-Reviewed-by: Anup Patel <anup@brainfault.org>
+> 
+> >         /* Reset the guest CSRs for hotplug usecase */
+> >         if (loaded)
+> >                 kvm_arch_vcpu_load(vcpu, smp_processor_id());
+> > diff --git a/arch/riscv/kvm/vcpu_sbi_sta.c b/arch/riscv/kvm/vcpu_sbi_sta.c
+> > index e28351c9488b..157c199be0b4 100644
+> > --- a/arch/riscv/kvm/vcpu_sbi_sta.c
+> > +++ b/arch/riscv/kvm/vcpu_sbi_sta.c
+> > @@ -10,6 +10,10 @@
+> >
+> >  void kvm_riscv_vcpu_record_steal_time(struct kvm_vcpu *vcpu)
+> >  {
+> > +       gpa_t shmem = vcpu->arch.sta.shmem;
+> > +
+> > +       if (shmem == INVALID_GPA)
+> > +               return;
+> >  }
+> >
+> >  static int kvm_sbi_sta_steal_time_set_shmem(struct kvm_vcpu *vcpu)
+> > --
+> > 2.43.0
+> >
+> 
+> Apart from the above, it looks good to me.
+> 
+> Reviewed-by: Anup Patel <anup@brainfault.org>
 
-Regards,
-Anup
-
-> ---
->  .../selftests/kvm/riscv/get-reg-list.c        | 43 +++++++++++++++++++
->  1 file changed, 43 insertions(+)
->
-> diff --git a/tools/testing/selftests/kvm/riscv/get-reg-list.c b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-> index b8da2e86bf9c..55dd1fc3c536 100644
-> --- a/tools/testing/selftests/kvm/riscv/get-reg-list.c
-> +++ b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-> @@ -71,6 +71,7 @@ bool filter_reg(__u64 reg)
->         case KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_SINGLE | KVM_RISCV_SBI_EXT_HSM:
->         case KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_SINGLE | KVM_RISCV_SBI_EXT_PMU:
->         case KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_SINGLE | KVM_RISCV_SBI_EXT_DBCN:
-> +       case KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_SINGLE | KVM_RISCV_SBI_EXT_STA:
->         case KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_SINGLE | KVM_RISCV_SBI_EXT_EXPERIMENTAL:
->         case KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_SINGLE | KVM_RISCV_SBI_EXT_VENDOR:
->                 return true;
-> @@ -461,6 +462,7 @@ static const char *sbi_ext_single_id_to_str(__u64 reg_off)
->                 KVM_SBI_EXT_ARR(KVM_RISCV_SBI_EXT_SRST),
->                 KVM_SBI_EXT_ARR(KVM_RISCV_SBI_EXT_HSM),
->                 KVM_SBI_EXT_ARR(KVM_RISCV_SBI_EXT_PMU),
-> +               KVM_SBI_EXT_ARR(KVM_RISCV_SBI_EXT_STA),
->                 KVM_SBI_EXT_ARR(KVM_RISCV_SBI_EXT_EXPERIMENTAL),
->                 KVM_SBI_EXT_ARR(KVM_RISCV_SBI_EXT_VENDOR),
->                 KVM_SBI_EXT_ARR(KVM_RISCV_SBI_EXT_DBCN),
-> @@ -509,6 +511,32 @@ static const char *sbi_ext_id_to_str(const char *prefix, __u64 id)
->         return strdup_printf("%lld | %lld /* UNKNOWN */", reg_subtype, reg_off);
->  }
->
-> +static const char *sbi_sta_id_to_str(__u64 reg_off)
-> +{
-> +       switch (reg_off) {
-> +       case 0: return "KVM_REG_RISCV_SBI_STA | KVM_REG_RISCV_SBI_STA_REG(shmem_lo)";
-> +       case 1: return "KVM_REG_RISCV_SBI_STA | KVM_REG_RISCV_SBI_STA_REG(shmem_hi)";
-> +       }
-> +       return strdup_printf("KVM_REG_RISCV_SBI_STA | %lld /* UNKNOWN */", reg_off);
-> +}
-> +
-> +static const char *sbi_id_to_str(const char *prefix, __u64 id)
-> +{
-> +       __u64 reg_off = id & ~(REG_MASK | KVM_REG_RISCV_SBI);
-> +       __u64 reg_subtype = reg_off & KVM_REG_RISCV_SUBTYPE_MASK;
-> +
-> +       assert((id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_SBI);
-> +
-> +       reg_off &= ~KVM_REG_RISCV_SUBTYPE_MASK;
-> +
-> +       switch (reg_subtype) {
-> +       case KVM_REG_RISCV_SBI_STA:
-> +               return sbi_sta_id_to_str(reg_off);
-> +       }
-> +
-> +       return strdup_printf("%lld | %lld /* UNKNOWN */", reg_subtype, reg_off);
-> +}
-> +
->  void print_reg(const char *prefix, __u64 id)
->  {
->         const char *reg_size = NULL;
-> @@ -565,6 +593,10 @@ void print_reg(const char *prefix, __u64 id)
->                 printf("\tKVM_REG_RISCV | %s | KVM_REG_RISCV_SBI_EXT | %s,\n",
->                                 reg_size, sbi_ext_id_to_str(prefix, id));
->                 break;
-> +       case KVM_REG_RISCV_SBI:
-> +               printf("\tKVM_REG_RISCV | %s | KVM_REG_RISCV_SBI | %s,\n",
-> +                               reg_size, sbi_id_to_str(prefix, id));
-> +               break;
->         default:
->                 printf("\tKVM_REG_RISCV | %s | 0x%llx /* UNKNOWN */,\n",
->                                 reg_size, id & ~REG_MASK);
-> @@ -651,6 +683,12 @@ static __u64 sbi_base_regs[] = {
->         KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_SINGLE | KVM_RISCV_SBI_EXT_VENDOR,
->  };
->
-> +static __u64 sbi_sta_regs[] = {
-> +       KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_SINGLE | KVM_RISCV_SBI_EXT_STA,
-> +       KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_SBI | KVM_REG_RISCV_SBI_STA | KVM_REG_RISCV_SBI_STA_REG(shmem_lo),
-> +       KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_SBI | KVM_REG_RISCV_SBI_STA | KVM_REG_RISCV_SBI_STA_REG(shmem_hi),
-> +};
-> +
->  static __u64 zicbom_regs[] = {
->         KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_CONFIG | KVM_REG_RISCV_CONFIG_REG(zicbom_block_size),
->         KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZICBOM,
-> @@ -757,6 +795,9 @@ static __u64 fp_d_regs[] = {
->  #define SUBLIST_SBI_BASE \
->         {"sbi-base", .feature_type = VCPU_FEATURE_SBI_EXT, .feature = KVM_RISCV_SBI_EXT_V01, \
->          .regs = sbi_base_regs, .regs_n = ARRAY_SIZE(sbi_base_regs),}
-> +#define SUBLIST_SBI_STA \
-> +       {"sbi-sta", .feature_type = VCPU_FEATURE_SBI_EXT, .feature = KVM_RISCV_SBI_EXT_STA, \
-> +        .regs = sbi_sta_regs, .regs_n = ARRAY_SIZE(sbi_sta_regs),}
->  #define SUBLIST_ZICBOM \
->         {"zicbom", .feature = KVM_RISCV_ISA_EXT_ZICBOM, .regs = zicbom_regs, .regs_n = ARRAY_SIZE(zicbom_regs),}
->  #define SUBLIST_ZICBOZ \
-> @@ -832,6 +873,7 @@ static struct vcpu_reg_list config_sbi_##ext = {            \
->  /* Note: The below list is alphabetically sorted. */
->
->  KVM_SBI_EXT_SUBLIST_CONFIG(base, BASE);
-> +KVM_SBI_EXT_SUBLIST_CONFIG(sta, STA);
->  KVM_SBI_EXT_SIMPLE_CONFIG(pmu, PMU);
->  KVM_SBI_EXT_SIMPLE_CONFIG(dbcn, DBCN);
->
-> @@ -858,6 +900,7 @@ KVM_ISA_EXT_SIMPLE_CONFIG(zihpm, ZIHPM);
->
->  struct vcpu_reg_list *vcpu_configs[] = {
->         &config_sbi_base,
-> +       &config_sbi_sta,
->         &config_sbi_pmu,
->         &config_sbi_dbcn,
->         &config_aia,
-> --
-> 2.43.0
->
+Thanks,
+drew
 
