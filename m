@@ -1,9 +1,9 @@
 From: Anup Patel <anup@brainfault.org>
-Date: Fri, 15 Dec 2023 14:50:15 +0530
-Subject: [PATCH v2 10/13] RISC-V: KVM: selftests: Move sbi_ecall to processor.c
-In-Reply-To: <20231214101552.100721-25-ajones@ventanamicro.com>
-References: <20231214101552.100721-15-ajones@ventanamicro.com> <20231214101552.100721-25-ajones@ventanamicro.com>
-Message-ID: <CAAhSdy1_ufRyGc3gBkV8FKBD8zZ_SwNnz6a6xct31NmuDZYssw@mail.gmail.com>
+Date: Fri, 15 Dec 2023 14:51:53 +0530
+Subject: [PATCH v2 11/13] RISC-V: KVM: selftests: Add guest_sbi_probe_extension
+In-Reply-To: <20231214101552.100721-26-ajones@ventanamicro.com>
+References: <20231214101552.100721-15-ajones@ventanamicro.com> <20231214101552.100721-26-ajones@ventanamicro.com>
+Message-ID: <CAAhSdy26X3Ou_+df=dcUhW80JwmR5R_SORyc38pqMx378PaF6A@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -12,94 +12,98 @@ Content-Transfer-Encoding: 7bit
 
 On Thu, Dec 14, 2023 at 3:46?PM Andrew Jones <ajones@ventanamicro.com> wrote:
 >
-> sbi_ecall() isn't ucall specific and its prototype is already in
-> processor.h. Move its implementation to processor.c.
+> Add guest_sbi_probe_extension(), allowing guest code to probe for
+> SBI extensions. As guest_sbi_probe_extension() needs
+> SBI_ERR_NOT_SUPPORTED, take the opportunity to bring in all SBI
+> error codes. We don't bring in all current extension IDs or base
+> extension function IDs though, even though we need one of each,
+> because we'd prefer to bring those in as necessary.
 >
 > Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
 
 LGTM.
 
-Reviewed-by: Anup Patel <anup@brainfault.org
+Reviewed-by: Anup Patel <anup@brainfault.org>
 
 Regards,
 Anup
 
 > ---
->  .../selftests/kvm/lib/riscv/processor.c       | 26 +++++++++++++++++++
->  tools/testing/selftests/kvm/lib/riscv/ucall.c | 26 -------------------
->  2 files changed, 26 insertions(+), 26 deletions(-)
+>  .../selftests/kvm/include/riscv/processor.h   | 21 +++++++++++++++++++
+>  .../selftests/kvm/lib/riscv/processor.c       | 19 +++++++++++++++++
+>  2 files changed, 40 insertions(+)
 >
+> diff --git a/tools/testing/selftests/kvm/include/riscv/processor.h b/tools/testing/selftests/kvm/include/riscv/processor.h
+> index e70ccda2011b..dc50ad62e150 100644
+> --- a/tools/testing/selftests/kvm/include/riscv/processor.h
+> +++ b/tools/testing/selftests/kvm/include/riscv/processor.h
+> @@ -108,6 +108,17 @@ static inline uint64_t __kvm_reg_id(uint64_t type, uint64_t subtype,
+>  #define SATP_ASID_SHIFT                                44
+>  #define SATP_ASID_MASK                         _AC(0xFFFF, UL)
+>
+> +/* SBI return error codes */
+> +#define SBI_SUCCESS                            0
+> +#define SBI_ERR_FAILURE                                -1
+> +#define SBI_ERR_NOT_SUPPORTED                  -2
+> +#define SBI_ERR_INVALID_PARAM                  -3
+> +#define SBI_ERR_DENIED                         -4
+> +#define SBI_ERR_INVALID_ADDRESS                        -5
+> +#define SBI_ERR_ALREADY_AVAILABLE              -6
+> +#define SBI_ERR_ALREADY_STARTED                        -7
+> +#define SBI_ERR_ALREADY_STOPPED                        -8
+> +
+>  #define SBI_EXT_EXPERIMENTAL_START             0x08000000
+>  #define SBI_EXT_EXPERIMENTAL_END               0x08FFFFFF
+>
+> @@ -115,6 +126,14 @@ static inline uint64_t __kvm_reg_id(uint64_t type, uint64_t subtype,
+>  #define KVM_RISCV_SELFTESTS_SBI_UCALL          0
+>  #define KVM_RISCV_SELFTESTS_SBI_UNEXP          1
+>
+> +enum sbi_ext_id {
+> +       SBI_EXT_BASE = 0x10,
+> +};
+> +
+> +enum sbi_ext_base_fid {
+> +       SBI_EXT_BASE_PROBE_EXT = 3,
+> +};
+> +
+>  struct sbiret {
+>         long error;
+>         long value;
+> @@ -125,4 +144,6 @@ struct sbiret sbi_ecall(int ext, int fid, unsigned long arg0,
+>                         unsigned long arg3, unsigned long arg4,
+>                         unsigned long arg5);
+>
+> +bool guest_sbi_probe_extension(int extid, long *out_val);
+> +
+>  #endif /* SELFTEST_KVM_PROCESSOR_H */
 > diff --git a/tools/testing/selftests/kvm/lib/riscv/processor.c b/tools/testing/selftests/kvm/lib/riscv/processor.c
-> index 6c25f7843ef4..6905a4348380 100644
+> index 6905a4348380..7ca736fb4194 100644
 > --- a/tools/testing/selftests/kvm/lib/riscv/processor.c
 > +++ b/tools/testing/selftests/kvm/lib/riscv/processor.c
-> @@ -367,3 +367,29 @@ void vcpu_args_set(struct kvm_vcpu *vcpu, unsigned int num, ...)
->  void assert_on_unhandled_exception(struct kvm_vcpu *vcpu)
->  {
+> @@ -393,3 +393,22 @@ struct sbiret sbi_ecall(int ext, int fid, unsigned long arg0,
+>
+>         return ret;
 >  }
 > +
-> +struct sbiret sbi_ecall(int ext, int fid, unsigned long arg0,
-> +                       unsigned long arg1, unsigned long arg2,
-> +                       unsigned long arg3, unsigned long arg4,
-> +                       unsigned long arg5)
+> +bool guest_sbi_probe_extension(int extid, long *out_val)
 > +{
-> +       register uintptr_t a0 asm ("a0") = (uintptr_t)(arg0);
-> +       register uintptr_t a1 asm ("a1") = (uintptr_t)(arg1);
-> +       register uintptr_t a2 asm ("a2") = (uintptr_t)(arg2);
-> +       register uintptr_t a3 asm ("a3") = (uintptr_t)(arg3);
-> +       register uintptr_t a4 asm ("a4") = (uintptr_t)(arg4);
-> +       register uintptr_t a5 asm ("a5") = (uintptr_t)(arg5);
-> +       register uintptr_t a6 asm ("a6") = (uintptr_t)(fid);
-> +       register uintptr_t a7 asm ("a7") = (uintptr_t)(ext);
 > +       struct sbiret ret;
 > +
-> +       asm volatile (
-> +               "ecall"
-> +               : "+r" (a0), "+r" (a1)
-> +               : "r" (a2), "r" (a3), "r" (a4), "r" (a5), "r" (a6), "r" (a7)
-> +               : "memory");
-> +       ret.error = a0;
-> +       ret.value = a1;
+> +       ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_PROBE_EXT, extid,
+> +                       0, 0, 0, 0, 0);
 > +
-> +       return ret;
+> +       __GUEST_ASSERT(!ret.error || ret.error == SBI_ERR_NOT_SUPPORTED,
+> +                      "ret.error=%ld, ret.value=%ld\n", ret.error, ret.value);
+> +
+> +       if (ret.error == SBI_ERR_NOT_SUPPORTED)
+> +               return false;
+> +
+> +       if (out_val)
+> +               *out_val = ret.value;
+> +
+> +       return true;
 > +}
-> diff --git a/tools/testing/selftests/kvm/lib/riscv/ucall.c b/tools/testing/selftests/kvm/lib/riscv/ucall.c
-> index fe6d1004f018..14ee17151a59 100644
-> --- a/tools/testing/selftests/kvm/lib/riscv/ucall.c
-> +++ b/tools/testing/selftests/kvm/lib/riscv/ucall.c
-> @@ -10,32 +10,6 @@
->  #include "kvm_util.h"
->  #include "processor.h"
->
-> -struct sbiret sbi_ecall(int ext, int fid, unsigned long arg0,
-> -                       unsigned long arg1, unsigned long arg2,
-> -                       unsigned long arg3, unsigned long arg4,
-> -                       unsigned long arg5)
-> -{
-> -       register uintptr_t a0 asm ("a0") = (uintptr_t)(arg0);
-> -       register uintptr_t a1 asm ("a1") = (uintptr_t)(arg1);
-> -       register uintptr_t a2 asm ("a2") = (uintptr_t)(arg2);
-> -       register uintptr_t a3 asm ("a3") = (uintptr_t)(arg3);
-> -       register uintptr_t a4 asm ("a4") = (uintptr_t)(arg4);
-> -       register uintptr_t a5 asm ("a5") = (uintptr_t)(arg5);
-> -       register uintptr_t a6 asm ("a6") = (uintptr_t)(fid);
-> -       register uintptr_t a7 asm ("a7") = (uintptr_t)(ext);
-> -       struct sbiret ret;
-> -
-> -       asm volatile (
-> -               "ecall"
-> -               : "+r" (a0), "+r" (a1)
-> -               : "r" (a2), "r" (a3), "r" (a4), "r" (a5), "r" (a6), "r" (a7)
-> -               : "memory");
-> -       ret.error = a0;
-> -       ret.value = a1;
-> -
-> -       return ret;
-> -}
-> -
->  void *ucall_arch_get_ucall(struct kvm_vcpu *vcpu)
->  {
->         struct kvm_run *run = vcpu->run;
 > --
 > 2.43.0
 >
