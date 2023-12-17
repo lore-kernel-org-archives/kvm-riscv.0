@@ -1,381 +1,154 @@
-From: Atish Kumar Patra <atishp@rivosinc.com>
-Date: Sun, 17 Dec 2023 01:36:26 -0800
-Subject: [RFC 7/9] RISC-V: KVM: Implement SBI PMU Snapshot feature
-In-Reply-To: <CAAhSdy3cqeHg0HSE2qAZ3n4854xkhgZVjZa9hW0PD2NU9is4uA@mail.gmail.com>
-References: <20231205024310.1593100-1-atishp@rivosinc.com> <20231205024310.1593100-8-atishp@rivosinc.com>
- <CAAhSdy3cqeHg0HSE2qAZ3n4854xkhgZVjZa9hW0PD2NU9is4uA@mail.gmail.com>
-Message-ID: <CAHBxVyFf4f7LA4mAyCgfFp425BbnbYneCZqWkudDYC_upC0cSQ@mail.gmail.com>
+From: Conor Dooley <conor@kernel.org>
+Date: Sun, 17 Dec 2023 12:10:48 +0000
+Subject: [RFC 6/9] drivers/perf: riscv: Implement SBI PMU snapshot
+ function
+In-Reply-To: <CAHBxVyE3xAAj=Z_Cu33tEKjXEAcnOV_=Jpkpn-+j5MoLj1FPWw@mail.gmail.com>
+References: <20231205024310.1593100-1-atishp@rivosinc.com>
+ <20231205024310.1593100-7-atishp@rivosinc.com>
+ <20231207-daycare-manager-2f4817171422@wendy>
+ <CAHBxVyE3xAAj=Z_Cu33tEKjXEAcnOV_=Jpkpn-+j5MoLj1FPWw@mail.gmail.com>
+Message-ID: <20231217-navigate-thirsty-03509850a683@spud>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Dec 14, 2023 at 5:46?AM Anup Patel <anup@brainfault.org> wrote:
->
-> On Tue, Dec 5, 2023 at 8:13?AM Atish Patra <atishp@rivosinc.com> wrote:
+On Sat, Dec 16, 2023 at 05:39:12PM -0800, Atish Kumar Patra wrote:
+> On Thu, Dec 7, 2023 at 5:06?AM Conor Dooley <conor.dooley@microchip.com> wrote:
+> > On Mon, Dec 04, 2023 at 06:43:07PM -0800, Atish Patra wrote:
+
+> > > +static void pmu_sbi_snapshot_free(struct riscv_pmu *pmu)
+> > > +{
+> > > +     int cpu;
 > >
-> > PMU Snapshot function allows to minimize the number of traps when the
-> > guest access configures/access the hpmcounters. If the snapshot feature
-> > is enabled, the hypervisor updates the shared memory with counter
-> > data and state of overflown counters. The guest can just read the
-> > shared memory instead of trap & emulate done by the hypervisor.
+> > > +     struct cpu_hw_events *cpu_hw_evt;
 > >
-> > This patch doesn't implement the counter overflow yet.
+> > This is only used inside the scope of the for loop.
 > >
-> > Signed-off-by: Atish Patra <atishp@rivosinc.com>
-> > ---
-> >  arch/riscv/include/asm/kvm_vcpu_pmu.h |  10 ++
-> >  arch/riscv/kvm/vcpu_pmu.c             | 129 ++++++++++++++++++++++++--
-> >  arch/riscv/kvm/vcpu_sbi_pmu.c         |   3 +
-> >  3 files changed, 134 insertions(+), 8 deletions(-)
+> 
+> Do you intend to suggest using mixed declarations ? Personally, I
+> prefer all the declarations upfront for readability.
+> Let me know if you think that's an issue or violates coding style.
+
+I was suggesting
+
+int cpu;
+
+for_each_possible_cpu(cpu)
+	struct cpu_hw_events *cpu_hw_evt = per....()
+
+I've been asked to do this in some subsystems I submitted code to,
+and checkpatch etc do not complain about it. I don't think there is any
+specific commentary in the coding style about minimising the scope of
+variables however.
+
+> > > +     /* Free up the snapshot area memory and fall back to default SBI */
 > >
-> > diff --git a/arch/riscv/include/asm/kvm_vcpu_pmu.h b/arch/riscv/include/asm/kvm_vcpu_pmu.h
-> > index 395518a1664e..64c75acad6ba 100644
-> > --- a/arch/riscv/include/asm/kvm_vcpu_pmu.h
-> > +++ b/arch/riscv/include/asm/kvm_vcpu_pmu.h
-> > @@ -36,6 +36,7 @@ struct kvm_pmc {
-> >         bool started;
-> >         /* Monitoring event ID */
-> >         unsigned long event_idx;
-> > +       struct kvm_vcpu *vcpu;
->
-> Where is this used ?
->
+> > What does "fall back to the default SBI mean"? SBI is an interface so I
+> > don't understand what it means in this context. Secondly,
+> 
+> In absence of SBI PMU snapshot, the driver would try to read the
+> counters directly and end up traps.
+> Also, it would not use the SBI PMU snapshot flags in the SBI start/stop calls.
+> Snapshot is an alternative mechanism to minimize the traps. I just
+> wanted to highlight that.
+> 
+> How about this ?
+> "Free up the snapshot area memory and fall back to default SBI PMU
+> calls without snapshot */
 
-Moved it to the next patch as suggested there.
+Yeah, that's fine (modulo the */ placement). The original comment just
+seemed truncated.
 
-> >  };
+> > > +     if (ret.error) {
+> > > +             if (ret.error != SBI_ERR_NOT_SUPPORTED)
+> > > +                     pr_warn("%s: pmu snapshot setup failed with error %ld\n", __func__,
+> > > +                             ret.error);
 > >
-> >  /* PMU data structure per vcpu */
-> > @@ -50,6 +51,12 @@ struct kvm_pmu {
-> >         bool init_done;
-> >         /* Bit map of all the virtual counter used */
-> >         DECLARE_BITMAP(pmc_in_use, RISCV_KVM_MAX_COUNTERS);
-> > +       /* Bit map of all the virtual counter overflown */
-> > +       DECLARE_BITMAP(pmc_overflown, RISCV_KVM_MAX_COUNTERS);
-> > +       /* The address of the counter snapshot area (guest physical address) */
-> > +       unsigned long snapshot_addr;
-> > +       /* The actual data of the snapshot */
-> > +       struct riscv_pmu_snapshot_data *sdata;
-> >  };
+> > Why is the function relevant here? Is the error message in-and-of-itself
+> > not sufficient here? Where else would one be setting up the snapshots
+> > other than the setup function?
 > >
-> >  #define vcpu_to_pmu(vcpu) (&(vcpu)->arch.pmu_context)
-> > @@ -85,6 +92,9 @@ int kvm_riscv_vcpu_pmu_ctr_cfg_match(struct kvm_vcpu *vcpu, unsigned long ctr_ba
-> >  int kvm_riscv_vcpu_pmu_ctr_read(struct kvm_vcpu *vcpu, unsigned long cidx,
-> >                                 struct kvm_vcpu_sbi_return *retdata);
-> >  void kvm_riscv_vcpu_pmu_init(struct kvm_vcpu *vcpu);
-> > +int kvm_riscv_vcpu_pmu_setup_snapshot(struct kvm_vcpu *vcpu, unsigned long saddr_low,
-> > +                                      unsigned long saddr_high, unsigned long flags,
-> > +                                      struct kvm_vcpu_sbi_return *retdata);
-> >  void kvm_riscv_vcpu_pmu_deinit(struct kvm_vcpu *vcpu);
-> >  void kvm_riscv_vcpu_pmu_reset(struct kvm_vcpu *vcpu);
+> 
+> The SBI implementation (i.e OpenSBI) may or may not provide a snapshot
+> feature. This error message indicates
+> that SBI implementation supports PMU snapshot but setup failed for
+> some other error.
+
+I don't see what this has to do with printing out the function. This is
+a unique error message, and there is no other place where the setup is
+done AFAICT.
+
+> > > +             /* Snapshot is taken relative to the counter idx base. Apply a fixup. */
+> > > +             if (hwc->idx > 0) {
+> > > +                     sdata->ctr_values[hwc->idx] = sdata->ctr_values[0];
+> > > +                     sdata->ctr_values[0] = 0;
 > >
-> > diff --git a/arch/riscv/kvm/vcpu_pmu.c b/arch/riscv/kvm/vcpu_pmu.c
-> > index 86391a5061dd..622c4ee89e7b 100644
-> > --- a/arch/riscv/kvm/vcpu_pmu.c
-> > +++ b/arch/riscv/kvm/vcpu_pmu.c
-> > @@ -310,6 +310,79 @@ int kvm_riscv_vcpu_pmu_read_hpm(struct kvm_vcpu *vcpu, unsigned int csr_num,
-> >         return ret;
-> >  }
+> > Why is this being zeroed in this manner? Why is zeroing it not required
+> > if hwc->idx == 0? You've got a comment there that could probably do with
+> > elaboration.
 > >
-> > +static void kvm_pmu_clear_snapshot_area(struct kvm_vcpu *vcpu)
-> > +{
-> > +       struct kvm_pmu *kvpmu = vcpu_to_pmu(vcpu);
-> > +       int snapshot_area_size = sizeof(struct riscv_pmu_snapshot_data);
-> > +
-> > +       if (kvpmu->sdata) {
-> > +               memset(kvpmu->sdata, 0, snapshot_area_size);
-> > +               if (kvpmu->snapshot_addr != INVALID_GPA)
-> > +                       kvm_vcpu_write_guest(vcpu, kvpmu->snapshot_addr,
-> > +                                            kvpmu->sdata, snapshot_area_size);
->
-> We should free the "kvpmu->sdata" and set it to NULL. This way subsequent
-> re-enabling of snapshot won't leak the kernel memory.
->
+> 
+> hwc->idx is the counter_idx_base here. If it is zero, that means the
+> counter0 value is updated
+> in the shared memory. However, if the base > 0, we need to update the
+> relative counter value
+> from the shared memory. Does it make sense ?
 
-Done.
+Please expand on the comment so that it contains this information.
 
-> > +       }
-> > +       kvpmu->snapshot_addr = INVALID_GPA;
-> > +}
-> > +
-> > +int kvm_riscv_vcpu_pmu_setup_snapshot(struct kvm_vcpu *vcpu, unsigned long saddr_low,
-> > +                                     unsigned long saddr_high, unsigned long flags,
-> > +                                     struct kvm_vcpu_sbi_return *retdata)
-> > +{
-> > +       struct kvm_pmu *kvpmu = vcpu_to_pmu(vcpu);
-> > +       int snapshot_area_size = sizeof(struct riscv_pmu_snapshot_data);
-> > +       int sbiret = 0;
-> > +       gpa_t saddr;
-> > +       unsigned long hva;
-> > +       bool writable;
-> > +
-> > +       if (!kvpmu) {
-> > +               sbiret = SBI_ERR_INVALID_PARAM;
-> > +               goto out;
-> > +       }
-> > +
-> > +       if (saddr_low == -1 && saddr_high == -1) {
-> > +               kvm_pmu_clear_snapshot_area(vcpu);
-> > +               return 0;
-> > +       }
-> > +
-> > +       saddr = saddr_low;
-> > +
-> > +       if (saddr_high != 0) {
-> > +#ifdef CONFIG_32BIT
-> > +               saddr |= ((gpa_t)saddr << 32);
-> > +#else
-> > +               sbiret = SBI_ERR_INVALID_ADDRESS;
-> > +               goto out;
-> > +#endif
-> > +       }
-> > +
-> > +       if (kvm_is_error_gpa(vcpu->kvm, saddr)) {
-> > +               sbiret = SBI_ERR_INVALID_PARAM;
-> > +               goto out;
-> > +       }
-> > +
-> > +       hva = kvm_vcpu_gfn_to_hva_prot(vcpu, saddr >> PAGE_SHIFT, &writable);
-> > +       if (kvm_is_error_hva(hva) || !writable) {
-> > +               sbiret = SBI_ERR_INVALID_ADDRESS;
-> > +               goto out;
-> > +       }
-> > +
-> > +       kvpmu->snapshot_addr = saddr;
-> > +       kvpmu->sdata = kzalloc(snapshot_area_size, GFP_ATOMIC);
-> > +       if (!kvpmu->sdata)
-> > +               return -ENOMEM;
-> > +
-> > +       if (kvm_vcpu_write_guest(vcpu, saddr, kvpmu->sdata, snapshot_area_size)) {
-> > +               kfree(kvpmu->sdata);
-> > +               kvpmu->snapshot_addr = INVALID_GPA;
-> > +               sbiret = SBI_ERR_FAILURE;
-> > +       }
->
-> Newline here.
->
-
-Done.
-
-> > +out:
-> > +       retdata->err_val = sbiret;
-> > +
-> > +       return 0;
-> > +}
-> > +
-> >  int kvm_riscv_vcpu_pmu_num_ctrs(struct kvm_vcpu *vcpu,
-> >                                 struct kvm_vcpu_sbi_return *retdata)
-> >  {
-> > @@ -343,8 +416,10 @@ int kvm_riscv_vcpu_pmu_ctr_start(struct kvm_vcpu *vcpu, unsigned long ctr_base,
-> >         int i, pmc_index, sbiret = 0;
-> >         struct kvm_pmc *pmc;
-> >         int fevent_code;
-> > +       bool bSnapshot = flags & SBI_PMU_START_FLAG_INIT_FROM_SNAPSHOT;
+> > > +             ret = pmu_sbi_snapshot_setup(pmu, smp_processor_id());
+> > > +             if (!ret) {
+> > > +                     pr_info("SBI PMU snapshot is available to optimize the PMU traps\n");
 > >
-> > -       if (kvm_pmu_validate_counter_mask(kvpmu, ctr_base, ctr_mask) < 0) {
-> > +       if ((kvm_pmu_validate_counter_mask(kvpmu, ctr_base, ctr_mask) < 0) ||
-> > +           (bSnapshot && kvpmu->snapshot_addr == INVALID_GPA)) {
->
-> We have a different error code when shared memory is not available.
->
+> > Why the verbose message? Could we standardise on one wording for the SBI
+> > function probing stuff? Most users seem to be "SBI FOO extension detected".
+> > Only IPI has additional wording and PMU differs slightly.
+> 
+> Additional information is for users to understand PMU functionality
+> uses less traps on this system.
+> We can just resort to and expect users to read upon the purpose of the
+> snapshot from the spec.
+> "SBI PMU snapshot available"
 
-Fixed.
+What I was asking for was alignment with the majority of other SBI
+extensions that use the format I mentioned above.
 
-> >                 sbiret = SBI_ERR_INVALID_PARAM;
-> >                 goto out;
-> >         }
-> > @@ -355,8 +430,14 @@ int kvm_riscv_vcpu_pmu_ctr_start(struct kvm_vcpu *vcpu, unsigned long ctr_base,
-> >                 if (!test_bit(pmc_index, kvpmu->pmc_in_use))
-> >                         continue;
-> >                 pmc = &kvpmu->pmc[pmc_index];
-> > -               if (flags & SBI_PMU_START_FLAG_SET_INIT_VALUE)
-> > +               if (flags & SBI_PMU_START_FLAG_SET_INIT_VALUE) {
-> >                         pmc->counter_val = ival;
-> > +               } else if (bSnapshot) {
-> > +                       kvm_vcpu_read_guest(vcpu, kvpmu->snapshot_addr, kvpmu->sdata,
-> > +                                           sizeof(struct riscv_pmu_snapshot_data));
-> > +                       pmc->counter_val = kvpmu->sdata->ctr_values[pmc_index];
-> > +               }
-> > +
-> >                 if (pmc->cinfo.type == SBI_PMU_CTR_TYPE_FW) {
-> >                         fevent_code = get_event_code(pmc->event_idx);
-> >                         if (fevent_code >= SBI_PMU_FW_MAX) {
-> > @@ -400,8 +481,10 @@ int kvm_riscv_vcpu_pmu_ctr_stop(struct kvm_vcpu *vcpu, unsigned long ctr_base,
-> >         u64 enabled, running;
-> >         struct kvm_pmc *pmc;
-> >         int fevent_code;
-> > +       bool bSnapshot = flags & SBI_PMU_STOP_FLAG_TAKE_SNAPSHOT;
+> 
 > >
-> > -       if (kvm_pmu_validate_counter_mask(kvpmu, ctr_base, ctr_mask) < 0) {
-> > +       if ((kvm_pmu_validate_counter_mask(kvpmu, ctr_base, ctr_mask) < 0) ||
-> > +           (bSnapshot && (kvpmu->snapshot_addr == INVALID_GPA))) {
->
-> Same as above.
->
-> >                 sbiret = SBI_ERR_INVALID_PARAM;
-> >                 goto out;
-> >         }
-> > @@ -423,27 +506,52 @@ int kvm_riscv_vcpu_pmu_ctr_stop(struct kvm_vcpu *vcpu, unsigned long ctr_base,
-> >                                 sbiret = SBI_ERR_ALREADY_STOPPED;
+> > > +                     /* We enable it once here for the boot cpu. If snapshot shmem fails during
 > >
-> >                         kvpmu->fw_event[fevent_code].started = false;
-> > +                       /* No need to increment the value as it is absolute for firmware events */
-> > +                       pmc->counter_val = kvpmu->fw_event[fevent_code].value;
->
-> This change does not relate to the current patch.
->
-
-Actually it does. We need to assign pmc->counter_val here because
-shared memory needs to be updated
-with the actual counter val. However, we should do it if the snapshot
-is enabled only.
-Otherwise, it will be updated in pmu_ctr_read anyways. I have fixed
-that and moved this to the if condition with bSnapshot
-below.
-
-> >                 } else if (pmc->perf_event) {
-> >                         if (pmc->started) {
-> >                                 /* Stop counting the counter */
-> >                                 perf_event_disable(pmc->perf_event);
-> > -                               pmc->started = false;
->
-> Same as above.
->
-> >                         } else {
-> >                                 sbiret = SBI_ERR_ALREADY_STOPPED;
-> >                         }
+> > Again, comment style here. What does "snapshot shmem" mean? I think
+> > there's a missing action here. Registration? Allocation?
 > >
-> > -                       if (flags & SBI_PMU_STOP_FLAG_RESET) {
-> > -                               /* Relase the counter if this is a reset request */
-> > +                       /* Stop counting the counter */
-> > +                       perf_event_disable(pmc->perf_event);
-> > +
-
-This is not needed as we would have already stopped when started = true.
-
-> > +                       /* We only update if stopped is already called. The caller may stop/reset
-> > +                        * the event in two steps.
-> > +                        */
->
-> Use a double winged style multiline comment block.
->
-
-Fixed.
-
-> > +                       if (pmc->started) {
-> >                                 pmc->counter_val += perf_event_read_value(pmc->perf_event,
-> >                                                                           &enabled, &running);
-> > +                               pmc->started = false;
-> > +                       }
-> > +
-> > +                       if (flags & SBI_PMU_STOP_FLAG_RESET) {
->
-> No need for braces here.
->
-> > +                               /* Relase the counter if this is a reset request */
->
-> s/Relase/Release/
->
-
-Fixed.
-
-> >                                 kvm_pmu_release_perf_event(pmc);
-> >                         }
-> >                 } else {
-> >                         sbiret = SBI_ERR_INVALID_PARAM;
-> >                 }
-> > +
-> > +               if (bSnapshot && !sbiret) {
-> > +                       //TODO: Add counter overflow support when sscofpmf support is added
->
-> Use "/* */"
->
-> > +                       kvpmu->sdata->ctr_values[i] = pmc->counter_val;
-> > +                       kvm_vcpu_write_guest(vcpu, kvpmu->snapshot_addr, kvpmu->sdata,
-> > +                                            sizeof(struct riscv_pmu_snapshot_data));
-> > +               }
-> > +
-> >                 if (flags & SBI_PMU_STOP_FLAG_RESET) {
-> >                         pmc->event_idx = SBI_PMU_EVENT_IDX_INVALID;
-> >                         clear_bit(pmc_index, kvpmu->pmc_in_use);
-> > +                       if (bSnapshot) {
-> > +                               /* Clear the snapshot area for the upcoming deletion event */
-> > +                               kvpmu->sdata->ctr_values[i] = 0;
-> > +                               kvm_vcpu_write_guest(vcpu, kvpmu->snapshot_addr, kvpmu->sdata,
-> > +                                                    sizeof(struct riscv_pmu_snapshot_data));
-> > +                       }
-> >                 }
-> >         }
+> 
+> Fixed it. It is supposed to be "snapshot shmem setup"
+> 
+> > > +                      * cpu hotplug on, it should bail out.
 > >
-> > @@ -517,8 +625,10 @@ int kvm_riscv_vcpu_pmu_ctr_cfg_match(struct kvm_vcpu *vcpu, unsigned long ctr_ba
-> >                         kvpmu->fw_event[event_code].started = true;
-> >         } else {
-> >                 ret = kvm_pmu_create_perf_event(pmc, &attr, flags, eidx, evtdata);
-> > -               if (ret)
-> > -                       return ret;
-> > +               if (ret) {
-> > +                       sbiret = SBI_ERR_NOT_SUPPORTED;
-> > +                       goto out;
-> > +               }
->
-> This also looks like a change not related to the current patch.
->
-
-Moved to a separate patch.
-
-> >         }
+> > Should or will? What action does "bail out" correspond to?
 > >
-> >         set_bit(ctr_idx, kvpmu->pmc_in_use);
-> > @@ -566,6 +676,7 @@ void kvm_riscv_vcpu_pmu_init(struct kvm_vcpu *vcpu)
-> >         kvpmu->num_hw_ctrs = num_hw_ctrs + 1;
-> >         kvpmu->num_fw_ctrs = SBI_PMU_FW_MAX;
-> >         memset(&kvpmu->fw_event, 0, SBI_PMU_FW_MAX * sizeof(struct kvm_fw_event));
-> > +       kvpmu->snapshot_addr = INVALID_GPA;
-> >
-> >         if (kvpmu->num_hw_ctrs > RISCV_KVM_MAX_HW_CTRS) {
-> >                 pr_warn_once("Limiting the hardware counters to 32 as specified by the ISA");
-> > @@ -585,6 +696,7 @@ void kvm_riscv_vcpu_pmu_init(struct kvm_vcpu *vcpu)
-> >                 pmc = &kvpmu->pmc[i];
-> >                 pmc->idx = i;
-> >                 pmc->event_idx = SBI_PMU_EVENT_IDX_INVALID;
-> > +               pmc->vcpu = vcpu;
-> >                 if (i < kvpmu->num_hw_ctrs) {
-> >                         pmc->cinfo.type = SBI_PMU_CTR_TYPE_HW;
-> >                         if (i < 3)
-> > @@ -625,6 +737,7 @@ void kvm_riscv_vcpu_pmu_deinit(struct kvm_vcpu *vcpu)
-> >         }
-> >         bitmap_zero(kvpmu->pmc_in_use, RISCV_MAX_COUNTERS);
-> >         memset(&kvpmu->fw_event, 0, SBI_PMU_FW_MAX * sizeof(struct kvm_fw_event));
-> > +       kvpmu->snapshot_addr = INVALID_GPA;
->
-> You need to also free the sdata pointer.
->
+> 
+> bail out the cpu hotplug process. We don't support heterogeneous pmus
+> for snapshot.
+> If the SBI implementation returns success for SBI_EXT_PMU_SNAPSHOT_SET_SHMEM
+> boot cpu but fails for other cpus while bringing them up, it is
+> problematic to handle that.
 
-Fixed. Thanks.
+"bail out" should be replaced by a more technical explanation of what is
+going to happen. "should" is a weird word to use, either the cpuhotplug
+code does or does not deal with this case, and since that code is also
+in the kernel, this patchset should ensure that it does handle the case,
+no? If the kernel does handle it "should" should be replaced with more
+definitive wording.
 
-> >  }
-> >
-> >  void kvm_riscv_vcpu_pmu_reset(struct kvm_vcpu *vcpu)
-> > diff --git a/arch/riscv/kvm/vcpu_sbi_pmu.c b/arch/riscv/kvm/vcpu_sbi_pmu.c
-> > index 7eca72df2cbd..77c20a61fd7d 100644
-> > --- a/arch/riscv/kvm/vcpu_sbi_pmu.c
-> > +++ b/arch/riscv/kvm/vcpu_sbi_pmu.c
-> > @@ -64,6 +64,9 @@ static int kvm_sbi_ext_pmu_handler(struct kvm_vcpu *vcpu, struct kvm_run *run,
-> >         case SBI_EXT_PMU_COUNTER_FW_READ:
-> >                 ret = kvm_riscv_vcpu_pmu_ctr_read(vcpu, cp->a0, retdata);
-> >                 break;
-> > +       case SBI_EXT_PMU_SNAPSHOT_SET_SHMEM:
-> > +               ret = kvm_riscv_vcpu_pmu_setup_snapshot(vcpu, cp->a0, cp->a1, cp->a2, retdata);
-> > +               break;
-> >         default:
-> >                 retdata->err_val = SBI_ERR_NOT_SUPPORTED;
-> >         }
-> > --
-> > 2.34.1
-> >
->
-> Regards,
-> Anup
-
+Thanks,
+Conor.
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 228 bytes
+Desc: not available
+URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20231217/5eb1ae11/attachment.sig>
