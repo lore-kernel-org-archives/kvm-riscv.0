@@ -1,154 +1,113 @@
-From: Conor Dooley <conor@kernel.org>
-Date: Sun, 17 Dec 2023 12:10:48 +0000
-Subject: [RFC 6/9] drivers/perf: riscv: Implement SBI PMU snapshot
- function
-In-Reply-To: <CAHBxVyE3xAAj=Z_Cu33tEKjXEAcnOV_=Jpkpn-+j5MoLj1FPWw@mail.gmail.com>
-References: <20231205024310.1593100-1-atishp@rivosinc.com>
- <20231205024310.1593100-7-atishp@rivosinc.com>
- <20231207-daycare-manager-2f4817171422@wendy>
- <CAHBxVyE3xAAj=Z_Cu33tEKjXEAcnOV_=Jpkpn-+j5MoLj1FPWw@mail.gmail.com>
-Message-ID: <20231217-navigate-thirsty-03509850a683@spud>
+From: Andrew Jones <ajones@ventanamicro.com>
+Date: Sun, 17 Dec 2023 21:40:20 +0100
+Subject: [PATCH v3 00/13] RISC-V: Add steal-time support
+Message-ID: <20231217204019.36492-15-ajones@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sat, Dec 16, 2023 at 05:39:12PM -0800, Atish Kumar Patra wrote:
-> On Thu, Dec 7, 2023 at 5:06?AM Conor Dooley <conor.dooley@microchip.com> wrote:
-> > On Mon, Dec 04, 2023 at 06:43:07PM -0800, Atish Patra wrote:
+One frequently touted benefit of virtualization is the ability to
+consolidate machines, increasing resource utilization.  It may even be
+desirable to overcommit, at the risk of one or more VCPUs having to wait.
+Hypervisors which have interfaces for guests to retrieve the amount of
+time each VCPU had to wait give observers within the guests ways to
+account for less progress than would otherwise be expected. The SBI STA
+extension[1] provides a standard interface for guest VCPUs to retrieve
+the amount of time "stolen".
 
-> > > +static void pmu_sbi_snapshot_free(struct riscv_pmu *pmu)
-> > > +{
-> > > +     int cpu;
-> >
-> > > +     struct cpu_hw_events *cpu_hw_evt;
-> >
-> > This is only used inside the scope of the for loop.
-> >
-> 
-> Do you intend to suggest using mixed declarations ? Personally, I
-> prefer all the declarations upfront for readability.
-> Let me know if you think that's an issue or violates coding style.
+This series has three parts:
+ 1) Patches 01-03 - Add paravirt support to RISC-V and implement
+                    steal-time accounting support using the SBI STA
+                    extension.
+ 2) Patches 04-09 - Implement SBI STA in KVM so KVM guests, such as
+                    Linux guests which enable the paravirt steal-time
+                    support, can be enlightened about stolen time.
+ 3) Patches 10-13 - Add RISC-V support to the KVM selftests steal_time
+                    test and the SBI extension regs in the get-reg-list
+                    test.
 
-I was suggesting
+These patches are based on kvm-riscv/riscv_kvm_queue
 
-int cpu;
+[1] https://github.com/riscv-non-isa/riscv-sbi-doc/blob/master/src/ext-steal-time.adoc
 
-for_each_possible_cpu(cpu)
-	struct cpu_hw_events *cpu_hw_evt = per....()
+This patches are also available here
+https://github.com/jones-drew/linux/commits/kvm/steal-time-v3
 
-I've been asked to do this in some subsystems I submitted code to,
-and checkpatch etc do not complain about it. I don't think there is any
-specific commentary in the coding style about minimising the scope of
-variables however.
+Changes since v2:
+ - Always check sequence in case the SBI impl isn't writing steal
+   atomically [Anup]
+ - Create a reset function for sta and also reset last_steal [Anup]
+ - Picked up Anup's r-b's
 
-> > > +     /* Free up the snapshot area memory and fall back to default SBI */
-> >
-> > What does "fall back to the default SBI mean"? SBI is an interface so I
-> > don't understand what it means in this context. Secondly,
-> 
-> In absence of SBI PMU snapshot, the driver would try to read the
-> counters directly and end up traps.
-> Also, it would not use the SBI PMU snapshot flags in the SBI start/stop calls.
-> Snapshot is an alternative mechanism to minimize the traps. I just
-> wanted to highlight that.
-> 
-> How about this ?
-> "Free up the snapshot area memory and fall back to default SBI PMU
-> calls without snapshot */
+Changes since v1:
+ - sbi_sta_steal_time_set_shmem() now maps SBI errors to linux errors [Conor]
+ - Squashed v1 patch 4 into v1 patch 3 [Conor]
+ - Moved kvm_riscv_vcpu_set/get_reg_sbi() to arch/riscv/kvm/vcpu_sbi.c
+   which seems like a more appropriate file for them
+ - Rebased on kvm-riscv/riscv_kvm_queue which has all the dependencies
 
-Yeah, that's fine (modulo the */ placement). The original comment just
-seemed truncated.
-
-> > > +     if (ret.error) {
-> > > +             if (ret.error != SBI_ERR_NOT_SUPPORTED)
-> > > +                     pr_warn("%s: pmu snapshot setup failed with error %ld\n", __func__,
-> > > +                             ret.error);
-> >
-> > Why is the function relevant here? Is the error message in-and-of-itself
-> > not sufficient here? Where else would one be setting up the snapshots
-> > other than the setup function?
-> >
-> 
-> The SBI implementation (i.e OpenSBI) may or may not provide a snapshot
-> feature. This error message indicates
-> that SBI implementation supports PMU snapshot but setup failed for
-> some other error.
-
-I don't see what this has to do with printing out the function. This is
-a unique error message, and there is no other place where the setup is
-done AFAICT.
-
-> > > +             /* Snapshot is taken relative to the counter idx base. Apply a fixup. */
-> > > +             if (hwc->idx > 0) {
-> > > +                     sdata->ctr_values[hwc->idx] = sdata->ctr_values[0];
-> > > +                     sdata->ctr_values[0] = 0;
-> >
-> > Why is this being zeroed in this manner? Why is zeroing it not required
-> > if hwc->idx == 0? You've got a comment there that could probably do with
-> > elaboration.
-> >
-> 
-> hwc->idx is the counter_idx_base here. If it is zero, that means the
-> counter0 value is updated
-> in the shared memory. However, if the base > 0, we need to update the
-> relative counter value
-> from the shared memory. Does it make sense ?
-
-Please expand on the comment so that it contains this information.
-
-> > > +             ret = pmu_sbi_snapshot_setup(pmu, smp_processor_id());
-> > > +             if (!ret) {
-> > > +                     pr_info("SBI PMU snapshot is available to optimize the PMU traps\n");
-> >
-> > Why the verbose message? Could we standardise on one wording for the SBI
-> > function probing stuff? Most users seem to be "SBI FOO extension detected".
-> > Only IPI has additional wording and PMU differs slightly.
-> 
-> Additional information is for users to understand PMU functionality
-> uses less traps on this system.
-> We can just resort to and expect users to read upon the purpose of the
-> snapshot from the spec.
-> "SBI PMU snapshot available"
-
-What I was asking for was alignment with the majority of other SBI
-extensions that use the format I mentioned above.
-
-> 
-> >
-> > > +                     /* We enable it once here for the boot cpu. If snapshot shmem fails during
-> >
-> > Again, comment style here. What does "snapshot shmem" mean? I think
-> > there's a missing action here. Registration? Allocation?
-> >
-> 
-> Fixed it. It is supposed to be "snapshot shmem setup"
-> 
-> > > +                      * cpu hotplug on, it should bail out.
-> >
-> > Should or will? What action does "bail out" correspond to?
-> >
-> 
-> bail out the cpu hotplug process. We don't support heterogeneous pmus
-> for snapshot.
-> If the SBI implementation returns success for SBI_EXT_PMU_SNAPSHOT_SET_SHMEM
-> boot cpu but fails for other cpus while bringing them up, it is
-> problematic to handle that.
-
-"bail out" should be replaced by a more technical explanation of what is
-going to happen. "should" is a weird word to use, either the cpuhotplug
-code does or does not deal with this case, and since that code is also
-in the kernel, this patchset should ensure that it does handle the case,
-no? If the kernel does handle it "should" should be replaced with more
-definitive wording.
+Changes since RFC:
+ - Rebased on v6.7-rc3 (plus the patches mentioned above)
+ - Added defines for the -1's [Conor]
+ - Added a comment to the steal read sequence [Conor]
+ - Only do the steal read sequence for 32-bit and added READ_ONCE's
+ - Check for SBI v2.0 implementation
+ - Rename set_steal_time_shmem to steal_time_set_shmem
+ - Add get-reg-list support and test with get-reg-list kselftest
+ - A few other minor improvements
+ - Picked up one r-b from Conor
 
 Thanks,
-Conor.
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 228 bytes
-Desc: not available
-URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20231217/5eb1ae11/attachment.sig>
+drew
+
+
+Andrew Jones (13):
+  RISC-V: paravirt: Add skeleton for pv-time support
+  RISC-V: Add SBI STA extension definitions
+  RISC-V: paravirt: Implement steal-time support
+  RISC-V: KVM: Add SBI STA extension skeleton
+  RISC-V: KVM: Add steal-update vcpu request
+  RISC-V: KVM: Add SBI STA info to vcpu_arch
+  RISC-V: KVM: Add support for SBI extension registers
+  RISC-V: KVM: Add support for SBI STA registers
+  RISC-V: KVM: Implement SBI STA extension
+  RISC-V: KVM: selftests: Move sbi_ecall to processor.c
+  RISC-V: KVM: selftests: Add guest_sbi_probe_extension
+  RISC-V: KVM: selftests: Add steal_time test support
+  RISC-V: KVM: selftests: Add get-reg-list test for STA registers
+
+ .../admin-guide/kernel-parameters.txt         |   6 +-
+ arch/riscv/Kconfig                            |  19 ++
+ arch/riscv/include/asm/kvm_host.h             |  10 +
+ arch/riscv/include/asm/kvm_vcpu_sbi.h         |  10 +
+ arch/riscv/include/asm/paravirt.h             |  28 +++
+ arch/riscv/include/asm/paravirt_api_clock.h   |   1 +
+ arch/riscv/include/asm/sbi.h                  |  17 ++
+ arch/riscv/include/uapi/asm/kvm.h             |  13 ++
+ arch/riscv/kernel/Makefile                    |   1 +
+ arch/riscv/kernel/paravirt.c                  | 134 +++++++++++
+ arch/riscv/kernel/time.c                      |   3 +
+ arch/riscv/kvm/Kconfig                        |   1 +
+ arch/riscv/kvm/Makefile                       |   1 +
+ arch/riscv/kvm/vcpu.c                         |   7 +
+ arch/riscv/kvm/vcpu_onereg.c                  |  50 ++++-
+ arch/riscv/kvm/vcpu_sbi.c                     |  67 ++++++
+ arch/riscv/kvm/vcpu_sbi_sta.c                 | 208 ++++++++++++++++++
+ tools/testing/selftests/kvm/Makefile          |   5 +-
+ .../selftests/kvm/include/riscv/processor.h   |  22 ++
+ .../selftests/kvm/lib/riscv/processor.c       |  45 ++++
+ tools/testing/selftests/kvm/lib/riscv/ucall.c |  26 ---
+ .../selftests/kvm/riscv/get-reg-list.c        |  43 ++++
+ tools/testing/selftests/kvm/steal_time.c      |  99 +++++++++
+ 23 files changed, 781 insertions(+), 35 deletions(-)
+ create mode 100644 arch/riscv/include/asm/paravirt.h
+ create mode 100644 arch/riscv/include/asm/paravirt_api_clock.h
+ create mode 100644 arch/riscv/kernel/paravirt.c
+ create mode 100644 arch/riscv/kvm/vcpu_sbi_sta.c
+
+-- 
+2.43.0
+
+
