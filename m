@@ -1,134 +1,87 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Sun, 17 Dec 2023 21:40:24 +0100
-Subject: [PATCH v3 04/13] RISC-V: KVM: Add SBI STA extension skeleton
+Date: Sun, 17 Dec 2023 21:40:25 +0100
+Subject: [PATCH v3 05/13] RISC-V: KVM: Add steal-update vcpu request
 In-Reply-To: <20231217204019.36492-15-ajones@ventanamicro.com>
 References: <20231217204019.36492-15-ajones@ventanamicro.com>
-Message-ID: <20231217204019.36492-19-ajones@ventanamicro.com>
+Message-ID: <20231217204019.36492-20-ajones@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add the files and functions needed to support the SBI STA
-(steal-time accounting) extension. In the next patches we'll
-complete the functions to fully enable SBI STA support.
+Add a new vcpu request to inform a vcpu that it should record its
+steal-time information. The request is made each time it has been
+detected that the vcpu task was not assigned a cpu for some time,
+which is easy to do by making the request from vcpu-load. The record
+function is just a stub for now and will be filled in with the rest
+of the steal-time support functions in following patches.
 
 Reviewed-by: Anup Patel <anup@brainfault.org>
 Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
 ---
- arch/riscv/include/asm/kvm_vcpu_sbi.h |  1 +
- arch/riscv/include/uapi/asm/kvm.h     |  1 +
- arch/riscv/kvm/Makefile               |  1 +
- arch/riscv/kvm/vcpu_sbi.c             |  4 +++
- arch/riscv/kvm/vcpu_sbi_sta.c         | 47 +++++++++++++++++++++++++++
- 5 files changed, 54 insertions(+)
- create mode 100644 arch/riscv/kvm/vcpu_sbi_sta.c
+ arch/riscv/include/asm/kvm_host.h | 3 +++
+ arch/riscv/kvm/vcpu.c             | 5 +++++
+ arch/riscv/kvm/vcpu_sbi_sta.c     | 4 ++++
+ 3 files changed, 12 insertions(+)
 
-diff --git a/arch/riscv/include/asm/kvm_vcpu_sbi.h b/arch/riscv/include/asm/kvm_vcpu_sbi.h
-index bffda0ac59b6..99c23bb37a37 100644
---- a/arch/riscv/include/asm/kvm_vcpu_sbi.h
-+++ b/arch/riscv/include/asm/kvm_vcpu_sbi.h
-@@ -76,6 +76,7 @@ extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_rfence;
- extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_srst;
- extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_hsm;
- extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_dbcn;
-+extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_sta;
- extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_experimental;
- extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_vendor;
+diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
+index 0eefd9c991ae..230b82c3118d 100644
+--- a/arch/riscv/include/asm/kvm_host.h
++++ b/arch/riscv/include/asm/kvm_host.h
+@@ -41,6 +41,7 @@
+ 	KVM_ARCH_REQ_FLAGS(4, KVM_REQUEST_WAIT | KVM_REQUEST_NO_WAKEUP)
+ #define KVM_REQ_HFENCE			\
+ 	KVM_ARCH_REQ_FLAGS(5, KVM_REQUEST_WAIT | KVM_REQUEST_NO_WAKEUP)
++#define KVM_REQ_STEAL_UPDATE		KVM_ARCH_REQ(6)
  
-diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
-index 60d3b21dead7..e961d79622fb 100644
---- a/arch/riscv/include/uapi/asm/kvm.h
-+++ b/arch/riscv/include/uapi/asm/kvm.h
-@@ -157,6 +157,7 @@ enum KVM_RISCV_SBI_EXT_ID {
- 	KVM_RISCV_SBI_EXT_EXPERIMENTAL,
- 	KVM_RISCV_SBI_EXT_VENDOR,
- 	KVM_RISCV_SBI_EXT_DBCN,
-+	KVM_RISCV_SBI_EXT_STA,
- 	KVM_RISCV_SBI_EXT_MAX,
- };
+ enum kvm_riscv_hfence_type {
+ 	KVM_RISCV_HFENCE_UNKNOWN = 0,
+@@ -372,4 +373,6 @@ bool kvm_riscv_vcpu_has_interrupts(struct kvm_vcpu *vcpu, u64 mask);
+ void kvm_riscv_vcpu_power_off(struct kvm_vcpu *vcpu);
+ void kvm_riscv_vcpu_power_on(struct kvm_vcpu *vcpu);
  
-diff --git a/arch/riscv/kvm/Makefile b/arch/riscv/kvm/Makefile
-index 4c2067fc59fc..c9646521f113 100644
---- a/arch/riscv/kvm/Makefile
-+++ b/arch/riscv/kvm/Makefile
-@@ -26,6 +26,7 @@ kvm-$(CONFIG_RISCV_SBI_V01) += vcpu_sbi_v01.o
- kvm-y += vcpu_sbi_base.o
- kvm-y += vcpu_sbi_replace.o
- kvm-y += vcpu_sbi_hsm.o
-+kvm-y += vcpu_sbi_sta.o
- kvm-y += vcpu_timer.o
- kvm-$(CONFIG_RISCV_PMU_SBI) += vcpu_pmu.o vcpu_sbi_pmu.o
- kvm-y += aia.o
-diff --git a/arch/riscv/kvm/vcpu_sbi.c b/arch/riscv/kvm/vcpu_sbi.c
-index dcdff4458190..088daaa23dd8 100644
---- a/arch/riscv/kvm/vcpu_sbi.c
-+++ b/arch/riscv/kvm/vcpu_sbi.c
-@@ -70,6 +70,10 @@ static const struct kvm_riscv_sbi_extension_entry sbi_ext[] = {
- 		.ext_idx = KVM_RISCV_SBI_EXT_DBCN,
- 		.ext_ptr = &vcpu_sbi_ext_dbcn,
- 	},
-+	{
-+		.ext_idx = KVM_RISCV_SBI_EXT_STA,
-+		.ext_ptr = &vcpu_sbi_ext_sta,
-+	},
- 	{
- 		.ext_idx = KVM_RISCV_SBI_EXT_EXPERIMENTAL,
- 		.ext_ptr = &vcpu_sbi_ext_experimental,
++void kvm_riscv_vcpu_record_steal_time(struct kvm_vcpu *vcpu);
++
+ #endif /* __RISCV_KVM_HOST_H__ */
+diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+index bf3952d1a621..6995b8b641e4 100644
+--- a/arch/riscv/kvm/vcpu.c
++++ b/arch/riscv/kvm/vcpu.c
+@@ -541,6 +541,8 @@ void kvm_arch_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
+ 
+ 	kvm_riscv_vcpu_aia_load(vcpu, cpu);
+ 
++	kvm_make_request(KVM_REQ_STEAL_UPDATE, vcpu);
++
+ 	vcpu->cpu = cpu;
+ }
+ 
+@@ -614,6 +616,9 @@ static void kvm_riscv_check_vcpu_requests(struct kvm_vcpu *vcpu)
+ 
+ 		if (kvm_check_request(KVM_REQ_HFENCE, vcpu))
+ 			kvm_riscv_hfence_process(vcpu);
++
++		if (kvm_check_request(KVM_REQ_STEAL_UPDATE, vcpu))
++			kvm_riscv_vcpu_record_steal_time(vcpu);
+ 	}
+ }
+ 
 diff --git a/arch/riscv/kvm/vcpu_sbi_sta.c b/arch/riscv/kvm/vcpu_sbi_sta.c
-new file mode 100644
-index 000000000000..839911dcd837
---- /dev/null
+index 839911dcd837..e28351c9488b 100644
+--- a/arch/riscv/kvm/vcpu_sbi_sta.c
 +++ b/arch/riscv/kvm/vcpu_sbi_sta.c
-@@ -0,0 +1,47 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Copyright (c) 2023 Ventana Micro Systems Inc.
-+ */
-+
-+#include <linux/kvm_host.h>
-+
-+#include <asm/kvm_vcpu_sbi.h>
-+#include <asm/sbi.h>
-+
-+static int kvm_sbi_sta_steal_time_set_shmem(struct kvm_vcpu *vcpu)
+@@ -8,6 +8,10 @@
+ #include <asm/kvm_vcpu_sbi.h>
+ #include <asm/sbi.h>
+ 
++void kvm_riscv_vcpu_record_steal_time(struct kvm_vcpu *vcpu)
 +{
-+	return SBI_ERR_FAILURE;
 +}
 +
-+static int kvm_sbi_ext_sta_handler(struct kvm_vcpu *vcpu, struct kvm_run *run,
-+				   struct kvm_vcpu_sbi_return *retdata)
-+{
-+	struct kvm_cpu_context *cp = &vcpu->arch.guest_context;
-+	unsigned long funcid = cp->a6;
-+	int ret;
-+
-+	switch (funcid) {
-+	case SBI_EXT_STA_STEAL_TIME_SET_SHMEM:
-+		ret = kvm_sbi_sta_steal_time_set_shmem(vcpu);
-+		break;
-+	default:
-+		ret = SBI_ERR_NOT_SUPPORTED;
-+		break;
-+	}
-+
-+	retdata->err_val = ret;
-+
-+	return 0;
-+}
-+
-+static unsigned long kvm_sbi_ext_sta_probe(struct kvm_vcpu *vcpu)
-+{
-+	return 0;
-+}
-+
-+const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_sta = {
-+	.extid_start = SBI_EXT_STA,
-+	.extid_end = SBI_EXT_STA,
-+	.handler = kvm_sbi_ext_sta_handler,
-+	.probe = kvm_sbi_ext_sta_probe,
-+};
+ static int kvm_sbi_sta_steal_time_set_shmem(struct kvm_vcpu *vcpu)
+ {
+ 	return SBI_ERR_FAILURE;
 -- 
 2.43.0
 
