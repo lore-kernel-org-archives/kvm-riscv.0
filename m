@@ -1,128 +1,85 @@
 From: Atish Patra <atishp@rivosinc.com>
-Date: Mon, 18 Dec 2023 02:41:07 -0800
-Subject: [v1 10/10] RISC-V: KVM: Support 64 bit firmware counters on RV32
+Date: Mon, 18 Dec 2023 02:41:04 -0800
+Subject: [v1 07/10] RISC-V: KVM: No need to exit to the user space if perf event failed
 In-Reply-To: <20231218104107.2976925-1-atishp@rivosinc.com>
 References: <20231218104107.2976925-1-atishp@rivosinc.com>
-Message-ID: <20231218104107.2976925-11-atishp@rivosinc.com>
+Message-ID: <20231218104107.2976925-8-atishp@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The SBI v2.0 introduced a fw_read_hi function to read 64 bit firmware
-counters for RV32 based systems.
+Currently, we return a linux error code if creating a perf event failed
+in kvm. That shouldn't be necessary as guest can continue to operate
+without perf profiling or profiling with firmware counters.
 
-Add infrastructure to support that.
+Return appropriate SBI error code to indicate that PMU configuration
+failed. An error message in kvm already describes the reason for failure.
 
+Fixes: 0cb74b65d2e5 ("RISC-V: KVM: Implement perf support without sampling")
 Signed-off-by: Atish Patra <atishp@rivosinc.com>
 ---
- arch/riscv/include/asm/kvm_vcpu_pmu.h |  4 ++-
- arch/riscv/kvm/vcpu_pmu.c             | 37 ++++++++++++++++++++++++++-
- arch/riscv/kvm/vcpu_sbi_pmu.c         |  6 +++++
- 3 files changed, 45 insertions(+), 2 deletions(-)
+ arch/riscv/kvm/vcpu_pmu.c     | 14 +++++++++-----
+ arch/riscv/kvm/vcpu_sbi_pmu.c |  6 +++---
+ 2 files changed, 12 insertions(+), 8 deletions(-)
 
-diff --git a/arch/riscv/include/asm/kvm_vcpu_pmu.h b/arch/riscv/include/asm/kvm_vcpu_pmu.h
-index 931887e07a66..5da5df21ec54 100644
---- a/arch/riscv/include/asm/kvm_vcpu_pmu.h
-+++ b/arch/riscv/include/asm/kvm_vcpu_pmu.h
-@@ -20,7 +20,7 @@ static_assert(RISCV_KVM_MAX_COUNTERS <= 64);
- 
- struct kvm_fw_event {
- 	/* Current value of the event */
--	unsigned long value;
-+	uint64_t value;
- 
- 	/* Event monitoring status */
- 	bool started;
-@@ -91,6 +91,8 @@ int kvm_riscv_vcpu_pmu_ctr_cfg_match(struct kvm_vcpu *vcpu, unsigned long ctr_ba
- 				     struct kvm_vcpu_sbi_return *retdata);
- int kvm_riscv_vcpu_pmu_ctr_read(struct kvm_vcpu *vcpu, unsigned long cidx,
- 				struct kvm_vcpu_sbi_return *retdata);
-+int kvm_riscv_vcpu_pmu_fw_ctr_read_hi(struct kvm_vcpu *vcpu, unsigned long cidx,
-+				struct kvm_vcpu_sbi_return *retdata);
- void kvm_riscv_vcpu_pmu_init(struct kvm_vcpu *vcpu);
- int kvm_riscv_vcpu_pmu_setup_snapshot(struct kvm_vcpu *vcpu, unsigned long saddr_low,
- 				       unsigned long saddr_high, unsigned long flags,
 diff --git a/arch/riscv/kvm/vcpu_pmu.c b/arch/riscv/kvm/vcpu_pmu.c
-index 368c3a8a8d4a..5c21035e284d 100644
+index 8c44f26e754d..08f561998611 100644
 --- a/arch/riscv/kvm/vcpu_pmu.c
 +++ b/arch/riscv/kvm/vcpu_pmu.c
-@@ -196,6 +196,29 @@ static int pmu_get_pmc_index(struct kvm_pmu *pmu, unsigned long eidx,
- 	return kvm_pmu_get_programmable_pmc_index(pmu, eidx, cbase, cmask);
- }
- 
-+static int pmu_fw_ctr_read_hi(struct kvm_vcpu *vcpu, unsigned long cidx,
-+			      unsigned long *out_val)
-+{
-+	struct kvm_pmu *kvpmu = vcpu_to_pmu(vcpu);
-+	struct kvm_pmc *pmc;
-+	int fevent_code;
-+
-+	if (!IS_ENABLED(CONFIG_32BIT))
-+		return -EINVAL;
-+
-+	pmc = &kvpmu->pmc[cidx];
-+
-+	if (pmc->cinfo.type != SBI_PMU_CTR_TYPE_FW)
-+		return -EINVAL;
-+
-+	fevent_code = get_event_code(pmc->event_idx);
-+	pmc->counter_val = kvpmu->fw_event[fevent_code].value;
-+
-+	*out_val = pmc->counter_val >> 32;
-+
-+	return 0;
-+}
-+
- static int pmu_ctr_read(struct kvm_vcpu *vcpu, unsigned long cidx,
- 			unsigned long *out_val)
- {
-@@ -701,6 +724,18 @@ int kvm_riscv_vcpu_pmu_ctr_cfg_match(struct kvm_vcpu *vcpu, unsigned long ctr_ba
+@@ -229,8 +229,9 @@ static int kvm_pmu_validate_counter_mask(struct kvm_pmu *kvpmu, unsigned long ct
  	return 0;
  }
  
-+int kvm_riscv_vcpu_pmu_fw_ctr_read_hi(struct kvm_vcpu *vcpu, unsigned long cidx,
-+				   struct kvm_vcpu_sbi_return *retdata)
-+{
-+	int ret;
-+
-+	ret = pmu_fw_ctr_read_hi(vcpu, cidx, &retdata->out_val);
-+	if (ret == -EINVAL)
-+		retdata->err_val = SBI_ERR_INVALID_PARAM;
-+
-+	return 0;
-+}
-+
- int kvm_riscv_vcpu_pmu_ctr_read(struct kvm_vcpu *vcpu, unsigned long cidx,
- 				struct kvm_vcpu_sbi_return *retdata)
+-static int kvm_pmu_create_perf_event(struct kvm_pmc *pmc, struct perf_event_attr *attr,
+-				     unsigned long flags, unsigned long eidx, unsigned long evtdata)
++static long kvm_pmu_create_perf_event(struct kvm_pmc *pmc, struct perf_event_attr *attr,
++				      unsigned long flags, unsigned long eidx,
++				      unsigned long evtdata)
  {
-@@ -774,7 +809,7 @@ void kvm_riscv_vcpu_pmu_init(struct kvm_vcpu *vcpu)
- 			pmc->cinfo.csr = CSR_CYCLE + i;
- 		} else {
- 			pmc->cinfo.type = SBI_PMU_CTR_TYPE_FW;
--			pmc->cinfo.width = BITS_PER_LONG - 1;
-+			pmc->cinfo.width = 63;
- 		}
+ 	struct perf_event *event;
+ 
+@@ -455,7 +456,8 @@ int kvm_riscv_vcpu_pmu_ctr_cfg_match(struct kvm_vcpu *vcpu, unsigned long ctr_ba
+ 				     unsigned long eidx, u64 evtdata,
+ 				     struct kvm_vcpu_sbi_return *retdata)
+ {
+-	int ctr_idx, ret, sbiret = 0;
++	int ctr_idx, sbiret = 0;
++	long ret;
+ 	bool is_fevent;
+ 	unsigned long event_code;
+ 	u32 etype = kvm_pmu_get_perf_event_type(eidx);
+@@ -514,8 +516,10 @@ int kvm_riscv_vcpu_pmu_ctr_cfg_match(struct kvm_vcpu *vcpu, unsigned long ctr_ba
+ 			kvpmu->fw_event[event_code].started = true;
+ 	} else {
+ 		ret = kvm_pmu_create_perf_event(pmc, &attr, flags, eidx, evtdata);
+-		if (ret)
+-			return ret;
++		if (ret) {
++			sbiret = SBI_ERR_NOT_SUPPORTED;
++			goto out;
++		}
  	}
  
+ 	set_bit(ctr_idx, kvpmu->pmc_in_use);
 diff --git a/arch/riscv/kvm/vcpu_sbi_pmu.c b/arch/riscv/kvm/vcpu_sbi_pmu.c
-index 9f61136e4bb1..58a0e5587e2a 100644
+index 7eca72df2cbd..b70179e9e875 100644
 --- a/arch/riscv/kvm/vcpu_sbi_pmu.c
 +++ b/arch/riscv/kvm/vcpu_sbi_pmu.c
-@@ -64,6 +64,12 @@ static int kvm_sbi_ext_pmu_handler(struct kvm_vcpu *vcpu, struct kvm_run *run,
- 	case SBI_EXT_PMU_COUNTER_FW_READ:
- 		ret = kvm_riscv_vcpu_pmu_ctr_read(vcpu, cp->a0, retdata);
- 		break;
-+	case SBI_EXT_PMU_COUNTER_FW_READ_HI:
-+		if (IS_ENABLED(CONFIG_32BIT))
-+			ret = kvm_riscv_vcpu_pmu_fw_ctr_read_hi(vcpu, cp->a0, retdata);
-+		else
-+			retdata->out_val = 0;
-+		break;
- 	case SBI_EXT_PMU_SNAPSHOT_SET_SHMEM:
- 		ret = kvm_riscv_vcpu_pmu_setup_snapshot(vcpu, cp->a0, cp->a1, cp->a2, retdata);
- 		break;
+@@ -42,9 +42,9 @@ static int kvm_sbi_ext_pmu_handler(struct kvm_vcpu *vcpu, struct kvm_run *run,
+ #endif
+ 		/*
+ 		 * This can fail if perf core framework fails to create an event.
+-		 * Forward the error to userspace because it's an error which
+-		 * happened within the host kernel. The other option would be
+-		 * to convert to an SBI error and forward to the guest.
++		 * No need to forward the error to userspace and exit the guest
++		 * operation can continue without profiling. Forward the
++		 * appropriate SBI error to the guest.
+ 		 */
+ 		ret = kvm_riscv_vcpu_pmu_ctr_cfg_match(vcpu, cp->a0, cp->a1,
+ 						       cp->a2, cp->a3, temp, retdata);
 -- 
 2.34.1
 
