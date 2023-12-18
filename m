@@ -1,127 +1,173 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Sun, 17 Dec 2023 21:40:33 +0100
-Subject: [PATCH v3 13/13] RISC-V: KVM: selftests: Add get-reg-list test for STA registers
-In-Reply-To: <20231217204019.36492-15-ajones@ventanamicro.com>
-References: <20231217204019.36492-15-ajones@ventanamicro.com>
-Message-ID: <20231217204019.36492-28-ajones@ventanamicro.com>
+From: Atish Kumar Patra <atishp@rivosinc.com>
+Date: Sun, 17 Dec 2023 16:57:42 -0800
+Subject: [RFC 6/9] drivers/perf: riscv: Implement SBI PMU snapshot function
+In-Reply-To: <20231217-navigate-thirsty-03509850a683@spud>
+References: <20231205024310.1593100-1-atishp@rivosinc.com> <20231205024310.1593100-7-atishp@rivosinc.com>
+ <20231207-daycare-manager-2f4817171422@wendy> <CAHBxVyE3xAAj=Z_Cu33tEKjXEAcnOV_=Jpkpn-+j5MoLj1FPWw@mail.gmail.com>
+ <20231217-navigate-thirsty-03509850a683@spud>
+Message-ID: <CAHBxVyFQ2+NYeb77zqMofHQC0zD5_Ye2cGk6Zsc+KHKm4zE5mw@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add SBI STA and its two registers to the get-reg-list test.
+On Sun, Dec 17, 2023 at 4:10?AM Conor Dooley <conor@kernel.org> wrote:
+>
+> On Sat, Dec 16, 2023 at 05:39:12PM -0800, Atish Kumar Patra wrote:
+> > On Thu, Dec 7, 2023 at 5:06?AM Conor Dooley <conor.dooley@microchip.com> wrote:
+> > > On Mon, Dec 04, 2023 at 06:43:07PM -0800, Atish Patra wrote:
+>
+> > > > +static void pmu_sbi_snapshot_free(struct riscv_pmu *pmu)
+> > > > +{
+> > > > +     int cpu;
+> > >
+> > > > +     struct cpu_hw_events *cpu_hw_evt;
+> > >
+> > > This is only used inside the scope of the for loop.
+> > >
+> >
+> > Do you intend to suggest using mixed declarations ? Personally, I
+> > prefer all the declarations upfront for readability.
+> > Let me know if you think that's an issue or violates coding style.
+>
+> I was suggesting
+>
+> int cpu;
+>
+> for_each_possible_cpu(cpu)
+>         struct cpu_hw_events *cpu_hw_evt = per....()
+>
 
-Reviewed-by: Anup Patel <anup@brainfault.org>
-Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
----
- .../selftests/kvm/riscv/get-reg-list.c        | 43 +++++++++++++++++++
- 1 file changed, 43 insertions(+)
+That's what I meant by mixed declarations.
 
-diff --git a/tools/testing/selftests/kvm/riscv/get-reg-list.c b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-index b8da2e86bf9c..55dd1fc3c536 100644
---- a/tools/testing/selftests/kvm/riscv/get-reg-list.c
-+++ b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-@@ -71,6 +71,7 @@ bool filter_reg(__u64 reg)
- 	case KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_SINGLE | KVM_RISCV_SBI_EXT_HSM:
- 	case KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_SINGLE | KVM_RISCV_SBI_EXT_PMU:
- 	case KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_SINGLE | KVM_RISCV_SBI_EXT_DBCN:
-+	case KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_SINGLE | KVM_RISCV_SBI_EXT_STA:
- 	case KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_SINGLE | KVM_RISCV_SBI_EXT_EXPERIMENTAL:
- 	case KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_SINGLE | KVM_RISCV_SBI_EXT_VENDOR:
- 		return true;
-@@ -461,6 +462,7 @@ static const char *sbi_ext_single_id_to_str(__u64 reg_off)
- 		KVM_SBI_EXT_ARR(KVM_RISCV_SBI_EXT_SRST),
- 		KVM_SBI_EXT_ARR(KVM_RISCV_SBI_EXT_HSM),
- 		KVM_SBI_EXT_ARR(KVM_RISCV_SBI_EXT_PMU),
-+		KVM_SBI_EXT_ARR(KVM_RISCV_SBI_EXT_STA),
- 		KVM_SBI_EXT_ARR(KVM_RISCV_SBI_EXT_EXPERIMENTAL),
- 		KVM_SBI_EXT_ARR(KVM_RISCV_SBI_EXT_VENDOR),
- 		KVM_SBI_EXT_ARR(KVM_RISCV_SBI_EXT_DBCN),
-@@ -509,6 +511,32 @@ static const char *sbi_ext_id_to_str(const char *prefix, __u64 id)
- 	return strdup_printf("%lld | %lld /* UNKNOWN */", reg_subtype, reg_off);
- }
- 
-+static const char *sbi_sta_id_to_str(__u64 reg_off)
-+{
-+	switch (reg_off) {
-+	case 0: return "KVM_REG_RISCV_SBI_STA | KVM_REG_RISCV_SBI_STA_REG(shmem_lo)";
-+	case 1: return "KVM_REG_RISCV_SBI_STA | KVM_REG_RISCV_SBI_STA_REG(shmem_hi)";
-+	}
-+	return strdup_printf("KVM_REG_RISCV_SBI_STA | %lld /* UNKNOWN */", reg_off);
-+}
-+
-+static const char *sbi_id_to_str(const char *prefix, __u64 id)
-+{
-+	__u64 reg_off = id & ~(REG_MASK | KVM_REG_RISCV_SBI);
-+	__u64 reg_subtype = reg_off & KVM_REG_RISCV_SUBTYPE_MASK;
-+
-+	assert((id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_SBI);
-+
-+	reg_off &= ~KVM_REG_RISCV_SUBTYPE_MASK;
-+
-+	switch (reg_subtype) {
-+	case KVM_REG_RISCV_SBI_STA:
-+		return sbi_sta_id_to_str(reg_off);
-+	}
-+
-+	return strdup_printf("%lld | %lld /* UNKNOWN */", reg_subtype, reg_off);
-+}
-+
- void print_reg(const char *prefix, __u64 id)
- {
- 	const char *reg_size = NULL;
-@@ -565,6 +593,10 @@ void print_reg(const char *prefix, __u64 id)
- 		printf("\tKVM_REG_RISCV | %s | KVM_REG_RISCV_SBI_EXT | %s,\n",
- 				reg_size, sbi_ext_id_to_str(prefix, id));
- 		break;
-+	case KVM_REG_RISCV_SBI:
-+		printf("\tKVM_REG_RISCV | %s | KVM_REG_RISCV_SBI | %s,\n",
-+				reg_size, sbi_id_to_str(prefix, id));
-+		break;
- 	default:
- 		printf("\tKVM_REG_RISCV | %s | 0x%llx /* UNKNOWN */,\n",
- 				reg_size, id & ~REG_MASK);
-@@ -651,6 +683,12 @@ static __u64 sbi_base_regs[] = {
- 	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_SINGLE | KVM_RISCV_SBI_EXT_VENDOR,
- };
- 
-+static __u64 sbi_sta_regs[] = {
-+	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_SINGLE | KVM_RISCV_SBI_EXT_STA,
-+	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_SBI | KVM_REG_RISCV_SBI_STA | KVM_REG_RISCV_SBI_STA_REG(shmem_lo),
-+	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_SBI | KVM_REG_RISCV_SBI_STA | KVM_REG_RISCV_SBI_STA_REG(shmem_hi),
-+};
-+
- static __u64 zicbom_regs[] = {
- 	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_CONFIG | KVM_REG_RISCV_CONFIG_REG(zicbom_block_size),
- 	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZICBOM,
-@@ -757,6 +795,9 @@ static __u64 fp_d_regs[] = {
- #define SUBLIST_SBI_BASE \
- 	{"sbi-base", .feature_type = VCPU_FEATURE_SBI_EXT, .feature = KVM_RISCV_SBI_EXT_V01, \
- 	 .regs = sbi_base_regs, .regs_n = ARRAY_SIZE(sbi_base_regs),}
-+#define SUBLIST_SBI_STA \
-+	{"sbi-sta", .feature_type = VCPU_FEATURE_SBI_EXT, .feature = KVM_RISCV_SBI_EXT_STA, \
-+	 .regs = sbi_sta_regs, .regs_n = ARRAY_SIZE(sbi_sta_regs),}
- #define SUBLIST_ZICBOM \
- 	{"zicbom", .feature = KVM_RISCV_ISA_EXT_ZICBOM, .regs = zicbom_regs, .regs_n = ARRAY_SIZE(zicbom_regs),}
- #define SUBLIST_ZICBOZ \
-@@ -832,6 +873,7 @@ static struct vcpu_reg_list config_sbi_##ext = {		\
- /* Note: The below list is alphabetically sorted. */
- 
- KVM_SBI_EXT_SUBLIST_CONFIG(base, BASE);
-+KVM_SBI_EXT_SUBLIST_CONFIG(sta, STA);
- KVM_SBI_EXT_SIMPLE_CONFIG(pmu, PMU);
- KVM_SBI_EXT_SIMPLE_CONFIG(dbcn, DBCN);
- 
-@@ -858,6 +900,7 @@ KVM_ISA_EXT_SIMPLE_CONFIG(zihpm, ZIHPM);
- 
- struct vcpu_reg_list *vcpu_configs[] = {
- 	&config_sbi_base,
-+	&config_sbi_sta,
- 	&config_sbi_pmu,
- 	&config_sbi_dbcn,
- 	&config_aia,
--- 
-2.43.0
+> I've been asked to do this in some subsystems I submitted code to,
+> and checkpatch etc do not complain about it. I don't think there is any
+> specific commentary in the coding style about minimising the scope of
+> variables however.
+>
 
+I didn't know any subsystem which prefers mixed declaration vs upfront.
+
+> > > > +     /* Free up the snapshot area memory and fall back to default SBI */
+> > >
+> > > What does "fall back to the default SBI mean"? SBI is an interface so I
+> > > don't understand what it means in this context. Secondly,
+> >
+> > In absence of SBI PMU snapshot, the driver would try to read the
+> > counters directly and end up traps.
+> > Also, it would not use the SBI PMU snapshot flags in the SBI start/stop calls.
+> > Snapshot is an alternative mechanism to minimize the traps. I just
+> > wanted to highlight that.
+> >
+> > How about this ?
+> > "Free up the snapshot area memory and fall back to default SBI PMU
+> > calls without snapshot */
+>
+> Yeah, that's fine (modulo the */ placement). The original comment just
+> seemed truncated.
+>
+
+ok.
+
+> > > > +     if (ret.error) {
+> > > > +             if (ret.error != SBI_ERR_NOT_SUPPORTED)
+> > > > +                     pr_warn("%s: pmu snapshot setup failed with error %ld\n", __func__,
+> > > > +                             ret.error);
+> > >
+> > > Why is the function relevant here? Is the error message in-and-of-itself
+> > > not sufficient here? Where else would one be setting up the snapshots
+> > > other than the setup function?
+> > >
+> >
+> > The SBI implementation (i.e OpenSBI) may or may not provide a snapshot
+> > feature. This error message indicates
+> > that SBI implementation supports PMU snapshot but setup failed for
+> > some other error.
+>
+> I don't see what this has to do with printing out the function. This is
+> a unique error message, and there is no other place where the setup is
+> done AFAICT.
+>
+
+Ahh you were concerned about the function name in the log. I
+misunderstood it at first.
+The function name is not relevant and has been already removed.
+
+> > > > +             /* Snapshot is taken relative to the counter idx base. Apply a fixup. */
+> > > > +             if (hwc->idx > 0) {
+> > > > +                     sdata->ctr_values[hwc->idx] = sdata->ctr_values[0];
+> > > > +                     sdata->ctr_values[0] = 0;
+> > >
+> > > Why is this being zeroed in this manner? Why is zeroing it not required
+> > > if hwc->idx == 0? You've got a comment there that could probably do with
+> > > elaboration.
+> > >
+> >
+> > hwc->idx is the counter_idx_base here. If it is zero, that means the
+> > counter0 value is updated
+> > in the shared memory. However, if the base > 0, we need to update the
+> > relative counter value
+> > from the shared memory. Does it make sense ?
+>
+> Please expand on the comment so that it contains this information.
+>
+
+Sure.
+
+> > > > +             ret = pmu_sbi_snapshot_setup(pmu, smp_processor_id());
+> > > > +             if (!ret) {
+> > > > +                     pr_info("SBI PMU snapshot is available to optimize the PMU traps\n");
+> > >
+> > > Why the verbose message? Could we standardise on one wording for the SBI
+> > > function probing stuff? Most users seem to be "SBI FOO extension detected".
+> > > Only IPI has additional wording and PMU differs slightly.
+> >
+> > Additional information is for users to understand PMU functionality
+> > uses less traps on this system.
+> > We can just resort to and expect users to read upon the purpose of the
+> > snapshot from the spec.
+> > "SBI PMU snapshot available"
+>
+> What I was asking for was alignment with the majority of other SBI
+> extensions that use the format I mentioned above.
+>
+
+PMU snapshot is a function and my previous suggestion aligns PMU
+extension availability log message.
+I can change it to "SBI PMU snapshot detected"
+
+> >
+> > >
+> > > > +                     /* We enable it once here for the boot cpu. If snapshot shmem fails during
+> > >
+> > > Again, comment style here. What does "snapshot shmem" mean? I think
+> > > there's a missing action here. Registration? Allocation?
+> > >
+> >
+> > Fixed it. It is supposed to be "snapshot shmem setup"
+> >
+> > > > +                      * cpu hotplug on, it should bail out.
+> > >
+> > > Should or will? What action does "bail out" correspond to?
+> > >
+> >
+> > bail out the cpu hotplug process. We don't support heterogeneous pmus
+> > for snapshot.
+> > If the SBI implementation returns success for SBI_EXT_PMU_SNAPSHOT_SET_SHMEM
+> > boot cpu but fails for other cpus while bringing them up, it is
+> > problematic to handle that.
+>
+> "bail out" should be replaced by a more technical explanation of what is
+> going to happen. "should" is a weird word to use, either the cpuhotplug
+> code does or does not deal with this case, and since that code is also
+> in the kernel, this patchset should ensure that it does handle the case,
+> no? If the kernel does handle it "should" should be replaced with more
+> definitive wording.
+>
+
+ok. I will improve the comment to explain a bit more.
+
+> Thanks,
+> Conor.
 
