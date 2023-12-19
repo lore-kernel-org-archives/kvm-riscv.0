@@ -1,9 +1,9 @@
 From: Atish Patra <atishp@atishpatra.org>
-Date: Mon, 18 Dec 2023 17:41:14 -0800
-Subject: [PATCH v3 03/13] RISC-V: paravirt: Implement steal-time support
-In-Reply-To: <20231217204019.36492-18-ajones@ventanamicro.com>
-References: <20231217204019.36492-15-ajones@ventanamicro.com> <20231217204019.36492-18-ajones@ventanamicro.com>
-Message-ID: <CAOnJCU+ospMOmJ7PnF8ynD90cN3A3YP8gx8VHgmVzLjAQsr7eQ@mail.gmail.com>
+Date: Mon, 18 Dec 2023 17:42:04 -0800
+Subject: [PATCH v3 04/13] RISC-V: KVM: Add SBI STA extension skeleton
+In-Reply-To: <20231217204019.36492-19-ajones@ventanamicro.com>
+References: <20231217204019.36492-15-ajones@ventanamicro.com> <20231217204019.36492-19-ajones@ventanamicro.com>
+Message-ID: <CAOnJCUKsSyWmK0kkoTZ-R0dnaO2cONK8oD_kbRfipbZZ7Hrqig@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -12,155 +12,131 @@ Content-Transfer-Encoding: 7bit
 
 On Sun, Dec 17, 2023 at 12:40?PM Andrew Jones <ajones@ventanamicro.com> wrote:
 >
-> When the SBI STA extension exists we can use it to implement
-> paravirt steal-time support. Fill in the empty pv-time functions
-> with an SBI STA implementation and add the Kconfig knobs allowing
-> it to be enabled.
+> Add the files and functions needed to support the SBI STA
+> (steal-time accounting) extension. In the next patches we'll
+> complete the functions to fully enable SBI STA support.
 >
+> Reviewed-by: Anup Patel <anup@brainfault.org>
 > Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
 > ---
->  arch/riscv/Kconfig           | 19 +++++++++++
->  arch/riscv/kernel/paravirt.c | 63 ++++++++++++++++++++++++++++++++++--
->  2 files changed, 79 insertions(+), 3 deletions(-)
+>  arch/riscv/include/asm/kvm_vcpu_sbi.h |  1 +
+>  arch/riscv/include/uapi/asm/kvm.h     |  1 +
+>  arch/riscv/kvm/Makefile               |  1 +
+>  arch/riscv/kvm/vcpu_sbi.c             |  4 +++
+>  arch/riscv/kvm/vcpu_sbi_sta.c         | 47 +++++++++++++++++++++++++++
+>  5 files changed, 54 insertions(+)
+>  create mode 100644 arch/riscv/kvm/vcpu_sbi_sta.c
 >
-> diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
-> index 95a2a06acc6a..b99fd8129edf 100644
-> --- a/arch/riscv/Kconfig
-> +++ b/arch/riscv/Kconfig
-> @@ -724,6 +724,25 @@ config COMPAT
+> diff --git a/arch/riscv/include/asm/kvm_vcpu_sbi.h b/arch/riscv/include/asm/kvm_vcpu_sbi.h
+> index bffda0ac59b6..99c23bb37a37 100644
+> --- a/arch/riscv/include/asm/kvm_vcpu_sbi.h
+> +++ b/arch/riscv/include/asm/kvm_vcpu_sbi.h
+> @@ -76,6 +76,7 @@ extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_rfence;
+>  extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_srst;
+>  extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_hsm;
+>  extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_dbcn;
+> +extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_sta;
+>  extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_experimental;
+>  extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_vendor;
 >
->           If you want to execute 32-bit userspace applications, say Y.
+> diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
+> index 60d3b21dead7..e961d79622fb 100644
+> --- a/arch/riscv/include/uapi/asm/kvm.h
+> +++ b/arch/riscv/include/uapi/asm/kvm.h
+> @@ -157,6 +157,7 @@ enum KVM_RISCV_SBI_EXT_ID {
+>         KVM_RISCV_SBI_EXT_EXPERIMENTAL,
+>         KVM_RISCV_SBI_EXT_VENDOR,
+>         KVM_RISCV_SBI_EXT_DBCN,
+> +       KVM_RISCV_SBI_EXT_STA,
+>         KVM_RISCV_SBI_EXT_MAX,
+>  };
 >
-> +config PARAVIRT
-> +       bool "Enable paravirtualization code"
-> +       depends on RISCV_SBI
-> +       help
-> +         This changes the kernel so it can modify itself when it is run
-> +         under a hypervisor, potentially improving performance significantly
-> +         over full virtualization.
+> diff --git a/arch/riscv/kvm/Makefile b/arch/riscv/kvm/Makefile
+> index 4c2067fc59fc..c9646521f113 100644
+> --- a/arch/riscv/kvm/Makefile
+> +++ b/arch/riscv/kvm/Makefile
+> @@ -26,6 +26,7 @@ kvm-$(CONFIG_RISCV_SBI_V01) += vcpu_sbi_v01.o
+>  kvm-y += vcpu_sbi_base.o
+>  kvm-y += vcpu_sbi_replace.o
+>  kvm-y += vcpu_sbi_hsm.o
+> +kvm-y += vcpu_sbi_sta.o
+>  kvm-y += vcpu_timer.o
+>  kvm-$(CONFIG_RISCV_PMU_SBI) += vcpu_pmu.o vcpu_sbi_pmu.o
+>  kvm-y += aia.o
+> diff --git a/arch/riscv/kvm/vcpu_sbi.c b/arch/riscv/kvm/vcpu_sbi.c
+> index dcdff4458190..088daaa23dd8 100644
+> --- a/arch/riscv/kvm/vcpu_sbi.c
+> +++ b/arch/riscv/kvm/vcpu_sbi.c
+> @@ -70,6 +70,10 @@ static const struct kvm_riscv_sbi_extension_entry sbi_ext[] = {
+>                 .ext_idx = KVM_RISCV_SBI_EXT_DBCN,
+>                 .ext_ptr = &vcpu_sbi_ext_dbcn,
+>         },
+> +       {
+> +               .ext_idx = KVM_RISCV_SBI_EXT_STA,
+> +               .ext_ptr = &vcpu_sbi_ext_sta,
+> +       },
+>         {
+>                 .ext_idx = KVM_RISCV_SBI_EXT_EXPERIMENTAL,
+>                 .ext_ptr = &vcpu_sbi_ext_experimental,
+> diff --git a/arch/riscv/kvm/vcpu_sbi_sta.c b/arch/riscv/kvm/vcpu_sbi_sta.c
+> new file mode 100644
+> index 000000000000..839911dcd837
+> --- /dev/null
+> +++ b/arch/riscv/kvm/vcpu_sbi_sta.c
+> @@ -0,0 +1,47 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +/*
+> + * Copyright (c) 2023 Ventana Micro Systems Inc.
+> + */
 > +
-> +config PARAVIRT_TIME_ACCOUNTING
-> +       bool "Paravirtual steal time accounting"
-> +       depends on PARAVIRT
-> +       help
-> +         Select this option to enable fine granularity task steal time
-> +         accounting. Time spent executing other tasks in parallel with
-> +         the current vCPU is discounted from the vCPU power. To account for
-> +         that, there can be a small performance impact.
+> +#include <linux/kvm_host.h>
 > +
-> +         If in doubt, say N here.
-> +
->  config RELOCATABLE
->         bool "Build a relocatable kernel"
->         depends on MMU && 64BIT && !XIP_KERNEL
-> diff --git a/arch/riscv/kernel/paravirt.c b/arch/riscv/kernel/paravirt.c
-> index 141dbcc36fa2..cc6a85432678 100644
-> --- a/arch/riscv/kernel/paravirt.c
-> +++ b/arch/riscv/kernel/paravirt.c
-> @@ -6,12 +6,21 @@
->  #define pr_fmt(fmt) "riscv-pv: " fmt
->
->  #include <linux/cpuhotplug.h>
-> +#include <linux/compiler.h>
-> +#include <linux/errno.h>
->  #include <linux/init.h>
->  #include <linux/jump_label.h>
-> +#include <linux/kconfig.h>
-> +#include <linux/kernel.h>
-> +#include <linux/percpu-defs.h>
->  #include <linux/printk.h>
->  #include <linux/static_call.h>
->  #include <linux/types.h>
->
-> +#include <asm/barrier.h>
-> +#include <asm/page.h>
+> +#include <asm/kvm_vcpu_sbi.h>
 > +#include <asm/sbi.h>
 > +
->  struct static_key paravirt_steal_enabled;
->  struct static_key paravirt_steal_rq_enabled;
->
-> @@ -31,24 +40,72 @@ static int __init parse_no_stealacc(char *arg)
->
->  early_param("no-steal-acc", parse_no_stealacc);
->
-> +DEFINE_PER_CPU(struct sbi_sta_struct, steal_time) __aligned(64);
-> +
->  static bool __init has_pv_steal_clock(void)
->  {
-> +       if (sbi_spec_version >= sbi_mk_version(2, 0) &&
-> +           sbi_probe_extension(SBI_EXT_STA) > 0) {
-> +               pr_info("SBI STA extension detected\n");
-> +               return true;
-> +       }
-> +
->         return false;
->  }
->
-> -static int pv_time_cpu_online(unsigned int cpu)
-> +static int sbi_sta_steal_time_set_shmem(unsigned long lo, unsigned long hi,
-> +                                       unsigned long flags)
->  {
-> +       struct sbiret ret;
-> +
-> +       ret = sbi_ecall(SBI_EXT_STA, SBI_EXT_STA_STEAL_TIME_SET_SHMEM,
-> +                       lo, hi, flags, 0, 0, 0);
-> +       if (ret.error) {
-> +               if (lo == SBI_STA_SHMEM_DISABLE && hi == SBI_STA_SHMEM_DISABLE)
-> +                       pr_warn("Failed to disable steal-time shmem");
-> +               else
-> +                       pr_warn("Failed to set steal-time shmem");
-> +               return sbi_err_map_linux_errno(ret.error);
-> +       }
-> +
->         return 0;
->  }
->
-> +static int pv_time_cpu_online(unsigned int cpu)
+> +static int kvm_sbi_sta_steal_time_set_shmem(struct kvm_vcpu *vcpu)
 > +{
-> +       struct sbi_sta_struct *st = this_cpu_ptr(&steal_time);
-> +       phys_addr_t pa = __pa(st);
-> +       unsigned long lo = (unsigned long)pa;
-> +       unsigned long hi = IS_ENABLED(CONFIG_32BIT) ? upper_32_bits((u64)pa) : 0;
-> +
-> +       return sbi_sta_steal_time_set_shmem(lo, hi, 0);
+> +       return SBI_ERR_FAILURE;
 > +}
 > +
->  static int pv_time_cpu_down_prepare(unsigned int cpu)
->  {
-> -       return 0;
-> +       return sbi_sta_steal_time_set_shmem(SBI_STA_SHMEM_DISABLE,
-> +                                           SBI_STA_SHMEM_DISABLE, 0);
->  }
->
->  static u64 pv_time_steal_clock(int cpu)
->  {
-> -       return 0;
-> +       struct sbi_sta_struct *st = per_cpu_ptr(&steal_time, cpu);
-> +       u32 sequence;
-> +       u64 steal;
+> +static int kvm_sbi_ext_sta_handler(struct kvm_vcpu *vcpu, struct kvm_run *run,
+> +                                  struct kvm_vcpu_sbi_return *retdata)
+> +{
+> +       struct kvm_cpu_context *cp = &vcpu->arch.guest_context;
+> +       unsigned long funcid = cp->a6;
+> +       int ret;
 > +
-> +       /*
-> +        * Check the sequence field before and after reading the steal
-> +        * field. Repeat the read if it is different or odd.
-> +        */
-> +       do {
-> +               sequence = READ_ONCE(st->sequence);
-> +               virt_rmb();
-> +               steal = READ_ONCE(st->steal);
-> +               virt_rmb();
-> +       } while ((le32_to_cpu(sequence) & 1) ||
-> +                sequence != READ_ONCE(st->sequence));
+> +       switch (funcid) {
+> +       case SBI_EXT_STA_STEAL_TIME_SET_SHMEM:
+> +               ret = kvm_sbi_sta_steal_time_set_shmem(vcpu);
+> +               break;
+> +       default:
+> +               ret = SBI_ERR_NOT_SUPPORTED;
+> +               break;
+> +       }
 > +
-> +       return le64_to_cpu(steal);
->  }
->
->  int __init pv_time_init(void)
+> +       retdata->err_val = ret;
+> +
+> +       return 0;
+> +}
+> +
+> +static unsigned long kvm_sbi_ext_sta_probe(struct kvm_vcpu *vcpu)
+> +{
+> +       return 0;
+> +}
+> +
+> +const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_sta = {
+> +       .extid_start = SBI_EXT_STA,
+> +       .extid_end = SBI_EXT_STA,
+> +       .handler = kvm_sbi_ext_sta_handler,
+> +       .probe = kvm_sbi_ext_sta_probe,
+> +};
 > --
 > 2.43.0
 >
 
-
 Reviewed-by: Atish Patra <atishp@rivosinc.com>
+
 -- 
 Regards,
 Atish
