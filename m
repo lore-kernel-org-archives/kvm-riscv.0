@@ -1,87 +1,47 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Tue, 19 Dec 2023 15:29:57 +0100
-Subject: [PATCH v3 01/13] RISC-V: paravirt: Add skeleton for pv-time
- support
-In-Reply-To: <CAOnJCULYeMz63LA-MR-Y9HqCU+dhBQdXf7Shwhu1FXFuck5gWA@mail.gmail.com>
-References: <20231217204019.36492-15-ajones@ventanamicro.com>
- <20231217204019.36492-16-ajones@ventanamicro.com>
- <CAOnJCULYeMz63LA-MR-Y9HqCU+dhBQdXf7Shwhu1FXFuck5gWA@mail.gmail.com>
-Message-ID: <20231219-3ed5ceb6bcb61fcfebc4a342@orel>
+From: Marc Zyngier <maz@kernel.org>
+Date: Tue, 19 Dec 2023 18:22:44 +0000
+Subject: [PATCH v4 11/11] KVM: selftests: Enable tunning of err_margin_us in arch timer test
+In-Reply-To: <0343a9e4bfa8011fbb6bca0286cee7eab1f17d5d.1702371136.git.haibo1.xu@intel.com>
+References: <cover.1702371136.git.haibo1.xu@intel.com>
+	<0343a9e4bfa8011fbb6bca0286cee7eab1f17d5d.1702371136.git.haibo1.xu@intel.com>
+Message-ID: <8734vy832j.wl-maz@kernel.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Dec 18, 2023 at 04:48:04PM -0800, Atish Patra wrote:
-> On Sun, Dec 17, 2023 at 12:40?PM Andrew Jones <ajones@ventanamicro.com> wrote:
-...
-> > +int __init pv_time_init(void)
-> > +{
-> > +       int ret;
-> > +
-> > +       if (!has_pv_steal_clock())
-> > +               return 0;
-> > +
-> > +       ret = cpuhp_setup_state(CPUHP_AP_ONLINE_DYN,
-> > +                               "riscv/pv_time:online",
-> > +                               pv_time_cpu_online,
-> > +                               pv_time_cpu_down_prepare);
-> > +       if (ret < 0)
-> > +               return ret;
-> > +
-> > +       static_call_update(pv_steal_clock, pv_time_steal_clock);
-> > +
-> > +       static_key_slow_inc(&paravirt_steal_enabled);
-> > +       if (steal_acc)
-> > +               static_key_slow_inc(&paravirt_steal_rq_enabled);
-> > +
-> > +       pr_info("using paravirt steal-time\n");
-> > +
-> 
-> Nit comment:
-> If the scheduler doesn't take stolen time into consideration (when If
-> no-steal-acc is specified in the command line),
-> the above log is a bit misleading ? ARM64 also seems to be doing the
-> same thing.
-> 
-> Maybe the intention of the log is to steal time extension presence
-> rather than actual usage in place ?
+On Tue, 12 Dec 2023 09:31:20 +0000,
+Haibo Xu <haibo1.xu@intel.com> wrote:
+> > @@ -216,6 +221,9 @@ static bool parse_args(int argc, char *argv[])
+>  		case 'm':
+>  			test_args.migration_freq_ms = atoi_non_negative("Frequency", optarg);
+>  			break;
+> +		case 'e':
+> +			test_args.timer_err_margin_us = atoi_non_negative("Error Margin", optarg);
+> +			break;
 
-You're right that the word "using" isn't great. "Computing" would be
-better as, even with no-steal-acc, steal time gets computed and shows
-up in /proc/stat.
+So your error margin is always unsigned...
 
-> 
-> > +       return 0;
-> > +}
-> > diff --git a/arch/riscv/kernel/time.c b/arch/riscv/kernel/time.c
-> > index 23641e82a9df..ba3477197789 100644
-> > --- a/arch/riscv/kernel/time.c
-> > +++ b/arch/riscv/kernel/time.c
-> > @@ -12,6 +12,7 @@
-> >  #include <asm/sbi.h>
-> >  #include <asm/processor.h>
-> >  #include <asm/timex.h>
-> > +#include <asm/paravirt.h>
-> >
-> >  unsigned long riscv_timebase __ro_after_init;
-> >  EXPORT_SYMBOL_GPL(riscv_timebase);
-> > @@ -45,4 +46,6 @@ void __init time_init(void)
-> >         timer_probe();
-> >
-> >         tick_setup_hrtimer_broadcast();
-> > +
-> > +       pv_time_init();
-> >  }
-> > --
-> > 2.43.0
-> >
-> 
-> Other than that, lgtm.
-> 
-> Reviewed-by: Atish Patra <atishp@rivosinc.com>
+>  		case 'o':
+>  			test_args.counter_offset = strtol(optarg, NULL, 0);
+>  			test_args.reserved = 0;
+> diff --git a/tools/testing/selftests/kvm/include/timer_test.h b/tools/testing/selftests/kvm/include/timer_test.h
+> index 968257b893a7..b1d405e7157d 100644
+> --- a/tools/testing/selftests/kvm/include/timer_test.h
+> +++ b/tools/testing/selftests/kvm/include/timer_test.h
+> @@ -22,6 +22,7 @@ struct test_args {
+>  	int nr_iter;
+>  	int timer_period_ms;
+>  	int migration_freq_ms;
+> +	int timer_err_margin_us;
 
-Thanks,
-drew
+... except that you are storing it as a signed value. Some consistency
+wouldn't hurt, really, and would avoid issues when passing large
+values.
+
+	M.
+
+-- 
+Without deviation from the norm, progress is not possible.
 
