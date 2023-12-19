@@ -1,100 +1,98 @@
-From: Atish Patra <atishp@atishpatra.org>
-Date: Mon, 18 Dec 2023 17:49:27 -0800
-Subject: [PATCH v3 06/13] RISC-V: KVM: Add SBI STA info to vcpu_arch
-In-Reply-To: <20231217204019.36492-21-ajones@ventanamicro.com>
-References: <20231217204019.36492-15-ajones@ventanamicro.com> <20231217204019.36492-21-ajones@ventanamicro.com>
-Message-ID: <CAOnJCU+6MBadxbry5TeoWxYXDrCQRqSdqMNgQxFYzZXjM-=YRg@mail.gmail.com>
+From: Haibo Xu <xiaobo55x@gmail.com>
+Date: Tue, 19 Dec 2023 10:28:31 +0800
+Subject: [PATCH v4 08/11] KVM: riscv: selftests: Add guest helper to get
+ vcpu id
+In-Reply-To: <20231213-b02db86aaf7957be22b200f1@orel>
+References: <cover.1702371136.git.haibo1.xu@intel.com> <02f6c9ccaaeb4ceb67137863e0317f62cef62496.1702371136.git.haibo1.xu@intel.com>
+ <20231213-b02db86aaf7957be22b200f1@orel>
+Message-ID: <CAJve8okOO=e66Kko3LyDfsD+tRZvDGf_Zgmog-u5TUzk1JZ1RA@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sun, Dec 17, 2023 at 12:40?PM Andrew Jones <ajones@ventanamicro.com> wrote:
+On Wed, Dec 13, 2023 at 10:08?PM Andrew Jones <ajones@ventanamicro.com> wrote:
 >
-> KVM's implementation of SBI STA needs to track the address of each
-> VCPU's steal-time shared memory region as well as the amount of
-> stolen time. Add a structure to vcpu_arch to contain this state
-> and make sure that the address is always set to INVALID_GPA on
-> vcpu reset. And, of course, ensure KVM won't try to update steal-
-> time when the shared memory address is invalid.
+> On Tue, Dec 12, 2023 at 05:31:17PM +0800, Haibo Xu wrote:
+> > Add guest_get_vcpuid() helper to simplify accessing to per-cpu
+> > private data. The sscratch CSR was used to store the vcpu id.
+> >
+> > Signed-off-by: Haibo Xu <haibo1.xu@intel.com>
+> > Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+> > ---
+> >  tools/testing/selftests/kvm/include/aarch64/processor.h | 4 ----
+> >  tools/testing/selftests/kvm/include/kvm_util_base.h     | 9 +++++++++
+> >  tools/testing/selftests/kvm/lib/riscv/processor.c       | 8 ++++++++
+> >  3 files changed, 17 insertions(+), 4 deletions(-)
+> >
+> > diff --git a/tools/testing/selftests/kvm/include/aarch64/processor.h b/tools/testing/selftests/kvm/include/aarch64/processor.h
+> > index c42d683102c7..16ae0ac01879 100644
+> > --- a/tools/testing/selftests/kvm/include/aarch64/processor.h
+> > +++ b/tools/testing/selftests/kvm/include/aarch64/processor.h
+> > @@ -226,8 +226,4 @@ void smccc_smc(uint32_t function_id, uint64_t arg0, uint64_t arg1,
+> >              uint64_t arg2, uint64_t arg3, uint64_t arg4, uint64_t arg5,
+> >              uint64_t arg6, struct arm_smccc_res *res);
+> >
+> > -
+> > -
+> > -uint32_t guest_get_vcpuid(void);
+> > -
+> >  #endif /* SELFTEST_KVM_PROCESSOR_H */
+> > diff --git a/tools/testing/selftests/kvm/include/kvm_util_base.h b/tools/testing/selftests/kvm/include/kvm_util_base.h
+> > index a18db6a7b3cf..666438113d22 100644
+> > --- a/tools/testing/selftests/kvm/include/kvm_util_base.h
+> > +++ b/tools/testing/selftests/kvm/include/kvm_util_base.h
+> > @@ -932,4 +932,13 @@ void kvm_selftest_arch_init(void);
+> >
+> >  void kvm_arch_vm_post_create(struct kvm_vm *vm);
+> >
+> > +void vm_init_vector_tables(struct kvm_vm *vm);
+> > +void vcpu_init_vector_tables(struct kvm_vcpu *vcpu);
+> > +
+> > +struct ex_regs;
+> > +typedef void(*exception_handler_fn)(struct ex_regs *);
+> > +void vm_install_exception_handler(struct kvm_vm *vm, int vector, exception_handler_fn handler);
 >
-> Reviewed-by: Anup Patel <anup@brainfault.org>
-> Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
-> ---
->  arch/riscv/include/asm/kvm_host.h |  7 +++++++
->  arch/riscv/kvm/vcpu.c             |  2 ++
->  arch/riscv/kvm/vcpu_sbi_sta.c     | 10 ++++++++++
->  3 files changed, 19 insertions(+)
+> I think something happend on rebase since the above should be in a
+> different patch (and were for v3). I suggest checking your previous
+> and current version branches with git-range-diff after rebasing in
+> order to catch stuff like this.
 >
-> diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
-> index 230b82c3118d..525cba63e0c5 100644
-> --- a/arch/riscv/include/asm/kvm_host.h
-> +++ b/arch/riscv/include/asm/kvm_host.h
-> @@ -263,6 +263,12 @@ struct kvm_vcpu_arch {
->
->         /* 'static' configurations which are set only once */
->         struct kvm_vcpu_config cfg;
-> +
-> +       /* SBI steal-time accounting */
-> +       struct {
-> +               gpa_t shmem;
-> +               u64 last_steal;
-> +       } sta;
->  };
->
->  static inline void kvm_arch_sync_events(struct kvm *kvm) {}
-> @@ -373,6 +379,7 @@ bool kvm_riscv_vcpu_has_interrupts(struct kvm_vcpu *vcpu, u64 mask);
->  void kvm_riscv_vcpu_power_off(struct kvm_vcpu *vcpu);
->  void kvm_riscv_vcpu_power_on(struct kvm_vcpu *vcpu);
->
-> +void kvm_riscv_vcpu_sbi_sta_reset(struct kvm_vcpu *vcpu);
->  void kvm_riscv_vcpu_record_steal_time(struct kvm_vcpu *vcpu);
->
->  #endif /* __RISCV_KVM_HOST_H__ */
-> diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-> index 6995b8b641e4..b5ca9f2e98ac 100644
-> --- a/arch/riscv/kvm/vcpu.c
-> +++ b/arch/riscv/kvm/vcpu.c
-> @@ -83,6 +83,8 @@ static void kvm_riscv_reset_vcpu(struct kvm_vcpu *vcpu)
->         vcpu->arch.hfence_tail = 0;
->         memset(vcpu->arch.hfence_queue, 0, sizeof(vcpu->arch.hfence_queue));
->
-> +       kvm_riscv_vcpu_sbi_sta_reset(vcpu);
-> +
->         /* Reset the guest CSRs for hotplug usecase */
->         if (loaded)
->                 kvm_arch_vcpu_load(vcpu, smp_processor_id());
-> diff --git a/arch/riscv/kvm/vcpu_sbi_sta.c b/arch/riscv/kvm/vcpu_sbi_sta.c
-> index e28351c9488b..6592d287fc4e 100644
-> --- a/arch/riscv/kvm/vcpu_sbi_sta.c
-> +++ b/arch/riscv/kvm/vcpu_sbi_sta.c
-> @@ -8,8 +8,18 @@
->  #include <asm/kvm_vcpu_sbi.h>
->  #include <asm/sbi.h>
->
-> +void kvm_riscv_vcpu_sbi_sta_reset(struct kvm_vcpu *vcpu)
-> +{
-> +       vcpu->arch.sta.shmem = INVALID_GPA;
-> +       vcpu->arch.sta.last_steal = 0;
-> +}
-> +
->  void kvm_riscv_vcpu_record_steal_time(struct kvm_vcpu *vcpu)
->  {
-> +       gpa_t shmem = vcpu->arch.sta.shmem;
-> +
-> +       if (shmem == INVALID_GPA)
-> +               return;
->  }
->
->  static int kvm_sbi_sta_steal_time_set_shmem(struct kvm_vcpu *vcpu)
-> --
-> 2.43.0
+> Thanks,
+> drew
 >
 
-Reviewed-by: Atish Patra <atishp@rivosinc.com>
+Thanks for pointing it out. Will fix it in v5.
 
--- 
-Regards,
-Atish
+> > +
+> > +uint32_t guest_get_vcpuid(void);
+> > +
+> >  #endif /* SELFTEST_KVM_UTIL_BASE_H */
+> > diff --git a/tools/testing/selftests/kvm/lib/riscv/processor.c b/tools/testing/selftests/kvm/lib/riscv/processor.c
+> > index efd9ac4b0198..39a1e9902dec 100644
+> > --- a/tools/testing/selftests/kvm/lib/riscv/processor.c
+> > +++ b/tools/testing/selftests/kvm/lib/riscv/processor.c
+> > @@ -316,6 +316,9 @@ struct kvm_vcpu *vm_arch_vcpu_add(struct kvm_vm *vm, uint32_t vcpu_id,
+> >       vcpu_set_reg(vcpu, RISCV_CORE_REG(regs.sp), stack_vaddr + stack_size);
+> >       vcpu_set_reg(vcpu, RISCV_CORE_REG(regs.pc), (unsigned long)guest_code);
+> >
+> > +     /* Setup sscratch for guest_get_vcpuid() */
+> > +     vcpu_set_reg(vcpu, RISCV_CSR_REG(sscratch), vcpu_id);
+> > +
+> >       /* Setup default exception vector of guest */
+> >       vcpu_set_reg(vcpu, RISCV_CSR_REG(stvec), (unsigned long)guest_unexp_trap);
+> >
+> > @@ -436,3 +439,8 @@ void vm_install_interrupt_handler(struct kvm_vm *vm, exception_handler_fn handle
+> >
+> >       handlers->exception_handlers[1][0] = handler;
+> >  }
+> > +
+> > +uint32_t guest_get_vcpuid(void)
+> > +{
+> > +     return csr_read(CSR_SSCRATCH);
+> > +}
+> > --
+> > 2.34.1
+> >
 
