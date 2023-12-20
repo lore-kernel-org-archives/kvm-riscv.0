@@ -1,169 +1,68 @@
-From: Anup Patel <anup@brainfault.org>
-Date: Wed, 20 Dec 2023 12:11:40 +0530
-Subject: [PATCH v3 03/13] RISC-V: paravirt: Implement steal-time support
-In-Reply-To: <20231217204019.36492-18-ajones@ventanamicro.com>
-References: <20231217204019.36492-15-ajones@ventanamicro.com> <20231217204019.36492-18-ajones@ventanamicro.com>
-Message-ID: <CAAhSdy2y_scAkgEnW2VMq-VD8-pUUEfT3eFnozZBRbJ_uGgeYg@mail.gmail.com>
+From: Haibo Xu <xiaobo55x@gmail.com>
+Date: Wed, 20 Dec 2023 14:50:03 +0800
+Subject: [PATCH v4 11/11] KVM: selftests: Enable tunning of err_margin_us
+ in arch timer test
+In-Reply-To: <8734vy832j.wl-maz@kernel.org>
+References: <cover.1702371136.git.haibo1.xu@intel.com> <0343a9e4bfa8011fbb6bca0286cee7eab1f17d5d.1702371136.git.haibo1.xu@intel.com>
+ <8734vy832j.wl-maz@kernel.org>
+Message-ID: <CAJve8onc0WN5g98aOVBmJx15wFBAqfBKJ+ufoLY+oqYyVL+=3A@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Dec 18, 2023 at 2:10?AM Andrew Jones <ajones@ventanamicro.com> wrote:
+On Wed, Dec 20, 2023 at 2:22?AM Marc Zyngier <maz@kernel.org> wrote:
 >
-> When the SBI STA extension exists we can use it to implement
-> paravirt steal-time support. Fill in the empty pv-time functions
-> with an SBI STA implementation and add the Kconfig knobs allowing
-> it to be enabled.
+> On Tue, 12 Dec 2023 09:31:20 +0000,
+> Haibo Xu <haibo1.xu@intel.com> wrote:
+> > > @@ -216,6 +221,9 @@ static bool parse_args(int argc, char *argv[])
+> >               case 'm':
+> >                       test_args.migration_freq_ms = atoi_non_negative("Frequency", optarg);
+> >                       break;
+> > +             case 'e':
+> > +                     test_args.timer_err_margin_us = atoi_non_negative("Error Margin", optarg);
+> > +                     break;
 >
-> Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
+> So your error margin is always unsigned...
+>
 
-LGTM.
+The error margin was supposed to be a non-negative [0, INT_MAX].
+(May be need to define a Max for the input, instead of INT_MAX)
 
-Reviewed-by: Anup Patel <anup@brainfault.org>
+> >               case 'o':
+> >                       test_args.counter_offset = strtol(optarg, NULL, 0);
+> >                       test_args.reserved = 0;
+> > diff --git a/tools/testing/selftests/kvm/include/timer_test.h b/tools/testing/selftests/kvm/include/timer_test.h
+> > index 968257b893a7..b1d405e7157d 100644
+> > --- a/tools/testing/selftests/kvm/include/timer_test.h
+> > +++ b/tools/testing/selftests/kvm/include/timer_test.h
+> > @@ -22,6 +22,7 @@ struct test_args {
+> >       int nr_iter;
+> >       int timer_period_ms;
+> >       int migration_freq_ms;
+> > +     int timer_err_margin_us;
+>
+> ... except that you are storing it as a signed value. Some consistency
+> wouldn't hurt, really, and would avoid issues when passing large
+> values.
+>
 
-Regards,
-Anup
+Yes, it's more proper to use an unsigned int for the non-negative error margin.
+Storing as signed here is just to keep the type consistent with that
+of timer_period_ms
+since there will be '+' operation in other places.
 
-> ---
->  arch/riscv/Kconfig           | 19 +++++++++++
->  arch/riscv/kernel/paravirt.c | 63 ++++++++++++++++++++++++++++++++++--
->  2 files changed, 79 insertions(+), 3 deletions(-)
+        tools/testing/selftests/kvm/aarch64/arch_timer.c
+        /* Setup a timeout for the interrupt to arrive */
+         udelay(msecs_to_usecs(test_args.timer_period_ms) +
+             test_args.timer_err_margin_us);
+
+Thanks,
+Haibo
+
+>         M.
 >
-> diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
-> index 95a2a06acc6a..b99fd8129edf 100644
-> --- a/arch/riscv/Kconfig
-> +++ b/arch/riscv/Kconfig
-> @@ -724,6 +724,25 @@ config COMPAT
->
->           If you want to execute 32-bit userspace applications, say Y.
->
-> +config PARAVIRT
-> +       bool "Enable paravirtualization code"
-> +       depends on RISCV_SBI
-> +       help
-> +         This changes the kernel so it can modify itself when it is run
-> +         under a hypervisor, potentially improving performance significantly
-> +         over full virtualization.
-> +
-> +config PARAVIRT_TIME_ACCOUNTING
-> +       bool "Paravirtual steal time accounting"
-> +       depends on PARAVIRT
-> +       help
-> +         Select this option to enable fine granularity task steal time
-> +         accounting. Time spent executing other tasks in parallel with
-> +         the current vCPU is discounted from the vCPU power. To account for
-> +         that, there can be a small performance impact.
-> +
-> +         If in doubt, say N here.
-> +
->  config RELOCATABLE
->         bool "Build a relocatable kernel"
->         depends on MMU && 64BIT && !XIP_KERNEL
-> diff --git a/arch/riscv/kernel/paravirt.c b/arch/riscv/kernel/paravirt.c
-> index 141dbcc36fa2..cc6a85432678 100644
-> --- a/arch/riscv/kernel/paravirt.c
-> +++ b/arch/riscv/kernel/paravirt.c
-> @@ -6,12 +6,21 @@
->  #define pr_fmt(fmt) "riscv-pv: " fmt
->
->  #include <linux/cpuhotplug.h>
-> +#include <linux/compiler.h>
-> +#include <linux/errno.h>
->  #include <linux/init.h>
->  #include <linux/jump_label.h>
-> +#include <linux/kconfig.h>
-> +#include <linux/kernel.h>
-> +#include <linux/percpu-defs.h>
->  #include <linux/printk.h>
->  #include <linux/static_call.h>
->  #include <linux/types.h>
->
-> +#include <asm/barrier.h>
-> +#include <asm/page.h>
-> +#include <asm/sbi.h>
-> +
->  struct static_key paravirt_steal_enabled;
->  struct static_key paravirt_steal_rq_enabled;
->
-> @@ -31,24 +40,72 @@ static int __init parse_no_stealacc(char *arg)
->
->  early_param("no-steal-acc", parse_no_stealacc);
->
-> +DEFINE_PER_CPU(struct sbi_sta_struct, steal_time) __aligned(64);
-> +
->  static bool __init has_pv_steal_clock(void)
->  {
-> +       if (sbi_spec_version >= sbi_mk_version(2, 0) &&
-> +           sbi_probe_extension(SBI_EXT_STA) > 0) {
-> +               pr_info("SBI STA extension detected\n");
-> +               return true;
-> +       }
-> +
->         return false;
->  }
->
-> -static int pv_time_cpu_online(unsigned int cpu)
-> +static int sbi_sta_steal_time_set_shmem(unsigned long lo, unsigned long hi,
-> +                                       unsigned long flags)
->  {
-> +       struct sbiret ret;
-> +
-> +       ret = sbi_ecall(SBI_EXT_STA, SBI_EXT_STA_STEAL_TIME_SET_SHMEM,
-> +                       lo, hi, flags, 0, 0, 0);
-> +       if (ret.error) {
-> +               if (lo == SBI_STA_SHMEM_DISABLE && hi == SBI_STA_SHMEM_DISABLE)
-> +                       pr_warn("Failed to disable steal-time shmem");
-> +               else
-> +                       pr_warn("Failed to set steal-time shmem");
-> +               return sbi_err_map_linux_errno(ret.error);
-> +       }
-> +
->         return 0;
->  }
->
-> +static int pv_time_cpu_online(unsigned int cpu)
-> +{
-> +       struct sbi_sta_struct *st = this_cpu_ptr(&steal_time);
-> +       phys_addr_t pa = __pa(st);
-> +       unsigned long lo = (unsigned long)pa;
-> +       unsigned long hi = IS_ENABLED(CONFIG_32BIT) ? upper_32_bits((u64)pa) : 0;
-> +
-> +       return sbi_sta_steal_time_set_shmem(lo, hi, 0);
-> +}
-> +
->  static int pv_time_cpu_down_prepare(unsigned int cpu)
->  {
-> -       return 0;
-> +       return sbi_sta_steal_time_set_shmem(SBI_STA_SHMEM_DISABLE,
-> +                                           SBI_STA_SHMEM_DISABLE, 0);
->  }
->
->  static u64 pv_time_steal_clock(int cpu)
->  {
-> -       return 0;
-> +       struct sbi_sta_struct *st = per_cpu_ptr(&steal_time, cpu);
-> +       u32 sequence;
-> +       u64 steal;
-> +
-> +       /*
-> +        * Check the sequence field before and after reading the steal
-> +        * field. Repeat the read if it is different or odd.
-> +        */
-> +       do {
-> +               sequence = READ_ONCE(st->sequence);
-> +               virt_rmb();
-> +               steal = READ_ONCE(st->steal);
-> +               virt_rmb();
-> +       } while ((le32_to_cpu(sequence) & 1) ||
-> +                sequence != READ_ONCE(st->sequence));
-> +
-> +       return le64_to_cpu(steal);
->  }
->
->  int __init pv_time_init(void)
 > --
-> 2.43.0
->
+> Without deviation from the norm, progress is not possible.
 
