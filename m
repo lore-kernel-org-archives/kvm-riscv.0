@@ -1,19 +1,18 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Wed, 20 Dec 2023 07:16:26 +0100
-Subject: [PATCH v3 07/13] RISC-V: KVM: Add support for SBI extension
- registers
+From: Anup Patel <apatel@ventanamicro.com>
+Date: Wed, 20 Dec 2023 11:49:46 +0530
+Subject: [PATCH v3 07/13] RISC-V: KVM: Add support for SBI extension registers
 In-Reply-To: <CAOnJCU+h_ed-x7L5oFwWTWoKAq8M3Vk8XUQo1-jhPPaty5Y7Jg@mail.gmail.com>
 References: <20231217204019.36492-15-ajones@ventanamicro.com>
- <20231217204019.36492-22-ajones@ventanamicro.com>
- <CAOnJCU+h_ed-x7L5oFwWTWoKAq8M3Vk8XUQo1-jhPPaty5Y7Jg@mail.gmail.com>
-Message-ID: <20231220-c59e78c640f00495c3976343@orel>
+ <20231217204019.36492-22-ajones@ventanamicro.com> <CAOnJCU+h_ed-x7L5oFwWTWoKAq8M3Vk8XUQo1-jhPPaty5Y7Jg@mail.gmail.com>
+Message-ID: <CAK9=C2XQb3=PbU+Ggpp1jEnDbc-DER+eEY9j=w8w=_6DNjcdDg@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Dec 19, 2023 at 11:58:27AM -0800, Atish Patra wrote:
+On Wed, Dec 20, 2023 at 1:28?AM Atish Patra <atishp@atishpatra.org> wrote:
+>
 > On Sun, Dec 17, 2023 at 12:40?PM Andrew Jones <ajones@ventanamicro.com> wrote:
 > >
 > > Some SBI extensions have state that needs to be saved / restored
@@ -57,20 +56,23 @@ On Tue, Dec 19, 2023 at 11:58:27AM -0800, Atish Patra wrote:
 > > +/* Registers for specific SBI extensions are mapped as type 10 */
 > > +#define KVM_REG_RISCV_SBI              (0x0a << KVM_REG_RISCV_TYPE_SHIFT)
 > > +
-> 
-> 
+>
+>
 > nit comment: KVM_REG_RISCV_SBI looks bit odd when we already have
 > KVM_REG_RISCV_SBI_EXT for
 > extension enabling/disabling.
-> 
+>
 > How about renaming this to KVM_REG_RISCV_SBI_EXT_STATE or something
 > similar indicate that this
 > for a specific extension state ?
 
-OK, will do for v4.
+How about KVM_REG_RISCV_SBI_STATE  ?
 
-> 
-> 
+Regards,
+Anup
+
+>
+>
 > >  /* Device Control API: RISC-V AIA */
 > >  #define KVM_DEV_RISCV_APLIC_ALIGN              0x1000
 > >  #define KVM_DEV_RISCV_APLIC_SIZE               0x4000
@@ -235,11 +237,17 @@ OK, will do for v4.
 > > --
 > > 2.43.0
 > >
-> 
+>
 > Other than that, lgtm.
-> 
+>
 > Reviewed-by: Atish Patra <atishp@rivosinc.com>
-
-Thanks,
-drew
+>
+> --
+> Regards,
+> Atish
+>
+> --
+> kvm-riscv mailing list
+> kvm-riscv at lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/kvm-riscv
 
