@@ -1,253 +1,132 @@
-From: Anup Patel <apatel@ventanamicro.com>
-Date: Wed, 20 Dec 2023 11:49:46 +0530
-Subject: [PATCH v3 07/13] RISC-V: KVM: Add support for SBI extension registers
-In-Reply-To: <CAOnJCU+h_ed-x7L5oFwWTWoKAq8M3Vk8XUQo1-jhPPaty5Y7Jg@mail.gmail.com>
+From: Andrew Jones <ajones@ventanamicro.com>
+Date: Wed, 20 Dec 2023 07:28:51 +0100
+Subject: [PATCH v3 11/13] RISC-V: KVM: selftests: Add
+ guest_sbi_probe_extension
+In-Reply-To: <CAOnJCUKu1069YXRWopFDjRobF4jjskdFJMQH1oD2wPc+9JoBmg@mail.gmail.com>
 References: <20231217204019.36492-15-ajones@ventanamicro.com>
- <20231217204019.36492-22-ajones@ventanamicro.com> <CAOnJCU+h_ed-x7L5oFwWTWoKAq8M3Vk8XUQo1-jhPPaty5Y7Jg@mail.gmail.com>
-Message-ID: <CAK9=C2XQb3=PbU+Ggpp1jEnDbc-DER+eEY9j=w8w=_6DNjcdDg@mail.gmail.com>
+ <20231217204019.36492-26-ajones@ventanamicro.com>
+ <CAOnJCUKu1069YXRWopFDjRobF4jjskdFJMQH1oD2wPc+9JoBmg@mail.gmail.com>
+Message-ID: <20231220-3a173b8727d455756f691508@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Dec 20, 2023 at 1:28?AM Atish Patra <atishp@atishpatra.org> wrote:
->
+On Tue, Dec 19, 2023 at 01:57:21PM -0800, Atish Patra wrote:
 > On Sun, Dec 17, 2023 at 12:40?PM Andrew Jones <ajones@ventanamicro.com> wrote:
 > >
-> > Some SBI extensions have state that needs to be saved / restored
-> > when migrating the VM. Provide a get/set-one-reg register type
-> > for SBI extension registers. Each SBI extension that uses this type
-> > will have its own subtype. There are currently no subtypes defined.
-> > The next patch introduces the first one.
+> > Add guest_sbi_probe_extension(), allowing guest code to probe for
+> > SBI extensions. As guest_sbi_probe_extension() needs
+> > SBI_ERR_NOT_SUPPORTED, take the opportunity to bring in all SBI
+> > error codes. We don't bring in all current extension IDs or base
+> > extension function IDs though, even though we need one of each,
+> > because we'd prefer to bring those in as necessary.
 > >
 > > Reviewed-by: Anup Patel <anup@brainfault.org>
 > > Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
 > > ---
-> >  arch/riscv/include/asm/kvm_vcpu_sbi.h |  4 ++
-> >  arch/riscv/include/uapi/asm/kvm.h     |  3 ++
-> >  arch/riscv/kvm/vcpu_onereg.c          | 42 +++++++++++++++++--
-> >  arch/riscv/kvm/vcpu_sbi.c             | 58 +++++++++++++++++++++++++++
-> >  4 files changed, 103 insertions(+), 4 deletions(-)
+> >  .../selftests/kvm/include/riscv/processor.h   | 21 +++++++++++++++++++
+> >  .../selftests/kvm/lib/riscv/processor.c       | 19 +++++++++++++++++
+> >  2 files changed, 40 insertions(+)
 > >
-> > diff --git a/arch/riscv/include/asm/kvm_vcpu_sbi.h b/arch/riscv/include/asm/kvm_vcpu_sbi.h
-> > index 99c23bb37a37..dd60f73b5c36 100644
-> > --- a/arch/riscv/include/asm/kvm_vcpu_sbi.h
-> > +++ b/arch/riscv/include/asm/kvm_vcpu_sbi.h
-> > @@ -60,6 +60,10 @@ int kvm_riscv_vcpu_set_reg_sbi_ext(struct kvm_vcpu *vcpu,
-> >                                    const struct kvm_one_reg *reg);
-> >  int kvm_riscv_vcpu_get_reg_sbi_ext(struct kvm_vcpu *vcpu,
-> >                                    const struct kvm_one_reg *reg);
-> > +int kvm_riscv_vcpu_set_reg_sbi(struct kvm_vcpu *vcpu,
-> > +                              const struct kvm_one_reg *reg);
-> > +int kvm_riscv_vcpu_get_reg_sbi(struct kvm_vcpu *vcpu,
-> > +                              const struct kvm_one_reg *reg);
-> >  const struct kvm_vcpu_sbi_extension *kvm_vcpu_sbi_find_ext(
-> >                                 struct kvm_vcpu *vcpu, unsigned long extid);
-> >  bool riscv_vcpu_supports_sbi_ext(struct kvm_vcpu *vcpu, int idx);
-> > diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
-> > index e961d79622fb..30f89a0e855f 100644
-> > --- a/arch/riscv/include/uapi/asm/kvm.h
-> > +++ b/arch/riscv/include/uapi/asm/kvm.h
-> > @@ -242,6 +242,9 @@ enum KVM_RISCV_SBI_EXT_ID {
-> >  #define KVM_REG_RISCV_VECTOR_REG(n)    \
-> >                 ((n) + sizeof(struct __riscv_v_ext_state) / sizeof(unsigned long))
+> > diff --git a/tools/testing/selftests/kvm/include/riscv/processor.h b/tools/testing/selftests/kvm/include/riscv/processor.h
+> > index e70ccda2011b..dc50ad62e150 100644
+> > --- a/tools/testing/selftests/kvm/include/riscv/processor.h
+> > +++ b/tools/testing/selftests/kvm/include/riscv/processor.h
+> > @@ -108,6 +108,17 @@ static inline uint64_t __kvm_reg_id(uint64_t type, uint64_t subtype,
+> >  #define SATP_ASID_SHIFT                                44
+> >  #define SATP_ASID_MASK                         _AC(0xFFFF, UL)
 > >
-> > +/* Registers for specific SBI extensions are mapped as type 10 */
-> > +#define KVM_REG_RISCV_SBI              (0x0a << KVM_REG_RISCV_TYPE_SHIFT)
+> > +/* SBI return error codes */
+> > +#define SBI_SUCCESS                            0
+> > +#define SBI_ERR_FAILURE                                -1
+> > +#define SBI_ERR_NOT_SUPPORTED                  -2
+> > +#define SBI_ERR_INVALID_PARAM                  -3
+> > +#define SBI_ERR_DENIED                         -4
+> > +#define SBI_ERR_INVALID_ADDRESS                        -5
+> > +#define SBI_ERR_ALREADY_AVAILABLE              -6
+> > +#define SBI_ERR_ALREADY_STARTED                        -7
+> > +#define SBI_ERR_ALREADY_STOPPED                        -8
 > > +
->
->
-> nit comment: KVM_REG_RISCV_SBI looks bit odd when we already have
-> KVM_REG_RISCV_SBI_EXT for
-> extension enabling/disabling.
->
-> How about renaming this to KVM_REG_RISCV_SBI_EXT_STATE or something
-> similar indicate that this
-> for a specific extension state ?
+> 
+> Add SBI_ERR_NO_SHMEM as well ?
 
-How about KVM_REG_RISCV_SBI_STATE  ?
+I can add it now to selftests, but it won't get used (steal-time doesn't
+use it since it doesn't have any SBI functions that use an already set up
+shared memory region). It's also not yet in Linux, so KVM selftests would
+be "ahead" of Linux in this regard. And, while the naming shouldn't be
+controversial, I suppose we should commit the name to Linux first to be sure
+we port it correctly here. So let's wait until we have a KVM selftests
+user, which means it'll also be in Linux.
 
-Regards,
-Anup
-
->
->
-> >  /* Device Control API: RISC-V AIA */
-> >  #define KVM_DEV_RISCV_APLIC_ALIGN              0x1000
-> >  #define KVM_DEV_RISCV_APLIC_SIZE               0x4000
-> > diff --git a/arch/riscv/kvm/vcpu_onereg.c b/arch/riscv/kvm/vcpu_onereg.c
-> > index 11cdbf844291..901480e73817 100644
-> > --- a/arch/riscv/kvm/vcpu_onereg.c
-> > +++ b/arch/riscv/kvm/vcpu_onereg.c
-> > @@ -961,6 +961,29 @@ static unsigned long num_sbi_ext_regs(struct kvm_vcpu *vcpu)
-> >         return copy_sbi_ext_reg_indices(vcpu, NULL);
-> >  }
+> 
+> >  #define SBI_EXT_EXPERIMENTAL_START             0x08000000
+> >  #define SBI_EXT_EXPERIMENTAL_END               0x08FFFFFF
 > >
-> > +static inline unsigned long num_sbi_regs(struct kvm_vcpu *vcpu)
-> > +{
-> > +       return 0;
-> > +}
-> > +
-> > +static int copy_sbi_reg_indices(struct kvm_vcpu *vcpu, u64 __user *uindices)
-> > +{
-> > +       int n = num_sbi_regs(vcpu);
-> > +
-> > +       for (int i = 0; i < n; i++) {
-> > +               u64 reg = KVM_REG_RISCV | KVM_REG_SIZE_U64 |
-> > +                         KVM_REG_RISCV_SBI | i;
-> > +
-> > +               if (uindices) {
-> > +                       if (put_user(reg, uindices))
-> > +                               return -EFAULT;
-> > +                       uindices++;
-> > +               }
-> > +       }
-> > +
-> > +       return n;
-> > +}
-> > +
-> >  static inline unsigned long num_vector_regs(const struct kvm_vcpu *vcpu)
-> >  {
-> >         if (!riscv_isa_extension_available(vcpu->arch.isa, v))
-> > @@ -1028,6 +1051,7 @@ unsigned long kvm_riscv_vcpu_num_regs(struct kvm_vcpu *vcpu)
-> >         res += num_vector_regs(vcpu);
-> >         res += num_isa_ext_regs(vcpu);
-> >         res += num_sbi_ext_regs(vcpu);
-> > +       res += num_sbi_regs(vcpu);
+> > @@ -115,6 +126,14 @@ static inline uint64_t __kvm_reg_id(uint64_t type, uint64_t subtype,
+> >  #define KVM_RISCV_SELFTESTS_SBI_UCALL          0
+> >  #define KVM_RISCV_SELFTESTS_SBI_UNEXP          1
 > >
-> >         return res;
-> >  }
-> > @@ -1083,6 +1107,12 @@ int kvm_riscv_vcpu_copy_reg_indices(struct kvm_vcpu *vcpu,
-> >         ret = copy_sbi_ext_reg_indices(vcpu, uindices);
-> >         if (ret < 0)
-> >                 return ret;
-> > +       uindices += ret;
+> > +enum sbi_ext_id {
+> > +       SBI_EXT_BASE = 0x10,
+> > +};
 > > +
-> > +       ret = copy_sbi_reg_indices(vcpu, uindices);
-> > +       if (ret < 0)
-> > +               return ret;
-> > +       uindices += ret;
+> > +enum sbi_ext_base_fid {
+> > +       SBI_EXT_BASE_PROBE_EXT = 3,
+> > +};
+> > +
+> >  struct sbiret {
+> >         long error;
+> >         long value;
+> > @@ -125,4 +144,6 @@ struct sbiret sbi_ecall(int ext, int fid, unsigned long arg0,
+> >                         unsigned long arg3, unsigned long arg4,
+> >                         unsigned long arg5);
 > >
-> >         return 0;
-> >  }
-> > @@ -1105,12 +1135,14 @@ int kvm_riscv_vcpu_set_reg(struct kvm_vcpu *vcpu,
-> >         case KVM_REG_RISCV_FP_D:
-> >                 return kvm_riscv_vcpu_set_reg_fp(vcpu, reg,
-> >                                                  KVM_REG_RISCV_FP_D);
-> > +       case KVM_REG_RISCV_VECTOR:
-> > +               return kvm_riscv_vcpu_set_reg_vector(vcpu, reg);
-> >         case KVM_REG_RISCV_ISA_EXT:
-> >                 return kvm_riscv_vcpu_set_reg_isa_ext(vcpu, reg);
-> >         case KVM_REG_RISCV_SBI_EXT:
-> >                 return kvm_riscv_vcpu_set_reg_sbi_ext(vcpu, reg);
-> > -       case KVM_REG_RISCV_VECTOR:
-> > -               return kvm_riscv_vcpu_set_reg_vector(vcpu, reg);
-> > +       case KVM_REG_RISCV_SBI:
-> > +               return kvm_riscv_vcpu_set_reg_sbi(vcpu, reg);
-> >         default:
-> >                 break;
-> >         }
-> > @@ -1136,12 +1168,14 @@ int kvm_riscv_vcpu_get_reg(struct kvm_vcpu *vcpu,
-> >         case KVM_REG_RISCV_FP_D:
-> >                 return kvm_riscv_vcpu_get_reg_fp(vcpu, reg,
-> >                                                  KVM_REG_RISCV_FP_D);
-> > +       case KVM_REG_RISCV_VECTOR:
-> > +               return kvm_riscv_vcpu_get_reg_vector(vcpu, reg);
-> >         case KVM_REG_RISCV_ISA_EXT:
-> >                 return kvm_riscv_vcpu_get_reg_isa_ext(vcpu, reg);
-> >         case KVM_REG_RISCV_SBI_EXT:
-> >                 return kvm_riscv_vcpu_get_reg_sbi_ext(vcpu, reg);
-> > -       case KVM_REG_RISCV_VECTOR:
-> > -               return kvm_riscv_vcpu_get_reg_vector(vcpu, reg);
-> > +       case KVM_REG_RISCV_SBI:
-> > +               return kvm_riscv_vcpu_get_reg_sbi(vcpu, reg);
-> >         default:
-> >                 break;
-> >         }
-> > diff --git a/arch/riscv/kvm/vcpu_sbi.c b/arch/riscv/kvm/vcpu_sbi.c
-> > index 088daaa23dd8..834176242ddf 100644
-> > --- a/arch/riscv/kvm/vcpu_sbi.c
-> > +++ b/arch/riscv/kvm/vcpu_sbi.c
-> > @@ -325,6 +325,64 @@ int kvm_riscv_vcpu_get_reg_sbi_ext(struct kvm_vcpu *vcpu,
-> >         return 0;
-> >  }
+> > +bool guest_sbi_probe_extension(int extid, long *out_val);
+> > +
+> >  #endif /* SELFTEST_KVM_PROCESSOR_H */
+> > diff --git a/tools/testing/selftests/kvm/lib/riscv/processor.c b/tools/testing/selftests/kvm/lib/riscv/processor.c
+> > index 6905a4348380..7ca736fb4194 100644
+> > --- a/tools/testing/selftests/kvm/lib/riscv/processor.c
+> > +++ b/tools/testing/selftests/kvm/lib/riscv/processor.c
+> > @@ -393,3 +393,22 @@ struct sbiret sbi_ecall(int ext, int fid, unsigned long arg0,
 > >
-> > +int kvm_riscv_vcpu_set_reg_sbi(struct kvm_vcpu *vcpu,
-> > +                              const struct kvm_one_reg *reg)
+> >         return ret;
+> >  }
+> > +
+> > +bool guest_sbi_probe_extension(int extid, long *out_val)
 > > +{
-> > +       unsigned long __user *uaddr =
-> > +                       (unsigned long __user *)(unsigned long)reg->addr;
-> > +       unsigned long reg_num = reg->id & ~(KVM_REG_ARCH_MASK |
-> > +                                           KVM_REG_SIZE_MASK |
-> > +                                           KVM_REG_RISCV_SBI);
-> > +       unsigned long reg_subtype, reg_val;
+> > +       struct sbiret ret;
 > > +
-> > +       if (KVM_REG_SIZE(reg->id) != sizeof(unsigned long))
-> > +               return -EINVAL;
+> > +       ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_PROBE_EXT, extid,
+> > +                       0, 0, 0, 0, 0);
 > > +
-> > +       if (copy_from_user(&reg_val, uaddr, KVM_REG_SIZE(reg->id)))
-> > +               return -EFAULT;
+> > +       __GUEST_ASSERT(!ret.error || ret.error == SBI_ERR_NOT_SUPPORTED,
+> > +                      "ret.error=%ld, ret.value=%ld\n", ret.error, ret.value);
 > > +
-> > +       reg_subtype = reg_num & KVM_REG_RISCV_SUBTYPE_MASK;
-> > +       reg_num &= ~KVM_REG_RISCV_SUBTYPE_MASK;
+> > +       if (ret.error == SBI_ERR_NOT_SUPPORTED)
+> > +               return false;
 > > +
-> > +       switch (reg_subtype) {
-> > +       default:
-> > +               return -EINVAL;
-> > +       }
+> > +       if (out_val)
+> > +               *out_val = ret.value;
 > > +
-> > +       return 0;
+> > +       return true;
 > > +}
-> > +
-> > +int kvm_riscv_vcpu_get_reg_sbi(struct kvm_vcpu *vcpu,
-> > +                              const struct kvm_one_reg *reg)
-> > +{
-> > +       unsigned long __user *uaddr =
-> > +                       (unsigned long __user *)(unsigned long)reg->addr;
-> > +       unsigned long reg_num = reg->id & ~(KVM_REG_ARCH_MASK |
-> > +                                           KVM_REG_SIZE_MASK |
-> > +                                           KVM_REG_RISCV_SBI);
-> > +       unsigned long reg_subtype, reg_val;
-> > +       int ret;
-> > +
-> > +       if (KVM_REG_SIZE(reg->id) != sizeof(unsigned long))
-> > +               return -EINVAL;
-> > +
-> > +       reg_subtype = reg_num & KVM_REG_RISCV_SUBTYPE_MASK;
-> > +       reg_num &= ~KVM_REG_RISCV_SUBTYPE_MASK;
-> > +
-> > +       switch (reg_subtype) {
-> > +       default:
-> > +               return -EINVAL;
-> > +       }
-> > +
-> > +       if (ret)
-> > +               return ret;
-> > +
-> > +       if (copy_to_user(uaddr, &reg_val, KVM_REG_SIZE(reg->id)))
-> > +               return -EFAULT;
-> > +
-> > +       return 0;
-> > +}
-> > +
-> >  const struct kvm_vcpu_sbi_extension *kvm_vcpu_sbi_find_ext(
-> >                                 struct kvm_vcpu *vcpu, unsigned long extid)
-> >  {
 > > --
 > > 2.43.0
 > >
->
-> Other than that, lgtm.
->
+> 
+> 
+> Apart from that, LGTM.
+> 
 > Reviewed-by: Atish Patra <atishp@rivosinc.com>
->
-> --
+
+Thanks,
+drew
+
+> 
+> -- 
 > Regards,
 > Atish
->
-> --
-> kvm-riscv mailing list
-> kvm-riscv at lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/kvm-riscv
 
