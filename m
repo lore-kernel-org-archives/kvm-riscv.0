@@ -1,128 +1,135 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Wed, 20 Dec 2023 17:00:26 +0100
-Subject: [PATCH v4 13/13] RISC-V: KVM: selftests: Add get-reg-list test for STA registers
+From: Anup Patel <apatel@ventanamicro.com>
+Date: Wed, 20 Dec 2023 21:41:43 +0530
+Subject: [PATCH v4 00/13] RISC-V: Add steal-time support
 In-Reply-To: <20231220160012.40184-15-ajones@ventanamicro.com>
 References: <20231220160012.40184-15-ajones@ventanamicro.com>
-Message-ID: <20231220160012.40184-28-ajones@ventanamicro.com>
+Message-ID: <CAK9=C2Vzp=P6Cg-WEDZGCAsKW01fkNWbozGqNn0fYAA7qCbOYA@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add SBI STA and its two registers to the get-reg-list test.
+Hi Palmer,
 
-Reviewed-by: Anup Patel <anup@brainfault.org>
-Reviewed-by: Atish Patra <atishp@rivosinc.com>
-Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
----
- .../selftests/kvm/riscv/get-reg-list.c        | 43 +++++++++++++++++++
- 1 file changed, 43 insertions(+)
+On Wed, Dec 20, 2023 at 9:30?PM Andrew Jones <ajones@ventanamicro.com> wrote:
+>
+> One frequently touted benefit of virtualization is the ability to
+> consolidate machines, increasing resource utilization.  It may even be
+> desirable to overcommit, at the risk of one or more VCPUs having to wait.
+> Hypervisors which have interfaces for guests to retrieve the amount of
+> time each VCPU had to wait give observers within the guests ways to
+> account for less progress than would otherwise be expected. The SBI STA
+> extension[1] provides a standard interface for guest VCPUs to retrieve
+> the amount of time "stolen".
+>
+> This series has three parts:
+>  1) Patches 01-03 - Add paravirt support to RISC-V and implement
+>                     steal-time accounting support using the SBI STA
+>                     extension.
+>  2) Patches 04-09 - Implement SBI STA in KVM so KVM guests, such as
+>                     Linux guests which enable the paravirt steal-time
+>                     support, can be enlightened about stolen time.
+>  3) Patches 10-13 - Add RISC-V support to the KVM selftests steal_time
+>                     test and the SBI extension regs in the get-reg-list
+>                     test.
+>
+> These patches are based on kvm-riscv/riscv_kvm_queue
+>
+> [1] https://github.com/riscv-non-isa/riscv-sbi-doc/blob/master/src/ext-steal-time.adoc
+>
+> This patches are also available here
+> https://github.com/jones-drew/linux/commits/kvm/steal-time-v4
+>
+> Changes since v3:
+>  - Use work "Computing" instead of "using" in pr_info [Atish]
+>  - Rename KVM_REG_RISCV_SBI to KVM_REG_RISCV_SBI_STATE [Atish, Anup]
+>  - Picked up r-b's from Atish and Anup
+>
+> Changes since v2:
+>  - Always check sequence in case the SBI impl isn't writing steal
+>    atomically [Anup]
+>  - Create a reset function for sta and also reset last_steal [Anup]
+>  - Picked up Anup's r-b's
+>
+> Changes since v1:
+>  - sbi_sta_steal_time_set_shmem() now maps SBI errors to linux errors [Conor]
+>  - Squashed v1 patch 4 into v1 patch 3 [Conor]
+>  - Moved kvm_riscv_vcpu_set/get_reg_sbi() to arch/riscv/kvm/vcpu_sbi.c
+>    which seems like a more appropriate file for them
+>  - Rebased on kvm-riscv/riscv_kvm_queue which has all the dependencies
+>
+> Changes since RFC:
+>  - Rebased on v6.7-rc3 (plus the patches mentioned above)
+>  - Added defines for the -1's [Conor]
+>  - Added a comment to the steal read sequence [Conor]
+>  - Only do the steal read sequence for 32-bit and added READ_ONCE's
+>  - Check for SBI v2.0 implementation
+>  - Rename set_steal_time_shmem to steal_time_set_shmem
+>  - Add get-reg-list support and test with get-reg-list kselftest
+>  - A few other minor improvements
+>  - Picked up one r-b from Conor
+>
+> Thanks,
+> drew
+>
+>
+> Andrew Jones (13):
+>   RISC-V: paravirt: Add skeleton for pv-time support
+>   RISC-V: Add SBI STA extension definitions
+>   RISC-V: paravirt: Implement steal-time support
+>   RISC-V: KVM: Add SBI STA extension skeleton
+>   RISC-V: KVM: Add steal-update vcpu request
+>   RISC-V: KVM: Add SBI STA info to vcpu_arch
+>   RISC-V: KVM: Add support for SBI extension registers
+>   RISC-V: KVM: Add support for SBI STA registers
+>   RISC-V: KVM: Implement SBI STA extension
+>   RISC-V: KVM: selftests: Move sbi_ecall to processor.c
+>   RISC-V: KVM: selftests: Add guest_sbi_probe_extension
+>   RISC-V: KVM: selftests: Add steal_time test support
+>   RISC-V: KVM: selftests: Add get-reg-list test for STA registers
 
-diff --git a/tools/testing/selftests/kvm/riscv/get-reg-list.c b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-index b8da2e86bf9c..6652108816db 100644
---- a/tools/testing/selftests/kvm/riscv/get-reg-list.c
-+++ b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-@@ -71,6 +71,7 @@ bool filter_reg(__u64 reg)
- 	case KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_SINGLE | KVM_RISCV_SBI_EXT_HSM:
- 	case KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_SINGLE | KVM_RISCV_SBI_EXT_PMU:
- 	case KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_SINGLE | KVM_RISCV_SBI_EXT_DBCN:
-+	case KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_SINGLE | KVM_RISCV_SBI_EXT_STA:
- 	case KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_SINGLE | KVM_RISCV_SBI_EXT_EXPERIMENTAL:
- 	case KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_SINGLE | KVM_RISCV_SBI_EXT_VENDOR:
- 		return true;
-@@ -461,6 +462,7 @@ static const char *sbi_ext_single_id_to_str(__u64 reg_off)
- 		KVM_SBI_EXT_ARR(KVM_RISCV_SBI_EXT_SRST),
- 		KVM_SBI_EXT_ARR(KVM_RISCV_SBI_EXT_HSM),
- 		KVM_SBI_EXT_ARR(KVM_RISCV_SBI_EXT_PMU),
-+		KVM_SBI_EXT_ARR(KVM_RISCV_SBI_EXT_STA),
- 		KVM_SBI_EXT_ARR(KVM_RISCV_SBI_EXT_EXPERIMENTAL),
- 		KVM_SBI_EXT_ARR(KVM_RISCV_SBI_EXT_VENDOR),
- 		KVM_SBI_EXT_ARR(KVM_RISCV_SBI_EXT_DBCN),
-@@ -509,6 +511,32 @@ static const char *sbi_ext_id_to_str(const char *prefix, __u64 id)
- 	return strdup_printf("%lld | %lld /* UNKNOWN */", reg_subtype, reg_off);
- }
- 
-+static const char *sbi_sta_id_to_str(__u64 reg_off)
-+{
-+	switch (reg_off) {
-+	case 0: return "KVM_REG_RISCV_SBI_STA | KVM_REG_RISCV_SBI_STA_REG(shmem_lo)";
-+	case 1: return "KVM_REG_RISCV_SBI_STA | KVM_REG_RISCV_SBI_STA_REG(shmem_hi)";
-+	}
-+	return strdup_printf("KVM_REG_RISCV_SBI_STA | %lld /* UNKNOWN */", reg_off);
-+}
-+
-+static const char *sbi_id_to_str(const char *prefix, __u64 id)
-+{
-+	__u64 reg_off = id & ~(REG_MASK | KVM_REG_RISCV_SBI_STATE);
-+	__u64 reg_subtype = reg_off & KVM_REG_RISCV_SUBTYPE_MASK;
-+
-+	assert((id & KVM_REG_RISCV_TYPE_MASK) == KVM_REG_RISCV_SBI_STATE);
-+
-+	reg_off &= ~KVM_REG_RISCV_SUBTYPE_MASK;
-+
-+	switch (reg_subtype) {
-+	case KVM_REG_RISCV_SBI_STA:
-+		return sbi_sta_id_to_str(reg_off);
-+	}
-+
-+	return strdup_printf("%lld | %lld /* UNKNOWN */", reg_subtype, reg_off);
-+}
-+
- void print_reg(const char *prefix, __u64 id)
- {
- 	const char *reg_size = NULL;
-@@ -565,6 +593,10 @@ void print_reg(const char *prefix, __u64 id)
- 		printf("\tKVM_REG_RISCV | %s | KVM_REG_RISCV_SBI_EXT | %s,\n",
- 				reg_size, sbi_ext_id_to_str(prefix, id));
- 		break;
-+	case KVM_REG_RISCV_SBI_STATE:
-+		printf("\tKVM_REG_RISCV | %s | KVM_REG_RISCV_SBI_STATE | %s,\n",
-+				reg_size, sbi_id_to_str(prefix, id));
-+		break;
- 	default:
- 		printf("\tKVM_REG_RISCV | %s | 0x%llx /* UNKNOWN */,\n",
- 				reg_size, id & ~REG_MASK);
-@@ -651,6 +683,12 @@ static __u64 sbi_base_regs[] = {
- 	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_SINGLE | KVM_RISCV_SBI_EXT_VENDOR,
- };
- 
-+static __u64 sbi_sta_regs[] = {
-+	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_SINGLE | KVM_RISCV_SBI_EXT_STA,
-+	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_SBI_STATE | KVM_REG_RISCV_SBI_STA | KVM_REG_RISCV_SBI_STA_REG(shmem_lo),
-+	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_SBI_STATE | KVM_REG_RISCV_SBI_STA | KVM_REG_RISCV_SBI_STA_REG(shmem_hi),
-+};
-+
- static __u64 zicbom_regs[] = {
- 	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_CONFIG | KVM_REG_RISCV_CONFIG_REG(zicbom_block_size),
- 	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZICBOM,
-@@ -757,6 +795,9 @@ static __u64 fp_d_regs[] = {
- #define SUBLIST_SBI_BASE \
- 	{"sbi-base", .feature_type = VCPU_FEATURE_SBI_EXT, .feature = KVM_RISCV_SBI_EXT_V01, \
- 	 .regs = sbi_base_regs, .regs_n = ARRAY_SIZE(sbi_base_regs),}
-+#define SUBLIST_SBI_STA \
-+	{"sbi-sta", .feature_type = VCPU_FEATURE_SBI_EXT, .feature = KVM_RISCV_SBI_EXT_STA, \
-+	 .regs = sbi_sta_regs, .regs_n = ARRAY_SIZE(sbi_sta_regs),}
- #define SUBLIST_ZICBOM \
- 	{"zicbom", .feature = KVM_RISCV_ISA_EXT_ZICBOM, .regs = zicbom_regs, .regs_n = ARRAY_SIZE(zicbom_regs),}
- #define SUBLIST_ZICBOZ \
-@@ -832,6 +873,7 @@ static struct vcpu_reg_list config_sbi_##ext = {		\
- /* Note: The below list is alphabetically sorted. */
- 
- KVM_SBI_EXT_SUBLIST_CONFIG(base, BASE);
-+KVM_SBI_EXT_SUBLIST_CONFIG(sta, STA);
- KVM_SBI_EXT_SIMPLE_CONFIG(pmu, PMU);
- KVM_SBI_EXT_SIMPLE_CONFIG(dbcn, DBCN);
- 
-@@ -858,6 +900,7 @@ KVM_ISA_EXT_SIMPLE_CONFIG(zihpm, ZIHPM);
- 
- struct vcpu_reg_list *vcpu_configs[] = {
- 	&config_sbi_base,
-+	&config_sbi_sta,
- 	&config_sbi_pmu,
- 	&config_sbi_dbcn,
- 	&config_aia,
--- 
-2.43.0
+Can you please review and ack the first three patches ?
 
+Regards,
+Anup
+
+>
+>  .../admin-guide/kernel-parameters.txt         |   6 +-
+>  arch/riscv/Kconfig                            |  19 ++
+>  arch/riscv/include/asm/kvm_host.h             |  10 +
+>  arch/riscv/include/asm/kvm_vcpu_sbi.h         |  10 +
+>  arch/riscv/include/asm/paravirt.h             |  28 +++
+>  arch/riscv/include/asm/paravirt_api_clock.h   |   1 +
+>  arch/riscv/include/asm/sbi.h                  |  17 ++
+>  arch/riscv/include/uapi/asm/kvm.h             |  13 ++
+>  arch/riscv/kernel/Makefile                    |   1 +
+>  arch/riscv/kernel/paravirt.c                  | 134 +++++++++++
+>  arch/riscv/kernel/time.c                      |   3 +
+>  arch/riscv/kvm/Kconfig                        |   1 +
+>  arch/riscv/kvm/Makefile                       |   1 +
+>  arch/riscv/kvm/vcpu.c                         |   7 +
+>  arch/riscv/kvm/vcpu_onereg.c                  |  51 ++++-
+>  arch/riscv/kvm/vcpu_sbi.c                     |  67 ++++++
+>  arch/riscv/kvm/vcpu_sbi_sta.c                 | 208 ++++++++++++++++++
+>  tools/testing/selftests/kvm/Makefile          |   5 +-
+>  .../selftests/kvm/include/riscv/processor.h   |  22 ++
+>  .../selftests/kvm/lib/riscv/processor.c       |  45 ++++
+>  tools/testing/selftests/kvm/lib/riscv/ucall.c |  26 ---
+>  .../selftests/kvm/riscv/get-reg-list.c        |  43 ++++
+>  tools/testing/selftests/kvm/steal_time.c      |  99 +++++++++
+>  23 files changed, 782 insertions(+), 35 deletions(-)
+>  create mode 100644 arch/riscv/include/asm/paravirt.h
+>  create mode 100644 arch/riscv/include/asm/paravirt_api_clock.h
+>  create mode 100644 arch/riscv/kernel/paravirt.c
+>  create mode 100644 arch/riscv/kvm/vcpu_sbi_sta.c
+>
+> --
+> 2.43.0
+>
+>
+> --
+> kvm-riscv mailing list
+> kvm-riscv at lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/kvm-riscv
 
