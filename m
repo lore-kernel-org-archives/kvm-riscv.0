@@ -1,88 +1,62 @@
-From: Chao Du <duchao@eswincomputing.com>
-Date: Fri, 22 Dec 2023 16:28:12 +0800 (GMT+08:00)
-Subject: [RFC PATCH 0/3] RISC-V: KVM: Guest Debug Support
-In-Reply-To: <CAK9=C2Wfv7=fCitUdjBpC9=0icN82Bb+9p1-Gq5ha8o9v13nEg@mail.gmail.com>
-References: <20231221095002.7404-1-duchao@eswincomputing.com>
- <CAK9=C2Wfv7=fCitUdjBpC9=0icN82Bb+9p1-Gq5ha8o9v13nEg@mail.gmail.com>
-Message-ID: <19434eff.1deb.18c90a3a375.Coremail.duchao@eswincomputing.com>
+From: Paolo Bonzini <pbonzini@redhat.com>
+Date: Sat, 23 Dec 2023 00:09:15 +0100
+Subject: [GIT PULL] KVM/riscv fixes for 6.7, take #1
+In-Reply-To: <CAAhSdy3Rc+vub65qJ4JNngp5qTgm7YpsJCHZy+ff0=TN_ir03g@mail.gmail.com>
+References: <CAAhSdy3Rc+vub65qJ4JNngp5qTgm7YpsJCHZy+ff0=TN_ir03g@mail.gmail.com>
+Message-ID: <CABgObfZuK+QcqBMQSU1ReXPBsHJvmXrwu8HxvUNhLVTqR4RWDw@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 2023-12-21 21:01, Anup Patel <apatel@ventanamicro.com> wrote:
-> 
-> On Thu, Dec 21, 2023 at 3:21?PM Chao Du <duchao@eswincomputing.com> wrote:
-> >
-> > This series implements KVM Guest Debug on RISC-V. Currently, we can
-> > debug RISC-V KVM guest from the host side, with software breakpoints.
-> >
-> > A brief test was done on QEMU RISC-V hypervisor emulator.
-> >
-> > A TODO list which will be added later:
-> > 1. HW breakpoints support
-> > 2. Test cases
-> 
-> Himanshu has already done the complete HW breakpoint implementation
-> in OpenSBI, Linux RISC-V, and KVM RISC-V. This is based on the upcoming
-> SBI debug trigger extension draft proposal.
-> (Refer, https://lists.riscv.org/g/tech-debug/message/1261)
-> 
-> There are also RISE projects to track these efforts:
-> https://wiki.riseproject.dev/pages/viewpage.action?pageId=394541
-> https://wiki.riseproject.dev/pages/viewpage.action?pageId=394545
-> 
-> Currently, we are in the process of upstreaming the OpenSBI support
-> for SBI debug trigger extension. The Linux RISC-V and KVM RISC-V
-> patches require SBI debug trigger extension and Sdtrig extension to
-> be frozen which will happen next year 2024.
-> 
+On Fri, Dec 15, 2023 at 6:14?PM Anup Patel <anup@brainfault.org> wrote:
+>
+> Hi Paolo,
+>
+> We have two fixes for 6.7. Out of these, one fix is related to
+> race condition in updating IMSIC swfile and second fix is
+> for default prints in get-reg-list sefltest.
+>
+> Please pull.
+
+Pulled, thanks.
+
+Paolo
+
 > Regards,
 > Anup
-> 
+>
+> The following changes since commit a39b6ac3781d46ba18193c9dbb2110f31e9bffe9:
+>
+>   Linux 6.7-rc5 (2023-12-10 14:33:40 -0800)
+>
+> are available in the Git repository at:
+>
+>   https://github.com/kvm-riscv/linux.git tags/kvm-riscv-fixes-6.7-1
+>
+> for you to fetch changes up to 4ad9843e1ea088bd2529290234c6c4c6374836a7:
+>
+>   RISCV: KVM: update external interrupt atomically for IMSIC swfile
+> (2023-12-13 11:59:52 +0530)
+>
+> ----------------------------------------------------------------
+> KVM/riscv fixes for 6.7, take #1
+>
+> - Fix a race condition in updating external interrupt for
+>   trap-n-emulated IMSIC swfile
+> - Fix print_reg defaults in get-reg-list selftest
+>
+> ----------------------------------------------------------------
+> Andrew Jones (1):
+>       KVM: riscv: selftests: Fix get-reg-list print_reg defaults
+>
+> Yong-Xuan Wang (1):
+>       RISCV: KVM: update external interrupt atomically for IMSIC swfile
+>
+>  arch/riscv/kvm/aia_imsic.c                       | 13 +++++++++++++
+>  tools/testing/selftests/kvm/riscv/get-reg-list.c | 10 ++++++----
+>  2 files changed, 19 insertions(+), 4 deletions(-)
+>
 
-Hi Anup,
 
-Thank you for the information and your great work on the SBI
-Debug Trigger Extension proposal.
-
-So I think that 'HW breakpoints support' in the above TODO list
-will be taken care of by Himanshu following the extension proposal.
-
-On the other hand, if I understand correctly, the software
-breakpoint part of KVM Guest Debug has no dependency on the new
-extension since it does not use the trigger module. Just an
-ebreak substitution is made.
-
-So may I know your suggestion about this RFC? Both in KVM and QEMU.
-
-Regards,
-Chao
-
-> >
-> > This series is based on Linux 6.7-rc6 and is also available at:
-> > https://github.com/Du-Chao/linux/tree/riscv_gd_sw
-> >
-> > The matched QEMU is available at:
-> > https://github.com/Du-Chao/qemu/tree/riscv_gd_sw
-> >
-> > Chao Du (3):
-> >   RISC-V: KVM: Enable the KVM_CAP_SET_GUEST_DEBUG capability
-> >   RISC-V: KVM: Implement kvm_arch_vcpu_ioctl_set_guest_debug()
-> >   RISC-V: KVM: Handle breakpoint exits for VCPU
-> >
-> >  arch/riscv/include/uapi/asm/kvm.h |  1 +
-> >  arch/riscv/kvm/vcpu.c             | 15 +++++++++++++--
-> >  arch/riscv/kvm/vcpu_exit.c        |  4 ++++
-> >  arch/riscv/kvm/vm.c               |  1 +
-> >  4 files changed, 19 insertions(+), 2 deletions(-)
-> >
-> > --
-> > 2.17.1
-> >
-> >
-> > --
-> > kvm-riscv mailing list
-> > kvm-riscv at lists.infradead.org
-> > http://lists.infradead.org/mailman/listinfo/kvm-riscv
