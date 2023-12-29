@@ -1,72 +1,76 @@
 From: Palmer Dabbelt <palmer@dabbelt.com>
-Date: Thu, 28 Dec 2023 17:44:50 -0800 (PST)
-Subject: [v1 04/10] RISC-V: Add SBI PMU snapshot definitions
-In-Reply-To: <20231218104107.2976925-5-atishp@rivosinc.com>
-Message-ID: <mhng-bc357c81-f43a-40e2-b4ac-f9c462e4c006@palmer-ri-x1c9a>
+Date: Thu, 28 Dec 2023 17:44:48 -0800 (PST)
+Subject: [v1 03/10] drivers/perf: riscv: Read upper bits of a firmware counter
+In-Reply-To: <20231218104107.2976925-4-atishp@rivosinc.com>
+Message-ID: <mhng-94cdfcf4-01c1-493c-a23e-32bc8b391aad@palmer-ri-x1c9a>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, 18 Dec 2023 02:41:01 PST (-0800), Atish Patra wrote:
-> SBI PMU Snapshot function optimizes the number of traps to
-> higher privilege mode by leveraging a shared memory between the S/VS-mode
-> and the M/HS mode. Add the definitions for that extension and new error
-> codes.
+On Mon, 18 Dec 2023 02:41:00 PST (-0800), Atish Patra wrote:
+> SBI v2.0 introduced a explicit function to read the upper 32 bits
+> for any firmwar counter width that is longer than 32bits.
+> This is only applicable for RV32 where firmware counter can be
+> 64 bit.
 >
-> Reviewed-by: Anup Patel <anup@brainfault.org>
 > Signed-off-by: Atish Patra <atishp@rivosinc.com>
 > ---
->  arch/riscv/include/asm/sbi.h | 11 +++++++++++
->  1 file changed, 11 insertions(+)
+>  drivers/perf/riscv_pmu_sbi.c | 20 ++++++++++++++++----
+>  1 file changed, 16 insertions(+), 4 deletions(-)
 >
-> diff --git a/arch/riscv/include/asm/sbi.h b/arch/riscv/include/asm/sbi.h
-> index f3eeca79a02d..a24bc4fa34ff 100644
-> --- a/arch/riscv/include/asm/sbi.h
-> +++ b/arch/riscv/include/asm/sbi.h
-> @@ -122,6 +122,7 @@ enum sbi_ext_pmu_fid {
->  	SBI_EXT_PMU_COUNTER_STOP,
->  	SBI_EXT_PMU_COUNTER_FW_READ,
->  	SBI_EXT_PMU_COUNTER_FW_READ_HI,
-> +	SBI_EXT_PMU_SNAPSHOT_SET_SHMEM,
->  };
+> diff --git a/drivers/perf/riscv_pmu_sbi.c b/drivers/perf/riscv_pmu_sbi.c
+> index 16acd4dcdb96..646604f8c0a5 100644
+> --- a/drivers/perf/riscv_pmu_sbi.c
+> +++ b/drivers/perf/riscv_pmu_sbi.c
+> @@ -35,6 +35,8 @@
+>  PMU_FORMAT_ATTR(event, "config:0-47");
+>  PMU_FORMAT_ATTR(firmware, "config:63");
 >
->  union sbi_pmu_ctr_info {
-> @@ -138,6 +139,13 @@ union sbi_pmu_ctr_info {
->  	};
->  };
->
-> +/* Data structure to contain the pmu snapshot data */
-> +struct riscv_pmu_snapshot_data {
-> +	uint64_t ctr_overflow_mask;
-> +	uint64_t ctr_values[64];
-> +	uint64_t reserved[447];
-> +};
+> +static bool sbi_v2_available;
 > +
->  #define RISCV_PMU_RAW_EVENT_MASK GENMASK_ULL(47, 0)
->  #define RISCV_PMU_RAW_EVENT_IDX 0x20000
+>  static struct attribute *riscv_arch_formats_attr[] = {
+>  	&format_attr_event.attr,
+>  	&format_attr_firmware.attr,
+> @@ -488,16 +490,23 @@ static u64 pmu_sbi_ctr_read(struct perf_event *event)
+>  	struct hw_perf_event *hwc = &event->hw;
+>  	int idx = hwc->idx;
+>  	struct sbiret ret;
+> -	union sbi_pmu_ctr_info info;
+>  	u64 val = 0;
+> +	union sbi_pmu_ctr_info info = pmu_ctr_list[idx];
 >
-> @@ -234,9 +242,11 @@ enum sbi_pmu_ctr_type {
+>  	if (pmu_sbi_is_fw_event(event)) {
+>  		ret = sbi_ecall(SBI_EXT_PMU, SBI_EXT_PMU_COUNTER_FW_READ,
+>  				hwc->idx, 0, 0, 0, 0, 0);
+> -		if (!ret.error)
+> -			val = ret.value;
+> +		if (ret.error)
+> +			return val;
+> +
+> +		val = ret.value;
+> +		if (IS_ENABLED(CONFIG_32BIT) && sbi_v2_available && info.width >= 32) {
+> +			ret = sbi_ecall(SBI_EXT_PMU, SBI_EXT_PMU_COUNTER_FW_READ_HI,
+> +					hwc->idx, 0, 0, 0, 0, 0);
+> +			if (!ret.error)
+> +				val |= ((u64)ret.value << 32);
+> +		}
+>  	} else {
+> -		info = pmu_ctr_list[idx];
+>  		val = riscv_pmu_ctr_read_csr(info.csr);
+>  		if (IS_ENABLED(CONFIG_32BIT))
+>  			val = ((u64)riscv_pmu_ctr_read_csr(info.csr + 0x80)) << 31 | val;
+> @@ -1108,6 +1117,9 @@ static int __init pmu_sbi_devinit(void)
+>  		return 0;
+>  	}
 >
->  /* Flags defined for counter start function */
->  #define SBI_PMU_START_FLAG_SET_INIT_VALUE (1 << 0)
-> +#define SBI_PMU_START_FLAG_INIT_FROM_SNAPSHOT BIT(1)
->
->  /* Flags defined for counter stop function */
->  #define SBI_PMU_STOP_FLAG_RESET (1 << 0)
-> +#define SBI_PMU_STOP_FLAG_TAKE_SNAPSHOT BIT(1)
->
->  enum sbi_ext_dbcn_fid {
->  	SBI_EXT_DBCN_CONSOLE_WRITE = 0,
-> @@ -259,6 +269,7 @@ enum sbi_ext_dbcn_fid {
->  #define SBI_ERR_ALREADY_AVAILABLE -6
->  #define SBI_ERR_ALREADY_STARTED -7
->  #define SBI_ERR_ALREADY_STOPPED -8
-> +#define SBI_ERR_NO_SHMEM	-9
->
->  extern unsigned long sbi_spec_version;
->  struct sbiret {
+> +	if (sbi_spec_version >= sbi_mk_version(2, 0))
+> +		sbi_v2_available = true;
+> +
+>  	ret = cpuhp_setup_state_multi(CPUHP_AP_PERF_RISCV_STARTING,
+>  				      "perf/riscv/pmu:starting",
+>  				      pmu_sbi_starting_cpu, pmu_sbi_dying_cpu);
 
 Acked-by: Palmer Dabbelt <palmer@rivosinc.com>
 
