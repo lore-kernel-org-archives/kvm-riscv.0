@@ -1,139 +1,122 @@
 From: Anup Patel <anup@brainfault.org>
-Date: Sat, 30 Dec 2023 13:40:20 +0530
-Subject: [v2 10/10] RISC-V: KVM: Support 64 bit firmware counters on RV32
-In-Reply-To: <20231229214950.4061381-11-atishp@rivosinc.com>
-References: <20231229214950.4061381-1-atishp@rivosinc.com> <20231229214950.4061381-11-atishp@rivosinc.com>
-Message-ID: <CAAhSdy03BLQRdTZAqteK9PsbjxQt7cncXu_fG1CG99uQK5v6CA@mail.gmail.com>
+Date: Sun, 31 Dec 2023 11:03:41 +0530
+Subject: [GIT PULL] KVM/riscv changes for 6.8 part #1
+Message-ID: <CAAhSdy1QsMuAmr+DFxjkf3a2Ur91AX9AnddRnBHGM6+exkAn1g@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sat, Dec 30, 2023 at 3:20?AM Atish Patra <atishp@rivosinc.com> wrote:
->
-> The SBI v2.0 introduced a fw_read_hi function to read 64 bit firmware
-> counters for RV32 based systems.
->
-> Add infrastructure to support that.
->
-> Signed-off-by: Atish Patra <atishp@rivosinc.com>
+Hi Paolo,
 
-LGTM.
+We have the following KVM RISC-V changes for 6.8:
+1) KVM_GET_REG_LIST improvement for vector registers
+2) Generate ISA extension reg_list using macros in get-reg-list selftest
+3) Steal time account support along with selftest
 
-Reviewed-by: Anup Patel <anup@brainfault.org>
+Please pull.
+
+Please note that I will be sending another PR for 6.8 which will
+include two more changes:
+1) KVM RISC-V report more ISA extensions through ONE_REG
+2) RISC-V SBI v2.0 PMU improvements and Perf sampling in KVM guest
+
+Two separate PRs are because #1 (above) depends on a series
+merged by Palmer for 6.8 and #2 (above) requires little more testing.
+I hope you are okay with two separate PRs for 6.8.
 
 Regards,
 Anup
 
-> ---
->  arch/riscv/include/asm/kvm_vcpu_pmu.h |  4 ++-
->  arch/riscv/kvm/vcpu_pmu.c             | 37 ++++++++++++++++++++++++++-
->  arch/riscv/kvm/vcpu_sbi_pmu.c         |  6 +++++
->  3 files changed, 45 insertions(+), 2 deletions(-)
->
-> diff --git a/arch/riscv/include/asm/kvm_vcpu_pmu.h b/arch/riscv/include/asm/kvm_vcpu_pmu.h
-> index af6d0ff5ce41..463c349a9ea5 100644
-> --- a/arch/riscv/include/asm/kvm_vcpu_pmu.h
-> +++ b/arch/riscv/include/asm/kvm_vcpu_pmu.h
-> @@ -20,7 +20,7 @@ static_assert(RISCV_KVM_MAX_COUNTERS <= 64);
->
->  struct kvm_fw_event {
->         /* Current value of the event */
-> -       unsigned long value;
-> +       u64 value;
->
->         /* Event monitoring status */
->         bool started;
-> @@ -91,6 +91,8 @@ int kvm_riscv_vcpu_pmu_ctr_cfg_match(struct kvm_vcpu *vcpu, unsigned long ctr_ba
->                                      struct kvm_vcpu_sbi_return *retdata);
->  int kvm_riscv_vcpu_pmu_ctr_read(struct kvm_vcpu *vcpu, unsigned long cidx,
->                                 struct kvm_vcpu_sbi_return *retdata);
-> +int kvm_riscv_vcpu_pmu_fw_ctr_read_hi(struct kvm_vcpu *vcpu, unsigned long cidx,
-> +                                     struct kvm_vcpu_sbi_return *retdata);
->  void kvm_riscv_vcpu_pmu_init(struct kvm_vcpu *vcpu);
->  int kvm_riscv_vcpu_pmu_setup_snapshot(struct kvm_vcpu *vcpu, unsigned long saddr_low,
->                                       unsigned long saddr_high, unsigned long flags,
-> diff --git a/arch/riscv/kvm/vcpu_pmu.c b/arch/riscv/kvm/vcpu_pmu.c
-> index f2bf5b5bdd61..e6ce37819ca2 100644
-> --- a/arch/riscv/kvm/vcpu_pmu.c
-> +++ b/arch/riscv/kvm/vcpu_pmu.c
-> @@ -196,6 +196,29 @@ static int pmu_get_pmc_index(struct kvm_pmu *pmu, unsigned long eidx,
->         return kvm_pmu_get_programmable_pmc_index(pmu, eidx, cbase, cmask);
->  }
->
-> +static int pmu_fw_ctr_read_hi(struct kvm_vcpu *vcpu, unsigned long cidx,
-> +                             unsigned long *out_val)
-> +{
-> +       struct kvm_pmu *kvpmu = vcpu_to_pmu(vcpu);
-> +       struct kvm_pmc *pmc;
-> +       int fevent_code;
-> +
-> +       if (!IS_ENABLED(CONFIG_32BIT))
-> +               return -EINVAL;
-> +
-> +       pmc = &kvpmu->pmc[cidx];
-> +
-> +       if (pmc->cinfo.type != SBI_PMU_CTR_TYPE_FW)
-> +               return -EINVAL;
-> +
-> +       fevent_code = get_event_code(pmc->event_idx);
-> +       pmc->counter_val = kvpmu->fw_event[fevent_code].value;
-> +
-> +       *out_val = pmc->counter_val >> 32;
-> +
-> +       return 0;
-> +}
-> +
->  static int pmu_ctr_read(struct kvm_vcpu *vcpu, unsigned long cidx,
->                         unsigned long *out_val)
->  {
-> @@ -701,6 +724,18 @@ int kvm_riscv_vcpu_pmu_ctr_cfg_match(struct kvm_vcpu *vcpu, unsigned long ctr_ba
->         return 0;
->  }
->
-> +int kvm_riscv_vcpu_pmu_fw_ctr_read_hi(struct kvm_vcpu *vcpu, unsigned long cidx,
-> +                                     struct kvm_vcpu_sbi_return *retdata)
-> +{
-> +       int ret;
-> +
-> +       ret = pmu_fw_ctr_read_hi(vcpu, cidx, &retdata->out_val);
-> +       if (ret == -EINVAL)
-> +               retdata->err_val = SBI_ERR_INVALID_PARAM;
-> +
-> +       return 0;
-> +}
-> +
->  int kvm_riscv_vcpu_pmu_ctr_read(struct kvm_vcpu *vcpu, unsigned long cidx,
->                                 struct kvm_vcpu_sbi_return *retdata)
->  {
-> @@ -774,7 +809,7 @@ void kvm_riscv_vcpu_pmu_init(struct kvm_vcpu *vcpu)
->                         pmc->cinfo.csr = CSR_CYCLE + i;
->                 } else {
->                         pmc->cinfo.type = SBI_PMU_CTR_TYPE_FW;
-> -                       pmc->cinfo.width = BITS_PER_LONG - 1;
-> +                       pmc->cinfo.width = 63;
->                 }
->         }
->
-> diff --git a/arch/riscv/kvm/vcpu_sbi_pmu.c b/arch/riscv/kvm/vcpu_sbi_pmu.c
-> index 9f61136e4bb1..58a0e5587e2a 100644
-> --- a/arch/riscv/kvm/vcpu_sbi_pmu.c
-> +++ b/arch/riscv/kvm/vcpu_sbi_pmu.c
-> @@ -64,6 +64,12 @@ static int kvm_sbi_ext_pmu_handler(struct kvm_vcpu *vcpu, struct kvm_run *run,
->         case SBI_EXT_PMU_COUNTER_FW_READ:
->                 ret = kvm_riscv_vcpu_pmu_ctr_read(vcpu, cp->a0, retdata);
->                 break;
-> +       case SBI_EXT_PMU_COUNTER_FW_READ_HI:
-> +               if (IS_ENABLED(CONFIG_32BIT))
-> +                       ret = kvm_riscv_vcpu_pmu_fw_ctr_read_hi(vcpu, cp->a0, retdata);
-> +               else
-> +                       retdata->out_val = 0;
-> +               break;
->         case SBI_EXT_PMU_SNAPSHOT_SET_SHMEM:
->                 ret = kvm_riscv_vcpu_pmu_setup_snapshot(vcpu, cp->a0, cp->a1, cp->a2, retdata);
->                 break;
-> --
-> 2.34.1
->
+The following changes since commit 861deac3b092f37b2c5e6871732f3e11486f7082:
+
+  Linux 6.7-rc7 (2023-12-23 16:25:56 -0800)
+
+are available in the Git repository at:
+
+  https://github.com/kvm-riscv/linux.git tags/kvm-riscv-6.8-1
+
+for you to fetch changes up to aad86da229bc9d0390dc2c02eb0db9ab1f50d059:
+
+  RISC-V: KVM: selftests: Add get-reg-list test for STA registers
+(2023-12-30 11:26:47 +0530)
+
+----------------------------------------------------------------
+KVM/riscv changes for 6.8 part #1
+
+- KVM_GET_REG_LIST improvement for vector registers
+- Generate ISA extension reg_list using macros in get-reg-list selftest
+- Steal time account support along with selftest
+
+----------------------------------------------------------------
+Andrew Jones (19):
+      RISC-V: KVM: Don't add SBI multi regs in get-reg-list
+      KVM: riscv: selftests: Drop SBI multi registers
+      RISC-V: KVM: Make SBI uapi consistent with ISA uapi
+      KVM: riscv: selftests: Add RISCV_SBI_EXT_REG
+      KVM: riscv: selftests: Use register subtypes
+      RISC-V: KVM: selftests: Treat SBI ext regs like ISA ext regs
+      RISC-V: paravirt: Add skeleton for pv-time support
+      RISC-V: Add SBI STA extension definitions
+      RISC-V: paravirt: Implement steal-time support
+      RISC-V: KVM: Add SBI STA extension skeleton
+      RISC-V: KVM: Add steal-update vcpu request
+      RISC-V: KVM: Add SBI STA info to vcpu_arch
+      RISC-V: KVM: Add support for SBI extension registers
+      RISC-V: KVM: Add support for SBI STA registers
+      RISC-V: KVM: Implement SBI STA extension
+      RISC-V: KVM: selftests: Move sbi_ecall to processor.c
+      RISC-V: KVM: selftests: Add guest_sbi_probe_extension
+      RISC-V: KVM: selftests: Add steal_time test support
+      RISC-V: KVM: selftests: Add get-reg-list test for STA registers
+
+Anup Patel (2):
+      KVM: riscv: selftests: Generate ISA extension reg_list using macros
+      RISC-V: KVM: Fix indentation in kvm_riscv_vcpu_set_reg_csr()
+
+Chao Du (1):
+      RISC-V: KVM: remove a redundant condition in kvm_arch_vcpu_ioctl_run()
+
+Cl?ment L?ger (2):
+      riscv: kvm: Use SYM_*() assembly macros instead of deprecated ones
+      riscv: kvm: use ".L" local labels in assembly when applicable
+
+Daniel Henrique Barboza (3):
+      RISC-V: KVM: set 'vlenb' in kvm_riscv_vcpu_alloc_vector_context()
+      RISC-V: KVM: add 'vlenb' Vector CSR
+      RISC-V: KVM: add vector registers and CSRs in KVM_GET_REG_LIST
+
+ Documentation/admin-guide/kernel-parameters.txt    |   6 +-
+ arch/riscv/Kconfig                                 |  19 +
+ arch/riscv/include/asm/kvm_host.h                  |  10 +
+ arch/riscv/include/asm/kvm_vcpu_sbi.h              |  20 +-
+ arch/riscv/include/asm/paravirt.h                  |  28 +
+ arch/riscv/include/asm/paravirt_api_clock.h        |   1 +
+ arch/riscv/include/asm/sbi.h                       |  17 +
+ arch/riscv/include/uapi/asm/kvm.h                  |  13 +
+ arch/riscv/kernel/Makefile                         |   1 +
+ arch/riscv/kernel/paravirt.c                       | 135 +++++
+ arch/riscv/kernel/time.c                           |   3 +
+ arch/riscv/kvm/Kconfig                             |   1 +
+ arch/riscv/kvm/Makefile                            |   1 +
+ arch/riscv/kvm/vcpu.c                              |  10 +-
+ arch/riscv/kvm/vcpu_onereg.c                       | 135 +++--
+ arch/riscv/kvm/vcpu_sbi.c                          | 142 +++--
+ arch/riscv/kvm/vcpu_sbi_replace.c                  |   2 +-
+ arch/riscv/kvm/vcpu_sbi_sta.c                      | 208 ++++++++
+ arch/riscv/kvm/vcpu_switch.S                       |  32 +-
+ arch/riscv/kvm/vcpu_vector.c                       |  16 +
+ tools/testing/selftests/kvm/Makefile               |   5 +-
+ .../testing/selftests/kvm/include/kvm_util_base.h  |   1 +
+ .../selftests/kvm/include/riscv/processor.h        |  62 ++-
+ tools/testing/selftests/kvm/lib/riscv/processor.c  |  49 +-
+ tools/testing/selftests/kvm/lib/riscv/ucall.c      |  26 -
+ tools/testing/selftests/kvm/riscv/get-reg-list.c   | 588 ++++++++++-----------
+ tools/testing/selftests/kvm/steal_time.c           |  99 ++++
+ 27 files changed, 1184 insertions(+), 446 deletions(-)
+ create mode 100644 arch/riscv/include/asm/paravirt.h
+ create mode 100644 arch/riscv/include/asm/paravirt_api_clock.h
+ create mode 100644 arch/riscv/kernel/paravirt.c
+ create mode 100644 arch/riscv/kvm/vcpu_sbi_sta.c
 
