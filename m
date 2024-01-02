@@ -1,42 +1,38 @@
-From: Paolo Bonzini <pbonzini@redhat.com>
-Date: Tue, 2 Jan 2024 19:24:26 +0100
+From: Andrew Jones <ajones@ventanamicro.com>
+Date: Tue, 2 Jan 2024 21:25:49 +0100
 Subject: [GIT PULL] KVM/riscv changes for 6.8 part #1
-In-Reply-To: <CAAhSdy1QsMuAmr+DFxjkf3a2Ur91AX9AnddRnBHGM6+exkAn1g@mail.gmail.com>
+In-Reply-To: <CABgObfZN4_xvOHr8aukZZGZj5teWZ7rt5RJU5Y0YFewQk19FRw@mail.gmail.com>
 References: <CAAhSdy1QsMuAmr+DFxjkf3a2Ur91AX9AnddRnBHGM6+exkAn1g@mail.gmail.com>
-Message-ID: <CABgObfZN4_xvOHr8aukZZGZj5teWZ7rt5RJU5Y0YFewQk19FRw@mail.gmail.com>
+ <CABgObfZN4_xvOHr8aukZZGZj5teWZ7rt5RJU5Y0YFewQk19FRw@mail.gmail.com>
+Message-ID: <20240102-c07d32a585f11ee80bd7b70b@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sun, Dec 31, 2023 at 6:33?AM Anup Patel <anup@brainfault.org> wrote:
->
-> Hi Paolo,
->
-> We have the following KVM RISC-V changes for 6.8:
-> 1) KVM_GET_REG_LIST improvement for vector registers
-> 2) Generate ISA extension reg_list using macros in get-reg-list selftest
-> 3) Steal time account support along with selftest
+On Tue, Jan 02, 2024 at 07:24:26PM +0100, Paolo Bonzini wrote:
+> On Sun, Dec 31, 2023 at 6:33?AM Anup Patel <anup@brainfault.org> wrote:
+> >
+> > Hi Paolo,
+> >
+> > We have the following KVM RISC-V changes for 6.8:
+> > 1) KVM_GET_REG_LIST improvement for vector registers
+> > 2) Generate ISA extension reg_list using macros in get-reg-list selftest
+> > 3) Steal time account support along with selftest
+> 
+> Just one small thing I noticed on (3), do you really need cpu_to_le64
+> and le64_to_cpu on RISC-V? It seems that it was copied from aarch64.
+> No need to resend the PR anyway, of course.
 
-Just one small thing I noticed on (3), do you really need cpu_to_le64
-and le64_to_cpu on RISC-V? It seems that it was copied from aarch64.
-No need to resend the PR anyway, of course.
+While Linux/KVM is only LE, the arch doesn't prohibit S-mode being
+configured to use BE memory accesses, so I kept the conversions. They
+at least provide some self-documenting of the code. The biggest
+problem with them, though, is that I didn't use __le64 types and now
+sparse is yelling at me. I patched that this morning, but didn't get
+a chance to post yet. I could instead rip out the conversions to
+quiet sparse, if that would be preferred.
 
-> Please pull.
->
-> Please note that I will be sending another PR for 6.8 which will
-> include two more changes:
-> 1) KVM RISC-V report more ISA extensions through ONE_REG
-> 2) RISC-V SBI v2.0 PMU improvements and Perf sampling in KVM guest
->
-> Two separate PRs are because #1 (above) depends on a series
-> merged by Palmer for 6.8 and #2 (above) requires little more testing.
-> I hope you are okay with two separate PRs for 6.8.
-
-Yes, sure. The more the merrier. :)  If you want to send only #1, that
-may be better?
-
-Paolo
-
+Thanks,
+drew
 
