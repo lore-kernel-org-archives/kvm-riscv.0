@@ -1,76 +1,94 @@
-From: Alexandre Ghiti <alex@ghiti.fr>
-Date: Thu, 4 Jan 2024 12:07:51 +0100
-Subject: [PATCH] RISC-V: KVM: Require HAVE_KVM
-In-Reply-To: <20240104-d5ebb072b91a6f7abbb2ac76@orel>
-References: <20240104104307.16019-2-ajones@ventanamicro.com>
- <20240104-d5ebb072b91a6f7abbb2ac76@orel>
-Message-ID: <752c11ea-7172-40ff-a821-c78aeb6c5518@ghiti.fr>
+From: Andrew Jones <ajones@ventanamicro.com>
+Date: Thu, 4 Jan 2024 12:09:35 +0100
+Subject: [PATCH v4 11/11] KVM: selftests: Enable tunning of
+ err_margin_us in arch timer test
+In-Reply-To: <CAJve8o=nTsAwwgSib4vOLXjOWSMV2+J+BFsUZ57OdAK7eW8q8A@mail.gmail.com>
+References: <cover.1702371136.git.haibo1.xu@intel.com>
+ <0343a9e4bfa8011fbb6bca0286cee7eab1f17d5d.1702371136.git.haibo1.xu@intel.com>
+ <8734vy832j.wl-maz@kernel.org>
+ <CAJve8onc0WN5g98aOVBmJx15wFBAqfBKJ+ufoLY+oqYyVL+=3A@mail.gmail.com>
+ <f98879dc24f948f7a8a7b5374a32bc04@kernel.org>
+ <CAJve8ona7g=LxW1YeRB_FqGodF973H=A3b2m8054gmzK=Z7_ww@mail.gmail.com>
+ <87zfy5t1qt.wl-maz@kernel.org>
+ <CAJve8o=nTsAwwgSib4vOLXjOWSMV2+J+BFsUZ57OdAK7eW8q8A@mail.gmail.com>
+Message-ID: <20240104-be1acabe472432f709ee408c@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 04/01/2024 11:52, Andrew Jones wrote:
-> This applies to linux-next, but I forgot to append -next to the PATCH
-> prefix.
+On Thu, Dec 21, 2023 at 10:58:40AM +0800, Haibo Xu wrote:
+> On Wed, Dec 20, 2023 at 9:58?PM Marc Zyngier <maz@kernel.org> wrote:
+> >
+> > On Wed, 20 Dec 2023 13:51:24 +0000,
+> > Haibo Xu <xiaobo55x@gmail.com> wrote:
+> > >
+> > > On Wed, Dec 20, 2023 at 5:00?PM Marc Zyngier <maz@kernel.org> wrote:
+> > > >
+> > > > On 2023-12-20 06:50, Haibo Xu wrote:
+> > > > > On Wed, Dec 20, 2023 at 2:22?AM Marc Zyngier <maz@kernel.org> wrote:
+> > > > >>
+> > > > >> On Tue, 12 Dec 2023 09:31:20 +0000,
+> > > > >> Haibo Xu <haibo1.xu@intel.com> wrote:
+> > > > >> > diff --git a/tools/testing/selftests/kvm/include/timer_test.h b/tools/testing/selftests/kvm/include/timer_test.h
+> > > > >> > index 968257b893a7..b1d405e7157d 100644
+> > > > >> > --- a/tools/testing/selftests/kvm/include/timer_test.h
+> > > > >> > +++ b/tools/testing/selftests/kvm/include/timer_test.h
+> > > > >> > @@ -22,6 +22,7 @@ struct test_args {
+> > > > >> >       int nr_iter;
+> > > > >> >       int timer_period_ms;
+> > > > >> >       int migration_freq_ms;
+> > > > >> > +     int timer_err_margin_us;
+> > > > >>
+> > > > >> ... except that you are storing it as a signed value. Some consistency
+> > > > >> wouldn't hurt, really, and would avoid issues when passing large
+> > > > >> values.
+> > > > >>
+> > > > >
+> > > > > Yes, it's more proper to use an unsigned int for the non-negative error
+> > > > > margin.
+> > > > > Storing as signed here is just to keep the type consistent with that
+> > > > > of timer_period_ms
+> > > > > since there will be '+' operation in other places.
+> > > > >
+> > > > >         tools/testing/selftests/kvm/aarch64/arch_timer.c
+> > > > >         /* Setup a timeout for the interrupt to arrive */
+> > > > >          udelay(msecs_to_usecs(test_args.timer_period_ms) +
+> > > > >              test_args.timer_err_margin_us);
+> > > >
+> > > > But that's exactly why using a signed quantity is wrong.
+> > > > What does it mean to have a huge *negative* margin?
+> > > >
+> > >
+> > > Hi Marc,
+> > >
+> > > I agree that negative values are meaningless for the margin.
+> > > If I understand correctly, the negative margin should be filtered by
+> > > assertion in atoi_non_negative().
+> >
+> > No. Please.
+> >
+> > atoi_non_negative() returns a uint32_t, which is what it should do.
+> > The bug is squarely in the use of an 'int' to store such value, and it
+> > is the *storage* that turns a positive value into a negative one.
+> >
+> 
+> Thanks for the detailed info!
+> 
+> May I understand that your concern is mainly for a platform with 64bit int type,
+> which may trigger the positive to negative convert?
+> 
+> If so, I think we may need to do a clean up for the test code since
+> several other
+> places have the same issue.
 
+Yes, I think we should do that cleanup. While there are probably several
+offenders scattered throughout kvm selftests, we can keep the scope of
+this series focused on arch_timer.c. Let's audit all uses of signed types
+and convert them to unsigned as necessary with some separate patch(es)
+before splitting the test, so both aarch64 and riscv get the cleanups.
 
-Shoudn't this go to -fixes instead? With a Fixes tag?
-
-
->
-> On Thu, Jan 04, 2024 at 11:43:08AM +0100, Andrew Jones wrote:
->> KVM requires EVENTFD, which is selected by HAVE_KVM. Other KVM
->> supporting architectures select HAVE_KVM and then their KVM
->> Kconfigs ensure its there with a depends on HAVE_KVM. Make RISCV
->> consistent with that approach which fixes configs which have KVM
->> but not EVENTFD, as was discovered with a randconfig test.
->>
->> Reported-by: Randy Dunlap <rdunlap@infradead.org>
->> Closes: https://lore.kernel.org/all/44907c6b-c5bd-4e4a-a921-e4d3825539d8 at infradead.org/
-> I think powerpc may need a patch like this as well, since I don't see
-> anything ensuring EVENTFD is selected for it anymore either.
->
-> Thanks,
-> drew
->
->> Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
->> ---
->>   arch/riscv/Kconfig     | 1 +
->>   arch/riscv/kvm/Kconfig | 2 +-
->>   2 files changed, 2 insertions(+), 1 deletion(-)
->>
->> diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
->> index a935a5f736b9..daba06a3b76f 100644
->> --- a/arch/riscv/Kconfig
->> +++ b/arch/riscv/Kconfig
->> @@ -128,6 +128,7 @@ config RISCV
->>   	select HAVE_KPROBES if !XIP_KERNEL
->>   	select HAVE_KPROBES_ON_FTRACE if !XIP_KERNEL
->>   	select HAVE_KRETPROBES if !XIP_KERNEL
->> +	select HAVE_KVM
->>   	# https://github.com/ClangBuiltLinux/linux/issues/1881
->>   	select HAVE_LD_DEAD_CODE_DATA_ELIMINATION if !LD_IS_LLD
->>   	select HAVE_MOVE_PMD
->> diff --git a/arch/riscv/kvm/Kconfig b/arch/riscv/kvm/Kconfig
->> index 1fd76aee3b71..36fa8ec9e5ba 100644
->> --- a/arch/riscv/kvm/Kconfig
->> +++ b/arch/riscv/kvm/Kconfig
->> @@ -19,7 +19,7 @@ if VIRTUALIZATION
->>   
->>   config KVM
->>   	tristate "Kernel-based Virtual Machine (KVM) support (EXPERIMENTAL)"
->> -	depends on RISCV_SBI && MMU
->> +	depends on HAVE_KVM && RISCV_SBI && MMU
->>   	select HAVE_KVM_IRQCHIP
->>   	select HAVE_KVM_IRQ_ROUTING
->>   	select HAVE_KVM_MSI
->> -- 
->> 2.43.0
->>
-> _______________________________________________
-> linux-riscv mailing list
-> linux-riscv at lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-riscv
+Thanks,
+drew
 
