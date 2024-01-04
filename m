@@ -1,52 +1,115 @@
-From: Anup Patel <anup@brainfault.org>
-Date: Thu, 4 Jan 2024 11:00:25 +0530
-Subject: [GIT PULL] KVM/riscv changes for 6.8 part #1
-In-Reply-To: <20240102-c07d32a585f11ee80bd7b70b@orel>
-References: <CAAhSdy1QsMuAmr+DFxjkf3a2Ur91AX9AnddRnBHGM6+exkAn1g@mail.gmail.com>
- <CABgObfZN4_xvOHr8aukZZGZj5teWZ7rt5RJU5Y0YFewQk19FRw@mail.gmail.com> <20240102-c07d32a585f11ee80bd7b70b@orel>
-Message-ID: <CAAhSdy2_STfVNb6PB0o-hW+rn-K+U5BcYJWJO3m8vbeQEQ9BFw@mail.gmail.com>
+From: Chao Du <duchao@eswincomputing.com>
+Date: Thu, 4 Jan 2024 18:22:26 +0800 (GMT+08:00)
+Subject: [RFC PATCH 0/3] RISC-V: KVM: Guest Debug Support
+In-Reply-To: <51c6e871.1f32.18c9ee3ae12.Coremail.duchao@eswincomputing.com>
+References: <20231221095002.7404-1-duchao@eswincomputing.com>
+ <CAK9=C2Wfv7=fCitUdjBpC9=0icN82Bb+9p1-Gq5ha8o9v13nEg@mail.gmail.com>
+ <19434eff.1deb.18c90a3a375.Coremail.duchao@eswincomputing.com>
+ <51c6e871.1f32.18c9ee3ae12.Coremail.duchao@eswincomputing.com>
+Message-ID: <2be7402e.34b.18cd3fee5ab.Coremail.duchao@eswincomputing.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Paolo,
+Hi all,
 
-On Wed, Jan 3, 2024 at 1:55?AM Andrew Jones <ajones@ventanamicro.com> wrote:
->
-> On Tue, Jan 02, 2024 at 07:24:26PM +0100, Paolo Bonzini wrote:
-> > On Sun, Dec 31, 2023 at 6:33?AM Anup Patel <anup@brainfault.org> wrote:
-> > >
-> > > Hi Paolo,
-> > >
-> > > We have the following KVM RISC-V changes for 6.8:
-> > > 1) KVM_GET_REG_LIST improvement for vector registers
-> > > 2) Generate ISA extension reg_list using macros in get-reg-list selftest
-> > > 3) Steal time account support along with selftest
-> >
-> > Just one small thing I noticed on (3), do you really need cpu_to_le64
-> > and le64_to_cpu on RISC-V? It seems that it was copied from aarch64.
-> > No need to resend the PR anyway, of course.
->
-> While Linux/KVM is only LE, the arch doesn't prohibit S-mode being
-> configured to use BE memory accesses, so I kept the conversions. They
-> at least provide some self-documenting of the code. The biggest
-> problem with them, though, is that I didn't use __le64 types and now
-> sparse is yelling at me. I patched that this morning, but didn't get
-> a chance to post yet. I could instead rip out the conversions to
-> quiet sparse, if that would be preferred.
+Gentle ping.
 
-The SBI spec is quite explicit about endianness of data in shared
-memory. Also, the RISC-V priv spec allows BE load/store operations
-so eventually we might see BE platforms. I suggest keeping the LE
-conversion macros and __le32/__le64 data types.
+In my point of view, these patches focus on the software breakpoint
+of KVM Guest Debug, which are independent of the SBI extensions Anup
+mentioned.
 
-Regarding the sparse errors, Drew can send fix patches which I
-will include in the second PR for 6.8.
+Please correct me if I'm wrong.
 
-I hope this is okay.
+Thanks,
+Chao
 
-Regards,
-Anup
-
+On 2023-12-25 10:52, Chao Du <duchao@eswincomputing.com> wrote:
+> 
+> On 2023-12-22 16:28, Chao Du <duchao@eswincomputing.com> wrote:
+> > 
+> > On 2023-12-21 21:01, Anup Patel <apatel@ventanamicro.com> wrote:
+> > > 
+> > > On Thu, Dec 21, 2023 at 3:21?PM Chao Du <duchao@eswincomputing.com> wrote:
+> > > >
+> > > > This series implements KVM Guest Debug on RISC-V. Currently, we can
+> > > > debug RISC-V KVM guest from the host side, with software breakpoints.
+> > > >
+> > > > A brief test was done on QEMU RISC-V hypervisor emulator.
+> > > >
+> > > > A TODO list which will be added later:
+> > > > 1. HW breakpoints support
+> > > > 2. Test cases
+> > > 
+> > > Himanshu has already done the complete HW breakpoint implementation
+> > > in OpenSBI, Linux RISC-V, and KVM RISC-V. This is based on the upcoming
+> > > SBI debug trigger extension draft proposal.
+> > > (Refer, https://lists.riscv.org/g/tech-debug/message/1261)
+> > > 
+> > > There are also RISE projects to track these efforts:
+> > > https://wiki.riseproject.dev/pages/viewpage.action?pageId=394541
+> > > https://wiki.riseproject.dev/pages/viewpage.action?pageId=394545
+> > > 
+> > > Currently, we are in the process of upstreaming the OpenSBI support
+> > > for SBI debug trigger extension. The Linux RISC-V and KVM RISC-V
+> > > patches require SBI debug trigger extension and Sdtrig extension to
+> > > be frozen which will happen next year 2024.
+> > > 
+> > > Regards,
+> > > Anup
+> > > 
+> > 
+> > Hi Anup,
+> > 
+> > Thank you for the information and your great work on the SBI
+> > Debug Trigger Extension proposal.
+> > 
+> > So I think that 'HW breakpoints support' in the above TODO list
+> > will be taken care of by Himanshu following the extension proposal.
+> > 
+> > On the other hand, if I understand correctly, the software
+> > breakpoint part of KVM Guest Debug has no dependency on the new
+> > extension since it does not use the trigger module. Just an
+> > ebreak substitution is made.
+> > 
+> > So may I know your suggestion about this RFC? Both in KVM and QEMU.
+> > 
+> > Regards,
+> > Chao
+> > 
+> 
+> Hi Anup and all,
+> 
+> I'm still waiting for your comment and suggestion for the next step.
+> :)
+> 
+> Thanks
+> 
+> > > >
+> > > > This series is based on Linux 6.7-rc6 and is also available at:
+> > > > https://github.com/Du-Chao/linux/tree/riscv_gd_sw
+> > > >
+> > > > The matched QEMU is available at:
+> > > > https://github.com/Du-Chao/qemu/tree/riscv_gd_sw
+> > > >
+> > > > Chao Du (3):
+> > > >   RISC-V: KVM: Enable the KVM_CAP_SET_GUEST_DEBUG capability
+> > > >   RISC-V: KVM: Implement kvm_arch_vcpu_ioctl_set_guest_debug()
+> > > >   RISC-V: KVM: Handle breakpoint exits for VCPU
+> > > >
+> > > >  arch/riscv/include/uapi/asm/kvm.h |  1 +
+> > > >  arch/riscv/kvm/vcpu.c             | 15 +++++++++++++--
+> > > >  arch/riscv/kvm/vcpu_exit.c        |  4 ++++
+> > > >  arch/riscv/kvm/vm.c               |  1 +
+> > > >  4 files changed, 19 insertions(+), 2 deletions(-)
+> > > >
+> > > > --
+> > > > 2.17.1
+> > > >
+> > > >
+> > > > --
+> > > > kvm-riscv mailing list
+> > > > kvm-riscv at lists.infradead.org
+> > > > http://lists.infradead.org/mailman/listinfo/kvm-riscv
