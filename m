@@ -1,40 +1,58 @@
-From: Anup Patel <anup@brainfault.org>
-Date: Thu, 4 Jan 2024 17:03:10 +0530
-Subject: [PATCH] RISC-V: KVM: Require HAVE_KVM
-In-Reply-To: <20240104-6a5a59dde14adcaf3ac22a35@orel>
-References: <20240104104307.16019-2-ajones@ventanamicro.com>
- <20240104-d5ebb072b91a6f7abbb2ac76@orel> <752c11ea-7172-40ff-a821-c78aeb6c5518@ghiti.fr>
- <20240104-6a5a59dde14adcaf3ac22a35@orel>
-Message-ID: <CAAhSdy0uVZXsP1_3zZiwXXEXBZGkmWX5ujptirojD8S4nuzQpQ@mail.gmail.com>
+From: Andrew Jones <ajones@ventanamicro.com>
+Date: Thu,  4 Jan 2024 13:37:28 +0100
+Subject: [PATCH -fixes v2] RISC-V: KVM: Require HAVE_KVM
+Message-ID: <20240104123727.76987-2-ajones@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Jan 4, 2024 at 4:51?PM Andrew Jones <ajones@ventanamicro.com> wrote:
->
-> On Thu, Jan 04, 2024 at 12:07:51PM +0100, Alexandre Ghiti wrote:
-> > On 04/01/2024 11:52, Andrew Jones wrote:
-> > > This applies to linux-next, but I forgot to append -next to the PATCH
-> > > prefix.
-> >
-> >
-> > Shoudn't this go to -fixes instead? With a Fixes tag?
->
-> I'm not sure how urgent it is since it's a randconfig thing, but if we
-> think it deserves the -fixes track then I can do that. The Fixes tag isn't
-> super easy to select since, while it seems like it should be 8132d887a702
-> ("KVM: remove CONFIG_HAVE_KVM_EVENTFD"), it could also be 99cdc6c18c2d
-> ("RISC-V: Add initial skeletal KVM support").
->
-> I'll leave both the urgency decision and the Fixes tag selection up to
-> the maintainers. Anup? Paolo?
-
-Lets add
+KVM requires EVENTFD, which is selected by HAVE_KVM. Other KVM
+supporting architectures select HAVE_KVM and then their KVM
+Kconfigs ensure its there with a depends on HAVE_KVM. Make RISCV
+consistent with that approach which fixes configs which have KVM
+but not EVENTFD, as was discovered with a randconfig test.
 
 Fixes: 99cdc6c18c2d ("RISC-V: Add initial skeletal KVM support")
+Reported-by: Randy Dunlap <rdunlap@infradead.org>
+Closes: https://lore.kernel.org/all/44907c6b-c5bd-4e4a-a921-e4d3825539d8 at infradead.org/
+Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
+---
 
-Regards,
-Anup
+v2:
+ - Added Fixes tag and -fixes prefix [Alexandre/Anup]
+
+ arch/riscv/Kconfig     | 1 +
+ arch/riscv/kvm/Kconfig | 2 +-
+ 2 files changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
+index a935a5f736b9..daba06a3b76f 100644
+--- a/arch/riscv/Kconfig
++++ b/arch/riscv/Kconfig
+@@ -128,6 +128,7 @@ config RISCV
+ 	select HAVE_KPROBES if !XIP_KERNEL
+ 	select HAVE_KPROBES_ON_FTRACE if !XIP_KERNEL
+ 	select HAVE_KRETPROBES if !XIP_KERNEL
++	select HAVE_KVM
+ 	# https://github.com/ClangBuiltLinux/linux/issues/1881
+ 	select HAVE_LD_DEAD_CODE_DATA_ELIMINATION if !LD_IS_LLD
+ 	select HAVE_MOVE_PMD
+diff --git a/arch/riscv/kvm/Kconfig b/arch/riscv/kvm/Kconfig
+index 1fd76aee3b71..36fa8ec9e5ba 100644
+--- a/arch/riscv/kvm/Kconfig
++++ b/arch/riscv/kvm/Kconfig
+@@ -19,7 +19,7 @@ if VIRTUALIZATION
+ 
+ config KVM
+ 	tristate "Kernel-based Virtual Machine (KVM) support (EXPERIMENTAL)"
+-	depends on RISCV_SBI && MMU
++	depends on HAVE_KVM && RISCV_SBI && MMU
+ 	select HAVE_KVM_IRQCHIP
+ 	select HAVE_KVM_IRQ_ROUTING
+ 	select HAVE_KVM_MSI
+-- 
+2.43.0
+
 
