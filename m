@@ -1,64 +1,68 @@
 From: Anup Patel <anup@brainfault.org>
-Date: Thu, 18 Jan 2024 18:14:42 +0530
-Subject: [PATCH 00/15] KVM RISC-V report more ISA extensions through ONE_REG
-In-Reply-To: <20231128145357.413321-1-apatel@ventanamicro.com>
-References: <20231128145357.413321-1-apatel@ventanamicro.com>
-Message-ID: <CAAhSdy0Q8raGzH_mUsvAo++KmWu3yqBkjNTrn8CO-ZCiYEY9Cw@mail.gmail.com>
+Date: Thu, 18 Jan 2024 18:29:16 +0530
+Subject: [PATCH -fixes v2] RISC-V: KVM: Require HAVE_KVM
+In-Reply-To: <20240104123727.76987-2-ajones@ventanamicro.com>
+References: <20240104123727.76987-2-ajones@ventanamicro.com>
+Message-ID: <CAAhSdy0SxZWdCHQVW0Bki+bHpg4qrHWV0aFzJq8V2xYtwsMWhw@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Nov 28, 2023 at 8:24?PM Anup Patel <apatel@ventanamicro.com> wrote:
+On Thu, Jan 4, 2024 at 6:07?PM Andrew Jones <ajones@ventanamicro.com> wrote:
 >
-> This extends the KVM RISC-V ONE_REG interface to report more ISA extensions
-> namely: Zbz, scalar crypto, vector crypto, Zfh[min], Zihintntl, Zvfh[min],
-> and Zfa.
+> KVM requires EVENTFD, which is selected by HAVE_KVM. Other KVM
+> supporting architectures select HAVE_KVM and then their KVM
+> Kconfigs ensure its there with a depends on HAVE_KVM. Make RISCV
+> consistent with that approach which fixes configs which have KVM
+> but not EVENTFD, as was discovered with a randconfig test.
 >
-> This series depends upon the "riscv: report more ISA extensions through
-> hwprobe" series.from Clement.
-> (Link: https://lore.kernel.org/lkml/20231114141256.126749-1-cleger at rivosinc.com/)
->
-> To test these patches, use KVMTOOL from the riscv_more_exts_v1 branch at:
-> https://github.com/avpatel/kvmtool.git
->
-> These patches can also be found in the riscv_kvm_more_exts_v1 branch at:
-> https://github.com/avpatel/linux.git
->
-> Anup Patel (15):
->   KVM: riscv: selftests: Generate ISA extension reg_list using macros
->   RISC-V: KVM: Allow Zbc extension for Guest/VM
->   KVM: riscv: selftests: Add Zbc extension to get-reg-list test
->   RISC-V: KVM: Allow scalar crypto extensions for Guest/VM
->   KVM: riscv: selftests: Add scaler crypto extensions to get-reg-list
->     test
->   RISC-V: KVM: Allow vector crypto extensions for Guest/VM
->   KVM: riscv: selftests: Add vector crypto extensions to get-reg-list
->     test
->   RISC-V: KVM: Allow Zfh[min] extensions for Guest/VM
->   KVM: riscv: selftests: Add Zfh[min] extensions to get-reg-list test
->   RISC-V: KVM: Allow Zihintntl extension for Guest/VM
->   KVM: riscv: selftests: Add Zihintntl extension to get-reg-list test
->   RISC-V: KVM: Allow Zvfh[min] extensions for Guest/VM
->   KVM: riscv: selftests: Add Zvfh[min] extensions to get-reg-list test
->   RISC-V: KVM: Allow Zfa extension for Guest/VM
->   KVM: riscv: selftests: Add Zfa extension to get-reg-list test
+> Fixes: 99cdc6c18c2d ("RISC-V: Add initial skeletal KVM support")
+> Reported-by: Randy Dunlap <rdunlap@infradead.org>
+> Closes: https://lore.kernel.org/all/44907c6b-c5bd-4e4a-a921-e4d3825539d8 at infradead.org/
+> Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
 
-The first PATCH is already merged in upstream Linux.
-
-I have rebased and queued the remaining patches for Linux-6.8.
+Queued this patch for Linux-6.8
 
 Regards,
 Anup
 
+> ---
 >
->  arch/riscv/include/uapi/asm/kvm.h             |  27 ++
->  arch/riscv/kvm/vcpu_onereg.c                  |  54 +++
->  .../selftests/kvm/riscv/get-reg-list.c        | 439 ++++++++----------
->  3 files changed, 265 insertions(+), 255 deletions(-)
+> v2:
+>  - Added Fixes tag and -fixes prefix [Alexandre/Anup]
 >
+>  arch/riscv/Kconfig     | 1 +
+>  arch/riscv/kvm/Kconfig | 2 +-
+>  2 files changed, 2 insertions(+), 1 deletion(-)
+>
+> diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
+> index a935a5f736b9..daba06a3b76f 100644
+> --- a/arch/riscv/Kconfig
+> +++ b/arch/riscv/Kconfig
+> @@ -128,6 +128,7 @@ config RISCV
+>         select HAVE_KPROBES if !XIP_KERNEL
+>         select HAVE_KPROBES_ON_FTRACE if !XIP_KERNEL
+>         select HAVE_KRETPROBES if !XIP_KERNEL
+> +       select HAVE_KVM
+>         # https://github.com/ClangBuiltLinux/linux/issues/1881
+>         select HAVE_LD_DEAD_CODE_DATA_ELIMINATION if !LD_IS_LLD
+>         select HAVE_MOVE_PMD
+> diff --git a/arch/riscv/kvm/Kconfig b/arch/riscv/kvm/Kconfig
+> index 1fd76aee3b71..36fa8ec9e5ba 100644
+> --- a/arch/riscv/kvm/Kconfig
+> +++ b/arch/riscv/kvm/Kconfig
+> @@ -19,7 +19,7 @@ if VIRTUALIZATION
+>
+>  config KVM
+>         tristate "Kernel-based Virtual Machine (KVM) support (EXPERIMENTAL)"
+> -       depends on RISCV_SBI && MMU
+> +       depends on HAVE_KVM && RISCV_SBI && MMU
+>         select HAVE_KVM_IRQCHIP
+>         select HAVE_KVM_IRQ_ROUTING
+>         select HAVE_KVM_MSI
 > --
-> 2.34.1
+> 2.43.0
 >
 
