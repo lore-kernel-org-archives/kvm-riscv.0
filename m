@@ -1,47 +1,73 @@
-From: Anup Patel <apatel@ventanamicro.com>
-Date: Fri, 19 Jan 2024 08:42:53 +0530
-Subject: [PATCH -fixes v2] RISC-V: KVM: Require HAVE_KVM
-In-Reply-To: <ZalilFSHBa_XHolD@google.com>
-References: <20240104123727.76987-2-ajones@ventanamicro.com>
- <CAAhSdy0SxZWdCHQVW0Bki+bHpg4qrHWV0aFzJq8V2xYtwsMWhw@mail.gmail.com> <ZalilFSHBa_XHolD@google.com>
-Message-ID: <CAK9=C2X4R+3F5Lh-f33dPVMkyGt+koXorfwMOmB-JnqSs79eQw@mail.gmail.com>
+From: Anup Patel <anup@brainfault.org>
+Date: Fri, 19 Jan 2024 11:03:37 +0530
+Subject: [GIT PULL] KVM/riscv changes for 6.8 part #2
+Message-ID: <CAAhSdy2rbMeTwwHU_dHwUQi3AQB1qGNf=ByvzG11D99ZOJ3djA@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Jan 18, 2024 at 11:10?PM Sean Christopherson <seanjc@google.com> wrote:
->
-> On Thu, Jan 18, 2024, Anup Patel wrote:
-> > On Thu, Jan 4, 2024 at 6:07?PM Andrew Jones <ajones@ventanamicro.com> wrote:
-> > >
-> > > KVM requires EVENTFD, which is selected by HAVE_KVM. Other KVM
-> > > supporting architectures select HAVE_KVM and then their KVM
-> > > Kconfigs ensure its there with a depends on HAVE_KVM. Make RISCV
-> > > consistent with that approach which fixes configs which have KVM
-> > > but not EVENTFD, as was discovered with a randconfig test.
-> > >
-> > > Fixes: 99cdc6c18c2d ("RISC-V: Add initial skeletal KVM support")
-> > > Reported-by: Randy Dunlap <rdunlap@infradead.org>
-> > > Closes: https://lore.kernel.org/all/44907c6b-c5bd-4e4a-a921-e4d3825539d8 at infradead.org/
-> > > Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
-> >
-> > Queued this patch for Linux-6.8
->
-> That should be unnecessary.  Commit caadf876bb74 ("KVM: introduce CONFIG_KVM_COMMON"),
-> which is in Paolo's pull request for 6.8, addresses the EVENTFD issue.  And the
-> rest of Paolo's series[*], which presumably will get queued for 6.9, eliminates
-> HAVE_KVM entirely.
->
-> [*] https://lore.kernel.org/all/20240108124740.114453-6-pbonzini at redhat.com
+Hi Paolo,
 
-I was not sure about the timeline of when Paolo's series would be merged
-hence thought of taking this patch as a fix.
+We have the following additional KVM RISC-V changes for 6.8:
+1) Zbc extension support for Guest/VM
+2) Scalar crypto extensions support for Guest/VM
+3) Vector crypto extensions support for Guest/VM
+4) Zfh[min] extensions support for Guest/VM
+5) Zihintntl extension support for Guest/VM
+6) Zvfh[min] extensions support for Guest/VM
+7) Zfa extension support for Guest/VM
 
-For now, I will drop this patch from my queue. If required we can have it
-as a 6.8-rc fix.
+Please pull.
 
 Regards,
 Anup
+
+The following changes since commit 9d1694dc91ce7b80bc96d6d8eaf1a1eca668d847:
+
+  Merge tag 'for-6.8/block-2024-01-18' of git://git.kernel.dk/linux
+(2024-01-18 18:22:40 -0800)
+
+are available in the Git repository at:
+
+  https://github.com/kvm-riscv/linux.git tags/kvm-riscv-6.8-2
+
+for you to fetch changes up to 4d0e8f9a361b3a1f7b67418c536b258323de734f:
+
+  KVM: riscv: selftests: Add Zfa extension to get-reg-list test
+(2024-01-19 09:20:19 +0530)
+
+----------------------------------------------------------------
+KVM/riscv changes for 6.8 part #2
+
+- Zbc extension support for Guest/VM
+- Scalar crypto extensions support for Guest/VM
+- Vector crypto extensions support for Guest/VM
+- Zfh[min] extensions support for Guest/VM
+- Zihintntl extension support for Guest/VM
+- Zvfh[min] extensions support for Guest/VM
+- Zfa extension support for Guest/VM
+
+----------------------------------------------------------------
+Anup Patel (14):
+      RISC-V: KVM: Allow Zbc extension for Guest/VM
+      KVM: riscv: selftests: Add Zbc extension to get-reg-list test
+      RISC-V: KVM: Allow scalar crypto extensions for Guest/VM
+      KVM: riscv: selftests: Add scaler crypto extensions to get-reg-list test
+      RISC-V: KVM: Allow vector crypto extensions for Guest/VM
+      KVM: riscv: selftests: Add vector crypto extensions to get-reg-list test
+      RISC-V: KVM: Allow Zfh[min] extensions for Guest/VM
+      KVM: riscv: selftests: Add Zfh[min] extensions to get-reg-list test
+      RISC-V: KVM: Allow Zihintntl extension for Guest/VM
+      KVM: riscv: selftests: Add Zihintntl extension to get-reg-list test
+      RISC-V: KVM: Allow Zvfh[min] extensions for Guest/VM
+      KVM: riscv: selftests: Add Zvfh[min] extensions to get-reg-list test
+      RISC-V: KVM: Allow Zfa extension for Guest/VM
+      KVM: riscv: selftests: Add Zfa extension to get-reg-list test
+
+ arch/riscv/include/uapi/asm/kvm.h                |  27 ++++++
+ arch/riscv/kvm/vcpu_onereg.c                     |  54 ++++++++++++
+ tools/testing/selftests/kvm/riscv/get-reg-list.c | 108 +++++++++++++++++++++++
+ 3 files changed, 189 insertions(+)
 
