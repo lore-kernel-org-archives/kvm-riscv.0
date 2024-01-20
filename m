@@ -1,73 +1,64 @@
-From: Anup Patel <anup@brainfault.org>
-Date: Fri, 19 Jan 2024 11:03:37 +0530
-Subject: [GIT PULL] KVM/riscv changes for 6.8 part #2
-Message-ID: <CAAhSdy2rbMeTwwHU_dHwUQi3AQB1qGNf=ByvzG11D99ZOJ3djA@mail.gmail.com>
+From: patchwork-bot+linux-riscv@kernel.org <patchwork-bot+linux-riscv@kernel.org>
+Date: Sat, 20 Jan 2024 21:09:55 +0000
+Subject: [PATCH v4 00/13] RISC-V: Add steal-time support
+In-Reply-To: <20231220160012.40184-15-ajones@ventanamicro.com>
+References: <20231220160012.40184-15-ajones@ventanamicro.com>
+Message-ID: <170578499524.24348.16462593200054070695.git-patchwork-notify@kernel.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Paolo,
+Hello:
 
-We have the following additional KVM RISC-V changes for 6.8:
-1) Zbc extension support for Guest/VM
-2) Scalar crypto extensions support for Guest/VM
-3) Vector crypto extensions support for Guest/VM
-4) Zfh[min] extensions support for Guest/VM
-5) Zihintntl extension support for Guest/VM
-6) Zvfh[min] extensions support for Guest/VM
-7) Zfa extension support for Guest/VM
+This series was applied to riscv/linux.git (fixes)
+by Anup Patel <anup@brainfault.org>:
 
-Please pull.
+On Wed, 20 Dec 2023 17:00:13 +0100 you wrote:
+> One frequently touted benefit of virtualization is the ability to
+> consolidate machines, increasing resource utilization.  It may even be
+> desirable to overcommit, at the risk of one or more VCPUs having to wait.
+> Hypervisors which have interfaces for guests to retrieve the amount of
+> time each VCPU had to wait give observers within the guests ways to
+> account for less progress than would otherwise be expected. The SBI STA
+> extension[1] provides a standard interface for guest VCPUs to retrieve
+> the amount of time "stolen".
+> 
+> [...]
 
-Regards,
-Anup
+Here is the summary with links:
+  - [v4,01/13] RISC-V: paravirt: Add skeleton for pv-time support
+    (no matching commit)
+  - [v4,02/13] RISC-V: Add SBI STA extension definitions
+    https://git.kernel.org/riscv/c/6cfc624576a6
+  - [v4,03/13] RISC-V: paravirt: Implement steal-time support
+    (no matching commit)
+  - [v4,04/13] RISC-V: KVM: Add SBI STA extension skeleton
+    (no matching commit)
+  - [v4,05/13] RISC-V: KVM: Add steal-update vcpu request
+    (no matching commit)
+  - [v4,06/13] RISC-V: KVM: Add SBI STA info to vcpu_arch
+    (no matching commit)
+  - [v4,07/13] RISC-V: KVM: Add support for SBI extension registers
+    (no matching commit)
+  - [v4,08/13] RISC-V: KVM: Add support for SBI STA registers
+    (no matching commit)
+  - [v4,09/13] RISC-V: KVM: Implement SBI STA extension
+    (no matching commit)
+  - [v4,10/13] RISC-V: KVM: selftests: Move sbi_ecall to processor.c
+    (no matching commit)
+  - [v4,11/13] RISC-V: KVM: selftests: Add guest_sbi_probe_extension
+    (no matching commit)
+  - [v4,12/13] RISC-V: KVM: selftests: Add steal_time test support
+    (no matching commit)
+  - [v4,13/13] RISC-V: KVM: selftests: Add get-reg-list test for STA registers
+    (no matching commit)
 
-The following changes since commit 9d1694dc91ce7b80bc96d6d8eaf1a1eca668d847:
+You are awesome, thank you!
+-- 
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/patchwork/pwbot.html
 
-  Merge tag 'for-6.8/block-2024-01-18' of git://git.kernel.dk/linux
-(2024-01-18 18:22:40 -0800)
 
-are available in the Git repository at:
-
-  https://github.com/kvm-riscv/linux.git tags/kvm-riscv-6.8-2
-
-for you to fetch changes up to 4d0e8f9a361b3a1f7b67418c536b258323de734f:
-
-  KVM: riscv: selftests: Add Zfa extension to get-reg-list test
-(2024-01-19 09:20:19 +0530)
-
-----------------------------------------------------------------
-KVM/riscv changes for 6.8 part #2
-
-- Zbc extension support for Guest/VM
-- Scalar crypto extensions support for Guest/VM
-- Vector crypto extensions support for Guest/VM
-- Zfh[min] extensions support for Guest/VM
-- Zihintntl extension support for Guest/VM
-- Zvfh[min] extensions support for Guest/VM
-- Zfa extension support for Guest/VM
-
-----------------------------------------------------------------
-Anup Patel (14):
-      RISC-V: KVM: Allow Zbc extension for Guest/VM
-      KVM: riscv: selftests: Add Zbc extension to get-reg-list test
-      RISC-V: KVM: Allow scalar crypto extensions for Guest/VM
-      KVM: riscv: selftests: Add scaler crypto extensions to get-reg-list test
-      RISC-V: KVM: Allow vector crypto extensions for Guest/VM
-      KVM: riscv: selftests: Add vector crypto extensions to get-reg-list test
-      RISC-V: KVM: Allow Zfh[min] extensions for Guest/VM
-      KVM: riscv: selftests: Add Zfh[min] extensions to get-reg-list test
-      RISC-V: KVM: Allow Zihintntl extension for Guest/VM
-      KVM: riscv: selftests: Add Zihintntl extension to get-reg-list test
-      RISC-V: KVM: Allow Zvfh[min] extensions for Guest/VM
-      KVM: riscv: selftests: Add Zvfh[min] extensions to get-reg-list test
-      RISC-V: KVM: Allow Zfa extension for Guest/VM
-      KVM: riscv: selftests: Add Zfa extension to get-reg-list test
-
- arch/riscv/include/uapi/asm/kvm.h                |  27 ++++++
- arch/riscv/kvm/vcpu_onereg.c                     |  54 ++++++++++++
- tools/testing/selftests/kvm/riscv/get-reg-list.c | 108 +++++++++++++++++++++++
- 3 files changed, 189 insertions(+)
 
