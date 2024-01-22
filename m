@@ -1,63 +1,50 @@
 From: Haibo Xu <haibo1.xu@intel.com>
-Date: Mon, 22 Jan 2024 17:58:37 +0800
-Subject: [PATCH v5 07/12] tools: riscv: Add header file vdso/processor.h
+Date: Mon, 22 Jan 2024 17:58:38 +0800
+Subject: [PATCH v5 08/12] KVM: riscv: selftests: Switch to use macro from csr.h
 In-Reply-To: <cover.1705916069.git.haibo1.xu@intel.com>
 References: <cover.1705916069.git.haibo1.xu@intel.com>
-Message-ID: <212d0d848e54c887944ec38bd9f9729df8d1a27f.1705916069.git.haibo1.xu@intel.com>
+Message-ID: <4806503d3e8fe4b727eb6df72c8fdd087355495b.1705916069.git.haibo1.xu@intel.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Borrow the cpu_relax() definitions from kernel's
-arch/riscv/include/asm/vdso/processor.h to tools/ for riscv.
-
 Signed-off-by: Haibo Xu <haibo1.xu@intel.com>
 Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
 ---
- tools/arch/riscv/include/asm/vdso/processor.h | 32 +++++++++++++++++++
- 1 file changed, 32 insertions(+)
- create mode 100644 tools/arch/riscv/include/asm/vdso/processor.h
+ tools/testing/selftests/kvm/include/riscv/processor.h | 10 ++--------
+ 1 file changed, 2 insertions(+), 8 deletions(-)
 
-diff --git a/tools/arch/riscv/include/asm/vdso/processor.h b/tools/arch/riscv/include/asm/vdso/processor.h
-new file mode 100644
-index 000000000000..662aca039848
---- /dev/null
-+++ b/tools/arch/riscv/include/asm/vdso/processor.h
-@@ -0,0 +1,32 @@
-+/* SPDX-License-Identifier: GPL-2.0-only */
-+#ifndef __ASM_VDSO_PROCESSOR_H
-+#define __ASM_VDSO_PROCESSOR_H
-+
-+#ifndef __ASSEMBLY__
-+
-+#include <asm-generic/barrier.h>
-+
-+static inline void cpu_relax(void)
-+{
-+#ifdef __riscv_muldiv
-+	int dummy;
-+	/* In lieu of a halt instruction, induce a long-latency stall. */
-+	__asm__ __volatile__ ("div %0, %0, zero" : "=r" (dummy));
-+#endif
-+
-+#ifdef CONFIG_TOOLCHAIN_HAS_ZIHINTPAUSE
-+	/*
-+	 * Reduce instruction retirement.
-+	 * This assumes the PC changes.
-+	 */
-+	__asm__ __volatile__ ("pause");
-+#else
-+	/* Encoding of the pause instruction */
-+	__asm__ __volatile__ (".4byte 0x100000F");
-+#endif
-+	barrier();
-+}
-+
-+#endif /* __ASSEMBLY__ */
-+
-+#endif /* __ASM_VDSO_PROCESSOR_H */
+diff --git a/tools/testing/selftests/kvm/include/riscv/processor.h b/tools/testing/selftests/kvm/include/riscv/processor.h
+index 5b62a3d2aa9b..6f9e1e5e466d 100644
+--- a/tools/testing/selftests/kvm/include/riscv/processor.h
++++ b/tools/testing/selftests/kvm/include/riscv/processor.h
+@@ -7,8 +7,9 @@
+ #ifndef SELFTEST_KVM_PROCESSOR_H
+ #define SELFTEST_KVM_PROCESSOR_H
+ 
+-#include "kvm_util.h"
+ #include <linux/stringify.h>
++#include <asm/csr.h>
++#include "kvm_util.h"
+ 
+ static inline uint64_t __kvm_reg_id(uint64_t type, uint64_t idx,
+ 				    uint64_t  size)
+@@ -95,13 +96,6 @@ static inline uint64_t __kvm_reg_id(uint64_t type, uint64_t idx,
+ #define PGTBL_PAGE_SIZE				PGTBL_L0_BLOCK_SIZE
+ #define PGTBL_PAGE_SIZE_SHIFT			PGTBL_L0_BLOCK_SHIFT
+ 
+-#define SATP_PPN				_AC(0x00000FFFFFFFFFFF, UL)
+-#define SATP_MODE_39				_AC(0x8000000000000000, UL)
+-#define SATP_MODE_48				_AC(0x9000000000000000, UL)
+-#define SATP_ASID_BITS				16
+-#define SATP_ASID_SHIFT				44
+-#define SATP_ASID_MASK				_AC(0xFFFF, UL)
+-
+ #define SBI_EXT_EXPERIMENTAL_START		0x08000000
+ #define SBI_EXT_EXPERIMENTAL_END		0x08FFFFFF
+ 
 -- 
 2.34.1
 
