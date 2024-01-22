@@ -1,71 +1,58 @@
-From: Haibo Xu <xiaobo55x@gmail.com>
-Date: Mon, 22 Jan 2024 21:08:16 +0800
-Subject: [PATCH v5 02/12] KVM: arm64: selftests: Data type cleanup for
- arch_timer test
-In-Reply-To: <20240122-0ddedacdeb64808477a7911d@orel>
-References: <cover.1705916069.git.haibo1.xu@intel.com> <173c9b64c4c43cd585f6b177a7d434dcedc905fa.1705916069.git.haibo1.xu@intel.com>
- <20240122-0ddedacdeb64808477a7911d@orel>
-Message-ID: <CAJve8om6EG7nE891UOBCHJ6t2dsbJGeKDKUfNfJeffBB1QP8NQ@mail.gmail.com>
+From: Nathan Chancellor <nathan@kernel.org>
+Date: Mon, 22 Jan 2024 15:29:18 -0700
+Subject: [PATCH -next v21 23/27] riscv: detect assembler support for
+ .option arch
+In-Reply-To: <20240121181009.GA1469@sol.localdomain>
+References: <20240121011341.GA97368@sol.localdomain>
+ <mhng-e4b5de69-859d-43ea-b35d-b568e6a621ef@palmer-ri-x1c9>
+ <CABgGipW0pZCESu7dyiUdta2JtrpeMsJ3EABNjj_0GO9fbbTwQg@mail.gmail.com>
+ <20240121181009.GA1469@sol.localdomain>
+Message-ID: <20240122222918.GA141255@dev-fedora.aadp>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Jan 22, 2024 at 8:21?PM Andrew Jones <ajones@ventanamicro.com> wrote:
->
-> On Mon, Jan 22, 2024 at 05:58:32PM +0800, Haibo Xu wrote:
-> > Change signed type to unsigned in test_args struct which
-> > only make sense for unsigned value.
-> >
-> > Suggested-by: Andrew Jones <ajones@ventanamicro.com>
-> > Signed-off-by: Haibo Xu <haibo1.xu@intel.com>
-> > ---
-> >  tools/testing/selftests/kvm/aarch64/arch_timer.c | 12 ++++++------
-> >  1 file changed, 6 insertions(+), 6 deletions(-)
-> >
-> > diff --git a/tools/testing/selftests/kvm/aarch64/arch_timer.c b/tools/testing/selftests/kvm/aarch64/arch_timer.c
-> > index 274b8465b42a..3260fefcc1b3 100644
-> > --- a/tools/testing/selftests/kvm/aarch64/arch_timer.c
-> > +++ b/tools/testing/selftests/kvm/aarch64/arch_timer.c
-> > @@ -42,10 +42,10 @@
-> >  #define TIMER_TEST_MIGRATION_FREQ_MS 2
-> >
-> >  struct test_args {
-> > -     int nr_vcpus;
-> > -     int nr_iter;
-> > -     int timer_period_ms;
-> > -     int migration_freq_ms;
-> > +     uint32_t nr_vcpus;
-> > +     uint32_t nr_iter;
-> > +     uint32_t timer_period_ms;
-> > +     uint32_t migration_freq_ms;
-> >       struct kvm_arm_counter_offset offset;
-> >  };
-> >
-> > @@ -57,7 +57,7 @@ static struct test_args test_args = {
-> >       .offset = { .reserved = 1 },
-> >  };
-> >
-> > -#define msecs_to_usecs(msec)         ((msec) * 1000LL)
-> > +#define msecs_to_usecs(msec)         ((msec) * 1000ULL)
-> >
-> >  #define GICD_BASE_GPA                        0x8000000ULL
-> >  #define GICR_BASE_GPA                        0x80A0000ULL
-> > @@ -72,7 +72,7 @@ enum guest_stage {
-> >
-> >  /* Shared variables between host and guest */
-> >  struct test_vcpu_shared_data {
-> > -     int nr_iter;
-> > +     uint32_t nr_iter;
-> >       enum guest_stage guest_stage;
-> >       uint64_t xcnt;
-> >  };
-> > --
-> > 2.34.1
-> >
->
-> Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+On Sun, Jan 21, 2024 at 10:10:09AM -0800, Eric Biggers wrote:
+> On Sun, Jan 21, 2024 at 10:32:59PM +0800, Andy Chiu wrote:
+> > 
+> > Maybe what we really should do is to upgrade the condition check to a
+> > one liner shell script and grep if "Warning" is being printed. Sadly
+> > this warning is not failing the compilation with -Werror.
+> > 
+> > I can try forming a patch on this if it feels alright to people.
+> 
+> What about -Wa,--fatal-warnings ?
 
-Thanks!
+I suspect that would work, the following diff appears to work for me
+with a version of clang that does and does not support '.option arch',
+(although I am not sure if adding -Wa,--fatal-warnings will have any
+other consequences):
+
+diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
+index bffbd869a068..e3142ce531a0 100644
+--- a/arch/riscv/Kconfig
++++ b/arch/riscv/Kconfig
+@@ -315,7 +315,6 @@ config AS_HAS_OPTION_ARCH
+ 	# https://reviews.llvm.org/D123515
+ 	def_bool y
+ 	depends on $(as-instr, .option arch$(comma) +m)
+-	depends on !$(as-instr, .option arch$(comma) -i)
+ 
+ source "arch/riscv/Kconfig.socs"
+ source "arch/riscv/Kconfig.errata"
+diff --git a/scripts/Kconfig.include b/scripts/Kconfig.include
+index 5a84b6443875..3ee8ecfb8c04 100644
+--- a/scripts/Kconfig.include
++++ b/scripts/Kconfig.include
+@@ -33,7 +33,7 @@ ld-option = $(success,$(LD) -v $(1))
+ 
+ # $(as-instr,<instr>)
+ # Return y if the assembler supports <instr>, n otherwise
+-as-instr = $(success,printf "%b\n" "$(1)" | $(CC) $(CLANG_FLAGS) -c -x assembler-with-cpp -o /dev/null -)
++as-instr = $(success,printf "%b\n" "$(1)" | $(CC) $(CLANG_FLAGS) -Wa$(comma)--fatal-warnings -c -x assembler-with-cpp -o /dev/null -)
+ 
+ # check if $(CC) and $(LD) exist
+ $(error-if,$(failure,command -v $(CC)),C compiler '$(CC)' not found)
 
