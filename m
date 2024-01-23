@@ -1,58 +1,37 @@
-From: Nathan Chancellor <nathan@kernel.org>
-Date: Mon, 22 Jan 2024 15:29:18 -0700
-Subject: [PATCH -next v21 23/27] riscv: detect assembler support for
- .option arch
-In-Reply-To: <20240121181009.GA1469@sol.localdomain>
-References: <20240121011341.GA97368@sol.localdomain>
- <mhng-e4b5de69-859d-43ea-b35d-b568e6a621ef@palmer-ri-x1c9>
- <CABgGipW0pZCESu7dyiUdta2JtrpeMsJ3EABNjj_0GO9fbbTwQg@mail.gmail.com>
- <20240121181009.GA1469@sol.localdomain>
-Message-ID: <20240122222918.GA141255@dev-fedora.aadp>
+From: 秦少青 <qinshaoqing@bosc.ac.cn>
+Date: Tue, 23 Jan 2024 10:55:51 +0800 (GMT+08:00)
+Subject: [kvmtool PATCH 0/1] riscv: Add zacas extension
+Message-ID: <5b92b0c6.94.18d343eddde.Coremail.qinshaoqing@bosc.ac.cn>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sun, Jan 21, 2024 at 10:10:09AM -0800, Eric Biggers wrote:
-> On Sun, Jan 21, 2024 at 10:32:59PM +0800, Andy Chiu wrote:
-> > 
-> > Maybe what we really should do is to upgrade the condition check to a
-> > one liner shell script and grep if "Warning" is being printed. Sadly
-> > this warning is not failing the compilation with -Werror.
-> > 
-> > I can try forming a patch on this if it feels alright to people.
-> 
-> What about -Wa,--fatal-warnings ?
 
-I suspect that would work, the following diff appears to work for me
-with a version of clang that does and does not support '.option arch',
-(although I am not sure if adding -Wa,--fatal-warnings will have any
-other consequences):
+> The functionality has been tested on QEMU, the tests rely on kernel and qemu
+> support for zacas.
+> Currently, there is no patch for zacas on the upstream.
+> If you want to test, you could use the following version we released for testing.
 
-diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
-index bffbd869a068..e3142ce531a0 100644
---- a/arch/riscv/Kconfig
-+++ b/arch/riscv/Kconfig
-@@ -315,7 +315,6 @@ config AS_HAS_OPTION_ARCH
- 	# https://reviews.llvm.org/D123515
- 	def_bool y
- 	depends on $(as-instr, .option arch$(comma) +m)
--	depends on !$(as-instr, .option arch$(comma) -i)
- 
- source "arch/riscv/Kconfig.socs"
- source "arch/riscv/Kconfig.errata"
-diff --git a/scripts/Kconfig.include b/scripts/Kconfig.include
-index 5a84b6443875..3ee8ecfb8c04 100644
---- a/scripts/Kconfig.include
-+++ b/scripts/Kconfig.include
-@@ -33,7 +33,7 @@ ld-option = $(success,$(LD) -v $(1))
- 
- # $(as-instr,<instr>)
- # Return y if the assembler supports <instr>, n otherwise
--as-instr = $(success,printf "%b\n" "$(1)" | $(CC) $(CLANG_FLAGS) -c -x assembler-with-cpp -o /dev/null -)
-+as-instr = $(success,printf "%b\n" "$(1)" | $(CC) $(CLANG_FLAGS) -Wa$(comma)--fatal-warnings -c -x assembler-with-cpp -o /dev/null -)
- 
- # check if $(CC) and $(LD) exist
- $(error-if,$(failure,command -v $(CC)),C compiler '$(CC)' not found)
+About aobve message about:
 
+This patch is to enable Zacas ISA extension for VM.
+
+You could try this patch with below dependencies:
+
+kernel: 
+https://github.com/OpenXiangShan/riscv-linux/tree/riscv-zacas
+qemu:
+https://github.com/OpenXiangShan/qemu/tree/riscv-zacas
+
+qinshaoqing (1):
+  Add support for (ratified) Zacas extension
+
+ riscv/fdt.c                         | 1 +
+ riscv/include/asm/kvm.h             | 1 +
+ riscv/include/kvm/kvm-config-arch.h | 3 +++
+ 3 files changed, 5 insertions(+)
+
+-- 
+2.43.0
