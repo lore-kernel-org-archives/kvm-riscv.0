@@ -1,387 +1,148 @@
 From: Andrew Jones <andrew.jones@linux.dev>
-Date: Wed, 24 Jan 2024 08:18:31 +0100
-Subject: [kvm-unit-tests PATCH 15/24] riscv: Add SMP support
+Date: Wed, 24 Jan 2024 08:18:33 +0100
+Subject: [kvm-unit-tests PATCH 17/24] riscv: Populate memregions and switch to page allocator
 In-Reply-To: <20240124071815.6898-26-andrew.jones@linux.dev>
 References: <20240124071815.6898-26-andrew.jones@linux.dev>
-Message-ID: <20240124071815.6898-41-andrew.jones@linux.dev>
+Message-ID: <20240124071815.6898-43-andrew.jones@linux.dev>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Implement the same SMP API that Arm has but using an SBI HSM
-call instead of PSCI. Unlike Arm, riscv needs to always set
-cpu0_calls_idle, because the boot hart doesn't have to be the
-first hart described in the DT, which means cpu0 may well be
-a secondary. As usual, add a couple tests to selftest.c to
-make sure everything works.
-
-(The secondary boot process is also improved over Arm's a bit
-by keeping boot data percpu, dropping the need for a lock. We
-could create percpu data for Arm too, but that's left as future
-work.)
+Get the memory regions from the DT rather than just assuming we have
+enough. Getting memory regions and setting their flags is also a
+first step to enabling the MMU. Also switch to the page allocator,
+which is a second step to enabling the MMU.
 
 Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
 ---
- lib/riscv/asm-offsets.c |  6 ++++
- lib/riscv/asm/barrier.h |  2 ++
- lib/riscv/asm/sbi.h     | 22 +++++++++++++++
- lib/riscv/asm/smp.h     | 28 +++++++++++++++++++
- lib/riscv/processor.c   |  2 ++
- lib/riscv/sbi.c         |  5 ++++
- lib/riscv/setup.c       |  2 ++
- lib/riscv/smp.c         | 61 +++++++++++++++++++++++++++++++++++++++++
- riscv/Makefile          |  1 +
- riscv/cstart.S          | 25 +++++++++++++++++
- riscv/selftest.c        | 31 +++++++++++++++++++++
- 11 files changed, 185 insertions(+)
- create mode 100644 lib/riscv/asm/smp.h
+ lib/riscv/asm/memory_areas.h |  1 +
+ lib/riscv/setup.c            | 55 ++++++++++++++++++++++++++++++++++--
+ riscv/Makefile               |  2 ++
+ 3 files changed, 55 insertions(+), 3 deletions(-)
+ create mode 100644 lib/riscv/asm/memory_areas.h
 
-diff --git a/lib/riscv/asm-offsets.c b/lib/riscv/asm-offsets.c
-index 7b88d16fd0e4..f5beeeb45e09 100644
---- a/lib/riscv/asm-offsets.c
-+++ b/lib/riscv/asm-offsets.c
-@@ -2,6 +2,7 @@
- #include <kbuild.h>
- #include <elf.h>
- #include <asm/ptrace.h>
-+#include <asm/smp.h>
- 
- int main(void)
- {
-@@ -51,5 +52,10 @@ int main(void)
- 	OFFSET(PT_CAUSE, pt_regs, cause);
- 	OFFSET(PT_ORIG_A0, pt_regs, orig_a0);
- 	DEFINE(PT_SIZE, sizeof(struct pt_regs));
-+
-+	OFFSET(SECONDARY_STVEC, secondary_data, stvec);
-+	OFFSET(SECONDARY_FUNC, secondary_data, func);
-+	DEFINE(SECONDARY_DATA_SIZE, sizeof(struct secondary_data));
-+
- 	return 0;
- }
-diff --git a/lib/riscv/asm/barrier.h b/lib/riscv/asm/barrier.h
-index 6036d66af76f..4fef120a0fe8 100644
---- a/lib/riscv/asm/barrier.h
-+++ b/lib/riscv/asm/barrier.h
-@@ -15,4 +15,6 @@
- #define smp_rmb()	RISCV_FENCE(r,r)
- #define smp_wmb()	RISCV_FENCE(w,w)
- 
-+#define cpu_relax()	__asm__ __volatile__ ("pause")
-+
- #endif /* _ASMRISCV_BARRIER_H_ */
-diff --git a/lib/riscv/asm/sbi.h b/lib/riscv/asm/sbi.h
-index aeff07f6f1a8..d82a384da5ce 100644
---- a/lib/riscv/asm/sbi.h
-+++ b/lib/riscv/asm/sbi.h
-@@ -2,8 +2,21 @@
- #ifndef _ASMRISCV_SBI_H_
- #define _ASMRISCV_SBI_H_
- 
-+#define SBI_SUCCESS			0
-+#define SBI_ERR_FAILURE			-1
-+#define SBI_ERR_NOT_SUPPORTED		-2
-+#define SBI_ERR_INVALID_PARAM		-3
-+#define SBI_ERR_DENIED			-4
-+#define SBI_ERR_INVALID_ADDRESS		-5
-+#define SBI_ERR_ALREADY_AVAILABLE	-6
-+#define SBI_ERR_ALREADY_STARTED		-7
-+#define SBI_ERR_ALREADY_STOPPED		-8
-+
-+#ifndef __ASSEMBLY__
-+
- enum sbi_ext_id {
- 	SBI_EXT_BASE = 0x10,
-+	SBI_EXT_HSM = 0x48534d,
- 	SBI_EXT_SRST = 0x53525354,
- };
- 
-@@ -17,6 +30,13 @@ enum sbi_ext_base_fid {
- 	SBI_EXT_BASE_GET_MIMPID,
- };
- 
-+enum sbi_ext_hsm_fid {
-+	SBI_EXT_HSM_HART_START = 0,
-+	SBI_EXT_HSM_HART_STOP,
-+	SBI_EXT_HSM_HART_STATUS,
-+	SBI_EXT_HSM_HART_SUSPEND,
-+};
-+
- struct sbiret {
- 	long error;
- 	long value;
-@@ -28,5 +48,7 @@ struct sbiret sbi_ecall(int ext, int fid, unsigned long arg0,
- 			unsigned long arg5);
- 
- void sbi_shutdown(void);
-+struct sbiret sbi_hart_start(unsigned long hartid, unsigned long entry, unsigned long sp);
- 
-+#endif /* !__ASSEMBLY__ */
- #endif /* _ASMRISCV_SBI_H_ */
-diff --git a/lib/riscv/asm/smp.h b/lib/riscv/asm/smp.h
+diff --git a/lib/riscv/asm/memory_areas.h b/lib/riscv/asm/memory_areas.h
 new file mode 100644
-index 000000000000..931766dc3969
+index 000000000000..2b34e63502dd
 --- /dev/null
-+++ b/lib/riscv/asm/smp.h
-@@ -0,0 +1,28 @@
-+/* SPDX-License-Identifier: GPL-2.0-only */
-+#ifndef _ASMRISCV_SMP_H_
-+#define _ASMRISCV_SMP_H_
-+#include <asm/barrier.h>
-+#include <asm/processor.h>
-+
-+#define smp_wait_for_event()	cpu_relax()
-+#define smp_send_event()	cpu_relax()
-+
-+static inline int smp_processor_id(void)
-+{
-+	return current_thread_info()->cpu;
-+}
-+
-+typedef void (*secondary_func_t)(void);
-+
-+struct secondary_data {
-+	unsigned long stvec;
-+	secondary_func_t func;
-+} __attribute__((aligned(16)));
-+
-+void secondary_entry(unsigned long hartid, unsigned long sp_phys);
-+secondary_func_t secondary_cinit(struct secondary_data *data);
-+
-+void smp_boot_secondary(int cpu, void (*func)(void));
-+void smp_boot_secondary_nofail(int cpu, void (*func)(void));
-+
-+#endif /* _ASMRISCV_SMP_H_ */
-diff --git a/lib/riscv/processor.c b/lib/riscv/processor.c
-index 3790349aadd1..7248cf4c5ca6 100644
---- a/lib/riscv/processor.c
-+++ b/lib/riscv/processor.c
-@@ -11,10 +11,12 @@ extern unsigned long _text;
- 
- static void show_regs(struct pt_regs *regs)
- {
-+	struct thread_info *info = current_thread_info();
- 	uintptr_t text = (uintptr_t)&_text;
- 	unsigned int w = __riscv_xlen / 4;
- 
- 	printf("Load address: %" PRIxPTR "\n", text);
-+	printf("CPU%3d : hartid=%lx\n", info->cpu, info->hartid);
- 	printf("status : %.*lx\n", w, regs->status);
- 	printf("cause  : %.*lx\n", w, regs->cause);
- 	printf("badaddr: %.*lx\n", w, regs->badaddr);
-diff --git a/lib/riscv/sbi.c b/lib/riscv/sbi.c
-index fd758555b888..f39134c4d77e 100644
---- a/lib/riscv/sbi.c
-+++ b/lib/riscv/sbi.c
-@@ -33,3 +33,8 @@ void sbi_shutdown(void)
- 	sbi_ecall(SBI_EXT_SRST, 0, 0, 0, 0, 0, 0, 0);
- 	puts("SBI shutdown failed!\n");
- }
-+
-+struct sbiret sbi_hart_start(unsigned long hartid, unsigned long entry, unsigned long sp)
-+{
-+	return sbi_ecall(SBI_EXT_HSM, SBI_EXT_HSM_HART_START, hartid, entry, sp, 0, 0, 0);
-+}
++++ b/lib/riscv/asm/memory_areas.h
+@@ -0,0 +1 @@
++#include <asm-generic/memory_areas.h>
 diff --git a/lib/riscv/setup.c b/lib/riscv/setup.c
-index 57eb4797f798..9ff446b5e171 100644
+index 9ff446b5e171..848ec8e83496 100644
 --- a/lib/riscv/setup.c
 +++ b/lib/riscv/setup.c
-@@ -10,6 +10,7 @@
+@@ -6,22 +6,31 @@
+  */
+ #include <libcflat.h>
+ #include <alloc.h>
++#include <alloc_page.h>
+ #include <alloc_phys.h>
  #include <argv.h>
  #include <cpumask.h>
  #include <devicetree.h>
-+#include <on-cpus.h>
++#include <memregions.h>
+ #include <on-cpus.h>
  #include <asm/csr.h>
  #include <asm/page.h>
  #include <asm/processor.h>
-@@ -60,6 +61,7 @@ static void cpu_init(void)
- 	}
+ #include <asm/setup.h>
  
- 	set_cpu_online(hartid_to_cpu(csr_read(CSR_SSCRATCH)), true);
-+	cpu0_calls_idle = true;
++#define VA_BASE			((phys_addr_t)3 * SZ_1G)
++
++#define MAX_DT_MEM_REGIONS	16
++#define NR_MEM_REGIONS		(MAX_DT_MEM_REGIONS + 16)
++
+ char *initrd;
+ u32 initrd_size;
+ 
+ struct thread_info cpus[NR_CPUS];
+ int nr_cpus;
+ 
++static struct mem_region riscv_mem_regions[NR_MEM_REGIONS + 1];
++
+ int hartid_to_cpu(unsigned long hartid)
+ {
+ 	int cpu;
+@@ -64,10 +73,50 @@ static void cpu_init(void)
+ 	cpu0_calls_idle = true;
  }
  
++extern unsigned long _etext;
++
  static void mem_init(phys_addr_t freemem_start)
-diff --git a/lib/riscv/smp.c b/lib/riscv/smp.c
-index a89b59d8dd03..ed7984e75608 100644
---- a/lib/riscv/smp.c
-+++ b/lib/riscv/smp.c
-@@ -1,6 +1,67 @@
- // SPDX-License-Identifier: GPL-2.0-only
-+/*
-+ * Boot secondary CPUs
-+ *
-+ * Copyright (C) 2023, Ventana Micro Systems Inc., Andrew Jones <ajones@ventanamicro.com>
-+ */
-+#include <libcflat.h>
-+#include <alloc.h>
- #include <cpumask.h>
-+#include <asm/csr.h>
-+#include <asm/page.h>
-+#include <asm/processor.h>
-+#include <asm/sbi.h>
-+#include <asm/smp.h>
+ {
+-	//TODO - for now just assume we've got some memory available
+-	phys_alloc_init(freemem_start, 16 * SZ_1M);
++	struct mem_region *freemem, *code, *data;
++	phys_addr_t freemem_end, base, top;
++
++	memregions_init(riscv_mem_regions, NR_MEM_REGIONS);
++	memregions_add_dt_regions(MAX_DT_MEM_REGIONS);
++
++	/* Split the region with the code into two regions; code and data */
++	memregions_split((unsigned long)&_etext, &code, &data);
++	assert(code);
++	code->flags |= MR_F_CODE;
++
++	freemem = memregions_find(freemem_start);
++	assert(freemem && !(freemem->flags & (MR_F_IO | MR_F_CODE)));
++
++	freemem_end = freemem->end & PAGE_MASK;
++
++	/*
++	 * The assert below is mostly checking that the free memory doesn't
++	 * start in the 3G-4G range, which is reserved for virtual addresses,
++	 * but it also confirms that there is some free memory (the amount
++	 * is arbitrarily selected, but should be sufficient for a unit test)
++	 *
++	 * TODO: Allow the VA range to shrink and move.
++	 */
++	if (freemem_end > VA_BASE)
++		freemem_end = VA_BASE;
++	assert(freemem_end - freemem_start >= SZ_1M * 16);
++
++	/*
++	 * TODO: Remove the need for this phys allocator dance, since, as we
++	 * can see with the assert, we could have gone straight to the page
++	 * allocator.
++	 */
++	phys_alloc_init(freemem_start, freemem_end - freemem_start);
++	phys_alloc_set_minimum_alignment(PAGE_SIZE);
++	phys_alloc_get_unused(&base, &top);
++	assert(base == freemem_start && top == freemem_end);
++
++	page_alloc_init_area(0, freemem_start >> PAGE_SHIFT, freemem_end >> PAGE_SHIFT);
++	page_alloc_ops_enable();
+ }
  
- cpumask_t cpu_present_mask;
- cpumask_t cpu_online_mask;
- cpumask_t cpu_idle_mask;
-+
-+static cpumask_t cpu_started;
-+
-+secondary_func_t secondary_cinit(struct secondary_data *data)
-+{
-+	struct thread_info *info;
-+
-+	thread_info_init();
-+	info = current_thread_info();
-+	set_cpu_online(info->cpu, true);
-+	smp_send_event();
-+
-+	return data->func;
-+}
-+
-+static void __smp_boot_secondary(int cpu, secondary_func_t func)
-+{
-+	struct secondary_data *sp = memalign(16, SZ_8K) + SZ_8K - 16;
-+	struct sbiret ret;
-+
-+	sp -= sizeof(struct secondary_data);
-+	sp->stvec = csr_read(CSR_STVEC);
-+	sp->func = func;
-+
-+	ret = sbi_hart_start(cpus[cpu].hartid, (unsigned long)&secondary_entry, __pa(sp));
-+	assert(ret.error == SBI_SUCCESS);
-+}
-+
-+void smp_boot_secondary(int cpu, void (*func)(void))
-+{
-+	int ret = cpumask_test_and_set_cpu(cpu, &cpu_started);
-+
-+	assert_msg(!ret, "CPU%d already boot once", cpu);
-+	__smp_boot_secondary(cpu, func);
-+
-+	while (!cpu_online(cpu))
-+		smp_wait_for_event();
-+}
-+
-+void smp_boot_secondary_nofail(int cpu, void (*func)(void))
-+{
-+	int ret = cpumask_test_and_set_cpu(cpu, &cpu_started);
-+
-+	if (!ret)
-+		__smp_boot_secondary(cpu, func);
-+
-+	while (!cpu_online(cpu))
-+		smp_wait_for_event();
-+}
+ static void banner(void)
+@@ -86,7 +135,7 @@ void setup(const void *fdt, phys_addr_t freemem_start)
+ 	u32 fdt_size;
+ 	int ret;
+ 
+-	assert(sizeof(long) == 8 || freemem_start < (3ul << 30));
++	assert(sizeof(long) == 8 || freemem_start < VA_BASE);
+ 	freemem = (void *)(unsigned long)freemem_start;
+ 
+ 	/* Move the FDT to the base of free memory */
 diff --git a/riscv/Makefile b/riscv/Makefile
-index 697a3beb2703..932f3378264c 100644
+index 932f3378264c..ed1a14025ed2 100644
 --- a/riscv/Makefile
 +++ b/riscv/Makefile
-@@ -24,6 +24,7 @@ cstart.o = $(TEST_DIR)/cstart.o
+@@ -22,8 +22,10 @@ $(TEST_DIR)/sieve.elf: AUXFLAGS = 0x1
+ cstart.o = $(TEST_DIR)/cstart.o
+ 
  cflatobjs += lib/alloc.o
++cflatobjs += lib/alloc_page.o
  cflatobjs += lib/alloc_phys.o
  cflatobjs += lib/devicetree.o
-+cflatobjs += lib/on-cpus.o
++cflatobjs += lib/memregions.o
+ cflatobjs += lib/on-cpus.o
  cflatobjs += lib/riscv/bitops.o
  cflatobjs += lib/riscv/io.o
- cflatobjs += lib/riscv/processor.o
-diff --git a/riscv/cstart.S b/riscv/cstart.S
-index 9bdf2e3b17dd..145ccaab6159 100644
---- a/riscv/cstart.S
-+++ b/riscv/cstart.S
-@@ -117,6 +117,31 @@ halt:
- 1:	wfi
- 	j	1b
- 
-+.balign 4
-+.global secondary_entry
-+secondary_entry:
-+	/*
-+	 * From the "HSM Hart Start Register State" table of the SBI spec:
-+	 *	satp		0
-+	 *	sstatus.SIE	0
-+	 *	a0		hartid
-+	 *	a1		opaque parameter
-+	 *
-+	 * __smp_boot_secondary() sets the opaque parameter (a1) to the physical
-+	 * address of the stack and the stack contains the secondary data.
-+	 */
-+	csrw	CSR_SSCRATCH, a0
-+	mv	sp, a1
-+	mv	fp, zero
-+	REG_L	a0, SECONDARY_STVEC(sp)
-+	csrw	CSR_STVEC, a0
-+	mv	a0, sp
-+	call	secondary_cinit
-+	addi	sp, sp, SECONDARY_DATA_SIZE
-+	jr	a0
-+	la	a0, do_idle
-+	jr	a0
-+
- /*
-  * Save context to address in a0.
-  * For a0, sets PT_A0(a0) to the contents of PT_ORIG_A0(a0).
-diff --git a/riscv/selftest.c b/riscv/selftest.c
-index 219093489b62..da13c622dba7 100644
---- a/riscv/selftest.c
-+++ b/riscv/selftest.c
-@@ -6,8 +6,10 @@
-  */
- #include <libcflat.h>
- #include <cpumask.h>
-+#include <on-cpus.h>
- #include <asm/processor.h>
- #include <asm/setup.h>
-+#include <asm/smp.h>
- 
- static void check_cpus(void)
- {
-@@ -33,6 +35,34 @@ static void check_exceptions(void)
- 	report(exceptions_work, "exceptions");
- }
- 
-+static cpumask_t cpus_alive;
-+
-+static void check_secondary(void *data)
-+{
-+	cpumask_set_cpu(smp_processor_id(), &cpus_alive);
-+}
-+
-+static void check_smp(void)
-+{
-+	int cpu, me = smp_processor_id();
-+	bool fail = false;
-+
-+	on_cpus(check_secondary, NULL);
-+
-+	report(cpumask_full(&cpu_online_mask), "Brought up all cpus");
-+	report(cpumask_full(&cpus_alive), "check_secondary");
-+
-+	for_each_present_cpu(cpu) {
-+		if (cpu == me)
-+			continue;
-+		if (!cpu_idle(cpu)) {
-+			fail = true;
-+			break;
-+		}
-+	}
-+	report(!fail, "All secondaries are idle");
-+}
-+
- int main(int argc, char **argv)
- {
- 	bool r;
-@@ -64,6 +94,7 @@ int main(int argc, char **argv)
- 
- 	check_exceptions();
- 	check_cpus();
-+	check_smp();
- 
- 	return report_summary();
- }
 -- 
 2.43.0
 
