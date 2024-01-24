@@ -1,169 +1,154 @@
 From: Andrew Jones <andrew.jones@linux.dev>
-Date: Wed, 24 Jan 2024 08:18:16 +0100
-Subject: [kvm-unit-tests PATCH 00/24] Introduce RISC-V
-Message-ID: <20240124071815.6898-26-andrew.jones@linux.dev>
+Date: Wed, 24 Jan 2024 08:18:19 +0100
+Subject: [kvm-unit-tests PATCH 03/24] arm/arm64: Move cpumask.h to common lib
+In-Reply-To: <20240124071815.6898-26-andrew.jones@linux.dev>
+References: <20240124071815.6898-26-andrew.jones@linux.dev>
+Message-ID: <20240124071815.6898-29-andrew.jones@linux.dev>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This series adds another architecture to kvm-unit-tests (RISC-V, both
-32-bit and 64-bit). Much of the code is borrowed from arm/arm64 by
-mimicking its patterns or by first making the arm code more generic
-and moving it to the common lib.
+RISC-V will also make use of cpumask.h, so move it to the arch-common
+directory.
 
-This series brings UART, SMP, MMU, and exception handling support.
-One should be able to start writing CPU validation tests in a mix
-of C and asm as well as write SBI tests, as is the plan for the SBI
-verification framework. kvm-unit-tests provides backtraces on asserts
-and input can be given to the tests through command line arguments,
-environment variables, and the DT (there's already an ISA string
-parser for extension detection).
-
-This series only targets QEMU TCG and KVM, but OpenSBI may be replaced
-with other SBI implementations, such as RustSBI. It's a goal to target
-bare-metal as soon as possible, so EFI support is already in progress
-and will be posted soon. More follow on series will come as well,
-bringing interrupt controller support for timer and PMU testing,
-support to run tests in usermode, and whatever else people need for
-their tests.
-
-Thanks,
-drew 
-
-Andrew Jones (24):
-  configure: Add ARCH_LIBDIR
-  riscv: Initial port, hello world
-  arm/arm64: Move cpumask.h to common lib
-  arm/arm64: Share cpu online, present and idle masks
-  riscv: Add DT parsing
-  riscv: Add initial SBI support
-  riscv: Add run script and unittests.cfg
-  riscv: Add riscv32 support
-  riscv: Add exception handling
-  riscv: Add backtrace support
-  arm/arm64: Generalize wfe/sev names in smp.c
-  arm/arm64: Remove spinlocks from on_cpu_async
-  arm/arm64: Share on_cpus
-  riscv: Compile with march
-  riscv: Add SMP support
-  arm/arm64: Share memregions
-  riscv: Populate memregions and switch to page allocator
-  riscv: Add MMU support
-  riscv: Enable the MMU in secondaries
-  riscv: Enable vmalloc
-  lib: Add strcasecmp and strncasecmp
-  riscv: Add isa string parsing
-  gitlab-ci: Add riscv64 tests
-  MAINTAINERS: Add riscv
-
- .gitlab-ci.yml               |  16 +++
- MAINTAINERS                  |   8 ++
- Makefile                     |   2 +-
- arm/Makefile.common          |   2 +
- arm/selftest.c               |   3 +-
- configure                    |  16 +++
- lib/arm/asm/gic-v2.h         |   2 +-
- lib/arm/asm/gic-v3.h         |   2 +-
- lib/arm/asm/gic.h            |   2 +-
- lib/arm/asm/setup.h          |  14 --
- lib/arm/asm/smp.h            |  45 +-----
- lib/arm/mmu.c                |   3 +-
- lib/arm/setup.c              |  93 +++----------
- lib/arm/smp.c                | 135 +-----------------
- lib/arm64/asm/cpumask.h      |   1 -
- lib/{arm/asm => }/cpumask.h  |  42 +++++-
- lib/ctype.h                  |  10 ++
- lib/elf.h                    |  11 ++
- lib/ldiv32.c                 |  16 +++
- lib/linux/const.h            |   2 +
- lib/memregions.c             |  82 +++++++++++
- lib/memregions.h             |  29 ++++
- lib/on-cpus.c                | 154 +++++++++++++++++++++
- lib/on-cpus.h                |  14 ++
- lib/riscv/.gitignore         |   1 +
- lib/riscv/asm-offsets.c      |  62 +++++++++
- lib/riscv/asm/asm-offsets.h  |   1 +
- lib/riscv/asm/barrier.h      |  20 +++
- lib/riscv/asm/bitops.h       |  21 +++
- lib/riscv/asm/bug.h          |  20 +++
- lib/riscv/asm/csr.h          |  84 ++++++++++++
- lib/riscv/asm/io.h           |  87 ++++++++++++
- lib/riscv/asm/isa.h          |  18 +++
- lib/riscv/asm/memory_areas.h |   1 +
- lib/riscv/asm/mmu.h          |  26 ++++
- lib/riscv/asm/page.h         |  18 +++
- lib/riscv/asm/pgtable.h      |  42 ++++++
- lib/riscv/asm/processor.h    |  27 ++++
- lib/riscv/asm/ptrace.h       |  46 +++++++
- lib/riscv/asm/sbi.h          |  54 ++++++++
- lib/riscv/asm/setup.h        |  15 ++
- lib/riscv/asm/smp.h          |  29 ++++
- lib/riscv/asm/spinlock.h     |   7 +
- lib/riscv/asm/stack.h        |  12 ++
- lib/riscv/bitops.c           |  47 +++++++
- lib/riscv/io.c               |  97 +++++++++++++
- lib/riscv/mmu.c              | 195 ++++++++++++++++++++++++++
- lib/riscv/processor.c        | 146 ++++++++++++++++++++
- lib/riscv/sbi.c              |  40 ++++++
- lib/riscv/setup.c            | 188 +++++++++++++++++++++++++
- lib/riscv/smp.c              |  70 ++++++++++
- lib/riscv/stack.c            |  32 +++++
- lib/string.c                 |  14 ++
- lib/string.h                 |   2 +
- riscv/Makefile               | 105 ++++++++++++++
- riscv/cstart.S               | 258 +++++++++++++++++++++++++++++++++++
- riscv/flat.lds               |  75 ++++++++++
- riscv/run                    |  38 ++++++
- riscv/sbi.c                  |  41 ++++++
- riscv/selftest.c             | 100 ++++++++++++++
- riscv/sieve.c                |   1 +
- riscv/unittests.cfg          |  37 +++++
- 62 files changed, 2514 insertions(+), 267 deletions(-)
+Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
+---
+ lib/arm/asm/gic-v2.h        | 2 +-
+ lib/arm/asm/gic-v3.h        | 2 +-
+ lib/arm/asm/gic.h           | 2 +-
+ lib/arm/asm/smp.h           | 2 +-
+ lib/arm/mmu.c               | 2 +-
+ lib/arm/smp.c               | 2 +-
+ lib/arm64/asm/cpumask.h     | 1 -
+ lib/{arm/asm => }/cpumask.h | 9 ++++-----
+ 8 files changed, 10 insertions(+), 12 deletions(-)
  delete mode 100644 lib/arm64/asm/cpumask.h
- rename lib/{arm/asm => }/cpumask.h (72%)
- create mode 100644 lib/memregions.c
- create mode 100644 lib/memregions.h
- create mode 100644 lib/on-cpus.c
- create mode 100644 lib/on-cpus.h
- create mode 100644 lib/riscv/.gitignore
- create mode 100644 lib/riscv/asm-offsets.c
- create mode 100644 lib/riscv/asm/asm-offsets.h
- create mode 100644 lib/riscv/asm/barrier.h
- create mode 100644 lib/riscv/asm/bitops.h
- create mode 100644 lib/riscv/asm/bug.h
- create mode 100644 lib/riscv/asm/csr.h
- create mode 100644 lib/riscv/asm/io.h
- create mode 100644 lib/riscv/asm/isa.h
- create mode 100644 lib/riscv/asm/memory_areas.h
- create mode 100644 lib/riscv/asm/mmu.h
- create mode 100644 lib/riscv/asm/page.h
- create mode 100644 lib/riscv/asm/pgtable.h
- create mode 100644 lib/riscv/asm/processor.h
- create mode 100644 lib/riscv/asm/ptrace.h
- create mode 100644 lib/riscv/asm/sbi.h
- create mode 100644 lib/riscv/asm/setup.h
- create mode 100644 lib/riscv/asm/smp.h
- create mode 100644 lib/riscv/asm/spinlock.h
- create mode 100644 lib/riscv/asm/stack.h
- create mode 100644 lib/riscv/bitops.c
- create mode 100644 lib/riscv/io.c
- create mode 100644 lib/riscv/mmu.c
- create mode 100644 lib/riscv/processor.c
- create mode 100644 lib/riscv/sbi.c
- create mode 100644 lib/riscv/setup.c
- create mode 100644 lib/riscv/smp.c
- create mode 100644 lib/riscv/stack.c
- create mode 100644 riscv/Makefile
- create mode 100644 riscv/cstart.S
- create mode 100644 riscv/flat.lds
- create mode 100755 riscv/run
- create mode 100644 riscv/sbi.c
- create mode 100644 riscv/selftest.c
- create mode 120000 riscv/sieve.c
- create mode 100644 riscv/unittests.cfg
+ rename lib/{arm/asm => }/cpumask.h (94%)
 
+diff --git a/lib/arm/asm/gic-v2.h b/lib/arm/asm/gic-v2.h
+index 1fcfd43c8075..ff11afb15d30 100644
+--- a/lib/arm/asm/gic-v2.h
++++ b/lib/arm/asm/gic-v2.h
+@@ -18,7 +18,7 @@
+ #define GICC_IAR_INT_ID_MASK		0x3ff
+ 
+ #ifndef __ASSEMBLY__
+-#include <asm/cpumask.h>
++#include <cpumask.h>
+ 
+ struct gicv2_data {
+ 	void *dist_base;
+diff --git a/lib/arm/asm/gic-v3.h b/lib/arm/asm/gic-v3.h
+index b4ce130e56c6..a1cc62a298b8 100644
+--- a/lib/arm/asm/gic-v3.h
++++ b/lib/arm/asm/gic-v3.h
+@@ -67,10 +67,10 @@
+ #include <asm/arch_gicv3.h>
+ 
+ #ifndef __ASSEMBLY__
++#include <cpumask.h>
+ #include <asm/setup.h>
+ #include <asm/processor.h>
+ #include <asm/delay.h>
+-#include <asm/cpumask.h>
+ #include <asm/smp.h>
+ #include <asm/io.h>
+ 
+diff --git a/lib/arm/asm/gic.h b/lib/arm/asm/gic.h
+index 189840014b02..dc8cc18c0fbd 100644
+--- a/lib/arm/asm/gic.h
++++ b/lib/arm/asm/gic.h
+@@ -47,7 +47,7 @@
+ #define SPI(irq)			((irq) + GIC_FIRST_SPI)
+ 
+ #ifndef __ASSEMBLY__
+-#include <asm/cpumask.h>
++#include <cpumask.h>
+ 
+ enum gic_irq_state {
+ 	GIC_IRQ_STATE_INACTIVE,
+diff --git a/lib/arm/asm/smp.h b/lib/arm/asm/smp.h
+index dee4c1a883e7..bb3e71a55e8c 100644
+--- a/lib/arm/asm/smp.h
++++ b/lib/arm/asm/smp.h
+@@ -5,8 +5,8 @@
+  *
+  * This work is licensed under the terms of the GNU LGPL, version 2.
+  */
++#include <cpumask.h>
+ #include <asm/thread_info.h>
+-#include <asm/cpumask.h>
+ 
+ #define smp_processor_id()		(current_thread_info()->cpu)
+ 
+diff --git a/lib/arm/mmu.c b/lib/arm/mmu.c
+index 2f4ec815a35d..b16517a3200d 100644
+--- a/lib/arm/mmu.c
++++ b/lib/arm/mmu.c
+@@ -5,9 +5,9 @@
+  *
+  * This work is licensed under the terms of the GNU LGPL, version 2.
+  */
++#include <cpumask.h>
+ #include <asm/setup.h>
+ #include <asm/thread_info.h>
+-#include <asm/cpumask.h>
+ #include <asm/mmu.h>
+ #include <asm/setup.h>
+ #include <asm/page.h>
+diff --git a/lib/arm/smp.c b/lib/arm/smp.c
+index 1d470d1aab45..78fc1656cefa 100644
+--- a/lib/arm/smp.c
++++ b/lib/arm/smp.c
+@@ -7,9 +7,9 @@
+  */
+ #include <libcflat.h>
+ #include <auxinfo.h>
++#include <cpumask.h>
+ #include <asm/thread_info.h>
+ #include <asm/spinlock.h>
+-#include <asm/cpumask.h>
+ #include <asm/barrier.h>
+ #include <asm/mmu.h>
+ #include <asm/psci.h>
+diff --git a/lib/arm64/asm/cpumask.h b/lib/arm64/asm/cpumask.h
+deleted file mode 100644
+index d1421e7abe31..000000000000
+--- a/lib/arm64/asm/cpumask.h
++++ /dev/null
+@@ -1 +0,0 @@
+-#include "../../arm/asm/cpumask.h"
+diff --git a/lib/arm/asm/cpumask.h b/lib/cpumask.h
+similarity index 94%
+rename from lib/arm/asm/cpumask.h
+rename to lib/cpumask.h
+index 3fa57bfb17c6..d30e14cda09e 100644
+--- a/lib/arm/asm/cpumask.h
++++ b/lib/cpumask.h
+@@ -1,12 +1,11 @@
+-#ifndef _ASMARM_CPUMASK_H_
+-#define _ASMARM_CPUMASK_H_
++/* SPDX-License-Identifier: GPL-2.0-only */
+ /*
+  * Simple cpumask implementation
+  *
+  * Copyright (C) 2015, Red Hat Inc, Andrew Jones <drjones@redhat.com>
+- *
+- * This work is licensed under the terms of the GNU LGPL, version 2.
+  */
++#ifndef _CPUMASK_H_
++#define _CPUMASK_H_
+ #include <asm/setup.h>
+ #include <bitops.h>
+ 
+@@ -120,4 +119,4 @@ static inline int cpumask_next(int cpu, const cpumask_t *mask)
+ 			(cpu) < nr_cpus; 			\
+ 			(cpu) = cpumask_next(cpu, mask))
+ 
+-#endif /* _ASMARM_CPUMASK_H_ */
++#endif /* _CPUMASK_H_ */
 -- 
 2.43.0
 
