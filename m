@@ -1,410 +1,341 @@
 From: Andrew Jones <andrew.jones@linux.dev>
-Date: Wed, 24 Jan 2024 08:18:32 +0100
-Subject: [kvm-unit-tests PATCH 16/24] arm/arm64: Share memregions
+Date: Wed, 24 Jan 2024 08:18:34 +0100
+Subject: [kvm-unit-tests PATCH 18/24] riscv: Add MMU support
 In-Reply-To: <20240124071815.6898-26-andrew.jones@linux.dev>
 References: <20240124071815.6898-26-andrew.jones@linux.dev>
-Message-ID: <20240124071815.6898-42-andrew.jones@linux.dev>
+Message-ID: <20240124071815.6898-44-andrew.jones@linux.dev>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-arm/arm64 (and to a small extent powerpc) have memory regions which
-get built from hardware descriptions (DT/ACPI/EFI) and then used to
-build page tables. Move memregions to common code, tweaking the API
-a bit at the same time, e.g. change 'mem_region' to 'memregions'.
-The biggest change is there is now a default number of memory regions
-which, if too small, should be overridden at setup time with a new
-init function, memregions_init().
+Add minimal page table defines and functions in order to build page
+tables and enable the MMU.
 
 Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
 ---
- arm/Makefile.common |  1 +
- arm/selftest.c      |  3 +-
- lib/arm/asm/setup.h | 14 -------
- lib/arm/mmu.c       |  1 +
- lib/arm/setup.c     | 93 ++++++++++-----------------------------------
- lib/memregions.c    | 82 +++++++++++++++++++++++++++++++++++++++
- lib/memregions.h    | 29 ++++++++++++++
- 7 files changed, 136 insertions(+), 87 deletions(-)
- create mode 100644 lib/memregions.c
- create mode 100644 lib/memregions.h
+ lib/riscv/asm/csr.h     |   1 +
+ lib/riscv/asm/io.h      |   3 +
+ lib/riscv/asm/mmu.h     |  28 ++++++++
+ lib/riscv/asm/page.h    |  11 ++++
+ lib/riscv/asm/pgtable.h |  42 ++++++++++++
+ lib/riscv/mmu.c         | 140 ++++++++++++++++++++++++++++++++++++++++
+ lib/riscv/setup.c       |   3 +
+ riscv/Makefile          |   1 +
+ 8 files changed, 229 insertions(+)
+ create mode 100644 lib/riscv/asm/mmu.h
+ create mode 100644 lib/riscv/asm/pgtable.h
+ create mode 100644 lib/riscv/mmu.c
 
-diff --git a/arm/Makefile.common b/arm/Makefile.common
-index dc92a7433350..4dfd570fa59e 100644
---- a/arm/Makefile.common
-+++ b/arm/Makefile.common
-@@ -42,6 +42,7 @@ cflatobjs += lib/alloc_page.o
- cflatobjs += lib/vmalloc.o
- cflatobjs += lib/alloc.o
- cflatobjs += lib/devicetree.o
-+cflatobjs += lib/memregions.o
- cflatobjs += lib/migrate.o
- cflatobjs += lib/on-cpus.o
- cflatobjs += lib/pci.o
-diff --git a/arm/selftest.c b/arm/selftest.c
-index 9f459ed3d571..007d2309d01c 100644
---- a/arm/selftest.c
-+++ b/arm/selftest.c
-@@ -8,6 +8,7 @@
- #include <libcflat.h>
- #include <util.h>
- #include <devicetree.h>
-+#include <memregions.h>
- #include <vmalloc.h>
- #include <asm/setup.h>
- #include <asm/ptrace.h>
-@@ -90,7 +91,7 @@ static bool check_pabt_init(void)
- 			highest_end = PAGE_ALIGN(r->end);
- 	}
+diff --git a/lib/riscv/asm/csr.h b/lib/riscv/asm/csr.h
+index eeddd1fb448a..88c816c68d09 100644
+--- a/lib/riscv/asm/csr.h
++++ b/lib/riscv/asm/csr.h
+@@ -9,6 +9,7 @@
+ #define CSR_SEPC		0x141
+ #define CSR_SCAUSE		0x142
+ #define CSR_STVAL		0x143
++#define CSR_SATP		0x180
  
--	if (mem_region_get_flags(highest_end) != MR_F_UNKNOWN)
-+	if (memregions_get_flags(highest_end) != MR_F_UNKNOWN)
- 		return false;
- 
- 	vaddr = (unsigned long)vmap(highest_end, PAGE_SIZE);
-diff --git a/lib/arm/asm/setup.h b/lib/arm/asm/setup.h
-index 060691165a20..9f8ef82efb90 100644
---- a/lib/arm/asm/setup.h
-+++ b/lib/arm/asm/setup.h
-@@ -13,22 +13,8 @@
- extern u64 cpus[NR_CPUS];	/* per-cpu IDs (MPIDRs) */
- extern int nr_cpus;
- 
--#define MR_F_IO			(1U << 0)
--#define MR_F_CODE		(1U << 1)
--#define MR_F_RESERVED		(1U << 2)
--#define MR_F_UNKNOWN		(1U << 31)
--
--struct mem_region {
--	phys_addr_t start;
--	phys_addr_t end;
--	unsigned int flags;
--};
--extern struct mem_region *mem_regions;
- extern phys_addr_t __phys_offset, __phys_end;
- 
--extern struct mem_region *mem_region_find(phys_addr_t paddr);
--extern unsigned int mem_region_get_flags(phys_addr_t paddr);
--
- #define PHYS_OFFSET		(__phys_offset)
- #define PHYS_END		(__phys_end)
- 
-diff --git a/lib/arm/mmu.c b/lib/arm/mmu.c
-index b16517a3200d..eb5e82a95f06 100644
---- a/lib/arm/mmu.c
-+++ b/lib/arm/mmu.c
-@@ -6,6 +6,7 @@
-  * This work is licensed under the terms of the GNU LGPL, version 2.
-  */
- #include <cpumask.h>
-+#include <memregions.h>
- #include <asm/setup.h>
- #include <asm/thread_info.h>
- #include <asm/mmu.h>
-diff --git a/lib/arm/setup.c b/lib/arm/setup.c
-index b6fc453e5b31..0382cbdaf5a1 100644
---- a/lib/arm/setup.c
-+++ b/lib/arm/setup.c
-@@ -13,6 +13,7 @@
- #include <libcflat.h>
- #include <libfdt/libfdt.h>
- #include <devicetree.h>
-+#include <memregions.h>
- #include <alloc.h>
- #include <alloc_phys.h>
- #include <alloc_page.h>
-@@ -31,7 +32,7 @@
- 
- #define MAX_DT_MEM_REGIONS	16
- #define NR_EXTRA_MEM_REGIONS	64
--#define NR_INITIAL_MEM_REGIONS	(MAX_DT_MEM_REGIONS + NR_EXTRA_MEM_REGIONS)
-+#define NR_MEM_REGIONS		(MAX_DT_MEM_REGIONS + NR_EXTRA_MEM_REGIONS)
- 
- extern unsigned long _text, _etext, _data, _edata;
- 
-@@ -41,8 +42,7 @@ u32 initrd_size;
- u64 cpus[NR_CPUS] = { [0 ... NR_CPUS-1] = (u64)~0 };
- int nr_cpus;
- 
--static struct mem_region __initial_mem_regions[NR_INITIAL_MEM_REGIONS + 1];
--struct mem_region *mem_regions = __initial_mem_regions;
-+static struct mem_region arm_mem_regions[NR_MEM_REGIONS + 1];
- phys_addr_t __phys_offset = (phys_addr_t)-1, __phys_end = 0;
- 
- extern void exceptions_init(void);
-@@ -114,68 +114,14 @@ static void cpu_init(void)
- 	set_cpu_online(0, true);
+ /* Exception cause high bit - is an interrupt if set */
+ #define CAUSE_IRQ_FLAG		(_AC(1, UL) << (__riscv_xlen - 1))
+diff --git a/lib/riscv/asm/io.h b/lib/riscv/asm/io.h
+index d2eb3acc9fda..6fe111289102 100644
+--- a/lib/riscv/asm/io.h
++++ b/lib/riscv/asm/io.h
+@@ -73,6 +73,9 @@ static inline u64 __raw_readq(const volatile void __iomem *addr)
  }
- 
--static void mem_region_add(struct mem_region *r)
-+static void arm_memregions_add_assumed(void)
- {
--	struct mem_region *r_next = mem_regions;
--	int i = 0;
--
--	for (; r_next->end; ++r_next, ++i)
--		;
--	assert(i < NR_INITIAL_MEM_REGIONS);
--
--	*r_next = *r;
--}
--
--static void mem_regions_add_dt_regions(void)
--{
--	struct dt_pbus_reg regs[MAX_DT_MEM_REGIONS];
--	int nr_regs, i;
--
--	nr_regs = dt_get_memory_params(regs, MAX_DT_MEM_REGIONS);
--	assert(nr_regs > 0);
--
--	for (i = 0; i < nr_regs; ++i) {
--		mem_region_add(&(struct mem_region){
--			.start = regs[i].addr,
--			.end = regs[i].addr + regs[i].size,
--		});
--	}
--}
--
--struct mem_region *mem_region_find(phys_addr_t paddr)
--{
--	struct mem_region *r;
--
--	for (r = mem_regions; r->end; ++r)
--		if (paddr >= r->start && paddr < r->end)
--			return r;
--	return NULL;
--}
--
--unsigned int mem_region_get_flags(phys_addr_t paddr)
--{
--	struct mem_region *r = mem_region_find(paddr);
--	return r ? r->flags : MR_F_UNKNOWN;
--}
--
--static void mem_regions_add_assumed(void)
--{
--	phys_addr_t code_end = (phys_addr_t)(unsigned long)&_etext;
--	struct mem_region *r;
--
--	r = mem_region_find(code_end - 1);
--	assert(r);
-+	struct mem_region *code, *data;
- 
- 	/* Split the region with the code into two regions; code and data */
--	mem_region_add(&(struct mem_region){
--		.start = code_end,
--		.end = r->end,
--	});
--	*r = (struct mem_region){
--		.start = r->start,
--		.end = code_end,
--		.flags = MR_F_CODE,
--	};
-+	memregions_split((unsigned long)&_etext, &code, &data);
-+	assert(code);
-+	code->flags |= MR_F_CODE;
- 
- 	/*
- 	 * mach-virt I/O regions:
-@@ -183,10 +129,10 @@ static void mem_regions_add_assumed(void)
- 	 *   - 512M at 256G (arm64, arm uses highmem=off)
- 	 *   - 512G at 512G (arm64, arm uses highmem=off)
- 	 */
--	mem_region_add(&(struct mem_region){ 0, (1ul << 30), MR_F_IO });
-+	memregions_add(&(struct mem_region){ 0, (1ul << 30), MR_F_IO });
- #ifdef __aarch64__
--	mem_region_add(&(struct mem_region){ (1ul << 38), (1ul << 38) | (1ul << 29), MR_F_IO });
--	mem_region_add(&(struct mem_region){ (1ul << 39), (1ul << 40), MR_F_IO });
-+	memregions_add(&(struct mem_region){ (1ul << 38), (1ul << 38) | (1ul << 29), MR_F_IO });
-+	memregions_add(&(struct mem_region){ (1ul << 39), (1ul << 40), MR_F_IO });
  #endif
- }
  
-@@ -197,7 +143,7 @@ static void mem_init(phys_addr_t freemem_start)
- 		.start = (phys_addr_t)-1,
- 	};
- 
--	freemem = mem_region_find(freemem_start);
-+	freemem = memregions_find(freemem_start);
- 	assert(freemem && !(freemem->flags & (MR_F_IO | MR_F_CODE)));
- 
- 	for (r = mem_regions; r->end; ++r) {
-@@ -212,9 +158,9 @@ static void mem_init(phys_addr_t freemem_start)
- 	mem.end &= PHYS_MASK;
- 
- 	/* Check for holes */
--	r = mem_region_find(mem.start);
-+	r = memregions_find(mem.start);
- 	while (r && r->end != mem.end)
--		r = mem_region_find(r->end);
-+		r = memregions_find(r->end);
- 	assert(r);
- 
- 	/* Ensure our selected freemem range is somewhere in our full range */
-@@ -263,8 +209,9 @@ void setup(const void *fdt, phys_addr_t freemem_start)
- 		freemem += initrd_size;
- 	}
- 
--	mem_regions_add_dt_regions();
--	mem_regions_add_assumed();
-+	memregions_init(arm_mem_regions, NR_MEM_REGIONS);
-+	memregions_add_dt_regions(MAX_DT_MEM_REGIONS);
-+	arm_memregions_add_assumed();
- 	mem_init(PAGE_ALIGN((unsigned long)freemem));
- 
- 	psci_set_conduit();
-@@ -371,7 +318,7 @@ static efi_status_t efi_mem_init(efi_bootinfo_t *efi_bootinfo)
- 				assert(edata <= r.end);
- 				r.flags = MR_F_CODE;
- 				r.end = data;
--				mem_region_add(&r);
-+				memregions_add(&r);
- 				r.start = data;
- 				r.end = tmp;
- 				r.flags = 0;
-@@ -393,7 +340,7 @@ static efi_status_t efi_mem_init(efi_bootinfo_t *efi_bootinfo)
- 			if (r.end > __phys_end)
- 				__phys_end = r.end;
- 		}
--		mem_region_add(&r);
-+		memregions_add(&r);
- 	}
- 	if (fdt) {
- 		/* Move the FDT to the base of free memory */
-@@ -439,6 +386,8 @@ efi_status_t setup_efi(efi_bootinfo_t *efi_bootinfo)
- 
- 	exceptions_init();
- 
-+	memregions_init(arm_mem_regions, NR_MEM_REGIONS);
++#define ioremap ioremap
++void __iomem *ioremap(phys_addr_t phys_addr, size_t size);
 +
- 	status = efi_mem_init(efi_bootinfo);
- 	if (status != EFI_SUCCESS) {
- 		printf("Failed to initialize memory: ");
-diff --git a/lib/memregions.c b/lib/memregions.c
+ #include <asm-generic/io.h>
+ 
+ #endif /* _ASMRISCV_IO_H_ */
+diff --git a/lib/riscv/asm/mmu.h b/lib/riscv/asm/mmu.h
 new file mode 100644
-index 000000000000..96de86b27333
+index 000000000000..02703f607511
 --- /dev/null
-+++ b/lib/memregions.c
-@@ -0,0 +1,82 @@
-+// SPDX-License-Identifier: GPL-2.0-only
++++ b/lib/riscv/asm/mmu.h
+@@ -0,0 +1,28 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++#ifndef _ASMRISCV_MMU_H_
++#define _ASMRISCV_MMU_H_
 +#include <libcflat.h>
-+#include <devicetree.h>
++#include <asm/csr.h>
++#include <asm/page.h>
++#include <asm/pgtable.h>
++
++static inline pgd_t *current_pgtable(void)
++{
++	return (pgd_t *)((csr_read(CSR_SATP) & SATP_PPN) << PAGE_SHIFT);
++}
++
++void mmu_set_range_ptes(pgd_t *pgtable, uintptr_t virt_offset,
++			phys_addr_t phys_start, phys_addr_t phys_end,
++			pgprot_t prot, bool flush);
++void __mmu_enable(unsigned long satp);
++void mmu_enable(unsigned long mode, pgd_t *pgtable);
++void mmu_disable(void);
++
++void setup_mmu(void);
++
++static inline void local_flush_tlb_page(unsigned long addr)
++{
++	asm volatile("sfence.vma %0" : : "r" (addr) : "memory");
++}
++
++#endif /* _ASMRISCV_MMU_H_ */
+diff --git a/lib/riscv/asm/page.h b/lib/riscv/asm/page.h
+index 7d7c9191605a..9801b4d1b9c1 100644
+--- a/lib/riscv/asm/page.h
++++ b/lib/riscv/asm/page.h
+@@ -2,6 +2,17 @@
+ #ifndef _ASMRISCV_PAGE_H_
+ #define _ASMRISCV_PAGE_H_
+ 
++#ifndef __ASSEMBLY__
++
++typedef unsigned long pgd_t;
++typedef unsigned long pte_t;
++typedef unsigned long pgprot_t;
++typedef unsigned long pteval_t;
++
++#define __pgprot(x)		((pgprot_t)(x))
++
++#endif /* !__ASSEMBLY__ */
++
+ #include <asm-generic/page.h>
+ 
+ #endif /* _ASMRISCV_PAGE_H_ */
+diff --git a/lib/riscv/asm/pgtable.h b/lib/riscv/asm/pgtable.h
+new file mode 100644
+index 000000000000..98d41ff9f661
+--- /dev/null
++++ b/lib/riscv/asm/pgtable.h
+@@ -0,0 +1,42 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++#ifndef _ASMRISCV_PGTABLE_H_
++#define _ASMRISCV_PGTABLE_H_
++#include <linux/const.h>
++
++#if __riscv_xlen == 32
++#define SATP_PPN		_AC(0x003FFFFF, UL)
++#define SATP_MODE_32		_AC(0x80000000, UL)
++#define SATP_MODE_SHIFT		31
++#define NR_LEVELS		2
++#define PGDIR_BITS		10
++#define PGDIR_MASK		_AC(0x3FF, UL)
++#define PTE_PPN			_AC(0xFFFFFC00, UL)
++
++#define SATP_MODE_DEFAULT	SATP_MODE_32
++
++#else
++#define SATP_PPN		_AC(0x00000FFFFFFFFFFF, UL)
++#define SATP_MODE_39		_AC(0x8000000000000000, UL)
++#define SATP_MODE_SHIFT		60
++#define NR_LEVELS		3
++#define PGDIR_BITS		9
++#define PGDIR_MASK		_AC(0x1FF, UL)
++#define PTE_PPN			_AC(0x3FFFFFFFFFFC00, UL)
++
++#define SATP_MODE_DEFAULT	SATP_MODE_39
++
++#endif
++
++#define PPN_SHIFT		10
++
++#define _PAGE_PRESENT		(1 << 0)
++#define _PAGE_READ		(1 << 1)
++#define _PAGE_WRITE		(1 << 2)
++#define _PAGE_EXEC		(1 << 3)
++#define _PAGE_USER		(1 << 4)
++#define _PAGE_GLOBAL		(1 << 5)
++#define _PAGE_ACCESSED		(1 << 6)
++#define _PAGE_DIRTY		(1 << 7)
++#define _PAGE_SOFT		(3 << 8)
++
++#endif /* _ASMRISCV_PGTABLE_H_ */
+diff --git a/lib/riscv/mmu.c b/lib/riscv/mmu.c
+new file mode 100644
+index 000000000000..6b1af518ddd8
+--- /dev/null
++++ b/lib/riscv/mmu.c
+@@ -0,0 +1,140 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Copyright (C) 2023, Ventana Micro Systems Inc., Andrew Jones <ajones@ventanamicro.com>
++ */
++#include <libcflat.h>
++#include <alloc_page.h>
 +#include <memregions.h>
++#include <asm/csr.h>
++#include <asm/io.h>
++#include <asm/mmu.h>
++#include <asm/page.h>
 +
-+static struct mem_region __initial_mem_regions[NR_INITIAL_MEM_REGIONS + 1];
-+static size_t nr_regions = NR_INITIAL_MEM_REGIONS;
++static pgd_t *__initial_pgtable;
 +
-+struct mem_region *mem_regions = __initial_mem_regions;
-+
-+void memregions_init(struct mem_region regions[], size_t nr)
++static int pte_index(uintptr_t vaddr, int level)
 +{
-+	mem_regions = regions;
-+	nr_regions = nr;
++	return (vaddr >> (PGDIR_BITS * level + PAGE_SHIFT)) & PGDIR_MASK;
 +}
 +
-+struct mem_region *memregions_add(struct mem_region *r)
++static pte_t *pte_to_ptep(pte_t pte)
 +{
-+	struct mem_region *r_next = mem_regions;
-+	int i = 0;
-+
-+	for (; r_next->end; ++r_next, ++i)
-+		;
-+	assert(i < nr_regions);
-+
-+	*r_next = *r;
-+
-+	return r_next;
++	return (pte_t *)(((pte & PTE_PPN) >> PPN_SHIFT) << PAGE_SHIFT);
 +}
 +
-+struct mem_region *memregions_find(phys_addr_t paddr)
++static pte_t ptep_to_pte(pte_t *ptep)
++{
++	return ((pte_t)ptep >> PAGE_SHIFT) << PPN_SHIFT;
++}
++
++static pteval_t *__install_page(pgd_t *pgtable, phys_addr_t paddr,
++				uintptr_t vaddr, pgprot_t prot, bool flush)
++{
++	phys_addr_t ppn = (paddr >> PAGE_SHIFT) << PPN_SHIFT;
++	pte_t pte = (pte_t)ppn;
++	pte_t *ptep = pgtable;
++
++	assert(pgtable && !((uintptr_t)pgtable & ~PAGE_MASK));
++	assert(!(ppn & ~PTE_PPN));
++
++	for (int level = NR_LEVELS - 1; level > 0; --level) {
++		pte_t *next = &ptep[pte_index(vaddr, level)];
++		if (!*next) {
++			void *page = alloc_page();
++			*next = ptep_to_pte(page) | _PAGE_PRESENT;
++		}
++		ptep = pte_to_ptep(*next);
++	}
++	ptep = &ptep[pte_index(vaddr, 0)];
++	*ptep = pte | prot | _PAGE_PRESENT;
++
++	if (flush)
++		local_flush_tlb_page(vaddr);
++
++	return (pteval_t *)ptep;
++}
++
++void mmu_set_range_ptes(pgd_t *pgtable, uintptr_t virt_offset,
++			phys_addr_t phys_start, phys_addr_t phys_end,
++			pgprot_t prot, bool flush)
++{
++	phys_addr_t paddr = phys_start & PAGE_MASK;
++	uintptr_t vaddr = virt_offset & PAGE_MASK;
++	uintptr_t virt_end = phys_end - paddr + vaddr;
++
++	assert(phys_start < phys_end);
++
++	for (; vaddr < virt_end; vaddr += PAGE_SIZE, paddr += PAGE_SIZE)
++		__install_page(pgtable, paddr, vaddr, prot, flush);
++}
++
++void mmu_disable(void)
++{
++	__asm__ __volatile__ (
++	"	csrw	" xstr(CSR_SATP) ", zero\n"
++	"	sfence.vma\n"
++	: : : "memory");
++}
++
++void __mmu_enable(unsigned long satp)
++{
++	__asm__ __volatile__ (
++	"	sfence.vma\n"
++	"	csrw	" xstr(CSR_SATP) ", %0\n"
++	: : "r" (satp) : "memory");
++}
++
++void mmu_enable(unsigned long mode, pgd_t *pgtable)
++{
++	unsigned long ppn = (unsigned long)pgtable >> PAGE_SHIFT;
++	unsigned long satp = mode | ppn;
++
++	assert(!(ppn & ~SATP_PPN));
++	__mmu_enable(satp);
++}
++
++void setup_mmu(void)
 +{
 +	struct mem_region *r;
++	pgd_t *pgtable;
 +
-+	for (r = mem_regions; r->end; ++r)
-+		if (paddr >= r->start && paddr < r->end)
-+			return r;
-+	return NULL;
-+}
++	if (!__initial_pgtable)
++		__initial_pgtable = alloc_page();
++	pgtable = __initial_pgtable;
 +
-+uint32_t memregions_get_flags(phys_addr_t paddr)
-+{
-+	struct mem_region *r = memregions_find(paddr);
-+
-+	return r ? r->flags : MR_F_UNKNOWN;
-+}
-+
-+void memregions_split(phys_addr_t addr, struct mem_region **r1, struct mem_region **r2)
-+{
-+	*r1 = memregions_find(addr);
-+	assert(*r1);
-+
-+	if ((*r1)->start == addr) {
-+		*r2 = *r1;
-+		*r1 = NULL;
-+		return;
++	for (r = mem_regions; r->end; ++r) {
++		if (r->flags & (MR_F_IO | MR_F_RESERVED))
++			continue;
++		if (r->flags & MR_F_CODE) {
++			mmu_set_range_ptes(pgtable, r->start, r->start, r->end,
++					   __pgprot(_PAGE_READ | _PAGE_EXEC), false);
++		} else {
++			mmu_set_range_ptes(pgtable, r->start, r->start, r->end,
++					   __pgprot(_PAGE_READ | _PAGE_WRITE), false);
++		}
 +	}
 +
-+	*r2 = memregions_add(&(struct mem_region){
-+		.start = addr,
-+		.end = (*r1)->end,
-+		.flags = (*r1)->flags,
-+	});
-+
-+	(*r1)->end = addr;
++	mmu_enable(SATP_MODE_DEFAULT, pgtable);
 +}
 +
-+void memregions_add_dt_regions(size_t max_nr)
++void __iomem *ioremap(phys_addr_t phys_addr, size_t size)
 +{
-+	struct dt_pbus_reg regs[max_nr];
-+	int nr_regs, i;
++	phys_addr_t start = phys_addr & PAGE_MASK;
++	phys_addr_t end = PAGE_ALIGN(phys_addr + size);
++	pgd_t *pgtable = current_pgtable();
++	bool flush = true;
 +
-+	nr_regs = dt_get_memory_params(regs, max_nr);
-+	assert(nr_regs > 0);
++	assert(sizeof(long) == 8 || !(phys_addr >> 32));
 +
-+	for (i = 0; i < nr_regs; ++i) {
-+		memregions_add(&(struct mem_region){
-+			.start = regs[i].addr,
-+			.end = regs[i].addr + regs[i].size,
-+		});
++	if (!pgtable) {
++		if (!__initial_pgtable)
++			__initial_pgtable = alloc_page();
++		pgtable = __initial_pgtable;
++		flush = false;
 +	}
++
++	mmu_set_range_ptes(pgtable, start, start, end,
++			   __pgprot(_PAGE_READ | _PAGE_WRITE), flush);
++
++	return (void __iomem *)(unsigned long)phys_addr;
 +}
-diff --git a/lib/memregions.h b/lib/memregions.h
-new file mode 100644
-index 000000000000..9a8e33182fe5
---- /dev/null
-+++ b/lib/memregions.h
-@@ -0,0 +1,29 @@
-+/* SPDX-License-Identifier: GPL-2.0-only */
-+#ifndef _MEMREGIONS_H_
-+#define _MEMREGIONS_H_
-+#include <libcflat.h>
-+#include <bitops.h>
+diff --git a/lib/riscv/setup.c b/lib/riscv/setup.c
+index 848ec8e83496..c4c1bd58b337 100644
+--- a/lib/riscv/setup.c
++++ b/lib/riscv/setup.c
+@@ -14,6 +14,7 @@
+ #include <memregions.h>
+ #include <on-cpus.h>
+ #include <asm/csr.h>
++#include <asm/mmu.h>
+ #include <asm/page.h>
+ #include <asm/processor.h>
+ #include <asm/setup.h>
+@@ -171,5 +172,7 @@ void setup(const void *fdt, phys_addr_t freemem_start)
+ 		setup_env(env, initrd_size);
+ 	}
+ 
++	setup_mmu();
 +
-+#define NR_INITIAL_MEM_REGIONS		8
-+
-+#define MR_F_IO				BIT(0)
-+#define MR_F_CODE			BIT(1)
-+#define MR_F_RESERVED			BIT(2)
-+#define MR_F_UNKNOWN			BIT(31)
-+
-+struct mem_region {
-+	phys_addr_t start;
-+	phys_addr_t end;
-+	uint32_t flags;
-+};
-+
-+extern struct mem_region *mem_regions;
-+
-+void memregions_init(struct mem_region regions[], size_t nr);
-+struct mem_region *memregions_add(struct mem_region *r);
-+struct mem_region *memregions_find(phys_addr_t paddr);
-+uint32_t memregions_get_flags(phys_addr_t paddr);
-+void memregions_split(phys_addr_t addr, struct mem_region **r1, struct mem_region **r2);
-+void memregions_add_dt_regions(size_t max_nr);
-+
-+#endif /* _MEMREGIONS_H_ */
+ 	banner();
+ }
+diff --git a/riscv/Makefile b/riscv/Makefile
+index ed1a14025ed2..821891b719e7 100644
+--- a/riscv/Makefile
++++ b/riscv/Makefile
+@@ -29,6 +29,7 @@ cflatobjs += lib/memregions.o
+ cflatobjs += lib/on-cpus.o
+ cflatobjs += lib/riscv/bitops.o
+ cflatobjs += lib/riscv/io.o
++cflatobjs += lib/riscv/mmu.o
+ cflatobjs += lib/riscv/processor.o
+ cflatobjs += lib/riscv/sbi.o
+ cflatobjs += lib/riscv/setup.o
 -- 
 2.43.0
 
