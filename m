@@ -1,87 +1,50 @@
 From: Andrew Jones <andrew.jones@linux.dev>
-Date: Wed, 24 Jan 2024 08:18:37 +0100
-Subject: [kvm-unit-tests PATCH 21/24] lib: Add strcasecmp and strncasecmp
+Date: Wed, 24 Jan 2024 08:18:39 +0100
+Subject: [kvm-unit-tests PATCH 23/24] gitlab-ci: Add riscv64 tests
 In-Reply-To: <20240124071815.6898-26-andrew.jones@linux.dev>
 References: <20240124071815.6898-26-andrew.jones@linux.dev>
-Message-ID: <20240124071815.6898-47-andrew.jones@linux.dev>
+Message-ID: <20240124071815.6898-49-andrew.jones@linux.dev>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-We'll soon want a case insensitive string comparison. Add toupper()
-and tolower() too (the latter gets used by the new string functions).
+Add build/run tests for riscv64. We would also add riscv32, but Fedora
+doesn't package what we need for that.
 
 Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
 ---
- lib/ctype.h  | 10 ++++++++++
- lib/string.c | 14 ++++++++++++++
- lib/string.h |  2 ++
- 3 files changed, 26 insertions(+)
+ .gitlab-ci.yml | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
 
-diff --git a/lib/ctype.h b/lib/ctype.h
-index 48a9c16300f8..45c96f111e19 100644
---- a/lib/ctype.h
-+++ b/lib/ctype.h
-@@ -37,4 +37,14 @@ static inline int isspace(int c)
-         return c == ' ' || c == '\t' || c == '\r' || c == '\n' || c == '\v' || c == '\f';
- }
+diff --git a/.gitlab-ci.yml b/.gitlab-ci.yml
+index 273ec9a7224b..f3ec551a50f2 100644
+--- a/.gitlab-ci.yml
++++ b/.gitlab-ci.yml
+@@ -87,6 +87,22 @@ build-ppc64le:
+      | tee results.txt
+  - if grep -q FAIL results.txt ; then exit 1 ; fi
  
-+static inline int toupper(int c)
-+{
-+	return islower(c) ? c - 'a' + 'A' : c;
-+}
++# build-riscv32:
++# Fedora doesn't package a riscv32 compiler for QEMU. Oh, well.
 +
-+static inline int tolower(int c)
-+{
-+	return isupper(c) ? c - 'A' + 'a' : c;
-+}
++build-riscv64:
++ extends: .intree_template
++ script:
++ - dnf install -y qemu-system-riscv gcc-riscv64-linux-gnu
++ - ./configure --arch=riscv64 --cross-prefix=riscv64-linux-gnu-
++ - make -j2
++ - printf "FOO=foo\nBAR=bar\nBAZ=baz\nMVENDORID=0\n" >test-env
++ - ACCEL=tcg KVM_UNIT_TESTS_ENV=test-env ./run_tests.sh
++      selftest
++      sbi
++      | tee results.txt
++ - if grep -q FAIL results.txt ; then exit 1 ; fi
 +
- #endif /* _CTYPE_H_ */
-diff --git a/lib/string.c b/lib/string.c
-index 6d8a6380db92..ab6a724a3144 100644
---- a/lib/string.c
-+++ b/lib/string.c
-@@ -54,11 +54,25 @@ int strncmp(const char *a, const char *b, size_t n)
- 	return 0;
- }
- 
-+int strncasecmp(const char *a, const char *b, size_t n)
-+{
-+	for (; n--; ++a, ++b)
-+		if (tolower(*a) != tolower(*b) || *a == '\0')
-+			return tolower(*a) - tolower(*b);
-+
-+	return 0;
-+}
-+
- int strcmp(const char *a, const char *b)
- {
- 	return strncmp(a, b, SIZE_MAX);
- }
- 
-+int strcasecmp(const char *a, const char *b)
-+{
-+	return strncasecmp(a, b, SIZE_MAX);
-+}
-+
- char *strchr(const char *s, int c)
- {
- 	while (*s != (char)c)
-diff --git a/lib/string.h b/lib/string.h
-index 758dca8af36a..a28d75641530 100644
---- a/lib/string.h
-+++ b/lib/string.h
-@@ -15,6 +15,8 @@ extern char *strcat(char *dest, const char *src);
- extern char *strcpy(char *dest, const char *src);
- extern int strcmp(const char *a, const char *b);
- extern int strncmp(const char *a, const char *b, size_t n);
-+int strcasecmp(const char *a, const char *b);
-+int strncasecmp(const char *a, const char *b, size_t n);
- extern char *strchr(const char *s, int c);
- extern char *strrchr(const char *s, int c);
- extern char *strchrnul(const char *s, int c);
+ build-s390x:
+  extends: .outoftree_template
+  script:
 -- 
 2.43.0
 
