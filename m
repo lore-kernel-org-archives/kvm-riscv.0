@@ -1,61 +1,59 @@
-From: 秦少青 <qinshaoqing@bosc.ac.cn>
-Date: Tue, 23 Jan 2024 10:57:59 +0800 (GMT+08:00)
-Subject: [kvmtool PATCH 1/1] riscv: Add zacas extension
-Message-ID: <3095a39b.95.18d3440cf62.Coremail.qinshaoqing@bosc.ac.cn>
+From: Andrew Jones <andrew.jones@linux.dev>
+Date: Wed, 24 Jan 2024 08:18:17 +0100
+Subject: [kvm-unit-tests PATCH 01/24] configure: Add ARCH_LIBDIR
+In-Reply-To: <20240124071815.6898-26-andrew.jones@linux.dev>
+References: <20240124071815.6898-26-andrew.jones@linux.dev>
+Message-ID: <20240124071815.6898-27-andrew.jones@linux.dev>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add parsing for Zacas ISA extension which was ratified recently in the
-riscv-zacas manual.
+Prepare for an architecture which will share the same lib/$ARCH
+directory, but be configured with different arch names for different
+bit widths, i.e. riscv32 -> lib/riscv and riscv64 -> lib/riscv.
 
-Signed-off-by: Shaoqing Qin <qinshaoqing@bosc.ac.cn>
+Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
 ---
- riscv/fdt.c                         | 1 +
- riscv/include/asm/kvm.h             | 1 +
- riscv/include/kvm/kvm-config-arch.h | 3 +++
- 3 files changed, 5 insertions(+)
+ Makefile  | 2 +-
+ configure | 2 ++
+ 2 files changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/riscv/fdt.c b/riscv/fdt.c
-index 9af71b5..1b4f701 100644
---- a/riscv/fdt.c
-+++ b/riscv/fdt.c
-@@ -22,6 +22,7 @@ struct isa_ext_info isa_info_arr[] = {
- 	{"svnapot", KVM_RISCV_ISA_EXT_SVNAPOT},
- 	{"svpbmt", KVM_RISCV_ISA_EXT_SVPBMT},
- 	{"zbb", KVM_RISCV_ISA_EXT_ZBB},
-+	{"zacas", KVM_RISCV_ISA_EXT_ZACAS},
- 	{"zicbom", KVM_RISCV_ISA_EXT_ZICBOM},
- 	{"zicboz", KVM_RISCV_ISA_EXT_ZICBOZ},
- 	{"zihintpause", KVM_RISCV_ISA_EXT_ZIHINTPAUSE},
-diff --git a/riscv/include/asm/kvm.h b/riscv/include/asm/kvm.h
-index 992c5e4..0c65ff0 100644
---- a/riscv/include/asm/kvm.h
-+++ b/riscv/include/asm/kvm.h
-@@ -122,6 +122,7 @@ enum KVM_RISCV_ISA_EXT_ID {
- 	KVM_RISCV_ISA_EXT_ZICBOM,
- 	KVM_RISCV_ISA_EXT_ZICBOZ,
- 	KVM_RISCV_ISA_EXT_ZBB,
-+	KVM_RISCV_ISA_EXT_ZACAS,
- 	KVM_RISCV_ISA_EXT_SSAIA,
- 	KVM_RISCV_ISA_EXT_V,
- 	KVM_RISCV_ISA_EXT_SVNAPOT,
-diff --git a/riscv/include/kvm/kvm-config-arch.h b/riscv/include/kvm/kvm-config-arch.h
-index 863baea..7840f91 100644
---- a/riscv/include/kvm/kvm-config-arch.h
-+++ b/riscv/include/kvm/kvm-config-arch.h
-@@ -43,6 +43,9 @@ struct kvm_config_arch {
- 	OPT_BOOLEAN('\0', "disable-zbb",				\
- 		    &(cfg)->ext_disabled[KVM_RISCV_ISA_EXT_ZBB],	\
- 		    "Disable Zbb Extension"),				\
-+	OPT_BOOLEAN('\0', "disable-zacas",				\
-+		    &(cfg)->ext_disabled[KVM_RISCV_ISA_EXT_ZACAS],	\
-+		    "Disable Zacas Extension"),				\
- 	OPT_BOOLEAN('\0', "disable-zicbom",				\
- 		    &(cfg)->ext_disabled[KVM_RISCV_ISA_EXT_ZICBOM],	\
- 		    "Disable Zicbom Extension"),			\
+diff --git a/Makefile b/Makefile
+index 602910dda11b..4f35fffc685b 100644
+--- a/Makefile
++++ b/Makefile
+@@ -10,7 +10,7 @@ include config.mak
+ VPATH = $(SRCDIR)
+ 
+ libdirs-get = $(shell [ -d "lib/$(1)" ] && echo "lib/$(1) lib/$(1)/asm")
+-ARCH_LIBDIRS := $(call libdirs-get,$(ARCH)) $(call libdirs-get,$(TEST_DIR))
++ARCH_LIBDIRS := $(call libdirs-get,$(ARCH_LIBDIR)) $(call libdirs-get,$(TEST_DIR))
+ OBJDIRS := $(ARCH_LIBDIRS)
+ 
+ DESTDIR := $(PREFIX)/share/kvm-unit-tests/
+diff --git a/configure b/configure
+index 6ee9b27a6af2..ada6512702a1 100755
+--- a/configure
++++ b/configure
+@@ -198,6 +198,7 @@ fi
+ arch_name=$arch
+ [ "$arch" = "aarch64" ] && arch="arm64"
+ [ "$arch_name" = "arm64" ] && arch_name="aarch64"
++arch_libdir=$arch
+ 
+ if [ -z "$target" ]; then
+     target="qemu"
+@@ -391,6 +392,7 @@ PREFIX=$prefix
+ HOST=$host
+ ARCH=$arch
+ ARCH_NAME=$arch_name
++ARCH_LIBDIR=$arch_libdir
+ PROCESSOR=$processor
+ CC=$cross_prefix$cc
+ CFLAGS=$cflags
 -- 
 2.43.0
+
 
