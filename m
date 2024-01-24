@@ -1,68 +1,67 @@
-From: Andrew Jones <andrew.jones@linux.dev>
-Date: Wed, 24 Jan 2024 11:21:47 +0100
-Subject: [kvm-unit-tests PATCH 23/24] gitlab-ci: Add riscv64 tests
-In-Reply-To: <283af7cb-33fa-4486-a038-0c5a2235ffd5@redhat.com>
-References: <20240124071815.6898-26-andrew.jones@linux.dev>
- <20240124071815.6898-49-andrew.jones@linux.dev>
- <283af7cb-33fa-4486-a038-0c5a2235ffd5@redhat.com>
-Message-ID: <20240124-6b0edbeb8659415cd18d809d@orel>
+From: Eric Biggers <ebiggers@kernel.org>
+Date: Wed, 24 Jan 2024 13:58:18 -0800
+Subject: [PATCH -next v21 23/27] riscv: detect assembler support for
+ .option arch
+In-Reply-To: <20240122222918.GA141255@dev-fedora.aadp>
+References: <20240121011341.GA97368@sol.localdomain>
+ <mhng-e4b5de69-859d-43ea-b35d-b568e6a621ef@palmer-ri-x1c9>
+ <CABgGipW0pZCESu7dyiUdta2JtrpeMsJ3EABNjj_0GO9fbbTwQg@mail.gmail.com>
+ <20240121181009.GA1469@sol.localdomain>
+ <20240122222918.GA141255@dev-fedora.aadp>
+Message-ID: <20240124215818.GB1088@sol.localdomain>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Jan 24, 2024 at 10:45:29AM +0100, Thomas Huth wrote:
-> On 24/01/2024 08.18, Andrew Jones wrote:
-> > Add build/run tests for riscv64. We would also add riscv32, but Fedora
-> > doesn't package what we need for that.
+On Mon, Jan 22, 2024 at 03:29:18PM -0700, Nathan Chancellor wrote:
+> On Sun, Jan 21, 2024 at 10:10:09AM -0800, Eric Biggers wrote:
+> > On Sun, Jan 21, 2024 at 10:32:59PM +0800, Andy Chiu wrote:
+> > > 
+> > > Maybe what we really should do is to upgrade the condition check to a
+> > > one liner shell script and grep if "Warning" is being printed. Sadly
+> > > this warning is not failing the compilation with -Werror.
+> > > 
+> > > I can try forming a patch on this if it feels alright to people.
 > > 
-> > Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
-> > ---
-> >   .gitlab-ci.yml | 16 ++++++++++++++++
-> >   1 file changed, 16 insertions(+)
-> > 
-> > diff --git a/.gitlab-ci.yml b/.gitlab-ci.yml
-> > index 273ec9a7224b..f3ec551a50f2 100644
-> > --- a/.gitlab-ci.yml
-> > +++ b/.gitlab-ci.yml
-> > @@ -87,6 +87,22 @@ build-ppc64le:
-> >        | tee results.txt
-> >    - if grep -q FAIL results.txt ; then exit 1 ; fi
-> > +# build-riscv32:
-> > +# Fedora doesn't package a riscv32 compiler for QEMU. Oh, well.
-> > +
-> > +build-riscv64:
-> > + extends: .intree_template
-> > + script:
-> > + - dnf install -y qemu-system-riscv gcc-riscv64-linux-gnu
-> > + - ./configure --arch=riscv64 --cross-prefix=riscv64-linux-gnu-
-> > + - make -j2
-> > + - printf "FOO=foo\nBAR=bar\nBAZ=baz\nMVENDORID=0\n" >test-env
-> > + - ACCEL=tcg KVM_UNIT_TESTS_ENV=test-env ./run_tests.sh
-> > +      selftest
-> > +      sbi
-> > +      | tee results.txt
-> > + - if grep -q FAIL results.txt ; then exit 1 ; fi
+> > What about -Wa,--fatal-warnings ?
 > 
-> IIRC it's better to make sure that at least one test passed:
+> I suspect that would work, the following diff appears to work for me
+> with a version of clang that does and does not support '.option arch',
+> (although I am not sure if adding -Wa,--fatal-warnings will have any
+> other consequences):
 > 
->   - grep -q PASS results.txt && ! grep -q FAIL results.txt
-> 
-> Otherwise all tests could be SKIP which indicates that something went wrong,
-> too.
+> diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
+> index bffbd869a068..e3142ce531a0 100644
+> --- a/arch/riscv/Kconfig
+> +++ b/arch/riscv/Kconfig
+> @@ -315,7 +315,6 @@ config AS_HAS_OPTION_ARCH
+>  	# https://reviews.llvm.org/D123515
+>  	def_bool y
+>  	depends on $(as-instr, .option arch$(comma) +m)
+> -	depends on !$(as-instr, .option arch$(comma) -i)
+>  
+>  source "arch/riscv/Kconfig.socs"
+>  source "arch/riscv/Kconfig.errata"
+> diff --git a/scripts/Kconfig.include b/scripts/Kconfig.include
+> index 5a84b6443875..3ee8ecfb8c04 100644
+> --- a/scripts/Kconfig.include
+> +++ b/scripts/Kconfig.include
+> @@ -33,7 +33,7 @@ ld-option = $(success,$(LD) -v $(1))
+>  
+>  # $(as-instr,<instr>)
+>  # Return y if the assembler supports <instr>, n otherwise
+> -as-instr = $(success,printf "%b\n" "$(1)" | $(CC) $(CLANG_FLAGS) -c -x assembler-with-cpp -o /dev/null -)
+> +as-instr = $(success,printf "%b\n" "$(1)" | $(CC) $(CLANG_FLAGS) -Wa$(comma)--fatal-warnings -c -x assembler-with-cpp -o /dev/null -)
+>  
+>  # check if $(CC) and $(LD) exist
+>  $(error-if,$(failure,command -v $(CC)),C compiler '$(CC)' not found)
 
-Yeah, for sure the basic selftests should pass.
+It looks good to me as long as none of the as-instr users turn out to have any
+expected warnings.
 
-> We're using the check for PASS for some tests in the gitlab-ci.yml file, but
-> not for all ... we should maybe update the remaining ones to use that,
-> too...
+Maybe send the change to scripts/Kconfig.include as a separate patch?
 
-Yup, almost all of them are the FAIL pattern which I copy+pasted. If
-I respin this series I'll change riscv now, but since I think we should
-change the other ones in a separate patch, then we could change riscv at
-the same time as the rest.
-
-Thanks,
-drew
+- Eric
 
