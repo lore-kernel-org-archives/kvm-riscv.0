@@ -1,10 +1,11 @@
 From: Thomas Huth <thuth@redhat.com>
-Date: Wed, 24 Jan 2024 10:46:08 +0100
-Subject: [kvm-unit-tests PATCH 24/24] MAINTAINERS: Add riscv
-In-Reply-To: <20240124071815.6898-50-andrew.jones@linux.dev>
+Date: Wed, 24 Jan 2024 10:52:47 +0100
+Subject: [kvm-unit-tests PATCH 03/24] arm/arm64: Move cpumask.h to common
+ lib
+In-Reply-To: <20240124071815.6898-29-andrew.jones@linux.dev>
 References: <20240124071815.6898-26-andrew.jones@linux.dev>
- <20240124071815.6898-50-andrew.jones@linux.dev>
-Message-ID: <e50d0124-230d-4720-bded-b2ae9eb2e128@redhat.com>
+ <20240124071815.6898-29-andrew.jones@linux.dev>
+Message-ID: <1284c5bd-8c2d-4228-b2db-915548672eac@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -12,14 +13,24 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 On 24/01/2024 08.18, Andrew Jones wrote:
-> Most of the support for riscv is now in place. Let's make it official
-> and start adding tests!
+> RISC-V will also make use of cpumask.h, so move it to the arch-common
+> directory.
 > 
 > Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
 > ---
->   MAINTAINERS | 8 ++++++++
->   1 file changed, 8 insertions(+)
+>   lib/arm/asm/gic-v2.h        | 2 +-
+>   lib/arm/asm/gic-v3.h        | 2 +-
+>   lib/arm/asm/gic.h           | 2 +-
+>   lib/arm/asm/smp.h           | 2 +-
+>   lib/arm/mmu.c               | 2 +-
+>   lib/arm/smp.c               | 2 +-
+>   lib/arm64/asm/cpumask.h     | 1 -
+>   lib/{arm/asm => }/cpumask.h | 9 ++++-----
+>   8 files changed, 10 insertions(+), 12 deletions(-)
+>   delete mode 100644 lib/arm64/asm/cpumask.h
+>   rename lib/{arm/asm => }/cpumask.h (94%)
 
 Reviewed-by: Thomas Huth <thuth@redhat.com>
+
 
 
