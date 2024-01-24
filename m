@@ -1,50 +1,42 @@
 From: Andrew Jones <andrew.jones@linux.dev>
-Date: Wed, 24 Jan 2024 08:18:39 +0100
-Subject: [kvm-unit-tests PATCH 23/24] gitlab-ci: Add riscv64 tests
+Date: Wed, 24 Jan 2024 08:18:40 +0100
+Subject: [kvm-unit-tests PATCH 24/24] MAINTAINERS: Add riscv
 In-Reply-To: <20240124071815.6898-26-andrew.jones@linux.dev>
 References: <20240124071815.6898-26-andrew.jones@linux.dev>
-Message-ID: <20240124071815.6898-49-andrew.jones@linux.dev>
+Message-ID: <20240124071815.6898-50-andrew.jones@linux.dev>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add build/run tests for riscv64. We would also add riscv32, but Fedora
-doesn't package what we need for that.
+Most of the support for riscv is now in place. Let's make it official
+and start adding tests!
 
 Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
 ---
- .gitlab-ci.yml | 16 ++++++++++++++++
- 1 file changed, 16 insertions(+)
+ MAINTAINERS | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-diff --git a/.gitlab-ci.yml b/.gitlab-ci.yml
-index 273ec9a7224b..f3ec551a50f2 100644
---- a/.gitlab-ci.yml
-+++ b/.gitlab-ci.yml
-@@ -87,6 +87,22 @@ build-ppc64le:
-      | tee results.txt
-  - if grep -q FAIL results.txt ; then exit 1 ; fi
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 958735fbfd79..a2fa437da5c9 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -94,6 +94,14 @@ F: powerpc/
+ F: lib/powerpc/
+ F: lib/ppc64/
  
-+# build-riscv32:
-+# Fedora doesn't package a riscv32 compiler for QEMU. Oh, well.
++RISCV
++M: Andrew Jones <andrew.jones@linux.dev>
++S: Supported
++L: kvm-riscv at lists.infradead.org
++F: riscv/
++F: lib/riscv/
++T: https://gitlab.com/jones-drew/kvm-unit-tests.git
 +
-+build-riscv64:
-+ extends: .intree_template
-+ script:
-+ - dnf install -y qemu-system-riscv gcc-riscv64-linux-gnu
-+ - ./configure --arch=riscv64 --cross-prefix=riscv64-linux-gnu-
-+ - make -j2
-+ - printf "FOO=foo\nBAR=bar\nBAZ=baz\nMVENDORID=0\n" >test-env
-+ - ACCEL=tcg KVM_UNIT_TESTS_ENV=test-env ./run_tests.sh
-+      selftest
-+      sbi
-+      | tee results.txt
-+ - if grep -q FAIL results.txt ; then exit 1 ; fi
-+
- build-s390x:
-  extends: .outoftree_template
-  script:
+ S390X
+ M: Janosch Frank <frankja@linux.ibm.com>
+ M: Claudio Imbrenda <imbrenda@linux.ibm.com>
 -- 
 2.43.0
 
