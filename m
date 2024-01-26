@@ -1,113 +1,546 @@
 From: Andrew Jones <andrew.jones@linux.dev>
-Date: Fri, 26 Jan 2024 15:23:29 +0100
-Subject: [kvm-unit-tests PATCH v2 04/24] arm/arm64: Share cpu online, present and idle masks
+Date: Fri, 26 Jan 2024 15:23:30 +0100
+Subject: [kvm-unit-tests PATCH v2 05/24] riscv: Add DT parsing
 In-Reply-To: <20240126142324.66674-26-andrew.jones@linux.dev>
 References: <20240126142324.66674-26-andrew.jones@linux.dev>
-Message-ID: <20240126142324.66674-30-andrew.jones@linux.dev>
+Message-ID: <20240126142324.66674-31-andrew.jones@linux.dev>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-RISC-V will also use Arm's three cpumasks. These were in smp.h,
-but they can be in cpumask.h instead, so move them there, which
-is now shared.
+Start building setup() by copying code from Arm and adding
+dependencies along the way like bitops and a few more barriers.
+We now parse the DT for the UART base address to be sure we
+find what we expect with the early base. We also parse the
+CPU nodes to get the hartids, even though we don't yet support
+booting secondaries. Finally, add parsing of bootargs to get
+the command line and parsing of the environ to set the environment
+variables, and then extend the selftest to ensure it all works.
+
+We don't do proper memory setup yet, only just enough to allocate
+memory for the environment variables and any another small mallocs
+that may be necessary.
+
+Note, we've added a banner, which Arm doesn't have, because we
+need to separate the test output from OpenSBI output.
+
+Run with
+  qemu-system-riscv64 -nographic -M virt \
+      -kernel riscv/selftest.flat \
+      -append 'foo bar baz' \
+      -initrd test-env \
+      -smp 16
+
+where test-env is a text file with the environment, i.e.
+$ cat test-env
+FOO=foo
+BAR=bar
+BAZ=baz
 
 Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
-Reviewed-by: Thomas Huth <thuth@redhat.com>
 Acked-by: Thomas Huth <thuth@redhat.com>
 ---
- lib/arm/asm/smp.h | 33 ---------------------------------
- lib/cpumask.h     | 33 +++++++++++++++++++++++++++++++++
- 2 files changed, 33 insertions(+), 33 deletions(-)
+ lib/linux/const.h       |   2 +
+ lib/riscv/asm/barrier.h |   5 ++
+ lib/riscv/asm/bitops.h  |  21 ++++++++
+ lib/riscv/asm/csr.h     |  64 +++++++++++++++++++++++
+ lib/riscv/asm/setup.h   |   7 +++
+ lib/riscv/bitops.c      |  47 +++++++++++++++++
+ lib/riscv/io.c          |  51 +++++++++++++++++++
+ lib/riscv/setup.c       | 109 ++++++++++++++++++++++++++++++++++++++++
+ lib/riscv/smp.c         |   6 +++
+ riscv/Makefile          |   5 ++
+ riscv/selftest.c        |  44 ++++++++++++++--
+ 11 files changed, 358 insertions(+), 3 deletions(-)
+ create mode 100644 lib/riscv/asm/bitops.h
+ create mode 100644 lib/riscv/bitops.c
+ create mode 100644 lib/riscv/smp.c
 
-diff --git a/lib/arm/asm/smp.h b/lib/arm/asm/smp.h
-index bb3e71a55e8c..b89a68dd344f 100644
---- a/lib/arm/asm/smp.h
-+++ b/lib/arm/asm/smp.h
-@@ -23,39 +23,6 @@ extern bool cpu0_calls_idle;
- extern void halt(void);
- extern void do_idle(void);
+diff --git a/lib/linux/const.h b/lib/linux/const.h
+index be114dc4a553..f622fa852ced 100644
+--- a/lib/linux/const.h
++++ b/lib/linux/const.h
+@@ -15,10 +15,12 @@
+ #if defined(__ASSEMBLY__) || defined(__ASSEMBLER__)
+ #define _AC(X,Y)	X
+ #define _AT(T,X)	X
++#define __ASM_STR(X)	X
+ #else
+ #define __AC(X,Y)	(X##Y)
+ #define _AC(X,Y)	__AC(X,Y)
+ #define _AT(T,X)	((T)(X))
++#define __ASM_STR(X)	#X
+ #endif
  
--extern cpumask_t cpu_present_mask;
--extern cpumask_t cpu_online_mask;
--extern cpumask_t cpu_idle_mask;
--#define cpu_present(cpu)		cpumask_test_cpu(cpu, &cpu_present_mask)
--#define cpu_online(cpu)			cpumask_test_cpu(cpu, &cpu_online_mask)
--#define cpu_idle(cpu)			cpumask_test_cpu(cpu, &cpu_idle_mask)
--#define for_each_present_cpu(cpu)	for_each_cpu(cpu, &cpu_present_mask)
--#define for_each_online_cpu(cpu)	for_each_cpu(cpu, &cpu_online_mask)
--
--static inline void set_cpu_present(int cpu, bool present)
--{
--	if (present)
--		cpumask_set_cpu(cpu, &cpu_present_mask);
--	else
--		cpumask_clear_cpu(cpu, &cpu_present_mask);
--}
--
--static inline void set_cpu_online(int cpu, bool online)
--{
--	if (online)
--		cpumask_set_cpu(cpu, &cpu_online_mask);
--	else
--		cpumask_clear_cpu(cpu, &cpu_online_mask);
--}
--
--static inline void set_cpu_idle(int cpu, bool idle)
--{
--	if (idle)
--		cpumask_set_cpu(cpu, &cpu_idle_mask);
--	else
--		cpumask_clear_cpu(cpu, &cpu_idle_mask);
--}
--
- extern void smp_boot_secondary(int cpu, secondary_entry_fn entry);
- extern void on_cpu_async(int cpu, void (*func)(void *data), void *data);
- extern void on_cpu(int cpu, void (*func)(void *data), void *data);
-diff --git a/lib/cpumask.h b/lib/cpumask.h
-index d30e14cda09e..be1919234d8e 100644
---- a/lib/cpumask.h
-+++ b/lib/cpumask.h
-@@ -119,4 +119,37 @@ static inline int cpumask_next(int cpu, const cpumask_t *mask)
- 			(cpu) < nr_cpus; 			\
- 			(cpu) = cpumask_next(cpu, mask))
+ #define _BITUL(x)	(_AC(1,UL) << (x))
+diff --git a/lib/riscv/asm/barrier.h b/lib/riscv/asm/barrier.h
+index c6a09066b2c7..6036d66af76f 100644
+--- a/lib/riscv/asm/barrier.h
++++ b/lib/riscv/asm/barrier.h
+@@ -10,4 +10,9 @@
+ #define rmb()		RISCV_FENCE(ir,ir)
+ #define wmb()		RISCV_FENCE(ow,ow)
  
-+extern cpumask_t cpu_present_mask;
-+extern cpumask_t cpu_online_mask;
-+extern cpumask_t cpu_idle_mask;
-+#define cpu_present(cpu)		cpumask_test_cpu(cpu, &cpu_present_mask)
-+#define cpu_online(cpu)			cpumask_test_cpu(cpu, &cpu_online_mask)
-+#define cpu_idle(cpu)			cpumask_test_cpu(cpu, &cpu_idle_mask)
-+#define for_each_present_cpu(cpu)	for_each_cpu(cpu, &cpu_present_mask)
-+#define for_each_online_cpu(cpu)	for_each_cpu(cpu, &cpu_online_mask)
++/* These barriers do not need to enforce ordering on devices, just memory. */
++#define smp_mb()	RISCV_FENCE(rw,rw)
++#define smp_rmb()	RISCV_FENCE(r,r)
++#define smp_wmb()	RISCV_FENCE(w,w)
 +
-+static inline void set_cpu_present(int cpu, bool present)
+ #endif /* _ASMRISCV_BARRIER_H_ */
+diff --git a/lib/riscv/asm/bitops.h b/lib/riscv/asm/bitops.h
+new file mode 100644
+index 000000000000..0d982507c7e7
+--- /dev/null
++++ b/lib/riscv/asm/bitops.h
+@@ -0,0 +1,21 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++#ifndef _ASMRISCV_BITOPS_H_
++#define _ASMRISCV_BITOPS_H_
++
++#ifndef _BITOPS_H_
++#error only <bitops.h> can be included directly
++#endif
++
++#ifdef CONFIG_64BIT
++#define BITS_PER_LONG	64
++#else
++#define BITS_PER_LONG	32
++#endif
++
++void set_bit(int nr, volatile unsigned long *addr);
++void clear_bit(int nr, volatile unsigned long *addr);
++int test_bit(int nr, const volatile unsigned long *addr);
++int test_and_set_bit(int nr, volatile unsigned long *addr);
++int test_and_clear_bit(int nr, volatile unsigned long *addr);
++
++#endif /* _ASMRISCV_BITOPS_H_ */
+diff --git a/lib/riscv/asm/csr.h b/lib/riscv/asm/csr.h
+index 5c4f2de34f64..356ae054bfff 100644
+--- a/lib/riscv/asm/csr.h
++++ b/lib/riscv/asm/csr.h
+@@ -1,7 +1,71 @@
+ /* SPDX-License-Identifier: GPL-2.0-only */
+ #ifndef _ASMRISCV_CSR_H_
+ #define _ASMRISCV_CSR_H_
++#include <linux/const.h>
+ 
+ #define CSR_SSCRATCH		0x140
+ 
++#ifndef __ASSEMBLY__
++
++#define csr_swap(csr, val)					\
++({								\
++	unsigned long __v = (unsigned long)(val);		\
++	__asm__ __volatile__ ("csrrw %0, " __ASM_STR(csr) ", %1"\
++				: "=r" (__v) : "rK" (__v)	\
++				: "memory");			\
++	__v;							\
++})
++
++#define csr_read(csr)						\
++({								\
++	register unsigned long __v;				\
++	__asm__ __volatile__ ("csrr %0, " __ASM_STR(csr)	\
++				: "=r" (__v) :			\
++				: "memory");			\
++	__v;							\
++})
++
++#define csr_write(csr, val)					\
++({								\
++	unsigned long __v = (unsigned long)(val);		\
++	__asm__ __volatile__ ("csrw " __ASM_STR(csr) ", %0"	\
++				: : "rK" (__v)			\
++				: "memory");			\
++})
++
++#define csr_read_set(csr, val)					\
++({								\
++	unsigned long __v = (unsigned long)(val);		\
++	__asm__ __volatile__ ("csrrs %0, " __ASM_STR(csr) ", %1"\
++				: "=r" (__v) : "rK" (__v)	\
++				: "memory");			\
++	__v;							\
++})
++
++#define csr_set(csr, val)					\
++({								\
++	unsigned long __v = (unsigned long)(val);		\
++	__asm__ __volatile__ ("csrs " __ASM_STR(csr) ", %0"	\
++				: : "rK" (__v)			\
++				: "memory");			\
++})
++
++#define csr_read_clear(csr, val)				\
++({								\
++	unsigned long __v = (unsigned long)(val);		\
++	__asm__ __volatile__ ("csrrc %0, " __ASM_STR(csr) ", %1"\
++				: "=r" (__v) : "rK" (__v)	\
++				: "memory");			\
++	__v;							\
++})
++
++#define csr_clear(csr, val)					\
++({								\
++	unsigned long __v = (unsigned long)(val);		\
++	__asm__ __volatile__ ("csrc " __ASM_STR(csr) ", %0"	\
++				: : "rK" (__v)			\
++				: "memory");			\
++})
++
++#endif /* !__ASSEMBLY__ */
+ #endif /* _ASMRISCV_CSR_H_ */
+diff --git a/lib/riscv/asm/setup.h b/lib/riscv/asm/setup.h
+index 385455f341cc..c8cfebb4f2c1 100644
+--- a/lib/riscv/asm/setup.h
++++ b/lib/riscv/asm/setup.h
+@@ -1,7 +1,14 @@
+ /* SPDX-License-Identifier: GPL-2.0-only */
+ #ifndef _ASMRISCV_SETUP_H_
+ #define _ASMRISCV_SETUP_H_
++#include <libcflat.h>
+ 
++#define NR_CPUS 16
++extern unsigned long cpus[NR_CPUS];       /* per-cpu IDs (hartids) */
++extern int nr_cpus;
++int hartid_to_cpu(unsigned long hartid);
++
++void io_init(void);
+ void setup(const void *fdt, phys_addr_t freemem_start);
+ 
+ #endif /* _ASMRISCV_SETUP_H_ */
+diff --git a/lib/riscv/bitops.c b/lib/riscv/bitops.c
+new file mode 100644
+index 000000000000..f9d4d9ad45c3
+--- /dev/null
++++ b/lib/riscv/bitops.c
+@@ -0,0 +1,47 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Copyright (C) 2023, Ventana Micro Systems Inc., Andrew Jones <ajones@ventanamicro.com>
++ */
++#include <bitops.h>
++
++void set_bit(int nr, volatile unsigned long *addr)
 +{
-+	if (present)
-+		cpumask_set_cpu(cpu, &cpu_present_mask);
-+	else
-+		cpumask_clear_cpu(cpu, &cpu_present_mask);
++	volatile unsigned long *word = addr + BIT_WORD(nr);
++	unsigned long mask = BIT_MASK(nr);
++
++	__sync_or_and_fetch(word, mask);
 +}
 +
-+static inline void set_cpu_online(int cpu, bool online)
++void clear_bit(int nr, volatile unsigned long *addr)
 +{
-+	if (online)
-+		cpumask_set_cpu(cpu, &cpu_online_mask);
-+	else
-+		cpumask_clear_cpu(cpu, &cpu_online_mask);
++	volatile unsigned long *word = addr + BIT_WORD(nr);
++	unsigned long mask = BIT_MASK(nr);
++
++	__sync_and_and_fetch(word, ~mask);
 +}
 +
-+static inline void set_cpu_idle(int cpu, bool idle)
++int test_bit(int nr, const volatile unsigned long *addr)
 +{
-+	if (idle)
-+		cpumask_set_cpu(cpu, &cpu_idle_mask);
-+	else
-+		cpumask_clear_cpu(cpu, &cpu_idle_mask);
++	const volatile unsigned long *word = addr + BIT_WORD(nr);
++	unsigned long mask = BIT_MASK(nr);
++
++	return (*word & mask) != 0;
 +}
 +
- #endif /* _CPUMASK_H_ */
++int test_and_set_bit(int nr, volatile unsigned long *addr)
++{
++	volatile unsigned long *word = addr + BIT_WORD(nr);
++	unsigned long mask = BIT_MASK(nr);
++	unsigned long old = __sync_fetch_and_or(word, mask);
++
++	return (old & mask) != 0;
++}
++
++int test_and_clear_bit(int nr, volatile unsigned long *addr)
++{
++	volatile unsigned long *word = addr + BIT_WORD(nr);
++	unsigned long mask = BIT_MASK(nr);
++	unsigned long old = __sync_fetch_and_and(word, ~mask);
++
++	return (old & mask) != 0;
++}
+diff --git a/lib/riscv/io.c b/lib/riscv/io.c
+index 3cfc235d19a6..aeda74be61ee 100644
+--- a/lib/riscv/io.c
++++ b/lib/riscv/io.c
+@@ -7,7 +7,9 @@
+  */
+ #include <libcflat.h>
+ #include <config.h>
++#include <devicetree.h>
+ #include <asm/io.h>
++#include <asm/setup.h>
+ #include <asm/spinlock.h>
+ 
+ /*
+@@ -21,6 +23,55 @@
+ static volatile u8 *uart0_base = UART_EARLY_BASE;
+ static struct spinlock uart_lock;
+ 
++static void uart0_init_fdt(void)
++{
++	const char *compatible[] = {"ns16550a"};
++	struct dt_pbus_reg base;
++	int i, ret;
++
++	ret = dt_get_default_console_node();
++	assert(ret >= 0 || ret == -FDT_ERR_NOTFOUND);
++
++	if (ret == -FDT_ERR_NOTFOUND) {
++		for (i = 0; i < ARRAY_SIZE(compatible); i++) {
++			ret = dt_pbus_get_base_compatible(compatible[i], &base);
++			assert(ret == 0 || ret == -FDT_ERR_NOTFOUND);
++			if (ret == 0)
++				break;
++		}
++
++		if (ret) {
++			printf("%s: Compatible uart not found in the device tree, aborting...\n",
++			       __func__);
++			abort();
++		}
++	} else {
++		ret = dt_pbus_translate_node(ret, 0, &base);
++		assert(ret == 0);
++	}
++
++	uart0_base = ioremap(base.addr, base.size);
++}
++
++static void uart0_init_acpi(void)
++{
++	assert_msg(false, "ACPI not available");
++}
++
++void io_init(void)
++{
++	if (dt_available())
++		uart0_init_fdt();
++	else
++		uart0_init_acpi();
++
++	if (uart0_base != UART_EARLY_BASE) {
++		printf("WARNING: early print support may not work. "
++		       "Found uart at %p, but early base is %p.\n",
++		       uart0_base, UART_EARLY_BASE);
++	}
++}
++
+ void puts(const char *s)
+ {
+ 	spin_lock(&uart_lock);
+diff --git a/lib/riscv/setup.c b/lib/riscv/setup.c
+index 8937525ccb7f..44c26b125a27 100644
+--- a/lib/riscv/setup.c
++++ b/lib/riscv/setup.c
+@@ -5,8 +5,117 @@
+  * Copyright (C) 2023, Ventana Micro Systems Inc., Andrew Jones <ajones@ventanamicro.com>
+  */
+ #include <libcflat.h>
++#include <alloc.h>
++#include <alloc_phys.h>
++#include <argv.h>
++#include <cpumask.h>
++#include <devicetree.h>
++#include <asm/csr.h>
++#include <asm/page.h>
+ #include <asm/setup.h>
+ 
++char *initrd;
++u32 initrd_size;
++
++unsigned long cpus[NR_CPUS] = { [0 ... NR_CPUS - 1] = ~0UL };
++int nr_cpus;
++
++int hartid_to_cpu(unsigned long hartid)
++{
++	int cpu;
++
++	for_each_present_cpu(cpu)
++		if (cpus[cpu] == hartid)
++			return cpu;
++	return -1;
++}
++
++static void cpu_set_fdt(int fdtnode __unused, u64 regval, void *info __unused)
++{
++	int cpu = nr_cpus++;
++
++	assert_msg(cpu < NR_CPUS, "Number cpus exceeds maximum supported (%d).", NR_CPUS);
++
++	cpus[cpu] = regval;
++	set_cpu_present(cpu, true);
++}
++
++static void cpu_init_acpi(void)
++{
++	assert_msg(false, "ACPI not available");
++}
++
++static void cpu_init(void)
++{
++	int ret;
++
++	nr_cpus = 0;
++	if (dt_available()) {
++		ret = dt_for_each_cpu_node(cpu_set_fdt, NULL);
++		assert(ret == 0);
++	} else {
++		cpu_init_acpi();
++	}
++
++	set_cpu_online(hartid_to_cpu(csr_read(CSR_SSCRATCH)), true);
++}
++
++static void mem_init(phys_addr_t freemem_start)
++{
++	//TODO - for now just assume we've got some memory available
++	phys_alloc_init(freemem_start, 16 * SZ_1M);
++}
++
++static void banner(void)
++{
++	puts("\n");
++	puts("##########################################################################\n");
++	puts("#    kvm-unit-tests\n");
++	puts("##########################################################################\n");
++	puts("\n");
++}
++
+ void setup(const void *fdt, phys_addr_t freemem_start)
+ {
++	void *freemem;
++	const char *bootargs, *tmp;
++	u32 fdt_size;
++	int ret;
++
++	assert(sizeof(long) == 8 || freemem_start < (3ul << 30));
++	freemem = (void *)(unsigned long)freemem_start;
++
++	/* Move the FDT to the base of free memory */
++	fdt_size = fdt_totalsize(fdt);
++	ret = fdt_move(fdt, freemem, fdt_size);
++	assert(ret == 0);
++	ret = dt_init(freemem);
++	assert(ret == 0);
++	freemem += fdt_size;
++
++	/* Move the initrd to the top of the FDT */
++	ret = dt_get_initrd(&tmp, &initrd_size);
++	assert(ret == 0 || ret == -FDT_ERR_NOTFOUND);
++	if (ret == 0) {
++		initrd = freemem;
++		memmove(initrd, tmp, initrd_size);
++		freemem += initrd_size;
++	}
++
++	mem_init(PAGE_ALIGN((unsigned long)freemem));
++	cpu_init();
++	io_init();
++
++	ret = dt_get_bootargs(&bootargs);
++	assert(ret == 0 || ret == -FDT_ERR_NOTFOUND);
++	setup_args_progname(bootargs);
++
++	if (initrd) {
++		/* environ is currently the only file in the initrd */
++		char *env = malloc(initrd_size);
++		memcpy(env, initrd, initrd_size);
++		setup_env(env, initrd_size);
++	}
++
++	banner();
+ }
+diff --git a/lib/riscv/smp.c b/lib/riscv/smp.c
+new file mode 100644
+index 000000000000..a89b59d8dd03
+--- /dev/null
++++ b/lib/riscv/smp.c
+@@ -0,0 +1,6 @@
++// SPDX-License-Identifier: GPL-2.0-only
++#include <cpumask.h>
++
++cpumask_t cpu_present_mask;
++cpumask_t cpu_online_mask;
++cpumask_t cpu_idle_mask;
+diff --git a/riscv/Makefile b/riscv/Makefile
+index f2e89f0e4c38..ddf2a0e016a8 100644
+--- a/riscv/Makefile
++++ b/riscv/Makefile
+@@ -20,8 +20,13 @@ $(TEST_DIR)/sieve.elf: AUXFLAGS = 0x1
+ 
+ cstart.o = $(TEST_DIR)/cstart.o
+ 
++cflatobjs += lib/alloc.o
++cflatobjs += lib/alloc_phys.o
++cflatobjs += lib/devicetree.o
++cflatobjs += lib/riscv/bitops.o
+ cflatobjs += lib/riscv/io.o
+ cflatobjs += lib/riscv/setup.o
++cflatobjs += lib/riscv/smp.o
+ 
+ ########################################
+ 
+diff --git a/riscv/selftest.c b/riscv/selftest.c
+index 88afa732649e..d3b269cf6255 100644
+--- a/riscv/selftest.c
++++ b/riscv/selftest.c
+@@ -5,9 +5,47 @@
+  * Copyright (C) 2023, Ventana Micro Systems Inc., Andrew Jones <ajones@ventanamicro.com>
+  */
+ #include <libcflat.h>
++#include <cpumask.h>
++#include <asm/setup.h>
+ 
+-int main(void)
++static void check_cpus(void)
+ {
+-	puts("Hello, world\n");
+-	return 0;
++	int cpu;
++
++	for_each_present_cpu(cpu)
++		report_info("CPU%3d: hartid=%08lx", cpu, cpus[cpu]);
++}
++
++int main(int argc, char **argv)
++{
++	bool r;
++
++	report_prefix_push("selftest");
++
++	report(!strncmp(argv[0], "selftest", 8), "program name");
++
++	if (argc > 1) {
++		r = !strcmp(argv[1], "foo");
++		if (argc > 2)
++			r &= !strcmp(argv[2], "bar");
++		if (argc > 3)
++			r &= !strcmp(argv[3], "baz");
++		report_info("matched %d command line parameters", argc - 1);
++		report(r, "command line parsing");
++	} else {
++		report_skip("command line parsing");
++	}
++
++	if (getenv("FOO")) {
++		r = !strcmp(getenv("FOO"), "foo");
++		r &= !strcmp(getenv("BAR"), "bar");
++		r &= !strcmp(getenv("BAZ"), "baz");
++		report(r, "environ parsing");
++	} else {
++		report_skip("environ parsing");
++	}
++
++	check_cpus();
++
++	return report_summary();
+ }
 -- 
 2.43.0
 
