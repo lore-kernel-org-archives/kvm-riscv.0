@@ -1,89 +1,247 @@
 From: Andrew Jones <andrew.jones@linux.dev>
-Date: Fri, 26 Jan 2024 15:23:46 +0100
-Subject: [kvm-unit-tests PATCH v2 21/24] lib: Add strcasecmp and strncasecmp
+Date: Fri, 26 Jan 2024 15:23:47 +0100
+Subject: [kvm-unit-tests PATCH v2 22/24] riscv: Add isa string parsing
 In-Reply-To: <20240126142324.66674-26-andrew.jones@linux.dev>
 References: <20240126142324.66674-26-andrew.jones@linux.dev>
-Message-ID: <20240126142324.66674-47-andrew.jones@linux.dev>
+Message-ID: <20240126142324.66674-48-andrew.jones@linux.dev>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-We'll soon want a case insensitive string comparison. Add toupper()
-and tolower() too (the latter gets used by the new string functions).
+We can probably get away with just assuming several important
+and popular extensions (at least everything covered by G), but
+we'll also want to use some extensions which we should ensure
+are present by parsing the isa string. Add a parser and already
+apply it to Sstc.
 
 Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
-Reviewed-by: Thomas Huth <thuth@redhat.com>
 Acked-by: Thomas Huth <thuth@redhat.com>
 ---
- lib/ctype.h  | 10 ++++++++++
- lib/string.c | 14 ++++++++++++++
- lib/string.h |  2 ++
- 3 files changed, 26 insertions(+)
+ lib/riscv/asm/isa.h       |  33 ++++++++++
+ lib/riscv/asm/processor.h |   1 +
+ lib/riscv/isa.c           | 126 ++++++++++++++++++++++++++++++++++++++
+ lib/riscv/processor.c     |   2 +
+ riscv/Makefile            |   1 +
+ 5 files changed, 163 insertions(+)
+ create mode 100644 lib/riscv/asm/isa.h
+ create mode 100644 lib/riscv/isa.c
 
-diff --git a/lib/ctype.h b/lib/ctype.h
-index 48a9c16300f8..45c96f111e19 100644
---- a/lib/ctype.h
-+++ b/lib/ctype.h
-@@ -37,4 +37,14 @@ static inline int isspace(int c)
-         return c == ' ' || c == '\t' || c == '\r' || c == '\n' || c == '\v' || c == '\f';
- }
+diff --git a/lib/riscv/asm/isa.h b/lib/riscv/asm/isa.h
+new file mode 100644
+index 000000000000..df874173f4ed
+--- /dev/null
++++ b/lib/riscv/asm/isa.h
+@@ -0,0 +1,33 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++#ifndef _ASMRISCV_ISA_H_
++#define _ASMRISCV_ISA_H_
++#include <bitops.h>
++#include <asm/setup.h>
++
++/*
++ * We assume and use several extensions, such as Zicsr and Zifencei.
++ * Here we only track extensions which we don't assume and the
++ * framework may want to use. Unit tests may check for extensions
++ * by name not tracked here with cpu_has_extension_name()
++ */
++enum {
++	ISA_SSTC,
++	ISA_MAX,
++};
++_Static_assert(ISA_MAX <= __riscv_xlen, "Need to increase thread_info.isa");
++
++static inline bool cpu_has_extension(int cpu, int ext)
++{
++	return test_bit(ext, cpus[cpu].isa);
++}
++
++bool cpu_has_extension_name(int cpu, const char *ext);
++
++static inline bool has_ext(const char *ext)
++{
++	return cpu_has_extension_name(current_thread_info()->cpu, ext);
++}
++
++void isa_init(struct thread_info *info);
++
++#endif /* _ASMRISCV_ISA_H_ */
+diff --git a/lib/riscv/asm/processor.h b/lib/riscv/asm/processor.h
+index f20774d02d8e..32c499d0c0ab 100644
+--- a/lib/riscv/asm/processor.h
++++ b/lib/riscv/asm/processor.h
+@@ -11,6 +11,7 @@ typedef void (*exception_fn)(struct pt_regs *);
+ struct thread_info {
+ 	int cpu;
+ 	unsigned long hartid;
++	unsigned long isa[1];
+ 	exception_fn exception_handlers[EXCEPTION_CAUSE_MAX];
+ };
  
-+static inline int toupper(int c)
+diff --git a/lib/riscv/isa.c b/lib/riscv/isa.c
+new file mode 100644
+index 000000000000..bc1c9c72045c
+--- /dev/null
++++ b/lib/riscv/isa.c
+@@ -0,0 +1,126 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Copyright (C) 2023, Ventana Micro Systems Inc., Andrew Jones <ajones@ventanamicro.com>
++ */
++#include <libcflat.h>
++#include <bitops.h>
++#include <devicetree.h>
++#include <string.h>
++#include <asm/isa.h>
++#include <asm/setup.h>
++
++typedef void (*isa_func_t)(const char *, int, void *);
++
++struct isa_info {
++	unsigned long hartid;
++	isa_func_t func;
++	void *data;
++};
++
++static bool isa_match(const char *ext, const char *name, int len)
 +{
-+	return islower(c) ? c - 'a' + 'A' : c;
++	return len == strlen(ext) && !strncasecmp(name, ext, len);
 +}
 +
-+static inline int tolower(int c)
++struct isa_check {
++	const char *ext;
++	bool found;
++};
++
++static void isa_name(const char *name, int len, void *data)
 +{
-+	return isupper(c) ? c - 'A' + 'a' : c;
++	struct isa_check *check = (struct isa_check *)data;
++
++	if (isa_match(check->ext, name, len))
++		check->found = true;
 +}
 +
- #endif /* _CTYPE_H_ */
-diff --git a/lib/string.c b/lib/string.c
-index 6d8a6380db92..ab6a724a3144 100644
---- a/lib/string.c
-+++ b/lib/string.c
-@@ -54,11 +54,25 @@ int strncmp(const char *a, const char *b, size_t n)
- 	return 0;
- }
++static void isa_bit(const char *name, int len, void *data)
++{
++	struct thread_info *info = (struct thread_info *)data;
++
++	if (isa_match("sstc", name, len))
++		set_bit(ISA_SSTC, info->isa);
++}
++
++static void isa_parse(const char *isa_string, int len, struct isa_info *info)
++{
++	assert(isa_string[0] == 'r' && isa_string[1] == 'v');
++#if __riscv_xlen == 32
++	assert(isa_string[2] == '3' && isa_string[3] == '2');
++#else
++	assert(isa_string[2] == '6' && isa_string[3] == '4');
++#endif
++
++	for (int i = 4; i < len; ++i) {
++		if (isa_string[i] == '_') {
++			const char *multi = &isa_string[++i];
++			int start = i;
++
++			while (i < len - 1 && isa_string[i] != '_')
++				++i;
++			info->func(multi, i - start, info->data);
++			if (i < len - 1)
++				--i;
++		} else {
++			info->func(&isa_string[i], 1, info->data);
++		}
++	}
++}
++
++static void isa_parse_fdt(int cpu_node, u64 hartid, void *data)
++{
++	struct isa_info *info = (struct isa_info *)data;
++	const struct fdt_property *prop;
++	int len;
++
++	if (hartid != info->hartid)
++		return;
++
++	prop = fdt_get_property(dt_fdt(), cpu_node, "riscv,isa", &len);
++	assert(prop);
++
++	isa_parse(prop->data, len, info);
++}
++
++static void isa_init_acpi(void)
++{
++	assert_msg(false, "ACPI not available");
++}
++
++void isa_init(struct thread_info *ti)
++{
++	struct isa_info info = {
++		.hartid = ti->hartid,
++		.func = isa_bit,
++		.data = ti,
++	};
++	int ret;
++
++	if (dt_available()) {
++		ret = dt_for_each_cpu_node(isa_parse_fdt, &info);
++		assert(ret == 0);
++	} else {
++		isa_init_acpi();
++	}
++}
++
++bool cpu_has_extension_name(int cpu, const char *ext)
++{
++	struct isa_info info = {
++		.hartid = cpus[cpu].hartid,
++		.func = isa_name,
++		.data = &(struct isa_check){ .ext = ext, },
++	};
++	struct isa_check *check = info.data;
++	int ret;
++
++	if (dt_available()) {
++		ret = dt_for_each_cpu_node(isa_parse_fdt, &info);
++		assert(ret == 0);
++	} else {
++		assert_msg(false, "ACPI not available");
++	}
++
++	return check->found;
++}
+diff --git a/lib/riscv/processor.c b/lib/riscv/processor.c
+index 2bfbd4e9b274..e0904209c0da 100644
+--- a/lib/riscv/processor.c
++++ b/lib/riscv/processor.c
+@@ -4,6 +4,7 @@
+  */
+ #include <libcflat.h>
+ #include <asm/csr.h>
++#include <asm/isa.h>
+ #include <asm/processor.h>
+ #include <asm/setup.h>
  
-+int strncasecmp(const char *a, const char *b, size_t n)
-+{
-+	for (; n--; ++a, ++b)
-+		if (tolower(*a) != tolower(*b) || *a == '\0')
-+			return tolower(*a) - tolower(*b);
-+
-+	return 0;
-+}
-+
- int strcmp(const char *a, const char *b)
- {
- 	return strncmp(a, b, SIZE_MAX);
- }
+@@ -58,5 +59,6 @@ void thread_info_init(void)
+ 	unsigned long hartid = csr_read(CSR_SSCRATCH);
+ 	int cpu = hartid_to_cpu(hartid);
  
-+int strcasecmp(const char *a, const char *b)
-+{
-+	return strncasecmp(a, b, SIZE_MAX);
-+}
-+
- char *strchr(const char *s, int c)
- {
- 	while (*s != (char)c)
-diff --git a/lib/string.h b/lib/string.h
-index 758dca8af36a..a28d75641530 100644
---- a/lib/string.h
-+++ b/lib/string.h
-@@ -15,6 +15,8 @@ extern char *strcat(char *dest, const char *src);
- extern char *strcpy(char *dest, const char *src);
- extern int strcmp(const char *a, const char *b);
- extern int strncmp(const char *a, const char *b, size_t n);
-+int strcasecmp(const char *a, const char *b);
-+int strncasecmp(const char *a, const char *b, size_t n);
- extern char *strchr(const char *s, int c);
- extern char *strrchr(const char *s, int c);
- extern char *strchrnul(const char *s, int c);
++	isa_init(&cpus[cpu]);
+ 	csr_write(CSR_SSCRATCH, &cpus[cpu]);
+ }
+diff --git a/riscv/Makefile b/riscv/Makefile
+index 61a1ff88d8ec..b51d9edfb792 100644
+--- a/riscv/Makefile
++++ b/riscv/Makefile
+@@ -30,6 +30,7 @@ cflatobjs += lib/on-cpus.o
+ cflatobjs += lib/vmalloc.o
+ cflatobjs += lib/riscv/bitops.o
+ cflatobjs += lib/riscv/io.o
++cflatobjs += lib/riscv/isa.o
+ cflatobjs += lib/riscv/mmu.o
+ cflatobjs += lib/riscv/processor.o
+ cflatobjs += lib/riscv/sbi.o
 -- 
 2.43.0
 
