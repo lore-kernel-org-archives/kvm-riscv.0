@@ -1,67 +1,187 @@
-From: Eric Biggers <ebiggers@kernel.org>
-Date: Wed, 24 Jan 2024 13:58:18 -0800
-Subject: [PATCH -next v21 23/27] riscv: detect assembler support for
- .option arch
-In-Reply-To: <20240122222918.GA141255@dev-fedora.aadp>
-References: <20240121011341.GA97368@sol.localdomain>
- <mhng-e4b5de69-859d-43ea-b35d-b568e6a621ef@palmer-ri-x1c9>
- <CABgGipW0pZCESu7dyiUdta2JtrpeMsJ3EABNjj_0GO9fbbTwQg@mail.gmail.com>
- <20240121181009.GA1469@sol.localdomain>
- <20240122222918.GA141255@dev-fedora.aadp>
-Message-ID: <20240124215818.GB1088@sol.localdomain>
+From: Andrew Jones <andrew.jones@linux.dev>
+Date: Fri, 26 Jan 2024 15:23:25 +0100
+Subject: [kvm-unit-tests PATCH v2 00/24] Introduce RISC-V
+Message-ID: <20240126142324.66674-26-andrew.jones@linux.dev>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Jan 22, 2024 at 03:29:18PM -0700, Nathan Chancellor wrote:
-> On Sun, Jan 21, 2024 at 10:10:09AM -0800, Eric Biggers wrote:
-> > On Sun, Jan 21, 2024 at 10:32:59PM +0800, Andy Chiu wrote:
-> > > 
-> > > Maybe what we really should do is to upgrade the condition check to a
-> > > one liner shell script and grep if "Warning" is being printed. Sadly
-> > > this warning is not failing the compilation with -Werror.
-> > > 
-> > > I can try forming a patch on this if it feels alright to people.
-> > 
-> > What about -Wa,--fatal-warnings ?
-> 
-> I suspect that would work, the following diff appears to work for me
-> with a version of clang that does and does not support '.option arch',
-> (although I am not sure if adding -Wa,--fatal-warnings will have any
-> other consequences):
-> 
-> diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
-> index bffbd869a068..e3142ce531a0 100644
-> --- a/arch/riscv/Kconfig
-> +++ b/arch/riscv/Kconfig
-> @@ -315,7 +315,6 @@ config AS_HAS_OPTION_ARCH
->  	# https://reviews.llvm.org/D123515
->  	def_bool y
->  	depends on $(as-instr, .option arch$(comma) +m)
-> -	depends on !$(as-instr, .option arch$(comma) -i)
->  
->  source "arch/riscv/Kconfig.socs"
->  source "arch/riscv/Kconfig.errata"
-> diff --git a/scripts/Kconfig.include b/scripts/Kconfig.include
-> index 5a84b6443875..3ee8ecfb8c04 100644
-> --- a/scripts/Kconfig.include
-> +++ b/scripts/Kconfig.include
-> @@ -33,7 +33,7 @@ ld-option = $(success,$(LD) -v $(1))
->  
->  # $(as-instr,<instr>)
->  # Return y if the assembler supports <instr>, n otherwise
-> -as-instr = $(success,printf "%b\n" "$(1)" | $(CC) $(CLANG_FLAGS) -c -x assembler-with-cpp -o /dev/null -)
-> +as-instr = $(success,printf "%b\n" "$(1)" | $(CC) $(CLANG_FLAGS) -Wa$(comma)--fatal-warnings -c -x assembler-with-cpp -o /dev/null -)
->  
->  # check if $(CC) and $(LD) exist
->  $(error-if,$(failure,command -v $(CC)),C compiler '$(CC)' not found)
+v2:
+ - While basing [1] on this series I found two bugs (one in exception
+   return and another in isa string parsing). I also decided to expose
+   a get_pte() function to unit tests and also an isa-extension-by-name
+   function to check for arbitrary extensions. Finally, I picked up
+   Thomas' gitlab-ci suggestion and his tags.
 
-It looks good to me as long as none of the as-instr users turn out to have any
-expected warnings.
+(Having [1] and the selftests running makes me pretty happy with the
+series, so, unless somebody shouts, I'll merge this sometime next week.)
 
-Maybe send the change to scripts/Kconfig.include as a separate patch?
+[1] https://gitlab.com/jones-drew/kvm-unit-tests/-/commit/e9c6c58b1c799de77fd39970b358a7592ecd048f
 
-- Eric
+Thanks,
+drew
+
+Original cover letter follows:
+
+This series adds another architecture to kvm-unit-tests (RISC-V, both
+32-bit and 64-bit). Much of the code is borrowed from arm/arm64 by
+mimicking its patterns or by first making the arm code more generic
+and moving it to the common lib.
+
+This series brings UART, SMP, MMU, and exception handling support.
+One should be able to start writing CPU validation tests in a mix
+of C and asm as well as write SBI tests, as is the plan for the SBI
+verification framework. kvm-unit-tests provides backtraces on asserts
+and input can be given to the tests through command line arguments,
+environment variables, and the DT (there's already an ISA string
+parser for extension detection).
+
+This series only targets QEMU TCG and KVM, but OpenSBI may be replaced
+with other SBI implementations, such as RustSBI. It's a goal to target
+bare-metal as soon as possible, so EFI support is already in progress
+and will be posted soon. More follow on series will come as well,
+bringing interrupt controller support for timer and PMU testing,
+support to run tests in usermode, and whatever else people need for
+their tests.
+
+
+Andrew Jones (24):
+  configure: Add ARCH_LIBDIR
+  riscv: Initial port, hello world
+  arm/arm64: Move cpumask.h to common lib
+  arm/arm64: Share cpu online, present and idle masks
+  riscv: Add DT parsing
+  riscv: Add initial SBI support
+  riscv: Add run script and unittests.cfg
+  riscv: Add riscv32 support
+  riscv: Add exception handling
+  riscv: Add backtrace support
+  arm/arm64: Generalize wfe/sev names in smp.c
+  arm/arm64: Remove spinlocks from on_cpu_async
+  arm/arm64: Share on_cpus
+  riscv: Compile with march
+  riscv: Add SMP support
+  arm/arm64: Share memregions
+  riscv: Populate memregions and switch to page allocator
+  riscv: Add MMU support
+  riscv: Enable the MMU in secondaries
+  riscv: Enable vmalloc
+  lib: Add strcasecmp and strncasecmp
+  riscv: Add isa string parsing
+  gitlab-ci: Add riscv64 tests
+  MAINTAINERS: Add riscv
+
+ .gitlab-ci.yml               |  17 +++
+ MAINTAINERS                  |   8 ++
+ Makefile                     |   2 +-
+ arm/Makefile.common          |   2 +
+ arm/selftest.c               |   3 +-
+ configure                    |  16 +++
+ lib/arm/asm/gic-v2.h         |   2 +-
+ lib/arm/asm/gic-v3.h         |   2 +-
+ lib/arm/asm/gic.h            |   2 +-
+ lib/arm/asm/setup.h          |  14 --
+ lib/arm/asm/smp.h            |  45 +-----
+ lib/arm/mmu.c                |   3 +-
+ lib/arm/setup.c              |  93 +++----------
+ lib/arm/smp.c                | 135 +-----------------
+ lib/arm64/asm/cpumask.h      |   1 -
+ lib/{arm/asm => }/cpumask.h  |  42 +++++-
+ lib/ctype.h                  |  10 ++
+ lib/elf.h                    |  11 ++
+ lib/ldiv32.c                 |  16 +++
+ lib/linux/const.h            |   2 +
+ lib/memregions.c             |  82 +++++++++++
+ lib/memregions.h             |  29 ++++
+ lib/on-cpus.c                | 154 +++++++++++++++++++++
+ lib/on-cpus.h                |  14 ++
+ lib/riscv/.gitignore         |   1 +
+ lib/riscv/asm-offsets.c      |  62 +++++++++
+ lib/riscv/asm/asm-offsets.h  |   1 +
+ lib/riscv/asm/barrier.h      |  20 +++
+ lib/riscv/asm/bitops.h       |  21 +++
+ lib/riscv/asm/bug.h          |  20 +++
+ lib/riscv/asm/csr.h          | 100 ++++++++++++++
+ lib/riscv/asm/io.h           |  87 ++++++++++++
+ lib/riscv/asm/isa.h          |  33 +++++
+ lib/riscv/asm/memory_areas.h |   1 +
+ lib/riscv/asm/mmu.h          |  32 +++++
+ lib/riscv/asm/page.h         |  21 +++
+ lib/riscv/asm/pgtable.h      |  42 ++++++
+ lib/riscv/asm/processor.h    |  29 ++++
+ lib/riscv/asm/ptrace.h       |  46 +++++++
+ lib/riscv/asm/sbi.h          |  54 ++++++++
+ lib/riscv/asm/setup.h        |  15 ++
+ lib/riscv/asm/smp.h          |  29 ++++
+ lib/riscv/asm/spinlock.h     |   7 +
+ lib/riscv/asm/stack.h        |  12 ++
+ lib/riscv/bitops.c           |  47 +++++++
+ lib/riscv/io.c               |  97 +++++++++++++
+ lib/riscv/isa.c              | 126 +++++++++++++++++
+ lib/riscv/mmu.c              | 205 +++++++++++++++++++++++++++
+ lib/riscv/processor.c        |  64 +++++++++
+ lib/riscv/sbi.c              |  40 ++++++
+ lib/riscv/setup.c            | 188 +++++++++++++++++++++++++
+ lib/riscv/smp.c              |  70 ++++++++++
+ lib/riscv/stack.c            |  32 +++++
+ lib/string.c                 |  14 ++
+ lib/string.h                 |   2 +
+ riscv/Makefile               | 106 ++++++++++++++
+ riscv/cstart.S               | 259 +++++++++++++++++++++++++++++++++++
+ riscv/flat.lds               |  75 ++++++++++
+ riscv/run                    |  41 ++++++
+ riscv/sbi.c                  |  41 ++++++
+ riscv/selftest.c             | 100 ++++++++++++++
+ riscv/sieve.c                |   1 +
+ riscv/unittests.cfg          |  37 +++++
+ 63 files changed, 2616 insertions(+), 267 deletions(-)
+ delete mode 100644 lib/arm64/asm/cpumask.h
+ rename lib/{arm/asm => }/cpumask.h (72%)
+ create mode 100644 lib/memregions.c
+ create mode 100644 lib/memregions.h
+ create mode 100644 lib/on-cpus.c
+ create mode 100644 lib/on-cpus.h
+ create mode 100644 lib/riscv/.gitignore
+ create mode 100644 lib/riscv/asm-offsets.c
+ create mode 100644 lib/riscv/asm/asm-offsets.h
+ create mode 100644 lib/riscv/asm/barrier.h
+ create mode 100644 lib/riscv/asm/bitops.h
+ create mode 100644 lib/riscv/asm/bug.h
+ create mode 100644 lib/riscv/asm/csr.h
+ create mode 100644 lib/riscv/asm/io.h
+ create mode 100644 lib/riscv/asm/isa.h
+ create mode 100644 lib/riscv/asm/memory_areas.h
+ create mode 100644 lib/riscv/asm/mmu.h
+ create mode 100644 lib/riscv/asm/page.h
+ create mode 100644 lib/riscv/asm/pgtable.h
+ create mode 100644 lib/riscv/asm/processor.h
+ create mode 100644 lib/riscv/asm/ptrace.h
+ create mode 100644 lib/riscv/asm/sbi.h
+ create mode 100644 lib/riscv/asm/setup.h
+ create mode 100644 lib/riscv/asm/smp.h
+ create mode 100644 lib/riscv/asm/spinlock.h
+ create mode 100644 lib/riscv/asm/stack.h
+ create mode 100644 lib/riscv/bitops.c
+ create mode 100644 lib/riscv/io.c
+ create mode 100644 lib/riscv/isa.c
+ create mode 100644 lib/riscv/mmu.c
+ create mode 100644 lib/riscv/processor.c
+ create mode 100644 lib/riscv/sbi.c
+ create mode 100644 lib/riscv/setup.c
+ create mode 100644 lib/riscv/smp.c
+ create mode 100644 lib/riscv/stack.c
+ create mode 100644 riscv/Makefile
+ create mode 100644 riscv/cstart.S
+ create mode 100644 riscv/flat.lds
+ create mode 100755 riscv/run
+ create mode 100644 riscv/sbi.c
+ create mode 100644 riscv/selftest.c
+ create mode 120000 riscv/sieve.c
+ create mode 100644 riscv/unittests.cfg
+
+-- 
+2.43.0
+
 
