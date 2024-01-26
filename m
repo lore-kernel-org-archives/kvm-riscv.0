@@ -1,45 +1,83 @@
-From: Andrew Jones <andrew.jones@linux.dev>
-Date: Fri, 26 Jan 2024 15:23:49 +0100
-Subject: [kvm-unit-tests PATCH v2 24/24] MAINTAINERS: Add riscv
-In-Reply-To: <20240126142324.66674-26-andrew.jones@linux.dev>
-References: <20240126142324.66674-26-andrew.jones@linux.dev>
-Message-ID: <20240126142324.66674-50-andrew.jones@linux.dev>
+From: Paolo Bonzini <pbonzini@redhat.com>
+Date: Fri, 26 Jan 2024 18:59:54 +0100
+Subject: [GIT PULL] KVM/riscv changes for 6.8 part #2
+In-Reply-To: <CAAhSdy2rbMeTwwHU_dHwUQi3AQB1qGNf=ByvzG11D99ZOJ3djA@mail.gmail.com>
+References: <CAAhSdy2rbMeTwwHU_dHwUQi3AQB1qGNf=ByvzG11D99ZOJ3djA@mail.gmail.com>
+Message-ID: <CABgObfavYbr_L34jNTOf_GLKTZ0CjXyz_vkVO6jr6pQZ_pLWSA@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Most of the support for riscv is now in place. Let's make it official
-and start adding tests!
+On Fri, Jan 19, 2024 at 6:33?AM Anup Patel <anup@brainfault.org> wrote:
+>
+> Hi Paolo,
+>
+> We have the following additional KVM RISC-V changes for 6.8:
+> 1) Zbc extension support for Guest/VM
+> 2) Scalar crypto extensions support for Guest/VM
+> 3) Vector crypto extensions support for Guest/VM
+> 4) Zfh[min] extensions support for Guest/VM
+> 5) Zihintntl extension support for Guest/VM
+> 6) Zvfh[min] extensions support for Guest/VM
+> 7) Zfa extension support for Guest/VM
 
-Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
-Reviewed-by: Thomas Huth <thuth@redhat.com>
-Acked-by: Thomas Huth <thuth@redhat.com>
----
- MAINTAINERS | 8 ++++++++
- 1 file changed, 8 insertions(+)
+Pulled, thanks.
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 958735fbfd79..a2fa437da5c9 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -94,6 +94,14 @@ F: powerpc/
- F: lib/powerpc/
- F: lib/ppc64/
- 
-+RISCV
-+M: Andrew Jones <andrew.jones@linux.dev>
-+S: Supported
-+L: kvm-riscv at lists.infradead.org
-+F: riscv/
-+F: lib/riscv/
-+T: https://gitlab.com/jones-drew/kvm-unit-tests.git
-+
- S390X
- M: Janosch Frank <frankja@linux.ibm.com>
- M: Claudio Imbrenda <imbrenda@linux.ibm.com>
--- 
-2.43.0
+Paolo
+
+> Please pull.
+>
+> Regards,
+> Anup
+>
+> The following changes since commit 9d1694dc91ce7b80bc96d6d8eaf1a1eca668d847:
+>
+>   Merge tag 'for-6.8/block-2024-01-18' of git://git.kernel.dk/linux
+> (2024-01-18 18:22:40 -0800)
+>
+> are available in the Git repository at:
+>
+>   https://github.com/kvm-riscv/linux.git tags/kvm-riscv-6.8-2
+>
+> for you to fetch changes up to 4d0e8f9a361b3a1f7b67418c536b258323de734f:
+>
+>   KVM: riscv: selftests: Add Zfa extension to get-reg-list test
+> (2024-01-19 09:20:19 +0530)
+>
+> ----------------------------------------------------------------
+> KVM/riscv changes for 6.8 part #2
+>
+> - Zbc extension support for Guest/VM
+> - Scalar crypto extensions support for Guest/VM
+> - Vector crypto extensions support for Guest/VM
+> - Zfh[min] extensions support for Guest/VM
+> - Zihintntl extension support for Guest/VM
+> - Zvfh[min] extensions support for Guest/VM
+> - Zfa extension support for Guest/VM
+>
+> ----------------------------------------------------------------
+> Anup Patel (14):
+>       RISC-V: KVM: Allow Zbc extension for Guest/VM
+>       KVM: riscv: selftests: Add Zbc extension to get-reg-list test
+>       RISC-V: KVM: Allow scalar crypto extensions for Guest/VM
+>       KVM: riscv: selftests: Add scaler crypto extensions to get-reg-list test
+>       RISC-V: KVM: Allow vector crypto extensions for Guest/VM
+>       KVM: riscv: selftests: Add vector crypto extensions to get-reg-list test
+>       RISC-V: KVM: Allow Zfh[min] extensions for Guest/VM
+>       KVM: riscv: selftests: Add Zfh[min] extensions to get-reg-list test
+>       RISC-V: KVM: Allow Zihintntl extension for Guest/VM
+>       KVM: riscv: selftests: Add Zihintntl extension to get-reg-list test
+>       RISC-V: KVM: Allow Zvfh[min] extensions for Guest/VM
+>       KVM: riscv: selftests: Add Zvfh[min] extensions to get-reg-list test
+>       RISC-V: KVM: Allow Zfa extension for Guest/VM
+>       KVM: riscv: selftests: Add Zfa extension to get-reg-list test
+>
+>  arch/riscv/include/uapi/asm/kvm.h                |  27 ++++++
+>  arch/riscv/kvm/vcpu_onereg.c                     |  54 ++++++++++++
+>  tools/testing/selftests/kvm/riscv/get-reg-list.c | 108 +++++++++++++++++++++++
+>  3 files changed, 189 insertions(+)
+>
 
 
