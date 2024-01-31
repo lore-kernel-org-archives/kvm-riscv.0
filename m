@@ -1,84 +1,97 @@
-From: Atish Patra <atishp@atishpatra.org>
-Date: Wed, 31 Jan 2024 11:46:05 -0800
-Subject: [PATCH 3/3] RISC-V: KVM: Use correct restricted types
-In-Reply-To: <20240131120511.200338-8-ajones@ventanamicro.com>
-References: <20240131120511.200338-5-ajones@ventanamicro.com> <20240131120511.200338-8-ajones@ventanamicro.com>
-Message-ID: <CAOnJCUJ-COpQcs+Baf44qGfTaon9xb6=fo9+DBKHvgMtBNzdPQ@mail.gmail.com>
+From: Sean Christopherson <seanjc@google.com>
+Date: Wed, 31 Jan 2024 14:45:46 -0800
+Subject: [RFC PATCH v1 1/8] KVM: selftests: x86: Fix bug in addr_arch_gva2gpa()
+In-Reply-To: <20231102155111.28821-2-guang.zeng@intel.com>
+References: <20231102155111.28821-1-guang.zeng@intel.com> <20231102155111.28821-2-guang.zeng@intel.com>
+Message-ID: <ZbrNmoSiufn4RM9K@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Jan 31, 2024 at 4:05?AM Andrew Jones <ajones@ventanamicro.com> wrote:
->
-> __le32 and __le64 types should be used with le32_to_cpu() and
-> le64_to_cpu() and __user is needed for pointers referencing
-> guest memory, as sparse helpfully points out.
->
-> Fixes: e9f12b5fff8a ("RISC-V: KVM: Implement SBI STA extension")
-> Reported-by: kernel test robot <lkp@intel.com>
-> Closes: https://lore.kernel.org/oe-kbuild-all/202401020142.lwFEDK5v-lkp at intel.com/
-> Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
+On Thu, Nov 02, 2023, Zeng Guang wrote:
+> Fix the approach to get page map from gva to gpa.
+> 
+> If gva maps a 4-KByte page, current implementation of addr_arch_gva2gpa()
+> will obtain wrong page size and cannot derive correct offset from the guest
+> virtual address.
+> 
+> Meanwhile using HUGEPAGE_MASK(x) to calculate the offset within page
+> (1G/2M/4K) mistakenly incorporates the upper part of 64-bit canonical
+> linear address. That will work out improper guest physical address if
+> translating guest virtual address in supervisor-mode address space.
+
+The "Meanwhile ..." is a huge clue that this should be two separate patches.
+
+> Signed-off-by: Zeng Guang <guang.zeng@intel.com>
 > ---
->  arch/riscv/kvm/vcpu_sbi_sta.c | 20 ++++++++++++--------
->  1 file changed, 12 insertions(+), 8 deletions(-)
->
-> diff --git a/arch/riscv/kvm/vcpu_sbi_sta.c b/arch/riscv/kvm/vcpu_sbi_sta.c
-> index 01f09fe8c3b0..d8cf9ca28c61 100644
-> --- a/arch/riscv/kvm/vcpu_sbi_sta.c
-> +++ b/arch/riscv/kvm/vcpu_sbi_sta.c
-> @@ -26,8 +26,12 @@ void kvm_riscv_vcpu_record_steal_time(struct kvm_vcpu *vcpu)
->  {
->         gpa_t shmem = vcpu->arch.sta.shmem;
->         u64 last_steal = vcpu->arch.sta.last_steal;
-> -       u32 *sequence_ptr, sequence;
-> -       u64 *steal_ptr, steal;
-> +       __le32 __user *sequence_ptr;
-> +       __le64 __user *steal_ptr;
-> +       __le32 sequence_le;
-> +       __le64 steal_le;
-> +       u32 sequence;
-> +       u64 steal;
->         unsigned long hva;
->         gfn_t gfn;
->
-> @@ -47,22 +51,22 @@ void kvm_riscv_vcpu_record_steal_time(struct kvm_vcpu *vcpu)
->                 return;
->         }
->
-> -       sequence_ptr = (u32 *)(hva + offset_in_page(shmem) +
-> +       sequence_ptr = (__le32 __user *)(hva + offset_in_page(shmem) +
->                                offsetof(struct sbi_sta_struct, sequence));
-> -       steal_ptr = (u64 *)(hva + offset_in_page(shmem) +
-> +       steal_ptr = (__le64 __user *)(hva + offset_in_page(shmem) +
->                             offsetof(struct sbi_sta_struct, steal));
->
-> -       if (WARN_ON(get_user(sequence, sequence_ptr)))
-> +       if (WARN_ON(get_user(sequence_le, sequence_ptr)))
->                 return;
->
-> -       sequence = le32_to_cpu(sequence);
-> +       sequence = le32_to_cpu(sequence_le);
->         sequence += 1;
->
->         if (WARN_ON(put_user(cpu_to_le32(sequence), sequence_ptr)))
->                 return;
->
-> -       if (!WARN_ON(get_user(steal, steal_ptr))) {
-> -               steal = le64_to_cpu(steal);
-> +       if (!WARN_ON(get_user(steal_le, steal_ptr))) {
-> +               steal = le64_to_cpu(steal_le);
->                 vcpu->arch.sta.last_steal = READ_ONCE(current->sched_info.run_delay);
->                 steal += vcpu->arch.sta.last_steal - last_steal;
->                 WARN_ON(put_user(cpu_to_le64(steal), steal_ptr));
-> --
-> 2.43.0
->
+>  tools/testing/selftests/kvm/lib/x86_64/processor.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/tools/testing/selftests/kvm/lib/x86_64/processor.c b/tools/testing/selftests/kvm/lib/x86_64/processor.c
+> index d8288374078e..9f4b8c47edce 100644
+> --- a/tools/testing/selftests/kvm/lib/x86_64/processor.c
+> +++ b/tools/testing/selftests/kvm/lib/x86_64/processor.c
+> @@ -293,6 +293,7 @@ uint64_t *__vm_get_page_table_entry(struct kvm_vm *vm, uint64_t vaddr,
+>  	if (vm_is_target_pte(pde, level, PG_LEVEL_2M))
+>  		return pde;
+>  
+> +	*level = PG_LEVEL_4K;
+>  	return virt_get_pte(vm, pde, vaddr, PG_LEVEL_4K);
+>  }
+>  
+> @@ -496,7 +497,7 @@ vm_paddr_t addr_arch_gva2gpa(struct kvm_vm *vm, vm_vaddr_t gva)
+>  	 * No need for a hugepage mask on the PTE, x86-64 requires the "unused"
+>  	 * address bits to be zero.
+>  	 */
+> -	return PTE_GET_PA(*pte) | (gva & ~HUGEPAGE_MASK(level));
+> +	return PTE_GET_PA(*pte) | (gva & (HUGEPAGE_SIZE(level) - 1));
 
-Reviewed-by: Atish Patra <atishp@rivosinc.com>
+I think I would prefer to "fix" HUGEPAGE_MASK() and drop its incorporation of
+PHYSICAL_PAGE_MASK.  Regardless of anyone's personal views on whether or not
+PAGE_MASK and HUGEPAGE_MASK should only cover physical address bits, (a) the
+_one_ usage of HUGEPAGE_MASK is broken and (b) diverging from the kernel for
+something like is a terrible idea, and the kernel does:
 
--- 
-Regards,
-Atish
+	#define PAGE_MASK		(~(PAGE_SIZE-1))
+	#define HPAGE_MASK		(~(HPAGE_SIZE - 1))
+	#define KVM_HPAGE_MASK(x)	(~(KVM_HPAGE_SIZE(x) - 1))
+
+Luckily, there are barely any users in x86, so I think the entirety of the
+conversion is this?
+
+diff --git a/tools/testing/selftests/kvm/include/x86_64/processor.h b/tools/testing/selftests/kvm/include/x86_64/processor.h
+index 0f4792083d01..ef895038c87f 100644
+--- a/tools/testing/selftests/kvm/include/x86_64/processor.h
++++ b/tools/testing/selftests/kvm/include/x86_64/processor.h
+@@ -352,11 +352,12 @@ static inline unsigned int x86_model(unsigned int eax)
+ 
+ #define PAGE_SHIFT             12
+ #define PAGE_SIZE              (1ULL << PAGE_SHIFT)
+-#define PAGE_MASK              (~(PAGE_SIZE-1) & PHYSICAL_PAGE_MASK)
++#define PAGE_MASK              (~(PAGE_SIZE-1))
++kvm_static_assert((PHYSICAL_PAGE_MASK & PAGE_MASK) == PHYSICAL_PAGE_MASK);
+ 
+ #define HUGEPAGE_SHIFT(x)      (PAGE_SHIFT + (((x) - 1) * 9))
+ #define HUGEPAGE_SIZE(x)       (1UL << HUGEPAGE_SHIFT(x))
+-#define HUGEPAGE_MASK(x)       (~(HUGEPAGE_SIZE(x) - 1) & PHYSICAL_PAGE_MASK)
++#define HUGEPAGE_MASK(x)       (~(HUGEPAGE_SIZE(x) - 1))
+ 
+ #define PTE_GET_PA(pte)                ((pte) & PHYSICAL_PAGE_MASK)
+ #define PTE_GET_PFN(pte)        (PTE_GET_PA(pte) >> PAGE_SHIFT)
+diff --git a/tools/testing/selftests/kvm/x86_64/hyperv_tlb_flush.c b/tools/testing/selftests/kvm/x86_64/hyperv_tlb_flush.c
+index 05b56095cf76..cc5730322072 100644
+--- a/tools/testing/selftests/kvm/x86_64/hyperv_tlb_flush.c
++++ b/tools/testing/selftests/kvm/x86_64/hyperv_tlb_flush.c
+@@ -623,7 +623,7 @@ int main(int argc, char *argv[])
+        for (i = 0; i < NTEST_PAGES; i++) {
+                pte = vm_get_page_table_entry(vm, data->test_pages + i * PAGE_SIZE);
+                gpa = addr_hva2gpa(vm, pte);
+-               __virt_pg_map(vm, gva + PAGE_SIZE * i, gpa & PAGE_MASK, PG_LEVEL_4K);
++               __virt_pg_map(vm, gva + PAGE_SIZE * i, gpa & PHYSICAL_PAGE_MASK, PG_LEVEL_4K);
+                data->test_pages_pte[i] = gva + (gpa & ~PAGE_MASK);
+        }
+ 
+
 
