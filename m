@@ -1,35 +1,37 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Wed, 31 Jan 2024 13:05:12 +0100
-Subject: [PATCH 0/3] RISC-V: Fix sparse warnings
-Message-ID: <20240131120511.200338-5-ajones@ventanamicro.com>
+Date: Wed, 31 Jan 2024 13:05:13 +0100
+Subject: [PATCH 1/3] RISC-V: paravirt: steal_time should be static
+In-Reply-To: <20240131120511.200338-5-ajones@ventanamicro.com>
+References: <20240131120511.200338-5-ajones@ventanamicro.com>
+Message-ID: <20240131120511.200338-6-ajones@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-After the steal-time series was merged, LKP sent me mail with sparse
-warnings for the lack of using appropriate restricted types and a
-local variable not being static. This series makes the fixups
-necessary to appease sparse for 64-bit compiles. Changes to
-__get_user_8() and __put_user_8() are needed to completely quiet
-sparse for 32-bit compiles. I'll address those 32-bit sparse warnings
-separately, since it's not 100% clear how best to approach a couple of
-them.
+steal_time is not used outside paravirt.c, make it static,
+as sparse suggested.
 
-Thanks,
-drew
+Fixes: fdf68acccfc6 ("RISC-V: paravirt: Implement steal-time support")
+Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
+---
+ arch/riscv/kernel/paravirt.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-
-Andrew Jones (3):
-  RISC-V: paravirt: steal_time should be static
-  RISC-V: paravirt: Use correct restricted types
-  RISC-V: KVM: Use correct restricted types
-
- arch/riscv/kernel/paravirt.c  |  6 +++---
- arch/riscv/kvm/vcpu_sbi_sta.c | 20 ++++++++++++--------
- 2 files changed, 15 insertions(+), 11 deletions(-)
-
+diff --git a/arch/riscv/kernel/paravirt.c b/arch/riscv/kernel/paravirt.c
+index 8e114f5930ce..15c5d4048db5 100644
+--- a/arch/riscv/kernel/paravirt.c
++++ b/arch/riscv/kernel/paravirt.c
+@@ -41,7 +41,7 @@ static int __init parse_no_stealacc(char *arg)
+ 
+ early_param("no-steal-acc", parse_no_stealacc);
+ 
+-DEFINE_PER_CPU(struct sbi_sta_struct, steal_time) __aligned(64);
++static DEFINE_PER_CPU(struct sbi_sta_struct, steal_time) __aligned(64);
+ 
+ static bool __init has_pv_steal_clock(void)
+ {
 -- 
 2.43.0
 
