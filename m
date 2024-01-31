@@ -1,36 +1,36 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Wed, 31 Jan 2024 09:49:40 +0100
-Subject: [PATCH 5/5] KVM: selftests: x86_64: Remove redundant newlines
-In-Reply-To: <ZblbcUloeMqc-lR0@google.com>
-References: <20231206170241.82801-7-ajones@ventanamicro.com>
- <20231206170241.82801-12-ajones@ventanamicro.com>
- <ZblbcUloeMqc-lR0@google.com>
-Message-ID: <20240131-aaad2df64c2f26b892623006@orel>
+Date: Wed, 31 Jan 2024 13:05:12 +0100
+Subject: [PATCH 0/3] RISC-V: Fix sparse warnings
+Message-ID: <20240131120511.200338-5-ajones@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Jan 30, 2024 at 12:26:25PM -0800, Sean Christopherson wrote:
-> On Wed, Dec 06, 2023, Andrew Jones wrote:
-> > @@ -162,7 +162,7 @@ static void check_clocksource(void)
-> >  		goto out;
-> >  	}
-> >  
-> > -	TEST_ASSERT(!strncmp(clk_name, "tsc\n", st.st_size),
-> > +	TEST_ASSERT(!strncmp(clk_name, "tsc", st.st_size),
-> 
-> This newline is functionally necessary.  It's in the strncmp() (*#$@ sysfs appends
-> newlines to everything), not the TEST_ASSERT message.  I'll give you a pass and
-> fixup when applying since I'm guessing you don't have x86 hardware ;-)
+After the steal-time series was merged, LKP sent me mail with sparse
+warnings for the lack of using appropriate restricted types and a
+local variable not being static. This series makes the fixups
+necessary to appease sparse for 64-bit compiles. Changes to
+__get_user_8() and __put_user_8() are needed to completely quiet
+sparse for 32-bit compiles. I'll address those 32-bit sparse warnings
+separately, since it's not 100% clear how best to approach a couple of
+them.
 
-Thanks for the fixup!
-
-> 
-> I double checked the other arch patches and didn't see anything sneaky like this.
-
-And for the double check!
-
+Thanks,
 drew
+
+
+Andrew Jones (3):
+  RISC-V: paravirt: steal_time should be static
+  RISC-V: paravirt: Use correct restricted types
+  RISC-V: KVM: Use correct restricted types
+
+ arch/riscv/kernel/paravirt.c  |  6 +++---
+ arch/riscv/kvm/vcpu_sbi_sta.c | 20 ++++++++++++--------
+ 2 files changed, 15 insertions(+), 11 deletions(-)
+
+-- 
+2.43.0
+
 
