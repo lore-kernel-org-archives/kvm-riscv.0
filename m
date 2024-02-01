@@ -1,55 +1,70 @@
-From: Andrew Jones <andrew.jones@linux.dev>
-Date: Thu, 1 Feb 2024 16:24:43 +0100
-Subject: [kvm-unit-tests PATCH v2 08/24] riscv: Add riscv32 support
-In-Reply-To: <20240126142324.66674-34-andrew.jones@linux.dev>
+From: Eric Auger <eric.auger@redhat.com>
+Date: Thu, 1 Feb 2024 18:46:46 +0100
+Subject: [kvm-unit-tests PATCH v2 16/24] arm/arm64: Share memregions
+In-Reply-To: <20240201-522cd6aa1f8162c0c50f63b0@orel>
 References: <20240126142324.66674-26-andrew.jones@linux.dev>
- <20240126142324.66674-34-andrew.jones@linux.dev>
-Message-ID: <20240201-89bb062a591a3a65313f4cba@orel>
+ <20240126142324.66674-42-andrew.jones@linux.dev>
+ <730ca018-cb7b-4ef8-b544-7afdfce03bc8@redhat.com>
+ <20240201-522cd6aa1f8162c0c50f63b0@orel>
+Message-ID: <783ed9aa-82f7-41b7-a082-e3b75276bd7c@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Jan 26, 2024 at 03:23:33PM +0100, Andrew Jones wrote:
-...
-> diff --git a/lib/ldiv32.c b/lib/ldiv32.c
-> index 897a4b9cd39e..9ce2a6a1faf0 100644
-> --- a/lib/ldiv32.c
-> +++ b/lib/ldiv32.c
-> @@ -1,5 +1,21 @@
->  #include <stdint.h>
->  
-> +#if __riscv_xlen == 32
-> +int __clzdi2(unsigned long);
-> +
-> +int __clzdi2(unsigned long a)
-> +{
-> +	int n = 0;
-> +
-> +	while (a) {
-> +		++n;
-> +		a >>= 1;
-> +	}
-> +
-> +	return 32 - n;
-> +}
-> +#endif
-> +
 
-On riscv32, when attempting to do printf("%llx\n", x), where x is a 64-bit
-type, I found a bug with the above. It turns out that despite [1] stating
-that __clzdi2() takes an unsigned long, libgcc code which generates calls
-to it expect it to take an unsigned long long. I've fixed this for v3 by
-renaming the above function to __clzsi2() and adding
 
- int __clzdi2(uint64_t num)
- {
-     return num >> 32 ? __clzsi2(num >> 32) : __clzsi2(num) + 32;
- }
+On 2/1/24 15:21, Andrew Jones wrote:
+> On Thu, Feb 01, 2024 at 01:03:54PM +0100, Eric Auger wrote:
+>> Hi Drew,
+>>
+>> On 1/26/24 15:23, Andrew Jones wrote:
+> ...
+>>> -static void mem_regions_add_assumed(void)
+>>> -{
+>>> -	phys_addr_t code_end = (phys_addr_t)(unsigned long)&_etext;
+>>> -	struct mem_region *r;
+>>> -
+>>> -	r = mem_region_find(code_end - 1);
+>>> -	assert(r);
+>>> +	struct mem_region *code, *data;
+>>>  
+>>>  	/* Split the region with the code into two regions; code and data */
+>>> -	mem_region_add(&(struct mem_region){
+>>> -		.start = code_end,
+>>> -		.end = r->end,
+>>> -	});
+>>> -	*r = (struct mem_region){
+>>> -		.start = r->start,
+>>> -		.end = code_end,
+>>> -		.flags = MR_F_CODE,
+>>> -	};
+>>> +	memregions_split((unsigned long)&_etext, &code, &data);
+>>> +	assert(code);
+>>> +	code->flags |= MR_F_CODE;
+>> I think this would deserve to be split into several patches, esp. this
+>> change in the implementation of
+>>
+>> mem_regions_add_assumed and the init changes. At the moment this is pretty difficult to review
+>>
+> Darn, you called me out on this one :-) I had a feeling I should split out
+> the introduction of memregions_split(), since it was sneaking a bit more
+> into the patch than just code motion as advertised, but then I hoped I
+> get away with putting a bit more burden on the reviewer instead. If you
+> haven't already convinced yourself that the new function is equivalent to
+> the old code, then I'll respin with the splitting and also create a new
+> patch for the 'mem_region' to 'memregions' rename while at it (so there
+> will be three patches instead of one). But, if you're already good with
+> it, then I'll leave it as is, since patch splitting is a pain...
+frankly I would prefer you split. But maybe somebody smarter than me
+will be able to review as is, maybe just wait a little bit until you
+respin ;-)
 
-[1] https://gcc.gnu.org/onlinedocs/gccint/Integer-library-routines.html
+Eric
+>
+> Thanks,
+> drew
+>
 
-Thanks,
-drew
 
