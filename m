@@ -1,11 +1,11 @@
 From: Eric Auger <eric.auger@redhat.com>
-Date: Thu, 1 Feb 2024 10:22:49 +0100
-Subject: [kvm-unit-tests PATCH v2 11/24] arm/arm64: Generalize wfe/sev
- names in smp.c
-In-Reply-To: <20240126142324.66674-37-andrew.jones@linux.dev>
+Date: Thu, 1 Feb 2024 10:34:24 +0100
+Subject: [kvm-unit-tests PATCH v2 12/24] arm/arm64: Remove spinlocks from
+ on_cpu_async
+In-Reply-To: <20240126142324.66674-38-andrew.jones@linux.dev>
 References: <20240126142324.66674-26-andrew.jones@linux.dev>
- <20240126142324.66674-37-andrew.jones@linux.dev>
-Message-ID: <3623c065-8842-4570-a591-5d0b11911dee@redhat.com>
+ <20240126142324.66674-38-andrew.jones@linux.dev>
+Message-ID: <f2c558f7-4ba6-4ea5-966a-7b820ee3a2b8@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -15,114 +15,104 @@ Content-Transfer-Encoding: 7bit
 
 
 On 1/26/24 15:23, Andrew Jones wrote:
-> Most of Arm's on_cpus() implementation can be shared by any
-> architecture which has the possible, present, and idle cpumasks,
-> like riscv does. Rename the exceptions (wfe/sve) to something
-> more generic in order to prepare to share the functions.
+> Remove spinlocks from on_cpu_async() by pulling some of their
+> use into a new function and also by narrowing the locking to a
+> single on_cpu_info structure by introducing yet another cpumask.
 >
 > Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
 > Acked-by: Thomas Huth <thuth@redhat.com>
-
 Reviewed-by: Eric Auger <eric.auger@redhat.com>
 
 Eric
-
 > ---
->  lib/arm/asm/smp.h |  4 ++++
->  lib/arm/smp.c     | 16 ++++++++--------
->  2 files changed, 12 insertions(+), 8 deletions(-)
+>  lib/arm/asm/smp.h |  4 +++-
+>  lib/arm/smp.c     | 37 ++++++++++++++++++++++++++++---------
+>  2 files changed, 31 insertions(+), 10 deletions(-)
 >
 > diff --git a/lib/arm/asm/smp.h b/lib/arm/asm/smp.h
-> index b89a68dd344f..9f6d839ab568 100644
+> index 9f6d839ab568..f0c0f97a19f8 100644
 > --- a/lib/arm/asm/smp.h
 > +++ b/lib/arm/asm/smp.h
-> @@ -6,6 +6,7 @@
->   * This work is licensed under the terms of the GNU LGPL, version 2.
->   */
->  #include <cpumask.h>
-> +#include <asm/barrier.h>
->  #include <asm/thread_info.h>
->  
->  #define smp_processor_id()		(current_thread_info()->cpu)
-> @@ -18,6 +19,9 @@ struct secondary_data {
->  };
->  extern struct secondary_data secondary_data;
->  
-> +#define smp_wait_for_event()	wfe()
-> +#define smp_send_event()	sev()
-> +
->  extern bool cpu0_calls_idle;
->  
+> @@ -27,9 +27,11 @@ extern bool cpu0_calls_idle;
 >  extern void halt(void);
+>  extern void do_idle(void);
+>  
+> -extern void smp_boot_secondary(int cpu, secondary_entry_fn entry);
+>  extern void on_cpu_async(int cpu, void (*func)(void *data), void *data);
+>  extern void on_cpu(int cpu, void (*func)(void *data), void *data);
+>  extern void on_cpus(void (*func)(void *data), void *data);
+>  
+> +extern void smp_boot_secondary(int cpu, secondary_entry_fn entry);
+> +extern void smp_boot_secondary_nofail(int cpu, secondary_entry_fn entry);
+> +
+>  #endif /* _ASMARM_SMP_H_ */
 > diff --git a/lib/arm/smp.c b/lib/arm/smp.c
-> index 78fc1656cefa..c00fda2efb03 100644
+> index c00fda2efb03..e0872a1a72c2 100644
 > --- a/lib/arm/smp.c
 > +++ b/lib/arm/smp.c
-> @@ -45,7 +45,7 @@ secondary_entry_fn secondary_cinit(void)
->  	 */
->  	entry = secondary_data.entry;
->  	set_cpu_online(ti->cpu, true);
-> -	sev();
-> +	smp_send_event();
->  
->  	/*
->  	 * Return to the assembly stub, allowing entry to be called
-> @@ -65,7 +65,7 @@ static void __smp_boot_secondary(int cpu, secondary_entry_fn entry)
->  	assert(ret == 0);
->  
->  	while (!cpu_online(cpu))
-> -		wfe();
-> +		smp_wait_for_event();
+> @@ -76,12 +76,32 @@ void smp_boot_secondary(int cpu, secondary_entry_fn entry)
+>  	spin_unlock(&lock);
 >  }
 >  
->  void smp_boot_secondary(int cpu, secondary_entry_fn entry)
-> @@ -122,7 +122,7 @@ static void cpu_wait(int cpu)
->  	cpumask_set_cpu(me, &on_cpu_info[cpu].waiters);
->  	deadlock_check(me, cpu);
->  	while (!cpu_idle(cpu))
-> -		wfe();
-> +		smp_wait_for_event();
->  	cpumask_clear_cpu(me, &on_cpu_info[cpu].waiters);
->  }
+> +void smp_boot_secondary_nofail(int cpu, secondary_entry_fn entry)
+> +{
+> +	spin_lock(&lock);
+> +	if (!cpu_online(cpu))
+> +		__smp_boot_secondary(cpu, entry);
+> +	spin_unlock(&lock);
+> +}
+> +
+>  struct on_cpu_info {
+>  	void (*func)(void *data);
+>  	void *data;
+>  	cpumask_t waiters;
+>  };
+>  static struct on_cpu_info on_cpu_info[NR_CPUS];
+> +static cpumask_t on_cpu_info_lock;
+> +
+> +static bool get_on_cpu_info(int cpu)
+> +{
+> +	return !cpumask_test_and_set_cpu(cpu, &on_cpu_info_lock);
+> +}
+> +
+> +static void put_on_cpu_info(int cpu)
+> +{
+> +	int ret = cpumask_test_and_clear_cpu(cpu, &on_cpu_info_lock);
+> +	assert(ret);
+> +}
 >  
-> @@ -134,17 +134,17 @@ void do_idle(void)
->  		cpu0_calls_idle = true;
+>  static void __deadlock_check(int cpu, const cpumask_t *waiters, bool *found)
+>  {
+> @@ -158,22 +178,21 @@ void on_cpu_async(int cpu, void (*func)(void *data), void *data)
+>  	assert_msg(cpu != 0 || cpu0_calls_idle, "Waiting on CPU0, which is unlikely to idle. "
+>  						"If this is intended set cpu0_calls_idle=1");
 >  
->  	set_cpu_idle(cpu, true);
-> -	sev();
-> +	smp_send_event();
+> -	spin_lock(&lock);
+> -	if (!cpu_online(cpu))
+> -		__smp_boot_secondary(cpu, do_idle);
+> -	spin_unlock(&lock);
+> +	smp_boot_secondary_nofail(cpu, do_idle);
 >  
 >  	for (;;) {
->  		while (cpu_idle(cpu))
-> -			wfe();
-> +			smp_wait_for_event();
->  		smp_rmb();
->  		on_cpu_info[cpu].func(on_cpu_info[cpu].data);
->  		on_cpu_info[cpu].func = NULL;
->  		smp_wmb();
->  		set_cpu_idle(cpu, true);
-> -		sev();
-> +		smp_send_event();
+>  		cpu_wait(cpu);
+> -		spin_lock(&lock);
+> -		if ((volatile void *)on_cpu_info[cpu].func == NULL)
+> -			break;
+> -		spin_unlock(&lock);
+> +		if (get_on_cpu_info(cpu)) {
+> +			if ((volatile void *)on_cpu_info[cpu].func == NULL)
+> +				break;
+> +			put_on_cpu_info(cpu);
+> +		}
 >  	}
->  }
->  
-> @@ -174,7 +174,7 @@ void on_cpu_async(int cpu, void (*func)(void *data), void *data)
+> +
+>  	on_cpu_info[cpu].func = func;
 >  	on_cpu_info[cpu].data = data;
->  	spin_unlock(&lock);
+> -	spin_unlock(&lock);
 >  	set_cpu_idle(cpu, false);
-> -	sev();
-> +	smp_send_event();
+> +	put_on_cpu_info(cpu);
+>  	smp_send_event();
 >  }
 >  
->  void on_cpu(int cpu, void (*func)(void *data), void *data)
-> @@ -201,7 +201,7 @@ void on_cpus(void (*func)(void *data), void *data)
->  		deadlock_check(me, cpu);
->  	}
->  	while (cpumask_weight(&cpu_idle_mask) < nr_cpus - 1)
-> -		wfe();
-> +		smp_wait_for_event();
->  	for_each_present_cpu(cpu)
->  		cpumask_clear_cpu(me, &on_cpu_info[cpu].waiters);
->  }
 
 
