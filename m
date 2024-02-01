@@ -1,142 +1,163 @@
-From: Maxim Levitsky <mlevitsk@redhat.com>
-Date: Mon, 01 Nov 2021 00:52:55 +0200
-Subject: [PATCH v2 28/43] KVM: VMX: Remove vCPU from PI wakeup list
- before updating PID.NV
-In-Reply-To: <YXrbpvHG7YD0MNO2@google.com>
-References: <20211009021236.4122790-1-seanjc@google.com>
- <20211009021236.4122790-29-seanjc@google.com>
- <558e7e4c36e649709837079a25c2f56fc5609fbe.camel@redhat.com>
- <YXrbpvHG7YD0MNO2@google.com>
-Message-ID: <b03c61ae0fa7e9531db8115569ef1c201c1aecef.camel@redhat.com>
+From: Eric Auger <eric.auger@redhat.com>
+Date: Thu, 1 Feb 2024 09:29:22 +0100
+Subject: [kvm-unit-tests PATCH v2 03/24] arm/arm64: Move cpumask.h to
+ common lib
+In-Reply-To: <20240126142324.66674-29-andrew.jones@linux.dev>
+References: <20240126142324.66674-26-andrew.jones@linux.dev>
+ <20240126142324.66674-29-andrew.jones@linux.dev>
+Message-ID: <6810c7a7-2494-4bb3-9e74-98010f4d8d4a@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, 2021-10-28 at 17:19 +0000, Sean Christopherson wrote:
-> On Thu, Oct 28, 2021, Maxim Levitsky wrote:
-> > On Fri, 2021-10-08 at 19:12 -0700, Sean Christopherson wrote:
-> > > Remove the vCPU from the wakeup list before updating the notification
-> > > vector in the posted interrupt post-block helper.  There is no need to
-> > > wake the current vCPU as it is by definition not blocking.  Practically
-> > > speaking this is a nop as it only shaves a few meager cycles in the
-> > > unlikely case that the vCPU was migrated and the previous pCPU gets a
-> > > wakeup IRQ right before PID.NV is updated.  The real motivation is to
-> > > allow for more readable code in the future, when post-block is merged
-> > > with vmx_vcpu_pi_load(), at which point removal from the list will be
-> > > conditional on the old notification vector.
-> > > 
-> > > Opportunistically add comments to document why KVM has a per-CPU spinlock
-> > > that, at first glance, appears to be taken only on the owning CPU.
-> > > Explicitly call out that the spinlock must be taken with IRQs disabled, a
-> > > detail that was "lost" when KVM switched from spin_lock_irqsave() to
-> > > spin_lock(), with IRQs disabled for the entirety of the relevant path.
-> > > 
-> > > Signed-off-by: Sean Christopherson <seanjc@google.com>
-> > > ---
-> > >  arch/x86/kvm/vmx/posted_intr.c | 49 +++++++++++++++++++++++-----------
-> > >  1 file changed, 33 insertions(+), 16 deletions(-)
-> > > 
-> > > diff --git a/arch/x86/kvm/vmx/posted_intr.c b/arch/x86/kvm/vmx/posted_intr.c
-> > > index 2b2206339174..901b7a5f7777 100644
-> > > --- a/arch/x86/kvm/vmx/posted_intr.c
-> > > +++ b/arch/x86/kvm/vmx/posted_intr.c
-> > > @@ -10,10 +10,22 @@
-> > >  #include "vmx.h"
-> > >  
-> > >  /*
-> > > - * We maintain a per-CPU linked-list of vCPU, so in wakeup_handler() we
-> > > - * can find which vCPU should be waken up.
-> > > + * Maintain a per-CPU list of vCPUs that need to be awakened by wakeup_handler()
-> > Nit: While at it, it would be nice to rename this to pi_wakeup_hanlder() so
-> > that it can be more easilly found.
-> 
-> Ah, good catch.
-> 
-> > > + * when a WAKEUP_VECTOR interrupted is posted.  vCPUs are added to the list when
-> > > + * the vCPU is scheduled out and is blocking (e.g. in HLT) with IRQs enabled.
-> > s/interrupted/interrupt ?
-> > 
-> > Isn't that comment incorrect? As I see, the PI hardware is setup to use the WAKEUP_VECTOR
-> > when vcpu blocks (in pi_pre_block) and then that vcpu is added to the list.
-> > The pi_wakeup_hanlder just goes over the list and wakes up all vcpus on the lsit.
-> 
-> Doh, yes.  This patch is predicting the future.  The comment becomes correct as of 
-> 
->   KVM: VMX: Handle PI wakeup shenanigans during vcpu_put/load
-> 
-> but as of this patch the "scheduled out" piece doesn't hold true.
+
+
+On 1/26/24 15:23, Andrew Jones wrote:
+> RISC-V will also make use of cpumask.h, so move it to the arch-common
+> directory.
+>
+> Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
+> Reviewed-by: Thomas Huth <thuth@redhat.com>
+> Acked-by: Thomas Huth <thuth@redhat.com>
+Reviewed-by: Eric Auger <eric.auger@redhat.com>
+
+Eric
+> ---
+>  lib/arm/asm/gic-v2.h        | 2 +-
+>  lib/arm/asm/gic-v3.h        | 2 +-
+>  lib/arm/asm/gic.h           | 2 +-
+>  lib/arm/asm/smp.h           | 2 +-
+>  lib/arm/mmu.c               | 2 +-
+>  lib/arm/smp.c               | 2 +-
+>  lib/arm64/asm/cpumask.h     | 1 -
+>  lib/{arm/asm => }/cpumask.h | 9 ++++-----
+>  8 files changed, 10 insertions(+), 12 deletions(-)
+>  delete mode 100644 lib/arm64/asm/cpumask.h
+>  rename lib/{arm/asm => }/cpumask.h (94%)
+>
+> diff --git a/lib/arm/asm/gic-v2.h b/lib/arm/asm/gic-v2.h
+> index 1fcfd43c8075..ff11afb15d30 100644
+> --- a/lib/arm/asm/gic-v2.h
+> +++ b/lib/arm/asm/gic-v2.h
+> @@ -18,7 +18,7 @@
+>  #define GICC_IAR_INT_ID_MASK		0x3ff
 >  
-> > > + * The vCPUs posted interrupt descriptor is updated at the same time to set its
-> > > + * notification vector to WAKEUP_VECTOR, so that posted interrupt from devices
-> > > + * wake the target vCPUs.  vCPUs are removed from the list and the notification
-> > > + * vector is reset when the vCPU is scheduled in.
-> > >   */
-> > >  static DEFINE_PER_CPU(struct list_head, blocked_vcpu_on_cpu);
-> > Also while at it, why not to rename this to 'blocked_vcpu_list'?
-> > to explain that this is list of blocked vcpus. Its a per-cpu variable
-> > so 'on_cpu' suffix isn't needed IMHO.
-> 
-> As you noted, addressed in a future patch.
-> 
-> > > +/*
-> > > + * Protect the per-CPU list with a per-CPU spinlock to handle task migration.
-> > > + * When a blocking vCPU is awakened _and_ migrated to a different pCPU, the
-> > > + * ->sched_in() path will need to take the vCPU off the list of the _previous_
-> > > + * CPU.  IRQs must be disabled when taking this lock, otherwise deadlock will
-> > > + * occur if a wakeup IRQ arrives and attempts to acquire the lock.
-> > > + */
-> > >  static DEFINE_PER_CPU(spinlock_t, blocked_vcpu_on_cpu_lock);
-> > >  
-> > >  static inline struct pi_desc *vcpu_to_pi_desc(struct kvm_vcpu *vcpu)
-> > > @@ -101,23 +113,28 @@ static void __pi_post_block(struct kvm_vcpu *vcpu)
-> > >  	WARN(pi_desc->nv != POSTED_INTR_WAKEUP_VECTOR,
-> > >  	     "Wakeup handler not enabled while the vCPU was blocking");
-> > >  
-> > > -	dest = cpu_physical_id(vcpu->cpu);
-> > > -	if (!x2apic_mode)
-> > > -		dest = (dest << 8) & 0xFF00;
-> > > -
-> > > -	do {
-> > > -		old.control = new.control = READ_ONCE(pi_desc->control);
-> > > -
-> > > -		new.ndst = dest;
-> > > -
-> > > -		/* set 'NV' to 'notification vector' */
-> > > -		new.nv = POSTED_INTR_VECTOR;
-> > > -	} while (cmpxchg64(&pi_desc->control, old.control,
-> > > -			   new.control) != old.control);
-> > > -
-> > > +	/*
-> > > +	 * Remove the vCPU from the wakeup list of the _previous_ pCPU, which
-> > > +	 * will not be the same as the current pCPU if the task was migrated.
-> > > +	 */
-> > >  	spin_lock(&per_cpu(blocked_vcpu_on_cpu_lock, vcpu->pre_pcpu));
-> > >  	list_del(&vcpu->blocked_vcpu_list);
-> > >  	spin_unlock(&per_cpu(blocked_vcpu_on_cpu_lock, vcpu->pre_pcpu));
-> > > +
-> > > +	dest = cpu_physical_id(vcpu->cpu);
-> > > +	if (!x2apic_mode)
-> > > +		dest = (dest << 8) & 0xFF00;
-> > It would be nice to have a function for this, this appears in this file twice.
-> > Maybe there is a function already somewhere?
-> 
-> The second instance does go away by the aforementioned:
-
-Then no need for a helper.
-
-> 
->   KVM: VMX: Handle PI wakeup shenanigans during vcpu_put/load
-> 
-> I'm inclined to say we don't want a helper because there should only ever be one
-> path that changes PI.ndst.  But a comment would definitely help to explain the
-> difference between xAPIC and x2APIC IDs.
-> 
-
-Makes sense!
-
-Best regards,
-	Maxim Levitsky
+>  #ifndef __ASSEMBLY__
+> -#include <asm/cpumask.h>
+> +#include <cpumask.h>
+>  
+>  struct gicv2_data {
+>  	void *dist_base;
+> diff --git a/lib/arm/asm/gic-v3.h b/lib/arm/asm/gic-v3.h
+> index b4ce130e56c6..a1cc62a298b8 100644
+> --- a/lib/arm/asm/gic-v3.h
+> +++ b/lib/arm/asm/gic-v3.h
+> @@ -67,10 +67,10 @@
+>  #include <asm/arch_gicv3.h>
+>  
+>  #ifndef __ASSEMBLY__
+> +#include <cpumask.h>
+>  #include <asm/setup.h>
+>  #include <asm/processor.h>
+>  #include <asm/delay.h>
+> -#include <asm/cpumask.h>
+>  #include <asm/smp.h>
+>  #include <asm/io.h>
+>  
+> diff --git a/lib/arm/asm/gic.h b/lib/arm/asm/gic.h
+> index 189840014b02..dc8cc18c0fbd 100644
+> --- a/lib/arm/asm/gic.h
+> +++ b/lib/arm/asm/gic.h
+> @@ -47,7 +47,7 @@
+>  #define SPI(irq)			((irq) + GIC_FIRST_SPI)
+>  
+>  #ifndef __ASSEMBLY__
+> -#include <asm/cpumask.h>
+> +#include <cpumask.h>
+>  
+>  enum gic_irq_state {
+>  	GIC_IRQ_STATE_INACTIVE,
+> diff --git a/lib/arm/asm/smp.h b/lib/arm/asm/smp.h
+> index dee4c1a883e7..bb3e71a55e8c 100644
+> --- a/lib/arm/asm/smp.h
+> +++ b/lib/arm/asm/smp.h
+> @@ -5,8 +5,8 @@
+>   *
+>   * This work is licensed under the terms of the GNU LGPL, version 2.
+>   */
+> +#include <cpumask.h>
+>  #include <asm/thread_info.h>
+> -#include <asm/cpumask.h>
+>  
+>  #define smp_processor_id()		(current_thread_info()->cpu)
+>  
+> diff --git a/lib/arm/mmu.c b/lib/arm/mmu.c
+> index 2f4ec815a35d..b16517a3200d 100644
+> --- a/lib/arm/mmu.c
+> +++ b/lib/arm/mmu.c
+> @@ -5,9 +5,9 @@
+>   *
+>   * This work is licensed under the terms of the GNU LGPL, version 2.
+>   */
+> +#include <cpumask.h>
+>  #include <asm/setup.h>
+>  #include <asm/thread_info.h>
+> -#include <asm/cpumask.h>
+>  #include <asm/mmu.h>
+>  #include <asm/setup.h>
+>  #include <asm/page.h>
+> diff --git a/lib/arm/smp.c b/lib/arm/smp.c
+> index 1d470d1aab45..78fc1656cefa 100644
+> --- a/lib/arm/smp.c
+> +++ b/lib/arm/smp.c
+> @@ -7,9 +7,9 @@
+>   */
+>  #include <libcflat.h>
+>  #include <auxinfo.h>
+> +#include <cpumask.h>
+>  #include <asm/thread_info.h>
+>  #include <asm/spinlock.h>
+> -#include <asm/cpumask.h>
+>  #include <asm/barrier.h>
+>  #include <asm/mmu.h>
+>  #include <asm/psci.h>
+> diff --git a/lib/arm64/asm/cpumask.h b/lib/arm64/asm/cpumask.h
+> deleted file mode 100644
+> index d1421e7abe31..000000000000
+> --- a/lib/arm64/asm/cpumask.h
+> +++ /dev/null
+> @@ -1 +0,0 @@
+> -#include "../../arm/asm/cpumask.h"
+> diff --git a/lib/arm/asm/cpumask.h b/lib/cpumask.h
+> similarity index 94%
+> rename from lib/arm/asm/cpumask.h
+> rename to lib/cpumask.h
+> index 3fa57bfb17c6..d30e14cda09e 100644
+> --- a/lib/arm/asm/cpumask.h
+> +++ b/lib/cpumask.h
+> @@ -1,12 +1,11 @@
+> -#ifndef _ASMARM_CPUMASK_H_
+> -#define _ASMARM_CPUMASK_H_
+> +/* SPDX-License-Identifier: GPL-2.0-only */
+>  /*
+>   * Simple cpumask implementation
+>   *
+>   * Copyright (C) 2015, Red Hat Inc, Andrew Jones <drjones@redhat.com>
+> - *
+> - * This work is licensed under the terms of the GNU LGPL, version 2.
+>   */
+> +#ifndef _CPUMASK_H_
+> +#define _CPUMASK_H_
+>  #include <asm/setup.h>
+>  #include <bitops.h>
+>  
+> @@ -120,4 +119,4 @@ static inline int cpumask_next(int cpu, const cpumask_t *mask)
+>  			(cpu) < nr_cpus; 			\
+>  			(cpu) = cpumask_next(cpu, mask))
+>  
+> -#endif /* _ASMARM_CPUMASK_H_ */
+> +#endif /* _CPUMASK_H_ */
 
 
