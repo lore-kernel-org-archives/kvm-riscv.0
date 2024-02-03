@@ -1,46 +1,130 @@
-From: Anup Patel <anup@brainfault.org>
-Date: Fri, 2 Feb 2024 21:27:15 +0530
-Subject: [PATCH 0/3] RISC-V: Fix sparse warnings
-In-Reply-To: <20240131120511.200338-5-ajones@ventanamicro.com>
-References: <20240131120511.200338-5-ajones@ventanamicro.com>
-Message-ID: <CAAhSdy3FNoE8Rog_fq4sVqf090GSMMuU3+nxHEK3O02YPY0E0Q@mail.gmail.com>
+From: Sean Christopherson <seanjc@google.com>
+Date: Fri,  2 Feb 2024 16:09:06 -0800
+Subject: [PATCH v8 00/10] KVM: selftests: Add SEV smoke test
+Message-ID: <20240203000917.376631-1-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Jan 31, 2024 at 5:35?PM Andrew Jones <ajones@ventanamicro.com> wrote:
->
-> After the steal-time series was merged, LKP sent me mail with sparse
-> warnings for the lack of using appropriate restricted types and a
-> local variable not being static. This series makes the fixups
-> necessary to appease sparse for 64-bit compiles. Changes to
-> __get_user_8() and __put_user_8() are needed to completely quiet
-> sparse for 32-bit compiles. I'll address those 32-bit sparse warnings
-> separately, since it's not 100% clear how best to approach a couple of
-> them.
->
-> Thanks,
-> drew
->
->
-> Andrew Jones (3):
->   RISC-V: paravirt: steal_time should be static
->   RISC-V: paravirt: Use correct restricted types
->   RISC-V: KVM: Use correct restricted types
+Add a basic SEV smoke test.  Unlike the intra-host migration tests, this
+one actually runs a small chunk of code in the guest.
 
-Queued this series as fixes for Linux-6.8
+v8:
+ - Undo the kvm.h uAPI breakage.
+ - Take advantage of "struct vm_shape", introduced by the guest_memfd
+   selftests, to simply tracking the SEV/SEV-ES subtypes.
+ - Rename the test to "sev_smoke_test" instead of "sev_all_boot_test",
+   as the "all" is rather nonsensical, and the test isn't booting anything
+   in the traditional sense of the word.
+ - Drop vm->protected and instead add an arch hook to query if the VM has
+   protected memory.
+ - Assert that the target memory region supports protected memory when
+   allocating protected memory.
+ - Allocate protected_phy_pages for memory regions if and only if the VM
+   supports protected memory.
+ - Rename kvm_host.h to kvm_util_arch.h, and move it to selftests/kvm where
+   it belongs.
+ - Fix up some SoB goofs.
+ - Convert the intrahost SEV/SEV-ES migration tests to use common ioctl()
+   wrappers.
 
-Thanks,
-Anup
+V7
+ * https://lore.kernel.org/all/20231218161146.3554657-1-pgonda at google.com
+ * See https://github.com/sean-jc/linux/tree/x86/sev_selftests_for_peter.
+ * I kept is_pt_protected because without it the page tables are never
+ readable. Its used for the elf loading in kvm_vm_elf_load().
 
->
->  arch/riscv/kernel/paravirt.c  |  6 +++---
->  arch/riscv/kvm/vcpu_sbi_sta.c | 20 ++++++++++++--------
->  2 files changed, 15 insertions(+), 11 deletions(-)
->
-> --
-> 2.43.0
->
+V6
+ * Updated SEV VM create function based on Seanjc's feedback and new
+   changes to VM creation functions.
+ * Removed pte_me_mask based on feedback.
+ * Fixed s_bit usage based on TDX
+ * Fixed bugs and took Ackerly's code for enc_region setup code.
+
+V5
+ * Rebase onto seanjc@'s latest ucall pool series.
+ * More review changes based on seanjc:
+ ** use protected instead of encrypted outside of SEV specific files
+ ** Swap memcrypt struct for kvm_vm_arch arch specific struct
+ ** Make protected page table data agnostic of address bit stealing specifics
+    of SEV
+ ** Further clean up for SEV library to just vm_sev_create_one_vcpu()
+ * Due to large changes moved more authorships from mroth@ to pgonda at . Gave
+   originally-by tags to mroth@ as suggested by Seanjc for this.
+
+V4
+ * Rebase ontop of seanjc@'s latest Ucall Pool series:
+   https://lore.kernel.org/linux-arm-kernel/20220825232522.3997340-8-seanjc at google.com/
+ * Fix up review comments from seanjc
+ * Switch authorship on 2 patches because of significant changes, added
+ * Michael as suggested-by or originally-by.
+
+V3
+ * Addressed more of andrew.jones@ in ucall patches.
+ * Fix build in non-x86 archs.
+
+V2
+ * Dropped RFC tag
+ * Correctly separated Sean's ucall patches into 2 as originally
+   intended.
+ * Addressed andrew.jones@ in ucall patches.
+ * Fixed ucall pool usage to work for other archs
+
+V1
+ * https://lore.kernel.org/all/20220715192956.1873315-1-pgonda at google.com/
+
+Ackerley Tng (1):
+  KVM: selftests: Add a macro to iterate over a sparsebit range
+
+Michael Roth (2):
+  KVM: selftests: Make sparsebit structs const where appropriate
+  KVM: selftests: Add support for protected vm_vaddr_* allocations
+
+Peter Gonda (5):
+  KVM: selftests: Add support for allocating/managing protected guest
+    memory
+  KVM: selftests: Explicitly ucall pool from shared memory
+  KVM: selftests: Allow tagging protected memory in guest page tables
+  KVM: selftests: Add library for creating and interacting with SEV
+    guests
+  KVM: selftests: Add a basic SEV smoke test
+
+Sean Christopherson (2):
+  KVM: selftests: Extend VM creation's @shape to allow control of VM
+    subtype
+  KVM: selftests: Use the SEV library APIs in the intra-host migration
+    test
+
+ tools/testing/selftests/kvm/Makefile          |   2 +
+ .../kvm/include/aarch64/kvm_util_arch.h       |   7 +
+ .../selftests/kvm/include/kvm_util_base.h     |  50 ++++++-
+ .../kvm/include/riscv/kvm_util_arch.h         |   7 +
+ .../kvm/include/s390x/kvm_util_arch.h         |   7 +
+ .../testing/selftests/kvm/include/sparsebit.h |  56 +++++---
+ .../kvm/include/x86_64/kvm_util_arch.h        |  23 ++++
+ .../selftests/kvm/include/x86_64/processor.h  |   8 ++
+ .../selftests/kvm/include/x86_64/sev.h        | 110 +++++++++++++++
+ tools/testing/selftests/kvm/lib/kvm_util.c    |  67 +++++++--
+ tools/testing/selftests/kvm/lib/sparsebit.c   |  48 +++----
+ .../testing/selftests/kvm/lib/ucall_common.c  |   3 +-
+ .../selftests/kvm/lib/x86_64/processor.c      |  32 ++++-
+ tools/testing/selftests/kvm/lib/x86_64/sev.c  | 128 ++++++++++++++++++
+ .../selftests/kvm/x86_64/sev_migrate_tests.c  |  67 +++------
+ .../selftests/kvm/x86_64/sev_smoke_test.c     |  58 ++++++++
+ 16 files changed, 570 insertions(+), 103 deletions(-)
+ create mode 100644 tools/testing/selftests/kvm/include/aarch64/kvm_util_arch.h
+ create mode 100644 tools/testing/selftests/kvm/include/riscv/kvm_util_arch.h
+ create mode 100644 tools/testing/selftests/kvm/include/s390x/kvm_util_arch.h
+ create mode 100644 tools/testing/selftests/kvm/include/x86_64/kvm_util_arch.h
+ create mode 100644 tools/testing/selftests/kvm/include/x86_64/sev.h
+ create mode 100644 tools/testing/selftests/kvm/lib/x86_64/sev.c
+ create mode 100644 tools/testing/selftests/kvm/x86_64/sev_smoke_test.c
+
+
+base-commit: 60eedcfceda9db46f1b333e5e1aa9359793f04fb
+-- 
+2.43.0.594.gd9cf4e227d-goog
+
 
