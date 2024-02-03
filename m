@@ -1,156 +1,116 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Fri,  2 Feb 2024 16:09:15 -0800
-Subject: [PATCH v8 09/10] KVM: selftests: Use the SEV library APIs in the
- intra-host migration test
+Date: Fri,  2 Feb 2024 16:09:16 -0800
+Subject: [PATCH v8 10/10] KVM: selftests: Add a basic SEV smoke test
 In-Reply-To: <20240203000917.376631-1-seanjc@google.com>
 References: <20240203000917.376631-1-seanjc@google.com>
-Message-ID: <20240203000917.376631-10-seanjc@google.com>
+Message-ID: <20240203000917.376631-11-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Port the existing intra-host SEV(-ES) migration test to the recently added
-SEV library, which handles much of the boilerplate needed to create and
-configure SEV guests.
+From: Peter Gonda <pgonda@google.com>
 
+Add a basic smoke test for SEV guests to verify that KVM can launch an
+SEV guest and run a few instructions without exploding.  To verify that
+SEV is indeed enabled, assert that SEV is reported as enabled in
+MSR_AMD64_SEV, a.k.a. SEV_STATUS, which cannot be intercepted by KVM
+(architecturally enforced).
+
+Cc: Paolo Bonzini <pbonzini@redhat.com>
+Cc: Sean Christopherson <seanjc@google.com>
+Cc: Vishal Annapurve <vannapurve@google.com>
+Cc: Ackerly Tng <ackerleytng@google.com>
+cc: Andrew Jones <andrew.jones@linux.dev>
+Cc: Tom Lendacky <thomas.lendacky@amd.com>
+Cc: Michael Roth <michael.roth@amd.com>
+Suggested-by: Michael Roth <michael.roth@amd.com>
+Signed-off-by: Peter Gonda <pgonda@google.com>
+[sean: rename to "sev_smoke_test"]
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- .../selftests/kvm/x86_64/sev_migrate_tests.c  | 67 ++++++-------------
- 1 file changed, 21 insertions(+), 46 deletions(-)
+ tools/testing/selftests/kvm/Makefile          |  1 +
+ .../selftests/kvm/x86_64/sev_smoke_test.c     | 58 +++++++++++++++++++
+ 2 files changed, 59 insertions(+)
+ create mode 100644 tools/testing/selftests/kvm/x86_64/sev_smoke_test.c
 
-diff --git a/tools/testing/selftests/kvm/x86_64/sev_migrate_tests.c b/tools/testing/selftests/kvm/x86_64/sev_migrate_tests.c
-index a49828adf294..d6f7428e42c6 100644
---- a/tools/testing/selftests/kvm/x86_64/sev_migrate_tests.c
-+++ b/tools/testing/selftests/kvm/x86_64/sev_migrate_tests.c
-@@ -10,11 +10,9 @@
- #include "test_util.h"
- #include "kvm_util.h"
- #include "processor.h"
--#include "svm_util.h"
+diff --git a/tools/testing/selftests/kvm/Makefile b/tools/testing/selftests/kvm/Makefile
+index 169b6ee8f733..da20e6bb43ed 100644
+--- a/tools/testing/selftests/kvm/Makefile
++++ b/tools/testing/selftests/kvm/Makefile
+@@ -120,6 +120,7 @@ TEST_GEN_PROGS_x86_64 += x86_64/vmx_pmu_caps_test
+ TEST_GEN_PROGS_x86_64 += x86_64/xen_shinfo_test
+ TEST_GEN_PROGS_x86_64 += x86_64/xen_vmcall_test
+ TEST_GEN_PROGS_x86_64 += x86_64/sev_migrate_tests
++TEST_GEN_PROGS_x86_64 += x86_64/sev_smoke_test
+ TEST_GEN_PROGS_x86_64 += x86_64/amx_test
+ TEST_GEN_PROGS_x86_64 += x86_64/max_vcpuid_cap_test
+ TEST_GEN_PROGS_x86_64 += x86_64/triple_fault_event_test
+diff --git a/tools/testing/selftests/kvm/x86_64/sev_smoke_test.c b/tools/testing/selftests/kvm/x86_64/sev_smoke_test.c
+new file mode 100644
+index 000000000000..c1534efab2be
+--- /dev/null
++++ b/tools/testing/selftests/kvm/x86_64/sev_smoke_test.c
+@@ -0,0 +1,58 @@
++// SPDX-License-Identifier: GPL-2.0-only
++#include <fcntl.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <sys/ioctl.h>
++
++#include "test_util.h"
++#include "kvm_util.h"
++#include "processor.h"
++#include "svm_util.h"
++#include "linux/psp-sev.h"
 +#include "sev.h"
- #include "kselftest.h"
- 
--#define SEV_POLICY_ES 0b100
--
- #define NR_MIGRATE_TEST_VCPUS 4
- #define NR_MIGRATE_TEST_VMS 3
- #define NR_LOCK_TESTING_THREADS 3
-@@ -22,46 +20,24 @@
- 
- bool have_sev_es;
- 
--static int __sev_ioctl(int vm_fd, int cmd_id, void *data, __u32 *fw_error)
--{
--	struct kvm_sev_cmd cmd = {
--		.id = cmd_id,
--		.data = (uint64_t)data,
--		.sev_fd = open_sev_dev_path_or_exit(),
--	};
--	int ret;
--
--	ret = ioctl(vm_fd, KVM_MEMORY_ENCRYPT_OP, &cmd);
--	*fw_error = cmd.error;
--	return ret;
--}
--
--static void sev_ioctl(int vm_fd, int cmd_id, void *data)
--{
--	int ret;
--	__u32 fw_error;
--
--	ret = __sev_ioctl(vm_fd, cmd_id, data, &fw_error);
--	TEST_ASSERT(ret == 0 && fw_error == SEV_RET_SUCCESS,
--		    "%d failed: return code: %d, errno: %d, fw error: %d",
--		    cmd_id, ret, errno, fw_error);
--}
--
- static struct kvm_vm *sev_vm_create(bool es)
- {
- 	struct kvm_vm *vm;
--	struct kvm_sev_launch_start start = { 0 };
- 	int i;
- 
- 	vm = vm_create_barebones();
--	sev_ioctl(vm->fd, es ? KVM_SEV_ES_INIT : KVM_SEV_INIT, NULL);
-+	if (!es)
-+		sev_vm_init(vm);
-+	else
-+		sev_es_vm_init(vm);
 +
- 	for (i = 0; i < NR_MIGRATE_TEST_VCPUS; ++i)
- 		__vm_vcpu_add(vm, i);
++static void guest_sev_code(void)
++{
++	GUEST_ASSERT(this_cpu_has(X86_FEATURE_SEV));
++	GUEST_ASSERT(rdmsr(MSR_AMD64_SEV) & MSR_AMD64_SEV_ENABLED);
 +
-+	sev_vm_launch(vm, es ? SEV_POLICY_ES : 0);
++	GUEST_DONE();
++}
 +
- 	if (es)
--		start.policy |= SEV_POLICY_ES;
--	sev_ioctl(vm->fd, KVM_SEV_LAUNCH_START, &start);
--	if (es)
--		sev_ioctl(vm->fd, KVM_SEV_LAUNCH_UPDATE_VMSA, NULL);
-+		vm_sev_ioctl(vm, KVM_SEV_LAUNCH_UPDATE_VMSA, NULL);
- 	return vm;
- }
- 
-@@ -181,7 +157,7 @@ static void test_sev_migrate_parameters(void)
- 	sev_vm = sev_vm_create(/* es= */ false);
- 	sev_es_vm = sev_vm_create(/* es= */ true);
- 	sev_es_vm_no_vmsa = vm_create_barebones();
--	sev_ioctl(sev_es_vm_no_vmsa->fd, KVM_SEV_ES_INIT, NULL);
-+	sev_es_vm_init(sev_es_vm_no_vmsa);
- 	__vm_vcpu_add(sev_es_vm_no_vmsa, 1);
- 
- 	ret = __sev_migrate_from(sev_vm, sev_es_vm);
-@@ -230,13 +206,13 @@ static void sev_mirror_create(struct kvm_vm *dst, struct kvm_vm *src)
- 	TEST_ASSERT(!ret, "Copying context failed, ret: %d, errno: %d", ret, errno);
- }
- 
--static void verify_mirror_allowed_cmds(int vm_fd)
-+static void verify_mirror_allowed_cmds(struct kvm_vm *vm)
- {
- 	struct kvm_sev_guest_status status;
-+	int cmd_id;
- 
--	for (int cmd_id = KVM_SEV_INIT; cmd_id < KVM_SEV_NR_MAX; ++cmd_id) {
-+	for (cmd_id = KVM_SEV_INIT; cmd_id < KVM_SEV_NR_MAX; ++cmd_id) {
- 		int ret;
--		__u32 fw_error;
- 
- 		/*
- 		 * These commands are allowed for mirror VMs, all others are
-@@ -256,14 +232,13 @@ static void verify_mirror_allowed_cmds(int vm_fd)
- 		 * These commands should be disallowed before the data
- 		 * parameter is examined so NULL is OK here.
- 		 */
--		ret = __sev_ioctl(vm_fd, cmd_id, NULL, &fw_error);
--		TEST_ASSERT(
--			ret == -1 && errno == EINVAL,
--			"Should not be able call command: %d. ret: %d, errno: %d",
--			cmd_id, ret, errno);
-+		ret = __vm_sev_ioctl(vm, cmd_id, NULL);
-+		TEST_ASSERT(ret == -1 && errno == EINVAL,
-+			    "Should not be able call command: %d. ret: %d, errno: %d",
-+			    cmd_id, ret, errno);
- 	}
- 
--	sev_ioctl(vm_fd, KVM_SEV_GUEST_STATUS, &status);
-+	vm_sev_ioctl(vm, KVM_SEV_GUEST_STATUS, &status);
- }
- 
- static void test_sev_mirror(bool es)
-@@ -281,9 +256,9 @@ static void test_sev_mirror(bool es)
- 		__vm_vcpu_add(dst_vm, i);
- 
- 	if (es)
--		sev_ioctl(dst_vm->fd, KVM_SEV_LAUNCH_UPDATE_VMSA, NULL);
-+		vm_sev_ioctl(dst_vm, KVM_SEV_LAUNCH_UPDATE_VMSA, NULL);
- 
--	verify_mirror_allowed_cmds(dst_vm->fd);
-+	verify_mirror_allowed_cmds(dst_vm);
- 
- 	kvm_vm_free(src_vm);
- 	kvm_vm_free(dst_vm);
++static void test_sev(void *guest_code, uint64_t policy)
++{
++	struct kvm_vcpu *vcpu;
++	struct kvm_vm *vm;
++	struct ucall uc;
++
++	vm = vm_sev_create_with_one_vcpu(policy, guest_code, &vcpu);
++
++	for (;;) {
++		vcpu_run(vcpu);
++
++		switch (get_ucall(vcpu, &uc)) {
++		case UCALL_SYNC:
++			continue;
++		case UCALL_DONE:
++			return;
++		case UCALL_ABORT:
++			REPORT_GUEST_ASSERT(uc);
++		default:
++			TEST_FAIL("Unexpected exit: %s",
++				  exit_reason_str(vcpu->run->exit_reason));
++		}
++	}
++
++	kvm_vm_free(vm);
++}
++
++int main(int argc, char *argv[])
++{
++	TEST_REQUIRE(is_kvm_sev_supported());
++
++	test_sev(guest_sev_code, SEV_POLICY_NO_DBG);
++	test_sev(guest_sev_code, 0);
++
++	return 0;
++}
 -- 
 2.43.0.594.gd9cf4e227d-goog
 
