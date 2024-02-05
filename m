@@ -1,21 +1,80 @@
-From: Steve He <snt.d-boy@163.com>
-Date: Mon, 5 Feb 2024 13:04:33 +0800 (CST)
-Subject: riscv glibc library
-Message-ID: <2cdac91e.3bbd.18d77a75b64.Coremail.snt.d-boy@163.com>
+From: Haibo Xu <xiaobo55x@gmail.com>
+Date: Mon, 5 Feb 2024 21:10:26 +0800
+Subject: [PATCH v5 00/12] RISCV: Add kvm Sstc timer selftests
+In-Reply-To: <cover.1705916069.git.haibo1.xu@intel.com>
+References: <cover.1705916069.git.haibo1.xu@intel.com>
+Message-ID: <CAJve8onDbX44Ph6a-FdO2+p7QOQLah-7OyF+yUc06wud+SvmQQ@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+Hi Marc,
 
+Could you help review the first 3 patches in this series?
 
-Hi, 
+Thanks,
+Haibo
 
-I'm in the progress of building QEMU emulating RISC-V env.
-Looks like riscv-glibc isn't available in e.g. CentOS repos,
-is that true?
-Is there any built riscv-glibc packages available? or the only way to
-have it is to manually build.
+On Mon, Jan 22, 2024 at 5:45?PM Haibo Xu <haibo1.xu@intel.com> wrote:
+>
+> The RISC-V arch_timer selftests is used to validate Sstc timer
+> functionality in a guest, which sets up periodic timer interrupts
+> and check the basic interrupt status upon its receipt.
+>
+> This KVM selftests was ported from aarch64 arch_timer and tested
+> with Linux v6.7-rc8 on a Qemu riscv64 virt machine.
+>
+> ---
+> Changed since v4:
+>   * Rebased to Linux 6.7-rc8
+>   * Added new patch(2/12) to clean up the data type in struct test_args
+>   * Re-ordered patch(11/11) in v4 to patch(3/12)
+>   * Changed the timer_err_margin_us type from int to uint32_t
+>
+> Haibo Xu (11):
+>   KVM: arm64: selftests: Data type cleanup for arch_timer test
+>   KVM: arm64: selftests: Enable tuning of error margin in arch_timer
+>     test
+>   KVM: arm64: selftests: Split arch_timer test code
+>   KVM: selftests: Add CONFIG_64BIT definition for the build
+>   tools: riscv: Add header file csr.h
+>   tools: riscv: Add header file vdso/processor.h
+>   KVM: riscv: selftests: Switch to use macro from csr.h
+>   KVM: riscv: selftests: Add exception handling support
+>   KVM: riscv: selftests: Add guest helper to get vcpu id
+>   KVM: riscv: selftests: Change vcpu_has_ext to a common function
+>   KVM: riscv: selftests: Add sstc timer test
+>
+> Paolo Bonzini (1):
+>   selftests/kvm: Fix issues with $(SPLIT_TESTS)
+>
+>  tools/arch/riscv/include/asm/csr.h            | 541 ++++++++++++++++++
+>  tools/arch/riscv/include/asm/vdso/processor.h |  32 ++
+>  tools/testing/selftests/kvm/Makefile          |  27 +-
+>  .../selftests/kvm/aarch64/arch_timer.c        | 295 +---------
+>  tools/testing/selftests/kvm/arch_timer.c      | 259 +++++++++
+>  .../selftests/kvm/include/aarch64/processor.h |   4 -
+>  .../selftests/kvm/include/kvm_util_base.h     |   9 +
+>  .../selftests/kvm/include/riscv/arch_timer.h  |  71 +++
+>  .../selftests/kvm/include/riscv/processor.h   |  65 ++-
+>  .../testing/selftests/kvm/include/test_util.h |   2 +
+>  .../selftests/kvm/include/timer_test.h        |  45 ++
+>  .../selftests/kvm/lib/riscv/handlers.S        | 101 ++++
+>  .../selftests/kvm/lib/riscv/processor.c       |  87 +++
+>  .../testing/selftests/kvm/riscv/arch_timer.c  | 111 ++++
+>  .../selftests/kvm/riscv/get-reg-list.c        |  11 +-
+>  15 files changed, 1353 insertions(+), 307 deletions(-)
+>  create mode 100644 tools/arch/riscv/include/asm/csr.h
+>  create mode 100644 tools/arch/riscv/include/asm/vdso/processor.h
+>  create mode 100644 tools/testing/selftests/kvm/arch_timer.c
+>  create mode 100644 tools/testing/selftests/kvm/include/riscv/arch_timer.h
+>  create mode 100644 tools/testing/selftests/kvm/include/timer_test.h
+>  create mode 100644 tools/testing/selftests/kvm/lib/riscv/handlers.S
+>  create mode 100644 tools/testing/selftests/kvm/riscv/arch_timer.c
+>
+> --
+> 2.34.1
+>
 
-Thanks
