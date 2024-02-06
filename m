@@ -1,36 +1,93 @@
-From: Haibo Xu <xiaobo55x@gmail.com>
-Date: Tue, 6 Feb 2024 09:32:17 +0800
-Subject: [PATCH v5 00/12] RISCV: Add kvm Sstc timer selftests
-In-Reply-To: <86zfwe6frn.wl-maz@kernel.org>
-References: <cover.1705916069.git.haibo1.xu@intel.com> <CAJve8onDbX44Ph6a-FdO2+p7QOQLah-7OyF+yUc06wud+SvmQQ@mail.gmail.com>
- <86zfwe6frn.wl-maz@kernel.org>
-Message-ID: <CAJve8okvg=UTWgmE=TpJT=nQJB3i6R_Tn_0AS1MtsD0mP8i3JQ@mail.gmail.com>
+From: Chao Du <duchao@eswincomputing.com>
+Date: Tue,  6 Feb 2024 07:49:31 +0000
+Subject: [PATCH v1 3/3] RISC-V: KVM: selftests: Add breakpoints test support
+In-Reply-To: <20240206074931.22930-1-duchao@eswincomputing.com>
+References: <20240206074931.22930-1-duchao@eswincomputing.com>
+Message-ID: <20240206074931.22930-4-duchao@eswincomputing.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Feb 6, 2024 at 12:24?AM Marc Zyngier <maz@kernel.org> wrote:
->
-> On Mon, 05 Feb 2024 13:10:26 +0000,
-> Haibo Xu <xiaobo55x@gmail.com> wrote:
-> >
-> > Hi Marc,
-> >
-> > Could you help review the first 3 patches in this series?
->
-> For these 3 patches:
->
-> Reviewed-by: Marc Zyngier <maz@kernel.org>
->
+Initial support for RISC-V KVM breakpoint test. Check the exit reason
+and the PC when guest debug is enabled.
 
-Thanks for the review!
+Signed-off-by: Chao Du <duchao@eswincomputing.com>
+---
+ tools/testing/selftests/kvm/Makefile          |  1 +
+ .../testing/selftests/kvm/riscv/breakpoints.c | 49 +++++++++++++++++++
+ 2 files changed, 50 insertions(+)
+ create mode 100644 tools/testing/selftests/kvm/riscv/breakpoints.c
 
-> Thanks,
->
->         M.
->
-> --
-> Without deviation from the norm, progress is not possible.
+diff --git a/tools/testing/selftests/kvm/Makefile b/tools/testing/selftests/kvm/Makefile
+index 492e937fab00..5f9048a740b0 100644
+--- a/tools/testing/selftests/kvm/Makefile
++++ b/tools/testing/selftests/kvm/Makefile
+@@ -184,6 +184,7 @@ TEST_GEN_PROGS_s390x += rseq_test
+ TEST_GEN_PROGS_s390x += set_memory_region_test
+ TEST_GEN_PROGS_s390x += kvm_binary_stats_test
+
++TEST_GEN_PROGS_riscv += riscv/breakpoints
+ TEST_GEN_PROGS_riscv += demand_paging_test
+ TEST_GEN_PROGS_riscv += dirty_log_test
+ TEST_GEN_PROGS_riscv += get-reg-list
+diff --git a/tools/testing/selftests/kvm/riscv/breakpoints.c b/tools/testing/selftests/kvm/riscv/breakpoints.c
+new file mode 100644
+index 000000000000..8ca09a493460
+--- /dev/null
++++ b/tools/testing/selftests/kvm/riscv/breakpoints.c
+@@ -0,0 +1,49 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * RISC-V KVM breakpoint tests.
++ *
++ * Copyright 2024 Beijing ESWIN Computing Technology Co., Ltd.
++ *
++ */
++#include "kvm_util.h"
++
++#define PC(v) ((uint64_t)&(v))
++
++extern unsigned char sw_bp;
++
++static void guest_code(void)
++{
++	asm volatile("sw_bp: ebreak");
++	asm volatile("nop");
++	asm volatile("nop");
++	asm volatile("nop");
++
++	GUEST_DONE();
++}
++
++int main(void)
++{
++	struct kvm_vm *vm;
++	struct kvm_vcpu *vcpu;
++	struct kvm_guest_debug debug;
++	uint64_t pc;
++
++	TEST_REQUIRE(kvm_has_cap(KVM_CAP_SET_GUEST_DEBUG));
++
++	vm = vm_create_with_one_vcpu(&vcpu, guest_code);
++
++	memset(&debug, 0, sizeof(debug));
++	debug.control = KVM_GUESTDBG_ENABLE;
++	vcpu_guest_debug_set(vcpu, &debug);
++	vcpu_run(vcpu);
++
++	TEST_ASSERT_KVM_EXIT_REASON(vcpu, KVM_EXIT_DEBUG);
++
++	vcpu_get_reg(vcpu, RISCV_CORE_REG(regs.pc), &pc);
++
++	TEST_ASSERT_EQ(pc, PC(sw_bp));
++
++	kvm_vm_free(vm);
++
++	return 0;
++}
+--
+2.17.1
+
 
