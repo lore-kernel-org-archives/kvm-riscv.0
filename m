@@ -1,53 +1,54 @@
-From: Thomas Huth <thuth@redhat.com>
-Date: Fri, 9 Feb 2024 16:44:38 +0100
-Subject: [kvm-unit-tests PATCH v4 2/8] arch-run: Clean up initrd cleanup
-In-Reply-To: <20240209091134.600228-3-npiggin@gmail.com>
-References: <20240209091134.600228-1-npiggin@gmail.com>
- <20240209091134.600228-3-npiggin@gmail.com>
-Message-ID: <05d86794-0c1e-4395-bcde-15177469e1c4@redhat.com>
+From: Will Deacon <will@kernel.org>
+Date: Fri,  9 Feb 2024 15:55:56 +0000
+Subject: [kvmtool PATCH 00/10] SBI debug console and few ISA extensions
+In-Reply-To: <20231128145628.413414-1-apatel@ventanamicro.com>
+References: <20231128145628.413414-1-apatel@ventanamicro.com>
+Message-ID: <170749352335.2620327.13138913157188078368.b4-ty@kernel.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 09/02/2024 10.11, Nicholas Piggin wrote:
-> Rather than put a big script into the trap handler, have it call
-> a function.
+On Tue, 28 Nov 2023 20:26:18 +0530, Anup Patel wrote:
+> This series adds support for:
+> 1) ISA extensions: Zba, Zbs, Zicntr, Zihpm, Zicsr, Zifencei, Zicond,
+>    and Smstateen
+> 2) SBI debug console (DBCN) extension
 > 
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> ---
->   scripts/arch-run.bash | 13 ++++++++++++-
->   1 file changed, 12 insertions(+), 1 deletion(-)
+> These patches can also be found in the riscv_zbx_zicntr_smstateen_condops_v1
+> branch at: https://github.com/avpatel/kvmtool.git
 > 
-> diff --git a/scripts/arch-run.bash b/scripts/arch-run.bash
-> index 11d47a85..c1dd67ab 100644
-> --- a/scripts/arch-run.bash
-> +++ b/scripts/arch-run.bash
-> @@ -269,10 +269,21 @@ search_qemu_binary ()
->   	export PATH=$save_path
->   }
->   
-> +initrd_cleanup ()
-> +{
-> +	rm -f $KVM_UNIT_TESTS_ENV
-> +	if [ "$KVM_UNIT_TESTS_ENV_OLD" ]; then
-> +		export KVM_UNIT_TESTS_ENV="$KVM_UNIT_TESTS_ENV_OLD"
-> +	else
-> +		unset KVM_UNIT_TESTS_ENV
-> +	fi
-> +	unset KVM_UNIT_TESTS_ENV_OLD
-> +}
-> +
->   initrd_create ()
->   {
->   	if [ "$ENVIRON_DEFAULT" = "yes" ]; then
-> -		trap_exit_push 'rm -f $KVM_UNIT_TESTS_ENV; [ "$KVM_UNIT_TESTS_ENV_OLD" ] && export KVM_UNIT_TESTS_ENV="$KVM_UNIT_TESTS_ENV_OLD" || unset KVM_UNIT_TESTS_ENV; unset KVM_UNIT_TESTS_ENV_OLD'
-> +		trap_exit_push 'initrd_cleanup'
->   		[ -f "$KVM_UNIT_TESTS_ENV" ] && export KVM_UNIT_TESTS_ENV_OLD="$KVM_UNIT_TESTS_ENV"
->   		export KVM_UNIT_TESTS_ENV=$(mktemp)
->   		env_params
+> [...]
 
-Reviewed-by: Thomas Huth <thuth@redhat.com>
+Applied to kvmtool (master), thanks!
 
+(I updated the headers to 6.7 separately)
+
+[02/10] riscv: Improve warning in generate_cpu_nodes()
+        https://git.kernel.org/will/kvmtool/c/fcb076756ab2
+[03/10] riscv: Make CPU_ISA_MAX_LEN depend upon isa_info_arr array size
+        https://git.kernel.org/will/kvmtool/c/7887b3989ac2
+[04/10] riscv: Add Zba and Zbs extension support
+        https://git.kernel.org/will/kvmtool/c/6331850d6bc0
+[05/10] riscv: Add Zicntr and Zihpm extension support
+        https://git.kernel.org/will/kvmtool/c/667685691c5d
+[06/10] riscv: Add Zicsr and Zifencei extension support
+        https://git.kernel.org/will/kvmtool/c/3436684940bc
+[07/10] riscv: Add Smstateen extension support
+        https://git.kernel.org/will/kvmtool/c/8d02d5a895c3
+[08/10] riscv: Add Zicond extension support
+        https://git.kernel.org/will/kvmtool/c/8cd71ca57fb0
+[09/10] riscv: Set mmu-type DT property based on satp_mode ONE_REG interface
+        https://git.kernel.org/will/kvmtool/c/ef89838e3760
+[10/10] riscv: Handle SBI DBCN calls from Guest/VM
+        https://git.kernel.org/will/kvmtool/c/4ddaa4249e0c
+
+Cheers,
+-- 
+Will
+
+https://fixes.arm64.dev
+https://next.arm64.dev
+https://will.arm64.dev
 
