@@ -1,47 +1,53 @@
-From: Anup Patel <anup@brainfault.org>
-Date: Fri, 9 Feb 2024 17:27:15 +0530
-Subject: [GIT PULL] KVM/riscv fixes for 6.8, take #1
-Message-ID: <CAAhSdy3TXDCnA+hqJyNq3CiJD9LTtL_OOqX0N=GqScL1VU8FeQ@mail.gmail.com>
+From: Thomas Huth <thuth@redhat.com>
+Date: Fri, 9 Feb 2024 16:44:38 +0100
+Subject: [kvm-unit-tests PATCH v4 2/8] arch-run: Clean up initrd cleanup
+In-Reply-To: <20240209091134.600228-3-npiggin@gmail.com>
+References: <20240209091134.600228-1-npiggin@gmail.com>
+ <20240209091134.600228-3-npiggin@gmail.com>
+Message-ID: <05d86794-0c1e-4395-bcde-15177469e1c4@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Paolo,
+On 09/02/2024 10.11, Nicholas Piggin wrote:
+> Rather than put a big script into the trap handler, have it call
+> a function.
+> 
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> ---
+>   scripts/arch-run.bash | 13 ++++++++++++-
+>   1 file changed, 12 insertions(+), 1 deletion(-)
+> 
+> diff --git a/scripts/arch-run.bash b/scripts/arch-run.bash
+> index 11d47a85..c1dd67ab 100644
+> --- a/scripts/arch-run.bash
+> +++ b/scripts/arch-run.bash
+> @@ -269,10 +269,21 @@ search_qemu_binary ()
+>   	export PATH=$save_path
+>   }
+>   
+> +initrd_cleanup ()
+> +{
+> +	rm -f $KVM_UNIT_TESTS_ENV
+> +	if [ "$KVM_UNIT_TESTS_ENV_OLD" ]; then
+> +		export KVM_UNIT_TESTS_ENV="$KVM_UNIT_TESTS_ENV_OLD"
+> +	else
+> +		unset KVM_UNIT_TESTS_ENV
+> +	fi
+> +	unset KVM_UNIT_TESTS_ENV_OLD
+> +}
+> +
+>   initrd_create ()
+>   {
+>   	if [ "$ENVIRON_DEFAULT" = "yes" ]; then
+> -		trap_exit_push 'rm -f $KVM_UNIT_TESTS_ENV; [ "$KVM_UNIT_TESTS_ENV_OLD" ] && export KVM_UNIT_TESTS_ENV="$KVM_UNIT_TESTS_ENV_OLD" || unset KVM_UNIT_TESTS_ENV; unset KVM_UNIT_TESTS_ENV_OLD'
+> +		trap_exit_push 'initrd_cleanup'
+>   		[ -f "$KVM_UNIT_TESTS_ENV" ] && export KVM_UNIT_TESTS_ENV_OLD="$KVM_UNIT_TESTS_ENV"
+>   		export KVM_UNIT_TESTS_ENV=$(mktemp)
+>   		env_params
 
-We have three fixes for 6.8 which address steal-time
-related sparse warnings.
+Reviewed-by: Thomas Huth <thuth@redhat.com>
 
-Please pull.
-
-Regards,
-Anup
-
-The following changes since commit 54be6c6c5ae8e0d93a6c4641cb7528eb0b6ba478:
-
-  Linux 6.8-rc3 (2024-02-04 12:20:36 +0000)
-
-are available in the Git repository at:
-
-  https://github.com/kvm-riscv/linux.git tags/kvm-riscv-fixes-6.8-1
-
-for you to fetch changes up to f072b272aa27d57cf7fe6fdedb30fb50f391974e:
-
-  RISC-V: KVM: Use correct restricted types (2024-02-09 11:53:13 +0530)
-
-----------------------------------------------------------------
-KVM/riscv fixes for 6.8, take #1
-
-- Fix steal-time related sparse warnings
-
-----------------------------------------------------------------
-Andrew Jones (3):
-      RISC-V: paravirt: steal_time should be static
-      RISC-V: paravirt: Use correct restricted types
-      RISC-V: KVM: Use correct restricted types
-
- arch/riscv/kernel/paravirt.c  |  6 +++---
- arch/riscv/kvm/vcpu_sbi_sta.c | 20 ++++++++++++--------
- 2 files changed, 15 insertions(+), 11 deletions(-)
 
