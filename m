@@ -1,42 +1,76 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Thu, 8 Feb 2024 18:41:11 +0100
-Subject: Announcing RISC-V support for kvm-unit-tests
-Message-ID: <20240208-d78f3ecdaf1c2c9237aa90bd@orel>
+From: Nicholas Piggin <npiggin@gmail.com>
+Date: Fri,  9 Feb 2024 17:01:33 +1000
+Subject: [kvm-unit-tests PATCH v3 0/8] Multi-migration support
+Message-ID: <20240209070141.421569-1-npiggin@gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+Since v2:
+- Rebase on riscv port and auxvinfo fix was merged.
+- Clean up initrd cleanup moves more commands into the new cleanup
+  function from the trap handler comands (suggested by Thomas).
+- "arch-run: Clean up temporary files properly" patch is now renamed
+  to "arch-run: Fix TRAP handler..."
+- Fix TRAP handler patch has redone changelog to be more precise about
+  the problem and including recipe to recreate it.
+- Fix TRAP handler patch reworked slightly to remove the theoretical
+  race rather than just adding a comment about it.
+- Patch 3 was missing a couple of fixes that leaked into patch 4,
+  those are moved into patch 3.
 
-Hi All,
-
-I'm pleased to announce that the initial RISC-V port for kvm-unit-tests[1]
-has been merged.  With the initial support we can begin writing SBI tests
-which can be used for SBI implementation verification, as we've previously
-proposed in a tech-prs call [2].  Any SBI implementation which supports
-QEMU as a platform may be tested, e.g. OpenSBI, RustSBI, and KVM.  SBI
-implementations which do not support QEMU, but do have bootloaders which
-support EFI, will also be testable soon when the EFI support for RISC-V
-kvm-unit-tests has been merged.
-
-CPU validation tests may also already be written.  When CPU validation
-tests are run on QEMU, then they will validate QEMU itself, which may
-be useful for the development of new QEMU ISA extension support, as well
-as for regression tests.  Additionally, on platforms where it's possible
-to run Linux and KVM (e.g. QEMU, other emulators, or actual hardware with
-the H extension), then tests may be written which validate KVM and guest
-mode behavior (this latter test scope was the original purpose of
-kvm-unit-tests, hence the 'kvm' in its name).  With minimal effort it
-should be possible to use alternative KVM userspaces with KVM testing,
-e.g. kvmtool instead of QEMU.  Finally, on hardware that supports KVM,
-it's already possible to write virtualization micro-benchmarks.  After
-the EFI support has been merged, then micro-benchmarks with scopes
-beyond virtualization will also be possible.
+I did look into doing a better job at handling timeouts in places
+where the migration script can hang (the timeout command only kills
+the qemu process, but there are other places the bash script itself
+can still timeout). There are ways it might be possible (along the
+lines of starting ( sleep N ; kill ) subshell in the backround), but
+it's very tricky to handle all the details. Existing script has
+timeout issues already, so this series doesn't add a fundamentally
+new type of problem here.
 
 Thanks,
-drew
+Nick
 
-[1] https://gitlab.com/kvm-unit-tests/kvm-unit-tests
-[2] https://lists.riscv.org/g/tech-prs/message/649
+Nicholas Piggin (8):
+  arch-run: Fix TRAP handler recursion to remove temporary files
+    properly
+  arch-run: Clean up initrd cleanup
+  migration: use a more robust way to wait for background job
+  migration: Support multiple migrations
+  arch-run: rename migration variables
+  migration: Add quiet migration support
+  Add common/ directory for architecture-independent tests
+  migration: add a migration selftest
+
+ arm/Makefile.common          |   1 +
+ arm/selftest-migration.c     |   1 +
+ arm/sieve.c                  |   2 +-
+ arm/unittests.cfg            |   6 ++
+ common/selftest-migration.c  |  34 +++++++
+ common/sieve.c               |  51 ++++++++++
+ lib/migrate.c                |  20 +++-
+ lib/migrate.h                |   2 +
+ powerpc/Makefile.common      |   1 +
+ powerpc/selftest-migration.c |   1 +
+ powerpc/unittests.cfg        |   4 +
+ riscv/sieve.c                |   2 +-
+ s390x/Makefile               |   1 +
+ s390x/selftest-migration.c   |   1 +
+ s390x/sieve.c                |   2 +-
+ s390x/unittests.cfg          |   4 +
+ scripts/arch-run.bash        | 182 ++++++++++++++++++++++++++---------
+ x86/sieve.c                  |  52 +---------
+ 18 files changed, 261 insertions(+), 106 deletions(-)
+ create mode 120000 arm/selftest-migration.c
+ create mode 100644 common/selftest-migration.c
+ create mode 100644 common/sieve.c
+ create mode 120000 powerpc/selftest-migration.c
+ create mode 120000 s390x/selftest-migration.c
+ mode change 100644 => 120000 x86/sieve.c
+
+-- 
+2.42.0
+
 
