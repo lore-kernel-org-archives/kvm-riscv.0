@@ -1,76 +1,74 @@
 From: Nicholas Piggin <npiggin@gmail.com>
-Date: Fri,  9 Feb 2024 19:11:26 +1000
-Subject: [kvm-unit-tests PATCH v4 0/8] Multi-migration support
-Message-ID: <20240209091134.600228-1-npiggin@gmail.com>
+Date: Fri,  9 Feb 2024 19:11:27 +1000
+Subject: [kvm-unit-tests PATCH v4 1/8] arch-run: Fix TRAP handler recursion to remove temporary files properly
+In-Reply-To: <20240209091134.600228-1-npiggin@gmail.com>
+References: <20240209091134.600228-1-npiggin@gmail.com>
+Message-ID: <20240209091134.600228-2-npiggin@gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Thanks for the detailed reviews. Hopefully this is the last one...
+Migration files were not being removed when the QEMU process is
+interrupted (e.g., with ^C). This is becaus the SIGINT propagates to the
+bash TRAP handler, which recursively TRAPs due to the 'kill 0' in the
+handler. This eventually crashes bash.
 
-Since v3:
-- Addressed Thomas's review comments:
-- Patch 2 initrd cleanup unset the old variable in the correct place.
-- Patch 4 multi migration removed the extra wait for "Now migrate the
-  VM" message, and updated comments around it.
-- Patch 6 fix typo and whitespace in quiet migration support.
-- Patch 8 fix typo and whitespace in migration selftest.
+This can be observed by interrupting a long-running test program that is
+run with MIGRATION=yes, /tmp/mig-helper-* files remain afterwards.
 
-Since v2:
-- Rebase on riscv port and auxvinfo fix was merged.
-- Clean up initrd cleanup moves more commands into the new cleanup
-  function from the trap handler comands (suggested by Thomas).
-- "arch-run: Clean up temporary files properly" patch is now renamed
-  to "arch-run: Fix TRAP handler..."
-- Fix TRAP handler patch has redone changelog to be more precise about
-  the problem and including recipe to recreate it.
-- Fix TRAP handler patch reworked slightly to remove the theoretical
-  race rather than just adding a comment about it.
-- Patch 3 was missing a couple of fixes that leaked into patch 4,
-  those are moved into patch 3.
+Removing TRAP recursion solves this problem and allows the EXIT handler
+to run and clean up the files.
 
-Thanks,
-Nick
+This also moves the trap handler before temp file creation, which closes
+the small race between creation trap handler install.
 
-Nicholas Piggin (8):
-  arch-run: Fix TRAP handler recursion to remove temporary files
-    properly
-  arch-run: Clean up initrd cleanup
-  migration: use a more robust way to wait for background job
-  migration: Support multiple migrations
-  arch-run: rename migration variables
-  migration: Add quiet migration support
-  Add common/ directory for architecture-independent tests
-  migration: add a migration selftest
+Reviewed-by: Thomas Huth <thuth@redhat.com>
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ scripts/arch-run.bash | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
- arm/Makefile.common          |   1 +
- arm/selftest-migration.c     |   1 +
- arm/sieve.c                  |   2 +-
- arm/unittests.cfg            |   6 ++
- common/selftest-migration.c  |  34 +++++++
- common/sieve.c               |  51 ++++++++++
- lib/migrate.c                |  19 +++-
- lib/migrate.h                |   2 +
- powerpc/Makefile.common      |   1 +
- powerpc/selftest-migration.c |   1 +
- powerpc/unittests.cfg        |   4 +
- riscv/sieve.c                |   2 +-
- s390x/Makefile               |   1 +
- s390x/selftest-migration.c   |   1 +
- s390x/sieve.c                |   2 +-
- s390x/unittests.cfg          |   4 +
- scripts/arch-run.bash        | 177 +++++++++++++++++++++++++----------
- x86/sieve.c                  |  52 +---------
- 18 files changed, 253 insertions(+), 108 deletions(-)
- create mode 120000 arm/selftest-migration.c
- create mode 100644 common/selftest-migration.c
- create mode 100644 common/sieve.c
- create mode 120000 powerpc/selftest-migration.c
- create mode 120000 s390x/selftest-migration.c
- mode change 100644 => 120000 x86/sieve.c
-
+diff --git a/scripts/arch-run.bash b/scripts/arch-run.bash
+index d0864360..11d47a85 100644
+--- a/scripts/arch-run.bash
++++ b/scripts/arch-run.bash
+@@ -129,6 +129,9 @@ run_migration ()
+ 		return 77
+ 	fi
+ 
++	trap 'trap - TERM ; kill 0 ; exit 2' INT TERM
++	trap 'rm -f ${migout1} ${migsock} ${qmp1} ${qmp2} ${fifo}' RETURN EXIT
++
+ 	migsock=$(mktemp -u -t mig-helper-socket.XXXXXXXXXX)
+ 	migout1=$(mktemp -t mig-helper-stdout1.XXXXXXXXXX)
+ 	qmp1=$(mktemp -u -t mig-helper-qmp1.XXXXXXXXXX)
+@@ -137,9 +140,6 @@ run_migration ()
+ 	qmpout1=/dev/null
+ 	qmpout2=/dev/null
+ 
+-	trap 'kill 0; exit 2' INT TERM
+-	trap 'rm -f ${migout1} ${migsock} ${qmp1} ${qmp2} ${fifo}' RETURN EXIT
+-
+ 	eval "$@" -chardev socket,id=mon1,path=${qmp1},server=on,wait=off \
+ 		-mon chardev=mon1,mode=control | tee ${migout1} &
+ 	live_pid=`jobs -l %+ | grep "eval" | awk '{print$2}'`
+@@ -209,11 +209,11 @@ run_panic ()
+ 		return 77
+ 	fi
+ 
+-	qmp=$(mktemp -u -t panic-qmp.XXXXXXXXXX)
+-
+-	trap 'kill 0; exit 2' INT TERM
++	trap 'trap - TERM ; kill 0 ; exit 2' INT TERM
+ 	trap 'rm -f ${qmp}' RETURN EXIT
+ 
++	qmp=$(mktemp -u -t panic-qmp.XXXXXXXXXX)
++
+ 	# start VM stopped so we don't miss any events
+ 	eval "$@" -chardev socket,id=mon1,path=${qmp},server=on,wait=off \
+ 		-mon chardev=mon1,mode=control -S &
 -- 
 2.42.0
 
