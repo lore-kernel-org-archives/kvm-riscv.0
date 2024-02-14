@@ -1,79 +1,46 @@
-From: Anup Patel <anup@brainfault.org>
-Date: Mon, 12 Feb 2024 17:53:58 +0530
-Subject: [PATCH v5 00/12] RISCV: Add kvm Sstc timer selftests
-In-Reply-To: <cover.1705916069.git.haibo1.xu@intel.com>
-References: <cover.1705916069.git.haibo1.xu@intel.com>
-Message-ID: <CAAhSdy2wFzk0h5MiM5y9Fij0HyWake=7vNuV1MExUxkEtMWShw@mail.gmail.com>
+From: Anup Patel <apatel@ventanamicro.com>
+Date: Wed, 14 Feb 2024 17:51:31 +0530
+Subject: [kvmtool PATCH 00/10] More ISA extensions
+Message-ID: <20240214122141.305126-1-apatel@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Jan 22, 2024 at 3:15?PM Haibo Xu <haibo1.xu@intel.com> wrote:
->
-> The RISC-V arch_timer selftests is used to validate Sstc timer
-> functionality in a guest, which sets up periodic timer interrupts
-> and check the basic interrupt status upon its receipt.
->
-> This KVM selftests was ported from aarch64 arch_timer and tested
-> with Linux v6.7-rc8 on a Qemu riscv64 virt machine.
->
-> ---
-> Changed since v4:
->   * Rebased to Linux 6.7-rc8
->   * Added new patch(2/12) to clean up the data type in struct test_args
->   * Re-ordered patch(11/11) in v4 to patch(3/12)
->   * Changed the timer_err_margin_us type from int to uint32_t
->
-> Haibo Xu (11):
->   KVM: arm64: selftests: Data type cleanup for arch_timer test
->   KVM: arm64: selftests: Enable tuning of error margin in arch_timer
->     test
->   KVM: arm64: selftests: Split arch_timer test code
->   KVM: selftests: Add CONFIG_64BIT definition for the build
->   tools: riscv: Add header file csr.h
->   tools: riscv: Add header file vdso/processor.h
->   KVM: riscv: selftests: Switch to use macro from csr.h
->   KVM: riscv: selftests: Add exception handling support
->   KVM: riscv: selftests: Add guest helper to get vcpu id
->   KVM: riscv: selftests: Change vcpu_has_ext to a common function
->   KVM: riscv: selftests: Add sstc timer test
->
-> Paolo Bonzini (1):
->   selftests/kvm: Fix issues with $(SPLIT_TESTS)
+This series adds support more ISA extensions namely: Zbc, scalar crypto,
+vector crypto, Zfh[min], Zihintntl, Zvfh[min], and Zfa. The series also
+adds a command-line option to disable SBI STA extension for Guest/VM.
 
-Rebased on Linux-6.8-rc4 and queued this series for Linux-6.9
+These patches can also be found in the riscv_more_exts_v1 branch at:
+https://github.com/avpatel/kvmtool.git
 
-Thanks,
-Anup
+Anup Patel (10):
+  Sync-up header with Linux-6.8-rc4 for KVM RISC-V
+  kvmtool: Fix absence of __packed definition
+  riscv: Add Zbc extension support
+  riscv: Add scalar crypto extensions support
+  riscv: Add vector crypto extensions support
+  riscv: Add Zfh[min] extensions support
+  riscv: Add Zihintntl extension support
+  riscv: Add Zvfh[min] extensions support
+  riscv: Add Zfa extensiona support
+  riscv: Allow disabling SBI STA extension for Guest
 
->
->  tools/arch/riscv/include/asm/csr.h            | 541 ++++++++++++++++++
->  tools/arch/riscv/include/asm/vdso/processor.h |  32 ++
->  tools/testing/selftests/kvm/Makefile          |  27 +-
->  .../selftests/kvm/aarch64/arch_timer.c        | 295 +---------
->  tools/testing/selftests/kvm/arch_timer.c      | 259 +++++++++
->  .../selftests/kvm/include/aarch64/processor.h |   4 -
->  .../selftests/kvm/include/kvm_util_base.h     |   9 +
->  .../selftests/kvm/include/riscv/arch_timer.h  |  71 +++
->  .../selftests/kvm/include/riscv/processor.h   |  65 ++-
->  .../testing/selftests/kvm/include/test_util.h |   2 +
->  .../selftests/kvm/include/timer_test.h        |  45 ++
->  .../selftests/kvm/lib/riscv/handlers.S        | 101 ++++
->  .../selftests/kvm/lib/riscv/processor.c       |  87 +++
->  .../testing/selftests/kvm/riscv/arch_timer.c  | 111 ++++
->  .../selftests/kvm/riscv/get-reg-list.c        |  11 +-
->  15 files changed, 1353 insertions(+), 307 deletions(-)
->  create mode 100644 tools/arch/riscv/include/asm/csr.h
->  create mode 100644 tools/arch/riscv/include/asm/vdso/processor.h
->  create mode 100644 tools/testing/selftests/kvm/arch_timer.c
->  create mode 100644 tools/testing/selftests/kvm/include/riscv/arch_timer.h
->  create mode 100644 tools/testing/selftests/kvm/include/timer_test.h
->  create mode 100644 tools/testing/selftests/kvm/lib/riscv/handlers.S
->  create mode 100644 tools/testing/selftests/kvm/riscv/arch_timer.c
->
-> --
-> 2.34.1
->
+ include/kvm/compiler.h              |   2 +
+ include/linux/kvm.h                 | 140 ++++++++++------------------
+ include/linux/virtio_config.h       |   8 +-
+ include/linux/virtio_pci.h          |  68 ++++++++++++++
+ riscv/fdt.c                         |  27 ++++++
+ riscv/include/asm/kvm.h             |  40 ++++++++
+ riscv/include/kvm/csr.h             |  15 +++
+ riscv/include/kvm/kvm-config-arch.h |  86 ++++++++++++++++-
+ riscv/kvm-cpu.c                     |  31 ++++++
+ x86/include/asm/kvm.h               |   3 +
+ 10 files changed, 328 insertions(+), 92 deletions(-)
+ create mode 100644 riscv/include/kvm/csr.h
+
+-- 
+2.34.1
+
 
