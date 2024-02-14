@@ -1,37 +1,50 @@
 From: Anup Patel <apatel@ventanamicro.com>
-Date: Wed, 14 Feb 2024 17:51:33 +0530
-Subject: [kvmtool PATCH 02/10] kvmtool: Fix absence of __packed definition
+Date: Wed, 14 Feb 2024 17:51:34 +0530
+Subject: [kvmtool PATCH 03/10] riscv: Add Zbc extension support
 In-Reply-To: <20240214122141.305126-1-apatel@ventanamicro.com>
 References: <20240214122141.305126-1-apatel@ventanamicro.com>
-Message-ID: <20240214122141.305126-3-apatel@ventanamicro.com>
+Message-ID: <20240214122141.305126-4-apatel@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The absence of __packed definition in kvm/compiler.h cause build
-failer after syncing kernel headers with Linux-6.8 because the
-kernel header uapi/linux/virtio_pci.h uses __packed for structures.
+When the Zbc extension is available expose it to the guest
+via device tree so that guest can use it.
 
 Signed-off-by: Anup Patel <apatel@ventanamicro.com>
 ---
- include/kvm/compiler.h | 2 ++
- 1 file changed, 2 insertions(+)
+ riscv/fdt.c                         | 1 +
+ riscv/include/kvm/kvm-config-arch.h | 3 +++
+ 2 files changed, 4 insertions(+)
 
-diff --git a/include/kvm/compiler.h b/include/kvm/compiler.h
-index 2013a83..dd8a22a 100644
---- a/include/kvm/compiler.h
-+++ b/include/kvm/compiler.h
-@@ -1,6 +1,8 @@
- #ifndef KVM_COMPILER_H_
- #define KVM_COMPILER_H_
- 
-+#include <linux/compiler.h>
-+
- #ifndef __compiletime_error
- # define __compiletime_error(message)
- #endif
+diff --git a/riscv/fdt.c b/riscv/fdt.c
+index 8485acf..84b6087 100644
+--- a/riscv/fdt.c
++++ b/riscv/fdt.c
+@@ -24,6 +24,7 @@ struct isa_ext_info isa_info_arr[] = {
+ 	{"svpbmt", KVM_RISCV_ISA_EXT_SVPBMT},
+ 	{"zba", KVM_RISCV_ISA_EXT_ZBA},
+ 	{"zbb", KVM_RISCV_ISA_EXT_ZBB},
++	{"zbc", KVM_RISCV_ISA_EXT_ZBC},
+ 	{"zbs", KVM_RISCV_ISA_EXT_ZBS},
+ 	{"zicbom", KVM_RISCV_ISA_EXT_ZICBOM},
+ 	{"zicboz", KVM_RISCV_ISA_EXT_ZICBOZ},
+diff --git a/riscv/include/kvm/kvm-config-arch.h b/riscv/include/kvm/kvm-config-arch.h
+index d2fc2d4..6d09eee 100644
+--- a/riscv/include/kvm/kvm-config-arch.h
++++ b/riscv/include/kvm/kvm-config-arch.h
+@@ -49,6 +49,9 @@ struct kvm_config_arch {
+ 	OPT_BOOLEAN('\0', "disable-zbb",				\
+ 		    &(cfg)->ext_disabled[KVM_RISCV_ISA_EXT_ZBB],	\
+ 		    "Disable Zbb Extension"),				\
++	OPT_BOOLEAN('\0', "disable-zbc",				\
++		    &(cfg)->ext_disabled[KVM_RISCV_ISA_EXT_ZBC],	\
++		    "Disable Zbc Extension"),				\
+ 	OPT_BOOLEAN('\0', "disable-zbs",				\
+ 		    &(cfg)->ext_disabled[KVM_RISCV_ISA_EXT_ZBS],	\
+ 		    "Disable Zbs Extension"),				\
 -- 
 2.34.1
 
