@@ -1,49 +1,58 @@
-From: Anup Patel <anup@brainfault.org>
-Date: Wed, 14 Feb 2024 18:21:14 +0530
-Subject: [PATCH v1 2/3] RISC-V: KVM: Handle breakpoint exits for VCPU
-In-Reply-To: <20240206074931.22930-3-duchao@eswincomputing.com>
-References: <20240206074931.22930-1-duchao@eswincomputing.com> <20240206074931.22930-3-duchao@eswincomputing.com>
-Message-ID: <CAAhSdy0xYr6jKRdYzTTGfTe26WUC352u1HFd727z7EXA+8AnCQ@mail.gmail.com>
+From: Paolo Bonzini <pbonzini@redhat.com>
+Date: Wed, 14 Feb 2024 18:35:58 +0100
+Subject: [GIT PULL] KVM/riscv fixes for 6.8, take #1
+In-Reply-To: <CAAhSdy3TXDCnA+hqJyNq3CiJD9LTtL_OOqX0N=GqScL1VU8FeQ@mail.gmail.com>
+References: <CAAhSdy3TXDCnA+hqJyNq3CiJD9LTtL_OOqX0N=GqScL1VU8FeQ@mail.gmail.com>
+Message-ID: <CABgObfZXYLTnaK3b24Uui2nMMrZGXgpCU8KaRM=rjC32vLGJKg@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Feb 6, 2024 at 1:22?PM Chao Du <duchao@eswincomputing.com> wrote:
+On Fri, Feb 9, 2024 at 12:57?PM Anup Patel <anup@brainfault.org> wrote:
 >
-> Exit to userspace for breakpoint traps. Set the exit_reason as
-> KVM_EXIT_DEBUG before exit.
+> Hi Paolo,
 >
-> Signed-off-by: Chao Du <duchao@eswincomputing.com>
-
-Looks good to me.
-
-Reviewed-by: Anup Patel <anup@brainfault.org>
-
-Regards,
-Anup
-
-> ---
->  arch/riscv/kvm/vcpu_exit.c | 4 ++++
->  1 file changed, 4 insertions(+)
+> We have three fixes for 6.8 which address steal-time
+> related sparse warnings.
 >
-> diff --git a/arch/riscv/kvm/vcpu_exit.c b/arch/riscv/kvm/vcpu_exit.c
-> index 2415722c01b8..5761f95abb60 100644
-> --- a/arch/riscv/kvm/vcpu_exit.c
-> +++ b/arch/riscv/kvm/vcpu_exit.c
-> @@ -204,6 +204,10 @@ int kvm_riscv_vcpu_exit(struct kvm_vcpu *vcpu, struct kvm_run *run,
->                 if (vcpu->arch.guest_context.hstatus & HSTATUS_SPV)
->                         ret = kvm_riscv_vcpu_sbi_ecall(vcpu, run);
->                 break;
-> +       case EXC_BREAKPOINT:
-> +               run->exit_reason = KVM_EXIT_DEBUG;
-> +               ret = 0;
-> +               break;
->         default:
->                 break;
->         }
-> --
-> 2.17.1
+> Please pull.
 >
+> Regards,
+> Anup
+>
+> The following changes since commit 54be6c6c5ae8e0d93a6c4641cb7528eb0b6ba478:
+>
+>   Linux 6.8-rc3 (2024-02-04 12:20:36 +0000)
+>
+> are available in the Git repository at:
+>
+>   https://github.com/kvm-riscv/linux.git tags/kvm-riscv-fixes-6.8-1
+>
+> for you to fetch changes up to f072b272aa27d57cf7fe6fdedb30fb50f391974e:
+>
+>   RISC-V: KVM: Use correct restricted types (2024-02-09 11:53:13 +0530)
+
+Pulled (but not pushed), thanks.
+
+Paolo
+
+>
+> ----------------------------------------------------------------
+> KVM/riscv fixes for 6.8, take #1
+>
+> - Fix steal-time related sparse warnings
+>
+> ----------------------------------------------------------------
+> Andrew Jones (3):
+>       RISC-V: paravirt: steal_time should be static
+>       RISC-V: paravirt: Use correct restricted types
+>       RISC-V: KVM: Use correct restricted types
+>
+>  arch/riscv/kernel/paravirt.c  |  6 +++---
+>  arch/riscv/kvm/vcpu_sbi_sta.c | 20 ++++++++++++--------
+>  2 files changed, 15 insertions(+), 11 deletions(-)
+>
+
 
