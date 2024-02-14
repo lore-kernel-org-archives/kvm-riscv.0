@@ -1,38 +1,36 @@
 From: Anup Patel <apatel@ventanamicro.com>
-Date: Wed, 14 Feb 2024 17:51:41 +0530
-Subject: [kvmtool PATCH 10/10] riscv: Allow disabling SBI STA extension for Guest
-In-Reply-To: <20240214122141.305126-1-apatel@ventanamicro.com>
-References: <20240214122141.305126-1-apatel@ventanamicro.com>
-Message-ID: <20240214122141.305126-11-apatel@ventanamicro.com>
+Date: Wed, 14 Feb 2024 18:07:52 +0530
+Subject: [PATCH 0/5] KVM RISC-V report few more ISA extensions through ONE_REG
+Message-ID: <20240214123757.305347-1-apatel@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-We add "--disable-sbi-sta" options to allow users disable SBI steal-time
-extension for the Guest.
+This series extends the KVM RISC-V ONE_REG interface to report few more
+ISA extensions namely: Ztso and Zacas. These extensions are already
+supported by the HWPROBE interface in Linux-6.8 kernel.
 
-Signed-off-by: Anup Patel <apatel@ventanamicro.com>
----
- riscv/include/kvm/kvm-config-arch.h | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+To test these patches, use KVMTOOL from the riscv_more_exts_round2_v1
+branch at: https://github.com/avpatel/kvmtool.git
 
-diff --git a/riscv/include/kvm/kvm-config-arch.h b/riscv/include/kvm/kvm-config-arch.h
-index 6415d3d..e562d71 100644
---- a/riscv/include/kvm/kvm-config-arch.h
-+++ b/riscv/include/kvm/kvm-config-arch.h
-@@ -186,6 +186,9 @@ struct kvm_config_arch {
- 		    "Disable SBI Vendor Extensions"),			\
- 	OPT_BOOLEAN('\0', "disable-sbi-dbcn",				\
- 		    &(cfg)->sbi_ext_disabled[KVM_RISCV_SBI_EXT_DBCN],	\
--		    "Disable SBI DBCN Extension"),
-+		    "Disable SBI DBCN Extension"),			\
-+	OPT_BOOLEAN('\0', "disable-sbi-sta",				\
-+		    &(cfg)->sbi_ext_disabled[KVM_RISCV_SBI_EXT_STA],	\
-+		    "Disable SBI STA Extension"),
- 
- #endif /* KVM__KVM_CONFIG_ARCH_H */
+These patches can also be found in the riscv_kvm_more_exts_round2_v1
+branch at: https://github.com/avpatel/linux.git
+
+Anup Patel (5):
+  RISC-V: KVM: Forward SEED CSR access to user space
+  RISC-V: KVM: Allow Ztso extension for Guest/VM
+  KVM: riscv: selftests: Add Ztso extension to get-reg-list test
+  RISC-V: KVM: Allow Zacas extension for Guest/VM
+  KVM: riscv: selftests: Add Zacas extension to get-reg-list test
+
+ arch/riscv/include/uapi/asm/kvm.h                |  2 ++
+ arch/riscv/kvm/vcpu_insn.c                       | 13 +++++++++++++
+ arch/riscv/kvm/vcpu_onereg.c                     |  4 ++++
+ tools/testing/selftests/kvm/riscv/get-reg-list.c |  8 ++++++++
+ 4 files changed, 27 insertions(+)
+
 -- 
 2.34.1
 
