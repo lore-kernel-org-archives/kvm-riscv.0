@@ -1,61 +1,56 @@
 From: Anup Patel <apatel@ventanamicro.com>
-Date: Wed, 14 Feb 2024 18:07:53 +0530
-Subject: [PATCH 1/5] RISC-V: KVM: Forward SEED CSR access to user space
+Date: Wed, 14 Feb 2024 18:07:54 +0530
+Subject: [PATCH 2/5] RISC-V: KVM: Allow Ztso extension for Guest/VM
 In-Reply-To: <20240214123757.305347-1-apatel@ventanamicro.com>
 References: <20240214123757.305347-1-apatel@ventanamicro.com>
-Message-ID: <20240214123757.305347-2-apatel@ventanamicro.com>
+Message-ID: <20240214123757.305347-3-apatel@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The SEED CSR access from VS/VU mode (guest) will always trap to
-HS-mode (KVM) when Zkr extension is available to the Guest/VM.
+We extend the KVM ISA extension ONE_REG interface to allow KVM
+user space to detect and enable Ztso extension for Guest/VM.
 
-We must forward this CSR access to KVM user space so that it
-can be emulated based on the method chosen by VMM.
-
-Fixes: f370b4e668f0 ("RISC-V: KVM: Allow scalar crypto extensions for Guest/VM")
 Signed-off-by: Anup Patel <apatel@ventanamicro.com>
 ---
- arch/riscv/kvm/vcpu_insn.c | 13 +++++++++++++
- 1 file changed, 13 insertions(+)
+ arch/riscv/include/uapi/asm/kvm.h | 1 +
+ arch/riscv/kvm/vcpu_onereg.c      | 2 ++
+ 2 files changed, 3 insertions(+)
 
-diff --git a/arch/riscv/kvm/vcpu_insn.c b/arch/riscv/kvm/vcpu_insn.c
-index 7a6abed41bc1..ee7215f4071f 100644
---- a/arch/riscv/kvm/vcpu_insn.c
-+++ b/arch/riscv/kvm/vcpu_insn.c
-@@ -7,6 +7,8 @@
- #include <linux/bitops.h>
- #include <linux/kvm_host.h>
- 
-+#include <asm/cpufeature.h>
-+
- #define INSN_OPCODE_MASK	0x007c
- #define INSN_OPCODE_SHIFT	2
- #define INSN_OPCODE_SYSTEM	28
-@@ -213,9 +215,20 @@ struct csr_func {
- 		    unsigned long wr_mask);
+diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
+index 7499e88a947c..f8aa9f2ace95 100644
+--- a/arch/riscv/include/uapi/asm/kvm.h
++++ b/arch/riscv/include/uapi/asm/kvm.h
+@@ -166,6 +166,7 @@ enum KVM_RISCV_ISA_EXT_ID {
+ 	KVM_RISCV_ISA_EXT_ZVFH,
+ 	KVM_RISCV_ISA_EXT_ZVFHMIN,
+ 	KVM_RISCV_ISA_EXT_ZFA,
++	KVM_RISCV_ISA_EXT_ZTSO,
+ 	KVM_RISCV_ISA_EXT_MAX,
  };
  
-+static int seed_csr_rmw(struct kvm_vcpu *vcpu, unsigned int csr_num,
-+			unsigned long *val, unsigned long new_val,
-+			unsigned long wr_mask)
-+{
-+	if (!riscv_isa_extension_available(vcpu->arch.isa, ZKR))
-+		return KVM_INSN_ILLEGAL_TRAP;
-+
-+	return KVM_INSN_EXIT_TO_USER_SPACE;
-+}
-+
- static const struct csr_func csr_funcs[] = {
- 	KVM_RISCV_VCPU_AIA_CSR_FUNCS
- 	KVM_RISCV_VCPU_HPMCOUNTER_CSR_FUNCS
-+	{ .base = CSR_SEED, .count = 1, .func = seed_csr_rmw },
- };
- 
- /**
+diff --git a/arch/riscv/kvm/vcpu_onereg.c b/arch/riscv/kvm/vcpu_onereg.c
+index 5f7355e96008..38f5cf286087 100644
+--- a/arch/riscv/kvm/vcpu_onereg.c
++++ b/arch/riscv/kvm/vcpu_onereg.c
+@@ -66,6 +66,7 @@ static const unsigned long kvm_isa_ext_arr[] = {
+ 	KVM_ISA_EXT_ARR(ZKSED),
+ 	KVM_ISA_EXT_ARR(ZKSH),
+ 	KVM_ISA_EXT_ARR(ZKT),
++	KVM_ISA_EXT_ARR(ZTSO),
+ 	KVM_ISA_EXT_ARR(ZVBB),
+ 	KVM_ISA_EXT_ARR(ZVBC),
+ 	KVM_ISA_EXT_ARR(ZVFH),
+@@ -141,6 +142,7 @@ static bool kvm_riscv_vcpu_isa_disable_allowed(unsigned long ext)
+ 	case KVM_RISCV_ISA_EXT_ZKSED:
+ 	case KVM_RISCV_ISA_EXT_ZKSH:
+ 	case KVM_RISCV_ISA_EXT_ZKT:
++	case KVM_RISCV_ISA_EXT_ZTSO:
+ 	case KVM_RISCV_ISA_EXT_ZVBB:
+ 	case KVM_RISCV_ISA_EXT_ZVBC:
+ 	case KVM_RISCV_ISA_EXT_ZVFH:
 -- 
 2.34.1
 
