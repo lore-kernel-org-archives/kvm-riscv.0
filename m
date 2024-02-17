@@ -1,53 +1,52 @@
 From: Atish Patra <atishp@rivosinc.com>
-Date: Fri, 16 Feb 2024 16:57:26 -0800
-Subject: [PATCH RFC 08/20] dt-bindings: riscv: add Ssccfg ISA extension description
+Date: Fri, 16 Feb 2024 16:57:27 -0800
+Subject: [PATCH RFC 09/20] RISC-V: Add Smcntrpmf extension parsing
 In-Reply-To: <20240217005738.3744121-1-atishp@rivosinc.com>
 References: <20240217005738.3744121-1-atishp@rivosinc.com>
-Message-ID: <20240217005738.3744121-9-atishp@rivosinc.com>
+Message-ID: <20240217005738.3744121-10-atishp@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add description for the Ssccfg extension.
+Smcntrpmf extension allows M-mode to enable privilege mode filtering
+for cycle/instret counters. However, the cyclecfg/instretcfg CSRs are
+only available only in Ssccfg only Smcntrpmf is present.
+
+That's why, kernel needs to detect presence of Smcntrpmf extension and
+enable privilege mode filtering for cycle/instret counters.
 
 Signed-off-by: Atish Patra <atishp@rivosinc.com>
 ---
- .../devicetree/bindings/riscv/extensions.yaml       | 13 +++++++++++++
- 1 file changed, 13 insertions(+)
+ arch/riscv/include/asm/hwcap.h | 1 +
+ arch/riscv/kernel/cpufeature.c | 1 +
+ 2 files changed, 2 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/riscv/extensions.yaml b/Documentation/devicetree/bindings/riscv/extensions.yaml
-index 77a9f867e36b..15adeb60441b 100644
---- a/Documentation/devicetree/bindings/riscv/extensions.yaml
-+++ b/Documentation/devicetree/bindings/riscv/extensions.yaml
-@@ -128,6 +128,13 @@ properties:
-             changes to interrupts as frozen at commit ccbddab ("Merge pull
-             request #42 from riscv/jhauser-2023-RC4") of riscv-aia.
+diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
+index 5f4401e221ee..b82a8d7a9b3b 100644
+--- a/arch/riscv/include/asm/hwcap.h
++++ b/arch/riscv/include/asm/hwcap.h
+@@ -84,6 +84,7 @@
+ #define RISCV_ISA_EXT_SMCSRIND		75
+ #define RISCV_ISA_EXT_SSCCFG            76
+ #define RISCV_ISA_EXT_SMCDELEG          77
++#define RISCV_ISA_EXT_SMCNTRPMF         78
  
-+	- const: smcdeleg
-+	  description: |
-+	    The standard Smcdeleg supervisor-level extension for the machine mode
-+	    to delegate the hpmcounters to supvervisor mode so that they are
-+	    directlyi accessible in the supervisor mode. This extension depend
-+	    on Sscsrind, Zihpm, Zicntr extensions.
-+
-         - const: smstateen
-           description: |
-             The standard Smstateen extension for controlling access to CSRs
-@@ -154,6 +161,12 @@ properties:
-             interrupt architecture for supervisor-mode-visible csr and
-             behavioural changes to interrupts as frozen at commit ccbddab
-             ("Merge pull request #42 from riscv/jhauser-2023-RC4") of riscv-aia.
-+	- const: ssccfg
-+	  description: |
-+	    The standard Ssccfg supervisor-level extension for configuring
-+            the delegated hpmcounters to be accessible directly in supervisor
-+            mode. This extension depend on Sscsrind, Smcdeleg, Zihpm, Zicntr
-+            extensions.
- 
-         - const: sscofpmf
-           description: |
+ #define RISCV_ISA_EXT_MAX		128
+ #define RISCV_ISA_EXT_INVALID		U32_MAX
+diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
+index 77cc5dbd73bf..c30be2c924e7 100644
+--- a/arch/riscv/kernel/cpufeature.c
++++ b/arch/riscv/kernel/cpufeature.c
+@@ -302,6 +302,7 @@ const struct riscv_isa_ext_data riscv_isa_ext[] = {
+ 	__RISCV_ISA_EXT_DATA(smaia, RISCV_ISA_EXT_SMAIA),
+ 	__RISCV_ISA_EXT_DATA(smcdeleg, RISCV_ISA_EXT_SMCDELEG),
+ 	__RISCV_ISA_EXT_DATA(smstateen, RISCV_ISA_EXT_SMSTATEEN),
++	__RISCV_ISA_EXT_DATA(smcntrpmf, RISCV_ISA_EXT_SMCNTRPMF),
+ 	__RISCV_ISA_EXT_DATA(smcsrind, RISCV_ISA_EXT_SMCSRIND),
+ 	__RISCV_ISA_EXT_DATA(ssaia, RISCV_ISA_EXT_SSAIA),
+ 	__RISCV_ISA_EXT_DATA(sscsrind, RISCV_ISA_EXT_SSCSRIND),
 -- 
 2.34.1
 
