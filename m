@@ -1,58 +1,56 @@
 From: Atish Patra <atishp@rivosinc.com>
-Date: Fri, 16 Feb 2024 16:57:34 -0800
-Subject: [PATCH RFC 16/20] tools/perf: Pass the Counter constraint values in the pmu events
+Date: Fri, 16 Feb 2024 16:57:36 -0800
+Subject: [PATCH RFC 18/20] tools arch uapi: Sync the uinstd.h header file for RISC-V
 In-Reply-To: <20240217005738.3744121-1-atishp@rivosinc.com>
 References: <20240217005738.3744121-1-atishp@rivosinc.com>
-Message-ID: <20240217005738.3744121-17-atishp@rivosinc.com>
+Message-ID: <20240217005738.3744121-19-atishp@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-RISC-V doesn't have any standard event to counter mapping discovery
-mechanism in the ISA. The ISA defines 29 programmable counters and
-platforms can choose to implement any number of them and map any
-events to any counters. Thus, the perf tool need to inform the driver
-about the counter mapping of each events.
-
-The current perf infrastructure only parses the 'Counter' constraints
-in metrics. This patch extends that to pass in the pmu events so that
-any driver can retrieve those values via perf attributes if defined
-accordingly.
+The uninstd.h has been changed since it's last sync. Update it so
+that perf tool can use the new RISC-V specific syscall in perf tool.
 
 Signed-off-by: Atish Patra <atishp@rivosinc.com>
 ---
- tools/perf/pmu-events/jevents.py | 9 +++++++++
- 1 file changed, 9 insertions(+)
+ tools/arch/riscv/include/uapi/asm/unistd.h | 14 +++++++++++++-
+ 1 file changed, 13 insertions(+), 1 deletion(-)
 
-diff --git a/tools/perf/pmu-events/jevents.py b/tools/perf/pmu-events/jevents.py
-index 30934a490109..f1e320077695 100755
---- a/tools/perf/pmu-events/jevents.py
-+++ b/tools/perf/pmu-events/jevents.py
-@@ -278,6 +278,11 @@ class JsonEvent:
-         return fixed[name.lower()]
-       return event
+diff --git a/tools/arch/riscv/include/uapi/asm/unistd.h b/tools/arch/riscv/include/uapi/asm/unistd.h
+index f506cca520b0..950ab3fd4409 100644
+--- a/tools/arch/riscv/include/uapi/asm/unistd.h
++++ b/tools/arch/riscv/include/uapi/asm/unistd.h
+@@ -15,11 +15,14 @@
+  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+  */
  
-+    def counter_list_to_bitmask(counterlist):
-+      counter_ids = list(map(int, counterlist.split(',')))
-+      bitmask = sum(1 << pos for pos in counter_ids)
-+      return bitmask
+-#ifdef __LP64__
++#if defined(__LP64__) && !defined(__SYSCALL_COMPAT)
+ #define __ARCH_WANT_NEW_STAT
+ #define __ARCH_WANT_SET_GET_RLIMIT
+ #endif /* __LP64__ */
+ 
++#define __ARCH_WANT_SYS_CLONE3
++#define __ARCH_WANT_MEMFD_SECRET
 +
-     def unit_to_pmu(unit: str) -> Optional[str]:
-       """Convert a JSON Unit to Linux PMU name."""
-       if not unit:
-@@ -401,6 +406,10 @@ class JsonEvent:
-       else:
-         raise argparse.ArgumentTypeError('Cannot find arch std event:', arch_std)
+ #include <asm-generic/unistd.h>
  
-+    if self.counter:
-+      bitmask = counter_list_to_bitmask(self.counter)
-+      event += f',counterid_mask={bitmask:#x}'
+ /*
+@@ -40,3 +43,12 @@
+ #define __NR_riscv_flush_icache (__NR_arch_specific_syscall + 15)
+ #endif
+ __SYSCALL(__NR_riscv_flush_icache, sys_riscv_flush_icache)
 +
-     self.event = real_event(self.name, event)
- 
-   def __repr__(self) -> str:
++/*
++ * Allows userspace to query the kernel for CPU architecture and
++ * microarchitecture details across a given set of CPUs.
++ */
++#ifndef __NR_riscv_hwprobe
++#define __NR_riscv_hwprobe (__NR_arch_specific_syscall + 14)
++#endif
++__SYSCALL(__NR_riscv_hwprobe, sys_riscv_hwprobe)
 -- 
 2.34.1
 
