@@ -1,233 +1,123 @@
 From: Atish Patra <atishp@rivosinc.com>
-Date: Fri, 16 Feb 2024 16:57:30 -0800
-Subject: [PATCH RFC 12/20] RISC-V: perf: Modify the counter discovery mechanism
+Date: Fri, 16 Feb 2024 16:57:32 -0800
+Subject: [PATCH RFC 14/20] RISC-V: perf: Use config2 for event to counter mapping
 In-Reply-To: <20240217005738.3744121-1-atishp@rivosinc.com>
 References: <20240217005738.3744121-1-atishp@rivosinc.com>
-Message-ID: <20240217005738.3744121-13-atishp@rivosinc.com>
+Message-ID: <20240217005738.3744121-15-atishp@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-If both counter delegation and SBI PMU is present, the counter
-delegation will be used for hardware pmu counters while the SBI PMU
-will be used for firmware counters. Thus, the driver has to probe
-the counters info via SBI PMU to distinguish the firmware counters.
+The counter restriction specified in the json file is passed to
+the drivers via config2 paarameter in perf attributes. This allows
+any platform vendor to define their custom mapping between event and
+hpmcounters without any rules defined in the ISA.
 
-The hybrid scheme also requires improvements of the informational
-logging messages to indicate the user about underlying interface
-used for each use case.
+However, the cycle and instruction counters are fixed (0 and 2
+respectively) by the ISA. The platform vendor must specify this
+in the json file if intended to be used while profiling. Otherwise,
+they can just specify the alternate hpmcounters that may monitor
+and/or sample the cycle/instruction counts.
 
 Signed-off-by: Atish Patra <atishp@rivosinc.com>
 ---
- drivers/perf/riscv_pmu_dev.c | 120 ++++++++++++++++++++++++++---------
- 1 file changed, 90 insertions(+), 30 deletions(-)
+ drivers/perf/riscv_pmu_dev.c   | 36 +++++++++++++++++++++++-----------
+ include/linux/perf/riscv_pmu.h |  2 ++
+ 2 files changed, 27 insertions(+), 11 deletions(-)
 
 diff --git a/drivers/perf/riscv_pmu_dev.c b/drivers/perf/riscv_pmu_dev.c
-index 3d27bd65f140..dfc0ddee9da4 100644
+index 0cdad0dafb71..5bad4131e920 100644
 --- a/drivers/perf/riscv_pmu_dev.c
 +++ b/drivers/perf/riscv_pmu_dev.c
-@@ -35,6 +35,11 @@
- PMU_FORMAT_ATTR(event, "config:0-47");
+@@ -49,6 +49,7 @@ static ssize_t __maybe_unused rvpmu_format_show(struct device *dev,
+ 	RVPMU_ATTR_ENTRY(_name, rvpmu_format_show, (char *)_config)
+ 
  PMU_FORMAT_ATTR(firmware, "config:63");
++PMU_FORMAT_ATTR(counterid_mask, "config2:0-31");
  
-+static DEFINE_STATIC_KEY_FALSE(riscv_pmu_sbi_available);
-+static DEFINE_STATIC_KEY_FALSE(riscv_pmu_cdeleg_available);
-+static bool cdeleg_available;
-+static bool sbi_available;
-+
- static struct attribute *riscv_arch_formats_attr[] = {
- 	&format_attr_event.attr,
+ static DEFINE_STATIC_KEY_FALSE(riscv_pmu_sbi_available);
+ static DEFINE_STATIC_KEY_FALSE(riscv_pmu_cdeleg_available);
+@@ -74,6 +75,7 @@ static const struct attribute_group *riscv_sbi_pmu_attr_groups[] = {
+ static struct attribute *riscv_cdeleg_pmu_formats_attr[] = {
+ 	RVPMU_FORMAT_ATTR_ENTRY(event, RVPMU_CDELEG_PMU_FORMAT_ATTR),
  	&format_attr_firmware.attr,
-@@ -56,7 +61,8 @@ static int sysctl_perf_user_access __read_mostly = SYSCTL_USER_ACCESS;
++	&format_attr_counterid_mask.attr,
+ 	NULL,
+ };
  
- /*
-  * This structure is SBI specific but counter delegation also require counter
-- * width, csr mapping. Reuse it for now.
-+ * width, csr mapping. Reuse it for now we can have firmware counters for
-+ * platfroms with counter delegation support.
-  * RISC-V doesn't have heterogeneous harts yet. This need to be part of
-  * per_cpu in case of harts with different pmu counters
-  */
-@@ -67,6 +73,8 @@ static unsigned int riscv_pmu_irq;
- 
- /* Cache the available counters in a bitmask */
- static unsigned long cmask;
-+/* Cache the available firmware counters in another bitmask */
-+static unsigned long firmware_cmask;
- 
- struct sbi_pmu_event_data {
- 	union {
-@@ -575,35 +583,49 @@ static int rvpmu_sbi_find_num_ctrs(void)
- 		return sbi_err_map_linux_errno(ret.error);
+@@ -974,23 +976,39 @@ static int rvpmu_deleg_find_ctrs(void)
+ 	return num_hw_ctr;
  }
  
--static int rvpmu_sbi_get_ctrinfo(int nctr, unsigned long *mask)
-+static int rvpmu_deleg_find_ctrs(void)
-+{
-+	/* TODO */
-+	return -1;
-+}
-+
-+static int rvpmu_sbi_get_ctrinfo(int nsbi_ctr, int ndeleg_ctr)
++/* The json file must correctly specify counter 0 or counter 2 is available
++ * in the counter lists for cycle/instret events. Otherwise, the drivers have
++ * no way to figure out if a fixed counter must be used and pick a programmable
++ * counter if available.
++ */
+ static int get_deleg_fixed_hw_idx(struct cpu_hw_events *cpuc, struct perf_event *event)
  {
- 	struct sbiret ret;
--	int i, num_hw_ctr = 0, num_fw_ctr = 0;
-+	int i, num_hw_ctr = 0, num_fw_ctr = 0, num_ctr = 0;
- 	union sbi_pmu_ctr_info cinfo;
- 
--	pmu_ctr_list = kcalloc(nctr, sizeof(*pmu_ctr_list), GFP_KERNEL);
--	if (!pmu_ctr_list)
--		return -ENOMEM;
--
--	for (i = 0; i < nctr; i++) {
-+	for (i = 0; i < nsbi_ctr; i++) {
- 		ret = sbi_ecall(SBI_EXT_PMU, SBI_EXT_PMU_COUNTER_GET_INFO, i, 0, 0, 0, 0, 0);
- 		if (ret.error)
- 			/* The logical counter ids are not expected to be contiguous */
- 			continue;
- 
--		*mask |= BIT(i);
--
- 		cinfo.value = ret.value;
- 		if (cinfo.type == SBI_PMU_CTR_TYPE_FW)
- 			num_fw_ctr++;
--		else
+-	return -EINVAL;
++	if (!event->attr.config2)
++		return -EINVAL;
 +
-+		if (!cdeleg_available) {
- 			num_hw_ctr++;
--		pmu_ctr_list[i].value = cinfo.value;
-+			cmask |= BIT(i);
-+			pmu_ctr_list[i].value = cinfo.value;
-+		} else if (cinfo.type == SBI_PMU_CTR_TYPE_FW) {
-+			/* Track firmware counters in a different mask */
-+			firmware_cmask |= BIT(i);
-+			pmu_ctr_list[i].value = cinfo.value;
-+		}
-+
- 	}
- 
--	pr_info("%d firmware and %d hardware counters\n", num_fw_ctr, num_hw_ctr);
-+	if (cdeleg_available) {
-+		pr_info("%d firmware and %d hardware counters\n", num_fw_ctr, ndeleg_ctr);
-+		num_ctr = num_fw_ctr + ndeleg_ctr;
-+	} else {
-+		pr_info("%d firmware and %d hardware counters\n", num_fw_ctr, num_hw_ctr);
-+		num_ctr = nsbi_ctr;
-+	}
- 
--	return 0;
-+	return num_ctr;
++	if (event->attr.config2 & RISCV_PMU_CYCLE_FIXED_CTR_MASK)
++		return 0; /* CY counter */
++	else if (event->attr.config2 & RISCV_PMU_INSTRUCTION_FIXED_CTR_MASK)
++		return 2; /* IR counter */
++	else
++		return -EINVAL;
  }
  
- static inline void rvpmu_sbi_stop_all(struct riscv_pmu *pmu)
-@@ -775,16 +797,33 @@ static void rvpmu_ctr_stop(struct perf_event *event, unsigned long flag)
- 	/* TODO: Counter delegation implementation */
- }
- 
--static int rvpmu_find_num_ctrs(void)
-+static int rvpmu_find_ctrs(void)
+ static int get_deleg_next_hpm_hw_idx(struct cpu_hw_events *cpuc, struct perf_event *event)
  {
--	return rvpmu_sbi_find_num_ctrs();
--	/* TODO: Counter delegation implementation */
--}
-+	int num_sbi_counters = 0, num_deleg_counters = 0, num_counters = 0;
+ 	unsigned long hw_ctr_mask = 0;
  
--static int rvpmu_get_ctrinfo(int nctr, unsigned long *mask)
--{
--	return rvpmu_sbi_get_ctrinfo(nctr, mask);
--	/* TODO: Counter delegation implementation */
-+	/*
-+	 * We don't know how many firmware counters available. Just allocate
-+	 * for maximum counters driver can support. The default is 64 anyways.
-+	 */
-+	pmu_ctr_list = kcalloc(RISCV_MAX_COUNTERS, sizeof(*pmu_ctr_list),
-+			       GFP_KERNEL);
-+	if (!pmu_ctr_list)
-+		return -ENOMEM;
-+
-+	if (cdeleg_available)
-+		num_deleg_counters = rvpmu_deleg_find_ctrs();
-+
-+	/* This is required for firmware counters even if the above is true */
-+	if (sbi_available)
-+		num_sbi_counters = rvpmu_sbi_find_num_ctrs();
-+
-+	if (num_sbi_counters >= RISCV_MAX_COUNTERS || num_deleg_counters >= RISCV_MAX_COUNTERS)
-+		return -ENOSPC;
-+
-+	/* cache all the information about counters now */
-+	num_counters = rvpmu_sbi_get_ctrinfo(num_sbi_counters, num_deleg_counters);
-+
-+	return num_counters;
- }
- 
- static int rvpmu_event_map(struct perf_event *event, u64 *econfig)
-@@ -1069,12 +1108,21 @@ static int rvpmu_device_probe(struct platform_device *pdev)
- 	int ret = -ENODEV;
- 	int num_counters;
- 
--	pr_info("SBI PMU extension is available\n");
-+	if (cdeleg_available) {
-+		pr_info("hpmcounters will use the counter delegation ISA extension\n");
-+		if (sbi_available)
-+			pr_info("Firmware counters will be use SBI PMU extension\n");
-+		else
-+			pr_info("Firmware counters will be not available as SBI PMU extension is not present\n");
-+	} else if (sbi_available) {
-+		pr_info("Both hpmcounters and firmware counters will use SBI PMU extension\n");
-+	}
-+
- 	pmu = riscv_pmu_alloc();
- 	if (!pmu)
- 		return -ENOMEM;
- 
--	num_counters = rvpmu_find_num_ctrs();
-+	num_counters = rvpmu_find_ctrs();
- 	if (num_counters < 0) {
- 		pr_err("SBI PMU extension doesn't provide any counters\n");
- 		goto out_free;
-@@ -1086,9 +1134,6 @@ static int rvpmu_device_probe(struct platform_device *pdev)
- 		pr_info("SBI returned more than maximum number of counters. Limiting the number of counters to %d\n", num_counters);
- 	}
- 
--	/* cache all the information about counters now */
--	if (rvpmu_get_ctrinfo(num_counters, &cmask))
--		goto out_free;
- 
- 	ret = rvpmu_setup_irqs(pmu, pdev);
- 	if (ret < 0) {
-@@ -1147,11 +1192,26 @@ static int __init rvpmu_devinit(void)
- 	int ret;
- 	struct platform_device *pdev;
- 
--	if (sbi_spec_version < sbi_mk_version(0, 3) ||
--	    !sbi_probe_extension(SBI_EXT_PMU)) {
--		return 0;
-+	if (sbi_spec_version >= sbi_mk_version(0, 3) &&
-+	    sbi_probe_extension(SBI_EXT_PMU)) {
-+		static_branch_enable(&riscv_pmu_sbi_available);
-+		sbi_available = true;
-+	}
+-	/*
+-	 * TODO: Treat every hpmcounter can monitor every event for now.
+-	 * The event to counter mapping should come from the json file.
+-	 * The mapping should also tell if sampling is supported or not.
+-	 */
+-
+ 	/* Select only hpmcounters */
+ 	hw_ctr_mask = cmask & (~0x7);
 +
 +	/*
-+	 * We need all three extensions to be present to access the counters
-+	 * in S-mode via Supervisor Counter delegation.
++	 * Mask off the counters that can't monitor this event (specified via json)
++	 * The counter mask for this event is set in config2 via the property 'Counter'
++	 * in the json file or manual configuration of config2. If the config2 is not set, it
++	 * is assumed all the available hpmcounters can monitor this event.
 +	 */
-+	if (riscv_isa_extension_available(NULL, SSCCFG) &&
-+	    riscv_isa_extension_available(NULL, SMCDELEG) &&
-+	    riscv_isa_extension_available(NULL, SSCSRIND)) {
-+		static_branch_enable(&riscv_pmu_cdeleg_available);
-+		cdeleg_available = true;
- 	}
++	if (event->attr.config2)
++		hw_ctr_mask = hw_ctr_mask & event->attr.config2;
+ 	hw_ctr_mask &= ~(cpuc->used_hw_ctrs[0]);
+ 	return __ffs(hw_ctr_mask);
+ }
+@@ -1020,10 +1038,6 @@ static int rvpmu_deleg_ctr_get_idx(struct perf_event *event)
+ 	uint64_t priv_filter;
+ 	int idx;
  
-+	if (!(sbi_available || cdeleg_available))
-+		return 0;
-+
- 	ret = cpuhp_setup_state_multi(CPUHP_AP_PERF_RISCV_STARTING,
- 				      "perf/riscv/pmu:starting",
- 				      rvpmu_starting_cpu, rvpmu_dying_cpu);
+-	/*
+-	 * TODO: We should not rely on SBI Perf encoding to check if the event
+-	 * is a fixed one or not.
+-	 */
+ 	if (!is_sampling_event(event)) {
+ 		idx = get_deleg_fixed_hw_idx(cpuc, event);
+ 		if (idx == 0 || idx == 2) {
+diff --git a/include/linux/perf/riscv_pmu.h b/include/linux/perf/riscv_pmu.h
+index f878369fecc8..425edd6685a9 100644
+--- a/include/linux/perf/riscv_pmu.h
++++ b/include/linux/perf/riscv_pmu.h
+@@ -30,6 +30,8 @@
+ #define RISCV_PMU_CONFIG1_GUEST_EVENTS 0x1
+ 
+ #define RISCV_PMU_DELEG_RAW_EVENT_MASK GENMASK_ULL(55, 0)
++#define RISCV_PMU_CYCLE_FIXED_CTR_MASK 0x01
++#define RISCV_PMU_INSTRUCTION_FIXED_CTR_MASK 0x04
+ 
+ struct cpu_hw_events {
+ 	/* currently enabled events */
 -- 
 2.34.1
 
