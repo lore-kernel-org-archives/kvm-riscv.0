@@ -1,132 +1,54 @@
-From: Atish Patra <atishp@rivosinc.com>
-Date: Fri, 16 Feb 2024 16:57:38 -0800
-Subject: [PATCH RFC 20/20] tools/perf: Detect if platform supports counter delegation
-In-Reply-To: <20240217005738.3744121-1-atishp@rivosinc.com>
+From: Rob Herring <robh@kernel.org>
+Date: Fri, 16 Feb 2024 20:33:35 -0600
+Subject: [PATCH RFC 08/20] dt-bindings: riscv: add Ssccfg ISA extension
+ description
+In-Reply-To: <20240217005738.3744121-9-atishp@rivosinc.com>
 References: <20240217005738.3744121-1-atishp@rivosinc.com>
-Message-ID: <20240217005738.3744121-21-atishp@rivosinc.com>
+ <20240217005738.3744121-9-atishp@rivosinc.com>
+Message-ID: <170813721337.1034359.14079032178586114678.robh@kernel.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The perf tool currently remap the standard events to the encoding
-specified by the platform in the json file. We need that only if
-the counter delegation extension is present. Otherwise, SBI PMU
-interface is used which defines the encoding for all standard
-events.
 
-The hwprobe mechanism can be used to detect the presence of these
-extensions and remap the encoding space only in that case.
+On Fri, 16 Feb 2024 16:57:26 -0800, Atish Patra wrote:
+> Add description for the Ssccfg extension.
+> 
+> Signed-off-by: Atish Patra <atishp@rivosinc.com>
+> ---
+>  .../devicetree/bindings/riscv/extensions.yaml       | 13 +++++++++++++
+>  1 file changed, 13 insertions(+)
+> 
 
-Signed-off-by: Atish Patra <atishp@rivosinc.com>
----
- tools/perf/arch/riscv/util/Build    |  1 +
- tools/perf/arch/riscv/util/evlist.c |  3 ++-
- tools/perf/arch/riscv/util/pmu.c    | 41 +++++++++++++++++++++++++++++
- tools/perf/arch/riscv/util/pmu.h    | 11 ++++++++
- 4 files changed, 55 insertions(+), 1 deletion(-)
- create mode 100644 tools/perf/arch/riscv/util/pmu.c
- create mode 100644 tools/perf/arch/riscv/util/pmu.h
+My bot found errors running 'make DT_CHECKER_FLAGS=-m dt_binding_check'
+on your patch (DT_CHECKER_FLAGS is new in v5.13):
 
-diff --git a/tools/perf/arch/riscv/util/Build b/tools/perf/arch/riscv/util/Build
-index b581fb3d8677..2358f0666e8d 100644
---- a/tools/perf/arch/riscv/util/Build
-+++ b/tools/perf/arch/riscv/util/Build
-@@ -1,6 +1,7 @@
- perf-y += perf_regs.o
- perf-y += header.o
- perf-y += evlist.o
-+perf-y += pmu.o
- 
- perf-$(CONFIG_DWARF) += dwarf-regs.o
- perf-$(CONFIG_LIBDW_DWARF_UNWIND) += unwind-libdw.o
-diff --git a/tools/perf/arch/riscv/util/evlist.c b/tools/perf/arch/riscv/util/evlist.c
-index 9ad287c6f396..aa7eef7280ca 100644
---- a/tools/perf/arch/riscv/util/evlist.c
-+++ b/tools/perf/arch/riscv/util/evlist.c
-@@ -6,6 +6,7 @@
- #include "util/parse-events.h"
- #include "util/event.h"
- #include "evsel.h"
-+#include "pmu.h"
- 
- static int pmu_update_cpu_stdevents_callback(const struct pmu_event *pe,
- 					     const struct pmu_events_table *table __maybe_unused,
-@@ -41,7 +42,7 @@ int arch_evlist__override_default_attrs(struct evlist *evlist, const char *pmu_n
- 							  "iTLB-load-misses"};
- 	unsigned int i, len = sizeof(overriden_event_arr) / sizeof(char *);
- 
--	if (!pmu)
-+	if (!pmu || !perf_pmu_riscv_cdeleg_present())
- 		return 0;
- 
- 	for (i = 0; i < len; i++) {
-diff --git a/tools/perf/arch/riscv/util/pmu.c b/tools/perf/arch/riscv/util/pmu.c
-new file mode 100644
-index 000000000000..79f0974e27f8
---- /dev/null
-+++ b/tools/perf/arch/riscv/util/pmu.c
-@@ -0,0 +1,41 @@
-+// SPDX-License-Identifier: GPL-2.0
-+
-+/*
-+ * Copyright Rivos Inc 2024
-+ * Author(s): Atish Patra <atishp@rivosinc.com>
-+ */
-+
-+#include <string.h>
-+#include <stdio.h>
-+#include <asm/hwprobe.h>
-+#include <unistd.h>
-+#include <sys/syscall.h>
-+
-+#include "pmu.h"
-+
-+static bool counter_deleg_present;
-+
-+bool perf_pmu_riscv_cdeleg_present(void)
-+{
-+	return counter_deleg_present;
-+}
-+
-+void perf_pmu__arch_init(struct perf_pmu *pmu __maybe_unused)
-+{
-+	struct riscv_hwprobe isa_ext;
-+	int ret;
-+
-+	isa_ext.key = RISCV_HWPROBE_KEY_IMA_EXT_0;
-+
-+	ret = syscall(__NR_riscv_hwprobe, &isa_ext, 1, 0, NULL, 0);
-+	if (ret)
-+		return;
-+
-+	if (isa_ext.key < 0)
-+		return;
-+
-+	if ((isa_ext.value & RISCV_HWPROBE_EXT_SSCSRIND) &&
-+	    (isa_ext.value & RISCV_HWPROBE_EXT_SMCDELEG) &&
-+	    (isa_ext.value & RISCV_HWPROBE_EXT_SSCCFG))
-+		counter_deleg_present = true;
-+}
-diff --git a/tools/perf/arch/riscv/util/pmu.h b/tools/perf/arch/riscv/util/pmu.h
-new file mode 100644
-index 000000000000..21f33f7d323d
---- /dev/null
-+++ b/tools/perf/arch/riscv/util/pmu.h
-@@ -0,0 +1,11 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+
-+#ifndef __RISCV_UTIL_PMU_H
-+#define __RISCV_UTIL_PMU_H
-+
-+#include "../../../util/pmu.h"
-+
-+
-+bool perf_pmu_riscv_cdeleg_present(void);
-+
-+#endif
--- 
-2.34.1
+yamllint warnings/errors:
+./Documentation/devicetree/bindings/riscv/extensions.yaml:131:1: [error] syntax error: found character '\t' that cannot start any token (syntax)
+
+dtschema/dtc warnings/errors:
+Documentation/devicetree/bindings/riscv/extensions.yaml:131:1: found a tab character where an indentation space is expected
+./Documentation/devicetree/bindings/riscv/extensions.yaml:131:1: found a tab character where an indentation space is expected
+  in "<unicode string>", line 125, column 24
+  in "<unicode string>", line 131, column 1
+
+doc reference errors (make refcheckdocs):
+
+See https://patchwork.ozlabs.org/project/devicetree-bindings/patch/20240217005738.3744121-9-atishp at rivosinc.com
+
+The base for the series is generally the latest rc1. A different dependency
+should be noted in *this* patch.
+
+If you already ran 'make dt_binding_check' and didn't see the above
+error(s), then make sure 'yamllint' is installed and dt-schema is up to
+date:
+
+pip3 install dtschema --upgrade
+
+Please check and re-submit after running the above command yourself. Note
+that DT_SCHEMA_FILES can be set to your schema file to speed up checking
+your schema. However, it must be unset to test all examples with your schema.
 
 
