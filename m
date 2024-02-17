@@ -1,73 +1,57 @@
 From: Atish Patra <atishp@rivosinc.com>
-Date: Fri, 16 Feb 2024 16:57:20 -0800
-Subject: [PATCH RFC 02/20] RISC-V: Add Sxcsrind ISA extension CSR definitions
+Date: Fri, 16 Feb 2024 16:57:25 -0800
+Subject: [PATCH RFC 07/20] RISC-V: Add Ssccfg ISA extension definition and parsing
 In-Reply-To: <20240217005738.3744121-1-atishp@rivosinc.com>
 References: <20240217005738.3744121-1-atishp@rivosinc.com>
-Message-ID: <20240217005738.3744121-3-atishp@rivosinc.com>
+Message-ID: <20240217005738.3744121-8-atishp@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Kaiwen Xue <kaiwenx@rivosinc.com>
+Ssccfg (?Ss? for Privileged architecture and Supervisor-level
+extension, ?ccfg? for Counter Configuration) provides access to
+delegated counters and new supervisor-level state.
 
-This adds definitions of new CSRs and bits defined in Sxcsrind ISA
-extension. These CSR enables indirect accesses mechanism to access
-any CSRs in M-, S-, and VS-mode. The range of the select values
-and ireg will be define by the ISA extension using Sxcsrind extension.
+This patch just enables the definitions and enable parsing.
 
-Signed-off-by: Kaiwen Xue <kaiwenx@rivosinc.com>
 Signed-off-by: Atish Patra <atishp@rivosinc.com>
 ---
- arch/riscv/include/asm/csr.h | 20 ++++++++++++++++++++
- 1 file changed, 20 insertions(+)
+ arch/riscv/include/asm/hwcap.h | 2 ++
+ arch/riscv/kernel/cpufeature.c | 2 ++
+ 2 files changed, 4 insertions(+)
 
-diff --git a/arch/riscv/include/asm/csr.h b/arch/riscv/include/asm/csr.h
-index 510014051f5d..0a54856fd807 100644
---- a/arch/riscv/include/asm/csr.h
-+++ b/arch/riscv/include/asm/csr.h
-@@ -302,6 +302,12 @@
- /* Supervisor-Level Window to Indirectly Accessed Registers (AIA) */
- #define CSR_SISELECT		0x150
- #define CSR_SIREG		0x151
-+/* Supervisor-Level Window to Indirectly Accessed Registers (Sxcsrind) */
-+#define CSR_SIREG2		0x152
-+#define CSR_SIREG3		0x153
-+#define CSR_SIREG4		0x155
-+#define CSR_SIREG5		0x156
-+#define CSR_SIREG6		0x157
+diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
+index 44df259cc815..5f4401e221ee 100644
+--- a/arch/riscv/include/asm/hwcap.h
++++ b/arch/riscv/include/asm/hwcap.h
+@@ -82,6 +82,8 @@
+ #define RISCV_ISA_EXT_ZACAS		73
+ #define RISCV_ISA_EXT_SSCSRIND		74
+ #define RISCV_ISA_EXT_SMCSRIND		75
++#define RISCV_ISA_EXT_SSCCFG            76
++#define RISCV_ISA_EXT_SMCDELEG          77
  
- /* Supervisor-Level Interrupts (AIA) */
- #define CSR_STOPEI		0x15c
-@@ -349,6 +355,14 @@
- /* VS-Level Window to Indirectly Accessed Registers (H-extension with AIA) */
- #define CSR_VSISELECT		0x250
- #define CSR_VSIREG		0x251
-+/*
-+ * VS-Level Window to Indirectly Accessed Registers (H-extension with Sxcsrind)
-+ */
-+#define CSR_VSIREG2		0x252
-+#define CSR_VSIREG3		0x253
-+#define CSR_VSIREG4		0x255
-+#define CSR_VSIREG5		0x256
-+#define CSR_VISREG6		0x257
- 
- /* VS-Level Interrupts (H-extension with AIA) */
- #define CSR_VSTOPEI		0x25c
-@@ -389,6 +403,12 @@
- /* Machine-Level Window to Indirectly Accessed Registers (AIA) */
- #define CSR_MISELECT		0x350
- #define CSR_MIREG		0x351
-+/* Machine-Level Window to Indrecitly Accessed Registers (Sxcsrind) */
-+#define CSR_MIREG2		0x352
-+#define CSR_MIREG3		0x353
-+#define CSR_MIREG4		0x355
-+#define CSR_MIREG5		0x356
-+#define CSR_MIREG6		0x357
- 
- /* Machine-Level Interrupts (AIA) */
- #define CSR_MTOPEI		0x35c
+ #define RISCV_ISA_EXT_MAX		128
+ #define RISCV_ISA_EXT_INVALID		U32_MAX
+diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
+index 52ec88dfb004..77cc5dbd73bf 100644
+--- a/arch/riscv/kernel/cpufeature.c
++++ b/arch/riscv/kernel/cpufeature.c
+@@ -300,10 +300,12 @@ const struct riscv_isa_ext_data riscv_isa_ext[] = {
+ 	__RISCV_ISA_EXT_BUNDLE(zvksg, riscv_zvksg_bundled_exts),
+ 	__RISCV_ISA_EXT_DATA(zvkt, RISCV_ISA_EXT_ZVKT),
+ 	__RISCV_ISA_EXT_DATA(smaia, RISCV_ISA_EXT_SMAIA),
++	__RISCV_ISA_EXT_DATA(smcdeleg, RISCV_ISA_EXT_SMCDELEG),
+ 	__RISCV_ISA_EXT_DATA(smstateen, RISCV_ISA_EXT_SMSTATEEN),
+ 	__RISCV_ISA_EXT_DATA(smcsrind, RISCV_ISA_EXT_SMCSRIND),
+ 	__RISCV_ISA_EXT_DATA(ssaia, RISCV_ISA_EXT_SSAIA),
+ 	__RISCV_ISA_EXT_DATA(sscsrind, RISCV_ISA_EXT_SSCSRIND),
++	__RISCV_ISA_EXT_DATA(ssccfg, RISCV_ISA_EXT_SSCCFG),
+ 	__RISCV_ISA_EXT_DATA(sscofpmf, RISCV_ISA_EXT_SSCOFPMF),
+ 	__RISCV_ISA_EXT_DATA(sstc, RISCV_ISA_EXT_SSTC),
+ 	__RISCV_ISA_EXT_DATA(svinval, RISCV_ISA_EXT_SVINVAL),
 -- 
 2.34.1
 
