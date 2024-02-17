@@ -1,50 +1,52 @@
-From: Rob Herring <robh@kernel.org>
-Date: Fri, 16 Feb 2024 20:33:38 -0600
-Subject: [PATCH RFC 10/20] dt-bindings: riscv: add Smcntrpmf ISA
- extension description
-In-Reply-To: <20240217005738.3744121-11-atishp@rivosinc.com>
-References: <20240217005738.3744121-1-atishp@rivosinc.com>
- <20240217005738.3744121-11-atishp@rivosinc.com>
-Message-ID: <170813721439.1034411.7264728567495824984.robh@kernel.org>
+From: Nicholas Piggin <npiggin@gmail.com>
+Date: Sat, 17 Feb 2024 17:19:54 +1000
+Subject: [kvm-unit-tests PATCH v4 8/8] migration: add a migration
+ selftest
+In-Reply-To: <abbcbb47-1ae7-4793-a918-dede8dcaf07f@redhat.com>
+References: <20240209091134.600228-1-npiggin@gmail.com>
+ <20240209091134.600228-9-npiggin@gmail.com>
+ <abbcbb47-1ae7-4793-a918-dede8dcaf07f@redhat.com>
+Message-ID: <CZ7673PUQ853.DB10GSBEZ65Z@wheely>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+On Fri Feb 16, 2024 at 9:15 PM AEST, Thomas Huth wrote:
+> On 09/02/2024 10.11, Nicholas Piggin wrote:
+> > Add a selftest for migration support in  guest library and test harness
+> > code. It performs migrations in a tight loop to irritate races and bugs
+> > in the test harness code.
+> > 
+> > Include the test in arm, s390, powerpc.
+> > 
+> > Acked-by: Claudio Imbrenda <imbrenda@linux.ibm.com> (s390x)
+> > Reviewed-by: Thomas Huth <thuth@redhat.com>
+> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> > ---
+> >   arm/Makefile.common          |  1 +
+> >   arm/selftest-migration.c     |  1 +
+> >   arm/unittests.cfg            |  6 ++++++
+>
+>   Hi Nicholas,
+>
+> I just gave the patches a try, but the arm test seems to fail for me: Only 
+> the first getchar() seems to wait for a character, all the subsequent ones 
+> don't wait anymore and just continue immediately ... is this working for 
+> you? Or do I need another patch on top?
 
-On Fri, 16 Feb 2024 16:57:28 -0800, Atish Patra wrote:
-> Add the description for Smcntrpmf ISA extension
-> 
-> Signed-off-by: Atish Patra <atishp@rivosinc.com>
-> ---
->  Documentation/devicetree/bindings/riscv/extensions.yaml | 7 +++++++
->  1 file changed, 7 insertions(+)
-> 
+Hey sorry missed this comment....
 
-My bot found errors running 'make DT_CHECKER_FLAGS=-m dt_binding_check'
-on your patch (DT_CHECKER_FLAGS is new in v5.13):
+It does seem to work for me, I've mostly tested pseries but I did test
+others too (that's how I saw the arm getchar limit).
 
-yamllint warnings/errors:
+How are you observing it not waiting for migration? I put some sleeps in
+the migration script before echo'ing to the console input and it seems
+to be doing the right thing. Admittedly the test contains no way to
+programaticaly verify the machine was migrated the expected number of
+times, it would be nice to try to match that up somehow.
 
-dtschema/dtc warnings/errors:
-
-
-doc reference errors (make refcheckdocs):
-
-See https://patchwork.ozlabs.org/project/devicetree-bindings/patch/20240217005738.3744121-11-atishp at rivosinc.com
-
-The base for the series is generally the latest rc1. A different dependency
-should be noted in *this* patch.
-
-If you already ran 'make dt_binding_check' and didn't see the above
-error(s), then make sure 'yamllint' is installed and dt-schema is up to
-date:
-
-pip3 install dtschema --upgrade
-
-Please check and re-submit after running the above command yourself. Note
-that DT_SCHEMA_FILES can be set to your schema file to speed up checking
-your schema. However, it must be unset to test all examples with your schema.
-
+Thanks,
+Nick
 
