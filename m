@@ -1,77 +1,131 @@
 From: Atish Patra <atishp@rivosinc.com>
-Date: Fri, 16 Feb 2024 16:57:37 -0800
-Subject: [PATCH RFC 19/20] RISC-V: Add hwprobe support for Counter delegation extensions
+Date: Fri, 16 Feb 2024 16:57:38 -0800
+Subject: [PATCH RFC 20/20] tools/perf: Detect if platform supports counter delegation
 In-Reply-To: <20240217005738.3744121-1-atishp@rivosinc.com>
 References: <20240217005738.3744121-1-atishp@rivosinc.com>
-Message-ID: <20240217005738.3744121-20-atishp@rivosinc.com>
+Message-ID: <20240217005738.3744121-21-atishp@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Even though the counter delegation extensions are all S-mode extension,
-perf tool can use it decide whether it wants to map standard events
-or not. Remapping is not required for if SBI PMU is being used
-for hardware events.
+The perf tool currently remap the standard events to the encoding
+specified by the platform in the json file. We need that only if
+the counter delegation extension is present. Otherwise, SBI PMU
+interface is used which defines the encoding for all standard
+events.
+
+The hwprobe mechanism can be used to detect the presence of these
+extensions and remap the encoding space only in that case.
 
 Signed-off-by: Atish Patra <atishp@rivosinc.com>
 ---
- Documentation/arch/riscv/hwprobe.rst  | 10 ++++++++++
- arch/riscv/include/uapi/asm/hwprobe.h |  4 ++++
- arch/riscv/kernel/sys_hwprobe.c       |  3 +++
- 3 files changed, 17 insertions(+)
+ tools/perf/arch/riscv/util/Build    |  1 +
+ tools/perf/arch/riscv/util/evlist.c |  3 ++-
+ tools/perf/arch/riscv/util/pmu.c    | 41 +++++++++++++++++++++++++++++
+ tools/perf/arch/riscv/util/pmu.h    | 11 ++++++++
+ 4 files changed, 55 insertions(+), 1 deletion(-)
+ create mode 100644 tools/perf/arch/riscv/util/pmu.c
+ create mode 100644 tools/perf/arch/riscv/util/pmu.h
 
-diff --git a/Documentation/arch/riscv/hwprobe.rst b/Documentation/arch/riscv/hwprobe.rst
-index b2bcc9eed9aa..77fa0ed09366 100644
---- a/Documentation/arch/riscv/hwprobe.rst
-+++ b/Documentation/arch/riscv/hwprobe.rst
-@@ -188,6 +188,16 @@ The following keys are defined:
-        manual starting from commit 95cf1f9 ("Add changes requested by Ved
-        during signoff")
+diff --git a/tools/perf/arch/riscv/util/Build b/tools/perf/arch/riscv/util/Build
+index b581fb3d8677..2358f0666e8d 100644
+--- a/tools/perf/arch/riscv/util/Build
++++ b/tools/perf/arch/riscv/util/Build
+@@ -1,6 +1,7 @@
+ perf-y += perf_regs.o
+ perf-y += header.o
+ perf-y += evlist.o
++perf-y += pmu.o
  
-+  * :c:macro:`RISCV_HWPROBE_EXT_SMCDELEG`: The Smcdeleg extension is supported as
-+       defined in the RISC-V Counter Delegation extension manual starting from
-+       commit ff61c1f ("switch to v1.0.0 and frozen")
-+  * :c:macro:`RISCV_HWPROBE_EXT_SSCCFG`: The Ssccfg extension is supported as
-+       defined in the RISC-V Counter Delegation extension manual starting from
-+       commit ff61c1f ("switch to v1.0.0 and frozen")
-+  * :c:macro:`RISCV_HWPROBE_EXT_SSCSRIND`: The Sscsrind extension is supported as
-+       defined in the RISC-V Indirect CSR extension manual starting from
-+       commit a28625c ("mark spec as frozen")
+ perf-$(CONFIG_DWARF) += dwarf-regs.o
+ perf-$(CONFIG_LIBDW_DWARF_UNWIND) += unwind-libdw.o
+diff --git a/tools/perf/arch/riscv/util/evlist.c b/tools/perf/arch/riscv/util/evlist.c
+index 9ad287c6f396..aa7eef7280ca 100644
+--- a/tools/perf/arch/riscv/util/evlist.c
++++ b/tools/perf/arch/riscv/util/evlist.c
+@@ -6,6 +6,7 @@
+ #include "util/parse-events.h"
+ #include "util/event.h"
+ #include "evsel.h"
++#include "pmu.h"
+ 
+ static int pmu_update_cpu_stdevents_callback(const struct pmu_event *pe,
+ 					     const struct pmu_events_table *table __maybe_unused,
+@@ -41,7 +42,7 @@ int arch_evlist__override_default_attrs(struct evlist *evlist, const char *pmu_n
+ 							  "iTLB-load-misses"};
+ 	unsigned int i, len = sizeof(overriden_event_arr) / sizeof(char *);
+ 
+-	if (!pmu)
++	if (!pmu || !perf_pmu_riscv_cdeleg_present())
+ 		return 0;
+ 
+ 	for (i = 0; i < len; i++) {
+diff --git a/tools/perf/arch/riscv/util/pmu.c b/tools/perf/arch/riscv/util/pmu.c
+new file mode 100644
+index 000000000000..79f0974e27f8
+--- /dev/null
++++ b/tools/perf/arch/riscv/util/pmu.c
+@@ -0,0 +1,41 @@
++// SPDX-License-Identifier: GPL-2.0
 +
- * :c:macro:`RISCV_HWPROBE_KEY_CPUPERF_0`: A bitmask that contains performance
-   information about the selected set of processors.
- 
-diff --git a/arch/riscv/include/uapi/asm/hwprobe.h b/arch/riscv/include/uapi/asm/hwprobe.h
-index 9f2a8e3ff204..fb7c6bd6822a 100644
---- a/arch/riscv/include/uapi/asm/hwprobe.h
-+++ b/arch/riscv/include/uapi/asm/hwprobe.h
-@@ -59,6 +59,10 @@ struct riscv_hwprobe {
- #define		RISCV_HWPROBE_EXT_ZTSO		(1ULL << 33)
- #define		RISCV_HWPROBE_EXT_ZACAS		(1ULL << 34)
- #define		RISCV_HWPROBE_EXT_ZICOND	(1ULL << 35)
-+#define		RISCV_HWPROBE_EXT_SSCSRIND	(1ULL << 36)
-+#define		RISCV_HWPROBE_EXT_SMCDELEG	(1ULL << 37)
-+#define		RISCV_HWPROBE_EXT_SSCCFG	(1ULL << 38)
++/*
++ * Copyright Rivos Inc 2024
++ * Author(s): Atish Patra <atishp@rivosinc.com>
++ */
 +
- #define RISCV_HWPROBE_KEY_CPUPERF_0	5
- #define		RISCV_HWPROBE_MISALIGNED_UNKNOWN	(0 << 0)
- #define		RISCV_HWPROBE_MISALIGNED_EMULATED	(1 << 0)
-diff --git a/arch/riscv/kernel/sys_hwprobe.c b/arch/riscv/kernel/sys_hwprobe.c
-index a7c56b41efd2..befb6582b1ce 100644
---- a/arch/riscv/kernel/sys_hwprobe.c
-+++ b/arch/riscv/kernel/sys_hwprobe.c
-@@ -111,6 +111,9 @@ static void hwprobe_isa_ext0(struct riscv_hwprobe *pair,
- 		EXT_KEY(ZTSO);
- 		EXT_KEY(ZACAS);
- 		EXT_KEY(ZICOND);
-+		EXT_KEY(SSCSRIND);
-+		EXT_KEY(SMCDELEG);
-+		EXT_KEY(SSCCFG);
- 
- 		if (has_vector()) {
- 			EXT_KEY(ZVBB);
++#include <string.h>
++#include <stdio.h>
++#include <asm/hwprobe.h>
++#include <unistd.h>
++#include <sys/syscall.h>
++
++#include "pmu.h"
++
++static bool counter_deleg_present;
++
++bool perf_pmu_riscv_cdeleg_present(void)
++{
++	return counter_deleg_present;
++}
++
++void perf_pmu__arch_init(struct perf_pmu *pmu __maybe_unused)
++{
++	struct riscv_hwprobe isa_ext;
++	int ret;
++
++	isa_ext.key = RISCV_HWPROBE_KEY_IMA_EXT_0;
++
++	ret = syscall(__NR_riscv_hwprobe, &isa_ext, 1, 0, NULL, 0);
++	if (ret)
++		return;
++
++	if (isa_ext.key < 0)
++		return;
++
++	if ((isa_ext.value & RISCV_HWPROBE_EXT_SSCSRIND) &&
++	    (isa_ext.value & RISCV_HWPROBE_EXT_SMCDELEG) &&
++	    (isa_ext.value & RISCV_HWPROBE_EXT_SSCCFG))
++		counter_deleg_present = true;
++}
+diff --git a/tools/perf/arch/riscv/util/pmu.h b/tools/perf/arch/riscv/util/pmu.h
+new file mode 100644
+index 000000000000..21f33f7d323d
+--- /dev/null
++++ b/tools/perf/arch/riscv/util/pmu.h
+@@ -0,0 +1,11 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++
++#ifndef __RISCV_UTIL_PMU_H
++#define __RISCV_UTIL_PMU_H
++
++#include "../../../util/pmu.h"
++
++
++bool perf_pmu_riscv_cdeleg_present(void);
++
++#endif
 -- 
 2.34.1
 
