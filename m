@@ -1,61 +1,58 @@
 From: Conor Dooley <conor@kernel.org>
-Date: Sun, 18 Feb 2024 12:47:39 +0000
-Subject: [PATCH RFC 04/20] dt-bindings: riscv: add Sxcsrind ISA extension
- description
-In-Reply-To: <20240217005738.3744121-5-atishp@rivosinc.com>
+Date: Sun, 18 Feb 2024 12:50:06 +0000
+Subject: [PATCH RFC 09/20] RISC-V: Add Smcntrpmf extension parsing
+In-Reply-To: <20240217005738.3744121-10-atishp@rivosinc.com>
 References: <20240217005738.3744121-1-atishp@rivosinc.com>
- <20240217005738.3744121-5-atishp@rivosinc.com>
-Message-ID: <20240218-struggle-grumble-43efdfb9515d@spud>
+ <20240217005738.3744121-10-atishp@rivosinc.com>
+Message-ID: <20240218-contort-profile-53593ed8d391@spud>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Feb 16, 2024 at 04:57:22PM -0800, Atish Patra wrote:
-> Add the S[m|s]csrind ISA extension description.
+On Fri, Feb 16, 2024 at 04:57:27PM -0800, Atish Patra wrote:
+> Smcntrpmf extension allows M-mode to enable privilege mode filtering
+> for cycle/instret counters. However, the cyclecfg/instretcfg CSRs are
+> only available only in Ssccfg only Smcntrpmf is present.
+
+There's some typos in this opening paragraph that makes it hard to
+follow.
+
+> 
+> That's why, kernel needs to detect presence of Smcntrpmf extension and
+> enable privilege mode filtering for cycle/instret counters.
 > 
 > Signed-off-by: Atish Patra <atishp@rivosinc.com>
 > ---
->  .../devicetree/bindings/riscv/extensions.yaml      | 14 ++++++++++++++
->  1 file changed, 14 insertions(+)
+>  arch/riscv/include/asm/hwcap.h | 1 +
+>  arch/riscv/kernel/cpufeature.c | 1 +
+>  2 files changed, 2 insertions(+)
 > 
-> diff --git a/Documentation/devicetree/bindings/riscv/extensions.yaml b/Documentation/devicetree/bindings/riscv/extensions.yaml
-> index 63d81dc895e5..77a9f867e36b 100644
-> --- a/Documentation/devicetree/bindings/riscv/extensions.yaml
-> +++ b/Documentation/devicetree/bindings/riscv/extensions.yaml
-> @@ -134,6 +134,20 @@ properties:
->              added by other RISC-V extensions in H/S/VS/U/VU modes and as
->              ratified at commit a28bfae (Ratified (#7)) of riscv-state-enable.
+> diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
+> index 5f4401e221ee..b82a8d7a9b3b 100644
+> --- a/arch/riscv/include/asm/hwcap.h
+> +++ b/arch/riscv/include/asm/hwcap.h
+> @@ -84,6 +84,7 @@
+>  #define RISCV_ISA_EXT_SMCSRIND		75
+>  #define RISCV_ISA_EXT_SSCCFG            76
+>  #define RISCV_ISA_EXT_SMCDELEG          77
+> +#define RISCV_ISA_EXT_SMCNTRPMF         78
 >  
-> +	- const: smcsrind
-> +          description: |
-> +            The standard Smcsrind supervisor-level extension extends the
-
-The indentation here looks weird.
-
-> +	    indirect CSR access mechanism defined by the Smaia extension. This
-> +	    extension allows other ISA extension to use indirect CSR access
-> +	    mechanism in M-mode.
-
-For this, and the other patches in the series, I want a reference to the
-frozen/ratified point for these extensions. See the rest of this file
-for examples.
-
-Cheers,
-Conor.
-
-> +
-> +	- const: sscsrind
-> +          description: |
-> +            The standard Sscsrind supervisor-level extension extends the
-> +	    indirect CSR access mechanism defined by the Ssaia extension. This
-> +	    extension allows other ISA extension to use indirect CSR access
-> +	    mechanism in S-mode.
-> +
->          - const: ssaia
->            description: |
->              The standard Ssaia supervisor-level extension for the advanced
+>  #define RISCV_ISA_EXT_MAX		128
+>  #define RISCV_ISA_EXT_INVALID		U32_MAX
+> diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
+> index 77cc5dbd73bf..c30be2c924e7 100644
+> --- a/arch/riscv/kernel/cpufeature.c
+> +++ b/arch/riscv/kernel/cpufeature.c
+> @@ -302,6 +302,7 @@ const struct riscv_isa_ext_data riscv_isa_ext[] = {
+>  	__RISCV_ISA_EXT_DATA(smaia, RISCV_ISA_EXT_SMAIA),
+>  	__RISCV_ISA_EXT_DATA(smcdeleg, RISCV_ISA_EXT_SMCDELEG),
+>  	__RISCV_ISA_EXT_DATA(smstateen, RISCV_ISA_EXT_SMSTATEEN),
+> +	__RISCV_ISA_EXT_DATA(smcntrpmf, RISCV_ISA_EXT_SMCNTRPMF),
+>  	__RISCV_ISA_EXT_DATA(smcsrind, RISCV_ISA_EXT_SMCSRIND),
+>  	__RISCV_ISA_EXT_DATA(ssaia, RISCV_ISA_EXT_SSAIA),
+>  	__RISCV_ISA_EXT_DATA(sscsrind, RISCV_ISA_EXT_SSCSRIND),
 > -- 
 > 2.34.1
 > 
@@ -65,4 +62,4 @@ Name: signature.asc
 Type: application/pgp-signature
 Size: 228 bytes
 Desc: not available
-URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20240218/ebfbbc24/attachment.sig>
+URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20240218/902269a0/attachment.sig>
