@@ -1,65 +1,62 @@
-From: Conor Dooley <conor@kernel.org>
-Date: Sun, 18 Feb 2024 12:50:06 +0000
-Subject: [PATCH RFC 09/20] RISC-V: Add Smcntrpmf extension parsing
-In-Reply-To: <20240217005738.3744121-10-atishp@rivosinc.com>
-References: <20240217005738.3744121-1-atishp@rivosinc.com>
- <20240217005738.3744121-10-atishp@rivosinc.com>
-Message-ID: <20240218-contort-profile-53593ed8d391@spud>
+From: Thomas Huth <thuth@redhat.com>
+Date: Mon, 19 Feb 2024 07:56:20 +0100
+Subject: [kvm-unit-tests PATCH v4 8/8] migration: add a migration selftest
+In-Reply-To: <CZ7673PUQ853.DB10GSBEZ65Z@wheely>
+References: <20240209091134.600228-1-npiggin@gmail.com>
+ <20240209091134.600228-9-npiggin@gmail.com>
+ <abbcbb47-1ae7-4793-a918-dede8dcaf07f@redhat.com>
+ <CZ7673PUQ853.DB10GSBEZ65Z@wheely>
+Message-ID: <4d73467d-2091-4342-87a1-822f4aeb8b70@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Feb 16, 2024 at 04:57:27PM -0800, Atish Patra wrote:
-> Smcntrpmf extension allows M-mode to enable privilege mode filtering
-> for cycle/instret counters. However, the cyclecfg/instretcfg CSRs are
-> only available only in Ssccfg only Smcntrpmf is present.
+On 17/02/2024 08.19, Nicholas Piggin wrote:
+> On Fri Feb 16, 2024 at 9:15 PM AEST, Thomas Huth wrote:
+>> On 09/02/2024 10.11, Nicholas Piggin wrote:
+>>> Add a selftest for migration support in  guest library and test harness
+>>> code. It performs migrations in a tight loop to irritate races and bugs
+>>> in the test harness code.
+>>>
+>>> Include the test in arm, s390, powerpc.
+>>>
+>>> Acked-by: Claudio Imbrenda <imbrenda@linux.ibm.com> (s390x)
+>>> Reviewed-by: Thomas Huth <thuth@redhat.com>
+>>> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+>>> ---
+>>>    arm/Makefile.common          |  1 +
+>>>    arm/selftest-migration.c     |  1 +
+>>>    arm/unittests.cfg            |  6 ++++++
+>>
+>>    Hi Nicholas,
+>>
+>> I just gave the patches a try, but the arm test seems to fail for me: Only
+>> the first getchar() seems to wait for a character, all the subsequent ones
+>> don't wait anymore and just continue immediately ... is this working for
+>> you? Or do I need another patch on top?
+> 
+> Hey sorry missed this comment....
+> 
+> It does seem to work for me, I've mostly tested pseries but I did test
+> others too (that's how I saw the arm getchar limit).
+> 
+> How are you observing it not waiting for migration?
 
-There's some typos in this opening paragraph that makes it hard to
-follow.
+According to you other mail, I think you figured it out already, but just 
+for the records: You can see it when running the guest manually, e.g. 
+something like:
 
-> 
-> That's why, kernel needs to detect presence of Smcntrpmf extension and
-> enable privilege mode filtering for cycle/instret counters.
-> 
-> Signed-off-by: Atish Patra <atishp@rivosinc.com>
-> ---
->  arch/riscv/include/asm/hwcap.h | 1 +
->  arch/riscv/kernel/cpufeature.c | 1 +
->  2 files changed, 2 insertions(+)
-> 
-> diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
-> index 5f4401e221ee..b82a8d7a9b3b 100644
-> --- a/arch/riscv/include/asm/hwcap.h
-> +++ b/arch/riscv/include/asm/hwcap.h
-> @@ -84,6 +84,7 @@
->  #define RISCV_ISA_EXT_SMCSRIND		75
->  #define RISCV_ISA_EXT_SSCCFG            76
->  #define RISCV_ISA_EXT_SMCDELEG          77
-> +#define RISCV_ISA_EXT_SMCNTRPMF         78
->  
->  #define RISCV_ISA_EXT_MAX		128
->  #define RISCV_ISA_EXT_INVALID		U32_MAX
-> diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
-> index 77cc5dbd73bf..c30be2c924e7 100644
-> --- a/arch/riscv/kernel/cpufeature.c
-> +++ b/arch/riscv/kernel/cpufeature.c
-> @@ -302,6 +302,7 @@ const struct riscv_isa_ext_data riscv_isa_ext[] = {
->  	__RISCV_ISA_EXT_DATA(smaia, RISCV_ISA_EXT_SMAIA),
->  	__RISCV_ISA_EXT_DATA(smcdeleg, RISCV_ISA_EXT_SMCDELEG),
->  	__RISCV_ISA_EXT_DATA(smstateen, RISCV_ISA_EXT_SMSTATEEN),
-> +	__RISCV_ISA_EXT_DATA(smcntrpmf, RISCV_ISA_EXT_SMCNTRPMF),
->  	__RISCV_ISA_EXT_DATA(smcsrind, RISCV_ISA_EXT_SMCSRIND),
->  	__RISCV_ISA_EXT_DATA(ssaia, RISCV_ISA_EXT_SSAIA),
->  	__RISCV_ISA_EXT_DATA(sscsrind, RISCV_ISA_EXT_SSCSRIND),
-> -- 
-> 2.34.1
-> 
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 228 bytes
-Desc: not available
-URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20240218/902269a0/attachment.sig>
+  qemu-system-aarch64 -nodefaults -machine virt -accel tcg -cpu cortex-a57 \
+    -device virtio-serial-device -device virtconsole,chardev=ctd \
+    -chardev testdev,id=ctd -device pci-testdev -display none \
+    -serial mon:stdio -kernel arm/selftest-migration.flat -smp 1
+
+Without my "lib/arm/io: Fix calling getchar() multiple times" patch, the 
+guest only waits during the first getchar(), all the others simply return 
+immediately.
+
+  Thomas
+
+
