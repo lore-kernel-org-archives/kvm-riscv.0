@@ -1,69 +1,122 @@
-From: Nicholas Piggin <npiggin@gmail.com>
-Date: Mon, 19 Feb 2024 22:02:32 +1000
-Subject: [kvm-unit-tests PATCH v4 8/8] migration: add a migration
- selftest
-In-Reply-To: <4d73467d-2091-4342-87a1-822f4aeb8b70@redhat.com>
-References: <20240209091134.600228-1-npiggin@gmail.com>
- <20240209091134.600228-9-npiggin@gmail.com>
- <abbcbb47-1ae7-4793-a918-dede8dcaf07f@redhat.com>
- <CZ7673PUQ853.DB10GSBEZ65Z@wheely>
- <4d73467d-2091-4342-87a1-822f4aeb8b70@redhat.com>
-Message-ID: <CZ91GLI40959.3EGSUC8X9D0WU@wheely>
+From: Chao Du <duchao@eswincomputing.com>
+Date: Tue, 20 Feb 2024 10:58:25 +0800 (GMT+08:00)
+Subject: [PATCH v1 1/3] RISC-V: KVM: Implement
+ kvm_arch_vcpu_ioctl_set_guest_debug()
+In-Reply-To: <CAK9=C2VZ1t3ctTWKiqeKOALjLh0kJgzVEsZvM=xfc2j7yQOEcQ@mail.gmail.com>
+References: <20240206074931.22930-1-duchao@eswincomputing.com>
+ <20240206074931.22930-2-duchao@eswincomputing.com>
+ <CAK9=C2VZ1t3ctTWKiqeKOALjLh0kJgzVEsZvM=xfc2j7yQOEcQ@mail.gmail.com>
+Message-ID: <4a5a30cd.18c.18dc4734699.Coremail.duchao@eswincomputing.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon Feb 19, 2024 at 4:56 PM AEST, Thomas Huth wrote:
-> On 17/02/2024 08.19, Nicholas Piggin wrote:
-> > On Fri Feb 16, 2024 at 9:15 PM AEST, Thomas Huth wrote:
-> >> On 09/02/2024 10.11, Nicholas Piggin wrote:
-> >>> Add a selftest for migration support in  guest library and test harness
-> >>> code. It performs migrations in a tight loop to irritate races and bugs
-> >>> in the test harness code.
-> >>>
-> >>> Include the test in arm, s390, powerpc.
-> >>>
-> >>> Acked-by: Claudio Imbrenda <imbrenda@linux.ibm.com> (s390x)
-> >>> Reviewed-by: Thomas Huth <thuth@redhat.com>
-> >>> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> >>> ---
-> >>>    arm/Makefile.common          |  1 +
-> >>>    arm/selftest-migration.c     |  1 +
-> >>>    arm/unittests.cfg            |  6 ++++++
-> >>
-> >>    Hi Nicholas,
-> >>
-> >> I just gave the patches a try, but the arm test seems to fail for me: Only
-> >> the first getchar() seems to wait for a character, all the subsequent ones
-> >> don't wait anymore and just continue immediately ... is this working for
-> >> you? Or do I need another patch on top?
-> > 
-> > Hey sorry missed this comment....
-> > 
-> > It does seem to work for me, I've mostly tested pseries but I did test
-> > others too (that's how I saw the arm getchar limit).
-> > 
-> > How are you observing it not waiting for migration?
->
-> According to you other mail, I think you figured it out already, but just 
-> for the records: You can see it when running the guest manually, e.g. 
-> something like:
->
->   qemu-system-aarch64 -nodefaults -machine virt -accel tcg -cpu cortex-a57 \
->     -device virtio-serial-device -device virtconsole,chardev=ctd \
->     -chardev testdev,id=ctd -device pci-testdev -display none \
->     -serial mon:stdio -kernel arm/selftest-migration.flat -smp 1
->
-> Without my "lib/arm/io: Fix calling getchar() multiple times" patch, the 
-> guest only waits during the first getchar(), all the others simply return 
-> immediately.
+On 2024-02-14 21:19, Anup Patel <apatel@ventanamicro.com> wrote:
+> 
+> On Tue, Feb 6, 2024 at 1:22?PM Chao Du <duchao@eswincomputing.com> wrote:
+> >
+> > kvm_vm_ioctl_check_extension(): Return 1 if KVM_CAP_SET_GUEST_DEBUG is
+> > being checked.
+> >
+> > kvm_arch_vcpu_ioctl_set_guest_debug(): Update the guest_debug flags
+> > from userspace accordingly. Route the breakpoint exceptions to HS mode
+> > if the VM is being debugged by userspace, by clearing the corresponding
+> > bit in hedeleg CSR.
+> >
+> > Signed-off-by: Chao Du <duchao@eswincomputing.com>
+> > ---
+> >  arch/riscv/include/uapi/asm/kvm.h |  1 +
+> >  arch/riscv/kvm/vcpu.c             | 15 +++++++++++++--
+> >  arch/riscv/kvm/vm.c               |  1 +
+> >  3 files changed, 15 insertions(+), 2 deletions(-)
+> >
+> > diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
+> > index d6b7a5b95874..8890977836f0 100644
+> > --- a/arch/riscv/include/uapi/asm/kvm.h
+> > +++ b/arch/riscv/include/uapi/asm/kvm.h
+> > @@ -17,6 +17,7 @@
+> >
+> >  #define __KVM_HAVE_IRQ_LINE
+> >  #define __KVM_HAVE_READONLY_MEM
+> > +#define __KVM_HAVE_GUEST_DEBUG
+> >
+> >  #define KVM_COALESCED_MMIO_PAGE_OFFSET 1
+> >
+> > diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+> > index b5ca9f2e98ac..6cee974592ac 100644
+> > --- a/arch/riscv/kvm/vcpu.c
+> > +++ b/arch/riscv/kvm/vcpu.c
+> > @@ -475,8 +475,19 @@ int kvm_arch_vcpu_ioctl_set_mpstate(struct kvm_vcpu *vcpu,
+> >  int kvm_arch_vcpu_ioctl_set_guest_debug(struct kvm_vcpu *vcpu,
+> >                                         struct kvm_guest_debug *dbg)
+> >  {
+> > -       /* TODO; To be implemented later. */
+> > -       return -EINVAL;
+> > +       if (dbg->control & KVM_GUESTDBG_ENABLE) {
+> > +               if (vcpu->guest_debug != dbg->control) {
+> > +                       vcpu->guest_debug = dbg->control;
+> > +                       csr_clear(CSR_HEDELEG, BIT(EXC_BREAKPOINT));
+> > +               }
+> > +       } else {
+> > +               if (vcpu->guest_debug != 0) {
+> > +                       vcpu->guest_debug = 0;
+> > +                       csr_set(CSR_HEDELEG, BIT(EXC_BREAKPOINT));
+> > +               }
+> > +       }
+> 
+> This is broken because directly setting breakpoint exception delegation
+> in CSR also affects other VCPUs running on the same host CPU.
+> 
+> To address the above, we should do the following:
+> 1) Add "unsigned long hedeleg" in "struct kvm_vcpu_config" which
+>    is pre-initialized in kvm_riscv_vcpu_setup_config() without setting
+>    EXC_BREAKPOINT bit.
+> 2) The kvm_arch_vcpu_ioctl_set_guest_debug() should only set/clear
+>     EXC_BREAKPOINT bit in "hedeleg" of "struct kvm_vcpu_config".
+> 3) The kvm_riscv_vcpu_swap_in_guest_state() must write the
+>      HEDELEG csr before entering the Guest/VM.
+> 
+> Regards,
+> Anup
+> 
 
-Yeah I got it -- I re-ran it on arm and it is obvious since you told
-me it's not waiting. At the time I tested I thought it was just arm
-migrating really fast :D
+Thanks for the review and detailed suggestion.
+Maybe we could make it a bit easier:
+1) The kvm_arch_vcpu_ioctl_set_guest_debug() only update vcpu->guest_debug
+   accordingly.
+2) The kvm_riscv_vcpu_swap_in_guest_state() check vcpu->guest_debug and
+   set/clear the HEDELEG csr accordingly.
 
-Thanks,
-Nick
+Could you confirm if this is OK?
+If yes, I will post another revision.
 
+Regards,
+Chao
+
+> > +
+> > +       return 0;
+> >  }
+> >
+> >  static void kvm_riscv_vcpu_setup_config(struct kvm_vcpu *vcpu)
+> > diff --git a/arch/riscv/kvm/vm.c b/arch/riscv/kvm/vm.c
+> > index ce58bc48e5b8..7396b8654f45 100644
+> > --- a/arch/riscv/kvm/vm.c
+> > +++ b/arch/riscv/kvm/vm.c
+> > @@ -186,6 +186,7 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
+> >         case KVM_CAP_READONLY_MEM:
+> >         case KVM_CAP_MP_STATE:
+> >         case KVM_CAP_IMMEDIATE_EXIT:
+> > +       case KVM_CAP_SET_GUEST_DEBUG:
+> >                 r = 1;
+> >                 break;
+> >         case KVM_CAP_NR_VCPUS:
+> > --
+> > 2.17.1
+> >
+> >
+> > --
+> > kvm-riscv mailing list
+> > kvm-riscv at lists.infradead.org
+> > http://lists.infradead.org/mailman/listinfo/kvm-riscv
