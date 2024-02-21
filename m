@@ -1,201 +1,86 @@
-From: Haibo Xu <xiaobo55x@gmail.com>
-Date: Wed, 21 Feb 2024 10:13:08 +0800
-Subject: [PATCH v5 11/12] KVM: riscv: selftests: Change vcpu_has_ext to a
- common function
-In-Reply-To: <CAOnJCULwRTSnrQkR2o1P53R=tJ3TAxX+y+XRBesW6OFEzgFv2g@mail.gmail.com>
-References: <cover.1705916069.git.haibo1.xu@intel.com> <68856b86a93a4188558e5d0ebac0dd6aac8e404c.1705916069.git.haibo1.xu@intel.com>
- <CAOnJCULwRTSnrQkR2o1P53R=tJ3TAxX+y+XRBesW6OFEzgFv2g@mail.gmail.com>
-Message-ID: <CAJve8om2oOLg5-wKX7m7cBTgzwqiMcb35x=nDi1edY8evXjyMw@mail.gmail.com>
+From: Nicholas Piggin <npiggin@gmail.com>
+Date: Wed, 21 Feb 2024 13:27:49 +1000
+Subject: [kvm-unit-tests PATCH v5 0/8] Multi-migration support
+Message-ID: <20240221032757.454524-1-npiggin@gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Feb 21, 2024 at 7:03?AM Atish Patra <atishp@atishpatra.org> wrote:
->
-> On Mon, Jan 22, 2024 at 1:48?AM Haibo Xu <haibo1.xu@intel.com> wrote:
-> >
-> > Move vcpu_has_ext to the processor.c and rename it to __vcpu_has_ext
-> > so that other test cases can use it for vCPU extension check.
-> >
-> > Signed-off-by: Haibo Xu <haibo1.xu@intel.com>
-> > Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
-> > ---
-> >  tools/testing/selftests/kvm/include/riscv/processor.h |  2 ++
-> >  tools/testing/selftests/kvm/lib/riscv/processor.c     | 10 ++++++++++
-> >  tools/testing/selftests/kvm/riscv/get-reg-list.c      | 11 +----------
-> >  3 files changed, 13 insertions(+), 10 deletions(-)
-> >
-> > diff --git a/tools/testing/selftests/kvm/include/riscv/processor.h b/tools/testing/selftests/kvm/include/riscv/processor.h
-> > index b68b1b731a34..bd27e1c67579 100644
-> > --- a/tools/testing/selftests/kvm/include/riscv/processor.h
-> > +++ b/tools/testing/selftests/kvm/include/riscv/processor.h
-> > @@ -42,6 +42,8 @@ static inline uint64_t __kvm_reg_id(uint64_t type, uint64_t idx,
-> >  #define RISCV_ISA_EXT_REG(idx) __kvm_reg_id(KVM_REG_RISCV_ISA_EXT, \
-> >                                              idx, KVM_REG_SIZE_ULONG)
-> >
-> > +bool __vcpu_has_ext(struct kvm_vcpu *vcpu, int ext);
-> > +
-> >  struct ex_regs {
-> >         unsigned long ra;
-> >         unsigned long sp;
-> > diff --git a/tools/testing/selftests/kvm/lib/riscv/processor.c b/tools/testing/selftests/kvm/lib/riscv/processor.c
-> > index 39a1e9902dec..dad73ce18164 100644
-> > --- a/tools/testing/selftests/kvm/lib/riscv/processor.c
-> > +++ b/tools/testing/selftests/kvm/lib/riscv/processor.c
-> > @@ -15,6 +15,16 @@
-> >
-> >  static vm_vaddr_t exception_handlers;
-> >
-> > +bool __vcpu_has_ext(struct kvm_vcpu *vcpu, int ext)
-> > +{
-> > +       unsigned long value = 0;
-> > +       int ret;
-> > +
-> > +       ret = __vcpu_get_reg(vcpu, RISCV_ISA_EXT_REG(ext), &value);
-> > +
-> > +       return !ret && !!value;
-> > +}
-> > +
->
-> Not sure what was the base patch on which this was rebased. The actual
-> commit in the queue branch looks different.
->
+Now that strange arm64 hang is found to be QEMU bug, I'll repost.
+Since arm64 requires Thomas's uart patch and it is worse affected
+by the QEMU bug, I will just not build it on arm. The QEMU bug
+still affects powerpc (and presumably s390x) but it's not causing
+so much trouble for this test case.
 
-This patch set was based on 6.7-rc8.
+I have another test case that can hit it reliably and doesn't
+cause crashes but that takes some harness and common lib work so
+I'll send that another time.
 
-> https://github.com/kvm-riscv/linux/commit/5563517cc2012e3326411b360c9924d3f2706c8d
->
-> Both seem to have the same bug though the tests fail now and require
-> the following fix.
-> The ext id should be uint64_t and we need to pass ext directly so that
-> SBI extension tests can also pass.
->
+Since v4:
+- Don't build selftest-migration on arm.
+- Reduce selftest-migration iterations from 100 to 30 to make the
+  test run faster (it's ~0.5s per migration).
 
-It's weird that 6.7-rc8 has already included Andrew's change on the ISA ext reg,
-but this patch was not generated against his change.
+Since v3:
+- Addressed Thomas's review comments:
+- Patch 2 initrd cleanup unset the old variable in the correct place.
+- Patch 4 multi migration removed the extra wait for "Now migrate the
+  VM" message, and updated comments around it.
+- Patch 6 fix typo and whitespace in quiet migration support.
+- Patch 8 fix typo and whitespace in migration selftest.
 
-commit bdf6aa328f137e184b0fce607fd585354c3742f1
-Author: Andrew Jones <ajones@ventanamicro.com>
-Date:   Wed Dec 13 18:09:58 2023 +0100
-
-    RISC-V: KVM: selftests: Treat SBI ext regs like ISA ext regs
-
-Anyway, your changes were right. Please go ahead to include them when merging.
+Since v2:
+- Rebase on riscv port and auxvinfo fix was merged.
+- Clean up initrd cleanup moves more commands into the new cleanup
+  function from the trap handler comands (suggested by Thomas).
+- "arch-run: Clean up temporary files properly" patch is now renamed
+  to "arch-run: Fix TRAP handler..."
+- Fix TRAP handler patch has redone changelog to be more precise about
+  the problem and including recipe to recreate it.
+- Fix TRAP handler patch reworked slightly to remove the theoretical
+  race rather than just adding a comment about it.
+- Patch 3 was missing a couple of fixes that leaked into patch 4,
+  those are moved into patch 3.
 
 Thanks,
-Haibo
+Nick
 
->
-> --- a/tools/testing/selftests/kvm/include/riscv/processor.h
-> +++ b/tools/testing/selftests/kvm/include/riscv/processor.h
-> @@ -48,7 +48,7 @@ static inline uint64_t __kvm_reg_id(uint64_t type,
-> uint64_t subtype,
-> KVM_REG_RISCV_SBI_SINGLE, \
-> idx, KVM_REG_SIZE_ULONG)
->
-> -bool __vcpu_has_ext(struct kvm_vcpu *vcpu, int ext);
-> +bool __vcpu_has_ext(struct kvm_vcpu *vcpu, uint64_t ext);
->
-> struct ex_regs {
-> unsigned long ra;
-> diff --git a/tools/testing/selftests/kvm/lib/riscv/processor.c
-> b/tools/testing/selftests/kvm/lib/riscv/processor.c
-> index 282587cd4bbc..ec66d331a127 100644
-> --- a/tools/testing/selftests/kvm/lib/riscv/processor.c
-> +++ b/tools/testing/selftests/kvm/lib/riscv/processor.c
-> @@ -15,12 +15,12 @@
->
-> static vm_vaddr_t exception_handlers;
->
-> -bool __vcpu_has_ext(struct kvm_vcpu *vcpu, int ext)
-> +bool __vcpu_has_ext(struct kvm_vcpu *vcpu, uint64_t ext)
-> {
-> unsigned long value = 0;
-> int ret;
->
-> - ret = __vcpu_get_reg(vcpu, RISCV_ISA_EXT_REG(ext), &value);
-> + ret = __vcpu_get_reg(vcpu, ext, &value);
->
-> return !ret && !!value;
-> }
->
-> With the above the fix, Both SBI/ISA extension tests pass.
-> # ./get-reg-list
-> sbi-base: PASS
-> sbi-sta: PASS
-> sbi-pmu: PASS
-> sbi-dbcn: PASS
-> aia: PASS
-> fp_f: PASS
-> fp_d: PASS
-> 1..0 # SKIP - h not available, skipping tests
-> smstateen: PASS
-> sscofpmf: PASS
-> sstc: PASS
-> 1..0 # SKIP - svinval not available, skipping tests
-> 1..0 # SKIP - svnapot not available, skipping tests
-> 1..0 # SKIP - svpbmt not available, skipping tests
-> zba: PASS
-> zbb: PASS
-> zbc: PASS
-> 1..0 # SKIP - zbkb not available, skipping tests
-> 1..0 # SKIP - zbkc not available, skipping tests
-> 1..0 # SKIP - zbkx not available, skipping tests
-> zbs: PASS
-> zfa: PASS
-> 1..0 # SKIP - zfh not available, skipping tests
-> 1..0 # SKIP - zfhmin not available, skipping tests
-> zicbom: PASS
-> zicboz: PASS
-> zicntr: PASS
-> 1..0 # SKIP - zicond not available, skipping tests
-> zicsr: PASS
-> zifencei: PASS
-> zihintntl: PASS
-> zihintpause: PASS
-> zihpm: PASS
->
->
-> >  static uint64_t page_align(struct kvm_vm *vm, uint64_t v)
-> >  {
-> >         return (v + vm->page_size) & ~(vm->page_size - 1);
-> > diff --git a/tools/testing/selftests/kvm/riscv/get-reg-list.c b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-> > index 25de4b8bc347..ed29ba45588c 100644
-> > --- a/tools/testing/selftests/kvm/riscv/get-reg-list.c
-> > +++ b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-> > @@ -75,15 +75,6 @@ bool check_reject_set(int err)
-> >         return err == EINVAL;
-> >  }
-> >
-> > -static inline bool vcpu_has_ext(struct kvm_vcpu *vcpu, int ext)
-> > -{
-> > -       int ret;
-> > -       unsigned long value;
-> > -
-> > -       ret = __vcpu_get_reg(vcpu, RISCV_ISA_EXT_REG(ext), &value);
-> > -       return (ret) ? false : !!value;
-> > -}
-> > -
-> >  void finalize_vcpu(struct kvm_vcpu *vcpu, struct vcpu_reg_list *c)
-> >  {
-> >         unsigned long isa_ext_state[KVM_RISCV_ISA_EXT_MAX] = { 0 };
-> > @@ -111,7 +102,7 @@ void finalize_vcpu(struct kvm_vcpu *vcpu, struct vcpu_reg_list *c)
-> >                 __vcpu_set_reg(vcpu, RISCV_ISA_EXT_REG(s->feature), 1);
-> >
-> >                 /* Double check whether the desired extension was enabled */
-> > -               __TEST_REQUIRE(vcpu_has_ext(vcpu, s->feature),
-> > +               __TEST_REQUIRE(__vcpu_has_ext(vcpu, s->feature),
-> >                                "%s not available, skipping tests\n", s->name);
-> >         }
-> >  }
-> > --
-> > 2.34.1
-> >
->
->
-> --
-> Regards,
-> Atish
+Nicholas Piggin (8):
+  arch-run: Fix TRAP handler recursion to remove temporary files
+    properly
+  arch-run: Clean up initrd cleanup
+  migration: use a more robust way to wait for background job
+  migration: Support multiple migrations
+  arch-run: rename migration variables
+  migration: Add quiet migration support
+  Add common/ directory for architecture-independent tests
+  migration: add a migration selftest
+
+ arm/sieve.c                  |   2 +-
+ common/selftest-migration.c  |  29 ++++++
+ common/sieve.c               |  51 ++++++++++
+ lib/migrate.c                |  19 +++-
+ lib/migrate.h                |   2 +
+ powerpc/Makefile.common      |   1 +
+ powerpc/selftest-migration.c |   1 +
+ powerpc/unittests.cfg        |   4 +
+ riscv/sieve.c                |   2 +-
+ s390x/Makefile               |   1 +
+ s390x/selftest-migration.c   |   1 +
+ s390x/sieve.c                |   2 +-
+ s390x/unittests.cfg          |   4 +
+ scripts/arch-run.bash        | 177 +++++++++++++++++++++++++----------
+ x86/sieve.c                  |  52 +---------
+ 15 files changed, 240 insertions(+), 108 deletions(-)
+ create mode 100644 common/selftest-migration.c
+ create mode 100644 common/sieve.c
+ create mode 120000 powerpc/selftest-migration.c
+ create mode 120000 s390x/selftest-migration.c
+ mode change 100644 => 120000 x86/sieve.c
+
+-- 
+2.42.0
+
 
