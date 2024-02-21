@@ -1,141 +1,158 @@
-From: Nicholas Piggin <npiggin@gmail.com>
-Date: Wed, 21 Feb 2024 13:27:57 +1000
-Subject: [kvm-unit-tests PATCH v5 8/8] migration: add a migration selftest
-In-Reply-To: <20240221032757.454524-1-npiggin@gmail.com>
-References: <20240221032757.454524-1-npiggin@gmail.com>
-Message-ID: <20240221032757.454524-9-npiggin@gmail.com>
+From: Anup Patel <apatel@ventanamicro.com>
+Date: Wed, 21 Feb 2024 09:19:10 +0530
+Subject: [PATCH v1 1/3] RISC-V: KVM: Implement kvm_arch_vcpu_ioctl_set_guest_debug()
+In-Reply-To: <61f5b01b.323.18dc95f8d58.Coremail.duchao@eswincomputing.com>
+References: <20240206074931.22930-1-duchao@eswincomputing.com>
+ <20240206074931.22930-2-duchao@eswincomputing.com> <CAK9=C2VZ1t3ctTWKiqeKOALjLh0kJgzVEsZvM=xfc2j7yQOEcQ@mail.gmail.com>
+ <4a5a30cd.18c.18dc4734699.Coremail.duchao@eswincomputing.com>
+ <CAK9=C2XAEDfac+GQTD3jE2RLR+5ngNPedEE_G6tL4e2KByUZ1w@mail.gmail.com> <61f5b01b.323.18dc95f8d58.Coremail.duchao@eswincomputing.com>
+Message-ID: <CAK9=C2Waz7iLx+8p9=QTQS5i4aomodn2G6Z2L8wn8UXOBm=qzQ@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add a selftest for migration support in  guest library and test harness
-code. It performs migrations in a tight loop to irritate races and bugs
-in the test harness code.
+On Wed, Feb 21, 2024 at 7:28?AM Chao Du <duchao@eswincomputing.com> wrote:
+>
+> On 2024-02-20 12:54, Anup Patel <apatel@ventanamicro.com> wrote:
+> >
+> > On Tue, Feb 20, 2024 at 8:31?AM Chao Du <duchao@eswincomputing.com> wrote:
+> > >
+> > > On 2024-02-14 21:19, Anup Patel <apatel@ventanamicro.com> wrote:
+> > > >
+> > > > On Tue, Feb 6, 2024 at 1:22?PM Chao Du <duchao@eswincomputing.com> wrote:
+> > > > >
+> > > > > kvm_vm_ioctl_check_extension(): Return 1 if KVM_CAP_SET_GUEST_DEBUG is
+> > > > > being checked.
+> > > > >
+> > > > > kvm_arch_vcpu_ioctl_set_guest_debug(): Update the guest_debug flags
+> > > > > from userspace accordingly. Route the breakpoint exceptions to HS mode
+> > > > > if the VM is being debugged by userspace, by clearing the corresponding
+> > > > > bit in hedeleg CSR.
+> > > > >
+> > > > > Signed-off-by: Chao Du <duchao@eswincomputing.com>
+> > > > > ---
+> > > > >  arch/riscv/include/uapi/asm/kvm.h |  1 +
+> > > > >  arch/riscv/kvm/vcpu.c             | 15 +++++++++++++--
+> > > > >  arch/riscv/kvm/vm.c               |  1 +
+> > > > >  3 files changed, 15 insertions(+), 2 deletions(-)
+> > > > >
+> > > > > diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
+> > > > > index d6b7a5b95874..8890977836f0 100644
+> > > > > --- a/arch/riscv/include/uapi/asm/kvm.h
+> > > > > +++ b/arch/riscv/include/uapi/asm/kvm.h
+> > > > > @@ -17,6 +17,7 @@
+> > > > >
+> > > > >  #define __KVM_HAVE_IRQ_LINE
+> > > > >  #define __KVM_HAVE_READONLY_MEM
+> > > > > +#define __KVM_HAVE_GUEST_DEBUG
+> > > > >
+> > > > >  #define KVM_COALESCED_MMIO_PAGE_OFFSET 1
+> > > > >
+> > > > > diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+> > > > > index b5ca9f2e98ac..6cee974592ac 100644
+> > > > > --- a/arch/riscv/kvm/vcpu.c
+> > > > > +++ b/arch/riscv/kvm/vcpu.c
+> > > > > @@ -475,8 +475,19 @@ int kvm_arch_vcpu_ioctl_set_mpstate(struct kvm_vcpu *vcpu,
+> > > > >  int kvm_arch_vcpu_ioctl_set_guest_debug(struct kvm_vcpu *vcpu,
+> > > > >                                         struct kvm_guest_debug *dbg)
+> > > > >  {
+> > > > > -       /* TODO; To be implemented later. */
+> > > > > -       return -EINVAL;
+> > > > > +       if (dbg->control & KVM_GUESTDBG_ENABLE) {
+> > > > > +               if (vcpu->guest_debug != dbg->control) {
+> > > > > +                       vcpu->guest_debug = dbg->control;
+> > > > > +                       csr_clear(CSR_HEDELEG, BIT(EXC_BREAKPOINT));
+> > > > > +               }
+> > > > > +       } else {
+> > > > > +               if (vcpu->guest_debug != 0) {
+> > > > > +                       vcpu->guest_debug = 0;
+> > > > > +                       csr_set(CSR_HEDELEG, BIT(EXC_BREAKPOINT));
+> > > > > +               }
+> > > > > +       }
+> > > >
+> > > > This is broken because directly setting breakpoint exception delegation
+> > > > in CSR also affects other VCPUs running on the same host CPU.
+> > > >
+> > > > To address the above, we should do the following:
+> > > > 1) Add "unsigned long hedeleg" in "struct kvm_vcpu_config" which
+> > > >    is pre-initialized in kvm_riscv_vcpu_setup_config() without setting
+> > > >    EXC_BREAKPOINT bit.
+> > > > 2) The kvm_arch_vcpu_ioctl_set_guest_debug() should only set/clear
+> > > >     EXC_BREAKPOINT bit in "hedeleg" of "struct kvm_vcpu_config".
+> > > > 3) The kvm_riscv_vcpu_swap_in_guest_state() must write the
+> > > >      HEDELEG csr before entering the Guest/VM.
+> > > >
+> > > > Regards,
+> > > > Anup
+> > > >
+> > >
+> > > Thanks for the review and detailed suggestion.
+> > > Maybe we could make it a bit easier:
+> > > 1) The kvm_arch_vcpu_ioctl_set_guest_debug() only update vcpu->guest_debug
+> > >    accordingly.
+> > > 2) The kvm_riscv_vcpu_swap_in_guest_state() check vcpu->guest_debug and
+> > >    set/clear the HEDELEG csr accordingly.
+> > >
+> > > Could you confirm if this is OK?
+> >
+> > Your suggestion will work but it adds an additional "if ()" check in
+> > kvm_riscv_vcpu_swap_in_guest_state() which is in the hot path.
+> >
+>
+> Yes, it makes sense.
+> I will prepare a V2 patch.
 
-Include the test in s390, powerpc.
+I just realized that kvm_arch_vcpu_load() will be a much
+better place to add hedeleg CSR write instead of
+kvm_riscv_vcpu_swap_in_guest_state(). This way
+it will be only at the start hot-path (aka run-loop).
 
-Acked-by: Claudio Imbrenda <imbrenda@linux.ibm.com> (s390x)
-Reviewed-by: Thomas Huth <thuth@redhat.com>
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- common/selftest-migration.c  | 29 +++++++++++++++++++++++++++++
- powerpc/Makefile.common      |  1 +
- powerpc/selftest-migration.c |  1 +
- powerpc/unittests.cfg        |  4 ++++
- s390x/Makefile               |  1 +
- s390x/selftest-migration.c   |  1 +
- s390x/unittests.cfg          |  4 ++++
- 7 files changed, 41 insertions(+)
- create mode 100644 common/selftest-migration.c
- create mode 120000 powerpc/selftest-migration.c
- create mode 120000 s390x/selftest-migration.c
+Regards,
+Anup
 
-diff --git a/common/selftest-migration.c b/common/selftest-migration.c
-new file mode 100644
-index 000000000..54b5d6b2d
---- /dev/null
-+++ b/common/selftest-migration.c
-@@ -0,0 +1,29 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/*
-+ * Machine independent migration tests
-+ *
-+ * This is just a very simple test that is intended to stress the migration
-+ * support in the test harness. This could be expanded to test more guest
-+ * library code, but architecture-specific tests should be used to test
-+ * migration of tricky machine state.
-+ */
-+#include <libcflat.h>
-+#include <migrate.h>
-+
-+#define NR_MIGRATIONS 30
-+
-+int main(int argc, char **argv)
-+{
-+	int i = 0;
-+
-+	report_prefix_push("migration");
-+
-+	for (i = 0; i < NR_MIGRATIONS; i++)
-+		migrate_quiet();
-+
-+	report(true, "simple harness stress test");
-+
-+	report_prefix_pop();
-+
-+	return report_summary();
-+}
-diff --git a/powerpc/Makefile.common b/powerpc/Makefile.common
-index eb88398d8..da4a7bbb8 100644
---- a/powerpc/Makefile.common
-+++ b/powerpc/Makefile.common
-@@ -6,6 +6,7 @@
- 
- tests-common = \
- 	$(TEST_DIR)/selftest.elf \
-+	$(TEST_DIR)/selftest-migration.elf \
- 	$(TEST_DIR)/spapr_hcall.elf \
- 	$(TEST_DIR)/rtas.elf \
- 	$(TEST_DIR)/emulator.elf \
-diff --git a/powerpc/selftest-migration.c b/powerpc/selftest-migration.c
-new file mode 120000
-index 000000000..bd1eb266d
---- /dev/null
-+++ b/powerpc/selftest-migration.c
-@@ -0,0 +1 @@
-+../common/selftest-migration.c
-\ No newline at end of file
-diff --git a/powerpc/unittests.cfg b/powerpc/unittests.cfg
-index e71140aa5..7ce57de02 100644
---- a/powerpc/unittests.cfg
-+++ b/powerpc/unittests.cfg
-@@ -36,6 +36,10 @@ smp = 2
- extra_params = -m 256 -append 'setup smp=2 mem=256'
- groups = selftest
- 
-+[selftest-migration]
-+file = selftest-migration.elf
-+groups = selftest migration
-+
- [spapr_hcall]
- file = spapr_hcall.elf
- 
-diff --git a/s390x/Makefile b/s390x/Makefile
-index b72f7578f..344d46d68 100644
---- a/s390x/Makefile
-+++ b/s390x/Makefile
-@@ -1,4 +1,5 @@
- tests = $(TEST_DIR)/selftest.elf
-+tests += $(TEST_DIR)/selftest-migration.elf
- tests += $(TEST_DIR)/intercept.elf
- tests += $(TEST_DIR)/emulator.elf
- tests += $(TEST_DIR)/sieve.elf
-diff --git a/s390x/selftest-migration.c b/s390x/selftest-migration.c
-new file mode 120000
-index 000000000..bd1eb266d
---- /dev/null
-+++ b/s390x/selftest-migration.c
-@@ -0,0 +1 @@
-+../common/selftest-migration.c
-\ No newline@end of file
-diff --git a/s390x/unittests.cfg b/s390x/unittests.cfg
-index f5024b6ee..a7ad522ca 100644
---- a/s390x/unittests.cfg
-+++ b/s390x/unittests.cfg
-@@ -24,6 +24,10 @@ groups = selftest
- # please keep the kernel cmdline in sync with $(TEST_DIR)/selftest.parmfile
- extra_params = -append 'test 123'
- 
-+[selftest-migration]
-+file = selftest-migration.elf
-+groups = selftest migration
-+
- [intercept]
- file = intercept.elf
- 
--- 
-2.42.0
-
+>
+> Thanks,
+> Chao
+>
+> > I am still leaning towards what I suggested.
+> >
+> > Regards,
+> > Anup
+> >
+> > > If yes, I will post another revision.
+> > >
+> > > Regards,
+> > > Chao
+> > >
+> > > > > +
+> > > > > +       return 0;
+> > > > >  }
+> > > > >
+> > > > >  static void kvm_riscv_vcpu_setup_config(struct kvm_vcpu *vcpu)
+> > > > > diff --git a/arch/riscv/kvm/vm.c b/arch/riscv/kvm/vm.c
+> > > > > index ce58bc48e5b8..7396b8654f45 100644
+> > > > > --- a/arch/riscv/kvm/vm.c
+> > > > > +++ b/arch/riscv/kvm/vm.c
+> > > > > @@ -186,6 +186,7 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
+> > > > >         case KVM_CAP_READONLY_MEM:
+> > > > >         case KVM_CAP_MP_STATE:
+> > > > >         case KVM_CAP_IMMEDIATE_EXIT:
+> > > > > +       case KVM_CAP_SET_GUEST_DEBUG:
+> > > > >                 r = 1;
+> > > > >                 break;
+> > > > >         case KVM_CAP_NR_VCPUS:
+> > > > > --
+> > > > > 2.17.1
+> > > > >
+> > > > >
+> > > > > --
+> > > > > kvm-riscv mailing list
+> > > > > kvm-riscv at lists.infradead.org
+> > > > > http://lists.infradead.org/mailman/listinfo/kvm-riscv
+> > > --
+> > > kvm-riscv mailing list
+> > > kvm-riscv at lists.infradead.org
+> > > http://lists.infradead.org/mailman/listinfo/kvm-riscv
 
