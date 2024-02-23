@@ -1,40 +1,76 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Thu, 22 Feb 2024 14:55:30 -0800
-Subject: [PATCH v8 10/10] KVM: selftests: Add a basic SEV smoke test
-In-Reply-To: <ZdfNwhe2s0Mn2gB4@google.com>
-References: <20240203000917.376631-1-seanjc@google.com> <20240203000917.376631-11-seanjc@google.com>
- <ZcKYRsNUAngWGy2a@google.com> <ZdfNwhe2s0Mn2gB4@google.com>
-Message-ID: <ZdfQ4jI8yT-bvbV4@google.com>
+Date: Thu, 22 Feb 2024 16:42:48 -0800
+Subject: [PATCH v9 01/11] KVM: selftests: Extend VM creation's @shape to allow
+ control of VM subtype
+In-Reply-To: <20240223004258.3104051-1-seanjc@google.com>
+References: <20240223004258.3104051-1-seanjc@google.com>
+Message-ID: <20240223004258.3104051-2-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Feb 22, 2024, Sean Christopherson wrote:
-> On Tue, Feb 06, 2024, Sean Christopherson wrote:
-> > On Fri, Feb 02, 2024, Sean Christopherson wrote:
-> > > +int main(int argc, char *argv[])
-> > > +{
-> > > +	TEST_REQUIRE(is_kvm_sev_supported());
-> > 
-> > This also needs
-> > 
-> > 	TEST_REQUIRE(kvm_cpu_has(X86_FEATURE_SEV));
-> > 
-> > to handle the case where the platform supports SEV, i.e. /dev/sev exists, but
-> > KVM doesn't support SEV, e.g. if TDP is disabled, if SEV was explicitly disabled
-> > via module param, etc.
-> 
-> Thinking more about this, I think we should simply delete is_kvm_sev_supported().
-> (a) it obviously doesn't query _KVM_ support, and (b) if KVM says SEV is supported,
-> then it darn well actually be supported.
+Carve out space in the @shape passed to the various VM creation helpers to
+allow using the shape to control the subtype of VM, e.g. to identify x86's
+SEV VMs (which are "regular" VMs as far as KVM is concerned).
 
-Ugh, and selftests also need to handle the scenario where SEV is enabled, but all
-ASIDs are assigned to SEV-ES.  We could try to create a dummy VM and check for an
--EBUSY return, but that is ugly and could result in missing KVM bugs due to tests
-being skipped instead of failing.
+Cc: Paolo Bonzini <pbonzini@redhat.com>
+Cc: Sean Christopherson <seanjc@google.com>
+Cc: Vishal Annapurve <vannapurve@google.com>
+Cc: Ackerley Tng <ackerleytng@google.com>
+Cc: Andrew Jones <andrew.jones@linux.dev>
+Cc: Tom Lendacky <thomas.lendacky@amd.com>
+Cc: Michael Roth <michael.roth@amd.com>
+Tested-by: Carlos Bilbao <carlos.bilbao@amd.com>
+Signed-off-by: Sean Christopherson <seanjc@google.com>
+---
+ tools/testing/selftests/kvm/include/kvm_util_base.h | 9 +++++++--
+ tools/testing/selftests/kvm/lib/kvm_util.c          | 1 +
+ 2 files changed, 8 insertions(+), 2 deletions(-)
 
-That's a future problem though, because I think we'll need new KVM functionality
-to surface that information.
+diff --git a/tools/testing/selftests/kvm/include/kvm_util_base.h b/tools/testing/selftests/kvm/include/kvm_util_base.h
+index 070f250036fc..d9dc31af2f96 100644
+--- a/tools/testing/selftests/kvm/include/kvm_util_base.h
++++ b/tools/testing/selftests/kvm/include/kvm_util_base.h
+@@ -90,6 +90,7 @@ enum kvm_mem_region_type {
+ struct kvm_vm {
+ 	int mode;
+ 	unsigned long type;
++	uint8_t subtype;
+ 	int kvm_fd;
+ 	int fd;
+ 	unsigned int pgtable_levels;
+@@ -191,10 +192,14 @@ enum vm_guest_mode {
+ };
+ 
+ struct vm_shape {
+-	enum vm_guest_mode mode;
+-	unsigned int type;
++	uint32_t type;
++	uint8_t  mode;
++	uint8_t  subtype;
++	uint16_t padding;
+ };
+ 
++kvm_static_assert(sizeof(struct vm_shape) == sizeof(uint64_t));
++
+ #define VM_TYPE_DEFAULT			0
+ 
+ #define VM_SHAPE(__mode)			\
+diff --git a/tools/testing/selftests/kvm/lib/kvm_util.c b/tools/testing/selftests/kvm/lib/kvm_util.c
+index 4994afbdab40..a53caf81eb87 100644
+--- a/tools/testing/selftests/kvm/lib/kvm_util.c
++++ b/tools/testing/selftests/kvm/lib/kvm_util.c
+@@ -276,6 +276,7 @@ struct kvm_vm *____vm_create(struct vm_shape shape)
+ 
+ 	vm->mode = shape.mode;
+ 	vm->type = shape.type;
++	vm->subtype = shape.subtype;
+ 
+ 	vm->pa_bits = vm_guest_mode_params[vm->mode].pa_bits;
+ 	vm->va_bits = vm_guest_mode_params[vm->mode].va_bits;
+-- 
+2.44.0.rc0.258.g7320e95886-goog
+
 
