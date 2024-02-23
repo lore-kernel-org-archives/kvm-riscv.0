@@ -1,105 +1,37 @@
-From: Sean Christopherson <seanjc@google.com>
-Date: Thu, 22 Feb 2024 16:42:52 -0800
-Subject: [PATCH v9 05/11] KVM: selftests: Add support for protected vm_vaddr_* allocations
-In-Reply-To: <20240223004258.3104051-1-seanjc@google.com>
-References: <20240223004258.3104051-1-seanjc@google.com>
-Message-ID: <20240223004258.3104051-6-seanjc@google.com>
+From: Thomas Huth <thuth@redhat.com>
+Date: Fri, 23 Feb 2024 08:06:21 +0100
+Subject: [kvm-unit-tests PATCH v5 0/8] Multi-migration support
+In-Reply-To: <20240221032757.454524-1-npiggin@gmail.com>
+References: <20240221032757.454524-1-npiggin@gmail.com>
+Message-ID: <5383a1b2-20ca-4d07-9729-e9d5115948dc@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Michael Roth <michael.roth@amd.com>
+On 21/02/2024 04.27, Nicholas Piggin wrote:
+> Now that strange arm64 hang is found to be QEMU bug, I'll repost.
+> Since arm64 requires Thomas's uart patch and it is worse affected
+> by the QEMU bug, I will just not build it on arm. The QEMU bug
+> still affects powerpc (and presumably s390x) but it's not causing
+> so much trouble for this test case.
+> 
+> I have another test case that can hit it reliably and doesn't
+> cause crashes but that takes some harness and common lib work so
+> I'll send that another time.
+> 
+> Since v4:
+> - Don't build selftest-migration on arm.
+> - Reduce selftest-migration iterations from 100 to 30 to make the
+>    test run faster (it's ~0.5s per migration).
 
-Test programs may wish to allocate shared vaddrs for things like
-sharing memory with the guest. Since protected vms will have their
-memory encrypted by default an interface is needed to explicitly
-request shared pages.
+Thanks, I think the series is ready to go now ... we just have to wait for 
+your QEMU TCG migration fix to get merged first. Or should we maybe mark the 
+selftest-migration with "accel = kvm" for now and remove that line later 
+once QEMU has been fixed?
 
-Implement this by splitting the common code out from vm_vaddr_alloc()
-and introducing a new vm_vaddr_alloc_shared().
+  Thomas
 
-Cc: Paolo Bonzini <pbonzini@redhat.com>
-Cc: Sean Christopherson <seanjc@google.com>
-Cc: Vishal Annapurve <vannapurve@google.com>
-Cc: Ackerly Tng <ackerleytng@google.com>
-cc: Andrew Jones <andrew.jones@linux.dev>
-Cc: Tom Lendacky <thomas.lendacky@amd.com>
-Cc: Michael Roth <michael.roth@amd.com>
-Reviewed-by: Itaru Kitayama <itaru.kitayama@fujitsu.com>
-Tested-by: Carlos Bilbao <carlos.bilbao@amd.com>
-Signed-off-by: Michael Roth <michael.roth@amd.com>
-Signed-off-by: Peter Gonda <pgonda@google.com>
-Signed-off-by: Sean Christopherson <seanjc@google.com>
----
- .../selftests/kvm/include/kvm_util_base.h     |  3 +++
- tools/testing/selftests/kvm/lib/kvm_util.c    | 26 +++++++++++++++----
- 2 files changed, 24 insertions(+), 5 deletions(-)
-
-diff --git a/tools/testing/selftests/kvm/include/kvm_util_base.h b/tools/testing/selftests/kvm/include/kvm_util_base.h
-index a82149305349..cb3159af6db3 100644
---- a/tools/testing/selftests/kvm/include/kvm_util_base.h
-+++ b/tools/testing/selftests/kvm/include/kvm_util_base.h
-@@ -590,6 +590,9 @@ vm_vaddr_t vm_vaddr_unused_gap(struct kvm_vm *vm, size_t sz, vm_vaddr_t vaddr_mi
- vm_vaddr_t vm_vaddr_alloc(struct kvm_vm *vm, size_t sz, vm_vaddr_t vaddr_min);
- vm_vaddr_t __vm_vaddr_alloc(struct kvm_vm *vm, size_t sz, vm_vaddr_t vaddr_min,
- 			    enum kvm_mem_region_type type);
-+vm_vaddr_t vm_vaddr_alloc_shared(struct kvm_vm *vm, size_t sz,
-+				 vm_vaddr_t vaddr_min,
-+				 enum kvm_mem_region_type type);
- vm_vaddr_t vm_vaddr_alloc_pages(struct kvm_vm *vm, int nr_pages);
- vm_vaddr_t __vm_vaddr_alloc_page(struct kvm_vm *vm,
- 				 enum kvm_mem_region_type type);
-diff --git a/tools/testing/selftests/kvm/lib/kvm_util.c b/tools/testing/selftests/kvm/lib/kvm_util.c
-index ea677aa019ef..e7f4f84f2e68 100644
---- a/tools/testing/selftests/kvm/lib/kvm_util.c
-+++ b/tools/testing/selftests/kvm/lib/kvm_util.c
-@@ -1431,15 +1431,17 @@ vm_vaddr_t vm_vaddr_unused_gap(struct kvm_vm *vm, size_t sz,
- 	return pgidx_start * vm->page_size;
- }
- 
--vm_vaddr_t __vm_vaddr_alloc(struct kvm_vm *vm, size_t sz, vm_vaddr_t vaddr_min,
--			    enum kvm_mem_region_type type)
-+static vm_vaddr_t ____vm_vaddr_alloc(struct kvm_vm *vm, size_t sz,
-+				     vm_vaddr_t vaddr_min,
-+				     enum kvm_mem_region_type type,
-+				     bool protected)
- {
- 	uint64_t pages = (sz >> vm->page_shift) + ((sz % vm->page_size) != 0);
- 
- 	virt_pgd_alloc(vm);
--	vm_paddr_t paddr = vm_phy_pages_alloc(vm, pages,
--					      KVM_UTIL_MIN_PFN * vm->page_size,
--					      vm->memslots[type]);
-+	vm_paddr_t paddr = __vm_phy_pages_alloc(vm, pages,
-+						KVM_UTIL_MIN_PFN * vm->page_size,
-+						vm->memslots[type], protected);
- 
- 	/*
- 	 * Find an unused range of virtual page addresses of at least
-@@ -1459,6 +1461,20 @@ vm_vaddr_t __vm_vaddr_alloc(struct kvm_vm *vm, size_t sz, vm_vaddr_t vaddr_min,
- 	return vaddr_start;
- }
- 
-+vm_vaddr_t __vm_vaddr_alloc(struct kvm_vm *vm, size_t sz, vm_vaddr_t vaddr_min,
-+			    enum kvm_mem_region_type type)
-+{
-+	return ____vm_vaddr_alloc(vm, sz, vaddr_min, type,
-+				  vm_arch_has_protected_memory(vm));
-+}
-+
-+vm_vaddr_t vm_vaddr_alloc_shared(struct kvm_vm *vm, size_t sz,
-+				 vm_vaddr_t vaddr_min,
-+				 enum kvm_mem_region_type type)
-+{
-+	return ____vm_vaddr_alloc(vm, sz, vaddr_min, type, false);
-+}
-+
- /*
-  * VM Virtual Address Allocate
-  *
--- 
-2.44.0.rc0.258.g7320e95886-goog
 
 
