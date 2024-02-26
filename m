@@ -1,67 +1,75 @@
-From: Thomas Huth <thuth@redhat.com>
-Date: Mon, 26 Feb 2024 10:08:16 +0100
-Subject: [kvm-unit-tests PATCH v5 0/8] Multi-migration support
-In-Reply-To: <CZEUWE22JA80.3S73L9F5A04RK@wheely>
-References: <20240221032757.454524-1-npiggin@gmail.com>
- <5383a1b2-20ca-4d07-9729-e9d5115948dc@redhat.com>
- <CZEUWE22JA80.3S73L9F5A04RK@wheely>
-Message-ID: <d7d4644f-0c82-42b8-b211-f53d8135786c@redhat.com>
+From: Nicholas Piggin <npiggin@gmail.com>
+Date: Mon, 26 Feb 2024 20:12:15 +1000
+Subject: [kvm-unit-tests PATCH 29/32] configure: Fail on unknown arch
+In-Reply-To: <20240226101218.1472843-1-npiggin@gmail.com>
+References: <20240226101218.1472843-1-npiggin@gmail.com>
+Message-ID: <20240226101218.1472843-30-npiggin@gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 26/02/2024 09.10, Nicholas Piggin wrote:
-> On Fri Feb 23, 2024 at 5:06 PM AEST, Thomas Huth wrote:
->> On 21/02/2024 04.27, Nicholas Piggin wrote:
->>> Now that strange arm64 hang is found to be QEMU bug, I'll repost.
->>> Since arm64 requires Thomas's uart patch and it is worse affected
->>> by the QEMU bug, I will just not build it on arm. The QEMU bug
->>> still affects powerpc (and presumably s390x) but it's not causing
->>> so much trouble for this test case.
->>>
->>> I have another test case that can hit it reliably and doesn't
->>> cause crashes but that takes some harness and common lib work so
->>> I'll send that another time.
->>>
->>> Since v4:
->>> - Don't build selftest-migration on arm.
->>> - Reduce selftest-migration iterations from 100 to 30 to make the
->>>     test run faster (it's ~0.5s per migration).
->>
->> Thanks, I think the series is ready to go now ... we just have to wait for
->> your QEMU TCG migration fix to get merged first. Or should we maybe mark the
->> selftest-migration with "accel = kvm" for now and remove that line later
->> once QEMU has been fixed?
-> 
-> Could we merge it? I'm juggling a bunch of different things and prone to
-> lose track of something :\ I'll need to drum up a bit of interest to
-> review the QEMU fixes from those who know the code too, so that may take
-> some time.
+configure will accept an unknown arch, and if it is the name of a
+directory in the source tree the command will silently succeed. Make
+it only accept supported arch names.
 
-Ok, I merged it, but with "accel = kvm" for the time being (otherwise this 
-would be quite a pitfall for people trying to run the k-u-t with TCG when 
-they don't know that they have to fetch a patch from the mailing list to get 
-it working).
+Also print the full path of a missing test directory to disambiguate
+the error in out of tree builds.
 
-> I left it out of arm unittests.cfg entirely, and s390 and powerpc seems
-> to work by luck enough to be useful for gitlab CI so I don't think there
-> is a chnage needed really unless you're paranoid.
+Cc: Alexandru Elisei <alexandru.elisei@arm.com>
+Cc: Andrew Jones <andrew.jones@linux.dev>
+Cc: Claudio Imbrenda <imbrenda@linux.ibm.com>
+Cc: David Hildenbrand <david@redhat.com>
+Cc: Eric Auger <eric.auger@redhat.com>
+Cc: Janosch Frank <frankja@linux.ibm.com>
+Cc: Laurent Vivier <lvivier@redhat.com>
+Cc: Nico B?hr <nrb@linux.ibm.com>
+Cc: Paolo Bonzini <pbonzini@redhat.com>
+Cc: Thomas Huth <thuth@redhat.com>
+Cc: kvm at vger.kernel.org
+Cc: linux-s390 at vger.kernel.org
+Cc: kvmarm at lists.linux.dev
+Cc: kvm-riscv at lists.infradead.org
+Cc: linuxppc-dev at lists.ozlabs.org
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ configure | 11 ++++++++---
+ 1 file changed, 8 insertions(+), 3 deletions(-)
 
-At least the s390x test does not work reliably at all when running with TCG 
-without your QEMU patch, so I think we really need the "accel = kvm" for the 
-time being here.
-
-> I do have a later patch that adds a memory tester that does trigger it
-> right away on powerpc. I'll send that out after this series is merged...
-> but we do still have the issue that the gitlab CI image has the old QEMU
-> don't we? Until we update distro.
-
-We only run selected tests in the gitlab-CI, so unless you add it to 
-.gitlab-ci.yml, the selftest-migration test won't be run there.
-
-  Thomas
-
+diff --git a/configure b/configure
+index 6907ccbbb..ae522c556 100755
+--- a/configure
++++ b/configure
+@@ -45,7 +45,8 @@ usage() {
+ 	Usage: $0 [options]
+ 
+ 	Options include:
+-	    --arch=ARCH            architecture to compile for ($arch)
++	    --arch=ARCH            architecture to compile for ($arch). ARCH can be one of:
++	                           arm, arm64, i386, ppc64, riscv32, riscv64, s390x, x86_64
+ 	    --processor=PROCESSOR  processor to compile for ($arch)
+ 	    --target=TARGET        target platform that the tests will be running on (qemu or
+ 	                           kvmtool, default is qemu) (arm/arm64 only)
+@@ -321,11 +322,15 @@ elif [ "$arch" = "ppc64" ]; then
+ elif [ "$arch" = "riscv32" ] || [ "$arch" = "riscv64" ]; then
+     testdir=riscv
+     arch_libdir=riscv
++elif [ "$arch" = "s390x" ]; then
++    testdir=s390x
+ else
+-    testdir=$arch
++    echo "arch $arch is not supported!"
++    arch=
++    usage
+ fi
+ if [ ! -d "$srcdir/$testdir" ]; then
+-    echo "$testdir does not exist!"
++    echo "$srcdir/$testdir does not exist!"
+     exit 1
+ fi
+ 
+-- 
+2.42.0
 
 
