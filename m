@@ -1,64 +1,73 @@
 From: Andrew Jones <andrew.jones@linux.dev>
-Date: Wed, 28 Feb 2024 16:04:24 +0100
-Subject: [kvm-unit-tests PATCH 08/13] riscv: efi: Switch stack in _start
+Date: Wed, 28 Feb 2024 16:04:25 +0100
+Subject: [kvm-unit-tests PATCH 09/13] efi: Add support for obtaining the boot hartid
 In-Reply-To: <20240228150416.248948-15-andrew.jones@linux.dev>
 References: <20240228150416.248948-15-andrew.jones@linux.dev>
-Message-ID: <20240228150416.248948-23-andrew.jones@linux.dev>
+Message-ID: <20240228150416.248948-24-andrew.jones@linux.dev>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Modify gnu-efi's _start to switch the stack. This allows us to not
-map memory regions which have EFI memory type EFI_BOOT_SERVICES_DATA,
-as the stack will be in the EFI_LOADER_CODE region instead. We'll
-still map the stack as R/W instead of R/X because we'll split the
-EFI_LOADER_CODE region on the _etext boundary and map addresses
-before _etext as R/X and the rest as R/W.
+riscv needs to use an EFI protocol to get the boot hartid.
 
 Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
 ---
- riscv/efi/crt0-efi-riscv64.S | 18 ++++++++++++++++++
- 1 file changed, 18 insertions(+)
+ lib/efi.c | 33 +++++++++++++++++++++++++++++++++
+ 1 file changed, 33 insertions(+)
 
-diff --git a/riscv/efi/crt0-efi-riscv64.S b/riscv/efi/crt0-efi-riscv64.S
-index cc8551a43c6a..4ed82b14a1d6 100644
---- a/riscv/efi/crt0-efi-riscv64.S
-+++ b/riscv/efi/crt0-efi-riscv64.S
-@@ -164,7 +164,20 @@ _start:
- 	bne		a0, zero, 0f
- 	ld		a1, 8(sp)
- 	ld		a0, 0(sp)
-+
-+	/* Switch to our own stack */
-+	mv		a2, sp
-+	la		sp, stacktop
-+	mv		fp, zero
-+	push_fp zero
-+	addi		sp, sp, -16
-+	sd		a2, 0(sp)
-+
- 	call		efi_main
-+
-+	/* Restore sp */
-+	ld		sp, 0(sp)
-+
- 	ld		ra, 16(sp)
- 0:	addi		sp, sp, 24
- 	ret
-@@ -172,6 +185,11 @@ _start:
- // hand-craft a dummy .reloc section so EFI knows it's a relocatable executable:
-  
-  	.data
-+
-+.balign 16384
-+.space 16384
-+stacktop:
-+
- dummy:	.4byte	0
+diff --git a/lib/efi.c b/lib/efi.c
+index edfcc80ef114..77cfbfac50ed 100644
+--- a/lib/efi.c
++++ b/lib/efi.c
+@@ -29,6 +29,31 @@ extern int main(int argc, char **argv, char **envp);
  
- #define IMAGE_REL_ABSOLUTE	0
+ efi_system_table_t *efi_system_table = NULL;
+ 
++#ifdef __riscv
++#define RISCV_EFI_BOOT_PROTOCOL_GUID EFI_GUID(0xccd15fec, 0x6f73, 0x4eec,  0x83, 0x95, 0x3e, 0x69, 0xe4, 0xb9, 0x40, 0xbf)
++
++unsigned long boot_hartid;
++
++struct riscv_efi_boot_protocol {
++	u64 revision;
++	efi_status_t (*get_boot_hartid)(struct riscv_efi_boot_protocol *,
++		      unsigned long *boot_hartid);
++};
++
++static efi_status_t efi_get_boot_hartid(void)
++{
++	efi_guid_t boot_protocol_guid = RISCV_EFI_BOOT_PROTOCOL_GUID;
++	struct riscv_efi_boot_protocol *boot_protocol;
++	efi_status_t status;
++
++	status = efi_bs_call(locate_protocol, &boot_protocol_guid, NULL,
++			     (void **)&boot_protocol);
++	if (status != EFI_SUCCESS)
++		return status;
++	return efi_call_proto(boot_protocol, get_boot_hartid, &boot_hartid);
++}
++#endif
++
+ static void efi_free_pool(void *ptr)
+ {
+ 	efi_bs_call(free_pool, ptr);
+@@ -422,6 +447,14 @@ efi_status_t efi_main(efi_handle_t handle, efi_system_table_t *sys_tab)
+ 		goto efi_main_error;
+ 	}
+ 
++#ifdef __riscv
++	status = efi_get_boot_hartid();
++	if (status != EFI_SUCCESS) {
++		printf("Failed to get boot haritd\n");
++		goto efi_main_error;
++	}
++#endif
++
+ 	/* 
+ 	 * Exit EFI boot services, let kvm-unit-tests take full control of the
+ 	 * guest
 -- 
 2.43.0
 
