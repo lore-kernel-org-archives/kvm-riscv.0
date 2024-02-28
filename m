@@ -1,180 +1,126 @@
 From: Andrew Jones <andrew.jones@linux.dev>
-Date: Wed, 28 Feb 2024 16:04:26 +0100
-Subject: [kvm-unit-tests PATCH 10/13] riscv: Refactor setup code
+Date: Wed, 28 Feb 2024 16:04:27 +0100
+Subject: [kvm-unit-tests PATCH 11/13] riscv: Enable EFI boot
 In-Reply-To: <20240228150416.248948-15-andrew.jones@linux.dev>
 References: <20240228150416.248948-15-andrew.jones@linux.dev>
-Message-ID: <20240228150416.248948-25-andrew.jones@linux.dev>
+Message-ID: <20240228150416.248948-26-andrew.jones@linux.dev>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-To prepare for EFI setup, move code that will be shared into
-functions. This is the same type of code and the exact same function
-names which were created when refactoring Arm's EFI setup, so riscv
-setup is still following Arm's setup patterns.
+Mimicking Arm's setup_efi() and duplicating some code from riscv's
+setup(), add the EFI setup code needed to boot unit tests from EFI-
+capable bootloaders. The selftest unit test can now be run with
+
+  qemu-system-riscv64 \
+    -nodefaults -nographic -serial mon:stdio \
+    -accel tcg -cpu max \
+    -machine virt,pflash0=pflash0 \
+    -blockdev node-name=pflash0,driver=file,read-only=on,filename=RISCV_VIRT_CODE.fd \
+    -smp 16 \
+    -kernel riscv/selftest.efi \
+    -initrd test-env \
+    -append 'selftest.efi foo bar baz' \
+    -machine acpi=off
+
+where test-env has the environment variables
+  $ cat test-env
+  FOO=foo
+  BAR=bar
+  BAZ=baz
 
 Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
 ---
- lib/riscv/setup.c | 109 +++++++++++++++++++++++++++++-----------------
- 1 file changed, 68 insertions(+), 41 deletions(-)
+ lib/riscv/asm/setup.h |  2 +-
+ lib/riscv/setup.c     | 63 +++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 64 insertions(+), 1 deletion(-)
 
+diff --git a/lib/riscv/asm/setup.h b/lib/riscv/asm/setup.h
+index dfc8875fbb3b..7f81a705ca4f 100644
+--- a/lib/riscv/asm/setup.h
++++ b/lib/riscv/asm/setup.h
+@@ -14,7 +14,7 @@ void setup(const void *fdt, phys_addr_t freemem_start);
+ 
+ #ifdef CONFIG_EFI
+ #include <efi.h>
+-static inline efi_status_t setup_efi(efi_bootinfo_t *efi_bootinfo) { return 0; }
++efi_status_t setup_efi(efi_bootinfo_t *efi_bootinfo);
+ #endif
+ 
+ #endif /* _ASMRISCV_SETUP_H_ */
 diff --git a/lib/riscv/setup.c b/lib/riscv/setup.c
-index 40ff26a24cfc..f721d81192ac 100644
+index f721d81192ac..7c681ea3a13c 100644
 --- a/lib/riscv/setup.c
 +++ b/lib/riscv/setup.c
-@@ -31,6 +31,8 @@
- #define MAX_DT_MEM_REGIONS	16
- #define NR_MEM_REGIONS		(MAX_DT_MEM_REGIONS + 16)
+@@ -213,3 +213,66 @@ void setup(const void *fdt, phys_addr_t freemem_start)
  
-+extern unsigned long _etext;
+ 	banner();
+ }
 +
- char *initrd;
- u32 initrd_size;
- 
-@@ -81,25 +83,12 @@ static void cpu_init(void)
- 	cpu0_calls_idle = true;
- }
- 
--extern unsigned long _etext;
--
--static void mem_init(phys_addr_t freemem_start)
-+static void mem_allocator_init(phys_addr_t freemem_start, phys_addr_t freemem_end)
- {
--	struct mem_region *freemem, *code, *data;
--	phys_addr_t freemem_end, base, top;
--
--	memregions_init(riscv_mem_regions, NR_MEM_REGIONS);
--	memregions_add_dt_regions(MAX_DT_MEM_REGIONS);
-+	phys_addr_t base, top;
- 
--	/* Split the region with the code into two regions; code and data */
--	memregions_split((unsigned long)&_etext, &code, &data);
--	assert(code);
--	code->flags |= MR_F_CODE;
--
--	freemem = memregions_find(freemem_start);
--	assert(freemem && !(freemem->flags & (MR_F_IO | MR_F_CODE)));
--
--	freemem_end = freemem->end & PAGE_MASK;
-+	freemem_start = PAGE_ALIGN(freemem_start);
-+	freemem_end &= PAGE_MASK;
- 
- 	/*
- 	 * The assert below is mostly checking that the free memory doesn't
-@@ -129,6 +118,64 @@ static void mem_init(phys_addr_t freemem_start)
- 	page_alloc_ops_enable();
- }
- 
-+static void mem_init(phys_addr_t freemem_start)
++#ifdef CONFIG_EFI
++#include <efi.h>
++
++extern unsigned long exception_vectors;
++extern unsigned long boot_hartid;
++
++static efi_status_t efi_mem_init(efi_bootinfo_t *efi_bootinfo)
 +{
-+	struct mem_region *freemem, *code, *data;
++	struct mem_region *freemem_mr = NULL, *code, *data;
++	void *freemem;
 +
 +	memregions_init(riscv_mem_regions, NR_MEM_REGIONS);
-+	memregions_add_dt_regions(MAX_DT_MEM_REGIONS);
 +
-+	/* Split the region with the code into two regions; code and data */
++	memregions_efi_init(&efi_bootinfo->mem_map, &freemem_mr);
++	if (!freemem_mr)
++		return EFI_OUT_OF_RESOURCES;
++
 +	memregions_split((unsigned long)&_etext, &code, &data);
-+	assert(code);
-+	code->flags |= MR_F_CODE;
++	assert(code && (code->flags & MR_F_CODE));
++	if (data)
++		data->flags &= ~MR_F_CODE;
 +
-+	freemem = memregions_find(freemem_start);
-+	assert(freemem && !(freemem->flags & (MR_F_IO | MR_F_CODE)));
++	for (struct mem_region *m = mem_regions; m->end; ++m)
++		assert(m == code || !(m->flags & MR_F_CODE));
 +
-+	mem_allocator_init(freemem_start, freemem->end);
++	freemem = (void *)PAGE_ALIGN(freemem_mr->start);
++
++	if (efi_bootinfo->fdt_valid)
++		freemem_push_fdt(&freemem, efi_bootinfo->fdt);
++
++	mmu_disable();
++	mem_allocator_init((unsigned long)freemem, freemem_mr->end);
++
++	return EFI_SUCCESS;
 +}
 +
-+static void freemem_push_fdt(void **freemem, const void *fdt)
++efi_status_t setup_efi(efi_bootinfo_t *efi_bootinfo)
 +{
-+	u32 fdt_size;
-+	int ret;
++	efi_status_t status;
 +
-+	fdt_size = fdt_totalsize(fdt);
-+	ret = fdt_move(fdt, *freemem, fdt_size);
-+	assert(ret == 0);
-+	ret = dt_init(*freemem);
-+	assert(ret == 0);
-+	*freemem += fdt_size;
-+}
++	csr_write(CSR_STVEC, (unsigned long)&exception_vectors);
++	csr_write(CSR_SSCRATCH, boot_hartid);
 +
-+static void freemem_push_dt_initrd(void **freemem)
-+{
-+	const char *tmp;
-+	int ret;
-+
-+	ret = dt_get_initrd(&tmp, &initrd_size);
-+	assert(ret == 0 || ret == -FDT_ERR_NOTFOUND);
-+	if (ret == 0) {
-+		initrd = *freemem;
-+		memmove(initrd, tmp, initrd_size);
-+		*freemem += initrd_size;
++	status = efi_mem_init(efi_bootinfo);
++	if (status != EFI_SUCCESS) {
++		printf("Failed to initialize memory\n");
++		return status;
 +	}
-+}
 +
-+static void initrd_setup(void)
-+{
-+	char *env;
-+
-+	if (!initrd)
-+		return;
-+
-+	/* environ is currently the only file in the initrd */
-+	env = malloc(initrd_size);
-+	memcpy(env, initrd, initrd_size);
-+	setup_env(env, initrd_size);
-+}
-+
- static void banner(void)
- {
- 	puts("\n");
-@@ -141,29 +188,14 @@ static void banner(void)
- void setup(const void *fdt, phys_addr_t freemem_start)
- {
- 	void *freemem;
--	const char *bootargs, *tmp;
--	u32 fdt_size;
-+	const char *bootargs;
- 	int ret;
- 
- 	assert(sizeof(long) == 8 || freemem_start < VA_BASE);
- 	freemem = __va(freemem_start);
- 
--	/* Move the FDT to the base of free memory */
--	fdt_size = fdt_totalsize(fdt);
--	ret = fdt_move(fdt, freemem, fdt_size);
--	assert(ret == 0);
--	ret = dt_init(freemem);
--	assert(ret == 0);
--	freemem += fdt_size;
--
--	/* Move the initrd to the top of the FDT */
--	ret = dt_get_initrd(&tmp, &initrd_size);
--	assert(ret == 0 || ret == -FDT_ERR_NOTFOUND);
--	if (ret == 0) {
--		initrd = freemem;
--		memmove(initrd, tmp, initrd_size);
--		freemem += initrd_size;
--	}
-+	freemem_push_fdt(&freemem, fdt);
-+	freemem_push_dt_initrd(&freemem);
- 
- 	mem_init(PAGE_ALIGN(__pa(freemem)));
- 	cpu_init();
-@@ -174,12 +206,7 @@ void setup(const void *fdt, phys_addr_t freemem_start)
- 	assert(ret == 0 || ret == -FDT_ERR_NOTFOUND);
- 	setup_args_progname(bootargs);
- 
--	if (initrd) {
--		/* environ is currently the only file in the initrd */
--		char *env = malloc(initrd_size);
--		memcpy(env, initrd, initrd_size);
--		setup_env(env, initrd_size);
--	}
++	cpu_init();
++	thread_info_init();
++	io_init();
 +	initrd_setup();
- 
- 	if (!(auxinfo.flags & AUXINFO_MMU_OFF))
- 		setup_vm();
++
++	if (!(auxinfo.flags & AUXINFO_MMU_OFF))
++		setup_vm();
++
++	banner();
++
++	return EFI_SUCCESS;
++}
++#endif /* CONFIG_EFI */
 -- 
 2.43.0
 
