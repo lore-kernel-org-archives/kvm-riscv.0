@@ -1,65 +1,41 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Wed, 28 Feb 2024 14:10:27 +0100
-Subject: [PATCH 5/5] KVM: riscv: selftests: Add Zacas extension to
- get-reg-list test
-In-Reply-To: <20240214123757.305347-6-apatel@ventanamicro.com>
-References: <20240214123757.305347-1-apatel@ventanamicro.com>
- <20240214123757.305347-6-apatel@ventanamicro.com>
-Message-ID: <20240228-8f3f6703b3c14ceaf169da3b@orel>
+From: Andrew Jones <andrew.jones@linux.dev>
+Date: Wed, 28 Feb 2024 16:04:17 +0100
+Subject: [kvm-unit-tests PATCH 01/13] riscv: Call abort instead of assert on unhandled exceptions
+In-Reply-To: <20240228150416.248948-15-andrew.jones@linux.dev>
+References: <20240228150416.248948-15-andrew.jones@linux.dev>
+Message-ID: <20240228150416.248948-16-andrew.jones@linux.dev>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Feb 14, 2024 at 06:07:57PM +0530, Anup Patel wrote:
-> The KVM RISC-V allows Zacas extension for Guest/VM so let us
-> add this extension to get-reg-list test.
-> 
-> Signed-off-by: Anup Patel <apatel@ventanamicro.com>
-> ---
->  tools/testing/selftests/kvm/riscv/get-reg-list.c | 4 ++++
->  1 file changed, 4 insertions(+)
-> 
-> diff --git a/tools/testing/selftests/kvm/riscv/get-reg-list.c b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-> index 5429453561d7..d334c4c9765f 100644
-> --- a/tools/testing/selftests/kvm/riscv/get-reg-list.c
-> +++ b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-> @@ -47,6 +47,7 @@ bool filter_reg(__u64 reg)
->  	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SVINVAL:
->  	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SVNAPOT:
->  	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SVPBMT:
-> +	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZACAS:
->  	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZBA:
->  	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZBB:
->  	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZBC:
-> @@ -411,6 +412,7 @@ static const char *isa_ext_single_id_to_str(__u64 reg_off)
->  		KVM_ISA_EXT_ARR(SVINVAL),
->  		KVM_ISA_EXT_ARR(SVNAPOT),
->  		KVM_ISA_EXT_ARR(SVPBMT),
-> +		KVM_ISA_EXT_ARR(ZACAS),
->  		KVM_ISA_EXT_ARR(ZBA),
->  		KVM_ISA_EXT_ARR(ZBB),
->  		KVM_ISA_EXT_ARR(ZBC),
-> @@ -933,6 +935,7 @@ KVM_ISA_EXT_SIMPLE_CONFIG(sstc, SSTC);
->  KVM_ISA_EXT_SIMPLE_CONFIG(svinval, SVINVAL);
->  KVM_ISA_EXT_SIMPLE_CONFIG(svnapot, SVNAPOT);
->  KVM_ISA_EXT_SIMPLE_CONFIG(svpbmt, SVPBMT);
-> +KVM_ISA_EXT_SIMPLE_CONFIG(zacas, ZACAS);
->  KVM_ISA_EXT_SIMPLE_CONFIG(zba, ZBA);
->  KVM_ISA_EXT_SIMPLE_CONFIG(zbb, ZBB);
->  KVM_ISA_EXT_SIMPLE_CONFIG(zbc, ZBC);
-> @@ -987,6 +990,7 @@ struct vcpu_reg_list *vcpu_configs[] = {
->  	&config_svinval,
->  	&config_svnapot,
->  	&config_svpbmt,
-> +	&config_zacas,
->  	&config_zba,
->  	&config_zbb,
->  	&config_zbc,
-> -- 
-> 2.34.1
->
+We should call abort() instead of assert() on an unhandled
+exception since assert() calls abort() anyway after a useless
+"assert failed: 0" message. We can also skip dumping the
+exception stack and just unwind from the stack frame where
+the exception occurred.
 
-Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
+---
+ lib/riscv/processor.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/lib/riscv/processor.c b/lib/riscv/processor.c
+index e0904209c0da..6c868b805cf7 100644
+--- a/lib/riscv/processor.c
++++ b/lib/riscv/processor.c
+@@ -43,7 +43,8 @@ void do_handle_exception(struct pt_regs *regs)
+ 	}
+ 
+ 	show_regs(regs);
+-	assert(0);
++	dump_frame_stack((void *)regs->epc, (void *)regs->s0);
++	abort();
+ }
+ 
+ void install_exception_handler(unsigned long cause, void (*handler)(struct pt_regs *))
+-- 
+2.43.0
+
 
