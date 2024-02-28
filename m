@@ -1,243 +1,80 @@
-From: Claudio Imbrenda <imbrenda@linux.ibm.com>
-Date: Wed, 28 Feb 2024 18:33:58 +0100
-Subject: [kvm-unit-tests PATCH 03/13] treewide: lib/stack: Fix backtrace
-In-Reply-To: <20240228150416.248948-18-andrew.jones@linux.dev>
-References: <20240228150416.248948-15-andrew.jones@linux.dev>
-	<20240228150416.248948-18-andrew.jones@linux.dev>
-Message-ID: <20240228183358.5a72ce73@p-imbrenda>
+From: Sean Christopherson <seanjc@google.com>
+Date: Wed, 28 Feb 2024 14:40:20 -0800
+Subject: [PATCH v9 00/11] KVM: selftests: Add SEV and SEV-ES smoke tests
+In-Reply-To: <170900037528.3692126.18029642068469384283.b4-ty@google.com>
+References: <20240223004258.3104051-1-seanjc@google.com> <170900037528.3692126.18029642068469384283.b4-ty@google.com>
+Message-ID: <Zd-2VK2kvMr_t1jx@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 28 Feb 2024 16:04:19 +0100
-Andrew Jones <andrew.jones@linux.dev> wrote:
-
-> We should never pass the result of __builtin_frame_address(0) to
-> another function since the compiler is within its rights to pop the
-> frame to which it points before making the function call, as may be
-> done for tail calls. Nobody has complained about backtrace(), so
-> likely all compilations have been inlining backtrace_frame(), not
-> dropping the frame on the tail call, or nobody is looking at traces.
-> However, for riscv, when built for EFI, it does drop the frame on the
-> tail call, and it was noticed. Preemptively fix backtrace() for all
-> architectures.
+On Mon, Feb 26, 2024, Sean Christopherson wrote:
+> On Thu, 22 Feb 2024 16:42:47 -0800, Sean Christopherson wrote:
+> > Add basic SEV and SEV-ES smoke tests.  Unlike the intra-host migration tests,
+> > this one actually runs a small chunk of code in the guest.
+> > 
+> > Unless anyone strongly objects to the quick and dirty approach I've taken for
+> > SEV-ES, I'll get all of this queued for 6.9 soon-ish.
+> > 
+> > As for _why_ I added the quick-and-dirty SEV-ES testcase, I have a series to
+> > cleanup __svm_sev_es_vcpu_run(), and found out that apparently I have a version
+> > of OVMF that doesn't quite have to the right <something> for SEV-ES, and so I
+> > could even get a "real" VM to reach KVM_RUN.  I assumed (correctly, yay!) that
+> > hacking together a selftest would be faster than figuring out what firmware
+> > magic I am missing.
+> > 
+> > [...]
 > 
-> Fixes: 52266791750d ("lib: backtrace printing")
-> Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
-
-Acked-by: Claudio Imbrenda <imbrenda@linux.ibm.com>
-
-> ---
->  lib/arm/stack.c   | 13 +++++--------
->  lib/arm64/stack.c | 12 +++++-------
->  lib/riscv/stack.c | 12 +++++-------
->  lib/s390x/stack.c | 12 +++++-------
->  lib/stack.h       | 24 +++++++++++++++++-------
->  lib/x86/stack.c   | 12 +++++-------
->  6 files changed, 42 insertions(+), 43 deletions(-)
+> Applied to kvm-x86 selftests, thanks!
 > 
-> diff --git a/lib/arm/stack.c b/lib/arm/stack.c
-> index 7d081be7c6d0..66d18b47ea53 100644
-> --- a/lib/arm/stack.c
-> +++ b/lib/arm/stack.c
-> @@ -8,13 +8,16 @@
->  #include <libcflat.h>
->  #include <stack.h>
->  
-> -int backtrace_frame(const void *frame, const void **return_addrs,
-> -		    int max_depth)
-> +int arch_backtrace_frame(const void *frame, const void **return_addrs,
-> +			 int max_depth, bool current_frame)
->  {
->  	static int walking;
->  	int depth;
->  	const unsigned long *fp = (unsigned long *)frame;
->  
-> +	if (current_frame)
-> +		fp = __builtin_frame_address(0);
-> +
->  	if (walking) {
->  		printf("RECURSIVE STACK WALK!!!\n");
->  		return 0;
-> @@ -33,9 +36,3 @@ int backtrace_frame(const void *frame, const void **return_addrs,
->  	walking = 0;
->  	return depth;
->  }
-> -
-> -int backtrace(const void **return_addrs, int max_depth)
-> -{
-> -	return backtrace_frame(__builtin_frame_address(0),
-> -			       return_addrs, max_depth);
-> -}
-> diff --git a/lib/arm64/stack.c b/lib/arm64/stack.c
-> index 82611f4b1815..f5eb57fd8892 100644
-> --- a/lib/arm64/stack.c
-> +++ b/lib/arm64/stack.c
-> @@ -8,7 +8,8 @@
->  
->  extern char vector_stub_start, vector_stub_end;
->  
-> -int backtrace_frame(const void *frame, const void **return_addrs, int max_depth)
-> +int arch_backtrace_frame(const void *frame, const void **return_addrs,
-> +			 int max_depth, bool current_frame)
->  {
->  	const void *fp = frame;
->  	static bool walking;
-> @@ -17,6 +18,9 @@ int backtrace_frame(const void *frame, const void **return_addrs, int max_depth)
->  	bool is_exception = false;
->  	unsigned long addr;
->  
-> +	if (current_frame)
-> +		fp = __builtin_frame_address(0);
-> +
->  	if (walking) {
->  		printf("RECURSIVE STACK WALK!!!\n");
->  		return 0;
-> @@ -54,9 +58,3 @@ int backtrace_frame(const void *frame, const void **return_addrs, int max_depth)
->  	walking = false;
->  	return depth;
->  }
-> -
-> -int backtrace(const void **return_addrs, int max_depth)
-> -{
-> -	return backtrace_frame(__builtin_frame_address(0),
-> -			       return_addrs, max_depth);
-> -}
-> diff --git a/lib/riscv/stack.c b/lib/riscv/stack.c
-> index 712a5478d547..d865594b9671 100644
-> --- a/lib/riscv/stack.c
-> +++ b/lib/riscv/stack.c
-> @@ -2,12 +2,16 @@
->  #include <libcflat.h>
->  #include <stack.h>
->  
-> -int backtrace_frame(const void *frame, const void **return_addrs, int max_depth)
-> +int arch_backtrace_frame(const void *frame, const void **return_addrs,
-> +			 int max_depth, bool current_frame)
->  {
->  	static bool walking;
->  	const unsigned long *fp = (unsigned long *)frame;
->  	int depth;
->  
-> +	if (current_frame)
-> +		fp = __builtin_frame_address(0);
-> +
->  	if (walking) {
->  		printf("RECURSIVE STACK WALK!!!\n");
->  		return 0;
-> @@ -24,9 +28,3 @@ int backtrace_frame(const void *frame, const void **return_addrs, int max_depth)
->  	walking = false;
->  	return depth;
->  }
-> -
-> -int backtrace(const void **return_addrs, int max_depth)
-> -{
-> -	return backtrace_frame(__builtin_frame_address(0),
-> -			       return_addrs, max_depth);
-> -}
-> diff --git a/lib/s390x/stack.c b/lib/s390x/stack.c
-> index 9f234a12adf6..d194f654e94d 100644
-> --- a/lib/s390x/stack.c
-> +++ b/lib/s390x/stack.c
-> @@ -14,11 +14,15 @@
->  #include <stack.h>
->  #include <asm/arch_def.h>
->  
-> -int backtrace_frame(const void *frame, const void **return_addrs, int max_depth)
-> +int arch_backtrace_frame(const void *frame, const void **return_addrs,
-> +			 int max_depth, bool current_frame)
->  {
->  	int depth = 0;
->  	struct stack_frame *stack = (struct stack_frame *)frame;
->  
-> +	if (current_frame)
-> +		stack = __builtin_frame_address(0);
-> +
->  	for (depth = 0; stack && depth < max_depth; depth++) {
->  		return_addrs[depth] = (void *)stack->grs[8];
->  		stack = stack->back_chain;
-> @@ -28,9 +32,3 @@ int backtrace_frame(const void *frame, const void **return_addrs, int max_depth)
->  
->  	return depth;
->  }
-> -
-> -int backtrace(const void **return_addrs, int max_depth)
-> -{
-> -	return backtrace_frame(__builtin_frame_address(0),
-> -			       return_addrs, max_depth);
-> -}
-> diff --git a/lib/stack.h b/lib/stack.h
-> index 10fc2f793354..6edc84344b51 100644
-> --- a/lib/stack.h
-> +++ b/lib/stack.h
-> @@ -11,17 +11,27 @@
->  #include <asm/stack.h>
->  
->  #ifdef HAVE_ARCH_BACKTRACE_FRAME
-> -extern int backtrace_frame(const void *frame, const void **return_addrs,
-> -			   int max_depth);
-> +extern int arch_backtrace_frame(const void *frame, const void **return_addrs,
-> +				int max_depth, bool current_frame);
-> +
-> +static inline int backtrace_frame(const void *frame, const void **return_addrs,
-> +				  int max_depth)
-> +{
-> +	return arch_backtrace_frame(frame, return_addrs, max_depth, false);
-> +}
-> +
-> +static inline int backtrace(const void **return_addrs, int max_depth)
-> +{
-> +	return arch_backtrace_frame(NULL, return_addrs, max_depth, true);
-> +}
->  #else
-> -static inline int
-> -backtrace_frame(const void *frame __unused, const void **return_addrs __unused,
-> -		int max_depth __unused)
-> +extern int backtrace(const void **return_addrs, int max_depth);
-> +
-> +static inline int backtrace_frame(const void *frame, const void **return_addrs,
-> +				  int max_depth)
->  {
->  	return 0;
->  }
->  #endif
->  
-> -extern int backtrace(const void **return_addrs, int max_depth);
-> -
->  #endif
-> diff --git a/lib/x86/stack.c b/lib/x86/stack.c
-> index 5ecd97ce90b9..58ab6c4b293a 100644
-> --- a/lib/x86/stack.c
-> +++ b/lib/x86/stack.c
-> @@ -1,12 +1,16 @@
->  #include <libcflat.h>
->  #include <stack.h>
->  
-> -int backtrace_frame(const void *frame, const void **return_addrs, int max_depth)
-> +int arch_backtrace_frame(const void *frame, const void **return_addrs,
-> +			 int max_depth, bool current_frame)
->  {
->  	static int walking;
->  	int depth = 0;
->  	const unsigned long *bp = (unsigned long *) frame;
->  
-> +	if (current_frame)
-> +		bp = __builtin_frame_address(0);
-> +
->  	if (walking) {
->  		printf("RECURSIVE STACK WALK!!!\n");
->  		return 0;
-> @@ -23,9 +27,3 @@ int backtrace_frame(const void *frame, const void **return_addrs, int max_depth)
->  	walking = 0;
->  	return depth;
->  }
-> -
-> -int backtrace(const void **return_addrs, int max_depth)
-> -{
-> -	return backtrace_frame(__builtin_frame_address(0), return_addrs,
-> -			       max_depth);
-> -}
+> [01/11] KVM: selftests: Extend VM creation's @shape to allow control of VM subtype
+>         https://github.com/kvm-x86/linux/commit/309d1ad7b6ff
+> [02/11] KVM: selftests: Make sparsebit structs const where appropriate
+>         https://github.com/kvm-x86/linux/commit/6077c3ce4021
+> [03/11] KVM: selftests: Add a macro to iterate over a sparsebit range
+>         https://github.com/kvm-x86/linux/commit/8811565ff68e
+> [04/11] KVM: selftests: Add support for allocating/managing protected guest memory
+>         https://github.com/kvm-x86/linux/commit/29e749e8faff
+> [05/11] KVM: selftests: Add support for protected vm_vaddr_* allocations
+>         https://github.com/kvm-x86/linux/commit/1e3af7cf984a
+> [06/11] KVM: selftests: Explicitly ucall pool from shared memory
+>         https://github.com/kvm-x86/linux/commit/5ef7196273b6
+> [07/11] KVM: selftests: Allow tagging protected memory in guest page tables
+>         https://github.com/kvm-x86/linux/commit/a8446cd81de8
+> [08/11] KVM: selftests: Add library for creating and interacting with SEV guests
+>         https://github.com/kvm-x86/linux/commit/f3ff1e9b2f9c
+> [09/11] KVM: selftests: Use the SEV library APIs in the intra-host migration test
+>         https://github.com/kvm-x86/linux/commit/0837ddb51f9b
+> [10/11] KVM: selftests: Add a basic SEV smoke test
+>         https://github.com/kvm-x86/linux/commit/5101f1e27683
+> [11/11] KVM: selftests: Add a basic SEV-ES smoke test
+>         https://github.com/kvm-x86/linux/commit/f3750b0c7f6e
 
+FYI, the hashes changed due to a force push to squash a bug in a different
+series.
+
+[1/11] KVM: selftests: Extend VM creation's @shape to allow control of VM subtype
+      https://github.com/kvm-x86/linux/commit/126190379c57
+[2/11] KVM: selftests: Make sparsebit structs const where appropriate
+      https://github.com/kvm-x86/linux/commit/35f50c91c43e
+[3/11] KVM: selftests: Add a macro to iterate over a sparsebit range
+      https://github.com/kvm-x86/linux/commit/57e19f057758
+[4/11] KVM: selftests: Add support for allocating/managing protected guest memory
+      https://github.com/kvm-x86/linux/commit/cd8eb2913205
+[5/11] KVM: selftests: Add support for protected vm_vaddr_* allocations
+      https://github.com/kvm-x86/linux/commit/d210eebb51a2
+[6/11] KVM: selftests: Explicitly ucall pool from shared memory
+      https://github.com/kvm-x86/linux/commit/31e00dae72fd
+[7/11] KVM: selftests: Allow tagging protected memory in guest page tables
+      https://github.com/kvm-x86/linux/commit/bf47e87c65be
+[8/11] KVM: selftests: Add library for creating and interacting with SEV guests
+      https://github.com/kvm-x86/linux/commit/bdceeebcddb8
+[9/11] KVM: selftests: Use the SEV library APIs in the intra-host migration test
+      https://github.com/kvm-x86/linux/commit/8b174eb9d289
+[10/11] KVM: selftests: Add a basic SEV smoke test
+      https://github.com/kvm-x86/linux/commit/faa0d7027de3
+[11/11] KVM: selftests: Add a basic SEV-ES smoke test
+      https://github.com/kvm-x86/linux/commit/974ba6f0e595
 
