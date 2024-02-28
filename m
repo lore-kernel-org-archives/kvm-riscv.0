@@ -1,66 +1,72 @@
 From: Andrew Jones <andrew.jones@linux.dev>
-Date: Wed, 28 Feb 2024 16:04:16 +0100
-Subject: [kvm-unit-tests PATCH 00/13] Enable EFI support
-Message-ID: <20240228150416.248948-15-andrew.jones@linux.dev>
+Date: Wed, 28 Feb 2024 16:04:18 +0100
+Subject: [kvm-unit-tests PATCH 02/13] riscv: show_regs: Prepare for EFI images
+In-Reply-To: <20240228150416.248948-15-andrew.jones@linux.dev>
+References: <20240228150416.248948-15-andrew.jones@linux.dev>
+Message-ID: <20240228150416.248948-17-andrew.jones@linux.dev>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This series starts with some fixes for backtraces for bugs found
-when tracing with riscv EFI builds. The series then brings EFI
-support to riscv, basing the approach heavily on arm64's support
-(including arm64's improvements[1]). It should now be possible
-to launch tests from EFI-capable bootloaders.
+EFI images start with a header page and then _text, so the load
+address should use 'ImageBase' instead of _text. Just add the
+ImageBase symbol to the non-efi build too and then change show_regs()
+to use it instead. While there, add a couple convenience calculations
+for the PC and return address (pre-subtract the load address from
+them) in order to make it quicker for looking them up in an objdump
+(Note, for EFI, one must dump the .so file, which isn't preserved by
+default, but can be by uncommenting out the '.PRECIOUS: %.so' line in
+the makefile.)
 
-[1] https://lore.kernel.org/all/20240227192109.487402-20-andrew.jones at linux.dev/
+Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
+---
+ lib/riscv/processor.c | 8 ++++----
+ riscv/flat.lds        | 1 +
+ 2 files changed, 5 insertions(+), 4 deletions(-)
 
-Thanks,
-drew
-
-Andrew Jones (13):
-  riscv: Call abort instead of assert on unhandled exceptions
-  riscv: show_regs: Prepare for EFI images
-  treewide: lib/stack: Fix backtrace
-  treewide: lib/stack: Make base_address arch specific
-  riscv: Import gnu-efi files
-  riscv: Tweak the gnu-efi imported code
-  riscv: Enable building for EFI
-  riscv: efi: Switch stack in _start
-  efi: Add support for obtaining the boot hartid
-  riscv: Refactor setup code
-  riscv: Enable EFI boot
-  riscv: efi: Add run script
-  riscv: efi: Use efi-direct by default
-
- configure                     |  12 +-
- lib/arm/stack.c               |  13 +--
- lib/arm64/stack.c             |  29 +++--
- lib/efi.c                     |  33 ++++++
- lib/elf.h                     |   5 +
- lib/riscv/asm/setup.h         |   5 +
- lib/riscv/processor.c         |  11 +-
- lib/riscv/setup.c             | 170 +++++++++++++++++++++-------
- lib/riscv/stack.c             |  30 +++--
- lib/s390x/stack.c             |  12 +-
- lib/stack.c                   |  19 +---
- lib/stack.h                   |  26 +++--
- lib/x86/stack.c               |  29 +++--
- riscv/Makefile                |  24 +++-
- riscv/cstart.S                |   4 +
- riscv/efi/crt0-efi-riscv64.S  | 205 ++++++++++++++++++++++++++++++++++
- riscv/efi/elf_riscv64_efi.lds | 142 +++++++++++++++++++++++
- riscv/efi/reloc_riscv64.c     |  91 +++++++++++++++
- riscv/efi/run                 | 106 ++++++++++++++++++
- riscv/flat.lds                |   1 +
- riscv/run                     |   2 +-
- 21 files changed, 859 insertions(+), 110 deletions(-)
- create mode 100644 riscv/efi/crt0-efi-riscv64.S
- create mode 100644 riscv/efi/elf_riscv64_efi.lds
- create mode 100644 riscv/efi/reloc_riscv64.c
- create mode 100755 riscv/efi/run
-
+diff --git a/lib/riscv/processor.c b/lib/riscv/processor.c
+index 6c868b805cf7..ece7cbffc6dd 100644
+--- a/lib/riscv/processor.c
++++ b/lib/riscv/processor.c
+@@ -8,20 +8,20 @@
+ #include <asm/processor.h>
+ #include <asm/setup.h>
+ 
+-extern unsigned long _text;
++extern unsigned long ImageBase;
+ 
+ void show_regs(struct pt_regs *regs)
+ {
+ 	struct thread_info *info = current_thread_info();
+-	uintptr_t text = (uintptr_t)&_text;
++	uintptr_t loadaddr = (uintptr_t)&ImageBase;
+ 	unsigned int w = __riscv_xlen / 4;
+ 
+-	printf("Load address: %" PRIxPTR "\n", text);
++	printf("Load address: %" PRIxPTR "\n", loadaddr);
+ 	printf("CPU%3d : hartid=%lx\n", info->cpu, info->hartid);
+ 	printf("status : %.*lx\n", w, regs->status);
+ 	printf("cause  : %.*lx\n", w, regs->cause);
+ 	printf("badaddr: %.*lx\n", w, regs->badaddr);
+-	printf("pc: %.*lx ra: %.*lx\n", w, regs->epc, w, regs->ra);
++	printf("pc: %.*lx (%lx) ra: %.*lx (%lx)\n", w, regs->epc, regs->epc - loadaddr, w, regs->ra, regs->ra - loadaddr);
+ 	printf("sp: %.*lx gp: %.*lx tp : %.*lx\n", w, regs->sp, w, regs->gp, w, regs->tp);
+ 	printf("a0: %.*lx a1: %.*lx a2 : %.*lx a3 : %.*lx\n", w, regs->a0, w, regs->a1, w, regs->a2, w, regs->a3);
+ 	printf("a4: %.*lx a5: %.*lx a6 : %.*lx a7 : %.*lx\n", w, regs->a4, w, regs->a5, w, regs->a6, w, regs->a7);
+diff --git a/riscv/flat.lds b/riscv/flat.lds
+index d4853f82ba1c..1ca501e6593b 100644
+--- a/riscv/flat.lds
++++ b/riscv/flat.lds
+@@ -30,6 +30,7 @@ PHDRS
+ 
+ SECTIONS
+ {
++    PROVIDE(ImageBase = .);
+     PROVIDE(_text = .);
+     .text : { *(.init) *(.text) *(.text.*) } :text
+     . = ALIGN(4K);
 -- 
 2.43.0
 
