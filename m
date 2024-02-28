@@ -1,114 +1,180 @@
 From: Andrew Jones <andrew.jones@linux.dev>
-Date: Wed, 28 Feb 2024 16:04:23 +0100
-Subject: [kvm-unit-tests PATCH 07/13] riscv: Enable building for EFI
+Date: Wed, 28 Feb 2024 16:04:26 +0100
+Subject: [kvm-unit-tests PATCH 10/13] riscv: Refactor setup code
 In-Reply-To: <20240228150416.248948-15-andrew.jones@linux.dev>
 References: <20240228150416.248948-15-andrew.jones@linux.dev>
-Message-ID: <20240228150416.248948-22-andrew.jones@linux.dev>
+Message-ID: <20240228150416.248948-25-andrew.jones@linux.dev>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Mimicking arm64 support, add configure and makefile changes to build
-for EFI. Since the linker script is replaced also replace the initial
-cstart code (also done like arm64). Finally, provide a stub for
-setup_efi() in order to allow compiling to complete (even though
-tests can't yet run).
+To prepare for EFI setup, move code that will be shared into
+functions. This is the same type of code and the exact same function
+names which were created when refactoring Arm's EFI setup, so riscv
+setup is still following Arm's setup patterns.
 
 Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
 ---
- configure             |  3 ++-
- lib/riscv/asm/setup.h |  5 +++++
- riscv/Makefile        | 24 +++++++++++++++++++++++-
- riscv/cstart.S        |  4 ++++
- 4 files changed, 34 insertions(+), 2 deletions(-)
+ lib/riscv/setup.c | 109 +++++++++++++++++++++++++++++-----------------
+ 1 file changed, 68 insertions(+), 41 deletions(-)
 
-diff --git a/configure b/configure
-index 283c959973fd..cb1718ce12e6 100755
---- a/configure
-+++ b/configure
-@@ -230,7 +230,8 @@ else
-     fi
- fi
+diff --git a/lib/riscv/setup.c b/lib/riscv/setup.c
+index 40ff26a24cfc..f721d81192ac 100644
+--- a/lib/riscv/setup.c
++++ b/lib/riscv/setup.c
+@@ -31,6 +31,8 @@
+ #define MAX_DT_MEM_REGIONS	16
+ #define NR_MEM_REGIONS		(MAX_DT_MEM_REGIONS + 16)
  
--if [ "$efi" ] && [ "$arch" != "x86_64" ] && [ "$arch" != "arm64" ]; then
-+if [ "$efi" ] && [ "$arch" != "x86_64" ] &&
-+   [ "$arch" != "arm64" ] && [ "$arch" != "riscv64" ]; then
-     echo "--[enable|disable]-efi is not supported for $arch"
-     usage
- fi
-diff --git a/lib/riscv/asm/setup.h b/lib/riscv/asm/setup.h
-index e58dd53071ae..dfc8875fbb3b 100644
---- a/lib/riscv/asm/setup.h
-+++ b/lib/riscv/asm/setup.h
-@@ -12,4 +12,9 @@ int hartid_to_cpu(unsigned long hartid);
- void io_init(void);
- void setup(const void *fdt, phys_addr_t freemem_start);
- 
-+#ifdef CONFIG_EFI
-+#include <efi.h>
-+static inline efi_status_t setup_efi(efi_bootinfo_t *efi_bootinfo) { return 0; }
-+#endif
++extern unsigned long _etext;
 +
- #endif /* _ASMRISCV_SETUP_H_ */
-diff --git a/riscv/Makefile b/riscv/Makefile
-index 85bbca151739..e1803c133e71 100644
---- a/riscv/Makefile
-+++ b/riscv/Makefile
-@@ -85,7 +85,29 @@ include $(SRCDIR)/scripts/asm-offsets.mak
- 		-DPROGNAME=\"$(notdir $(@:.aux.o=.$(exe)))\" -DAUXFLAGS=$(AUXFLAGS)
+ char *initrd;
+ u32 initrd_size;
  
- ifeq ($(CONFIG_EFI),y)
--	# TODO
-+# avoid jump tables before all relocations have been processed
-+riscv/efi/reloc_riscv64.o: CFLAGS += -fno-jump-tables
-+cflatobjs += riscv/efi/reloc_riscv64.o
-+cflatobjs += lib/acpi.o
-+cflatobjs += lib/efi.o
+@@ -81,25 +83,12 @@ static void cpu_init(void)
+ 	cpu0_calls_idle = true;
+ }
+ 
+-extern unsigned long _etext;
+-
+-static void mem_init(phys_addr_t freemem_start)
++static void mem_allocator_init(phys_addr_t freemem_start, phys_addr_t freemem_end)
+ {
+-	struct mem_region *freemem, *code, *data;
+-	phys_addr_t freemem_end, base, top;
+-
+-	memregions_init(riscv_mem_regions, NR_MEM_REGIONS);
+-	memregions_add_dt_regions(MAX_DT_MEM_REGIONS);
++	phys_addr_t base, top;
+ 
+-	/* Split the region with the code into two regions; code and data */
+-	memregions_split((unsigned long)&_etext, &code, &data);
+-	assert(code);
+-	code->flags |= MR_F_CODE;
+-
+-	freemem = memregions_find(freemem_start);
+-	assert(freemem && !(freemem->flags & (MR_F_IO | MR_F_CODE)));
+-
+-	freemem_end = freemem->end & PAGE_MASK;
++	freemem_start = PAGE_ALIGN(freemem_start);
++	freemem_end &= PAGE_MASK;
+ 
+ 	/*
+ 	 * The assert below is mostly checking that the free memory doesn't
+@@ -129,6 +118,64 @@ static void mem_init(phys_addr_t freemem_start)
+ 	page_alloc_ops_enable();
+ }
+ 
++static void mem_init(phys_addr_t freemem_start)
++{
++	struct mem_region *freemem, *code, *data;
 +
-+#.PRECIOUS: %.so
++	memregions_init(riscv_mem_regions, NR_MEM_REGIONS);
++	memregions_add_dt_regions(MAX_DT_MEM_REGIONS);
 +
-+%.so: EFI_LDFLAGS += -defsym=EFI_SUBSYSTEM=0xa --no-undefined
-+%.so: %.o $(FLATLIBS) $(SRCDIR)/riscv/efi/elf_riscv64_efi.lds $(cstart.o) %.aux.o
-+	$(LD) $(EFI_LDFLAGS) -o $@ -T $(SRCDIR)/riscv/efi/elf_riscv64_efi.lds \
-+		$(filter %.o, $^) $(FLATLIBS) $(EFI_LIBS)
++	/* Split the region with the code into two regions; code and data */
++	memregions_split((unsigned long)&_etext, &code, &data);
++	assert(code);
++	code->flags |= MR_F_CODE;
 +
-+%.efi: %.so
-+	$(call arch_elf_check, $^)
-+	$(OBJCOPY) --only-keep-debug $^ $@.debug
-+	$(OBJCOPY) --strip-debug $^
-+	$(OBJCOPY) --add-gnu-debuglink=$@.debug $^
-+	$(OBJCOPY) \
-+		-j .text -j .sdata -j .data -j .rodata -j .dynamic -j .dynsym \
-+		-j .rel -j .rela -j .rel.* -j .rela.* -j .rel* -j .rela* \
-+		-j .reloc \
-+		-O binary $^ $@
- else
- %.elf: LDFLAGS += -pie -n -z notext
- %.elf: %.o $(FLATLIBS) $(SRCDIR)/riscv/flat.lds $(cstart.o) %.aux.o
-diff --git a/riscv/cstart.S b/riscv/cstart.S
-index c935467ff6a1..10b5da5779b0 100644
---- a/riscv/cstart.S
-+++ b/riscv/cstart.S
-@@ -42,6 +42,9 @@
- 9997:
- .endm
++	freemem = memregions_find(freemem_start);
++	assert(freemem && !(freemem->flags & (MR_F_IO | MR_F_CODE)));
++
++	mem_allocator_init(freemem_start, freemem->end);
++}
++
++static void freemem_push_fdt(void **freemem, const void *fdt)
++{
++	u32 fdt_size;
++	int ret;
++
++	fdt_size = fdt_totalsize(fdt);
++	ret = fdt_move(fdt, *freemem, fdt_size);
++	assert(ret == 0);
++	ret = dt_init(*freemem);
++	assert(ret == 0);
++	*freemem += fdt_size;
++}
++
++static void freemem_push_dt_initrd(void **freemem)
++{
++	const char *tmp;
++	int ret;
++
++	ret = dt_get_initrd(&tmp, &initrd_size);
++	assert(ret == 0 || ret == -FDT_ERR_NOTFOUND);
++	if (ret == 0) {
++		initrd = *freemem;
++		memmove(initrd, tmp, initrd_size);
++		*freemem += initrd_size;
++	}
++}
++
++static void initrd_setup(void)
++{
++	char *env;
++
++	if (!initrd)
++		return;
++
++	/* environ is currently the only file in the initrd */
++	env = malloc(initrd_size);
++	memcpy(env, initrd, initrd_size);
++	setup_env(env, initrd_size);
++}
++
+ static void banner(void)
+ {
+ 	puts("\n");
+@@ -141,29 +188,14 @@ static void banner(void)
+ void setup(const void *fdt, phys_addr_t freemem_start)
+ {
+ 	void *freemem;
+-	const char *bootargs, *tmp;
+-	u32 fdt_size;
++	const char *bootargs;
+ 	int ret;
  
-+#ifdef CONFIG_EFI
-+#include "efi/crt0-efi-riscv64.S"
-+#else
- 	.section .init
+ 	assert(sizeof(long) == 8 || freemem_start < VA_BASE);
+ 	freemem = __va(freemem_start);
  
- /*
-@@ -109,6 +112,7 @@ start:
- 	call	exit
- 	j	halt
+-	/* Move the FDT to the base of free memory */
+-	fdt_size = fdt_totalsize(fdt);
+-	ret = fdt_move(fdt, freemem, fdt_size);
+-	assert(ret == 0);
+-	ret = dt_init(freemem);
+-	assert(ret == 0);
+-	freemem += fdt_size;
+-
+-	/* Move the initrd to the top of the FDT */
+-	ret = dt_get_initrd(&tmp, &initrd_size);
+-	assert(ret == 0 || ret == -FDT_ERR_NOTFOUND);
+-	if (ret == 0) {
+-		initrd = freemem;
+-		memmove(initrd, tmp, initrd_size);
+-		freemem += initrd_size;
+-	}
++	freemem_push_fdt(&freemem, fdt);
++	freemem_push_dt_initrd(&freemem);
  
-+#endif /* !CONFIG_EFI */
- 	.text
+ 	mem_init(PAGE_ALIGN(__pa(freemem)));
+ 	cpu_init();
+@@ -174,12 +206,7 @@ void setup(const void *fdt, phys_addr_t freemem_start)
+ 	assert(ret == 0 || ret == -FDT_ERR_NOTFOUND);
+ 	setup_args_progname(bootargs);
  
- .balign 4
+-	if (initrd) {
+-		/* environ is currently the only file in the initrd */
+-		char *env = malloc(initrd_size);
+-		memcpy(env, initrd, initrd_size);
+-		setup_env(env, initrd_size);
+-	}
++	initrd_setup();
+ 
+ 	if (!(auxinfo.flags & AUXINFO_MMU_OFF))
+ 		setup_vm();
 -- 
 2.43.0
 
