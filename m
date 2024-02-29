@@ -1,45 +1,43 @@
-From: cem@kernel.org <cem@kernel.org>
-Date: Thu, 29 Feb 2024 13:42:12 +0100
-Subject: [PATCH 6/6] riscv: Test for a SBI implementation ID range
+From: Andrew Jones <ajones@ventanamicro.com>
+Date: Thu, 29 Feb 2024 15:05:48 +0100
+Subject: [PATCH 0/6] Add riscv tests to cover the base extension specs
 In-Reply-To: <20240229124246.309304-1-cem@kernel.org>
 References: <20240229124246.309304-1-cem@kernel.org>
-Message-ID: <20240229124246.309304-7-cem@kernel.org>
+Message-ID: <20240229-24c619ea4927156d28f68f74@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Carlos Maiolino <cem@kernel.org>
+On Thu, Feb 29, 2024 at 01:42:06PM +0100, cem at kernel.org wrote:
+> From: Carlos Maiolino <cem@kernel.org>
+> 
+> Hi,
+> 
+> this is my first attempt to create tests to cover some functions of the riscv's
+> SBI base implementation spec. The series also includes a couple helpers to
+> reduce code duplication.
+> 
+> Carlos Maiolino (6):
+>   riscv: Add test to probe SBI Extension
+>   riscv: Factor out environment variable check
+>   riscv: Implement test for architecture ID register
+>   riscv: Enable gen_report() to print the wrong value in case of test
+>     failure
+>   riscv: Test for specific SBI implementation ID
+>   riscv: Test for a SBI implementation ID range
+> 
+>  riscv/sbi.c | 95 ++++++++++++++++++++++++++++++++++++++++++++++-------
+>  1 file changed, 83 insertions(+), 12 deletions(-)
+> 
+> -- 
+> 2.43.2
 
-This tests the SBI ID against SBI_IMPLID_MAX, so it can be used to test a SBI
-against the available IDs from a specification version.
+Hi Carlos,
 
-Signed-off-by: Carlos Maiolino <cmaiolino@redhat.com>
----
- riscv/sbi.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
+If you can, please CC tech-prs at lists.riscv.org when posting SBI tests.
 
-diff --git a/riscv/sbi.c b/riscv/sbi.c
-index 9daab9dc..37f5680c 100644
---- a/riscv/sbi.c
-+++ b/riscv/sbi.c
-@@ -64,6 +64,14 @@ static void check_base(void)
- 	}
- 	report_prefix_pop();
- 
-+	report_prefix_push("sbi_impl_id_max");
-+	if (env_is_defined("SBI_IMPLID_MAX")) {
-+		expected = strtol(getenv("SBI_IMPLID_MAX"), NULL, 0);
-+
-+		gen_report(&ret, (ret.value <= expected));
-+	}
-+	report_prefix_pop();
-+
- 	report_prefix_push("probe_ext");
- 	if (env_is_defined("PROBE_EXT")) {
- 		expected = strtol(getenv("PROBE_EXT"), NULL, 0);
--- 
-2.43.2
-
+Thanks,
+drew
 
