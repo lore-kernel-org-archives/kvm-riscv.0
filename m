@@ -1,125 +1,63 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Fri, 1 Mar 2024 09:25:21 +0100
-Subject: [PATCH 1/6] riscv: Add test to probe SBI Extension
-In-Reply-To: <20240229124246.309304-2-cem@kernel.org>
-References: <20240229124246.309304-1-cem@kernel.org>
- <20240229124246.309304-2-cem@kernel.org>
-Message-ID: <20240229-b8364d5b7f297dcd978f952d@orel>
+From: Clément Léger <cleger@rivosinc.com>
+Date: Fri, 1 Mar 2024 09:25:56 +0100
+Subject: [PATCH v4 01/15] RISC-V: Fix the typo in Scountovf CSR name
+In-Reply-To: <20240229010130.1380926-2-atishp@rivosinc.com>
+References: <20240229010130.1380926-1-atishp@rivosinc.com>
+ <20240229010130.1380926-2-atishp@rivosinc.com>
+Message-ID: <9c466c89-3788-4473-a657-1f117cd5e5ab@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Feb 29, 2024 at 01:42:07PM +0100, cem at kernel.org wrote:
-> From: Carlos Maiolino <cem@kernel.org>
+
+
+On 29/02/2024 02:01, Atish Patra wrote:
+> The counter overflow CSR name is "scountovf" not "sscountovf".
 > 
-> Factor out vendor id test to a new helper, and add a new test for probing the
-> SBI extension.
-> Compare the retrieved value against an environment variable, as the
-> implementation can return any non-zero value.
+> Fix the csr name.
 > 
-> Signed-off-by: Carlos Maiolino <cmaiolino@redhat.com>
+> Fixes: 4905ec2fb7e6 ("RISC-V: Add sscofpmf extension support")
+> Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
+> Reviewed-by: Anup Patel <anup@brainfault.org>
+> Signed-off-by: Atish Patra <atishp@rivosinc.com>
 > ---
->  riscv/sbi.c | 52 ++++++++++++++++++++++++++++++++++++++++------------
->  1 file changed, 40 insertions(+), 12 deletions(-)
+>  arch/riscv/include/asm/csr.h         | 2 +-
+>  arch/riscv/include/asm/errata_list.h | 2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
 > 
-> diff --git a/riscv/sbi.c b/riscv/sbi.c
-> index ffb07a25..9dc82ecb 100644
-> --- a/riscv/sbi.c
-> +++ b/riscv/sbi.c
-> @@ -14,28 +14,56 @@ static void help(void)
->  	puts("An environ must be provided where expected values are given.\n");
->  }
+> diff --git a/arch/riscv/include/asm/csr.h b/arch/riscv/include/asm/csr.h
+> index 510014051f5d..603e5a3c61f9 100644
+> --- a/arch/riscv/include/asm/csr.h
+> +++ b/arch/riscv/include/asm/csr.h
+> @@ -281,7 +281,7 @@
+>  #define CSR_HPMCOUNTER30H	0xc9e
+>  #define CSR_HPMCOUNTER31H	0xc9f
 >  
-> -int main(int argc, char **argv)
-> +static void check_base(void)
->  {
->  	struct sbiret ret;
->  	long expected;
+> -#define CSR_SSCOUNTOVF		0xda0
+> +#define CSR_SCOUNTOVF		0xda0
 >  
-> -	if (argc > 1 && !strcmp(argv[1], "-h")) {
-> -		help();
-> -		exit(0);
-> -	}
-> -
-> -	report_prefix_push("sbi");
-> +	report_prefix_push("base");
+>  #define CSR_SSTATUS		0x100
+>  #define CSR_SIE			0x104
+> diff --git a/arch/riscv/include/asm/errata_list.h b/arch/riscv/include/asm/errata_list.h
+> index ea33288f8a25..cd49eb025ddf 100644
+> --- a/arch/riscv/include/asm/errata_list.h
+> +++ b/arch/riscv/include/asm/errata_list.h
+> @@ -114,7 +114,7 @@ asm volatile(ALTERNATIVE(						\
 >  
->  	if (!getenv("MVENDORID")) {
->  		report_skip("mvendorid: missing MVENDORID environment variable");
-> -		goto done;
-> +		return;
+>  #define ALT_SBI_PMU_OVERFLOW(__ovl)					\
+>  asm volatile(ALTERNATIVE(						\
+> -	"csrr %0, " __stringify(CSR_SSCOUNTOVF),			\
+> +	"csrr %0, " __stringify(CSR_SCOUNTOVF),				\
+>  	"csrr %0, " __stringify(THEAD_C9XX_CSR_SCOUNTEROF),		\
+>  		THEAD_VENDOR_ID, ERRATA_THEAD_PMU,			\
+>  		CONFIG_ERRATA_THEAD_PMU)				\
 
-We don't want to bail on all SBI base tests when a single expected value
-environment variable is missing, but, looking ahead, I see the pattern
-changes with the next patch to only skip the one test, so this patch is
-fine.
 
->  	}
-> +
-> +	report_prefix_push("mvendorid");
->  	expected = strtol(getenv("MVENDORID"), NULL, 0);
->  
-> -	ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_GET_MVENDORID, 0, 0, 0, 0, 0, 0);
-> -	report(!ret.error, "mvendorid: no error");
-> -	report(ret.value == expected, "mvendorid");
-> +	ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_GET_MVENDORID,
-> +			0, 0, 0, 0, 0, 0);
-
-We use the Linux kernel's coding style (we encourage running the kernel's
-checkpatch on patches). The kernel allows 100 chars and we're even more
-tolerant of long lines in kvm-unit-tests. The zeros in sbi_ecall can be
-annoying, though, so feel free to create a wrapper for a short-hand.
-
-> +
-> +	report(!ret.error, "no sbi.error");
-> +	report(ret.value == expected, "expected sbi.value");
-> +	report_prefix_pop();
-> +
-> +	if (!getenv("PROBE_EXT")) {
-> +		report_skip("probe_ext: missing PROBE_EXT environment variable");
-> +		return;
-> +	}
-> +
-> +	report_prefix_push("probe_ext");
-> +	expected = strtol(getenv("PROBE_EXT"), NULL, 0);
-> +
-> +	ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_PROBE_EXT,
-> +			SBI_EXT_BASE, 0, 0, 0, 0, 0);
-> +
-> +	report(!ret.error, "no sbi.error");
-> +	report(ret.value == expected, "expected sbi.value");
-
-I think the expected value environment variable (PROBE_EXT) can be
-optional in this case. Most implementations will return 0 or 1,
-particularly for probing the Base extension. So, here I'd do
-
- expected = getenv("PROBE_EXT") ? strtol(getenv("PROBE_EXT"), NULL, 0) : 1; 
-
-> +	report_prefix_pop();
-> +
-> +	report_prefix_pop();
-> +}
-> +
-> +int main(int argc, char **argv)
-> +{
-> +
-> +	if (argc > 1 && !strcmp(argv[1], "-h")) {
-> +		help();
-> +		exit(0);
-> +	}
-> +
-> +	report_prefix_push("sbi");
-> +	check_base();
->  
-> -done:
->  	return report_summary();
->  }
-> -- 
-> 2.43.2
->
+Reviewed-by: Cl?ment L?ger <cleger@rivosinc.com>
 
 Thanks,
-drew
+
+Cl?ment
 
