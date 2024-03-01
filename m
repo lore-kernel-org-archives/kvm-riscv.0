@@ -1,38 +1,92 @@
 From: Chao Du <duchao@eswincomputing.com>
-Date: Fri,  1 Mar 2024 01:35:44 +0000
-Subject: [PATCH v2 2/3] RISC-V: KVM: Handle breakpoint exits for VCPU
+Date: Fri,  1 Mar 2024 01:35:45 +0000
+Subject: [PATCH v2 3/3] RISC-V: KVM: selftests: Add breakpoints test support
 In-Reply-To: <20240301013545.10403-1-duchao@eswincomputing.com>
 References: <20240301013545.10403-1-duchao@eswincomputing.com>
-Message-ID: <20240301013545.10403-3-duchao@eswincomputing.com>
+Message-ID: <20240301013545.10403-4-duchao@eswincomputing.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Exit to userspace for breakpoint traps. Set the exit_reason as
-KVM_EXIT_DEBUG before exit.
+Initial support for RISC-V KVM breakpoint test. Check the exit reason
+and the PC when guest debug is enabled.
 
 Signed-off-by: Chao Du <duchao@eswincomputing.com>
 ---
- arch/riscv/kvm/vcpu_exit.c | 4 ++++
- 1 file changed, 4 insertions(+)
+ tools/testing/selftests/kvm/Makefile          |  1 +
+ .../testing/selftests/kvm/riscv/breakpoints.c | 49 +++++++++++++++++++
+ 2 files changed, 50 insertions(+)
+ create mode 100644 tools/testing/selftests/kvm/riscv/breakpoints.c
 
-diff --git a/arch/riscv/kvm/vcpu_exit.c b/arch/riscv/kvm/vcpu_exit.c
-index 2415722c01b8..5761f95abb60 100644
---- a/arch/riscv/kvm/vcpu_exit.c
-+++ b/arch/riscv/kvm/vcpu_exit.c
-@@ -204,6 +204,10 @@ int kvm_riscv_vcpu_exit(struct kvm_vcpu *vcpu, struct kvm_run *run,
- 		if (vcpu->arch.guest_context.hstatus & HSTATUS_SPV)
- 			ret = kvm_riscv_vcpu_sbi_ecall(vcpu, run);
- 		break;
-+	case EXC_BREAKPOINT:
-+		run->exit_reason = KVM_EXIT_DEBUG;
-+		ret = 0;
-+		break;
- 	default:
- 		break;
- 	}
+diff --git a/tools/testing/selftests/kvm/Makefile b/tools/testing/selftests/kvm/Makefile
+index 492e937fab00..5f9048a740b0 100644
+--- a/tools/testing/selftests/kvm/Makefile
++++ b/tools/testing/selftests/kvm/Makefile
+@@ -184,6 +184,7 @@ TEST_GEN_PROGS_s390x += rseq_test
+ TEST_GEN_PROGS_s390x += set_memory_region_test
+ TEST_GEN_PROGS_s390x += kvm_binary_stats_test
+ 
++TEST_GEN_PROGS_riscv += riscv/breakpoints
+ TEST_GEN_PROGS_riscv += demand_paging_test
+ TEST_GEN_PROGS_riscv += dirty_log_test
+ TEST_GEN_PROGS_riscv += get-reg-list
+diff --git a/tools/testing/selftests/kvm/riscv/breakpoints.c b/tools/testing/selftests/kvm/riscv/breakpoints.c
+new file mode 100644
+index 000000000000..be2d94837c83
+--- /dev/null
++++ b/tools/testing/selftests/kvm/riscv/breakpoints.c
+@@ -0,0 +1,49 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * RISC-V KVM breakpoint tests.
++ *
++ * Copyright 2024 Beijing ESWIN Computing Technology Co., Ltd.
++ *
++ */
++#include "kvm_util.h"
++
++#define PC(v) ((uint64_t)&(v))
++
++extern unsigned char sw_bp;
++
++static void guest_code(void)
++{
++	asm volatile("sw_bp: ebreak");
++	asm volatile("nop");
++	asm volatile("nop");
++	asm volatile("nop");
++
++	GUEST_DONE();
++}
++
++int main(void)
++{
++	struct kvm_vm *vm;
++	struct kvm_vcpu *vcpu;
++	struct kvm_guest_debug debug;
++	uint64_t pc;
++
++	TEST_REQUIRE(kvm_has_cap(KVM_CAP_SET_GUEST_DEBUG));
++
++	vm = vm_create_with_one_vcpu(&vcpu, guest_code);
++
++	memset(&debug, 0, sizeof(debug));
++	debug.control = KVM_GUESTDBG_ENABLE;
++	vcpu_guest_debug_set(vcpu, &debug);
++	vcpu_run(vcpu);
++
++	TEST_ASSERT_KVM_EXIT_REASON(vcpu, KVM_EXIT_DEBUG);
++
++	vcpu_get_reg(vcpu, RISCV_CORE_REG(regs.pc), &pc);
++
++	TEST_ASSERT_EQ(pc, PC(sw_bp));
++
++	kvm_vm_free(vm);
++
++	return 0;
++}
 -- 
 2.17.1
 
