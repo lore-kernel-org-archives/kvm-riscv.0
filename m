@@ -1,100 +1,337 @@
-From: Paolo Bonzini <pbonzini@redhat.com>
-Date: Fri, 29 Jul 2022 16:14:31 +0200
-Subject: [GIT PULL] KVM/riscv changes for 5.20
-In-Reply-To: <CAAhSdy2iH-WpitweQ_nCYm6p0S5S_fmQ3x37FdAe7tEmu_np0A@mail.gmail.com>
-References: <CAAhSdy2iH-WpitweQ_nCYm6p0S5S_fmQ3x37FdAe7tEmu_np0A@mail.gmail.com>
-Message-ID: <59b295a4-9a09-12a6-cf72-d5f0d4b20d7f@redhat.com>
+From: Chao Du <duchao@eswincomputing.com>
+Date: Fri, 1 Mar 2024 16:16:33 +0800 (GMT+08:00)
+Subject: [PATCH v2 1/3] RISC-V: KVM: Implement
+ kvm_arch_vcpu_ioctl_set_guest_debug()
+In-Reply-To: <CAK9=C2Wz6ZHjsxPMkMnRBT+maE2qLuy+zi4wCRJ+1nkssCX5FA@mail.gmail.com>
+References: <20240301013545.10403-1-duchao@eswincomputing.com>
+ <20240301013545.10403-2-duchao@eswincomputing.com>
+ <CAAhSdy2+_+t4L8LHmYcJQZBGJHj6pyFm26_KwFBahFxz7eV1fQ@mail.gmail.com>
+ <1f31ec16.1447.18df8b97f73.Coremail.duchao@eswincomputing.com>
+ <CAAhSdy0x6bdm3hYk8jeRG_bF-vFXP8eOqYJ5GMY4Eb=bMNkaQw@mail.gmail.com>
+ <698f58e.1490.18df8e9084f.Coremail.duchao@eswincomputing.com>
+ <CAK9=C2Wz6ZHjsxPMkMnRBT+maE2qLuy+zi4wCRJ+1nkssCX5FA@mail.gmail.com>
+Message-ID: <1d6d446.14cc.18df9162000.Coremail.duchao@eswincomputing.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 7/29/22 14:31, Anup Patel wrote:
-> Hi Paolo,
+Thanks Anup.
+Let me try to summarize the changes in next revision:
+
+1. Use BIT().
+2. In kvm_arch_vcpu_ioctl_set_guest_debug(), do below things:
+       if (dbg->control & KVM_GUESTDBG_ENABLE) {
+               vcpu->guest_debug = dbg->control;
+       } else {
+               vcpu->guest_debug = 0;
+       }
+3. In kvm_riscv_vcpu_setup_config(), do below things:
+       cfg->hedeleg = KVM_HEDELEG_DEFAULT; // with BIT(EXC_BREAKPOINT)
+       if (vcpu->guest_debug)
+               cfg->hedeleg &= ~BIT(EXC_BREAKPOINT);
+
+Will prepare a PATCH v3 accordingly.
+
+Regards,
+Chao
+
+On 2024-03-01 16:11, Anup Patel <apatel@ventanamicro.com> wrote:
 > 
-> We have following KVM RISC-V changes for 5.20:
-> 1) Track ISA extensions used by Guest using bitmap
-> 2) Added system instruction emulation framework
-> 3) Added CSR emulation framework
-> 4) Added gfp_custom flag in struct kvm_mmu_memory_cache
-> 5) Added G-stage ioremap() and iounmap() functions
-> 6) Added support for Svpbmt inside Guest
+> On Fri, Mar 1, 2024 at 12:57?PM Chao Du <duchao@eswincomputing.com> wrote:
+> >
+> > On 2024-03-01 15:29, Anup Patel <anup@brainfault.org> wrote:
+> > >
+> > > On Fri, Mar 1, 2024 at 12:05?PM Chao Du <duchao@eswincomputing.com> wrote:
+> > > >
+> > > > On 2024-03-01 13:00, Anup Patel <anup@brainfault.org> wrote:
+> > > > >
+> > > > > On Fri, Mar 1, 2024 at 7:08?AM Chao Du <duchao@eswincomputing.com> wrote:
+> > > > > >
+> > > > > > kvm_vm_ioctl_check_extension(): Return 1 if KVM_CAP_SET_GUEST_DEBUG is
+> > > > > > been checked.
+> > > > > >
+> > > > > > kvm_arch_vcpu_ioctl_set_guest_debug(): Update the guest_debug flags
+> > > > > > from userspace accordingly. Route the breakpoint exceptions to HS mode
+> > > > > > if the VCPU is being debugged by userspace, by clearing the
+> > > > > > corresponding bit in hedeleg. Write the actual CSR in
+> > > > > > kvm_arch_vcpu_load().
+> > > > > >
+> > > > > > Signed-off-by: Chao Du <duchao@eswincomputing.com>
+> > > > > > ---
+> > > > > >  arch/riscv/include/asm/kvm_host.h | 17 +++++++++++++++++
+> > > > > >  arch/riscv/include/uapi/asm/kvm.h |  1 +
+> > > > > >  arch/riscv/kvm/main.c             | 18 ++----------------
+> > > > > >  arch/riscv/kvm/vcpu.c             | 15 +++++++++++++--
+> > > > > >  arch/riscv/kvm/vm.c               |  1 +
+> > > > > >  5 files changed, 34 insertions(+), 18 deletions(-)
+> > > > > >
+> > > > > > diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
+> > > > > > index 484d04a92fa6..9ee3f03ba5d1 100644
+> > > > > > --- a/arch/riscv/include/asm/kvm_host.h
+> > > > > > +++ b/arch/riscv/include/asm/kvm_host.h
+> > > > > > @@ -43,6 +43,22 @@
+> > > > > >         KVM_ARCH_REQ_FLAGS(5, KVM_REQUEST_WAIT | KVM_REQUEST_NO_WAKEUP)
+> > > > > >  #define KVM_REQ_STEAL_UPDATE           KVM_ARCH_REQ(6)
+> > > > > >
+> > > > > > +#define KVM_HEDELEG_DEFAULT            ((_AC(1, UL) << EXC_INST_MISALIGNED) | \
+> > > > > > +                                        (_AC(1, UL) << EXC_BREAKPOINT) | \
+> > > > > > +                                        (_AC(1, UL) << EXC_SYSCALL) | \
+> > > > > > +                                        (_AC(1, UL) << EXC_INST_PAGE_FAULT) | \
+> > > > > > +                                        (_AC(1, UL) << EXC_LOAD_PAGE_FAULT) | \
+> > > > > > +                                        (_AC(1, UL) << EXC_STORE_PAGE_FAULT))
+> > > > >
+> > > > > Use BIT(xyz) here. For example: BIT(EXC_INST_MISALIGNED)
+> > > >
+> > > > Thanks, I will use BIT() instead in next revision.
+> > > >
+> > > > >
+> > > >
+> > > > > Also, BIT(EXC_BREAKPOINT) should not be part of KVM_HEDELEG_DEFAULT.
+> > > >
+> > > > I think the bit EXC_BREAKPOINT should be set by default, like what you
+> > > > already did in kvm_arch_hardware_enable(). Then the VS could get the ebreak
+> > > > and handle it accordingly.
+> > > >
+> > > > If the guest_debug is enabled, ebreak instructions are inserted by the
+> > > > userspace(QEMU). So KVM should 'intercept' the ebreak and exit to QEMU.
+> > > > Bit EXC_BREAKPOINT should be cleared in this case.
+> > >
+> > > If EXC_BREAKPOINT is delegated by default then it is not consistent with
+> > > vcpu->guest_debug which is not enabled by default.
+> >
+> > To enable the guest_debug corresponding to NOT delegate the EXC_BREAKPOINT.
+> > They are somehow 'opposite'.
+> >
+> > This 'kvm_guest_debug' feature is different from "debug in the guest".
+> > The later requires the delegation of EXC_BREAKPOINT.
+> > The former does not.
 > 
-> Please pull.
+> In which case your below code is totally misleading.
+> 
+> +       if (dbg->control & KVM_GUESTDBG_ENABLE) {
+> +               vcpu->guest_debug = dbg->control;
+> +               vcpu->arch.cfg.hedeleg = KVM_HEDELEG_GUEST_DEBUG;
+> +       } else {
+> +               vcpu->guest_debug = 0;
+> +               vcpu->arch.cfg.hedeleg = KVM_HEDELEG_DEFAULT;
+> +       }
+> 
+> This should have been:
+> 
+> +       if (dbg->control & KVM_GUESTDBG_ENABLE) {
+> +               vcpu->guest_debug = dbg->control;
+> +               vcpu->arch.cfg.hedeleg &= ~BIT(EXC_BREAKPOINT);
+> +       } else {
+> +               vcpu->guest_debug = 0;
+> +               vcpu->arch.cfg.hedeleg |= BIT(EXC_BREAKPOINT);
+> +       }
+> 
+> >
+> > >
+> > > >
+> > > > >
+> > > > > > +#define KVM_HEDELEG_GUEST_DEBUG                ((_AC(1, UL) << EXC_INST_MISALIGNED) | \
+> > > > > > +                                        (_AC(1, UL) << EXC_SYSCALL) | \
+> > > > > > +                                        (_AC(1, UL) << EXC_INST_PAGE_FAULT) | \
+> > > > > > +                                        (_AC(1, UL) << EXC_LOAD_PAGE_FAULT) | \
+> > > > > > +                                        (_AC(1, UL) << EXC_STORE_PAGE_FAULT))
+> > > > >
+> > > > > No need for KVM_HEDELEG_GUEST_DEBUG, see below.
+> > > > >
+> > > > > > +
+> > > > > > +#define KVM_HIDELEG_DEFAULT            ((_AC(1, UL) << IRQ_VS_SOFT) | \
+> > > > > > +                                        (_AC(1, UL) << IRQ_VS_TIMER) | \
+> > > > > > +                                        (_AC(1, UL) << IRQ_VS_EXT))
+> > > > > > +
+> > > > >
+> > > > > Same as above, use BIT(xyz) here.
+> > > > >
+> > > > > >  enum kvm_riscv_hfence_type {
+> > > > > >         KVM_RISCV_HFENCE_UNKNOWN = 0,
+> > > > > >         KVM_RISCV_HFENCE_GVMA_VMID_GPA,
+> > > > > > @@ -169,6 +185,7 @@ struct kvm_vcpu_csr {
+> > > > > >  struct kvm_vcpu_config {
+> > > > > >         u64 henvcfg;
+> > > > > >         u64 hstateen0;
+> > > > > > +       unsigned long hedeleg;
+> > > > > >  };
+> > > > > >
+> > > > > >  struct kvm_vcpu_smstateen_csr {
+> > > > > > diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
+> > > > > > index 7499e88a947c..39f4f4b9dede 100644
+> > > > > > --- a/arch/riscv/include/uapi/asm/kvm.h
+> > > > > > +++ b/arch/riscv/include/uapi/asm/kvm.h
+> > > > > > @@ -17,6 +17,7 @@
+> > > > > >
+> > > > > >  #define __KVM_HAVE_IRQ_LINE
+> > > > > >  #define __KVM_HAVE_READONLY_MEM
+> > > > > > +#define __KVM_HAVE_GUEST_DEBUG
+> > > > > >
+> > > > > >  #define KVM_COALESCED_MMIO_PAGE_OFFSET 1
+> > > > > >
+> > > > > > diff --git a/arch/riscv/kvm/main.c b/arch/riscv/kvm/main.c
+> > > > > > index 225a435d9c9a..bab2ec34cd87 100644
+> > > > > > --- a/arch/riscv/kvm/main.c
+> > > > > > +++ b/arch/riscv/kvm/main.c
+> > > > > > @@ -22,22 +22,8 @@ long kvm_arch_dev_ioctl(struct file *filp,
+> > > > > >
+> > > > > >  int kvm_arch_hardware_enable(void)
+> > > > > >  {
+> > > > > > -       unsigned long hideleg, hedeleg;
+> > > > > > -
+> > > > > > -       hedeleg = 0;
+> > > > > > -       hedeleg |= (1UL << EXC_INST_MISALIGNED);
+> > > > > > -       hedeleg |= (1UL << EXC_BREAKPOINT);
+> > > > > > -       hedeleg |= (1UL << EXC_SYSCALL);
+> > > > > > -       hedeleg |= (1UL << EXC_INST_PAGE_FAULT);
+> > > > > > -       hedeleg |= (1UL << EXC_LOAD_PAGE_FAULT);
+> > > > > > -       hedeleg |= (1UL << EXC_STORE_PAGE_FAULT);
+> > > > > > -       csr_write(CSR_HEDELEG, hedeleg);
+> > > > > > -
+> > > > > > -       hideleg = 0;
+> > > > > > -       hideleg |= (1UL << IRQ_VS_SOFT);
+> > > > > > -       hideleg |= (1UL << IRQ_VS_TIMER);
+> > > > > > -       hideleg |= (1UL << IRQ_VS_EXT);
+> > > > > > -       csr_write(CSR_HIDELEG, hideleg);
+> > > > > > +       csr_write(CSR_HEDELEG, KVM_HEDELEG_DEFAULT);
+> > > > > > +       csr_write(CSR_HIDELEG, KVM_HIDELEG_DEFAULT);
+> > > > > >
+> > > > > >         /* VS should access only the time counter directly. Everything else should trap */
+> > > > > >         csr_write(CSR_HCOUNTEREN, 0x02);
+> > > > > > diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+> > > > > > index b5ca9f2e98ac..242076c2227f 100644
+> > > > > > --- a/arch/riscv/kvm/vcpu.c
+> > > > > > +++ b/arch/riscv/kvm/vcpu.c
+> > > > > > @@ -475,8 +475,15 @@ int kvm_arch_vcpu_ioctl_set_mpstate(struct kvm_vcpu *vcpu,
+> > > > > >  int kvm_arch_vcpu_ioctl_set_guest_debug(struct kvm_vcpu *vcpu,
+> > > > > >                                         struct kvm_guest_debug *dbg)
+> > > > > >  {
+> > > > > > -       /* TODO; To be implemented later. */
+> > > > > > -       return -EINVAL;
+> > > > >
+> > > > > if (vcpu->arch.ran_atleast_once)
+> > > > >         return -EBUSY;
+> > > >
+> > > > If we enabled the guest_debug in QEMU side, then the KVM_SET_GUEST_DEBUG ioctl
+> > > > will come before the first KVM_RUN. This will always cause an ERROR.
+> > >
+> > > The check ensures that KVM user space can only enable/disable
+> > > guest debug before the VCPU is run. I don't see why this would
+> > > fail for QEMU.
+> >
+> > In the current implementation of GDB and QEMU, the userspace will enable/disable
+> > guest_debug frequently during the debugging (almost every step).
+> > The sequence should like:
+> >
+> > KVM_SET_GUEST_DEBUG enable
+> > KVM_RUN
+> > KVM_SET_GUEST_DEBUG disable
+> > KVM_SET_GUEST_DEBUG enable
+> > KVM_RUN
+> > KVM_SET_GUEST_DEBUG disable
+> > KVM_SET_GUEST_DEBUG enable
+> > KVM_RUN
+> > KVM_SET_GUEST_DEBUG disable
+> > ...
+> 
+> Fair enough, no need to check "ran_atleast_once"
+> 
+> >
+> > >
+> > > >
+> > > > >
+> > > > >
+> > > > > > +       if (dbg->control & KVM_GUESTDBG_ENABLE) {
+> > > > > > +               vcpu->guest_debug = dbg->control;
+> > > > > > +               vcpu->arch.cfg.hedeleg = KVM_HEDELEG_GUEST_DEBUG;
+> > > > > > +       } else {
+> > > > > > +               vcpu->guest_debug = 0;
+> > > > > > +               vcpu->arch.cfg.hedeleg = KVM_HEDELEG_DEFAULT;
+> > > > > > +       }
+> > > > >
+> > > > > Don't update vcpu->arch.cfg.hedeleg here since it should be only done
+> > > > > in kvm_riscv_vcpu_setup_config().
+> > > > >
+> > > > > > +
+> > > > > > +       return 0;
+> > > > > >  }
+> > > > > >
+> > > > > >  static void kvm_riscv_vcpu_setup_config(struct kvm_vcpu *vcpu)
+> > > > > > @@ -505,6 +512,9 @@ static void kvm_riscv_vcpu_setup_config(struct kvm_vcpu *vcpu)
+> > > > > >                 if (riscv_isa_extension_available(isa, SMSTATEEN))
+> > > > > >                         cfg->hstateen0 |= SMSTATEEN0_SSTATEEN0;
+> > > > > >         }
+> > > > > > +
+> > > > > > +       if (!vcpu->guest_debug)
+> > > > > > +               cfg->hedeleg = KVM_HEDELEG_DEFAULT;
+> > > > >
+> > > > > This should be:
+> > > > >
+> > > > > cfg->hedeleg = KVM_HEDELEG_DEFAULT;
+> > > > > if (vcpu->guest_debug)
+> > > > >         cfg->hedeleg |= BIT(EXC_BREAKPOINT);
+> > > >
+> > > > Like above, here the logic should be:
+> > > >
+> > > > cfg->hedeleg = KVM_HEDELEG_DEFAULT; // with BIT(EXC_BREAKPOINT)
+> > > > if (vcpu->guest_debug)
+> > > >         cfg->hedeleg &= ~BIT(EXC_BREAKPOINT);
+> > > >
+> > > > Another approach is:
+> > > > initialize the cfg->hedeleg as KVM_HEDELEG_DEFAULT during kvm_arch_vcpu_create().
+> > > > Besides that, only update the cfg->hedeleg in kvm_arch_vcpu_ioctl_set_guest_debug().
+> > >
+> > > I disagree. We should handle hedeleg just like we handle henvcfg.
+> >
+> > OK, let's only update the cfg->hedeleg in kvm_riscv_vcpu_setup_config().
+> >
+> > >
+> > > >
+> > > > >
+> > > > > >  }
+> > > > > >
+> > > > > >  void kvm_arch_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
+> > > > > > @@ -519,6 +529,7 @@ void kvm_arch_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
+> > > > > >         csr_write(CSR_VSEPC, csr->vsepc);
+> > > > > >         csr_write(CSR_VSCAUSE, csr->vscause);
+> > > > > >         csr_write(CSR_VSTVAL, csr->vstval);
+> > > > > > +       csr_write(CSR_HEDELEG, cfg->hedeleg);
+> > > > > >         csr_write(CSR_HVIP, csr->hvip);
+> > > > > >         csr_write(CSR_VSATP, csr->vsatp);
+> > > > > >         csr_write(CSR_HENVCFG, cfg->henvcfg);
+> > > > > > diff --git a/arch/riscv/kvm/vm.c b/arch/riscv/kvm/vm.c
+> > > > > > index ce58bc48e5b8..7396b8654f45 100644
+> > > > > > --- a/arch/riscv/kvm/vm.c
+> > > > > > +++ b/arch/riscv/kvm/vm.c
+> > > > > > @@ -186,6 +186,7 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
+> > > > > >         case KVM_CAP_READONLY_MEM:
+> > > > > >         case KVM_CAP_MP_STATE:
+> > > > > >         case KVM_CAP_IMMEDIATE_EXIT:
+> > > > > > +       case KVM_CAP_SET_GUEST_DEBUG:
+> > > > > >                 r = 1;
+> > > > > >                 break;
+> > > > > >         case KVM_CAP_NR_VCPUS:
+> > > > > > --
+> > > > > > 2.17.1
+> > > > > >
+> > > > >
+> > > > > Regards,
+> > > > > Anup
+> > > >
+> > > > Thanks,
+> > > > Chao
+> > >
+> > > Regards,
+> > > Anup
+> >
+> > Thanks,
+> > Chao
+> > --
+> > kvm-riscv mailing list
+> > kvm-riscv at lists.infradead.org
+> > http://lists.infradead.org/mailman/listinfo/kvm-riscv
 > 
 > Regards,
 > Anup
-> 
-> The following changes since commit e0dccc3b76fb35bb257b4118367a883073d7390e:
-> 
->    Linux 5.19-rc8 (2022-07-24 13:26:27 -0700)
-> 
-> are available in the Git repository at:
-> 
->    https://github.com/kvm-riscv/linux.git tags/kvm-riscv-5.20-1
-> 
-> for you to fetch changes up to 6bb2e00ea304ffc0446f345c46fe22713ce43cbf:
-> 
->    RISC-V: KVM: Add support for Svpbmt inside Guest/VM (2022-07-29
-> 17:15:18 +0530)
-> 
-> ----------------------------------------------------------------
-> KVM/riscv changes for 5.20
-> 
-> - Track ISA extensions used by Guest using bitmap
-> - Added system instruction emulation framework
-> - Added CSR emulation framework
-> - Added gfp_custom flag in struct kvm_mmu_memory_cache
-> - Added G-stage ioremap() and iounmap() functions
-> - Added support for Svpbmt inside Guest
-> 
-> ----------------------------------------------------------------
-> Anup Patel (7):
->        RISC-V: KVM: Factor-out instruction emulation into separate sources
->        RISC-V: KVM: Add extensible system instruction emulation framework
->        RISC-V: KVM: Add extensible CSR emulation framework
->        KVM: Add gfp_custom flag in struct kvm_mmu_memory_cache
->        RISC-V: KVM: Add G-stage ioremap() and iounmap() functions
->        RISC-V: KVM: Use PAGE_KERNEL_IO in kvm_riscv_gstage_ioremap()
->        RISC-V: KVM: Add support for Svpbmt inside Guest/VM
-> 
-> Atish Patra (1):
->        RISC-V: KVM: Improve ISA extension by using a bitmap
-> 
-> Nikolay Borisov (2):
->        RISC-V: KVM: Make kvm_riscv_guest_timer_init a void function
->        RISC-V: KVM: move preempt_disable() call in kvm_arch_vcpu_ioctl_run
-> 
-> Zhang Jiaming (1):
->        RISC-V: KVM: Fix variable spelling mistake
-> 
->   arch/riscv/include/asm/csr.h            |  16 +
->   arch/riscv/include/asm/kvm_host.h       |  24 +-
->   arch/riscv/include/asm/kvm_vcpu_fp.h    |   8 +-
->   arch/riscv/include/asm/kvm_vcpu_insn.h  |  48 ++
->   arch/riscv/include/asm/kvm_vcpu_timer.h |   2 +-
->   arch/riscv/include/uapi/asm/kvm.h       |   1 +
->   arch/riscv/kvm/Makefile                 |   1 +
->   arch/riscv/kvm/mmu.c                    |  28 +-
->   arch/riscv/kvm/vcpu.c                   | 203 ++++++---
->   arch/riscv/kvm/vcpu_exit.c              | 496 +--------------------
->   arch/riscv/kvm/vcpu_fp.c                |  27 +-
->   arch/riscv/kvm/vcpu_insn.c              | 752 ++++++++++++++++++++++++++++++++
->   arch/riscv/kvm/vcpu_timer.c             |   4 +-
->   arch/riscv/kvm/vm.c                     |   4 +-
->   include/linux/kvm_types.h               |   1 +
->   include/uapi/linux/kvm.h                |   8 +
->   virt/kvm/kvm_main.c                     |   4 +-
->   17 files changed, 1028 insertions(+), 599 deletions(-)
->   create mode 100644 arch/riscv/include/asm/kvm_vcpu_insn.h
->   create mode 100644 arch/riscv/kvm/vcpu_insn.c
-> 
-
-Pulled, thanks.  Because it's Friday and the pull brought in all the new 
-x86 RETbleed stuff, it may be a couple days before I finish retesting 
-and do push it out to kvm.git.
-
-Paolo
-
-
