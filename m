@@ -1,112 +1,60 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Fri, 1 Mar 2024 09:28:58 +0100
-Subject: [PATCH 2/6] riscv: Factor out environment variable check
-In-Reply-To: <20240229124246.309304-3-cem@kernel.org>
+Date: Fri, 1 Mar 2024 09:31:30 +0100
+Subject: [PATCH 3/6] riscv: Implement test for architecture ID register
+In-Reply-To: <20240229124246.309304-4-cem@kernel.org>
 References: <20240229124246.309304-1-cem@kernel.org>
- <20240229124246.309304-3-cem@kernel.org>
-Message-ID: <20240301-69d98d6c8972be7aef0bdcf1@orel>
+ <20240229124246.309304-4-cem@kernel.org>
+Message-ID: <20240301-cbf4c2670c3672af28883744@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Feb 29, 2024 at 01:42:08PM +0100, cem at kernel.org wrote:
+On Thu, Feb 29, 2024 at 01:42:09PM +0100, cem at kernel.org wrote:
 > From: Carlos Maiolino <cem@kernel.org>
 > 
-> Environment variables are checked all the time, so use a helper for that
+> Probe the MARCHID register and compare it to the specified MARCHID environment
+> variable
+
+Please keep commit message lines to around 70 chars long (same comment
+applies to other patches as well)
+
 > 
 > Signed-off-by: Carlos Maiolino <cmaiolino@redhat.com>
 > ---
->  riscv/sbi.c | 49 +++++++++++++++++++++++++++++--------------------
->  1 file changed, 29 insertions(+), 20 deletions(-)
+>  riscv/sbi.c | 11 +++++++++++
+>  1 file changed, 11 insertions(+)
 > 
 > diff --git a/riscv/sbi.c b/riscv/sbi.c
-> index 9dc82ecb..636f907a 100644
+> index 636f907a..fa28d7c8 100644
 > --- a/riscv/sbi.c
 > +++ b/riscv/sbi.c
-> @@ -14,6 +14,23 @@ static void help(void)
->  	puts("An environ must be provided where expected values are given.\n");
->  }
->  
-> +static bool env_is_defined(const char *env)
-
-The function name doesn't imply anything about the report_skip side
-effect, which is actually the important part of the function. Maybe
-name it something like env_or_skip()?
-
-> +{
-> +
-> +	if (!getenv(env)) {
-> +		report_skip("missing %s environment variable", env);
-> +		return false;
-> +	}
-> +
-> +	return true;
-> +}
-> +
-> +static void gen_report(struct sbiret *ret, long expected)
-> +{
-> +	report(!ret->error, "no sbi.error");
-> +	report(ret->value == expected, "expected sbi.value");
-> +}
-
-This refactoring isn't called out in the commit message.
-
-> +
->  static void check_base(void)
->  {
->  	struct sbiret ret;
-> @@ -21,34 +38,26 @@ static void check_base(void)
->  
->  	report_prefix_push("base");
->  
-> -	if (!getenv("MVENDORID")) {
-> -		report_skip("mvendorid: missing MVENDORID environment variable");
-> -		return;
-> -	}
-> -
->  	report_prefix_push("mvendorid");
-> -	expected = strtol(getenv("MVENDORID"), NULL, 0);
-> +	if (env_is_defined("MVENDORID")) {
-> +		expected = strtol(getenv("MVENDORID"), NULL, 0);
->  
-> -	ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_GET_MVENDORID,
-> -			0, 0, 0, 0, 0, 0);
-> +		ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_GET_MVENDORID,
-> +				0, 0, 0, 0, 0, 0);
->  
-> -	report(!ret.error, "no sbi.error");
-> -	report(ret.value == expected, "expected sbi.value");
-> -	report_prefix_pop();
-> -
-> -	if (!getenv("PROBE_EXT")) {
-> -		report_skip("probe_ext: missing PROBE_EXT environment variable");
-> -		return;
-> +		gen_report(&ret, expected);
+> @@ -60,6 +60,17 @@ static void check_base(void)
 >  	}
-> +	report_prefix_pop();
+>  	report_prefix_pop();
 >  
->  	report_prefix_push("probe_ext");
-> -	expected = strtol(getenv("PROBE_EXT"), NULL, 0);
-> +	if (env_is_defined("PROBE_EXT")) {
-> +		expected = strtol(getenv("PROBE_EXT"), NULL, 0);
->  
-> -	ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_PROBE_EXT,
-> -			SBI_EXT_BASE, 0, 0, 0, 0, 0);
+> +	report_prefix_push("marchid");
+> +	if (env_is_defined("MARCHID")) {
+> +		expected = strtol(getenv("MARCHID"), NULL, 0);
+> +
 > +		ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_PROBE_EXT,
-> +				SBI_EXT_BASE, 0, 0, 0, 0, 0);
->  
-> -	report(!ret.error, "no sbi.error");
-> -	report(ret.value == expected, "expected sbi.value");
+> +				SBI_EXT_BASE_GET_MARCHID, 0, 0, 0, 0, 0);
+> +
 > +		gen_report(&ret, expected);
+
+nit: no need for the two blank lines
+
 > +	}
+> +	report_prefix_pop();
+> +
 >  	report_prefix_pop();
->  
->  	report_prefix_pop();
-> -- 
-> 2.43.2
->
+>  }
+
+With the rename of env_is_defined to include 'skip' somehow, then I like
+the looks of this pattern.
+
+Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
 
 Thanks,
 drew
