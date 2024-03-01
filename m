@@ -1,47 +1,113 @@
-From: Clément Léger <cleger@rivosinc.com>
-Date: Fri, 1 Mar 2024 09:27:30 +0100
-Subject: [PATCH v4 02/15] RISC-V: Add FIRMWARE_READ_HI definition
-In-Reply-To: <20240229010130.1380926-3-atishp@rivosinc.com>
-References: <20240229010130.1380926-1-atishp@rivosinc.com>
- <20240229010130.1380926-3-atishp@rivosinc.com>
-Message-ID: <8e3003f0-ec27-47d4-9b1f-89de2afbb8b8@rivosinc.com>
+From: Andrew Jones <ajones@ventanamicro.com>
+Date: Fri, 1 Mar 2024 09:28:58 +0100
+Subject: [PATCH 2/6] riscv: Factor out environment variable check
+In-Reply-To: <20240229124246.309304-3-cem@kernel.org>
+References: <20240229124246.309304-1-cem@kernel.org>
+ <20240229124246.309304-3-cem@kernel.org>
+Message-ID: <20240301-69d98d6c8972be7aef0bdcf1@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-
-
-On 29/02/2024 02:01, Atish Patra wrote:
-> SBI v2.0 added another function to SBI PMU extension to read
-> the upper bits of a counter with width larger than XLEN.
+On Thu, Feb 29, 2024 at 01:42:08PM +0100, cem at kernel.org wrote:
+> From: Carlos Maiolino <cem@kernel.org>
 > 
-> Add the definition for that function.
+> Environment variables are checked all the time, so use a helper for that
 > 
-> Acked-by: Conor Dooley <conor.dooley@microchip.com>
-> Reviewed-by: Anup Patel <anup@brainfault.org>
-> Signed-off-by: Atish Patra <atishp@rivosinc.com>
+> Signed-off-by: Carlos Maiolino <cmaiolino@redhat.com>
 > ---
->  arch/riscv/include/asm/sbi.h | 1 +
->  1 file changed, 1 insertion(+)
+>  riscv/sbi.c | 49 +++++++++++++++++++++++++++++--------------------
+>  1 file changed, 29 insertions(+), 20 deletions(-)
 > 
-> diff --git a/arch/riscv/include/asm/sbi.h b/arch/riscv/include/asm/sbi.h
-> index 6e68f8dff76b..ef8311dafb91 100644
-> --- a/arch/riscv/include/asm/sbi.h
-> +++ b/arch/riscv/include/asm/sbi.h
-> @@ -131,6 +131,7 @@ enum sbi_ext_pmu_fid {
->  	SBI_EXT_PMU_COUNTER_START,
->  	SBI_EXT_PMU_COUNTER_STOP,
->  	SBI_EXT_PMU_COUNTER_FW_READ,
-> +	SBI_EXT_PMU_COUNTER_FW_READ_HI,
->  };
+> diff --git a/riscv/sbi.c b/riscv/sbi.c
+> index 9dc82ecb..636f907a 100644
+> --- a/riscv/sbi.c
+> +++ b/riscv/sbi.c
+> @@ -14,6 +14,23 @@ static void help(void)
+>  	puts("An environ must be provided where expected values are given.\n");
+>  }
 >  
->  union sbi_pmu_ctr_info {
+> +static bool env_is_defined(const char *env)
 
-Reviewed-by: Cl?ment L?ger <cleger@rivosinc.com>
+The function name doesn't imply anything about the report_skip side
+effect, which is actually the important part of the function. Maybe
+name it something like env_or_skip()?
+
+> +{
+> +
+> +	if (!getenv(env)) {
+> +		report_skip("missing %s environment variable", env);
+> +		return false;
+> +	}
+> +
+> +	return true;
+> +}
+> +
+> +static void gen_report(struct sbiret *ret, long expected)
+> +{
+> +	report(!ret->error, "no sbi.error");
+> +	report(ret->value == expected, "expected sbi.value");
+> +}
+
+This refactoring isn't called out in the commit message.
+
+> +
+>  static void check_base(void)
+>  {
+>  	struct sbiret ret;
+> @@ -21,34 +38,26 @@ static void check_base(void)
+>  
+>  	report_prefix_push("base");
+>  
+> -	if (!getenv("MVENDORID")) {
+> -		report_skip("mvendorid: missing MVENDORID environment variable");
+> -		return;
+> -	}
+> -
+>  	report_prefix_push("mvendorid");
+> -	expected = strtol(getenv("MVENDORID"), NULL, 0);
+> +	if (env_is_defined("MVENDORID")) {
+> +		expected = strtol(getenv("MVENDORID"), NULL, 0);
+>  
+> -	ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_GET_MVENDORID,
+> -			0, 0, 0, 0, 0, 0);
+> +		ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_GET_MVENDORID,
+> +				0, 0, 0, 0, 0, 0);
+>  
+> -	report(!ret.error, "no sbi.error");
+> -	report(ret.value == expected, "expected sbi.value");
+> -	report_prefix_pop();
+> -
+> -	if (!getenv("PROBE_EXT")) {
+> -		report_skip("probe_ext: missing PROBE_EXT environment variable");
+> -		return;
+> +		gen_report(&ret, expected);
+>  	}
+> +	report_prefix_pop();
+>  
+>  	report_prefix_push("probe_ext");
+> -	expected = strtol(getenv("PROBE_EXT"), NULL, 0);
+> +	if (env_is_defined("PROBE_EXT")) {
+> +		expected = strtol(getenv("PROBE_EXT"), NULL, 0);
+>  
+> -	ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_PROBE_EXT,
+> -			SBI_EXT_BASE, 0, 0, 0, 0, 0);
+> +		ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_PROBE_EXT,
+> +				SBI_EXT_BASE, 0, 0, 0, 0, 0);
+>  
+> -	report(!ret.error, "no sbi.error");
+> -	report(ret.value == expected, "expected sbi.value");
+> +		gen_report(&ret, expected);
+> +	}
+>  	report_prefix_pop();
+>  
+>  	report_prefix_pop();
+> -- 
+> 2.43.2
+>
 
 Thanks,
-
-Cl?ment
+drew
 
