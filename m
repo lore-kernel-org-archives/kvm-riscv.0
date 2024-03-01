@@ -1,61 +1,75 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Fri, 1 Mar 2024 09:31:30 +0100
-Subject: [PATCH 3/6] riscv: Implement test for architecture ID register
-In-Reply-To: <20240229124246.309304-4-cem@kernel.org>
+Date: Fri, 1 Mar 2024 09:43:08 +0100
+Subject: [PATCH 4/6] riscv: Enable gen_report() to print the wrong value
+ in case of test failure
+In-Reply-To: <20240229124246.309304-5-cem@kernel.org>
 References: <20240229124246.309304-1-cem@kernel.org>
- <20240229124246.309304-4-cem@kernel.org>
-Message-ID: <20240301-cbf4c2670c3672af28883744@orel>
+ <20240229124246.309304-5-cem@kernel.org>
+Message-ID: <20240301-6bcfc030d90fa055b8192386@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Feb 29, 2024 at 01:42:09PM +0100, cem at kernel.org wrote:
+On Thu, Feb 29, 2024 at 01:42:10PM +0100, cem at kernel.org wrote:
 > From: Carlos Maiolino <cem@kernel.org>
 > 
-> Probe the MARCHID register and compare it to the specified MARCHID environment
-> variable
-
-Please keep commit message lines to around 70 chars long (same comment
-applies to other patches as well)
-
+> If the test fails because the expected value doesn't match, it's useful to know
+> what value was actually printed.
 > 
 > Signed-off-by: Carlos Maiolino <cmaiolino@redhat.com>
 > ---
->  riscv/sbi.c | 11 +++++++++++
->  1 file changed, 11 insertions(+)
+>  riscv/sbi.c | 7 ++++++-
+>  1 file changed, 6 insertions(+), 1 deletion(-)
 > 
 > diff --git a/riscv/sbi.c b/riscv/sbi.c
-> index 636f907a..fa28d7c8 100644
+> index fa28d7c8..8ad8f375 100644
 > --- a/riscv/sbi.c
 > +++ b/riscv/sbi.c
-> @@ -60,6 +60,17 @@ static void check_base(void)
->  	}
->  	report_prefix_pop();
->  
-> +	report_prefix_push("marchid");
-> +	if (env_is_defined("MARCHID")) {
-> +		expected = strtol(getenv("MARCHID"), NULL, 0);
+> @@ -28,7 +28,12 @@ static bool env_is_defined(const char *env)
+>  static void gen_report(struct sbiret *ret, long expected)
+>  {
+>  	report(!ret->error, "no sbi.error");
+> -	report(ret->value == expected, "expected sbi.value");
 > +
-> +		ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_PROBE_EXT,
-> +				SBI_EXT_BASE_GET_MARCHID, 0, 0, 0, 0, 0);
-> +
-> +		gen_report(&ret, expected);
+> +	if (ret->value == expected)
+> +		report(true, "expected sbi.value");
+> +	else
+> +		report(false, "expected sbi.value: %ld - Got: %ld",
+> +		       expected, ret->value);
 
-nit: no need for the two blank lines
+We want to keep the output line consistent for both pass and fail
+in order to simplify parsing. But, since the expected value is
+variable, depending on the SBI implementation under test, it's
+probably best not to put the numbers in the pass/fail line, but as
+info. So how about
 
-> +	}
-> +	report_prefix_pop();
-> +
->  	report_prefix_pop();
->  }
+ static void gen_report(struct sbiret *ret,
+                        long expected_error, long expected_value)
+ {
+     report_info("expected (error: %ld, value: %ld), received: (error: %ld, value: %ld)",
+                 expected_error, expected_value, ret->error, ret->value);
+     report(ret->error == expected_error, "expected sbi.error");
+     report(ret->value == expected_value, "expected sbi.value");
+ }
 
-With the rename of env_is_defined to include 'skip' somehow, then I like
-the looks of this pattern.
-
-Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+I've changed this function to take the error as input because negative
+tests (which we should also have) will be looking for specific errors.
 
 Thanks,
 drew
+
+
+>  }
+>  
+>  static void check_base(void)
+> -- 
+> 2.43.2
+> 
+> 
+> -- 
+> kvm-riscv mailing list
+> kvm-riscv at lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/kvm-riscv
 
