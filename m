@@ -1,59 +1,116 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Sat, 2 Mar 2024 08:47:33 +0100
-Subject: [PATCH v4 06/15] RISC-V: KVM: No need to update the counter
- value during reset
-In-Reply-To: <20240229010130.1380926-7-atishp@rivosinc.com>
+Date: Sat, 2 Mar 2024 09:15:55 +0100
+Subject: [PATCH v4 07/15] RISC-V: KVM: No need to exit to the user space
+ if perf event failed
+In-Reply-To: <20240229010130.1380926-8-atishp@rivosinc.com>
 References: <20240229010130.1380926-1-atishp@rivosinc.com>
- <20240229010130.1380926-7-atishp@rivosinc.com>
-Message-ID: <20240302-a82f4ba5d90bc3d85f3ed83b@orel>
+ <20240229010130.1380926-8-atishp@rivosinc.com>
+Message-ID: <20240302-1a3c0df25f2422e1e6abecf3@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Feb 28, 2024 at 05:01:21PM -0800, Atish Patra wrote:
-> The virtual counter value is updated during pmu_ctr_read. There is no need
-> to update it in reset case. Otherwise, it will be counted twice which is
-> incorrect.
+On Wed, Feb 28, 2024 at 05:01:22PM -0800, Atish Patra wrote:
+> Currently, we return a linux error code if creating a perf event failed
+> in kvm. That shouldn't be necessary as guest can continue to operate
+> without perf profiling or profiling with firmware counters.
+> 
+> Return appropriate SBI error code to indicate that PMU configuration
+> failed. An error message in kvm already describes the reason for failure.
+
+I don't know enough about the perf subsystem to know if there may be
+a concern that resources are temporarily unavailable. If so, then this
+patch would make it possible for a guest to do the exact same thing,
+but sometimes succeed and sometimes get SBI_ERR_NOT_SUPPORTED.
+sbi_pmu_counter_config_matching doesn't currently have any error types
+specified that say "unsupported at the moment, maybe try again", which
+would be more appropriate in that case. I do see
+perf_event_create_kernel_counter() can return ENOMEM when memory isn't
+available, but if the kernel isn't able to allocate a small amount of
+memory, then we're in bigger trouble anyway, so the concern would be
+if there are perf resource pools which may temporarily be exhausted at
+the time the guest makes this request.
+
+One comment below.
+
 > 
 > Fixes: 0cb74b65d2e5 ("RISC-V: KVM: Implement perf support without sampling")
 > Reviewed-by: Anup Patel <anup@brainfault.org>
 > Signed-off-by: Atish Patra <atishp@rivosinc.com>
 > ---
->  arch/riscv/kvm/vcpu_pmu.c | 8 ++------
->  1 file changed, 2 insertions(+), 6 deletions(-)
+>  arch/riscv/kvm/vcpu_pmu.c     | 14 +++++++++-----
+>  arch/riscv/kvm/vcpu_sbi_pmu.c |  6 +++---
+>  2 files changed, 12 insertions(+), 8 deletions(-)
 > 
 > diff --git a/arch/riscv/kvm/vcpu_pmu.c b/arch/riscv/kvm/vcpu_pmu.c
-> index 86391a5061dd..b1574c043f77 100644
+> index b1574c043f77..29bf4ca798cb 100644
 > --- a/arch/riscv/kvm/vcpu_pmu.c
 > +++ b/arch/riscv/kvm/vcpu_pmu.c
-> @@ -397,7 +397,6 @@ int kvm_riscv_vcpu_pmu_ctr_stop(struct kvm_vcpu *vcpu, unsigned long ctr_base,
+> @@ -229,8 +229,9 @@ static int kvm_pmu_validate_counter_mask(struct kvm_pmu *kvpmu, unsigned long ct
+>  	return 0;
+>  }
+>  
+> -static int kvm_pmu_create_perf_event(struct kvm_pmc *pmc, struct perf_event_attr *attr,
+> -				     unsigned long flags, unsigned long eidx, unsigned long evtdata)
+> +static long kvm_pmu_create_perf_event(struct kvm_pmc *pmc, struct perf_event_attr *attr,
+> +				      unsigned long flags, unsigned long eidx,
+> +				      unsigned long evtdata)
 >  {
->  	struct kvm_pmu *kvpmu = vcpu_to_pmu(vcpu);
->  	int i, pmc_index, sbiret = 0;
-> -	u64 enabled, running;
->  	struct kvm_pmc *pmc;
->  	int fevent_code;
+>  	struct perf_event *event;
 >  
-> @@ -432,12 +431,9 @@ int kvm_riscv_vcpu_pmu_ctr_stop(struct kvm_vcpu *vcpu, unsigned long ctr_base,
->  				sbiret = SBI_ERR_ALREADY_STOPPED;
->  			}
+> @@ -454,7 +455,8 @@ int kvm_riscv_vcpu_pmu_ctr_cfg_match(struct kvm_vcpu *vcpu, unsigned long ctr_ba
+>  				     unsigned long eidx, u64 evtdata,
+>  				     struct kvm_vcpu_sbi_return *retdata)
+>  {
+> -	int ctr_idx, ret, sbiret = 0;
+> +	int ctr_idx, sbiret = 0;
+> +	long ret;
+>  	bool is_fevent;
+>  	unsigned long event_code;
+>  	u32 etype = kvm_pmu_get_perf_event_type(eidx);
+> @@ -513,8 +515,10 @@ int kvm_riscv_vcpu_pmu_ctr_cfg_match(struct kvm_vcpu *vcpu, unsigned long ctr_ba
+>  			kvpmu->fw_event[event_code].started = true;
+>  	} else {
+>  		ret = kvm_pmu_create_perf_event(pmc, &attr, flags, eidx, evtdata);
+> -		if (ret)
+> -			return ret;
+> +		if (ret) {
+> +			sbiret = SBI_ERR_NOT_SUPPORTED;
+> +			goto out;
+> +		}
+>  	}
 >  
-> -			if (flags & SBI_PMU_STOP_FLAG_RESET) {
-> -				/* Relase the counter if this is a reset request */
-> -				pmc->counter_val += perf_event_read_value(pmc->perf_event,
-> -									  &enabled, &running);
-> +			if (flags & SBI_PMU_STOP_FLAG_RESET)
-> +				/* Release the counter if this is a reset request */
->  				kvm_pmu_release_perf_event(pmc);
-> -			}
->  		} else {
->  			sbiret = SBI_ERR_INVALID_PARAM;
->  		}
+>  	set_bit(ctr_idx, kvpmu->pmc_in_use);
+> diff --git a/arch/riscv/kvm/vcpu_sbi_pmu.c b/arch/riscv/kvm/vcpu_sbi_pmu.c
+> index 7eca72df2cbd..b70179e9e875 100644
+> --- a/arch/riscv/kvm/vcpu_sbi_pmu.c
+> +++ b/arch/riscv/kvm/vcpu_sbi_pmu.c
+> @@ -42,9 +42,9 @@ static int kvm_sbi_ext_pmu_handler(struct kvm_vcpu *vcpu, struct kvm_run *run,
+>  #endif
+>  		/*
+>  		 * This can fail if perf core framework fails to create an event.
+> -		 * Forward the error to userspace because it's an error which
+> -		 * happened within the host kernel. The other option would be
+> -		 * to convert to an SBI error and forward to the guest.
+> +		 * No need to forward the error to userspace and exit the guest
+
+Period after guest
+
+
+> +		 * operation can continue without profiling. Forward the
+
+The operation
+
+> +		 * appropriate SBI error to the guest.
+>  		 */
+>  		ret = kvm_riscv_vcpu_pmu_ctr_cfg_match(vcpu, cp->a0, cp->a1,
+>  						       cp->a2, cp->a3, temp, retdata);
 > -- 
 > 2.34.1
 >
 
-Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+Thanks,
+drew
 
