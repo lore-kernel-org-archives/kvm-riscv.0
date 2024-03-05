@@ -1,50 +1,55 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Tue, 5 Mar 2024 13:16:53 +0100
-Subject: [PATCH 4/6] riscv: Enable gen_report() to print the wrong value
- in case of test failure
-In-Reply-To: <iuspdeox3mmp4nzfs3xkqefttylgpfmb6gfm2ck62mxgi2sbov@iz76pufcqyfa>
-References: <20240229124246.309304-1-cem@kernel.org>
- <20240229124246.309304-5-cem@kernel.org>
- <wknHl_qFyCT3szEX-jsszal17_EQegdBjYN7Ea5JbXix6Yz0QPxNm6lBqPCIIeUbWVxnlogmf_Wkf3jevBroiQ==@protonmail.internalid>
- <20240301-6bcfc030d90fa055b8192386@orel>
- <iuspdeox3mmp4nzfs3xkqefttylgpfmb6gfm2ck62mxgi2sbov@iz76pufcqyfa>
-Message-ID: <20240305-513a395546dfde01c6b08a99@orel>
+Date: Tue, 5 Mar 2024 14:35:04 +0100
+Subject: [kvmtool PATCH 03/10] riscv: Add Zbc extension support
+In-Reply-To: <20240214122141.305126-4-apatel@ventanamicro.com>
+References: <20240214122141.305126-1-apatel@ventanamicro.com>
+ <20240214122141.305126-4-apatel@ventanamicro.com>
+Message-ID: <20240305-8f39b0950d3bcdfd44e0cbe0@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Mar 05, 2024 at 09:05:31AM +0100, Carlos Maiolino wrote:
-> > 
-> > We want to keep the output line consistent for both pass and fail
-> > in order to simplify parsing. But, since the expected value is
-> > variable, depending on the SBI implementation under test, it's
-> > probably best not to put the numbers in the pass/fail line, but as
-> > info. So how about
-> > 
-> >  static void gen_report(struct sbiret *ret,
-> >                         long expected_error, long expected_value)
-> >  {
-> >      report_info("expected (error: %ld, value: %ld), received: (error: %ld, value: %ld)",
-> >                  expected_error, expected_value, ret->error, ret->value);
-> >      report(ret->error == expected_error, "expected sbi.error");
-> >      report(ret->value == expected_value, "expected sbi.value");
-> >  }
+On Wed, Feb 14, 2024 at 05:51:34PM +0530, Anup Patel wrote:
+> When the Zbc extension is available expose it to the guest
+> via device tree so that guest can use it.
 > 
-> Something just came up to my mind while implementing this.
+> Signed-off-by: Anup Patel <apatel@ventanamicro.com>
+> ---
+>  riscv/fdt.c                         | 1 +
+>  riscv/include/kvm/kvm-config-arch.h | 3 +++
+>  2 files changed, 4 insertions(+)
 > 
-> I agree with the use of report_info() here, but I still think this could be
-> under a conditional to only print it when we have something different from the
-> expectations. I particularly don't see much value in printing the report_info if
-> nothing unexpected, but maybe I'm wrong?
+> diff --git a/riscv/fdt.c b/riscv/fdt.c
+> index 8485acf..84b6087 100644
+> --- a/riscv/fdt.c
+> +++ b/riscv/fdt.c
+> @@ -24,6 +24,7 @@ struct isa_ext_info isa_info_arr[] = {
+>  	{"svpbmt", KVM_RISCV_ISA_EXT_SVPBMT},
+>  	{"zba", KVM_RISCV_ISA_EXT_ZBA},
+>  	{"zbb", KVM_RISCV_ISA_EXT_ZBB},
+> +	{"zbc", KVM_RISCV_ISA_EXT_ZBC},
+>  	{"zbs", KVM_RISCV_ISA_EXT_ZBS},
+>  	{"zicbom", KVM_RISCV_ISA_EXT_ZICBOM},
+>  	{"zicboz", KVM_RISCV_ISA_EXT_ZICBOZ},
+> diff --git a/riscv/include/kvm/kvm-config-arch.h b/riscv/include/kvm/kvm-config-arch.h
+> index d2fc2d4..6d09eee 100644
+> --- a/riscv/include/kvm/kvm-config-arch.h
+> +++ b/riscv/include/kvm/kvm-config-arch.h
+> @@ -49,6 +49,9 @@ struct kvm_config_arch {
+>  	OPT_BOOLEAN('\0', "disable-zbb",				\
+>  		    &(cfg)->ext_disabled[KVM_RISCV_ISA_EXT_ZBB],	\
+>  		    "Disable Zbb Extension"),				\
+> +	OPT_BOOLEAN('\0', "disable-zbc",				\
+> +		    &(cfg)->ext_disabled[KVM_RISCV_ISA_EXT_ZBC],	\
+> +		    "Disable Zbc Extension"),				\
+>  	OPT_BOOLEAN('\0', "disable-zbs",				\
+>  		    &(cfg)->ext_disabled[KVM_RISCV_ISA_EXT_ZBS],	\
+>  		    "Disable Zbs Extension"),				\
+> -- 
+> 2.34.1
+>
 
-I don't mind either way. report_info() is for human readers, so parsers
-should ignore them and not freak out when they appear or disappear. Not
-cluttering the output by removing useless info sounds good to me, but
-also not cluttering the code, by not adding unnecessary logic, sounds
-good to me. So, it's up to you :-)
-
-Thanks,
-drew
+Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
 
