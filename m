@@ -1,52 +1,41 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Tue, 5 Mar 2024 14:51:36 +0100
-Subject: [kvmtool PATCH 09/10] riscv: Add Zfa extensiona support
-In-Reply-To: <20240214122141.305126-10-apatel@ventanamicro.com>
+Date: Tue, 5 Mar 2024 14:52:25 +0100
+Subject: [kvmtool PATCH 10/10] riscv: Allow disabling SBI STA extension
+ for Guest
+In-Reply-To: <20240214122141.305126-11-apatel@ventanamicro.com>
 References: <20240214122141.305126-1-apatel@ventanamicro.com>
- <20240214122141.305126-10-apatel@ventanamicro.com>
-Message-ID: <20240305-b511f6616851f55ae466a17c@orel>
+ <20240214122141.305126-11-apatel@ventanamicro.com>
+Message-ID: <20240305-05dffac2a28923796e790f0b@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Feb 14, 2024 at 05:51:40PM +0530, Anup Patel wrote:
-> When the Zfa extension is available expose it to the guest
-> via device tree so that guest can use it.
+On Wed, Feb 14, 2024 at 05:51:41PM +0530, Anup Patel wrote:
+> We add "--disable-sbi-sta" options to allow users disable SBI steal-time
+> extension for the Guest.
 > 
 > Signed-off-by: Anup Patel <apatel@ventanamicro.com>
 > ---
->  riscv/fdt.c                         | 1 +
->  riscv/include/kvm/kvm-config-arch.h | 3 +++
->  2 files changed, 4 insertions(+)
+>  riscv/include/kvm/kvm-config-arch.h | 5 ++++-
+>  1 file changed, 4 insertions(+), 1 deletion(-)
 > 
-> diff --git a/riscv/fdt.c b/riscv/fdt.c
-> index 005301e..cc8070d 100644
-> --- a/riscv/fdt.c
-> +++ b/riscv/fdt.c
-> @@ -29,6 +29,7 @@ struct isa_ext_info isa_info_arr[] = {
->  	{"zbkc", KVM_RISCV_ISA_EXT_ZBKC},
->  	{"zbkx", KVM_RISCV_ISA_EXT_ZBKX},
->  	{"zbs", KVM_RISCV_ISA_EXT_ZBS},
-> +	{"zfa", KVM_RISCV_ISA_EXT_ZFA},
->  	{"zfh", KVM_RISCV_ISA_EXT_ZFH},
->  	{"zfhmin", KVM_RISCV_ISA_EXT_ZFHMIN},
->  	{"zicbom", KVM_RISCV_ISA_EXT_ZICBOM},
 > diff --git a/riscv/include/kvm/kvm-config-arch.h b/riscv/include/kvm/kvm-config-arch.h
-> index 10ca3b8..6415d3d 100644
+> index 6415d3d..e562d71 100644
 > --- a/riscv/include/kvm/kvm-config-arch.h
 > +++ b/riscv/include/kvm/kvm-config-arch.h
-> @@ -64,6 +64,9 @@ struct kvm_config_arch {
->  	OPT_BOOLEAN('\0', "disable-zbs",				\
->  		    &(cfg)->ext_disabled[KVM_RISCV_ISA_EXT_ZBS],	\
->  		    "Disable Zbs Extension"),				\
-> +	OPT_BOOLEAN('\0', "disable-zfa",				\
-> +		    &(cfg)->ext_disabled[KVM_RISCV_ISA_EXT_ZFA],	\
-> +		    "Disable Zfa Extension"),				\
->  	OPT_BOOLEAN('\0', "disable-zfh",				\
->  		    &(cfg)->ext_disabled[KVM_RISCV_ISA_EXT_ZFH],	\
->  		    "Disable Zfh Extension"),				\
+> @@ -186,6 +186,9 @@ struct kvm_config_arch {
+>  		    "Disable SBI Vendor Extensions"),			\
+>  	OPT_BOOLEAN('\0', "disable-sbi-dbcn",				\
+>  		    &(cfg)->sbi_ext_disabled[KVM_RISCV_SBI_EXT_DBCN],	\
+> -		    "Disable SBI DBCN Extension"),
+> +		    "Disable SBI DBCN Extension"),			\
+> +	OPT_BOOLEAN('\0', "disable-sbi-sta",				\
+> +		    &(cfg)->sbi_ext_disabled[KVM_RISCV_SBI_EXT_STA],	\
+> +		    "Disable SBI STA Extension"),
+>  
+>  #endif /* KVM__KVM_CONFIG_ARCH_H */
 > -- 
 > 2.34.1
 >
