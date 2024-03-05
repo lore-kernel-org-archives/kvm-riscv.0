@@ -1,69 +1,108 @@
 From: Andrew Jones <andrew.jones@linux.dev>
-Date: Tue,  5 Mar 2024 18:09:01 +0100
-Subject: [kvm-unit-tests PATCH v2 02/13] riscv: show_regs: Prepare for EFI images
+Date: Tue,  5 Mar 2024 18:09:03 +0100
+Subject: [kvm-unit-tests PATCH v2 04/13] treewide: lib/stack: Make base_address arch specific
 In-Reply-To: <20240305170858.395836-15-andrew.jones@linux.dev>
 References: <20240305170858.395836-15-andrew.jones@linux.dev>
-Message-ID: <20240305170858.395836-17-andrew.jones@linux.dev>
+Message-ID: <20240305170858.395836-19-andrew.jones@linux.dev>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-EFI images start with a header page and then _text, so the load
-address should use 'ImageBase' instead of _text. Just add the
-ImageBase symbol to the non-efi build too and then change show_regs()
-to use it instead. While there, add a couple convenience calculations
-for the PC and return address (pre-subtract the load address from
-them) in order to make it quicker for looking them up in an objdump.
+Calculating the offset of an address is image specific, which is
+architecture specific. Until now, all architectures and architecture
+configurations which select CONFIG_RELOC were able to subtract
+_etext, but the EFI configuration of riscv cannot (it must subtract
+ImageBase). Make this function weak, such that an architecture may
+override it when necessary, to accommodate the image layout. Then,
+immediately supply the riscv override.
 
 Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
 ---
- lib/riscv/processor.c | 8 ++++----
- riscv/flat.lds        | 1 +
- 2 files changed, 5 insertions(+), 4 deletions(-)
+ lib/riscv/stack.c | 18 ++++++++++++++++++
+ lib/stack.c       |  8 ++++----
+ lib/stack.h       |  2 ++
+ 3 files changed, 24 insertions(+), 4 deletions(-)
 
-diff --git a/lib/riscv/processor.c b/lib/riscv/processor.c
-index 6c868b805cf7..ece7cbffc6dd 100644
---- a/lib/riscv/processor.c
-+++ b/lib/riscv/processor.c
-@@ -8,20 +8,20 @@
- #include <asm/processor.h>
- #include <asm/setup.h>
+diff --git a/lib/riscv/stack.c b/lib/riscv/stack.c
+index d865594b9671..2cd7f012738b 100644
+--- a/lib/riscv/stack.c
++++ b/lib/riscv/stack.c
+@@ -2,6 +2,24 @@
+ #include <libcflat.h>
+ #include <stack.h>
  
--extern unsigned long _text;
-+extern unsigned long ImageBase;
- 
- void show_regs(struct pt_regs *regs)
++#ifdef CONFIG_RELOC
++extern char ImageBase, _text, _etext;
++
++bool arch_base_address(const void *rebased_addr, unsigned long *addr)
++{
++	unsigned long ra = (unsigned long)rebased_addr;
++	unsigned long base = (unsigned long)&ImageBase;
++	unsigned long start = (unsigned long)&_text;
++	unsigned long end = (unsigned long)&_etext;
++
++	if (ra < start || ra >= end)
++		return false;
++
++	*addr = ra - base;
++	return true;
++}
++#endif
++
+ int arch_backtrace_frame(const void *frame, const void **return_addrs,
+ 			 int max_depth, bool current_frame)
  {
- 	struct thread_info *info = current_thread_info();
--	uintptr_t text = (uintptr_t)&_text;
-+	uintptr_t loadaddr = (uintptr_t)&ImageBase;
- 	unsigned int w = __riscv_xlen / 4;
+diff --git a/lib/stack.c b/lib/stack.c
+index dd6bfa8dac6e..086fec544a81 100644
+--- a/lib/stack.c
++++ b/lib/stack.c
+@@ -14,7 +14,7 @@
+ #ifdef CONFIG_RELOC
+ extern char _text, _etext;
  
--	printf("Load address: %" PRIxPTR "\n", text);
-+	printf("Load address: %" PRIxPTR "\n", loadaddr);
- 	printf("CPU%3d : hartid=%lx\n", info->cpu, info->hartid);
- 	printf("status : %.*lx\n", w, regs->status);
- 	printf("cause  : %.*lx\n", w, regs->cause);
- 	printf("badaddr: %.*lx\n", w, regs->badaddr);
--	printf("pc: %.*lx ra: %.*lx\n", w, regs->epc, w, regs->ra);
-+	printf("pc: %.*lx (%lx) ra: %.*lx (%lx)\n", w, regs->epc, regs->epc - loadaddr, w, regs->ra, regs->ra - loadaddr);
- 	printf("sp: %.*lx gp: %.*lx tp : %.*lx\n", w, regs->sp, w, regs->gp, w, regs->tp);
- 	printf("a0: %.*lx a1: %.*lx a2 : %.*lx a3 : %.*lx\n", w, regs->a0, w, regs->a1, w, regs->a2, w, regs->a3);
- 	printf("a4: %.*lx a5: %.*lx a6 : %.*lx a7 : %.*lx\n", w, regs->a4, w, regs->a5, w, regs->a6, w, regs->a7);
-diff --git a/riscv/flat.lds b/riscv/flat.lds
-index d4853f82ba1c..1ca501e6593b 100644
---- a/riscv/flat.lds
-+++ b/riscv/flat.lds
-@@ -30,6 +30,7 @@ PHDRS
- 
- SECTIONS
+-static bool base_address(const void *rebased_addr, unsigned long *addr)
++bool __attribute__((weak)) arch_base_address(const void *rebased_addr, unsigned long *addr)
  {
-+    PROVIDE(ImageBase = .);
-     PROVIDE(_text = .);
-     .text : { *(.init) *(.text) *(.text.*) } :text
-     . = ALIGN(4K);
+ 	unsigned long ra = (unsigned long)rebased_addr;
+ 	unsigned long start = (unsigned long)&_text;
+@@ -27,7 +27,7 @@ static bool base_address(const void *rebased_addr, unsigned long *addr)
+ 	return true;
+ }
+ #else
+-static bool base_address(const void *rebased_addr, unsigned long *addr)
++bool __attribute__((weak)) arch_base_address(const void *rebased_addr, unsigned long *addr)
+ {
+ 	*addr = (unsigned long)rebased_addr;
+ 	return true;
+@@ -45,13 +45,13 @@ static void print_stack(const void **return_addrs, int depth,
+ 	/* @addr indicates a non-return address, as expected by the stack
+ 	 * pretty printer script. */
+ 	if (depth > 0 && !top_is_return_address) {
+-		if (base_address(return_addrs[0], &addr))
++		if (arch_base_address(return_addrs[0], &addr))
+ 			printf(" @%lx", addr);
+ 		i++;
+ 	}
+ 
+ 	for (; i < depth; i++) {
+-		if (base_address(return_addrs[i], &addr))
++		if (arch_base_address(return_addrs[i], &addr))
+ 			printf(" %lx", addr);
+ 	}
+ 	printf("\n");
+diff --git a/lib/stack.h b/lib/stack.h
+index 6edc84344b51..df076d94bf8f 100644
+--- a/lib/stack.h
++++ b/lib/stack.h
+@@ -34,4 +34,6 @@ static inline int backtrace_frame(const void *frame, const void **return_addrs,
+ }
+ #endif
+ 
++bool __attribute__((weak)) arch_base_address(const void *rebased_addr, unsigned long *addr);
++
+ #endif
 -- 
 2.44.0
 
