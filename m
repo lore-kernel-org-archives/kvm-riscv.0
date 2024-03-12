@@ -1,118 +1,54 @@
-From: Nicholas Piggin <npiggin@gmail.com>
-Date: Tue, 12 Mar 2024 15:45:05 +1000
-Subject: [kvm-unit-tests PATCH v2 04/13] treewide: lib/stack: Make
- base_address arch specific
-In-Reply-To: <20240305170858.395836-19-andrew.jones@linux.dev>
-References: <20240305170858.395836-15-andrew.jones@linux.dev>
- <20240305170858.395836-19-andrew.jones@linux.dev>
-Message-ID: <CZRJ7KVBS2ZT.3144ZIHYUZRNY@wheely>
+From: Anup Patel <anup@brainfault.org>
+Date: Tue, 12 Mar 2024 12:21:31 +0530
+Subject: [GIT PULL] KVM/riscv changes for 6.9
+In-Reply-To: <6091398f-a2b3-4dc9-9f33-d7459a0a9594@redhat.com>
+References: <CAAhSdy1rYFoYjCRWTPouiT=tiN26Z_v3Y36K2MyDrcCkRs1Luw@mail.gmail.com>
+ <Zen8qGzVpaOB_vKa@google.com> <CAAhSdy2Mu08RsBM+7FMjkcV49p9gOj3UKEoZnPAVk92e_3q=sw@mail.gmail.com>
+ <ZesxeoyFZUeo-Z9F@google.com> <6091398f-a2b3-4dc9-9f33-d7459a0a9594@redhat.com>
+Message-ID: <CAAhSdy2XEwtn47E5R93gGYHvDv5J0NSWXWyrmhe_kjQAw79N_w@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed Mar 6, 2024 at 3:09 AM AEST, Andrew Jones wrote:
-> Calculating the offset of an address is image specific, which is
-> architecture specific. Until now, all architectures and architecture
-> configurations which select CONFIG_RELOC were able to subtract
-> _etext, but the EFI configuration of riscv cannot (it must subtract
-> ImageBase). Make this function weak, such that an architecture may
-> override it when necessary, to accommodate the image layout. Then,
-> immediately supply the riscv override.
+On Mon, Mar 11, 2024 at 7:40?PM Paolo Bonzini <pbonzini@redhat.com> wrote:
+>
+> On 3/8/24 16:40, Sean Christopherson wrote:
+> > You're missing the point.  I don't care when patches land in the RISC-V tree, nor
+> > do I care that you made a last minute tweak to fix a bug.  I care when commits
+> > show up in linux-next, and*none*  of these commits were in linux-next until
+> > yesterday.
+> >
+> >    $ git tag -l --contains 2c5af1c8460376751d57c50af88a053a3b869926
+> >    next-20240307
+> >    next-20240308
+> >
+> > The*entire*  purpose of linux-next is to integrate*all*  work destined for the
+> > next kernel into a single tree, so that conflicts, bugs, etc. can be found and
+> > fixed*before*  the next merge window.
+>
+> Indeed, and this is more important as more work is routed towards
+> different trees.  At this point we have 5 more or less active
+> architectures, and especially in selftests land it's important to
+> coordinate with each other.
+>
+> Anup, ideally, when you say that a patch is "queued" it should only be a
+> short time before you're ready to send it to me - and that means putting
+> it in a place where linux-next picks it up.  For x86 I generally compile
+> test and run kvm-unit-tests on one of Intel or AMD, and leave the
+> remaining tests for later (because they take a day or two), but in
+> general it's a matter of days before linux-next get the patches.
 >
 
-Thanks for making these changes. Looks good. For the generic parts,
+Currently, I was collecting patches in the queue and allowing people
+(including myself) to test the queue for a longer time and updating
+"next" branch only a couple of weeks before I send PR.
 
-Reviewed-by: Nicholas Piggin <npiggin@gmail.com>
+Going forward, I will follow your suggestion. This means once a
+series is tested on queue, I will move it to the "next" branch sooner
+so that "linux-next" picks it sooner.
 
-Thanks,
-Nick
-
-> Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
-> ---
->  lib/riscv/stack.c | 18 ++++++++++++++++++
->  lib/stack.c       |  8 ++++----
->  lib/stack.h       |  2 ++
->  3 files changed, 24 insertions(+), 4 deletions(-)
->
-> diff --git a/lib/riscv/stack.c b/lib/riscv/stack.c
-> index d865594b9671..2cd7f012738b 100644
-> --- a/lib/riscv/stack.c
-> +++ b/lib/riscv/stack.c
-> @@ -2,6 +2,24 @@
->  #include <libcflat.h>
->  #include <stack.h>
->  
-> +#ifdef CONFIG_RELOC
-> +extern char ImageBase, _text, _etext;
-> +
-> +bool arch_base_address(const void *rebased_addr, unsigned long *addr)
-> +{
-> +	unsigned long ra = (unsigned long)rebased_addr;
-> +	unsigned long base = (unsigned long)&ImageBase;
-> +	unsigned long start = (unsigned long)&_text;
-> +	unsigned long end = (unsigned long)&_etext;
-> +
-> +	if (ra < start || ra >= end)
-> +		return false;
-> +
-> +	*addr = ra - base;
-> +	return true;
-> +}
-> +#endif
-> +
->  int arch_backtrace_frame(const void *frame, const void **return_addrs,
->  			 int max_depth, bool current_frame)
->  {
-> diff --git a/lib/stack.c b/lib/stack.c
-> index dd6bfa8dac6e..086fec544a81 100644
-> --- a/lib/stack.c
-> +++ b/lib/stack.c
-> @@ -14,7 +14,7 @@
->  #ifdef CONFIG_RELOC
->  extern char _text, _etext;
->  
-> -static bool base_address(const void *rebased_addr, unsigned long *addr)
-> +bool __attribute__((weak)) arch_base_address(const void *rebased_addr, unsigned long *addr)
->  {
->  	unsigned long ra = (unsigned long)rebased_addr;
->  	unsigned long start = (unsigned long)&_text;
-> @@ -27,7 +27,7 @@ static bool base_address(const void *rebased_addr, unsigned long *addr)
->  	return true;
->  }
->  #else
-> -static bool base_address(const void *rebased_addr, unsigned long *addr)
-> +bool __attribute__((weak)) arch_base_address(const void *rebased_addr, unsigned long *addr)
->  {
->  	*addr = (unsigned long)rebased_addr;
->  	return true;
-> @@ -45,13 +45,13 @@ static void print_stack(const void **return_addrs, int depth,
->  	/* @addr indicates a non-return address, as expected by the stack
->  	 * pretty printer script. */
->  	if (depth > 0 && !top_is_return_address) {
-> -		if (base_address(return_addrs[0], &addr))
-> +		if (arch_base_address(return_addrs[0], &addr))
->  			printf(" @%lx", addr);
->  		i++;
->  	}
->  
->  	for (; i < depth; i++) {
-> -		if (base_address(return_addrs[i], &addr))
-> +		if (arch_base_address(return_addrs[i], &addr))
->  			printf(" %lx", addr);
->  	}
->  	printf("\n");
-> diff --git a/lib/stack.h b/lib/stack.h
-> index 6edc84344b51..df076d94bf8f 100644
-> --- a/lib/stack.h
-> +++ b/lib/stack.h
-> @@ -34,4 +34,6 @@ static inline int backtrace_frame(const void *frame, const void **return_addrs,
->  }
->  #endif
->  
-> +bool __attribute__((weak)) arch_base_address(const void *rebased_addr, unsigned long *addr);
-> +
->  #endif
-
+Regards,
+Anup
 
