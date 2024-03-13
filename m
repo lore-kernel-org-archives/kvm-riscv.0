@@ -1,79 +1,103 @@
-From: cem@kernel.org <cem@kernel.org>
-Date: Wed, 13 Mar 2024 09:46:24 +0100
-Subject: [PATCH 6/6] riscv: Add a wrapper to call sbi_ecall for base extension
-In-Reply-To: <20240313084644.277426-1-cem@kernel.org>
+From: Andrew Jones <ajones@ventanamicro.com>
+Date: Wed, 13 Mar 2024 12:06:04 +0100
+Subject: [PATCH V2 1/6] riscv: Add test to probe SBI Extension
+In-Reply-To: <20240313084644.277426-2-cem@kernel.org>
 References: <20240313084644.277426-1-cem@kernel.org>
-Message-ID: <20240313084644.277426-7-cem@kernel.org>
+ <20240313084644.277426-2-cem@kernel.org>
+Message-ID: <20240313-179beba6ccc2d1c01d88f0f4@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Carlos Maiolino <cem@kernel.org>
+On Wed, Mar 13, 2024 at 09:46:19AM +0100, cem at kernel.org wrote:
+> From: Carlos Maiolino <cem@kernel.org>
+> 
+> Factor out vendor id test to a new helper, and add a new test for
+> probing the SBI extension.
+> Compare the retrieved value against an environment variable, as the
+> implementation can return any non-zero value.
+> 
+> Signed-off-by: Carlos Maiolino <cmaiolino@redhat.com>
+> ---
+> 
+> V2:
+> 	- change sbi_ecall()'s format, to fit a single line.
+> 	- Make PROBE_EXT envvar optional, as suggested by Drew. This prevents
+> 	  the test to bail if the envvar is not set.
+> 
+>  riscv/sbi.c | 43 ++++++++++++++++++++++++++++++++-----------
+>  1 file changed, 32 insertions(+), 11 deletions(-)
+> 
+> diff --git a/riscv/sbi.c b/riscv/sbi.c
+> index ffb07a25..1d73d8f1 100644
+> --- a/riscv/sbi.c
+> +++ b/riscv/sbi.c
+> @@ -14,28 +14,49 @@ static void help(void)
+>  	puts("An environ must be provided where expected values are given.\n");
+>  }
+>  
+> -int main(int argc, char **argv)
+> +static void check_base(void)
+>  {
+>  	struct sbiret ret;
+>  	long expected;
+>  
+> -	if (argc > 1 && !strcmp(argv[1], "-h")) {
+> -		help();
+> -		exit(0);
+> -	}
+> -
+> -	report_prefix_push("sbi");
+> +	report_prefix_push("base");
+>  
+>  	if (!getenv("MVENDORID")) {
+>  		report_skip("mvendorid: missing MVENDORID environment variable");
+> -		goto done;
+> +		return;
+>  	}
+> +
+> +	report_prefix_push("mvendorid");
+>  	expected = strtol(getenv("MVENDORID"), NULL, 0);
+>  
+>  	ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_GET_MVENDORID, 0, 0, 0, 0, 0, 0);
+> -	report(!ret.error, "mvendorid: no error");
+> -	report(ret.value == expected, "mvendorid");
+>  
+> -done:
+> +	report(!ret.error, "no sbi.error");
+> +	report(ret.value == expected, "expected sbi.value");
+> +	report_prefix_pop();
+> +
+> +	report_prefix_push("probe_ext");
+> +	expected = getenv("PROBE_EXT") ? strtol(getenv("PROBE_EXT"), NULL, 0) : 1;
+> +
+> +	ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_PROBE_EXT, SBI_EXT_BASE, 0, 0, 0, 0, 0);
+> +
+> +	report(!ret.error, "no sbi.error");
+> +	report(ret.value == expected, "expected sbi.value");
+> +	report_prefix_pop();
+> +
+> +	report_prefix_pop();
+> +}
+> +
+> +int main(int argc, char **argv)
+> +{
+> +
+> +	if (argc > 1 && !strcmp(argv[1], "-h")) {
+> +		help();
+> +		exit(0);
+> +	}
+> +
+> +	report_prefix_push("sbi");
+> +	check_base();
+> +
+>  	return report_summary();
+>  }
+> -- 
+> 2.44.0
+>
 
-All SBI extension functions accepts at most one argument, so create a
-wrapper around sbi_ecall() to avoid needing to pass in arguments 1 to 5
-all the time, also, the wrapper can specify SBI_EXT_BASE directly.
-
-Signed-off-by: Carlos Maiolino <cmaiolino@redhat.com>
----
- riscv/sbi.c | 15 +++++++++------
- 1 file changed, 9 insertions(+), 6 deletions(-)
-
-diff --git a/riscv/sbi.c b/riscv/sbi.c
-index 65492fd6..82513d61 100644
---- a/riscv/sbi.c
-+++ b/riscv/sbi.c
-@@ -36,6 +36,11 @@ static void gen_report(struct sbiret *ret,
- 	report(ret->value == expected_value, "expected sbi.value");
- }
- 
-+static inline struct sbiret __base_sbi_ecall(int fid, unsigned long arg0)
-+{
-+	return sbi_ecall(SBI_EXT_BASE, fid, arg0, 0, 0, 0, 0, 0);
-+}
-+
- static void check_base(void)
- {
- 	struct sbiret ret;
-@@ -46,7 +51,7 @@ static void check_base(void)
- 	report_prefix_push("mvendorid");
- 	if (env_or_skip("MVENDORID")) {
- 		expected = strtol(getenv("MVENDORID"), NULL, 0);
--		ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_GET_MVENDORID, 0, 0, 0, 0, 0, 0);
-+		ret = __base_sbi_ecall(SBI_EXT_BASE_GET_MVENDORID, 0);
- 		gen_report(&ret, 0, expected);
- 	}
- 	report_prefix_pop();
-@@ -54,23 +59,21 @@ static void check_base(void)
- 	report_prefix_push("sbi_impl_id");
- 	if (env_or_skip("SBI_IMPLID")) {
- 		expected = strtol(getenv("SBI_IMPLID"), NULL, 0);
--		ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_GET_IMP_ID,
--				SBI_EXT_BASE, 0, 0, 0, 0, 0);
-+		ret = __base_sbi_ecall(SBI_EXT_BASE_GET_IMP_ID, SBI_EXT_BASE);
- 		gen_report(&ret, 0, expected);
- 	}
- 	report_prefix_pop();
- 
- 	report_prefix_push("probe_ext");
- 	expected = getenv("PROBE_EXT") ? strtol(getenv("PROBE_EXT"), NULL, 0) : 1;
--	ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_PROBE_EXT, SBI_EXT_BASE, 0, 0, 0, 0, 0);
-+	ret = __base_sbi_ecall(SBI_EXT_BASE_PROBE_EXT, SBI_EXT_BASE);
- 	gen_report(&ret, 0, expected);
- 	report_prefix_pop();
- 
- 	report_prefix_push("marchid");
- 	if (env_or_skip("MARCHID")) {
- 		expected = strtol(getenv("MARCHID"), NULL, 0);
--		ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_PROBE_EXT,
--				SBI_EXT_BASE_GET_MARCHID, 0, 0, 0, 0, 0);
-+		ret = __base_sbi_ecall(SBI_EXT_BASE_PROBE_EXT, SBI_EXT_BASE_GET_MARCHID);
- 		gen_report(&ret, 0, expected);
- 	}
- 	report_prefix_pop();
--- 
-2.44.0
-
+Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
 
