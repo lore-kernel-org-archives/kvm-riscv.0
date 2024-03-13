@@ -1,9 +1,9 @@
 From: cem@kernel.org <cem@kernel.org>
-Date: Wed, 13 Mar 2024 09:46:19 +0100
-Subject: [PATCH V2 1/6] riscv: Add test to probe SBI Extension
+Date: Wed, 13 Mar 2024 09:46:22 +0100
+Subject: [PATCH V2 4/6] riscv: Enable gen_report() to print the wrong value in case of failure
 In-Reply-To: <20240313084644.277426-1-cem@kernel.org>
 References: <20240313084644.277426-1-cem@kernel.org>
-Message-ID: <20240313084644.277426-2-cem@kernel.org>
+Message-ID: <20240313084644.277426-5-cem@kernel.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -12,87 +12,68 @@ Content-Transfer-Encoding: 7bit
 
 From: Carlos Maiolino <cem@kernel.org>
 
-Factor out vendor id test to a new helper, and add a new test for
-probing the SBI extension.
-Compare the retrieved value against an environment variable, as the
-implementation can return any non-zero value.
+If the test fails because the expected value doesn't match, it's
+useful to know what value was actually printed.
 
 Signed-off-by: Carlos Maiolino <cmaiolino@redhat.com>
 ---
-
 V2:
-	- change sbi_ecall()'s format, to fit a single line.
-	- Make PROBE_EXT envvar optional, as suggested by Drew. This prevents
-	  the test to bail if the envvar is not set.
+	- Reduce subject to fit 70 chars
+	- Use report_info() to output expected vs received values,
+	  leaving only necessary information for parsers on report()
 
- riscv/sbi.c | 43 ++++++++++++++++++++++++++++++++-----------
- 1 file changed, 32 insertions(+), 11 deletions(-)
+ riscv/sbi.c | 17 +++++++++++------
+ 1 file changed, 11 insertions(+), 6 deletions(-)
 
 diff --git a/riscv/sbi.c b/riscv/sbi.c
-index ffb07a25..1d73d8f1 100644
+index 76f6111d..bc0f5c68 100644
 --- a/riscv/sbi.c
 +++ b/riscv/sbi.c
-@@ -14,28 +14,49 @@ static void help(void)
- 	puts("An environ must be provided where expected values are given.\n");
+@@ -25,10 +25,15 @@ static bool env_or_skip(const char *env)
+ 	return true;
  }
  
--int main(int argc, char **argv)
-+static void check_base(void)
+-static void gen_report(struct sbiret *ret, long expected)
++static void gen_report(struct sbiret *ret,
++		       long expected_error, long expected_value)
  {
- 	struct sbiret ret;
- 	long expected;
- 
--	if (argc > 1 && !strcmp(argv[1], "-h")) {
--		help();
--		exit(0);
--	}
--
--	report_prefix_push("sbi");
-+	report_prefix_push("base");
- 
- 	if (!getenv("MVENDORID")) {
- 		report_skip("mvendorid: missing MVENDORID environment variable");
--		goto done;
-+		return;
- 	}
+-	report(!ret->error, "no sbi.error");
+-	report(ret->value == expected, "expected sbi.value");
++	if (ret->value != expected_value)
++		report_info("expected (error: %ld, value: %ld), received: (error: %ld, value %ld)\n",
++			    expected_error, expected_value, ret->error, ret->value);
 +
-+	report_prefix_push("mvendorid");
- 	expected = strtol(getenv("MVENDORID"), NULL, 0);
- 
- 	ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_GET_MVENDORID, 0, 0, 0, 0, 0, 0);
--	report(!ret.error, "mvendorid: no error");
--	report(ret.value == expected, "mvendorid");
- 
--done:
-+	report(!ret.error, "no sbi.error");
-+	report(ret.value == expected, "expected sbi.value");
-+	report_prefix_pop();
-+
-+	report_prefix_push("probe_ext");
-+	expected = getenv("PROBE_EXT") ? strtol(getenv("PROBE_EXT"), NULL, 0) : 1;
-+
-+	ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_PROBE_EXT, SBI_EXT_BASE, 0, 0, 0, 0, 0);
-+
-+	report(!ret.error, "no sbi.error");
-+	report(ret.value == expected, "expected sbi.value");
-+	report_prefix_pop();
-+
-+	report_prefix_pop();
-+}
-+
-+int main(int argc, char **argv)
-+{
-+
-+	if (argc > 1 && !strcmp(argv[1], "-h")) {
-+		help();
-+		exit(0);
-+	}
-+
-+	report_prefix_push("sbi");
-+	check_base();
-+
- 	return report_summary();
++	report(ret->error == expected_error, "expected sbi.error");
++	report(ret->value == expected_value, "expected sbi.value");
  }
+ 
+ static void check_base(void)
+@@ -42,14 +47,14 @@ static void check_base(void)
+ 	if (env_or_skip("MVENDORID")) {
+ 		expected = strtol(getenv("MVENDORID"), NULL, 0);
+ 		ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_GET_MVENDORID, 0, 0, 0, 0, 0, 0);
+-		gen_report(&ret, expected);
++		gen_report(&ret, 0, expected);
+ 	}
+ 	report_prefix_pop();
+ 
+ 	report_prefix_push("probe_ext");
+ 	expected = getenv("PROBE_EXT") ? strtol(getenv("PROBE_EXT"), NULL, 0) : 1;
+ 	ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_PROBE_EXT, SBI_EXT_BASE, 0, 0, 0, 0, 0);
+-	gen_report(&ret, expected);
++	gen_report(&ret, 0, expected);
+ 	report_prefix_pop();
+ 
+ 	report_prefix_push("marchid");
+@@ -57,7 +62,7 @@ static void check_base(void)
+ 		expected = strtol(getenv("MARCHID"), NULL, 0);
+ 		ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_PROBE_EXT,
+ 				SBI_EXT_BASE_GET_MARCHID, 0, 0, 0, 0, 0);
+-		gen_report(&ret, expected);
++		gen_report(&ret, 0, expected);
+ 	}
+ 	report_prefix_pop();
+ 
 -- 
 2.44.0
 
