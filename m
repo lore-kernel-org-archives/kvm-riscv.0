@@ -1,7 +1,9 @@
 From: cem@kernel.org <cem@kernel.org>
-Date: Wed, 13 Mar 2024 22:50:51 +0100
-Subject: [PATCH V4 0/6] Add riscv tests to cover the base extension specs
-Message-ID: <20240313215106.325766-1-cem@kernel.org>
+Date: Wed, 13 Mar 2024 22:50:53 +0100
+Subject: [PATCH V4 2/6] riscv: Add test to probe SBI Extension
+In-Reply-To: <20240313215106.325766-1-cem@kernel.org>
+References: <20240313215106.325766-1-cem@kernel.org>
+Message-ID: <20240313215106.325766-3-cem@kernel.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -10,33 +12,88 @@ Content-Transfer-Encoding: 7bit
 
 From: Carlos Maiolino <cem@kernel.org>
 
-Hi,
+Factor out vendor id test to a new helper, and add a new test for
+probing the SBI extension.
+Compare the retrieved value against an environment variable, as the
+implementation can return any non-zero value.
 
-This is a new (V4) version of this series to create tests to cover functions
-of the riscv's SBI base implementation spec. The series also includes a
-a few helpers to reduce code duplication.
+Signed-off-by: Carlos Maiolino <cmaiolino@redhat.com>
 
-This new version includes updates related to Drew reviews, and rebasing of
-the patches according to the changes. 
-This new series has also been rebased on TOT, didn't affect the patches,
-but worth the heads up.
+---
+V4:
+	- rebase on previous patch update (blank line removal)
+	- Fix sbi_ecall to pass SBI_BASE_EXT as argument
+V3:
+	- Adapt patch to use __base_sbi_ecall
 
-Patches tagged with V4 needed modifications from the previous version.
+ riscv/sbi.c | 43 ++++++++++++++++++++++++++++++++-----------
+ 1 file changed, 32 insertions(+), 11 deletions(-)
 
-Detailed updates are specified on a patch-basis
-
-
-Carlos Maiolino (6):
-  riscv: Add a wrapper to call sbi_ecall for base extension
-  riscv: Add test to probe SBI Extension
-  riscv: Factor out environment variable check and report generation
-  riscv: Implement test for architecture ID register
-  riscv: Enable gen_report() to print the wrong value in case of failure
-  riscv: Test for specific SBI implementation ID
-
- riscv/sbi.c | 81 +++++++++++++++++++++++++++++++++++++++++++++--------
- 1 file changed, 69 insertions(+), 12 deletions(-)
-
+diff --git a/riscv/sbi.c b/riscv/sbi.c
+index 76b72a80..519c5a0c 100644
+--- a/riscv/sbi.c
++++ b/riscv/sbi.c
+@@ -19,28 +19,49 @@ static struct sbiret __base_sbi_ecall(int fid, unsigned long arg0)
+ 	return sbi_ecall(SBI_EXT_BASE, fid, arg0, 0, 0, 0, 0, 0);
+ }
+ 
+-int main(int argc, char **argv)
++static void check_base(void)
+ {
+ 	struct sbiret ret;
+ 	long expected;
+ 
+-	if (argc > 1 && !strcmp(argv[1], "-h")) {
+-		help();
+-		exit(0);
+-	}
+-
+-	report_prefix_push("sbi");
++	report_prefix_push("base");
+ 
+ 	if (!getenv("MVENDORID")) {
+ 		report_skip("mvendorid: missing MVENDORID environment variable");
+-		goto done;
++		return;
+ 	}
++
++	report_prefix_push("mvendorid");
+ 	expected = strtol(getenv("MVENDORID"), NULL, 0);
+ 
+ 	ret = __base_sbi_ecall(SBI_EXT_BASE_GET_MVENDORID, 0);
+-	report(!ret.error, "mvendorid: no error");
+-	report(ret.value == expected, "mvendorid");
+ 
+-done:
++	report(!ret.error, "no sbi.error");
++	report(ret.value == expected, "expected sbi.value");
++	report_prefix_pop();
++
++	report_prefix_push("probe_ext");
++	expected = getenv("PROBE_EXT") ? strtol(getenv("PROBE_EXT"), NULL, 0) : 1;
++
++	ret = __base_sbi_ecall(SBI_EXT_BASE_PROBE_EXT, SBI_EXT_BASE);
++
++	report(!ret.error, "no sbi.error");
++	report(ret.value == expected, "expected sbi.value");
++	report_prefix_pop();
++
++	report_prefix_pop();
++}
++
++int main(int argc, char **argv)
++{
++
++	if (argc > 1 && !strcmp(argv[1], "-h")) {
++		help();
++		exit(0);
++	}
++
++	report_prefix_push("sbi");
++	check_base();
++
+ 	return report_summary();
+ }
 -- 
 2.44.0
 
