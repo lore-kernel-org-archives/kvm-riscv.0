@@ -1,86 +1,68 @@
-From: cem@kernel.org <cem@kernel.org>
-Date: Wed, 13 Mar 2024 15:53:28 +0100
-Subject: [PATCH 5/6] riscv: Enable gen_report() to print the wrong value in case of failure
-In-Reply-To: <20240313145336.311611-1-cem@kernel.org>
+From: Andrew Jones <ajones@ventanamicro.com>
+Date: Wed, 13 Mar 2024 20:24:15 +0100
+Subject: [PATCH 1/6] riscv: Add a wrapper to call sbi_ecall for base
+ extension
+In-Reply-To: <20240313145336.311611-2-cem@kernel.org>
 References: <20240313145336.311611-1-cem@kernel.org>
-Message-ID: <20240313145336.311611-6-cem@kernel.org>
+ <20240313145336.311611-2-cem@kernel.org>
+Message-ID: <20240313-c6e01559c99c5f640998927b@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Carlos Maiolino <cem@kernel.org>
+On Wed, Mar 13, 2024 at 03:53:24PM +0100, cem at kernel.org wrote:
+> From: Carlos Maiolino <cem@kernel.org>
+> 
+> All SBI extension functions accepts at most one argument, so create a
+> wrapper around sbi_ecall() to avoid needing to pass in arguments 1 to 5
+> all the time, also, the wrapper can specify SBI_EXT_BASE directly.
+> 
+> Signed-off-by: Carlos Maiolino <cmaiolino@redhat.com>
+> ---
+> V3:
+> 	- Move to the beginning of the series
+> 	- Don't mark __base_sbi_ecall() as inline
+> V2:
+> 	- This patch was introduced in V2
+> 
+>  riscv/sbi.c | 8 +++++++-
+>  1 file changed, 7 insertions(+), 1 deletion(-)
+> 
+> diff --git a/riscv/sbi.c b/riscv/sbi.c
+> index ffb07a25..48d0b06e 100644
+> --- a/riscv/sbi.c
+> +++ b/riscv/sbi.c
+> @@ -14,7 +14,13 @@ static void help(void)
+>  	puts("An environ must be provided where expected values are given.\n");
+>  }
+>  
+> +static struct sbiret __base_sbi_ecall(int fid, unsigned long arg0)
+> +{
+> +	return sbi_ecall(SBI_EXT_BASE, fid, arg0, 0, 0, 0, 0, 0);
+> +}
+> +
+>  int main(int argc, char **argv)
+> +
 
-If the test fails because the expected value doesn't match, it's
-useful to know what value was actually printed.
+stray blank line
 
-Signed-off-by: Carlos Maiolino <cmaiolino@redhat.com>
----
-V3:
-	- Include expected error check in gen_report()
-	- Implement Drew's suggestion on cleaning up the function a bit
-	- Update patch to use __base_sbi_ecall()
-V2:
-	- Reduce subject to fit 70 chars
-	- Use report_info() to output expected vs received values,
-	  leaving only necessary information for parsers on report()
+>  {
+>  	struct sbiret ret;
+>  	long expected;
+> @@ -32,7 +38,7 @@ int main(int argc, char **argv)
+>  	}
+>  	expected = strtol(getenv("MVENDORID"), NULL, 0);
+>  
+> -	ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_GET_MVENDORID, 0, 0, 0, 0, 0, 0);
+> +	ret = __base_sbi_ecall(SBI_EXT_BASE_GET_MVENDORID, 0);
+>  	report(!ret.error, "mvendorid: no error");
+>  	report(ret.value == expected, "mvendorid");
+>  
+> -- 
+> 2.44.0
+> 
 
- riscv/sbi.c | 20 ++++++++++++++------
- 1 file changed, 14 insertions(+), 6 deletions(-)
-
-diff --git a/riscv/sbi.c b/riscv/sbi.c
-index 56b27765..a4a16325 100644
---- a/riscv/sbi.c
-+++ b/riscv/sbi.c
-@@ -30,10 +30,18 @@ static bool env_or_skip(const char *env)
- 	return true;
- }
- 
--static void gen_report(struct sbiret *ret, long expected)
-+static void gen_report(struct sbiret *ret,
-+		       long expected_error, long expected_value)
- {
--	report(!ret->error, "no sbi.error");
--	report(ret->value == expected, "expected sbi.value");
-+	bool check_error = ret->error == expected_error;
-+	bool check_value = ret->value == expected_value;
-+
-+	if (!check_error || !check_value)
-+		report_info("expected (error: %ld, value: %ld), received: (error: %ld, value %ld)\n",
-+			    expected_error, expected_value, ret->error, ret->value);
-+
-+	report(check_error, "expected sbi.error");
-+	report(check_value, "expected sbi.value");
- }
- 
- static void check_base(void)
-@@ -47,21 +55,21 @@ static void check_base(void)
- 	if (env_or_skip("MVENDORID")) {
- 		expected = strtol(getenv("MVENDORID"), NULL, 0);
- 		ret = __base_sbi_ecall(SBI_EXT_BASE_GET_MVENDORID, 0);
--		gen_report(&ret, expected);
-+		gen_report(&ret, 0, expected);
- 	}
- 	report_prefix_pop();
- 
- 	report_prefix_push("probe_ext");
- 	expected = getenv("PROBE_EXT") ? strtol(getenv("PROBE_EXT"), NULL, 0) : 1;
- 	ret = __base_sbi_ecall(SBI_EXT_BASE_PROBE_EXT, 0);
--	gen_report(&ret, expected);
-+	gen_report(&ret, 0, expected);
- 	report_prefix_pop();
- 
- 	report_prefix_push("marchid");
- 	if (env_or_skip("MARCHID")) {
- 		expected = strtol(getenv("MARCHID"), NULL, 0);
- 		ret = __base_sbi_ecall(SBI_EXT_BASE_GET_MARCHID, 0);
--		gen_report(&ret, expected);
-+		gen_report(&ret, 0, expected);
- 	}
- 	report_prefix_pop();
- 
--- 
-2.44.0
-
+Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
 
