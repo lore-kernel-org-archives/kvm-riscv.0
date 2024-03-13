@@ -1,104 +1,103 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Wed, 13 Mar 2024 12:11:41 +0100
-Subject: [PATCH V2 2/6] riscv: Factor out environment variable check and
- report generation
-In-Reply-To: <20240313084644.277426-3-cem@kernel.org>
+Date: Wed, 13 Mar 2024 12:19:00 +0100
+Subject: [PATCH V2 4/6] riscv: Enable gen_report() to print the wrong
+ value in case of failure
+In-Reply-To: <20240313084644.277426-5-cem@kernel.org>
 References: <20240313084644.277426-1-cem@kernel.org>
- <20240313084644.277426-3-cem@kernel.org>
-Message-ID: <20240313-ce781d871afc27c6af263b2e@orel>
+ <20240313084644.277426-5-cem@kernel.org>
+Message-ID: <20240313-5ecfc895c3e1aed8a053c0da@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Mar 13, 2024 at 09:46:20AM +0100, cem at kernel.org wrote:
+On Wed, Mar 13, 2024 at 09:46:22AM +0100, cem at kernel.org wrote:
 > From: Carlos Maiolino <cem@kernel.org>
 > 
-> We do check Environment variables and generate reports all the time,
-> so use a couple of helpers for that
+> If the test fails because the expected value doesn't match, it's
+> useful to know what value was actually printed.
 > 
 > Signed-off-by: Carlos Maiolino <cmaiolino@redhat.com>
 > ---
-> 
 > V2:
-> 	- Rename env_is_defined() to env_or_skip()
-> 	- Add information about gen_report() in the commit message
-> 	- PROBE_EXT is not mandatory, so we don't need to pass it to
-> 	  env_or_skip().
+> 	- Reduce subject to fit 70 chars
+> 	- Use report_info() to output expected vs received values,
+> 	  leaving only necessary information for parsers on report()
 > 
->  riscv/sbi.c | 38 +++++++++++++++++++++++---------------
->  1 file changed, 23 insertions(+), 15 deletions(-)
+>  riscv/sbi.c | 17 +++++++++++------
+>  1 file changed, 11 insertions(+), 6 deletions(-)
 > 
 > diff --git a/riscv/sbi.c b/riscv/sbi.c
-> index 1d73d8f1..519fcbe3 100644
+> index 76f6111d..bc0f5c68 100644
 > --- a/riscv/sbi.c
 > +++ b/riscv/sbi.c
-> @@ -14,6 +14,23 @@ static void help(void)
->  	puts("An environ must be provided where expected values are given.\n");
+> @@ -25,10 +25,15 @@ static bool env_or_skip(const char *env)
+>  	return true;
 >  }
 >  
-> +static bool env_or_skip(const char *env)
-> +{
-> +
-> +	if (!getenv(env)) {
-> +		report_skip("missing %s environment variable", env);
-> +		return false;
-> +	}
-> +
-> +	return true;
-> +}
-> +
-> +static void gen_report(struct sbiret *ret, long expected)
-
-I see you add expected_error in a later patch. I probably would have done
-that here at function introduction time, but OK.
-
-> +{
-> +	report(!ret->error, "no sbi.error");
-> +	report(ret->value == expected, "expected sbi.value");
-> +}
-> +
->  static void check_base(void)
+> -static void gen_report(struct sbiret *ret, long expected)
+> +static void gen_report(struct sbiret *ret,
+> +		       long expected_error, long expected_value)
 >  {
->  	struct sbiret ret;
-> @@ -21,27 +38,18 @@ static void check_base(void)
+> -	report(!ret->error, "no sbi.error");
+> -	report(ret->value == expected, "expected sbi.value");
+> +	if (ret->value != expected_value)
+
+This should be
+
+  if (ret->error != expected_error || ret->value != expected_value)
+
+> +		report_info("expected (error: %ld, value: %ld), received: (error: %ld, value %ld)\n",
+> +			    expected_error, expected_value, ret->error, ret->value);
+> +
+> +	report(ret->error == expected_error, "expected sbi.error");
+> +	report(ret->value == expected_value, "expected sbi.value");
+
+nit: We can reduce some code clutter with
+
+ bool check_error = ret->error == expected_error;
+ bool check_value = ret->value == expected_value;
+
+ if (!check_error || !check_value)
+   report_info(...);
+
+ report(check_error, ...);
+ report(check_value, ...);
+
+>  }
 >  
->  	report_prefix_push("base");
->  
-> -	if (!getenv("MVENDORID")) {
-> -		report_skip("mvendorid: missing MVENDORID environment variable");
-> -		return;
-> -	}
-> -
->  	report_prefix_push("mvendorid");
-> -	expected = strtol(getenv("MVENDORID"), NULL, 0);
-> -
-> -	ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_GET_MVENDORID, 0, 0, 0, 0, 0, 0);
-> -
-> -	report(!ret.error, "no sbi.error");
-> -	report(ret.value == expected, "expected sbi.value");
-> +	if (env_or_skip("MVENDORID")) {
-> +		expected = strtol(getenv("MVENDORID"), NULL, 0);
-> +		ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_GET_MVENDORID, 0, 0, 0, 0, 0, 0);
-> +		gen_report(&ret, expected);
-> +	}
+>  static void check_base(void)
+> @@ -42,14 +47,14 @@ static void check_base(void)
+>  	if (env_or_skip("MVENDORID")) {
+>  		expected = strtol(getenv("MVENDORID"), NULL, 0);
+>  		ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_GET_MVENDORID, 0, 0, 0, 0, 0, 0);
+> -		gen_report(&ret, expected);
+> +		gen_report(&ret, 0, expected);
+>  	}
 >  	report_prefix_pop();
 >  
 >  	report_prefix_push("probe_ext");
 >  	expected = getenv("PROBE_EXT") ? strtol(getenv("PROBE_EXT"), NULL, 0) : 1;
-> -
 >  	ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_PROBE_EXT, SBI_EXT_BASE, 0, 0, 0, 0, 0);
-> -
-> -	report(!ret.error, "no sbi.error");
-> -	report(ret.value == expected, "expected sbi.value");
-> +	gen_report(&ret, expected);
+> -	gen_report(&ret, expected);
+> +	gen_report(&ret, 0, expected);
 >  	report_prefix_pop();
 >  
+>  	report_prefix_push("marchid");
+> @@ -57,7 +62,7 @@ static void check_base(void)
+>  		expected = strtol(getenv("MARCHID"), NULL, 0);
+>  		ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_PROBE_EXT,
+>  				SBI_EXT_BASE_GET_MARCHID, 0, 0, 0, 0, 0);
+> -		gen_report(&ret, expected);
+> +		gen_report(&ret, 0, expected);
+>  	}
 >  	report_prefix_pop();
+>  
 > -- 
 > 2.44.0
 >
 
-Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+Thanks,
+drew
 
