@@ -1,9 +1,9 @@
 From: cem@kernel.org <cem@kernel.org>
-Date: Wed, 13 Mar 2024 15:53:27 +0100
-Subject: [PATCH 4/6] riscv: Implement test for architecture ID register
+Date: Wed, 13 Mar 2024 15:53:26 +0100
+Subject: [PATCH 3/6] riscv: Factor out environment variable check and report generation
 In-Reply-To: <20240313145336.311611-1-cem@kernel.org>
 References: <20240313145336.311611-1-cem@kernel.org>
-Message-ID: <20240313145336.311611-5-cem@kernel.org>
+Message-ID: <20240313145336.311611-4-cem@kernel.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -12,39 +12,79 @@ Content-Transfer-Encoding: 7bit
 
 From: Carlos Maiolino <cem@kernel.org>
 
-Probe the MARCHID register and compare it to the specified MARCHID
-environment variable.
+We do check Environment variables and generate reports all the time,
+so use a couple of helpers for that
 
 Signed-off-by: Carlos Maiolino <cmaiolino@redhat.com>
 ---
 V3:
-	- Adapt to use __base_sbi_ecall (which also fixes the wrong paramenters)
-V2:
-	- Wrap commit message around 70 chars
-	- Remove unneeded blank lines
+	- Adapt to use __base_sbi_ecall()
 
- riscv/sbi.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ riscv/sbi.c | 38 +++++++++++++++++++++++---------------
+ 1 file changed, 23 insertions(+), 15 deletions(-)
 
 diff --git a/riscv/sbi.c b/riscv/sbi.c
-index ce0be84f..56b27765 100644
+index 55bfcd42..ce0be84f 100644
 --- a/riscv/sbi.c
 +++ b/riscv/sbi.c
-@@ -57,6 +57,14 @@ static void check_base(void)
- 	gen_report(&ret, expected);
- 	report_prefix_pop();
- 
-+	report_prefix_push("marchid");
-+	if (env_or_skip("MARCHID")) {
-+		expected = strtol(getenv("MARCHID"), NULL, 0);
-+		ret = __base_sbi_ecall(SBI_EXT_BASE_GET_MARCHID, 0);
-+		gen_report(&ret, expected);
-+	}
-+	report_prefix_pop();
-+
- 	report_prefix_pop();
+@@ -19,6 +19,23 @@ static struct sbiret __base_sbi_ecall(int fid, unsigned long arg0)
+ 	return sbi_ecall(SBI_EXT_BASE, fid, arg0, 0, 0, 0, 0, 0);
  }
  
++static bool env_or_skip(const char *env)
++{
++
++	if (!getenv(env)) {
++		report_skip("missing %s environment variable", env);
++		return false;
++	}
++
++	return true;
++}
++
++static void gen_report(struct sbiret *ret, long expected)
++{
++	report(!ret->error, "no sbi.error");
++	report(ret->value == expected, "expected sbi.value");
++}
++
+ static void check_base(void)
+ {
+ 	struct sbiret ret;
+@@ -26,27 +43,18 @@ static void check_base(void)
+ 
+ 	report_prefix_push("base");
+ 
+-	if (!getenv("MVENDORID")) {
+-		report_skip("mvendorid: missing MVENDORID environment variable");
+-		return;
+-	}
+-
+ 	report_prefix_push("mvendorid");
+-	expected = strtol(getenv("MVENDORID"), NULL, 0);
+-
+-	ret = __base_sbi_ecall(SBI_EXT_BASE_GET_MVENDORID, 0);
+-
+-	report(!ret.error, "no sbi.error");
+-	report(ret.value == expected, "expected sbi.value");
++	if (env_or_skip("MVENDORID")) {
++		expected = strtol(getenv("MVENDORID"), NULL, 0);
++		ret = __base_sbi_ecall(SBI_EXT_BASE_GET_MVENDORID, 0);
++		gen_report(&ret, expected);
++	}
+ 	report_prefix_pop();
+ 
+ 	report_prefix_push("probe_ext");
+ 	expected = getenv("PROBE_EXT") ? strtol(getenv("PROBE_EXT"), NULL, 0) : 1;
+-
+ 	ret = __base_sbi_ecall(SBI_EXT_BASE_PROBE_EXT, 0);
+-
+-	report(!ret.error, "no sbi.error");
+-	report(ret.value == expected, "expected sbi.value");
++	gen_report(&ret, expected);
+ 	report_prefix_pop();
+ 
+ 	report_prefix_pop();
 -- 
 2.44.0
 
