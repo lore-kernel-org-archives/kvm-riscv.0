@@ -1,47 +1,71 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Thu, 14 Mar 2024 16:26:31 -0700
-Subject: [PATCH 12/18] KVM: selftests: Allocate x86's GDT during VM creation
+Date: Thu, 14 Mar 2024 16:26:35 -0700
+Subject: [PATCH 16/18] KVM: selftests: Add macro for TSS selector, rename up
+ code/data macros
 In-Reply-To: <20240314232637.2538648-1-seanjc@google.com>
 References: <20240314232637.2538648-1-seanjc@google.com>
-Message-ID: <20240314232637.2538648-13-seanjc@google.com>
+Message-ID: <20240314232637.2538648-17-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Allocate the GDT during creation of non-barebones VMs instead of waiting
-until the first vCPU is created, as the whole point of non-barebones VMs
-is to be able to run vCPUs, i.e. the GDT is going to get allocated no
-matter what.
+Add a proper #define for the TSS selector instead of open coding 0x18 and
+hoping future developers don't use that selector for something else.
+
+Opportunistically rename the code and data selector macros to shorten the
+names, align the naming with the kernel's scheme, and capture that they
+are *kernel* segments.
 
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- tools/testing/selftests/kvm/lib/x86_64/processor.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+ .../selftests/kvm/lib/x86_64/processor.c       | 18 +++++++++---------
+ 1 file changed, 9 insertions(+), 9 deletions(-)
 
 diff --git a/tools/testing/selftests/kvm/lib/x86_64/processor.c b/tools/testing/selftests/kvm/lib/x86_64/processor.c
-index f4046029f168..8547833ffa26 100644
+index 03b9387a1d2e..67235013f6f9 100644
 --- a/tools/testing/selftests/kvm/lib/x86_64/processor.c
 +++ b/tools/testing/selftests/kvm/lib/x86_64/processor.c
-@@ -518,9 +518,6 @@ vm_paddr_t addr_arch_gva2gpa(struct kvm_vm *vm, vm_vaddr_t gva)
+@@ -15,8 +15,9 @@
+ #define NUM_INTERRUPTS 256
+ #endif
  
- static void kvm_setup_gdt(struct kvm_vm *vm, struct kvm_dtable *dt)
- {
--	if (!vm->arch.gdt)
--		vm->arch.gdt = __vm_vaddr_alloc_page(vm, MEM_REGION_DATA);
--
- 	dt->base = vm->arch.gdt;
- 	dt->limit = getpagesize() - 1;
- }
-@@ -644,6 +641,7 @@ static void vm_init_descriptor_tables(struct kvm_vm *vm)
- 	extern void *idt_handlers;
- 	int i;
+-#define DEFAULT_CODE_SELECTOR 0x8
+-#define DEFAULT_DATA_SELECTOR 0x10
++#define KERNEL_CS	0x8
++#define KERNEL_DS	0x10
++#define KERNEL_TSS	0x18
  
-+	vm->arch.gdt = __vm_vaddr_alloc_page(vm, MEM_REGION_DATA);
- 	vm->arch.idt = __vm_vaddr_alloc_page(vm, MEM_REGION_DATA);
- 	vm->handlers = __vm_vaddr_alloc_page(vm, MEM_REGION_DATA);
+ #define MAX_NR_CPUID_ENTRIES 100
+ 
+@@ -547,11 +548,11 @@ static void vcpu_init_sregs(struct kvm_vm *vm, struct kvm_vcpu *vcpu)
+ 	sregs.efer |= (EFER_LME | EFER_LMA | EFER_NX);
+ 
+ 	kvm_seg_set_unusable(&sregs.ldt);
+-	kvm_seg_set_kernel_code_64bit(vm, DEFAULT_CODE_SELECTOR, &sregs.cs);
+-	kvm_seg_set_kernel_data_64bit(vm, DEFAULT_DATA_SELECTOR, &sregs.ds);
+-	kvm_seg_set_kernel_data_64bit(vm, DEFAULT_DATA_SELECTOR, &sregs.es);
+-	kvm_seg_set_kernel_data_64bit(NULL, DEFAULT_DATA_SELECTOR, &sregs.gs);
+-	kvm_setup_tss_64bit(vm, &sregs.tr, 0x18);
++	kvm_seg_set_kernel_code_64bit(vm, KERNEL_CS, &sregs.cs);
++	kvm_seg_set_kernel_data_64bit(vm, KERNEL_DS, &sregs.ds);
++	kvm_seg_set_kernel_data_64bit(vm, KERNEL_DS, &sregs.es);
++	kvm_seg_set_kernel_data_64bit(NULL, KERNEL_DS, &sregs.gs);
++	kvm_setup_tss_64bit(vm, &sregs.tr, KERNEL_TSS);
+ 
+ 	sregs.cr3 = vm->pgd;
+ 	vcpu_sregs_set(vcpu, &sregs);
+@@ -620,8 +621,7 @@ static void vm_init_descriptor_tables(struct kvm_vm *vm)
+ 
  	/* Handlers have the same address in both address spaces.*/
+ 	for (i = 0; i < NUM_INTERRUPTS; i++)
+-		set_idt_entry(vm, i, (unsigned long)(&idt_handlers)[i], 0,
+-			DEFAULT_CODE_SELECTOR);
++		set_idt_entry(vm, i, (unsigned long)(&idt_handlers)[i], 0, KERNEL_CS);
+ 
+ 	*(vm_vaddr_t *)addr_gva2hva(vm, (vm_vaddr_t)(&exception_handlers)) = vm->handlers;
+ }
 -- 
 2.44.0.291.gc1ea87d7ee-goog
 
