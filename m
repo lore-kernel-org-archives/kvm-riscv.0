@@ -1,156 +1,64 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Thu, 14 Mar 2024 16:26:22 -0700
-Subject: [PATCH 03/18] KVM: selftests: Move GDT, IDT, and TSS fields to x86's kvm_vm_arch
+Date: Thu, 14 Mar 2024 16:26:24 -0700
+Subject: [PATCH 05/18] KVM: selftests: Move platform_info_test's main assert
+ into guest code
 In-Reply-To: <20240314232637.2538648-1-seanjc@google.com>
 References: <20240314232637.2538648-1-seanjc@google.com>
-Message-ID: <20240314232637.2538648-4-seanjc@google.com>
+Message-ID: <20240314232637.2538648-6-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Now that kvm_vm_arch exists, move the GDT, IDT, and TSS fields to x86's
-implementation, as the structures are firmly x86-only.
+As a first step toward gracefully handling the expected #GP on RDMSR in
+platform_info_test, move the test's assert on the non-faulting RDMSR
+result into the guest itself.  This will allow using a unified flow for
+the host userspace side of things.
 
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- .../testing/selftests/kvm/include/kvm_util.h  |  3 ---
- .../kvm/include/x86_64/kvm_util_arch.h        |  6 +++++
- .../selftests/kvm/lib/x86_64/processor.c      | 22 +++++++++----------
- .../kvm/x86_64/svm_nested_shutdown_test.c     |  2 +-
- .../kvm/x86_64/svm_nested_soft_inject_test.c  |  2 +-
- 5 files changed, 19 insertions(+), 16 deletions(-)
+ .../selftests/kvm/x86_64/platform_info_test.c | 20 +++++++++++--------
+ 1 file changed, 12 insertions(+), 8 deletions(-)
 
-diff --git a/tools/testing/selftests/kvm/include/kvm_util.h b/tools/testing/selftests/kvm/include/kvm_util.h
-index acdcddf78e3f..58d6a4d6ce4f 100644
---- a/tools/testing/selftests/kvm/include/kvm_util.h
-+++ b/tools/testing/selftests/kvm/include/kvm_util.h
-@@ -94,9 +94,6 @@ struct kvm_vm {
- 	bool pgd_created;
- 	vm_paddr_t ucall_mmio_addr;
- 	vm_paddr_t pgd;
--	vm_vaddr_t gdt;
--	vm_vaddr_t tss;
--	vm_vaddr_t idt;
- 	vm_vaddr_t handlers;
- 	uint32_t dirty_ring_size;
- 	uint64_t gpa_tag_mask;
-diff --git a/tools/testing/selftests/kvm/include/x86_64/kvm_util_arch.h b/tools/testing/selftests/kvm/include/x86_64/kvm_util_arch.h
-index 9f1725192aa2..b14ff3a88b4a 100644
---- a/tools/testing/selftests/kvm/include/x86_64/kvm_util_arch.h
-+++ b/tools/testing/selftests/kvm/include/x86_64/kvm_util_arch.h
-@@ -5,7 +5,13 @@
- #include <stdbool.h>
- #include <stdint.h>
+diff --git a/tools/testing/selftests/kvm/x86_64/platform_info_test.c b/tools/testing/selftests/kvm/x86_64/platform_info_test.c
+index 87011965dc41..cdad7e2124c8 100644
+--- a/tools/testing/selftests/kvm/x86_64/platform_info_test.c
++++ b/tools/testing/selftests/kvm/x86_64/platform_info_test.c
+@@ -29,7 +29,9 @@ static void guest_code(void)
  
-+#include "kvm_util_types.h"
-+
- struct kvm_vm_arch {
-+	vm_vaddr_t gdt;
-+	vm_vaddr_t tss;
-+	vm_vaddr_t idt;
-+
- 	uint64_t c_bit;
- 	uint64_t s_bit;
- 	int sev_fd;
-diff --git a/tools/testing/selftests/kvm/lib/x86_64/processor.c b/tools/testing/selftests/kvm/lib/x86_64/processor.c
-index 74a4c736c9ae..45f965c052a1 100644
---- a/tools/testing/selftests/kvm/lib/x86_64/processor.c
-+++ b/tools/testing/selftests/kvm/lib/x86_64/processor.c
-@@ -417,7 +417,7 @@ static void kvm_seg_set_unusable(struct kvm_segment *segp)
+ 	for (;;) {
+ 		msr_platform_info = rdmsr(MSR_PLATFORM_INFO);
+-		GUEST_SYNC(msr_platform_info);
++		GUEST_ASSERT_EQ(msr_platform_info & MSR_PLATFORM_INFO_MAX_TURBO_RATIO,
++				MSR_PLATFORM_INFO_MAX_TURBO_RATIO);
++		GUEST_SYNC(0);
+ 		asm volatile ("inc %r11");
+ 	}
+ }
+@@ -42,13 +44,15 @@ static void test_msr_platform_info_enabled(struct kvm_vcpu *vcpu)
+ 	vcpu_run(vcpu);
+ 	TEST_ASSERT_KVM_EXIT_REASON(vcpu, KVM_EXIT_IO);
  
- static void kvm_seg_fill_gdt_64bit(struct kvm_vm *vm, struct kvm_segment *segp)
- {
--	void *gdt = addr_gva2hva(vm, vm->gdt);
-+	void *gdt = addr_gva2hva(vm, vm->arch.gdt);
- 	struct desc64 *desc = gdt + (segp->selector >> 3) * 8;
- 
- 	desc->limit0 = segp->limit & 0xFFFF;
-@@ -518,21 +518,21 @@ vm_paddr_t addr_arch_gva2gpa(struct kvm_vm *vm, vm_vaddr_t gva)
- 
- static void kvm_setup_gdt(struct kvm_vm *vm, struct kvm_dtable *dt)
- {
--	if (!vm->gdt)
--		vm->gdt = __vm_vaddr_alloc_page(vm, MEM_REGION_DATA);
-+	if (!vm->arch.gdt)
-+		vm->arch.gdt = __vm_vaddr_alloc_page(vm, MEM_REGION_DATA);
- 
--	dt->base = vm->gdt;
-+	dt->base = vm->arch.gdt;
- 	dt->limit = getpagesize();
+-	get_ucall(vcpu, &uc);
+-	TEST_ASSERT(uc.cmd == UCALL_SYNC,
+-			"Received ucall other than UCALL_SYNC: %lu", uc.cmd);
+-	TEST_ASSERT((uc.args[1] & MSR_PLATFORM_INFO_MAX_TURBO_RATIO) ==
+-		MSR_PLATFORM_INFO_MAX_TURBO_RATIO,
+-		"Expected MSR_PLATFORM_INFO to have max turbo ratio mask: %i.",
+-		MSR_PLATFORM_INFO_MAX_TURBO_RATIO);
++	switch (get_ucall(vcpu, &uc)) {
++	case UCALL_SYNC:
++		break;
++	case UCALL_ABORT:
++		REPORT_GUEST_ASSERT(uc);
++	default:
++		TEST_FAIL("Unexpected ucall %lu", uc.cmd);
++		break;
++	}
  }
  
- static void kvm_setup_tss_64bit(struct kvm_vm *vm, struct kvm_segment *segp,
- 				int selector)
- {
--	if (!vm->tss)
--		vm->tss = __vm_vaddr_alloc_page(vm, MEM_REGION_DATA);
-+	if (!vm->arch.tss)
-+		vm->arch.tss = __vm_vaddr_alloc_page(vm, MEM_REGION_DATA);
- 
- 	memset(segp, 0, sizeof(*segp));
--	segp->base = vm->tss;
-+	segp->base = vm->arch.tss;
- 	segp->limit = 0x67;
- 	segp->selector = selector;
- 	segp->type = 0xb;
-@@ -1091,7 +1091,7 @@ static void set_idt_entry(struct kvm_vm *vm, int vector, unsigned long addr,
- 			  int dpl, unsigned short selector)
- {
- 	struct idt_entry *base =
--		(struct idt_entry *)addr_gva2hva(vm, vm->idt);
-+		(struct idt_entry *)addr_gva2hva(vm, vm->arch.idt);
- 	struct idt_entry *e = &base[vector];
- 
- 	memset(e, 0, sizeof(*e));
-@@ -1144,7 +1144,7 @@ void vm_init_descriptor_tables(struct kvm_vm *vm)
- 	extern void *idt_handlers;
- 	int i;
- 
--	vm->idt = __vm_vaddr_alloc_page(vm, MEM_REGION_DATA);
-+	vm->arch.idt = __vm_vaddr_alloc_page(vm, MEM_REGION_DATA);
- 	vm->handlers = __vm_vaddr_alloc_page(vm, MEM_REGION_DATA);
- 	/* Handlers have the same address in both address spaces.*/
- 	for (i = 0; i < NUM_INTERRUPTS; i++)
-@@ -1158,9 +1158,9 @@ void vcpu_init_descriptor_tables(struct kvm_vcpu *vcpu)
- 	struct kvm_sregs sregs;
- 
- 	vcpu_sregs_get(vcpu, &sregs);
--	sregs.idt.base = vm->idt;
-+	sregs.idt.base = vm->arch.idt;
- 	sregs.idt.limit = NUM_INTERRUPTS * sizeof(struct idt_entry) - 1;
--	sregs.gdt.base = vm->gdt;
-+	sregs.gdt.base = vm->arch.gdt;
- 	sregs.gdt.limit = getpagesize() - 1;
- 	kvm_seg_set_kernel_data_64bit(NULL, DEFAULT_DATA_SELECTOR, &sregs.gs);
- 	vcpu_sregs_set(vcpu, &sregs);
-diff --git a/tools/testing/selftests/kvm/x86_64/svm_nested_shutdown_test.c b/tools/testing/selftests/kvm/x86_64/svm_nested_shutdown_test.c
-index d6fcdcc3af31..f4a1137e04ab 100644
---- a/tools/testing/selftests/kvm/x86_64/svm_nested_shutdown_test.c
-+++ b/tools/testing/selftests/kvm/x86_64/svm_nested_shutdown_test.c
-@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
- 
- 	vcpu_alloc_svm(vm, &svm_gva);
- 
--	vcpu_args_set(vcpu, 2, svm_gva, vm->idt);
-+	vcpu_args_set(vcpu, 2, svm_gva, vm->arch.idt);
- 
- 	vcpu_run(vcpu);
- 	TEST_ASSERT_KVM_EXIT_REASON(vcpu, KVM_EXIT_SHUTDOWN);
-diff --git a/tools/testing/selftests/kvm/x86_64/svm_nested_soft_inject_test.c b/tools/testing/selftests/kvm/x86_64/svm_nested_soft_inject_test.c
-index 0c7ce3d4e83a..2478a9e50743 100644
---- a/tools/testing/selftests/kvm/x86_64/svm_nested_soft_inject_test.c
-+++ b/tools/testing/selftests/kvm/x86_64/svm_nested_soft_inject_test.c
-@@ -166,7 +166,7 @@ static void run_test(bool is_nmi)
- 
- 		idt_alt_vm = vm_vaddr_alloc_page(vm);
- 		idt_alt = addr_gva2hva(vm, idt_alt_vm);
--		idt = addr_gva2hva(vm, vm->idt);
-+		idt = addr_gva2hva(vm, vm->arch.idt);
- 		memcpy(idt_alt, idt, getpagesize());
- 	} else {
- 		idt_alt_vm = 0;
+ static void test_msr_platform_info_disabled(struct kvm_vcpu *vcpu)
 -- 
 2.44.0.291.gc1ea87d7ee-goog
 
