@@ -1,59 +1,45 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Thu, 14 Mar 2024 16:26:26 -0700
-Subject: [PATCH 07/18] KVM: selftests: Explicitly clobber the IDT in the
- "delete memslot" testcase
+Date: Thu, 14 Mar 2024 16:26:30 -0700
+Subject: [PATCH 11/18] KVM: selftests: Map x86's exception_handlers at VM
+ creation, not vCPU setup
 In-Reply-To: <20240314232637.2538648-1-seanjc@google.com>
 References: <20240314232637.2538648-1-seanjc@google.com>
-Message-ID: <20240314232637.2538648-8-seanjc@google.com>
+Message-ID: <20240314232637.2538648-12-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Explicitly clobber the guest IDT in the "delete memslot" test, which
-expects the deleted memslot to result in either a KVM emulation error, or
-a triple fault shutdown.  A future change to the core selftests library
-will configuring the guest IDT and exception handlers by default, i.e.
-will install a guest #PF handler and put the guest into an infinite #NPF
-loop (the guest hits a !PRESENT SPTE when trying to vector a #PF, and KVM
-reinjects the #PF without fixing the #NPF, because there is no memslot).
-
-Note, it's not clear whether or not KVM's behavior is reasonable in this
-case, e.g. arguably KVM should try (and fail) to emulate in response to
-the #NPF.  But barring a goofy/broken userspace, this scenario will likely
-never happen in practice.  Punt the KVM investigation to the future.
+Map x86's exception handlers at VM creation, not vCPU setup, as the
+mapping is per-VM, i.e. doesn't need to be (re)done for every vCPU.
 
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- tools/testing/selftests/kvm/set_memory_region_test.c | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
+ tools/testing/selftests/kvm/lib/x86_64/processor.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/tools/testing/selftests/kvm/set_memory_region_test.c b/tools/testing/selftests/kvm/set_memory_region_test.c
-index 06b43ed23580..9b814ea16eb4 100644
---- a/tools/testing/selftests/kvm/set_memory_region_test.c
-+++ b/tools/testing/selftests/kvm/set_memory_region_test.c
-@@ -221,8 +221,20 @@ static void test_move_memory_region(void)
+diff --git a/tools/testing/selftests/kvm/lib/x86_64/processor.c b/tools/testing/selftests/kvm/lib/x86_64/processor.c
+index 5813d93b2e7c..f4046029f168 100644
+--- a/tools/testing/selftests/kvm/lib/x86_64/processor.c
++++ b/tools/testing/selftests/kvm/lib/x86_64/processor.c
+@@ -552,7 +552,6 @@ static void vcpu_init_descriptor_tables(struct kvm_vcpu *vcpu)
+ 	sregs.gdt.limit = getpagesize() - 1;
+ 	kvm_seg_set_kernel_data_64bit(NULL, DEFAULT_DATA_SELECTOR, &sregs.gs);
+ 	vcpu_sregs_set(vcpu, &sregs);
+-	*(vm_vaddr_t *)addr_gva2hva(vm, (vm_vaddr_t)(&exception_handlers)) = vm->handlers;
+ }
  
- static void guest_code_delete_memory_region(void)
- {
-+	struct desc_ptr idt;
- 	uint64_t val;
- 
-+	/*
-+	 * Clobber the IDT so that a #PF due to the memory region being deleted
-+	 * escalates to triple-fault shutdown.  Because the memory region is
-+	 * deleted, there will be no valid mappings.  As a result, KVM will
-+	 * repeatedly intercepts the state-2 page fault that occurs when trying
-+	 * to vector the guest's #PF.  I.e. trying to actually handle the #PF
-+	 * in the guest will never succeed, and so isn't an option.
-+	 */
-+	memset(&idt, 0, sizeof(idt));
-+	__asm__ __volatile__("lidt %0" :: "m"(idt));
+ static void vcpu_init_sregs(struct kvm_vm *vm, struct kvm_vcpu *vcpu)
+@@ -651,6 +650,8 @@ static void vm_init_descriptor_tables(struct kvm_vm *vm)
+ 	for (i = 0; i < NUM_INTERRUPTS; i++)
+ 		set_idt_entry(vm, i, (unsigned long)(&idt_handlers)[i], 0,
+ 			DEFAULT_CODE_SELECTOR);
 +
- 	GUEST_SYNC(0);
++	*(vm_vaddr_t *)addr_gva2hva(vm, (vm_vaddr_t)(&exception_handlers)) = vm->handlers;
+ }
  
- 	/* Spin until the memory region is deleted. */
+ void vm_install_exception_handler(struct kvm_vm *vm, int vector,
 -- 
 2.44.0.291.gc1ea87d7ee-goog
 
