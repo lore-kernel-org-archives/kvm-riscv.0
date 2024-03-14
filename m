@@ -1,71 +1,118 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Thu, 14 Mar 2024 16:26:35 -0700
-Subject: [PATCH 16/18] KVM: selftests: Add macro for TSS selector, rename up
- code/data macros
+Date: Thu, 14 Mar 2024 16:26:37 -0700
+Subject: [PATCH 18/18] KVM: selftests: Drop @selector from segment helpers
 In-Reply-To: <20240314232637.2538648-1-seanjc@google.com>
 References: <20240314232637.2538648-1-seanjc@google.com>
-Message-ID: <20240314232637.2538648-17-seanjc@google.com>
+Message-ID: <20240314232637.2538648-19-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add a proper #define for the TSS selector instead of open coding 0x18 and
-hoping future developers don't use that selector for something else.
+Drop the @selector from the kernel code, data, and TSS builders and
+instead hardcode the respective selector in the helper.  Accepting a
+selector but not a base makes the selector useless, e.g. the data helper
+can't create per-vCPU for FS or GS, and so loading GS with KERNEL_DS is
+the only logical choice.
 
-Opportunistically rename the code and data selector macros to shorten the
-names, align the naming with the kernel's scheme, and capture that they
-are *kernel* segments.
+And for code and TSS, there is no known reason to ever want multiple
+segments, e.g. there are zero plans to support 32-bit kernel code (and
+again, that would require more than just the selector).
+
+If KVM selftests ever do add support for per-vCPU segments, it'd arguably
+be more readable to add a dedicated helper for building/setting the
+per-vCPU segment, and move the common data segment code to an inner
+helper.
+
+Lastly, hardcoding the selector reduces the probability of setting the
+wrong selector in the vCPU versus what was created by the VM in the GDT.
 
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- .../selftests/kvm/lib/x86_64/processor.c       | 18 +++++++++---------
- 1 file changed, 9 insertions(+), 9 deletions(-)
+ .../selftests/kvm/lib/x86_64/processor.c      | 29 +++++++++----------
+ 1 file changed, 14 insertions(+), 15 deletions(-)
 
 diff --git a/tools/testing/selftests/kvm/lib/x86_64/processor.c b/tools/testing/selftests/kvm/lib/x86_64/processor.c
-index 03b9387a1d2e..67235013f6f9 100644
+index dab719ee7734..6abd50d6e59d 100644
 --- a/tools/testing/selftests/kvm/lib/x86_64/processor.c
 +++ b/tools/testing/selftests/kvm/lib/x86_64/processor.c
-@@ -15,8 +15,9 @@
- #define NUM_INTERRUPTS 256
- #endif
+@@ -438,10 +438,10 @@ static void kvm_seg_fill_gdt_64bit(struct kvm_vm *vm, struct kvm_segment *segp)
+ 		desc->base3 = segp->base >> 32;
+ }
  
--#define DEFAULT_CODE_SELECTOR 0x8
--#define DEFAULT_DATA_SELECTOR 0x10
-+#define KERNEL_CS	0x8
-+#define KERNEL_DS	0x10
-+#define KERNEL_TSS	0x18
+-static void kvm_seg_set_kernel_code_64bit(uint16_t selector, struct kvm_segment *segp)
++static void kvm_seg_set_kernel_code_64bit(struct kvm_segment *segp)
+ {
+ 	memset(segp, 0, sizeof(*segp));
+-	segp->selector = selector;
++	segp->selector = KERNEL_CS;
+ 	segp->limit = 0xFFFFFFFFu;
+ 	segp->s = 0x1; /* kTypeCodeData */
+ 	segp->type = 0x08 | 0x01 | 0x02; /* kFlagCode | kFlagCodeAccessed
+@@ -452,10 +452,10 @@ static void kvm_seg_set_kernel_code_64bit(uint16_t selector, struct kvm_segment
+ 	segp->present = 1;
+ }
  
- #define MAX_NR_CPUID_ENTRIES 100
+-static void kvm_seg_set_kernel_data_64bit(uint16_t selector, struct kvm_segment *segp)
++static void kvm_seg_set_kernel_data_64bit(struct kvm_segment *segp)
+ {
+ 	memset(segp, 0, sizeof(*segp));
+-	segp->selector = selector;
++	segp->selector = KERNEL_DS;
+ 	segp->limit = 0xFFFFFFFFu;
+ 	segp->s = 0x1; /* kTypeCodeData */
+ 	segp->type = 0x00 | 0x01 | 0x02; /* kFlagData | kFlagDataAccessed
+@@ -480,13 +480,12 @@ vm_paddr_t addr_arch_gva2gpa(struct kvm_vm *vm, vm_vaddr_t gva)
+ 	return vm_untag_gpa(vm, PTE_GET_PA(*pte)) | (gva & ~HUGEPAGE_MASK(level));
+ }
  
-@@ -547,11 +548,11 @@ static void vcpu_init_sregs(struct kvm_vm *vm, struct kvm_vcpu *vcpu)
+-static void kvm_seg_set_tss_64bit(vm_vaddr_t base, struct kvm_segment *segp,
+-				  int selector)
++static void kvm_seg_set_tss_64bit(vm_vaddr_t base, struct kvm_segment *segp)
+ {
+ 	memset(segp, 0, sizeof(*segp));
+ 	segp->base = base;
+ 	segp->limit = 0x67;
+-	segp->selector = selector;
++	segp->selector = KERNEL_TSS;
+ 	segp->type = 0xb;
+ 	segp->present = 1;
+ }
+@@ -510,11 +509,11 @@ static void vcpu_init_sregs(struct kvm_vm *vm, struct kvm_vcpu *vcpu)
  	sregs.efer |= (EFER_LME | EFER_LMA | EFER_NX);
  
  	kvm_seg_set_unusable(&sregs.ldt);
--	kvm_seg_set_kernel_code_64bit(vm, DEFAULT_CODE_SELECTOR, &sregs.cs);
--	kvm_seg_set_kernel_data_64bit(vm, DEFAULT_DATA_SELECTOR, &sregs.ds);
--	kvm_seg_set_kernel_data_64bit(vm, DEFAULT_DATA_SELECTOR, &sregs.es);
--	kvm_seg_set_kernel_data_64bit(NULL, DEFAULT_DATA_SELECTOR, &sregs.gs);
--	kvm_setup_tss_64bit(vm, &sregs.tr, 0x18);
-+	kvm_seg_set_kernel_code_64bit(vm, KERNEL_CS, &sregs.cs);
-+	kvm_seg_set_kernel_data_64bit(vm, KERNEL_DS, &sregs.ds);
-+	kvm_seg_set_kernel_data_64bit(vm, KERNEL_DS, &sregs.es);
-+	kvm_seg_set_kernel_data_64bit(NULL, KERNEL_DS, &sregs.gs);
-+	kvm_setup_tss_64bit(vm, &sregs.tr, KERNEL_TSS);
+-	kvm_seg_set_kernel_code_64bit(KERNEL_CS, &sregs.cs);
+-	kvm_seg_set_kernel_data_64bit(KERNEL_DS, &sregs.ds);
+-	kvm_seg_set_kernel_data_64bit(KERNEL_DS, &sregs.es);
+-	kvm_seg_set_kernel_data_64bit(KERNEL_DS, &sregs.gs);
+-	kvm_seg_set_tss_64bit(vm->arch.tss, &sregs.tr, KERNEL_TSS);
++	kvm_seg_set_kernel_code_64bit(&sregs.cs);
++	kvm_seg_set_kernel_data_64bit(&sregs.ds);
++	kvm_seg_set_kernel_data_64bit(&sregs.es);
++	kvm_seg_set_kernel_data_64bit(&sregs.gs);
++	kvm_seg_set_tss_64bit(vm->arch.tss, &sregs.tr);
  
  	sregs.cr3 = vm->pgd;
  	vcpu_sregs_set(vcpu, &sregs);
-@@ -620,8 +621,7 @@ static void vm_init_descriptor_tables(struct kvm_vm *vm)
- 
- 	/* Handlers have the same address in both address spaces.*/
- 	for (i = 0; i < NUM_INTERRUPTS; i++)
--		set_idt_entry(vm, i, (unsigned long)(&idt_handlers)[i], 0,
--			DEFAULT_CODE_SELECTOR);
-+		set_idt_entry(vm, i, (unsigned long)(&idt_handlers)[i], 0, KERNEL_CS);
+@@ -588,13 +587,13 @@ static void vm_init_descriptor_tables(struct kvm_vm *vm)
  
  	*(vm_vaddr_t *)addr_gva2hva(vm, (vm_vaddr_t)(&exception_handlers)) = vm->handlers;
+ 
+-	kvm_seg_set_kernel_code_64bit(KERNEL_CS, &seg);
++	kvm_seg_set_kernel_code_64bit(&seg);
+ 	kvm_seg_fill_gdt_64bit(vm, &seg);
+ 
+-	kvm_seg_set_kernel_data_64bit(KERNEL_DS, &seg);
++	kvm_seg_set_kernel_data_64bit(&seg);
+ 	kvm_seg_fill_gdt_64bit(vm, &seg);
+ 
+-	kvm_seg_set_tss_64bit(vm->arch.tss, &seg, KERNEL_TSS);
++	kvm_seg_set_tss_64bit(vm->arch.tss, &seg);
+ 	kvm_seg_fill_gdt_64bit(vm, &seg);
  }
+ 
 -- 
 2.44.0.291.gc1ea87d7ee-goog
 
