@@ -1,62 +1,55 @@
 From: Carlos Maiolino <cmaiolino@redhat.com>
-Date: Fri, 15 Mar 2024 17:20:01 +0100
-Subject: [kvm-unit-tests PATCH 2/2] riscv: sbi: Test remaining base
- functions
-In-Reply-To: <20240315133244.579425-6-ajones@ventanamicro.com>
+Date: Fri, 15 Mar 2024 17:18:37 +0100
+Subject: [kvm-unit-tests PATCH 1/2] riscv: sbi: Check and test spec
+ version
+In-Reply-To: <20240315133244.579425-5-ajones@ventanamicro.com>
 References: <20240315133244.579425-4-ajones@ventanamicro.com>
- <20240315133244.579425-6-ajones@ventanamicro.com>
-Message-ID: <l7pu3pof2momotehm5374y633sezqoctmbxknpwpxsjqro5pgj@myqw7l4kif3f>
+ <20240315133244.579425-5-ajones@ventanamicro.com>
+Message-ID: <ug5drdbecffpxxpyyrp5ss75ilb7oapecrlvijma7syfeo67mv@uqohys6cyov7>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Mar 15, 2024 at 02:32:47PM +0100, Andrew Jones wrote:
-> Add the two remaining base extension functions to the base test.
+On Fri, Mar 15, 2024 at 02:32:46PM +0100, Andrew Jones wrote:
+> The base extension tests are only valid for spec versions 0.2 and
+> later, so ensure we have that before proceeding. Also check the
+> spec version matches an expected value, as we do the other functions.
 > 
 > Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
 > ---
->  riscv/sbi.c | 16 ++++++++++++++++
->  1 file changed, 16 insertions(+)
-> 
-> diff --git a/riscv/sbi.c b/riscv/sbi.c
-> index 707ce8dd1c57..762e9711c35a 100644
-> --- a/riscv/sbi.c
-> +++ b/riscv/sbi.c
-> @@ -71,6 +71,14 @@ static void check_base(void)
->  	}
->  	report_prefix_pop();
+>  riscv/sbi.c | 13 +++++++++++++
+>  1 file changed, 13 insertions(+)
 
+Looks good.
 Reviewed-by: Carlos Maiolino <cmaiolino@redhat.com>
 
+> 
+> diff --git a/riscv/sbi.c b/riscv/sbi.c
+> index cd36290ce11e..707ce8dd1c57 100644
+> --- a/riscv/sbi.c
+> +++ b/riscv/sbi.c
+> @@ -50,6 +50,19 @@ static void check_base(void)
 >  
-> +	report_prefix_push("impl_version");
-> +	if (env_or_skip("IMPL_VERSION")) {
-> +		expected = strtol(getenv("IMPL_VERSION"), NULL, 0);
-> +		ret = __base_sbi_ecall(SBI_EXT_BASE_GET_IMP_VERSION, 0);
+>  	report_prefix_push("base");
+>  
+> +	ret = __base_sbi_ecall(SBI_EXT_BASE_GET_SPEC_VERSION, 0);
+> +	if (ret.error || ret.value < 2) {
+> +		report_skip("SBI spec version 0.2 or higher required");
+> +		return;
+> +	}
+> +
+> +	report_prefix_push("spec_version");
+> +	if (env_or_skip("SPEC_VERSION")) {
+> +		expected = strtol(getenv("SPEC_VERSION"), NULL, 0);
 > +		gen_report(&ret, 0, expected);
 > +	}
 > +	report_prefix_pop();
 > +
->  	report_prefix_push("probe_ext");
->  	expected = getenv("PROBE_EXT") ? strtol(getenv("PROBE_EXT"), NULL, 0) : 1;
->  	ret = __base_sbi_ecall(SBI_EXT_BASE_PROBE_EXT, SBI_EXT_BASE);
-> @@ -93,6 +101,14 @@ static void check_base(void)
->  	}
->  	report_prefix_pop();
->  
-> +	report_prefix_push("mimpid");
-> +	if (env_or_skip("MIMPID")) {
-> +		expected = strtol(getenv("MIMPID"), NULL, 0);
-> +		ret = __base_sbi_ecall(SBI_EXT_BASE_GET_MIMPID, 0);
-> +		gen_report(&ret, 0, expected);
-> +	}
-> +	report_prefix_pop();
-> +
->  	report_prefix_pop();
->  }
->  
+>  	report_prefix_push("impl_id");
+>  	if (env_or_skip("IMPL_ID")) {
+>  		expected = strtol(getenv("IMPL_ID"), NULL, 0);
 > -- 
 > 2.44.0
 > 
