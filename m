@@ -1,86 +1,211 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Fri, 15 Mar 2024 14:40:10 +0100
-Subject: [PATCH 0/5] riscv: Apply Zawrs when available
-Message-ID: <20240315134009.580167-7-ajones@ventanamicro.com>
+Date: Fri, 15 Mar 2024 14:40:11 +0100
+Subject: [PATCH 1/5] riscv: Add Zawrs support for spinlocks
+In-Reply-To: <20240315134009.580167-7-ajones@ventanamicro.com>
+References: <20240315134009.580167-7-ajones@ventanamicro.com>
+Message-ID: <20240315134009.580167-8-ajones@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Zawrs provides two instructions (wrs.nto and wrs.sto), where both are
-meant to allow the hart to enter a low-power state while waiting on a
-store to a memory location. The instructions also both wait an
-implementation-defined "short" duration (unless the implementation
-terminates the stall for another reason). The difference is that while
-wrs.sto will terminate when the duration elapses, wrs.nto, depending on
-configuration, will either just keep waiting or an ILL exception will be
-raised.
+From: Christoph M?llner <christoph.muellner@vrull.eu>
 
-Like wfi (and with the same {m,h}status bits to configure it), when
-wrs.nto is configured to raise exceptions it's expected that the higher
-privilege level will see the instruction was a wait instruction, do
-something, and then resume execution following the instruction.
-Currently, it's not expected that M-mode will configure and handle
-exceptions for timeouts (so it's expected that mstatus.TW=0), but KVM does
-configure exceptions for wfi (hstatus.VTW=1) and therefore also for
-wrs.nto. KVM does this for wfi since it's better to allow other tasks to
-be scheduled while a VCPU waits for an interrupt. For waits such as those
-where wrs.nto/sto would be used, which are typically locks, it is also a
-good idea for KVM to be involved, as it can attempt to schedule the lock
-holding VCPU.
+The current RISC-V code uses the generic ticket lock implementation,
+that calls the macros smp_cond_load_relaxed() and smp_cond_load_acquire().
+Currently, RISC-V uses the generic implementation of these macros.
+This patch introduces a RISC-V specific implementation, of these
+macros, that peels off the first loop iteration and modifies the waiting
+loop such, that it is possible to use the WRS.STO instruction of the Zawrs
+ISA extension to stall the CPU.
 
-This series starts with Christoph's addition of riscv smp_cond_load*
-functions which apply wrs.sto when available. We then switch from
-wrs.sto to wrs.nto, add hwprobe support (since the instructions are also
-usable from usermode), and finally teach KVM about wrs.nto, allowing
-guests to see and use the Zawrs extension.
+The resulting implementation of smp_cond_load_*() will only work for
+32-bit or 64-bit types for RV64 and 32-bit types for RV32.
+This is caused by the restrictions of the LR instruction (RISC-V only
+has LR.W and LR.D). Compiler assertions guard this new restriction.
 
-We still don't have test results from hardware, and it's not possible to
-prove that using Zawrs is a win when testing on QEMU, not even when
-oversubscribing VCPUs to guests. However, it is possible to use KVM
-selftests to force a scenario where we can prove Zawrs does its job and
-does it well. [4] is a test which does this and, on my machine, without
-Zawrs it takes 16 seconds to complete and with Zawrs it takes 0.25
-seconds.
+This patch uses the existing RISC-V ISA extension framework
+to detect the presence of Zawrs at run-time.
+If available a NOP instruction will be replaced by WRS.NTO or WRS.STO.
 
-This series is based on kvm/queue and also available here [1]. In order
-to use QEMU for testing a build with [2] is needed. In order to enable
-guests to use Zawrs with KVM using kvmtool, the branch at [3] may be used.
+The whole mechanism is gated by Kconfig setting, which defaults to Y.
 
-[1] https://github.com/jones-drew/linux/commits/riscv/zawrs-v1/
-[2] https://lore.kernel.org/all/20240312152901.512001-2-ajones at ventanamicro.com/
-[3] https://github.com/jones-drew/kvmtool/commits/riscv/zawrs/
-[4] https://github.com/jones-drew/linux/commit/2e712b19b7bb78634199bf262e6a75e09e1c87d2
+The Zawrs specification can be found here:
+https://github.com/riscv/riscv-zawrs/blob/main/zawrs.adoc
 
-Thanks,
-drew
+Signed-off-by: Christoph M?llner <christoph.muellner@vrull.eu>
+[rebase, update to review comments]
+Signed-off-by: Heiko Stuebner <heiko.stuebner@vrull.eu>
+[rebase, move ALT_WRS* to barrier.h]
+Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
+---
+ arch/riscv/Kconfig               | 13 +++++
+ arch/riscv/include/asm/barrier.h | 82 ++++++++++++++++++++++++++++++++
+ arch/riscv/include/asm/hwcap.h   |  1 +
+ arch/riscv/kernel/cpufeature.c   |  1 +
+ 4 files changed, 97 insertions(+)
 
-
-Andrew Jones (4):
-  riscv: Prefer wrs.nto over wrs.sto
-  riscv: hwprobe: export Zawrs ISA extension
-  KVM: riscv: Support guest wrs.nto
-  KVM: riscv: selftests: Add Zawrs extension to get-reg-list test
-
-Christoph M?llner (1):
-  riscv: Add Zawrs support for spinlocks
-
- Documentation/arch/riscv/hwprobe.rst          |  4 +
- arch/riscv/Kconfig                            | 13 +++
- arch/riscv/include/asm/barrier.h              | 87 +++++++++++++++++++
- arch/riscv/include/asm/hwcap.h                |  1 +
- arch/riscv/include/asm/kvm_host.h             |  1 +
- arch/riscv/include/uapi/asm/hwprobe.h         |  1 +
- arch/riscv/include/uapi/asm/kvm.h             |  1 +
- arch/riscv/kernel/cpufeature.c                |  1 +
- arch/riscv/kernel/sys_hwprobe.c               |  1 +
- arch/riscv/kvm/vcpu.c                         |  1 +
- arch/riscv/kvm/vcpu_insn.c                    | 15 ++++
- arch/riscv/kvm/vcpu_onereg.c                  |  2 +
- .../selftests/kvm/riscv/get-reg-list.c        |  4 +
- 13 files changed, 132 insertions(+)
-
+diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
+index e3142ce531a0..2c296113aeb1 100644
+--- a/arch/riscv/Kconfig
++++ b/arch/riscv/Kconfig
+@@ -569,6 +569,19 @@ config RISCV_ISA_V_PREEMPTIVE
+ 	  preemption. Enabling this config will result in higher memory
+ 	  consumption due to the allocation of per-task's kernel Vector context.
+ 
++config RISCV_ISA_ZAWRS
++	bool "Zawrs extension support for more efficient busy waiting"
++	depends on RISCV_ALTERNATIVE
++	default y
++	help
++	   Enable the use of the Zawrs (wait for reservation set) extension
++	   when available.
++
++	   The Zawrs extension instructions (wrs.nto and wrs.sto) are used for
++	   more efficient busy waiting.
++
++	   If you don't know what to do here, say Y.
++
+ config TOOLCHAIN_HAS_ZBB
+ 	bool
+ 	default y
+diff --git a/arch/riscv/include/asm/barrier.h b/arch/riscv/include/asm/barrier.h
+index 110752594228..93b3f572d643 100644
+--- a/arch/riscv/include/asm/barrier.h
++++ b/arch/riscv/include/asm/barrier.h
+@@ -11,11 +11,26 @@
+ #define _ASM_RISCV_BARRIER_H
+ 
+ #ifndef __ASSEMBLY__
++#include <linux/compiler.h>
++#include <asm/alternative-macros.h>
++#include <asm/hwcap.h>
++#include <asm/rwonce.h>
+ 
+ #define nop()		__asm__ __volatile__ ("nop")
+ #define __nops(n)	".rept	" #n "\nnop\n.endr\n"
+ #define nops(n)		__asm__ __volatile__ (__nops(n))
+ 
++#define ZAWRS_WRS_NTO	".long 0x00d00073"
++#define ZAWRS_WRS_STO	".long 0x01d00073"
++#define ALT_WRS_NTO()							\
++	__asm__ __volatile__ (ALTERNATIVE(				\
++		"nop\n", ZAWRS_WRS_NTO "\n",				\
++		0, RISCV_ISA_EXT_ZAWRS, CONFIG_RISCV_ISA_ZAWRS))
++#define ALT_WRS_STO()							\
++	__asm__ __volatile__ (ALTERNATIVE(				\
++		"nop\n", ZAWRS_WRS_STO "\n",				\
++		0, RISCV_ISA_EXT_ZAWRS, CONFIG_RISCV_ISA_ZAWRS))
++
+ #define RISCV_FENCE(p, s) \
+ 	__asm__ __volatile__ ("fence " #p "," #s : : : "memory")
+ 
+@@ -44,6 +59,39 @@ do {									\
+ 	___p1;								\
+ })
+ 
++#define ___smp_load_reservedN(attr, ptr)				\
++({									\
++	typeof(*ptr) ___p1;						\
++									\
++	__asm__ __volatile__ ("lr." attr "       %[p], %[c]\n"		\
++			      : [p]"=&r" (___p1), [c]"+A"(*ptr));	\
++	___p1;								\
++})
++
++#define __smp_load_reserved_relaxed(ptr)				\
++({									\
++	typeof(*ptr) ___p1;						\
++									\
++	if (sizeof(*ptr) == sizeof(int))				\
++		___p1 = ___smp_load_reservedN("w", ptr);		\
++	else if (sizeof(*ptr) == sizeof(long))				\
++		___p1 = ___smp_load_reservedN("d", ptr);		\
++	else								\
++		compiletime_assert(0,					\
++		"Need type compatible with LR/SC instructions for "	\
++		__stringify(ptr));					\
++	___p1;								\
++})
++
++#define __smp_load_reserved_acquire(ptr)				\
++({									\
++	typeof(*ptr) ___p1;						\
++									\
++	___p1 = __smp_load_reserved_relaxed(ptr);			\
++	RISCV_FENCE(r, rw);						\
++	___p1;								\
++})
++
+ /*
+  * This is a very specific barrier: it's currently only used in two places in
+  * the kernel, both in the scheduler.  See include/linux/spinlock.h for the two
+@@ -71,6 +119,40 @@ do {									\
+  */
+ #define smp_mb__after_spinlock()	RISCV_FENCE(iorw,iorw)
+ 
++#define smp_cond_load_relaxed(ptr, cond_expr)				\
++({									\
++	typeof(ptr) __PTR = (ptr);					\
++	__unqual_scalar_typeof(*ptr) VAL;				\
++									\
++	VAL = READ_ONCE(*__PTR);					\
++	if (!cond_expr) {						\
++		for (;;) {						\
++			VAL = __smp_load_reserved_relaxed(__PTR);	\
++			if (cond_expr)					\
++				break;					\
++			ALT_WRS_STO();					\
++		}							\
++	}								\
++	(typeof(*ptr))VAL;						\
++})
++
++#define smp_cond_load_acquire(ptr, cond_expr)				\
++({									\
++	typeof(ptr) __PTR = (ptr);					\
++	__unqual_scalar_typeof(*ptr) VAL;				\
++									\
++	VAL = smp_load_acquire(__PTR);					\
++	if (!cond_expr) {						\
++		for (;;) {						\
++			VAL = __smp_load_reserved_acquire(__PTR);	\
++			if (cond_expr)					\
++				break;					\
++			ALT_WRS_STO();					\
++		}							\
++	}								\
++	(typeof(*ptr))VAL;						\
++})
++
+ #include <asm-generic/barrier.h>
+ 
+ #endif /* __ASSEMBLY__ */
+diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
+index 1f2d2599c655..eac7214a4bd0 100644
+--- a/arch/riscv/include/asm/hwcap.h
++++ b/arch/riscv/include/asm/hwcap.h
+@@ -80,6 +80,7 @@
+ #define RISCV_ISA_EXT_ZFA		71
+ #define RISCV_ISA_EXT_ZTSO		72
+ #define RISCV_ISA_EXT_ZACAS		73
++#define RISCV_ISA_EXT_ZAWRS		74
+ 
+ #define RISCV_ISA_EXT_XLINUXENVCFG	127
+ 
+diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
+index 79a5a35fab96..0e3c79094b07 100644
+--- a/arch/riscv/kernel/cpufeature.c
++++ b/arch/riscv/kernel/cpufeature.c
+@@ -271,6 +271,7 @@ const struct riscv_isa_ext_data riscv_isa_ext[] = {
+ 	__RISCV_ISA_EXT_DATA(zihintpause, RISCV_ISA_EXT_ZIHINTPAUSE),
+ 	__RISCV_ISA_EXT_DATA(zihpm, RISCV_ISA_EXT_ZIHPM),
+ 	__RISCV_ISA_EXT_DATA(zacas, RISCV_ISA_EXT_ZACAS),
++	__RISCV_ISA_EXT_DATA(zawrs, RISCV_ISA_EXT_ZAWRS),
+ 	__RISCV_ISA_EXT_DATA(zfa, RISCV_ISA_EXT_ZFA),
+ 	__RISCV_ISA_EXT_DATA(zfh, RISCV_ISA_EXT_ZFH),
+ 	__RISCV_ISA_EXT_DATA(zfhmin, RISCV_ISA_EXT_ZFHMIN),
 -- 
 2.44.0
 
