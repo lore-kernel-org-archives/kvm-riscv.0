@@ -1,60 +1,64 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Fri, 15 Mar 2024 14:40:15 +0100
-Subject: [PATCH 5/5] KVM: riscv: selftests: Add Zawrs extension to get-reg-list test
-In-Reply-To: <20240315134009.580167-7-ajones@ventanamicro.com>
-References: <20240315134009.580167-7-ajones@ventanamicro.com>
-Message-ID: <20240315134009.580167-12-ajones@ventanamicro.com>
+From: Carlos Maiolino <cmaiolino@redhat.com>
+Date: Fri, 15 Mar 2024 17:20:01 +0100
+Subject: [kvm-unit-tests PATCH 2/2] riscv: sbi: Test remaining base
+ functions
+In-Reply-To: <20240315133244.579425-6-ajones@ventanamicro.com>
+References: <20240315133244.579425-4-ajones@ventanamicro.com>
+ <20240315133244.579425-6-ajones@ventanamicro.com>
+Message-ID: <l7pu3pof2momotehm5374y633sezqoctmbxknpwpxsjqro5pgj@myqw7l4kif3f>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-KVM RISC-V allows the Zawrs extension for the Guest/VM, so add it
-to the get-reg-list test.
+On Fri, Mar 15, 2024 at 02:32:47PM +0100, Andrew Jones wrote:
+> Add the two remaining base extension functions to the base test.
+> 
+> Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
+> ---
+>  riscv/sbi.c | 16 ++++++++++++++++
+>  1 file changed, 16 insertions(+)
+> 
+> diff --git a/riscv/sbi.c b/riscv/sbi.c
+> index 707ce8dd1c57..762e9711c35a 100644
+> --- a/riscv/sbi.c
+> +++ b/riscv/sbi.c
+> @@ -71,6 +71,14 @@ static void check_base(void)
+>  	}
+>  	report_prefix_pop();
 
-Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
----
- tools/testing/selftests/kvm/riscv/get-reg-list.c | 4 ++++
- 1 file changed, 4 insertions(+)
+Reviewed-by: Carlos Maiolino <cmaiolino@redhat.com>
 
-diff --git a/tools/testing/selftests/kvm/riscv/get-reg-list.c b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-index b882b7b9b785..8c4c27bd4b88 100644
---- a/tools/testing/selftests/kvm/riscv/get-reg-list.c
-+++ b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-@@ -48,6 +48,7 @@ bool filter_reg(__u64 reg)
- 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SVNAPOT:
- 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SVPBMT:
- 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZACAS:
-+	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZAWRS:
- 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZBA:
- 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZBB:
- 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZBC:
-@@ -413,6 +414,7 @@ static const char *isa_ext_single_id_to_str(__u64 reg_off)
- 		KVM_ISA_EXT_ARR(SVNAPOT),
- 		KVM_ISA_EXT_ARR(SVPBMT),
- 		KVM_ISA_EXT_ARR(ZACAS),
-+		KVM_ISA_EXT_ARR(ZAWRS),
- 		KVM_ISA_EXT_ARR(ZBA),
- 		KVM_ISA_EXT_ARR(ZBB),
- 		KVM_ISA_EXT_ARR(ZBC),
-@@ -936,6 +938,7 @@ KVM_ISA_EXT_SIMPLE_CONFIG(svinval, SVINVAL);
- KVM_ISA_EXT_SIMPLE_CONFIG(svnapot, SVNAPOT);
- KVM_ISA_EXT_SIMPLE_CONFIG(svpbmt, SVPBMT);
- KVM_ISA_EXT_SIMPLE_CONFIG(zacas, ZACAS);
-+KVM_ISA_EXT_SIMPLE_CONFIG(zawrs, ZAWRS);
- KVM_ISA_EXT_SIMPLE_CONFIG(zba, ZBA);
- KVM_ISA_EXT_SIMPLE_CONFIG(zbb, ZBB);
- KVM_ISA_EXT_SIMPLE_CONFIG(zbc, ZBC);
-@@ -991,6 +994,7 @@ struct vcpu_reg_list *vcpu_configs[] = {
- 	&config_svnapot,
- 	&config_svpbmt,
- 	&config_zacas,
-+	&config_zawrs,
- 	&config_zba,
- 	&config_zbb,
- 	&config_zbc,
--- 
-2.44.0
+>  
+> +	report_prefix_push("impl_version");
+> +	if (env_or_skip("IMPL_VERSION")) {
+> +		expected = strtol(getenv("IMPL_VERSION"), NULL, 0);
+> +		ret = __base_sbi_ecall(SBI_EXT_BASE_GET_IMP_VERSION, 0);
+> +		gen_report(&ret, 0, expected);
+> +	}
+> +	report_prefix_pop();
+> +
+>  	report_prefix_push("probe_ext");
+>  	expected = getenv("PROBE_EXT") ? strtol(getenv("PROBE_EXT"), NULL, 0) : 1;
+>  	ret = __base_sbi_ecall(SBI_EXT_BASE_PROBE_EXT, SBI_EXT_BASE);
+> @@ -93,6 +101,14 @@ static void check_base(void)
+>  	}
+>  	report_prefix_pop();
+>  
+> +	report_prefix_push("mimpid");
+> +	if (env_or_skip("MIMPID")) {
+> +		expected = strtol(getenv("MIMPID"), NULL, 0);
+> +		ret = __base_sbi_ecall(SBI_EXT_BASE_GET_MIMPID, 0);
+> +		gen_report(&ret, 0, expected);
+> +	}
+> +	report_prefix_pop();
+> +
+>  	report_prefix_pop();
+>  }
+>  
+> -- 
+> 2.44.0
+> 
 
 
