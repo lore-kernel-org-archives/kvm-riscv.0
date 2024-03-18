@@ -1,52 +1,67 @@
-From: Andrew Jones <andrew.jones@linux.dev>
-Date: Mon, 18 Mar 2024 18:28:20 +0100
-Subject: [kvm-unit-tests PATCH v2 00/13] Enable EFI support
-In-Reply-To: <20240305170858.395836-15-andrew.jones@linux.dev>
-References: <20240305170858.395836-15-andrew.jones@linux.dev>
-Message-ID: <20240318-3fd0fb4ca9e43c2fe5e20ccb@orel>
+From: Carlos Maiolino <cem@kernel.org>
+Date: Mon, 18 Mar 2024 19:39:30 +0100
+Subject: [PATCH V4 0/6] Add riscv tests to cover the base extension specs
+In-Reply-To: <20240318-336372c31d669f9bd3f64794@orel>
+References: <20240313215106.325766-1-cem@kernel.org>
+ <20240318-4db92d2af2562faffcf9829d@orel>
+ <MN6azXWmu4RN5sh5bl52vlPJ_Nb76jpaNYw1rO9A-UkUJHBP08PFYtU55df3GcCLciTll8xHtr5CE8w46eQdxw==@protonmail.internalid>
+ <20240318-336372c31d669f9bd3f64794@orel>
+Message-ID: <rbglxx7ebt2l2ax4kgllof5iya7pouwaq2ofwnyrp2ww5jvwdd@d5meuowsa2an>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Mar 05, 2024 at 06:08:59PM +0100, Andrew Jones wrote:
-> This series starts with some fixes for backtraces for bugs found
-> when tracing with riscv EFI builds. The series then brings EFI
-> support to riscv, basing the approach heavily on arm64's support
-> (including arm64's improvements[1]). It should now be possible
-> to launch tests from EFI-capable bootloaders.
+On Mon, Mar 18, 2024 at 06:27:03PM +0100, Andrew Jones wrote:
+> On Mon, Mar 18, 2024 at 06:24:09PM +0100, Andrew Jones wrote:
+> > On Wed, Mar 13, 2024 at 10:50:51PM +0100, cem at kernel.org wrote:
+> > > From: Carlos Maiolino <cem@kernel.org>
+> > >
+> > > Hi,
+> > >
+> > > This is a new (V4) version of this series to create tests to cover functions
+> > > of the riscv's SBI base implementation spec. The series also includes a
+> > > a few helpers to reduce code duplication.
+> > >
+> > > This new version includes updates related to Drew reviews, and rebasing of
+> > > the patches according to the changes.
+> > > This new series has also been rebased on TOT, didn't affect the patches,
+> > > but worth the heads up.
+> > >
+> > > Patches tagged with V4 needed modifications from the previous version.
+> > >
+> > > Detailed updates are specified on a patch-basis
+> > >
+> > >
+> > > Carlos Maiolino (6):
+> > >   riscv: Add a wrapper to call sbi_ecall for base extension
+> > >   riscv: Add test to probe SBI Extension
+> > >   riscv: Factor out environment variable check and report generation
+> > >   riscv: Implement test for architecture ID register
+> > >   riscv: Enable gen_report() to print the wrong value in case of failure
+> > >   riscv: Test for specific SBI implementation ID
+> > >
+> > >  riscv/sbi.c | 81 +++++++++++++++++++++++++++++++++++++++++++++--------
+> > >  1 file changed, 69 insertions(+), 12 deletions(-)
+> > >
+> > > --
+> > > 2.44.0
+> > >
+> >
+> > Merged to https://gitlab.com/kvm-unit-tests/kvm-unit-tests
 > 
-> [1] https://lore.kernel.org/all/20240305164623.379149-20-andrew.jones at linux.dev/
+> Hi Carlos,
 > 
-> v2:
->  - Rebase on v3 of arm's efi improvement series
->  - Just make base_address a weak function rather than duplicate it
->  - Always preserve .so files (they're useful for debug)
->  - Build the sieve test for EFI
->  - Pick up a couple tags
+> I just realized you've forgotten to CC tech-prs on v3 and v4.
+
+I actually didn't CC them on purpose. The list seems to only accept incoming emails from registered
+users, so all previous attempts I got a bunch of delivery failure messages, so I thought it was
+pointless to CC them. I should get myself registered there, but I didn't have time so far to figure
+it out. 
+
+Carlos.
+
 > 
-> Thanks,
 > drew
-> 
-> Andrew Jones (13):
->   riscv: Call abort instead of assert on unhandled exceptions
->   riscv: show_regs: Prepare for EFI images
->   treewide: lib/stack: Fix backtrace
->   treewide: lib/stack: Make base_address arch specific
->   riscv: Import gnu-efi files
->   riscv: Tweak the gnu-efi imported code
->   riscv: Enable building for EFI
->   riscv: efi: Switch stack in _start
->   efi: Add support for obtaining the boot hartid
->   riscv: Refactor setup code
->   riscv: Enable EFI boot
->   riscv: efi: Add run script
->   riscv: efi: Use efi-direct by default
->
-
-Merged.
-
-Thanks,
-drew
 
