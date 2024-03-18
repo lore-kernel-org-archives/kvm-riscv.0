@@ -1,56 +1,37 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Mon, 18 Mar 2024 18:27:03 +0100
-Subject: [PATCH V4 0/6] Add riscv tests to cover the base extension specs
-In-Reply-To: <20240318-4db92d2af2562faffcf9829d@orel>
-References: <20240313215106.325766-1-cem@kernel.org>
- <20240318-4db92d2af2562faffcf9829d@orel>
-Message-ID: <20240318-336372c31d669f9bd3f64794@orel>
+Date: Mon, 18 Mar 2024 18:27:39 +0100
+Subject: [kvm-unit-tests PATCH 0/2] riscv: sbi: Check spec version and
+ test rest
+In-Reply-To: <20240315133244.579425-4-ajones@ventanamicro.com>
+References: <20240315133244.579425-4-ajones@ventanamicro.com>
+Message-ID: <20240318-25772b619e0553a1b736dfde@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Mar 18, 2024 at 06:24:09PM +0100, Andrew Jones wrote:
-> On Wed, Mar 13, 2024 at 10:50:51PM +0100, cem at kernel.org wrote:
-> > From: Carlos Maiolino <cem@kernel.org>
-> > 
-> > Hi,
-> > 
-> > This is a new (V4) version of this series to create tests to cover functions
-> > of the riscv's SBI base implementation spec. The series also includes a
-> > a few helpers to reduce code duplication.
-> > 
-> > This new version includes updates related to Drew reviews, and rebasing of
-> > the patches according to the changes. 
-> > This new series has also been rebased on TOT, didn't affect the patches,
-> > but worth the heads up.
-> > 
-> > Patches tagged with V4 needed modifications from the previous version.
-> > 
-> > Detailed updates are specified on a patch-basis
-> > 
-> > 
-> > Carlos Maiolino (6):
-> >   riscv: Add a wrapper to call sbi_ecall for base extension
-> >   riscv: Add test to probe SBI Extension
-> >   riscv: Factor out environment variable check and report generation
-> >   riscv: Implement test for architecture ID register
-> >   riscv: Enable gen_report() to print the wrong value in case of failure
-> >   riscv: Test for specific SBI implementation ID
-> > 
-> >  riscv/sbi.c | 81 +++++++++++++++++++++++++++++++++++++++++++++--------
-> >  1 file changed, 69 insertions(+), 12 deletions(-)
-> > 
-> > -- 
-> > 2.44.0
-> >
+On Fri, Mar 15, 2024 at 02:32:45PM +0100, Andrew Jones wrote:
+> The base extension tests require spec version 0.2 or later, so check for
+> that, and also add the remaining function tests.
 > 
-> Merged to https://gitlab.com/kvm-unit-tests/kvm-unit-tests
+> This is based on Carlos' series [1]
+> 
+> [1] http://lists.infradead.org/pipermail/kvm-riscv/2024-March/006047.html
+> 
+> Andrew Jones (2):
+>   riscv: sbi: Check and test spec version
+>   riscv: sbi: Test remaining base functions
+> 
+>  riscv/sbi.c | 29 +++++++++++++++++++++++++++++
+>  1 file changed, 29 insertions(+)
+> 
+> -- 
+> 2.44.0
+>
 
-Hi Carlos,
+Merged to https://gitlab.com/kvm-unit-tests/kvm-unit-tests
 
-I just realized you've forgotten to CC tech-prs on v3 and v4.
-
+Thanks,
 drew
 
