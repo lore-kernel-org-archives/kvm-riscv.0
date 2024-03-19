@@ -1,103 +1,124 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Tue, 19 Mar 2024 08:38:38 +0100
-Subject: [PATCH V4 0/6] Add riscv tests to cover the base extension specs
-In-Reply-To: <CAOnJCU+RSy6DXtX6hdnv0deCBzaLoy4rg2vAgvYPvAWqPsZCbw@mail.gmail.com>
-References: <20240313215106.325766-1-cem@kernel.org>
- <20240318-4db92d2af2562faffcf9829d@orel>
- <MN6azXWmu4RN5sh5bl52vlPJ_Nb76jpaNYw1rO9A-UkUJHBP08PFYtU55df3GcCLciTll8xHtr5CE8w46eQdxw==@protonmail.internalid>
- <20240318-336372c31d669f9bd3f64794@orel>
- <rbglxx7ebt2l2ax4kgllof5iya7pouwaq2ofwnyrp2ww5jvwdd@d5meuowsa2an>
- <CAOnJCU+RSy6DXtX6hdnv0deCBzaLoy4rg2vAgvYPvAWqPsZCbw@mail.gmail.com>
-Message-ID: <20240319-0d42549d8f8228d35b35315f@orel>
+From: Nicholas Piggin <npiggin@gmail.com>
+Date: Tue, 19 Mar 2024 17:59:24 +1000
+Subject: [kvm-unit-tests PATCH v7 33/35] configure: Make arch_libdir a first-class entity
+In-Reply-To: <20240319075926.2422707-1-npiggin@gmail.com>
+References: <20240319075926.2422707-1-npiggin@gmail.com>
+Message-ID: <20240319075926.2422707-34-npiggin@gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Mar 18, 2024 at 12:37:46PM -0700, Atish Patra wrote:
-> On Mon, Mar 18, 2024 at 11:39?AM Carlos Maiolino <cem@kernel.org> wrote:
-> >
-> > On Mon, Mar 18, 2024 at 06:27:03PM +0100, Andrew Jones wrote:
-> > > On Mon, Mar 18, 2024 at 06:24:09PM +0100, Andrew Jones wrote:
-> > > > On Wed, Mar 13, 2024 at 10:50:51PM +0100, cem at kernel.org wrote:
-> > > > > From: Carlos Maiolino <cem@kernel.org>
-> > > > >
-> > > > > Hi,
-> > > > >
-> > > > > This is a new (V4) version of this series to create tests to cover functions
-> > > > > of the riscv's SBI base implementation spec. The series also includes a
-> > > > > a few helpers to reduce code duplication.
-> > > > >
-> > > > > This new version includes updates related to Drew reviews, and rebasing of
-> > > > > the patches according to the changes.
-> > > > > This new series has also been rebased on TOT, didn't affect the patches,
-> > > > > but worth the heads up.
-> > > > >
-> > > > > Patches tagged with V4 needed modifications from the previous version.
-> > > > >
-> > > > > Detailed updates are specified on a patch-basis
-> > > > >
-> > > > >
-> > > > > Carlos Maiolino (6):
-> > > > >   riscv: Add a wrapper to call sbi_ecall for base extension
-> > > > >   riscv: Add test to probe SBI Extension
-> > > > >   riscv: Factor out environment variable check and report generation
-> > > > >   riscv: Implement test for architecture ID register
-> > > > >   riscv: Enable gen_report() to print the wrong value in case of failure
-> > > > >   riscv: Test for specific SBI implementation ID
-> > > > >
-> > > > >  riscv/sbi.c | 81 +++++++++++++++++++++++++++++++++++++++++++++--------
-> > > > >  1 file changed, 69 insertions(+), 12 deletions(-)
-> > > > >
-> > > > > --
-> > > > > 2.44.0
-> > > > >
-> > > >
-> > > > Merged to https://gitlab.com/kvm-unit-tests/kvm-unit-tests
-> > >
-> > > Hi Carlos,
-> > >
-> > > I just realized you've forgotten to CC tech-prs on v3 and v4.
-> >
-> > I actually didn't CC them on purpose. The list seems to only accept incoming emails from registered
-> > users, so all previous attempts I got a bunch of delivery failure messages, so I thought it was
-> > pointless to CC them. I should get myself registered there, but I didn't have time so far to figure
-> > it out.
-> >
-> Here are the details.
-> https://lists.riscv.org/g/tech-prs
-> 
-> IIRC, you also need to be an individual member or employee of a RVI
-> member company to subscribe to PRS.
-> 
-> @Andrew Jones : I don't think it is possible for every contributor for
-> kvm-unit-tests to be a member of RVI
-> and subscribe to PRS.
-> 
-> Maybe we should just send periodic updates ?
+arch_libdir was brought in to improve the heuristic determination of
+the lib/ directory based on arch and testdir names, but it did not
+entirely clean that mess up.
 
-Periodic updates sounds good to me.
+Remove the arch_libdir->arch->testdir heuristic and just require
+everybody sets arch_libdir correctly. Fail if the lib/arch or
+lib/arch/asm directories can not be found.
 
-Thanks,
-drew
+Cc: Alexandru Elisei <alexandru.elisei@arm.com>
+Cc: Claudio Imbrenda <imbrenda@linux.ibm.com>
+Cc: David Hildenbrand <david@redhat.com>
+Cc: Eric Auger <eric.auger@redhat.com>
+Cc: Janosch Frank <frankja@linux.ibm.com>
+Cc: Laurent Vivier <lvivier@redhat.com>
+Cc: Nico B?hr <nrb@linux.ibm.com>
+Cc: Paolo Bonzini <pbonzini@redhat.com>
+Cc: Thomas Huth <thuth@redhat.com>
+Cc: kvm at vger.kernel.org
+Cc: linux-s390 at vger.kernel.org
+Cc: kvmarm at lists.linux.dev
+Cc: kvm-riscv at lists.infradead.org
+Cc: linuxppc-dev at lists.ozlabs.org
+Reviewed-by: Andrew Jones <andrew.jones@linux.dev>
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ Makefile  |  2 +-
+ configure | 18 +++++++++++++-----
+ 2 files changed, 14 insertions(+), 6 deletions(-)
 
-> I am not sure if there is
-> a better way to do cross-posting.
-> 
-> > Carlos.
-> >
-> > >
-> > > drew
-> >
-> > --
-> > kvm-riscv mailing list
-> > kvm-riscv at lists.infradead.org
-> > http://lists.infradead.org/mailman/listinfo/kvm-riscv
-> 
-> 
-> 
-> -- 
-> Regards,
-> Atish
+diff --git a/Makefile b/Makefile
+index 4f35fffc6..4e0f54543 100644
+--- a/Makefile
++++ b/Makefile
+@@ -10,7 +10,7 @@ include config.mak
+ VPATH = $(SRCDIR)
+ 
+ libdirs-get = $(shell [ -d "lib/$(1)" ] && echo "lib/$(1) lib/$(1)/asm")
+-ARCH_LIBDIRS := $(call libdirs-get,$(ARCH_LIBDIR)) $(call libdirs-get,$(TEST_DIR))
++ARCH_LIBDIRS := $(call libdirs-get,$(ARCH_LIBDIR))
+ OBJDIRS := $(ARCH_LIBDIRS)
+ 
+ DESTDIR := $(PREFIX)/share/kvm-unit-tests/
+diff --git a/configure b/configure
+index e19ba6f0c..a1308db8e 100755
+--- a/configure
++++ b/configure
+@@ -216,7 +216,6 @@ fi
+ arch_name=$arch
+ [ "$arch" = "aarch64" ] && arch="arm64"
+ [ "$arch_name" = "arm64" ] && arch_name="aarch64"
+-arch_libdir=$arch
+ 
+ if [ "$arch" = "riscv" ]; then
+     echo "riscv32 or riscv64 must be specified"
+@@ -286,8 +285,10 @@ fi
+ 
+ if [ "$arch" = "i386" ] || [ "$arch" = "x86_64" ]; then
+     testdir=x86
++    arch_libdir=x86
+ elif [ "$arch" = "arm" ] || [ "$arch" = "arm64" ]; then
+     testdir=arm
++    arch_libdir=$arch
+     if [ "$target" = "qemu" ]; then
+         arm_uart_early_addr=0x09000000
+     elif [ "$target" = "kvmtool" ]; then
+@@ -336,6 +337,7 @@ elif [ "$arch" = "arm" ] || [ "$arch" = "arm64" ]; then
+     fi
+ elif [ "$arch" = "ppc64" ]; then
+     testdir=powerpc
++    arch_libdir=ppc64
+     firmware="$testdir/boot_rom.bin"
+     if [ "$endian" != "little" ] && [ "$endian" != "big" ]; then
+         echo "You must provide endianness (big or little)!"
+@@ -346,6 +348,7 @@ elif [ "$arch" = "riscv32" ] || [ "$arch" = "riscv64" ]; then
+     arch_libdir=riscv
+ elif [ "$arch" = "s390x" ]; then
+     testdir=s390x
++    arch_libdir=s390x
+ else
+     echo "arch $arch is not supported!"
+     arch=
+@@ -355,6 +358,10 @@ if [ ! -d "$srcdir/$testdir" ]; then
+     echo "$srcdir/$testdir does not exist!"
+     exit 1
+ fi
++if [ ! -d "$srcdir/lib/$arch_libdir" ]; then
++    echo "$srcdir/lib/$arch_libdir does not exist!"
++    exit 1
++fi
+ 
+ if [ "$efi" = "y" ] && [ -f "$srcdir/$testdir/efi/run" ]; then
+     ln -fs "$srcdir/$testdir/efi/run" $testdir-run
+@@ -417,10 +424,11 @@ fi
+ # link lib/asm for the architecture
+ rm -f lib/asm
+ asm="asm-generic"
+-if [ -d "$srcdir/lib/$arch/asm" ]; then
+-	asm="$srcdir/lib/$arch/asm"
+-elif [ -d "$srcdir/lib/$testdir/asm" ]; then
+-	asm="$srcdir/lib/$testdir/asm"
++if [ -d "$srcdir/lib/$arch_libdir/asm" ]; then
++    asm="$srcdir/lib/$arch_libdir/asm"
++else
++    echo "$srcdir/lib/$arch_libdir/asm does not exist"
++    exit 1
+ fi
+ mkdir -p lib
+ ln -sf "$asm" lib/asm
+-- 
+2.42.0
+
 
