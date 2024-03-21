@@ -1,26 +1,69 @@
 From: Anup Patel <apatel@ventanamicro.com>
-Date: Thu, 21 Mar 2024 14:20:39 +0530
-Subject: [PATCH 0/2] KVM RISC-V APLIC fixes
-Message-ID: <20240321085041.1955293-1-apatel@ventanamicro.com>
+Date: Thu, 21 Mar 2024 14:20:40 +0530
+Subject: [PATCH 1/2] RISC-V: KVM: Fix APLIC setipnum_le/be write emulation
+In-Reply-To: <20240321085041.1955293-1-apatel@ventanamicro.com>
+References: <20240321085041.1955293-1-apatel@ventanamicro.com>
+Message-ID: <20240321085041.1955293-2-apatel@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Few fixes for KVM RISC-V in-kernel APLIC emulation which were discovered
-during Linux AIA driver patch reviews.
+The writes to setipnum_le/be register for APLIC in MSI-mode have special
+consideration for level-triggered interrupts as-per the section "4.9.2
+Special consideration for level-sensitive interrupt sources" of the RISC-V
+AIA specification.
 
-These patches can also be found in the riscv_kvm_aplic_fixes_v1
-branch at: https://github.com/avpatel/linux.git
+Particularly, the below text from the RISC-V AIA specification defines
+the behaviour of writes to setipnum_le/be register for level-triggered
+interrupts:
 
-Anup Patel (2):
-  RISC-V: KVM: Fix APLIC setipnum_le/be write emulation
-  RISC-V: KVM: Fix APLIC in_clrip[x] read emulation
+"A second option is for the interrupt service routine to write the
+APLIC?s source identity number for the interrupt to the domain?s
+setipnum register just before exiting. This will cause the interrupt?s
+pending bit to be set to one again if the source is still asserting
+an interrupt, but not if the source is not asserting an interrupt."
 
- arch/riscv/kvm/aia_aplic.c | 37 +++++++++++++++++++++++++++++++------
- 1 file changed, 31 insertions(+), 6 deletions(-)
+Fix setipnum_le/be write emulation for in-kernel APLIC by implementing
+the above behaviour in aplic_write_pending() function.
 
+Cc: stable at vger.kernel.org
+Fixes: 74967aa208e2 ("RISC-V: KVM: Add in-kernel emulation of AIA APLIC")
+Signed-off-by: Anup Patel <apatel@ventanamicro.com>
+---
+ arch/riscv/kvm/aia_aplic.c | 16 +++++++++++++---
+ 1 file changed, 13 insertions(+), 3 deletions(-)
+
+diff --git a/arch/riscv/kvm/aia_aplic.c b/arch/riscv/kvm/aia_aplic.c
+index 39e72aa016a4..5e842b92dc46 100644
+--- a/arch/riscv/kvm/aia_aplic.c
++++ b/arch/riscv/kvm/aia_aplic.c
+@@ -137,11 +137,21 @@ static void aplic_write_pending(struct aplic *aplic, u32 irq, bool pending)
+ 	raw_spin_lock_irqsave(&irqd->lock, flags);
+ 
+ 	sm = irqd->sourcecfg & APLIC_SOURCECFG_SM_MASK;
+-	if (!pending &&
+-	    ((sm == APLIC_SOURCECFG_SM_LEVEL_HIGH) ||
+-	     (sm == APLIC_SOURCECFG_SM_LEVEL_LOW)))
++	if (sm == APLIC_SOURCECFG_SM_INACTIVE)
+ 		goto skip_write_pending;
+ 
++	if (sm == APLIC_SOURCECFG_SM_LEVEL_HIGH ||
++	    sm == APLIC_SOURCECFG_SM_LEVEL_LOW) {
++		if (!pending)
++			goto skip_write_pending;
++		if ((irqd->state & APLIC_IRQ_STATE_INPUT) &&
++		    sm == APLIC_SOURCECFG_SM_LEVEL_LOW)
++			goto skip_write_pending;
++		if (!(irqd->state & APLIC_IRQ_STATE_INPUT) &&
++		    sm == APLIC_SOURCECFG_SM_LEVEL_HIGH)
++			goto skip_write_pending;
++	}
++
+ 	if (pending)
+ 		irqd->state |= APLIC_IRQ_STATE_PENDING;
+ 	else
 -- 
 2.34.1
 
