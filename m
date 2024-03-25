@@ -1,45 +1,50 @@
-From: Anup Patel <anup@brainfault.org>
-Date: Mon, 25 Mar 2024 14:17:44 +0530
-Subject: [PATCH][next] RISC-V: KVM: Remove second semicolon
-In-Reply-To: <20240315092914.2431214-1-colin.i.king@gmail.com>
-References: <20240315092914.2431214-1-colin.i.king@gmail.com>
-Message-ID: <CAAhSdy2b1nUO5u0cM2uMcow931UX0Q=o_OY_YLQ5+oK499PX+w@mail.gmail.com>
+From: Anup Patel <apatel@ventanamicro.com>
+Date: Mon, 25 Mar 2024 21:01:31 +0530
+Subject: [kvmtool PATCH v2 00/10] More ISA extensions
+Message-ID: <20240325153141.6816-1-apatel@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Mar 15, 2024 at 2:59?PM Colin Ian King <colin.i.king@gmail.com> wrote:
->
-> There is a statement with two semicolons. Remove the second one, it
-> is redundant.
->
-> Signed-off-by: Colin Ian King <colin.i.king@gmail.com>
+This series adds support more ISA extensions namely: Zbc, scalar crypto,
+vector crypto, Zfh[min], Zihintntl, Zvfh[min], and Zfa. The series also
+adds a command-line option to disable SBI STA extension for Guest/VM.
 
-Queued this patch for Linux-6.9 fixes.
+These patches can also be found in the riscv_more_exts_v2 branch at:
+https://github.com/avpatel/kvmtool.git
 
-Thanks,
-Anup
+Changes since v1:
+ - Rebased on commit 4d2c017f41533b0e51e00f689050c26190a15318
+ - Addressed Drew's comments on PATCH4
 
-> ---
->  arch/riscv/kvm/vcpu_onereg.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/arch/riscv/kvm/vcpu_onereg.c b/arch/riscv/kvm/vcpu_onereg.c
-> index f4a6124d25c9..994adc26db4b 100644
-> --- a/arch/riscv/kvm/vcpu_onereg.c
-> +++ b/arch/riscv/kvm/vcpu_onereg.c
-> @@ -986,7 +986,7 @@ static int copy_isa_ext_reg_indices(const struct kvm_vcpu *vcpu,
->
->  static inline unsigned long num_isa_ext_regs(const struct kvm_vcpu *vcpu)
->  {
-> -       return copy_isa_ext_reg_indices(vcpu, NULL);;
-> +       return copy_isa_ext_reg_indices(vcpu, NULL);
->  }
->
->  static int copy_sbi_ext_reg_indices(struct kvm_vcpu *vcpu, u64 __user *uindices)
-> --
-> 2.39.2
->
+Anup Patel (10):
+  Sync-up headers with Linux-6.8 for KVM RISC-V
+  kvmtool: Fix absence of __packed definition
+  riscv: Add Zbc extension support
+  riscv: Add scalar crypto extensions support
+  riscv: Add vector crypto extensions support
+  riscv: Add Zfh[min] extensions support
+  riscv: Add Zihintntl extension support
+  riscv: Add Zvfh[min] extensions support
+  riscv: Add Zfa extensiona support
+  riscv: Allow disabling SBI STA extension for Guest
+
+ include/kvm/compiler.h              |   2 +
+ include/linux/kvm.h                 | 140 ++++++++++------------------
+ include/linux/virtio_config.h       |   8 +-
+ include/linux/virtio_pci.h          |  68 ++++++++++++++
+ riscv/fdt.c                         |  27 ++++++
+ riscv/include/asm/kvm.h             |  40 ++++++++
+ riscv/include/kvm/csr.h             |  16 ++++
+ riscv/include/kvm/kvm-config-arch.h |  86 ++++++++++++++++-
+ riscv/kvm-cpu.c                     |  32 +++++++
+ x86/include/asm/kvm.h               |   3 +
+ 10 files changed, 330 insertions(+), 92 deletions(-)
+ create mode 100644 riscv/include/kvm/csr.h
+
+-- 
+2.34.1
+
 
