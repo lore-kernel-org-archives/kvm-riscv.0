@@ -1,187 +1,77 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Tue, 26 Mar 2024 10:15:52 +0100
-Subject: [kvmtool PATCH v2 04/10] riscv: Add scalar crypto extensions
- support
-In-Reply-To: <20240325153141.6816-5-apatel@ventanamicro.com>
-References: <20240325153141.6816-1-apatel@ventanamicro.com>
- <20240325153141.6816-5-apatel@ventanamicro.com>
-Message-ID: <20240326-c6bc7026dec7fb55764ff728@orel>
+From: Yong-Xuan Wang <yongxuan.wang@sifive.com>
+Date: Tue, 26 Mar 2024 18:10:52 +0800
+Subject: [PATCH 1/1] RISC-V: KVM: Avoid lock inversion in SBI_EXT_HSM_HART_START
+Message-ID: <20240326101054.13088-1-yongxuan.wang@sifive.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Mar 25, 2024 at 09:01:35PM +0530, Anup Patel wrote:
-> When the scalar extensions are available expose them to the guest
-> via device tree so that guest can use it. This includes extensions
-> Zbkb, Zbkc, Zbkx, Zknd, Zkne, Zknh, Zkr, Zksed, Zksh, and Zkt.
-> 
-> The Zkr extension requires SEED CSR emulation in user space so
-> we also add related KVM_EXIT_RISCV_CSR handling.
-> 
-> Signed-off-by: Anup Patel <apatel@ventanamicro.com>
-> ---
->  riscv/fdt.c                         | 10 +++++++++
->  riscv/include/kvm/csr.h             | 16 +++++++++++++++
->  riscv/include/kvm/kvm-config-arch.h | 30 +++++++++++++++++++++++++++
->  riscv/kvm-cpu.c                     | 32 +++++++++++++++++++++++++++++
->  4 files changed, 88 insertions(+)
->  create mode 100644 riscv/include/kvm/csr.h
-> 
-> diff --git a/riscv/fdt.c b/riscv/fdt.c
-> index 84b6087..be87e9a 100644
-> --- a/riscv/fdt.c
-> +++ b/riscv/fdt.c
-> @@ -25,6 +25,9 @@ struct isa_ext_info isa_info_arr[] = {
->  	{"zba", KVM_RISCV_ISA_EXT_ZBA},
->  	{"zbb", KVM_RISCV_ISA_EXT_ZBB},
->  	{"zbc", KVM_RISCV_ISA_EXT_ZBC},
-> +	{"zbkb", KVM_RISCV_ISA_EXT_ZBKB},
-> +	{"zbkc", KVM_RISCV_ISA_EXT_ZBKC},
-> +	{"zbkx", KVM_RISCV_ISA_EXT_ZBKX},
->  	{"zbs", KVM_RISCV_ISA_EXT_ZBS},
->  	{"zicbom", KVM_RISCV_ISA_EXT_ZICBOM},
->  	{"zicboz", KVM_RISCV_ISA_EXT_ZICBOZ},
-> @@ -34,6 +37,13 @@ struct isa_ext_info isa_info_arr[] = {
->  	{"zifencei", KVM_RISCV_ISA_EXT_ZIFENCEI},
->  	{"zihintpause", KVM_RISCV_ISA_EXT_ZIHINTPAUSE},
->  	{"zihpm", KVM_RISCV_ISA_EXT_ZIHPM},
-> +	{"zknd", KVM_RISCV_ISA_EXT_ZKND},
-> +	{"zkne", KVM_RISCV_ISA_EXT_ZKNE},
-> +	{"zknh", KVM_RISCV_ISA_EXT_ZKNH},
-> +	{"zkr", KVM_RISCV_ISA_EXT_ZKR},
-> +	{"zksed", KVM_RISCV_ISA_EXT_ZKSED},
-> +	{"zksh", KVM_RISCV_ISA_EXT_ZKSH},
-> +	{"zkt", KVM_RISCV_ISA_EXT_ZKT},
->  };
->  
->  static void dump_fdt(const char *dtb_file, void *fdt)
-> diff --git a/riscv/include/kvm/csr.h b/riscv/include/kvm/csr.h
-> new file mode 100644
-> index 0000000..bcbf61d
-> --- /dev/null
-> +++ b/riscv/include/kvm/csr.h
-> @@ -0,0 +1,16 @@
-> +/* SPDX-License-Identifier: GPL-2.0-only */
-> +#ifndef KVM__KVM_CSR_H
-> +#define KVM__KVM_CSR_H
-> +
-> +#include <linux/const.h>
-> +
-> +/* Scalar Crypto Extension - Entropy */
-> +#define CSR_SEED		0x015
-> +#define SEED_OPST_MASK		_AC(0xC0000000, UL)
-> +#define SEED_OPST_BIST		_AC(0x00000000, UL)
-> +#define SEED_OPST_WAIT		_AC(0x40000000, UL)
-> +#define SEED_OPST_ES16		_AC(0x80000000, UL)
-> +#define SEED_OPST_DEAD		_AC(0xC0000000, UL)
-> +#define SEED_ENTROPY_MASK	_AC(0xFFFF, UL)
-> +
-> +#endif /* KVM__KVM_CSR_H */
-> diff --git a/riscv/include/kvm/kvm-config-arch.h b/riscv/include/kvm/kvm-config-arch.h
-> index 6d09eee..3764d7c 100644
-> --- a/riscv/include/kvm/kvm-config-arch.h
-> +++ b/riscv/include/kvm/kvm-config-arch.h
-> @@ -52,6 +52,15 @@ struct kvm_config_arch {
->  	OPT_BOOLEAN('\0', "disable-zbc",				\
->  		    &(cfg)->ext_disabled[KVM_RISCV_ISA_EXT_ZBC],	\
->  		    "Disable Zbc Extension"),				\
-> +	OPT_BOOLEAN('\0', "disable-zbkb",				\
-> +		    &(cfg)->ext_disabled[KVM_RISCV_ISA_EXT_ZBKB],	\
-> +		    "Disable Zbkb Extension"),				\
-> +	OPT_BOOLEAN('\0', "disable-zbkc",				\
-> +		    &(cfg)->ext_disabled[KVM_RISCV_ISA_EXT_ZBKC],	\
-> +		    "Disable Zbkc Extension"),				\
-> +	OPT_BOOLEAN('\0', "disable-zbkx",				\
-> +		    &(cfg)->ext_disabled[KVM_RISCV_ISA_EXT_ZBKX],	\
-> +		    "Disable Zbkx Extension"),				\
->  	OPT_BOOLEAN('\0', "disable-zbs",				\
->  		    &(cfg)->ext_disabled[KVM_RISCV_ISA_EXT_ZBS],	\
->  		    "Disable Zbs Extension"),				\
-> @@ -79,6 +88,27 @@ struct kvm_config_arch {
->  	OPT_BOOLEAN('\0', "disable-zihpm",				\
->  		    &(cfg)->ext_disabled[KVM_RISCV_ISA_EXT_ZIHPM],	\
->  		    "Disable Zihpm Extension"),				\
-> +	OPT_BOOLEAN('\0', "disable-zknd",				\
-> +		    &(cfg)->ext_disabled[KVM_RISCV_ISA_EXT_ZKND],	\
-> +		    "Disable Zknd Extension"),				\
-> +	OPT_BOOLEAN('\0', "disable-zkne",				\
-> +		    &(cfg)->ext_disabled[KVM_RISCV_ISA_EXT_ZKNE],	\
-> +		    "Disable Zkne Extension"),				\
-> +	OPT_BOOLEAN('\0', "disable-zknh",				\
-> +		    &(cfg)->ext_disabled[KVM_RISCV_ISA_EXT_ZKNH],	\
-> +		    "Disable Zknh Extension"),				\
-> +	OPT_BOOLEAN('\0', "disable-zkr",				\
-> +		    &(cfg)->ext_disabled[KVM_RISCV_ISA_EXT_ZKR],	\
-> +		    "Disable Zkr Extension"),				\
-> +	OPT_BOOLEAN('\0', "disable-zksed",				\
-> +		    &(cfg)->ext_disabled[KVM_RISCV_ISA_EXT_ZKSED],	\
-> +		    "Disable Zksed Extension"),				\
-> +	OPT_BOOLEAN('\0', "disable-zksh",				\
-> +		    &(cfg)->ext_disabled[KVM_RISCV_ISA_EXT_ZKSH],	\
-> +		    "Disable Zksh Extension"),				\
-> +	OPT_BOOLEAN('\0', "disable-zkt",				\
-> +		    &(cfg)->ext_disabled[KVM_RISCV_ISA_EXT_ZKT],	\
-> +		    "Disable Zkt Extension"),				\
->  	OPT_BOOLEAN('\0', "disable-sbi-legacy",				\
->  		    &(cfg)->sbi_ext_disabled[KVM_RISCV_SBI_EXT_V01],	\
->  		    "Disable SBI Legacy Extensions"),			\
-> diff --git a/riscv/kvm-cpu.c b/riscv/kvm-cpu.c
-> index c4e83c4..ae87848 100644
-> --- a/riscv/kvm-cpu.c
-> +++ b/riscv/kvm-cpu.c
-> @@ -1,3 +1,4 @@
-> +#include "kvm/csr.h"
->  #include "kvm/kvm-cpu.h"
->  #include "kvm/kvm.h"
->  #include "kvm/virtio.h"
-> @@ -222,11 +223,42 @@ static bool kvm_cpu_riscv_sbi(struct kvm_cpu *vcpu)
->  	return ret;
->  }
->  
-> +static bool kvm_cpu_riscv_csr(struct kvm_cpu *vcpu)
-> +{
-> +	int dfd = kvm_cpu__get_debug_fd();
-> +	bool ret = true;
-> +
-> +	switch (vcpu->kvm_run->riscv_csr.csr_num) {
-> +	case CSR_SEED:
-> +		/*
-> +		 * We ignore the new_value and write_mask and simply
-> +		 * return a random value as SEED.
-> +		 */
-> +		vcpu->kvm_run->riscv_csr.ret_value = SEED_OPST_ES16;
-> +		vcpu->kvm_run->riscv_csr.ret_value |= rand() & SEED_ENTROPY_MASK;
-> +		break;
-> +	default:
-> +		dprintf(dfd, "Unhandled CSR access\n");
-> +		dprintf(dfd, "csr_num=0x%lx new_value=0x%lx\n",
-> +			vcpu->kvm_run->riscv_csr.csr_num,
-> +			vcpu->kvm_run->riscv_csr.new_value);
-> +		dprintf(dfd, "write_mask=0x%lx ret_value=0x%lx\n",
-> +			vcpu->kvm_run->riscv_csr.write_mask,
-> +			vcpu->kvm_run->riscv_csr.ret_value);
-> +		ret = false;
-> +		break;
-> +	}
-> +
-> +	return ret;
-> +}
-> +
->  bool kvm_cpu__handle_exit(struct kvm_cpu *vcpu)
->  {
->  	switch (vcpu->kvm_run->exit_reason) {
->  	case KVM_EXIT_RISCV_SBI:
->  		return kvm_cpu_riscv_sbi(vcpu);
-> +	case KVM_EXIT_RISCV_CSR:
-> +		return kvm_cpu_riscv_csr(vcpu);
->  	default:
->  		break;
->  	};
-> -- 
-> 2.34.1
->
+Documentation/virt/kvm/locking.rst advises that kvm->lock should be
+acquired outside vcpu->mutex and kvm->srcu. However, when KVM/RISC-V
+handling SBI_EXT_HSM_HART_START, the lock ordering is vcpu->mutex,
+kvm->srcu then kvm->lock.
 
-Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+Although the lockdep checking no longer complains about this after commit
+f0f44752f5f6 ("rcu: Annotate SRCU's update-side lockdep dependencies"),
+it's necessary to replace kvm->lock with a new dedicated lock to ensure
+only one hart can execute the SBI_EXT_HSM_HART_START call for the target
+hart simultaneously.
+
+Signed-off-by: Yong-Xuan Wang <yongxuan.wang@sifive.com>
+---
+ arch/riscv/include/asm/kvm_host.h | 1 +
+ arch/riscv/kvm/vcpu.c             | 1 +
+ arch/riscv/kvm/vcpu_sbi_hsm.c     | 5 ++---
+ 3 files changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
+index 484d04a92fa6..537099413344 100644
+--- a/arch/riscv/include/asm/kvm_host.h
++++ b/arch/riscv/include/asm/kvm_host.h
+@@ -254,6 +254,7 @@ struct kvm_vcpu_arch {
+ 
+ 	/* VCPU power-off state */
+ 	bool power_off;
++	struct mutex hsm_start_lock;
+ 
+ 	/* Don't run the VCPU (blocked) */
+ 	bool pause;
+diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+index b5ca9f2e98ac..4d89b5b5afbf 100644
+--- a/arch/riscv/kvm/vcpu.c
++++ b/arch/riscv/kvm/vcpu.c
+@@ -119,6 +119,7 @@ int kvm_arch_vcpu_create(struct kvm_vcpu *vcpu)
+ 	spin_lock_init(&vcpu->arch.hfence_lock);
+ 
+ 	/* Setup reset state of shadow SSTATUS and HSTATUS CSRs */
++	mutex_init(&vcpu->arch.hsm_start_lock);
+ 	cntx = &vcpu->arch.guest_reset_context;
+ 	cntx->sstatus = SR_SPP | SR_SPIE;
+ 	cntx->hstatus = 0;
+diff --git a/arch/riscv/kvm/vcpu_sbi_hsm.c b/arch/riscv/kvm/vcpu_sbi_hsm.c
+index 7dca0e9381d9..b528f6e880ae 100644
+--- a/arch/riscv/kvm/vcpu_sbi_hsm.c
++++ b/arch/riscv/kvm/vcpu_sbi_hsm.c
+@@ -71,14 +71,13 @@ static int kvm_sbi_ext_hsm_handler(struct kvm_vcpu *vcpu, struct kvm_run *run,
+ {
+ 	int ret = 0;
+ 	struct kvm_cpu_context *cp = &vcpu->arch.guest_context;
+-	struct kvm *kvm = vcpu->kvm;
+ 	unsigned long funcid = cp->a6;
+ 
+ 	switch (funcid) {
+ 	case SBI_EXT_HSM_HART_START:
+-		mutex_lock(&kvm->lock);
++		mutex_lock(&vcpu->arch.hsm_start_lock);
+ 		ret = kvm_sbi_hsm_vcpu_start(vcpu);
+-		mutex_unlock(&kvm->lock);
++		mutex_unlock(&vcpu->arch.hsm_start_lock);
+ 		break;
+ 	case SBI_EXT_HSM_HART_STOP:
+ 		ret = kvm_sbi_hsm_vcpu_stop(vcpu);
+-- 
+2.17.1
+
 
