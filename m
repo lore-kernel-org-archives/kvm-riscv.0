@@ -1,72 +1,160 @@
-From: Chao Du <duchao@eswincomputing.com>
-Date: Wed, 27 Mar 2024 07:55:23 +0000
-Subject: [PATCH v3 0/3] RISC-V: KVM: Guest Debug Support - Software Breakpoint Part
-Message-ID: <20240327075526.31855-1-duchao@eswincomputing.com>
+From: Andrew Jones <ajones@ventanamicro.com>
+Date: Wed, 27 Mar 2024 10:00:55 +0100
+Subject: [PATCH v3 3/3] RISC-V: KVM: selftests: Add ebreak test support
+In-Reply-To: <20240327075526.31855-4-duchao@eswincomputing.com>
+References: <20240327075526.31855-1-duchao@eswincomputing.com>
+ <20240327075526.31855-4-duchao@eswincomputing.com>
+Message-ID: <20240327-b867e01dab2996d68c15f899@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This series implements the "KVM Guset Debug" feature on RISC-V. This is
-an existing feature which is already supported by some other arches.
-It allows us to debug a RISC-V KVM guest from GDB in host side.
+On Wed, Mar 27, 2024 at 07:55:26AM +0000, Chao Du wrote:
+> Initial support for RISC-V KVM ebreak test. Check the exit reason and
+> the PC when guest debug is enabled. Also to make sure the guest could
+> handle the ebreak exception without exiting to the VMM when guest debug
+> is not enabled.
+> 
+> Signed-off-by: Chao Du <duchao@eswincomputing.com>
+> ---
+>  tools/testing/selftests/kvm/Makefile          |  1 +
+>  .../testing/selftests/kvm/riscv/ebreak_test.c | 84 +++++++++++++++++++
+>  2 files changed, 85 insertions(+)
+>  create mode 100644 tools/testing/selftests/kvm/riscv/ebreak_test.c
+> 
+> diff --git a/tools/testing/selftests/kvm/Makefile b/tools/testing/selftests/kvm/Makefile
+> index 741c7dc16afc..7f4430242c9e 100644
+> --- a/tools/testing/selftests/kvm/Makefile
+> +++ b/tools/testing/selftests/kvm/Makefile
+> @@ -189,6 +189,7 @@ TEST_GEN_PROGS_s390x += rseq_test
+>  TEST_GEN_PROGS_s390x += set_memory_region_test
+>  TEST_GEN_PROGS_s390x += kvm_binary_stats_test
+>  
+> +TEST_GEN_PROGS_riscv += riscv/ebreak_test
+>  TEST_GEN_PROGS_riscv += arch_timer
+>  TEST_GEN_PROGS_riscv += demand_paging_test
+>  TEST_GEN_PROGS_riscv += dirty_log_test
+> diff --git a/tools/testing/selftests/kvm/riscv/ebreak_test.c b/tools/testing/selftests/kvm/riscv/ebreak_test.c
+> new file mode 100644
+> index 000000000000..4c79c778e026
+> --- /dev/null
+> +++ b/tools/testing/selftests/kvm/riscv/ebreak_test.c
+> @@ -0,0 +1,84 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +/*
+> + * RISC-V KVM ebreak test.
+> + *
+> + * Copyright 2024 Beijing ESWIN Computing Technology Co., Ltd.
+> + *
+> + */
+> +#include "kvm_util.h"
+> +
+> +#define PC(v) ((uint64_t)&(v))
 
-As the first stage, the software breakpoints (ebreak instruction) is
-implemented. HW breakpoints support will come later after a synthetically
-consideration with the SBI debug trigger extension.
+PC() isn't a good name for the function this is doing. It's getting
+the address of a label. LABEL_ADDRESS() would be more appropriate.
 
-A selftest case was added in this series. Manual test was done on QEMU
-RISC-V hypervisor emulator. (add '-s' to enable the gdbserver in QEMU)
+> +
+> +extern unsigned char sw_bp_1, sw_bp_2;
+> +static volatile uint64_t sw_bp_addr;
 
-This series is based on Linux 6.9-rc1 and also available at:
-https://github.com/Du-Chao/kvm-riscv/tree/guest_debug_sw_v3_6.9-rc1
+Drop volatile here and use READ/WRITE_ONCE on sw_bp_addr when reading and
+writing it.
 
-The matched QEMU is available at:
-https://github.com/Du-Chao/qemu/tree/riscv_gd_sw
+> +
+> +static void guest_code(void)
+> +{
+> +	/*
+> +	 * nops are inserted to make sure that the "pc += 4" operation is
+> +	 * compatible with the compressed instructions.
+> +	 */
+> +	asm volatile("sw_bp_1: ebreak\n"
+> +		     "nop\n"
+> +		     "sw_bp_2: ebreak\n"
+> +		     "nop\n");
 
+The nops are fine, but options should work too, something like
 
-Changes from v2->v3:
-- Rebased on Linux 6.9-rc1.
-- Use BIT() in the macro definition.
-- set/clear the bit EXC_BREAKPOINT explicitly.
-- change the testcase name to ebreak_test.
-- test the scenario without GUEST_DEBUG. vm_install_exception_handler() is used
-  thanks to Haibo's patch.
+ asm volatile(
+ ".option push\n"
+ ".option norvc\n"
+ "sw_bp_1: ebreak\n"
+ "sw_bp_2: ebreak\n"
+ ".option pop\n"
+ );
 
-Changes from v1->v2:
-- Rebased on Linux 6.8-rc6.
-- Maintain a hedeleg in "struct kvm_vcpu_config" for each VCPU.
-- Update the HEDELEG csr in kvm_arch_vcpu_load().
+> +	GUEST_ASSERT_EQ(sw_bp_addr, PC(sw_bp_2));
+> +
+> +	GUEST_DONE();
+> +}
+> +
+> +static void guest_breakpoint_handler(struct ex_regs *regs)
+> +{
+> +	sw_bp_addr = regs->epc;
+> +	regs->epc += 4;
+> +}
+> +
+> +int main(void)
+> +{
+> +	struct kvm_vm *vm;
+> +	struct kvm_vcpu *vcpu;
+> +	uint64_t pc;
+> +	struct kvm_guest_debug debug = {
+> +		.control = KVM_GUESTDBG_ENABLE,
+> +	};
+> +	struct ucall uc;
 
-Changes from RFC->v1:
-- Rebased on Linux 6.8-rc2.
-- Merge PATCH1 and PATCH2 into one patch.
-- kselftest case added.
+You don't use 'uc', so you can drop it and...
 
-v2 link:
-https://lore.kernel.org/kvm/20240301013545.10403-1-duchao at eswincomputing.com
-v1 link:
-https://lore.kernel.org/kvm/20240206074931.22930-1-duchao at eswincomputing.com
-RFC link:
-https://lore.kernel.org/kvm/20231221095002.7404-1-duchao at eswincomputing.com
+> +
+> +	TEST_REQUIRE(kvm_has_cap(KVM_CAP_SET_GUEST_DEBUG));
+> +
+> +	vm = vm_create_with_one_vcpu(&vcpu, guest_code);
+> +
+> +	vm_init_vector_tables(vm);
+> +	vcpu_init_vector_tables(vcpu);
+> +	vm_install_exception_handler(vm, EXC_BREAKPOINT,
+> +					guest_breakpoint_handler);
+> +
+> +	/*
+> +	 * Enable the guest debug.
+> +	 * ebreak should exit to the VMM with KVM_EXIT_DEBUG reason.
+> +	 */
+> +	vcpu_guest_debug_set(vcpu, &debug);
+> +	vcpu_run(vcpu);
+> +
+> +	TEST_ASSERT_KVM_EXIT_REASON(vcpu, KVM_EXIT_DEBUG);
+> +
+> +	vcpu_get_reg(vcpu, RISCV_CORE_REG(regs.pc), &pc);
+> +	TEST_ASSERT_EQ(pc, PC(sw_bp_1));
+> +
+> +	/* skip sw_bp_1 */
+> +	vcpu_set_reg(vcpu, RISCV_CORE_REG(regs.pc), pc + 4);
+> +
+> +	/*
+> +	 * Disable all debug controls.
+> +	 * Guest should handle the ebreak without exiting to the VMM.
+> +	 */
+> +	memset(&debug, 0, sizeof(debug));
+> +	vcpu_guest_debug_set(vcpu, &debug);
+> +
+> +	vcpu_run(vcpu);
+> +
+> +	TEST_ASSERT_EQ(get_ucall(vcpu, &uc), UCALL_DONE);
 
-Chao Du (3):
-  RISC-V: KVM: Implement kvm_arch_vcpu_ioctl_set_guest_debug()
-  RISC-V: KVM: Handle breakpoint exits for VCPU
-  RISC-V: KVM: selftests: Add ebreak test support
+...call get_ucall() with NULL for the second parameter.
 
- arch/riscv/include/asm/kvm_host.h             | 12 +++
- arch/riscv/kvm/main.c                         | 18 +---
- arch/riscv/kvm/vcpu.c                         | 16 +++-
- arch/riscv/kvm/vcpu_exit.c                    |  4 +
- arch/riscv/kvm/vm.c                           |  1 +
- tools/testing/selftests/kvm/Makefile          |  1 +
- .../testing/selftests/kvm/riscv/ebreak_test.c | 84 +++++++++++++++++++
- 7 files changed, 118 insertions(+), 18 deletions(-)
- create mode 100644 tools/testing/selftests/kvm/riscv/ebreak_test.c
+> +
+> +	kvm_vm_free(vm);
+> +
+> +	return 0;
+> +}
+> -- 
+> 2.17.1
+>
 
---
-2.17.1
-
+Thanks,
+drew
 
