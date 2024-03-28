@@ -1,10 +1,9 @@
 From: Ackerley Tng <ackerleytng@google.com>
-Date: Thu, 28 Mar 2024 02:28:51 +0000
-Subject: [PATCH 13/18] KVM: selftests: Drop superfluous switch() on
- vm->mode in vcpu_init_sregs()
-In-Reply-To: <20240314232637.2538648-14-seanjc@google.com>
-References: <20240314232637.2538648-1-seanjc@google.com> <20240314232637.2538648-14-seanjc@google.com>
-Message-ID: <diqz7chnm6n0.fsf@ctop-sg.c.googlers.com>
+Date: Thu, 28 Mar 2024 02:33:36 +0000
+Subject: [PATCH 12/18] KVM: selftests: Allocate x86's GDT during VM creation
+In-Reply-To: <20240314232637.2538648-13-seanjc@google.com>
+References: <20240314232637.2538648-1-seanjc@google.com> <20240314232637.2538648-13-seanjc@google.com>
+Message-ID: <diqz4jcrm6f3.fsf@ctop-sg.c.googlers.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -13,62 +12,38 @@ Content-Transfer-Encoding: 7bit
 
 Sean Christopherson <seanjc@google.com> writes:
 
-> Replace the switch statement on vm->mode in x86's vcpu_init_sregs()'s with
-> a simple assert that the VM has a 48-bit virtual address space.  A switch
-> statement is both overkill and misleading, as the existing code incorrectly
-> implies that VMs with LA57 would need different to configuration for the
-> LDT, TSS, and flat segments.  In all likelihood, the only difference that
-> would be needed for selftests is CR4.LA57 itself.
+> Allocate the GDT during creation of non-barebones VMs instead of waiting
+> until the first vCPU is created, as the whole point of non-barebones VMs
+> is to be able to run vCPUs, i.e. the GDT is going to get allocated no
+> matter what.
 >
 > Signed-off-by: Sean Christopherson <seanjc@google.com>
 > ---
->  .../selftests/kvm/lib/x86_64/processor.c      | 25 ++++++++-----------
->  1 file changed, 10 insertions(+), 15 deletions(-)
+>  tools/testing/selftests/kvm/lib/x86_64/processor.c | 4 +---
+>  1 file changed, 1 insertion(+), 3 deletions(-)
 >
 > diff --git a/tools/testing/selftests/kvm/lib/x86_64/processor.c b/tools/testing/selftests/kvm/lib/x86_64/processor.c
-> index 8547833ffa26..561c0aa93608 100644
+> index f4046029f168..8547833ffa26 100644
 > --- a/tools/testing/selftests/kvm/lib/x86_64/processor.c
 > +++ b/tools/testing/selftests/kvm/lib/x86_64/processor.c
-> @@ -555,6 +555,8 @@ static void vcpu_init_sregs(struct kvm_vm *vm, struct kvm_vcpu *vcpu)
+> @@ -518,9 +518,6 @@ vm_paddr_t addr_arch_gva2gpa(struct kvm_vm *vm, vm_vaddr_t gva)
+>  
+>  static void kvm_setup_gdt(struct kvm_vm *vm, struct kvm_dtable *dt)
 >  {
->  	struct kvm_sregs sregs;
->  
-> +	TEST_ASSERT_EQ(vm->mode, VM_MODE_PXXV48_4K);
-> +
->  	/* Set mode specific system register values. */
->  	vcpu_sregs_get(vcpu, &sregs);
->  
-> @@ -562,22 +564,15 @@ static void vcpu_init_sregs(struct kvm_vm *vm, struct kvm_vcpu *vcpu)
->  
->  	kvm_setup_gdt(vm, &sregs.gdt);
->  
-> -	switch (vm->mode) {
-> -	case VM_MODE_PXXV48_4K:
-> -		sregs.cr0 = X86_CR0_PE | X86_CR0_NE | X86_CR0_PG;
-> -		sregs.cr4 |= X86_CR4_PAE | X86_CR4_OSFXSR;
-> -		sregs.efer |= (EFER_LME | EFER_LMA | EFER_NX);
-> +	sregs.cr0 = X86_CR0_PE | X86_CR0_NE | X86_CR0_PG;
-> +	sregs.cr4 |= X86_CR4_PAE | X86_CR4_OSFXSR;
-> +	sregs.efer |= (EFER_LME | EFER_LMA | EFER_NX);
->  
-> -		kvm_seg_set_unusable(&sregs.ldt);
-> -		kvm_seg_set_kernel_code_64bit(vm, DEFAULT_CODE_SELECTOR, &sregs.cs);
-> -		kvm_seg_set_kernel_data_64bit(vm, DEFAULT_DATA_SELECTOR, &sregs.ds);
-> -		kvm_seg_set_kernel_data_64bit(vm, DEFAULT_DATA_SELECTOR, &sregs.es);
-> -		kvm_setup_tss_64bit(vm, &sregs.tr, 0x18);
-> -		break;
+> -	if (!vm->arch.gdt)
+> -		vm->arch.gdt = __vm_vaddr_alloc_page(vm, MEM_REGION_DATA);
 > -
-> -	default:
-> -		TEST_FAIL("Unknown guest mode, mode: 0x%x", vm->mode);
-> -	}
-> +	kvm_seg_set_unusable(&sregs.ldt);
-> +	kvm_seg_set_kernel_code_64bit(vm, DEFAULT_CODE_SELECTOR, &sregs.cs);
-> +	kvm_seg_set_kernel_data_64bit(vm, DEFAULT_DATA_SELECTOR, &sregs.ds);
-> +	kvm_seg_set_kernel_data_64bit(vm, DEFAULT_DATA_SELECTOR, &sregs.es);
-> +	kvm_setup_tss_64bit(vm, &sregs.tr, 0x18);
+>  	dt->base = vm->arch.gdt;
+>  	dt->limit = getpagesize() - 1;
+>  }
+> @@ -644,6 +641,7 @@ static void vm_init_descriptor_tables(struct kvm_vm *vm)
+>  	extern void *idt_handlers;
+>  	int i;
 >  
->  	sregs.cr3 = vm->pgd;
->  	vcpu_sregs_set(vcpu, &sregs);
+> +	vm->arch.gdt = __vm_vaddr_alloc_page(vm, MEM_REGION_DATA);
+>  	vm->arch.idt = __vm_vaddr_alloc_page(vm, MEM_REGION_DATA);
+>  	vm->handlers = __vm_vaddr_alloc_page(vm, MEM_REGION_DATA);
+>  	/* Handlers have the same address in both address spaces.*/
 > -- 
 > 2.44.0.291.gc1ea87d7ee-goog
 
