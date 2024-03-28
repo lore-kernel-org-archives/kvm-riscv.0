@@ -1,9 +1,10 @@
 From: Ackerley Tng <ackerleytng@google.com>
-Date: Thu, 28 Mar 2024 02:33:36 +0000
-Subject: [PATCH 12/18] KVM: selftests: Allocate x86's GDT during VM creation
-In-Reply-To: <20240314232637.2538648-13-seanjc@google.com>
-References: <20240314232637.2538648-1-seanjc@google.com> <20240314232637.2538648-13-seanjc@google.com>
-Message-ID: <diqz4jcrm6f3.fsf@ctop-sg.c.googlers.com>
+Date: Thu, 28 Mar 2024 02:35:44 +0000
+Subject: [PATCH 11/18] KVM: selftests: Map x86's exception_handlers at VM
+ creation, not vCPU setup
+In-Reply-To: <20240314232637.2538648-12-seanjc@google.com>
+References: <20240314232637.2538648-1-seanjc@google.com> <20240314232637.2538648-12-seanjc@google.com>
+Message-ID: <diqz1q7vm6bj.fsf@ctop-sg.c.googlers.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -12,38 +13,35 @@ Content-Transfer-Encoding: 7bit
 
 Sean Christopherson <seanjc@google.com> writes:
 
-> Allocate the GDT during creation of non-barebones VMs instead of waiting
-> until the first vCPU is created, as the whole point of non-barebones VMs
-> is to be able to run vCPUs, i.e. the GDT is going to get allocated no
-> matter what.
+> Map x86's exception handlers at VM creation, not vCPU setup, as the
+> mapping is per-VM, i.e. doesn't need to be (re)done for every vCPU.
 >
 > Signed-off-by: Sean Christopherson <seanjc@google.com>
 > ---
->  tools/testing/selftests/kvm/lib/x86_64/processor.c | 4 +---
->  1 file changed, 1 insertion(+), 3 deletions(-)
+>  tools/testing/selftests/kvm/lib/x86_64/processor.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
 >
 > diff --git a/tools/testing/selftests/kvm/lib/x86_64/processor.c b/tools/testing/selftests/kvm/lib/x86_64/processor.c
-> index f4046029f168..8547833ffa26 100644
+> index 5813d93b2e7c..f4046029f168 100644
 > --- a/tools/testing/selftests/kvm/lib/x86_64/processor.c
 > +++ b/tools/testing/selftests/kvm/lib/x86_64/processor.c
-> @@ -518,9 +518,6 @@ vm_paddr_t addr_arch_gva2gpa(struct kvm_vm *vm, vm_vaddr_t gva)
->  
->  static void kvm_setup_gdt(struct kvm_vm *vm, struct kvm_dtable *dt)
->  {
-> -	if (!vm->arch.gdt)
-> -		vm->arch.gdt = __vm_vaddr_alloc_page(vm, MEM_REGION_DATA);
-> -
->  	dt->base = vm->arch.gdt;
->  	dt->limit = getpagesize() - 1;
+> @@ -552,7 +552,6 @@ static void vcpu_init_descriptor_tables(struct kvm_vcpu *vcpu)
+>  	sregs.gdt.limit = getpagesize() - 1;
+>  	kvm_seg_set_kernel_data_64bit(NULL, DEFAULT_DATA_SELECTOR, &sregs.gs);
+>  	vcpu_sregs_set(vcpu, &sregs);
+> -	*(vm_vaddr_t *)addr_gva2hva(vm, (vm_vaddr_t)(&exception_handlers)) = vm->handlers;
 >  }
-> @@ -644,6 +641,7 @@ static void vm_init_descriptor_tables(struct kvm_vm *vm)
->  	extern void *idt_handlers;
->  	int i;
 >  
-> +	vm->arch.gdt = __vm_vaddr_alloc_page(vm, MEM_REGION_DATA);
->  	vm->arch.idt = __vm_vaddr_alloc_page(vm, MEM_REGION_DATA);
->  	vm->handlers = __vm_vaddr_alloc_page(vm, MEM_REGION_DATA);
->  	/* Handlers have the same address in both address spaces.*/
+>  static void vcpu_init_sregs(struct kvm_vm *vm, struct kvm_vcpu *vcpu)
+> @@ -651,6 +650,8 @@ static void vm_init_descriptor_tables(struct kvm_vm *vm)
+>  	for (i = 0; i < NUM_INTERRUPTS; i++)
+>  		set_idt_entry(vm, i, (unsigned long)(&idt_handlers)[i], 0,
+>  			DEFAULT_CODE_SELECTOR);
+> +
+> +	*(vm_vaddr_t *)addr_gva2hva(vm, (vm_vaddr_t)(&exception_handlers)) = vm->handlers;
+>  }
+>  
+>  void vm_install_exception_handler(struct kvm_vm *vm, int vector,
 > -- 
 > 2.44.0.291.gc1ea87d7ee-goog
 
