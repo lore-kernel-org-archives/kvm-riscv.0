@@ -1,66 +1,123 @@
 From: Shenlin Liang <liangshenlin@eswincomputing.com>
-Date: Thu, 28 Mar 2024 03:12:18 +0000
-Subject: [PATCH 0/2] perf kvm: Add kvm stat support on riscv 
-Message-ID: <20240328031220.1287-1-liangshenlin@eswincomputing.com>
+Date: Thu, 28 Mar 2024 03:12:19 +0000
+Subject: [PATCH 1/2] RISCV: KVM: add tracepoints for entry and exit events
+In-Reply-To: <20240328031220.1287-1-liangshenlin@eswincomputing.com>
+References: <20240328031220.1287-1-liangshenlin@eswincomputing.com>
+Message-ID: <20240328031220.1287-2-liangshenlin@eswincomputing.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-'perf kvm stat report/record' generates a statistical analysis of KVM
-events and can be used to analyze guest exit reasons. This patch tries
-to add stat support on riscv.
+Like other architectures, RISCV KVM also needs to add these event
+tracepoints to count the number of times kvm guest entry/exit.
 
-Map the return value of trace_kvm_exit() to the specific cause of the 
-exception, and export it to userspace.
-
-It records on two available KVM tracepoints for riscv: "kvm:kvm_entry"
-and "kvm:kvm_exit", and reports statistical data which includes events
-handles time, samples, and so on.
-
-Simple tests go below:
-
-# ./perf kvm record -e "kvm:kvm_entry" -e "kvm:kvm_exit"
-Lowering default frequency rate from 4000 to 2500.
-Please consider tweaking /proc/sys/kernel/perf_event_max_sample_rate.
-[ perf record: Woken up 18 times to write data ]
-[ perf record: Captured and wrote 5.433 MB perf.data.guest (62519 samples) 
-
-# ./perf kvm report
-31K kvm:kvm_entry
-31K kvm:kvm_exit
-
-# ./perf kvm stat record -a
-[ perf record: Woken up 3 times to write data ]
-[ perf record: Captured and wrote 8.502 MB perf.data.guest (99338 samples) ]
-
-# ./perf kvm stat report --event=vmexit
-Event name                Samples   Sample%    Time (ns)     Time%   Max Time (ns)   Min Time (ns)  Mean Time (ns)
-STORE_GUEST_PAGE_FAULT     26968     54.00%    2003031800    40.00%     3361400         27600          74274
-LOAD_GUEST_PAGE_FAULT      17645     35.00%    1153338100    23.00%     2513400         30800          65363
-VIRTUAL_INST_FAULT         1247      2.00%     340820800     6.00%      1190800         43300          273312
-INST_GUEST_PAGE_FAULT      1128      2.00%     340645800     6.00%      2123200         30200          301990
-SUPERVISOR_SYSCALL         1019      2.00%     245989900     4.00%      1851500         29300          241403
-LOAD_ACCESS                986       1.00%     671556200     13.00%     4180200         100700         681091
-INST_ACCESS                655       1.00%     170054800     3.00%      1808300         54600          259625
-HYPERVISOR_SYSCALL         21        0.00%     4276400       0.00%      716500          116000         203638 
-
-Shenlin Liang (2):
-  RISCV: KVM: add tracepoints for entry and exit events
-  perf kvm/riscv: Port perf kvm stat to RISC-V
-
- arch/riscv/kvm/trace_riscv.h                  | 60 ++++++++++++++
- arch/riscv/kvm/vcpu.c                         |  7 ++
- tools/perf/arch/riscv/Makefile                |  1 +
- tools/perf/arch/riscv/util/Build              |  1 +
- tools/perf/arch/riscv/util/kvm-stat.c         | 78 +++++++++++++++++++
- .../arch/riscv/util/riscv_exception_types.h   | 41 ++++++++++
- 6 files changed, 188 insertions(+)
+Signed-off-by: Shenlin Liang <liangshenlin@eswincomputing.com>
+---
+ arch/riscv/kvm/trace_riscv.h | 60 ++++++++++++++++++++++++++++++++++++
+ arch/riscv/kvm/vcpu.c        |  7 +++++
+ 2 files changed, 67 insertions(+)
  create mode 100644 arch/riscv/kvm/trace_riscv.h
- create mode 100644 tools/perf/arch/riscv/util/kvm-stat.c
- create mode 100644 tools/perf/arch/riscv/util/riscv_exception_types.h
 
+diff --git a/arch/riscv/kvm/trace_riscv.h b/arch/riscv/kvm/trace_riscv.h
+new file mode 100644
+index 000000000000..5848083c7a5e
+--- /dev/null
++++ b/arch/riscv/kvm/trace_riscv.h
+@@ -0,0 +1,60 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Tracepoints for RISC-V KVM
++ *
++ * Copyright 2024 Beijing ESWIN Computing Technology Co., Ltd.
++ *
++ */
++#if !defined(_TRACE_RSICV_KVM_H) || defined(TRACE_HEADER_MULTI_READ)
++#define _TRACE_RSICV_KVM_H
++
++#include <linux/tracepoint.h>
++
++#undef TRACE_SYSTEM
++#define TRACE_SYSTEM kvm
++
++TRACE_EVENT(kvm_entry,
++	TP_PROTO(struct kvm_vcpu *vcpu),
++	TP_ARGS(vcpu),
++
++	TP_STRUCT__entry(
++		__field(unsigned long, pc)
++	),
++
++	TP_fast_assign(
++		__entry->pc	= vcpu->arch.guest_context.sepc;
++	),
++
++	TP_printk("PC: 0x%016lx", __entry->pc)
++);
++
++TRACE_EVENT(kvm_exit,
++	TP_PROTO(struct kvm_vcpu *vcpu, unsigned long exit_reason,
++			unsigned long scause),
++	TP_ARGS(vcpu, exit_reason, scause),
++
++	TP_STRUCT__entry(
++		__field(unsigned long, pc)
++		__field(unsigned long, exit_reason)
++		__field(unsigned long, scause)
++	),
++
++	TP_fast_assign(
++		__entry->pc		= vcpu->arch.guest_context.sepc;
++		__entry->exit_reason	= exit_reason;
++		__entry->scause		= scause;
++	),
++
++	TP_printk("EXIT_REASON:0x%lx,PC: 0x%016lx,SCAUSE:0x%lx",
++			__entry->exit_reason, __entry->pc, __entry->scause)
++);
++
++#endif /* _TRACE_RSICV_KVM_H */
++
++#undef TRACE_INCLUDE_PATH
++#define TRACE_INCLUDE_PATH .
++#undef TRACE_INCLUDE_FILE
++#define TRACE_INCLUDE_FILE trace_riscv
++
++/* This part must be outside protection */
++#include <trace/define_trace.h>
+diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+index b5ca9f2e98ac..ed0932f0d514 100644
+--- a/arch/riscv/kvm/vcpu.c
++++ b/arch/riscv/kvm/vcpu.c
+@@ -21,6 +21,9 @@
+ #include <asm/cacheflush.h>
+ #include <asm/kvm_vcpu_vector.h>
+ 
++#define CREATE_TRACE_POINTS
++#include "trace_riscv.h"
++
+ const struct _kvm_stats_desc kvm_vcpu_stats_desc[] = {
+ 	KVM_GENERIC_VCPU_STATS(),
+ 	STATS_DESC_COUNTER(VCPU, ecall_exit_stat),
+@@ -782,6 +785,8 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
+ 		 */
+ 		kvm_riscv_local_tlb_sanitize(vcpu);
+ 
++		trace_kvm_entry(vcpu);
++
+ 		guest_timing_enter_irqoff();
+ 
+ 		kvm_riscv_vcpu_enter_exit(vcpu);
+@@ -820,6 +825,8 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
+ 
+ 		local_irq_enable();
+ 
++		trace_kvm_exit(vcpu, run->exit_reason, trap.scause);
++
+ 		preempt_enable();
+ 
+ 		kvm_vcpu_srcu_read_lock(vcpu);
 -- 
 2.37.2
 
