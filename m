@@ -1,270 +1,71 @@
 From: Conor Dooley <conor.dooley@microchip.com>
-Date: Fri, 29 Mar 2024 10:21:39 +0000
-Subject: [PATCH RFC 05/11] riscv: cpufeature: Add Sdtrig optional CSRs
- checks
-In-Reply-To: <20240329-dev-maxh-lin-452-6-9-v1-5-1534f93b94a7@sifive.com>
+Date: Fri, 29 Mar 2024 10:31:10 +0000
+Subject: [PATCH RFC 02/11] dt-bindings: riscv: Add Sdtrig optional CSRs
+ existence on DT
+In-Reply-To: <20240329-dev-maxh-lin-452-6-9-v1-2-1534f93b94a7@sifive.com>
 References: <20240329-dev-maxh-lin-452-6-9-v1-0-1534f93b94a7@sifive.com>
- <20240329-dev-maxh-lin-452-6-9-v1-5-1534f93b94a7@sifive.com>
-Message-ID: <20240329-avid-footgear-ed5e7f8788ba@wendy>
+ <20240329-dev-maxh-lin-452-6-9-v1-2-1534f93b94a7@sifive.com>
+Message-ID: <20240329-affidavit-anatomist-1118a12c3e60@wendy>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Mar 29, 2024 at 05:26:21PM +0800, Max Hsu wrote:
-> Sdtrig extension introduce two optional CSRs [hcontext/scontext],
-> that will be storing PID/Guest OS ID for the debug feature.
+On Fri, Mar 29, 2024 at 05:26:18PM +0800, Max Hsu wrote:
+> The mcontext/hcontext/scontext CSRs are optional in the Sdtrig extension,
+> to prevent RW operations to the missing CSRs, which will cause
+> illegal instructions.
 > 
-> The availability of these two CSRs will be determined by
-> DTS and Smstateen extension [h/s]stateen0 CSR bit 57.
-> 
-> If all CPUs hcontext/scontext checks are satisfied, it will enable the
-> use_hcontext/use_scontext static branch.
+> As a solution, we have proposed the dt format for these CSRs.
+
+As I mentioned in your other patch, I amn't sure what the actual value
+is in being told about "sdtrig" itself if so many of the CSRs are
+optional. I think we should define pseudo extensions that represent
+usable subsets that are allowed by riscv,isa-extensions, such as
+those you describe here: sdtrig + mcontext, sdtrig + scontext and
+sdtrig + hcontext. Probably also for strig + mscontext. What
+additional value does having a debug child node give us that makes
+it worth having over something like the above?
+
+Thanks,
+Conor.
+
 > 
 > Signed-off-by: Max Hsu <max.hsu@sifive.com>
 > ---
->  arch/riscv/include/asm/switch_to.h |   6 ++
->  arch/riscv/kernel/cpufeature.c     | 161 +++++++++++++++++++++++++++++++++++++
->  2 files changed, 167 insertions(+)
+>  Documentation/devicetree/bindings/riscv/cpus.yaml | 18 ++++++++++++++++++
+>  1 file changed, 18 insertions(+)
 > 
-> diff --git a/arch/riscv/include/asm/switch_to.h b/arch/riscv/include/asm/switch_to.h
-> index 7efdb0584d47..07432550ed54 100644
-> --- a/arch/riscv/include/asm/switch_to.h
-> +++ b/arch/riscv/include/asm/switch_to.h
-> @@ -69,6 +69,12 @@ static __always_inline bool has_fpu(void) { return false; }
->  #define __switch_to_fpu(__prev, __next) do { } while (0)
->  #endif
+> diff --git a/Documentation/devicetree/bindings/riscv/cpus.yaml b/Documentation/devicetree/bindings/riscv/cpus.yaml
+> index d87dd50f1a4b..c713a48c5025 100644
+> --- a/Documentation/devicetree/bindings/riscv/cpus.yaml
+> +++ b/Documentation/devicetree/bindings/riscv/cpus.yaml
+> @@ -137,6 +137,24 @@ properties:
+>        DMIPS/MHz, relative to highest capacity-dmips-mhz
+>        in the system.
 >  
-> +DECLARE_STATIC_KEY_FALSE(use_scontext);
-> +static __always_inline bool has_scontext(void)
-> +{
-> +	return static_branch_likely(&use_scontext);
-> +}
+> +  debug:
+> +    type: object
+> +    properties:
+> +      compatible:
+> +        const: riscv,debug-v1.0.0
+> +      trigger-module:
+> +        type: object
+> +        description: |
+> +          An indication set of optional CSR existence from
+> +          riscv-debug-spec Sdtrig extension
+> +        properties:
+> +          mcontext-present:
+> +            type: boolean
+> +          hcontext-present:
+> +            type: boolean
+> +          scontext-present:
+> +            type: boolean
 > +
->  extern struct task_struct *__switch_to(struct task_struct *,
->  				       struct task_struct *);
->  
-> diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
-> index 080c06b76f53..44ff84b920af 100644
-> --- a/arch/riscv/kernel/cpufeature.c
-> +++ b/arch/riscv/kernel/cpufeature.c
-> @@ -35,6 +35,19 @@ static DECLARE_BITMAP(riscv_isa, RISCV_ISA_EXT_MAX) __read_mostly;
->  /* Per-cpu ISA extensions. */
->  struct riscv_isainfo hart_isa[NR_CPUS];
->  
-> +atomic_t hcontext_disable;
-> +atomic_t scontext_disable;
-> +
-> +DEFINE_STATIC_KEY_FALSE_RO(use_hcontext);
-> +EXPORT_SYMBOL(use_hcontext);
-> +
-> +DEFINE_STATIC_KEY_FALSE_RO(use_scontext);
-> +EXPORT_SYMBOL(use_scontext);
-> +
-> +/* Record the maximum number that the hcontext CSR allowed to hold */
-> +atomic_long_t hcontext_id_share;
-> +EXPORT_SYMBOL(hcontext_id_share);
-> +
->  /**
->   * riscv_isa_extension_base() - Get base extension word
->   *
-> @@ -719,6 +732,154 @@ unsigned long riscv_get_elf_hwcap(void)
->  	return hwcap;
->  }
->  
-> +static void __init sdtrig_percpu_csrs_check(void *data)
-> +{
-> +	struct device_node *node;
-> +	struct device_node *debug_node;
-> +	struct device_node *trigger_module;
-> +
-> +	unsigned int cpu = smp_processor_id();
-> +
-> +	/*
-> +	 * Expect every cpu node has the [h/s]context-present property
-> +	 * otherwise, jump to sdtrig_csrs_disable_all to disable all access to
-> +	 * [h/s]context CSRs
-
-I think the wording of this comment is kinda strange. What you're trying
-to say is that homogeneous support for sdtrig (and the contexts) is
-required.
-
-> +	 */
-> +	node = of_cpu_device_node_get(cpu);
-
-If there's no ACPI support, shouldn't the first thing here by a fast
-path out before you start assuming DT?
-
-> +	if (!node)
-> +		goto sdtrig_csrs_disable_all;
-> +
-> +	debug_node = of_get_compatible_child(node, "riscv,debug-v1.0.0");
-> +	of_node_put(node);
-> +
-> +	if (!debug_node)
-> +		goto sdtrig_csrs_disable_all;
-> +
-> +	trigger_module = of_get_child_by_name(debug_node, "trigger-module");
-> +	of_node_put(debug_node);
-> +
-> +	if (!trigger_module)
-> +		goto sdtrig_csrs_disable_all;
-> +
-> +	if (!(IS_ENABLED(CONFIG_KVM) &&
-> +	      of_property_read_bool(trigger_module, "hcontext-present")))
-> +		atomic_inc(&hcontext_disable);
-> +
-> +	if (!of_property_read_bool(trigger_module, "scontext-present"))
-> +		atomic_inc(&scontext_disable);
-
-I think we should define pseudo extensions for {h,s}context-present and
-parse this out of riscv,isa-extensions. That'd also give you the per-cpu
-checks for homogeneous support for "free".
-My immediate thought is that sdtrig doesn't seem valuable in isolation,
-if you're gonna need additional properties that communicate support for
-additional modes.
-
-> +	of_node_put(trigger_module);
-> +
-> +	/*
-> +	 * Before access to hcontext/scontext CSRs, if the smstateen
-> +	 * extension is present, the accessibility will be controlled
-> +	 * by the hstateen0[H]/sstateen0 CSRs.
-> +	 */
-> +	if (__riscv_isa_extension_available(NULL, RISCV_ISA_EXT_SMSTATEEN)) {
-
-Why can't you use the non-underscore prefixed version of this function
-here?
-
-> +		u64 hstateen_bit, sstateen_bit;
-> +
-> +		if (__riscv_isa_extension_available(NULL, RISCV_ISA_EXT_h)) {
-> +#if __riscv_xlen > 32
-> +			csr_set(CSR_HSTATEEN0, SMSTATEEN0_HSCONTEXT);
-
-For zkr we require the CSR to be usable at the privilege level to which
-the DT is passed:
-        - const: zkr
-          description:
-            The standard Zkr entropy source extension as ratified in version
-            1.0 of RISC-V Cryptography Extensions Volume I specification.
-            This string being present means that the CSR associated to this
-            extension is accessible at the privilege level to which that
-            device-tree has been provided.
-
-I wonder if we should do something similar here and make this a
-requirement for anything with bits in stateen registers. I'd love to
-avoid having to read CSRs on all harts before being able to make
-judgements about whether or not an extension is enabled. I dunno if that
-is possible here though, given you want to also make some checks on the
-exact nature of the support below.
-
-Cheers,
-Conor.
-
-> +			hstateen_bit = csr_read(CSR_HSTATEEN0);
-> +#else
-> +			csr_set(CSR_HSTATEEN0H, SMSTATEEN0_HSCONTEXT >> 32);
-> +			hstateen_bit = csr_read(CSR_HSTATEEN0H) << 32;
-> +#endif
-> +			if (!(hstateen_bit & SMSTATEEN0_HSCONTEXT))
-> +				goto sdtrig_csrs_disable_all;
-> +
-> +		} else {
-> +			if (IS_ENABLED(CONFIG_KVM))
-> +				atomic_inc(&hcontext_disable);
-> +
-> +			/*
-> +			 * In RV32, the smstateen extension doesn't provide
-> +			 * high 32 bits of sstateen0 CSR which represent
-> +			 * accessibility for scontext CSR;
-> +			 * The decision is left on whether the dts has the
-> +			 * property to access the scontext CSR.
-> +			 */
-> +#if __riscv_xlen > 32
-> +			csr_set(CSR_SSTATEEN0, SMSTATEEN0_HSCONTEXT);
-> +			sstateen_bit = csr_read(CSR_SSTATEEN0);
-> +
-> +			if (!(sstateen_bit & SMSTATEEN0_HSCONTEXT))
-> +				atomic_inc(&scontext_disable);
-> +#endif
-> +		}
-> +	}
-> +
-> +	/*
-> +	 * The code can only access hcontext/scontext CSRs if:
-> +	 * The cpu dts node have [h/s]context-present;
-> +	 * If Smstateen extension is presented, then the accessibility bit
-> +	 * toward hcontext/scontext CSRs is enabled; Or the Smstateen extension
-> +	 * isn't available, thus the access won't be blocked by it.
-> +	 *
-> +	 * With writing 1 to the every bit of these CSRs, we retrieve the
-> +	 * maximum bits that is available on the CSRs. and decide
-> +	 * whether it's suit for its context recording operation.
-> +	 */
-> +	if (IS_ENABLED(CONFIG_KVM) &&
-> +	    !atomic_read(&hcontext_disable)) {
-> +		unsigned long hcontext_available_bits = 0;
-> +
-> +		csr_write(CSR_HCONTEXT, -1UL);
-> +		hcontext_available_bits = csr_swap(CSR_HCONTEXT, hcontext_available_bits);
-> +
-> +		/* hcontext CSR is required by at least 1 bit */
-> +		if (hcontext_available_bits)
-> +			atomic_long_and(hcontext_available_bits, &hcontext_id_share);
-> +		else
-> +			atomic_inc(&hcontext_disable);
-> +	}
-> +
-> +	if (!atomic_read(&scontext_disable)) {
-> +		unsigned long scontext_available_bits = 0;
-> +
-> +		csr_write(CSR_SCONTEXT, -1UL);
-> +		scontext_available_bits = csr_swap(CSR_SCONTEXT, scontext_available_bits);
-> +
-> +		/* scontext CSR is required by at least the sizeof pid_t */
-> +		if (scontext_available_bits < ((1UL << (sizeof(pid_t) << 3)) - 1))
-> +			atomic_inc(&scontext_disable);
-> +	}
-> +
-> +	return;
-> +
-> +sdtrig_csrs_disable_all:
-> +	if (IS_ENABLED(CONFIG_KVM))
-> +		atomic_inc(&hcontext_disable);
-> +
-> +	atomic_inc(&scontext_disable);
-> +}
-> +
-> +static int __init sdtrig_enable_csrs_fill(void)
-> +{
-> +	if (__riscv_isa_extension_available(NULL, RISCV_ISA_EXT_SDTRIG)) {
-> +		atomic_long_set(&hcontext_id_share, -1UL);
-> +
-> +		/* check every CPUs sdtrig extension optional CSRs */
-> +		sdtrig_percpu_csrs_check(NULL);
-> +		smp_call_function(sdtrig_percpu_csrs_check, NULL, 1);
-> +
-> +		if (IS_ENABLED(CONFIG_KVM) &&
-> +		    !atomic_read(&hcontext_disable)) {
-> +			pr_info("riscv-sdtrig: Writing 'GuestOS ID' to hcontext CSR is enabled\n");
-> +			static_branch_enable(&use_hcontext);
-> +		}
-> +
-> +		if (!atomic_read(&scontext_disable)) {
-> +			pr_info("riscv-sdtrig: Writing 'PID' to scontext CSR is enabled\n");
-> +			static_branch_enable(&use_scontext);
-> +		}
-> +	}
-> +	return 0;
-> +}
-> +
-> +arch_initcall(sdtrig_enable_csrs_fill);
-> +
->  void riscv_user_isa_enable(void)
->  {
->  	if (riscv_cpu_has_extension_unlikely(smp_processor_id(), RISCV_ISA_EXT_ZICBOZ))
+>  anyOf:
+>    - required:
+>        - riscv,isa
 > 
 > -- 
 > 2.43.2
@@ -275,4 +76,4 @@ Name: signature.asc
 Type: application/pgp-signature
 Size: 228 bytes
 Desc: not available
-URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20240329/439f42b4/attachment.sig>
+URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20240329/53c40f5d/attachment-0001.sig>
