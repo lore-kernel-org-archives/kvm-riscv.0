@@ -1,43 +1,49 @@
 From: Max Hsu <max.hsu@sifive.com>
-Date: Fri, 29 Mar 2024 17:26:17 +0800
-Subject: [PATCH RFC 01/11] dt-bindings: riscv: Add Sdtrig ISA extension
+Date: Fri, 29 Mar 2024 17:26:19 +0800
+Subject: [PATCH RFC 03/11] riscv: Add ISA extension parsing for Sdtrig
 In-Reply-To: <20240329-dev-maxh-lin-452-6-9-v1-0-1534f93b94a7@sifive.com>
 References: <20240329-dev-maxh-lin-452-6-9-v1-0-1534f93b94a7@sifive.com>
-Message-ID: <20240329-dev-maxh-lin-452-6-9-v1-1-1534f93b94a7@sifive.com>
+Message-ID: <20240329-dev-maxh-lin-452-6-9-v1-3-1534f93b94a7@sifive.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-As riscv-debug-spec [1] Chapter 5 introduce Sdtrig extension.
-
-Add an entry for the Sdtrig extension to the riscv,isa-extensions property.
+Add ISA extension parsing for Sdtrig as introduced
+in riscv-debug-spec [1] Chapter 5
 
 Link: https://github.com/riscv/riscv-debug-spec/releases/download/ar20231208/riscv-debug-stable.pdf [1]
 Signed-off-by: Max Hsu <max.hsu@sifive.com>
 ---
- Documentation/devicetree/bindings/riscv/extensions.yaml | 7 +++++++
- 1 file changed, 7 insertions(+)
+ arch/riscv/include/asm/hwcap.h | 1 +
+ arch/riscv/kernel/cpufeature.c | 1 +
+ 2 files changed, 2 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/riscv/extensions.yaml b/Documentation/devicetree/bindings/riscv/extensions.yaml
-index 468c646247aa..47d82cd35ca7 100644
---- a/Documentation/devicetree/bindings/riscv/extensions.yaml
-+++ b/Documentation/devicetree/bindings/riscv/extensions.yaml
-@@ -121,6 +121,13 @@ properties:
-             version of the privileged ISA specification.
+diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
+index e17d0078a651..9f8d780fce35 100644
+--- a/arch/riscv/include/asm/hwcap.h
++++ b/arch/riscv/include/asm/hwcap.h
+@@ -81,6 +81,7 @@
+ #define RISCV_ISA_EXT_ZTSO		72
+ #define RISCV_ISA_EXT_ZACAS		73
+ #define RISCV_ISA_EXT_XANDESPMU		74
++#define RISCV_ISA_EXT_SDTRIG		75
  
-         # multi-letter extensions, sorted alphanumerically
-+        - const: sdtrig
-+          description: |
-+            The standard Sdtrig extension for introduce trigger CSRs for
-+            cause a breakpoint exception, entry into Debug Mode,
-+            or trace action as frozen at commit 359bedc ("Freeze Candidate")
-+            of riscv-debug-spec
-+
-         - const: smaia
-           description: |
-             The standard Smaia supervisor-level extension for the advanced
+ #define RISCV_ISA_EXT_XLINUXENVCFG	127
+ 
+diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
+index 3ed2359eae35..080c06b76f53 100644
+--- a/arch/riscv/kernel/cpufeature.c
++++ b/arch/riscv/kernel/cpufeature.c
+@@ -296,6 +296,7 @@ const struct riscv_isa_ext_data riscv_isa_ext[] = {
+ 	__RISCV_ISA_EXT_DATA(zvksh, RISCV_ISA_EXT_ZVKSH),
+ 	__RISCV_ISA_EXT_BUNDLE(zvksg, riscv_zvksg_bundled_exts),
+ 	__RISCV_ISA_EXT_DATA(zvkt, RISCV_ISA_EXT_ZVKT),
++	__RISCV_ISA_EXT_DATA(sdtrig, RISCV_ISA_EXT_SDTRIG),
+ 	__RISCV_ISA_EXT_DATA(smaia, RISCV_ISA_EXT_SMAIA),
+ 	__RISCV_ISA_EXT_DATA(smstateen, RISCV_ISA_EXT_SMSTATEEN),
+ 	__RISCV_ISA_EXT_DATA(ssaia, RISCV_ISA_EXT_SSAIA),
 
 -- 
 2.43.2
