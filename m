@@ -1,9 +1,10 @@
 From: Max Hsu <max.hsu@sifive.com>
-Date: Fri, 29 Mar 2024 17:26:26 +0800
-Subject: [PATCH RFC 10/11] riscv: KVM: Add hcontext support
+Date: Fri, 29 Mar 2024 17:26:27 +0800
+Subject: [PATCH RFC 11/11] KVM: riscv: selftests: Add Sdtrig Extension to
+ get-reg-list test
 In-Reply-To: <20240329-dev-maxh-lin-452-6-9-v1-0-1534f93b94a7@sifive.com>
 References: <20240329-dev-maxh-lin-452-6-9-v1-0-1534f93b94a7@sifive.com>
-Message-ID: <20240329-dev-maxh-lin-452-6-9-v1-10-1534f93b94a7@sifive.com>
+Message-ID: <20240329-dev-maxh-lin-452-6-9-v1-11-1534f93b94a7@sifive.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -12,188 +13,110 @@ Content-Transfer-Encoding: 7bit
 
 From: Yong-Xuan Wang <yongxuan.wang@sifive.com>
 
-hcontext CSR store the ID of the currently running machine status.
-When a virtual machine is initialized, it will obtain and utilize
-the first available ID.
-It will be updated to VM ID when switch to a virtual machine,
-and updated to 0 when switch back to host machine.
+Update the get-reg-list test to test the Sdtrig Extension is available
+for guest OS.
 
 Signed-off-by: Yong-Xuan Wang <yongxuan.wang@sifive.com>
 Co-developed-by: Max Hsu <max.hsu@sifive.com>
 Signed-off-by: Max Hsu <max.hsu@sifive.com>
 ---
- arch/riscv/include/asm/kvm_host.h       |  3 ++
- arch/riscv/include/asm/kvm_vcpu_debug.h |  7 +++
- arch/riscv/kvm/main.c                   |  4 ++
- arch/riscv/kvm/vcpu_debug.c             | 78 +++++++++++++++++++++++++++++++++
- arch/riscv/kvm/vm.c                     |  4 ++
- 5 files changed, 96 insertions(+)
+ tools/testing/selftests/kvm/riscv/get-reg-list.c | 27 ++++++++++++++++++++++++
+ 1 file changed, 27 insertions(+)
 
-diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
-index d495279d99e1..b5d972783116 100644
---- a/arch/riscv/include/asm/kvm_host.h
-+++ b/arch/riscv/include/asm/kvm_host.h
-@@ -103,6 +103,9 @@ struct kvm_arch {
+diff --git a/tools/testing/selftests/kvm/riscv/get-reg-list.c b/tools/testing/selftests/kvm/riscv/get-reg-list.c
+index b882b7b9b785..f2696e308509 100644
+--- a/tools/testing/selftests/kvm/riscv/get-reg-list.c
++++ b/tools/testing/selftests/kvm/riscv/get-reg-list.c
+@@ -41,6 +41,7 @@ bool filter_reg(__u64 reg)
+ 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_I:
+ 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_M:
+ 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_V:
++	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SDTRIG:
+ 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SMSTATEEN:
+ 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SSAIA:
+ 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SSTC:
+@@ -247,6 +248,8 @@ static const char *core_id_to_str(const char *prefix, __u64 id)
+ 	"KVM_REG_RISCV_CSR_AIA | KVM_REG_RISCV_CSR_REG(" #csr ")"
+ #define RISCV_CSR_SMSTATEEN(csr) \
+ 	"KVM_REG_RISCV_CSR_SMSTATEEN | KVM_REG_RISCV_CSR_REG(" #csr ")"
++#define RISCV_CSR_SDTRIG(csr) \
++	"KVM_REG_RISCV_CSR_SDTRIG | KVM_REG_RISCV_CSR_REG(" #csr ")"
  
- 	/* AIA Guest/VM context */
- 	struct kvm_aia aia;
+ static const char *general_csr_id_to_str(__u64 reg_off)
+ {
+@@ -314,6 +317,18 @@ static const char *smstateen_csr_id_to_str(__u64 reg_off)
+ 	return NULL;
+ }
+ 
++static const char *sdtrig_csr_id_to_str(__u64 reg_off)
++{
++	/* reg_off is the offset into struct kvm_riscv_smstateen_csr */
++	switch (reg_off) {
++	case KVM_REG_RISCV_CSR_SDTRIG_REG(scontext):
++		return RISCV_CSR_SDTRIG(scontext);
++	}
 +
-+	/* hcontext ID for guest VM */
-+	unsigned long hcontext;
- };
- 
- struct kvm_cpu_trap {
-diff --git a/arch/riscv/include/asm/kvm_vcpu_debug.h b/arch/riscv/include/asm/kvm_vcpu_debug.h
-index 6e7ce6b408a6..0a025fc4e6dd 100644
---- a/arch/riscv/include/asm/kvm_vcpu_debug.h
-+++ b/arch/riscv/include/asm/kvm_vcpu_debug.h
-@@ -11,6 +11,13 @@
- 
- #include <linux/types.h>
- 
-+DECLARE_STATIC_KEY_FALSE(use_hcontext);
-+extern atomic_long_t hcontext_id_share;
++	TEST_FAIL("Unknown sdtrig csr reg: 0x%llx", reg_off);
++	return NULL;
++}
 +
-+void kvm_riscv_debug_init(void);
-+void kvm_riscv_debug_exit(void);
-+void kvm_riscv_debug_get_hcontext_id(struct kvm *kvm);
-+void kvm_riscv_debug_return_hcontext_id(struct kvm *kvm);
- void kvm_riscv_debug_vcpu_swap_in_guest_context(struct kvm_vcpu *vcpu);
- void kvm_riscv_debug_vcpu_swap_in_host_context(struct kvm_vcpu *vcpu);
- 
-diff --git a/arch/riscv/kvm/main.c b/arch/riscv/kvm/main.c
-index 225a435d9c9a..ff28b96ad70b 100644
---- a/arch/riscv/kvm/main.c
-+++ b/arch/riscv/kvm/main.c
-@@ -125,6 +125,8 @@ static int __init riscv_kvm_init(void)
- 		return rc;
+ static const char *csr_id_to_str(const char *prefix, __u64 id)
+ {
+ 	__u64 reg_off = id & ~(REG_MASK | KVM_REG_RISCV_CSR);
+@@ -330,6 +345,8 @@ static const char *csr_id_to_str(const char *prefix, __u64 id)
+ 		return aia_csr_id_to_str(reg_off);
+ 	case KVM_REG_RISCV_CSR_SMSTATEEN:
+ 		return smstateen_csr_id_to_str(reg_off);
++	case KVM_REG_RISCV_CSR_SDTRIG:
++		return sdtrig_csr_id_to_str(reg_off);
  	}
  
-+	kvm_riscv_debug_init();
-+
- 	return 0;
- }
- module_init(riscv_kvm_init);
-@@ -133,6 +135,8 @@ static void __exit riscv_kvm_exit(void)
- {
- 	kvm_riscv_aia_exit();
+ 	return strdup_printf("%lld | %lld /* UNKNOWN */", reg_subtype, reg_off);
+@@ -406,6 +423,7 @@ static const char *isa_ext_single_id_to_str(__u64 reg_off)
+ 		KVM_ISA_EXT_ARR(I),
+ 		KVM_ISA_EXT_ARR(M),
+ 		KVM_ISA_EXT_ARR(V),
++		KVM_ISA_EXT_ARR(SDTRIG),
+ 		KVM_ISA_EXT_ARR(SMSTATEEN),
+ 		KVM_ISA_EXT_ARR(SSAIA),
+ 		KVM_ISA_EXT_ARR(SSTC),
+@@ -764,6 +782,11 @@ static __u64 smstateen_regs[] = {
+ 	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SMSTATEEN,
+ };
  
-+	kvm_riscv_debug_exit();
++static __u64 sdtrig_regs[] = {
++	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_CSR | KVM_REG_RISCV_CSR_SDTRIG | KVM_REG_RISCV_CSR_SDTRIG_REG(scontext),
++	KVM_REG_RISCV | KVM_REG_SIZE_ULONG | KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SDTRIG,
++};
 +
- 	kvm_exit();
- }
- module_exit(riscv_kvm_exit);
-diff --git a/arch/riscv/kvm/vcpu_debug.c b/arch/riscv/kvm/vcpu_debug.c
-index e7e9263c2e30..5081c272f01d 100644
---- a/arch/riscv/kvm/vcpu_debug.c
-+++ b/arch/riscv/kvm/vcpu_debug.c
-@@ -6,6 +6,84 @@
- #include <linux/kvm_host.h>
- #include <asm/switch_to.h>
- 
-+DEFINE_SPINLOCK(hcontext_lock);
-+unsigned long *hcontext_bitmap;
-+unsigned long hcontext_bitmap_len;
-+
-+static __always_inline bool has_hcontext(void)
-+{
-+	return static_branch_likely(&use_hcontext);
-+}
-+
-+void kvm_riscv_debug_init(void)
-+{
-+	/*
-+	 * As from riscv-debug-spec, Chapter 5.7.9:
-+	 * If the H extension is implemented, it?s recommended to
-+	 * implement no more than 7 bits on RV32 and 14 on RV64.
-+	 * Allocating bit array according to spec size.
-+	 */
-+#if __riscv_xlen > 32
-+	unsigned long tmp = atomic_long_read(&hcontext_id_share) & GENMASK(13, 0);
-+#else
-+	unsigned long tmp = atomic_long_read(&hcontext_id_share) & GENMASK(6, 0);
-+#endif
-+	if (has_hcontext()) {
-+		while (tmp) {
-+			kvm_info("hcontext: try to allocate 0x%lx-bit array\n", tmp);
-+			hcontext_bitmap_len = tmp + 1;
-+			hcontext_bitmap = bitmap_zalloc(tmp, 0);
-+			if (hcontext_bitmap)
-+				break;
-+			tmp = tmp >> 1;
-+		}
-+
-+		if (tmp == 0) {
-+			/* We can't allocate any space for hcontext bitmap */
-+			static_branch_disable(&use_hcontext);
-+		} else {
-+			/* ID 0 is hypervisor */
-+			set_bit(0, hcontext_bitmap);
-+		}
-+	}
-+}
-+
-+void kvm_riscv_debug_exit(void)
-+{
-+	if (has_hcontext()) {
-+		static_branch_disable(&use_hcontext);
-+		kfree(hcontext_bitmap);
-+	}
-+}
-+
-+void kvm_riscv_debug_get_hcontext_id(struct kvm *kvm)
-+{
-+	if (has_hcontext()) {
-+		unsigned long free_id;
-+
-+		spin_lock(&hcontext_lock);
-+		free_id = find_first_zero_bit(hcontext_bitmap, hcontext_bitmap_len);
-+
-+		/* share the maximum ID when we run out of the hcontext ID */
-+		if (free_id <= hcontext_bitmap_len)
-+			set_bit(free_id, hcontext_bitmap);
-+		else
-+			free_id -= 1;
-+
-+		kvm->arch.hcontext = free_id;
-+		spin_unlock(&hcontext_lock);
-+	}
-+}
-+
-+void kvm_riscv_debug_return_hcontext_id(struct kvm *kvm)
-+{
-+	if (has_hcontext()) {
-+		spin_lock(&hcontext_lock);
-+		clear_bit(kvm->arch.hcontext, hcontext_bitmap);
-+		spin_unlock(&hcontext_lock);
-+	}
-+}
-+
- void kvm_riscv_debug_vcpu_swap_in_guest_context(struct kvm_vcpu *vcpu)
- {
- 	struct kvm_vcpu_sdtrig_csr *csr = &vcpu->arch.sdtrig_csr;
-diff --git a/arch/riscv/kvm/vm.c b/arch/riscv/kvm/vm.c
-index ce58bc48e5b8..275f5f05d4dd 100644
---- a/arch/riscv/kvm/vm.c
-+++ b/arch/riscv/kvm/vm.c
-@@ -45,6 +45,8 @@ int kvm_arch_init_vm(struct kvm *kvm, unsigned long type)
- 
- 	kvm_riscv_guest_timer_init(kvm);
- 
-+	kvm_riscv_debug_get_hcontext_id(kvm);
-+
- 	return 0;
- }
- 
-@@ -53,6 +55,8 @@ void kvm_arch_destroy_vm(struct kvm *kvm)
- 	kvm_destroy_vcpus(kvm);
- 
- 	kvm_riscv_aia_destroy_vm(kvm);
-+
-+	kvm_riscv_debug_return_hcontext_id(kvm);
- }
- 
- int kvm_vm_ioctl_irq_line(struct kvm *kvm, struct kvm_irq_level *irql,
+ static __u64 fp_f_regs[] = {
+ 	KVM_REG_RISCV | KVM_REG_SIZE_U32 | KVM_REG_RISCV_FP_F | KVM_REG_RISCV_FP_F_REG(f[0]),
+ 	KVM_REG_RISCV | KVM_REG_SIZE_U32 | KVM_REG_RISCV_FP_F | KVM_REG_RISCV_FP_F_REG(f[1]),
+@@ -853,6 +876,8 @@ static __u64 fp_d_regs[] = {
+ 	{"zicboz", .feature = KVM_RISCV_ISA_EXT_ZICBOZ, .regs = zicboz_regs, .regs_n = ARRAY_SIZE(zicboz_regs),}
+ #define SUBLIST_AIA \
+ 	{"aia", .feature = KVM_RISCV_ISA_EXT_SSAIA, .regs = aia_regs, .regs_n = ARRAY_SIZE(aia_regs),}
++#define SUBLIST_SDTRIG \
++	{"sdtrig", .feature = KVM_RISCV_ISA_EXT_SDTRIG, .regs = sdtrig_regs, .regs_n = ARRAY_SIZE(sdtrig_regs),}
+ #define SUBLIST_SMSTATEEN \
+ 	{"smstateen", .feature = KVM_RISCV_ISA_EXT_SMSTATEEN, .regs = smstateen_regs, .regs_n = ARRAY_SIZE(smstateen_regs),}
+ #define SUBLIST_FP_F \
+@@ -930,6 +955,7 @@ KVM_ISA_EXT_SUBLIST_CONFIG(aia, AIA);
+ KVM_ISA_EXT_SUBLIST_CONFIG(fp_f, FP_F);
+ KVM_ISA_EXT_SUBLIST_CONFIG(fp_d, FP_D);
+ KVM_ISA_EXT_SIMPLE_CONFIG(h, H);
++KVM_ISA_EXT_SUBLIST_CONFIG(sdtrig, SDTRIG);
+ KVM_ISA_EXT_SUBLIST_CONFIG(smstateen, SMSTATEEN);
+ KVM_ISA_EXT_SIMPLE_CONFIG(sstc, SSTC);
+ KVM_ISA_EXT_SIMPLE_CONFIG(svinval, SVINVAL);
+@@ -985,6 +1011,7 @@ struct vcpu_reg_list *vcpu_configs[] = {
+ 	&config_fp_f,
+ 	&config_fp_d,
+ 	&config_h,
++	&config_sdtrig,
+ 	&config_smstateen,
+ 	&config_sstc,
+ 	&config_svinval,
 
 -- 
 2.43.2
