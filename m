@@ -1,405 +1,126 @@
 From: Atish Patra <atishp@atishpatra.org>
-Date: Mon, 1 Apr 2024 15:36:14 -0700
-Subject: [PATCH v4 08/15] RISC-V: KVM: Implement SBI PMU Snapshot feature
-In-Reply-To: <20240302-6ae8fe37b90f127bc9be737f@orel>
-References: <20240229010130.1380926-1-atishp@rivosinc.com> <20240229010130.1380926-9-atishp@rivosinc.com>
- <20240302-6ae8fe37b90f127bc9be737f@orel>
-Message-ID: <CAOnJCUKjZWnS_SaR78Fy5AUOxrd+4gBx=_YrA=FQCa20iwifNQ@mail.gmail.com>
+Date: Mon, 1 Apr 2024 15:37:01 -0700
+Subject: [PATCH v4 07/15] RISC-V: KVM: No need to exit to the user space
+ if perf event failed
+In-Reply-To: <20240302-1a3c0df25f2422e1e6abecf3@orel>
+References: <20240229010130.1380926-1-atishp@rivosinc.com> <20240229010130.1380926-8-atishp@rivosinc.com>
+ <20240302-1a3c0df25f2422e1e6abecf3@orel>
+Message-ID: <CAOnJCUJCQjBfLZFW-3iLUB6ygyRmz1Anu+fhfrT4Lpoj2iNB5Q@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sat, Mar 2, 2024 at 1:49?AM Andrew Jones <ajones@ventanamicro.com> wrote:
+On Sat, Mar 2, 2024 at 12:16?AM Andrew Jones <ajones@ventanamicro.com> wrote:
 >
-> On Wed, Feb 28, 2024 at 05:01:23PM -0800, Atish Patra wrote:
-> > PMU Snapshot function allows to minimize the number of traps when the
-> > guest access configures/access the hpmcounters. If the snapshot feature
-> > is enabled, the hypervisor updates the shared memory with counter
-> > data and state of overflown counters. The guest can just read the
-> > shared memory instead of trap & emulate done by the hypervisor.
+> On Wed, Feb 28, 2024 at 05:01:22PM -0800, Atish Patra wrote:
+> > Currently, we return a linux error code if creating a perf event failed
+> > in kvm. That shouldn't be necessary as guest can continue to operate
+> > without perf profiling or profiling with firmware counters.
 > >
-> > This patch doesn't implement the counter overflow yet.
+> > Return appropriate SBI error code to indicate that PMU configuration
+> > failed. An error message in kvm already describes the reason for failure.
+>
+> I don't know enough about the perf subsystem to know if there may be
+> a concern that resources are temporarily unavailable. If so, then this
+
+Do you mean the hardware resources unavailable because the host is using it ?
+
+> patch would make it possible for a guest to do the exact same thing,
+> but sometimes succeed and sometimes get SBI_ERR_NOT_SUPPORTED.
+> sbi_pmu_counter_config_matching doesn't currently have any error types
+> specified that say "unsupported at the moment, maybe try again", which
+> would be more appropriate in that case. I do see
+> perf_event_create_kernel_counter() can return ENOMEM when memory isn't
+> available, but if the kernel isn't able to allocate a small amount of
+> memory, then we're in bigger trouble anyway, so the concern would be
+> if there are perf resource pools which may temporarily be exhausted at
+> the time the guest makes this request.
+>
+
+For other cases, this patch ensures that guests continue to run without failure
+which allows the user in the guest to try again if this fails due to a temporary
+resource availability.
+
+> One comment below.
+>
 > >
+> > Fixes: 0cb74b65d2e5 ("RISC-V: KVM: Implement perf support without sampling")
 > > Reviewed-by: Anup Patel <anup@brainfault.org>
 > > Signed-off-by: Atish Patra <atishp@rivosinc.com>
 > > ---
-> >  arch/riscv/include/asm/kvm_vcpu_pmu.h |   7 ++
-> >  arch/riscv/kvm/vcpu_pmu.c             | 120 +++++++++++++++++++++++++-
-> >  arch/riscv/kvm/vcpu_sbi_pmu.c         |   3 +
-> >  drivers/perf/riscv_pmu_sbi.c          |   2 +-
-> >  4 files changed, 129 insertions(+), 3 deletions(-)
-> >
-> > diff --git a/arch/riscv/include/asm/kvm_vcpu_pmu.h b/arch/riscv/include/asm/kvm_vcpu_pmu.h
-> > index 395518a1664e..586bab84be35 100644
-> > --- a/arch/riscv/include/asm/kvm_vcpu_pmu.h
-> > +++ b/arch/riscv/include/asm/kvm_vcpu_pmu.h
-> > @@ -50,6 +50,10 @@ struct kvm_pmu {
-> >       bool init_done;
-> >       /* Bit map of all the virtual counter used */
-> >       DECLARE_BITMAP(pmc_in_use, RISCV_KVM_MAX_COUNTERS);
-> > +     /* The address of the counter snapshot area (guest physical address) */
-> > +     gpa_t snapshot_addr;
-> > +     /* The actual data of the snapshot */
-> > +     struct riscv_pmu_snapshot_data *sdata;
-> >  };
-> >
-> >  #define vcpu_to_pmu(vcpu) (&(vcpu)->arch.pmu_context)
-> > @@ -85,6 +89,9 @@ int kvm_riscv_vcpu_pmu_ctr_cfg_match(struct kvm_vcpu *vcpu, unsigned long ctr_ba
-> >  int kvm_riscv_vcpu_pmu_ctr_read(struct kvm_vcpu *vcpu, unsigned long cidx,
-> >                               struct kvm_vcpu_sbi_return *retdata);
-> >  void kvm_riscv_vcpu_pmu_init(struct kvm_vcpu *vcpu);
-> > +int kvm_riscv_vcpu_pmu_setup_snapshot(struct kvm_vcpu *vcpu, unsigned long saddr_low,
-> > +                                   unsigned long saddr_high, unsigned long flags,
-> > +                                   struct kvm_vcpu_sbi_return *retdata);
->
-> I prefer to name this function
->
-> kvm_riscv_vcpu_pmu_snapshot_set_shmem
->
-
-Sure.
-
-> >  void kvm_riscv_vcpu_pmu_deinit(struct kvm_vcpu *vcpu);
-> >  void kvm_riscv_vcpu_pmu_reset(struct kvm_vcpu *vcpu);
+> >  arch/riscv/kvm/vcpu_pmu.c     | 14 +++++++++-----
+> >  arch/riscv/kvm/vcpu_sbi_pmu.c |  6 +++---
+> >  2 files changed, 12 insertions(+), 8 deletions(-)
 > >
 > > diff --git a/arch/riscv/kvm/vcpu_pmu.c b/arch/riscv/kvm/vcpu_pmu.c
-> > index 29bf4ca798cb..74865e6050a1 100644
+> > index b1574c043f77..29bf4ca798cb 100644
 > > --- a/arch/riscv/kvm/vcpu_pmu.c
 > > +++ b/arch/riscv/kvm/vcpu_pmu.c
-> > @@ -311,6 +311,81 @@ int kvm_riscv_vcpu_pmu_read_hpm(struct kvm_vcpu *vcpu, unsigned int csr_num,
-> >       return ret;
+> > @@ -229,8 +229,9 @@ static int kvm_pmu_validate_counter_mask(struct kvm_pmu *kvpmu, unsigned long ct
+> >       return 0;
 > >  }
 > >
-> > +static void kvm_pmu_clear_snapshot_area(struct kvm_vcpu *vcpu)
-> > +{
-> > +     struct kvm_pmu *kvpmu = vcpu_to_pmu(vcpu);
-> > +     int snapshot_area_size = sizeof(struct riscv_pmu_snapshot_data);
-> > +
-> > +     if (kvpmu->sdata) {
-> > +             memset(kvpmu->sdata, 0, snapshot_area_size);
-> > +             if (kvpmu->snapshot_addr != INVALID_GPA)
->
-> It's a KVM bug if we have non-null sdata but snapshot_addr is INVALID_GPA,
-> right? Maybe we should warn if we see that. We can also move the memset
-> inside the if block.
->
-
-Added a warning.
-
-> > +                     kvm_vcpu_write_guest(vcpu, kvpmu->snapshot_addr,
-> > +                                          kvpmu->sdata, snapshot_area_size);
-> > +             kfree(kvpmu->sdata);
-> > +             kvpmu->sdata = NULL;
-> > +     }
-> > +     kvpmu->snapshot_addr = INVALID_GPA;
-> > +}
-> > +
-> > +int kvm_riscv_vcpu_pmu_setup_snapshot(struct kvm_vcpu *vcpu, unsigned long saddr_low,
-> > +                                   unsigned long saddr_high, unsigned long flags,
-> > +                                   struct kvm_vcpu_sbi_return *retdata)
-> > +{
-> > +     struct kvm_pmu *kvpmu = vcpu_to_pmu(vcpu);
-> > +     int snapshot_area_size = sizeof(struct riscv_pmu_snapshot_data);
-> > +     int sbiret = 0;
-> > +     gpa_t saddr;
-> > +     unsigned long hva;
-> > +     bool writable;
-> > +
-> > +     if (!kvpmu) {
-> > +             sbiret = SBI_ERR_INVALID_PARAM;
-> > +             goto out;
-> > +     }
->
-> Need to check that flags is zero or return SBI_ERR_INVALID_PARAM.
->
-
-Fixed.
-
-> > +
-> > +     if (saddr_low == -1 && saddr_high == -1) {
->
-> We introduced SBI_STA_SHMEM_DISABLE for these magic -1's for STA. Since
-> SBI is using the -1 approach for all its shmem, then maybe we should
-> rename SBI_STA_SHMEM_DISABLE to SBI_SHMEM_DISABLE and then use them here
-> too.
->
-
-Fixed
-
-> > +             kvm_pmu_clear_snapshot_area(vcpu);
-> > +             return 0;
-> > +     }
-> > +
-> > +     saddr = saddr_low;
-> > +
-> > +     if (saddr_high != 0) {
-> > +             if (IS_ENABLED(CONFIG_32BIT))
-> > +                     saddr |= ((gpa_t)saddr << 32);
-> > +             else
-> > +                     sbiret = SBI_ERR_INVALID_ADDRESS;
-> > +             goto out;
-> > +     }
-> > +
-> > +     if (kvm_is_error_gpa(vcpu->kvm, saddr)) {
-> > +             sbiret = SBI_ERR_INVALID_PARAM;
-> > +             goto out;
-> > +     }
->
-> Does the check above provide anything more than what the check below does?
->
-You are correct. I have removed the check
-
-> > +
-> > +     hva = kvm_vcpu_gfn_to_hva_prot(vcpu, saddr >> PAGE_SHIFT, &writable);
-> > +     if (kvm_is_error_hva(hva) || !writable) {
-> > +             sbiret = SBI_ERR_INVALID_ADDRESS;
-> > +             goto out;
-> > +     }
-> > +
-> > +     kvpmu->snapshot_addr = saddr;
-> > +     kvpmu->sdata = kzalloc(snapshot_area_size, GFP_ATOMIC);
-> > +     if (!kvpmu->sdata)
->
-> Should reset snapshot_addr to INVALID_GPA here on error. Or maybe we
-> should just set snapshot_addr to saddr at the bottom of this function if
-> we make it.
->
-
-Done.
-
-> > +             return -ENOMEM;
-> > +
-> > +     if (kvm_vcpu_write_guest(vcpu, saddr, kvpmu->sdata, snapshot_area_size)) {
-> > +             kfree(kvpmu->sdata);
-> > +             kvpmu->snapshot_addr = INVALID_GPA;
-> > +             sbiret = SBI_ERR_FAILURE;
->
-> I agree we should return this SBI error for this case, but unfortunately
-> the spec is missing the
->
->  SBI_ERR_FAILED - The request failed for unspecified or unknown other reasons.
->
-> that we have for other SBI functions. I guess we should keep the code like
-> this and open a PR to the spec.
->
-
-I have created a blanket github issue for now. I will send a PR.
-
-> > +     }
-> > +
-> > +out:
-> > +     retdata->err_val = sbiret;
-> > +
-> > +     return 0;
-> > +}
-> > +
-> >  int kvm_riscv_vcpu_pmu_num_ctrs(struct kvm_vcpu *vcpu,
-> >                               struct kvm_vcpu_sbi_return *retdata)
+> > -static int kvm_pmu_create_perf_event(struct kvm_pmc *pmc, struct perf_event_attr *attr,
+> > -                                  unsigned long flags, unsigned long eidx, unsigned long evtdata)
+> > +static long kvm_pmu_create_perf_event(struct kvm_pmc *pmc, struct perf_event_attr *attr,
+> > +                                   unsigned long flags, unsigned long eidx,
+> > +                                   unsigned long evtdata)
 > >  {
-> > @@ -344,20 +419,33 @@ int kvm_riscv_vcpu_pmu_ctr_start(struct kvm_vcpu *vcpu, unsigned long ctr_base,
-> >       int i, pmc_index, sbiret = 0;
-> >       struct kvm_pmc *pmc;
-> >       int fevent_code;
-> > +     bool snap_flag_set = flags & SBI_PMU_START_FLAG_INIT_FROM_SNAPSHOT;
->
-> This function should confirm no undefined bits are set in flags and the
-> spec should specify that the reserved flags must be zero otherwise an
-> invalid param will be returned.
->
-> Also here would should confirm that only one of the two flags is set,
-> otherwise return invalid param, as they've specified to be mutually
-> exclusive.
->
-
-That makes sense. Update the same github issue.
-(https://github.com/riscv-non-isa/riscv-sbi-doc/issues/145)
-
-I will make the necessary changes in a separate series after the spec is merged.
-
-> Regarding the spec, the note about the counter value not being modified
-> unless SBI_PMU_START_SET_INIT_VALUE is set should be modified to state
-> unless either of the two flags are set (so I think we need another spec
-> PR).
->
-> (The same flags checking/specifying comments apply to the other functions
-> with flags too.)
->
-
-Noted (https://github.com/riscv-non-isa/riscv-sbi-doc/issues/146).
-
+> >       struct perf_event *event;
 > >
-> >       if (kvm_pmu_validate_counter_mask(kvpmu, ctr_base, ctr_mask) < 0) {
-> >               sbiret = SBI_ERR_INVALID_PARAM;
-> >               goto out;
-> >       }
-> >
-> > +     if (snap_flag_set && kvpmu->snapshot_addr == INVALID_GPA) {
-> > +             sbiret = SBI_ERR_NO_SHMEM;
-> > +             goto out;
-> > +     }
-> > +
-> >       /* Start the counters that have been configured and requested by the guest */
-> >       for_each_set_bit(i, &ctr_mask, RISCV_MAX_COUNTERS) {
-> >               pmc_index = i + ctr_base;
-> >               if (!test_bit(pmc_index, kvpmu->pmc_in_use))
-> >                       continue;
-> >               pmc = &kvpmu->pmc[pmc_index];
-> > -             if (flags & SBI_PMU_START_FLAG_SET_INIT_VALUE)
-> > +             if (flags & SBI_PMU_START_FLAG_SET_INIT_VALUE) {
-> >                       pmc->counter_val = ival;
-> > +             } else if (snap_flag_set) {
-> > +                     kvm_vcpu_read_guest(vcpu, kvpmu->snapshot_addr, kvpmu->sdata,
-> > +                                         sizeof(struct riscv_pmu_snapshot_data));
->
-> The snapshot read should be outside the for_each_set_bit() loop and we
-> should warn and abort the counter starting if the read fails.
->
-
-Fixed. This should also fall under the SBI_ERR_FAILURE category.
-
-> > +                     /* The counter index in the snapshot are relative to the counter base */
-> > +                     pmc->counter_val = kvpmu->sdata->ctr_values[i];
-> > +             }
-> > +
-> >               if (pmc->cinfo.type == SBI_PMU_CTR_TYPE_FW) {
-> >                       fevent_code = get_event_code(pmc->event_idx);
-> >                       if (fevent_code >= SBI_PMU_FW_MAX) {
-> > @@ -398,14 +486,21 @@ int kvm_riscv_vcpu_pmu_ctr_stop(struct kvm_vcpu *vcpu, unsigned long ctr_base,
+> > @@ -454,7 +455,8 @@ int kvm_riscv_vcpu_pmu_ctr_cfg_match(struct kvm_vcpu *vcpu, unsigned long ctr_ba
+> >                                    unsigned long eidx, u64 evtdata,
+> >                                    struct kvm_vcpu_sbi_return *retdata)
 > >  {
-> >       struct kvm_pmu *kvpmu = vcpu_to_pmu(vcpu);
-> >       int i, pmc_index, sbiret = 0;
-> > +     u64 enabled, running;
-> >       struct kvm_pmc *pmc;
-> >       int fevent_code;
-> > +     bool snap_flag_set = flags & SBI_PMU_STOP_FLAG_TAKE_SNAPSHOT;
-> >
-> > -     if (kvm_pmu_validate_counter_mask(kvpmu, ctr_base, ctr_mask) < 0) {
-> > +     if ((kvm_pmu_validate_counter_mask(kvpmu, ctr_base, ctr_mask) < 0)) {
->
-> Added unnecessary () here.
->
-
-Fixed.
-
-> >               sbiret = SBI_ERR_INVALID_PARAM;
-> >               goto out;
-> >       }
-> >
-> > +     if (snap_flag_set && kvpmu->snapshot_addr == INVALID_GPA) {
-> > +             sbiret = SBI_ERR_NO_SHMEM;
-> > +             goto out;
-> > +     }
-> > +
-> >       /* Stop the counters that have been configured and requested by the guest */
-> >       for_each_set_bit(i, &ctr_mask, RISCV_MAX_COUNTERS) {
-> >               pmc_index = i + ctr_base;
-> > @@ -438,9 +533,28 @@ int kvm_riscv_vcpu_pmu_ctr_stop(struct kvm_vcpu *vcpu, unsigned long ctr_base,
-> >               } else {
-> >                       sbiret = SBI_ERR_INVALID_PARAM;
-> >               }
-> > +
-> > +             if (snap_flag_set && !sbiret) {
-> > +                     if (pmc->cinfo.type == SBI_PMU_CTR_TYPE_FW)
-> > +                             pmc->counter_val = kvpmu->fw_event[fevent_code].value;
-> > +                     else if (pmc->perf_event)
-> > +                             pmc->counter_val += perf_event_read_value(pmc->perf_event,
-> > +                                                                       &enabled, &running);
-> > +                     /* TODO: Add counter overflow support when sscofpmf support is added */
-> > +                     kvpmu->sdata->ctr_values[i] = pmc->counter_val;
-> > +                     kvm_vcpu_write_guest(vcpu, kvpmu->snapshot_addr, kvpmu->sdata,
-> > +                                          sizeof(struct riscv_pmu_snapshot_data));
->
-> Should just set a boolean here saying that the snapshot needs an update
-> and then do the update outside the for_each_set_bit loop.
->
-
-Done.
-
+> > -     int ctr_idx, ret, sbiret = 0;
+> > +     int ctr_idx, sbiret = 0;
+> > +     long ret;
+> >       bool is_fevent;
+> >       unsigned long event_code;
+> >       u32 etype = kvm_pmu_get_perf_event_type(eidx);
+> > @@ -513,8 +515,10 @@ int kvm_riscv_vcpu_pmu_ctr_cfg_match(struct kvm_vcpu *vcpu, unsigned long ctr_ba
+> >                       kvpmu->fw_event[event_code].started = true;
+> >       } else {
+> >               ret = kvm_pmu_create_perf_event(pmc, &attr, flags, eidx, evtdata);
+> > -             if (ret)
+> > -                     return ret;
+> > +             if (ret) {
+> > +                     sbiret = SBI_ERR_NOT_SUPPORTED;
+> > +                     goto out;
 > > +             }
-> > +
-> >               if (flags & SBI_PMU_STOP_FLAG_RESET) {
-> >                       pmc->event_idx = SBI_PMU_EVENT_IDX_INVALID;
-> >                       clear_bit(pmc_index, kvpmu->pmc_in_use);
-> > +                     if (snap_flag_set) {
-> > +                             /* Clear the snapshot area for the upcoming deletion event */
-> > +                             kvpmu->sdata->ctr_values[i] = 0;
-> > +                             kvm_vcpu_write_guest(vcpu, kvpmu->snapshot_addr, kvpmu->sdata,
-> > +                                                  sizeof(struct riscv_pmu_snapshot_data));
->
-> The spec isn't clear on this (so we should clarify it), but I'd expect
-> that a caller who set both the reset and the snapshot flag would want
-> the snapshot from before the reset when this call completes and then
-> assume that when they start counting again, and look at the snapshot
-> again, that those new counts would be from the reset values. Or maybe
-> not :-) Maybe they want to do a reset and take a snapshot in order to
-> look at the snapshot and confirm the reset happened? Either way, it
-> seems we should only do one of the two here. Either update the snapshot
-> before resetting, and not again after reset, or reset and then update
-> the snapshot (with no need to update before).
->
-
-The reset call should happen when the event is deleted by the perf
-framework in supervisor.
-If we don't clear the values, the shared memory may have stale data of
-last read counters
-which is not ideal. That's why, I am clearing it upon resetting.
-The actual counter value should be read while stopping the counters.
-
-I thought the current description is clear enough as it says
-
-"SBI_PMU_STOP_FLAG_RESET - Reset the counter to event mapping."
-
-Do you feel we should be more explicit about this ?
-
-> > +                     }
-> >               }
 > >       }
 > >
-> > @@ -566,6 +680,7 @@ void kvm_riscv_vcpu_pmu_init(struct kvm_vcpu *vcpu)
-> >       kvpmu->num_hw_ctrs = num_hw_ctrs + 1;
-> >       kvpmu->num_fw_ctrs = SBI_PMU_FW_MAX;
-> >       memset(&kvpmu->fw_event, 0, SBI_PMU_FW_MAX * sizeof(struct kvm_fw_event));
-> > +     kvpmu->snapshot_addr = INVALID_GPA;
-> >
-> >       if (kvpmu->num_hw_ctrs > RISCV_KVM_MAX_HW_CTRS) {
-> >               pr_warn_once("Limiting the hardware counters to 32 as specified by the ISA");
-> > @@ -625,6 +740,7 @@ void kvm_riscv_vcpu_pmu_deinit(struct kvm_vcpu *vcpu)
-> >       }
-> >       bitmap_zero(kvpmu->pmc_in_use, RISCV_MAX_COUNTERS);
-> >       memset(&kvpmu->fw_event, 0, SBI_PMU_FW_MAX * sizeof(struct kvm_fw_event));
-> > +     kvm_pmu_clear_snapshot_area(vcpu);
-> >  }
-> >
-> >  void kvm_riscv_vcpu_pmu_reset(struct kvm_vcpu *vcpu)
+> >       set_bit(ctr_idx, kvpmu->pmc_in_use);
 > > diff --git a/arch/riscv/kvm/vcpu_sbi_pmu.c b/arch/riscv/kvm/vcpu_sbi_pmu.c
-> > index b70179e9e875..9f61136e4bb1 100644
+> > index 7eca72df2cbd..b70179e9e875 100644
 > > --- a/arch/riscv/kvm/vcpu_sbi_pmu.c
 > > +++ b/arch/riscv/kvm/vcpu_sbi_pmu.c
-> > @@ -64,6 +64,9 @@ static int kvm_sbi_ext_pmu_handler(struct kvm_vcpu *vcpu, struct kvm_run *run,
-> >       case SBI_EXT_PMU_COUNTER_FW_READ:
-> >               ret = kvm_riscv_vcpu_pmu_ctr_read(vcpu, cp->a0, retdata);
-> >               break;
-> > +     case SBI_EXT_PMU_SNAPSHOT_SET_SHMEM:
-> > +             ret = kvm_riscv_vcpu_pmu_setup_snapshot(vcpu, cp->a0, cp->a1, cp->a2, retdata);
-> > +             break;
-> >       default:
-> >               retdata->err_val = SBI_ERR_NOT_SUPPORTED;
-> >       }
-> > diff --git a/drivers/perf/riscv_pmu_sbi.c b/drivers/perf/riscv_pmu_sbi.c
-> > index 8de5721e8019..1a22ce1ff8c8 100644
-> > --- a/drivers/perf/riscv_pmu_sbi.c
-> > +++ b/drivers/perf/riscv_pmu_sbi.c
-> > @@ -802,7 +802,7 @@ static noinline void pmu_sbi_start_ovf_ctrs_snapshot(struct cpu_hw_events *cpu_h
-> >       struct riscv_pmu_snapshot_data *sdata = cpu_hw_evt->snapshot_addr;
-> >
-> >       for_each_set_bit(idx, cpu_hw_evt->used_hw_ctrs, RISCV_MAX_COUNTERS) {
-> > -             if (ctr_ovf_mask & (1 << idx)) {
-> > +             if (ctr_ovf_mask & (BIT(idx))) {
-> >                       event = cpu_hw_evt->events[idx];
-> >                       hwc = &event->hw;
-> >                       max_period = riscv_pmu_ctr_get_width_mask(event);
+> > @@ -42,9 +42,9 @@ static int kvm_sbi_ext_pmu_handler(struct kvm_vcpu *vcpu, struct kvm_run *run,
+> >  #endif
+> >               /*
+> >                * This can fail if perf core framework fails to create an event.
+> > -              * Forward the error to userspace because it's an error which
+> > -              * happened within the host kernel. The other option would be
+> > -              * to convert to an SBI error and forward to the guest.
+> > +              * No need to forward the error to userspace and exit the guest
+>
+> Period after guest
+>
+>
+> > +              * operation can continue without profiling. Forward the
+>
+> The operation
+>
+
+Fixed the above two.
+
+
+> > +              * appropriate SBI error to the guest.
+> >                */
+> >               ret = kvm_riscv_vcpu_pmu_ctr_cfg_match(vcpu, cp->a0, cp->a1,
+> >                                                      cp->a2, cp->a3, temp, retdata);
 > > --
 > > 2.34.1
 > >
@@ -409,7 +130,7 @@ Do you feel we should be more explicit about this ?
 
 
 
--- 
+--
 Regards,
 Atish
 
