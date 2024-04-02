@@ -1,149 +1,176 @@
-From: Atish Patra <atishp@rivosinc.com>
-Date: Tue, 2 Apr 2024 01:43:45 -0700
-Subject: [PATCH v4 12/15] KVM: riscv: selftests: Add SBI PMU extension
- definitions
-In-Reply-To: <20240302-698f4322ab7ba74fc3dba416@orel>
-References: <20240229010130.1380926-1-atishp@rivosinc.com>
- <20240229010130.1380926-13-atishp@rivosinc.com>
- <20240302-698f4322ab7ba74fc3dba416@orel>
-Message-ID: <d382c616-5212-4da2-be63-6ed0a85e13f7@rivosinc.com>
+From: Andrew Jones <ajones@ventanamicro.com>
+Date: Tue, 2 Apr 2024 16:12:02 +0200
+Subject: [PATCH] KVM: riscv: selftests: Add SBI base extension test
+In-Reply-To: <20240401082019.2318193-1-haibo1.xu@intel.com>
+References: <20240401082019.2318193-1-haibo1.xu@intel.com>
+Message-ID: <20240402-7bd2b9ed00094befa6927b60@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 3/2/24 03:00, Andrew Jones wrote:
-> On Wed, Feb 28, 2024 at 05:01:27PM -0800, Atish Patra wrote:
->> The SBI PMU extension definition is required for upcoming SBI PMU
->> selftests.
->>
->> Signed-off-by: Atish Patra <atishp@rivosinc.com>
->> ---
->>   .../selftests/kvm/include/riscv/processor.h   | 67 +++++++++++++++++++
->>   1 file changed, 67 insertions(+)
->>
->> diff --git a/tools/testing/selftests/kvm/include/riscv/processor.h b/tools/testing/selftests/kvm/include/riscv/processor.h
->> index f75c381fa35a..a49a39c8e8d4 100644
->> --- a/tools/testing/selftests/kvm/include/riscv/processor.h
->> +++ b/tools/testing/selftests/kvm/include/riscv/processor.h
-> 
-> We should probably create a new header (include/riscv/sbi.h) since
-> otherwise processor.h is very quickly going to look like an SBI
-> header with a few non-sbi things in it. Can we add a patch prior to
-> this one that moves the SBI stuff we currently have in processor.h
-> out to an sbi.h? Or, we could start synchronizing a copy of
-> arch/riscv/include/asm/sbi.h in tools/arch/riscv/include/asm like
-> we've done for csr.h
-> 
-A separate sbi.h makes sense. I have moved the definitions to sbi.h as 
-of now.
+On Mon, Apr 01, 2024 at 04:20:18PM +0800, Haibo Xu wrote:
+> This is the first patch to enable the base extension selftest
+> for the SBI implementation in KVM. Test for other extensions
+> will be added later.
 
-There is still lot more changes in sbi.h which is not required for 
-selftests even after this patch. But I am okay with syncing with sbi.h
-But I am not sure what should be the synchronization policy for sbi.h.
+I'm not sure we want SBI tests in KVM selftests since we already
+plan to add them to kvm-unit-tests, where they can be used to
+test both KVM's SBI implementation and M-mode firmware implementations.
+If we also have them here, then we'll end up duplicating that effort.
 
-As needed or regular sync with after every release? The csr.h is already 
-out of date even though it was created last MW (one change is part of 
-this series).
+I do like the approach of only checking for an error, rather than
+also for a value, for these ID getters. In kvm-unit-tests we're
+currently requiring that the expected value be passed in, otherwise
+the whole test is skipped. We could fallback to only checking for
+an error instead, as is done here.
 
-Let me know if you have any thoughts about that. I can send another 
-version with that.
+Thanks,
+drew
 
->> @@ -169,17 +169,84 @@ void vm_install_exception_handler(struct kvm_vm *vm, int vector, exception_handl
->>   enum sbi_ext_id {
->>   	SBI_EXT_BASE = 0x10,
->>   	SBI_EXT_STA = 0x535441,
->> +	SBI_EXT_PMU = 0x504D55,
->>   };
->>   
->>   enum sbi_ext_base_fid {
->>   	SBI_EXT_BASE_PROBE_EXT = 3,
->>   };
->>   
->> +enum sbi_ext_pmu_fid {
->> +	SBI_EXT_PMU_NUM_COUNTERS = 0,
->> +	SBI_EXT_PMU_COUNTER_GET_INFO,
->> +	SBI_EXT_PMU_COUNTER_CFG_MATCH,
->> +	SBI_EXT_PMU_COUNTER_START,
->> +	SBI_EXT_PMU_COUNTER_STOP,
->> +	SBI_EXT_PMU_COUNTER_FW_READ,
->> +	SBI_EXT_PMU_COUNTER_FW_READ_HI,
->> +	SBI_EXT_PMU_SNAPSHOT_SET_SHMEM,
->> +};
->> +
->> +union sbi_pmu_ctr_info {
->> +	unsigned long value;
->> +	struct {
->> +		unsigned long csr:12;
->> +		unsigned long width:6;
->> +#if __riscv_xlen == 32
->> +		unsigned long reserved:13;
->> +#else
->> +		unsigned long reserved:45;
->> +#endif
->> +		unsigned long type:1;
->> +	};
->> +};
->> +
->>   struct sbiret {
->>   	long error;
->>   	long value;
->>   };
->>   
->> +/** General pmu event codes specified in SBI PMU extension */
->> +enum sbi_pmu_hw_generic_events_t {
->> +	SBI_PMU_HW_NO_EVENT			= 0,
->> +	SBI_PMU_HW_CPU_CYCLES			= 1,
->> +	SBI_PMU_HW_INSTRUCTIONS			= 2,
->> +	SBI_PMU_HW_CACHE_REFERENCES		= 3,
->> +	SBI_PMU_HW_CACHE_MISSES			= 4,
->> +	SBI_PMU_HW_BRANCH_INSTRUCTIONS		= 5,
->> +	SBI_PMU_HW_BRANCH_MISSES		= 6,
->> +	SBI_PMU_HW_BUS_CYCLES			= 7,
->> +	SBI_PMU_HW_STALLED_CYCLES_FRONTEND	= 8,
->> +	SBI_PMU_HW_STALLED_CYCLES_BACKEND	= 9,
->> +	SBI_PMU_HW_REF_CPU_CYCLES		= 10,
->> +
->> +	SBI_PMU_HW_GENERAL_MAX,
->> +};
->> +
->> +/* SBI PMU counter types */
->> +enum sbi_pmu_ctr_type {
->> +	SBI_PMU_CTR_TYPE_HW = 0x0,
->> +	SBI_PMU_CTR_TYPE_FW,
->> +};
->> +
->> +/* Flags defined for config matching function */
->> +#define SBI_PMU_CFG_FLAG_SKIP_MATCH	(1 << 0)
->> +#define SBI_PMU_CFG_FLAG_CLEAR_VALUE	(1 << 1)
->> +#define SBI_PMU_CFG_FLAG_AUTO_START	(1 << 2)
->> +#define SBI_PMU_CFG_FLAG_SET_VUINH	(1 << 3)
->> +#define SBI_PMU_CFG_FLAG_SET_VSINH	(1 << 4)
->> +#define SBI_PMU_CFG_FLAG_SET_UINH	(1 << 5)
->> +#define SBI_PMU_CFG_FLAG_SET_SINH	(1 << 6)
->> +#define SBI_PMU_CFG_FLAG_SET_MINH	(1 << 7)
->> +
->> +/* Flags defined for counter start function */
->> +#define SBI_PMU_START_FLAG_SET_INIT_VALUE (1 << 0)
->> +#define SBI_PMU_START_FLAG_INIT_FROM_SNAPSHOT BIT(1)
->> +
->> +/* Flags defined for counter stop function */
->> +#define SBI_PMU_STOP_FLAG_RESET (1 << 0)
->> +#define SBI_PMU_STOP_FLAG_TAKE_SNAPSHOT BIT(1)
 > 
-> When changing shifts to BIT()'s, don't forget these (easy not to forget
-> if we go with the synch sbi.h to tools approach)
+> Signed-off-by: Haibo Xu <haibo1.xu@intel.com>
+> ---
+>  tools/testing/selftests/kvm/Makefile          |  1 +
+>  .../selftests/kvm/include/riscv/processor.h   |  8 +-
+>  tools/testing/selftests/kvm/riscv/sbi_test.c  | 95 +++++++++++++++++++
+>  3 files changed, 103 insertions(+), 1 deletion(-)
+>  create mode 100644 tools/testing/selftests/kvm/riscv/sbi_test.c
 > 
->> +
->>   struct sbiret sbi_ecall(int ext, int fid, unsigned long arg0,
->>   			unsigned long arg1, unsigned long arg2,
->>   			unsigned long arg3, unsigned long arg4,
->> -- 
->> 2.34.1
->>
+> diff --git a/tools/testing/selftests/kvm/Makefile b/tools/testing/selftests/kvm/Makefile
+> index 741c7dc16afc..a6acbbcad757 100644
+> --- a/tools/testing/selftests/kvm/Makefile
+> +++ b/tools/testing/selftests/kvm/Makefile
+> @@ -189,6 +189,7 @@ TEST_GEN_PROGS_s390x += rseq_test
+>  TEST_GEN_PROGS_s390x += set_memory_region_test
+>  TEST_GEN_PROGS_s390x += kvm_binary_stats_test
+>  
+> +TEST_GEN_PROGS_riscv += riscv/sbi_test
+>  TEST_GEN_PROGS_riscv += arch_timer
+>  TEST_GEN_PROGS_riscv += demand_paging_test
+>  TEST_GEN_PROGS_riscv += dirty_log_test
+> diff --git a/tools/testing/selftests/kvm/include/riscv/processor.h b/tools/testing/selftests/kvm/include/riscv/processor.h
+> index ce473fe251dd..df530ac751c4 100644
+> --- a/tools/testing/selftests/kvm/include/riscv/processor.h
+> +++ b/tools/testing/selftests/kvm/include/riscv/processor.h
+> @@ -178,7 +178,13 @@ enum sbi_ext_id {
+>  };
+>  
+>  enum sbi_ext_base_fid {
+> -	SBI_EXT_BASE_PROBE_EXT = 3,
+> +	SBI_EXT_BASE_GET_SPEC_VERSION = 0,
+> +	SBI_EXT_BASE_GET_IMP_ID,
+> +	SBI_EXT_BASE_GET_IMP_VERSION,
+> +	SBI_EXT_BASE_PROBE_EXT,
+> +	SBI_EXT_BASE_GET_MVENDORID,
+> +	SBI_EXT_BASE_GET_MARCHID,
+> +	SBI_EXT_BASE_GET_MIMPID,
+>  };
+>  
+>  struct sbiret {
+> diff --git a/tools/testing/selftests/kvm/riscv/sbi_test.c b/tools/testing/selftests/kvm/riscv/sbi_test.c
+> new file mode 100644
+> index 000000000000..b9378546e3b6
+> --- /dev/null
+> +++ b/tools/testing/selftests/kvm/riscv/sbi_test.c
+> @@ -0,0 +1,95 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +/*
+> + * sbi_test - SBI API test for KVM's SBI implementation.
+> + *
+> + * Copyright (c) 2024 Intel Corporation
+> + *
+> + * Test cover the following SBI extentions:
+> + *  - Base: All functions in this extension should be supported
+> + */
+> +
+> +#include "kvm_util.h"
+> +#include "processor.h"
+> +#include "test_util.h"
+> +
+> +/*
+> + * Test that all functions in the base extension must be supported
+> + */
+> +static void base_ext_guest_code(void)
+> +{
+> +	struct sbiret ret;
+> +
+> +	/*
+> +	 * Since the base extension was introduced in SBI Spec v0.2,
+> +	 * assert if the implemented SBI version is below 0.2.
+> +	 */
+> +	ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_GET_SPEC_VERSION, 0,
+> +			0, 0, 0, 0, 0);
+> +	__GUEST_ASSERT(!ret.error && ret.value >= 2, "Get Spec Version Error: ret.error=%ld, "
+> +			"ret.value=%ld\n", ret.error, ret.value);
+> +
+> +	ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_GET_IMP_ID, 0,
+> +			0, 0, 0, 0, 0);
+> +	__GUEST_ASSERT(!ret.error && ret.value == 3, "Get Imp ID Error: ret.error=%ld, "
+> +			"ret.value=%ld\n",
+> +			ret.error, ret.value);
+> +
+> +	ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_GET_IMP_VERSION, 0,
+> +			0, 0, 0, 0, 0);
+> +	__GUEST_ASSERT(!ret.error, "Get Imp Version Error: ret.error=%ld\n", ret.error);
+> +
+> +	ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_PROBE_EXT, SBI_EXT_BASE,
+> +			0, 0, 0, 0, 0);
+> +	__GUEST_ASSERT(!ret.error && ret.value == 1, "Probe ext Error: ret.error=%ld, "
+> +			"ret.value=%ld\n",
+> +			ret.error, ret.value);
+> +
+> +	ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_GET_MVENDORID, 0,
+> +			0, 0, 0, 0, 0);
+> +	__GUEST_ASSERT(!ret.error, "Get Machine Vendor ID Error: ret.error=%ld\n", ret.error);
+> +
+> +	ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_GET_MARCHID, 0,
+> +			0, 0, 0, 0, 0);
+> +	__GUEST_ASSERT(!ret.error, "Get Machine Arch ID Error: ret.error=%ld\n", ret.error);
+> +
+> +	ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_GET_MIMPID, 0,
+> +			0, 0, 0, 0, 0);
+> +	__GUEST_ASSERT(!ret.error, "Get Machine Imp ID Error: ret.error=%ld\n", ret.error);
+> +
+> +	GUEST_DONE();
+> +}
+> +
+> +static void sbi_base_ext_test(void)
+> +{
+> +	struct kvm_vm *vm;
+> +	struct kvm_vcpu *vcpu;
+> +	struct ucall uc;
+> +
+> +	vm = vm_create_with_one_vcpu(&vcpu, base_ext_guest_code);
+> +	while (1) {
+> +		vcpu_run(vcpu);
+> +		TEST_ASSERT(vcpu->run->exit_reason == UCALL_EXIT_REASON,
+> +			    "Unexpected exit reason: %u (%s),",
+> +			    vcpu->run->exit_reason, exit_reason_str(vcpu->run->exit_reason));
+> +
+> +		switch (get_ucall(vcpu, &uc)) {
+> +		case UCALL_DONE:
+> +			goto done;
+> +		case UCALL_ABORT:
+> +			fprintf(stderr, "Guest assert failed!\n");
+> +			REPORT_GUEST_ASSERT(uc);
+> +		default:
+> +			TEST_FAIL("Unexpected ucall %lu", uc.cmd);
+> +		}
+> +	}
+> +
+> +done:
+> +	kvm_vm_free(vm);
+> +}
+> +
+> +int main(void)
+> +{
+> +	sbi_base_ext_test();
+> +
+> +	return 0;
+> +}
+> -- 
+> 2.34.1
 > 
-> Thanks,
-> drew
-
 
