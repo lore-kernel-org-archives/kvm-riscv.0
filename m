@@ -1,100 +1,157 @@
 From: Anup Patel <anup@brainfault.org>
-Date: Tue, 2 Apr 2024 09:18:06 +0530
-Subject: [PATCH 1/1] RISC-V: KVM: Avoid lock inversion in SBI_EXT_HSM_HART_START
-In-Reply-To: <20240326101054.13088-1-yongxuan.wang@sifive.com>
-References: <20240326101054.13088-1-yongxuan.wang@sifive.com>
-Message-ID: <CAAhSdy1EOyzg+Sdx5-uJJqFipehde+zGic8jNnnTXBEj7k4P3g@mail.gmail.com>
+Date: Tue, 2 Apr 2024 09:25:49 +0530
+Subject: [PATCH v3 1/3] RISC-V: KVM: Implement kvm_arch_vcpu_ioctl_set_guest_debug()
+In-Reply-To: <20240327075526.31855-2-duchao@eswincomputing.com>
+References: <20240327075526.31855-1-duchao@eswincomputing.com> <20240327075526.31855-2-duchao@eswincomputing.com>
+Message-ID: <CAAhSdy0Cv23WDx=3H863rqeAdqQ5wbWZC=qFS=RFwR9VFbD_og@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Mar 26, 2024 at 3:41?PM Yong-Xuan Wang <yongxuan.wang@sifive.com> wrote:
+On Wed, Mar 27, 2024 at 1:29?PM Chao Du <duchao@eswincomputing.com> wrote:
 >
-> Documentation/virt/kvm/locking.rst advises that kvm->lock should be
-> acquired outside vcpu->mutex and kvm->srcu. However, when KVM/RISC-V
-> handling SBI_EXT_HSM_HART_START, the lock ordering is vcpu->mutex,
-> kvm->srcu then kvm->lock.
+> kvm_vm_ioctl_check_extension(): Return 1 if KVM_CAP_SET_GUEST_DEBUG is
+> been checked.
 >
-> Although the lockdep checking no longer complains about this after commit
-> f0f44752f5f6 ("rcu: Annotate SRCU's update-side lockdep dependencies"),
-> it's necessary to replace kvm->lock with a new dedicated lock to ensure
-> only one hart can execute the SBI_EXT_HSM_HART_START call for the target
-> hart simultaneously.
+> kvm_arch_vcpu_ioctl_set_guest_debug(): Update the guest_debug flags
+> from userspace accordingly. Route the breakpoint exceptions to HS mode
+> if the VCPU is being debugged by userspace, by clearing the
+> corresponding bit in hedeleg.
 >
-> Signed-off-by: Yong-Xuan Wang <yongxuan.wang@sifive.com>
-> ---
->  arch/riscv/include/asm/kvm_host.h | 1 +
->  arch/riscv/kvm/vcpu.c             | 1 +
->  arch/riscv/kvm/vcpu_sbi_hsm.c     | 5 ++---
->  3 files changed, 4 insertions(+), 3 deletions(-)
+> Initialize the hedeleg configuration in kvm_riscv_vcpu_setup_config().
+> Write the actual CSR in kvm_arch_vcpu_load().
 >
-> diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
-> index 484d04a92fa6..537099413344 100644
-> --- a/arch/riscv/include/asm/kvm_host.h
-> +++ b/arch/riscv/include/asm/kvm_host.h
-> @@ -254,6 +254,7 @@ struct kvm_vcpu_arch {
->
->         /* VCPU power-off state */
->         bool power_off;
-> +       struct mutex hsm_start_lock;
+> Signed-off-by: Chao Du <duchao@eswincomputing.com>
 
-Instead of a mutex hsm_start_lock, let's introduce spinlock mp_state_lock
-which needs to be taken whenever power_off is accessed. Also, we should
-rename "power_off" to "mp_state" with two possible values.
+LGTM.
 
->
->         /* Don't run the VCPU (blocked) */
->         bool pause;
-> diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-> index b5ca9f2e98ac..4d89b5b5afbf 100644
-> --- a/arch/riscv/kvm/vcpu.c
-> +++ b/arch/riscv/kvm/vcpu.c
-> @@ -119,6 +119,7 @@ int kvm_arch_vcpu_create(struct kvm_vcpu *vcpu)
->         spin_lock_init(&vcpu->arch.hfence_lock);
->
->         /* Setup reset state of shadow SSTATUS and HSTATUS CSRs */
-> +       mutex_init(&vcpu->arch.hsm_start_lock);
->         cntx = &vcpu->arch.guest_reset_context;
->         cntx->sstatus = SR_SPP | SR_SPIE;
->         cntx->hstatus = 0;
-> diff --git a/arch/riscv/kvm/vcpu_sbi_hsm.c b/arch/riscv/kvm/vcpu_sbi_hsm.c
-> index 7dca0e9381d9..b528f6e880ae 100644
-> --- a/arch/riscv/kvm/vcpu_sbi_hsm.c
-> +++ b/arch/riscv/kvm/vcpu_sbi_hsm.c
-> @@ -71,14 +71,13 @@ static int kvm_sbi_ext_hsm_handler(struct kvm_vcpu *vcpu, struct kvm_run *run,
->  {
->         int ret = 0;
->         struct kvm_cpu_context *cp = &vcpu->arch.guest_context;
-> -       struct kvm *kvm = vcpu->kvm;
->         unsigned long funcid = cp->a6;
->
->         switch (funcid) {
->         case SBI_EXT_HSM_HART_START:
-> -               mutex_lock(&kvm->lock);
-> +               mutex_lock(&vcpu->arch.hsm_start_lock);
->                 ret = kvm_sbi_hsm_vcpu_start(vcpu);
-> -               mutex_unlock(&kvm->lock);
-> +               mutex_unlock(&vcpu->arch.hsm_start_lock);
-
-The use of kvm->lock over here was also protecting
-simultaneous updates to VCPU reset context. It's better
-to introduce a separate lock for protecting VCPU reset
-context access.
-
->                 break;
->         case SBI_EXT_HSM_HART_STOP:
->                 ret = kvm_sbi_hsm_vcpu_stop(vcpu);
-> --
-> 2.17.1
->
-
-I think this patch can be broken down into two patches:
-1) Patch replacing VCPU "power_off" with "enum mp_state"
-    and introducing "mp_state_lock"
-2) Patch introducing VCPU reset context lock
+Reviewed-by: Anup Patel <anup@brainfault.org>
 
 Regards,
 Anup
+
+> ---
+>  arch/riscv/include/asm/kvm_host.h | 12 ++++++++++++
+>  arch/riscv/kvm/main.c             | 18 ++----------------
+>  arch/riscv/kvm/vcpu.c             | 16 ++++++++++++++--
+>  arch/riscv/kvm/vm.c               |  1 +
+>  4 files changed, 29 insertions(+), 18 deletions(-)
+>
+> diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
+> index 484d04a92fa6..da4ab7e175ff 100644
+> --- a/arch/riscv/include/asm/kvm_host.h
+> +++ b/arch/riscv/include/asm/kvm_host.h
+> @@ -43,6 +43,17 @@
+>         KVM_ARCH_REQ_FLAGS(5, KVM_REQUEST_WAIT | KVM_REQUEST_NO_WAKEUP)
+>  #define KVM_REQ_STEAL_UPDATE           KVM_ARCH_REQ(6)
+>
+> +#define KVM_HEDELEG_DEFAULT            (BIT(EXC_INST_MISALIGNED) | \
+> +                                        BIT(EXC_BREAKPOINT)      | \
+> +                                        BIT(EXC_SYSCALL)         | \
+> +                                        BIT(EXC_INST_PAGE_FAULT) | \
+> +                                        BIT(EXC_LOAD_PAGE_FAULT) | \
+> +                                        BIT(EXC_STORE_PAGE_FAULT))
+> +
+> +#define KVM_HIDELEG_DEFAULT            (BIT(IRQ_VS_SOFT)  | \
+> +                                        BIT(IRQ_VS_TIMER) | \
+> +                                        BIT(IRQ_VS_EXT))
+> +
+>  enum kvm_riscv_hfence_type {
+>         KVM_RISCV_HFENCE_UNKNOWN = 0,
+>         KVM_RISCV_HFENCE_GVMA_VMID_GPA,
+> @@ -169,6 +180,7 @@ struct kvm_vcpu_csr {
+>  struct kvm_vcpu_config {
+>         u64 henvcfg;
+>         u64 hstateen0;
+> +       unsigned long hedeleg;
+>  };
+>
+>  struct kvm_vcpu_smstateen_csr {
+> diff --git a/arch/riscv/kvm/main.c b/arch/riscv/kvm/main.c
+> index 225a435d9c9a..bab2ec34cd87 100644
+> --- a/arch/riscv/kvm/main.c
+> +++ b/arch/riscv/kvm/main.c
+> @@ -22,22 +22,8 @@ long kvm_arch_dev_ioctl(struct file *filp,
+>
+>  int kvm_arch_hardware_enable(void)
+>  {
+> -       unsigned long hideleg, hedeleg;
+> -
+> -       hedeleg = 0;
+> -       hedeleg |= (1UL << EXC_INST_MISALIGNED);
+> -       hedeleg |= (1UL << EXC_BREAKPOINT);
+> -       hedeleg |= (1UL << EXC_SYSCALL);
+> -       hedeleg |= (1UL << EXC_INST_PAGE_FAULT);
+> -       hedeleg |= (1UL << EXC_LOAD_PAGE_FAULT);
+> -       hedeleg |= (1UL << EXC_STORE_PAGE_FAULT);
+> -       csr_write(CSR_HEDELEG, hedeleg);
+> -
+> -       hideleg = 0;
+> -       hideleg |= (1UL << IRQ_VS_SOFT);
+> -       hideleg |= (1UL << IRQ_VS_TIMER);
+> -       hideleg |= (1UL << IRQ_VS_EXT);
+> -       csr_write(CSR_HIDELEG, hideleg);
+> +       csr_write(CSR_HEDELEG, KVM_HEDELEG_DEFAULT);
+> +       csr_write(CSR_HIDELEG, KVM_HIDELEG_DEFAULT);
+>
+>         /* VS should access only the time counter directly. Everything else should trap */
+>         csr_write(CSR_HCOUNTEREN, 0x02);
+> diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+> index b5ca9f2e98ac..f3c87f0c93ba 100644
+> --- a/arch/riscv/kvm/vcpu.c
+> +++ b/arch/riscv/kvm/vcpu.c
+> @@ -475,8 +475,15 @@ int kvm_arch_vcpu_ioctl_set_mpstate(struct kvm_vcpu *vcpu,
+>  int kvm_arch_vcpu_ioctl_set_guest_debug(struct kvm_vcpu *vcpu,
+>                                         struct kvm_guest_debug *dbg)
+>  {
+> -       /* TODO; To be implemented later. */
+> -       return -EINVAL;
+> +       if (dbg->control & KVM_GUESTDBG_ENABLE) {
+> +               vcpu->guest_debug = dbg->control;
+> +               vcpu->arch.cfg.hedeleg &= ~BIT(EXC_BREAKPOINT);
+> +       } else {
+> +               vcpu->guest_debug = 0;
+> +               vcpu->arch.cfg.hedeleg |= BIT(EXC_BREAKPOINT);
+> +       }
+> +
+> +       return 0;
+>  }
+>
+>  static void kvm_riscv_vcpu_setup_config(struct kvm_vcpu *vcpu)
+> @@ -505,6 +512,10 @@ static void kvm_riscv_vcpu_setup_config(struct kvm_vcpu *vcpu)
+>                 if (riscv_isa_extension_available(isa, SMSTATEEN))
+>                         cfg->hstateen0 |= SMSTATEEN0_SSTATEEN0;
+>         }
+> +
+> +       cfg->hedeleg = KVM_HEDELEG_DEFAULT;
+> +       if (vcpu->guest_debug)
+> +               cfg->hedeleg &= ~BIT(EXC_BREAKPOINT);
+>  }
+>
+>  void kvm_arch_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
+> @@ -519,6 +530,7 @@ void kvm_arch_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
+>         csr_write(CSR_VSEPC, csr->vsepc);
+>         csr_write(CSR_VSCAUSE, csr->vscause);
+>         csr_write(CSR_VSTVAL, csr->vstval);
+> +       csr_write(CSR_HEDELEG, cfg->hedeleg);
+>         csr_write(CSR_HVIP, csr->hvip);
+>         csr_write(CSR_VSATP, csr->vsatp);
+>         csr_write(CSR_HENVCFG, cfg->henvcfg);
+> diff --git a/arch/riscv/kvm/vm.c b/arch/riscv/kvm/vm.c
+> index ce58bc48e5b8..7396b8654f45 100644
+> --- a/arch/riscv/kvm/vm.c
+> +++ b/arch/riscv/kvm/vm.c
+> @@ -186,6 +186,7 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
+>         case KVM_CAP_READONLY_MEM:
+>         case KVM_CAP_MP_STATE:
+>         case KVM_CAP_IMMEDIATE_EXIT:
+> +       case KVM_CAP_SET_GUEST_DEBUG:
+>                 r = 1;
+>                 break;
+>         case KVM_CAP_NR_VCPUS:
+> --
+> 2.17.1
+>
 
