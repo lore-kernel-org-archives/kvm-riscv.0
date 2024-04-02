@@ -1,176 +1,132 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Tue, 2 Apr 2024 16:12:02 +0200
-Subject: [PATCH] KVM: riscv: selftests: Add SBI base extension test
-In-Reply-To: <20240401082019.2318193-1-haibo1.xu@intel.com>
-References: <20240401082019.2318193-1-haibo1.xu@intel.com>
-Message-ID: <20240402-7bd2b9ed00094befa6927b60@orel>
+Date: Tue, 2 Apr 2024 17:36:06 +0200
+Subject: [PATCH v4 3/3] RISC-V: KVM: selftests: Add ebreak test support
+In-Reply-To: <20240402062628.5425-4-duchao@eswincomputing.com>
+References: <20240402062628.5425-1-duchao@eswincomputing.com>
+ <20240402062628.5425-4-duchao@eswincomputing.com>
+Message-ID: <20240402-d3a3ebd7da7998f4928f47ba@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Apr 01, 2024 at 04:20:18PM +0800, Haibo Xu wrote:
-> This is the first patch to enable the base extension selftest
-> for the SBI implementation in KVM. Test for other extensions
-> will be added later.
-
-I'm not sure we want SBI tests in KVM selftests since we already
-plan to add them to kvm-unit-tests, where they can be used to
-test both KVM's SBI implementation and M-mode firmware implementations.
-If we also have them here, then we'll end up duplicating that effort.
-
-I do like the approach of only checking for an error, rather than
-also for a value, for these ID getters. In kvm-unit-tests we're
-currently requiring that the expected value be passed in, otherwise
-the whole test is skipped. We could fallback to only checking for
-an error instead, as is done here.
-
-Thanks,
-drew
-
+On Tue, Apr 02, 2024 at 06:26:28AM +0000, Chao Du wrote:
+> Initial support for RISC-V KVM ebreak test. Check the exit reason and
+> the PC when guest debug is enabled. Also to make sure the guest could
+> handle the ebreak exception without exiting to the VMM when guest debug
+> is not enabled.
 > 
-> Signed-off-by: Haibo Xu <haibo1.xu@intel.com>
+> Signed-off-by: Chao Du <duchao@eswincomputing.com>
 > ---
 >  tools/testing/selftests/kvm/Makefile          |  1 +
->  .../selftests/kvm/include/riscv/processor.h   |  8 +-
->  tools/testing/selftests/kvm/riscv/sbi_test.c  | 95 +++++++++++++++++++
->  3 files changed, 103 insertions(+), 1 deletion(-)
->  create mode 100644 tools/testing/selftests/kvm/riscv/sbi_test.c
+>  .../testing/selftests/kvm/riscv/ebreak_test.c | 82 +++++++++++++++++++
+>  2 files changed, 83 insertions(+)
+>  create mode 100644 tools/testing/selftests/kvm/riscv/ebreak_test.c
 > 
 > diff --git a/tools/testing/selftests/kvm/Makefile b/tools/testing/selftests/kvm/Makefile
-> index 741c7dc16afc..a6acbbcad757 100644
+> index 741c7dc16afc..7f4430242c9e 100644
 > --- a/tools/testing/selftests/kvm/Makefile
 > +++ b/tools/testing/selftests/kvm/Makefile
 > @@ -189,6 +189,7 @@ TEST_GEN_PROGS_s390x += rseq_test
 >  TEST_GEN_PROGS_s390x += set_memory_region_test
 >  TEST_GEN_PROGS_s390x += kvm_binary_stats_test
 >  
-> +TEST_GEN_PROGS_riscv += riscv/sbi_test
+> +TEST_GEN_PROGS_riscv += riscv/ebreak_test
 >  TEST_GEN_PROGS_riscv += arch_timer
 >  TEST_GEN_PROGS_riscv += demand_paging_test
 >  TEST_GEN_PROGS_riscv += dirty_log_test
-> diff --git a/tools/testing/selftests/kvm/include/riscv/processor.h b/tools/testing/selftests/kvm/include/riscv/processor.h
-> index ce473fe251dd..df530ac751c4 100644
-> --- a/tools/testing/selftests/kvm/include/riscv/processor.h
-> +++ b/tools/testing/selftests/kvm/include/riscv/processor.h
-> @@ -178,7 +178,13 @@ enum sbi_ext_id {
->  };
->  
->  enum sbi_ext_base_fid {
-> -	SBI_EXT_BASE_PROBE_EXT = 3,
-> +	SBI_EXT_BASE_GET_SPEC_VERSION = 0,
-> +	SBI_EXT_BASE_GET_IMP_ID,
-> +	SBI_EXT_BASE_GET_IMP_VERSION,
-> +	SBI_EXT_BASE_PROBE_EXT,
-> +	SBI_EXT_BASE_GET_MVENDORID,
-> +	SBI_EXT_BASE_GET_MARCHID,
-> +	SBI_EXT_BASE_GET_MIMPID,
->  };
->  
->  struct sbiret {
-> diff --git a/tools/testing/selftests/kvm/riscv/sbi_test.c b/tools/testing/selftests/kvm/riscv/sbi_test.c
+> diff --git a/tools/testing/selftests/kvm/riscv/ebreak_test.c b/tools/testing/selftests/kvm/riscv/ebreak_test.c
 > new file mode 100644
-> index 000000000000..b9378546e3b6
+> index 000000000000..823c132069b4
 > --- /dev/null
-> +++ b/tools/testing/selftests/kvm/riscv/sbi_test.c
-> @@ -0,0 +1,95 @@
+> +++ b/tools/testing/selftests/kvm/riscv/ebreak_test.c
+> @@ -0,0 +1,82 @@
 > +// SPDX-License-Identifier: GPL-2.0
 > +/*
-> + * sbi_test - SBI API test for KVM's SBI implementation.
+> + * RISC-V KVM ebreak test.
 > + *
-> + * Copyright (c) 2024 Intel Corporation
+> + * Copyright 2024 Beijing ESWIN Computing Technology Co., Ltd.
 > + *
-> + * Test cover the following SBI extentions:
-> + *  - Base: All functions in this extension should be supported
 > + */
-> +
 > +#include "kvm_util.h"
-> +#include "processor.h"
-> +#include "test_util.h"
 > +
-> +/*
-> + * Test that all functions in the base extension must be supported
-> + */
-> +static void base_ext_guest_code(void)
+> +#define LABEL_ADDRESS(v) ((uint64_t)&(v))
+> +
+> +extern unsigned char sw_bp_1, sw_bp_2;
+> +static uint64_t sw_bp_addr;
+> +
+> +static void guest_code(void)
 > +{
-> +	struct sbiret ret;
-> +
-> +	/*
-> +	 * Since the base extension was introduced in SBI Spec v0.2,
-> +	 * assert if the implemented SBI version is below 0.2.
-> +	 */
-> +	ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_GET_SPEC_VERSION, 0,
-> +			0, 0, 0, 0, 0);
-> +	__GUEST_ASSERT(!ret.error && ret.value >= 2, "Get Spec Version Error: ret.error=%ld, "
-> +			"ret.value=%ld\n", ret.error, ret.value);
-> +
-> +	ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_GET_IMP_ID, 0,
-> +			0, 0, 0, 0, 0);
-> +	__GUEST_ASSERT(!ret.error && ret.value == 3, "Get Imp ID Error: ret.error=%ld, "
-> +			"ret.value=%ld\n",
-> +			ret.error, ret.value);
-> +
-> +	ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_GET_IMP_VERSION, 0,
-> +			0, 0, 0, 0, 0);
-> +	__GUEST_ASSERT(!ret.error, "Get Imp Version Error: ret.error=%ld\n", ret.error);
-> +
-> +	ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_PROBE_EXT, SBI_EXT_BASE,
-> +			0, 0, 0, 0, 0);
-> +	__GUEST_ASSERT(!ret.error && ret.value == 1, "Probe ext Error: ret.error=%ld, "
-> +			"ret.value=%ld\n",
-> +			ret.error, ret.value);
-> +
-> +	ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_GET_MVENDORID, 0,
-> +			0, 0, 0, 0, 0);
-> +	__GUEST_ASSERT(!ret.error, "Get Machine Vendor ID Error: ret.error=%ld\n", ret.error);
-> +
-> +	ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_GET_MARCHID, 0,
-> +			0, 0, 0, 0, 0);
-> +	__GUEST_ASSERT(!ret.error, "Get Machine Arch ID Error: ret.error=%ld\n", ret.error);
-> +
-> +	ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_GET_MIMPID, 0,
-> +			0, 0, 0, 0, 0);
-> +	__GUEST_ASSERT(!ret.error, "Get Machine Imp ID Error: ret.error=%ld\n", ret.error);
+> +	asm volatile(
+> +		".option push\n"
+> +		".option norvc\n"
+> +		"sw_bp_1: ebreak\n"
+> +		"sw_bp_2: ebreak\n"
+> +		".option pop\n"
+> +	);
+> +	GUEST_ASSERT_EQ(READ_ONCE(sw_bp_addr), LABEL_ADDRESS(sw_bp_2));
 > +
 > +	GUEST_DONE();
 > +}
 > +
-> +static void sbi_base_ext_test(void)
+> +static void guest_breakpoint_handler(struct ex_regs *regs)
 > +{
-> +	struct kvm_vm *vm;
-> +	struct kvm_vcpu *vcpu;
-> +	struct ucall uc;
-> +
-> +	vm = vm_create_with_one_vcpu(&vcpu, base_ext_guest_code);
-> +	while (1) {
-> +		vcpu_run(vcpu);
-> +		TEST_ASSERT(vcpu->run->exit_reason == UCALL_EXIT_REASON,
-> +			    "Unexpected exit reason: %u (%s),",
-> +			    vcpu->run->exit_reason, exit_reason_str(vcpu->run->exit_reason));
-> +
-> +		switch (get_ucall(vcpu, &uc)) {
-> +		case UCALL_DONE:
-> +			goto done;
-> +		case UCALL_ABORT:
-> +			fprintf(stderr, "Guest assert failed!\n");
-> +			REPORT_GUEST_ASSERT(uc);
-> +		default:
-> +			TEST_FAIL("Unexpected ucall %lu", uc.cmd);
-> +		}
-> +	}
-> +
-> +done:
-> +	kvm_vm_free(vm);
+> +	WRITE_ONCE(sw_bp_addr, regs->epc);
+> +	regs->epc += 4;
 > +}
 > +
 > +int main(void)
 > +{
-> +	sbi_base_ext_test();
+> +	struct kvm_vm *vm;
+> +	struct kvm_vcpu *vcpu;
+> +	uint64_t pc;
+> +	struct kvm_guest_debug debug = {
+> +		.control = KVM_GUESTDBG_ENABLE,
+> +	};
+> +
+> +	TEST_REQUIRE(kvm_has_cap(KVM_CAP_SET_GUEST_DEBUG));
+> +
+> +	vm = vm_create_with_one_vcpu(&vcpu, guest_code);
+> +
+> +	vm_init_vector_tables(vm);
+> +	vcpu_init_vector_tables(vcpu);
+> +	vm_install_exception_handler(vm, EXC_BREAKPOINT,
+> +					guest_breakpoint_handler);
+> +
+> +	/*
+> +	 * Enable the guest debug.
+> +	 * ebreak should exit to the VMM with KVM_EXIT_DEBUG reason.
+> +	 */
+> +	vcpu_guest_debug_set(vcpu, &debug);
+> +	vcpu_run(vcpu);
+> +
+> +	TEST_ASSERT_KVM_EXIT_REASON(vcpu, KVM_EXIT_DEBUG);
+> +
+> +	vcpu_get_reg(vcpu, RISCV_CORE_REG(regs.pc), &pc);
+> +	TEST_ASSERT_EQ(pc, LABEL_ADDRESS(sw_bp_1));
+> +
+> +	/* skip sw_bp_1 */
+> +	vcpu_set_reg(vcpu, RISCV_CORE_REG(regs.pc), pc + 4);
+> +
+> +	/*
+> +	 * Disable all debug controls.
+> +	 * Guest should handle the ebreak without exiting to the VMM.
+> +	 */
+> +	memset(&debug, 0, sizeof(debug));
+> +	vcpu_guest_debug_set(vcpu, &debug);
+> +
+> +	vcpu_run(vcpu);
+> +
+> +	TEST_ASSERT_EQ(get_ucall(vcpu, NULL), UCALL_DONE);
+> +
+> +	kvm_vm_free(vm);
 > +
 > +	return 0;
 > +}
 > -- 
-> 2.34.1
-> 
+> 2.17.1
+>
+
+Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
 
