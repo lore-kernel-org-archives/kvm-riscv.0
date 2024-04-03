@@ -1,384 +1,194 @@
 From: Atish Patra <atishp@rivosinc.com>
-Date: Wed,  3 Apr 2024 01:04:49 -0700
-Subject: [PATCH v5 20/22] KVM: riscv: selftests: Add SBI PMU selftest
+Date: Wed,  3 Apr 2024 01:04:51 -0700
+Subject: [PATCH v5 22/22] KVM: riscv: selftests: Add a test for counter overflow
 In-Reply-To: <20240403080452.1007601-1-atishp@rivosinc.com>
 References: <20240403080452.1007601-1-atishp@rivosinc.com>
-Message-ID: <20240403080452.1007601-21-atishp@rivosinc.com>
+Message-ID: <20240403080452.1007601-23-atishp@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This test implements basic sanity test and cycle/instret event
-counting tests.
+Add a test for verifying overflow interrupt. Currently, it relies on
+overflow support on cycle/instret events. This test works for cycle/
+instret events which support sampling via hpmcounters on the platform.
+There are no ISA extensions to detect if a platform supports that. Thus,
+this test will fail on platform with virtualization but doesn't
+support overflow on these two events.
 
 Reviewed-by: Anup Patel <anup@brainfault.org>
 Signed-off-by: Atish Patra <atishp@rivosinc.com>
 ---
- tools/testing/selftests/kvm/Makefile          |   1 +
- .../selftests/kvm/riscv/sbi_pmu_test.c        | 340 ++++++++++++++++++
- 2 files changed, 341 insertions(+)
- create mode 100644 tools/testing/selftests/kvm/riscv/sbi_pmu_test.c
+ .../selftests/kvm/riscv/sbi_pmu_test.c        | 114 ++++++++++++++++++
+ 1 file changed, 114 insertions(+)
 
-diff --git a/tools/testing/selftests/kvm/Makefile b/tools/testing/selftests/kvm/Makefile
-index 741c7dc16afc..1cfcd2797ee4 100644
---- a/tools/testing/selftests/kvm/Makefile
-+++ b/tools/testing/selftests/kvm/Makefile
-@@ -189,6 +189,7 @@ TEST_GEN_PROGS_s390x += rseq_test
- TEST_GEN_PROGS_s390x += set_memory_region_test
- TEST_GEN_PROGS_s390x += kvm_binary_stats_test
- 
-+TEST_GEN_PROGS_riscv += riscv/sbi_pmu_test
- TEST_GEN_PROGS_riscv += arch_timer
- TEST_GEN_PROGS_riscv += demand_paging_test
- TEST_GEN_PROGS_riscv += dirty_log_test
 diff --git a/tools/testing/selftests/kvm/riscv/sbi_pmu_test.c b/tools/testing/selftests/kvm/riscv/sbi_pmu_test.c
-new file mode 100644
-index 000000000000..8e7c7a3172d8
---- /dev/null
+index 7d195be5c3d9..451db956b885 100644
+--- a/tools/testing/selftests/kvm/riscv/sbi_pmu_test.c
 +++ b/tools/testing/selftests/kvm/riscv/sbi_pmu_test.c
-@@ -0,0 +1,340 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/*
-+ * sbi_pmu_test.c - Tests the riscv64 SBI PMU functionality.
-+ *
-+ * Copyright (c) 2024, Rivos Inc.
-+ */
+@@ -14,6 +14,7 @@
+ #include "test_util.h"
+ #include "processor.h"
+ #include "sbi.h"
++#include "arch_timer.h"
+ 
+ /* Maximum counters(firmware + hardware) */
+ #define RISCV_MAX_PMU_COUNTERS 64
+@@ -24,6 +25,9 @@ union sbi_pmu_ctr_info ctrinfo_arr[RISCV_MAX_PMU_COUNTERS];
+ static void *snapshot_gva;
+ static vm_paddr_t snapshot_gpa;
+ 
++static int vcpu_shared_irq_count;
++static int counter_in_use;
 +
-+#include <stdio.h>
-+#include <stdlib.h>
-+#include <string.h>
-+#include <unistd.h>
-+#include <sys/types.h>
-+#include "kvm_util.h"
-+#include "test_util.h"
-+#include "processor.h"
-+#include "sbi.h"
-+
-+/* Maximum counters(firmware + hardware) */
-+#define RISCV_MAX_PMU_COUNTERS 64
-+union sbi_pmu_ctr_info ctrinfo_arr[RISCV_MAX_PMU_COUNTERS];
-+
-+/* Cache the available counters in a bitmask */
-+static unsigned long counter_mask_available;
-+
-+unsigned long pmu_csr_read_num(int csr_num)
+ /* Cache the available counters in a bitmask */
+ static unsigned long counter_mask_available;
+ 
+@@ -117,6 +121,31 @@ static void guest_illegal_exception_handler(struct ex_regs *regs)
+ 	regs->epc += 4;
+ }
+ 
++static void guest_irq_handler(struct ex_regs *regs)
 +{
-+#define switchcase_csr_read(__csr_num, __val)		{\
-+	case __csr_num:					\
-+		__val = csr_read(__csr_num);		\
-+		break; }
-+#define switchcase_csr_read_2(__csr_num, __val)		{\
-+	switchcase_csr_read(__csr_num + 0, __val)	 \
-+	switchcase_csr_read(__csr_num + 1, __val)}
-+#define switchcase_csr_read_4(__csr_num, __val)		{\
-+	switchcase_csr_read_2(__csr_num + 0, __val)	 \
-+	switchcase_csr_read_2(__csr_num + 2, __val)}
-+#define switchcase_csr_read_8(__csr_num, __val)		{\
-+	switchcase_csr_read_4(__csr_num + 0, __val)	 \
-+	switchcase_csr_read_4(__csr_num + 4, __val)}
-+#define switchcase_csr_read_16(__csr_num, __val)	{\
-+	switchcase_csr_read_8(__csr_num + 0, __val)	 \
-+	switchcase_csr_read_8(__csr_num + 8, __val)}
-+#define switchcase_csr_read_32(__csr_num, __val)	{\
-+	switchcase_csr_read_16(__csr_num + 0, __val)	 \
-+	switchcase_csr_read_16(__csr_num + 16, __val)}
-+
-+	unsigned long ret = 0;
-+
-+	switch (csr_num) {
-+	switchcase_csr_read_32(CSR_CYCLE, ret)
-+	switchcase_csr_read_32(CSR_CYCLEH, ret)
-+	default :
-+		break;
-+	}
-+
-+	return ret;
-+#undef switchcase_csr_read_32
-+#undef switchcase_csr_read_16
-+#undef switchcase_csr_read_8
-+#undef switchcase_csr_read_4
-+#undef switchcase_csr_read_2
-+#undef switchcase_csr_read
-+}
-+
-+static inline void dummy_func_loop(uint64_t iter)
-+{
-+	int i = 0;
-+
-+	while (i < iter) {
-+		asm volatile("nop");
-+		i++;
-+	}
-+}
-+
-+static void start_counter(unsigned long counter, unsigned long start_flags,
-+			  unsigned long ival)
-+{
-+	struct sbiret ret;
-+
-+	ret = sbi_ecall(SBI_EXT_PMU, SBI_EXT_PMU_COUNTER_START, counter, 1, start_flags,
-+			ival, 0, 0);
-+	__GUEST_ASSERT(ret.error == 0, "Unable to start counter %ld\n", counter);
-+}
-+
-+/* This should be invoked only for reset counter use case */
-+static void stop_reset_counter(unsigned long counter, unsigned long stop_flags)
-+{
-+	struct sbiret ret;
-+
-+	ret = sbi_ecall(SBI_EXT_PMU, SBI_EXT_PMU_COUNTER_STOP, counter, 1,
-+					stop_flags | SBI_PMU_STOP_FLAG_RESET, 0, 0, 0);
-+	__GUEST_ASSERT(ret.error == SBI_ERR_ALREADY_STOPPED,
-+			       "Unable to stop counter %ld\n", counter);
-+}
-+
-+static void stop_counter(unsigned long counter, unsigned long stop_flags)
-+{
-+	struct sbiret ret;
-+
-+	ret = sbi_ecall(SBI_EXT_PMU, SBI_EXT_PMU_COUNTER_STOP, counter, 1, stop_flags,
-+			0, 0, 0);
-+	__GUEST_ASSERT(ret.error == 0, "Unable to stop counter %ld error %ld\n",
-+			       counter, ret.error);
-+}
-+
-+static void guest_illegal_exception_handler(struct ex_regs *regs)
-+{
-+	__GUEST_ASSERT(regs->cause == EXC_INST_ILLEGAL,
-+		       "Unexpected exception handler %lx\n", regs->cause);
-+
-+	/* skip the trapping instruction */
-+	regs->epc += 4;
-+}
-+
-+static unsigned long get_counter_index(unsigned long cbase, unsigned long cmask,
-+				       unsigned long cflags,
-+				       unsigned long event)
-+{
-+	struct sbiret ret;
-+
-+	ret = sbi_ecall(SBI_EXT_PMU, SBI_EXT_PMU_COUNTER_CFG_MATCH, cbase, cmask,
-+			cflags, event, 0, 0);
-+	__GUEST_ASSERT(ret.error == 0, "config matching failed %ld\n", ret.error);
-+	GUEST_ASSERT(ret.value < RISCV_MAX_PMU_COUNTERS);
-+	GUEST_ASSERT(BIT(ret.value) & counter_mask_available);
-+
-+	return ret.value;
-+}
-+
-+static unsigned long get_num_counters(void)
-+{
-+	struct sbiret ret;
-+
-+	ret = sbi_ecall(SBI_EXT_PMU, SBI_EXT_PMU_NUM_COUNTERS, 0, 0, 0, 0, 0, 0);
-+
-+	__GUEST_ASSERT(ret.error == 0, "Unable to retrieve number of counters from SBI PMU");
-+	__GUEST_ASSERT(ret.value < RISCV_MAX_PMU_COUNTERS,
-+		       "Invalid number of counters %ld\n", ret.value);
-+
-+	return ret.value;
-+}
-+
-+static void update_counter_info(int num_counters)
-+{
-+	int i = 0;
-+	struct sbiret ret;
-+
-+	for (i = 0; i < num_counters; i++) {
-+		ret = sbi_ecall(SBI_EXT_PMU, SBI_EXT_PMU_COUNTER_GET_INFO, i, 0, 0, 0, 0, 0);
-+
-+		/* There can be gaps in logical counter indicies*/
-+		if (ret.error)
-+			continue;
-+		GUEST_ASSERT_NE(ret.value, 0);
-+
-+		ctrinfo_arr[i].value = ret.value;
-+		counter_mask_available |= BIT(i);
-+	}
-+
-+	GUEST_ASSERT(counter_mask_available > 0);
-+}
-+
-+static unsigned long read_counter(int idx, union sbi_pmu_ctr_info ctrinfo)
-+{
++	unsigned int irq_num = regs->cause & ~CAUSE_IRQ_FLAG;
++	struct riscv_pmu_snapshot_data *snapshot_data = snapshot_gva;
++	unsigned long overflown_mask;
 +	unsigned long counter_val = 0;
-+	struct sbiret ret;
 +
-+	__GUEST_ASSERT(ctrinfo.type < 2, "Invalid counter type %d", ctrinfo.type);
++	/* Validate that we are in the correct irq handler */
++	GUEST_ASSERT_EQ(irq_num, IRQ_PMU_OVF);
 +
-+	if (ctrinfo.type == SBI_PMU_CTR_TYPE_HW) {
-+		counter_val = pmu_csr_read_num(ctrinfo.csr);
-+	} else if (ctrinfo.type == SBI_PMU_CTR_TYPE_FW) {
-+		ret = sbi_ecall(SBI_EXT_PMU, SBI_EXT_PMU_COUNTER_FW_READ, idx, 0, 0, 0, 0, 0);
-+		GUEST_ASSERT(ret.error == 0);
-+		counter_val = ret.value;
-+	}
++	/* Stop all counters first to avoid further interrupts */
++	stop_counter(counter_in_use, SBI_PMU_STOP_FLAG_TAKE_SNAPSHOT);
 +
-+	return counter_val;
++	csr_clear(CSR_SIP, BIT(IRQ_PMU_OVF));
++
++	overflown_mask = READ_ONCE(snapshot_data->ctr_overflow_mask);
++	GUEST_ASSERT(overflown_mask & 0x01);
++
++	WRITE_ONCE(vcpu_shared_irq_count, vcpu_shared_irq_count+1);
++
++	counter_val = READ_ONCE(snapshot_data->ctr_values[0]);
++	/* Now start the counter to mimick the real driver behavior */
++	start_counter(counter_in_use, SBI_PMU_START_FLAG_SET_INIT_VALUE, counter_val);
 +}
 +
-+static void test_pmu_event(unsigned long event)
+ static unsigned long get_counter_index(unsigned long cbase, unsigned long cmask,
+ 				       unsigned long cflags,
+ 				       unsigned long event)
+@@ -276,6 +305,33 @@ static void test_pmu_event_snapshot(unsigned long event)
+ 	stop_reset_counter(counter, 0);
+ }
+ 
++static void test_pmu_event_overflow(unsigned long event)
 +{
 +	unsigned long counter;
-+	unsigned long counter_value_pre, counter_value_post;
-+	unsigned long counter_init_value = 100;
++	unsigned long counter_value_post;
++	unsigned long counter_init_value = ULONG_MAX - 10000;
++	struct riscv_pmu_snapshot_data *snapshot_data = snapshot_gva;
 +
 +	counter = get_counter_index(0, counter_mask_available, 0, event);
-+	counter_value_pre = read_counter(counter, ctrinfo_arr[counter]);
++	counter_in_use = counter;
 +
-+	/* Do not set the initial value */
-+	start_counter(counter, 0, counter_init_value);
++	/* The counter value is updated w.r.t relative index of cbase passed to start/stop */
++	WRITE_ONCE(snapshot_data->ctr_values[0], counter_init_value);
++	start_counter(counter, SBI_PMU_START_FLAG_INIT_SNAPSHOT, 0);
 +	dummy_func_loop(10000);
-+	stop_counter(counter, 0);
++	udelay(msecs_to_usecs(2000));
++	/* irq handler should have stopped the counter */
++	stop_counter(counter, SBI_PMU_STOP_FLAG_TAKE_SNAPSHOT);
 +
-+	counter_value_post = read_counter(counter, ctrinfo_arr[counter]);
-+	__GUEST_ASSERT(counter_value_post > counter_value_pre,
-+		       "counter_value_post %lx counter_value_pre %lx\n",
-+		       counter_value_post, counter_value_pre);
-+
-+	/* Now set the initial value and compare */
-+	start_counter(counter, SBI_PMU_START_FLAG_SET_INIT_VALUE, counter_init_value);
-+	dummy_func_loop(10000);
-+	stop_counter(counter, 0);
-+
-+	counter_value_post = read_counter(counter, ctrinfo_arr[counter]);
-+	__GUEST_ASSERT(counter_value_post > counter_init_value,
-+		       "counter_value_post %lx counter_init_value %lx\n",
++	counter_value_post = READ_ONCE(snapshot_data->ctr_values[0]);
++	/* The counter value after stopping should be less the init value due to overflow */
++	__GUEST_ASSERT(counter_value_post < counter_init_value,
++		       "counter_value_post %lx counter_init_value %lx for counter\n",
 +		       counter_value_post, counter_init_value);
 +
 +	stop_reset_counter(counter, 0);
 +}
 +
-+static void test_invalid_event(void)
-+{
-+	struct sbiret ret;
-+	unsigned long event = 0x1234; /* A random event */
-+
-+	ret = sbi_ecall(SBI_EXT_PMU, SBI_EXT_PMU_COUNTER_CFG_MATCH, 0,
-+			counter_mask_available, 0, event, 0, 0);
-+	GUEST_ASSERT_EQ(ret.error, SBI_ERR_NOT_SUPPORTED);
-+}
-+
-+static void test_pmu_events(void)
+ static void test_invalid_event(void)
+ {
+ 	struct sbiret ret;
+@@ -366,6 +422,34 @@ static void test_pmu_events_snaphost(void)
+ 	GUEST_DONE();
+ }
+ 
++static void test_pmu_events_overflow(void)
 +{
 +	int num_counters = 0;
++
++	/* Verify presence of SBI PMU and minimum requrired SBI version */
++	verify_sbi_requirement_assert();
++
++	snapshot_set_shmem(snapshot_gpa, 0);
++	csr_set(CSR_IE, BIT(IRQ_PMU_OVF));
++	local_irq_enable();
 +
 +	/* Get the counter details */
 +	num_counters = get_num_counters();
 +	update_counter_info(num_counters);
 +
-+	/* Sanity testing for any random invalid event */
-+	test_invalid_event();
++	/*
++	 * Qemu supports overflow for cycle/instruction.
++	 * This test may fail on any platform that do not support overflow for these two events.
++	 */
++	test_pmu_event_overflow(SBI_PMU_HW_CPU_CYCLES);
++	GUEST_ASSERT_EQ(vcpu_shared_irq_count, 1);
 +
-+	/* Only these two events are guaranteed to be present */
-+	test_pmu_event(SBI_PMU_HW_CPU_CYCLES);
-+	test_pmu_event(SBI_PMU_HW_INSTRUCTIONS);
-+
-+	GUEST_DONE();
-+}
-+
-+static void test_pmu_basic_sanity(void)
-+{
-+	long out_val = 0;
-+	bool probe;
-+	struct sbiret ret;
-+	int num_counters = 0, i;
-+	union sbi_pmu_ctr_info ctrinfo;
-+
-+	probe = guest_sbi_probe_extension(SBI_EXT_PMU, &out_val);
-+	GUEST_ASSERT(probe && out_val == 1);
-+
-+	num_counters = get_num_counters();
-+
-+	for (i = 0; i < num_counters; i++) {
-+		ret = sbi_ecall(SBI_EXT_PMU, SBI_EXT_PMU_COUNTER_GET_INFO, i,
-+				0, 0, 0, 0, 0);
-+
-+		/* There can be gaps in logical counter indicies*/
-+		if (ret.error)
-+			continue;
-+		GUEST_ASSERT_NE(ret.value, 0);
-+
-+		ctrinfo.value = ret.value;
-+
-+		/**
-+		 * Accesibillity check of hardware and read capability of firmware counters.
-+		 * The spec doesn't mandate any initial value. No need to check any value.
-+		 */
-+		read_counter(i, ctrinfo);
-+	}
++	test_pmu_event_overflow(SBI_PMU_HW_INSTRUCTIONS);
++	GUEST_ASSERT_EQ(vcpu_shared_irq_count, 2);
 +
 +	GUEST_DONE();
 +}
 +
-+static void run_vcpu(struct kvm_vcpu *vcpu)
+ static void run_vcpu(struct kvm_vcpu *vcpu)
+ {
+ 	struct ucall uc;
+@@ -451,6 +535,33 @@ static void test_vm_events_snapshot_test(void *guest_code)
+ 	test_vm_destroy(vm);
+ }
+ 
++static void test_vm_events_overflow(void *guest_code)
 +{
-+	struct ucall uc;
-+
-+	vcpu_run(vcpu);
-+	switch (get_ucall(vcpu, &uc)) {
-+	case UCALL_ABORT:
-+		REPORT_GUEST_ASSERT(uc);
-+		break;
-+	case UCALL_DONE:
-+	case UCALL_SYNC:
-+		break;
-+	default:
-+		TEST_FAIL("Unknown ucall %lu", uc.cmd);
-+		break;
-+	}
-+}
-+
-+void test_vm_destroy(struct kvm_vm *vm)
-+{
-+	memset(ctrinfo_arr, 0, sizeof(union sbi_pmu_ctr_info) * RISCV_MAX_PMU_COUNTERS);
-+	counter_mask_available = 0;
-+	kvm_vm_free(vm);
-+}
-+
-+static void test_vm_basic_test(void *guest_code)
-+{
-+	struct kvm_vm *vm;
++	struct kvm_vm *vm = NULL;
 +	struct kvm_vcpu *vcpu;
 +
 +	vm = vm_create_with_one_vcpu(&vcpu, guest_code);
 +	__TEST_REQUIRE(__vcpu_has_sbi_ext(vcpu, KVM_RISCV_SBI_EXT_PMU),
 +				   "SBI PMU not available, skipping test");
++
++	__TEST_REQUIRE(__vcpu_has_isa_ext(vcpu, KVM_RISCV_ISA_EXT_SSCOFPMF),
++				   "Sscofpmf is not available, skipping overflow test");
++
++
++	test_vm_setup_snapshot_mem(vm, vcpu);
 +	vm_init_vector_tables(vm);
-+	/* Illegal instruction handler is required to verify read access without configuration */
-+	vm_install_exception_handler(vm, EXC_INST_ILLEGAL, guest_illegal_exception_handler);
++	vm_install_interrupt_handler(vm, guest_irq_handler);
 +
 +	vcpu_init_vector_tables(vcpu);
++	/* Initialize guest timer frequency. */
++	vcpu_get_reg(vcpu, RISCV_TIMER_REG(frequency), &timer_freq);
++	sync_global_to_guest(vm, timer_freq);
++
 +	run_vcpu(vcpu);
 +
 +	test_vm_destroy(vm);
 +}
 +
-+static void test_vm_events_test(void *guest_code)
-+{
-+	struct kvm_vm *vm = NULL;
-+	struct kvm_vcpu *vcpu = NULL;
+ int main(void)
+ {
+ 	pr_info("SBI PMU basic test : starting\n");
+@@ -463,5 +574,8 @@ int main(void)
+ 	test_vm_events_snapshot_test(test_pmu_events_snaphost);
+ 	pr_info("SBI PMU event verification with snapshot test : PASS\n");
+ 
++	test_vm_events_overflow(test_pmu_events_overflow);
++	pr_info("SBI PMU event verification with overflow test : PASS\n");
 +
-+	vm = vm_create_with_one_vcpu(&vcpu, guest_code);
-+	__TEST_REQUIRE(__vcpu_has_sbi_ext(vcpu, KVM_RISCV_SBI_EXT_PMU),
-+				   "SBI PMU not available, skipping test");
-+	run_vcpu(vcpu);
-+
-+	test_vm_destroy(vm);
-+}
-+
-+int main(void)
-+{
-+	test_vm_basic_test(test_pmu_basic_sanity);
-+	pr_info("SBI PMU basic test : PASS\n");
-+
-+	test_vm_events_test(test_pmu_events);
-+	pr_info("SBI PMU event verification test : PASS\n");
-+
-+	return 0;
-+}
+ 	return 0;
+ }
 -- 
 2.34.1
 
