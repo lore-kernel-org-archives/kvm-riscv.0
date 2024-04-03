@@ -1,75 +1,72 @@
 From: Atish Patra <atishp@rivosinc.com>
-Date: Wed,  3 Apr 2024 01:04:36 -0700
-Subject: [PATCH v5 07/22] drivers/perf: riscv: Fix counter mask iteration for RV32
+Date: Wed,  3 Apr 2024 01:04:33 -0700
+Subject: [PATCH v5 04/22] drivers/perf: riscv: Use BIT macro for shifting operations
 In-Reply-To: <20240403080452.1007601-1-atishp@rivosinc.com>
 References: <20240403080452.1007601-1-atishp@rivosinc.com>
-Message-ID: <20240403080452.1007601-8-atishp@rivosinc.com>
+Message-ID: <20240403080452.1007601-5-atishp@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-For RV32, used_hw_ctrs can have more than 1 word if the firmware chooses
-to interleave firmware/hardware counters indicies. Even though it's a
-unlikely scenario, handle that case by iterating over all the words
-instead of just using the first word.
+It is a good practice to use BIT() instead of (1UL << x).
+Replace the current usages with BIT().
 
 Signed-off-by: Atish Patra <atishp@rivosinc.com>
 ---
- drivers/perf/riscv_pmu_sbi.c | 21 ++++++++++++---------
- 1 file changed, 12 insertions(+), 9 deletions(-)
+ arch/riscv/include/asm/sbi.h | 20 ++++++++++----------
+ drivers/perf/riscv_pmu_sbi.c |  2 +-
+ 2 files changed, 11 insertions(+), 11 deletions(-)
 
+diff --git a/arch/riscv/include/asm/sbi.h b/arch/riscv/include/asm/sbi.h
+index ef8311dafb91..4afa2cd01bae 100644
+--- a/arch/riscv/include/asm/sbi.h
++++ b/arch/riscv/include/asm/sbi.h
+@@ -233,20 +233,20 @@ enum sbi_pmu_ctr_type {
+ #define SBI_PMU_EVENT_IDX_INVALID 0xFFFFFFFF
+ 
+ /* Flags defined for config matching function */
+-#define SBI_PMU_CFG_FLAG_SKIP_MATCH	(1 << 0)
+-#define SBI_PMU_CFG_FLAG_CLEAR_VALUE	(1 << 1)
+-#define SBI_PMU_CFG_FLAG_AUTO_START	(1 << 2)
+-#define SBI_PMU_CFG_FLAG_SET_VUINH	(1 << 3)
+-#define SBI_PMU_CFG_FLAG_SET_VSINH	(1 << 4)
+-#define SBI_PMU_CFG_FLAG_SET_UINH	(1 << 5)
+-#define SBI_PMU_CFG_FLAG_SET_SINH	(1 << 6)
+-#define SBI_PMU_CFG_FLAG_SET_MINH	(1 << 7)
++#define SBI_PMU_CFG_FLAG_SKIP_MATCH	BIT(0)
++#define SBI_PMU_CFG_FLAG_CLEAR_VALUE	BIT(1)
++#define SBI_PMU_CFG_FLAG_AUTO_START	BIT(2)
++#define SBI_PMU_CFG_FLAG_SET_VUINH	BIT(3)
++#define SBI_PMU_CFG_FLAG_SET_VSINH	BIT(4)
++#define SBI_PMU_CFG_FLAG_SET_UINH	BIT(5)
++#define SBI_PMU_CFG_FLAG_SET_SINH	BIT(6)
++#define SBI_PMU_CFG_FLAG_SET_MINH	BIT(7)
+ 
+ /* Flags defined for counter start function */
+-#define SBI_PMU_START_FLAG_SET_INIT_VALUE (1 << 0)
++#define SBI_PMU_START_FLAG_SET_INIT_VALUE BIT(0)
+ 
+ /* Flags defined for counter stop function */
+-#define SBI_PMU_STOP_FLAG_RESET (1 << 0)
++#define SBI_PMU_STOP_FLAG_RESET BIT(0)
+ 
+ enum sbi_ext_dbcn_fid {
+ 	SBI_EXT_DBCN_CONSOLE_WRITE = 0,
 diff --git a/drivers/perf/riscv_pmu_sbi.c b/drivers/perf/riscv_pmu_sbi.c
-index 8c3475d55433..82336fec82b8 100644
+index babf1b9a4dbe..a83ae82301e3 100644
 --- a/drivers/perf/riscv_pmu_sbi.c
 +++ b/drivers/perf/riscv_pmu_sbi.c
-@@ -771,13 +771,15 @@ static inline void pmu_sbi_stop_hw_ctrs(struct riscv_pmu *pmu)
- {
- 	struct cpu_hw_events *cpu_hw_evt = this_cpu_ptr(pmu->hw_events);
- 	unsigned long flag = 0;
-+	int i;
+@@ -386,7 +386,7 @@ static int pmu_sbi_ctr_get_idx(struct perf_event *event)
+ 			cmask = 1;
+ 		} else if (event->attr.config == PERF_COUNT_HW_INSTRUCTIONS) {
+ 			cflags |= SBI_PMU_CFG_FLAG_SKIP_MATCH;
+-			cmask = 1UL << (CSR_INSTRET - CSR_CYCLE);
++			cmask = BIT(CSR_INSTRET - CSR_CYCLE);
+ 		}
+ 	}
  
- 	if (sbi_pmu_snapshot_available())
- 		flag = SBI_PMU_STOP_FLAG_TAKE_SNAPSHOT;
- 
--	/* No need to check the error here as we can't do anything about the error */
--	sbi_ecall(SBI_EXT_PMU, SBI_EXT_PMU_COUNTER_STOP, 0,
--		  cpu_hw_evt->used_hw_ctrs[0], flag, 0, 0, 0);
-+	for (i = 0; i < BITS_TO_LONGS(RISCV_MAX_COUNTERS); i++)
-+		/* No need to check the error here as we can't do anything about the error */
-+		sbi_ecall(SBI_EXT_PMU, SBI_EXT_PMU_COUNTER_STOP, i * BITS_PER_LONG,
-+			  cpu_hw_evt->used_hw_ctrs[i], flag, 0, 0, 0);
- }
- 
- /*
-@@ -789,7 +791,7 @@ static inline void pmu_sbi_stop_hw_ctrs(struct riscv_pmu *pmu)
- static noinline void pmu_sbi_start_ovf_ctrs_sbi(struct cpu_hw_events *cpu_hw_evt,
- 						unsigned long ctr_ovf_mask)
- {
--	int idx = 0;
-+	int idx = 0, i;
- 	struct perf_event *event;
- 	unsigned long flag = SBI_PMU_START_FLAG_SET_INIT_VALUE;
- 	unsigned long ctr_start_mask = 0;
-@@ -797,11 +799,12 @@ static noinline void pmu_sbi_start_ovf_ctrs_sbi(struct cpu_hw_events *cpu_hw_evt
- 	struct hw_perf_event *hwc;
- 	u64 init_val = 0;
- 
--	ctr_start_mask = cpu_hw_evt->used_hw_ctrs[0] & ~ctr_ovf_mask;
--
--	/* Start all the counters that did not overflow in a single shot */
--	sbi_ecall(SBI_EXT_PMU, SBI_EXT_PMU_COUNTER_START, 0, ctr_start_mask,
--		  0, 0, 0, 0);
-+	for (i = 0; i < BITS_TO_LONGS(RISCV_MAX_COUNTERS); i++) {
-+		ctr_start_mask = cpu_hw_evt->used_hw_ctrs[i] & ~ctr_ovf_mask;
-+		/* Start all the counters that did not overflow in a single shot */
-+		sbi_ecall(SBI_EXT_PMU, SBI_EXT_PMU_COUNTER_START, i * BITS_PER_LONG, ctr_start_mask,
-+			0, 0, 0, 0);
-+	}
- 
- 	/* Reinitialize and start all the counter that overflowed */
- 	while (ctr_ovf_mask) {
 -- 
 2.34.1
 
