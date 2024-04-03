@@ -1,78 +1,77 @@
 From: Atish Patra <atishp@rivosinc.com>
-Date: Wed,  3 Apr 2024 01:04:38 -0700
-Subject: [PATCH v5 09/22] RISC-V: KVM: Rename the SBI_STA_SHMEM_DISABLE to a generic name
+Date: Wed,  3 Apr 2024 01:04:44 -0700
+Subject: [PATCH v5 15/22] RISC-V: KVM: Improve firmware counter read function
 In-Reply-To: <20240403080452.1007601-1-atishp@rivosinc.com>
 References: <20240403080452.1007601-1-atishp@rivosinc.com>
-Message-ID: <20240403080452.1007601-10-atishp@rivosinc.com>
+Message-ID: <20240403080452.1007601-16-atishp@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-SBI_STA_SHMEM_DISABLE is a macro to invoke disable shared memory
-commands. As this can be invoked from other SBI extension context
-as well, rename it to more generic name as SBI_SHMEM_DISABLE.
+Rename the function to indicate that it is meant for firmware
+counter read. While at it, add a range sanity check for it as
+well.
 
 Signed-off-by: Atish Patra <atishp@rivosinc.com>
 ---
- arch/riscv/include/asm/sbi.h  | 2 +-
- arch/riscv/kernel/paravirt.c  | 6 +++---
- arch/riscv/kvm/vcpu_sbi_sta.c | 4 ++--
- 3 files changed, 6 insertions(+), 6 deletions(-)
+ arch/riscv/include/asm/kvm_vcpu_pmu.h | 2 +-
+ arch/riscv/kvm/vcpu_pmu.c             | 7 ++++++-
+ arch/riscv/kvm/vcpu_sbi_pmu.c         | 2 +-
+ 3 files changed, 8 insertions(+), 3 deletions(-)
 
-diff --git a/arch/riscv/include/asm/sbi.h b/arch/riscv/include/asm/sbi.h
-index 9aada4b9f7b5..f31650b10899 100644
---- a/arch/riscv/include/asm/sbi.h
-+++ b/arch/riscv/include/asm/sbi.h
-@@ -277,7 +277,7 @@ struct sbi_sta_struct {
- 	u8 pad[47];
- } __packed;
+diff --git a/arch/riscv/include/asm/kvm_vcpu_pmu.h b/arch/riscv/include/asm/kvm_vcpu_pmu.h
+index 55861b5d3382..fa0f535bbbf0 100644
+--- a/arch/riscv/include/asm/kvm_vcpu_pmu.h
++++ b/arch/riscv/include/asm/kvm_vcpu_pmu.h
+@@ -89,7 +89,7 @@ int kvm_riscv_vcpu_pmu_ctr_cfg_match(struct kvm_vcpu *vcpu, unsigned long ctr_ba
+ 				     unsigned long ctr_mask, unsigned long flags,
+ 				     unsigned long eidx, u64 evtdata,
+ 				     struct kvm_vcpu_sbi_return *retdata);
+-int kvm_riscv_vcpu_pmu_ctr_read(struct kvm_vcpu *vcpu, unsigned long cidx,
++int kvm_riscv_vcpu_pmu_fw_ctr_read(struct kvm_vcpu *vcpu, unsigned long cidx,
+ 				struct kvm_vcpu_sbi_return *retdata);
+ int kvm_riscv_vcpu_pmu_fw_ctr_read_hi(struct kvm_vcpu *vcpu, unsigned long cidx,
+ 				      struct kvm_vcpu_sbi_return *retdata);
+diff --git a/arch/riscv/kvm/vcpu_pmu.c b/arch/riscv/kvm/vcpu_pmu.c
+index ff326152eeff..94efa88d054d 100644
+--- a/arch/riscv/kvm/vcpu_pmu.c
++++ b/arch/riscv/kvm/vcpu_pmu.c
+@@ -235,6 +235,11 @@ static int pmu_ctr_read(struct kvm_vcpu *vcpu, unsigned long cidx,
+ 	u64 enabled, running;
+ 	int fevent_code;
  
--#define SBI_STA_SHMEM_DISABLE		-1
-+#define SBI_SHMEM_DISABLE		-1
++	if (cidx >= kvm_pmu_num_counters(kvpmu) || cidx == 1) {
++		pr_warn("Invalid counter id [%ld] during read\n", cidx);
++		return -EINVAL;
++	}
++
+ 	pmc = &kvpmu->pmc[cidx];
  
- /* SBI spec version fields */
- #define SBI_SPEC_VERSION_DEFAULT	0x1
-diff --git a/arch/riscv/kernel/paravirt.c b/arch/riscv/kernel/paravirt.c
-index 0d6225fd3194..fa6b0339a65d 100644
---- a/arch/riscv/kernel/paravirt.c
-+++ b/arch/riscv/kernel/paravirt.c
-@@ -62,7 +62,7 @@ static int sbi_sta_steal_time_set_shmem(unsigned long lo, unsigned long hi,
- 	ret = sbi_ecall(SBI_EXT_STA, SBI_EXT_STA_STEAL_TIME_SET_SHMEM,
- 			lo, hi, flags, 0, 0, 0);
- 	if (ret.error) {
--		if (lo == SBI_STA_SHMEM_DISABLE && hi == SBI_STA_SHMEM_DISABLE)
-+		if (lo == SBI_SHMEM_DISABLE && hi == SBI_SHMEM_DISABLE)
- 			pr_warn("Failed to disable steal-time shmem");
- 		else
- 			pr_warn("Failed to set steal-time shmem");
-@@ -84,8 +84,8 @@ static int pv_time_cpu_online(unsigned int cpu)
- 
- static int pv_time_cpu_down_prepare(unsigned int cpu)
- {
--	return sbi_sta_steal_time_set_shmem(SBI_STA_SHMEM_DISABLE,
--					    SBI_STA_SHMEM_DISABLE, 0);
-+	return sbi_sta_steal_time_set_shmem(SBI_SHMEM_DISABLE,
-+					    SBI_SHMEM_DISABLE, 0);
+ 	if (pmc->cinfo.type == SBI_PMU_CTR_TYPE_FW) {
+@@ -747,7 +752,7 @@ int kvm_riscv_vcpu_pmu_fw_ctr_read_hi(struct kvm_vcpu *vcpu, unsigned long cidx,
+ 	return 0;
  }
  
- static u64 pv_time_steal_clock(int cpu)
-diff --git a/arch/riscv/kvm/vcpu_sbi_sta.c b/arch/riscv/kvm/vcpu_sbi_sta.c
-index d8cf9ca28c61..5f35427114c1 100644
---- a/arch/riscv/kvm/vcpu_sbi_sta.c
-+++ b/arch/riscv/kvm/vcpu_sbi_sta.c
-@@ -93,8 +93,8 @@ static int kvm_sbi_sta_steal_time_set_shmem(struct kvm_vcpu *vcpu)
- 	if (flags != 0)
- 		return SBI_ERR_INVALID_PARAM;
- 
--	if (shmem_phys_lo == SBI_STA_SHMEM_DISABLE &&
--	    shmem_phys_hi == SBI_STA_SHMEM_DISABLE) {
-+	if (shmem_phys_lo == SBI_SHMEM_DISABLE &&
-+	    shmem_phys_hi == SBI_SHMEM_DISABLE) {
- 		vcpu->arch.sta.shmem = INVALID_GPA;
- 		return 0;
- 	}
+-int kvm_riscv_vcpu_pmu_ctr_read(struct kvm_vcpu *vcpu, unsigned long cidx,
++int kvm_riscv_vcpu_pmu_fw_ctr_read(struct kvm_vcpu *vcpu, unsigned long cidx,
+ 				struct kvm_vcpu_sbi_return *retdata)
+ {
+ 	int ret;
+diff --git a/arch/riscv/kvm/vcpu_sbi_pmu.c b/arch/riscv/kvm/vcpu_sbi_pmu.c
+index cf111de51bdb..e4be34e03e83 100644
+--- a/arch/riscv/kvm/vcpu_sbi_pmu.c
++++ b/arch/riscv/kvm/vcpu_sbi_pmu.c
+@@ -62,7 +62,7 @@ static int kvm_sbi_ext_pmu_handler(struct kvm_vcpu *vcpu, struct kvm_run *run,
+ 		ret = kvm_riscv_vcpu_pmu_ctr_stop(vcpu, cp->a0, cp->a1, cp->a2, retdata);
+ 		break;
+ 	case SBI_EXT_PMU_COUNTER_FW_READ:
+-		ret = kvm_riscv_vcpu_pmu_ctr_read(vcpu, cp->a0, retdata);
++		ret = kvm_riscv_vcpu_pmu_fw_ctr_read(vcpu, cp->a0, retdata);
+ 		break;
+ 	case SBI_EXT_PMU_COUNTER_FW_READ_HI:
+ 		if (IS_ENABLED(CONFIG_32BIT))
 -- 
 2.34.1
 
