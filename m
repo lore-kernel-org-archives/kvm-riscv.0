@@ -1,60 +1,60 @@
-From: Clément Léger <cleger@rivosinc.com>
-Date: Thu,  4 Apr 2024 12:32:51 +0200
-Subject: [PATCH 5/5] KVM: riscv: selftests: Add Zimop extension to get-reg-list test
-In-Reply-To: <20240404103254.1752834-1-cleger@rivosinc.com>
-References: <20240404103254.1752834-1-cleger@rivosinc.com>
-Message-ID: <20240404103254.1752834-6-cleger@rivosinc.com>
+From: Andrew Jones <ajones@ventanamicro.com>
+Date: Thu, 4 Apr 2024 12:56:36 +0200
+Subject: [PATCH v5 01/22] RISC-V: Fix the typo in Scountovf CSR name
+In-Reply-To: <20240403080452.1007601-2-atishp@rivosinc.com>
+References: <20240403080452.1007601-1-atishp@rivosinc.com>
+ <20240403080452.1007601-2-atishp@rivosinc.com>
+Message-ID: <20240404-9c750d13d89168feb5ff34de@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The KVM RISC-V allows Zimop extension for Guest/VM so add this
-extension to get-reg-list test.
+On Wed, Apr 03, 2024 at 01:04:30AM -0700, Atish Patra wrote:
+> The counter overflow CSR name is "scountovf" not "sscountovf".
+> 
+> Fix the csr name.
+> 
+> Fixes: 4905ec2fb7e6 ("RISC-V: Add sscofpmf extension support")
+> Reviewed-by: Cl?ment L?ger <cleger@rivosinc.com>
+> Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
+> Reviewed-by: Anup Patel <anup@brainfault.org>
+> Signed-off-by: Atish Patra <atishp@rivosinc.com>
+> ---
+>  arch/riscv/include/asm/csr.h | 2 +-
+>  drivers/perf/riscv_pmu_sbi.c | 2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/riscv/include/asm/csr.h b/arch/riscv/include/asm/csr.h
+> index 2468c55933cd..9d1b07932794 100644
+> --- a/arch/riscv/include/asm/csr.h
+> +++ b/arch/riscv/include/asm/csr.h
+> @@ -281,7 +281,7 @@
+>  #define CSR_HPMCOUNTER30H	0xc9e
+>  #define CSR_HPMCOUNTER31H	0xc9f
+>  
+> -#define CSR_SSCOUNTOVF		0xda0
+> +#define CSR_SCOUNTOVF		0xda0
+>  
+>  #define CSR_SSTATUS		0x100
+>  #define CSR_SIE			0x104
+> diff --git a/drivers/perf/riscv_pmu_sbi.c b/drivers/perf/riscv_pmu_sbi.c
+> index 8cbe6e5f9c39..3e44d2fb8bf8 100644
+> --- a/drivers/perf/riscv_pmu_sbi.c
+> +++ b/drivers/perf/riscv_pmu_sbi.c
+> @@ -27,7 +27,7 @@
+>  
+>  #define ALT_SBI_PMU_OVERFLOW(__ovl)					\
+>  asm volatile(ALTERNATIVE_2(						\
+> -	"csrr %0, " __stringify(CSR_SSCOUNTOVF),			\
+> +	"csrr %0, " __stringify(CSR_SCOUNTOVF),				\
+>  	"csrr %0, " __stringify(THEAD_C9XX_CSR_SCOUNTEROF),		\
+>  		THEAD_VENDOR_ID, ERRATA_THEAD_PMU,			\
+>  		CONFIG_ERRATA_THEAD_PMU,				\
+> -- 
+> 2.34.1
+>
 
-Signed-off-by: Cl?ment L?ger <cleger@rivosinc.com>
----
- tools/testing/selftests/kvm/riscv/get-reg-list.c | 4 ++++
- 1 file changed, 4 insertions(+)
-
-diff --git a/tools/testing/selftests/kvm/riscv/get-reg-list.c b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-index b882b7b9b785..40107bb61975 100644
---- a/tools/testing/selftests/kvm/riscv/get-reg-list.c
-+++ b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-@@ -67,6 +67,7 @@ bool filter_reg(__u64 reg)
- 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZIHINTNTL:
- 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZIHINTPAUSE:
- 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZIHPM:
-+	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZIMOP:
- 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZKND:
- 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZKNE:
- 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZKNH:
-@@ -432,6 +433,7 @@ static const char *isa_ext_single_id_to_str(__u64 reg_off)
- 		KVM_ISA_EXT_ARR(ZIHINTNTL),
- 		KVM_ISA_EXT_ARR(ZIHINTPAUSE),
- 		KVM_ISA_EXT_ARR(ZIHPM),
-+		KVM_ISA_EXT_ARR(ZIMOP),
- 		KVM_ISA_EXT_ARR(ZKND),
- 		KVM_ISA_EXT_ARR(ZKNE),
- 		KVM_ISA_EXT_ARR(ZKNH),
-@@ -955,6 +957,7 @@ KVM_ISA_EXT_SIMPLE_CONFIG(zifencei, ZIFENCEI);
- KVM_ISA_EXT_SIMPLE_CONFIG(zihintntl, ZIHINTNTL);
- KVM_ISA_EXT_SIMPLE_CONFIG(zihintpause, ZIHINTPAUSE);
- KVM_ISA_EXT_SIMPLE_CONFIG(zihpm, ZIHPM);
-+KVM_ISA_EXT_SIMPLE_CONFIG(zimop, ZIMOP);
- KVM_ISA_EXT_SIMPLE_CONFIG(zknd, ZKND);
- KVM_ISA_EXT_SIMPLE_CONFIG(zkne, ZKNE);
- KVM_ISA_EXT_SIMPLE_CONFIG(zknh, ZKNH);
-@@ -1010,6 +1013,7 @@ struct vcpu_reg_list *vcpu_configs[] = {
- 	&config_zihintntl,
- 	&config_zihintpause,
- 	&config_zihpm,
-+	&config_zimop,
- 	&config_zknd,
- 	&config_zkne,
- 	&config_zknh,
--- 
-2.43.0
-
+Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
 
