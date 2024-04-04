@@ -1,96 +1,64 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Thu, 4 Apr 2024 14:19:30 +0200
-Subject: [PATCH v5 11/22] RISC-V: KVM: No need to exit to the user space
- if perf event failed
-In-Reply-To: <20240403080452.1007601-12-atishp@rivosinc.com>
-References: <20240403080452.1007601-1-atishp@rivosinc.com>
- <20240403080452.1007601-12-atishp@rivosinc.com>
-Message-ID: <20240404-de7d09060b134d467e437fcf@orel>
+Date: Thu, 4 Apr 2024 15:19:41 +0200
+Subject: [PATCH v4 08/15] RISC-V: KVM: Implement SBI PMU Snapshot feature
+In-Reply-To: <a75fa96e-2f26-49a7-a7f7-4a397c4a4513@rivosinc.com>
+References: <20240229010130.1380926-1-atishp@rivosinc.com>
+ <20240229010130.1380926-9-atishp@rivosinc.com>
+ <20240302-6ae8fe37b90f127bc9be737f@orel>
+ <CAOnJCUKjZWnS_SaR78Fy5AUOxrd+4gBx=_YrA=FQCa20iwifNQ@mail.gmail.com>
+ <a75fa96e-2f26-49a7-a7f7-4a397c4a4513@rivosinc.com>
+Message-ID: <20240404-0eb0261d56c48ac9472dfe5a@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Apr 03, 2024 at 01:04:40AM -0700, Atish Patra wrote:
-> Currently, we return a linux error code if creating a perf event failed
-> in kvm. That shouldn't be necessary as guest can continue to operate
-> without perf profiling or profiling with firmware counters.
+On Wed, Apr 03, 2024 at 12:36:41AM -0700, Atish Patra wrote:
+> On 4/1/24 15:36, Atish Patra wrote:
+> > On Sat, Mar 2, 2024 at 1:49?AM Andrew Jones <ajones@ventanamicro.com> wrote:
+> > > 
+> > > On Wed, Feb 28, 2024 at 05:01:23PM -0800, Atish Patra wrote:
+...
+> > > > +
+> > > >                if (flags & SBI_PMU_STOP_FLAG_RESET) {
+> > > >                        pmc->event_idx = SBI_PMU_EVENT_IDX_INVALID;
+> > > >                        clear_bit(pmc_index, kvpmu->pmc_in_use);
+> > > > +                     if (snap_flag_set) {
+> > > > +                             /* Clear the snapshot area for the upcoming deletion event */
+> > > > +                             kvpmu->sdata->ctr_values[i] = 0;
+> > > > +                             kvm_vcpu_write_guest(vcpu, kvpmu->snapshot_addr, kvpmu->sdata,
+> > > > +                                                  sizeof(struct riscv_pmu_snapshot_data));
+> > > 
+> > > The spec isn't clear on this (so we should clarify it), but I'd expect
+> > > that a caller who set both the reset and the snapshot flag would want
+> > > the snapshot from before the reset when this call completes and then
+> > > assume that when they start counting again, and look at the snapshot
+> > > again, that those new counts would be from the reset values. Or maybe
+> > > not :-) Maybe they want to do a reset and take a snapshot in order to
+> > > look at the snapshot and confirm the reset happened? Either way, it
+> > > seems we should only do one of the two here. Either update the snapshot
+> > > before resetting, and not again after reset, or reset and then update
+> > > the snapshot (with no need to update before).
+> > > 
+> > 
+> > The reset call should happen when the event is deleted by the perf
+> > framework in supervisor.
+> > If we don't clear the values, the shared memory may have stale data of
+> > last read counters
+> > which is not ideal. That's why, I am clearing it upon resetting.
 > 
-> Return appropriate SBI error code to indicate that PMU configuration
-> failed. An error message in kvm already describes the reason for failure.
+> Thinking about it more, I think having stale values in the shared memory
+> would be similar expected behavior to hardware counters after reset. We
+> don't need to clear the shared memory during the reset.
 > 
-> Fixes: 0cb74b65d2e5 ("RISC-V: KVM: Implement perf support without sampling")
-> Reviewed-by: Anup Patel <anup@brainfault.org>
-> Signed-off-by: Atish Patra <atishp@rivosinc.com>
-> ---
->  arch/riscv/kvm/vcpu_pmu.c     | 14 +++++++++-----
->  arch/riscv/kvm/vcpu_sbi_pmu.c |  6 +++---
->  2 files changed, 12 insertions(+), 8 deletions(-)
-> 
-> diff --git a/arch/riscv/kvm/vcpu_pmu.c b/arch/riscv/kvm/vcpu_pmu.c
-> index b5159ce4592d..2d9929bbc2c8 100644
-> --- a/arch/riscv/kvm/vcpu_pmu.c
-> +++ b/arch/riscv/kvm/vcpu_pmu.c
-> @@ -229,8 +229,9 @@ static int kvm_pmu_validate_counter_mask(struct kvm_pmu *kvpmu, unsigned long ct
->  	return 0;
->  }
->  
-> -static int kvm_pmu_create_perf_event(struct kvm_pmc *pmc, struct perf_event_attr *attr,
-> -				     unsigned long flags, unsigned long eidx, unsigned long evtdata)
-> +static long kvm_pmu_create_perf_event(struct kvm_pmc *pmc, struct perf_event_attr *attr,
-> +				      unsigned long flags, unsigned long eidx,
-> +				      unsigned long evtdata)
->  {
->  	struct perf_event *event;
->  
-> @@ -454,7 +455,8 @@ int kvm_riscv_vcpu_pmu_ctr_cfg_match(struct kvm_vcpu *vcpu, unsigned long ctr_ba
->  				     unsigned long eidx, u64 evtdata,
->  				     struct kvm_vcpu_sbi_return *retdata)
->  {
-> -	int ctr_idx, ret, sbiret = 0;
-> +	int ctr_idx, sbiret = 0;
-> +	long ret;
->  	bool is_fevent;
->  	unsigned long event_code;
->  	u32 etype = kvm_pmu_get_perf_event_type(eidx);
-> @@ -513,8 +515,10 @@ int kvm_riscv_vcpu_pmu_ctr_cfg_match(struct kvm_vcpu *vcpu, unsigned long ctr_ba
->  			kvpmu->fw_event[event_code].started = true;
->  	} else {
->  		ret = kvm_pmu_create_perf_event(pmc, &attr, flags, eidx, evtdata);
-> -		if (ret)
-> -			return ret;
-> +		if (ret) {
-> +			sbiret = SBI_ERR_NOT_SUPPORTED;
+> If both SBI_PMU_STOP_FLAG_TAKE_SNAPSHOT and SBI_PMU_STOP_FLAG_RESET are set,
+> may be we should just write it to the shared memory again without assuming
+> the intention of the caller ?
+>
 
-I'm still not sure about this. I replied in the v4 thread about it.
+Either way, we just need to ensure it's clear in the spec.
 
 Thanks,
 drew
-
-> +			goto out;
-> +		}
->  	}
->  
->  	set_bit(ctr_idx, kvpmu->pmc_in_use);
-> diff --git a/arch/riscv/kvm/vcpu_sbi_pmu.c b/arch/riscv/kvm/vcpu_sbi_pmu.c
-> index 7eca72df2cbd..e1633606c98b 100644
-> --- a/arch/riscv/kvm/vcpu_sbi_pmu.c
-> +++ b/arch/riscv/kvm/vcpu_sbi_pmu.c
-> @@ -42,9 +42,9 @@ static int kvm_sbi_ext_pmu_handler(struct kvm_vcpu *vcpu, struct kvm_run *run,
->  #endif
->  		/*
->  		 * This can fail if perf core framework fails to create an event.
-> -		 * Forward the error to userspace because it's an error which
-> -		 * happened within the host kernel. The other option would be
-> -		 * to convert to an SBI error and forward to the guest.
-> +		 * No need to forward the error to userspace and exit the guest.
-> +		 * The operation can continue without profiling. Forward the
-> +		 * appropriate SBI error to the guest.
->  		 */
->  		ret = kvm_riscv_vcpu_pmu_ctr_cfg_match(vcpu, cp->a0, cp->a1,
->  						       cp->a2, cp->a3, temp, retdata);
-> -- 
-> 2.34.1
-> 
 
