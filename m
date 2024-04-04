@@ -1,62 +1,36 @@
-From: Anup Patel <apatel@ventanamicro.com>
-Date: Wed, 3 Apr 2024 16:50:25 +0530
-Subject: [kvmtool PATCH v2 00/10] More ISA extensions
-In-Reply-To: <20240325153141.6816-1-apatel@ventanamicro.com>
-References: <20240325153141.6816-1-apatel@ventanamicro.com>
-Message-ID: <CAK9=C2UMLO+ft-j=qfmuv+Xc16z6JbDKcQf9+jJftwR5FdGYAA@mail.gmail.com>
+From: Clément Léger <cleger@rivosinc.com>
+Date: Thu,  4 Apr 2024 12:32:46 +0200
+Subject: [PATCH 0/5] Add parsing for Zimop ISA extension
+Message-ID: <20240404103254.1752834-1-cleger@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Will,
+The Zimop ISA extension was ratified recently. This series adds support
+for parsing it from riscv,isa, hwprobe export and kvm support for
+Guest/VM.
 
-On Mon, Mar 25, 2024 at 9:01?PM Anup Patel <apatel@ventanamicro.com> wrote:
->
-> This series adds support more ISA extensions namely: Zbc, scalar crypto,
-> vector crypto, Zfh[min], Zihintntl, Zvfh[min], and Zfa. The series also
-> adds a command-line option to disable SBI STA extension for Guest/VM.
->
-> These patches can also be found in the riscv_more_exts_v2 branch at:
-> https://github.com/avpatel/kvmtool.git
->
-> Changes since v1:
->  - Rebased on commit 4d2c017f41533b0e51e00f689050c26190a15318
->  - Addressed Drew's comments on PATCH4
->
-> Anup Patel (10):
->   Sync-up headers with Linux-6.8 for KVM RISC-V
->   kvmtool: Fix absence of __packed definition
->   riscv: Add Zbc extension support
->   riscv: Add scalar crypto extensions support
->   riscv: Add vector crypto extensions support
->   riscv: Add Zfh[min] extensions support
->   riscv: Add Zihintntl extension support
->   riscv: Add Zvfh[min] extensions support
->   riscv: Add Zfa extensiona support
->   riscv: Allow disabling SBI STA extension for Guest
+Cl?ment L?ger (5):
+  dt-bindings: riscv: add Zimop ISA extension description
+  riscv: add ISA extension parsing for Zimop
+  riscv: hwprobe: export Zimop ISA extension
+  RISC-V: KVM: Allow Zimop extension for Guest/VM
+  KVM: riscv: selftests: Add Zimop extension to get-reg-list test
 
-Friendly ping ?
+ Documentation/arch/riscv/hwprobe.rst                    | 4 ++++
+ Documentation/devicetree/bindings/riscv/extensions.yaml | 5 +++++
+ arch/riscv/include/asm/hwcap.h                          | 1 +
+ arch/riscv/include/uapi/asm/hwprobe.h                   | 1 +
+ arch/riscv/include/uapi/asm/kvm.h                       | 1 +
+ arch/riscv/kernel/cpufeature.c                          | 1 +
+ arch/riscv/kernel/sys_hwprobe.c                         | 1 +
+ arch/riscv/kvm/vcpu_onereg.c                            | 2 ++
+ tools/testing/selftests/kvm/riscv/get-reg-list.c        | 4 ++++
+ 9 files changed, 20 insertions(+)
 
->
->  include/kvm/compiler.h              |   2 +
->  include/linux/kvm.h                 | 140 ++++++++++------------------
->  include/linux/virtio_config.h       |   8 +-
->  include/linux/virtio_pci.h          |  68 ++++++++++++++
->  riscv/fdt.c                         |  27 ++++++
->  riscv/include/asm/kvm.h             |  40 ++++++++
->  riscv/include/kvm/csr.h             |  16 ++++
->  riscv/include/kvm/kvm-config-arch.h |  86 ++++++++++++++++-
->  riscv/kvm-cpu.c                     |  32 +++++++
->  x86/include/asm/kvm.h               |   3 +
->  10 files changed, 330 insertions(+), 92 deletions(-)
->  create mode 100644 riscv/include/kvm/csr.h
->
-> --
-> 2.34.1
->
+-- 
+2.43.0
 
-Regards,
-Anup
 
