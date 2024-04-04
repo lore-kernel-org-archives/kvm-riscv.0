@@ -1,86 +1,78 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Thu, 4 Apr 2024 13:08:11 +0200
-Subject: [PATCH v5 04/22] drivers/perf: riscv: Use BIT macro for shifting
- operations
-In-Reply-To: <20240403080452.1007601-5-atishp@rivosinc.com>
+Date: Thu, 4 Apr 2024 13:14:58 +0200
+Subject: [PATCH v5 05/22] RISC-V: Add SBI PMU snapshot definitions
+In-Reply-To: <20240403080452.1007601-6-atishp@rivosinc.com>
 References: <20240403080452.1007601-1-atishp@rivosinc.com>
- <20240403080452.1007601-5-atishp@rivosinc.com>
-Message-ID: <20240404-9a84f2090d00f6b994e1de7c@orel>
+ <20240403080452.1007601-6-atishp@rivosinc.com>
+Message-ID: <20240404-ecddd056e774ccec7cea3be8@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Apr 03, 2024 at 01:04:33AM -0700, Atish Patra wrote:
-> It is a good practice to use BIT() instead of (1UL << x).
-
-(1UL << x) isn't generally a problem. The problem is with (1 << x).
-
-> Replace the current usages with BIT().
+On Wed, Apr 03, 2024 at 01:04:34AM -0700, Atish Patra wrote:
+> SBI PMU Snapshot function optimizes the number of traps to
+> higher privilege mode by leveraging a shared memory between the S/VS-mode
+> and the M/HS mode. Add the definitions for that extension and new error
+> codes.
 > 
+> Reviewed-by: Anup Patel <anup@brainfault.org>
+> Acked-by: Palmer Dabbelt <palmer@rivosinc.com>
 > Signed-off-by: Atish Patra <atishp@rivosinc.com>
 > ---
->  arch/riscv/include/asm/sbi.h | 20 ++++++++++----------
->  drivers/perf/riscv_pmu_sbi.c |  2 +-
->  2 files changed, 11 insertions(+), 11 deletions(-)
+>  arch/riscv/include/asm/sbi.h | 11 +++++++++++
+>  1 file changed, 11 insertions(+)
 > 
 > diff --git a/arch/riscv/include/asm/sbi.h b/arch/riscv/include/asm/sbi.h
-> index ef8311dafb91..4afa2cd01bae 100644
+> index 4afa2cd01bae..9aada4b9f7b5 100644
 > --- a/arch/riscv/include/asm/sbi.h
 > +++ b/arch/riscv/include/asm/sbi.h
-> @@ -233,20 +233,20 @@ enum sbi_pmu_ctr_type {
->  #define SBI_PMU_EVENT_IDX_INVALID 0xFFFFFFFF
+> @@ -132,6 +132,7 @@ enum sbi_ext_pmu_fid {
+>  	SBI_EXT_PMU_COUNTER_STOP,
+>  	SBI_EXT_PMU_COUNTER_FW_READ,
+>  	SBI_EXT_PMU_COUNTER_FW_READ_HI,
+> +	SBI_EXT_PMU_SNAPSHOT_SET_SHMEM,
+>  };
 >  
->  /* Flags defined for config matching function */
-> -#define SBI_PMU_CFG_FLAG_SKIP_MATCH	(1 << 0)
-> -#define SBI_PMU_CFG_FLAG_CLEAR_VALUE	(1 << 1)
-> -#define SBI_PMU_CFG_FLAG_AUTO_START	(1 << 2)
-> -#define SBI_PMU_CFG_FLAG_SET_VUINH	(1 << 3)
-> -#define SBI_PMU_CFG_FLAG_SET_VSINH	(1 << 4)
-> -#define SBI_PMU_CFG_FLAG_SET_UINH	(1 << 5)
-> -#define SBI_PMU_CFG_FLAG_SET_SINH	(1 << 6)
-> -#define SBI_PMU_CFG_FLAG_SET_MINH	(1 << 7)
-> +#define SBI_PMU_CFG_FLAG_SKIP_MATCH	BIT(0)
-> +#define SBI_PMU_CFG_FLAG_CLEAR_VALUE	BIT(1)
-> +#define SBI_PMU_CFG_FLAG_AUTO_START	BIT(2)
-> +#define SBI_PMU_CFG_FLAG_SET_VUINH	BIT(3)
-> +#define SBI_PMU_CFG_FLAG_SET_VSINH	BIT(4)
-> +#define SBI_PMU_CFG_FLAG_SET_UINH	BIT(5)
-> +#define SBI_PMU_CFG_FLAG_SET_SINH	BIT(6)
-> +#define SBI_PMU_CFG_FLAG_SET_MINH	BIT(7)
+>  union sbi_pmu_ctr_info {
+> @@ -148,6 +149,13 @@ union sbi_pmu_ctr_info {
+>  	};
+>  };
+>  
+> +/* Data structure to contain the pmu snapshot data */
+> +struct riscv_pmu_snapshot_data {
+> +	u64 ctr_overflow_mask;
+> +	u64 ctr_values[64];
+> +	u64 reserved[447];
+> +};
+> +
+>  #define RISCV_PMU_RAW_EVENT_MASK GENMASK_ULL(47, 0)
+>  #define RISCV_PMU_RAW_EVENT_IDX 0x20000
+>  
+> @@ -244,9 +252,11 @@ enum sbi_pmu_ctr_type {
 >  
 >  /* Flags defined for counter start function */
-> -#define SBI_PMU_START_FLAG_SET_INIT_VALUE (1 << 0)
-> +#define SBI_PMU_START_FLAG_SET_INIT_VALUE BIT(0)
+>  #define SBI_PMU_START_FLAG_SET_INIT_VALUE BIT(0)
+> +#define SBI_PMU_START_FLAG_INIT_SNAPSHOT BIT(1)
 >  
 >  /* Flags defined for counter stop function */
-> -#define SBI_PMU_STOP_FLAG_RESET (1 << 0)
-> +#define SBI_PMU_STOP_FLAG_RESET BIT(0)
+>  #define SBI_PMU_STOP_FLAG_RESET BIT(0)
+> +#define SBI_PMU_STOP_FLAG_TAKE_SNAPSHOT BIT(1)
 >  
 >  enum sbi_ext_dbcn_fid {
 >  	SBI_EXT_DBCN_CONSOLE_WRITE = 0,
-> diff --git a/drivers/perf/riscv_pmu_sbi.c b/drivers/perf/riscv_pmu_sbi.c
-> index babf1b9a4dbe..a83ae82301e3 100644
-> --- a/drivers/perf/riscv_pmu_sbi.c
-> +++ b/drivers/perf/riscv_pmu_sbi.c
-> @@ -386,7 +386,7 @@ static int pmu_sbi_ctr_get_idx(struct perf_event *event)
->  			cmask = 1;
->  		} else if (event->attr.config == PERF_COUNT_HW_INSTRUCTIONS) {
->  			cflags |= SBI_PMU_CFG_FLAG_SKIP_MATCH;
-> -			cmask = 1UL << (CSR_INSTRET - CSR_CYCLE);
-> +			cmask = BIT(CSR_INSTRET - CSR_CYCLE);
->  		}
->  	}
+> @@ -285,6 +295,7 @@ struct sbi_sta_struct {
+>  #define SBI_ERR_ALREADY_AVAILABLE -6
+>  #define SBI_ERR_ALREADY_STARTED -7
+>  #define SBI_ERR_ALREADY_STOPPED -8
+> +#define SBI_ERR_NO_SHMEM	-9
 >  
+>  extern unsigned long sbi_spec_version;
+>  struct sbiret {
 > -- 
 > 2.34.1
 >
 
-Other than the commit message,
-
 Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
-
-Thanks,
-drew
 
