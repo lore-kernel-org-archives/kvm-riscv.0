@@ -1,111 +1,128 @@
-From: Nicholas Piggin <npiggin@gmail.com>
-Date: Fri,  5 Apr 2024 19:00:49 +1000
-Subject: [kvm-unit-tests RFC PATCH 17/17] shellcheck: Suppress various messages
-In-Reply-To: <20240405090052.375599-1-npiggin@gmail.com>
-References: <20240405090052.375599-1-npiggin@gmail.com>
-Message-ID: <20240405090052.375599-18-npiggin@gmail.com>
+From: Andrew Jones <ajones@ventanamicro.com>
+Date: Fri, 5 Apr 2024 13:23:04 +0200
+Subject: [PATCH v5 12/22] RISC-V: KVM: Implement SBI PMU Snapshot feature
+In-Reply-To: <20240403080452.1007601-13-atishp@rivosinc.com>
+References: <20240403080452.1007601-1-atishp@rivosinc.com>
+ <20240403080452.1007601-13-atishp@rivosinc.com>
+Message-ID: <20240405-1060c986299eaac3528c7d4f@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Various info and warnings are suppressed here, where circumstances
-(commented) warrant.
+On Wed, Apr 03, 2024 at 01:04:41AM -0700, Atish Patra wrote:
+> PMU Snapshot function allows to minimize the number of traps when the
+> guest access configures/access the hpmcounters. If the snapshot feature
+> is enabled, the hypervisor updates the shared memory with counter
+> data and state of overflown counters. The guest can just read the
+> shared memory instead of trap & emulate done by the hypervisor.
+> 
+> This patch doesn't implement the counter overflow yet.
+> 
+> Reviewed-by: Anup Patel <anup@brainfault.org>
+> Signed-off-by: Atish Patra <atishp@rivosinc.com>
+> ---
+>  arch/riscv/include/asm/kvm_vcpu_pmu.h |   7 ++
+>  arch/riscv/kvm/vcpu_pmu.c             | 121 +++++++++++++++++++++++++-
+>  arch/riscv/kvm/vcpu_sbi_pmu.c         |   3 +
+>  3 files changed, 130 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/riscv/include/asm/kvm_vcpu_pmu.h b/arch/riscv/include/asm/kvm_vcpu_pmu.h
+> index 395518a1664e..77a1fc4d203d 100644
+> --- a/arch/riscv/include/asm/kvm_vcpu_pmu.h
+> +++ b/arch/riscv/include/asm/kvm_vcpu_pmu.h
+> @@ -50,6 +50,10 @@ struct kvm_pmu {
+>  	bool init_done;
+>  	/* Bit map of all the virtual counter used */
+>  	DECLARE_BITMAP(pmc_in_use, RISCV_KVM_MAX_COUNTERS);
+> +	/* The address of the counter snapshot area (guest physical address) */
+> +	gpa_t snapshot_addr;
+> +	/* The actual data of the snapshot */
+> +	struct riscv_pmu_snapshot_data *sdata;
+>  };
+>  
+>  #define vcpu_to_pmu(vcpu) (&(vcpu)->arch.pmu_context)
+> @@ -85,6 +89,9 @@ int kvm_riscv_vcpu_pmu_ctr_cfg_match(struct kvm_vcpu *vcpu, unsigned long ctr_ba
+>  int kvm_riscv_vcpu_pmu_ctr_read(struct kvm_vcpu *vcpu, unsigned long cidx,
+>  				struct kvm_vcpu_sbi_return *retdata);
+>  void kvm_riscv_vcpu_pmu_init(struct kvm_vcpu *vcpu);
+> +int kvm_riscv_vcpu_pmu_snapshot_set_shmem(struct kvm_vcpu *vcpu, unsigned long saddr_low,
+> +				      unsigned long saddr_high, unsigned long flags,
+> +				      struct kvm_vcpu_sbi_return *retdata);
+>  void kvm_riscv_vcpu_pmu_deinit(struct kvm_vcpu *vcpu);
+>  void kvm_riscv_vcpu_pmu_reset(struct kvm_vcpu *vcpu);
+>  
+> diff --git a/arch/riscv/kvm/vcpu_pmu.c b/arch/riscv/kvm/vcpu_pmu.c
+> index 2d9929bbc2c8..f706c688b338 100644
+> --- a/arch/riscv/kvm/vcpu_pmu.c
+> +++ b/arch/riscv/kvm/vcpu_pmu.c
+> @@ -14,6 +14,7 @@
+>  #include <asm/csr.h>
+>  #include <asm/kvm_vcpu_sbi.h>
+>  #include <asm/kvm_vcpu_pmu.h>
+> +#include <asm/sbi.h>
+>  #include <linux/bitops.h>
+>  
+>  #define kvm_pmu_num_counters(pmu) ((pmu)->num_hw_ctrs + (pmu)->num_fw_ctrs)
+> @@ -311,6 +312,80 @@ int kvm_riscv_vcpu_pmu_read_hpm(struct kvm_vcpu *vcpu, unsigned int csr_num,
+>  	return ret;
+>  }
+>  
+> +static void kvm_pmu_clear_snapshot_area(struct kvm_vcpu *vcpu)
+> +{
+> +	struct kvm_pmu *kvpmu = vcpu_to_pmu(vcpu);
+> +	int snapshot_area_size = sizeof(struct riscv_pmu_snapshot_data);
+> +
+> +	if (kvpmu->sdata) {
+> +		if (kvpmu->snapshot_addr != INVALID_GPA) {
+> +			memset(kvpmu->sdata, 0, snapshot_area_size);
+> +			kvm_vcpu_write_guest(vcpu, kvpmu->snapshot_addr,
+> +					     kvpmu->sdata, snapshot_area_size);
+> +		} else {
+> +			pr_warn("snapshot address invalid\n");
+> +		}
+> +		kfree(kvpmu->sdata);
+> +		kvpmu->sdata = NULL;
+> +	}
+> +	kvpmu->snapshot_addr = INVALID_GPA;
+> +}
+> +
+> +int kvm_riscv_vcpu_pmu_snapshot_set_shmem(struct kvm_vcpu *vcpu, unsigned long saddr_low,
+> +				      unsigned long saddr_high, unsigned long flags,
+> +				      struct kvm_vcpu_sbi_return *retdata)
+> +{
+> +	struct kvm_pmu *kvpmu = vcpu_to_pmu(vcpu);
+> +	int snapshot_area_size = sizeof(struct riscv_pmu_snapshot_data);
+> +	int sbiret = 0;
+> +	gpa_t saddr;
+> +	unsigned long hva;
+> +	bool writable;
+> +
+> +	if (!kvpmu || flags) {
+> +		sbiret = SBI_ERR_INVALID_PARAM;
+> +		goto out;
+> +	}
+> +
+> +	if (saddr_low == SBI_SHMEM_DISABLE && saddr_high == SBI_SHMEM_DISABLE) {
+> +		kvm_pmu_clear_snapshot_area(vcpu);
+> +		return 0;
+> +	}
+> +
+> +	saddr = saddr_low;
+> +
+> +	if (saddr_high != 0) {
+> +		if (IS_ENABLED(CONFIG_32BIT))
+> +			saddr |= ((gpa_t)saddr << 32);
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- run_tests.sh            | 3 +++
- scripts/arch-run.bash   | 9 +++++++++
- scripts/mkstandalone.sh | 2 ++
- scripts/runtime.bash    | 2 ++
- 4 files changed, 16 insertions(+)
+saddr |= ((gpa_t)saddr_high << 32)
 
-diff --git a/run_tests.sh b/run_tests.sh
-index 938bb8edf..152323ffc 100755
---- a/run_tests.sh
-+++ b/run_tests.sh
-@@ -45,6 +45,9 @@ fi
- only_tests=""
- list_tests=""
- args=$(getopt -u -o ag:htj:vl -l all,group:,help,tap13,parallel:,verbose,list,probe-maxsmp -- "$@")
-+# Shellcheck likes to test commands directly rather than with $? but sometimes they
-+# are too long to put in the same test.
-+# shellcheck disable=SC2181
- [ $? -ne 0 ] && exit 2;
- set -- $args;
- while [ $# -gt 0 ]; do
-diff --git a/scripts/arch-run.bash b/scripts/arch-run.bash
-index ed440b4aa..fe8785cfd 100644
---- a/scripts/arch-run.bash
-+++ b/scripts/arch-run.bash
-@@ -44,6 +44,8 @@ run_qemu ()
- 	if [ "$errors" ]; then
- 		sig=$(grep 'terminating on signal' <<<"$errors")
- 		if [ "$sig" ]; then
-+			# This is too complex for ${var/search/replace}
-+			# shellcheck disable=SC2001
- 			sig=$(sed 's/.*terminating on signal \([0-9][0-9]*\).*/\1/' <<<"$sig")
- 		fi
- 	fi
-@@ -174,9 +176,12 @@ run_migration ()
- 
- 	# Holding both ends of the input fifo open prevents opens from
- 	# blocking and readers getting EOF when a writer closes it.
-+	# These fds appear to be unused to shellcheck so quieten the warning.
- 	mkfifo ${src_infifo}
- 	mkfifo ${dst_infifo}
-+	# shellcheck disable=SC2034
- 	exec {src_infifo_fd}<>${src_infifo}
-+	# shellcheck disable=SC2034
- 	exec {dst_infifo_fd}<>${dst_infifo}
- 
- 	"${migcmdline[@]}" \
-@@ -184,6 +189,8 @@ run_migration ()
- 		-mon chardev=mon,mode=control \
- 		< ${src_infifo} > ${src_outfifo} &
- 	live_pid=$!
-+	# SC complains about useless cat but I prefer it over redirect here.
-+	# shellcheck disable=SC2002
- 	cat ${src_outfifo} | tee ${src_out} | filter_quiet_msgs &
- 
- 	# Start the first destination QEMU machine in advance of the test
-@@ -224,6 +231,8 @@ do_migration ()
- 		-mon chardev=mon,mode=control -incoming unix:${dst_incoming} \
- 		< ${dst_infifo} > ${dst_outfifo} &
- 	incoming_pid=$!
-+	# SC complains about useless cat but I prefer it over redirect here.
-+	# shellcheck disable=SC2002
- 	cat ${dst_outfifo} | tee ${dst_out} | filter_quiet_msgs &
- 
- 	# The test must prompt the user to migrate, so wait for the
-diff --git a/scripts/mkstandalone.sh b/scripts/mkstandalone.sh
-index 756647f29..2318a85f0 100755
---- a/scripts/mkstandalone.sh
-+++ b/scripts/mkstandalone.sh
-@@ -65,6 +65,8 @@ generate_test ()
- 	fi
- 
- 	temp_file bin "$kernel"
-+	# Don't want to expand $bin but print it as-is.
-+	# shellcheck disable=SC2016
- 	args[3]='$bin'
- 
- 	(echo "#!/usr/bin/env bash"
-diff --git a/scripts/runtime.bash b/scripts/runtime.bash
-index 3b76aec9e..c87613b96 100644
---- a/scripts/runtime.bash
-+++ b/scripts/runtime.bash
-@@ -137,6 +137,8 @@ function run()
-     # the check line can contain multiple files to check separated by a space
-     # but each check parameter needs to be of the form <path>=<value>
-     if [ "$check" ]; then
-+        # There is no globbing allowed in the check parameter.
-+        # shellcheck disable=SC2206
-         check=($check)
-         for check_param in "${check[@]}"; do
-             path=${check_param%%=*}
--- 
-2.43.0
+> +		else
+> +			sbiret = SBI_ERR_INVALID_ADDRESS;
+> +		goto out;
+> +	}
+> +
 
+Thanks,
+drew
 
