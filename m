@@ -1,118 +1,67 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Fri, 5 Apr 2024 14:20:08 +0200
-Subject: [PATCH v5 19/22] KVM: riscv: selftests: Add SBI PMU extension
- definitions
-In-Reply-To: <20240403080452.1007601-20-atishp@rivosinc.com>
-References: <20240403080452.1007601-1-atishp@rivosinc.com>
- <20240403080452.1007601-20-atishp@rivosinc.com>
-Message-ID: <20240405-1f8409c47501740fe808adbb@orel>
+Date: Fri, 5 Apr 2024 14:48:15 +0200
+Subject: [PATCH v4 13/15] KVM: riscv: selftests: Add SBI PMU selftest
+In-Reply-To: <CAOnJCUK2D6-zP4=DiXRMeFQsMc9iG5nWY-yYHMhg83h_q+OtnQ@mail.gmail.com>
+References: <20240229010130.1380926-1-atishp@rivosinc.com>
+ <20240229010130.1380926-14-atishp@rivosinc.com>
+ <20240302-ed6c516829dc0ed616f39a45@orel>
+ <CAOnJCUK2D6-zP4=DiXRMeFQsMc9iG5nWY-yYHMhg83h_q+OtnQ@mail.gmail.com>
+Message-ID: <20240405-3242460b23ce1daf905242df@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Apr 03, 2024 at 01:04:48AM -0700, Atish Patra wrote:
-> The SBI PMU extension definition is required for upcoming SBI PMU
-> selftests.
+On Tue, Apr 02, 2024 at 01:34:54AM -0700, Atish Patra wrote:
+...
+> > > +static void guest_illegal_exception_handler(struct ex_regs *regs)
+> > > +{
+> > > +     __GUEST_ASSERT(regs->cause == EXC_INST_ILLEGAL,
+> > > +                    "Unexpected exception handler %lx\n", regs->cause);
+> >
+> > Shouldn't we be reporting somehow that we were here? We seem to be using
+> > this handler to skip instructions which don't work, which is fine, if
+> > we have some knowledge we skipped them and then do something else.
+> > Otherwise I don't understand.
+> >
 > 
-> Reviewed-by: Anup Patel <anup@brainfault.org>
-> Signed-off-by: Atish Patra <atishp@rivosinc.com>
-> ---
->  .../testing/selftests/kvm/include/riscv/sbi.h | 66 +++++++++++++++++++
->  1 file changed, 66 insertions(+)
-> 
-> diff --git a/tools/testing/selftests/kvm/include/riscv/sbi.h b/tools/testing/selftests/kvm/include/riscv/sbi.h
-> index ba04f2dec7b5..6675ca673c77 100644
-> --- a/tools/testing/selftests/kvm/include/riscv/sbi.h
-> +++ b/tools/testing/selftests/kvm/include/riscv/sbi.h
-> @@ -29,17 +29,83 @@
->  enum sbi_ext_id {
->  	SBI_EXT_BASE = 0x10,
->  	SBI_EXT_STA = 0x535441,
-> +	SBI_EXT_PMU = 0x504D55,
->  };
->  
->  enum sbi_ext_base_fid {
->  	SBI_EXT_BASE_PROBE_EXT = 3,
->  };
-> +enum sbi_ext_pmu_fid {
-> +	SBI_EXT_PMU_NUM_COUNTERS = 0,
-> +	SBI_EXT_PMU_COUNTER_GET_INFO,
-> +	SBI_EXT_PMU_COUNTER_CFG_MATCH,
-> +	SBI_EXT_PMU_COUNTER_START,
-> +	SBI_EXT_PMU_COUNTER_STOP,
-> +	SBI_EXT_PMU_COUNTER_FW_READ,
-> +	SBI_EXT_PMU_COUNTER_FW_READ_HI,
-> +	SBI_EXT_PMU_SNAPSHOT_SET_SHMEM,
-> +};
-> +
-> +union sbi_pmu_ctr_info {
-> +	unsigned long value;
-> +	struct {
-> +		unsigned long csr:12;
-> +		unsigned long width:6;
-> +#if __riscv_xlen == 32
-> +		unsigned long reserved:13;
-> +#else
-> +		unsigned long reserved:45;
-> +#endif
-> +		unsigned long type:1;
-> +	};
-> +};
->  
->  struct sbiret {
->  	long error;
->  	long value;
->  };
->  
-> +/** General pmu event codes specified in SBI PMU extension */
-> +enum sbi_pmu_hw_generic_events_t {
-> +	SBI_PMU_HW_NO_EVENT			= 0,
-> +	SBI_PMU_HW_CPU_CYCLES			= 1,
-> +	SBI_PMU_HW_INSTRUCTIONS			= 2,
-> +	SBI_PMU_HW_CACHE_REFERENCES		= 3,
-> +	SBI_PMU_HW_CACHE_MISSES			= 4,
-> +	SBI_PMU_HW_BRANCH_INSTRUCTIONS		= 5,
-> +	SBI_PMU_HW_BRANCH_MISSES		= 6,
-> +	SBI_PMU_HW_BUS_CYCLES			= 7,
-> +	SBI_PMU_HW_STALLED_CYCLES_FRONTEND	= 8,
-> +	SBI_PMU_HW_STALLED_CYCLES_BACKEND	= 9,
-> +	SBI_PMU_HW_REF_CPU_CYCLES		= 10,
-> +
-> +	SBI_PMU_HW_GENERAL_MAX,
-> +};
-> +
-> +/* SBI PMU counter types */
-> +enum sbi_pmu_ctr_type {
-> +	SBI_PMU_CTR_TYPE_HW = 0x0,
-> +	SBI_PMU_CTR_TYPE_FW,
-> +};
-> +
-> +/* Flags defined for config matching function */
-> +#define SBI_PMU_CFG_FLAG_SKIP_MATCH	BIT(0)
-> +#define SBI_PMU_CFG_FLAG_CLEAR_VALUE	BIT(1)
-> +#define SBI_PMU_CFG_FLAG_AUTO_START	BIT(2)
-> +#define SBI_PMU_CFG_FLAG_SET_VUINH	BIT(3)
-> +#define SBI_PMU_CFG_FLAG_SET_VSINH	BIT(4)
-> +#define SBI_PMU_CFG_FLAG_SET_UINH	BIT(5)
-> +#define SBI_PMU_CFG_FLAG_SET_SINH	BIT(6)
-> +#define SBI_PMU_CFG_FLAG_SET_MINH	BIT(7)
-> +
-> +/* Flags defined for counter start function */
-> +#define SBI_PMU_START_FLAG_SET_INIT_VALUE BIT(0)
-> +#define SBI_PMU_START_FLAG_INIT_SNAPSHOT BIT(1)
-> +
-> +/* Flags defined for counter stop function */
-> +#define SBI_PMU_STOP_FLAG_RESET BIT(0)
-> +#define SBI_PMU_STOP_FLAG_TAKE_SNAPSHOT BIT(1)
-> +
->  struct sbiret sbi_ecall(int ext, int fid, unsigned long arg0,
->  			unsigned long arg1, unsigned long arg2,
->  			unsigned long arg3, unsigned long arg4,
-> -- 
-> 2.34.1
->
+> This is only used in test_vm_basic_test to validate that the guest
+> will get an illegal
+> exception if they try to access without configuring first.
 
-Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+Yeah, that's good. I just don't see how we know we were ever here. We
+either got the exception and then stepped over the CSR read or we did
+the CSR read. Either way, the test progresses the same. Shouldn't this
+induce a test skip or something instead?
+
+> > > +
+> > > +     counter_value_post = read_counter(counter, ctrinfo_arr[counter]);
+> > > +     __GUEST_ASSERT(counter_value_post > counter_value_pre,
+> > > +                    "counter_value_post %lx counter_value_pre %lx\n",
+> > > +                    counter_value_post, counter_value_pre);
+> > > +
+> > > +     /* Now set the initial value and compare */
+> > > +     start_counter(counter, SBI_PMU_START_FLAG_SET_INIT_VALUE, counter_init_value);
+> >
+> > We should try to confirm that we reset the counter, otherwise the check
+> > below only proves that the value we read is greater than 100, which it
+> > is possible even if the reset doesn't work.
+> >
+> 
+> Hmm. There is no way to just update the counter value without starting
+> it. Reading it without stopping is not reliable.
+> Maybe we can do this.
+> 
+> 1. Reset it to 100. Stop it immediately after and read it. Let's say
+> the value is X
+> 2. Now reset it to counter  X + 1000.
+> 3. Do the validation with the above reset value in #2.
+> 
+> Wdyt ?
+
+OK
+
+Thanks,
+drew
 
