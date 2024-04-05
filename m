@@ -1,62 +1,42 @@
 From: Nicholas Piggin <npiggin@gmail.com>
-Date: Fri,  5 Apr 2024 19:00:40 +1000
-Subject: [kvm-unit-tests RFC PATCH 08/17] shellcheck: Fix SC2119, SC2120
+Date: Fri,  5 Apr 2024 19:00:41 +1000
+Subject: [kvm-unit-tests RFC PATCH 09/17] shellcheck: Fix SC2143
 In-Reply-To: <20240405090052.375599-1-npiggin@gmail.com>
 References: <20240405090052.375599-1-npiggin@gmail.com>
-Message-ID: <20240405090052.375599-9-npiggin@gmail.com>
+Message-ID: <20240405090052.375599-10-npiggin@gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-  SC2119 (info): Use is_pv "$@" if function's $1 should mean script's
-  $1.
+  SC2143 (style): Use ! grep -q instead of comparing output with
+  [ -z .. ].
 
-  SC2120 (warning): is_pv references arguments, but none are ever
-  passed.
-
-Could be a bug?
+Not a bug.
 
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- s390x/run | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ scripts/arch-run.bash | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-diff --git a/s390x/run b/s390x/run
-index e58fa4af9..34552c274 100755
---- a/s390x/run
-+++ b/s390x/run
-@@ -21,12 +21,12 @@ is_pv() {
- 	return 1
- }
- 
--if is_pv && [ "$ACCEL" = "tcg" ]; then
-+if is_pv "$@" && [ "$ACCEL" = "tcg" ]; then
- 	echo "Protected Virtualization isn't supported under TCG"
- 	exit 2
- fi
- 
--if is_pv && [ "$MIGRATION" = "yes" ]; then
-+if is_pv "$@" && [ "$MIGRATION" = "yes" ]; then
- 	echo "Migration isn't supported under Protected Virtualization"
- 	exit 2
- fi
-@@ -34,12 +34,12 @@ fi
- M='-machine s390-ccw-virtio'
- M+=",accel=$ACCEL$ACCEL_PROPS"
- 
--if is_pv; then
-+if is_pv "$@"; then
- 	M+=",confidential-guest-support=pv0"
- fi
- 
- command="$qemu -nodefaults -nographic $M"
--if is_pv; then
-+if is_pv "$@"; then
- 	command+=" -object s390-pv-guest,id=pv0"
- fi
- command+=" -chardev stdio,id=con0 -device sclpconsole,chardev=con0"
+diff --git a/scripts/arch-run.bash b/scripts/arch-run.bash
+index d1edd1d69..9dc34a54a 100644
+--- a/scripts/arch-run.bash
++++ b/scripts/arch-run.bash
+@@ -61,7 +61,11 @@ run_qemu ()
+ 		# Even when ret==1 (unittest success) if we also got stderr
+ 		# logs, then we assume a QEMU failure. Otherwise we translate
+ 		# status of 1 to 0 (SUCCESS)
+-		if [ -z "$(echo "$errors" | grep -vi warning)" ]; then
++	        if [ "$errors" ]; then
++			if ! grep -qvi warning <<<"$errors" ; then
++				ret=0
++			fi
++		else
+ 			ret=0
+ 		fi
+ 	fi
 -- 
 2.43.0
 
