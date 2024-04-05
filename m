@@ -1,66 +1,128 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Fri, 5 Apr 2024 14:48:15 +0200
-Subject: [PATCH v4 13/15] KVM: riscv: selftests: Add SBI PMU selftest
-In-Reply-To: <CAOnJCUK2D6-zP4=DiXRMeFQsMc9iG5nWY-yYHMhg83h_q+OtnQ@mail.gmail.com>
-References: <20240229010130.1380926-1-atishp@rivosinc.com>
- <20240229010130.1380926-14-atishp@rivosinc.com>
- <20240302-ed6c516829dc0ed616f39a45@orel>
- <CAOnJCUK2D6-zP4=DiXRMeFQsMc9iG5nWY-yYHMhg83h_q+OtnQ@mail.gmail.com>
-Message-ID: <20240405-3242460b23ce1daf905242df@orel>
+Date: Fri, 5 Apr 2024 14:50:31 +0200
+Subject: [PATCH v5 20/22] KVM: riscv: selftests: Add SBI PMU selftest
+In-Reply-To: <20240403080452.1007601-21-atishp@rivosinc.com>
+References: <20240403080452.1007601-1-atishp@rivosinc.com>
+ <20240403080452.1007601-21-atishp@rivosinc.com>
+Message-ID: <20240405-d1a4cb9a441a05a9d2f8b1c8@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Apr 02, 2024 at 01:34:54AM -0700, Atish Patra wrote:
+On Wed, Apr 03, 2024 at 01:04:49AM -0700, Atish Patra wrote:
 ...
-> > > +static void guest_illegal_exception_handler(struct ex_regs *regs)
-> > > +{
-> > > +     __GUEST_ASSERT(regs->cause == EXC_INST_ILLEGAL,
-> > > +                    "Unexpected exception handler %lx\n", regs->cause);
-> >
-> > Shouldn't we be reporting somehow that we were here? We seem to be using
-> > this handler to skip instructions which don't work, which is fine, if
-> > we have some knowledge we skipped them and then do something else.
-> > Otherwise I don't understand.
-> >
-> 
-> This is only used in test_vm_basic_test to validate that the guest
-> will get an illegal
-> exception if they try to access without configuring first.
+> +static void test_pmu_basic_sanity(void)
+> +{
+> +	long out_val = 0;
+> +	bool probe;
+> +	struct sbiret ret;
+> +	int num_counters = 0, i;
+> +	union sbi_pmu_ctr_info ctrinfo;
+> +
+> +	probe = guest_sbi_probe_extension(SBI_EXT_PMU, &out_val);
+> +	GUEST_ASSERT(probe && out_val == 1);
+> +
+> +	num_counters = get_num_counters();
+> +
+> +	for (i = 0; i < num_counters; i++) {
+> +		ret = sbi_ecall(SBI_EXT_PMU, SBI_EXT_PMU_COUNTER_GET_INFO, i,
+> +				0, 0, 0, 0, 0);
+> +
+> +		/* There can be gaps in logical counter indicies*/
+> +		if (ret.error)
+> +			continue;
+> +		GUEST_ASSERT_NE(ret.value, 0);
+> +
+> +		ctrinfo.value = ret.value;
+> +
+> +		/**
+> +		 * Accesibillity check of hardware and read capability of firmware counters.
 
-Yeah, that's good. I just don't see how we know we were ever here. We
-either got the exception and then stepped over the CSR read or we did
-the CSR read. Either way, the test progresses the same. Shouldn't this
-induce a test skip or something instead?
+Accessibility
 
-> > > +
-> > > +     counter_value_post = read_counter(counter, ctrinfo_arr[counter]);
-> > > +     __GUEST_ASSERT(counter_value_post > counter_value_pre,
-> > > +                    "counter_value_post %lx counter_value_pre %lx\n",
-> > > +                    counter_value_post, counter_value_pre);
-> > > +
-> > > +     /* Now set the initial value and compare */
-> > > +     start_counter(counter, SBI_PMU_START_FLAG_SET_INIT_VALUE, counter_init_value);
-> >
-> > We should try to confirm that we reset the counter, otherwise the check
-> > below only proves that the value we read is greater than 100, which it
-> > is possible even if the reset doesn't work.
-> >
-> 
-> Hmm. There is no way to just update the counter value without starting
-> it. Reading it without stopping is not reliable.
-> Maybe we can do this.
-> 
-> 1. Reset it to 100. Stop it immediately after and read it. Let's say
-> the value is X
-> 2. Now reset it to counter  X + 1000.
-> 3. Do the validation with the above reset value in #2.
-> 
-> Wdyt ?
+> +		 * The spec doesn't mandate any initial value. No need to check any value.
+> +		 */
+> +		read_counter(i, ctrinfo);
+> +	}
+> +
+> +	GUEST_DONE();
+> +}
+> +
+> +static void run_vcpu(struct kvm_vcpu *vcpu)
+> +{
+> +	struct ucall uc;
+> +
+> +	vcpu_run(vcpu);
+> +	switch (get_ucall(vcpu, &uc)) {
+> +	case UCALL_ABORT:
+> +		REPORT_GUEST_ASSERT(uc);
+> +		break;
+> +	case UCALL_DONE:
+> +	case UCALL_SYNC:
+> +		break;
+> +	default:
+> +		TEST_FAIL("Unknown ucall %lu", uc.cmd);
+> +		break;
+> +	}
+> +}
+> +
+> +void test_vm_destroy(struct kvm_vm *vm)
+> +{
+> +	memset(ctrinfo_arr, 0, sizeof(union sbi_pmu_ctr_info) * RISCV_MAX_PMU_COUNTERS);
+> +	counter_mask_available = 0;
+> +	kvm_vm_free(vm);
+> +}
+> +
+> +static void test_vm_basic_test(void *guest_code)
+> +{
+> +	struct kvm_vm *vm;
+> +	struct kvm_vcpu *vcpu;
+> +
+> +	vm = vm_create_with_one_vcpu(&vcpu, guest_code);
+> +	__TEST_REQUIRE(__vcpu_has_sbi_ext(vcpu, KVM_RISCV_SBI_EXT_PMU),
+> +				   "SBI PMU not available, skipping test");
+> +	vm_init_vector_tables(vm);
+> +	/* Illegal instruction handler is required to verify read access without configuration */
+> +	vm_install_exception_handler(vm, EXC_INST_ILLEGAL, guest_illegal_exception_handler);
 
-OK
+I still don't see where the "verify" part is. The handler doesn't record
+that it had to handle anything.
+
+> +
+> +	vcpu_init_vector_tables(vcpu);
+> +	run_vcpu(vcpu);
+> +
+> +	test_vm_destroy(vm);
+> +}
+> +
+> +static void test_vm_events_test(void *guest_code)
+> +{
+> +	struct kvm_vm *vm = NULL;
+> +	struct kvm_vcpu *vcpu = NULL;
+> +
+> +	vm = vm_create_with_one_vcpu(&vcpu, guest_code);
+> +	__TEST_REQUIRE(__vcpu_has_sbi_ext(vcpu, KVM_RISCV_SBI_EXT_PMU),
+> +				   "SBI PMU not available, skipping test");
+> +	run_vcpu(vcpu);
+> +
+> +	test_vm_destroy(vm);
+> +}
+> +
+> +int main(void)
+> +{
+> +	test_vm_basic_test(test_pmu_basic_sanity);
+> +	pr_info("SBI PMU basic test : PASS\n");
+> +
+> +	test_vm_events_test(test_pmu_events);
+> +	pr_info("SBI PMU event verification test : PASS\n");
+> +
+> +	return 0;
+> +}
+> -- 
+> 2.34.1
+>
 
 Thanks,
 drew
