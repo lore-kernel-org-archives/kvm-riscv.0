@@ -1,52 +1,67 @@
 From: Andrew Jones <andrew.jones@linux.dev>
-Date: Fri, 5 Apr 2024 16:17:07 +0200
-Subject: [kvm-unit-tests RFC PATCH 04/17] shellcheck: Fix SC2094
-In-Reply-To: <20240405090052.375599-5-npiggin@gmail.com>
+Date: Fri, 5 Apr 2024 16:17:42 +0200
+Subject: [kvm-unit-tests RFC PATCH 05/17] shellcheck: Fix SC2006
+In-Reply-To: <20240405090052.375599-6-npiggin@gmail.com>
 References: <20240405090052.375599-1-npiggin@gmail.com>
- <20240405090052.375599-5-npiggin@gmail.com>
-Message-ID: <20240405-61cc54f481450c1f1142e465@orel>
+ <20240405090052.375599-6-npiggin@gmail.com>
+Message-ID: <20240405-f5a043bb8fa1230ca636f62e@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Apr 05, 2024 at 07:00:36PM +1000, Nicholas Piggin wrote:
->   SC2094 (info): Make sure not to read and write the same file in the same
->   pipeline.
+On Fri, Apr 05, 2024 at 07:00:37PM +1000, Nicholas Piggin wrote:
+>   SC2006 (style): Use $(...) notation instead of legacy backticks `...`.
 > 
-> This is not as clearly bad as overwriting an input file with >, but
-> could appended characters possibly be read in from the input
-> redirection?
+> No bug identified.
 > 
 > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 > ---
->  scripts/arch-run.bash | 5 ++++-
->  1 file changed, 4 insertions(+), 1 deletion(-)
+>  scripts/arch-run.bash | 6 +++---
+>  scripts/runtime.bash  | 4 ++--
+>  2 files changed, 5 insertions(+), 5 deletions(-)
 > 
 > diff --git a/scripts/arch-run.bash b/scripts/arch-run.bash
-> index 1901a929f..472c31b08 100644
+> index 472c31b08..f9d1fade9 100644
 > --- a/scripts/arch-run.bash
 > +++ b/scripts/arch-run.bash
-> @@ -492,6 +492,8 @@ env_file ()
+> @@ -271,16 +271,16 @@ do_migration ()
+>  	qmp ${src_qmp} '"migrate", "arguments": { "uri": "unix:'${dst_incoming}'" }' > ${src_qmpout}
 >  
->  env_errata ()
->  {
-> +	local new_env
-> +
->  	if [ "$ACCEL" = "tcg" ]; then
->  		export "ERRATA_FORCE=y"
->  	elif [ "$ERRATATXT" ] && [ ! -f "$ERRATATXT" ]; then
-> @@ -500,7 +502,8 @@ env_errata ()
->  	elif [ "$ERRATATXT" ]; then
->  		env_generate_errata
->  	fi
-> -	sort <(env | grep '^ERRATA_') <(grep '^ERRATA_' $KVM_UNIT_TESTS_ENV) | uniq -u >>$KVM_UNIT_TESTS_ENV
-> +	new_env=$(sort <(env | grep '^ERRATA_') <(grep '^ERRATA_' $KVM_UNIT_TESTS_ENV) | uniq -u)
-> +	echo "$new_env" >>$KVM_UNIT_TESTS_ENV
+>  	# Wait for the migration to complete
+> -	migstatus=`qmp ${src_qmp} '"query-migrate"' | grep return`
+> +	migstatus=$(qmp ${src_qmp} '"query-migrate"' | grep return)
+>  	while ! grep -q '"completed"' <<<"$migstatus" ; do
+>  		sleep 0.1
+> -		if ! migstatus=`qmp ${src_qmp} '"query-migrate"'`; then
+> +		if ! migstatus=$(qmp ${src_qmp} '"query-migrate"'); then
+>  			echo "ERROR: Querying migration state failed." >&2
+>  			echo > ${dst_infifo}
+>  			qmp ${dst_qmp} '"quit"'> ${dst_qmpout} 2>/dev/null
+>  			return 2
+>  		fi
+> -		migstatus=`grep return <<<"$migstatus"`
+> +		migstatus=$(grep return <<<"$migstatus")
+>  		if grep -q '"failed"' <<<"$migstatus"; then
+>  			echo "ERROR: Migration failed." >&2
+>  			echo > ${dst_infifo}
+> diff --git a/scripts/runtime.bash b/scripts/runtime.bash
+> index 2d7ff5baa..f79c4e281 100644
+> --- a/scripts/runtime.bash
+> +++ b/scripts/runtime.bash
+> @@ -61,9 +61,9 @@ function print_result()
+>      local reason="$4"
+>  
+>      if [ -z "$reason" ]; then
+> -        echo "`$status` $testname $summary"
+> +        echo "$($status) $testname $summary"
+>      else
+> -        echo "`$status` $testname ($reason)"
+> +        echo "$($status) $testname ($reason)"
+>      fi
 >  }
 >  
->  env_generate_errata ()
 > -- 
 > 2.43.0
 >
