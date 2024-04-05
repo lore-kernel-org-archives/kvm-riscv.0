@@ -1,168 +1,68 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Fri, 5 Apr 2024 14:16:29 +0200
-Subject: [PATCH v5 16/22] KVM: riscv: selftests: Move sbi definitions to
- its own header file
-In-Reply-To: <20240403080452.1007601-17-atishp@rivosinc.com>
+Date: Fri, 5 Apr 2024 14:17:49 +0200
+Subject: [PATCH v5 17/22] KVM: riscv: selftests: Add helper functions for
+ extension checks
+In-Reply-To: <20240403080452.1007601-18-atishp@rivosinc.com>
 References: <20240403080452.1007601-1-atishp@rivosinc.com>
- <20240403080452.1007601-17-atishp@rivosinc.com>
-Message-ID: <20240405-a09f9ed26805b6988179132c@orel>
+ <20240403080452.1007601-18-atishp@rivosinc.com>
+Message-ID: <20240405-dae6363b92b742554e85cf4c@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Apr 03, 2024 at 01:04:45AM -0700, Atish Patra wrote:
-> The SBI definitions will continue to grow. Move the sbi related
-> definitions to its own header file from processor.h
+On Wed, Apr 03, 2024 at 01:04:46AM -0700, Atish Patra wrote:
+> __vcpu_has_ext can check both SBI and ISA extensions when the first
+> argument is properly converted to SBI/ISA extension IDs. Introduce
+> two helper functions to make life easier for developers so they
+> don't have to worry about the conversions.
 > 
-> Suggested-by: Andrew Jones <ajones@ventanamicro.com>
+> Replace the current usages as well with new helpers.
+> 
 > Signed-off-by: Atish Patra <atishp@rivosinc.com>
 > ---
->  .../selftests/kvm/include/riscv/processor.h   | 39 ---------------
->  .../testing/selftests/kvm/include/riscv/sbi.h | 50 +++++++++++++++++++
->  .../selftests/kvm/include/riscv/ucall.h       |  1 +
->  tools/testing/selftests/kvm/steal_time.c      |  4 +-
->  4 files changed, 54 insertions(+), 40 deletions(-)
->  create mode 100644 tools/testing/selftests/kvm/include/riscv/sbi.h
+>  tools/testing/selftests/kvm/include/riscv/processor.h | 10 ++++++++++
+>  tools/testing/selftests/kvm/riscv/arch_timer.c        |  2 +-
+>  2 files changed, 11 insertions(+), 1 deletion(-)
 > 
 > diff --git a/tools/testing/selftests/kvm/include/riscv/processor.h b/tools/testing/selftests/kvm/include/riscv/processor.h
-> index ce473fe251dd..3b9cb39327ff 100644
+> index 3b9cb39327ff..5f389166338c 100644
 > --- a/tools/testing/selftests/kvm/include/riscv/processor.h
 > +++ b/tools/testing/selftests/kvm/include/riscv/processor.h
-> @@ -154,45 +154,6 @@ void vm_install_interrupt_handler(struct kvm_vm *vm, exception_handler_fn handle
->  #define PGTBL_PAGE_SIZE				PGTBL_L0_BLOCK_SIZE
->  #define PGTBL_PAGE_SIZE_SHIFT			PGTBL_L0_BLOCK_SHIFT
+> @@ -50,6 +50,16 @@ static inline uint64_t __kvm_reg_id(uint64_t type, uint64_t subtype,
 >  
-> -/* SBI return error codes */
-> -#define SBI_SUCCESS				0
-> -#define SBI_ERR_FAILURE				-1
-> -#define SBI_ERR_NOT_SUPPORTED			-2
-> -#define SBI_ERR_INVALID_PARAM			-3
-> -#define SBI_ERR_DENIED				-4
-> -#define SBI_ERR_INVALID_ADDRESS			-5
-> -#define SBI_ERR_ALREADY_AVAILABLE		-6
-> -#define SBI_ERR_ALREADY_STARTED			-7
-> -#define SBI_ERR_ALREADY_STOPPED			-8
-> -
-> -#define SBI_EXT_EXPERIMENTAL_START		0x08000000
-> -#define SBI_EXT_EXPERIMENTAL_END		0x08FFFFFF
-> -
-> -#define KVM_RISCV_SELFTESTS_SBI_EXT		SBI_EXT_EXPERIMENTAL_END
-> -#define KVM_RISCV_SELFTESTS_SBI_UCALL		0
-> -#define KVM_RISCV_SELFTESTS_SBI_UNEXP		1
-> -
-> -enum sbi_ext_id {
-> -	SBI_EXT_BASE = 0x10,
-> -	SBI_EXT_STA = 0x535441,
-> -};
-> -
-> -enum sbi_ext_base_fid {
-> -	SBI_EXT_BASE_PROBE_EXT = 3,
-> -};
-> -
-> -struct sbiret {
-> -	long error;
-> -	long value;
-> -};
-> -
-> -struct sbiret sbi_ecall(int ext, int fid, unsigned long arg0,
-> -			unsigned long arg1, unsigned long arg2,
-> -			unsigned long arg3, unsigned long arg4,
-> -			unsigned long arg5);
-> -
-> -bool guest_sbi_probe_extension(int extid, long *out_val);
-> -
->  static inline void local_irq_enable(void)
->  {
->  	csr_set(CSR_SSTATUS, SR_SIE);
-> diff --git a/tools/testing/selftests/kvm/include/riscv/sbi.h b/tools/testing/selftests/kvm/include/riscv/sbi.h
-> new file mode 100644
-> index 000000000000..ba04f2dec7b5
-> --- /dev/null
-> +++ b/tools/testing/selftests/kvm/include/riscv/sbi.h
-> @@ -0,0 +1,50 @@
-> +/* SPDX-License-Identifier: GPL-2.0 */
-> +/*
-> + * RISC-V SBI specific definitions
-> + *
-> + * Copyright (C) 2024 Rivos Inc.
-> + */
-> +
-> +#ifndef SELFTEST_KVM_SBI_H
-> +#define SELFTEST_KVM_SBI_H
-> +
-> +/* SBI return error codes */
-> +#define SBI_SUCCESS				 0
-> +#define SBI_ERR_FAILURE				-1
-> +#define SBI_ERR_NOT_SUPPORTED			-2
-> +#define SBI_ERR_INVALID_PARAM			-3
-> +#define SBI_ERR_DENIED				-4
-> +#define SBI_ERR_INVALID_ADDRESS			-5
-> +#define SBI_ERR_ALREADY_AVAILABLE		-6
-> +#define SBI_ERR_ALREADY_STARTED			-7
-> +#define SBI_ERR_ALREADY_STOPPED			-8
-> +
-> +#define SBI_EXT_EXPERIMENTAL_START		0x08000000
-> +#define SBI_EXT_EXPERIMENTAL_END		0x08FFFFFF
-> +
-> +#define KVM_RISCV_SELFTESTS_SBI_EXT		SBI_EXT_EXPERIMENTAL_END
-> +#define KVM_RISCV_SELFTESTS_SBI_UCALL		0
-> +#define KVM_RISCV_SELFTESTS_SBI_UNEXP		1
-> +
-> +enum sbi_ext_id {
-> +	SBI_EXT_BASE = 0x10,
-> +	SBI_EXT_STA = 0x535441,
-> +};
-> +
-> +enum sbi_ext_base_fid {
-> +	SBI_EXT_BASE_PROBE_EXT = 3,
-> +};
-> +
-> +struct sbiret {
-> +	long error;
-> +	long value;
-> +};
-> +
-> +struct sbiret sbi_ecall(int ext, int fid, unsigned long arg0,
-> +			unsigned long arg1, unsigned long arg2,
-> +			unsigned long arg3, unsigned long arg4,
-> +			unsigned long arg5);
-> +
-> +bool guest_sbi_probe_extension(int extid, long *out_val);
-> +
-> +#endif /* SELFTEST_KVM_SBI_H */
-> diff --git a/tools/testing/selftests/kvm/include/riscv/ucall.h b/tools/testing/selftests/kvm/include/riscv/ucall.h
-> index be46eb32ec27..a695ae36f3e0 100644
-> --- a/tools/testing/selftests/kvm/include/riscv/ucall.h
-> +++ b/tools/testing/selftests/kvm/include/riscv/ucall.h
-> @@ -3,6 +3,7 @@
->  #define SELFTEST_KVM_UCALL_H
+>  bool __vcpu_has_ext(struct kvm_vcpu *vcpu, uint64_t ext);
 >  
->  #include "processor.h"
-> +#include "sbi.h"
+> +static inline bool __vcpu_has_isa_ext(struct kvm_vcpu *vcpu, uint64_t isa_ext)
+> +{
+> +	return __vcpu_has_ext(vcpu, RISCV_ISA_EXT_REG(isa_ext));
+> +}
+> +
+> +static inline bool __vcpu_has_sbi_ext(struct kvm_vcpu *vcpu, uint64_t sbi_ext)
+> +{
+> +	return __vcpu_has_ext(vcpu, RISCV_SBI_EXT_REG(sbi_ext));
+> +}
+> +
+>  struct ex_regs {
+>  	unsigned long ra;
+>  	unsigned long sp;
+> diff --git a/tools/testing/selftests/kvm/riscv/arch_timer.c b/tools/testing/selftests/kvm/riscv/arch_timer.c
+> index e22848f747c0..6a3e97ead824 100644
+> --- a/tools/testing/selftests/kvm/riscv/arch_timer.c
+> +++ b/tools/testing/selftests/kvm/riscv/arch_timer.c
+> @@ -85,7 +85,7 @@ struct kvm_vm *test_vm_create(void)
+>  	int nr_vcpus = test_args.nr_vcpus;
 >  
->  #define UCALL_EXIT_REASON       KVM_EXIT_RISCV_SBI
+>  	vm = vm_create_with_vcpus(nr_vcpus, guest_code, vcpus);
+> -	__TEST_REQUIRE(__vcpu_has_ext(vcpus[0], RISCV_ISA_EXT_REG(KVM_RISCV_ISA_EXT_SSTC)),
+> +	__TEST_REQUIRE(__vcpu_has_isa_ext(vcpus[0], KVM_RISCV_ISA_EXT_SSTC),
+>  				   "SSTC not available, skipping test\n");
 >  
-> diff --git a/tools/testing/selftests/kvm/steal_time.c b/tools/testing/selftests/kvm/steal_time.c
-> index bae0c5026f82..2ff82c7fd926 100644
-> --- a/tools/testing/selftests/kvm/steal_time.c
-> +++ b/tools/testing/selftests/kvm/steal_time.c
-> @@ -11,7 +11,9 @@
->  #include <pthread.h>
->  #include <linux/kernel.h>
->  #include <asm/kvm.h>
-> -#ifndef __riscv
-> +#ifdef __riscv
-> +#include "sbi.h"
-> +#else
->  #include <asm/kvm_para.h>
->  #endif
->  
+>  	vm_init_vector_tables(vm);
 > -- 
 > 2.34.1
 >
-
 
 Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
 
