@@ -1,64 +1,124 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Thu, 4 Apr 2024 15:19:41 +0200
-Subject: [PATCH v4 08/15] RISC-V: KVM: Implement SBI PMU Snapshot feature
-In-Reply-To: <a75fa96e-2f26-49a7-a7f7-4a397c4a4513@rivosinc.com>
-References: <20240229010130.1380926-1-atishp@rivosinc.com>
- <20240229010130.1380926-9-atishp@rivosinc.com>
- <20240302-6ae8fe37b90f127bc9be737f@orel>
- <CAOnJCUKjZWnS_SaR78Fy5AUOxrd+4gBx=_YrA=FQCa20iwifNQ@mail.gmail.com>
- <a75fa96e-2f26-49a7-a7f7-4a397c4a4513@rivosinc.com>
-Message-ID: <20240404-0eb0261d56c48ac9472dfe5a@orel>
+From: Nicholas Piggin <npiggin@gmail.com>
+Date: Fri,  5 Apr 2024 18:35:34 +1000
+Subject: [kvm-unit-tests PATCH v8 33/35] configure: Make arch_libdir a first-class entity
+In-Reply-To: <20240405083539.374995-1-npiggin@gmail.com>
+References: <20240405083539.374995-1-npiggin@gmail.com>
+Message-ID: <20240405083539.374995-34-npiggin@gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Apr 03, 2024 at 12:36:41AM -0700, Atish Patra wrote:
-> On 4/1/24 15:36, Atish Patra wrote:
-> > On Sat, Mar 2, 2024 at 1:49?AM Andrew Jones <ajones@ventanamicro.com> wrote:
-> > > 
-> > > On Wed, Feb 28, 2024 at 05:01:23PM -0800, Atish Patra wrote:
-...
-> > > > +
-> > > >                if (flags & SBI_PMU_STOP_FLAG_RESET) {
-> > > >                        pmc->event_idx = SBI_PMU_EVENT_IDX_INVALID;
-> > > >                        clear_bit(pmc_index, kvpmu->pmc_in_use);
-> > > > +                     if (snap_flag_set) {
-> > > > +                             /* Clear the snapshot area for the upcoming deletion event */
-> > > > +                             kvpmu->sdata->ctr_values[i] = 0;
-> > > > +                             kvm_vcpu_write_guest(vcpu, kvpmu->snapshot_addr, kvpmu->sdata,
-> > > > +                                                  sizeof(struct riscv_pmu_snapshot_data));
-> > > 
-> > > The spec isn't clear on this (so we should clarify it), but I'd expect
-> > > that a caller who set both the reset and the snapshot flag would want
-> > > the snapshot from before the reset when this call completes and then
-> > > assume that when they start counting again, and look at the snapshot
-> > > again, that those new counts would be from the reset values. Or maybe
-> > > not :-) Maybe they want to do a reset and take a snapshot in order to
-> > > look at the snapshot and confirm the reset happened? Either way, it
-> > > seems we should only do one of the two here. Either update the snapshot
-> > > before resetting, and not again after reset, or reset and then update
-> > > the snapshot (with no need to update before).
-> > > 
-> > 
-> > The reset call should happen when the event is deleted by the perf
-> > framework in supervisor.
-> > If we don't clear the values, the shared memory may have stale data of
-> > last read counters
-> > which is not ideal. That's why, I am clearing it upon resetting.
-> 
-> Thinking about it more, I think having stale values in the shared memory
-> would be similar expected behavior to hardware counters after reset. We
-> don't need to clear the shared memory during the reset.
-> 
-> If both SBI_PMU_STOP_FLAG_TAKE_SNAPSHOT and SBI_PMU_STOP_FLAG_RESET are set,
-> may be we should just write it to the shared memory again without assuming
-> the intention of the caller ?
->
+arch_libdir was brought in to improve the heuristic determination of
+the lib/ directory based on arch and testdir names, but it did not
+entirely clean that mess up.
 
-Either way, we just need to ensure it's clear in the spec.
+Remove the arch_libdir->arch->testdir heuristic and just require
+everybody sets arch_libdir correctly. Fail if the lib/arch or
+lib/arch/asm directories can not be found.
 
-Thanks,
-drew
+Cc: Alexandru Elisei <alexandru.elisei@arm.com>
+Cc: Claudio Imbrenda <imbrenda@linux.ibm.com>
+Cc: David Hildenbrand <david@redhat.com>
+Cc: Eric Auger <eric.auger@redhat.com>
+Cc: Janosch Frank <frankja@linux.ibm.com>
+Cc: Laurent Vivier <lvivier@redhat.com>
+Cc: Nico B?hr <nrb@linux.ibm.com>
+Cc: Paolo Bonzini <pbonzini@redhat.com>
+Cc: Thomas Huth <thuth@redhat.com>
+Cc: kvm at vger.kernel.org
+Cc: linux-s390 at vger.kernel.org
+Cc: kvmarm at lists.linux.dev
+Cc: kvm-riscv at lists.infradead.org
+Cc: linuxppc-dev at lists.ozlabs.org
+Reviewed-by: Andrew Jones <andrew.jones@linux.dev>
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ Makefile  |  2 +-
+ configure | 18 +++++++++++++-----
+ 2 files changed, 14 insertions(+), 6 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index 4f35fffc6..4e0f54543 100644
+--- a/Makefile
++++ b/Makefile
+@@ -10,7 +10,7 @@ include config.mak
+ VPATH = $(SRCDIR)
+ 
+ libdirs-get = $(shell [ -d "lib/$(1)" ] && echo "lib/$(1) lib/$(1)/asm")
+-ARCH_LIBDIRS := $(call libdirs-get,$(ARCH_LIBDIR)) $(call libdirs-get,$(TEST_DIR))
++ARCH_LIBDIRS := $(call libdirs-get,$(ARCH_LIBDIR))
+ OBJDIRS := $(ARCH_LIBDIRS)
+ 
+ DESTDIR := $(PREFIX)/share/kvm-unit-tests/
+diff --git a/configure b/configure
+index e19ba6f0c..a1308db8e 100755
+--- a/configure
++++ b/configure
+@@ -216,7 +216,6 @@ fi
+ arch_name=$arch
+ [ "$arch" = "aarch64" ] && arch="arm64"
+ [ "$arch_name" = "arm64" ] && arch_name="aarch64"
+-arch_libdir=$arch
+ 
+ if [ "$arch" = "riscv" ]; then
+     echo "riscv32 or riscv64 must be specified"
+@@ -286,8 +285,10 @@ fi
+ 
+ if [ "$arch" = "i386" ] || [ "$arch" = "x86_64" ]; then
+     testdir=x86
++    arch_libdir=x86
+ elif [ "$arch" = "arm" ] || [ "$arch" = "arm64" ]; then
+     testdir=arm
++    arch_libdir=$arch
+     if [ "$target" = "qemu" ]; then
+         arm_uart_early_addr=0x09000000
+     elif [ "$target" = "kvmtool" ]; then
+@@ -336,6 +337,7 @@ elif [ "$arch" = "arm" ] || [ "$arch" = "arm64" ]; then
+     fi
+ elif [ "$arch" = "ppc64" ]; then
+     testdir=powerpc
++    arch_libdir=ppc64
+     firmware="$testdir/boot_rom.bin"
+     if [ "$endian" != "little" ] && [ "$endian" != "big" ]; then
+         echo "You must provide endianness (big or little)!"
+@@ -346,6 +348,7 @@ elif [ "$arch" = "riscv32" ] || [ "$arch" = "riscv64" ]; then
+     arch_libdir=riscv
+ elif [ "$arch" = "s390x" ]; then
+     testdir=s390x
++    arch_libdir=s390x
+ else
+     echo "arch $arch is not supported!"
+     arch=
+@@ -355,6 +358,10 @@ if [ ! -d "$srcdir/$testdir" ]; then
+     echo "$srcdir/$testdir does not exist!"
+     exit 1
+ fi
++if [ ! -d "$srcdir/lib/$arch_libdir" ]; then
++    echo "$srcdir/lib/$arch_libdir does not exist!"
++    exit 1
++fi
+ 
+ if [ "$efi" = "y" ] && [ -f "$srcdir/$testdir/efi/run" ]; then
+     ln -fs "$srcdir/$testdir/efi/run" $testdir-run
+@@ -417,10 +424,11 @@ fi
+ # link lib/asm for the architecture
+ rm -f lib/asm
+ asm="asm-generic"
+-if [ -d "$srcdir/lib/$arch/asm" ]; then
+-	asm="$srcdir/lib/$arch/asm"
+-elif [ -d "$srcdir/lib/$testdir/asm" ]; then
+-	asm="$srcdir/lib/$testdir/asm"
++if [ -d "$srcdir/lib/$arch_libdir/asm" ]; then
++    asm="$srcdir/lib/$arch_libdir/asm"
++else
++    echo "$srcdir/lib/$arch_libdir/asm does not exist"
++    exit 1
+ fi
+ mkdir -p lib
+ ln -sf "$asm" lib/asm
+-- 
+2.43.0
+
 
