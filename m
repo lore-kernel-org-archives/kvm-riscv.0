@@ -1,123 +1,86 @@
 From: Nicholas Piggin <npiggin@gmail.com>
-Date: Fri,  5 Apr 2024 18:35:34 +1000
-Subject: [kvm-unit-tests PATCH v8 33/35] configure: Make arch_libdir a first-class entity
-In-Reply-To: <20240405083539.374995-1-npiggin@gmail.com>
-References: <20240405083539.374995-1-npiggin@gmail.com>
-Message-ID: <20240405083539.374995-34-npiggin@gmail.com>
+Date: Fri,  5 Apr 2024 19:00:32 +1000
+Subject: [kvm-unit-tests RFC PATCH 00/17] add shellcheck support
+Message-ID: <20240405090052.375599-1-npiggin@gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-arch_libdir was brought in to improve the heuristic determination of
-the lib/ directory based on arch and testdir names, but it did not
-entirely clean that mess up.
+I foolishly promised Andrew I would look into shellcheck, so here
+it is.
 
-Remove the arch_libdir->arch->testdir heuristic and just require
-everybody sets arch_libdir correctly. Fail if the lib/arch or
-lib/arch/asm directories can not be found.
+https://gitlab.com/npiggin/kvm-unit-tests/-/tree/powerpc?ref_type=heads
 
-Cc: Alexandru Elisei <alexandru.elisei@arm.com>
-Cc: Claudio Imbrenda <imbrenda@linux.ibm.com>
-Cc: David Hildenbrand <david@redhat.com>
-Cc: Eric Auger <eric.auger@redhat.com>
-Cc: Janosch Frank <frankja@linux.ibm.com>
-Cc: Laurent Vivier <lvivier@redhat.com>
-Cc: Nico B?hr <nrb@linux.ibm.com>
-Cc: Paolo Bonzini <pbonzini@redhat.com>
-Cc: Thomas Huth <thuth@redhat.com>
-Cc: kvm at vger.kernel.org
-Cc: linux-s390 at vger.kernel.org
-Cc: kvmarm at lists.linux.dev
-Cc: kvm-riscv at lists.infradead.org
-Cc: linuxppc-dev at lists.ozlabs.org
-Reviewed-by: Andrew Jones <andrew.jones@linux.dev>
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- Makefile  |  2 +-
- configure | 18 +++++++++++++-----
- 2 files changed, 14 insertions(+), 6 deletions(-)
+This is on top of the "v8 migration, powerpc improvements" series. For
+now the patches are a bit raw but it does get down to zero[*] shellcheck
+warnings while still passing gitlab CI.
 
-diff --git a/Makefile b/Makefile
-index 4f35fffc6..4e0f54543 100644
---- a/Makefile
-+++ b/Makefile
-@@ -10,7 +10,7 @@ include config.mak
- VPATH = $(SRCDIR)
- 
- libdirs-get = $(shell [ -d "lib/$(1)" ] && echo "lib/$(1) lib/$(1)/asm")
--ARCH_LIBDIRS := $(call libdirs-get,$(ARCH_LIBDIR)) $(call libdirs-get,$(TEST_DIR))
-+ARCH_LIBDIRS := $(call libdirs-get,$(ARCH_LIBDIR))
- OBJDIRS := $(ARCH_LIBDIRS)
- 
- DESTDIR := $(PREFIX)/share/kvm-unit-tests/
-diff --git a/configure b/configure
-index e19ba6f0c..a1308db8e 100755
---- a/configure
-+++ b/configure
-@@ -216,7 +216,6 @@ fi
- arch_name=$arch
- [ "$arch" = "aarch64" ] && arch="arm64"
- [ "$arch_name" = "arm64" ] && arch_name="aarch64"
--arch_libdir=$arch
- 
- if [ "$arch" = "riscv" ]; then
-     echo "riscv32 or riscv64 must be specified"
-@@ -286,8 +285,10 @@ fi
- 
- if [ "$arch" = "i386" ] || [ "$arch" = "x86_64" ]; then
-     testdir=x86
-+    arch_libdir=x86
- elif [ "$arch" = "arm" ] || [ "$arch" = "arm64" ]; then
-     testdir=arm
-+    arch_libdir=$arch
-     if [ "$target" = "qemu" ]; then
-         arm_uart_early_addr=0x09000000
-     elif [ "$target" = "kvmtool" ]; then
-@@ -336,6 +337,7 @@ elif [ "$arch" = "arm" ] || [ "$arch" = "arm64" ]; then
-     fi
- elif [ "$arch" = "ppc64" ]; then
-     testdir=powerpc
-+    arch_libdir=ppc64
-     firmware="$testdir/boot_rom.bin"
-     if [ "$endian" != "little" ] && [ "$endian" != "big" ]; then
-         echo "You must provide endianness (big or little)!"
-@@ -346,6 +348,7 @@ elif [ "$arch" = "riscv32" ] || [ "$arch" = "riscv64" ]; then
-     arch_libdir=riscv
- elif [ "$arch" = "s390x" ]; then
-     testdir=s390x
-+    arch_libdir=s390x
- else
-     echo "arch $arch is not supported!"
-     arch=
-@@ -355,6 +358,10 @@ if [ ! -d "$srcdir/$testdir" ]; then
-     echo "$srcdir/$testdir does not exist!"
-     exit 1
- fi
-+if [ ! -d "$srcdir/lib/$arch_libdir" ]; then
-+    echo "$srcdir/lib/$arch_libdir does not exist!"
-+    exit 1
-+fi
- 
- if [ "$efi" = "y" ] && [ -f "$srcdir/$testdir/efi/run" ]; then
-     ln -fs "$srcdir/$testdir/efi/run" $testdir-run
-@@ -417,10 +424,11 @@ fi
- # link lib/asm for the architecture
- rm -f lib/asm
- asm="asm-generic"
--if [ -d "$srcdir/lib/$arch/asm" ]; then
--	asm="$srcdir/lib/$arch/asm"
--elif [ -d "$srcdir/lib/$testdir/asm" ]; then
--	asm="$srcdir/lib/$testdir/asm"
-+if [ -d "$srcdir/lib/$arch_libdir/asm" ]; then
-+    asm="$srcdir/lib/$arch_libdir/asm"
-+else
-+    echo "$srcdir/lib/$arch_libdir/asm does not exist"
-+    exit 1
- fi
- mkdir -p lib
- ln -sf "$asm" lib/asm
+[*] Modulo the relatively few cases where they're disabled or
+suppressed.
+
+I'd like comments about what should be enabled and disabled? There are
+quite a lot of options. Lots of changes don't fix real bugs AFAIKS, so
+there's some taste involved.
+
+Could possibly be a couple of bugs, including in s390x specific. Any
+review of those to confirm or deny bug is appreciated. I haven't tried
+to create reproducers for them.
+
+I added a quick comment on each one whether it looks like a bug or
+harmless but I'm not a bash guru so could easily be wrong. I would
+possibly pull any real bug fixes to the front of the series and describe
+them as proper fix patches, and leave the other style / non-bugfixes in
+the brief format.  shellcheck has a very good wiki explaining each issue
+so there is not much point in rehashing that in the changelog.
+
+One big thing kept disabled for now is the double-quoting to prevent
+globbing and splitting warning that is disabled. That touches a lot of
+code and we're very inconsistent about quoting variables today, but it's
+not completely trivial because there are quite a lot of places that does
+rely on splitting for invoking commands with arguments. That would need
+some rework to avoid sprinkling a lot of warning suppressions around.
+Possibly consistently using arrays for argument lists would be the best
+solution?
+
+Thanks,
+Nick
+
+Nicholas Piggin (17):
+  Add initial shellcheck checking
+  shellcheck: Fix SC2223
+  shellcheck: Fix SC2295
+  shellcheck: Fix SC2094
+  shellcheck: Fix SC2006
+  shellcheck: Fix SC2155
+  shellcheck: Fix SC2235
+  shellcheck: Fix SC2119, SC2120
+  shellcheck: Fix SC2143
+  shellcheck: Fix SC2013
+  shellcheck: Fix SC2145
+  shellcheck: Fix SC2124
+  shellcheck: Fix SC2294
+  shellcheck: Fix SC2178
+  shellcheck: Fix SC2048
+  shellcheck: Fix SC2153
+  shellcheck: Suppress various messages
+
+ .shellcheckrc           | 32 +++++++++++++++++++++++++
+ Makefile                |  4 ++++
+ README.md               |  2 ++
+ arm/efi/run             |  4 ++--
+ riscv/efi/run           |  4 ++--
+ run_tests.sh            | 11 +++++----
+ s390x/run               |  8 +++----
+ scripts/arch-run.bash   | 52 ++++++++++++++++++++++++++++-------------
+ scripts/common.bash     |  5 +++-
+ scripts/mkstandalone.sh |  4 +++-
+ scripts/runtime.bash    | 14 +++++++----
+ scripts/s390x/func.bash |  2 +-
+ 12 files changed, 106 insertions(+), 36 deletions(-)
+ create mode 100644 .shellcheckrc
+
 -- 
 2.43.0
 
