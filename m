@@ -1,56 +1,44 @@
 From: Andrew Jones <andrew.jones@linux.dev>
-Date: Fri, 5 Apr 2024 16:14:36 +0200
-Subject: [kvm-unit-tests RFC PATCH 02/17] shellcheck: Fix SC2223
-In-Reply-To: <20240405090052.375599-3-npiggin@gmail.com>
+Date: Fri, 5 Apr 2024 16:15:19 +0200
+Subject: [kvm-unit-tests RFC PATCH 03/17] shellcheck: Fix SC2295
+In-Reply-To: <20240405090052.375599-4-npiggin@gmail.com>
 References: <20240405090052.375599-1-npiggin@gmail.com>
- <20240405090052.375599-3-npiggin@gmail.com>
-Message-ID: <20240405-04a2850c5340d5e29c822124@orel>
+ <20240405090052.375599-4-npiggin@gmail.com>
+Message-ID: <20240405-3c86b0d830a56cd1f5aa89de@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Apr 05, 2024 at 07:00:34PM +1000, Nicholas Piggin wrote:
->   SC2223 (info): This default assignment may cause DoS due to globbing.
->   Quote it.
+On Fri, Apr 05, 2024 at 07:00:35PM +1000, Nicholas Piggin wrote:
+>   SC2295 (info): Expansions inside ${..} need to be quoted separately,
+>   otherwise they match as patterns.
+> 
+> Doesn't appear to be a bug since the match string does not include
+> patterns.
 > 
 > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 > ---
->  run_tests.sh         | 4 ++--
->  scripts/runtime.bash | 4 ++--
->  2 files changed, 4 insertions(+), 4 deletions(-)
+>  run_tests.sh | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
 > diff --git a/run_tests.sh b/run_tests.sh
-> index bb3024ff9..9067e529e 100755
+> index 9067e529e..116188e92 100755
 > --- a/run_tests.sh
 > +++ b/run_tests.sh
-> @@ -158,8 +158,8 @@ function run_task()
->  	fi
->  }
->  
-> -: ${unittest_log_dir:=logs}
-> -: ${unittest_run_queues:=1}
-> +: "${unittest_log_dir:=logs}"
-> +: "${unittest_run_queues:=1}"
->  config=$TEST_DIR/unittests.cfg
->  
->  print_testname()
-> diff --git a/scripts/runtime.bash b/scripts/runtime.bash
-> index e4ad1962f..2d7ff5baa 100644
-> --- a/scripts/runtime.bash
-> +++ b/scripts/runtime.bash
-> @@ -1,6 +1,6 @@
->  : "${RUNTIME_arch_run?}"
-> -: ${MAX_SMP:=$(getconf _NPROCESSORS_ONLN)}
-> -: ${TIMEOUT:=90s}
-> +: "${MAX_SMP:=$(getconf _NPROCESSORS_ONLN)}"
-> +: "${TIMEOUT:=90s}"
->  
->  PASS() { echo -ne "\e[32mPASS\e[0m"; }
->  SKIP() { echo -ne "\e[33mSKIP\e[0m"; }
+> @@ -99,7 +99,7 @@ else
+>          local testname="$1"
+>          CR=$'\r'
+>          while read -r line; do
+> -            line="${line%$CR}"
+> +            line="${line%"$CR"}"
+>              case "${line:0:4}" in
+>                  PASS)
+>                      echo "ok TEST_NUMBER - ${testname}: ${line#??????}" >&3
 > -- 
 > 2.43.0
+>
 
 Reviewed-by: Andrew Jones <andrew.jones@linux.dev>
 
