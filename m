@@ -1,44 +1,150 @@
-From: Deepak Gupta <debug@rivosinc.com>
-Date: Fri, 5 Apr 2024 10:33:48 -0700
-Subject: [PATCH 0/5] Add parsing for Zimop ISA extension
-In-Reply-To: <20240405-091c6c174f023d74b434059d@orel>
-References: <20240404103254.1752834-1-cleger@rivosinc.com> <20240405-091c6c174f023d74b434059d@orel>
-Message-ID: <CAKC1njQ3qQ8mTMoYkhhoGQfRSVtp2Tfd2LjDhAmut7UcW9-bGw@mail.gmail.com>
+From: Nicholas Piggin <npiggin@gmail.com>
+Date: Sat, 06 Apr 2024 16:31:17 +1000
+Subject: [kvm-unit-tests RFC PATCH 17/17] shellcheck: Suppress various
+ messages
+In-Reply-To: <20240405-7c0ad5d3ce76e1ad9ad2f5a9@orel>
+References: <20240405090052.375599-1-npiggin@gmail.com>
+ <20240405090052.375599-18-npiggin@gmail.com>
+ <20240405-7c0ad5d3ce76e1ad9ad2f5a9@orel>
+Message-ID: <D0CTUKHP4IZV.2OQZNUD6J9U1P@gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Apr 5, 2024 at 8:26?AM Andrew Jones <ajones@ventanamicro.com> wrote:
+On Sat Apr 6, 2024 at 12:55 AM AEST, Andrew Jones wrote:
+> On Fri, Apr 05, 2024 at 07:00:49PM +1000, Nicholas Piggin wrote:
+> > Various info and warnings are suppressed here, where circumstances
+> > (commented) warrant.
+> > 
+> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> > ---
+> >  run_tests.sh            | 3 +++
+> >  scripts/arch-run.bash   | 9 +++++++++
+> >  scripts/mkstandalone.sh | 2 ++
+> >  scripts/runtime.bash    | 2 ++
+> >  4 files changed, 16 insertions(+)
+> > 
+> > diff --git a/run_tests.sh b/run_tests.sh
+> > index 938bb8edf..152323ffc 100755
+> > --- a/run_tests.sh
+> > +++ b/run_tests.sh
+> > @@ -45,6 +45,9 @@ fi
+> >  only_tests=""
+> >  list_tests=""
+> >  args=$(getopt -u -o ag:htj:vl -l all,group:,help,tap13,parallel:,verbose,list,probe-maxsmp -- "$@")
+> > +# Shellcheck likes to test commands directly rather than with $? but sometimes they
+> > +# are too long to put in the same test.
+> > +# shellcheck disable=SC2181
+> >  [ $? -ne 0 ] && exit 2;
+> >  set -- $args;
+> >  while [ $# -gt 0 ]; do
+> > diff --git a/scripts/arch-run.bash b/scripts/arch-run.bash
+> > index ed440b4aa..fe8785cfd 100644
+> > --- a/scripts/arch-run.bash
+> > +++ b/scripts/arch-run.bash
+> > @@ -44,6 +44,8 @@ run_qemu ()
+> >  	if [ "$errors" ]; then
+> >  		sig=$(grep 'terminating on signal' <<<"$errors")
+> >  		if [ "$sig" ]; then
+> > +			# This is too complex for ${var/search/replace}
+> > +			# shellcheck disable=SC2001
+> >  			sig=$(sed 's/.*terminating on signal \([0-9][0-9]*\).*/\1/' <<<"$sig")
+> >  		fi
+> >  	fi
+> > @@ -174,9 +176,12 @@ run_migration ()
+> >  
+> >  	# Holding both ends of the input fifo open prevents opens from
+> >  	# blocking and readers getting EOF when a writer closes it.
+> > +	# These fds appear to be unused to shellcheck so quieten the warning.
+> >  	mkfifo ${src_infifo}
+> >  	mkfifo ${dst_infifo}
+> > +	# shellcheck disable=SC2034
+> >  	exec {src_infifo_fd}<>${src_infifo}
+> > +	# shellcheck disable=SC2034
+> >  	exec {dst_infifo_fd}<>${dst_infifo}
+> >  
+> >  	"${migcmdline[@]}" \
+> > @@ -184,6 +189,8 @@ run_migration ()
+> >  		-mon chardev=mon,mode=control \
+> >  		< ${src_infifo} > ${src_outfifo} &
+> >  	live_pid=$!
+> > +	# SC complains about useless cat but I prefer it over redirect here.
 >
-> On Thu, Apr 04, 2024 at 12:32:46PM +0200, Cl?ment L?ger wrote:
-> > The Zimop ISA extension was ratified recently. This series adds support
-> > for parsing it from riscv,isa, hwprobe export and kvm support for
-> > Guest/VM.
+> Let's spell out 'shellcheck' when referring to it rather than call it
+> 'SC'. And instead of "but I prefer..." let's write
 >
-> I'm not sure we need this. Zimop by itself isn't useful, so I don't know
-> if we need to advertise it at all. When an extension comes along that
-> redefines some MOPs, then we'll advertise that extension, but the fact
-> Zimop is used for that extension is really just an implementation detail.
+>  # shellcheck complains about a useless cat, but using a redirect here is
+>  # harder to read
 
-Only situation I see this can be useful is this:--
+Sounds good, will do.
 
-An implementer, implemented Zimops in CPU solely for the purpose that they can
-run mainline distro & packages on their hardware and don't want to leverage any
-feature which are built on top of Zimop.
+>
+> or something like that. Don't tell my cat-loving daughter that I just
+> wrote "a useless cat"!
 
-As an example zicfilp and zicfiss are dependent on zimops. glibc can
-do following
+:D
 
-1) check elf header if binary was compiled with zicfiss and zicfilp,
-if yes goto step 2, else goto step 6.
-2) check if zicfiss/zicfilp is available in hw via hwprobe, if yes
-goto step 5. else goto step 3
-3) check if zimop is available via hwprobe, if yes goto step 6, else goto step 4
-4) This binary won't be able to run successfully on this platform,
-issue exit syscall. <-- termination
-5) issue prctl to enable shadow stack and landing pad for current task
-<-- enable feature
-6) let the binary run <-- let the binary run because no harm can be done
+>
+>
+> > +	# shellcheck disable=SC2002
+> >  	cat ${src_outfifo} | tee ${src_out} | filter_quiet_msgs &
+> >  
+> >  	# Start the first destination QEMU machine in advance of the test
+> > @@ -224,6 +231,8 @@ do_migration ()
+> >  		-mon chardev=mon,mode=control -incoming unix:${dst_incoming} \
+> >  		< ${dst_infifo} > ${dst_outfifo} &
+> >  	incoming_pid=$!
+> > +	# SC complains about useless cat but I prefer it over redirect here.
+>
+> Same comment as above.
+>
+> > +	# shellcheck disable=SC2002
+> >  	cat ${dst_outfifo} | tee ${dst_out} | filter_quiet_msgs &
+> >  
+> >  	# The test must prompt the user to migrate, so wait for the
+> > diff --git a/scripts/mkstandalone.sh b/scripts/mkstandalone.sh
+> > index 756647f29..2318a85f0 100755
+> > --- a/scripts/mkstandalone.sh
+> > +++ b/scripts/mkstandalone.sh
+> > @@ -65,6 +65,8 @@ generate_test ()
+> >  	fi
+> >  
+> >  	temp_file bin "$kernel"
+> > +	# Don't want to expand $bin but print it as-is.
+> > +	# shellcheck disable=SC2016
+> >  	args[3]='$bin'
+> >  
+> >  	(echo "#!/usr/bin/env bash"
+> > diff --git a/scripts/runtime.bash b/scripts/runtime.bash
+> > index 3b76aec9e..c87613b96 100644
+> > --- a/scripts/runtime.bash
+> > +++ b/scripts/runtime.bash
+> > @@ -137,6 +137,8 @@ function run()
+> >      # the check line can contain multiple files to check separated by a space
+> >      # but each check parameter needs to be of the form <path>=<value>
+> >      if [ "$check" ]; then
+> > +        # There is no globbing allowed in the check parameter.
+> > +        # shellcheck disable=SC2206
+> >          check=($check)
+>
+> Hmm, I'm not sure about this one. $check is an arbitrary path, which means
+> it can have spaces, then =, and then an arbitrary value, which means it can
+> contain spaces. If there are multiple check path=value pairs then
+> separation by space is a bad idea, and any deliminator really is. It seems
+> like each pair should be quoted, i.e.
+>
+>  check = "path1=value1" "path2=value2"
+>
+> and then that should be managed here.
+
+Yeah I did think of that, valid paths could also have = and ", and even
+with double quotes it seems to be tricky to handle spaces.
+
+Maybe I'll just add to the unittest.cfg docs to stick with alphanumeric
+paths, and we can improve it if someone complains?
+
+Thanks,
+Nick
 
