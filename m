@@ -1,76 +1,150 @@
 From: Nicholas Piggin <npiggin@gmail.com>
-Date: Sat, 06 Apr 2024 16:34:21 +1000
-Subject: [kvm-unit-tests RFC PATCH 00/17] add shellcheck support
-In-Reply-To: <20240405-20fbe979a00acc8b9d161936@orel>
+Date: Sat, 06 Apr 2024 16:39:02 +1000
+Subject: [kvm-unit-tests RFC PATCH 01/17] Add initial shellcheck
+ checking
+In-Reply-To: <20240405-4880f3f2b12bcae5f3383043@orel>
 References: <20240405090052.375599-1-npiggin@gmail.com>
- <20240405-20fbe979a00acc8b9d161936@orel>
-Message-ID: <D0CTWX0N023S.3U58HCNRJDC1R@gmail.com>
+ <20240405090052.375599-2-npiggin@gmail.com>
+ <20240405-4880f3f2b12bcae5f3383043@orel>
+Message-ID: <D0CU0I2V06SD.ESUPYVUNWII5@gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri Apr 5, 2024 at 11:59 PM AEST, Andrew Jones wrote:
-> On Fri, Apr 05, 2024 at 07:00:32PM +1000, Nicholas Piggin wrote:
-> > I foolishly promised Andrew I would look into shellcheck, so here
-> > it is.
+On Sat Apr 6, 2024 at 12:12 AM AEST, Andrew Jones wrote:
+> On Fri, Apr 05, 2024 at 07:00:33PM +1000, Nicholas Piggin wrote:
+> > This adds a basic shellcheck sytle file, some directives to help
+> > find scripts, and a make shellcheck target.
+> > 
+> > When changes settle down this could be made part of the standard
+> > build / CI flow.
+> > 
+> > Suggested-by: Andrew Jones <andrew.jones@linux.dev>
+> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> > ---
+> >  .shellcheckrc       | 32 ++++++++++++++++++++++++++++++++
+> >  Makefile            |  4 ++++
+> >  README.md           |  2 ++
+> >  scripts/common.bash |  5 ++++-
+> >  4 files changed, 42 insertions(+), 1 deletion(-)
+> >  create mode 100644 .shellcheckrc
+> > 
+> > diff --git a/.shellcheckrc b/.shellcheckrc
+> > new file mode 100644
+> > index 000000000..2a9a57c42
+> > --- /dev/null
+> > +++ b/.shellcheckrc
+> > @@ -0,0 +1,32 @@
+> > +# shellcheck configuration file
+> > +external-sources=true
+> > +
+> > +# Optional extras --  https://www.shellcheck.net/wiki/Optional
+> > +# Possibilities, e.g., -
+> > +# quote?safe?variables
+> > +# require-double-brackets
+> > +# require-variable-braces
+> > +# add-default-case
+> > +
+> > +# Disable SC2004 style? I.e.,
+> > +# In run_tests.sh line 67:
+> > +#            if (( $unittest_run_queues <= 0 )); then
+> > +#                  ^------------------^ SC2004 (style): $/${} is unnecessary on arithmetic variables.
+> > +disable=SC2004
 >
-> Thanks! I hope you only felt foolish since it was recently April
-> Fool's day, though.
+> I vote keep disabled. The problem pointed out in the wiki can be handled
+> with ($a), similar to how one handles variables to C preprocessor macros.
+>
+> > +
+> > +# Disable SC2034 - config.mak contains a lot of these unused variable errors.
+> > +# Maybe we could have a script extract the ones used by shell script and put
+> > +# them in a generated file, to re-enable the warning.
+> > +#
+> > +# In config.mak line 1:
+> > +# SRCDIR=/home/npiggin/src/kvm-unit-tests
+> > +# ^----^ SC2034 (warning): SRCDIR appears unused. Verify use (or export if used externally).
+> > +disable=SC2034
+>
+> Maybe we should export everything in config.mak.
 
-Hah, no it was fine, it was a good idea and I've been mucking with
-a lot of the bash so, no worries.
+It would be nice to enable the warning.... Oh, actually it looks like
+we can disable a warning for an entire file by adding the disable
+directive at the top. I didn't notice that before, I'll try that first.
 
 >
-> > 
-> > https://gitlab.com/npiggin/kvm-unit-tests/-/tree/powerpc?ref_type=heads
-> > 
-> > This is on top of the "v8 migration, powerpc improvements" series. For
-> > now the patches are a bit raw but it does get down to zero[*] shellcheck
-> > warnings while still passing gitlab CI.
-> > 
-> > [*] Modulo the relatively few cases where they're disabled or
-> > suppressed.
-> > 
-> > I'd like comments about what should be enabled and disabled? There are
-> > quite a lot of options. Lots of changes don't fix real bugs AFAIKS, so
-> > there's some taste involved.
+> > +
+> > +# Disable SC2086 for now, double quote to prevent globbing and word
+> > +# splitting. There are lots of places that use it for word splitting
+> > +# (e.g., invoking commands with arguments) that break. Should have a
+> > +# more consistent approach for this (perhaps use arrays for such cases)
+> > +# but for now disable.
+> > +# SC2086 (info): Double quote to prevent globbing and word splitting.
+> > +disable=SC2086
 >
-> Yes, Bash is like that. We should probably eventually have a Bash style
-> guide as well as shellcheck and then tune shellcheck to the guide as
-> best we can.
-
-+1
-
+> Agreed. We can cross this bridge later.
 >
-> > 
-> > Could possibly be a couple of bugs, including in s390x specific. Any
-> > review of those to confirm or deny bug is appreciated. I haven't tried
-> > to create reproducers for them.
-> > 
-> > I added a quick comment on each one whether it looks like a bug or
-> > harmless but I'm not a bash guru so could easily be wrong. I would
-> > possibly pull any real bug fixes to the front of the series and describe
-> > them as proper fix patches, and leave the other style / non-bugfixes in
-> > the brief format.  shellcheck has a very good wiki explaining each issue
-> > so there is not much point in rehashing that in the changelog.
-> > 
-> > One big thing kept disabled for now is the double-quoting to prevent
-> > globbing and splitting warning that is disabled. That touches a lot of
-> > code and we're very inconsistent about quoting variables today, but it's
-> > not completely trivial because there are quite a lot of places that does
-> > rely on splitting for invoking commands with arguments. That would need
-> > some rework to avoid sprinkling a lot of warning suppressions around.
-> > Possibly consistently using arrays for argument lists would be the best
-> > solution?
+> > diff --git a/Makefile b/Makefile
+> > index 4e0f54543..4863cfdc6 100644
+> > --- a/Makefile
+> > +++ b/Makefile
+> > @@ -141,6 +141,10 @@ cscope:
+> >  		-name '*.[chsS]' -exec realpath --relative-base=$(CURDIR) {} \; | sort -u > ./cscope.files
+> >  	cscope -bk
+> >  
+> > +.PHONY: shellcheck
+> > +shellcheck:
+> > +	shellcheck -a run_tests.sh */run */efi/run scripts/mkstandalone.sh
+> > +
+> >  .PHONY: tags
+> >  tags:
+> >  	ctags -R
+> > diff --git a/README.md b/README.md
+> > index 6e82dc225..77718675e 100644
+> > --- a/README.md
+> > +++ b/README.md
+> > @@ -193,3 +193,5 @@ with `git config diff.orderFile scripts/git.difforder` enables it.
+> >  
+> >  We strive to follow the Linux kernels coding style so it's recommended
+> >  to run the kernel's ./scripts/checkpatch.pl on new patches.
+> > +
+> > +Also run make shellcheck before submitting a patch.
 >
-> Yes, switching to arrays and using double-quoting would be good, but we
-> can leave it for follow-on work after a first round of shellcheck
-> integration.
+> which touches Bash scripts.
 
-Okay good, thanks for all the review on it.
+Yeah good point.
 
 Thanks,
 Nick
+
+>
+>
+> > diff --git a/scripts/common.bash b/scripts/common.bash
+> > index ee1dd8659..3aa557c8c 100644
+> > --- a/scripts/common.bash
+> > +++ b/scripts/common.bash
+> > @@ -82,8 +82,11 @@ function arch_cmd()
+> >  }
+> >  
+> >  # The current file has to be the only file sourcing the arch helper
+> > -# file
+> > +# file. Shellcheck can't follow this so help it out. There doesn't appear to be a
+> > +# way to specify multiple alternatives, so we will have to rethink this if things
+> > +# get more complicated.
+> >  ARCH_FUNC=scripts/${ARCH}/func.bash
+> >  if [ -f "${ARCH_FUNC}" ]; then
+> > +# shellcheck source=scripts/s390x/func.bash
+> >  	source "${ARCH_FUNC}"
+> >  fi
+> > -- 
+> > 2.43.0
+> >
+>
+> Other than the extension to the sentence in the README,
+>
+> Reviewed-by: Andrew Jones <andrew.jones@linux.dev>
+>
+> Thanks,
+> drew
+
 
