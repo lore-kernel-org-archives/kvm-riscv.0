@@ -1,84 +1,69 @@
 From: Nicholas Piggin <npiggin@gmail.com>
-Date: Sat, 06 Apr 2024 20:56:04 +1000
-Subject: [kvm-unit-tests RFC PATCH 17/17] shellcheck: Suppress various
- messages
-In-Reply-To: <20240405-7c0ad5d3ce76e1ad9ad2f5a9@orel>
-References: <20240405090052.375599-1-npiggin@gmail.com>
- <20240405090052.375599-18-npiggin@gmail.com>
- <20240405-7c0ad5d3ce76e1ad9ad2f5a9@orel>
-Message-ID: <D0CZHAYST4M9.193BR8RVK0KJK@gmail.com>
+Date: Sat,  6 Apr 2024 22:38:09 +1000
+Subject: [RFC kvm-unit-tests PATCH v2 00/14] add shellcheck support
+Message-ID: <20240406123833.406488-1-npiggin@gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sat Apr 6, 2024 at 12:55 AM AEST, Andrew Jones wrote:
-> On Fri, Apr 05, 2024 at 07:00:49PM +1000, Nicholas Piggin wrote:
-> > Various info and warnings are suppressed here, where circumstances
-> > (commented) warrant.
-> > 
-> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> > ---
-> >  run_tests.sh            | 3 +++
-> >  scripts/arch-run.bash   | 9 +++++++++
-> >  scripts/mkstandalone.sh | 2 ++
-> >  scripts/runtime.bash    | 2 ++
-> >  4 files changed, 16 insertions(+)
-> > 
-> > diff --git a/run_tests.sh b/run_tests.sh
-> > index 938bb8edf..152323ffc 100755
-> > --- a/run_tests.sh
-> > +++ b/run_tests.sh
-> > @@ -45,6 +45,9 @@ fi
-> >  only_tests=""
-> >  list_tests=""
-> >  args=$(getopt -u -o ag:htj:vl -l all,group:,help,tap13,parallel:,verbose,list,probe-maxsmp -- "$@")
-> > +# Shellcheck likes to test commands directly rather than with $? but sometimes they
-> > +# are too long to put in the same test.
-> > +# shellcheck disable=SC2181
-> >  [ $? -ne 0 ] && exit 2;
-> >  set -- $args;
-> >  while [ $# -gt 0 ]; do
-> > diff --git a/scripts/arch-run.bash b/scripts/arch-run.bash
-> > index ed440b4aa..fe8785cfd 100644
-> > --- a/scripts/arch-run.bash
-> > +++ b/scripts/arch-run.bash
-> > @@ -44,6 +44,8 @@ run_qemu ()
-> >  	if [ "$errors" ]; then
-> >  		sig=$(grep 'terminating on signal' <<<"$errors")
-> >  		if [ "$sig" ]; then
-> > +			# This is too complex for ${var/search/replace}
-> > +			# shellcheck disable=SC2001
-> >  			sig=$(sed 's/.*terminating on signal \([0-9][0-9]*\).*/\1/' <<<"$sig")
-> >  		fi
-> >  	fi
-> > @@ -174,9 +176,12 @@ run_migration ()
-> >  
-> >  	# Holding both ends of the input fifo open prevents opens from
-> >  	# blocking and readers getting EOF when a writer closes it.
-> > +	# These fds appear to be unused to shellcheck so quieten the warning.
-> >  	mkfifo ${src_infifo}
-> >  	mkfifo ${dst_infifo}
-> > +	# shellcheck disable=SC2034
-> >  	exec {src_infifo_fd}<>${src_infifo}
-> > +	# shellcheck disable=SC2034
-> >  	exec {dst_infifo_fd}<>${dst_infifo}
-> >  
-> >  	"${migcmdline[@]}" \
-> > @@ -184,6 +189,8 @@ run_migration ()
-> >  		-mon chardev=mon,mode=control \
-> >  		< ${src_infifo} > ${src_outfifo} &
-> >  	live_pid=$!
-> > +	# SC complains about useless cat but I prefer it over redirect here.
->
-> Let's spell out 'shellcheck' when referring to it rather than call it
-> 'SC'. And instead of "but I prefer..." let's write
+Tree here
 
-Okay I got reminded why I did this, because starting # shellcheck blah
-makes shellcheck try to parse it and fails. We could use # * shellcheck
-for comments?
+https://gitlab.com/npiggin/kvm-unit-tests/-/tree/shellcheck
+
+Again on top of the "v8 migration, powerpc improvements" series. I
+don't plan to rebase the other way around since it's a lot of work.
+So this is still in RFC until the other big series gets merged.
+
+Thanks to Andrew for a lot of review. A submitted the likely s390x
+bugs separately ahead of this series, and also disabled one of the
+tests and dropped its fix patch as-per review comments. Hence 3 fewer
+patches. Other than that, since last post:
+
+* Tidied commit messages and added some of Andrew's comments.
+* Removed the "SC2034 unused variable" blanket disable, and just
+  suppressed the config.mak and a couple of other warnings.
+* Blanket disabled "SC2235 Use { ..; } instead of (..)" and dropped
+  the fix for it.
+* Change warning suppression comments as per Andrew's review, also
+  mention in the new unittests doc about the "check =" option not
+  allowing whitespace etc in the name since we don't cope with that.
 
 Thanks,
 Nick
+
+Nicholas Piggin (14):
+  Add initial shellcheck checking
+  shellcheck: Fix SC2223
+  shellcheck: Fix SC2295
+  shellcheck: Fix SC2094
+  shellcheck: Fix SC2006
+  shellcheck: Fix SC2155
+  shellcheck: Fix SC2143
+  shellcheck: Fix SC2013
+  shellcheck: Fix SC2145
+  shellcheck: Fix SC2124
+  shellcheck: Fix SC2294
+  shellcheck: Fix SC2178
+  shellcheck: Fix SC2048
+  shellcheck: Suppress various messages
+
+ .shellcheckrc           | 30 ++++++++++++++++++++++++
+ Makefile                |  4 ++++
+ README.md               |  3 +++
+ arm/efi/run             |  4 ++--
+ configure               |  2 ++
+ riscv/efi/run           |  4 ++--
+ run_tests.sh            | 11 +++++----
+ scripts/arch-run.bash   | 52 ++++++++++++++++++++++++++++++-----------
+ scripts/common.bash     |  5 +++-
+ scripts/mkstandalone.sh |  4 +++-
+ scripts/runtime.bash    | 14 +++++++----
+ 11 files changed, 105 insertions(+), 28 deletions(-)
+ create mode 100644 .shellcheckrc
+
+-- 
+2.43.0
+
 
