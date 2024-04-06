@@ -1,111 +1,53 @@
 From: Nicholas Piggin <npiggin@gmail.com>
-Date: Sat,  6 Apr 2024 22:38:10 +1000
-Subject: [RFC kvm-unit-tests PATCH v2 01/14] Add initial shellcheck checking
+Date: Sat,  6 Apr 2024 22:38:11 +1000
+Subject: [RFC kvm-unit-tests PATCH v2 02/14] shellcheck: Fix SC2223
 In-Reply-To: <20240406123833.406488-1-npiggin@gmail.com>
 References: <20240406123833.406488-1-npiggin@gmail.com>
-Message-ID: <20240406123833.406488-2-npiggin@gmail.com>
+Message-ID: <20240406123833.406488-3-npiggin@gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This adds a basic shellcheck sytle file, some directives to help
-find scripts, and a make shellcheck target.
+  SC2223 (info): This default assignment may cause DoS due to globbing.
+  Quote it.
 
-When changes settle down this could be made part of the standard
-build / CI flow.
-
-Suggested-by: Andrew Jones <andrew.jones@linux.dev>
 Reviewed-by: Andrew Jones <andrew.jones@linux.dev>
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- .shellcheckrc       | 30 ++++++++++++++++++++++++++++++
- Makefile            |  4 ++++
- README.md           |  3 +++
- scripts/common.bash |  5 ++++-
- 4 files changed, 41 insertions(+), 1 deletion(-)
- create mode 100644 .shellcheckrc
+ run_tests.sh         | 4 ++--
+ scripts/runtime.bash | 4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/.shellcheckrc b/.shellcheckrc
-new file mode 100644
-index 000000000..491af18bd
---- /dev/null
-+++ b/.shellcheckrc
-@@ -0,0 +1,30 @@
-+# shellcheck configuration file
-+external-sources=true
-+
-+# Optional extras --  https://www.shellcheck.net/wiki/Optional
-+# Possibilities, e.g., -
-+# quote?safe?variables
-+# require-double-brackets
-+# require-variable-braces
-+# add-default-case
-+
-+# Disable SC2004 style? I.e.,
-+# In run_tests.sh line 67:
-+#            if (( $unittest_run_queues <= 0 )); then
-+#                  ^------------------^ SC2004 (style): $/${} is unnecessary on arithmetic variables.
-+disable=SC2004
-+
-+# Disable SC2086 for now, double quote to prevent globbing and word
-+# splitting. There are lots of places that use it for word splitting
-+# (e.g., invoking commands with arguments) that break. Should have a
-+# more consistent approach for this (perhaps use arrays for such cases)
-+# but for now disable.
-+# SC2086 (info): Double quote to prevent globbing and word splitting.
-+disable=SC2086
-+
-+# Disable SC2235.  Most developers are used to seeing expressions
-+# like a || (b && c), not a || { b && c ; }. The subshell overhead in
-+# kvm-unit-tests is negligible as it's not shell-heavy in the first
-+# place (time is dominated by qemu startup/shutdown and test execution)
-+# SC2235 (style): Use { ..; } instead of (..) to avoid subshell overhead.
-+disable=SC2235
-diff --git a/Makefile b/Makefile
-index 4e0f54543..4863cfdc6 100644
---- a/Makefile
-+++ b/Makefile
-@@ -141,6 +141,10 @@ cscope:
- 		-name '*.[chsS]' -exec realpath --relative-base=$(CURDIR) {} \; | sort -u > ./cscope.files
- 	cscope -bk
- 
-+.PHONY: shellcheck
-+shellcheck:
-+	shellcheck -a run_tests.sh */run */efi/run scripts/mkstandalone.sh
-+
- .PHONY: tags
- tags:
- 	ctags -R
-diff --git a/README.md b/README.md
-index 6e82dc225..03ff5994e 100644
---- a/README.md
-+++ b/README.md
-@@ -193,3 +193,6 @@ with `git config diff.orderFile scripts/git.difforder` enables it.
- 
- We strive to follow the Linux kernels coding style so it's recommended
- to run the kernel's ./scripts/checkpatch.pl on new patches.
-+
-+Also run make shellcheck before submitting a patch which touches bash
-+scripts.
-diff --git a/scripts/common.bash b/scripts/common.bash
-index ee1dd8659..3aa557c8c 100644
---- a/scripts/common.bash
-+++ b/scripts/common.bash
-@@ -82,8 +82,11 @@ function arch_cmd()
+diff --git a/run_tests.sh b/run_tests.sh
+index bb3024ff9..9067e529e 100755
+--- a/run_tests.sh
++++ b/run_tests.sh
+@@ -158,8 +158,8 @@ function run_task()
+ 	fi
  }
  
- # The current file has to be the only file sourcing the arch helper
--# file
-+# file. Shellcheck can't follow this so help it out. There doesn't appear to be a
-+# way to specify multiple alternatives, so we will have to rethink this if things
-+# get more complicated.
- ARCH_FUNC=scripts/${ARCH}/func.bash
- if [ -f "${ARCH_FUNC}" ]; then
-+# shellcheck source=scripts/s390x/func.bash
- 	source "${ARCH_FUNC}"
- fi
+-: ${unittest_log_dir:=logs}
+-: ${unittest_run_queues:=1}
++: "${unittest_log_dir:=logs}"
++: "${unittest_run_queues:=1}"
+ config=$TEST_DIR/unittests.cfg
+ 
+ print_testname()
+diff --git a/scripts/runtime.bash b/scripts/runtime.bash
+index e4ad1962f..2d7ff5baa 100644
+--- a/scripts/runtime.bash
++++ b/scripts/runtime.bash
+@@ -1,6 +1,6 @@
+ : "${RUNTIME_arch_run?}"
+-: ${MAX_SMP:=$(getconf _NPROCESSORS_ONLN)}
+-: ${TIMEOUT:=90s}
++: "${MAX_SMP:=$(getconf _NPROCESSORS_ONLN)}"
++: "${TIMEOUT:=90s}"
+ 
+ PASS() { echo -ne "\e[32mPASS\e[0m"; }
+ SKIP() { echo -ne "\e[33mSKIP\e[0m"; }
 -- 
 2.43.0
 
