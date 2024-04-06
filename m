@@ -1,85 +1,51 @@
-From: Nicholas Piggin <npiggin@gmail.com>
-Date: Sat, 06 Apr 2024 16:47:56 +1000
-Subject: [kvm-unit-tests RFC PATCH 11/17] shellcheck: Fix SC2145
-In-Reply-To: <20240405-a35419152685e6aca33ccc04@orel>
+From: Andrew Jones <andrew.jones@linux.dev>
+Date: Sat, 6 Apr 2024 09:30:02 +0200
+Subject: [kvm-unit-tests RFC PATCH 17/17] shellcheck: Suppress various
+ messages
+In-Reply-To: <D0CTUKHP4IZV.2OQZNUD6J9U1P@gmail.com>
 References: <20240405090052.375599-1-npiggin@gmail.com>
- <20240405090052.375599-12-npiggin@gmail.com>
- <20240405-a35419152685e6aca33ccc04@orel>
-Message-ID: <D0CU7BLHUQGG.2GG3SFOUSVPCL@gmail.com>
+ <20240405090052.375599-18-npiggin@gmail.com>
+ <20240405-7c0ad5d3ce76e1ad9ad2f5a9@orel>
+ <D0CTUKHP4IZV.2OQZNUD6J9U1P@gmail.com>
+Message-ID: <20240406-35a566d73057343e596e0fc9@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sat Apr 6, 2024 at 12:35 AM AEST, Andrew Jones wrote:
-> On Fri, Apr 05, 2024 at 07:00:43PM +1000, Nicholas Piggin wrote:
-> >   SC2145 (error): Argument mixes string and array. Use * or separate
-> >   argument.
-> > 
-> > Could be a bug?
->
-> I don't think so, since the preceding string ends with a space and there
-> aren't any succeeding strings. Anyway, it's good to switch to *
+On Sat, Apr 06, 2024 at 04:31:17PM +1000, Nicholas Piggin wrote:
+...
+> > > diff --git a/scripts/runtime.bash b/scripts/runtime.bash
+> > > index 3b76aec9e..c87613b96 100644
+> > > --- a/scripts/runtime.bash
+> > > +++ b/scripts/runtime.bash
+> > > @@ -137,6 +137,8 @@ function run()
+> > >      # the check line can contain multiple files to check separated by a space
+> > >      # but each check parameter needs to be of the form <path>=<value>
+> > >      if [ "$check" ]; then
+> > > +        # There is no globbing allowed in the check parameter.
+> > > +        # shellcheck disable=SC2206
+> > >          check=($check)
+> >
+> > Hmm, I'm not sure about this one. $check is an arbitrary path, which means
+> > it can have spaces, then =, and then an arbitrary value, which means it can
+> > contain spaces. If there are multiple check path=value pairs then
+> > separation by space is a bad idea, and any deliminator really is. It seems
+> > like each pair should be quoted, i.e.
+> >
+> >  check = "path1=value1" "path2=value2"
+> >
+> > and then that should be managed here.
+> 
+> Yeah I did think of that, valid paths could also have = and ", and even
+> with double quotes it seems to be tricky to handle spaces.
+> 
+> Maybe I'll just add to the unittest.cfg docs to stick with alphanumeric
+> paths, and we can improve it if someone complains?
 
-Okay I think you're right.
+Works for me.
 
 Thanks,
-Nick
-
->
-> > 
-> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> > ---
-> >  arm/efi/run             | 2 +-
-> >  riscv/efi/run           | 2 +-
-> >  scripts/mkstandalone.sh | 2 +-
-> >  3 files changed, 3 insertions(+), 3 deletions(-)
-> > 
-> > diff --git a/arm/efi/run b/arm/efi/run
-> > index f07a6e55c..cf6d34b0b 100755
-> > --- a/arm/efi/run
-> > +++ b/arm/efi/run
-> > @@ -87,7 +87,7 @@ uefi_shell_run()
-> >  if [ "$EFI_DIRECT" = "y" ]; then
-> >  	$TEST_DIR/run \
-> >  		$KERNEL_NAME \
-> > -		-append "$(basename $KERNEL_NAME) ${cmd_args[@]}" \
-> > +		-append "$(basename $KERNEL_NAME) ${cmd_args[*]}" \
-> >  		-bios "$EFI_UEFI" \
-> >  		"${qemu_args[@]}"
-> >  else
-> > diff --git a/riscv/efi/run b/riscv/efi/run
-> > index 982b8b9c4..cce068694 100755
-> > --- a/riscv/efi/run
-> > +++ b/riscv/efi/run
-> > @@ -97,7 +97,7 @@ if [ "$EFI_DIRECT" = "y" ]; then
-> >  	fi
-> >  	$TEST_DIR/run \
-> >  		$KERNEL_NAME \
-> > -		-append "$(basename $KERNEL_NAME) ${cmd_args[@]}" \
-> > +		-append "$(basename $KERNEL_NAME) ${cmd_args[*]}" \
-> >  		-machine pflash0=pflash0 \
-> >  		-blockdev node-name=pflash0,driver=file,read-only=on,filename="$EFI_UEFI" \
-> >  		"${qemu_args[@]}"
-> > diff --git a/scripts/mkstandalone.sh b/scripts/mkstandalone.sh
-> > index 86c7e5498..756647f29 100755
-> > --- a/scripts/mkstandalone.sh
-> > +++ b/scripts/mkstandalone.sh
-> > @@ -76,7 +76,7 @@ generate_test ()
-> >  
-> >  	cat scripts/runtime.bash
-> >  
-> > -	echo "run ${args[@]}"
-> > +	echo "run ${args[*]}"
-> >  }
-> >  
-> >  function mkstandalone()
-> > -- 
-> > 2.43.0
-> > 
-> >
->
-> Reviewed-by: Andrew Jones <andrew.jones@linux.dev>
-
+drew
 
