@@ -1,67 +1,85 @@
 From: Nicholas Piggin <npiggin@gmail.com>
-Date: Sat, 06 Apr 2024 16:41:12 +1000
-Subject: [kvm-unit-tests RFC PATCH 07/17] shellcheck: Fix SC2235
-In-Reply-To: <20240405-a578a48a6cad5c42abe5943c@orel>
+Date: Sat, 06 Apr 2024 16:47:56 +1000
+Subject: [kvm-unit-tests RFC PATCH 11/17] shellcheck: Fix SC2145
+In-Reply-To: <20240405-a35419152685e6aca33ccc04@orel>
 References: <20240405090052.375599-1-npiggin@gmail.com>
- <20240405090052.375599-8-npiggin@gmail.com>
- <20240405-a578a48a6cad5c42abe5943c@orel>
-Message-ID: <D0CU26801BXH.1ZO7Z28QAJ0V1@gmail.com>
+ <20240405090052.375599-12-npiggin@gmail.com>
+ <20240405-a35419152685e6aca33ccc04@orel>
+Message-ID: <D0CU7BLHUQGG.2GG3SFOUSVPCL@gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sat Apr 6, 2024 at 12:24 AM AEST, Andrew Jones wrote:
-> On Fri, Apr 05, 2024 at 07:00:39PM +1000, Nicholas Piggin wrote:
-> >   SC2235 (style): Use { ..; } instead of (..) to avoid subshell
-> >   overhead.
+On Sat Apr 6, 2024 at 12:35 AM AEST, Andrew Jones wrote:
+> On Fri, Apr 05, 2024 at 07:00:43PM +1000, Nicholas Piggin wrote:
+> >   SC2145 (error): Argument mixes string and array. Use * or separate
+> >   argument.
 > > 
-> > No bug identified. Overhead is pretty irrelevant.
-> > 
-> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
-> > ---
-> >  scripts/arch-run.bash | 6 +++---
-> >  1 file changed, 3 insertions(+), 3 deletions(-)
-> > 
-> > diff --git a/scripts/arch-run.bash b/scripts/arch-run.bash
-> > index ae4b06679..d1edd1d69 100644
-> > --- a/scripts/arch-run.bash
-> > +++ b/scripts/arch-run.bash
-> > @@ -580,15 +580,15 @@ kvm_available ()
-> >  		return 1
-> >  
-> >  	[ "$HOST" = "$ARCH_NAME" ] ||
-> > -		( [ "$HOST" = aarch64 ] && [ "$ARCH" = arm ] ) ||
-> > -		( [ "$HOST" = x86_64 ] && [ "$ARCH" = i386 ] )
-> > +		{ [ "$HOST" = aarch64 ] && [ "$ARCH" = arm ] ; } ||
-> > +		{ [ "$HOST" = x86_64 ] && [ "$ARCH" = i386 ] ; }
-> >  }
-> >  
-> >  hvf_available ()
-> >  {
-> >  	[ "$(sysctl -n kern.hv_support 2>/dev/null)" = "1" ] || return 1
-> >  	[ "$HOST" = "$ARCH_NAME" ] ||
-> > -		( [ "$HOST" = x86_64 ] && [ "$ARCH" = i386 ] )
-> > +		{ [ "$HOST" = x86_64 ] && [ "$ARCH" = i386 ] ; }
-> >  }
+> > Could be a bug?
 >
-> This one is a bit ugly. Most developers are used to seeing expressions
-> like
->
->   a || (b && c)
->
-> not 
->
->  a || { b && c ; }
->
-> I'm inclined to add SC2235 to the ignore list...
+> I don't think so, since the preceding string ends with a space and there
+> aren't any succeeding strings. Anyway, it's good to switch to *
 
-I'm sure it's a good warning for bash scripts that do a lot of
-computation and have these in hot loops. But I _think_ none of
-our scripts are like that so I would be okay with disabling
-the warning. I'll do that unless someone disagrees.
+Okay I think you're right.
 
 Thanks,
 Nick
+
+>
+> > 
+> > Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> > ---
+> >  arm/efi/run             | 2 +-
+> >  riscv/efi/run           | 2 +-
+> >  scripts/mkstandalone.sh | 2 +-
+> >  3 files changed, 3 insertions(+), 3 deletions(-)
+> > 
+> > diff --git a/arm/efi/run b/arm/efi/run
+> > index f07a6e55c..cf6d34b0b 100755
+> > --- a/arm/efi/run
+> > +++ b/arm/efi/run
+> > @@ -87,7 +87,7 @@ uefi_shell_run()
+> >  if [ "$EFI_DIRECT" = "y" ]; then
+> >  	$TEST_DIR/run \
+> >  		$KERNEL_NAME \
+> > -		-append "$(basename $KERNEL_NAME) ${cmd_args[@]}" \
+> > +		-append "$(basename $KERNEL_NAME) ${cmd_args[*]}" \
+> >  		-bios "$EFI_UEFI" \
+> >  		"${qemu_args[@]}"
+> >  else
+> > diff --git a/riscv/efi/run b/riscv/efi/run
+> > index 982b8b9c4..cce068694 100755
+> > --- a/riscv/efi/run
+> > +++ b/riscv/efi/run
+> > @@ -97,7 +97,7 @@ if [ "$EFI_DIRECT" = "y" ]; then
+> >  	fi
+> >  	$TEST_DIR/run \
+> >  		$KERNEL_NAME \
+> > -		-append "$(basename $KERNEL_NAME) ${cmd_args[@]}" \
+> > +		-append "$(basename $KERNEL_NAME) ${cmd_args[*]}" \
+> >  		-machine pflash0=pflash0 \
+> >  		-blockdev node-name=pflash0,driver=file,read-only=on,filename="$EFI_UEFI" \
+> >  		"${qemu_args[@]}"
+> > diff --git a/scripts/mkstandalone.sh b/scripts/mkstandalone.sh
+> > index 86c7e5498..756647f29 100755
+> > --- a/scripts/mkstandalone.sh
+> > +++ b/scripts/mkstandalone.sh
+> > @@ -76,7 +76,7 @@ generate_test ()
+> >  
+> >  	cat scripts/runtime.bash
+> >  
+> > -	echo "run ${args[@]}"
+> > +	echo "run ${args[*]}"
+> >  }
+> >  
+> >  function mkstandalone()
+> > -- 
+> > 2.43.0
+> > 
+> >
+>
+> Reviewed-by: Andrew Jones <andrew.jones@linux.dev>
+
 
