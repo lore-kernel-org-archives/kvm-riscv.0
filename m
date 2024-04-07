@@ -1,145 +1,70 @@
-From: Nicholas Piggin <npiggin@gmail.com>
-Date: Sat,  6 Apr 2024 22:38:23 +1000
-Subject: [RFC kvm-unit-tests PATCH v2 14/14] shellcheck: Suppress various messages
-In-Reply-To: <20240406123833.406488-1-npiggin@gmail.com>
-References: <20240406123833.406488-1-npiggin@gmail.com>
-Message-ID: <20240406123833.406488-15-npiggin@gmail.com>
+From: Shenlin Liang <liangshenlin@eswincomputing.com>
+Date: Sun, 7 Apr 2024 10:31:34 +0800 (GMT+08:00)
+Subject: [PATCH 0/2] perf kvm: Add kvm stat support on riscv
+In-Reply-To: <20240328031220.1287-1-liangshenlin@eswincomputing.com>
+References: <20240328031220.1287-1-liangshenlin@eswincomputing.com>
+Message-ID: <71d045ed.2258.18eb6659685.Coremail.liangshenlin@eswincomputing.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Various info and warnings are suppressed here, where circumstances
-(commented) warrant.
+Gentle ping...
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- configure               |  2 ++
- run_tests.sh            |  3 +++
- scripts/arch-run.bash   | 15 +++++++++++++++
- scripts/mkstandalone.sh |  2 ++
- scripts/runtime.bash    |  2 ++
- 5 files changed, 24 insertions(+)
-
-diff --git a/configure b/configure
-index 8508396af..6ebac7e0a 100755
---- a/configure
-+++ b/configure
-@@ -437,6 +437,8 @@ ln -sf "$asm" lib/asm
- 
- # create the config
- cat <<EOF > config.mak
-+# Shellcheck does not see these are used
-+# shellcheck disable=SC2034
- SRCDIR=$srcdir
- PREFIX=$prefix
- HOST=$host
-diff --git a/run_tests.sh b/run_tests.sh
-index 938bb8edf..152323ffc 100755
---- a/run_tests.sh
-+++ b/run_tests.sh
-@@ -45,6 +45,9 @@ fi
- only_tests=""
- list_tests=""
- args=$(getopt -u -o ag:htj:vl -l all,group:,help,tap13,parallel:,verbose,list,probe-maxsmp -- "$@")
-+# Shellcheck likes to test commands directly rather than with $? but sometimes they
-+# are too long to put in the same test.
-+# shellcheck disable=SC2181
- [ $? -ne 0 ] && exit 2;
- set -- $args;
- while [ $# -gt 0 ]; do
-diff --git a/scripts/arch-run.bash b/scripts/arch-run.bash
-index 98d29b671..7e5b2bdf1 100644
---- a/scripts/arch-run.bash
-+++ b/scripts/arch-run.bash
-@@ -44,6 +44,8 @@ run_qemu ()
- 	if [ "$errors" ]; then
- 		sig=$(grep 'terminating on signal' <<<"$errors")
- 		if [ "$sig" ]; then
-+			# This is too complex for ${var/search/replace}
-+			# shellcheck disable=SC2001
- 			sig=$(sed 's/.*terminating on signal \([0-9][0-9]*\).*/\1/' <<<"$sig")
- 		fi
- 	fi
-@@ -174,9 +176,12 @@ run_migration ()
- 
- 	# Holding both ends of the input fifo open prevents opens from
- 	# blocking and readers getting EOF when a writer closes it.
-+	# These fds appear to be unused to shellcheck so quieten the warning.
- 	mkfifo ${src_infifo}
- 	mkfifo ${dst_infifo}
-+	# shellcheck disable=SC2034
- 	exec {src_infifo_fd}<>${src_infifo}
-+	# shellcheck disable=SC2034
- 	exec {dst_infifo_fd}<>${dst_infifo}
- 
- 	"${migcmdline[@]}" \
-@@ -184,6 +189,9 @@ run_migration ()
- 		-mon chardev=mon,mode=control \
- 		< ${src_infifo} > ${src_outfifo} &
- 	live_pid=$!
-+	# Shellcheck complains about useless cat but it is clearer than a
-+	# redirect in this case.
-+	# shellcheck disable=SC2002
- 	cat ${src_outfifo} | tee ${src_out} | filter_quiet_msgs &
- 
- 	# Start the first destination QEMU machine in advance of the test
-@@ -224,6 +232,9 @@ do_migration ()
- 		-mon chardev=mon,mode=control -incoming unix:${dst_incoming} \
- 		< ${dst_infifo} > ${dst_outfifo} &
- 	incoming_pid=$!
-+	# Shellcheck complains about useless cat but it is clearer than a
-+	# redirect in this case.
-+	# shellcheck disable=SC2002
- 	cat ${dst_outfifo} | tee ${dst_out} | filter_quiet_msgs &
- 
- 	# The test must prompt the user to migrate, so wait for the
-@@ -467,6 +478,8 @@ env_params ()
- 			[ -n "$ACCEL" ] && QEMU_ACCEL=$ACCEL
- 		fi
- 		QEMU_VERSION_STRING="$($qemu -h | head -1)"
-+		# SC does not seee QEMU_MAJOR|MINOR|MICRO are used
-+		# shellcheck disable=SC2034
- 		IFS='[ .]' read -r _ _ _ QEMU_MAJOR QEMU_MINOR QEMU_MICRO rest <<<"$QEMU_VERSION_STRING"
- 	fi
- 	env_add_params QEMU_ACCEL QEMU_VERSION_STRING QEMU_MAJOR QEMU_MINOR QEMU_MICRO
-@@ -597,6 +610,8 @@ hvf_available ()
- 
- set_qemu_accelerator ()
- {
-+	# Shellcheck does not seee ACCEL_PROPS is used
-+	# shellcheck disable=SC2034
- 	ACCEL_PROPS=${ACCEL#"${ACCEL%%,*}"}
- 	ACCEL=${ACCEL%%,*}
- 
-diff --git a/scripts/mkstandalone.sh b/scripts/mkstandalone.sh
-index 756647f29..2318a85f0 100755
---- a/scripts/mkstandalone.sh
-+++ b/scripts/mkstandalone.sh
-@@ -65,6 +65,8 @@ generate_test ()
- 	fi
- 
- 	temp_file bin "$kernel"
-+	# Don't want to expand $bin but print it as-is.
-+	# shellcheck disable=SC2016
- 	args[3]='$bin'
- 
- 	(echo "#!/usr/bin/env bash"
-diff --git a/scripts/runtime.bash b/scripts/runtime.bash
-index 3b76aec9e..6e712214d 100644
---- a/scripts/runtime.bash
-+++ b/scripts/runtime.bash
-@@ -137,6 +137,8 @@ function run()
-     # the check line can contain multiple files to check separated by a space
-     # but each check parameter needs to be of the form <path>=<value>
-     if [ "$check" ]; then
-+        # There is no globbing or whitespace allowed in check parameters.
-+        # shellcheck disable=SC2206
-         check=($check)
-         for check_param in "${check[@]}"; do
-             path=${check_param%%=*}
--- 
-2.43.0
-
-
+> 
+> 'perf kvm stat report/record' generates a statistical analysis of KVM
+> events and can be used to analyze guest exit reasons. This patch tries
+> to add stat support on riscv.
+> 
+> Map the return value of trace_kvm_exit() to the specific cause of the 
+> exception, and export it to userspace.
+> 
+> It records on two available KVM tracepoints for riscv: "kvm:kvm_entry"
+> and "kvm:kvm_exit", and reports statistical data which includes events
+> handles time, samples, and so on.
+> 
+> Simple tests go below:
+> 
+> # ./perf kvm record -e "kvm:kvm_entry" -e "kvm:kvm_exit"
+> Lowering default frequency rate from 4000 to 2500.
+> Please consider tweaking /proc/sys/kernel/perf_event_max_sample_rate.
+> [ perf record: Woken up 18 times to write data ]
+> [ perf record: Captured and wrote 5.433 MB perf.data.guest (62519 samples) 
+> 
+> # ./perf kvm report
+> 31K kvm:kvm_entry
+> 31K kvm:kvm_exit
+> 
+> # ./perf kvm stat record -a
+> [ perf record: Woken up 3 times to write data ]
+> [ perf record: Captured and wrote 8.502 MB perf.data.guest (99338 samples) ]
+> 
+> # ./perf kvm stat report --event=vmexit
+> Event name                Samples   Sample%    Time (ns)     Time%   Max Time (ns)   Min Time (ns)  Mean Time (ns)
+> STORE_GUEST_PAGE_FAULT     26968     54.00%    2003031800    40.00%     3361400         27600          74274
+> LOAD_GUEST_PAGE_FAULT      17645     35.00%    1153338100    23.00%     2513400         30800          65363
+> VIRTUAL_INST_FAULT         1247      2.00%     340820800     6.00%      1190800         43300          273312
+> INST_GUEST_PAGE_FAULT      1128      2.00%     340645800     6.00%      2123200         30200          301990
+> SUPERVISOR_SYSCALL         1019      2.00%     245989900     4.00%      1851500         29300          241403
+> LOAD_ACCESS                986       1.00%     671556200     13.00%     4180200         100700         681091
+> INST_ACCESS                655       1.00%     170054800     3.00%      1808300         54600          259625
+> HYPERVISOR_SYSCALL         21        0.00%     4276400       0.00%      716500          116000         203638 
+> 
+> Shenlin Liang (2):
+>   RISCV: KVM: add tracepoints for entry and exit events
+>   perf kvm/riscv: Port perf kvm stat to RISC-V
+> 
+>  arch/riscv/kvm/trace_riscv.h                  | 60 ++++++++++++++
+>  arch/riscv/kvm/vcpu.c                         |  7 ++
+>  tools/perf/arch/riscv/Makefile                |  1 +
+>  tools/perf/arch/riscv/util/Build              |  1 +
+>  tools/perf/arch/riscv/util/kvm-stat.c         | 78 +++++++++++++++++++
+>  .../arch/riscv/util/riscv_exception_types.h   | 41 ++++++++++
+>  6 files changed, 188 insertions(+)
+>  create mode 100644 arch/riscv/kvm/trace_riscv.h
+>  create mode 100644 tools/perf/arch/riscv/util/kvm-stat.c
+>  create mode 100644 tools/perf/arch/riscv/util/riscv_exception_types.h
+> 
+> -- 
+> 2.37.2
