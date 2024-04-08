@@ -1,88 +1,144 @@
 From: Anup Patel <anup@brainfault.org>
-Date: Mon, 8 Apr 2024 17:21:40 +0530
-Subject: [PATCH v4 0/3] RISC-V: KVM: Guest Debug Support - Software
- Breakpoint Part
-In-Reply-To: <20240402062628.5425-1-duchao@eswincomputing.com>
-References: <20240402062628.5425-1-duchao@eswincomputing.com>
-Message-ID: <CAAhSdy0yVN91P5-B0bBibEB1-53L4wAiOdCWeBP3cxPzOacyXA@mail.gmail.com>
+Date: Mon, 8 Apr 2024 17:37:23 +0530
+Subject: [PATCH 1/2] RISCV: KVM: add tracepoints for entry and exit events
+In-Reply-To: <20240328031220.1287-2-liangshenlin@eswincomputing.com>
+References: <20240328031220.1287-1-liangshenlin@eswincomputing.com> <20240328031220.1287-2-liangshenlin@eswincomputing.com>
+Message-ID: <CAAhSdy0DgW055iV7=_D6iOLr1iVeK9SZmG8hqBG0_hb1z=+07g@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Apr 2, 2024 at 12:00?PM Chao Du <duchao@eswincomputing.com> wrote:
+On Thu, Mar 28, 2024 at 8:49?AM Shenlin Liang
+<liangshenlin@eswincomputing.com> wrote:
 >
-> This series implements the "KVM Guset Debug" feature on RISC-V. This is
-> an existing feature which is already supported by some other arches.
-> It allows us to debug a RISC-V KVM guest from GDB in host side.
+> Like other architectures, RISCV KVM also needs to add these event
+> tracepoints to count the number of times kvm guest entry/exit.
 >
-> As the first stage, the software breakpoints (ebreak instruction) is
-> implemented. HW breakpoints support will come later after a synthetically
-> consideration with the SBI debug trigger extension.
+> Signed-off-by: Shenlin Liang <liangshenlin@eswincomputing.com>
+> ---
+>  arch/riscv/kvm/trace_riscv.h | 60 ++++++++++++++++++++++++++++++++++++
+>  arch/riscv/kvm/vcpu.c        |  7 +++++
+>  2 files changed, 67 insertions(+)
+>  create mode 100644 arch/riscv/kvm/trace_riscv.h
 >
-> A selftest case was added in this series. Manual test was done on QEMU
-> RISC-V hypervisor emulator. (add '-s' to enable the gdbserver in QEMU)
->
-> This series is based on Linux 6.9-rc1 and also available at:
-> https://github.com/Du-Chao/kvm-riscv/tree/guest_debug_sw_v3_6.9-rc1
->
-> The matched QEMU is available at:
-> https://github.com/Du-Chao/qemu/tree/riscv_gd_sw
->
->
-> Changes from v3->v4:
-> - Some optimization on the testcase as per review comments.
->
-> Changes from v2->v3:
-> - Rebased on Linux 6.9-rc1.
-> - Use BIT() in the macro definition.
-> - set/clear the bit EXC_BREAKPOINT explicitly.
-> - change the testcase name to ebreak_test.
-> - test the scenario without GUEST_DEBUG. vm_install_exception_handler()
->   is used thanks to Haibo's patch.
->
-> Changes from v1->v2:
-> - Rebased on Linux 6.8-rc6.
-> - Maintain a hedeleg in "struct kvm_vcpu_config" for each VCPU.
-> - Update the HEDELEG csr in kvm_arch_vcpu_load().
->
-> Changes from RFC->v1:
-> - Rebased on Linux 6.8-rc2.
-> - Merge PATCH1 and PATCH2 into one patch.
-> - kselftest case added.
->
-> v3 link:
-> https://lore.kernel.org/kvm/20240327075526.31855-1-duchao at eswincomputing.com
-> v2 link:
-> https://lore.kernel.org/kvm/20240301013545.10403-1-duchao at eswincomputing.com
-> v1 link:
-> https://lore.kernel.org/kvm/20240206074931.22930-1-duchao at eswincomputing.com
-> RFC link:
-> https://lore.kernel.org/kvm/20231221095002.7404-1-duchao at eswincomputing.com
->
-> Chao Du (3):
->   RISC-V: KVM: Implement kvm_arch_vcpu_ioctl_set_guest_debug()
->   RISC-V: KVM: Handle breakpoint exits for VCPU
->   RISC-V: KVM: selftests: Add ebreak test support
+> diff --git a/arch/riscv/kvm/trace_riscv.h b/arch/riscv/kvm/trace_riscv.h
+> new file mode 100644
+> index 000000000000..5848083c7a5e
+> --- /dev/null
+> +++ b/arch/riscv/kvm/trace_riscv.h
+> @@ -0,0 +1,60 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +/*
+> + * Tracepoints for RISC-V KVM
+> + *
+> + * Copyright 2024 Beijing ESWIN Computing Technology Co., Ltd.
+> + *
+> + */
+> +#if !defined(_TRACE_RSICV_KVM_H) || defined(TRACE_HEADER_MULTI_READ)
+> +#define _TRACE_RSICV_KVM_H
 
-Queued this series for Linux-6.10
+s/_RSICV_/_RISCV_/
 
-Thanks,
-Anup
+> +
+> +#include <linux/tracepoint.h>
+> +
+> +#undef TRACE_SYSTEM
+> +#define TRACE_SYSTEM kvm
+> +
+> +TRACE_EVENT(kvm_entry,
+> +       TP_PROTO(struct kvm_vcpu *vcpu),
+> +       TP_ARGS(vcpu),
+> +
+> +       TP_STRUCT__entry(
+> +               __field(unsigned long, pc)
+> +       ),
+> +
+> +       TP_fast_assign(
+> +               __entry->pc     = vcpu->arch.guest_context.sepc;
+> +       ),
+> +
+> +       TP_printk("PC: 0x%016lx", __entry->pc)
+> +);
+> +
+> +TRACE_EVENT(kvm_exit,
+> +       TP_PROTO(struct kvm_vcpu *vcpu, unsigned long exit_reason,
+> +                       unsigned long scause),
+> +       TP_ARGS(vcpu, exit_reason, scause),
+> +
+> +       TP_STRUCT__entry(
+> +               __field(unsigned long, pc)
+> +               __field(unsigned long, exit_reason)
+> +               __field(unsigned long, scause)
 
+This is not the right contents describing a KVM exit.
+
+The fields over here should be aligned with "struct kvm_cpu_trap"
+so we should have following fields:
+    __field(unsigned long, sepc)
+    __field(unsigned long, scause)
+    __field(unsigned long, stval)
+    __field(unsigned long, htval)
+    __field(unsigned long, htinst)
+
+> +       ),
+> +
+> +       TP_fast_assign(
+> +               __entry->pc             = vcpu->arch.guest_context.sepc;
+> +               __entry->exit_reason    = exit_reason;
+> +               __entry->scause         = scause;
+> +       ),
+> +
+> +       TP_printk("EXIT_REASON:0x%lx,PC: 0x%016lx,SCAUSE:0x%lx",
+> +                       __entry->exit_reason, __entry->pc, __entry->scause)
+> +);
+> +
+> +#endif /* _TRACE_RSICV_KVM_H */
+> +
+> +#undef TRACE_INCLUDE_PATH
+> +#define TRACE_INCLUDE_PATH .
+> +#undef TRACE_INCLUDE_FILE
+> +#define TRACE_INCLUDE_FILE trace_riscv
+> +
+> +/* This part must be outside protection */
+> +#include <trace/define_trace.h>
+> diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+> index b5ca9f2e98ac..ed0932f0d514 100644
+> --- a/arch/riscv/kvm/vcpu.c
+> +++ b/arch/riscv/kvm/vcpu.c
+> @@ -21,6 +21,9 @@
+>  #include <asm/cacheflush.h>
+>  #include <asm/kvm_vcpu_vector.h>
 >
->  arch/riscv/include/asm/kvm_host.h             | 12 +++
->  arch/riscv/kvm/main.c                         | 18 +---
->  arch/riscv/kvm/vcpu.c                         | 16 +++-
->  arch/riscv/kvm/vcpu_exit.c                    |  4 +
->  arch/riscv/kvm/vm.c                           |  1 +
->  tools/testing/selftests/kvm/Makefile          |  1 +
->  .../testing/selftests/kvm/riscv/ebreak_test.c | 82 +++++++++++++++++++
->  7 files changed, 116 insertions(+), 18 deletions(-)
->  create mode 100644 tools/testing/selftests/kvm/riscv/ebreak_test.c
+> +#define CREATE_TRACE_POINTS
+> +#include "trace_riscv.h"
+> +
+>  const struct _kvm_stats_desc kvm_vcpu_stats_desc[] = {
+>         KVM_GENERIC_VCPU_STATS(),
+>         STATS_DESC_COUNTER(VCPU, ecall_exit_stat),
+> @@ -782,6 +785,8 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
+>                  */
+>                 kvm_riscv_local_tlb_sanitize(vcpu);
 >
+> +               trace_kvm_entry(vcpu);
+> +
+>                 guest_timing_enter_irqoff();
+>
+>                 kvm_riscv_vcpu_enter_exit(vcpu);
+> @@ -820,6 +825,8 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
+>
+>                 local_irq_enable();
+>
+> +               trace_kvm_exit(vcpu, run->exit_reason, trap.scause);
+> +
+>                 preempt_enable();
+>
+>                 kvm_vcpu_srcu_read_lock(vcpu);
 > --
-> 2.17.1
+> 2.37.2
 >
+
+Regards,
+Anup
 
