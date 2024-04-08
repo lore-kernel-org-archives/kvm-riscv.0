@@ -1,45 +1,37 @@
-From: Andrew Jones <andrew.jones@linux.dev>
-Date: Mon, 8 Apr 2024 09:34:35 +0200
-Subject: [RFC kvm-unit-tests PATCH v2 08/14] shellcheck: Fix SC2013
-In-Reply-To: <20240406123833.406488-9-npiggin@gmail.com>
-References: <20240406123833.406488-1-npiggin@gmail.com>
- <20240406123833.406488-9-npiggin@gmail.com>
-Message-ID: <20240408-840ece34e7b407365a18227d@orel>
+From: David Hildenbrand <david@redhat.com>
+Date: Mon, 8 Apr 2024 09:35:21 +0200
+Subject: [PATCH 3/4] mmu_notifier: remove the .change_pte() callback
+In-Reply-To: <20240405115815.3226315-4-pbonzini@redhat.com>
+References: <20240405115815.3226315-1-pbonzini@redhat.com>
+ <20240405115815.3226315-4-pbonzini@redhat.com>
+Message-ID: <e40ad5e2-6679-47f6-ab9f-14625627ac1e@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sat, Apr 06, 2024 at 10:38:17PM +1000, Nicholas Piggin wrote:
->   SC2013 (info): To read lines rather than words, pipe/redirect to a
->   'while read' loop.
+On 05.04.24 13:58, Paolo Bonzini wrote:
+> The scope of set_pte_at_notify() has reduced more and more through the
+> years.  Initially, it was meant for when the change to the PTE was
+> not bracketed by mmu_notifier_invalidate_range_{start,end}().  However,
+> that has not been so for over ten years.  During all this period
+> the only implementation of .change_pte() was KVM and it
+> had no actual functionality, because it was called after
+> mmu_notifier_invalidate_range_start() zapped the secondary PTE.
 > 
-> Not a bug.
+> Now that this (nonfunctional) user of the .change_pte() callback is
+> gone, the whole callback can be removed.  For now, leave in place
+> set_pte_at_notify() even though it is just a synonym for set_pte_at().
 > 
-> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+> Signed-off-by: Paolo Bonzini <pbonzini@redhat.com>
 > ---
->  scripts/arch-run.bash | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/scripts/arch-run.bash b/scripts/arch-run.bash
-> index cd75405c8..45ec8f57d 100644
-> --- a/scripts/arch-run.bash
-> +++ b/scripts/arch-run.bash
-> @@ -487,7 +487,7 @@ env_file ()
->  
->  	[ ! -f "$KVM_UNIT_TESTS_ENV_OLD" ] && return
->  
-> -	for line in $(grep -E '^[[:blank:]]*[[:alpha:]_][[:alnum:]_]*=' "$KVM_UNIT_TESTS_ENV_OLD"); do
-> +	grep -E '^[[:blank:]]*[[:alpha:]_][[:alnum:]_]*=' "$KVM_UNIT_TESTS_ENV_OLD" | while IFS= read -r line ; do
->  		var=${line%%=*}
->  		if ! grep -q "^$var=" $KVM_UNIT_TESTS_ENV; then
->  			eval export "$line"
-> -- 
-> 2.43.0
->
 
-I already gave an r-b on this one. Here it is again,
+Reviewed-by: David Hildenbrand <david@redhat.com>
 
-Reviewed-by: Andrew Jones <andrew.jones@linux.dev>
+-- 
+Cheers,
+
+David / dhildenb
+
 
