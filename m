@@ -1,32 +1,158 @@
-From: David Hildenbrand <david@redhat.com>
-Date: Mon, 8 Apr 2024 09:36:37 +0200
-Subject: [PATCH 4/4] mm: replace set_pte_at_notify() with just
- set_pte_at()
-In-Reply-To: <20240405115815.3226315-5-pbonzini@redhat.com>
-References: <20240405115815.3226315-1-pbonzini@redhat.com>
- <20240405115815.3226315-5-pbonzini@redhat.com>
-Message-ID: <fb525c6b-4284-4cb2-b3e1-20275fc3c4f3@redhat.com>
+From: Andrew Jones <andrew.jones@linux.dev>
+Date: Mon, 8 Apr 2024 09:37:29 +0200
+Subject: [RFC kvm-unit-tests PATCH v2 14/14] shellcheck: Suppress various
+ messages
+In-Reply-To: <20240406123833.406488-15-npiggin@gmail.com>
+References: <20240406123833.406488-1-npiggin@gmail.com>
+ <20240406123833.406488-15-npiggin@gmail.com>
+Message-ID: <20240408-c1fd647357babc836cf85914@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 05.04.24 13:58, Paolo Bonzini wrote:
-> With the demise of the .change_pte() MMU notifier callback, there is no
-> notification happening in set_pte_at_notify().  It is a synonym of
-> set_pte_at() and can be replaced with it.
+On Sat, Apr 06, 2024 at 10:38:23PM +1000, Nicholas Piggin wrote:
+> Various info and warnings are suppressed here, where circumstances
+> (commented) warrant.
 > 
-> Signed-off-by: Paolo Bonzini <pbonzini@redhat.com>
+> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 > ---
+>  configure               |  2 ++
+>  run_tests.sh            |  3 +++
+>  scripts/arch-run.bash   | 15 +++++++++++++++
+>  scripts/mkstandalone.sh |  2 ++
+>  scripts/runtime.bash    |  2 ++
+>  5 files changed, 24 insertions(+)
+> 
+> diff --git a/configure b/configure
+> index 8508396af..6ebac7e0a 100755
+> --- a/configure
+> +++ b/configure
+> @@ -437,6 +437,8 @@ ln -sf "$asm" lib/asm
+>  
+>  # create the config
+>  cat <<EOF > config.mak
+> +# Shellcheck does not see these are used
+> +# shellcheck disable=SC2034
+>  SRCDIR=$srcdir
+>  PREFIX=$prefix
+>  HOST=$host
+> diff --git a/run_tests.sh b/run_tests.sh
+> index 938bb8edf..152323ffc 100755
+> --- a/run_tests.sh
+> +++ b/run_tests.sh
+> @@ -45,6 +45,9 @@ fi
+>  only_tests=""
+>  list_tests=""
+>  args=$(getopt -u -o ag:htj:vl -l all,group:,help,tap13,parallel:,verbose,list,probe-maxsmp -- "$@")
+> +# Shellcheck likes to test commands directly rather than with $? but sometimes they
+> +# are too long to put in the same test.
+> +# shellcheck disable=SC2181
+>  [ $? -ne 0 ] && exit 2;
+>  set -- $args;
+>  while [ $# -gt 0 ]; do
+> diff --git a/scripts/arch-run.bash b/scripts/arch-run.bash
+> index 98d29b671..7e5b2bdf1 100644
+> --- a/scripts/arch-run.bash
+> +++ b/scripts/arch-run.bash
+> @@ -44,6 +44,8 @@ run_qemu ()
+>  	if [ "$errors" ]; then
+>  		sig=$(grep 'terminating on signal' <<<"$errors")
+>  		if [ "$sig" ]; then
+> +			# This is too complex for ${var/search/replace}
+> +			# shellcheck disable=SC2001
+>  			sig=$(sed 's/.*terminating on signal \([0-9][0-9]*\).*/\1/' <<<"$sig")
+>  		fi
+>  	fi
+> @@ -174,9 +176,12 @@ run_migration ()
+>  
+>  	# Holding both ends of the input fifo open prevents opens from
+>  	# blocking and readers getting EOF when a writer closes it.
+> +	# These fds appear to be unused to shellcheck so quieten the warning.
+>  	mkfifo ${src_infifo}
+>  	mkfifo ${dst_infifo}
+> +	# shellcheck disable=SC2034
+>  	exec {src_infifo_fd}<>${src_infifo}
+> +	# shellcheck disable=SC2034
+>  	exec {dst_infifo_fd}<>${dst_infifo}
+>  
+>  	"${migcmdline[@]}" \
+> @@ -184,6 +189,9 @@ run_migration ()
+>  		-mon chardev=mon,mode=control \
+>  		< ${src_infifo} > ${src_outfifo} &
+>  	live_pid=$!
+> +	# Shellcheck complains about useless cat but it is clearer than a
+> +	# redirect in this case.
+> +	# shellcheck disable=SC2002
+>  	cat ${src_outfifo} | tee ${src_out} | filter_quiet_msgs &
+>  
+>  	# Start the first destination QEMU machine in advance of the test
+> @@ -224,6 +232,9 @@ do_migration ()
+>  		-mon chardev=mon,mode=control -incoming unix:${dst_incoming} \
+>  		< ${dst_infifo} > ${dst_outfifo} &
+>  	incoming_pid=$!
+> +	# Shellcheck complains about useless cat but it is clearer than a
+> +	# redirect in this case.
+> +	# shellcheck disable=SC2002
+>  	cat ${dst_outfifo} | tee ${dst_out} | filter_quiet_msgs &
+>  
+>  	# The test must prompt the user to migrate, so wait for the
+> @@ -467,6 +478,8 @@ env_params ()
+>  			[ -n "$ACCEL" ] && QEMU_ACCEL=$ACCEL
+>  		fi
+>  		QEMU_VERSION_STRING="$($qemu -h | head -1)"
+> +		# SC does not seee QEMU_MAJOR|MINOR|MICRO are used
 
-A real joy seeing that gone
+Shellcheck does not see
 
-Reviewed-by: David Hildenbrand <david@redhat.com>
+> +		# shellcheck disable=SC2034
+>  		IFS='[ .]' read -r _ _ _ QEMU_MAJOR QEMU_MINOR QEMU_MICRO rest <<<"$QEMU_VERSION_STRING"
+>  	fi
+>  	env_add_params QEMU_ACCEL QEMU_VERSION_STRING QEMU_MAJOR QEMU_MINOR QEMU_MICRO
+> @@ -597,6 +610,8 @@ hvf_available ()
+>  
+>  set_qemu_accelerator ()
+>  {
+> +	# Shellcheck does not seee ACCEL_PROPS is used
 
--- 
-Cheers,
+see
 
-David / dhildenb
+> +	# shellcheck disable=SC2034
+>  	ACCEL_PROPS=${ACCEL#"${ACCEL%%,*}"}
+>  	ACCEL=${ACCEL%%,*}
+>  
+> diff --git a/scripts/mkstandalone.sh b/scripts/mkstandalone.sh
+> index 756647f29..2318a85f0 100755
+> --- a/scripts/mkstandalone.sh
+> +++ b/scripts/mkstandalone.sh
+> @@ -65,6 +65,8 @@ generate_test ()
+>  	fi
+>  
+>  	temp_file bin "$kernel"
+> +	# Don't want to expand $bin but print it as-is.
+> +	# shellcheck disable=SC2016
+>  	args[3]='$bin'
+>  
+>  	(echo "#!/usr/bin/env bash"
+> diff --git a/scripts/runtime.bash b/scripts/runtime.bash
+> index 3b76aec9e..6e712214d 100644
+> --- a/scripts/runtime.bash
+> +++ b/scripts/runtime.bash
+> @@ -137,6 +137,8 @@ function run()
+>      # the check line can contain multiple files to check separated by a space
+>      # but each check parameter needs to be of the form <path>=<value>
+>      if [ "$check" ]; then
+> +        # There is no globbing or whitespace allowed in check parameters.
+> +        # shellcheck disable=SC2206
+>          check=($check)
+>          for check_param in "${check[@]}"; do
+>              path=${check_param%%=*}
+> -- 
+> 2.43.0
+>
 
+Other than comment fixes,
+
+Reviewed-by: Andrew Jones <andrew.jones@linux.dev>
 
