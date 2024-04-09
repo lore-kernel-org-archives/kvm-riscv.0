@@ -1,102 +1,106 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Mon, 8 Apr 2024 15:56:29 +0200
-Subject: [PATCH 0/5] Add parsing for Zimop ISA extension
-In-Reply-To: <89d4a24c-db24-487b-8c5c-bdc1fa2d42b4@rivosinc.com>
-References: <20240404103254.1752834-1-cleger@rivosinc.com>
- <20240405-091c6c174f023d74b434059d@orel>
- <CAKC1njQ3qQ8mTMoYkhhoGQfRSVtp2Tfd2LjDhAmut7UcW9-bGw@mail.gmail.com>
- <ddc5555a-3ae8-42e5-a08a-ca5ceaf0bf28@rivosinc.com>
- <20240408-6c93f3f50b55234f3825ca33@orel>
- <89d4a24c-db24-487b-8c5c-bdc1fa2d42b4@rivosinc.com>
-Message-ID: <20240408-8d245caaaeddc6a23e39d6dd@orel>
+From: Atish Patra <atishp@rivosinc.com>
+Date: Mon, 8 Apr 2024 17:04:41 -0700
+Subject: [PATCH v5 03/22] drivers/perf: riscv: Read upper bits of a
+ firmware counter
+In-Reply-To: <20240404-89ee7d7f90a5fcc91809065e@orel>
+References: <20240403080452.1007601-1-atishp@rivosinc.com>
+ <20240403080452.1007601-4-atishp@rivosinc.com>
+ <20240404-89ee7d7f90a5fcc91809065e@orel>
+Message-ID: <e95f9821-e83c-4abb-941d-60ce24b9c0a3@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Apr 08, 2024 at 01:19:39PM +0200, Cl?ment L?ger wrote:
+On 4/4/24 04:02, Andrew Jones wrote:
+> On Wed, Apr 03, 2024 at 01:04:32AM -0700, Atish Patra wrote:
+>> SBI v2.0 introduced a explicit function to read the upper 32 bits
+>> for any firmware counter width that is longer than 32bits.
+>> This is only applicable for RV32 where firmware counter can be
+>> 64 bit.
+>>
+>> Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+>> Acked-by: Palmer Dabbelt <palmer@rivosinc.com>
+>> Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
+>> Reviewed-by: Anup Patel <anup@brainfault.org>
+>> Signed-off-by: Atish Patra <atishp@rivosinc.com>
+>> ---
+>>   drivers/perf/riscv_pmu_sbi.c | 25 ++++++++++++++++++++-----
+>>   1 file changed, 20 insertions(+), 5 deletions(-)
+>>
+>> diff --git a/drivers/perf/riscv_pmu_sbi.c b/drivers/perf/riscv_pmu_sbi.c
+>> index 3e44d2fb8bf8..babf1b9a4dbe 100644
+>> --- a/drivers/perf/riscv_pmu_sbi.c
+>> +++ b/drivers/perf/riscv_pmu_sbi.c
+>> @@ -57,6 +57,8 @@ asm volatile(ALTERNATIVE(						\
+>>   PMU_FORMAT_ATTR(event, "config:0-47");
+>>   PMU_FORMAT_ATTR(firmware, "config:63");
+>>   
+>> +static bool sbi_v2_available;
+>> +
+>>   static struct attribute *riscv_arch_formats_attr[] = {
+>>   	&format_attr_event.attr,
+>>   	&format_attr_firmware.attr,
+>> @@ -511,19 +513,29 @@ static u64 pmu_sbi_ctr_read(struct perf_event *event)
+>>   	struct hw_perf_event *hwc = &event->hw;
+>>   	int idx = hwc->idx;
+>>   	struct sbiret ret;
+>> -	union sbi_pmu_ctr_info info;
+>>   	u64 val = 0;
+>> +	union sbi_pmu_ctr_info info = pmu_ctr_list[idx];
+>>   
+>>   	if (pmu_sbi_is_fw_event(event)) {
+>>   		ret = sbi_ecall(SBI_EXT_PMU, SBI_EXT_PMU_COUNTER_FW_READ,
+>>   				hwc->idx, 0, 0, 0, 0, 0);
+>> -		if (!ret.error)
+>> -			val = ret.value;
+>> +		if (ret.error)
+>> +			return 0;
+>> +
+>> +		val = ret.value;
+>> +		if (IS_ENABLED(CONFIG_32BIT) && sbi_v2_available && info.width >= 32) {
+>> +			ret = sbi_ecall(SBI_EXT_PMU, SBI_EXT_PMU_COUNTER_FW_READ_HI,
+>> +					hwc->idx, 0, 0, 0, 0, 0);
+>> +			if (!ret.error)
+>> +				val |= ((u64)ret.value << 32);
+>> +			else
+>> +				WARN_ONCE(1, "Unable to read upper 32 bits of firmware counter error: %d\n",
+>> +					  sbi_err_map_linux_errno(ret.error));
 > 
+> I don't think we should use sbi_err_map_linux_errno() in this case since
+> we don't have a 1:1 mapping of SBI errors to Linux errors and we don't
+> propagate the error as a Linux error. For warnings, it's better to output
+> the exact SBI error.
 > 
-> On 08/04/2024 13:03, Andrew Jones wrote:
-> > On Mon, Apr 08, 2024 at 10:01:12AM +0200, Cl?ment L?ger wrote:
-> >>
-> >>
-> >> On 05/04/2024 19:33, Deepak Gupta wrote:
-> >>> On Fri, Apr 5, 2024 at 8:26?AM Andrew Jones <ajones@ventanamicro.com> wrote:
-> >>>>
-> >>>> On Thu, Apr 04, 2024 at 12:32:46PM +0200, Cl?ment L?ger wrote:
-> >>>>> The Zimop ISA extension was ratified recently. This series adds support
-> >>>>> for parsing it from riscv,isa, hwprobe export and kvm support for
-> >>>>> Guest/VM.
-> >>>>
-> >>>> I'm not sure we need this. Zimop by itself isn't useful, so I don't know
-> >>>> if we need to advertise it at all. When an extension comes along that
-> >>>> redefines some MOPs, then we'll advertise that extension, but the fact
-> >>>> Zimop is used for that extension is really just an implementation detail.
-> >>>
-> >>> Only situation I see this can be useful is this:--
-> >>>
-> >>> An implementer, implemented Zimops in CPU solely for the purpose that they can
-> >>> run mainline distro & packages on their hardware and don't want to leverage any
-> >>> feature which are built on top of Zimop.
-> >>
-> >> Yes, the rationale was that some binaries using extensions that overload
-> >> MOPs could still be run. With Zimop exposed, the loader could determine
-> >> if the binary can be executed without potentially crashing. We could
-> >> also let the program run anyway but the execution could potentially
-> >> crash unexpectedly, which IMHO is not really good for the user
-> >> experience nor for debugging. I already think that the segfaults which
-> >> happens when executing binaries that need some missing extension are not
-> >> so easy to debug, so better add more guards.
-> > 
-> > OK. It's only one more extension out of dozens, so I won't complain more,
-> 
-> No worries, your point *is* valid since I'm not sure yet that the loader
-> will actually do that one day.
-> 
-> BTW, are you aware of any effort to make the elf dynamic loader
-> "smarter" and actually check for needed extensions to be present rather
-> than blindly running the elf and potentially catching SIGILL ?
 
-Jeff Law told me a bit about FMV (function multiversioning). I don't know
-much about this, but, from what he's told me, it sounds like there will be
-an ifunc resolver which invokes hwprobe to determine which variants are
-possible/best to use, so it should be possible to avoid SIGILL by always
-having a basic variant.
+Sure. Fixed it.
 
-Thanks,
-drew
-
+>> +		}
+>>   	} else {
+>> -		info = pmu_ctr_list[idx];
+>>   		val = riscv_pmu_ctr_read_csr(info.csr);
+>>   		if (IS_ENABLED(CONFIG_32BIT))
+>> -			val = ((u64)riscv_pmu_ctr_read_csr(info.csr + 0x80)) << 31 | val;
+>> +			val |= ((u64)riscv_pmu_ctr_read_csr(info.csr + 0x80)) << 32;
+>>   	}
+>>   
+>>   	return val;
+>> @@ -1135,6 +1147,9 @@ static int __init pmu_sbi_devinit(void)
+>>   		return 0;
+>>   	}
+>>   
+>> +	if (sbi_spec_version >= sbi_mk_version(2, 0))
+>> +		sbi_v2_available = true;
+>> +
+>>   	ret = cpuhp_setup_state_multi(CPUHP_AP_PERF_RISCV_STARTING,
+>>   				      "perf/riscv/pmu:starting",
+>>   				      pmu_sbi_starting_cpu, pmu_sbi_dying_cpu);
+>> -- 
+>> 2.34.1
+>>
 > 
 > Thanks,
-> 
-> Cl?ment
-> 
-> > but I was thinking that binaries that use particular extensions would
-> > check for those particular extensions (step 2), rather than Zimop.
-> > 
-> > Thanks,
-> > drew
-> > 
-> >>
-> >>>
-> >>> As an example zicfilp and zicfiss are dependent on zimops. glibc can
-> >>> do following
-> >>>
-> >>> 1) check elf header if binary was compiled with zicfiss and zicfilp,
-> >>> if yes goto step 2, else goto step 6.
-> >>> 2) check if zicfiss/zicfilp is available in hw via hwprobe, if yes
-> >>> goto step 5. else goto step 3
-> >>> 3) check if zimop is available via hwprobe, if yes goto step 6, else goto step 4
-> >>
-> >> I think you meant step 5 rather than step 6.
-> >>
-> >> Cl?ment
-> >>
-> >>> 4) This binary won't be able to run successfully on this platform,
-> >>> issue exit syscall. <-- termination
-> >>> 5) issue prctl to enable shadow stack and landing pad for current task
-> >>> <-- enable feature
-> >>> 6) let the binary run <-- let the binary run because no harm can be done
+> drew
+
 
