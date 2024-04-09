@@ -1,62 +1,53 @@
-From: Conor Dooley <conor@kernel.org>
-Date: Tue, 9 Apr 2024 16:49:02 +0100
-Subject: [PATCH RFC 02/11] dt-bindings: riscv: Add Sdtrig optional CSRs
- existence on DT
-In-Reply-To: <20240405-ebdb2943657ab08d2d563c03@orel>
-References: <20240329-dev-maxh-lin-452-6-9-v1-0-1534f93b94a7@sifive.com>
- <20240329-dev-maxh-lin-452-6-9-v1-2-1534f93b94a7@sifive.com>
- <20240329-affidavit-anatomist-1118a12c3e60@wendy>
- <20240405-ebdb2943657ab08d2d563c03@orel>
-Message-ID: <20240409-princess-hypnotic-7fd89aafa31d@spud>
+From: Will Deacon <will@kernel.org>
+Date: Tue,  9 Apr 2024 17:59:33 +0100
+Subject: [kvmtool PATCH v2 00/10] More ISA extensions
+In-Reply-To: <20240325153141.6816-1-apatel@ventanamicro.com>
+References: <20240325153141.6816-1-apatel@ventanamicro.com>
+Message-ID: <171267491912.3164891.14888329040291157885.b4-ty@kernel.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Apr 05, 2024 at 05:59:41PM +0200, Andrew Jones wrote:
-> On Fri, Mar 29, 2024 at 10:31:10AM +0000, Conor Dooley wrote:
-> > On Fri, Mar 29, 2024 at 05:26:18PM +0800, Max Hsu wrote:
-> > > The mcontext/hcontext/scontext CSRs are optional in the Sdtrig extension,
-> > > to prevent RW operations to the missing CSRs, which will cause
-> > > illegal instructions.
-> > > 
-> > > As a solution, we have proposed the dt format for these CSRs.
-> > 
-> > As I mentioned in your other patch, I amn't sure what the actual value
-> > is in being told about "sdtrig" itself if so many of the CSRs are
-> > optional. I think we should define pseudo extensions that represent
-> > usable subsets that are allowed by riscv,isa-extensions, such as
-> > those you describe here: sdtrig + mcontext, sdtrig + scontext and
-> > sdtrig + hcontext. Probably also for strig + mscontext. What
-> > additional value does having a debug child node give us that makes
-> > it worth having over something like the above?
+On Mon, 25 Mar 2024 21:01:31 +0530, Anup Patel wrote:
+> This series adds support more ISA extensions namely: Zbc, scalar crypto,
+> vector crypto, Zfh[min], Zihintntl, Zvfh[min], and Zfa. The series also
+> adds a command-line option to disable SBI STA extension for Guest/VM.
 > 
-> Yeah, Sdtrig, which doesn't tell you what you get, isn't nice at all.
-> I wonder if we can start with requiring Sdtrig to be accompanied by
-> Ssstrict in order to enable the context CSRs, i.e.
+> These patches can also be found in the riscv_more_exts_v2 branch at:
+> https://github.com/avpatel/kvmtool.git
 > 
->  Sdtrig          - support without optional CSRs
->  Sdtrig+Ssstrict - probe for optional CSRs, support what's found
-> 
-> If there are platforms with Sdtrig and optional CSRs, but not Ssstrict,
-> then maybe the optional CSRs can be detected in some vendor-specific way,
-> where the decision as to whether or not that vendor-specific way is
-> acceptable is handled case-by-case.
+> [...]
 
-I think it's pretty reasonable to make sstrict a requirement for the
-kernel's use of sdtrig. If we have some non-sstrict systems that do
-implement these particular CSRs, then I guess we can add some psuedo
-instructions then (and nothing would stop the sstrict systems also
-specifying directly). If they're using some non-standard CSRs then
-case-by-case I guess.
+Applied to kvmtool (master), thanks!
 
-I'm just specifically not keen on adding extra dt properties that do
-things we can already do with the ones we have!
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 228 bytes
-Desc: not available
-URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20240409/7a06481e/attachment.sig>
+[01/10] Sync-up headers with Linux-6.8 for KVM RISC-V
+        https://git.kernel.org/will/kvmtool/c/9968468141fc
+[02/10] kvmtool: Fix absence of __packed definition
+        https://git.kernel.org/will/kvmtool/c/f8c9614c4696
+[03/10] riscv: Add Zbc extension support
+        https://git.kernel.org/will/kvmtool/c/8b4cc7051393
+[04/10] riscv: Add scalar crypto extensions support
+        https://git.kernel.org/will/kvmtool/c/d9052a965a22
+[05/10] riscv: Add vector crypto extensions support
+        https://git.kernel.org/will/kvmtool/c/65b58f723ec3
+[06/10] riscv: Add Zfh[min] extensions support
+        https://git.kernel.org/will/kvmtool/c/bd7f13c1a19f
+[07/10] riscv: Add Zihintntl extension support
+        https://git.kernel.org/will/kvmtool/c/fce2865286b5
+[08/10] riscv: Add Zvfh[min] extensions support
+        https://git.kernel.org/will/kvmtool/c/5a64c1eadf79
+[09/10] riscv: Add Zfa extensiona support
+        https://git.kernel.org/will/kvmtool/c/9cf213d609bc
+[10/10] riscv: Allow disabling SBI STA extension for Guest
+        https://git.kernel.org/will/kvmtool/c/d38c8f76ebe2
+
+Cheers,
+-- 
+Will
+
+https://fixes.arm64.dev
+https://next.arm64.dev
+https://will.arm64.dev
+
