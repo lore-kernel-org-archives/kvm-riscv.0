@@ -1,133 +1,145 @@
 From: Atish Patra <atishp@rivosinc.com>
-Date: Mon, 8 Apr 2024 17:33:10 -0700
-Subject: [PATCH v5 12/22] RISC-V: KVM: Implement SBI PMU Snapshot feature
-In-Reply-To: <20240405-1060c986299eaac3528c7d4f@orel>
+Date: Mon, 8 Apr 2024 17:37:19 -0700
+Subject: [PATCH v5 20/22] KVM: riscv: selftests: Add SBI PMU selftest
+In-Reply-To: <20240405-d1a4cb9a441a05a9d2f8b1c8@orel>
 References: <20240403080452.1007601-1-atishp@rivosinc.com>
- <20240403080452.1007601-13-atishp@rivosinc.com>
- <20240405-1060c986299eaac3528c7d4f@orel>
-Message-ID: <a50d426c-a7c0-49d9-8bdf-d15ba53ba40f@rivosinc.com>
+ <20240403080452.1007601-21-atishp@rivosinc.com>
+ <20240405-d1a4cb9a441a05a9d2f8b1c8@orel>
+Message-ID: <976411ab-6ddf-4b10-8e13-1575928415ce@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 4/5/24 04:23, Andrew Jones wrote:
-> On Wed, Apr 03, 2024 at 01:04:41AM -0700, Atish Patra wrote:
->> PMU Snapshot function allows to minimize the number of traps when the
->> guest access configures/access the hpmcounters. If the snapshot feature
->> is enabled, the hypervisor updates the shared memory with counter
->> data and state of overflown counters. The guest can just read the
->> shared memory instead of trap & emulate done by the hypervisor.
->>
->> This patch doesn't implement the counter overflow yet.
->>
->> Reviewed-by: Anup Patel <anup@brainfault.org>
->> Signed-off-by: Atish Patra <atishp@rivosinc.com>
->> ---
->>   arch/riscv/include/asm/kvm_vcpu_pmu.h |   7 ++
->>   arch/riscv/kvm/vcpu_pmu.c             | 121 +++++++++++++++++++++++++-
->>   arch/riscv/kvm/vcpu_sbi_pmu.c         |   3 +
->>   3 files changed, 130 insertions(+), 1 deletion(-)
->>
->> diff --git a/arch/riscv/include/asm/kvm_vcpu_pmu.h b/arch/riscv/include/asm/kvm_vcpu_pmu.h
->> index 395518a1664e..77a1fc4d203d 100644
->> --- a/arch/riscv/include/asm/kvm_vcpu_pmu.h
->> +++ b/arch/riscv/include/asm/kvm_vcpu_pmu.h
->> @@ -50,6 +50,10 @@ struct kvm_pmu {
->>   	bool init_done;
->>   	/* Bit map of all the virtual counter used */
->>   	DECLARE_BITMAP(pmc_in_use, RISCV_KVM_MAX_COUNTERS);
->> +	/* The address of the counter snapshot area (guest physical address) */
->> +	gpa_t snapshot_addr;
->> +	/* The actual data of the snapshot */
->> +	struct riscv_pmu_snapshot_data *sdata;
->>   };
->>   
->>   #define vcpu_to_pmu(vcpu) (&(vcpu)->arch.pmu_context)
->> @@ -85,6 +89,9 @@ int kvm_riscv_vcpu_pmu_ctr_cfg_match(struct kvm_vcpu *vcpu, unsigned long ctr_ba
->>   int kvm_riscv_vcpu_pmu_ctr_read(struct kvm_vcpu *vcpu, unsigned long cidx,
->>   				struct kvm_vcpu_sbi_return *retdata);
->>   void kvm_riscv_vcpu_pmu_init(struct kvm_vcpu *vcpu);
->> +int kvm_riscv_vcpu_pmu_snapshot_set_shmem(struct kvm_vcpu *vcpu, unsigned long saddr_low,
->> +				      unsigned long saddr_high, unsigned long flags,
->> +				      struct kvm_vcpu_sbi_return *retdata);
->>   void kvm_riscv_vcpu_pmu_deinit(struct kvm_vcpu *vcpu);
->>   void kvm_riscv_vcpu_pmu_reset(struct kvm_vcpu *vcpu);
->>   
->> diff --git a/arch/riscv/kvm/vcpu_pmu.c b/arch/riscv/kvm/vcpu_pmu.c
->> index 2d9929bbc2c8..f706c688b338 100644
->> --- a/arch/riscv/kvm/vcpu_pmu.c
->> +++ b/arch/riscv/kvm/vcpu_pmu.c
->> @@ -14,6 +14,7 @@
->>   #include <asm/csr.h>
->>   #include <asm/kvm_vcpu_sbi.h>
->>   #include <asm/kvm_vcpu_pmu.h>
->> +#include <asm/sbi.h>
->>   #include <linux/bitops.h>
->>   
->>   #define kvm_pmu_num_counters(pmu) ((pmu)->num_hw_ctrs + (pmu)->num_fw_ctrs)
->> @@ -311,6 +312,80 @@ int kvm_riscv_vcpu_pmu_read_hpm(struct kvm_vcpu *vcpu, unsigned int csr_num,
->>   	return ret;
->>   }
->>   
->> +static void kvm_pmu_clear_snapshot_area(struct kvm_vcpu *vcpu)
+On 4/5/24 05:50, Andrew Jones wrote:
+> On Wed, Apr 03, 2024 at 01:04:49AM -0700, Atish Patra wrote:
+> ...
+>> +static void test_pmu_basic_sanity(void)
 >> +{
->> +	struct kvm_pmu *kvpmu = vcpu_to_pmu(vcpu);
->> +	int snapshot_area_size = sizeof(struct riscv_pmu_snapshot_data);
+>> +	long out_val = 0;
+>> +	bool probe;
+>> +	struct sbiret ret;
+>> +	int num_counters = 0, i;
+>> +	union sbi_pmu_ctr_info ctrinfo;
 >> +
->> +	if (kvpmu->sdata) {
->> +		if (kvpmu->snapshot_addr != INVALID_GPA) {
->> +			memset(kvpmu->sdata, 0, snapshot_area_size);
->> +			kvm_vcpu_write_guest(vcpu, kvpmu->snapshot_addr,
->> +					     kvpmu->sdata, snapshot_area_size);
->> +		} else {
->> +			pr_warn("snapshot address invalid\n");
->> +		}
->> +		kfree(kvpmu->sdata);
->> +		kvpmu->sdata = NULL;
+>> +	probe = guest_sbi_probe_extension(SBI_EXT_PMU, &out_val);
+>> +	GUEST_ASSERT(probe && out_val == 1);
+>> +
+>> +	num_counters = get_num_counters();
+>> +
+>> +	for (i = 0; i < num_counters; i++) {
+>> +		ret = sbi_ecall(SBI_EXT_PMU, SBI_EXT_PMU_COUNTER_GET_INFO, i,
+>> +				0, 0, 0, 0, 0);
+>> +
+>> +		/* There can be gaps in logical counter indicies*/
+>> +		if (ret.error)
+>> +			continue;
+>> +		GUEST_ASSERT_NE(ret.value, 0);
+>> +
+>> +		ctrinfo.value = ret.value;
+>> +
+>> +		/**
+>> +		 * Accesibillity check of hardware and read capability of firmware counters.
+> 
+> Accessibility
+> 
+
+Fixed it.
+
+>> +		 * The spec doesn't mandate any initial value. No need to check any value.
+>> +		 */
+>> +		read_counter(i, ctrinfo);
 >> +	}
->> +	kvpmu->snapshot_addr = INVALID_GPA;
+>> +
+>> +	GUEST_DONE();
 >> +}
 >> +
->> +int kvm_riscv_vcpu_pmu_snapshot_set_shmem(struct kvm_vcpu *vcpu, unsigned long saddr_low,
->> +				      unsigned long saddr_high, unsigned long flags,
->> +				      struct kvm_vcpu_sbi_return *retdata)
+>> +static void run_vcpu(struct kvm_vcpu *vcpu)
 >> +{
->> +	struct kvm_pmu *kvpmu = vcpu_to_pmu(vcpu);
->> +	int snapshot_area_size = sizeof(struct riscv_pmu_snapshot_data);
->> +	int sbiret = 0;
->> +	gpa_t saddr;
->> +	unsigned long hva;
->> +	bool writable;
+>> +	struct ucall uc;
 >> +
->> +	if (!kvpmu || flags) {
->> +		sbiret = SBI_ERR_INVALID_PARAM;
->> +		goto out;
+>> +	vcpu_run(vcpu);
+>> +	switch (get_ucall(vcpu, &uc)) {
+>> +	case UCALL_ABORT:
+>> +		REPORT_GUEST_ASSERT(uc);
+>> +		break;
+>> +	case UCALL_DONE:
+>> +	case UCALL_SYNC:
+>> +		break;
+>> +	default:
+>> +		TEST_FAIL("Unknown ucall %lu", uc.cmd);
+>> +		break;
 >> +	}
+>> +}
 >> +
->> +	if (saddr_low == SBI_SHMEM_DISABLE && saddr_high == SBI_SHMEM_DISABLE) {
->> +		kvm_pmu_clear_snapshot_area(vcpu);
->> +		return 0;
->> +	}
+>> +void test_vm_destroy(struct kvm_vm *vm)
+>> +{
+>> +	memset(ctrinfo_arr, 0, sizeof(union sbi_pmu_ctr_info) * RISCV_MAX_PMU_COUNTERS);
+>> +	counter_mask_available = 0;
+>> +	kvm_vm_free(vm);
+>> +}
 >> +
->> +	saddr = saddr_low;
+>> +static void test_vm_basic_test(void *guest_code)
+>> +{
+>> +	struct kvm_vm *vm;
+>> +	struct kvm_vcpu *vcpu;
 >> +
->> +	if (saddr_high != 0) {
->> +		if (IS_ENABLED(CONFIG_32BIT))
->> +			saddr |= ((gpa_t)saddr << 32);
+>> +	vm = vm_create_with_one_vcpu(&vcpu, guest_code);
+>> +	__TEST_REQUIRE(__vcpu_has_sbi_ext(vcpu, KVM_RISCV_SBI_EXT_PMU),
+>> +				   "SBI PMU not available, skipping test");
+>> +	vm_init_vector_tables(vm);
+>> +	/* Illegal instruction handler is required to verify read access without configuration */
+>> +	vm_install_exception_handler(vm, EXC_INST_ILLEGAL, guest_illegal_exception_handler);
 > 
-> saddr |= ((gpa_t)saddr_high << 32)
+> I still don't see where the "verify" part is. The handler doesn't record
+> that it had to handle anything.
 > 
 
-Oops. Thanks for catching it. Fixed.
+The objective of the test is to ensure that we get an illegal 
+instruction without configuration. The presence of the registered 
+exception handler is sufficient for that.
+
+The verify part is that the test doesn't end up in a illegal instruction 
+exception when you try to access a counter without configuring.
+
+Let me know if you think we should more verbose comment to explain the 
+scenario.
 
 
->> +		else
->> +			sbiret = SBI_ERR_INVALID_ADDRESS;
->> +		goto out;
->> +	}
 >> +
+>> +	vcpu_init_vector_tables(vcpu);
+>> +	run_vcpu(vcpu);
+>> +
+>> +	test_vm_destroy(vm);
+>> +}
+>> +
+>> +static void test_vm_events_test(void *guest_code)
+>> +{
+>> +	struct kvm_vm *vm = NULL;
+>> +	struct kvm_vcpu *vcpu = NULL;
+>> +
+>> +	vm = vm_create_with_one_vcpu(&vcpu, guest_code);
+>> +	__TEST_REQUIRE(__vcpu_has_sbi_ext(vcpu, KVM_RISCV_SBI_EXT_PMU),
+>> +				   "SBI PMU not available, skipping test");
+>> +	run_vcpu(vcpu);
+>> +
+>> +	test_vm_destroy(vm);
+>> +}
+>> +
+>> +int main(void)
+>> +{
+>> +	test_vm_basic_test(test_pmu_basic_sanity);
+>> +	pr_info("SBI PMU basic test : PASS\n");
+>> +
+>> +	test_vm_events_test(test_pmu_events);
+>> +	pr_info("SBI PMU event verification test : PASS\n");
+>> +
+>> +	return 0;
+>> +}
+>> -- 
+>> 2.34.1
+>>
 > 
 > Thanks,
 > drew
