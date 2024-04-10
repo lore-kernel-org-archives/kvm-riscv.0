@@ -1,57 +1,75 @@
 From: Deepak Gupta <debug@rivosinc.com>
-Date: Wed, 10 Apr 2024 14:34:33 -0700
-Subject: [PATCH 00/10] Add support for a few Zc* extensions as well as Zcmop
-In-Reply-To: <20240410091106.749233-1-cleger@rivosinc.com>
-References: <20240410091106.749233-1-cleger@rivosinc.com>
-Message-ID: <CAKC1njRJRnxj8XjwJ-Yx6Guu=9kSEdaFnxF1e+gXq9ij_j=atA@mail.gmail.com>
+Date: Wed, 10 Apr 2024 15:11:32 -0700
+Subject: [PATCH 0/5] Add parsing for Zimop ISA extension
+In-Reply-To: <ddc5555a-3ae8-42e5-a08a-ca5ceaf0bf28@rivosinc.com>
+References: <20240404103254.1752834-1-cleger@rivosinc.com>
+ <20240405-091c6c174f023d74b434059d@orel>
+ <CAKC1njQ3qQ8mTMoYkhhoGQfRSVtp2Tfd2LjDhAmut7UcW9-bGw@mail.gmail.com>
+ <ddc5555a-3ae8-42e5-a08a-ca5ceaf0bf28@rivosinc.com>
+Message-ID: <ZhcOlNK4u1xAjcs9@debug.ba.rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-For the series:
+On Mon, Apr 08, 2024 at 10:01:12AM +0200, Cl?ment L?ger wrote:
+>
+>
+>On 05/04/2024 19:33, Deepak Gupta wrote:
+>> On Fri, Apr 5, 2024 at 8:26?AM Andrew Jones <ajones@ventanamicro.com> wrote:
+>>>
+>>> On Thu, Apr 04, 2024 at 12:32:46PM +0200, Cl?ment L?ger wrote:
+>>>> The Zimop ISA extension was ratified recently. This series adds support
+>>>> for parsing it from riscv,isa, hwprobe export and kvm support for
+>>>> Guest/VM.
+>>>
+>>> I'm not sure we need this. Zimop by itself isn't useful, so I don't know
+>>> if we need to advertise it at all. When an extension comes along that
+>>> redefines some MOPs, then we'll advertise that extension, but the fact
+>>> Zimop is used for that extension is really just an implementation detail.
+>>
+>> Only situation I see this can be useful is this:--
+>>
+>> An implementer, implemented Zimops in CPU solely for the purpose that they can
+>> run mainline distro & packages on their hardware and don't want to leverage any
+>> feature which are built on top of Zimop.
+>
+>Yes, the rationale was that some binaries using extensions that overload
+>MOPs could still be run. With Zimop exposed, the loader could determine
+>if the binary can be executed without potentially crashing. We could
+>also let the program run anyway but the execution could potentially
+>crash unexpectedly, which IMHO is not really good for the user
+>experience nor for debugging. I already think that the segfaults which
+>happens when executing binaries that need some missing extension are not
+>so easy to debug, so better add more guards.
+>
+>>
+>> As an example zicfilp and zicfiss are dependent on zimops. glibc can
+>> do following
+>>
+>> 1) check elf header if binary was compiled with zicfiss and zicfilp,
+>> if yes goto step 2, else goto step 6.
+>> 2) check if zicfiss/zicfilp is available in hw via hwprobe, if yes
+>> goto step 5. else goto step 3
+>> 3) check if zimop is available via hwprobe, if yes goto step 6, else goto step 4
+>
+>I think you meant step 5 rather than step 6.
 
-Reviewed-by: Deepak Gupta <debug@rivosinc.com>
+No I did mean step 6 which is let the binary run. Step 5 is "issue the prctl" to
+light up the feature, this should have been reached via step 2 if feature was
+available.
 
-On Wed, Apr 10, 2024 at 2:13?AM Cl?ment L?ger <cleger@rivosinc.com> wrote:
+Going to step 6 from step 3 basically means that underlying hardware only supports
+zimops and thus this binary is safe to run on this hardware. But no need to issue
+any prctl to kernel to enable this feature.
+
 >
-> Add support for (yet again) more RVA23U64 missing extensions. Add
-> support for Zcmop, Zca, Zcf, Zcd and Zcb extensions isa string parsing,
-> hwprobe and kvm support. Zce, Zcmt and Zcmp extensions have been left
-> out since they target microcontrollers/embedded CPUs and are not needed
-> by RVA23U64
+>Cl?ment
 >
-> This series is based on the Zimop one [1].
->
-> Link: https://lore.kernel.org/linux-riscv/20240404103254.1752834-1-cleger at rivosinc.com/ [1]
->
-> Cl?ment L?ger (10):
->   dt-bindings: riscv: add Zca, Zcf, Zcd and Zcb ISA extension
->     description
->   riscv: add ISA parsing for Zca, Zcf, Zcd and Zcb
->   riscv: hwprobe: export Zca, Zcf, Zcd and Zcb ISA extensions
->   RISC-V: KVM: Allow Zca, Zcf, Zcd and Zcb extensions for Guest/VM
->   KVM: riscv: selftests: Add some Zc* extensions to get-reg-list test
->   dt-bindings: riscv: add Zcmop ISA extension description
->   riscv: add ISA extension parsing for Zcmop
->   riscv: hwprobe: export Zcmop ISA extension
->   RISC-V: KVM: Allow Zcmop extension for Guest/VM
->   KVM: riscv: selftests: Add Zcmop extension to get-reg-list test
->
->  Documentation/arch/riscv/hwprobe.rst          | 24 ++++++++++++
->  .../devicetree/bindings/riscv/extensions.yaml | 37 +++++++++++++++++++
->  arch/riscv/include/asm/hwcap.h                |  5 +++
->  arch/riscv/include/uapi/asm/hwprobe.h         |  5 +++
->  arch/riscv/include/uapi/asm/kvm.h             |  5 +++
->  arch/riscv/kernel/cpufeature.c                |  5 +++
->  arch/riscv/kernel/sys_hwprobe.c               |  5 +++
->  arch/riscv/kvm/vcpu_onereg.c                  | 10 +++++
->  .../selftests/kvm/riscv/get-reg-list.c        | 20 ++++++++++
->  9 files changed, 116 insertions(+)
->
-> --
-> 2.43.0
->
->
+>> 4) This binary won't be able to run successfully on this platform,
+>> issue exit syscall. <-- termination
+>> 5) issue prctl to enable shadow stack and landing pad for current task
+>> <-- enable feature
+>> 6) let the binary run <-- let the binary run because no harm can be done
 
