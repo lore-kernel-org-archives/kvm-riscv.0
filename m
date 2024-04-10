@@ -1,58 +1,57 @@
 From: Deepak Gupta <debug@rivosinc.com>
-Date: Wed, 10 Apr 2024 14:32:41 -0700
-Subject: [PATCH 07/10] riscv: add ISA extension parsing for Zcmop
-In-Reply-To: <20240410091106.749233-8-cleger@rivosinc.com>
+Date: Wed, 10 Apr 2024 14:34:33 -0700
+Subject: [PATCH 00/10] Add support for a few Zc* extensions as well as Zcmop
+In-Reply-To: <20240410091106.749233-1-cleger@rivosinc.com>
 References: <20240410091106.749233-1-cleger@rivosinc.com>
- <20240410091106.749233-8-cleger@rivosinc.com>
-Message-ID: <ZhcFeVYUQJmBAKuv@debug.ba.rivosinc.com>
+Message-ID: <CAKC1njRJRnxj8XjwJ-Yx6Guu=9kSEdaFnxF1e+gXq9ij_j=atA@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Apr 10, 2024 at 11:11:00AM +0200, Cl?ment L?ger wrote:
->Add parsing for Zcmop ISA extension which was ratified in commit
->b854a709c00 ("Zcmop is ratified/1.0") of the riscv-isa-manual.
->
->Signed-off-by: Cl?ment L?ger <cleger@rivosinc.com>
->---
-> arch/riscv/include/asm/hwcap.h | 1 +
-> arch/riscv/kernel/cpufeature.c | 1 +
-> 2 files changed, 2 insertions(+)
->
->diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
->index b7551bad341b..cff7660de268 100644
->--- a/arch/riscv/include/asm/hwcap.h
->+++ b/arch/riscv/include/asm/hwcap.h
->@@ -86,6 +86,7 @@
-> #define RISCV_ISA_EXT_ZCB		77
-> #define RISCV_ISA_EXT_ZCD		78
-> #define RISCV_ISA_EXT_ZCF		79
->+#define RISCV_ISA_EXT_ZCMOP		80
->
-> #define RISCV_ISA_EXT_XLINUXENVCFG	127
->
->diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
->index 09dee071274d..f1450cd7231e 100644
->--- a/arch/riscv/kernel/cpufeature.c
->+++ b/arch/riscv/kernel/cpufeature.c
->@@ -265,6 +265,7 @@ const struct riscv_isa_ext_data riscv_isa_ext[] = {
-> 	__RISCV_ISA_EXT_DATA(zcb, RISCV_ISA_EXT_ZCB),
-> 	__RISCV_ISA_EXT_DATA(zcd, RISCV_ISA_EXT_ZCD),
-> 	__RISCV_ISA_EXT_DATA(zcf, RISCV_ISA_EXT_ZCF),
->+	__RISCV_ISA_EXT_DATA(zcmop, RISCV_ISA_EXT_ZCMOP),
+For the series:
 
-As per spec zcmop is dependent on zca. So perhaps below ?
+Reviewed-by: Deepak Gupta <debug@rivosinc.com>
 
-__RISCV_ISA_EXT_SUPERSET(zicboz, RISCV_ISA_EXT_ZCMOP, RISCV_ISA_EXT_ZCA)
-
-
-> 	__RISCV_ISA_EXT_DATA(zba, RISCV_ISA_EXT_ZBA),
-> 	__RISCV_ISA_EXT_DATA(zbb, RISCV_ISA_EXT_ZBB),
-> 	__RISCV_ISA_EXT_DATA(zbc, RISCV_ISA_EXT_ZBC),
->-- 
->2.43.0
+On Wed, Apr 10, 2024 at 2:13?AM Cl?ment L?ger <cleger@rivosinc.com> wrote:
+>
+> Add support for (yet again) more RVA23U64 missing extensions. Add
+> support for Zcmop, Zca, Zcf, Zcd and Zcb extensions isa string parsing,
+> hwprobe and kvm support. Zce, Zcmt and Zcmp extensions have been left
+> out since they target microcontrollers/embedded CPUs and are not needed
+> by RVA23U64
+>
+> This series is based on the Zimop one [1].
+>
+> Link: https://lore.kernel.org/linux-riscv/20240404103254.1752834-1-cleger at rivosinc.com/ [1]
+>
+> Cl?ment L?ger (10):
+>   dt-bindings: riscv: add Zca, Zcf, Zcd and Zcb ISA extension
+>     description
+>   riscv: add ISA parsing for Zca, Zcf, Zcd and Zcb
+>   riscv: hwprobe: export Zca, Zcf, Zcd and Zcb ISA extensions
+>   RISC-V: KVM: Allow Zca, Zcf, Zcd and Zcb extensions for Guest/VM
+>   KVM: riscv: selftests: Add some Zc* extensions to get-reg-list test
+>   dt-bindings: riscv: add Zcmop ISA extension description
+>   riscv: add ISA extension parsing for Zcmop
+>   riscv: hwprobe: export Zcmop ISA extension
+>   RISC-V: KVM: Allow Zcmop extension for Guest/VM
+>   KVM: riscv: selftests: Add Zcmop extension to get-reg-list test
+>
+>  Documentation/arch/riscv/hwprobe.rst          | 24 ++++++++++++
+>  .../devicetree/bindings/riscv/extensions.yaml | 37 +++++++++++++++++++
+>  arch/riscv/include/asm/hwcap.h                |  5 +++
+>  arch/riscv/include/uapi/asm/hwprobe.h         |  5 +++
+>  arch/riscv/include/uapi/asm/kvm.h             |  5 +++
+>  arch/riscv/kernel/cpufeature.c                |  5 +++
+>  arch/riscv/kernel/sys_hwprobe.c               |  5 +++
+>  arch/riscv/kvm/vcpu_onereg.c                  | 10 +++++
+>  .../selftests/kvm/riscv/get-reg-list.c        | 20 ++++++++++
+>  9 files changed, 116 insertions(+)
+>
+> --
+> 2.43.0
 >
 >
 
