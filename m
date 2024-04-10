@@ -1,47 +1,66 @@
 From: Clément Léger <cleger@rivosinc.com>
-Date: Wed, 10 Apr 2024 11:10:53 +0200
-Subject: [PATCH 00/10] Add support for a few Zc* extensions as well as Zcmop
-Message-ID: <20240410091106.749233-1-cleger@rivosinc.com>
+Date: Wed, 10 Apr 2024 11:10:54 +0200
+Subject: [PATCH 01/10] dt-bindings: riscv: add Zca, Zcf, Zcd and Zcb ISA extension description
+In-Reply-To: <20240410091106.749233-1-cleger@rivosinc.com>
+References: <20240410091106.749233-1-cleger@rivosinc.com>
+Message-ID: <20240410091106.749233-2-cleger@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add support for (yet again) more RVA23U64 missing extensions. Add
-support for Zcmop, Zca, Zcf, Zcd and Zcb extensions isa string parsing,
-hwprobe and kvm support. Zce, Zcmt and Zcmp extensions have been left
-out since they target microcontrollers/embedded CPUs and are not needed
-by RVA23U64
+Add description for Zca, Zcf, Zcd and Zcb extensions which are part the
+Zc* standard extensions for code size reduction.
 
-This series is based on the Zimop one [1].
+Signed-off-by: Cl?ment L?ger <cleger@rivosinc.com>
+---
+ .../devicetree/bindings/riscv/extensions.yaml | 32 +++++++++++++++++++
+ 1 file changed, 32 insertions(+)
 
-Link: https://lore.kernel.org/linux-riscv/20240404103254.1752834-1-cleger at rivosinc.com/ [1]
-
-Cl?ment L?ger (10):
-  dt-bindings: riscv: add Zca, Zcf, Zcd and Zcb ISA extension
-    description
-  riscv: add ISA parsing for Zca, Zcf, Zcd and Zcb
-  riscv: hwprobe: export Zca, Zcf, Zcd and Zcb ISA extensions
-  RISC-V: KVM: Allow Zca, Zcf, Zcd and Zcb extensions for Guest/VM
-  KVM: riscv: selftests: Add some Zc* extensions to get-reg-list test
-  dt-bindings: riscv: add Zcmop ISA extension description
-  riscv: add ISA extension parsing for Zcmop
-  riscv: hwprobe: export Zcmop ISA extension
-  RISC-V: KVM: Allow Zcmop extension for Guest/VM
-  KVM: riscv: selftests: Add Zcmop extension to get-reg-list test
-
- Documentation/arch/riscv/hwprobe.rst          | 24 ++++++++++++
- .../devicetree/bindings/riscv/extensions.yaml | 37 +++++++++++++++++++
- arch/riscv/include/asm/hwcap.h                |  5 +++
- arch/riscv/include/uapi/asm/hwprobe.h         |  5 +++
- arch/riscv/include/uapi/asm/kvm.h             |  5 +++
- arch/riscv/kernel/cpufeature.c                |  5 +++
- arch/riscv/kernel/sys_hwprobe.c               |  5 +++
- arch/riscv/kvm/vcpu_onereg.c                  | 10 +++++
- .../selftests/kvm/riscv/get-reg-list.c        | 20 ++++++++++
- 9 files changed, 116 insertions(+)
-
+diff --git a/Documentation/devicetree/bindings/riscv/extensions.yaml b/Documentation/devicetree/bindings/riscv/extensions.yaml
+index 616370318a66..516f57bdfeeb 100644
+--- a/Documentation/devicetree/bindings/riscv/extensions.yaml
++++ b/Documentation/devicetree/bindings/riscv/extensions.yaml
+@@ -220,6 +220,38 @@ properties:
+             instructions as ratified at commit 6d33919 ("Merge pull request #158
+             from hirooih/clmul-fix-loop-end-condition") of riscv-bitmanip.
+ 
++        - const: zca
++          description: |
++            The Zca extension part of Zc* standard extensions for code size
++            reduction, as ratified in commit 8be3419c1c0 ("Zcf doesn't exist on
++            RV64 as it contains no instructions") of riscv-code-size-reduction,
++            merged in the riscv-isa-manual by commit dbc79cf28a2 ("Initial seed
++            of zc.adoc to src tree.").
++
++        - const: zcb
++          description: |
++            The Zcb extension part of Zc* standard extensions for code size
++            reduction, as ratified in commit 8be3419c1c0 ("Zcf doesn't exist on
++            RV64 as it contains no instructions") of riscv-code-size-reduction,
++            merged in the riscv-isa-manual by commit dbc79cf28a2 ("Initial seed
++            of zc.adoc to src tree.").
++
++        - const: zcd
++          description: |
++            The Zcd extension part of Zc* standard extensions for code size
++            reduction, as ratified in commit 8be3419c1c0 ("Zcf doesn't exist on
++            RV64 as it contains no instructions") of riscv-code-size-reduction,
++            merged in the riscv-isa-manual by commit dbc79cf28a2 ("Initial seed
++            of zc.adoc to src tree.").
++
++        - const: zcf
++          description: |
++            The Zcf extension part of Zc* standard extensions for code size
++            reduction, as ratified in commit 8be3419c1c0 ("Zcf doesn't exist on
++            RV64 as it contains no instructions") of riscv-code-size-reduction,
++            merged in the riscv-isa-manual by commit dbc79cf28a2 ("Initial seed
++            of zc.adoc to src tree.").
++
+         - const: zfa
+           description:
+             The standard Zfa extension for additional floating point
 -- 
 2.43.0
 
