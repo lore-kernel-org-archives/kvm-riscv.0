@@ -1,63 +1,59 @@
 From: Clément Léger <cleger@rivosinc.com>
-Date: Wed, 10 Apr 2024 11:11:01 +0200
-Subject: [PATCH 08/10] riscv: hwprobe: export Zcmop ISA extension
+Date: Wed, 10 Apr 2024 11:11:03 +0200
+Subject: [PATCH 10/10] KVM: riscv: selftests: Add Zcmop extension to get-reg-list test
 In-Reply-To: <20240410091106.749233-1-cleger@rivosinc.com>
 References: <20240410091106.749233-1-cleger@rivosinc.com>
-Message-ID: <20240410091106.749233-9-cleger@rivosinc.com>
+Message-ID: <20240410091106.749233-11-cleger@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Export Zcmop ISA extension through hwprobe.
+The KVM RISC-V allows Zcmop extension for Guest/VM so add this
+extension to get-reg-list test.
 
 Signed-off-by: Cl?ment L?ger <cleger@rivosinc.com>
 ---
- Documentation/arch/riscv/hwprobe.rst  | 4 ++++
- arch/riscv/include/uapi/asm/hwprobe.h | 1 +
- arch/riscv/kernel/sys_hwprobe.c       | 1 +
- 3 files changed, 6 insertions(+)
+ tools/testing/selftests/kvm/riscv/get-reg-list.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/Documentation/arch/riscv/hwprobe.rst b/Documentation/arch/riscv/hwprobe.rst
-index bf96b4e8ba3b..e3187659a077 100644
---- a/Documentation/arch/riscv/hwprobe.rst
-+++ b/Documentation/arch/riscv/hwprobe.rst
-@@ -212,6 +212,10 @@ The following keys are defined:
-        ("Zcf doesn't exist on RV64 as it contains no instructions") of
-        riscv-code-size-reduction.
- 
-+  * :c:macro:`RISCV_HWPROBE_EXT_ZCMOP`: The Zcmop May-Be-Operations extension is
-+       supported as defined in the RISC-V ISA manual starting from commit
-+       c732a4f39a4 ("Zcmop is ratified/1.0").
-+
- * :c:macro:`RISCV_HWPROBE_KEY_CPUPERF_0`: A bitmask that contains performance
-   information about the selected set of processors.
- 
-diff --git a/arch/riscv/include/uapi/asm/hwprobe.h b/arch/riscv/include/uapi/asm/hwprobe.h
-index dd4ad77faf49..d97ac5436447 100644
---- a/arch/riscv/include/uapi/asm/hwprobe.h
-+++ b/arch/riscv/include/uapi/asm/hwprobe.h
-@@ -64,6 +64,7 @@ struct riscv_hwprobe {
- #define		RISCV_HWPROBE_EXT_ZCB		(1ULL << 38)
- #define		RISCV_HWPROBE_EXT_ZCD		(1ULL << 39)
- #define		RISCV_HWPROBE_EXT_ZCF		(1ULL << 40)
-+#define		RISCV_HWPROBE_EXT_ZCMOP		(1ULL << 41)
- #define RISCV_HWPROBE_KEY_CPUPERF_0	5
- #define		RISCV_HWPROBE_MISALIGNED_UNKNOWN	(0 << 0)
- #define		RISCV_HWPROBE_MISALIGNED_EMULATED	(1 << 0)
-diff --git a/arch/riscv/kernel/sys_hwprobe.c b/arch/riscv/kernel/sys_hwprobe.c
-index 2ffa0fe5101e..9457231bd1c0 100644
---- a/arch/riscv/kernel/sys_hwprobe.c
-+++ b/arch/riscv/kernel/sys_hwprobe.c
-@@ -114,6 +114,7 @@ static void hwprobe_isa_ext0(struct riscv_hwprobe *pair,
- 		EXT_KEY(ZIMOP);
- 		EXT_KEY(ZCA);
- 		EXT_KEY(ZCB);
-+		EXT_KEY(ZCMOP);
- 
- 		if (has_vector()) {
- 			EXT_KEY(ZVBB);
+diff --git a/tools/testing/selftests/kvm/riscv/get-reg-list.c b/tools/testing/selftests/kvm/riscv/get-reg-list.c
+index 61cad4514197..9604c8ece787 100644
+--- a/tools/testing/selftests/kvm/riscv/get-reg-list.c
++++ b/tools/testing/selftests/kvm/riscv/get-reg-list.c
+@@ -59,6 +59,7 @@ bool filter_reg(__u64 reg)
+ 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZCB:
+ 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZCD:
+ 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZCF:
++	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZCMOP:
+ 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZFA:
+ 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZFH:
+ 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZFHMIN:
+@@ -429,6 +430,7 @@ static const char *isa_ext_single_id_to_str(__u64 reg_off)
+ 		KVM_ISA_EXT_ARR(ZCB),
+ 		KVM_ISA_EXT_ARR(ZCD),
+ 		KVM_ISA_EXT_ARR(ZCF),
++		KVM_ISA_EXT_ARR(ZCMOP),
+ 		KVM_ISA_EXT_ARR(ZFA),
+ 		KVM_ISA_EXT_ARR(ZFH),
+ 		KVM_ISA_EXT_ARR(ZFHMIN),
+@@ -957,6 +959,7 @@ KVM_ISA_EXT_SIMPLE_CONFIG(zca, ZCA),
+ KVM_ISA_EXT_SIMPLE_CONFIG(zcb, ZCB),
+ KVM_ISA_EXT_SIMPLE_CONFIG(zcd, ZCD),
+ KVM_ISA_EXT_SIMPLE_CONFIG(zcf, ZCF),
++KVM_ISA_EXT_SIMPLE_CONFIG(zcmop, ZCMOP);
+ KVM_ISA_EXT_SIMPLE_CONFIG(zfa, ZFA);
+ KVM_ISA_EXT_SIMPLE_CONFIG(zfh, ZFH);
+ KVM_ISA_EXT_SIMPLE_CONFIG(zfhmin, ZFHMIN);
+@@ -1017,6 +1020,7 @@ struct vcpu_reg_list *vcpu_configs[] = {
+ 	&config_zcb,
+ 	&config_zcd,
+ 	&config_zcf,
++	&config_zcmop,
+ 	&config_zfa,
+ 	&config_zfh,
+ 	&config_zfhmin,
 -- 
 2.43.0
 
