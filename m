@@ -1,21 +1,58 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Date: Wed, 10 Apr 2024 14:30:20 -0700
-Subject: [PATCH 0/4] KVM, mm: remove the .change_pte() MMU notifier and
- set_pte_at_notify()
-In-Reply-To: <20240405115815.3226315-1-pbonzini@redhat.com>
-References: <20240405115815.3226315-1-pbonzini@redhat.com>
-Message-ID: <20240410143020.420cafd47bf8af257b2e647a@linux-foundation.org>
+From: Deepak Gupta <debug@rivosinc.com>
+Date: Wed, 10 Apr 2024 14:32:41 -0700
+Subject: [PATCH 07/10] riscv: add ISA extension parsing for Zcmop
+In-Reply-To: <20240410091106.749233-8-cleger@rivosinc.com>
+References: <20240410091106.749233-1-cleger@rivosinc.com>
+ <20240410091106.749233-8-cleger@rivosinc.com>
+Message-ID: <ZhcFeVYUQJmBAKuv@debug.ba.rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri,  5 Apr 2024 07:58:11 -0400 Paolo Bonzini <pbonzini@redhat.com> wrote:
+On Wed, Apr 10, 2024 at 11:11:00AM +0200, Cl?ment L?ger wrote:
+>Add parsing for Zcmop ISA extension which was ratified in commit
+>b854a709c00 ("Zcmop is ratified/1.0") of the riscv-isa-manual.
+>
+>Signed-off-by: Cl?ment L?ger <cleger@rivosinc.com>
+>---
+> arch/riscv/include/asm/hwcap.h | 1 +
+> arch/riscv/kernel/cpufeature.c | 1 +
+> 2 files changed, 2 insertions(+)
+>
+>diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
+>index b7551bad341b..cff7660de268 100644
+>--- a/arch/riscv/include/asm/hwcap.h
+>+++ b/arch/riscv/include/asm/hwcap.h
+>@@ -86,6 +86,7 @@
+> #define RISCV_ISA_EXT_ZCB		77
+> #define RISCV_ISA_EXT_ZCD		78
+> #define RISCV_ISA_EXT_ZCF		79
+>+#define RISCV_ISA_EXT_ZCMOP		80
+>
+> #define RISCV_ISA_EXT_XLINUXENVCFG	127
+>
+>diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
+>index 09dee071274d..f1450cd7231e 100644
+>--- a/arch/riscv/kernel/cpufeature.c
+>+++ b/arch/riscv/kernel/cpufeature.c
+>@@ -265,6 +265,7 @@ const struct riscv_isa_ext_data riscv_isa_ext[] = {
+> 	__RISCV_ISA_EXT_DATA(zcb, RISCV_ISA_EXT_ZCB),
+> 	__RISCV_ISA_EXT_DATA(zcd, RISCV_ISA_EXT_ZCD),
+> 	__RISCV_ISA_EXT_DATA(zcf, RISCV_ISA_EXT_ZCF),
+>+	__RISCV_ISA_EXT_DATA(zcmop, RISCV_ISA_EXT_ZCMOP),
 
-> Please review!  Also feel free to take the KVM patches through the mm
-> tree, as I don't expect any conflicts.
+As per spec zcmop is dependent on zca. So perhaps below ?
 
-It's mainly a KVM thing and the MM changes are small and simple.
-I'd say that the KVM tree would be a better home?
+__RISCV_ISA_EXT_SUPERSET(zicboz, RISCV_ISA_EXT_ZCMOP, RISCV_ISA_EXT_ZCA)
+
+
+> 	__RISCV_ISA_EXT_DATA(zba, RISCV_ISA_EXT_ZBA),
+> 	__RISCV_ISA_EXT_DATA(zbb, RISCV_ISA_EXT_ZBB),
+> 	__RISCV_ISA_EXT_DATA(zbc, RISCV_ISA_EXT_ZBC),
+>-- 
+>2.43.0
+>
+>
 
