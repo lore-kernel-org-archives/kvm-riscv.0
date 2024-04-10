@@ -1,75 +1,69 @@
-From: Deepak Gupta <debug@rivosinc.com>
-Date: Wed, 10 Apr 2024 15:11:32 -0700
-Subject: [PATCH 0/5] Add parsing for Zimop ISA extension
-In-Reply-To: <ddc5555a-3ae8-42e5-a08a-ca5ceaf0bf28@rivosinc.com>
-References: <20240404103254.1752834-1-cleger@rivosinc.com>
- <20240405-091c6c174f023d74b434059d@orel>
- <CAKC1njQ3qQ8mTMoYkhhoGQfRSVtp2Tfd2LjDhAmut7UcW9-bGw@mail.gmail.com>
- <ddc5555a-3ae8-42e5-a08a-ca5ceaf0bf28@rivosinc.com>
-Message-ID: <ZhcOlNK4u1xAjcs9@debug.ba.rivosinc.com>
+From: Conor Dooley <conor@kernel.org>
+Date: Wed, 10 Apr 2024 23:16:11 +0100
+Subject: [PATCH 07/10] riscv: add ISA extension parsing for Zcmop
+In-Reply-To: <ZhcFeVYUQJmBAKuv@debug.ba.rivosinc.com>
+References: <20240410091106.749233-1-cleger@rivosinc.com>
+ <20240410091106.749233-8-cleger@rivosinc.com>
+ <ZhcFeVYUQJmBAKuv@debug.ba.rivosinc.com>
+Message-ID: <20240410-jawless-cavalry-a3eaf9c562a4@spud>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Apr 08, 2024 at 10:01:12AM +0200, Cl?ment L?ger wrote:
->
->
->On 05/04/2024 19:33, Deepak Gupta wrote:
->> On Fri, Apr 5, 2024 at 8:26?AM Andrew Jones <ajones@ventanamicro.com> wrote:
->>>
->>> On Thu, Apr 04, 2024 at 12:32:46PM +0200, Cl?ment L?ger wrote:
->>>> The Zimop ISA extension was ratified recently. This series adds support
->>>> for parsing it from riscv,isa, hwprobe export and kvm support for
->>>> Guest/VM.
->>>
->>> I'm not sure we need this. Zimop by itself isn't useful, so I don't know
->>> if we need to advertise it at all. When an extension comes along that
->>> redefines some MOPs, then we'll advertise that extension, but the fact
->>> Zimop is used for that extension is really just an implementation detail.
->>
->> Only situation I see this can be useful is this:--
->>
->> An implementer, implemented Zimops in CPU solely for the purpose that they can
->> run mainline distro & packages on their hardware and don't want to leverage any
->> feature which are built on top of Zimop.
->
->Yes, the rationale was that some binaries using extensions that overload
->MOPs could still be run. With Zimop exposed, the loader could determine
->if the binary can be executed without potentially crashing. We could
->also let the program run anyway but the execution could potentially
->crash unexpectedly, which IMHO is not really good for the user
->experience nor for debugging. I already think that the segfaults which
->happens when executing binaries that need some missing extension are not
->so easy to debug, so better add more guards.
->
->>
->> As an example zicfilp and zicfiss are dependent on zimops. glibc can
->> do following
->>
->> 1) check elf header if binary was compiled with zicfiss and zicfilp,
->> if yes goto step 2, else goto step 6.
->> 2) check if zicfiss/zicfilp is available in hw via hwprobe, if yes
->> goto step 5. else goto step 3
->> 3) check if zimop is available via hwprobe, if yes goto step 6, else goto step 4
->
->I think you meant step 5 rather than step 6.
+On Wed, Apr 10, 2024 at 02:32:41PM -0700, Deepak Gupta wrote:
+> On Wed, Apr 10, 2024 at 11:11:00AM +0200, Cl?ment L?ger wrote:
+> > Add parsing for Zcmop ISA extension which was ratified in commit
+> > b854a709c00 ("Zcmop is ratified/1.0") of the riscv-isa-manual.
+> > 
+> > Signed-off-by: Cl?ment L?ger <cleger@rivosinc.com>
+> > ---
+> > arch/riscv/include/asm/hwcap.h | 1 +
+> > arch/riscv/kernel/cpufeature.c | 1 +
+> > 2 files changed, 2 insertions(+)
+> > 
+> > diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
+> > index b7551bad341b..cff7660de268 100644
+> > --- a/arch/riscv/include/asm/hwcap.h
+> > +++ b/arch/riscv/include/asm/hwcap.h
+> > @@ -86,6 +86,7 @@
+> > #define RISCV_ISA_EXT_ZCB		77
+> > #define RISCV_ISA_EXT_ZCD		78
+> > #define RISCV_ISA_EXT_ZCF		79
+> > +#define RISCV_ISA_EXT_ZCMOP		80
+> > 
+> > #define RISCV_ISA_EXT_XLINUXENVCFG	127
+> > 
+> > diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
+> > index 09dee071274d..f1450cd7231e 100644
+> > --- a/arch/riscv/kernel/cpufeature.c
+> > +++ b/arch/riscv/kernel/cpufeature.c
+> > @@ -265,6 +265,7 @@ const struct riscv_isa_ext_data riscv_isa_ext[] = {
+> > 	__RISCV_ISA_EXT_DATA(zcb, RISCV_ISA_EXT_ZCB),
+> > 	__RISCV_ISA_EXT_DATA(zcd, RISCV_ISA_EXT_ZCD),
+> > 	__RISCV_ISA_EXT_DATA(zcf, RISCV_ISA_EXT_ZCF),
+> > +	__RISCV_ISA_EXT_DATA(zcmop, RISCV_ISA_EXT_ZCMOP),
+> 
+> As per spec zcmop is dependent on zca. So perhaps below ?
+> 
+> __RISCV_ISA_EXT_SUPERSET(zicboz, RISCV_ISA_EXT_ZCMOP, RISCV_ISA_EXT_ZCA)
 
-No I did mean step 6 which is let the binary run. Step 5 is "issue the prctl" to
-light up the feature, this should have been reached via step 2 if feature was
-available.
+What's zicboz got to do with it, copy-pasto I guess?
+If we're gonna imply stuff like this though I think we need some
+comments explaining why it's okay.
 
-Going to step 6 from step 3 basically means that underlying hardware only supports
-zimops and thus this binary is safe to run on this hardware. But no need to issue
-any prctl to kernel to enable this feature.
-
->
->Cl?ment
->
->> 4) This binary won't be able to run successfully on this platform,
->> issue exit syscall. <-- termination
->> 5) issue prctl to enable shadow stack and landing pad for current task
->> <-- enable feature
->> 6) let the binary run <-- let the binary run because no harm can be done
-
+> > 	__RISCV_ISA_EXT_DATA(zba, RISCV_ISA_EXT_ZBA),
+> > 	__RISCV_ISA_EXT_DATA(zbb, RISCV_ISA_EXT_ZBB),
+> > 	__RISCV_ISA_EXT_DATA(zbc, RISCV_ISA_EXT_ZBC),
+> > -- 
+> > 2.43.0
+> > 
+> > 
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 228 bytes
+Desc: not available
+URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20240410/6e4c0793/attachment-0001.sig>
