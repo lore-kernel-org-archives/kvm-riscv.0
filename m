@@ -1,38 +1,113 @@
 From: Atish Patra <atishp@rivosinc.com>
-Date: Wed, 10 Apr 2024 17:07:38 -0700
-Subject: [PATCH v6 10/24] RISC-V: KVM: Fix the initial sample period value
+Date: Wed, 10 Apr 2024 17:07:48 -0700
+Subject: [PATCH v6 20/24] KVM: riscv: selftests: Add SBI PMU extension definitions
 In-Reply-To: <20240411000752.955910-1-atishp@rivosinc.com>
 References: <20240411000752.955910-1-atishp@rivosinc.com>
-Message-ID: <20240411000752.955910-11-atishp@rivosinc.com>
+Message-ID: <20240411000752.955910-21-atishp@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The initial sample period value when counter value is not assigned
-should be set to maximum value supported by the counter width.
-Otherwise, it may result in spurious interrupts.
+The SBI PMU extension definition is required for upcoming SBI PMU
+selftests.
 
 Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+Reviewed-by: Anup Patel <anup@brainfault.org>
 Signed-off-by: Atish Patra <atishp@rivosinc.com>
 ---
- arch/riscv/kvm/vcpu_pmu.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ .../testing/selftests/kvm/include/riscv/sbi.h | 66 +++++++++++++++++++
+ 1 file changed, 66 insertions(+)
 
-diff --git a/arch/riscv/kvm/vcpu_pmu.c b/arch/riscv/kvm/vcpu_pmu.c
-index 86391a5061dd..cee1b9ca4ec4 100644
---- a/arch/riscv/kvm/vcpu_pmu.c
-+++ b/arch/riscv/kvm/vcpu_pmu.c
-@@ -39,7 +39,7 @@ static u64 kvm_pmu_get_sample_period(struct kvm_pmc *pmc)
- 	u64 sample_period;
+diff --git a/tools/testing/selftests/kvm/include/riscv/sbi.h b/tools/testing/selftests/kvm/include/riscv/sbi.h
+index ba04f2dec7b5..6675ca673c77 100644
+--- a/tools/testing/selftests/kvm/include/riscv/sbi.h
++++ b/tools/testing/selftests/kvm/include/riscv/sbi.h
+@@ -29,17 +29,83 @@
+ enum sbi_ext_id {
+ 	SBI_EXT_BASE = 0x10,
+ 	SBI_EXT_STA = 0x535441,
++	SBI_EXT_PMU = 0x504D55,
+ };
  
- 	if (!pmc->counter_val)
--		sample_period = counter_val_mask + 1;
-+		sample_period = counter_val_mask;
- 	else
- 		sample_period = (-pmc->counter_val) & counter_val_mask;
+ enum sbi_ext_base_fid {
+ 	SBI_EXT_BASE_PROBE_EXT = 3,
+ };
++enum sbi_ext_pmu_fid {
++	SBI_EXT_PMU_NUM_COUNTERS = 0,
++	SBI_EXT_PMU_COUNTER_GET_INFO,
++	SBI_EXT_PMU_COUNTER_CFG_MATCH,
++	SBI_EXT_PMU_COUNTER_START,
++	SBI_EXT_PMU_COUNTER_STOP,
++	SBI_EXT_PMU_COUNTER_FW_READ,
++	SBI_EXT_PMU_COUNTER_FW_READ_HI,
++	SBI_EXT_PMU_SNAPSHOT_SET_SHMEM,
++};
++
++union sbi_pmu_ctr_info {
++	unsigned long value;
++	struct {
++		unsigned long csr:12;
++		unsigned long width:6;
++#if __riscv_xlen == 32
++		unsigned long reserved:13;
++#else
++		unsigned long reserved:45;
++#endif
++		unsigned long type:1;
++	};
++};
  
+ struct sbiret {
+ 	long error;
+ 	long value;
+ };
+ 
++/** General pmu event codes specified in SBI PMU extension */
++enum sbi_pmu_hw_generic_events_t {
++	SBI_PMU_HW_NO_EVENT			= 0,
++	SBI_PMU_HW_CPU_CYCLES			= 1,
++	SBI_PMU_HW_INSTRUCTIONS			= 2,
++	SBI_PMU_HW_CACHE_REFERENCES		= 3,
++	SBI_PMU_HW_CACHE_MISSES			= 4,
++	SBI_PMU_HW_BRANCH_INSTRUCTIONS		= 5,
++	SBI_PMU_HW_BRANCH_MISSES		= 6,
++	SBI_PMU_HW_BUS_CYCLES			= 7,
++	SBI_PMU_HW_STALLED_CYCLES_FRONTEND	= 8,
++	SBI_PMU_HW_STALLED_CYCLES_BACKEND	= 9,
++	SBI_PMU_HW_REF_CPU_CYCLES		= 10,
++
++	SBI_PMU_HW_GENERAL_MAX,
++};
++
++/* SBI PMU counter types */
++enum sbi_pmu_ctr_type {
++	SBI_PMU_CTR_TYPE_HW = 0x0,
++	SBI_PMU_CTR_TYPE_FW,
++};
++
++/* Flags defined for config matching function */
++#define SBI_PMU_CFG_FLAG_SKIP_MATCH	BIT(0)
++#define SBI_PMU_CFG_FLAG_CLEAR_VALUE	BIT(1)
++#define SBI_PMU_CFG_FLAG_AUTO_START	BIT(2)
++#define SBI_PMU_CFG_FLAG_SET_VUINH	BIT(3)
++#define SBI_PMU_CFG_FLAG_SET_VSINH	BIT(4)
++#define SBI_PMU_CFG_FLAG_SET_UINH	BIT(5)
++#define SBI_PMU_CFG_FLAG_SET_SINH	BIT(6)
++#define SBI_PMU_CFG_FLAG_SET_MINH	BIT(7)
++
++/* Flags defined for counter start function */
++#define SBI_PMU_START_FLAG_SET_INIT_VALUE BIT(0)
++#define SBI_PMU_START_FLAG_INIT_SNAPSHOT BIT(1)
++
++/* Flags defined for counter stop function */
++#define SBI_PMU_STOP_FLAG_RESET BIT(0)
++#define SBI_PMU_STOP_FLAG_TAKE_SNAPSHOT BIT(1)
++
+ struct sbiret sbi_ecall(int ext, int fid, unsigned long arg0,
+ 			unsigned long arg1, unsigned long arg2,
+ 			unsigned long arg3, unsigned long arg4,
 -- 
 2.34.1
 
