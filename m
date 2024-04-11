@@ -1,79 +1,61 @@
 From: Atish Patra <atishp@rivosinc.com>
-Date: Wed, 10 Apr 2024 17:07:34 -0700
-Subject: [PATCH v6 06/24] RISC-V: KVM: Rename the SBI_STA_SHMEM_DISABLE to a generic name
+Date: Wed, 10 Apr 2024 17:07:47 -0700
+Subject: [PATCH v6 19/24] KVM: riscv: selftests: Add Sscofpmf to get-reg-list test
 In-Reply-To: <20240411000752.955910-1-atishp@rivosinc.com>
 References: <20240411000752.955910-1-atishp@rivosinc.com>
-Message-ID: <20240411000752.955910-7-atishp@rivosinc.com>
+Message-ID: <20240411000752.955910-20-atishp@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-SBI_STA_SHMEM_DISABLE is a macro to invoke disable shared memory
-commands. As this can be invoked from other SBI extension context
-as well, rename it to more generic name as SBI_SHMEM_DISABLE.
+The KVM RISC-V allows Sscofpmf extension for Guest/VM so let us
+add this extension to get-reg-list test.
 
+Reviewed-by: Anup Patel <anup@brainfault.org>
 Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
 Signed-off-by: Atish Patra <atishp@rivosinc.com>
 ---
- arch/riscv/include/asm/sbi.h  | 2 +-
- arch/riscv/kernel/paravirt.c  | 6 +++---
- arch/riscv/kvm/vcpu_sbi_sta.c | 4 ++--
- 3 files changed, 6 insertions(+), 6 deletions(-)
+ tools/testing/selftests/kvm/riscv/get-reg-list.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/arch/riscv/include/asm/sbi.h b/arch/riscv/include/asm/sbi.h
-index 9aada4b9f7b5..f31650b10899 100644
---- a/arch/riscv/include/asm/sbi.h
-+++ b/arch/riscv/include/asm/sbi.h
-@@ -277,7 +277,7 @@ struct sbi_sta_struct {
- 	u8 pad[47];
- } __packed;
- 
--#define SBI_STA_SHMEM_DISABLE		-1
-+#define SBI_SHMEM_DISABLE		-1
- 
- /* SBI spec version fields */
- #define SBI_SPEC_VERSION_DEFAULT	0x1
-diff --git a/arch/riscv/kernel/paravirt.c b/arch/riscv/kernel/paravirt.c
-index 0d6225fd3194..fa6b0339a65d 100644
---- a/arch/riscv/kernel/paravirt.c
-+++ b/arch/riscv/kernel/paravirt.c
-@@ -62,7 +62,7 @@ static int sbi_sta_steal_time_set_shmem(unsigned long lo, unsigned long hi,
- 	ret = sbi_ecall(SBI_EXT_STA, SBI_EXT_STA_STEAL_TIME_SET_SHMEM,
- 			lo, hi, flags, 0, 0, 0);
- 	if (ret.error) {
--		if (lo == SBI_STA_SHMEM_DISABLE && hi == SBI_STA_SHMEM_DISABLE)
-+		if (lo == SBI_SHMEM_DISABLE && hi == SBI_SHMEM_DISABLE)
- 			pr_warn("Failed to disable steal-time shmem");
- 		else
- 			pr_warn("Failed to set steal-time shmem");
-@@ -84,8 +84,8 @@ static int pv_time_cpu_online(unsigned int cpu)
- 
- static int pv_time_cpu_down_prepare(unsigned int cpu)
- {
--	return sbi_sta_steal_time_set_shmem(SBI_STA_SHMEM_DISABLE,
--					    SBI_STA_SHMEM_DISABLE, 0);
-+	return sbi_sta_steal_time_set_shmem(SBI_SHMEM_DISABLE,
-+					    SBI_SHMEM_DISABLE, 0);
- }
- 
- static u64 pv_time_steal_clock(int cpu)
-diff --git a/arch/riscv/kvm/vcpu_sbi_sta.c b/arch/riscv/kvm/vcpu_sbi_sta.c
-index d8cf9ca28c61..5f35427114c1 100644
---- a/arch/riscv/kvm/vcpu_sbi_sta.c
-+++ b/arch/riscv/kvm/vcpu_sbi_sta.c
-@@ -93,8 +93,8 @@ static int kvm_sbi_sta_steal_time_set_shmem(struct kvm_vcpu *vcpu)
- 	if (flags != 0)
- 		return SBI_ERR_INVALID_PARAM;
- 
--	if (shmem_phys_lo == SBI_STA_SHMEM_DISABLE &&
--	    shmem_phys_hi == SBI_STA_SHMEM_DISABLE) {
-+	if (shmem_phys_lo == SBI_SHMEM_DISABLE &&
-+	    shmem_phys_hi == SBI_SHMEM_DISABLE) {
- 		vcpu->arch.sta.shmem = INVALID_GPA;
- 		return 0;
- 	}
+diff --git a/tools/testing/selftests/kvm/riscv/get-reg-list.c b/tools/testing/selftests/kvm/riscv/get-reg-list.c
+index b882b7b9b785..222198dd6d04 100644
+--- a/tools/testing/selftests/kvm/riscv/get-reg-list.c
++++ b/tools/testing/selftests/kvm/riscv/get-reg-list.c
+@@ -43,6 +43,7 @@ bool filter_reg(__u64 reg)
+ 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_V:
+ 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SMSTATEEN:
+ 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SSAIA:
++	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SSCOFPMF:
+ 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SSTC:
+ 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SVINVAL:
+ 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SVNAPOT:
+@@ -408,6 +409,7 @@ static const char *isa_ext_single_id_to_str(__u64 reg_off)
+ 		KVM_ISA_EXT_ARR(V),
+ 		KVM_ISA_EXT_ARR(SMSTATEEN),
+ 		KVM_ISA_EXT_ARR(SSAIA),
++		KVM_ISA_EXT_ARR(SSCOFPMF),
+ 		KVM_ISA_EXT_ARR(SSTC),
+ 		KVM_ISA_EXT_ARR(SVINVAL),
+ 		KVM_ISA_EXT_ARR(SVNAPOT),
+@@ -931,6 +933,7 @@ KVM_ISA_EXT_SUBLIST_CONFIG(fp_f, FP_F);
+ KVM_ISA_EXT_SUBLIST_CONFIG(fp_d, FP_D);
+ KVM_ISA_EXT_SIMPLE_CONFIG(h, H);
+ KVM_ISA_EXT_SUBLIST_CONFIG(smstateen, SMSTATEEN);
++KVM_ISA_EXT_SIMPLE_CONFIG(sscofpmf, SSCOFPMF);
+ KVM_ISA_EXT_SIMPLE_CONFIG(sstc, SSTC);
+ KVM_ISA_EXT_SIMPLE_CONFIG(svinval, SVINVAL);
+ KVM_ISA_EXT_SIMPLE_CONFIG(svnapot, SVNAPOT);
+@@ -986,6 +989,7 @@ struct vcpu_reg_list *vcpu_configs[] = {
+ 	&config_fp_d,
+ 	&config_h,
+ 	&config_smstateen,
++	&config_sscofpmf,
+ 	&config_sstc,
+ 	&config_svinval,
+ 	&config_svnapot,
 -- 
 2.34.1
 
