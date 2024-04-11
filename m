@@ -1,113 +1,311 @@
 From: Atish Patra <atishp@rivosinc.com>
-Date: Wed, 10 Apr 2024 17:07:48 -0700
-Subject: [PATCH v6 20/24] KVM: riscv: selftests: Add SBI PMU extension definitions
+Date: Wed, 10 Apr 2024 17:07:42 -0700
+Subject: [PATCH v6 14/24] RISC-V: KVM: Add perf sampling support for guests
 In-Reply-To: <20240411000752.955910-1-atishp@rivosinc.com>
 References: <20240411000752.955910-1-atishp@rivosinc.com>
-Message-ID: <20240411000752.955910-21-atishp@rivosinc.com>
+Message-ID: <20240411000752.955910-15-atishp@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The SBI PMU extension definition is required for upcoming SBI PMU
-selftests.
+KVM enables perf for guest via counter virtualization. However, the
+sampling can not be supported as there is no mechanism to enabled
+trap/emulate scountovf in ISA yet. Rely on the SBI PMU snapshot
+to provide the counter overflow data via the shared memory.
 
-Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+In case of sampling event, the host first sets the guest's LCOFI
+interrupt and injects to the guest via irq filtering mechanism defined
+in AIA specification. Thus, ssaia must be enabled in the host in order
+to use perf sampling in the guest. No other AIA dependency w.r.t kernel
+is required.
+
 Reviewed-by: Anup Patel <anup@brainfault.org>
 Signed-off-by: Atish Patra <atishp@rivosinc.com>
 ---
- .../testing/selftests/kvm/include/riscv/sbi.h | 66 +++++++++++++++++++
- 1 file changed, 66 insertions(+)
+ arch/riscv/include/asm/csr.h          |  3 +-
+ arch/riscv/include/asm/kvm_vcpu_pmu.h |  3 ++
+ arch/riscv/include/uapi/asm/kvm.h     |  1 +
+ arch/riscv/kvm/aia.c                  |  5 ++
+ arch/riscv/kvm/vcpu.c                 | 15 ++++--
+ arch/riscv/kvm/vcpu_onereg.c          |  6 +++
+ arch/riscv/kvm/vcpu_pmu.c             | 68 +++++++++++++++++++++++++--
+ 7 files changed, 93 insertions(+), 8 deletions(-)
 
-diff --git a/tools/testing/selftests/kvm/include/riscv/sbi.h b/tools/testing/selftests/kvm/include/riscv/sbi.h
-index ba04f2dec7b5..6675ca673c77 100644
---- a/tools/testing/selftests/kvm/include/riscv/sbi.h
-+++ b/tools/testing/selftests/kvm/include/riscv/sbi.h
-@@ -29,17 +29,83 @@
- enum sbi_ext_id {
- 	SBI_EXT_BASE = 0x10,
- 	SBI_EXT_STA = 0x535441,
-+	SBI_EXT_PMU = 0x504D55,
+diff --git a/arch/riscv/include/asm/csr.h b/arch/riscv/include/asm/csr.h
+index 9d1b07932794..25966995da04 100644
+--- a/arch/riscv/include/asm/csr.h
++++ b/arch/riscv/include/asm/csr.h
+@@ -168,7 +168,8 @@
+ #define VSIP_TO_HVIP_SHIFT	(IRQ_VS_SOFT - IRQ_S_SOFT)
+ #define VSIP_VALID_MASK		((_AC(1, UL) << IRQ_S_SOFT) | \
+ 				 (_AC(1, UL) << IRQ_S_TIMER) | \
+-				 (_AC(1, UL) << IRQ_S_EXT))
++				 (_AC(1, UL) << IRQ_S_EXT) | \
++				 (_AC(1, UL) << IRQ_PMU_OVF))
+ 
+ /* AIA CSR bits */
+ #define TOPI_IID_SHIFT		16
+diff --git a/arch/riscv/include/asm/kvm_vcpu_pmu.h b/arch/riscv/include/asm/kvm_vcpu_pmu.h
+index 77a1fc4d203d..257f17641e00 100644
+--- a/arch/riscv/include/asm/kvm_vcpu_pmu.h
++++ b/arch/riscv/include/asm/kvm_vcpu_pmu.h
+@@ -36,6 +36,7 @@ struct kvm_pmc {
+ 	bool started;
+ 	/* Monitoring event ID */
+ 	unsigned long event_idx;
++	struct kvm_vcpu *vcpu;
  };
  
- enum sbi_ext_base_fid {
- 	SBI_EXT_BASE_PROBE_EXT = 3,
- };
-+enum sbi_ext_pmu_fid {
-+	SBI_EXT_PMU_NUM_COUNTERS = 0,
-+	SBI_EXT_PMU_COUNTER_GET_INFO,
-+	SBI_EXT_PMU_COUNTER_CFG_MATCH,
-+	SBI_EXT_PMU_COUNTER_START,
-+	SBI_EXT_PMU_COUNTER_STOP,
-+	SBI_EXT_PMU_COUNTER_FW_READ,
-+	SBI_EXT_PMU_COUNTER_FW_READ_HI,
-+	SBI_EXT_PMU_SNAPSHOT_SET_SHMEM,
-+};
-+
-+union sbi_pmu_ctr_info {
-+	unsigned long value;
-+	struct {
-+		unsigned long csr:12;
-+		unsigned long width:6;
-+#if __riscv_xlen == 32
-+		unsigned long reserved:13;
-+#else
-+		unsigned long reserved:45;
-+#endif
-+		unsigned long type:1;
-+	};
-+};
- 
- struct sbiret {
- 	long error;
- 	long value;
+ /* PMU data structure per vcpu */
+@@ -50,6 +51,8 @@ struct kvm_pmu {
+ 	bool init_done;
+ 	/* Bit map of all the virtual counter used */
+ 	DECLARE_BITMAP(pmc_in_use, RISCV_KVM_MAX_COUNTERS);
++	/* Bit map of all the virtual counter overflown */
++	DECLARE_BITMAP(pmc_overflown, RISCV_KVM_MAX_COUNTERS);
+ 	/* The address of the counter snapshot area (guest physical address) */
+ 	gpa_t snapshot_addr;
+ 	/* The actual data of the snapshot */
+diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
+index b1c503c2959c..e878e7cc3978 100644
+--- a/arch/riscv/include/uapi/asm/kvm.h
++++ b/arch/riscv/include/uapi/asm/kvm.h
+@@ -167,6 +167,7 @@ enum KVM_RISCV_ISA_EXT_ID {
+ 	KVM_RISCV_ISA_EXT_ZFA,
+ 	KVM_RISCV_ISA_EXT_ZTSO,
+ 	KVM_RISCV_ISA_EXT_ZACAS,
++	KVM_RISCV_ISA_EXT_SSCOFPMF,
+ 	KVM_RISCV_ISA_EXT_MAX,
  };
  
-+/** General pmu event codes specified in SBI PMU extension */
-+enum sbi_pmu_hw_generic_events_t {
-+	SBI_PMU_HW_NO_EVENT			= 0,
-+	SBI_PMU_HW_CPU_CYCLES			= 1,
-+	SBI_PMU_HW_INSTRUCTIONS			= 2,
-+	SBI_PMU_HW_CACHE_REFERENCES		= 3,
-+	SBI_PMU_HW_CACHE_MISSES			= 4,
-+	SBI_PMU_HW_BRANCH_INSTRUCTIONS		= 5,
-+	SBI_PMU_HW_BRANCH_MISSES		= 6,
-+	SBI_PMU_HW_BUS_CYCLES			= 7,
-+	SBI_PMU_HW_STALLED_CYCLES_FRONTEND	= 8,
-+	SBI_PMU_HW_STALLED_CYCLES_BACKEND	= 9,
-+	SBI_PMU_HW_REF_CPU_CYCLES		= 10,
+diff --git a/arch/riscv/kvm/aia.c b/arch/riscv/kvm/aia.c
+index a944294f6f23..0f0a9d11bb5f 100644
+--- a/arch/riscv/kvm/aia.c
++++ b/arch/riscv/kvm/aia.c
+@@ -545,6 +545,9 @@ void kvm_riscv_aia_enable(void)
+ 	enable_percpu_irq(hgei_parent_irq,
+ 			  irq_get_trigger_type(hgei_parent_irq));
+ 	csr_set(CSR_HIE, BIT(IRQ_S_GEXT));
++	/* Enable IRQ filtering for overflow interrupt only if sscofpmf is present */
++	if (__riscv_isa_extension_available(NULL, RISCV_ISA_EXT_SSCOFPMF))
++		csr_write(CSR_HVIEN, BIT(IRQ_PMU_OVF));
+ }
+ 
+ void kvm_riscv_aia_disable(void)
+@@ -558,6 +561,8 @@ void kvm_riscv_aia_disable(void)
+ 		return;
+ 	hgctrl = get_cpu_ptr(&aia_hgei);
+ 
++	if (__riscv_isa_extension_available(NULL, RISCV_ISA_EXT_SSCOFPMF))
++		csr_clear(CSR_HVIEN, BIT(IRQ_PMU_OVF));
+ 	/* Disable per-CPU SGEI interrupt */
+ 	csr_clear(CSR_HIE, BIT(IRQ_S_GEXT));
+ 	disable_percpu_irq(hgei_parent_irq);
+diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+index b5ca9f2e98ac..bb10771b2b18 100644
+--- a/arch/riscv/kvm/vcpu.c
++++ b/arch/riscv/kvm/vcpu.c
+@@ -365,6 +365,13 @@ void kvm_riscv_vcpu_sync_interrupts(struct kvm_vcpu *vcpu)
+ 		}
+ 	}
+ 
++	/* Sync up the HVIP.LCOFIP bit changes (only clear) by the guest */
++	if ((csr->hvip ^ hvip) & (1UL << IRQ_PMU_OVF)) {
++		if (!(hvip & (1UL << IRQ_PMU_OVF)) &&
++		    !test_and_set_bit(IRQ_PMU_OVF, v->irqs_pending_mask))
++			clear_bit(IRQ_PMU_OVF, v->irqs_pending);
++	}
 +
-+	SBI_PMU_HW_GENERAL_MAX,
-+};
+ 	/* Sync-up AIA high interrupts */
+ 	kvm_riscv_vcpu_aia_sync_interrupts(vcpu);
+ 
+@@ -382,7 +389,8 @@ int kvm_riscv_vcpu_set_interrupt(struct kvm_vcpu *vcpu, unsigned int irq)
+ 	if (irq < IRQ_LOCAL_MAX &&
+ 	    irq != IRQ_VS_SOFT &&
+ 	    irq != IRQ_VS_TIMER &&
+-	    irq != IRQ_VS_EXT)
++	    irq != IRQ_VS_EXT &&
++	    irq != IRQ_PMU_OVF)
+ 		return -EINVAL;
+ 
+ 	set_bit(irq, vcpu->arch.irqs_pending);
+@@ -397,14 +405,15 @@ int kvm_riscv_vcpu_set_interrupt(struct kvm_vcpu *vcpu, unsigned int irq)
+ int kvm_riscv_vcpu_unset_interrupt(struct kvm_vcpu *vcpu, unsigned int irq)
+ {
+ 	/*
+-	 * We only allow VS-mode software, timer, and external
++	 * We only allow VS-mode software, timer, counter overflow and external
+ 	 * interrupts when irq is one of the local interrupts
+ 	 * defined by RISC-V privilege specification.
+ 	 */
+ 	if (irq < IRQ_LOCAL_MAX &&
+ 	    irq != IRQ_VS_SOFT &&
+ 	    irq != IRQ_VS_TIMER &&
+-	    irq != IRQ_VS_EXT)
++	    irq != IRQ_VS_EXT &&
++	    irq != IRQ_PMU_OVF)
+ 		return -EINVAL;
+ 
+ 	clear_bit(irq, vcpu->arch.irqs_pending);
+diff --git a/arch/riscv/kvm/vcpu_onereg.c b/arch/riscv/kvm/vcpu_onereg.c
+index 994adc26db4b..c676275ea0a0 100644
+--- a/arch/riscv/kvm/vcpu_onereg.c
++++ b/arch/riscv/kvm/vcpu_onereg.c
+@@ -36,6 +36,7 @@ static const unsigned long kvm_isa_ext_arr[] = {
+ 	/* Multi letter extensions (alphabetically sorted) */
+ 	KVM_ISA_EXT_ARR(SMSTATEEN),
+ 	KVM_ISA_EXT_ARR(SSAIA),
++	KVM_ISA_EXT_ARR(SSCOFPMF),
+ 	KVM_ISA_EXT_ARR(SSTC),
+ 	KVM_ISA_EXT_ARR(SVINVAL),
+ 	KVM_ISA_EXT_ARR(SVNAPOT),
+@@ -99,6 +100,9 @@ static bool kvm_riscv_vcpu_isa_enable_allowed(unsigned long ext)
+ 	switch (ext) {
+ 	case KVM_RISCV_ISA_EXT_H:
+ 		return false;
++	case KVM_RISCV_ISA_EXT_SSCOFPMF:
++		/* Sscofpmf depends on interrupt filtering defined in ssaia */
++		return __riscv_isa_extension_available(NULL, RISCV_ISA_EXT_SSAIA);
+ 	case KVM_RISCV_ISA_EXT_V:
+ 		return riscv_v_vstate_ctrl_user_allowed();
+ 	default:
+@@ -116,6 +120,8 @@ static bool kvm_riscv_vcpu_isa_disable_allowed(unsigned long ext)
+ 	case KVM_RISCV_ISA_EXT_C:
+ 	case KVM_RISCV_ISA_EXT_I:
+ 	case KVM_RISCV_ISA_EXT_M:
++	/* There is not architectural config bit to disable sscofpmf completely */
++	case KVM_RISCV_ISA_EXT_SSCOFPMF:
+ 	case KVM_RISCV_ISA_EXT_SSTC:
+ 	case KVM_RISCV_ISA_EXT_SVINVAL:
+ 	case KVM_RISCV_ISA_EXT_SVNAPOT:
+diff --git a/arch/riscv/kvm/vcpu_pmu.c b/arch/riscv/kvm/vcpu_pmu.c
+index 2ebccd73680f..a801ed52dc9b 100644
+--- a/arch/riscv/kvm/vcpu_pmu.c
++++ b/arch/riscv/kvm/vcpu_pmu.c
+@@ -230,6 +230,47 @@ static int kvm_pmu_validate_counter_mask(struct kvm_pmu *kvpmu, unsigned long ct
+ 	return 0;
+ }
+ 
++static void kvm_riscv_pmu_overflow(struct perf_event *perf_event,
++				   struct perf_sample_data *data,
++				   struct pt_regs *regs)
++{
++	struct kvm_pmc *pmc = perf_event->overflow_handler_context;
++	struct kvm_vcpu *vcpu = pmc->vcpu;
++	struct kvm_pmu *kvpmu = vcpu_to_pmu(vcpu);
++	struct riscv_pmu *rpmu = to_riscv_pmu(perf_event->pmu);
++	u64 period;
 +
-+/* SBI PMU counter types */
-+enum sbi_pmu_ctr_type {
-+	SBI_PMU_CTR_TYPE_HW = 0x0,
-+	SBI_PMU_CTR_TYPE_FW,
-+};
++	/*
++	 * Stop the event counting by directly accessing the perf_event.
++	 * Otherwise, this needs to deferred via a workqueue.
++	 * That will introduce skew in the counter value because the actual
++	 * physical counter would start after returning from this function.
++	 * It will be stopped again once the workqueue is scheduled
++	 */
++	rpmu->pmu.stop(perf_event, PERF_EF_UPDATE);
 +
-+/* Flags defined for config matching function */
-+#define SBI_PMU_CFG_FLAG_SKIP_MATCH	BIT(0)
-+#define SBI_PMU_CFG_FLAG_CLEAR_VALUE	BIT(1)
-+#define SBI_PMU_CFG_FLAG_AUTO_START	BIT(2)
-+#define SBI_PMU_CFG_FLAG_SET_VUINH	BIT(3)
-+#define SBI_PMU_CFG_FLAG_SET_VSINH	BIT(4)
-+#define SBI_PMU_CFG_FLAG_SET_UINH	BIT(5)
-+#define SBI_PMU_CFG_FLAG_SET_SINH	BIT(6)
-+#define SBI_PMU_CFG_FLAG_SET_MINH	BIT(7)
++	/*
++	 * The hw counter would start automatically when this function returns.
++	 * Thus, the host may continue to interrupt and inject it to the guest
++	 * even without the guest configuring the next event. Depending on the hardware
++	 * the host may have some sluggishness only if privilege mode filtering is not
++	 * available. In an ideal world, where qemu is not the only capable hardware,
++	 * this can be removed.
++	 * FYI: ARM64 does this way while x86 doesn't do anything as such.
++	 * TODO: Should we keep it for RISC-V ?
++	 */
++	period = -(local64_read(&perf_event->count));
 +
-+/* Flags defined for counter start function */
-+#define SBI_PMU_START_FLAG_SET_INIT_VALUE BIT(0)
-+#define SBI_PMU_START_FLAG_INIT_SNAPSHOT BIT(1)
++	local64_set(&perf_event->hw.period_left, 0);
++	perf_event->attr.sample_period = period;
++	perf_event->hw.sample_period = period;
 +
-+/* Flags defined for counter stop function */
-+#define SBI_PMU_STOP_FLAG_RESET BIT(0)
-+#define SBI_PMU_STOP_FLAG_TAKE_SNAPSHOT BIT(1)
++	set_bit(pmc->idx, kvpmu->pmc_overflown);
++	kvm_riscv_vcpu_set_interrupt(vcpu, IRQ_PMU_OVF);
 +
- struct sbiret sbi_ecall(int ext, int fid, unsigned long arg0,
- 			unsigned long arg1, unsigned long arg2,
- 			unsigned long arg3, unsigned long arg4,
++	rpmu->pmu.start(perf_event, PERF_EF_RELOAD);
++}
++
+ static long kvm_pmu_create_perf_event(struct kvm_pmc *pmc, struct perf_event_attr *attr,
+ 				      unsigned long flags, unsigned long eidx,
+ 				      unsigned long evtdata)
+@@ -249,7 +290,7 @@ static long kvm_pmu_create_perf_event(struct kvm_pmc *pmc, struct perf_event_att
+ 	 */
+ 	attr->sample_period = kvm_pmu_get_sample_period(pmc);
+ 
+-	event = perf_event_create_kernel_counter(attr, -1, current, NULL, pmc);
++	event = perf_event_create_kernel_counter(attr, -1, current, kvm_riscv_pmu_overflow, pmc);
+ 	if (IS_ERR(event)) {
+ 		pr_err("kvm pmu event creation failed for eidx %lx: %ld\n", eidx, PTR_ERR(event));
+ 		return PTR_ERR(event);
+@@ -443,6 +484,8 @@ int kvm_riscv_vcpu_pmu_ctr_start(struct kvm_vcpu *vcpu, unsigned long ctr_base,
+ 		pmc_index = i + ctr_base;
+ 		if (!test_bit(pmc_index, kvpmu->pmc_in_use))
+ 			continue;
++		/* The guest started the counter again. Reset the overflow status */
++		clear_bit(pmc_index, kvpmu->pmc_overflown);
+ 		pmc = &kvpmu->pmc[pmc_index];
+ 		if (flags & SBI_PMU_START_FLAG_SET_INIT_VALUE) {
+ 			pmc->counter_val = ival;
+@@ -546,7 +589,13 @@ int kvm_riscv_vcpu_pmu_ctr_stop(struct kvm_vcpu *vcpu, unsigned long ctr_base,
+ 			else if (pmc->perf_event)
+ 				pmc->counter_val += perf_event_read_value(pmc->perf_event,
+ 									  &enabled, &running);
+-			/* TODO: Add counter overflow support when sscofpmf support is added */
++			/*
++			 * The counter and overflow indicies in the snapshot region are w.r.to
++			 * cbase. Modify the set bit in the counter mask instead of the pmc_index
++			 * which indicates the absolute counter index.
++			 */
++			if (test_bit(pmc_index, kvpmu->pmc_overflown))
++				kvpmu->sdata->ctr_overflow_mask |= BIT(i);
+ 			kvpmu->sdata->ctr_values[i] = pmc->counter_val;
+ 			shmem_needs_update = true;
+ 		}
+@@ -554,6 +603,15 @@ int kvm_riscv_vcpu_pmu_ctr_stop(struct kvm_vcpu *vcpu, unsigned long ctr_base,
+ 		if (flags & SBI_PMU_STOP_FLAG_RESET) {
+ 			pmc->event_idx = SBI_PMU_EVENT_IDX_INVALID;
+ 			clear_bit(pmc_index, kvpmu->pmc_in_use);
++			clear_bit(pmc_index, kvpmu->pmc_overflown);
++			if (snap_flag_set) {
++				/*
++				 * Only clear the given counter as the caller is responsible to
++				 * validate both the overflow mask and configured counters.
++				 */
++				kvpmu->sdata->ctr_overflow_mask &= ~BIT(i);
++				shmem_needs_update = true;
++			}
+ 		}
+ 	}
+ 
+@@ -703,6 +761,7 @@ void kvm_riscv_vcpu_pmu_init(struct kvm_vcpu *vcpu)
+ 		pmc = &kvpmu->pmc[i];
+ 		pmc->idx = i;
+ 		pmc->event_idx = SBI_PMU_EVENT_IDX_INVALID;
++		pmc->vcpu = vcpu;
+ 		if (i < kvpmu->num_hw_ctrs) {
+ 			pmc->cinfo.type = SBI_PMU_CTR_TYPE_HW;
+ 			if (i < 3)
+@@ -735,13 +794,14 @@ void kvm_riscv_vcpu_pmu_deinit(struct kvm_vcpu *vcpu)
+ 	if (!kvpmu)
+ 		return;
+ 
+-	for_each_set_bit(i, kvpmu->pmc_in_use, RISCV_MAX_COUNTERS) {
++	for_each_set_bit(i, kvpmu->pmc_in_use, RISCV_KVM_MAX_COUNTERS) {
+ 		pmc = &kvpmu->pmc[i];
+ 		pmc->counter_val = 0;
+ 		kvm_pmu_release_perf_event(pmc);
+ 		pmc->event_idx = SBI_PMU_EVENT_IDX_INVALID;
+ 	}
+-	bitmap_zero(kvpmu->pmc_in_use, RISCV_MAX_COUNTERS);
++	bitmap_zero(kvpmu->pmc_in_use, RISCV_KVM_MAX_COUNTERS);
++	bitmap_zero(kvpmu->pmc_overflown, RISCV_KVM_MAX_COUNTERS);
+ 	memset(&kvpmu->fw_event, 0, SBI_PMU_FW_MAX * sizeof(struct kvm_fw_event));
+ 	kvm_pmu_clear_snapshot_area(vcpu);
+ }
 -- 
 2.34.1
 
