@@ -1,81 +1,51 @@
-From: Conor Dooley <conor.dooley@microchip.com>
-Date: Thu, 11 Apr 2024 12:53:43 +0100
-Subject: [PATCH 07/10] riscv: add ISA extension parsing for Zcmop
-In-Reply-To: <c86f9fa8-e273-4509-83fa-f21d3265d5c9@rivosinc.com>
-References: <20240410091106.749233-1-cleger@rivosinc.com>
- <20240410091106.749233-8-cleger@rivosinc.com>
- <ZhcFeVYUQJmBAKuv@debug.ba.rivosinc.com>
- <20240410-jawless-cavalry-a3eaf9c562a4@spud>
- <20240410-judgingly-appease-5df493852b70@spud>
- <ZhcTiakvfbjb2hon@debug.ba.rivosinc.com>
- <1287e6e9-cb8e-4a78-9195-ce29f1c4bace@rivosinc.com>
- <20240411-superglue-errant-b32e5118695f@wendy>
- <c86f9fa8-e273-4509-83fa-f21d3265d5c9@rivosinc.com>
-Message-ID: <20240411-backwater-opal-00c9aed2231e@wendy>
+From: Paolo Bonzini <pbonzini@redhat.com>
+Date: Thu, 11 Apr 2024 18:55:44 +0200
+Subject: [PATCH 1/4] KVM: delete .change_pte MMU notifier callback
+In-Reply-To: <ZhP3hDhe2Qwo9oCL@x1n>
+References: <20240405115815.3226315-1-pbonzini@redhat.com> <20240405115815.3226315-2-pbonzini@redhat.com>
+ <ZhP3hDhe2Qwo9oCL@x1n>
+Message-ID: <CABgObfYwwXy9gQap-PJyOrVCcUr-VfK90AKNaRe0VO-G00G8SQ@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Apr 11, 2024 at 11:08:21AM +0200, Cl?ment L?ger wrote:
-> >> If we consider to have potentially broken isa string (ie extensions
-> >> dependencies not correctly handled), then we'll need some way to
-> >> validate this within the kernel.
-> > 
-> > No, the DT passed to the kernel should be correct and we by and large we
-> > should not have to do validation of it. What I meant above was writing
-> > the binding so that something invalid will not pass dtbs_check.
-> 
-> Acked, I was mainly answering Deepak question about dependencies wrt to
-> using __RISCV_ISA_EXT_SUPERSET() which does not seems to be relevant
-> since we expect a correct isa string to be passed.
+On Mon, Apr 8, 2024 at 3:56?PM Peter Xu <peterx@redhat.com> wrote:
+> Paolo,
+>
+> I may miss a bunch of details here (as I still remember some change_pte
+> patches previously on the list..), however not sure whether we considered
+> enable it?  Asked because I remember Andrea used to have a custom tree
+> maintaining that part:
+>
+> https://github.com/aagit/aa/commit/c761078df7a77d13ddfaeebe56a0f4bc128b1968
 
-Ahh, okay.
+The patch enables it only for KSM, so it would still require a bunch
+of cleanups, for example I also would still use set_pte_at() in all
+the places that are not KSM. This would at least fix the issue with
+the poor documentation of where to use set_pte_at_notify() vs
+set_pte_at().
 
-> But as you stated, DT
-> validation clearly make sense. I think a lot of extensions strings would
-> benefit such support (All the Zv* depends on V, etc).
+With regard to the implementation, I like the idea of disabling the
+invalidation on the MMU notifier side, but I would rather have
+MMU_NOTIFIER_CHANGE_PTE as a separate field in the range instead of
+overloading the event field.
 
-I think it is actually as simple something like this, which makes it
-invalid to have "d" without "f":
+> Maybe it can't be enabled for some reason that I overlooked in the current
+> tree, or we just decided to not to?
 
-| diff --git a/Documentation/devicetree/bindings/riscv/extensions.yaml b/Documentation/devicetree/bindings/riscv/extensions.yaml
-| index 468c646247aa..594828700cbe 100644
-| --- a/Documentation/devicetree/bindings/riscv/extensions.yaml
-| +++ b/Documentation/devicetree/bindings/riscv/extensions.yaml
-| @@ -484,5 +484,20 @@ properties:
-|              Registers in the AX45MP datasheet.
-|              https://www.andestech.com/wp-content/uploads/AX45MP-1C-Rev.-5.0.0-Datasheet.pdf
-|  
-| +allOf:
-| +  - if:
-| +      properties:
-| +        riscv,isa-extensions:
-| +          contains:
-| +            const: "d"
-| +          not:
-| +            contains:
-| +              const: "f"
-| +    then:
-| +      properties:
-| +        riscv,isa-extensions:
-| +          false
-| +
-| +
-|  additionalProperties: true
-|  ...
+I have just learnt about the patch, nobody had ever mentioned it even
+though it's almost 2 years old... It's a lot of code though and no one
+has ever reported an issue for over 10 years, so I think it's easiest
+to just rip the code out.
 
-If you do have d without f, the checker will say:
-cpu at 2: riscv,isa-extensions: False schema does not allow ['i', 'm', 'a', 'd', 'c']
+Paolo
 
-At least that's readable, even though not clear about what to do. I wish
-the former could be said about the wall of text you get for /each/
-undocumented entry in the string.
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 228 bytes
-Desc: not available
-URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20240411/2a9bef48/attachment.sig>
+> Thanks,
+>
+> --
+> Peter Xu
+>
+
+
