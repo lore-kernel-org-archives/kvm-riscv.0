@@ -1,95 +1,151 @@
-From: Clément Léger <cleger@rivosinc.com>
-Date: Thu, 11 Apr 2024 09:25:06 +0200
-Subject: [PATCH 07/10] riscv: add ISA extension parsing for Zcmop
-In-Reply-To: <ZhcTiakvfbjb2hon@debug.ba.rivosinc.com>
-References: <20240410091106.749233-1-cleger@rivosinc.com>
- <20240410091106.749233-8-cleger@rivosinc.com>
- <ZhcFeVYUQJmBAKuv@debug.ba.rivosinc.com>
- <20240410-jawless-cavalry-a3eaf9c562a4@spud>
- <20240410-judgingly-appease-5df493852b70@spud>
- <ZhcTiakvfbjb2hon@debug.ba.rivosinc.com>
-Message-ID: <1287e6e9-cb8e-4a78-9195-ce29f1c4bace@rivosinc.com>
+From: Shenlin Liang <liangshenlin@eswincomputing.com>
+Date: Thu, 11 Apr 2024 15:24:07 +0800 (GMT+08:00)
+Subject: [PATCH 1/2] RISCV: KVM: add tracepoints for entry and exit
+ events
+In-Reply-To: <CAAhSdy0DgW055iV7=_D6iOLr1iVeK9SZmG8hqBG0_hb1z=+07g@mail.gmail.com>
+References: <20240328031220.1287-1-liangshenlin@eswincomputing.com>
+ <20240328031220.1287-2-liangshenlin@eswincomputing.com>
+ <CAAhSdy0DgW055iV7=_D6iOLr1iVeK9SZmG8hqBG0_hb1z=+07g@mail.gmail.com>
+Message-ID: <66245675.2875.18ecc0add4b.Coremail.liangshenlin@eswincomputing.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-
-
-On 11/04/2024 00:32, Deepak Gupta wrote:
-> On Wed, Apr 10, 2024 at 11:27:16PM +0100, Conor Dooley wrote:
->> On Wed, Apr 10, 2024 at 11:16:11PM +0100, Conor Dooley wrote:
->>> On Wed, Apr 10, 2024 at 02:32:41PM -0700, Deepak Gupta wrote:
->>> > On Wed, Apr 10, 2024 at 11:11:00AM +0200, Cl?ment L?ger wrote:
->>> > > Add parsing for Zcmop ISA extension which was ratified in commit
->>> > > b854a709c00 ("Zcmop is ratified/1.0") of the riscv-isa-manual.
->>> > >
->>> > > Signed-off-by: Cl?ment L?ger <cleger@rivosinc.com>
->>> > > ---
->>> > > arch/riscv/include/asm/hwcap.h | 1 +
->>> > > arch/riscv/kernel/cpufeature.c | 1 +
->>> > > 2 files changed, 2 insertions(+)
->>> > >
->>> > > diff --git a/arch/riscv/include/asm/hwcap.h
->>> b/arch/riscv/include/asm/hwcap.h
->>> > > index b7551bad341b..cff7660de268 100644
->>> > > --- a/arch/riscv/include/asm/hwcap.h
->>> > > +++ b/arch/riscv/include/asm/hwcap.h
->>> > > @@ -86,6 +86,7 @@
->>> > > #define RISCV_ISA_EXT_ZCB??????? 77
->>> > > #define RISCV_ISA_EXT_ZCD??????? 78
->>> > > #define RISCV_ISA_EXT_ZCF??????? 79
->>> > > +#define RISCV_ISA_EXT_ZCMOP??????? 80
->>> > >
->>> > > #define RISCV_ISA_EXT_XLINUXENVCFG??? 127
->>> > >
->>> > > diff --git a/arch/riscv/kernel/cpufeature.c
->>> b/arch/riscv/kernel/cpufeature.c
->>> > > index 09dee071274d..f1450cd7231e 100644
->>> > > --- a/arch/riscv/kernel/cpufeature.c
->>> > > +++ b/arch/riscv/kernel/cpufeature.c
->>> > > @@ -265,6 +265,7 @@ const struct riscv_isa_ext_data
->>> riscv_isa_ext[] = {
->>> > >???? __RISCV_ISA_EXT_DATA(zcb, RISCV_ISA_EXT_ZCB),
->>> > >???? __RISCV_ISA_EXT_DATA(zcd, RISCV_ISA_EXT_ZCD),
->>> > >???? __RISCV_ISA_EXT_DATA(zcf, RISCV_ISA_EXT_ZCF),
->>> > > +??? __RISCV_ISA_EXT_DATA(zcmop, RISCV_ISA_EXT_ZCMOP),
->>> >
->>> > As per spec zcmop is dependent on zca. So perhaps below ?
->>> >
->>> > __RISCV_ISA_EXT_SUPERSET(zicboz, RISCV_ISA_EXT_ZCMOP,
->>> RISCV_ISA_EXT_ZCA)
->>>
->>> What's zicboz got to do with it, copy-pasto I guess?
-> 
-> Yes, copy-pasta :-)
-> 
->>> If we're gonna imply stuff like this though I think we need some
->>> comments explaining why it's okay.
->>
->> Also, I'm inclined to call that out specifically in the binding, I've
->> not yet checked if dependencies actually work for elements of a string
->> array like the do for individual properties. I'll todo list that..
-> 
-> Earlier examples of specifying dependency on envcfg actually had functional
-> use case.
-> So you are right, I am not sure if its actually needed in this
-> particular case.
-
-I actually saw that and think about addressing it but AFAICT, this
-should be handled by the machine firmware passing the isa string to the
-kernel (ie, it should be valid). In the case of QEMU, it takes care of
-setting the extension that are required by this extension itself.
-
-If we consider to have potentially broken isa string (ie extensions
-dependencies not correctly handled), then we'll need some way to
-validate this within the kernel.
-
-Cl?ment
+On 2024-04-08 20:37, Anup Patel <anup@brainfault.org> wrote:
 
 > 
-> And yes definitley, dependency should be mentioned in binding.
+> On Thu, Mar 28, 2024 at 8:49?AM Shenlin Liang
+> <liangshenlin@eswincomputing.com> wrote:
+> >
+> > Like other architectures, RISCV KVM also needs to add these event
+> > tracepoints to count the number of times kvm guest entry/exit.
+> >
+> > Signed-off-by: Shenlin Liang <liangshenlin@eswincomputing.com>
+> > ---
+> >  arch/riscv/kvm/trace_riscv.h | 60 ++++++++++++++++++++++++++++++++++++
+> >  arch/riscv/kvm/vcpu.c        |  7 +++++
+> >  2 files changed, 67 insertions(+)
+> >  create mode 100644 arch/riscv/kvm/trace_riscv.h
+> >
+> > diff --git a/arch/riscv/kvm/trace_riscv.h b/arch/riscv/kvm/trace_riscv.h
+> > new file mode 100644
+> > index 000000000000..5848083c7a5e
+> > --- /dev/null
+> > +++ b/arch/riscv/kvm/trace_riscv.h
+> > @@ -0,0 +1,60 @@
+> > +// SPDX-License-Identifier: GPL-2.0
+> > +/*
+> > + * Tracepoints for RISC-V KVM
+> > + *
+> > + * Copyright 2024 Beijing ESWIN Computing Technology Co., Ltd.
+> > + *
+> > + */
+> > +#if !defined(_TRACE_RSICV_KVM_H) || defined(TRACE_HEADER_MULTI_READ)
+> > +#define _TRACE_RSICV_KVM_H
 > 
+> s/_RSICV_/_RISCV_/
 > 
+> > +
+> > +#include <linux/tracepoint.h>
+> > +
+> > +#undef TRACE_SYSTEM
+> > +#define TRACE_SYSTEM kvm
+> > +
+> > +TRACE_EVENT(kvm_entry,
+> > +       TP_PROTO(struct kvm_vcpu *vcpu),
+> > +       TP_ARGS(vcpu),
+> > +
+> > +       TP_STRUCT__entry(
+> > +               __field(unsigned long, pc)
+> > +       ),
+> > +
+> > +       TP_fast_assign(
+> > +               __entry->pc     = vcpu->arch.guest_context.sepc;
+> > +       ),
+> > +
+> > +       TP_printk("PC: 0x%016lx", __entry->pc)
+> > +);
+> > +
+> > +TRACE_EVENT(kvm_exit,
+> > +       TP_PROTO(struct kvm_vcpu *vcpu, unsigned long exit_reason,
+> > +                       unsigned long scause),
+> > +       TP_ARGS(vcpu, exit_reason, scause),
+> > +
+> > +       TP_STRUCT__entry(
+> > +               __field(unsigned long, pc)
+> > +               __field(unsigned long, exit_reason)
+> > +               __field(unsigned long, scause)
+> 
+> This is not the right contents describing a KVM exit.
+> 
+> The fields over here should be aligned with "struct kvm_cpu_trap"
+> so we should have following fields:
+>     __field(unsigned long, sepc)
+>     __field(unsigned long, scause)
+>     __field(unsigned long, stval)
+>     __field(unsigned long, htval)
+>     __field(unsigned long, htinst)
+> 
+> > +       ),
+> > +
+> > +       TP_fast_assign(
+> > +               __entry->pc             = vcpu->arch.guest_context.sepc;
+> > +               __entry->exit_reason    = exit_reason;
+> > +               __entry->scause         = scause;
+> > +       ),
+> > +
+> > +       TP_printk("EXIT_REASON:0x%lx,PC: 0x%016lx,SCAUSE:0x%lx",
+> > +                       __entry->exit_reason, __entry->pc, __entry->scause)
+> > +);
+> > +
+> > +#endif /* _TRACE_RSICV_KVM_H */
+> > +
+> > +#undef TRACE_INCLUDE_PATH
+> > +#define TRACE_INCLUDE_PATH .
+> > +#undef TRACE_INCLUDE_FILE
+> > +#define TRACE_INCLUDE_FILE trace_riscv
+> > +
+> > +/* This part must be outside protection */
+> > +#include <trace/define_trace.h>
+> > diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+> > index b5ca9f2e98ac..ed0932f0d514 100644
+> > --- a/arch/riscv/kvm/vcpu.c
+> > +++ b/arch/riscv/kvm/vcpu.c
+> > @@ -21,6 +21,9 @@
+> >  #include <asm/cacheflush.h>
+> >  #include <asm/kvm_vcpu_vector.h>
+> >
+> > +#define CREATE_TRACE_POINTS
+> > +#include "trace_riscv.h"
+> > +
+> >  const struct _kvm_stats_desc kvm_vcpu_stats_desc[] = {
+> >         KVM_GENERIC_VCPU_STATS(),
+> >         STATS_DESC_COUNTER(VCPU, ecall_exit_stat),
+> > @@ -782,6 +785,8 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
+> >                  */
+> >                 kvm_riscv_local_tlb_sanitize(vcpu);
+> >
+> > +               trace_kvm_entry(vcpu);
+> > +
+> >                 guest_timing_enter_irqoff();
+> >
+> >                 kvm_riscv_vcpu_enter_exit(vcpu);
+> > @@ -820,6 +825,8 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
+> >
+> >                 local_irq_enable();
+> >
+> > +               trace_kvm_exit(vcpu, run->exit_reason, trap.scause);
+> > +
+> >                 preempt_enable();
+> >
+> >                 kvm_vcpu_srcu_read_lock(vcpu);
+> > --
+> > 2.37.2
+> >
+> 
+> Regards,
+> Anup
 
+Thank you for the review. I will send the v2 version.
