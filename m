@@ -1,212 +1,107 @@
-From: Anup Patel <apatel@ventanamicro.com>
-Date: Thu, 11 Apr 2024 14:36:38 +0530
-Subject: [PATCH 1/2] RISC-V: KVM: Share APLIC and IMSIC defines with irqchip drivers
-In-Reply-To: <20240411090639.237119-1-apatel@ventanamicro.com>
-References: <20240411090639.237119-1-apatel@ventanamicro.com>
-Message-ID: <20240411090639.237119-2-apatel@ventanamicro.com>
+From: Clément Léger <cleger@rivosinc.com>
+Date: Thu, 11 Apr 2024 11:08:21 +0200
+Subject: [PATCH 07/10] riscv: add ISA extension parsing for Zcmop
+In-Reply-To: <20240411-superglue-errant-b32e5118695f@wendy>
+References: <20240410091106.749233-1-cleger@rivosinc.com>
+ <20240410091106.749233-8-cleger@rivosinc.com>
+ <ZhcFeVYUQJmBAKuv@debug.ba.rivosinc.com>
+ <20240410-jawless-cavalry-a3eaf9c562a4@spud>
+ <20240410-judgingly-appease-5df493852b70@spud>
+ <ZhcTiakvfbjb2hon@debug.ba.rivosinc.com>
+ <1287e6e9-cb8e-4a78-9195-ce29f1c4bace@rivosinc.com>
+ <20240411-superglue-errant-b32e5118695f@wendy>
+Message-ID: <c86f9fa8-e273-4509-83fa-f21d3265d5c9@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-We have common APLIC and IMSIC headers available under
-include/linux/irqchip/ directory which are used by APLIC
-and IMSIC irqchip drivers. Let us replace the use of
-kvm_aia_*.h headers with include/linux/irqchip/riscv-*.h
-headers.
 
-Signed-off-by: Anup Patel <apatel@ventanamicro.com>
----
- arch/riscv/include/asm/kvm_aia_aplic.h | 58 --------------------------
- arch/riscv/include/asm/kvm_aia_imsic.h | 38 -----------------
- arch/riscv/kvm/aia.c                   |  2 +-
- arch/riscv/kvm/aia_aplic.c             |  2 +-
- arch/riscv/kvm/aia_device.c            |  2 +-
- arch/riscv/kvm/aia_imsic.c             |  2 +-
- 6 files changed, 4 insertions(+), 100 deletions(-)
- delete mode 100644 arch/riscv/include/asm/kvm_aia_aplic.h
- delete mode 100644 arch/riscv/include/asm/kvm_aia_imsic.h
 
-diff --git a/arch/riscv/include/asm/kvm_aia_aplic.h b/arch/riscv/include/asm/kvm_aia_aplic.h
-deleted file mode 100644
-index 6dd1a4809ec1..000000000000
---- a/arch/riscv/include/asm/kvm_aia_aplic.h
-+++ /dev/null
-@@ -1,58 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0-only */
--/*
-- * Copyright (C) 2021 Western Digital Corporation or its affiliates.
-- * Copyright (C) 2022 Ventana Micro Systems Inc.
-- */
--#ifndef __KVM_RISCV_AIA_IMSIC_H
--#define __KVM_RISCV_AIA_IMSIC_H
--
--#include <linux/bitops.h>
--
--#define APLIC_MAX_IDC			BIT(14)
--#define APLIC_MAX_SOURCE		1024
--
--#define APLIC_DOMAINCFG			0x0000
--#define APLIC_DOMAINCFG_RDONLY		0x80000000
--#define APLIC_DOMAINCFG_IE		BIT(8)
--#define APLIC_DOMAINCFG_DM		BIT(2)
--#define APLIC_DOMAINCFG_BE		BIT(0)
--
--#define APLIC_SOURCECFG_BASE		0x0004
--#define APLIC_SOURCECFG_D		BIT(10)
--#define APLIC_SOURCECFG_CHILDIDX_MASK	0x000003ff
--#define APLIC_SOURCECFG_SM_MASK	0x00000007
--#define APLIC_SOURCECFG_SM_INACTIVE	0x0
--#define APLIC_SOURCECFG_SM_DETACH	0x1
--#define APLIC_SOURCECFG_SM_EDGE_RISE	0x4
--#define APLIC_SOURCECFG_SM_EDGE_FALL	0x5
--#define APLIC_SOURCECFG_SM_LEVEL_HIGH	0x6
--#define APLIC_SOURCECFG_SM_LEVEL_LOW	0x7
--
--#define APLIC_IRQBITS_PER_REG		32
--
--#define APLIC_SETIP_BASE		0x1c00
--#define APLIC_SETIPNUM			0x1cdc
--
--#define APLIC_CLRIP_BASE		0x1d00
--#define APLIC_CLRIPNUM			0x1ddc
--
--#define APLIC_SETIE_BASE		0x1e00
--#define APLIC_SETIENUM			0x1edc
--
--#define APLIC_CLRIE_BASE		0x1f00
--#define APLIC_CLRIENUM			0x1fdc
--
--#define APLIC_SETIPNUM_LE		0x2000
--#define APLIC_SETIPNUM_BE		0x2004
--
--#define APLIC_GENMSI			0x3000
--
--#define APLIC_TARGET_BASE		0x3004
--#define APLIC_TARGET_HART_IDX_SHIFT	18
--#define APLIC_TARGET_HART_IDX_MASK	0x3fff
--#define APLIC_TARGET_GUEST_IDX_SHIFT	12
--#define APLIC_TARGET_GUEST_IDX_MASK	0x3f
--#define APLIC_TARGET_IPRIO_MASK	0xff
--#define APLIC_TARGET_EIID_MASK	0x7ff
--
--#endif
-diff --git a/arch/riscv/include/asm/kvm_aia_imsic.h b/arch/riscv/include/asm/kvm_aia_imsic.h
-deleted file mode 100644
-index da5881d2bde0..000000000000
---- a/arch/riscv/include/asm/kvm_aia_imsic.h
-+++ /dev/null
-@@ -1,38 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0-only */
--/*
-- * Copyright (C) 2021 Western Digital Corporation or its affiliates.
-- * Copyright (C) 2022 Ventana Micro Systems Inc.
-- */
--#ifndef __KVM_RISCV_AIA_IMSIC_H
--#define __KVM_RISCV_AIA_IMSIC_H
--
--#include <linux/types.h>
--#include <asm/csr.h>
--
--#define IMSIC_MMIO_PAGE_SHIFT		12
--#define IMSIC_MMIO_PAGE_SZ		(1UL << IMSIC_MMIO_PAGE_SHIFT)
--#define IMSIC_MMIO_PAGE_LE		0x00
--#define IMSIC_MMIO_PAGE_BE		0x04
--
--#define IMSIC_MIN_ID			63
--#define IMSIC_MAX_ID			2048
--
--#define IMSIC_EIDELIVERY		0x70
--
--#define IMSIC_EITHRESHOLD		0x72
--
--#define IMSIC_EIP0			0x80
--#define IMSIC_EIP63			0xbf
--#define IMSIC_EIPx_BITS			32
--
--#define IMSIC_EIE0			0xc0
--#define IMSIC_EIE63			0xff
--#define IMSIC_EIEx_BITS			32
--
--#define IMSIC_FIRST			IMSIC_EIDELIVERY
--#define IMSIC_LAST			IMSIC_EIE63
--
--#define IMSIC_MMIO_SETIPNUM_LE		0x00
--#define IMSIC_MMIO_SETIPNUM_BE		0x04
--
--#endif
-diff --git a/arch/riscv/kvm/aia.c b/arch/riscv/kvm/aia.c
-index a944294f6f23..8ea51a791371 100644
---- a/arch/riscv/kvm/aia.c
-+++ b/arch/riscv/kvm/aia.c
-@@ -10,12 +10,12 @@
- #include <linux/kernel.h>
- #include <linux/bitops.h>
- #include <linux/irq.h>
-+#include <linux/irqchip/riscv-imsic.h>
- #include <linux/irqdomain.h>
- #include <linux/kvm_host.h>
- #include <linux/percpu.h>
- #include <linux/spinlock.h>
- #include <asm/cpufeature.h>
--#include <asm/kvm_aia_imsic.h>
- 
- struct aia_hgei_control {
- 	raw_spinlock_t lock;
-diff --git a/arch/riscv/kvm/aia_aplic.c b/arch/riscv/kvm/aia_aplic.c
-index b467ba5ed910..da6ff1bade0d 100644
---- a/arch/riscv/kvm/aia_aplic.c
-+++ b/arch/riscv/kvm/aia_aplic.c
-@@ -7,12 +7,12 @@
-  *	Anup Patel <apatel@ventanamicro.com>
-  */
- 
-+#include <linux/irqchip/riscv-aplic.h>
- #include <linux/kvm_host.h>
- #include <linux/math.h>
- #include <linux/spinlock.h>
- #include <linux/swab.h>
- #include <kvm/iodev.h>
--#include <asm/kvm_aia_aplic.h>
- 
- struct aplic_irq {
- 	raw_spinlock_t lock;
-diff --git a/arch/riscv/kvm/aia_device.c b/arch/riscv/kvm/aia_device.c
-index 0eb689351b7d..308b3bbede33 100644
---- a/arch/riscv/kvm/aia_device.c
-+++ b/arch/riscv/kvm/aia_device.c
-@@ -8,9 +8,9 @@
-  */
- 
- #include <linux/bits.h>
-+#include <linux/irqchip/riscv-imsic.h>
- #include <linux/kvm_host.h>
- #include <linux/uaccess.h>
--#include <asm/kvm_aia_imsic.h>
- 
- static void unlock_vcpus(struct kvm *kvm, int vcpu_lock_idx)
- {
-diff --git a/arch/riscv/kvm/aia_imsic.c b/arch/riscv/kvm/aia_imsic.c
-index e808723a85f1..0a1e859323b4 100644
---- a/arch/riscv/kvm/aia_imsic.c
-+++ b/arch/riscv/kvm/aia_imsic.c
-@@ -9,13 +9,13 @@
- 
- #include <linux/atomic.h>
- #include <linux/bitmap.h>
-+#include <linux/irqchip/riscv-imsic.h>
- #include <linux/kvm_host.h>
- #include <linux/math.h>
- #include <linux/spinlock.h>
- #include <linux/swab.h>
- #include <kvm/iodev.h>
- #include <asm/csr.h>
--#include <asm/kvm_aia_imsic.h>
- 
- #define IMSIC_MAX_EIX	(IMSIC_MAX_ID / BITS_PER_TYPE(u64))
- 
--- 
-2.34.1
+On 11/04/2024 11:03, Conor Dooley wrote:
+> On Thu, Apr 11, 2024 at 09:25:06AM +0200, Cl?ment L?ger wrote:
+>>
+>>
+>> On 11/04/2024 00:32, Deepak Gupta wrote:
+>>> On Wed, Apr 10, 2024 at 11:27:16PM +0100, Conor Dooley wrote:
+>>>> On Wed, Apr 10, 2024 at 11:16:11PM +0100, Conor Dooley wrote:
+>>>>> On Wed, Apr 10, 2024 at 02:32:41PM -0700, Deepak Gupta wrote:
+>>>>>> On Wed, Apr 10, 2024 at 11:11:00AM +0200, Cl?ment L?ger wrote:
+>>>>>>> Add parsing for Zcmop ISA extension which was ratified in commit
+>>>>>>> b854a709c00 ("Zcmop is ratified/1.0") of the riscv-isa-manual.
+>>>>>>>
+>>>>>>> Signed-off-by: Cl?ment L?ger <cleger@rivosinc.com>
+>>>>>>> ---
+>>>>>>> arch/riscv/include/asm/hwcap.h | 1 +
+>>>>>>> arch/riscv/kernel/cpufeature.c | 1 +
+>>>>>>> 2 files changed, 2 insertions(+)
+>>>>>>>
+>>>>>>> diff --git a/arch/riscv/include/asm/hwcap.h
+>>>>> b/arch/riscv/include/asm/hwcap.h
+>>>>>>> index b7551bad341b..cff7660de268 100644
+>>>>>>> --- a/arch/riscv/include/asm/hwcap.h
+>>>>>>> +++ b/arch/riscv/include/asm/hwcap.h
+>>>>>>> @@ -86,6 +86,7 @@
+>>>>>>> #define RISCV_ISA_EXT_ZCB??????? 77
+>>>>>>> #define RISCV_ISA_EXT_ZCD??????? 78
+>>>>>>> #define RISCV_ISA_EXT_ZCF??????? 79
+>>>>>>> +#define RISCV_ISA_EXT_ZCMOP??????? 80
+>>>>>>>
+>>>>>>> #define RISCV_ISA_EXT_XLINUXENVCFG??? 127
+>>>>>>>
+>>>>>>> diff --git a/arch/riscv/kernel/cpufeature.c
+>>>>> b/arch/riscv/kernel/cpufeature.c
+>>>>>>> index 09dee071274d..f1450cd7231e 100644
+>>>>>>> --- a/arch/riscv/kernel/cpufeature.c
+>>>>>>> +++ b/arch/riscv/kernel/cpufeature.c
+>>>>>>> @@ -265,6 +265,7 @@ const struct riscv_isa_ext_data
+>>>>> riscv_isa_ext[] = {
+>>>>>>> ???? __RISCV_ISA_EXT_DATA(zcb, RISCV_ISA_EXT_ZCB),
+>>>>>>> ???? __RISCV_ISA_EXT_DATA(zcd, RISCV_ISA_EXT_ZCD),
+>>>>>>> ???? __RISCV_ISA_EXT_DATA(zcf, RISCV_ISA_EXT_ZCF),
+>>>>>>> +??? __RISCV_ISA_EXT_DATA(zcmop, RISCV_ISA_EXT_ZCMOP),
+>>>>>>
+>>>>>> As per spec zcmop is dependent on zca. So perhaps below ?
+>>>>>>
+>>>>>> __RISCV_ISA_EXT_SUPERSET(zicboz, RISCV_ISA_EXT_ZCMOP,
+>>>>> RISCV_ISA_EXT_ZCA)
+>>>>>
+>>>>> What's zicboz got to do with it, copy-pasto I guess?
+>>>
+>>> Yes, copy-pasta :-)
+>>>
+>>>>> If we're gonna imply stuff like this though I think we need some
+>>>>> comments explaining why it's okay.
+>>>>
+>>>> Also, I'm inclined to call that out specifically in the binding, I've
+>>>> not yet checked if dependencies actually work for elements of a string
+>>>> array like the do for individual properties. I'll todo list that..
+>>>
+>>> Earlier examples of specifying dependency on envcfg actually had functional
+>>> use case.
+>>> So you are right, I am not sure if its actually needed in this
+>>> particular case.
+>>
+>> I actually saw that and think about addressing it but AFAICT, this
+>> should be handled by the machine firmware passing the isa string to the
+>> kernel (ie, it should be valid). In the case of QEMU, it takes care of
+>> setting the extension that are required by this extension itself.
+>>
+>> If we consider to have potentially broken isa string (ie extensions
+>> dependencies not correctly handled), then we'll need some way to
+>> validate this within the kernel.
+> 
+> No, the DT passed to the kernel should be correct and we by and large we
+> should not have to do validation of it. What I meant above was writing
+> the binding so that something invalid will not pass dtbs_check.
+
+Acked, I was mainly answering Deepak question about dependencies wrt to
+using __RISCV_ISA_EXT_SUPERSET() which does not seems to be relevant
+since we expect a correct isa string to be passed. But as you stated, DT
+validation clearly make sense. I think a lot of extensions strings would
+benefit such support (All the Zv* depends on V, etc).
+
+Cl?ment
 
 
