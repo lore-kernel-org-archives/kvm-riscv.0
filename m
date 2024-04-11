@@ -1,171 +1,194 @@
 From: Atish Patra <atishp@rivosinc.com>
-Date: Wed, 10 Apr 2024 15:44:32 -0700
-Subject: [PATCH v4 07/15] RISC-V: KVM: No need to exit to the user space
- if perf event failed
-In-Reply-To: <20240404-ea40bc0237635d671e64fef6@orel>
-References: <20240229010130.1380926-1-atishp@rivosinc.com>
- <20240229010130.1380926-8-atishp@rivosinc.com>
- <20240302-1a3c0df25f2422e1e6abecf3@orel>
- <CAOnJCUJCQjBfLZFW-3iLUB6ygyRmz1Anu+fhfrT4Lpoj2iNB5Q@mail.gmail.com>
- <20240404-ea40bc0237635d671e64fef6@orel>
-Message-ID: <7d02c86e-8c36-4e78-9fa8-5e30f3431eb3@rivosinc.com>
+Date: Wed, 10 Apr 2024 17:07:28 -0700
+Subject: [PATCH v6 00/24] RISC-V SBI v2.0 PMU improvements and Perf sampling in KVM guest
+Message-ID: <20240411000752.955910-1-atishp@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 4/4/24 05:16, Andrew Jones wrote:
-> On Mon, Apr 01, 2024 at 03:37:01PM -0700, Atish Patra wrote:
->> On Sat, Mar 2, 2024 at 12:16?AM Andrew Jones <ajones@ventanamicro.com> wrote:
->>>
->>> On Wed, Feb 28, 2024 at 05:01:22PM -0800, Atish Patra wrote:
->>>> Currently, we return a linux error code if creating a perf event failed
->>>> in kvm. That shouldn't be necessary as guest can continue to operate
->>>> without perf profiling or profiling with firmware counters.
->>>>
->>>> Return appropriate SBI error code to indicate that PMU configuration
->>>> failed. An error message in kvm already describes the reason for failure.
->>>
->>> I don't know enough about the perf subsystem to know if there may be
->>> a concern that resources are temporarily unavailable. If so, then this
->>
->> Do you mean the hardware resources unavailable because the host is using it ?
-> 
-> Yes (I think). The issue I'm thinking of is if kvm_pmu_create_perf_event
-> (perf_event_create_kernel_counter) returns something like EBUSY and then
-> we translate that to SBI_ERR_NOT_SUPPORTED. I'm not sure guests would
-> interpret not-supported as an error which means they can retry. Or if
-> they retry and get something other than not-supported if they'd be
-> confused.
-> 
+This series implements SBI PMU improvements done in SBI v2.0[1] i.e. PMU snapshot
+and fw_read_hi() functions. 
 
-At least in Linux driver, treats -ENOTSUPP and it just fails. Other 
-guest OS implementation may interpret it differently. But they should 
-fail at that point as well. I don't see how can they interpret to be retry.
+SBI v2.0 introduced PMU snapshot feature which allows the SBI implementation
+to provide counter information (i.e. values/overflow status) via a shared
+memory between the SBI implementation and supervisor OS. This allows to minimize
+the number of traps in when perf being used inside a kvm guest as it relies on
+SBI PMU + trap/emulation of the counters. 
 
-The perf user can retry again with assumption that may be enough 
-counters are not available at this moment. But that's different from 
-return a retry from driver code.
+The current set of ratified RISC-V specification also doesn't allow scountovf
+to be trap/emulated by the hypervisor. The SBI PMU snapshot bridges the gap
+in ISA as well and enables perf sampling in the guest. However, LCOFI in the
+guest only works via IRQ filtering in AIA specification. That's why, AIA
+has to be enabled in the hardware (at least the Ssaia extension) in order to
+use the sampling support in the perf. 
 
-Even if we support a retry error code, when does the caller retry it ?
-The driver doesn't know how long the user is going to run the perf 
-command to keep the hardware resources occupied.
+Here are the patch wise implementation details.
 
-I feel the perf user is the best entity to know that and should retry if 
-it knows the previous run is over which might have released the hardware 
-resources.
+PATCH 1,4,7,8,9,10,11,15 : Generic cleanups/improvements.
+PATCH 2,3,14 : FW_READ_HI function implementation
+PATCH 5-6: Add PMU snapshot feature in sbi pmu driver
+PATCH 12-13: KVM implementation for snapshot and sampling in kvm guests
+PATCH 16-17: Generic improvements for kvm selftests 
+PATCH 18-22: KVM selftests for SBI PMU extension
 
-> Thanks,
-> drew
->    
-> 
->>
->>> patch would make it possible for a guest to do the exact same thing,
->>> but sometimes succeed and sometimes get SBI_ERR_NOT_SUPPORTED.
->>> sbi_pmu_counter_config_matching doesn't currently have any error types
->>> specified that say "unsupported at the moment, maybe try again", which
->>> would be more appropriate in that case. I do see
->>> perf_event_create_kernel_counter() can return ENOMEM when memory isn't
->>> available, but if the kernel isn't able to allocate a small amount of
->>> memory, then we're in bigger trouble anyway, so the concern would be
->>> if there are perf resource pools which may temporarily be exhausted at
->>> the time the guest makes this request.
->>>
->>
->> For other cases, this patch ensures that guests continue to run without failure
->> which allows the user in the guest to try again if this fails due to a temporary
->> resource availability.
->>
->>> One comment below.
->>>
->>>>
->>>> Fixes: 0cb74b65d2e5 ("RISC-V: KVM: Implement perf support without sampling")
->>>> Reviewed-by: Anup Patel <anup@brainfault.org>
->>>> Signed-off-by: Atish Patra <atishp@rivosinc.com>
->>>> ---
->>>>   arch/riscv/kvm/vcpu_pmu.c     | 14 +++++++++-----
->>>>   arch/riscv/kvm/vcpu_sbi_pmu.c |  6 +++---
->>>>   2 files changed, 12 insertions(+), 8 deletions(-)
->>>>
->>>> diff --git a/arch/riscv/kvm/vcpu_pmu.c b/arch/riscv/kvm/vcpu_pmu.c
->>>> index b1574c043f77..29bf4ca798cb 100644
->>>> --- a/arch/riscv/kvm/vcpu_pmu.c
->>>> +++ b/arch/riscv/kvm/vcpu_pmu.c
->>>> @@ -229,8 +229,9 @@ static int kvm_pmu_validate_counter_mask(struct kvm_pmu *kvpmu, unsigned long ct
->>>>        return 0;
->>>>   }
->>>>
->>>> -static int kvm_pmu_create_perf_event(struct kvm_pmc *pmc, struct perf_event_attr *attr,
->>>> -                                  unsigned long flags, unsigned long eidx, unsigned long evtdata)
->>>> +static long kvm_pmu_create_perf_event(struct kvm_pmc *pmc, struct perf_event_attr *attr,
->>>> +                                   unsigned long flags, unsigned long eidx,
->>>> +                                   unsigned long evtdata)
->>>>   {
->>>>        struct perf_event *event;
->>>>
->>>> @@ -454,7 +455,8 @@ int kvm_riscv_vcpu_pmu_ctr_cfg_match(struct kvm_vcpu *vcpu, unsigned long ctr_ba
->>>>                                     unsigned long eidx, u64 evtdata,
->>>>                                     struct kvm_vcpu_sbi_return *retdata)
->>>>   {
->>>> -     int ctr_idx, ret, sbiret = 0;
->>>> +     int ctr_idx, sbiret = 0;
->>>> +     long ret;
->>>>        bool is_fevent;
->>>>        unsigned long event_code;
->>>>        u32 etype = kvm_pmu_get_perf_event_type(eidx);
->>>> @@ -513,8 +515,10 @@ int kvm_riscv_vcpu_pmu_ctr_cfg_match(struct kvm_vcpu *vcpu, unsigned long ctr_ba
->>>>                        kvpmu->fw_event[event_code].started = true;
->>>>        } else {
->>>>                ret = kvm_pmu_create_perf_event(pmc, &attr, flags, eidx, evtdata);
->>>> -             if (ret)
->>>> -                     return ret;
->>>> +             if (ret) {
->>>> +                     sbiret = SBI_ERR_NOT_SUPPORTED;
->>>> +                     goto out;
->>>> +             }
->>>>        }
->>>>
->>>>        set_bit(ctr_idx, kvpmu->pmc_in_use);
->>>> diff --git a/arch/riscv/kvm/vcpu_sbi_pmu.c b/arch/riscv/kvm/vcpu_sbi_pmu.c
->>>> index 7eca72df2cbd..b70179e9e875 100644
->>>> --- a/arch/riscv/kvm/vcpu_sbi_pmu.c
->>>> +++ b/arch/riscv/kvm/vcpu_sbi_pmu.c
->>>> @@ -42,9 +42,9 @@ static int kvm_sbi_ext_pmu_handler(struct kvm_vcpu *vcpu, struct kvm_run *run,
->>>>   #endif
->>>>                /*
->>>>                 * This can fail if perf core framework fails to create an event.
->>>> -              * Forward the error to userspace because it's an error which
->>>> -              * happened within the host kernel. The other option would be
->>>> -              * to convert to an SBI error and forward to the guest.
->>>> +              * No need to forward the error to userspace and exit the guest
->>>
->>> Period after guest
->>>
->>>
->>>> +              * operation can continue without profiling. Forward the
->>>
->>> The operation
->>>
->>
->> Fixed the above two.
->>
->>
->>>> +              * appropriate SBI error to the guest.
->>>>                 */
->>>>                ret = kvm_riscv_vcpu_pmu_ctr_cfg_match(vcpu, cp->a0, cp->a1,
->>>>                                                       cp->a2, cp->a3, temp, retdata);
->>>> --
->>>> 2.34.1
->>>>
->>>
->>> Thanks,
->>> drew
->>
->>
->>
->> --
->> Regards,
->> Atish
+The series is based on v6.9-rc1 and is available at:
+
+https://github.com/atishp04/linux/tree/kvm_pmu_snapshot_v6
+
+The kvmtool patch is also available at:
+https://github.com/atishp04/kvmtool/tree/sscofpmf
+
+It also requires Ssaia ISA extension to be present in the hardware in order to
+get perf sampling support in the guest. In Qemu virt machine, it can be done
+by the following config.
+
+```
+-cpu rv64,sscofpmf=true,x-ssaia=true
+```
+
+There is no other dependencies on AIA apart from that. Thus, Ssaia must be disabled
+for the guest if AIA patches are not available. Here is the example command.
+
+```
+./lkvm-static run -m 256 -c2 --console serial -p "console=ttyS0 earlycon" --disable-ssaia -k ./Image --debug 
+```
+
+The series has been tested only in Qemu.
+Here is the snippet of the perf running inside a kvm guest.
+
+===================================================
+$ perf record -e cycles -e instructions perf bench sched messaging -g 5
+...
+$ Running 'sched/messaging' benchmark:
+...
+[   45.928723] perf_duration_warn: 2 callbacks suppressed
+[   45.929000] perf: interrupt took too long (484426 > 483186), lowering kernel.perf_event_max_sample_rate to 250
+$ 20 sender and receiver processes per group
+$ 5 groups == 200 processes run
+
+     Total time: 14.220 [sec]
+[ perf record: Woken up 1 times to write data ]
+[ perf record: Captured and wrote 0.117 MB perf.data (1942 samples) ]
+$ perf report --stdio
+$ To display the perf.data header info, please use --header/--header-only optio>
+$
+$
+$ Total Lost Samples: 0
+$
+$ Samples: 943  of event 'cycles'
+$ Event count (approx.): 5128976844
+$
+$ Overhead  Command          Shared Object                Symbol               >
+$ ........  ...............  ...........................  .....................>
+$
+     7.59%  sched-messaging  [kernel.kallsyms]            [k] memcpy
+     5.48%  sched-messaging  [kernel.kallsyms]            [k] percpu_counter_ad>
+     5.24%  sched-messaging  [kernel.kallsyms]            [k] __sbi_rfence_v02_>
+     4.00%  sched-messaging  [kernel.kallsyms]            [k] _raw_spin_unlock_>
+     3.79%  sched-messaging  [kernel.kallsyms]            [k] set_pte_range
+     3.72%  sched-messaging  [kernel.kallsyms]            [k] next_uptodate_fol>
+     3.46%  sched-messaging  [kernel.kallsyms]            [k] filemap_map_pages
+     3.31%  sched-messaging  [kernel.kallsyms]            [k] handle_mm_fault
+     3.20%  sched-messaging  [kernel.kallsyms]            [k] finish_task_switc>
+     3.16%  sched-messaging  [kernel.kallsyms]            [k] clear_page
+     3.03%  sched-messaging  [kernel.kallsyms]            [k] mtree_range_walk
+     2.42%  sched-messaging  [kernel.kallsyms]            [k] flush_icache_pte
+
+===================================================
+
+[1] https://github.com/riscv-non-isa/riscv-sbi-doc
+
+Changes from v5->v6:
+1. Added a patch for command line option for the sbi pmu tests.
+2. Removed redundant prints and restructure the code little bit.
+3. Added a patch for computing the sbi minor version correctly.
+4. Addressed all other comments on v5.  
+
+Changes from v4->v5:
+1. Moved sbi related definitions to its own header file from processor.h
+2. Added few helper functions for selftests.
+3. Improved firmware counter read and RV32 start/stop functions.
+4. Converted all the shifting operations to use BIT macro
+5. Addressed all other comments on v4.  
+
+Changes from v3->v4:
+1. Added selftests.
+2. Fixed an issue to clear the interrupt pending bits.
+3. Fixed the counter index in snapshot memory start function.
+
+Changes from v2->v3:
+1. Fixed a patchwork warning on patch6.
+2. Fixed a comment formatting & nit fix in PATCH 3 & 5.
+3. Moved the hvien update and sscofpmf enabling to PATCH 9 from PATCH 8.
+
+Changes from v1->v2:
+1. Fixed warning/errors from patchwork CI.
+2. Rebased on top of kvm-next.
+3. Added Acked-by tags.
+
+Changes from RFC->v1:
+1. Addressed all the comments on RFC series.
+2. Removed PATCH2 and merged into later patches.
+3. Added 2 more patches for minor fixes.
+4. Fixed KVM boot issue without Ssaia and made sscofpmf in guest dependent on
+   Ssaia in the host.
+
+Atish Patra (24):
+RISC-V: Fix the typo in Scountovf CSR name
+RISC-V: Add FIRMWARE_READ_HI definition
+drivers/perf: riscv: Read upper bits of a firmware counter
+drivers/perf: riscv: Use BIT macro for shifting operations
+RISC-V: Add SBI PMU snapshot definitions
+RISC-V: KVM: Rename the SBI_STA_SHMEM_DISABLE to a generic name
+RISC-V: Use the minor version mask while computing sbi version
+drivers/perf: riscv: Implement SBI PMU snapshot function
+drivers/perf: riscv: Fix counter mask iteration for RV32
+RISC-V: KVM: Fix the initial sample period value
+RISC-V: KVM: No need to update the counter value during reset
+RISC-V: KVM: No need to exit to the user space if perf event failed
+RISC-V: KVM: Implement SBI PMU Snapshot feature
+RISC-V: KVM: Add perf sampling support for guests
+RISC-V: KVM: Support 64 bit firmware counters on RV32
+RISC-V: KVM: Improve firmware counter read function
+KVM: riscv: selftests: Move sbi definitions to its own header file
+KVM: riscv: selftests: Add helper functions for extension checks
+KVM: riscv: selftests: Add Sscofpmf to get-reg-list test
+KVM: riscv: selftests: Add SBI PMU extension definitions
+KVM: riscv: selftests: Add SBI PMU selftest
+KVM: riscv: selftests: Add a test for PMU snapshot functionality
+KVM: riscv: selftests: Add a test for counter overflow
+KVM: riscv: selftests: Add commandline option for SBI PMU test
+
+arch/riscv/include/asm/csr.h                  |   5 +-
+arch/riscv/include/asm/kvm_vcpu_pmu.h         |  16 +-
+arch/riscv/include/asm/sbi.h                  |  38 +-
+arch/riscv/include/uapi/asm/kvm.h             |   1 +
+arch/riscv/kernel/paravirt.c                  |   6 +-
+arch/riscv/kvm/aia.c                          |   5 +
+arch/riscv/kvm/vcpu.c                         |  15 +-
+arch/riscv/kvm/vcpu_onereg.c                  |   6 +
+arch/riscv/kvm/vcpu_pmu.c                     | 260 ++++++-
+arch/riscv/kvm/vcpu_sbi_pmu.c                 |  17 +-
+arch/riscv/kvm/vcpu_sbi_sta.c                 |   4 +-
+drivers/perf/riscv_pmu.c                      |   1 +
+drivers/perf/riscv_pmu_sbi.c                  | 272 ++++++-
+include/linux/perf/riscv_pmu.h                |   6 +
+tools/testing/selftests/kvm/Makefile          |   1 +
+.../selftests/kvm/include/riscv/processor.h   |  49 +-
+.../testing/selftests/kvm/include/riscv/sbi.h | 141 ++++
+.../selftests/kvm/include/riscv/ucall.h       |   1 +
+.../selftests/kvm/lib/riscv/processor.c       |  12 +
+.../testing/selftests/kvm/riscv/arch_timer.c  |   2 +-
+.../selftests/kvm/riscv/get-reg-list.c        |   4 +
+.../selftests/kvm/riscv/sbi_pmu_test.c        | 685 ++++++++++++++++++
+tools/testing/selftests/kvm/steal_time.c      |   4 +-
+23 files changed, 1437 insertions(+), 114 deletions(-)
+create mode 100644 tools/testing/selftests/kvm/include/riscv/sbi.h
+create mode 100644 tools/testing/selftests/kvm/riscv/sbi_pmu_test.c
+
+--
+2.34.1
 
 
