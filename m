@@ -1,61 +1,74 @@
-From: Peter Xu <peterx@redhat.com>
-Date: Thu, 11 Apr 2024 14:47:56 -0400
+From: Will Deacon <will@kernel.org>
+Date: Fri, 12 Apr 2024 11:44:09 +0100
 Subject: [PATCH 1/4] KVM: delete .change_pte MMU notifier callback
-In-Reply-To: <CABgObfYwwXy9gQap-PJyOrVCcUr-VfK90AKNaRe0VO-G00G8SQ@mail.gmail.com>
+In-Reply-To: <20240405115815.3226315-2-pbonzini@redhat.com>
 References: <20240405115815.3226315-1-pbonzini@redhat.com>
  <20240405115815.3226315-2-pbonzini@redhat.com>
- <ZhP3hDhe2Qwo9oCL@x1n>
- <CABgObfYwwXy9gQap-PJyOrVCcUr-VfK90AKNaRe0VO-G00G8SQ@mail.gmail.com>
-Message-ID: <ZhgwXGuUeXbFjrCp@x1n>
+Message-ID: <20240412104408.GA27645@willie-the-truck>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Apr 11, 2024 at 06:55:44PM +0200, Paolo Bonzini wrote:
-> On Mon, Apr 8, 2024 at 3:56?PM Peter Xu <peterx@redhat.com> wrote:
-> > Paolo,
-> >
-> > I may miss a bunch of details here (as I still remember some change_pte
-> > patches previously on the list..), however not sure whether we considered
-> > enable it?  Asked because I remember Andrea used to have a custom tree
-> > maintaining that part:
-> >
-> > https://github.com/aagit/aa/commit/c761078df7a77d13ddfaeebe56a0f4bc128b1968
-> 
-> The patch enables it only for KSM, so it would still require a bunch
-> of cleanups, for example I also would still use set_pte_at() in all
-> the places that are not KSM. This would at least fix the issue with
-> the poor documentation of where to use set_pte_at_notify() vs
-> set_pte_at().
-> 
-> With regard to the implementation, I like the idea of disabling the
-> invalidation on the MMU notifier side, but I would rather have
-> MMU_NOTIFIER_CHANGE_PTE as a separate field in the range instead of
-> overloading the event field.
-> 
-> > Maybe it can't be enabled for some reason that I overlooked in the current
-> > tree, or we just decided to not to?
-> 
-> I have just learnt about the patch, nobody had ever mentioned it even
-> though it's almost 2 years old... It's a lot of code though and no one
-> has ever reported an issue for over 10 years, so I think it's easiest
-> to just rip the code out.
+On Fri, Apr 05, 2024 at 07:58:12AM -0400, Paolo Bonzini wrote:
+> diff --git a/arch/arm64/kvm/mmu.c b/arch/arm64/kvm/mmu.c
+> index dc04bc767865..ff17849be9f4 100644
+> --- a/arch/arm64/kvm/mmu.c
+> +++ b/arch/arm64/kvm/mmu.c
+> @@ -1768,40 +1768,6 @@ bool kvm_unmap_gfn_range(struct kvm *kvm, struct kvm_gfn_range *range)
+>  	return false;
+>  }
+>  
+> -bool kvm_set_spte_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
+> -{
+> -	kvm_pfn_t pfn = pte_pfn(range->arg.pte);
+> -
+> -	if (!kvm->arch.mmu.pgt)
+> -		return false;
+> -
+> -	WARN_ON(range->end - range->start != 1);
+> -
+> -	/*
+> -	 * If the page isn't tagged, defer to user_mem_abort() for sanitising
+> -	 * the MTE tags. The S2 pte should have been unmapped by
+> -	 * mmu_notifier_invalidate_range_end().
+> -	 */
+> -	if (kvm_has_mte(kvm) && !page_mte_tagged(pfn_to_page(pfn)))
+> -		return false;
+> -
+> -	/*
+> -	 * We've moved a page around, probably through CoW, so let's treat
+> -	 * it just like a translation fault and the map handler will clean
+> -	 * the cache to the PoC.
+> -	 *
+> -	 * The MMU notifiers will have unmapped a huge PMD before calling
+> -	 * ->change_pte() (which in turn calls kvm_set_spte_gfn()) and
+> -	 * therefore we never need to clear out a huge PMD through this
+> -	 * calling path and a memcache is not required.
+> -	 */
+> -	kvm_pgtable_stage2_map(kvm->arch.mmu.pgt, range->start << PAGE_SHIFT,
+> -			       PAGE_SIZE, __pfn_to_phys(pfn),
+> -			       KVM_PGTABLE_PROT_R, NULL, 0);
+> -
+> -	return false;
+> -}
+> -
+>  bool kvm_age_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
+>  {
+>  	u64 size = (range->end - range->start) << PAGE_SHIFT;
 
-Right, it was pretty old and I have no idea if that was discussed or
-published before..  It would be better to have discussed this earlier.
+Thanks. It's nice to see this code retire:
 
-As long as we have a decision with that being aware and in mind, then it
-looks fine to me to take either way to go, and I also agree either way is
-better than keep the status quo.
+Acked-by: Will Deacon <will@kernel.org>
 
-I also have Andrea copied anyway when I replied, so I guess he should be
-aware of this and he can chim in anytime.
+Also, if you're in the business of hacking the MMU notifier code, it
+would be really great to change the .clear_flush_young() callback so
+that the architecture could handle the TLB invalidation. At the moment,
+the core KVM code invalidates the whole VMID courtesy of 'flush_on_ret'
+being set by kvm_handle_hva_range(), whereas we could do a much
+lighter-weight and targetted TLBI in the architecture page-table code
+when we actually update the ptes for small ranges.
 
-Thanks!
-
--- 
-Peter Xu
-
+Will
 
