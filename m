@@ -1,92 +1,76 @@
-From: Marc Zyngier <maz@kernel.org>
-Date: Fri, 12 Apr 2024 14:15:44 +0100
+From: Sean Christopherson <seanjc@google.com>
+Date: Fri, 12 Apr 2024 07:54:22 -0700
 Subject: [PATCH 1/4] KVM: delete .change_pte MMU notifier callback
-In-Reply-To: <20240412104408.GA27645@willie-the-truck>
-References: <20240405115815.3226315-1-pbonzini@redhat.com>
-	<20240405115815.3226315-2-pbonzini@redhat.com>
-	<20240412104408.GA27645@willie-the-truck>
-Message-ID: <86jzl2sovz.wl-maz@kernel.org>
+In-Reply-To: <86jzl2sovz.wl-maz@kernel.org>
+References: <20240405115815.3226315-1-pbonzini@redhat.com> <20240405115815.3226315-2-pbonzini@redhat.com>
+ <20240412104408.GA27645@willie-the-truck> <86jzl2sovz.wl-maz@kernel.org>
+Message-ID: <ZhlLHtfeSHk9gRRO@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, 12 Apr 2024 11:44:09 +0100,
-Will Deacon <will@kernel.org> wrote:
+On Fri, Apr 12, 2024, Marc Zyngier wrote:
+> On Fri, 12 Apr 2024 11:44:09 +0100, Will Deacon <will@kernel.org> wrote:
+> > On Fri, Apr 05, 2024 at 07:58:12AM -0400, Paolo Bonzini wrote:
+> > Also, if you're in the business of hacking the MMU notifier code, it
+> > would be really great to change the .clear_flush_young() callback so
+> > that the architecture could handle the TLB invalidation. At the moment,
+> > the core KVM code invalidates the whole VMID courtesy of 'flush_on_ret'
+> > being set by kvm_handle_hva_range(), whereas we could do a much
+> > lighter-weight and targetted TLBI in the architecture page-table code
+> > when we actually update the ptes for small ranges.
 > 
-> On Fri, Apr 05, 2024 at 07:58:12AM -0400, Paolo Bonzini wrote:
-> > diff --git a/arch/arm64/kvm/mmu.c b/arch/arm64/kvm/mmu.c
-> > index dc04bc767865..ff17849be9f4 100644
-> > --- a/arch/arm64/kvm/mmu.c
-> > +++ b/arch/arm64/kvm/mmu.c
-> > @@ -1768,40 +1768,6 @@ bool kvm_unmap_gfn_range(struct kvm *kvm, struct kvm_gfn_range *range)
-> >  	return false;
-> >  }
-> >  
-> > -bool kvm_set_spte_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
-> > -{
-> > -	kvm_pfn_t pfn = pte_pfn(range->arg.pte);
-> > -
-> > -	if (!kvm->arch.mmu.pgt)
-> > -		return false;
-> > -
-> > -	WARN_ON(range->end - range->start != 1);
-> > -
-> > -	/*
-> > -	 * If the page isn't tagged, defer to user_mem_abort() for sanitising
-> > -	 * the MTE tags. The S2 pte should have been unmapped by
-> > -	 * mmu_notifier_invalidate_range_end().
-> > -	 */
-> > -	if (kvm_has_mte(kvm) && !page_mte_tagged(pfn_to_page(pfn)))
-> > -		return false;
-> > -
-> > -	/*
-> > -	 * We've moved a page around, probably through CoW, so let's treat
-> > -	 * it just like a translation fault and the map handler will clean
-> > -	 * the cache to the PoC.
-> > -	 *
-> > -	 * The MMU notifiers will have unmapped a huge PMD before calling
-> > -	 * ->change_pte() (which in turn calls kvm_set_spte_gfn()) and
-> > -	 * therefore we never need to clear out a huge PMD through this
-> > -	 * calling path and a memcache is not required.
-> > -	 */
-> > -	kvm_pgtable_stage2_map(kvm->arch.mmu.pgt, range->start << PAGE_SHIFT,
-> > -			       PAGE_SIZE, __pfn_to_phys(pfn),
-> > -			       KVM_PGTABLE_PROT_R, NULL, 0);
-> > -
-> > -	return false;
-> > -}
-> > -
-> >  bool kvm_age_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
-> >  {
-> >  	u64 size = (range->end - range->start) << PAGE_SHIFT;
+> Indeed, and I was looking at this earlier this week as it has a pretty
+> devastating effect with NV (it blows the shadow S2 for that VMID, with
+> costly consequences).
 > 
-> Thanks. It's nice to see this code retire:
-> 
-> Acked-by: Will Deacon <will@kernel.org>
-> 
-> Also, if you're in the business of hacking the MMU notifier code, it
-> would be really great to change the .clear_flush_young() callback so
-> that the architecture could handle the TLB invalidation. At the moment,
-> the core KVM code invalidates the whole VMID courtesy of 'flush_on_ret'
-> being set by kvm_handle_hva_range(), whereas we could do a much
-> lighter-weight and targetted TLBI in the architecture page-table code
-> when we actually update the ptes for small ranges.
+> In general, it feels like the TLB invalidation should stay with the
+> code that deals with the page tables, as it has a pretty good idea of
+> what needs to be invalidated and how -- specially on architectures
+> that have a HW-broadcast facility like arm64.
 
-Indeed, and I was looking at this earlier this week as it has a pretty
-devastating effect with NV (it blows the shadow S2 for that VMID, with
-costly consequences).
+Would this be roughly on par with an in-line flush on arm64?  The simpler, more
+straightforward solution would be to let architectures override flush_on_ret,
+but I would prefer something like the below as x86 can also utilize a range-based
+flush when running as a nested hypervisor.
 
-In general, it feels like the TLB invalidation should stay with the
-code that deals with the page tables, as it has a pretty good idea of
-what needs to be invalidated and how -- specially on architectures
-that have a HW-broadcast facility like arm64.
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index ff0a20565f90..b65116294efe 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -601,6 +601,7 @@ static __always_inline kvm_mn_ret_t __kvm_handle_hva_range(struct kvm *kvm,
+        struct kvm_gfn_range gfn_range;
+        struct kvm_memory_slot *slot;
+        struct kvm_memslots *slots;
++       bool need_flush = false;
+        int i, idx;
+ 
+        if (WARN_ON_ONCE(range->end <= range->start))
+@@ -653,10 +654,22 @@ static __always_inline kvm_mn_ret_t __kvm_handle_hva_range(struct kvm *kvm,
+                                        break;
+                        }
+                        r.ret |= range->handler(kvm, &gfn_range);
++
++                       /*
++                        * Use a precise gfn-based TLB flush when possible, as
++                        * most mmu_notifier events affect a small-ish range.
++                        * Fall back to a full TLB flush if the gfn-based flush
++                        * fails, and don't bother trying the gfn-based flush
++                        * if a full flush is already pending.
++                        */
++                       if (range->flush_on_ret && !need_flush && r.ret &&
++                           kvm_arch_flush_remote_tlbs_range(kvm, gfn_range.start
++                                                            gfn_range.end - gfn_range.start + 1))
++                               need_flush = true;
+                }
+        }
+ 
+-       if (range->flush_on_ret && r.ret)
++       if (need_flush)
+                kvm_flush_remote_tlbs(kvm);
+ 
+        if (r.found_memslot)
 
-Thanks,
-
-	M.
-
--- 
-Without deviation from the norm, progress is not possible.
 
