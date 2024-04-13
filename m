@@ -1,67 +1,100 @@
-From: David Hildenbrand <david@redhat.com>
-Date: Fri, 12 Apr 2024 22:01:03 +0200
+From: Marc Zyngier <maz@kernel.org>
+Date: Sat, 13 Apr 2024 10:56:25 +0100
 Subject: [PATCH 1/4] KVM: delete .change_pte MMU notifier callback
-In-Reply-To: <CABgObfYwwXy9gQap-PJyOrVCcUr-VfK90AKNaRe0VO-G00G8SQ@mail.gmail.com>
+In-Reply-To: <ZhlLHtfeSHk9gRRO@google.com>
 References: <20240405115815.3226315-1-pbonzini@redhat.com>
- <20240405115815.3226315-2-pbonzini@redhat.com> <ZhP3hDhe2Qwo9oCL@x1n>
- <CABgObfYwwXy9gQap-PJyOrVCcUr-VfK90AKNaRe0VO-G00G8SQ@mail.gmail.com>
-Message-ID: <5ed763c2-7e01-4c31-923c-ba62f0d0e993@redhat.com>
+	<20240405115815.3226315-2-pbonzini@redhat.com>
+	<20240412104408.GA27645@willie-the-truck>
+	<86jzl2sovz.wl-maz@kernel.org>
+	<ZhlLHtfeSHk9gRRO@google.com>
+Message-ID: <86h6g5si0m.wl-maz@kernel.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 11.04.24 18:55, Paolo Bonzini wrote:
-> On Mon, Apr 8, 2024 at 3:56?PM Peter Xu <peterx@redhat.com> wrote:
->> Paolo,
->>
->> I may miss a bunch of details here (as I still remember some change_pte
->> patches previously on the list..), however not sure whether we considered
->> enable it?  Asked because I remember Andrea used to have a custom tree
->> maintaining that part:
->>
->> https://github.com/aagit/aa/commit/c761078df7a77d13ddfaeebe56a0f4bc128b1968
+On Fri, 12 Apr 2024 15:54:22 +0100,
+Sean Christopherson <seanjc@google.com> wrote:
 > 
-> The patch enables it only for KSM, so it would still require a bunch
-> of cleanups, for example I also would still use set_pte_at() in all
-> the places that are not KSM. This would at least fix the issue with
-> the poor documentation of where to use set_pte_at_notify() vs
-> set_pte_at().
+> On Fri, Apr 12, 2024, Marc Zyngier wrote:
+> > On Fri, 12 Apr 2024 11:44:09 +0100, Will Deacon <will@kernel.org> wrote:
+> > > On Fri, Apr 05, 2024 at 07:58:12AM -0400, Paolo Bonzini wrote:
+> > > Also, if you're in the business of hacking the MMU notifier code, it
+> > > would be really great to change the .clear_flush_young() callback so
+> > > that the architecture could handle the TLB invalidation. At the moment,
+> > > the core KVM code invalidates the whole VMID courtesy of 'flush_on_ret'
+> > > being set by kvm_handle_hva_range(), whereas we could do a much
+> > > lighter-weight and targetted TLBI in the architecture page-table code
+> > > when we actually update the ptes for small ranges.
+> > 
+> > Indeed, and I was looking at this earlier this week as it has a pretty
+> > devastating effect with NV (it blows the shadow S2 for that VMID, with
+> > costly consequences).
+> > 
+> > In general, it feels like the TLB invalidation should stay with the
+> > code that deals with the page tables, as it has a pretty good idea of
+> > what needs to be invalidated and how -- specially on architectures
+> > that have a HW-broadcast facility like arm64.
 > 
-> With regard to the implementation, I like the idea of disabling the
-> invalidation on the MMU notifier side, but I would rather have
-> MMU_NOTIFIER_CHANGE_PTE as a separate field in the range instead of
-> overloading the event field.
+> Would this be roughly on par with an in-line flush on arm64?  The simpler, more
+> straightforward solution would be to let architectures override flush_on_ret,
+> but I would prefer something like the below as x86 can also utilize a range-based
+> flush when running as a nested hypervisor.
 > 
->> Maybe it can't be enabled for some reason that I overlooked in the current
->> tree, or we just decided to not to?
-> 
-> I have just learnt about the patch, nobody had ever mentioned it even
-> though it's almost 2 years old... It's a lot of code though and no one
+> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+> index ff0a20565f90..b65116294efe 100644
+> --- a/virt/kvm/kvm_main.c
+> +++ b/virt/kvm/kvm_main.c
+> @@ -601,6 +601,7 @@ static __always_inline kvm_mn_ret_t __kvm_handle_hva_range(struct kvm *kvm,
+>         struct kvm_gfn_range gfn_range;
+>         struct kvm_memory_slot *slot;
+>         struct kvm_memslots *slots;
+> +       bool need_flush = false;
+>         int i, idx;
+>  
+>         if (WARN_ON_ONCE(range->end <= range->start))
+> @@ -653,10 +654,22 @@ static __always_inline kvm_mn_ret_t __kvm_handle_hva_range(struct kvm *kvm,
+>                                         break;
+>                         }
+>                         r.ret |= range->handler(kvm, &gfn_range);
+> +
+> +                       /*
+> +                        * Use a precise gfn-based TLB flush when possible, as
+> +                        * most mmu_notifier events affect a small-ish range.
+> +                        * Fall back to a full TLB flush if the gfn-based flush
+> +                        * fails, and don't bother trying the gfn-based flush
+> +                        * if a full flush is already pending.
+> +                        */
+> +                       if (range->flush_on_ret && !need_flush && r.ret &&
+> +                           kvm_arch_flush_remote_tlbs_range(kvm, gfn_range.start
+> +                                                            gfn_range.end - gfn_range.start + 1))
+> +                               need_flush = true;
+>                 }
+>         }
+>  
+> -       if (range->flush_on_ret && r.ret)
+> +       if (need_flush)
+>                 kvm_flush_remote_tlbs(kvm);
+>  
+>         if (r.found_memslot)
 
-I assume Andrea used it on his tree where he also has a version of 
-"randprotect" (even included in that commit subject) to mitigate a KSM 
-security issue that was reported by some security researchers [1] a 
-while ago. From what I recall, the industry did not end up caring about 
-that security issue that much.
+I think this works for us on HW that has range invalidation, which
+would already be a positive move.
 
-IIUC, with "randprotect" we get a lot more R/O protection even when not 
-de-duplicating a page -- thus the name. Likely, the reporter mentioned 
-in the commit is a researcher that played with Andreas fix for the 
-security issue. But I'm just speculating at this point :)
+For the lesser HW that isn't range capable, it also gives the
+opportunity to perform the iteration ourselves or go for the nuclear
+option if the range is larger than some arbitrary constant (though
+this is additional work).
 
-> has ever reported an issue for over 10 years, so I think it's easiest
-> to just rip the code out.
+But this still considers the whole range as being affected by
+range->handler(). It'd be interesting to try and see whether more
+precise tracking is (or isn't) generally beneficial.
 
-Yes. Can always be readded in a possibly cleaner fashion (like you note 
-above), when deemed necessary and we are willing to support it.
+Thanks,
 
-[1] https://gruss.cc/files/remote_dedup.pdf
+	M.
 
 -- 
-Cheers,
-
-David / dhildenb
-
+Without deviation from the norm, progress is not possible.
 
