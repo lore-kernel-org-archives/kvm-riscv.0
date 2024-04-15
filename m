@@ -1,69 +1,188 @@
 From: Shenlin Liang <liangshenlin@eswincomputing.com>
-Date: Mon, 15 Apr 2024 03:11:29 +0000
-Subject: [PATCH v2 0/2] perf kvm: Add kvm stat support on riscv
-Message-ID: <20240415031131.23443-1-liangshenlin@eswincomputing.com>
+Date: Mon, 15 Apr 2024 03:11:31 +0000
+Subject: [PATCH v2 2/2] perf kvm/riscv: Port perf kvm stat to RISC-V
+In-Reply-To: <20240415031131.23443-1-liangshenlin@eswincomputing.com>
+References: <20240415031131.23443-1-liangshenlin@eswincomputing.com>
+Message-ID: <20240415031131.23443-3-liangshenlin@eswincomputing.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Changes from v1->v2:
-- Rebased on Linux 6.9-rc3.
-
 'perf kvm stat report/record' generates a statistical analysis of KVM
-events and can be used to analyze guest exit reasons. This patch tries
-to add stat support on riscv.
+events and can be used to analyze guest exit reasons.
 
-Map the return value of trace_kvm_exit() to the specific cause of the 
-exception, and export it to userspace.
+"report" reports statistical analysis of guest exit events.
 
-It records on two available KVM tracepoints for riscv: "kvm:kvm_entry"
-and "kvm:kvm_exit", and reports statistical data which includes events
-handles time, samples, and so on.
+To record kvm events on the host:
+ # perf kvm stat record -a
 
-Simple tests go below:
+To report kvm VM EXIT events:
+ # perf kvm stat report --event=vmexit
 
-# ./perf kvm record -e "kvm:kvm_entry" -e "kvm:kvm_exit"
-Lowering default frequency rate from 4000 to 2500.
-Please consider tweaking /proc/sys/kernel/perf_event_max_sample_rate.
-[ perf record: Woken up 18 times to write data ]
-[ perf record: Captured and wrote 5.433 MB perf.data.guest (62519 samples) 
-
-# ./perf kvm report
-31K kvm:kvm_entry
-31K kvm:kvm_exit
-
-# ./perf kvm stat record -a
-[ perf record: Woken up 3 times to write data ]
-[ perf record: Captured and wrote 8.502 MB perf.data.guest (99338 samples) ]
-
-# ./perf kvm stat report --event=vmexit
-Event name                Samples   Sample%    Time (ns)     Time%   Max Time (ns)   Min Time (ns)  Mean Time (ns)
-STORE_GUEST_PAGE_FAULT     26968     54.00%    2003031800    40.00%     3361400         27600          74274
-LOAD_GUEST_PAGE_FAULT      17645     35.00%    1153338100    23.00%     2513400         30800          65363
-VIRTUAL_INST_FAULT         1247      2.00%     340820800     6.00%      1190800         43300          273312
-INST_GUEST_PAGE_FAULT      1128      2.00%     340645800     6.00%      2123200         30200          301990
-SUPERVISOR_SYSCALL         1019      2.00%     245989900     4.00%      1851500         29300          241403
-LOAD_ACCESS                986       1.00%     671556200     13.00%     4180200         100700         681091
-INST_ACCESS                655       1.00%     170054800     3.00%      1808300         54600          259625
-HYPERVISOR_SYSCALL         21        0.00%     4276400       0.00%      716500          116000         203638 
-
-Shenlin Liang (2):
-  RISCV: KVM: add tracepoints for entry and exit events
-  perf kvm/riscv: Port perf kvm stat to RISC-V
-
- arch/riscv/kvm/trace.h                        | 67 ++++++++++++++++
- arch/riscv/kvm/vcpu.c                         |  7 ++
+Signed-off-by: Shenlin Liang <liangshenlin@eswincomputing.com>
+---
  tools/perf/arch/riscv/Makefile                |  1 +
  tools/perf/arch/riscv/util/Build              |  1 +
  tools/perf/arch/riscv/util/kvm-stat.c         | 78 +++++++++++++++++++
  .../arch/riscv/util/riscv_exception_types.h   | 41 ++++++++++
- 6 files changed, 195 insertions(+)
- create mode 100644 arch/riscv/kvm/trace.h
+ 4 files changed, 121 insertions(+)
  create mode 100644 tools/perf/arch/riscv/util/kvm-stat.c
  create mode 100644 tools/perf/arch/riscv/util/riscv_exception_types.h
 
+diff --git a/tools/perf/arch/riscv/Makefile b/tools/perf/arch/riscv/Makefile
+index a8d25d005207..e1e445615536 100644
+--- a/tools/perf/arch/riscv/Makefile
++++ b/tools/perf/arch/riscv/Makefile
+@@ -3,3 +3,4 @@ PERF_HAVE_DWARF_REGS := 1
+ endif
+ PERF_HAVE_ARCH_REGS_QUERY_REGISTER_OFFSET := 1
+ PERF_HAVE_JITDUMP := 1
++HAVE_KVM_STAT_SUPPORT := 1
+\ No newline at end of file
+diff --git a/tools/perf/arch/riscv/util/Build b/tools/perf/arch/riscv/util/Build
+index 603dbb5ae4dc..d72b04f8d32b 100644
+--- a/tools/perf/arch/riscv/util/Build
++++ b/tools/perf/arch/riscv/util/Build
+@@ -1,5 +1,6 @@
+ perf-y += perf_regs.o
+ perf-y += header.o
+ 
++perf-$(CONFIG_LIBTRACEEVENT) += kvm-stat.o
+ perf-$(CONFIG_DWARF) += dwarf-regs.o
+ perf-$(CONFIG_LIBDW_DWARF_UNWIND) += unwind-libdw.o
+diff --git a/tools/perf/arch/riscv/util/kvm-stat.c b/tools/perf/arch/riscv/util/kvm-stat.c
+new file mode 100644
+index 000000000000..db7183e0f09f
+--- /dev/null
++++ b/tools/perf/arch/riscv/util/kvm-stat.c
+@@ -0,0 +1,78 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Arch specific functions for perf kvm stat.
++ *
++ * Copyright 2024 Beijing ESWIN Computing Technology Co., Ltd.
++ *
++ */
++#include <errno.h>
++#include <memory.h>
++#include "../../../util/evsel.h"
++#include "../../../util/kvm-stat.h"
++#include "riscv_exception_types.h"
++#include "debug.h"
++
++define_exit_reasons_table(riscv_exit_reasons, kvm_riscv_exception_class);
++
++const char *kvm_exit_reason = "scause";
++const char *kvm_entry_trace = "kvm:kvm_entry";
++const char *kvm_exit_trace = "kvm:kvm_exit";
++
++const char *kvm_events_tp[] = {
++	"kvm:kvm_entry",
++	"kvm:kvm_exit",
++	NULL,
++};
++
++static void event_get_key(struct evsel *evsel,
++			  struct perf_sample *sample,
++			  struct event_key *key)
++{
++	key->info = 0;
++	key->key = evsel__intval(evsel, sample, kvm_exit_reason);
++	key->key = (int)key->key;
++	key->exit_reasons = riscv_exit_reasons;
++}
++
++static bool event_begin(struct evsel *evsel,
++			struct perf_sample *sample __maybe_unused,
++			struct event_key *key __maybe_unused)
++{
++	return evsel__name_is(evsel, kvm_entry_trace);
++}
++
++static bool event_end(struct evsel *evsel,
++		      struct perf_sample *sample,
++		      struct event_key *key)
++{
++	if (evsel__name_is(evsel, kvm_exit_trace)) {
++		event_get_key(evsel, sample, key);
++		return true;
++	}
++	return false;
++}
++
++static struct kvm_events_ops exit_events = {
++	.is_begin_event = event_begin,
++	.is_end_event	= event_end,
++	.decode_key	= exit_event_decode_key,
++	.name		= "VM-EXIT"
++};
++
++struct kvm_reg_events_ops kvm_reg_events_ops[] = {
++	{
++		.name	= "vmexit",
++		.ops	= &exit_events,
++	},
++	{ NULL, NULL },
++};
++
++const char * const kvm_skip_events[] = {
++	NULL,
++};
++
++int cpu_isa_init(struct perf_kvm_stat *kvm, const char *cpuid __maybe_unused)
++{
++	kvm->exit_reasons_isa = "riscv64";
++	return 0;
++}
+diff --git a/tools/perf/arch/riscv/util/riscv_exception_types.h b/tools/perf/arch/riscv/util/riscv_exception_types.h
+new file mode 100644
+index 000000000000..2e42150f72b2
+--- /dev/null
++++ b/tools/perf/arch/riscv/util/riscv_exception_types.h
+@@ -0,0 +1,41 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * RISCV exception types
++ *
++ * Copyright 2024 Beijing ESWIN Computing Technology Co., Ltd.
++ *
++ */
++#ifndef ARCH_PERF_RISCV_EXCEPTION_TYPES_H
++#define ARCH_PERF_RISCV_EXCEPTION_TYPES_H
++
++#define EXC_INST_MISALIGNED 0
++#define EXC_INST_ACCESS 1
++#define EXC_INST_ILLEGAL 2
++#define EXC_BREAKPOINT 3
++#define EXC_LOAD_MISALIGNED 4
++#define EXC_LOAD_ACCESS 5
++#define EXC_STORE_MISALIGNED 6
++#define EXC_STORE_ACCESS 7
++#define EXC_SYSCALL 8
++#define EXC_HYPERVISOR_SYSCALL 9
++#define EXC_SUPERVISOR_SYSCALL 10
++#define EXC_INST_PAGE_FAULT 12
++#define EXC_LOAD_PAGE_FAULT 13
++#define EXC_STORE_PAGE_FAULT 15
++#define EXC_INST_GUEST_PAGE_FAULT 20
++#define EXC_LOAD_GUEST_PAGE_FAULT 21
++#define EXC_VIRTUAL_INST_FAULT 22
++#define EXC_STORE_GUEST_PAGE_FAULT 23
++
++#define EXC(x) {EXC_##x, #x }
++
++#define kvm_riscv_exception_class                                           \
++	(EXC(INST_MISALIGNED), EXC(INST_ACCESS), EXC(INST_ILLEGAL),         \
++	 EXC(BREAKPOINT), EXC(LOAD_MISALIGNED), EXC(LOAD_ACCESS),           \
++	 EXC(STORE_MISALIGNED), EXC(STORE_ACCESS), EXC(SYSCALL),            \
++	 EXC(HYPERVISOR_SYSCALL), EXC(SUPERVISOR_SYSCALL),                  \
++	 EXC(INST_PAGE_FAULT), EXC(LOAD_PAGE_FAULT), EXC(STORE_PAGE_FAULT), \
++	 EXC(INST_GUEST_PAGE_FAULT), EXC(LOAD_GUEST_PAGE_FAULT),            \
++	 EXC(VIRTUAL_INST_FAULT), EXC(STORE_GUEST_PAGE_FAULT))
++
++#endif /* ARCH_PERF_RISCV_EXCEPTION_TYPES_H */
 -- 
 2.37.2
 
