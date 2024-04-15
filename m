@@ -1,100 +1,131 @@
-From: Marc Zyngier <maz@kernel.org>
-Date: Sat, 13 Apr 2024 10:56:25 +0100
-Subject: [PATCH 1/4] KVM: delete .change_pte MMU notifier callback
-In-Reply-To: <ZhlLHtfeSHk9gRRO@google.com>
-References: <20240405115815.3226315-1-pbonzini@redhat.com>
-	<20240405115815.3226315-2-pbonzini@redhat.com>
-	<20240412104408.GA27645@willie-the-truck>
-	<86jzl2sovz.wl-maz@kernel.org>
-	<ZhlLHtfeSHk9gRRO@google.com>
-Message-ID: <86h6g5si0m.wl-maz@kernel.org>
+From: Shenlin Liang <liangshenlin@eswincomputing.com>
+Date: Mon, 15 Apr 2024 03:11:30 +0000
+Subject: [PATCH v2 1/2] RISCV: KVM: add tracepoints for entry and exit events
+In-Reply-To: <20240415031131.23443-1-liangshenlin@eswincomputing.com>
+References: <20240415031131.23443-1-liangshenlin@eswincomputing.com>
+Message-ID: <20240415031131.23443-2-liangshenlin@eswincomputing.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, 12 Apr 2024 15:54:22 +0100,
-Sean Christopherson <seanjc@google.com> wrote:
-> 
-> On Fri, Apr 12, 2024, Marc Zyngier wrote:
-> > On Fri, 12 Apr 2024 11:44:09 +0100, Will Deacon <will@kernel.org> wrote:
-> > > On Fri, Apr 05, 2024 at 07:58:12AM -0400, Paolo Bonzini wrote:
-> > > Also, if you're in the business of hacking the MMU notifier code, it
-> > > would be really great to change the .clear_flush_young() callback so
-> > > that the architecture could handle the TLB invalidation. At the moment,
-> > > the core KVM code invalidates the whole VMID courtesy of 'flush_on_ret'
-> > > being set by kvm_handle_hva_range(), whereas we could do a much
-> > > lighter-weight and targetted TLBI in the architecture page-table code
-> > > when we actually update the ptes for small ranges.
-> > 
-> > Indeed, and I was looking at this earlier this week as it has a pretty
-> > devastating effect with NV (it blows the shadow S2 for that VMID, with
-> > costly consequences).
-> > 
-> > In general, it feels like the TLB invalidation should stay with the
-> > code that deals with the page tables, as it has a pretty good idea of
-> > what needs to be invalidated and how -- specially on architectures
-> > that have a HW-broadcast facility like arm64.
-> 
-> Would this be roughly on par with an in-line flush on arm64?  The simpler, more
-> straightforward solution would be to let architectures override flush_on_ret,
-> but I would prefer something like the below as x86 can also utilize a range-based
-> flush when running as a nested hypervisor.
-> 
-> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-> index ff0a20565f90..b65116294efe 100644
-> --- a/virt/kvm/kvm_main.c
-> +++ b/virt/kvm/kvm_main.c
-> @@ -601,6 +601,7 @@ static __always_inline kvm_mn_ret_t __kvm_handle_hva_range(struct kvm *kvm,
->         struct kvm_gfn_range gfn_range;
->         struct kvm_memory_slot *slot;
->         struct kvm_memslots *slots;
-> +       bool need_flush = false;
->         int i, idx;
->  
->         if (WARN_ON_ONCE(range->end <= range->start))
-> @@ -653,10 +654,22 @@ static __always_inline kvm_mn_ret_t __kvm_handle_hva_range(struct kvm *kvm,
->                                         break;
->                         }
->                         r.ret |= range->handler(kvm, &gfn_range);
-> +
-> +                       /*
-> +                        * Use a precise gfn-based TLB flush when possible, as
-> +                        * most mmu_notifier events affect a small-ish range.
-> +                        * Fall back to a full TLB flush if the gfn-based flush
-> +                        * fails, and don't bother trying the gfn-based flush
-> +                        * if a full flush is already pending.
-> +                        */
-> +                       if (range->flush_on_ret && !need_flush && r.ret &&
-> +                           kvm_arch_flush_remote_tlbs_range(kvm, gfn_range.start
-> +                                                            gfn_range.end - gfn_range.start + 1))
-> +                               need_flush = true;
->                 }
->         }
->  
-> -       if (range->flush_on_ret && r.ret)
-> +       if (need_flush)
->                 kvm_flush_remote_tlbs(kvm);
->  
->         if (r.found_memslot)
+Like other architectures, RISCV KVM also needs to add these event
+tracepoints to count the number of times kvm guest entry/exit.
 
-I think this works for us on HW that has range invalidation, which
-would already be a positive move.
+Signed-off-by: Shenlin Liang <liangshenlin@eswincomputing.com>
+---
+ arch/riscv/kvm/trace.h | 67 ++++++++++++++++++++++++++++++++++++++++++
+ arch/riscv/kvm/vcpu.c  |  7 +++++
+ 2 files changed, 74 insertions(+)
+ create mode 100644 arch/riscv/kvm/trace.h
 
-For the lesser HW that isn't range capable, it also gives the
-opportunity to perform the iteration ourselves or go for the nuclear
-option if the range is larger than some arbitrary constant (though
-this is additional work).
-
-But this still considers the whole range as being affected by
-range->handler(). It'd be interesting to try and see whether more
-precise tracking is (or isn't) generally beneficial.
-
-Thanks,
-
-	M.
-
+diff --git a/arch/riscv/kvm/trace.h b/arch/riscv/kvm/trace.h
+new file mode 100644
+index 000000000000..3d54175d805c
+--- /dev/null
++++ b/arch/riscv/kvm/trace.h
+@@ -0,0 +1,67 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Tracepoints for RISC-V KVM
++ *
++ * Copyright 2024 Beijing ESWIN Computing Technology Co., Ltd.
++ *
++ */
++#if !defined(_TRACE_KVM_H) || defined(TRACE_HEADER_MULTI_READ)
++#define _TRACE_KVM_H
++
++#include <linux/tracepoint.h>
++
++#undef TRACE_SYSTEM
++#define TRACE_SYSTEM kvm
++
++TRACE_EVENT(kvm_entry,
++	TP_PROTO(struct kvm_vcpu *vcpu),
++	TP_ARGS(vcpu),
++
++	TP_STRUCT__entry(
++		__field(unsigned long, pc)
++	),
++
++	TP_fast_assign(
++		__entry->pc	= vcpu->arch.guest_context.sepc;
++	),
++
++	TP_printk("PC: 0x016%lx", __entry->pc)
++);
++
++TRACE_EVENT(kvm_exit,
++	TP_PROTO(struct kvm_cpu_trap *trap),
++	TP_ARGS(trap),
++
++	TP_STRUCT__entry(
++		__field(unsigned long, sepc)
++		__field(unsigned long, scause)
++		__field(unsigned long, stval)
++		__field(unsigned long, htval)
++		__field(unsigned long, htinst)
++	),
++
++	TP_fast_assign(
++		__entry->sepc		= trap->sepc;
++		__entry->scause		= trap->scause;
++		__entry->stval		= trap->stval;
++		__entry->htval		= trap->htval;
++		__entry->htinst		= trap->htinst;
++	),
++
++	TP_printk("SEPC:0x%lx, SCAUSE:0x%lx, STVAL:0x%lx, HTVAL:0x%lx, HTINST:0x%lx",
++		__entry->sepc,
++		__entry->scause,
++		__entry->stval,
++		__entry->htval,
++		__entry->htinst)
++);
++
++#endif /* _TRACE_RSICV_KVM_H */
++
++#undef TRACE_INCLUDE_PATH
++#define TRACE_INCLUDE_PATH .
++#undef TRACE_INCLUDE_FILE
++#define TRACE_INCLUDE_FILE trace
++
++/* This part must be outside protection */
++#include <trace/define_trace.h>
+diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+index b5ca9f2e98ac..f4e27004ceb8 100644
+--- a/arch/riscv/kvm/vcpu.c
++++ b/arch/riscv/kvm/vcpu.c
+@@ -21,6 +21,9 @@
+ #include <asm/cacheflush.h>
+ #include <asm/kvm_vcpu_vector.h>
+ 
++#define CREATE_TRACE_POINTS
++#include "trace.h"
++
+ const struct _kvm_stats_desc kvm_vcpu_stats_desc[] = {
+ 	KVM_GENERIC_VCPU_STATS(),
+ 	STATS_DESC_COUNTER(VCPU, ecall_exit_stat),
+@@ -782,6 +785,8 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
+ 		 */
+ 		kvm_riscv_local_tlb_sanitize(vcpu);
+ 
++		trace_kvm_entry(vcpu);
++
+ 		guest_timing_enter_irqoff();
+ 
+ 		kvm_riscv_vcpu_enter_exit(vcpu);
+@@ -820,6 +825,8 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
+ 
+ 		local_irq_enable();
+ 
++		trace_kvm_exit(&trap);
++
+ 		preempt_enable();
+ 
+ 		kvm_vcpu_srcu_read_lock(vcpu);
 -- 
-Without deviation from the norm, progress is not possible.
+2.37.2
+
 
