@@ -1,46 +1,114 @@
-From: Yong-Xuan Wang <yongxuan.wang@sifive.com>
-Date: Mon, 15 Apr 2024 14:49:04 +0800
-Subject: [PATCH 1/1] RISC-V: KVM: No need to use mask when hart-index-bit is 0
-Message-ID: <20240415064905.25184-1-yongxuan.wang@sifive.com>
+From: Clément Léger <cleger@rivosinc.com>
+Date: Mon, 15 Apr 2024 11:10:24 +0200
+Subject: [PATCH 07/10] riscv: add ISA extension parsing for Zcmop
+In-Reply-To: <20240411-backwater-opal-00c9aed2231e@wendy>
+References: <20240410091106.749233-1-cleger@rivosinc.com>
+ <20240410091106.749233-8-cleger@rivosinc.com>
+ <ZhcFeVYUQJmBAKuv@debug.ba.rivosinc.com>
+ <20240410-jawless-cavalry-a3eaf9c562a4@spud>
+ <20240410-judgingly-appease-5df493852b70@spud>
+ <ZhcTiakvfbjb2hon@debug.ba.rivosinc.com>
+ <1287e6e9-cb8e-4a78-9195-ce29f1c4bace@rivosinc.com>
+ <20240411-superglue-errant-b32e5118695f@wendy>
+ <c86f9fa8-e273-4509-83fa-f21d3265d5c9@rivosinc.com>
+ <20240411-backwater-opal-00c9aed2231e@wendy>
+Message-ID: <5eda3278-24bc-4c17-a741-523ad5ff79f7@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-When the maximum hart number within groups is 1, hart-index-bit is set to
-0. Consequently, there is no need to restore the hart ID from IMSIC
-addresses and hart-index-bit settings. Currently, QEMU and kvmtool do not
-pass correct hart-index-bit values when the maximum hart number is a
-power of 2, thereby avoiding this issue. Corresponding patches for QEMU
-and kvmtool will also be dispatched.
 
-Fixes: 89d01306e34d ("RISC-V: KVM: Implement device interface for AIA irqchip")
-Signed-off-by: Yong-Xuan Wang <yongxuan.wang@sifive.com>
----
- arch/riscv/kvm/aia_device.c | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/arch/riscv/kvm/aia_device.c b/arch/riscv/kvm/aia_device.c
-index 0eb689351b7d..5cd407c6a8e4 100644
---- a/arch/riscv/kvm/aia_device.c
-+++ b/arch/riscv/kvm/aia_device.c
-@@ -237,10 +237,11 @@ static gpa_t aia_imsic_ppn(struct kvm_aia *aia, gpa_t addr)
- 
- static u32 aia_imsic_hart_index(struct kvm_aia *aia, gpa_t addr)
- {
--	u32 hart, group = 0;
-+	u32 hart = 0, group = 0;
- 
--	hart = (addr >> (aia->nr_guest_bits + IMSIC_MMIO_PAGE_SHIFT)) &
--		GENMASK_ULL(aia->nr_hart_bits - 1, 0);
-+	if (aia->nr_hart_bits)
-+		hart = (addr >> (aia->nr_guest_bits + IMSIC_MMIO_PAGE_SHIFT)) &
-+		       GENMASK_ULL(aia->nr_hart_bits - 1, 0);
- 	if (aia->nr_group_bits)
- 		group = (addr >> aia->nr_group_shift) &
- 			GENMASK_ULL(aia->nr_group_bits - 1, 0);
--- 
-2.17.1
+On 11/04/2024 13:53, Conor Dooley wrote:
+> On Thu, Apr 11, 2024 at 11:08:21AM +0200, Cl?ment L?ger wrote:
+>>>> If we consider to have potentially broken isa string (ie extensions
+>>>> dependencies not correctly handled), then we'll need some way to
+>>>> validate this within the kernel.
+>>>
+>>> No, the DT passed to the kernel should be correct and we by and large we
+>>> should not have to do validation of it. What I meant above was writing
+>>> the binding so that something invalid will not pass dtbs_check.
+>>
+>> Acked, I was mainly answering Deepak question about dependencies wrt to
+>> using __RISCV_ISA_EXT_SUPERSET() which does not seems to be relevant
+>> since we expect a correct isa string to be passed.
+> 
+> Ahh, okay.
+> 
+>> But as you stated, DT
+>> validation clearly make sense. I think a lot of extensions strings would
+>> benefit such support (All the Zv* depends on V, etc).
+> 
+> I think it is actually as simple something like this, which makes it
+> invalid to have "d" without "f":
+> 
+> | diff --git a/Documentation/devicetree/bindings/riscv/extensions.yaml b/Documentation/devicetree/bindings/riscv/extensions.yaml
+> | index 468c646247aa..594828700cbe 100644
+> | --- a/Documentation/devicetree/bindings/riscv/extensions.yaml
+> | +++ b/Documentation/devicetree/bindings/riscv/extensions.yaml
+> | @@ -484,5 +484,20 @@ properties:
+> |              Registers in the AX45MP datasheet.
+> |              https://www.andestech.com/wp-content/uploads/AX45MP-1C-Rev.-5.0.0-Datasheet.pdf
+> |  
+> | +allOf:
+> | +  - if:
+> | +      properties:
+> | +        riscv,isa-extensions:
+> | +          contains:
+> | +            const: "d"
+> | +          not:
+> | +            contains:
+> | +              const: "f"
+> | +    then:
+> | +      properties:
+> | +        riscv,isa-extensions:
+> | +          false
+> | +
+> | +
+> |  additionalProperties: true
+> |  ...
+> 
+> If you do have d without f, the checker will say:
+> cpu at 2: riscv,isa-extensions: False schema does not allow ['i', 'm', 'a', 'd', 'c']
+> 
+> At least that's readable, even though not clear about what to do. I wish
 
+That looks really readable indeed but the messages that result from
+errors are not so informative.
+
+It tried playing with various constructs and found this one to yield a
+comprehensive message:
+
++allOf:
++  - if:
++      properties:
++        riscv,isa-extensions:
++          contains:
++            const: zcf
++          not:
++            contains:
++              const: zca
++    then:
++      properties:
++        riscv,isa-extensions:
++          items:
++            anyOf:
++              - const: zca
+
+arch/riscv/boot/dts/allwinner/sun20i-d1-dongshan-nezha-stu.dtb: cpu at 0:
+riscv,isa-extensions:10: 'anyOf' conditional failed, one must be fixed:
+        'zca' was expected
+        from schema $id: http://devicetree.org/schemas/riscv/extensions.yaml
+
+Even though dt-bindings-check passed, not sure if this is totally a
+valid construct though...
+
+Thanks,
+
+Cl?ment
+
+> the former could be said about the wall of text you get for /each/
+> undocumented entry in the string.
 
