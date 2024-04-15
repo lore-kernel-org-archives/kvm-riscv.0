@@ -1,60 +1,59 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Mon, 15 Apr 2024 15:01:42 +0200
-Subject: [PATCH v6 01/24] RISC-V: Fix the typo in Scountovf CSR name
-In-Reply-To: <20240411000752.955910-2-atishp@rivosinc.com>
+Date: Mon, 15 Apr 2024 15:06:35 +0200
+Subject: [PATCH v6 07/24] RISC-V: Use the minor version mask while
+ computing sbi version
+In-Reply-To: <20240411000752.955910-8-atishp@rivosinc.com>
 References: <20240411000752.955910-1-atishp@rivosinc.com>
- <20240411000752.955910-2-atishp@rivosinc.com>
-Message-ID: <20240415-b899e62329c901f59db9f146@orel>
+ <20240411000752.955910-8-atishp@rivosinc.com>
+Message-ID: <20240415-e229bb33ad53ce43e3534f5a@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Apr 10, 2024 at 05:07:29PM -0700, Atish Patra wrote:
-> The counter overflow CSR name is "scountovf" not "sscountovf".
+On Wed, Apr 10, 2024 at 05:07:35PM -0700, Atish Patra wrote:
+> As per the SBI specification, minor version is encoded in the
+> lower 24 bits only. Make sure that the SBI version is computed
+> with the appropriate mask.
 > 
-> Fix the csr name.
+> Currently, there is no minor version in use. Thus, it doesn't
+> change anything functionality but it is good to be compliant with
+> the specification.
 > 
-> Fixes: 4905ec2fb7e6 ("RISC-V: Add sscofpmf extension support")
-> Reviewed-by: Cl?ment L?ger <cleger@rivosinc.com>
-> Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
-> Reviewed-by: Anup Patel <anup@brainfault.org>
 > Signed-off-by: Atish Patra <atishp@rivosinc.com>
 > ---
->  arch/riscv/include/asm/csr.h | 2 +-
->  drivers/perf/riscv_pmu_sbi.c | 2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
+>  arch/riscv/include/asm/sbi.h | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 > 
-> diff --git a/arch/riscv/include/asm/csr.h b/arch/riscv/include/asm/csr.h
-> index 2468c55933cd..9d1b07932794 100644
-> --- a/arch/riscv/include/asm/csr.h
-> +++ b/arch/riscv/include/asm/csr.h
-> @@ -281,7 +281,7 @@
->  #define CSR_HPMCOUNTER30H	0xc9e
->  #define CSR_HPMCOUNTER31H	0xc9f
->  
-> -#define CSR_SSCOUNTOVF		0xda0
-> +#define CSR_SCOUNTOVF		0xda0
->  
->  #define CSR_SSTATUS		0x100
->  #define CSR_SIE			0x104
-> diff --git a/drivers/perf/riscv_pmu_sbi.c b/drivers/perf/riscv_pmu_sbi.c
-> index 8cbe6e5f9c39..3e44d2fb8bf8 100644
-> --- a/drivers/perf/riscv_pmu_sbi.c
-> +++ b/drivers/perf/riscv_pmu_sbi.c
-> @@ -27,7 +27,7 @@
->  
->  #define ALT_SBI_PMU_OVERFLOW(__ovl)					\
->  asm volatile(ALTERNATIVE_2(						\
-> -	"csrr %0, " __stringify(CSR_SSCOUNTOVF),			\
-> +	"csrr %0, " __stringify(CSR_SCOUNTOVF),				\
->  	"csrr %0, " __stringify(THEAD_C9XX_CSR_SCOUNTEROF),		\
->  		THEAD_VENDOR_ID, ERRATA_THEAD_PMU,			\
->  		CONFIG_ERRATA_THEAD_PMU,				\
-> -- 
-> 2.34.1
->
+> diff --git a/arch/riscv/include/asm/sbi.h b/arch/riscv/include/asm/sbi.h
+> index f31650b10899..935b082d6a6c 100644
+> --- a/arch/riscv/include/asm/sbi.h
+> +++ b/arch/riscv/include/asm/sbi.h
+> @@ -367,8 +367,8 @@ static inline unsigned long sbi_minor_version(void)
+>  static inline unsigned long sbi_mk_version(unsigned long major,
+>  					    unsigned long minor)
+>  {
+> -	return ((major & SBI_SPEC_VERSION_MAJOR_MASK) <<
+> -		SBI_SPEC_VERSION_MAJOR_SHIFT) | minor;
+> +	return ((major & SBI_SPEC_VERSION_MAJOR_MASK) << SBI_SPEC_VERSION_MAJOR_SHIFT
+> +		| (minor & SBI_SPEC_VERSION_MINOR_MASK));
+
+The previous version had ((major & major_mask) << major_shift) | minor
+(parentheses around all the major bits before the OR). Now we have
+parentheses around everything, which aren't necessary, and no longer
+have them around all the major bits before the OR. We don't need the
+parentheses around the major bits, since shift has higher precedence
+than OR, but I'd probably keep them.
+
+Otherwise,
 
 Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+
+>  }
+>  
+>  int sbi_err_map_linux_errno(int err);
+> -- 
+> 2.34.1
+> 
 
