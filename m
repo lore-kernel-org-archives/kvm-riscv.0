@@ -1,78 +1,136 @@
 From: Atish Patra <atishp@rivosinc.com>
-Date: Tue, 16 Apr 2024 01:31:27 -0700
-Subject: [PATCH v6 07/24] RISC-V: Use the minor version mask while
- computing sbi version
-In-Reply-To: <20240415-e229bb33ad53ce43e3534f5a@orel>
+Date: Tue, 16 Apr 2024 01:33:22 -0700
+Subject: [PATCH v6 08/24] drivers/perf: riscv: Implement SBI PMU snapshot
+ function
+In-Reply-To: <20240415-1654deb9446d6c0ebb858b30@orel>
 References: <20240411000752.955910-1-atishp@rivosinc.com>
- <20240411000752.955910-8-atishp@rivosinc.com>
- <20240415-e229bb33ad53ce43e3534f5a@orel>
-Message-ID: <2a63d7da-91b6-496d-9966-e6c0a0aa6c6c@rivosinc.com>
+ <20240411000752.955910-9-atishp@rivosinc.com>
+ <20240415-1654deb9446d6c0ebb858b30@orel>
+Message-ID: <dd14fc53-deda-4086-aac0-2dde7f065bb0@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 4/15/24 06:06, Andrew Jones wrote:
-> On Wed, Apr 10, 2024 at 05:07:35PM -0700, Atish Patra wrote:
->> As per the SBI specification, minor version is encoded in the
->> lower 24 bits only. Make sure that the SBI version is computed
->> with the appropriate mask.
+On 4/15/24 06:15, Andrew Jones wrote:
+> On Wed, Apr 10, 2024 at 05:07:36PM -0700, Atish Patra wrote:
+>> SBI v2.0 SBI introduced PMU snapshot feature which adds the following
+>> features.
 >>
->> Currently, there is no minor version in use. Thus, it doesn't
->> change anything functionality but it is good to be compliant with
->> the specification.
+>> 1. Read counter values directly from the shared memory instead of
+>> csr read.
+>> 2. Start multiple counters with initial values with one SBI call.
 >>
+>> These functionalities optimizes the number of traps to the higher
+>> privilege mode. If the kernel is in VS mode while the hypervisor
+>> deploy trap & emulate method, this would minimize all the hpmcounter
+>> CSR read traps. If the kernel is running in S-mode, the benefits
+>> reduced to CSR latency vs DRAM/cache latency as there is no trap
+>> involved while accessing the hpmcounter CSRs.
+>>
+>> In both modes, it does saves the number of ecalls while starting
+>> multiple counter together with an initial values. This is a likely
+>> scenario if multiple counters overflow at the same time.
+>>
+>> Acked-by: Palmer Dabbelt <palmer@rivosinc.com>
+>> Reviewed-by: Anup Patel <anup@brainfault.org>
+>> Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
 >> Signed-off-by: Atish Patra <atishp@rivosinc.com>
 >> ---
->>   arch/riscv/include/asm/sbi.h | 4 ++--
->>   1 file changed, 2 insertions(+), 2 deletions(-)
+>>   drivers/perf/riscv_pmu.c       |   1 +
+>>   drivers/perf/riscv_pmu_sbi.c   | 224 +++++++++++++++++++++++++++++++--
+>>   include/linux/perf/riscv_pmu.h |   6 +
+>>   3 files changed, 219 insertions(+), 12 deletions(-)
 >>
->> diff --git a/arch/riscv/include/asm/sbi.h b/arch/riscv/include/asm/sbi.h
->> index f31650b10899..935b082d6a6c 100644
->> --- a/arch/riscv/include/asm/sbi.h
->> +++ b/arch/riscv/include/asm/sbi.h
->> @@ -367,8 +367,8 @@ static inline unsigned long sbi_minor_version(void)
->>   static inline unsigned long sbi_mk_version(unsigned long major,
->>   					    unsigned long minor)
->>   {
->> -	return ((major & SBI_SPEC_VERSION_MAJOR_MASK) <<
->> -		SBI_SPEC_VERSION_MAJOR_SHIFT) | minor;
->> +	return ((major & SBI_SPEC_VERSION_MAJOR_MASK) << SBI_SPEC_VERSION_MAJOR_SHIFT
->> +		| (minor & SBI_SPEC_VERSION_MINOR_MASK));
+>> diff --git a/drivers/perf/riscv_pmu.c b/drivers/perf/riscv_pmu.c
+>> index b4efdddb2ad9..36d348753d05 100644
+>> --- a/drivers/perf/riscv_pmu.c
+>> +++ b/drivers/perf/riscv_pmu.c
+>> @@ -408,6 +408,7 @@ struct riscv_pmu *riscv_pmu_alloc(void)
+>>   		cpuc->n_events = 0;
+>>   		for (i = 0; i < RISCV_MAX_COUNTERS; i++)
+>>   			cpuc->events[i] = NULL;
+>> +		cpuc->snapshot_addr = NULL;
+>>   	}
+>>   	pmu->pmu = (struct pmu) {
+>>   		.event_init	= riscv_pmu_event_init,
+>> diff --git a/drivers/perf/riscv_pmu_sbi.c b/drivers/perf/riscv_pmu_sbi.c
+>> index f23501898657..e2881415ca0a 100644
+>> --- a/drivers/perf/riscv_pmu_sbi.c
+>> +++ b/drivers/perf/riscv_pmu_sbi.c
+>> @@ -58,6 +58,9 @@ PMU_FORMAT_ATTR(event, "config:0-47");
+>>   PMU_FORMAT_ATTR(firmware, "config:63");
+>>   
+>>   static bool sbi_v2_available;
+>> +static DEFINE_STATIC_KEY_FALSE(sbi_pmu_snapshot_available);
+>> +#define sbi_pmu_snapshot_available() \
+>> +	static_branch_unlikely(&sbi_pmu_snapshot_available)
+>>   
+>>   static struct attribute *riscv_arch_formats_attr[] = {
+>>   	&format_attr_event.attr,
+>> @@ -508,14 +511,109 @@ static int pmu_sbi_event_map(struct perf_event *event, u64 *econfig)
+>>   	return ret;
+>>   }
+>>   
+>> +static void pmu_sbi_snapshot_free(struct riscv_pmu *pmu)
+>> +{
+>> +	int cpu;
+>> +
+>> +	for_each_possible_cpu(cpu) {
+>> +		struct cpu_hw_events *cpu_hw_evt = per_cpu_ptr(pmu->hw_events, cpu);
+>> +
+>> +		if (!cpu_hw_evt->snapshot_addr)
+>> +			continue;
+>> +
+>> +		free_page((unsigned long)cpu_hw_evt->snapshot_addr);
+>> +		cpu_hw_evt->snapshot_addr = NULL;
+>> +		cpu_hw_evt->snapshot_addr_phys = 0;
+>> +	}
+>> +}
+>> +
+>> +static int pmu_sbi_snapshot_alloc(struct riscv_pmu *pmu)
+>> +{
+>> +	int cpu;
+>> +	struct page *snapshot_page;
+>> +
+>> +	for_each_possible_cpu(cpu) {
+>> +		struct cpu_hw_events *cpu_hw_evt = per_cpu_ptr(pmu->hw_events, cpu);
+>> +
+>> +		if (cpu_hw_evt->snapshot_addr)
+>> +			continue;
+>> +
+>> +		snapshot_page = alloc_page(GFP_ATOMIC | __GFP_ZERO);
+>> +		if (!snapshot_page) {
+>> +			pmu_sbi_snapshot_free(pmu);
+>> +			return -ENOMEM;
+>> +		}
+>> +		cpu_hw_evt->snapshot_addr = page_to_virt(snapshot_page);
+>> +		cpu_hw_evt->snapshot_addr_phys = page_to_phys(snapshot_page);
+>> +	}
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +static int pmu_sbi_snapshot_disable(void)
+>> +{
+>> +	struct sbiret ret;
+>> +
+>> +	ret = sbi_ecall(SBI_EXT_PMU, SBI_EXT_PMU_SNAPSHOT_SET_SHMEM, -1,
+>> +			-1, 0, 0, 0, 0);
 > 
-> The previous version had ((major & major_mask) << major_shift) | minor
-> (parentheses around all the major bits before the OR). Now we have
-> parentheses around everything, which aren't necessary, and no longer
-
-We have to use parentheses around | to avoid compiler warnings 
-(-Wparentheses)
-
-Are you only concerned about the outer parentheses ? I have removed it.
-
-> have them around all the major bits before the OR. We don't need the
-> parentheses around the major bits, since shift has higher precedence
-> than OR, but I'd probably keep them.
+> The SBI_SHMEM_DISABLE patch got moved in front of this patch, but looks
+> like it was forgotten to apply it.
 > 
 
-Is this what you prefer?
-
-return ((major & SBI_SPEC_VERSION_MAJOR_MASK) << 
-SBI_SPEC_VERSION_MAJOR_SHIFT) | (minor & SBI_SPEC_VERSION_MINOR_MASK); 
- 
-
-
+Oops. My bad. Fixed it.
 
 > Otherwise,
 > 
 > Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
 > 
->>   }
->>   
->>   int sbi_err_map_linux_errno(int err);
->> -- 
->> 2.34.1
->>
+> Thanks,
+> drew
 > 
 > _______________________________________________
 > linux-riscv mailing list
