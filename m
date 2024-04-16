@@ -1,160 +1,89 @@
-From: Atish Patra <atishp@rivosinc.com>
-Date: Tue, 16 Apr 2024 01:49:04 -0700
-Subject: [PATCH v6 24/24] KVM: riscv: selftests: Add commandline option
- for SBI PMU test
-In-Reply-To: <20240415-8b9ad5a7e968b1808e99e3da@orel>
+From: Andrew Jones <ajones@ventanamicro.com>
+Date: Tue, 16 Apr 2024 10:49:20 +0200
+Subject: [PATCH v6 07/24] RISC-V: Use the minor version mask while
+ computing sbi version
+In-Reply-To: <2a63d7da-91b6-496d-9966-e6c0a0aa6c6c@rivosinc.com>
 References: <20240411000752.955910-1-atishp@rivosinc.com>
- <20240411000752.955910-25-atishp@rivosinc.com>
- <20240415-8b9ad5a7e968b1808e99e3da@orel>
-Message-ID: <be9a80a3-64f1-4848-94a4-031a3ea797ad@rivosinc.com>
+ <20240411000752.955910-8-atishp@rivosinc.com>
+ <20240415-e229bb33ad53ce43e3534f5a@orel>
+ <2a63d7da-91b6-496d-9966-e6c0a0aa6c6c@rivosinc.com>
+Message-ID: <20240416-1a9f7ea9700c4c6c3e52a1b1@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 4/15/24 06:43, Andrew Jones wrote:
-> On Wed, Apr 10, 2024 at 05:07:52PM -0700, Atish Patra wrote:
->> SBI PMU test comprises of multiple tests and user may want to run
->> only a subset depending on the platform. The most common case would
->> be to run all to validate all the tests. However, some platform may
->> not support all events or all ISA extensions.
->>
->> The commandline option allows user to disable particular test if they
->> want to.
->>
->> Suggested-by: Andrew Jones <ajones@ventanamicro.com>
->> Signed-off-by: Atish Patra <atishp@rivosinc.com>
->> ---
->>   .../selftests/kvm/riscv/sbi_pmu_test.c        | 77 ++++++++++++++++---
->>   1 file changed, 68 insertions(+), 9 deletions(-)
->>
->> diff --git a/tools/testing/selftests/kvm/riscv/sbi_pmu_test.c b/tools/testing/selftests/kvm/riscv/sbi_pmu_test.c
->> index 0fd9b76ae838..57025b07a403 100644
->> --- a/tools/testing/selftests/kvm/riscv/sbi_pmu_test.c
->> +++ b/tools/testing/selftests/kvm/riscv/sbi_pmu_test.c
->> @@ -33,6 +33,16 @@ static unsigned long counter_mask_available;
->>   
->>   static bool illegal_handler_invoked;
->>   
->> +enum sbi_pmu_test_id {
->> +	SBI_PMU_TEST_BASIC = 0,
->> +	SBI_PMU_TEST_EVENTS,
->> +	SBI_PMU_TEST_SNAPSHOT,
->> +	SBI_PMU_TEST_OVERFLOW,
->> +	SBI_PMU_TEST_MAX,
->> +};
->> +
->> +static int disabled_test_id = SBI_PMU_TEST_MAX;
+On Tue, Apr 16, 2024 at 01:31:27AM -0700, Atish Patra wrote:
+> On 4/15/24 06:06, Andrew Jones wrote:
+> > On Wed, Apr 10, 2024 at 05:07:35PM -0700, Atish Patra wrote:
+> > > As per the SBI specification, minor version is encoded in the
+> > > lower 24 bits only. Make sure that the SBI version is computed
+> > > with the appropriate mask.
+> > > 
+> > > Currently, there is no minor version in use. Thus, it doesn't
+> > > change anything functionality but it is good to be compliant with
+> > > the specification.
+> > > 
+> > > Signed-off-by: Atish Patra <atishp@rivosinc.com>
+> > > ---
+> > >   arch/riscv/include/asm/sbi.h | 4 ++--
+> > >   1 file changed, 2 insertions(+), 2 deletions(-)
+> > > 
+> > > diff --git a/arch/riscv/include/asm/sbi.h b/arch/riscv/include/asm/sbi.h
+> > > index f31650b10899..935b082d6a6c 100644
+> > > --- a/arch/riscv/include/asm/sbi.h
+> > > +++ b/arch/riscv/include/asm/sbi.h
+> > > @@ -367,8 +367,8 @@ static inline unsigned long sbi_minor_version(void)
+> > >   static inline unsigned long sbi_mk_version(unsigned long major,
+> > >   					    unsigned long minor)
+> > >   {
+> > > -	return ((major & SBI_SPEC_VERSION_MAJOR_MASK) <<
+> > > -		SBI_SPEC_VERSION_MAJOR_SHIFT) | minor;
+> > > +	return ((major & SBI_SPEC_VERSION_MAJOR_MASK) << SBI_SPEC_VERSION_MAJOR_SHIFT
+> > > +		| (minor & SBI_SPEC_VERSION_MINOR_MASK));
+> > 
+> > The previous version had ((major & major_mask) << major_shift) | minor
+> > (parentheses around all the major bits before the OR). Now we have
+> > parentheses around everything, which aren't necessary, and no longer
 > 
-> I think we should allow specifying '-d' multiple times in case a user
-> wants to disable more than one type of test. So we should set a bit
-> in this variable instead of assigning it. We could also flip it
-> around. If the user uses '-e' to enable test type then only type
-> will be run, but then we'd probably want to allow multiple '-e'
-> too so it doesn't gain anything.
+> We have to use parentheses around | to avoid compiler warnings
+> (-Wparentheses)
 > 
+> Are you only concerned about the outer parentheses ? I have removed it.
+> 
+> > have them around all the major bits before the OR. We don't need the
+> > parentheses around the major bits, since shift has higher precedence
+> > than OR, but I'd probably keep them.
+> > 
+> 
+> Is this what you prefer?
+> 
+> return ((major & SBI_SPEC_VERSION_MAJOR_MASK) <<
+> SBI_SPEC_VERSION_MAJOR_SHIFT) | (minor & SBI_SPEC_VERSION_MINOR_MASK);
 
-Sure. Added multiple disable option.
+Yup
 
->> +
->>   unsigned long pmu_csr_read_num(int csr_num)
->>   {
->>   #define switchcase_csr_read(__csr_num, __val)		{\
->> @@ -608,19 +618,68 @@ static void test_vm_events_overflow(void *guest_code)
->>   	test_vm_destroy(vm);
->>   }
->>   
->> -int main(void)
->> +static void test_print_help(char *name)
->>   {
->> -	test_vm_basic_test(test_pmu_basic_sanity);
->> -	pr_info("SBI PMU basic test : PASS\n");
->> +	pr_info("Usage: %s [-h] [-d <test name>]\n", name);
->> +	pr_info("\t-d: Test to disable. Available tests are 'basic', 'events', 'snapshot', 'overflow'\n");
->> +	pr_info("\t-h: print this help screen\n");
->> +}
->>   
->> -	test_vm_events_test(test_pmu_events);
->> -	pr_info("SBI PMU event verification test : PASS\n");
->> +static bool parse_args(int argc, char *argv[])
->> +{
->> +	int opt;
->> +
->> +	while ((opt = getopt(argc, argv, "hd:")) != -1) {
->> +		switch (opt) {
->> +		case 'd':
->> +			if (!strncmp("basic", optarg, 5))
->> +				disabled_test_id = SBI_PMU_TEST_BASIC;
->> +			else if (!strncmp("events", optarg, 6))
->> +				disabled_test_id = SBI_PMU_TEST_EVENTS;
->> +			else if (!strncmp("snapshot", optarg, 8))
->> +				disabled_test_id = SBI_PMU_TEST_SNAPSHOT;
->> +			else if (!strncmp("overflow", optarg, 8))
->> +				disabled_test_id = SBI_PMU_TEST_OVERFLOW;
->> +			else
->> +				goto done;
->> +			break;
->> +		break;
-> 
-> Extra 'break'
-> 
+Thanks,
+drew
 
-Fixed. Thanks for catching this.
-
->> +		case 'h':
->> +		default:
->> +			goto done;
->> +		}
->> +	}
->>   
->> -	test_vm_events_snapshot_test(test_pmu_events_snaphost);
->> -	pr_info("SBI PMU event verification with snapshot test : PASS\n");
->> +	return true;
->> +done:
->> +	test_print_help(argv[0]);
->> +	return false;
->> +}
->>   
->> -	test_vm_events_overflow(test_pmu_events_overflow);
->> -	pr_info("SBI PMU event verification with overflow test : PASS\n");
->> +int main(int argc, char *argv[])
->> +{
->> +	if (!parse_args(argc, argv))
->> +		exit(KSFT_SKIP);
->> +
->> +	if (disabled_test_id != SBI_PMU_TEST_BASIC) {
->> +		test_vm_basic_test(test_pmu_basic_sanity);
->> +		pr_info("SBI PMU basic test : PASS\n");
->> +	}
->> +
->> +	if (disabled_test_id != SBI_PMU_TEST_EVENTS) {
->> +		test_vm_events_test(test_pmu_events);
->> +		pr_info("SBI PMU event verification test : PASS\n");
->> +	}
->> +
->> +	if (disabled_test_id != SBI_PMU_TEST_SNAPSHOT) {
->> +		test_vm_events_snapshot_test(test_pmu_events_snaphost);
->> +		pr_info("SBI PMU event verification with snapshot test : PASS\n");
->> +	}
->> +
->> +	if (disabled_test_id != SBI_PMU_TEST_OVERFLOW) {
->> +		test_vm_events_overflow(test_pmu_events_overflow);
->> +		pr_info("SBI PMU event verification with overflow test : PASS\n");
->> +	}
->>   
->>   	return 0;
->>   }
->> -- 
->> 2.34.1
->>
 > 
-> Thanks,
-> drew
 > 
-> _______________________________________________
-> linux-riscv mailing list
-> linux-riscv at lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-riscv
-
+> 
+> 
+> > Otherwise,
+> > 
+> > Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+> > 
+> > >   }
+> > >   int sbi_err_map_linux_errno(int err);
+> > > -- 
+> > > 2.34.1
+> > > 
+> > 
+> > _______________________________________________
+> > linux-riscv mailing list
+> > linux-riscv at lists.infradead.org
+> > http://lists.infradead.org/mailman/listinfo/linux-riscv
+> 
 
