@@ -1,89 +1,135 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Tue, 16 Apr 2024 10:49:20 +0200
-Subject: [PATCH v6 07/24] RISC-V: Use the minor version mask while
- computing sbi version
-In-Reply-To: <2a63d7da-91b6-496d-9966-e6c0a0aa6c6c@rivosinc.com>
-References: <20240411000752.955910-1-atishp@rivosinc.com>
- <20240411000752.955910-8-atishp@rivosinc.com>
- <20240415-e229bb33ad53ce43e3534f5a@orel>
- <2a63d7da-91b6-496d-9966-e6c0a0aa6c6c@rivosinc.com>
-Message-ID: <20240416-1a9f7ea9700c4c6c3e52a1b1@orel>
+From: Conor Dooley <conor@kernel.org>
+Date: Tue, 16 Apr 2024 15:54:32 +0100
+Subject: [PATCH 07/10] riscv: add ISA extension parsing for Zcmop
+In-Reply-To: <5eda3278-24bc-4c17-a741-523ad5ff79f7@rivosinc.com>
+References: <20240410091106.749233-8-cleger@rivosinc.com>
+ <ZhcFeVYUQJmBAKuv@debug.ba.rivosinc.com>
+ <20240410-jawless-cavalry-a3eaf9c562a4@spud>
+ <20240410-judgingly-appease-5df493852b70@spud>
+ <ZhcTiakvfbjb2hon@debug.ba.rivosinc.com>
+ <1287e6e9-cb8e-4a78-9195-ce29f1c4bace@rivosinc.com>
+ <20240411-superglue-errant-b32e5118695f@wendy>
+ <c86f9fa8-e273-4509-83fa-f21d3265d5c9@rivosinc.com>
+ <20240411-backwater-opal-00c9aed2231e@wendy>
+ <5eda3278-24bc-4c17-a741-523ad5ff79f7@rivosinc.com>
+Message-ID: <20240416-gave-apron-3234098ce416@spud>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Apr 16, 2024 at 01:31:27AM -0700, Atish Patra wrote:
-> On 4/15/24 06:06, Andrew Jones wrote:
-> > On Wed, Apr 10, 2024 at 05:07:35PM -0700, Atish Patra wrote:
-> > > As per the SBI specification, minor version is encoded in the
-> > > lower 24 bits only. Make sure that the SBI version is computed
-> > > with the appropriate mask.
-> > > 
-> > > Currently, there is no minor version in use. Thus, it doesn't
-> > > change anything functionality but it is good to be compliant with
-> > > the specification.
-> > > 
-> > > Signed-off-by: Atish Patra <atishp@rivosinc.com>
-> > > ---
-> > >   arch/riscv/include/asm/sbi.h | 4 ++--
-> > >   1 file changed, 2 insertions(+), 2 deletions(-)
-> > > 
-> > > diff --git a/arch/riscv/include/asm/sbi.h b/arch/riscv/include/asm/sbi.h
-> > > index f31650b10899..935b082d6a6c 100644
-> > > --- a/arch/riscv/include/asm/sbi.h
-> > > +++ b/arch/riscv/include/asm/sbi.h
-> > > @@ -367,8 +367,8 @@ static inline unsigned long sbi_minor_version(void)
-> > >   static inline unsigned long sbi_mk_version(unsigned long major,
-> > >   					    unsigned long minor)
-> > >   {
-> > > -	return ((major & SBI_SPEC_VERSION_MAJOR_MASK) <<
-> > > -		SBI_SPEC_VERSION_MAJOR_SHIFT) | minor;
-> > > +	return ((major & SBI_SPEC_VERSION_MAJOR_MASK) << SBI_SPEC_VERSION_MAJOR_SHIFT
-> > > +		| (minor & SBI_SPEC_VERSION_MINOR_MASK));
+On Mon, Apr 15, 2024 at 11:10:24AM +0200, Cl?ment L?ger wrote:
+> 
+> 
+> On 11/04/2024 13:53, Conor Dooley wrote:
+> > On Thu, Apr 11, 2024 at 11:08:21AM +0200, Cl?ment L?ger wrote:
+> >>>> If we consider to have potentially broken isa string (ie extensions
+> >>>> dependencies not correctly handled), then we'll need some way to
+> >>>> validate this within the kernel.
+> >>>
+> >>> No, the DT passed to the kernel should be correct and we by and large we
+> >>> should not have to do validation of it. What I meant above was writing
+> >>> the binding so that something invalid will not pass dtbs_check.
+> >>
+> >> Acked, I was mainly answering Deepak question about dependencies wrt to
+> >> using __RISCV_ISA_EXT_SUPERSET() which does not seems to be relevant
+> >> since we expect a correct isa string to be passed.
 > > 
-> > The previous version had ((major & major_mask) << major_shift) | minor
-> > (parentheses around all the major bits before the OR). Now we have
-> > parentheses around everything, which aren't necessary, and no longer
-> 
-> We have to use parentheses around | to avoid compiler warnings
-> (-Wparentheses)
-> 
-> Are you only concerned about the outer parentheses ? I have removed it.
-> 
-> > have them around all the major bits before the OR. We don't need the
-> > parentheses around the major bits, since shift has higher precedence
-> > than OR, but I'd probably keep them.
+> > Ahh, okay.
 > > 
+> >> But as you stated, DT
+> >> validation clearly make sense. I think a lot of extensions strings would
+> >> benefit such support (All the Zv* depends on V, etc).
+> > 
+> > I think it is actually as simple something like this, which makes it
+> > invalid to have "d" without "f":
+> > 
+> > | diff --git a/Documentation/devicetree/bindings/riscv/extensions.yaml b/Documentation/devicetree/bindings/riscv/extensions.yaml
+> > | index 468c646247aa..594828700cbe 100644
+> > | --- a/Documentation/devicetree/bindings/riscv/extensions.yaml
+> > | +++ b/Documentation/devicetree/bindings/riscv/extensions.yaml
+> > | @@ -484,5 +484,20 @@ properties:
+> > |              Registers in the AX45MP datasheet.
+> > |              https://www.andestech.com/wp-content/uploads/AX45MP-1C-Rev.-5.0.0-Datasheet.pdf
+> > |  
+> > | +allOf:
+> > | +  - if:
+> > | +      properties:
+> > | +        riscv,isa-extensions:
+> > | +          contains:
+> > | +            const: "d"
+> > | +          not:
+> > | +            contains:
+> > | +              const: "f"
+> > | +    then:
+> > | +      properties:
+> > | +        riscv,isa-extensions:
+> > | +          false
+> > | +
+> > | +
+> > |  additionalProperties: true
+> > |  ...
+> > 
+> > If you do have d without f, the checker will say:
+> > cpu at 2: riscv,isa-extensions: False schema does not allow ['i', 'm', 'a', 'd', 'c']
+> > 
+> > At least that's readable, even though not clear about what to do. I wish
 > 
-> Is this what you prefer?
+> That looks really readable indeed but the messages that result from
+> errors are not so informative.
 > 
-> return ((major & SBI_SPEC_VERSION_MAJOR_MASK) <<
-> SBI_SPEC_VERSION_MAJOR_SHIFT) | (minor & SBI_SPEC_VERSION_MINOR_MASK);
+> It tried playing with various constructs and found this one to yield a
+> comprehensive message:
+> 
+> +allOf:
+> +  - if:
+> +      properties:
+> +        riscv,isa-extensions:
+> +          contains:
+> +            const: zcf
+> +          not:
+> +            contains:
+> +              const: zca
+> +    then:
+> +      properties:
+> +        riscv,isa-extensions:
+> +          items:
+> +            anyOf:
+> +              - const: zca
+> 
+> arch/riscv/boot/dts/allwinner/sun20i-d1-dongshan-nezha-stu.dtb: cpu at 0:
+> riscv,isa-extensions:10: 'anyOf' conditional failed, one must be fixed:
+>         'zca' was expected
+>         from schema $id: http://devicetree.org/schemas/riscv/extensions.yaml
+> 
+> Even though dt-bindings-check passed, not sure if this is totally a
+> valid construct though...
 
-Yup
+I asked Rob about this yesterday, he suggested adding:
+riscv,isa-extensions:
+  if:
+    contains:
+      const: zcf
+  then:
+    contains:
+      const: zca
+to the existing property, not in an allOf. I think that is by far the
+most readable version in terms of what goes into the binding. The output
+would look like:
+cpu at 0: riscv,isa-extensions: ['i', 'm', 'a', 'd', 'c'] does not contain items matching the given schema
+(for d requiring f cos I am lazy)
 
-Thanks,
-drew
+Also, his comment about your one that gives the nice message was that it
+would wrong as the anyOf was pointless and it says all items must be
+"zca". I didn't try it, but I have a feeling your nice output will be
+rather less nice if several different deps are unmet - but hey, probably
+will still be better than having an undocumented extension!
 
-> 
-> 
-> 
-> 
-> > Otherwise,
-> > 
-> > Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
-> > 
-> > >   }
-> > >   int sbi_err_map_linux_errno(int err);
-> > > -- 
-> > > 2.34.1
-> > > 
-> > 
-> > _______________________________________________
-> > linux-riscv mailing list
-> > linux-riscv at lists.infradead.org
-> > http://lists.infradead.org/mailman/listinfo/linux-riscv
-> 
-
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 228 bytes
+Desc: not available
+URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20240416/185ae6d6/attachment.sig>
