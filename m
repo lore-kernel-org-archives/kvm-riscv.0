@@ -1,44 +1,74 @@
 From: Atish Patra <atishp@rivosinc.com>
-Date: Tue, 16 Apr 2024 11:44:04 -0700
-Subject: [PATCH v7 07/24] RISC-V: Use the minor version mask while computing sbi version
+Date: Tue, 16 Apr 2024 11:44:02 -0700
+Subject: [PATCH v7 05/24] RISC-V: Add SBI PMU snapshot definitions
 In-Reply-To: <20240416184421.3693802-1-atishp@rivosinc.com>
 References: <20240416184421.3693802-1-atishp@rivosinc.com>
-Message-ID: <20240416184421.3693802-8-atishp@rivosinc.com>
+Message-ID: <20240416184421.3693802-6-atishp@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-As per the SBI specification, minor version is encoded in the
-lower 24 bits only. Make sure that the SBI version is computed
-with the appropriate mask.
-
-Currently, there is no minor version in use. Thus, it doesn't
-change anything functionality but it is good to be compliant with
-the specification.
+SBI PMU Snapshot function optimizes the number of traps to
+higher privilege mode by leveraging a shared memory between the S/VS-mode
+and the M/HS mode. Add the definitions for that extension and new error
+codes.
 
 Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+Reviewed-by: Anup Patel <anup@brainfault.org>
+Acked-by: Palmer Dabbelt <palmer@rivosinc.com>
 Signed-off-by: Atish Patra <atishp@rivosinc.com>
 ---
- arch/riscv/include/asm/sbi.h | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/riscv/include/asm/sbi.h | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
 diff --git a/arch/riscv/include/asm/sbi.h b/arch/riscv/include/asm/sbi.h
-index f31650b10899..112a0a0d9f46 100644
+index 4afa2cd01bae..9aada4b9f7b5 100644
 --- a/arch/riscv/include/asm/sbi.h
 +++ b/arch/riscv/include/asm/sbi.h
-@@ -367,8 +367,8 @@ static inline unsigned long sbi_minor_version(void)
- static inline unsigned long sbi_mk_version(unsigned long major,
- 					    unsigned long minor)
- {
--	return ((major & SBI_SPEC_VERSION_MAJOR_MASK) <<
--		SBI_SPEC_VERSION_MAJOR_SHIFT) | minor;
-+	return ((major & SBI_SPEC_VERSION_MAJOR_MASK) << SBI_SPEC_VERSION_MAJOR_SHIFT)
-+		| (minor & SBI_SPEC_VERSION_MINOR_MASK);
- }
+@@ -132,6 +132,7 @@ enum sbi_ext_pmu_fid {
+ 	SBI_EXT_PMU_COUNTER_STOP,
+ 	SBI_EXT_PMU_COUNTER_FW_READ,
+ 	SBI_EXT_PMU_COUNTER_FW_READ_HI,
++	SBI_EXT_PMU_SNAPSHOT_SET_SHMEM,
+ };
  
- int sbi_err_map_linux_errno(int err);
+ union sbi_pmu_ctr_info {
+@@ -148,6 +149,13 @@ union sbi_pmu_ctr_info {
+ 	};
+ };
+ 
++/* Data structure to contain the pmu snapshot data */
++struct riscv_pmu_snapshot_data {
++	u64 ctr_overflow_mask;
++	u64 ctr_values[64];
++	u64 reserved[447];
++};
++
+ #define RISCV_PMU_RAW_EVENT_MASK GENMASK_ULL(47, 0)
+ #define RISCV_PMU_RAW_EVENT_IDX 0x20000
+ 
+@@ -244,9 +252,11 @@ enum sbi_pmu_ctr_type {
+ 
+ /* Flags defined for counter start function */
+ #define SBI_PMU_START_FLAG_SET_INIT_VALUE BIT(0)
++#define SBI_PMU_START_FLAG_INIT_SNAPSHOT BIT(1)
+ 
+ /* Flags defined for counter stop function */
+ #define SBI_PMU_STOP_FLAG_RESET BIT(0)
++#define SBI_PMU_STOP_FLAG_TAKE_SNAPSHOT BIT(1)
+ 
+ enum sbi_ext_dbcn_fid {
+ 	SBI_EXT_DBCN_CONSOLE_WRITE = 0,
+@@ -285,6 +295,7 @@ struct sbi_sta_struct {
+ #define SBI_ERR_ALREADY_AVAILABLE -6
+ #define SBI_ERR_ALREADY_STARTED -7
+ #define SBI_ERR_ALREADY_STOPPED -8
++#define SBI_ERR_NO_SHMEM	-9
+ 
+ extern unsigned long sbi_spec_version;
+ struct sbiret {
 -- 
 2.34.1
 
