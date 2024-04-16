@@ -1,68 +1,142 @@
-From: Nicholas Piggin <npiggin@gmail.com>
-Date: Tue, 16 Apr 2024 13:26:28 +1000
-Subject: [RFC kvm-unit-tests PATCH v2 00/14] add shellcheck support
-In-Reply-To: <a7cdd98e-93c1-4546-bba4-ac3a465f01f5@redhat.com>
-References: <20240406123833.406488-1-npiggin@gmail.com>
- <a7cdd98e-93c1-4546-bba4-ac3a465f01f5@redhat.com>
-Message-ID: <D0L86IDPMTI3.2XFZ8C6UCVD1B@gmail.com>
+From: Anup Patel <anup@brainfault.org>
+Date: Tue, 16 Apr 2024 09:14:51 +0530
+Subject: [PATCH v2 1/2] RISCV: KVM: add tracepoints for entry and exit events
+In-Reply-To: <20240415031131.23443-2-liangshenlin@eswincomputing.com>
+References: <20240415031131.23443-1-liangshenlin@eswincomputing.com> <20240415031131.23443-2-liangshenlin@eswincomputing.com>
+Message-ID: <CAAhSdy1D9x4GJVrXJMzzqU-2iYLxduSHeRvxezmeBTQhgcruJQ@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon Apr 15, 2024 at 9:59 PM AEST, Thomas Huth wrote:
-> On 06/04/2024 14.38, Nicholas Piggin wrote:
-> > Tree here
-> > 
-> > https://gitlab.com/npiggin/kvm-unit-tests/-/tree/shellcheck
-> > 
-> > Again on top of the "v8 migration, powerpc improvements" series. I
-> > don't plan to rebase the other way around since it's a lot of work.
-> > So this is still in RFC until the other big series gets merged.
-> > 
-> > Thanks to Andrew for a lot of review. A submitted the likely s390x
-> > bugs separately ahead of this series, and also disabled one of the
-> > tests and dropped its fix patch as-per review comments. Hence 3 fewer
-> > patches. Other than that, since last post:
-> > 
-> > * Tidied commit messages and added some of Andrew's comments.
-> > * Removed the "SC2034 unused variable" blanket disable, and just
-> >    suppressed the config.mak and a couple of other warnings.
-> > * Blanket disabled "SC2235 Use { ..; } instead of (..)" and dropped
-> >    the fix for it.
-> > * Change warning suppression comments as per Andrew's review, also
-> >    mention in the new unittests doc about the "check =" option not
-> >    allowing whitespace etc in the name since we don't cope with that.
-> > 
-> > Thanks,
-> > Nick
-> > 
-> > Nicholas Piggin (14):
-> >    Add initial shellcheck checking
-> >    shellcheck: Fix SC2223
-> >    shellcheck: Fix SC2295
-> >    shellcheck: Fix SC2094
-> >    shellcheck: Fix SC2006
-> >    shellcheck: Fix SC2155
-> >    shellcheck: Fix SC2143
-> >    shellcheck: Fix SC2013
-> >    shellcheck: Fix SC2145
-> >    shellcheck: Fix SC2124
-> >    shellcheck: Fix SC2294
-> >    shellcheck: Fix SC2178
-> >    shellcheck: Fix SC2048
-> >    shellcheck: Suppress various messages
+On Mon, Apr 15, 2024 at 8:45?AM Shenlin Liang
+<liangshenlin@eswincomputing.com> wrote:
 >
-> I went ahead and pushed a bunch of your patches to the k-u-t master branch 
-> now. However, there were also some patches which did not apply cleanly to 
-> master anymore, so please rebase the remaining patches and then send them again.
+> Like other architectures, RISCV KVM also needs to add these event
+> tracepoints to count the number of times kvm guest entry/exit.
+>
+> Signed-off-by: Shenlin Liang <liangshenlin@eswincomputing.com>
 
-Hey Thomas,
+LGTM.
 
-Yeah the sc patches were based on top of the big series, so some
-collisions expected. I'll look at rebasing.
+Reviewed-by: Anup Patel <anup@brainfault.org>
 
-Thanks,
-Nick
+Regards,
+Anup
+
+> ---
+>  arch/riscv/kvm/trace.h | 67 ++++++++++++++++++++++++++++++++++++++++++
+>  arch/riscv/kvm/vcpu.c  |  7 +++++
+>  2 files changed, 74 insertions(+)
+>  create mode 100644 arch/riscv/kvm/trace.h
+>
+> diff --git a/arch/riscv/kvm/trace.h b/arch/riscv/kvm/trace.h
+> new file mode 100644
+> index 000000000000..3d54175d805c
+> --- /dev/null
+> +++ b/arch/riscv/kvm/trace.h
+> @@ -0,0 +1,67 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +/*
+> + * Tracepoints for RISC-V KVM
+> + *
+> + * Copyright 2024 Beijing ESWIN Computing Technology Co., Ltd.
+> + *
+> + */
+> +#if !defined(_TRACE_KVM_H) || defined(TRACE_HEADER_MULTI_READ)
+> +#define _TRACE_KVM_H
+> +
+> +#include <linux/tracepoint.h>
+> +
+> +#undef TRACE_SYSTEM
+> +#define TRACE_SYSTEM kvm
+> +
+> +TRACE_EVENT(kvm_entry,
+> +       TP_PROTO(struct kvm_vcpu *vcpu),
+> +       TP_ARGS(vcpu),
+> +
+> +       TP_STRUCT__entry(
+> +               __field(unsigned long, pc)
+> +       ),
+> +
+> +       TP_fast_assign(
+> +               __entry->pc     = vcpu->arch.guest_context.sepc;
+> +       ),
+> +
+> +       TP_printk("PC: 0x016%lx", __entry->pc)
+> +);
+> +
+> +TRACE_EVENT(kvm_exit,
+> +       TP_PROTO(struct kvm_cpu_trap *trap),
+> +       TP_ARGS(trap),
+> +
+> +       TP_STRUCT__entry(
+> +               __field(unsigned long, sepc)
+> +               __field(unsigned long, scause)
+> +               __field(unsigned long, stval)
+> +               __field(unsigned long, htval)
+> +               __field(unsigned long, htinst)
+> +       ),
+> +
+> +       TP_fast_assign(
+> +               __entry->sepc           = trap->sepc;
+> +               __entry->scause         = trap->scause;
+> +               __entry->stval          = trap->stval;
+> +               __entry->htval          = trap->htval;
+> +               __entry->htinst         = trap->htinst;
+> +       ),
+> +
+> +       TP_printk("SEPC:0x%lx, SCAUSE:0x%lx, STVAL:0x%lx, HTVAL:0x%lx, HTINST:0x%lx",
+> +               __entry->sepc,
+> +               __entry->scause,
+> +               __entry->stval,
+> +               __entry->htval,
+> +               __entry->htinst)
+> +);
+> +
+> +#endif /* _TRACE_RSICV_KVM_H */
+> +
+> +#undef TRACE_INCLUDE_PATH
+> +#define TRACE_INCLUDE_PATH .
+> +#undef TRACE_INCLUDE_FILE
+> +#define TRACE_INCLUDE_FILE trace
+> +
+> +/* This part must be outside protection */
+> +#include <trace/define_trace.h>
+> diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+> index b5ca9f2e98ac..f4e27004ceb8 100644
+> --- a/arch/riscv/kvm/vcpu.c
+> +++ b/arch/riscv/kvm/vcpu.c
+> @@ -21,6 +21,9 @@
+>  #include <asm/cacheflush.h>
+>  #include <asm/kvm_vcpu_vector.h>
+>
+> +#define CREATE_TRACE_POINTS
+> +#include "trace.h"
+> +
+>  const struct _kvm_stats_desc kvm_vcpu_stats_desc[] = {
+>         KVM_GENERIC_VCPU_STATS(),
+>         STATS_DESC_COUNTER(VCPU, ecall_exit_stat),
+> @@ -782,6 +785,8 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
+>                  */
+>                 kvm_riscv_local_tlb_sanitize(vcpu);
+>
+> +               trace_kvm_entry(vcpu);
+> +
+>                 guest_timing_enter_irqoff();
+>
+>                 kvm_riscv_vcpu_enter_exit(vcpu);
+> @@ -820,6 +825,8 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
+>
+>                 local_irq_enable();
+>
+> +               trace_kvm_exit(&trap);
+> +
+>                 preempt_enable();
+>
+>                 kvm_vcpu_srcu_read_lock(vcpu);
+> --
+> 2.37.2
+>
 
