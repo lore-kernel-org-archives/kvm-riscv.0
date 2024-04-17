@@ -1,76 +1,83 @@
-From: Atish Patra <atishp@rivosinc.com>
-Date: Tue, 16 Apr 2024 17:25:06 -0700
-Subject: [PATCH v2 0/2] perf kvm: Add kvm stat support on riscv
-In-Reply-To: <20240415031131.23443-1-liangshenlin@eswincomputing.com>
-References: <20240415031131.23443-1-liangshenlin@eswincomputing.com>
-Message-ID: <aceaaeba-61cb-44fa-8639-e30a86ef8cd8@rivosinc.com>
+From: Nicholas Piggin <npiggin@gmail.com>
+Date: Wed, 17 Apr 2024 11:40:40 +1000
+Subject: [RFC kvm-unit-tests PATCH v2 00/14] add shellcheck support
+In-Reply-To: <3ed01604-3b9e-4131-9ec0-c354c6d65cc8@redhat.com>
+References: <20240406123833.406488-1-npiggin@gmail.com>
+ <a7cdd98e-93c1-4546-bba4-ac3a465f01f5@redhat.com>
+ <D0L86IDPMTI3.2XFZ8C6UCVD1B@gmail.com>
+ <3ed01604-3b9e-4131-9ec0-c354c6d65cc8@redhat.com>
+Message-ID: <D0M0K25RUX0G.1FCOQS1GR21N4@gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 4/14/24 20:11, Shenlin Liang wrote:
-> Changes from v1->v2:
-> - Rebased on Linux 6.9-rc3.
-> 
-> 'perf kvm stat report/record' generates a statistical analysis of KVM
-> events and can be used to analyze guest exit reasons. This patch tries
-> to add stat support on riscv.
-> 
-> Map the return value of trace_kvm_exit() to the specific cause of the
-> exception, and export it to userspace.
-> 
-> It records on two available KVM tracepoints for riscv: "kvm:kvm_entry"
-> and "kvm:kvm_exit", and reports statistical data which includes events
-> handles time, samples, and so on.
-> 
-> Simple tests go below:
-> 
-> # ./perf kvm record -e "kvm:kvm_entry" -e "kvm:kvm_exit"
-> Lowering default frequency rate from 4000 to 2500.
-> Please consider tweaking /proc/sys/kernel/perf_event_max_sample_rate.
-> [ perf record: Woken up 18 times to write data ]
-> [ perf record: Captured and wrote 5.433 MB perf.data.guest (62519 samples)
-> 
+On Tue Apr 16, 2024 at 2:46 PM AEST, Thomas Huth wrote:
+> On 16/04/2024 05.26, Nicholas Piggin wrote:
+> > On Mon Apr 15, 2024 at 9:59 PM AEST, Thomas Huth wrote:
+> >> On 06/04/2024 14.38, Nicholas Piggin wrote:
+> >>> Tree here
+> >>>
+> >>> https://gitlab.com/npiggin/kvm-unit-tests/-/tree/shellcheck
+> >>>
+> >>> Again on top of the "v8 migration, powerpc improvements" series. I
+> >>> don't plan to rebase the other way around since it's a lot of work.
+> >>> So this is still in RFC until the other big series gets merged.
+> >>>
+> >>> Thanks to Andrew for a lot of review. A submitted the likely s390x
+> >>> bugs separately ahead of this series, and also disabled one of the
+> >>> tests and dropped its fix patch as-per review comments. Hence 3 fewer
+> >>> patches. Other than that, since last post:
+> >>>
+> >>> * Tidied commit messages and added some of Andrew's comments.
+> >>> * Removed the "SC2034 unused variable" blanket disable, and just
+> >>>     suppressed the config.mak and a couple of other warnings.
+> >>> * Blanket disabled "SC2235 Use { ..; } instead of (..)" and dropped
+> >>>     the fix for it.
+> >>> * Change warning suppression comments as per Andrew's review, also
+> >>>     mention in the new unittests doc about the "check =" option not
+> >>>     allowing whitespace etc in the name since we don't cope with that.
+> >>>
+> >>> Thanks,
+> >>> Nick
+> >>>
+> >>> Nicholas Piggin (14):
+> >>>     Add initial shellcheck checking
+> >>>     shellcheck: Fix SC2223
+> >>>     shellcheck: Fix SC2295
+> >>>     shellcheck: Fix SC2094
+> >>>     shellcheck: Fix SC2006
+> >>>     shellcheck: Fix SC2155
+> >>>     shellcheck: Fix SC2143
+> >>>     shellcheck: Fix SC2013
+> >>>     shellcheck: Fix SC2145
+> >>>     shellcheck: Fix SC2124
+> >>>     shellcheck: Fix SC2294
+> >>>     shellcheck: Fix SC2178
+> >>>     shellcheck: Fix SC2048
+> >>>     shellcheck: Suppress various messages
+> >>
+> >> I went ahead and pushed a bunch of your patches to the k-u-t master branch
+> >> now. However, there were also some patches which did not apply cleanly to
+> >> master anymore, so please rebase the remaining patches and then send them again.
+> > 
+> > Hey Thomas,
+> > 
+> > Yeah the sc patches were based on top of the big series, so some
+> > collisions expected. I'll look at rebasing.
+>
+> Ah, ok, we can also try to get in the big series first ... I just lack 
 
-I want to test these patches but couldn't build a perf for RISC-V with 
-libtraceevent enabled. It fails with pkg-config dependencies when I 
-tried to build it (both via buildroot and directly from kernel source).
+They should have come first, but I'd written the multi migration code
+before Andrew suggested adding sc, and it looked like hard work to
+rebase the other way. I'll try again.
 
-> # ./perf kvm report
-> 31K kvm:kvm_entry
-> 31K kvm:kvm_exit
-> 
-> # ./perf kvm stat record -a
-> [ perf record: Woken up 3 times to write data ]
-> [ perf record: Captured and wrote 8.502 MB perf.data.guest (99338 samples) ]
-> 
-> # ./perf kvm stat report --event=vmexit
-> Event name                Samples   Sample%    Time (ns)     Time%   Max Time (ns)   Min Time (ns)  Mean Time (ns)
-> STORE_GUEST_PAGE_FAULT     26968     54.00%    2003031800    40.00%     3361400         27600          74274
-> LOAD_GUEST_PAGE_FAULT      17645     35.00%    1153338100    23.00%     2513400         30800          65363
-> VIRTUAL_INST_FAULT         1247      2.00%     340820800     6.00%      1190800         43300          273312
-> INST_GUEST_PAGE_FAULT      1128      2.00%     340645800     6.00%      2123200         30200          301990
-> SUPERVISOR_SYSCALL         1019      2.00%     245989900     4.00%      1851500         29300          241403
-> LOAD_ACCESS                986       1.00%     671556200     13.00%     4180200         100700         681091
-> INST_ACCESS                655       1.00%     170054800     3.00%      1808300         54600          259625
-> HYPERVISOR_SYSCALL         21        0.00%     4276400       0.00%      716500          116000         203638
-> 
-> Shenlin Liang (2):
->    RISCV: KVM: add tracepoints for entry and exit events
->    perf kvm/riscv: Port perf kvm stat to RISC-V
-> 
->   arch/riscv/kvm/trace.h                        | 67 ++++++++++++++++
->   arch/riscv/kvm/vcpu.c                         |  7 ++
->   tools/perf/arch/riscv/Makefile                |  1 +
->   tools/perf/arch/riscv/util/Build              |  1 +
->   tools/perf/arch/riscv/util/kvm-stat.c         | 78 +++++++++++++++++++
->   .../arch/riscv/util/riscv_exception_types.h   | 41 ++++++++++
->   6 files changed, 195 insertions(+)
->   create mode 100644 arch/riscv/kvm/trace.h
->   create mode 100644 tools/perf/arch/riscv/util/kvm-stat.c
->   create mode 100644 tools/perf/arch/riscv/util/riscv_exception_types.h
-> 
+> enough spare time for reviewing currently, so it might take a while :-/
 
+Understandable. You've done heaps of reviewing already so I really
+appreciate it.
+
+Thanks,
+Nick
 
