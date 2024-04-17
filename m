@@ -1,32 +1,76 @@
-From: Dip Paul Enes <paulenes252@gmail.com>
-Date: Tue, 16 Apr 2024 22:54:03 +0100
-Subject: Very Urgent Reply!!!!
-Message-ID: <661ef393.5d0a0220.b7a76.0c62@mx.google.com>
+From: Atish Patra <atishp@rivosinc.com>
+Date: Tue, 16 Apr 2024 17:25:06 -0700
+Subject: [PATCH v2 0/2] perf kvm: Add kvm stat support on riscv
+In-Reply-To: <20240415031131.23443-1-liangshenlin@eswincomputing.com>
+References: <20240415031131.23443-1-liangshenlin@eswincomputing.com>
+Message-ID: <aceaaeba-61cb-44fa-8639-e30a86ef8cd8@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Attention Sir/Madam,
+On 4/14/24 20:11, Shenlin Liang wrote:
+> Changes from v1->v2:
+> - Rebased on Linux 6.9-rc3.
+> 
+> 'perf kvm stat report/record' generates a statistical analysis of KVM
+> events and can be used to analyze guest exit reasons. This patch tries
+> to add stat support on riscv.
+> 
+> Map the return value of trace_kvm_exit() to the specific cause of the
+> exception, and export it to userspace.
+> 
+> It records on two available KVM tracepoints for riscv: "kvm:kvm_entry"
+> and "kvm:kvm_exit", and reports statistical data which includes events
+> handles time, samples, and so on.
+> 
+> Simple tests go below:
+> 
+> # ./perf kvm record -e "kvm:kvm_entry" -e "kvm:kvm_exit"
+> Lowering default frequency rate from 4000 to 2500.
+> Please consider tweaking /proc/sys/kernel/perf_event_max_sample_rate.
+> [ perf record: Woken up 18 times to write data ]
+> [ perf record: Captured and wrote 5.433 MB perf.data.guest (62519 samples)
+> 
 
-I hope this message finds you well. I am writing to inform you of some exciting news regarding the delivery of your consignment. Diplomat James Morgan, who has been mandated by our company to ensure the safe and prompt delivery of your consignment, has just arrived in your city.
+I want to test these patches but couldn't build a perf for RISC-V with 
+libtraceevent enabled. It fails with pkg-config dependencies when I 
+tried to build it (both via buildroot and directly from kernel source).
 
-I am delighted to inform you that Diplomat James Morgan has successfully completed all the necessary procedures and documentation for the swift release and delivery of your consignment. He brings with him years of experience and expertise in handling diplomatic deliveries, and we are confident that he will ensure the successful completion of this important transaction.
+> # ./perf kvm report
+> 31K kvm:kvm_entry
+> 31K kvm:kvm_exit
+> 
+> # ./perf kvm stat record -a
+> [ perf record: Woken up 3 times to write data ]
+> [ perf record: Captured and wrote 8.502 MB perf.data.guest (99338 samples) ]
+> 
+> # ./perf kvm stat report --event=vmexit
+> Event name                Samples   Sample%    Time (ns)     Time%   Max Time (ns)   Min Time (ns)  Mean Time (ns)
+> STORE_GUEST_PAGE_FAULT     26968     54.00%    2003031800    40.00%     3361400         27600          74274
+> LOAD_GUEST_PAGE_FAULT      17645     35.00%    1153338100    23.00%     2513400         30800          65363
+> VIRTUAL_INST_FAULT         1247      2.00%     340820800     6.00%      1190800         43300          273312
+> INST_GUEST_PAGE_FAULT      1128      2.00%     340645800     6.00%      2123200         30200          301990
+> SUPERVISOR_SYSCALL         1019      2.00%     245989900     4.00%      1851500         29300          241403
+> LOAD_ACCESS                986       1.00%     671556200     13.00%     4180200         100700         681091
+> INST_ACCESS                655       1.00%     170054800     3.00%      1808300         54600          259625
+> HYPERVISOR_SYSCALL         21        0.00%     4276400       0.00%      716500          116000         203638
+> 
+> Shenlin Liang (2):
+>    RISCV: KVM: add tracepoints for entry and exit events
+>    perf kvm/riscv: Port perf kvm stat to RISC-V
+> 
+>   arch/riscv/kvm/trace.h                        | 67 ++++++++++++++++
+>   arch/riscv/kvm/vcpu.c                         |  7 ++
+>   tools/perf/arch/riscv/Makefile                |  1 +
+>   tools/perf/arch/riscv/util/Build              |  1 +
+>   tools/perf/arch/riscv/util/kvm-stat.c         | 78 +++++++++++++++++++
+>   .../arch/riscv/util/riscv_exception_types.h   | 41 ++++++++++
+>   6 files changed, 195 insertions(+)
+>   create mode 100644 arch/riscv/kvm/trace.h
+>   create mode 100644 tools/perf/arch/riscv/util/kvm-stat.c
+>   create mode 100644 tools/perf/arch/riscv/util/riscv_exception_types.h
+> 
 
-Given the significance of the consignment to you, we have arranged for Diplomat James Morgan to personally oversee its delivery to your designated location. His professionalism, attention to detail, and commitment to providing excellent customer service make him the ideal choice for this crucial task.
-
-We understand that you have eagerly been awaiting the arrival of your consignment, and we apologize for any delays or inconveniences you may have experienced during this process. Rest assured that we are doing everything in our power to make sure your consignment arrives in perfect condition and within the shortest possible time frame.
-
-Diplomat James Morgan will contact you directly to arrange a convenient delivery date and time. Please ensure that you are available to receive the consignment or designate a trusted representative who can accept it on your behalf. You may be required to provide valid identification upon delivery, as per standard protocol.
-
-Should you have any questions or concerns, please do not hesitate to reach out to me directly at dipmorgan7 at gmail.com. Your satisfaction is our top priority, and we are committed to resolving any issues you may have promptly and effectively.
-
-Thank you for choosing our services for the delivery of your consignment. We appreciate your trust in our company and assure you that we will continue to strive for excellence throughout this process.
-
-Wishing you a seamless delivery experience and a pleasant day ahead.
-
-Warm regards,
-
-Dip James Morgan
 
