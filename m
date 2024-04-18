@@ -1,81 +1,79 @@
-From: Anup Patel <anup@brainfault.org>
-Date: Thu, 18 Apr 2024 18:58:13 +0530
-Subject: [PATCH v2 00/12] Add support for a few Zc* extensions as well as Zcmop
-In-Reply-To: <20240418124300.1387978-1-cleger@rivosinc.com>
-References: <20240418124300.1387978-1-cleger@rivosinc.com>
-Message-ID: <CAAhSdy0RPOX7_rLQ8GcYzbWQ8wzKDxDKXUqNoNd2ZFkVx4sfMg@mail.gmail.com>
+From: Will Deacon <will@kernel.org>
+Date: Thu, 18 Apr 2024 15:19:32 +0100
+Subject: [PATCH 1/4] KVM: delete .change_pte MMU notifier callback
+In-Reply-To: <Zh1d94Pl6gneVoDd@google.com>
+References: <20240405115815.3226315-1-pbonzini@redhat.com>
+ <20240405115815.3226315-2-pbonzini@redhat.com>
+ <20240412104408.GA27645@willie-the-truck>
+ <86jzl2sovz.wl-maz@kernel.org>
+ <ZhlLHtfeSHk9gRRO@google.com>
+ <86h6g5si0m.wl-maz@kernel.org>
+ <Zh1d94Pl6gneVoDd@google.com>
+Message-ID: <20240418141932.GA1855@willie-the-truck>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Palmer,
+On Mon, Apr 15, 2024 at 10:03:51AM -0700, Sean Christopherson wrote:
+> On Sat, Apr 13, 2024, Marc Zyngier wrote:
+> > On Fri, 12 Apr 2024 15:54:22 +0100, Sean Christopherson <seanjc@google.com> wrote:
+> > > 
+> > > On Fri, Apr 12, 2024, Marc Zyngier wrote:
+> > > > On Fri, 12 Apr 2024 11:44:09 +0100, Will Deacon <will@kernel.org> wrote:
+> > > > > On Fri, Apr 05, 2024 at 07:58:12AM -0400, Paolo Bonzini wrote:
+> > > > > Also, if you're in the business of hacking the MMU notifier code, it
+> > > > > would be really great to change the .clear_flush_young() callback so
+> > > > > that the architecture could handle the TLB invalidation. At the moment,
+> > > > > the core KVM code invalidates the whole VMID courtesy of 'flush_on_ret'
+> > > > > being set by kvm_handle_hva_range(), whereas we could do a much
+> > > > > lighter-weight and targetted TLBI in the architecture page-table code
+> > > > > when we actually update the ptes for small ranges.
+> > > > 
+> > > > Indeed, and I was looking at this earlier this week as it has a pretty
+> > > > devastating effect with NV (it blows the shadow S2 for that VMID, with
+> > > > costly consequences).
+> > > > 
+> > > > In general, it feels like the TLB invalidation should stay with the
+> > > > code that deals with the page tables, as it has a pretty good idea of
+> > > > what needs to be invalidated and how -- specially on architectures
+> > > > that have a HW-broadcast facility like arm64.
+> > > 
+> > > Would this be roughly on par with an in-line flush on arm64?  The simpler, more
+> > > straightforward solution would be to let architectures override flush_on_ret,
+> > > but I would prefer something like the below as x86 can also utilize a range-based
+> > > flush when running as a nested hypervisor.
+> 
+> ...
+> 
+> > I think this works for us on HW that has range invalidation, which
+> > would already be a positive move.
+> > 
+> > For the lesser HW that isn't range capable, it also gives the
+> > opportunity to perform the iteration ourselves or go for the nuclear
+> > option if the range is larger than some arbitrary constant (though
+> > this is additional work).
+> > 
+> > But this still considers the whole range as being affected by
+> > range->handler(). It'd be interesting to try and see whether more
+> > precise tracking is (or isn't) generally beneficial.
+> 
+> I assume the idea would be to let arch code do single-page invalidations of
+> stage-2 entries for each gfn?
 
-On Thu, Apr 18, 2024 at 6:13?PM Cl?ment L?ger <cleger@rivosinc.com> wrote:
->
-> Add support for (yet again) more RVA23U64 missing extensions. Add
-> support for Zcmop, Zca, Zcf, Zcd and Zcb extensions isa string parsing,
-> hwprobe and kvm support. Zce, Zcmt and Zcmp extensions have been left
-> out since they target microcontrollers/embedded CPUs and are not needed
-> by RVA23U64
->
-> This series is based on the Zimop one [1].
->
-> Link: https://lore.kernel.org/linux-riscv/20240404103254.1752834-1-cleger at rivosinc.com/ [1]
->
-> ---
-> v2:
->  - Add Zc* dependencies validation in dt-bindings
->  - v1: https://lore.kernel.org/lkml/20240410091106.749233-1-cleger at rivosinc.com/
->
-> Cl?ment L?ger (12):
->   dt-bindings: riscv: add Zca, Zcf, Zcd and Zcb ISA extension
->     description
->   riscv: dts: enable Zc* extensions when needed
->   dt-bindings: riscv: add Zc* extension rules implied by C extension
->   riscv: add ISA parsing for Zca, Zcf, Zcd and Zcb
->   riscv: hwprobe: export Zca, Zcf, Zcd and Zcb ISA extensions
->   RISC-V: KVM: Allow Zca, Zcf, Zcd and Zcb extensions for Guest/VM
->   KVM: riscv: selftests: Add some Zc* extensions to get-reg-list test
->   dt-bindings: riscv: add Zcmop ISA extension description
->   riscv: add ISA extension parsing for Zcmop
->   riscv: hwprobe: export Zcmop ISA extension
->   RISC-V: KVM: Allow Zcmop extension for Guest/VM
->   KVM: riscv: selftests: Add Zcmop extension to get-reg-list test
->
->  Documentation/arch/riscv/hwprobe.rst          |  24 ++
->  .../devicetree/bindings/riscv/cpus.yaml       |   8 +-
->  .../devicetree/bindings/riscv/extensions.yaml | 124 +++++++++
->  arch/riscv/boot/dts/allwinner/sun20i-d1s.dtsi |   4 +-
->  arch/riscv/boot/dts/microchip/mpfs.dtsi       |  20 +-
->  arch/riscv/boot/dts/renesas/r9a07g043f.dtsi   |   4 +-
->  arch/riscv/boot/dts/sifive/fu540-c000.dtsi    |  20 +-
->  arch/riscv/boot/dts/sifive/fu740-c000.dtsi    |  20 +-
->  arch/riscv/boot/dts/sophgo/cv18xx.dtsi        |   4 +-
->  arch/riscv/boot/dts/sophgo/sg2042-cpus.dtsi   | 256 +++++++++---------
->  arch/riscv/boot/dts/starfive/jh7100.dtsi      |   8 +-
->  arch/riscv/boot/dts/starfive/jh7110.dtsi      |  20 +-
->  arch/riscv/boot/dts/thead/th1520.dtsi         |  16 +-
->  arch/riscv/include/asm/hwcap.h                |   5 +
->  arch/riscv/include/uapi/asm/hwprobe.h         |   5 +
->  arch/riscv/include/uapi/asm/kvm.h             |   5 +
->  arch/riscv/kernel/cpufeature.c                |   5 +
->  arch/riscv/kernel/sys_hwprobe.c               |   5 +
->  arch/riscv/kvm/vcpu_onereg.c                  |  10 +
->  .../selftests/kvm/riscv/get-reg-list.c        |  20 ++
->  20 files changed, 394 insertions(+), 189 deletions(-)
->
-> --
-> 2.43.0
->
+Right, as it's the only code which knows which ptes actually ended up
+being aged.
 
-Most likely the KVM RISC-V related changes in this series
-will conflict with the KVM RISC-V repo.
+> Unless I'm having a brain fart, x86 can't make use of that functionality.  Intel
+> doesn't provide any way to do targeted invalidation of stage-2 mappings.  AMD
+> provides an instruction to do broadcast invalidations, but it takes a virtual
+> address, i.e. a stage-1 address.  I can't tell if it's a host virtual address or
+> a guest virtual address, but it's a moot point because KVM doen't have the guest
+> virtual address, and if it's a host virtual address, there would need to be valid
+> mappings in the host page tables for it to work, which KVM can't guarantee.
 
-I will provide a shared tag based on 6.9-rc3 tomorrow or
-early next week.
+Ah, so it sounds like it would need to be an arch opt-in then.
 
-Regards,
-Anup
+Will
 
