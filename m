@@ -1,118 +1,113 @@
 From: Clément Léger <cleger@rivosinc.com>
-Date: Thu, 18 Apr 2024 14:42:24 +0200
-Subject: [PATCH v2 01/12] dt-bindings: riscv: add Zca, Zcf, Zcd and Zcb ISA extension description
+Date: Thu, 18 Apr 2024 14:42:26 +0200
+Subject: [PATCH v2 03/12] dt-bindings: riscv: add Zc* extension rules implied by C extension
 In-Reply-To: <20240418124300.1387978-1-cleger@rivosinc.com>
 References: <20240418124300.1387978-1-cleger@rivosinc.com>
-Message-ID: <20240418124300.1387978-2-cleger@rivosinc.com>
+Message-ID: <20240418124300.1387978-4-cleger@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add description for Zca, Zcf, Zcd and Zcb extensions which are part the
-Zc* standard extensions for code size reduction. Additional validation
-rules are added since Zcb depends on Zca, Zcf, depends on Zca and F, Zcd
-depends on Zca and D and finally, Zcf can not be present on rv64.
+As stated by Zc* spec:
+
+"As C defines the same instructions as Zca, Zcf and Zcd, the rule is that:
+ - C always implies Zca
+ - C+F implies Zcf (RV32 only)
+ - C+D implies Zcd"
+
+Add additionnal validation rules to enforce this in dts.
 
 Signed-off-by: Cl?ment L?ger <cleger@rivosinc.com>
 ---
- .../devicetree/bindings/riscv/extensions.yaml | 78 +++++++++++++++++++
- 1 file changed, 78 insertions(+)
+ .../devicetree/bindings/riscv/cpus.yaml       |  8 +++--
+ .../devicetree/bindings/riscv/extensions.yaml | 34 +++++++++++++++++++
+ 2 files changed, 39 insertions(+), 3 deletions(-)
 
+diff --git a/Documentation/devicetree/bindings/riscv/cpus.yaml b/Documentation/devicetree/bindings/riscv/cpus.yaml
+index d87dd50f1a4b..c4e2c65437b1 100644
+--- a/Documentation/devicetree/bindings/riscv/cpus.yaml
++++ b/Documentation/devicetree/bindings/riscv/cpus.yaml
+@@ -168,7 +168,7 @@ examples:
+                 i-cache-size = <16384>;
+                 reg = <0>;
+                 riscv,isa-base = "rv64i";
+-                riscv,isa-extensions = "i", "m", "a", "c";
++                riscv,isa-extensions = "i", "m", "a", "c", "zca";
+ 
+                 cpu_intc0: interrupt-controller {
+                         #interrupt-cells = <1>;
+@@ -194,7 +194,8 @@ examples:
+                 reg = <1>;
+                 tlb-split;
+                 riscv,isa-base = "rv64i";
+-                riscv,isa-extensions = "i", "m", "a", "f", "d", "c";
++                riscv,isa-extensions = "i", "m", "a", "f", "d", "c", "zca",
++                                       "zcd";
+ 
+                 cpu_intc1: interrupt-controller {
+                         #interrupt-cells = <1>;
+@@ -215,7 +216,8 @@ examples:
+                 compatible = "riscv";
+                 mmu-type = "riscv,sv48";
+                 riscv,isa-base = "rv64i";
+-                riscv,isa-extensions = "i", "m", "a", "f", "d", "c";
++                riscv,isa-extensions = "i", "m", "a", "f", "d", "c", "zca",
++                                       "zcd";
+ 
+                 interrupt-controller {
+                         #interrupt-cells = <1>;
 diff --git a/Documentation/devicetree/bindings/riscv/extensions.yaml b/Documentation/devicetree/bindings/riscv/extensions.yaml
-index 616370318a66..db7daf22b863 100644
+index db7daf22b863..0172cbaa13ca 100644
 --- a/Documentation/devicetree/bindings/riscv/extensions.yaml
 +++ b/Documentation/devicetree/bindings/riscv/extensions.yaml
-@@ -220,6 +220,38 @@ properties:
-             instructions as ratified at commit 6d33919 ("Merge pull request #158
-             from hirooih/clmul-fix-loop-end-condition") of riscv-bitmanip.
- 
-+        - const: zca
-+          description: |
-+            The Zca extension part of Zc* standard extensions for code size
-+            reduction, as ratified in commit 8be3419c1c0 ("Zcf doesn't exist on
-+            RV64 as it contains no instructions") of riscv-code-size-reduction,
-+            merged in the riscv-isa-manual by commit dbc79cf28a2 ("Initial seed
-+            of zc.adoc to src tree.").
-+
-+        - const: zcb
-+          description: |
-+            The Zcb extension part of Zc* standard extensions for code size
-+            reduction, as ratified in commit 8be3419c1c0 ("Zcf doesn't exist on
-+            RV64 as it contains no instructions") of riscv-code-size-reduction,
-+            merged in the riscv-isa-manual by commit dbc79cf28a2 ("Initial seed
-+            of zc.adoc to src tree.").
-+
-+        - const: zcd
-+          description: |
-+            The Zcd extension part of Zc* standard extensions for code size
-+            reduction, as ratified in commit 8be3419c1c0 ("Zcf doesn't exist on
-+            RV64 as it contains no instructions") of riscv-code-size-reduction,
-+            merged in the riscv-isa-manual by commit dbc79cf28a2 ("Initial seed
-+            of zc.adoc to src tree.").
-+
-+        - const: zcf
-+          description: |
-+            The Zcf extension part of Zc* standard extensions for code size
-+            reduction, as ratified in commit 8be3419c1c0 ("Zcf doesn't exist on
-+            RV64 as it contains no instructions") of riscv-code-size-reduction,
-+            merged in the riscv-isa-manual by commit dbc79cf28a2 ("Initial seed
-+            of zc.adoc to src tree.").
-+
-         - const: zfa
-           description:
-             The standard Zfa extension for additional floating point
-@@ -489,5 +521,51 @@ properties:
-             Registers in the AX45MP datasheet.
-             https://www.andestech.com/wp-content/uploads/AX45MP-1C-Rev.-5.0.0-Datasheet.pdf
- 
-+    allOf:
-+      # Zcb depends on Zca
+@@ -549,6 +549,23 @@ properties:
+                 const: zca
+             - contains:
+                 const: f
++      # C extension implies Zca
 +      - if:
 +          contains:
-+            const: zcb
++            const: c
 +        then:
 +          contains:
 +            const: zca
-+      # Zcd depends on Zca and D
++      # C extension implies Zcd if d
 +      - if:
-+          contains:
-+            const: zcd
-+        then:
 +          allOf:
 +            - contains:
-+                const: zca
++                const: c
 +            - contains:
 +                const: d
-+      # Zcf depends on Zca and F
-+      - if:
-+          contains:
-+            const: zcf
 +        then:
-+          allOf:
-+            - contains:
-+                const: zca
-+            - contains:
-+                const: f
-+
-+allOf:
-+  # Zcf extension does not exists on rv64
++          contains:
++            const: zcd
+ 
+ allOf:
+   # Zcf extension does not exists on rv64
+@@ -566,6 +583,23 @@ allOf:
+           not:
+             contains:
+               const: zcf
++  # C extension implies Zcf if f on rv32 only
 +  - if:
 +      properties:
 +        riscv,isa-extensions:
-+          contains:
-+            const: zcf
++          allOf:
++            - contains:
++                const: c
++            - contains:
++                const: f
 +        riscv,isa-base:
 +          contains:
-+            const: rv64i
++            const: rv32i
 +    then:
 +      properties:
 +        riscv,isa-extensions:
-+          not:
-+            contains:
-+              const: zcf
-+
++          contains:
++            const: zcf
+ 
  additionalProperties: true
  ...
 -- 
