@@ -1,72 +1,81 @@
 From: Anup Patel <anup@brainfault.org>
-Date: Thu, 18 Apr 2024 18:51:42 +0530
-Subject: [PATCH v2 12/12] KVM: riscv: selftests: Add Zcmop extension to
- get-reg-list test
-In-Reply-To: <20240418124300.1387978-13-cleger@rivosinc.com>
-References: <20240418124300.1387978-1-cleger@rivosinc.com> <20240418124300.1387978-13-cleger@rivosinc.com>
-Message-ID: <CAAhSdy1VTn_etwfYa-pYM-1hFFK02aBvynHJA7JVsOZvSdDx6w@mail.gmail.com>
+Date: Thu, 18 Apr 2024 18:58:13 +0530
+Subject: [PATCH v2 00/12] Add support for a few Zc* extensions as well as Zcmop
+In-Reply-To: <20240418124300.1387978-1-cleger@rivosinc.com>
+References: <20240418124300.1387978-1-cleger@rivosinc.com>
+Message-ID: <CAAhSdy0RPOX7_rLQ8GcYzbWQ8wzKDxDKXUqNoNd2ZFkVx4sfMg@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Apr 18, 2024 at 6:14?PM Cl?ment L?ger <cleger@rivosinc.com> wrote:
+Hi Palmer,
+
+On Thu, Apr 18, 2024 at 6:13?PM Cl?ment L?ger <cleger@rivosinc.com> wrote:
 >
-> The KVM RISC-V allows Zcmop extension for Guest/VM so add this
-> extension to get-reg-list test.
+> Add support for (yet again) more RVA23U64 missing extensions. Add
+> support for Zcmop, Zca, Zcf, Zcd and Zcb extensions isa string parsing,
+> hwprobe and kvm support. Zce, Zcmt and Zcmp extensions have been left
+> out since they target microcontrollers/embedded CPUs and are not needed
+> by RVA23U64
 >
-> Signed-off-by: Cl?ment L?ger <cleger@rivosinc.com>
-
-LGTM.
-
-Reviewed-by: Anup Patel <anup@brainfault.org>
-Acked-by: Anup Patel <anup@brainfault.org>
-
-Thanks,
-Anup
-
+> This series is based on the Zimop one [1].
+>
+> Link: https://lore.kernel.org/linux-riscv/20240404103254.1752834-1-cleger at rivosinc.com/ [1]
+>
 > ---
->  tools/testing/selftests/kvm/riscv/get-reg-list.c | 4 ++++
->  1 file changed, 4 insertions(+)
+> v2:
+>  - Add Zc* dependencies validation in dt-bindings
+>  - v1: https://lore.kernel.org/lkml/20240410091106.749233-1-cleger at rivosinc.com/
 >
-> diff --git a/tools/testing/selftests/kvm/riscv/get-reg-list.c b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-> index 61cad4514197..9604c8ece787 100644
-> --- a/tools/testing/selftests/kvm/riscv/get-reg-list.c
-> +++ b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-> @@ -59,6 +59,7 @@ bool filter_reg(__u64 reg)
->         case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZCB:
->         case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZCD:
->         case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZCF:
-> +       case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZCMOP:
->         case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZFA:
->         case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZFH:
->         case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZFHMIN:
-> @@ -429,6 +430,7 @@ static const char *isa_ext_single_id_to_str(__u64 reg_off)
->                 KVM_ISA_EXT_ARR(ZCB),
->                 KVM_ISA_EXT_ARR(ZCD),
->                 KVM_ISA_EXT_ARR(ZCF),
-> +               KVM_ISA_EXT_ARR(ZCMOP),
->                 KVM_ISA_EXT_ARR(ZFA),
->                 KVM_ISA_EXT_ARR(ZFH),
->                 KVM_ISA_EXT_ARR(ZFHMIN),
-> @@ -957,6 +959,7 @@ KVM_ISA_EXT_SIMPLE_CONFIG(zca, ZCA),
->  KVM_ISA_EXT_SIMPLE_CONFIG(zcb, ZCB),
->  KVM_ISA_EXT_SIMPLE_CONFIG(zcd, ZCD),
->  KVM_ISA_EXT_SIMPLE_CONFIG(zcf, ZCF),
-> +KVM_ISA_EXT_SIMPLE_CONFIG(zcmop, ZCMOP);
->  KVM_ISA_EXT_SIMPLE_CONFIG(zfa, ZFA);
->  KVM_ISA_EXT_SIMPLE_CONFIG(zfh, ZFH);
->  KVM_ISA_EXT_SIMPLE_CONFIG(zfhmin, ZFHMIN);
-> @@ -1017,6 +1020,7 @@ struct vcpu_reg_list *vcpu_configs[] = {
->         &config_zcb,
->         &config_zcd,
->         &config_zcf,
-> +       &config_zcmop,
->         &config_zfa,
->         &config_zfh,
->         &config_zfhmin,
+> Cl?ment L?ger (12):
+>   dt-bindings: riscv: add Zca, Zcf, Zcd and Zcb ISA extension
+>     description
+>   riscv: dts: enable Zc* extensions when needed
+>   dt-bindings: riscv: add Zc* extension rules implied by C extension
+>   riscv: add ISA parsing for Zca, Zcf, Zcd and Zcb
+>   riscv: hwprobe: export Zca, Zcf, Zcd and Zcb ISA extensions
+>   RISC-V: KVM: Allow Zca, Zcf, Zcd and Zcb extensions for Guest/VM
+>   KVM: riscv: selftests: Add some Zc* extensions to get-reg-list test
+>   dt-bindings: riscv: add Zcmop ISA extension description
+>   riscv: add ISA extension parsing for Zcmop
+>   riscv: hwprobe: export Zcmop ISA extension
+>   RISC-V: KVM: Allow Zcmop extension for Guest/VM
+>   KVM: riscv: selftests: Add Zcmop extension to get-reg-list test
+>
+>  Documentation/arch/riscv/hwprobe.rst          |  24 ++
+>  .../devicetree/bindings/riscv/cpus.yaml       |   8 +-
+>  .../devicetree/bindings/riscv/extensions.yaml | 124 +++++++++
+>  arch/riscv/boot/dts/allwinner/sun20i-d1s.dtsi |   4 +-
+>  arch/riscv/boot/dts/microchip/mpfs.dtsi       |  20 +-
+>  arch/riscv/boot/dts/renesas/r9a07g043f.dtsi   |   4 +-
+>  arch/riscv/boot/dts/sifive/fu540-c000.dtsi    |  20 +-
+>  arch/riscv/boot/dts/sifive/fu740-c000.dtsi    |  20 +-
+>  arch/riscv/boot/dts/sophgo/cv18xx.dtsi        |   4 +-
+>  arch/riscv/boot/dts/sophgo/sg2042-cpus.dtsi   | 256 +++++++++---------
+>  arch/riscv/boot/dts/starfive/jh7100.dtsi      |   8 +-
+>  arch/riscv/boot/dts/starfive/jh7110.dtsi      |  20 +-
+>  arch/riscv/boot/dts/thead/th1520.dtsi         |  16 +-
+>  arch/riscv/include/asm/hwcap.h                |   5 +
+>  arch/riscv/include/uapi/asm/hwprobe.h         |   5 +
+>  arch/riscv/include/uapi/asm/kvm.h             |   5 +
+>  arch/riscv/kernel/cpufeature.c                |   5 +
+>  arch/riscv/kernel/sys_hwprobe.c               |   5 +
+>  arch/riscv/kvm/vcpu_onereg.c                  |  10 +
+>  .../selftests/kvm/riscv/get-reg-list.c        |  20 ++
+>  20 files changed, 394 insertions(+), 189 deletions(-)
+>
 > --
 > 2.43.0
 >
+
+Most likely the KVM RISC-V related changes in this series
+will conflict with the KVM RISC-V repo.
+
+I will provide a shared tag based on 6.9-rc3 tomorrow or
+early next week.
+
+Regards,
+Anup
 
