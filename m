@@ -1,48 +1,56 @@
 From: Clément Léger <cleger@rivosinc.com>
-Date: Thu, 18 Apr 2024 14:42:32 +0200
-Subject: [PATCH v2 09/12] riscv: add ISA extension parsing for Zcmop
+Date: Thu, 18 Apr 2024 14:42:34 +0200
+Subject: [PATCH v2 11/12] RISC-V: KVM: Allow Zcmop extension for Guest/VM
 In-Reply-To: <20240418124300.1387978-1-cleger@rivosinc.com>
 References: <20240418124300.1387978-1-cleger@rivosinc.com>
-Message-ID: <20240418124300.1387978-10-cleger@rivosinc.com>
+Message-ID: <20240418124300.1387978-12-cleger@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add parsing for Zcmop ISA extension which was ratified in commit
-b854a709c00 ("Zcmop is ratified/1.0") of the riscv-isa-manual.
+Extend the KVM ISA extension ONE_REG interface to allow KVM user space
+to detect and enable Zcmop extension for Guest/VM.
 
 Signed-off-by: Cl?ment L?ger <cleger@rivosinc.com>
 ---
- arch/riscv/include/asm/hwcap.h | 1 +
- arch/riscv/kernel/cpufeature.c | 1 +
- 2 files changed, 2 insertions(+)
+ arch/riscv/include/uapi/asm/kvm.h | 1 +
+ arch/riscv/kvm/vcpu_onereg.c      | 2 ++
+ 2 files changed, 3 insertions(+)
 
-diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
-index b7551bad341b..cff7660de268 100644
---- a/arch/riscv/include/asm/hwcap.h
-+++ b/arch/riscv/include/asm/hwcap.h
-@@ -86,6 +86,7 @@
- #define RISCV_ISA_EXT_ZCB		77
- #define RISCV_ISA_EXT_ZCD		78
- #define RISCV_ISA_EXT_ZCF		79
-+#define RISCV_ISA_EXT_ZCMOP		80
+diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
+index 57db3fea679f..0366389a0bae 100644
+--- a/arch/riscv/include/uapi/asm/kvm.h
++++ b/arch/riscv/include/uapi/asm/kvm.h
+@@ -172,6 +172,7 @@ enum KVM_RISCV_ISA_EXT_ID {
+ 	KVM_RISCV_ISA_EXT_ZCB,
+ 	KVM_RISCV_ISA_EXT_ZCD,
+ 	KVM_RISCV_ISA_EXT_ZCF,
++	KVM_RISCV_ISA_EXT_ZCMOP,
+ 	KVM_RISCV_ISA_EXT_MAX,
+ };
  
- #define RISCV_ISA_EXT_XLINUXENVCFG	127
- 
-diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
-index 09dee071274d..f1450cd7231e 100644
---- a/arch/riscv/kernel/cpufeature.c
-+++ b/arch/riscv/kernel/cpufeature.c
-@@ -265,6 +265,7 @@ const struct riscv_isa_ext_data riscv_isa_ext[] = {
- 	__RISCV_ISA_EXT_DATA(zcb, RISCV_ISA_EXT_ZCB),
- 	__RISCV_ISA_EXT_DATA(zcd, RISCV_ISA_EXT_ZCD),
- 	__RISCV_ISA_EXT_DATA(zcf, RISCV_ISA_EXT_ZCF),
-+	__RISCV_ISA_EXT_DATA(zcmop, RISCV_ISA_EXT_ZCMOP),
- 	__RISCV_ISA_EXT_DATA(zba, RISCV_ISA_EXT_ZBA),
- 	__RISCV_ISA_EXT_DATA(zbb, RISCV_ISA_EXT_ZBB),
- 	__RISCV_ISA_EXT_DATA(zbc, RISCV_ISA_EXT_ZBC),
+diff --git a/arch/riscv/kvm/vcpu_onereg.c b/arch/riscv/kvm/vcpu_onereg.c
+index a2747a6dbdb6..77a0d337faeb 100644
+--- a/arch/riscv/kvm/vcpu_onereg.c
++++ b/arch/riscv/kvm/vcpu_onereg.c
+@@ -52,6 +52,7 @@ static const unsigned long kvm_isa_ext_arr[] = {
+ 	KVM_ISA_EXT_ARR(ZCB),
+ 	KVM_ISA_EXT_ARR(ZCD),
+ 	KVM_ISA_EXT_ARR(ZCF),
++	KVM_ISA_EXT_ARR(ZCMOP),
+ 	KVM_ISA_EXT_ARR(ZFA),
+ 	KVM_ISA_EXT_ARR(ZFH),
+ 	KVM_ISA_EXT_ARR(ZFHMIN),
+@@ -136,6 +137,7 @@ static bool kvm_riscv_vcpu_isa_disable_allowed(unsigned long ext)
+ 	case KVM_RISCV_ISA_EXT_ZCB:
+ 	case KVM_RISCV_ISA_EXT_ZCD:
+ 	case KVM_RISCV_ISA_EXT_ZCF:
++	case KVM_RISCV_ISA_EXT_ZCMOP:
+ 	case KVM_RISCV_ISA_EXT_ZFA:
+ 	case KVM_RISCV_ISA_EXT_ZFH:
+ 	case KVM_RISCV_ISA_EXT_ZFHMIN:
 -- 
 2.43.0
 
