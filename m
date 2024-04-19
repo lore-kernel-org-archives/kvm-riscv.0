@@ -1,27 +1,64 @@
 From: Conor Dooley <conor@kernel.org>
-Date: Fri, 19 Apr 2024 16:50:00 +0100
-Subject: [PATCH v2 08/12] dt-bindings: riscv: add Zcmop ISA extension
- description
-In-Reply-To: <20240418124300.1387978-9-cleger@rivosinc.com>
+Date: Fri, 19 Apr 2024 16:51:10 +0100
+Subject: [PATCH v2 04/12] riscv: add ISA parsing for Zca, Zcf, Zcd and Zcb
+In-Reply-To: <20240418124300.1387978-5-cleger@rivosinc.com>
 References: <20240418124300.1387978-1-cleger@rivosinc.com>
- <20240418124300.1387978-9-cleger@rivosinc.com>
-Message-ID: <20240419-lumpish-synapse-db19786b15cd@spud>
+ <20240418124300.1387978-5-cleger@rivosinc.com>
+Message-ID: <20240419-clinic-amusing-d23b1b6d2af2@spud>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Apr 18, 2024 at 02:42:31PM +0200, Cl?ment L?ger wrote:
-> Add description for the Zcmop (Compressed May-Be-Operations) ISA
-> extension which was ratified in commit c732a4f39a4 ("Zcmop is
-> ratified/1.0") of the riscv-isa-manual.
+On Thu, Apr 18, 2024 at 02:42:27PM +0200, Cl?ment L?ger wrote:
+> The Zc* standard extension for code reduction introduces new extensions.
+> This patch adds support for Zca, Zcf, Zcd and Zcb. Zce, Zcmt and Zcmp
+> are left out of this patch since they are targeting microcontrollers/
+> embedded CPUs instead of application processors.
+> 
+> Signed-off-by: Cl?ment L?ger <cleger@rivosinc.com>
+> ---
+>  arch/riscv/include/asm/hwcap.h | 4 ++++
+>  arch/riscv/kernel/cpufeature.c | 4 ++++
+>  2 files changed, 8 insertions(+)
+> 
+> diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
+> index 543e3ea2da0e..b7551bad341b 100644
+> --- a/arch/riscv/include/asm/hwcap.h
+> +++ b/arch/riscv/include/asm/hwcap.h
+> @@ -82,6 +82,10 @@
+>  #define RISCV_ISA_EXT_ZACAS		73
+>  #define RISCV_ISA_EXT_XANDESPMU		74
+>  #define RISCV_ISA_EXT_ZIMOP		75
+> +#define RISCV_ISA_EXT_ZCA		76
+> +#define RISCV_ISA_EXT_ZCB		77
+> +#define RISCV_ISA_EXT_ZCD		78
+> +#define RISCV_ISA_EXT_ZCF		79
+>  
+>  #define RISCV_ISA_EXT_XLINUXENVCFG	127
+>  
+> diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
+> index 115ba001f1bc..09dee071274d 100644
+> --- a/arch/riscv/kernel/cpufeature.c
+> +++ b/arch/riscv/kernel/cpufeature.c
+> @@ -261,6 +261,10 @@ const struct riscv_isa_ext_data riscv_isa_ext[] = {
+>  	__RISCV_ISA_EXT_DATA(zfa, RISCV_ISA_EXT_ZFA),
+>  	__RISCV_ISA_EXT_DATA(zfh, RISCV_ISA_EXT_ZFH),
+>  	__RISCV_ISA_EXT_DATA(zfhmin, RISCV_ISA_EXT_ZFHMIN),
+> +	__RISCV_ISA_EXT_DATA(zca, RISCV_ISA_EXT_ZCA),
+> +	__RISCV_ISA_EXT_DATA(zcb, RISCV_ISA_EXT_ZCB),
+> +	__RISCV_ISA_EXT_DATA(zcd, RISCV_ISA_EXT_ZCD),
+> +	__RISCV_ISA_EXT_DATA(zcf, RISCV_ISA_EXT_ZCF),
+>  	__RISCV_ISA_EXT_DATA(zba, RISCV_ISA_EXT_ZBA),
+>  	__RISCV_ISA_EXT_DATA(zbb, RISCV_ISA_EXT_ZBB),
+>  	__RISCV_ISA_EXT_DATA(zbc, RISCV_ISA_EXT_ZBC),
 
-Acked-by: Conor Dooley <conor.dooley@microchip.com>
+Ye, this looks exactly like what I "feared".
 -------------- next part --------------
 A non-text attachment was scrubbed...
 Name: signature.asc
 Type: application/pgp-signature
 Size: 228 bytes
 Desc: not available
-URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20240419/17e1c6ae/attachment-0001.sig>
+URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20240419/7334d016/attachment.sig>
