@@ -1,80 +1,37 @@
 From: Conor Dooley <conor@kernel.org>
-Date: Fri, 19 Apr 2024 16:19:52 +0100
-Subject: [PATCH v2 2/6] dt-bindings: riscv: Add Zawrs ISA extension
- description
-In-Reply-To: <20240419-8c6af6a169a7aa0b9aa5cac5@orel>
+Date: Fri, 19 Apr 2024 16:22:52 +0100
+Subject: [PATCH v2 3/6] riscv: Add Zawrs support for spinlocks
+In-Reply-To: <20240419135321.70781-11-ajones@ventanamicro.com>
 References: <20240419135321.70781-8-ajones@ventanamicro.com>
- <20240419135321.70781-10-ajones@ventanamicro.com>
- <20240419-chafe-leotard-e5daee19b1c8@spud>
- <20240419-8c6af6a169a7aa0b9aa5cac5@orel>
-Message-ID: <20240419-disdain-litmus-82874cc4872e@spud>
+ <20240419135321.70781-11-ajones@ventanamicro.com>
+Message-ID: <20240419-irate-dispute-2714c42f3a63@spud>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Apr 19, 2024 at 05:16:05PM +0200, Andrew Jones wrote:
-> On Fri, Apr 19, 2024 at 03:45:46PM +0100, Conor Dooley wrote:
-> > On Fri, Apr 19, 2024 at 03:53:24PM +0200, Andrew Jones wrote:
-> > > Add description for the Zawrs (Wait-on-Reservation-Set) ISA extension
-> > > which was ratified in commit 98918c844281 of riscv-isa-manual.
-> > > 
-> > > Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
-> > > ---
-> > >  .../devicetree/bindings/riscv/extensions.yaml        | 12 ++++++++++++
-> > >  1 file changed, 12 insertions(+)
-> > > 
-> > > diff --git a/Documentation/devicetree/bindings/riscv/extensions.yaml b/Documentation/devicetree/bindings/riscv/extensions.yaml
-> > > index 468c646247aa..584da2f539e5 100644
-> > > --- a/Documentation/devicetree/bindings/riscv/extensions.yaml
-> > > +++ b/Documentation/devicetree/bindings/riscv/extensions.yaml
-> > > @@ -177,6 +177,18 @@ properties:
-> > >              is supported as ratified at commit 5059e0ca641c ("update to
-> > >              ratified") of the riscv-zacas.
-> > >  
-> > > +        - const: zawrs
-> > > +          description: |
-> > > +            The Zawrs extension for entering a low-power state or for trapping
-> > > +            to a hypervisor while waiting on a store to a memory location, as
-> > > +            ratified in commit 98918c844281 ("Merge pull request #1217 from
-> > > +            riscv/zawrs") of riscv-isa-manual.
-> > 
-> > This part is fine...
-> > 
-> > 
-> > > Linux assumes that WRS.NTO will
-> > > +            either always eventually terminate the stall due to the reservation
-> > > +            set becoming invalid, implementation-specific other reasons, or
-> > > +            because a higher privilege level has configured it to cause an
-> > > +            illegal instruction exception after an implementation-specific
-> > > +            bounded time limit.
-> > 
-> > ...but I don't like this bit. The binding should just describe what the
-> > property means for the hardware, not discuss specifics about a
-> > particular OS.
-> > 
-> > And with my dt-bindings hat off and my kernel hat on, I think that if we
-> > want to have more specific requirements than the extension provides we
-> > either need to a) document that zawrs means that it will always
-> > terminate or b) additionally document a "zawrs-always-terminates" that
-> > has that meaning and look for it to enable the behaviour.
-> 
-> IIUC, the text above mostly just needs to remove 'Linux assumes' in order
-> to provide what we want for (a)? I'm not sure about (b). If Zawrs is
-> unusable as is, then we should probably just go back to the specs and get
-> a new standard extension name for a new version which includes the changes
-> we need.
+On Fri, Apr 19, 2024 at 03:53:25PM +0200, Andrew Jones wrote:
 
-An (official) new name for the behaviour that you actually want, especially
-if the patchset sent the other day does not have the more stringent
-requirement (I won't even pretend to understand Zawrs well enough to know
-whether it does or not), sounds like the ideal outcome. That way you're
-also sorted on the ACPI side.
+> +config RISCV_ISA_ZAWRS
+> +	bool "Zawrs extension support for more efficient busy waiting"
+> +	depends on RISCV_ALTERNATIVE
+> +	default y
+> +	help
+> +	  The Zawrs extension defines instructions to be used in polling loops
+> +	  which allow a hart to enter a low-power state or to trap to the
+> +	  hypervisor while waiting on a store to a memory location. Enable the
+> +	  use of these instructions in the kernel when the Zawrs extension is
+> +	  detected at boot.
+
+Ignoring the rest of the patch, and focusing on the bit relevant to our
+other conversation, I think this description satisfies what I was trying
+to do with the other options in terms of being clear about what exactly
+it does.
 -------------- next part --------------
 A non-text attachment was scrubbed...
 Name: signature.asc
 Type: application/pgp-signature
 Size: 228 bytes
 Desc: not available
-URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20240419/1541caf5/attachment.sig>
+URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20240419/555241cd/attachment.sig>
