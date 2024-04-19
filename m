@@ -1,60 +1,41 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Fri, 19 Apr 2024 15:53:28 +0200
-Subject: [PATCH v2 6/6] KVM: riscv: selftests: Add Zawrs extension to get-reg-list test
-In-Reply-To: <20240419135321.70781-8-ajones@ventanamicro.com>
-References: <20240419135321.70781-8-ajones@ventanamicro.com>
-Message-ID: <20240419135321.70781-14-ajones@ventanamicro.com>
+From: Sean Christopherson <seanjc@google.com>
+Date: Fri, 19 Apr 2024 06:58:06 -0700
+Subject: [PATCH 1/4] KVM: delete .change_pte MMU notifier callback
+In-Reply-To: <20240419112432.GB2972@willie-the-truck>
+References: <20240405115815.3226315-1-pbonzini@redhat.com> <20240405115815.3226315-2-pbonzini@redhat.com>
+ <20240412104408.GA27645@willie-the-truck> <86jzl2sovz.wl-maz@kernel.org>
+ <ZhlLHtfeSHk9gRRO@google.com> <86h6g5si0m.wl-maz@kernel.org>
+ <Zh1d94Pl6gneVoDd@google.com> <20240418141932.GA1855@willie-the-truck>
+ <ZiF6NgGYLSsPNEOg@google.com> <20240419112432.GB2972@willie-the-truck>
+Message-ID: <ZiJ4bqrBUPM0E8iq@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-KVM RISC-V allows the Zawrs extension for the Guest/VM, so add it
-to the get-reg-list test.
+On Fri, Apr 19, 2024, Will Deacon wrote:
+> > @@ -663,10 +669,22 @@ static __always_inline kvm_mn_ret_t __kvm_handle_hva_range(struct kvm *kvm,
+> >  					break;
+> >  			}
+> >  			r.ret |= range->handler(kvm, &gfn_range);
+> > +
+> > +		       /*
+> > +			* Use a precise gfn-based TLB flush when possible, as
+> > +			* most mmu_notifier events affect a small-ish range.
+> > +			* Fall back to a full TLB flush if the gfn-based flush
+> > +			* fails, and don't bother trying the gfn-based flush
+> > +			* if a full flush is already pending.
+> > +			*/
+> > +		       if (range->flush_on_ret && !need_flush && r.ret &&
+> > +			   kvm_arch_flush_remote_tlbs_range(kvm, gfn_range.start,
+> > +							    gfn_range.end - gfn_range.start + 1))
+> 
+> What's that '+ 1' needed for here?
 
-Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
----
- tools/testing/selftests/kvm/riscv/get-reg-list.c | 4 ++++
- 1 file changed, 4 insertions(+)
-
-diff --git a/tools/testing/selftests/kvm/riscv/get-reg-list.c b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-index b882b7b9b785..8c4c27bd4b88 100644
---- a/tools/testing/selftests/kvm/riscv/get-reg-list.c
-+++ b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-@@ -48,6 +48,7 @@ bool filter_reg(__u64 reg)
- 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SVNAPOT:
- 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SVPBMT:
- 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZACAS:
-+	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZAWRS:
- 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZBA:
- 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZBB:
- 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZBC:
-@@ -413,6 +414,7 @@ static const char *isa_ext_single_id_to_str(__u64 reg_off)
- 		KVM_ISA_EXT_ARR(SVNAPOT),
- 		KVM_ISA_EXT_ARR(SVPBMT),
- 		KVM_ISA_EXT_ARR(ZACAS),
-+		KVM_ISA_EXT_ARR(ZAWRS),
- 		KVM_ISA_EXT_ARR(ZBA),
- 		KVM_ISA_EXT_ARR(ZBB),
- 		KVM_ISA_EXT_ARR(ZBC),
-@@ -936,6 +938,7 @@ KVM_ISA_EXT_SIMPLE_CONFIG(svinval, SVINVAL);
- KVM_ISA_EXT_SIMPLE_CONFIG(svnapot, SVNAPOT);
- KVM_ISA_EXT_SIMPLE_CONFIG(svpbmt, SVPBMT);
- KVM_ISA_EXT_SIMPLE_CONFIG(zacas, ZACAS);
-+KVM_ISA_EXT_SIMPLE_CONFIG(zawrs, ZAWRS);
- KVM_ISA_EXT_SIMPLE_CONFIG(zba, ZBA);
- KVM_ISA_EXT_SIMPLE_CONFIG(zbb, ZBB);
- KVM_ISA_EXT_SIMPLE_CONFIG(zbc, ZBC);
-@@ -991,6 +994,7 @@ struct vcpu_reg_list *vcpu_configs[] = {
- 	&config_svnapot,
- 	&config_svpbmt,
- 	&config_zacas,
-+	&config_zawrs,
- 	&config_zba,
- 	&config_zbb,
- 	&config_zbc,
--- 
-2.44.0
-
+ (a) To see if you're paying attention.
+ (b) Because more is always better.
+ (c) Because math is hard.
+ (d) Because I haven't tested this.
+ (e) Both (c) and (d).
 
