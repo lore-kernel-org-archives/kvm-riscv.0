@@ -1,161 +1,109 @@
-From: Will Deacon <will@kernel.org>
-Date: Fri, 19 Apr 2024 12:24:32 +0100
-Subject: [PATCH 1/4] KVM: delete .change_pte MMU notifier callback
-In-Reply-To: <ZiF6NgGYLSsPNEOg@google.com>
-References: <20240405115815.3226315-1-pbonzini@redhat.com>
- <20240405115815.3226315-2-pbonzini@redhat.com>
- <20240412104408.GA27645@willie-the-truck>
- <86jzl2sovz.wl-maz@kernel.org>
- <ZhlLHtfeSHk9gRRO@google.com>
- <86h6g5si0m.wl-maz@kernel.org>
- <Zh1d94Pl6gneVoDd@google.com>
- <20240418141932.GA1855@willie-the-truck>
- <ZiF6NgGYLSsPNEOg@google.com>
-Message-ID: <20240419112432.GB2972@willie-the-truck>
+From: Andrew Jones <ajones@ventanamicro.com>
+Date: Fri, 19 Apr 2024 15:53:22 +0200
+Subject: [PATCH v2 0/6] riscv: Apply Zawrs when available
+Message-ID: <20240419135321.70781-8-ajones@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Apr 18, 2024 at 12:53:26PM -0700, Sean Christopherson wrote:
-> On Thu, Apr 18, 2024, Will Deacon wrote:
-> > On Mon, Apr 15, 2024 at 10:03:51AM -0700, Sean Christopherson wrote:
-> > > On Sat, Apr 13, 2024, Marc Zyngier wrote:
-> > > > On Fri, 12 Apr 2024 15:54:22 +0100, Sean Christopherson <seanjc@google.com> wrote:
-> > > > > 
-> > > > > On Fri, Apr 12, 2024, Marc Zyngier wrote:
-> > > > > > On Fri, 12 Apr 2024 11:44:09 +0100, Will Deacon <will@kernel.org> wrote:
-> > > > > > > On Fri, Apr 05, 2024 at 07:58:12AM -0400, Paolo Bonzini wrote:
-> > > > > > > Also, if you're in the business of hacking the MMU notifier code, it
-> > > > > > > would be really great to change the .clear_flush_young() callback so
-> > > > > > > that the architecture could handle the TLB invalidation. At the moment,
-> > > > > > > the core KVM code invalidates the whole VMID courtesy of 'flush_on_ret'
-> > > > > > > being set by kvm_handle_hva_range(), whereas we could do a much
-> > > > > > > lighter-weight and targetted TLBI in the architecture page-table code
-> > > > > > > when we actually update the ptes for small ranges.
-> > > > > > 
-> > > > > > Indeed, and I was looking at this earlier this week as it has a pretty
-> > > > > > devastating effect with NV (it blows the shadow S2 for that VMID, with
-> > > > > > costly consequences).
-> > > > > > 
-> > > > > > In general, it feels like the TLB invalidation should stay with the
-> > > > > > code that deals with the page tables, as it has a pretty good idea of
-> > > > > > what needs to be invalidated and how -- specially on architectures
-> > > > > > that have a HW-broadcast facility like arm64.
-> > > > > 
-> > > > > Would this be roughly on par with an in-line flush on arm64?  The simpler, more
-> > > > > straightforward solution would be to let architectures override flush_on_ret,
-> > > > > but I would prefer something like the below as x86 can also utilize a range-based
-> > > > > flush when running as a nested hypervisor.
-> > > 
-> > > ...
-> > > 
-> > > > I think this works for us on HW that has range invalidation, which
-> > > > would already be a positive move.
-> > > > 
-> > > > For the lesser HW that isn't range capable, it also gives the
-> > > > opportunity to perform the iteration ourselves or go for the nuclear
-> > > > option if the range is larger than some arbitrary constant (though
-> > > > this is additional work).
-> > > > 
-> > > > But this still considers the whole range as being affected by
-> > > > range->handler(). It'd be interesting to try and see whether more
-> > > > precise tracking is (or isn't) generally beneficial.
-> > > 
-> > > I assume the idea would be to let arch code do single-page invalidations of
-> > > stage-2 entries for each gfn?
-> > 
-> > Right, as it's the only code which knows which ptes actually ended up
-> > being aged.
-> > 
-> > > Unless I'm having a brain fart, x86 can't make use of that functionality.  Intel
-> > > doesn't provide any way to do targeted invalidation of stage-2 mappings.  AMD
-> > > provides an instruction to do broadcast invalidations, but it takes a virtual
-> > > address, i.e. a stage-1 address.  I can't tell if it's a host virtual address or
-> > > a guest virtual address, but it's a moot point because KVM doen't have the guest
-> > > virtual address, and if it's a host virtual address, there would need to be valid
-> > > mappings in the host page tables for it to work, which KVM can't guarantee.
-> > 
-> > Ah, so it sounds like it would need to be an arch opt-in then.
-> 
-> Even if x86 (or some other arch code) could use the precise tracking, I think it
-> would make sense to have the behavior be arch specific.  Adding infrastructure
-> to get information from arch code, only to turn around and give it back to arch
-> code would be odd.
+Zawrs provides two instructions (wrs.nto and wrs.sto), where both are
+meant to allow the hart to enter a low-power state while waiting on a
+store to a memory location. The instructions also both wait an
+implementation-defined "short" duration (unless the implementation
+terminates the stall for another reason). The difference is that while
+wrs.sto will terminate when the duration elapses, wrs.nto, depending on
+configuration, will either just keep waiting or an ILL exception will be
+raised. Linux will use wrs.nto, so if platforms have an implementation
+which falls in the "just keep waiting" category, then it should _not_
+advertise Zawrs in the hardware description. Text to that effect has
+been added to the Zawrs DT definition.
 
-Sorry, yes, that's what I had in mind. Basically, a way for the arch code
-to say "I've handled the TLBI, don't worry about it."
+Like wfi (and with the same {m,h}status bits to configure it), when
+wrs.nto is configured to raise exceptions it's expected that the higher
+privilege level will see the instruction was a wait instruction, do
+something, and then resume execution following the instruction. For
+example, KVM does configure exceptions for wfi (hstatus.VTW=1) and
+therefore also for wrs.nto. KVM does this for wfi since it's better to
+allow other tasks to be scheduled while a VCPU waits for an interrupt.
+For waits such as those where wrs.nto/sto would be used, which are
+typically locks, it is also a good idea for KVM to be involved, as it
+can attempt to schedule the lock holding VCPU.
 
-> Unless arm64 can't do the invalidation immediately after aging the stage-2 PTE,
-> the best/easiest solution would be to let arm64 opt out of the common TLB flush
-> when a SPTE is made young.
-> 
-> With the range-based flushing bundled in, this?
-> 
-> ---
->  include/linux/kvm_host.h |  2 ++
->  virt/kvm/kvm_main.c      | 40 +++++++++++++++++++++++++---------------
->  2 files changed, 27 insertions(+), 15 deletions(-)
-> 
-> diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-> index afbc99264ffa..8fe5f5e16919 100644
-> --- a/include/linux/kvm_host.h
-> +++ b/include/linux/kvm_host.h
-> @@ -2010,6 +2010,8 @@ extern const struct kvm_stats_header kvm_vcpu_stats_header;
->  extern const struct _kvm_stats_desc kvm_vcpu_stats_desc[];
->  
->  #ifdef CONFIG_KVM_GENERIC_MMU_NOTIFIER
-> +int kvm_arch_flush_tlb_if_young(void);
-> +
->  static inline int mmu_invalidate_retry(struct kvm *kvm, unsigned long mmu_seq)
->  {
->  	if (unlikely(kvm->mmu_invalidate_in_progress))
-> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-> index 38b498669ef9..5ebef8ef239c 100644
-> --- a/virt/kvm/kvm_main.c
-> +++ b/virt/kvm/kvm_main.c
-> @@ -595,6 +595,11 @@ static void kvm_null_fn(void)
->  }
->  #define IS_KVM_NULL_FN(fn) ((fn) == (void *)kvm_null_fn)
->  
-> +int __weak kvm_arch_flush_tlb_if_young(void)
-> +{
-> +	return true;
-> +}
+This series starts with Christoph's addition of riscv smp_cond_load*
+functions which apply wrs.sto when available. That patch has been
+reworked to use wrs.nto and to use the same approach as Arm for the
+wait loop, since we can't have arbitrary C code between the load-
+reserved and the wrs. Then, hwprobe support is added (since the
+instructions are also usable from usermode), and finally KVM is
+taught about wrs.nto, allowing guests to see and use the Zawrs
+extension.
 
-I tend to find __weak functions a little ugly, but I think the gist of the
-diff looks good to me. Thanks for putting it together!
+We still don't have test results from hardware, and it's not possible to
+prove that using Zawrs is a win when testing on QEMU, not even when
+oversubscribing VCPUs to guests. However, it is possible to use KVM
+selftests to force a scenario where we can prove Zawrs does its job and
+does it well. [4] is a test which does this and, on my machine, without
+Zawrs it takes 16 seconds to complete and with Zawrs it takes 0.25
+seconds.
 
-> +
->  /* Iterate over each memslot intersecting [start, last] (inclusive) range */
->  #define kvm_for_each_memslot_in_hva_range(node, slots, start, last)	     \
->  	for (node = interval_tree_iter_first(&slots->hva_tree, start, last); \
-> @@ -611,6 +616,7 @@ static __always_inline kvm_mn_ret_t __kvm_handle_hva_range(struct kvm *kvm,
->  	struct kvm_gfn_range gfn_range;
->  	struct kvm_memory_slot *slot;
->  	struct kvm_memslots *slots;
-> +	bool need_flush = false;
->  	int i, idx;
->  
->  	if (WARN_ON_ONCE(range->end <= range->start))
-> @@ -663,10 +669,22 @@ static __always_inline kvm_mn_ret_t __kvm_handle_hva_range(struct kvm *kvm,
->  					break;
->  			}
->  			r.ret |= range->handler(kvm, &gfn_range);
-> +
-> +		       /*
-> +			* Use a precise gfn-based TLB flush when possible, as
-> +			* most mmu_notifier events affect a small-ish range.
-> +			* Fall back to a full TLB flush if the gfn-based flush
-> +			* fails, and don't bother trying the gfn-based flush
-> +			* if a full flush is already pending.
-> +			*/
-> +		       if (range->flush_on_ret && !need_flush && r.ret &&
-> +			   kvm_arch_flush_remote_tlbs_range(kvm, gfn_range.start,
-> +							    gfn_range.end - gfn_range.start + 1))
+This series is also available here [1]. In order to use QEMU for testing
+a build with [2] is needed. In order to enable guests to use Zawrs with
+KVM using kvmtool, the branch at [3] may be used.
 
-What's that '+ 1' needed for here?
+[1] https://github.com/jones-drew/linux/commits/riscv/zawrs-v2/
+[2] https://lore.kernel.org/all/20240312152901.512001-2-ajones at ventanamicro.com/
+[3] https://github.com/jones-drew/kvmtool/commits/riscv/zawrs/
+[4] https://github.com/jones-drew/linux/commit/9311702bcd118bdbfa8b9be4a8ec355c40559499
 
-Will
+Thanks,
+drew
+
+v2:
+ - Added DT bindings patch with additional Linux specifications due
+   to wrs.nto potentially never terminating, as suggested by Palmer
+ - Added patch to share pause insn definition
+ - Rework main Zawrs support patch to use Arm approach (which is
+   also the approach that Andrea Parri suggested)
+ - Dropped the riscv implementation of smp_cond_load_acquire().
+   afaict, the generic implementation, which will use the riscv
+   implementation of smp_cond_load_relaxed() is sufficient for riscv.
+ - The rework was large enough (IMO) to drop Heiko's s-o-b and to
+   add myself as a co-developer
+
+
+Andrew Jones (5):
+  riscv: Provide a definition for 'pause'
+  dt-bindings: riscv: Add Zawrs ISA extension description
+  riscv: hwprobe: export Zawrs ISA extension
+  KVM: riscv: Support guest wrs.nto
+  KVM: riscv: selftests: Add Zawrs extension to get-reg-list test
+
+Christoph M?llner (1):
+  riscv: Add Zawrs support for spinlocks
+
+ Documentation/arch/riscv/hwprobe.rst          |  4 ++
+ .../devicetree/bindings/riscv/extensions.yaml | 12 +++++
+ arch/riscv/Kconfig                            | 20 +++++---
+ arch/riscv/Makefile                           |  3 --
+ arch/riscv/include/asm/barrier.h              | 45 ++++++++++------
+ arch/riscv/include/asm/cmpxchg.h              | 51 +++++++++++++++++++
+ arch/riscv/include/asm/hwcap.h                |  1 +
+ arch/riscv/include/asm/insn-def.h             |  4 ++
+ arch/riscv/include/asm/kvm_host.h             |  1 +
+ arch/riscv/include/asm/vdso/processor.h       |  8 +--
+ arch/riscv/include/uapi/asm/hwprobe.h         |  1 +
+ arch/riscv/include/uapi/asm/kvm.h             |  1 +
+ arch/riscv/kernel/cpufeature.c                |  1 +
+ arch/riscv/kernel/sys_hwprobe.c               |  1 +
+ arch/riscv/kvm/vcpu.c                         |  1 +
+ arch/riscv/kvm/vcpu_insn.c                    | 15 ++++++
+ arch/riscv/kvm/vcpu_onereg.c                  |  2 +
+ .../selftests/kvm/riscv/get-reg-list.c        |  4 ++
+ 18 files changed, 144 insertions(+), 31 deletions(-)
+
+-- 
+2.44.0
+
 
