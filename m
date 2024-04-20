@@ -1,76 +1,79 @@
 From: Atish Patra <atishp@rivosinc.com>
-Date: Sat, 20 Apr 2024 08:17:20 -0700
-Subject: [PATCH v8 04/24] drivers/perf: riscv: Use BIT macro for shifting operations
+Date: Sat, 20 Apr 2024 08:17:22 -0700
+Subject: [PATCH v8 06/24] RISC-V: KVM: Rename the SBI_STA_SHMEM_DISABLE to a generic name
 In-Reply-To: <20240420151741.962500-1-atishp@rivosinc.com>
 References: <20240420151741.962500-1-atishp@rivosinc.com>
-Message-ID: <20240420151741.962500-5-atishp@rivosinc.com>
+Message-ID: <20240420151741.962500-7-atishp@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-It is a good practice to use BIT() instead of (1 << x).
-Replace the current usages with BIT().
-
-Take this opportunity to replace few (1UL << x) with BIT() as well
-for consistency.
+SBI_STA_SHMEM_DISABLE is a macro to invoke disable shared memory
+commands. As this can be invoked from other SBI extension context
+as well, rename it to more generic name as SBI_SHMEM_DISABLE.
 
 Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
 Signed-off-by: Atish Patra <atishp@rivosinc.com>
 ---
- arch/riscv/include/asm/sbi.h | 20 ++++++++++----------
- drivers/perf/riscv_pmu_sbi.c |  2 +-
- 2 files changed, 11 insertions(+), 11 deletions(-)
+ arch/riscv/include/asm/sbi.h  | 2 +-
+ arch/riscv/kernel/paravirt.c  | 6 +++---
+ arch/riscv/kvm/vcpu_sbi_sta.c | 4 ++--
+ 3 files changed, 6 insertions(+), 6 deletions(-)
 
 diff --git a/arch/riscv/include/asm/sbi.h b/arch/riscv/include/asm/sbi.h
-index ef8311dafb91..4afa2cd01bae 100644
+index 9aada4b9f7b5..f31650b10899 100644
 --- a/arch/riscv/include/asm/sbi.h
 +++ b/arch/riscv/include/asm/sbi.h
-@@ -233,20 +233,20 @@ enum sbi_pmu_ctr_type {
- #define SBI_PMU_EVENT_IDX_INVALID 0xFFFFFFFF
+@@ -277,7 +277,7 @@ struct sbi_sta_struct {
+ 	u8 pad[47];
+ } __packed;
  
- /* Flags defined for config matching function */
--#define SBI_PMU_CFG_FLAG_SKIP_MATCH	(1 << 0)
--#define SBI_PMU_CFG_FLAG_CLEAR_VALUE	(1 << 1)
--#define SBI_PMU_CFG_FLAG_AUTO_START	(1 << 2)
--#define SBI_PMU_CFG_FLAG_SET_VUINH	(1 << 3)
--#define SBI_PMU_CFG_FLAG_SET_VSINH	(1 << 4)
--#define SBI_PMU_CFG_FLAG_SET_UINH	(1 << 5)
--#define SBI_PMU_CFG_FLAG_SET_SINH	(1 << 6)
--#define SBI_PMU_CFG_FLAG_SET_MINH	(1 << 7)
-+#define SBI_PMU_CFG_FLAG_SKIP_MATCH	BIT(0)
-+#define SBI_PMU_CFG_FLAG_CLEAR_VALUE	BIT(1)
-+#define SBI_PMU_CFG_FLAG_AUTO_START	BIT(2)
-+#define SBI_PMU_CFG_FLAG_SET_VUINH	BIT(3)
-+#define SBI_PMU_CFG_FLAG_SET_VSINH	BIT(4)
-+#define SBI_PMU_CFG_FLAG_SET_UINH	BIT(5)
-+#define SBI_PMU_CFG_FLAG_SET_SINH	BIT(6)
-+#define SBI_PMU_CFG_FLAG_SET_MINH	BIT(7)
+-#define SBI_STA_SHMEM_DISABLE		-1
++#define SBI_SHMEM_DISABLE		-1
  
- /* Flags defined for counter start function */
--#define SBI_PMU_START_FLAG_SET_INIT_VALUE (1 << 0)
-+#define SBI_PMU_START_FLAG_SET_INIT_VALUE BIT(0)
+ /* SBI spec version fields */
+ #define SBI_SPEC_VERSION_DEFAULT	0x1
+diff --git a/arch/riscv/kernel/paravirt.c b/arch/riscv/kernel/paravirt.c
+index 0d6225fd3194..fa6b0339a65d 100644
+--- a/arch/riscv/kernel/paravirt.c
++++ b/arch/riscv/kernel/paravirt.c
+@@ -62,7 +62,7 @@ static int sbi_sta_steal_time_set_shmem(unsigned long lo, unsigned long hi,
+ 	ret = sbi_ecall(SBI_EXT_STA, SBI_EXT_STA_STEAL_TIME_SET_SHMEM,
+ 			lo, hi, flags, 0, 0, 0);
+ 	if (ret.error) {
+-		if (lo == SBI_STA_SHMEM_DISABLE && hi == SBI_STA_SHMEM_DISABLE)
++		if (lo == SBI_SHMEM_DISABLE && hi == SBI_SHMEM_DISABLE)
+ 			pr_warn("Failed to disable steal-time shmem");
+ 		else
+ 			pr_warn("Failed to set steal-time shmem");
+@@ -84,8 +84,8 @@ static int pv_time_cpu_online(unsigned int cpu)
  
- /* Flags defined for counter stop function */
--#define SBI_PMU_STOP_FLAG_RESET (1 << 0)
-+#define SBI_PMU_STOP_FLAG_RESET BIT(0)
+ static int pv_time_cpu_down_prepare(unsigned int cpu)
+ {
+-	return sbi_sta_steal_time_set_shmem(SBI_STA_SHMEM_DISABLE,
+-					    SBI_STA_SHMEM_DISABLE, 0);
++	return sbi_sta_steal_time_set_shmem(SBI_SHMEM_DISABLE,
++					    SBI_SHMEM_DISABLE, 0);
+ }
  
- enum sbi_ext_dbcn_fid {
- 	SBI_EXT_DBCN_CONSOLE_WRITE = 0,
-diff --git a/drivers/perf/riscv_pmu_sbi.c b/drivers/perf/riscv_pmu_sbi.c
-index 1823ffb25d35..f23501898657 100644
---- a/drivers/perf/riscv_pmu_sbi.c
-+++ b/drivers/perf/riscv_pmu_sbi.c
-@@ -386,7 +386,7 @@ static int pmu_sbi_ctr_get_idx(struct perf_event *event)
- 			cmask = 1;
- 		} else if (event->attr.config == PERF_COUNT_HW_INSTRUCTIONS) {
- 			cflags |= SBI_PMU_CFG_FLAG_SKIP_MATCH;
--			cmask = 1UL << (CSR_INSTRET - CSR_CYCLE);
-+			cmask = BIT(CSR_INSTRET - CSR_CYCLE);
- 		}
+ static u64 pv_time_steal_clock(int cpu)
+diff --git a/arch/riscv/kvm/vcpu_sbi_sta.c b/arch/riscv/kvm/vcpu_sbi_sta.c
+index d8cf9ca28c61..5f35427114c1 100644
+--- a/arch/riscv/kvm/vcpu_sbi_sta.c
++++ b/arch/riscv/kvm/vcpu_sbi_sta.c
+@@ -93,8 +93,8 @@ static int kvm_sbi_sta_steal_time_set_shmem(struct kvm_vcpu *vcpu)
+ 	if (flags != 0)
+ 		return SBI_ERR_INVALID_PARAM;
+ 
+-	if (shmem_phys_lo == SBI_STA_SHMEM_DISABLE &&
+-	    shmem_phys_hi == SBI_STA_SHMEM_DISABLE) {
++	if (shmem_phys_lo == SBI_SHMEM_DISABLE &&
++	    shmem_phys_hi == SBI_SHMEM_DISABLE) {
+ 		vcpu->arch.sta.shmem = INVALID_GPA;
+ 		return 0;
  	}
- 
 -- 
 2.34.1
 
