@@ -1,78 +1,63 @@
 From: Atish Patra <atishp@rivosinc.com>
-Date: Sat, 20 Apr 2024 08:17:32 -0700
-Subject: [PATCH v8 16/24] RISC-V: KVM: Improve firmware counter read function
+Date: Sat, 20 Apr 2024 08:17:34 -0700
+Subject: [PATCH v8 18/24] KVM: riscv: selftests: Add helper functions for extension checks
 In-Reply-To: <20240420151741.962500-1-atishp@rivosinc.com>
 References: <20240420151741.962500-1-atishp@rivosinc.com>
-Message-ID: <20240420151741.962500-17-atishp@rivosinc.com>
+Message-ID: <20240420151741.962500-19-atishp@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Rename the function to indicate that it is meant for firmware
-counter read. While at it, add a range sanity check for it as
-well.
+__vcpu_has_ext can check both SBI and ISA extensions when the first
+argument is properly converted to SBI/ISA extension IDs. Introduce
+two helper functions to make life easier for developers so they
+don't have to worry about the conversions.
+
+Replace the current usages as well with new helpers.
 
 Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
 Signed-off-by: Atish Patra <atishp@rivosinc.com>
 ---
- arch/riscv/include/asm/kvm_vcpu_pmu.h | 2 +-
- arch/riscv/kvm/vcpu_pmu.c             | 7 ++++++-
- arch/riscv/kvm/vcpu_sbi_pmu.c         | 2 +-
- 3 files changed, 8 insertions(+), 3 deletions(-)
+ tools/testing/selftests/kvm/include/riscv/processor.h | 10 ++++++++++
+ tools/testing/selftests/kvm/riscv/arch_timer.c        |  2 +-
+ 2 files changed, 11 insertions(+), 1 deletion(-)
 
-diff --git a/arch/riscv/include/asm/kvm_vcpu_pmu.h b/arch/riscv/include/asm/kvm_vcpu_pmu.h
-index 55861b5d3382..fa0f535bbbf0 100644
---- a/arch/riscv/include/asm/kvm_vcpu_pmu.h
-+++ b/arch/riscv/include/asm/kvm_vcpu_pmu.h
-@@ -89,7 +89,7 @@ int kvm_riscv_vcpu_pmu_ctr_cfg_match(struct kvm_vcpu *vcpu, unsigned long ctr_ba
- 				     unsigned long ctr_mask, unsigned long flags,
- 				     unsigned long eidx, u64 evtdata,
- 				     struct kvm_vcpu_sbi_return *retdata);
--int kvm_riscv_vcpu_pmu_ctr_read(struct kvm_vcpu *vcpu, unsigned long cidx,
-+int kvm_riscv_vcpu_pmu_fw_ctr_read(struct kvm_vcpu *vcpu, unsigned long cidx,
- 				struct kvm_vcpu_sbi_return *retdata);
- int kvm_riscv_vcpu_pmu_fw_ctr_read_hi(struct kvm_vcpu *vcpu, unsigned long cidx,
- 				      struct kvm_vcpu_sbi_return *retdata);
-diff --git a/arch/riscv/kvm/vcpu_pmu.c b/arch/riscv/kvm/vcpu_pmu.c
-index e1409ec9afc0..04db1f993c47 100644
---- a/arch/riscv/kvm/vcpu_pmu.c
-+++ b/arch/riscv/kvm/vcpu_pmu.c
-@@ -235,6 +235,11 @@ static int pmu_ctr_read(struct kvm_vcpu *vcpu, unsigned long cidx,
- 	u64 enabled, running;
- 	int fevent_code;
+diff --git a/tools/testing/selftests/kvm/include/riscv/processor.h b/tools/testing/selftests/kvm/include/riscv/processor.h
+index 3b9cb39327ff..5f389166338c 100644
+--- a/tools/testing/selftests/kvm/include/riscv/processor.h
++++ b/tools/testing/selftests/kvm/include/riscv/processor.h
+@@ -50,6 +50,16 @@ static inline uint64_t __kvm_reg_id(uint64_t type, uint64_t subtype,
  
-+	if (cidx >= kvm_pmu_num_counters(kvpmu) || cidx == 1) {
-+		pr_warn("Invalid counter id [%ld] during read\n", cidx);
-+		return -EINVAL;
-+	}
+ bool __vcpu_has_ext(struct kvm_vcpu *vcpu, uint64_t ext);
+ 
++static inline bool __vcpu_has_isa_ext(struct kvm_vcpu *vcpu, uint64_t isa_ext)
++{
++	return __vcpu_has_ext(vcpu, RISCV_ISA_EXT_REG(isa_ext));
++}
 +
- 	pmc = &kvpmu->pmc[cidx];
++static inline bool __vcpu_has_sbi_ext(struct kvm_vcpu *vcpu, uint64_t sbi_ext)
++{
++	return __vcpu_has_ext(vcpu, RISCV_SBI_EXT_REG(sbi_ext));
++}
++
+ struct ex_regs {
+ 	unsigned long ra;
+ 	unsigned long sp;
+diff --git a/tools/testing/selftests/kvm/riscv/arch_timer.c b/tools/testing/selftests/kvm/riscv/arch_timer.c
+index 0f9cabd99fd4..735b78569021 100644
+--- a/tools/testing/selftests/kvm/riscv/arch_timer.c
++++ b/tools/testing/selftests/kvm/riscv/arch_timer.c
+@@ -85,7 +85,7 @@ struct kvm_vm *test_vm_create(void)
+ 	int nr_vcpus = test_args.nr_vcpus;
  
- 	if (pmc->cinfo.type == SBI_PMU_CTR_TYPE_FW) {
-@@ -747,7 +752,7 @@ int kvm_riscv_vcpu_pmu_fw_ctr_read_hi(struct kvm_vcpu *vcpu, unsigned long cidx,
- 	return 0;
- }
+ 	vm = vm_create_with_vcpus(nr_vcpus, guest_code, vcpus);
+-	__TEST_REQUIRE(__vcpu_has_ext(vcpus[0], RISCV_ISA_EXT_REG(KVM_RISCV_ISA_EXT_SSTC)),
++	__TEST_REQUIRE(__vcpu_has_isa_ext(vcpus[0], KVM_RISCV_ISA_EXT_SSTC),
+ 				   "SSTC not available, skipping test\n");
  
--int kvm_riscv_vcpu_pmu_ctr_read(struct kvm_vcpu *vcpu, unsigned long cidx,
-+int kvm_riscv_vcpu_pmu_fw_ctr_read(struct kvm_vcpu *vcpu, unsigned long cidx,
- 				struct kvm_vcpu_sbi_return *retdata)
- {
- 	int ret;
-diff --git a/arch/riscv/kvm/vcpu_sbi_pmu.c b/arch/riscv/kvm/vcpu_sbi_pmu.c
-index cf111de51bdb..e4be34e03e83 100644
---- a/arch/riscv/kvm/vcpu_sbi_pmu.c
-+++ b/arch/riscv/kvm/vcpu_sbi_pmu.c
-@@ -62,7 +62,7 @@ static int kvm_sbi_ext_pmu_handler(struct kvm_vcpu *vcpu, struct kvm_run *run,
- 		ret = kvm_riscv_vcpu_pmu_ctr_stop(vcpu, cp->a0, cp->a1, cp->a2, retdata);
- 		break;
- 	case SBI_EXT_PMU_COUNTER_FW_READ:
--		ret = kvm_riscv_vcpu_pmu_ctr_read(vcpu, cp->a0, retdata);
-+		ret = kvm_riscv_vcpu_pmu_fw_ctr_read(vcpu, cp->a0, retdata);
- 		break;
- 	case SBI_EXT_PMU_COUNTER_FW_READ_HI:
- 		if (IS_ENABLED(CONFIG_32BIT))
+ 	vm_init_vector_tables(vm);
 -- 
 2.34.1
 
