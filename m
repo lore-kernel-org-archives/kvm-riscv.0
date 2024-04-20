@@ -1,162 +1,73 @@
 From: Atish Patra <atishp@rivosinc.com>
-Date: Sat, 20 Apr 2024 08:17:33 -0700
-Subject: [PATCH v8 17/24] KVM: riscv: selftests: Move sbi definitions to its own header file
+Date: Sat, 20 Apr 2024 08:17:24 -0700
+Subject: [PATCH v8 08/24] drivers/perf: riscv: Fix counter mask iteration for RV32
 In-Reply-To: <20240420151741.962500-1-atishp@rivosinc.com>
 References: <20240420151741.962500-1-atishp@rivosinc.com>
-Message-ID: <20240420151741.962500-18-atishp@rivosinc.com>
+Message-ID: <20240420151741.962500-9-atishp@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The SBI definitions will continue to grow. Move the sbi related
-definitions to its own header file from processor.h
+For RV32, used_hw_ctrs can have more than 1 word if the firmware chooses
+to interleave firmware/hardware counters indicies. Even though it's a
+unlikely scenario, handle that case by iterating over all the words
+instead of just using the first word.
 
-Suggested-by: Andrew Jones <ajones@ventanamicro.com>
 Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
 Signed-off-by: Atish Patra <atishp@rivosinc.com>
 ---
- .../selftests/kvm/include/riscv/processor.h   | 39 ---------------
- .../testing/selftests/kvm/include/riscv/sbi.h | 50 +++++++++++++++++++
- .../selftests/kvm/include/riscv/ucall.h       |  1 +
- tools/testing/selftests/kvm/steal_time.c      |  4 +-
- 4 files changed, 54 insertions(+), 40 deletions(-)
- create mode 100644 tools/testing/selftests/kvm/include/riscv/sbi.h
+ drivers/perf/riscv_pmu_sbi.c | 21 ++++++++++++---------
+ 1 file changed, 12 insertions(+), 9 deletions(-)
 
-diff --git a/tools/testing/selftests/kvm/include/riscv/processor.h b/tools/testing/selftests/kvm/include/riscv/processor.h
-index ce473fe251dd..3b9cb39327ff 100644
---- a/tools/testing/selftests/kvm/include/riscv/processor.h
-+++ b/tools/testing/selftests/kvm/include/riscv/processor.h
-@@ -154,45 +154,6 @@ void vm_install_interrupt_handler(struct kvm_vm *vm, exception_handler_fn handle
- #define PGTBL_PAGE_SIZE				PGTBL_L0_BLOCK_SIZE
- #define PGTBL_PAGE_SIZE_SHIFT			PGTBL_L0_BLOCK_SHIFT
- 
--/* SBI return error codes */
--#define SBI_SUCCESS				0
--#define SBI_ERR_FAILURE				-1
--#define SBI_ERR_NOT_SUPPORTED			-2
--#define SBI_ERR_INVALID_PARAM			-3
--#define SBI_ERR_DENIED				-4
--#define SBI_ERR_INVALID_ADDRESS			-5
--#define SBI_ERR_ALREADY_AVAILABLE		-6
--#define SBI_ERR_ALREADY_STARTED			-7
--#define SBI_ERR_ALREADY_STOPPED			-8
--
--#define SBI_EXT_EXPERIMENTAL_START		0x08000000
--#define SBI_EXT_EXPERIMENTAL_END		0x08FFFFFF
--
--#define KVM_RISCV_SELFTESTS_SBI_EXT		SBI_EXT_EXPERIMENTAL_END
--#define KVM_RISCV_SELFTESTS_SBI_UCALL		0
--#define KVM_RISCV_SELFTESTS_SBI_UNEXP		1
--
--enum sbi_ext_id {
--	SBI_EXT_BASE = 0x10,
--	SBI_EXT_STA = 0x535441,
--};
--
--enum sbi_ext_base_fid {
--	SBI_EXT_BASE_PROBE_EXT = 3,
--};
--
--struct sbiret {
--	long error;
--	long value;
--};
--
--struct sbiret sbi_ecall(int ext, int fid, unsigned long arg0,
--			unsigned long arg1, unsigned long arg2,
--			unsigned long arg3, unsigned long arg4,
--			unsigned long arg5);
--
--bool guest_sbi_probe_extension(int extid, long *out_val);
--
- static inline void local_irq_enable(void)
+diff --git a/drivers/perf/riscv_pmu_sbi.c b/drivers/perf/riscv_pmu_sbi.c
+index f23501898657..4eacd89141a9 100644
+--- a/drivers/perf/riscv_pmu_sbi.c
++++ b/drivers/perf/riscv_pmu_sbi.c
+@@ -652,10 +652,12 @@ static inline void pmu_sbi_stop_all(struct riscv_pmu *pmu)
+ static inline void pmu_sbi_stop_hw_ctrs(struct riscv_pmu *pmu)
  {
- 	csr_set(CSR_SSTATUS, SR_SIE);
-diff --git a/tools/testing/selftests/kvm/include/riscv/sbi.h b/tools/testing/selftests/kvm/include/riscv/sbi.h
-new file mode 100644
-index 000000000000..ba04f2dec7b5
---- /dev/null
-+++ b/tools/testing/selftests/kvm/include/riscv/sbi.h
-@@ -0,0 +1,50 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/*
-+ * RISC-V SBI specific definitions
-+ *
-+ * Copyright (C) 2024 Rivos Inc.
-+ */
-+
-+#ifndef SELFTEST_KVM_SBI_H
-+#define SELFTEST_KVM_SBI_H
-+
-+/* SBI return error codes */
-+#define SBI_SUCCESS				 0
-+#define SBI_ERR_FAILURE				-1
-+#define SBI_ERR_NOT_SUPPORTED			-2
-+#define SBI_ERR_INVALID_PARAM			-3
-+#define SBI_ERR_DENIED				-4
-+#define SBI_ERR_INVALID_ADDRESS			-5
-+#define SBI_ERR_ALREADY_AVAILABLE		-6
-+#define SBI_ERR_ALREADY_STARTED			-7
-+#define SBI_ERR_ALREADY_STOPPED			-8
-+
-+#define SBI_EXT_EXPERIMENTAL_START		0x08000000
-+#define SBI_EXT_EXPERIMENTAL_END		0x08FFFFFF
-+
-+#define KVM_RISCV_SELFTESTS_SBI_EXT		SBI_EXT_EXPERIMENTAL_END
-+#define KVM_RISCV_SELFTESTS_SBI_UCALL		0
-+#define KVM_RISCV_SELFTESTS_SBI_UNEXP		1
-+
-+enum sbi_ext_id {
-+	SBI_EXT_BASE = 0x10,
-+	SBI_EXT_STA = 0x535441,
-+};
-+
-+enum sbi_ext_base_fid {
-+	SBI_EXT_BASE_PROBE_EXT = 3,
-+};
-+
-+struct sbiret {
-+	long error;
-+	long value;
-+};
-+
-+struct sbiret sbi_ecall(int ext, int fid, unsigned long arg0,
-+			unsigned long arg1, unsigned long arg2,
-+			unsigned long arg3, unsigned long arg4,
-+			unsigned long arg5);
-+
-+bool guest_sbi_probe_extension(int extid, long *out_val);
-+
-+#endif /* SELFTEST_KVM_SBI_H */
-diff --git a/tools/testing/selftests/kvm/include/riscv/ucall.h b/tools/testing/selftests/kvm/include/riscv/ucall.h
-index be46eb32ec27..a695ae36f3e0 100644
---- a/tools/testing/selftests/kvm/include/riscv/ucall.h
-+++ b/tools/testing/selftests/kvm/include/riscv/ucall.h
-@@ -3,6 +3,7 @@
- #define SELFTEST_KVM_UCALL_H
+ 	struct cpu_hw_events *cpu_hw_evt = this_cpu_ptr(pmu->hw_events);
++	int i;
  
- #include "processor.h"
-+#include "sbi.h"
+-	/* No need to check the error here as we can't do anything about the error */
+-	sbi_ecall(SBI_EXT_PMU, SBI_EXT_PMU_COUNTER_STOP, 0,
+-		  cpu_hw_evt->used_hw_ctrs[0], 0, 0, 0, 0);
++	for (i = 0; i < BITS_TO_LONGS(RISCV_MAX_COUNTERS); i++)
++		/* No need to check the error here as we can't do anything about the error */
++		sbi_ecall(SBI_EXT_PMU, SBI_EXT_PMU_COUNTER_STOP, i * BITS_PER_LONG,
++			  cpu_hw_evt->used_hw_ctrs[i], 0, 0, 0, 0);
+ }
  
- #define UCALL_EXIT_REASON       KVM_EXIT_RISCV_SBI
+ /*
+@@ -667,7 +669,7 @@ static inline void pmu_sbi_stop_hw_ctrs(struct riscv_pmu *pmu)
+ static inline void pmu_sbi_start_overflow_mask(struct riscv_pmu *pmu,
+ 					       unsigned long ctr_ovf_mask)
+ {
+-	int idx = 0;
++	int idx = 0, i;
+ 	struct cpu_hw_events *cpu_hw_evt = this_cpu_ptr(pmu->hw_events);
+ 	struct perf_event *event;
+ 	unsigned long flag = SBI_PMU_START_FLAG_SET_INIT_VALUE;
+@@ -676,11 +678,12 @@ static inline void pmu_sbi_start_overflow_mask(struct riscv_pmu *pmu,
+ 	struct hw_perf_event *hwc;
+ 	u64 init_val = 0;
  
-diff --git a/tools/testing/selftests/kvm/steal_time.c b/tools/testing/selftests/kvm/steal_time.c
-index bae0c5026f82..2ff82c7fd926 100644
---- a/tools/testing/selftests/kvm/steal_time.c
-+++ b/tools/testing/selftests/kvm/steal_time.c
-@@ -11,7 +11,9 @@
- #include <pthread.h>
- #include <linux/kernel.h>
- #include <asm/kvm.h>
--#ifndef __riscv
-+#ifdef __riscv
-+#include "sbi.h"
-+#else
- #include <asm/kvm_para.h>
- #endif
+-	ctr_start_mask = cpu_hw_evt->used_hw_ctrs[0] & ~ctr_ovf_mask;
+-
+-	/* Start all the counters that did not overflow in a single shot */
+-	sbi_ecall(SBI_EXT_PMU, SBI_EXT_PMU_COUNTER_START, 0, ctr_start_mask,
+-		  0, 0, 0, 0);
++	for (i = 0; i < BITS_TO_LONGS(RISCV_MAX_COUNTERS); i++) {
++		ctr_start_mask = cpu_hw_evt->used_hw_ctrs[i] & ~ctr_ovf_mask;
++		/* Start all the counters that did not overflow in a single shot */
++		sbi_ecall(SBI_EXT_PMU, SBI_EXT_PMU_COUNTER_START, i * BITS_PER_LONG, ctr_start_mask,
++			0, 0, 0, 0);
++	}
  
+ 	/* Reinitialize and start all the counter that overflowed */
+ 	while (ctr_ovf_mask) {
 -- 
 2.34.1
 
