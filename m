@@ -1,38 +1,54 @@
 From: Atish Patra <atishp@rivosinc.com>
-Date: Sat, 20 Apr 2024 08:17:26 -0700
-Subject: [PATCH v8 10/24] RISC-V: KVM: Fix the initial sample period value
+Date: Sat, 20 Apr 2024 08:17:27 -0700
+Subject: [PATCH v8 11/24] RISC-V: KVM: No need to update the counter value during reset
 In-Reply-To: <20240420151741.962500-1-atishp@rivosinc.com>
 References: <20240420151741.962500-1-atishp@rivosinc.com>
-Message-ID: <20240420151741.962500-11-atishp@rivosinc.com>
+Message-ID: <20240420151741.962500-12-atishp@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The initial sample period value when counter value is not assigned
-should be set to maximum value supported by the counter width.
-Otherwise, it may result in spurious interrupts.
+The virtual counter value is updated during pmu_ctr_read. There is no need
+to update it in reset case. Otherwise, it will be counted twice which is
+incorrect.
 
+Fixes: 0cb74b65d2e5 ("RISC-V: KVM: Implement perf support without sampling")
+Reviewed-by: Anup Patel <anup@brainfault.org>
 Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
 Signed-off-by: Atish Patra <atishp@rivosinc.com>
 ---
- arch/riscv/kvm/vcpu_pmu.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/riscv/kvm/vcpu_pmu.c | 8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
 
 diff --git a/arch/riscv/kvm/vcpu_pmu.c b/arch/riscv/kvm/vcpu_pmu.c
-index 86391a5061dd..cee1b9ca4ec4 100644
+index cee1b9ca4ec4..b5159ce4592d 100644
 --- a/arch/riscv/kvm/vcpu_pmu.c
 +++ b/arch/riscv/kvm/vcpu_pmu.c
-@@ -39,7 +39,7 @@ static u64 kvm_pmu_get_sample_period(struct kvm_pmc *pmc)
- 	u64 sample_period;
+@@ -397,7 +397,6 @@ int kvm_riscv_vcpu_pmu_ctr_stop(struct kvm_vcpu *vcpu, unsigned long ctr_base,
+ {
+ 	struct kvm_pmu *kvpmu = vcpu_to_pmu(vcpu);
+ 	int i, pmc_index, sbiret = 0;
+-	u64 enabled, running;
+ 	struct kvm_pmc *pmc;
+ 	int fevent_code;
  
- 	if (!pmc->counter_val)
--		sample_period = counter_val_mask + 1;
-+		sample_period = counter_val_mask;
- 	else
- 		sample_period = (-pmc->counter_val) & counter_val_mask;
+@@ -432,12 +431,9 @@ int kvm_riscv_vcpu_pmu_ctr_stop(struct kvm_vcpu *vcpu, unsigned long ctr_base,
+ 				sbiret = SBI_ERR_ALREADY_STOPPED;
+ 			}
  
+-			if (flags & SBI_PMU_STOP_FLAG_RESET) {
+-				/* Relase the counter if this is a reset request */
+-				pmc->counter_val += perf_event_read_value(pmc->perf_event,
+-									  &enabled, &running);
++			if (flags & SBI_PMU_STOP_FLAG_RESET)
++				/* Release the counter if this is a reset request */
+ 				kvm_pmu_release_perf_event(pmc);
+-			}
+ 		} else {
+ 			sbiret = SBI_ERR_INVALID_PARAM;
+ 		}
 -- 
 2.34.1
 
