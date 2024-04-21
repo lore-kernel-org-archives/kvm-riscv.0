@@ -1,105 +1,92 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Sun, 21 Apr 2024 12:20:03 +0200
-Subject: [PATCH v2 2/6] dt-bindings: riscv: Add Zawrs ISA extension
- description
-In-Reply-To: <ZiKeYRnXxtLUtkkW@ghost>
+From: Andrea Parri <parri.andrea@gmail.com>
+Date: Sun, 21 Apr 2024 23:16:47 +0200
+Subject: [PATCH v2 3/6] riscv: Add Zawrs support for spinlocks
+In-Reply-To: <20240419135321.70781-11-ajones@ventanamicro.com>
 References: <20240419135321.70781-8-ajones@ventanamicro.com>
- <20240419135321.70781-10-ajones@ventanamicro.com>
- <20240419-chafe-leotard-e5daee19b1c8@spud>
- <20240419-8c6af6a169a7aa0b9aa5cac5@orel>
- <20240419-disdain-litmus-82874cc4872e@spud>
- <ZiKeYRnXxtLUtkkW@ghost>
-Message-ID: <20240421-f63f90c2146deb0695b84441@orel>
+ <20240419135321.70781-11-ajones@ventanamicro.com>
+Message-ID: <ZiWCP6f6zZ3dKXfN@andrea>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Apr 19, 2024 at 12:40:01PM -0400, Charlie Jenkins wrote:
-> On Fri, Apr 19, 2024 at 04:19:52PM +0100, Conor Dooley wrote:
-> > On Fri, Apr 19, 2024 at 05:16:05PM +0200, Andrew Jones wrote:
-> > > On Fri, Apr 19, 2024 at 03:45:46PM +0100, Conor Dooley wrote:
-> > > > On Fri, Apr 19, 2024 at 03:53:24PM +0200, Andrew Jones wrote:
-> > > > > Add description for the Zawrs (Wait-on-Reservation-Set) ISA extension
-> > > > > which was ratified in commit 98918c844281 of riscv-isa-manual.
-> > > > > 
-> > > > > Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
-> > > > > ---
-> > > > >  .../devicetree/bindings/riscv/extensions.yaml        | 12 ++++++++++++
-> > > > >  1 file changed, 12 insertions(+)
-> > > > > 
-> > > > > diff --git a/Documentation/devicetree/bindings/riscv/extensions.yaml b/Documentation/devicetree/bindings/riscv/extensions.yaml
-> > > > > index 468c646247aa..584da2f539e5 100644
-> > > > > --- a/Documentation/devicetree/bindings/riscv/extensions.yaml
-> > > > > +++ b/Documentation/devicetree/bindings/riscv/extensions.yaml
-> > > > > @@ -177,6 +177,18 @@ properties:
-> > > > >              is supported as ratified at commit 5059e0ca641c ("update to
-> > > > >              ratified") of the riscv-zacas.
-> > > > >  
-> > > > > +        - const: zawrs
-> > > > > +          description: |
-> > > > > +            The Zawrs extension for entering a low-power state or for trapping
-> > > > > +            to a hypervisor while waiting on a store to a memory location, as
-> > > > > +            ratified in commit 98918c844281 ("Merge pull request #1217 from
-> > > > > +            riscv/zawrs") of riscv-isa-manual.
-> > > > 
-> > > > This part is fine...
-> > > > 
-> > > > 
-> > > > > Linux assumes that WRS.NTO will
-> > > > > +            either always eventually terminate the stall due to the reservation
-> > > > > +            set becoming invalid, implementation-specific other reasons, or
-> > > > > +            because a higher privilege level has configured it to cause an
-> > > > > +            illegal instruction exception after an implementation-specific
-> > > > > +            bounded time limit.
-> > > > 
-> > > > ...but I don't like this bit. The binding should just describe what the
-> > > > property means for the hardware, not discuss specifics about a
-> > > > particular OS.
-> > > > 
-> > > > And with my dt-bindings hat off and my kernel hat on, I think that if we
-> > > > want to have more specific requirements than the extension provides we
-> > > > either need to a) document that zawrs means that it will always
-> > > > terminate or b) additionally document a "zawrs-always-terminates" that
-> > > > has that meaning and look for it to enable the behaviour.
-> > > 
-> > > IIUC, the text above mostly just needs to remove 'Linux assumes' in order
-> > > to provide what we want for (a)? I'm not sure about (b). If Zawrs is
-> > > unusable as is, then we should probably just go back to the specs and get
-> > > a new standard extension name for a new version which includes the changes
-> > > we need.
-> > 
-> > An (official) new name for the behaviour that you actually want, especially
-> > if the patchset sent the other day does not have the more stringent
-> > requirement (I won't even pretend to understand Zawrs well enough to know
-> > whether it does or not), sounds like the ideal outcome. That way you're
-> > also sorted on the ACPI side.
+On Fri, Apr 19, 2024 at 03:53:25PM +0200, Andrew Jones wrote:
+> From: Christoph M??llner <christoph.muellner@vrull.eu>
 > 
-> What would be the purpose of a vendor implementing WRS.NTO (and putting
-> it in the DT) that never terminates? The spec says "Then a subsequent
-> WRS.NTO instruction would cause the hart to temporarily stall execution
-> in a low- power state until a store occurs to the reservation set or an
-> interrupt is observed." Why is this wording for WRS.NTO not sufficient
-> to assume that an implementation of this instruction would eventually
-> terminate?
->
+> RISC-V code uses the generic ticket lock implementation, which calls
+> the macros smp_cond_load_relaxed() and smp_cond_load_acquire().
+> Introduce a RISC-V specific implementation of smp_cond_load_relaxed()
+> which applies WRS.NTO of the Zawrs extension in order to reduce power
+> consumption while waiting and allows hypervisors to enable guests to
+> trap while waiting. smp_cond_load_acquire() doesn't need a RISC-V
+> specific implementation as the generic implementation is based on
+> smp_cond_load_relaxed() and smp_acquire__after_ctrl_dep() sufficiently
+> provides the acquire semantics.
+> 
+> This implementation is heavily based on Arm's approach which is the
+> approach Andrea Parri also suggested.
+> 
+> The Zawrs specification can be found here:
+> https://github.com/riscv/riscv-zawrs/blob/main/zawrs.adoc
+> 
+> Signed-off-by: Christoph M??llner <christoph.muellner@vrull.eu>
+> Co-developed-by: Andrew Jones <ajones@ventanamicro.com>
+> Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
+> ---
+>  arch/riscv/Kconfig                | 13 ++++++++
+>  arch/riscv/include/asm/barrier.h  | 45 ++++++++++++++++++---------
+>  arch/riscv/include/asm/cmpxchg.h  | 51 +++++++++++++++++++++++++++++++
+>  arch/riscv/include/asm/hwcap.h    |  1 +
+>  arch/riscv/include/asm/insn-def.h |  2 ++
+>  arch/riscv/kernel/cpufeature.c    |  1 +
+>  6 files changed, 98 insertions(+), 15 deletions(-)
 
-We can invoke smp_cond_load_relaxed(addr, VAL || anything_we_want()). This
-means we may not expect VAL ever to be written, which rules out "until a
-store occurs". As for "an interrupt is observed", we don't know which one
-to expect to arrive within a "reasonable" amount of time. We need to know
-which one(s), since, while wrs.nto will terminate even when interrupts are
-globally disabled, we still need to have the interrupt(s) we expect to be
-locally enabled. And, the interrupts should arrive in a "reasonable"
-amount of time since we want to poll anything_we_want() at a "reasonable"
-frequency.
+Doesn't apply to riscv/for-next (due to, AFAIU,
 
-So, we need firmware to promise to enable exceptions if there aren't any
-such interrupts. Or, we could require hardware descriptions to identify
-which interrupt(s) would be good to have enabled before calling wrs.nto.
-Maybe there's already some way to describe something like that?
+  https://lore.kernel.org/all/171275883330.18495.10110341843571163280.git-patchwork-notify at kernel.org/ ).
 
-Thanks,
-drew
+But other than that, this LGTM.  One nit below.
+
+
+> -#define __smp_store_release(p, v)					\
+> -do {									\
+> -	compiletime_assert_atomic_type(*p);				\
+> -	RISCV_FENCE(rw, w);						\
+> -	WRITE_ONCE(*p, v);						\
+> -} while (0)
+> -
+> -#define __smp_load_acquire(p)						\
+> -({									\
+> -	typeof(*p) ___p1 = READ_ONCE(*p);				\
+> -	compiletime_assert_atomic_type(*p);				\
+> -	RISCV_FENCE(r, rw);						\
+> -	___p1;								\
+> -})
+> -
+>  /*
+>   * This is a very specific barrier: it's currently only used in two places in
+>   * the kernel, both in the scheduler.  See include/linux/spinlock.h for the two
+> @@ -70,6 +56,35 @@ do {									\
+>   */
+>  #define smp_mb__after_spinlock()	RISCV_FENCE(iorw, iorw)
+>  
+> +#define __smp_store_release(p, v)					\
+> +do {									\
+> +	compiletime_assert_atomic_type(*p);				\
+> +	RISCV_FENCE(rw, w);						\
+> +	WRITE_ONCE(*p, v);						\
+> +} while (0)
+> +
+> +#define __smp_load_acquire(p)						\
+> +({									\
+> +	typeof(*p) ___p1 = READ_ONCE(*p);				\
+> +	compiletime_assert_atomic_type(*p);				\
+> +	RISCV_FENCE(r, rw);						\
+> +	___p1;								\
+> +})
+
+Unrelated/unmotivated changes.
+
+  Andrea
 
