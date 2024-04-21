@@ -1,91 +1,105 @@
-From: Atish Kumar Patra <atishp@rivosinc.com>
-Date: Fri, 19 Apr 2024 18:08:12 -0700
-Subject: [PATCH v8 08/24] drivers/perf: riscv: Fix counter mask iteration
- for RV32
-In-Reply-To: <6fa06233-d572-48a7-a8ef-73a7c5879c06@sifive.com>
-References: <20240420151741.962500-1-atishp@rivosinc.com> <20240420151741.962500-9-atishp@rivosinc.com>
- <6fa06233-d572-48a7-a8ef-73a7c5879c06@sifive.com>
-Message-ID: <CAHBxVyHZ81G7yaMkV25RBwS=ric=MA92MePaPtQaOXuR+C70YA@mail.gmail.com>
+From: Andrew Jones <ajones@ventanamicro.com>
+Date: Sun, 21 Apr 2024 12:20:03 +0200
+Subject: [PATCH v2 2/6] dt-bindings: riscv: Add Zawrs ISA extension
+ description
+In-Reply-To: <ZiKeYRnXxtLUtkkW@ghost>
+References: <20240419135321.70781-8-ajones@ventanamicro.com>
+ <20240419135321.70781-10-ajones@ventanamicro.com>
+ <20240419-chafe-leotard-e5daee19b1c8@spud>
+ <20240419-8c6af6a169a7aa0b9aa5cac5@orel>
+ <20240419-disdain-litmus-82874cc4872e@spud>
+ <ZiKeYRnXxtLUtkkW@ghost>
+Message-ID: <20240421-f63f90c2146deb0695b84441@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Apr 19, 2024 at 5:37?PM Samuel Holland
-<samuel.holland@sifive.com> wrote:
->
-> Hi Atish,
->
-> On 2024-04-20 10:17 AM, Atish Patra wrote:
-> > For RV32, used_hw_ctrs can have more than 1 word if the firmware chooses
-> > to interleave firmware/hardware counters indicies. Even though it's a
-> > unlikely scenario, handle that case by iterating over all the words
-> > instead of just using the first word.
-> >
-> > Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
-> > Signed-off-by: Atish Patra <atishp@rivosinc.com>
-> > ---
-> >  drivers/perf/riscv_pmu_sbi.c | 21 ++++++++++++---------
-> >  1 file changed, 12 insertions(+), 9 deletions(-)
-> >
-> > diff --git a/drivers/perf/riscv_pmu_sbi.c b/drivers/perf/riscv_pmu_sbi.c
-> > index f23501898657..4eacd89141a9 100644
-> > --- a/drivers/perf/riscv_pmu_sbi.c
-> > +++ b/drivers/perf/riscv_pmu_sbi.c
-> > @@ -652,10 +652,12 @@ static inline void pmu_sbi_stop_all(struct riscv_pmu *pmu)
-> >  static inline void pmu_sbi_stop_hw_ctrs(struct riscv_pmu *pmu)
-> >  {
-> >       struct cpu_hw_events *cpu_hw_evt = this_cpu_ptr(pmu->hw_events);
-> > +     int i;
-> >
-> > -     /* No need to check the error here as we can't do anything about the error */
-> > -     sbi_ecall(SBI_EXT_PMU, SBI_EXT_PMU_COUNTER_STOP, 0,
-> > -               cpu_hw_evt->used_hw_ctrs[0], 0, 0, 0, 0);
-> > +     for (i = 0; i < BITS_TO_LONGS(RISCV_MAX_COUNTERS); i++)
-> > +             /* No need to check the error here as we can't do anything about the error */
-> > +             sbi_ecall(SBI_EXT_PMU, SBI_EXT_PMU_COUNTER_STOP, i * BITS_PER_LONG,
-> > +                       cpu_hw_evt->used_hw_ctrs[i], 0, 0, 0, 0);
-> >  }
-> >
-> >  /*
-> > @@ -667,7 +669,7 @@ static inline void pmu_sbi_stop_hw_ctrs(struct riscv_pmu *pmu)
-> >  static inline void pmu_sbi_start_overflow_mask(struct riscv_pmu *pmu,
-> >                                              unsigned long ctr_ovf_mask)
-> >  {
-> > -     int idx = 0;
-> > +     int idx = 0, i;
-> >       struct cpu_hw_events *cpu_hw_evt = this_cpu_ptr(pmu->hw_events);
-> >       struct perf_event *event;
-> >       unsigned long flag = SBI_PMU_START_FLAG_SET_INIT_VALUE;
-> > @@ -676,11 +678,12 @@ static inline void pmu_sbi_start_overflow_mask(struct riscv_pmu *pmu,
-> >       struct hw_perf_event *hwc;
-> >       u64 init_val = 0;
-> >
-> > -     ctr_start_mask = cpu_hw_evt->used_hw_ctrs[0] & ~ctr_ovf_mask;
-> > -
-> > -     /* Start all the counters that did not overflow in a single shot */
-> > -     sbi_ecall(SBI_EXT_PMU, SBI_EXT_PMU_COUNTER_START, 0, ctr_start_mask,
-> > -               0, 0, 0, 0);
-> > +     for (i = 0; i < BITS_TO_LONGS(RISCV_MAX_COUNTERS); i++) {
-> > +             ctr_start_mask = cpu_hw_evt->used_hw_ctrs[i] & ~ctr_ovf_mask;
->
-> This is applying the mask for the first 32 logical counters to the both sets of
-> 32 logical counters. ctr_ovf_mask needs to be 64 bits wide here, so each loop
-> iteration can apply the correct half of the mask.
+On Fri, Apr 19, 2024 at 12:40:01PM -0400, Charlie Jenkins wrote:
+> On Fri, Apr 19, 2024 at 04:19:52PM +0100, Conor Dooley wrote:
+> > On Fri, Apr 19, 2024 at 05:16:05PM +0200, Andrew Jones wrote:
+> > > On Fri, Apr 19, 2024 at 03:45:46PM +0100, Conor Dooley wrote:
+> > > > On Fri, Apr 19, 2024 at 03:53:24PM +0200, Andrew Jones wrote:
+> > > > > Add description for the Zawrs (Wait-on-Reservation-Set) ISA extension
+> > > > > which was ratified in commit 98918c844281 of riscv-isa-manual.
+> > > > > 
+> > > > > Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
+> > > > > ---
+> > > > >  .../devicetree/bindings/riscv/extensions.yaml        | 12 ++++++++++++
+> > > > >  1 file changed, 12 insertions(+)
+> > > > > 
+> > > > > diff --git a/Documentation/devicetree/bindings/riscv/extensions.yaml b/Documentation/devicetree/bindings/riscv/extensions.yaml
+> > > > > index 468c646247aa..584da2f539e5 100644
+> > > > > --- a/Documentation/devicetree/bindings/riscv/extensions.yaml
+> > > > > +++ b/Documentation/devicetree/bindings/riscv/extensions.yaml
+> > > > > @@ -177,6 +177,18 @@ properties:
+> > > > >              is supported as ratified at commit 5059e0ca641c ("update to
+> > > > >              ratified") of the riscv-zacas.
+> > > > >  
+> > > > > +        - const: zawrs
+> > > > > +          description: |
+> > > > > +            The Zawrs extension for entering a low-power state or for trapping
+> > > > > +            to a hypervisor while waiting on a store to a memory location, as
+> > > > > +            ratified in commit 98918c844281 ("Merge pull request #1217 from
+> > > > > +            riscv/zawrs") of riscv-isa-manual.
+> > > > 
+> > > > This part is fine...
+> > > > 
+> > > > 
+> > > > > Linux assumes that WRS.NTO will
+> > > > > +            either always eventually terminate the stall due to the reservation
+> > > > > +            set becoming invalid, implementation-specific other reasons, or
+> > > > > +            because a higher privilege level has configured it to cause an
+> > > > > +            illegal instruction exception after an implementation-specific
+> > > > > +            bounded time limit.
+> > > > 
+> > > > ...but I don't like this bit. The binding should just describe what the
+> > > > property means for the hardware, not discuss specifics about a
+> > > > particular OS.
+> > > > 
+> > > > And with my dt-bindings hat off and my kernel hat on, I think that if we
+> > > > want to have more specific requirements than the extension provides we
+> > > > either need to a) document that zawrs means that it will always
+> > > > terminate or b) additionally document a "zawrs-always-terminates" that
+> > > > has that meaning and look for it to enable the behaviour.
+> > > 
+> > > IIUC, the text above mostly just needs to remove 'Linux assumes' in order
+> > > to provide what we want for (a)? I'm not sure about (b). If Zawrs is
+> > > unusable as is, then we should probably just go back to the specs and get
+> > > a new standard extension name for a new version which includes the changes
+> > > we need.
+> > 
+> > An (official) new name for the behaviour that you actually want, especially
+> > if the patchset sent the other day does not have the more stringent
+> > requirement (I won't even pretend to understand Zawrs well enough to know
+> > whether it does or not), sounds like the ideal outcome. That way you're
+> > also sorted on the ACPI side.
+> 
+> What would be the purpose of a vendor implementing WRS.NTO (and putting
+> it in the DT) that never terminates? The spec says "Then a subsequent
+> WRS.NTO instruction would cause the hart to temporarily stall execution
+> in a low- power state until a store occurs to the reservation set or an
+> interrupt is observed." Why is this wording for WRS.NTO not sufficient
+> to assume that an implementation of this instruction would eventually
+> terminate?
 >
 
-The 64bit wide support for ctr_ovf_mask is added in the next patch.
+We can invoke smp_cond_load_relaxed(addr, VAL || anything_we_want()). This
+means we may not expect VAL ever to be written, which rules out "until a
+store occurs". As for "an interrupt is observed", we don't know which one
+to expect to arrive within a "reasonable" amount of time. We need to know
+which one(s), since, while wrs.nto will terminate even when interrupts are
+globally disabled, we still need to have the interrupt(s) we expect to be
+locally enabled. And, the interrupts should arrive in a "reasonable"
+amount of time since we want to poll anything_we_want() at a "reasonable"
+frequency.
 
-> Regards,
-> Samuel
->
-> > +             /* Start all the counters that did not overflow in a single shot */
-> > +             sbi_ecall(SBI_EXT_PMU, SBI_EXT_PMU_COUNTER_START, i * BITS_PER_LONG, ctr_start_mask,
-> > +                     0, 0, 0, 0);
-> > +     }
-> >
-> >       /* Reinitialize and start all the counter that overflowed */
-> >       while (ctr_ovf_mask) {
->
+So, we need firmware to promise to enable exceptions if there aren't any
+such interrupts. Or, we could require hardware descriptions to identify
+which interrupt(s) would be good to have enabled before calling wrs.nto.
+Maybe there's already some way to describe something like that?
+
+Thanks,
+drew
 
