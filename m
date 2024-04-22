@@ -1,181 +1,78 @@
-From: Clément Léger <cleger@rivosinc.com>
-Date: Mon, 22 Apr 2024 10:53:04 +0200
-Subject: [PATCH v2 03/12] dt-bindings: riscv: add Zc* extension rules
- implied by C extension
-In-Reply-To: <20240419-blinked-timid-da722ec6ddc4@spud>
+From: Conor Dooley <conor.dooley@microchip.com>
+Date: Mon, 22 Apr 2024 10:35:21 +0100
+Subject: [PATCH v2 04/12] riscv: add ISA parsing for Zca, Zcf, Zcd and Zcb
+In-Reply-To: <6ab9e591-f2f2-4267-8bdd-169ef0243e14@rivosinc.com>
 References: <20240418124300.1387978-1-cleger@rivosinc.com>
- <20240418124300.1387978-4-cleger@rivosinc.com>
- <20240419-blinked-timid-da722ec6ddc4@spud>
-Message-ID: <f89c79f7-a09e-4fcf-8e16-0875202ade4a@rivosinc.com>
+ <20240418124300.1387978-5-cleger@rivosinc.com>
+ <20240419-clinic-amusing-d23b1b6d2af2@spud>
+ <6ab9e591-f2f2-4267-8bdd-169ef0243e14@rivosinc.com>
+Message-ID: <20240422-daylight-sassy-ff3b0d867fef@wendy>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-
-
-On 19/04/2024 17:49, Conor Dooley wrote:
-> On Thu, Apr 18, 2024 at 02:42:26PM +0200, Cl?ment L?ger wrote:
->> As stated by Zc* spec:
->>
->> "As C defines the same instructions as Zca, Zcf and Zcd, the rule is that:
->>  - C always implies Zca
->>  - C+F implies Zcf (RV32 only)
->>  - C+D implies Zcd"
->>
->> Add additionnal validation rules to enforce this in dts.
+On Mon, Apr 22, 2024 at 10:53:10AM +0200, Cl?ment L?ger wrote:
+> On 19/04/2024 17:51, Conor Dooley wrote:
+> > On Thu, Apr 18, 2024 at 02:42:27PM +0200, Cl?ment L?ger wrote:
+> >> The Zc* standard extension for code reduction introduces new extensions.
+> >> This patch adds support for Zca, Zcf, Zcd and Zcb. Zce, Zcmt and Zcmp
+> >> are left out of this patch since they are targeting microcontrollers/
+> >> embedded CPUs instead of application processors.
+> >>
+> >> Signed-off-by: Cl?ment L?ger <cleger@rivosinc.com>
+> >> ---
+> >>  arch/riscv/include/asm/hwcap.h | 4 ++++
+> >>  arch/riscv/kernel/cpufeature.c | 4 ++++
+> >>  2 files changed, 8 insertions(+)
+> >>
+> >> diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
+> >> index 543e3ea2da0e..b7551bad341b 100644
+> >> --- a/arch/riscv/include/asm/hwcap.h
+> >> +++ b/arch/riscv/include/asm/hwcap.h
+> >> @@ -82,6 +82,10 @@
+> >>  #define RISCV_ISA_EXT_ZACAS		73
+> >>  #define RISCV_ISA_EXT_XANDESPMU		74
+> >>  #define RISCV_ISA_EXT_ZIMOP		75
+> >> +#define RISCV_ISA_EXT_ZCA		76
+> >> +#define RISCV_ISA_EXT_ZCB		77
+> >> +#define RISCV_ISA_EXT_ZCD		78
+> >> +#define RISCV_ISA_EXT_ZCF		79
+> >>  
+> >>  #define RISCV_ISA_EXT_XLINUXENVCFG	127
+> >>  
+> >> diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
+> >> index 115ba001f1bc..09dee071274d 100644
+> >> --- a/arch/riscv/kernel/cpufeature.c
+> >> +++ b/arch/riscv/kernel/cpufeature.c
+> >> @@ -261,6 +261,10 @@ const struct riscv_isa_ext_data riscv_isa_ext[] = {
+> >>  	__RISCV_ISA_EXT_DATA(zfa, RISCV_ISA_EXT_ZFA),
+> >>  	__RISCV_ISA_EXT_DATA(zfh, RISCV_ISA_EXT_ZFH),
+> >>  	__RISCV_ISA_EXT_DATA(zfhmin, RISCV_ISA_EXT_ZFHMIN),
+> >> +	__RISCV_ISA_EXT_DATA(zca, RISCV_ISA_EXT_ZCA),
+> >> +	__RISCV_ISA_EXT_DATA(zcb, RISCV_ISA_EXT_ZCB),
+> >> +	__RISCV_ISA_EXT_DATA(zcd, RISCV_ISA_EXT_ZCD),
+> >> +	__RISCV_ISA_EXT_DATA(zcf, RISCV_ISA_EXT_ZCF),
+> >>  	__RISCV_ISA_EXT_DATA(zba, RISCV_ISA_EXT_ZBA),
+> >>  	__RISCV_ISA_EXT_DATA(zbb, RISCV_ISA_EXT_ZBB),
+> >>  	__RISCV_ISA_EXT_DATA(zbc, RISCV_ISA_EXT_ZBC),
+> > 
+> > Ye, this looks exactly like what I "feared".
 > 
-> I'll get it out of the way: NAK, and the dts patch is the perfect
-> example of why. I don't want us to have to continually update
-> devicetrees. If these are implied due to being subsets of other
-> extensions, then software should be able to enable them when that
-> other extension is present.
+> Ok but for instance, Qemu actually set Zc* based on C/F/D. So the ISA
+> string containing theses dependencies should actually also be allowed.
+> So should we simply ignore them in the ISA string and always do our own
+> "post-processing" based on C/F/D?
 
-Acked.
-
-> 
-> My fear is that, and a quick look at the "add probing" commit seemed to
-> confirm it, new subsets would require updates to the dts, even though
-> the existing extension is perfectly sufficient to determine presence.
-> 
-> I definitely want to avoid continual updates to the devicetree for churn
-> reasons whenever subsets are added, but not turning on the likes of Zca
-> when C is present because "the bindings were updated to enforce this"
-> is a complete blocker. I do concede that having two parents makes that
-> more difficult and will likely require some changes to how we probe - do
-> we need to have a "second round" type thing?
-
-Yeah, I understand. At first, I actually did the modifications in the
-ISA probing loop with some dependency probing (ie loop while we don't
-have a stable extension state). But I thought that it was not actually
-our problem but rather the ISA string provider. For instance, Qemu
-provides them.
-
-
-> Taking Zcf as an example, maybe something like making both of C and F into
-> "standard" supersets and adding a case to riscv_isa_extension_check()
-> that would mandate that Zca and F are enabled before enabling it, and we
-> would ensure that C implies Zca before it implies Zcf?
-
-I'm afraid that riscv_isa_extension_check() will become a rat nest so
-rather than going that way, I would be in favor of adding a validation
-callback for the extensions if needed.
-
-> 
-> Given we'd be relying on ordering, we have to perform the same implication
-> for both F and C and make sure that the "implies" struct has Zca before Zcf.
-> I don't really like that suggestion, hopefully there's a nicer way of doing
-> that, but I don't like the dt stuff here.
-
-I guess the "cleanest" way would be to have some "defered-like"
-mechanism in ISA probing which would allow to handle ordering as well as
-dependencies/implies for extensions. For Zca, Zcf, we actually do not
-have ordering problems but I think it would be a bit broken not to
-support that as well.
-
-I can actually revive the work mentioned above to handle that and see if
-it works ok.
-
-Cl?ment
-
-> 
-> Thanks,
-> Conor.
-> 
->>
->> Signed-off-by: Cl?ment L?ger <cleger@rivosinc.com>
->> ---
->>  .../devicetree/bindings/riscv/cpus.yaml       |  8 +++--
->>  .../devicetree/bindings/riscv/extensions.yaml | 34 +++++++++++++++++++
->>  2 files changed, 39 insertions(+), 3 deletions(-)
->>
->> diff --git a/Documentation/devicetree/bindings/riscv/cpus.yaml b/Documentation/devicetree/bindings/riscv/cpus.yaml
->> index d87dd50f1a4b..c4e2c65437b1 100644
->> --- a/Documentation/devicetree/bindings/riscv/cpus.yaml
->> +++ b/Documentation/devicetree/bindings/riscv/cpus.yaml
->> @@ -168,7 +168,7 @@ examples:
->>                  i-cache-size = <16384>;
->>                  reg = <0>;
->>                  riscv,isa-base = "rv64i";
->> -                riscv,isa-extensions = "i", "m", "a", "c";
->> +                riscv,isa-extensions = "i", "m", "a", "c", "zca";
->>  
->>                  cpu_intc0: interrupt-controller {
->>                          #interrupt-cells = <1>;
->> @@ -194,7 +194,8 @@ examples:
->>                  reg = <1>;
->>                  tlb-split;
->>                  riscv,isa-base = "rv64i";
->> -                riscv,isa-extensions = "i", "m", "a", "f", "d", "c";
->> +                riscv,isa-extensions = "i", "m", "a", "f", "d", "c", "zca",
->> +                                       "zcd";
->>  
->>                  cpu_intc1: interrupt-controller {
->>                          #interrupt-cells = <1>;
->> @@ -215,7 +216,8 @@ examples:
->>                  compatible = "riscv";
->>                  mmu-type = "riscv,sv48";
->>                  riscv,isa-base = "rv64i";
->> -                riscv,isa-extensions = "i", "m", "a", "f", "d", "c";
->> +                riscv,isa-extensions = "i", "m", "a", "f", "d", "c", "zca",
->> +                                       "zcd";
->>  
->>                  interrupt-controller {
->>                          #interrupt-cells = <1>;
->> diff --git a/Documentation/devicetree/bindings/riscv/extensions.yaml b/Documentation/devicetree/bindings/riscv/extensions.yaml
->> index db7daf22b863..0172cbaa13ca 100644
->> --- a/Documentation/devicetree/bindings/riscv/extensions.yaml
->> +++ b/Documentation/devicetree/bindings/riscv/extensions.yaml
->> @@ -549,6 +549,23 @@ properties:
->>                  const: zca
->>              - contains:
->>                  const: f
->> +      # C extension implies Zca
->> +      - if:
->> +          contains:
->> +            const: c
->> +        then:
->> +          contains:
->> +            const: zca
->> +      # C extension implies Zcd if d
->> +      - if:
->> +          allOf:
->> +            - contains:
->> +                const: c
->> +            - contains:
->> +                const: d
->> +        then:
->> +          contains:
->> +            const: zcd
->>  
->>  allOf:
->>    # Zcf extension does not exists on rv64
->> @@ -566,6 +583,23 @@ allOf:
->>            not:
->>              contains:
->>                const: zcf
->> +  # C extension implies Zcf if f on rv32 only
->> +  - if:
->> +      properties:
->> +        riscv,isa-extensions:
->> +          allOf:
->> +            - contains:
->> +                const: c
->> +            - contains:
->> +                const: f
->> +        riscv,isa-base:
->> +          contains:
->> +            const: rv32i
->> +    then:
->> +      properties:
->> +        riscv,isa-extensions:
->> +          contains:
->> +            const: zcf
->>  
->>  additionalProperties: true
->>  ...
->> -- 
->> 2.43.0
->>
-
+I'm not familiar with the contents of all of these extensions, but I
+assume the reasoning for splitting them out is that you can implement
+them but not maybe not implement C (or something similar)? If that's the
+case, you cannot always imply.
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 228 bytes
+Desc: not available
+URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20240422/9fade3cd/attachment.sig>
