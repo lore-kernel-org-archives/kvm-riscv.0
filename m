@@ -1,9 +1,9 @@
 From: Anup Patel <anup@brainfault.org>
-Date: Mon, 22 Apr 2024 09:27:12 +0530
-Subject: [PATCH v2 2/2] RISCV: KVM: Introduce vcpu->reset_cntx_lock
-In-Reply-To: <20240417074528.16506-3-yongxuan.wang@sifive.com>
-References: <20240417074528.16506-1-yongxuan.wang@sifive.com> <20240417074528.16506-3-yongxuan.wang@sifive.com>
-Message-ID: <CAAhSdy2na-+4DrZm7W8ZD2zGMF7J3VVL235Wx2_QVPr1AfuFVg@mail.gmail.com>
+Date: Mon, 22 Apr 2024 10:43:27 +0530
+Subject: [PATCH v2 0/2] RISCV: KVM: Avoid lock inversion in SBI_EXT_HSM_HART_START
+In-Reply-To: <20240417074528.16506-1-yongxuan.wang@sifive.com>
+References: <20240417074528.16506-1-yongxuan.wang@sifive.com>
+Message-ID: <CAAhSdy2EEGfDYSuF6iFsXtEd5nR6mO6tXZZ6UZrM5m5CxdjD4A@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -12,93 +12,45 @@ Content-Transfer-Encoding: 7bit
 
 On Wed, Apr 17, 2024 at 1:15?PM Yong-Xuan Wang <yongxuan.wang@sifive.com> wrote:
 >
-> Originally, the use of kvm->lock in SBI_EXT_HSM_HART_START also avoids
-> the simultaneous updates to the reset context of target VCPU. Since this
-> lock has been replace with vcpu->mp_state_lock, and this new lock also
-> protects the vcpu->mp_state. We have to add a separate lock for
-> vcpu->reset_cntx.
+> Documentation/virt/kvm/locking.rst advises that kvm->lock should be
+> acquired outside vcpu->mutex and kvm->srcu. However, when KVM/RISC-V
+> handling SBI_EXT_HSM_HART_START, the lock ordering is vcpu->mutex,
+> kvm->srcu then kvm->lock.
 >
-> Signed-off-by: Yong-Xuan Wang <yongxuan.wang@sifive.com>
+> The use of kvm->lock over there ensures that only one VCPU can update
+> the reset context and call SBI_EXT_HSM_HART_START for the target VCPU
+> simultaneously. This patchset divides it into 2 separate spinlock, and
+> replace vcpu->power_off with vcpu->mp_state.
+>
+> ---
+> v2:
+> - rename the hsm_start_lock to mp_state_lock
+> - replace vcpu->power_off with vcpu->mp_state in PATCH1
+> - add vcpu->reset_cntx_lock in PATCH2
+>
+> Yong-Xuan Wang (2):
+>   RISCV: KVM: Introduce mp_state_lock to avoid lock inversion in
+>     SBI_EXT_HSM_HART_START
+>   RISCV: KVM: Introduce vcpu->reset_cntx_lock
 
-LGTM.
+Queued this series for Linux-6.10
 
-Reviewed-by: Anup Patel <anup@brainfault.org>
-
-Regards,
+Thanks,
 Anup
 
-
-> ---
->  arch/riscv/include/asm/kvm_host.h | 1 +
->  arch/riscv/kvm/vcpu.c             | 6 ++++++
->  arch/riscv/kvm/vcpu_sbi_hsm.c     | 3 +++
->  3 files changed, 10 insertions(+)
 >
-> diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
-> index 64d35a8c908c..664d1bb00368 100644
-> --- a/arch/riscv/include/asm/kvm_host.h
-> +++ b/arch/riscv/include/asm/kvm_host.h
-> @@ -211,6 +211,7 @@ struct kvm_vcpu_arch {
+>  arch/riscv/include/asm/kvm_host.h |  8 +++-
+>  arch/riscv/kvm/vcpu.c             | 62 ++++++++++++++++++++++++-------
+>  arch/riscv/kvm/vcpu_sbi.c         |  7 +++-
+>  arch/riscv/kvm/vcpu_sbi_hsm.c     | 26 +++++++++----
+>  4 files changed, 78 insertions(+), 25 deletions(-)
 >
->         /* CPU context upon Guest VCPU reset */
->         struct kvm_cpu_context guest_reset_context;
-> +       spinlock_t reset_cntx_lock;
->
->         /* CPU CSR context upon Guest VCPU reset */
->         struct kvm_vcpu_csr guest_reset_csr;
-> diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-> index 70937f71c3c4..1a2236e4c7f3 100644
-> --- a/arch/riscv/kvm/vcpu.c
-> +++ b/arch/riscv/kvm/vcpu.c
-> @@ -64,7 +64,9 @@ static void kvm_riscv_reset_vcpu(struct kvm_vcpu *vcpu)
->
->         memcpy(csr, reset_csr, sizeof(*csr));
->
-> +       spin_lock(&vcpu->arch.reset_cntx_lock);
->         memcpy(cntx, reset_cntx, sizeof(*cntx));
-> +       spin_unlock(&vcpu->arch.reset_cntx_lock);
->
->         kvm_riscv_vcpu_fp_reset(vcpu);
->
-> @@ -121,12 +123,16 @@ int kvm_arch_vcpu_create(struct kvm_vcpu *vcpu)
->         spin_lock_init(&vcpu->arch.hfence_lock);
->
->         /* Setup reset state of shadow SSTATUS and HSTATUS CSRs */
-> +       spin_lock_init(&vcpu->arch.reset_cntx_lock);
-> +
-> +       spin_lock(&vcpu->arch.reset_cntx_lock);
->         cntx = &vcpu->arch.guest_reset_context;
->         cntx->sstatus = SR_SPP | SR_SPIE;
->         cntx->hstatus = 0;
->         cntx->hstatus |= HSTATUS_VTW;
->         cntx->hstatus |= HSTATUS_SPVP;
->         cntx->hstatus |= HSTATUS_SPV;
-> +       spin_unlock(&vcpu->arch.reset_cntx_lock);
->
->         if (kvm_riscv_vcpu_alloc_vector_context(vcpu, cntx))
->                 return -ENOMEM;
-> diff --git a/arch/riscv/kvm/vcpu_sbi_hsm.c b/arch/riscv/kvm/vcpu_sbi_hsm.c
-> index 115a6c6525fd..cc5038b90e02 100644
-> --- a/arch/riscv/kvm/vcpu_sbi_hsm.c
-> +++ b/arch/riscv/kvm/vcpu_sbi_hsm.c
-> @@ -31,6 +31,7 @@ static int kvm_sbi_hsm_vcpu_start(struct kvm_vcpu *vcpu)
->                 goto out;
->         }
->
-> +       spin_lock(&target_vcpu->arch.reset_cntx_lock);
->         reset_cntx = &target_vcpu->arch.guest_reset_context;
->         /* start address */
->         reset_cntx->sepc = cp->a1;
-> @@ -38,6 +39,8 @@ static int kvm_sbi_hsm_vcpu_start(struct kvm_vcpu *vcpu)
->         reset_cntx->a0 = target_vcpuid;
->         /* private data passed from kernel */
->         reset_cntx->a1 = cp->a2;
-> +       spin_unlock(&target_vcpu->arch.reset_cntx_lock);
-> +
->         kvm_make_request(KVM_REQ_VCPU_RESET, target_vcpu);
->
->         __kvm_riscv_vcpu_power_on(target_vcpu);
 > --
 > 2.17.1
 >
+>
+> --
+> kvm-riscv mailing list
+> kvm-riscv at lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/kvm-riscv
 
