@@ -1,97 +1,124 @@
-From: Clément Léger <cleger@rivosinc.com>
-Date: Mon, 22 Apr 2024 13:41:25 +0200
-Subject: [PATCH v2 04/12] riscv: add ISA parsing for Zca, Zcf, Zcd and Zcb
-In-Reply-To: <20240422-matchbook-unlikable-59987a8d8b1f@wendy>
-References: <20240418124300.1387978-1-cleger@rivosinc.com>
- <20240418124300.1387978-5-cleger@rivosinc.com>
- <20240419-clinic-amusing-d23b1b6d2af2@spud>
- <6ab9e591-f2f2-4267-8bdd-169ef0243e14@rivosinc.com>
- <20240422-daylight-sassy-ff3b0d867fef@wendy>
- <032530b8-a26e-494f-bd9c-3e1661add5d4@rivosinc.com>
- <20240422-matchbook-unlikable-59987a8d8b1f@wendy>
-Message-ID: <7d06aaa0-cafc-4396-b5d9-8b64b6a1e643@rivosinc.com>
+From: Andrew Jones <ajones@ventanamicro.com>
+Date: Mon, 22 Apr 2024 15:46:06 +0200
+Subject: [PATCH] target/riscv/kvm: Fix exposure of Zkr
+Message-ID: <20240422134605.534207-2-ajones@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+The Zkr extension may only be exposed to KVM guests if the VMM
+implements the SEED CSR. Use the same implementation as TCG.
 
+Without this patch, running with a KVM which does not forward the
+SEED CSR access to QEMU will result in an ILL exception being
+injected into the guest (this results in Linux guests crashing on
+boot). And, when running with a KVM which does forward the access,
+QEMU will crash, since QEMU doesn't know what to do with the exit.
 
-On 22/04/2024 13:36, Conor Dooley wrote:
-> On Mon, Apr 22, 2024 at 01:14:26PM +0200, Cl?ment L?ger wrote:
->> On 22/04/2024 11:35, Conor Dooley wrote:
->>> On Mon, Apr 22, 2024 at 10:53:10AM +0200, Cl?ment L?ger wrote:
->>>> On 19/04/2024 17:51, Conor Dooley wrote:
->>>>> On Thu, Apr 18, 2024 at 02:42:27PM +0200, Cl?ment L?ger wrote:
->>>>>> The Zc* standard extension for code reduction introduces new extensions.
->>>>>> This patch adds support for Zca, Zcf, Zcd and Zcb. Zce, Zcmt and Zcmp
->>>>>> are left out of this patch since they are targeting microcontrollers/
->>>>>> embedded CPUs instead of application processors.
->>>>>>
->>>>>> Signed-off-by: Cl?ment L?ger <cleger@rivosinc.com>
->>>>>> ---
->>>>>>  arch/riscv/include/asm/hwcap.h | 4 ++++
->>>>>>  arch/riscv/kernel/cpufeature.c | 4 ++++
->>>>>>  2 files changed, 8 insertions(+)
->>>>>>
->>>>>> diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
->>>>>> index 543e3ea2da0e..b7551bad341b 100644
->>>>>> --- a/arch/riscv/include/asm/hwcap.h
->>>>>> +++ b/arch/riscv/include/asm/hwcap.h
->>>>>> @@ -82,6 +82,10 @@
->>>>>>  #define RISCV_ISA_EXT_ZACAS		73
->>>>>>  #define RISCV_ISA_EXT_XANDESPMU		74
->>>>>>  #define RISCV_ISA_EXT_ZIMOP		75
->>>>>> +#define RISCV_ISA_EXT_ZCA		76
->>>>>> +#define RISCV_ISA_EXT_ZCB		77
->>>>>> +#define RISCV_ISA_EXT_ZCD		78
->>>>>> +#define RISCV_ISA_EXT_ZCF		79
->>>>>>  
->>>>>>  #define RISCV_ISA_EXT_XLINUXENVCFG	127
->>>>>>  
->>>>>> diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
->>>>>> index 115ba001f1bc..09dee071274d 100644
->>>>>> --- a/arch/riscv/kernel/cpufeature.c
->>>>>> +++ b/arch/riscv/kernel/cpufeature.c
->>>>>> @@ -261,6 +261,10 @@ const struct riscv_isa_ext_data riscv_isa_ext[] = {
->>>>>>  	__RISCV_ISA_EXT_DATA(zfa, RISCV_ISA_EXT_ZFA),
->>>>>>  	__RISCV_ISA_EXT_DATA(zfh, RISCV_ISA_EXT_ZFH),
->>>>>>  	__RISCV_ISA_EXT_DATA(zfhmin, RISCV_ISA_EXT_ZFHMIN),
->>>>>> +	__RISCV_ISA_EXT_DATA(zca, RISCV_ISA_EXT_ZCA),
->>>>>> +	__RISCV_ISA_EXT_DATA(zcb, RISCV_ISA_EXT_ZCB),
->>>>>> +	__RISCV_ISA_EXT_DATA(zcd, RISCV_ISA_EXT_ZCD),
->>>>>> +	__RISCV_ISA_EXT_DATA(zcf, RISCV_ISA_EXT_ZCF),
->>>>>>  	__RISCV_ISA_EXT_DATA(zba, RISCV_ISA_EXT_ZBA),
->>>>>>  	__RISCV_ISA_EXT_DATA(zbb, RISCV_ISA_EXT_ZBB),
->>>>>>  	__RISCV_ISA_EXT_DATA(zbc, RISCV_ISA_EXT_ZBC),
->>>>>
->>>>> Ye, this looks exactly like what I "feared".
->>>>
->>>> Ok but for instance, Qemu actually set Zc* based on C/F/D. So the ISA
->>>> string containing theses dependencies should actually also be allowed.
->>>> So should we simply ignore them in the ISA string and always do our own
->>>> "post-processing" based on C/F/D?
->>>
->>> I'm not familiar with the contents of all of these extensions, but I
->>> assume the reasoning for splitting them out is that you can implement
->>> them but not maybe not implement C (or something similar)? If that's the
->>> case, you cannot always imply.
->>
->> Yeah, they can be implemented independently so we need to be able to
->> parse them independently.
-> 
->> However, the kernel currently requires C
-> 
-> No it doesn't!
-> There's a Kconfig option that controls whether or not we build with
-> compressed instructions.
+Fixes: 3108e2f1c69d ("target/riscv/kvm: update KVM exts to Linux 6.8")
+Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
+---
+ target/riscv/cpu.h         |  3 +++
+ target/riscv/csr.c         | 18 ++++++++++++++----
+ target/riscv/kvm/kvm-cpu.c | 25 +++++++++++++++++++++++++
+ 3 files changed, 42 insertions(+), 4 deletions(-)
 
-Acked, missed that. That is then advocating to keep separate Zc* extensions.
+diff --git a/target/riscv/cpu.h b/target/riscv/cpu.h
+index 3b1a02b9449a..52fb8c15d08f 100644
+--- a/target/riscv/cpu.h
++++ b/target/riscv/cpu.h
+@@ -821,6 +821,9 @@ void riscv_set_csr_ops(int csrno, riscv_csr_operations *ops);
+ 
+ void riscv_cpu_register_gdb_regs_for_features(CPUState *cs);
+ 
++target_ulong riscv_new_csr_seed(target_ulong new_value,
++                                target_ulong write_mask);
++
+ uint8_t satp_mode_max_from_map(uint32_t map);
+ const char *satp_mode_str(uint8_t satp_mode, bool is_32_bit);
+ 
+diff --git a/target/riscv/csr.c b/target/riscv/csr.c
+index 726096444fae..829d8346ed4e 100644
+--- a/target/riscv/csr.c
++++ b/target/riscv/csr.c
+@@ -4267,10 +4267,8 @@ static RISCVException write_upmbase(CPURISCVState *env, int csrno,
+ #endif
+ 
+ /* Crypto Extension */
+-static RISCVException rmw_seed(CPURISCVState *env, int csrno,
+-                               target_ulong *ret_value,
+-                               target_ulong new_value,
+-                               target_ulong write_mask)
++target_ulong riscv_new_csr_seed(target_ulong new_value,
++                                target_ulong write_mask)
+ {
+     uint16_t random_v;
+     Error *random_e = NULL;
+@@ -4294,6 +4292,18 @@ static RISCVException rmw_seed(CPURISCVState *env, int csrno,
+         rval = random_v | SEED_OPST_ES16;
+     }
+ 
++    return rval;
++}
++
++static RISCVException rmw_seed(CPURISCVState *env, int csrno,
++                               target_ulong *ret_value,
++                               target_ulong new_value,
++                               target_ulong write_mask)
++{
++    target_ulong rval;
++
++    rval = riscv_new_csr_seed(new_value, write_mask);
++
+     if (ret_value) {
+         *ret_value = rval;
+     }
+diff --git a/target/riscv/kvm/kvm-cpu.c b/target/riscv/kvm/kvm-cpu.c
+index 6a6c6cae80f1..50bdbd24a878 100644
+--- a/target/riscv/kvm/kvm-cpu.c
++++ b/target/riscv/kvm/kvm-cpu.c
+@@ -1418,6 +1418,28 @@ static int kvm_riscv_handle_sbi(CPUState *cs, struct kvm_run *run)
+     return ret;
+ }
+ 
++static int kvm_riscv_handle_csr(CPUState *cs, struct kvm_run *run)
++{
++    target_ulong csr_num = run->riscv_csr.csr_num;
++    target_ulong new_value = run->riscv_csr.new_value;
++    target_ulong write_mask = run->riscv_csr.write_mask;
++    int ret = 0;
++
++    switch (csr_num) {
++    case CSR_SEED:
++        run->riscv_csr.ret_value = riscv_new_csr_seed(new_value, write_mask);
++        break;
++    default:
++        qemu_log_mask(LOG_UNIMP,
++                      "%s: un-handled CSR EXIT for CSR %lx\n",
++                      __func__, csr_num);
++        ret = -1;
++        break;
++    }
++
++    return ret;
++}
++
+ int kvm_arch_handle_exit(CPUState *cs, struct kvm_run *run)
+ {
+     int ret = 0;
+@@ -1425,6 +1447,9 @@ int kvm_arch_handle_exit(CPUState *cs, struct kvm_run *run)
+     case KVM_EXIT_RISCV_SBI:
+         ret = kvm_riscv_handle_sbi(cs, run);
+         break;
++    case KVM_EXIT_RISCV_CSR:
++        ret = kvm_riscv_handle_csr(cs, run);
++        break;
+     default:
+         qemu_log_mask(LOG_UNIMP, "%s: un-handled exit reason %d\n",
+                       __func__, run->exit_reason);
+-- 
+2.44.0
 
-> 
->> so we
->> should always have Zca/Zcf/Zcd. But if that changes in the future, then,
->> that won't be true anymore. Better keep it generic probably
-> 
 
