@@ -1,92 +1,289 @@
-From: Andrea Parri <parri.andrea@gmail.com>
-Date: Sun, 21 Apr 2024 23:16:47 +0200
-Subject: [PATCH v2 3/6] riscv: Add Zawrs support for spinlocks
-In-Reply-To: <20240419135321.70781-11-ajones@ventanamicro.com>
-References: <20240419135321.70781-8-ajones@ventanamicro.com>
- <20240419135321.70781-11-ajones@ventanamicro.com>
-Message-ID: <ZiWCP6f6zZ3dKXfN@andrea>
+From: Anup Patel <anup@brainfault.org>
+Date: Mon, 22 Apr 2024 09:27:05 +0530
+Subject: [PATCH v2 1/2] RISCV: KVM: Introduce mp_state_lock to avoid lock
+ inversion in SBI_EXT_HSM_HART_START
+In-Reply-To: <20240417074528.16506-2-yongxuan.wang@sifive.com>
+References: <20240417074528.16506-1-yongxuan.wang@sifive.com> <20240417074528.16506-2-yongxuan.wang@sifive.com>
+Message-ID: <CAAhSdy30XpKzewqF1-UEinis6ScrQnB2aT1+iJakWC7eFDSbGA@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Apr 19, 2024 at 03:53:25PM +0200, Andrew Jones wrote:
-> From: Christoph M??llner <christoph.muellner@vrull.eu>
-> 
-> RISC-V code uses the generic ticket lock implementation, which calls
-> the macros smp_cond_load_relaxed() and smp_cond_load_acquire().
-> Introduce a RISC-V specific implementation of smp_cond_load_relaxed()
-> which applies WRS.NTO of the Zawrs extension in order to reduce power
-> consumption while waiting and allows hypervisors to enable guests to
-> trap while waiting. smp_cond_load_acquire() doesn't need a RISC-V
-> specific implementation as the generic implementation is based on
-> smp_cond_load_relaxed() and smp_acquire__after_ctrl_dep() sufficiently
-> provides the acquire semantics.
-> 
-> This implementation is heavily based on Arm's approach which is the
-> approach Andrea Parri also suggested.
-> 
-> The Zawrs specification can be found here:
-> https://github.com/riscv/riscv-zawrs/blob/main/zawrs.adoc
-> 
-> Signed-off-by: Christoph M??llner <christoph.muellner@vrull.eu>
-> Co-developed-by: Andrew Jones <ajones@ventanamicro.com>
-> Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
+On Wed, Apr 17, 2024 at 1:15?PM Yong-Xuan Wang <yongxuan.wang@sifive.com> wrote:
+>
+> Documentation/virt/kvm/locking.rst advises that kvm->lock should be
+> acquired outside vcpu->mutex and kvm->srcu. However, when KVM/RISC-V
+> handling SBI_EXT_HSM_HART_START, the lock ordering is vcpu->mutex,
+> kvm->srcu then kvm->lock.
+>
+> Although the lockdep checking no longer complains about this after commit
+> f0f44752f5f6 ("rcu: Annotate SRCU's update-side lockdep dependencies"),
+> it's necessary to replace kvm->lock with a new dedicated lock to ensure
+> only one hart can execute the SBI_EXT_HSM_HART_START call for the target
+> hart simultaneously.
+>
+> Additionally, this patch also rename "power_off" to "mp_state" with two
+> possible values. The vcpu->mp_state_lock also protects the access of
+> vcpu->mp_state.
+>
+> Signed-off-by: Yong-Xuan Wang <yongxuan.wang@sifive.com>
 > ---
->  arch/riscv/Kconfig                | 13 ++++++++
->  arch/riscv/include/asm/barrier.h  | 45 ++++++++++++++++++---------
->  arch/riscv/include/asm/cmpxchg.h  | 51 +++++++++++++++++++++++++++++++
->  arch/riscv/include/asm/hwcap.h    |  1 +
->  arch/riscv/include/asm/insn-def.h |  2 ++
->  arch/riscv/kernel/cpufeature.c    |  1 +
->  6 files changed, 98 insertions(+), 15 deletions(-)
-
-Doesn't apply to riscv/for-next (due to, AFAIU,
-
-  https://lore.kernel.org/all/171275883330.18495.10110341843571163280.git-patchwork-notify at kernel.org/ ).
-
-But other than that, this LGTM.  One nit below.
-
-
-> -#define __smp_store_release(p, v)					\
-> -do {									\
-> -	compiletime_assert_atomic_type(*p);				\
-> -	RISCV_FENCE(rw, w);						\
-> -	WRITE_ONCE(*p, v);						\
-> -} while (0)
-> -
-> -#define __smp_load_acquire(p)						\
-> -({									\
-> -	typeof(*p) ___p1 = READ_ONCE(*p);				\
-> -	compiletime_assert_atomic_type(*p);				\
-> -	RISCV_FENCE(r, rw);						\
-> -	___p1;								\
-> -})
-> -
->  /*
->   * This is a very specific barrier: it's currently only used in two places in
->   * the kernel, both in the scheduler.  See include/linux/spinlock.h for the two
-> @@ -70,6 +56,35 @@ do {									\
->   */
->  #define smp_mb__after_spinlock()	RISCV_FENCE(iorw, iorw)
->  
-> +#define __smp_store_release(p, v)					\
-> +do {									\
-> +	compiletime_assert_atomic_type(*p);				\
-> +	RISCV_FENCE(rw, w);						\
-> +	WRITE_ONCE(*p, v);						\
-> +} while (0)
+>  arch/riscv/include/asm/kvm_host.h |  7 ++--
+>  arch/riscv/kvm/vcpu.c             | 56 ++++++++++++++++++++++++-------
+>  arch/riscv/kvm/vcpu_sbi.c         |  7 ++--
+>  arch/riscv/kvm/vcpu_sbi_hsm.c     | 23 ++++++++-----
+>  4 files changed, 68 insertions(+), 25 deletions(-)
+>
+> diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
+> index 484d04a92fa6..64d35a8c908c 100644
+> --- a/arch/riscv/include/asm/kvm_host.h
+> +++ b/arch/riscv/include/asm/kvm_host.h
+> @@ -252,8 +252,9 @@ struct kvm_vcpu_arch {
+>         /* Cache pages needed to program page tables with spinlock held */
+>         struct kvm_mmu_memory_cache mmu_page_cache;
+>
+> -       /* VCPU power-off state */
+> -       bool power_off;
+> +       /* VCPU power state */
+> +       struct kvm_mp_state mp_state;
+> +       spinlock_t mp_state_lock;
+>
+>         /* Don't run the VCPU (blocked) */
+>         bool pause;
+> @@ -375,7 +376,9 @@ void kvm_riscv_vcpu_flush_interrupts(struct kvm_vcpu *vcpu);
+>  void kvm_riscv_vcpu_sync_interrupts(struct kvm_vcpu *vcpu);
+>  bool kvm_riscv_vcpu_has_interrupts(struct kvm_vcpu *vcpu, u64 mask);
+>  void kvm_riscv_vcpu_power_off(struct kvm_vcpu *vcpu);
+> +void __kvm_riscv_vcpu_power_on(struct kvm_vcpu *vcpu);
+>  void kvm_riscv_vcpu_power_on(struct kvm_vcpu *vcpu);
+> +bool kvm_riscv_vcpu_stopped(struct kvm_vcpu *vcpu);
+>
+>  void kvm_riscv_vcpu_sbi_sta_reset(struct kvm_vcpu *vcpu);
+>  void kvm_riscv_vcpu_record_steal_time(struct kvm_vcpu *vcpu);
+> diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+> index b5ca9f2e98ac..70937f71c3c4 100644
+> --- a/arch/riscv/kvm/vcpu.c
+> +++ b/arch/riscv/kvm/vcpu.c
+> @@ -102,6 +102,8 @@ int kvm_arch_vcpu_create(struct kvm_vcpu *vcpu)
+>         struct kvm_cpu_context *cntx;
+>         struct kvm_vcpu_csr *reset_csr = &vcpu->arch.guest_reset_csr;
+>
+> +       spin_lock_init(&vcpu->arch.mp_state_lock);
 > +
-> +#define __smp_load_acquire(p)						\
-> +({									\
-> +	typeof(*p) ___p1 = READ_ONCE(*p);				\
-> +	compiletime_assert_atomic_type(*p);				\
-> +	RISCV_FENCE(r, rw);						\
-> +	___p1;								\
-> +})
+>         /* Mark this VCPU never ran */
+>         vcpu->arch.ran_atleast_once = false;
+>         vcpu->arch.mmu_page_cache.gfp_zero = __GFP_ZERO;
+> @@ -201,7 +203,7 @@ void kvm_arch_vcpu_unblocking(struct kvm_vcpu *vcpu)
+>  int kvm_arch_vcpu_runnable(struct kvm_vcpu *vcpu)
+>  {
+>         return (kvm_riscv_vcpu_has_interrupts(vcpu, -1UL) &&
+> -               !vcpu->arch.power_off && !vcpu->arch.pause);
+> +               !kvm_riscv_vcpu_stopped(vcpu) && !vcpu->arch.pause);
+>  }
+>
+>  int kvm_arch_vcpu_should_kick(struct kvm_vcpu *vcpu)
+> @@ -429,26 +431,50 @@ bool kvm_riscv_vcpu_has_interrupts(struct kvm_vcpu *vcpu, u64 mask)
+>         return kvm_riscv_vcpu_aia_has_interrupts(vcpu, mask);
+>  }
+>
+> -void kvm_riscv_vcpu_power_off(struct kvm_vcpu *vcpu)
+> +static void __kvm_riscv_vcpu_power_off(struct kvm_vcpu *vcpu)
+>  {
+> -       vcpu->arch.power_off = true;
+> +       vcpu->arch.mp_state.mp_state = KVM_MP_STATE_STOPPED;
+>         kvm_make_request(KVM_REQ_SLEEP, vcpu);
+>         kvm_vcpu_kick(vcpu);
+>  }
+>
+> -void kvm_riscv_vcpu_power_on(struct kvm_vcpu *vcpu)
+> +void kvm_riscv_vcpu_power_off(struct kvm_vcpu *vcpu)
+> +{
+> +       spin_lock(&vcpu->arch.mp_state_lock);
+> +       __kvm_riscv_vcpu_power_off(vcpu);
+> +       spin_unlock(&vcpu->arch.mp_state_lock);
+> +}
+> +
+> +void __kvm_riscv_vcpu_power_on(struct kvm_vcpu *vcpu)
+>  {
+> -       vcpu->arch.power_off = false;
+> +       vcpu->arch.mp_state.mp_state = KVM_MP_STATE_RUNNABLE;
+>         kvm_vcpu_wake_up(vcpu);
+>  }
+>
+> +void kvm_riscv_vcpu_power_on(struct kvm_vcpu *vcpu)
+> +{
+> +       spin_lock(&vcpu->arch.mp_state_lock);
+> +       __kvm_riscv_vcpu_power_on(vcpu);
+> +       spin_unlock(&vcpu->arch.mp_state_lock);
+> +}
+> +
+> +bool kvm_riscv_vcpu_stopped(struct kvm_vcpu *vcpu)
+> +{
+> +       bool ret;
+> +
+> +       spin_lock(&vcpu->arch.mp_state_lock);
+> +       ret = vcpu->arch.mp_state.mp_state == KVM_MP_STATE_STOPPED;
+> +       spin_unlock(&vcpu->arch.mp_state_lock);
+> +
+> +       return ret;
 
-Unrelated/unmotivated changes.
+Checking mp_state is very expensive this way because spin locks
+are implicit fences.
 
-  Andrea
+Instead of this, we can simply use READ_ONCE() here and we
+use WRITE_ONCE() + spin lock to serialize writes.
+
+I will take care of this at the time of merging this patch.
+
+> +}
+> +
+>  int kvm_arch_vcpu_ioctl_get_mpstate(struct kvm_vcpu *vcpu,
+>                                     struct kvm_mp_state *mp_state)
+>  {
+> -       if (vcpu->arch.power_off)
+> -               mp_state->mp_state = KVM_MP_STATE_STOPPED;
+> -       else
+> -               mp_state->mp_state = KVM_MP_STATE_RUNNABLE;
+> +       spin_lock(&vcpu->arch.mp_state_lock);
+> +       *mp_state = vcpu->arch.mp_state;
+> +       spin_unlock(&vcpu->arch.mp_state_lock);
+>
+>         return 0;
+>  }
+> @@ -458,17 +484,21 @@ int kvm_arch_vcpu_ioctl_set_mpstate(struct kvm_vcpu *vcpu,
+>  {
+>         int ret = 0;
+>
+> +       spin_lock(&vcpu->arch.mp_state_lock);
+> +
+>         switch (mp_state->mp_state) {
+>         case KVM_MP_STATE_RUNNABLE:
+> -               vcpu->arch.power_off = false;
+> +               vcpu->arch.mp_state.mp_state = KVM_MP_STATE_RUNNABLE;
+>                 break;
+>         case KVM_MP_STATE_STOPPED:
+> -               kvm_riscv_vcpu_power_off(vcpu);
+> +               __kvm_riscv_vcpu_power_off(vcpu);
+>                 break;
+>         default:
+>                 ret = -EINVAL;
+>         }
+>
+> +       spin_unlock(&vcpu->arch.mp_state_lock);
+> +
+>         return ret;
+>  }
+>
+> @@ -584,11 +614,11 @@ static void kvm_riscv_check_vcpu_requests(struct kvm_vcpu *vcpu)
+>                 if (kvm_check_request(KVM_REQ_SLEEP, vcpu)) {
+>                         kvm_vcpu_srcu_read_unlock(vcpu);
+>                         rcuwait_wait_event(wait,
+> -                               (!vcpu->arch.power_off) && (!vcpu->arch.pause),
+> +                               (!kvm_riscv_vcpu_stopped(vcpu)) && (!vcpu->arch.pause),
+>                                 TASK_INTERRUPTIBLE);
+>                         kvm_vcpu_srcu_read_lock(vcpu);
+>
+> -                       if (vcpu->arch.power_off || vcpu->arch.pause) {
+> +                       if (kvm_riscv_vcpu_stopped(vcpu) || vcpu->arch.pause) {
+>                                 /*
+>                                  * Awaken to handle a signal, request to
+>                                  * sleep again later.
+> diff --git a/arch/riscv/kvm/vcpu_sbi.c b/arch/riscv/kvm/vcpu_sbi.c
+> index 72a2ffb8dcd1..1851fc979bd2 100644
+> --- a/arch/riscv/kvm/vcpu_sbi.c
+> +++ b/arch/riscv/kvm/vcpu_sbi.c
+> @@ -138,8 +138,11 @@ void kvm_riscv_vcpu_sbi_system_reset(struct kvm_vcpu *vcpu,
+>         unsigned long i;
+>         struct kvm_vcpu *tmp;
+>
+> -       kvm_for_each_vcpu(i, tmp, vcpu->kvm)
+> -               tmp->arch.power_off = true;
+> +       kvm_for_each_vcpu(i, tmp, vcpu->kvm) {
+> +               spin_lock(&vcpu->arch.mp_state_lock);
+> +               tmp->arch.mp_state.mp_state = KVM_MP_STATE_STOPPED;
+> +               spin_unlock(&vcpu->arch.mp_state_lock);
+> +       }
+>         kvm_make_all_cpus_request(vcpu->kvm, KVM_REQ_SLEEP);
+>
+>         memset(&run->system_event, 0, sizeof(run->system_event));
+> diff --git a/arch/riscv/kvm/vcpu_sbi_hsm.c b/arch/riscv/kvm/vcpu_sbi_hsm.c
+> index 7dca0e9381d9..115a6c6525fd 100644
+> --- a/arch/riscv/kvm/vcpu_sbi_hsm.c
+> +++ b/arch/riscv/kvm/vcpu_sbi_hsm.c
+> @@ -18,12 +18,18 @@ static int kvm_sbi_hsm_vcpu_start(struct kvm_vcpu *vcpu)
+>         struct kvm_cpu_context *cp = &vcpu->arch.guest_context;
+>         struct kvm_vcpu *target_vcpu;
+>         unsigned long target_vcpuid = cp->a0;
+> +       int ret = 0;
+>
+>         target_vcpu = kvm_get_vcpu_by_id(vcpu->kvm, target_vcpuid);
+>         if (!target_vcpu)
+>                 return SBI_ERR_INVALID_PARAM;
+> -       if (!target_vcpu->arch.power_off)
+> -               return SBI_ERR_ALREADY_AVAILABLE;
+> +
+> +       spin_lock(&target_vcpu->arch.mp_state_lock);
+> +
+> +       if (target_vcpu->arch.mp_state.mp_state != KVM_MP_STATE_STOPPED) {
+> +               ret = SBI_ERR_ALREADY_AVAILABLE;
+> +               goto out;
+> +       }
+>
+>         reset_cntx = &target_vcpu->arch.guest_reset_context;
+>         /* start address */
+> @@ -34,14 +40,18 @@ static int kvm_sbi_hsm_vcpu_start(struct kvm_vcpu *vcpu)
+>         reset_cntx->a1 = cp->a2;
+>         kvm_make_request(KVM_REQ_VCPU_RESET, target_vcpu);
+>
+> -       kvm_riscv_vcpu_power_on(target_vcpu);
+> +       __kvm_riscv_vcpu_power_on(target_vcpu);
+> +
+> +out:
+> +       spin_unlock(&target_vcpu->arch.mp_state_lock);
+> +
+>
+>         return 0;
+>  }
+>
+>  static int kvm_sbi_hsm_vcpu_stop(struct kvm_vcpu *vcpu)
+>  {
+> -       if (vcpu->arch.power_off)
+> +       if (kvm_riscv_vcpu_stopped(vcpu))
+>                 return SBI_ERR_FAILURE;
+>
+>         kvm_riscv_vcpu_power_off(vcpu);
+> @@ -58,7 +68,7 @@ static int kvm_sbi_hsm_vcpu_get_status(struct kvm_vcpu *vcpu)
+>         target_vcpu = kvm_get_vcpu_by_id(vcpu->kvm, target_vcpuid);
+>         if (!target_vcpu)
+>                 return SBI_ERR_INVALID_PARAM;
+> -       if (!target_vcpu->arch.power_off)
+> +       if (!kvm_riscv_vcpu_stopped(target_vcpu))
+>                 return SBI_HSM_STATE_STARTED;
+>         else if (vcpu->stat.generic.blocking)
+>                 return SBI_HSM_STATE_SUSPENDED;
+> @@ -71,14 +81,11 @@ static int kvm_sbi_ext_hsm_handler(struct kvm_vcpu *vcpu, struct kvm_run *run,
+>  {
+>         int ret = 0;
+>         struct kvm_cpu_context *cp = &vcpu->arch.guest_context;
+> -       struct kvm *kvm = vcpu->kvm;
+>         unsigned long funcid = cp->a6;
+>
+>         switch (funcid) {
+>         case SBI_EXT_HSM_HART_START:
+> -               mutex_lock(&kvm->lock);
+>                 ret = kvm_sbi_hsm_vcpu_start(vcpu);
+> -               mutex_unlock(&kvm->lock);
+>                 break;
+>         case SBI_EXT_HSM_HART_STOP:
+>                 ret = kvm_sbi_hsm_vcpu_stop(vcpu);
+> --
+> 2.17.1
+>
+
+Reviewed-by: Anup Patel <anup@brainfault.org>
+
+Regards,
+Anup
 
