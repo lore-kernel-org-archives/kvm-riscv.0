@@ -1,183 +1,131 @@
 From: Shenlin Liang <liangshenlin@eswincomputing.com>
-Date: Mon, 22 Apr 2024 08:08:33 +0000
-Subject: [PATCH v3 2/2] perf kvm/riscv: Port perf kvm stat to RISC-V
+Date: Mon, 22 Apr 2024 08:08:32 +0000
+Subject: [PATCH v3 1/2] RISCV: KVM: add tracepoints for entry and exit events
 In-Reply-To: <20240422080833.8745-1-liangshenlin@eswincomputing.com>
 References: <20240422080833.8745-1-liangshenlin@eswincomputing.com>
-Message-ID: <20240422080833.8745-3-liangshenlin@eswincomputing.com>
+Message-ID: <20240422080833.8745-2-liangshenlin@eswincomputing.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-'perf kvm stat report/record' generates a statistical analysis of KVM
-events and can be used to analyze guest exit reasons.
-
-"report" reports statistical analysis of guest exit events.
-
-To record kvm events on the host:
- # perf kvm stat record -a
-
-To report kvm VM EXIT events:
- # perf kvm stat report --event=vmexit
+Like other architectures, RISCV KVM also needs to add these event
+tracepoints to count the number of times kvm guest entry/exit.
 
 Signed-off-by: Shenlin Liang <liangshenlin@eswincomputing.com>
+Reviewed-by: Anup Patel <anup@brainfault.org>
 ---
- tools/perf/arch/riscv/Makefile                |  1 +
- tools/perf/arch/riscv/util/Build              |  1 +
- tools/perf/arch/riscv/util/kvm-stat.c         | 79 +++++++++++++++++++
- .../arch/riscv/util/riscv_exception_types.h   | 35 ++++++++
- 4 files changed, 116 insertions(+)
- create mode 100644 tools/perf/arch/riscv/util/kvm-stat.c
- create mode 100644 tools/perf/arch/riscv/util/riscv_exception_types.h
+ arch/riscv/kvm/trace.h | 67 ++++++++++++++++++++++++++++++++++++++++++
+ arch/riscv/kvm/vcpu.c  |  7 +++++
+ 2 files changed, 74 insertions(+)
+ create mode 100644 arch/riscv/kvm/trace.h
 
-diff --git a/tools/perf/arch/riscv/Makefile b/tools/perf/arch/riscv/Makefile
-index a8d25d005207..e1e445615536 100644
---- a/tools/perf/arch/riscv/Makefile
-+++ b/tools/perf/arch/riscv/Makefile
-@@ -3,3 +3,4 @@ PERF_HAVE_DWARF_REGS := 1
- endif
- PERF_HAVE_ARCH_REGS_QUERY_REGISTER_OFFSET := 1
- PERF_HAVE_JITDUMP := 1
-+HAVE_KVM_STAT_SUPPORT := 1
-\ No newline at end of file
-diff --git a/tools/perf/arch/riscv/util/Build b/tools/perf/arch/riscv/util/Build
-index 603dbb5ae4dc..d72b04f8d32b 100644
---- a/tools/perf/arch/riscv/util/Build
-+++ b/tools/perf/arch/riscv/util/Build
-@@ -1,5 +1,6 @@
- perf-y += perf_regs.o
- perf-y += header.o
- 
-+perf-$(CONFIG_LIBTRACEEVENT) += kvm-stat.o
- perf-$(CONFIG_DWARF) += dwarf-regs.o
- perf-$(CONFIG_LIBDW_DWARF_UNWIND) += unwind-libdw.o
-diff --git a/tools/perf/arch/riscv/util/kvm-stat.c b/tools/perf/arch/riscv/util/kvm-stat.c
+diff --git a/arch/riscv/kvm/trace.h b/arch/riscv/kvm/trace.h
 new file mode 100644
-index 000000000000..58813049fc45
+index 000000000000..3d54175d805c
 --- /dev/null
-+++ b/tools/perf/arch/riscv/util/kvm-stat.c
-@@ -0,0 +1,79 @@
++++ b/arch/riscv/kvm/trace.h
+@@ -0,0 +1,67 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
-+ * Arch specific functions for perf kvm stat.
++ * Tracepoints for RISC-V KVM
 + *
 + * Copyright 2024 Beijing ESWIN Computing Technology Co., Ltd.
 + *
 + */
-+#include <errno.h>
-+#include <memory.h>
-+#include "../../../util/evsel.h"
-+#include "../../../util/kvm-stat.h"
-+#include "riscv_exception_types.h"
-+#include "debug.h"
++#if !defined(_TRACE_KVM_H) || defined(TRACE_HEADER_MULTI_READ)
++#define _TRACE_KVM_H
 +
-+define_exit_reasons_table(riscv_exit_reasons, kvm_riscv_exception_class);
++#include <linux/tracepoint.h>
 +
-+const char *vcpu_id_str = "id";
-+const char *kvm_exit_reason = "scause";
-+const char *kvm_entry_trace = "kvm:kvm_entry";
-+const char *kvm_exit_trace = "kvm:kvm_exit";
++#undef TRACE_SYSTEM
++#define TRACE_SYSTEM kvm
 +
-+const char *kvm_events_tp[] = {
-+	"kvm:kvm_entry",
-+	"kvm:kvm_exit",
-+	NULL,
-+};
++TRACE_EVENT(kvm_entry,
++	TP_PROTO(struct kvm_vcpu *vcpu),
++	TP_ARGS(vcpu),
 +
-+static void event_get_key(struct evsel *evsel,
-+			  struct perf_sample *sample,
-+			  struct event_key *key)
-+{
-+	key->info = 0;
-+	key->key = evsel__intval(evsel, sample, kvm_exit_reason);
-+	key->key = (int)key->key;
-+	key->exit_reasons = riscv_exit_reasons;
-+}
++	TP_STRUCT__entry(
++		__field(unsigned long, pc)
++	),
 +
-+static bool event_begin(struct evsel *evsel,
-+			struct perf_sample *sample __maybe_unused,
-+			struct event_key *key __maybe_unused)
-+{
-+	return evsel__name_is(evsel, kvm_entry_trace);
-+}
++	TP_fast_assign(
++		__entry->pc	= vcpu->arch.guest_context.sepc;
++	),
 +
-+static bool event_end(struct evsel *evsel,
-+		      struct perf_sample *sample,
-+		      struct event_key *key)
-+{
-+	if (evsel__name_is(evsel, kvm_exit_trace)) {
-+		event_get_key(evsel, sample, key);
-+		return true;
-+	}
-+	return false;
-+}
++	TP_printk("PC: 0x016%lx", __entry->pc)
++);
 +
-+static struct kvm_events_ops exit_events = {
-+	.is_begin_event = event_begin,
-+	.is_end_event	= event_end,
-+	.decode_key	= exit_event_decode_key,
-+	.name		= "VM-EXIT"
-+};
++TRACE_EVENT(kvm_exit,
++	TP_PROTO(struct kvm_cpu_trap *trap),
++	TP_ARGS(trap),
 +
-+struct kvm_reg_events_ops kvm_reg_events_ops[] = {
-+	{
-+		.name	= "vmexit",
-+		.ops	= &exit_events,
-+	},
-+	{ NULL, NULL },
-+};
++	TP_STRUCT__entry(
++		__field(unsigned long, sepc)
++		__field(unsigned long, scause)
++		__field(unsigned long, stval)
++		__field(unsigned long, htval)
++		__field(unsigned long, htinst)
++	),
 +
-+const char * const kvm_skip_events[] = {
-+	NULL,
-+};
++	TP_fast_assign(
++		__entry->sepc		= trap->sepc;
++		__entry->scause		= trap->scause;
++		__entry->stval		= trap->stval;
++		__entry->htval		= trap->htval;
++		__entry->htinst		= trap->htinst;
++	),
 +
-+int cpu_isa_init(struct perf_kvm_stat *kvm, const char *cpuid __maybe_unused)
-+{
-+	kvm->exit_reasons_isa = "riscv64";
-+	return 0;
-+}
-diff --git a/tools/perf/arch/riscv/util/riscv_exception_types.h b/tools/perf/arch/riscv/util/riscv_exception_types.h
-new file mode 100644
-index 000000000000..c49b8fa5e847
---- /dev/null
-+++ b/tools/perf/arch/riscv/util/riscv_exception_types.h
-@@ -0,0 +1,35 @@
-+// SPDX-License-Identifier: GPL-2.0
-+#ifndef ARCH_PERF_RISCV_EXCEPTION_TYPES_H
-+#define ARCH_PERF_RISCV_EXCEPTION_TYPES_H
++	TP_printk("SEPC:0x%lx, SCAUSE:0x%lx, STVAL:0x%lx, HTVAL:0x%lx, HTINST:0x%lx",
++		__entry->sepc,
++		__entry->scause,
++		__entry->stval,
++		__entry->htval,
++		__entry->htinst)
++);
 +
-+#define EXC_INST_MISALIGNED 0
-+#define EXC_INST_ACCESS 1
-+#define EXC_INST_ILLEGAL 2
-+#define EXC_BREAKPOINT 3
-+#define EXC_LOAD_MISALIGNED 4
-+#define EXC_LOAD_ACCESS 5
-+#define EXC_STORE_MISALIGNED 6
-+#define EXC_STORE_ACCESS 7
-+#define EXC_SYSCALL 8
-+#define EXC_HYPERVISOR_SYSCALL 9
-+#define EXC_SUPERVISOR_SYSCALL 10
-+#define EXC_INST_PAGE_FAULT 12
-+#define EXC_LOAD_PAGE_FAULT 13
-+#define EXC_STORE_PAGE_FAULT 15
-+#define EXC_INST_GUEST_PAGE_FAULT 20
-+#define EXC_LOAD_GUEST_PAGE_FAULT 21
-+#define EXC_VIRTUAL_INST_FAULT 22
-+#define EXC_STORE_GUEST_PAGE_FAULT 23
++#endif /* _TRACE_RSICV_KVM_H */
 +
-+#define EXC(x) {EXC_##x, #x }
++#undef TRACE_INCLUDE_PATH
++#define TRACE_INCLUDE_PATH .
++#undef TRACE_INCLUDE_FILE
++#define TRACE_INCLUDE_FILE trace
 +
-+#define kvm_riscv_exception_class                                         \
-+	EXC(INST_MISALIGNED), EXC(INST_ACCESS), EXC(INST_ILLEGAL),         \
-+	EXC(BREAKPOINT), EXC(LOAD_MISALIGNED), EXC(LOAD_ACCESS),           \
-+	EXC(STORE_MISALIGNED), EXC(STORE_ACCESS), EXC(SYSCALL),            \
-+	EXC(HYPERVISOR_SYSCALL), EXC(SUPERVISOR_SYSCALL),                  \
-+	EXC(INST_PAGE_FAULT), EXC(LOAD_PAGE_FAULT), EXC(STORE_PAGE_FAULT), \
-+	EXC(INST_GUEST_PAGE_FAULT), EXC(LOAD_GUEST_PAGE_FAULT),            \
-+	EXC(VIRTUAL_INST_FAULT), EXC(STORE_GUEST_PAGE_FAULT)
++/* This part must be outside protection */
++#include <trace/define_trace.h>
+diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+index b5ca9f2e98ac..f4e27004ceb8 100644
+--- a/arch/riscv/kvm/vcpu.c
++++ b/arch/riscv/kvm/vcpu.c
+@@ -21,6 +21,9 @@
+ #include <asm/cacheflush.h>
+ #include <asm/kvm_vcpu_vector.h>
+ 
++#define CREATE_TRACE_POINTS
++#include "trace.h"
 +
-+#endif /* ARCH_PERF_RISCV_EXCEPTION_TYPES_H */
+ const struct _kvm_stats_desc kvm_vcpu_stats_desc[] = {
+ 	KVM_GENERIC_VCPU_STATS(),
+ 	STATS_DESC_COUNTER(VCPU, ecall_exit_stat),
+@@ -782,6 +785,8 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
+ 		 */
+ 		kvm_riscv_local_tlb_sanitize(vcpu);
+ 
++		trace_kvm_entry(vcpu);
++
+ 		guest_timing_enter_irqoff();
+ 
+ 		kvm_riscv_vcpu_enter_exit(vcpu);
+@@ -820,6 +825,8 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
+ 
+ 		local_irq_enable();
+ 
++		trace_kvm_exit(&trap);
++
+ 		preempt_enable();
+ 
+ 		kvm_vcpu_srcu_read_lock(vcpu);
 -- 
 2.37.2
 
