@@ -1,127 +1,92 @@
 From: Clément Léger <cleger@rivosinc.com>
-Date: Tue, 23 Apr 2024 14:43:17 +0200
-Subject: [PATCH v3 03/11] riscv: add ISA parsing for Zca, Zcf, Zcd and Zcb
+Date: Tue, 23 Apr 2024 14:43:18 +0200
+Subject: [PATCH v3 04/11] riscv: hwprobe: export Zca, Zcf, Zcd and Zcb ISA extensions
 In-Reply-To: <20240423124326.2532796-1-cleger@rivosinc.com>
 References: <20240423124326.2532796-1-cleger@rivosinc.com>
-Message-ID: <20240423124326.2532796-4-cleger@rivosinc.com>
+Message-ID: <20240423124326.2532796-5-cleger@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The Zc* standard extension for code reduction introduces new extensions.
-This patch adds support for Zca, Zcf, Zcd and Zcb. Zce, Zcmt and Zcmp
-are left out of this patch since they are targeting microcontrollers/
-embedded CPUs instead of application processors.
+Export Zca, Zcf, Zcd and Zcb ISA extension through hwprobe.
 
 Signed-off-by: Cl?ment L?ger <cleger@rivosinc.com>
 ---
- arch/riscv/include/asm/hwcap.h |  4 +++
- arch/riscv/kernel/cpufeature.c | 47 +++++++++++++++++++++++++++++++++-
- 2 files changed, 50 insertions(+), 1 deletion(-)
+ Documentation/arch/riscv/hwprobe.rst  | 20 ++++++++++++++++++++
+ arch/riscv/include/uapi/asm/hwprobe.h |  4 ++++
+ arch/riscv/kernel/sys_hwprobe.c       |  4 ++++
+ 3 files changed, 28 insertions(+)
 
-diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
-index 543e3ea2da0e..b7551bad341b 100644
---- a/arch/riscv/include/asm/hwcap.h
-+++ b/arch/riscv/include/asm/hwcap.h
-@@ -82,6 +82,10 @@
- #define RISCV_ISA_EXT_ZACAS		73
- #define RISCV_ISA_EXT_XANDESPMU		74
- #define RISCV_ISA_EXT_ZIMOP		75
-+#define RISCV_ISA_EXT_ZCA		76
-+#define RISCV_ISA_EXT_ZCB		77
-+#define RISCV_ISA_EXT_ZCD		78
-+#define RISCV_ISA_EXT_ZCF		79
+diff --git a/Documentation/arch/riscv/hwprobe.rst b/Documentation/arch/riscv/hwprobe.rst
+index 9ca5b093b6d5..bf96b4e8ba3b 100644
+--- a/Documentation/arch/riscv/hwprobe.rst
++++ b/Documentation/arch/riscv/hwprobe.rst
+@@ -192,6 +192,26 @@ The following keys are defined:
+        supported as defined in the RISC-V ISA manual starting from commit
+        58220614a5f ("Zimop is ratified/1.0").
  
- #define RISCV_ISA_EXT_XLINUXENVCFG	127
- 
-diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
-index 6d238c8dbccf..24bf3fbc0578 100644
---- a/arch/riscv/kernel/cpufeature.c
-+++ b/arch/riscv/kernel/cpufeature.c
-@@ -107,6 +107,29 @@ static bool riscv_ext_zicboz_validate(const struct riscv_isa_ext_data *data,
- 	return true;
- }
- 
-+static bool riscv_ext_zca_depends(const struct riscv_isa_ext_data *data,
-+				   const unsigned long *isa_bitmap)
-+{
-+	return __riscv_isa_extension_available(isa_bitmap, RISCV_ISA_EXT_ZCA);
-+}
-+static bool riscv_ext_zcd_validate(const struct riscv_isa_ext_data *data,
-+				   const unsigned long *isa_bitmap)
-+{
-+	return __riscv_isa_extension_available(isa_bitmap, RISCV_ISA_EXT_ZCA) &&
-+	       __riscv_isa_extension_available(isa_bitmap, RISCV_ISA_EXT_d);
-+}
++  * :c:macro:`RISCV_HWPROBE_EXT_ZCA`: The Zca extension part of Zc* standard
++       extensions for code size reduction, as ratified in commit 8be3419c1c0
++       ("Zcf doesn't exist on RV64 as it contains no instructions") of
++       riscv-code-size-reduction.
 +
-+static bool riscv_ext_zcf_validate(const struct riscv_isa_ext_data *data,
-+				   const unsigned long *isa_bitmap)
-+{
-+#ifdef CONFIG_64BIT
-+	return false;
-+#else
-+	return __riscv_isa_extension_available(isa_bitmap, RISCV_ISA_EXT_ZCA) &&
-+	       __riscv_isa_extension_available(isa_bitmap, RISCV_ISA_EXT_f);
-+#endif
-+}
++  * :c:macro:`RISCV_HWPROBE_EXT_ZCB`: The Zcb extension part of Zc* standard
++       extensions for code size reduction, as ratified in commit 8be3419c1c0
++       ("Zcf doesn't exist on RV64 as it contains no instructions") of
++       riscv-code-size-reduction.
 +
- #define _RISCV_ISA_EXT_DATA(_name, _id, _subset_exts, _subset_exts_size, _validate) {	\
- 	.name = #_name,									\
- 	.property = #_name,								\
-@@ -118,6 +141,9 @@ static bool riscv_ext_zicboz_validate(const struct riscv_isa_ext_data *data,
- 
- #define __RISCV_ISA_EXT_DATA(_name, _id) _RISCV_ISA_EXT_DATA(_name, _id, NULL, 0, NULL)
- 
-+#define __RISCV_ISA_EXT_DATA_VALIDATE(_name, _id, _validate) \
-+			_RISCV_ISA_EXT_DATA(_name, _id, NULL, 0, _validate)
++  * :c:macro:`RISCV_HWPROBE_EXT_ZCD`: The Zcd extension part of Zc* standard
++       extensions for code size reduction, as ratified in commit 8be3419c1c0
++       ("Zcf doesn't exist on RV64 as it contains no instructions") of
++       riscv-code-size-reduction.
 +
- /* Used to declare pure "lasso" extension (Zk for instance) */
- #define __RISCV_ISA_EXT_BUNDLE(_name, _bundled_exts) \
- 	_RISCV_ISA_EXT_DATA(_name, RISCV_ISA_EXT_INVALID, _bundled_exts, \
-@@ -209,6 +235,21 @@ static const unsigned int riscv_xlinuxenvcfg_exts[] = {
- 	RISCV_ISA_EXT_XLINUXENVCFG
- };
- 
-+/*
-+ * Zc* spec states that:
-+ * - C always implies Zca
-+ * - C+F implies Zcf (RV32 only)
-+ * - C+D implies Zcd
-+ *
-+ * These extensions will be enabled and then validated depending on the
-+ * availability of F/D RV32.
-+ */
-+static const unsigned int riscv_c_exts[] = {
-+	RISCV_ISA_EXT_ZCA,
-+	RISCV_ISA_EXT_ZCF,
-+	RISCV_ISA_EXT_ZCD,
-+};
++  * :c:macro:`RISCV_HWPROBE_EXT_ZCF`: The Zcf extension part of Zc* standard
++       extensions for code size reduction, as ratified in commit 8be3419c1c0
++       ("Zcf doesn't exist on RV64 as it contains no instructions") of
++       riscv-code-size-reduction.
 +
- /*
-  * The canonical order of ISA extension names in the ISA string is defined in
-  * chapter 27 of the unprivileged specification.
-@@ -255,7 +296,7 @@ const struct riscv_isa_ext_data riscv_isa_ext[] = {
- 	__RISCV_ISA_EXT_DATA(f, RISCV_ISA_EXT_f),
- 	__RISCV_ISA_EXT_DATA(d, RISCV_ISA_EXT_d),
- 	__RISCV_ISA_EXT_DATA(q, RISCV_ISA_EXT_q),
--	__RISCV_ISA_EXT_DATA(c, RISCV_ISA_EXT_c),
-+	__RISCV_ISA_EXT_SUPERSET(c, RISCV_ISA_EXT_c, riscv_c_exts),
- 	__RISCV_ISA_EXT_DATA(v, RISCV_ISA_EXT_v),
- 	__RISCV_ISA_EXT_DATA(h, RISCV_ISA_EXT_h),
- 	__RISCV_ISA_EXT_SUPERSET_VALIDATE(zicbom, RISCV_ISA_EXT_ZICBOM, riscv_xlinuxenvcfg_exts,
-@@ -274,6 +315,10 @@ const struct riscv_isa_ext_data riscv_isa_ext[] = {
- 	__RISCV_ISA_EXT_DATA(zfa, RISCV_ISA_EXT_ZFA),
- 	__RISCV_ISA_EXT_DATA(zfh, RISCV_ISA_EXT_ZFH),
- 	__RISCV_ISA_EXT_DATA(zfhmin, RISCV_ISA_EXT_ZFHMIN),
-+	__RISCV_ISA_EXT_DATA(zca, RISCV_ISA_EXT_ZCA),
-+	__RISCV_ISA_EXT_DATA_VALIDATE(zcb, RISCV_ISA_EXT_ZCB, riscv_ext_zca_depends),
-+	__RISCV_ISA_EXT_DATA_VALIDATE(zcd, RISCV_ISA_EXT_ZCD, riscv_ext_zcd_validate),
-+	__RISCV_ISA_EXT_DATA_VALIDATE(zcf, RISCV_ISA_EXT_ZCF, riscv_ext_zcf_validate),
- 	__RISCV_ISA_EXT_DATA(zba, RISCV_ISA_EXT_ZBA),
- 	__RISCV_ISA_EXT_DATA(zbb, RISCV_ISA_EXT_ZBB),
- 	__RISCV_ISA_EXT_DATA(zbc, RISCV_ISA_EXT_ZBC),
+ * :c:macro:`RISCV_HWPROBE_KEY_CPUPERF_0`: A bitmask that contains performance
+   information about the selected set of processors.
+ 
+diff --git a/arch/riscv/include/uapi/asm/hwprobe.h b/arch/riscv/include/uapi/asm/hwprobe.h
+index ac6874ab743a..dd4ad77faf49 100644
+--- a/arch/riscv/include/uapi/asm/hwprobe.h
++++ b/arch/riscv/include/uapi/asm/hwprobe.h
+@@ -60,6 +60,10 @@ struct riscv_hwprobe {
+ #define		RISCV_HWPROBE_EXT_ZACAS		(1ULL << 34)
+ #define		RISCV_HWPROBE_EXT_ZICOND	(1ULL << 35)
+ #define		RISCV_HWPROBE_EXT_ZIMOP		(1ULL << 36)
++#define		RISCV_HWPROBE_EXT_ZCA		(1ULL << 37)
++#define		RISCV_HWPROBE_EXT_ZCB		(1ULL << 38)
++#define		RISCV_HWPROBE_EXT_ZCD		(1ULL << 39)
++#define		RISCV_HWPROBE_EXT_ZCF		(1ULL << 40)
+ #define RISCV_HWPROBE_KEY_CPUPERF_0	5
+ #define		RISCV_HWPROBE_MISALIGNED_UNKNOWN	(0 << 0)
+ #define		RISCV_HWPROBE_MISALIGNED_EMULATED	(1 << 0)
+diff --git a/arch/riscv/kernel/sys_hwprobe.c b/arch/riscv/kernel/sys_hwprobe.c
+index c99a4cf231c5..2ffa0fe5101e 100644
+--- a/arch/riscv/kernel/sys_hwprobe.c
++++ b/arch/riscv/kernel/sys_hwprobe.c
+@@ -112,6 +112,8 @@ static void hwprobe_isa_ext0(struct riscv_hwprobe *pair,
+ 		EXT_KEY(ZACAS);
+ 		EXT_KEY(ZICOND);
+ 		EXT_KEY(ZIMOP);
++		EXT_KEY(ZCA);
++		EXT_KEY(ZCB);
+ 
+ 		if (has_vector()) {
+ 			EXT_KEY(ZVBB);
+@@ -132,6 +134,8 @@ static void hwprobe_isa_ext0(struct riscv_hwprobe *pair,
+ 			EXT_KEY(ZFH);
+ 			EXT_KEY(ZFHMIN);
+ 			EXT_KEY(ZFA);
++			EXT_KEY(ZCD);
++			EXT_KEY(ZCF);
+ 		}
+ #undef EXT_KEY
+ 	}
 -- 
 2.43.0
 
