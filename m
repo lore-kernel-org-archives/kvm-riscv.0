@@ -1,11 +1,11 @@
 From: Muhammad Usama Anjum <usama.anjum@collabora.com>
-Date: Tue, 23 Apr 2024 13:57:50 +0500
-Subject: [PATCH v8 18/24] KVM: riscv: selftests: Add helper functions for
- extension checks
-In-Reply-To: <20240420151741.962500-19-atishp@rivosinc.com>
+Date: Tue, 23 Apr 2024 13:58:02 +0500
+Subject: [PATCH v8 19/24] KVM: riscv: selftests: Add Sscofpmf to
+ get-reg-list test
+In-Reply-To: <20240420151741.962500-20-atishp@rivosinc.com>
 References: <20240420151741.962500-1-atishp@rivosinc.com>
- <20240420151741.962500-19-atishp@rivosinc.com>
-Message-ID: <bc284bf8-c74d-4601-ab64-79b5cc12f829@collabora.com>
+ <20240420151741.962500-20-atishp@rivosinc.com>
+Message-ID: <4f4ca27c-846e-4f8a-928d-fa680c51361c@collabora.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -13,13 +13,10 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 On 4/20/24 8:17 PM, Atish Patra wrote:
-> __vcpu_has_ext can check both SBI and ISA extensions when the first
-> argument is properly converted to SBI/ISA extension IDs. Introduce
-> two helper functions to make life easier for developers so they
-> don't have to worry about the conversions.
+> The KVM RISC-V allows Sscofpmf extension for Guest/VM so let us
+> add this extension to get-reg-list test.
 > 
-> Replace the current usages as well with new helpers.
-> 
+> Reviewed-by: Anup Patel <anup@brainfault.org>
 > Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
 > Signed-off-by: Atish Patra <atishp@rivosinc.com>
 LGTM
@@ -27,44 +24,45 @@ LGTM
 Reviewed-by: Muhammad Usama Anjum <usama.anjum@collabora.com>
 
 > ---
->  tools/testing/selftests/kvm/include/riscv/processor.h | 10 ++++++++++
->  tools/testing/selftests/kvm/riscv/arch_timer.c        |  2 +-
->  2 files changed, 11 insertions(+), 1 deletion(-)
+>  tools/testing/selftests/kvm/riscv/get-reg-list.c | 4 ++++
+>  1 file changed, 4 insertions(+)
 > 
-> diff --git a/tools/testing/selftests/kvm/include/riscv/processor.h b/tools/testing/selftests/kvm/include/riscv/processor.h
-> index 3b9cb39327ff..5f389166338c 100644
-> --- a/tools/testing/selftests/kvm/include/riscv/processor.h
-> +++ b/tools/testing/selftests/kvm/include/riscv/processor.h
-> @@ -50,6 +50,16 @@ static inline uint64_t __kvm_reg_id(uint64_t type, uint64_t subtype,
->  
->  bool __vcpu_has_ext(struct kvm_vcpu *vcpu, uint64_t ext);
->  
-> +static inline bool __vcpu_has_isa_ext(struct kvm_vcpu *vcpu, uint64_t isa_ext)
-> +{
-> +	return __vcpu_has_ext(vcpu, RISCV_ISA_EXT_REG(isa_ext));
-> +}
-> +
-> +static inline bool __vcpu_has_sbi_ext(struct kvm_vcpu *vcpu, uint64_t sbi_ext)
-> +{
-> +	return __vcpu_has_ext(vcpu, RISCV_SBI_EXT_REG(sbi_ext));
-> +}
-> +
->  struct ex_regs {
->  	unsigned long ra;
->  	unsigned long sp;
-> diff --git a/tools/testing/selftests/kvm/riscv/arch_timer.c b/tools/testing/selftests/kvm/riscv/arch_timer.c
-> index 0f9cabd99fd4..735b78569021 100644
-> --- a/tools/testing/selftests/kvm/riscv/arch_timer.c
-> +++ b/tools/testing/selftests/kvm/riscv/arch_timer.c
-> @@ -85,7 +85,7 @@ struct kvm_vm *test_vm_create(void)
->  	int nr_vcpus = test_args.nr_vcpus;
->  
->  	vm = vm_create_with_vcpus(nr_vcpus, guest_code, vcpus);
-> -	__TEST_REQUIRE(__vcpu_has_ext(vcpus[0], RISCV_ISA_EXT_REG(KVM_RISCV_ISA_EXT_SSTC)),
-> +	__TEST_REQUIRE(__vcpu_has_isa_ext(vcpus[0], KVM_RISCV_ISA_EXT_SSTC),
->  				   "SSTC not available, skipping test\n");
->  
->  	vm_init_vector_tables(vm);
+> diff --git a/tools/testing/selftests/kvm/riscv/get-reg-list.c b/tools/testing/selftests/kvm/riscv/get-reg-list.c
+> index b882b7b9b785..222198dd6d04 100644
+> --- a/tools/testing/selftests/kvm/riscv/get-reg-list.c
+> +++ b/tools/testing/selftests/kvm/riscv/get-reg-list.c
+> @@ -43,6 +43,7 @@ bool filter_reg(__u64 reg)
+>  	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_V:
+>  	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SMSTATEEN:
+>  	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SSAIA:
+> +	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SSCOFPMF:
+>  	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SSTC:
+>  	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SVINVAL:
+>  	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SVNAPOT:
+> @@ -408,6 +409,7 @@ static const char *isa_ext_single_id_to_str(__u64 reg_off)
+>  		KVM_ISA_EXT_ARR(V),
+>  		KVM_ISA_EXT_ARR(SMSTATEEN),
+>  		KVM_ISA_EXT_ARR(SSAIA),
+> +		KVM_ISA_EXT_ARR(SSCOFPMF),
+>  		KVM_ISA_EXT_ARR(SSTC),
+>  		KVM_ISA_EXT_ARR(SVINVAL),
+>  		KVM_ISA_EXT_ARR(SVNAPOT),
+> @@ -931,6 +933,7 @@ KVM_ISA_EXT_SUBLIST_CONFIG(fp_f, FP_F);
+>  KVM_ISA_EXT_SUBLIST_CONFIG(fp_d, FP_D);
+>  KVM_ISA_EXT_SIMPLE_CONFIG(h, H);
+>  KVM_ISA_EXT_SUBLIST_CONFIG(smstateen, SMSTATEEN);
+> +KVM_ISA_EXT_SIMPLE_CONFIG(sscofpmf, SSCOFPMF);
+>  KVM_ISA_EXT_SIMPLE_CONFIG(sstc, SSTC);
+>  KVM_ISA_EXT_SIMPLE_CONFIG(svinval, SVINVAL);
+>  KVM_ISA_EXT_SIMPLE_CONFIG(svnapot, SVNAPOT);
+> @@ -986,6 +989,7 @@ struct vcpu_reg_list *vcpu_configs[] = {
+>  	&config_fp_d,
+>  	&config_h,
+>  	&config_smstateen,
+> +	&config_sscofpmf,
+>  	&config_sstc,
+>  	&config_svinval,
+>  	&config_svnapot,
 
 -- 
 BR,
