@@ -1,56 +1,39 @@
-From: Clément Léger <cleger@rivosinc.com>
-Date: Tue, 23 Apr 2024 14:43:21 +0200
-Subject: [PATCH v3 07/11] dt-bindings: riscv: add Zcmop ISA extension description
-In-Reply-To: <20240423124326.2532796-1-cleger@rivosinc.com>
-References: <20240423124326.2532796-1-cleger@rivosinc.com>
-Message-ID: <20240423124326.2532796-8-cleger@rivosinc.com>
+From: Conor Dooley <conor@kernel.org>
+Date: Tue, 23 Apr 2024 17:24:01 +0100
+Subject: [RFC PATCH 0/7] riscv: Add support for Ssdbltrp extension
+In-Reply-To: <20240418142701.1493091-1-cleger@rivosinc.com>
+References: <20240418142701.1493091-1-cleger@rivosinc.com>
+Message-ID: <20240423-fresh-constrict-c28f949665e8@spud>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add description for the Zcmop (Compressed May-Be-Operations) ISA
-extension which was ratified in commit c732a4f39a4 ("Zcmop is
-ratified/1.0") of the riscv-isa-manual.
+On Thu, Apr 18, 2024 at 04:26:39PM +0200, Cl?ment L?ger wrote:
 
-Signed-off-by: Cl?ment L?ger <cleger@rivosinc.com>
-Acked-by: Conor Dooley <conor.dooley@microchip.com>
----
- .../devicetree/bindings/riscv/extensions.yaml        | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
+>  drivers/firmware/Kconfig                      |   7 +
+>  drivers/firmware/Makefile                     |   1 +
+>  drivers/firmware/riscv_dbltrp.c               |  95 ++++++++++
 
-diff --git a/Documentation/devicetree/bindings/riscv/extensions.yaml b/Documentation/devicetree/bindings/riscv/extensions.yaml
-index 81bce4fa2424..1952d20b8996 100644
---- a/Documentation/devicetree/bindings/riscv/extensions.yaml
-+++ b/Documentation/devicetree/bindings/riscv/extensions.yaml
-@@ -252,6 +252,11 @@ properties:
-             merged in the riscv-isa-manual by commit dbc79cf28a2 ("Initial seed
-             of zc.adoc to src tree.").
- 
-+        - const: zcmop
-+          description:
-+            The standard Zcmop extension version 1.0, as ratified in commit
-+            c732a4f39a4 ("Zcmop is ratified/1.0") of the riscv-isa-manual.
-+
-         - const: zfa
-           description:
-             The standard Zfa extension for additional floating point
-@@ -549,6 +554,13 @@ properties:
-                 const: zca
-             - contains:
-                 const: f
-+      # Zcmop depends on Zca
-+      - if:
-+          contains:
-+            const: zcmop
-+        then:
-+          contains:
-+            const: zca
- 
- allOf:
-   # Zcf extension does not exist on rv64
--- 
-2.43.0
+From what we discussed with Arnd back when we started routing the dts
+and soc driver stuff via the soc tree, riscv stuff in drivers/firmware
+supposedly also falls under my remit, and gets merged via the soc tree,
+although I would expect that this and the initial SSE support series
+would go via the riscv tree since they touch a lot more than just
+drivers/firmware.
 
+Could you create a drivers/firmware/riscv directory for this dbltrp file
+and whichever of this or the SSE patch that lands first add a maintainers
+entry for drivers/firmware/riscv that links to my git tree?
+It probably also makes sense to create per-driver entries for each of
+the dbltrp and sse drivers that ensures you get CCed on any patches
+for them.
 
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 228 bytes
+Desc: not available
+URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20240423/068fbd19/attachment-0001.sig>
