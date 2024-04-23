@@ -1,164 +1,171 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Tue, 23 Apr 2024 10:46:01 +0200
-Subject: [PATCH v2 2/6] dt-bindings: riscv: Add Zawrs ISA extension
- description
-In-Reply-To: <ZibmfbLnGCb9gmow@ghost>
-References: <20240419135321.70781-8-ajones@ventanamicro.com>
- <20240419135321.70781-10-ajones@ventanamicro.com>
- <20240419-chafe-leotard-e5daee19b1c8@spud>
- <20240419-8c6af6a169a7aa0b9aa5cac5@orel>
- <20240419-disdain-litmus-82874cc4872e@spud>
- <ZiKeYRnXxtLUtkkW@ghost>
- <20240421-f63f90c2146deb0695b84441@orel>
- <ZibmfbLnGCb9gmow@ghost>
-Message-ID: <20240423-ed9ddb701be1df4a25e29f31@orel>
+From: Muhammad Usama Anjum <usama.anjum@collabora.com>
+Date: Tue, 23 Apr 2024 13:57:35 +0500
+Subject: [PATCH v8 17/24] KVM: riscv: selftests: Move sbi definitions to
+ its own header file
+In-Reply-To: <20240420151741.962500-18-atishp@rivosinc.com>
+References: <20240420151741.962500-1-atishp@rivosinc.com>
+ <20240420151741.962500-18-atishp@rivosinc.com>
+Message-ID: <eba0baca-1aea-4e8b-a68b-16cfdbc45403@collabora.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Apr 22, 2024 at 06:36:45PM -0400, Charlie Jenkins wrote:
-> On Sun, Apr 21, 2024 at 12:20:03PM +0200, Andrew Jones wrote:
-> > On Fri, Apr 19, 2024 at 12:40:01PM -0400, Charlie Jenkins wrote:
-...
-> > > What would be the purpose of a vendor implementing WRS.NTO (and putting
-> > > it in the DT) that never terminates? The spec says "Then a subsequent
-> > > WRS.NTO instruction would cause the hart to temporarily stall execution
-> > > in a low- power state until a store occurs to the reservation set or an
-> > > interrupt is observed." Why is this wording for WRS.NTO not sufficient
-> > > to assume that an implementation of this instruction would eventually
-> > > terminate?
-> > >
-> > 
-> > We can invoke smp_cond_load_relaxed(addr, VAL || anything_we_want()). This
-> > means we may not expect VAL ever to be written, which rules out "until a
-> > store occurs". As for "an interrupt is observed", we don't know which one
-> > to expect to arrive within a "reasonable" amount of time. We need to know
-> > which one(s), since, while wrs.nto will terminate even when interrupts are
-> > globally disabled, we still need to have the interrupt(s) we expect to be
-> > locally enabled. And, the interrupts should arrive in a "reasonable"
-> > amount of time since we want to poll anything_we_want() at a "reasonable"
-> > frequency.
-> > 
-> > So, we need firmware to promise to enable exceptions if there aren't any
-> > such interrupts. Or, we could require hardware descriptions to identify
-> > which interrupt(s) would be good to have enabled before calling wrs.nto.
-> > Maybe there's already some way to describe something like that?
-> > 
-> > Thanks,
-> > drew
+On 4/20/24 8:17 PM, Atish Patra wrote:
+> The SBI definitions will continue to grow. Move the sbi related
+> definitions to its own header file from processor.h
 > 
-> Ahh okay I am caught up now. So the wording we are looking at in the
-> spec is:
-> 
-> "When executing in VS or VU mode, if the VTW bit is set in hstatus, the
-> TW bit in mstatus is clear, and the WRS.NTO does not complete within an
-> implementation-specific bounded time limit, the WRS.NTO instruction will
-> cause a virtual instruction exception."
+> Suggested-by: Andrew Jones <ajones@ventanamicro.com>
+> Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+> Signed-off-by: Atish Patra <atishp@rivosinc.com>
+LGTM
 
-That's what the hypervisor should promise to do when there's no other
-guarantee of wrs.nto terminating (but the hypervisor likely wants to
-anyway since it wants guests to trap on wrs.nto in order to potentially
-schedule the lock holding VCPU). The firmware of the host should likewise
-promise to set mstatus.TW when there's no guarantee of wrs.nto
-terminating, but that's likely _not_ something it normally would want to
-do, so hopefully there will always be implementation-specific "other
-reasons" which guarantee termination.
+Reviewed-by: Muhammad Usama Anjum <usama.anjum@collabora.com>
 
+> ---
+>  .../selftests/kvm/include/riscv/processor.h   | 39 ---------------
+>  .../testing/selftests/kvm/include/riscv/sbi.h | 50 +++++++++++++++++++
+>  .../selftests/kvm/include/riscv/ucall.h       |  1 +
+>  tools/testing/selftests/kvm/steal_time.c      |  4 +-
+>  4 files changed, 54 insertions(+), 40 deletions(-)
+>  create mode 100644 tools/testing/selftests/kvm/include/riscv/sbi.h
 > 
-> With the concern being that it is possible for "implementation-specific
-> bounded time limit" to be infinite/never times out,
+> diff --git a/tools/testing/selftests/kvm/include/riscv/processor.h b/tools/testing/selftests/kvm/include/riscv/processor.h
+> index ce473fe251dd..3b9cb39327ff 100644
+> --- a/tools/testing/selftests/kvm/include/riscv/processor.h
+> +++ b/tools/testing/selftests/kvm/include/riscv/processor.h
+> @@ -154,45 +154,6 @@ void vm_install_interrupt_handler(struct kvm_vm *vm, exception_handler_fn handle
+>  #define PGTBL_PAGE_SIZE				PGTBL_L0_BLOCK_SIZE
+>  #define PGTBL_PAGE_SIZE_SHIFT			PGTBL_L0_BLOCK_SHIFT
+>  
+> -/* SBI return error codes */
+> -#define SBI_SUCCESS				0
+> -#define SBI_ERR_FAILURE				-1
+> -#define SBI_ERR_NOT_SUPPORTED			-2
+> -#define SBI_ERR_INVALID_PARAM			-3
+> -#define SBI_ERR_DENIED				-4
+> -#define SBI_ERR_INVALID_ADDRESS			-5
+> -#define SBI_ERR_ALREADY_AVAILABLE		-6
+> -#define SBI_ERR_ALREADY_STARTED			-7
+> -#define SBI_ERR_ALREADY_STOPPED			-8
+> -
+> -#define SBI_EXT_EXPERIMENTAL_START		0x08000000
+> -#define SBI_EXT_EXPERIMENTAL_END		0x08FFFFFF
+> -
+> -#define KVM_RISCV_SELFTESTS_SBI_EXT		SBI_EXT_EXPERIMENTAL_END
+> -#define KVM_RISCV_SELFTESTS_SBI_UCALL		0
+> -#define KVM_RISCV_SELFTESTS_SBI_UNEXP		1
+> -
+> -enum sbi_ext_id {
+> -	SBI_EXT_BASE = 0x10,
+> -	SBI_EXT_STA = 0x535441,
+> -};
+> -
+> -enum sbi_ext_base_fid {
+> -	SBI_EXT_BASE_PROBE_EXT = 3,
+> -};
+> -
+> -struct sbiret {
+> -	long error;
+> -	long value;
+> -};
+> -
+> -struct sbiret sbi_ecall(int ext, int fid, unsigned long arg0,
+> -			unsigned long arg1, unsigned long arg2,
+> -			unsigned long arg3, unsigned long arg4,
+> -			unsigned long arg5);
+> -
+> -bool guest_sbi_probe_extension(int extid, long *out_val);
+> -
+>  static inline void local_irq_enable(void)
+>  {
+>  	csr_set(CSR_SSTATUS, SR_SIE);
+> diff --git a/tools/testing/selftests/kvm/include/riscv/sbi.h b/tools/testing/selftests/kvm/include/riscv/sbi.h
+> new file mode 100644
+> index 000000000000..ba04f2dec7b5
+> --- /dev/null
+> +++ b/tools/testing/selftests/kvm/include/riscv/sbi.h
+> @@ -0,0 +1,50 @@
+> +/* SPDX-License-Identifier: GPL-2.0 */
+> +/*
+> + * RISC-V SBI specific definitions
+> + *
+> + * Copyright (C) 2024 Rivos Inc.
+> + */
+> +
+> +#ifndef SELFTEST_KVM_SBI_H
+> +#define SELFTEST_KVM_SBI_H
+> +
+> +/* SBI return error codes */
+> +#define SBI_SUCCESS				 0
+> +#define SBI_ERR_FAILURE				-1
+> +#define SBI_ERR_NOT_SUPPORTED			-2
+> +#define SBI_ERR_INVALID_PARAM			-3
+> +#define SBI_ERR_DENIED				-4
+> +#define SBI_ERR_INVALID_ADDRESS			-5
+> +#define SBI_ERR_ALREADY_AVAILABLE		-6
+> +#define SBI_ERR_ALREADY_STARTED			-7
+> +#define SBI_ERR_ALREADY_STOPPED			-8
+> +
+> +#define SBI_EXT_EXPERIMENTAL_START		0x08000000
+> +#define SBI_EXT_EXPERIMENTAL_END		0x08FFFFFF
+> +
+> +#define KVM_RISCV_SELFTESTS_SBI_EXT		SBI_EXT_EXPERIMENTAL_END
+> +#define KVM_RISCV_SELFTESTS_SBI_UCALL		0
+> +#define KVM_RISCV_SELFTESTS_SBI_UNEXP		1
+> +
+> +enum sbi_ext_id {
+> +	SBI_EXT_BASE = 0x10,
+> +	SBI_EXT_STA = 0x535441,
+> +};
+> +
+> +enum sbi_ext_base_fid {
+> +	SBI_EXT_BASE_PROBE_EXT = 3,
+> +};
+> +
+> +struct sbiret {
+> +	long error;
+> +	long value;
+> +};
+> +
+> +struct sbiret sbi_ecall(int ext, int fid, unsigned long arg0,
+> +			unsigned long arg1, unsigned long arg2,
+> +			unsigned long arg3, unsigned long arg4,
+> +			unsigned long arg5);
+> +
+> +bool guest_sbi_probe_extension(int extid, long *out_val);
+> +
+> +#endif /* SELFTEST_KVM_SBI_H */
+> diff --git a/tools/testing/selftests/kvm/include/riscv/ucall.h b/tools/testing/selftests/kvm/include/riscv/ucall.h
+> index be46eb32ec27..a695ae36f3e0 100644
+> --- a/tools/testing/selftests/kvm/include/riscv/ucall.h
+> +++ b/tools/testing/selftests/kvm/include/riscv/ucall.h
+> @@ -3,6 +3,7 @@
+>  #define SELFTEST_KVM_UCALL_H
+>  
+>  #include "processor.h"
+> +#include "sbi.h"
+>  
+>  #define UCALL_EXIT_REASON       KVM_EXIT_RISCV_SBI
+>  
+> diff --git a/tools/testing/selftests/kvm/steal_time.c b/tools/testing/selftests/kvm/steal_time.c
+> index bae0c5026f82..2ff82c7fd926 100644
+> --- a/tools/testing/selftests/kvm/steal_time.c
+> +++ b/tools/testing/selftests/kvm/steal_time.c
+> @@ -11,7 +11,9 @@
+>  #include <pthread.h>
+>  #include <linux/kernel.h>
+>  #include <asm/kvm.h>
+> -#ifndef __riscv
+> +#ifdef __riscv
+> +#include "sbi.h"
+> +#else
+>  #include <asm/kvm_para.h>
+>  #endif
+>  
 
-The implementation-defined short timeout cannot be infinite, but it only
-applies to wrs.sto. While using wrs.sto would relieve the concern, it
-cannot be configured to raise exceptions, which means it's not useful in
-guests. If we want to use wrs.sto in hosts and wrs.nto in guests then we
-need a paravirt channel which allows an "enlightened" guest to determine
-that it is a guest and that the hypervisor has configured wrs.nto to
-trap, which then indicates it's a good idea to patch wrs.sto to wrs.nto.
-But, adding paravirt stuff should be avoided whenever possible since it
-adds complexity we'd rather not maintain.
-
-> and the kernel
-> enters a WRS where the reservation set is not required to be invalidated
-> for the condition we are waiting on to become true.
-> 
-> An option here would be to enforce in the spec that this time limit is
-> finite. If the original intention of the spec was to have it be finite,
-> then this would not be an issue. If the intention was to allow no time
-> limit, then this would probably have to be a new extension.
-
-wrs.nto has been specified to never timeout.
-wrs.sto has been specified to never raise exceptions.
-
-If we had an instruction which would timeout when mstatus.TW/hstatus.VTW
-is clear and raise exceptions when set, then that's the one we'd choose.
-
-> 
-> We are also able to change the kernel to not allow these conditions that
-> would break this interpretation of WRS. I found three instances in the
-> kernel that contain a condition that is not dependent on the wrs
-> reservation.
-> 
-> 1.
-> # queued_spin_lock_slowpath() in kernel/locking/qspinlock.c
-> val = atomic_cond_read_relaxed(&lock->val,
-> 			       (VAL != _Q_PENDING_VAL) || !cnt--);
-> 
-> The first condition will only become true if lock->val changes which
-> should invalidate the reservation. !cnt-- on the otherhand is a counter
-> of the number of loops that happen under-the-hood in
-> atomic_cond_read_relaxed. This seems like an abuse of the function and
-> could be factored out into a new bounded-iteration cond_read macro.
-> 
-> 2.
-> # osq_lock() in kernel/locking/osq_lock.c
-> if (smp_cond_load_relaxed(&node->locked, VAL || need_resched() ||
-> 			  vcpu_is_preempted(node_cpu(node->prev))))
-> 
-> VAL is the first condition and won't be a problem here since changes to
-> it will cause the reservation to become invalid. arm64 has hard-coded
-> vcpu_is_preempted to be false for the same exact reason that riscv would
-> want to (the wait wouldn't be woken up). There is a comment that
-> points this out in arch/arm64/include/asm/spinlock.h. riscv currently
-> uses the default implementation which returns false.
-
-The operative word is 'currently'. I plan to eventually get riscv's
-vcpu_is_preempted() working since we already laid the groundwork by
-adding a preempted flag to the SBI STA struct.
-
-> 
-> need_resched() should not be a problem since this condition only changes
-> when the hart recieves an IPI, so as long as the hart is able to receive
-> an IPI while in WRS it will be fine.
-> 
-> 3.
-> # __arm_smmu_cmdq_poll_until_msi() in drivers/iommu/arm/arm-smmu-v3/arm-smmu-v3.c
-> smp_cond_load_relaxed(cmd, !VAL || (ret = queue_poll(&qp)));
-> 
-> arm driver, not relevant.
-> 
-> 
-> 
-> The only case that would cause a problem in the current implementation
-> of the kernel would be queued_spin_lock_slowpath() with the cnt check.
-> We are able to either change this definition, change the spec, or leave
-> it up to the vendor who would be hit by this issue to change it.
-
-We could attempt to document restrictions on the condition given to
-smp_cond_load_relaxed() and then change the callers to honor those
-restrictions, but that doesn't sound too easy. How will we remove
-vcpu_is_preempted() on x86?
-
-We should probably start the process of a new extension which has the
-hybrid wrs.sto/nto instruction, but I'm reluctant to, since, in practice,
-the current wrs.nto is probably fine. I don't really expect there to be
-implementations that never terminate, even though I'd rather we document
-that it's _required_ wrs.nto terminates, or that exceptions be raised.
-Maybe I'm attempting to document it in the wrong place though. Maybe this
-is more of a Documentation/arch/riscv/boot.rst type of thing.
-
-Thanks,
-drew
+-- 
+BR,
+Muhammad Usama Anjum
 
