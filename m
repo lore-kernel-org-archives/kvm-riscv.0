@@ -1,121 +1,67 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Wed, 24 Apr 2024 09:34:50 +0200
-Subject: [PATCH v2 2/6] dt-bindings: riscv: Add Zawrs ISA extension
+From: Conor Dooley <conor@kernel.org>
+Date: Wed, 24 Apr 2024 08:40:08 +0100
+Subject: [RFC PATCH 2/7] dt-bindings: riscv: add Ssdbltrp ISA extension
  description
-In-Reply-To: <ZigPN/iJ/gLT4DOD@ghost>
-References: <20240419135321.70781-10-ajones@ventanamicro.com>
- <20240419-chafe-leotard-e5daee19b1c8@spud>
- <20240419-8c6af6a169a7aa0b9aa5cac5@orel>
- <20240419-disdain-litmus-82874cc4872e@spud>
- <ZiKeYRnXxtLUtkkW@ghost>
- <20240421-f63f90c2146deb0695b84441@orel>
- <ZibmfbLnGCb9gmow@ghost>
- <20240423-ed9ddb701be1df4a25e29f31@orel>
- <Zif3VZALGtLtl3D3@ghost>
- <ZigPN/iJ/gLT4DOD@ghost>
-Message-ID: <20240424-0e571b29835610c24409762b@orel>
+In-Reply-To: <e39f2fea-868a-4a79-b7a5-bef8f15de688@rivosinc.com>
+References: <20240418142701.1493091-1-cleger@rivosinc.com>
+ <20240418142701.1493091-3-cleger@rivosinc.com>
+ <20240423-poser-splashed-56ab5340af48@spud>
+ <e39f2fea-868a-4a79-b7a5-bef8f15de688@rivosinc.com>
+Message-ID: <20240424-rehydrate-sloppy-62132c72fe18@spud>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Apr 23, 2024 at 03:42:47PM -0400, Charlie Jenkins wrote:
-> On Tue, Apr 23, 2024 at 02:00:53PM -0400, Charlie Jenkins wrote:
-> > On Tue, Apr 23, 2024 at 10:46:01AM +0200, Andrew Jones wrote:
-> > > On Mon, Apr 22, 2024 at 06:36:45PM -0400, Charlie Jenkins wrote:
-> > > > On Sun, Apr 21, 2024 at 12:20:03PM +0200, Andrew Jones wrote:
-> > > > > On Fri, Apr 19, 2024 at 12:40:01PM -0400, Charlie Jenkins wrote:
-> > > ...
-> > > > > > What would be the purpose of a vendor implementing WRS.NTO (and putting
-> > > > > > it in the DT) that never terminates? The spec says "Then a subsequent
-> > > > > > WRS.NTO instruction would cause the hart to temporarily stall execution
-> > > > > > in a low- power state until a store occurs to the reservation set or an
-> > > > > > interrupt is observed." Why is this wording for WRS.NTO not sufficient
-> > > > > > to assume that an implementation of this instruction would eventually
-> > > > > > terminate?
-> > > > > >
-> > > > > 
-> > > > > We can invoke smp_cond_load_relaxed(addr, VAL || anything_we_want()). This
-> > > > > means we may not expect VAL ever to be written, which rules out "until a
-> > > > > store occurs". As for "an interrupt is observed", we don't know which one
-> > > > > to expect to arrive within a "reasonable" amount of time. We need to know
-> > > > > which one(s), since, while wrs.nto will terminate even when interrupts are
-> > > > > globally disabled, we still need to have the interrupt(s) we expect to be
-> > > > > locally enabled. And, the interrupts should arrive in a "reasonable"
-> > > > > amount of time since we want to poll anything_we_want() at a "reasonable"
-> > > > > frequency.
-> > > > > 
-> > > > > So, we need firmware to promise to enable exceptions if there aren't any
-> > > > > such interrupts. Or, we could require hardware descriptions to identify
-> > > > > which interrupt(s) would be good to have enabled before calling wrs.nto.
-> > > > > Maybe there's already some way to describe something like that?
-> > > > > 
-> > > > > Thanks,
-> > > > > drew
-> > > > 
-> > > > Ahh okay I am caught up now. So the wording we are looking at in the
-> > > > spec is:
-> > > > 
-> > > > "When executing in VS or VU mode, if the VTW bit is set in hstatus, the
-> > > > TW bit in mstatus is clear, and the WRS.NTO does not complete within an
-> > > > implementation-specific bounded time limit, the WRS.NTO instruction will
-> > > > cause a virtual instruction exception."
-> > > 
-> > > That's what the hypervisor should promise to do when there's no other
-> > > guarantee of wrs.nto terminating (but the hypervisor likely wants to
-> > > anyway since it wants guests to trap on wrs.nto in order to potentially
-> > > schedule the lock holding VCPU). The firmware of the host should likewise
-> > > promise to set mstatus.TW when there's no guarantee of wrs.nto
-> > > terminating, but that's likely _not_ something it normally would want to
-> > > do, so hopefully there will always be implementation-specific "other
-> > > reasons" which guarantee termination.
-> > > 
-> > > > 
-> > > > With the concern being that it is possible for "implementation-specific
-> > > > bounded time limit" to be infinite/never times out,
-> > > 
-> > > The implementation-defined short timeout cannot be infinite, but it only
-> > > applies to wrs.sto. While using wrs.sto would relieve the concern, it
-> > > cannot be configured to raise exceptions, which means it's not useful in
-> > > guests. If we want to use wrs.sto in hosts and wrs.nto in guests then we
-> > > need a paravirt channel which allows an "enlightened" guest to determine
-> > > that it is a guest and that the hypervisor has configured wrs.nto to
-> > > trap, which then indicates it's a good idea to patch wrs.sto to wrs.nto.
-> > > But, adding paravirt stuff should be avoided whenever possible since it
-> > > adds complexity we'd rather not maintain.
-> > > 
-> > 
-> > That still wouldn't solve this issue, because the wrs.nto guest may still
-> > never wakeup in the implementation-specific way?
-
-The paravirt approach does solve it, because wrs.nto is specified to raise
-exceptions after an implementation-specific bounded time limit when the
-hypervisor sets hstatus.VTW.
-
+On Wed, Apr 24, 2024 at 09:20:35AM +0200, Cl?ment L?ger wrote:
 > 
-> Thinking about this a bit more, this is a performance penalty and not a
-> correctness issue.
+> 
+> On 23/04/2024 18:30, Conor Dooley wrote:
+> > On Thu, Apr 18, 2024 at 04:26:41PM +0200, Cl?ment L?ger wrote:
+> >> Add description for the Ssdbltrp ISA extension which is not yet
+> >> ratified.
+> >>
+> >> Signed-off-by: Cl?ment L?ger <cleger@rivosinc.com>
+> >> ---
+> >>  Documentation/devicetree/bindings/riscv/extensions.yaml | 6 ++++++
+> >>  1 file changed, 6 insertions(+)
+> >>
+> >> diff --git a/Documentation/devicetree/bindings/riscv/extensions.yaml b/Documentation/devicetree/bindings/riscv/extensions.yaml
+> >> index 63d81dc895e5..ce7021dbb556 100644
+> >> --- a/Documentation/devicetree/bindings/riscv/extensions.yaml
+> >> +++ b/Documentation/devicetree/bindings/riscv/extensions.yaml
+> >> @@ -147,6 +147,12 @@ properties:
+> >>              and mode-based filtering as ratified at commit 01d1df0 ("Add ability
+> >>              to manually trigger workflow. (#2)") of riscv-count-overflow.
+> >>  
+> >> +        - const: ssdbltrp
+> >> +          description: |
+> >> +            The standard Ssdbltrp supervisor-level extension for double trap
+> >> +            handling as currently defined by commit e85847b ("Merge pull request
+> >> +            #32 from ved-rivos/0415_1 ") of riscv-double-trap.
+> > 
+> > I see the proposed ratification for this is Sept 2024, and is marked as
+> > "Freeze Approved". Do you know when it is going to be frozen? Until
+> > this, I can't ack this patch. I had a look in the RVI JIRA
+> > https://jira.riscv.org/browse/RVS-2291?src=confmacro
+> > and it looks imminent, but it's unclear to me whether it actually has
+> > been or not.
+> 
+> Hi Conor,
+> 
+> Yeah, this series is a RFC since the spec is not yet ratified nor frozen
+> and its purpose is actually to get to a frozen state. As to when this
+> will be ratified, I guess Ved can probably answer that.
 
-It's incorrect to have a design that is likely to result in bad
-performance.
-
-> This line is an optimization that allows the lock
-> holder to jump the queue if the holder directly in front is a preempted
-> vcpu. Eventually the vcpu will be scheduled again and give up the lock.
-> So an implementation of WRS.NTO that does not have the
-> "implementation-specific bounded time limit" that the spec calls out for
-> WRS.NTO to raise a virtual instruction exception, would still function,
-> just slower.
-
-The problem isn't specific to virtualization. The problem is using wrs.nto
-when it has not been configured to raise exceptions and there are not any
-other guaranteed termination events (other than the reservation set
-becoming invalid). While the paravirt solution is virtualization specific,
-it works, because we would then only use wrs.nto when we know we can, and
-otherwise use wrs.sto. But, as I said, I'd rather not have a paravirt
-solution.
-
-Thanks,
-drew
-
+Usually I'd just not ack the RFC patches, but I do at least check how
+far they might be from frozen before I move on, The jira for this one
+says "Actual ARC Freeze Approval:	18/Apr/24", which made me think
+a freeze was gonna happen soon.
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 228 bytes
+Desc: not available
+URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20240424/96696a63/attachment-0001.sig>
