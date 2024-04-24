@@ -1,250 +1,131 @@
-From: Clément Léger <cleger@rivosinc.com>
-Date: Wed, 24 Apr 2024 10:56:14 +0200
-Subject: [RFC PATCH 5/7] riscv: add double trap driver
-In-Reply-To: <20240423-headsman-arrival-16a2d13342b2@spud>
-References: <20240418142701.1493091-1-cleger@rivosinc.com>
- <20240418142701.1493091-6-cleger@rivosinc.com>
- <20240423-headsman-arrival-16a2d13342b2@spud>
-Message-ID: <5b3f9017-b107-4de1-ab0d-854de160a5f6@rivosinc.com>
+From: Christoph Müllner <christoph.muellner@vrull.eu>
+Date: Wed, 24 Apr 2024 11:23:00 +0200
+Subject: [PATCH v2 2/6] dt-bindings: riscv: Add Zawrs ISA extension description
+In-Reply-To: <20240424-0e571b29835610c24409762b@orel>
+References: <20240419135321.70781-10-ajones@ventanamicro.com>
+ <20240419-chafe-leotard-e5daee19b1c8@spud> <20240419-8c6af6a169a7aa0b9aa5cac5@orel>
+ <20240419-disdain-litmus-82874cc4872e@spud> <ZiKeYRnXxtLUtkkW@ghost>
+ <20240421-f63f90c2146deb0695b84441@orel> <ZibmfbLnGCb9gmow@ghost>
+ <20240423-ed9ddb701be1df4a25e29f31@orel> <Zif3VZALGtLtl3D3@ghost>
+ <ZigPN/iJ/gLT4DOD@ghost> <20240424-0e571b29835610c24409762b@orel>
+Message-ID: <CAEg0e7gYteAbHyQCvodO=Mh20qpW4oM9Lm42efNJvz=9muQO-g@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+On Wed, Apr 24, 2024 at 9:34?AM Andrew Jones <ajones@ventanamicro.com> wrote:
+>
+> On Tue, Apr 23, 2024 at 03:42:47PM -0400, Charlie Jenkins wrote:
+> > On Tue, Apr 23, 2024 at 02:00:53PM -0400, Charlie Jenkins wrote:
+> > > On Tue, Apr 23, 2024 at 10:46:01AM +0200, Andrew Jones wrote:
+> > > > On Mon, Apr 22, 2024 at 06:36:45PM -0400, Charlie Jenkins wrote:
+> > > > > On Sun, Apr 21, 2024 at 12:20:03PM +0200, Andrew Jones wrote:
+> > > > > > On Fri, Apr 19, 2024 at 12:40:01PM -0400, Charlie Jenkins wrote:
+> > > > ...
+> > > > > > > What would be the purpose of a vendor implementing WRS.NTO (and putting
+> > > > > > > it in the DT) that never terminates? The spec says "Then a subsequent
+> > > > > > > WRS.NTO instruction would cause the hart to temporarily stall execution
+> > > > > > > in a low- power state until a store occurs to the reservation set or an
+> > > > > > > interrupt is observed." Why is this wording for WRS.NTO not sufficient
+> > > > > > > to assume that an implementation of this instruction would eventually
+> > > > > > > terminate?
+> > > > > > >
+> > > > > >
+> > > > > > We can invoke smp_cond_load_relaxed(addr, VAL || anything_we_want()). This
+> > > > > > means we may not expect VAL ever to be written, which rules out "until a
+> > > > > > store occurs". As for "an interrupt is observed", we don't know which one
+> > > > > > to expect to arrive within a "reasonable" amount of time. We need to know
+> > > > > > which one(s), since, while wrs.nto will terminate even when interrupts are
+> > > > > > globally disabled, we still need to have the interrupt(s) we expect to be
+> > > > > > locally enabled. And, the interrupts should arrive in a "reasonable"
+> > > > > > amount of time since we want to poll anything_we_want() at a "reasonable"
+> > > > > > frequency.
+> > > > > >
+> > > > > > So, we need firmware to promise to enable exceptions if there aren't any
+> > > > > > such interrupts. Or, we could require hardware descriptions to identify
+> > > > > > which interrupt(s) would be good to have enabled before calling wrs.nto.
+> > > > > > Maybe there's already some way to describe something like that?
+> > > > > >
+> > > > > > Thanks,
+> > > > > > drew
+> > > > >
+> > > > > Ahh okay I am caught up now. So the wording we are looking at in the
+> > > > > spec is:
+> > > > >
+> > > > > "When executing in VS or VU mode, if the VTW bit is set in hstatus, the
+> > > > > TW bit in mstatus is clear, and the WRS.NTO does not complete within an
+> > > > > implementation-specific bounded time limit, the WRS.NTO instruction will
+> > > > > cause a virtual instruction exception."
+> > > >
+> > > > That's what the hypervisor should promise to do when there's no other
+> > > > guarantee of wrs.nto terminating (but the hypervisor likely wants to
+> > > > anyway since it wants guests to trap on wrs.nto in order to potentially
+> > > > schedule the lock holding VCPU). The firmware of the host should likewise
+> > > > promise to set mstatus.TW when there's no guarantee of wrs.nto
+> > > > terminating, but that's likely _not_ something it normally would want to
+> > > > do, so hopefully there will always be implementation-specific "other
+> > > > reasons" which guarantee termination.
+> > > >
+> > > > >
+> > > > > With the concern being that it is possible for "implementation-specific
+> > > > > bounded time limit" to be infinite/never times out,
+> > > >
+> > > > The implementation-defined short timeout cannot be infinite, but it only
+> > > > applies to wrs.sto. While using wrs.sto would relieve the concern, it
+> > > > cannot be configured to raise exceptions, which means it's not useful in
+> > > > guests. If we want to use wrs.sto in hosts and wrs.nto in guests then we
+> > > > need a paravirt channel which allows an "enlightened" guest to determine
+> > > > that it is a guest and that the hypervisor has configured wrs.nto to
+> > > > trap, which then indicates it's a good idea to patch wrs.sto to wrs.nto.
+> > > > But, adding paravirt stuff should be avoided whenever possible since it
+> > > > adds complexity we'd rather not maintain.
+> > > >
+> > >
+> > > That still wouldn't solve this issue, because the wrs.nto guest may still
+> > > never wakeup in the implementation-specific way?
+>
+> The paravirt approach does solve it, because wrs.nto is specified to raise
+> exceptions after an implementation-specific bounded time limit when the
+> hypervisor sets hstatus.VTW.
+>
+> >
+> > Thinking about this a bit more, this is a performance penalty and not a
+> > correctness issue.
+>
+> It's incorrect to have a design that is likely to result in bad
+> performance.
+>
+> > This line is an optimization that allows the lock
+> > holder to jump the queue if the holder directly in front is a preempted
+> > vcpu. Eventually the vcpu will be scheduled again and give up the lock.
+> > So an implementation of WRS.NTO that does not have the
+> > "implementation-specific bounded time limit" that the spec calls out for
+> > WRS.NTO to raise a virtual instruction exception, would still function,
+> > just slower.
+>
+> The problem isn't specific to virtualization. The problem is using wrs.nto
+> when it has not been configured to raise exceptions and there are not any
+> other guaranteed termination events (other than the reservation set
+> becoming invalid). While the paravirt solution is virtualization specific,
+> it works, because we would then only use wrs.nto when we know we can, and
+> otherwise use wrs.sto. But, as I said, I'd rather not have a paravirt
+> solution.
 
+Andrew, it would be great if you could summarize this finding to the
+spec authors.
+Maybe a non-normative text added to the spec (that raises awareness
+for the issue
+and provides a guideline to avoid it) could reduce the risk of triggering
+the issue on real HW. This might be enough justification to use WRS.NTO.
 
-On 23/04/2024 18:39, Conor Dooley wrote:
-> On Thu, Apr 18, 2024 at 04:26:44PM +0200, Cl?ment L?ger wrote:
->> Add a small driver to request double trap enabling as well as
->> registering a SSE handler for double trap. This will also be used by KVM
->> SBI FWFT extension support to detect if it is possible to enable double
->> trap in VS-mode.
->>
->> Signed-off-by: Cl?ment L?ger <cleger@rivosinc.com>
->> ---
->>  arch/riscv/include/asm/sbi.h    |  1 +
->>  drivers/firmware/Kconfig        |  7 +++
->>  drivers/firmware/Makefile       |  1 +
->>  drivers/firmware/riscv_dbltrp.c | 95 +++++++++++++++++++++++++++++++++
->>  include/linux/riscv_dbltrp.h    | 19 +++++++
->>  5 files changed, 123 insertions(+)
->>  create mode 100644 drivers/firmware/riscv_dbltrp.c
->>  create mode 100644 include/linux/riscv_dbltrp.h
->>
->> diff --git a/arch/riscv/include/asm/sbi.h b/arch/riscv/include/asm/sbi.h
->> index 744aa1796c92..9cd4ca66487c 100644
->> --- a/arch/riscv/include/asm/sbi.h
->> +++ b/arch/riscv/include/asm/sbi.h
->> @@ -314,6 +314,7 @@ enum sbi_sse_attr_id {
->>  #define SBI_SSE_ATTR_INTERRUPTED_FLAGS_SPIE	(1 << 2)
->>  
->>  #define SBI_SSE_EVENT_LOCAL_RAS		0x00000000
->> +#define SBI_SSE_EVENT_LOCAL_DOUBLE_TRAP	0x00000001
->>  #define SBI_SSE_EVENT_GLOBAL_RAS	0x00008000
->>  #define SBI_SSE_EVENT_LOCAL_PMU		0x00010000
->>  #define SBI_SSE_EVENT_LOCAL_SOFTWARE	0xffff0000
->> diff --git a/drivers/firmware/Kconfig b/drivers/firmware/Kconfig
->> index 59f611288807..a037f6e89942 100644
->> --- a/drivers/firmware/Kconfig
->> +++ b/drivers/firmware/Kconfig
->> @@ -197,6 +197,13 @@ config RISCV_SSE_TEST
->>  	  Select if you want to enable SSE extension testing at boot time.
->>  	  This will run a series of test which verifies SSE sanity.
->>  
->> +config RISCV_DBLTRP
->> +	bool "Enable Double trap handling"
->> +	depends on RISCV_SSE && RISCV_SBI
->> +	default n
->> +	help
->> +	  Select if you want to enable SSE double trap handler.
->> +
->>  config SYSFB
->>  	bool
->>  	select BOOT_VESA_SUPPORT
->> diff --git a/drivers/firmware/Makefile b/drivers/firmware/Makefile
->> index fb7b0c08c56d..ad67a1738c0f 100644
->> --- a/drivers/firmware/Makefile
->> +++ b/drivers/firmware/Makefile
->> @@ -18,6 +18,7 @@ obj-$(CONFIG_RASPBERRYPI_FIRMWARE) += raspberrypi.o
->>  obj-$(CONFIG_FW_CFG_SYSFS)	+= qemu_fw_cfg.o
->>  obj-$(CONFIG_RISCV_SSE)		+= riscv_sse.o
->>  obj-$(CONFIG_RISCV_SSE_TEST)	+= riscv_sse_test.o
->> +obj-$(CONFIG_RISCV_DBLTRP)	+= riscv_dbltrp.o
-> 
-> As previously mentioned, I'd like to see all of these riscv specific
-> things in a riscv directory.
+If WRS.NTO is considered as not reliable enough to wake up and therefore causing
+performance issues or CPU stalls if used for the spin lock optimization,
+it might be also reasonable to use WRS.STO instead.
+The cost of having too many wakeups seems much more acceptable than
+a stalled CPU.
 
-Acked, I was not aware of that.
-
-> 
->>  obj-$(CONFIG_SYSFB)		+= sysfb.o
->>  obj-$(CONFIG_SYSFB_SIMPLEFB)	+= sysfb_simplefb.o
->>  obj-$(CONFIG_TI_SCI_PROTOCOL)	+= ti_sci.o
->> diff --git a/drivers/firmware/riscv_dbltrp.c b/drivers/firmware/riscv_dbltrp.c
->> new file mode 100644
->> index 000000000000..72f9a067e87a
->> --- /dev/null
->> +++ b/drivers/firmware/riscv_dbltrp.c
->> @@ -0,0 +1,95 @@
->> +// SPDX-License-Identifier: GPL-2.0-only
->> +/*
->> + * Copyright (C) 2023 Rivos Inc.
->> + */
->> +
->> +#define pr_fmt(fmt) "riscv-dbltrp: " fmt
->> +
->> +#include <linux/cpu.h>
->> +#include <linux/init.h>
->> +#include <linux/riscv_dbltrp.h>
->> +#include <linux/riscv_sse.h>
->> +
->> +#include <asm/sbi.h>
->> +
->> +static bool double_trap_enabled;
->> +
->> +static int riscv_sse_dbltrp_handle(uint32_t evt, void *arg,
->> +				   struct pt_regs *regs)
->> +{
->> +	__show_regs(regs);
->> +	panic("Double trap !\n");
->> +
->> +	return 0;
->> +}
->> +
->> +struct cpu_dbltrp_data {
->> +	int error;
->> +};
->> +
->> +static void
->> +sbi_cpu_enable_double_trap(void *data)
-> 
-> This should easily fit on one line.
-> 
->> +{
->> +	struct sbiret ret;
->> +	struct cpu_dbltrp_data *cdd = data;
->> +
->> +	ret = sbi_ecall(SBI_EXT_FWFT, SBI_EXT_FWFT_SET,
->> +			SBI_FWFT_DOUBLE_TRAP_ENABLE, 1, 0, 0, 0, 0);
->> +
->> +	if (ret.error) {
->> +		cdd->error = 1;
-> 
-> If this is a boolean, make it a boolean please. All the code in this
-> patch treats it as one.
-> 
->> +		pr_err("Failed to enable double trap on cpu %d\n", smp_processor_id());
->> +	}
->> +}
->> +
->> +static int sbi_enable_double_trap(void)
->> +{
->> +	struct cpu_dbltrp_data cdd = {0};
->> +
->> +	on_each_cpu(sbi_cpu_enable_double_trap, &cdd, 1);
->> +	if (cdd.error)
->> +		return -1;
-> 
-> Can this be an errno please?
-> 
->> +
->> +	double_trap_enabled = true;
->> +
->> +	return 0;
->> +}
->> +
->> +bool riscv_double_trap_enabled(void)
->> +{
->> +	return double_trap_enabled;
->> +}
->> +EXPORT_SYMBOL(riscv_double_trap_enabled);
-> 
-> Can we just use double_trap everywhere? dbltrp reads like sound that a
-> beatboxer would make and this looks a lot nicer than the other functions
-> in the file...
-
-Ahah you gave me a good laugh :D
-
-> 
->> +
->> +static int __init riscv_dbltrp(void)
-> 
-> I think this function is missing an action work - init or probe?
-> 
->> +{
->> +	struct sse_event *evt;
->> +
->> +	if (!riscv_has_extension_unlikely(RISCV_ISA_EXT_SSDBLTRP)) {
->> +		pr_err("Ssdbltrp extension not available\n");
->> +		return 1;
->> +	}
->> +
->> +	if (!sbi_probe_extension(SBI_EXT_FWFT)) {
->> +		pr_err("Can not enable double trap, SBI_EXT_FWFT is not available\n");
->> +		return 1;
->> +	}
->> +
->> +	if (sbi_enable_double_trap()) {
->> +		pr_err("Failed to enable double trap on all cpus\n");
->> +		return 1;
-> 
-> Why do we return 1s here, but an errno via PTR_ERR() below?
-> Shouldn't all of these be returning a negative errono?
-> This particular one should probably propagate the error it got from
-> sbi_enable_double_trap().
-
-Indeed, I'll use some errno everywhere.
-
-Thanks,
-
-Cl?ment
-
-> 
-> Cheers,
-> Conor.
-> 
->> +	}
->> +
->> +	evt = sse_event_register(SBI_SSE_EVENT_LOCAL_DOUBLE_TRAP, 0,
->> +				 riscv_sse_dbltrp_handle, NULL);
->> +	if (IS_ERR(evt)) {
->> +		pr_err("SSE double trap register failed\n");
->> +		return PTR_ERR(evt);
->> +	}
->> +
->> +	sse_event_enable(evt);
->> +	pr_info("Double trap handling registered\n");
->> +
->> +	return 0;
->> +}
->> +device_initcall(riscv_dbltrp);
->> diff --git a/include/linux/riscv_dbltrp.h b/include/linux/riscv_dbltrp.h
->> new file mode 100644
->> index 000000000000..6de4f43fae6b
->> --- /dev/null
->> +++ b/include/linux/riscv_dbltrp.h
->> @@ -0,0 +1,19 @@
->> +/* SPDX-License-Identifier: GPL-2.0 */
->> +/*
->> + * Copyright (C) 2023 Rivos Inc.
->> + */
->> +
->> +#ifndef __LINUX_RISCV_DBLTRP_H
->> +#define __LINUX_RISCV_DBLTRP_H
->> +
->> +#if defined(CONFIG_RISCV_DBLTRP)
->> +bool riscv_double_trap_enabled(void);
->> +#else
->> +
->> +static inline bool riscv_double_trap_enabled(void)
->> +{
->> +	return false;
->> +}
->> +#endif
->> +
->> +#endif /* __LINUX_RISCV_DBLTRP_H */
->> -- 
->> 2.43.0
->>
+BR
+Christoph
 
