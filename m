@@ -1,582 +1,136 @@
-From: Atish Kumar Patra <atishp@rivosinc.com>
-Date: Tue, 23 Apr 2024 13:34:31 -0700
-Subject: [PATCH v8 09/24] drivers/perf: riscv: Implement SBI PMU snapshot function
-In-Reply-To: <2f43393d-2488-40c8-abde-4dc82a64a829@sifive.com>
-References: <20240420151741.962500-1-atishp@rivosinc.com> <20240420151741.962500-10-atishp@rivosinc.com>
- <2f43393d-2488-40c8-abde-4dc82a64a829@sifive.com>
-Message-ID: <CAHBxVyGjzeZQ+FkPXbAKF822eSCE25iyb8O56PkRbtEkXW00kw@mail.gmail.com>
+From: Alistair Francis <alistair23@gmail.com>
+Date: Wed, 24 Apr 2024 10:13:34 +1000
+Subject: [PATCH] target/riscv/kvm: Fix exposure of Zkr
+In-Reply-To: <20240422134605.534207-2-ajones@ventanamicro.com>
+References: <20240422134605.534207-2-ajones@ventanamicro.com>
+Message-ID: <CAKmqyKNX=gnWgTBDp60W_iZk3aEfcNbvfhB+N6ZoWvkQdwxgkg@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Apr 22, 2024 at 9:06?AM Samuel Holland
-<samuel.holland@sifive.com> wrote:
+On Mon, Apr 22, 2024 at 11:47?PM Andrew Jones <ajones@ventanamicro.com> wrote:
 >
-> Hi Atish,
+> The Zkr extension may only be exposed to KVM guests if the VMM
+> implements the SEED CSR. Use the same implementation as TCG.
 >
-> On 2024-04-20 10:17 AM, Atish Patra wrote:
-> > SBI v2.0 SBI introduced PMU snapshot feature which adds the following
-> > features.
-> >
-> > 1. Read counter values directly from the shared memory instead of
-> > csr read.
-> > 2. Start multiple counters with initial values with one SBI call.
-> >
-> > These functionalities optimizes the number of traps to the higher
-> > privilege mode. If the kernel is in VS mode while the hypervisor
-> > deploy trap & emulate method, this would minimize all the hpmcounter
-> > CSR read traps. If the kernel is running in S-mode, the benefits
-> > reduced to CSR latency vs DRAM/cache latency as there is no trap
-> > involved while accessing the hpmcounter CSRs.
-> >
-> > In both modes, it does saves the number of ecalls while starting
-> > multiple counter together with an initial values. This is a likely
-> > scenario if multiple counters overflow at the same time.
-> >
-> > Acked-by: Palmer Dabbelt <palmer@rivosinc.com>
-> > Reviewed-by: Anup Patel <anup@brainfault.org>
-> > Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
-> > Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
-> > Signed-off-by: Atish Patra <atishp@rivosinc.com>
-> > ---
-> >  drivers/perf/riscv_pmu.c       |   1 +
-> >  drivers/perf/riscv_pmu_sbi.c   | 265 ++++++++++++++++++++++++++++++---
-> >  include/linux/perf/riscv_pmu.h |   6 +
-> >  3 files changed, 255 insertions(+), 17 deletions(-)
-> >
-> > diff --git a/drivers/perf/riscv_pmu.c b/drivers/perf/riscv_pmu.c
-> > index b4efdddb2ad9..36d348753d05 100644
-> > --- a/drivers/perf/riscv_pmu.c
-> > +++ b/drivers/perf/riscv_pmu.c
-> > @@ -408,6 +408,7 @@ struct riscv_pmu *riscv_pmu_alloc(void)
-> >               cpuc->n_events = 0;
-> >               for (i = 0; i < RISCV_MAX_COUNTERS; i++)
-> >                       cpuc->events[i] = NULL;
-> > +             cpuc->snapshot_addr = NULL;
-> >       }
-> >       pmu->pmu = (struct pmu) {
-> >               .event_init     = riscv_pmu_event_init,
-> > diff --git a/drivers/perf/riscv_pmu_sbi.c b/drivers/perf/riscv_pmu_sbi.c
-> > index 4eacd89141a9..2694110f1cff 100644
-> > --- a/drivers/perf/riscv_pmu_sbi.c
-> > +++ b/drivers/perf/riscv_pmu_sbi.c
-> > @@ -58,6 +58,9 @@ PMU_FORMAT_ATTR(event, "config:0-47");
-> >  PMU_FORMAT_ATTR(firmware, "config:63");
-> >
-> >  static bool sbi_v2_available;
-> > +static DEFINE_STATIC_KEY_FALSE(sbi_pmu_snapshot_available);
-> > +#define sbi_pmu_snapshot_available() \
-> > +     static_branch_unlikely(&sbi_pmu_snapshot_available)
-> >
-> >  static struct attribute *riscv_arch_formats_attr[] = {
-> >       &format_attr_event.attr,
-> > @@ -508,14 +511,105 @@ static int pmu_sbi_event_map(struct perf_event *event, u64 *econfig)
-> >       return ret;
-> >  }
-> >
-> > +static void pmu_sbi_snapshot_free(struct riscv_pmu *pmu)
-> > +{
-> > +     int cpu;
-> > +
-> > +     for_each_possible_cpu(cpu) {
-> > +             struct cpu_hw_events *cpu_hw_evt = per_cpu_ptr(pmu->hw_events, cpu);
-> > +
-> > +             if (!cpu_hw_evt->snapshot_addr)
-> > +                     continue;
-> > +
-> > +             free_page((unsigned long)cpu_hw_evt->snapshot_addr);
-> > +             cpu_hw_evt->snapshot_addr = NULL;
-> > +             cpu_hw_evt->snapshot_addr_phys = 0;
-> > +     }
-> > +}
-> > +
-> > +static int pmu_sbi_snapshot_alloc(struct riscv_pmu *pmu)
-> > +{
-> > +     int cpu;
-> > +     struct page *snapshot_page;
-> > +
-> > +     for_each_possible_cpu(cpu) {
-> > +             struct cpu_hw_events *cpu_hw_evt = per_cpu_ptr(pmu->hw_events, cpu);
-> > +
-> > +             snapshot_page = alloc_page(GFP_ATOMIC | __GFP_ZERO);
-> > +             if (!snapshot_page) {
-> > +                     pmu_sbi_snapshot_free(pmu);
-> > +                     return -ENOMEM;
-> > +             }
-> > +             cpu_hw_evt->snapshot_addr = page_to_virt(snapshot_page);
-> > +             cpu_hw_evt->snapshot_addr_phys = page_to_phys(snapshot_page);
-> > +     }
-> > +
-> > +     return 0;
-> > +}
-> > +
-> > +static int pmu_sbi_snapshot_disable(void)
-> > +{
-> > +     struct sbiret ret;
-> > +
-> > +     ret = sbi_ecall(SBI_EXT_PMU, SBI_EXT_PMU_SNAPSHOT_SET_SHMEM, SBI_SHMEM_DISABLE,
-> > +                     SBI_SHMEM_DISABLE, 0, 0, 0, 0);
-> > +     if (ret.error) {
-> > +             pr_warn("failed to disable snapshot shared memory\n");
-> > +             return sbi_err_map_linux_errno(ret.error);
-> > +     }
-> > +
-> > +     return 0;
-> > +}
-> > +
-> > +static int pmu_sbi_snapshot_setup(struct riscv_pmu *pmu, int cpu)
-> > +{
-> > +     struct cpu_hw_events *cpu_hw_evt;
-> > +     struct sbiret ret = {0};
-> > +
-> > +     cpu_hw_evt = per_cpu_ptr(pmu->hw_events, cpu);
-> > +     if (!cpu_hw_evt->snapshot_addr_phys)
-> > +             return -EINVAL;
-> > +
-> > +     if (cpu_hw_evt->snapshot_set_done)
-> > +             return 0;
-> > +
-> > +     if (IS_ENABLED(CONFIG_32BIT))
-> > +             ret = sbi_ecall(SBI_EXT_PMU, SBI_EXT_PMU_SNAPSHOT_SET_SHMEM,
-> > +                             cpu_hw_evt->snapshot_addr_phys,
-> > +                             (u64)(cpu_hw_evt->snapshot_addr_phys) >> 32, 0, 0, 0, 0);
-> > +     else
-> > +             ret = sbi_ecall(SBI_EXT_PMU, SBI_EXT_PMU_SNAPSHOT_SET_SHMEM,
-> > +                             cpu_hw_evt->snapshot_addr_phys, 0, 0, 0, 0, 0);
-> > +
-> > +     /* Free up the snapshot area memory and fall back to SBI PMU calls without snapshot */
-> > +     if (ret.error) {
-> > +             if (ret.error != SBI_ERR_NOT_SUPPORTED)
-> > +                     pr_warn("pmu snapshot setup failed with error %ld\n", ret.error);
-> > +             return sbi_err_map_linux_errno(ret.error);
-> > +     }
-> > +
-> > +     cpu_hw_evt->snapshot_set_done = true;
-> > +
-> > +     return 0;
-> > +}
-> > +
-> >  static u64 pmu_sbi_ctr_read(struct perf_event *event)
-> >  {
-> >       struct hw_perf_event *hwc = &event->hw;
-> >       int idx = hwc->idx;
-> >       struct sbiret ret;
-> >       u64 val = 0;
-> > +     struct riscv_pmu *pmu = to_riscv_pmu(event->pmu);
-> > +     struct cpu_hw_events *cpu_hw_evt = this_cpu_ptr(pmu->hw_events);
-> > +     struct riscv_pmu_snapshot_data *sdata = cpu_hw_evt->snapshot_addr;
-> >       union sbi_pmu_ctr_info info = pmu_ctr_list[idx];
-> >
-> > +     /* Read the value from the shared memory directly only if counter is stopped */
-> > +     if (sbi_pmu_snapshot_available() & (hwc->state & PERF_HES_STOPPED)) {
+> Without this patch, running with a KVM which does not forward the
+> SEED CSR access to QEMU will result in an ILL exception being
+> injected into the guest (this results in Linux guests crashing on
+> boot). And, when running with a KVM which does forward the access,
+> QEMU will crash, since QEMU doesn't know what to do with the exit.
 >
-> nit: logical && between the two conditions
+> Fixes: 3108e2f1c69d ("target/riscv/kvm: update KVM exts to Linux 6.8")
+> Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
+
+Thanks!
+
+Applied to riscv-to-apply.next
+
+Alistair
+
+> ---
+>  target/riscv/cpu.h         |  3 +++
+>  target/riscv/csr.c         | 18 ++++++++++++++----
+>  target/riscv/kvm/kvm-cpu.c | 25 +++++++++++++++++++++++++
+>  3 files changed, 42 insertions(+), 4 deletions(-)
 >
-
-Fixed.
-
-> > +             val = sdata->ctr_values[idx];
-> > +             return val;
-> > +     }
-> > +
-> >       if (pmu_sbi_is_fw_event(event)) {
-> >               ret = sbi_ecall(SBI_EXT_PMU, SBI_EXT_PMU_COUNTER_FW_READ,
-> >                               hwc->idx, 0, 0, 0, 0, 0);
-> > @@ -565,6 +659,7 @@ static void pmu_sbi_ctr_start(struct perf_event *event, u64 ival)
-> >       struct hw_perf_event *hwc = &event->hw;
-> >       unsigned long flag = SBI_PMU_START_FLAG_SET_INIT_VALUE;
-> >
-> > +     /* There is no benefit setting SNAPSHOT FLAG for a single counter */
-> >  #if defined(CONFIG_32BIT)
-> >       ret = sbi_ecall(SBI_EXT_PMU, SBI_EXT_PMU_COUNTER_START, hwc->idx,
-> >                       1, flag, ival, ival >> 32, 0);
-> > @@ -585,16 +680,36 @@ static void pmu_sbi_ctr_stop(struct perf_event *event, unsigned long flag)
-> >  {
-> >       struct sbiret ret;
-> >       struct hw_perf_event *hwc = &event->hw;
-> > +     struct riscv_pmu *pmu = to_riscv_pmu(event->pmu);
-> > +     struct cpu_hw_events *cpu_hw_evt = this_cpu_ptr(pmu->hw_events);
-> > +     struct riscv_pmu_snapshot_data *sdata = cpu_hw_evt->snapshot_addr;
-> >
-> >       if ((hwc->flags & PERF_EVENT_FLAG_USER_ACCESS) &&
-> >           (hwc->flags & PERF_EVENT_FLAG_USER_READ_CNT))
-> >               pmu_sbi_reset_scounteren((void *)event);
-> >
-> > +     if (sbi_pmu_snapshot_available())
-> > +             flag |= SBI_PMU_STOP_FLAG_TAKE_SNAPSHOT;
-> > +
-> >       ret = sbi_ecall(SBI_EXT_PMU, SBI_EXT_PMU_COUNTER_STOP, hwc->idx, 1, flag, 0, 0, 0);
-> > -     if (ret.error && (ret.error != SBI_ERR_ALREADY_STOPPED) &&
-> > -             flag != SBI_PMU_STOP_FLAG_RESET)
-> > +     if (!ret.error && sbi_pmu_snapshot_available()) {
-> > +             /*
-> > +              * The counter snapshot is based on the index base specified by hwc->idx.
-> > +              * The actual counter value is updated in shared memory at index 0 when counter
-> > +              * mask is 0x01. To ensure accurate counter values, it's necessary to transfer
-> > +              * the counter value to shared memory. However, if hwc->idx is zero, the counter
-> > +              * value is already correctly updated in shared memory, requiring no further
-> > +              * adjustment.
-> > +              */
-> > +             if (hwc->idx > 0) {
-> > +                     sdata->ctr_values[hwc->idx] = sdata->ctr_values[0];
-> > +                     sdata->ctr_values[0] = 0;
-> > +             }
-> > +     } else if (ret.error && (ret.error != SBI_ERR_ALREADY_STOPPED) &&
-> > +             flag != SBI_PMU_STOP_FLAG_RESET) {
-> >               pr_err("Stopping counter idx %d failed with error %d\n",
-> >                       hwc->idx, sbi_err_map_linux_errno(ret.error));
-> > +     }
-> >  }
-> >
-> >  static int pmu_sbi_find_num_ctrs(void)
-> > @@ -652,12 +767,39 @@ static inline void pmu_sbi_stop_all(struct riscv_pmu *pmu)
-> >  static inline void pmu_sbi_stop_hw_ctrs(struct riscv_pmu *pmu)
-> >  {
-> >       struct cpu_hw_events *cpu_hw_evt = this_cpu_ptr(pmu->hw_events);
-> > +     struct riscv_pmu_snapshot_data *sdata = cpu_hw_evt->snapshot_addr;
-> > +     unsigned long flag = 0;
-> >       int i;
-> > +     struct sbiret ret;
-> > +     unsigned long temp_ctr_values[64] = {0};
-> > +     unsigned long ctr_val, temp_ctr_overflow_mask = 0;
-> >
-> > -     for (i = 0; i < BITS_TO_LONGS(RISCV_MAX_COUNTERS); i++)
-> > +     if (sbi_pmu_snapshot_available())
-> > +             flag = SBI_PMU_STOP_FLAG_TAKE_SNAPSHOT;
-> > +
-> > +     for (i = 0; i < BITS_TO_LONGS(RISCV_MAX_COUNTERS); i++) {
-> >               /* No need to check the error here as we can't do anything about the error */
-> > -             sbi_ecall(SBI_EXT_PMU, SBI_EXT_PMU_COUNTER_STOP, i * BITS_PER_LONG,
-> > -                       cpu_hw_evt->used_hw_ctrs[i], 0, 0, 0, 0);
-> > +             ret = sbi_ecall(SBI_EXT_PMU, SBI_EXT_PMU_COUNTER_STOP, i * BITS_PER_LONG,
-> > +                             cpu_hw_evt->used_hw_ctrs[i], flag, 0, 0, 0);
-> > +             if (!ret.error && sbi_pmu_snapshot_available()) {
-> > +                     /* Save the counter values to avoid clobbering */
-> > +                     temp_ctr_values[i * BITS_PER_LONG + i] = sdata->ctr_values[i];
-> > +                     /* Save the overflow mask to avoid clobbering */
-> > +                     if (BIT(i) & sdata->ctr_overflow_mask)
-> > +                             temp_ctr_overflow_mask |= BIT(i + i * BITS_PER_LONG);
+> diff --git a/target/riscv/cpu.h b/target/riscv/cpu.h
+> index 3b1a02b9449a..52fb8c15d08f 100644
+> --- a/target/riscv/cpu.h
+> +++ b/target/riscv/cpu.h
+> @@ -821,6 +821,9 @@ void riscv_set_csr_ops(int csrno, riscv_csr_operations *ops);
 >
-> `i` is iterating over longs here, not individual counters. Using `i` twice in
-> the same expression like this makes no sense.
+>  void riscv_cpu_register_gdb_regs_for_features(CPUState *cs);
 >
-> And again, since you made temp_ctr_overflow_mask an `unsigned long`, this BIT
-> expression overflows during the second iteration of the loop on riscv32.
+> +target_ulong riscv_new_csr_seed(target_ulong new_value,
+> +                                target_ulong write_mask);
+> +
+>  uint8_t satp_mode_max_from_map(uint32_t map);
+>  const char *satp_mode_str(uint8_t satp_mode, bool is_32_bit);
 >
-
-Arrgh. I don't know what I was thinking. That was the result of me
-sending the patch in haste.
-
-> > +             }
-> > +     }
-> > +
-> > +     /* Restore the counter values to the shared memory */
-> > +     if (sbi_pmu_snapshot_available()) {
-> > +             for (i = 0; i < 64; i++) {
-> > +                     ctr_val = temp_ctr_values[i];
-> > +                     if (ctr_val)
-> > +                             sdata->ctr_values[i] = ctr_val;
+> diff --git a/target/riscv/csr.c b/target/riscv/csr.c
+> index 726096444fae..829d8346ed4e 100644
+> --- a/target/riscv/csr.c
+> +++ b/target/riscv/csr.c
+> @@ -4267,10 +4267,8 @@ static RISCVException write_upmbase(CPURISCVState *env, int csrno,
+>  #endif
 >
-> It is entirely possible for the correct value of a counter to be zero when some
-> other counter overflows. But here if a counter with value zero is clobbered by a
-> nonzero value, the correct value will not be restored.
+>  /* Crypto Extension */
+> -static RISCVException rmw_seed(CPURISCVState *env, int csrno,
+> -                               target_ulong *ret_value,
+> -                               target_ulong new_value,
+> -                               target_ulong write_mask)
+> +target_ulong riscv_new_csr_seed(target_ulong new_value,
+> +                                target_ulong write_mask)
+>  {
+>      uint16_t random_v;
+>      Error *random_e = NULL;
+> @@ -4294,6 +4292,18 @@ static RISCVException rmw_seed(CPURISCVState *env, int csrno,
+>          rval = random_v | SEED_OPST_ES16;
+>      }
 >
-
-Very unlikely but possible. Anyways, it doesn't save much by only
-restoring the values
-with non-zero. So I will remove it.
-
-> > +                     if (temp_ctr_overflow_mask)
-> > +                             sdata->ctr_overflow_mask = temp_ctr_overflow_mask;
+> +    return rval;
+> +}
+> +
+> +static RISCVException rmw_seed(CPURISCVState *env, int csrno,
+> +                               target_ulong *ret_value,
+> +                               target_ulong new_value,
+> +                               target_ulong write_mask)
+> +{
+> +    target_ulong rval;
+> +
+> +    rval = riscv_new_csr_seed(new_value, write_mask);
+> +
+>      if (ret_value) {
+>          *ret_value = rval;
+>      }
+> diff --git a/target/riscv/kvm/kvm-cpu.c b/target/riscv/kvm/kvm-cpu.c
+> index 6a6c6cae80f1..50bdbd24a878 100644
+> --- a/target/riscv/kvm/kvm-cpu.c
+> +++ b/target/riscv/kvm/kvm-cpu.c
+> @@ -1418,6 +1418,28 @@ static int kvm_riscv_handle_sbi(CPUState *cs, struct kvm_run *run)
+>      return ret;
+>  }
 >
-> This doesn't need to be inside the loop. And if temp_ctr_overflow_mask is the
-Sure. I will move it outside.
-
-> 64-bit combination of the two 32-bit values from the SBI calls (which seems to
-> be the intention), then we already know there is at least one set bit, since
-> this is called from the overflow IRQ handler.
-
-The check is there as a sanity check incase there is a spurious interrupt.
-
+> +static int kvm_riscv_handle_csr(CPUState *cs, struct kvm_run *run)
+> +{
+> +    target_ulong csr_num = run->riscv_csr.csr_num;
+> +    target_ulong new_value = run->riscv_csr.new_value;
+> +    target_ulong write_mask = run->riscv_csr.write_mask;
+> +    int ret = 0;
+> +
+> +    switch (csr_num) {
+> +    case CSR_SEED:
+> +        run->riscv_csr.ret_value = riscv_new_csr_seed(new_value, write_mask);
+> +        break;
+> +    default:
+> +        qemu_log_mask(LOG_UNIMP,
+> +                      "%s: un-handled CSR EXIT for CSR %lx\n",
+> +                      __func__, csr_num);
+> +        ret = -1;
+> +        break;
+> +    }
+> +
+> +    return ret;
+> +}
+> +
+>  int kvm_arch_handle_exit(CPUState *cs, struct kvm_run *run)
+>  {
+>      int ret = 0;
+> @@ -1425,6 +1447,9 @@ int kvm_arch_handle_exit(CPUState *cs, struct kvm_run *run)
+>      case KVM_EXIT_RISCV_SBI:
+>          ret = kvm_riscv_handle_sbi(cs, run);
+>          break;
+> +    case KVM_EXIT_RISCV_CSR:
+> +        ret = kvm_riscv_handle_csr(cs, run);
+> +        break;
+>      default:
+>          qemu_log_mask(LOG_UNIMP, "%s: un-handled exit reason %d\n",
+>                        __func__, run->exit_reason);
+> --
+> 2.44.0
 >
-> > +             }
-> > +     }
-> >  }
-> >
-> >  /*
-> > @@ -666,11 +808,10 @@ static inline void pmu_sbi_stop_hw_ctrs(struct riscv_pmu *pmu)
-> >   * while the overflowed counters need to be started with updated initialization
-> >   * value.
-> >   */
-> > -static inline void pmu_sbi_start_overflow_mask(struct riscv_pmu *pmu,
-> > -                                            unsigned long ctr_ovf_mask)
-> > +static inline void pmu_sbi_start_ovf_ctrs_sbi(struct cpu_hw_events *cpu_hw_evt,
-> > +                                           u64 ctr_ovf_mask)
-> >  {
-> >       int idx = 0, i;
-> > -     struct cpu_hw_events *cpu_hw_evt = this_cpu_ptr(pmu->hw_events);
-> >       struct perf_event *event;
-> >       unsigned long flag = SBI_PMU_START_FLAG_SET_INIT_VALUE;
-> >       unsigned long ctr_start_mask = 0;
-> > @@ -706,6 +847,48 @@ static inline void pmu_sbi_start_overflow_mask(struct riscv_pmu *pmu,
-> >       }
-> >  }
-> >
-> > +static inline void pmu_sbi_start_ovf_ctrs_snapshot(struct cpu_hw_events *cpu_hw_evt,
-> > +                                                u64 ctr_ovf_mask)
-> > +{
-> > +     int idx = 0;
-> > +     struct perf_event *event;
-> > +     unsigned long flag = SBI_PMU_START_FLAG_INIT_SNAPSHOT;
-> > +     u64 max_period, init_val = 0;
-> > +     struct hw_perf_event *hwc;
-> > +     struct riscv_pmu_snapshot_data *sdata = cpu_hw_evt->snapshot_addr;
-> > +
-> > +     for_each_set_bit(idx, cpu_hw_evt->used_hw_ctrs, RISCV_MAX_COUNTERS) {
-> > +             if (ctr_ovf_mask & BIT(idx)) {
-> > +                     event = cpu_hw_evt->events[idx];
-> > +                     hwc = &event->hw;
-> > +                     max_period = riscv_pmu_ctr_get_width_mask(event);
-> > +                     init_val = local64_read(&hwc->prev_count) & max_period;
-> > +                     sdata->ctr_values[idx] = init_val;
-> > +             }
-> > +             /*
-> > +              * We do not need to update the non-overflow counters the previous
-> > +              * value should have been there already.
-> > +              */
-> > +     }
-> > +
-> > +     for (idx = 0; idx < BITS_TO_LONGS(RISCV_MAX_COUNTERS); idx++) {
-> > +             /* Start all the counters in a single shot */
-> > +             sbi_ecall(SBI_EXT_PMU, SBI_EXT_PMU_COUNTER_START, idx * BITS_PER_LONG,
-> > +                       cpu_hw_evt->used_hw_ctrs[idx], flag, 0, 0, 0);
->
-> This doesn't work either... for riscv32 you have to copy the initial values for
-> counters 32-63 to ctr_values indexes 0-31, since that is where the SBI
-> implementation expects to find them. And since this clobbers counters 0-31,
-> those need to be preserved somewhere. That's why I recommended a shadow copy of
-> ctr_values -- globally, not local to pmu_sbi_stop_hw_ctrs().
->
-
-Yeah. Again, it's the result of haste to send the patch on Friday
-evening before the trip. My bad!
-
-> Also, you need SBI_PMU_START_FLAG_INIT_SNAPSHOT here to actually load the values
-> from shared memory, so this is broken on riscv64 as well.
-
-The "flag" declared above is initialized with SBI_PMU_START_FLAG_INIT_SNAPSHOT.
-
->
-> > +     }
-> > +}
-> > +
-> > +static void pmu_sbi_start_overflow_mask(struct riscv_pmu *pmu,
-> > +                                     u64 ctr_ovf_mask)
-> > +{
-> > +     struct cpu_hw_events *cpu_hw_evt = this_cpu_ptr(pmu->hw_events);
-> > +
-> > +     if (sbi_pmu_snapshot_available())
-> > +             pmu_sbi_start_ovf_ctrs_snapshot(cpu_hw_evt, ctr_ovf_mask);
-> > +     else
-> > +             pmu_sbi_start_ovf_ctrs_sbi(cpu_hw_evt, ctr_ovf_mask);
-> > +}
-> > +
-> >  static irqreturn_t pmu_sbi_ovf_handler(int irq, void *dev)
-> >  {
-> >       struct perf_sample_data data;
-> > @@ -716,9 +899,10 @@ static irqreturn_t pmu_sbi_ovf_handler(int irq, void *dev)
-> >       struct riscv_pmu *pmu;
-> >       struct perf_event *event;
-> >       unsigned long overflow;
-> > -     unsigned long overflowed_ctrs = 0;
-> > +     u64 overflowed_ctrs = 0;
-> >       struct cpu_hw_events *cpu_hw_evt = dev;
-> >       u64 start_clock = sched_clock();
-> > +     struct riscv_pmu_snapshot_data *sdata = cpu_hw_evt->snapshot_addr;
-> >
-> >       if (WARN_ON_ONCE(!cpu_hw_evt))
-> >               return IRQ_NONE;
-> > @@ -740,7 +924,10 @@ static irqreturn_t pmu_sbi_ovf_handler(int irq, void *dev)
-> >       pmu_sbi_stop_hw_ctrs(pmu);
-> >
-> >       /* Overflow status register should only be read after counter are stopped */
-> > -     ALT_SBI_PMU_OVERFLOW(overflow);
-> > +     if (sbi_pmu_snapshot_available())
-> > +             overflow = sdata->ctr_overflow_mask;
->
-> Overflow is `unsigned long`, so this assignment truncates ctr_overflow_mask on
-> riscv32.
->
-
-Will fix it.
-
-> Was this series tested on riscv32?
->
-
-This particular code path is very unlikely in normal testing scenarios
-as it requires more than 32 counters for rv32 configuration which is
-not the common case. Moreover, the physical counter indices are less
-than 32 to match the hardware CSR number. You can only configure more
-than 32 counters with firmware counters but kvm currently doesn't
-support overflow.
-
-Thus, we need to construct an artificial case to create logical
-counters with indexes more than 32 for hardware counters with CSR
-remapping or support firmware counter overflow.
-
-Let me know if you have any better ideas for quicker testing.
-
-Regarding the whole series, I had tested some earlier versions but
-perf tool seems to be broken for riscv32 now. I will fix it and give
-it a spin. If you have a working setup of rv32 perf testing, let me
-know as well.
-
-Regards,
-Atish
-
-> Regards,
-> Samuel
->
-> > +     else
-> > +             ALT_SBI_PMU_OVERFLOW(overflow);
-> >
-> >       /*
-> >        * Overflow interrupt pending bit should only be cleared after stopping
-> > @@ -766,9 +953,14 @@ static irqreturn_t pmu_sbi_ovf_handler(int irq, void *dev)
-> >               if (!info || info->type != SBI_PMU_CTR_TYPE_HW)
-> >                       continue;
-> >
-> > -             /* compute hardware counter index */
-> > -             hidx = info->csr - CSR_CYCLE;
-> > -             /* check if the corresponding bit is set in sscountovf */
-> > +             if (sbi_pmu_snapshot_available())
-> > +                     /* SBI implementation already updated the logical indicies */
-> > +                     hidx = lidx;
-> > +             else
-> > +                     /* compute hardware counter index */
-> > +                     hidx = info->csr - CSR_CYCLE;
-> > +
-> > +             /* check if the corresponding bit is set in sscountovf or overflow mask in shmem */
-> >               if (!(overflow & BIT(hidx)))
-> >                       continue;
-> >
-> > @@ -778,7 +970,10 @@ static irqreturn_t pmu_sbi_ovf_handler(int irq, void *dev)
-> >                */
-> >               overflowed_ctrs |= BIT(lidx);
-> >               hw_evt = &event->hw;
-> > +             /* Update the event states here so that we know the state while reading */
-> > +             hw_evt->state |= PERF_HES_STOPPED;
-> >               riscv_pmu_event_update(event);
-> > +             hw_evt->state |= PERF_HES_UPTODATE;
-> >               perf_sample_data_init(&data, 0, hw_evt->last_period);
-> >               if (riscv_pmu_event_set_period(event)) {
-> >                       /*
-> > @@ -791,6 +986,8 @@ static irqreturn_t pmu_sbi_ovf_handler(int irq, void *dev)
-> >                        */
-> >                       perf_event_overflow(event, &data, regs);
-> >               }
-> > +             /* Reset the state as we are going to start the counter after the loop */
-> > +             hw_evt->state = 0;
-> >       }
-> >
-> >       pmu_sbi_start_overflow_mask(pmu, overflowed_ctrs);
-> > @@ -822,6 +1019,9 @@ static int pmu_sbi_starting_cpu(unsigned int cpu, struct hlist_node *node)
-> >               enable_percpu_irq(riscv_pmu_irq, IRQ_TYPE_NONE);
-> >       }
-> >
-> > +     if (sbi_pmu_snapshot_available())
-> > +             return pmu_sbi_snapshot_setup(pmu, cpu);
-> > +
-> >       return 0;
-> >  }
-> >
-> > @@ -834,6 +1034,9 @@ static int pmu_sbi_dying_cpu(unsigned int cpu, struct hlist_node *node)
-> >       /* Disable all counters access for user mode now */
-> >       csr_write(CSR_SCOUNTEREN, 0x0);
-> >
-> > +     if (sbi_pmu_snapshot_available())
-> > +             return pmu_sbi_snapshot_disable();
-> > +
-> >       return 0;
-> >  }
-> >
-> > @@ -942,6 +1145,12 @@ static inline void riscv_pm_pmu_unregister(struct riscv_pmu *pmu) { }
-> >
-> >  static void riscv_pmu_destroy(struct riscv_pmu *pmu)
-> >  {
-> > +     if (sbi_v2_available) {
-> > +             if (sbi_pmu_snapshot_available()) {
-> > +                     pmu_sbi_snapshot_disable();
-> > +                     pmu_sbi_snapshot_free(pmu);
-> > +             }
-> > +     }
-> >       riscv_pm_pmu_unregister(pmu);
-> >       cpuhp_state_remove_instance(CPUHP_AP_PERF_RISCV_STARTING, &pmu->node);
-> >  }
-> > @@ -1109,10 +1318,6 @@ static int pmu_sbi_device_probe(struct platform_device *pdev)
-> >       pmu->event_unmapped = pmu_sbi_event_unmapped;
-> >       pmu->csr_index = pmu_sbi_csr_index;
-> >
-> > -     ret = cpuhp_state_add_instance(CPUHP_AP_PERF_RISCV_STARTING, &pmu->node);
-> > -     if (ret)
-> > -             return ret;
-> > -
-> >       ret = riscv_pm_pmu_register(pmu);
-> >       if (ret)
-> >               goto out_unregister;
-> > @@ -1121,8 +1326,34 @@ static int pmu_sbi_device_probe(struct platform_device *pdev)
-> >       if (ret)
-> >               goto out_unregister;
-> >
-> > +     /* SBI PMU Snapsphot is only available in SBI v2.0 */
-> > +     if (sbi_v2_available) {
-> > +             ret = pmu_sbi_snapshot_alloc(pmu);
-> > +             if (ret)
-> > +                     goto out_unregister;
-> > +
-> > +             ret = pmu_sbi_snapshot_setup(pmu, smp_processor_id());
-> > +             if (ret) {
-> > +                     /* Snapshot is an optional feature. Continue if not available */
-> > +                     pmu_sbi_snapshot_free(pmu);
-> > +             } else {
-> > +                     pr_info("SBI PMU snapshot detected\n");
-> > +                     /*
-> > +                      * We enable it once here for the boot cpu. If snapshot shmem setup
-> > +                      * fails during cpu hotplug process, it will fail to start the cpu
-> > +                      * as we can not handle hetergenous PMUs with different snapshot
-> > +                      * capability.
-> > +                      */
-> > +                     static_branch_enable(&sbi_pmu_snapshot_available);
-> > +             }
-> > +     }
-> > +
-> >       register_sysctl("kernel", sbi_pmu_sysctl_table);
-> >
-> > +     ret = cpuhp_state_add_instance(CPUHP_AP_PERF_RISCV_STARTING, &pmu->node);
-> > +     if (ret)
-> > +             goto out_unregister;
-> > +
-> >       return 0;
-> >
-> >  out_unregister:
-> > diff --git a/include/linux/perf/riscv_pmu.h b/include/linux/perf/riscv_pmu.h
-> > index 43282e22ebe1..c3fa90970042 100644
-> > --- a/include/linux/perf/riscv_pmu.h
-> > +++ b/include/linux/perf/riscv_pmu.h
-> > @@ -39,6 +39,12 @@ struct cpu_hw_events {
-> >       DECLARE_BITMAP(used_hw_ctrs, RISCV_MAX_COUNTERS);
-> >       /* currently enabled firmware counters */
-> >       DECLARE_BITMAP(used_fw_ctrs, RISCV_MAX_COUNTERS);
-> > +     /* The virtual address of the shared memory where counter snapshot will be taken */
-> > +     void *snapshot_addr;
-> > +     /* The physical address of the shared memory where counter snapshot will be taken */
-> > +     phys_addr_t snapshot_addr_phys;
-> > +     /* Boolean flag to indicate setup is already done */
-> > +     bool snapshot_set_done;
-> >  };
-> >
-> >  struct riscv_pmu {
 >
 
