@@ -1,28 +1,53 @@
-From: Ved Shanbhogue <ved@rivosinc.com>
-Date: Wed, 24 Apr 2024 16:38:23 -0500
-Subject: [RFC PATCH 2/7] dt-bindings: riscv: add Ssdbltrp ISA extension
- description
-In-Reply-To: <20240424-rehydrate-sloppy-62132c72fe18@spud>
-References: <20240418142701.1493091-1-cleger@rivosinc.com>
- <20240418142701.1493091-3-cleger@rivosinc.com>
- <20240423-poser-splashed-56ab5340af48@spud>
- <e39f2fea-868a-4a79-b7a5-bef8f15de688@rivosinc.com>
- <20240424-rehydrate-sloppy-62132c72fe18@spud>
-Message-ID: <20240424213823.GA1889117@vedvyas-XPS-13-9310>
+From: Dan Carpenter <dan.carpenter@linaro.org>
+Date: Thu, 25 Apr 2024 17:12:31 +0300
+Subject: [PATCH v13 25/35] KVM: selftests: Convert lib's mem regions to
+ KVM_SET_USER_MEMORY_REGION2
+In-Reply-To: <20231027182217.3615211-26-seanjc@google.com>
+References: <20231027182217.3615211-1-seanjc@google.com>
+ <20231027182217.3615211-26-seanjc@google.com>
+Message-ID: <69ae0694-8ca3-402c-b864-99b500b24f5d@moroto.mountain>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Conor Dooley wrote:
->Usually I'd just not ack the RFC patches, but I do at least check how
->far they might be from frozen before I move on, The jira for this one
->says "Actual ARC Freeze Approval:	18/Apr/24", which made me think
->a freeze was gonna happen soon.
+On Fri, Oct 27, 2023 at 11:22:07AM -0700, Sean Christopherson wrote:
+> Use KVM_SET_USER_MEMORY_REGION2 throughout KVM's selftests library so that
+> support for guest private memory can be added without needing an entirely
+> separate set of helpers.
+> 
+> Note, this obviously makes selftests backwards-incompatible with older KVM
+  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> versions from this point forward.
+  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Yes, should happen soon - expected by 5/4. 
+Is there a way we could disable the tests on older kernels instead of
+making them fail?  Check uname or something?  There is probably a
+standard way to do this...  It's these tests which fail.
 
-regards
-ved
+ kvm_aarch32_id_regs
+ kvm_access_tracking_perf_test
+ kvm_arch_timer
+ kvm_debug-exceptions
+ kvm_demand_paging_test
+ kvm_dirty_log_perf_test
+ kvm_dirty_log_test
+ kvm_guest_print_test
+ kvm_hypercalls
+ kvm_kvm_page_table_test
+ kvm_memslot_modification_stress_test
+ kvm_memslot_perf_test
+ kvm_page_fault_test
+ kvm_psci_test
+ kvm_rseq_test
+ kvm_smccc_filter
+ kvm_steal_time
+ kvm_vgic_init
+ kvm_vgic_irq
+ kvm_vpmu_counter_access
+
+regards,
+dan carpenter
+
 
