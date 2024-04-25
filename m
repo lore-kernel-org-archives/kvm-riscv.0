@@ -1,62 +1,40 @@
-From: Atish Patra <atishp@atishpatra.org>
-Date: Thu, 25 Apr 2024 13:22:08 -0700
-Subject: [kvm-riscv/for-next 1/2] drivers/perf: riscv: Remove the warning
- from stop function
-In-Reply-To: <d2742ee1-7e3c-4c0d-8172-d3543fe78e5e@sifive.com>
-References: <20240425232933.4111680-1-atishp@rivosinc.com> <20240425232933.4111680-2-atishp@rivosinc.com>
- <d2742ee1-7e3c-4c0d-8172-d3543fe78e5e@sifive.com>
-Message-ID: <CAOnJCUKtEZxK4TdL7G6zXBWDibFUwHMNz9cDcMMRT3p9jTrXkQ@mail.gmail.com>
+From: Oliver Upton <oliver.upton@linux.dev>
+Date: Thu, 25 Apr 2024 22:41:32 +0000
+Subject: [PATCH] KVM: selftest: Define _GNU_SOURCE for all selftests code
+In-Reply-To: <20240423190308.2883084-1-seanjc@google.com>
+References: <20240423190308.2883084-1-seanjc@google.com>
+Message-ID: <ZircHEd4GZPApm21@linux.dev>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Apr 25, 2024 at 1:08?PM Samuel Holland
-<samuel.holland@sifive.com> wrote:
->
-> On 2024-04-25 6:29 PM, Atish Patra wrote:
-> > The warning message was initially added just to indicate that counter
-> > stop function is being called while the event is already stopped.
-> >
-> > However, we update the state to stopped case now in an overflow handler
-> > after stopping the counter. If there is another child overflow handler
-> > is registered (e.g kvm) it may call stop again which will trigger the
-> > warning.
-> >
-> > Fixes : commit 22f5dac41004d ("drivers/perf: riscv: Implement SBI PMU snapshot function")
->
-> This may be intentional, since you wanted these to be squashed, but this isn't
-> the right format for a Fixes: tag (no space before ":" and no "commit"). Otherwise,
->
+On Tue, Apr 23, 2024 at 12:03:08PM -0700, Sean Christopherson wrote:
+> Define _GNU_SOURCE is the base CFLAGS instead of relying on selftests to
+> manually #define _GNU_SOURCE, which is repetitive and error prone.  E.g.
+> kselftest_harness.h requires _GNU_SOURCE for asprintf(), but if a selftest
+> includes kvm_test_harness.h after stdio.h, the include guards result in
+> the effective version of stdio.h consumed by kvm_test_harness.h not
+> defining asprintf():
+> 
+>   In file included from x86_64/fix_hypercall_test.c:12:
+>   In file included from include/kvm_test_harness.h:11:
+>  ../kselftest_harness.h:1169:2: error: call to undeclared function
+>   'asprintf'; ISO C99 and later do not support implicit function declarations
+>   [-Wimplicit-function-declaration]
+>    1169 |         asprintf(&test_name, "%s%s%s.%s", f->name,
+>         |         ^
+> 
+> When including the rseq selftest's "library" code, #undef _GNU_SOURCE so
+> that rseq.c controls whether or not it wants to build with _GNU_SOURCE.
+> 
+> Reported-by: Muhammad Usama Anjum <usama.anjum@collabora.com>
+> Signed-off-by: Sean Christopherson <seanjc@google.com>
 
-Yeah. Just wanted to be explicit as the commit is based on kvm-riscv
-queue and not based on upstream commit.
-
-> Reviewed-by: Samuel Holland <samuel.holland@sifive.com>
->
-> > Signed-off-by: Atish Patra <atishp@rivosinc.com>
-> > ---
-> >  drivers/perf/riscv_pmu.c | 2 --
-> >  1 file changed, 2 deletions(-)
-> >
-> > diff --git a/drivers/perf/riscv_pmu.c b/drivers/perf/riscv_pmu.c
-> > index 36d348753d05..78c490e0505a 100644
-> > --- a/drivers/perf/riscv_pmu.c
-> > +++ b/drivers/perf/riscv_pmu.c
-> > @@ -191,8 +191,6 @@ void riscv_pmu_stop(struct perf_event *event, int flags)
-> >       struct hw_perf_event *hwc = &event->hw;
-> >       struct riscv_pmu *rvpmu = to_riscv_pmu(event->pmu);
-> >
-> > -     WARN_ON_ONCE(hwc->state & PERF_HES_STOPPED);
-> > -
-> >       if (!(hwc->state & PERF_HES_STOPPED)) {
-> >               if (rvpmu->ctr_stop) {
-> >                       rvpmu->ctr_stop(event, 0);
->
-
+Acked-by: Oliver Upton <oliver.upton@linux.dev>
 
 -- 
-Regards,
-Atish
+Thanks,
+Oliver
 
