@@ -1,26 +1,48 @@
-From: Jarkko Sakkinen <jarkko@kernel.org>
-Date: Fri, 26 Apr 2024 10:33:40 +0300
-Subject: [PATCH v13 25/35] KVM: selftests: Convert lib's mem regions to
- KVM_SET_USER_MEMORY_REGION2
-In-Reply-To: <ZipyPYR8Nv_usoU4@google.com>
-References: <20231027182217.3615211-1-seanjc@google.com>
- <20231027182217.3615211-26-seanjc@google.com>
- <69ae0694-8ca3-402c-b864-99b500b24f5d@moroto.mountain>
- <3848a9ad-07aa-48da-a2b7-264c4a990b5b@linuxfoundation.org>
- <ZipyPYR8Nv_usoU4@google.com>
-Message-ID: <D0TVP8ILJMO0.HERRWR4PA7N6@kernel.org>
+From: Anup Patel <anup@brainfault.org>
+Date: Fri, 26 Apr 2024 13:17:55 +0530
+Subject: [PATCH v2 kvm-riscv/for-next 0/2] Fixes for kvm-riscv
+In-Reply-To: <20240426031637.4135544-1-atishp@rivosinc.com>
+References: <20240426031637.4135544-1-atishp@rivosinc.com>
+Message-ID: <CAAhSdy2xECj3AOBNCVJSsNi==7PdT5riqx7-gsVd-v0MdRU2ag@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu Apr 25, 2024 at 6:09 PM EEST, Sean Christopherson wrote:
-> +       __TEST_REQUIRE(kvm_has_cap(KVM_CAP_USER_MEMORY2),
-> +                      "KVM selftests from v6.8+ require KVM_SET_USER_MEMORY_REGION2");
+On Fri, Apr 26, 2024 at 5:18?AM Atish Patra <atishp@rivosinc.com> wrote:
+>
+> Here are two fixes for issues found during review/testing after the
+> series[1] has been queued for 6.10.
+>
+> @Anup: Can you please squash them into the original source commit
+> 22f5dac41004 that introduced this ?
+>
+> [1] https://lore.kernel.org/all/20240420151741.962500-1-atishp at rivosinc.com/
+>
+> Changes from v1->v2:
+> 1. Added RB tags.
+> 2. Optimized the logic for overflow mask.
+> 3. Update the fixes tag. The cover letter should be enough to indicate the base
+>    tag for rebasing.
+>
+> Atish Patra (2):
+> drivers/perf: riscv: Remove the warning from stop function
+> drivers/perf: riscv: Fix RV32 snapshot overflow use case
 
-This would work also for casual (but not seasoned) visitor in KVM code
-as additionl documentation.
+Thanks, I have squashed both fixes into appropriate commit along
+with Samuel's Reviewed-by
 
-BR, Jarkko
+Regards,
+Anup
+
+>
+> drivers/perf/riscv_pmu.c       |  2 --
+> drivers/perf/riscv_pmu_sbi.c   | 45 +++++++++++++++++++---------------
+> include/linux/perf/riscv_pmu.h |  2 ++
+> 3 files changed, 27 insertions(+), 22 deletions(-)
+>
+> --
+> 2.34.1
+>
 
