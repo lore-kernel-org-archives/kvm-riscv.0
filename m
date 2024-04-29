@@ -1,41 +1,74 @@
-From: Yu-Wei Hsu <betterman5240@gmail.com>
-Date: Mon, 29 Apr 2024 09:21:13 +0000
-Subject: [PATCH] RISC-V:KVM: Add AMO load/store access fault traps to redirect to guest
-Message-ID: <20240429092113.70695-1-betterman5240@gmail.com>
+From: Clément Léger <cleger@rivosinc.com>
+Date: Mon, 29 Apr 2024 17:04:53 +0200
+Subject: [PATCH v4 00/11] Add support for a few Zc* extensions as well as Zcmop
+Message-ID: <20240429150553.625165-1-cleger@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-When unhandled AMO load/store access fault traps are not delegated to
-VS mode (hedeleg), M mode redirects them back to S mode.
-However, upon returning from M mode,the KVM executed in HS mode terminates
-VS mode software.
-KVM should redirect traps back to VS mode and let the VS mode trap handler
-determine the next steps.
-This is one approach to handling access fault traps in KVM,
-not only redirecting them to VS mode or terminating it.
+Add support for (yet again) more RVA23U64 missing extensions. Add
+support for Zcmop, Zca, Zcf, Zcd and Zcb extensions isa string parsing,
+hwprobe and kvm support. Zce, Zcmt and Zcmp extensions have been left
+out since they target microcontrollers/embedded CPUs and are not needed
+by RVA23U64.
 
-Signed-off-by: Yu-Wei Hsu <betterman5240@gmail.com>
+Since Zc* extensions states that C implies Zca, Zcf (if F and RV32), Zcd
+(if D), this series modifies the way ISA string is parsed and now does
+it in two phases. First one parses the string and the second one
+validates it for the final ISA description.
+
+This series is based on the Zimop one [1]. An additional fix [2] should
+be applied to correctly test that series.
+
+Link: https://lore.kernel.org/linux-riscv/20240404103254.1752834-1-cleger at rivosinc.com/ [1]
+Link: https://lore.kernel.org/all/20240409143839.558784-1-cleger at rivosinc.com/ [2]
+
 ---
- arch/riscv/kvm/vcpu_exit.c | 2 ++
- 1 file changed, 2 insertions(+)
 
-diff --git a/arch/riscv/kvm/vcpu_exit.c b/arch/riscv/kvm/vcpu_exit.c
-index 2415722c01b8..ef8c5e3ec8a0 100644
---- a/arch/riscv/kvm/vcpu_exit.c
-+++ b/arch/riscv/kvm/vcpu_exit.c
-@@ -185,6 +185,8 @@ int kvm_riscv_vcpu_exit(struct kvm_vcpu *vcpu, struct kvm_run *run,
- 	case EXC_INST_ILLEGAL:
- 	case EXC_LOAD_MISALIGNED:
- 	case EXC_STORE_MISALIGNED:
-+	case EXC_LOAD_ACCESS:
-+	case EXC_STORE_ACCESS:
- 		if (vcpu->arch.guest_context.hstatus & HSTATUS_SPV) {
- 			kvm_riscv_vcpu_trap_redirect(vcpu, trap);
- 			ret = 1;
+v4:
+ - Modify validate() callbacks to return an 0, -EPROBEDEFER or another
+   error.
+ - v3: https://lore.kernel.org/all/20240423124326.2532796-1-cleger at rivosinc.com/
+
+v3:
+ - Fix typo "exists" -> "exist"
+ - Remove C implies Zca, Zcd, Zcf, dt-bindings rules
+ - Rework ISA string resolver to handle dependencies
+ - v2: https://lore.kernel.org/all/20240418124300.1387978-1-cleger at rivosinc.com/
+
+v2:
+ - Add Zc* dependencies validation in dt-bindings
+ - v1: https://lore.kernel.org/lkml/20240410091106.749233-1-cleger at rivosinc.com/
+
+Cl?ment L?ger (11):
+  dt-bindings: riscv: add Zca, Zcf, Zcd and Zcb ISA extension
+    description
+  riscv: add ISA extensions validation
+  riscv: add ISA parsing for Zca, Zcf, Zcd and Zcb
+  riscv: hwprobe: export Zca, Zcf, Zcd and Zcb ISA extensions
+  RISC-V: KVM: Allow Zca, Zcf, Zcd and Zcb extensions for Guest/VM
+  KVM: riscv: selftests: Add some Zc* extensions to get-reg-list test
+  dt-bindings: riscv: add Zcmop ISA extension description
+  riscv: add ISA extension parsing for Zcmop
+  riscv: hwprobe: export Zcmop ISA extension
+  RISC-V: KVM: Allow Zcmop extension for Guest/VM
+  KVM: riscv: selftests: Add Zcmop extension to get-reg-list test
+
+ Documentation/arch/riscv/hwprobe.rst          |  24 ++
+ .../devicetree/bindings/riscv/extensions.yaml |  90 ++++++
+ arch/riscv/include/asm/cpufeature.h           |   1 +
+ arch/riscv/include/asm/hwcap.h                |   5 +
+ arch/riscv/include/uapi/asm/hwprobe.h         |   5 +
+ arch/riscv/include/uapi/asm/kvm.h             |   5 +
+ arch/riscv/kernel/cpufeature.c                | 259 ++++++++++++------
+ arch/riscv/kernel/sys_hwprobe.c               |   5 +
+ arch/riscv/kvm/vcpu_onereg.c                  |  10 +
+ .../selftests/kvm/riscv/get-reg-list.c        |  20 ++
+ 10 files changed, 337 insertions(+), 87 deletions(-)
+
 -- 
-2.25.1
+2.43.0
 
 
