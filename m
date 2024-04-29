@@ -1,94 +1,74 @@
-From: Arnaldo Carvalho de Melo <acme@kernel.org>
-Date: Mon, 29 Apr 2024 15:50:34 -0300
-Subject: [PATCH v3 0/2] perf kvm: Add kvm stat support on riscv
-In-Reply-To: <5e830d33.45c7.18f287c8f73.Coremail.liangshenlin@eswincomputing.com>
-References: <20240422080833.8745-1-liangshenlin@eswincomputing.com>
- <5e830d33.45c7.18f287c8f73.Coremail.liangshenlin@eswincomputing.com>
-Message-ID: <Zi_r-oe_u7NkV7sa@x1>
+From: Sean Christopherson <seanjc@google.com>
+Date: Mon, 29 Apr 2024 13:45:21 -0700
+Subject: [PATCH 00/18] KVM: selftests: Clean up x86's DT initialization
+In-Reply-To: <20240314232637.2538648-1-seanjc@google.com>
+References: <20240314232637.2538648-1-seanjc@google.com>
+Message-ID: <171442343194.161918.3828509492626949358.b4-ty@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Apr 29, 2024 at 02:13:22PM +0800, Shenlin Liang wrote:
-> Gentle ping...
+On Thu, 14 Mar 2024 16:26:19 -0700, Sean Christopherson wrote:
+> The vast majority of this series is x86 specific, and aims to clean up the
+> core library's handling of descriptor tables and segments.  Currently, the
+> library (a) waits until vCPUs are created to allocate per-VM assets, and
+> (b) forces tests to opt-in to allocate the structures needed to handler
+> exceptions, which has result in some rather odd tests, and makes it
+> unnecessarily difficult to debug unexpected exceptions.
+> 
+> [...]
 
-It would be great to have people with such boards testing your patchkit
-and providing Tested-by tags.
+Applied to kvm-x86 selftests_utils (I had already pushed stuff to "selftests",
+so the name is less than awesome).
 
-Also the patch set has both kernel and tooling support, thus needs to
-find a RiscV kernel maintainer to pick the kernel bits and then, when
-that was merged, I would look at reports of tests for the tooling side
-to then merge it.
+Other KVM maintainers, I also created tags/kvm-x86-selftests-utils if you want
+to pull this into your tree to avoid later merge conflicts with the
+kvm_util_base.h => kvm_util.h rename.  I don't expect to push anything else to
+the branch, but never say never. 
 
-Hope this clarifies the process,
+Note, this branch+tag also has the _GNU_SOURCE change, and the global pseudo-RNG
+series ("thank yous" incoming), i.e. it's hopefuly a one stop shop for all your
+6.10 selftests needs!
 
-- Arnaldo
+[01/18] Revert "kvm: selftests: move base kvm_util.h declarations to kvm_util_base.h"
+        https://github.com/kvm-x86/linux/commit/2b7deea3ec7c
+[02/18] KVM: sefltests: Add kvm_util_types.h to hold common types, e.g. vm_vaddr_t
+        https://github.com/kvm-x86/linux/commit/f54884f93898
+[03/18] KVM: selftests: Move GDT, IDT, and TSS fields to x86's kvm_vm_arch
+        https://github.com/kvm-x86/linux/commit/3a085fbf8228
+[04/18] KVM: selftests: Fix off-by-one initialization of GDT limit
+        https://github.com/kvm-x86/linux/commit/0d95817e0753
+[05/18] KVM: selftests: Move platform_info_test's main assert into guest code
+        https://github.com/kvm-x86/linux/commit/53635ec253c0
+[06/18] KVM: selftests: Rework platform_info_test to actually verify #GP
+        https://github.com/kvm-x86/linux/commit/dec79eab2b48
+[07/18] KVM: selftests: Explicitly clobber the IDT in the "delete memslot" testcase
+        https://github.com/kvm-x86/linux/commit/61c3cffd4cbf
+[08/18] KVM: selftests: Move x86's descriptor table helpers "up" in processor.c
+        https://github.com/kvm-x86/linux/commit/b62c32c532cd
+[09/18] KVM: selftests: Rename x86's vcpu_setup() to vcpu_init_sregs()
+        https://github.com/kvm-x86/linux/commit/d8c63805e4e5
+[10/18] KVM: selftests: Init IDT and exception handlers for all VMs/vCPUs on x86
+        https://github.com/kvm-x86/linux/commit/c1b9793b45d5
+[11/18] KVM: selftests: Map x86's exception_handlers at VM creation, not vCPU setup
+        https://github.com/kvm-x86/linux/commit/44c93b277269
+[12/18] KVM: selftests: Allocate x86's GDT during VM creation
+        https://github.com/kvm-x86/linux/commit/2a511ca99493
+[13/18] KVM: selftests: Drop superfluous switch() on vm->mode in vcpu_init_sregs()
+        https://github.com/kvm-x86/linux/commit/1051e29cb915
+[14/18] KVM: selftests: Fold x86's descriptor tables helpers into vcpu_init_sregs()
+        https://github.com/kvm-x86/linux/commit/23ef21f58cf8
+[15/18] KVM: selftests: Allocate x86's TSS at VM creation
+        https://github.com/kvm-x86/linux/commit/a2834e6e0b98
+[16/18] KVM: selftests: Add macro for TSS selector, rename up code/data macros
+        https://github.com/kvm-x86/linux/commit/f18ef97fc602
+[17/18] KVM: selftests: Init x86's segments during VM creation
+        https://github.com/kvm-x86/linux/commit/0f53a0245068
+[18/18] KVM: selftests: Drop @selector from segment helpers
+        https://github.com/kvm-x86/linux/commit/b093f87fd195
 
-> > 'perf kvm stat report/record' generates a statistical analysis of KVM
-> > events and can be used to analyze guest exit reasons. This patch tries
-> > to add stat support on riscv.
-> > 
-> > Map the return value of trace_kvm_exit() to the specific cause of the 
-> > exception, and export it to userspace.
-> > 
-> > It records on two available KVM tracepoints for riscv: "kvm:kvm_entry"
-> > and "kvm:kvm_exit", and reports statistical data which includes events
-> > handles time, samples, and so on.
-> > 
-> > Cross compiling perf in X86 environment may encounter issues with missing
-> > libraries and tools. Suggest compiling nativly in RISC-V environment
-> > 
-> > Simple tests go below:
-> > 
-> > # ./perf kvm record -e "kvm:kvm_entry" -e "kvm:kvm_exit"
-> > Lowering default frequency rate from 4000 to 2500.
-> > Please consider tweaking /proc/sys/kernel/perf_event_max_sample_rate.
-> > [ perf record: Woken up 18 times to write data ]
-> > [ perf record: Captured and wrote 5.433 MB perf.data.guest (62519 samples) 
-> > 
-> > # ./perf kvm report
-> > 31K kvm:kvm_entry
-> > 31K kvm:kvm_exit
-> > 
-> > # ./perf kvm stat record -a
-> > [ perf record: Woken up 3 times to write data ]
-> > [ perf record: Captured and wrote 8.502 MB perf.data.guest (99338 samples) ]
-> > 
-> > # ./perf kvm stat report --event=vmexit
-> > Event name                Samples   Sample%    Time (ns)     Time%   Max Time (ns)   Min Time (ns)  Mean Time (ns)
-> > STORE_GUEST_PAGE_FAULT     26968     54.00%    2003031800    40.00%     3361400         27600          74274
-> > LOAD_GUEST_PAGE_FAULT      17645     35.00%    1153338100    23.00%     2513400         30800          65363
-> > VIRTUAL_INST_FAULT         1247      2.00%     340820800     6.00%      1190800         43300          273312
-> > INST_GUEST_PAGE_FAULT      1128      2.00%     340645800     6.00%      2123200         30200          301990
-> > SUPERVISOR_SYSCALL         1019      2.00%     245989900     4.00%      1851500         29300          241403
-> > LOAD_ACCESS                986       1.00%     671556200     13.00%     4180200         100700         681091
-> > INST_ACCESS                655       1.00%     170054800     3.00%      1808300         54600          259625
-> > HYPERVISOR_SYSCALL         21        0.00%     4276400       0.00%      716500          116000         203638 
-> > 
-> > Changes from v1->v2:
-> > - Rebased on Linux 6.9-rc3.
-> > 
-> > Changes from v2->v3:
-> > - Add the missing assignment for 'vcpu_id_str' in patch 2.
-> > - Remove parentheses that cause compilation errors
-> > 
-> > Shenlin Liang (2):
-> >   RISCV: KVM: add tracepoints for entry and exit events
-> >   perf kvm/riscv: Port perf kvm stat to RISC-V
-> > 
-> >  arch/riscv/kvm/trace.h                        | 67 ++++++++++++++++
-> >  arch/riscv/kvm/vcpu.c                         |  7 ++
-> >  tools/perf/arch/riscv/Makefile                |  1 +
-> >  tools/perf/arch/riscv/util/Build              |  1 +
-> >  tools/perf/arch/riscv/util/kvm-stat.c         | 79 +++++++++++++++++++
-> >  .../arch/riscv/util/riscv_exception_types.h   | 35 ++++++++
-> >  6 files changed, 190 insertions(+)
-> >  create mode 100644 arch/riscv/kvm/trace.h
-> >  create mode 100644 tools/perf/arch/riscv/util/kvm-stat.c
-> >  create mode 100644 tools/perf/arch/riscv/util/riscv_exception_types.h
-> > 
-> > -- 
-> > 2.37.2
+--
+https://github.com/kvm-x86/linux/tree/next
 
