@@ -1,121 +1,127 @@
 From: Clément Léger <cleger@rivosinc.com>
-Date: Mon, 29 Apr 2024 17:04:54 +0200
-Subject: [PATCH v4 01/11] dt-bindings: riscv: add Zca, Zcf, Zcd and Zcb ISA extension description
+Date: Mon, 29 Apr 2024 17:04:56 +0200
+Subject: [PATCH v4 03/11] riscv: add ISA parsing for Zca, Zcf, Zcd and Zcb
 In-Reply-To: <20240429150553.625165-1-cleger@rivosinc.com>
 References: <20240429150553.625165-1-cleger@rivosinc.com>
-Message-ID: <20240429150553.625165-2-cleger@rivosinc.com>
+Message-ID: <20240429150553.625165-4-cleger@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add description for Zca, Zcf, Zcd and Zcb extensions which are part the
-Zc* standard extensions for code size reduction. Additional validation
-rules are added since Zcb depends on Zca, Zcf, depends on Zca and F, Zcd
-depends on Zca and D and finally, Zcf can not be present on rv64.
+The Zc* standard extension for code reduction introduces new extensions.
+This patch adds support for Zca, Zcf, Zcd and Zcb. Zce, Zcmt and Zcmp
+are left out of this patch since they are targeting microcontrollers/
+embedded CPUs instead of application processors.
 
 Signed-off-by: Cl?ment L?ger <cleger@rivosinc.com>
-Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
 ---
- .../devicetree/bindings/riscv/extensions.yaml | 78 +++++++++++++++++++
- 1 file changed, 78 insertions(+)
+ arch/riscv/include/asm/hwcap.h |  4 +++
+ arch/riscv/kernel/cpufeature.c | 47 +++++++++++++++++++++++++++++++++-
+ 2 files changed, 50 insertions(+), 1 deletion(-)
 
-diff --git a/Documentation/devicetree/bindings/riscv/extensions.yaml b/Documentation/devicetree/bindings/riscv/extensions.yaml
-index 616370318a66..81bce4fa2424 100644
---- a/Documentation/devicetree/bindings/riscv/extensions.yaml
-+++ b/Documentation/devicetree/bindings/riscv/extensions.yaml
-@@ -220,6 +220,38 @@ properties:
-             instructions as ratified at commit 6d33919 ("Merge pull request #158
-             from hirooih/clmul-fix-loop-end-condition") of riscv-bitmanip.
+diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
+index 543e3ea2da0e..b7551bad341b 100644
+--- a/arch/riscv/include/asm/hwcap.h
++++ b/arch/riscv/include/asm/hwcap.h
+@@ -82,6 +82,10 @@
+ #define RISCV_ISA_EXT_ZACAS		73
+ #define RISCV_ISA_EXT_XANDESPMU		74
+ #define RISCV_ISA_EXT_ZIMOP		75
++#define RISCV_ISA_EXT_ZCA		76
++#define RISCV_ISA_EXT_ZCB		77
++#define RISCV_ISA_EXT_ZCD		78
++#define RISCV_ISA_EXT_ZCF		79
  
-+        - const: zca
-+          description: |
-+            The Zca extension part of Zc* standard extensions for code size
-+            reduction, as ratified in commit 8be3419c1c0 ("Zcf doesn't exist on
-+            RV64 as it contains no instructions") of riscv-code-size-reduction,
-+            merged in the riscv-isa-manual by commit dbc79cf28a2 ("Initial seed
-+            of zc.adoc to src tree.").
-+
-+        - const: zcb
-+          description: |
-+            The Zcb extension part of Zc* standard extensions for code size
-+            reduction, as ratified in commit 8be3419c1c0 ("Zcf doesn't exist on
-+            RV64 as it contains no instructions") of riscv-code-size-reduction,
-+            merged in the riscv-isa-manual by commit dbc79cf28a2 ("Initial seed
-+            of zc.adoc to src tree.").
-+
-+        - const: zcd
-+          description: |
-+            The Zcd extension part of Zc* standard extensions for code size
-+            reduction, as ratified in commit 8be3419c1c0 ("Zcf doesn't exist on
-+            RV64 as it contains no instructions") of riscv-code-size-reduction,
-+            merged in the riscv-isa-manual by commit dbc79cf28a2 ("Initial seed
-+            of zc.adoc to src tree.").
-+
-+        - const: zcf
-+          description: |
-+            The Zcf extension part of Zc* standard extensions for code size
-+            reduction, as ratified in commit 8be3419c1c0 ("Zcf doesn't exist on
-+            RV64 as it contains no instructions") of riscv-code-size-reduction,
-+            merged in the riscv-isa-manual by commit dbc79cf28a2 ("Initial seed
-+            of zc.adoc to src tree.").
-+
-         - const: zfa
-           description:
-             The standard Zfa extension for additional floating point
-@@ -489,5 +521,51 @@ properties:
-             Registers in the AX45MP datasheet.
-             https://www.andestech.com/wp-content/uploads/AX45MP-1C-Rev.-5.0.0-Datasheet.pdf
+ #define RISCV_ISA_EXT_XLINUXENVCFG	127
  
-+    allOf:
-+      # Zcb depends on Zca
-+      - if:
-+          contains:
-+            const: zcb
-+        then:
-+          contains:
-+            const: zca
-+      # Zcd depends on Zca and D
-+      - if:
-+          contains:
-+            const: zcd
-+        then:
-+          allOf:
-+            - contains:
-+                const: zca
-+            - contains:
-+                const: d
-+      # Zcf depends on Zca and F
-+      - if:
-+          contains:
-+            const: zcf
-+        then:
-+          allOf:
-+            - contains:
-+                const: zca
-+            - contains:
-+                const: f
+diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
+index cb2ffa6c8c33..c74bdb9c0a9f 100644
+--- a/arch/riscv/kernel/cpufeature.c
++++ b/arch/riscv/kernel/cpufeature.c
+@@ -103,6 +103,29 @@ static int riscv_ext_zicboz_validate(const struct riscv_isa_ext_data *data,
+ 	return 0;
+ }
+ 
++static int riscv_ext_zca_depends(const struct riscv_isa_ext_data *data,
++				 const unsigned long *isa_bitmap)
++{
++	return __riscv_isa_extension_available(isa_bitmap, RISCV_ISA_EXT_ZCA) ? 0 : -EPROBE_DEFER;
++}
++static int riscv_ext_zcd_validate(const struct riscv_isa_ext_data *data,
++				  const unsigned long *isa_bitmap)
++{
++	return __riscv_isa_extension_available(isa_bitmap, RISCV_ISA_EXT_ZCA) &&
++	       __riscv_isa_extension_available(isa_bitmap, RISCV_ISA_EXT_d) ? 0 : -EPROBE_DEFER;
++}
 +
-+allOf:
-+  # Zcf extension does not exist on rv64
-+  - if:
-+      properties:
-+        riscv,isa-extensions:
-+          contains:
-+            const: zcf
-+        riscv,isa-base:
-+          contains:
-+            const: rv64i
-+    then:
-+      properties:
-+        riscv,isa-extensions:
-+          not:
-+            contains:
-+              const: zcf
++static int riscv_ext_zcf_validate(const struct riscv_isa_ext_data *data,
++				  const unsigned long *isa_bitmap)
++{
++#ifdef CONFIG_64BIT
++	return -EINVAL;
++#else
++	return __riscv_isa_extension_available(isa_bitmap, RISCV_ISA_EXT_ZCA) &&
++	       __riscv_isa_extension_available(isa_bitmap, RISCV_ISA_EXT_f) ? 0 : -EPROBE_DEFER;
++#endif
++}
 +
- additionalProperties: true
- ...
+ #define _RISCV_ISA_EXT_DATA(_name, _id, _subset_exts, _subset_exts_size, _validate) {	\
+ 	.name = #_name,									\
+ 	.property = #_name,								\
+@@ -114,6 +137,9 @@ static int riscv_ext_zicboz_validate(const struct riscv_isa_ext_data *data,
+ 
+ #define __RISCV_ISA_EXT_DATA(_name, _id) _RISCV_ISA_EXT_DATA(_name, _id, NULL, 0, NULL)
+ 
++#define __RISCV_ISA_EXT_DATA_VALIDATE(_name, _id, _validate) \
++			_RISCV_ISA_EXT_DATA(_name, _id, NULL, 0, _validate)
++
+ /* Used to declare pure "lasso" extension (Zk for instance) */
+ #define __RISCV_ISA_EXT_BUNDLE(_name, _bundled_exts) \
+ 	_RISCV_ISA_EXT_DATA(_name, RISCV_ISA_EXT_INVALID, _bundled_exts, \
+@@ -205,6 +231,21 @@ static const unsigned int riscv_xlinuxenvcfg_exts[] = {
+ 	RISCV_ISA_EXT_XLINUXENVCFG
+ };
+ 
++/*
++ * Zc* spec states that:
++ * - C always implies Zca
++ * - C+F implies Zcf (RV32 only)
++ * - C+D implies Zcd
++ *
++ * These extensions will be enabled and then validated depending on the
++ * availability of F/D RV32.
++ */
++static const unsigned int riscv_c_exts[] = {
++	RISCV_ISA_EXT_ZCA,
++	RISCV_ISA_EXT_ZCF,
++	RISCV_ISA_EXT_ZCD,
++};
++
+ /*
+  * The canonical order of ISA extension names in the ISA string is defined in
+  * chapter 27 of the unprivileged specification.
+@@ -251,7 +292,7 @@ const struct riscv_isa_ext_data riscv_isa_ext[] = {
+ 	__RISCV_ISA_EXT_DATA(f, RISCV_ISA_EXT_f),
+ 	__RISCV_ISA_EXT_DATA(d, RISCV_ISA_EXT_d),
+ 	__RISCV_ISA_EXT_DATA(q, RISCV_ISA_EXT_q),
+-	__RISCV_ISA_EXT_DATA(c, RISCV_ISA_EXT_c),
++	__RISCV_ISA_EXT_SUPERSET(c, RISCV_ISA_EXT_c, riscv_c_exts),
+ 	__RISCV_ISA_EXT_DATA(v, RISCV_ISA_EXT_v),
+ 	__RISCV_ISA_EXT_DATA(h, RISCV_ISA_EXT_h),
+ 	__RISCV_ISA_EXT_SUPERSET_VALIDATE(zicbom, RISCV_ISA_EXT_ZICBOM, riscv_xlinuxenvcfg_exts,
+@@ -270,6 +311,10 @@ const struct riscv_isa_ext_data riscv_isa_ext[] = {
+ 	__RISCV_ISA_EXT_DATA(zfa, RISCV_ISA_EXT_ZFA),
+ 	__RISCV_ISA_EXT_DATA(zfh, RISCV_ISA_EXT_ZFH),
+ 	__RISCV_ISA_EXT_DATA(zfhmin, RISCV_ISA_EXT_ZFHMIN),
++	__RISCV_ISA_EXT_DATA(zca, RISCV_ISA_EXT_ZCA),
++	__RISCV_ISA_EXT_DATA_VALIDATE(zcb, RISCV_ISA_EXT_ZCB, riscv_ext_zca_depends),
++	__RISCV_ISA_EXT_DATA_VALIDATE(zcd, RISCV_ISA_EXT_ZCD, riscv_ext_zcd_validate),
++	__RISCV_ISA_EXT_DATA_VALIDATE(zcf, RISCV_ISA_EXT_ZCF, riscv_ext_zcf_validate),
+ 	__RISCV_ISA_EXT_DATA(zba, RISCV_ISA_EXT_ZBA),
+ 	__RISCV_ISA_EXT_DATA(zbb, RISCV_ISA_EXT_ZBB),
+ 	__RISCV_ISA_EXT_DATA(zbc, RISCV_ISA_EXT_ZBC),
 -- 
 2.43.0
 
