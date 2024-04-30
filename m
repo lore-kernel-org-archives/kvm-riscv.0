@@ -1,142 +1,104 @@
-From: Clément Léger <cleger@rivosinc.com>
-Date: Tue, 30 Apr 2024 09:26:24 +0200
-Subject: [RFC PATCH 1/7] riscv: kvm: add support for FWFT SBI extension
-In-Reply-To: <Ziw8c0X0K3mXjJWK@debug.ba.rivosinc.com>
-References: <20240418142701.1493091-1-cleger@rivosinc.com>
- <20240418142701.1493091-2-cleger@rivosinc.com>
- <Ziw8c0X0K3mXjJWK@debug.ba.rivosinc.com>
-Message-ID: <99d3eabc-0289-4ace-90a8-ad02dbffd6d2@rivosinc.com>
+From: Conor Dooley <conor.dooley@microchip.com>
+Date: Tue, 30 Apr 2024 12:44:30 +0100
+Subject: [PATCH v4 02/11] riscv: add ISA extensions validation
+In-Reply-To: <5d5febd5-d113-4e8c-9535-9e75acf23398@rivosinc.com>
+References: <20240429150553.625165-1-cleger@rivosinc.com>
+ <20240429150553.625165-3-cleger@rivosinc.com>
+ <20240429-subtext-tabby-3a1532f058a5@spud>
+ <5d5febd5-d113-4e8c-9535-9e75acf23398@rivosinc.com>
+Message-ID: <20240430-payable-famished-6711765d5ca4@wendy>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-
-
-On 27/04/2024 01:44, Deepak Gupta wrote:
-> On Thu, Apr 18, 2024 at 04:26:40PM +0200, Cl?ment L?ger wrote:
->> Add support for FWFT extension in KVM
->>
->> Signed-off-by: Cl?ment L?ger <cleger@rivosinc.com>
->> ---
->> arch/riscv/include/asm/kvm_host.h????????? |?? 5 +
->> arch/riscv/include/asm/kvm_vcpu_sbi.h????? |?? 1 +
->> arch/riscv/include/asm/kvm_vcpu_sbi_fwft.h |? 37 ++++++
->> arch/riscv/include/uapi/asm/kvm.h????????? |?? 1 +
->> arch/riscv/kvm/Makefile??????????????????? |?? 1 +
->> arch/riscv/kvm/vcpu.c????????????????????? |?? 5 +
->> arch/riscv/kvm/vcpu_sbi.c????????????????? |?? 4 +
->> arch/riscv/kvm/vcpu_sbi_fwft.c???????????? | 136 +++++++++++++++++++++
->> 8 files changed, 190 insertions(+)
->> create mode 100644 arch/riscv/include/asm/kvm_vcpu_sbi_fwft.h
->> create mode 100644 arch/riscv/kvm/vcpu_sbi_fwft.c
->>
->> diff --git a/arch/riscv/include/asm/kvm_host.h
->> b/arch/riscv/include/asm/kvm_host.h
->> index 484d04a92fa6..be60aaa07f57 100644
->> --- a/arch/riscv/include/asm/kvm_host.h
->> +++ b/arch/riscv/include/asm/kvm_host.h
->> @@ -19,6 +19,7 @@
->> #include <asm/kvm_vcpu_fp.h>
->> #include <asm/kvm_vcpu_insn.h>
->> #include <asm/kvm_vcpu_sbi.h>
->> +#include <asm/kvm_vcpu_sbi_fwft.h>
->> #include <asm/kvm_vcpu_timer.h>
->> #include <asm/kvm_vcpu_pmu.h>
->>
->> @@ -169,6 +170,7 @@ struct kvm_vcpu_csr {
->> struct kvm_vcpu_config {
->> ????u64 henvcfg;
->> ????u64 hstateen0;
->> +??? u64 hedeleg;
->> };
->>
->> struct kvm_vcpu_smstateen_csr {
->> @@ -261,6 +263,9 @@ struct kvm_vcpu_arch {
->> ????/* Performance monitoring context */
->> ????struct kvm_pmu pmu_context;
->>
->> +??? /* Firmware feature SBI extension context */
->> +??? struct kvm_sbi_fwft fwft_context;
->> +
->> ????/* 'static' configurations which are set only once */
->> ????struct kvm_vcpu_config cfg;
->>
->> diff --git a/arch/riscv/include/asm/kvm_vcpu_sbi.h
->> b/arch/riscv/include/asm/kvm_vcpu_sbi.h
->> index b96705258cf9..3a33bbacc233 100644
->> --- a/arch/riscv/include/asm/kvm_vcpu_sbi.h
->> +++ b/arch/riscv/include/asm/kvm_vcpu_sbi.h
->> @@ -86,6 +86,7 @@ extern const struct kvm_vcpu_sbi_extension
->> vcpu_sbi_ext_srst;
->> extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_hsm;
->> extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_dbcn;
->> extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_sta;
->> +extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_fwft;
->> extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_experimental;
->> extern const struct kvm_vcpu_sbi_extension vcpu_sbi_ext_vendor;
->>
->> diff --git a/arch/riscv/include/asm/kvm_vcpu_sbi_fwft.h
->> b/arch/riscv/include/asm/kvm_vcpu_sbi_fwft.h
->> new file mode 100644
->> index 000000000000..7dc1b80c7e6c
->> --- /dev/null
->> +++ b/arch/riscv/include/asm/kvm_vcpu_sbi_fwft.h
->> @@ -0,0 +1,37 @@
->> +/* SPDX-License-Identifier: GPL-2.0-only */
->> +/*
->> + * Copyright (c) 2023 Rivos Inc
->> + *
->> + * Authors:
->> + *???? Atish Patra <atishp@rivosinc.com>
+On Tue, Apr 30, 2024 at 09:18:47AM +0200, Cl?ment L?ger wrote:
 > 
-> nit: probably need to fix Copyright year and Authors here :-)
-> Same in all new files being introduced.
 > 
->> + */
->> +
->> +#ifndef __KVM_VCPU_RISCV_FWFT_H
->> +#define __KVM_VCPU_RISCV_FWFT_H
->> +
->> +#include <asm/sbi.h>
->> +
->> +#define KVM_SBI_FWFT_FEATURE_COUNT??? 1
->> +
->> +static int kvm_sbi_fwft_set(struct kvm_vcpu *vcpu,
->> +??????????????? enum sbi_fwft_feature_t feature,
->> +??????????????? unsigned long value, unsigned long flags)
->> +{
->> +??? struct kvm_sbi_fwft_config *conf = kvm_sbi_fwft_get_config(vcpu,
->> +?????????????????????????????????? feature);
->> +??? if (!conf)
->> +??????? return SBI_ERR_DENIED;
+> On 30/04/2024 00:15, Conor Dooley wrote:
+> > On Mon, Apr 29, 2024 at 05:04:55PM +0200, Cl?ment L?ger wrote:
+> >> Since a few extensions (Zicbom/Zicboz) already needs validation and
+> >> future ones will need it as well (Zc*) add a validate() callback to
+> >> struct riscv_isa_ext_data. This require to rework the way extensions are
+> >> parsed and split it in two phases. First phase is isa string or isa
+> >> extension list parsing and consists in enabling all the extensions in a
+> >> temporary bitmask without any validation. The second step "resolves" the
+> >> final isa bitmap, handling potential missing dependencies. The mechanism
+> >> is quite simple and simply validate each extension described in the
+> >> temporary bitmap before enabling it in the final isa bitmap. validate()
+> >> callbacks can return either 0 for success, -EPROBEDEFER if extension
+> >> needs to be validated again at next loop. A previous ISA bitmap is kept
+> >> to avoid looping mutliple times if an extension dependencies are never
+> >> satisfied until we reach a stable state. In order to avoid any potential
+> >> infinite looping, allow looping a maximum of the number of extension we
+> >> handle. Zicboz and Zicbom extensions are modified to use this validation
+> >> mechanism.
+> > 
+> > Your reply to my last review only talked about part of my comments,
+> > which is usually what you do when you're gonna implement the rest, but
+> > you haven't.
+> > I like the change you've made to shorten looping, but I'd at least like
+> > a response to why a split is not worth doing :)
 > 
-> Curious,
-> Why denied and not something like NOT_SUPPORTED NOT_AVAILABLE here?
-
-Hey Deepak,
-
-So indeed, the return value is not totally correct since the spec states
-that we return  EDENIED if feature is reserved or is platform-specific
-and unimplemented. But in that case it dos not distinguish between
-defined features and reserved one. I'll add a check for that.
-
-Thanks,
-
-Cl?ment
-
+> Hi Conor,
 > 
->> +
->> +??? if ((flags & ~SBI_FWFT_SET_FLAG_LOCK) != 0)
->> +??????? return SBI_ERR_INVALID_PARAM;
->> +
->> +??? if (conf->flags & SBI_FWFT_SET_FLAG_LOCK)
->> +??????? return SBI_ERR_DENIED;
->> +
->> +??? conf->flags = flags;
->> +
->> +??? return conf->feature->set(vcpu, conf, value);
->> +}
->> +
+> Missed that point since I was feeling that my solution actually
+> addresses your concerns. Your argument was that there is no reason to
+> loop for Zicbom/Zicboz but that would also apply to Zcf in case we are
+> on RV64 as well (since zcf is not supported on RV64). So for Zcf, that
+> would lead to using both mecanism or additional ifdefery with little to
+> no added value since the current solution actually solves both cases:
+> 
+> - We don't have any extra looping if all validation callback returns 0
+> (except the initial one on riscv_isa_ext, which is kind of unavoidable).
+> - Zicbom, Zicboz callbacks will be called only once (which was one of
+> your concern).
+> 
+> Adding a second kind of callback for after loop validation would only
+> lead to a bunch of additional macros/ifdefery for extensions with
+> validate() callback, with validate_end() or with both (ie Zcf)). For
+> these reasons, I do not think there is a need for a separate mechanism
+> nor additional callback for such extensions except adding extra code
+> with no real added functionality.
+> 
+> AFAIK, the platform driver probing mechanism works the same, the probe()
+> callback is actually called even if for some reason properties are
+> missing from nodes for platform devices and thus the probe() returns
+> -EINVAL or whatever.
+> 
+> Hope this answers your question,
 
+Yeah, pretty much I am happy with just an "it's not worth doing it"
+response. Given it wasn't your first choice, I doubt you're overly happy
+with it either, but I really would like to avoid looping to closure to
+sort out dependencies - particularly on the boot CPU before we bring
+anyone else up, but if the code is now more proactive about breaking
+out, I suppose that'll have to do :)
+I kinda wish we didn't do this at all, but I think we've brought this
+upon ourselves via hwprobe. I'm still on the fence as to whether things
+that are implied need to be handled in this way. I think I'll bring this
+up tomorrow at the weekly call, because so far it's only been you and I
+discussing this really and it's a policy decision that hwprobe-ists
+should be involved in I think.
+
+Implied extensions aside, I think we will eventually need this stuff
+anyway, for extensions that make no sense to consider if a config option
+for a dependency is disabled.
+From talking to Eric Biggers the other week about
+riscv_isa_extension_available() I'm of the opinion that we need to do
+better with that interface w.r.t. extension and config dependencies,
+and what seems like a good idea to me at the moment is putting tests for
+IS_ENABLED(RISCV_ISA_FOO) into these validate hooks.
+
+I'll try to look at the actual implementation here tomorrow.
+
+Cheers,
+Conor.
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 228 bytes
+Desc: not available
+URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20240430/aaea7285/attachment.sig>
