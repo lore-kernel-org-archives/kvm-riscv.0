@@ -1,393 +1,236 @@
-From: Conor Dooley <conor@kernel.org>
-Date: Mon, 29 Apr 2024 23:15:55 +0100
-Subject: [PATCH v4 02/11] riscv: add ISA extensions validation
-In-Reply-To: <20240429150553.625165-3-cleger@rivosinc.com>
-References: <20240429150553.625165-1-cleger@rivosinc.com>
- <20240429150553.625165-3-cleger@rivosinc.com>
-Message-ID: <20240429-subtext-tabby-3a1532f058a5@spud>
+From: Anup Patel <anup@brainfault.org>
+Date: Tue, 30 Apr 2024 11:24:18 +0530
+Subject: [PATCH v8 00/24] RISC-V SBI v2.0 PMU improvements and Perf
+ sampling in KVM guest
+In-Reply-To: <CAAhSdy2tw1vy-vS3u8-Eq92d=TS_wFENTTrAFG7ked1aEfpkGA@mail.gmail.com>
+References: <20240420151741.962500-1-atishp@rivosinc.com> <CAAhSdy2tw1vy-vS3u8-Eq92d=TS_wFENTTrAFG7ked1aEfpkGA@mail.gmail.com>
+Message-ID: <CAAhSdy0k=-wtge-iA-rckQrd_ziNtWDnf4J-yCKP0OooZCaPzA@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Apr 29, 2024 at 05:04:55PM +0200, Cl?ment L?ger wrote:
-> Since a few extensions (Zicbom/Zicboz) already needs validation and
-> future ones will need it as well (Zc*) add a validate() callback to
-> struct riscv_isa_ext_data. This require to rework the way extensions are
-> parsed and split it in two phases. First phase is isa string or isa
-> extension list parsing and consists in enabling all the extensions in a
-> temporary bitmask without any validation. The second step "resolves" the
-> final isa bitmap, handling potential missing dependencies. The mechanism
-> is quite simple and simply validate each extension described in the
-> temporary bitmap before enabling it in the final isa bitmap. validate()
-> callbacks can return either 0 for success, -EPROBEDEFER if extension
-> needs to be validated again at next loop. A previous ISA bitmap is kept
-> to avoid looping mutliple times if an extension dependencies are never
-> satisfied until we reach a stable state. In order to avoid any potential
-> infinite looping, allow looping a maximum of the number of extension we
-> handle. Zicboz and Zicbom extensions are modified to use this validation
-> mechanism.
+Hi Palmer,
 
-Your reply to my last review only talked about part of my comments,
-which is usually what you do when you're gonna implement the rest, but
-you haven't.
-I like the change you've made to shorten looping, but I'd at least like
-a response to why a split is not worth doing :)
+On Mon, Apr 22, 2024 at 3:29?PM Anup Patel <anup@brainfault.org> wrote:
+>
+> On Sat, Apr 20, 2024 at 5:17?AM Atish Patra <atishp@rivosinc.com> wrote:
+> >
+> > This series implements SBI PMU improvements done in SBI v2.0[1] i.e. PMU snapshot
+> > and fw_read_hi() functions.
+> >
+> > SBI v2.0 introduced PMU snapshot feature which allows the SBI implementation
+> > to provide counter information (i.e. values/overflow status) via a shared
+> > memory between the SBI implementation and supervisor OS. This allows to minimize
+> > the number of traps in when perf being used inside a kvm guest as it relies on
+> > SBI PMU + trap/emulation of the counters.
+> >
+> > The current set of ratified RISC-V specification also doesn't allow scountovf
+> > to be trap/emulated by the hypervisor. The SBI PMU snapshot bridges the gap
+> > in ISA as well and enables perf sampling in the guest. However, LCOFI in the
+> > guest only works via IRQ filtering in AIA specification. That's why, AIA
+> > has to be enabled in the hardware (at least the Ssaia extension) in order to
+> > use the sampling support in the perf.
+> >
+> > Here are the patch wise implementation details.
+> >
+> > PATCH 1,4,7,8,9,10,11,15 : Generic cleanups/improvements.
+> > PATCH 2,3,14 : FW_READ_HI function implementation
+> > PATCH 5-6: Add PMU snapshot feature in sbi pmu driver
+> > PATCH 12-13: KVM implementation for snapshot and sampling in kvm guests
+> > PATCH 16-17: Generic improvements for kvm selftests
+> > PATCH 18-22: KVM selftests for SBI PMU extension
+> >
+> > The series is based on v6.9-rc4 and is available at:
+> >
+> > https://github.com/atishp04/linux/tree/kvm_pmu_snapshot_v8
+> >
+> > The kvmtool patch is also available at:
+> > https://github.com/atishp04/kvmtool/tree/sscofpmf
+> >
+> > It also requires Ssaia ISA extension to be present in the hardware in order to
+> > get perf sampling support in the guest. In Qemu virt machine, it can be done
+> > by the following config.
+> >
+> > ```
+> > -cpu rv64,sscofpmf=true,x-ssaia=true
+> > ```
+> >
+> > There is no other dependencies on AIA apart from that. Thus, Ssaia must be disabled
+> > for the guest if AIA patches are not available. Here is the example command.
+> >
+> > ```
+> > ./lkvm-static run -m 256 -c2 --console serial -p "console=ttyS0 earlycon" --disable-ssaia -k ./Image --debug
+> > ```
+> >
+> > The series has been tested only in Qemu.
+> > Here is the snippet of the perf running inside a kvm guest.
+> >
+> > ===================================================
+> > $ perf record -e cycles -e instructions perf bench sched messaging -g 5
+> > ...
+> > $ Running 'sched/messaging' benchmark:
+> > ...
+> > [   45.928723] perf_duration_warn: 2 callbacks suppressed
+> > [   45.929000] perf: interrupt took too long (484426 > 483186), lowering kernel.perf_event_max_sample_rate to 250
+> > $ 20 sender and receiver processes per group
+> > $ 5 groups == 200 processes run
+> >
+> >      Total time: 14.220 [sec]
+> > [ perf record: Woken up 1 times to write data ]
+> > [ perf record: Captured and wrote 0.117 MB perf.data (1942 samples) ]
+> > $ perf report --stdio
+> > $ To display the perf.data header info, please use --header/--header-only optio>
+> > $
+> > $
+> > $ Total Lost Samples: 0
+> > $
+> > $ Samples: 943  of event 'cycles'
+> > $ Event count (approx.): 5128976844
+> > $
+> > $ Overhead  Command          Shared Object                Symbol               >
+> > $ ........  ...............  ...........................  .....................>
+> > $
+> >      7.59%  sched-messaging  [kernel.kallsyms]            [k] memcpy
+> >      5.48%  sched-messaging  [kernel.kallsyms]            [k] percpu_counter_ad>
+> >      5.24%  sched-messaging  [kernel.kallsyms]            [k] __sbi_rfence_v02_>
+> >      4.00%  sched-messaging  [kernel.kallsyms]            [k] _raw_spin_unlock_>
+> >      3.79%  sched-messaging  [kernel.kallsyms]            [k] set_pte_range
+> >      3.72%  sched-messaging  [kernel.kallsyms]            [k] next_uptodate_fol>
+> >      3.46%  sched-messaging  [kernel.kallsyms]            [k] filemap_map_pages
+> >      3.31%  sched-messaging  [kernel.kallsyms]            [k] handle_mm_fault
+> >      3.20%  sched-messaging  [kernel.kallsyms]            [k] finish_task_switc>
+> >      3.16%  sched-messaging  [kernel.kallsyms]            [k] clear_page
+> >      3.03%  sched-messaging  [kernel.kallsyms]            [k] mtree_range_walk
+> >      2.42%  sched-messaging  [kernel.kallsyms]            [k] flush_icache_pte
+> >
+> > ===================================================
+> >
+> > [1] https://github.com/riscv-non-isa/riscv-sbi-doc
+> >
+> > Changes from v7->v8:
+> > 1. Updated event states so that shared memory is updated only during stop
+> >    operations.
+> > 2. Avoid clobbering lower XLEN counter/overflow values in shared memory
+> >    by maintaining a temporary copy for RV32.
+> > 3. Improved overflow handling in snapshot case by supporting all 64 values.
+> > 4. Minor cleanups based on suggestions on v7.
+> >
+> > Changes from v6->v7:
+> > 1. Used SBI_SHMEM_DISABLE in the driver.
+> > 2. Added RB Tags.
+> > 3. Improved the sbi_pmu_test commandline to allow disabling multiple
+> >    tests.
+> >
+> > Changes from v5->v6:
+> > 1. Added a patch for command line option for the sbi pmu tests.
+> > 2. Removed redundant prints and restructure the code little bit.
+> > 3. Added a patch for computing the sbi minor version correctly.
+> > 4. Addressed all other comments on v5.
+> >
+> > Changes from v4->v5:
+> > 1. Moved sbi related definitions to its own header file from processor.h
+> > 2. Added few helper functions for selftests.
+> > 3. Improved firmware counter read and RV32 start/stop functions.
+> > 4. Converted all the shifting operations to use BIT macro
+> > 5. Addressed all other comments on v4.
+> >
+> > Changes from v3->v4:
+> > 1. Added selftests.
+> > 2. Fixed an issue to clear the interrupt pending bits.
+> > 3. Fixed the counter index in snapshot memory start function.
+> >
+> > Changes from v2->v3:
+> > 1. Fixed a patchwork warning on patch6.
+> > 2. Fixed a comment formatting & nit fix in PATCH 3 & 5.
+> > 3. Moved the hvien update and sscofpmf enabling to PATCH 9 from PATCH 8.
+> >
+> > Changes from v1->v2:
+> > 1. Fixed warning/errors from patchwork CI.
+> > 2. Rebased on top of kvm-next.
+> > 3. Added Acked-by tags.
+> >
+> > Changes from RFC->v1:
+> > 1. Addressed all the comments on RFC series.
+> > 2. Removed PATCH2 and merged into later patches.
+> > 3. Added 2 more patches for minor fixes.
+> > 4. Fixed KVM boot issue without Ssaia and made sscofpmf in guest dependent on
+> >    Ssaia in the host.
+> >
+> > Atish Patra (24):
+> > RISC-V: Fix the typo in Scountovf CSR name
+> > RISC-V: Add FIRMWARE_READ_HI definition
+> > drivers/perf: riscv: Read upper bits of a firmware counter
+> > drivers/perf: riscv: Use BIT macro for shifting operations
+> > RISC-V: Add SBI PMU snapshot definitions
+> > RISC-V: KVM: Rename the SBI_STA_SHMEM_DISABLE to a generic name
+> > RISC-V: Use the minor version mask while computing sbi version
+> > drivers/perf: riscv: Fix counter mask iteration for RV32
+> > drivers/perf: riscv: Implement SBI PMU snapshot function
+> > RISC-V: KVM: Fix the initial sample period value
+> > RISC-V: KVM: No need to update the counter value during reset
+> > RISC-V: KVM: No need to exit to the user space if perf event failed
+> > RISC-V: KVM: Implement SBI PMU Snapshot feature
+> > RISC-V: KVM: Add perf sampling support for guests
+> > RISC-V: KVM: Support 64 bit firmware counters on RV32
+> > RISC-V: KVM: Improve firmware counter read function
+> > KVM: riscv: selftests: Move sbi definitions to its own header file
+> > KVM: riscv: selftests: Add helper functions for extension checks
+> > KVM: riscv: selftests: Add Sscofpmf to get-reg-list test
+> > KVM: riscv: selftests: Add SBI PMU extension definitions
+> > KVM: riscv: selftests: Add SBI PMU selftest
+> > KVM: riscv: selftests: Add a test for PMU snapshot functionality
+> > KVM: riscv: selftests: Add a test for counter overflow
+> > KVM: riscv: selftests: Add commandline option for SBI PMU test
+>
+> Queued this series for Linux-6.10
+>
+> If new issues are discovered then send patches based on
+> the KVM riscv queue.
 
-Thanks,
-Conor.
+Please use the kvm-riscv-for-palmer-6.10 tag in the KVM RISC-V
+repo (https://github.com/kvm-riscv/linux.git) as a shared tag for
+the upcoming Linux-6.10 merge window.
 
-> 
-> Signed-off-by: Cl?ment L?ger <cleger@rivosinc.com>
-> ---
->  arch/riscv/include/asm/cpufeature.h |   1 +
->  arch/riscv/kernel/cpufeature.c      | 211 ++++++++++++++++------------
->  2 files changed, 126 insertions(+), 86 deletions(-)
-> 
-> diff --git a/arch/riscv/include/asm/cpufeature.h b/arch/riscv/include/asm/cpufeature.h
-> index 347805446151..000796c2d0b1 100644
-> --- a/arch/riscv/include/asm/cpufeature.h
-> +++ b/arch/riscv/include/asm/cpufeature.h
-> @@ -70,6 +70,7 @@ struct riscv_isa_ext_data {
->  	const char *property;
->  	const unsigned int *subset_ext_ids;
->  	const unsigned int subset_ext_size;
-> +	int (*validate)(const struct riscv_isa_ext_data *data, const unsigned long *isa_bitmap);
->  };
->  
->  extern const struct riscv_isa_ext_data riscv_isa_ext[];
-> diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
-> index 115ba001f1bc..cb2ffa6c8c33 100644
-> --- a/arch/riscv/kernel/cpufeature.c
-> +++ b/arch/riscv/kernel/cpufeature.c
-> @@ -72,51 +72,58 @@ bool __riscv_isa_extension_available(const unsigned long *isa_bitmap, unsigned i
->  }
->  EXPORT_SYMBOL_GPL(__riscv_isa_extension_available);
->  
-> -static bool riscv_isa_extension_check(int id)
-> +static bool riscv_isa_extension_valid(int id)
->  {
-> -	switch (id) {
-> -	case RISCV_ISA_EXT_ZICBOM:
-> -		if (!riscv_cbom_block_size) {
-> -			pr_err("Zicbom detected in ISA string, disabling as no cbom-block-size found\n");
-> -			return false;
-> -		} else if (!is_power_of_2(riscv_cbom_block_size)) {
-> -			pr_err("Zicbom disabled as cbom-block-size present, but is not a power-of-2\n");
-> -			return false;
-> -		}
-> -		return true;
-> -	case RISCV_ISA_EXT_ZICBOZ:
-> -		if (!riscv_cboz_block_size) {
-> -			pr_err("Zicboz detected in ISA string, disabling as no cboz-block-size found\n");
-> -			return false;
-> -		} else if (!is_power_of_2(riscv_cboz_block_size)) {
-> -			pr_err("Zicboz disabled as cboz-block-size present, but is not a power-of-2\n");
-> -			return false;
-> -		}
-> -		return true;
-> -	case RISCV_ISA_EXT_INVALID:
-> -		return false;
-> +	return id != RISCV_ISA_EXT_INVALID;
-> +}
-> +
-> +static int riscv_ext_zicbom_validate(const struct riscv_isa_ext_data *data,
-> +				     const unsigned long *isa_bitmap)
-> +{
-> +	if (!riscv_cbom_block_size) {
-> +		pr_err("Zicbom detected in ISA string, disabling as no cbom-block-size found\n");
-> +		return -EINVAL;
-> +	} else if (!is_power_of_2(riscv_cbom_block_size)) {
-> +		pr_err("Zicbom disabled as cbom-block-size present, but is not a power-of-2\n");
-> +		return -EINVAL;
->  	}
-> +	return 0;
-> +}
->  
-> -	return true;
-> +static int riscv_ext_zicboz_validate(const struct riscv_isa_ext_data *data,
-> +				     const unsigned long *isa_bitmap)
-> +{
-> +	if (!riscv_cboz_block_size) {
-> +		pr_err("Zicboz detected in ISA string, disabling as no cboz-block-size found\n");
-> +		return -EINVAL;
-> +	} else if (!is_power_of_2(riscv_cboz_block_size)) {
-> +		pr_err("Zicboz disabled as cboz-block-size present, but is not a power-of-2\n");
-> +		return -EINVAL;
-> +	}
-> +	return 0;
->  }
->  
-> -#define _RISCV_ISA_EXT_DATA(_name, _id, _subset_exts, _subset_exts_size) {	\
-> -	.name = #_name,								\
-> -	.property = #_name,							\
-> -	.id = _id,								\
-> -	.subset_ext_ids = _subset_exts,						\
-> -	.subset_ext_size = _subset_exts_size					\
-> +#define _RISCV_ISA_EXT_DATA(_name, _id, _subset_exts, _subset_exts_size, _validate) {	\
-> +	.name = #_name,									\
-> +	.property = #_name,								\
-> +	.id = _id,									\
-> +	.subset_ext_ids = _subset_exts,							\
-> +	.subset_ext_size = _subset_exts_size,						\
-> +	.validate = _validate								\
->  }
->  
-> -#define __RISCV_ISA_EXT_DATA(_name, _id) _RISCV_ISA_EXT_DATA(_name, _id, NULL, 0)
-> +#define __RISCV_ISA_EXT_DATA(_name, _id) _RISCV_ISA_EXT_DATA(_name, _id, NULL, 0, NULL)
->  
->  /* Used to declare pure "lasso" extension (Zk for instance) */
->  #define __RISCV_ISA_EXT_BUNDLE(_name, _bundled_exts) \
-> -	_RISCV_ISA_EXT_DATA(_name, RISCV_ISA_EXT_INVALID, _bundled_exts, ARRAY_SIZE(_bundled_exts))
-> +	_RISCV_ISA_EXT_DATA(_name, RISCV_ISA_EXT_INVALID, _bundled_exts, \
-> +			    ARRAY_SIZE(_bundled_exts), NULL)
->  
->  /* Used to declare extensions that are a superset of other extensions (Zvbb for instance) */
->  #define __RISCV_ISA_EXT_SUPERSET(_name, _id, _sub_exts) \
-> -	_RISCV_ISA_EXT_DATA(_name, _id, _sub_exts, ARRAY_SIZE(_sub_exts))
-> +	_RISCV_ISA_EXT_DATA(_name, _id, _sub_exts, ARRAY_SIZE(_sub_exts), NULL)
-> +#define __RISCV_ISA_EXT_SUPERSET_VALIDATE(_name, _id, _sub_exts, _validate) \
-> +	_RISCV_ISA_EXT_DATA(_name, _id, _sub_exts, ARRAY_SIZE(_sub_exts), _validate)
->  
->  static const unsigned int riscv_zk_bundled_exts[] = {
->  	RISCV_ISA_EXT_ZBKB,
-> @@ -247,8 +254,10 @@ const struct riscv_isa_ext_data riscv_isa_ext[] = {
->  	__RISCV_ISA_EXT_DATA(c, RISCV_ISA_EXT_c),
->  	__RISCV_ISA_EXT_DATA(v, RISCV_ISA_EXT_v),
->  	__RISCV_ISA_EXT_DATA(h, RISCV_ISA_EXT_h),
-> -	__RISCV_ISA_EXT_SUPERSET(zicbom, RISCV_ISA_EXT_ZICBOM, riscv_xlinuxenvcfg_exts),
-> -	__RISCV_ISA_EXT_SUPERSET(zicboz, RISCV_ISA_EXT_ZICBOZ, riscv_xlinuxenvcfg_exts),
-> +	__RISCV_ISA_EXT_SUPERSET_VALIDATE(zicbom, RISCV_ISA_EXT_ZICBOM, riscv_xlinuxenvcfg_exts,
-> +					  riscv_ext_zicbom_validate),
-> +	__RISCV_ISA_EXT_SUPERSET_VALIDATE(zicboz, RISCV_ISA_EXT_ZICBOZ, riscv_xlinuxenvcfg_exts,
-> +					  riscv_ext_zicboz_validate),
->  	__RISCV_ISA_EXT_DATA(zicntr, RISCV_ISA_EXT_ZICNTR),
->  	__RISCV_ISA_EXT_DATA(zicond, RISCV_ISA_EXT_ZICOND),
->  	__RISCV_ISA_EXT_DATA(zicsr, RISCV_ISA_EXT_ZICSR),
-> @@ -310,33 +319,80 @@ const struct riscv_isa_ext_data riscv_isa_ext[] = {
->  
->  const size_t riscv_isa_ext_count = ARRAY_SIZE(riscv_isa_ext);
->  
-> -static void __init match_isa_ext(const struct riscv_isa_ext_data *ext, const char *name,
-> -				 const char *name_end, struct riscv_isainfo *isainfo)
-> +static void riscv_isa_set_ext(const struct riscv_isa_ext_data *ext, unsigned long *bitmap)
->  {
-> -	if ((name_end - name == strlen(ext->name)) &&
-> -	     !strncasecmp(name, ext->name, name_end - name)) {
-> -		/*
-> -		 * If this is a bundle, enable all the ISA extensions that
-> -		 * comprise the bundle.
-> -		 */
-> -		if (ext->subset_ext_size) {
-> -			for (int i = 0; i < ext->subset_ext_size; i++) {
-> -				if (riscv_isa_extension_check(ext->subset_ext_ids[i]))
-> -					set_bit(ext->subset_ext_ids[i], isainfo->isa);
-> -			}
-> +	/*
-> +	 * This is valid even for bundle extensions which uses the RISCV_ISA_EXT_INVALID id
-> +	 * (rejected by riscv_isa_extension_valid()).
-> +	 */
-> +	if (riscv_isa_extension_valid(ext->id))
-> +		set_bit(ext->id, bitmap);
-> +
-> +	for (int i = 0; i < ext->subset_ext_size; i++) {
-> +		if (riscv_isa_extension_valid(ext->subset_ext_ids[i]))
-> +			set_bit(ext->subset_ext_ids[i], bitmap);
-> +	}
-> +}
-> +
-> +static void __init riscv_resolve_isa(unsigned long *isa_bitmap, struct riscv_isainfo *isainfo,
-> +				     unsigned long *this_hwcap, unsigned long *isa2hwcap)
-> +{
-> +	bool loop;
-> +	const struct riscv_isa_ext_data *ext;
-> +	DECLARE_BITMAP(prev_bitmap, RISCV_ISA_EXT_MAX);
-> +	int max_loop_count = riscv_isa_ext_count, ret;
-> +
-> +	do {
-> +		loop = false;
-> +		if (max_loop_count-- < 0) {
-> +			pr_err("Failed to reach a stable ISA state\n");
-> +			return;
->  		}
-> +		memcpy(prev_bitmap, isainfo->isa, sizeof(prev_bitmap));
-> +		for (int i = 0; i < riscv_isa_ext_count; i++) {
-> +			ext = &riscv_isa_ext[i];
-> +
-> +			/* Bundle extensions ids are invalid*/
-> +			if (!riscv_isa_extension_valid(ext->id))
-> +				continue;
-> +
-> +			if (!test_bit(ext->id, isa_bitmap) || test_bit(ext->id, isainfo->isa))
-> +				continue;
-> +
-> +			if (ext->validate) {
-> +				ret = ext->validate(ext, isainfo->isa);
-> +				if (ret) {
-> +					if (ret == -EPROBE_DEFER)
-> +						loop = true;
-> +					else
-> +						clear_bit(ext->id, isa_bitmap);
-> +					continue;
-> +				}
-> +			}
->  
-> -		/*
-> -		 * This is valid even for bundle extensions which uses the RISCV_ISA_EXT_INVALID id
-> -		 * (rejected by riscv_isa_extension_check()).
-> -		 */
-> -		if (riscv_isa_extension_check(ext->id))
->  			set_bit(ext->id, isainfo->isa);
-> +
-> +			/* Only single letter extensions get set in hwcap */
-> +			if (ext->id < RISCV_ISA_EXT_BASE)
-> +				*this_hwcap |= isa2hwcap[ext->id];
-> +		}
-> +	} while (loop && memcmp(prev_bitmap, isainfo->isa, sizeof(prev_bitmap)));
-> +}
-> +
-> +static void __init match_isa_ext(const char *name, const char *name_end, unsigned long *bitmap)
-> +{
-> +	for (int i = 0; i < riscv_isa_ext_count; i++) {
-> +		const struct riscv_isa_ext_data *ext = &riscv_isa_ext[i];
-> +
-> +		if ((name_end - name == strlen(ext->name)) &&
-> +		    !strncasecmp(name, ext->name, name_end - name)) {
-> +			riscv_isa_set_ext(ext, bitmap);
-> +			break;
-> +		}
->  	}
->  }
->  
-> -static void __init riscv_parse_isa_string(unsigned long *this_hwcap, struct riscv_isainfo *isainfo,
-> -					  unsigned long *isa2hwcap, const char *isa)
-> +static void __init riscv_resolve_isa_string(const char *isa, unsigned long *bitmap)
->  {
->  	/*
->  	 * For all possible cpus, we have already validated in
-> @@ -349,7 +405,7 @@ static void __init riscv_parse_isa_string(unsigned long *this_hwcap, struct risc
->  	while (*isa) {
->  		const char *ext = isa++;
->  		const char *ext_end = isa;
-> -		bool ext_long = false, ext_err = false;
-> +		bool ext_err = false;
->  
->  		switch (*ext) {
->  		case 's':
-> @@ -389,7 +445,6 @@ static void __init riscv_parse_isa_string(unsigned long *this_hwcap, struct risc
->  			 * character itself while eliminating the extensions version number.
->  			 * A simple re-increment solves this problem.
->  			 */
-> -			ext_long = true;
->  			for (; *isa && *isa != '_'; ++isa)
->  				if (unlikely(!isalnum(*isa)))
->  					ext_err = true;
-> @@ -469,17 +524,8 @@ static void __init riscv_parse_isa_string(unsigned long *this_hwcap, struct risc
->  
->  		if (unlikely(ext_err))
->  			continue;
-> -		if (!ext_long) {
-> -			int nr = tolower(*ext) - 'a';
->  
-> -			if (riscv_isa_extension_check(nr)) {
-> -				*this_hwcap |= isa2hwcap[nr];
-> -				set_bit(nr, isainfo->isa);
-> -			}
-> -		} else {
-> -			for (int i = 0; i < riscv_isa_ext_count; i++)
-> -				match_isa_ext(&riscv_isa_ext[i], ext, ext_end, isainfo);
-> -		}
-> +		match_isa_ext(ext, ext_end, bitmap);
->  	}
->  }
->  
-> @@ -501,6 +547,7 @@ static void __init riscv_fill_hwcap_from_isa_string(unsigned long *isa2hwcap)
->  	for_each_possible_cpu(cpu) {
->  		struct riscv_isainfo *isainfo = &hart_isa[cpu];
->  		unsigned long this_hwcap = 0;
-> +		DECLARE_BITMAP(isa_bitmap, RISCV_ISA_EXT_MAX) = { 0 };
->  
->  		if (acpi_disabled) {
->  			node = of_cpu_device_node_get(cpu);
-> @@ -523,7 +570,7 @@ static void __init riscv_fill_hwcap_from_isa_string(unsigned long *isa2hwcap)
->  			}
->  		}
->  
-> -		riscv_parse_isa_string(&this_hwcap, isainfo, isa2hwcap, isa);
-> +		riscv_resolve_isa_string(isa, isa_bitmap);
->  
->  		/*
->  		 * These ones were as they were part of the base ISA when the
-> @@ -531,10 +578,10 @@ static void __init riscv_fill_hwcap_from_isa_string(unsigned long *isa2hwcap)
->  		 * unconditionally where `i` is in riscv,isa on DT systems.
->  		 */
->  		if (acpi_disabled) {
-> -			set_bit(RISCV_ISA_EXT_ZICSR, isainfo->isa);
-> -			set_bit(RISCV_ISA_EXT_ZIFENCEI, isainfo->isa);
-> -			set_bit(RISCV_ISA_EXT_ZICNTR, isainfo->isa);
-> -			set_bit(RISCV_ISA_EXT_ZIHPM, isainfo->isa);
-> +			set_bit(RISCV_ISA_EXT_ZICSR, isa_bitmap);
-> +			set_bit(RISCV_ISA_EXT_ZIFENCEI, isa_bitmap);
-> +			set_bit(RISCV_ISA_EXT_ZICNTR, isa_bitmap);
-> +			set_bit(RISCV_ISA_EXT_ZIHPM, isa_bitmap);
->  		}
->  
->  		/*
-> @@ -548,9 +595,11 @@ static void __init riscv_fill_hwcap_from_isa_string(unsigned long *isa2hwcap)
->  		if (acpi_disabled && riscv_cached_mvendorid(cpu) == THEAD_VENDOR_ID &&
->  		    riscv_cached_marchid(cpu) == 0x0) {
->  			this_hwcap &= ~isa2hwcap[RISCV_ISA_EXT_v];
-> -			clear_bit(RISCV_ISA_EXT_v, isainfo->isa);
-> +			clear_bit(RISCV_ISA_EXT_v, isa_bitmap);
->  		}
->  
-> +		riscv_resolve_isa(isa_bitmap, isainfo, &this_hwcap, isa2hwcap);
-> +
->  		/*
->  		 * All "okay" hart should have same isa. Set HWCAP based on
->  		 * common capabilities of every "okay" hart, in case they don't
-> @@ -579,6 +628,7 @@ static int __init riscv_fill_hwcap_from_ext_list(unsigned long *isa2hwcap)
->  		unsigned long this_hwcap = 0;
->  		struct device_node *cpu_node;
->  		struct riscv_isainfo *isainfo = &hart_isa[cpu];
-> +		DECLARE_BITMAP(isa_bitmap, RISCV_ISA_EXT_MAX) = { 0 };
->  
->  		cpu_node = of_cpu_device_node_get(cpu);
->  		if (!cpu_node) {
-> @@ -598,22 +648,11 @@ static int __init riscv_fill_hwcap_from_ext_list(unsigned long *isa2hwcap)
->  						     ext->property) < 0)
->  				continue;
->  
-> -			if (ext->subset_ext_size) {
-> -				for (int j = 0; j < ext->subset_ext_size; j++) {
-> -					if (riscv_isa_extension_check(ext->subset_ext_ids[i]))
-> -						set_bit(ext->subset_ext_ids[j], isainfo->isa);
-> -				}
-> -			}
-> -
-> -			if (riscv_isa_extension_check(ext->id)) {
-> -				set_bit(ext->id, isainfo->isa);
-> -
-> -				/* Only single letter extensions get set in hwcap */
-> -				if (strnlen(riscv_isa_ext[i].name, 2) == 1)
-> -					this_hwcap |= isa2hwcap[riscv_isa_ext[i].id];
-> -			}
-> +			riscv_isa_set_ext(ext, isa_bitmap);
->  		}
->  
-> +		riscv_resolve_isa(isa_bitmap, isainfo, &this_hwcap, isa2hwcap);
-> +
->  		of_node_put(cpu_node);
->  
->  		/*
-> -- 
-> 2.43.0
-> 
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 228 bytes
-Desc: not available
-URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20240429/c9707e4d/attachment-0001.sig>
+This tag is based on Linux-6.9-rc3.
+
+Regards,
+Anup
+
+>
+> Thanks,
+> Anup
+>
+> >
+> > arch/riscv/include/asm/csr.h                  |   5 +-
+> > arch/riscv/include/asm/kvm_vcpu_pmu.h         |  16 +-
+> > arch/riscv/include/asm/sbi.h                  |  38 +-
+> > arch/riscv/include/uapi/asm/kvm.h             |   1 +
+> > arch/riscv/kernel/paravirt.c                  |   6 +-
+> > arch/riscv/kvm/aia.c                          |   5 +
+> > arch/riscv/kvm/vcpu.c                         |  15 +-
+> > arch/riscv/kvm/vcpu_onereg.c                  |   6 +
+> > arch/riscv/kvm/vcpu_pmu.c                     | 260 ++++++-
+> > arch/riscv/kvm/vcpu_sbi_pmu.c                 |  17 +-
+> > arch/riscv/kvm/vcpu_sbi_sta.c                 |   4 +-
+> > drivers/perf/riscv_pmu.c                      |   1 +
+> > drivers/perf/riscv_pmu_sbi.c                  | 309 +++++++-
+> > include/linux/perf/riscv_pmu.h                |   6 +
+> > tools/testing/selftests/kvm/Makefile          |   1 +
+> > .../selftests/kvm/include/riscv/processor.h   |  49 +-
+> > .../testing/selftests/kvm/include/riscv/sbi.h | 141 ++++
+> > .../selftests/kvm/include/riscv/ucall.h       |   1 +
+> > .../selftests/kvm/lib/riscv/processor.c       |  12 +
+> > .../testing/selftests/kvm/riscv/arch_timer.c  |   2 +-
+> > .../selftests/kvm/riscv/get-reg-list.c        |   4 +
+> > .../selftests/kvm/riscv/sbi_pmu_test.c        | 681 ++++++++++++++++++
+> > tools/testing/selftests/kvm/steal_time.c      |   4 +-
+> > 23 files changed, 1467 insertions(+), 117 deletions(-)
+> > create mode 100644 tools/testing/selftests/kvm/include/riscv/sbi.h
+> > create mode 100644 tools/testing/selftests/kvm/riscv/sbi_pmu_test.c
+> >
+> > --
+> > 2.34.1
+> >
+
