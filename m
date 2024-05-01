@@ -1,57 +1,145 @@
 From: Nicholas Piggin <npiggin@gmail.com>
-Date: Wed,  1 May 2024 21:29:33 +1000
-Subject: [kvm-unit-tests PATCH v3 4/5] shellcheck: Fix SC2294
+Date: Wed,  1 May 2024 21:29:34 +1000
+Subject: [kvm-unit-tests PATCH v3 5/5] shellcheck: Suppress various messages
 In-Reply-To: <20240501112938.931452-1-npiggin@gmail.com>
 References: <20240501112938.931452-1-npiggin@gmail.com>
-Message-ID: <20240501112938.931452-5-npiggin@gmail.com>
+Message-ID: <20240501112938.931452-6-npiggin@gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-  SC2294 (warning): eval negates the benefit of arrays. Drop eval to
-  preserve whitespace/symbols (or eval as string).
-
-No bug identified.
+Various info and warnings are suppressed here, where circumstances
+(commented) warrant.
 
 Reviewed-by: Andrew Jones <andrew.jones@linux.dev>
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- scripts/arch-run.bash | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ configure               |  2 ++
+ run_tests.sh            |  3 +++
+ scripts/arch-run.bash   | 15 +++++++++++++++
+ scripts/mkstandalone.sh |  2 ++
+ scripts/runtime.bash    |  2 ++
+ 5 files changed, 24 insertions(+)
 
+diff --git a/configure b/configure
+index 49f047cb2..e13a346d3 100755
+--- a/configure
++++ b/configure
+@@ -422,6 +422,8 @@ ln -sf "$asm" lib/asm
+ 
+ # create the config
+ cat <<EOF > config.mak
++# Shellcheck does not see these are used
++# shellcheck disable=SC2034
+ SRCDIR=$srcdir
+ PREFIX=$prefix
+ HOST=$host
+diff --git a/run_tests.sh b/run_tests.sh
+index 938bb8edf..152323ffc 100755
+--- a/run_tests.sh
++++ b/run_tests.sh
+@@ -45,6 +45,9 @@ fi
+ only_tests=""
+ list_tests=""
+ args=$(getopt -u -o ag:htj:vl -l all,group:,help,tap13,parallel:,verbose,list,probe-maxsmp -- "$@")
++# Shellcheck likes to test commands directly rather than with $? but sometimes they
++# are too long to put in the same test.
++# shellcheck disable=SC2181
+ [ $? -ne 0 ] && exit 2;
+ set -- $args;
+ while [ $# -gt 0 ]; do
 diff --git a/scripts/arch-run.bash b/scripts/arch-run.bash
-index 95b6fa64d..98d29b671 100644
+index 98d29b671..8643bab3b 100644
 --- a/scripts/arch-run.bash
 +++ b/scripts/arch-run.bash
-@@ -179,7 +179,7 @@ run_migration ()
+@@ -44,6 +44,8 @@ run_qemu ()
+ 	if [ "$errors" ]; then
+ 		sig=$(grep 'terminating on signal' <<<"$errors")
+ 		if [ "$sig" ]; then
++			# This is too complex for ${var/search/replace}
++			# shellcheck disable=SC2001
+ 			sig=$(sed 's/.*terminating on signal \([0-9][0-9]*\).*/\1/' <<<"$sig")
+ 		fi
+ 	fi
+@@ -174,9 +176,12 @@ run_migration ()
+ 
+ 	# Holding both ends of the input fifo open prevents opens from
+ 	# blocking and readers getting EOF when a writer closes it.
++	# These fds appear to be unused to shellcheck so quieten the warning.
+ 	mkfifo ${src_infifo}
+ 	mkfifo ${dst_infifo}
++	# shellcheck disable=SC2034
  	exec {src_infifo_fd}<>${src_infifo}
++	# shellcheck disable=SC2034
  	exec {dst_infifo_fd}<>${dst_infifo}
  
--	eval "${migcmdline[@]}" \
-+	"${migcmdline[@]}" \
- 		-chardev socket,id=mon,path=${src_qmp},server=on,wait=off \
+ 	"${migcmdline[@]}" \
+@@ -184,6 +189,9 @@ run_migration ()
  		-mon chardev=mon,mode=control \
  		< ${src_infifo} > ${src_outfifo} &
-@@ -219,7 +219,7 @@ run_migration ()
+ 	live_pid=$!
++	# Shellcheck complains about useless cat but it is clearer than a
++	# redirect in this case.
++	# shellcheck disable=SC2002
+ 	cat ${src_outfifo} | tee ${src_out} | filter_quiet_msgs &
  
- do_migration ()
- {
--	eval "${migcmdline[@]}" \
-+	"${migcmdline[@]}" \
- 		-chardev socket,id=mon,path=${dst_qmp},server=on,wait=off \
+ 	# Start the first destination QEMU machine in advance of the test
+@@ -224,6 +232,9 @@ do_migration ()
  		-mon chardev=mon,mode=control -incoming unix:${dst_incoming} \
  		< ${dst_infifo} > ${dst_outfifo} &
-@@ -357,7 +357,7 @@ run_panic ()
- 	qmp=$(mktemp -u -t panic-qmp.XXXXXXXXXX)
+ 	incoming_pid=$!
++	# Shellcheck complains about useless cat but it is clearer than a
++	# redirect in this case.
++	# shellcheck disable=SC2002
+ 	cat ${dst_outfifo} | tee ${dst_out} | filter_quiet_msgs &
  
- 	# start VM stopped so we don't miss any events
--	eval "$@" -chardev socket,id=mon,path=${qmp},server=on,wait=off \
-+	"$@" -chardev socket,id=mon,path=${qmp},server=on,wait=off \
- 		-mon chardev=mon,mode=control -S &
+ 	# The test must prompt the user to migrate, so wait for the
+@@ -467,6 +478,8 @@ env_params ()
+ 			[ -n "$ACCEL" ] && QEMU_ACCEL=$ACCEL
+ 		fi
+ 		QEMU_VERSION_STRING="$($qemu -h | head -1)"
++		# Shellcheck does not see QEMU_MAJOR|MINOR|MICRO are used
++		# shellcheck disable=SC2034
+ 		IFS='[ .]' read -r _ _ _ QEMU_MAJOR QEMU_MINOR QEMU_MICRO rest <<<"$QEMU_VERSION_STRING"
+ 	fi
+ 	env_add_params QEMU_ACCEL QEMU_VERSION_STRING QEMU_MAJOR QEMU_MINOR QEMU_MICRO
+@@ -597,6 +610,8 @@ hvf_available ()
  
- 	panic_event_count=$(qmp_events ${qmp} | jq -c 'select(.event == "GUEST_PANICKED")' | wc -l)
+ set_qemu_accelerator ()
+ {
++	# Shellcheck does not see ACCEL_PROPS is used
++	# shellcheck disable=SC2034
+ 	ACCEL_PROPS=${ACCEL#"${ACCEL%%,*}"}
+ 	ACCEL=${ACCEL%%,*}
+ 
+diff --git a/scripts/mkstandalone.sh b/scripts/mkstandalone.sh
+index 756647f29..2318a85f0 100755
+--- a/scripts/mkstandalone.sh
++++ b/scripts/mkstandalone.sh
+@@ -65,6 +65,8 @@ generate_test ()
+ 	fi
+ 
+ 	temp_file bin "$kernel"
++	# Don't want to expand $bin but print it as-is.
++	# shellcheck disable=SC2016
+ 	args[3]='$bin'
+ 
+ 	(echo "#!/usr/bin/env bash"
+diff --git a/scripts/runtime.bash b/scripts/runtime.bash
+index 597c90991..fb7c83a25 100644
+--- a/scripts/runtime.bash
++++ b/scripts/runtime.bash
+@@ -127,6 +127,8 @@ function run()
+     # the check line can contain multiple files to check separated by a space
+     # but each check parameter needs to be of the form <path>=<value>
+     if [ "$check" ]; then
++        # There is no globbing or whitespace allowed in check parameters.
++        # shellcheck disable=SC2206
+         check=($check)
+         for check_param in "${check[@]}"; do
+             path=${check_param%%=*}
 -- 
 2.43.0
 
