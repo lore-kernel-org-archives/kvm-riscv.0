@@ -1,49 +1,111 @@
 From: Nicholas Piggin <npiggin@gmail.com>
-Date: Wed,  1 May 2024 21:29:29 +1000
-Subject: [kvm-unit-tests PATCH v3 0/5] add shellcheck support
-Message-ID: <20240501112938.931452-1-npiggin@gmail.com>
+Date: Wed,  1 May 2024 21:29:30 +1000
+Subject: [kvm-unit-tests PATCH v3 1/5] Add initial shellcheck checking
+In-Reply-To: <20240501112938.931452-1-npiggin@gmail.com>
+References: <20240501112938.931452-1-npiggin@gmail.com>
+Message-ID: <20240501112938.931452-2-npiggin@gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This is based on upstream directly now, not ahead of the powerpc
-series.
+This adds a basic shellcheck style file, some directives to help
+find scripts, and a make shellcheck target.
 
-Since v2:
-- Rebased to upstream with some patches merged.
-- Just a few comment typos and small issues (e.g., quoting
-  `make shellcheck` in docs) that people picked up from the
-  last round.
+When changes settle down this could be made part of the standard
+build / CI flow.
 
-`make shellcheck` passes with no warnings for me after this series.
-(You should be able to put patch 1 at the end without conflicts if
-you prefer to only introduce the shellcheck Makefile target when the
-tree is clean.)
-
-Thanks,
-Nick
-
-Nicholas Piggin (5):
-  Add initial shellcheck checking
-  shellcheck: Fix SC2155
-  shellcheck: Fix SC2124
-  shellcheck: Fix SC2294
-  shellcheck: Suppress various messages
-
- .shellcheckrc           | 30 ++++++++++++++++++++++++++++++
- Makefile                |  4 ++++
- README.md               |  3 +++
- configure               |  2 ++
- run_tests.sh            |  3 +++
- scripts/arch-run.bash   | 33 ++++++++++++++++++++++++++-------
- scripts/common.bash     |  5 ++++-
- scripts/mkstandalone.sh |  2 ++
- scripts/runtime.bash    |  6 +++++-
- 9 files changed, 79 insertions(+), 9 deletions(-)
+Suggested-by: Andrew Jones <andrew.jones@linux.dev>
+Reviewed-by: Andrew Jones <andrew.jones@linux.dev>
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ .shellcheckrc       | 30 ++++++++++++++++++++++++++++++
+ Makefile            |  4 ++++
+ README.md           |  3 +++
+ scripts/common.bash |  5 ++++-
+ 4 files changed, 41 insertions(+), 1 deletion(-)
  create mode 100644 .shellcheckrc
 
+diff --git a/.shellcheckrc b/.shellcheckrc
+new file mode 100644
+index 000000000..491af18bd
+--- /dev/null
++++ b/.shellcheckrc
+@@ -0,0 +1,30 @@
++# shellcheck configuration file
++external-sources=true
++
++# Optional extras --  https://www.shellcheck.net/wiki/Optional
++# Possibilities, e.g., -
++# quote?safe?variables
++# require-double-brackets
++# require-variable-braces
++# add-default-case
++
++# Disable SC2004 style? I.e.,
++# In run_tests.sh line 67:
++#            if (( $unittest_run_queues <= 0 )); then
++#                  ^------------------^ SC2004 (style): $/${} is unnecessary on arithmetic variables.
++disable=SC2004
++
++# Disable SC2086 for now, double quote to prevent globbing and word
++# splitting. There are lots of places that use it for word splitting
++# (e.g., invoking commands with arguments) that break. Should have a
++# more consistent approach for this (perhaps use arrays for such cases)
++# but for now disable.
++# SC2086 (info): Double quote to prevent globbing and word splitting.
++disable=SC2086
++
++# Disable SC2235.  Most developers are used to seeing expressions
++# like a || (b && c), not a || { b && c ; }. The subshell overhead in
++# kvm-unit-tests is negligible as it's not shell-heavy in the first
++# place (time is dominated by qemu startup/shutdown and test execution)
++# SC2235 (style): Use { ..; } instead of (..) to avoid subshell overhead.
++disable=SC2235
+diff --git a/Makefile b/Makefile
+index 4f35fffc6..6240d8dfa 100644
+--- a/Makefile
++++ b/Makefile
+@@ -141,6 +141,10 @@ cscope:
+ 		-name '*.[chsS]' -exec realpath --relative-base=$(CURDIR) {} \; | sort -u > ./cscope.files
+ 	cscope -bk
+ 
++.PHONY: shellcheck
++shellcheck:
++	shellcheck -a run_tests.sh */run */efi/run scripts/mkstandalone.sh
++
+ .PHONY: tags
+ tags:
+ 	ctags -R
+diff --git a/README.md b/README.md
+index 6e82dc225..2d6f7db56 100644
+--- a/README.md
++++ b/README.md
+@@ -193,3 +193,6 @@ with `git config diff.orderFile scripts/git.difforder` enables it.
+ 
+ We strive to follow the Linux kernels coding style so it's recommended
+ to run the kernel's ./scripts/checkpatch.pl on new patches.
++
++Also run `make shellcheck` before submitting a patch which touches bash
++scripts.
+diff --git a/scripts/common.bash b/scripts/common.bash
+index b9413d683..5e9ad53e2 100644
+--- a/scripts/common.bash
++++ b/scripts/common.bash
+@@ -78,8 +78,11 @@ function arch_cmd()
+ }
+ 
+ # The current file has to be the only file sourcing the arch helper
+-# file
++# file. Shellcheck can't follow this so help it out. There doesn't appear to be a
++# way to specify multiple alternatives, so we will have to rethink this if things
++# get more complicated.
+ ARCH_FUNC=scripts/${ARCH}/func.bash
+ if [ -f "${ARCH_FUNC}" ]; then
++# shellcheck source=scripts/s390x/func.bash
+ 	source "${ARCH_FUNC}"
+ fi
 -- 
 2.43.0
 
