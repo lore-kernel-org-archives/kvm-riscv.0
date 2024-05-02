@@ -1,58 +1,43 @@
-From: Andrew Jones <andrew.jones@linux.dev>
-Date: Thu, 2 May 2024 10:12:44 +0200
+From: Thomas Huth <thuth@redhat.com>
+Date: Thu, 2 May 2024 10:23:22 +0200
 Subject: [kvm-unit-tests PATCH v3 0/5] add shellcheck support
 In-Reply-To: <20240501112938.931452-1-npiggin@gmail.com>
 References: <20240501112938.931452-1-npiggin@gmail.com>
-Message-ID: <20240502-0e53a1b2873fbb04cdd2840c@orel>
+Message-ID: <2be99a78-878c-4819-8c42-1b795019af2f@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, May 01, 2024 at 09:29:29PM GMT, Nicholas Piggin wrote:
+On 01/05/2024 13.29, Nicholas Piggin wrote:
 > This is based on upstream directly now, not ahead of the powerpc
 > series.
-> 
+
+Thanks! ... maybe you could also rebase the powerpc series on this now? (I 
+haven't forgotten about it, just did not find enough spare time for more 
+reviewing yet)
+
 > Since v2:
 > - Rebased to upstream with some patches merged.
 > - Just a few comment typos and small issues (e.g., quoting
->   `make shellcheck` in docs) that people picked up from the
->   last round.
-> 
-> `make shellcheck` passes with no warnings for me after this series.
-> (You should be able to put patch 1 at the end without conflicts if
-> you prefer to only introduce the shellcheck Makefile target when the
-> tree is clean.)
-> 
-> Thanks,
-> Nick
-> 
-> Nicholas Piggin (5):
->   Add initial shellcheck checking
->   shellcheck: Fix SC2155
->   shellcheck: Fix SC2124
->   shellcheck: Fix SC2294
->   shellcheck: Suppress various messages
-> 
->  .shellcheckrc           | 30 ++++++++++++++++++++++++++++++
->  Makefile                |  4 ++++
->  README.md               |  3 +++
->  configure               |  2 ++
->  run_tests.sh            |  3 +++
->  scripts/arch-run.bash   | 33 ++++++++++++++++++++++++++-------
->  scripts/common.bash     |  5 ++++-
->  scripts/mkstandalone.sh |  2 ++
->  scripts/runtime.bash    |  6 +++++-
->  9 files changed, 79 insertions(+), 9 deletions(-)
->  create mode 100644 .shellcheckrc
-> 
-> -- 
-> 2.43.0
->
+>    `make shellcheck` in docs) that people picked up from the
+>    last round.
 
-Merged.
+When I now run "make shellcheck", I'm still getting an error:
 
-Thanks,
-drew
+In config.mak line 16:
+AR=ar
+^-- SC2209 (warning): Use var=$(command) to assign output (or quote to 
+assign string).
+
+Not sure why it's complaining about "ar" but not about the other lines in there?
+
+Also, it only seems to work for in-tree builds. If I run it from an 
+out-of-tree build directory, I get:
+
+*/efi/run: */efi/run: openBinaryFile: does not exist (No such file or directory)
+
+  Thomas
+
 
