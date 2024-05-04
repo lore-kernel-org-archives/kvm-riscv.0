@@ -1,55 +1,84 @@
-From: David Matlack <dmatlack@google.com>
-Date: Fri,  3 May 2024 11:17:34 -0700
-Subject: [PATCH v3 3/3] KVM: Mark a vCPU as preempted/ready iff it's scheduled
- out while running
-In-Reply-To: <20240503181734.1467938-1-dmatlack@google.com>
-References: <20240503181734.1467938-1-dmatlack@google.com>
-Message-ID: <20240503181734.1467938-4-dmatlack@google.com>
+From: Atish Patra <atishp@rivosinc.com>
+Date: Fri, 3 May 2024 17:21:11 -0700
+Subject: [PATCH v3 0/2] perf kvm: Add kvm stat support on riscv
+In-Reply-To: <20240422080833.8745-1-liangshenlin@eswincomputing.com>
+References: <20240422080833.8745-1-liangshenlin@eswincomputing.com>
+Message-ID: <66b91a63-a953-4bc4-9024-b5b1defa9857@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Mark a vCPU as preempted/ready if-and-only-if it's scheduled out while
-running. i.e. Do not mark a vCPU preempted/ready if it's scheduled out
-during a non-KVM_RUN ioctl() or when userspace is doing KVM_RUN with
-immediate_exit.
+On 4/22/24 01:08, Shenlin Liang wrote:
+> 'perf kvm stat report/record' generates a statistical analysis of KVM
+> events and can be used to analyze guest exit reasons. This patch tries
+> to add stat support on riscv.
+> 
+> Map the return value of trace_kvm_exit() to the specific cause of the
+> exception, and export it to userspace.
+> 
+> It records on two available KVM tracepoints for riscv: "kvm:kvm_entry"
+> and "kvm:kvm_exit", and reports statistical data which includes events
+> handles time, samples, and so on.
+> 
+> Cross compiling perf in X86 environment may encounter issues with missing
+> libraries and tools. Suggest compiling nativly in RISC-V environment
+> 
 
-Commit 54aa83c90198 ("KVM: x86: do not set st->preempted when going back
-to user space") stopped marking a vCPU as preempted when returning to
-userspace, but if userspace then invokes a KVM vCPU ioctl() that gets
-preempted, the vCPU will be marked preempted/ready. This is arguably
-incorrect behavior since the vCPU was not actually preempted while the
-guest was running, it was preempted while doing something on behalf of
-userspace.
+Indeed. I am able to test the series with native build.
+For the entire series:
+Tested-by: Atish Patra <atishp@rivosinc.com>
 
-This commit also avoids KVM dirtying guest memory after userspace has
-paused vCPUs, e.g. for Live Migration, which allows userspace to collect
-the final dirty bitmap before or in parallel with saving vCPU state
-without having to worry about saving vCPU state triggering writes to
-guest memory.
 
-Suggested-by: Sean Christopherson <seanjc@google.com>
-Signed-off-by: David Matlack <dmatlack@google.com>
----
- virt/kvm/kvm_main.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 2b29851a90bd..3973e62acc7c 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -6302,7 +6302,7 @@ static void kvm_sched_out(struct preempt_notifier *pn,
- {
- 	struct kvm_vcpu *vcpu = preempt_notifier_to_vcpu(pn);
- 
--	if (current->on_rq) {
-+	if (current->on_rq && vcpu->wants_to_run) {
- 		WRITE_ONCE(vcpu->preempted, true);
- 		WRITE_ONCE(vcpu->ready, true);
- 	}
--- 
-2.45.0.rc1.225.g2a3ae87e7f-goog
+> Simple tests go below:
+> 
+> # ./perf kvm record -e "kvm:kvm_entry" -e "kvm:kvm_exit"
+> Lowering default frequency rate from 4000 to 2500.
+> Please consider tweaking /proc/sys/kernel/perf_event_max_sample_rate.
+> [ perf record: Woken up 18 times to write data ]
+> [ perf record: Captured and wrote 5.433 MB perf.data.guest (62519 samples)
+> 
+> # ./perf kvm report
+> 31K kvm:kvm_entry
+> 31K kvm:kvm_exit
+> 
+> # ./perf kvm stat record -a
+> [ perf record: Woken up 3 times to write data ]
+> [ perf record: Captured and wrote 8.502 MB perf.data.guest (99338 samples) ]
+> 
+> # ./perf kvm stat report --event=vmexit
+> Event name                Samples   Sample%    Time (ns)     Time%   Max Time (ns)   Min Time (ns)  Mean Time (ns)
+> STORE_GUEST_PAGE_FAULT     26968     54.00%    2003031800    40.00%     3361400         27600          74274
+> LOAD_GUEST_PAGE_FAULT      17645     35.00%    1153338100    23.00%     2513400         30800          65363
+> VIRTUAL_INST_FAULT         1247      2.00%     340820800     6.00%      1190800         43300          273312
+> INST_GUEST_PAGE_FAULT      1128      2.00%     340645800     6.00%      2123200         30200          301990
+> SUPERVISOR_SYSCALL         1019      2.00%     245989900     4.00%      1851500         29300          241403
+> LOAD_ACCESS                986       1.00%     671556200     13.00%     4180200         100700         681091
+> INST_ACCESS                655       1.00%     170054800     3.00%      1808300         54600          259625
+> HYPERVISOR_SYSCALL         21        0.00%     4276400       0.00%      716500          116000         203638
+> 
+> Changes from v1->v2:
+> - Rebased on Linux 6.9-rc3.
+> 
+> Changes from v2->v3:
+> - Add the missing assignment for 'vcpu_id_str' in patch 2.
+> - Remove parentheses that cause compilation errors
+> 
+> Shenlin Liang (2):
+>    RISCV: KVM: add tracepoints for entry and exit events
+>    perf kvm/riscv: Port perf kvm stat to RISC-V
+> 
+>   arch/riscv/kvm/trace.h                        | 67 ++++++++++++++++
+>   arch/riscv/kvm/vcpu.c                         |  7 ++
+>   tools/perf/arch/riscv/Makefile                |  1 +
+>   tools/perf/arch/riscv/util/Build              |  1 +
+>   tools/perf/arch/riscv/util/kvm-stat.c         | 79 +++++++++++++++++++
+>   .../arch/riscv/util/riscv_exception_types.h   | 35 ++++++++
+>   6 files changed, 190 insertions(+)
+>   create mode 100644 arch/riscv/kvm/trace.h
+>   create mode 100644 tools/perf/arch/riscv/util/kvm-stat.c
+>   create mode 100644 tools/perf/arch/riscv/util/riscv_exception_types.h
+> 
 
 
