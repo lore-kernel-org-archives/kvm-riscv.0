@@ -1,124 +1,59 @@
 From: Nicholas Piggin <npiggin@gmail.com>
-Date: Sat,  4 May 2024 22:28:34 +1000
-Subject: [kvm-unit-tests PATCH v9 28/31] configure: Make arch_libdir a first-class entity
-In-Reply-To: <20240504122841.1177683-1-npiggin@gmail.com>
-References: <20240504122841.1177683-1-npiggin@gmail.com>
-Message-ID: <20240504122841.1177683-29-npiggin@gmail.com>
+Date: Tue, 07 May 2024 14:26:42 +1000
+Subject: [kvm-unit-tests PATCH v3 0/5] add shellcheck support
+In-Reply-To: <4b934481-49f9-42e6-87f5-74318f2597db@redhat.com>
+References: <20240501112938.931452-1-npiggin@gmail.com>
+ <2be99a78-878c-4819-8c42-1b795019af2f@redhat.com>
+ <20240502-d231f770256b3ed812eb4246@orel>
+ <28975cc5-ef8f-4471-baca-0bb792a62084@redhat.com>
+ <D0ZQV7VH839A.3RQVN9RKAGH2N@gmail.com>
+ <4b934481-49f9-42e6-87f5-74318f2597db@redhat.com>
+Message-ID: <D134M2NGQTR1.227OAJT9O1VEM@gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-arch_libdir was brought in to improve the heuristic determination of
-the lib/ directory based on arch and testdir names, but it did not
-entirely clean that mess up.
+On Fri May 3, 2024 at 3:13 PM AEST, Thomas Huth wrote:
+> On 03/05/2024 07.02, Nicholas Piggin wrote:
+> > On Thu May 2, 2024 at 7:34 PM AEST, Thomas Huth wrote:
+> >> On 02/05/2024 10.56, Andrew Jones wrote:
+> >>> On Thu, May 02, 2024 at 10:23:22AM GMT, Thomas Huth wrote:
+> >>>> On 01/05/2024 13.29, Nicholas Piggin wrote:
+> >>>>> This is based on upstream directly now, not ahead of the powerpc
+> >>>>> series.
+> >>>>
+> >>>> Thanks! ... maybe you could also rebase the powerpc series on this now? (I
+> >>>> haven't forgotten about it, just did not find enough spare time for more
+> >>>> reviewing yet)
+> >>>>
+> >>>>> Since v2:
+> >>>>> - Rebased to upstream with some patches merged.
+> >>>>> - Just a few comment typos and small issues (e.g., quoting
+> >>>>>      `make shellcheck` in docs) that people picked up from the
+> >>>>>      last round.
+> >>>>
+> >>>> When I now run "make shellcheck", I'm still getting an error:
+> >>>>
+> >>>> In config.mak line 16:
+> >>>> AR=ar
+> >>>> ^-- SC2209 (warning): Use var=$(command) to assign output (or quote to
+> >>>> assign string).
+> >>>
+> >>> I didn't see this one when testing. I have shellcheck version 0.9.0.
+> >>
+> >> I'm also using 0.9.0 (from Fedora). Maybe we've got a different default config?
+> > 
+> > I have 0.10.0 from Debian with no changes to config defaults and no
+> > warning.
+>
+> If I understood it correctly, it warns for AR=ar but it does not warn for 
+> AR=powerpc-linux-gnu-ar ... could you try the first term, too, if you 
+> haven't done so yet?
 
-Remove the arch_libdir->arch->testdir heuristic and just require
-everybody sets arch_libdir correctly. Fail if the lib/arch or
-lib/arch/asm directories can not be found.
+Ah you're right, that does warn here too.
 
-Cc: Alexandru Elisei <alexandru.elisei@arm.com>
-Cc: Claudio Imbrenda <imbrenda@linux.ibm.com>
-Cc: David Hildenbrand <david@redhat.com>
-Cc: Eric Auger <eric.auger@redhat.com>
-Cc: Janosch Frank <frankja@linux.ibm.com>
-Cc: Laurent Vivier <lvivier@redhat.com>
-Cc: Nico B?hr <nrb@linux.ibm.com>
-Cc: Paolo Bonzini <pbonzini@redhat.com>
-Cc: Thomas Huth <thuth@redhat.com>
-Cc: kvm at vger.kernel.org
-Cc: linux-s390 at vger.kernel.org
-Cc: kvmarm at lists.linux.dev
-Cc: kvm-riscv at lists.infradead.org
-Cc: linuxppc-dev at lists.ozlabs.org
-Reviewed-by: Andrew Jones <andrew.jones@linux.dev>
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- Makefile  |  2 +-
- configure | 18 +++++++++++++-----
- 2 files changed, 14 insertions(+), 6 deletions(-)
-
-diff --git a/Makefile b/Makefile
-index 5b7998b79..7fe93dfd8 100644
---- a/Makefile
-+++ b/Makefile
-@@ -10,7 +10,7 @@ include config.mak
- VPATH = $(SRCDIR)
- 
- libdirs-get = $(shell [ -d "lib/$(1)" ] && echo "lib/$(1) lib/$(1)/asm")
--ARCH_LIBDIRS := $(call libdirs-get,$(ARCH_LIBDIR)) $(call libdirs-get,$(TEST_DIR))
-+ARCH_LIBDIRS := $(call libdirs-get,$(ARCH_LIBDIR))
- OBJDIRS := $(ARCH_LIBDIRS)
- 
- DESTDIR := $(PREFIX)/share/kvm-unit-tests/
-diff --git a/configure b/configure
-index d744ec4dc..2b788d0c8 100755
---- a/configure
-+++ b/configure
-@@ -216,7 +216,6 @@ fi
- arch_name=$arch
- [ "$arch" = "aarch64" ] && arch="arm64"
- [ "$arch_name" = "arm64" ] && arch_name="aarch64"
--arch_libdir=$arch
- 
- if [ "$arch" = "riscv" ]; then
-     echo "riscv32 or riscv64 must be specified"
-@@ -284,8 +283,10 @@ fi
- 
- if [ "$arch" = "i386" ] || [ "$arch" = "x86_64" ]; then
-     testdir=x86
-+    arch_libdir=x86
- elif [ "$arch" = "arm" ] || [ "$arch" = "arm64" ]; then
-     testdir=arm
-+    arch_libdir=$arch
-     if [ "$target" = "qemu" ]; then
-         arm_uart_early_addr=0x09000000
-     elif [ "$target" = "kvmtool" ]; then
-@@ -334,6 +335,7 @@ elif [ "$arch" = "arm" ] || [ "$arch" = "arm64" ]; then
-     fi
- elif [ "$arch" = "ppc64" ]; then
-     testdir=powerpc
-+    arch_libdir=ppc64
-     firmware="$testdir/boot_rom.bin"
-     if [ "$endian" != "little" ] && [ "$endian" != "big" ]; then
-         echo "You must provide endianness (big or little)!"
-@@ -344,6 +346,7 @@ elif [ "$arch" = "riscv32" ] || [ "$arch" = "riscv64" ]; then
-     arch_libdir=riscv
- elif [ "$arch" = "s390x" ]; then
-     testdir=s390x
-+    arch_libdir=s390x
- else
-     echo "arch $arch is not supported!"
-     arch=
-@@ -353,6 +356,10 @@ if [ ! -d "$srcdir/$testdir" ]; then
-     echo "$srcdir/$testdir does not exist!"
-     exit 1
- fi
-+if [ ! -d "$srcdir/lib/$arch_libdir" ]; then
-+    echo "$srcdir/lib/$arch_libdir does not exist!"
-+    exit 1
-+fi
- 
- if [ "$efi" = "y" ] && [ -f "$srcdir/$testdir/efi/run" ]; then
-     ln -fs "$srcdir/$testdir/efi/run" $testdir-run
-@@ -415,10 +422,11 @@ fi
- # link lib/asm for the architecture
- rm -f lib/asm
- asm="asm-generic"
--if [ -d "$srcdir/lib/$arch/asm" ]; then
--	asm="$srcdir/lib/$arch/asm"
--elif [ -d "$srcdir/lib/$testdir/asm" ]; then
--	asm="$srcdir/lib/$testdir/asm"
-+if [ -d "$srcdir/lib/$arch_libdir/asm" ]; then
-+    asm="$srcdir/lib/$arch_libdir/asm"
-+else
-+    echo "$srcdir/lib/$arch_libdir/asm does not exist"
-+    exit 1
- fi
- mkdir -p lib
- ln -sf "$asm" lib/asm
--- 
-2.43.0
-
+Thanks,
+Nick
 
