@@ -1,27 +1,37 @@
-From: Jarkko Sakkinen <jarkko@kernel.org>
-Date: Wed, 08 May 2024 01:36:35 +0300
-Subject: [PATCH v2 3/5] selftests: Include KHDR_INCLUDES in Makefile
-In-Reply-To: <20240507214254.2787305-4-edliaw@google.com>
+From: Kees Cook <keescook@chromium.org>
+Date: Tue, 7 May 2024 16:28:53 -0700
+Subject: [PATCH v2 0/5] Define _GNU_SOURCE for sources using
+In-Reply-To: <20240507214254.2787305-1-edliaw@google.com>
 References: <20240507214254.2787305-1-edliaw@google.com>
- <20240507214254.2787305-4-edliaw@google.com>
-Message-ID: <D13RSJRDTUQO.UA22FQGU3839@kernel.org>
+Message-ID: <202405071628.7F8C3EC@keescook>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed May 8, 2024 at 12:38 AM EEST, Edward Liaw wrote:
-> Add KHDR_INCLUDES to CFLAGS to pull in the kselftest harness
-> dependencies (-D_GNU_SOURCE).
->
-> Fixes: 809216233555 ("selftests/harness: remove use of LINE_MAX")
-> Signed-off-by: Edward Liaw <edliaw@google.com>
+On Tue, May 07, 2024 at 09:38:25PM +0000, Edward Liaw wrote:
+> 809216233555 ("selftests/harness: remove use of LINE_MAX") introduced
+> asprintf into kselftest_harness.h, which is a GNU extension and needs
+> _GNU_SOURCE to either be defined prior to including headers or with the
+> -D_GNU_SOURCE flag passed to the compiler.
+> 
+> v1: https://lore.kernel.org/linux-kselftest/20240430235057.1351993-1-edliaw at google.com/
+> v2: add -D_GNU_SOURCE to KHDR_INCLUDES so that it is in a single
+> location.  Remove #define _GNU_SOURCE from source code to resolve
+> redefinition warnings.
+> 
+> Edward Liaw (5):
+>   selftests: Compile kselftest headers with -D_GNU_SOURCE
+>   selftests/sgx: Include KHDR_INCLUDES in Makefile
+>   selftests: Include KHDR_INCLUDES in Makefile
+>   selftests: Drop define _GNU_SOURCE
+>   selftests: Drop duplicate -D_GNU_SOURCE
 
-Oops, this is not for this patch but for SGX. Pressed D by mistake
-in aerch, so for SGX one:
+It's a lot of churn, but I don't see a way to do it differently. :)
 
-Reviewed-by: Jarkko Sakkinen <jarkko@kernel.org>
+Reviewed-by: Kees Cook <keescook@chromium.org>
 
-BR, Jarkko
+-- 
+Kees Cook
 
