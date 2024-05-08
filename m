@@ -1,27 +1,21 @@
 From: Muhammad Usama Anjum <usama.anjum@collabora.com>
-Date: Wed, 8 May 2024 12:48:57 +0500
-Subject: [PATCH v2 1/5] selftests: Compile kselftest headers with
- -D_GNU_SOURCE
-In-Reply-To: <20240507214254.2787305-2-edliaw@google.com>
+Date: Wed, 8 May 2024 12:49:23 +0500
+Subject: [PATCH v2 2/5] selftests/sgx: Include KHDR_INCLUDES in Makefile
+In-Reply-To: <20240507214254.2787305-3-edliaw@google.com>
 References: <20240507214254.2787305-1-edliaw@google.com>
- <20240507214254.2787305-2-edliaw@google.com>
-Message-ID: <546aaaa7-d796-46af-8805-1612759aaaa5@collabora.com>
+ <20240507214254.2787305-3-edliaw@google.com>
+Message-ID: <b36d9d60-1ef5-4f61-be40-127b46a138eb@collabora.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Thanks for patches
-
 On 5/8/24 2:38 AM, Edward Liaw wrote:
-> Add the -D_GNU_SOURCE flag to KHDR_INCLUDES so that it is defined in a
-> central location.
+> Add KHDR_INCLUDES to the CFLAGS to pull in the kselftest harness
+> dependencies (-D_GNU_SOURCE).
 > 
-> 809216233555 ("selftests/harness: remove use of LINE_MAX") introduced
-> asprintf into kselftest_harness.h, which is a GNU extension and needs
-> _GNU_SOURCE to either be defined prior to including headers or with the
-> -D_GNU_SOURCE flag passed to the compiler.
+> Also, remove redefinitions of _GNU_SOURCE in the source code.
 > 
 > Fixes: 809216233555 ("selftests/harness: remove use of LINE_MAX")
 > Reported-by: kernel test robot <oliver.sang@intel.com>
@@ -30,55 +24,35 @@ On 5/8/24 2:38 AM, Edward Liaw wrote:
 Reviewed-by: Muhammad Usama Anjum <usama.anjum@collabora.com>
 
 > ---
->  tools/testing/selftests/Makefile            | 4 ++--
->  tools/testing/selftests/kselftest_harness.h | 2 +-
->  tools/testing/selftests/lib.mk              | 2 +-
->  3 files changed, 4 insertions(+), 4 deletions(-)
+>  tools/testing/selftests/sgx/Makefile    | 2 +-
+>  tools/testing/selftests/sgx/sigstruct.c | 1 -
+>  2 files changed, 1 insertion(+), 2 deletions(-)
 > 
-> diff --git a/tools/testing/selftests/Makefile b/tools/testing/selftests/Makefile
-> index e1504833654d..ed012a7f0786 100644
-> --- a/tools/testing/selftests/Makefile
-> +++ b/tools/testing/selftests/Makefile
-> @@ -161,11 +161,11 @@ ifneq ($(KBUILD_OUTPUT),)
->    # $(realpath ...) resolves symlinks
->    abs_objtree := $(realpath $(abs_objtree))
->    BUILD := $(abs_objtree)/kselftest
-> -  KHDR_INCLUDES := -isystem ${abs_objtree}/usr/include
-> +  KHDR_INCLUDES := -D_GNU_SOURCE -isystem ${abs_objtree}/usr/include
->  else
->    BUILD := $(CURDIR)
->    abs_srctree := $(shell cd $(top_srcdir) && pwd)
-> -  KHDR_INCLUDES := -isystem ${abs_srctree}/usr/include
-> +  KHDR_INCLUDES := -D_GNU_SOURCE -isystem ${abs_srctree}/usr/include
->    DEFAULT_INSTALL_HDR_PATH := 1
+> diff --git a/tools/testing/selftests/sgx/Makefile b/tools/testing/selftests/sgx/Makefile
+> index 867f88ce2570..26ea30fae23c 100644
+> --- a/tools/testing/selftests/sgx/Makefile
+> +++ b/tools/testing/selftests/sgx/Makefile
+> @@ -12,7 +12,7 @@ OBJCOPY := $(CROSS_COMPILE)objcopy
 >  endif
 >  
-> diff --git a/tools/testing/selftests/kselftest_harness.h b/tools/testing/selftests/kselftest_harness.h
-> index d98702b6955d..b2a1b6343896 100644
-> --- a/tools/testing/selftests/kselftest_harness.h
-> +++ b/tools/testing/selftests/kselftest_harness.h
-> @@ -51,7 +51,7 @@
->  #define __KSELFTEST_HARNESS_H
+>  INCLUDES := -I$(top_srcdir)/tools/include
+> -HOST_CFLAGS := -Wall -Werror -g $(INCLUDES) -fPIC
+> +HOST_CFLAGS := -Wall -Werror $(KHDR_INCLUDES) -g $(INCLUDES) -fPIC
+>  HOST_LDFLAGS := -z noexecstack -lcrypto
+>  ENCL_CFLAGS += -Wall -Werror -static-pie -nostdlib -ffreestanding -fPIE \
+>  	       -fno-stack-protector -mrdrnd $(INCLUDES)
+> diff --git a/tools/testing/selftests/sgx/sigstruct.c b/tools/testing/selftests/sgx/sigstruct.c
+> index d73b29becf5b..200034a0fee5 100644
+> --- a/tools/testing/selftests/sgx/sigstruct.c
+> +++ b/tools/testing/selftests/sgx/sigstruct.c
+> @@ -1,7 +1,6 @@
+>  // SPDX-License-Identifier: GPL-2.0
+>  /*  Copyright(c) 2016-20 Intel Corporation. */
 >  
->  #ifndef _GNU_SOURCE
 > -#define _GNU_SOURCE
-> +static_assert(0, "kselftest harness requires _GNU_SOURCE to be defined");
->  #endif
->  #include <asm/types.h>
->  #include <ctype.h>
-> diff --git a/tools/testing/selftests/lib.mk b/tools/testing/selftests/lib.mk
-> index da2cade3bab0..2503dc732b4d 100644
-> --- a/tools/testing/selftests/lib.mk
-> +++ b/tools/testing/selftests/lib.mk
-> @@ -45,7 +45,7 @@ selfdir = $(realpath $(dir $(filter %/lib.mk,$(MAKEFILE_LIST))))
->  top_srcdir = $(selfdir)/../../..
->  
->  ifeq ($(KHDR_INCLUDES),)
-> -KHDR_INCLUDES := -isystem $(top_srcdir)/usr/include
-> +KHDR_INCLUDES := -D_GNU_SOURCE -isystem $(top_srcdir)/usr/include
->  endif
->  
->  # The following are built by lib.mk common compile rules.
+>  #include <assert.h>
+>  #include <getopt.h>
+>  #include <stdbool.h>
 
 -- 
 BR,
