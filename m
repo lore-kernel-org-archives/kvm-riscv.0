@@ -1,49 +1,123 @@
-From: Edward Liaw <edliaw@google.com>
-Date: Wed, 8 May 2024 13:27:39 -0700
-Subject: [PATCH v2 4/5] selftests: Drop define _GNU_SOURCE
-In-Reply-To: <ZjuEILj0SZRuTL9I@google.com>
-References: <20240507214254.2787305-1-edliaw@google.com> <20240507214254.2787305-5-edliaw@google.com>
- <ZjuEILj0SZRuTL9I@google.com>
-Message-ID: <CAG4es9VWuY4Z5HoU_SQCDaSrDC0s1knDfGvLNEa1YxhC0RZ2ZQ@mail.gmail.com>
+From: John Hubbard <jhubbard@nvidia.com>
+Date: Wed, 8 May 2024 14:23:13 -0700
+Subject: [PATCH v2 1/5] selftests: Compile kselftest headers with
+ -D_GNU_SOURCE
+In-Reply-To: <20240507214254.2787305-2-edliaw@google.com>
+References: <20240507214254.2787305-1-edliaw@google.com>
+ <20240507214254.2787305-2-edliaw@google.com>
+Message-ID: <ac8c217e-4109-4ca7-a7dd-fc4fc8b0a4de@nvidia.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, May 8, 2024 at 6:54?AM Sean Christopherson <seanjc@google.com> wrote:
->
-> On Tue, May 07, 2024, Edward Liaw wrote:
-> > _GNU_SOURCE is provided by KHDR_INCLUDES, so it should be dropped to
-> > prevent _GNU_SOURCE redefined warnings.
->
-> ...
->
-> > diff --git a/tools/testing/selftests/x86/test_syscall_vdso.c b/tools/testing/selftests/x86/test_syscall_vdso.c
-> > index 8965c311bd65..5cd13279bba5 100644
-> > --- a/tools/testing/selftests/x86/test_syscall_vdso.c
-> > +++ b/tools/testing/selftests/x86/test_syscall_vdso.c
-> > @@ -8,10 +8,6 @@
-> >   * Can be built statically:
-> >   * gcc -Os -Wall -static -m32 test_syscall_vdso.c thunks_32.S
-> >   */
-> > -#undef _GNU_SOURCE
-> > -#define _GNU_SOURCE 1
-> > -#undef __USE_GNU
-> > -#define __USE_GNU 1
->
-> AFAICT, manually defining __USE_GNU is frowned upon, so I'm guessing the __USE_GNU
-> stuff is just the result of misguided copy+paste.  But it would be nice to get
-> confirmation that this test isn't doing something clever.  Or at the very least,
-> explain the removal of __USE_GNU in the changelog.
+On 5/7/24 2:38 PM, Edward Liaw wrote:
+> Add the -D_GNU_SOURCE flag to KHDR_INCLUDES so that it is defined in a
+> central location.
+> 
+> 809216233555 ("selftests/harness: remove use of LINE_MAX") introduced
+> asprintf into kselftest_harness.h, which is a GNU extension and needs
+> _GNU_SOURCE to either be defined prior to including headers or with the
+> -D_GNU_SOURCE flag passed to the compiler.
+> 
+> Fixes: 809216233555 ("selftests/harness: remove use of LINE_MAX")
+> Reported-by: kernel test robot <oliver.sang@intel.com>
+> Closes: https://lore.kernel.org/oe-lkp/202404301040.3bea5782-oliver.sang at intel.com
+> Signed-off-by: Edward Liaw <edliaw@google.com>
+> ---
+>   tools/testing/selftests/Makefile            | 4 ++--
+>   tools/testing/selftests/kselftest_harness.h | 2 +-
+>   tools/testing/selftests/lib.mk              | 2 +-
+>   3 files changed, 4 insertions(+), 4 deletions(-)
+> 
+> diff --git a/tools/testing/selftests/Makefile b/tools/testing/selftests/Makefile
+> index e1504833654d..ed012a7f0786 100644
+> --- a/tools/testing/selftests/Makefile
+> +++ b/tools/testing/selftests/Makefile
+> @@ -161,11 +161,11 @@ ifneq ($(KBUILD_OUTPUT),)
+>     # $(realpath ...) resolves symlinks
+>     abs_objtree := $(realpath $(abs_objtree))
+>     BUILD := $(abs_objtree)/kselftest
+> -  KHDR_INCLUDES := -isystem ${abs_objtree}/usr/include
+> +  KHDR_INCLUDES := -D_GNU_SOURCE -isystem ${abs_objtree}/usr/include
+>   else
+>     BUILD := $(CURDIR)
+>     abs_srctree := $(shell cd $(top_srcdir) && pwd)
+> -  KHDR_INCLUDES := -isystem ${abs_srctree}/usr/include
+> +  KHDR_INCLUDES := -D_GNU_SOURCE -isystem ${abs_srctree}/usr/include
+>     DEFAULT_INSTALL_HDR_PATH := 1
+>   endif
 
-It looks like test_syscall_vdso, test_FCMOV, test_FCOMI, and
-test_FISTTP don't actually use any GNU extensions.  I'll add that to
-the commit message.
+Just a small copy-paste duplication request: can we maybe do it this
+way, instead, to remove the duplication? It's small *so far*, but
+still. :)
+
+diff --git a/tools/testing/selftests/Makefile b/tools/testing/selftests/Makefile
+index e1504833654d..13a5b11db59a 100644
+--- a/tools/testing/selftests/Makefile
++++ b/tools/testing/selftests/Makefile
+@@ -152,6 +152,8 @@ ifeq ("$(origin O)", "command line")
+    KBUILD_OUTPUT := $(O)
+  endif
+  
++KHDR_INCLUDES := -D_GNU_SOURCE
++
+  ifneq ($(KBUILD_OUTPUT),)
+    # Make's built-in functions such as $(abspath ...), $(realpath ...) cannot
+    # expand a shell special character '~'. We use a somewhat tedious way here.
+@@ -161,11 +163,11 @@ ifneq ($(KBUILD_OUTPUT),)
+    # $(realpath ...) resolves symlinks
+    abs_objtree := $(realpath $(abs_objtree))
+    BUILD := $(abs_objtree)/kselftest
+-  KHDR_INCLUDES := -isystem ${abs_objtree}/usr/include
++  KHDR_INCLUDES += -isystem ${abs_objtree}/usr/include
+  else
+    BUILD := $(CURDIR)
+    abs_srctree := $(shell cd $(top_srcdir) && pwd)
+-  KHDR_INCLUDES := -isystem ${abs_srctree}/usr/include
++  KHDR_INCLUDES += -isystem ${abs_srctree}/usr/include
+    DEFAULT_INSTALL_HDR_PATH := 1
+  endif
 
 
->
-> >  #include <unistd.h>
-> >  #include <stdlib.h>
-> >  #include <string.h>
+>   
+> diff --git a/tools/testing/selftests/kselftest_harness.h b/tools/testing/selftests/kselftest_harness.h
+> index d98702b6955d..b2a1b6343896 100644
+> --- a/tools/testing/selftests/kselftest_harness.h
+> +++ b/tools/testing/selftests/kselftest_harness.h
+> @@ -51,7 +51,7 @@
+>   #define __KSELFTEST_HARNESS_H
+>   
+>   #ifndef _GNU_SOURCE
+> -#define _GNU_SOURCE
+> +static_assert(0, "kselftest harness requires _GNU_SOURCE to be defined");
+>   #endif
+>   #include <asm/types.h>
+>   #include <ctype.h>
+> diff --git a/tools/testing/selftests/lib.mk b/tools/testing/selftests/lib.mk
+> index da2cade3bab0..2503dc732b4d 100644
+> --- a/tools/testing/selftests/lib.mk
+> +++ b/tools/testing/selftests/lib.mk
+> @@ -45,7 +45,7 @@ selfdir = $(realpath $(dir $(filter %/lib.mk,$(MAKEFILE_LIST))))
+>   top_srcdir = $(selfdir)/../../..
+>   
+>   ifeq ($(KHDR_INCLUDES),)
+> -KHDR_INCLUDES := -isystem $(top_srcdir)/usr/include
+> +KHDR_INCLUDES := -D_GNU_SOURCE -isystem $(top_srcdir)/usr/include
+>   endif
+>   
+>   # The following are built by lib.mk common compile rules.
+
+The rest looks good. And whether you accept my recommendation above,
+or not, either way this patch looks good, so please feel free to add:
+
+Reviewed-by: John Hubbard <jhubbard@nvidia.com>
+
+
+thanks,
+-- 
+John Hubbard
+NVIDIA
+
 
