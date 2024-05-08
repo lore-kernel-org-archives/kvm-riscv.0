@@ -1,36 +1,56 @@
-From: Jarkko Sakkinen <jarkko@kernel.org>
-Date: Wed, 08 May 2024 19:44:40 +0300
-Subject: [PATCH v2 2/5] selftests/sgx: Include KHDR_INCLUDES in Makefile
-In-Reply-To: <c3fc5396-bc71-4dee-a3e0-d59dbbc6eda1@intel.com>
-References: <20240507214254.2787305-1-edliaw@google.com>
- <20240507214254.2787305-3-edliaw@google.com>
- <c3fc5396-bc71-4dee-a3e0-d59dbbc6eda1@intel.com>
-Message-ID: <D14EXNEBOKFY.8SJ7SOCABM01@kernel.org>
+From: Edward Liaw <edliaw@google.com>
+Date: Wed, 8 May 2024 11:03:07 -0700
+Subject: [PATCH v2 0/5] Define _GNU_SOURCE for sources using
+In-Reply-To: <ZjuA3aY_iHkjP7bQ@google.com>
+References: <20240507214254.2787305-1-edliaw@google.com> <ZjuA3aY_iHkjP7bQ@google.com>
+Message-ID: <CAG4es9V1578h2EgpztcoEv3CPGftbgA+HNfhgaPxBqOxP6-CrQ@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed May 8, 2024 at 6:33 PM EEST, Dave Hansen wrote:
-> On 5/7/24 14:38, Edward Liaw wrote:
-> > Add KHDR_INCLUDES to the CFLAGS to pull in the kselftest harness
-> > dependencies (-D_GNU_SOURCE).
-> > 
-> > Also, remove redefinitions of _GNU_SOURCE in the source code.
+On Wed, May 8, 2024 at 6:47?AM Sean Christopherson <seanjc@google.com> wrote:
 >
-> From an x86 and SGX perspective, looks fine.  I assume Shuah is planning
-> on taking this pile.
+> On Tue, May 07, 2024, Edward Liaw wrote:
+> > 809216233555 ("selftests/harness: remove use of LINE_MAX") introduced
+> > asprintf into kselftest_harness.h, which is a GNU extension and needs
+> > _GNU_SOURCE to either be defined prior to including headers or with the
+> > -D_GNU_SOURCE flag passed to the compiler.
+> >
+> > v1: https://lore.kernel.org/linux-kselftest/20240430235057.1351993-1-edliaw at google.com/
+> > v2: add -D_GNU_SOURCE to KHDR_INCLUDES so that it is in a single
+> > location.  Remove #define _GNU_SOURCE from source code to resolve
+> > redefinition warnings.
+> >
+> > Edward Liaw (5):
+> >   selftests: Compile kselftest headers with -D_GNU_SOURCE
+> >   selftests/sgx: Include KHDR_INCLUDES in Makefile
+> >   selftests: Include KHDR_INCLUDES in Makefile
+> >   selftests: Drop define _GNU_SOURCE
+> >   selftests: Drop duplicate -D_GNU_SOURCE
 >
-> Acked-by: Dave Hansen <dave.hansen@linux.intel.com>
+> Can you rebase this on top of linux-next?  I have a conflicting fix[*] for the
+> KVM selftests queued for 6.10, and I would prefer not to drop that commit at
+> this stage as it would require a rebase of a pile of other commits.
 
-Yep,
+Ok, I'll do that.
 
-Reviewed-by: Jarkko Sakkinen <jarkko@kernel.org>
+>
+> And I doubt KVM is the only subsystem that has a targeted fix for the _GNU_SOURCE
+> mess.
+>
+> If we want/need to get a fix into 6.9, then IMO we should just revert 809216233555
+> ("selftests/harness: remove use of LINE_MAX"), as that came in quite late in the
+> 6.9 cycle, and I don't think it's feasible to be 100% confident that globally
+> defining _GNU_SOURCE works for all selftests, i.e. we really should have a full
+> cycle for folks to test.
 
-I also quickly tested with NUC7 for what it is worth:
+That sounds reasonable to me.  In this thread Tao suggested reverting
+back to 809216233555 and using a fixed value in place of LINE_MAX to
+fix 38c957f07038
+https://lore.kernel.org/linux-kselftest/20240508070003.2acdf9b4 at kernel.org/
 
-Tested-by: Jarkko Sakkinen <jarkko@kernel.org>
-
-BR, Jarkko
+>
+> [*] https://github.com/kvm-x86/linux/commit/730cfa45b5f4
 
