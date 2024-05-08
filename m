@@ -1,40 +1,24 @@
-From: Sean Christopherson <seanjc@google.com>
-Date: Wed, 8 May 2024 06:54:40 -0700
-Subject: [PATCH v2 4/5] selftests: Drop define _GNU_SOURCE
-In-Reply-To: <20240507214254.2787305-5-edliaw@google.com>
-References: <20240507214254.2787305-1-edliaw@google.com> <20240507214254.2787305-5-edliaw@google.com>
-Message-ID: <ZjuEILj0SZRuTL9I@google.com>
+From: Dave Hansen <dave.hansen@intel.com>
+Date: Wed, 8 May 2024 08:33:24 -0700
+Subject: [PATCH v2 2/5] selftests/sgx: Include KHDR_INCLUDES in Makefile
+In-Reply-To: <20240507214254.2787305-3-edliaw@google.com>
+References: <20240507214254.2787305-1-edliaw@google.com>
+ <20240507214254.2787305-3-edliaw@google.com>
+Message-ID: <c3fc5396-bc71-4dee-a3e0-d59dbbc6eda1@intel.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, May 07, 2024, Edward Liaw wrote:
-> _GNU_SOURCE is provided by KHDR_INCLUDES, so it should be dropped to
-> prevent _GNU_SOURCE redefined warnings.
+On 5/7/24 14:38, Edward Liaw wrote:
+> Add KHDR_INCLUDES to the CFLAGS to pull in the kselftest harness
+> dependencies (-D_GNU_SOURCE).
+> 
+> Also, remove redefinitions of _GNU_SOURCE in the source code.
 
-...
+From an x86 and SGX perspective, looks fine.  I assume Shuah is planning
+on taking this pile.
 
-> diff --git a/tools/testing/selftests/x86/test_syscall_vdso.c b/tools/testing/selftests/x86/test_syscall_vdso.c
-> index 8965c311bd65..5cd13279bba5 100644
-> --- a/tools/testing/selftests/x86/test_syscall_vdso.c
-> +++ b/tools/testing/selftests/x86/test_syscall_vdso.c
-> @@ -8,10 +8,6 @@
->   * Can be built statically:
->   * gcc -Os -Wall -static -m32 test_syscall_vdso.c thunks_32.S
->   */
-> -#undef _GNU_SOURCE
-> -#define _GNU_SOURCE 1
-> -#undef __USE_GNU
-> -#define __USE_GNU 1
-
-AFAICT, manually defining __USE_GNU is frowned upon, so I'm guessing the __USE_GNU
-stuff is just the result of misguided copy+paste.  But it would be nice to get
-confirmation that this test isn't doing something clever.  Or at the very least,
-explain the removal of __USE_GNU in the changelog.
-
->  #include <unistd.h>
->  #include <stdlib.h>
->  #include <string.h>
+Acked-by: Dave Hansen <dave.hansen@linux.intel.com>
 
