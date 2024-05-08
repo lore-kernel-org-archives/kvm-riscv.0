@@ -1,56 +1,70 @@
-From: Edward Liaw <edliaw@google.com>
-Date: Wed, 8 May 2024 11:03:07 -0700
-Subject: [PATCH v2 0/5] Define _GNU_SOURCE for sources using
-In-Reply-To: <ZjuA3aY_iHkjP7bQ@google.com>
-References: <20240507214254.2787305-1-edliaw@google.com> <ZjuA3aY_iHkjP7bQ@google.com>
-Message-ID: <CAG4es9V1578h2EgpztcoEv3CPGftbgA+HNfhgaPxBqOxP6-CrQ@mail.gmail.com>
+From: Alexandre Ghiti <alexghiti@rivosinc.com>
+Date: Wed,  8 May 2024 21:19:19 +0200
+Subject: [PATCH 00/12] Make riscv use THP contpte support for arm64
+Message-ID: <20240508191931.46060-1-alexghiti@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, May 8, 2024 at 6:47?AM Sean Christopherson <seanjc@google.com> wrote:
->
-> On Tue, May 07, 2024, Edward Liaw wrote:
-> > 809216233555 ("selftests/harness: remove use of LINE_MAX") introduced
-> > asprintf into kselftest_harness.h, which is a GNU extension and needs
-> > _GNU_SOURCE to either be defined prior to including headers or with the
-> > -D_GNU_SOURCE flag passed to the compiler.
-> >
-> > v1: https://lore.kernel.org/linux-kselftest/20240430235057.1351993-1-edliaw at google.com/
-> > v2: add -D_GNU_SOURCE to KHDR_INCLUDES so that it is in a single
-> > location.  Remove #define _GNU_SOURCE from source code to resolve
-> > redefinition warnings.
-> >
-> > Edward Liaw (5):
-> >   selftests: Compile kselftest headers with -D_GNU_SOURCE
-> >   selftests/sgx: Include KHDR_INCLUDES in Makefile
-> >   selftests: Include KHDR_INCLUDES in Makefile
-> >   selftests: Drop define _GNU_SOURCE
-> >   selftests: Drop duplicate -D_GNU_SOURCE
->
-> Can you rebase this on top of linux-next?  I have a conflicting fix[*] for the
-> KVM selftests queued for 6.10, and I would prefer not to drop that commit at
-> this stage as it would require a rebase of a pile of other commits.
+This allows riscv to support napot (riscv equivalent to contpte) THPs by
+moving arm64 contpte support into mm, the previous series [1] only merging
+riscv and arm64 implementations of hugetlbfs contpte.
 
-Ok, I'll do that.
+riscv contpte specification allows for different contpte sizes, although
+only 64KB is supported for now. So in this patchset is implemented the
+support of multiple contpte sizes, which introduces a few arch specific
+helpers to determine what sizes are supported. Even though only one size
+is supported on riscv, the implementation of the multi size support is to
+show what it will look like when we support other sizes, and make sure
+it does not regress arm64.
 
->
-> And I doubt KVM is the only subsystem that has a targeted fix for the _GNU_SOURCE
-> mess.
->
-> If we want/need to get a fix into 6.9, then IMO we should just revert 809216233555
-> ("selftests/harness: remove use of LINE_MAX"), as that came in quite late in the
-> 6.9 cycle, and I don't think it's feasible to be 100% confident that globally
-> defining _GNU_SOURCE works for all selftests, i.e. we really should have a full
-> cycle for folks to test.
+I tested arm64 using the cow kselftest and a kernel build with 4KB base
+page size and 64KB contpte. riscv was tested with the same tests on *all*
+contpte sizes that fit in the last page table level (support for PMD sizes
+is not present here). Both arch were only tested on qemu.
 
-That sounds reasonable to me.  In this thread Tao suggested reverting
-back to 809216233555 and using a fixed value in place of LINE_MAX to
-fix 38c957f07038
-https://lore.kernel.org/linux-kselftest/20240508070003.2acdf9b4 at kernel.org/
+Alexandre Ghiti (12):
+  mm, arm64: Rename ARM64_CONTPTE to THP_CONTPTE
+  mm, riscv, arm64: Use common ptep_get() function
+  mm, riscv, arm64: Use common set_ptes() function
+  mm, riscv, arm64: Use common ptep_get_lockless() function
+  mm, riscv, arm64: Use common set_pte() function
+  mm, riscv, arm64: Use common pte_clear() function
+  mm, riscv, arm64: Use common ptep_get_and_clear() function
+  mm, riscv, arm64: Use common ptep_test_and_clear_young() function
+  mm, riscv, arm64: Use common ptep_clear_flush_young() function
+  mm, riscv, arm64: Use common ptep_set_access_flags() function
+  mm, riscv, arm64: Use common ptep_set_wrprotect()/wrprotect_ptes()
+    functions
+  mm, riscv, arm64: Use common
+    get_and_clear_full_ptes()/clear_full_ptes() functions
 
->
-> [*] https://github.com/kvm-x86/linux/commit/730cfa45b5f4
+ arch/arm64/Kconfig               |   9 -
+ arch/arm64/include/asm/pgtable.h | 318 +++++---------
+ arch/arm64/mm/Makefile           |   1 -
+ arch/arm64/mm/contpte.c          | 408 ------------------
+ arch/arm64/mm/hugetlbpage.c      |   6 +-
+ arch/arm64/mm/mmu.c              |   2 +-
+ arch/riscv/include/asm/kfence.h  |   4 +-
+ arch/riscv/include/asm/pgtable.h | 206 +++++++++-
+ arch/riscv/kernel/efi.c          |   4 +-
+ arch/riscv/kernel/hibernate.c    |   2 +-
+ arch/riscv/kvm/mmu.c             |  26 +-
+ arch/riscv/mm/fault.c            |   2 +-
+ arch/riscv/mm/init.c             |   4 +-
+ arch/riscv/mm/kasan_init.c       |  16 +-
+ arch/riscv/mm/pageattr.c         |   8 +-
+ arch/riscv/mm/pgtable.c          |   6 +-
+ include/linux/contpte.h          |  37 ++
+ mm/Kconfig                       |   9 +
+ mm/contpte.c                     | 685 ++++++++++++++++++++++++++++++-
+ 19 files changed, 1056 insertions(+), 697 deletions(-)
+ delete mode 100644 arch/arm64/mm/contpte.c
+ create mode 100644 include/linux/contpte.h
+
+-- 
+2.39.2
+
 
