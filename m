@@ -1,205 +1,121 @@
-From: Edward Liaw <edliaw@google.com>
-Date: Wed, 8 May 2024 17:29:07 -0700
-Subject: [PATCH v2 3/5] selftests: Include KHDR_INCLUDES in Makefile
-In-Reply-To: <ec8ab737-a841-4cd5-8ec1-e0a777744262@nvidia.com>
-References: <20240507214254.2787305-1-edliaw@google.com> <20240507214254.2787305-4-edliaw@google.com>
- <ec8ab737-a841-4cd5-8ec1-e0a777744262@nvidia.com>
-Message-ID: <CAG4es9XPLhHhH-Hfm3_m5zLLtiB1zme8pAazMhErMpHqJcAMmw@mail.gmail.com>
+From: Barry Song <21cnbao@gmail.com>
+Date: Thu, 9 May 2024 12:46:35 +1200
+Subject: [PATCH 01/12] mm, arm64: Rename ARM64_CONTPTE to THP_CONTPTE
+In-Reply-To: <20240508191931.46060-2-alexghiti@rivosinc.com>
+References: <20240508191931.46060-1-alexghiti@rivosinc.com> <20240508191931.46060-2-alexghiti@rivosinc.com>
+Message-ID: <CAGsJ_4xayC4D4y0d7SPXxCvuW4-rJQUCa_-OUDSsOGm_HyPm1w@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, May 8, 2024 at 2:41?PM John Hubbard <jhubbard@nvidia.com> wrote:
+On Thu, May 9, 2024 at 7:20?AM Alexandre Ghiti <alexghiti@rivosinc.com> wrote:
 >
-> On 5/7/24 2:38 PM, Edward Liaw wrote:
-> > Add KHDR_INCLUDES to CFLAGS to pull in the kselftest harness
-> > dependencies (-D_GNU_SOURCE).
-> >
-> > Fixes: 809216233555 ("selftests/harness: remove use of LINE_MAX")
-> > Signed-off-by: Edward Liaw <edliaw@google.com>
-> > ---
-> >   tools/testing/selftests/alsa/Makefile                  | 2 +-
-> >   tools/testing/selftests/arm64/signal/Makefile          | 2 +-
-> >   tools/testing/selftests/exec/Makefile                  | 2 +-
-> >   tools/testing/selftests/filesystems/overlayfs/Makefile | 2 +-
-> >   tools/testing/selftests/hid/Makefile                   | 2 +-
-> >   tools/testing/selftests/nci/Makefile                   | 2 +-
-> >   tools/testing/selftests/prctl/Makefile                 | 2 ++
-> >   tools/testing/selftests/proc/Makefile                  | 2 +-
-> >   tools/testing/selftests/riscv/mm/Makefile              | 2 +-
-> >   tools/testing/selftests/rtc/Makefile                   | 2 +-
-> >   tools/testing/selftests/tmpfs/Makefile                 | 2 +-
-> >   11 files changed, 12 insertions(+), 10 deletions(-)
+> The ARM64_CONTPTE config represents the capability to transparently use
+> contpte mappings for THP userspace mappings, which will be implemented
+> in the next commits for riscv, so make this config more generic and move
+> it to mm.
 >
-> Hi Edward,
+> Signed-off-by: Alexandre Ghiti <alexghiti@rivosinc.com>
+> ---
+>  arch/arm64/Kconfig               | 9 ---------
+>  arch/arm64/include/asm/pgtable.h | 6 +++---
+>  arch/arm64/mm/Makefile           | 2 +-
+>  mm/Kconfig                       | 9 +++++++++
+>  4 files changed, 13 insertions(+), 13 deletions(-)
 >
-> Seeing as how these all include lib.mk, and all use CFLAGS, is there
-> any reason not to simply fix this in lib.mk instead? Like this:
+> diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+> index ac2f6d906cc3..9d823015b4e5 100644
+> --- a/arch/arm64/Kconfig
+> +++ b/arch/arm64/Kconfig
+> @@ -2227,15 +2227,6 @@ config UNWIND_PATCH_PAC_INTO_SCS
+>         select UNWIND_TABLES
+>         select DYNAMIC_SCS
 >
-> diff --git a/tools/testing/selftests/lib.mk b/tools/testing/selftests/lib.mk
-> index 7fa4a96e26ed..df72610e0d2b 100644
-> --- a/tools/testing/selftests/lib.mk
-> +++ b/tools/testing/selftests/lib.mk
-> @@ -170,6 +170,8 @@ clean: $(if $(TEST_GEN_MODS_DIR),clean_mods_dir)
->   CFLAGS += $(USERCFLAGS)
->   LDFLAGS += $(USERLDFLAGS)
+> -config ARM64_CONTPTE
+> -       bool "Contiguous PTE mappings for user memory" if EXPERT
+> -       depends on TRANSPARENT_HUGEPAGE
+> -       default y
+> -       help
+> -         When enabled, user mappings are configured using the PTE contiguous
+> -         bit, for any mappings that meet the size and alignment requirements.
+> -         This reduces TLB pressure and improves performance.
+> -
+>  endmenu # "Kernel Features"
 >
-> +CFLAGS += $(KHDR_INCLUDES)
+>  menu "Boot options"
+> diff --git a/arch/arm64/include/asm/pgtable.h b/arch/arm64/include/asm/pgtable.h
+> index 7c2938cb70b9..1758ce71fae9 100644
+> --- a/arch/arm64/include/asm/pgtable.h
+> +++ b/arch/arm64/include/asm/pgtable.h
+> @@ -1369,7 +1369,7 @@ extern void ptep_modify_prot_commit(struct vm_area_struct *vma,
+>                                     unsigned long addr, pte_t *ptep,
+>                                     pte_t old_pte, pte_t new_pte);
+>
+> -#ifdef CONFIG_ARM64_CONTPTE
+> +#ifdef CONFIG_THP_CONTPTE
+
+Is it necessarily THP? can't be hugetlb or others? I feel THP_CONTPTE
+isn't a good name.
+
+>
+>  /*
+>   * The contpte APIs are used to transparently manage the contiguous bit in ptes
+> @@ -1622,7 +1622,7 @@ static inline int ptep_set_access_flags(struct vm_area_struct *vma,
+>         return contpte_ptep_set_access_flags(vma, addr, ptep, entry, dirty);
+>  }
+>
+> -#else /* CONFIG_ARM64_CONTPTE */
+> +#else /* CONFIG_THP_CONTPTE */
+>
+>  #define ptep_get                               __ptep_get
+>  #define set_pte                                        __set_pte
+> @@ -1642,7 +1642,7 @@ static inline int ptep_set_access_flags(struct vm_area_struct *vma,
+>  #define __HAVE_ARCH_PTEP_SET_ACCESS_FLAGS
+>  #define ptep_set_access_flags                  __ptep_set_access_flags
+>
+> -#endif /* CONFIG_ARM64_CONTPTE */
+> +#endif /* CONFIG_THP_CONTPTE */
+>
+>  int find_num_contig(struct mm_struct *mm, unsigned long addr,
+>                     pte_t *ptep, size_t *pgsize);
+> diff --git a/arch/arm64/mm/Makefile b/arch/arm64/mm/Makefile
+> index 60454256945b..52a1b2082627 100644
+> --- a/arch/arm64/mm/Makefile
+> +++ b/arch/arm64/mm/Makefile
+> @@ -3,7 +3,7 @@ obj-y                           := dma-mapping.o extable.o fault.o init.o \
+>                                    cache.o copypage.o flush.o \
+>                                    ioremap.o mmap.o pgd.o mmu.o \
+>                                    context.o proc.o pageattr.o fixmap.o
+> -obj-$(CONFIG_ARM64_CONTPTE)    += contpte.o
+> +obj-$(CONFIG_THP_CONTPTE)      += contpte.o
+>  obj-$(CONFIG_HUGETLB_PAGE)     += hugetlbpage.o
+>  obj-$(CONFIG_PTDUMP_CORE)      += ptdump.o
+>  obj-$(CONFIG_PTDUMP_DEBUGFS)   += ptdump_debugfs.o
+> diff --git a/mm/Kconfig b/mm/Kconfig
+> index c325003d6552..fd4de221a1c6 100644
+> --- a/mm/Kconfig
+> +++ b/mm/Kconfig
+> @@ -984,6 +984,15 @@ config ARCH_HAS_CACHE_LINE_SIZE
+>  config ARCH_HAS_CONTPTE
+>         bool
+>
+> +config THP_CONTPTE
+> +       bool "Contiguous PTE mappings for user memory" if EXPERT
+> +       depends on ARCH_HAS_CONTPTE && TRANSPARENT_HUGEPAGE
+> +       default y
+> +       help
+> +         When enabled, user mappings are configured using the PTE contiguous
+> +         bit, for any mappings that meet the size and alignment requirements.
+> +         This reduces TLB pressure and improves performance.
 > +
->   # When make O= with kselftest target from main level
->   # the following aren't defined.
->   #
->
-
-Or how about just adding -D_GNU_SOURCE to CFLAGS then?
-
-
-
->
-> thanks,
+>  config ARCH_HAS_CURRENT_STACK_POINTER
+>         bool
+>         help
 > --
-> John Hubbard
-> NVIDIA
->
-> >
-> > diff --git a/tools/testing/selftests/alsa/Makefile b/tools/testing/selftests/alsa/Makefile
-> > index 5af9ba8a4645..9a0ef194522c 100644
-> > --- a/tools/testing/selftests/alsa/Makefile
-> > +++ b/tools/testing/selftests/alsa/Makefile
-> > @@ -6,7 +6,7 @@ LDLIBS += $(shell pkg-config --libs alsa)
-> >   ifeq ($(LDLIBS),)
-> >   LDLIBS += -lasound
-> >   endif
-> > -CFLAGS += -L$(OUTPUT) -Wl,-rpath=./
-> > +CFLAGS += $(KHDR_INCLUDES) -L$(OUTPUT) -Wl,-rpath=./
-> >
-> >   LDLIBS+=-lpthread
-> >
-> > diff --git a/tools/testing/selftests/arm64/signal/Makefile b/tools/testing/selftests/arm64/signal/Makefile
-> > index 8f5febaf1a9a..ae682ade615d 100644
-> > --- a/tools/testing/selftests/arm64/signal/Makefile
-> > +++ b/tools/testing/selftests/arm64/signal/Makefile
-> > @@ -2,7 +2,7 @@
-> >   # Copyright (C) 2019 ARM Limited
-> >
-> >   # Additional include paths needed by kselftest.h and local headers
-> > -CFLAGS += -D_GNU_SOURCE -std=gnu99 -I.
-> > +CFLAGS += $(KHDR_INCLUDES) -std=gnu99 -I.
-> >
-> >   SRCS := $(filter-out testcases/testcases.c,$(wildcard testcases/*.c))
-> >   PROGS := $(patsubst %.c,%,$(SRCS))
-> > diff --git a/tools/testing/selftests/exec/Makefile b/tools/testing/selftests/exec/Makefile
-> > index fb4472ddffd8..15e78ec7c55e 100644
-> > --- a/tools/testing/selftests/exec/Makefile
-> > +++ b/tools/testing/selftests/exec/Makefile
-> > @@ -1,7 +1,7 @@
-> >   # SPDX-License-Identifier: GPL-2.0
-> >   CFLAGS = -Wall
-> >   CFLAGS += -Wno-nonnull
-> > -CFLAGS += -D_GNU_SOURCE
-> > +CFLAGS += $(KHDR_INCLUDES)
-> >
-> >   TEST_PROGS := binfmt_script.py
-> >   TEST_GEN_PROGS := execveat load_address_4096 load_address_2097152 load_address_16777216 non-regular
-> > diff --git a/tools/testing/selftests/filesystems/overlayfs/Makefile b/tools/testing/selftests/filesystems/overlayfs/Makefile
-> > index 56b2b48a765b..6c29c963c7a8 100644
-> > --- a/tools/testing/selftests/filesystems/overlayfs/Makefile
-> > +++ b/tools/testing/selftests/filesystems/overlayfs/Makefile
-> > @@ -2,6 +2,6 @@
-> >
-> >   TEST_GEN_PROGS := dev_in_maps
-> >
-> > -CFLAGS := -Wall -Werror
-> > +CFLAGS := -Wall -Werror $(KHDR_INCLUDES)
-> >
-> >   include ../../lib.mk
-> > diff --git a/tools/testing/selftests/hid/Makefile b/tools/testing/selftests/hid/Makefile
-> > index 2b5ea18bde38..0661b34488ef 100644
-> > --- a/tools/testing/selftests/hid/Makefile
-> > +++ b/tools/testing/selftests/hid/Makefile
-> > @@ -21,7 +21,7 @@ CXX ?= $(CROSS_COMPILE)g++
-> >
-> >   HOSTPKG_CONFIG := pkg-config
-> >
-> > -CFLAGS += -g -O0 -rdynamic -Wall -Werror -I$(OUTPUT)
-> > +CFLAGS += -g -O0 -rdynamic -Wall -Werror $(KHDR_INCLUDES) -I$(OUTPUT)
-> >   CFLAGS += -I$(OUTPUT)/tools/include
-> >
-> >   LDLIBS += -lelf -lz -lrt -lpthread
-> > diff --git a/tools/testing/selftests/nci/Makefile b/tools/testing/selftests/nci/Makefile
-> > index 47669a1d6a59..bbc5b8ec3b17 100644
-> > --- a/tools/testing/selftests/nci/Makefile
-> > +++ b/tools/testing/selftests/nci/Makefile
-> > @@ -1,5 +1,5 @@
-> >   # SPDX-License-Identifier: GPL-2.0
-> > -CFLAGS += -Wl,-no-as-needed -Wall
-> > +CFLAGS += -Wl,-no-as-needed -Wall $(KHDR_INCLUDES)
-> >   LDFLAGS += -lpthread
-> >
-> >   TEST_GEN_PROGS := nci_dev
-> > diff --git a/tools/testing/selftests/prctl/Makefile b/tools/testing/selftests/prctl/Makefile
-> > index 01dc90fbb509..1a0aefec9d6f 100644
-> > --- a/tools/testing/selftests/prctl/Makefile
-> > +++ b/tools/testing/selftests/prctl/Makefile
-> > @@ -6,6 +6,8 @@ ARCH ?= $(shell echo $(uname_M) | sed -e s/i.86/x86/ -e s/x86_64/x86/)
-> >   ifeq ($(ARCH),x86)
-> >   TEST_PROGS := disable-tsc-ctxt-sw-stress-test disable-tsc-on-off-stress-test \
-> >               disable-tsc-test set-anon-vma-name-test set-process-name
-> > +
-> > +CFLAGS += $(KHDR_INCLUDES)
-> >   all: $(TEST_PROGS)
-> >
-> >   include ../lib.mk
-> > diff --git a/tools/testing/selftests/proc/Makefile b/tools/testing/selftests/proc/Makefile
-> > index cd95369254c0..9596014c10a0 100644
-> > --- a/tools/testing/selftests/proc/Makefile
-> > +++ b/tools/testing/selftests/proc/Makefile
-> > @@ -1,6 +1,6 @@
-> >   # SPDX-License-Identifier: GPL-2.0-only
-> >   CFLAGS += -Wall -O2 -Wno-unused-function
-> > -CFLAGS += -D_GNU_SOURCE
-> > +CFLAGS += $(KHDR_INCLUDES)
-> >   LDFLAGS += -pthread
-> >
-> >   TEST_GEN_PROGS :=
-> > diff --git a/tools/testing/selftests/riscv/mm/Makefile b/tools/testing/selftests/riscv/mm/Makefile
-> > index c333263f2b27..715a21241113 100644
-> > --- a/tools/testing/selftests/riscv/mm/Makefile
-> > +++ b/tools/testing/selftests/riscv/mm/Makefile
-> > @@ -3,7 +3,7 @@
-> >   # Originally tools/testing/arm64/abi/Makefile
-> >
-> >   # Additional include paths needed by kselftest.h and local headers
-> > -CFLAGS += -D_GNU_SOURCE -std=gnu99 -I.
-> > +CFLAGS += $(KHDR_INCLUDES) -std=gnu99 -I.
-> >
-> >   TEST_GEN_FILES := mmap_default mmap_bottomup
-> >
-> > diff --git a/tools/testing/selftests/rtc/Makefile b/tools/testing/selftests/rtc/Makefile
-> > index 55198ecc04db..654f9d58da3c 100644
-> > --- a/tools/testing/selftests/rtc/Makefile
-> > +++ b/tools/testing/selftests/rtc/Makefile
-> > @@ -1,5 +1,5 @@
-> >   # SPDX-License-Identifier: GPL-2.0
-> > -CFLAGS += -O3 -Wl,-no-as-needed -Wall
-> > +CFLAGS += -O3 -Wl,-no-as-needed -Wall $(KHDR_INCLUDES)
-> >   LDLIBS += -lrt -lpthread -lm
-> >
-> >   TEST_GEN_PROGS = rtctest
-> > diff --git a/tools/testing/selftests/tmpfs/Makefile b/tools/testing/selftests/tmpfs/Makefile
-> > index aa11ccc92e5b..bcdc1bb6d2e6 100644
-> > --- a/tools/testing/selftests/tmpfs/Makefile
-> > +++ b/tools/testing/selftests/tmpfs/Makefile
-> > @@ -1,6 +1,6 @@
-> >   # SPDX-License-Identifier: GPL-2.0-only
-> >   CFLAGS += -Wall -O2
-> > -CFLAGS += -D_GNU_SOURCE
-> > +CFLAGS += $(KHDR_INCLUDES)
-> >
-> >   TEST_GEN_PROGS :=
-> >   TEST_GEN_PROGS += bug-link-o-tmpfile
->
->
+> 2.39.2
+
+Thanks
+Barry
 
