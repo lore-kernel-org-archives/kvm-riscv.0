@@ -1,76 +1,136 @@
-From: Muhammad Usama Anjum <usama.anjum@collabora.com>
-Date: Thu, 9 May 2024 23:20:19 +0500
-Subject: [PATCH v2 0/5] Define _GNU_SOURCE for sources using
-In-Reply-To: <CAG4es9V2CcBJr0josSoGNsD+ZPQ6vasVXh_Hc_j88oeSqn__yQ@mail.gmail.com>
-References: <20240507214254.2787305-1-edliaw@google.com>
- <f4e45604-86b0-4be6-9bea-36edf301df33@linuxfoundation.org>
- <CAG4es9XE2D94BNboRSf607NbJVW7OW4xkVq4jZ8pDZ_AZsb3nQ@mail.gmail.com>
- <946ae22f-a4af-448a-92e1-60afb6ed9261@linuxfoundation.org>
- <CAG4es9V2CcBJr0josSoGNsD+ZPQ6vasVXh_Hc_j88oeSqn__yQ@mail.gmail.com>
-Message-ID: <57f47bc1-972c-45b5-81ef-d8269dcadebb@collabora.com>
+From: Alexandre Ghiti <alexghiti@rivosinc.com>
+Date: Mon, 13 May 2024 15:09:15 +0200
+Subject: [PATCH 01/12] mm, arm64: Rename ARM64_CONTPTE to THP_CONTPTE
+In-Reply-To: <CAGsJ_4xayC4D4y0d7SPXxCvuW4-rJQUCa_-OUDSsOGm_HyPm1w@mail.gmail.com>
+References: <20240508191931.46060-1-alexghiti@rivosinc.com>
+ <20240508191931.46060-2-alexghiti@rivosinc.com> <CAGsJ_4xayC4D4y0d7SPXxCvuW4-rJQUCa_-OUDSsOGm_HyPm1w@mail.gmail.com>
+Message-ID: <CAHVXubiOo3oe0=-qU2kBaFXebPJvmnc+-1UOPEHS2spcCeMzsw@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 5/9/24 10:45 PM, Edward Liaw wrote:
-> On Thu, May 9, 2024 at 7:37?AM Shuah Khan <skhan@linuxfoundation.org> wrote:
->>
->> On 5/9/24 00:13, Edward Liaw wrote:
->>> On Wed, May 8, 2024 at 4:10?PM Shuah Khan <skhan@linuxfoundation.org> wrote:
->>>>
->>>> On 5/7/24 15:38, Edward Liaw wrote:
->>>>> 809216233555 ("selftests/harness: remove use of LINE_MAX") introduced
->>>>> asprintf into kselftest_harness.h, which is a GNU extension and needs
->>>>> _GNU_SOURCE to either be defined prior to including headers or with the
->>>>> -D_GNU_SOURCE flag passed to the compiler.
->>>>>
->>>>> v1: https://lore.kernel.org/linux-kselftest/20240430235057.1351993-1-edliaw at google.com/
->>>>> v2: add -D_GNU_SOURCE to KHDR_INCLUDES so that it is in a single
->>>>> location.  Remove #define _GNU_SOURCE from source code to resolve
->>>>> redefinition warnings.
->>>>>
->>>>> Edward Liaw (5):
->>>>>     selftests: Compile kselftest headers with -D_GNU_SOURCE
->>>>>     selftests/sgx: Include KHDR_INCLUDES in Makefile
->>>>
->>>> I appled patches 1/5 and 2.5 - The rest need to be split up.
->>>>
->>>>>     selftests: Include KHDR_INCLUDES in Makefile
->>>>>     selftests: Drop define _GNU_SOURCE
->>>>>     selftests: Drop duplicate -D_GNU_SOURCE
->>>>>
->>>>
->>>> Please split these patches pwe test directory. Otherwise it will
->>>> cause merge conflicts which can be hard to resolve.
->>>
->>> Hi Shuah,
->>> Sean asked that I rebase the patches on linux-next, and I will need to
->>> remove additional _GNU_SOURCE defines.  Should I send an unsplit v3 to
->>> be reviewed, then split it afterwards?  I'm concerned that it will be
->>> difficult to review with ~70 patches once split.
->>
->> Please send them split - it will be easier to review and apply. You
->> might as well wait until the merge window is done. I don't think
->> anybody would have time to review now since merge window starts
->> next week.
-> 
-> Sorry, I have them split already; is it ok if I send them now?  I will
-> be on leave soon and may not be able to get back to it in a while.
-Feel free to send the patches. There is no restriction on that.
+Hi Barry,
 
-> 
-> Thanks,
-> Edward
-> 
->>
->>
->> thanks,
->> -- Shuah
-> 
+On Thu, May 9, 2024 at 2:46?AM Barry Song <21cnbao@gmail.com> wrote:
+>
+> On Thu, May 9, 2024 at 7:20?AM Alexandre Ghiti <alexghiti@rivosinc.com> wrote:
+> >
+> > The ARM64_CONTPTE config represents the capability to transparently use
+> > contpte mappings for THP userspace mappings, which will be implemented
+> > in the next commits for riscv, so make this config more generic and move
+> > it to mm.
+> >
+> > Signed-off-by: Alexandre Ghiti <alexghiti@rivosinc.com>
+> > ---
+> >  arch/arm64/Kconfig               | 9 ---------
+> >  arch/arm64/include/asm/pgtable.h | 6 +++---
+> >  arch/arm64/mm/Makefile           | 2 +-
+> >  mm/Kconfig                       | 9 +++++++++
+> >  4 files changed, 13 insertions(+), 13 deletions(-)
+> >
+> > diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+> > index ac2f6d906cc3..9d823015b4e5 100644
+> > --- a/arch/arm64/Kconfig
+> > +++ b/arch/arm64/Kconfig
+> > @@ -2227,15 +2227,6 @@ config UNWIND_PATCH_PAC_INTO_SCS
+> >         select UNWIND_TABLES
+> >         select DYNAMIC_SCS
+> >
+> > -config ARM64_CONTPTE
+> > -       bool "Contiguous PTE mappings for user memory" if EXPERT
+> > -       depends on TRANSPARENT_HUGEPAGE
+> > -       default y
+> > -       help
+> > -         When enabled, user mappings are configured using the PTE contiguous
+> > -         bit, for any mappings that meet the size and alignment requirements.
+> > -         This reduces TLB pressure and improves performance.
+> > -
+> >  endmenu # "Kernel Features"
+> >
+> >  menu "Boot options"
+> > diff --git a/arch/arm64/include/asm/pgtable.h b/arch/arm64/include/asm/pgtable.h
+> > index 7c2938cb70b9..1758ce71fae9 100644
+> > --- a/arch/arm64/include/asm/pgtable.h
+> > +++ b/arch/arm64/include/asm/pgtable.h
+> > @@ -1369,7 +1369,7 @@ extern void ptep_modify_prot_commit(struct vm_area_struct *vma,
+> >                                     unsigned long addr, pte_t *ptep,
+> >                                     pte_t old_pte, pte_t new_pte);
+> >
+> > -#ifdef CONFIG_ARM64_CONTPTE
+> > +#ifdef CONFIG_THP_CONTPTE
+>
+> Is it necessarily THP? can't be hugetlb or others? I feel THP_CONTPTE
+> isn't a good name.
 
--- 
-BR,
-Muhammad Usama Anjum
+This does not target hugetlbfs (see my other patchset for that here
+https://lore.kernel.org/linux-riscv/7504a525-8211-48b3-becb-a6e838c1b42e at arm.com/T/#m57d273d680fc531b3aa1074e6f8558a52ba5badc).
+
+What could be "others" here?
+
+Thanks for your comment,
+
+Alex
+
+>
+> >
+> >  /*
+> >   * The contpte APIs are used to transparently manage the contiguous bit in ptes
+> > @@ -1622,7 +1622,7 @@ static inline int ptep_set_access_flags(struct vm_area_struct *vma,
+> >         return contpte_ptep_set_access_flags(vma, addr, ptep, entry, dirty);
+> >  }
+> >
+> > -#else /* CONFIG_ARM64_CONTPTE */
+> > +#else /* CONFIG_THP_CONTPTE */
+> >
+> >  #define ptep_get                               __ptep_get
+> >  #define set_pte                                        __set_pte
+> > @@ -1642,7 +1642,7 @@ static inline int ptep_set_access_flags(struct vm_area_struct *vma,
+> >  #define __HAVE_ARCH_PTEP_SET_ACCESS_FLAGS
+> >  #define ptep_set_access_flags                  __ptep_set_access_flags
+> >
+> > -#endif /* CONFIG_ARM64_CONTPTE */
+> > +#endif /* CONFIG_THP_CONTPTE */
+> >
+> >  int find_num_contig(struct mm_struct *mm, unsigned long addr,
+> >                     pte_t *ptep, size_t *pgsize);
+> > diff --git a/arch/arm64/mm/Makefile b/arch/arm64/mm/Makefile
+> > index 60454256945b..52a1b2082627 100644
+> > --- a/arch/arm64/mm/Makefile
+> > +++ b/arch/arm64/mm/Makefile
+> > @@ -3,7 +3,7 @@ obj-y                           := dma-mapping.o extable.o fault.o init.o \
+> >                                    cache.o copypage.o flush.o \
+> >                                    ioremap.o mmap.o pgd.o mmu.o \
+> >                                    context.o proc.o pageattr.o fixmap.o
+> > -obj-$(CONFIG_ARM64_CONTPTE)    += contpte.o
+> > +obj-$(CONFIG_THP_CONTPTE)      += contpte.o
+> >  obj-$(CONFIG_HUGETLB_PAGE)     += hugetlbpage.o
+> >  obj-$(CONFIG_PTDUMP_CORE)      += ptdump.o
+> >  obj-$(CONFIG_PTDUMP_DEBUGFS)   += ptdump_debugfs.o
+> > diff --git a/mm/Kconfig b/mm/Kconfig
+> > index c325003d6552..fd4de221a1c6 100644
+> > --- a/mm/Kconfig
+> > +++ b/mm/Kconfig
+> > @@ -984,6 +984,15 @@ config ARCH_HAS_CACHE_LINE_SIZE
+> >  config ARCH_HAS_CONTPTE
+> >         bool
+> >
+> > +config THP_CONTPTE
+> > +       bool "Contiguous PTE mappings for user memory" if EXPERT
+> > +       depends on ARCH_HAS_CONTPTE && TRANSPARENT_HUGEPAGE
+> > +       default y
+> > +       help
+> > +         When enabled, user mappings are configured using the PTE contiguous
+> > +         bit, for any mappings that meet the size and alignment requirements.
+> > +         This reduces TLB pressure and improves performance.
+> > +
+> >  config ARCH_HAS_CURRENT_STACK_POINTER
+> >         bool
+> >         help
+> > --
+> > 2.39.2
+>
+> Thanks
+> Barry
 
