@@ -1,168 +1,176 @@
-From: Clément Léger <cleger@rivosinc.com>
-Date: Tue, 14 May 2024 10:06:31 +0200
-Subject: [RFC PATCH 5/7] riscv: add double trap driver
-In-Reply-To: <Ziw//90J0WfOY/tl@debug.ba.rivosinc.com>
-References: <20240418142701.1493091-1-cleger@rivosinc.com>
- <20240418142701.1493091-6-cleger@rivosinc.com>
- <Ziw//90J0WfOY/tl@debug.ba.rivosinc.com>
-Message-ID: <e33b8eba-85f0-44b7-8a6f-802a6979f6c8@rivosinc.com>
+From: Barry Song <21cnbao@gmail.com>
+Date: Tue, 14 May 2024 21:30:36 +1200
+Subject: [PATCH 01/12] mm, arm64: Rename ARM64_CONTPTE to THP_CONTPTE
+In-Reply-To: <CAHVXubiOo3oe0=-qU2kBaFXebPJvmnc+-1UOPEHS2spcCeMzsw@mail.gmail.com>
+References: <20240508191931.46060-1-alexghiti@rivosinc.com>
+ <20240508191931.46060-2-alexghiti@rivosinc.com> <CAGsJ_4xayC4D4y0d7SPXxCvuW4-rJQUCa_-OUDSsOGm_HyPm1w@mail.gmail.com>
+ <CAHVXubiOo3oe0=-qU2kBaFXebPJvmnc+-1UOPEHS2spcCeMzsw@mail.gmail.com>
+Message-ID: <CAGsJ_4w_mOL5egHV9a3+0vcZV6ODvr=3KFXevedH19voSCHXwQ@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+On Tue, May 14, 2024 at 1:09?AM Alexandre Ghiti <alexghiti@rivosinc.com> wrote:
+>
+> Hi Barry,
+>
+> On Thu, May 9, 2024 at 2:46?AM Barry Song <21cnbao@gmail.com> wrote:
+> >
+> > On Thu, May 9, 2024 at 7:20?AM Alexandre Ghiti <alexghiti@rivosinc.com> wrote:
+> > >
+> > > The ARM64_CONTPTE config represents the capability to transparently use
+> > > contpte mappings for THP userspace mappings, which will be implemented
+> > > in the next commits for riscv, so make this config more generic and move
+> > > it to mm.
+> > >
+> > > Signed-off-by: Alexandre Ghiti <alexghiti@rivosinc.com>
+> > > ---
+> > >  arch/arm64/Kconfig               | 9 ---------
+> > >  arch/arm64/include/asm/pgtable.h | 6 +++---
+> > >  arch/arm64/mm/Makefile           | 2 +-
+> > >  mm/Kconfig                       | 9 +++++++++
+> > >  4 files changed, 13 insertions(+), 13 deletions(-)
+> > >
+> > > diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+> > > index ac2f6d906cc3..9d823015b4e5 100644
+> > > --- a/arch/arm64/Kconfig
+> > > +++ b/arch/arm64/Kconfig
+> > > @@ -2227,15 +2227,6 @@ config UNWIND_PATCH_PAC_INTO_SCS
+> > >         select UNWIND_TABLES
+> > >         select DYNAMIC_SCS
+> > >
+> > > -config ARM64_CONTPTE
+> > > -       bool "Contiguous PTE mappings for user memory" if EXPERT
+> > > -       depends on TRANSPARENT_HUGEPAGE
+> > > -       default y
+> > > -       help
+> > > -         When enabled, user mappings are configured using the PTE contiguous
+> > > -         bit, for any mappings that meet the size and alignment requirements.
+> > > -         This reduces TLB pressure and improves performance.
+> > > -
+> > >  endmenu # "Kernel Features"
+> > >
+> > >  menu "Boot options"
+> > > diff --git a/arch/arm64/include/asm/pgtable.h b/arch/arm64/include/asm/pgtable.h
+> > > index 7c2938cb70b9..1758ce71fae9 100644
+> > > --- a/arch/arm64/include/asm/pgtable.h
+> > > +++ b/arch/arm64/include/asm/pgtable.h
+> > > @@ -1369,7 +1369,7 @@ extern void ptep_modify_prot_commit(struct vm_area_struct *vma,
+> > >                                     unsigned long addr, pte_t *ptep,
+> > >                                     pte_t old_pte, pte_t new_pte);
+> > >
+> > > -#ifdef CONFIG_ARM64_CONTPTE
+> > > +#ifdef CONFIG_THP_CONTPTE
+> >
+> > Is it necessarily THP? can't be hugetlb or others? I feel THP_CONTPTE
+> > isn't a good name.
+>
+> This does not target hugetlbfs (see my other patchset for that here
+> https://lore.kernel.org/linux-riscv/7504a525-8211-48b3-becb-a6e838c1b42e at arm.com/T/#m57d273d680fc531b3aa1074e6f8558a52ba5badc).
+>
+> What could be "others" here?
 
 
-On 27/04/2024 01:59, Deepak Gupta wrote:
-> On Thu, Apr 18, 2024 at 04:26:44PM +0200, Cl?ment L?ger wrote:
->> Add a small driver to request double trap enabling as well as
->> registering a SSE handler for double trap. This will also be used by KVM
->> SBI FWFT extension support to detect if it is possible to enable double
->> trap in VS-mode.
->>
->> Signed-off-by: Cl?ment L?ger <cleger@rivosinc.com>
->> ---
->> arch/riscv/include/asm/sbi.h??? |? 1 +
->> drivers/firmware/Kconfig??????? |? 7 +++
->> drivers/firmware/Makefile?????? |? 1 +
->> drivers/firmware/riscv_dbltrp.c | 95 +++++++++++++++++++++++++++++++++
->> include/linux/riscv_dbltrp.h??? | 19 +++++++
->> 5 files changed, 123 insertions(+)
->> create mode 100644 drivers/firmware/riscv_dbltrp.c
->> create mode 100644 include/linux/riscv_dbltrp.h
->>
->> diff --git a/arch/riscv/include/asm/sbi.h b/arch/riscv/include/asm/sbi.h
->> index 744aa1796c92..9cd4ca66487c 100644
->> --- a/arch/riscv/include/asm/sbi.h
->> +++ b/arch/riscv/include/asm/sbi.h
->> @@ -314,6 +314,7 @@ enum sbi_sse_attr_id {
->> #define SBI_SSE_ATTR_INTERRUPTED_FLAGS_SPIE??? (1 << 2)
->>
->> #define SBI_SSE_EVENT_LOCAL_RAS??????? 0x00000000
->> +#define SBI_SSE_EVENT_LOCAL_DOUBLE_TRAP??? 0x00000001
->> #define SBI_SSE_EVENT_GLOBAL_RAS??? 0x00008000
->> #define SBI_SSE_EVENT_LOCAL_PMU??????? 0x00010000
->> #define SBI_SSE_EVENT_LOCAL_SOFTWARE??? 0xffff0000
->> diff --git a/drivers/firmware/Kconfig b/drivers/firmware/Kconfig
->> index 59f611288807..a037f6e89942 100644
->> --- a/drivers/firmware/Kconfig
->> +++ b/drivers/firmware/Kconfig
->> @@ -197,6 +197,13 @@ config RISCV_SSE_TEST
->> ????? Select if you want to enable SSE extension testing at boot time.
->> ????? This will run a series of test which verifies SSE sanity.
->>
->> +config RISCV_DBLTRP
->> +??? bool "Enable Double trap handling"
->> +??? depends on RISCV_SSE && RISCV_SBI
->> +??? default n
->> +??? help
->> +????? Select if you want to enable SSE double trap handler.
->> +
->> config SYSFB
->> ????bool
->> ????select BOOT_VESA_SUPPORT
->> diff --git a/drivers/firmware/Makefile b/drivers/firmware/Makefile
->> index fb7b0c08c56d..ad67a1738c0f 100644
->> --- a/drivers/firmware/Makefile
->> +++ b/drivers/firmware/Makefile
->> @@ -18,6 +18,7 @@ obj-$(CONFIG_RASPBERRYPI_FIRMWARE) += raspberrypi.o
->> obj-$(CONFIG_FW_CFG_SYSFS)??? += qemu_fw_cfg.o
->> obj-$(CONFIG_RISCV_SSE)??????? += riscv_sse.o
->> obj-$(CONFIG_RISCV_SSE_TEST)??? += riscv_sse_test.o
->> +obj-$(CONFIG_RISCV_DBLTRP)??? += riscv_dbltrp.o
->> obj-$(CONFIG_SYSFB)??????? += sysfb.o
->> obj-$(CONFIG_SYSFB_SIMPLEFB)??? += sysfb_simplefb.o
->> obj-$(CONFIG_TI_SCI_PROTOCOL)??? += ti_sci.o
->> diff --git a/drivers/firmware/riscv_dbltrp.c
->> b/drivers/firmware/riscv_dbltrp.c
->> new file mode 100644
->> index 000000000000..72f9a067e87a
->> --- /dev/null
->> +++ b/drivers/firmware/riscv_dbltrp.c
->> @@ -0,0 +1,95 @@
->> +// SPDX-License-Identifier: GPL-2.0-only
->> +/*
->> + * Copyright (C) 2023 Rivos Inc.
->> + */
-> 
-> nit: fix copyright year
->> +
->> +#define pr_fmt(fmt) "riscv-dbltrp: " fmt
->> +
->> +#include <linux/cpu.h>
->> +#include <linux/init.h>
->> +#include <linux/riscv_dbltrp.h>
->> +#include <linux/riscv_sse.h>
->> +
->> +#include <asm/sbi.h>
->> +
->> +static bool double_trap_enabled;
->> +
->> +static int riscv_sse_dbltrp_handle(uint32_t evt, void *arg,
->> +?????????????????? struct pt_regs *regs)
->> +{
->> +??? __show_regs(regs);
->> +??? panic("Double trap !\n");
->> +
->> +??? return 0;
-> Curious:
-> Does panic return?
-> What's the point of returning from here?
+I acknowledge that the current focus is on Transparent Huge Pages. However,
+many aspects of CONT-PTE appear to be applicable to the mm-core in general.
+For example,
 
-Hi Deepak,
+/*
+ * The below functions constitute the public API that arm64 presents to the
+ * core-mm to manipulate PTE entries within their page tables (or at least this
+ * is the subset of the API that arm64 needs to implement). These public
+ * versions will automatically and transparently apply the contiguous bit where
+ * it makes sense to do so. Therefore any users that are contig-aware (e.g.
+ * hugetlb, kernel mapper) should NOT use these APIs, but instead use the
+ * private versions, which are prefixed with double underscore. All of these
+ * APIs except for ptep_get_lockless() are expected to be called with the PTL
+ * held. Although the contiguous bit is considered private to the
+ * implementation, it is deliberately allowed to leak through the getters (e.g.
+ * ptep_get()), back to core code. This is required so that pte_leaf_size() can
+ * provide an accurate size for perf_get_pgtable_size(). But this leakage means
+ * its possible a pte will be passed to a setter with the contiguous bit set, so
+ * we explicitly clear the contiguous bit in those cases to prevent accidentally
+ * setting it in the pgtable.
+ */
 
-No, panic() does not return and indeed, the "return 0" is useless. It's
-a leftover of a previous implementation without panic in order to keep
-GCC mouth shut ;).
+#define ptep_get ptep_get
+static inline pte_t ptep_get(pte_t *ptep)
+{
+        pte_t pte = __ptep_get(ptep);
 
-> 
->> +}
->> +
->> +struct cpu_dbltrp_data {
->> +??? int error;
->> +};
->> +
->> +static void
->> +sbi_cpu_enable_double_trap(void *data)
->> +{
->> +??? struct sbiret ret;
->> +??? struct cpu_dbltrp_data *cdd = data;
->> +
->> +??? ret = sbi_ecall(SBI_EXT_FWFT, SBI_EXT_FWFT_SET,
->> +??????????? SBI_FWFT_DOUBLE_TRAP_ENABLE, 1, 0, 0, 0, 0);
->> +
->> +??? if (ret.error) {
->> +??????? cdd->error = 1;
->> +??????? pr_err("Failed to enable double trap on cpu %d\n",
->> smp_processor_id());
->> +??? }
->> +}
->> +
->> +static int sbi_enable_double_trap(void)
->> +{
->> +??? struct cpu_dbltrp_data cdd = {0};
->> +
->> +??? on_each_cpu(sbi_cpu_enable_double_trap, &cdd, 1);
->> +??? if (cdd.error)
->> +??????? return -1;
-> 
-> There is a bug here. If `sbi_cpu_enable_double_trap` failed on all cpus
-> but last cpu.
-> Then cdd.error would not record error and will be reflect as if double
-> trap was enabled.
+        if (likely(!pte_valid_cont(pte)))
+                return pte;
 
-cdd.error is only written in case of error by the per-cpu callbacks, so
-it is only set if enabled failed. Is there something I'm missing ?
+        return contpte_ptep_get(ptep, pte);
+}
 
-Thanks,
+Could it possibly be given a more generic name such as "PGTABLE_CONTPTE"?
 
-Cl?ment
-
-> 
-> Its less likely to happen that FW would return success for one cpu and
-> fail for others.
-> But there is non-zero probablity here.
-> 
-
+>
+> Thanks for your comment,
+>
+> Alex
+>
+> >
+> > >
+> > >  /*
+> > >   * The contpte APIs are used to transparently manage the contiguous bit in ptes
+> > > @@ -1622,7 +1622,7 @@ static inline int ptep_set_access_flags(struct vm_area_struct *vma,
+> > >         return contpte_ptep_set_access_flags(vma, addr, ptep, entry, dirty);
+> > >  }
+> > >
+> > > -#else /* CONFIG_ARM64_CONTPTE */
+> > > +#else /* CONFIG_THP_CONTPTE */
+> > >
+> > >  #define ptep_get                               __ptep_get
+> > >  #define set_pte                                        __set_pte
+> > > @@ -1642,7 +1642,7 @@ static inline int ptep_set_access_flags(struct vm_area_struct *vma,
+> > >  #define __HAVE_ARCH_PTEP_SET_ACCESS_FLAGS
+> > >  #define ptep_set_access_flags                  __ptep_set_access_flags
+> > >
+> > > -#endif /* CONFIG_ARM64_CONTPTE */
+> > > +#endif /* CONFIG_THP_CONTPTE */
+> > >
+> > >  int find_num_contig(struct mm_struct *mm, unsigned long addr,
+> > >                     pte_t *ptep, size_t *pgsize);
+> > > diff --git a/arch/arm64/mm/Makefile b/arch/arm64/mm/Makefile
+> > > index 60454256945b..52a1b2082627 100644
+> > > --- a/arch/arm64/mm/Makefile
+> > > +++ b/arch/arm64/mm/Makefile
+> > > @@ -3,7 +3,7 @@ obj-y                           := dma-mapping.o extable.o fault.o init.o \
+> > >                                    cache.o copypage.o flush.o \
+> > >                                    ioremap.o mmap.o pgd.o mmu.o \
+> > >                                    context.o proc.o pageattr.o fixmap.o
+> > > -obj-$(CONFIG_ARM64_CONTPTE)    += contpte.o
+> > > +obj-$(CONFIG_THP_CONTPTE)      += contpte.o
+> > >  obj-$(CONFIG_HUGETLB_PAGE)     += hugetlbpage.o
+> > >  obj-$(CONFIG_PTDUMP_CORE)      += ptdump.o
+> > >  obj-$(CONFIG_PTDUMP_DEBUGFS)   += ptdump_debugfs.o
+> > > diff --git a/mm/Kconfig b/mm/Kconfig
+> > > index c325003d6552..fd4de221a1c6 100644
+> > > --- a/mm/Kconfig
+> > > +++ b/mm/Kconfig
+> > > @@ -984,6 +984,15 @@ config ARCH_HAS_CACHE_LINE_SIZE
+> > >  config ARCH_HAS_CONTPTE
+> > >         bool
+> > >
+> > > +config THP_CONTPTE
+> > > +       bool "Contiguous PTE mappings for user memory" if EXPERT
+> > > +       depends on ARCH_HAS_CONTPTE && TRANSPARENT_HUGEPAGE
+> > > +       default y
+> > > +       help
+> > > +         When enabled, user mappings are configured using the PTE contiguous
+> > > +         bit, for any mappings that meet the size and alignment requirements.
+> > > +         This reduces TLB pressure and improves performance.
+> > > +
+> > >  config ARCH_HAS_CURRENT_STACK_POINTER
+> > >         bool
+> > >         help
+> > > --
+> > > 2.39.2
+> >
+Thanks
+Barry
 
