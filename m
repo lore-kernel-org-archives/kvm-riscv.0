@@ -1,140 +1,103 @@
-From: Conor Dooley <conor@kernel.org>
-Date: Tue, 14 May 2024 15:44:05 +0100
-Subject: [PATCH v4 02/11] riscv: add ISA extensions validation
-In-Reply-To: <9d0840ff-d00a-4866-8f45-e8676f369ad6@rivosinc.com>
-References: <20240429150553.625165-1-cleger@rivosinc.com>
- <20240429150553.625165-3-cleger@rivosinc.com>
- <20240429-subtext-tabby-3a1532f058a5@spud>
- <5d5febd5-d113-4e8c-9535-9e75acf23398@rivosinc.com>
- <20240430-payable-famished-6711765d5ca4@wendy>
- <e57f8b70-7981-42c1-bb04-2060054dd796@rivosinc.com>
- <20240514-sip-exclusion-014b07b01f4c@spud>
- <9d0840ff-d00a-4866-8f45-e8676f369ad6@rivosinc.com>
-Message-ID: <20240514-ascend-joyous-a15969f703de@spud>
+From: Deepak Gupta <debug@rivosinc.com>
+Date: Tue, 14 May 2024 09:05:35 -0700
+Subject: [RFC PATCH 6/7] riscv: kvm: add SBI FWFT support for
+ SBI_FWFT_DOUBLE_TRAP_ENABLE
+In-Reply-To: <c8e4c44d-8125-417e-8c61-a1f6d438815e@rivosinc.com>
+References: <20240418142701.1493091-1-cleger@rivosinc.com>
+ <20240418142701.1493091-7-cleger@rivosinc.com>
+ <ZixSFLZYZaf8BKHP@debug.ba.rivosinc.com>
+ <c8e4c44d-8125-417e-8c61-a1f6d438815e@rivosinc.com>
+Message-ID: <ZkOLz0ANkESSv5qr@debug.ba.rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, May 14, 2024 at 02:48:01PM +0200, Cl?ment L?ger wrote:
-> 
-> 
-> On 14/05/2024 14:43, Conor Dooley wrote:
-> > On Tue, May 14, 2024 at 09:53:08AM +0200, Cl?ment L?ger wrote:
-> >>
-> >>
-> >> On 30/04/2024 13:44, Conor Dooley wrote:
-> >>> On Tue, Apr 30, 2024 at 09:18:47AM +0200, Cl?ment L?ger wrote:
-> >>>>
-> >>>>
-> >>>> On 30/04/2024 00:15, Conor Dooley wrote:
-> >>>>> On Mon, Apr 29, 2024 at 05:04:55PM +0200, Cl?ment L?ger wrote:
-> >>>>>> Since a few extensions (Zicbom/Zicboz) already needs validation and
-> >>>>>> future ones will need it as well (Zc*) add a validate() callback to
-> >>>>>> struct riscv_isa_ext_data. This require to rework the way extensions are
-> >>>>>> parsed and split it in two phases. First phase is isa string or isa
-> >>>>>> extension list parsing and consists in enabling all the extensions in a
-> >>>>>> temporary bitmask without any validation. The second step "resolves" the
-> >>>>>> final isa bitmap, handling potential missing dependencies. The mechanism
-> >>>>>> is quite simple and simply validate each extension described in the
-> >>>>>> temporary bitmap before enabling it in the final isa bitmap. validate()
-> >>>>>> callbacks can return either 0 for success, -EPROBEDEFER if extension
-> >>>>>> needs to be validated again at next loop. A previous ISA bitmap is kept
-> >>>>>> to avoid looping mutliple times if an extension dependencies are never
-> >>>>>> satisfied until we reach a stable state. In order to avoid any potential
-> >>>>>> infinite looping, allow looping a maximum of the number of extension we
-> >>>>>> handle. Zicboz and Zicbom extensions are modified to use this validation
-> >>>>>> mechanism.
-> >>>>>
-> >>>>> Your reply to my last review only talked about part of my comments,
-> >>>>> which is usually what you do when you're gonna implement the rest, but
-> >>>>> you haven't.
-> >>>>> I like the change you've made to shorten looping, but I'd at least like
-> >>>>> a response to why a split is not worth doing :)
-> >>>>
-> >>>> Hi Conor,
-> >>>>
-> >>>> Missed that point since I was feeling that my solution actually
-> >>>> addresses your concerns. Your argument was that there is no reason to
-> >>>> loop for Zicbom/Zicboz but that would also apply to Zcf in case we are
-> >>>> on RV64 as well (since zcf is not supported on RV64). So for Zcf, that
-> >>>> would lead to using both mecanism or additional ifdefery with little to
-> >>>> no added value since the current solution actually solves both cases:
-> >>>>
-> >>>> - We don't have any extra looping if all validation callback returns 0
-> >>>> (except the initial one on riscv_isa_ext, which is kind of unavoidable).
-> >>>> - Zicbom, Zicboz callbacks will be called only once (which was one of
-> >>>> your concern).
-> >>>>
-> >>>> Adding a second kind of callback for after loop validation would only
-> >>>> lead to a bunch of additional macros/ifdefery for extensions with
-> >>>> validate() callback, with validate_end() or with both (ie Zcf)). For
-> >>>> these reasons, I do not think there is a need for a separate mechanism
-> >>>> nor additional callback for such extensions except adding extra code
-> >>>> with no real added functionality.
-> >>>>
-> >>>> AFAIK, the platform driver probing mechanism works the same, the probe()
-> >>>> callback is actually called even if for some reason properties are
-> >>>> missing from nodes for platform devices and thus the probe() returns
-> >>>> -EINVAL or whatever.
-> >>>>
-> >>>> Hope this answers your question,
-> >>>
-> >>> Yeah, pretty much I am happy with just an "it's not worth doing it"
-> >>> response. Given it wasn't your first choice, I doubt you're overly happy
-> >>> with it either, but I really would like to avoid looping to closure to
-> >>> sort out dependencies - particularly on the boot CPU before we bring
-> >>> anyone else up, but if the code is now more proactive about breaking
-> >>> out, I suppose that'll have to do :)
-> >>> I kinda wish we didn't do this at all, but I think we've brought this
-> >>> upon ourselves via hwprobe. I'm still on the fence as to whether things
-> >>> that are implied need to be handled in this way. I think I'll bring this
-> >>> up tomorrow at the weekly call, because so far it's only been you and I
-> >>> discussing this really and it's a policy decision that hwprobe-ists
-> >>> should be involved in I think.
-> >>
-> >> Hi Conor,
-> >>
-> >> Were you able to discuss that topic ?
-> > 
-> > I realised last night that I'd not got back to this thread and meant to
-> > do that today (I had accidentally deleted it from my mailbox), but I had
-> > a migraine this morning and so didn't.
-> > I did bring it up and IIRC Palmer was of the opinion that we should try
-> > our best to infer extensions.
-> > 
-> >>> Implied extensions aside, I think we will eventually need this stuff
-> >>> anyway, for extensions that make no sense to consider if a config option
-> >>> for a dependency is disabled.
-> >>> From talking to Eric Biggers the other week about
-> >>> riscv_isa_extension_available() I'm of the opinion that we need to do
-> >>> better with that interface w.r.t. extension and config dependencies,
-> >>> and what seems like a good idea to me at the moment is putting tests for
-> >>> IS_ENABLED(RISCV_ISA_FOO) into these validate hooks.
-> >>>
-> >>> I'll try to look at the actual implementation here tomorrow.
-> >>
-> >> Did you found time to look at the implementation ?
-> > 
-> > No, with the above excuse. I'll try to get to it today or tomorrow...
-> 
-> No worries, I was on vacation and was just checking if I hadn't missed
-> anything in the meantime. Take your time ;)
+On Tue, May 14, 2024 at 11:43:15AM +0200, Cl?ment L?ger wrote:
+>
+>
+>On 27/04/2024 03:17, Deepak Gupta wrote:
+>> On Thu, Apr 18, 2024 at 04:26:45PM +0200, Cl?ment L?ger wrote:
+>>> Add support in KVM SBI FWFT extension to allow VS-mode to request double
+>>> trap enabling. Double traps can then be generated by VS-mode, allowing
+>>> M-mode to redirect them to S-mode.
+>>>
+>>
+>>> +
+>>> +??? if (value)
+>>> +??????? csr_set(CSR_HENVCFG_DBLTRP, DBLTRP_DTE);
+>>> +??? else
+>>> +??????? csr_clear(CSR_HENVCFG_DBLTRP, DBLTRP_DTE);
+>>
+>> I think vcpu->arch.cfg has `henvcfg` field. Can we reflect it there as
+>> well so that current
+>> `henvcfg` copy in vcpu arch specifci config is consistent? Otherwise
+>> it'll be lost when vCPU
+>> is scheduled out and later scheduled back in (on vcpu load)
+>
+>henvcfg is restored when loading the vpcu (kvm_arch_vcpu_load()) and
+>saved when the CPU is put (kvm_arch_vcpu_put()). But I just saw that
+>this change is included in the next patch. Should have been this one ,
+>I'll fix that.
+>
+>
+>>
+>> Furthermore, lets not do feature specific alias names for CSR.
+>>
+>> Instead let's keep consistent 64bit image of henvcfg in vcpu->arch.cfg.
+>>
+>> And whenever it's time to pick up the setting, pick up logic either
+>> perform the writes in
+>> henvcfg. And if required it'll perform henvcfgh too (as
+>> `kvm_arch_vcpu_load` already does)
+>
+>I don't have a strong opinion on that point so if you think it really is
+>better, I'll switch to that.
 
-I forget where we talked about validation for F/V, but I chucked this
-together last week in response to another thread of Andy's that was
-adding some of the vector subset stuff, because I realised we don't turn
-off any of the stuff that depends on vector if vector gets disabled:
-https://git.kernel.org/pub/scm/linux/kernel/git/conor/linux.git/commit/?h=riscv-check_vector&id=38050c6858143f43ce2fd04e9824727a7d7731d0
+Thanks.
 
-What I've got there doesn't actually work for the vector subsets though,
-only for vector itself, because of the probe ordering. Your validate
-callback stuff should solve that issue though.
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 228 bytes
-Desc: not available
-URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20240514/6061491f/attachment-0001.sig>
+>
+>Thanks,
+>
+>Cl?ment
+>
+>>
+>>> +
+>>> +??? return SBI_SUCCESS;
+>>> +}
+>>> +
+>>> +static int kvm_sbi_fwft_get_double_trap(struct kvm_vcpu *vcpu,
+>>> +??????????????????? struct kvm_sbi_fwft_config *conf,
+>>> +??????????????????? unsigned long *value)
+>>> +{
+>>> +??? if (!riscv_double_trap_enabled())
+>>> +??????? return SBI_ERR_NOT_SUPPORTED;
+>>> +
+>>> +??? *value = (csr_read(CSR_HENVCFG_DBLTRP) & DBLTRP_DTE) != 0;
+>>> +
+>>> +??? return SBI_SUCCESS;
+>>> +}
+>>> +
+>>> static struct kvm_sbi_fwft_config *
+>>> kvm_sbi_fwft_get_config(struct kvm_vcpu *vcpu, enum sbi_fwft_feature_t
+>>> feature)
+>>> {
+>>> @@ -111,6 +147,11 @@ static const struct kvm_sbi_fwft_feature
+>>> features[] = {
+>>> ??????? .id = SBI_FWFT_MISALIGNED_DELEG,
+>>> ??????? .set = kvm_sbi_fwft_set_misaligned_delegation,
+>>> ??????? .get = kvm_sbi_fwft_get_misaligned_delegation,
+>>> +??? },
+>>> +??? {
+>>> +??????? .id = SBI_FWFT_DOUBLE_TRAP_ENABLE,
+>>> +??????? .set = kvm_sbi_fwft_set_double_trap,
+>>> +??????? .get = kvm_sbi_fwft_get_double_trap,
+>>> ????}
+>>> };
+>>>
+>>> --?
+>>> 2.43.0
+>>>
+>>>
+
