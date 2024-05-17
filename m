@@ -1,67 +1,55 @@
 From: Clément Léger <cleger@rivosinc.com>
-Date: Fri, 17 May 2024 16:52:50 +0200
-Subject: [PATCH v5 10/16] RISC-V: KVM: Allow Zca, Zcf, Zcd and Zcb extensions for Guest/VM
+Date: Fri, 17 May 2024 16:52:52 +0200
+Subject: [PATCH v5 12/16] dt-bindings: riscv: add Zcmop ISA extension description
 In-Reply-To: <20240517145302.971019-1-cleger@rivosinc.com>
 References: <20240517145302.971019-1-cleger@rivosinc.com>
-Message-ID: <20240517145302.971019-11-cleger@rivosinc.com>
+Message-ID: <20240517145302.971019-13-cleger@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Extend the KVM ISA extension ONE_REG interface to allow KVM user space
-to detect and enable Zca, Zcf, Zcd and Zcb extensions for Guest/VM.
+Add description for the Zcmop (Compressed May-Be-Operations) ISA
+extension which was ratified in commit c732a4f39a4 ("Zcmop is
+ratified/1.0") of the riscv-isa-manual.
 
 Signed-off-by: Cl?ment L?ger <cleger@rivosinc.com>
-Reviewed-by: Anup Patel <anup@brainfault.org>
-Acked-by: Anup Patel <anup@brainfault.org>
+Acked-by: Conor Dooley <conor.dooley@microchip.com>
 ---
- arch/riscv/include/uapi/asm/kvm.h | 4 ++++
- arch/riscv/kvm/vcpu_onereg.c      | 8 ++++++++
- 2 files changed, 12 insertions(+)
+ .../devicetree/bindings/riscv/extensions.yaml        | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
-diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
-index 35a12aa1953e..57db3fea679f 100644
---- a/arch/riscv/include/uapi/asm/kvm.h
-+++ b/arch/riscv/include/uapi/asm/kvm.h
-@@ -168,6 +168,10 @@ enum KVM_RISCV_ISA_EXT_ID {
- 	KVM_RISCV_ISA_EXT_ZTSO,
- 	KVM_RISCV_ISA_EXT_ZACAS,
- 	KVM_RISCV_ISA_EXT_ZIMOP,
-+	KVM_RISCV_ISA_EXT_ZCA,
-+	KVM_RISCV_ISA_EXT_ZCB,
-+	KVM_RISCV_ISA_EXT_ZCD,
-+	KVM_RISCV_ISA_EXT_ZCF,
- 	KVM_RISCV_ISA_EXT_MAX,
- };
+diff --git a/Documentation/devicetree/bindings/riscv/extensions.yaml b/Documentation/devicetree/bindings/riscv/extensions.yaml
+index 39084c58d4e4..acad4d9d96ab 100644
+--- a/Documentation/devicetree/bindings/riscv/extensions.yaml
++++ b/Documentation/devicetree/bindings/riscv/extensions.yaml
+@@ -252,6 +252,11 @@ properties:
+             merged in the riscv-isa-manual by commit dbc79cf28a2 ("Initial seed
+             of zc.adoc to src tree.").
  
-diff --git a/arch/riscv/kvm/vcpu_onereg.c b/arch/riscv/kvm/vcpu_onereg.c
-index c6ee763422f2..7d47fc910bd9 100644
---- a/arch/riscv/kvm/vcpu_onereg.c
-+++ b/arch/riscv/kvm/vcpu_onereg.c
-@@ -48,6 +48,10 @@ static const unsigned long kvm_isa_ext_arr[] = {
- 	KVM_ISA_EXT_ARR(ZBKC),
- 	KVM_ISA_EXT_ARR(ZBKX),
- 	KVM_ISA_EXT_ARR(ZBS),
-+	KVM_ISA_EXT_ARR(ZCA),
-+	KVM_ISA_EXT_ARR(ZCB),
-+	KVM_ISA_EXT_ARR(ZCD),
-+	KVM_ISA_EXT_ARR(ZCF),
- 	KVM_ISA_EXT_ARR(ZFA),
- 	KVM_ISA_EXT_ARR(ZFH),
- 	KVM_ISA_EXT_ARR(ZFHMIN),
-@@ -128,6 +132,10 @@ static bool kvm_riscv_vcpu_isa_disable_allowed(unsigned long ext)
- 	case KVM_RISCV_ISA_EXT_ZBKC:
- 	case KVM_RISCV_ISA_EXT_ZBKX:
- 	case KVM_RISCV_ISA_EXT_ZBS:
-+	case KVM_RISCV_ISA_EXT_ZCA:
-+	case KVM_RISCV_ISA_EXT_ZCB:
-+	case KVM_RISCV_ISA_EXT_ZCD:
-+	case KVM_RISCV_ISA_EXT_ZCF:
- 	case KVM_RISCV_ISA_EXT_ZFA:
- 	case KVM_RISCV_ISA_EXT_ZFH:
- 	case KVM_RISCV_ISA_EXT_ZFHMIN:
++        - const: zcmop
++          description:
++            The standard Zcmop extension version 1.0, as ratified in commit
++            c732a4f39a4 ("Zcmop is ratified/1.0") of the riscv-isa-manual.
++
+         - const: zfa
+           description:
+             The standard Zfa extension for additional floating point
+@@ -559,6 +564,13 @@ properties:
+                 const: zca
+             - contains:
+                 const: f
++      # Zcmop depends on Zca
++      - if:
++          contains:
++            const: zcmop
++        then:
++          contains:
++            const: zca
+ 
+ allOf:
+   # Zcf extension does not exist on rv64
 -- 
 2.43.0
 
