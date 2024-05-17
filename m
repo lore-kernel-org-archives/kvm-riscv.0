@@ -1,59 +1,121 @@
 From: Clément Léger <cleger@rivosinc.com>
-Date: Fri, 17 May 2024 16:52:45 +0200
-Subject: [PATCH v5 05/16] KVM: riscv: selftests: Add Zimop extension to get-reg-list test
+Date: Fri, 17 May 2024 16:52:46 +0200
+Subject: [PATCH v5 06/16] dt-bindings: riscv: add Zca, Zcf, Zcd and Zcb ISA extension description
 In-Reply-To: <20240517145302.971019-1-cleger@rivosinc.com>
 References: <20240517145302.971019-1-cleger@rivosinc.com>
-Message-ID: <20240517145302.971019-6-cleger@rivosinc.com>
+Message-ID: <20240517145302.971019-7-cleger@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The KVM RISC-V allows Zimop extension for Guest/VM so add this
-extension to get-reg-list test.
+Add description for Zca, Zcf, Zcd and Zcb extensions which are part the
+Zc* standard extensions for code size reduction. Additional validation
+rules are added since Zcb depends on Zca, Zcf, depends on Zca and F, Zcd
+depends on Zca and D and finally, Zcf can not be present on rv64.
 
 Signed-off-by: Cl?ment L?ger <cleger@rivosinc.com>
+Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
 ---
- tools/testing/selftests/kvm/riscv/get-reg-list.c | 4 ++++
- 1 file changed, 4 insertions(+)
+ .../devicetree/bindings/riscv/extensions.yaml | 78 +++++++++++++++++++
+ 1 file changed, 78 insertions(+)
 
-diff --git a/tools/testing/selftests/kvm/riscv/get-reg-list.c b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-index b882b7b9b785..40107bb61975 100644
---- a/tools/testing/selftests/kvm/riscv/get-reg-list.c
-+++ b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-@@ -67,6 +67,7 @@ bool filter_reg(__u64 reg)
- 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZIHINTNTL:
- 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZIHINTPAUSE:
- 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZIHPM:
-+	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZIMOP:
- 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZKND:
- 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZKNE:
- 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZKNH:
-@@ -432,6 +433,7 @@ static const char *isa_ext_single_id_to_str(__u64 reg_off)
- 		KVM_ISA_EXT_ARR(ZIHINTNTL),
- 		KVM_ISA_EXT_ARR(ZIHINTPAUSE),
- 		KVM_ISA_EXT_ARR(ZIHPM),
-+		KVM_ISA_EXT_ARR(ZIMOP),
- 		KVM_ISA_EXT_ARR(ZKND),
- 		KVM_ISA_EXT_ARR(ZKNE),
- 		KVM_ISA_EXT_ARR(ZKNH),
-@@ -955,6 +957,7 @@ KVM_ISA_EXT_SIMPLE_CONFIG(zifencei, ZIFENCEI);
- KVM_ISA_EXT_SIMPLE_CONFIG(zihintntl, ZIHINTNTL);
- KVM_ISA_EXT_SIMPLE_CONFIG(zihintpause, ZIHINTPAUSE);
- KVM_ISA_EXT_SIMPLE_CONFIG(zihpm, ZIHPM);
-+KVM_ISA_EXT_SIMPLE_CONFIG(zimop, ZIMOP);
- KVM_ISA_EXT_SIMPLE_CONFIG(zknd, ZKND);
- KVM_ISA_EXT_SIMPLE_CONFIG(zkne, ZKNE);
- KVM_ISA_EXT_SIMPLE_CONFIG(zknh, ZKNH);
-@@ -1010,6 +1013,7 @@ struct vcpu_reg_list *vcpu_configs[] = {
- 	&config_zihintntl,
- 	&config_zihintpause,
- 	&config_zihpm,
-+	&config_zimop,
- 	&config_zknd,
- 	&config_zkne,
- 	&config_zknh,
+diff --git a/Documentation/devicetree/bindings/riscv/extensions.yaml b/Documentation/devicetree/bindings/riscv/extensions.yaml
+index b9100addeb90..39084c58d4e4 100644
+--- a/Documentation/devicetree/bindings/riscv/extensions.yaml
++++ b/Documentation/devicetree/bindings/riscv/extensions.yaml
+@@ -220,6 +220,38 @@ properties:
+             instructions as ratified at commit 6d33919 ("Merge pull request #158
+             from hirooih/clmul-fix-loop-end-condition") of riscv-bitmanip.
+ 
++        - const: zca
++          description: |
++            The Zca extension part of Zc* standard extensions for code size
++            reduction, as ratified in commit 8be3419c1c0 ("Zcf doesn't exist on
++            RV64 as it contains no instructions") of riscv-code-size-reduction,
++            merged in the riscv-isa-manual by commit dbc79cf28a2 ("Initial seed
++            of zc.adoc to src tree.").
++
++        - const: zcb
++          description: |
++            The Zcb extension part of Zc* standard extensions for code size
++            reduction, as ratified in commit 8be3419c1c0 ("Zcf doesn't exist on
++            RV64 as it contains no instructions") of riscv-code-size-reduction,
++            merged in the riscv-isa-manual by commit dbc79cf28a2 ("Initial seed
++            of zc.adoc to src tree.").
++
++        - const: zcd
++          description: |
++            The Zcd extension part of Zc* standard extensions for code size
++            reduction, as ratified in commit 8be3419c1c0 ("Zcf doesn't exist on
++            RV64 as it contains no instructions") of riscv-code-size-reduction,
++            merged in the riscv-isa-manual by commit dbc79cf28a2 ("Initial seed
++            of zc.adoc to src tree.").
++
++        - const: zcf
++          description: |
++            The Zcf extension part of Zc* standard extensions for code size
++            reduction, as ratified in commit 8be3419c1c0 ("Zcf doesn't exist on
++            RV64 as it contains no instructions") of riscv-code-size-reduction,
++            merged in the riscv-isa-manual by commit dbc79cf28a2 ("Initial seed
++            of zc.adoc to src tree.").
++
+         - const: zfa
+           description:
+             The standard Zfa extension for additional floating point
+@@ -499,5 +531,51 @@ properties:
+             The T-HEAD specific 0.7.1 vector implementation as written in
+             https://github.com/T-head-Semi/thead-extension-spec/blob/95358cb2cca9489361c61d335e03d3134b14133f/xtheadvector.adoc.
+ 
++    allOf:
++      # Zcb depends on Zca
++      - if:
++          contains:
++            const: zcb
++        then:
++          contains:
++            const: zca
++      # Zcd depends on Zca and D
++      - if:
++          contains:
++            const: zcd
++        then:
++          allOf:
++            - contains:
++                const: zca
++            - contains:
++                const: d
++      # Zcf depends on Zca and F
++      - if:
++          contains:
++            const: zcf
++        then:
++          allOf:
++            - contains:
++                const: zca
++            - contains:
++                const: f
++
++allOf:
++  # Zcf extension does not exist on rv64
++  - if:
++      properties:
++        riscv,isa-extensions:
++          contains:
++            const: zcf
++        riscv,isa-base:
++          contains:
++            const: rv64i
++    then:
++      properties:
++        riscv,isa-extensions:
++          not:
++            contains:
++              const: zcf
++
+ additionalProperties: true
+ ...
 -- 
 2.43.0
 
