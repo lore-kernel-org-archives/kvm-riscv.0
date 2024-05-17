@@ -1,72 +1,47 @@
-From: Anup Patel <anup@brainfault.org>
-Date: Fri, 17 May 2024 20:48:21 +0530
-Subject: [PATCH v5 05/16] KVM: riscv: selftests: Add Zimop extension to
- get-reg-list test
-In-Reply-To: <20240517145302.971019-6-cleger@rivosinc.com>
-References: <20240517145302.971019-1-cleger@rivosinc.com> <20240517145302.971019-6-cleger@rivosinc.com>
-Message-ID: <CAAhSdy0XADKcLS_iFdTzpYDY+KAL2+v91xFcjWUu8LofknQWMA@mail.gmail.com>
+From: Conor Dooley <conor@kernel.org>
+Date: Fri, 17 May 2024 17:44:44 +0100
+Subject: [PATCH v5 07/16] riscv: add ISA extensions validation callback
+In-Reply-To: <20240517145302.971019-8-cleger@rivosinc.com>
+References: <20240517145302.971019-1-cleger@rivosinc.com>
+ <20240517145302.971019-8-cleger@rivosinc.com>
+Message-ID: <20240517-scrunch-palace-2f83aa8cc3ce@spud>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, May 17, 2024 at 8:23?PM Cl?ment L?ger <cleger@rivosinc.com> wrote:
->
-> The KVM RISC-V allows Zimop extension for Guest/VM so add this
-> extension to get-reg-list test.
->
-> Signed-off-by: Cl?ment L?ger <cleger@rivosinc.com>
+On Fri, May 17, 2024 at 04:52:47PM +0200, Cl?ment L?ger wrote:
+> Since a few extensions (Zicbom/Zicboz) already needs validation and
+> future ones will need it as well (Zc*) add a validate() callback to
+> struct riscv_isa_ext_data. This require to rework the way extensions are
+> parsed and split it in two phases. First phase is isa string or isa
+> extension list parsing and consists in enabling all the extensions in a
+> temporary bitmask (source isa) without any validation. The second step
+> "resolves" the final isa bitmap, handling potential missing dependencies.
+> The mechanism is quite simple and simply validate each extension
+> described in the source bitmap before enabling it in the resolved isa
+> bitmap. validate() callbacks can return either 0 for success,
+> -EPROBEDEFER if extension needs to be validated again at next loop. A
+> previous ISA bitmap is kept to avoid looping multiple times if an
+> extension dependencies are never satisfied until we reach a stable
+> state. In order to avoid any potential infinite looping, allow looping
+> a maximum of the number of extension we handle. Zicboz and Zicbom
+> extensions are modified to use this validation mechanism.
 
-LGTM.
+I wish we weren't doin' it at all, but since we have to, I think what
+you've got here is good.
+Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
 
-Reviewed-by: Anup Patel <anup@brainfault.org>
-Acked-by: Anup Patel <anup@brainfault.org>
+Do you want me to send some patches for the F/V stuff we discussed
+previously?
 
-Regards,
-Anup
-
-> ---
->  tools/testing/selftests/kvm/riscv/get-reg-list.c | 4 ++++
->  1 file changed, 4 insertions(+)
->
-> diff --git a/tools/testing/selftests/kvm/riscv/get-reg-list.c b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-> index b882b7b9b785..40107bb61975 100644
-> --- a/tools/testing/selftests/kvm/riscv/get-reg-list.c
-> +++ b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-> @@ -67,6 +67,7 @@ bool filter_reg(__u64 reg)
->         case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZIHINTNTL:
->         case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZIHINTPAUSE:
->         case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZIHPM:
-> +       case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZIMOP:
->         case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZKND:
->         case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZKNE:
->         case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZKNH:
-> @@ -432,6 +433,7 @@ static const char *isa_ext_single_id_to_str(__u64 reg_off)
->                 KVM_ISA_EXT_ARR(ZIHINTNTL),
->                 KVM_ISA_EXT_ARR(ZIHINTPAUSE),
->                 KVM_ISA_EXT_ARR(ZIHPM),
-> +               KVM_ISA_EXT_ARR(ZIMOP),
->                 KVM_ISA_EXT_ARR(ZKND),
->                 KVM_ISA_EXT_ARR(ZKNE),
->                 KVM_ISA_EXT_ARR(ZKNH),
-> @@ -955,6 +957,7 @@ KVM_ISA_EXT_SIMPLE_CONFIG(zifencei, ZIFENCEI);
->  KVM_ISA_EXT_SIMPLE_CONFIG(zihintntl, ZIHINTNTL);
->  KVM_ISA_EXT_SIMPLE_CONFIG(zihintpause, ZIHINTPAUSE);
->  KVM_ISA_EXT_SIMPLE_CONFIG(zihpm, ZIHPM);
-> +KVM_ISA_EXT_SIMPLE_CONFIG(zimop, ZIMOP);
->  KVM_ISA_EXT_SIMPLE_CONFIG(zknd, ZKND);
->  KVM_ISA_EXT_SIMPLE_CONFIG(zkne, ZKNE);
->  KVM_ISA_EXT_SIMPLE_CONFIG(zknh, ZKNH);
-> @@ -1010,6 +1013,7 @@ struct vcpu_reg_list *vcpu_configs[] = {
->         &config_zihintntl,
->         &config_zihintpause,
->         &config_zihpm,
-> +       &config_zimop,
->         &config_zknd,
->         &config_zkne,
->         &config_zknh,
-> --
-> 2.43.0
->
-
+Cheers,
+Conor.
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 228 bytes
+Desc: not available
+URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20240517/d0081efc/attachment-0001.sig>
