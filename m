@@ -1,67 +1,108 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Tue, 21 May 2024 18:40:07 -0700
-Subject: [PATCH v2 0/6] KVM: Fold kvm_arch_sched_in() into kvm_arch_vcpu_load()
-Message-ID: <20240522014013.1672962-1-seanjc@google.com>
+Date: Tue, 21 May 2024 18:40:09 -0700
+Subject: [PATCH v2 2/6] KVM: VMX: Move PLE grow/shrink helpers above vmx_vcpu_load()
+In-Reply-To: <20240522014013.1672962-1-seanjc@google.com>
+References: <20240522014013.1672962-1-seanjc@google.com>
+Message-ID: <20240522014013.1672962-3-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Drop kvm_arch_sched_in() and instead add and use kvm_vcpu.scheduled_out
-to communicate to kvm_arch_vcpu_load() that the vCPU is being scheduling
-back in.
+Move VMX's {grow,shrink}_ple_window() above vmx_vcpu_load() in preparation
+of moving the sched_in logic, which handles shrinking the PLE window, into
+vmx_vcpu_load().
 
-While fiddling with an idea for optimizing state management on AMD CPUs,
-I wanted to skip re-saving certain host state when a vCPU is scheduled back
-in, as the state (theoretically) shouldn't change for the task while it's
-scheduled out.  Actually doing that was annoying and unnecessarily brittle
-due to having a separate API for the kvm_sched_in() case (the state save
-needed to be in kvm_arch_vcpu_load() for the common path).
+No functional change intended.
 
-The other motivation for this is to avoid yet another arch hook, and more
-arbitrary ordering, if there's a future need to hook kvm_sched_out() (we've
-come close on the x86 side several times).  E.g. kvm_arch_vcpu_put() can
-simply check kvm_vcpu.scheduled_out if it needs to something specific for
-the vCPU being scheduled out.
+Signed-off-by: Sean Christopherson <seanjc@google.com>
+---
+ arch/x86/kvm/vmx/vmx.c | 64 +++++++++++++++++++++---------------------
+ 1 file changed, 32 insertions(+), 32 deletions(-)
 
-v2:
- - Add scheduled_out flag instead of passing a bool to kvm_arch_vcpu_load().
-   [Oliver]
- - Tack on patches to clean up x86's setting of l1tf_flush_l1d in
-   kvm_arch_sched_load() (the code looked slightly less weird when the flag
-   was being set by kvm_arch_sched_in()).
-
-v1: https://lore.kernel.org/all/20240430193157.419425-1-seanjc at google.com
-
-Sean Christopherson (6):
-  KVM: Add a flag to track if a loaded vCPU is scheduled out
-  KVM: VMX: Move PLE grow/shrink helpers above vmx_vcpu_load()
-  KVM: x86: Fold kvm_arch_sched_in() into kvm_arch_vcpu_load()
-  KVM: Delete the now unused kvm_arch_sched_in()
-  KVM: x86: Unconditionally set l1tf_flush_l1d during vCPU load
-  KVM: x86: Drop now-superflous setting of l1tf_flush_l1d in vcpu_run()
-
- arch/arm64/include/asm/kvm_host.h     |  1 -
- arch/loongarch/include/asm/kvm_host.h |  1 -
- arch/mips/include/asm/kvm_host.h      |  1 -
- arch/powerpc/include/asm/kvm_host.h   |  1 -
- arch/riscv/include/asm/kvm_host.h     |  1 -
- arch/s390/include/asm/kvm_host.h      |  1 -
- arch/x86/include/asm/kvm-x86-ops.h    |  1 -
- arch/x86/include/asm/kvm_host.h       |  2 -
- arch/x86/kvm/pmu.c                    |  6 +-
- arch/x86/kvm/svm/svm.c                | 11 +---
- arch/x86/kvm/vmx/main.c               |  2 -
- arch/x86/kvm/vmx/vmx.c                | 80 +++++++++++++--------------
- arch/x86/kvm/vmx/x86_ops.h            |  1 -
- arch/x86/kvm/x86.c                    | 22 +++-----
- include/linux/kvm_host.h              |  3 +-
- virt/kvm/kvm_main.c                   |  5 +-
- 16 files changed, 59 insertions(+), 80 deletions(-)
-
-
-base-commit: 4aad0b1893a141f114ba40ed509066f3c9bc24b0
+diff --git a/arch/x86/kvm/vmx/vmx.c b/arch/x86/kvm/vmx/vmx.c
+index 51b2cd13250a..07a4d6a3a43e 100644
+--- a/arch/x86/kvm/vmx/vmx.c
++++ b/arch/x86/kvm/vmx/vmx.c
+@@ -1410,6 +1410,38 @@ static void vmx_write_guest_kernel_gs_base(struct vcpu_vmx *vmx, u64 data)
+ }
+ #endif
+ 
++static void grow_ple_window(struct kvm_vcpu *vcpu)
++{
++	struct vcpu_vmx *vmx = to_vmx(vcpu);
++	unsigned int old = vmx->ple_window;
++
++	vmx->ple_window = __grow_ple_window(old, ple_window,
++					    ple_window_grow,
++					    ple_window_max);
++
++	if (vmx->ple_window != old) {
++		vmx->ple_window_dirty = true;
++		trace_kvm_ple_window_update(vcpu->vcpu_id,
++					    vmx->ple_window, old);
++	}
++}
++
++static void shrink_ple_window(struct kvm_vcpu *vcpu)
++{
++	struct vcpu_vmx *vmx = to_vmx(vcpu);
++	unsigned int old = vmx->ple_window;
++
++	vmx->ple_window = __shrink_ple_window(old, ple_window,
++					      ple_window_shrink,
++					      ple_window);
++
++	if (vmx->ple_window != old) {
++		vmx->ple_window_dirty = true;
++		trace_kvm_ple_window_update(vcpu->vcpu_id,
++					    vmx->ple_window, old);
++	}
++}
++
+ void vmx_vcpu_load_vmcs(struct kvm_vcpu *vcpu, int cpu,
+ 			struct loaded_vmcs *buddy)
+ {
+@@ -5889,38 +5921,6 @@ int vmx_vcpu_pre_run(struct kvm_vcpu *vcpu)
+ 	return 1;
+ }
+ 
+-static void grow_ple_window(struct kvm_vcpu *vcpu)
+-{
+-	struct vcpu_vmx *vmx = to_vmx(vcpu);
+-	unsigned int old = vmx->ple_window;
+-
+-	vmx->ple_window = __grow_ple_window(old, ple_window,
+-					    ple_window_grow,
+-					    ple_window_max);
+-
+-	if (vmx->ple_window != old) {
+-		vmx->ple_window_dirty = true;
+-		trace_kvm_ple_window_update(vcpu->vcpu_id,
+-					    vmx->ple_window, old);
+-	}
+-}
+-
+-static void shrink_ple_window(struct kvm_vcpu *vcpu)
+-{
+-	struct vcpu_vmx *vmx = to_vmx(vcpu);
+-	unsigned int old = vmx->ple_window;
+-
+-	vmx->ple_window = __shrink_ple_window(old, ple_window,
+-					      ple_window_shrink,
+-					      ple_window);
+-
+-	if (vmx->ple_window != old) {
+-		vmx->ple_window_dirty = true;
+-		trace_kvm_ple_window_update(vcpu->vcpu_id,
+-					    vmx->ple_window, old);
+-	}
+-}
+-
+ /*
+  * Indicate a busy-waiting vcpu in spinlock. We do not enable the PAUSE
+  * exiting, so only get here on cpu with PAUSE-Loop-Exiting.
 -- 
 2.45.0.215.g3402c0e53f-goog
 
