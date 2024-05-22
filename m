@@ -1,79 +1,67 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Tue, 21 May 2024 18:40:08 -0700
-Subject: [PATCH v2 1/6] KVM: Add a flag to track if a loaded vCPU is scheduled out
-In-Reply-To: <20240522014013.1672962-1-seanjc@google.com>
-References: <20240522014013.1672962-1-seanjc@google.com>
-Message-ID: <20240522014013.1672962-2-seanjc@google.com>
+Date: Tue, 21 May 2024 18:40:07 -0700
+Subject: [PATCH v2 0/6] KVM: Fold kvm_arch_sched_in() into kvm_arch_vcpu_load()
+Message-ID: <20240522014013.1672962-1-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add a kvm_vcpu.scheduled_out flag to track if a vCPU is in the process of
-being scheduled out (vCPU put path), or if the vCPU is being reloaded
-after being scheduled out (vCPU load path).  In the short term, this will
-allow dropping kvm_arch_sched_in(), as arch code can query scheduled_out
-during kvm_arch_vcpu_load().
+Drop kvm_arch_sched_in() and instead add and use kvm_vcpu.scheduled_out
+to communicate to kvm_arch_vcpu_load() that the vCPU is being scheduling
+back in.
 
-Longer term, scheduled_out opens up other potential optimizations, without
-creating subtle/brittle dependencies.  E.g. it allows KVM to keep guest
-state (that is managed via kvm_arch_vcpu_{load,put}()) loaded across
-kvm_sched_{out,in}(), if KVM knows the state isn't accessed by the host
-kernel.  Forcing arch code to coordinate between kvm_arch_sched_{in,out}()
-and kvm_arch_vcpu_{load,put}() is awkward, not reusable, and relies on the
-exact ordering of calls into arch code.
+While fiddling with an idea for optimizing state management on AMD CPUs,
+I wanted to skip re-saving certain host state when a vCPU is scheduled back
+in, as the state (theoretically) shouldn't change for the task while it's
+scheduled out.  Actually doing that was annoying and unnecessarily brittle
+due to having a separate API for the kvm_sched_in() case (the state save
+needed to be in kvm_arch_vcpu_load() for the common path).
 
-Adding scheduled_out also obviates the need for a kvm_arch_sched_out()
-hook, e.g. if arch code needs to do something novel when putting vCPU
-state.
+The other motivation for this is to avoid yet another arch hook, and more
+arbitrary ordering, if there's a future need to hook kvm_sched_out() (we've
+come close on the x86 side several times).  E.g. kvm_arch_vcpu_put() can
+simply check kvm_vcpu.scheduled_out if it needs to something specific for
+the vCPU being scheduled out.
 
-And even if KVM never uses scheduled_out for anything beyond dropping
-kvm_arch_sched_in(), just being able to remove all of the arch stubs makes
-it worth adding the flag.
+v2:
+ - Add scheduled_out flag instead of passing a bool to kvm_arch_vcpu_load().
+   [Oliver]
+ - Tack on patches to clean up x86's setting of l1tf_flush_l1d in
+   kvm_arch_sched_load() (the code looked slightly less weird when the flag
+   was being set by kvm_arch_sched_in()).
 
-Link: https://lore.kernel.org/all/20240430224431.490139-1-seanjc at google.com
-Cc: Oliver Upton <oliver.upton@linux.dev>
-Signed-off-by: Sean Christopherson <seanjc@google.com>
----
- include/linux/kvm_host.h | 1 +
- virt/kvm/kvm_main.c      | 4 ++++
- 2 files changed, 5 insertions(+)
+v1: https://lore.kernel.org/all/20240430193157.419425-1-seanjc at google.com
 
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index 7b57878c8c18..bde69f74b031 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -380,6 +380,7 @@ struct kvm_vcpu {
- #endif
- 	bool preempted;
- 	bool ready;
-+	bool scheduled_out;
- 	struct kvm_vcpu_arch arch;
- 	struct kvm_vcpu_stat stat;
- 	char stats_id[KVM_STATS_NAME_SIZE];
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index a1756d5077ee..7ecea573d121 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -6288,6 +6288,8 @@ static void kvm_sched_in(struct preempt_notifier *pn, int cpu)
- 	__this_cpu_write(kvm_running_vcpu, vcpu);
- 	kvm_arch_sched_in(vcpu, cpu);
- 	kvm_arch_vcpu_load(vcpu, cpu);
-+
-+	WRITE_ONCE(vcpu->scheduled_out, false);
- }
- 
- static void kvm_sched_out(struct preempt_notifier *pn,
-@@ -6295,6 +6297,8 @@ static void kvm_sched_out(struct preempt_notifier *pn,
- {
- 	struct kvm_vcpu *vcpu = preempt_notifier_to_vcpu(pn);
- 
-+	WRITE_ONCE(vcpu->scheduled_out, true);
-+
- 	if (current->on_rq) {
- 		WRITE_ONCE(vcpu->preempted, true);
- 		WRITE_ONCE(vcpu->ready, true);
+Sean Christopherson (6):
+  KVM: Add a flag to track if a loaded vCPU is scheduled out
+  KVM: VMX: Move PLE grow/shrink helpers above vmx_vcpu_load()
+  KVM: x86: Fold kvm_arch_sched_in() into kvm_arch_vcpu_load()
+  KVM: Delete the now unused kvm_arch_sched_in()
+  KVM: x86: Unconditionally set l1tf_flush_l1d during vCPU load
+  KVM: x86: Drop now-superflous setting of l1tf_flush_l1d in vcpu_run()
+
+ arch/arm64/include/asm/kvm_host.h     |  1 -
+ arch/loongarch/include/asm/kvm_host.h |  1 -
+ arch/mips/include/asm/kvm_host.h      |  1 -
+ arch/powerpc/include/asm/kvm_host.h   |  1 -
+ arch/riscv/include/asm/kvm_host.h     |  1 -
+ arch/s390/include/asm/kvm_host.h      |  1 -
+ arch/x86/include/asm/kvm-x86-ops.h    |  1 -
+ arch/x86/include/asm/kvm_host.h       |  2 -
+ arch/x86/kvm/pmu.c                    |  6 +-
+ arch/x86/kvm/svm/svm.c                | 11 +---
+ arch/x86/kvm/vmx/main.c               |  2 -
+ arch/x86/kvm/vmx/vmx.c                | 80 +++++++++++++--------------
+ arch/x86/kvm/vmx/x86_ops.h            |  1 -
+ arch/x86/kvm/x86.c                    | 22 +++-----
+ include/linux/kvm_host.h              |  3 +-
+ virt/kvm/kvm_main.c                   |  5 +-
+ 16 files changed, 59 insertions(+), 80 deletions(-)
+
+
+base-commit: 4aad0b1893a141f114ba40ed509066f3c9bc24b0
 -- 
 2.45.0.215.g3402c0e53f-goog
 
