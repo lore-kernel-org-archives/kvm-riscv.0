@@ -1,59 +1,58 @@
-From: Sean Christopherson <seanjc@google.com>
-Date: Tue, 21 May 2024 18:40:13 -0700
-Subject: [PATCH v2 6/6] KVM: x86: Drop now-superflous setting of
- l1tf_flush_l1d in vcpu_run()
-In-Reply-To: <20240522014013.1672962-1-seanjc@google.com>
-References: <20240522014013.1672962-1-seanjc@google.com>
-Message-ID: <20240522014013.1672962-7-seanjc@google.com>
+From: Clément Léger <cleger@rivosinc.com>
+Date: Wed, 22 May 2024 09:20:09 +0200
+Subject: [PATCH v5 08/16] riscv: add ISA parsing for Zca, Zcf, Zcd and Zcb
+In-Reply-To: <20240521-spiny-undergrad-efa1a391ad3d@spud>
+References: <20240517145302.971019-1-cleger@rivosinc.com>
+ <20240517145302.971019-9-cleger@rivosinc.com>
+ <20240521-spiny-undergrad-efa1a391ad3d@spud>
+Message-ID: <de2c9064-bb01-42b2-9c0f-884dcabf7c40@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Now that KVM unconditionally sets l1tf_flush_l1d in kvm_arch_vcpu_load(),
-drop the redundant store from vcpu_run().  The flag is cleared only when
-VM-Enter is imminent, deep below vcpu_run(), i.e. barring a KVM bug, it's
-impossible for l1tf_flush_l1d to be cleared between loading the vCPU and
-calling vcpu_run().
 
-Signed-off-by: Sean Christopherson <seanjc@google.com>
----
- arch/x86/kvm/vmx/vmx.c | 7 ++++---
- arch/x86/kvm/x86.c     | 1 -
- 2 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/arch/x86/kvm/vmx/vmx.c b/arch/x86/kvm/vmx/vmx.c
-index da2f95385a12..552b6a9887a5 100644
---- a/arch/x86/kvm/vmx/vmx.c
-+++ b/arch/x86/kvm/vmx/vmx.c
-@@ -6672,9 +6672,10 @@ static noinstr void vmx_l1d_flush(struct kvm_vcpu *vcpu)
- 		bool flush_l1d;
- 
- 		/*
--		 * Clear the per-vcpu flush bit, it gets set again
--		 * either from vcpu_run() or from one of the unsafe
--		 * VMEXIT handlers.
-+		 * Clear the per-vcpu flush bit, it gets set again if the vCPU
-+		 * is reloaded, i.e. if the vCPU is scheduled out or if KVM
-+		 * exits to userspace, or if KVM reaches one of the unsafe
-+		 * VMEXIT handlers, e.g. if KVM calls into the emulator.
- 		 */
- 		flush_l1d = vcpu->arch.l1tf_flush_l1d;
- 		vcpu->arch.l1tf_flush_l1d = false;
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 60fea297f91f..86ae7392cc59 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -11264,7 +11264,6 @@ static int vcpu_run(struct kvm_vcpu *vcpu)
- 	int r;
- 
- 	vcpu->run->exit_reason = KVM_EXIT_UNKNOWN;
--	vcpu->arch.l1tf_flush_l1d = true;
- 
- 	for (;;) {
- 		/*
--- 
-2.45.0.215.g3402c0e53f-goog
+On 21/05/2024 21:49, Conor Dooley wrote:
+> On Fri, May 17, 2024 at 04:52:48PM +0200, Cl?ment L?ger wrote:
+> 
+>> +static int riscv_ext_zca_depends(const struct riscv_isa_ext_data *data,
+>> +				 const unsigned long *isa_bitmap)
+>> +{
+>> +	return __riscv_isa_extension_available(isa_bitmap, RISCV_ISA_EXT_ZCA) ? 0 : -EPROBE_DEFER;
+>> +}
+>> +static int riscv_ext_zcd_validate(const struct riscv_isa_ext_data *data,
+>> +				  const unsigned long *isa_bitmap)
+>> +{
+>> +	return __riscv_isa_extension_available(isa_bitmap, RISCV_ISA_EXT_ZCA) &&
+>> +	       __riscv_isa_extension_available(isa_bitmap, RISCV_ISA_EXT_d) ? 0 : -EPROBE_DEFER;
+>> +}
+> 
+> Could you write the logic in these out normally please? I think they'd
+> be more understandable (particular this second one) broken down and with
+> early return.
 
+Yes sure. I'll probably make the same thing for zcf_validate as well as
+removing the #ifdef and using IS_ENABLED():
+
+static int riscv_ext_zcf_validate(const struct riscv_isa_ext_data *data,
+				  const unsigned long *isa_bitmap)
+{
+	if (IS_ENABLED(CONFIG_64BIT))
+		return -EINVAL;
+
+	if (__riscv_isa_extension_available(isa_bitmap, RISCV_ISA_EXT_ZCA) &&
+	    __riscv_isa_extension_available(isa_bitmap, RISCV_ISA_EXT_f))
+	       return 0;
+
+	return -EPROBE_DEFER;
+}
+
+> 
+> Otherwise,
+> Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
+> 
+> Cheers,
+> Conor.
 
