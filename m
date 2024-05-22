@@ -1,43 +1,80 @@
-From: Conor Dooley <conor@kernel.org>
-Date: Tue, 21 May 2024 20:49:19 +0100
-Subject: [PATCH v5 08/16] riscv: add ISA parsing for Zca, Zcf, Zcd and Zcb
-In-Reply-To: <20240517145302.971019-9-cleger@rivosinc.com>
-References: <20240517145302.971019-1-cleger@rivosinc.com>
- <20240517145302.971019-9-cleger@rivosinc.com>
-Message-ID: <20240521-spiny-undergrad-efa1a391ad3d@spud>
+From: Sean Christopherson <seanjc@google.com>
+Date: Tue, 21 May 2024 18:40:08 -0700
+Subject: [PATCH v2 1/6] KVM: Add a flag to track if a loaded vCPU is scheduled out
+In-Reply-To: <20240522014013.1672962-1-seanjc@google.com>
+References: <20240522014013.1672962-1-seanjc@google.com>
+Message-ID: <20240522014013.1672962-2-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, May 17, 2024 at 04:52:48PM +0200, Cl?ment L?ger wrote:
+Add a kvm_vcpu.scheduled_out flag to track if a vCPU is in the process of
+being scheduled out (vCPU put path), or if the vCPU is being reloaded
+after being scheduled out (vCPU load path).  In the short term, this will
+allow dropping kvm_arch_sched_in(), as arch code can query scheduled_out
+during kvm_arch_vcpu_load().
 
-> +static int riscv_ext_zca_depends(const struct riscv_isa_ext_data *data,
-> +				 const unsigned long *isa_bitmap)
-> +{
-> +	return __riscv_isa_extension_available(isa_bitmap, RISCV_ISA_EXT_ZCA) ? 0 : -EPROBE_DEFER;
-> +}
-> +static int riscv_ext_zcd_validate(const struct riscv_isa_ext_data *data,
-> +				  const unsigned long *isa_bitmap)
-> +{
-> +	return __riscv_isa_extension_available(isa_bitmap, RISCV_ISA_EXT_ZCA) &&
-> +	       __riscv_isa_extension_available(isa_bitmap, RISCV_ISA_EXT_d) ? 0 : -EPROBE_DEFER;
-> +}
+Longer term, scheduled_out opens up other potential optimizations, without
+creating subtle/brittle dependencies.  E.g. it allows KVM to keep guest
+state (that is managed via kvm_arch_vcpu_{load,put}()) loaded across
+kvm_sched_{out,in}(), if KVM knows the state isn't accessed by the host
+kernel.  Forcing arch code to coordinate between kvm_arch_sched_{in,out}()
+and kvm_arch_vcpu_{load,put}() is awkward, not reusable, and relies on the
+exact ordering of calls into arch code.
 
-Could you write the logic in these out normally please? I think they'd
-be more understandable (particular this second one) broken down and with
-early return.
+Adding scheduled_out also obviates the need for a kvm_arch_sched_out()
+hook, e.g. if arch code needs to do something novel when putting vCPU
+state.
 
-Otherwise,
-Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
+And even if KVM never uses scheduled_out for anything beyond dropping
+kvm_arch_sched_in(), just being able to remove all of the arch stubs makes
+it worth adding the flag.
 
-Cheers,
-Conor.
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 228 bytes
-Desc: not available
-URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20240521/c0c71513/attachment.sig>
+Link: https://lore.kernel.org/all/20240430224431.490139-1-seanjc at google.com
+Cc: Oliver Upton <oliver.upton@linux.dev>
+Signed-off-by: Sean Christopherson <seanjc@google.com>
+---
+ include/linux/kvm_host.h | 1 +
+ virt/kvm/kvm_main.c      | 4 ++++
+ 2 files changed, 5 insertions(+)
+
+diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+index 7b57878c8c18..bde69f74b031 100644
+--- a/include/linux/kvm_host.h
++++ b/include/linux/kvm_host.h
+@@ -380,6 +380,7 @@ struct kvm_vcpu {
+ #endif
+ 	bool preempted;
+ 	bool ready;
++	bool scheduled_out;
+ 	struct kvm_vcpu_arch arch;
+ 	struct kvm_vcpu_stat stat;
+ 	char stats_id[KVM_STATS_NAME_SIZE];
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index a1756d5077ee..7ecea573d121 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -6288,6 +6288,8 @@ static void kvm_sched_in(struct preempt_notifier *pn, int cpu)
+ 	__this_cpu_write(kvm_running_vcpu, vcpu);
+ 	kvm_arch_sched_in(vcpu, cpu);
+ 	kvm_arch_vcpu_load(vcpu, cpu);
++
++	WRITE_ONCE(vcpu->scheduled_out, false);
+ }
+ 
+ static void kvm_sched_out(struct preempt_notifier *pn,
+@@ -6295,6 +6297,8 @@ static void kvm_sched_out(struct preempt_notifier *pn,
+ {
+ 	struct kvm_vcpu *vcpu = preempt_notifier_to_vcpu(pn);
+ 
++	WRITE_ONCE(vcpu->scheduled_out, true);
++
+ 	if (current->on_rq) {
+ 		WRITE_ONCE(vcpu->preempted, true);
+ 		WRITE_ONCE(vcpu->ready, true);
+-- 
+2.45.0.215.g3402c0e53f-goog
+
+
