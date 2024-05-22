@@ -1,58 +1,53 @@
-From: Clément Léger <cleger@rivosinc.com>
-Date: Wed, 22 May 2024 09:20:09 +0200
-Subject: [PATCH v5 08/16] riscv: add ISA parsing for Zca, Zcf, Zcd and Zcb
-In-Reply-To: <20240521-spiny-undergrad-efa1a391ad3d@spud>
-References: <20240517145302.971019-1-cleger@rivosinc.com>
- <20240517145302.971019-9-cleger@rivosinc.com>
- <20240521-spiny-undergrad-efa1a391ad3d@spud>
-Message-ID: <de2c9064-bb01-42b2-9c0f-884dcabf7c40@rivosinc.com>
+From: Yong-Xuan Wang <yongxuan.wang@sifive.com>
+Date: Wed, 22 May 2024 16:24:46 +0800
+Subject: [PATCH 1/1] RISC-V: KVM: No need to use mask when hart-index-bit
+ is 0
+In-Reply-To: <20240415064905.25184-1-yongxuan.wang@sifive.com>
+References: <20240415064905.25184-1-yongxuan.wang@sifive.com>
+Message-ID: <CAMWQL2jvNV70dX46J+EzUQXxw1yzVGzB2+knuPFiWK7mF2TfFA@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+Ping
 
-
-On 21/05/2024 21:49, Conor Dooley wrote:
-> On Fri, May 17, 2024 at 04:52:48PM +0200, Cl?ment L?ger wrote:
-> 
->> +static int riscv_ext_zca_depends(const struct riscv_isa_ext_data *data,
->> +				 const unsigned long *isa_bitmap)
->> +{
->> +	return __riscv_isa_extension_available(isa_bitmap, RISCV_ISA_EXT_ZCA) ? 0 : -EPROBE_DEFER;
->> +}
->> +static int riscv_ext_zcd_validate(const struct riscv_isa_ext_data *data,
->> +				  const unsigned long *isa_bitmap)
->> +{
->> +	return __riscv_isa_extension_available(isa_bitmap, RISCV_ISA_EXT_ZCA) &&
->> +	       __riscv_isa_extension_available(isa_bitmap, RISCV_ISA_EXT_d) ? 0 : -EPROBE_DEFER;
->> +}
-> 
-> Could you write the logic in these out normally please? I think they'd
-> be more understandable (particular this second one) broken down and with
-> early return.
-
-Yes sure. I'll probably make the same thing for zcf_validate as well as
-removing the #ifdef and using IS_ENABLED():
-
-static int riscv_ext_zcf_validate(const struct riscv_isa_ext_data *data,
-				  const unsigned long *isa_bitmap)
-{
-	if (IS_ENABLED(CONFIG_64BIT))
-		return -EINVAL;
-
-	if (__riscv_isa_extension_available(isa_bitmap, RISCV_ISA_EXT_ZCA) &&
-	    __riscv_isa_extension_available(isa_bitmap, RISCV_ISA_EXT_f))
-	       return 0;
-
-	return -EPROBE_DEFER;
-}
-
-> 
-> Otherwise,
-> Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
-> 
-> Cheers,
-> Conor.
+On Mon, Apr 15, 2024 at 2:49?PM Yong-Xuan Wang <yongxuan.wang@sifive.com> wrote:
+>
+> When the maximum hart number within groups is 1, hart-index-bit is set to
+> 0. Consequently, there is no need to restore the hart ID from IMSIC
+> addresses and hart-index-bit settings. Currently, QEMU and kvmtool do not
+> pass correct hart-index-bit values when the maximum hart number is a
+> power of 2, thereby avoiding this issue. Corresponding patches for QEMU
+> and kvmtool will also be dispatched.
+>
+> Fixes: 89d01306e34d ("RISC-V: KVM: Implement device interface for AIA irqchip")
+> Signed-off-by: Yong-Xuan Wang <yongxuan.wang@sifive.com>
+> ---
+>  arch/riscv/kvm/aia_device.c | 7 ++++---
+>  1 file changed, 4 insertions(+), 3 deletions(-)
+>
+> diff --git a/arch/riscv/kvm/aia_device.c b/arch/riscv/kvm/aia_device.c
+> index 0eb689351b7d..5cd407c6a8e4 100644
+> --- a/arch/riscv/kvm/aia_device.c
+> +++ b/arch/riscv/kvm/aia_device.c
+> @@ -237,10 +237,11 @@ static gpa_t aia_imsic_ppn(struct kvm_aia *aia, gpa_t addr)
+>
+>  static u32 aia_imsic_hart_index(struct kvm_aia *aia, gpa_t addr)
+>  {
+> -       u32 hart, group = 0;
+> +       u32 hart = 0, group = 0;
+>
+> -       hart = (addr >> (aia->nr_guest_bits + IMSIC_MMIO_PAGE_SHIFT)) &
+> -               GENMASK_ULL(aia->nr_hart_bits - 1, 0);
+> +       if (aia->nr_hart_bits)
+> +               hart = (addr >> (aia->nr_guest_bits + IMSIC_MMIO_PAGE_SHIFT)) &
+> +                      GENMASK_ULL(aia->nr_hart_bits - 1, 0);
+>         if (aia->nr_group_bits)
+>                 group = (addr >> aia->nr_group_shift) &
+>                         GENMASK_ULL(aia->nr_group_bits - 1, 0);
+> --
+> 2.17.1
+>
 
