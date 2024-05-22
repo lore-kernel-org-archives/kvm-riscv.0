@@ -1,52 +1,47 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Wed, 22 May 2024 11:00:12 +0200
-Subject: [PATCH 1/1] RISC-V: KVM: No need to use mask when hart-index-bit
- is 0
-In-Reply-To: <20240415064905.25184-1-yongxuan.wang@sifive.com>
-References: <20240415064905.25184-1-yongxuan.wang@sifive.com>
-Message-ID: <20240522-74009df58fb51008bae6cbaf@orel>
+From: Oliver Upton <oliver.upton@linux.dev>
+Date: Wed, 22 May 2024 08:16:07 -0700
+Subject: [PATCH v2 1/6] KVM: Add a flag to track if a loaded vCPU is
+ scheduled out
+In-Reply-To: <20240522014013.1672962-2-seanjc@google.com>
+References: <20240522014013.1672962-1-seanjc@google.com>
+ <20240522014013.1672962-2-seanjc@google.com>
+Message-ID: <Zk4MN49212SaW1_z@linux.dev>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Apr 15, 2024 at 02:49:04PM GMT, Yong-Xuan Wang wrote:
-> When the maximum hart number within groups is 1, hart-index-bit is set to
-> 0. Consequently, there is no need to restore the hart ID from IMSIC
-> addresses and hart-index-bit settings. Currently, QEMU and kvmtool do not
-> pass correct hart-index-bit values when the maximum hart number is a
-> power of 2, thereby avoiding this issue. Corresponding patches for QEMU
-> and kvmtool will also be dispatched.
+On Tue, May 21, 2024 at 06:40:08PM -0700, Sean Christopherson wrote:
+> Add a kvm_vcpu.scheduled_out flag to track if a vCPU is in the process of
+> being scheduled out (vCPU put path), or if the vCPU is being reloaded
+> after being scheduled out (vCPU load path).  In the short term, this will
+> allow dropping kvm_arch_sched_in(), as arch code can query scheduled_out
+> during kvm_arch_vcpu_load().
 > 
-> Fixes: 89d01306e34d ("RISC-V: KVM: Implement device interface for AIA irqchip")
-> Signed-off-by: Yong-Xuan Wang <yongxuan.wang@sifive.com>
-> ---
->  arch/riscv/kvm/aia_device.c | 7 ++++---
->  1 file changed, 4 insertions(+), 3 deletions(-)
+> Longer term, scheduled_out opens up other potential optimizations, without
+> creating subtle/brittle dependencies.  E.g. it allows KVM to keep guest
+> state (that is managed via kvm_arch_vcpu_{load,put}()) loaded across
+> kvm_sched_{out,in}(), if KVM knows the state isn't accessed by the host
+> kernel.  Forcing arch code to coordinate between kvm_arch_sched_{in,out}()
+> and kvm_arch_vcpu_{load,put}() is awkward, not reusable, and relies on the
+> exact ordering of calls into arch code.
 > 
-> diff --git a/arch/riscv/kvm/aia_device.c b/arch/riscv/kvm/aia_device.c
-> index 0eb689351b7d..5cd407c6a8e4 100644
-> --- a/arch/riscv/kvm/aia_device.c
-> +++ b/arch/riscv/kvm/aia_device.c
-> @@ -237,10 +237,11 @@ static gpa_t aia_imsic_ppn(struct kvm_aia *aia, gpa_t addr)
->  
->  static u32 aia_imsic_hart_index(struct kvm_aia *aia, gpa_t addr)
->  {
-> -	u32 hart, group = 0;
-> +	u32 hart = 0, group = 0;
->  
-> -	hart = (addr >> (aia->nr_guest_bits + IMSIC_MMIO_PAGE_SHIFT)) &
-> -		GENMASK_ULL(aia->nr_hart_bits - 1, 0);
-> +	if (aia->nr_hart_bits)
-> +		hart = (addr >> (aia->nr_guest_bits + IMSIC_MMIO_PAGE_SHIFT)) &
-> +		       GENMASK_ULL(aia->nr_hart_bits - 1, 0);
->  	if (aia->nr_group_bits)
->  		group = (addr >> aia->nr_group_shift) &
->  			GENMASK_ULL(aia->nr_group_bits - 1, 0);
-> -- 
-> 2.17.1
->
+> Adding scheduled_out also obviates the need for a kvm_arch_sched_out()
+> hook, e.g. if arch code needs to do something novel when putting vCPU
+> state.
+> 
+> And even if KVM never uses scheduled_out for anything beyond dropping
+> kvm_arch_sched_in(), just being able to remove all of the arch stubs makes
+> it worth adding the flag.
+> 
+> Link: https://lore.kernel.org/all/20240430224431.490139-1-seanjc at google.com
+> Cc: Oliver Upton <oliver.upton@linux.dev>
+> Signed-off-by: Sean Christopherson <seanjc@google.com>
 
-Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+Reviewed-by: Oliver Upton <oliver.upton@linux.dev>
+
+-- 
+Thanks,
+Oliver
 
