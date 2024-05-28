@@ -1,65 +1,109 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Mon, 27 May 2024 18:29:45 +0200
-Subject: [RFC PATCH v4 5/5] KVM: riscv: selftests: Add Svadu Extension to
- get-reg-list testt
-In-Reply-To: <20240524103307.2684-6-yongxuan.wang@sifive.com>
+From: Clément Léger <cleger@rivosinc.com>
+Date: Tue, 28 May 2024 12:15:09 +0200
+Subject: [RFC PATCH v4 4/5] RISC-V: KVM: add support for
+ SBI_FWFT_PTE_AD_HW_UPDATING
+In-Reply-To: <20240524103307.2684-5-yongxuan.wang@sifive.com>
 References: <20240524103307.2684-1-yongxuan.wang@sifive.com>
- <20240524103307.2684-6-yongxuan.wang@sifive.com>
-Message-ID: <20240527-e9845c06619bca5cd285098c@orel>
+ <20240524103307.2684-5-yongxuan.wang@sifive.com>
+Message-ID: <40da6797-faab-41f3-b4bd-766e6a117468@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, May 24, 2024 at 06:33:05PM GMT, Yong-Xuan Wang wrote:
-> Update the get-reg-list test to test the Svadu Extension is available for
-> guest OS.
+
+
+On 24/05/2024 12:33, Yong-Xuan Wang wrote:
+> Add support for SBI_FWFT_PTE_AD_HW_UPDATING to set the PTE A/D bits
+> updating behavior for Guest/VM.
 > 
 > Signed-off-by: Yong-Xuan Wang <yongxuan.wang@sifive.com>
 > ---
->  tools/testing/selftests/kvm/riscv/get-reg-list.c | 4 ++++
->  1 file changed, 4 insertions(+)
+>  arch/riscv/include/asm/kvm_vcpu_sbi_fwft.h |  2 +-
+>  arch/riscv/kvm/vcpu_sbi_fwft.c             | 38 +++++++++++++++++++++-
+>  2 files changed, 38 insertions(+), 2 deletions(-)
 > 
-> diff --git a/tools/testing/selftests/kvm/riscv/get-reg-list.c b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-> index b882b7b9b785..3e71b7e40dbf 100644
-> --- a/tools/testing/selftests/kvm/riscv/get-reg-list.c
-> +++ b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-> @@ -44,6 +44,7 @@ bool filter_reg(__u64 reg)
->  	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SMSTATEEN:
->  	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SSAIA:
->  	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SSTC:
-> +	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SVADU:
->  	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SVINVAL:
->  	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SVNAPOT:
->  	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SVPBMT:
-> @@ -409,6 +410,7 @@ static const char *isa_ext_single_id_to_str(__u64 reg_off)
->  		KVM_ISA_EXT_ARR(SMSTATEEN),
->  		KVM_ISA_EXT_ARR(SSAIA),
->  		KVM_ISA_EXT_ARR(SSTC),
-> +		KVM_ISA_EXT_ARR(SVADU),
->  		KVM_ISA_EXT_ARR(SVINVAL),
->  		KVM_ISA_EXT_ARR(SVNAPOT),
->  		KVM_ISA_EXT_ARR(SVPBMT),
-> @@ -932,6 +934,7 @@ KVM_ISA_EXT_SUBLIST_CONFIG(fp_d, FP_D);
->  KVM_ISA_EXT_SIMPLE_CONFIG(h, H);
->  KVM_ISA_EXT_SUBLIST_CONFIG(smstateen, SMSTATEEN);
->  KVM_ISA_EXT_SIMPLE_CONFIG(sstc, SSTC);
-> +KVM_ISA_EXT_SIMPLE_CONFIG(svadu, SVADU);
->  KVM_ISA_EXT_SIMPLE_CONFIG(svinval, SVINVAL);
->  KVM_ISA_EXT_SIMPLE_CONFIG(svnapot, SVNAPOT);
->  KVM_ISA_EXT_SIMPLE_CONFIG(svpbmt, SVPBMT);
-> @@ -987,6 +990,7 @@ struct vcpu_reg_list *vcpu_configs[] = {
->  	&config_h,
->  	&config_smstateen,
->  	&config_sstc,
-> +	&config_svadu,
->  	&config_svinval,
->  	&config_svnapot,
->  	&config_svpbmt,
-> -- 
-> 2.17.1
->
+> diff --git a/arch/riscv/include/asm/kvm_vcpu_sbi_fwft.h b/arch/riscv/include/asm/kvm_vcpu_sbi_fwft.h
+> index 7b7bcc5c8fee..3614a44e0a4a 100644
+> --- a/arch/riscv/include/asm/kvm_vcpu_sbi_fwft.h
+> +++ b/arch/riscv/include/asm/kvm_vcpu_sbi_fwft.h
+> @@ -11,7 +11,7 @@
+>  
+>  #include <asm/sbi.h>
+>  
+> -#define KVM_SBI_FWFT_FEATURE_COUNT	1
+> +#define KVM_SBI_FWFT_FEATURE_COUNT	2
+>  
+>  struct kvm_sbi_fwft_config;
+>  struct kvm_vcpu;
+> diff --git a/arch/riscv/kvm/vcpu_sbi_fwft.c b/arch/riscv/kvm/vcpu_sbi_fwft.c
+> index 89ec263c250d..14ef74023340 100644
+> --- a/arch/riscv/kvm/vcpu_sbi_fwft.c
+> +++ b/arch/riscv/kvm/vcpu_sbi_fwft.c
+> @@ -71,6 +71,36 @@ static int kvm_sbi_fwft_get_misaligned_delegation(struct kvm_vcpu *vcpu,
+>  	return SBI_SUCCESS;
+>  }
+>  
+> +static int kvm_sbi_fwft_adue_supported(struct kvm_vcpu *vcpu)
+> +{
+> +	if (!riscv_isa_extension_available(vcpu->arch.isa, SVADU))
+> +		return SBI_ERR_NOT_SUPPORTED;
+> +
+> +	return 0;
+> +}
+> +
+> +static int kvm_sbi_fwft_set_adue(struct kvm_vcpu *vcpu, struct kvm_sbi_fwft_config *conf,
+> +				 unsigned long value)
+> +{
+> +	if (value)
+> +		vcpu->arch.cfg.henvcfg |= ENVCFG_ADUE;
+> +	else
+> +		vcpu->arch.cfg.henvcfg &= ~ENVCFG_ADUE;
+> +
+> +	return SBI_SUCCESS;
+> +}
+> +
+> +static int kvm_sbi_fwft_get_adue(struct kvm_vcpu *vcpu, struct kvm_sbi_fwft_config *conf,
+> +				 unsigned long *value)
+> +{
+> +	if (!riscv_isa_extension_available(vcpu->arch.isa, SVADU))
+> +		return SBI_ERR_NOT_SUPPORTED;
+> +
+> +	*value = !!(vcpu->arch.cfg.henvcfg & ENVCFG_ADUE);
+> +
+> +	return SBI_SUCCESS;
+> +}
 
-Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+Hi Yong-Xuan,
+
+vcpu->arch.cfg.henvcfg seems to be used to update the HENVCFG CSR  only
+during vcpu_load()/vcpu_put(). So if this extension updates it there and
+stays in the execution loop (kvm_arch_vcpu_ioctl_run()) then, it seems
+like the HENVCFG CSR won't be updated immediately but on the next
+vcpu_load(). Is there something I'm missing ?
+
+Thanks,
+
+Cl?ment L?ger
+
+> +
+>  static struct kvm_sbi_fwft_config *
+>  kvm_sbi_fwft_get_config(struct kvm_vcpu *vcpu, enum sbi_fwft_feature_t feature)
+>  {
+> @@ -177,7 +207,13 @@ static const struct kvm_sbi_fwft_feature features[] = {
+>  		.supported = kvm_sbi_fwft_misaligned_delegation_supported,
+>  		.set = kvm_sbi_fwft_set_misaligned_delegation,
+>  		.get = kvm_sbi_fwft_get_misaligned_delegation,
+> -	}
+> +	},
+> +	{
+> +		.id = SBI_FWFT_PTE_AD_HW_UPDATING,
+> +		.supported = kvm_sbi_fwft_adue_supported,
+> +		.set = kvm_sbi_fwft_set_adue,
+> +		.get = kvm_sbi_fwft_get_adue,
+> +	},
+>  };
+>  
+>  static_assert(ARRAY_SIZE(features) == KVM_SBI_FWFT_FEATURE_COUNT);
 
