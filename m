@@ -1,144 +1,317 @@
 From: James Houghton <jthoughton@google.com>
-Date: Wed, 29 May 2024 18:05:03 +0000
-Subject: [PATCH v4 0/7] mm: multi-gen LRU: Walk secondary MMU page tables
- while aging
-Message-ID: <20240529180510.2295118-1-jthoughton@google.com>
+Date: Wed, 29 May 2024 18:05:07 +0000
+Subject: [PATCH v4 4/7] KVM: Move MMU lock acquisition for test/clear_young to architecture
+In-Reply-To: <20240529180510.2295118-1-jthoughton@google.com>
+References: <20240529180510.2295118-1-jthoughton@google.com>
+Message-ID: <20240529180510.2295118-5-jthoughton@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This patchset makes it possible for MGLRU to consult secondary MMUs
-while doing aging, not just during eviction. This allows for more
-accurate reclaim decisions, which is especially important for proactive
-reclaim.
+For implementation mmu_notifier_{test,clear}_young, the KVM memslot
+walker used to take the MMU lock for us. Now make the architectures
+take it themselves.
 
-This series makes the necessary MMU notifier changes to MGLRU and then
-includes optimizations on top of that. This series also now includes
-changes to access_tracking_perf_test to verify that aging works properly
-for pages that are mainly used by KVM.
+Don't relax locking for any architecture except powerpc e500; its
+implementations of kvm_age_gfn and kvm_test_age_gfn simply return false,
+so there is no need to grab the KVM MMU lock.
 
-access_tracking_perf_test also has a mode (-p) to check performance of
-MGLRU aging while the VM is faulting memory in. Here are some results:
+Signed-off-by: James Houghton <jthoughton@google.com>
+---
+ arch/arm64/kvm/mmu.c      | 30 ++++++++++++++++++++++--------
+ arch/loongarch/kvm/mmu.c  | 20 +++++++++++++++-----
+ arch/mips/kvm/mmu.c       | 21 ++++++++++++++++-----
+ arch/powerpc/kvm/book3s.c | 14 ++++++++++++--
+ arch/riscv/kvm/mmu.c      | 26 ++++++++++++++++++++------
+ arch/x86/kvm/mmu/mmu.c    |  8 ++++++++
+ virt/kvm/kvm_main.c       |  4 ++--
+ 7 files changed, 95 insertions(+), 28 deletions(-)
 
-  Testing MGLRU aging while vCPUs are faulting in memory on x86 with the
-  TDP MMU. THPs disabled.
-
-  The test results varied a decent amount from run to run. I did my best to
-  take representative averages, but nonetheless, the big picture is the
-  important part.
-
-  Main takeaways:
-  - With the optimizations, the workload is much less impacted
-    by the presence of aging.
-  - With the optimizations, MGLRU is able to do aging much more
-    quickly, especially at 8+ vCPUs on my machine.
-
-  ./access_tracking_perf_test -p -l -b 1G -v $N_VCPUS # 1G per vCPU
-
-  num_vcpus       vcpu wall time          aging avg pass time
-
-  1 (no aging)    0.878822016             n/a
-  1 (no opt)      0.938250568             0.008236007
-  1 (opt)         0.912270190             0.007314582
-
-  2 (no aging)    0.984959659             n/a
-  2 (no opt)      1.057880728             0.017989741
-  2 (opt)         1.037735641             0.013996319
-
-  4 (no aging)    1.264881581             n/a
-  4 (no opt)      1.318849182             0.056164918
-  4 (opt)         1.314653465             0.029311993
-
-  8 (no aging)    1.473883699             n/a
-  8 (no opt)      1.589441079             0.227419586s
-  8 (opt)         1.498439592             0.063857740s
-
-  16 (no aging)   2.048766096             n/a
-  16 (no opt)     2.399335597             1.247142841s
-  16 (opt)        2.000914001             0.121628689s
-
-  32 (no aging)   3.316256321             n/a
-  32 (no opt)     3.955417018             4.347290433
-  32 (opt)        3.355274507             0.250886289
-
-  64 (no aging)   6.498958516             n/a
-  64 (no opt)     7.127533884             9.815592054
-  64 (opt)        6.442582168             1.392907010
-
-  112 (no aging)  8.498029491             n/a
-  112 (no opt)    10.21372495             13.47381656
-  112 (opt)       8.896963554             2.292223850
-
-Previous versions of this series included logic in MGLRU and KVM to
-support batching the updates to secondary page tables. This version
-removes this logic, as it was complex and not necessary to enable
-proactive reclaim. This optimization, as well as the additional
-optimizations for arm64 and powerpc, can be done in a later series.
-
-Changes since v3[1]:
- - Vastly simplified the series (thanks David). Removed mmu notifier
-   batching logic entirely.
- - Cleaned up how locking is done for mmu_notifier_test/clear_young
-   (thanks David).
- - Look-around is now only done when there are no secondary MMUs
-   subscribed to MMU notifiers.
- - CONFIG_LRU_GEN_WALKS_SECONDARY_MMU has been added.
- - Fixed the lockless implementation of kvm_{test,}age_gfn for x86
-   (thanks David).
- - Added MGLRU functional and performance tests to
-   access_tracking_perf_test (thanks Axel).
- - In v3, an mm would be completely ignored (for aging) if there was a
-   secondary MMU but support for secondary MMU walking was missing. Now,
-   missing secondary MMU walking support simply skips the notifier
-   calls (except for eviction).
- - Added a sanity check for that range->lockless and range->on_lock are
-   never both provided for the memslot walk.
-
-For the changes from v2[2] to v3, see v3[1].
-
-This series applies cleanly to mm/mm-unstable and kvm/queue.
-
-[1]: https://lore.kernel.org/linux-mm/20240401232946.1837665-1-jthoughton at google.com/
-[2]: https://lore.kernel.org/kvmarm/20230526234435.662652-1-yuzhao at google.com/
-
-James Houghton (7):
-  mm/Kconfig: Add LRU_GEN_WALKS_SECONDARY_MMU
-  mm: multi-gen LRU: Have secondary MMUs participate in aging
-  KVM: Add lockless memslot walk to KVM
-  KVM: Move MMU lock acquisition for test/clear_young to architecture
-  KVM: x86: Relax locking for kvm_test_age_gfn and kvm_age_gfn
-  KVM: arm64: Relax locking for kvm_test_age_gfn and kvm_age_gfn
-  KVM: selftests: Add multi-gen LRU aging to access_tracking_perf_test
-
- Documentation/admin-guide/mm/multigen_lru.rst |   6 +-
- arch/arm64/kvm/hyp/pgtable.c                  |   9 +-
- arch/arm64/kvm/mmu.c                          |  30 +-
- arch/loongarch/kvm/mmu.c                      |  20 +-
- arch/mips/kvm/mmu.c                           |  21 +-
- arch/powerpc/kvm/book3s.c                     |  14 +-
- arch/riscv/kvm/mmu.c                          |  26 +-
- arch/x86/include/asm/kvm_host.h               |   1 +
- arch/x86/kvm/mmu/mmu.c                        |  10 +-
- arch/x86/kvm/mmu/tdp_iter.h                   |  27 +-
- arch/x86/kvm/mmu/tdp_mmu.c                    |  67 ++-
- include/linux/kvm_host.h                      |   1 +
- include/linux/mmzone.h                        |   6 +-
- mm/Kconfig                                    |   8 +
- mm/rmap.c                                     |   9 +-
- mm/vmscan.c                                   | 144 +++++--
- tools/testing/selftests/kvm/Makefile          |   1 +
- .../selftests/kvm/access_tracking_perf_test.c | 365 ++++++++++++++--
- .../selftests/kvm/include/lru_gen_util.h      |  55 +++
- .../testing/selftests/kvm/lib/lru_gen_util.c  | 391 ++++++++++++++++++
- virt/kvm/kvm_main.c                           |  38 +-
- 21 files changed, 1104 insertions(+), 145 deletions(-)
- create mode 100644 tools/testing/selftests/kvm/include/lru_gen_util.h
- create mode 100644 tools/testing/selftests/kvm/lib/lru_gen_util.c
-
-
-base-commit: e0cce98fe279b64f4a7d81b7f5c3a23d80b92fbc
+diff --git a/arch/arm64/kvm/mmu.c b/arch/arm64/kvm/mmu.c
+index 8bcab0cc3fe9..8337009dde77 100644
+--- a/arch/arm64/kvm/mmu.c
++++ b/arch/arm64/kvm/mmu.c
+@@ -1773,25 +1773,39 @@ bool kvm_unmap_gfn_range(struct kvm *kvm, struct kvm_gfn_range *range)
+ bool kvm_age_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
+ {
+ 	u64 size = (range->end - range->start) << PAGE_SHIFT;
++	bool young = false;
++
++	write_lock(&kvm->mmu_lock);
+ 
+ 	if (!kvm->arch.mmu.pgt)
+-		return false;
++		goto out;
+ 
+-	return kvm_pgtable_stage2_test_clear_young(kvm->arch.mmu.pgt,
+-						   range->start << PAGE_SHIFT,
+-						   size, true);
++	young = kvm_pgtable_stage2_test_clear_young(kvm->arch.mmu.pgt,
++						    range->start << PAGE_SHIFT,
++						    size, true);
++
++out:
++	write_unlock(&kvm->mmu_lock);
++	return young;
+ }
+ 
+ bool kvm_test_age_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
+ {
+ 	u64 size = (range->end - range->start) << PAGE_SHIFT;
++	bool young = false;
++
++	write_lock(&kvm->mmu_lock);
+ 
+ 	if (!kvm->arch.mmu.pgt)
+-		return false;
++		goto out;
+ 
+-	return kvm_pgtable_stage2_test_clear_young(kvm->arch.mmu.pgt,
+-						   range->start << PAGE_SHIFT,
+-						   size, false);
++	young = kvm_pgtable_stage2_test_clear_young(kvm->arch.mmu.pgt,
++						    range->start << PAGE_SHIFT,
++						    size, false);
++
++out:
++	write_unlock(&kvm->mmu_lock);
++	return young;
+ }
+ 
+ phys_addr_t kvm_mmu_get_httbr(void)
+diff --git a/arch/loongarch/kvm/mmu.c b/arch/loongarch/kvm/mmu.c
+index 98883aa23ab8..5eb262bcf6b0 100644
+--- a/arch/loongarch/kvm/mmu.c
++++ b/arch/loongarch/kvm/mmu.c
+@@ -497,24 +497,34 @@ bool kvm_unmap_gfn_range(struct kvm *kvm, struct kvm_gfn_range *range)
+ bool kvm_age_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
+ {
+ 	kvm_ptw_ctx ctx;
++	bool young;
++
++	spin_lock(&kvm->mmu_lock);
+ 
+ 	ctx.flag = 0;
+ 	ctx.ops = kvm_mkold_pte;
+ 	kvm_ptw_prepare(kvm, &ctx);
+ 
+-	return kvm_ptw_top(kvm->arch.pgd, range->start << PAGE_SHIFT,
++	young = kvm_ptw_top(kvm->arch.pgd, range->start << PAGE_SHIFT,
+ 				range->end << PAGE_SHIFT, &ctx);
++
++	spin_unlock(&kvm->mmu_lock);
++	return young;
+ }
+ 
+ bool kvm_test_age_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
+ {
+ 	gpa_t gpa = range->start << PAGE_SHIFT;
+-	kvm_pte_t *ptep = kvm_populate_gpa(kvm, NULL, gpa, 0);
++	kvm_pte_t *ptep;
++	bool young;
+ 
+-	if (ptep && kvm_pte_present(NULL, ptep) && kvm_pte_young(*ptep))
+-		return true;
++	spin_lock(&kvm->mmu_lock);
++	ptep = kvm_populate_gpa(kvm, NULL, gpa, 0);
+ 
+-	return false;
++	young = ptep && kvm_pte_present(NULL, ptep) && kvm_pte_young(*ptep);
++
++	spin_unlock(&kvm->mmu_lock);
++	return young;
+ }
+ 
+ /*
+diff --git a/arch/mips/kvm/mmu.c b/arch/mips/kvm/mmu.c
+index c17157e700c0..db3b7cf22db1 100644
+--- a/arch/mips/kvm/mmu.c
++++ b/arch/mips/kvm/mmu.c
+@@ -446,17 +446,28 @@ bool kvm_unmap_gfn_range(struct kvm *kvm, struct kvm_gfn_range *range)
+ 
+ bool kvm_age_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
+ {
+-	return kvm_mips_mkold_gpa_pt(kvm, range->start, range->end);
++	bool young;
++
++	spin_lock(&kvm->mmu_lock);
++	young = kvm_mips_mkold_gpa_pt(kvm, range->start, range->end);
++	spin_unlock(&kvm->mmu_lock);
++	return young;
+ }
+ 
+ bool kvm_test_age_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
+ {
+ 	gpa_t gpa = range->start << PAGE_SHIFT;
+-	pte_t *gpa_pte = kvm_mips_pte_for_gpa(kvm, NULL, gpa);
++	pte_t *gpa_pte;
++	bool young = false;
+ 
+-	if (!gpa_pte)
+-		return false;
+-	return pte_young(*gpa_pte);
++	spin_lock(&kvm->mmu_lock);
++	gpa_pte = kvm_mips_pte_for_gpa(kvm, NULL, gpa);
++
++	if (gpa_pte)
++		young = pte_young(*gpa_pte);
++
++	spin_unlock(&kvm->mmu_lock);
++	return young;
+ }
+ 
+ /**
+diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
+index ff6c38373957..f503ab9ac3a5 100644
+--- a/arch/powerpc/kvm/book3s.c
++++ b/arch/powerpc/kvm/book3s.c
+@@ -887,12 +887,22 @@ bool kvm_unmap_gfn_range(struct kvm *kvm, struct kvm_gfn_range *range)
+ 
+ bool kvm_age_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
+ {
+-	return kvm->arch.kvm_ops->age_gfn(kvm, range);
++	bool young;
++
++	spin_lock(&kvm->mmu_lock);
++	young = kvm->arch.kvm_ops->age_gfn(kvm, range);
++	spin_unlock(&kvm->mmu_lock);
++	return young;
+ }
+ 
+ bool kvm_test_age_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
+ {
+-	return kvm->arch.kvm_ops->test_age_gfn(kvm, range);
++	bool young;
++
++	spin_lock(&kvm->mmu_lock);
++	young = kvm->arch.kvm_ops->test_age_gfn(kvm, range);
++	spin_unlock(&kvm->mmu_lock);
++	return young;
+ }
+ 
+ int kvmppc_core_init_vm(struct kvm *kvm)
+diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
+index b63650f9b966..c78abe8041fb 100644
+--- a/arch/riscv/kvm/mmu.c
++++ b/arch/riscv/kvm/mmu.c
+@@ -555,17 +555,24 @@ bool kvm_age_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
+ 	pte_t *ptep;
+ 	u32 ptep_level = 0;
+ 	u64 size = (range->end - range->start) << PAGE_SHIFT;
++	bool young = false;
++
++	spin_lock(&kvm->mmu_lock);
+ 
+ 	if (!kvm->arch.pgd)
+-		return false;
++		goto out;
+ 
+ 	WARN_ON(size != PAGE_SIZE && size != PMD_SIZE && size != PUD_SIZE);
+ 
+ 	if (!gstage_get_leaf_entry(kvm, range->start << PAGE_SHIFT,
+ 				   &ptep, &ptep_level))
+-		return false;
++		goto out;
++
++	young = ptep_test_and_clear_young(NULL, 0, ptep);
+ 
+-	return ptep_test_and_clear_young(NULL, 0, ptep);
++out:
++	spin_unlock(&kvm->mmu_lock);
++	return young;
+ }
+ 
+ bool kvm_test_age_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
+@@ -573,17 +580,24 @@ bool kvm_test_age_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
+ 	pte_t *ptep;
+ 	u32 ptep_level = 0;
+ 	u64 size = (range->end - range->start) << PAGE_SHIFT;
++	bool young = false;
++
++	spin_lock(&kvm->mmu_lock);
+ 
+ 	if (!kvm->arch.pgd)
+-		return false;
++		goto out;
+ 
+ 	WARN_ON(size != PAGE_SIZE && size != PMD_SIZE && size != PUD_SIZE);
+ 
+ 	if (!gstage_get_leaf_entry(kvm, range->start << PAGE_SHIFT,
+ 				   &ptep, &ptep_level))
+-		return false;
++		goto out;
++
++	young = pte_young(ptep_get(ptep));
+ 
+-	return pte_young(ptep_get(ptep));
++out:
++	spin_unlock(&kvm->mmu_lock);
++	return young;
+ }
+ 
+ int kvm_riscv_gstage_map(struct kvm_vcpu *vcpu,
+diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
+index 662f62dfb2aa..6a2a557c2c31 100644
+--- a/arch/x86/kvm/mmu/mmu.c
++++ b/arch/x86/kvm/mmu/mmu.c
+@@ -1630,12 +1630,16 @@ bool kvm_age_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
+ {
+ 	bool young = false;
+ 
++	write_lock(&kvm->mmu_lock);
++
+ 	if (kvm_memslots_have_rmaps(kvm))
+ 		young = kvm_handle_gfn_range(kvm, range, kvm_age_rmap);
+ 
+ 	if (tdp_mmu_enabled)
+ 		young |= kvm_tdp_mmu_age_gfn_range(kvm, range);
+ 
++	write_unlock(&kvm->mmu_lock);
++
+ 	return young;
+ }
+ 
+@@ -1643,12 +1647,16 @@ bool kvm_test_age_gfn(struct kvm *kvm, struct kvm_gfn_range *range)
+ {
+ 	bool young = false;
+ 
++	write_lock(&kvm->mmu_lock);
++
+ 	if (kvm_memslots_have_rmaps(kvm))
+ 		young = kvm_handle_gfn_range(kvm, range, kvm_test_age_rmap);
+ 
+ 	if (tdp_mmu_enabled)
+ 		young |= kvm_tdp_mmu_test_age_gfn(kvm, range);
+ 
++	write_unlock(&kvm->mmu_lock);
++
+ 	return young;
+ }
+ 
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index d197b6725cb3..8d2d3acf18d8 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -901,7 +901,7 @@ static int kvm_mmu_notifier_clear_young(struct mmu_notifier *mn,
+ 	 * more sophisticated heuristic later.
+ 	 */
+ 	return kvm_handle_hva_range_no_flush(mn, start, end,
+-					     kvm_age_gfn, false);
++					     kvm_age_gfn, true);
+ }
+ 
+ static int kvm_mmu_notifier_test_young(struct mmu_notifier *mn,
+@@ -911,7 +911,7 @@ static int kvm_mmu_notifier_test_young(struct mmu_notifier *mn,
+ 	trace_kvm_test_age_hva(address);
+ 
+ 	return kvm_handle_hva_range_no_flush(mn, address, address + 1,
+-					     kvm_test_age_gfn, false);
++					     kvm_test_age_gfn, true);
+ }
+ 
+ static void kvm_mmu_notifier_release(struct mmu_notifier *mn,
 -- 
 2.45.1.288.g0e0cd299f1-goog
 
