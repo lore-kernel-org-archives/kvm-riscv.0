@@ -1,64 +1,75 @@
-From: Yong-Xuan Wang <yongxuan.wang@sifive.com>
-Date: Wed, 29 May 2024 17:33:45 +0800
-Subject: [RFC PATCH v4 2/5] dt-bindings: riscv: Add Svadu Entry
-In-Reply-To: <20240527-widely-goatskin-bb5575541aed@spud>
-References: <20240524103307.2684-1-yongxuan.wang@sifive.com>
- <20240524103307.2684-3-yongxuan.wang@sifive.com> <20240527-widely-goatskin-bb5575541aed@spud>
-Message-ID: <CAMWQL2jHLVtGA3RzPG-Qp5k8qhzDttNQjkSp5X2EMYCyFWKwLA@mail.gmail.com>
+From: Huang, Kai <kai.huang@intel.com>
+Date: Wed, 29 May 2024 10:50:57 +0000
+Subject: [PATCH v2 3/6] KVM: x86: Fold kvm_arch_sched_in() into
+ kvm_arch_vcpu_load()
+In-Reply-To: <ZlYte16cvQpPGHkx@google.com>
+References: <20240522014013.1672962-1-seanjc@google.com>
+	 <20240522014013.1672962-4-seanjc@google.com>
+	 <c77f3931-31b2-4695-bd74-c69cba9b96c1@intel.com>
+	 <ZlYte16cvQpPGHkx@google.com>
+Message-ID: <2a221116a03f57dca8274b6bc2da7541b21d86bb.camel@intel.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Conor,
+On Tue, 2024-05-28 at 12:16 -0700, Sean Christopherson wrote:
+> On Fri, May 24, 2024, Kai Huang wrote:
+> > > @@ -1548,6 +1548,9 @@ static void svm_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
+> > >   	struct vcpu_svm *svm = to_svm(vcpu);
+> > >   	struct svm_cpu_data *sd = per_cpu_ptr(&svm_data, cpu);
+> > > +	if (vcpu->scheduled_out && !kvm_pause_in_guest(vcpu->kvm))
+> > > +		shrink_ple_window(vcpu);
+> > > +
+> > 
+> > [...]
+> > 
+> > > @@ -1517,6 +1517,9 @@ void vmx_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
+> > >   {
+> > >   	struct vcpu_vmx *vmx = to_vmx(vcpu);
+> > > +	if (vcpu->scheduled_out && !kvm_pause_in_guest(vcpu->kvm))
+> > > +		shrink_ple_window(vcpu);
+> > > +
+> > 
+> > Nit:  Perhaps we need a kvm_x86_ops::shrink_ple_window()?  :-)
+> 
+> Heh, that duplicate code annoys me too.  The problem is the "old" window value
+> comes from the VMCS/VMCB, so either we'd end up with multiple kvm_x86_ops, or
+> we'd only be able to consolidate the scheduled_out + kvm_pause_in_guest() code,
+> which isn't all that interesting.
 
-On Mon, May 27, 2024 at 11:09?PM Conor Dooley <conor@kernel.org> wrote:
->
-> On Fri, May 24, 2024 at 06:33:02PM +0800, Yong-Xuan Wang wrote:
-> > Add an entry for the Svadu extension to the riscv,isa-extensions property.
-> >
-> > Signed-off-by: Yong-Xuan Wang <yongxuan.wang@sifive.com>
-> > Acked-by: Conor Dooley <conor.dooley@microchip.com>
-> > Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
->
-> I'm going to un-ack this, not because you did something wrong per se,
-> but because there's some discussion on the OpenSBI list about what is
-> and what is not backwards compatible and how an OS should interpret
-> svade and svadu:
-> https://lists.infradead.org/pipermail/opensbi/2024-May/006949.html
->
-> Thanks,
-> Conor.
->
+Agreed only consolidating scheduled_out + kvm_pause_in_guest() isn't quite
+interesting.
 
-ok. I will remove it in the next version.
+> 
+> Aha!  Actually, VMX already open codes the functionality provided by VCPU_EXREG_*,
+> e.g. has vmx->ple_window_dirty.  If we add VCPU_EXREG_PLE_WINDOW, then the info
+> get be made available to common x86 code without having to add new hooks.  And
+> that would also allow moving the guts of handle_pause()/pause_interception() to
+> common code, i.e. will also allow deduplicating the "grow" side of things.
 
-Regards,
-Yong-Xuan
+Sounds feasible.  I am not sure whether we should use
+VCPU_EXREG_PLE_WINDOW, though.  We can just have "ple_window" +
+"ple_window_dirty" concept in the vcpu:
 
-> > ---
-> >  Documentation/devicetree/bindings/riscv/extensions.yaml | 6 ++++++
-> >  1 file changed, 6 insertions(+)
-> >
-> > diff --git a/Documentation/devicetree/bindings/riscv/extensions.yaml b/Documentation/devicetree/bindings/riscv/extensions.yaml
-> > index 468c646247aa..598a5841920f 100644
-> > --- a/Documentation/devicetree/bindings/riscv/extensions.yaml
-> > +++ b/Documentation/devicetree/bindings/riscv/extensions.yaml
-> > @@ -153,6 +153,12 @@ properties:
-> >              ratified at commit 3f9ed34 ("Add ability to manually trigger
-> >              workflow. (#2)") of riscv-time-compare.
-> >
-> > +        - const: svadu
-> > +          description: |
-> > +            The standard Svadu supervisor-level extension for hardware updating
-> > +            of PTE A/D bits as ratified at commit c1abccf ("Merge pull request
-> > +            #25 from ved-rivos/ratified") of riscv-svadu.
-> > +
-> >          - const: svinval
-> >            description:
-> >              The standard Svinval supervisor-level extension for fine-grained
-> > --
-> > 2.17.1
-> >
+	vcpu->ple_window;
+	vcpu->ple_window_dirty;
+
+I.e., kinda make current VMX's version of {grow|shrink}_ple_window() as
+common code. 
+
+I am not familiar with SVM, but it seems the relevant parts are:
+
+	control->pause_filter_count;
+	vmcb_mark_dirty(svm->vmcb, VMCB_INTERCEPTS);
+
+And it seems they are directly related to programming the hardware, i.e.,
+they got automatically loaded to hardware during VMRUN.
+
+They need to be updated in the SVM specific code when @ple_window_dirty is
+true in the relevant code path.
+
+Anyway, even it is feasible and worth to do, we should do in a separate
+patchset.
 
