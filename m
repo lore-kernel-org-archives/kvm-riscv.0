@@ -1,54 +1,68 @@
-From: Yu Zhao <yuzhao@google.com>
-Date: Wed, 29 May 2024 15:03:21 -0600
-Subject: [PATCH v4 2/7] mm: multi-gen LRU: Have secondary MMUs participate
- in aging
-In-Reply-To: <20240529180510.2295118-3-jthoughton@google.com>
-References: <20240529180510.2295118-1-jthoughton@google.com> <20240529180510.2295118-3-jthoughton@google.com>
-Message-ID: <CAOUHufYFHKLwt1PWp2uS6g174GZYRZURWJAmdUWs5eaKmhEeyQ@mail.gmail.com>
+From: Sean Christopherson <seanjc@google.com>
+Date: Wed, 29 May 2024 14:51:24 -0700
+Subject: [PATCH v4 3/7] KVM: Add lockless memslot walk to KVM
+In-Reply-To: <20240529180510.2295118-4-jthoughton@google.com>
+References: <20240529180510.2295118-1-jthoughton@google.com> <20240529180510.2295118-4-jthoughton@google.com>
+Message-ID: <ZlejXCYIuJ7_DlwL@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, May 29, 2024 at 12:05?PM James Houghton <jthoughton@google.com> wrote:
->
-> Secondary MMUs are currently consulted for access/age information at
-> eviction time, but before then, we don't get accurate age information.
-> That is, pages that are mostly accessed through a secondary MMU (like
-> guest memory, used by KVM) will always just proceed down to the oldest
-> generation, and then at eviction time, if KVM reports the page to be
-> young, the page will be activated/promoted back to the youngest
-> generation.
+On Wed, May 29, 2024, James Houghton wrote:
+> @@ -686,10 +694,12 @@ static __always_inline int kvm_handle_hva_range(struct mmu_notifier *mn,
+>  	return __kvm_handle_hva_range(kvm, &range).ret;
+>  }
+>  
+> -static __always_inline int kvm_handle_hva_range_no_flush(struct mmu_notifier *mn,
+> -							 unsigned long start,
+> -							 unsigned long end,
+> -							 gfn_handler_t handler)
+> +static __always_inline int kvm_handle_hva_range_no_flush(
+> +		struct mmu_notifier *mn,
+> +		unsigned long start,
+> +		unsigned long end,
+> +		gfn_handler_t handler,
+> +		bool lockless)
 
-Correct, and as I explained offline, this is the only reasonable
-behavior if we can't locklessly walk secondary MMUs.
+Unnecessary and unwanted style change.
 
-Just for the record, the (crude) analogy I used was:
-Imagine a large room with many bills ($1, $5, $10, ...) on the floor,
-but you are only allowed to pick up 10 of them (and put them in your
-pocket). A smart move would be to survey the room *first and then*
-pick up the largest ones. But if you are carrying a 500 lbs backpack,
-you would just want to pick up whichever that's in front of you rather
-than walk the entire room.
+>  {
+>  	struct kvm *kvm = mmu_notifier_to_kvm(mn);
+>  	const struct kvm_mmu_notifier_range range = {
+> @@ -699,6 +709,7 @@ static __always_inline int kvm_handle_hva_range_no_flush(struct mmu_notifier *mn
+>  		.on_lock	= (void *)kvm_null_fn,
+>  		.flush_on_ret	= false,
+>  		.may_block	= false,
+> +		.lockless	= lockless,
 
-MGLRU should only scan (or lookaround) secondary MMUs if it can be
-done lockless. Otherwise, it should just fall back to the existing
-approach, which existed in previous versions but is removed in this
-version.
+Why add @lockess to kvm_handle_hva_range_no_flush()?  Both callers immediately
+pass %false, and conceptually, locking is always optional for a "no flush" variant.
 
-> Do not do look around if there is a secondary MMU we have to interact
-> with.
->
-> The added feature bit (0x8), if disabled, will make MGLRU behave as if
-> there are no secondary MMUs subscribed to MMU notifiers except at
-> eviction time.
->
-> Suggested-by: Yu Zhao <yuzhao@google.com>
-> Signed-off-by: James Houghton <jthoughton@google.com>
-
-This is not what I suggested, and it would have been done in the first
-place if it hadn't regressed the non-lockless case.
-
-NAK.
+>  	};
+>  
+>  	return __kvm_handle_hva_range(kvm, &range).ret;
+> @@ -889,7 +900,8 @@ static int kvm_mmu_notifier_clear_young(struct mmu_notifier *mn,
+>  	 * cadence. If we find this inaccurate, we might come up with a
+>  	 * more sophisticated heuristic later.
+>  	 */
+> -	return kvm_handle_hva_range_no_flush(mn, start, end, kvm_age_gfn);
+> +	return kvm_handle_hva_range_no_flush(mn, start, end,
+> +					     kvm_age_gfn, false);
+>  }
+>  
+>  static int kvm_mmu_notifier_test_young(struct mmu_notifier *mn,
+> @@ -899,7 +911,7 @@ static int kvm_mmu_notifier_test_young(struct mmu_notifier *mn,
+>  	trace_kvm_test_age_hva(address);
+>  
+>  	return kvm_handle_hva_range_no_flush(mn, address, address + 1,
+> -					     kvm_test_age_gfn);
+> +					     kvm_test_age_gfn, false);
+>  }
+>  
+>  static void kvm_mmu_notifier_release(struct mmu_notifier *mn,
+> -- 
+> 2.45.1.288.g0e0cd299f1-goog
+> 
 
