@@ -1,124 +1,64 @@
 From: Charlie Jenkins <charlie@rivosinc.com>
-Date: Wed, 29 May 2024 15:13:10 -0700
-Subject: [PATCH v5 06/16] dt-bindings: riscv: add Zca, Zcf, Zcd and Zcb
- ISA extension description
-In-Reply-To: <20240517145302.971019-7-cleger@rivosinc.com>
+Date: Wed, 29 May 2024 15:16:53 -0700
+Subject: [PATCH v5 04/16] RISC-V: KVM: Allow Zimop extension for Guest/VM
+In-Reply-To: <20240517145302.971019-5-cleger@rivosinc.com>
 References: <20240517145302.971019-1-cleger@rivosinc.com>
- <20240517145302.971019-7-cleger@rivosinc.com>
-Message-ID: <ZleodmaYG7qsvNmu@ghost>
+ <20240517145302.971019-5-cleger@rivosinc.com>
+Message-ID: <ZlepVSNhhLzpM32y@ghost>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, May 17, 2024 at 04:52:46PM +0200, Cl?ment L?ger wrote:
-> Add description for Zca, Zcf, Zcd and Zcb extensions which are part the
-> Zc* standard extensions for code size reduction. Additional validation
-> rules are added since Zcb depends on Zca, Zcf, depends on Zca and F, Zcd
-> depends on Zca and D and finally, Zcf can not be present on rv64.
+On Fri, May 17, 2024 at 04:52:44PM +0200, Cl?ment L?ger wrote:
+> Extend the KVM ISA extension ONE_REG interface to allow KVM user space
+> to detect and enable Zimop extension for Guest/VM.
 > 
 > Signed-off-by: Cl?ment L?ger <cleger@rivosinc.com>
-> Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
 > ---
->  .../devicetree/bindings/riscv/extensions.yaml | 78 +++++++++++++++++++
->  1 file changed, 78 insertions(+)
+>  arch/riscv/include/uapi/asm/kvm.h | 1 +
+>  arch/riscv/kvm/vcpu_onereg.c      | 2 ++
+>  2 files changed, 3 insertions(+)
 > 
-> diff --git a/Documentation/devicetree/bindings/riscv/extensions.yaml b/Documentation/devicetree/bindings/riscv/extensions.yaml
-> index b9100addeb90..39084c58d4e4 100644
-> --- a/Documentation/devicetree/bindings/riscv/extensions.yaml
-> +++ b/Documentation/devicetree/bindings/riscv/extensions.yaml
-> @@ -220,6 +220,38 @@ properties:
->              instructions as ratified at commit 6d33919 ("Merge pull request #158
->              from hirooih/clmul-fix-loop-end-condition") of riscv-bitmanip.
+> diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
+> index b1c503c2959c..35a12aa1953e 100644
+> --- a/arch/riscv/include/uapi/asm/kvm.h
+> +++ b/arch/riscv/include/uapi/asm/kvm.h
+> @@ -167,6 +167,7 @@ enum KVM_RISCV_ISA_EXT_ID {
+>  	KVM_RISCV_ISA_EXT_ZFA,
+>  	KVM_RISCV_ISA_EXT_ZTSO,
+>  	KVM_RISCV_ISA_EXT_ZACAS,
+
+KVM_RISCV_ISA_EXT_SSCOFPMF got added here in 6.10-rc1 so there is a
+conflict now unfortunately. Easy to fix at least!
+
+- Charlie
+
+> +	KVM_RISCV_ISA_EXT_ZIMOP,
+>  	KVM_RISCV_ISA_EXT_MAX,
+>  };
 >  
-> +        - const: zca
-> +          description: |
-> +            The Zca extension part of Zc* standard extensions for code size
-> +            reduction, as ratified in commit 8be3419c1c0 ("Zcf doesn't exist on
-> +            RV64 as it contains no instructions") of riscv-code-size-reduction,
-> +            merged in the riscv-isa-manual by commit dbc79cf28a2 ("Initial seed
-> +            of zc.adoc to src tree.").
-> +
-> +        - const: zcb
-> +          description: |
-> +            The Zcb extension part of Zc* standard extensions for code size
-> +            reduction, as ratified in commit 8be3419c1c0 ("Zcf doesn't exist on
-> +            RV64 as it contains no instructions") of riscv-code-size-reduction,
-> +            merged in the riscv-isa-manual by commit dbc79cf28a2 ("Initial seed
-> +            of zc.adoc to src tree.").
-> +
-> +        - const: zcd
-> +          description: |
-> +            The Zcd extension part of Zc* standard extensions for code size
-> +            reduction, as ratified in commit 8be3419c1c0 ("Zcf doesn't exist on
-> +            RV64 as it contains no instructions") of riscv-code-size-reduction,
-> +            merged in the riscv-isa-manual by commit dbc79cf28a2 ("Initial seed
-> +            of zc.adoc to src tree.").
-> +
-> +        - const: zcf
-> +          description: |
-> +            The Zcf extension part of Zc* standard extensions for code size
-> +            reduction, as ratified in commit 8be3419c1c0 ("Zcf doesn't exist on
-> +            RV64 as it contains no instructions") of riscv-code-size-reduction,
-> +            merged in the riscv-isa-manual by commit dbc79cf28a2 ("Initial seed
-> +            of zc.adoc to src tree.").
-> +
->          - const: zfa
->            description:
->              The standard Zfa extension for additional floating point
-> @@ -499,5 +531,51 @@ properties:
->              The T-HEAD specific 0.7.1 vector implementation as written in
->              https://github.com/T-head-Semi/thead-extension-spec/blob/95358cb2cca9489361c61d335e03d3134b14133f/xtheadvector.adoc.
->  
-> +    allOf:
-> +      # Zcb depends on Zca
-> +      - if:
-> +          contains:
-> +            const: zcb
-> +        then:
-> +          contains:
-> +            const: zca
-> +      # Zcd depends on Zca and D
-> +      - if:
-> +          contains:
-> +            const: zcd
-> +        then:
-> +          allOf:
-> +            - contains:
-> +                const: zca
-> +            - contains:
-> +                const: d
-> +      # Zcf depends on Zca and F
-> +      - if:
-> +          contains:
-> +            const: zcf
-> +        then:
-> +          allOf:
-> +            - contains:
-> +                const: zca
-> +            - contains:
-> +                const: f
-> +
-> +allOf:
-> +  # Zcf extension does not exist on rv64
-> +  - if:
-> +      properties:
-> +        riscv,isa-extensions:
-> +          contains:
-> +            const: zcf
-> +        riscv,isa-base:
-> +          contains:
-> +            const: rv64i
-> +    then:
-> +      properties:
-> +        riscv,isa-extensions:
-> +          not:
-> +            contains:
-> +              const: zcf
-> +
->  additionalProperties: true
->  ...
+> diff --git a/arch/riscv/kvm/vcpu_onereg.c b/arch/riscv/kvm/vcpu_onereg.c
+> index f4a6124d25c9..c6ee763422f2 100644
+> --- a/arch/riscv/kvm/vcpu_onereg.c
+> +++ b/arch/riscv/kvm/vcpu_onereg.c
+> @@ -60,6 +60,7 @@ static const unsigned long kvm_isa_ext_arr[] = {
+>  	KVM_ISA_EXT_ARR(ZIHINTNTL),
+>  	KVM_ISA_EXT_ARR(ZIHINTPAUSE),
+>  	KVM_ISA_EXT_ARR(ZIHPM),
+> +	KVM_ISA_EXT_ARR(ZIMOP),
+>  	KVM_ISA_EXT_ARR(ZKND),
+>  	KVM_ISA_EXT_ARR(ZKNE),
+>  	KVM_ISA_EXT_ARR(ZKNH),
+> @@ -137,6 +138,7 @@ static bool kvm_riscv_vcpu_isa_disable_allowed(unsigned long ext)
+>  	case KVM_RISCV_ISA_EXT_ZIHINTNTL:
+>  	case KVM_RISCV_ISA_EXT_ZIHINTPAUSE:
+>  	case KVM_RISCV_ISA_EXT_ZIHPM:
+> +	case KVM_RISCV_ISA_EXT_ZIMOP:
+>  	case KVM_RISCV_ISA_EXT_ZKND:
+>  	case KVM_RISCV_ISA_EXT_ZKNE:
+>  	case KVM_RISCV_ISA_EXT_ZKNH:
 > -- 
 > 2.43.0
 > 
@@ -127,6 +67,4 @@ On Fri, May 17, 2024 at 04:52:46PM +0200, Cl?ment L?ger wrote:
 > linux-riscv mailing list
 > linux-riscv at lists.infradead.org
 > http://lists.infradead.org/mailman/listinfo/linux-riscv
-Reviewed-by: Charlie Jenkins <charlie@rivosinc.com>
-
 
