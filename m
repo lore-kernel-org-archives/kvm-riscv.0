@@ -1,65 +1,124 @@
 From: Charlie Jenkins <charlie@rivosinc.com>
-Date: Wed, 29 May 2024 15:11:03 -0700
-Subject: [PATCH v5 03/16] riscv: hwprobe: export Zimop ISA extension
-In-Reply-To: <20240517145302.971019-4-cleger@rivosinc.com>
+Date: Wed, 29 May 2024 15:13:10 -0700
+Subject: [PATCH v5 06/16] dt-bindings: riscv: add Zca, Zcf, Zcd and Zcb
+ ISA extension description
+In-Reply-To: <20240517145302.971019-7-cleger@rivosinc.com>
 References: <20240517145302.971019-1-cleger@rivosinc.com>
- <20240517145302.971019-4-cleger@rivosinc.com>
-Message-ID: <Zlen931jkx9zGthc@ghost>
+ <20240517145302.971019-7-cleger@rivosinc.com>
+Message-ID: <ZleodmaYG7qsvNmu@ghost>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, May 17, 2024 at 04:52:43PM +0200, Cl?ment L?ger wrote:
-> Export Zimop ISA extension through hwprobe.
+On Fri, May 17, 2024 at 04:52:46PM +0200, Cl?ment L?ger wrote:
+> Add description for Zca, Zcf, Zcd and Zcb extensions which are part the
+> Zc* standard extensions for code size reduction. Additional validation
+> rules are added since Zcb depends on Zca, Zcf, depends on Zca and F, Zcd
+> depends on Zca and D and finally, Zcf can not be present on rv64.
 > 
 > Signed-off-by: Cl?ment L?ger <cleger@rivosinc.com>
+> Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
 > ---
->  Documentation/arch/riscv/hwprobe.rst  | 4 ++++
->  arch/riscv/include/uapi/asm/hwprobe.h | 1 +
->  arch/riscv/kernel/sys_hwprobe.c       | 1 +
->  3 files changed, 6 insertions(+)
+>  .../devicetree/bindings/riscv/extensions.yaml | 78 +++++++++++++++++++
+>  1 file changed, 78 insertions(+)
 > 
-> diff --git a/Documentation/arch/riscv/hwprobe.rst b/Documentation/arch/riscv/hwprobe.rst
-> index 204cd4433af5..48be38e0b788 100644
-> --- a/Documentation/arch/riscv/hwprobe.rst
-> +++ b/Documentation/arch/riscv/hwprobe.rst
-> @@ -192,6 +192,10 @@ The following keys are defined:
->         supported as defined in the RISC-V ISA manual starting from commit
->         d8ab5c78c207 ("Zihintpause is ratified").
+> diff --git a/Documentation/devicetree/bindings/riscv/extensions.yaml b/Documentation/devicetree/bindings/riscv/extensions.yaml
+> index b9100addeb90..39084c58d4e4 100644
+> --- a/Documentation/devicetree/bindings/riscv/extensions.yaml
+> +++ b/Documentation/devicetree/bindings/riscv/extensions.yaml
+> @@ -220,6 +220,38 @@ properties:
+>              instructions as ratified at commit 6d33919 ("Merge pull request #158
+>              from hirooih/clmul-fix-loop-end-condition") of riscv-bitmanip.
 >  
-> +  * :c:macro:`RISCV_HWPROBE_EXT_ZIMOP`: The Zimop May-Be-Operations extension is
-> +       supported as defined in the RISC-V ISA manual starting from commit
-> +       58220614a5f ("Zimop is ratified/1.0").
+> +        - const: zca
+> +          description: |
+> +            The Zca extension part of Zc* standard extensions for code size
+> +            reduction, as ratified in commit 8be3419c1c0 ("Zcf doesn't exist on
+> +            RV64 as it contains no instructions") of riscv-code-size-reduction,
+> +            merged in the riscv-isa-manual by commit dbc79cf28a2 ("Initial seed
+> +            of zc.adoc to src tree.").
 > +
->  * :c:macro:`RISCV_HWPROBE_KEY_CPUPERF_0`: A bitmask that contains performance
->    information about the selected set of processors.
+> +        - const: zcb
+> +          description: |
+> +            The Zcb extension part of Zc* standard extensions for code size
+> +            reduction, as ratified in commit 8be3419c1c0 ("Zcf doesn't exist on
+> +            RV64 as it contains no instructions") of riscv-code-size-reduction,
+> +            merged in the riscv-isa-manual by commit dbc79cf28a2 ("Initial seed
+> +            of zc.adoc to src tree.").
+> +
+> +        - const: zcd
+> +          description: |
+> +            The Zcd extension part of Zc* standard extensions for code size
+> +            reduction, as ratified in commit 8be3419c1c0 ("Zcf doesn't exist on
+> +            RV64 as it contains no instructions") of riscv-code-size-reduction,
+> +            merged in the riscv-isa-manual by commit dbc79cf28a2 ("Initial seed
+> +            of zc.adoc to src tree.").
+> +
+> +        - const: zcf
+> +          description: |
+> +            The Zcf extension part of Zc* standard extensions for code size
+> +            reduction, as ratified in commit 8be3419c1c0 ("Zcf doesn't exist on
+> +            RV64 as it contains no instructions") of riscv-code-size-reduction,
+> +            merged in the riscv-isa-manual by commit dbc79cf28a2 ("Initial seed
+> +            of zc.adoc to src tree.").
+> +
+>          - const: zfa
+>            description:
+>              The standard Zfa extension for additional floating point
+> @@ -499,5 +531,51 @@ properties:
+>              The T-HEAD specific 0.7.1 vector implementation as written in
+>              https://github.com/T-head-Semi/thead-extension-spec/blob/95358cb2cca9489361c61d335e03d3134b14133f/xtheadvector.adoc.
 >  
-> diff --git a/arch/riscv/include/uapi/asm/hwprobe.h b/arch/riscv/include/uapi/asm/hwprobe.h
-> index 31c570cbd1c5..3b16a12204b1 100644
-> --- a/arch/riscv/include/uapi/asm/hwprobe.h
-> +++ b/arch/riscv/include/uapi/asm/hwprobe.h
-> @@ -60,6 +60,7 @@ struct riscv_hwprobe {
->  #define		RISCV_HWPROBE_EXT_ZACAS		(1ULL << 34)
->  #define		RISCV_HWPROBE_EXT_ZICOND	(1ULL << 35)
->  #define		RISCV_HWPROBE_EXT_ZIHINTPAUSE	(1ULL << 36)
-> +#define		RISCV_HWPROBE_EXT_ZIMOP		(1ULL << 37)
->  #define RISCV_HWPROBE_KEY_CPUPERF_0	5
->  #define		RISCV_HWPROBE_MISALIGNED_UNKNOWN	(0 << 0)
->  #define		RISCV_HWPROBE_MISALIGNED_EMULATED	(1 << 0)
-> diff --git a/arch/riscv/kernel/sys_hwprobe.c b/arch/riscv/kernel/sys_hwprobe.c
-> index 969ef3d59dbe..fc6f4238f0b3 100644
-> --- a/arch/riscv/kernel/sys_hwprobe.c
-> +++ b/arch/riscv/kernel/sys_hwprobe.c
-> @@ -112,6 +112,7 @@ static void hwprobe_isa_ext0(struct riscv_hwprobe *pair,
->  		EXT_KEY(ZACAS);
->  		EXT_KEY(ZICOND);
->  		EXT_KEY(ZIHINTPAUSE);
-> +		EXT_KEY(ZIMOP);
->  
->  		if (has_vector()) {
->  			EXT_KEY(ZVBB);
+> +    allOf:
+> +      # Zcb depends on Zca
+> +      - if:
+> +          contains:
+> +            const: zcb
+> +        then:
+> +          contains:
+> +            const: zca
+> +      # Zcd depends on Zca and D
+> +      - if:
+> +          contains:
+> +            const: zcd
+> +        then:
+> +          allOf:
+> +            - contains:
+> +                const: zca
+> +            - contains:
+> +                const: d
+> +      # Zcf depends on Zca and F
+> +      - if:
+> +          contains:
+> +            const: zcf
+> +        then:
+> +          allOf:
+> +            - contains:
+> +                const: zca
+> +            - contains:
+> +                const: f
+> +
+> +allOf:
+> +  # Zcf extension does not exist on rv64
+> +  - if:
+> +      properties:
+> +        riscv,isa-extensions:
+> +          contains:
+> +            const: zcf
+> +        riscv,isa-base:
+> +          contains:
+> +            const: rv64i
+> +    then:
+> +      properties:
+> +        riscv,isa-extensions:
+> +          not:
+> +            contains:
+> +              const: zcf
+> +
+>  additionalProperties: true
+>  ...
 > -- 
 > 2.43.0
 > 
@@ -68,7 +127,6 @@ On Fri, May 17, 2024 at 04:52:43PM +0200, Cl?ment L?ger wrote:
 > linux-riscv mailing list
 > linux-riscv at lists.infradead.org
 > http://lists.infradead.org/mailman/listinfo/linux-riscv
-
 Reviewed-by: Charlie Jenkins <charlie@rivosinc.com>
 
 
