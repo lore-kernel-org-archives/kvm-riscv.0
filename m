@@ -1,59 +1,60 @@
-From: Charlie Jenkins <charlie@rivosinc.com>
-Date: Thu, 30 May 2024 08:48:13 -0700
-Subject: [PATCH v5 13/16] riscv: add ISA extension parsing for Zcmop
-In-Reply-To: <20240517145302.971019-14-cleger@rivosinc.com>
-References: <20240517145302.971019-1-cleger@rivosinc.com>
- <20240517145302.971019-14-cleger@rivosinc.com>
-Message-ID: <ZlifvXUiHeNnEJqq@ghost>
+From: Palmer Dabbelt <palmer@dabbelt.com>
+Date: Thu, 30 May 2024 14:13:10 -0700 (PDT)
+Subject: [PATCH v5 08/16] riscv: add ISA parsing for Zca, Zcf, Zcd and Zcb
+In-Reply-To: <de2c9064-bb01-42b2-9c0f-884dcabf7c40@rivosinc.com>
+Message-ID: <mhng-d5016935-99b6-4dc6-bbd2-ed84eb834f98@palmer-ri-x1c9a>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, May 17, 2024 at 04:52:53PM +0200, Cl?ment L?ger wrote:
-> Add parsing for Zcmop ISA extension which was ratified in commit
-> b854a709c00 ("Zcmop is ratified/1.0") of the riscv-isa-manual.
-> 
-> Signed-off-by: Cl?ment L?ger <cleger@rivosinc.com>
-> ---
->  arch/riscv/include/asm/hwcap.h | 1 +
->  arch/riscv/kernel/cpufeature.c | 1 +
->  2 files changed, 2 insertions(+)
-> 
-> diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
-> index a5836fa6b998..aaaf23f204ac 100644
-> --- a/arch/riscv/include/asm/hwcap.h
-> +++ b/arch/riscv/include/asm/hwcap.h
-> @@ -85,6 +85,7 @@
->  #define RISCV_ISA_EXT_ZCB		76
->  #define RISCV_ISA_EXT_ZCD		77
->  #define RISCV_ISA_EXT_ZCF		78
-> +#define RISCV_ISA_EXT_ZCMOP		79
->  
->  #define RISCV_ISA_EXT_XLINUXENVCFG	127
->  
-> diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
-> index 3bb2ef52a38b..0a40fa1faa04 100644
-> --- a/arch/riscv/kernel/cpufeature.c
-> +++ b/arch/riscv/kernel/cpufeature.c
-> @@ -290,6 +290,7 @@ const struct riscv_isa_ext_data riscv_isa_ext[] = {
->  	__RISCV_ISA_EXT_DATA_VALIDATE(zcb, RISCV_ISA_EXT_ZCB, riscv_ext_zca_depends),
->  	__RISCV_ISA_EXT_DATA_VALIDATE(zcd, RISCV_ISA_EXT_ZCD, riscv_ext_zcd_validate),
->  	__RISCV_ISA_EXT_DATA_VALIDATE(zcf, RISCV_ISA_EXT_ZCF, riscv_ext_zcf_validate),
-> +	__RISCV_ISA_EXT_DATA_VALIDATE(zcmop, RISCV_ISA_EXT_ZCMOP, riscv_ext_zca_depends),
->  	__RISCV_ISA_EXT_DATA(zba, RISCV_ISA_EXT_ZBA),
->  	__RISCV_ISA_EXT_DATA(zbb, RISCV_ISA_EXT_ZBB),
->  	__RISCV_ISA_EXT_DATA(zbc, RISCV_ISA_EXT_ZBC),
-> -- 
-> 2.43.0
-> 
-> 
-> _______________________________________________
-> linux-riscv mailing list
-> linux-riscv at lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-riscv
+On Wed, 22 May 2024 00:20:09 PDT (-0700), cleger at rivosinc.com wrote:
+>
+>
+> On 21/05/2024 21:49, Conor Dooley wrote:
+>> On Fri, May 17, 2024 at 04:52:48PM +0200, Cl?ment L?ger wrote:
+>>
+>>> +static int riscv_ext_zca_depends(const struct riscv_isa_ext_data *data,
+>>> +				 const unsigned long *isa_bitmap)
+>>> +{
+>>> +	return __riscv_isa_extension_available(isa_bitmap, RISCV_ISA_EXT_ZCA) ? 0 : -EPROBE_DEFER;
+>>> +}
+>>> +static int riscv_ext_zcd_validate(const struct riscv_isa_ext_data *data,
+>>> +				  const unsigned long *isa_bitmap)
+>>> +{
+>>> +	return __riscv_isa_extension_available(isa_bitmap, RISCV_ISA_EXT_ZCA) &&
+>>> +	       __riscv_isa_extension_available(isa_bitmap, RISCV_ISA_EXT_d) ? 0 : -EPROBE_DEFER;
+>>> +}
+>>
+>> Could you write the logic in these out normally please? I think they'd
+>> be more understandable (particular this second one) broken down and with
+>> early return.
+>
+> Yes sure. I'll probably make the same thing for zcf_validate as well as
+> removing the #ifdef and using IS_ENABLED():
+>
+> static int riscv_ext_zcf_validate(const struct riscv_isa_ext_data *data,
+> 				  const unsigned long *isa_bitmap)
+> {
+> 	if (IS_ENABLED(CONFIG_64BIT))
+> 		return -EINVAL;
+>
+> 	if (__riscv_isa_extension_available(isa_bitmap, RISCV_ISA_EXT_ZCA) &&
+> 	    __riscv_isa_extension_available(isa_bitmap, RISCV_ISA_EXT_f))
+> 	       return 0;
+>
+> 	return -EPROBE_DEFER;
+> }
 
-Reviewed-by: Charlie Jenkins <charlie@rivosinc.com>
+Are you going to send a v6 (sorry if I missed it, I'm trying to untangle 
+all these ISA parsing patch sets).
 
+>
+>>
+>> Otherwise,
+>> Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
+>>
+>> Cheers,
+>> Conor.
 
