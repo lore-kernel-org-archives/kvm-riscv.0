@@ -1,103 +1,104 @@
-From: Clément Léger <cleger@rivosinc.com>
-Date: Thu, 30 May 2024 16:38:31 +0200
-Subject: [PATCH v5 02/16] riscv: add ISA extension parsing for Zimop
-In-Reply-To: <ZliPL4yXBAir5pr2@ghost>
+From: Charlie Jenkins <charlie@rivosinc.com>
+Date: Thu, 30 May 2024 08:25:42 -0700
+Subject: [PATCH v5 09/16] riscv: hwprobe: export Zca, Zcf, Zcd and Zcb
+ ISA extensions
+In-Reply-To: <20240517145302.971019-10-cleger@rivosinc.com>
 References: <20240517145302.971019-1-cleger@rivosinc.com>
- <20240517145302.971019-3-cleger@rivosinc.com> <ZlenZ+NvXxOxvqEO@ghost>
- <ZleqVUhDW+xgiTwu@ghost> <4d23f17e-cc1e-45e3-9ca2-a884baacf207@rivosinc.com>
- <ZliPL4yXBAir5pr2@ghost>
-Message-ID: <920cc061-f5bf-4eae-88b9-7b7c2b32ed53@rivosinc.com>
+ <20240517145302.971019-10-cleger@rivosinc.com>
+Message-ID: <ZliadoA5v5obWNYn@ghost>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-
-
-On 30/05/2024 16:37, Charlie Jenkins wrote:
-> On Thu, May 30, 2024 at 10:12:39AM +0200, Cl?ment L?ger wrote:
->>
->>
->> On 30/05/2024 00:21, Charlie Jenkins wrote:
->>> On Wed, May 29, 2024 at 03:08:39PM -0700, Charlie Jenkins wrote:
->>>> On Fri, May 17, 2024 at 04:52:42PM +0200, Cl?ment L?ger wrote:
->>>>> Add parsing for Zimop ISA extension which was ratified in commit
->>>>> 58220614a5f of the riscv-isa-manual.
->>>>>
->>>>> Signed-off-by: Cl?ment L?ger <cleger@rivosinc.com>
->>>>> ---
->>>>>  arch/riscv/include/asm/hwcap.h | 1 +
->>>>>  arch/riscv/kernel/cpufeature.c | 1 +
->>>>>  2 files changed, 2 insertions(+)
->>>>>
->>>>> diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
->>>>> index 1f2d2599c655..b1896dade74c 100644
->>>>> --- a/arch/riscv/include/asm/hwcap.h
->>>>> +++ b/arch/riscv/include/asm/hwcap.h
->>>>> @@ -80,6 +80,7 @@
->>>>>  #define RISCV_ISA_EXT_ZFA		71
->>>>>  #define RISCV_ISA_EXT_ZTSO		72
->>>>>  #define RISCV_ISA_EXT_ZACAS		73
->>>>> +#define RISCV_ISA_EXT_ZIMOP		74
->>>>
->>>> Since my changes for removing xandespmu haven't landed here yet I think
->>>> you should keep RISCV_ISA_EXT_XANDESPMU in the diff here and make
->>>> RISCV_ISA_EXT_ZIMOP have a key of 75. Palmer can probably resolve the
->>>> conflicting keys when these two series are merged.
->>>>
->>>> - Charlie
->>>
->>> I missed that other patches in this series were based off my
->>> xtheadvector changes. It's not in the cover letter that there is a
->>> dependency though. What do you need from that series for this series to
->>> work?
->>
->> Hey Charlie, I'm not based directly on any of your series, but on
->> riscv/for-next which probably already contains your patches.
->>
->> Cl?ment
+On Fri, May 17, 2024 at 04:52:49PM +0200, Cl?ment L?ger wrote:
+> Export Zca, Zcf, Zcd and Zcb ISA extension through hwprobe.
 > 
-> There was some churn here so I didn't expect those to be merged, it
-> looks like a subset of the patches were added to riscv/for-next, sorry
-> for the confusion!
-
-No worries, it seems strange indeed that some of them were merged but
-not the other :/
-
+> Signed-off-by: Cl?ment L?ger <cleger@rivosinc.com>
+> ---
+>  Documentation/arch/riscv/hwprobe.rst  | 20 ++++++++++++++++++++
+>  arch/riscv/include/uapi/asm/hwprobe.h |  4 ++++
+>  arch/riscv/kernel/sys_hwprobe.c       |  4 ++++
+>  3 files changed, 28 insertions(+)
 > 
-> Reviewed-by: Charlie Jenkins <charlie@rivosinc.com>
-
-Thanks !
-
+> diff --git a/Documentation/arch/riscv/hwprobe.rst b/Documentation/arch/riscv/hwprobe.rst
+> index 48be38e0b788..cad84f51412d 100644
+> --- a/Documentation/arch/riscv/hwprobe.rst
+> +++ b/Documentation/arch/riscv/hwprobe.rst
+> @@ -196,6 +196,26 @@ The following keys are defined:
+>         supported as defined in the RISC-V ISA manual starting from commit
+>         58220614a5f ("Zimop is ratified/1.0").
+>  
+> +  * :c:macro:`RISCV_HWPROBE_EXT_ZCA`: The Zca extension part of Zc* standard
+> +       extensions for code size reduction, as ratified in commit 8be3419c1c0
+> +       ("Zcf doesn't exist on RV64 as it contains no instructions") of
+> +       riscv-code-size-reduction.
+> +
+> +  * :c:macro:`RISCV_HWPROBE_EXT_ZCB`: The Zcb extension part of Zc* standard
+> +       extensions for code size reduction, as ratified in commit 8be3419c1c0
+> +       ("Zcf doesn't exist on RV64 as it contains no instructions") of
+> +       riscv-code-size-reduction.
+> +
+> +  * :c:macro:`RISCV_HWPROBE_EXT_ZCD`: The Zcd extension part of Zc* standard
+> +       extensions for code size reduction, as ratified in commit 8be3419c1c0
+> +       ("Zcf doesn't exist on RV64 as it contains no instructions") of
+> +       riscv-code-size-reduction.
+> +
+> +  * :c:macro:`RISCV_HWPROBE_EXT_ZCF`: The Zcf extension part of Zc* standard
+> +       extensions for code size reduction, as ratified in commit 8be3419c1c0
+> +       ("Zcf doesn't exist on RV64 as it contains no instructions") of
+> +       riscv-code-size-reduction.
+> +
+>  * :c:macro:`RISCV_HWPROBE_KEY_CPUPERF_0`: A bitmask that contains performance
+>    information about the selected set of processors.
+>  
+> diff --git a/arch/riscv/include/uapi/asm/hwprobe.h b/arch/riscv/include/uapi/asm/hwprobe.h
+> index 3b16a12204b1..652b2373729f 100644
+> --- a/arch/riscv/include/uapi/asm/hwprobe.h
+> +++ b/arch/riscv/include/uapi/asm/hwprobe.h
+> @@ -61,6 +61,10 @@ struct riscv_hwprobe {
+>  #define		RISCV_HWPROBE_EXT_ZICOND	(1ULL << 35)
+>  #define		RISCV_HWPROBE_EXT_ZIHINTPAUSE	(1ULL << 36)
+>  #define		RISCV_HWPROBE_EXT_ZIMOP		(1ULL << 37)
+> +#define		RISCV_HWPROBE_EXT_ZCA		(1ULL << 38)
+> +#define		RISCV_HWPROBE_EXT_ZCB		(1ULL << 39)
+> +#define		RISCV_HWPROBE_EXT_ZCD		(1ULL << 40)
+> +#define		RISCV_HWPROBE_EXT_ZCF		(1ULL << 41)
+>  #define RISCV_HWPROBE_KEY_CPUPERF_0	5
+>  #define		RISCV_HWPROBE_MISALIGNED_UNKNOWN	(0 << 0)
+>  #define		RISCV_HWPROBE_MISALIGNED_EMULATED	(1 << 0)
+> diff --git a/arch/riscv/kernel/sys_hwprobe.c b/arch/riscv/kernel/sys_hwprobe.c
+> index fc6f4238f0b3..11def345a42d 100644
+> --- a/arch/riscv/kernel/sys_hwprobe.c
+> +++ b/arch/riscv/kernel/sys_hwprobe.c
+> @@ -113,6 +113,8 @@ static void hwprobe_isa_ext0(struct riscv_hwprobe *pair,
+>  		EXT_KEY(ZICOND);
+>  		EXT_KEY(ZIHINTPAUSE);
+>  		EXT_KEY(ZIMOP);
+> +		EXT_KEY(ZCA);
+> +		EXT_KEY(ZCB);
+>  
+>  		if (has_vector()) {
+>  			EXT_KEY(ZVBB);
+> @@ -133,6 +135,8 @@ static void hwprobe_isa_ext0(struct riscv_hwprobe *pair,
+>  			EXT_KEY(ZFH);
+>  			EXT_KEY(ZFHMIN);
+>  			EXT_KEY(ZFA);
+> +			EXT_KEY(ZCD);
+> +			EXT_KEY(ZCF);
+>  		}
+>  #undef EXT_KEY
+>  	}
+> -- 
+> 2.43.0
 > 
->>
->>>
->>> - Charlie
->>>
->>>>
->>>>>  
->>>>>  #define RISCV_ISA_EXT_XLINUXENVCFG	127
->>>>>  
->>>>> diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
->>>>> index 2993318b8ea2..41f8ae22e7a0 100644
->>>>> --- a/arch/riscv/kernel/cpufeature.c
->>>>> +++ b/arch/riscv/kernel/cpufeature.c
->>>>> @@ -241,6 +241,7 @@ const struct riscv_isa_ext_data riscv_isa_ext[] = {
->>>>>  	__RISCV_ISA_EXT_DATA(zihintntl, RISCV_ISA_EXT_ZIHINTNTL),
->>>>>  	__RISCV_ISA_EXT_DATA(zihintpause, RISCV_ISA_EXT_ZIHINTPAUSE),
->>>>>  	__RISCV_ISA_EXT_DATA(zihpm, RISCV_ISA_EXT_ZIHPM),
->>>>> +	__RISCV_ISA_EXT_DATA(zimop, RISCV_ISA_EXT_ZIMOP),
->>>>>  	__RISCV_ISA_EXT_DATA(zacas, RISCV_ISA_EXT_ZACAS),
->>>>>  	__RISCV_ISA_EXT_DATA(zfa, RISCV_ISA_EXT_ZFA),
->>>>>  	__RISCV_ISA_EXT_DATA(zfh, RISCV_ISA_EXT_ZFH),
->>>>> -- 
->>>>> 2.43.0
->>>>>
->>>>>
->>>>> _______________________________________________
->>>>> linux-riscv mailing list
->>>>> linux-riscv at lists.infradead.org
->>>>> http://lists.infradead.org/mailman/listinfo/linux-riscv
->>>>
+> 
+> _______________________________________________
+> linux-riscv mailing list
+> linux-riscv at lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-riscv
+
+Reviewed-by: Charlie Jenkins <charlie@rivosinc.com>
+
 
