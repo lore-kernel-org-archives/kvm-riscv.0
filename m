@@ -1,45 +1,84 @@
-From: James Houghton <jthoughton@google.com>
-Date: Wed, 29 May 2024 20:27:45 -0700
-Subject: [PATCH v4 4/7] KVM: Move MMU lock acquisition for
- test/clear_young to architecture
-In-Reply-To: <ZlekYljG7KJwblUj@google.com>
-References: <20240529180510.2295118-1-jthoughton@google.com>
- <20240529180510.2295118-5-jthoughton@google.com> <ZlekYljG7KJwblUj@google.com>
-Message-ID: <CADrL8HVZxoO33F2UJBoTjF_SXpxyZmH=RTM5G3stgo_kRPjazA@mail.gmail.com>
+From: Clément Léger <cleger@rivosinc.com>
+Date: Thu, 30 May 2024 10:12:39 +0200
+Subject: [PATCH v5 02/16] riscv: add ISA extension parsing for Zimop
+In-Reply-To: <ZleqVUhDW+xgiTwu@ghost>
+References: <20240517145302.971019-1-cleger@rivosinc.com>
+ <20240517145302.971019-3-cleger@rivosinc.com> <ZlenZ+NvXxOxvqEO@ghost>
+ <ZleqVUhDW+xgiTwu@ghost>
+Message-ID: <4d23f17e-cc1e-45e3-9ca2-a884baacf207@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, May 29, 2024 at 2:55?PM Sean Christopherson <seanjc@google.com> wrote:
->
-> On Wed, May 29, 2024, James Houghton wrote:
-> > For implementation mmu_notifier_{test,clear}_young, the KVM memslot
-> > walker used to take the MMU lock for us. Now make the architectures
-> > take it themselves.
->
-> Hmm, *forcing* architectures to take mmu_lock is a step backwards.  Rather than
-> add all of this churn, what about adding CONFIG_KVM_MMU_NOTIFIER_LOCKLESS, e.g.
->
-> static __always_inline int kvm_handle_hva_range_no_flush(struct mmu_notifier *mn,
->                                                          unsigned long start,
->                                                          unsigned long end,
->                                                          gfn_handler_t handler)
-> {
->         struct kvm *kvm = mmu_notifier_to_kvm(mn);
->         const struct kvm_mmu_notifier_range range = {
->                 .start          = start,
->                 .end            = end,
->                 .handler        = handler,
->                 .on_lock        = (void *)kvm_null_fn,
->                 .flush_on_ret   = false,
->                 .may_block      = false,
->                 .lockless       = IS_ENABLED(CONFIG_KVM_MMU_NOTIFIER_LOCKLESS),
->         };
->
->         return __kvm_handle_hva_range(kvm, &range).ret;
-> }
 
-Thanks Sean, yes this is a lot better. I will do this for v5.
+
+On 30/05/2024 00:21, Charlie Jenkins wrote:
+> On Wed, May 29, 2024 at 03:08:39PM -0700, Charlie Jenkins wrote:
+>> On Fri, May 17, 2024 at 04:52:42PM +0200, Cl?ment L?ger wrote:
+>>> Add parsing for Zimop ISA extension which was ratified in commit
+>>> 58220614a5f of the riscv-isa-manual.
+>>>
+>>> Signed-off-by: Cl?ment L?ger <cleger@rivosinc.com>
+>>> ---
+>>>  arch/riscv/include/asm/hwcap.h | 1 +
+>>>  arch/riscv/kernel/cpufeature.c | 1 +
+>>>  2 files changed, 2 insertions(+)
+>>>
+>>> diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
+>>> index 1f2d2599c655..b1896dade74c 100644
+>>> --- a/arch/riscv/include/asm/hwcap.h
+>>> +++ b/arch/riscv/include/asm/hwcap.h
+>>> @@ -80,6 +80,7 @@
+>>>  #define RISCV_ISA_EXT_ZFA		71
+>>>  #define RISCV_ISA_EXT_ZTSO		72
+>>>  #define RISCV_ISA_EXT_ZACAS		73
+>>> +#define RISCV_ISA_EXT_ZIMOP		74
+>>
+>> Since my changes for removing xandespmu haven't landed here yet I think
+>> you should keep RISCV_ISA_EXT_XANDESPMU in the diff here and make
+>> RISCV_ISA_EXT_ZIMOP have a key of 75. Palmer can probably resolve the
+>> conflicting keys when these two series are merged.
+>>
+>> - Charlie
+> 
+> I missed that other patches in this series were based off my
+> xtheadvector changes. It's not in the cover letter that there is a
+> dependency though. What do you need from that series for this series to
+> work?
+
+Hey Charlie, I'm not based directly on any of your series, but on
+riscv/for-next which probably already contains your patches.
+
+Cl?ment
+
+> 
+> - Charlie
+> 
+>>
+>>>  
+>>>  #define RISCV_ISA_EXT_XLINUXENVCFG	127
+>>>  
+>>> diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
+>>> index 2993318b8ea2..41f8ae22e7a0 100644
+>>> --- a/arch/riscv/kernel/cpufeature.c
+>>> +++ b/arch/riscv/kernel/cpufeature.c
+>>> @@ -241,6 +241,7 @@ const struct riscv_isa_ext_data riscv_isa_ext[] = {
+>>>  	__RISCV_ISA_EXT_DATA(zihintntl, RISCV_ISA_EXT_ZIHINTNTL),
+>>>  	__RISCV_ISA_EXT_DATA(zihintpause, RISCV_ISA_EXT_ZIHINTPAUSE),
+>>>  	__RISCV_ISA_EXT_DATA(zihpm, RISCV_ISA_EXT_ZIHPM),
+>>> +	__RISCV_ISA_EXT_DATA(zimop, RISCV_ISA_EXT_ZIMOP),
+>>>  	__RISCV_ISA_EXT_DATA(zacas, RISCV_ISA_EXT_ZACAS),
+>>>  	__RISCV_ISA_EXT_DATA(zfa, RISCV_ISA_EXT_ZFA),
+>>>  	__RISCV_ISA_EXT_DATA(zfh, RISCV_ISA_EXT_ZFH),
+>>> -- 
+>>> 2.43.0
+>>>
+>>>
+>>> _______________________________________________
+>>> linux-riscv mailing list
+>>> linux-riscv at lists.infradead.org
+>>> http://lists.infradead.org/mailman/listinfo/linux-riscv
+>>
 
