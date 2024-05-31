@@ -1,77 +1,52 @@
-From: Yu Zhao <yuzhao@google.com>
-Date: Fri, 31 May 2024 10:45:04 -0600
-Subject: [PATCH v4 2/7] mm: multi-gen LRU: Have secondary MMUs participate
- in aging
-In-Reply-To: <Zll2ILUNWE-JPi9U@linux.dev>
-References: <20240529180510.2295118-1-jthoughton@google.com>
- <20240529180510.2295118-3-jthoughton@google.com> <CAOUHufYFHKLwt1PWp2uS6g174GZYRZURWJAmdUWs5eaKmhEeyQ@mail.gmail.com>
- <ZlelW93_T6P-ZuSZ@google.com> <CAOUHufZdEpY6ra73SMHA33DegKxKaUM=Os7A7aDBFND6NkbUmQ@mail.gmail.com>
- <Zley-u_dOlZ-S-a6@google.com> <CADrL8HXHWg_MkApYQTngzmN21NEGNWC6KzJDw_Lm63JHJkR=5A@mail.gmail.com>
- <CAOUHufZq6DwpStzHtjG+TOiHaQ6FFbkTfHMCe8Yy0n_M9MKdqw@mail.gmail.com> <Zll2ILUNWE-JPi9U@linux.dev>
-Message-ID: <CAOUHufb_-w=B+NfHAUAo=O8bDXZBdXeeGRZD6kY=krN07srbGA@mail.gmail.com>
+From: Anup Patel <anup@brainfault.org>
+Date: Fri, 31 May 2024 22:21:52 +0530
+Subject: [GIT PULL] KVM/riscv fixes for 6.10 take #1
+Message-ID: <CAAhSdy1mug8sUpNc=RaXYQWJoHNBQahAv5_rLRp0vOdT=xrHNg@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, May 31, 2024 at 1:03?AM Oliver Upton <oliver.upton@linux.dev> wrote:
->
-> On Fri, May 31, 2024 at 12:05:48AM -0600, Yu Zhao wrote:
+Hi Paolo,
 
-Let me add back what I said earlier:
+We have two minor fixes for 6.10. One is a special case
+handling for hart-index-bits = 0 in IMSIC virtualization and
+another one is a typo fix in kvm_riscv_vcpu_set_reg_isa_ext().
 
-  I'm not convinced, but it doesn't mean your point of view is
-  invalid. If you fully understand the implications of your design
-  choice and document them, I will not object.
+Please pull.
 
-> > All optimizations in v2 were measured step by step. Even that bitmap,
-> > which might be considered overengineered, brought a readily
-> > measuarable 4% improvement in memcached throughput on Altra Max
-> > swapping to Optane:
->
-> That's great, but taking an iterative approach to the problem allows
-> the reviewers and maintainers to come to their own conclusions about
-> each optimization independently. Squashing all of that together and
-> posting the result doesn't allow for this.
+Regards,
+Anup
 
-That's your methodology, which I respect: as I said I won't stand in your way.
+The following changes since commit 1613e604df0cd359cf2a7fbd9be7a0bcfacfabd0:
 
-But mine is backed by data, please do respect that as well, by doing
-what I asked: document your justifications.
+  Linux 6.10-rc1 (2024-05-26 15:20:12 -0700)
 
-> Even if we were to take the series as-is, the door is wide open to
-> subsequent improvements.
->
-> > What I don't think is acceptable is simplifying those optimizations
-> > out without documenting your justifications (I would even call it a
-> > design change, rather than simplification, from v3 to v4).
->
-> No, sorry, there's nothing wrong with James' approach here.
+are available in the Git repository at:
 
-Sorry, are you saying "without documenting your justifications" is
-nothing wrong? If so, please elaborate.
+  https://github.com/kvm-riscv/linux.git tags/kvm-riscv-fixes-6.10-1
 
-> The discussion that led to the design of v4 happened on list; you were
-> on CC. The general consensus on the KVM side was that the bitmap was
-> complicated and lacked independent justification. There was ample
-> opportunity to voice your concerns before he spent the time on v4.
+for you to fetch changes up to c66f3b40b17d3dfc4b6abb5efde8e71c46971821:
 
-Please re-read my previous emails -- I never object to the removal of
-the bitmap or James' approach.
+  RISC-V: KVM: Fix incorrect reg_subtype labels in
+kvm_riscv_vcpu_set_reg_isa_ext function (2024-05-31 10:40:39 +0530)
 
-And please stop making assumptions -- I did voice my concerns with
-James privately.
+----------------------------------------------------------------
+KVM/riscv fixes for 6.10, take #1
 
-> You seriously cannot fault a contributor for respinning their work based
-> on the provided feedback.
+- No need to use mask when hart-index-bits is 0
+- Fix incorrect reg_subtype labels in kvm_riscv_vcpu_set_reg_isa_ext()
 
-Are you saying I faulted James for taking others' feedback? If so,
-where? And I'll make sure I don't give such an impression in the
-future.
+----------------------------------------------------------------
+Quan Zhou (1):
+      RISC-V: KVM: Fix incorrect reg_subtype labels in
+kvm_riscv_vcpu_set_reg_isa_ext function
 
-Also what do you think about the technical flaws and inaccurate
-understandings I pointed out? You seem to have a strong opinion on
-your iterate approach, but I hope you didn't choose to overlook the
-real meat of this discussion.
+Yong-Xuan Wang (1):
+      RISC-V: KVM: No need to use mask when hart-index-bit is 0
+
+ arch/riscv/kvm/aia_device.c  | 7 ++++---
+ arch/riscv/kvm/vcpu_onereg.c | 4 ++--
+ 2 files changed, 6 insertions(+), 5 deletions(-)
 
