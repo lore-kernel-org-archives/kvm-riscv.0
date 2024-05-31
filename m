@@ -1,60 +1,48 @@
-From: Oliver Upton <oliver.upton@linux.dev>
-Date: Fri, 31 May 2024 00:24:18 -0700
-Subject: [PATCH v4 2/7] mm: multi-gen LRU: Have secondary MMUs
- participate in aging
-In-Reply-To: <CAOUHufYFHKLwt1PWp2uS6g174GZYRZURWJAmdUWs5eaKmhEeyQ@mail.gmail.com>
-References: <20240529180510.2295118-1-jthoughton@google.com>
- <20240529180510.2295118-3-jthoughton@google.com>
- <CAOUHufYFHKLwt1PWp2uS6g174GZYRZURWJAmdUWs5eaKmhEeyQ@mail.gmail.com>
-Message-ID: <Zll7IuGYGG5uI20W@linux.dev>
+From: Anup Patel <anup@brainfault.org>
+Date: Fri, 31 May 2024 16:55:37 +0530
+Subject: [PATCH 0/2] KVM RISC-V HW IMSIC guest files
+In-Reply-To: <20240411090639.237119-1-apatel@ventanamicro.com>
+References: <20240411090639.237119-1-apatel@ventanamicro.com>
+Message-ID: <CAAhSdy3+q1aLgTro5N_UerXjaW7fTGxjpOPKkyR+-GMru-gZMw@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, May 29, 2024 at 03:03:21PM -0600, Yu Zhao wrote:
-> On Wed, May 29, 2024 at 12:05?PM James Houghton <jthoughton@google.com> wrote:
-> >
-> > Secondary MMUs are currently consulted for access/age information at
-> > eviction time, but before then, we don't get accurate age information.
-> > That is, pages that are mostly accessed through a secondary MMU (like
-> > guest memory, used by KVM) will always just proceed down to the oldest
-> > generation, and then at eviction time, if KVM reports the page to be
-> > young, the page will be activated/promoted back to the youngest
-> > generation.
-> 
-> Correct, and as I explained offline, this is the only reasonable
-> behavior if we can't locklessly walk secondary MMUs.
-> 
-> Just for the record, the (crude) analogy I used was:
-> Imagine a large room with many bills ($1, $5, $10, ...) on the floor,
-> but you are only allowed to pick up 10 of them (and put them in your
-> pocket). A smart move would be to survey the room *first and then*
-> pick up the largest ones. But if you are carrying a 500 lbs backpack,
-> you would just want to pick up whichever that's in front of you rather
-> than walk the entire room.
-> 
-> MGLRU should only scan (or lookaround) secondary MMUs if it can be
-> done lockless. Otherwise, it should just fall back to the existing
-> approach, which existed in previous versions but is removed in this
-> version.
+On Thu, Apr 11, 2024 at 2:36?PM Anup Patel <apatel@ventanamicro.com> wrote:
+>
+> This series extends the HWACCEL and AUTO modes of AIA in-kernel irqchip
+> to use HW IMSIC guest files whenever underlying host supports it.
+>
+> This series depends upon the "Linux RISC-V AIA support" series which
+> is already queued for Linux-6.10.
+> (Refer, https://lore.kernel.org/lkml/20240307140307.646078-1-apatel at ventanamicro.com/)
+>
+> These patches can also be found in the riscv_kvm_aia_hwaccel_v1 branch
+> at: https://github.com/avpatel/linux.git
+>
+> Anup Patel (2):
+>   RISC-V: KVM: Share APLIC and IMSIC defines with irqchip drivers
+>   RISC-V: KVM: Use IMSIC guest files when available
 
-Grabbing the MMU lock for write to scan sucks, no argument there. But
-can you please be specific about the impact of read lock v. RCU in the
-case of arm64? I had asked about this before and you never replied.
+Queued this series for Linux-6.11
 
-My concern remains that adding support for software table walkers
-outside of the MMU lock entirely requires more work than just deferring
-the deallocation to an RCU callback. Walkers that previously assumed
-'exclusive' access while holding the MMU lock for write must now cope
-with volatile PTEs.
+Regards,
+Anup
 
-Yes, this problem already exists when hardware sets the AF, but the
-lock-free walker implementation needs to be generic so it can be applied
-for other PTE bits.
-
--- 
-Thanks,
-Oliver
+>
+>  arch/riscv/include/asm/kvm_aia_aplic.h | 58 --------------------------
+>  arch/riscv/include/asm/kvm_aia_imsic.h | 38 -----------------
+>  arch/riscv/kvm/aia.c                   | 35 +++++++++-------
+>  arch/riscv/kvm/aia_aplic.c             |  2 +-
+>  arch/riscv/kvm/aia_device.c            |  2 +-
+>  arch/riscv/kvm/aia_imsic.c             |  2 +-
+>  6 files changed, 24 insertions(+), 113 deletions(-)
+>  delete mode 100644 arch/riscv/include/asm/kvm_aia_aplic.h
+>  delete mode 100644 arch/riscv/include/asm/kvm_aia_imsic.h
+>
+> --
+> 2.34.1
+>
 
