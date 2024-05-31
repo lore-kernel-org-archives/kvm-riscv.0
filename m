@@ -1,58 +1,58 @@
 From: Anup Patel <anup@brainfault.org>
-Date: Fri, 31 May 2024 10:04:09 +0530
-Subject: [PATCH 1/1] RISC-V: KVM: No need to use mask when hart-index-bit
- is 0
-In-Reply-To: <20240415064905.25184-1-yongxuan.wang@sifive.com>
-References: <20240415064905.25184-1-yongxuan.wang@sifive.com>
-Message-ID: <CAAhSdy0STe67n6TB2ZH1OYZCTQ+yPycmsQ+8Ay0KsorwVYEo6w@mail.gmail.com>
+Date: Fri, 31 May 2024 11:12:05 +0530
+Subject: [PATCH] RISC-V: KVM: Fix incorrect reg_subtype labels in
+ kvm_riscv_vcpu_set_reg_isa_ext function
+In-Reply-To: <ff1c6771a67d660db94372ac9aaa40f51e5e0090.1716429371.git.zhouquan@iscas.ac.cn>
+References: <ff1c6771a67d660db94372ac9aaa40f51e5e0090.1716429371.git.zhouquan@iscas.ac.cn>
+Message-ID: <CAAhSdy1Mjx5cq0Gim3TBFSCNbCJPvMxkRSC-gW6KjFeGBrg75w@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Apr 15, 2024 at 12:19?PM Yong-Xuan Wang
-<yongxuan.wang@sifive.com> wrote:
+On Thu, May 23, 2024 at 7:43?AM <zhouquan@iscas.ac.cn> wrote:
 >
-> When the maximum hart number within groups is 1, hart-index-bit is set to
-> 0. Consequently, there is no need to restore the hart ID from IMSIC
-> addresses and hart-index-bit settings. Currently, QEMU and kvmtool do not
-> pass correct hart-index-bit values when the maximum hart number is a
-> power of 2, thereby avoiding this issue. Corresponding patches for QEMU
-> and kvmtool will also be dispatched.
+> From: Quan Zhou <zhouquan@iscas.ac.cn>
 >
-> Fixes: 89d01306e34d ("RISC-V: KVM: Implement device interface for AIA irqchip")
-> Signed-off-by: Yong-Xuan Wang <yongxuan.wang@sifive.com>
+> In the function kvm_riscv_vcpu_set_reg_isa_ext, the original code
+> used incorrect reg_subtype labels KVM_REG_RISCV_SBI_MULTI_EN/DIS.
+> These have been corrected to KVM_REG_RISCV_ISA_MULTI_EN/DIS respectively.
+> Although they are numerically equivalent, the actual processing
+> will not result in errors, but it may lead to ambiguous code semantics.
+>
+> Signed-off-by: Quan Zhou <zhouquan@iscas.ac.cn>
 
 Queued this patch for Linux-6.10-rcX fixes.
+
+I have added an appropriate Fixes tag as well.
 
 Thanks,
 Anup
 
 > ---
->  arch/riscv/kvm/aia_device.c | 7 ++++---
->  1 file changed, 4 insertions(+), 3 deletions(-)
+>  arch/riscv/kvm/vcpu_onereg.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 >
-> diff --git a/arch/riscv/kvm/aia_device.c b/arch/riscv/kvm/aia_device.c
-> index 0eb689351b7d..5cd407c6a8e4 100644
-> --- a/arch/riscv/kvm/aia_device.c
-> +++ b/arch/riscv/kvm/aia_device.c
-> @@ -237,10 +237,11 @@ static gpa_t aia_imsic_ppn(struct kvm_aia *aia, gpa_t addr)
+> diff --git a/arch/riscv/kvm/vcpu_onereg.c b/arch/riscv/kvm/vcpu_onereg.c
+> index c676275ea0a0..62874fbca29f 100644
+> --- a/arch/riscv/kvm/vcpu_onereg.c
+> +++ b/arch/riscv/kvm/vcpu_onereg.c
+> @@ -724,9 +724,9 @@ static int kvm_riscv_vcpu_set_reg_isa_ext(struct kvm_vcpu *vcpu,
+>         switch (reg_subtype) {
+>         case KVM_REG_RISCV_ISA_SINGLE:
+>                 return riscv_vcpu_set_isa_ext_single(vcpu, reg_num, reg_val);
+> -       case KVM_REG_RISCV_SBI_MULTI_EN:
+> +       case KVM_REG_RISCV_ISA_MULTI_EN:
+>                 return riscv_vcpu_set_isa_ext_multi(vcpu, reg_num, reg_val, true);
+> -       case KVM_REG_RISCV_SBI_MULTI_DIS:
+> +       case KVM_REG_RISCV_ISA_MULTI_DIS:
+>                 return riscv_vcpu_set_isa_ext_multi(vcpu, reg_num, reg_val, false);
+>         default:
+>                 return -ENOENT;
 >
->  static u32 aia_imsic_hart_index(struct kvm_aia *aia, gpa_t addr)
->  {
-> -       u32 hart, group = 0;
-> +       u32 hart = 0, group = 0;
->
-> -       hart = (addr >> (aia->nr_guest_bits + IMSIC_MMIO_PAGE_SHIFT)) &
-> -               GENMASK_ULL(aia->nr_hart_bits - 1, 0);
-> +       if (aia->nr_hart_bits)
-> +               hart = (addr >> (aia->nr_guest_bits + IMSIC_MMIO_PAGE_SHIFT)) &
-> +                      GENMASK_ULL(aia->nr_hart_bits - 1, 0);
->         if (aia->nr_group_bits)
->                 group = (addr >> aia->nr_group_shift) &
->                         GENMASK_ULL(aia->nr_group_bits - 1, 0);
+> base-commit: 29c73fc794c83505066ee6db893b2a83ac5fac63
 > --
-> 2.17.1
+> 2.34.1
 >
 
