@@ -1,52 +1,125 @@
-From: Anup Patel <anup@brainfault.org>
-Date: Fri, 31 May 2024 22:21:52 +0530
-Subject: [GIT PULL] KVM/riscv fixes for 6.10 take #1
-Message-ID: <CAAhSdy1mug8sUpNc=RaXYQWJoHNBQahAv5_rLRp0vOdT=xrHNg@mail.gmail.com>
+From: Oliver Upton <oliver.upton@linux.dev>
+Date: Fri, 31 May 2024 11:41:14 -0700
+Subject: [PATCH v4 2/7] mm: multi-gen LRU: Have secondary MMUs
+ participate in aging
+In-Reply-To: <CAOUHufb_-w=B+NfHAUAo=O8bDXZBdXeeGRZD6kY=krN07srbGA@mail.gmail.com>
+References: <20240529180510.2295118-1-jthoughton@google.com>
+ <20240529180510.2295118-3-jthoughton@google.com>
+ <CAOUHufYFHKLwt1PWp2uS6g174GZYRZURWJAmdUWs5eaKmhEeyQ@mail.gmail.com>
+ <ZlelW93_T6P-ZuSZ@google.com>
+ <CAOUHufZdEpY6ra73SMHA33DegKxKaUM=Os7A7aDBFND6NkbUmQ@mail.gmail.com>
+ <Zley-u_dOlZ-S-a6@google.com>
+ <CADrL8HXHWg_MkApYQTngzmN21NEGNWC6KzJDw_Lm63JHJkR=5A@mail.gmail.com>
+ <CAOUHufZq6DwpStzHtjG+TOiHaQ6FFbkTfHMCe8Yy0n_M9MKdqw@mail.gmail.com>
+ <Zll2ILUNWE-JPi9U@linux.dev>
+ <CAOUHufb_-w=B+NfHAUAo=O8bDXZBdXeeGRZD6kY=krN07srbGA@mail.gmail.com>
+Message-ID: <ZloZysAPL0ePk3bY@linux.dev>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Paolo,
+On Fri, May 31, 2024 at 10:45:04AM -0600, Yu Zhao wrote:
+> On Fri, May 31, 2024 at 1:03?AM Oliver Upton <oliver.upton@linux.dev> wrote:
+> >
+> > On Fri, May 31, 2024 at 12:05:48AM -0600, Yu Zhao wrote:
+> 
+> Let me add back what I said earlier:
+> 
+>   I'm not convinced, but it doesn't mean your point of view is
+>   invalid. If you fully understand the implications of your design
+>   choice and document them, I will not object.
 
-We have two minor fixes for 6.10. One is a special case
-handling for hart-index-bits = 0 in IMSIC virtualization and
-another one is a typo fix in kvm_riscv_vcpu_set_reg_isa_ext().
+Thanks, I appreciate the sentiment. Hopefully we can align here.
 
-Please pull.
+> > > All optimizations in v2 were measured step by step. Even that bitmap,
+> > > which might be considered overengineered, brought a readily
+> > > measuarable 4% improvement in memcached throughput on Altra Max
+> > > swapping to Optane:
+> >
+> > That's great, but taking an iterative approach to the problem allows
+> > the reviewers and maintainers to come to their own conclusions about
+> > each optimization independently. Squashing all of that together and
+> > posting the result doesn't allow for this.
+> 
+> That's your methodology, which I respect: as I said I won't stand in your way.
+> 
+> But mine is backed by data, please do respect that as well,
 
-Regards,
-Anup
+Data is useful and expected for changes that aim to improve the
+performance of a system in one way or another. That is, after all, the
+sole intention of the work, no?
 
-The following changes since commit 1613e604df0cd359cf2a7fbd9be7a0bcfacfabd0:
+What I'm also looking for is a controlled experiment, where a single
+independent variable (e.g. locking) can be evaluated against the
+baseline. All-or-nothing data has limited usefulness.
 
-  Linux 6.10-rc1 (2024-05-26 15:20:12 -0700)
+> by doing what I asked: document your justifications.
 
-are available in the Git repository at:
+The justification for a series is against the upstream tree, not some
+out-of-tree stuff. The cover letter explicitly calls out the decision
+to simplify the patch series along with performance data I can reproduce
+on my own systems.
 
-  https://github.com/kvm-riscv/linux.git tags/kvm-riscv-fixes-6.10-1
+This is a perfect example of how to contribute changes upstream.
 
-for you to fetch changes up to c66f3b40b17d3dfc4b6abb5efde8e71c46971821:
+> > > What I don't think is acceptable is simplifying those optimizations
+> > > out without documenting your justifications (I would even call it a
+> > > design change, rather than simplification, from v3 to v4).
+> >
+> > No, sorry, there's nothing wrong with James' approach here.
+> 
+> Sorry, are you saying "without documenting your justifications" is
+> nothing wrong? If so, please elaborate.
 
-  RISC-V: KVM: Fix incorrect reg_subtype labels in
-kvm_riscv_vcpu_set_reg_isa_ext function (2024-05-31 10:40:39 +0530)
+As I mentioned above, the reasoning is adequately documented and the
+discussion that led to v4 is public. OTOH...
 
-----------------------------------------------------------------
-KVM/riscv fixes for 6.10, take #1
+> > The discussion that led to the design of v4 happened on list; you were
+> > on CC. The general consensus on the KVM side was that the bitmap was
+> > complicated and lacked independent justification. There was ample
+> > opportunity to voice your concerns before he spent the time on v4.
+> 
+> Please re-read my previous emails -- I never object to the removal of
+> the bitmap or James' approach.
+> 
+> And please stop making assumptions -- I did voice my concerns with
+> James privately.
+        ^~~~~~~~~
 
-- No need to use mask when hart-index-bits is 0
-- Fix incorrect reg_subtype labels in kvm_riscv_vcpu_set_reg_isa_ext()
+If it happened in private then its no better than having said nothing at
+all.
 
-----------------------------------------------------------------
-Quan Zhou (1):
-      RISC-V: KVM: Fix incorrect reg_subtype labels in
-kvm_riscv_vcpu_set_reg_isa_ext function
+Please, keep the conversation on-list next time so we can iron out any
+disagreements there. Otherwise contributors are put in a *very* awkward
+situation of mediating the on- and off-list dialogue.
 
-Yong-Xuan Wang (1):
-      RISC-V: KVM: No need to use mask when hart-index-bit is 0
+> > You seriously cannot fault a contributor for respinning their work based
+> > on the provided feedback.
+> 
+> Are you saying I faulted James for taking others' feedback?
 
- arch/riscv/kvm/aia_device.c  | 7 ++++---
- arch/riscv/kvm/vcpu_onereg.c | 4 ++--
- 2 files changed, 6 insertions(+), 5 deletions(-)
+No. Sufficient justification is captured in the public review feedback +
+series cover letter. Your statement that the approach was changed without
+justification is unsubstantiated.
+
+> Also what do you think about the technical flaws and inaccurate
+> understandings I pointed out? You seem to have a strong opinion on
+> your iterate approach, but I hope you didn't choose to overlook the
+> real meat of this discussion.
+
+Serious question: are you not receiving my mail or something?
+
+I re-raised my question to you from ages ago about locking on the arm64
+MMU. You didn't answer last time, I'd appreciate a reply this time
+around.
+
+Otherwise I couldn't be bothered about the color of the Kconfig bikeshed
+and don't have anything meaningful to add there. I think the three of
+you are trending in the right direction.
+
+-- 
+Thanks,
+Oliver
 
