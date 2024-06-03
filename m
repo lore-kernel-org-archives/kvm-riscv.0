@@ -1,103 +1,117 @@
-From: Guo Ren <guoren@kernel.org>
-Date: Wed, 1 Jun 2022 14:29:43 +0800
-Subject: [PATCH -for-next] riscv: Fix missing PAGE_PFN_MASK
-In-Reply-To: <20220530094701.2891404-1-alexandre.ghiti@canonical.com>
-References: <20220530094701.2891404-1-alexandre.ghiti@canonical.com>
-Message-ID: <CAJF2gTSny-Yz1L80B9MRQDHG1N=Nxy5O19LNsht+6d9oqyonuQ@mail.gmail.com>
+From: Alexandre Ghiti <alex@ghiti.fr>
+Date: Mon, 3 Jun 2024 13:29:29 +0200
+Subject: [RFC PATCH v4 1/5] RISC-V: Detect and Enable Svadu Extension
+ Support
+In-Reply-To: <20240530-de1fde9735e6648dc34654f3@orel>
+References: <20240524103307.2684-1-yongxuan.wang@sifive.com>
+ <20240524103307.2684-2-yongxuan.wang@sifive.com>
+ <20240527-41b376a2bfedb3b9cf7e9c7b@orel>
+ <ec110587-d557-439b-ae50-f3472535ef3a@ghiti.fr>
+ <20240530-3e5538b8e4dea932e2d3edc4@orel>
+ <3b76c46f-c502-4245-ae58-be3bd3f8a41f@ghiti.fr>
+ <20240530-de1fde9735e6648dc34654f3@orel>
+Message-ID: <f2016305-e24b-41ea-8c48-cfdeb8ee6b48@ghiti.fr>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, May 30, 2022 at 5:47 PM Alexandre Ghiti
-<alexandre.ghiti@canonical.com> wrote:
+On 30/05/2024 11:24, Andrew Jones wrote:
+> On Thu, May 30, 2024 at 11:01:20AM GMT, Alexandre Ghiti wrote:
+>> Hi Andrew,
+>>
+>> On 30/05/2024 10:47, Andrew Jones wrote:
+>>> On Thu, May 30, 2024 at 10:19:12AM GMT, Alexandre Ghiti wrote:
+>>>> Hi Yong-Xuan,
+>>>>
+>>>> On 27/05/2024 18:25, Andrew Jones wrote:
+>>>>> On Fri, May 24, 2024 at 06:33:01PM GMT, Yong-Xuan Wang wrote:
+>>>>>> Svadu is a RISC-V extension for hardware updating of PTE A/D bits.
+>>>>>>
+>>>>>> In this patch we detect Svadu extension support from DTB and enable it
+>>>>>> with SBI FWFT extension. Also we add arch_has_hw_pte_young() to enable
+>>>>>> optimization in MGLRU and __wp_page_copy_user() if Svadu extension is
+>>>>>> available.
+>>>> So we talked about this yesterday during the linux-riscv patchwork meeting.
+>>>> We came to the conclusion that we should not wait for the SBI FWFT extension
+>>>> to enable Svadu but instead, it should be enabled by default by openSBI if
+>>>> the extension is present in the device tree. This is because we did not find
+>>>> any backward compatibility issues, meaning that enabling Svadu should not
+>>>> break any S-mode software.
+>>> Unfortunately I joined yesterday's patchwork call late and missed this
+>>> discussion. I'm still not sure how we avoid concerns with S-mode software
+>>> expecting exceptions by purposely not setting A/D bits, but then not
+>>> getting those exceptions.
+>>
+>> Most other architectures implement hardware A/D updates, so I don't see
+>> what's specific in riscv. In addition, if an OS really needs the exceptions,
+>> it can always play with the page table permissions to achieve such
+>> behaviour.
+> Hmm, yeah we're probably pretty safe since sorting this out is just one of
+> many things an OS will have to learn to manage when getting ported. Also,
+> handling both svade and svadu at boot is trivial since the OS simply needs
+> to set the A/D bits when creating the PTEs or have exception handlers
+> which do nothing but set the bits ready just in case.
 >
-> There are a bunch of functions that use the PFN from a page table entry
-> that end up with the svpbmt upper-bits because they are missing the newly
-> introduced PAGE_PFN_MASK which leads to wrong addresses conversions and
-> then crash: fix this by adding this mask.
+>>
+>>>> This is what you did in your previous versions of
+>>>> this patchset so the changes should be easy. This behaviour must be added to
+>>>> the dtbinding description of the Svadu extension.
+>>>>
+>>>> Another thing that we discussed yesterday. There exist 2 schemes to manage
+>>>> the A/D bits updates, Svade and Svadu. If a platform supports both
+>>>> extensions and both are present in the device tree, it is M-mode firmware's
+>>>> responsibility to provide a "sane" device tree to the S-mode software,
+>>>> meaning the device tree can not contain both extensions. And because on such
+>>>> platforms, Svadu is more performant than Svade, Svadu should be enabled by
+>>>> the M-mode firmware and only Svadu should be present in the device tree.
+>>> I'm not sure firmware will be able to choose svadu when it's available.
+>>> For example, platforms which want to conform to the upcoming "Server
+>>> Platform" specification must also conform to the RVA23 profile, which
+>>> mandates Svade and lists Svadu as an optional extension. This implies to
+>>> me that S-mode should be boot with both svade and svadu in the DT and with
+>>> svade being the active one. Then, S-mode can choose to request switching
+>>> to svadu with FWFT.
+>>
+>> The problem is that FWFT is not there and won't be there for ~1y (according
+>> to Anup). So in the meantime, we prevent all uarchs that support Svadu to
+>> take advantage of this.
+> I think we should have documented behaviors for all four possibilities
 >
-> Fixes: 100631b48ded ("riscv: Fix accessing pfn bits in PTEs for non-32bit variants")
-> Signed-off-by: Alexandre Ghiti <alexandre.ghiti@canonical.com>
-
-I think this patch is the appendix for:
-https://lore.kernel.org/linux-riscv/20220324000710.575331-10-heiko at sntech.de/
-
-Reviewed-by: Guo Ren <guoren@kernel.org>
-
-
-> ---
->  arch/riscv/include/asm/pgtable-64.h | 4 ++--
->  arch/riscv/include/asm/pgtable.h    | 4 ++--
->  arch/riscv/kvm/mmu.c                | 2 +-
->  3 files changed, 5 insertions(+), 5 deletions(-)
+>   1. Neither svade nor svadu in DT -- current behavior
+>   2. Only svade in DT -- current behavior
+>   3. Only svadu in DT -- expect hardware A/D updating
+>   4. Both svade and svadu in DT -- current behavior, but, if we have FWFT,
+>      then use it to switch to svadu. If we don't have FWFT, then, oh well...
 >
-> diff --git a/arch/riscv/include/asm/pgtable-64.h b/arch/riscv/include/asm/pgtable-64.h
-> index 6d59e4695200..0e57bf1e25e9 100644
-> --- a/arch/riscv/include/asm/pgtable-64.h
-> +++ b/arch/riscv/include/asm/pgtable-64.h
-> @@ -153,7 +153,7 @@ static inline pud_t pfn_pud(unsigned long pfn, pgprot_t prot)
->
->  static inline unsigned long _pud_pfn(pud_t pud)
->  {
-> -       return pud_val(pud) >> _PAGE_PFN_SHIFT;
-> +       return (pud_val(pud) & _PAGE_PFN_MASK) >> _PAGE_PFN_SHIFT;
->  }
->
->  static inline pmd_t *pud_pgtable(pud_t pud)
-> @@ -240,7 +240,7 @@ static inline void p4d_clear(p4d_t *p4d)
->  static inline pud_t *p4d_pgtable(p4d_t p4d)
->  {
->         if (pgtable_l4_enabled)
-> -               return (pud_t *)pfn_to_virt(p4d_val(p4d) >> _PAGE_PFN_SHIFT);
-> +               return (pud_t *)pfn_to_virt((p4d_val(p4d) & _PAGE_PFN_MASK) >> _PAGE_PFN_SHIFT);
->
->         return (pud_t *)pud_pgtable((pud_t) { p4d_val(p4d) });
->  }
-> diff --git a/arch/riscv/include/asm/pgtable.h b/arch/riscv/include/asm/pgtable.h
-> index e2658a25f06d..43064025f4b0 100644
-> --- a/arch/riscv/include/asm/pgtable.h
-> +++ b/arch/riscv/include/asm/pgtable.h
-> @@ -255,7 +255,7 @@ static inline pgd_t pfn_pgd(unsigned long pfn, pgprot_t prot)
->
->  static inline unsigned long _pgd_pfn(pgd_t pgd)
->  {
-> -       return pgd_val(pgd) >> _PAGE_PFN_SHIFT;
-> +       return (pgd_val(pgd) & _PAGE_PFN_MASK) >> _PAGE_PFN_SHIFT;
->  }
->
->  static inline struct page *pmd_page(pmd_t pmd)
-> @@ -568,7 +568,7 @@ static inline pmd_t pmd_mkinvalid(pmd_t pmd)
->         return __pmd(pmd_val(pmd) & ~(_PAGE_PRESENT|_PAGE_PROT_NONE));
->  }
->
-> -#define __pmd_to_phys(pmd)  (pmd_val(pmd) >> _PAGE_PFN_SHIFT << PAGE_SHIFT)
-> +#define __pmd_to_phys(pmd)  ((pmd_val(pmd) & _PAGE_PFN_MASK) >> _PAGE_PFN_SHIFT << PAGE_SHIFT)
->
->  static inline unsigned long pmd_pfn(pmd_t pmd)
->  {
-> diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
-> index f80a34fbf102..db03c5a29d4c 100644
-> --- a/arch/riscv/kvm/mmu.c
-> +++ b/arch/riscv/kvm/mmu.c
-> @@ -55,7 +55,7 @@ static inline unsigned long stage2_pte_index(gpa_t addr, u32 level)
->
->  static inline unsigned long stage2_pte_page_vaddr(pte_t pte)
->  {
-> -       return (unsigned long)pfn_to_virt(pte_val(pte) >> _PAGE_PFN_SHIFT);
-> +       return (unsigned long)pfn_to_virt((pte_val(pte) & _PAGE_PFN_MASK) >> _PAGE_PFN_SHIFT);
->  }
->
->  static int stage2_page_size_to_level(unsigned long page_size, u32 *out_level)
-> --
-> 2.34.1
->
+> Platforms/firmwares that aren't concerned with the profiles can choose (3)
+> and Linux is fine. Those that do want to conform to the profile will
+> choose (4) but Linux won't get the benefit of svadu until it also gets
+> FWFT.
 
 
--- 
-Best Regards
- Guo Ren
+I think this solution pleases everyone so I'd say we should go for it, 
+thanks Andrew!
 
-ML: https://lore.kernel.org/linux-csky/
+@Yong-Xuan do you think you can prepare another spin with Andrew's 
+proposal implemented?
+
+Thanks,
+
+Alex
+
+
+>
+> IOW, I think your proposal is fine except for wanting to document in the
+> DT bindings that only svade or svadu may be provided, since I think we'll
+> want both to be allowed eventually.
+>
+> Thanks,
+> drew
+>
+> _______________________________________________
+> linux-riscv mailing list
+> linux-riscv at lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-riscv
 
