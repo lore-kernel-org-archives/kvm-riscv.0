@@ -1,128 +1,163 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Mon, 3 Jun 2024 14:36:42 +0200
-Subject: [PATCH v3 0/6] riscv: Apply Zawrs when available
-In-Reply-To: <20240426100820.14762-8-ajones@ventanamicro.com>
-References: <20240426100820.14762-8-ajones@ventanamicro.com>
-Message-ID: <20240603-f8650a2cc220b73cf52d77c7@orel>
+From: James Houghton <jthoughton@google.com>
+Date: Mon, 3 Jun 2024 15:45:59 -0700
+Subject: [PATCH v4 2/7] mm: multi-gen LRU: Have secondary MMUs participate
+ in aging
+In-Reply-To: <CAOUHufZq6DwpStzHtjG+TOiHaQ6FFbkTfHMCe8Yy0n_M9MKdqw@mail.gmail.com>
+References: <20240529180510.2295118-1-jthoughton@google.com>
+ <20240529180510.2295118-3-jthoughton@google.com> <CAOUHufYFHKLwt1PWp2uS6g174GZYRZURWJAmdUWs5eaKmhEeyQ@mail.gmail.com>
+ <ZlelW93_T6P-ZuSZ@google.com> <CAOUHufZdEpY6ra73SMHA33DegKxKaUM=Os7A7aDBFND6NkbUmQ@mail.gmail.com>
+ <Zley-u_dOlZ-S-a6@google.com> <CADrL8HXHWg_MkApYQTngzmN21NEGNWC6KzJDw_Lm63JHJkR=5A@mail.gmail.com>
+ <CAOUHufZq6DwpStzHtjG+TOiHaQ6FFbkTfHMCe8Yy0n_M9MKdqw@mail.gmail.com>
+Message-ID: <CADrL8HW44Hx_Ejx_6+FVKt1V17PdgT6rw+sNtKzumqc9UCVDfA@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Palmer,
+On Thu, May 30, 2024 at 11:06?PM Yu Zhao <yuzhao@google.com> wrote:
+>
+> On Wed, May 29, 2024 at 7:08?PM James Houghton <jthoughton@google.com> wrote:
+> >
+> > Hi Yu, Sean,
+> >
+> > Perhaps I "simplified" this bit of the series a little bit too much.
+> > Being able to opportunistically do aging with KVM (even without
+> > setting the Kconfig) is valuable.
+> >
+> > IIUC, we have the following possibilities:
+> > - v4: aging with KVM is done if the new Kconfig is set.
+> > - v3: aging with KVM is always done.
+>
+> This is not true -- in v3, MGLRU only scans secondary MMUs if it can
+> be done locklessly on x86. It uses a bitmap to imply this requirement.
+>
+> > - v2: aging with KVM is done when the architecture reports that it can
+> > probably be done locklessly, set at KVM MMU init time.
+>
+> Not really -- it's only done if it can be done locklessly on both x86 and arm64.
+>
+> > - Another possibility?: aging with KVM is only done exactly when it
+> > can be done locklessly (i.e., mmu_notifier_test/clear_young() called
+> > such that it will not grab any locks).
+>
+> This is exactly the case for v2.
 
-I submit our concerns of wrs.nto to RVI ARC for consideration. They
-discussed it but don't believe there's a need for concern. The
-expectation is that there will always be enough interrupt activity
-and that those interrupts with activity will not likely be locally
-disabled.
+Thanks for clarifying; sorry for getting this wrong.
 
-Can we consider this series for 6.10?
+>
+> > I like the v4 approach because:
+> > 1. We can choose whether or not to do aging with KVM no matter what
+> > architecture we're using (without requiring userspace be aware to
+> > disable the feature at runtime with sysfs to avoid regressing
+> > performance if they don't care about proactive reclaim).
+> > 2. If we check the new feature bit (0x8) in sysfs, we can know for
+> > sure if aging is meant to be working or not. The selftest changes I
+> > made won't work properly unless there is a way to be sure that aging
+> > is working with KVM.
+>
+> I'm not convinced, but it doesn't mean your point of view is invalid.
+> If you fully understand the implications of your design choice and
+> document them, I will not object.
+>
+> All optimizations in v2 were measured step by step. Even that bitmap,
+> which might be considered overengineered, brought a readily
+> measuarable 4% improvement in memcached throughput on Altra Max
+> swapping to Optane:
+>
+> Using the bitmap (64 KVM PTEs for each call)
+> ============================================================================================================================
+> Type         Ops/sec     Hits/sec   Misses/sec    Avg. Latency     p50
+> Latency     p99 Latency   p99.9 Latency       KB/sec
+> ----------------------------------------------------------------------------------------------------------------------------
+> Sets            0.00          ---          ---             ---
+>     ---             ---             ---         0.00
+> Gets      1012801.92    431436.92     14965.11         0.06246
+> 0.04700         0.16700         4.31900     39635.83
+> Waits           0.00          ---          ---             ---
+>     ---             ---             ---          ---
+> Totals    1012801.92    431436.92     14965.11         0.06246
+> 0.04700         0.16700         4.31900     39635.83
+>
+>
+> Not using the bitmap (1 KVM PTEs for each call)
+> ============================================================================================================================
+> Type         Ops/sec     Hits/sec   Misses/sec    Avg. Latency     p50
+> Latency     p99 Latency   p99.9 Latency       KB/sec
+> ----------------------------------------------------------------------------------------------------------------------------
+> Sets            0.00          ---          ---             ---
+>     ---             ---             ---         0.00
+> Gets       968210.02    412443.85     14303.89         0.06517
+> 0.04700         0.15900         7.42300     37890.74
+> Waits           0.00          ---          ---             ---
+>     ---             ---             ---          ---
+> Totals     968210.02    412443.85     14303.89         0.06517
+> 0.04700         0.15900         7.42300     37890.74
+>
+>
+> FlameGraphs with bitmap (1.svg) and without bitmap (2.svg) attached.
+>
+> What I don't think is acceptable is simplifying those optimizations
+> out without documenting your justifications (I would even call it a
+> design change, rather than simplification, from v3 to v4).
 
-Thanks,
-drew
+I'll put back something similar to what you had before (like a
+test_clear_young() with a "fast" parameter instead of "bitmap"). I
+like the idea of having a new mmu notifier, like
+fast_test_clear_young(), while leaving test_young() and clear_young()
+unchanged (where "fast" means "prioritize speed over accuracy"). It
+seems a little more straightforward that way.
 
-On Fri, Apr 26, 2024 at 12:08:20PM GMT, Andrew Jones wrote:
-> Zawrs provides two instructions (wrs.nto and wrs.sto), where both are
-> meant to allow the hart to enter a low-power state while waiting on a
-> store to a memory location. The instructions also both wait an
-> implementation-defined "short" duration (unless the implementation
-> terminates the stall for another reason). The difference is that while
-> wrs.sto will terminate when the duration elapses, wrs.nto, depending on
-> configuration, will either just keep waiting or an ILL exception will be
-> raised. Linux will use wrs.nto, so if platforms have an implementation
-> which falls in the "just keep waiting" category (which is not expected),
-> then it should _not_ advertise Zawrs in the hardware description.
-> 
-> Like wfi (and with the same {m,h}status bits to configure it), when
-> wrs.nto is configured to raise exceptions it's expected that the higher
-> privilege level will see the instruction was a wait instruction, do
-> something, and then resume execution following the instruction. For
-> example, KVM does configure exceptions for wfi (hstatus.VTW=1) and
-> therefore also for wrs.nto. KVM does this for wfi since it's better to
-> allow other tasks to be scheduled while a VCPU waits for an interrupt.
-> For waits such as those where wrs.nto/sto would be used, which are
-> typically locks, it is also a good idea for KVM to be involved, as it
-> can attempt to schedule the lock holding VCPU.
-> 
-> This series starts with Christoph's addition of the riscv
-> smp_cond_load_relaxed function which applies wrs.sto when available.
-> That patch has been reworked to use wrs.nto and to use the same approach
-> as Arm for the wait loop, since we can't have arbitrary C code between
-> the load-reserved and the wrs. Then, hwprobe support is added (since the
-> instructions are also usable from usermode), and finally KVM is
-> taught about wrs.nto, allowing guests to see and use the Zawrs
-> extension.
-> 
-> We still don't have test results from hardware, and it's not possible to
-> prove that using Zawrs is a win when testing on QEMU, not even when
-> oversubscribing VCPUs to guests. However, it is possible to use KVM
-> selftests to force a scenario where we can prove Zawrs does its job and
-> does it well. [4] is a test which does this and, on my machine, without
-> Zawrs it takes 16 seconds to complete and with Zawrs it takes 0.25
-> seconds.
-> 
-> This series is also available here [1]. In order to use QEMU for testing
-> a build with [2] is needed. In order to enable guests to use Zawrs with
-> KVM using kvmtool, the branch at [3] may be used.
-> 
-> [1] https://github.com/jones-drew/linux/commits/riscv/zawrs-v3/
-> [2] https://lore.kernel.org/all/20240312152901.512001-2-ajones at ventanamicro.com/
-> [3] https://github.com/jones-drew/kvmtool/commits/riscv/zawrs/
-> [4] https://github.com/jones-drew/linux/commit/cb2beccebcece10881db842ed69bdd5715cfab5d
-> 
-> Thanks,
-> drew
-> 
-> v3:
->  - Moved comment about expected termination from the DT binding text
->    to a code comment.
-> 
-> v2:
->  - Added DT bindings patch with additional Linux specifications due
->    to wrs.nto potentially never terminating, as suggested by Palmer
->  - Added patch to share pause insn definition
->  - Rework main Zawrs support patch to use Arm approach (which is
->    also the approach that Andrea Parri suggested)
->  - Dropped the riscv implementation of smp_cond_load_acquire().
->    afaict, the generic implementation, which will use the riscv
->    implementation of smp_cond_load_relaxed() is sufficient for riscv.
->  - The rework was large enough (IMO) to drop Heiko's s-o-b and to
->    add myself as a co-developer
-> 
-> 
-> Andrew Jones (5):
->   riscv: Provide a definition for 'pause'
->   dt-bindings: riscv: Add Zawrs ISA extension description
->   riscv: hwprobe: export Zawrs ISA extension
->   KVM: riscv: Support guest wrs.nto
->   KVM: riscv: selftests: Add Zawrs extension to get-reg-list test
-> 
-> Christoph M??llner (1):
->   riscv: Add Zawrs support for spinlocks
-> 
->  Documentation/arch/riscv/hwprobe.rst          |  4 ++
->  .../devicetree/bindings/riscv/extensions.yaml |  7 +++
->  arch/riscv/Kconfig                            | 20 ++++---
->  arch/riscv/Makefile                           |  3 -
->  arch/riscv/include/asm/barrier.h              | 45 +++++++++-----
->  arch/riscv/include/asm/cmpxchg.h              | 58 +++++++++++++++++++
->  arch/riscv/include/asm/hwcap.h                |  1 +
->  arch/riscv/include/asm/insn-def.h             |  4 ++
->  arch/riscv/include/asm/kvm_host.h             |  1 +
->  arch/riscv/include/asm/vdso/processor.h       |  8 +--
->  arch/riscv/include/uapi/asm/hwprobe.h         |  1 +
->  arch/riscv/include/uapi/asm/kvm.h             |  1 +
->  arch/riscv/kernel/cpufeature.c                |  1 +
->  arch/riscv/kernel/sys_hwprobe.c               |  1 +
->  arch/riscv/kvm/vcpu.c                         |  1 +
->  arch/riscv/kvm/vcpu_insn.c                    | 15 +++++
->  arch/riscv/kvm/vcpu_onereg.c                  |  2 +
->  .../selftests/kvm/riscv/get-reg-list.c        |  4 ++
->  18 files changed, 146 insertions(+), 31 deletions(-)
-> 
-> -- 
-> 2.44.0
-> 
+>
+> > For look-around at eviction time:
+> > - v4: done if the main mm PTE was young and no MMU notifiers are subscribed.
+> > - v2/v3: done if the main mm PTE was young or (the SPTE was young and
+> > the MMU notifier was lockless/fast).
+>
+> The host and secondary MMUs are two *independent* cases, IMO:
+> 1. lookaround the host MMU if the PTE mapping the folio under reclaim is young.
+> 2. lookaround the secondary MMU if it can be done locklessly.
+>
+> So the v2/v3 behavior sounds a lot more reasonable to me.
+
+I'll restore the v2/v3 behavior. I initially removed it because,
+without batching, we (mostly) lose the spatial locality that, IIUC,
+look-around is designed to exploit.
+
+>
+> Also a nit -- don't use 'else' in the following case (should_look_around()):
+>
+>   if (foo)
+>     return bar;
+>   else
+>     do_something();
+
+Oh, yes, sorry. I wrote and rewrote should_look_around() quite a few
+times while trying to figure out what made sense in a no-batching
+series. I'll fix this.
+
+>
+> > I made this logic change as part of removing batching.
+> >
+> > I'd really appreciate guidance on what the correct thing to do is.
+> >
+> > In my mind, what would work great is: by default, do aging exactly
+> > when KVM can do it locklessly, and then have a Kconfig to always have
+> > MGLRU to do aging with KVM if a user really cares about proactive
+> > reclaim (when the feature bit is set). The selftest can check the
+> > Kconfig + feature bit to know for sure if aging will be done.
+>
+> I still don't see how that Kconfig helps. Or why the new static branch
+> isn't enough?
+
+Without a special Kconfig, the feature bit just tells us that aging
+with KVM is possible, not that it will necessarily be done. For the
+self-test, it'd be good to know exactly when aging is being done or
+not, so having a Kconfig like LRU_GEN_ALWAYS_WALK_SECONDARY_MMU would
+help make the self-test set the right expectations for aging.
+
+The Kconfig would also allow a user to know that, no matter what,
+we're going to get correct age data for VMs, even if, say, we're using
+the shadow MMU. This is somewhat important for me/Google Cloud. Is
+that reasonable? Maybe there's a better solution.
 
