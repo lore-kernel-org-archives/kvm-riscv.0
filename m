@@ -1,62 +1,26 @@
-From: Clément Léger <cleger@rivosinc.com>
-Date: Tue,  4 Jun 2024 14:45:48 +0200
-Subject: [PATCH v6 16/16] KVM: riscv: selftests: Add Zcmop extension to get-reg-list test
-In-Reply-To: <20240604124550.3214710-1-cleger@rivosinc.com>
-References: <20240604124550.3214710-1-cleger@rivosinc.com>
-Message-ID: <20240604124550.3214710-17-cleger@rivosinc.com>
+From: Sean Christopherson <seanjc@google.com>
+Date: Tue, 4 Jun 2024 08:30:49 -0700
+Subject: [PATCH] KVM: selftests: Fix RISC-V compilation
+In-Reply-To: <20240604-e11569f6e3aa7675774628ed@orel>
+References: <20240603122045.323064-2-ajones@ventanamicro.com> <20240604-e11569f6e3aa7675774628ed@orel>
+Message-ID: <Zl8zKYynz1rgg1OX@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The KVM RISC-V allows Zcmop extension for Guest/VM so add this
-extension to get-reg-list test.
+On Tue, Jun 04, 2024, Andrew Jones wrote:
+> On Mon, Jun 03, 2024 at 02:20:46PM GMT, Andrew Jones wrote:
+> > Due to commit 2b7deea3ec7c ("Revert "kvm: selftests: move base
+> > kvm_util.h declarations to kvm_util_base.h"") kvm selftests now
+> > requires implicitly including ucall_common.h when needed. The commit
+>            ^ of course I meant 'explicitly' here. Gota love brain inversions
+> and not reviewing commit messages closely until after posting... Should I
+> post a v2 or just promise to buy a beer in exchange for a fixup-on-merge?
 
-Signed-off-by: Cl?ment L?ger <cleger@rivosinc.com>
-Reviewed-by: Anup Patel <anup@brainfault.org>
-Acked-by: Anup Patel <anup@brainfault.org>
----
- tools/testing/selftests/kvm/riscv/get-reg-list.c | 4 ++++
- 1 file changed, 4 insertions(+)
+LOL, what kind of question is that?  Beer must be a lot cheaper in your neck of
+the woods :-)
 
-diff --git a/tools/testing/selftests/kvm/riscv/get-reg-list.c b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-index 864a701ef6c3..1a5637a6ea1e 100644
---- a/tools/testing/selftests/kvm/riscv/get-reg-list.c
-+++ b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-@@ -60,6 +60,7 @@ bool filter_reg(__u64 reg)
- 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZCB:
- 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZCD:
- 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZCF:
-+	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZCMOP:
- 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZFA:
- 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZFH:
- 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZFHMIN:
-@@ -431,6 +432,7 @@ static const char *isa_ext_single_id_to_str(__u64 reg_off)
- 		KVM_ISA_EXT_ARR(ZCB),
- 		KVM_ISA_EXT_ARR(ZCD),
- 		KVM_ISA_EXT_ARR(ZCF),
-+		KVM_ISA_EXT_ARR(ZCMOP),
- 		KVM_ISA_EXT_ARR(ZFA),
- 		KVM_ISA_EXT_ARR(ZFH),
- 		KVM_ISA_EXT_ARR(ZFHMIN),
-@@ -960,6 +962,7 @@ KVM_ISA_EXT_SIMPLE_CONFIG(zca, ZCA),
- KVM_ISA_EXT_SIMPLE_CONFIG(zcb, ZCB),
- KVM_ISA_EXT_SIMPLE_CONFIG(zcd, ZCD),
- KVM_ISA_EXT_SIMPLE_CONFIG(zcf, ZCF),
-+KVM_ISA_EXT_SIMPLE_CONFIG(zcmop, ZCMOP);
- KVM_ISA_EXT_SIMPLE_CONFIG(zfa, ZFA);
- KVM_ISA_EXT_SIMPLE_CONFIG(zfh, ZFH);
- KVM_ISA_EXT_SIMPLE_CONFIG(zfhmin, ZFHMIN);
-@@ -1021,6 +1024,7 @@ struct vcpu_reg_list *vcpu_configs[] = {
- 	&config_zcb,
- 	&config_zcd,
- 	&config_zcf,
-+	&config_zcmop,
- 	&config_zfa,
- 	&config_zfh,
- 	&config_zfhmin,
--- 
-2.45.1
-
+I'll grab this if no one jumps on it by tomorrow.
 
