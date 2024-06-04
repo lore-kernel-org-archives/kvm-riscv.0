@@ -1,75 +1,77 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Tue, 4 Jun 2024 07:54:09 +0200
-Subject: [PATCH] KVM: selftests: Fix RISC-V compilation
-In-Reply-To: <20240603122045.323064-2-ajones@ventanamicro.com>
-References: <20240603122045.323064-2-ajones@ventanamicro.com>
-Message-ID: <20240604-e11569f6e3aa7675774628ed@orel>
+From: Clément Léger <cleger@rivosinc.com>
+Date: Tue, 4 Jun 2024 09:18:25 +0200
+Subject: [PATCH v5 08/16] riscv: add ISA parsing for Zca, Zcf, Zcd and Zcb
+In-Reply-To: <mhng-d5016935-99b6-4dc6-bbd2-ed84eb834f98@palmer-ri-x1c9a>
+References: <mhng-d5016935-99b6-4dc6-bbd2-ed84eb834f98@palmer-ri-x1c9a>
+Message-ID: <06d8ae43-4aad-4637-a33b-9bae91b23872@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Jun 03, 2024 at 02:20:46PM GMT, Andrew Jones wrote:
-> Due to commit 2b7deea3ec7c ("Revert "kvm: selftests: move base
-> kvm_util.h declarations to kvm_util_base.h"") kvm selftests now
-> requires implicitly including ucall_common.h when needed. The commit
-           ^ of course I meant 'explicitly' here. Gota love brain inversions
-and not reviewing commit messages closely until after posting... Should I
-post a v2 or just promise to buy a beer in exchange for a fixup-on-merge?
+
+
+On 30/05/2024 23:13, Palmer Dabbelt wrote:
+> On Wed, 22 May 2024 00:20:09 PDT (-0700), cleger at rivosinc.com wrote:
+>>
+>>
+>> On 21/05/2024 21:49, Conor Dooley wrote:
+>>> On Fri, May 17, 2024 at 04:52:48PM +0200, Cl?ment L?ger wrote:
+>>>
+>>>> +static int riscv_ext_zca_depends(const struct riscv_isa_ext_data
+>>>> *data,
+>>>> +???????????????? const unsigned long *isa_bitmap)
+>>>> +{
+>>>> +??? return __riscv_isa_extension_available(isa_bitmap,
+>>>> RISCV_ISA_EXT_ZCA) ? 0 : -EPROBE_DEFER;
+>>>> +}
+>>>> +static int riscv_ext_zcd_validate(const struct riscv_isa_ext_data
+>>>> *data,
+>>>> +????????????????? const unsigned long *isa_bitmap)
+>>>> +{
+>>>> +??? return __riscv_isa_extension_available(isa_bitmap,
+>>>> RISCV_ISA_EXT_ZCA) &&
+>>>> +?????????? __riscv_isa_extension_available(isa_bitmap,
+>>>> RISCV_ISA_EXT_d) ? 0 : -EPROBE_DEFER;
+>>>> +}
+>>>
+>>> Could you write the logic in these out normally please? I think they'd
+>>> be more understandable (particular this second one) broken down and with
+>>> early return.
+>>
+>> Yes sure. I'll probably make the same thing for zcf_validate as well as
+>> removing the #ifdef and using IS_ENABLED():
+>>
+>> static int riscv_ext_zcf_validate(const struct riscv_isa_ext_data *data,
+>> ????????????????? const unsigned long *isa_bitmap)
+>> {
+>> ????if (IS_ENABLED(CONFIG_64BIT))
+>> ??????? return -EINVAL;
+>>
+>> ????if (__riscv_isa_extension_available(isa_bitmap, RISCV_ISA_EXT_ZCA) &&
+>> ??????? __riscv_isa_extension_available(isa_bitmap, RISCV_ISA_EXT_f))
+>> ?????????? return 0;
+>>
+>> ????return -EPROBE_DEFER;
+>> }
+> 
+> Are you going to send a v6 (sorry if I missed it, I'm trying to untangle
+> all these ISA parsing patch sets).
+
+Yes, I was waiting for more feedback/Rb by it seems like I now have
+everything I need. I'll send that.
 
 Thanks,
-drew
 
-> added the directives everywhere they were needed at the time, but, by
-> merge time, new places had been merged for RISC-V. Add those now to
-> fix RISC-V's compilation.
+Cl?ment
+
 > 
-> Fixes: dee7ea42a1eb ("Merge tag 'kvm-x86-selftests_utils-6.10' of https://github.com/kvm-x86/linux into HEAD")
-> Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
-> ---
->  tools/testing/selftests/kvm/lib/riscv/ucall.c    | 1 +
->  tools/testing/selftests/kvm/riscv/ebreak_test.c  | 1 +
->  tools/testing/selftests/kvm/riscv/sbi_pmu_test.c | 1 +
->  3 files changed, 3 insertions(+)
-> 
-> diff --git a/tools/testing/selftests/kvm/lib/riscv/ucall.c b/tools/testing/selftests/kvm/lib/riscv/ucall.c
-> index 14ee17151a59..b5035c63d516 100644
-> --- a/tools/testing/selftests/kvm/lib/riscv/ucall.c
-> +++ b/tools/testing/selftests/kvm/lib/riscv/ucall.c
-> @@ -9,6 +9,7 @@
->  
->  #include "kvm_util.h"
->  #include "processor.h"
-> +#include "sbi.h"
->  
->  void *ucall_arch_get_ucall(struct kvm_vcpu *vcpu)
->  {
-> diff --git a/tools/testing/selftests/kvm/riscv/ebreak_test.c b/tools/testing/selftests/kvm/riscv/ebreak_test.c
-> index 823c132069b4..0e0712854953 100644
-> --- a/tools/testing/selftests/kvm/riscv/ebreak_test.c
-> +++ b/tools/testing/selftests/kvm/riscv/ebreak_test.c
-> @@ -6,6 +6,7 @@
->   *
->   */
->  #include "kvm_util.h"
-> +#include "ucall_common.h"
->  
->  #define LABEL_ADDRESS(v) ((uint64_t)&(v))
->  
-> diff --git a/tools/testing/selftests/kvm/riscv/sbi_pmu_test.c b/tools/testing/selftests/kvm/riscv/sbi_pmu_test.c
-> index 69bb94e6b227..f299cbfd23ca 100644
-> --- a/tools/testing/selftests/kvm/riscv/sbi_pmu_test.c
-> +++ b/tools/testing/selftests/kvm/riscv/sbi_pmu_test.c
-> @@ -15,6 +15,7 @@
->  #include "processor.h"
->  #include "sbi.h"
->  #include "arch_timer.h"
-> +#include "ucall_common.h"
->  
->  /* Maximum counters(firmware + hardware) */
->  #define RISCV_MAX_PMU_COUNTERS 64
-> -- 
-> 2.45.1
-> 
+>>
+>>>
+>>> Otherwise,
+>>> Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
+>>>
+>>> Cheers,
+>>> Conor.
 
