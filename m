@@ -1,93 +1,67 @@
 From: Clément Léger <cleger@rivosinc.com>
-Date: Tue,  4 Jun 2024 14:45:41 +0200
-Subject: [PATCH v6 09/16] riscv: hwprobe: export Zca, Zcf, Zcd and Zcb ISA extensions
+Date: Tue,  4 Jun 2024 14:45:42 +0200
+Subject: [PATCH v6 10/16] RISC-V: KVM: Allow Zca, Zcf, Zcd and Zcb extensions for Guest/VM
 In-Reply-To: <20240604124550.3214710-1-cleger@rivosinc.com>
 References: <20240604124550.3214710-1-cleger@rivosinc.com>
-Message-ID: <20240604124550.3214710-10-cleger@rivosinc.com>
+Message-ID: <20240604124550.3214710-11-cleger@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Export Zca, Zcf, Zcd and Zcb ISA extension through hwprobe.
+Extend the KVM ISA extension ONE_REG interface to allow KVM user space
+to detect and enable Zca, Zcf, Zcd and Zcb extensions for Guest/VM.
 
 Signed-off-by: Cl?ment L?ger <cleger@rivosinc.com>
-Reviewed-by: Charlie Jenkins <charlie@rivosinc.com>
+Reviewed-by: Anup Patel <anup@brainfault.org>
+Acked-by: Anup Patel <anup@brainfault.org>
 ---
- Documentation/arch/riscv/hwprobe.rst  | 20 ++++++++++++++++++++
- arch/riscv/include/uapi/asm/hwprobe.h |  4 ++++
- arch/riscv/kernel/sys_hwprobe.c       |  4 ++++
- 3 files changed, 28 insertions(+)
+ arch/riscv/include/uapi/asm/kvm.h | 4 ++++
+ arch/riscv/kvm/vcpu_onereg.c      | 8 ++++++++
+ 2 files changed, 12 insertions(+)
 
-diff --git a/Documentation/arch/riscv/hwprobe.rst b/Documentation/arch/riscv/hwprobe.rst
-index 48be38e0b788..cad84f51412d 100644
---- a/Documentation/arch/riscv/hwprobe.rst
-+++ b/Documentation/arch/riscv/hwprobe.rst
-@@ -196,6 +196,26 @@ The following keys are defined:
-        supported as defined in the RISC-V ISA manual starting from commit
-        58220614a5f ("Zimop is ratified/1.0").
+diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
+index db482ef0ae1e..71b17a6799e6 100644
+--- a/arch/riscv/include/uapi/asm/kvm.h
++++ b/arch/riscv/include/uapi/asm/kvm.h
+@@ -169,6 +169,10 @@ enum KVM_RISCV_ISA_EXT_ID {
+ 	KVM_RISCV_ISA_EXT_ZACAS,
+ 	KVM_RISCV_ISA_EXT_SSCOFPMF,
+ 	KVM_RISCV_ISA_EXT_ZIMOP,
++	KVM_RISCV_ISA_EXT_ZCA,
++	KVM_RISCV_ISA_EXT_ZCB,
++	KVM_RISCV_ISA_EXT_ZCD,
++	KVM_RISCV_ISA_EXT_ZCF,
+ 	KVM_RISCV_ISA_EXT_MAX,
+ };
  
-+  * :c:macro:`RISCV_HWPROBE_EXT_ZCA`: The Zca extension part of Zc* standard
-+       extensions for code size reduction, as ratified in commit 8be3419c1c0
-+       ("Zcf doesn't exist on RV64 as it contains no instructions") of
-+       riscv-code-size-reduction.
-+
-+  * :c:macro:`RISCV_HWPROBE_EXT_ZCB`: The Zcb extension part of Zc* standard
-+       extensions for code size reduction, as ratified in commit 8be3419c1c0
-+       ("Zcf doesn't exist on RV64 as it contains no instructions") of
-+       riscv-code-size-reduction.
-+
-+  * :c:macro:`RISCV_HWPROBE_EXT_ZCD`: The Zcd extension part of Zc* standard
-+       extensions for code size reduction, as ratified in commit 8be3419c1c0
-+       ("Zcf doesn't exist on RV64 as it contains no instructions") of
-+       riscv-code-size-reduction.
-+
-+  * :c:macro:`RISCV_HWPROBE_EXT_ZCF`: The Zcf extension part of Zc* standard
-+       extensions for code size reduction, as ratified in commit 8be3419c1c0
-+       ("Zcf doesn't exist on RV64 as it contains no instructions") of
-+       riscv-code-size-reduction.
-+
- * :c:macro:`RISCV_HWPROBE_KEY_CPUPERF_0`: A bitmask that contains performance
-   information about the selected set of processors.
- 
-diff --git a/arch/riscv/include/uapi/asm/hwprobe.h b/arch/riscv/include/uapi/asm/hwprobe.h
-index 575b95744843..fba3d74154b1 100644
---- a/arch/riscv/include/uapi/asm/hwprobe.h
-+++ b/arch/riscv/include/uapi/asm/hwprobe.h
-@@ -61,6 +61,10 @@ struct riscv_hwprobe {
- #define		RISCV_HWPROBE_EXT_ZICOND	(1ULL << 35)
- #define		RISCV_HWPROBE_EXT_ZIHINTPAUSE	(1ULL << 36)
- #define		RISCV_HWPROBE_EXT_ZIMOP		(1ULL << 37)
-+#define		RISCV_HWPROBE_EXT_ZCA		(1ULL << 38)
-+#define		RISCV_HWPROBE_EXT_ZCB		(1ULL << 39)
-+#define		RISCV_HWPROBE_EXT_ZCD		(1ULL << 40)
-+#define		RISCV_HWPROBE_EXT_ZCF		(1ULL << 41)
- #define RISCV_HWPROBE_KEY_CPUPERF_0	5
- #define		RISCV_HWPROBE_MISALIGNED_UNKNOWN	(0 << 0)
- #define		RISCV_HWPROBE_MISALIGNED_EMULATED	(1 << 0)
-diff --git a/arch/riscv/kernel/sys_hwprobe.c b/arch/riscv/kernel/sys_hwprobe.c
-index fc6f4238f0b3..11def345a42d 100644
---- a/arch/riscv/kernel/sys_hwprobe.c
-+++ b/arch/riscv/kernel/sys_hwprobe.c
-@@ -113,6 +113,8 @@ static void hwprobe_isa_ext0(struct riscv_hwprobe *pair,
- 		EXT_KEY(ZICOND);
- 		EXT_KEY(ZIHINTPAUSE);
- 		EXT_KEY(ZIMOP);
-+		EXT_KEY(ZCA);
-+		EXT_KEY(ZCB);
- 
- 		if (has_vector()) {
- 			EXT_KEY(ZVBB);
-@@ -133,6 +135,8 @@ static void hwprobe_isa_ext0(struct riscv_hwprobe *pair,
- 			EXT_KEY(ZFH);
- 			EXT_KEY(ZFHMIN);
- 			EXT_KEY(ZFA);
-+			EXT_KEY(ZCD);
-+			EXT_KEY(ZCF);
- 		}
- #undef EXT_KEY
- 	}
+diff --git a/arch/riscv/kvm/vcpu_onereg.c b/arch/riscv/kvm/vcpu_onereg.c
+index 09f0aa92a4da..f68b15b15f0e 100644
+--- a/arch/riscv/kvm/vcpu_onereg.c
++++ b/arch/riscv/kvm/vcpu_onereg.c
+@@ -49,6 +49,10 @@ static const unsigned long kvm_isa_ext_arr[] = {
+ 	KVM_ISA_EXT_ARR(ZBKC),
+ 	KVM_ISA_EXT_ARR(ZBKX),
+ 	KVM_ISA_EXT_ARR(ZBS),
++	KVM_ISA_EXT_ARR(ZCA),
++	KVM_ISA_EXT_ARR(ZCB),
++	KVM_ISA_EXT_ARR(ZCD),
++	KVM_ISA_EXT_ARR(ZCF),
+ 	KVM_ISA_EXT_ARR(ZFA),
+ 	KVM_ISA_EXT_ARR(ZFH),
+ 	KVM_ISA_EXT_ARR(ZFHMIN),
+@@ -134,6 +138,10 @@ static bool kvm_riscv_vcpu_isa_disable_allowed(unsigned long ext)
+ 	case KVM_RISCV_ISA_EXT_ZBKC:
+ 	case KVM_RISCV_ISA_EXT_ZBKX:
+ 	case KVM_RISCV_ISA_EXT_ZBS:
++	case KVM_RISCV_ISA_EXT_ZCA:
++	case KVM_RISCV_ISA_EXT_ZCB:
++	case KVM_RISCV_ISA_EXT_ZCD:
++	case KVM_RISCV_ISA_EXT_ZCF:
+ 	case KVM_RISCV_ISA_EXT_ZFA:
+ 	case KVM_RISCV_ISA_EXT_ZFH:
+ 	case KVM_RISCV_ISA_EXT_ZFHMIN:
 -- 
 2.45.1
 
