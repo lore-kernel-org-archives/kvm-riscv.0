@@ -1,64 +1,98 @@
-From: Yong-Xuan Wang <yongxuan.wang@sifive.com>
-Date: Wed,  5 Jun 2024 20:15:10 +0800
-Subject: [PATCH v5 4/4] KVM: riscv: selftests: Add Svade and Svadu Extension to get-reg-list test
-In-Reply-To: <20240605121512.32083-1-yongxuan.wang@sifive.com>
+From: Conor Dooley <conor@kernel.org>
+Date: Wed, 5 Jun 2024 17:54:58 +0100
+Subject: [PATCH v5 2/4] dt-bindings: riscv: Add Svade and Svadu Entries
+In-Reply-To: <20240605121512.32083-3-yongxuan.wang@sifive.com>
 References: <20240605121512.32083-1-yongxuan.wang@sifive.com>
-Message-ID: <20240605121512.32083-5-yongxuan.wang@sifive.com>
+ <20240605121512.32083-3-yongxuan.wang@sifive.com>
+Message-ID: <20240605-atrium-neuron-c2512b34d3da@spud>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Update the get-reg-list test to test the Svade and Svadu Extensions are
-available for guest OS.
+On Wed, Jun 05, 2024 at 08:15:08PM +0800, Yong-Xuan Wang wrote:
+> Add entries for the Svade and Svadu extensions to the riscv,isa-extensions
+> property.
+> 
+> Signed-off-by: Yong-Xuan Wang <yongxuan.wang@sifive.com>
+> ---
+>  .../devicetree/bindings/riscv/extensions.yaml | 30 +++++++++++++++++++
+>  1 file changed, 30 insertions(+)
+> 
+> diff --git a/Documentation/devicetree/bindings/riscv/extensions.yaml b/Documentation/devicetree/bindings/riscv/extensions.yaml
+> index 468c646247aa..1e30988826b9 100644
+> --- a/Documentation/devicetree/bindings/riscv/extensions.yaml
+> +++ b/Documentation/devicetree/bindings/riscv/extensions.yaml
+> @@ -153,6 +153,36 @@ properties:
+>              ratified at commit 3f9ed34 ("Add ability to manually trigger
+>              workflow. (#2)") of riscv-time-compare.
+>  
+> +        - const: svade
+> +          description: |
+> +            The standard Svade supervisor-level extension for raising page-fault
+> +            exceptions when PTE A/D bits need be set as ratified in the 20240213
+> +            version of the privileged ISA specification.
+> +
+> +            Both Svade and Svadu extensions control the hardware behavior when
+> +            the PTE A/D bits need to be set. The default behavior for the four
+> +            possible combinations of these extensions in the device tree are:
+> +            1. Neither svade nor svadu in DT: default to svade.
 
-Signed-off-by: Yong-Xuan Wang <yongxuan.wang@sifive.com>
----
- tools/testing/selftests/kvm/riscv/get-reg-list.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
+I think this needs to be expanded on, as to why nothing means svade.
 
-diff --git a/tools/testing/selftests/kvm/riscv/get-reg-list.c b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-index 222198dd6d04..1d32351ad55e 100644
---- a/tools/testing/selftests/kvm/riscv/get-reg-list.c
-+++ b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-@@ -45,6 +45,8 @@ bool filter_reg(__u64 reg)
- 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SSAIA:
- 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SSCOFPMF:
- 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SSTC:
-+	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SVADE:
-+	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SVADU:
- 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SVINVAL:
- 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SVNAPOT:
- 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SVPBMT:
-@@ -411,6 +413,8 @@ static const char *isa_ext_single_id_to_str(__u64 reg_off)
- 		KVM_ISA_EXT_ARR(SSAIA),
- 		KVM_ISA_EXT_ARR(SSCOFPMF),
- 		KVM_ISA_EXT_ARR(SSTC),
-+		KVM_ISA_EXT_ARR(SVADE),
-+		KVM_ISA_EXT_ARR(SVADU),
- 		KVM_ISA_EXT_ARR(SVINVAL),
- 		KVM_ISA_EXT_ARR(SVNAPOT),
- 		KVM_ISA_EXT_ARR(SVPBMT),
-@@ -935,6 +939,8 @@ KVM_ISA_EXT_SIMPLE_CONFIG(h, H);
- KVM_ISA_EXT_SUBLIST_CONFIG(smstateen, SMSTATEEN);
- KVM_ISA_EXT_SIMPLE_CONFIG(sscofpmf, SSCOFPMF);
- KVM_ISA_EXT_SIMPLE_CONFIG(sstc, SSTC);
-+KVM_ISA_EXT_SIMPLE_CONFIG(svade, SVADE);
-+KVM_ISA_EXT_SIMPLE_CONFIG(svadu, SVADU);
- KVM_ISA_EXT_SIMPLE_CONFIG(svinval, SVINVAL);
- KVM_ISA_EXT_SIMPLE_CONFIG(svnapot, SVNAPOT);
- KVM_ISA_EXT_SIMPLE_CONFIG(svpbmt, SVPBMT);
-@@ -991,6 +997,8 @@ struct vcpu_reg_list *vcpu_configs[] = {
- 	&config_smstateen,
- 	&config_sscofpmf,
- 	&config_sstc,
-+	&config_svade,
-+	&config_svadu,
- 	&config_svinval,
- 	&config_svnapot,
- 	&config_svpbmt,
--- 
-2.17.1
+> +            2. Only svade in DT: use svade.
 
+That's a statement of the obvious, right?
 
+> +            3. Only svadu in DT: use svadu.
+
+This is not relevant for Svade.
+
+> +            4. Both svade and svadu in DT: default to svade (Linux can switch to
+> +               svadu once the SBI FWFT extension is available).
+
+"The privilege level to which this devicetree has been provided can switch to
+Svadu if the SBI FWFT extension is available".
+
+> +        - const: svadu
+> +          description: |
+> +            The standard Svadu supervisor-level extension for hardware updating
+> +            of PTE A/D bits as ratified at commit c1abccf ("Merge pull request
+> +            #25 from ved-rivos/ratified") of riscv-svadu.
+> +
+> +            Both Svade and Svadu extensions control the hardware behavior when
+> +            the PTE A/D bits need to be set. The default behavior for the four
+> +            possible combinations of these extensions in the device tree are:
+
+@Anup/Drew/Alex, are we missing some wording in here about it only being
+valid to have Svadu in isolation if the provider of the devicetree has
+actually turned on Svadu? The binding says "the default behaviour", but
+it is not the "default" behaviour, the behaviour is a must AFAICT. If
+you set Svadu in isolation, you /must/ have turned it on. If you set
+Svadu and Svade, you must have Svadu turned off?
+
+> +            1. Neither svade nor svadu in DT: default to svade.
+> +            2. Only svade in DT: use svade.
+
+These two are not relevant to Svadu, I'd leave them out.
+
+> +            3. Only svadu in DT: use svadu.
+
+Again, statement of the obvious?
+
+> +            4. Both svade and svadu in DT: default to svade (Linux can switch to
+> +               svadu once the SBI FWFT extension is available).
+
+Same here as in the Svade entry.
+
+Thanks,
+Conor.
+
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 228 bytes
+Desc: not available
+URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20240605/90e840cf/attachment.sig>
