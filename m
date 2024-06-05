@@ -1,64 +1,89 @@
 From: Yong-Xuan Wang <yongxuan.wang@sifive.com>
-Date: Wed,  5 Jun 2024 20:15:08 +0800
-Subject: [PATCH v5 2/4] dt-bindings: riscv: Add Svade and Svadu Entries
+Date: Wed,  5 Jun 2024 20:15:09 +0800
+Subject: [PATCH v5 3/4] RISC-V: KVM: Add Svade and Svadu Extensions Support for Guest/VM
 In-Reply-To: <20240605121512.32083-1-yongxuan.wang@sifive.com>
 References: <20240605121512.32083-1-yongxuan.wang@sifive.com>
-Message-ID: <20240605121512.32083-3-yongxuan.wang@sifive.com>
+Message-ID: <20240605121512.32083-4-yongxuan.wang@sifive.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add entries for the Svade and Svadu extensions to the riscv,isa-extensions
-property.
+We extend the KVM ISA extension ONE_REG interface to allow VMM tools to
+detect and enable Svade and Svadu extensions for Guest/VM. Since the
+henvcfg.ADUE is read-only zero if the menvcfg.ADUE is zero, the Svadu
+extension is available for Guest/VM only when arch_has_hw_pte_young()
+is true.
 
 Signed-off-by: Yong-Xuan Wang <yongxuan.wang@sifive.com>
 ---
- .../devicetree/bindings/riscv/extensions.yaml | 30 +++++++++++++++++++
- 1 file changed, 30 insertions(+)
+ arch/riscv/include/uapi/asm/kvm.h | 2 ++
+ arch/riscv/kvm/vcpu.c             | 6 ++++++
+ arch/riscv/kvm/vcpu_onereg.c      | 6 ++++++
+ 3 files changed, 14 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/riscv/extensions.yaml b/Documentation/devicetree/bindings/riscv/extensions.yaml
-index 468c646247aa..1e30988826b9 100644
---- a/Documentation/devicetree/bindings/riscv/extensions.yaml
-+++ b/Documentation/devicetree/bindings/riscv/extensions.yaml
-@@ -153,6 +153,36 @@ properties:
-             ratified at commit 3f9ed34 ("Add ability to manually trigger
-             workflow. (#2)") of riscv-time-compare.
+diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
+index e878e7cc3978..a5e0c35d7e9a 100644
+--- a/arch/riscv/include/uapi/asm/kvm.h
++++ b/arch/riscv/include/uapi/asm/kvm.h
+@@ -168,6 +168,8 @@ enum KVM_RISCV_ISA_EXT_ID {
+ 	KVM_RISCV_ISA_EXT_ZTSO,
+ 	KVM_RISCV_ISA_EXT_ZACAS,
+ 	KVM_RISCV_ISA_EXT_SSCOFPMF,
++	KVM_RISCV_ISA_EXT_SVADE,
++	KVM_RISCV_ISA_EXT_SVADU,
+ 	KVM_RISCV_ISA_EXT_MAX,
+ };
  
-+        - const: svade
-+          description: |
-+            The standard Svade supervisor-level extension for raising page-fault
-+            exceptions when PTE A/D bits need be set as ratified in the 20240213
-+            version of the privileged ISA specification.
+diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+index 17e21df36cc1..21edd60c4756 100644
+--- a/arch/riscv/kvm/vcpu.c
++++ b/arch/riscv/kvm/vcpu.c
+@@ -540,6 +540,12 @@ static void kvm_riscv_vcpu_setup_config(struct kvm_vcpu *vcpu)
+ 	if (riscv_isa_extension_available(isa, ZICBOZ))
+ 		cfg->henvcfg |= ENVCFG_CBZE;
+ 
++	if (riscv_isa_extension_available(isa, SVADU))
++		cfg->henvcfg |= ENVCFG_ADUE;
 +
-+            Both Svade and Svadu extensions control the hardware behavior when
-+            the PTE A/D bits need to be set. The default behavior for the four
-+            possible combinations of these extensions in the device tree are:
-+            1. Neither svade nor svadu in DT: default to svade.
-+            2. Only svade in DT: use svade.
-+            3. Only svadu in DT: use svadu.
-+            4. Both svade and svadu in DT: default to svade (Linux can switch to
-+               svadu once the SBI FWFT extension is available).
++	if (riscv_isa_extension_available(isa, SVADE))
++		cfg->henvcfg &= ~ENVCFG_ADUE;
 +
-+        - const: svadu
-+          description: |
-+            The standard Svadu supervisor-level extension for hardware updating
-+            of PTE A/D bits as ratified at commit c1abccf ("Merge pull request
-+            #25 from ved-rivos/ratified") of riscv-svadu.
-+
-+            Both Svade and Svadu extensions control the hardware behavior when
-+            the PTE A/D bits need to be set. The default behavior for the four
-+            possible combinations of these extensions in the device tree are:
-+            1. Neither svade nor svadu in DT: default to svade.
-+            2. Only svade in DT: use svade.
-+            3. Only svadu in DT: use svadu.
-+            4. Both svade and svadu in DT: default to svade (Linux can switch to
-+               svadu once the SBI FWFT extension is available).
-+
-         - const: svinval
-           description:
-             The standard Svinval supervisor-level extension for fine-grained
+ 	if (riscv_has_extension_unlikely(RISCV_ISA_EXT_SMSTATEEN)) {
+ 		cfg->hstateen0 |= SMSTATEEN0_HSENVCFG;
+ 		if (riscv_isa_extension_available(isa, SSAIA))
+diff --git a/arch/riscv/kvm/vcpu_onereg.c b/arch/riscv/kvm/vcpu_onereg.c
+index c676275ea0a0..06e930f1e206 100644
+--- a/arch/riscv/kvm/vcpu_onereg.c
++++ b/arch/riscv/kvm/vcpu_onereg.c
+@@ -15,6 +15,7 @@
+ #include <asm/cacheflush.h>
+ #include <asm/cpufeature.h>
+ #include <asm/kvm_vcpu_vector.h>
++#include <asm/pgtable.h>
+ #include <asm/vector.h>
+ 
+ #define KVM_RISCV_BASE_ISA_MASK		GENMASK(25, 0)
+@@ -38,6 +39,8 @@ static const unsigned long kvm_isa_ext_arr[] = {
+ 	KVM_ISA_EXT_ARR(SSAIA),
+ 	KVM_ISA_EXT_ARR(SSCOFPMF),
+ 	KVM_ISA_EXT_ARR(SSTC),
++	KVM_ISA_EXT_ARR(SVADE),
++	KVM_ISA_EXT_ARR(SVADU),
+ 	KVM_ISA_EXT_ARR(SVINVAL),
+ 	KVM_ISA_EXT_ARR(SVNAPOT),
+ 	KVM_ISA_EXT_ARR(SVPBMT),
+@@ -105,6 +108,9 @@ static bool kvm_riscv_vcpu_isa_enable_allowed(unsigned long ext)
+ 		return __riscv_isa_extension_available(NULL, RISCV_ISA_EXT_SSAIA);
+ 	case KVM_RISCV_ISA_EXT_V:
+ 		return riscv_v_vstate_ctrl_user_allowed();
++	case KVM_RISCV_ISA_EXT_SVADU:
++		/* The henvcfg.ADUE is read-only zero if menvcfg.ADUE is zero. */
++		return arch_has_hw_pte_young();
+ 	default:
+ 		break;
+ 	}
 -- 
 2.17.1
 
