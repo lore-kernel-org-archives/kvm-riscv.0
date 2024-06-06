@@ -1,26 +1,75 @@
-From: Anup Patel <apatel@ventanamicro.com>
-Date: Thu, 6 Jun 2024 15:21:59 +0530
-Subject: [PATCH v3 2/2] perf kvm/riscv: Port perf kvm stat to RISC-V
-In-Reply-To: <mvmr0das93i.fsf@suse.de>
-References: <20240422080833.8745-1-liangshenlin@eswincomputing.com>
- <20240422080833.8745-3-liangshenlin@eswincomputing.com> <mvmr0das93i.fsf@suse.de>
-Message-ID: <CAK9=C2Ug2gcS5Rbqc9EQ6mVwrJkoeLscOm6wtgqGKHdqEdSpSA@mail.gmail.com>
+From: Anup Patel <anup@brainfault.org>
+Date: Thu, 6 Jun 2024 15:50:53 +0530
+Subject: [PATCH] KVM: selftests: Fix RISC-V compilation
+In-Reply-To: <20240603122045.323064-2-ajones@ventanamicro.com>
+References: <20240603122045.323064-2-ajones@ventanamicro.com>
+Message-ID: <CAAhSdy28AojFu7jF1imz9P1JYbn0vKJNnrOA-hN4WoaVHjtPtw@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Jun 6, 2024 at 3:10?PM Andreas Schwab <schwab@suse.de> wrote:
+On Mon, Jun 3, 2024 at 5:50?PM Andrew Jones <ajones@ventanamicro.com> wrote:
 >
-> On Apr 22 2024, Shenlin Liang wrote:
+> Due to commit 2b7deea3ec7c ("Revert "kvm: selftests: move base
+> kvm_util.h declarations to kvm_util_base.h"") kvm selftests now
+> requires implicitly including ucall_common.h when needed. The commit
+> added the directives everywhere they were needed at the time, but, by
+> merge time, new places had been merged for RISC-V. Add those now to
+> fix RISC-V's compilation.
 >
-> > \ No newline at end of file
->
-> Please fix that.
+> Fixes: dee7ea42a1eb ("Merge tag 'kvm-x86-selftests_utils-6.10' of https://github.com/kvm-x86/linux into HEAD")
+> Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
 
-Fixed in KVM RISC-V queue.
+Queued this for Linux-6.10-rcX fixes.
 
 Thanks,
 Anup
+
+> ---
+>  tools/testing/selftests/kvm/lib/riscv/ucall.c    | 1 +
+>  tools/testing/selftests/kvm/riscv/ebreak_test.c  | 1 +
+>  tools/testing/selftests/kvm/riscv/sbi_pmu_test.c | 1 +
+>  3 files changed, 3 insertions(+)
+>
+> diff --git a/tools/testing/selftests/kvm/lib/riscv/ucall.c b/tools/testing/selftests/kvm/lib/riscv/ucall.c
+> index 14ee17151a59..b5035c63d516 100644
+> --- a/tools/testing/selftests/kvm/lib/riscv/ucall.c
+> +++ b/tools/testing/selftests/kvm/lib/riscv/ucall.c
+> @@ -9,6 +9,7 @@
+>
+>  #include "kvm_util.h"
+>  #include "processor.h"
+> +#include "sbi.h"
+>
+>  void *ucall_arch_get_ucall(struct kvm_vcpu *vcpu)
+>  {
+> diff --git a/tools/testing/selftests/kvm/riscv/ebreak_test.c b/tools/testing/selftests/kvm/riscv/ebreak_test.c
+> index 823c132069b4..0e0712854953 100644
+> --- a/tools/testing/selftests/kvm/riscv/ebreak_test.c
+> +++ b/tools/testing/selftests/kvm/riscv/ebreak_test.c
+> @@ -6,6 +6,7 @@
+>   *
+>   */
+>  #include "kvm_util.h"
+> +#include "ucall_common.h"
+>
+>  #define LABEL_ADDRESS(v) ((uint64_t)&(v))
+>
+> diff --git a/tools/testing/selftests/kvm/riscv/sbi_pmu_test.c b/tools/testing/selftests/kvm/riscv/sbi_pmu_test.c
+> index 69bb94e6b227..f299cbfd23ca 100644
+> --- a/tools/testing/selftests/kvm/riscv/sbi_pmu_test.c
+> +++ b/tools/testing/selftests/kvm/riscv/sbi_pmu_test.c
+> @@ -15,6 +15,7 @@
+>  #include "processor.h"
+>  #include "sbi.h"
+>  #include "arch_timer.h"
+> +#include "ucall_common.h"
+>
+>  /* Maximum counters(firmware + hardware) */
+>  #define RISCV_MAX_PMU_COUNTERS 64
+> --
+> 2.45.1
+>
 
