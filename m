@@ -1,215 +1,69 @@
 From: Anup Patel <anup@brainfault.org>
-Date: Fri, 7 Jun 2024 12:20:40 +0530
-Subject: [PATCH v3 2/2] perf kvm/riscv: Port perf kvm stat to RISC-V
-In-Reply-To: <5fa1e23d.1f4a.18ff07726a1.Coremail.liangshenlin@eswincomputing.com>
-References: <20240422080833.8745-1-liangshenlin@eswincomputing.com>
- <20240422080833.8745-3-liangshenlin@eswincomputing.com> <ZmJUCJwavWXsesKn@google.com>
- <5fa1e23d.1f4a.18ff07726a1.Coremail.liangshenlin@eswincomputing.com>
-Message-ID: <CAAhSdy1DVEwAMVKPH0Pi3vUCumw1Rhg7Dz5pCp6G+WfF29nc9Q@mail.gmail.com>
+Date: Fri, 7 Jun 2024 12:37:01 +0530
+Subject: [PATCH] RISC-V:KVM: Add AMO load/store access fault traps to
+ redirect to guest
+In-Reply-To: <20240429092113.70695-1-betterman5240@gmail.com>
+References: <20240429092113.70695-1-betterman5240@gmail.com>
+Message-ID: <CAAhSdy3HPGS48TeG5LxiECAtNyzmzsJPzo+_eicgxL28nAgoHg@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Jun 7, 2024 at 7:44?AM Shenlin Liang
-<liangshenlin@eswincomputing.com> wrote:
+On Mon, Apr 29, 2024 at 2:51?PM Yu-Wei Hsu <betterman5240@gmail.com> wrote:
 >
+> When unhandled AMO load/store access fault traps are not delegated to
+> VS mode (hedeleg), M mode redirects them back to S mode.
+> However, upon returning from M mode,the KVM executed in HS mode terminates
+> VS mode software.
+> KVM should redirect traps back to VS mode and let the VS mode trap handler
+> determine the next steps.
+> This is one approach to handling access fault traps in KVM,
+> not only redirecting them to VS mode or terminating it.
 >
-> On 2024-06-07 08:27, Namhyung Kim <namhyung@kernel.org> wrote:
->
-> >
-> > Hello,
-> >
-> > On Mon, Apr 22, 2024 at 08:08:33AM +0000, Shenlin Liang wrote:
-> > > 'perf kvm stat report/record' generates a statistical analysis of KVM
-> > > events and can be used to analyze guest exit reasons.
-> > >
-> > > "report" reports statistical analysis of guest exit events.
-> > >
-> > > To record kvm events on the host:
-> > >  # perf kvm stat record -a
-> > >
-> > > To report kvm VM EXIT events:
-> > >  # perf kvm stat report --event=vmexit
-> > >
-> > > Signed-off-by: Shenlin Liang <liangshenlin@eswincomputing.com>
-> > > ---
-> > >  tools/perf/arch/riscv/Makefile                |  1 +
-> > >  tools/perf/arch/riscv/util/Build              |  1 +
-> > >  tools/perf/arch/riscv/util/kvm-stat.c         | 79 +++++++++++++++++++
-> > >  .../arch/riscv/util/riscv_exception_types.h   | 35 ++++++++
-> > >  4 files changed, 116 insertions(+)
-> > >  create mode 100644 tools/perf/arch/riscv/util/kvm-stat.c
-> > >  create mode 100644 tools/perf/arch/riscv/util/riscv_exception_types.h
-> > >
-> > > diff --git a/tools/perf/arch/riscv/Makefile b/tools/perf/arch/riscv/Makefile
-> > > index a8d25d005207..e1e445615536 100644
-> > > --- a/tools/perf/arch/riscv/Makefile
-> > > +++ b/tools/perf/arch/riscv/Makefile
-> > > @@ -3,3 +3,4 @@ PERF_HAVE_DWARF_REGS := 1
-> > >  endif
-> > >  PERF_HAVE_ARCH_REGS_QUERY_REGISTER_OFFSET := 1
-> > >  PERF_HAVE_JITDUMP := 1
-> > > +HAVE_KVM_STAT_SUPPORT := 1
-> > > \ No newline at end of file
-> > > diff --git a/tools/perf/arch/riscv/util/Build b/tools/perf/arch/riscv/util/Build
-> > > index 603dbb5ae4dc..d72b04f8d32b 100644
-> > > --- a/tools/perf/arch/riscv/util/Build
-> > > +++ b/tools/perf/arch/riscv/util/Build
-> > > @@ -1,5 +1,6 @@
-> > >  perf-y += perf_regs.o
-> > >  perf-y += header.o
-> > >
-> > > +perf-$(CONFIG_LIBTRACEEVENT) += kvm-stat.o
-> > >  perf-$(CONFIG_DWARF) += dwarf-regs.o
-> > >  perf-$(CONFIG_LIBDW_DWARF_UNWIND) += unwind-libdw.o
-> > > diff --git a/tools/perf/arch/riscv/util/kvm-stat.c b/tools/perf/arch/riscv/util/kvm-stat.c
-> > > new file mode 100644
-> > > index 000000000000..58813049fc45
-> > > --- /dev/null
-> > > +++ b/tools/perf/arch/riscv/util/kvm-stat.c
-> > > @@ -0,0 +1,79 @@
-> > > +// SPDX-License-Identifier: GPL-2.0
-> > > +/*
-> > > + * Arch specific functions for perf kvm stat.
-> > > + *
-> > > + * Copyright 2024 Beijing ESWIN Computing Technology Co., Ltd.
-> > > + *
-> > > + */
-> > > +#include <errno.h>
-> > > +#include <memory.h>
-> > > +#include "../../../util/evsel.h"
-> > > +#include "../../../util/kvm-stat.h"
-> > > +#include "riscv_exception_types.h"
-> > > +#include "debug.h"
-> > > +
-> > > +define_exit_reasons_table(riscv_exit_reasons, kvm_riscv_exception_class);
-> > > +
-> > > +const char *vcpu_id_str = "id";
-> > > +const char *kvm_exit_reason = "scause";
-> > > +const char *kvm_entry_trace = "kvm:kvm_entry";
-> > > +const char *kvm_exit_trace = "kvm:kvm_exit";
-> > > +
-> > > +const char *kvm_events_tp[] = {
-> > > +   "kvm:kvm_entry",
-> > > +   "kvm:kvm_exit",
-> > > +   NULL,
-> > > +};
-> > > +
-> > > +static void event_get_key(struct evsel *evsel,
-> > > +                     struct perf_sample *sample,
-> > > +                     struct event_key *key)
-> > > +{
-> > > +   key->info = 0;
-> > > +   key->key = evsel__intval(evsel, sample, kvm_exit_reason);
-> > > +   key->key = (int)key->key;
-> >
-> > Looks unnecessary..
-> >
-> > Thanks,
-> > Namhyung
->
-> Yes?it's unnecessary...
-> @Anup, Could you delete this line when merging, or should I send another revision ?
+> Signed-off-by: Yu-Wei Hsu <betterman5240@gmail.com>
 
-No need for another revision, I have updated the riscv_kvm_queue.
+Overall this patch looks good to me but the patch subject and
+description can further simplified as follows:
 
-Regards,
+    RISC-V: KVM: Redirect AMO load/store access fault traps to guest
+
+    The KVM RISC-V does not delegate AMO load/store access fault traps to
+    VS-mode (hedeleg) so typically M-mode takes these traps and redirects
+    them back to HS-mode. However, upon returning from M-mode, the KVM
+    RISC-V running in HS-mode terminates VS-mode software.
+
+    The KVM RISC-V should redirect AMO load/store access fault traps back
+    to VS-mode and let the VS-mode trap handler determine the next steps.
+
+I have taken care of the above at the time of queuing this patch.
+
+Reviewed-by: Anup Patel <anup@brainfault.org>
+
+Queued this patch for Linux-6.11
+
+Thanks,
 Anup
 
-> Thanks,
-> Shenlin
+> ---
+>  arch/riscv/kvm/vcpu_exit.c | 2 ++
+>  1 file changed, 2 insertions(+)
 >
-> >
-> >
-> > > +   key->exit_reasons = riscv_exit_reasons;
-> > > +}
-> > > +
-> > > +static bool event_begin(struct evsel *evsel,
-> > > +                   struct perf_sample *sample __maybe_unused,
-> > > +                   struct event_key *key __maybe_unused)
-> > > +{
-> > > +   return evsel__name_is(evsel, kvm_entry_trace);
-> > > +}
-> > > +
-> > > +static bool event_end(struct evsel *evsel,
-> > > +                 struct perf_sample *sample,
-> > > +                 struct event_key *key)
-> > > +{
-> > > +   if (evsel__name_is(evsel, kvm_exit_trace)) {
-> > > +           event_get_key(evsel, sample, key);
-> > > +           return true;
-> > > +   }
-> > > +   return false;
-> > > +}
-> > > +
-> > > +static struct kvm_events_ops exit_events = {
-> > > +   .is_begin_event = event_begin,
-> > > +   .is_end_event   = event_end,
-> > > +   .decode_key     = exit_event_decode_key,
-> > > +   .name           = "VM-EXIT"
-> > > +};
-> > > +
-> > > +struct kvm_reg_events_ops kvm_reg_events_ops[] = {
-> > > +   {
-> > > +           .name   = "vmexit",
-> > > +           .ops    = &exit_events,
-> > > +   },
-> > > +   { NULL, NULL },
-> > > +};
-> > > +
-> > > +const char * const kvm_skip_events[] = {
-> > > +   NULL,
-> > > +};
-> > > +
-> > > +int cpu_isa_init(struct perf_kvm_stat *kvm, const char *cpuid __maybe_unused)
-> > > +{
-> > > +   kvm->exit_reasons_isa = "riscv64";
-> > > +   return 0;
-> > > +}
-> > > diff --git a/tools/perf/arch/riscv/util/riscv_exception_types.h b/tools/perf/arch/riscv/util/riscv_exception_types.h
-> > > new file mode 100644
-> > > index 000000000000..c49b8fa5e847
-> > > --- /dev/null
-> > > +++ b/tools/perf/arch/riscv/util/riscv_exception_types.h
-> > > @@ -0,0 +1,35 @@
-> > > +// SPDX-License-Identifier: GPL-2.0
-> > > +#ifndef ARCH_PERF_RISCV_EXCEPTION_TYPES_H
-> > > +#define ARCH_PERF_RISCV_EXCEPTION_TYPES_H
-> > > +
-> > > +#define EXC_INST_MISALIGNED 0
-> > > +#define EXC_INST_ACCESS 1
-> > > +#define EXC_INST_ILLEGAL 2
-> > > +#define EXC_BREAKPOINT 3
-> > > +#define EXC_LOAD_MISALIGNED 4
-> > > +#define EXC_LOAD_ACCESS 5
-> > > +#define EXC_STORE_MISALIGNED 6
-> > > +#define EXC_STORE_ACCESS 7
-> > > +#define EXC_SYSCALL 8
-> > > +#define EXC_HYPERVISOR_SYSCALL 9
-> > > +#define EXC_SUPERVISOR_SYSCALL 10
-> > > +#define EXC_INST_PAGE_FAULT 12
-> > > +#define EXC_LOAD_PAGE_FAULT 13
-> > > +#define EXC_STORE_PAGE_FAULT 15
-> > > +#define EXC_INST_GUEST_PAGE_FAULT 20
-> > > +#define EXC_LOAD_GUEST_PAGE_FAULT 21
-> > > +#define EXC_VIRTUAL_INST_FAULT 22
-> > > +#define EXC_STORE_GUEST_PAGE_FAULT 23
-> > > +
-> > > +#define EXC(x) {EXC_##x, #x }
-> > > +
-> > > +#define kvm_riscv_exception_class                                         \
-> > > +   EXC(INST_MISALIGNED), EXC(INST_ACCESS), EXC(INST_ILLEGAL),         \
-> > > +   EXC(BREAKPOINT), EXC(LOAD_MISALIGNED), EXC(LOAD_ACCESS),           \
-> > > +   EXC(STORE_MISALIGNED), EXC(STORE_ACCESS), EXC(SYSCALL),            \
-> > > +   EXC(HYPERVISOR_SYSCALL), EXC(SUPERVISOR_SYSCALL),                  \
-> > > +   EXC(INST_PAGE_FAULT), EXC(LOAD_PAGE_FAULT), EXC(STORE_PAGE_FAULT), \
-> > > +   EXC(INST_GUEST_PAGE_FAULT), EXC(LOAD_GUEST_PAGE_FAULT),            \
-> > > +   EXC(VIRTUAL_INST_FAULT), EXC(STORE_GUEST_PAGE_FAULT)
-> > > +
-> > > +#endif /* ARCH_PERF_RISCV_EXCEPTION_TYPES_H */
-> > > --
-> > > 2.37.2
-> > >
+> diff --git a/arch/riscv/kvm/vcpu_exit.c b/arch/riscv/kvm/vcpu_exit.c
+> index 2415722c01b8..ef8c5e3ec8a0 100644
+> --- a/arch/riscv/kvm/vcpu_exit.c
+> +++ b/arch/riscv/kvm/vcpu_exit.c
+> @@ -185,6 +185,8 @@ int kvm_riscv_vcpu_exit(struct kvm_vcpu *vcpu, struct kvm_run *run,
+>         case EXC_INST_ILLEGAL:
+>         case EXC_LOAD_MISALIGNED:
+>         case EXC_STORE_MISALIGNED:
+> +       case EXC_LOAD_ACCESS:
+> +       case EXC_STORE_ACCESS:
+>                 if (vcpu->arch.guest_context.hstatus & HSTATUS_SPV) {
+>                         kvm_riscv_vcpu_trap_redirect(vcpu, trap);
+>                         ret = 1;
+> --
+> 2.25.1
+>
 
