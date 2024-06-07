@@ -1,75 +1,195 @@
-From: Anup Patel <anup@brainfault.org>
-Date: Thu, 6 Jun 2024 15:50:53 +0530
-Subject: [PATCH] KVM: selftests: Fix RISC-V compilation
-In-Reply-To: <20240603122045.323064-2-ajones@ventanamicro.com>
-References: <20240603122045.323064-2-ajones@ventanamicro.com>
-Message-ID: <CAAhSdy28AojFu7jF1imz9P1JYbn0vKJNnrOA-hN4WoaVHjtPtw@mail.gmail.com>
+From: Namhyung Kim <namhyung@kernel.org>
+Date: Thu, 6 Jun 2024 17:27:52 -0700
+Subject: [PATCH v3 2/2] perf kvm/riscv: Port perf kvm stat to RISC-V
+In-Reply-To: <20240422080833.8745-3-liangshenlin@eswincomputing.com>
+References: <20240422080833.8745-1-liangshenlin@eswincomputing.com>
+ <20240422080833.8745-3-liangshenlin@eswincomputing.com>
+Message-ID: <ZmJUCJwavWXsesKn@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Jun 3, 2024 at 5:50?PM Andrew Jones <ajones@ventanamicro.com> wrote:
->
-> Due to commit 2b7deea3ec7c ("Revert "kvm: selftests: move base
-> kvm_util.h declarations to kvm_util_base.h"") kvm selftests now
-> requires implicitly including ucall_common.h when needed. The commit
-> added the directives everywhere they were needed at the time, but, by
-> merge time, new places had been merged for RISC-V. Add those now to
-> fix RISC-V's compilation.
->
-> Fixes: dee7ea42a1eb ("Merge tag 'kvm-x86-selftests_utils-6.10' of https://github.com/kvm-x86/linux into HEAD")
-> Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
+Hello,
 
-Queued this for Linux-6.10-rcX fixes.
+On Mon, Apr 22, 2024 at 08:08:33AM +0000, Shenlin Liang wrote:
+> 'perf kvm stat report/record' generates a statistical analysis of KVM
+> events and can be used to analyze guest exit reasons.
+> 
+> "report" reports statistical analysis of guest exit events.
+> 
+> To record kvm events on the host:
+>  # perf kvm stat record -a
+> 
+> To report kvm VM EXIT events:
+>  # perf kvm stat report --event=vmexit
+> 
+> Signed-off-by: Shenlin Liang <liangshenlin@eswincomputing.com>
+> ---
+>  tools/perf/arch/riscv/Makefile                |  1 +
+>  tools/perf/arch/riscv/util/Build              |  1 +
+>  tools/perf/arch/riscv/util/kvm-stat.c         | 79 +++++++++++++++++++
+>  .../arch/riscv/util/riscv_exception_types.h   | 35 ++++++++
+>  4 files changed, 116 insertions(+)
+>  create mode 100644 tools/perf/arch/riscv/util/kvm-stat.c
+>  create mode 100644 tools/perf/arch/riscv/util/riscv_exception_types.h
+> 
+> diff --git a/tools/perf/arch/riscv/Makefile b/tools/perf/arch/riscv/Makefile
+> index a8d25d005207..e1e445615536 100644
+> --- a/tools/perf/arch/riscv/Makefile
+> +++ b/tools/perf/arch/riscv/Makefile
+> @@ -3,3 +3,4 @@ PERF_HAVE_DWARF_REGS := 1
+>  endif
+>  PERF_HAVE_ARCH_REGS_QUERY_REGISTER_OFFSET := 1
+>  PERF_HAVE_JITDUMP := 1
+> +HAVE_KVM_STAT_SUPPORT := 1
+> \ No newline at end of file
+> diff --git a/tools/perf/arch/riscv/util/Build b/tools/perf/arch/riscv/util/Build
+> index 603dbb5ae4dc..d72b04f8d32b 100644
+> --- a/tools/perf/arch/riscv/util/Build
+> +++ b/tools/perf/arch/riscv/util/Build
+> @@ -1,5 +1,6 @@
+>  perf-y += perf_regs.o
+>  perf-y += header.o
+>  
+> +perf-$(CONFIG_LIBTRACEEVENT) += kvm-stat.o
+>  perf-$(CONFIG_DWARF) += dwarf-regs.o
+>  perf-$(CONFIG_LIBDW_DWARF_UNWIND) += unwind-libdw.o
+> diff --git a/tools/perf/arch/riscv/util/kvm-stat.c b/tools/perf/arch/riscv/util/kvm-stat.c
+> new file mode 100644
+> index 000000000000..58813049fc45
+> --- /dev/null
+> +++ b/tools/perf/arch/riscv/util/kvm-stat.c
+> @@ -0,0 +1,79 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +/*
+> + * Arch specific functions for perf kvm stat.
+> + *
+> + * Copyright 2024 Beijing ESWIN Computing Technology Co., Ltd.
+> + *
+> + */
+> +#include <errno.h>
+> +#include <memory.h>
+> +#include "../../../util/evsel.h"
+> +#include "../../../util/kvm-stat.h"
+> +#include "riscv_exception_types.h"
+> +#include "debug.h"
+> +
+> +define_exit_reasons_table(riscv_exit_reasons, kvm_riscv_exception_class);
+> +
+> +const char *vcpu_id_str = "id";
+> +const char *kvm_exit_reason = "scause";
+> +const char *kvm_entry_trace = "kvm:kvm_entry";
+> +const char *kvm_exit_trace = "kvm:kvm_exit";
+> +
+> +const char *kvm_events_tp[] = {
+> +	"kvm:kvm_entry",
+> +	"kvm:kvm_exit",
+> +	NULL,
+> +};
+> +
+> +static void event_get_key(struct evsel *evsel,
+> +			  struct perf_sample *sample,
+> +			  struct event_key *key)
+> +{
+> +	key->info = 0;
+> +	key->key = evsel__intval(evsel, sample, kvm_exit_reason);
+> +	key->key = (int)key->key;
+
+Looks unnecessary..
 
 Thanks,
-Anup
+Namhyung
 
-> ---
->  tools/testing/selftests/kvm/lib/riscv/ucall.c    | 1 +
->  tools/testing/selftests/kvm/riscv/ebreak_test.c  | 1 +
->  tools/testing/selftests/kvm/riscv/sbi_pmu_test.c | 1 +
->  3 files changed, 3 insertions(+)
->
-> diff --git a/tools/testing/selftests/kvm/lib/riscv/ucall.c b/tools/testing/selftests/kvm/lib/riscv/ucall.c
-> index 14ee17151a59..b5035c63d516 100644
-> --- a/tools/testing/selftests/kvm/lib/riscv/ucall.c
-> +++ b/tools/testing/selftests/kvm/lib/riscv/ucall.c
-> @@ -9,6 +9,7 @@
->
->  #include "kvm_util.h"
->  #include "processor.h"
-> +#include "sbi.h"
->
->  void *ucall_arch_get_ucall(struct kvm_vcpu *vcpu)
->  {
-> diff --git a/tools/testing/selftests/kvm/riscv/ebreak_test.c b/tools/testing/selftests/kvm/riscv/ebreak_test.c
-> index 823c132069b4..0e0712854953 100644
-> --- a/tools/testing/selftests/kvm/riscv/ebreak_test.c
-> +++ b/tools/testing/selftests/kvm/riscv/ebreak_test.c
-> @@ -6,6 +6,7 @@
->   *
->   */
->  #include "kvm_util.h"
-> +#include "ucall_common.h"
->
->  #define LABEL_ADDRESS(v) ((uint64_t)&(v))
->
-> diff --git a/tools/testing/selftests/kvm/riscv/sbi_pmu_test.c b/tools/testing/selftests/kvm/riscv/sbi_pmu_test.c
-> index 69bb94e6b227..f299cbfd23ca 100644
-> --- a/tools/testing/selftests/kvm/riscv/sbi_pmu_test.c
-> +++ b/tools/testing/selftests/kvm/riscv/sbi_pmu_test.c
-> @@ -15,6 +15,7 @@
->  #include "processor.h"
->  #include "sbi.h"
->  #include "arch_timer.h"
-> +#include "ucall_common.h"
->
->  /* Maximum counters(firmware + hardware) */
->  #define RISCV_MAX_PMU_COUNTERS 64
-> --
-> 2.45.1
->
+
+> +	key->exit_reasons = riscv_exit_reasons;
+> +}
+> +
+> +static bool event_begin(struct evsel *evsel,
+> +			struct perf_sample *sample __maybe_unused,
+> +			struct event_key *key __maybe_unused)
+> +{
+> +	return evsel__name_is(evsel, kvm_entry_trace);
+> +}
+> +
+> +static bool event_end(struct evsel *evsel,
+> +		      struct perf_sample *sample,
+> +		      struct event_key *key)
+> +{
+> +	if (evsel__name_is(evsel, kvm_exit_trace)) {
+> +		event_get_key(evsel, sample, key);
+> +		return true;
+> +	}
+> +	return false;
+> +}
+> +
+> +static struct kvm_events_ops exit_events = {
+> +	.is_begin_event = event_begin,
+> +	.is_end_event	= event_end,
+> +	.decode_key	= exit_event_decode_key,
+> +	.name		= "VM-EXIT"
+> +};
+> +
+> +struct kvm_reg_events_ops kvm_reg_events_ops[] = {
+> +	{
+> +		.name	= "vmexit",
+> +		.ops	= &exit_events,
+> +	},
+> +	{ NULL, NULL },
+> +};
+> +
+> +const char * const kvm_skip_events[] = {
+> +	NULL,
+> +};
+> +
+> +int cpu_isa_init(struct perf_kvm_stat *kvm, const char *cpuid __maybe_unused)
+> +{
+> +	kvm->exit_reasons_isa = "riscv64";
+> +	return 0;
+> +}
+> diff --git a/tools/perf/arch/riscv/util/riscv_exception_types.h b/tools/perf/arch/riscv/util/riscv_exception_types.h
+> new file mode 100644
+> index 000000000000..c49b8fa5e847
+> --- /dev/null
+> +++ b/tools/perf/arch/riscv/util/riscv_exception_types.h
+> @@ -0,0 +1,35 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +#ifndef ARCH_PERF_RISCV_EXCEPTION_TYPES_H
+> +#define ARCH_PERF_RISCV_EXCEPTION_TYPES_H
+> +
+> +#define EXC_INST_MISALIGNED 0
+> +#define EXC_INST_ACCESS 1
+> +#define EXC_INST_ILLEGAL 2
+> +#define EXC_BREAKPOINT 3
+> +#define EXC_LOAD_MISALIGNED 4
+> +#define EXC_LOAD_ACCESS 5
+> +#define EXC_STORE_MISALIGNED 6
+> +#define EXC_STORE_ACCESS 7
+> +#define EXC_SYSCALL 8
+> +#define EXC_HYPERVISOR_SYSCALL 9
+> +#define EXC_SUPERVISOR_SYSCALL 10
+> +#define EXC_INST_PAGE_FAULT 12
+> +#define EXC_LOAD_PAGE_FAULT 13
+> +#define EXC_STORE_PAGE_FAULT 15
+> +#define EXC_INST_GUEST_PAGE_FAULT 20
+> +#define EXC_LOAD_GUEST_PAGE_FAULT 21
+> +#define EXC_VIRTUAL_INST_FAULT 22
+> +#define EXC_STORE_GUEST_PAGE_FAULT 23
+> +
+> +#define EXC(x) {EXC_##x, #x }
+> +
+> +#define kvm_riscv_exception_class                                         \
+> +	EXC(INST_MISALIGNED), EXC(INST_ACCESS), EXC(INST_ILLEGAL),         \
+> +	EXC(BREAKPOINT), EXC(LOAD_MISALIGNED), EXC(LOAD_ACCESS),           \
+> +	EXC(STORE_MISALIGNED), EXC(STORE_ACCESS), EXC(SYSCALL),            \
+> +	EXC(HYPERVISOR_SYSCALL), EXC(SUPERVISOR_SYSCALL),                  \
+> +	EXC(INST_PAGE_FAULT), EXC(LOAD_PAGE_FAULT), EXC(STORE_PAGE_FAULT), \
+> +	EXC(INST_GUEST_PAGE_FAULT), EXC(LOAD_GUEST_PAGE_FAULT),            \
+> +	EXC(VIRTUAL_INST_FAULT), EXC(STORE_GUEST_PAGE_FAULT)
+> +
+> +#endif /* ARCH_PERF_RISCV_EXCEPTION_TYPES_H */
+> -- 
+> 2.37.2
+> 
 
