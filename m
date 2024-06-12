@@ -1,88 +1,123 @@
 From: Nicholas Piggin <npiggin@gmail.com>
-Date: Wed, 12 Jun 2024 14:42:32 +1000
-Subject: [kvm-unit-tests PATCH] build: retain intermediate .aux.o targets
-Message-ID: <20240612044234.212156-1-npiggin@gmail.com>
+Date: Wed, 12 Jun 2024 15:23:14 +1000
+Subject: [kvm-unit-tests PATCH v10 09/15] configure: Make arch_libdir a first-class entity
+In-Reply-To: <20240612052322.218726-1-npiggin@gmail.com>
+References: <20240612052322.218726-1-npiggin@gmail.com>
+Message-ID: <20240612052322.218726-10-npiggin@gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-arm, powerpc, riscv, build .aux.o targets with implicit pattern rules
-in dependency chains that cause them to be made as intermediate files,
-which get removed when make finishes. This results in unnecessary
-partial rebuilds. If make is run again, this time the .aux.o targets
-are not intermediate, possibly due to being made via different
-dependencies.
+arch_libdir was brought in to improve the heuristic determination of
+the lib/ directory based on arch and testdir names, but it did not
+entirely clean that mess up.
 
-Adding .aux.o files to .PRECIOUS prevents them being removed and solves
-the rebuild problem.
+Remove the arch_libdir->arch->testdir heuristic and just require
+everybody sets arch_libdir correctly. Fail if the lib/arch or
+lib/arch/asm directories can not be found.
 
-s390x does not have the problem because .SECONDARY prevents dependancies
-from being built as intermediate. However the same change is made for
-s390x, for consistency.
-
-Suggested-by: Marc Hartmayer <mhartmay@linux.ibm.com>
+Cc: Alexandru Elisei <alexandru.elisei@arm.com>
+Cc: Claudio Imbrenda <imbrenda@linux.ibm.com>
+Cc: David Hildenbrand <david@redhat.com>
+Cc: Eric Auger <eric.auger@redhat.com>
+Cc: Janosch Frank <frankja@linux.ibm.com>
+Cc: Laurent Vivier <lvivier@redhat.com>
+Cc: Nico B?hr <nrb@linux.ibm.com>
+Cc: Paolo Bonzini <pbonzini@redhat.com>
+Cc: Thomas Huth <thuth@redhat.com>
+Cc: kvm at vger.kernel.org
+Cc: linux-s390 at vger.kernel.org
+Cc: kvmarm at lists.linux.dev
+Cc: kvm-riscv at lists.infradead.org
+Cc: linuxppc-dev at lists.ozlabs.org
+Reviewed-by: Andrew Jones <andrew.jones@linux.dev>
 Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
 ---
- arm/Makefile.common     | 2 +-
- powerpc/Makefile.common | 2 +-
- riscv/Makefile          | 2 +-
- s390x/Makefile          | 2 +-
- 4 files changed, 4 insertions(+), 4 deletions(-)
+ Makefile  |  2 +-
+ configure | 18 +++++++++++++-----
+ 2 files changed, 14 insertions(+), 6 deletions(-)
 
-diff --git a/arm/Makefile.common b/arm/Makefile.common
-index f828dbe01..0b26a92a6 100644
---- a/arm/Makefile.common
-+++ b/arm/Makefile.common
-@@ -31,7 +31,7 @@ CFLAGS += -O2
- CFLAGS += -I $(SRCDIR)/lib -I $(SRCDIR)/lib/libfdt -I lib
+diff --git a/Makefile b/Makefile
+index 5b7998b79..7fe93dfd8 100644
+--- a/Makefile
++++ b/Makefile
+@@ -10,7 +10,7 @@ include config.mak
+ VPATH = $(SRCDIR)
  
- # We want to keep intermediate files
--.PRECIOUS: %.elf %.o
-+.PRECIOUS: %.elf %.o %.aux.o
+ libdirs-get = $(shell [ -d "lib/$(1)" ] && echo "lib/$(1) lib/$(1)/asm")
+-ARCH_LIBDIRS := $(call libdirs-get,$(ARCH_LIBDIR)) $(call libdirs-get,$(TEST_DIR))
++ARCH_LIBDIRS := $(call libdirs-get,$(ARCH_LIBDIR))
+ OBJDIRS := $(ARCH_LIBDIRS)
  
- asm-offsets = lib/$(ARCH)/asm-offsets.h
- include $(SRCDIR)/scripts/asm-offsets.mak
-diff --git a/powerpc/Makefile.common b/powerpc/Makefile.common
-index b98f71c2f..16f14577e 100644
---- a/powerpc/Makefile.common
-+++ b/powerpc/Makefile.common
-@@ -30,7 +30,7 @@ CFLAGS += -I $(SRCDIR)/lib -I $(SRCDIR)/lib/libfdt -I lib
- CFLAGS += -Wa,-mregnames
+ DESTDIR := $(PREFIX)/share/kvm-unit-tests/
+diff --git a/configure b/configure
+index db15e85d6..b93723142 100755
+--- a/configure
++++ b/configure
+@@ -217,7 +217,6 @@ fi
+ arch_name=$arch
+ [ "$arch" = "aarch64" ] && arch="arm64"
+ [ "$arch_name" = "arm64" ] && arch_name="aarch64"
+-arch_libdir=$arch
  
- # We want to keep intermediate files
--.PRECIOUS: %.o
-+.PRECIOUS: %.o %.aux.o
+ if [ "$arch" = "riscv" ]; then
+     echo "riscv32 or riscv64 must be specified"
+@@ -285,8 +284,10 @@ fi
  
- asm-offsets = lib/$(ARCH)/asm-offsets.h
- include $(SRCDIR)/scripts/asm-offsets.mak
-diff --git a/riscv/Makefile b/riscv/Makefile
-index 919a3ebb5..7207ff988 100644
---- a/riscv/Makefile
-+++ b/riscv/Makefile
-@@ -53,7 +53,7 @@ AUXFLAGS ?= 0x0
- KEEP_FRAME_POINTER := y
+ if [ "$arch" = "i386" ] || [ "$arch" = "x86_64" ]; then
+     testdir=x86
++    arch_libdir=x86
+ elif [ "$arch" = "arm" ] || [ "$arch" = "arm64" ]; then
+     testdir=arm
++    arch_libdir=$arch
+     if [ "$target" = "qemu" ]; then
+         arm_uart_early_addr=0x09000000
+     elif [ "$target" = "kvmtool" ]; then
+@@ -335,6 +336,7 @@ elif [ "$arch" = "arm" ] || [ "$arch" = "arm64" ]; then
+     fi
+ elif [ "$arch" = "ppc64" ]; then
+     testdir=powerpc
++    arch_libdir=ppc64
+     firmware="$testdir/boot_rom.bin"
+     if [ "$endian" != "little" ] && [ "$endian" != "big" ]; then
+         echo "You must provide endianness (big or little)!"
+@@ -345,6 +347,7 @@ elif [ "$arch" = "riscv32" ] || [ "$arch" = "riscv64" ]; then
+     arch_libdir=riscv
+ elif [ "$arch" = "s390x" ]; then
+     testdir=s390x
++    arch_libdir=s390x
+ else
+     echo "arch $arch is not supported!"
+     arch=
+@@ -354,6 +357,10 @@ if [ ! -d "$srcdir/$testdir" ]; then
+     echo "$srcdir/$testdir does not exist!"
+     exit 1
+ fi
++if [ ! -d "$srcdir/lib/$arch_libdir" ]; then
++    echo "$srcdir/lib/$arch_libdir does not exist!"
++    exit 1
++fi
  
- # We want to keep intermediate files
--.PRECIOUS: %.elf %.o
-+.PRECIOUS: %.elf %.o %.aux.o
- 
- define arch_elf_check =
- 	$(if $(shell ! $(READELF) -rW $(1) >&/dev/null && echo "nok"),
-diff --git a/s390x/Makefile b/s390x/Makefile
-index 23342bd64..d436c6e9a 100644
---- a/s390x/Makefile
-+++ b/s390x/Makefile
-@@ -85,7 +85,7 @@ CFLAGS += -fno-delete-null-pointer-checks
- LDFLAGS += -Wl,--build-id=none
- 
- # We want to keep intermediate files
--.PRECIOUS: %.o %.lds
-+.PRECIOUS: %.o %.aux.o %.lds
- 
- asm-offsets = lib/$(ARCH)/asm-offsets.h
- include $(SRCDIR)/scripts/asm-offsets.mak
+ if [ "$efi" = "y" ] && [ -f "$srcdir/$testdir/efi/run" ]; then
+     ln -fs "$srcdir/$testdir/efi/run" $testdir-run
+@@ -416,10 +423,11 @@ fi
+ # link lib/asm for the architecture
+ rm -f lib/asm
+ asm="asm-generic"
+-if [ -d "$srcdir/lib/$arch/asm" ]; then
+-	asm="$srcdir/lib/$arch/asm"
+-elif [ -d "$srcdir/lib/$testdir/asm" ]; then
+-	asm="$srcdir/lib/$testdir/asm"
++if [ -d "$srcdir/lib/$arch_libdir/asm" ]; then
++    asm="$srcdir/lib/$arch_libdir/asm"
++else
++    echo "$srcdir/lib/$arch_libdir/asm does not exist"
++    exit 1
+ fi
+ mkdir -p lib
+ ln -sf "$asm" lib/asm
 -- 
 2.45.1
 
