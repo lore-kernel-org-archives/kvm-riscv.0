@@ -1,65 +1,101 @@
-From: Nicholas Piggin <npiggin@gmail.com>
-Date: Fri, 14 Jun 2024 18:38:54 +1000
-Subject: [kvm-unit-tests PATCH] build: retain intermediate .aux.o
- targets
-In-Reply-To: <20240614010856.GK19790@gate.crashing.org>
-References: <20240612044234.212156-1-npiggin@gmail.com>
- <20240612082847.GG19790@gate.crashing.org>
- <D1ZBO021MLHV.3C7E4V3WOHO8V@gmail.com>
- <20240614010856.GK19790@gate.crashing.org>
-Message-ID: <D1ZLRVNGPWTV.5H76A3E8DJCV@gmail.com>
+From: Yong-Xuan Wang <yongxuan.wang@sifive.com>
+Date: Tue, 18 Jun 2024 18:38:13 +0800
+Subject: [PATCH v5 2/4] dt-bindings: riscv: Add Svade and Svadu Entries
+In-Reply-To: <20240605-atrium-neuron-c2512b34d3da@spud>
+References: <20240605121512.32083-1-yongxuan.wang@sifive.com>
+ <20240605121512.32083-3-yongxuan.wang@sifive.com> <20240605-atrium-neuron-c2512b34d3da@spud>
+Message-ID: <CAMWQL2gQpHPD=bPenjD+=NP47k8n26+6KP05zogxUtsD6zY6GQ@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri Jun 14, 2024 at 11:08 AM AEST, Segher Boessenkool wrote:
-> On Fri, Jun 14, 2024 at 10:43:39AM +1000, Nicholas Piggin wrote:
-> > On Wed Jun 12, 2024 at 6:28 PM AEST, Segher Boessenkool wrote:
-> > > On Wed, Jun 12, 2024 at 02:42:32PM +1000, Nicholas Piggin wrote:
-> > > > arm, powerpc, riscv, build .aux.o targets with implicit pattern rules
-> > > > in dependency chains that cause them to be made as intermediate files,
-> > > > which get removed when make finishes. This results in unnecessary
-> > > > partial rebuilds. If make is run again, this time the .aux.o targets
-> > > > are not intermediate, possibly due to being made via different
-> > > > dependencies.
-> > > > 
-> > > > Adding .aux.o files to .PRECIOUS prevents them being removed and solves
-> > > > the rebuild problem.
-> > > > 
-> > > > s390x does not have the problem because .SECONDARY prevents dependancies
-> > > > from being built as intermediate. However the same change is made for
-> > > > s390x, for consistency.
-> > >
-> > > This is exactly what .SECONDARY is for, as its documentation says,
-> > > even.  Wouldn't it be better to just add a .SECONDARY to the other
-> > > targets as well?
-> > 
-> > Yeah we were debating that and agreed .PRECIOUS may not be the
-> > cleanest fix but since we already use that it's okay for a
-> > minimal fix.
+On Thu, Jun 6, 2024 at 12:55?AM Conor Dooley <conor@kernel.org> wrote:
 >
-> But why add it to s390x then?  It is not a fix there at all!
+> On Wed, Jun 05, 2024 at 08:15:08PM +0800, Yong-Xuan Wang wrote:
+> > Add entries for the Svade and Svadu extensions to the riscv,isa-extensions
+> > property.
+> >
+> > Signed-off-by: Yong-Xuan Wang <yongxuan.wang@sifive.com>
+> > ---
+> >  .../devicetree/bindings/riscv/extensions.yaml | 30 +++++++++++++++++++
+> >  1 file changed, 30 insertions(+)
+> >
+> > diff --git a/Documentation/devicetree/bindings/riscv/extensions.yaml b/Documentation/devicetree/bindings/riscv/extensions.yaml
+> > index 468c646247aa..1e30988826b9 100644
+> > --- a/Documentation/devicetree/bindings/riscv/extensions.yaml
+> > +++ b/Documentation/devicetree/bindings/riscv/extensions.yaml
+> > @@ -153,6 +153,36 @@ properties:
+> >              ratified at commit 3f9ed34 ("Add ability to manually trigger
+> >              workflow. (#2)") of riscv-time-compare.
+> >
+> > +        - const: svade
+> > +          description: |
+> > +            The standard Svade supervisor-level extension for raising page-fault
+> > +            exceptions when PTE A/D bits need be set as ratified in the 20240213
+> > +            version of the privileged ISA specification.
+> > +
+> > +            Both Svade and Svadu extensions control the hardware behavior when
+> > +            the PTE A/D bits need to be set. The default behavior for the four
+> > +            possible combinations of these extensions in the device tree are:
+> > +            1. Neither svade nor svadu in DT: default to svade.
+>
+> I think this needs to be expanded on, as to why nothing means svade.
+>
+> > +            2. Only svade in DT: use svade.
+>
+> That's a statement of the obvious, right?
+>
+> > +            3. Only svadu in DT: use svadu.
+>
+> This is not relevant for Svade.
+>
+> > +            4. Both svade and svadu in DT: default to svade (Linux can switch to
+> > +               svadu once the SBI FWFT extension is available).
+>
+> "The privilege level to which this devicetree has been provided can switch to
+> Svadu if the SBI FWFT extension is available".
+>
+> > +        - const: svadu
+> > +          description: |
+> > +            The standard Svadu supervisor-level extension for hardware updating
+> > +            of PTE A/D bits as ratified at commit c1abccf ("Merge pull request
+> > +            #25 from ved-rivos/ratified") of riscv-svadu.
+> > +
+> > +            Both Svade and Svadu extensions control the hardware behavior when
+> > +            the PTE A/D bits need to be set. The default behavior for the four
+> > +            possible combinations of these extensions in the device tree are:
+>
+> @Anup/Drew/Alex, are we missing some wording in here about it only being
+> valid to have Svadu in isolation if the provider of the devicetree has
+> actually turned on Svadu? The binding says "the default behaviour", but
+> it is not the "default" behaviour, the behaviour is a must AFAICT. If
+> you set Svadu in isolation, you /must/ have turned it on. If you set
+> Svadu and Svade, you must have Svadu turned off?
+>
+> > +            1. Neither svade nor svadu in DT: default to svade.
+> > +            2. Only svade in DT: use svade.
+>
+> These two are not relevant to Svadu, I'd leave them out.
+>
+> > +            3. Only svadu in DT: use svadu.
+>
+> Again, statement of the obvious?
+>
+> > +            4. Both svade and svadu in DT: default to svade (Linux can switch to
+> > +               svadu once the SBI FWFT extension is available).
+>
+> Same here as in the Svade entry.
+>
+> Thanks,
+> Conor.
+>
 
-Eh, not a big deal. I mentioned that in the changelog it doesn't seem to
-pracicaly fix something. And I rather the makefiles converge as much as
-possible rather than diverge more.
+Hi Conor,
 
-.SECONDARY was added independently and not to fix this problem in
-s390x. And s390x has .SECONDARY slightly wrong AFAIKS. It mentions
-.SECONDARY: twice in a way that looks like it was meant to depend on
-specific targets, it actually gives it no dependencies and the
-resulting semantics are that all intermediate files in the build are
-treated as secondary. So somethig there should be cleaned up. If the
-.SECONDARY was changed to only depend on the .gobj and .hdr.obj then
-suddenly that would break .aux.o if I don't make the change.
+I will update the description. Thank you!
 
-So I'm meaning to work out what to do with all that, i.e., whether to
-add blanket .SECONDARY for all and trim or remove the .PRECIOUS files,
-or remove s390x's secondary, or make it more specific, or something
-else. But it takes a while for me to do makefile work.
-
-Thanks,
-Nick
+Regards,
+Yong-Xuan
 
