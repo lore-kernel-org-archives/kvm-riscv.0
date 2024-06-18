@@ -1,101 +1,84 @@
-From: Yong-Xuan Wang <yongxuan.wang@sifive.com>
-Date: Tue, 18 Jun 2024 18:38:13 +0800
-Subject: [PATCH v5 2/4] dt-bindings: riscv: Add Svade and Svadu Entries
-In-Reply-To: <20240605-atrium-neuron-c2512b34d3da@spud>
-References: <20240605121512.32083-1-yongxuan.wang@sifive.com>
- <20240605121512.32083-3-yongxuan.wang@sifive.com> <20240605-atrium-neuron-c2512b34d3da@spud>
-Message-ID: <CAMWQL2gQpHPD=bPenjD+=NP47k8n26+6KP05zogxUtsD6zY6GQ@mail.gmail.com>
+From: Clément Léger <cleger@rivosinc.com>
+Date: Tue, 18 Jun 2024 15:48:59 +0200
+Subject: [PATCH v3 4/6] riscv: hwprobe: export Zawrs ISA extension
+In-Reply-To: <20240426100820.14762-12-ajones@ventanamicro.com>
+References: <20240426100820.14762-8-ajones@ventanamicro.com>
+ <20240426100820.14762-12-ajones@ventanamicro.com>
+Message-ID: <d0abe3e0-af0f-4693-b943-57ea3fc2189f@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Jun 6, 2024 at 12:55?AM Conor Dooley <conor@kernel.org> wrote:
->
-> On Wed, Jun 05, 2024 at 08:15:08PM +0800, Yong-Xuan Wang wrote:
-> > Add entries for the Svade and Svadu extensions to the riscv,isa-extensions
-> > property.
-> >
-> > Signed-off-by: Yong-Xuan Wang <yongxuan.wang@sifive.com>
-> > ---
-> >  .../devicetree/bindings/riscv/extensions.yaml | 30 +++++++++++++++++++
-> >  1 file changed, 30 insertions(+)
-> >
-> > diff --git a/Documentation/devicetree/bindings/riscv/extensions.yaml b/Documentation/devicetree/bindings/riscv/extensions.yaml
-> > index 468c646247aa..1e30988826b9 100644
-> > --- a/Documentation/devicetree/bindings/riscv/extensions.yaml
-> > +++ b/Documentation/devicetree/bindings/riscv/extensions.yaml
-> > @@ -153,6 +153,36 @@ properties:
-> >              ratified at commit 3f9ed34 ("Add ability to manually trigger
-> >              workflow. (#2)") of riscv-time-compare.
-> >
-> > +        - const: svade
-> > +          description: |
-> > +            The standard Svade supervisor-level extension for raising page-fault
-> > +            exceptions when PTE A/D bits need be set as ratified in the 20240213
-> > +            version of the privileged ISA specification.
-> > +
-> > +            Both Svade and Svadu extensions control the hardware behavior when
-> > +            the PTE A/D bits need to be set. The default behavior for the four
-> > +            possible combinations of these extensions in the device tree are:
-> > +            1. Neither svade nor svadu in DT: default to svade.
->
-> I think this needs to be expanded on, as to why nothing means svade.
->
-> > +            2. Only svade in DT: use svade.
->
-> That's a statement of the obvious, right?
->
-> > +            3. Only svadu in DT: use svadu.
->
-> This is not relevant for Svade.
->
-> > +            4. Both svade and svadu in DT: default to svade (Linux can switch to
-> > +               svadu once the SBI FWFT extension is available).
->
-> "The privilege level to which this devicetree has been provided can switch to
-> Svadu if the SBI FWFT extension is available".
->
-> > +        - const: svadu
-> > +          description: |
-> > +            The standard Svadu supervisor-level extension for hardware updating
-> > +            of PTE A/D bits as ratified at commit c1abccf ("Merge pull request
-> > +            #25 from ved-rivos/ratified") of riscv-svadu.
-> > +
-> > +            Both Svade and Svadu extensions control the hardware behavior when
-> > +            the PTE A/D bits need to be set. The default behavior for the four
-> > +            possible combinations of these extensions in the device tree are:
->
-> @Anup/Drew/Alex, are we missing some wording in here about it only being
-> valid to have Svadu in isolation if the provider of the devicetree has
-> actually turned on Svadu? The binding says "the default behaviour", but
-> it is not the "default" behaviour, the behaviour is a must AFAICT. If
-> you set Svadu in isolation, you /must/ have turned it on. If you set
-> Svadu and Svade, you must have Svadu turned off?
->
-> > +            1. Neither svade nor svadu in DT: default to svade.
-> > +            2. Only svade in DT: use svade.
->
-> These two are not relevant to Svadu, I'd leave them out.
->
-> > +            3. Only svadu in DT: use svadu.
->
-> Again, statement of the obvious?
->
-> > +            4. Both svade and svadu in DT: default to svade (Linux can switch to
-> > +               svadu once the SBI FWFT extension is available).
->
-> Same here as in the Svade entry.
->
-> Thanks,
-> Conor.
->
 
-Hi Conor,
 
-I will update the description. Thank you!
+On 26/04/2024 12:08, Andrew Jones wrote:
+> Export Zawrs ISA extension through hwprobe.
+> 
+> Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
+> ---
+>  Documentation/arch/riscv/hwprobe.rst  | 4 ++++
+>  arch/riscv/include/uapi/asm/hwprobe.h | 1 +
+>  arch/riscv/kernel/sys_hwprobe.c       | 1 +
+>  3 files changed, 6 insertions(+)
+> 
+> diff --git a/Documentation/arch/riscv/hwprobe.rst b/Documentation/arch/riscv/hwprobe.rst
+> index b2bcc9eed9aa..e072ce8285d8 100644
+> --- a/Documentation/arch/riscv/hwprobe.rst
+> +++ b/Documentation/arch/riscv/hwprobe.rst
+> @@ -188,6 +188,10 @@ The following keys are defined:
+>         manual starting from commit 95cf1f9 ("Add changes requested by Ved
+>         during signoff")
+>  
+> +  * :c:macro:`RISCV_HWPROBE_EXT_ZAWRS`: The Zawrs extension is supported as
+> +       ratified in commit 98918c844281 ("Merge pull request #1217 from
+> +       riscv/zawrs") of riscv-isa-manual.
+> +
+>  * :c:macro:`RISCV_HWPROBE_KEY_CPUPERF_0`: A bitmask that contains performance
+>    information about the selected set of processors.
+>  
+> diff --git a/arch/riscv/include/uapi/asm/hwprobe.h b/arch/riscv/include/uapi/asm/hwprobe.h
+> index 9f2a8e3ff204..a5fca3878a32 100644
+> --- a/arch/riscv/include/uapi/asm/hwprobe.h
+> +++ b/arch/riscv/include/uapi/asm/hwprobe.h
+> @@ -59,6 +59,7 @@ struct riscv_hwprobe {
+>  #define		RISCV_HWPROBE_EXT_ZTSO		(1ULL << 33)
+>  #define		RISCV_HWPROBE_EXT_ZACAS		(1ULL << 34)
+>  #define		RISCV_HWPROBE_EXT_ZICOND	(1ULL << 35)
+> +#define		RISCV_HWPROBE_EXT_ZAWRS		(1ULL << 36)
+>  #define RISCV_HWPROBE_KEY_CPUPERF_0	5
+>  #define		RISCV_HWPROBE_MISALIGNED_UNKNOWN	(0 << 0)
+>  #define		RISCV_HWPROBE_MISALIGNED_EMULATED	(1 << 0)
+> diff --git a/arch/riscv/kernel/sys_hwprobe.c b/arch/riscv/kernel/sys_hwprobe.c
+> index 8cae41a502dd..b86e3531a45a 100644
+> --- a/arch/riscv/kernel/sys_hwprobe.c
+> +++ b/arch/riscv/kernel/sys_hwprobe.c
+> @@ -111,6 +111,7 @@ static void hwprobe_isa_ext0(struct riscv_hwprobe *pair,
+>  		EXT_KEY(ZTSO);
+>  		EXT_KEY(ZACAS);
+>  		EXT_KEY(ZICOND);
+> +		EXT_KEY(ZAWRS);
+>  
+>  		if (has_vector()) {
+>  			EXT_KEY(ZVBB);
 
-Regards,
-Yong-Xuan
+AFAIU, when used in userspace, this will actually "stall" the processor
+until an interrupt/timeout happens, so the current process will keep
+occupying the processor doing nothing (up to the next interrupt/timeout)
+right ?
+
+BTW, the spec also states that "When the TW (Timeout Wait) bit in
+mstatus is set and WRS.NTO is executed in any privilege mode other than
+M mode, and it does not complete within an implementation-specific
+bounded time limit, the WRS.NTO instruction will cause an illegal
+instruction exception." so I guess the process will be killed in this case ?
+
+If this is not a concern:
+
+Reviewed-by: Cl?ment L?ger <cleger@rivosinc.com>
+
+Thanks,
+
+Cl?ment
 
