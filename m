@@ -1,136 +1,67 @@
 From: Clément Léger <cleger@rivosinc.com>
-Date: Wed, 19 Jun 2024 13:35:18 +0200
-Subject: [PATCH v7 08/16] riscv: add ISA parsing for Zca, Zcf, Zcd and Zcb
+Date: Wed, 19 Jun 2024 13:35:20 +0200
+Subject: [PATCH v7 10/16] RISC-V: KVM: Allow Zca, Zcf, Zcd and Zcb extensions for Guest/VM
 In-Reply-To: <20240619113529.676940-1-cleger@rivosinc.com>
 References: <20240619113529.676940-1-cleger@rivosinc.com>
-Message-ID: <20240619113529.676940-9-cleger@rivosinc.com>
+Message-ID: <20240619113529.676940-11-cleger@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The Zc* standard extension for code reduction introduces new extensions.
-This patch adds support for Zca, Zcf, Zcd and Zcb. Zce, Zcmt and Zcmp
-are left out of this patch since they are targeting microcontrollers/
-embedded CPUs instead of application processors.
+Extend the KVM ISA extension ONE_REG interface to allow KVM user space
+to detect and enable Zca, Zcf, Zcd and Zcb extensions for Guest/VM.
 
 Signed-off-by: Cl?ment L?ger <cleger@rivosinc.com>
-Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
+Reviewed-by: Anup Patel <anup@brainfault.org>
+Acked-by: Anup Patel <anup@brainfault.org>
 ---
- arch/riscv/include/asm/hwcap.h |  4 +++
- arch/riscv/kernel/cpufeature.c | 55 +++++++++++++++++++++++++++++++++-
- 2 files changed, 58 insertions(+), 1 deletion(-)
+ arch/riscv/include/uapi/asm/kvm.h | 4 ++++
+ arch/riscv/kvm/vcpu_onereg.c      | 8 ++++++++
+ 2 files changed, 12 insertions(+)
 
-diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
-index 18859277843a..b12ae3f2141c 100644
---- a/arch/riscv/include/asm/hwcap.h
-+++ b/arch/riscv/include/asm/hwcap.h
-@@ -87,6 +87,10 @@
- #define RISCV_ISA_EXT_ZVE64F		78
- #define RISCV_ISA_EXT_ZVE64D		79
- #define RISCV_ISA_EXT_ZIMOP		80
-+#define RISCV_ISA_EXT_ZCA		81
-+#define RISCV_ISA_EXT_ZCB		82
-+#define RISCV_ISA_EXT_ZCD		83
-+#define RISCV_ISA_EXT_ZCF		84
- 
- #define RISCV_ISA_EXT_XLINUXENVCFG	127
- 
-diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
-index a3af976f36c9..aa631fe49b7c 100644
---- a/arch/riscv/kernel/cpufeature.c
-+++ b/arch/riscv/kernel/cpufeature.c
-@@ -111,6 +111,9 @@ static int riscv_ext_zicboz_validate(const struct riscv_isa_ext_data *data,
- 
- #define __RISCV_ISA_EXT_DATA(_name, _id) _RISCV_ISA_EXT_DATA(_name, _id, NULL, 0, NULL)
- 
-+#define __RISCV_ISA_EXT_DATA_VALIDATE(_name, _id, _validate) \
-+			_RISCV_ISA_EXT_DATA(_name, _id, NULL, 0, _validate)
-+
- /* Used to declare pure "lasso" extension (Zk for instance) */
- #define __RISCV_ISA_EXT_BUNDLE(_name, _bundled_exts) \
- 	_RISCV_ISA_EXT_DATA(_name, RISCV_ISA_EXT_INVALID, _bundled_exts, \
-@@ -122,6 +125,37 @@ static int riscv_ext_zicboz_validate(const struct riscv_isa_ext_data *data,
- #define __RISCV_ISA_EXT_SUPERSET_VALIDATE(_name, _id, _sub_exts, _validate) \
- 	_RISCV_ISA_EXT_DATA(_name, _id, _sub_exts, ARRAY_SIZE(_sub_exts), _validate)
- 
-+static int riscv_ext_zca_depends(const struct riscv_isa_ext_data *data,
-+				 const unsigned long *isa_bitmap)
-+{
-+	if (__riscv_isa_extension_available(isa_bitmap, RISCV_ISA_EXT_ZCA))
-+		return 0;
-+
-+	return -EPROBE_DEFER;
-+}
-+static int riscv_ext_zcd_validate(const struct riscv_isa_ext_data *data,
-+				  const unsigned long *isa_bitmap)
-+{
-+	if (__riscv_isa_extension_available(isa_bitmap, RISCV_ISA_EXT_ZCA) &&
-+	    __riscv_isa_extension_available(isa_bitmap, RISCV_ISA_EXT_d))
-+		return 0;
-+
-+	return -EPROBE_DEFER;
-+}
-+
-+static int riscv_ext_zcf_validate(const struct riscv_isa_ext_data *data,
-+				  const unsigned long *isa_bitmap)
-+{
-+	if (IS_ENABLED(CONFIG_64BIT))
-+		return -EINVAL;
-+
-+	if (__riscv_isa_extension_available(isa_bitmap, RISCV_ISA_EXT_ZCA) &&
-+	    __riscv_isa_extension_available(isa_bitmap, RISCV_ISA_EXT_f))
-+		return 0;
-+
-+	return -EPROBE_DEFER;
-+}
-+
- static const unsigned int riscv_zk_bundled_exts[] = {
- 	RISCV_ISA_EXT_ZBKB,
- 	RISCV_ISA_EXT_ZBKC,
-@@ -236,6 +270,21 @@ static const unsigned int riscv_xlinuxenvcfg_exts[] = {
- 	RISCV_ISA_EXT_XLINUXENVCFG
+diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
+index db482ef0ae1e..71b17a6799e6 100644
+--- a/arch/riscv/include/uapi/asm/kvm.h
++++ b/arch/riscv/include/uapi/asm/kvm.h
+@@ -169,6 +169,10 @@ enum KVM_RISCV_ISA_EXT_ID {
+ 	KVM_RISCV_ISA_EXT_ZACAS,
+ 	KVM_RISCV_ISA_EXT_SSCOFPMF,
+ 	KVM_RISCV_ISA_EXT_ZIMOP,
++	KVM_RISCV_ISA_EXT_ZCA,
++	KVM_RISCV_ISA_EXT_ZCB,
++	KVM_RISCV_ISA_EXT_ZCD,
++	KVM_RISCV_ISA_EXT_ZCF,
+ 	KVM_RISCV_ISA_EXT_MAX,
  };
  
-+/*
-+ * Zc* spec states that:
-+ * - C always implies Zca
-+ * - C+F implies Zcf (RV32 only)
-+ * - C+D implies Zcd
-+ *
-+ * These extensions will be enabled and then validated depending on the
-+ * availability of F/D RV32.
-+ */
-+static const unsigned int riscv_c_exts[] = {
-+	RISCV_ISA_EXT_ZCA,
-+	RISCV_ISA_EXT_ZCF,
-+	RISCV_ISA_EXT_ZCD,
-+};
-+
- /*
-  * The canonical order of ISA extension names in the ISA string is defined in
-  * chapter 27 of the unprivileged specification.
-@@ -282,7 +331,7 @@ const struct riscv_isa_ext_data riscv_isa_ext[] = {
- 	__RISCV_ISA_EXT_DATA(f, RISCV_ISA_EXT_f),
- 	__RISCV_ISA_EXT_DATA(d, RISCV_ISA_EXT_d),
- 	__RISCV_ISA_EXT_DATA(q, RISCV_ISA_EXT_q),
--	__RISCV_ISA_EXT_DATA(c, RISCV_ISA_EXT_c),
-+	__RISCV_ISA_EXT_SUPERSET(c, RISCV_ISA_EXT_c, riscv_c_exts),
- 	__RISCV_ISA_EXT_SUPERSET(v, RISCV_ISA_EXT_v, riscv_v_exts),
- 	__RISCV_ISA_EXT_DATA(h, RISCV_ISA_EXT_h),
- 	__RISCV_ISA_EXT_SUPERSET_VALIDATE(zicbom, RISCV_ISA_EXT_ZICBOM, riscv_xlinuxenvcfg_exts,
-@@ -301,6 +350,10 @@ const struct riscv_isa_ext_data riscv_isa_ext[] = {
- 	__RISCV_ISA_EXT_DATA(zfa, RISCV_ISA_EXT_ZFA),
- 	__RISCV_ISA_EXT_DATA(zfh, RISCV_ISA_EXT_ZFH),
- 	__RISCV_ISA_EXT_DATA(zfhmin, RISCV_ISA_EXT_ZFHMIN),
-+	__RISCV_ISA_EXT_DATA(zca, RISCV_ISA_EXT_ZCA),
-+	__RISCV_ISA_EXT_DATA_VALIDATE(zcb, RISCV_ISA_EXT_ZCB, riscv_ext_zca_depends),
-+	__RISCV_ISA_EXT_DATA_VALIDATE(zcd, RISCV_ISA_EXT_ZCD, riscv_ext_zcd_validate),
-+	__RISCV_ISA_EXT_DATA_VALIDATE(zcf, RISCV_ISA_EXT_ZCF, riscv_ext_zcf_validate),
- 	__RISCV_ISA_EXT_DATA(zba, RISCV_ISA_EXT_ZBA),
- 	__RISCV_ISA_EXT_DATA(zbb, RISCV_ISA_EXT_ZBB),
- 	__RISCV_ISA_EXT_DATA(zbc, RISCV_ISA_EXT_ZBC),
+diff --git a/arch/riscv/kvm/vcpu_onereg.c b/arch/riscv/kvm/vcpu_onereg.c
+index 09f0aa92a4da..f68b15b15f0e 100644
+--- a/arch/riscv/kvm/vcpu_onereg.c
++++ b/arch/riscv/kvm/vcpu_onereg.c
+@@ -49,6 +49,10 @@ static const unsigned long kvm_isa_ext_arr[] = {
+ 	KVM_ISA_EXT_ARR(ZBKC),
+ 	KVM_ISA_EXT_ARR(ZBKX),
+ 	KVM_ISA_EXT_ARR(ZBS),
++	KVM_ISA_EXT_ARR(ZCA),
++	KVM_ISA_EXT_ARR(ZCB),
++	KVM_ISA_EXT_ARR(ZCD),
++	KVM_ISA_EXT_ARR(ZCF),
+ 	KVM_ISA_EXT_ARR(ZFA),
+ 	KVM_ISA_EXT_ARR(ZFH),
+ 	KVM_ISA_EXT_ARR(ZFHMIN),
+@@ -134,6 +138,10 @@ static bool kvm_riscv_vcpu_isa_disable_allowed(unsigned long ext)
+ 	case KVM_RISCV_ISA_EXT_ZBKC:
+ 	case KVM_RISCV_ISA_EXT_ZBKX:
+ 	case KVM_RISCV_ISA_EXT_ZBS:
++	case KVM_RISCV_ISA_EXT_ZCA:
++	case KVM_RISCV_ISA_EXT_ZCB:
++	case KVM_RISCV_ISA_EXT_ZCD:
++	case KVM_RISCV_ISA_EXT_ZCF:
+ 	case KVM_RISCV_ISA_EXT_ZFA:
+ 	case KVM_RISCV_ISA_EXT_ZFH:
+ 	case KVM_RISCV_ISA_EXT_ZFHMIN:
 -- 
 2.45.2
 
