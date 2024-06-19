@@ -1,49 +1,64 @@
 From: Clément Léger <cleger@rivosinc.com>
-Date: Wed, 19 Jun 2024 13:35:12 +0200
-Subject: [PATCH v7 02/16] riscv: add ISA extension parsing for Zimop
+Date: Wed, 19 Jun 2024 13:35:13 +0200
+Subject: [PATCH v7 03/16] riscv: hwprobe: export Zimop ISA extension
 In-Reply-To: <20240619113529.676940-1-cleger@rivosinc.com>
 References: <20240619113529.676940-1-cleger@rivosinc.com>
-Message-ID: <20240619113529.676940-3-cleger@rivosinc.com>
+Message-ID: <20240619113529.676940-4-cleger@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add parsing for Zimop ISA extension which was ratified in commit
-58220614a5f of the riscv-isa-manual.
+Export Zimop ISA extension through hwprobe.
 
 Signed-off-by: Cl?ment L?ger <cleger@rivosinc.com>
 Reviewed-by: Charlie Jenkins <charlie@rivosinc.com>
 ---
- arch/riscv/include/asm/hwcap.h | 1 +
- arch/riscv/kernel/cpufeature.c | 1 +
- 2 files changed, 2 insertions(+)
+ Documentation/arch/riscv/hwprobe.rst  | 4 ++++
+ arch/riscv/include/uapi/asm/hwprobe.h | 1 +
+ arch/riscv/kernel/sys_hwprobe.c       | 1 +
+ 3 files changed, 6 insertions(+)
 
-diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
-index f64d4e98e67c..18859277843a 100644
---- a/arch/riscv/include/asm/hwcap.h
-+++ b/arch/riscv/include/asm/hwcap.h
-@@ -86,6 +86,7 @@
- #define RISCV_ISA_EXT_ZVE64X		77
- #define RISCV_ISA_EXT_ZVE64F		78
- #define RISCV_ISA_EXT_ZVE64D		79
-+#define RISCV_ISA_EXT_ZIMOP		80
+diff --git a/Documentation/arch/riscv/hwprobe.rst b/Documentation/arch/riscv/hwprobe.rst
+index fc015b452ebf..2b7f1d05b2e3 100644
+--- a/Documentation/arch/riscv/hwprobe.rst
++++ b/Documentation/arch/riscv/hwprobe.rst
+@@ -207,6 +207,10 @@ The following keys are defined:
+   * :c:macro:`RISCV_HWPROBE_EXT_ZVE64D`: The Vector sub-extension Zve64d is
+     supported, as defined by version 1.0 of the RISC-V Vector extension manual.
  
- #define RISCV_ISA_EXT_XLINUXENVCFG	127
++  * :c:macro:`RISCV_HWPROBE_EXT_ZIMOP`: The Zimop May-Be-Operations extension is
++       supported as defined in the RISC-V ISA manual starting from commit
++       58220614a5f ("Zimop is ratified/1.0").
++
+ * :c:macro:`RISCV_HWPROBE_KEY_CPUPERF_0`: A bitmask that contains performance
+   information about the selected set of processors.
  
-diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
-index 1d6e4fda00f8..e5516ba14440 100644
---- a/arch/riscv/kernel/cpufeature.c
-+++ b/arch/riscv/kernel/cpufeature.c
-@@ -290,6 +290,7 @@ const struct riscv_isa_ext_data riscv_isa_ext[] = {
- 	__RISCV_ISA_EXT_DATA(zihintntl, RISCV_ISA_EXT_ZIHINTNTL),
- 	__RISCV_ISA_EXT_DATA(zihintpause, RISCV_ISA_EXT_ZIHINTPAUSE),
- 	__RISCV_ISA_EXT_DATA(zihpm, RISCV_ISA_EXT_ZIHPM),
-+	__RISCV_ISA_EXT_DATA(zimop, RISCV_ISA_EXT_ZIMOP),
- 	__RISCV_ISA_EXT_DATA(zacas, RISCV_ISA_EXT_ZACAS),
- 	__RISCV_ISA_EXT_DATA(zfa, RISCV_ISA_EXT_ZFA),
- 	__RISCV_ISA_EXT_DATA(zfh, RISCV_ISA_EXT_ZFH),
+diff --git a/arch/riscv/include/uapi/asm/hwprobe.h b/arch/riscv/include/uapi/asm/hwprobe.h
+index 7b95fadbea2a..538c404938e6 100644
+--- a/arch/riscv/include/uapi/asm/hwprobe.h
++++ b/arch/riscv/include/uapi/asm/hwprobe.h
+@@ -65,6 +65,7 @@ struct riscv_hwprobe {
+ #define		RISCV_HWPROBE_EXT_ZVE64X	(1ULL << 39)
+ #define		RISCV_HWPROBE_EXT_ZVE64F	(1ULL << 40)
+ #define		RISCV_HWPROBE_EXT_ZVE64D	(1ULL << 41)
++#define		RISCV_HWPROBE_EXT_ZIMOP		(1ULL << 42)
+ #define RISCV_HWPROBE_KEY_CPUPERF_0	5
+ #define		RISCV_HWPROBE_MISALIGNED_UNKNOWN	(0 << 0)
+ #define		RISCV_HWPROBE_MISALIGNED_EMULATED	(1 << 0)
+diff --git a/arch/riscv/kernel/sys_hwprobe.c b/arch/riscv/kernel/sys_hwprobe.c
+index 83fcc939df67..04a2ed4ee415 100644
+--- a/arch/riscv/kernel/sys_hwprobe.c
++++ b/arch/riscv/kernel/sys_hwprobe.c
+@@ -112,6 +112,7 @@ static void hwprobe_isa_ext0(struct riscv_hwprobe *pair,
+ 		EXT_KEY(ZACAS);
+ 		EXT_KEY(ZICOND);
+ 		EXT_KEY(ZIHINTPAUSE);
++		EXT_KEY(ZIMOP);
+ 
+ 		/*
+ 		 * All the following extensions must depend on the kernel
 -- 
 2.45.2
 
