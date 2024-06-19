@@ -1,147 +1,92 @@
-From: Andrew Jones <andrew.jones@linux.dev>
-Date: Wed, 19 Jun 2024 10:39:08 +0200
-Subject: [kvm-unit-tests PATCH 3/4] riscv: Add methods to toggle
- interrupt enable bits
-In-Reply-To: <20240618173053.364776-4-jamestiotio@gmail.com>
-References: <20240618173053.364776-1-jamestiotio@gmail.com>
- <20240618173053.364776-4-jamestiotio@gmail.com>
-Message-ID: <20240619-3ba7acf7b1504529899f6cc9@orel>
+From: Clément Léger <cleger@rivosinc.com>
+Date: Wed, 19 Jun 2024 13:35:10 +0200
+Subject: [PATCH v7 00/16] Add support for a few Zc* extensions, Zcmop and Zimop
+Message-ID: <20240619113529.676940-1-cleger@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Jun 19, 2024 at 01:30:52AM GMT, James Raphael Tiovalen wrote:
-> Add some helper methods to toggle the interrupt enable bits in the SIE
-> register.
-> 
-> Signed-off-by: James Raphael Tiovalen <jamestiotio@gmail.com>
-> ---
->  riscv/Makefile            |  1 +
->  lib/riscv/asm/csr.h       |  7 +++++++
->  lib/riscv/asm/interrupt.h | 12 ++++++++++++
->  lib/riscv/interrupt.c     | 39 +++++++++++++++++++++++++++++++++++++++
->  4 files changed, 59 insertions(+)
->  create mode 100644 lib/riscv/asm/interrupt.h
->  create mode 100644 lib/riscv/interrupt.c
-> 
-> diff --git a/riscv/Makefile b/riscv/Makefile
-> index 919a3ebb..108d4481 100644
-> --- a/riscv/Makefile
-> +++ b/riscv/Makefile
-> @@ -30,6 +30,7 @@ cflatobjs += lib/memregions.o
->  cflatobjs += lib/on-cpus.o
->  cflatobjs += lib/vmalloc.o
->  cflatobjs += lib/riscv/bitops.o
-> +cflatobjs += lib/riscv/interrupt.o
->  cflatobjs += lib/riscv/io.o
->  cflatobjs += lib/riscv/isa.o
->  cflatobjs += lib/riscv/mmu.o
-> diff --git a/lib/riscv/asm/csr.h b/lib/riscv/asm/csr.h
-> index c1777744..da58b0ce 100644
-> --- a/lib/riscv/asm/csr.h
-> +++ b/lib/riscv/asm/csr.h
-> @@ -4,15 +4,22 @@
->  #include <linux/const.h>
->  
->  #define CSR_SSTATUS		0x100
-> +#define CSR_SIE			0x104
->  #define CSR_STVEC		0x105
->  #define CSR_SSCRATCH		0x140
->  #define CSR_SEPC		0x141
->  #define CSR_SCAUSE		0x142
->  #define CSR_STVAL		0x143
-> +#define CSR_SIP			0x144
->  #define CSR_SATP		0x180
->  
->  #define SSTATUS_SIE		(_AC(1, UL) << 1)
->  
-> +#define SIE_SSIE		(_AC(1, UL) << 1)
-> +#define SIE_STIE		(_AC(1, UL) << 5)
-> +#define SIE_SEIE		(_AC(1, UL) << 9)
-> +#define SIE_LCOFIE		(_AC(1, UL) << 13)
-> +
->  /* Exception cause high bit - is an interrupt if set */
->  #define CAUSE_IRQ_FLAG		(_AC(1, UL) << (__riscv_xlen - 1))
->  
-> diff --git a/lib/riscv/asm/interrupt.h b/lib/riscv/asm/interrupt.h
-> new file mode 100644
-> index 00000000..b760afbb
-> --- /dev/null
-> +++ b/lib/riscv/asm/interrupt.h
-> @@ -0,0 +1,12 @@
-> +/* SPDX-License-Identifier: GPL-2.0-only */
-> +#ifndef _ASMRISCV_INTERRUPT_H_
-> +#define _ASMRISCV_INTERRUPT_H_
-> +
-> +#include <stdbool.h>
-> +
-> +void toggle_software_interrupt(bool enable);
-> +void toggle_timer_interrupt(bool enable);
-> +void toggle_external_interrupt(bool enable);
-> +void toggle_local_cof_interrupt(bool enable);
-> +
-> +#endif /* _ASMRISCV_INTERRUPT_H_ */
-> diff --git a/lib/riscv/interrupt.c b/lib/riscv/interrupt.c
-> new file mode 100644
-> index 00000000..bc0e16f1
-> --- /dev/null
-> +++ b/lib/riscv/interrupt.c
-> @@ -0,0 +1,39 @@
-> +// SPDX-License-Identifier: GPL-2.0-only
-> +/*
-> + * Copyright (C) 2024, James Raphael Tiovalen <jamestiotio@gmail.com>
-> + */
-> +#include <libcflat.h>
-> +#include <asm/csr.h>
-> +#include <asm/interrupt.h>
-> +
-> +void toggle_software_interrupt(bool enable)
-> +{
-> +	if (enable)
-> +		csr_set(CSR_SIE, SIE_SSIE);
-> +	else
-> +		csr_clear(CSR_SIE, SIE_SSIE);
-> +}
-> +
-> +void toggle_timer_interrupt(bool enable)
-> +{
-> +	if (enable)
-> +		csr_set(CSR_SIE, SIE_STIE);
-> +	else
-> +		csr_clear(CSR_SIE, SIE_STIE);
-> +}
-> +
-> +void toggle_external_interrupt(bool enable)
-> +{
-> +	if (enable)
-> +		csr_set(CSR_SIE, SIE_SEIE);
-> +	else
-> +		csr_clear(CSR_SIE, SIE_SEIE);
-> +}
-> +
-> +void toggle_local_cof_interrupt(bool enable)
-> +{
-> +	if (enable)
-> +		csr_set(CSR_SIE, SIE_LCOFIE);
-> +	else
-> +		csr_clear(CSR_SIE, SIE_LCOFIE);
-> +}
-> -- 
-> 2.43.0
->
+Add support for (yet again) more RVA23U64 missing extensions. Add
+support for Zimop, Zcmop, Zca, Zcf, Zcd and Zcb extensions ISA string
+parsing, hwprobe and kvm support. Zce, Zcmt and Zcmp extensions have
+been left out since they target microcontrollers/embedded CPUs and are
+not needed by RVA23U64.
 
-Most of this patch seems premature since the series only needs
-toggle_timer_interrupt(). Also, I think lib/riscv/interrupt.c
-is premature because something like toggle_timer_interrupt()
-can be a static inline in a new lib/riscv/asm/timer.h file.
+Since Zc* extensions states that C implies Zca, Zcf (if F and RV32), Zcd
+(if D), this series modifies the way ISA string is parsed and now does
+it in two phases. First one parses the string and the second one
+validates it for the final ISA description.
 
-And please provide two functions rather than a toggle with
-a parameter, i.e.
+Link: https://lore.kernel.org/linux-riscv/20240404103254.1752834-1-cleger at rivosinc.com/ [1]
+Link: https://lore.kernel.org/all/20240409143839.558784-1-cleger at rivosinc.com/ [2]
 
-  timer_interrupt_enable() / timer_interrupt_disable()
+---
 
-Thanks,
-drew
+v7:
+ - Rebased on riscv/for-next to fix conflicts
+
+v6:
+ - Rebased on riscv/for-next
+ - Remove ternary operator to use 'if()' instead in extension checks
+ - v5: https://lore.kernel.org/all/20240517145302.971019-1-cleger at rivosinc.com/
+
+v5:
+ - Merged in Zimop to avoid any uneeded series dependencies
+ - Rework dependency resolution loop to loop on source isa first rather
+   than on all extension.
+ - Disabled extensions in source isa once set in resolved isa
+ - Rename riscv_resolve_isa() parameters
+ - v4: https://lore.kernel.org/all/20240429150553.625165-1-cleger at rivosinc.com/
+
+v4:
+ - Modify validate() callbacks to return 0, -EPROBEDEFER or another
+   error.
+ - v3: https://lore.kernel.org/all/20240423124326.2532796-1-cleger at rivosinc.com/
+
+v3:
+ - Fix typo "exists" -> "exist"
+ - Remove C implies Zca, Zcd, Zcf, dt-bindings rules
+ - Rework ISA string resolver to handle dependencies
+ - v2: https://lore.kernel.org/all/20240418124300.1387978-1-cleger at rivosinc.com/
+
+v2:
+ - Add Zc* dependencies validation in dt-bindings
+ - v1: https://lore.kernel.org/lkml/20240410091106.749233-1-cleger at rivosinc.com/
+
+Cl?ment L?ger (16):
+  dt-bindings: riscv: add Zimop ISA extension description
+  riscv: add ISA extension parsing for Zimop
+  riscv: hwprobe: export Zimop ISA extension
+  RISC-V: KVM: Allow Zimop extension for Guest/VM
+  KVM: riscv: selftests: Add Zimop extension to get-reg-list test
+  dt-bindings: riscv: add Zca, Zcf, Zcd and Zcb ISA extension
+    description
+  riscv: add ISA extensions validation callback
+  riscv: add ISA parsing for Zca, Zcf, Zcd and Zcb
+  riscv: hwprobe: export Zca, Zcf, Zcd and Zcb ISA extensions
+  RISC-V: KVM: Allow Zca, Zcf, Zcd and Zcb extensions for Guest/VM
+  KVM: riscv: selftests: Add some Zc* extensions to get-reg-list test
+  dt-bindings: riscv: add Zcmop ISA extension description
+  riscv: add ISA extension parsing for Zcmop
+  riscv: hwprobe: export Zcmop ISA extension
+  RISC-V: KVM: Allow Zcmop extension for Guest/VM
+  KVM: riscv: selftests: Add Zcmop extension to get-reg-list test
+
+ Documentation/arch/riscv/hwprobe.rst          |  28 ++
+ .../devicetree/bindings/riscv/extensions.yaml |  95 ++++++
+ arch/riscv/include/asm/cpufeature.h           |   1 +
+ arch/riscv/include/asm/hwcap.h                |   6 +
+ arch/riscv/include/uapi/asm/hwprobe.h         |   6 +
+ arch/riscv/include/uapi/asm/kvm.h             |   6 +
+ arch/riscv/kernel/cpufeature.c                | 277 ++++++++++++------
+ arch/riscv/kernel/sys_hwprobe.c               |   6 +
+ arch/riscv/kvm/vcpu_onereg.c                  |  12 +
+ .../selftests/kvm/riscv/get-reg-list.c        |  24 ++
+ 10 files changed, 375 insertions(+), 86 deletions(-)
+
+-- 
+2.45.2
+
 
