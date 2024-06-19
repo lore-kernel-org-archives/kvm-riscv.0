@@ -1,73 +1,69 @@
 From: Clément Léger <cleger@rivosinc.com>
-Date: Wed, 19 Jun 2024 17:39:09 +0200
-Subject: [PATCH 2/5] riscv: add parsing for Zaamo and Zalrsc extensions
+Date: Wed, 19 Jun 2024 17:39:10 +0200
+Subject: [PATCH 3/5] riscv: hwprobe: export Zaamo and Zalrsc extensions
 In-Reply-To: <20240619153913.867263-1-cleger@rivosinc.com>
 References: <20240619153913.867263-1-cleger@rivosinc.com>
-Message-ID: <20240619153913.867263-3-cleger@rivosinc.com>
+Message-ID: <20240619153913.867263-4-cleger@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-These 2 new extensions are actually a subset of the A extension which
-provides atomic memory operations and load-reserved/store-conditional
-instructions.
+Export the Zaamo and Zalrsc extensions to userspace using hwprobe.
 
 Signed-off-by: Cl?ment L?ger <cleger@rivosinc.com>
 ---
- arch/riscv/include/asm/hwcap.h | 2 ++
- arch/riscv/kernel/cpufeature.c | 9 ++++++++-
- 2 files changed, 10 insertions(+), 1 deletion(-)
+ Documentation/arch/riscv/hwprobe.rst  | 8 ++++++++
+ arch/riscv/include/uapi/asm/hwprobe.h | 2 ++
+ arch/riscv/kernel/sys_hwprobe.c       | 2 ++
+ 3 files changed, 12 insertions(+)
 
-diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
-index 4880324a1b29..69be244bce4b 100644
---- a/arch/riscv/include/asm/hwcap.h
-+++ b/arch/riscv/include/asm/hwcap.h
-@@ -92,6 +92,8 @@
- #define RISCV_ISA_EXT_ZCD		83
- #define RISCV_ISA_EXT_ZCF		84
- #define RISCV_ISA_EXT_ZCMOP		85
-+#define RISCV_ISA_EXT_ZAAMO		86
-+#define RISCV_ISA_EXT_ZALRSC		87
+diff --git a/Documentation/arch/riscv/hwprobe.rst b/Documentation/arch/riscv/hwprobe.rst
+index 25d783be2878..6836a789a9b1 100644
+--- a/Documentation/arch/riscv/hwprobe.rst
++++ b/Documentation/arch/riscv/hwprobe.rst
+@@ -235,6 +235,14 @@ The following keys are defined:
+        supported as defined in the RISC-V ISA manual starting from commit
+        c732a4f39a4 ("Zcmop is ratified/1.0").
  
- #define RISCV_ISA_EXT_XLINUXENVCFG	127
- 
-diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
-index ec4bff7a827c..d71e5bd58acc 100644
---- a/arch/riscv/kernel/cpufeature.c
-+++ b/arch/riscv/kernel/cpufeature.c
-@@ -156,6 +156,11 @@ static int riscv_ext_zcf_validate(const struct riscv_isa_ext_data *data,
- 	return -EPROBE_DEFER;
- }
- 
-+static const unsigned int riscv_a_exts[] = {
-+	RISCV_ISA_EXT_ZAAMO,
-+	RISCV_ISA_EXT_ZALRSC,
-+};
++  * :c:macro:`RISCV_HWPROBE_EXT_ZAAMO`: The Zaamo extension is supported as
++       defined in the in the RISC-V ISA manual starting from commit e87412e621f1
++       ("integrate Zaamo and Zalrsc text (#1304)").
 +
- static const unsigned int riscv_zk_bundled_exts[] = {
- 	RISCV_ISA_EXT_ZBKB,
- 	RISCV_ISA_EXT_ZBKC,
-@@ -327,7 +332,7 @@ static const unsigned int riscv_c_exts[] = {
- const struct riscv_isa_ext_data riscv_isa_ext[] = {
- 	__RISCV_ISA_EXT_DATA(i, RISCV_ISA_EXT_i),
- 	__RISCV_ISA_EXT_DATA(m, RISCV_ISA_EXT_m),
--	__RISCV_ISA_EXT_DATA(a, RISCV_ISA_EXT_a),
-+	__RISCV_ISA_EXT_SUPERSET(a, RISCV_ISA_EXT_a, riscv_a_exts),
- 	__RISCV_ISA_EXT_DATA(f, RISCV_ISA_EXT_f),
- 	__RISCV_ISA_EXT_DATA(d, RISCV_ISA_EXT_d),
- 	__RISCV_ISA_EXT_DATA(q, RISCV_ISA_EXT_q),
-@@ -346,7 +351,9 @@ const struct riscv_isa_ext_data riscv_isa_ext[] = {
- 	__RISCV_ISA_EXT_DATA(zihintpause, RISCV_ISA_EXT_ZIHINTPAUSE),
- 	__RISCV_ISA_EXT_DATA(zihpm, RISCV_ISA_EXT_ZIHPM),
- 	__RISCV_ISA_EXT_DATA(zimop, RISCV_ISA_EXT_ZIMOP),
-+	__RISCV_ISA_EXT_DATA(zaamo, RISCV_ISA_EXT_ZAAMO),
- 	__RISCV_ISA_EXT_DATA(zacas, RISCV_ISA_EXT_ZACAS),
-+	__RISCV_ISA_EXT_DATA(zalrsc, RISCV_ISA_EXT_ZALRSC),
- 	__RISCV_ISA_EXT_DATA(zfa, RISCV_ISA_EXT_ZFA),
- 	__RISCV_ISA_EXT_DATA(zfh, RISCV_ISA_EXT_ZFH),
- 	__RISCV_ISA_EXT_DATA(zfhmin, RISCV_ISA_EXT_ZFHMIN),
++  * :c:macro:`RISCV_HWPROBE_EXT_ZALRSC`: The Zalrsc extension is supported as
++       defined in the in the RISC-V ISA manual starting from commit e87412e621f1
++       ("integrate Zaamo and Zalrsc text (#1304)").
++
+ * :c:macro:`RISCV_HWPROBE_KEY_CPUPERF_0`: A bitmask that contains performance
+   information about the selected set of processors.
+ 
+diff --git a/arch/riscv/include/uapi/asm/hwprobe.h b/arch/riscv/include/uapi/asm/hwprobe.h
+index 920fc6a586c9..52cd161e9a94 100644
+--- a/arch/riscv/include/uapi/asm/hwprobe.h
++++ b/arch/riscv/include/uapi/asm/hwprobe.h
+@@ -71,6 +71,8 @@ struct riscv_hwprobe {
+ #define		RISCV_HWPROBE_EXT_ZCD		(1ULL << 45)
+ #define		RISCV_HWPROBE_EXT_ZCF		(1ULL << 46)
+ #define		RISCV_HWPROBE_EXT_ZCMOP		(1ULL << 47)
++#define		RISCV_HWPROBE_EXT_ZAAMO		(1ULL << 48)
++#define		RISCV_HWPROBE_EXT_ZALRSC	(1ULL << 49)
+ #define RISCV_HWPROBE_KEY_CPUPERF_0	5
+ #define		RISCV_HWPROBE_MISALIGNED_UNKNOWN	(0 << 0)
+ #define		RISCV_HWPROBE_MISALIGNED_EMULATED	(1 << 0)
+diff --git a/arch/riscv/kernel/sys_hwprobe.c b/arch/riscv/kernel/sys_hwprobe.c
+index 3d1aa13a0bb2..e09f1bc3af17 100644
+--- a/arch/riscv/kernel/sys_hwprobe.c
++++ b/arch/riscv/kernel/sys_hwprobe.c
+@@ -116,6 +116,8 @@ static void hwprobe_isa_ext0(struct riscv_hwprobe *pair,
+ 		EXT_KEY(ZCA);
+ 		EXT_KEY(ZCB);
+ 		EXT_KEY(ZCMOP);
++		EXT_KEY(ZAAMO);
++		EXT_KEY(ZALRSC);
+ 
+ 		/*
+ 		 * All the following extensions must depend on the kernel
 -- 
 2.45.2
 
