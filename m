@@ -1,73 +1,55 @@
 From: Clément Léger <cleger@rivosinc.com>
-Date: Wed, 19 Jun 2024 13:35:21 +0200
-Subject: [PATCH v7 11/16] KVM: riscv: selftests: Add some Zc* extensions to get-reg-list test
+Date: Wed, 19 Jun 2024 13:35:22 +0200
+Subject: [PATCH v7 12/16] dt-bindings: riscv: add Zcmop ISA extension description
 In-Reply-To: <20240619113529.676940-1-cleger@rivosinc.com>
 References: <20240619113529.676940-1-cleger@rivosinc.com>
-Message-ID: <20240619113529.676940-12-cleger@rivosinc.com>
+Message-ID: <20240619113529.676940-13-cleger@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The KVM RISC-V allows Zca, Zcf, Zcd and Zcb extensions for Guest/VM so
-add these extensions to get-reg-list test.
+Add description for the Zcmop (Compressed May-Be-Operations) ISA
+extension which was ratified in commit c732a4f39a4c ("Zcmop is
+ratified/1.0") of the riscv-isa-manual.
 
 Signed-off-by: Cl?ment L?ger <cleger@rivosinc.com>
-Reviewed-by: Anup Patel <anup@brainfault.org>
-Acked-by: Anup Patel <anup@brainfault.org>
+Acked-by: Conor Dooley <conor.dooley@microchip.com>
 ---
- tools/testing/selftests/kvm/riscv/get-reg-list.c | 16 ++++++++++++++++
- 1 file changed, 16 insertions(+)
+ .../devicetree/bindings/riscv/extensions.yaml        | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
-diff --git a/tools/testing/selftests/kvm/riscv/get-reg-list.c b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-index 8c8b109ce3ca..864a701ef6c3 100644
---- a/tools/testing/selftests/kvm/riscv/get-reg-list.c
-+++ b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-@@ -56,6 +56,10 @@ bool filter_reg(__u64 reg)
- 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZBKC:
- 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZBKX:
- 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZBS:
-+	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZCA:
-+	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZCB:
-+	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZCD:
-+	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZCF:
- 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZFA:
- 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZFH:
- 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_ZFHMIN:
-@@ -423,6 +427,10 @@ static const char *isa_ext_single_id_to_str(__u64 reg_off)
- 		KVM_ISA_EXT_ARR(ZBKC),
- 		KVM_ISA_EXT_ARR(ZBKX),
- 		KVM_ISA_EXT_ARR(ZBS),
-+		KVM_ISA_EXT_ARR(ZCA),
-+		KVM_ISA_EXT_ARR(ZCB),
-+		KVM_ISA_EXT_ARR(ZCD),
-+		KVM_ISA_EXT_ARR(ZCF),
- 		KVM_ISA_EXT_ARR(ZFA),
- 		KVM_ISA_EXT_ARR(ZFH),
- 		KVM_ISA_EXT_ARR(ZFHMIN),
-@@ -948,6 +956,10 @@ KVM_ISA_EXT_SIMPLE_CONFIG(zbkb, ZBKB);
- KVM_ISA_EXT_SIMPLE_CONFIG(zbkc, ZBKC);
- KVM_ISA_EXT_SIMPLE_CONFIG(zbkx, ZBKX);
- KVM_ISA_EXT_SIMPLE_CONFIG(zbs, ZBS);
-+KVM_ISA_EXT_SIMPLE_CONFIG(zca, ZCA),
-+KVM_ISA_EXT_SIMPLE_CONFIG(zcb, ZCB),
-+KVM_ISA_EXT_SIMPLE_CONFIG(zcd, ZCD),
-+KVM_ISA_EXT_SIMPLE_CONFIG(zcf, ZCF),
- KVM_ISA_EXT_SIMPLE_CONFIG(zfa, ZFA);
- KVM_ISA_EXT_SIMPLE_CONFIG(zfh, ZFH);
- KVM_ISA_EXT_SIMPLE_CONFIG(zfhmin, ZFHMIN);
-@@ -1005,6 +1017,10 @@ struct vcpu_reg_list *vcpu_configs[] = {
- 	&config_zbkc,
- 	&config_zbkx,
- 	&config_zbs,
-+	&config_zca,
-+	&config_zcb,
-+	&config_zcd,
-+	&config_zcf,
- 	&config_zfa,
- 	&config_zfh,
- 	&config_zfhmin,
+diff --git a/Documentation/devicetree/bindings/riscv/extensions.yaml b/Documentation/devicetree/bindings/riscv/extensions.yaml
+index e34d06633278..33f1a86efed8 100644
+--- a/Documentation/devicetree/bindings/riscv/extensions.yaml
++++ b/Documentation/devicetree/bindings/riscv/extensions.yaml
+@@ -252,6 +252,11 @@ properties:
+             merged in the riscv-isa-manual by commit dbc79cf28a2 ("Initial seed
+             of zc.adoc to src tree.").
+ 
++        - const: zcmop
++          description:
++            The standard Zcmop extension version 1.0, as ratified in commit
++            c732a4f39a4 ("Zcmop is ratified/1.0") of the riscv-isa-manual.
++
+         - const: zfa
+           description:
+             The standard Zfa extension for additional floating point
+@@ -579,6 +584,13 @@ properties:
+                 const: zca
+             - contains:
+                 const: f
++      # Zcmop depends on Zca
++      - if:
++          contains:
++            const: zcmop
++        then:
++          contains:
++            const: zca
+ 
+ allOf:
+   # Zcf extension does not exist on rv64
 -- 
 2.45.2
 
