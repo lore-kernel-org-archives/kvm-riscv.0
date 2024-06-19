@@ -1,92 +1,147 @@
 From: Andrew Jones <andrew.jones@linux.dev>
-Date: Wed, 19 Jun 2024 10:30:56 +0200
-Subject: [kvm-unit-tests PATCH 2/4] riscv: Update exception cause list
-In-Reply-To: <20240618173053.364776-3-jamestiotio@gmail.com>
+Date: Wed, 19 Jun 2024 10:39:08 +0200
+Subject: [kvm-unit-tests PATCH 3/4] riscv: Add methods to toggle
+ interrupt enable bits
+In-Reply-To: <20240618173053.364776-4-jamestiotio@gmail.com>
 References: <20240618173053.364776-1-jamestiotio@gmail.com>
- <20240618173053.364776-3-jamestiotio@gmail.com>
-Message-ID: <20240619-5747f9b7cf121c71889128a7@orel>
+ <20240618173053.364776-4-jamestiotio@gmail.com>
+Message-ID: <20240619-3ba7acf7b1504529899f6cc9@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Jun 19, 2024 at 01:30:51AM GMT, James Raphael Tiovalen wrote:
-> Update the list of exception and interrupt causes to follow the latest
-> RISC-V privileged ISA specification (version 20240411).
+On Wed, Jun 19, 2024 at 01:30:52AM GMT, James Raphael Tiovalen wrote:
+> Add some helper methods to toggle the interrupt enable bits in the SIE
+> register.
 > 
 > Signed-off-by: James Raphael Tiovalen <jamestiotio@gmail.com>
 > ---
->  lib/riscv/asm/csr.h       | 15 +++++++++------
->  lib/riscv/asm/processor.h |  2 +-
->  2 files changed, 10 insertions(+), 7 deletions(-)
+>  riscv/Makefile            |  1 +
+>  lib/riscv/asm/csr.h       |  7 +++++++
+>  lib/riscv/asm/interrupt.h | 12 ++++++++++++
+>  lib/riscv/interrupt.c     | 39 +++++++++++++++++++++++++++++++++++++++
+>  4 files changed, 59 insertions(+)
+>  create mode 100644 lib/riscv/asm/interrupt.h
+>  create mode 100644 lib/riscv/interrupt.c
 > 
+> diff --git a/riscv/Makefile b/riscv/Makefile
+> index 919a3ebb..108d4481 100644
+> --- a/riscv/Makefile
+> +++ b/riscv/Makefile
+> @@ -30,6 +30,7 @@ cflatobjs += lib/memregions.o
+>  cflatobjs += lib/on-cpus.o
+>  cflatobjs += lib/vmalloc.o
+>  cflatobjs += lib/riscv/bitops.o
+> +cflatobjs += lib/riscv/interrupt.o
+>  cflatobjs += lib/riscv/io.o
+>  cflatobjs += lib/riscv/isa.o
+>  cflatobjs += lib/riscv/mmu.o
 > diff --git a/lib/riscv/asm/csr.h b/lib/riscv/asm/csr.h
-> index d5879d2a..c1777744 100644
+> index c1777744..da58b0ce 100644
 > --- a/lib/riscv/asm/csr.h
 > +++ b/lib/riscv/asm/csr.h
-> @@ -26,15 +26,18 @@
->  #define EXC_STORE_MISALIGNED	6
->  #define EXC_STORE_ACCESS	7
->  #define EXC_SYSCALL		8
-> -#define EXC_HYPERVISOR_SYSCALL	9
-> -#define EXC_SUPERVISOR_SYSCALL	10
-> +#define EXC_SUPERVISOR_SYSCALL	9
->  #define EXC_INST_PAGE_FAULT	12
->  #define EXC_LOAD_PAGE_FAULT	13
->  #define EXC_STORE_PAGE_FAULT	15
-> -#define EXC_INST_GUEST_PAGE_FAULT	20
-> -#define EXC_LOAD_GUEST_PAGE_FAULT	21
-> -#define EXC_VIRTUAL_INST_FAULT		22
-> -#define EXC_STORE_GUEST_PAGE_FAULT	23
-> +#define EXC_SOFTWARE_CHECK	18
-> +#define EXC_HARDWARE_ERROR	19
-
-The above changes don't update the exception cause list to the latest
-spec, they drop the defines supporting the hypervisor extension's
-augmentations (see Section 18.6.1 of the 20240411 priv spec).
-
+> @@ -4,15 +4,22 @@
+>  #include <linux/const.h>
+>  
+>  #define CSR_SSTATUS		0x100
+> +#define CSR_SIE			0x104
+>  #define CSR_STVEC		0x105
+>  #define CSR_SSCRATCH		0x140
+>  #define CSR_SEPC		0x141
+>  #define CSR_SCAUSE		0x142
+>  #define CSR_STVAL		0x143
+> +#define CSR_SIP			0x144
+>  #define CSR_SATP		0x180
+>  
+>  #define SSTATUS_SIE		(_AC(1, UL) << 1)
+>  
+> +#define SIE_SSIE		(_AC(1, UL) << 1)
+> +#define SIE_STIE		(_AC(1, UL) << 5)
+> +#define SIE_SEIE		(_AC(1, UL) << 9)
+> +#define SIE_LCOFIE		(_AC(1, UL) << 13)
 > +
-> +/* Interrupt causes */
-> +#define IRQ_SUPERVISOR_SOFTWARE	1
-> +#define IRQ_SUPERVISOR_TIMER	5
-> +#define IRQ_SUPERVISOR_EXTERNAL	9
-> +#define IRQ_COUNTER_OVERFLOW	13
-
-These are fine, but we could also add the defines for the hypervisor
-extension's augmentations. I also usually just copy+paste the defines
-from Linux since I prefer name consistency.
-
+>  /* Exception cause high bit - is an interrupt if set */
+>  #define CAUSE_IRQ_FLAG		(_AC(1, UL) << (__riscv_xlen - 1))
 >  
->  #ifndef __ASSEMBLY__
->  
-> diff --git a/lib/riscv/asm/processor.h b/lib/riscv/asm/processor.h
-> index 767b1caa..5942ed2e 100644
-> --- a/lib/riscv/asm/processor.h
-> +++ b/lib/riscv/asm/processor.h
-> @@ -4,7 +4,7 @@
->  #include <asm/csr.h>
->  #include <asm/ptrace.h>
->  
-> -#define EXCEPTION_CAUSE_MAX	16
-> +#define EXCEPTION_CAUSE_MAX	64
+> diff --git a/lib/riscv/asm/interrupt.h b/lib/riscv/asm/interrupt.h
+> new file mode 100644
+> index 00000000..b760afbb
+> --- /dev/null
+> +++ b/lib/riscv/asm/interrupt.h
+> @@ -0,0 +1,12 @@
+> +/* SPDX-License-Identifier: GPL-2.0-only */
+> +#ifndef _ASMRISCV_INTERRUPT_H_
+> +#define _ASMRISCV_INTERRUPT_H_
+> +
+> +#include <stdbool.h>
+> +
+> +void toggle_software_interrupt(bool enable);
+> +void toggle_timer_interrupt(bool enable);
+> +void toggle_external_interrupt(bool enable);
+> +void toggle_local_cof_interrupt(bool enable);
+> +
+> +#endif /* _ASMRISCV_INTERRUPT_H_ */
+> diff --git a/lib/riscv/interrupt.c b/lib/riscv/interrupt.c
+> new file mode 100644
+> index 00000000..bc0e16f1
+> --- /dev/null
+> +++ b/lib/riscv/interrupt.c
+> @@ -0,0 +1,39 @@
+> +// SPDX-License-Identifier: GPL-2.0-only
+> +/*
+> + * Copyright (C) 2024, James Raphael Tiovalen <jamestiotio@gmail.com>
+> + */
+> +#include <libcflat.h>
+> +#include <asm/csr.h>
+> +#include <asm/interrupt.h>
+> +
+> +void toggle_software_interrupt(bool enable)
+> +{
+> +	if (enable)
+> +		csr_set(CSR_SIE, SIE_SSIE);
+> +	else
+> +		csr_clear(CSR_SIE, SIE_SSIE);
+> +}
+> +
+> +void toggle_timer_interrupt(bool enable)
+> +{
+> +	if (enable)
+> +		csr_set(CSR_SIE, SIE_STIE);
+> +	else
+> +		csr_clear(CSR_SIE, SIE_STIE);
+> +}
+> +
+> +void toggle_external_interrupt(bool enable)
+> +{
+> +	if (enable)
+> +		csr_set(CSR_SIE, SIE_SEIE);
+> +	else
+> +		csr_clear(CSR_SIE, SIE_SEIE);
+> +}
+> +
+> +void toggle_local_cof_interrupt(bool enable)
+> +{
+> +	if (enable)
+> +		csr_set(CSR_SIE, SIE_LCOFIE);
+> +	else
+> +		csr_clear(CSR_SIE, SIE_LCOFIE);
+> +}
+> -- 
+> 2.43.0
+>
 
-If we want to test the H extension, then we'll want 20-23, but everything
-else is custom or reserved, so we don't need to allocate handler pointer
-space all the way up to 64 as they'll never be used.
+Most of this patch seems premature since the series only needs
+toggle_timer_interrupt(). Also, I think lib/riscv/interrupt.c
+is premature because something like toggle_timer_interrupt()
+can be a static inline in a new lib/riscv/asm/timer.h file.
+
+And please provide two functions rather than a toggle with
+a parameter, i.e.
+
+  timer_interrupt_enable() / timer_interrupt_disable()
 
 Thanks,
 drew
-
->  #define INTERRUPT_CAUSE_MAX	16
->  
->  typedef void (*exception_fn)(struct pt_regs *);
-> -- 
-> 2.43.0
-> 
-> 
-> -- 
-> kvm-riscv mailing list
-> kvm-riscv at lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/kvm-riscv
 
