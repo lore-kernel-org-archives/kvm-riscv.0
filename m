@@ -1,59 +1,24 @@
-From: Anup Patel <apatel@ventanamicro.com>
-Date: Fri, 21 Jun 2024 21:19:04 +0530
+From: Paolo Bonzini <pbonzini@redhat.com>
+Date: Fri, 21 Jun 2024 18:57:39 +0200
 Subject: [GIT PULL] KVM/riscv fixes for 6.10 take #2
-In-Reply-To: <CAAhSdy0wc=e5LW92Y7YdK6Bi0cxk6C1EhSyv5vMo1FxKMu_CpA@mail.gmail.com>
+In-Reply-To: <CAK9=C2U6Mctz6fMOVQroDUHeCJf6HPGrKkK35BPeTkPAx2WMfA@mail.gmail.com>
 References: <CAAhSdy0wc=e5LW92Y7YdK6Bi0cxk6C1EhSyv5vMo1FxKMu_CpA@mail.gmail.com>
-Message-ID: <CAK9=C2U6Mctz6fMOVQroDUHeCJf6HPGrKkK35BPeTkPAx2WMfA@mail.gmail.com>
+ <CAK9=C2U6Mctz6fMOVQroDUHeCJf6HPGrKkK35BPeTkPAx2WMfA@mail.gmail.com>
+Message-ID: <CABgObfa41Ui5qxUGR-Jw+UueuM9U12bEEBwG7wEPSDjQ4gaArA@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Paolo,
+On Fri, Jun 21, 2024 at 5:49?PM Anup Patel <apatel@ventanamicro.com> wrote:
+> > We have one additional fix for 6.10 to take care of
+> > the compilation issue in KVM selftests.
+>
+> Friendly ping ?
 
-On Fri, Jun 7, 2024 at 12:20?PM Anup Patel <anup@brainfault.org> wrote:
->
-> Hi Paolo,
->
-> We have one additional fix for 6.10 to take care of
-> the compilation issue in KVM selftests.
->
-> Please pull.
->
-> Regards,
-> Anup
->
-> The following changes since commit c66f3b40b17d3dfc4b6abb5efde8e71c46971821:
->
->   RISC-V: KVM: Fix incorrect reg_subtype labels in
-> kvm_riscv_vcpu_set_reg_isa_ext function (2024-05-31 10:40:39 +0530)
->
-> are available in the Git repository at:
->
->   https://github.com/kvm-riscv/linux.git tags/kvm-riscv-fixes-6.10-2
->
-> for you to fetch changes up to 0fc670d07d5de36a54f061f457743c9cde1d8b46:
->
->   KVM: selftests: Fix RISC-V compilation (2024-06-06 15:53:16 +0530)
->
-> ----------------------------------------------------------------
-> KVM/riscv fixes for 6.10, take #2
->
-> - Fix compilation for KVM selftests
->
-> ----------------------------------------------------------------
-> Andrew Jones (1):
->       KVM: selftests: Fix RISC-V compilation
->
->  tools/testing/selftests/kvm/lib/riscv/ucall.c    | 1 +
->  tools/testing/selftests/kvm/riscv/ebreak_test.c  | 1 +
->  tools/testing/selftests/kvm/riscv/sbi_pmu_test.c | 1 +
->  3 files changed, 3 insertions(+)
->
+Getting there. :) Pulled now, thanks.
 
-Friendly ping ?
+Paolo
 
-Regards,
-Anup
 
