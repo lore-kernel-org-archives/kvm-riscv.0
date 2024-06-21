@@ -1,80 +1,142 @@
-From: Charlie Jenkins <charlie@rivosinc.com>
-Date: Thu, 20 Jun 2024 15:52:44 -0700
-Subject: [PATCH 3/5] riscv: hwprobe: export Zaamo and Zalrsc extensions
-In-Reply-To: <20240619153913.867263-4-cleger@rivosinc.com>
-References: <20240619153913.867263-1-cleger@rivosinc.com>
- <20240619153913.867263-4-cleger@rivosinc.com>
-Message-ID: <ZnSyvLKC+xXlW1i+@ghost>
+From: Alexandre Ghiti <alex@ghiti.fr>
+Date: Fri, 21 Jun 2024 09:52:01 +0200
+Subject: [PATCH v5 1/4] RISC-V: Add Svade and Svadu Extensions Support
+In-Reply-To: <20240605121512.32083-2-yongxuan.wang@sifive.com>
+References: <20240605121512.32083-1-yongxuan.wang@sifive.com>
+ <20240605121512.32083-2-yongxuan.wang@sifive.com>
+Message-ID: <09f427cd-74ad-4aa5-81b1-995af2b6e1d1@ghiti.fr>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Jun 19, 2024 at 05:39:10PM +0200, Cl?ment L?ger wrote:
-> Export the Zaamo and Zalrsc extensions to userspace using hwprobe.
-> 
-> Signed-off-by: Cl?ment L?ger <cleger@rivosinc.com>
+Hi Yong-Xuan,
+
+On 05/06/2024 14:15, Yong-Xuan Wang wrote:
+> Svade and Svadu extensions represent two schemes for managing the PTE A/D
+> bits. When the PTE A/D bits need to be set, Svade extension intdicates
+> that a related page fault will be raised. In contrast, the Svadu extension
+> supports hardware updating of PTE A/D bits. Since the Svade extension is
+> mandatory and the Svadu extension is optional in RVA23 profile, by default
+> the M-mode firmware will enable the Svadu extension in the menvcfg CSR
+> when only Svadu is present in DT.
+>
+> This patch detects Svade and Svadu extensions from DT and adds
+> arch_has_hw_pte_young() to enable optimization in MGLRU and
+> __wp_page_copy_user() when we have the PTE A/D bits hardware updating
+> support.
+>
+> Co-developed-by: Jinyu Tang <tjytimi@163.com>
+> Signed-off-by: Jinyu Tang <tjytimi@163.com>
+> Signed-off-by: Yong-Xuan Wang <yongxuan.wang@sifive.com>
 > ---
->  Documentation/arch/riscv/hwprobe.rst  | 8 ++++++++
->  arch/riscv/include/uapi/asm/hwprobe.h | 2 ++
->  arch/riscv/kernel/sys_hwprobe.c       | 2 ++
->  3 files changed, 12 insertions(+)
-> 
-> diff --git a/Documentation/arch/riscv/hwprobe.rst b/Documentation/arch/riscv/hwprobe.rst
-> index 25d783be2878..6836a789a9b1 100644
-> --- a/Documentation/arch/riscv/hwprobe.rst
-> +++ b/Documentation/arch/riscv/hwprobe.rst
-> @@ -235,6 +235,14 @@ The following keys are defined:
->         supported as defined in the RISC-V ISA manual starting from commit
->         c732a4f39a4 ("Zcmop is ratified/1.0").
->  
-> +  * :c:macro:`RISCV_HWPROBE_EXT_ZAAMO`: The Zaamo extension is supported as
-> +       defined in the in the RISC-V ISA manual starting from commit e87412e621f1
-> +       ("integrate Zaamo and Zalrsc text (#1304)").
-> +
-> +  * :c:macro:`RISCV_HWPROBE_EXT_ZALRSC`: The Zalrsc extension is supported as
-> +       defined in the in the RISC-V ISA manual starting from commit e87412e621f1
-> +       ("integrate Zaamo and Zalrsc text (#1304)").
-> +
->  * :c:macro:`RISCV_HWPROBE_KEY_CPUPERF_0`: A bitmask that contains performance
->    information about the selected set of processors.
->  
-> diff --git a/arch/riscv/include/uapi/asm/hwprobe.h b/arch/riscv/include/uapi/asm/hwprobe.h
-> index 920fc6a586c9..52cd161e9a94 100644
-> --- a/arch/riscv/include/uapi/asm/hwprobe.h
-> +++ b/arch/riscv/include/uapi/asm/hwprobe.h
-> @@ -71,6 +71,8 @@ struct riscv_hwprobe {
->  #define		RISCV_HWPROBE_EXT_ZCD		(1ULL << 45)
->  #define		RISCV_HWPROBE_EXT_ZCF		(1ULL << 46)
->  #define		RISCV_HWPROBE_EXT_ZCMOP		(1ULL << 47)
-> +#define		RISCV_HWPROBE_EXT_ZAAMO		(1ULL << 48)
-> +#define		RISCV_HWPROBE_EXT_ZALRSC	(1ULL << 49)
->  #define RISCV_HWPROBE_KEY_CPUPERF_0	5
->  #define		RISCV_HWPROBE_MISALIGNED_UNKNOWN	(0 << 0)
->  #define		RISCV_HWPROBE_MISALIGNED_EMULATED	(1 << 0)
-> diff --git a/arch/riscv/kernel/sys_hwprobe.c b/arch/riscv/kernel/sys_hwprobe.c
-> index 3d1aa13a0bb2..e09f1bc3af17 100644
-> --- a/arch/riscv/kernel/sys_hwprobe.c
-> +++ b/arch/riscv/kernel/sys_hwprobe.c
-> @@ -116,6 +116,8 @@ static void hwprobe_isa_ext0(struct riscv_hwprobe *pair,
->  		EXT_KEY(ZCA);
->  		EXT_KEY(ZCB);
->  		EXT_KEY(ZCMOP);
-> +		EXT_KEY(ZAAMO);
-> +		EXT_KEY(ZALRSC);
->  
->  		/*
->  		 * All the following extensions must depend on the kernel
-> -- 
-> 2.45.2
-> 
-> 
-> _______________________________________________
-> linux-riscv mailing list
-> linux-riscv at lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-riscv
+>   arch/riscv/Kconfig               |  1 +
+>   arch/riscv/include/asm/csr.h     |  1 +
+>   arch/riscv/include/asm/hwcap.h   |  2 ++
+>   arch/riscv/include/asm/pgtable.h | 14 +++++++++++++-
+>   arch/riscv/kernel/cpufeature.c   |  2 ++
+>   5 files changed, 19 insertions(+), 1 deletion(-)
+>
+> diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
+> index b94176e25be1..dbfe2be99bf9 100644
+> --- a/arch/riscv/Kconfig
+> +++ b/arch/riscv/Kconfig
+> @@ -36,6 +36,7 @@ config RISCV
+>   	select ARCH_HAS_PMEM_API
+>   	select ARCH_HAS_PREPARE_SYNC_CORE_CMD
+>   	select ARCH_HAS_PTE_SPECIAL
+> +	select ARCH_HAS_HW_PTE_YOUNG
+>   	select ARCH_HAS_SET_DIRECT_MAP if MMU
+>   	select ARCH_HAS_SET_MEMORY if MMU
+>   	select ARCH_HAS_STRICT_KERNEL_RWX if MMU && !XIP_KERNEL
+> diff --git a/arch/riscv/include/asm/csr.h b/arch/riscv/include/asm/csr.h
+> index 25966995da04..524cd4131c71 100644
+> --- a/arch/riscv/include/asm/csr.h
+> +++ b/arch/riscv/include/asm/csr.h
+> @@ -195,6 +195,7 @@
+>   /* xENVCFG flags */
+>   #define ENVCFG_STCE			(_AC(1, ULL) << 63)
+>   #define ENVCFG_PBMTE			(_AC(1, ULL) << 62)
+> +#define ENVCFG_ADUE			(_AC(1, ULL) << 61)
+>   #define ENVCFG_CBZE			(_AC(1, UL) << 7)
+>   #define ENVCFG_CBCFE			(_AC(1, UL) << 6)
+>   #define ENVCFG_CBIE_SHIFT		4
+> diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
+> index e17d0078a651..35d7aa49785d 100644
+> --- a/arch/riscv/include/asm/hwcap.h
+> +++ b/arch/riscv/include/asm/hwcap.h
+> @@ -81,6 +81,8 @@
+>   #define RISCV_ISA_EXT_ZTSO		72
+>   #define RISCV_ISA_EXT_ZACAS		73
+>   #define RISCV_ISA_EXT_XANDESPMU		74
+> +#define RISCV_ISA_EXT_SVADE             75
+> +#define RISCV_ISA_EXT_SVADU		76
+>   
+>   #define RISCV_ISA_EXT_XLINUXENVCFG	127
+>   
+> diff --git a/arch/riscv/include/asm/pgtable.h b/arch/riscv/include/asm/pgtable.h
+> index aad8b8ca51f1..7287ea4a6160 100644
+> --- a/arch/riscv/include/asm/pgtable.h
+> +++ b/arch/riscv/include/asm/pgtable.h
+> @@ -120,6 +120,7 @@
+>   #include <asm/tlbflush.h>
+>   #include <linux/mm_types.h>
+>   #include <asm/compat.h>
+> +#include <asm/cpufeature.h>
+>   
+>   #define __page_val_to_pfn(_val)  (((_val) & _PAGE_PFN_MASK) >> _PAGE_PFN_SHIFT)
+>   
+> @@ -288,7 +289,6 @@ static inline pte_t pud_pte(pud_t pud)
+>   }
+>   
+>   #ifdef CONFIG_RISCV_ISA_SVNAPOT
+> -#include <asm/cpufeature.h>
+>   
+>   static __always_inline bool has_svnapot(void)
+>   {
+> @@ -624,6 +624,18 @@ static inline pgprot_t pgprot_writecombine(pgprot_t _prot)
+>   	return __pgprot(prot);
+>   }
+>   
+> +/*
+> + * Both Svade and Svadu control the hardware behavior when the PTE A/D bits need to be set. By
+> + * default the M-mode firmware enables the hardware updating scheme when only Svadu is present in
+> + * DT.
+> + */
+> +#define arch_has_hw_pte_young arch_has_hw_pte_young
+> +static inline bool arch_has_hw_pte_young(void)
+> +{
+> +	return riscv_has_extension_unlikely(RISCV_ISA_EXT_SVADU) &&
+> +	       !riscv_has_extension_likely(RISCV_ISA_EXT_SVADE);
+> +}
 
-Reviewed-by: Charlie Jenkins <charlie@rivosinc.com>
 
+AFAIK, the riscv_has_extension_*() macros will use the content of the 
+riscv,isa string. So this works fine for now with the description you 
+provided in the cover letter, as long as we don't have the FWFT SBI 
+extension. I'm wondering if we should not make sure it works when FWFT 
+lands because I'm pretty sure we will forget about this.
+
+So I think we should check the availability of SBI FWFT and use some 
+global variable that tells if svadu is enabled or not instead of this check.
+
+
+> +
+>   /*
+>    * THP functions
+>    */
+> diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
+> index 5ef48cb20ee1..58565798cea0 100644
+> --- a/arch/riscv/kernel/cpufeature.c
+> +++ b/arch/riscv/kernel/cpufeature.c
+> @@ -301,6 +301,8 @@ const struct riscv_isa_ext_data riscv_isa_ext[] = {
+>   	__RISCV_ISA_EXT_DATA(ssaia, RISCV_ISA_EXT_SSAIA),
+>   	__RISCV_ISA_EXT_DATA(sscofpmf, RISCV_ISA_EXT_SSCOFPMF),
+>   	__RISCV_ISA_EXT_DATA(sstc, RISCV_ISA_EXT_SSTC),
+> +	__RISCV_ISA_EXT_DATA(svade, RISCV_ISA_EXT_SVADE),
+> +	__RISCV_ISA_EXT_DATA(svadu, RISCV_ISA_EXT_SVADU),
+>   	__RISCV_ISA_EXT_DATA(svinval, RISCV_ISA_EXT_SVINVAL),
+>   	__RISCV_ISA_EXT_DATA(svnapot, RISCV_ISA_EXT_SVNAPOT),
+>   	__RISCV_ISA_EXT_DATA(svpbmt, RISCV_ISA_EXT_SVPBMT),
 
