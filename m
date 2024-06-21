@@ -1,69 +1,51 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Fri, 21 Jun 2024 10:53:31 +0200
-Subject: [PATCH v5 4/4] KVM: riscv: selftests: Add Svade and Svadu
- Extension to get-reg-list test
-In-Reply-To: <20240605121512.32083-5-yongxuan.wang@sifive.com>
-References: <20240605121512.32083-1-yongxuan.wang@sifive.com>
- <20240605121512.32083-5-yongxuan.wang@sifive.com>
-Message-ID: <20240621-f02c058395f929dfac9f3883@orel>
+From: Xu Lu <luxu.kernel@bytedance.com>
+Date: Fri, 21 Jun 2024 17:32:21 +0800
+Subject: [RFC v2 0/2] riscv: Idle thread using Zawrs extension
+Message-ID: <20240621093223.37893-1-luxu.kernel@bytedance.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Jun 05, 2024 at 08:15:10PM GMT, Yong-Xuan Wang wrote:
-> Update the get-reg-list test to test the Svade and Svadu Extensions are
-> available for guest OS.
-> 
-> Signed-off-by: Yong-Xuan Wang <yongxuan.wang@sifive.com>
-> ---
->  tools/testing/selftests/kvm/riscv/get-reg-list.c | 8 ++++++++
->  1 file changed, 8 insertions(+)
-> 
-> diff --git a/tools/testing/selftests/kvm/riscv/get-reg-list.c b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-> index 222198dd6d04..1d32351ad55e 100644
-> --- a/tools/testing/selftests/kvm/riscv/get-reg-list.c
-> +++ b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-> @@ -45,6 +45,8 @@ bool filter_reg(__u64 reg)
->  	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SSAIA:
->  	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SSCOFPMF:
->  	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SSTC:
-> +	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SVADE:
-> +	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SVADU:
->  	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SVINVAL:
->  	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SVNAPOT:
->  	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SVPBMT:
-> @@ -411,6 +413,8 @@ static const char *isa_ext_single_id_to_str(__u64 reg_off)
->  		KVM_ISA_EXT_ARR(SSAIA),
->  		KVM_ISA_EXT_ARR(SSCOFPMF),
->  		KVM_ISA_EXT_ARR(SSTC),
-> +		KVM_ISA_EXT_ARR(SVADE),
-> +		KVM_ISA_EXT_ARR(SVADU),
->  		KVM_ISA_EXT_ARR(SVINVAL),
->  		KVM_ISA_EXT_ARR(SVNAPOT),
->  		KVM_ISA_EXT_ARR(SVPBMT),
-> @@ -935,6 +939,8 @@ KVM_ISA_EXT_SIMPLE_CONFIG(h, H);
->  KVM_ISA_EXT_SUBLIST_CONFIG(smstateen, SMSTATEEN);
->  KVM_ISA_EXT_SIMPLE_CONFIG(sscofpmf, SSCOFPMF);
->  KVM_ISA_EXT_SIMPLE_CONFIG(sstc, SSTC);
-> +KVM_ISA_EXT_SIMPLE_CONFIG(svade, SVADE);
-> +KVM_ISA_EXT_SIMPLE_CONFIG(svadu, SVADU);
->  KVM_ISA_EXT_SIMPLE_CONFIG(svinval, SVINVAL);
->  KVM_ISA_EXT_SIMPLE_CONFIG(svnapot, SVNAPOT);
->  KVM_ISA_EXT_SIMPLE_CONFIG(svpbmt, SVPBMT);
-> @@ -991,6 +997,8 @@ struct vcpu_reg_list *vcpu_configs[] = {
->  	&config_smstateen,
->  	&config_sscofpmf,
->  	&config_sstc,
-> +	&config_svade,
-> +	&config_svadu,
->  	&config_svinval,
->  	&config_svnapot,
->  	&config_svpbmt,
-> -- 
-> 2.17.1
->
+This is the second version of idle thread based on Zawrs extension. We
+rebased our code on Andrew's patch series[1] which provides basic
+support for Zawrs as well as optimization for spinlock.
 
-Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+This patch series introduces a new implementation of idle thread using
+Zawrs extension.
+
+The Zawrs[0] extension introduces two new instructions named WRS.STO and
+WRS.NTO in RISC-V. When software registers a reservation set using LR
+instruction, a subsequent WRS.STO or WRS.NTO instruction will cause the
+hart to stall in a low-power state until a store happens to the
+reservation set or an interrupt becomes pending. The difference between
+these two instructions is that WRS.STO will terminate stall after an
+implementation-defined timeout while WRS.NTO won't.
+
+This patch series implements idle thread using WRS.NTO instruction.
+Besides, we found there is no need to send a real IPI to wake up an idle
+CPU. Instead, we write IPI information to the reservation set of an idle
+CPU to wake it up and let it handle IPI quickly, without going through
+tranditional interrupt handling routine.
+
+[0] https://github.com/riscv/riscv-zawrs/blob/main/zawrs.adoc
+[1] https://github.com/jones-drew/linux/commits/riscv/zawrs-v3
+
+Xu Lu (2):
+  riscv: process: Introduce idle thread using Zawrs extension
+  riscv: Use Zawrs to accelerate IPI to idle cpu
+
+ arch/riscv/Kconfig                 |  10 +++
+ arch/riscv/include/asm/cpuidle.h   |  11 +---
+ arch/riscv/include/asm/processor.h |  32 +++++++++
+ arch/riscv/include/asm/smp.h       |  14 ++++
+ arch/riscv/kernel/cpu.c            |   5 ++
+ arch/riscv/kernel/process.c        | 102 ++++++++++++++++++++++++++++-
+ arch/riscv/kernel/smp.c            |  39 +++++++----
+ 7 files changed, 190 insertions(+), 23 deletions(-)
+
+-- 
+2.20.1
+
 
