@@ -1,145 +1,103 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Fri, 21 Jun 2024 10:43:58 +0200
-Subject: [PATCH v5 1/4] RISC-V: Add Svade and Svadu Extensions Support
-In-Reply-To: <20240605121512.32083-2-yongxuan.wang@sifive.com>
+Date: Fri, 21 Jun 2024 10:52:16 +0200
+Subject: [PATCH v5 3/4] RISC-V: KVM: Add Svade and Svadu Extensions
+ Support for Guest/VM
+In-Reply-To: <20240605121512.32083-4-yongxuan.wang@sifive.com>
 References: <20240605121512.32083-1-yongxuan.wang@sifive.com>
- <20240605121512.32083-2-yongxuan.wang@sifive.com>
-Message-ID: <20240621-d1b77d43adacaa34337238c2@orel>
+ <20240605121512.32083-4-yongxuan.wang@sifive.com>
+Message-ID: <20240621-2c3ffd345cba1317bc0f5f9d@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Jun 05, 2024 at 08:15:07PM GMT, Yong-Xuan Wang wrote:
-> Svade and Svadu extensions represent two schemes for managing the PTE A/D
-> bits. When the PTE A/D bits need to be set, Svade extension intdicates
-> that a related page fault will be raised. In contrast, the Svadu extension
-> supports hardware updating of PTE A/D bits. Since the Svade extension is
-> mandatory and the Svadu extension is optional in RVA23 profile, by default
-> the M-mode firmware will enable the Svadu extension in the menvcfg CSR
-> when only Svadu is present in DT.
+On Wed, Jun 05, 2024 at 08:15:09PM GMT, Yong-Xuan Wang wrote:
+> We extend the KVM ISA extension ONE_REG interface to allow VMM tools to
+> detect and enable Svade and Svadu extensions for Guest/VM. Since the
+> henvcfg.ADUE is read-only zero if the menvcfg.ADUE is zero, the Svadu
+> extension is available for Guest/VM only when arch_has_hw_pte_young()
+> is true.
 > 
-> This patch detects Svade and Svadu extensions from DT and adds
-> arch_has_hw_pte_young() to enable optimization in MGLRU and
-> __wp_page_copy_user() when we have the PTE A/D bits hardware updating
-> support.
-> 
-> Co-developed-by: Jinyu Tang <tjytimi@163.com>
-> Signed-off-by: Jinyu Tang <tjytimi@163.com>
 > Signed-off-by: Yong-Xuan Wang <yongxuan.wang@sifive.com>
 > ---
->  arch/riscv/Kconfig               |  1 +
->  arch/riscv/include/asm/csr.h     |  1 +
->  arch/riscv/include/asm/hwcap.h   |  2 ++
->  arch/riscv/include/asm/pgtable.h | 14 +++++++++++++-
->  arch/riscv/kernel/cpufeature.c   |  2 ++
->  5 files changed, 19 insertions(+), 1 deletion(-)
+>  arch/riscv/include/uapi/asm/kvm.h | 2 ++
+>  arch/riscv/kvm/vcpu.c             | 6 ++++++
+>  arch/riscv/kvm/vcpu_onereg.c      | 6 ++++++
+>  3 files changed, 14 insertions(+)
 > 
-> diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
-> index b94176e25be1..dbfe2be99bf9 100644
-> --- a/arch/riscv/Kconfig
-> +++ b/arch/riscv/Kconfig
-> @@ -36,6 +36,7 @@ config RISCV
->  	select ARCH_HAS_PMEM_API
->  	select ARCH_HAS_PREPARE_SYNC_CORE_CMD
->  	select ARCH_HAS_PTE_SPECIAL
-> +	select ARCH_HAS_HW_PTE_YOUNG
->  	select ARCH_HAS_SET_DIRECT_MAP if MMU
->  	select ARCH_HAS_SET_MEMORY if MMU
->  	select ARCH_HAS_STRICT_KERNEL_RWX if MMU && !XIP_KERNEL
-> diff --git a/arch/riscv/include/asm/csr.h b/arch/riscv/include/asm/csr.h
-> index 25966995da04..524cd4131c71 100644
-> --- a/arch/riscv/include/asm/csr.h
-> +++ b/arch/riscv/include/asm/csr.h
-> @@ -195,6 +195,7 @@
->  /* xENVCFG flags */
->  #define ENVCFG_STCE			(_AC(1, ULL) << 63)
->  #define ENVCFG_PBMTE			(_AC(1, ULL) << 62)
-> +#define ENVCFG_ADUE			(_AC(1, ULL) << 61)
->  #define ENVCFG_CBZE			(_AC(1, UL) << 7)
->  #define ENVCFG_CBCFE			(_AC(1, UL) << 6)
->  #define ENVCFG_CBIE_SHIFT		4
-> diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
-> index e17d0078a651..35d7aa49785d 100644
-> --- a/arch/riscv/include/asm/hwcap.h
-> +++ b/arch/riscv/include/asm/hwcap.h
-> @@ -81,6 +81,8 @@
->  #define RISCV_ISA_EXT_ZTSO		72
->  #define RISCV_ISA_EXT_ZACAS		73
->  #define RISCV_ISA_EXT_XANDESPMU		74
-> +#define RISCV_ISA_EXT_SVADE             75
-> +#define RISCV_ISA_EXT_SVADU		76
+> diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
+> index e878e7cc3978..a5e0c35d7e9a 100644
+> --- a/arch/riscv/include/uapi/asm/kvm.h
+> +++ b/arch/riscv/include/uapi/asm/kvm.h
+> @@ -168,6 +168,8 @@ enum KVM_RISCV_ISA_EXT_ID {
+>  	KVM_RISCV_ISA_EXT_ZTSO,
+>  	KVM_RISCV_ISA_EXT_ZACAS,
+>  	KVM_RISCV_ISA_EXT_SSCOFPMF,
+> +	KVM_RISCV_ISA_EXT_SVADE,
+> +	KVM_RISCV_ISA_EXT_SVADU,
+>  	KVM_RISCV_ISA_EXT_MAX,
+>  };
 >  
->  #define RISCV_ISA_EXT_XLINUXENVCFG	127
+> diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+> index 17e21df36cc1..21edd60c4756 100644
+> --- a/arch/riscv/kvm/vcpu.c
+> +++ b/arch/riscv/kvm/vcpu.c
+> @@ -540,6 +540,12 @@ static void kvm_riscv_vcpu_setup_config(struct kvm_vcpu *vcpu)
+>  	if (riscv_isa_extension_available(isa, ZICBOZ))
+>  		cfg->henvcfg |= ENVCFG_CBZE;
 >  
-> diff --git a/arch/riscv/include/asm/pgtable.h b/arch/riscv/include/asm/pgtable.h
-> index aad8b8ca51f1..7287ea4a6160 100644
-> --- a/arch/riscv/include/asm/pgtable.h
-> +++ b/arch/riscv/include/asm/pgtable.h
-> @@ -120,6 +120,7 @@
->  #include <asm/tlbflush.h>
->  #include <linux/mm_types.h>
->  #include <asm/compat.h>
-> +#include <asm/cpufeature.h>
->  
->  #define __page_val_to_pfn(_val)  (((_val) & _PAGE_PFN_MASK) >> _PAGE_PFN_SHIFT)
->  
-> @@ -288,7 +289,6 @@ static inline pte_t pud_pte(pud_t pud)
->  }
->  
->  #ifdef CONFIG_RISCV_ISA_SVNAPOT
-> -#include <asm/cpufeature.h>
->  
->  static __always_inline bool has_svnapot(void)
->  {
-> @@ -624,6 +624,18 @@ static inline pgprot_t pgprot_writecombine(pgprot_t _prot)
->  	return __pgprot(prot);
->  }
->  
-> +/*
-> + * Both Svade and Svadu control the hardware behavior when the PTE A/D bits need to be set. By
-> + * default the M-mode firmware enables the hardware updating scheme when only Svadu is present in
-> + * DT.
-> + */
-> +#define arch_has_hw_pte_young arch_has_hw_pte_young
-> +static inline bool arch_has_hw_pte_young(void)
-> +{
-> +	return riscv_has_extension_unlikely(RISCV_ISA_EXT_SVADU) &&
-> +	       !riscv_has_extension_likely(RISCV_ISA_EXT_SVADE);
-
-It's hard to guess what is, or will be, more likely to be the correct
-choice of call between the _unlikely and _likely variants. But, while we
-assume svade is most prevalent right now, it's actually quite unlikely
-that 'svade' will be in the DT, since DTs haven't been putting it there
-yet. Anyway, it doesn't really matter much and maybe the _unlikely vs.
-_likely variants are better for documenting expectations than for
-performance.
-
-> +}
+> +	if (riscv_isa_extension_available(isa, SVADU))
+> +		cfg->henvcfg |= ENVCFG_ADUE;
 > +
->  /*
->   * THP functions
->   */
-> diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
-> index 5ef48cb20ee1..58565798cea0 100644
-> --- a/arch/riscv/kernel/cpufeature.c
-> +++ b/arch/riscv/kernel/cpufeature.c
-> @@ -301,6 +301,8 @@ const struct riscv_isa_ext_data riscv_isa_ext[] = {
->  	__RISCV_ISA_EXT_DATA(ssaia, RISCV_ISA_EXT_SSAIA),
->  	__RISCV_ISA_EXT_DATA(sscofpmf, RISCV_ISA_EXT_SSCOFPMF),
->  	__RISCV_ISA_EXT_DATA(sstc, RISCV_ISA_EXT_SSTC),
-> +	__RISCV_ISA_EXT_DATA(svade, RISCV_ISA_EXT_SVADE),
-> +	__RISCV_ISA_EXT_DATA(svadu, RISCV_ISA_EXT_SVADU),
->  	__RISCV_ISA_EXT_DATA(svinval, RISCV_ISA_EXT_SVINVAL),
->  	__RISCV_ISA_EXT_DATA(svnapot, RISCV_ISA_EXT_SVNAPOT),
->  	__RISCV_ISA_EXT_DATA(svpbmt, RISCV_ISA_EXT_SVPBMT),
+> +	if (riscv_isa_extension_available(isa, SVADE))
+> +		cfg->henvcfg &= ~ENVCFG_ADUE;
+
+nit: I'd write this as
+
+	if (!riscv_isa_extension_available(isa, SVADE) &&
+	    riscv_isa_extension_available(isa, SVADU))
+		cfg->henvcfg |= ENVCFG_ADUE;
+
+> +
+>  	if (riscv_has_extension_unlikely(RISCV_ISA_EXT_SMSTATEEN)) {
+>  		cfg->hstateen0 |= SMSTATEEN0_HSENVCFG;
+>  		if (riscv_isa_extension_available(isa, SSAIA))
+> diff --git a/arch/riscv/kvm/vcpu_onereg.c b/arch/riscv/kvm/vcpu_onereg.c
+> index c676275ea0a0..06e930f1e206 100644
+> --- a/arch/riscv/kvm/vcpu_onereg.c
+> +++ b/arch/riscv/kvm/vcpu_onereg.c
+> @@ -15,6 +15,7 @@
+>  #include <asm/cacheflush.h>
+>  #include <asm/cpufeature.h>
+>  #include <asm/kvm_vcpu_vector.h>
+> +#include <asm/pgtable.h>
+>  #include <asm/vector.h>
+>  
+>  #define KVM_RISCV_BASE_ISA_MASK		GENMASK(25, 0)
+> @@ -38,6 +39,8 @@ static const unsigned long kvm_isa_ext_arr[] = {
+>  	KVM_ISA_EXT_ARR(SSAIA),
+>  	KVM_ISA_EXT_ARR(SSCOFPMF),
+>  	KVM_ISA_EXT_ARR(SSTC),
+> +	KVM_ISA_EXT_ARR(SVADE),
+> +	KVM_ISA_EXT_ARR(SVADU),
+>  	KVM_ISA_EXT_ARR(SVINVAL),
+>  	KVM_ISA_EXT_ARR(SVNAPOT),
+>  	KVM_ISA_EXT_ARR(SVPBMT),
+> @@ -105,6 +108,9 @@ static bool kvm_riscv_vcpu_isa_enable_allowed(unsigned long ext)
+>  		return __riscv_isa_extension_available(NULL, RISCV_ISA_EXT_SSAIA);
+>  	case KVM_RISCV_ISA_EXT_V:
+>  		return riscv_v_vstate_ctrl_user_allowed();
+> +	case KVM_RISCV_ISA_EXT_SVADU:
+> +		/* The henvcfg.ADUE is read-only zero if menvcfg.ADUE is zero. */
+> +		return arch_has_hw_pte_young();
+>  	default:
+>  		break;
+>  	}
 > -- 
 > 2.17.1
 >
 
 Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
 
-Thanks,
-drew
 
