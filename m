@@ -1,80 +1,100 @@
 From: Conor Dooley <conor@kernel.org>
-Date: Sat, 22 Jun 2024 13:01:30 +0100
-Subject: [PATCH v5 2/4] dt-bindings: riscv: Add Svade and Svadu Entries
-In-Reply-To: <20240621-8422c24612ae40600f349f7c@orel>
-References: <20240605-atrium-neuron-c2512b34d3da@spud>
- <CAK9=C2XH7-RdVpojX8GNW-WFTyChW=sTOWs8_kHgsjiFYwzg+g@mail.gmail.com>
- <40a7d568-3855-48fb-a73c-339e1790f12f@ghiti.fr>
- <20240621-viewless-mural-f5992a247992@wendy>
- <edcd3957-0720-4ab4-bdda-58752304a53a@ghiti.fr>
- <20240621-9bf9365533a2f8f97cbf1f5e@orel>
- <20240621-glutton-platonic-2ec41021b81b@spud>
- <20240621-a56e848050ebbf1f7394e51f@orel>
- <20240621-surging-flounder-58a653747e1d@spud>
- <20240621-8422c24612ae40600f349f7c@orel>
-Message-ID: <20240622-stride-unworn-6e3270a326e5@spud>
+Date: Sun, 23 Jun 2024 16:42:59 +0100
+Subject: [PATCH v7 08/16] riscv: add ISA parsing for Zca, Zcf, Zcd and Zcb
+In-Reply-To: <20240619113529.676940-9-cleger@rivosinc.com>
+References: <20240619113529.676940-1-cleger@rivosinc.com>
+ <20240619113529.676940-9-cleger@rivosinc.com>
+Message-ID: <20240623-cornbread-preteen-4ec287aa165c@spud>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Jun 21, 2024 at 05:08:01PM +0200, Andrew Jones wrote:
-> On Fri, Jun 21, 2024 at 03:58:18PM GMT, Conor Dooley wrote:
-> > On Fri, Jun 21, 2024 at 04:52:09PM +0200, Andrew Jones wrote:
-> > > On Fri, Jun 21, 2024 at 03:04:47PM GMT, Conor Dooley wrote:
-> > > > On Fri, Jun 21, 2024 at 03:15:10PM +0200, Andrew Jones wrote:
-> > > > > On Fri, Jun 21, 2024 at 02:42:15PM GMT, Alexandre Ghiti wrote:
-> > 
-> > > > > I understand the concern; old SBI implementations will leave svadu in the
-> > > > > DT but not actually enable it. Then, since svade may not be in the DT if
-> > > > > the platform doesn't support it or it was left out on purpose, Linux will
-> > > > > only see svadu and get unexpected exceptions. This is something we could
-> > > > > force easily with QEMU and an SBI implementation which doesn't do anything
-> > > > > for svadu. I hope vendors of real platforms, which typically provide their
-> > > > > own firmware and DTs, would get this right, though, especially since Linux
-> > > > > should fail fast in their testing when they get it wrong.
-> > > > 
-> > > > I'll admit, I wasn't really thinking here about something like QEMU that
-> > > > puts extensions into the dtb before their exact meanings are decided
-> > > > upon. I almost only ever think about "real" systems, and in those cases
-> > > > I would expect that if you can update the representation of the hardware
-> > > > provided to (or by the firmware to Linux) with new properties, then updating
-> > > > the firmware itself should be possible.
-> > > > 
-> > > > Does QEMU have the this exact problem at the moment? I know it puts
-> > > > Svadu in the max cpu, but does it enable the behaviour by default, even
-> > > > without the SBI implementation asking for it?
-> > > 
-> > > Yes, because QEMU has done hardware A/D updating since it first started
-> > > supporting riscv, which means it did svadu when neither svadu nor svade
-> > > were in the DT. The "fix" for that was to ensure we have svadu and !svade
-> > > by default, which means we've perfectly realized Alexandre's concern...
-> > > We should be able to change the named cpu types that don't support svadu
-> > > to only have svade in their DTs, since that would actually be fixing those
-> > > cpu types, but we'll need to discuss how to proceed with the generic cpu
-> > > types like 'max'.
-> > 
-> > Correct me please, since I think I am misunderstanding: At the moment
-> > QEMU does A/D updating whether or not the SBI implantation asks for it,
-> > with the max CPU. The SBI implementation doesn't understand Svadu and
-> > won't strip it. The kernel will get a DT with Svadu in it, but Svadu will
-> > be enabled, so it is not a problem.
+On Wed, Jun 19, 2024 at 01:35:18PM +0200, Cl?ment L?ger wrote:
+> The Zc* standard extension for code reduction introduces new extensions.
+> This patch adds support for Zca, Zcf, Zcd and Zcb. Zce, Zcmt and Zcmp
+> are left out of this patch since they are targeting microcontrollers/
+> embedded CPUs instead of application processors.
 > 
-> Oh, of course you're right! I managed to reverse things some odd number of
-> times (more than once!) in my head and ended up backwards...
+> Signed-off-by: Cl?ment L?ger <cleger@rivosinc.com>
+> Reviewed-by: Conor Dooley <conor.dooley@microchip.com>
+> ---
+>  arch/riscv/include/asm/hwcap.h |  4 +++
+>  arch/riscv/kernel/cpufeature.c | 55 +++++++++++++++++++++++++++++++++-
+>  2 files changed, 58 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
+> index 18859277843a..b12ae3f2141c 100644
+> --- a/arch/riscv/include/asm/hwcap.h
+> +++ b/arch/riscv/include/asm/hwcap.h
+> @@ -87,6 +87,10 @@
+>  #define RISCV_ISA_EXT_ZVE64F		78
+>  #define RISCV_ISA_EXT_ZVE64D		79
+>  #define RISCV_ISA_EXT_ZIMOP		80
+> +#define RISCV_ISA_EXT_ZCA		81
+> +#define RISCV_ISA_EXT_ZCB		82
+> +#define RISCV_ISA_EXT_ZCD		83
+> +#define RISCV_ISA_EXT_ZCF		84
+>  
+>  #define RISCV_ISA_EXT_XLINUXENVCFG	127
+>  
+> diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
+> index a3af976f36c9..aa631fe49b7c 100644
+> --- a/arch/riscv/kernel/cpufeature.c
+> +++ b/arch/riscv/kernel/cpufeature.c
+> @@ -111,6 +111,9 @@ static int riscv_ext_zicboz_validate(const struct riscv_isa_ext_data *data,
+>  
+>  #define __RISCV_ISA_EXT_DATA(_name, _id) _RISCV_ISA_EXT_DATA(_name, _id, NULL, 0, NULL)
+>  
+> +#define __RISCV_ISA_EXT_DATA_VALIDATE(_name, _id, _validate) \
+> +			_RISCV_ISA_EXT_DATA(_name, _id, NULL, 0, _validate)
+> +
+>  /* Used to declare pure "lasso" extension (Zk for instance) */
+>  #define __RISCV_ISA_EXT_BUNDLE(_name, _bundled_exts) \
+>  	_RISCV_ISA_EXT_DATA(_name, RISCV_ISA_EXT_INVALID, _bundled_exts, \
+> @@ -122,6 +125,37 @@ static int riscv_ext_zicboz_validate(const struct riscv_isa_ext_data *data,
+>  #define __RISCV_ISA_EXT_SUPERSET_VALIDATE(_name, _id, _sub_exts, _validate) \
+>  	_RISCV_ISA_EXT_DATA(_name, _id, _sub_exts, ARRAY_SIZE(_sub_exts), _validate)
+>  
+> +static int riscv_ext_zca_depends(const struct riscv_isa_ext_data *data,
 
-I mean, I've been really confused about this whole thing the entire
-time, so ye..
+It's super minor, but my OCD doesn't like this being called "depends"
+when the others are all called "validate".
 
-Speaking of QEMU, what happens if I try to turn on svade and svadu in
-QEMU? It looks like there's some handling of it that does things
-conditionally based !svade && svade, but I couldn't tell if it would do
-what we are describing in this thread.
+> +				 const unsigned long *isa_bitmap)
+> +{
+> +	if (__riscv_isa_extension_available(isa_bitmap, RISCV_ISA_EXT_ZCA))
+> +		return 0;
+> +
+> +	return -EPROBE_DEFER;
+> +}
+> +static int riscv_ext_zcd_validate(const struct riscv_isa_ext_data *data,
+> +				  const unsigned long *isa_bitmap)
+> +{
+> +	if (__riscv_isa_extension_available(isa_bitmap, RISCV_ISA_EXT_ZCA) &&
+> +	    __riscv_isa_extension_available(isa_bitmap, RISCV_ISA_EXT_d))
+> +		return 0;
+> +
+> +	return -EPROBE_DEFER;
+> +}
+> +
+> +static int riscv_ext_zcf_validate(const struct riscv_isa_ext_data *data,
+> +				  const unsigned long *isa_bitmap)
+> +{
+> +	if (IS_ENABLED(CONFIG_64BIT))
+> +		return -EINVAL;
+> +
+> +	if (__riscv_isa_extension_available(isa_bitmap, RISCV_ISA_EXT_ZCA) &&
+> +	    __riscv_isa_extension_available(isa_bitmap, RISCV_ISA_EXT_f))
+> +		return 0;
+> +
+> +	return -EPROBE_DEFER;
+> +}
 -------------- next part --------------
 A non-text attachment was scrubbed...
 Name: signature.asc
 Type: application/pgp-signature
 Size: 228 bytes
 Desc: not available
-URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20240622/fd989036/attachment.sig>
+URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20240623/77846569/attachment.sig>
