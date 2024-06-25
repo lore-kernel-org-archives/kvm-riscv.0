@@ -1,82 +1,104 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Tue, 25 Jun 2024 12:19:16 +0200
-Subject: [PATCH v5 2/4] dt-bindings: riscv: Add Svade and Svadu Entries
-In-Reply-To: <20240622-stride-unworn-6e3270a326e5@spud>
-References: <CAK9=C2XH7-RdVpojX8GNW-WFTyChW=sTOWs8_kHgsjiFYwzg+g@mail.gmail.com>
- <40a7d568-3855-48fb-a73c-339e1790f12f@ghiti.fr>
- <20240621-viewless-mural-f5992a247992@wendy>
- <edcd3957-0720-4ab4-bdda-58752304a53a@ghiti.fr>
- <20240621-9bf9365533a2f8f97cbf1f5e@orel>
- <20240621-glutton-platonic-2ec41021b81b@spud>
- <20240621-a56e848050ebbf1f7394e51f@orel>
- <20240621-surging-flounder-58a653747e1d@spud>
- <20240621-8422c24612ae40600f349f7c@orel>
- <20240622-stride-unworn-6e3270a326e5@spud>
-Message-ID: <20240625-6fb62d7ea4b9f6106e27e149@orel>
+From: Yong-Xuan Wang <yongxuan.wang@sifive.com>
+Date: Tue, 25 Jun 2024 18:37:53 +0800
+Subject: [PATCH v5 1/4] RISC-V: Add Svade and Svadu Extensions Support
+In-Reply-To: <20240621-a69c8f97e566ebd3a82654c1@orel>
+References: <20240605121512.32083-1-yongxuan.wang@sifive.com>
+ <20240605121512.32083-2-yongxuan.wang@sifive.com> <20240621-d1b77d43adacaa34337238c2@orel>
+ <20240621-nutty-penknife-ca541ee5108d@wendy> <20240621-b22a7c677a8d61c26feaa75b@orel>
+ <20240621-pushpin-exclude-1b4f38ae7e8d@wendy> <20240621-a69c8f97e566ebd3a82654c1@orel>
+Message-ID: <CAMWQL2jWPD77f2gz_N8HM+YdKev-8RvOCOUgm5-uxq-5VTvCXw@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sat, Jun 22, 2024 at 01:01:30PM GMT, Conor Dooley wrote:
-> On Fri, Jun 21, 2024 at 05:08:01PM +0200, Andrew Jones wrote:
-> > On Fri, Jun 21, 2024 at 03:58:18PM GMT, Conor Dooley wrote:
-> > > On Fri, Jun 21, 2024 at 04:52:09PM +0200, Andrew Jones wrote:
-> > > > On Fri, Jun 21, 2024 at 03:04:47PM GMT, Conor Dooley wrote:
-> > > > > On Fri, Jun 21, 2024 at 03:15:10PM +0200, Andrew Jones wrote:
-> > > > > > On Fri, Jun 21, 2024 at 02:42:15PM GMT, Alexandre Ghiti wrote:
-> > > 
-> > > > > > I understand the concern; old SBI implementations will leave svadu in the
-> > > > > > DT but not actually enable it. Then, since svade may not be in the DT if
-> > > > > > the platform doesn't support it or it was left out on purpose, Linux will
-> > > > > > only see svadu and get unexpected exceptions. This is something we could
-> > > > > > force easily with QEMU and an SBI implementation which doesn't do anything
-> > > > > > for svadu. I hope vendors of real platforms, which typically provide their
-> > > > > > own firmware and DTs, would get this right, though, especially since Linux
-> > > > > > should fail fast in their testing when they get it wrong.
-> > > > > 
-> > > > > I'll admit, I wasn't really thinking here about something like QEMU that
-> > > > > puts extensions into the dtb before their exact meanings are decided
-> > > > > upon. I almost only ever think about "real" systems, and in those cases
-> > > > > I would expect that if you can update the representation of the hardware
-> > > > > provided to (or by the firmware to Linux) with new properties, then updating
-> > > > > the firmware itself should be possible.
-> > > > > 
-> > > > > Does QEMU have the this exact problem at the moment? I know it puts
-> > > > > Svadu in the max cpu, but does it enable the behaviour by default, even
-> > > > > without the SBI implementation asking for it?
-> > > > 
-> > > > Yes, because QEMU has done hardware A/D updating since it first started
-> > > > supporting riscv, which means it did svadu when neither svadu nor svade
-> > > > were in the DT. The "fix" for that was to ensure we have svadu and !svade
-> > > > by default, which means we've perfectly realized Alexandre's concern...
-> > > > We should be able to change the named cpu types that don't support svadu
-> > > > to only have svade in their DTs, since that would actually be fixing those
-> > > > cpu types, but we'll need to discuss how to proceed with the generic cpu
-> > > > types like 'max'.
-> > > 
-> > > Correct me please, since I think I am misunderstanding: At the moment
-> > > QEMU does A/D updating whether or not the SBI implantation asks for it,
-> > > with the max CPU. The SBI implementation doesn't understand Svadu and
-> > > won't strip it. The kernel will get a DT with Svadu in it, but Svadu will
-> > > be enabled, so it is not a problem.
-> > 
-> > Oh, of course you're right! I managed to reverse things some odd number of
-> > times (more than once!) in my head and ended up backwards...
-> 
-> I mean, I've been really confused about this whole thing the entire
-> time, so ye..
-> 
-> Speaking of QEMU, what happens if I try to turn on svade and svadu in
-> QEMU? It looks like there's some handling of it that does things
-> conditionally based !svade && svade, but I couldn't tell if it would do
-> what we are describing in this thread.
+Hi Conor, Andrew and Alexandre,
 
-It'll use exception mode, but {m,h}envcfg.ADUE is still provided to allow
-software to switch to hardware updating when FWFT exists. So I think we're
-good to go.
+On Fri, Jun 21, 2024 at 8:06?PM Andrew Jones <ajones@ventanamicro.com> wrote:
+>
+> On Fri, Jun 21, 2024 at 12:00:32PM GMT, Conor Dooley wrote:
+> > On Fri, Jun 21, 2024 at 12:42:32PM +0200, Andrew Jones wrote:
+> > > On Fri, Jun 21, 2024 at 11:24:19AM GMT, Conor Dooley wrote:
+> > > > On Fri, Jun 21, 2024 at 10:43:58AM +0200, Andrew Jones wrote:
+> ...
+> > > > > It's hard to guess what is, or will be, more likely to be the correct
+> > > > > choice of call between the _unlikely and _likely variants. But, while we
+> > > > > assume svade is most prevalent right now, it's actually quite unlikely
+> > > > > that 'svade' will be in the DT, since DTs haven't been putting it there
+> > > > > yet. Anyway, it doesn't really matter much and maybe the _unlikely vs.
+> > > > > _likely variants are better for documenting expectations than for
+> > > > > performance.
+> > > >
+> > > > binding hat off, and kernel hat on, what do we actually do if there's
+> > > > neither Svadu or Svade in the firmware's description of the hardware?
+> > > > Do we just arbitrarily turn on Svade, like we already do for some
+> > > > extensions:
+> > > >   /*
+> > > >    * These ones were as they were part of the base ISA when the
+> > > >    * port & dt-bindings were upstreamed, and so can be set
+> > > >    * unconditionally where `i` is in riscv,isa on DT systems.
+> > > >    */
+> > > >   if (acpi_disabled) {
+> > > >           set_bit(RISCV_ISA_EXT_ZICSR, isainfo->isa);
+> > > >           set_bit(RISCV_ISA_EXT_ZIFENCEI, isainfo->isa);
+> > > >           set_bit(RISCV_ISA_EXT_ZICNTR, isainfo->isa);
+> > > >           set_bit(RISCV_ISA_EXT_ZIHPM, isainfo->isa);
+> > > >   }
+> > > >
+> > >
+> > > Yes, I think that's reasonable, assuming we do it in the final "pass",
+> > > where we're sure svadu isn't present.
+> >
+> > I haven't thought about specifically when to do it, but does it need to
+> > be in the final pass? If we were to, on each CPU, enable it if Svadu
+> > isn't there, we'd either end up with a system that I suspect we're not
+> > going to be supporting or the correct result. Or am I misunderstanding,
+> > and it will be valid to have a subset of CPUs that have Svadu enabled
+> > from the bootloader?
+> >
+> > Note that it would not be problematic to have 3 CPUs with Svade + Svadu
+> > and a 4th with only Svade in the DT because we would just not use the
+> > FWFT mechanism to enable Svadu. It's just the Svadu in isolation case
+> > that I'm asking about.
+>
+> I wasn't thinking about the potential of mixmatched A/D udpating. I'm
+> pretty sure this will be one of those things that is all or none. I
+> was more concerned with getting the result right and I had just been
+> too lazy to double check that the block of code you pointed out is
+> in the right place to be sure there's no svadu. Now that I look, I
+> believe it is.
+>
+> >
+> > > Doing this is a good idea since
+> > > we'll be able to simplify conditions, as we can just use 'if (svade)'
+> > > since !svade would imply svadu. With FWFT and both, we'll want to remove
+> > > svade from the isa bitmap when enabling svadu.
+> >
+> > Right I would like to move the various extension stuff in this
+> > direction, where they have a bit more intelligence to them, and don't
+> > just reflect the state in DT/ACPI directly.
+> > I've got some patches in mind once Clement's Zca etc patchset
+> > is merged, think I posted one or two as replies to conversations on
+> > the list already. An example would be disabling the vector crypto
+> > extensions if we've had to disable vector, or as you suggest here,
+> > dropping Svade if we have turned on Svadu using FWFT. I think that makes
+> > the APIs more understandable to developers and more useful than they are
+> > at the moment, where to use vector crypto you also need to check vector
+> > itself for the code to be correct. If I call
+> > riscv_isa_extension_available(), and it returns true, the extension
+> > should be usable IMO.
 
-Thanks,
-drew
+Thank you all very much! I will update the code so that
+riscv_isa_extension_available()
+can reflect the platform's behavior.
+
+Regards,
+Yong-Xuan
+
+>
+> Sounds good to me.
+>
+> Thanks,
+> drew
 
