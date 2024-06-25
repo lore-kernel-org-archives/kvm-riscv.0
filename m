@@ -1,141 +1,94 @@
 From: Yong-Xuan Wang <yongxuan.wang@sifive.com>
-Date: Tue, 25 Jun 2024 18:15:40 +0800
+Date: Tue, 25 Jun 2024 18:17:16 +0800
 Subject: [PATCH v5 2/4] dt-bindings: riscv: Add Svade and Svadu Entries
-In-Reply-To: <20240621-10d503a9a2e7d54e67db102c@orel>
-References: <20240605121512.32083-1-yongxuan.wang@sifive.com>
- <20240605121512.32083-3-yongxuan.wang@sifive.com> <20240605-atrium-neuron-c2512b34d3da@spud>
- <CAK9=C2XH7-RdVpojX8GNW-WFTyChW=sTOWs8_kHgsjiFYwzg+g@mail.gmail.com> <20240621-10d503a9a2e7d54e67db102c@orel>
-Message-ID: <CAMWQL2gGfpotAR_YmU05bciGV98r80PZ1GWDSk6A03YRxD8wug@mail.gmail.com>
+In-Reply-To: <20240622-stride-unworn-6e3270a326e5@spud>
+References: <20240605-atrium-neuron-c2512b34d3da@spud> <CAK9=C2XH7-RdVpojX8GNW-WFTyChW=sTOWs8_kHgsjiFYwzg+g@mail.gmail.com>
+ <40a7d568-3855-48fb-a73c-339e1790f12f@ghiti.fr> <20240621-viewless-mural-f5992a247992@wendy>
+ <edcd3957-0720-4ab4-bdda-58752304a53a@ghiti.fr> <20240621-9bf9365533a2f8f97cbf1f5e@orel>
+ <20240621-glutton-platonic-2ec41021b81b@spud> <20240621-a56e848050ebbf1f7394e51f@orel>
+ <20240621-surging-flounder-58a653747e1d@spud> <20240621-8422c24612ae40600f349f7c@orel>
+ <20240622-stride-unworn-6e3270a326e5@spud>
+Message-ID: <CAMWQL2hDUp4+5W4nOM0R5J-uZtkm9hUTwD0BxPBFuzR7eMpHjQ@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Anup/Andrew/Alexandre,
+Hi Conor,
 
-Thanks a lot! So the description of dt-binding of Svade would be:
+On Sat, Jun 22, 2024 at 8:01?PM Conor Dooley <conor@kernel.org> wrote:
+>
+> On Fri, Jun 21, 2024 at 05:08:01PM +0200, Andrew Jones wrote:
+> > On Fri, Jun 21, 2024 at 03:58:18PM GMT, Conor Dooley wrote:
+> > > On Fri, Jun 21, 2024 at 04:52:09PM +0200, Andrew Jones wrote:
+> > > > On Fri, Jun 21, 2024 at 03:04:47PM GMT, Conor Dooley wrote:
+> > > > > On Fri, Jun 21, 2024 at 03:15:10PM +0200, Andrew Jones wrote:
+> > > > > > On Fri, Jun 21, 2024 at 02:42:15PM GMT, Alexandre Ghiti wrote:
+> > >
+> > > > > > I understand the concern; old SBI implementations will leave svadu in the
+> > > > > > DT but not actually enable it. Then, since svade may not be in the DT if
+> > > > > > the platform doesn't support it or it was left out on purpose, Linux will
+> > > > > > only see svadu and get unexpected exceptions. This is something we could
+> > > > > > force easily with QEMU and an SBI implementation which doesn't do anything
+> > > > > > for svadu. I hope vendors of real platforms, which typically provide their
+> > > > > > own firmware and DTs, would get this right, though, especially since Linux
+> > > > > > should fail fast in their testing when they get it wrong.
+> > > > >
+> > > > > I'll admit, I wasn't really thinking here about something like QEMU that
+> > > > > puts extensions into the dtb before their exact meanings are decided
+> > > > > upon. I almost only ever think about "real" systems, and in those cases
+> > > > > I would expect that if you can update the representation of the hardware
+> > > > > provided to (or by the firmware to Linux) with new properties, then updating
+> > > > > the firmware itself should be possible.
+> > > > >
+> > > > > Does QEMU have the this exact problem at the moment? I know it puts
+> > > > > Svadu in the max cpu, but does it enable the behaviour by default, even
+> > > > > without the SBI implementation asking for it?
+> > > >
+> > > > Yes, because QEMU has done hardware A/D updating since it first started
+> > > > supporting riscv, which means it did svadu when neither svadu nor svade
+> > > > were in the DT. The "fix" for that was to ensure we have svadu and !svade
+> > > > by default, which means we've perfectly realized Alexandre's concern...
+> > > > We should be able to change the named cpu types that don't support svadu
+> > > > to only have svade in their DTs, since that would actually be fixing those
+> > > > cpu types, but we'll need to discuss how to proceed with the generic cpu
+> > > > types like 'max'.
+> > >
+> > > Correct me please, since I think I am misunderstanding: At the moment
+> > > QEMU does A/D updating whether or not the SBI implantation asks for it,
+> > > with the max CPU. The SBI implementation doesn't understand Svadu and
+> > > won't strip it. The kernel will get a DT with Svadu in it, but Svadu will
+> > > be enabled, so it is not a problem.
+> >
+> > Oh, of course you're right! I managed to reverse things some odd number of
+> > times (more than once!) in my head and ended up backwards...
+>
+> I mean, I've been really confused about this whole thing the entire
+> time, so ye..
+>
+> Speaking of QEMU, what happens if I try to turn on svade and svadu in
+> QEMU? It looks like there's some handling of it that does things
+> conditionally based !svade && svade, but I couldn't tell if it would do
+> what we are describing in this thread.
 
-The standard Svade supervisor-level extension for SW-managed PTE A/D
-bit updates as ratified in the 20240213 version of the privileged
-ISA specification.
-1) Neither Svade nor Svadu present in DT => It is technically
-    unknown whether the platform uses Svade or Svadu. Supervisor may
-    assume Svade to be present and enabled or it can discover based
-    on mvendorid, marchid, and mimpid.
-2) Only Svade present in DT => Supervisor must assume Svade
-    to be always enabled. (Obvious)
-3) Only Svadu present in DT => Supervisor must assume Svadu
-    to be always enabled. (Obvious)
-4) Both Svade and Svadu present in DT => Supervisor must
-    assume Svadu turned-off at boot time. To use Svadu, supervisor
-    must explicitly enable it using the SBI FWFT extension.
+When both Svadu and Svade are specified in QEMU, the reset value of
+menvcfg.ADUE is 0:
 
-Would you mind providing a Co-developed-by for this patch?
+env->menvcfg = (cpu->cfg.ext_svpbmt ? MENVCFG_PBMTE : 0) |
+                (!cpu->cfg.ext_svade && cpu->cfg.ext_svadu ?
+                MENVCFG_ADUE : 0);
+
+The runtime behavior depends on menvcfg.ADUE:
+
+    bool svade = riscv_cpu_cfg(env)->ext_svade;
+    bool svadu = riscv_cpu_cfg(env)->ext_svadu;
+    bool adue = svadu ? env->menvcfg & MENVCFG_ADUE : !svade;
+
+Regardless of whether OpenSBI supports the Svadu enablement,
+Supervisor can assume that QEMU uses Svade when it doesn't
+explicitly turn on Svadu.
 
 Regards,
 Yong-Xuan
-
-
-On Fri, Jun 21, 2024 at 4:33?PM Andrew Jones <ajones@ventanamicro.com> wrote:
->
-> On Thu, Jun 20, 2024 at 11:55:44AM GMT, Anup Patel wrote:
-> > On Wed, Jun 5, 2024 at 10:25?PM Conor Dooley <conor@kernel.org> wrote:
-> > >
-> > > On Wed, Jun 05, 2024 at 08:15:08PM +0800, Yong-Xuan Wang wrote:
-> > > > Add entries for the Svade and Svadu extensions to the riscv,isa-extensions
-> > > > property.
-> > > >
-> > > > Signed-off-by: Yong-Xuan Wang <yongxuan.wang@sifive.com>
-> > > > ---
-> > > >  .../devicetree/bindings/riscv/extensions.yaml | 30 +++++++++++++++++++
-> > > >  1 file changed, 30 insertions(+)
-> > > >
-> > > > diff --git a/Documentation/devicetree/bindings/riscv/extensions.yaml b/Documentation/devicetree/bindings/riscv/extensions.yaml
-> > > > index 468c646247aa..1e30988826b9 100644
-> > > > --- a/Documentation/devicetree/bindings/riscv/extensions.yaml
-> > > > +++ b/Documentation/devicetree/bindings/riscv/extensions.yaml
-> > > > @@ -153,6 +153,36 @@ properties:
-> > > >              ratified at commit 3f9ed34 ("Add ability to manually trigger
-> > > >              workflow. (#2)") of riscv-time-compare.
-> > > >
-> > > > +        - const: svade
-> > > > +          description: |
-> > > > +            The standard Svade supervisor-level extension for raising page-fault
-> > > > +            exceptions when PTE A/D bits need be set as ratified in the 20240213
-> > > > +            version of the privileged ISA specification.
-> > > > +
-> > > > +            Both Svade and Svadu extensions control the hardware behavior when
-> > > > +            the PTE A/D bits need to be set. The default behavior for the four
-> > > > +            possible combinations of these extensions in the device tree are:
-> > > > +            1. Neither svade nor svadu in DT: default to svade.
-> > >
-> > > I think this needs to be expanded on, as to why nothing means svade.
-> >
-> > Actually if both Svade and Svadu are not present in DT then
-> > it is left to the platform and OpenSBI does nothing.
->
-> This is a good point, and maybe it's worth integrating something that
-> states this case is technically unknown into the final text. (Even though
-> historically this has been assumed to mean svade.)
->
-> >
-> > >
-> > > > +            2. Only svade in DT: use svade.
-> > >
-> > > That's a statement of the obvious, right?
-> > >
-> > > > +            3. Only svadu in DT: use svadu.
-> > >
-> > > This is not relevant for Svade.
-> > >
-> > > > +            4. Both svade and svadu in DT: default to svade (Linux can switch to
-> > > > +               svadu once the SBI FWFT extension is available).
-> > >
-> > > "The privilege level to which this devicetree has been provided can switch to
-> > > Svadu if the SBI FWFT extension is available".
-> > >
-> > > > +        - const: svadu
-> > > > +          description: |
-> > > > +            The standard Svadu supervisor-level extension for hardware updating
-> > > > +            of PTE A/D bits as ratified at commit c1abccf ("Merge pull request
-> > > > +            #25 from ved-rivos/ratified") of riscv-svadu.
-> > > > +
-> > > > +            Both Svade and Svadu extensions control the hardware behavior when
-> > > > +            the PTE A/D bits need to be set. The default behavior for the four
-> > > > +            possible combinations of these extensions in the device tree are:
-> > >
-> > > @Anup/Drew/Alex, are we missing some wording in here about it only being
-> > > valid to have Svadu in isolation if the provider of the devicetree has
-> > > actually turned on Svadu? The binding says "the default behaviour", but
-> > > it is not the "default" behaviour, the behaviour is a must AFAICT. If
-> > > you set Svadu in isolation, you /must/ have turned it on. If you set
-> > > Svadu and Svade, you must have Svadu turned off?
-> >
-> > Yes, the wording should be more of requirement style using
-> > must or may.
-> >
-> > How about this ?
->
-> I'm mostly just +1'ing everything below, but with a minor wording change
-> suggestion
->
-> > 1) Both Svade and Svadu not present in DT => Supervisor may
->
-> Neither Svade nor Svadu present...
->
-> >     assume Svade to be present and enabled or it can discover
-> >     based on mvendorid, marchid, and mimpid.
-> > 2) Only Svade present in DT => Supervisor must assume Svade
-> >     to be always enabled. (Obvious)
-> > 3) Only Svadu present in DT => Supervisor must assume Svadu
-> >     to be always enabled. (Obvious)
-> > 4) Both Svade and Svadu present in DT => Supervisor must
-> >     assume Svadu turned-off at boot time. To use Svadu, supervisor
-> >     must explicitly enable it using the SBI FWFT extension.
-> >
-> > IMO, the #2 and #3 are definitely obvious but still worth mentioning.
->
-> Thanks,
-> drew
 
