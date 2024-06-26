@@ -1,143 +1,59 @@
-From: Anup Patel <anup@brainfault.org>
-Date: Wed, 26 Jun 2024 21:08:56 +0530
-Subject: [PATCH v3 0/6] riscv: Apply Zawrs when available
-In-Reply-To: <mhng-4fc810f5-fd3a-44f3-bd78-9a6b7bf2ab77@palmer-ri-x1c9>
-References: <20240603-f8650a2cc220b73cf52d77c7@orel> <mhng-4fc810f5-fd3a-44f3-bd78-9a6b7bf2ab77@palmer-ri-x1c9>
-Message-ID: <CAAhSdy37GxVnH0vvowpf4BeBT-f8YcoUFcNR32wioZBObKiUMw@mail.gmail.com>
+From: Atish Kumar Patra <atishp@rivosinc.com>
+Date: Wed, 26 Jun 2024 09:18:46 -0700
+Subject: [PATCH v3 2/3] drivers/perf: riscv: Reset the counter to hpmevent
+ mapping while starting cpus
+In-Reply-To: <96ff4dd2-db66-4653-80e9-97d4f1381581@sifive.com>
+References: <20240626-misc_perf_fixes-v3-0-de3f8ed88dab@rivosinc.com>
+ <20240626-misc_perf_fixes-v3-2-de3f8ed88dab@rivosinc.com> <96ff4dd2-db66-4653-80e9-97d4f1381581@sifive.com>
+Message-ID: <CAHBxVyHx9hTRPosizV_yn6DUZi-MTNTrAbJdkV3049D-qsDHcw@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Palmer,
-
-On Wed, Jun 26, 2024 at 8:04?PM Palmer Dabbelt <palmer@dabbelt.com> wrote:
+On Wed, Jun 26, 2024 at 6:24?AM Samuel Holland
+<samuel.holland@sifive.com> wrote:
 >
-> On Mon, 03 Jun 2024 05:36:42 PDT (-0700), ajones at ventanamicro.com wrote:
-> > Hi Palmer,
+> On 2024-06-26 2:23 AM, Atish Patra wrote:
+> > From: Samuel Holland <samuel.holland@sifive.com>
 > >
-> > I submit our concerns of wrs.nto to RVI ARC for consideration. They
-> > discussed it but don't believe there's a need for concern. The
-> > expectation is that there will always be enough interrupt activity
-> > and that those interrupts with activity will not likely be locally
-> > disabled.
+> > Currently, we stop all the counters while a new cpu is brought online.
+> > However, the hpmevent to counter mappings are not reset. The firmware may
+> > have some stale encoding in their mapping structure which may lead to
+> > undesirable results. We have not encountered such scenario though.
 > >
-> > Can we consider this series for 6.10?
 >
-> Sorry I forgot about this one, Anup just brought it up in the patchwork
-> meeting.  He's going to ack the KVM bits, then I'll pick it up.
-
-I have Acked the KVM bits so please go ahead with this series.
-
-Regards,
-Anup
-
+> This needs:
 >
+> Signed-off-by: Samuel Holland <samuel.holland@sifive.com>
+>
+
+Oops. Sorry I missed that.
+
+@Alexandre Ghiti @Palmer Dabbelt : Can you add that while picking up
+the patch or should I respin a v4 ?
+
+> otherwise your commit message looks fine to me.
+>
+> > Signed-off-by: Atish Patra <atishp@rivosinc.com>
+> > ---
+> >  drivers/perf/riscv_pmu_sbi.c | 2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
 > >
-> > Thanks,
-> > drew
+> > diff --git a/drivers/perf/riscv_pmu_sbi.c b/drivers/perf/riscv_pmu_sbi.c
+> > index a2e4005e1fd0..94bc369a3454 100644
+> > --- a/drivers/perf/riscv_pmu_sbi.c
+> > +++ b/drivers/perf/riscv_pmu_sbi.c
+> > @@ -762,7 +762,7 @@ static inline void pmu_sbi_stop_all(struct riscv_pmu *pmu)
+> >        * which may include counters that are not enabled yet.
+> >        */
+> >       sbi_ecall(SBI_EXT_PMU, SBI_EXT_PMU_COUNTER_STOP,
+> > -               0, pmu->cmask, 0, 0, 0, 0);
+> > +               0, pmu->cmask, SBI_PMU_STOP_FLAG_RESET, 0, 0, 0);
+> >  }
 > >
-> > On Fri, Apr 26, 2024 at 12:08:20PM GMT, Andrew Jones wrote:
-> >> Zawrs provides two instructions (wrs.nto and wrs.sto), where both are
-> >> meant to allow the hart to enter a low-power state while waiting on a
-> >> store to a memory location. The instructions also both wait an
-> >> implementation-defined "short" duration (unless the implementation
-> >> terminates the stall for another reason). The difference is that while
-> >> wrs.sto will terminate when the duration elapses, wrs.nto, depending on
-> >> configuration, will either just keep waiting or an ILL exception will be
-> >> raised. Linux will use wrs.nto, so if platforms have an implementation
-> >> which falls in the "just keep waiting" category (which is not expected),
-> >> then it should _not_ advertise Zawrs in the hardware description.
-> >>
-> >> Like wfi (and with the same {m,h}status bits to configure it), when
-> >> wrs.nto is configured to raise exceptions it's expected that the higher
-> >> privilege level will see the instruction was a wait instruction, do
-> >> something, and then resume execution following the instruction. For
-> >> example, KVM does configure exceptions for wfi (hstatus.VTW=1) and
-> >> therefore also for wrs.nto. KVM does this for wfi since it's better to
-> >> allow other tasks to be scheduled while a VCPU waits for an interrupt.
-> >> For waits such as those where wrs.nto/sto would be used, which are
-> >> typically locks, it is also a good idea for KVM to be involved, as it
-> >> can attempt to schedule the lock holding VCPU.
-> >>
-> >> This series starts with Christoph's addition of the riscv
-> >> smp_cond_load_relaxed function which applies wrs.sto when available.
-> >> That patch has been reworked to use wrs.nto and to use the same approach
-> >> as Arm for the wait loop, since we can't have arbitrary C code between
-> >> the load-reserved and the wrs. Then, hwprobe support is added (since the
-> >> instructions are also usable from usermode), and finally KVM is
-> >> taught about wrs.nto, allowing guests to see and use the Zawrs
-> >> extension.
-> >>
-> >> We still don't have test results from hardware, and it's not possible to
-> >> prove that using Zawrs is a win when testing on QEMU, not even when
-> >> oversubscribing VCPUs to guests. However, it is possible to use KVM
-> >> selftests to force a scenario where we can prove Zawrs does its job and
-> >> does it well. [4] is a test which does this and, on my machine, without
-> >> Zawrs it takes 16 seconds to complete and with Zawrs it takes 0.25
-> >> seconds.
-> >>
-> >> This series is also available here [1]. In order to use QEMU for testing
-> >> a build with [2] is needed. In order to enable guests to use Zawrs with
-> >> KVM using kvmtool, the branch at [3] may be used.
-> >>
-> >> [1] https://github.com/jones-drew/linux/commits/riscv/zawrs-v3/
-> >> [2] https://lore.kernel.org/all/20240312152901.512001-2-ajones at ventanamicro.com/
-> >> [3] https://github.com/jones-drew/kvmtool/commits/riscv/zawrs/
-> >> [4] https://github.com/jones-drew/linux/commit/cb2beccebcece10881db842ed69bdd5715cfab5d
-> >>
-> >> Thanks,
-> >> drew
-> >>
-> >> v3:
-> >>  - Moved comment about expected termination from the DT binding text
-> >>    to a code comment.
-> >>
-> >> v2:
-> >>  - Added DT bindings patch with additional Linux specifications due
-> >>    to wrs.nto potentially never terminating, as suggested by Palmer
-> >>  - Added patch to share pause insn definition
-> >>  - Rework main Zawrs support patch to use Arm approach (which is
-> >>    also the approach that Andrea Parri suggested)
-> >>  - Dropped the riscv implementation of smp_cond_load_acquire().
-> >>    afaict, the generic implementation, which will use the riscv
-> >>    implementation of smp_cond_load_relaxed() is sufficient for riscv.
-> >>  - The rework was large enough (IMO) to drop Heiko's s-o-b and to
-> >>    add myself as a co-developer
-> >>
-> >>
-> >> Andrew Jones (5):
-> >>   riscv: Provide a definition for 'pause'
-> >>   dt-bindings: riscv: Add Zawrs ISA extension description
-> >>   riscv: hwprobe: export Zawrs ISA extension
-> >>   KVM: riscv: Support guest wrs.nto
-> >>   KVM: riscv: selftests: Add Zawrs extension to get-reg-list test
-> >>
-> >> Christoph M??llner (1):
-> >>   riscv: Add Zawrs support for spinlocks
-> >>
-> >>  Documentation/arch/riscv/hwprobe.rst          |  4 ++
-> >>  .../devicetree/bindings/riscv/extensions.yaml |  7 +++
-> >>  arch/riscv/Kconfig                            | 20 ++++---
-> >>  arch/riscv/Makefile                           |  3 -
-> >>  arch/riscv/include/asm/barrier.h              | 45 +++++++++-----
-> >>  arch/riscv/include/asm/cmpxchg.h              | 58 +++++++++++++++++++
-> >>  arch/riscv/include/asm/hwcap.h                |  1 +
-> >>  arch/riscv/include/asm/insn-def.h             |  4 ++
-> >>  arch/riscv/include/asm/kvm_host.h             |  1 +
-> >>  arch/riscv/include/asm/vdso/processor.h       |  8 +--
-> >>  arch/riscv/include/uapi/asm/hwprobe.h         |  1 +
-> >>  arch/riscv/include/uapi/asm/kvm.h             |  1 +
-> >>  arch/riscv/kernel/cpufeature.c                |  1 +
-> >>  arch/riscv/kernel/sys_hwprobe.c               |  1 +
-> >>  arch/riscv/kvm/vcpu.c                         |  1 +
-> >>  arch/riscv/kvm/vcpu_insn.c                    | 15 +++++
-> >>  arch/riscv/kvm/vcpu_onereg.c                  |  2 +
-> >>  .../selftests/kvm/riscv/get-reg-list.c        |  4 ++
-> >>  18 files changed, 146 insertions(+), 31 deletions(-)
-> >>
-> >> --
-> >> 2.44.0
-> >>
+> >  static inline void pmu_sbi_stop_hw_ctrs(struct riscv_pmu *pmu)
+> >
+>
 
