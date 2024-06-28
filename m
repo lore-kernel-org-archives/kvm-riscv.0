@@ -1,65 +1,33 @@
-From: Yong-Xuan Wang <yongxuan.wang@sifive.com>
-Date: Fri, 28 Jun 2024 17:37:08 +0800
-Subject: [PATCH v6 4/4] KVM: riscv: selftests: Add Svade and Svadu Extension to get-reg-list test
-In-Reply-To: <20240628093711.11716-1-yongxuan.wang@sifive.com>
-References: <20240628093711.11716-1-yongxuan.wang@sifive.com>
-Message-ID: <20240628093711.11716-5-yongxuan.wang@sifive.com>
+From: Konstantin Ryabitsev <konstantin@linuxfoundation.org>
+Date: Fri, 28 Jun 2024 10:29:37 -0400
+Subject: [PATCH v3 2/3] drivers/perf: riscv: Reset the counter to
+ hpmevent mapping while starting cpus
+In-Reply-To: <20240626-pedigree-retype-dd7f1e54ac2b@spud>
+References: <20240626-misc_perf_fixes-v3-0-de3f8ed88dab@rivosinc.com>
+ <20240626-misc_perf_fixes-v3-2-de3f8ed88dab@rivosinc.com>
+ <96ff4dd2-db66-4653-80e9-97d4f1381581@sifive.com>
+ <CAHBxVyHx9hTRPosizV_yn6DUZi-MTNTrAbJdkV3049D-qsDHcw@mail.gmail.com>
+ <20240626-eraser-unselect-99e68a1f5a3e@spud>
+ <20240626-spyglass-clutter-4ff4d7b26dd4@spud>
+ <CAHBxVyEg2uKKdikXib77JDmCKs8qDGJHvj3stsFgCgO0U9omRg@mail.gmail.com>
+ <20240626-pedigree-retype-dd7f1e54ac2b@spud>
+Message-ID: <20240628-quantum-sophisticated-ferret-5eaec4@lemur>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Update the get-reg-list test to test the Svade and Svadu Extensions are
-available for guest OS.
+On Wed, Jun 26, 2024 at 11:11:54PM GMT, Conor Dooley wrote:
+> > Strange. I modified and sent the patch using b4 as well. It's missing
+> > my sign off too.
+> 
+> `b4 shazam` should pick up trailers provided on the list, signoffs
+> included. `b4 shazam -s` will add yours. TBH, I am not sure why that is
+> not the default behaviour.
 
-Signed-off-by: Yong-Xuan Wang <yongxuan.wang@sifive.com>
-Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
----
- tools/testing/selftests/kvm/riscv/get-reg-list.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
+Some projects don't use the DCO model, so they don't require Signed-off-by
+trailers.
 
-diff --git a/tools/testing/selftests/kvm/riscv/get-reg-list.c b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-index 222198dd6d04..1d32351ad55e 100644
---- a/tools/testing/selftests/kvm/riscv/get-reg-list.c
-+++ b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-@@ -45,6 +45,8 @@ bool filter_reg(__u64 reg)
- 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SSAIA:
- 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SSCOFPMF:
- 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SSTC:
-+	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SVADE:
-+	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SVADU:
- 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SVINVAL:
- 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SVNAPOT:
- 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SVPBMT:
-@@ -411,6 +413,8 @@ static const char *isa_ext_single_id_to_str(__u64 reg_off)
- 		KVM_ISA_EXT_ARR(SSAIA),
- 		KVM_ISA_EXT_ARR(SSCOFPMF),
- 		KVM_ISA_EXT_ARR(SSTC),
-+		KVM_ISA_EXT_ARR(SVADE),
-+		KVM_ISA_EXT_ARR(SVADU),
- 		KVM_ISA_EXT_ARR(SVINVAL),
- 		KVM_ISA_EXT_ARR(SVNAPOT),
- 		KVM_ISA_EXT_ARR(SVPBMT),
-@@ -935,6 +939,8 @@ KVM_ISA_EXT_SIMPLE_CONFIG(h, H);
- KVM_ISA_EXT_SUBLIST_CONFIG(smstateen, SMSTATEEN);
- KVM_ISA_EXT_SIMPLE_CONFIG(sscofpmf, SSCOFPMF);
- KVM_ISA_EXT_SIMPLE_CONFIG(sstc, SSTC);
-+KVM_ISA_EXT_SIMPLE_CONFIG(svade, SVADE);
-+KVM_ISA_EXT_SIMPLE_CONFIG(svadu, SVADU);
- KVM_ISA_EXT_SIMPLE_CONFIG(svinval, SVINVAL);
- KVM_ISA_EXT_SIMPLE_CONFIG(svnapot, SVNAPOT);
- KVM_ISA_EXT_SIMPLE_CONFIG(svpbmt, SVPBMT);
-@@ -991,6 +997,8 @@ struct vcpu_reg_list *vcpu_configs[] = {
- 	&config_smstateen,
- 	&config_sscofpmf,
- 	&config_sstc,
-+	&config_svade,
-+	&config_svadu,
- 	&config_svinval,
- 	&config_svnapot,
- 	&config_svpbmt,
--- 
-2.17.1
-
+-K
 
