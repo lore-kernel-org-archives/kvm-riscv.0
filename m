@@ -1,40 +1,27 @@
-From: Atish Kumar Patra <atishp@rivosinc.com>
-Date: Mon, 1 Jul 2024 11:33:32 -0700
-Subject: RISC - V Microconference CFP 2024 CFP
-In-Reply-To: <CAHBxVyEaCFt+bC=bwO54n30urANy+DaffOBk2odpqjpbBgOPKQ@mail.gmail.com>
-References: <CAHBxVyEaCFt+bC=bwO54n30urANy+DaffOBk2odpqjpbBgOPKQ@mail.gmail.com>
-Message-ID: <CAHBxVyGOiurDC+ep2Rzw0tTWHSWa_tXGA3ftd5JcWm6SznWyGw@mail.gmail.com>
+From: Palmer Dabbelt <palmer@rivosinc.com>
+Date: Wed, 03 Jul 2024 12:59:14 -0700 (PDT)
+Subject: [PATCH v4 0/3] Assorted fixes in RISC-V PMU driver
+In-Reply-To: <20240701130127.GA2250@willie-the-truck>
+Message-ID: <mhng-c9cb22ea-9f7c-44c2-8e3c-8bd1de101e16@palmer-ri-x1c9>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-FYI: The deadline for RISC-V MC CFP is in two weeks. Please submit
-your proposals asap.
-Please let me know if you require additional time.
+On Mon, 01 Jul 2024 06:01:27 PDT (-0700), Will Deacon wrote:
+> On Fri, Jun 28, 2024 at 12:51:40AM -0700, Atish Patra wrote:
+>> This series contains 3 fixes out of which the first one is a new fix
+>> for invalid event data reported in lkml[2]. The last two are v3 of Samuel's
+>> patch[1]. I added the RB/TB/Fixes tag and moved 1 unrelated change
+>> to its own patch. I also changed an error message in kvm vcpu_pmu from
+>> pr_err to pr_debug to avoid redundant failure error messages generated
+>> due to the boot time quering of events implemented in the patch[1]
+>
+> I'm assuming this series will go via the riscv arch tree, but please
+> shout if that's not the case.
 
-On Mon, May 20, 2024 at 3:33?PM Atish Kumar Patra <atishp@rivosinc.com> wrote:
->
-> The Call for Proposals (CFP) for the RISC-V Microconference 2024 is
-> now open. Don?t miss your chance to submit a topic proposal!
->
-> The deadline for topic submissions is July 15, 2024. Proposals can be
-> submitted at: https://lpc.events/event/18/abstracts/
->
-> Be sure to select the RISC-V MC track during submission.
->
-> Due to an unprecedented number of submissions this year, the RISC-V
-> Microconference may be shortened to 1.5 hours (nano conference)
-> instead of the usual 3-hour format. Topics will be accepted on a
-> rolling basis due to the limited number of slots.
->
-> LPC 2024 will take place in Vienna, Austria, on September 18-20.
-> For more details, visit: https://lpc.events/event/18/.
->
-> Update on the microconference situation:
-> https://lpc.events/blog/current/index.php/2024/05/13/update-on-the-microconference-situation/
->
-> Best regards,
-> Atish & Palmer
+Ya, it just ended up dragging on a bit because of a missing DCO.  I'm 
+just throwing it at the tester now, it should show up on fixes 
+eventually...
 
