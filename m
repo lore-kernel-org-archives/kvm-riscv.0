@@ -1,230 +1,291 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Thu, 4 Jul 2024 08:40:52 -0500
-Subject: [PATCH kvm-unit-tests] This patch adds a unit test for the debug
- console write() and write_byte() functions. It also fixes the virt_to_phys()
- function to return the offset address, not the PTE aligned address.
-In-Reply-To: <20240703-sbi-dbcn-write-v1-1-13f08380d768@berkeley.edu>
-References: <20240703-sbi-dbcn-write-v1-1-13f08380d768@berkeley.edu>
-Message-ID: <20240704-86beeeb5968c9f23cc100963@orel>
+From: Andrew Jones <andrew.jones@linux.dev>
+Date: Thu, 4 Jul 2024 11:06:25 -0500
+Subject: [kvm-unit-tests PATCH 4/4] riscv: sbi: Add test for timer
+ extension
+In-Reply-To: <20240618173053.364776-5-jamestiotio@gmail.com>
+References: <20240618173053.364776-1-jamestiotio@gmail.com>
+ <20240618173053.364776-5-jamestiotio@gmail.com>
+Message-ID: <20240704-8c9503a4a5e1504cf66051ba@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Cade,
-
-The patch summary (the part that becomes the email subject line) should
-be a concise phrase and not be longer than 75 characters. The rest of the
-patch description goes in the commit message (line wrapping at 75). It
-looks like you have all the text in the patch summary right now. Also,
-the commit message should point out the motivation, approach, remaining
-work etc., and it's a red flag when a patch has an "and also..." in its
-commit message, as that implies it needs to be split. A single patch
-should do a single thing. In this case I see an "and also virt_to_phys"
-type of thing, but I don't see that change. The virt_to_phys() change
-should be a separate patch and come before this patch, as this patch
-needs the fixed virt_to_phys().
-
-On Wed, Jul 03, 2024 at 08:43:44PM GMT, Cade Richard wrote:
+On Wed, Jun 19, 2024 at 01:30:53AM GMT, James Raphael Tiovalen wrote:
+> Add a test for the set_timer function of the time extension. The test
+> checks that:
+> - The time extension is available
+> - The time counter monotonically increases
+> - The installed timer interrupt handler is called
+> - The timer interrupt is received within a reasonable time frame
 > 
+> The timer interrupt delay can be set using the TIMER_DELAY environment
+> variable. If the variable is not set, the default delay value is
+> 1000000. The time interval used to validate the timer interrupt is
+> between the specified delay and double the delay. Because of this, the
+> test might fail if the delay is too short. Hence, we set the default
+> delay value as the minimum value.
 > 
+> This test has been verified on RV32 and RV64 with OpenSBI using QEMU.
+> 
+> Signed-off-by: James Raphael Tiovalen <jamestiotio@gmail.com>
 > ---
-> Signed-off-by: Cade Richard <cade.richard@berkeley.edu>
-> ---
->  riscv/run           |  1 +
->  lib/riscv/asm/sbi.h |  5 ++++
->  riscv/sbi.c         | 71 +++++++++++++++++++++++++++++++++++++++++++++++++++++
->  3 files changed, 77 insertions(+)
+>  lib/riscv/asm/csr.h |  6 ++++
+>  lib/riscv/asm/sbi.h |  5 +++
+>  riscv/sbi.c         | 87 +++++++++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 98 insertions(+)
 > 
-> diff --git a/riscv/run b/riscv/run
-> index 73f2bf54..e4e39d74 100755
-> --- a/riscv/run
-> +++ b/riscv/run
-> @@ -30,6 +30,7 @@ fi
->  mach='-machine virt'
+> diff --git a/lib/riscv/asm/csr.h b/lib/riscv/asm/csr.h
+> index da58b0ce..c4435650 100644
+> --- a/lib/riscv/asm/csr.h
+> +++ b/lib/riscv/asm/csr.h
+> @@ -12,6 +12,7 @@
+>  #define CSR_STVAL		0x143
+>  #define CSR_SIP			0x144
+>  #define CSR_SATP		0x180
+> +#define CSR_TIME		0xc01
 >  
->  command="$qemu -nodefaults -nographic -serial mon:stdio"
+>  #define SSTATUS_SIE		(_AC(1, UL) << 1)
+>  
+> @@ -108,5 +109,10 @@
+>  				: "memory");			\
+>  })
+>  
+> +#define wfi()							\
+> +({								\
+> +	__asm__ __volatile__("wfi" ::: "memory");		\
+> +})
+
+This belongs in lib/riscv/asm/barrier.h (but actually we don't need it at
+all, see below.)
+
 > +
-
-Stray, unnecessary change. Please be sure your tree only contains the
-changes you want to make before you commit and generate patches.
-
->  command+=" $mach $acc $firmware -cpu $processor "
->  command="$(migration_cmd) $(timeout_cmd) $command"
->  
+>  #endif /* !__ASSEMBLY__ */
+>  #endif /* _ASMRISCV_CSR_H_ */
 > diff --git a/lib/riscv/asm/sbi.h b/lib/riscv/asm/sbi.h
-> index d82a384d..4ae15879 100644
+> index d82a384d..eb4c77ef 100644
 > --- a/lib/riscv/asm/sbi.h
 > +++ b/lib/riscv/asm/sbi.h
-> @@ -12,6 +12,11 @@
->  #define SBI_ERR_ALREADY_STARTED		-7
->  #define SBI_ERR_ALREADY_STOPPED		-8
+> @@ -18,6 +18,7 @@ enum sbi_ext_id {
+>  	SBI_EXT_BASE = 0x10,
+>  	SBI_EXT_HSM = 0x48534d,
+>  	SBI_EXT_SRST = 0x53525354,
+> +	SBI_EXT_TIME = 0x54494D45,
+
+Let's list these in chapter order, so TIME comes after BASE.
+
+>  };
 >  
-> +#define DBCN_WRITE_TEST_STRING "DBCN_WRITE_TEST_STRING\n"
-> +#define DBCN_READ_TEST_STRING "DBCN_READ_TEST_STRING\n"
-
-This patch is only adding write tests so we don't need a read test string.
-
-> +#define DBCN_WRITE_BYTE_TEST_BYTE 'a'
-> +#define DBCN_WRITE_TEST_BYTE_FLAG "DBCN_WRITE_TEST_CHAR: "
-
-"DBCN_WRITE_TEST_CHAR:" isn't a flag it's a prefix, so the define should
-be named DBCN_WRITE_TEST_BYTE_PREFIX, but we don't need a define at all,
-as it's only used in one place, so just puts() the string itself.
-
-Also tab out the values of these symbols to line them up, i.e.
-
-#define FOO	"FOO"
-#define BAR	"BAR"
-
-And the defines don't belong in asm/sbi.h. That header is for common sbi
-support, not unit test stuff. Test strings are just for tests so the
-defines should go directly into the test source (riscv/sbi.c).
-
+>  enum sbi_ext_base_fid {
+> @@ -37,6 +38,10 @@ enum sbi_ext_hsm_fid {
+>  	SBI_EXT_HSM_HART_SUSPEND,
+>  };
+>  
+> +enum sbi_ext_time_fid {
+> +	SBI_EXT_TIME_SET_TIMER = 0,
+> +};
 > +
->  #ifndef __ASSEMBLY__
->  
->  enum sbi_ext_id {
+>  struct sbiret {
+>  	long error;
+>  	long value;
 > diff --git a/riscv/sbi.c b/riscv/sbi.c
-> index 762e9711..0fb7a300 100644
+> index 762e9711..6ad1dff6 100644
 > --- a/riscv/sbi.c
 > +++ b/riscv/sbi.c
-> @@ -7,6 +7,11 @@
+> @@ -6,8 +6,13 @@
+>   */
 >  #include <libcflat.h>
 >  #include <stdlib.h>
->  #include <asm/sbi.h>
 > +#include <asm/csr.h>
-> +#include <asm/io.h>
-> +#include <asm/sbi.h>
-> +
-> +#define INVALID_RW_ADDR 0x0000000002000000;
-
-No need for the leading 0's. We can't be sure this will be invalid on all
-platforms. The platform needs to be able to configure stuff like this.
-We use environment variables for that. We can provide a QEMU value as a
-default though.
-
+> +#include <asm/interrupt.h>
+> +#include <asm/processor.h>
+>  #include <asm/sbi.h>
 >  
+> +static bool timer_work;
+
+timer_works
+
+> +
 >  static void help(void)
 >  {
-> @@ -112,6 +117,72 @@ static void check_base(void)
+>  	puts("Test SBI\n");
+> @@ -19,6 +24,18 @@ static struct sbiret __base_sbi_ecall(int fid, unsigned long arg0)
+>  	return sbi_ecall(SBI_EXT_BASE, fid, arg0, 0, 0, 0, 0, 0);
+>  }
+>  
+> +static struct sbiret __time_sbi_ecall(int fid, unsigned long arg0)
+
+Since this is the time extension specific wrapper function then we should
+use time extension specific parameter names, i.e. s/arg0/stime_value/ and
+we don't need to take fid as a parameter since there's only a single
+function ID which can just be put directly in the sbi_ecall() call.
+
+> +{
+> +	return sbi_ecall(SBI_EXT_TIME, fid, arg0, 0, 0, 0, 0, 0);
+> +}
+> +
+> +static void timer_interrupt_handler(struct pt_regs *regs)
+> +{
+> +	timer_work = true;
+> +	toggle_timer_interrupt(false);
+> +	local_irq_disable();
+
+Just masking the timer interrupt should be enough. We don't want to over
+disable interrupts because we want to ensure the minimally specified
+disabling is sufficient in order to properly test the SBI impl. Also,
+we probably don't want to mask the timer interrupt here since we need
+to also provide a test case which only sets the next timer interrupt to
+be "infinitely far into the future" as specified by SBI as an alternative
+for "clearing" the timer interrupt.
+
+> +}
+> +
+>  static bool env_or_skip(const char *env)
+>  {
+>  	if (!getenv(env)) {
+> @@ -112,6 +129,75 @@ static void check_base(void)
 >  	report_prefix_pop();
 >  }
 >  
-> +static void check_dbcn(void)
+> +static void check_time(void)
 > +{
-> +	
 > +	struct sbiret ret;
-> +	unsigned long num_bytes, base_addr_lo, base_addr_hi;
+> +	unsigned long begin, end, duration;
+> +	const unsigned long default_delay = 1000000;
+> +	unsigned long delay = getenv("TIMER_DELAY")
+> +				? MAX(strtol(getenv("TIMER_DELAY"), NULL, 0), default_delay)
+
+Is there a reason we can't have a shorter delay than 1000000? Using MAX()
+will silently force 1000000 even when the user provided an environment
+variable with something smaller.
+
+> +				: default_delay;
 > +
-> +	report_prefix_push("dbcn");
-> +	
-> +	ret = __base_sbi_ecall(SBI_EXT_BASE_PROBE_EXT, SBI_EXT_DBCN);
-> +	if (!ret.value) {
-> +		report_skip("DBCN extension unavailable");
+> +	report_prefix_push("time");
+> +
+> +	ret = __base_sbi_ecall(SBI_EXT_BASE_PROBE_EXT, SBI_EXT_TIME);
+> +
+> +	if (ret.error) {
+> +		report_fail("probing for time extension failed");
 > +		report_prefix_pop();
 > +		return;
 > +	}
 > +
-> +	report_prefix_pop();
+> +	if (!ret.value) {
+> +		report_skip("time extension not available");
+> +		report_prefix_pop();
+> +		return;
+> +	}
+> +
+> +	begin = csr_read(CSR_TIME);
+> +	end = csr_read(CSR_TIME);
 
-We don't want to pop 'dbcn' here. We're still in the dbcn tests.
+It doesn't hurt to have this sanity check, but I'd probably make it
+an assert since things are really nuts if the timer isn't working.
+
+ begin = csr_read(CSR_TIME);
+ // Add delay here based on the timer frequency to ensure at
+ // least one tick of the timer occurs
+ assert(begin < csr_read(CSR_TIME));
+
+> +	if (begin >= end) {
+> +		report_fail("time counter has decreased");
+> +		report_prefix_pop();
+> +		return;
+> +	}
+> +
+> +	report_prefix_push("set_timer");
+> +
+> +	install_irq_handler(IRQ_SUPERVISOR_TIMER, timer_interrupt_handler);
+> +	local_irq_enable();
+> +
+> +	begin = csr_read(CSR_TIME);
+> +	ret = __time_sbi_ecall(SBI_EXT_TIME_SET_TIMER, csr_read(CSR_TIME) + delay);
+> +
+> +	if (ret.error) {
+> +		report_fail("setting timer failed");
+> +		install_irq_handler(IRQ_SUPERVISOR_TIMER, NULL);
+> +		report_prefix_pop();
+> +		report_prefix_pop();
+> +		return;
+
+We don't necessarily need to abort the rest of the tests. Sometimes yes,
+if we know that when this test fails nothing else can work, but if there
+are other tests, such as negative tests, that we could still try, then
+we should.
+
+> +	}
+> +
+> +	toggle_timer_interrupt(true);
+> +
+> +	while ((!timer_work) && (csr_read(CSR_TIME) <= (begin + delay)))
+
+nit: Unnecessary () on both sides of the &&
+
+> +		wfi();
+
+
+wfi() means we expect some interrupt, sometime, but if the timer setting
+isn't working then we may never get any interrupt. We should use
+cpu_relax(). Unit tests can't make any assumptions, but that's OK, since
+they don't need to be efficient. (Anything about the environment we would
+like to assume should be checked with asserts or at least be documented.)
 
 > +
-> +	report_prefix_push("write");
-> +	
-> +	num_bytes = strlen(DBCN_WRITE_TEST_STRING);
-> +	base_addr_hi = 0x0;
-> +	base_addr_lo = virt_to_phys((void *) &DBCN_WRITE_TEST_STRING);
-                                            ^ remove the space here
+> +	end = csr_read(CSR_TIME);
+
+duration will be slightly more accurate if we write the while loop like
+
+ while ((end = csr_read(CSR_TIME)) < begin + delay)
+     cpu_relax();
+
+> +	report(timer_work, "timer interrupt received");
 > +
-> +	do {
-> +		ret = __dbcn_sbi_ecall(SBI_EXT_DBCN_CONSOLE_WRITE, num_bytes, base_addr_lo, base_addr_hi);
-
-The pointer and number of bytes should be changing by the amount written
-when we need additional writes in order to finish the string.
-
-> +	} while (ret.value != num_bytes || ret.error != SBI_SUCCESS) ;
-
-If ret.error isn't success than we should break from the loop, otherwise 
-we could loop forever on a failing write and the report() check below
-would be useless.
-
-> +	report(SBI_SUCCESS == ret.error, "write success");
-> +    report(ret.value == num_bytes, "correct number of bytes written");
-
-This line isn't using a tab. Please run the kernel's checkpatch script on
-the patch before posting. Also this test is wrong because the last
-ret.value may be less than num_bytes and we know we wrote a total of
-num_bytes since we looped until we did.
-
+> +	install_irq_handler(IRQ_SUPERVISOR_TIMER, NULL);
+> +	__time_sbi_ecall(SBI_EXT_TIME_SET_TIMER,  -1);
 > +
-> +	base_addr_lo = INVALID_RW_ADDR;
-> +	ret = __dbcn_sbi_ecall(SBI_EXT_DBCN_CONSOLE_WRITE, num_bytes, base_addr_lo, base_addr_hi);
-> +    report(SBI_ERR_INVALID_PARAM == ret.error, "invalid parameter: address");
+> +	duration = end - begin;
+> +	if (timer_work)
+> +		report((duration >= delay) && (duration <= (delay + delay)), "timer delay honored");
 
-spaces instead of tab and I prefer variable first in conditions.
-
-> +
-> +	report_prefix_pop();
-> +	
-> +	report_prefix_push("read");
-> +
-> +/*	num_bytes = strlen(DBCN_READ_TEST_STRING);
-> +	char *actual = malloc(num_bytes);
-> +	base_addr_hi = 0x0;
-> +	base_addr_lo = virt_to_phys(( void *) actual);
-> +
-> +	do {
-> +		ret = __dbcn_sbi_ecall(SBI_EXT_DBCN_CONSOLE_READ, num_bytes, base_addr_lo, base_addr_hi);
-> +	} while (ret.value != num_bytes || ret.error != SBI_SUCCESS) ;
-> +	report(SBI_SUCCESS == ret.error, "read success");
-> +    report(ret.value == num_bytes, "correct number of bytes read");
-> +	report(strcmp(actual,DBCN_READ_TEST_STRING) == 0, "correct bytes read");
-> +*/
-
-All this commented out stuff above should not be in the patch. A TODO
-comment with a plan for a test is fine, but a bunch of commented out
-untested code is just clutter. Also, the commit message says its adding
-write and write_byte, nothing about read, so read shouldn't be here at
-all.
-
-> +	base_addr_lo = INVALID_RW_ADDR;
-> +    ret = __dbcn_sbi_ecall(SBI_EXT_DBCN_CONSOLE_READ, num_bytes, base_addr_lo, base_addr_hi);
-> +    report(SBI_ERR_INVALID_PARAM == ret.error, "invalid parameter: address");
-
-need to use tabs and variable first in conditions
-
-> +
-> +	report_prefix_pop();
-> +	
-> +	report_prefix_push("write_byte");
-> +
-> +	puts(DBCN_WRITE_TEST_BYTE_FLAG);
-> +	ret = __dbcn_sbi_ecall(SBI_EXT_DBCN_CONSOLE_WRITE_BYTE, (u8) DBCN_WRITE_BYTE_TEST_BYTE, 0, 0);
-                                                                    ^ no
-					space and we can put the cast on
-					the define instead of here
-
-> +	puts("\n");
-> +    report(SBI_SUCCESS == ret.error, "write success");
-> +    report(0 == ret.value, "expected ret.value");
-
-need to use tabs and variable first in conditions
+The <= delay + delay check implies that the delay has been selected for
+two purposes, how long to wait for the interrupt and how much time we
+allow the interrupt to be late. We should have two separate variables
+for those two purposes, both configurable.
 
 > +
 > +	report_prefix_pop();
+> +
+
+nit: drop this extra blank line.
+
+> +	report_prefix_pop();
+
+(After seeing all these repeated _pop() lines I'm actually thinking we
+need another report API call, something like report_prefix_popn(int n)
+which pops n number times.)
+
 > +}
 > +
 >  int main(int argc, char **argv)
 >  {
+>  
+> @@ -122,6 +208,7 @@ int main(int argc, char **argv)
+>  
+>  	report_prefix_push("sbi");
+>  	check_base();
+> +	check_time();
+>  
+>  	return report_summary();
+>  }
+> -- 
+> 2.43.0
 >
 
-As this test isn't actually confirming that the writes were actually
-written then the commit message should explain that it's expected the
-output of the test be inspected to ensure the test strings and bytes
-are written.
+The spec says "This function must clear the pending timer interrupt bit as
+well." so I think we should have something in the test that checks that
+too.
 
 Thanks,
 drew
