@@ -1,43 +1,41 @@
-From: Will Deacon <will@kernel.org>
-Date: Fri,  5 Jul 2024 11:54:16 +0100
-Subject: [kvmtool PATCH 0/3] Add RISC-V ISA extensions based on Linux-6.9
-In-Reply-To: <20240514054928.854419-1-apatel@ventanamicro.com>
-References: <20240514054928.854419-1-apatel@ventanamicro.com>
-Message-ID: <172017577880.496851.16044176986107595814.b4-ty@kernel.org>
+From: Cade Richard <cade.richard@gmail.com>
+Date: Sat, 06 Jul 2024 16:09:44 -0700
+Subject: [PATCH kvm-unit-tests] riscv: Fix virt_to_phys()
+Message-ID: <20240706-virt-to-phys-v1-1-7a4dc11f542c@berkeley.edu>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, 14 May 2024 11:19:25 +0530, Anup Patel wrote:
-> This series adds support for new ISA extensions based on Linux-6.9 namely:
-> Ztso and Zacas.
-> 
-> These patches can also be found in the riscv_more_exts_round2_v1 branch
-> at: https://github.com/avpatel/kvmtool.git
-> 
-> Anup Patel (3):
->   Sync-up headers with Linux-6.9 kernel
->   riscv: Add Ztso extensiona support
->   riscv: Add Zacas extensiona support
-> 
-> [...]
 
-Applied to kvmtool (master), thanks!
 
-[1/3] Sync-up headers with Linux-6.9 kernel
-      https://git.kernel.org/will/kvmtool/c/85aaadf64649
-[2/3] riscv: Add Ztso extensiona support
-      https://git.kernel.org/will/kvmtool/c/a20adc64b4ea
-[3/3] riscv: Add Zacas extensiona support
-      https://git.kernel.org/will/kvmtool/c/32f810364df0
+---
+Signed-off-by: Cade Richard <cade.richard@berkeley.edu>
+---
+ lib/riscv/mmu.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Cheers,
+diff --git a/lib/riscv/mmu.c b/lib/riscv/mmu.c
+index bd006881..c4770552 100644
+--- a/lib/riscv/mmu.c
++++ b/lib/riscv/mmu.c
+@@ -194,7 +194,7 @@ unsigned long virt_to_phys(volatile void *address)
+ 	paddr = virt_to_pte_phys(pgtable, (void *)address);
+ 	assert(sizeof(long) == 8 || !(paddr >> 32));
+ 
+-	return (unsigned long)paddr;
++	return (unsigned long)paddr | ((unsigned long) address & 0x00000FFF);
+ }
+ 
+ void *phys_to_virt(unsigned long address)
+
+---
+base-commit: a68956b3fb6f5f308822b20ce0ff8e02db1f7375
+change-id: 20240706-virt-to-phys-2a27a924ef2a
+
+Best regards,
 -- 
-Will
+Cade Richard <cade.richard@berkeley.edu>
 
-https://fixes.arm64.dev
-https://next.arm64.dev
-https://will.arm64.dev
 
