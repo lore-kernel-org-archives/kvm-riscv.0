@@ -1,7 +1,7 @@
 From: Cade Richard <cade.richard@gmail.com>
-Date: Sat, 06 Jul 2024 16:48:44 -0700
-Subject: [PATCH kvm-unit-tests] riscv: sbi: debug console write tests
-Message-ID: <20240706-sbi-dbcn-write-tests-v1-1-b754e51699f8@berkeley.edu>
+Date: Sat, 06 Jul 2024 16:55:46 -0700
+Subject: [PATCH kvm-unit-tests v2] riscv: sbi: debug console write tests
+Message-ID: <20240706-sbi-dbcn-write-tests-v2-1-a5dc6a749f4a@berkeley.edu>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -13,9 +13,13 @@ Content-Transfer-Encoding: 7bit
 ---
 Signed-off-by: Cade Richard <cade.richard@berkeley.edu>
 ---
+Changes in v2:
+- Added prefix pop to exit dbcn tests
+- Link to v1: https://lore.kernel.org/r/20240706-sbi-dbcn-write-tests-v1-1-b754e51699f8 at berkeley.edu
+---
  lib/riscv/asm/sbi.h |  7 +++++++
- riscv/sbi.c         | 59 +++++++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 66 insertions(+)
+ riscv/sbi.c         | 60 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 67 insertions(+)
 
 diff --git a/lib/riscv/asm/sbi.h b/lib/riscv/asm/sbi.h
 index d82a384d..c5fa84ae 100644
@@ -43,7 +47,7 @@ index d82a384d..c5fa84ae 100644
  	long error;
  	long value;
 diff --git a/riscv/sbi.c b/riscv/sbi.c
-index 762e9711..b93ef5d8 100644
+index 762e9711..18646842 100644
 --- a/riscv/sbi.c
 +++ b/riscv/sbi.c
 @@ -7,6 +7,10 @@
@@ -69,7 +73,7 @@ index 762e9711..b93ef5d8 100644
  static bool env_or_skip(const char *env)
  {
  	if (!getenv(env)) {
-@@ -112,6 +121,55 @@ static void check_base(void)
+@@ -112,6 +121,56 @@ static void check_base(void)
  	report_prefix_pop();
  }
  
@@ -120,12 +124,13 @@ index 762e9711..b93ef5d8 100644
 +	report(ret.value == 0, "expected ret.value");
 +
 +	report_prefix_pop();
++	report_prefix_pop();
 +}
 +
  int main(int argc, char **argv)
  {
  
-@@ -122,6 +180,7 @@ int main(int argc, char **argv)
+@@ -122,6 +181,7 @@ int main(int argc, char **argv)
  
  	report_prefix_push("sbi");
  	check_base();
