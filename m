@@ -1,380 +1,43 @@
-From: James R T <jamestiotio@gmail.com>
-Date: Sun, 7 Jul 2024 19:24:36 +0800
-Subject: [kvm-unit-tests PATCH v2 3/3] riscv: sbi: Add test for timer extension
-In-Reply-To: <20240707101053.74386-4-jamestiotio@gmail.com>
-References: <20240707101053.74386-1-jamestiotio@gmail.com> <20240707101053.74386-4-jamestiotio@gmail.com>
-Message-ID: <CAA_Li+vEZhHpuGNqJ9MF96iqcubrUgHw4Hmnv3UpHf4EkkJ8HQ@mail.gmail.com>
+From: Sean Christopherson <seanjc@google.com>
+Date: Wed, 10 Jul 2024 08:51:51 -0700
+Subject: [PATCH v3 0/3] KVM: Set vcpu->preempted/ready iff scheduled out
+ while running
+In-Reply-To: <CALzav=cwu3M2nLHwZLCTF=eGWx2Nq+=TuHMuGTfZCNa27mLs1A@mail.gmail.com>
+References: <20240503181734.1467938-1-dmatlack@google.com> <171874683295.1901599.10170158200177384059.b4-ty@google.com>
+ <CALzav=cwu3M2nLHwZLCTF=eGWx2Nq+=TuHMuGTfZCNa27mLs1A@mail.gmail.com>
+Message-ID: <Zo6uFz187FBYnQiY@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sun, Jul 7, 2024 at 6:11?PM James Raphael Tiovalen
-<jamestiotio@gmail.com> wrote:
->
-> Add a test for the set_timer function of the time extension. The test
-> checks that:
-> - The time extension is available
-> - The time counter monotonically increases
-> - The installed timer interrupt handler is called
-> - The timer interrupt is received within a reasonable time interval
-> - The timer interrupt pending bit is cleared after the set_timer SBI
->   call is made
-> - The timer interrupt can be cleared either by requesting a timer
->   interrupt infinitely far into the future or by masking the timer
->   interrupt
->
-> The timer interrupt delay can be set using the TIMER_DELAY environment
-> variable in microseconds. The default delay value is 1 second. Since the
-> interrupt can arrive a little later than the specified delay, allow some
-> margin of error. This margin of error can be specified via the
-> TIMER_MARGIN environment variable in microseconds. The default margin of
-> error is 1 second.
->
-> This test has been verified on RV32 and RV64 with OpenSBI using QEMU.
->
-> Signed-off-by: James Raphael Tiovalen <jamestiotio@gmail.com>
-> ---
->  lib/riscv/asm/csr.h   |   7 +++
->  lib/riscv/asm/sbi.h   |   5 ++
->  lib/riscv/asm/setup.h |   1 +
->  lib/riscv/asm/timer.h |  30 ++++++++++++
->  lib/riscv/processor.c |   6 +++
->  lib/riscv/setup.c     |  24 ++++++++++
->  riscv/sbi.c           | 108 ++++++++++++++++++++++++++++++++++++++++++
->  7 files changed, 181 insertions(+)
->  create mode 100644 lib/riscv/asm/timer.h
->
-> diff --git a/lib/riscv/asm/csr.h b/lib/riscv/asm/csr.h
-> index b3c48e8e..dc05bfc9 100644
-> --- a/lib/riscv/asm/csr.h
-> +++ b/lib/riscv/asm/csr.h
-> @@ -4,12 +4,15 @@
->  #include <linux/const.h>
->
->  #define CSR_SSTATUS            0x100
-> +#define CSR_SIE                        0x104
->  #define CSR_STVEC              0x105
->  #define CSR_SSCRATCH           0x140
->  #define CSR_SEPC               0x141
->  #define CSR_SCAUSE             0x142
->  #define CSR_STVAL              0x143
-> +#define CSR_SIP                        0x144
->  #define CSR_SATP               0x180
-> +#define CSR_TIME               0xc01
->
->  #define SR_SIE                 _AC(0x00000002, UL)
->
-> @@ -50,6 +53,10 @@
->  #define IRQ_S_GEXT             12
->  #define IRQ_PMU_OVF            13
->
-> +#define IE_TIE                 (_AC(0x1, UL) << IRQ_S_TIMER)
-> +
-> +#define IP_TIP                 IE_TIE
-> +
->  #ifndef __ASSEMBLY__
->
->  #define csr_swap(csr, val)                                     \
-> diff --git a/lib/riscv/asm/sbi.h b/lib/riscv/asm/sbi.h
-> index d82a384d..84ce1bff 100644
-> --- a/lib/riscv/asm/sbi.h
-> +++ b/lib/riscv/asm/sbi.h
-> @@ -16,6 +16,7 @@
->
->  enum sbi_ext_id {
->         SBI_EXT_BASE = 0x10,
-> +       SBI_EXT_TIME = 0x54494d45,
->         SBI_EXT_HSM = 0x48534d,
->         SBI_EXT_SRST = 0x53525354,
->  };
-> @@ -37,6 +38,10 @@ enum sbi_ext_hsm_fid {
->         SBI_EXT_HSM_HART_SUSPEND,
->  };
->
-> +enum sbi_ext_time_fid {
-> +       SBI_EXT_TIME_SET_TIMER = 0,
-> +};
-> +
->  struct sbiret {
->         long error;
->         long value;
-> diff --git a/lib/riscv/asm/setup.h b/lib/riscv/asm/setup.h
-> index 7f81a705..5be252df 100644
-> --- a/lib/riscv/asm/setup.h
-> +++ b/lib/riscv/asm/setup.h
-> @@ -7,6 +7,7 @@
->  #define NR_CPUS 16
->  extern struct thread_info cpus[NR_CPUS];
->  extern int nr_cpus;
-> +extern uint64_t tb_hz;
->  int hartid_to_cpu(unsigned long hartid);
->
->  void io_init(void);
-> diff --git a/lib/riscv/asm/timer.h b/lib/riscv/asm/timer.h
-> new file mode 100644
-> index 00000000..3eeb8344
-> --- /dev/null
-> +++ b/lib/riscv/asm/timer.h
-> @@ -0,0 +1,30 @@
-> +/* SPDX-License-Identifier: GPL-2.0-only */
-> +#ifndef _ASMRISCV_TIMER_H_
-> +#define _ASMRISCV_TIMER_H_
-> +
-> +#include <asm/csr.h>
-> +#include <asm/processor.h>
-> +
-> +extern uint64_t usec_to_cycles(uint64_t usec);
-> +
-> +static inline void timer_irq_enable(void)
-> +{
-> +       csr_set(CSR_SIE, IE_TIE);
-> +}
-> +
-> +static inline void timer_irq_disable(void)
-> +{
-> +       csr_clear(CSR_SIE, IE_TIE);
-> +}
-> +
-> +static inline uint64_t timer_get_cycles(void)
-> +{
-> +       return csr_read(CSR_TIME);
-> +}
-> +
-> +static inline bool timer_irq_pending(void)
-> +{
-> +       return csr_read(CSR_SIP) & IP_TIP;
-> +}
-> +
-> +#endif /* _ASMRISCV_TIMER_H_ */
-> diff --git a/lib/riscv/processor.c b/lib/riscv/processor.c
-> index 0dffadc7..082b9d80 100644
-> --- a/lib/riscv/processor.c
-> +++ b/lib/riscv/processor.c
-> @@ -7,6 +7,7 @@
->  #include <asm/isa.h>
->  #include <asm/processor.h>
->  #include <asm/setup.h>
-> +#include <asm/timer.h>
->
->  extern unsigned long ImageBase;
->
-> @@ -82,3 +83,8 @@ void thread_info_init(void)
->         isa_init(&cpus[cpu]);
->         csr_write(CSR_SSCRATCH, &cpus[cpu]);
->  }
-> +
-> +uint64_t usec_to_cycles(uint64_t usec)
-> +{
-> +       return (tb_hz * usec) / 1000000;
-> +}
-> diff --git a/lib/riscv/setup.c b/lib/riscv/setup.c
-> index 50ffb0d0..b659c14e 100644
-> --- a/lib/riscv/setup.c
-> +++ b/lib/riscv/setup.c
-> @@ -20,6 +20,7 @@
->  #include <asm/page.h>
->  #include <asm/processor.h>
->  #include <asm/setup.h>
-> +#include <asm/timer.h>
->
->  #define VA_BASE                        ((phys_addr_t)3 * SZ_1G)
->  #if __riscv_xlen == 64
-> @@ -38,6 +39,7 @@ u32 initrd_size;
->
->  struct thread_info cpus[NR_CPUS];
->  int nr_cpus;
-> +uint64_t tb_hz;
->
->  static struct mem_region riscv_mem_regions[NR_MEM_REGIONS + 1];
->
-> @@ -67,6 +69,26 @@ static void cpu_init_acpi(void)
->         assert_msg(false, "ACPI not available");
->  }
->
-> +static int cpu_init_timer(const void *fdt)
-> +{
-> +       const struct fdt_property *prop;
-> +       u32 *data;
-> +       int cpus;
-> +
-> +       cpus = fdt_path_offset(fdt, "/cpus");
-> +       if (cpus < 0)
-> +               return cpus;
-> +
-> +       prop = fdt_get_property(fdt, cpus, "timebase-frequency", NULL);
-> +       if (prop == NULL)
-> +               return -1;
-> +
-> +       data = (u32 *)prop->data;
-> +       tb_hz = fdt32_to_cpu(*data);
-> +
-> +       return 0;
-> +}
-> +
->  static void cpu_init(void)
->  {
->         int ret;
-> @@ -75,6 +97,8 @@ static void cpu_init(void)
->         if (dt_available()) {
->                 ret = dt_for_each_cpu_node(cpu_set_fdt, NULL);
->                 assert(ret == 0);
-> +               ret = cpu_init_timer(dt_fdt());
-> +               assert(ret == 0);
->         } else {
->                 cpu_init_acpi();
->         }
-> diff --git a/riscv/sbi.c b/riscv/sbi.c
-> index 762e9711..a1a9ce84 100644
-> --- a/riscv/sbi.c
-> +++ b/riscv/sbi.c
-> @@ -6,7 +6,14 @@
->   */
->  #include <libcflat.h>
->  #include <stdlib.h>
-> +#include <asm/barrier.h>
-> +#include <asm/csr.h>
-> +#include <asm/processor.h>
->  #include <asm/sbi.h>
-> +#include <asm/timer.h>
-> +
-> +static bool timer_works;
-> +static bool mask_timer_irq;
->
->  static void help(void)
->  {
-> @@ -19,6 +26,27 @@ static struct sbiret __base_sbi_ecall(int fid, unsigned long arg0)
->         return sbi_ecall(SBI_EXT_BASE, fid, arg0, 0, 0, 0, 0, 0);
->  }
->
-> +static struct sbiret __time_sbi_ecall(unsigned long stime_value)
-> +{
-> +       return sbi_ecall(SBI_EXT_TIME, SBI_EXT_TIME_SET_TIMER, stime_value, 0, 0, 0, 0, 0);
-> +}
-> +
-> +static void timer_irq_handler(struct pt_regs *regs)
-> +{
-> +       if (timer_works)
-> +               report_abort("timer interrupt received multiple times");
-> +
-> +       timer_works = true;
-> +       report(timer_irq_pending(), "pending timer interrupt bit set");
-> +
-> +       if (mask_timer_irq)
-> +               timer_irq_disable();
-> +       else {
-> +               __time_sbi_ecall(-1);
-> +               report(!timer_irq_pending(), "pending timer interrupt bit cleared");
-> +       }
-> +}
-> +
->  static bool env_or_skip(const char *env)
->  {
->         if (!getenv(env)) {
-> @@ -112,6 +140,85 @@ static void check_base(void)
->         report_prefix_pop();
->  }
->
-> +static void check_time(void)
-> +{
-> +       struct sbiret ret;
-> +       unsigned long begin, end, duration;
-> +       unsigned long delay = getenv("TIMER_DELAY")
-> +                                                       ? strtol(getenv("TIMER_DELAY"), NULL, 0)
-> +                                                       : 1000000;
-> +       unsigned long margin = getenv("TIMER_MARGIN")
-> +                                                       ? strtol(getenv("TIMER_MARGIN"), NULL, 0)
-> +                                                       : 1000000;
+On Mon, Jul 01, 2024, David Matlack wrote:
+> On Tue, Jun 18, 2024 at 2:41?PM Sean Christopherson <seanjc@google.com> wrote:
+> >
+> > On Fri, 03 May 2024 11:17:31 -0700, David Matlack wrote:
+> > > This series changes KVM to mark a vCPU as preempted/ready if-and-only-if
+> > > it's scheduled out while running. i.e. Do not mark a vCPU
+> > > preempted/ready if it's scheduled out during a non-KVM_RUN ioctl() or
+> > > when userspace is doing KVM_RUN with immediate_exit=true.
+> > >
+> > > This is a logical extension of commit 54aa83c90198 ("KVM: x86: do not
+> > > set st->preempted when going back to user space"), which  stopped
+> > > marking a vCPU as preempted when returning to userspace. But if userspace
+> > > invokes a KVM vCPU ioctl() that gets preempted, the vCPU will be marked
+> > > preempted/ready. This is arguably incorrect behavior since the vCPU was
+> > > not actually preempted while the guest was running, it was preempted
+> > > while doing something on behalf of userspace.
+> > >
+> > > [...]
+> >
+> > Applied to kvm-x86 generic, with minor changelog tweaks (me thinks you've been
+> > away from upstream too long ;-) ).  Thanks!
+> 
+> Thanks for the cleanups. Looks like you replaced "[Tt]his commit"
+> throughout. Anything else (so I can avoid the same mistakes in the
+> future)?
 
-Whoops, it looks like my editor settings showed tabs as 4 characters
-instead of 8. I will fix this spacing and manually validate it in the
-next patch version.
-
-> +
-> +       delay = usec_to_cycles(delay);
-> +       margin = usec_to_cycles(margin);
-> +
-> +       report_prefix_push("time");
-> +
-> +       ret = __base_sbi_ecall(SBI_EXT_BASE_PROBE_EXT, SBI_EXT_TIME);
-> +
-> +       if (ret.error) {
-> +               report_fail("probing for time extension failed");
-> +               report_prefix_pop();
-> +               return;
-> +       }
-> +
-> +       if (!ret.value) {
-> +               report_skip("time extension not available");
-> +               report_prefix_pop();
-> +               return;
-> +       }
-> +
-> +       begin = timer_get_cycles();
-> +       while ((end = timer_get_cycles()) <= begin)
-> +               cpu_relax();
-> +       assert(begin < end);
-> +
-> +       report_prefix_push("set_timer");
-> +
-> +       install_irq_handler(IRQ_S_TIMER, timer_irq_handler);
-> +       local_irq_enable();
-> +       timer_irq_enable();
-> +
-> +       begin = timer_get_cycles();
-> +       ret = __time_sbi_ecall(begin + delay);
-> +
-> +       if (ret.error)
-> +               report_fail("setting timer failed");
-> +
-> +       report(!timer_irq_pending(), "pending timer interrupt bit cleared");
-> +
-> +       while ((end = timer_get_cycles()) <= (begin + delay + margin) && !timer_works)
-> +               cpu_relax();
-> +
-> +       report(timer_works, "timer interrupt received");
-> +
-> +       if (timer_works) {
-> +               duration = end - begin;
-> +               report(duration >= delay && duration <= (delay + margin), "timer delay honored");
-> +       }
-> +
-> +       timer_works = false;
-> +       mask_timer_irq = true;
-> +       begin = timer_get_cycles();
-> +       ret = __time_sbi_ecall(begin + delay);
-> +
-> +       if (ret.error)
-> +               report_fail("setting timer failed");
-> +
-> +       while ((end = timer_get_cycles()) <= (begin + delay + margin) && !timer_works)
-> +               cpu_relax();
-> +
-> +       report(timer_works, "timer interrupt received");
-> +
-> +       local_irq_disable();
-> +       install_irq_handler(IRQ_S_TIMER, NULL);
-> +
-> +       report_prefix_pop();
-> +       report_prefix_pop();
-> +}
-> +
->  int main(int argc, char **argv)
->  {
->
-> @@ -122,6 +229,7 @@ int main(int argc, char **argv)
->
->         report_prefix_push("sbi");
->         check_base();
-> +       check_time();
->
->         return report_summary();
->  }
-> --
-> 2.43.0
->
-
-Best regards,
-James Raphael Tiovalen
+I don't think so?  The "This commit" stuff is the only thing that I remember, so
+any other tweaks can't be that important :-)
 
