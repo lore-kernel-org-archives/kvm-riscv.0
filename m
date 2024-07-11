@@ -1,43 +1,78 @@
-From: Sean Christopherson <seanjc@google.com>
-Date: Wed, 10 Jul 2024 08:51:51 -0700
-Subject: [PATCH v3 0/3] KVM: Set vcpu->preempted/ready iff scheduled out
- while running
-In-Reply-To: <CALzav=cwu3M2nLHwZLCTF=eGWx2Nq+=TuHMuGTfZCNa27mLs1A@mail.gmail.com>
-References: <20240503181734.1467938-1-dmatlack@google.com> <171874683295.1901599.10170158200177384059.b4-ty@google.com>
- <CALzav=cwu3M2nLHwZLCTF=eGWx2Nq+=TuHMuGTfZCNa27mLs1A@mail.gmail.com>
-Message-ID: <Zo6uFz187FBYnQiY@google.com>
+From: Yong-Xuan Wang <yongxuan.wang@sifive.com>
+Date: Thu, 11 Jul 2024 18:34:49 +0800
+Subject: [PATCH v6 2/4] dt-bindings: riscv: Add Svade and Svadu Entries
+In-Reply-To: <20240630-caboose-diameter-7e73bf86da49@spud>
+References: <20240628093711.11716-1-yongxuan.wang@sifive.com>
+ <20240628093711.11716-3-yongxuan.wang@sifive.com> <20240628-clamp-vineyard-c7cdd40a6d50@spud>
+ <402C3422-0248-4C0F-991E-C0C4BBB0FA72@jrtc27.com> <20240630-caboose-diameter-7e73bf86da49@spud>
+Message-ID: <CAMWQL2gpg-xN5xjshTaZT5844kKoZHDmLUQb8nXYYzw1RGbykQ@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Jul 01, 2024, David Matlack wrote:
-> On Tue, Jun 18, 2024 at 2:41?PM Sean Christopherson <seanjc@google.com> wrote:
-> >
-> > On Fri, 03 May 2024 11:17:31 -0700, David Matlack wrote:
-> > > This series changes KVM to mark a vCPU as preempted/ready if-and-only-if
-> > > it's scheduled out while running. i.e. Do not mark a vCPU
-> > > preempted/ready if it's scheduled out during a non-KVM_RUN ioctl() or
-> > > when userspace is doing KVM_RUN with immediate_exit=true.
-> > >
-> > > This is a logical extension of commit 54aa83c90198 ("KVM: x86: do not
-> > > set st->preempted when going back to user space"), which  stopped
-> > > marking a vCPU as preempted when returning to userspace. But if userspace
-> > > invokes a KVM vCPU ioctl() that gets preempted, the vCPU will be marked
-> > > preempted/ready. This is arguably incorrect behavior since the vCPU was
-> > > not actually preempted while the guest was running, it was preempted
-> > > while doing something on behalf of userspace.
-> > >
-> > > [...]
-> >
-> > Applied to kvm-x86 generic, with minor changelog tweaks (me thinks you've been
-> > away from upstream too long ;-) ).  Thanks!
-> 
-> Thanks for the cleanups. Looks like you replaced "[Tt]his commit"
-> throughout. Anything else (so I can avoid the same mistakes in the
-> future)?
+Hi Conor and Jessica,
 
-I don't think so?  The "This commit" stuff is the only thing that I remember, so
-any other tweaks can't be that important :-)
+On Sun, Jun 30, 2024 at 10:09?PM Conor Dooley <conor@kernel.org> wrote:
+>
+> On Sat, Jun 29, 2024 at 02:09:34PM +0100, Jessica Clarke wrote:
+> > On 28 Jun 2024, at 17:19, Conor Dooley <conor@kernel.org> wrote:
+> > >
+> > > On Fri, Jun 28, 2024 at 05:37:06PM +0800, Yong-Xuan Wang wrote:
+> > >> Add entries for the Svade and Svadu extensions to the riscv,isa-extensions
+> > >> property.
+> > >>
+> > >> Signed-off-by: Yong-Xuan Wang <yongxuan.wang@sifive.com>
+> > >> ---
+> > >> .../devicetree/bindings/riscv/extensions.yaml | 28 +++++++++++++++++++
+> > >> 1 file changed, 28 insertions(+)
+> > >>
+> > >> diff --git a/Documentation/devicetree/bindings/riscv/extensions.yaml b/Documentation/devicetree/bindings/riscv/extensions.yaml
+> > >> index 468c646247aa..c3d053ce7783 100644
+> > >> --- a/Documentation/devicetree/bindings/riscv/extensions.yaml
+> > >> +++ b/Documentation/devicetree/bindings/riscv/extensions.yaml
+> > >> @@ -153,6 +153,34 @@ properties:
+> > >>             ratified at commit 3f9ed34 ("Add ability to manually trigger
+> > >>             workflow. (#2)") of riscv-time-compare.
+> > >>
+> > >> +        - const: svade
+> > >> +          description: |
+> > >> +            The standard Svade supervisor-level extension for SW-managed PTE A/D
+> > >> +            bit updates as ratified in the 20240213 version of the privileged
+> > >> +            ISA specification.
+> > >> +
+> > >> +            Both Svade and Svadu extensions control the hardware behavior when
+> > >> +            the PTE A/D bits need to be set. The default behavior for the four
+> > >> +            possible combinations of these extensions in the device tree are:
+> > >> +            1) Neither Svade nor Svadu present in DT =>
+> > >
+> > >>                It is technically
+> > >> +               unknown whether the platform uses Svade or Svadu. Supervisor may
+> > >> +               assume Svade to be present and enabled or it can discover based
+> > >> +               on mvendorid, marchid, and mimpid.
+> > >
+> > > I would just write "for backwards compatibility, if neither Svade nor
+> > > Svadu appear in the devicetree the supervisor may assume Svade to be
+> > > present and enabled". If there are systems that this behaviour causes
+> > > problems for, we can deal with them iff they appear. I don't think
+> > > looking at m*id would be sufficient here anyway, since the firmware can
+> > > have an impact. I'd just drop that part entirely.
+> >
+> > Older QEMU falls into that category, as do Bluespec?s soft-cores (which
+> > ours are derived from at Cambridge). I feel that, in reality, one
+> > should be prepared to handle both trapping and atomic updates if
+> > writing an OS that aims to support case 1.
+>
+> I guess that is actually what we should put in then, to use an
+> approximation of your wording, something like
+>         Neither Svade nor Svadu present in DT => Supervisor software should be
+>         prepared to handle either hardware updating of the PTE A/D bits or page
+>         faults when they need updated
+> ?
+
+Thank you! I will update in the next version.
+
+Regards,
+Yong-Xuan
 
