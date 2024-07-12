@@ -1,65 +1,78 @@
-From: Yong-Xuan Wang <yongxuan.wang@sifive.com>
-Date: Fri, 12 Jul 2024 16:38:48 +0800
-Subject: [PATCH v7 4/4] KVM: riscv: selftests: Add Svade and Svadu Extension to get-reg-list test
-In-Reply-To: <20240712083850.4242-1-yongxuan.wang@sifive.com>
-References: <20240712083850.4242-1-yongxuan.wang@sifive.com>
-Message-ID: <20240712083850.4242-5-yongxuan.wang@sifive.com>
+From: Anup Patel <anup@brainfault.org>
+Date: Fri, 12 Jul 2024 17:41:22 +0530
+Subject: [GIT PULL] KVM/riscv changes for 6.11
+Message-ID: <CAAhSdy0jae8TYcbChockXDJ9qL+HnA1p3YJQi32NHQsLUtCGDA@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Update the get-reg-list test to test the Svade and Svadu Extensions are
-available for guest OS.
+Hi Paolo,
 
-Signed-off-by: Yong-Xuan Wang <yongxuan.wang@sifive.com>
-Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
----
- tools/testing/selftests/kvm/riscv/get-reg-list.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
+We have the following KVM RISC-V changes for 6.11:
+1) Redirect AMO load/store access fault traps to guest
+2) Perf kvm stat support for RISC-V
+3) Use HW IMSIC guest files when available
 
-diff --git a/tools/testing/selftests/kvm/riscv/get-reg-list.c b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-index 222198dd6d04..1d32351ad55e 100644
---- a/tools/testing/selftests/kvm/riscv/get-reg-list.c
-+++ b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-@@ -45,6 +45,8 @@ bool filter_reg(__u64 reg)
- 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SSAIA:
- 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SSCOFPMF:
- 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SSTC:
-+	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SVADE:
-+	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SVADU:
- 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SVINVAL:
- 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SVNAPOT:
- 	case KVM_REG_RISCV_ISA_EXT | KVM_REG_RISCV_ISA_SINGLE | KVM_RISCV_ISA_EXT_SVPBMT:
-@@ -411,6 +413,8 @@ static const char *isa_ext_single_id_to_str(__u64 reg_off)
- 		KVM_ISA_EXT_ARR(SSAIA),
- 		KVM_ISA_EXT_ARR(SSCOFPMF),
- 		KVM_ISA_EXT_ARR(SSTC),
-+		KVM_ISA_EXT_ARR(SVADE),
-+		KVM_ISA_EXT_ARR(SVADU),
- 		KVM_ISA_EXT_ARR(SVINVAL),
- 		KVM_ISA_EXT_ARR(SVNAPOT),
- 		KVM_ISA_EXT_ARR(SVPBMT),
-@@ -935,6 +939,8 @@ KVM_ISA_EXT_SIMPLE_CONFIG(h, H);
- KVM_ISA_EXT_SUBLIST_CONFIG(smstateen, SMSTATEEN);
- KVM_ISA_EXT_SIMPLE_CONFIG(sscofpmf, SSCOFPMF);
- KVM_ISA_EXT_SIMPLE_CONFIG(sstc, SSTC);
-+KVM_ISA_EXT_SIMPLE_CONFIG(svade, SVADE);
-+KVM_ISA_EXT_SIMPLE_CONFIG(svadu, SVADU);
- KVM_ISA_EXT_SIMPLE_CONFIG(svinval, SVINVAL);
- KVM_ISA_EXT_SIMPLE_CONFIG(svnapot, SVNAPOT);
- KVM_ISA_EXT_SIMPLE_CONFIG(svpbmt, SVPBMT);
-@@ -991,6 +997,8 @@ struct vcpu_reg_list *vcpu_configs[] = {
- 	&config_smstateen,
- 	&config_sscofpmf,
- 	&config_sstc,
-+	&config_svade,
-+	&config_svadu,
- 	&config_svinval,
- 	&config_svnapot,
- 	&config_svpbmt,
--- 
-2.17.1
+In addition to above, ONE_REG support for Zimop,
+Zcmop, Zca, Zcf, Zcd, Zcb and Zawrs ISA extensions
+is going through the RISC-V tree.
 
+Please pull.
+
+Regards,
+Anup
+
+The following changes since commit 0fc670d07d5de36a54f061f457743c9cde1d8b46:
+
+  KVM: selftests: Fix RISC-V compilation (2024-06-06 15:53:16 +0530)
+
+are available in the Git repository at:
+
+  https://github.com/kvm-riscv/linux.git tags/kvm-riscv-6.11-1
+
+for you to fetch changes up to e325618349cdc1fbbe63574080249730e7cff9ea:
+
+  RISC-V: KVM: Redirect AMO load/store access fault traps to guest
+(2024-06-26 18:37:41 +0530)
+
+----------------------------------------------------------------
+KVM/riscv changes for 6.11
+
+- Redirect AMO load/store access fault traps to guest
+- Perf kvm stat support for RISC-V
+- Use HW IMSIC guest files when available
+
+----------------------------------------------------------------
+Anup Patel (2):
+      RISC-V: KVM: Share APLIC and IMSIC defines with irqchip drivers
+      RISC-V: KVM: Use IMSIC guest files when available
+
+Shenlin Liang (2):
+      RISCV: KVM: add tracepoints for entry and exit events
+      perf kvm/riscv: Port perf kvm stat to RISC-V
+
+Yu-Wei Hsu (1):
+      RISC-V: KVM: Redirect AMO load/store access fault traps to guest
+
+ arch/riscv/include/asm/kvm_aia_aplic.h             | 58 ----------------
+ arch/riscv/include/asm/kvm_aia_imsic.h             | 38 -----------
+ arch/riscv/kvm/aia.c                               | 35 ++++++----
+ arch/riscv/kvm/aia_aplic.c                         |  2 +-
+ arch/riscv/kvm/aia_device.c                        |  2 +-
+ arch/riscv/kvm/aia_imsic.c                         |  2 +-
+ arch/riscv/kvm/trace.h                             | 67 +++++++++++++++++++
+ arch/riscv/kvm/vcpu.c                              |  7 ++
+ arch/riscv/kvm/vcpu_exit.c                         |  2 +
+ tools/perf/arch/riscv/Makefile                     |  1 +
+ tools/perf/arch/riscv/util/Build                   |  1 +
+ tools/perf/arch/riscv/util/kvm-stat.c              | 78 ++++++++++++++++++++++
+ tools/perf/arch/riscv/util/riscv_exception_types.h | 35 ++++++++++
+ 13 files changed, 215 insertions(+), 113 deletions(-)
+ delete mode 100644 arch/riscv/include/asm/kvm_aia_aplic.h
+ delete mode 100644 arch/riscv/include/asm/kvm_aia_imsic.h
+ create mode 100644 arch/riscv/kvm/trace.h
+ create mode 100644 tools/perf/arch/riscv/util/kvm-stat.c
+ create mode 100644 tools/perf/arch/riscv/util/riscv_exception_types.h
 
