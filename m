@@ -1,78 +1,98 @@
 From: Yong-Xuan Wang <yongxuan.wang@sifive.com>
-Date: Thu, 11 Jul 2024 18:34:49 +0800
-Subject: [PATCH v6 2/4] dt-bindings: riscv: Add Svade and Svadu Entries
-In-Reply-To: <20240630-caboose-diameter-7e73bf86da49@spud>
-References: <20240628093711.11716-1-yongxuan.wang@sifive.com>
- <20240628093711.11716-3-yongxuan.wang@sifive.com> <20240628-clamp-vineyard-c7cdd40a6d50@spud>
- <402C3422-0248-4C0F-991E-C0C4BBB0FA72@jrtc27.com> <20240630-caboose-diameter-7e73bf86da49@spud>
-Message-ID: <CAMWQL2gpg-xN5xjshTaZT5844kKoZHDmLUQb8nXYYzw1RGbykQ@mail.gmail.com>
+Date: Fri, 12 Jul 2024 16:38:44 +0800
+Subject: [PATCH v7 0/4] Add Svade and Svadu Extensions Support
+Message-ID: <20240712083850.4242-1-yongxuan.wang@sifive.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Conor and Jessica,
+Svade and Svadu extensions represent two schemes for managing the PTE A/D
+bit. When the PTE A/D bits need to be set, Svade extension intdicates that
+a related page fault will be raised. In contrast, the Svadu extension
+supports hardware updating of PTE A/D bits. This series enables Svade and
+Svadu extensions for both host and guest OS.
 
-On Sun, Jun 30, 2024 at 10:09?PM Conor Dooley <conor@kernel.org> wrote:
->
-> On Sat, Jun 29, 2024 at 02:09:34PM +0100, Jessica Clarke wrote:
-> > On 28 Jun 2024, at 17:19, Conor Dooley <conor@kernel.org> wrote:
-> > >
-> > > On Fri, Jun 28, 2024 at 05:37:06PM +0800, Yong-Xuan Wang wrote:
-> > >> Add entries for the Svade and Svadu extensions to the riscv,isa-extensions
-> > >> property.
-> > >>
-> > >> Signed-off-by: Yong-Xuan Wang <yongxuan.wang@sifive.com>
-> > >> ---
-> > >> .../devicetree/bindings/riscv/extensions.yaml | 28 +++++++++++++++++++
-> > >> 1 file changed, 28 insertions(+)
-> > >>
-> > >> diff --git a/Documentation/devicetree/bindings/riscv/extensions.yaml b/Documentation/devicetree/bindings/riscv/extensions.yaml
-> > >> index 468c646247aa..c3d053ce7783 100644
-> > >> --- a/Documentation/devicetree/bindings/riscv/extensions.yaml
-> > >> +++ b/Documentation/devicetree/bindings/riscv/extensions.yaml
-> > >> @@ -153,6 +153,34 @@ properties:
-> > >>             ratified at commit 3f9ed34 ("Add ability to manually trigger
-> > >>             workflow. (#2)") of riscv-time-compare.
-> > >>
-> > >> +        - const: svade
-> > >> +          description: |
-> > >> +            The standard Svade supervisor-level extension for SW-managed PTE A/D
-> > >> +            bit updates as ratified in the 20240213 version of the privileged
-> > >> +            ISA specification.
-> > >> +
-> > >> +            Both Svade and Svadu extensions control the hardware behavior when
-> > >> +            the PTE A/D bits need to be set. The default behavior for the four
-> > >> +            possible combinations of these extensions in the device tree are:
-> > >> +            1) Neither Svade nor Svadu present in DT =>
-> > >
-> > >>                It is technically
-> > >> +               unknown whether the platform uses Svade or Svadu. Supervisor may
-> > >> +               assume Svade to be present and enabled or it can discover based
-> > >> +               on mvendorid, marchid, and mimpid.
-> > >
-> > > I would just write "for backwards compatibility, if neither Svade nor
-> > > Svadu appear in the devicetree the supervisor may assume Svade to be
-> > > present and enabled". If there are systems that this behaviour causes
-> > > problems for, we can deal with them iff they appear. I don't think
-> > > looking at m*id would be sufficient here anyway, since the firmware can
-> > > have an impact. I'd just drop that part entirely.
-> >
-> > Older QEMU falls into that category, as do Bluespec?s soft-cores (which
-> > ours are derived from at Cambridge). I feel that, in reality, one
-> > should be prepared to handle both trapping and atomic updates if
-> > writing an OS that aims to support case 1.
->
-> I guess that is actually what we should put in then, to use an
-> approximation of your wording, something like
->         Neither Svade nor Svadu present in DT => Supervisor software should be
->         prepared to handle either hardware updating of the PTE A/D bits or page
->         faults when they need updated
-> ?
+Regrading the mailing thread[1], we have 4 possible combinations of
+these extensions in the device tree, the default hardware behavior for
+these possibilities are:
+1) Neither Svade nor Svadu present in DT => It is technically
+   unknown whether the platform uses Svade or Svadu. Supervisor
+   software should be prepared to handle either hardware updating
+   of the PTE A/D bits or page faults when they need updated.
+2) Only Svade present in DT => Supervisor must assume Svade to be
+   always enabled.
+3) Only Svadu present in DT => Supervisor must assume Svadu to be
+   always enabled.
+4) Both Svade and Svadu present in DT => Supervisor must assume
+   Svadu turned-off at boot time. To use Svadu, supervisor must
+   explicitly enable it using the SBI FWFT extension.
 
-Thank you! I will update in the next version.
+The Svade extension is mandatory and the Svadu extension is optional in
+RVA23 profile. Platforms want to take the advantage of Svadu can choose
+3. Those are aware of the profile can choose 4, and Linux won't get the
+benefit of svadu until the SBI FWFT extension is available.
 
-Regards,
-Yong-Xuan
+[1] https://lore.kernel.org/linux-kernel/20240527-e9845c06619bca5cd285098c at orel/T/#m29644eb88e241ec282df4ccd5199514e913b06ee
+
+---
+v7:
+- fix alignment in PATCH1
+- update the dtbinding in PATCH2 (Conor, Jessica)
+
+v6:
+- reflect the platform's behavior by riscv_isa_extension_available() and
+  update the the arch_has_hw_pte_young() in PATCH1 (Conor, Andrew)
+- update the dtbinding in PATCH2 (Alexandre, Andrew, Anup, Conor)
+- update the henvcfg condition in PATCH3 (Andrew)
+- check if Svade is allowed to disabled based on arch_has_hw_pte_young()
+  in PATCH3
+
+v5:
+- remove all Acked-by and Reviewed-by (Conor, Andrew)
+- add Svade support
+- update the arch_has_hw_pte_young() in PATCH1
+- update the dtbinding in PATCH2 (Alexandre, Andrew)
+- check the availibility of Svadu for Guest/VM based on
+  arch_has_hw_pte_young() in PATCH3
+
+v4:
+- fix 32bit kernel build error in PATCH1 (Conor)
+- update the status of Svadu extension to ratified in PATCH2
+- add the PATCH4 to suporrt SBI_FWFT_PTE_AD_HW_UPDATING for guest OS
+- update the PATCH1 and PATCH3 to integrate with FWFT extension
+- rebase PATCH5 on the lastest get-reg-list test (Andrew)
+
+v3:
+- fix the control bit name to ADUE in PATCH1 and PATCH3
+- update get-reg-list in PATCH4
+
+v2:
+- add Co-developed-by: in PATCH1
+- use riscv_has_extension_unlikely() to runtime patch the branch in PATCH1
+- update dt-binding
+
+Yong-Xuan Wang (4):
+  RISC-V: Add Svade and Svadu Extensions Support
+  dt-bindings: riscv: Add Svade and Svadu Entries
+  RISC-V: KVM: Add Svade and Svadu Extensions Support for Guest/VM
+  KVM: riscv: selftests: Add Svade and Svadu Extension to get-reg-list
+    test
+
+ .../devicetree/bindings/riscv/extensions.yaml | 28 ++++++++++++++++
+ arch/riscv/Kconfig                            |  1 +
+ arch/riscv/include/asm/csr.h                  |  1 +
+ arch/riscv/include/asm/hwcap.h                |  2 ++
+ arch/riscv/include/asm/pgtable.h              | 13 +++++++-
+ arch/riscv/include/uapi/asm/kvm.h             |  2 ++
+ arch/riscv/kernel/cpufeature.c                | 32 +++++++++++++++++++
+ arch/riscv/kvm/vcpu.c                         |  3 ++
+ arch/riscv/kvm/vcpu_onereg.c                  | 15 +++++++++
+ .../selftests/kvm/riscv/get-reg-list.c        |  8 +++++
+ 10 files changed, 104 insertions(+), 1 deletion(-)
+
+-- 
+2.17.1
+
 
