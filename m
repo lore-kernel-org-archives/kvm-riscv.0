@@ -1,88 +1,52 @@
-From: Paolo Bonzini <pbonzini@redhat.com>
-Date: Fri, 12 Jul 2024 17:22:18 +0200
-Subject: [GIT PULL] KVM/riscv changes for 6.11
-In-Reply-To: <CAAhSdy0jae8TYcbChockXDJ9qL+HnA1p3YJQi32NHQsLUtCGDA@mail.gmail.com>
-References: <CAAhSdy0jae8TYcbChockXDJ9qL+HnA1p3YJQi32NHQsLUtCGDA@mail.gmail.com>
-Message-ID: <CABgObfZJJHg41KH8=a9Sw7F8A8vthKTmx+w-hH-JP-+8BU3Wug@mail.gmail.com>
+From: patchwork-bot+linux-riscv@kernel.org <patchwork-bot+linux-riscv@kernel.org>
+Date: Sun, 14 Jul 2024 20:30:33 +0000
+Subject: [PATCH v3 0/6] riscv: Apply Zawrs when available
+In-Reply-To: <20240426100820.14762-8-ajones@ventanamicro.com>
+References: <20240426100820.14762-8-ajones@ventanamicro.com>
+Message-ID: <172098903362.7439.8760600001594796975.git-patchwork-notify@kernel.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Pulled, thanks.
+Hello:
 
-Paolo
+This series was applied to riscv/linux.git (for-next)
+by Palmer Dabbelt <palmer@rivosinc.com>:
 
-On Fri, Jul 12, 2024 at 2:11?PM Anup Patel <anup@brainfault.org> wrote:
->
-> Hi Paolo,
->
-> We have the following KVM RISC-V changes for 6.11:
-> 1) Redirect AMO load/store access fault traps to guest
-> 2) Perf kvm stat support for RISC-V
-> 3) Use HW IMSIC guest files when available
->
-> In addition to above, ONE_REG support for Zimop,
-> Zcmop, Zca, Zcf, Zcd, Zcb and Zawrs ISA extensions
-> is going through the RISC-V tree.
->
-> Please pull.
->
-> Regards,
-> Anup
->
-> The following changes since commit 0fc670d07d5de36a54f061f457743c9cde1d8b46:
->
->   KVM: selftests: Fix RISC-V compilation (2024-06-06 15:53:16 +0530)
->
-> are available in the Git repository at:
->
->   https://github.com/kvm-riscv/linux.git tags/kvm-riscv-6.11-1
->
-> for you to fetch changes up to e325618349cdc1fbbe63574080249730e7cff9ea:
->
->   RISC-V: KVM: Redirect AMO load/store access fault traps to guest
-> (2024-06-26 18:37:41 +0530)
->
-> ----------------------------------------------------------------
-> KVM/riscv changes for 6.11
->
-> - Redirect AMO load/store access fault traps to guest
-> - Perf kvm stat support for RISC-V
-> - Use HW IMSIC guest files when available
->
-> ----------------------------------------------------------------
-> Anup Patel (2):
->       RISC-V: KVM: Share APLIC and IMSIC defines with irqchip drivers
->       RISC-V: KVM: Use IMSIC guest files when available
->
-> Shenlin Liang (2):
->       RISCV: KVM: add tracepoints for entry and exit events
->       perf kvm/riscv: Port perf kvm stat to RISC-V
->
-> Yu-Wei Hsu (1):
->       RISC-V: KVM: Redirect AMO load/store access fault traps to guest
->
->  arch/riscv/include/asm/kvm_aia_aplic.h             | 58 ----------------
->  arch/riscv/include/asm/kvm_aia_imsic.h             | 38 -----------
->  arch/riscv/kvm/aia.c                               | 35 ++++++----
->  arch/riscv/kvm/aia_aplic.c                         |  2 +-
->  arch/riscv/kvm/aia_device.c                        |  2 +-
->  arch/riscv/kvm/aia_imsic.c                         |  2 +-
->  arch/riscv/kvm/trace.h                             | 67 +++++++++++++++++++
->  arch/riscv/kvm/vcpu.c                              |  7 ++
->  arch/riscv/kvm/vcpu_exit.c                         |  2 +
->  tools/perf/arch/riscv/Makefile                     |  1 +
->  tools/perf/arch/riscv/util/Build                   |  1 +
->  tools/perf/arch/riscv/util/kvm-stat.c              | 78 ++++++++++++++++++++++
->  tools/perf/arch/riscv/util/riscv_exception_types.h | 35 ++++++++++
->  13 files changed, 215 insertions(+), 113 deletions(-)
->  delete mode 100644 arch/riscv/include/asm/kvm_aia_aplic.h
->  delete mode 100644 arch/riscv/include/asm/kvm_aia_imsic.h
->  create mode 100644 arch/riscv/kvm/trace.h
->  create mode 100644 tools/perf/arch/riscv/util/kvm-stat.c
->  create mode 100644 tools/perf/arch/riscv/util/riscv_exception_types.h
->
+On Fri, 26 Apr 2024 12:08:20 +0200 you wrote:
+> Zawrs provides two instructions (wrs.nto and wrs.sto), where both are
+> meant to allow the hart to enter a low-power state while waiting on a
+> store to a memory location. The instructions also both wait an
+> implementation-defined "short" duration (unless the implementation
+> terminates the stall for another reason). The difference is that while
+> wrs.sto will terminate when the duration elapses, wrs.nto, depending on
+> configuration, will either just keep waiting or an ILL exception will be
+> raised. Linux will use wrs.nto, so if platforms have an implementation
+> which falls in the "just keep waiting" category (which is not expected),
+> then it should _not_ advertise Zawrs in the hardware description.
+> 
+> [...]
+
+Here is the summary with links:
+  - [v3,1/6] riscv: Provide a definition for 'pause'
+    https://git.kernel.org/riscv/c/6da111574baf
+  - [v3,2/6] dt-bindings: riscv: Add Zawrs ISA extension description
+    https://git.kernel.org/riscv/c/6d5852811600
+  - [v3,3/6] riscv: Add Zawrs support for spinlocks
+    https://git.kernel.org/riscv/c/b8ddb0df30f9
+  - [v3,4/6] riscv: hwprobe: export Zawrs ISA extension
+    https://git.kernel.org/riscv/c/244c18fbf64a
+  - [v3,5/6] KVM: riscv: Support guest wrs.nto
+    https://git.kernel.org/riscv/c/86d6a86e59e3
+  - [v3,6/6] KVM: riscv: selftests: Add Zawrs extension to get-reg-list test
+    https://git.kernel.org/riscv/c/f2c43c61160e
+
+You are awesome, thank you!
+-- 
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/patchwork/pwbot.html
+
 
 
