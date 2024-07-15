@@ -1,52 +1,67 @@
-From: patchwork-bot+linux-riscv@kernel.org <patchwork-bot+linux-riscv@kernel.org>
-Date: Sun, 14 Jul 2024 20:30:33 +0000
-Subject: [PATCH v3 0/6] riscv: Apply Zawrs when available
-In-Reply-To: <20240426100820.14762-8-ajones@ventanamicro.com>
-References: <20240426100820.14762-8-ajones@ventanamicro.com>
-Message-ID: <172098903362.7439.8760600001594796975.git-patchwork-notify@kernel.org>
+From: Palmer Dabbelt <palmer@dabbelt.com>
+Date: Mon, 15 Jul 2024 08:45:32 -0700 (PDT)
+Subject: [PATCH v3 4/6] riscv: hwprobe: export Zawrs ISA extension
+In-Reply-To: <20240426100820.14762-12-ajones@ventanamicro.com>
+Message-ID: <mhng-fca2e1e4-385d-4210-8814-680be3a2ee4d@palmer-ri-x1c9>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello:
+On Fri, 26 Apr 2024 03:08:24 PDT (-0700), ajones at ventanamicro.com wrote:
+> Export Zawrs ISA extension through hwprobe.
+>
+> Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
+> ---
+>  Documentation/arch/riscv/hwprobe.rst  | 4 ++++
+>  arch/riscv/include/uapi/asm/hwprobe.h | 1 +
+>  arch/riscv/kernel/sys_hwprobe.c       | 1 +
+>  3 files changed, 6 insertions(+)
+>
+> diff --git a/Documentation/arch/riscv/hwprobe.rst b/Documentation/arch/riscv/hwprobe.rst
+> index b2bcc9eed9aa..e072ce8285d8 100644
+> --- a/Documentation/arch/riscv/hwprobe.rst
+> +++ b/Documentation/arch/riscv/hwprobe.rst
+> @@ -188,6 +188,10 @@ The following keys are defined:
+>         manual starting from commit 95cf1f9 ("Add changes requested by Ved
+>         during signoff")
+>
+> +  * :c:macro:`RISCV_HWPROBE_EXT_ZAWRS`: The Zawrs extension is supported as
+> +       ratified in commit 98918c844281 ("Merge pull request #1217 from
+> +       riscv/zawrs") of riscv-isa-manual.
+> +
+>  * :c:macro:`RISCV_HWPROBE_KEY_CPUPERF_0`: A bitmask that contains performance
+>    information about the selected set of processors.
+>
+> diff --git a/arch/riscv/include/uapi/asm/hwprobe.h b/arch/riscv/include/uapi/asm/hwprobe.h
+> index 9f2a8e3ff204..a5fca3878a32 100644
+> --- a/arch/riscv/include/uapi/asm/hwprobe.h
+> +++ b/arch/riscv/include/uapi/asm/hwprobe.h
+> @@ -59,6 +59,7 @@ struct riscv_hwprobe {
+>  #define		RISCV_HWPROBE_EXT_ZTSO		(1ULL << 33)
+>  #define		RISCV_HWPROBE_EXT_ZACAS		(1ULL << 34)
+>  #define		RISCV_HWPROBE_EXT_ZICOND	(1ULL << 35)
+> +#define		RISCV_HWPROBE_EXT_ZAWRS		(1ULL << 36)
 
-This series was applied to riscv/linux.git (for-next)
-by Palmer Dabbelt <palmer@rivosinc.com>:
+I bumped this to a non-conflicting key when I picked up the patch, I 
+figured that'd be better as then we don't have a uABI hiccup.  There 
+were some other merge coflicts that looked easy to be, but LMK if I 
+screwed something up as I'm not operating on a ton of sleep...
 
-On Fri, 26 Apr 2024 12:08:20 +0200 you wrote:
-> Zawrs provides two instructions (wrs.nto and wrs.sto), where both are
-> meant to allow the hart to enter a low-power state while waiting on a
-> store to a memory location. The instructions also both wait an
-> implementation-defined "short" duration (unless the implementation
-> terminates the stall for another reason). The difference is that while
-> wrs.sto will terminate when the duration elapses, wrs.nto, depending on
-> configuration, will either just keep waiting or an ILL exception will be
-> raised. Linux will use wrs.nto, so if platforms have an implementation
-> which falls in the "just keep waiting" category (which is not expected),
-> then it should _not_ advertise Zawrs in the hardware description.
-> 
-> [...]
-
-Here is the summary with links:
-  - [v3,1/6] riscv: Provide a definition for 'pause'
-    https://git.kernel.org/riscv/c/6da111574baf
-  - [v3,2/6] dt-bindings: riscv: Add Zawrs ISA extension description
-    https://git.kernel.org/riscv/c/6d5852811600
-  - [v3,3/6] riscv: Add Zawrs support for spinlocks
-    https://git.kernel.org/riscv/c/b8ddb0df30f9
-  - [v3,4/6] riscv: hwprobe: export Zawrs ISA extension
-    https://git.kernel.org/riscv/c/244c18fbf64a
-  - [v3,5/6] KVM: riscv: Support guest wrs.nto
-    https://git.kernel.org/riscv/c/86d6a86e59e3
-  - [v3,6/6] KVM: riscv: selftests: Add Zawrs extension to get-reg-list test
-    https://git.kernel.org/riscv/c/f2c43c61160e
-
-You are awesome, thank you!
--- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/patchwork/pwbot.html
-
-
+>  #define RISCV_HWPROBE_KEY_CPUPERF_0	5
+>  #define		RISCV_HWPROBE_MISALIGNED_UNKNOWN	(0 << 0)
+>  #define		RISCV_HWPROBE_MISALIGNED_EMULATED	(1 << 0)
+> diff --git a/arch/riscv/kernel/sys_hwprobe.c b/arch/riscv/kernel/sys_hwprobe.c
+> index 8cae41a502dd..b86e3531a45a 100644
+> --- a/arch/riscv/kernel/sys_hwprobe.c
+> +++ b/arch/riscv/kernel/sys_hwprobe.c
+> @@ -111,6 +111,7 @@ static void hwprobe_isa_ext0(struct riscv_hwprobe *pair,
+>  		EXT_KEY(ZTSO);
+>  		EXT_KEY(ZACAS);
+>  		EXT_KEY(ZICOND);
+> +		EXT_KEY(ZAWRS);
+>
+>  		if (has_vector()) {
+>  			EXT_KEY(ZVBB);
 
