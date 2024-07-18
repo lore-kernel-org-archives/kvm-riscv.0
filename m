@@ -1,471 +1,108 @@
-From: Andrew Jones <andrew.jones@linux.dev>
-Date: Mon, 15 Jul 2024 18:38:02 -0500
-Subject: [kvm-unit-tests PATCH v2 3/3] riscv: sbi: Add test for timer
- extension
-In-Reply-To: <20240707101053.74386-4-jamestiotio@gmail.com>
-References: <20240707101053.74386-1-jamestiotio@gmail.com>
- <20240707101053.74386-4-jamestiotio@gmail.com>
-Message-ID: <20240715-180ca4fcd886945070ec3a22@orel>
+From: zhouquan@iscas.ac.cn <zhouquan@iscas.ac.cn>
+Date: Thu, 18 Jul 2024 19:23:41 +0800
+Subject: [PATCH 1/2] riscv: perf: add guest vs host distinction
+In-Reply-To: <cover.1721271251.git.zhouquan@iscas.ac.cn>
+References: <cover.1721271251.git.zhouquan@iscas.ac.cn>
+Message-ID: <8e2d2f60fc30d64b6c69b38184a1b640c7b30003.1721271251.git.zhouquan@iscas.ac.cn>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sun, Jul 07, 2024 at 06:10:52PM GMT, James Raphael Tiovalen wrote:
-> Add a test for the set_timer function of the time extension. The test
-> checks that:
-> - The time extension is available
-> - The time counter monotonically increases
-> - The installed timer interrupt handler is called
-> - The timer interrupt is received within a reasonable time interval
-> - The timer interrupt pending bit is cleared after the set_timer SBI
->   call is made
-> - The timer interrupt can be cleared either by requesting a timer
->   interrupt infinitely far into the future or by masking the timer
->   interrupt
-> 
-> The timer interrupt delay can be set using the TIMER_DELAY environment
-> variable in microseconds. The default delay value is 1 second. Since the
-> interrupt can arrive a little later than the specified delay, allow some
-> margin of error. This margin of error can be specified via the
-> TIMER_MARGIN environment variable in microseconds. The default margin of
-> error is 1 second.
+From: Quan Zhou <zhouquan@iscas.ac.cn>
 
-1 second is too much since we want these tests to run really fast when
-possible. Let's use 200 ms.
+Introduce basic guest support in perf, enabling it to distinguish
+between PMU interrupts in the host or guest, and collect
+fundamental information.
 
-> 
-> This test has been verified on RV32 and RV64 with OpenSBI using QEMU.
-> 
-> Signed-off-by: James Raphael Tiovalen <jamestiotio@gmail.com>
-> ---
->  lib/riscv/asm/csr.h   |   7 +++
->  lib/riscv/asm/sbi.h   |   5 ++
->  lib/riscv/asm/setup.h |   1 +
->  lib/riscv/asm/timer.h |  30 ++++++++++++
->  lib/riscv/processor.c |   6 +++
->  lib/riscv/setup.c     |  24 ++++++++++
->  riscv/sbi.c           | 108 ++++++++++++++++++++++++++++++++++++++++++
->  7 files changed, 181 insertions(+)
->  create mode 100644 lib/riscv/asm/timer.h
-> 
-> diff --git a/lib/riscv/asm/csr.h b/lib/riscv/asm/csr.h
-> index b3c48e8e..dc05bfc9 100644
-> --- a/lib/riscv/asm/csr.h
-> +++ b/lib/riscv/asm/csr.h
-> @@ -4,12 +4,15 @@
->  #include <linux/const.h>
->  
->  #define CSR_SSTATUS		0x100
-> +#define CSR_SIE			0x104
->  #define CSR_STVEC		0x105
->  #define CSR_SSCRATCH		0x140
->  #define CSR_SEPC		0x141
->  #define CSR_SCAUSE		0x142
->  #define CSR_STVAL		0x143
-> +#define CSR_SIP			0x144
->  #define CSR_SATP		0x180
-> +#define CSR_TIME		0xc01
->  
->  #define SR_SIE			_AC(0x00000002, UL)
->  
-> @@ -50,6 +53,10 @@
->  #define IRQ_S_GEXT		12
->  #define IRQ_PMU_OVF		13
->  
-> +#define IE_TIE			(_AC(0x1, UL) << IRQ_S_TIMER)
-> +
-> +#define IP_TIP			IE_TIE
-> +
->  #ifndef __ASSEMBLY__
->  
->  #define csr_swap(csr, val)					\
-> diff --git a/lib/riscv/asm/sbi.h b/lib/riscv/asm/sbi.h
-> index d82a384d..84ce1bff 100644
-> --- a/lib/riscv/asm/sbi.h
-> +++ b/lib/riscv/asm/sbi.h
-> @@ -16,6 +16,7 @@
->  
->  enum sbi_ext_id {
->  	SBI_EXT_BASE = 0x10,
-> +	SBI_EXT_TIME = 0x54494d45,
->  	SBI_EXT_HSM = 0x48534d,
->  	SBI_EXT_SRST = 0x53525354,
->  };
-> @@ -37,6 +38,10 @@ enum sbi_ext_hsm_fid {
->  	SBI_EXT_HSM_HART_SUSPEND,
->  };
->  
-> +enum sbi_ext_time_fid {
-> +	SBI_EXT_TIME_SET_TIMER = 0,
-> +};
-> +
->  struct sbiret {
->  	long error;
->  	long value;
-> diff --git a/lib/riscv/asm/setup.h b/lib/riscv/asm/setup.h
-> index 7f81a705..5be252df 100644
-> --- a/lib/riscv/asm/setup.h
-> +++ b/lib/riscv/asm/setup.h
-> @@ -7,6 +7,7 @@
->  #define NR_CPUS 16
->  extern struct thread_info cpus[NR_CPUS];
->  extern int nr_cpus;
-> +extern uint64_t tb_hz;
+Signed-off-by: Quan Zhou <zhouquan@iscas.ac.cn>
+---
+ arch/riscv/include/asm/perf_event.h |  7 ++++++
+ arch/riscv/kernel/perf_callchain.c  | 38 +++++++++++++++++++++++++++++
+ 2 files changed, 45 insertions(+)
 
-Let's spell out timebase and maybe even just call it exactly
-the same name as the DT node, i.e. 'timebase_frequency'
+diff --git a/arch/riscv/include/asm/perf_event.h b/arch/riscv/include/asm/perf_event.h
+index 665bbc9b2f84..5866d028aee5 100644
+--- a/arch/riscv/include/asm/perf_event.h
++++ b/arch/riscv/include/asm/perf_event.h
+@@ -8,13 +8,20 @@
+ #ifndef _ASM_RISCV_PERF_EVENT_H
+ #define _ASM_RISCV_PERF_EVENT_H
+ 
++#ifdef CONFIG_PERF_EVENTS
+ #include <linux/perf_event.h>
+ #define perf_arch_bpf_user_pt_regs(regs) (struct user_regs_struct *)regs
+ 
++extern unsigned long perf_instruction_pointer(struct pt_regs *regs);
++extern unsigned long perf_misc_flags(struct pt_regs *regs);
++#define perf_misc_flags(regs) perf_misc_flags(regs)
++
+ #define perf_arch_fetch_caller_regs(regs, __ip) { \
+ 	(regs)->epc = (__ip); \
+ 	(regs)->s0 = (unsigned long) __builtin_frame_address(0); \
+ 	(regs)->sp = current_stack_pointer; \
+ 	(regs)->status = SR_PP; \
+ }
++#endif
++
+ #endif /* _ASM_RISCV_PERF_EVENT_H */
+diff --git a/arch/riscv/kernel/perf_callchain.c b/arch/riscv/kernel/perf_callchain.c
+index 3348a61de7d9..c673dc6d9bd2 100644
+--- a/arch/riscv/kernel/perf_callchain.c
++++ b/arch/riscv/kernel/perf_callchain.c
+@@ -58,6 +58,11 @@ void perf_callchain_user(struct perf_callchain_entry_ctx *entry,
+ {
+ 	unsigned long fp = 0;
+ 
++	if (perf_guest_state()) {
++		/* TODO: We don't support guest os callchain now */
++		return;
++	}
++
+ 	fp = regs->s0;
+ 	perf_callchain_store(entry, regs->epc);
+ 
+@@ -74,5 +79,38 @@ static bool fill_callchain(void *entry, unsigned long pc)
+ void perf_callchain_kernel(struct perf_callchain_entry_ctx *entry,
+ 			   struct pt_regs *regs)
+ {
++	if (perf_guest_state()) {
++		/* TODO: We don't support guest os callchain now */
++		return;
++	}
++
+ 	walk_stackframe(NULL, regs, fill_callchain, entry);
+ }
++
++unsigned long perf_instruction_pointer(struct pt_regs *regs)
++{
++	if (perf_guest_state())
++		return perf_guest_get_ip();
++
++	return instruction_pointer(regs);
++}
++
++unsigned long perf_misc_flags(struct pt_regs *regs)
++{
++	unsigned int guest_state = perf_guest_state();
++	int misc = 0;
++
++	if (guest_state) {
++		if (guest_state & PERF_GUEST_USER)
++			misc |= PERF_RECORD_MISC_GUEST_USER;
++		else
++			misc |= PERF_RECORD_MISC_GUEST_KERNEL;
++	} else {
++		if (user_mode(regs))
++			misc |= PERF_RECORD_MISC_USER;
++		else
++			misc |= PERF_RECORD_MISC_KERNEL;
++	}
++
++	return misc;
++}
+-- 
+2.34.1
 
->  int hartid_to_cpu(unsigned long hartid);
->  
->  void io_init(void);
-> diff --git a/lib/riscv/asm/timer.h b/lib/riscv/asm/timer.h
-> new file mode 100644
-> index 00000000..3eeb8344
-> --- /dev/null
-> +++ b/lib/riscv/asm/timer.h
-> @@ -0,0 +1,30 @@
-> +/* SPDX-License-Identifier: GPL-2.0-only */
-> +#ifndef _ASMRISCV_TIMER_H_
-> +#define _ASMRISCV_TIMER_H_
-> +
-> +#include <asm/csr.h>
-> +#include <asm/processor.h>
-> +
-> +extern uint64_t usec_to_cycles(uint64_t usec);
-> +
-> +static inline void timer_irq_enable(void)
-> +{
-> +	csr_set(CSR_SIE, IE_TIE);
-> +}
-> +
-> +static inline void timer_irq_disable(void)
-> +{
-> +	csr_clear(CSR_SIE, IE_TIE);
-> +}
-> +
-> +static inline uint64_t timer_get_cycles(void)
-> +{
-> +	return csr_read(CSR_TIME);
-> +}
-> +
-> +static inline bool timer_irq_pending(void)
-> +{
-> +	return csr_read(CSR_SIP) & IP_TIP;
-
-I don't think we need to add this function to asm/timer.h.
-I don't expect we'll be checking SIP for TIP much other
-than in its test, so this function or the open coded
-check can be put directly in the test code.
-
-> +}
-> +
-> +#endif /* _ASMRISCV_TIMER_H_ */
-> diff --git a/lib/riscv/processor.c b/lib/riscv/processor.c
-> index 0dffadc7..082b9d80 100644
-> --- a/lib/riscv/processor.c
-> +++ b/lib/riscv/processor.c
-> @@ -7,6 +7,7 @@
->  #include <asm/isa.h>
->  #include <asm/processor.h>
->  #include <asm/setup.h>
-> +#include <asm/timer.h>
->  
->  extern unsigned long ImageBase;
->  
-> @@ -82,3 +83,8 @@ void thread_info_init(void)
->  	isa_init(&cpus[cpu]);
->  	csr_write(CSR_SSCRATCH, &cpus[cpu]);
->  }
-> +
-> +uint64_t usec_to_cycles(uint64_t usec)
-> +{
-> +	return (tb_hz * usec) / 1000000;
-
-This function should be a static inline. It also seems like
-it belongs in something like a 'delay' component, rather than
-the 'processor' component. We should probably add the frequency
-getting and usec_to_cycles() support adding in a separate patch,
-possibly also introducing delay.{c,h} at the same time (see
-Arm's delay.{c,h})
-
-> +}
-> diff --git a/lib/riscv/setup.c b/lib/riscv/setup.c
-> index 50ffb0d0..b659c14e 100644
-> --- a/lib/riscv/setup.c
-> +++ b/lib/riscv/setup.c
-> @@ -20,6 +20,7 @@
->  #include <asm/page.h>
->  #include <asm/processor.h>
->  #include <asm/setup.h>
-> +#include <asm/timer.h>
->  
->  #define VA_BASE			((phys_addr_t)3 * SZ_1G)
->  #if __riscv_xlen == 64
-> @@ -38,6 +39,7 @@ u32 initrd_size;
->  
->  struct thread_info cpus[NR_CPUS];
->  int nr_cpus;
-> +uint64_t tb_hz;
->  
->  static struct mem_region riscv_mem_regions[NR_MEM_REGIONS + 1];
->  
-> @@ -67,6 +69,26 @@ static void cpu_init_acpi(void)
->  	assert_msg(false, "ACPI not available");
->  }
->  
-> +static int cpu_init_timer(const void *fdt)
-
-We're not initializing per-cpu timers so the name of this function isn't
-correct. It should be something like 'timer_get_frequency' and maybe it
-should live in lib/riscv/timer.c rather than setup.c
-
-> +{
-> +	const struct fdt_property *prop;
-> +	u32 *data;
-> +	int cpus;
-> +
-> +	cpus = fdt_path_offset(fdt, "/cpus");
-> +	if (cpus < 0)
-> +		return cpus;
-
-We intend to assert on all non-zero return values so we could just
-make this function void and assert directly here. That would actually
-make it easier to debug since we'd see which assert fired, i.e. what
-exactly failed.
-
-> +
-> +	prop = fdt_get_property(fdt, cpus, "timebase-frequency", NULL);
-> +	if (prop == NULL)
-> +		return -1;
-> +
-> +	data = (u32 *)prop->data;
-> +	tb_hz = fdt32_to_cpu(*data);
-> +
-> +	return 0;
-> +}
-> +
->  static void cpu_init(void)
->  {
->  	int ret;
-> @@ -75,6 +97,8 @@ static void cpu_init(void)
->  	if (dt_available()) {
->  		ret = dt_for_each_cpu_node(cpu_set_fdt, NULL);
->  		assert(ret == 0);
-> +		ret = cpu_init_timer(dt_fdt());
-> +		assert(ret == 0);
-
-I think we should call timer_get_frequency() directly from setup()
-and setup_efi() (please also test with EFI) and have a
-
- assert_msg(!dt_available(), "ACPI not yet supported");
-
-at the top of timer_get_frequency().
-
->  	} else {
->  		cpu_init_acpi();
->  	}
-> diff --git a/riscv/sbi.c b/riscv/sbi.c
-> index 762e9711..a1a9ce84 100644
-> --- a/riscv/sbi.c
-> +++ b/riscv/sbi.c
-> @@ -6,7 +6,14 @@
->   */
->  #include <libcflat.h>
->  #include <stdlib.h>
-> +#include <asm/barrier.h>
-> +#include <asm/csr.h>
-> +#include <asm/processor.h>
->  #include <asm/sbi.h>
-> +#include <asm/timer.h>
-> +
-> +static bool timer_works;
-> +static bool mask_timer_irq;
->  
->  static void help(void)
->  {
-> @@ -19,6 +26,27 @@ static struct sbiret __base_sbi_ecall(int fid, unsigned long arg0)
->  	return sbi_ecall(SBI_EXT_BASE, fid, arg0, 0, 0, 0, 0, 0);
->  }
->  
-> +static struct sbiret __time_sbi_ecall(unsigned long stime_value)
-> +{
-> +	return sbi_ecall(SBI_EXT_TIME, SBI_EXT_TIME_SET_TIMER, stime_value, 0, 0, 0, 0, 0);
-> +}
-> +
-> +static void timer_irq_handler(struct pt_regs *regs)
-> +{
-> +	if (timer_works)
-> +		report_abort("timer interrupt received multiple times");
-
-We should generally avoid doing too much in an interrupt handler as
-it can add delays to our expected interrupt arrivals, etc. This is
-why we have variables like 'timer_works'. We only set the variable
-in the handler and then, back in normal context, we look at the
-variable to decide what we should do.
-
-> +
-> +	timer_works = true;
-> +	report(timer_irq_pending(), "pending timer interrupt bit set");
-> +
-> +	if (mask_timer_irq)
-> +		timer_irq_disable();
-> +	else {
-> +		__time_sbi_ecall(-1);
-> +		report(!timer_irq_pending(), "pending timer interrupt bit cleared");
-> +	}
-> +}
-> +
->  static bool env_or_skip(const char *env)
->  {
->  	if (!getenv(env)) {
-> @@ -112,6 +140,85 @@ static void check_base(void)
->  	report_prefix_pop();
->  }
->  
-> +static void check_time(void)
-> +{
-> +	struct sbiret ret;
-> +	unsigned long begin, end, duration;
-> +	unsigned long delay = getenv("TIMER_DELAY")
-> +							? strtol(getenv("TIMER_DELAY"), NULL, 0)
-> +							: 1000000;
-> +	unsigned long margin = getenv("TIMER_MARGIN")
-> +							? strtol(getenv("TIMER_MARGIN"), NULL, 0)
-> +							: 1000000;
-
-Put the '?' part of the ternary on the same line as the '='.
-
-foo = bar ? x
-          : y;
-
-> +
-> +	delay = usec_to_cycles(delay);
-> +	margin = usec_to_cycles(margin);
-> +
-> +	report_prefix_push("time");
-> +
-> +	ret = __base_sbi_ecall(SBI_EXT_BASE_PROBE_EXT, SBI_EXT_TIME);
-> +
-> +	if (ret.error) {
-> +		report_fail("probing for time extension failed");
-> +		report_prefix_pop();
-> +		return;
-> +	}
-
-See my suggestion in Cade's patch about adding sbi_probe() which asserts
-on ret.error.
-
-> +
-> +	if (!ret.value) {
-> +		report_skip("time extension not available");
-> +		report_prefix_pop();
-> +		return;
-> +	}
-> +
-> +	begin = timer_get_cycles();
-> +	while ((end = timer_get_cycles()) <= begin)
-> +		cpu_relax();
-> +	assert(begin < end);
-
-This will always be true since we loop until it's true.
-We should just do
-
- begin = timer_get_cycles();
- delay(d);
- end = timer_get_cycles();
- assert(begin + usec_to_cycles(d) <= end);
-
-(which means we need the 'delay' component)
-
-> +
-> +	report_prefix_push("set_timer");
-> +
-> +	install_irq_handler(IRQ_S_TIMER, timer_irq_handler);
-> +	local_irq_enable();
-> +	timer_irq_enable();
-
-Before enabling the timer irq we should make sure stimecmp is -1
-when we have the Sstc extension.
-
-> +
-> +	begin = timer_get_cycles();
-> +	ret = __time_sbi_ecall(begin + delay);
-> +
-> +	if (ret.error)
-> +		report_fail("setting timer failed");
-
-This should be something like
-
-  report(!ret.error, "set timer");
-  if (ret.error)
-     report_info("set timer failed with %ld\n", ret.error);
-
-Hmm, the spec doesn't actually say what to expect for ret.error and
-ret.value. We can still test for !ret.error though, I guess... We
-should probably also clarify the spec, please open a PR.
-
-> +
-> +	report(!timer_irq_pending(), "pending timer interrupt bit cleared");
-> +
-> +	while ((end = timer_get_cycles()) <= (begin + delay + margin) && !timer_works)
-> +		cpu_relax();
-> +
-> +	report(timer_works, "timer interrupt received");
-> +
-> +	if (timer_works) {
-> +		duration = end - begin;
-> +		report(duration >= delay && duration <= (delay + margin), "timer delay honored");
-> +	}
-> +
-> +	timer_works = false;
-> +	mask_timer_irq = true;
-> +	begin = timer_get_cycles();
-> +	ret = __time_sbi_ecall(begin + delay);
-> +
-> +	if (ret.error)
-> +		report_fail("setting timer failed");
-
-same comment as above
-
-> +
-> +	while ((end = timer_get_cycles()) <= (begin + delay + margin) && !timer_works)
-> +		cpu_relax();
-> +
-> +	report(timer_works, "timer interrupt received");
-
-This should have a different text than above. Something like
-
- "timer interrupt received for mask irq test"
-
-We should probably repeat the check that the interrupt arrived within the
-appropriate margin too (and also ensure it's text is different from the
-test above)
-
-> +
-> +	local_irq_disable();
-> +	install_irq_handler(IRQ_S_TIMER, NULL);
-> +
-> +	report_prefix_pop();
-> +	report_prefix_pop();
-> +}
-> +
->  int main(int argc, char **argv)
->  {
->  
-> @@ -122,6 +229,7 @@ int main(int argc, char **argv)
->  
->  	report_prefix_push("sbi");
->  	check_base();
-> +	check_time();
->  
->  	return report_summary();
->  }
-> -- 
-> 2.43.0
-> 
-
-Thanks,
-drew
 
