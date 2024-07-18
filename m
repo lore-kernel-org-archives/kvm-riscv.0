@@ -1,127 +1,186 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Thu, 18 Jul 2024 12:09:53 -0500
-Subject: [PATCH 2/2] riscv: KVM: add basic support for host vs guest
- profiling
-In-Reply-To: <fbf8a9fcca05a1b554ac0d01b0c46fbb6263c435.1721271251.git.zhouquan@iscas.ac.cn>
-References: <cover.1721271251.git.zhouquan@iscas.ac.cn>
- <fbf8a9fcca05a1b554ac0d01b0c46fbb6263c435.1721271251.git.zhouquan@iscas.ac.cn>
-Message-ID: <20240718-f39bdec648fc285ffe46cc3e@orel>
+From: Samuel Holland <samuel.holland@sifive.com>
+Date: Thu, 18 Jul 2024 18:35:19 -0500
+Subject: [PATCH v7 1/4] RISC-V: Add Svade and Svadu Extensions Support
+In-Reply-To: <20240712083850.4242-2-yongxuan.wang@sifive.com>
+References: <20240712083850.4242-1-yongxuan.wang@sifive.com>
+ <20240712083850.4242-2-yongxuan.wang@sifive.com>
+Message-ID: <c403de1d-cda8-45bc-a6a2-a92170ad8575@sifive.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Jul 18, 2024 at 07:23:51PM GMT, zhouquan at iscas.ac.cn wrote:
-> From: Quan Zhou <zhouquan@iscas.ac.cn>
+Hi Yong-Xuan,
+
+Two trivial comments below for if you send another version of the series.
+
+On 2024-07-12 3:38 AM, Yong-Xuan Wang wrote:
+> Svade and Svadu extensions represent two schemes for managing the PTE A/D
+> bits. When the PTE A/D bits need to be set, Svade extension intdicates
+> that a related page fault will be raised. In contrast, the Svadu extension
+> supports hardware updating of PTE A/D bits. Since the Svade extension is
+> mandatory and the Svadu extension is optional in RVA23 profile, by default
+> the M-mode firmware will enable the Svadu extension in the menvcfg CSR
+> when only Svadu is present in DT.
 > 
-> For the information collected on the host side, we need to
-> identify which data originates from the guest and record
-> these events separately. This can be achieved by having
-> KVM register perf callbacks.
+> This patch detects Svade and Svadu extensions from DT and adds
+> arch_has_hw_pte_young() to enable optimization in MGLRU and
+> __wp_page_copy_user() when we have the PTE A/D bits hardware updating
+> support.
 > 
-> Signed-off-by: Quan Zhou <zhouquan@iscas.ac.cn>
+> Co-developed-by: Jinyu Tang <tjytimi@163.com>
+> Signed-off-by: Jinyu Tang <tjytimi@163.com>
+> Signed-off-by: Yong-Xuan Wang <yongxuan.wang@sifive.com>
+> Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
 > ---
->  arch/riscv/include/asm/kvm_host.h |  6 ++++++
->  arch/riscv/kvm/Kconfig            |  1 +
->  arch/riscv/kvm/main.c             | 12 ++++++++++--
->  arch/riscv/kvm/vcpu.c             |  7 +++++++
->  4 files changed, 24 insertions(+), 2 deletions(-)
+>  arch/riscv/Kconfig               |  1 +
+>  arch/riscv/include/asm/csr.h     |  1 +
+>  arch/riscv/include/asm/hwcap.h   |  2 ++
+>  arch/riscv/include/asm/pgtable.h | 13 ++++++++++++-
+>  arch/riscv/kernel/cpufeature.c   | 32 ++++++++++++++++++++++++++++++++
+>  5 files changed, 48 insertions(+), 1 deletion(-)
 > 
-> diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
-> index d96281278586..b7bbe1c0c5dd 100644
-> --- a/arch/riscv/include/asm/kvm_host.h
-> +++ b/arch/riscv/include/asm/kvm_host.h
-> @@ -285,6 +285,12 @@ struct kvm_vcpu_arch {
->  	} sta;
->  };
->  
-> +/* TODO: A more explicit approach might be needed here than this simple one */
+> diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
+> index 0525ee2d63c7..3d705e28ff85 100644
+> --- a/arch/riscv/Kconfig
+> +++ b/arch/riscv/Kconfig
+> @@ -36,6 +36,7 @@ config RISCV
+>  	select ARCH_HAS_PMEM_API
+>  	select ARCH_HAS_PREPARE_SYNC_CORE_CMD
+>  	select ARCH_HAS_PTE_SPECIAL
+> +	select ARCH_HAS_HW_PTE_YOUNG
 
-Can you elaborate on this concern?
+These lines should be sorted alphabetically.
 
-> +static inline bool kvm_arch_pmi_in_guest(struct kvm_vcpu *vcpu)
-> +{
-> +	return IS_ENABLED(CONFIG_GUEST_PERF_EVENTS) && !!vcpu;
-> +}
-> +
->  static inline void kvm_arch_sync_events(struct kvm *kvm) {}
->  static inline void kvm_arch_sched_in(struct kvm_vcpu *vcpu, int cpu) {}
+>  	select ARCH_HAS_SET_DIRECT_MAP if MMU
+>  	select ARCH_HAS_SET_MEMORY if MMU
+>  	select ARCH_HAS_STRICT_KERNEL_RWX if MMU && !XIP_KERNEL
+> diff --git a/arch/riscv/include/asm/csr.h b/arch/riscv/include/asm/csr.h
+> index 25966995da04..524cd4131c71 100644
+> --- a/arch/riscv/include/asm/csr.h
+> +++ b/arch/riscv/include/asm/csr.h
+> @@ -195,6 +195,7 @@
+>  /* xENVCFG flags */
+>  #define ENVCFG_STCE			(_AC(1, ULL) << 63)
+>  #define ENVCFG_PBMTE			(_AC(1, ULL) << 62)
+> +#define ENVCFG_ADUE			(_AC(1, ULL) << 61)
+>  #define ENVCFG_CBZE			(_AC(1, UL) << 7)
+>  #define ENVCFG_CBCFE			(_AC(1, UL) << 6)
+>  #define ENVCFG_CBIE_SHIFT		4
+> diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
+> index e17d0078a651..35d7aa49785d 100644
+> --- a/arch/riscv/include/asm/hwcap.h
+> +++ b/arch/riscv/include/asm/hwcap.h
+> @@ -81,6 +81,8 @@
+>  #define RISCV_ISA_EXT_ZTSO		72
+>  #define RISCV_ISA_EXT_ZACAS		73
+>  #define RISCV_ISA_EXT_XANDESPMU		74
+> +#define RISCV_ISA_EXT_SVADE             75
+
+The number here should be aligned with tabs, like the surrounding lines.
+
+Regards,
+Samuel
+
+> +#define RISCV_ISA_EXT_SVADU		76
 >  
-> diff --git a/arch/riscv/kvm/Kconfig b/arch/riscv/kvm/Kconfig
-> index 26d1727f0550..0c3cbb0915ff 100644
-> --- a/arch/riscv/kvm/Kconfig
-> +++ b/arch/riscv/kvm/Kconfig
-> @@ -32,6 +32,7 @@ config KVM
->  	select KVM_XFER_TO_GUEST_WORK
->  	select KVM_GENERIC_MMU_NOTIFIER
->  	select SCHED_INFO
-> +	select GUEST_PERF_EVENTS if PERF_EVENTS
->  	help
->  	  Support hosting virtualized guest machines.
+>  #define RISCV_ISA_EXT_XLINUXENVCFG	127
 >  
-> diff --git a/arch/riscv/kvm/main.c b/arch/riscv/kvm/main.c
-> index bab2ec34cd87..734b48d8f6dd 100644
-> --- a/arch/riscv/kvm/main.c
-> +++ b/arch/riscv/kvm/main.c
-> @@ -51,6 +51,12 @@ void kvm_arch_hardware_disable(void)
->  	csr_write(CSR_HIDELEG, 0);
+> diff --git a/arch/riscv/include/asm/pgtable.h b/arch/riscv/include/asm/pgtable.h
+> index aad8b8ca51f1..ec0cdacd7da0 100644
+> --- a/arch/riscv/include/asm/pgtable.h
+> +++ b/arch/riscv/include/asm/pgtable.h
+> @@ -120,6 +120,7 @@
+>  #include <asm/tlbflush.h>
+>  #include <linux/mm_types.h>
+>  #include <asm/compat.h>
+> +#include <asm/cpufeature.h>
+>  
+>  #define __page_val_to_pfn(_val)  (((_val) & _PAGE_PFN_MASK) >> _PAGE_PFN_SHIFT)
+>  
+> @@ -288,7 +289,6 @@ static inline pte_t pud_pte(pud_t pud)
 >  }
 >  
-> +static void kvm_riscv_teardown(void)
-> +{
-> +	kvm_riscv_aia_exit();
-> +	kvm_unregister_perf_callbacks();
-> +}
-> +
->  static int __init riscv_kvm_init(void)
+>  #ifdef CONFIG_RISCV_ISA_SVNAPOT
+> -#include <asm/cpufeature.h>
+>  
+>  static __always_inline bool has_svnapot(void)
 >  {
->  	int rc;
-> @@ -105,9 +111,11 @@ static int __init riscv_kvm_init(void)
->  		kvm_info("AIA available with %d guest external interrupts\n",
->  			 kvm_riscv_aia_nr_hgei);
->  
-> +	kvm_register_perf_callbacks(NULL);
-> +
->  	rc = kvm_init(sizeof(struct kvm_vcpu), 0, THIS_MODULE);
->  	if (rc) {
-> -		kvm_riscv_aia_exit();
-> +		kvm_riscv_teardown();
->  		return rc;
->  	}
->  
-> @@ -117,7 +125,7 @@ module_init(riscv_kvm_init);
->  
->  static void __exit riscv_kvm_exit(void)
->  {
-> -	kvm_riscv_aia_exit();
-> +	kvm_riscv_teardown();
->  
->  	kvm_exit();
->  }
-> diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-> index 17e21df36cc1..c9d291865141 100644
-> --- a/arch/riscv/kvm/vcpu.c
-> +++ b/arch/riscv/kvm/vcpu.c
-> @@ -222,6 +222,13 @@ bool kvm_arch_vcpu_in_kernel(struct kvm_vcpu *vcpu)
->  	return (vcpu->arch.guest_context.sstatus & SR_SPP) ? true : false;
+> @@ -624,6 +624,17 @@ static inline pgprot_t pgprot_writecombine(pgprot_t _prot)
+>  	return __pgprot(prot);
 >  }
 >  
-> +#ifdef CONFIG_GUEST_PERF_EVENTS
-> +unsigned long kvm_arch_vcpu_get_ip(struct kvm_vcpu *vcpu)
+> +/*
+> + * Both Svade and Svadu control the hardware behavior when the PTE A/D bits need to be set. By
+> + * default the M-mode firmware enables the hardware updating scheme when only Svadu is present in
+> + * DT.
+> + */
+> +#define arch_has_hw_pte_young arch_has_hw_pte_young
+> +static inline bool arch_has_hw_pte_young(void)
 > +{
-> +	return vcpu->arch.guest_context.sepc;
+> +	return riscv_has_extension_unlikely(RISCV_ISA_EXT_SVADU);
 > +}
-> +#endif
 > +
->  vm_fault_t kvm_arch_vcpu_fault(struct kvm_vcpu *vcpu, struct vm_fault *vmf)
->  {
->  	return VM_FAULT_SIGBUS;
-> -- 
-> 2.34.1
->
+>  /*
+>   * THP functions
+>   */
+> diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
+> index 5ef48cb20ee1..b2c3fe945e89 100644
+> --- a/arch/riscv/kernel/cpufeature.c
+> +++ b/arch/riscv/kernel/cpufeature.c
+> @@ -301,6 +301,8 @@ const struct riscv_isa_ext_data riscv_isa_ext[] = {
+>  	__RISCV_ISA_EXT_DATA(ssaia, RISCV_ISA_EXT_SSAIA),
+>  	__RISCV_ISA_EXT_DATA(sscofpmf, RISCV_ISA_EXT_SSCOFPMF),
+>  	__RISCV_ISA_EXT_DATA(sstc, RISCV_ISA_EXT_SSTC),
+> +	__RISCV_ISA_EXT_DATA(svade, RISCV_ISA_EXT_SVADE),
+> +	__RISCV_ISA_EXT_DATA(svadu, RISCV_ISA_EXT_SVADU),
+>  	__RISCV_ISA_EXT_DATA(svinval, RISCV_ISA_EXT_SVINVAL),
+>  	__RISCV_ISA_EXT_DATA(svnapot, RISCV_ISA_EXT_SVNAPOT),
+>  	__RISCV_ISA_EXT_DATA(svpbmt, RISCV_ISA_EXT_SVPBMT),
+> @@ -554,6 +556,21 @@ static void __init riscv_fill_hwcap_from_isa_string(unsigned long *isa2hwcap)
+>  			clear_bit(RISCV_ISA_EXT_v, isainfo->isa);
+>  		}
+>  
+> +		/*
+> +		 * When neither Svade nor Svadu present in DT, it is technically
+> +		 * unknown whether the platform uses Svade or Svadu. Supervisor may
+> +		 * assume Svade to be present and enabled or it can discover based
+> +		 * on mvendorid, marchid, and mimpid. When both Svade and Svadu present
+> +		 * in DT, supervisor must assume Svadu turned-off at boot time. To use
+> +		 * Svadu, supervisor must explicitly enable it using the SBI FWFT extension.
+> +		 */
+> +		if (!test_bit(RISCV_ISA_EXT_SVADE, isainfo->isa) &&
+> +		    !test_bit(RISCV_ISA_EXT_SVADU, isainfo->isa))
+> +			set_bit(RISCV_ISA_EXT_SVADE, isainfo->isa);
+> +		else if (test_bit(RISCV_ISA_EXT_SVADE, isainfo->isa) &&
+> +			 test_bit(RISCV_ISA_EXT_SVADU, isainfo->isa))
+> +			clear_bit(RISCV_ISA_EXT_SVADU, isainfo->isa);
+> +
+>  		/*
+>  		 * All "okay" hart should have same isa. Set HWCAP based on
+>  		 * common capabilities of every "okay" hart, in case they don't
+> @@ -619,6 +636,21 @@ static int __init riscv_fill_hwcap_from_ext_list(unsigned long *isa2hwcap)
+>  
+>  		of_node_put(cpu_node);
+>  
+> +		/*
+> +		 * When neither Svade nor Svadu present in DT, it is technically
+> +		 * unknown whether the platform uses Svade or Svadu. Supervisor may
+> +		 * assume Svade to be present and enabled or it can discover based
+> +		 * on mvendorid, marchid, and mimpid. When both Svade and Svadu present
+> +		 * in DT, supervisor must assume Svadu turned-off at boot time. To use
+> +		 * Svadu, supervisor must explicitly enable it using the SBI FWFT extension.
+> +		 */
+> +		if (!test_bit(RISCV_ISA_EXT_SVADE, isainfo->isa) &&
+> +		    !test_bit(RISCV_ISA_EXT_SVADU, isainfo->isa))
+> +			set_bit(RISCV_ISA_EXT_SVADE, isainfo->isa);
+> +		else if (test_bit(RISCV_ISA_EXT_SVADE, isainfo->isa) &&
+> +			 test_bit(RISCV_ISA_EXT_SVADU, isainfo->isa))
+> +			clear_bit(RISCV_ISA_EXT_SVADU, isainfo->isa);
+> +
+>  		/*
+>  		 * All "okay" harts should have same isa. Set HWCAP based on
+>  		 * common capabilities of every "okay" hart, in case they don't.
 
-Otherwise,
-
-Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
 
