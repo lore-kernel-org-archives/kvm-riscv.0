@@ -1,66 +1,69 @@
 From: Anup Patel <apatel@ventanamicro.com>
-Date: Fri, 19 Jul 2024 21:39:00 +0530
-Subject: [PATCH 00/13] Accelerate KVM RISC-V when running as a guest
-Message-ID: <20240719160913.342027-1-apatel@ventanamicro.com>
+Date: Fri, 19 Jul 2024 21:39:01 +0530
+Subject: [PATCH 01/13] RISC-V: KVM: Order the object files alphabetically
+In-Reply-To: <20240719160913.342027-1-apatel@ventanamicro.com>
+References: <20240719160913.342027-1-apatel@ventanamicro.com>
+Message-ID: <20240719160913.342027-2-apatel@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The KVM RISC-V hypervisor might be running as a guest under some other
-host hypervisor in which case the complete H-extension functionality will
-be trap-n-emulated by the host hypervisor. In this case, the KVM RISC-V
-performance can be accelerated using the SBI nested acceleration (NACL)
-extension if the host hypervisor provides it.
+Order the object files alphabetically in the Makefile so that
+it is very predictable inserting new object files in the future.
 
-These series extends KVM RISC-V to use SBI NACL extension whenever
-underlying SBI implementation (aka host hypervisor) provides it.
+Signed-off-by: Anup Patel <apatel@ventanamicro.com>
+---
+ arch/riscv/kvm/Makefile | 26 ++++++++++++++------------
+ 1 file changed, 14 insertions(+), 12 deletions(-)
 
-These patches can also be found in the riscv_sbi_nested_v1 branch at:
-https://github.com/avpatel/linux.git
-
-To test these patches, run KVM RISC-V as Guest under latest Xvisor
-found at: https://github.com/xvisor/xvisor.git
-
-For the steps to test on Xvisor, refer the Xvisor documentation
-<xvisor_source>/docs/riscv/riscv64-qemu.txt with two small changes:
-
-1) In step#11, make sure compressed kvm.ko, guest kernel image, and
-   kvmtool are present in the rootfs.img
-2) In step#14, make sure AIA is available to Xvisor by using
-   "virt,aia=aplic-imsic" as the QEMU machine name.
-
-Anup Patel (13):
-  RISC-V: KVM: Order the object files alphabetically
-  RISC-V: KVM: Save/restore HSTATUS in C source
-  RISC-V: KVM: Save/restore SCOUNTEREN in C source
-  RISC-V: KVM: Break down the __kvm_riscv_switch_to() into macros
-  RISC-V: KVM: Replace aia_set_hvictl() with aia_hvictl_value()
-  RISC-V: KVM: Don't setup SGEI for zero guest external interrupts
-  RISC-V: Add defines for the SBI nested acceleration extension
-  RISC-V: KVM: Add common nested acceleration support
-  RISC-V: KVM: Use nacl_csr_xyz() for accessing H-extension CSRs
-  RISC-V: KVM: Use nacl_csr_xyz() for accessing AIA CSRs
-  RISC-V: KVM: Use SBI sync SRET call when available
-  RISC-V: KVM: Save trap CSRs in kvm_riscv_vcpu_enter_exit()
-  RISC-V: KVM: Use NACL HFENCEs for KVM request based HFENCEs
-
- arch/riscv/include/asm/kvm_nacl.h | 237 ++++++++++++++++++++++++++++++
- arch/riscv/include/asm/sbi.h      | 120 +++++++++++++++
- arch/riscv/kvm/Makefile           |  27 ++--
- arch/riscv/kvm/aia.c              | 114 +++++++++-----
- arch/riscv/kvm/main.c             |  53 ++++++-
- arch/riscv/kvm/mmu.c              |   4 +-
- arch/riscv/kvm/nacl.c             | 152 +++++++++++++++++++
- arch/riscv/kvm/tlb.c              |  57 ++++---
- arch/riscv/kvm/vcpu.c             | 184 +++++++++++++++++------
- arch/riscv/kvm/vcpu_switch.S      | 137 ++++++++++-------
- arch/riscv/kvm/vcpu_timer.c       |  28 ++--
- 11 files changed, 935 insertions(+), 178 deletions(-)
- create mode 100644 arch/riscv/include/asm/kvm_nacl.h
- create mode 100644 arch/riscv/kvm/nacl.c
-
+diff --git a/arch/riscv/kvm/Makefile b/arch/riscv/kvm/Makefile
+index c2cacfbc06a0..c1eac0d093de 100644
+--- a/arch/riscv/kvm/Makefile
++++ b/arch/riscv/kvm/Makefile
+@@ -9,27 +9,29 @@ include $(srctree)/virt/kvm/Makefile.kvm
+ 
+ obj-$(CONFIG_KVM) += kvm.o
+ 
++# Ordered alphabetically
++kvm-y += aia.o
++kvm-y += aia_aplic.o
++kvm-y += aia_device.o
++kvm-y += aia_imsic.o
+ kvm-y += main.o
+-kvm-y += vm.o
+-kvm-y += vmid.o
+-kvm-y += tlb.o
+ kvm-y += mmu.o
++kvm-y += tlb.o
+ kvm-y += vcpu.o
+ kvm-y += vcpu_exit.o
+ kvm-y += vcpu_fp.o
+-kvm-y += vcpu_vector.o
+ kvm-y += vcpu_insn.o
+ kvm-y += vcpu_onereg.o
+-kvm-y += vcpu_switch.o
++kvm-$(CONFIG_RISCV_PMU_SBI) += vcpu_pmu.o
+ kvm-y += vcpu_sbi.o
+-kvm-$(CONFIG_RISCV_SBI_V01) += vcpu_sbi_v01.o
+ kvm-y += vcpu_sbi_base.o
+-kvm-y += vcpu_sbi_replace.o
+ kvm-y += vcpu_sbi_hsm.o
++kvm-$(CONFIG_RISCV_PMU_SBI) += vcpu_sbi_pmu.o
++kvm-y += vcpu_sbi_replace.o
+ kvm-y += vcpu_sbi_sta.o
++kvm-$(CONFIG_RISCV_SBI_V01) += vcpu_sbi_v01.o
++kvm-y += vcpu_switch.o
+ kvm-y += vcpu_timer.o
+-kvm-$(CONFIG_RISCV_PMU_SBI) += vcpu_pmu.o vcpu_sbi_pmu.o
+-kvm-y += aia.o
+-kvm-y += aia_device.o
+-kvm-y += aia_aplic.o
+-kvm-y += aia_imsic.o
++kvm-y += vcpu_vector.o
++kvm-y += vm.o
++kvm-y += vmid.o
 -- 
 2.34.1
 
