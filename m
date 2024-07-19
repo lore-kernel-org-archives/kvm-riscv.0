@@ -1,9 +1,9 @@
 From: Anup Patel <apatel@ventanamicro.com>
-Date: Fri, 19 Jul 2024 21:39:09 +0530
-Subject: [PATCH 09/13] RISC-V: KVM: Use nacl_csr_xyz() for accessing H-extension CSRs
+Date: Fri, 19 Jul 2024 21:39:10 +0530
+Subject: [PATCH 10/13] RISC-V: KVM: Use nacl_csr_xyz() for accessing AIA CSRs
 In-Reply-To: <20240719160913.342027-1-apatel@ventanamicro.com>
 References: <20240719160913.342027-1-apatel@ventanamicro.com>
-Message-ID: <20240719160913.342027-10-apatel@ventanamicro.com>
+Message-ID: <20240719160913.342027-11-apatel@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -11,281 +11,221 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 When running under some other hypervisor, prefer nacl_csr_xyz()
-for accessing H-extension CSRs in the run-loop. This makes CSR
-access faster whenever SBI nested acceleration is available.
+for accessing AIA CSRs in the run-loop. This makes CSR access
+faster whenever SBI nested acceleration is available.
 
 Signed-off-by: Anup Patel <apatel@ventanamicro.com>
 ---
- arch/riscv/kvm/mmu.c        |   4 +-
- arch/riscv/kvm/vcpu.c       | 103 +++++++++++++++++++++++++-----------
- arch/riscv/kvm/vcpu_timer.c |  28 +++++-----
- 3 files changed, 87 insertions(+), 48 deletions(-)
+ arch/riscv/kvm/aia.c | 97 ++++++++++++++++++++++++++++----------------
+ 1 file changed, 63 insertions(+), 34 deletions(-)
 
-diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
-index b63650f9b966..45ace9138947 100644
---- a/arch/riscv/kvm/mmu.c
-+++ b/arch/riscv/kvm/mmu.c
-@@ -15,7 +15,7 @@
- #include <linux/vmalloc.h>
- #include <linux/kvm_host.h>
- #include <linux/sched/signal.h>
--#include <asm/csr.h>
+diff --git a/arch/riscv/kvm/aia.c b/arch/riscv/kvm/aia.c
+index 8ffae0330c89..dcced4db7fe8 100644
+--- a/arch/riscv/kvm/aia.c
++++ b/arch/riscv/kvm/aia.c
+@@ -16,6 +16,7 @@
+ #include <linux/percpu.h>
+ #include <linux/spinlock.h>
+ #include <asm/cpufeature.h>
 +#include <asm/kvm_nacl.h>
- #include <asm/page.h>
- #include <asm/pgtable.h>
  
-@@ -732,7 +732,7 @@ void kvm_riscv_gstage_update_hgatp(struct kvm_vcpu *vcpu)
- 	hgatp |= (READ_ONCE(k->vmid.vmid) << HGATP_VMID_SHIFT) & HGATP_VMID;
- 	hgatp |= (k->pgd_phys >> PAGE_SHIFT) & HGATP_PPN;
+ struct aia_hgei_control {
+ 	raw_spinlock_t lock;
+@@ -88,7 +89,7 @@ void kvm_riscv_vcpu_aia_sync_interrupts(struct kvm_vcpu *vcpu)
+ 	struct kvm_vcpu_aia_csr *csr = &vcpu->arch.aia_context.guest_csr;
  
--	csr_write(CSR_HGATP, hgatp);
-+	ncsr_write(CSR_HGATP, hgatp);
+ 	if (kvm_riscv_aia_available())
+-		csr->vsieh = csr_read(CSR_VSIEH);
++		csr->vsieh = ncsr_read(CSR_VSIEH);
+ }
+ #endif
  
- 	if (!kvm_riscv_gstage_vmid_bits())
- 		kvm_riscv_local_hfence_gvma_all();
-diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-index 957e1a5e081b..00baaf1b0136 100644
---- a/arch/riscv/kvm/vcpu.c
-+++ b/arch/riscv/kvm/vcpu.c
-@@ -17,8 +17,8 @@
- #include <linux/sched/signal.h>
- #include <linux/fs.h>
- #include <linux/kvm_host.h>
--#include <asm/csr.h>
- #include <asm/cacheflush.h>
-+#include <asm/kvm_nacl.h>
- #include <asm/kvm_vcpu_vector.h>
+@@ -115,7 +116,7 @@ bool kvm_riscv_vcpu_aia_has_interrupts(struct kvm_vcpu *vcpu, u64 mask)
  
- #define CREATE_TRACE_POINTS
-@@ -361,10 +361,10 @@ void kvm_riscv_vcpu_sync_interrupts(struct kvm_vcpu *vcpu)
- 	struct kvm_vcpu_csr *csr = &vcpu->arch.guest_csr;
+ 	hgei = aia_find_hgei(vcpu);
+ 	if (hgei > 0)
+-		return !!(csr_read(CSR_HGEIP) & BIT(hgei));
++		return !!(ncsr_read(CSR_HGEIP) & BIT(hgei));
  
- 	/* Read current HVIP and VSIE CSRs */
--	csr->vsie = csr_read(CSR_VSIE);
-+	csr->vsie = ncsr_read(CSR_VSIE);
+ 	return false;
+ }
+@@ -128,45 +129,73 @@ void kvm_riscv_vcpu_aia_update_hvip(struct kvm_vcpu *vcpu)
+ 		return;
  
- 	/* Sync-up HVIP.VSSIP bit changes does by Guest */
--	hvip = csr_read(CSR_HVIP);
-+	hvip = ncsr_read(CSR_HVIP);
- 	if ((csr->hvip ^ hvip) & (1UL << IRQ_VS_SOFT)) {
- 		if (hvip & (1UL << IRQ_VS_SOFT)) {
- 			if (!test_and_set_bit(IRQ_VS_SOFT,
-@@ -561,26 +561,49 @@ static void kvm_riscv_vcpu_setup_config(struct kvm_vcpu *vcpu)
+ #ifdef CONFIG_32BIT
+-	csr_write(CSR_HVIPH, vcpu->arch.aia_context.guest_csr.hviph);
++	ncsr_write(CSR_HVIPH, vcpu->arch.aia_context.guest_csr.hviph);
+ #endif
+-	csr_write(CSR_HVICTL, aia_hvictl_value(!!(csr->hvip & BIT(IRQ_VS_EXT))));
++	ncsr_write(CSR_HVICTL, aia_hvictl_value(!!(csr->hvip & BIT(IRQ_VS_EXT))));
+ }
  
- void kvm_arch_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
+ void kvm_riscv_vcpu_aia_load(struct kvm_vcpu *vcpu, int cpu)
  {
+ 	struct kvm_vcpu_aia_csr *csr = &vcpu->arch.aia_context.guest_csr;
 +	void *nsh;
- 	struct kvm_vcpu_csr *csr = &vcpu->arch.guest_csr;
- 	struct kvm_vcpu_config *cfg = &vcpu->arch.cfg;
  
--	csr_write(CSR_VSSTATUS, csr->vsstatus);
--	csr_write(CSR_VSIE, csr->vsie);
--	csr_write(CSR_VSTVEC, csr->vstvec);
--	csr_write(CSR_VSSCRATCH, csr->vsscratch);
--	csr_write(CSR_VSEPC, csr->vsepc);
--	csr_write(CSR_VSCAUSE, csr->vscause);
--	csr_write(CSR_VSTVAL, csr->vstval);
--	csr_write(CSR_HEDELEG, cfg->hedeleg);
--	csr_write(CSR_HVIP, csr->hvip);
--	csr_write(CSR_VSATP, csr->vsatp);
--	csr_write(CSR_HENVCFG, cfg->henvcfg);
--	if (IS_ENABLED(CONFIG_32BIT))
--		csr_write(CSR_HENVCFGH, cfg->henvcfg >> 32);
--	if (riscv_has_extension_unlikely(RISCV_ISA_EXT_SMSTATEEN)) {
--		csr_write(CSR_HSTATEEN0, cfg->hstateen0);
+ 	if (!kvm_riscv_aia_available())
+ 		return;
+ 
+-	csr_write(CSR_VSISELECT, csr->vsiselect);
+-	csr_write(CSR_HVIPRIO1, csr->hviprio1);
+-	csr_write(CSR_HVIPRIO2, csr->hviprio2);
 +	if (kvm_riscv_nacl_sync_csr_available()) {
 +		nsh = nacl_shmem();
-+		nacl_csr_write(nsh, CSR_VSSTATUS, csr->vsstatus);
-+		nacl_csr_write(nsh, CSR_VSIE, csr->vsie);
-+		nacl_csr_write(nsh, CSR_VSTVEC, csr->vstvec);
-+		nacl_csr_write(nsh, CSR_VSSCRATCH, csr->vsscratch);
-+		nacl_csr_write(nsh, CSR_VSEPC, csr->vsepc);
-+		nacl_csr_write(nsh, CSR_VSCAUSE, csr->vscause);
-+		nacl_csr_write(nsh, CSR_VSTVAL, csr->vstval);
-+		nacl_csr_write(nsh, CSR_HEDELEG, cfg->hedeleg);
-+		nacl_csr_write(nsh, CSR_HVIP, csr->hvip);
-+		nacl_csr_write(nsh, CSR_VSATP, csr->vsatp);
-+		nacl_csr_write(nsh, CSR_HENVCFG, cfg->henvcfg);
-+		if (IS_ENABLED(CONFIG_32BIT))
-+			nacl_csr_write(nsh, CSR_HENVCFGH, cfg->henvcfg >> 32);
-+		if (riscv_has_extension_unlikely(RISCV_ISA_EXT_SMSTATEEN)) {
-+			nacl_csr_write(nsh, CSR_HSTATEEN0, cfg->hstateen0);
-+			if (IS_ENABLED(CONFIG_32BIT))
-+				nacl_csr_write(nsh, CSR_HSTATEEN0H, cfg->hstateen0 >> 32);
-+		}
++		nacl_csr_write(nsh, CSR_VSISELECT, csr->vsiselect);
++		nacl_csr_write(nsh, CSR_HVIPRIO1, csr->hviprio1);
++		nacl_csr_write(nsh, CSR_HVIPRIO2, csr->hviprio2);
++#ifdef CONFIG_32BIT
++		nacl_csr_write(nsh, CSR_VSIEH, csr->vsieh);
++		nacl_csr_write(nsh, CSR_HVIPH, csr->hviph);
++		nacl_csr_write(nsh, CSR_HVIPRIO1H, csr->hviprio1h);
++		nacl_csr_write(nsh, CSR_HVIPRIO2H, csr->hviprio2h);
++#endif
 +	} else {
-+		csr_write(CSR_VSSTATUS, csr->vsstatus);
-+		csr_write(CSR_VSIE, csr->vsie);
-+		csr_write(CSR_VSTVEC, csr->vstvec);
-+		csr_write(CSR_VSSCRATCH, csr->vsscratch);
-+		csr_write(CSR_VSEPC, csr->vsepc);
-+		csr_write(CSR_VSCAUSE, csr->vscause);
-+		csr_write(CSR_VSTVAL, csr->vstval);
-+		csr_write(CSR_HEDELEG, cfg->hedeleg);
-+		csr_write(CSR_HVIP, csr->hvip);
-+		csr_write(CSR_VSATP, csr->vsatp);
-+		csr_write(CSR_HENVCFG, cfg->henvcfg);
- 		if (IS_ENABLED(CONFIG_32BIT))
--			csr_write(CSR_HSTATEEN0H, cfg->hstateen0 >> 32);
-+			csr_write(CSR_HENVCFGH, cfg->henvcfg >> 32);
-+		if (riscv_has_extension_unlikely(RISCV_ISA_EXT_SMSTATEEN)) {
-+			csr_write(CSR_HSTATEEN0, cfg->hstateen0);
-+			if (IS_ENABLED(CONFIG_32BIT))
-+				csr_write(CSR_HSTATEEN0H, cfg->hstateen0 >> 32);
-+		}
- 	}
- 
- 	kvm_riscv_gstage_update_hgatp(vcpu);
-@@ -603,6 +626,7 @@ void kvm_arch_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
- 
- void kvm_arch_vcpu_put(struct kvm_vcpu *vcpu)
- {
-+	void *nsh;
- 	struct kvm_vcpu_csr *csr = &vcpu->arch.guest_csr;
- 
- 	vcpu->cpu = -1;
-@@ -618,15 +642,28 @@ void kvm_arch_vcpu_put(struct kvm_vcpu *vcpu)
- 					 vcpu->arch.isa);
- 	kvm_riscv_vcpu_host_vector_restore(&vcpu->arch.host_context);
- 
--	csr->vsstatus = csr_read(CSR_VSSTATUS);
--	csr->vsie = csr_read(CSR_VSIE);
--	csr->vstvec = csr_read(CSR_VSTVEC);
--	csr->vsscratch = csr_read(CSR_VSSCRATCH);
--	csr->vsepc = csr_read(CSR_VSEPC);
--	csr->vscause = csr_read(CSR_VSCAUSE);
--	csr->vstval = csr_read(CSR_VSTVAL);
--	csr->hvip = csr_read(CSR_HVIP);
--	csr->vsatp = csr_read(CSR_VSATP);
-+	if (kvm_riscv_nacl_available()) {
-+		nsh = nacl_shmem();
-+		csr->vsstatus = nacl_csr_read(nsh, CSR_VSSTATUS);
-+		csr->vsie = nacl_csr_read(nsh, CSR_VSIE);
-+		csr->vstvec = nacl_csr_read(nsh, CSR_VSTVEC);
-+		csr->vsscratch = nacl_csr_read(nsh, CSR_VSSCRATCH);
-+		csr->vsepc = nacl_csr_read(nsh, CSR_VSEPC);
-+		csr->vscause = nacl_csr_read(nsh, CSR_VSCAUSE);
-+		csr->vstval = nacl_csr_read(nsh, CSR_VSTVAL);
-+		csr->hvip = nacl_csr_read(nsh, CSR_HVIP);
-+		csr->vsatp = nacl_csr_read(nsh, CSR_VSATP);
-+	} else {
-+		csr->vsstatus = csr_read(CSR_VSSTATUS);
-+		csr->vsie = csr_read(CSR_VSIE);
-+		csr->vstvec = csr_read(CSR_VSTVEC);
-+		csr->vsscratch = csr_read(CSR_VSSCRATCH);
-+		csr->vsepc = csr_read(CSR_VSEPC);
-+		csr->vscause = csr_read(CSR_VSCAUSE);
-+		csr->vstval = csr_read(CSR_VSTVAL);
-+		csr->hvip = csr_read(CSR_HVIP);
-+		csr->vsatp = csr_read(CSR_VSATP);
++		csr_write(CSR_VSISELECT, csr->vsiselect);
++		csr_write(CSR_HVIPRIO1, csr->hviprio1);
++		csr_write(CSR_HVIPRIO2, csr->hviprio2);
+ #ifdef CONFIG_32BIT
+-	csr_write(CSR_VSIEH, csr->vsieh);
+-	csr_write(CSR_HVIPH, csr->hviph);
+-	csr_write(CSR_HVIPRIO1H, csr->hviprio1h);
+-	csr_write(CSR_HVIPRIO2H, csr->hviprio2h);
++		csr_write(CSR_VSIEH, csr->vsieh);
++		csr_write(CSR_HVIPH, csr->hviph);
++		csr_write(CSR_HVIPRIO1H, csr->hviprio1h);
++		csr_write(CSR_HVIPRIO2H, csr->hviprio2h);
+ #endif
 +	}
  }
  
- static void kvm_riscv_check_vcpu_requests(struct kvm_vcpu *vcpu)
-@@ -681,7 +718,7 @@ static void kvm_riscv_update_hvip(struct kvm_vcpu *vcpu)
+ void kvm_riscv_vcpu_aia_put(struct kvm_vcpu *vcpu)
  {
- 	struct kvm_vcpu_csr *csr = &vcpu->arch.guest_csr;
+ 	struct kvm_vcpu_aia_csr *csr = &vcpu->arch.aia_context.guest_csr;
++	void *nsh;
  
--	csr_write(CSR_HVIP, csr->hvip);
-+	ncsr_write(CSR_HVIP, csr->hvip);
- 	kvm_riscv_vcpu_aia_update_hvip(vcpu);
- }
- 
-@@ -728,7 +765,9 @@ static void noinstr kvm_riscv_vcpu_enter_exit(struct kvm_vcpu *vcpu)
- 	kvm_riscv_vcpu_swap_in_guest_state(vcpu);
- 	guest_state_enter_irqoff();
- 
--	hcntx->hstatus = csr_swap(CSR_HSTATUS, gcntx->hstatus);
-+	hcntx->hstatus = ncsr_swap(CSR_HSTATUS, gcntx->hstatus);
-+
-+	nsync_csr(-1UL);
- 
- 	__kvm_riscv_switch_to(&vcpu->arch);
- 
-@@ -863,8 +902,8 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
- 		trap.sepc = vcpu->arch.guest_context.sepc;
- 		trap.scause = csr_read(CSR_SCAUSE);
- 		trap.stval = csr_read(CSR_STVAL);
--		trap.htval = csr_read(CSR_HTVAL);
--		trap.htinst = csr_read(CSR_HTINST);
-+		trap.htval = ncsr_read(CSR_HTVAL);
-+		trap.htinst = ncsr_read(CSR_HTINST);
- 
- 		/* Syncup interrupts state with HW */
- 		kvm_riscv_vcpu_sync_interrupts(vcpu);
-diff --git a/arch/riscv/kvm/vcpu_timer.c b/arch/riscv/kvm/vcpu_timer.c
-index 75486b25ac45..96e7a4e463f7 100644
---- a/arch/riscv/kvm/vcpu_timer.c
-+++ b/arch/riscv/kvm/vcpu_timer.c
-@@ -11,8 +11,8 @@
- #include <linux/kvm_host.h>
- #include <linux/uaccess.h>
- #include <clocksource/timer-riscv.h>
--#include <asm/csr.h>
- #include <asm/delay.h>
-+#include <asm/kvm_nacl.h>
- #include <asm/kvm_vcpu_timer.h>
- 
- static u64 kvm_riscv_current_cycles(struct kvm_guest_timer *gt)
-@@ -72,12 +72,12 @@ static int kvm_riscv_vcpu_timer_cancel(struct kvm_vcpu_timer *t)
- static int kvm_riscv_vcpu_update_vstimecmp(struct kvm_vcpu *vcpu, u64 ncycles)
- {
- #if defined(CONFIG_32BIT)
--		csr_write(CSR_VSTIMECMP, ncycles & 0xFFFFFFFF);
--		csr_write(CSR_VSTIMECMPH, ncycles >> 32);
-+	ncsr_write(CSR_VSTIMECMP, ncycles & 0xFFFFFFFF);
-+	ncsr_write(CSR_VSTIMECMPH, ncycles >> 32);
- #else
--		csr_write(CSR_VSTIMECMP, ncycles);
-+	ncsr_write(CSR_VSTIMECMP, ncycles);
- #endif
--		return 0;
-+	return 0;
- }
- 
- static int kvm_riscv_vcpu_update_hrtimer(struct kvm_vcpu *vcpu, u64 ncycles)
-@@ -289,10 +289,10 @@ static void kvm_riscv_vcpu_update_timedelta(struct kvm_vcpu *vcpu)
- 	struct kvm_guest_timer *gt = &vcpu->kvm->arch.timer;
- 
- #if defined(CONFIG_32BIT)
--	csr_write(CSR_HTIMEDELTA, (u32)(gt->time_delta));
--	csr_write(CSR_HTIMEDELTAH, (u32)(gt->time_delta >> 32));
-+	ncsr_write(CSR_HTIMEDELTA, (u32)(gt->time_delta));
-+	ncsr_write(CSR_HTIMEDELTAH, (u32)(gt->time_delta >> 32));
- #else
--	csr_write(CSR_HTIMEDELTA, gt->time_delta);
-+	ncsr_write(CSR_HTIMEDELTA, gt->time_delta);
- #endif
- }
- 
-@@ -306,10 +306,10 @@ void kvm_riscv_vcpu_timer_restore(struct kvm_vcpu *vcpu)
+ 	if (!kvm_riscv_aia_available())
  		return;
  
- #if defined(CONFIG_32BIT)
--	csr_write(CSR_VSTIMECMP, (u32)t->next_cycles);
--	csr_write(CSR_VSTIMECMPH, (u32)(t->next_cycles >> 32));
-+	ncsr_write(CSR_VSTIMECMP, (u32)t->next_cycles);
-+	ncsr_write(CSR_VSTIMECMPH, (u32)(t->next_cycles >> 32));
- #else
--	csr_write(CSR_VSTIMECMP, t->next_cycles);
-+	ncsr_write(CSR_VSTIMECMP, t->next_cycles);
+-	csr->vsiselect = csr_read(CSR_VSISELECT);
+-	csr->hviprio1 = csr_read(CSR_HVIPRIO1);
+-	csr->hviprio2 = csr_read(CSR_HVIPRIO2);
++	if (kvm_riscv_nacl_available()) {
++		nsh = nacl_shmem();
++		csr->vsiselect = nacl_csr_read(nsh, CSR_VSISELECT);
++		csr->hviprio1 = nacl_csr_read(nsh, CSR_HVIPRIO1);
++		csr->hviprio2 = nacl_csr_read(nsh, CSR_HVIPRIO2);
+ #ifdef CONFIG_32BIT
+-	csr->vsieh = csr_read(CSR_VSIEH);
+-	csr->hviph = csr_read(CSR_HVIPH);
+-	csr->hviprio1h = csr_read(CSR_HVIPRIO1H);
+-	csr->hviprio2h = csr_read(CSR_HVIPRIO2H);
++		csr->vsieh = nacl_csr_read(nsh, CSR_VSIEH);
++		csr->hviph = nacl_csr_read(nsh, CSR_HVIPH);
++		csr->hviprio1h = nacl_csr_read(nsh, CSR_HVIPRIO1H);
++		csr->hviprio2h = nacl_csr_read(nsh, CSR_HVIPRIO2H);
  #endif
- 
- 	/* timer should be enabled for the remaining operations */
-@@ -327,10 +327,10 @@ void kvm_riscv_vcpu_timer_sync(struct kvm_vcpu *vcpu)
- 		return;
- 
- #if defined(CONFIG_32BIT)
--	t->next_cycles = csr_read(CSR_VSTIMECMP);
--	t->next_cycles |= (u64)csr_read(CSR_VSTIMECMPH) << 32;
-+	t->next_cycles = ncsr_read(CSR_VSTIMECMP);
-+	t->next_cycles |= (u64)ncsr_read(CSR_VSTIMECMPH) << 32;
- #else
--	t->next_cycles = csr_read(CSR_VSTIMECMP);
-+	t->next_cycles = ncsr_read(CSR_VSTIMECMP);
- #endif
++	} else {
++		csr->vsiselect = csr_read(CSR_VSISELECT);
++		csr->hviprio1 = csr_read(CSR_HVIPRIO1);
++		csr->hviprio2 = csr_read(CSR_HVIPRIO2);
++#ifdef CONFIG_32BIT
++		csr->vsieh = csr_read(CSR_VSIEH);
++		csr->hviph = csr_read(CSR_HVIPH);
++		csr->hviprio1h = csr_read(CSR_HVIPRIO1H);
++		csr->hviprio2h = csr_read(CSR_HVIPRIO2H);
++#endif
++	}
  }
  
+ int kvm_riscv_vcpu_aia_get_csr(struct kvm_vcpu *vcpu,
+@@ -250,20 +279,20 @@ static u8 aia_get_iprio8(struct kvm_vcpu *vcpu, unsigned int irq)
+ 
+ 	switch (bitpos / BITS_PER_LONG) {
+ 	case 0:
+-		hviprio = csr_read(CSR_HVIPRIO1);
++		hviprio = ncsr_read(CSR_HVIPRIO1);
+ 		break;
+ 	case 1:
+ #ifndef CONFIG_32BIT
+-		hviprio = csr_read(CSR_HVIPRIO2);
++		hviprio = ncsr_read(CSR_HVIPRIO2);
+ 		break;
+ #else
+-		hviprio = csr_read(CSR_HVIPRIO1H);
++		hviprio = ncsr_read(CSR_HVIPRIO1H);
+ 		break;
+ 	case 2:
+-		hviprio = csr_read(CSR_HVIPRIO2);
++		hviprio = ncsr_read(CSR_HVIPRIO2);
+ 		break;
+ 	case 3:
+-		hviprio = csr_read(CSR_HVIPRIO2H);
++		hviprio = ncsr_read(CSR_HVIPRIO2H);
+ 		break;
+ #endif
+ 	default:
+@@ -283,20 +312,20 @@ static void aia_set_iprio8(struct kvm_vcpu *vcpu, unsigned int irq, u8 prio)
+ 
+ 	switch (bitpos / BITS_PER_LONG) {
+ 	case 0:
+-		hviprio = csr_read(CSR_HVIPRIO1);
++		hviprio = ncsr_read(CSR_HVIPRIO1);
+ 		break;
+ 	case 1:
+ #ifndef CONFIG_32BIT
+-		hviprio = csr_read(CSR_HVIPRIO2);
++		hviprio = ncsr_read(CSR_HVIPRIO2);
+ 		break;
+ #else
+-		hviprio = csr_read(CSR_HVIPRIO1H);
++		hviprio = ncsr_read(CSR_HVIPRIO1H);
+ 		break;
+ 	case 2:
+-		hviprio = csr_read(CSR_HVIPRIO2);
++		hviprio = ncsr_read(CSR_HVIPRIO2);
+ 		break;
+ 	case 3:
+-		hviprio = csr_read(CSR_HVIPRIO2H);
++		hviprio = ncsr_read(CSR_HVIPRIO2H);
+ 		break;
+ #endif
+ 	default:
+@@ -308,20 +337,20 @@ static void aia_set_iprio8(struct kvm_vcpu *vcpu, unsigned int irq, u8 prio)
+ 
+ 	switch (bitpos / BITS_PER_LONG) {
+ 	case 0:
+-		csr_write(CSR_HVIPRIO1, hviprio);
++		ncsr_write(CSR_HVIPRIO1, hviprio);
+ 		break;
+ 	case 1:
+ #ifndef CONFIG_32BIT
+-		csr_write(CSR_HVIPRIO2, hviprio);
++		ncsr_write(CSR_HVIPRIO2, hviprio);
+ 		break;
+ #else
+-		csr_write(CSR_HVIPRIO1H, hviprio);
++		ncsr_write(CSR_HVIPRIO1H, hviprio);
+ 		break;
+ 	case 2:
+-		csr_write(CSR_HVIPRIO2, hviprio);
++		ncsr_write(CSR_HVIPRIO2, hviprio);
+ 		break;
+ 	case 3:
+-		csr_write(CSR_HVIPRIO2H, hviprio);
++		ncsr_write(CSR_HVIPRIO2H, hviprio);
+ 		break;
+ #endif
+ 	default:
+@@ -377,7 +406,7 @@ int kvm_riscv_vcpu_aia_rmw_ireg(struct kvm_vcpu *vcpu, unsigned int csr_num,
+ 		return KVM_INSN_ILLEGAL_TRAP;
+ 
+ 	/* First try to emulate in kernel space */
+-	isel = csr_read(CSR_VSISELECT) & ISELECT_MASK;
++	isel = ncsr_read(CSR_VSISELECT) & ISELECT_MASK;
+ 	if (isel >= ISELECT_IPRIO0 && isel <= ISELECT_IPRIO15)
+ 		return aia_rmw_iprio(vcpu, isel, val, new_val, wr_mask);
+ 	else if (isel >= IMSIC_FIRST && isel <= IMSIC_LAST &&
 -- 
 2.34.1
 
