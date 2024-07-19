@@ -1,192 +1,128 @@
 From: Anup Patel <apatel@ventanamicro.com>
-Date: Fri, 19 Jul 2024 21:39:11 +0530
-Subject: [PATCH 11/13] RISC-V: KVM: Use SBI sync SRET call when available
+Date: Fri, 19 Jul 2024 21:39:13 +0530
+Subject: [PATCH 13/13] RISC-V: KVM: Use NACL HFENCEs for KVM request based HFENCEs
 In-Reply-To: <20240719160913.342027-1-apatel@ventanamicro.com>
 References: <20240719160913.342027-1-apatel@ventanamicro.com>
-Message-ID: <20240719160913.342027-12-apatel@ventanamicro.com>
+Message-ID: <20240719160913.342027-14-apatel@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Implement an optimized KVM world-switch using SBI sync SRET call
-when SBI nested acceleration extension is available. This improves
-KVM world-switch when KVM RISC-V is running as a Guest under some
-other hypervisor.
+When running under some other hypervisor, use SBI NACL based HFENCEs
+for TLB shoot-down via KVM requests. This makes HFENCEs faster whenever
+SBI nested acceleration is available.
 
 Signed-off-by: Anup Patel <apatel@ventanamicro.com>
 ---
- arch/riscv/include/asm/kvm_nacl.h | 32 +++++++++++++++++++++
- arch/riscv/kvm/vcpu.c             | 48 ++++++++++++++++++++++++++++---
- arch/riscv/kvm/vcpu_switch.S      | 29 +++++++++++++++++++
- 3 files changed, 105 insertions(+), 4 deletions(-)
+ arch/riscv/kvm/tlb.c | 57 +++++++++++++++++++++++++++++++-------------
+ 1 file changed, 40 insertions(+), 17 deletions(-)
 
-diff --git a/arch/riscv/include/asm/kvm_nacl.h b/arch/riscv/include/asm/kvm_nacl.h
-index a704e8000a58..5e74238ea525 100644
---- a/arch/riscv/include/asm/kvm_nacl.h
-+++ b/arch/riscv/include/asm/kvm_nacl.h
-@@ -12,6 +12,8 @@
+diff --git a/arch/riscv/kvm/tlb.c b/arch/riscv/kvm/tlb.c
+index 23c0e82b5103..2f91ea5f8493 100644
+--- a/arch/riscv/kvm/tlb.c
++++ b/arch/riscv/kvm/tlb.c
+@@ -14,6 +14,7 @@
  #include <asm/csr.h>
- #include <asm/sbi.h>
+ #include <asm/cpufeature.h>
+ #include <asm/insn-def.h>
++#include <asm/kvm_nacl.h>
  
-+struct kvm_vcpu_arch;
-+
- DECLARE_STATIC_KEY_FALSE(kvm_riscv_nacl_available);
- #define kvm_riscv_nacl_available() \
- 	static_branch_unlikely(&kvm_riscv_nacl_available)
-@@ -43,6 +45,10 @@ void __kvm_riscv_nacl_hfence(void *shmem,
- 			     unsigned long page_num,
- 			     unsigned long page_count);
+ #define has_svinval()	riscv_has_extension_unlikely(RISCV_ISA_EXT_SVINVAL)
  
-+void __kvm_riscv_nacl_switch_to(struct kvm_vcpu_arch *vcpu_arch,
-+				unsigned long sbi_ext_id,
-+				unsigned long sbi_func_id);
-+
- int kvm_riscv_nacl_enable(void);
+@@ -186,18 +187,24 @@ void kvm_riscv_fence_i_process(struct kvm_vcpu *vcpu)
  
- void kvm_riscv_nacl_disable(void);
-@@ -64,6 +70,32 @@ int kvm_riscv_nacl_init(void);
- #define nacl_shmem_fast()						\
- 	(kvm_riscv_nacl_available() ? nacl_shmem() : NULL)
- 
-+#define nacl_scratch_read_long(__shmem, __offset)			\
-+({									\
-+	unsigned long *__p = (__shmem) +				\
-+			     SBI_NACL_SHMEM_SCRATCH_OFFSET +		\
-+			     (__offset);				\
-+	lelong_to_cpu(*__p);						\
-+})
-+
-+#define nacl_scratch_write_long(__shmem, __offset, __val)		\
-+do {									\
-+	unsigned long *__p = (__shmem) +				\
-+			     SBI_NACL_SHMEM_SCRATCH_OFFSET +		\
-+			     (__offset);				\
-+	*__p = cpu_to_lelong(__val);					\
-+} while (0)
-+
-+#define nacl_scratch_write_longs(__shmem, __offset, __array, __count)	\
-+do {									\
-+	unsigned int __i;						\
-+	unsigned long *__p = (__shmem) +				\
-+			     SBI_NACL_SHMEM_SCRATCH_OFFSET +		\
-+			     (__offset);				\
-+	for (__i = 0; __i < (__count); __i++)				\
-+		__p[__i] = cpu_to_lelong((__array)[__i]);		\
-+} while (0)
-+
- #define nacl_sync_hfence(__e)						\
- 	sbi_ecall(SBI_EXT_NACL, SBI_EXT_NACL_SYNC_HFENCE,		\
- 		  (__e), 0, 0, 0, 0, 0)
-diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-index 00baaf1b0136..fe849fb1aaab 100644
---- a/arch/riscv/kvm/vcpu.c
-+++ b/arch/riscv/kvm/vcpu.c
-@@ -759,19 +759,59 @@ static __always_inline void kvm_riscv_vcpu_swap_in_host_state(struct kvm_vcpu *v
-  */
- static void noinstr kvm_riscv_vcpu_enter_exit(struct kvm_vcpu *vcpu)
+ void kvm_riscv_hfence_gvma_vmid_all_process(struct kvm_vcpu *vcpu)
  {
-+	void *nsh;
- 	struct kvm_cpu_context *gcntx = &vcpu->arch.guest_context;
- 	struct kvm_cpu_context *hcntx = &vcpu->arch.host_context;
+-	struct kvm_vmid *vmid;
++	struct kvm_vmid *v = &vcpu->kvm->arch.vmid;
++	unsigned long vmid = READ_ONCE(v->vmid);
  
- 	kvm_riscv_vcpu_swap_in_guest_state(vcpu);
- 	guest_state_enter_irqoff();
+-	vmid = &vcpu->kvm->arch.vmid;
+-	kvm_riscv_local_hfence_gvma_vmid_all(READ_ONCE(vmid->vmid));
++	if (kvm_riscv_nacl_available())
++		nacl_hfence_gvma_vmid_all(nacl_shmem(), vmid);
++	else
++		kvm_riscv_local_hfence_gvma_vmid_all(vmid);
+ }
  
--	hcntx->hstatus = ncsr_swap(CSR_HSTATUS, gcntx->hstatus);
-+	if (kvm_riscv_nacl_sync_sret_available()) {
-+		nsh = nacl_shmem();
+ void kvm_riscv_hfence_vvma_all_process(struct kvm_vcpu *vcpu)
+ {
+-	struct kvm_vmid *vmid;
++	struct kvm_vmid *v = &vcpu->kvm->arch.vmid;
++	unsigned long vmid = READ_ONCE(v->vmid);
  
--	nsync_csr(-1UL);
-+		if (kvm_riscv_nacl_autoswap_csr_available()) {
-+			hcntx->hstatus =
-+				nacl_csr_read(nsh, CSR_HSTATUS);
-+			nacl_scratch_write_long(nsh,
-+						SBI_NACL_SHMEM_AUTOSWAP_OFFSET +
-+						SBI_NACL_SHMEM_AUTOSWAP_HSTATUS,
-+						gcntx->hstatus);
-+			nacl_scratch_write_long(nsh,
-+						SBI_NACL_SHMEM_AUTOSWAP_OFFSET,
-+						SBI_NACL_SHMEM_AUTOSWAP_FLAG_HSTATUS);
-+		} else if (kvm_riscv_nacl_sync_csr_available()) {
-+			hcntx->hstatus = nacl_csr_swap(nsh,
-+						       CSR_HSTATUS, gcntx->hstatus);
-+		} else {
-+			hcntx->hstatus = csr_swap(CSR_HSTATUS, gcntx->hstatus);
-+		}
+-	vmid = &vcpu->kvm->arch.vmid;
+-	kvm_riscv_local_hfence_vvma_all(READ_ONCE(vmid->vmid));
++	if (kvm_riscv_nacl_available())
++		nacl_hfence_vvma_all(nacl_shmem(), vmid);
++	else
++		kvm_riscv_local_hfence_vvma_all(vmid);
+ }
  
--	__kvm_riscv_switch_to(&vcpu->arch);
-+		nacl_scratch_write_longs(nsh,
-+					 SBI_NACL_SHMEM_SRET_OFFSET +
-+					 SBI_NACL_SHMEM_SRET_X(1),
-+					 &gcntx->ra,
-+					 SBI_NACL_SHMEM_SRET_X_LAST);
-+
-+		__kvm_riscv_nacl_switch_to(&vcpu->arch, SBI_EXT_NACL,
-+					   SBI_EXT_NACL_SYNC_SRET);
-+
-+		if (kvm_riscv_nacl_autoswap_csr_available()) {
-+			nacl_scratch_write_long(nsh,
-+						SBI_NACL_SHMEM_AUTOSWAP_OFFSET,
-+						0);
-+			gcntx->hstatus = nacl_scratch_read_long(nsh,
-+								SBI_NACL_SHMEM_AUTOSWAP_OFFSET +
-+								SBI_NACL_SHMEM_AUTOSWAP_HSTATUS);
-+		} else {
-+			gcntx->hstatus = csr_swap(CSR_HSTATUS, hcntx->hstatus);
-+		}
-+	} else {
-+		hcntx->hstatus = csr_swap(CSR_HSTATUS, gcntx->hstatus);
+ static bool vcpu_hfence_dequeue(struct kvm_vcpu *vcpu,
+@@ -251,6 +258,7 @@ static bool vcpu_hfence_enqueue(struct kvm_vcpu *vcpu,
  
--	gcntx->hstatus = csr_swap(CSR_HSTATUS, hcntx->hstatus);
-+		__kvm_riscv_switch_to(&vcpu->arch);
-+
-+		gcntx->hstatus = csr_swap(CSR_HSTATUS, hcntx->hstatus);
-+	}
+ void kvm_riscv_hfence_process(struct kvm_vcpu *vcpu)
+ {
++	unsigned long vmid;
+ 	struct kvm_riscv_hfence d = { 0 };
+ 	struct kvm_vmid *v = &vcpu->kvm->arch.vmid;
  
- 	vcpu->arch.last_exit_cpu = vcpu->cpu;
- 	guest_state_exit_irqoff();
-diff --git a/arch/riscv/kvm/vcpu_switch.S b/arch/riscv/kvm/vcpu_switch.S
-index 9f13e5ce6a18..47686bcb21e0 100644
---- a/arch/riscv/kvm/vcpu_switch.S
-+++ b/arch/riscv/kvm/vcpu_switch.S
-@@ -218,6 +218,35 @@ SYM_FUNC_START(__kvm_riscv_switch_to)
- 	ret
- SYM_FUNC_END(__kvm_riscv_switch_to)
- 
-+	/*
-+	 * Parameters:
-+	 * A0 <= Pointer to struct kvm_vcpu_arch
-+	 * A1 <= SBI extension ID
-+	 * A2 <= SBI function ID
-+	 */
-+SYM_FUNC_START(__kvm_riscv_nacl_switch_to)
-+	SAVE_HOST_GPRS
-+
-+	SAVE_HOST_AND_RESTORE_GUEST_CSRS .Lkvm_nacl_switch_return
-+
-+	/* Resume Guest using SBI nested acceleration */
-+	add	a6, a2, zero
-+	add	a7, a1, zero
-+	ecall
-+
-+	/* Back to Host */
-+	.align 2
-+.Lkvm_nacl_switch_return:
-+	SAVE_GUEST_GPRS
-+
-+	SAVE_GUEST_AND_RESTORE_HOST_CSRS
-+
-+	RESTORE_HOST_GPRS
-+
-+	/* Return to C code */
-+	ret
-+SYM_FUNC_END(__kvm_riscv_nacl_switch_to)
-+
- SYM_CODE_START(__kvm_riscv_unpriv_trap)
- 	/*
- 	 * We assume that faulting unpriv load/store instruction is
+@@ -259,26 +267,41 @@ void kvm_riscv_hfence_process(struct kvm_vcpu *vcpu)
+ 		case KVM_RISCV_HFENCE_UNKNOWN:
+ 			break;
+ 		case KVM_RISCV_HFENCE_GVMA_VMID_GPA:
+-			kvm_riscv_local_hfence_gvma_vmid_gpa(
+-						READ_ONCE(v->vmid),
+-						d.addr, d.size, d.order);
++			vmid = READ_ONCE(v->vmid);
++			if (kvm_riscv_nacl_available())
++				nacl_hfence_gvma_vmid(nacl_shmem(), vmid,
++						      d.addr, d.size, d.order);
++			else
++				kvm_riscv_local_hfence_gvma_vmid_gpa(vmid, d.addr,
++								     d.size, d.order);
+ 			break;
+ 		case KVM_RISCV_HFENCE_VVMA_ASID_GVA:
+ 			kvm_riscv_vcpu_pmu_incr_fw(vcpu, SBI_PMU_FW_HFENCE_VVMA_ASID_RCVD);
+-			kvm_riscv_local_hfence_vvma_asid_gva(
+-						READ_ONCE(v->vmid), d.asid,
+-						d.addr, d.size, d.order);
++			vmid = READ_ONCE(v->vmid);
++			if (kvm_riscv_nacl_available())
++				nacl_hfence_vvma_asid(nacl_shmem(), vmid, d.asid,
++						      d.addr, d.size, d.order);
++			else
++				kvm_riscv_local_hfence_vvma_asid_gva(vmid, d.asid, d.addr,
++								     d.size, d.order);
+ 			break;
+ 		case KVM_RISCV_HFENCE_VVMA_ASID_ALL:
+ 			kvm_riscv_vcpu_pmu_incr_fw(vcpu, SBI_PMU_FW_HFENCE_VVMA_ASID_RCVD);
+-			kvm_riscv_local_hfence_vvma_asid_all(
+-						READ_ONCE(v->vmid), d.asid);
++			vmid = READ_ONCE(v->vmid);
++			if (kvm_riscv_nacl_available())
++				nacl_hfence_vvma_asid_all(nacl_shmem(), vmid, d.asid);
++			else
++				kvm_riscv_local_hfence_vvma_asid_all(vmid, d.asid);
+ 			break;
+ 		case KVM_RISCV_HFENCE_VVMA_GVA:
+ 			kvm_riscv_vcpu_pmu_incr_fw(vcpu, SBI_PMU_FW_HFENCE_VVMA_RCVD);
+-			kvm_riscv_local_hfence_vvma_gva(
+-						READ_ONCE(v->vmid),
+-						d.addr, d.size, d.order);
++			vmid = READ_ONCE(v->vmid);
++			if (kvm_riscv_nacl_available())
++				nacl_hfence_vvma(nacl_shmem(), vmid,
++						 d.addr, d.size, d.order);
++			else
++				kvm_riscv_local_hfence_vvma_gva(vmid, d.addr,
++								d.size, d.order);
+ 			break;
+ 		default:
+ 			break;
 -- 
 2.34.1
 
