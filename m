@@ -1,69 +1,129 @@
 From: Anup Patel <apatel@ventanamicro.com>
-Date: Fri, 19 Jul 2024 21:39:01 +0530
-Subject: [PATCH 01/13] RISC-V: KVM: Order the object files alphabetically
+Date: Fri, 19 Jul 2024 21:39:02 +0530
+Subject: [PATCH 02/13] RISC-V: KVM: Save/restore HSTATUS in C source
 In-Reply-To: <20240719160913.342027-1-apatel@ventanamicro.com>
 References: <20240719160913.342027-1-apatel@ventanamicro.com>
-Message-ID: <20240719160913.342027-2-apatel@ventanamicro.com>
+Message-ID: <20240719160913.342027-3-apatel@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Order the object files alphabetically in the Makefile so that
-it is very predictable inserting new object files in the future.
+We will be optimizing HSTATUS CSR access via shared memory setup
+using the SBI nested acceleration extension. To facilitate this,
+we first move HSTATUS save/restore in kvm_riscv_vcpu_enter_exit().
 
 Signed-off-by: Anup Patel <apatel@ventanamicro.com>
 ---
- arch/riscv/kvm/Makefile | 26 ++++++++++++++------------
- 1 file changed, 14 insertions(+), 12 deletions(-)
+ arch/riscv/kvm/vcpu.c        |  9 +++++++++
+ arch/riscv/kvm/vcpu_switch.S | 36 +++++++++++++-----------------------
+ 2 files changed, 22 insertions(+), 23 deletions(-)
 
-diff --git a/arch/riscv/kvm/Makefile b/arch/riscv/kvm/Makefile
-index c2cacfbc06a0..c1eac0d093de 100644
---- a/arch/riscv/kvm/Makefile
-+++ b/arch/riscv/kvm/Makefile
-@@ -9,27 +9,29 @@ include $(srctree)/virt/kvm/Makefile.kvm
+diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+index 449e5bb948c2..93b1ce043482 100644
+--- a/arch/riscv/kvm/vcpu.c
++++ b/arch/riscv/kvm/vcpu.c
+@@ -720,9 +720,18 @@ static __always_inline void kvm_riscv_vcpu_swap_in_host_state(struct kvm_vcpu *v
+  */
+ static void noinstr kvm_riscv_vcpu_enter_exit(struct kvm_vcpu *vcpu)
+ {
++	struct kvm_cpu_context *gcntx = &vcpu->arch.guest_context;
++	struct kvm_cpu_context *hcntx = &vcpu->arch.host_context;
++
+ 	kvm_riscv_vcpu_swap_in_guest_state(vcpu);
+ 	guest_state_enter_irqoff();
++
++	hcntx->hstatus = csr_swap(CSR_HSTATUS, gcntx->hstatus);
++
+ 	__kvm_riscv_switch_to(&vcpu->arch);
++
++	gcntx->hstatus = csr_swap(CSR_HSTATUS, hcntx->hstatus);
++
+ 	vcpu->arch.last_exit_cpu = vcpu->cpu;
+ 	guest_state_exit_irqoff();
+ 	kvm_riscv_vcpu_swap_in_host_state(vcpu);
+diff --git a/arch/riscv/kvm/vcpu_switch.S b/arch/riscv/kvm/vcpu_switch.S
+index 0c26189aa01c..f83643c4fdb9 100644
+--- a/arch/riscv/kvm/vcpu_switch.S
++++ b/arch/riscv/kvm/vcpu_switch.S
+@@ -43,35 +43,30 @@ SYM_FUNC_START(__kvm_riscv_switch_to)
  
- obj-$(CONFIG_KVM) += kvm.o
+ 	/* Load Guest CSR values */
+ 	REG_L	t0, (KVM_ARCH_GUEST_SSTATUS)(a0)
+-	REG_L	t1, (KVM_ARCH_GUEST_HSTATUS)(a0)
+-	REG_L	t2, (KVM_ARCH_GUEST_SCOUNTEREN)(a0)
+-	la	t4, .Lkvm_switch_return
+-	REG_L	t5, (KVM_ARCH_GUEST_SEPC)(a0)
++	REG_L	t1, (KVM_ARCH_GUEST_SCOUNTEREN)(a0)
++	la	t3, .Lkvm_switch_return
++	REG_L	t4, (KVM_ARCH_GUEST_SEPC)(a0)
  
-+# Ordered alphabetically
-+kvm-y += aia.o
-+kvm-y += aia_aplic.o
-+kvm-y += aia_device.o
-+kvm-y += aia_imsic.o
- kvm-y += main.o
--kvm-y += vm.o
--kvm-y += vmid.o
--kvm-y += tlb.o
- kvm-y += mmu.o
-+kvm-y += tlb.o
- kvm-y += vcpu.o
- kvm-y += vcpu_exit.o
- kvm-y += vcpu_fp.o
--kvm-y += vcpu_vector.o
- kvm-y += vcpu_insn.o
- kvm-y += vcpu_onereg.o
--kvm-y += vcpu_switch.o
-+kvm-$(CONFIG_RISCV_PMU_SBI) += vcpu_pmu.o
- kvm-y += vcpu_sbi.o
--kvm-$(CONFIG_RISCV_SBI_V01) += vcpu_sbi_v01.o
- kvm-y += vcpu_sbi_base.o
--kvm-y += vcpu_sbi_replace.o
- kvm-y += vcpu_sbi_hsm.o
-+kvm-$(CONFIG_RISCV_PMU_SBI) += vcpu_sbi_pmu.o
-+kvm-y += vcpu_sbi_replace.o
- kvm-y += vcpu_sbi_sta.o
-+kvm-$(CONFIG_RISCV_SBI_V01) += vcpu_sbi_v01.o
-+kvm-y += vcpu_switch.o
- kvm-y += vcpu_timer.o
--kvm-$(CONFIG_RISCV_PMU_SBI) += vcpu_pmu.o vcpu_sbi_pmu.o
--kvm-y += aia.o
--kvm-y += aia_device.o
--kvm-y += aia_aplic.o
--kvm-y += aia_imsic.o
-+kvm-y += vcpu_vector.o
-+kvm-y += vm.o
-+kvm-y += vmid.o
+ 	/* Save Host and Restore Guest SSTATUS */
+ 	csrrw	t0, CSR_SSTATUS, t0
+ 
+-	/* Save Host and Restore Guest HSTATUS */
+-	csrrw	t1, CSR_HSTATUS, t1
+-
+ 	/* Save Host and Restore Guest SCOUNTEREN */
+-	csrrw	t2, CSR_SCOUNTEREN, t2
++	csrrw	t1, CSR_SCOUNTEREN, t1
+ 
+ 	/* Save Host STVEC and change it to return path */
+-	csrrw	t4, CSR_STVEC, t4
++	csrrw	t3, CSR_STVEC, t3
+ 
+ 	/* Save Host SSCRATCH and change it to struct kvm_vcpu_arch pointer */
+-	csrrw	t3, CSR_SSCRATCH, a0
++	csrrw	t2, CSR_SSCRATCH, a0
+ 
+ 	/* Restore Guest SEPC */
+-	csrw	CSR_SEPC, t5
++	csrw	CSR_SEPC, t4
+ 
+ 	/* Store Host CSR values */
+ 	REG_S	t0, (KVM_ARCH_HOST_SSTATUS)(a0)
+-	REG_S	t1, (KVM_ARCH_HOST_HSTATUS)(a0)
+-	REG_S	t2, (KVM_ARCH_HOST_SCOUNTEREN)(a0)
+-	REG_S	t3, (KVM_ARCH_HOST_SSCRATCH)(a0)
+-	REG_S	t4, (KVM_ARCH_HOST_STVEC)(a0)
++	REG_S	t1, (KVM_ARCH_HOST_SCOUNTEREN)(a0)
++	REG_S	t2, (KVM_ARCH_HOST_SSCRATCH)(a0)
++	REG_S	t3, (KVM_ARCH_HOST_STVEC)(a0)
+ 
+ 	/* Restore Guest GPRs (except A0) */
+ 	REG_L	ra, (KVM_ARCH_GUEST_RA)(a0)
+@@ -153,8 +148,7 @@ SYM_FUNC_START(__kvm_riscv_switch_to)
+ 	REG_L	t1, (KVM_ARCH_HOST_STVEC)(a0)
+ 	REG_L	t2, (KVM_ARCH_HOST_SSCRATCH)(a0)
+ 	REG_L	t3, (KVM_ARCH_HOST_SCOUNTEREN)(a0)
+-	REG_L	t4, (KVM_ARCH_HOST_HSTATUS)(a0)
+-	REG_L	t5, (KVM_ARCH_HOST_SSTATUS)(a0)
++	REG_L	t4, (KVM_ARCH_HOST_SSTATUS)(a0)
+ 
+ 	/* Save Guest SEPC */
+ 	csrr	t0, CSR_SEPC
+@@ -168,18 +162,14 @@ SYM_FUNC_START(__kvm_riscv_switch_to)
+ 	/* Save Guest and Restore Host SCOUNTEREN */
+ 	csrrw	t3, CSR_SCOUNTEREN, t3
+ 
+-	/* Save Guest and Restore Host HSTATUS */
+-	csrrw	t4, CSR_HSTATUS, t4
+-
+ 	/* Save Guest and Restore Host SSTATUS */
+-	csrrw	t5, CSR_SSTATUS, t5
++	csrrw	t4, CSR_SSTATUS, t4
+ 
+ 	/* Store Guest CSR values */
+ 	REG_S	t0, (KVM_ARCH_GUEST_SEPC)(a0)
+ 	REG_S	t2, (KVM_ARCH_GUEST_A0)(a0)
+ 	REG_S	t3, (KVM_ARCH_GUEST_SCOUNTEREN)(a0)
+-	REG_S	t4, (KVM_ARCH_GUEST_HSTATUS)(a0)
+-	REG_S	t5, (KVM_ARCH_GUEST_SSTATUS)(a0)
++	REG_S	t4, (KVM_ARCH_GUEST_SSTATUS)(a0)
+ 
+ 	/* Restore Host GPRs (except A0 and T0-T6) */
+ 	REG_L	ra, (KVM_ARCH_HOST_RA)(a0)
 -- 
 2.34.1
 
