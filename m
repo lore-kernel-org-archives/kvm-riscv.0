@@ -1,148 +1,84 @@
-From: Quan Zhou <zhouquan@iscas.ac.cn>
-Date: Fri, 19 Jul 2024 17:55:38 +0800
-Subject: [PATCH 2/2] riscv: KVM: add basic support for host vs guest
- profiling
-In-Reply-To: <20240718-f39bdec648fc285ffe46cc3e@orel>
-References: <cover.1721271251.git.zhouquan@iscas.ac.cn>
- <fbf8a9fcca05a1b554ac0d01b0c46fbb6263c435.1721271251.git.zhouquan@iscas.ac.cn>
- <20240718-f39bdec648fc285ffe46cc3e@orel>
-Message-ID: <2dc4c5bb-57b0-415a-87e9-f738062e1d29@iscas.ac.cn>
+From: Conor Dooley <conor@kernel.org>
+Date: Fri, 19 Jul 2024 14:17:12 +0100
+Subject: [PATCH v7 2/4] dt-bindings: riscv: Add Svade and Svadu Entries
+In-Reply-To: <CAMWQL2g-peSYJQaxeJtyOzGdEmDQ6cnkRBdFQvLr2NQA1+mv2g@mail.gmail.com>
+References: <20240712083850.4242-1-yongxuan.wang@sifive.com>
+ <20240712083850.4242-3-yongxuan.wang@sifive.com>
+ <727b966a-a8c4-4021-acf6-3c031ccd843a@sifive.com>
+ <CAMWQL2g-peSYJQaxeJtyOzGdEmDQ6cnkRBdFQvLr2NQA1+mv2g@mail.gmail.com>
+Message-ID: <20240719-flatten-elixir-d4476977ab95@spud>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-
-On 2024/7/19 01:09, Andrew Jones wrote:
-> On Thu, Jul 18, 2024 at 07:23:51PM GMT, zhouquan at iscas.ac.cn wrote:
->> From: Quan Zhou <zhouquan@iscas.ac.cn>
->>
->> For the information collected on the host side, we need to
->> identify which data originates from the guest and record
->> these events separately. This can be achieved by having
->> KVM register perf callbacks.
->>
->> Signed-off-by: Quan Zhou <zhouquan@iscas.ac.cn>
->> ---
->>   arch/riscv/include/asm/kvm_host.h |  6 ++++++
->>   arch/riscv/kvm/Kconfig            |  1 +
->>   arch/riscv/kvm/main.c             | 12 ++++++++++--
->>   arch/riscv/kvm/vcpu.c             |  7 +++++++
->>   4 files changed, 24 insertions(+), 2 deletions(-)
->>
->> diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
->> index d96281278586..b7bbe1c0c5dd 100644
->> --- a/arch/riscv/include/asm/kvm_host.h
->> +++ b/arch/riscv/include/asm/kvm_host.h
->> @@ -285,6 +285,12 @@ struct kvm_vcpu_arch {
->>   	} sta;
->>   };
->>   
->> +/* TODO: A more explicit approach might be needed here than this simple one */
+On Fri, Jul 19, 2024 at 02:58:59PM +0800, Yong-Xuan Wang wrote:
+> Hi Samuel,
 > 
-> Can you elaborate on this concern?
+> On Fri, Jul 19, 2024 at 7:38?AM Samuel Holland
+> <samuel.holland@sifive.com> wrote:
+> >
+> > On 2024-07-12 3:38 AM, Yong-Xuan Wang wrote:
+> > > Add entries for the Svade and Svadu extensions to the riscv,isa-extensions
+> > > property.
+> > >
+> > > Signed-off-by: Yong-Xuan Wang <yongxuan.wang@sifive.com>
+> > > ---
+> > >  .../devicetree/bindings/riscv/extensions.yaml | 28 +++++++++++++++++++
+> > >  1 file changed, 28 insertions(+)
+> > >
+> > > diff --git a/Documentation/devicetree/bindings/riscv/extensions.yaml b/Documentation/devicetree/bindings/riscv/extensions.yaml
+> > > index 468c646247aa..e91a6f4ede38 100644
+> > > --- a/Documentation/devicetree/bindings/riscv/extensions.yaml
+> > > +++ b/Documentation/devicetree/bindings/riscv/extensions.yaml
+> > > @@ -153,6 +153,34 @@ properties:
+> > >              ratified at commit 3f9ed34 ("Add ability to manually trigger
+> > >              workflow. (#2)") of riscv-time-compare.
+> > >
+> > > +        - const: svade
+> > > +          description: |
+> > > +            The standard Svade supervisor-level extension for SW-managed PTE A/D
+> > > +            bit updates as ratified in the 20240213 version of the privileged
+> > > +            ISA specification.
+> > > +
+> > > +            Both Svade and Svadu extensions control the hardware behavior when
+> > > +            the PTE A/D bits need to be set. The default behavior for the four
+> > > +            possible combinations of these extensions in the device tree are:
+> > > +            1) Neither Svade nor Svadu present in DT => It is technically
+> > > +               unknown whether the platform uses Svade or Svadu. Supervisor
+> > > +               software should be prepared to handle either hardware updating
+> > > +               of the PTE A/D bits or page faults when they need updated.
+> > > +            2) Only Svade present in DT => Supervisor must assume Svade to be
+> > > +               always enabled.
+> > > +            3) Only Svadu present in DT => Supervisor must assume Svadu to be
+> > > +               always enabled.
+> > > +            4) Both Svade and Svadu present in DT => Supervisor must assume
+> > > +               Svadu turned-off at boot time. To use Svadu, supervisor must
+> > > +               explicitly enable it using the SBI FWFT extension.
+> > > +
+> > > +        - const: svadu
+> > > +          description: |
+> > > +            The standard Svadu supervisor-level extension for hardware updating
+> > > +            of PTE A/D bits as ratified at commit c1abccf ("Merge pull request
+> > > +            #25 from ved-rivos/ratified") of riscv-svadu. Please refer to Svade
+> >
+> > Should we be referencing the archived riscv-svadu repository now that Svadu has
+> > been merged to the main privileged ISA manual? Either way:
+> >
+> > Reviewed-by: Samuel Holland <samuel.holland@sifive.com>
+> >
 > 
+> Yes, this commit is from the archived riscv-svadu repo. Or should I update it to
+> "commit c1abccf ("Merge pull request  #25 from ved-rivos/ratified") of
+> riscvarchive/riscv-svadu."?
 
-Can we determine if a PMU interrupt occurs in the guest solely based on 
-whether the vcpu is loaded?
-
-In the kvm_arch_vcpu_ioctl_run while loop, when the guest exits, 
-host-side interrupts should be handled in local_irq_{enable/disable}. 
-Should we add a flag here (referencing x86) to further determine if 
-"this is a host interrupt triggered while the guest was running, rather 
-than when the host is running". Doing so might further reduce the 
-likelihood of perf incorrectly identifying "PMI in host" as "PMI in 
-guest," but it may not completely eliminate it.
-
-Have I misunderstood any points here?
-
-Thanks,
-Quan
-
->> +static inline bool kvm_arch_pmi_in_guest(struct kvm_vcpu *vcpu)
->> +{
->> +	return IS_ENABLED(CONFIG_GUEST_PERF_EVENTS) && !!vcpu;
->> +}
->> +
->>   static inline void kvm_arch_sync_events(struct kvm *kvm) {}
->>   static inline void kvm_arch_sched_in(struct kvm_vcpu *vcpu, int cpu) {}
->>   
->> diff --git a/arch/riscv/kvm/Kconfig b/arch/riscv/kvm/Kconfig
->> index 26d1727f0550..0c3cbb0915ff 100644
->> --- a/arch/riscv/kvm/Kconfig
->> +++ b/arch/riscv/kvm/Kconfig
->> @@ -32,6 +32,7 @@ config KVM
->>   	select KVM_XFER_TO_GUEST_WORK
->>   	select KVM_GENERIC_MMU_NOTIFIER
->>   	select SCHED_INFO
->> +	select GUEST_PERF_EVENTS if PERF_EVENTS
->>   	help
->>   	  Support hosting virtualized guest machines.
->>   
->> diff --git a/arch/riscv/kvm/main.c b/arch/riscv/kvm/main.c
->> index bab2ec34cd87..734b48d8f6dd 100644
->> --- a/arch/riscv/kvm/main.c
->> +++ b/arch/riscv/kvm/main.c
->> @@ -51,6 +51,12 @@ void kvm_arch_hardware_disable(void)
->>   	csr_write(CSR_HIDELEG, 0);
->>   }
->>   
->> +static void kvm_riscv_teardown(void)
->> +{
->> +	kvm_riscv_aia_exit();
->> +	kvm_unregister_perf_callbacks();
->> +}
->> +
->>   static int __init riscv_kvm_init(void)
->>   {
->>   	int rc;
->> @@ -105,9 +111,11 @@ static int __init riscv_kvm_init(void)
->>   		kvm_info("AIA available with %d guest external interrupts\n",
->>   			 kvm_riscv_aia_nr_hgei);
->>   
->> +	kvm_register_perf_callbacks(NULL);
->> +
->>   	rc = kvm_init(sizeof(struct kvm_vcpu), 0, THIS_MODULE);
->>   	if (rc) {
->> -		kvm_riscv_aia_exit();
->> +		kvm_riscv_teardown();
->>   		return rc;
->>   	}
->>   
->> @@ -117,7 +125,7 @@ module_init(riscv_kvm_init);
->>   
->>   static void __exit riscv_kvm_exit(void)
->>   {
->> -	kvm_riscv_aia_exit();
->> +	kvm_riscv_teardown();
->>   
->>   	kvm_exit();
->>   }
->> diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
->> index 17e21df36cc1..c9d291865141 100644
->> --- a/arch/riscv/kvm/vcpu.c
->> +++ b/arch/riscv/kvm/vcpu.c
->> @@ -222,6 +222,13 @@ bool kvm_arch_vcpu_in_kernel(struct kvm_vcpu *vcpu)
->>   	return (vcpu->arch.guest_context.sstatus & SR_SPP) ? true : false;
->>   }
->>   
->> +#ifdef CONFIG_GUEST_PERF_EVENTS
->> +unsigned long kvm_arch_vcpu_get_ip(struct kvm_vcpu *vcpu)
->> +{
->> +	return vcpu->arch.guest_context.sepc;
->> +}
->> +#endif
->> +
->>   vm_fault_t kvm_arch_vcpu_fault(struct kvm_vcpu *vcpu, struct vm_fault *vmf)
->>   {
->>   	return VM_FAULT_SIGBUS;
->> -- 
->> 2.34.1
->>
-> 
-> Otherwise,
-> 
-> Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
-
-
+I think Samuel was saying that we should use the commit where it was
+merged into riscv-isa-manual instead.
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 228 bytes
+Desc: not available
+URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20240719/a460d944/attachment.sig>
