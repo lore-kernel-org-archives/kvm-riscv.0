@@ -1,101 +1,192 @@
 From: Anup Patel <apatel@ventanamicro.com>
-Date: Fri, 19 Jul 2024 21:39:12 +0530
-Subject: [PATCH 12/13] RISC-V: KVM: Save trap CSRs in kvm_riscv_vcpu_enter_exit()
+Date: Fri, 19 Jul 2024 21:39:11 +0530
+Subject: [PATCH 11/13] RISC-V: KVM: Use SBI sync SRET call when available
 In-Reply-To: <20240719160913.342027-1-apatel@ventanamicro.com>
 References: <20240719160913.342027-1-apatel@ventanamicro.com>
-Message-ID: <20240719160913.342027-13-apatel@ventanamicro.com>
+Message-ID: <20240719160913.342027-12-apatel@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Save trap CSRs in the kvm_riscv_vcpu_enter_exit() function instead of
-the kvm_arch_vcpu_ioctl_run() function so that HTVAL and HTINST CSRs
-are accessed in more optimized manner while running under some other
-hypervisor.
+Implement an optimized KVM world-switch using SBI sync SRET call
+when SBI nested acceleration extension is available. This improves
+KVM world-switch when KVM RISC-V is running as a Guest under some
+other hypervisor.
 
 Signed-off-by: Anup Patel <apatel@ventanamicro.com>
 ---
- arch/riscv/kvm/vcpu.c | 34 +++++++++++++++++++++-------------
- 1 file changed, 21 insertions(+), 13 deletions(-)
+ arch/riscv/include/asm/kvm_nacl.h | 32 +++++++++++++++++++++
+ arch/riscv/kvm/vcpu.c             | 48 ++++++++++++++++++++++++++++---
+ arch/riscv/kvm/vcpu_switch.S      | 29 +++++++++++++++++++
+ 3 files changed, 105 insertions(+), 4 deletions(-)
 
+diff --git a/arch/riscv/include/asm/kvm_nacl.h b/arch/riscv/include/asm/kvm_nacl.h
+index a704e8000a58..5e74238ea525 100644
+--- a/arch/riscv/include/asm/kvm_nacl.h
++++ b/arch/riscv/include/asm/kvm_nacl.h
+@@ -12,6 +12,8 @@
+ #include <asm/csr.h>
+ #include <asm/sbi.h>
+ 
++struct kvm_vcpu_arch;
++
+ DECLARE_STATIC_KEY_FALSE(kvm_riscv_nacl_available);
+ #define kvm_riscv_nacl_available() \
+ 	static_branch_unlikely(&kvm_riscv_nacl_available)
+@@ -43,6 +45,10 @@ void __kvm_riscv_nacl_hfence(void *shmem,
+ 			     unsigned long page_num,
+ 			     unsigned long page_count);
+ 
++void __kvm_riscv_nacl_switch_to(struct kvm_vcpu_arch *vcpu_arch,
++				unsigned long sbi_ext_id,
++				unsigned long sbi_func_id);
++
+ int kvm_riscv_nacl_enable(void);
+ 
+ void kvm_riscv_nacl_disable(void);
+@@ -64,6 +70,32 @@ int kvm_riscv_nacl_init(void);
+ #define nacl_shmem_fast()						\
+ 	(kvm_riscv_nacl_available() ? nacl_shmem() : NULL)
+ 
++#define nacl_scratch_read_long(__shmem, __offset)			\
++({									\
++	unsigned long *__p = (__shmem) +				\
++			     SBI_NACL_SHMEM_SCRATCH_OFFSET +		\
++			     (__offset);				\
++	lelong_to_cpu(*__p);						\
++})
++
++#define nacl_scratch_write_long(__shmem, __offset, __val)		\
++do {									\
++	unsigned long *__p = (__shmem) +				\
++			     SBI_NACL_SHMEM_SCRATCH_OFFSET +		\
++			     (__offset);				\
++	*__p = cpu_to_lelong(__val);					\
++} while (0)
++
++#define nacl_scratch_write_longs(__shmem, __offset, __array, __count)	\
++do {									\
++	unsigned int __i;						\
++	unsigned long *__p = (__shmem) +				\
++			     SBI_NACL_SHMEM_SCRATCH_OFFSET +		\
++			     (__offset);				\
++	for (__i = 0; __i < (__count); __i++)				\
++		__p[__i] = cpu_to_lelong((__array)[__i]);		\
++} while (0)
++
+ #define nacl_sync_hfence(__e)						\
+ 	sbi_ecall(SBI_EXT_NACL, SBI_EXT_NACL_SYNC_HFENCE,		\
+ 		  (__e), 0, 0, 0, 0, 0)
 diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-index fe849fb1aaab..854d98aa165e 100644
+index 00baaf1b0136..fe849fb1aaab 100644
 --- a/arch/riscv/kvm/vcpu.c
 +++ b/arch/riscv/kvm/vcpu.c
-@@ -757,12 +757,21 @@ static __always_inline void kvm_riscv_vcpu_swap_in_host_state(struct kvm_vcpu *v
-  * This must be noinstr as instrumentation may make use of RCU, and this is not
-  * safe during the EQS.
+@@ -759,19 +759,59 @@ static __always_inline void kvm_riscv_vcpu_swap_in_host_state(struct kvm_vcpu *v
   */
--static void noinstr kvm_riscv_vcpu_enter_exit(struct kvm_vcpu *vcpu)
-+static void noinstr kvm_riscv_vcpu_enter_exit(struct kvm_vcpu *vcpu,
-+					      struct kvm_cpu_trap *trap)
+ static void noinstr kvm_riscv_vcpu_enter_exit(struct kvm_vcpu *vcpu)
  {
- 	void *nsh;
++	void *nsh;
  	struct kvm_cpu_context *gcntx = &vcpu->arch.guest_context;
  	struct kvm_cpu_context *hcntx = &vcpu->arch.host_context;
  
-+	/*
-+	 * We save trap CSRs (such as SEPC, SCAUSE, STVAL, HTVAL, and
-+	 * HTINST) here because we do local_irq_enable() after this
-+	 * function in kvm_arch_vcpu_ioctl_run() which can result in
-+	 * an interrupt immediately after local_irq_enable() and can
-+	 * potentially change trap CSRs.
-+	 */
-+
  	kvm_riscv_vcpu_swap_in_guest_state(vcpu);
  	guest_state_enter_irqoff();
  
-@@ -805,14 +814,24 @@ static void noinstr kvm_riscv_vcpu_enter_exit(struct kvm_vcpu *vcpu)
- 		} else {
- 			gcntx->hstatus = csr_swap(CSR_HSTATUS, hcntx->hstatus);
- 		}
-+
-+		trap->htval = nacl_csr_read(nsh, CSR_HTVAL);
-+		trap->htinst = nacl_csr_read(nsh, CSR_HTINST);
- 	} else {
- 		hcntx->hstatus = csr_swap(CSR_HSTATUS, gcntx->hstatus);
+-	hcntx->hstatus = ncsr_swap(CSR_HSTATUS, gcntx->hstatus);
++	if (kvm_riscv_nacl_sync_sret_available()) {
++		nsh = nacl_shmem();
  
- 		__kvm_riscv_switch_to(&vcpu->arch);
+-	nsync_csr(-1UL);
++		if (kvm_riscv_nacl_autoswap_csr_available()) {
++			hcntx->hstatus =
++				nacl_csr_read(nsh, CSR_HSTATUS);
++			nacl_scratch_write_long(nsh,
++						SBI_NACL_SHMEM_AUTOSWAP_OFFSET +
++						SBI_NACL_SHMEM_AUTOSWAP_HSTATUS,
++						gcntx->hstatus);
++			nacl_scratch_write_long(nsh,
++						SBI_NACL_SHMEM_AUTOSWAP_OFFSET,
++						SBI_NACL_SHMEM_AUTOSWAP_FLAG_HSTATUS);
++		} else if (kvm_riscv_nacl_sync_csr_available()) {
++			hcntx->hstatus = nacl_csr_swap(nsh,
++						       CSR_HSTATUS, gcntx->hstatus);
++		} else {
++			hcntx->hstatus = csr_swap(CSR_HSTATUS, gcntx->hstatus);
++		}
  
- 		gcntx->hstatus = csr_swap(CSR_HSTATUS, hcntx->hstatus);
+-	__kvm_riscv_switch_to(&vcpu->arch);
++		nacl_scratch_write_longs(nsh,
++					 SBI_NACL_SHMEM_SRET_OFFSET +
++					 SBI_NACL_SHMEM_SRET_X(1),
++					 &gcntx->ra,
++					 SBI_NACL_SHMEM_SRET_X_LAST);
 +
-+		trap->htval = csr_read(CSR_HTVAL);
-+		trap->htinst = csr_read(CSR_HTINST);
- 	}
++		__kvm_riscv_nacl_switch_to(&vcpu->arch, SBI_EXT_NACL,
++					   SBI_EXT_NACL_SYNC_SRET);
++
++		if (kvm_riscv_nacl_autoswap_csr_available()) {
++			nacl_scratch_write_long(nsh,
++						SBI_NACL_SHMEM_AUTOSWAP_OFFSET,
++						0);
++			gcntx->hstatus = nacl_scratch_read_long(nsh,
++								SBI_NACL_SHMEM_AUTOSWAP_OFFSET +
++								SBI_NACL_SHMEM_AUTOSWAP_HSTATUS);
++		} else {
++			gcntx->hstatus = csr_swap(CSR_HSTATUS, hcntx->hstatus);
++		}
++	} else {
++		hcntx->hstatus = csr_swap(CSR_HSTATUS, gcntx->hstatus);
  
-+	trap->sepc = gcntx->sepc;
-+	trap->scause = csr_read(CSR_SCAUSE);
-+	trap->stval = csr_read(CSR_STVAL);
+-	gcntx->hstatus = csr_swap(CSR_HSTATUS, hcntx->hstatus);
++		__kvm_riscv_switch_to(&vcpu->arch);
 +
++		gcntx->hstatus = csr_swap(CSR_HSTATUS, hcntx->hstatus);
++	}
+ 
  	vcpu->arch.last_exit_cpu = vcpu->cpu;
  	guest_state_exit_irqoff();
- 	kvm_riscv_vcpu_swap_in_host_state(vcpu);
-@@ -929,22 +948,11 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
+diff --git a/arch/riscv/kvm/vcpu_switch.S b/arch/riscv/kvm/vcpu_switch.S
+index 9f13e5ce6a18..47686bcb21e0 100644
+--- a/arch/riscv/kvm/vcpu_switch.S
++++ b/arch/riscv/kvm/vcpu_switch.S
+@@ -218,6 +218,35 @@ SYM_FUNC_START(__kvm_riscv_switch_to)
+ 	ret
+ SYM_FUNC_END(__kvm_riscv_switch_to)
  
- 		guest_timing_enter_irqoff();
- 
--		kvm_riscv_vcpu_enter_exit(vcpu);
-+		kvm_riscv_vcpu_enter_exit(vcpu, &trap);
- 
- 		vcpu->mode = OUTSIDE_GUEST_MODE;
- 		vcpu->stat.exits++;
- 
--		/*
--		 * Save SCAUSE, STVAL, HTVAL, and HTINST because we might
--		 * get an interrupt between __kvm_riscv_switch_to() and
--		 * local_irq_enable() which can potentially change CSRs.
--		 */
--		trap.sepc = vcpu->arch.guest_context.sepc;
--		trap.scause = csr_read(CSR_SCAUSE);
--		trap.stval = csr_read(CSR_STVAL);
--		trap.htval = ncsr_read(CSR_HTVAL);
--		trap.htinst = ncsr_read(CSR_HTINST);
--
- 		/* Syncup interrupts state with HW */
- 		kvm_riscv_vcpu_sync_interrupts(vcpu);
- 
++	/*
++	 * Parameters:
++	 * A0 <= Pointer to struct kvm_vcpu_arch
++	 * A1 <= SBI extension ID
++	 * A2 <= SBI function ID
++	 */
++SYM_FUNC_START(__kvm_riscv_nacl_switch_to)
++	SAVE_HOST_GPRS
++
++	SAVE_HOST_AND_RESTORE_GUEST_CSRS .Lkvm_nacl_switch_return
++
++	/* Resume Guest using SBI nested acceleration */
++	add	a6, a2, zero
++	add	a7, a1, zero
++	ecall
++
++	/* Back to Host */
++	.align 2
++.Lkvm_nacl_switch_return:
++	SAVE_GUEST_GPRS
++
++	SAVE_GUEST_AND_RESTORE_HOST_CSRS
++
++	RESTORE_HOST_GPRS
++
++	/* Return to C code */
++	ret
++SYM_FUNC_END(__kvm_riscv_nacl_switch_to)
++
+ SYM_CODE_START(__kvm_riscv_unpriv_trap)
+ 	/*
+ 	 * We assume that faulting unpriv load/store instruction is
 -- 
 2.34.1
 
