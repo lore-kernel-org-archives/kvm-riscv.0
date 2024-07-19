@@ -1,137 +1,136 @@
 From: Anup Patel <apatel@ventanamicro.com>
-Date: Fri, 19 Jul 2024 21:39:03 +0530
-Subject: [PATCH 03/13] RISC-V: KVM: Save/restore SCOUNTEREN in C source
+Date: Fri, 19 Jul 2024 21:39:04 +0530
+Subject: [PATCH 04/13] RISC-V: KVM: Break down the __kvm_riscv_switch_to() into macros
 In-Reply-To: <20240719160913.342027-1-apatel@ventanamicro.com>
 References: <20240719160913.342027-1-apatel@ventanamicro.com>
-Message-ID: <20240719160913.342027-4-apatel@ventanamicro.com>
+Message-ID: <20240719160913.342027-5-apatel@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The SCOUNTEREN CSR need not be saved/restored in the low-level
-__kvm_riscv_switch_to() function hence move the SCOUNTEREN CSR
-save/restore to the kvm_riscv_vcpu_swap_in_guest_state() and
-kvm_riscv_vcpu_swap_in_host_state() functions in C sources.
-
-Also, re-arrange the CSR save/restore and related GPR usage in
-the low-level __kvm_riscv_switch_to() low-level function.
+Break down the __kvm_riscv_switch_to() function into macros so that
+these macros can be later re-used by SBI NACL extension based low-level
+switch function.
 
 Signed-off-by: Anup Patel <apatel@ventanamicro.com>
 ---
- arch/riscv/kvm/vcpu.c        |  2 ++
- arch/riscv/kvm/vcpu_switch.S | 52 +++++++++++++++---------------------
- 2 files changed, 23 insertions(+), 31 deletions(-)
+ arch/riscv/kvm/vcpu_switch.S | 52 +++++++++++++++++++++++++++---------
+ 1 file changed, 40 insertions(+), 12 deletions(-)
 
-diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-index 93b1ce043482..957e1a5e081b 100644
---- a/arch/riscv/kvm/vcpu.c
-+++ b/arch/riscv/kvm/vcpu.c
-@@ -691,6 +691,7 @@ static __always_inline void kvm_riscv_vcpu_swap_in_guest_state(struct kvm_vcpu *
- 	struct kvm_vcpu_csr *csr = &vcpu->arch.guest_csr;
- 	struct kvm_vcpu_config *cfg = &vcpu->arch.cfg;
- 
-+	vcpu->arch.host_scounteren = csr_swap(CSR_SCOUNTEREN, csr->scounteren);
- 	vcpu->arch.host_senvcfg = csr_swap(CSR_SENVCFG, csr->senvcfg);
- 	if (riscv_has_extension_unlikely(RISCV_ISA_EXT_SMSTATEEN) &&
- 	    (cfg->hstateen0 & SMSTATEEN0_SSTATEEN0))
-@@ -704,6 +705,7 @@ static __always_inline void kvm_riscv_vcpu_swap_in_host_state(struct kvm_vcpu *v
- 	struct kvm_vcpu_csr *csr = &vcpu->arch.guest_csr;
- 	struct kvm_vcpu_config *cfg = &vcpu->arch.cfg;
- 
-+	csr->scounteren = csr_swap(CSR_SCOUNTEREN, vcpu->arch.host_scounteren);
- 	csr->senvcfg = csr_swap(CSR_SENVCFG, vcpu->arch.host_senvcfg);
- 	if (riscv_has_extension_unlikely(RISCV_ISA_EXT_SMSTATEEN) &&
- 	    (cfg->hstateen0 & SMSTATEEN0_SSTATEEN0))
 diff --git a/arch/riscv/kvm/vcpu_switch.S b/arch/riscv/kvm/vcpu_switch.S
-index f83643c4fdb9..3f8cbc21a644 100644
+index 3f8cbc21a644..9f13e5ce6a18 100644
 --- a/arch/riscv/kvm/vcpu_switch.S
 +++ b/arch/riscv/kvm/vcpu_switch.S
-@@ -43,30 +43,25 @@ SYM_FUNC_START(__kvm_riscv_switch_to)
+@@ -11,11 +11,7 @@
+ #include <asm/asm-offsets.h>
+ #include <asm/csr.h>
  
+-	.text
+-	.altmacro
+-	.option norelax
+-
+-SYM_FUNC_START(__kvm_riscv_switch_to)
++.macro SAVE_HOST_GPRS
+ 	/* Save Host GPRs (except A0 and T0-T6) */
+ 	REG_S	ra, (KVM_ARCH_HOST_RA)(a0)
+ 	REG_S	sp, (KVM_ARCH_HOST_SP)(a0)
+@@ -40,10 +36,12 @@ SYM_FUNC_START(__kvm_riscv_switch_to)
+ 	REG_S	s9, (KVM_ARCH_HOST_S9)(a0)
+ 	REG_S	s10, (KVM_ARCH_HOST_S10)(a0)
+ 	REG_S	s11, (KVM_ARCH_HOST_S11)(a0)
++.endm
+ 
++.macro SAVE_HOST_AND_RESTORE_GUEST_CSRS __resume_addr
  	/* Load Guest CSR values */
  	REG_L	t0, (KVM_ARCH_GUEST_SSTATUS)(a0)
--	REG_L	t1, (KVM_ARCH_GUEST_SCOUNTEREN)(a0)
--	la	t3, .Lkvm_switch_return
--	REG_L	t4, (KVM_ARCH_GUEST_SEPC)(a0)
-+	la	t1, .Lkvm_switch_return
-+	REG_L	t2, (KVM_ARCH_GUEST_SEPC)(a0)
+-	la	t1, .Lkvm_switch_return
++	la	t1, \__resume_addr
+ 	REG_L	t2, (KVM_ARCH_GUEST_SEPC)(a0)
  
  	/* Save Host and Restore Guest SSTATUS */
- 	csrrw	t0, CSR_SSTATUS, t0
- 
--	/* Save Host and Restore Guest SCOUNTEREN */
--	csrrw	t1, CSR_SCOUNTEREN, t1
--
- 	/* Save Host STVEC and change it to return path */
--	csrrw	t3, CSR_STVEC, t3
--
--	/* Save Host SSCRATCH and change it to struct kvm_vcpu_arch pointer */
--	csrrw	t2, CSR_SSCRATCH, a0
-+	csrrw	t1, CSR_STVEC, t1
- 
- 	/* Restore Guest SEPC */
--	csrw	CSR_SEPC, t4
-+	csrw	CSR_SEPC, t2
-+
-+	/* Save Host SSCRATCH and change it to struct kvm_vcpu_arch pointer */
-+	csrrw	t3, CSR_SSCRATCH, a0
- 
- 	/* Store Host CSR values */
+@@ -62,7 +60,9 @@ SYM_FUNC_START(__kvm_riscv_switch_to)
  	REG_S	t0, (KVM_ARCH_HOST_SSTATUS)(a0)
--	REG_S	t1, (KVM_ARCH_HOST_SCOUNTEREN)(a0)
--	REG_S	t2, (KVM_ARCH_HOST_SSCRATCH)(a0)
--	REG_S	t3, (KVM_ARCH_HOST_STVEC)(a0)
-+	REG_S	t1, (KVM_ARCH_HOST_STVEC)(a0)
-+	REG_S	t3, (KVM_ARCH_HOST_SSCRATCH)(a0)
+ 	REG_S	t1, (KVM_ARCH_HOST_STVEC)(a0)
+ 	REG_S	t3, (KVM_ARCH_HOST_SSCRATCH)(a0)
++.endm
  
++.macro RESTORE_GUEST_GPRS
  	/* Restore Guest GPRs (except A0) */
  	REG_L	ra, (KVM_ARCH_GUEST_RA)(a0)
-@@ -145,31 +140,26 @@ SYM_FUNC_START(__kvm_riscv_switch_to)
- 	REG_S	t6, (KVM_ARCH_GUEST_T6)(a0)
+ 	REG_L	sp, (KVM_ARCH_GUEST_SP)(a0)
+@@ -97,13 +97,9 @@ SYM_FUNC_START(__kvm_riscv_switch_to)
  
- 	/* Load Host CSR values */
--	REG_L	t1, (KVM_ARCH_HOST_STVEC)(a0)
--	REG_L	t2, (KVM_ARCH_HOST_SSCRATCH)(a0)
--	REG_L	t3, (KVM_ARCH_HOST_SCOUNTEREN)(a0)
--	REG_L	t4, (KVM_ARCH_HOST_SSTATUS)(a0)
+ 	/* Restore Guest A0 */
+ 	REG_L	a0, (KVM_ARCH_GUEST_A0)(a0)
++.endm
+ 
+-	/* Resume Guest */
+-	sret
 -
--	/* Save Guest SEPC */
--	csrr	t0, CSR_SEPC
-+	REG_L	t0, (KVM_ARCH_HOST_STVEC)(a0)
-+	REG_L	t1, (KVM_ARCH_HOST_SSCRATCH)(a0)
-+	REG_L	t2, (KVM_ARCH_HOST_SSTATUS)(a0)
+-	/* Back to Host */
+-	.align 2
+-.Lkvm_switch_return:
++.macro SAVE_GUEST_GPRS
+ 	/* Swap Guest A0 with SSCRATCH */
+ 	csrrw	a0, CSR_SSCRATCH, a0
  
- 	/* Save Guest A0 and Restore Host SSCRATCH */
--	csrrw	t2, CSR_SSCRATCH, t2
-+	csrrw	t1, CSR_SSCRATCH, t1
+@@ -138,7 +134,9 @@ SYM_FUNC_START(__kvm_riscv_switch_to)
+ 	REG_S	t4, (KVM_ARCH_GUEST_T4)(a0)
+ 	REG_S	t5, (KVM_ARCH_GUEST_T5)(a0)
+ 	REG_S	t6, (KVM_ARCH_GUEST_T6)(a0)
++.endm
  
--	/* Restore Host STVEC */
--	csrw	CSR_STVEC, t1
-+	/* Save Guest SEPC */
-+	csrr	t3, CSR_SEPC
++.macro SAVE_GUEST_AND_RESTORE_HOST_CSRS
+ 	/* Load Host CSR values */
+ 	REG_L	t0, (KVM_ARCH_HOST_STVEC)(a0)
+ 	REG_L	t1, (KVM_ARCH_HOST_SSCRATCH)(a0)
+@@ -160,7 +158,9 @@ SYM_FUNC_START(__kvm_riscv_switch_to)
+ 	REG_S	t1, (KVM_ARCH_GUEST_A0)(a0)
+ 	REG_S	t2, (KVM_ARCH_GUEST_SSTATUS)(a0)
+ 	REG_S	t3, (KVM_ARCH_GUEST_SEPC)(a0)
++.endm
  
--	/* Save Guest and Restore Host SCOUNTEREN */
--	csrrw	t3, CSR_SCOUNTEREN, t3
-+	/* Restore Host STVEC */
-+	csrw	CSR_STVEC, t0
- 
- 	/* Save Guest and Restore Host SSTATUS */
--	csrrw	t4, CSR_SSTATUS, t4
-+	csrrw	t2, CSR_SSTATUS, t2
- 
- 	/* Store Guest CSR values */
--	REG_S	t0, (KVM_ARCH_GUEST_SEPC)(a0)
--	REG_S	t2, (KVM_ARCH_GUEST_A0)(a0)
--	REG_S	t3, (KVM_ARCH_GUEST_SCOUNTEREN)(a0)
--	REG_S	t4, (KVM_ARCH_GUEST_SSTATUS)(a0)
-+	REG_S	t1, (KVM_ARCH_GUEST_A0)(a0)
-+	REG_S	t2, (KVM_ARCH_GUEST_SSTATUS)(a0)
-+	REG_S	t3, (KVM_ARCH_GUEST_SEPC)(a0)
- 
++.macro RESTORE_HOST_GPRS
  	/* Restore Host GPRs (except A0 and T0-T6) */
  	REG_L	ra, (KVM_ARCH_HOST_RA)(a0)
+ 	REG_L	sp, (KVM_ARCH_HOST_SP)(a0)
+@@ -185,6 +185,34 @@ SYM_FUNC_START(__kvm_riscv_switch_to)
+ 	REG_L	s9, (KVM_ARCH_HOST_S9)(a0)
+ 	REG_L	s10, (KVM_ARCH_HOST_S10)(a0)
+ 	REG_L	s11, (KVM_ARCH_HOST_S11)(a0)
++.endm
++
++	.text
++	.altmacro
++	.option norelax
++
++	/*
++	 * Parameters:
++	 * A0 <= Pointer to struct kvm_vcpu_arch
++	 */
++SYM_FUNC_START(__kvm_riscv_switch_to)
++	SAVE_HOST_GPRS
++
++	SAVE_HOST_AND_RESTORE_GUEST_CSRS .Lkvm_switch_return
++
++	RESTORE_GUEST_GPRS
++
++	/* Resume Guest using SRET */
++	sret
++
++	/* Back to Host */
++	.align 2
++.Lkvm_switch_return:
++	SAVE_GUEST_GPRS
++
++	SAVE_GUEST_AND_RESTORE_HOST_CSRS
++
++	RESTORE_HOST_GPRS
+ 
+ 	/* Return to C code */
+ 	ret
 -- 
 2.34.1
 
