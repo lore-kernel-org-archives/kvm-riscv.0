@@ -1,10 +1,11 @@
 From: Yong-Xuan Wang <yongxuan.wang@sifive.com>
-Date: Fri, 19 Jul 2024 14:32:19 +0800
-Subject: [PATCH v7 1/4] RISC-V: Add Svade and Svadu Extensions Support
-In-Reply-To: <c403de1d-cda8-45bc-a6a2-a92170ad8575@sifive.com>
+Date: Fri, 19 Jul 2024 14:51:46 +0800
+Subject: [PATCH v7 3/4] RISC-V: KVM: Add Svade and Svadu Extensions
+ Support for Guest/VM
+In-Reply-To: <60555952-7307-41ed-bd6f-17a179089596@sifive.com>
 References: <20240712083850.4242-1-yongxuan.wang@sifive.com>
- <20240712083850.4242-2-yongxuan.wang@sifive.com> <c403de1d-cda8-45bc-a6a2-a92170ad8575@sifive.com>
-Message-ID: <CAMWQL2hKWkBfV6SgRBQUF9rPAGLyW69oMm9j8RWQv7iGgz9kgQ@mail.gmail.com>
+ <20240712083850.4242-4-yongxuan.wang@sifive.com> <60555952-7307-41ed-bd6f-17a179089596@sifive.com>
+Message-ID: <CAMWQL2hCkEeTOqk5tHhhmsxKNknzGfLq=UOQ3Xx94L59YyA_WQ@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -13,185 +14,118 @@ Content-Transfer-Encoding: 7bit
 
 Hi Samuel,
 
-On Fri, Jul 19, 2024 at 7:35?AM Samuel Holland
+On Fri, Jul 19, 2024 at 8:22?AM Samuel Holland
 <samuel.holland@sifive.com> wrote:
 >
 > Hi Yong-Xuan,
 >
-> Two trivial comments below for if you send another version of the series.
->
 > On 2024-07-12 3:38 AM, Yong-Xuan Wang wrote:
-> > Svade and Svadu extensions represent two schemes for managing the PTE A/D
-> > bits. When the PTE A/D bits need to be set, Svade extension intdicates
-> > that a related page fault will be raised. In contrast, the Svadu extension
-> > supports hardware updating of PTE A/D bits. Since the Svade extension is
-> > mandatory and the Svadu extension is optional in RVA23 profile, by default
-> > the M-mode firmware will enable the Svadu extension in the menvcfg CSR
-> > when only Svadu is present in DT.
+> > We extend the KVM ISA extension ONE_REG interface to allow VMM tools to
+> > detect and enable Svade and Svadu extensions for Guest/VM. Since the
+> > henvcfg.ADUE is read-only zero if the menvcfg.ADUE is zero, the Svadu
+> > extension is available for Guest/VM and the Svade extension is allowed
+> > to disabledonly when arch_has_hw_pte_young() is true.
 > >
-> > This patch detects Svade and Svadu extensions from DT and adds
-> > arch_has_hw_pte_young() to enable optimization in MGLRU and
-> > __wp_page_copy_user() when we have the PTE A/D bits hardware updating
-> > support.
-> >
-> > Co-developed-by: Jinyu Tang <tjytimi@163.com>
-> > Signed-off-by: Jinyu Tang <tjytimi@163.com>
 > > Signed-off-by: Yong-Xuan Wang <yongxuan.wang@sifive.com>
 > > Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
 > > ---
-> >  arch/riscv/Kconfig               |  1 +
-> >  arch/riscv/include/asm/csr.h     |  1 +
-> >  arch/riscv/include/asm/hwcap.h   |  2 ++
-> >  arch/riscv/include/asm/pgtable.h | 13 ++++++++++++-
-> >  arch/riscv/kernel/cpufeature.c   | 32 ++++++++++++++++++++++++++++++++
-> >  5 files changed, 48 insertions(+), 1 deletion(-)
+> >  arch/riscv/include/uapi/asm/kvm.h |  2 ++
+> >  arch/riscv/kvm/vcpu.c             |  3 +++
+> >  arch/riscv/kvm/vcpu_onereg.c      | 15 +++++++++++++++
+> >  3 files changed, 20 insertions(+)
 > >
-> > diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
-> > index 0525ee2d63c7..3d705e28ff85 100644
-> > --- a/arch/riscv/Kconfig
-> > +++ b/arch/riscv/Kconfig
-> > @@ -36,6 +36,7 @@ config RISCV
-> >       select ARCH_HAS_PMEM_API
-> >       select ARCH_HAS_PREPARE_SYNC_CORE_CMD
-> >       select ARCH_HAS_PTE_SPECIAL
-> > +     select ARCH_HAS_HW_PTE_YOUNG
+> > diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
+> > index e878e7cc3978..a5e0c35d7e9a 100644
+> > --- a/arch/riscv/include/uapi/asm/kvm.h
+> > +++ b/arch/riscv/include/uapi/asm/kvm.h
+> > @@ -168,6 +168,8 @@ enum KVM_RISCV_ISA_EXT_ID {
+> >       KVM_RISCV_ISA_EXT_ZTSO,
+> >       KVM_RISCV_ISA_EXT_ZACAS,
+> >       KVM_RISCV_ISA_EXT_SSCOFPMF,
+> > +     KVM_RISCV_ISA_EXT_SVADE,
+> > +     KVM_RISCV_ISA_EXT_SVADU,
+> >       KVM_RISCV_ISA_EXT_MAX,
+> >  };
+> >
+> > diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+> > index 17e21df36cc1..64a15af459e0 100644
+> > --- a/arch/riscv/kvm/vcpu.c
+> > +++ b/arch/riscv/kvm/vcpu.c
+> > @@ -540,6 +540,9 @@ static void kvm_riscv_vcpu_setup_config(struct kvm_vcpu *vcpu)
+> >       if (riscv_isa_extension_available(isa, ZICBOZ))
+> >               cfg->henvcfg |= ENVCFG_CBZE;
+> >
+> > +     if (riscv_isa_extension_available(isa, SVADU))
+> > +             cfg->henvcfg |= ENVCFG_ADUE;
 >
-> These lines should be sorted alphabetically.
+> This is correct for now because patch 1 ensures the host (and therefore also the
+> guest) never has both Svade and Svadu available. When that changes, this check
+> will need to add an "&& !riscv_isa_extension_available(isa, SVADE)" condition so
+> it matches the behavior described in the DT binding. There's no need to resend
+> to make this addition, but if you do, it wouldn't hurt to include it so it's not
+> forgotten later. (It looks maybe like v6 only partially implemented Andrew's
+> suggestion?)
 >
-> >       select ARCH_HAS_SET_DIRECT_MAP if MMU
-> >       select ARCH_HAS_SET_MEMORY if MMU
-> >       select ARCH_HAS_STRICT_KERNEL_RWX if MMU && !XIP_KERNEL
-> > diff --git a/arch/riscv/include/asm/csr.h b/arch/riscv/include/asm/csr.h
-> > index 25966995da04..524cd4131c71 100644
-> > --- a/arch/riscv/include/asm/csr.h
-> > +++ b/arch/riscv/include/asm/csr.h
-> > @@ -195,6 +195,7 @@
-> >  /* xENVCFG flags */
-> >  #define ENVCFG_STCE                  (_AC(1, ULL) << 63)
-> >  #define ENVCFG_PBMTE                 (_AC(1, ULL) << 62)
-> > +#define ENVCFG_ADUE                  (_AC(1, ULL) << 61)
-> >  #define ENVCFG_CBZE                  (_AC(1, UL) << 7)
-> >  #define ENVCFG_CBCFE                 (_AC(1, UL) << 6)
-> >  #define ENVCFG_CBIE_SHIFT            4
-> > diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
-> > index e17d0078a651..35d7aa49785d 100644
-> > --- a/arch/riscv/include/asm/hwcap.h
-> > +++ b/arch/riscv/include/asm/hwcap.h
-> > @@ -81,6 +81,8 @@
-> >  #define RISCV_ISA_EXT_ZTSO           72
-> >  #define RISCV_ISA_EXT_ZACAS          73
-> >  #define RISCV_ISA_EXT_XANDESPMU              74
-> > +#define RISCV_ISA_EXT_SVADE             75
->
-> The number here should be aligned with tabs, like the surrounding lines.
->
-> Regards,
-> Samuel
+> Reviewed-by: Samuel Holland <samuel.holland@sifive.com>
 >
 
-I will fix them in the next version. Thank you!
+Yeah, since the PATCH1 can ensure that only Svade or Svadu will be used, so I
+removed the Svade checking there. I will add it back in the next version. Thank
+you!
 
 Regards,
 Yong-Xuan
 
-> > +#define RISCV_ISA_EXT_SVADU          76
-> >
-> >  #define RISCV_ISA_EXT_XLINUXENVCFG   127
-> >
-> > diff --git a/arch/riscv/include/asm/pgtable.h b/arch/riscv/include/asm/pgtable.h
-> > index aad8b8ca51f1..ec0cdacd7da0 100644
-> > --- a/arch/riscv/include/asm/pgtable.h
-> > +++ b/arch/riscv/include/asm/pgtable.h
-> > @@ -120,6 +120,7 @@
-> >  #include <asm/tlbflush.h>
-> >  #include <linux/mm_types.h>
-> >  #include <asm/compat.h>
-> > +#include <asm/cpufeature.h>
-> >
-> >  #define __page_val_to_pfn(_val)  (((_val) & _PAGE_PFN_MASK) >> _PAGE_PFN_SHIFT)
-> >
-> > @@ -288,7 +289,6 @@ static inline pte_t pud_pte(pud_t pud)
-> >  }
-> >
-> >  #ifdef CONFIG_RISCV_ISA_SVNAPOT
-> > -#include <asm/cpufeature.h>
-> >
-> >  static __always_inline bool has_svnapot(void)
-> >  {
-> > @@ -624,6 +624,17 @@ static inline pgprot_t pgprot_writecombine(pgprot_t _prot)
-> >       return __pgprot(prot);
-> >  }
-> >
-> > +/*
-> > + * Both Svade and Svadu control the hardware behavior when the PTE A/D bits need to be set. By
-> > + * default the M-mode firmware enables the hardware updating scheme when only Svadu is present in
-> > + * DT.
-> > + */
-> > +#define arch_has_hw_pte_young arch_has_hw_pte_young
-> > +static inline bool arch_has_hw_pte_young(void)
-> > +{
-> > +     return riscv_has_extension_unlikely(RISCV_ISA_EXT_SVADU);
-> > +}
 > > +
-> >  /*
-> >   * THP functions
-> >   */
-> > diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
-> > index 5ef48cb20ee1..b2c3fe945e89 100644
-> > --- a/arch/riscv/kernel/cpufeature.c
-> > +++ b/arch/riscv/kernel/cpufeature.c
-> > @@ -301,6 +301,8 @@ const struct riscv_isa_ext_data riscv_isa_ext[] = {
-> >       __RISCV_ISA_EXT_DATA(ssaia, RISCV_ISA_EXT_SSAIA),
-> >       __RISCV_ISA_EXT_DATA(sscofpmf, RISCV_ISA_EXT_SSCOFPMF),
-> >       __RISCV_ISA_EXT_DATA(sstc, RISCV_ISA_EXT_SSTC),
-> > +     __RISCV_ISA_EXT_DATA(svade, RISCV_ISA_EXT_SVADE),
-> > +     __RISCV_ISA_EXT_DATA(svadu, RISCV_ISA_EXT_SVADU),
-> >       __RISCV_ISA_EXT_DATA(svinval, RISCV_ISA_EXT_SVINVAL),
-> >       __RISCV_ISA_EXT_DATA(svnapot, RISCV_ISA_EXT_SVNAPOT),
-> >       __RISCV_ISA_EXT_DATA(svpbmt, RISCV_ISA_EXT_SVPBMT),
-> > @@ -554,6 +556,21 @@ static void __init riscv_fill_hwcap_from_isa_string(unsigned long *isa2hwcap)
-> >                       clear_bit(RISCV_ISA_EXT_v, isainfo->isa);
-> >               }
+> >       if (riscv_has_extension_unlikely(RISCV_ISA_EXT_SMSTATEEN)) {
+> >               cfg->hstateen0 |= SMSTATEEN0_HSENVCFG;
+> >               if (riscv_isa_extension_available(isa, SSAIA))
+> > diff --git a/arch/riscv/kvm/vcpu_onereg.c b/arch/riscv/kvm/vcpu_onereg.c
+> > index 62874fbca29f..474fdeafe9fe 100644
+> > --- a/arch/riscv/kvm/vcpu_onereg.c
+> > +++ b/arch/riscv/kvm/vcpu_onereg.c
+> > @@ -15,6 +15,7 @@
+> >  #include <asm/cacheflush.h>
+> >  #include <asm/cpufeature.h>
+> >  #include <asm/kvm_vcpu_vector.h>
+> > +#include <asm/pgtable.h>
+> >  #include <asm/vector.h>
 > >
+> >  #define KVM_RISCV_BASE_ISA_MASK              GENMASK(25, 0)
+> > @@ -38,6 +39,8 @@ static const unsigned long kvm_isa_ext_arr[] = {
+> >       KVM_ISA_EXT_ARR(SSAIA),
+> >       KVM_ISA_EXT_ARR(SSCOFPMF),
+> >       KVM_ISA_EXT_ARR(SSTC),
+> > +     KVM_ISA_EXT_ARR(SVADE),
+> > +     KVM_ISA_EXT_ARR(SVADU),
+> >       KVM_ISA_EXT_ARR(SVINVAL),
+> >       KVM_ISA_EXT_ARR(SVNAPOT),
+> >       KVM_ISA_EXT_ARR(SVPBMT),
+> > @@ -105,6 +108,12 @@ static bool kvm_riscv_vcpu_isa_enable_allowed(unsigned long ext)
+> >               return __riscv_isa_extension_available(NULL, RISCV_ISA_EXT_SSAIA);
+> >       case KVM_RISCV_ISA_EXT_V:
+> >               return riscv_v_vstate_ctrl_user_allowed();
+> > +     case KVM_RISCV_ISA_EXT_SVADU:
 > > +             /*
-> > +              * When neither Svade nor Svadu present in DT, it is technically
-> > +              * unknown whether the platform uses Svade or Svadu. Supervisor may
-> > +              * assume Svade to be present and enabled or it can discover based
-> > +              * on mvendorid, marchid, and mimpid. When both Svade and Svadu present
-> > +              * in DT, supervisor must assume Svadu turned-off at boot time. To use
-> > +              * Svadu, supervisor must explicitly enable it using the SBI FWFT extension.
+> > +              * The henvcfg.ADUE is read-only zero if menvcfg.ADUE is zero.
+> > +              * Guest OS can use Svadu only when host os enable Svadu.
 > > +              */
-> > +             if (!test_bit(RISCV_ISA_EXT_SVADE, isainfo->isa) &&
-> > +                 !test_bit(RISCV_ISA_EXT_SVADU, isainfo->isa))
-> > +                     set_bit(RISCV_ISA_EXT_SVADE, isainfo->isa);
-> > +             else if (test_bit(RISCV_ISA_EXT_SVADE, isainfo->isa) &&
-> > +                      test_bit(RISCV_ISA_EXT_SVADU, isainfo->isa))
-> > +                     clear_bit(RISCV_ISA_EXT_SVADU, isainfo->isa);
-> > +
-> >               /*
-> >                * All "okay" hart should have same isa. Set HWCAP based on
-> >                * common capabilities of every "okay" hart, in case they don't
-> > @@ -619,6 +636,21 @@ static int __init riscv_fill_hwcap_from_ext_list(unsigned long *isa2hwcap)
-> >
-> >               of_node_put(cpu_node);
-> >
+> > +             return arch_has_hw_pte_young();
+> >       default:
+> >               break;
+> >       }
+> > @@ -167,6 +176,12 @@ static bool kvm_riscv_vcpu_isa_disable_allowed(unsigned long ext)
+> >       /* Extensions which can be disabled using Smstateen */
+> >       case KVM_RISCV_ISA_EXT_SSAIA:
+> >               return riscv_has_extension_unlikely(RISCV_ISA_EXT_SMSTATEEN);
+> > +     case KVM_RISCV_ISA_EXT_SVADE:
 > > +             /*
-> > +              * When neither Svade nor Svadu present in DT, it is technically
-> > +              * unknown whether the platform uses Svade or Svadu. Supervisor may
-> > +              * assume Svade to be present and enabled or it can discover based
-> > +              * on mvendorid, marchid, and mimpid. When both Svade and Svadu present
-> > +              * in DT, supervisor must assume Svadu turned-off at boot time. To use
-> > +              * Svadu, supervisor must explicitly enable it using the SBI FWFT extension.
+> > +              * The henvcfg.ADUE is read-only zero if menvcfg.ADUE is zero.
+> > +              * Svade is not allowed to disable when the platform use Svade.
 > > +              */
-> > +             if (!test_bit(RISCV_ISA_EXT_SVADE, isainfo->isa) &&
-> > +                 !test_bit(RISCV_ISA_EXT_SVADU, isainfo->isa))
-> > +                     set_bit(RISCV_ISA_EXT_SVADE, isainfo->isa);
-> > +             else if (test_bit(RISCV_ISA_EXT_SVADE, isainfo->isa) &&
-> > +                      test_bit(RISCV_ISA_EXT_SVADU, isainfo->isa))
-> > +                     clear_bit(RISCV_ISA_EXT_SVADU, isainfo->isa);
-> > +
-> >               /*
-> >                * All "okay" harts should have same isa. Set HWCAP based on
-> >                * common capabilities of every "okay" hart, in case they don't.
+> > +             return arch_has_hw_pte_young();
+> >       default:
+> >               break;
+> >       }
 >
 
