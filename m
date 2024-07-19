@@ -1,211 +1,288 @@
 From: James Raphael Tiovalen <jamestiotio@gmail.com>
-Date: Fri, 19 Jul 2024 10:39:46 +0800
-Subject: [kvm-unit-tests PATCH v3 4/5] riscv: Add some delay and timer routines
+Date: Fri, 19 Jul 2024 10:39:47 +0800
+Subject: [kvm-unit-tests PATCH v3 5/5] riscv: sbi: Add test for timer extension
 In-Reply-To: <20240719023947.112609-1-jamestiotio@gmail.com>
 References: <20240719023947.112609-1-jamestiotio@gmail.com>
-Message-ID: <20240719023947.112609-5-jamestiotio@gmail.com>
+Message-ID: <20240719023947.112609-6-jamestiotio@gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add a delay method that would allow tests to wait for some specified
-number of cycles. Also add a conversion helper method between
-microseconds and cycles. This conversion is done by using the timebase
-frequency, which is obtained during setup via the device tree.
+Add a test for the set_timer function of the time extension. The test
+checks that:
+- The time extension is available
+- The time counter monotonically increases
+- The installed timer interrupt handler is called
+- The timer interrupt is received within a reasonable time interval
+- The timer interrupt pending bit is cleared after the set_timer SBI
+  call is made
+- The timer interrupt can be cleared either by requesting a timer
+  interrupt infinitely far into the future or by masking the timer
+  interrupt
+
+The timer interrupt delay can be set using the TIMER_DELAY environment
+variable in microseconds. The default delay value is 1 second. Since the
+interrupt can arrive a little later than the specified delay, allow some
+margin of error. This margin of error can be specified via the
+TIMER_MARGIN environment variable in microseconds. The default margin of
+error is 200 milliseconds.
+
+This test has been verified on RV32 and RV64 with OpenSBI using QEMU.
 
 Signed-off-by: James Raphael Tiovalen <jamestiotio@gmail.com>
 ---
- riscv/Makefile        |  2 ++
- lib/riscv/asm/csr.h   |  1 +
- lib/riscv/asm/delay.h | 15 +++++++++++++++
- lib/riscv/asm/setup.h |  1 +
- lib/riscv/asm/timer.h | 14 ++++++++++++++
- lib/riscv/delay.c     | 16 ++++++++++++++++
- lib/riscv/setup.c     |  4 ++++
- lib/riscv/timer.c     | 26 ++++++++++++++++++++++++++
- 8 files changed, 79 insertions(+)
- create mode 100644 lib/riscv/asm/delay.h
- create mode 100644 lib/riscv/asm/timer.h
- create mode 100644 lib/riscv/delay.c
- create mode 100644 lib/riscv/timer.c
+ lib/riscv/asm/csr.h   |   8 +++
+ lib/riscv/asm/sbi.h   |   5 ++
+ lib/riscv/asm/timer.h |  10 ++++
+ riscv/sbi.c           | 136 ++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 159 insertions(+)
 
-diff --git a/riscv/Makefile b/riscv/Makefile
-index 919a3ebb..b0cd613f 100644
---- a/riscv/Makefile
-+++ b/riscv/Makefile
-@@ -30,6 +30,7 @@ cflatobjs += lib/memregions.o
- cflatobjs += lib/on-cpus.o
- cflatobjs += lib/vmalloc.o
- cflatobjs += lib/riscv/bitops.o
-+cflatobjs += lib/riscv/delay.o
- cflatobjs += lib/riscv/io.o
- cflatobjs += lib/riscv/isa.o
- cflatobjs += lib/riscv/mmu.o
-@@ -38,6 +39,7 @@ cflatobjs += lib/riscv/sbi.o
- cflatobjs += lib/riscv/setup.o
- cflatobjs += lib/riscv/smp.o
- cflatobjs += lib/riscv/stack.o
-+cflatobjs += lib/riscv/timer.o
- ifeq ($(ARCH),riscv32)
- cflatobjs += lib/ldiv32.o
- endif
 diff --git a/lib/riscv/asm/csr.h b/lib/riscv/asm/csr.h
-index ba810c9f..a9b1bd42 100644
+index a9b1bd42..052c0412 100644
 --- a/lib/riscv/asm/csr.h
 +++ b/lib/riscv/asm/csr.h
-@@ -10,6 +10,7 @@
+@@ -4,13 +4,17 @@
+ #include <linux/const.h>
+ 
+ #define CSR_SSTATUS		0x100
++#define CSR_SIE			0x104
+ #define CSR_STVEC		0x105
+ #define CSR_SSCRATCH		0x140
+ #define CSR_SEPC		0x141
  #define CSR_SCAUSE		0x142
  #define CSR_STVAL		0x143
++#define CSR_SIP			0x144
  #define CSR_SATP		0x180
-+#define CSR_TIME		0xc01
+ #define CSR_TIME		0xc01
++#define CSR_STIMECMP		0x14d
++#define CSR_STIMECMPH		0x15d
  
  #define SR_SIE			_AC(0x00000002, UL)
  
-diff --git a/lib/riscv/asm/delay.h b/lib/riscv/asm/delay.h
-new file mode 100644
-index 00000000..ce540f4c
---- /dev/null
-+++ b/lib/riscv/asm/delay.h
-@@ -0,0 +1,15 @@
-+/* SPDX-License-Identifier: GPL-2.0-only */
-+#ifndef _ASMRISCV_DELAY_H_
-+#define _ASMRISCV_DELAY_H_
-+
-+#include <libcflat.h>
-+#include <asm/setup.h>
-+
-+extern void delay(u64 cycles);
-+
-+static inline uint64_t usec_to_cycles(uint64_t usec)
-+{
-+	return (timebase_frequency * usec) / 1000000;
-+}
-+
-+#endif /* _ASMRISCV_DELAY_H_ */
-diff --git a/lib/riscv/asm/setup.h b/lib/riscv/asm/setup.h
-index 7f81a705..a13159bf 100644
---- a/lib/riscv/asm/setup.h
-+++ b/lib/riscv/asm/setup.h
-@@ -7,6 +7,7 @@
- #define NR_CPUS 16
- extern struct thread_info cpus[NR_CPUS];
- extern int nr_cpus;
-+extern uint64_t timebase_frequency;
- int hartid_to_cpu(unsigned long hartid);
+@@ -47,6 +51,10 @@
+ #define IRQ_S_GEXT		12
+ #define IRQ_PMU_OVF		13
  
- void io_init(void);
++#define IE_TIE			(_AC(0x1, UL) << IRQ_S_TIMER)
++
++#define IP_TIP			IE_TIE
++
+ #ifndef __ASSEMBLY__
+ 
+ #define csr_swap(csr, val)					\
+diff --git a/lib/riscv/asm/sbi.h b/lib/riscv/asm/sbi.h
+index 5e1a674a..73ab5438 100644
+--- a/lib/riscv/asm/sbi.h
++++ b/lib/riscv/asm/sbi.h
+@@ -16,6 +16,7 @@
+ 
+ enum sbi_ext_id {
+ 	SBI_EXT_BASE = 0x10,
++	SBI_EXT_TIME = 0x54494d45,
+ 	SBI_EXT_HSM = 0x48534d,
+ 	SBI_EXT_SRST = 0x53525354,
+ };
+@@ -37,6 +38,10 @@ enum sbi_ext_hsm_fid {
+ 	SBI_EXT_HSM_HART_SUSPEND,
+ };
+ 
++enum sbi_ext_time_fid {
++	SBI_EXT_TIME_SET_TIMER = 0,
++};
++
+ struct sbiret {
+ 	long error;
+ 	long value;
 diff --git a/lib/riscv/asm/timer.h b/lib/riscv/asm/timer.h
-new file mode 100644
-index 00000000..2e319391
---- /dev/null
+index 2e319391..cd20262f 100644
+--- a/lib/riscv/asm/timer.h
 +++ b/lib/riscv/asm/timer.h
-@@ -0,0 +1,14 @@
-+/* SPDX-License-Identifier: GPL-2.0-only */
-+#ifndef _ASMRISCV_TIMER_H_
-+#define _ASMRISCV_TIMER_H_
-+
-+#include <asm/csr.h>
-+
-+extern void timer_get_frequency(const void *fdt);
-+
-+static inline uint64_t timer_get_cycles(void)
+@@ -11,4 +11,14 @@ static inline uint64_t timer_get_cycles(void)
+ 	return csr_read(CSR_TIME);
+ }
+ 
++static inline void timer_irq_enable(void)
 +{
-+	return csr_read(CSR_TIME);
++	csr_set(CSR_SIE, IE_TIE);
 +}
 +
-+#endif /* _ASMRISCV_TIMER_H_ */
-diff --git a/lib/riscv/delay.c b/lib/riscv/delay.c
-new file mode 100644
-index 00000000..6b5c78da
---- /dev/null
-+++ b/lib/riscv/delay.c
-@@ -0,0 +1,16 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/*
-+ * Copyright (C) 2024, James Raphael Tiovalen <jamestiotio@gmail.com>
-+ */
-+#include <libcflat.h>
++static inline void timer_irq_disable(void)
++{
++	csr_clear(CSR_SIE, IE_TIE);
++}
++
+ #endif /* _ASMRISCV_TIMER_H_ */
+diff --git a/riscv/sbi.c b/riscv/sbi.c
+index 762e9711..9798b989 100644
+--- a/riscv/sbi.c
++++ b/riscv/sbi.c
+@@ -6,7 +6,21 @@
+  */
+ #include <libcflat.h>
+ #include <stdlib.h>
++#include <limits.h>
 +#include <asm/barrier.h>
++#include <asm/csr.h>
 +#include <asm/delay.h>
++#include <asm/isa.h>
++#include <asm/processor.h>
+ #include <asm/sbi.h>
++#include <asm/smp.h>
 +#include <asm/timer.h>
 +
-+void delay(uint64_t cycles)
++static bool timer_works;
++static bool mask_timer_irq;
++static bool timer_irq_set;
++static bool timer_irq_cleared;
++static unsigned long timer_irq_count;
+ 
+ static void help(void)
+ {
+@@ -19,6 +33,33 @@ static struct sbiret __base_sbi_ecall(int fid, unsigned long arg0)
+ 	return sbi_ecall(SBI_EXT_BASE, fid, arg0, 0, 0, 0, 0, 0);
+ }
+ 
++static struct sbiret __time_sbi_ecall(unsigned long stime_value)
 +{
-+	uint64_t start = timer_get_cycles();
++	return sbi_ecall(SBI_EXT_TIME, SBI_EXT_TIME_SET_TIMER, stime_value, 0, 0, 0, 0, 0);
++}
 +
-+	while ((timer_get_cycles() - start) < cycles)
++static inline bool timer_irq_pending(void)
++{
++	return csr_read(CSR_SIP) & IP_TIP;
++}
++
++static void timer_irq_handler(struct pt_regs *regs)
++{
++	timer_irq_count = (timer_irq_count == ULONG_MAX) ? ULONG_MAX : timer_irq_count + 1;
++
++	timer_works = true;
++	if (timer_irq_pending())
++		timer_irq_set = true;
++
++	if (mask_timer_irq)
++		timer_irq_disable();
++	else {
++		__time_sbi_ecall(ULONG_MAX);
++		if (!timer_irq_pending())
++			timer_irq_cleared = true;
++	}
++}
++
+ static bool env_or_skip(const char *env)
+ {
+ 	if (!getenv(env)) {
+@@ -112,6 +153,100 @@ static void check_base(void)
+ 	report_prefix_pop();
+ }
+ 
++static void check_time(void)
++{
++	struct sbiret ret;
++	unsigned long begin, end, duration;
++	unsigned long d = getenv("TIMER_DELAY") ? strtol(getenv("TIMER_DELAY"), NULL, 0)
++						: 1000000;
++	unsigned long margin = getenv("TIMER_MARGIN") ? strtol(getenv("TIMER_MARGIN"), NULL, 0)
++						      : 200000;
++
++	d = usec_to_cycles(d);
++	margin = usec_to_cycles(margin);
++
++	report_prefix_push("time");
++
++	if (!sbi_probe(SBI_EXT_TIME)) {
++		report_skip("time extension not available");
++		report_prefix_pop();
++		return;
++	}
++
++	begin = timer_get_cycles();
++	delay(d);
++	end = timer_get_cycles();
++	assert(begin + d <= end);
++
++	report_prefix_push("set_timer");
++
++	install_irq_handler(IRQ_S_TIMER, timer_irq_handler);
++	local_irq_enable();
++	if (cpu_has_extension(smp_processor_id(), ISA_SSTC))
++#if __riscv_xlen == 64
++		csr_write(CSR_STIMECMP, ULONG_MAX);
++#else
++		csr_write(CSR_STIMECMPH, ULONG_MAX);
++#endif
++	timer_irq_enable();
++
++	begin = timer_get_cycles();
++	ret = __time_sbi_ecall(begin + d);
++
++	report(!ret.error, "set timer");
++	if (ret.error)
++		report_info("set timer failed with %ld\n", ret.error);
++
++	report(!timer_irq_pending(), "pending timer interrupt bit cleared");
++
++	while ((end = timer_get_cycles()) <= (begin + d + margin) && !timer_works)
 +		cpu_relax();
++
++	report(timer_works, "timer interrupt received");
++	report(timer_irq_set, "pending timer interrupt bit set in irq handler");
++	report(timer_irq_cleared, "pending timer interrupt bit cleared by setting timer to -1");
++
++	if (timer_works) {
++		duration = end - begin;
++		report(duration >= d && duration <= (d + margin), "timer delay honored");
++	}
++
++	if (timer_irq_count > 1)
++		report_fail("timer interrupt received multiple times");
++
++	timer_works = false;
++	timer_irq_set = false;
++	timer_irq_count = 0;
++	mask_timer_irq = true;
++	begin = timer_get_cycles();
++	ret = __time_sbi_ecall(begin + d);
++
++	report(!ret.error, "set timer for mask irq test");
++	if (ret.error)
++		report_info("set timer for mask irq test failed with %ld\n", ret.error);
++
++	while ((end = timer_get_cycles()) <= (begin + d + margin) && !timer_works)
++		cpu_relax();
++
++	report(timer_works, "timer interrupt received for mask irq test");
++	report(timer_irq_set, "pending timer interrupt bit set in irq handler for mask irq test");
++
++	if (timer_works) {
++		duration = end - begin;
++		report(duration >= d && duration <= (d + margin),
++		       "timer delay honored for mask irq test");
++	}
++
++	if (timer_irq_count > 1)
++		report_fail("timer interrupt received multiple times for mask irq test");
++
++	local_irq_disable();
++	install_irq_handler(IRQ_S_TIMER, NULL);
++
++	report_prefix_pop();
++	report_prefix_pop();
 +}
-diff --git a/lib/riscv/setup.c b/lib/riscv/setup.c
-index 50ffb0d0..905ea708 100644
---- a/lib/riscv/setup.c
-+++ b/lib/riscv/setup.c
-@@ -20,6 +20,7 @@
- #include <asm/page.h>
- #include <asm/processor.h>
- #include <asm/setup.h>
-+#include <asm/timer.h>
- 
- #define VA_BASE			((phys_addr_t)3 * SZ_1G)
- #if __riscv_xlen == 64
-@@ -38,6 +39,7 @@ u32 initrd_size;
- 
- struct thread_info cpus[NR_CPUS];
- int nr_cpus;
-+uint64_t timebase_frequency;
- 
- static struct mem_region riscv_mem_regions[NR_MEM_REGIONS + 1];
- 
-@@ -199,6 +201,7 @@ void setup(const void *fdt, phys_addr_t freemem_start)
- 
- 	mem_init(PAGE_ALIGN(__pa(freemem)));
- 	cpu_init();
-+	timer_get_frequency(dt_fdt());
- 	thread_info_init();
- 	io_init();
- 
-@@ -264,6 +267,7 @@ efi_status_t setup_efi(efi_bootinfo_t *efi_bootinfo)
- 	}
- 
- 	cpu_init();
-+	timer_get_frequency(dt_fdt());
- 	thread_info_init();
- 	io_init();
- 	initrd_setup();
-diff --git a/lib/riscv/timer.c b/lib/riscv/timer.c
-new file mode 100644
-index 00000000..db8dbb36
---- /dev/null
-+++ b/lib/riscv/timer.c
-@@ -0,0 +1,26 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/*
-+ * Copyright (C) 2024, James Raphael Tiovalen <jamestiotio@gmail.com>
-+ */
-+#include <libcflat.h>
-+#include <devicetree.h>
-+#include <asm/setup.h>
-+#include <asm/timer.h>
 +
-+void timer_get_frequency(const void *fdt)
-+{
-+	const struct fdt_property *prop;
-+	u32 *data;
-+	int cpus;
-+
-+	assert_msg(dt_available(), "ACPI not yet supported");
-+
-+	cpus = fdt_path_offset(fdt, "/cpus");
-+	assert(cpus >= 0);
-+
-+	prop = fdt_get_property(fdt, cpus, "timebase-frequency", NULL);
-+	assert(prop != NULL);
-+
-+	data = (u32 *)prop->data;
-+	timebase_frequency = fdt32_to_cpu(*data);
-+}
+ int main(int argc, char **argv)
+ {
+ 
+@@ -122,6 +257,7 @@ int main(int argc, char **argv)
+ 
+ 	report_prefix_push("sbi");
+ 	check_base();
++	check_time();
+ 
+ 	return report_summary();
+ }
 -- 
 2.43.0
 
