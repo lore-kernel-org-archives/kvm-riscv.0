@@ -1,59 +1,54 @@
 From: James Raphael Tiovalen <jamestiotio@gmail.com>
-Date: Fri, 19 Jul 2024 10:39:44 +0800
-Subject: [kvm-unit-tests PATCH v3 2/5] riscv: Update exception cause list
+Date: Fri, 19 Jul 2024 10:39:45 +0800
+Subject: [kvm-unit-tests PATCH v3 3/5] riscv: Add method to probe for SBI extensions
 In-Reply-To: <20240719023947.112609-1-jamestiotio@gmail.com>
 References: <20240719023947.112609-1-jamestiotio@gmail.com>
-Message-ID: <20240719023947.112609-3-jamestiotio@gmail.com>
+Message-ID: <20240719023947.112609-4-jamestiotio@gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Update the list of exception and interrupt causes to follow the latest
-RISC-V privileged ISA specification (version 20240411 section 18.6.1).
+Add a `sbi_probe` helper method that can be used by SBI extension tests
+to check if a given extension is available.
 
-Reviewed-by: Andrew Jones <andrew.jones@linux.dev>
 Signed-off-by: James Raphael Tiovalen <jamestiotio@gmail.com>
 ---
- lib/riscv/asm/csr.h       | 10 ++++++++++
- lib/riscv/asm/processor.h |  2 +-
- 2 files changed, 11 insertions(+), 1 deletion(-)
+ lib/riscv/asm/sbi.h |  1 +
+ lib/riscv/sbi.c     | 10 ++++++++++
+ 2 files changed, 11 insertions(+)
 
-diff --git a/lib/riscv/asm/csr.h b/lib/riscv/asm/csr.h
-index d6909d93..ba810c9f 100644
---- a/lib/riscv/asm/csr.h
-+++ b/lib/riscv/asm/csr.h
-@@ -36,6 +36,16 @@
- #define EXC_VIRTUAL_INST_FAULT		22
- #define EXC_STORE_GUEST_PAGE_FAULT	23
+diff --git a/lib/riscv/asm/sbi.h b/lib/riscv/asm/sbi.h
+index d82a384d..5e1a674a 100644
+--- a/lib/riscv/asm/sbi.h
++++ b/lib/riscv/asm/sbi.h
+@@ -49,6 +49,7 @@ struct sbiret sbi_ecall(int ext, int fid, unsigned long arg0,
  
-+/* Interrupt causes */
-+#define IRQ_S_SOFT		1
-+#define IRQ_VS_SOFT		2
-+#define IRQ_S_TIMER		5
-+#define IRQ_VS_TIMER		6
-+#define IRQ_S_EXT		9
-+#define IRQ_VS_EXT		10
-+#define IRQ_S_GEXT		12
-+#define IRQ_PMU_OVF		13
+ void sbi_shutdown(void);
+ struct sbiret sbi_hart_start(unsigned long hartid, unsigned long entry, unsigned long sp);
++long sbi_probe(int ext);
+ 
+ #endif /* !__ASSEMBLY__ */
+ #endif /* _ASMRISCV_SBI_H_ */
+diff --git a/lib/riscv/sbi.c b/lib/riscv/sbi.c
+index f39134c4..7d7d09c3 100644
+--- a/lib/riscv/sbi.c
++++ b/lib/riscv/sbi.c
+@@ -38,3 +38,13 @@ struct sbiret sbi_hart_start(unsigned long hartid, unsigned long entry, unsigned
+ {
+ 	return sbi_ecall(SBI_EXT_HSM, SBI_EXT_HSM_HART_START, hartid, entry, sp, 0, 0, 0);
+ }
 +
- #ifndef __ASSEMBLY__
- 
- #define csr_swap(csr, val)					\
-diff --git a/lib/riscv/asm/processor.h b/lib/riscv/asm/processor.h
-index 6451adb5..4c9ad968 100644
---- a/lib/riscv/asm/processor.h
-+++ b/lib/riscv/asm/processor.h
-@@ -4,7 +4,7 @@
- #include <asm/csr.h>
- #include <asm/ptrace.h>
- 
--#define EXCEPTION_CAUSE_MAX	16
-+#define EXCEPTION_CAUSE_MAX	24
- #define INTERRUPT_CAUSE_MAX	16
- 
- typedef void (*exception_fn)(struct pt_regs *);
++long sbi_probe(int ext)
++{
++	struct sbiret ret;
++
++	ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_PROBE_EXT, ext, 0, 0, 0, 0, 0);
++	assert(!ret.error);
++
++	return ret.value;
++}
 -- 
 2.43.0
 
