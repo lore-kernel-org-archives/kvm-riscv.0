@@ -1,84 +1,74 @@
-From: Conor Dooley <conor@kernel.org>
-Date: Fri, 19 Jul 2024 14:17:12 +0100
-Subject: [PATCH v7 2/4] dt-bindings: riscv: Add Svade and Svadu Entries
-In-Reply-To: <CAMWQL2g-peSYJQaxeJtyOzGdEmDQ6cnkRBdFQvLr2NQA1+mv2g@mail.gmail.com>
-References: <20240712083850.4242-1-yongxuan.wang@sifive.com>
- <20240712083850.4242-3-yongxuan.wang@sifive.com>
- <727b966a-a8c4-4021-acf6-3c031ccd843a@sifive.com>
- <CAMWQL2g-peSYJQaxeJtyOzGdEmDQ6cnkRBdFQvLr2NQA1+mv2g@mail.gmail.com>
-Message-ID: <20240719-flatten-elixir-d4476977ab95@spud>
+From: Andrew Jones <andrew.jones@linux.dev>
+Date: Fri, 19 Jul 2024 10:45:39 -0500
+Subject: [kvm-unit-tests PATCH v3 3/5] riscv: Add method to probe for SBI
+ extensions
+In-Reply-To: <20240719023947.112609-4-jamestiotio@gmail.com>
+References: <20240719023947.112609-1-jamestiotio@gmail.com>
+ <20240719023947.112609-4-jamestiotio@gmail.com>
+Message-ID: <20240719-14d00cb5b5a19d0c09a9ad02@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Jul 19, 2024 at 02:58:59PM +0800, Yong-Xuan Wang wrote:
-> Hi Samuel,
-> 
-> On Fri, Jul 19, 2024 at 7:38?AM Samuel Holland
-> <samuel.holland@sifive.com> wrote:
-> >
-> > On 2024-07-12 3:38 AM, Yong-Xuan Wang wrote:
-> > > Add entries for the Svade and Svadu extensions to the riscv,isa-extensions
-> > > property.
-> > >
-> > > Signed-off-by: Yong-Xuan Wang <yongxuan.wang@sifive.com>
-> > > ---
-> > >  .../devicetree/bindings/riscv/extensions.yaml | 28 +++++++++++++++++++
-> > >  1 file changed, 28 insertions(+)
-> > >
-> > > diff --git a/Documentation/devicetree/bindings/riscv/extensions.yaml b/Documentation/devicetree/bindings/riscv/extensions.yaml
-> > > index 468c646247aa..e91a6f4ede38 100644
-> > > --- a/Documentation/devicetree/bindings/riscv/extensions.yaml
-> > > +++ b/Documentation/devicetree/bindings/riscv/extensions.yaml
-> > > @@ -153,6 +153,34 @@ properties:
-> > >              ratified at commit 3f9ed34 ("Add ability to manually trigger
-> > >              workflow. (#2)") of riscv-time-compare.
-> > >
-> > > +        - const: svade
-> > > +          description: |
-> > > +            The standard Svade supervisor-level extension for SW-managed PTE A/D
-> > > +            bit updates as ratified in the 20240213 version of the privileged
-> > > +            ISA specification.
-> > > +
-> > > +            Both Svade and Svadu extensions control the hardware behavior when
-> > > +            the PTE A/D bits need to be set. The default behavior for the four
-> > > +            possible combinations of these extensions in the device tree are:
-> > > +            1) Neither Svade nor Svadu present in DT => It is technically
-> > > +               unknown whether the platform uses Svade or Svadu. Supervisor
-> > > +               software should be prepared to handle either hardware updating
-> > > +               of the PTE A/D bits or page faults when they need updated.
-> > > +            2) Only Svade present in DT => Supervisor must assume Svade to be
-> > > +               always enabled.
-> > > +            3) Only Svadu present in DT => Supervisor must assume Svadu to be
-> > > +               always enabled.
-> > > +            4) Both Svade and Svadu present in DT => Supervisor must assume
-> > > +               Svadu turned-off at boot time. To use Svadu, supervisor must
-> > > +               explicitly enable it using the SBI FWFT extension.
-> > > +
-> > > +        - const: svadu
-> > > +          description: |
-> > > +            The standard Svadu supervisor-level extension for hardware updating
-> > > +            of PTE A/D bits as ratified at commit c1abccf ("Merge pull request
-> > > +            #25 from ved-rivos/ratified") of riscv-svadu. Please refer to Svade
-> >
-> > Should we be referencing the archived riscv-svadu repository now that Svadu has
-> > been merged to the main privileged ISA manual? Either way:
-> >
-> > Reviewed-by: Samuel Holland <samuel.holland@sifive.com>
-> >
-> 
-> Yes, this commit is from the archived riscv-svadu repo. Or should I update it to
-> "commit c1abccf ("Merge pull request  #25 from ved-rivos/ratified") of
-> riscvarchive/riscv-svadu."?
+On Fri, Jul 19, 2024 at 10:39:45AM GMT, James Raphael Tiovalen wrote:
+> Add a `sbi_probe` helper method that can be used by SBI extension tests
+> to check if a given extension is available.
+>
 
-I think Samuel was saying that we should use the commit where it was
-merged into riscv-isa-manual instead.
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 228 bytes
-Desc: not available
-URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20240719/a460d944/attachment.sig>
+Suggested-by: Andrew Jones <andrew.jones@linux.dev>
+
+> Signed-off-by: James Raphael Tiovalen <jamestiotio@gmail.com>
+> ---
+>  lib/riscv/asm/sbi.h |  1 +
+>  lib/riscv/sbi.c     | 10 ++++++++++
+>  2 files changed, 11 insertions(+)
+> 
+> diff --git a/lib/riscv/asm/sbi.h b/lib/riscv/asm/sbi.h
+> index d82a384d..5e1a674a 100644
+> --- a/lib/riscv/asm/sbi.h
+> +++ b/lib/riscv/asm/sbi.h
+> @@ -49,6 +49,7 @@ struct sbiret sbi_ecall(int ext, int fid, unsigned long arg0,
+>  
+>  void sbi_shutdown(void);
+>  struct sbiret sbi_hart_start(unsigned long hartid, unsigned long entry, unsigned long sp);
+> +long sbi_probe(int ext);
+>  
+>  #endif /* !__ASSEMBLY__ */
+>  #endif /* _ASMRISCV_SBI_H_ */
+> diff --git a/lib/riscv/sbi.c b/lib/riscv/sbi.c
+> index f39134c4..7d7d09c3 100644
+> --- a/lib/riscv/sbi.c
+> +++ b/lib/riscv/sbi.c
+> @@ -38,3 +38,13 @@ struct sbiret sbi_hart_start(unsigned long hartid, unsigned long entry, unsigned
+>  {
+>  	return sbi_ecall(SBI_EXT_HSM, SBI_EXT_HSM_HART_START, hartid, entry, sp, 0, 0, 0);
+>  }
+> +
+> +long sbi_probe(int ext)
+> +{
+> +	struct sbiret ret;
+
+Let's also add
+
+  ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_GET_SPEC_VERSION, 0, 0, 0, 0, 0, 0);
+  assert(!ret.error && ret.value >= 2);
+
+> +
+> +	ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_PROBE_EXT, ext, 0, 0, 0, 0, 0);
+> +	assert(!ret.error);
+> +
+> +	return ret.value;
+> +}
+> -- 
+> 2.43.0
+>
+
+With that addition,
+
+Reviewed-by: Andrew Jones <andrew.jones@linux.dev>
+
+Thanks,
+drew
+
