@@ -1,346 +1,61 @@
-From: Andrew Jones <andrew.jones@linux.dev>
-Date: Fri, 19 Jul 2024 11:31:41 -0500
-Subject: [kvm-unit-tests PATCH v3 5/5] riscv: sbi: Add test for timer
- extension
-In-Reply-To: <20240719023947.112609-6-jamestiotio@gmail.com>
-References: <20240719023947.112609-1-jamestiotio@gmail.com>
- <20240719023947.112609-6-jamestiotio@gmail.com>
-Message-ID: <20240719-fe2a61d5b67ed6ba35e25eca@orel>
+From: James Raphael Tiovalen <jamestiotio@gmail.com>
+Date: Sun, 21 Jul 2024 15:05:55 +0800
+Subject: [kvm-unit-tests PATCH v4 0/5] riscv: sbi: Add support to test timer extension
+Message-ID: <20240721070601.88639-1-jamestiotio@gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Jul 19, 2024 at 10:39:47AM GMT, James Raphael Tiovalen wrote:
-> Add a test for the set_timer function of the time extension. The test
-> checks that:
-> - The time extension is available
-> - The time counter monotonically increases
-> - The installed timer interrupt handler is called
-> - The timer interrupt is received within a reasonable time interval
-> - The timer interrupt pending bit is cleared after the set_timer SBI
->   call is made
-> - The timer interrupt can be cleared either by requesting a timer
->   interrupt infinitely far into the future or by masking the timer
->   interrupt
-> 
-> The timer interrupt delay can be set using the TIMER_DELAY environment
-> variable in microseconds. The default delay value is 1 second. Since the
+This patch series adds support for testing the timer extension as
+defined in the RISC-V SBI specification. The first 2 patches add
+infrastructural support for handling interrupts, the next 2 patches add
+some helper routines that can be used by SBI extension tests, while the
+last patch adds the actual test for the timer extension.
 
-Do we need a whole second? I'd reduce the default delay for the interrupt
-in order to ensure speedy test execution. I think this can be 200 ms as
-well.
+v4:
+- Addressed all of Andrew's comments on v3.
 
-> interrupt can arrive a little later than the specified delay, allow some
-> margin of error. This margin of error can be specified via the
-> TIMER_MARGIN environment variable in microseconds. The default margin of
-> error is 200 milliseconds.
-> 
-> This test has been verified on RV32 and RV64 with OpenSBI using QEMU.
+v3:
+- Addressed all of Andrew's comments on v2.
+- Added 2 new patches to add sbi_probe and the delay and timer routines.
 
-Sentences like these belong in the cover letter or under the --- below
-your signoff as they don't belong in the commit (particularly because
-it doesn't include opensbi and qemu versions so it's not that useful
-of information and because all patches should be tested on rv32 and
-rv64, both with and without EFI, before they're merged :-)
+v2:
+- Addressed all of the previous comments from Andrew.
+- Updated the test to get the timer frequency value from the device tree
+  and allow the test parameters to be specified in microseconds instead of
+  cycles.
 
-> 
-> Signed-off-by: James Raphael Tiovalen <jamestiotio@gmail.com>
-> ---
->  lib/riscv/asm/csr.h   |   8 +++
->  lib/riscv/asm/sbi.h   |   5 ++
->  lib/riscv/asm/timer.h |  10 ++++
->  riscv/sbi.c           | 136 ++++++++++++++++++++++++++++++++++++++++++
->  4 files changed, 159 insertions(+)
-> 
-> diff --git a/lib/riscv/asm/csr.h b/lib/riscv/asm/csr.h
-> index a9b1bd42..052c0412 100644
-> --- a/lib/riscv/asm/csr.h
-> +++ b/lib/riscv/asm/csr.h
-> @@ -4,13 +4,17 @@
->  #include <linux/const.h>
->  
->  #define CSR_SSTATUS		0x100
-> +#define CSR_SIE			0x104
->  #define CSR_STVEC		0x105
->  #define CSR_SSCRATCH		0x140
->  #define CSR_SEPC		0x141
->  #define CSR_SCAUSE		0x142
->  #define CSR_STVAL		0x143
-> +#define CSR_SIP			0x144
->  #define CSR_SATP		0x180
->  #define CSR_TIME		0xc01
-> +#define CSR_STIMECMP		0x14d
-> +#define CSR_STIMECMPH		0x15d
+Andrew Jones (1):
+  riscv: Extend exception handling support for interrupts
 
-Please put these CSRs in numeric order, below CSR_SIP.
+James Raphael Tiovalen (4):
+  riscv: Update exception cause list
+  riscv: Add method to probe for SBI extensions
+  riscv: Add some delay and timer routines
+  riscv: sbi: Add test for timer extension
 
->  
->  #define SR_SIE			_AC(0x00000002, UL)
->  
-> @@ -47,6 +51,10 @@
->  #define IRQ_S_GEXT		12
->  #define IRQ_PMU_OVF		13
->  
-> +#define IE_TIE			(_AC(0x1, UL) << IRQ_S_TIMER)
-> +
-> +#define IP_TIP			IE_TIE
-> +
->  #ifndef __ASSEMBLY__
->  
->  #define csr_swap(csr, val)					\
-> diff --git a/lib/riscv/asm/sbi.h b/lib/riscv/asm/sbi.h
-> index 5e1a674a..73ab5438 100644
-> --- a/lib/riscv/asm/sbi.h
-> +++ b/lib/riscv/asm/sbi.h
-> @@ -16,6 +16,7 @@
->  
->  enum sbi_ext_id {
->  	SBI_EXT_BASE = 0x10,
-> +	SBI_EXT_TIME = 0x54494d45,
->  	SBI_EXT_HSM = 0x48534d,
->  	SBI_EXT_SRST = 0x53525354,
->  };
-> @@ -37,6 +38,10 @@ enum sbi_ext_hsm_fid {
->  	SBI_EXT_HSM_HART_SUSPEND,
->  };
->  
-> +enum sbi_ext_time_fid {
-> +	SBI_EXT_TIME_SET_TIMER = 0,
-> +};
-> +
->  struct sbiret {
->  	long error;
->  	long value;
-> diff --git a/lib/riscv/asm/timer.h b/lib/riscv/asm/timer.h
-> index 2e319391..cd20262f 100644
-> --- a/lib/riscv/asm/timer.h
-> +++ b/lib/riscv/asm/timer.h
-> @@ -11,4 +11,14 @@ static inline uint64_t timer_get_cycles(void)
->  	return csr_read(CSR_TIME);
->  }
->  
-> +static inline void timer_irq_enable(void)
-> +{
-> +	csr_set(CSR_SIE, IE_TIE);
-> +}
-> +
-> +static inline void timer_irq_disable(void)
-> +{
-> +	csr_clear(CSR_SIE, IE_TIE);
-> +}
-> +
->  #endif /* _ASMRISCV_TIMER_H_ */
-> diff --git a/riscv/sbi.c b/riscv/sbi.c
-> index 762e9711..9798b989 100644
-> --- a/riscv/sbi.c
-> +++ b/riscv/sbi.c
-> @@ -6,7 +6,21 @@
->   */
->  #include <libcflat.h>
->  #include <stdlib.h>
-> +#include <limits.h>
-> +#include <asm/barrier.h>
-> +#include <asm/csr.h>
-> +#include <asm/delay.h>
-> +#include <asm/isa.h>
-> +#include <asm/processor.h>
->  #include <asm/sbi.h>
-> +#include <asm/smp.h>
-> +#include <asm/timer.h>
-> +
-> +static bool timer_works;
-> +static bool mask_timer_irq;
-> +static bool timer_irq_set;
-> +static bool timer_irq_cleared;
-> +static unsigned long timer_irq_count;
->  
->  static void help(void)
->  {
-> @@ -19,6 +33,33 @@ static struct sbiret __base_sbi_ecall(int fid, unsigned long arg0)
->  	return sbi_ecall(SBI_EXT_BASE, fid, arg0, 0, 0, 0, 0, 0);
->  }
->  
-> +static struct sbiret __time_sbi_ecall(unsigned long stime_value)
-> +{
-> +	return sbi_ecall(SBI_EXT_TIME, SBI_EXT_TIME_SET_TIMER, stime_value, 0, 0, 0, 0, 0);
-> +}
-> +
-> +static inline bool timer_irq_pending(void)
-> +{
-> +	return csr_read(CSR_SIP) & IP_TIP;
-> +}
-> +
-> +static void timer_irq_handler(struct pt_regs *regs)
-> +{
-> +	timer_irq_count = (timer_irq_count == ULONG_MAX) ? ULONG_MAX : timer_irq_count + 1;
+ riscv/Makefile            |   2 +
+ lib/riscv/asm/csr.h       |  21 ++++++
+ lib/riscv/asm/delay.h     |  16 +++++
+ lib/riscv/asm/processor.h |  15 ++++-
+ lib/riscv/asm/sbi.h       |   6 ++
+ lib/riscv/asm/setup.h     |   1 +
+ lib/riscv/asm/timer.h     |  24 +++++++
+ lib/riscv/delay.c         |  21 ++++++
+ lib/riscv/processor.c     |  27 ++++++--
+ lib/riscv/sbi.c           |  13 ++++
+ lib/riscv/setup.c         |   4 ++
+ lib/riscv/timer.c         |  27 ++++++++
+ riscv/sbi.c               | 132 ++++++++++++++++++++++++++++++++++++++
+ 13 files changed, 304 insertions(+), 5 deletions(-)
+ create mode 100644 lib/riscv/asm/delay.h
+ create mode 100644 lib/riscv/asm/timer.h
+ create mode 100644 lib/riscv/delay.c
+ create mode 100644 lib/riscv/timer.c
 
-Unnecessary () and it might read better as
+--
+2.43.0
 
-  if (timer_irq_count < ULONG_MAX)
-      ++timer_irq_count;
-
-> +
-> +	timer_works = true;
-> +	if (timer_irq_pending())
-> +		timer_irq_set = true;
-> +
-> +	if (mask_timer_irq)
-> +		timer_irq_disable();
-
-If we use {} on one arm of an if-else then we should use them on both,
-even if one arm is only a single statement.
-
-> +	else {
-> +		__time_sbi_ecall(ULONG_MAX);
-> +		if (!timer_irq_pending())
-> +			timer_irq_cleared = true;
-> +	}
-> +}
-> +
->  static bool env_or_skip(const char *env)
->  {
->  	if (!getenv(env)) {
-> @@ -112,6 +153,100 @@ static void check_base(void)
->  	report_prefix_pop();
->  }
->  
-> +static void check_time(void)
-> +{
-> +	struct sbiret ret;
-> +	unsigned long begin, end, duration;
-> +	unsigned long d = getenv("TIMER_DELAY") ? strtol(getenv("TIMER_DELAY"), NULL, 0)
-> +						: 1000000;
-> +	unsigned long margin = getenv("TIMER_MARGIN") ? strtol(getenv("TIMER_MARGIN"), NULL, 0)
-> +						      : 200000;
-> +
-> +	d = usec_to_cycles(d);
-> +	margin = usec_to_cycles(margin);
-
-You can also add udelay() to delay.c to provide a convenience
-to users, i.e. we could use udelay(d) below without first
-converting d from usec to cycles. See lib/arm/delay.c for some
-inspiration.
-
-> +
-> +	report_prefix_push("time");
-> +
-> +	if (!sbi_probe(SBI_EXT_TIME)) {
-> +		report_skip("time extension not available");
-> +		report_prefix_pop();
-> +		return;
-> +	}
-> +
-> +	begin = timer_get_cycles();
-> +	delay(d);
-> +	end = timer_get_cycles();
-> +	assert(begin + d <= end);
-
-I don't think we need this begin/end capture and assert because it's only
-testing our delay function. We should test our delay function before we
-merge it to lib/riscv and then unit tests should be able to trust it
-since it's in the lib.
-
-> +
-> +	report_prefix_push("set_timer");
-> +
-> +	install_irq_handler(IRQ_S_TIMER, timer_irq_handler);
-> +	local_irq_enable();
-> +	if (cpu_has_extension(smp_processor_id(), ISA_SSTC))
-> +#if __riscv_xlen == 64
-> +		csr_write(CSR_STIMECMP, ULONG_MAX);
-> +#else
-> +		csr_write(CSR_STIMECMPH, ULONG_MAX);
-> +#endif
-
-This should be
-
-	if (cpu_has_extension(smp_processor_id(), ISA_SSTC)) {
-		csr_write(CSR_STIMECMP, ULONG_MAX);
- #if __riscv_xlen == 32
-		csr_write(CSR_STIMECMPH, ULONG_MAX);
- #endif
-        }
-
-since rv32 needs to write both registers.
-
-> +	timer_irq_enable();
-> +
-> +	begin = timer_get_cycles();
-> +	ret = __time_sbi_ecall(begin + d);
-> +
-> +	report(!ret.error, "set timer");
-> +	if (ret.error)
-> +		report_info("set timer failed with %ld\n", ret.error);
-> +
-> +	report(!timer_irq_pending(), "pending timer interrupt bit cleared");
-> +
-> +	while ((end = timer_get_cycles()) <= (begin + d + margin) && !timer_works)
-> +		cpu_relax();
-> +
-> +	report(timer_works, "timer interrupt received");
-> +	report(timer_irq_set, "pending timer interrupt bit set in irq handler");
-> +	report(timer_irq_cleared, "pending timer interrupt bit cleared by setting timer to -1");
-> +
-> +	if (timer_works) {
-> +		duration = end - begin;
-> +		report(duration >= d && duration <= (d + margin), "timer delay honored");
-> +	}
-> +
-> +	if (timer_irq_count > 1)
-> +		report_fail("timer interrupt received multiple times");
-> +
-> +	timer_works = false;
-> +	timer_irq_set = false;
-> +	timer_irq_count = 0;
-> +	mask_timer_irq = true;
-> +	begin = timer_get_cycles();
-> +	ret = __time_sbi_ecall(begin + d);
-> +
-> +	report(!ret.error, "set timer for mask irq test");
-> +	if (ret.error)
-> +		report_info("set timer for mask irq test failed with %ld\n", ret.error);
-> +
-> +	while ((end = timer_get_cycles()) <= (begin + d + margin) && !timer_works)
-> +		cpu_relax();
-> +
-> +	report(timer_works, "timer interrupt received for mask irq test");
-> +	report(timer_irq_set, "pending timer interrupt bit set in irq handler for mask irq test");
-> +
-> +	if (timer_works) {
-> +		duration = end - begin;
-> +		report(duration >= d && duration <= (d + margin),
-> +		       "timer delay honored for mask irq test");
-> +	}
-> +
-> +	if (timer_irq_count > 1)
-> +		report_fail("timer interrupt received multiple times for mask irq test");
-> +
-> +	local_irq_disable();
-> +	install_irq_handler(IRQ_S_TIMER, NULL);
-> +
-> +	report_prefix_pop();
-> +	report_prefix_pop();
-> +}
-> +
->  int main(int argc, char **argv)
->  {
->  
-> @@ -122,6 +257,7 @@ int main(int argc, char **argv)
->  
->  	report_prefix_push("sbi");
->  	check_base();
-> +	check_time();
->  
->  	return report_summary();
->  }
-> -- 
-> 2.43.0
->
-
-Looks great! Only a couple tweaks remaining and it'll be ready for merge.
-
-Thanks,
-drew
 
