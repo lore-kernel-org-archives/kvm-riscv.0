@@ -1,309 +1,83 @@
-From: Andrew Jones <andrew.jones@linux.dev>
-Date: Sun, 21 Jul 2024 11:46:36 -0500
-Subject: [kvm-unit-tests PATCH v4 5/5] riscv: sbi: Add test for timer
- extension
-In-Reply-To: <20240721070601.88639-6-jamestiotio@gmail.com>
-References: <20240721070601.88639-1-jamestiotio@gmail.com>
- <20240721070601.88639-6-jamestiotio@gmail.com>
-Message-ID: <20240721-3bbd88c71b92f7aaded9349d@orel>
+From: Yong-Xuan Wang <yongxuan.wang@sifive.com>
+Date: Mon, 22 Jul 2024 10:14:11 +0800
+Subject: [PATCH v7 2/4] dt-bindings: riscv: Add Svade and Svadu Entries
+In-Reply-To: <20240719-flatten-elixir-d4476977ab95@spud>
+References: <20240712083850.4242-1-yongxuan.wang@sifive.com>
+ <20240712083850.4242-3-yongxuan.wang@sifive.com> <727b966a-a8c4-4021-acf6-3c031ccd843a@sifive.com>
+ <CAMWQL2g-peSYJQaxeJtyOzGdEmDQ6cnkRBdFQvLr2NQA1+mv2g@mail.gmail.com> <20240719-flatten-elixir-d4476977ab95@spud>
+Message-ID: <CAMWQL2iWsxLJZZ3H59csJ376Hdtq+ZKjD92BtM9zhdXm+fh2=A@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sun, Jul 21, 2024 at 03:06:00PM GMT, James Raphael Tiovalen wrote:
-> Add a test for the set_timer function of the time extension. The test
-> checks that:
-> - The time extension is available
-> - The installed timer interrupt handler is called
-> - The timer interrupt is received within a reasonable time interval
-> - The timer interrupt pending bit is cleared after the set_timer SBI
->   call is made
-> - The timer interrupt can be cleared either by requesting a timer
->   interrupt infinitely far into the future or by masking the timer
->   interrupt
-> 
-> The timer interrupt delay can be set using the TIMER_DELAY environment
-> variable in microseconds. The default delay value is 200 milliseconds.
-> Since the interrupt can arrive a little later than the specified delay,
-> allow some margin of error. This margin of error can be specified via
-> the TIMER_MARGIN environment variable in microseconds. The default
-> margin of error is 200 milliseconds.
-> 
-> Signed-off-by: James Raphael Tiovalen <jamestiotio@gmail.com>
-> ---
->  lib/riscv/asm/csr.h   |   8 +++
->  lib/riscv/asm/sbi.h   |   5 ++
->  lib/riscv/asm/timer.h |  10 ++++
->  riscv/sbi.c           | 132 ++++++++++++++++++++++++++++++++++++++++++
->  4 files changed, 155 insertions(+)
-> 
-> diff --git a/lib/riscv/asm/csr.h b/lib/riscv/asm/csr.h
-> index a9b1bd42..24b333e0 100644
-> --- a/lib/riscv/asm/csr.h
-> +++ b/lib/riscv/asm/csr.h
-> @@ -4,11 +4,15 @@
->  #include <linux/const.h>
->  
->  #define CSR_SSTATUS		0x100
-> +#define CSR_SIE			0x104
->  #define CSR_STVEC		0x105
->  #define CSR_SSCRATCH		0x140
->  #define CSR_SEPC		0x141
->  #define CSR_SCAUSE		0x142
->  #define CSR_STVAL		0x143
-> +#define CSR_SIP			0x144
-> +#define CSR_STIMECMP		0x14d
-> +#define CSR_STIMECMPH		0x15d
->  #define CSR_SATP		0x180
->  #define CSR_TIME		0xc01
->  
-> @@ -47,6 +51,10 @@
->  #define IRQ_S_GEXT		12
->  #define IRQ_PMU_OVF		13
->  
-> +#define IE_TIE			(_AC(0x1, UL) << IRQ_S_TIMER)
-> +
-> +#define IP_TIP			IE_TIE
-> +
->  #ifndef __ASSEMBLY__
->  
->  #define csr_swap(csr, val)					\
-> diff --git a/lib/riscv/asm/sbi.h b/lib/riscv/asm/sbi.h
-> index 5e1a674a..73ab5438 100644
-> --- a/lib/riscv/asm/sbi.h
-> +++ b/lib/riscv/asm/sbi.h
-> @@ -16,6 +16,7 @@
->  
->  enum sbi_ext_id {
->  	SBI_EXT_BASE = 0x10,
-> +	SBI_EXT_TIME = 0x54494d45,
->  	SBI_EXT_HSM = 0x48534d,
->  	SBI_EXT_SRST = 0x53525354,
->  };
-> @@ -37,6 +38,10 @@ enum sbi_ext_hsm_fid {
->  	SBI_EXT_HSM_HART_SUSPEND,
->  };
->  
-> +enum sbi_ext_time_fid {
-> +	SBI_EXT_TIME_SET_TIMER = 0,
-> +};
-> +
->  struct sbiret {
->  	long error;
->  	long value;
-> diff --git a/lib/riscv/asm/timer.h b/lib/riscv/asm/timer.h
-> index f7504f84..b3514d3f 100644
-> --- a/lib/riscv/asm/timer.h
-> +++ b/lib/riscv/asm/timer.h
-> @@ -11,4 +11,14 @@ static inline uint64_t timer_get_cycles(void)
->  	return csr_read(CSR_TIME);
->  }
->  
-> +static inline void timer_irq_enable(void)
-> +{
-> +	csr_set(CSR_SIE, IE_TIE);
-> +}
-> +
-> +static inline void timer_irq_disable(void)
-> +{
-> +	csr_clear(CSR_SIE, IE_TIE);
-> +}
-> +
->  #endif /* _ASMRISCV_TIMER_H_ */
-> diff --git a/riscv/sbi.c b/riscv/sbi.c
-> index 762e9711..fe2fe771 100644
-> --- a/riscv/sbi.c
-> +++ b/riscv/sbi.c
-> @@ -6,7 +6,21 @@
->   */
->  #include <libcflat.h>
->  #include <stdlib.h>
-> +#include <limits.h>
-> +#include <asm/barrier.h>
-> +#include <asm/csr.h>
-> +#include <asm/delay.h>
-> +#include <asm/isa.h>
-> +#include <asm/processor.h>
->  #include <asm/sbi.h>
-> +#include <asm/smp.h>
-> +#include <asm/timer.h>
-> +
-> +static bool timer_works;
-> +static bool mask_timer_irq;
-> +static bool timer_irq_set;
-> +static bool timer_irq_cleared;
-> +static unsigned long timer_irq_count;
->  
->  static void help(void)
->  {
-> @@ -19,6 +33,34 @@ static struct sbiret __base_sbi_ecall(int fid, unsigned long arg0)
->  	return sbi_ecall(SBI_EXT_BASE, fid, arg0, 0, 0, 0, 0, 0);
->  }
->  
-> +static struct sbiret __time_sbi_ecall(unsigned long stime_value)
-> +{
-> +	return sbi_ecall(SBI_EXT_TIME, SBI_EXT_TIME_SET_TIMER, stime_value, 0, 0, 0, 0, 0);
-> +}
-> +
-> +static inline bool timer_irq_pending(void)
+Hi Conor,
 
-'inline' isn't useful in a source file. The compiler will do what it wants
-anyway.
-
-> +{
-> +	return csr_read(CSR_SIP) & IP_TIP;
-> +}
-> +
-> +static void timer_irq_handler(struct pt_regs *regs)
-> +{
-> +	if (timer_irq_count < ULONG_MAX)
-> +		++timer_irq_count;
-> +
-> +	timer_works = true;
-> +	if (timer_irq_pending())
-> +		timer_irq_set = true;
-> +
-> +	if (mask_timer_irq) {
-> +		timer_irq_disable();
-> +	} else {
-> +		__time_sbi_ecall(ULONG_MAX);
-> +		if (!timer_irq_pending())
-> +			timer_irq_cleared = true;
-> +	}
-> +}
-> +
->  static bool env_or_skip(const char *env)
->  {
->  	if (!getenv(env)) {
-> @@ -112,6 +154,95 @@ static void check_base(void)
->  	report_prefix_pop();
->  }
->  
-> +static void check_time(void)
-> +{
-> +	struct sbiret ret;
-> +	unsigned long begin, end, duration;
-> +	unsigned long d = getenv("TIMER_DELAY") ? strtol(getenv("TIMER_DELAY"), NULL, 0)
-> +						: 200000;
-> +	unsigned long margin = getenv("TIMER_MARGIN") ? strtol(getenv("TIMER_MARGIN"), NULL, 0)
-> +						      : 200000;
-> +
-> +	d = usec_to_cycles(d);
-> +	margin = usec_to_cycles(margin);
-> +
-> +	report_prefix_push("time");
-> +
-> +	if (!sbi_probe(SBI_EXT_TIME)) {
-> +		report_skip("time extension not available");
-> +		report_prefix_pop();
-> +		return;
-> +	}
-> +
-> +	report_prefix_push("set_timer");
-> +
-> +	install_irq_handler(IRQ_S_TIMER, timer_irq_handler);
-> +	local_irq_enable();
-> +	if (cpu_has_extension(smp_processor_id(), ISA_SSTC)) {
-> +		csr_write(CSR_STIMECMP, ULONG_MAX);
-> +#if __riscv_xlen == 32
-> +		csr_write(CSR_STIMECMPH, ULONG_MAX);
-> +#endif
-> +	}
-> +	timer_irq_enable();
-> +
-> +	begin = timer_get_cycles();
-> +	ret = __time_sbi_ecall(begin + d);
-> +
-> +	report(!ret.error, "set timer");
-> +	if (ret.error)
-> +		report_info("set timer failed with %ld\n", ret.error);
-> +
-> +	report(!timer_irq_pending(), "pending timer interrupt bit cleared");
-> +
-> +	while ((end = timer_get_cycles()) <= (begin + d + margin) && !timer_works)
-> +		cpu_relax();
-> +
-> +	report(timer_works, "timer interrupt received");
-> +	report(timer_irq_set, "pending timer interrupt bit set in irq handler");
-> +	report(timer_irq_cleared, "pending timer interrupt bit cleared by setting timer to -1");
-
-timer_irq_cleared being true is only interesting if timer_irq_set is also
-true. This test should be 'timer_irq_set && timer_irq_cleared'
-
-> +
-> +	if (timer_works) {
-> +		duration = end - begin;
-> +		report(duration >= d && duration <= (d + margin), "timer delay honored");
-> +	}
-> +
-> +	if (timer_irq_count > 1)
-> +		report_fail("timer interrupt received multiple times");
-> +
-> +	timer_works = false;
-> +	timer_irq_set = false;
-> +	timer_irq_count = 0;
-> +	mask_timer_irq = true;
-
-nit: We could collect all these variables into one struct, i.e.
-
- struct timer_info {
-  bool timer_works;
-  bool mask_timer_irq;
-  bool timer_irq_set;
-  bool timer_irq_cleared;
-  unsigned long timer_irq_count;
- };
-
-Then it's easy to reset them to zero with something like
-
-  timer_info = (struct timer_info){ .mask_timer_irq = true, };
-
-> +	begin = timer_get_cycles();
-> +	ret = __time_sbi_ecall(begin + d);
-> +
-> +	report(!ret.error, "set timer for mask irq test");
-> +	if (ret.error)
-> +		report_info("set timer for mask irq test failed with %ld\n", ret.error);
-> +
-> +	while ((end = timer_get_cycles()) <= (begin + d + margin) && !timer_works)
-> +		cpu_relax();
-> +
-> +	report(timer_works, "timer interrupt received for mask irq test");
-> +	report(timer_irq_set, "pending timer interrupt bit set in irq handler for mask irq test");
-> +
-> +	if (timer_works) {
-> +		duration = end - begin;
-> +		report(duration >= d && duration <= (d + margin),
-> +		       "timer delay honored for mask irq test");
-> +	}
-> +
-> +	if (timer_irq_count > 1)
-> +		report_fail("timer interrupt received multiple times for mask irq test");
-> +
-> +	local_irq_disable();
-> +	install_irq_handler(IRQ_S_TIMER, NULL);
-> +
-> +	report_prefix_pop();
-> +	report_prefix_pop();
-> +}
-> +
->  int main(int argc, char **argv)
->  {
->  
-> @@ -122,6 +253,7 @@ int main(int argc, char **argv)
->  
->  	report_prefix_push("sbi");
->  	check_base();
-> +	check_time();
->  
->  	return report_summary();
->  }
-> -- 
-> 2.43.0
+On Fri, Jul 19, 2024 at 9:17?PM Conor Dooley <conor@kernel.org> wrote:
 >
+> On Fri, Jul 19, 2024 at 02:58:59PM +0800, Yong-Xuan Wang wrote:
+> > Hi Samuel,
+> >
+> > On Fri, Jul 19, 2024 at 7:38?AM Samuel Holland
+> > <samuel.holland@sifive.com> wrote:
+> > >
+> > > On 2024-07-12 3:38 AM, Yong-Xuan Wang wrote:
+> > > > Add entries for the Svade and Svadu extensions to the riscv,isa-extensions
+> > > > property.
+> > > >
+> > > > Signed-off-by: Yong-Xuan Wang <yongxuan.wang@sifive.com>
+> > > > ---
+> > > >  .../devicetree/bindings/riscv/extensions.yaml | 28 +++++++++++++++++++
+> > > >  1 file changed, 28 insertions(+)
+> > > >
+> > > > diff --git a/Documentation/devicetree/bindings/riscv/extensions.yaml b/Documentation/devicetree/bindings/riscv/extensions.yaml
+> > > > index 468c646247aa..e91a6f4ede38 100644
+> > > > --- a/Documentation/devicetree/bindings/riscv/extensions.yaml
+> > > > +++ b/Documentation/devicetree/bindings/riscv/extensions.yaml
+> > > > @@ -153,6 +153,34 @@ properties:
+> > > >              ratified at commit 3f9ed34 ("Add ability to manually trigger
+> > > >              workflow. (#2)") of riscv-time-compare.
+> > > >
+> > > > +        - const: svade
+> > > > +          description: |
+> > > > +            The standard Svade supervisor-level extension for SW-managed PTE A/D
+> > > > +            bit updates as ratified in the 20240213 version of the privileged
+> > > > +            ISA specification.
+> > > > +
+> > > > +            Both Svade and Svadu extensions control the hardware behavior when
+> > > > +            the PTE A/D bits need to be set. The default behavior for the four
+> > > > +            possible combinations of these extensions in the device tree are:
+> > > > +            1) Neither Svade nor Svadu present in DT => It is technically
+> > > > +               unknown whether the platform uses Svade or Svadu. Supervisor
+> > > > +               software should be prepared to handle either hardware updating
+> > > > +               of the PTE A/D bits or page faults when they need updated.
+> > > > +            2) Only Svade present in DT => Supervisor must assume Svade to be
+> > > > +               always enabled.
+> > > > +            3) Only Svadu present in DT => Supervisor must assume Svadu to be
+> > > > +               always enabled.
+> > > > +            4) Both Svade and Svadu present in DT => Supervisor must assume
+> > > > +               Svadu turned-off at boot time. To use Svadu, supervisor must
+> > > > +               explicitly enable it using the SBI FWFT extension.
+> > > > +
+> > > > +        - const: svadu
+> > > > +          description: |
+> > > > +            The standard Svadu supervisor-level extension for hardware updating
+> > > > +            of PTE A/D bits as ratified at commit c1abccf ("Merge pull request
+> > > > +            #25 from ved-rivos/ratified") of riscv-svadu. Please refer to Svade
+> > >
+> > > Should we be referencing the archived riscv-svadu repository now that Svadu has
+> > > been merged to the main privileged ISA manual? Either way:
+> > >
+> > > Reviewed-by: Samuel Holland <samuel.holland@sifive.com>
+> > >
+> >
+> > Yes, this commit is from the archived riscv-svadu repo. Or should I update it to
+> > "commit c1abccf ("Merge pull request  #25 from ved-rivos/ratified") of
+> > riscvarchive/riscv-svadu."?
+>
+> I think Samuel was saying that we should use the commit where it was
+> merged into riscv-isa-manual instead.
 
-Thanks,
-drew
+Got it. I will update the description in the next version. Thank you!
 
