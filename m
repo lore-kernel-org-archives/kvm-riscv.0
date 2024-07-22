@@ -1,54 +1,52 @@
-From: Anup Patel <apatel@ventanamicro.com>
-Date: Mon, 22 Jul 2024 17:37:10 +0530
-Subject: [PATCH 2/2] riscv: Add Sscofpmf extensiona support
-In-Reply-To: <20240722120710.417705-1-apatel@ventanamicro.com>
-References: <20240722120710.417705-1-apatel@ventanamicro.com>
-Message-ID: <20240722120710.417705-3-apatel@ventanamicro.com>
+From: Conor Dooley <conor@kernel.org>
+Date: Mon, 22 Jul 2024 17:51:39 +0100
+Subject: [PATCH v7 2/4] dt-bindings: riscv: Add Svade and Svadu Entries
+In-Reply-To: <CAMWQL2iWsxLJZZ3H59csJ376Hdtq+ZKjD92BtM9zhdXm+fh2=A@mail.gmail.com>
+References: <20240712083850.4242-1-yongxuan.wang@sifive.com>
+ <20240712083850.4242-3-yongxuan.wang@sifive.com>
+ <727b966a-a8c4-4021-acf6-3c031ccd843a@sifive.com>
+ <CAMWQL2g-peSYJQaxeJtyOzGdEmDQ6cnkRBdFQvLr2NQA1+mv2g@mail.gmail.com>
+ <20240719-flatten-elixir-d4476977ab95@spud>
+ <CAMWQL2iWsxLJZZ3H59csJ376Hdtq+ZKjD92BtM9zhdXm+fh2=A@mail.gmail.com>
+Message-ID: <20240722-seizing-mardi-5237466fcf83@spud>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Atish Patra <atishp@rivosinc.com>
+On Mon, Jul 22, 2024 at 10:14:11AM +0800, Yong-Xuan Wang wrote:
 
-When the Sscofpmf extension is available expose it to the guest
-via device tree so that guest can use it.
+> > > > > +        - const: svadu
+> > > > > +          description: |
+> > > > > +            The standard Svadu supervisor-level extension for hardware updating
+> > > > > +            of PTE A/D bits as ratified at commit c1abccf ("Merge pull request
+> > > > > +            #25 from ved-rivos/ratified") of riscv-svadu. Please refer to Svade
+> > > >
+> > > > Should we be referencing the archived riscv-svadu repository now that Svadu has
+> > > > been merged to the main privileged ISA manual? Either way:
+> > > >
+> > > > Reviewed-by: Samuel Holland <samuel.holland@sifive.com>
+> > > >
+> > >
+> > > Yes, this commit is from the archived riscv-svadu repo. Or should I update it to
+> > > "commit c1abccf ("Merge pull request  #25 from ved-rivos/ratified") of
+> > > riscvarchive/riscv-svadu."?
+> >
+> > I think Samuel was saying that we should use the commit where it was
+> > merged into riscv-isa-manual instead.
+> 
+> Got it. I will update the description in the next version. Thank you!
 
-Signed-off-by: Atish Patra <atishp@rivosinc.com>
-Signed-off-by: Anup Patel <apatel@ventanamicro.com>
----
- riscv/fdt.c                         | 1 +
- riscv/include/kvm/kvm-config-arch.h | 3 +++
- 2 files changed, 4 insertions(+)
+There's no need (IMO) to send a new version for this alone - but if you
+have to send another version for some other reason then do it.
 
-diff --git a/riscv/fdt.c b/riscv/fdt.c
-index cf367b9..e331f80 100644
---- a/riscv/fdt.c
-+++ b/riscv/fdt.c
-@@ -18,6 +18,7 @@ struct isa_ext_info isa_info_arr[] = {
- 	/* sorted alphabetically */
- 	{"smstateen", KVM_RISCV_ISA_EXT_SMSTATEEN},
- 	{"ssaia", KVM_RISCV_ISA_EXT_SSAIA},
-+	{"sscofpmf", KVM_RISCV_ISA_EXT_SSCOFPMF},
- 	{"sstc", KVM_RISCV_ISA_EXT_SSTC},
- 	{"svinval", KVM_RISCV_ISA_EXT_SVINVAL},
- 	{"svnapot", KVM_RISCV_ISA_EXT_SVNAPOT},
-diff --git a/riscv/include/kvm/kvm-config-arch.h b/riscv/include/kvm/kvm-config-arch.h
-index 17f0ceb..3fbc4f7 100644
---- a/riscv/include/kvm/kvm-config-arch.h
-+++ b/riscv/include/kvm/kvm-config-arch.h
-@@ -31,6 +31,9 @@ struct kvm_config_arch {
- 	OPT_BOOLEAN('\0', "disable-ssaia",				\
- 		    &(cfg)->ext_disabled[KVM_RISCV_ISA_EXT_SSAIA],	\
- 		    "Disable Ssaia Extension"),				\
-+	OPT_BOOLEAN('\0', "disable-sscofpmf",				\
-+		    &(cfg)->ext_disabled[KVM_RISCV_ISA_EXT_SSCOFPMF],	\
-+		    "Disable Sscofpmf Extension"),			\
- 	OPT_BOOLEAN('\0', "disable-sstc",				\
- 		    &(cfg)->ext_disabled[KVM_RISCV_ISA_EXT_SSTC],	\
- 		    "Disable Sstc Extension"),				\
--- 
-2.34.1
-
-
+Cheers,
+Conor.
+-------------- next part --------------
+A non-text attachment was scrubbed...
+Name: signature.asc
+Type: application/pgp-signature
+Size: 228 bytes
+Desc: not available
+URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20240722/f48b4498/attachment.sig>
