@@ -1,69 +1,73 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Fri, 26 Jul 2024 16:51:58 -0700
-Subject: [PATCH v12 49/84] KVM: VMX: Hold mmu_lock until page is released when
- updating APIC access page
+Date: Fri, 26 Jul 2024 16:52:00 -0700
+Subject: [PATCH v12 51/84] KVM: PPC: e500: Mark "struct page" dirty in kvmppc_e500_shadow_map()
 In-Reply-To: <20240726235234.228822-1-seanjc@google.com>
 References: <20240726235234.228822-1-seanjc@google.com>
-Message-ID: <20240726235234.228822-50-seanjc@google.com>
+Message-ID: <20240726235234.228822-52-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hold mmu_lock across kvm_release_pfn_clean() when refreshing the APIC
-access page address to ensure that KVM doesn't mark a page/folio as
-accessed after it has been unmapped.  Practically speaking marking a folio
-accesses is benign in this scenario, as KVM does hold a reference (it's
-really just marking folios dirty that is problematic), but there's no
-reason not to be paranoid (moving the APIC access page isn't a hot path),
-and no reason to be different from other mmu_notifier-protected flows in
-KVM.
+Mark the underlying page as dirty in kvmppc_e500_ref_setup()'s sole
+caller, kvmppc_e500_shadow_map(), which will allow converting e500 to
+__kvm_faultin_pfn() + kvm_release_faultin_page() without having to do
+a weird dance between ref_setup() and shadow_map().
+
+Opportunistically drop the redundant kvm_set_pfn_accessed(), as
+shadow_map() puts the page via kvm_release_pfn_clean().
 
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/x86/kvm/vmx/vmx.c | 21 +++++++++------------
- 1 file changed, 9 insertions(+), 12 deletions(-)
+ arch/powerpc/kvm/e500_mmu_host.c | 13 ++++++-------
+ 1 file changed, 6 insertions(+), 7 deletions(-)
 
-diff --git a/arch/x86/kvm/vmx/vmx.c b/arch/x86/kvm/vmx/vmx.c
-index f18c2d8c7476..30032585f7dc 100644
---- a/arch/x86/kvm/vmx/vmx.c
-+++ b/arch/x86/kvm/vmx/vmx.c
-@@ -6828,25 +6828,22 @@ void vmx_set_apic_access_page_addr(struct kvm_vcpu *vcpu)
- 		return;
- 
- 	read_lock(&vcpu->kvm->mmu_lock);
--	if (mmu_invalidate_retry_gfn(kvm, mmu_seq, gfn)) {
-+	if (mmu_invalidate_retry_gfn(kvm, mmu_seq, gfn))
- 		kvm_make_request(KVM_REQ_APIC_PAGE_RELOAD, vcpu);
--		read_unlock(&vcpu->kvm->mmu_lock);
--		goto out;
--	}
-+	else
-+		vmcs_write64(APIC_ACCESS_ADDR, pfn_to_hpa(pfn));
- 
--	vmcs_write64(APIC_ACCESS_ADDR, pfn_to_hpa(pfn));
--	read_unlock(&vcpu->kvm->mmu_lock);
--
--	/*
--	 * No need for a manual TLB flush at this point, KVM has already done a
--	 * flush if there were SPTEs pointing at the previous page.
--	 */
--out:
- 	/*
- 	 * Do not pin apic access page in memory, the MMU notifier
- 	 * will call us again if it is migrated or swapped out.
- 	 */
- 	kvm_release_pfn_clean(pfn);
-+
-+	/*
-+	 * No need for a manual TLB flush at this point, KVM has already done a
-+	 * flush if there were SPTEs pointing at the previous page.
-+	 */
-+	read_unlock(&vcpu->kvm->mmu_lock);
+diff --git a/arch/powerpc/kvm/e500_mmu_host.c b/arch/powerpc/kvm/e500_mmu_host.c
+index c664fdec75b1..5c2adfd19e12 100644
+--- a/arch/powerpc/kvm/e500_mmu_host.c
++++ b/arch/powerpc/kvm/e500_mmu_host.c
+@@ -242,7 +242,7 @@ static inline int tlbe_is_writable(struct kvm_book3e_206_tlb_entry *tlbe)
+ 	return tlbe->mas7_3 & (MAS3_SW|MAS3_UW);
  }
  
- void vmx_hwapic_isr_update(int max_isr)
+-static inline void kvmppc_e500_ref_setup(struct tlbe_ref *ref,
++static inline bool kvmppc_e500_ref_setup(struct tlbe_ref *ref,
+ 					 struct kvm_book3e_206_tlb_entry *gtlbe,
+ 					 kvm_pfn_t pfn, unsigned int wimg)
+ {
+@@ -252,11 +252,7 @@ static inline void kvmppc_e500_ref_setup(struct tlbe_ref *ref,
+ 	/* Use guest supplied MAS2_G and MAS2_E */
+ 	ref->flags |= (gtlbe->mas2 & MAS2_ATTRIB_MASK) | wimg;
+ 
+-	/* Mark the page accessed */
+-	kvm_set_pfn_accessed(pfn);
+-
+-	if (tlbe_is_writable(gtlbe))
+-		kvm_set_pfn_dirty(pfn);
++	return tlbe_is_writable(gtlbe);
+ }
+ 
+ static inline void kvmppc_e500_ref_release(struct tlbe_ref *ref)
+@@ -337,6 +333,7 @@ static inline int kvmppc_e500_shadow_map(struct kvmppc_vcpu_e500 *vcpu_e500,
+ 	unsigned int wimg = 0;
+ 	pgd_t *pgdir;
+ 	unsigned long flags;
++	bool writable = false;
+ 
+ 	/* used to check for invalidations in progress */
+ 	mmu_seq = kvm->mmu_invalidate_seq;
+@@ -490,7 +487,9 @@ static inline int kvmppc_e500_shadow_map(struct kvmppc_vcpu_e500 *vcpu_e500,
+ 			goto out;
+ 		}
+ 	}
+-	kvmppc_e500_ref_setup(ref, gtlbe, pfn, wimg);
++	writable = kvmppc_e500_ref_setup(ref, gtlbe, pfn, wimg);
++	if (writable)
++		kvm_set_pfn_dirty(pfn);
+ 
+ 	kvmppc_e500_setup_stlbe(&vcpu_e500->vcpu, gtlbe, tsize,
+ 				ref, gvaddr, stlbe);
 -- 
 2.46.0.rc1.232.g9752f9e123-goog
 
