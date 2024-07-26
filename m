@@ -1,75 +1,188 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Fri, 26 Jul 2024 16:51:36 -0700
-Subject: [PATCH v12 27/84] KVM: pfncache: Precisely track refcounted pages
+Date: Fri, 26 Jul 2024 16:51:38 -0700
+Subject: [PATCH v12 29/84] KVM: Pin (as in FOLL_PIN) pages during kvm_vcpu_map()
 In-Reply-To: <20240726235234.228822-1-seanjc@google.com>
 References: <20240726235234.228822-1-seanjc@google.com>
-Message-ID: <20240726235234.228822-28-seanjc@google.com>
+Message-ID: <20240726235234.228822-30-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Track refcounted struct page memory using kvm_follow_pfn.refcounted_page
-instead of relying on kvm_release_pfn_clean() to correctly detect that the
-pfn is associated with a struct page.
+Pin, as in FOLL_PIN, pages when mapping them for direct access by KVM.
+As per Documentation/core-api/pin_user_pages.rst, writing to a page that
+was gotten via FOLL_GET is explicitly disallowed.
 
+  Correct (uses FOLL_PIN calls):
+      pin_user_pages()
+      write to the data within the pages
+      unpin_user_pages()
+
+  INCORRECT (uses FOLL_GET calls):
+      get_user_pages()
+      write to the data within the pages
+      put_page()
+
+Unfortunately, FOLL_PIN is a "private" flag, and so kvm_follow_pfn must
+use a one-off bool instead of being able to piggyback the "flags" field.
+
+Link: https://lwn.net/Articles/930667
+Link: https://lore.kernel.org/all/cover.1683044162.git.lstoakes at gmail.com
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- virt/kvm/pfncache.c | 11 +++++++----
- 1 file changed, 7 insertions(+), 4 deletions(-)
+ include/linux/kvm_host.h |  2 +-
+ virt/kvm/kvm_main.c      | 54 +++++++++++++++++++++++++++++-----------
+ virt/kvm/kvm_mm.h        |  7 ++++++
+ 3 files changed, 47 insertions(+), 16 deletions(-)
 
-diff --git a/virt/kvm/pfncache.c b/virt/kvm/pfncache.c
-index 067daf9ad6ef..728d2c1b488a 100644
---- a/virt/kvm/pfncache.c
-+++ b/virt/kvm/pfncache.c
-@@ -159,11 +159,14 @@ static kvm_pfn_t hva_to_pfn_retry(struct gfn_to_pfn_cache *gpc)
- 	kvm_pfn_t new_pfn = KVM_PFN_ERR_FAULT;
- 	void *new_khva = NULL;
- 	unsigned long mmu_seq;
-+	struct page *page;
+diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+index 8b5ac3305b05..3d4094ece479 100644
+--- a/include/linux/kvm_host.h
++++ b/include/linux/kvm_host.h
+@@ -280,7 +280,7 @@ struct kvm_host_map {
+ 	 * can be used as guest memory but they are not managed by host
+ 	 * kernel).
+ 	 */
+-	struct page *refcounted_page;
++	struct page *pinned_page;
+ 	struct page *page;
+ 	void *hva;
+ 	kvm_pfn_t pfn;
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index 255cbed83b40..4a9b99c11355 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -2824,9 +2824,12 @@ static kvm_pfn_t kvm_resolve_pfn(struct kvm_follow_pfn *kfp, struct page *page,
+ 	 */
+ 	if (pte) {
+ 		pfn = pte_pfn(*pte);
+-		page = kvm_pfn_to_refcounted_page(pfn);
+-		if (page && !get_page_unless_zero(page))
+-			return KVM_PFN_ERR_FAULT;
 +
- 	struct kvm_follow_pfn kfp = {
- 		.slot = gpc->memslot,
- 		.gfn = gpa_to_gfn(gpc->gpa),
- 		.flags = FOLL_WRITE,
- 		.hva = gpc->uhva,
-+		.refcounted_page = &page,
- 	};
- 
- 	lockdep_assert_held(&gpc->refresh_lock);
-@@ -198,7 +201,7 @@ static kvm_pfn_t hva_to_pfn_retry(struct gfn_to_pfn_cache *gpc)
- 			if (new_khva != old_khva)
- 				gpc_unmap(new_pfn, new_khva);
- 
--			kvm_release_pfn_clean(new_pfn);
-+			kvm_release_page_unused(page);
- 
- 			cond_resched();
- 		}
-@@ -218,7 +221,7 @@ static kvm_pfn_t hva_to_pfn_retry(struct gfn_to_pfn_cache *gpc)
- 			new_khva = gpc_map(new_pfn);
- 
- 		if (!new_khva) {
--			kvm_release_pfn_clean(new_pfn);
-+			kvm_release_page_unused(page);
- 			goto out_error;
- 		}
- 
-@@ -236,11 +239,11 @@ static kvm_pfn_t hva_to_pfn_retry(struct gfn_to_pfn_cache *gpc)
- 	gpc->khva = new_khva + offset_in_page(gpc->uhva);
++		if (!kfp->pin) {
++			page = kvm_pfn_to_refcounted_page(pfn);
++			if (page && !get_page_unless_zero(page))
++				return KVM_PFN_ERR_FAULT;
++		}
+ 	} else {
+ 		pfn = page_to_pfn(page);
+ 	}
+@@ -2845,16 +2848,24 @@ static kvm_pfn_t kvm_resolve_pfn(struct kvm_follow_pfn *kfp, struct page *page,
+ static bool hva_to_pfn_fast(struct kvm_follow_pfn *kfp, kvm_pfn_t *pfn)
+ {
+ 	struct page *page;
++	bool r;
  
  	/*
--	 * Put the reference to the _new_ pfn.  The pfn is now tracked by the
-+	 * Put the reference to the _new_ page.  The page is now tracked by the
- 	 * cache and can be safely migrated, swapped, etc... as the cache will
- 	 * invalidate any mappings in response to relevant mmu_notifier events.
+-	 * Fast pin a writable pfn only if it is a write fault request
+-	 * or the caller allows to map a writable pfn for a read fault
+-	 * request.
++	 * Try the fast-only path when the caller wants to pin/get the page for
++	 * writing.  If the caller only wants to read the page, KVM must go
++	 * down the full, slow path in order to avoid racing an operation that
++	 * breaks Copy-on-Write (CoW), e.g. so that KVM doesn't end up pointing
++	 * at the old, read-only page while mm/ points at a new, writable page.
  	 */
--	kvm_release_pfn_clean(new_pfn);
-+	kvm_release_page_clean(page);
+ 	if (!((kfp->flags & FOLL_WRITE) || kfp->map_writable))
+ 		return false;
  
- 	return 0;
+-	if (get_user_page_fast_only(kfp->hva, FOLL_WRITE, &page)) {
++	if (kfp->pin)
++		r = pin_user_pages_fast(kfp->hva, 1, FOLL_WRITE, &page) == 1;
++	else
++		r = get_user_page_fast_only(kfp->hva, FOLL_WRITE, &page);
++
++	if (r) {
+ 		*pfn = kvm_resolve_pfn(kfp, page, NULL, true);
+ 		return true;
+ 	}
+@@ -2883,10 +2894,21 @@ static int hva_to_pfn_slow(struct kvm_follow_pfn *kfp, kvm_pfn_t *pfn)
+ 	struct page *page, *wpage;
+ 	int npages;
  
+-	npages = get_user_pages_unlocked(kfp->hva, 1, &page, flags);
++	if (kfp->pin)
++		npages = pin_user_pages_unlocked(kfp->hva, 1, &page, flags);
++	else
++		npages = get_user_pages_unlocked(kfp->hva, 1, &page, flags);
+ 	if (npages != 1)
+ 		return npages;
+ 
++	/*
++	 * Pinning is mutually exclusive with opportunistically mapping a read
++	 * fault as writable, as KVM should never pin pages when mapping memory
++	 * into the guest (pinning is only for direct accesses from KVM).
++	 */
++	if (WARN_ON_ONCE(kfp->map_writable && kfp->pin))
++		goto out;
++
+ 	/* map read fault as writable if possible */
+ 	if (!(flags & FOLL_WRITE) && kfp->map_writable &&
+ 	    get_user_page_fast_only(kfp->hva, FOLL_WRITE, &wpage)) {
+@@ -2895,6 +2917,7 @@ static int hva_to_pfn_slow(struct kvm_follow_pfn *kfp, kvm_pfn_t *pfn)
+ 		flags |= FOLL_WRITE;
+ 	}
+ 
++out:
+ 	*pfn = kvm_resolve_pfn(kfp, page, NULL, flags & FOLL_WRITE);
+ 	return npages;
+ }
+@@ -3119,10 +3142,11 @@ int kvm_vcpu_map(struct kvm_vcpu *vcpu, gfn_t gfn, struct kvm_host_map *map)
+ 		.slot = gfn_to_memslot(vcpu->kvm, gfn),
+ 		.gfn = gfn,
+ 		.flags = FOLL_WRITE,
+-		.refcounted_page = &map->refcounted_page,
++		.refcounted_page = &map->pinned_page,
++		.pin = true,
+ 	};
+ 
+-	map->refcounted_page = NULL;
++	map->pinned_page = NULL;
+ 	map->page = NULL;
+ 	map->hva = NULL;
+ 	map->gfn = gfn;
+@@ -3159,16 +3183,16 @@ void kvm_vcpu_unmap(struct kvm_vcpu *vcpu, struct kvm_host_map *map, bool dirty)
+ 	if (dirty)
+ 		kvm_vcpu_mark_page_dirty(vcpu, map->gfn);
+ 
+-	if (map->refcounted_page) {
++	if (map->pinned_page) {
+ 		if (dirty)
+-			kvm_release_page_dirty(map->refcounted_page);
+-		else
+-			kvm_release_page_clean(map->refcounted_page);
++			kvm_set_page_dirty(map->pinned_page);
++		kvm_set_page_accessed(map->pinned_page);
++		unpin_user_page(map->pinned_page);
+ 	}
+ 
+ 	map->hva = NULL;
+ 	map->page = NULL;
+-	map->refcounted_page = NULL;
++	map->pinned_page = NULL;
+ }
+ EXPORT_SYMBOL_GPL(kvm_vcpu_unmap);
+ 
+diff --git a/virt/kvm/kvm_mm.h b/virt/kvm/kvm_mm.h
+index d3ac1ba8ba66..acef3f5c582a 100644
+--- a/virt/kvm/kvm_mm.h
++++ b/virt/kvm/kvm_mm.h
+@@ -30,6 +30,13 @@ struct kvm_follow_pfn {
+ 	/* FOLL_* flags modifying lookup behavior, e.g. FOLL_WRITE. */
+ 	unsigned int flags;
+ 
++	/*
++	 * Pin the page (effectively FOLL_PIN, which is an mm/ internal flag).
++	 * The page *must* be pinned if KVM will write to the page via a kernel
++	 * mapping, e.g. via kmap(), mremap(), etc.
++	 */
++	bool pin;
++
+ 	/*
+ 	 * If non-NULL, try to get a writable mapping even for a read fault.
+ 	 * Set to true if a writable mapping was obtained.
 -- 
 2.46.0.rc1.232.g9752f9e123-goog
 
