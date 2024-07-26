@@ -1,76 +1,104 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Fri, 26 Jul 2024 16:52:25 -0700
-Subject: [PATCH v12 76/84] KVM: arm64: Use __gfn_to_page() when copying MTE
- tags to/from userspace
+Date: Fri, 26 Jul 2024 16:52:26 -0700
+Subject: [PATCH v12 77/84] KVM: PPC: Explicitly require struct page memory for
+ Ultravisor sharing
 In-Reply-To: <20240726235234.228822-1-seanjc@google.com>
 References: <20240726235234.228822-1-seanjc@google.com>
-Message-ID: <20240726235234.228822-77-seanjc@google.com>
+Message-ID: <20240726235234.228822-78-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Use __gfn_to_page() instead when copying MTE tags between guest and
-userspace.  This will eventually allow removing gfn_to_pfn_prot(),
-gfn_to_pfn(), kvm_pfn_to_refcounted_page(), and related APIs.
+Explicitly require "struct page" memory when sharing memory between
+guest and host via an Ultravisor.  Given the number of pfn_to_page()
+calls in the code, it's safe to assume that KVM already requires that the
+pfn returned by gfn_to_pfn() is backed by struct page, i.e. this is
+likely a bug fix, not a reduction in KVM capabilities.
+
+Switching to gfn_to_page() will eventually allow removing gfn_to_pfn()
+and kvm_pfn_to_refcounted_page().
 
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/arm64/kvm/guest.c | 21 +++++++++------------
- 1 file changed, 9 insertions(+), 12 deletions(-)
+ arch/powerpc/kvm/book3s_hv_uvmem.c | 25 ++++++++++++-------------
+ 1 file changed, 12 insertions(+), 13 deletions(-)
 
-diff --git a/arch/arm64/kvm/guest.c b/arch/arm64/kvm/guest.c
-index 962f985977c2..4cd7ffa76794 100644
---- a/arch/arm64/kvm/guest.c
-+++ b/arch/arm64/kvm/guest.c
-@@ -1051,20 +1051,18 @@ int kvm_vm_ioctl_mte_copy_tags(struct kvm *kvm,
+diff --git a/arch/powerpc/kvm/book3s_hv_uvmem.c b/arch/powerpc/kvm/book3s_hv_uvmem.c
+index 92f33115144b..3a6592a31a10 100644
+--- a/arch/powerpc/kvm/book3s_hv_uvmem.c
++++ b/arch/powerpc/kvm/book3s_hv_uvmem.c
+@@ -879,9 +879,8 @@ static unsigned long kvmppc_share_page(struct kvm *kvm, unsigned long gpa,
+ {
+ 
+ 	int ret = H_PARAMETER;
+-	struct page *uvmem_page;
++	struct page *page, *uvmem_page;
+ 	struct kvmppc_uvmem_page_pvt *pvt;
+-	unsigned long pfn;
+ 	unsigned long gfn = gpa >> page_shift;
+ 	int srcu_idx;
+ 	unsigned long uvmem_pfn;
+@@ -901,8 +900,8 @@ static unsigned long kvmppc_share_page(struct kvm *kvm, unsigned long gpa,
+ 
+ retry:
+ 	mutex_unlock(&kvm->arch.uvmem_lock);
+-	pfn = gfn_to_pfn(kvm, gfn);
+-	if (is_error_noslot_pfn(pfn))
++	page = gfn_to_page(kvm, gfn);
++	if (!page)
+ 		goto out;
+ 
+ 	mutex_lock(&kvm->arch.uvmem_lock);
+@@ -911,16 +910,16 @@ static unsigned long kvmppc_share_page(struct kvm *kvm, unsigned long gpa,
+ 		pvt = uvmem_page->zone_device_data;
+ 		pvt->skip_page_out = true;
+ 		pvt->remove_gfn = false; /* it continues to be a valid GFN */
+-		kvm_release_pfn_clean(pfn);
++		kvm_release_page_unused(page);
+ 		goto retry;
  	}
  
- 	while (length > 0) {
--		kvm_pfn_t pfn = gfn_to_pfn_prot(kvm, gfn, write, NULL);
-+		struct page *page = __gfn_to_page(kvm, gfn, write);
- 		void *maddr;
- 		unsigned long num_tags;
--		struct page *page;
+-	if (!uv_page_in(kvm->arch.lpid, pfn << page_shift, gpa, 0,
++	if (!uv_page_in(kvm->arch.lpid, page_to_pfn(page) << page_shift, gpa, 0,
+ 				page_shift)) {
+ 		kvmppc_gfn_shared(gfn, kvm);
+ 		ret = H_SUCCESS;
+ 	}
+-	kvm_release_pfn_clean(pfn);
++	kvm_release_page_clean(page);
+ 	mutex_unlock(&kvm->arch.uvmem_lock);
+ out:
+ 	srcu_read_unlock(&kvm->srcu, srcu_idx);
+@@ -1083,21 +1082,21 @@ kvmppc_h_svm_page_out(struct kvm *kvm, unsigned long gpa,
  
--		if (is_error_noslot_pfn(pfn)) {
--			ret = -EFAULT;
--			goto out;
--		}
--
--		page = pfn_to_online_page(pfn);
- 		if (!page) {
-+			ret = -EFAULT;
-+			goto out;
-+		}
-+
-+		if (!pfn_to_online_page(page_to_pfn(page))) {
- 			/* Reject ZONE_DEVICE memory */
--			kvm_release_pfn_clean(pfn);
-+			kvm_release_page_unused(page);
- 			ret = -EFAULT;
- 			goto out;
- 		}
-@@ -1078,7 +1076,7 @@ int kvm_vm_ioctl_mte_copy_tags(struct kvm *kvm,
- 				/* No tags in memory, so write zeros */
- 				num_tags = MTE_GRANULES_PER_PAGE -
- 					clear_user(tags, MTE_GRANULES_PER_PAGE);
--			kvm_release_pfn_clean(pfn);
-+			kvm_release_page_clean(page);
- 		} else {
- 			/*
- 			 * Only locking to serialise with a concurrent
-@@ -1093,8 +1091,7 @@ int kvm_vm_ioctl_mte_copy_tags(struct kvm *kvm,
- 			if (num_tags != MTE_GRANULES_PER_PAGE)
- 				mte_clear_page_tags(maddr);
- 			set_page_mte_tagged(page);
--
--			kvm_release_pfn_dirty(pfn);
-+			kvm_release_page_dirty(page);
- 		}
+ int kvmppc_send_page_to_uv(struct kvm *kvm, unsigned long gfn)
+ {
+-	unsigned long pfn;
++	struct page *page;
+ 	int ret = U_SUCCESS;
  
- 		if (num_tags != MTE_GRANULES_PER_PAGE) {
+-	pfn = gfn_to_pfn(kvm, gfn);
+-	if (is_error_noslot_pfn(pfn))
++	page = gfn_to_page(kvm, gfn);
++	if (!page)
+ 		return -EFAULT;
+ 
+ 	mutex_lock(&kvm->arch.uvmem_lock);
+ 	if (kvmppc_gfn_is_uvmem_pfn(gfn, kvm, NULL))
+ 		goto out;
+ 
+-	ret = uv_page_in(kvm->arch.lpid, pfn << PAGE_SHIFT, gfn << PAGE_SHIFT,
+-			 0, PAGE_SHIFT);
++	ret = uv_page_in(kvm->arch.lpid, page_to_pfn(page) << PAGE_SHIFT,
++			 gfn << PAGE_SHIFT, 0, PAGE_SHIFT);
+ out:
+-	kvm_release_pfn_clean(pfn);
++	kvm_release_page_clean(page);
+ 	mutex_unlock(&kvm->arch.uvmem_lock);
+ 	return (ret == U_SUCCESS) ? RESUME_GUEST : -EFAULT;
+ }
 -- 
 2.46.0.rc1.232.g9752f9e123-goog
 
