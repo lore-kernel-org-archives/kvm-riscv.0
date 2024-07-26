@@ -1,54 +1,74 @@
-From: Clément Léger <cleger@rivosinc.com>
-Date: Fri, 26 Jul 2024 11:04:35 +0200
-Subject: [PATCH v8 4/5] KVM: riscv: selftests: Fix compile error
-In-Reply-To: <20240726084931.28924-5-yongxuan.wang@sifive.com>
-References: <20240726084931.28924-1-yongxuan.wang@sifive.com>
- <20240726084931.28924-5-yongxuan.wang@sifive.com>
-Message-ID: <f65d5184-d397-46ce-b8ba-dfe2d3a5ad40@rivosinc.com>
+From: Thomas Huth <thuth@redhat.com>
+Date: Fri, 26 Jul 2024 11:05:14 +0200
+Subject: [kvm-unit-tests PATCH] build: retain intermediate .aux.o targets
+In-Reply-To: <D2Z6GP2VFOJ8.2KU7OB25CUXTC@gmail.com>
+References: <20240612044234.212156-1-npiggin@gmail.com>
+ <20240612082847.GG19790@gate.crashing.org>
+ <D1ZBO021MLHV.3C7E4V3WOHO8V@gmail.com>
+ <20240614010856.GK19790@gate.crashing.org>
+ <D1ZLRVNGPWTV.5H76A3E8DJCV@gmail.com> <D2Z6GP2VFOJ8.2KU7OB25CUXTC@gmail.com>
+Message-ID: <8c9ca85f-0995-4c34-bb57-5a8490f74b50@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-
-
-On 26/07/2024 10:49, Yong-Xuan Wang wrote:
-> Fix compile error introduced by commit d27c34a73514 ("KVM: riscv:
-> selftests: Add some Zc* extensions to get-reg-list test"). These
-> 4 lines should be end with ";".
+On 26/07/2024 06.15, Nicholas Piggin wrote:
+> On Fri Jun 14, 2024 at 6:38 PM AEST, Nicholas Piggin wrote:
+>> On Fri Jun 14, 2024 at 11:08 AM AEST, Segher Boessenkool wrote:
+>>> On Fri, Jun 14, 2024 at 10:43:39AM +1000, Nicholas Piggin wrote:
+>>>> On Wed Jun 12, 2024 at 6:28 PM AEST, Segher Boessenkool wrote:
+>>>>> On Wed, Jun 12, 2024 at 02:42:32PM +1000, Nicholas Piggin wrote:
+>>>>>> arm, powerpc, riscv, build .aux.o targets with implicit pattern rules
+>>>>>> in dependency chains that cause them to be made as intermediate files,
+>>>>>> which get removed when make finishes. This results in unnecessary
+>>>>>> partial rebuilds. If make is run again, this time the .aux.o targets
+>>>>>> are not intermediate, possibly due to being made via different
+>>>>>> dependencies.
+>>>>>>
+>>>>>> Adding .aux.o files to .PRECIOUS prevents them being removed and solves
+>>>>>> the rebuild problem.
+>>>>>>
+>>>>>> s390x does not have the problem because .SECONDARY prevents dependancies
+>>>>>> from being built as intermediate. However the same change is made for
+>>>>>> s390x, for consistency.
+>>>>>
+>>>>> This is exactly what .SECONDARY is for, as its documentation says,
+>>>>> even.  Wouldn't it be better to just add a .SECONDARY to the other
+>>>>> targets as well?
+>>>>
+>>>> Yeah we were debating that and agreed .PRECIOUS may not be the
+>>>> cleanest fix but since we already use that it's okay for a
+>>>> minimal fix.
+>>>
+>>> But why add it to s390x then?  It is not a fix there at all!
+>>
+>> Eh, not a big deal. I mentioned that in the changelog it doesn't seem to
+>> pracicaly fix something. And I rather the makefiles converge as much as
+>> possible rather than diverge more.
+>>
+>> .SECONDARY was added independently and not to fix this problem in
+>> s390x. And s390x has .SECONDARY slightly wrong AFAIKS. It mentions
+>> .SECONDARY: twice in a way that looks like it was meant to depend on
+>> specific targets, it actually gives it no dependencies and the
+>> resulting semantics are that all intermediate files in the build are
+>> treated as secondary. So somethig there should be cleaned up. If the
+>> .SECONDARY was changed to only depend on the .gobj and .hdr.obj then
+>> suddenly that would break .aux.o if I don't make the change.
+>>
+>> So I'm meaning to work out what to do with all that, i.e., whether to
+>> add blanket .SECONDARY for all and trim or remove the .PRECIOUS files,
+>> or remove s390x's secondary, or make it more specific, or something
+>> else. But it takes a while for me to do makefile work.
 > 
-> Fixes: d27c34a73514 ("KVM: riscv: selftests: Add some Zc* extensions to get-reg-list test")
-> Signed-off-by: Yong-Xuan Wang <yongxuan.wang@sifive.com>
-> ---
->  tools/testing/selftests/kvm/riscv/get-reg-list.c | 8 ++++----
->  1 file changed, 4 insertions(+), 4 deletions(-)
+> Hi Thomas,
 > 
-> diff --git a/tools/testing/selftests/kvm/riscv/get-reg-list.c b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-> index f92c2fb23fcd..8e34f7fa44e9 100644
-> --- a/tools/testing/selftests/kvm/riscv/get-reg-list.c
-> +++ b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-> @@ -961,10 +961,10 @@ KVM_ISA_EXT_SIMPLE_CONFIG(zbkb, ZBKB);
->  KVM_ISA_EXT_SIMPLE_CONFIG(zbkc, ZBKC);
->  KVM_ISA_EXT_SIMPLE_CONFIG(zbkx, ZBKX);
->  KVM_ISA_EXT_SIMPLE_CONFIG(zbs, ZBS);
-> -KVM_ISA_EXT_SIMPLE_CONFIG(zca, ZCA),
-> -KVM_ISA_EXT_SIMPLE_CONFIG(zcb, ZCB),
-> -KVM_ISA_EXT_SIMPLE_CONFIG(zcd, ZCD),
-> -KVM_ISA_EXT_SIMPLE_CONFIG(zcf, ZCF),
-> +KVM_ISA_EXT_SIMPLE_CONFIG(zca, ZCA);
-> +KVM_ISA_EXT_SIMPLE_CONFIG(zcb, ZCB);
-> +KVM_ISA_EXT_SIMPLE_CONFIG(zcd, ZCD);
-> +KVM_ISA_EXT_SIMPLE_CONFIG(zcf, ZCF);
->  KVM_ISA_EXT_SIMPLE_CONFIG(zcmop, ZCMOP);
->  KVM_ISA_EXT_SIMPLE_CONFIG(zfa, ZFA);
->  KVM_ISA_EXT_SIMPLE_CONFIG(zfh, ZFH);
+> Ping on this patch?
 
-Arg, my bad. Thanks for fixing that.
+I assumed that Marc would chime in on the s390x part here?
 
-Reviewed-by: Cl?ment L?ger <cleger@rivosinc.com>
+  Thomas
 
-Thanks,
 
-Cl?ment
 
