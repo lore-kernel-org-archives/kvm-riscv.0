@@ -1,47 +1,45 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Fri, 26 Jul 2024 16:51:13 -0700
-Subject: [PATCH v12 04/84] KVM: Allow calling kvm_release_page_{clean,dirty}()
- on a NULL page pointer
+Date: Fri, 26 Jul 2024 16:51:14 -0700
+Subject: [PATCH v12 05/84] KVM: Add kvm_release_page_unused() API to put pages
+ that KVM never consumes
 In-Reply-To: <20240726235234.228822-1-seanjc@google.com>
 References: <20240726235234.228822-1-seanjc@google.com>
-Message-ID: <20240726235234.228822-5-seanjc@google.com>
+Message-ID: <20240726235234.228822-6-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Allow passing a NULL @page to kvm_release_page_{clean,dirty}(), there's no
-tangible benefit to forcing the callers to pre-check @page, and it ends up
-generating a lot of duplicate boilerplate code.
+Add an API to release an unused page, i.e. to put a page without marking
+it accessed or dirty.  The API will be used when KVM faults-in a page but
+bails before installing the guest mapping (and other similar flows).
 
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- virt/kvm/kvm_main.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ include/linux/kvm_host.h | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index fd8c212b8de7..656e931ac39e 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -3186,7 +3186,7 @@ static void kvm_set_page_accessed(struct page *page)
- 
- void kvm_release_page_clean(struct page *page)
- {
--	if (WARN_ON(!page))
+diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+index 3d9617d1de41..c5d39a337aa3 100644
+--- a/include/linux/kvm_host.h
++++ b/include/linux/kvm_host.h
+@@ -1201,6 +1201,15 @@ unsigned long gfn_to_hva_prot(struct kvm *kvm, gfn_t gfn, bool *writable);
+ unsigned long gfn_to_hva_memslot(struct kvm_memory_slot *slot, gfn_t gfn);
+ unsigned long gfn_to_hva_memslot_prot(struct kvm_memory_slot *slot, gfn_t gfn,
+ 				      bool *writable);
++
++static inline void kvm_release_page_unused(struct page *page)
++{
 +	if (!page)
- 		return;
++		return;
++
++	put_page(page);
++}
++
+ void kvm_release_page_clean(struct page *page);
+ void kvm_release_page_dirty(struct page *page);
  
- 	kvm_set_page_accessed(page);
-@@ -3211,7 +3211,7 @@ EXPORT_SYMBOL_GPL(kvm_release_pfn_clean);
- 
- void kvm_release_page_dirty(struct page *page)
- {
--	if (WARN_ON(!page))
-+	if (!page)
- 		return;
- 
- 	kvm_set_page_dirty(page);
 -- 
 2.46.0.rc1.232.g9752f9e123-goog
 
