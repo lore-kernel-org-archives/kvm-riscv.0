@@ -1,73 +1,82 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Fri, 26 Jul 2024 16:51:31 -0700
-Subject: [PATCH v12 22/84] KVM: nVMX: Drop pointless msr_bitmap_map field from
- struct nested_vmx
+Date: Fri, 26 Jul 2024 16:51:32 -0700
+Subject: [PATCH v12 23/84] KVM: nVMX: Add helper to put (unmap) vmcs12 pages
 In-Reply-To: <20240726235234.228822-1-seanjc@google.com>
 References: <20240726235234.228822-1-seanjc@google.com>
-Message-ID: <20240726235234.228822-23-seanjc@google.com>
+Message-ID: <20240726235234.228822-24-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Remove vcpu_vmx.msr_bitmap_map and instead use an on-stack structure in
-the one function that uses the map, nested_vmx_prepare_msr_bitmap().
+Add a helper to dedup unmapping the vmcs12 pages.  This will reduce the
+amount of churn when a future patch refactors the kvm_vcpu_unmap() API.
+
+No functional change intended.
 
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/x86/kvm/vmx/nested.c | 8 ++++----
- arch/x86/kvm/vmx/vmx.h    | 2 --
- 2 files changed, 4 insertions(+), 6 deletions(-)
+ arch/x86/kvm/vmx/nested.c | 32 ++++++++++++++++++--------------
+ 1 file changed, 18 insertions(+), 14 deletions(-)
 
 diff --git a/arch/x86/kvm/vmx/nested.c b/arch/x86/kvm/vmx/nested.c
-index a34b49ea64b5..372d005e09e7 100644
+index 372d005e09e7..8d05d1d9f544 100644
 --- a/arch/x86/kvm/vmx/nested.c
 +++ b/arch/x86/kvm/vmx/nested.c
-@@ -621,7 +621,7 @@ static inline bool nested_vmx_prepare_msr_bitmap(struct kvm_vcpu *vcpu,
- 	int msr;
- 	unsigned long *msr_bitmap_l1;
- 	unsigned long *msr_bitmap_l0 = vmx->nested.vmcs02.msr_bitmap;
--	struct kvm_host_map *map = &vmx->nested.msr_bitmap_map;
-+	struct kvm_host_map msr_bitmap_map;
+@@ -314,6 +314,21 @@ static void vmx_switch_vmcs(struct kvm_vcpu *vcpu, struct loaded_vmcs *vmcs)
+ 	vcpu->arch.regs_dirty = 0;
+ }
  
- 	/* Nothing to do if the MSR bitmap is not in use.  */
- 	if (!cpu_has_vmx_msr_bitmap() ||
-@@ -644,10 +644,10 @@ static inline bool nested_vmx_prepare_msr_bitmap(struct kvm_vcpu *vcpu,
- 			return true;
++static void nested_put_vmcs12_pages(struct kvm_vcpu *vcpu)
++{
++	struct vcpu_vmx *vmx = to_vmx(vcpu);
++
++	/*
++	 * Unpin physical memory we referred to in the vmcs02.  The APIC access
++	 * page's backing page (yeah, confusing) shouldn't actually be accessed,
++	 * and if it is written, the contents are irrelevant.
++	 */
++	kvm_vcpu_unmap(vcpu, &vmx->nested.apic_access_page_map, false);
++	kvm_vcpu_unmap(vcpu, &vmx->nested.virtual_apic_map, true);
++	kvm_vcpu_unmap(vcpu, &vmx->nested.pi_desc_map, true);
++	vmx->nested.pi_desc = NULL;
++}
++
+ /*
+  * Free whatever needs to be freed from vmx->nested when L1 goes down, or
+  * just stops using VMX.
+@@ -346,15 +361,8 @@ static void free_nested(struct kvm_vcpu *vcpu)
+ 	vmx->nested.cached_vmcs12 = NULL;
+ 	kfree(vmx->nested.cached_shadow_vmcs12);
+ 	vmx->nested.cached_shadow_vmcs12 = NULL;
+-	/*
+-	 * Unpin physical memory we referred to in the vmcs02.  The APIC access
+-	 * page's backing page (yeah, confusing) shouldn't actually be accessed,
+-	 * and if it is written, the contents are irrelevant.
+-	 */
+-	kvm_vcpu_unmap(vcpu, &vmx->nested.apic_access_page_map, false);
+-	kvm_vcpu_unmap(vcpu, &vmx->nested.virtual_apic_map, true);
+-	kvm_vcpu_unmap(vcpu, &vmx->nested.pi_desc_map, true);
+-	vmx->nested.pi_desc = NULL;
++
++	nested_put_vmcs12_pages(vcpu);
+ 
+ 	kvm_mmu_free_roots(vcpu->kvm, &vcpu->arch.guest_mmu, KVM_MMU_ROOTS_ALL);
+ 
+@@ -4942,11 +4950,7 @@ void nested_vmx_vmexit(struct kvm_vcpu *vcpu, u32 vm_exit_reason,
+ 		vmx_update_cpu_dirty_logging(vcpu);
  	}
  
--	if (kvm_vcpu_map(vcpu, gpa_to_gfn(vmcs12->msr_bitmap), map))
-+	if (kvm_vcpu_map(vcpu, gpa_to_gfn(vmcs12->msr_bitmap), &msr_bitmap_map))
- 		return false;
+-	/* Unpin physical memory we referred to in vmcs02 */
+-	kvm_vcpu_unmap(vcpu, &vmx->nested.apic_access_page_map, false);
+-	kvm_vcpu_unmap(vcpu, &vmx->nested.virtual_apic_map, true);
+-	kvm_vcpu_unmap(vcpu, &vmx->nested.pi_desc_map, true);
+-	vmx->nested.pi_desc = NULL;
++	nested_put_vmcs12_pages(vcpu);
  
--	msr_bitmap_l1 = (unsigned long *)map->hva;
-+	msr_bitmap_l1 = (unsigned long *)msr_bitmap_map.hva;
- 
- 	/*
- 	 * To keep the control flow simple, pay eight 8-byte writes (sixteen
-@@ -711,7 +711,7 @@ static inline bool nested_vmx_prepare_msr_bitmap(struct kvm_vcpu *vcpu,
- 	nested_vmx_set_intercept_for_msr(vmx, msr_bitmap_l1, msr_bitmap_l0,
- 					 MSR_IA32_FLUSH_CMD, MSR_TYPE_W);
- 
--	kvm_vcpu_unmap(vcpu, &vmx->nested.msr_bitmap_map, false);
-+	kvm_vcpu_unmap(vcpu, &msr_bitmap_map, false);
- 
- 	vmx->nested.force_msr_bitmap_recalc = false;
- 
-diff --git a/arch/x86/kvm/vmx/vmx.h b/arch/x86/kvm/vmx/vmx.h
-index 42498fa63abb..889c6c42ee27 100644
---- a/arch/x86/kvm/vmx/vmx.h
-+++ b/arch/x86/kvm/vmx/vmx.h
-@@ -204,8 +204,6 @@ struct nested_vmx {
- 	struct kvm_host_map virtual_apic_map;
- 	struct kvm_host_map pi_desc_map;
- 
--	struct kvm_host_map msr_bitmap_map;
--
- 	struct pi_desc *pi_desc;
- 	bool pi_pending;
- 	u16 posted_intr_nv;
+ 	if (vmx->nested.reload_vmcs01_apic_access_page) {
+ 		vmx->nested.reload_vmcs01_apic_access_page = false;
 -- 
 2.46.0.rc1.232.g9752f9e123-goog
 
