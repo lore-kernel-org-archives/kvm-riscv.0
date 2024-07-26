@@ -1,52 +1,71 @@
-From: Conor Dooley <conor@kernel.org>
-Date: Mon, 22 Jul 2024 17:51:39 +0100
-Subject: [PATCH v7 2/4] dt-bindings: riscv: Add Svade and Svadu Entries
-In-Reply-To: <CAMWQL2iWsxLJZZ3H59csJ376Hdtq+ZKjD92BtM9zhdXm+fh2=A@mail.gmail.com>
-References: <20240712083850.4242-1-yongxuan.wang@sifive.com>
- <20240712083850.4242-3-yongxuan.wang@sifive.com>
- <727b966a-a8c4-4021-acf6-3c031ccd843a@sifive.com>
- <CAMWQL2g-peSYJQaxeJtyOzGdEmDQ6cnkRBdFQvLr2NQA1+mv2g@mail.gmail.com>
- <20240719-flatten-elixir-d4476977ab95@spud>
- <CAMWQL2iWsxLJZZ3H59csJ376Hdtq+ZKjD92BtM9zhdXm+fh2=A@mail.gmail.com>
-Message-ID: <20240722-seizing-mardi-5237466fcf83@spud>
+From: Nicholas Piggin <npiggin@gmail.com>
+Date: Fri, 26 Jul 2024 14:15:00 +1000
+Subject: [kvm-unit-tests PATCH] build: retain intermediate .aux.o
+ targets
+In-Reply-To: <D1ZLRVNGPWTV.5H76A3E8DJCV@gmail.com>
+References: <20240612044234.212156-1-npiggin@gmail.com>
+ <20240612082847.GG19790@gate.crashing.org>
+ <D1ZBO021MLHV.3C7E4V3WOHO8V@gmail.com>
+ <20240614010856.GK19790@gate.crashing.org>
+ <D1ZLRVNGPWTV.5H76A3E8DJCV@gmail.com>
+Message-ID: <D2Z6GP2VFOJ8.2KU7OB25CUXTC@gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Jul 22, 2024 at 10:14:11AM +0800, Yong-Xuan Wang wrote:
-
-> > > > > +        - const: svadu
-> > > > > +          description: |
-> > > > > +            The standard Svadu supervisor-level extension for hardware updating
-> > > > > +            of PTE A/D bits as ratified at commit c1abccf ("Merge pull request
-> > > > > +            #25 from ved-rivos/ratified") of riscv-svadu. Please refer to Svade
+On Fri Jun 14, 2024 at 6:38 PM AEST, Nicholas Piggin wrote:
+> On Fri Jun 14, 2024 at 11:08 AM AEST, Segher Boessenkool wrote:
+> > On Fri, Jun 14, 2024 at 10:43:39AM +1000, Nicholas Piggin wrote:
+> > > On Wed Jun 12, 2024 at 6:28 PM AEST, Segher Boessenkool wrote:
+> > > > On Wed, Jun 12, 2024 at 02:42:32PM +1000, Nicholas Piggin wrote:
+> > > > > arm, powerpc, riscv, build .aux.o targets with implicit pattern rules
+> > > > > in dependency chains that cause them to be made as intermediate files,
+> > > > > which get removed when make finishes. This results in unnecessary
+> > > > > partial rebuilds. If make is run again, this time the .aux.o targets
+> > > > > are not intermediate, possibly due to being made via different
+> > > > > dependencies.
+> > > > > 
+> > > > > Adding .aux.o files to .PRECIOUS prevents them being removed and solves
+> > > > > the rebuild problem.
+> > > > > 
+> > > > > s390x does not have the problem because .SECONDARY prevents dependancies
+> > > > > from being built as intermediate. However the same change is made for
+> > > > > s390x, for consistency.
 > > > >
-> > > > Should we be referencing the archived riscv-svadu repository now that Svadu has
-> > > > been merged to the main privileged ISA manual? Either way:
-> > > >
-> > > > Reviewed-by: Samuel Holland <samuel.holland@sifive.com>
-> > > >
-> > >
-> > > Yes, this commit is from the archived riscv-svadu repo. Or should I update it to
-> > > "commit c1abccf ("Merge pull request  #25 from ved-rivos/ratified") of
-> > > riscvarchive/riscv-svadu."?
+> > > > This is exactly what .SECONDARY is for, as its documentation says,
+> > > > even.  Wouldn't it be better to just add a .SECONDARY to the other
+> > > > targets as well?
+> > > 
+> > > Yeah we were debating that and agreed .PRECIOUS may not be the
+> > > cleanest fix but since we already use that it's okay for a
+> > > minimal fix.
 > >
-> > I think Samuel was saying that we should use the commit where it was
-> > merged into riscv-isa-manual instead.
-> 
-> Got it. I will update the description in the next version. Thank you!
+> > But why add it to s390x then?  It is not a fix there at all!
+>
+> Eh, not a big deal. I mentioned that in the changelog it doesn't seem to
+> pracicaly fix something. And I rather the makefiles converge as much as
+> possible rather than diverge more.
+>
+> .SECONDARY was added independently and not to fix this problem in
+> s390x. And s390x has .SECONDARY slightly wrong AFAIKS. It mentions
+> .SECONDARY: twice in a way that looks like it was meant to depend on
+> specific targets, it actually gives it no dependencies and the
+> resulting semantics are that all intermediate files in the build are
+> treated as secondary. So somethig there should be cleaned up. If the
+> .SECONDARY was changed to only depend on the .gobj and .hdr.obj then
+> suddenly that would break .aux.o if I don't make the change.
+>
+> So I'm meaning to work out what to do with all that, i.e., whether to
+> add blanket .SECONDARY for all and trim or remove the .PRECIOUS files,
+> or remove s390x's secondary, or make it more specific, or something
+> else. But it takes a while for me to do makefile work.
 
-There's no need (IMO) to send a new version for this alone - but if you
-have to send another version for some other reason then do it.
+Hi Thomas,
 
-Cheers,
-Conor.
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: signature.asc
-Type: application/pgp-signature
-Size: 228 bytes
-Desc: not available
-URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20240722/f48b4498/attachment.sig>
+Ping on this patch?
+
+Thanks,
+Nick
+
