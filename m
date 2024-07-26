@@ -1,64 +1,144 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Fri, 26 Jul 2024 16:52:11 -0700
-Subject: [PATCH v12 62/84] KVM: PPC: Book3S: Mark "struct page" pfns
- dirty/accessed after installing PTE
+Date: Fri, 26 Jul 2024 16:52:12 -0700
+Subject: [PATCH v12 63/84] KVM: PPC: Use kvm_faultin_pfn() to handle page
+ faults on Book3s PR
 In-Reply-To: <20240726235234.228822-1-seanjc@google.com>
 References: <20240726235234.228822-1-seanjc@google.com>
-Message-ID: <20240726235234.228822-63-seanjc@google.com>
+Message-ID: <20240726235234.228822-64-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Mark pages/folios dirty/accessed after installing a PTE, and more
-specifically after acquiring mmu_lock and checking for an mmu_notifier
-invalidation.  Marking a page/folio dirty after it has been written back
-can make some filesystems unhappy (backing KVM guests will such filesystem
-files is uncommon, and the race is minuscule, hence the lack of complaints).
-See the link below for details.
+Convert Book3S PR to __kvm_faultin_pfn()+kvm_release_faultin_page(), which
+are new APIs to consolidate arch code and provide consistent behavior
+across all KVM architectures.
 
-This will also allow converting Book3S to kvm_release_faultin_page(),
-which requires that mmu_lock be held (for the aforementioned reason).
-
-Link: https://lore.kernel.org/all/cover.1683044162.git.lstoakes at gmail.com
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
+ arch/powerpc/include/asm/kvm_book3s.h |  2 +-
+ arch/powerpc/kvm/book3s.c             |  7 ++++---
+ arch/powerpc/kvm/book3s_32_mmu_host.c |  7 ++++---
  arch/powerpc/kvm/book3s_64_mmu_host.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ 4 files changed, 14 insertions(+), 12 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include/asm/kvm_book3s.h
+index 34e8f0b7b345..343c10dda80f 100644
+--- a/arch/powerpc/include/asm/kvm_book3s.h
++++ b/arch/powerpc/include/asm/kvm_book3s.h
+@@ -235,7 +235,7 @@ extern void kvmppc_set_bat(struct kvm_vcpu *vcpu, struct kvmppc_bat *bat,
+ extern void kvmppc_giveup_ext(struct kvm_vcpu *vcpu, ulong msr);
+ extern int kvmppc_emulate_paired_single(struct kvm_vcpu *vcpu);
+ extern kvm_pfn_t kvmppc_gpa_to_pfn(struct kvm_vcpu *vcpu, gpa_t gpa,
+-			bool writing, bool *writable);
++			bool writing, bool *writable, struct page **page);
+ extern void kvmppc_add_revmap_chain(struct kvm *kvm, struct revmap_entry *rev,
+ 			unsigned long *rmap, long pte_index, int realmode);
+ extern void kvmppc_update_dirty_map(const struct kvm_memory_slot *memslot,
+diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
+index ff6c38373957..d79c5d1098c0 100644
+--- a/arch/powerpc/kvm/book3s.c
++++ b/arch/powerpc/kvm/book3s.c
+@@ -422,7 +422,7 @@ int kvmppc_core_prepare_to_enter(struct kvm_vcpu *vcpu)
+ EXPORT_SYMBOL_GPL(kvmppc_core_prepare_to_enter);
+ 
+ kvm_pfn_t kvmppc_gpa_to_pfn(struct kvm_vcpu *vcpu, gpa_t gpa, bool writing,
+-			bool *writable)
++			    bool *writable, struct page **page)
+ {
+ 	ulong mp_pa = vcpu->arch.magic_page_pa & KVM_PAM;
+ 	gfn_t gfn = gpa >> PAGE_SHIFT;
+@@ -437,13 +437,14 @@ kvm_pfn_t kvmppc_gpa_to_pfn(struct kvm_vcpu *vcpu, gpa_t gpa, bool writing,
+ 		kvm_pfn_t pfn;
+ 
+ 		pfn = (kvm_pfn_t)virt_to_phys((void*)shared_page) >> PAGE_SHIFT;
+-		get_page(pfn_to_page(pfn));
++		*page = pfn_to_page(pfn);
++		get_page(*page);
+ 		if (writable)
+ 			*writable = true;
+ 		return pfn;
+ 	}
+ 
+-	return gfn_to_pfn_prot(vcpu->kvm, gfn, writing, writable);
++	return kvm_faultin_pfn(vcpu, gfn, writing, writable, page);
+ }
+ EXPORT_SYMBOL_GPL(kvmppc_gpa_to_pfn);
+ 
+diff --git a/arch/powerpc/kvm/book3s_32_mmu_host.c b/arch/powerpc/kvm/book3s_32_mmu_host.c
+index 4b3a8d80cfa3..5b7212edbb13 100644
+--- a/arch/powerpc/kvm/book3s_32_mmu_host.c
++++ b/arch/powerpc/kvm/book3s_32_mmu_host.c
+@@ -130,6 +130,7 @@ extern char etext[];
+ int kvmppc_mmu_map_page(struct kvm_vcpu *vcpu, struct kvmppc_pte *orig_pte,
+ 			bool iswrite)
+ {
++	struct page *page;
+ 	kvm_pfn_t hpaddr;
+ 	u64 vpn;
+ 	u64 vsid;
+@@ -145,7 +146,7 @@ int kvmppc_mmu_map_page(struct kvm_vcpu *vcpu, struct kvmppc_pte *orig_pte,
+ 	bool writable;
+ 
+ 	/* Get host physical address for gpa */
+-	hpaddr = kvmppc_gpa_to_pfn(vcpu, orig_pte->raddr, iswrite, &writable);
++	hpaddr = kvmppc_gpa_to_pfn(vcpu, orig_pte->raddr, iswrite, &writable, &page);
+ 	if (is_error_noslot_pfn(hpaddr)) {
+ 		printk(KERN_INFO "Couldn't get guest page for gpa %lx!\n",
+ 				 orig_pte->raddr);
+@@ -232,7 +233,7 @@ int kvmppc_mmu_map_page(struct kvm_vcpu *vcpu, struct kvmppc_pte *orig_pte,
+ 
+ 	pte = kvmppc_mmu_hpte_cache_next(vcpu);
+ 	if (!pte) {
+-		kvm_release_pfn_clean(hpaddr >> PAGE_SHIFT);
++		kvm_release_page_unused(page);
+ 		r = -EAGAIN;
+ 		goto out;
+ 	}
+@@ -250,7 +251,7 @@ int kvmppc_mmu_map_page(struct kvm_vcpu *vcpu, struct kvmppc_pte *orig_pte,
+ 
+ 	kvmppc_mmu_hpte_cache_map(vcpu, pte);
+ 
+-	kvm_release_pfn_clean(hpaddr >> PAGE_SHIFT);
++	kvm_release_page_clean(page);
+ out:
+ 	return r;
+ }
 diff --git a/arch/powerpc/kvm/book3s_64_mmu_host.c b/arch/powerpc/kvm/book3s_64_mmu_host.c
-index bc6a381b5346..d0e4f7bbdc3d 100644
+index d0e4f7bbdc3d..be20aee6fd7d 100644
 --- a/arch/powerpc/kvm/book3s_64_mmu_host.c
 +++ b/arch/powerpc/kvm/book3s_64_mmu_host.c
-@@ -121,13 +121,10 @@ int kvmppc_mmu_map_page(struct kvm_vcpu *vcpu, struct kvmppc_pte *orig_pte,
+@@ -88,13 +88,14 @@ int kvmppc_mmu_map_page(struct kvm_vcpu *vcpu, struct kvmppc_pte *orig_pte,
+ 	struct hpte_cache *cpte;
+ 	unsigned long gfn = orig_pte->raddr >> PAGE_SHIFT;
+ 	unsigned long pfn;
++	struct page *page;
  
- 	vpn = hpt_vpn(orig_pte->eaddr, map->host_vsid, MMU_SEGSIZE_256M);
+ 	/* used to check for invalidations in progress */
+ 	mmu_seq = kvm->mmu_invalidate_seq;
+ 	smp_rmb();
  
--	kvm_set_pfn_accessed(pfn);
- 	if (!orig_pte->may_write || !writable)
- 		rflags |= PP_RXRX;
--	else {
-+	else
- 		mark_page_dirty(vcpu->kvm, gfn);
--		kvm_set_pfn_dirty(pfn);
--	}
- 
- 	if (!orig_pte->may_execute)
- 		rflags |= HPTE_R_N;
-@@ -202,8 +199,11 @@ int kvmppc_mmu_map_page(struct kvm_vcpu *vcpu, struct kvmppc_pte *orig_pte,
+ 	/* Get host physical address for gpa */
+-	pfn = kvmppc_gpa_to_pfn(vcpu, orig_pte->raddr, iswrite, &writable);
++	pfn = kvmppc_gpa_to_pfn(vcpu, orig_pte->raddr, iswrite, &writable, &page);
+ 	if (is_error_noslot_pfn(pfn)) {
+ 		printk(KERN_INFO "Couldn't get guest page for gpa %lx!\n",
+ 		       orig_pte->raddr);
+@@ -199,10 +200,9 @@ int kvmppc_mmu_map_page(struct kvm_vcpu *vcpu, struct kvmppc_pte *orig_pte,
  	}
  
  out_unlock:
-+	if (!orig_pte->may_write || !writable)
-+		kvm_release_pfn_clean(pfn);
-+	else
-+		kvm_release_pfn_dirty(pfn);
+-	if (!orig_pte->may_write || !writable)
+-		kvm_release_pfn_clean(pfn);
+-	else
+-		kvm_release_pfn_dirty(pfn);
++	/* FIXME: Don't unconditionally pass unused=false. */
++	kvm_release_faultin_page(kvm, page, false,
++				 orig_pte->may_write && writable);
  	spin_unlock(&kvm->mmu_lock);
--	kvm_release_pfn_clean(pfn);
  	if (cpte)
  		kvmppc_mmu_hpte_cache_free(cpte);
- 
 -- 
 2.46.0.rc1.232.g9752f9e123-goog
 
