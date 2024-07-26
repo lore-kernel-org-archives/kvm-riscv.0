@@ -1,79 +1,71 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Fri, 26 Jul 2024 16:51:28 -0700
-Subject: [PATCH v12 19/84] KVM: Explicitly initialize all fields at the start
- of kvm_vcpu_map()
+Date: Fri, 26 Jul 2024 16:51:29 -0700
+Subject: [PATCH v12 20/84] KVM: Use NULL for struct page pointer to indicate
+ mremapped memory
 In-Reply-To: <20240726235234.228822-1-seanjc@google.com>
 References: <20240726235234.228822-1-seanjc@google.com>
-Message-ID: <20240726235234.228822-20-seanjc@google.com>
+Message-ID: <20240726235234.228822-21-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Explicitly initialize the entire kvm_host_map structure when mapping a
-pfn, as some callers declare their struct on the stack, i.e. don't
-zero-initialize the struct, which makes the map->hva in kvm_vcpu_unmap()
-*very* suspect.
+Drop yet another unnecessary magic page value from KVM, as there's zero
+reason to use a poisoned pointer to indicate "no page".  If KVM uses a
+NULL page pointer, the kernel will explode just as quickly as if KVM uses
+a poisoned pointer.  Never mind the fact that such usage would be a
+blatant and egregious KVM bug.
 
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- virt/kvm/kvm_main.c | 40 ++++++++++++++++------------------------
- 1 file changed, 16 insertions(+), 24 deletions(-)
+ include/linux/kvm_host.h | 4 ----
+ virt/kvm/kvm_main.c      | 4 ++--
+ 2 files changed, 2 insertions(+), 6 deletions(-)
 
+diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+index f42e030f69a4..a5dcb72bab00 100644
+--- a/include/linux/kvm_host.h
++++ b/include/linux/kvm_host.h
+@@ -273,16 +273,12 @@ enum {
+ 	READING_SHADOW_PAGE_TABLES,
+ };
+ 
+-#define KVM_UNMAPPED_PAGE	((void *) 0x500 + POISON_POINTER_DELTA)
+-
+ struct kvm_host_map {
+ 	/*
+ 	 * Only valid if the 'pfn' is managed by the host kernel (i.e. There is
+ 	 * a 'struct page' for it. When using mem= kernel parameter some memory
+ 	 * can be used as guest memory but they are not managed by host
+ 	 * kernel).
+-	 * If 'pfn' is not managed by the host kernel, this field is
+-	 * initialized to KVM_UNMAPPED_PAGE.
+ 	 */
+ 	struct page *page;
+ 	void *hva;
 diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 21ff0f4fa02c..67a50b87bb87 100644
+index 67a50b87bb87..3d717a131906 100644
 --- a/virt/kvm/kvm_main.c
 +++ b/virt/kvm/kvm_main.c
-@@ -3088,32 +3088,24 @@ void kvm_release_pfn(kvm_pfn_t pfn, bool dirty)
+@@ -3088,7 +3088,7 @@ void kvm_release_pfn(kvm_pfn_t pfn, bool dirty)
  
  int kvm_vcpu_map(struct kvm_vcpu *vcpu, gfn_t gfn, struct kvm_host_map *map)
  {
--	kvm_pfn_t pfn;
--	void *hva = NULL;
--	struct page *page = KVM_UNMAPPED_PAGE;
--
--	pfn = gfn_to_pfn(vcpu->kvm, gfn);
--	if (is_error_noslot_pfn(pfn))
--		return -EINVAL;
--
--	if (pfn_valid(pfn)) {
--		page = pfn_to_page(pfn);
--		hva = kmap(page);
--#ifdef CONFIG_HAS_IOMEM
--	} else {
--		hva = memremap(pfn_to_hpa(pfn), PAGE_SIZE, MEMREMAP_WB);
--#endif
--	}
--
--	if (!hva)
--		return -EFAULT;
--
--	map->page = page;
--	map->hva = hva;
--	map->pfn = pfn;
-+	map->page = KVM_UNMAPPED_PAGE;
-+	map->hva = NULL;
+-	map->page = KVM_UNMAPPED_PAGE;
++	map->page = NULL;
+ 	map->hva = NULL;
  	map->gfn = gfn;
  
--	return 0;
-+	map->pfn = gfn_to_pfn(vcpu->kvm, gfn);
-+	if (is_error_noslot_pfn(map->pfn))
-+		return -EINVAL;
-+
-+	if (pfn_valid(map->pfn)) {
-+		map->page = pfn_to_page(map->pfn);
-+		map->hva = kmap(map->page);
-+#ifdef CONFIG_HAS_IOMEM
-+	} else {
-+		map->hva = memremap(pfn_to_hpa(map->pfn), PAGE_SIZE, MEMREMAP_WB);
-+#endif
-+	}
-+
-+	return map->hva ? 0 : -EFAULT;
- }
- EXPORT_SYMBOL_GPL(kvm_vcpu_map);
+@@ -3114,7 +3114,7 @@ void kvm_vcpu_unmap(struct kvm_vcpu *vcpu, struct kvm_host_map *map, bool dirty)
+ 	if (!map->hva)
+ 		return;
  
+-	if (map->page != KVM_UNMAPPED_PAGE)
++	if (map->page)
+ 		kunmap(map->page);
+ #ifdef CONFIG_HAS_IOMEM
+ 	else
 -- 
 2.46.0.rc1.232.g9752f9e123-goog
 
