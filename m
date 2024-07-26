@@ -1,247 +1,41 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Fri, 26 Jul 2024 16:51:40 -0700
-Subject: [PATCH v12 31/84] KVM: Pass in write/dirty to kvm_vcpu_map(), not kvm_vcpu_unmap()
+Date: Fri, 26 Jul 2024 16:51:41 -0700
+Subject: [PATCH v12 32/84] KVM: Get writable mapping for __kvm_vcpu_map() only
+ when necessary
 In-Reply-To: <20240726235234.228822-1-seanjc@google.com>
 References: <20240726235234.228822-1-seanjc@google.com>
-Message-ID: <20240726235234.228822-32-seanjc@google.com>
+Message-ID: <20240726235234.228822-33-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Now that all kvm_vcpu_{,un}map() users pass "true" for @dirty, have them
-pass "true" as a @writable param to kvm_vcpu_map(), and thus create a
-read-only mapping when possible.
-
-Note, creating read-only mappings can be theoretically slower, as they
-don't play nice with fast GUP due to the need to break CoW before mapping
-the underlying PFN.  But practically speaking, creating a mapping isn't
+When creating a memory map for read, don't request a writable pfn from the
+primary MMU.  While creating read-only mappings can be theoretically slower,
+as they don't play nice with fast GUP due to the need to break CoW before
+mapping the underlying PFN, practically speaking, creating a mapping isn't
 a super hot path, and getting a writable mapping for reading is weird and
 confusing.
 
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/x86/kvm/svm/nested.c |  4 ++--
- arch/x86/kvm/svm/sev.c    |  2 +-
- arch/x86/kvm/svm/svm.c    |  8 ++++----
- arch/x86/kvm/vmx/nested.c | 16 ++++++++--------
- include/linux/kvm_host.h  | 20 ++++++++++++++++++--
- virt/kvm/kvm_main.c       | 12 +++++++-----
- 6 files changed, 40 insertions(+), 22 deletions(-)
+ virt/kvm/kvm_main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/x86/kvm/svm/nested.c b/arch/x86/kvm/svm/nested.c
-index 6f704c1037e5..23b3a228cd0a 100644
---- a/arch/x86/kvm/svm/nested.c
-+++ b/arch/x86/kvm/svm/nested.c
-@@ -922,7 +922,7 @@ int nested_svm_vmrun(struct kvm_vcpu *vcpu)
- 	nested_svm_vmexit(svm);
- 
- out:
--	kvm_vcpu_unmap(vcpu, &map, true);
-+	kvm_vcpu_unmap(vcpu, &map);
- 
- 	return ret;
- }
-@@ -1126,7 +1126,7 @@ int nested_svm_vmexit(struct vcpu_svm *svm)
- 				       vmcb12->control.exit_int_info_err,
- 				       KVM_ISA_SVM);
- 
--	kvm_vcpu_unmap(vcpu, &map, true);
-+	kvm_vcpu_unmap(vcpu, &map);
- 
- 	nested_svm_transition_tlb_flush(vcpu);
- 
-diff --git a/arch/x86/kvm/svm/sev.c b/arch/x86/kvm/svm/sev.c
-index a16c873b3232..62f63fd714df 100644
---- a/arch/x86/kvm/svm/sev.c
-+++ b/arch/x86/kvm/svm/sev.c
-@@ -3466,7 +3466,7 @@ void sev_es_unmap_ghcb(struct vcpu_svm *svm)
- 
- 	sev_es_sync_to_ghcb(svm);
- 
--	kvm_vcpu_unmap(&svm->vcpu, &svm->sev_es.ghcb_map, true);
-+	kvm_vcpu_unmap(&svm->vcpu, &svm->sev_es.ghcb_map);
- 	svm->sev_es.ghcb = NULL;
- }
- 
-diff --git a/arch/x86/kvm/svm/svm.c b/arch/x86/kvm/svm/svm.c
-index c115d26844f7..742a2cec04ce 100644
---- a/arch/x86/kvm/svm/svm.c
-+++ b/arch/x86/kvm/svm/svm.c
-@@ -2299,7 +2299,7 @@ static int vmload_vmsave_interception(struct kvm_vcpu *vcpu, bool vmload)
- 		svm_copy_vmloadsave_state(vmcb12, svm->vmcb);
- 	}
- 
--	kvm_vcpu_unmap(vcpu, &map, true);
-+	kvm_vcpu_unmap(vcpu, &map);
- 
- 	return ret;
- }
-@@ -4690,7 +4690,7 @@ static int svm_enter_smm(struct kvm_vcpu *vcpu, union kvm_smram *smram)
- 	svm_copy_vmrun_state(map_save.hva + 0x400,
- 			     &svm->vmcb01.ptr->save);
- 
--	kvm_vcpu_unmap(vcpu, &map_save, true);
-+	kvm_vcpu_unmap(vcpu, &map_save);
- 	return 0;
- }
- 
-@@ -4750,9 +4750,9 @@ static int svm_leave_smm(struct kvm_vcpu *vcpu, const union kvm_smram *smram)
- 	svm->nested.nested_run_pending = 1;
- 
- unmap_save:
--	kvm_vcpu_unmap(vcpu, &map_save, true);
-+	kvm_vcpu_unmap(vcpu, &map_save);
- unmap_map:
--	kvm_vcpu_unmap(vcpu, &map, true);
-+	kvm_vcpu_unmap(vcpu, &map);
- 	return ret;
- }
- 
-diff --git a/arch/x86/kvm/vmx/nested.c b/arch/x86/kvm/vmx/nested.c
-index 3096f6f5ecdb..f7dde74ff565 100644
---- a/arch/x86/kvm/vmx/nested.c
-+++ b/arch/x86/kvm/vmx/nested.c
-@@ -231,7 +231,7 @@ static inline void nested_release_evmcs(struct kvm_vcpu *vcpu)
- 	struct kvm_vcpu_hv *hv_vcpu = to_hv_vcpu(vcpu);
- 	struct vcpu_vmx *vmx = to_vmx(vcpu);
- 
--	kvm_vcpu_unmap(vcpu, &vmx->nested.hv_evmcs_map, true);
-+	kvm_vcpu_unmap(vcpu, &vmx->nested.hv_evmcs_map);
- 	vmx->nested.hv_evmcs = NULL;
- 	vmx->nested.hv_evmcs_vmptr = EVMPTR_INVALID;
- 
-@@ -318,9 +318,9 @@ static void nested_put_vmcs12_pages(struct kvm_vcpu *vcpu)
- {
- 	struct vcpu_vmx *vmx = to_vmx(vcpu);
- 
--	kvm_vcpu_unmap(vcpu, &vmx->nested.apic_access_page_map, true);
--	kvm_vcpu_unmap(vcpu, &vmx->nested.virtual_apic_map, true);
--	kvm_vcpu_unmap(vcpu, &vmx->nested.pi_desc_map, true);
-+	kvm_vcpu_unmap(vcpu, &vmx->nested.apic_access_page_map);
-+	kvm_vcpu_unmap(vcpu, &vmx->nested.virtual_apic_map);
-+	kvm_vcpu_unmap(vcpu, &vmx->nested.pi_desc_map);
- 	vmx->nested.pi_desc = NULL;
- }
- 
-@@ -624,7 +624,7 @@ static inline bool nested_vmx_prepare_msr_bitmap(struct kvm_vcpu *vcpu,
- 	int msr;
- 	unsigned long *msr_bitmap_l1;
- 	unsigned long *msr_bitmap_l0 = vmx->nested.vmcs02.msr_bitmap;
--	struct kvm_host_map msr_bitmap_map;
-+	struct kvm_host_map map;
- 
- 	/* Nothing to do if the MSR bitmap is not in use.  */
- 	if (!cpu_has_vmx_msr_bitmap() ||
-@@ -647,10 +647,10 @@ static inline bool nested_vmx_prepare_msr_bitmap(struct kvm_vcpu *vcpu,
- 			return true;
- 	}
- 
--	if (kvm_vcpu_map(vcpu, gpa_to_gfn(vmcs12->msr_bitmap), &msr_bitmap_map))
-+	if (kvm_vcpu_map_readonly(vcpu, gpa_to_gfn(vmcs12->msr_bitmap), &map))
- 		return false;
- 
--	msr_bitmap_l1 = (unsigned long *)msr_bitmap_map.hva;
-+	msr_bitmap_l1 = (unsigned long *)map.hva;
- 
- 	/*
- 	 * To keep the control flow simple, pay eight 8-byte writes (sixteen
-@@ -714,7 +714,7 @@ static inline bool nested_vmx_prepare_msr_bitmap(struct kvm_vcpu *vcpu,
- 	nested_vmx_set_intercept_for_msr(vmx, msr_bitmap_l1, msr_bitmap_l0,
- 					 MSR_IA32_FLUSH_CMD, MSR_TYPE_W);
- 
--	kvm_vcpu_unmap(vcpu, &msr_bitmap_map, false);
-+	kvm_vcpu_unmap(vcpu, &map);
- 
- 	vmx->nested.force_msr_bitmap_recalc = false;
- 
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index 3d4094ece479..82ca0971c156 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -285,6 +285,7 @@ struct kvm_host_map {
- 	void *hva;
- 	kvm_pfn_t pfn;
- 	kvm_pfn_t gfn;
-+	bool writable;
- };
- 
- /*
-@@ -1297,8 +1298,23 @@ void mark_page_dirty(struct kvm *kvm, gfn_t gfn);
- struct kvm_memslots *kvm_vcpu_memslots(struct kvm_vcpu *vcpu);
- struct kvm_memory_slot *kvm_vcpu_gfn_to_memslot(struct kvm_vcpu *vcpu, gfn_t gfn);
- kvm_pfn_t kvm_vcpu_gfn_to_pfn(struct kvm_vcpu *vcpu, gfn_t gfn);
--int kvm_vcpu_map(struct kvm_vcpu *vcpu, gpa_t gpa, struct kvm_host_map *map);
--void kvm_vcpu_unmap(struct kvm_vcpu *vcpu, struct kvm_host_map *map, bool dirty);
-+
-+int __kvm_vcpu_map(struct kvm_vcpu *vcpu, gpa_t gpa, struct kvm_host_map *map,
-+		   bool writable);
-+void kvm_vcpu_unmap(struct kvm_vcpu *vcpu, struct kvm_host_map *map);
-+
-+static inline int kvm_vcpu_map(struct kvm_vcpu *vcpu, gpa_t gpa,
-+			       struct kvm_host_map *map)
-+{
-+	return __kvm_vcpu_map(vcpu, gpa, map, true);
-+}
-+
-+static inline int kvm_vcpu_map_readonly(struct kvm_vcpu *vcpu, gpa_t gpa,
-+					struct kvm_host_map *map)
-+{
-+	return __kvm_vcpu_map(vcpu, gpa, map, false);
-+}
-+
- unsigned long kvm_vcpu_gfn_to_hva(struct kvm_vcpu *vcpu, gfn_t gfn);
- unsigned long kvm_vcpu_gfn_to_hva_prot(struct kvm_vcpu *vcpu, gfn_t gfn, bool *writable);
- int kvm_vcpu_read_guest_page(struct kvm_vcpu *vcpu, gfn_t gfn, void *data, int offset,
 diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 4a9b99c11355..a46c7bf1f902 100644
+index a46c7bf1f902..a28479629488 100644
 --- a/virt/kvm/kvm_main.c
 +++ b/virt/kvm/kvm_main.c
-@@ -3136,7 +3136,8 @@ struct page *gfn_to_page(struct kvm *kvm, gfn_t gfn)
- }
- EXPORT_SYMBOL_GPL(gfn_to_page);
- 
--int kvm_vcpu_map(struct kvm_vcpu *vcpu, gfn_t gfn, struct kvm_host_map *map)
-+int __kvm_vcpu_map(struct kvm_vcpu *vcpu, gfn_t gfn, struct kvm_host_map *map,
-+		   bool writable)
- {
+@@ -3142,7 +3142,7 @@ int __kvm_vcpu_map(struct kvm_vcpu *vcpu, gfn_t gfn, struct kvm_host_map *map,
  	struct kvm_follow_pfn kfp = {
  		.slot = gfn_to_memslot(vcpu->kvm, gfn),
-@@ -3150,6 +3151,7 @@ int kvm_vcpu_map(struct kvm_vcpu *vcpu, gfn_t gfn, struct kvm_host_map *map)
- 	map->page = NULL;
- 	map->hva = NULL;
- 	map->gfn = gfn;
-+	map->writable = writable;
- 
- 	map->pfn = kvm_follow_pfn(&kfp);
- 	if (is_error_noslot_pfn(map->pfn))
-@@ -3166,9 +3168,9 @@ int kvm_vcpu_map(struct kvm_vcpu *vcpu, gfn_t gfn, struct kvm_host_map *map)
- 
- 	return map->hva ? 0 : -EFAULT;
- }
--EXPORT_SYMBOL_GPL(kvm_vcpu_map);
-+EXPORT_SYMBOL_GPL(__kvm_vcpu_map);
- 
--void kvm_vcpu_unmap(struct kvm_vcpu *vcpu, struct kvm_host_map *map, bool dirty)
-+void kvm_vcpu_unmap(struct kvm_vcpu *vcpu, struct kvm_host_map *map)
- {
- 	if (!map->hva)
- 		return;
-@@ -3180,11 +3182,11 @@ void kvm_vcpu_unmap(struct kvm_vcpu *vcpu, struct kvm_host_map *map, bool dirty)
- 		memunmap(map->hva);
- #endif
- 
--	if (dirty)
-+	if (map->writable)
- 		kvm_vcpu_mark_page_dirty(vcpu, map->gfn);
- 
- 	if (map->pinned_page) {
--		if (dirty)
-+		if (map->writable)
- 			kvm_set_page_dirty(map->pinned_page);
- 		kvm_set_page_accessed(map->pinned_page);
- 		unpin_user_page(map->pinned_page);
+ 		.gfn = gfn,
+-		.flags = FOLL_WRITE,
++		.flags = writable ? FOLL_WRITE : 0,
+ 		.refcounted_page = &map->pinned_page,
+ 		.pin = true,
+ 	};
 -- 
 2.46.0.rc1.232.g9752f9e123-goog
 
