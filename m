@@ -1,98 +1,107 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Fri, 26 Jul 2024 16:52:31 -0700
-Subject: [PATCH v12 82/84] KVM: arm64: Don't mark "struct page" accessed when
- making SPTE young
+Date: Fri, 26 Jul 2024 16:52:32 -0700
+Subject: [PATCH v12 83/84] KVM: Drop APIs that manipulate "struct page" via pfns
 In-Reply-To: <20240726235234.228822-1-seanjc@google.com>
 References: <20240726235234.228822-1-seanjc@google.com>
-Message-ID: <20240726235234.228822-83-seanjc@google.com>
+Message-ID: <20240726235234.228822-84-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Don't mark pages/folios as accessed in the primary MMU when making a SPTE
-young in KVM's secondary MMU, as doing so relies on
-kvm_pfn_to_refcounted_page(), and generally speaking is unnecessary and
-wasteful.  KVM participates in page aging via mmu_notifiers, so there's no
-need to push "accessed" updates to the primary MMU.
+Remove all kvm_{release,set}_pfn_*() APIs not that all users are gone.
 
-Dropping use of kvm_set_pfn_accessed() also paves the way for removing
-kvm_pfn_to_refcounted_page() and all its users.
+No functional change intended.
 
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/arm64/include/asm/kvm_pgtable.h | 4 +---
- arch/arm64/kvm/hyp/pgtable.c         | 7 ++-----
- arch/arm64/kvm/mmu.c                 | 6 +-----
- 3 files changed, 4 insertions(+), 13 deletions(-)
+ include/linux/kvm_host.h |  5 ----
+ virt/kvm/kvm_main.c      | 55 ----------------------------------------
+ 2 files changed, 60 deletions(-)
 
-diff --git a/arch/arm64/include/asm/kvm_pgtable.h b/arch/arm64/include/asm/kvm_pgtable.h
-index 19278dfe7978..676d80723c38 100644
---- a/arch/arm64/include/asm/kvm_pgtable.h
-+++ b/arch/arm64/include/asm/kvm_pgtable.h
-@@ -632,10 +632,8 @@ int kvm_pgtable_stage2_wrprotect(struct kvm_pgtable *pgt, u64 addr, u64 size);
-  *
-  * If there is a valid, leaf page-table entry used to translate @addr, then
-  * set the access flag in that entry.
-- *
-- * Return: The old page-table entry prior to setting the flag, 0 on failure.
-  */
--kvm_pte_t kvm_pgtable_stage2_mkyoung(struct kvm_pgtable *pgt, u64 addr);
-+void kvm_pgtable_stage2_mkyoung(struct kvm_pgtable *pgt, u64 addr);
- 
- /**
-  * kvm_pgtable_stage2_test_clear_young() - Test and optionally clear the access
-diff --git a/arch/arm64/kvm/hyp/pgtable.c b/arch/arm64/kvm/hyp/pgtable.c
-index 9e2bbee77491..6679e02a02c4 100644
---- a/arch/arm64/kvm/hyp/pgtable.c
-+++ b/arch/arm64/kvm/hyp/pgtable.c
-@@ -1287,19 +1287,16 @@ int kvm_pgtable_stage2_wrprotect(struct kvm_pgtable *pgt, u64 addr, u64 size)
- 					NULL, NULL, 0);
+diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+index 34a1cadb1b80..87d61f16a449 100644
+--- a/include/linux/kvm_host.h
++++ b/include/linux/kvm_host.h
+@@ -1260,11 +1260,6 @@ static inline kvm_pfn_t kvm_faultin_pfn(struct kvm_vcpu *vcpu, gfn_t gfn,
+ 				 write ? FOLL_WRITE : 0, writable, refcounted_page);
  }
  
--kvm_pte_t kvm_pgtable_stage2_mkyoung(struct kvm_pgtable *pgt, u64 addr)
-+void kvm_pgtable_stage2_mkyoung(struct kvm_pgtable *pgt, u64 addr)
- {
--	kvm_pte_t pte = 0;
- 	int ret;
- 
- 	ret = stage2_update_leaf_attrs(pgt, addr, 1, KVM_PTE_LEAF_ATTR_LO_S2_AF, 0,
--				       &pte, NULL,
-+				       NULL, NULL,
- 				       KVM_PGTABLE_WALK_HANDLE_FAULT |
- 				       KVM_PGTABLE_WALK_SHARED);
- 	if (!ret)
- 		dsb(ishst);
+-void kvm_release_pfn_clean(kvm_pfn_t pfn);
+-void kvm_release_pfn_dirty(kvm_pfn_t pfn);
+-void kvm_set_pfn_dirty(kvm_pfn_t pfn);
+-void kvm_set_pfn_accessed(kvm_pfn_t pfn);
 -
--	return pte;
+ int kvm_read_guest_page(struct kvm *kvm, gfn_t gfn, void *data, int offset,
+ 			int len);
+ int kvm_read_guest(struct kvm *kvm, gpa_t gpa, void *data, unsigned long len);
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index 030a08d4b21d..8b85e1130a63 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -3200,61 +3200,6 @@ void kvm_vcpu_unmap(struct kvm_vcpu *vcpu, struct kvm_host_map *map)
  }
+ EXPORT_SYMBOL_GPL(kvm_vcpu_unmap);
  
- struct stage2_age_data {
-diff --git a/arch/arm64/kvm/mmu.c b/arch/arm64/kvm/mmu.c
-index 756fc856ab44..8fd8ea5b5795 100644
---- a/arch/arm64/kvm/mmu.c
-+++ b/arch/arm64/kvm/mmu.c
-@@ -1699,18 +1699,14 @@ static int user_mem_abort(struct kvm_vcpu *vcpu, phys_addr_t fault_ipa,
- /* Resolve the access fault by making the page young again. */
- static void handle_access_fault(struct kvm_vcpu *vcpu, phys_addr_t fault_ipa)
- {
--	kvm_pte_t pte;
- 	struct kvm_s2_mmu *mmu;
- 
- 	trace_kvm_access_fault(fault_ipa);
- 
- 	read_lock(&vcpu->kvm->mmu_lock);
- 	mmu = vcpu->arch.hw_mmu;
--	pte = kvm_pgtable_stage2_mkyoung(mmu->pgt, fault_ipa);
-+	kvm_pgtable_stage2_mkyoung(mmu->pgt, fault_ipa);
- 	read_unlock(&vcpu->kvm->mmu_lock);
+-void kvm_release_pfn_clean(kvm_pfn_t pfn)
+-{
+-	struct page *page;
 -
--	if (kvm_pte_valid(pte))
--		kvm_set_pfn_accessed(kvm_pte_to_pfn(pte));
- }
- 
- /**
+-	if (is_error_noslot_pfn(pfn))
+-		return;
+-
+-	page = kvm_pfn_to_refcounted_page(pfn);
+-	if (!page)
+-		return;
+-
+-	kvm_release_page_clean(page);
+-}
+-EXPORT_SYMBOL_GPL(kvm_release_pfn_clean);
+-
+-void kvm_release_pfn_dirty(kvm_pfn_t pfn)
+-{
+-	struct page *page;
+-
+-	if (is_error_noslot_pfn(pfn))
+-		return;
+-
+-	page = kvm_pfn_to_refcounted_page(pfn);
+-	if (!page)
+-		return;
+-
+-	kvm_release_page_dirty(page);
+-}
+-EXPORT_SYMBOL_GPL(kvm_release_pfn_dirty);
+-
+-/*
+- * Note, checking for an error/noslot pfn is the caller's responsibility when
+- * directly marking a page dirty/accessed.  Unlike the "release" helpers, the
+- * "set" helpers are not to be used when the pfn might point at garbage.
+- */
+-void kvm_set_pfn_dirty(kvm_pfn_t pfn)
+-{
+-	if (WARN_ON(is_error_noslot_pfn(pfn)))
+-		return;
+-
+-	if (pfn_valid(pfn))
+-		kvm_set_page_dirty(pfn_to_page(pfn));
+-}
+-EXPORT_SYMBOL_GPL(kvm_set_pfn_dirty);
+-
+-void kvm_set_pfn_accessed(kvm_pfn_t pfn)
+-{
+-	if (WARN_ON(is_error_noslot_pfn(pfn)))
+-		return;
+-
+-	if (pfn_valid(pfn))
+-		kvm_set_page_accessed(pfn_to_page(pfn));
+-}
+-EXPORT_SYMBOL_GPL(kvm_set_pfn_accessed);
+-
+ static int next_segment(unsigned long len, int offset)
+ {
+ 	if (len > PAGE_SIZE - offset)
 -- 
 2.46.0.rc1.232.g9752f9e123-goog
 
