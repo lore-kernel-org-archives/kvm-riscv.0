@@ -1,73 +1,44 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Fri, 26 Jul 2024 16:52:00 -0700
-Subject: [PATCH v12 51/84] KVM: PPC: e500: Mark "struct page" dirty in kvmppc_e500_shadow_map()
+Date: Fri, 26 Jul 2024 16:52:01 -0700
+Subject: [PATCH v12 52/84] KVM: PPC: e500: Mark "struct page" pfn accessed
+ before dropping mmu_lock
 In-Reply-To: <20240726235234.228822-1-seanjc@google.com>
 References: <20240726235234.228822-1-seanjc@google.com>
-Message-ID: <20240726235234.228822-52-seanjc@google.com>
+Message-ID: <20240726235234.228822-53-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Mark the underlying page as dirty in kvmppc_e500_ref_setup()'s sole
-caller, kvmppc_e500_shadow_map(), which will allow converting e500 to
-__kvm_faultin_pfn() + kvm_release_faultin_page() without having to do
-a weird dance between ref_setup() and shadow_map().
-
-Opportunistically drop the redundant kvm_set_pfn_accessed(), as
-shadow_map() puts the page via kvm_release_pfn_clean().
+Mark pages accessed before dropping mmu_lock when faulting in guest memory
+so that shadow_map() can convert to kvm_release_faultin_page() without
+tripping its lockdep assertion on mmu_lock being held.  Marking pages
+accessed outside of mmu_lock is ok (not great, but safe), but marking
+pages _dirty_ outside of mmu_lock can make filesystems unhappy.
 
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/powerpc/kvm/e500_mmu_host.c | 13 ++++++-------
- 1 file changed, 6 insertions(+), 7 deletions(-)
+ arch/powerpc/kvm/e500_mmu_host.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
 diff --git a/arch/powerpc/kvm/e500_mmu_host.c b/arch/powerpc/kvm/e500_mmu_host.c
-index c664fdec75b1..5c2adfd19e12 100644
+index 5c2adfd19e12..334dd96f8081 100644
 --- a/arch/powerpc/kvm/e500_mmu_host.c
 +++ b/arch/powerpc/kvm/e500_mmu_host.c
-@@ -242,7 +242,7 @@ static inline int tlbe_is_writable(struct kvm_book3e_206_tlb_entry *tlbe)
- 	return tlbe->mas7_3 & (MAS3_SW|MAS3_UW);
- }
+@@ -498,11 +498,9 @@ static inline int kvmppc_e500_shadow_map(struct kvmppc_vcpu_e500 *vcpu_e500,
+ 	kvmppc_mmu_flush_icache(pfn);
  
--static inline void kvmppc_e500_ref_setup(struct tlbe_ref *ref,
-+static inline bool kvmppc_e500_ref_setup(struct tlbe_ref *ref,
- 					 struct kvm_book3e_206_tlb_entry *gtlbe,
- 					 kvm_pfn_t pfn, unsigned int wimg)
- {
-@@ -252,11 +252,7 @@ static inline void kvmppc_e500_ref_setup(struct tlbe_ref *ref,
- 	/* Use guest supplied MAS2_G and MAS2_E */
- 	ref->flags |= (gtlbe->mas2 & MAS2_ATTRIB_MASK) | wimg;
- 
--	/* Mark the page accessed */
--	kvm_set_pfn_accessed(pfn);
+ out:
+-	spin_unlock(&kvm->mmu_lock);
 -
--	if (tlbe_is_writable(gtlbe))
--		kvm_set_pfn_dirty(pfn);
-+	return tlbe_is_writable(gtlbe);
+ 	/* Drop refcount on page, so that mmu notifiers can clear it */
+ 	kvm_release_pfn_clean(pfn);
+-
++	spin_unlock(&kvm->mmu_lock);
+ 	return ret;
  }
  
- static inline void kvmppc_e500_ref_release(struct tlbe_ref *ref)
-@@ -337,6 +333,7 @@ static inline int kvmppc_e500_shadow_map(struct kvmppc_vcpu_e500 *vcpu_e500,
- 	unsigned int wimg = 0;
- 	pgd_t *pgdir;
- 	unsigned long flags;
-+	bool writable = false;
- 
- 	/* used to check for invalidations in progress */
- 	mmu_seq = kvm->mmu_invalidate_seq;
-@@ -490,7 +487,9 @@ static inline int kvmppc_e500_shadow_map(struct kvmppc_vcpu_e500 *vcpu_e500,
- 			goto out;
- 		}
- 	}
--	kvmppc_e500_ref_setup(ref, gtlbe, pfn, wimg);
-+	writable = kvmppc_e500_ref_setup(ref, gtlbe, pfn, wimg);
-+	if (writable)
-+		kvm_set_pfn_dirty(pfn);
- 
- 	kvmppc_e500_setup_stlbe(&vcpu_e500->vcpu, gtlbe, tsize,
- 				ref, gvaddr, stlbe);
 -- 
 2.46.0.rc1.232.g9752f9e123-goog
 
