@@ -1,104 +1,124 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Fri, 26 Jul 2024 16:52:26 -0700
-Subject: [PATCH v12 77/84] KVM: PPC: Explicitly require struct page memory for
- Ultravisor sharing
+Date: Fri, 26 Jul 2024 16:52:27 -0700
+Subject: [PATCH v12 78/84] KVM: Drop gfn_to_pfn() APIs now that all users are gone
 In-Reply-To: <20240726235234.228822-1-seanjc@google.com>
 References: <20240726235234.228822-1-seanjc@google.com>
-Message-ID: <20240726235234.228822-78-seanjc@google.com>
+Message-ID: <20240726235234.228822-79-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Explicitly require "struct page" memory when sharing memory between
-guest and host via an Ultravisor.  Given the number of pfn_to_page()
-calls in the code, it's safe to assume that KVM already requires that the
-pfn returned by gfn_to_pfn() is backed by struct page, i.e. this is
-likely a bug fix, not a reduction in KVM capabilities.
+Drop gfn_to_pfn() and all its variants now that all users are gone.
 
-Switching to gfn_to_page() will eventually allow removing gfn_to_pfn()
-and kvm_pfn_to_refcounted_page().
+No functional change intended.
 
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/powerpc/kvm/book3s_hv_uvmem.c | 25 ++++++++++++-------------
- 1 file changed, 12 insertions(+), 13 deletions(-)
+ include/linux/kvm_host.h | 11 --------
+ virt/kvm/kvm_main.c      | 59 ----------------------------------------
+ 2 files changed, 70 deletions(-)
 
-diff --git a/arch/powerpc/kvm/book3s_hv_uvmem.c b/arch/powerpc/kvm/book3s_hv_uvmem.c
-index 92f33115144b..3a6592a31a10 100644
---- a/arch/powerpc/kvm/book3s_hv_uvmem.c
-+++ b/arch/powerpc/kvm/book3s_hv_uvmem.c
-@@ -879,9 +879,8 @@ static unsigned long kvmppc_share_page(struct kvm *kvm, unsigned long gpa,
- {
- 
- 	int ret = H_PARAMETER;
--	struct page *uvmem_page;
-+	struct page *page, *uvmem_page;
- 	struct kvmppc_uvmem_page_pvt *pvt;
--	unsigned long pfn;
- 	unsigned long gfn = gpa >> page_shift;
- 	int srcu_idx;
- 	unsigned long uvmem_pfn;
-@@ -901,8 +900,8 @@ static unsigned long kvmppc_share_page(struct kvm *kvm, unsigned long gpa,
- 
- retry:
- 	mutex_unlock(&kvm->arch.uvmem_lock);
--	pfn = gfn_to_pfn(kvm, gfn);
--	if (is_error_noslot_pfn(pfn))
-+	page = gfn_to_page(kvm, gfn);
-+	if (!page)
- 		goto out;
- 
- 	mutex_lock(&kvm->arch.uvmem_lock);
-@@ -911,16 +910,16 @@ static unsigned long kvmppc_share_page(struct kvm *kvm, unsigned long gpa,
- 		pvt = uvmem_page->zone_device_data;
- 		pvt->skip_page_out = true;
- 		pvt->remove_gfn = false; /* it continues to be a valid GFN */
--		kvm_release_pfn_clean(pfn);
-+		kvm_release_page_unused(page);
- 		goto retry;
- 	}
- 
--	if (!uv_page_in(kvm->arch.lpid, pfn << page_shift, gpa, 0,
-+	if (!uv_page_in(kvm->arch.lpid, page_to_pfn(page) << page_shift, gpa, 0,
- 				page_shift)) {
- 		kvmppc_gfn_shared(gfn, kvm);
- 		ret = H_SUCCESS;
- 	}
--	kvm_release_pfn_clean(pfn);
-+	kvm_release_page_clean(page);
- 	mutex_unlock(&kvm->arch.uvmem_lock);
- out:
- 	srcu_read_unlock(&kvm->srcu, srcu_idx);
-@@ -1083,21 +1082,21 @@ kvmppc_h_svm_page_out(struct kvm *kvm, unsigned long gpa,
- 
- int kvmppc_send_page_to_uv(struct kvm *kvm, unsigned long gfn)
- {
--	unsigned long pfn;
-+	struct page *page;
- 	int ret = U_SUCCESS;
- 
--	pfn = gfn_to_pfn(kvm, gfn);
--	if (is_error_noslot_pfn(pfn))
-+	page = gfn_to_page(kvm, gfn);
-+	if (!page)
- 		return -EFAULT;
- 
- 	mutex_lock(&kvm->arch.uvmem_lock);
- 	if (kvmppc_gfn_is_uvmem_pfn(gfn, kvm, NULL))
- 		goto out;
- 
--	ret = uv_page_in(kvm->arch.lpid, pfn << PAGE_SHIFT, gfn << PAGE_SHIFT,
--			 0, PAGE_SHIFT);
-+	ret = uv_page_in(kvm->arch.lpid, page_to_pfn(page) << PAGE_SHIFT,
-+			 gfn << PAGE_SHIFT, 0, PAGE_SHIFT);
- out:
--	kvm_release_pfn_clean(pfn);
-+	kvm_release_page_clean(page);
- 	mutex_unlock(&kvm->arch.uvmem_lock);
- 	return (ret == U_SUCCESS) ? RESUME_GUEST : -EFAULT;
+diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+index f2d3c3c436cc..34a1cadb1b80 100644
+--- a/include/linux/kvm_host.h
++++ b/include/linux/kvm_host.h
+@@ -1260,14 +1260,6 @@ static inline kvm_pfn_t kvm_faultin_pfn(struct kvm_vcpu *vcpu, gfn_t gfn,
+ 				 write ? FOLL_WRITE : 0, writable, refcounted_page);
  }
+ 
+-kvm_pfn_t gfn_to_pfn(struct kvm *kvm, gfn_t gfn);
+-kvm_pfn_t gfn_to_pfn_prot(struct kvm *kvm, gfn_t gfn, bool write_fault,
+-		      bool *writable);
+-kvm_pfn_t gfn_to_pfn_memslot(const struct kvm_memory_slot *slot, gfn_t gfn);
+-kvm_pfn_t __gfn_to_pfn_memslot(const struct kvm_memory_slot *slot, gfn_t gfn,
+-			       bool interruptible, bool no_wait,
+-			       bool write_fault, bool *writable);
+-
+ void kvm_release_pfn_clean(kvm_pfn_t pfn);
+ void kvm_release_pfn_dirty(kvm_pfn_t pfn);
+ void kvm_set_pfn_dirty(kvm_pfn_t pfn);
+@@ -1342,9 +1334,6 @@ unsigned long kvm_host_page_size(struct kvm_vcpu *vcpu, gfn_t gfn);
+ void mark_page_dirty_in_slot(struct kvm *kvm, const struct kvm_memory_slot *memslot, gfn_t gfn);
+ void mark_page_dirty(struct kvm *kvm, gfn_t gfn);
+ 
+-
+-kvm_pfn_t kvm_vcpu_gfn_to_pfn(struct kvm_vcpu *vcpu, gfn_t gfn);
+-
+ int __kvm_vcpu_map(struct kvm_vcpu *vcpu, gpa_t gpa, struct kvm_host_map *map,
+ 		   bool writable);
+ void kvm_vcpu_unmap(struct kvm_vcpu *vcpu, struct kvm_host_map *map);
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index 16bc3ac3ff84..5dcf3561b829 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -3059,65 +3059,6 @@ static kvm_pfn_t kvm_follow_pfn(struct kvm_follow_pfn *kfp)
+ 	return hva_to_pfn(kfp);
+ }
+ 
+-kvm_pfn_t __gfn_to_pfn_memslot(const struct kvm_memory_slot *slot, gfn_t gfn,
+-			       bool interruptible, bool no_wait,
+-			       bool write_fault, bool *writable)
+-{
+-	struct kvm_follow_pfn kfp = {
+-		.slot = slot,
+-		.gfn = gfn,
+-		.map_writable = writable,
+-	};
+-
+-	if (write_fault)
+-		kfp.flags |= FOLL_WRITE;
+-	if (no_wait)
+-		kfp.flags |= FOLL_NOWAIT;
+-	if (interruptible)
+-		kfp.flags |= FOLL_INTERRUPTIBLE;
+-
+-	return kvm_follow_pfn(&kfp);
+-}
+-EXPORT_SYMBOL_GPL(__gfn_to_pfn_memslot);
+-
+-kvm_pfn_t gfn_to_pfn_prot(struct kvm *kvm, gfn_t gfn, bool write_fault,
+-		      bool *writable)
+-{
+-	struct kvm_follow_pfn kfp = {
+-		.slot = gfn_to_memslot(kvm, gfn),
+-		.gfn = gfn,
+-		.flags = write_fault ? FOLL_WRITE : 0,
+-		.map_writable = writable,
+-	};
+-
+-	return kvm_follow_pfn(&kfp);
+-}
+-EXPORT_SYMBOL_GPL(gfn_to_pfn_prot);
+-
+-kvm_pfn_t gfn_to_pfn_memslot(const struct kvm_memory_slot *slot, gfn_t gfn)
+-{
+-	struct kvm_follow_pfn kfp = {
+-		.slot = slot,
+-		.gfn = gfn,
+-		.flags = FOLL_WRITE,
+-	};
+-
+-	return kvm_follow_pfn(&kfp);
+-}
+-EXPORT_SYMBOL_GPL(gfn_to_pfn_memslot);
+-
+-kvm_pfn_t gfn_to_pfn(struct kvm *kvm, gfn_t gfn)
+-{
+-	return gfn_to_pfn_memslot(gfn_to_memslot(kvm, gfn), gfn);
+-}
+-EXPORT_SYMBOL_GPL(gfn_to_pfn);
+-
+-kvm_pfn_t kvm_vcpu_gfn_to_pfn(struct kvm_vcpu *vcpu, gfn_t gfn)
+-{
+-	return gfn_to_pfn_memslot(kvm_vcpu_gfn_to_memslot(vcpu, gfn), gfn);
+-}
+-EXPORT_SYMBOL_GPL(kvm_vcpu_gfn_to_pfn);
+-
+ kvm_pfn_t kvm_lookup_pfn(struct kvm *kvm, gfn_t gfn)
+ {
+ 	struct page *refcounted_page = NULL;
 -- 
 2.46.0.rc1.232.g9752f9e123-goog
 
