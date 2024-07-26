@@ -1,44 +1,80 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Fri, 26 Jul 2024 16:52:15 -0700
-Subject: [PATCH v12 66/84] KVM: LoongArch: Mark "struct page" pfn accessed
- before dropping mmu_lock
+Date: Fri, 26 Jul 2024 16:52:16 -0700
+Subject: [PATCH v12 67/84] KVM: LoongArch: Use kvm_faultin_pfn() to map pfns
+ into the guest
 In-Reply-To: <20240726235234.228822-1-seanjc@google.com>
 References: <20240726235234.228822-1-seanjc@google.com>
-Message-ID: <20240726235234.228822-67-seanjc@google.com>
+Message-ID: <20240726235234.228822-68-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Mark pages accessed before dropping mmu_lock when faulting in guest memory
-so that LoongArch can convert to kvm_release_faultin_page() without
-tripping its lockdep assertion on mmu_lock being held.
+Convert LoongArch to kvm_faultin_pfn()+kvm_release_faultin_page(), which
+are new APIs to consolidate arch code and provide consistent behavior
+across all KVM architectures.
 
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/loongarch/kvm/mmu.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/loongarch/kvm/mmu.c | 14 ++++++--------
+ 1 file changed, 6 insertions(+), 8 deletions(-)
 
 diff --git a/arch/loongarch/kvm/mmu.c b/arch/loongarch/kvm/mmu.c
-index 52b5c16cf250..230cafa178d7 100644
+index 230cafa178d7..83e4376deabb 100644
 --- a/arch/loongarch/kvm/mmu.c
 +++ b/arch/loongarch/kvm/mmu.c
-@@ -902,13 +902,13 @@ static int kvm_map_page(struct kvm_vcpu *vcpu, unsigned long gpa, bool write)
+@@ -780,6 +780,7 @@ static int kvm_map_page(struct kvm_vcpu *vcpu, unsigned long gpa, bool write)
+ 	struct kvm *kvm = vcpu->kvm;
+ 	struct kvm_memory_slot *memslot;
+ 	struct kvm_mmu_memory_cache *memcache = &vcpu->arch.mmu_page_cache;
++	struct page *page;
  
- 	if (writeable)
- 		kvm_set_pfn_dirty(pfn);
-+	kvm_release_pfn_clean(pfn);
+ 	/* Try the fast path to handle old / clean pages */
+ 	srcu_idx = srcu_read_lock(&kvm->srcu);
+@@ -807,7 +808,7 @@ static int kvm_map_page(struct kvm_vcpu *vcpu, unsigned long gpa, bool write)
+ 	mmu_seq = kvm->mmu_invalidate_seq;
+ 	/*
+ 	 * Ensure the read of mmu_invalidate_seq isn't reordered with PTE reads in
+-	 * gfn_to_pfn_prot() (which calls get_user_pages()), so that we don't
++	 * kvm_faultin_pfn() (which calls get_user_pages()), so that we don't
+ 	 * risk the page we get a reference to getting unmapped before we have a
+ 	 * chance to grab the mmu_lock without mmu_invalidate_retry() noticing.
+ 	 *
+@@ -819,7 +820,7 @@ static int kvm_map_page(struct kvm_vcpu *vcpu, unsigned long gpa, bool write)
+ 	smp_rmb();
  
+ 	/* Slow path - ask KVM core whether we can access this GPA */
+-	pfn = gfn_to_pfn_prot(kvm, gfn, write, &writeable);
++	pfn = kvm_faultin_pfn(vcpu, gfn, write, &writeable, &page);
+ 	if (is_error_noslot_pfn(pfn)) {
+ 		err = -EFAULT;
+ 		goto out;
+@@ -831,10 +832,10 @@ static int kvm_map_page(struct kvm_vcpu *vcpu, unsigned long gpa, bool write)
+ 		/*
+ 		 * This can happen when mappings are changed asynchronously, but
+ 		 * also synchronously if a COW is triggered by
+-		 * gfn_to_pfn_prot().
++		 * kvm_faultin_pfn().
+ 		 */
+ 		spin_unlock(&kvm->mmu_lock);
+-		kvm_release_pfn_clean(pfn);
++		kvm_release_page_unused(page);
+ 		if (retry_no > 100) {
+ 			retry_no = 0;
+ 			schedule();
+@@ -900,10 +901,7 @@ static int kvm_map_page(struct kvm_vcpu *vcpu, unsigned long gpa, bool write)
+ 		++kvm->stat.pages;
+ 	kvm_set_pte(ptep, new_pte);
+ 
+-	if (writeable)
+-		kvm_set_pfn_dirty(pfn);
+-	kvm_release_pfn_clean(pfn);
+-
++	kvm_release_faultin_page(kvm, page, false, writeable);
  	spin_unlock(&kvm->mmu_lock);
  
  	if (prot_bits & _PAGE_DIRTY)
- 		mark_page_dirty_in_slot(kvm, memslot, gfn);
- 
--	kvm_release_pfn_clean(pfn);
- out:
- 	srcu_read_unlock(&kvm->srcu, srcu_idx);
- 	return err;
 -- 
 2.46.0.rc1.232.g9752f9e123-goog
 
