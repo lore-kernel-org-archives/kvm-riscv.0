@@ -1,74 +1,251 @@
-From: Thomas Huth <thuth@redhat.com>
-Date: Fri, 26 Jul 2024 11:05:14 +0200
-Subject: [kvm-unit-tests PATCH] build: retain intermediate .aux.o targets
-In-Reply-To: <D2Z6GP2VFOJ8.2KU7OB25CUXTC@gmail.com>
-References: <20240612044234.212156-1-npiggin@gmail.com>
- <20240612082847.GG19790@gate.crashing.org>
- <D1ZBO021MLHV.3C7E4V3WOHO8V@gmail.com>
- <20240614010856.GK19790@gate.crashing.org>
- <D1ZLRVNGPWTV.5H76A3E8DJCV@gmail.com> <D2Z6GP2VFOJ8.2KU7OB25CUXTC@gmail.com>
-Message-ID: <8c9ca85f-0995-4c34-bb57-5a8490f74b50@redhat.com>
+From: Sean Christopherson <seanjc@google.com>
+Date: Fri, 26 Jul 2024 16:51:09 -0700
+Subject: [PATCH v12 00/84] KVM: Stop grabbing references to PFNMAP'd pages
+Message-ID: <20240726235234.228822-1-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 26/07/2024 06.15, Nicholas Piggin wrote:
-> On Fri Jun 14, 2024 at 6:38 PM AEST, Nicholas Piggin wrote:
->> On Fri Jun 14, 2024 at 11:08 AM AEST, Segher Boessenkool wrote:
->>> On Fri, Jun 14, 2024 at 10:43:39AM +1000, Nicholas Piggin wrote:
->>>> On Wed Jun 12, 2024 at 6:28 PM AEST, Segher Boessenkool wrote:
->>>>> On Wed, Jun 12, 2024 at 02:42:32PM +1000, Nicholas Piggin wrote:
->>>>>> arm, powerpc, riscv, build .aux.o targets with implicit pattern rules
->>>>>> in dependency chains that cause them to be made as intermediate files,
->>>>>> which get removed when make finishes. This results in unnecessary
->>>>>> partial rebuilds. If make is run again, this time the .aux.o targets
->>>>>> are not intermediate, possibly due to being made via different
->>>>>> dependencies.
->>>>>>
->>>>>> Adding .aux.o files to .PRECIOUS prevents them being removed and solves
->>>>>> the rebuild problem.
->>>>>>
->>>>>> s390x does not have the problem because .SECONDARY prevents dependancies
->>>>>> from being built as intermediate. However the same change is made for
->>>>>> s390x, for consistency.
->>>>>
->>>>> This is exactly what .SECONDARY is for, as its documentation says,
->>>>> even.  Wouldn't it be better to just add a .SECONDARY to the other
->>>>> targets as well?
->>>>
->>>> Yeah we were debating that and agreed .PRECIOUS may not be the
->>>> cleanest fix but since we already use that it's okay for a
->>>> minimal fix.
->>>
->>> But why add it to s390x then?  It is not a fix there at all!
->>
->> Eh, not a big deal. I mentioned that in the changelog it doesn't seem to
->> pracicaly fix something. And I rather the makefiles converge as much as
->> possible rather than diverge more.
->>
->> .SECONDARY was added independently and not to fix this problem in
->> s390x. And s390x has .SECONDARY slightly wrong AFAIKS. It mentions
->> .SECONDARY: twice in a way that looks like it was meant to depend on
->> specific targets, it actually gives it no dependencies and the
->> resulting semantics are that all intermediate files in the build are
->> treated as secondary. So somethig there should be cleaned up. If the
->> .SECONDARY was changed to only depend on the .gobj and .hdr.obj then
->> suddenly that would break .aux.o if I don't make the change.
->>
->> So I'm meaning to work out what to do with all that, i.e., whether to
->> add blanket .SECONDARY for all and trim or remove the .PRECIOUS files,
->> or remove s390x's secondary, or make it more specific, or something
->> else. But it takes a while for me to do makefile work.
-> 
-> Hi Thomas,
-> 
-> Ping on this patch?
+arm64 folks, the first two patches are bug fixes, but I have very low
+confidence that they are correct and/or desirable.  If they are more or
+less correct, I can post them separately if that'd make life easier.  I
+included them here to avoid conflicts, and because I'm pretty sure how
+KVM deals with MTE tags vs. dirty logging will impact what APIs KVM needs
+to provide to arch code.
 
-I assumed that Marc would chime in on the s390x part here?
+On to the series...  The TL;DR is that I would like to get input on two
+things:
 
-  Thomas
+ 1. Marking folios dirty/accessed only on the intial stage-2 page fault
+ 2. The new APIs for faulting, prefetching, and doing "lookups" on pfns
 
+This is (spiritually) v12 of David Steven's series to play nice with pfns
+that are "valid", i.e. have a struct page, but are not refcounted.  Whereas
+David's series only (mostly) fixed things for x86, this series goes for
+broke and completely eliminates KVM's long-standing (and heinous) behavior
+of essentially guessing which pfns are refcounted pages (see
+kvm_pfn_to_refcounted_page()).
+
+Getting there requires "fixing" arch code that isn't obviously broken.
+Specifically, to get rid of kvm_pfn_to_refcounted_page(), KVM needs to
+stop marking pages/folios dirty/accessed based solely on the pfn that's
+stored in KVM's stage-2 page tables.  In v11, KVM x86 did this by tagging
+SPTEs with a flag (using a software-available bit).
+
+But that isn't a viable option for some flavors of x86 (we're out of
+software-available bits), and more importantly I've convinced myself[*]
+that marking folios _dirty_ after SPTEs have been installed is completely
+unnecessary, and that marking folios accessed is likewise unnecessary for
+real world workloads (and if this is a sticking point, I have ideas on
+how to handle it more gracefully; more at the bottom).
+
+So, instead of tracking which SPTEs correspond to refcounted pages, v12
+simply removes all of the code that operates on "struct page" based on
+the pfn in stage-2 PTEs.  This is the back ~40-50% of the series.  Most
+of the patches are relevatively uninteresting from a code perspective,
+it's the concept itself (of not marking folios dirty/accessed from SPTEs)
+that needs discussion.
+
+For x86 in particular, which sets accessed/dirty status when that info
+would be "lost", e.g. when SPTEs are zapped or KVM clears the dirty flag
+in a SPTE, foregoing the updates provides very measurable performance
+improvements for related operations.  E.g. when clearing dirty bits as
+part of dirty logging, and zapping SPTEs to reconstitue huge pages when
+disabling dirty logging.
+
+The other big change from v11 is that I opted to go with dedicated,
+specific, and hopefully descriptive APIs to wrap kvm_follow_pfn() instead
+of expose the "inner" helper to arch code.  In part because I still don't
+love kvm_follow_pfn(), and fewer callers means its easier to change if/when
+someone comes up with a better name.  But also because I think/hope that
+having dedicated APIs will make it easier for arch developers to understand
+what is the right/preferred way to do certain operations.  E.g. so that all
+architectures use the same core flow for handling stage-2 page faults.
+Long term, I would love to standardize that code even more, but this series
+is already waaaay too big.
+
+Along the way, I also discovered that several of the inputs to hva_to_pfn()
+(and it's myriad wrappers) could be removed.  E.g. the rather weirdly named
+@atomic flag can be removed by deduplicating x86's prefetching code.
+
+As for capturing accessed information on zapped SPTEs, e.g. to prevent
+losing accessed information because NUMA balancing mucks with things, my
+thought is that arch code can preserve the accessed information in SPTEs
+that are unmapped/zapped because protections were modified, e.g. so that
+LRU-initiated aging can still collect information.  I'm not at all
+convinced that this is necessary outside of tests that care about exact
+counts, e.g. KVM selftests, but I'll post an RFC KVM x86 series to get
+the conversation started.
+
+Note, I'm purposefully not capturing the delta from v11=>v12, because
+there is zero chance I will get everything, and while this is a spiritual
+successor to David's v11, in practice it's like 98% new code.
+
+[*] https://lore.kernel.org/all/20240320005024.3216282-1-seanjc at google.com
+
+David Stevens (3):
+  KVM: Replace "async" pointer in gfn=>pfn with "no_wait" and error code
+  KVM: Introduce kvm_follow_pfn() to eventually replace "gfn_to_pfn"
+    APIs
+  KVM: Migrate kvm_vcpu_map() to kvm_follow_pfn()
+
+Sean Christopherson (81):
+  KVM: arm64: Release pfn, i.e. put page, if copying MTE tags hits
+    ZONE_DEVICE
+  KVM: arm64: Disallow copying MTE to guest memory while KVM is dirty
+    logging
+  KVM: Drop KVM_ERR_PTR_BAD_PAGE and instead return NULL to indicate an
+    error
+  KVM: Allow calling kvm_release_page_{clean,dirty}() on a NULL page
+    pointer
+  KVM: Add kvm_release_page_unused() API to put pages that KVM never
+    consumes
+  KVM: x86/mmu: Skip the "try unsync" path iff the old SPTE was a leaf
+    SPTE
+  KVM: x86/mmu: Mark folio dirty when creating SPTE, not when
+    zapping/modifying
+  KVM: x86/mmu: Mark page/folio accessed only when zapping leaf SPTEs
+  KVM: x86/mmu: Don't force flush if SPTE update clears Accessed bit
+  KVM: x86/mmu: Use gfn_to_page_many_atomic() when prefetching indirect
+    PTEs
+  KVM: Rename gfn_to_page_many_atomic() to kvm_prefetch_pages()
+  KVM: Drop @atomic param from gfn=>pfn and hva=>pfn APIs
+  KVM: Annotate that all paths in hva_to_pfn() might sleep
+  KVM: x86/mmu: Drop kvm_page_fault.hva, i.e. don't track intermediate
+    hva
+  KVM: Drop unused "hva" pointer from __gfn_to_pfn_memslot()
+  KVM: Remove pointless sanity check on @map param to kvm_vcpu_(un)map()
+  KVM: Explicitly initialize all fields at the start of kvm_vcpu_map()
+  KVM: Use NULL for struct page pointer to indicate mremapped memory
+  KVM: nVMX: Rely on kvm_vcpu_unmap() to track validity of eVMCS mapping
+  KVM: nVMX: Drop pointless msr_bitmap_map field from struct nested_vmx
+  KVM: nVMX: Add helper to put (unmap) vmcs12 pages
+  KVM: Use plain "struct page" pointer instead of single-entry array
+  KVM: Provide refcounted page as output field in struct kvm_follow_pfn
+  KVM: Move kvm_{set,release}_page_{clean,dirty}() helpers up in
+    kvm_main.c
+  KVM: pfncache: Precisely track refcounted pages
+  KVM: Pin (as in FOLL_PIN) pages during kvm_vcpu_map()
+  KVM: nVMX: Mark vmcs12's APIC access page dirty when unmapping
+  KVM: Pass in write/dirty to kvm_vcpu_map(), not kvm_vcpu_unmap()
+  KVM: Get writable mapping for __kvm_vcpu_map() only when necessary
+  KVM: Disallow direct access (w/o mmu_notifier) to unpinned pfn by
+    default
+  KVM: Add a helper to lookup a pfn without grabbing a reference
+  KVM: x86: Use kvm_lookup_pfn() to check if retrying #PF is useful
+  KVM: x86: Use kvm_lookup_pfn() to check if APIC access page was
+    installed
+  KVM: x86/mmu: Add "mmu" prefix fault-in helpers to free up generic
+    names
+  KVM: x86/mmu: Put direct prefetched pages via kvm_release_page_clean()
+  KVM: x86/mmu: Add common helper to handle prefetching SPTEs
+  KVM: x86/mmu: Add helper to "finish" handling a guest page fault
+  KVM: x86/mmu: Mark pages/folios dirty at the origin of make_spte()
+  KVM: Move declarations of memslot accessors up in kvm_host.h
+  KVM: Add kvm_faultin_pfn() to specifically service guest page faults
+  KVM: x86/mmu: Convert page fault paths to kvm_faultin_pfn()
+  KVM: guest_memfd: Provide "struct page" as output from
+    kvm_gmem_get_pfn()
+  KVM: x86/mmu: Put refcounted pages instead of blindly releasing pfns
+  KVM: x86/mmu: Don't mark unused faultin pages as accessed
+  KVM: Move x86's API to release a faultin page to common KVM
+  KVM: VMX: Hold mmu_lock until page is released when updating APIC
+    access page
+  KVM: VMX: Use __kvm_faultin_page() to get APIC access page/pfn
+  KVM: PPC: e500: Mark "struct page" dirty in kvmppc_e500_shadow_map()
+  KVM: PPC: e500: Mark "struct page" pfn accessed before dropping
+    mmu_lock
+  KVM: PPC: e500: Use __kvm_faultin_pfn() to handle page faults
+  KVM: arm64: Mark "struct page" pfns accessed/dirty before dropping
+    mmu_lock
+  KVM: arm64: Use __kvm_faultin_pfn() to handle memory aborts
+  KVM: RISC-V: Mark "struct page" pfns dirty iff a stage-2 PTE is
+    installed
+  KVM: RISC-V: Mark "struct page" pfns accessed before dropping mmu_lock
+  KVM: RISC-V: Use kvm_faultin_pfn() when mapping pfns into the guest
+  KVM: PPC: Use __kvm_faultin_pfn() to handle page faults on Book3s HV
+  KVM: PPC: Use __kvm_faultin_pfn() to handle page faults on Book3s
+    Radix
+  KVM: PPC: Drop unused @kvm_ro param from
+    kvmppc_book3s_instantiate_page()
+  KVM: PPC: Book3S: Mark "struct page" pfns dirty/accessed after
+    installing PTE
+  KVM: PPC: Use kvm_faultin_pfn() to handle page faults on Book3s PR
+  KVM: LoongArch: Mark "struct page" pfns dirty only in "slow" page
+    fault path
+  KVM: LoongArch: Mark "struct page" pfns accessed only in "slow" page
+    fault path
+  KVM: LoongArch: Mark "struct page" pfn accessed before dropping
+    mmu_lock
+  KVM: LoongArch: Use kvm_faultin_pfn() to map pfns into the guest
+  KVM: MIPS: Mark "struct page" pfns dirty only in "slow" page fault
+    path
+  KVM: MIPS: Mark "struct page" pfns accessed only in "slow" page fault
+    path
+  KVM: MIPS: Mark "struct page" pfns accessed prior to dropping mmu_lock
+  KVM: MIPS: Use kvm_faultin_pfn() to map pfns into the guest
+  KVM: PPC: Remove extra get_page() to fix page refcount leak
+  KVM: PPC: Use kvm_vcpu_map() to map guest memory to patch dcbz
+    instructions
+  KVM: Convert gfn_to_page() to use kvm_follow_pfn()
+  KVM: Add support for read-only usage of gfn_to_page()
+  KVM: arm64: Use __gfn_to_page() when copying MTE tags to/from
+    userspace
+  KVM: PPC: Explicitly require struct page memory for Ultravisor sharing
+  KVM: Drop gfn_to_pfn() APIs now that all users are gone
+  KVM: s390: Use kvm_release_page_dirty() to unpin "struct page" memory
+  KVM: Make kvm_follow_pfn.refcounted_page a required field
+  KVM: x86/mmu: Don't mark "struct page" accessed when zapping SPTEs
+  KVM: arm64: Don't mark "struct page" accessed when making SPTE young
+  KVM: Drop APIs that manipulate "struct page" via pfns
+  KVM: Don't grab reference on VM_MIXEDMAP pfns that have a "struct
+    page"
+
+ Documentation/virt/kvm/locking.rst     |  80 ++--
+ arch/arm64/include/asm/kvm_pgtable.h   |   4 +-
+ arch/arm64/kvm/guest.c                 |  25 +-
+ arch/arm64/kvm/hyp/pgtable.c           |   7 +-
+ arch/arm64/kvm/mmu.c                   |  21 +-
+ arch/loongarch/kvm/mmu.c               |  40 +-
+ arch/mips/kvm/mmu.c                    |  26 +-
+ arch/powerpc/include/asm/kvm_book3s.h  |   4 +-
+ arch/powerpc/kvm/book3s.c              |   7 +-
+ arch/powerpc/kvm/book3s_32_mmu_host.c  |   7 +-
+ arch/powerpc/kvm/book3s_64_mmu_host.c  |  12 +-
+ arch/powerpc/kvm/book3s_64_mmu_hv.c    |  25 +-
+ arch/powerpc/kvm/book3s_64_mmu_radix.c |  35 +-
+ arch/powerpc/kvm/book3s_hv_nested.c    |   4 +-
+ arch/powerpc/kvm/book3s_hv_uvmem.c     |  25 +-
+ arch/powerpc/kvm/book3s_pr.c           |  14 +-
+ arch/powerpc/kvm/book3s_xive_native.c  |   2 +-
+ arch/powerpc/kvm/e500_mmu_host.c       |  19 +-
+ arch/riscv/kvm/mmu.c                   |   9 +-
+ arch/s390/kvm/vsie.c                   |   4 +-
+ arch/x86/kvm/lapic.c                   |  15 +-
+ arch/x86/kvm/mmu/mmu.c                 | 191 ++++----
+ arch/x86/kvm/mmu/mmu_internal.h        |   5 +-
+ arch/x86/kvm/mmu/paging_tmpl.h         |  29 +-
+ arch/x86/kvm/mmu/spte.c                |  23 +-
+ arch/x86/kvm/mmu/tdp_mmu.c             |  16 -
+ arch/x86/kvm/svm/nested.c              |   4 +-
+ arch/x86/kvm/svm/sev.c                 |  12 +-
+ arch/x86/kvm/svm/svm.c                 |   8 +-
+ arch/x86/kvm/vmx/nested.c              |  42 +-
+ arch/x86/kvm/vmx/vmx.c                 |  28 +-
+ arch/x86/kvm/vmx/vmx.h                 |   2 -
+ arch/x86/kvm/x86.c                     |  16 +-
+ include/linux/kvm_host.h               | 124 +++--
+ virt/kvm/guest_memfd.c                 |  19 +-
+ virt/kvm/kvm_main.c                    | 603 ++++++++++---------------
+ virt/kvm/kvm_mm.h                      |  36 +-
+ virt/kvm/pfncache.c                    |  20 +-
+ 38 files changed, 698 insertions(+), 865 deletions(-)
+
+
+base-commit: 332d2c1d713e232e163386c35a3ba0c1b90df83f
+-- 
+2.46.0.rc1.232.g9752f9e123-goog
 
 
