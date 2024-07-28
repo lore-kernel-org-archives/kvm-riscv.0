@@ -1,68 +1,127 @@
 From: James Raphael Tiovalen <jamestiotio@gmail.com>
-Date: Mon, 29 Jul 2024 00:50:17 +0800
-Subject: [kvm-unit-tests PATCH v5 0/5] riscv: sbi: Add support to test timer extension
-Message-ID: <20240728165022.30075-1-jamestiotio@gmail.com>
+Date: Mon, 29 Jul 2024 00:50:18 +0800
+Subject: [kvm-unit-tests PATCH v5 1/5] riscv: Extend exception handling support for interrupts
+In-Reply-To: <20240728165022.30075-1-jamestiotio@gmail.com>
+References: <20240728165022.30075-1-jamestiotio@gmail.com>
+Message-ID: <20240728165022.30075-2-jamestiotio@gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This patch series adds support for testing the timer extension as
-defined in the RISC-V SBI specification. The first 2 patches add
-infrastructural support for handling interrupts, the next 2 patches add
-some helper routines that can be used by SBI extension tests, while the
-last patch adds the actual test for the timer extension.
+From: Andrew Jones <andrew.jones@linux.dev>
 
-v5:
-- Addressed all of Andrew's comments on v4.
-- Updated the test to check if `sip.STIP` is cleared for both cases of
-  setting the timer to -1 and masking the timer irq as per the spec.
-- Updated the test to check if `sie.STIE` is writable for the mask irq
-  test.
+Add install_irq_handler() to enable tests to install interrupt handlers.
+Also add local_irq_enable() and local_irq_disable() to respectively
+enable and disable IRQs via the sstatus.SIE bit.
 
-v4:
-- Addressed all of Andrew's comments on v3.
+Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
+Signed-off-by: James Raphael Tiovalen <jamestiotio@gmail.com>
+---
+ lib/riscv/asm/csr.h       |  2 ++
+ lib/riscv/asm/processor.h | 13 +++++++++++++
+ lib/riscv/processor.c     | 27 +++++++++++++++++++++++----
+ 3 files changed, 38 insertions(+), 4 deletions(-)
 
-v3:
-- Addressed all of Andrew's comments on v2.
-- Added 2 new patches to add sbi_probe and the delay and timer routines.
-
-v2:
-- Addressed all of the previous comments from Andrew.
-- Updated the test to get the timer frequency value from the device tree
-  and allow the test parameters to be specified in microseconds instead of
-  cycles.
-
-Andrew Jones (1):
-  riscv: Extend exception handling support for interrupts
-
-James Raphael Tiovalen (4):
-  riscv: Update exception cause list
-  riscv: Add method to probe for SBI extensions
-  riscv: Add some delay and timer routines
-  riscv: sbi: Add test for timer extension
-
- riscv/Makefile            |   2 +
- lib/riscv/asm/csr.h       |  21 ++++++
- lib/riscv/asm/delay.h     |  16 +++++
- lib/riscv/asm/processor.h |  15 +++-
- lib/riscv/asm/sbi.h       |   6 ++
- lib/riscv/asm/setup.h     |   1 +
- lib/riscv/asm/timer.h     |  24 +++++++
- lib/riscv/delay.c         |  21 ++++++
- lib/riscv/processor.c     |  27 +++++--
- lib/riscv/sbi.c           |  13 ++++
- lib/riscv/setup.c         |   4 ++
- lib/riscv/timer.c         |  28 ++++++++
- riscv/sbi.c               | 144 ++++++++++++++++++++++++++++++++++++++
- 13 files changed, 317 insertions(+), 5 deletions(-)
- create mode 100644 lib/riscv/asm/delay.h
- create mode 100644 lib/riscv/asm/timer.h
- create mode 100644 lib/riscv/delay.c
- create mode 100644 lib/riscv/timer.c
-
---
+diff --git a/lib/riscv/asm/csr.h b/lib/riscv/asm/csr.h
+index 52608512..d6909d93 100644
+--- a/lib/riscv/asm/csr.h
++++ b/lib/riscv/asm/csr.h
+@@ -11,6 +11,8 @@
+ #define CSR_STVAL		0x143
+ #define CSR_SATP		0x180
+ 
++#define SR_SIE			_AC(0x00000002, UL)
++
+ /* Exception cause high bit - is an interrupt if set */
+ #define CAUSE_IRQ_FLAG		(_AC(1, UL) << (__riscv_xlen - 1))
+ 
+diff --git a/lib/riscv/asm/processor.h b/lib/riscv/asm/processor.h
+index 32c499d0..6451adb5 100644
+--- a/lib/riscv/asm/processor.h
++++ b/lib/riscv/asm/processor.h
+@@ -5,6 +5,7 @@
+ #include <asm/ptrace.h>
+ 
+ #define EXCEPTION_CAUSE_MAX	16
++#define INTERRUPT_CAUSE_MAX	16
+ 
+ typedef void (*exception_fn)(struct pt_regs *);
+ 
+@@ -13,6 +14,7 @@ struct thread_info {
+ 	unsigned long hartid;
+ 	unsigned long isa[1];
+ 	exception_fn exception_handlers[EXCEPTION_CAUSE_MAX];
++	exception_fn interrupt_handlers[INTERRUPT_CAUSE_MAX];
+ };
+ 
+ static inline struct thread_info *current_thread_info(void)
+@@ -20,7 +22,18 @@ static inline struct thread_info *current_thread_info(void)
+ 	return (struct thread_info *)csr_read(CSR_SSCRATCH);
+ }
+ 
++static inline void local_irq_enable(void)
++{
++	csr_set(CSR_SSTATUS, SR_SIE);
++}
++
++static inline void local_irq_disable(void)
++{
++	csr_clear(CSR_SSTATUS, SR_SIE);
++}
++
+ void install_exception_handler(unsigned long cause, void (*handler)(struct pt_regs *));
++void install_irq_handler(unsigned long cause, void (*handler)(struct pt_regs *));
+ void do_handle_exception(struct pt_regs *regs);
+ void thread_info_init(void);
+ 
+diff --git a/lib/riscv/processor.c b/lib/riscv/processor.c
+index ece7cbff..0dffadc7 100644
+--- a/lib/riscv/processor.c
++++ b/lib/riscv/processor.c
+@@ -36,10 +36,21 @@ void do_handle_exception(struct pt_regs *regs)
+ {
+ 	struct thread_info *info = current_thread_info();
+ 
+-	assert(regs->cause < EXCEPTION_CAUSE_MAX);
+-	if (info->exception_handlers[regs->cause]) {
+-		info->exception_handlers[regs->cause](regs);
+-		return;
++	if (regs->cause & CAUSE_IRQ_FLAG) {
++		unsigned long irq_cause = regs->cause & ~CAUSE_IRQ_FLAG;
++
++		assert(irq_cause < INTERRUPT_CAUSE_MAX);
++		if (info->interrupt_handlers[irq_cause]) {
++			info->interrupt_handlers[irq_cause](regs);
++			return;
++		}
++	} else {
++		assert(regs->cause < EXCEPTION_CAUSE_MAX);
++
++		if (info->exception_handlers[regs->cause]) {
++			info->exception_handlers[regs->cause](regs);
++			return;
++		}
+ 	}
+ 
+ 	show_regs(regs);
+@@ -47,6 +58,14 @@ void do_handle_exception(struct pt_regs *regs)
+ 	abort();
+ }
+ 
++void install_irq_handler(unsigned long cause, void (*handler)(struct pt_regs *))
++{
++	struct thread_info *info = current_thread_info();
++
++	assert(cause < INTERRUPT_CAUSE_MAX);
++	info->interrupt_handlers[cause] = handler;
++}
++
+ void install_exception_handler(unsigned long cause, void (*handler)(struct pt_regs *))
+ {
+ 	struct thread_info *info = current_thread_info();
+-- 
 2.43.0
 
 
