@@ -1,311 +1,263 @@
-From: Andrew Jones <andrew.jones@linux.dev>
-Date: Mon, 29 Jul 2024 15:31:01 +0200
-Subject: [kvm-unit-tests PATCH v5 5/5] riscv: sbi: Add test for timer
- extension
-In-Reply-To: <20240728165022.30075-6-jamestiotio@gmail.com>
-References: <20240728165022.30075-1-jamestiotio@gmail.com>
- <20240728165022.30075-6-jamestiotio@gmail.com>
-Message-ID: <20240729-a7e67852ef18e54de184d42a@orel>
+From: Alexandre Ghiti <alex@ghiti.fr>
+Date: Mon, 29 Jul 2024 15:43:30 +0200
+Subject: [PATCH v3 3/6] riscv: Add Zawrs support for spinlocks
+In-Reply-To: <20240426100820.14762-11-ajones@ventanamicro.com>
+References: <20240426100820.14762-8-ajones@ventanamicro.com>
+ <20240426100820.14762-11-ajones@ventanamicro.com>
+Message-ID: <4de22b20-8a6a-47d0-a4e9-74343c45411c@ghiti.fr>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Jul 29, 2024 at 12:50:22AM GMT, James Raphael Tiovalen wrote:
-> Add a test for the set_timer function of the time extension. The test
-> checks that:
-> - The time extension is available
-> - The installed timer interrupt handler is called
-> - The timer interrupt is received within a reasonable time interval
-> - The timer interrupt pending bit is cleared after the set_timer SBI
->   call is made
-> - The timer interrupt can be cleared either by requesting a timer
->   interrupt infinitely far into the future or by masking the timer
->   interrupt
-> 
-> The timer interrupt delay can be set using the TIMER_DELAY environment
-> variable in microseconds. The default delay value is 200 milliseconds.
-> Since the interrupt can arrive a little later than the specified delay,
-> allow some margin of error. This margin of error can be specified via
-> the TIMER_MARGIN environment variable in microseconds. The default
-> margin of error is 200 milliseconds.
-> 
-> Signed-off-by: James Raphael Tiovalen <jamestiotio@gmail.com>
-> ---
->  lib/riscv/asm/csr.h   |   8 +++
->  lib/riscv/asm/sbi.h   |   5 ++
->  lib/riscv/asm/timer.h |  10 +++
->  riscv/sbi.c           | 144 ++++++++++++++++++++++++++++++++++++++++++
->  4 files changed, 167 insertions(+)
-> 
-> diff --git a/lib/riscv/asm/csr.h b/lib/riscv/asm/csr.h
-> index a9b1bd42..24b333e0 100644
-> --- a/lib/riscv/asm/csr.h
-> +++ b/lib/riscv/asm/csr.h
-> @@ -4,11 +4,15 @@
->  #include <linux/const.h>
->  
->  #define CSR_SSTATUS		0x100
-> +#define CSR_SIE			0x104
->  #define CSR_STVEC		0x105
->  #define CSR_SSCRATCH		0x140
->  #define CSR_SEPC		0x141
->  #define CSR_SCAUSE		0x142
->  #define CSR_STVAL		0x143
-> +#define CSR_SIP			0x144
-> +#define CSR_STIMECMP		0x14d
-> +#define CSR_STIMECMPH		0x15d
->  #define CSR_SATP		0x180
->  #define CSR_TIME		0xc01
->  
-> @@ -47,6 +51,10 @@
->  #define IRQ_S_GEXT		12
->  #define IRQ_PMU_OVF		13
->  
-> +#define IE_TIE			(_AC(0x1, UL) << IRQ_S_TIMER)
-> +
-> +#define IP_TIP			IE_TIE
-> +
->  #ifndef __ASSEMBLY__
->  
->  #define csr_swap(csr, val)					\
-> diff --git a/lib/riscv/asm/sbi.h b/lib/riscv/asm/sbi.h
-> index 5e1a674a..73ab5438 100644
-> --- a/lib/riscv/asm/sbi.h
-> +++ b/lib/riscv/asm/sbi.h
-> @@ -16,6 +16,7 @@
->  
->  enum sbi_ext_id {
->  	SBI_EXT_BASE = 0x10,
-> +	SBI_EXT_TIME = 0x54494d45,
->  	SBI_EXT_HSM = 0x48534d,
->  	SBI_EXT_SRST = 0x53525354,
->  };
-> @@ -37,6 +38,10 @@ enum sbi_ext_hsm_fid {
->  	SBI_EXT_HSM_HART_SUSPEND,
->  };
->  
-> +enum sbi_ext_time_fid {
-> +	SBI_EXT_TIME_SET_TIMER = 0,
-> +};
-> +
->  struct sbiret {
->  	long error;
->  	long value;
-> diff --git a/lib/riscv/asm/timer.h b/lib/riscv/asm/timer.h
-> index f7504f84..b3514d3f 100644
-> --- a/lib/riscv/asm/timer.h
-> +++ b/lib/riscv/asm/timer.h
-> @@ -11,4 +11,14 @@ static inline uint64_t timer_get_cycles(void)
->  	return csr_read(CSR_TIME);
->  }
->  
-> +static inline void timer_irq_enable(void)
-> +{
-> +	csr_set(CSR_SIE, IE_TIE);
-> +}
-> +
-> +static inline void timer_irq_disable(void)
-> +{
-> +	csr_clear(CSR_SIE, IE_TIE);
-> +}
-> +
->  #endif /* _ASMRISCV_TIMER_H_ */
-> diff --git a/riscv/sbi.c b/riscv/sbi.c
-> index 762e9711..044258bb 100644
-> --- a/riscv/sbi.c
-> +++ b/riscv/sbi.c
-> @@ -6,7 +6,25 @@
->   */
->  #include <libcflat.h>
->  #include <stdlib.h>
-> +#include <limits.h>
-> +#include <asm/barrier.h>
-> +#include <asm/csr.h>
-> +#include <asm/delay.h>
-> +#include <asm/isa.h>
-> +#include <asm/processor.h>
->  #include <asm/sbi.h>
-> +#include <asm/smp.h>
-> +#include <asm/timer.h>
-> +
-> +struct timer_info {
-> +	bool timer_works;
-> +	bool mask_timer_irq;
-> +	bool timer_irq_set;
-> +	bool timer_irq_cleared;
-> +	unsigned long timer_irq_count;
-> +};
-> +
-> +static struct timer_info timer_info_;
+Hi Drew,
 
-I'd rather call this just 'timer_info' than 'timer_info_'. I usually
-prefer to use a different name than the struct for grepping purposes,
-but for a static structure of a small file it doesn't really matter.
-
->  
->  static void help(void)
->  {
-> @@ -19,6 +37,36 @@ static struct sbiret __base_sbi_ecall(int fid, unsigned long arg0)
->  	return sbi_ecall(SBI_EXT_BASE, fid, arg0, 0, 0, 0, 0, 0);
->  }
->  
-> +static struct sbiret __time_sbi_ecall(unsigned long stime_value)
-> +{
-> +	return sbi_ecall(SBI_EXT_TIME, SBI_EXT_TIME_SET_TIMER, stime_value, 0, 0, 0, 0, 0);
-> +}
-> +
-> +static bool timer_irq_pending(void)
-> +{
-> +	return csr_read(CSR_SIP) & IP_TIP;
-> +}
-> +
-> +static void timer_irq_handler(struct pt_regs *regs)
-> +{
-> +	if (timer_info_.timer_irq_count < ULONG_MAX)
-> +		++timer_info_.timer_irq_count;
-> +
-> +	timer_info_.timer_works = true;
-> +	if (timer_irq_pending())
-> +		timer_info_.timer_irq_set = true;
-> +
-> +	if (timer_info_.mask_timer_irq) {
-> +		timer_irq_disable();
-> +		__time_sbi_ecall(0);
-> +	} else {
-> +		__time_sbi_ecall(ULONG_MAX);
-> +	}
-> +
-> +	if (!timer_irq_pending())
-> +		timer_info_.timer_irq_cleared = true;
-> +}
-> +
->  static bool env_or_skip(const char *env)
->  {
->  	if (!getenv(env)) {
-> @@ -112,6 +160,101 @@ static void check_base(void)
->  	report_prefix_pop();
->  }
->  
-> +static void check_time(void)
-> +{
-> +	struct sbiret ret;
-> +	unsigned long begin, end, duration;
-> +	unsigned long d = getenv("TIMER_DELAY") ? strtol(getenv("TIMER_DELAY"), NULL, 0)
-> +						: 200000;
-> +	unsigned long margin = getenv("TIMER_MARGIN") ? strtol(getenv("TIMER_MARGIN"), NULL, 0)
-> +						      : 200000;
-> +
-> +	d = usec_to_cycles(d);
-> +	margin = usec_to_cycles(margin);
-> +
-> +	report_prefix_push("time");
-> +
-> +	if (!sbi_probe(SBI_EXT_TIME)) {
-> +		report_skip("time extension not available");
-> +		report_prefix_pop();
-> +		return;
-> +	}
-> +
-> +	report_prefix_push("set_timer");
-> +
-> +	install_irq_handler(IRQ_S_TIMER, timer_irq_handler);
-> +	local_irq_enable();
-> +	if (cpu_has_extension(smp_processor_id(), ISA_SSTC)) {
-> +		csr_write(CSR_STIMECMP, ULONG_MAX);
-> +#if __riscv_xlen == 32
-> +		csr_write(CSR_STIMECMPH, ULONG_MAX);
-> +#endif
-> +	}
-> +	timer_irq_enable();
-> +
-> +	begin = timer_get_cycles();
-> +	ret = __time_sbi_ecall(begin + d);
-> +
-> +	report(!ret.error, "set timer");
-> +	if (ret.error)
-> +		report_info("set timer failed with %ld\n", ret.error);
-> +
-> +	report(!timer_irq_pending(), "pending timer interrupt bit cleared");
-> +
-> +	while ((end = timer_get_cycles()) <= (begin + d + margin) && !timer_info_.timer_works)
-> +		cpu_relax();
-> +
-> +	report(timer_info_.timer_works, "timer interrupt received");
-> +	report(timer_info_.timer_irq_set, "pending timer interrupt bit set in irq handler");
-> +	report(timer_info_.timer_irq_set && timer_info_.timer_irq_cleared,
-> +	       "pending timer interrupt bit cleared by setting timer to -1");
-> +
-> +	if (timer_info_.timer_works) {
-> +		duration = end - begin;
-> +		report(duration >= d && duration <= (d + margin), "timer delay honored");
-> +	}
-> +
-> +	if (timer_info_.timer_irq_count > 1)
-> +		report_fail("timer interrupt received multiple times");
-> +
-> +	if (csr_read(CSR_SIE) & IE_TIE) {
-> +		timer_info_ = (struct timer_info){ .mask_timer_irq = true };
-> +		begin = timer_get_cycles();
-> +		ret = __time_sbi_ecall(begin + d);
-> +
-> +		report(!ret.error, "set timer for mask irq test");
-> +		if (ret.error)
-> +			report_info("set timer for mask irq test failed with %ld\n", ret.error);
-> +
-> +		while ((end = timer_get_cycles()) <= (begin + d + margin)
-> +		       && !timer_info_.timer_works)
-> +			cpu_relax();
-> +
-> +		report(timer_info_.timer_works, "timer interrupt received for mask irq test");
-> +		report(timer_info_.timer_irq_set,
-> +		       "pending timer interrupt bit set in irq handler for mask irq test");
-> +		report(timer_info_.timer_irq_set && timer_info_.timer_irq_cleared,
-> +		       "pending timer interrupt bit cleared by masking timer irq");
-> +
-> +		if (timer_info_.timer_works) {
-> +			duration = end - begin;
-> +			report(duration >= d && duration <= (d + margin),
-> +			"timer delay honored for mask irq test");
-> +		}
-> +
-> +		if (timer_info_.timer_irq_count > 1)
-> +			report_fail("timer interrupt received multiple times for mask irq test");
-
-nit: we could share all the code in the body of this if-statement with the
-code above if we just create a function which takes a const char * which
-would be NULL for the first invocation and "for mask irq test" for the
-second.
-
-> +	} else {
-> +		report_skip("timer irq enable bit is not writable, skipping mask irq test");
-> +	}
-> +
-> +	local_irq_disable();
-> +	install_irq_handler(IRQ_S_TIMER, NULL);
-> +
-> +	report_prefix_pop();
-> +	report_prefix_pop();
-> +}
-> +
->  int main(int argc, char **argv)
->  {
->  
-> @@ -122,6 +265,7 @@ int main(int argc, char **argv)
->  
->  	report_prefix_push("sbi");
->  	check_base();
-> +	check_time();
->  
->  	return report_summary();
->  }
-> -- 
-> 2.43.0
+On 26/04/2024 12:08, Andrew Jones wrote:
+> From: Christoph M?llner <christoph.muellner@vrull.eu>
 >
+> RISC-V code uses the generic ticket lock implementation, which calls
+> the macros smp_cond_load_relaxed() and smp_cond_load_acquire().
+> Introduce a RISC-V specific implementation of smp_cond_load_relaxed()
+> which applies WRS.NTO of the Zawrs extension in order to reduce power
+> consumption while waiting and allows hypervisors to enable guests to
+> trap while waiting. smp_cond_load_acquire() doesn't need a RISC-V
+> specific implementation as the generic implementation is based on
+> smp_cond_load_relaxed() and smp_acquire__after_ctrl_dep() sufficiently
+> provides the acquire semantics.
+>
+> This implementation is heavily based on Arm's approach which is the
+> approach Andrea Parri also suggested.
+>
+> The Zawrs specification can be found here:
+> https://github.com/riscv/riscv-zawrs/blob/main/zawrs.adoc
+>
+> Signed-off-by: Christoph M?llner <christoph.muellner@vrull.eu>
+> Co-developed-by: Andrew Jones <ajones@ventanamicro.com>
+> Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
+> ---
+>   arch/riscv/Kconfig                | 13 +++++++
+>   arch/riscv/include/asm/barrier.h  | 45 ++++++++++++++++--------
+>   arch/riscv/include/asm/cmpxchg.h  | 58 +++++++++++++++++++++++++++++++
+>   arch/riscv/include/asm/hwcap.h    |  1 +
+>   arch/riscv/include/asm/insn-def.h |  2 ++
+>   arch/riscv/kernel/cpufeature.c    |  1 +
+>   6 files changed, 105 insertions(+), 15 deletions(-)
+>
+> diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
+> index 7427d8088337..34bbe6b70546 100644
+> --- a/arch/riscv/Kconfig
+> +++ b/arch/riscv/Kconfig
+> @@ -578,6 +578,19 @@ config RISCV_ISA_V_PREEMPTIVE
+>   	  preemption. Enabling this config will result in higher memory
+>   	  consumption due to the allocation of per-task's kernel Vector context.
+>   
+> +config RISCV_ISA_ZAWRS
+> +	bool "Zawrs extension support for more efficient busy waiting"
+> +	depends on RISCV_ALTERNATIVE
+> +	default y
+> +	help
+> +	  The Zawrs extension defines instructions to be used in polling loops
+> +	  which allow a hart to enter a low-power state or to trap to the
+> +	  hypervisor while waiting on a store to a memory location. Enable the
+> +	  use of these instructions in the kernel when the Zawrs extension is
+> +	  detected at boot.
+> +
+> +	  If you don't know what to do here, say Y.
+> +
+>   config TOOLCHAIN_HAS_ZBB
+>   	bool
+>   	default y
+> diff --git a/arch/riscv/include/asm/barrier.h b/arch/riscv/include/asm/barrier.h
+> index 880b56d8480d..e1d9bf1deca6 100644
+> --- a/arch/riscv/include/asm/barrier.h
+> +++ b/arch/riscv/include/asm/barrier.h
+> @@ -11,6 +11,7 @@
+>   #define _ASM_RISCV_BARRIER_H
+>   
+>   #ifndef __ASSEMBLY__
+> +#include <asm/cmpxchg.h>
+>   #include <asm/fence.h>
+>   
+>   #define nop()		__asm__ __volatile__ ("nop")
+> @@ -28,21 +29,6 @@
+>   #define __smp_rmb()	RISCV_FENCE(r, r)
+>   #define __smp_wmb()	RISCV_FENCE(w, w)
+>   
+> -#define __smp_store_release(p, v)					\
+> -do {									\
+> -	compiletime_assert_atomic_type(*p);				\
+> -	RISCV_FENCE(rw, w);						\
+> -	WRITE_ONCE(*p, v);						\
+> -} while (0)
+> -
+> -#define __smp_load_acquire(p)						\
+> -({									\
+> -	typeof(*p) ___p1 = READ_ONCE(*p);				\
+> -	compiletime_assert_atomic_type(*p);				\
+> -	RISCV_FENCE(r, rw);						\
+> -	___p1;								\
+> -})
+> -
+>   /*
+>    * This is a very specific barrier: it's currently only used in two places in
+>    * the kernel, both in the scheduler.  See include/linux/spinlock.h for the two
+> @@ -70,6 +56,35 @@ do {									\
+>    */
+>   #define smp_mb__after_spinlock()	RISCV_FENCE(iorw, iorw)
+>   
+> +#define __smp_store_release(p, v)					\
+> +do {									\
+> +	compiletime_assert_atomic_type(*p);				\
+> +	RISCV_FENCE(rw, w);						\
+> +	WRITE_ONCE(*p, v);						\
+> +} while (0)
+> +
+> +#define __smp_load_acquire(p)						\
+> +({									\
+> +	typeof(*p) ___p1 = READ_ONCE(*p);				\
+> +	compiletime_assert_atomic_type(*p);				\
+> +	RISCV_FENCE(r, rw);						\
+> +	___p1;								\
+> +})
+> +
+> +#ifdef CONFIG_RISCV_ISA_ZAWRS
+> +#define smp_cond_load_relaxed(ptr, cond_expr) ({			\
+> +	typeof(ptr) __PTR = (ptr);					\
+> +	__unqual_scalar_typeof(*ptr) VAL;				\
+> +	for (;;) {							\
+> +		VAL = READ_ONCE(*__PTR);				\
+> +		if (cond_expr)						\
+> +			break;						\
+> +		__cmpwait_relaxed(ptr, VAL);				\
+> +	}								\
+> +	(typeof(*ptr))VAL;						\
+> +})
+> +#endif
+> +
+>   #include <asm-generic/barrier.h>
+>   
+>   #endif /* __ASSEMBLY__ */
+> diff --git a/arch/riscv/include/asm/cmpxchg.h b/arch/riscv/include/asm/cmpxchg.h
+> index 2fee65cc8443..725276dcb996 100644
+> --- a/arch/riscv/include/asm/cmpxchg.h
+> +++ b/arch/riscv/include/asm/cmpxchg.h
+> @@ -8,7 +8,10 @@
+>   
+>   #include <linux/bug.h>
+>   
+> +#include <asm/alternative-macros.h>
+>   #include <asm/fence.h>
+> +#include <asm/hwcap.h>
+> +#include <asm/insn-def.h>
+>   
+>   #define __xchg_relaxed(ptr, new, size)					\
+>   ({									\
+> @@ -359,4 +362,59 @@
+>   	arch_cmpxchg_relaxed((ptr), (o), (n));				\
+>   })
+>   
+> +#ifdef CONFIG_RISCV_ISA_ZAWRS
+> +/*
+> + * Despite wrs.nto being "WRS-with-no-timeout", in the absence of changes to
+> + * @val we expect it to still terminate within a "reasonable" amount of time
+> + * for an implementation-specific other reason, a pending, locally-enabled
+> + * interrupt, or because it has been configured to raise an illegal
+> + * instruction exception.
+> + */
+> +static __always_inline void __cmpwait(volatile void *ptr,
+> +				      unsigned long val,
+> +				      int size)
+> +{
+> +	unsigned long tmp;
+> +
+> +	asm goto(ALTERNATIVE("j %l[no_zawrs]", "nop",
+> +			     0, RISCV_ISA_EXT_ZAWRS, 1)
+> +		 : : : : no_zawrs);
+> +
+> +	switch (size) {
+> +	case 4:
+> +		asm volatile(
+> +		"	lr.w	%0, %1\n"
+> +		"	xor	%0, %0, %2\n"
+> +		"	bnez	%0, 1f\n"
+> +			ZAWRS_WRS_NTO "\n"
+> +		"1:"
+> +		: "=&r" (tmp), "+A" (*(u32 *)ptr)
+> +		: "r" (val));
+> +		break;
+> +#if __riscv_xlen == 64
+> +	case 8:
+> +		asm volatile(
+> +		"	lr.d	%0, %1\n"
+> +		"	xor	%0, %0, %2\n"
+> +		"	bnez	%0, 1f\n"
+> +			ZAWRS_WRS_NTO "\n"
+> +		"1:"
+> +		: "=&r" (tmp), "+A" (*(u64 *)ptr)
+> +		: "r" (val));
+> +		break;
+> +#endif
+> +	default:
+> +		BUILD_BUG();
+> +	}
+> +
+> +	return;
+> +
+> +no_zawrs:
+> +	asm volatile(RISCV_PAUSE : : : "memory");
 
-Reviewed-by: Andrew Jones <andrew.jones@linux.dev>
+
+Shouldn't we fallback to the previous implementation (cpu_relax()) here? 
+Not sure this is really important, but I want to make sure it was not an 
+oversight.
 
 Thanks,
-drew
+
+Alex
+
+
+> +}
+> +
+> +#define __cmpwait_relaxed(ptr, val) \
+> +	__cmpwait((ptr), (unsigned long)(val), sizeof(*(ptr)))
+> +#endif
+> +
+>   #endif /* _ASM_RISCV_CMPXCHG_H */
+> diff --git a/arch/riscv/include/asm/hwcap.h b/arch/riscv/include/asm/hwcap.h
+> index e17d0078a651..5b358c3cf212 100644
+> --- a/arch/riscv/include/asm/hwcap.h
+> +++ b/arch/riscv/include/asm/hwcap.h
+> @@ -81,6 +81,7 @@
+>   #define RISCV_ISA_EXT_ZTSO		72
+>   #define RISCV_ISA_EXT_ZACAS		73
+>   #define RISCV_ISA_EXT_XANDESPMU		74
+> +#define RISCV_ISA_EXT_ZAWRS		75
+>   
+>   #define RISCV_ISA_EXT_XLINUXENVCFG	127
+>   
+> diff --git a/arch/riscv/include/asm/insn-def.h b/arch/riscv/include/asm/insn-def.h
+> index 64dffaa21bfa..9a913010cdd9 100644
+> --- a/arch/riscv/include/asm/insn-def.h
+> +++ b/arch/riscv/include/asm/insn-def.h
+> @@ -197,5 +197,7 @@
+>   	       RS1(base), SIMM12(4))
+>   
+>   #define RISCV_PAUSE	".4byte 0x100000f"
+> +#define ZAWRS_WRS_NTO	".4byte 0x00d00073"
+> +#define ZAWRS_WRS_STO	".4byte 0x01d00073"
+>   
+>   #endif /* __ASM_INSN_DEF_H */
+> diff --git a/arch/riscv/kernel/cpufeature.c b/arch/riscv/kernel/cpufeature.c
+> index 3ed2359eae35..02de9eaa3f42 100644
+> --- a/arch/riscv/kernel/cpufeature.c
+> +++ b/arch/riscv/kernel/cpufeature.c
+> @@ -257,6 +257,7 @@ const struct riscv_isa_ext_data riscv_isa_ext[] = {
+>   	__RISCV_ISA_EXT_DATA(zihintpause, RISCV_ISA_EXT_ZIHINTPAUSE),
+>   	__RISCV_ISA_EXT_DATA(zihpm, RISCV_ISA_EXT_ZIHPM),
+>   	__RISCV_ISA_EXT_DATA(zacas, RISCV_ISA_EXT_ZACAS),
+> +	__RISCV_ISA_EXT_DATA(zawrs, RISCV_ISA_EXT_ZAWRS),
+>   	__RISCV_ISA_EXT_DATA(zfa, RISCV_ISA_EXT_ZFA),
+>   	__RISCV_ISA_EXT_DATA(zfh, RISCV_ISA_EXT_ZFH),
+>   	__RISCV_ISA_EXT_DATA(zfhmin, RISCV_ISA_EXT_ZFHMIN),
 
