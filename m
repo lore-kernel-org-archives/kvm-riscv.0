@@ -1,276 +1,120 @@
-From: James Raphael Tiovalen <jamestiotio@gmail.com>
-Date: Tue, 30 Jul 2024 14:18:20 +0800
-Subject: [kvm-unit-tests PATCH v6 5/5] riscv: sbi: Add test for timer extension
-In-Reply-To: <20240730061821.43811-1-jamestiotio@gmail.com>
-References: <20240730061821.43811-1-jamestiotio@gmail.com>
-Message-ID: <20240730061821.43811-6-jamestiotio@gmail.com>
+From: Paolo Bonzini <pbonzini@redhat.com>
+Date: Tue, 30 Jul 2024 10:57:55 +0200
+Subject: [PATCH v12 41/84] KVM: x86/mmu: Mark pages/folios dirty at the
+ origin of make_spte()
+In-Reply-To: <20240726235234.228822-42-seanjc@google.com>
+References: <20240726235234.228822-1-seanjc@google.com>
+ <20240726235234.228822-42-seanjc@google.com>
+Message-ID: <e425ac5e-6ca2-463e-879c-acb7d231ab72@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add a test for the set_timer function of the time extension. The test
-checks that:
-- The time extension is available
-- The installed timer interrupt handler is called
-- The timer interrupt is received within a reasonable time interval
-- The timer interrupt pending bit is cleared after the set_timer SBI
-  call is made
-- The timer interrupt can be cleared either by requesting a timer
-  interrupt infinitely far into the future or by masking the timer
-  interrupt
+On 7/27/24 01:51, Sean Christopherson wrote:
+> Move the marking of folios dirty from make_spte() out to its callers,
+> which have access to the _struct page_, not just the underlying pfn.
+> Once all architectures follow suit, this will allow removing KVM's ugly
+> hack where KVM elevates the refcount of VM_MIXEDMAP pfns that happen to
+> be struct page memory.
+> 
+> Signed-off-by: Sean Christopherson <seanjc@google.com>
+> ---
+>   arch/x86/kvm/mmu/mmu.c         | 29 +++++++++++++++++++++++++++--
+>   arch/x86/kvm/mmu/paging_tmpl.h |  5 +++++
+>   arch/x86/kvm/mmu/spte.c        | 11 -----------
+>   3 files changed, 32 insertions(+), 13 deletions(-)
+> 
+> diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
+> index 1cdd67707461..7e7b855ce1e1 100644
+> --- a/arch/x86/kvm/mmu/mmu.c
+> +++ b/arch/x86/kvm/mmu/mmu.c
+> @@ -2918,7 +2918,16 @@ static bool kvm_mmu_prefetch_sptes(struct kvm_vcpu *vcpu, gfn_t gfn, u64 *sptep,
+>   	for (i = 0; i < nr_pages; i++, gfn++, sptep++) {
+>   		mmu_set_spte(vcpu, slot, sptep, access, gfn,
+>   			     page_to_pfn(pages[i]), NULL);
+> -		kvm_release_page_clean(pages[i]);
+> +
+> +		/*
+> +		 * KVM always prefetches writable pages from the primary MMU,
+> +		 * and KVM can make its SPTE writable in the fast page, without
 
-The timer interrupt delay can be set using the TIMER_DELAY environment
-variable in microseconds. The default delay value is 200 milliseconds.
-Since the interrupt can arrive a little later than the specified delay,
-allow some margin of error. This margin of error can be specified via
-the TIMER_MARGIN environment variable in microseconds. The default
-margin of error is 200 milliseconds.
+"with a fast page fault"
 
-Reviewed-by: Andrew Jones <andrew.jones@linux.dev>
-Signed-off-by: James Raphael Tiovalen <jamestiotio@gmail.com>
----
- lib/riscv/asm/csr.h   |   8 +++
- lib/riscv/asm/sbi.h   |   5 ++
- lib/riscv/asm/timer.h |  10 ++++
- riscv/sbi.c           | 127 ++++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 150 insertions(+)
+Paolo
 
-diff --git a/lib/riscv/asm/csr.h b/lib/riscv/asm/csr.h
-index a9b1bd42..24b333e0 100644
---- a/lib/riscv/asm/csr.h
-+++ b/lib/riscv/asm/csr.h
-@@ -4,11 +4,15 @@
- #include <linux/const.h>
- 
- #define CSR_SSTATUS		0x100
-+#define CSR_SIE			0x104
- #define CSR_STVEC		0x105
- #define CSR_SSCRATCH		0x140
- #define CSR_SEPC		0x141
- #define CSR_SCAUSE		0x142
- #define CSR_STVAL		0x143
-+#define CSR_SIP			0x144
-+#define CSR_STIMECMP		0x14d
-+#define CSR_STIMECMPH		0x15d
- #define CSR_SATP		0x180
- #define CSR_TIME		0xc01
- 
-@@ -47,6 +51,10 @@
- #define IRQ_S_GEXT		12
- #define IRQ_PMU_OVF		13
- 
-+#define IE_TIE			(_AC(0x1, UL) << IRQ_S_TIMER)
-+
-+#define IP_TIP			IE_TIE
-+
- #ifndef __ASSEMBLY__
- 
- #define csr_swap(csr, val)					\
-diff --git a/lib/riscv/asm/sbi.h b/lib/riscv/asm/sbi.h
-index 5e1a674a..73ab5438 100644
---- a/lib/riscv/asm/sbi.h
-+++ b/lib/riscv/asm/sbi.h
-@@ -16,6 +16,7 @@
- 
- enum sbi_ext_id {
- 	SBI_EXT_BASE = 0x10,
-+	SBI_EXT_TIME = 0x54494d45,
- 	SBI_EXT_HSM = 0x48534d,
- 	SBI_EXT_SRST = 0x53525354,
- };
-@@ -37,6 +38,10 @@ enum sbi_ext_hsm_fid {
- 	SBI_EXT_HSM_HART_SUSPEND,
- };
- 
-+enum sbi_ext_time_fid {
-+	SBI_EXT_TIME_SET_TIMER = 0,
-+};
-+
- struct sbiret {
- 	long error;
- 	long value;
-diff --git a/lib/riscv/asm/timer.h b/lib/riscv/asm/timer.h
-index f7504f84..b3514d3f 100644
---- a/lib/riscv/asm/timer.h
-+++ b/lib/riscv/asm/timer.h
-@@ -11,4 +11,14 @@ static inline uint64_t timer_get_cycles(void)
- 	return csr_read(CSR_TIME);
- }
- 
-+static inline void timer_irq_enable(void)
-+{
-+	csr_set(CSR_SIE, IE_TIE);
-+}
-+
-+static inline void timer_irq_disable(void)
-+{
-+	csr_clear(CSR_SIE, IE_TIE);
-+}
-+
- #endif /* _ASMRISCV_TIMER_H_ */
-diff --git a/riscv/sbi.c b/riscv/sbi.c
-index 762e9711..9fc099df 100644
---- a/riscv/sbi.c
-+++ b/riscv/sbi.c
-@@ -6,7 +6,25 @@
-  */
- #include <libcflat.h>
- #include <stdlib.h>
-+#include <limits.h>
-+#include <asm/barrier.h>
-+#include <asm/csr.h>
-+#include <asm/delay.h>
-+#include <asm/isa.h>
-+#include <asm/processor.h>
- #include <asm/sbi.h>
-+#include <asm/smp.h>
-+#include <asm/timer.h>
-+
-+struct timer_info {
-+	bool timer_works;
-+	bool mask_timer_irq;
-+	bool timer_irq_set;
-+	bool timer_irq_cleared;
-+	unsigned long timer_irq_count;
-+};
-+
-+static struct timer_info timer_info;
- 
- static void help(void)
- {
-@@ -19,6 +37,78 @@ static struct sbiret __base_sbi_ecall(int fid, unsigned long arg0)
- 	return sbi_ecall(SBI_EXT_BASE, fid, arg0, 0, 0, 0, 0, 0);
- }
- 
-+static struct sbiret __time_sbi_ecall(unsigned long stime_value)
-+{
-+	return sbi_ecall(SBI_EXT_TIME, SBI_EXT_TIME_SET_TIMER, stime_value, 0, 0, 0, 0, 0);
-+}
-+
-+static bool timer_irq_pending(void)
-+{
-+	return csr_read(CSR_SIP) & IP_TIP;
-+}
-+
-+static void timer_irq_handler(struct pt_regs *regs)
-+{
-+	if (timer_info.timer_irq_count < ULONG_MAX)
-+		++timer_info.timer_irq_count;
-+
-+	timer_info.timer_works = true;
-+	if (timer_irq_pending())
-+		timer_info.timer_irq_set = true;
-+
-+	if (timer_info.mask_timer_irq) {
-+		timer_irq_disable();
-+		__time_sbi_ecall(0);
-+	} else {
-+		__time_sbi_ecall(ULONG_MAX);
-+	}
-+
-+	if (!timer_irq_pending())
-+		timer_info.timer_irq_cleared = true;
-+}
-+
-+static void execute_set_timer_test(bool mask_timer_irq)
-+{
-+	struct sbiret ret;
-+	unsigned long begin, end, duration;
-+	const char *mask_test_str = mask_timer_irq ? " for mask irq test" : "";
-+	const char *clear_irq_bit_str = mask_timer_irq ? "masking timer irq"
-+						       : "setting timer to -1";
-+	unsigned long d = getenv("TIMER_DELAY") ? strtol(getenv("TIMER_DELAY"), NULL, 0)
-+						: 200000;
-+	unsigned long margin = getenv("TIMER_MARGIN") ? strtol(getenv("TIMER_MARGIN"), NULL, 0)
-+						      : 200000;
-+
-+	d = usec_to_cycles(d);
-+	margin = usec_to_cycles(margin);
-+
-+	timer_info = (struct timer_info){ .mask_timer_irq = mask_timer_irq };
-+	begin = timer_get_cycles();
-+	ret = __time_sbi_ecall(begin + d);
-+
-+	report(!ret.error, "set timer%s", mask_test_str);
-+	if (ret.error)
-+		report_info("set timer%s failed with %ld\n", mask_test_str, ret.error);
-+
-+	while ((end = timer_get_cycles()) <= (begin + d + margin) && !timer_info.timer_works)
-+		cpu_relax();
-+
-+	report(timer_info.timer_works, "timer interrupt received%s", mask_test_str);
-+	report(timer_info.timer_irq_set, "pending timer interrupt bit set in irq handler%s",
-+	       mask_test_str);
-+	report(timer_info.timer_irq_set && timer_info.timer_irq_cleared,
-+	       "pending timer interrupt bit cleared by %s", clear_irq_bit_str);
-+
-+	if (timer_info.timer_works) {
-+		duration = end - begin;
-+		report(duration >= d && duration <= (d + margin), "timer delay honored%s",
-+		       mask_test_str);
-+	}
-+
-+	if (timer_info.timer_irq_count > 1)
-+		report_fail("timer interrupt received multiple times%s", mask_test_str);
-+}
-+
- static bool env_or_skip(const char *env)
- {
- 	if (!getenv(env)) {
-@@ -112,6 +202,42 @@ static void check_base(void)
- 	report_prefix_pop();
- }
- 
-+static void check_time(void)
-+{
-+	report_prefix_push("time");
-+
-+	if (!sbi_probe(SBI_EXT_TIME)) {
-+		report_skip("time extension not available");
-+		report_prefix_pop();
-+		return;
-+	}
-+
-+	report_prefix_push("set_timer");
-+
-+	install_irq_handler(IRQ_S_TIMER, timer_irq_handler);
-+	local_irq_enable();
-+	if (cpu_has_extension(smp_processor_id(), ISA_SSTC)) {
-+		csr_write(CSR_STIMECMP, ULONG_MAX);
-+#if __riscv_xlen == 32
-+		csr_write(CSR_STIMECMPH, ULONG_MAX);
-+#endif
-+	}
-+	timer_irq_enable();
-+
-+	execute_set_timer_test(false);
-+
-+	if (csr_read(CSR_SIE) & IE_TIE)
-+		execute_set_timer_test(true);
-+	else
-+		report_skip("timer irq enable bit is not writable, skipping mask irq test");
-+
-+	local_irq_disable();
-+	install_irq_handler(IRQ_S_TIMER, NULL);
-+
-+	report_prefix_pop();
-+	report_prefix_pop();
-+}
-+
- int main(int argc, char **argv)
- {
- 
-@@ -122,6 +248,7 @@ int main(int argc, char **argv)
- 
- 	report_prefix_push("sbi");
- 	check_base();
-+	check_time();
- 
- 	return report_summary();
- }
--- 
-2.43.0
+> +		 * notifying the primary MMU.  Mark pages/folios dirty now to
+> +		 * ensure file data is written back if it ends up being written
+> +		 * by the guest.  Because KVM's prefetching GUPs writable PTEs,
+> +		 * the probability of unnecessary writeback is extremely low.
+> +		 */
+> +		kvm_release_page_dirty(pages[i]);
+>   	}
+>   
+>   	return true;
+> @@ -4314,7 +4323,23 @@ static u8 kvm_max_private_mapping_level(struct kvm *kvm, kvm_pfn_t pfn,
+>   static void kvm_mmu_finish_page_fault(struct kvm_vcpu *vcpu,
+>   				      struct kvm_page_fault *fault, int r)
+>   {
+> -	kvm_release_pfn_clean(fault->pfn);
+> +	lockdep_assert_once(lockdep_is_held(&vcpu->kvm->mmu_lock) ||
+> +			    r == RET_PF_RETRY);
+> +
+> +	/*
+> +	 * If the page that KVM got from the *primary MMU* is writable, and KVM
+> +	 * installed or reused a SPTE, mark the page/folio dirty.  Note, this
+> +	 * may mark a folio dirty even if KVM created a read-only SPTE, e.g. if
+> +	 * the GFN is write-protected.  Folios can't be safely marked dirty
+> +	 * outside of mmu_lock as doing so could race with writeback on the
+> +	 * folio.  As a result, KVM can't mark folios dirty in the fast page
+> +	 * fault handler, and so KVM must (somewhat) speculatively mark the
+> +	 * folio dirty if KVM could locklessly make the SPTE writable.
+> +	 */
+> +	if (!fault->map_writable || r == RET_PF_RETRY)
+> +		kvm_release_pfn_clean(fault->pfn);
+> +	else
+> +		kvm_release_pfn_dirty(fault->pfn);
+>   }
+>   
+>   static int kvm_mmu_faultin_pfn_private(struct kvm_vcpu *vcpu,
+> diff --git a/arch/x86/kvm/mmu/paging_tmpl.h b/arch/x86/kvm/mmu/paging_tmpl.h
+> index b6897916c76b..2e2d87a925ac 100644
+> --- a/arch/x86/kvm/mmu/paging_tmpl.h
+> +++ b/arch/x86/kvm/mmu/paging_tmpl.h
+> @@ -953,6 +953,11 @@ static int FNAME(sync_spte)(struct kvm_vcpu *vcpu, struct kvm_mmu_page *sp, int
+>   		  spte_to_pfn(spte), spte, true, false,
+>   		  host_writable, &spte);
+>   
+> +	/*
+> +	 * There is no need to mark the pfn dirty, as the new protections must
+> +	 * be a subset of the old protections, i.e. synchronizing a SPTE cannot
+> +	 * change the SPTE from read-only to writable.
+> +	 */
+>   	return mmu_spte_update(sptep, spte);
+>   }
+>   
+> diff --git a/arch/x86/kvm/mmu/spte.c b/arch/x86/kvm/mmu/spte.c
+> index 9b8795bd2f04..2c5650390d3b 100644
+> --- a/arch/x86/kvm/mmu/spte.c
+> +++ b/arch/x86/kvm/mmu/spte.c
+> @@ -277,17 +277,6 @@ bool make_spte(struct kvm_vcpu *vcpu, struct kvm_mmu_page *sp,
+>   		mark_page_dirty_in_slot(vcpu->kvm, slot, gfn);
+>   	}
+>   
+> -	/*
+> -	 * If the page that KVM got from the primary MMU is writable, i.e. if
+> -	 * it's host-writable, mark the page/folio dirty.  As alluded to above,
+> -	 * folios can't be safely marked dirty in the fast page fault handler,
+> -	 * and so KVM must (somewhat) speculatively mark the folio dirty even
+> -	 * though it isn't guaranteed to be written as KVM won't mark the folio
+> -	 * dirty if/when the SPTE is made writable.
+> -	 */
+> -	if (host_writable)
+> -		kvm_set_pfn_dirty(pfn);
+> -
+>   	*new_spte = spte;
+>   	return wrprot;
+>   }
 
 
