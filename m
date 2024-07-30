@@ -1,11 +1,11 @@
 From: Paolo Bonzini <pbonzini@redhat.com>
-Date: Tue, 30 Jul 2024 10:57:55 +0200
-Subject: [PATCH v12 41/84] KVM: x86/mmu: Mark pages/folios dirty at the
- origin of make_spte()
-In-Reply-To: <20240726235234.228822-42-seanjc@google.com>
+Date: Tue, 30 Jul 2024 10:58:32 +0200
+Subject: [PATCH v12 48/84] KVM: Move x86's API to release a faultin page
+ to common KVM
+In-Reply-To: <20240726235234.228822-49-seanjc@google.com>
 References: <20240726235234.228822-1-seanjc@google.com>
- <20240726235234.228822-42-seanjc@google.com>
-Message-ID: <e425ac5e-6ca2-463e-879c-acb7d231ab72@redhat.com>
+ <20240726235234.228822-49-seanjc@google.com>
+Message-ID: <96df1dd5-cc31-4e84-84fd-ea75b4800be8@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -13,53 +13,73 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 On 7/27/24 01:51, Sean Christopherson wrote:
-> Move the marking of folios dirty from make_spte() out to its callers,
-> which have access to the _struct page_, not just the underlying pfn.
-> Once all architectures follow suit, this will allow removing KVM's ugly
-> hack where KVM elevates the refcount of VM_MIXEDMAP pfns that happen to
-> be struct page memory.
+> Move KVM x86's helper that "finishes" the faultin process to common KVM
+> so that the logic can be shared across all architectures.  Note, not all
+> architectures implement a fast page fault path, but the gist of the
+> comment applies to all architectures.
 > 
 > Signed-off-by: Sean Christopherson <seanjc@google.com>
 > ---
->   arch/x86/kvm/mmu/mmu.c         | 29 +++++++++++++++++++++++++++--
->   arch/x86/kvm/mmu/paging_tmpl.h |  5 +++++
->   arch/x86/kvm/mmu/spte.c        | 11 -----------
->   3 files changed, 32 insertions(+), 13 deletions(-)
+>   arch/x86/kvm/mmu/mmu.c   | 24 ++----------------------
+>   include/linux/kvm_host.h | 26 ++++++++++++++++++++++++++
+>   2 files changed, 28 insertions(+), 22 deletions(-)
 > 
 > diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
-> index 1cdd67707461..7e7b855ce1e1 100644
+> index 95beb50748fc..2a0cfa225c8d 100644
 > --- a/arch/x86/kvm/mmu/mmu.c
 > +++ b/arch/x86/kvm/mmu/mmu.c
-> @@ -2918,7 +2918,16 @@ static bool kvm_mmu_prefetch_sptes(struct kvm_vcpu *vcpu, gfn_t gfn, u64 *sptep,
->   	for (i = 0; i < nr_pages; i++, gfn++, sptep++) {
->   		mmu_set_spte(vcpu, slot, sptep, access, gfn,
->   			     page_to_pfn(pages[i]), NULL);
-> -		kvm_release_page_clean(pages[i]);
-> +
-> +		/*
-> +		 * KVM always prefetches writable pages from the primary MMU,
-> +		 * and KVM can make its SPTE writable in the fast page, without
-
-"with a fast page fault"
-
-Paolo
-
-> +		 * notifying the primary MMU.  Mark pages/folios dirty now to
-> +		 * ensure file data is written back if it ends up being written
-> +		 * by the guest.  Because KVM's prefetching GUPs writable PTEs,
-> +		 * the probability of unnecessary writeback is extremely low.
-> +		 */
-> +		kvm_release_page_dirty(pages[i]);
->   	}
->   
->   	return true;
-> @@ -4314,7 +4323,23 @@ static u8 kvm_max_private_mapping_level(struct kvm *kvm, kvm_pfn_t pfn,
+> @@ -4323,28 +4323,8 @@ static u8 kvm_max_private_mapping_level(struct kvm *kvm, kvm_pfn_t pfn,
 >   static void kvm_mmu_finish_page_fault(struct kvm_vcpu *vcpu,
 >   				      struct kvm_page_fault *fault, int r)
 >   {
-> -	kvm_release_pfn_clean(fault->pfn);
-> +	lockdep_assert_once(lockdep_is_held(&vcpu->kvm->mmu_lock) ||
-> +			    r == RET_PF_RETRY);
+> -	lockdep_assert_once(lockdep_is_held(&vcpu->kvm->mmu_lock) ||
+> -			    r == RET_PF_RETRY);
+> -
+> -	if (!fault->refcounted_page)
+> -		return;
+> -
+> -	/*
+> -	 * If the page that KVM got from the *primary MMU* is writable, and KVM
+> -	 * installed or reused a SPTE, mark the page/folio dirty.  Note, this
+> -	 * may mark a folio dirty even if KVM created a read-only SPTE, e.g. if
+> -	 * the GFN is write-protected.  Folios can't be safely marked dirty
+> -	 * outside of mmu_lock as doing so could race with writeback on the
+> -	 * folio.  As a result, KVM can't mark folios dirty in the fast page
+> -	 * fault handler, and so KVM must (somewhat) speculatively mark the
+> -	 * folio dirty if KVM could locklessly make the SPTE writable.
+> -	 */
+> -	if (r == RET_PF_RETRY)
+> -		kvm_release_page_unused(fault->refcounted_page);
+> -	else if (!fault->map_writable)
+> -		kvm_release_page_clean(fault->refcounted_page);
+> -	else
+> -		kvm_release_page_dirty(fault->refcounted_page);
+> +	kvm_release_faultin_page(vcpu->kvm, fault->refcounted_page,
+> +				 r == RET_PF_RETRY, fault->map_writable);
+
+Does it make sense to move RET_PF_* to common code, and avoid a bool 
+argument here?
+
+Paolo
+
+>   }
+>   
+>   static int kvm_mmu_faultin_pfn_private(struct kvm_vcpu *vcpu,
+> diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+> index 9d2a97eb30e4..91341cdc6562 100644
+> --- a/include/linux/kvm_host.h
+> +++ b/include/linux/kvm_host.h
+> @@ -1216,6 +1216,32 @@ static inline void kvm_release_page_unused(struct page *page)
+>   void kvm_release_page_clean(struct page *page);
+>   void kvm_release_page_dirty(struct page *page);
+>   
+> +static inline void kvm_release_faultin_page(struct kvm *kvm, struct page *page,
+> +					    bool unused, bool dirty)
+> +{
+> +	lockdep_assert_once(lockdep_is_held(&kvm->mmu_lock) || unused);
+> +
+> +	if (!page)
+> +		return;
 > +
 > +	/*
 > +	 * If the page that KVM got from the *primary MMU* is writable, and KVM
@@ -71,50 +91,16 @@ Paolo
 > +	 * fault handler, and so KVM must (somewhat) speculatively mark the
 > +	 * folio dirty if KVM could locklessly make the SPTE writable.
 > +	 */
-> +	if (!fault->map_writable || r == RET_PF_RETRY)
-> +		kvm_release_pfn_clean(fault->pfn);
+> +	if (unused)
+> +		kvm_release_page_unused(page);
+> +	else if (dirty)
+> +		kvm_release_page_dirty(page);
 > +	else
-> +		kvm_release_pfn_dirty(fault->pfn);
->   }
->   
->   static int kvm_mmu_faultin_pfn_private(struct kvm_vcpu *vcpu,
-> diff --git a/arch/x86/kvm/mmu/paging_tmpl.h b/arch/x86/kvm/mmu/paging_tmpl.h
-> index b6897916c76b..2e2d87a925ac 100644
-> --- a/arch/x86/kvm/mmu/paging_tmpl.h
-> +++ b/arch/x86/kvm/mmu/paging_tmpl.h
-> @@ -953,6 +953,11 @@ static int FNAME(sync_spte)(struct kvm_vcpu *vcpu, struct kvm_mmu_page *sp, int
->   		  spte_to_pfn(spte), spte, true, false,
->   		  host_writable, &spte);
->   
-> +	/*
-> +	 * There is no need to mark the pfn dirty, as the new protections must
-> +	 * be a subset of the old protections, i.e. synchronizing a SPTE cannot
-> +	 * change the SPTE from read-only to writable.
-> +	 */
->   	return mmu_spte_update(sptep, spte);
->   }
->   
-> diff --git a/arch/x86/kvm/mmu/spte.c b/arch/x86/kvm/mmu/spte.c
-> index 9b8795bd2f04..2c5650390d3b 100644
-> --- a/arch/x86/kvm/mmu/spte.c
-> +++ b/arch/x86/kvm/mmu/spte.c
-> @@ -277,17 +277,6 @@ bool make_spte(struct kvm_vcpu *vcpu, struct kvm_mmu_page *sp,
->   		mark_page_dirty_in_slot(vcpu->kvm, slot, gfn);
->   	}
->   
-> -	/*
-> -	 * If the page that KVM got from the primary MMU is writable, i.e. if
-> -	 * it's host-writable, mark the page/folio dirty.  As alluded to above,
-> -	 * folios can't be safely marked dirty in the fast page fault handler,
-> -	 * and so KVM must (somewhat) speculatively mark the folio dirty even
-> -	 * though it isn't guaranteed to be written as KVM won't mark the folio
-> -	 * dirty if/when the SPTE is made writable.
-> -	 */
-> -	if (host_writable)
-> -		kvm_set_pfn_dirty(pfn);
-> -
->   	*new_spte = spte;
->   	return wrprot;
->   }
+> +		kvm_release_page_clean(page);
+> +}
+> +
+>   kvm_pfn_t kvm_lookup_pfn(struct kvm *kvm, gfn_t gfn);
+>   kvm_pfn_t __kvm_faultin_pfn(const struct kvm_memory_slot *slot, gfn_t gfn,
+>   			    unsigned int foll, bool *writable,
 
 
