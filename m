@@ -1,88 +1,71 @@
-From: Alexandre Ghiti <alex@ghiti.fr>
-Date: Mon, 29 Jul 2024 16:30:00 +0200
-Subject: [PATCH v3 3/6] riscv: Add Zawrs support for spinlocks
-In-Reply-To: <20240729-b6707d037c0546c2c2f8da25@orel>
-References: <20240426100820.14762-8-ajones@ventanamicro.com>
- <20240426100820.14762-11-ajones@ventanamicro.com>
- <4de22b20-8a6a-47d0-a4e9-74343c45411c@ghiti.fr>
- <20240729-b6707d037c0546c2c2f8da25@orel>
-Message-ID: <51043fe4-297b-4f2e-9e67-669ea53cf273@ghiti.fr>
+From: James Raphael Tiovalen <jamestiotio@gmail.com>
+Date: Tue, 30 Jul 2024 14:18:15 +0800
+Subject: [kvm-unit-tests PATCH v6 0/5] riscv: sbi: Add support to test timer extension
+Message-ID: <20240730061821.43811-1-jamestiotio@gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 29/07/2024 16:01, Andrew Jones wrote:
-> On Mon, Jul 29, 2024 at 03:43:30PM GMT, Alexandre Ghiti wrote:
-> ...
->>> +static __always_inline void __cmpwait(volatile void *ptr,
->>> +				      unsigned long val,
->>> +				      int size)
->>> +{
->>> +	unsigned long tmp;
->>> +
->>> +	asm goto(ALTERNATIVE("j %l[no_zawrs]", "nop",
->>> +			     0, RISCV_ISA_EXT_ZAWRS, 1)
->>> +		 : : : : no_zawrs);
->>> +
->>> +	switch (size) {
->>> +	case 4:
->>> +		asm volatile(
->>> +		"	lr.w	%0, %1\n"
->>> +		"	xor	%0, %0, %2\n"
->>> +		"	bnez	%0, 1f\n"
->>> +			ZAWRS_WRS_NTO "\n"
->>> +		"1:"
->>> +		: "=&r" (tmp), "+A" (*(u32 *)ptr)
->>> +		: "r" (val));
->>> +		break;
->>> +#if __riscv_xlen == 64
->>> +	case 8:
->>> +		asm volatile(
->>> +		"	lr.d	%0, %1\n"
->>> +		"	xor	%0, %0, %2\n"
->>> +		"	bnez	%0, 1f\n"
->>> +			ZAWRS_WRS_NTO "\n"
->>> +		"1:"
->>> +		: "=&r" (tmp), "+A" (*(u64 *)ptr)
->>> +		: "r" (val));
->>> +		break;
->>> +#endif
->>> +	default:
->>> +		BUILD_BUG();
->>> +	}
->>> +
->>> +	return;
->>> +
->>> +no_zawrs:
->>> +	asm volatile(RISCV_PAUSE : : : "memory");
->>
->> Shouldn't we fallback to the previous implementation (cpu_relax()) here? Not
->> sure this is really important, but I want to make sure it was not an
->> oversight.
->>
-> Hi Alex,
->
-> It was intentional. We can't easily call cpu_relax() from here because
-> asm/vdso/processor.h includes asm/barrier.h which includes asm/cmpxchg.h.
-> We've mostly reproduced cpu_relax() here since we're only skipping the
-> div, and, as __cmpwait will be used in loops which load memory for the
-> comparison, I didn't think we needed the extra div stalls.
+This patch series adds support for testing the timer extension as
+defined in the RISC-V SBI specification. The first 2 patches add
+infrastructural support for handling interrupts, the next 2 patches add
+some helper routines that can be used by SBI extension tests, while the
+last patch adds the actual test for the timer extension.
 
+v6:
+- Addressed all of Andrew's comments on v5.
 
-Ok thanks for your quick answer. Actually I'm asking because I fell onto 
-the issue with the headers and I managed to fix it by replacing 
-asm/barrier.h with linux/compiler.h, which is actually where is defined 
-barrier().
+v5:
+- Addressed all of Andrew's comments on v4.
+- Updated the test to check if `sip.STIP` is cleared for both cases of
+  setting the timer to -1 and masking the timer irq as per the spec.
+- Updated the test to check if `sie.STIE` is writable for the mask irq
+  test.
 
-But anyway, it makes sense.
+v4:
+- Addressed all of Andrew's comments on v3.
 
-Thanks,
+v3:
+- Addressed all of Andrew's comments on v2.
+- Added 2 new patches to add sbi_probe and the delay and timer routines.
 
-Alex
+v2:
+- Addressed all of the previous comments from Andrew.
+- Updated the test to get the timer frequency value from the device tree
+  and allow the test parameters to be specified in microseconds instead of
+  cycles.
 
+Andrew Jones (1):
+  riscv: Extend exception handling support for interrupts
 
-> Thanks,
-> drew
+James Raphael Tiovalen (4):
+  riscv: Update exception cause list
+  riscv: Add method to probe for SBI extensions
+  riscv: Add some delay and timer routines
+  riscv: sbi: Add test for timer extension
+
+ riscv/Makefile            |   2 +
+ lib/riscv/asm/csr.h       |  21 +++++++
+ lib/riscv/asm/delay.h     |  16 +++++
+ lib/riscv/asm/processor.h |  15 ++++-
+ lib/riscv/asm/sbi.h       |   6 ++
+ lib/riscv/asm/setup.h     |   1 +
+ lib/riscv/asm/timer.h     |  24 +++++++
+ lib/riscv/delay.c         |  21 +++++++
+ lib/riscv/processor.c     |  27 ++++++--
+ lib/riscv/sbi.c           |  13 ++++
+ lib/riscv/setup.c         |   4 ++
+ lib/riscv/timer.c         |  28 +++++++++
+ riscv/sbi.c               | 127 ++++++++++++++++++++++++++++++++++++++
+ 13 files changed, 300 insertions(+), 5 deletions(-)
+ create mode 100644 lib/riscv/asm/delay.h
+ create mode 100644 lib/riscv/asm/timer.h
+ create mode 100644 lib/riscv/delay.c
+ create mode 100644 lib/riscv/timer.c
+
+--
+2.43.0
+
 
