@@ -1,49 +1,48 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Wed, 31 Jul 2024 10:12:31 +0200
-Subject: [PATCH v12 57/84] KVM: RISC-V: Mark "struct page" pfns accessed
- before dropping mmu_lock
-In-Reply-To: <20240726235234.228822-58-seanjc@google.com>
+From: Paolo Bonzini <pbonzini@redhat.com>
+Date: Wed, 31 Jul 2024 11:50:38 +0200
+Subject: [PATCH v12 84/84] KVM: Don't grab reference on VM_MIXEDMAP pfns
+ that have a "struct page"
+In-Reply-To: <ZqlLWl0R1p41CS0O@google.com>
 References: <20240726235234.228822-1-seanjc@google.com>
- <20240726235234.228822-58-seanjc@google.com>
-Message-ID: <20240731-f034f3516f0fffede877c68d@orel>
+ <20240726235234.228822-85-seanjc@google.com>
+ <992c4a07-fb84-42d8-93b3-96fb3a12c8e0@redhat.com>
+ <ZqlLWl0R1p41CS0O@google.com>
+Message-ID: <57ba7e1d-0121-4d71-89b8-c61c476ca724@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Jul 26, 2024 at 04:52:06PM GMT, Sean Christopherson wrote:
-> Mark pages accessed before dropping mmu_lock when faulting in guest memory
-> so that RISC-V can convert to kvm_release_faultin_page() without tripping
-> its lockdep assertion on mmu_lock being held.  Marking pages accessed
-> outside of mmu_lock is ok (not great, but safe), but marking pages _dirty_
-> outside of mmu_lock can make filesystems unhappy.
+On 7/30/24 22:21, Sean Christopherson wrote:
+> On Tue, Jul 30, 2024, Paolo Bonzini wrote:
+>> On 7/27/24 01:52, Sean Christopherson wrote:
+>>> Now that KVM no longer relies on an ugly heuristic to find its struct page
+>>> references, i.e. now that KVM can't get false positives on VM_MIXEDMAP
+>>> pfns, remove KVM's hack to elevate the refcount for pfns that happen to
+>>> have a valid struct page.  In addition to removing a long-standing wart
+>>> in KVM, this allows KVM to map non-refcounted struct page memory into the
+>>> guest, e.g. for exposing GPU TTM buffers to KVM guests.
+>>
+>> Feel free to leave it to me for later, but there are more cleanups that
+>> can be made, given how simple kvm_resolve_pfn() is now:
 > 
-> Signed-off-by: Sean Christopherson <seanjc@google.com>
-> ---
->  arch/riscv/kvm/mmu.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
-> index 06aa5a0d056d..806f68e70642 100644
-> --- a/arch/riscv/kvm/mmu.c
-> +++ b/arch/riscv/kvm/mmu.c
-> @@ -683,10 +683,10 @@ int kvm_riscv_gstage_map(struct kvm_vcpu *vcpu,
->  out_unlock:
->  	if ((!ret || ret == -EEXIST) && writable)
->  		kvm_set_pfn_dirty(hfn);
-> +	else
-> +		kvm_release_pfn_clean(hfn);
->  
->  	spin_unlock(&kvm->mmu_lock);
-> -	kvm_set_pfn_accessed(hfn);
-> -	kvm_release_pfn_clean(hfn);
->  	return ret;
->  }
->  
-> -- 
-> 2.46.0.rc1.232.g9752f9e123-goog
->
+> I'll revisit kvm_resolve_pfn(), Maxim also wasn't a fan of a similar helper that
+> existed in v11.
 
-Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+FWIW kvm_resolve_pfn() is totally fine as an intermediate step.  Just 
+food for thought for possible follow-ups.
+
+>> Also, check_user_page_hwpoison() should not be needed anymore, probably
+>> not since commit 234b239bea39 ("kvm: Faults which trigger IO release the
+>> mmap_sem", 2014-09-24) removed get_user_pages_fast() from hva_to_pfn_slow().
+> 
+> Ha, I *knew* this sounded familiar.  Past me apparently came to the same
+> conclusion[*], though I wrongly suspected a memory leak and promptly forgot to
+> ever send a patch.  I'll tack one on this time around.
+
+As you prefer.
+
+Paolo
+
 
