@@ -1,58 +1,54 @@
-From: Sean Christopherson <seanjc@google.com>
-Date: Thu, 31 Oct 2024 12:51:56 -0700
-Subject: [PATCH v3 00/14] KVM: selftests: Morph max_guest_mem to mmu_stress
-In-Reply-To: <20241009154953.1073471-1-seanjc@google.com>
-References: <20241009154953.1073471-1-seanjc@google.com>
-Message-ID: <173039503553.1508387.3074658713815866060.b4-ty@google.com>
+From: Aneesh Kumar K.V <aneesh.kumar@kernel.org>
+Date: Thu, 01 Aug 2024 13:04:43 +0530
+Subject: [PATCH v12 02/84] KVM: arm64: Disallow copying MTE to guest
+ memory while KVM is dirty logging
+In-Reply-To: <20240726235234.228822-3-seanjc@google.com>
+References: <20240726235234.228822-1-seanjc@google.com>
+ <20240726235234.228822-3-seanjc@google.com>
+Message-ID: <yq5aikwku25o.fsf@kernel.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, 09 Oct 2024 08:49:39 -0700, Sean Christopherson wrote:
-> The main purpose of this series is to convert the max_guest_memory_test
-> into a more generic mmu_stress_test.  The basic gist of the "conversion"
-> is to have the test do mprotect() on guest memory while vCPUs are
-> accessing said memory, e.g. to verify KVM and mmu_notifiers are working
-> as intended.
-> 
-> Patches 1-4 are a somewhat unexpected side quest.  The original plan was
-> that patch 3 would be a single patch, but things snowballed.
-> 
-> [...]
+Sean Christopherson <seanjc@google.com> writes:
 
-Applied to kvm-x86 selftests, with the typo fixup pointed out by James.  Thanks!
+> Disallow copying MTE tags to guest memory while KVM is dirty logging, as
+> writing guest memory without marking the gfn as dirty in the memslot could
+> result in userspace failing to migrate the updated page.  Ideally (maybe?),
+> KVM would simply mark the gfn as dirty, but there is no vCPU to work with,
+> and presumably the only use case for copy MTE tags _to_ the guest is when
+> restoring state on the target.
+>
+> Fixes: f0376edb1ddc ("KVM: arm64: Add ioctl to fetch/store tags in a guest")
+> Signed-off-by: Sean Christopherson <seanjc@google.com>
+> ---
+>  arch/arm64/kvm/guest.c | 5 +++++
+>  1 file changed, 5 insertions(+)
+>
+> diff --git a/arch/arm64/kvm/guest.c b/arch/arm64/kvm/guest.c
+> index e1f0ff08836a..962f985977c2 100644
+> --- a/arch/arm64/kvm/guest.c
+> +++ b/arch/arm64/kvm/guest.c
+> @@ -1045,6 +1045,11 @@ int kvm_vm_ioctl_mte_copy_tags(struct kvm *kvm,
+>  
+>  	mutex_lock(&kvm->slots_lock);
+>  
+> +	if (write && atomic_read(&kvm->nr_memslots_dirty_logging)) {
+> +		ret = -EBUSY;
+> +		goto out;
+> +	}
+> +
+>
 
-[01/14] KVM: Move KVM_REG_SIZE() definition to common uAPI header
-        https://github.com/kvm-x86/linux/commit/5e07fd0bf516
-[02/14] KVM: selftests: Disable strict aliasing
-        https://github.com/kvm-x86/linux/commit/d1ce2bcd8d2e
-[03/14] KVM: selftests: Return a value from vcpu_get_reg() instead of using an out-param
-        https://github.com/kvm-x86/linux/commit/5c6c7b71a45c
-[04/14] KVM: selftests: Assert that vcpu_{g,s}et_reg() won't truncate
-        https://github.com/kvm-x86/linux/commit/6aa2df3eb90b
-[05/14] KVM: selftests: Check for a potential unhandled exception iff KVM_RUN succeeded
-        https://github.com/kvm-x86/linux/commit/be9f2746d20b
-[06/14] KVM: selftests: Rename max_guest_memory_test to mmu_stress_test
-        https://github.com/kvm-x86/linux/commit/06694f27cfcc
-[07/14] KVM: selftests: Only muck with SREGS on x86 in mmu_stress_test
-        https://github.com/kvm-x86/linux/commit/8556ce365a07
-[08/14] KVM: selftests: Compute number of extra pages needed in mmu_stress_test
-        https://github.com/kvm-x86/linux/commit/c7b7876ac5d4
-[09/14] KVM: sefltests: Explicitly include ucall_common.h in mmu_stress_test.c
-        https://github.com/kvm-x86/linux/commit/a657856469e1
-[10/14] KVM: selftests: Enable mmu_stress_test on arm64
-        https://github.com/kvm-x86/linux/commit/1e53cde06102
-[11/14] KVM: selftests: Use vcpu_arch_put_guest() in mmu_stress_test
-        https://github.com/kvm-x86/linux/commit/8630563012b9
-[12/14] KVM: selftests: Precisely limit the number of guest loops in mmu_stress_test
-        https://github.com/kvm-x86/linux/commit/3d4585c220dc
-[13/14] KVM: selftests: Add a read-only mprotect() phase to mmu_stress_test
-        https://github.com/kvm-x86/linux/commit/eaafeebca75a
-[14/14] KVM: selftests: Verify KVM correctly handles mprotect(PROT_READ)
-        https://github.com/kvm-x86/linux/commit/a3cd5c187742
+is this equivalent to kvm_follow_pfn() with kfp->pin = 1 ? Should all
+those pin request fail if kvm->nr_memslots_dirty_logging != 0? 
 
---
-https://github.com/kvm-x86/linux/tree/next
+
+>  	while (length > 0) {
+>  		kvm_pfn_t pfn = gfn_to_pfn_prot(kvm, gfn, write, NULL);
+>  		void *maddr;
+> -- 
+> 2.46.0.rc1.232.g9752f9e123-goog
 
