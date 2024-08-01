@@ -1,50 +1,78 @@
-From: Marc Zyngier <maz@kernel.org>
-Date: Thu, 01 Aug 2024 11:07:52 +0100
-Subject: [PATCH v12 01/84] KVM: arm64: Release pfn, i.e. put page, if copying MTE tags hits ZONE_DEVICE
-In-Reply-To: <20240726235234.228822-2-seanjc@google.com>
-References: <20240726235234.228822-1-seanjc@google.com>
-	<20240726235234.228822-2-seanjc@google.com>
-Message-ID: <86plqs1rpj.wl-maz@kernel.org>
+From: Sean Christopherson <seanjc@google.com>
+Date: Thu, 1 Aug 2024 07:43:13 -0700
+Subject: [PATCH v12 05/84] KVM: Add kvm_release_page_unused() API to put
+ pages that KVM never consumes
+In-Reply-To: <87wml0egzo.fsf@draig.linaro.org>
+References: <20240726235234.228822-1-seanjc@google.com> <20240726235234.228822-6-seanjc@google.com>
+ <87wml0egzo.fsf@draig.linaro.org>
+Message-ID: <ZqufAYyVOa9M1z76@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-+ Steven Price for this patch (and the following one), as this really
-is his turf.
+On Thu, Aug 01, 2024, Alex Benn?e wrote:
+> Sean Christopherson <seanjc@google.com> writes:
+> 
+> > Add an API to release an unused page, i.e. to put a page without marking
+> > it accessed or dirty.  The API will be used when KVM faults-in a page but
+> > bails before installing the guest mapping (and other similar flows).
+> >
+> > Signed-off-by: Sean Christopherson <seanjc@google.com>
+> > ---
+> >  include/linux/kvm_host.h | 9 +++++++++
+> >  1 file changed, 9 insertions(+)
+> >
+> > diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+> > index 3d9617d1de41..c5d39a337aa3 100644
+> > --- a/include/linux/kvm_host.h
+> > +++ b/include/linux/kvm_host.h
+> > @@ -1201,6 +1201,15 @@ unsigned long gfn_to_hva_prot(struct kvm *kvm, gfn_t gfn, bool *writable);
+> >  unsigned long gfn_to_hva_memslot(struct kvm_memory_slot *slot, gfn_t gfn);
+> >  unsigned long gfn_to_hva_memslot_prot(struct kvm_memory_slot *slot, gfn_t gfn,
+> >  				      bool *writable);
+> > +
+> > +static inline void kvm_release_page_unused(struct page *page)
+> > +{
+> > +	if (!page)
+> > +		return;
+> > +
+> > +	put_page(page);
+> > +}
+> 
+> I guess it's unfamiliarity with the mm layout but I was trying to find
+> where the get_pages come from to see the full pattern of allocate and
+> return. I guess somewhere in the depths of hva_to_pfn() from
+> hva_to_pfn_retry()?
 
-On Sat, 27 Jul 2024 00:51:10 +0100,
-Sean Christopherson <seanjc@google.com> wrote:
-> 
-> Put the page reference acquired by gfn_to_pfn_prot() if
-> kvm_vm_ioctl_mte_copy_tags() runs into ZONE_DEVICE memory.  KVM's less-
-> than-stellar heuristics for dealing with pfn-mapped memory means that KVM
-> can get a page reference to ZONE_DEVICE memory.
-> 
-> Fixes: f0376edb1ddc ("KVM: arm64: Add ioctl to fetch/store tags in a guest")
-> Signed-off-by: Sean Christopherson <seanjc@google.com>
-> ---
->  arch/arm64/kvm/guest.c | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/arch/arm64/kvm/guest.c b/arch/arm64/kvm/guest.c
-> index 11098eb7eb44..e1f0ff08836a 100644
-> --- a/arch/arm64/kvm/guest.c
-> +++ b/arch/arm64/kvm/guest.c
-> @@ -1059,6 +1059,7 @@ int kvm_vm_ioctl_mte_copy_tags(struct kvm *kvm,
->  		page = pfn_to_online_page(pfn);
->  		if (!page) {
->  			/* Reject ZONE_DEVICE memory */
-> +			kvm_release_pfn_clean(pfn);
->  			ret = -EFAULT;
->  			goto out;
->  		}
-> -- 
-> 2.46.0.rc1.232.g9752f9e123-goog
-> 
-> 
+If successful, get_user_page_fast_only() and get_user_pages_unlocked() grab a
+reference on behalf of the caller.
 
--- 
-Without deviation from the norm, progress is not possible.
+As of this patch, hva_to_pfn_remapped() also grabs a reference to pages that
+appear to be refcounted, which is the underlying wart this series aims to fix.
+In KVM's early days, it _only_ supported GUP, i.e. if KVM got a pfn, that pfn
+was (a) backed by struct page and (b) KVM had a reference to said page.  That
+led to the current mess, as KVM didn't get reworked to properly track pages vs.
+pfns when support for VM_MIXEDMAP was added.
+
+	/*
+	 * Get a reference here because callers of *hva_to_pfn* and
+	 * *gfn_to_pfn* ultimately call kvm_release_pfn_clean on the
+	 * returned pfn.  This is only needed if the VMA has VM_MIXEDMAP
+	 * set, but the kvm_try_get_pfn/kvm_release_pfn_clean pair will
+	 * simply do nothing for reserved pfns.
+	 *
+	 * Whoever called remap_pfn_range is also going to call e.g.
+	 * unmap_mapping_range before the underlying pages are freed,
+	 * causing a call to our MMU notifier.
+	 *
+	 * Certain IO or PFNMAP mappings can be backed with valid
+	 * struct pages, but be allocated without refcounting e.g.,
+	 * tail pages of non-compound higher order allocations, which
+	 * would then underflow the refcount when the caller does the
+	 * required put_page. Don't allow those pages here.
+	 */
+	if (!kvm_try_get_pfn(pfn))
+		r = -EFAULT;
 
