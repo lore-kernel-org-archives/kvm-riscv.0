@@ -1,80 +1,39 @@
-From: maobibo <maobibo@loongson.cn>
-Date: Fri, 2 Aug 2024 15:53:48 +0800
-Subject: [PATCH v12 64/84] KVM: LoongArch: Mark "struct page" pfns dirty
- only in "slow" page fault path
-In-Reply-To: <20240726235234.228822-65-seanjc@google.com>
-References: <20240726235234.228822-1-seanjc@google.com>
- <20240726235234.228822-65-seanjc@google.com>
-Message-ID: <a039b758-d4e3-3798-806f-25bceb2f33a5@loongson.cn>
+From: Andrew Jones <andrew.jones@linux.dev>
+Date: Fri, 2 Aug 2024 10:36:42 +0200
+Subject: [kvm-unit-tests PATCH v6 5/5] riscv: sbi: Add test for timer
+ extension
+In-Reply-To: <20240730061821.43811-6-jamestiotio@gmail.com>
+References: <20240730061821.43811-1-jamestiotio@gmail.com>
+ <20240730061821.43811-6-jamestiotio@gmail.com>
+Message-ID: <20240802-e1bd80fc34bfd2caaf52d0b8@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
+On Tue, Jul 30, 2024 at 02:18:20PM GMT, James Raphael Tiovalen wrote:
+> Add a test for the set_timer function of the time extension. The test
+> checks that:
+> - The time extension is available
+> - The installed timer interrupt handler is called
+> - The timer interrupt is received within a reasonable time interval
+> - The timer interrupt pending bit is cleared after the set_timer SBI
+>   call is made
+> - The timer interrupt can be cleared either by requesting a timer
+>   interrupt infinitely far into the future or by masking the timer
+>   interrupt
 
+I've modified the "or by masking the timer interrupt" test to work as I'd
+expect it to based on a bit more thought about what the SBI TIME extension
+spec is trying to say (we should clarify the spec with the PR you've
+written). I also added a test for ensuring a timer is pending immediately
+when setting the time with a value of zero. All tests pass.
 
-On 2024/7/27 ??7:52, Sean Christopherson wrote:
-> Mark pages/folios dirty only the slow page fault path, i.e. only when
-> mmu_lock is held and the operation is mmu_notifier-protected, as marking a
-> page/folio dirty after it has been written back can make some filesystems
-> unhappy (backing KVM guests will such filesystem files is uncommon, and
-> the race is minuscule, hence the lack of complaints).
-> 
-> See the link below for details.
-> 
-> Link: https://lore.kernel.org/all/cover.1683044162.git.lstoakes at gmail.com
-> Signed-off-by: Sean Christopherson <seanjc@google.com>
-> ---
->   arch/loongarch/kvm/mmu.c | 18 ++++++++++--------
->   1 file changed, 10 insertions(+), 8 deletions(-)
-> 
-> diff --git a/arch/loongarch/kvm/mmu.c b/arch/loongarch/kvm/mmu.c
-> index 2634a9e8d82c..364dd35e0557 100644
-> --- a/arch/loongarch/kvm/mmu.c
-> +++ b/arch/loongarch/kvm/mmu.c
-> @@ -608,13 +608,13 @@ static int kvm_map_page_fast(struct kvm_vcpu *vcpu, unsigned long gpa, bool writ
->   		if (kvm_pte_young(changed))
->   			kvm_set_pfn_accessed(pfn);
->   
-> -		if (kvm_pte_dirty(changed)) {
-> -			mark_page_dirty(kvm, gfn);
-> -			kvm_set_pfn_dirty(pfn);
-> -		}
->   		if (page)
->   			put_page(page);
->   	}
-> +
-> +	if (kvm_pte_dirty(changed))
-> +		mark_page_dirty(kvm, gfn);
-> +
->   	return ret;
->   out:
->   	spin_unlock(&kvm->mmu_lock);
-> @@ -915,12 +915,14 @@ static int kvm_map_page(struct kvm_vcpu *vcpu, unsigned long gpa, bool write)
->   	else
->   		++kvm->stat.pages;
->   	kvm_set_pte(ptep, new_pte);
-> -	spin_unlock(&kvm->mmu_lock);
->   
-> -	if (prot_bits & _PAGE_DIRTY) {
-> -		mark_page_dirty_in_slot(kvm, memslot, gfn);
-> +	if (writeable)
-Is it better to use write or (prot_bits & _PAGE_DIRTY) here?  writable 
-is pte permission from function hva_to_pfn_slow(), write is fault action.
+I also moved some code around a bit and a couple other minor cleanups.
 
-Regards
-Bibo Mao
->   		kvm_set_pfn_dirty(pfn);
-> -	}
-> +
-> +	spin_unlock(&kvm->mmu_lock);
-> +
-> +	if (prot_bits & _PAGE_DIRTY)
-> +		mark_page_dirty_in_slot(kvm, memslot, gfn);
->   
->   	kvm_release_pfn_clean(pfn);
->   out:
-> 
+And (drum roll, please), it's now merged!
 
+Thanks,
+drew
 
