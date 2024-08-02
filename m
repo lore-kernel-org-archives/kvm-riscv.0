@@ -1,39 +1,29 @@
-From: Andrew Jones <andrew.jones@linux.dev>
-Date: Fri, 2 Aug 2024 10:36:42 +0200
-Subject: [kvm-unit-tests PATCH v6 5/5] riscv: sbi: Add test for timer
- extension
-In-Reply-To: <20240730061821.43811-6-jamestiotio@gmail.com>
-References: <20240730061821.43811-1-jamestiotio@gmail.com>
- <20240730061821.43811-6-jamestiotio@gmail.com>
-Message-ID: <20240802-e1bd80fc34bfd2caaf52d0b8@orel>
+From: Alex Bennée <alex.bennee@linaro.org>
+Date: Fri, 02 Aug 2024 12:03:11 +0100
+Subject: [PATCH v12 83/84] KVM: Drop APIs that manipulate "struct page"
+ via pfns
+In-Reply-To: <20240726235234.228822-84-seanjc@google.com> (Sean
+	Christopherson's message of "Fri, 26 Jul 2024 16:52:32 -0700")
+References: <20240726235234.228822-1-seanjc@google.com>
+	<20240726235234.228822-84-seanjc@google.com>
+Message-ID: <87jzgzchlc.fsf@draig.linaro.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Jul 30, 2024 at 02:18:20PM GMT, James Raphael Tiovalen wrote:
-> Add a test for the set_timer function of the time extension. The test
-> checks that:
-> - The time extension is available
-> - The installed timer interrupt handler is called
-> - The timer interrupt is received within a reasonable time interval
-> - The timer interrupt pending bit is cleared after the set_timer SBI
->   call is made
-> - The timer interrupt can be cleared either by requesting a timer
->   interrupt infinitely far into the future or by masking the timer
->   interrupt
+Sean Christopherson <seanjc@google.com> writes:
 
-I've modified the "or by masking the timer interrupt" test to work as I'd
-expect it to based on a bit more thought about what the SBI TIME extension
-spec is trying to say (we should clarify the spec with the PR you've
-written). I also added a test for ensuring a timer is pending immediately
-when setting the time with a value of zero. All tests pass.
+> Remove all kvm_{release,set}_pfn_*() APIs not that all users are gone.
 
-I also moved some code around a bit and a couple other minor cleanups.
+now?
 
-And (drum roll, please), it's now merged!
+Otherwise:
 
-Thanks,
-drew
+Reviewed-by: Alex Benn?e <alex.bennee@linaro.org>
+
+-- 
+Alex Benn?e
+Virtualisation Tech Lead @ Linaro
 
