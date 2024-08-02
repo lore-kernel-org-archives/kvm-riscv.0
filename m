@@ -1,41 +1,71 @@
-From: Paolo Bonzini <pbonzini@redhat.com>
-Date: Fri, 2 Aug 2024 18:30:38 +0200
-Subject: [GIT PULL] KVM/riscv fixes for 6.11 take #1
-In-Reply-To: <CAAhSdy3ZhXmbDFrWneA9aA8ALYy+SgMpyopd_9MPzYgWksMLBQ@mail.gmail.com>
-References: <CAAhSdy3ZhXmbDFrWneA9aA8ALYy+SgMpyopd_9MPzYgWksMLBQ@mail.gmail.com>
-Message-ID: <CABgObfaakho9SPTjkSo0uDZ_UyOv08Mxc2ym_88gGgQTAA5OQg@mail.gmail.com>
+From: Sean Christopherson <seanjc@google.com>
+Date: Fri, 2 Aug 2024 12:32:09 -0700
+Subject: [PATCH v12 64/84] KVM: LoongArch: Mark "struct page" pfns dirty
+ only in "slow" page fault path
+In-Reply-To: <a039b758-d4e3-3798-806f-25bceb2f33a5@loongson.cn>
+References: <20240726235234.228822-1-seanjc@google.com> <20240726235234.228822-65-seanjc@google.com>
+ <a039b758-d4e3-3798-806f-25bceb2f33a5@loongson.cn>
+Message-ID: <Zq00OYowF5kc9QFE@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Aug 2, 2024 at 1:42?PM Anup Patel <anup@brainfault.org> wrote:
->
-> Hi Paolo,
->
-> We have one compilation fix for get-reg-list selftests
-> in the 6.11 kernel.
->
-> Please pull.
->
-> Regards,
-> Anup
->
-> The following changes since commit 8400291e289ee6b2bf9779ff1c83a291501f017b:
->
->   Linux 6.11-rc1 (2024-07-28 14:19:55 -0700)
->
-> are available in the Git repository at:
->
->   https://github.com/kvm-riscv/linux.git tags/kvm-riscv-fixes-6.11-1
->
-> for you to fetch changes up to dd4a799bcc13992dd8be9708e5c585f55226b567:
->
->   KVM: riscv: selftests: Fix compile error (2024-07-29 10:10:56 +0530)
+On Fri, Aug 02, 2024, maobibo wrote:
+> On 2024/7/27 ??7:52, Sean Christopherson wrote:
+> > Mark pages/folios dirty only the slow page fault path, i.e. only when
+> > mmu_lock is held and the operation is mmu_notifier-protected, as marking a
+> > page/folio dirty after it has been written back can make some filesystems
+> > unhappy (backing KVM guests will such filesystem files is uncommon, and
+> > the race is minuscule, hence the lack of complaints).
+> > 
+> > See the link below for details.
+> > 
+> > Link: https://lore.kernel.org/all/cover.1683044162.git.lstoakes at gmail.com
+> > Signed-off-by: Sean Christopherson <seanjc@google.com>
+> > ---
+> >   arch/loongarch/kvm/mmu.c | 18 ++++++++++--------
+> >   1 file changed, 10 insertions(+), 8 deletions(-)
+> > 
+> > diff --git a/arch/loongarch/kvm/mmu.c b/arch/loongarch/kvm/mmu.c
+> > index 2634a9e8d82c..364dd35e0557 100644
+> > --- a/arch/loongarch/kvm/mmu.c
+> > +++ b/arch/loongarch/kvm/mmu.c
+> > @@ -608,13 +608,13 @@ static int kvm_map_page_fast(struct kvm_vcpu *vcpu, unsigned long gpa, bool writ
+> >   		if (kvm_pte_young(changed))
+> >   			kvm_set_pfn_accessed(pfn);
+> > -		if (kvm_pte_dirty(changed)) {
+> > -			mark_page_dirty(kvm, gfn);
+> > -			kvm_set_pfn_dirty(pfn);
+> > -		}
+> >   		if (page)
+> >   			put_page(page);
+> >   	}
+> > +
+> > +	if (kvm_pte_dirty(changed))
+> > +		mark_page_dirty(kvm, gfn);
+> > +
+> >   	return ret;
+> >   out:
+> >   	spin_unlock(&kvm->mmu_lock);
+> > @@ -915,12 +915,14 @@ static int kvm_map_page(struct kvm_vcpu *vcpu, unsigned long gpa, bool write)
+> >   	else
+> >   		++kvm->stat.pages;
+> >   	kvm_set_pte(ptep, new_pte);
+> > -	spin_unlock(&kvm->mmu_lock);
+> > -	if (prot_bits & _PAGE_DIRTY) {
+> > -		mark_page_dirty_in_slot(kvm, memslot, gfn);
+> > +	if (writeable)
+> Is it better to use write or (prot_bits & _PAGE_DIRTY) here?  writable is
+> pte permission from function hva_to_pfn_slow(), write is fault action.
 
-Pulled, thanks.
+Marking folios dirty in the slow/full path basically necessitates marking the
+folio dirty if KVM creates a writable SPTE, as KVM won't mark the folio dirty
+if/when _PAGE_DIRTY is set.
 
-Paolo
-
+Practically speaking, I'm 99.9% certain it doesn't matter.  The folio is marked
+dirty by core MM when the folio is made writable, and cleaning the folio triggers
+an mmu_notifier invalidation.  I.e. if the page is mapped writable in KVM's
+stage-2 PTEs, then its folio has already been marked dirty.
 
