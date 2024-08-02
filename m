@@ -1,66 +1,44 @@
-From: Alex Bennée <alex.bennee@linaro.org>
-Date: Fri, 02 Aug 2024 12:16:04 +0100
-Subject: [PATCH v12 11/84] KVM: Rename gfn_to_page_many_atomic() to
- kvm_prefetch_pages()
-In-Reply-To: <20240726235234.228822-12-seanjc@google.com> (Sean
-	Christopherson's message of "Fri, 26 Jul 2024 16:51:20 -0700")
-References: <20240726235234.228822-1-seanjc@google.com>
-	<20240726235234.228822-12-seanjc@google.com>
-Message-ID: <87frrncgzv.fsf@draig.linaro.org>
+From: Anup Patel <anup@brainfault.org>
+Date: Fri, 2 Aug 2024 17:12:07 +0530
+Subject: [GIT PULL] KVM/riscv fixes for 6.11 take #1
+Message-ID: <CAAhSdy3ZhXmbDFrWneA9aA8ALYy+SgMpyopd_9MPzYgWksMLBQ@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Sean Christopherson <seanjc@google.com> writes:
+Hi Paolo,
 
-> Rename gfn_to_page_many_atomic() to kvm_prefetch_pages() to try and
-> communicate its true purpose, as the "atomic" aspect is essentially a
-> side effect of the fact that x86 uses the API while holding mmu_lock.
+We have one compilation fix for get-reg-list selftests
+in the 6.11 kernel.
 
-It's never too late to start adding some kdoc annotations to a function
-and renaming a kvm_host API call seems like a good time to do it.
+Please pull.
 
-> E.g. even if mmu_lock weren't held, KVM wouldn't want to fault-in pages,
-> as the goal is to opportunistically grab surrounding pages that have
-> already been accessed and/or dirtied by the host, and to do so quickly.
->
-> Signed-off-by: Sean Christopherson <seanjc@google.com>
-> ---
-<snip>
+Regards,
+Anup
 
-/**
- * kvm_prefetch_pages() - opportunistically grab previously accessed pages
- * @slot: which @kvm_memory_slot the pages are in
- * @gfn: guest frame
- * @pages: array to receives page pointers
- * @nr_pages: number of pages
- *
- * Returns the number of pages actually mapped.
- */
+The following changes since commit 8400291e289ee6b2bf9779ff1c83a291501f017b:
 
-?
+  Linux 6.11-rc1 (2024-07-28 14:19:55 -0700)
 
->  
-> -int gfn_to_page_many_atomic(struct kvm_memory_slot *slot, gfn_t gfn,
-> -			    struct page **pages, int nr_pages)
-> +int kvm_prefetch_pages(struct kvm_memory_slot *slot, gfn_t gfn,
-> +		       struct page **pages, int nr_pages)
->  {
->  	unsigned long addr;
->  	gfn_t entry = 0;
-> @@ -3075,7 +3075,7 @@ int gfn_to_page_many_atomic(struct kvm_memory_slot *slot, gfn_t gfn,
->  
->  	return get_user_pages_fast_only(addr, nr_pages, FOLL_WRITE, pages);
->  }
-> -EXPORT_SYMBOL_GPL(gfn_to_page_many_atomic);
-> +EXPORT_SYMBOL_GPL(kvm_prefetch_pages);
->  
->  /*
->   * Do not use this helper unless you are absolutely certain the gfn _must_ be
+are available in the Git repository at:
 
--- 
-Alex Benn?e
-Virtualisation Tech Lead @ Linaro
+  https://github.com/kvm-riscv/linux.git tags/kvm-riscv-fixes-6.11-1
+
+for you to fetch changes up to dd4a799bcc13992dd8be9708e5c585f55226b567:
+
+  KVM: riscv: selftests: Fix compile error (2024-07-29 10:10:56 +0530)
+
+----------------------------------------------------------------
+KVM/riscv fixes for 6.11, take #1
+
+- Fix compile error in get-reg-list selftests
+
+----------------------------------------------------------------
+Yong-Xuan Wang (1):
+      KVM: riscv: selftests: Fix compile error
+
+ tools/testing/selftests/kvm/riscv/get-reg-list.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
