@@ -1,65 +1,67 @@
-From: Aneesh Kumar K.V <aneesh.kumar@kernel.org>
-Date: Mon, 05 Aug 2024 13:27:18 +0530
-Subject: [PATCH v12 02/84] KVM: arm64: Disallow copying MTE to guest
- memory while KVM is dirty logging
-In-Reply-To: <ZqvNekQAjs-SN-se@google.com>
-References: <20240726235234.228822-1-seanjc@google.com>
- <20240726235234.228822-3-seanjc@google.com> <yq5aikwku25o.fsf@kernel.org>
- <ZqvNekQAjs-SN-se@google.com>
-Message-ID: <yq5a5xsftna9.fsf@kernel.org>
+From: Andrew Jones <andrew.jones@linux.dev>
+Date: Mon, 5 Aug 2024 16:26:55 +0200
+Subject: [PATCH kvm-unit-tests] riscv: Fix virt_to_phys()
+In-Reply-To: <20240715-259591b706e831a2cf19f618@orel>
+References: <20240706-virt-to-phys-v1-1-7a4dc11f542c@berkeley.edu>
+ <20240715-259591b706e831a2cf19f618@orel>
+Message-ID: <20240805-1d135dd842be42acbe313193@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Sean Christopherson <seanjc@google.com> writes:
-
-> On Thu, Aug 01, 2024, Aneesh Kumar K.V wrote:
->> Sean Christopherson <seanjc@google.com> writes:
->> 
->> > Disallow copying MTE tags to guest memory while KVM is dirty logging, as
->> > writing guest memory without marking the gfn as dirty in the memslot could
->> > result in userspace failing to migrate the updated page.  Ideally (maybe?),
->> > KVM would simply mark the gfn as dirty, but there is no vCPU to work with,
->> > and presumably the only use case for copy MTE tags _to_ the guest is when
->> > restoring state on the target.
->> >
->> > Fixes: f0376edb1ddc ("KVM: arm64: Add ioctl to fetch/store tags in a guest")
->> > Signed-off-by: Sean Christopherson <seanjc@google.com>
->> > ---
->> >  arch/arm64/kvm/guest.c | 5 +++++
->> >  1 file changed, 5 insertions(+)
->> >
->> > diff --git a/arch/arm64/kvm/guest.c b/arch/arm64/kvm/guest.c
->> > index e1f0ff08836a..962f985977c2 100644
->> > --- a/arch/arm64/kvm/guest.c
->> > +++ b/arch/arm64/kvm/guest.c
->> > @@ -1045,6 +1045,11 @@ int kvm_vm_ioctl_mte_copy_tags(struct kvm *kvm,
->> >  
->> >  	mutex_lock(&kvm->slots_lock);
->> >  
->> > +	if (write && atomic_read(&kvm->nr_memslots_dirty_logging)) {
->> > +		ret = -EBUSY;
->> > +		goto out;
->> > +	}
->> > +
->> >
->> 
->> is this equivalent to kvm_follow_pfn() with kfp->pin = 1 ?
+On Mon, Jul 15, 2024 at 03:57:12PM GMT, Andrew Jones wrote:
+> On Sat, Jul 06, 2024 at 04:09:44PM GMT, Cade Richard wrote:
+> > 
+> 
+> Needs a commit message stating it's currently broken for anything
+> other than addresses on page boundaries and that this is the fix.
+> 
+> > 
+> > ---
+> 
+> These dashes shouldn't be here. With them, git will strip the s-o-b on
+> commit.
+> 
+> Please also add
+> 
+> Fixes: 23100d972705 ("riscv: Enable vmalloc")
+> 
+> > Signed-off-by: Cade Richard <cade.richard@berkeley.edu>
+> > ---
+> >  lib/riscv/mmu.c | 2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > 
+> > diff --git a/lib/riscv/mmu.c b/lib/riscv/mmu.c
+> > index bd006881..c4770552 100644
+> > --- a/lib/riscv/mmu.c
+> > +++ b/lib/riscv/mmu.c
+> > @@ -194,7 +194,7 @@ unsigned long virt_to_phys(volatile void *address)
+> >  	paddr = virt_to_pte_phys(pgtable, (void *)address);
+> >  	assert(sizeof(long) == 8 || !(paddr >> 32));
+> >  
+> > -	return (unsigned long)paddr;
+> > +	return (unsigned long)paddr | ((unsigned long) address & 0x00000FFF);
+> 
+> Let's add
+> 
+>   #define offset_in_page(p) ((unsigned long)(p) & ~PAGE_MASK)
+> 
+> to lib/asm-generic/page.h and use it here.
+> 
+> >  }
+> >  
+> >  void *phys_to_virt(unsigned long address)
+> >
+> 
+> Thanks,
+> drew
 >
-> No, gfn_to_pfn_prot() == FOLL_GET, kfp->pin == FOLL_PIN.  But that's not really
-> relevant.
->
 
+Since this is a fix that I'd like to get in sooner than later, I've made
+my suggested changes myself and merged it.
 
-What I meant was, should we consider mte_copy_tags_from_user() as one
-that update the page contents (even though it is updating tags) and
-use kvm_follow_pfn() with kfp->pin = 1 instead?
-
-Is my understanding correct in that, if we want to look up a pfn/page
-from gfn with the intent of updating the page contents, we should use
-kfp->pin == 1? 
-
--aneesh
+Thanks,
+drew
 
