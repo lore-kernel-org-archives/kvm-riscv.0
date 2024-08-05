@@ -1,63 +1,108 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Mon, 5 Aug 2024 15:09:21 -0700
-Subject: [PATCH v12 02/84] KVM: arm64: Disallow copying MTE to guest
- memory while KVM is dirty logging
-In-Reply-To: <yq5a5xsftna9.fsf@kernel.org>
-References: <20240726235234.228822-1-seanjc@google.com> <20240726235234.228822-3-seanjc@google.com>
- <yq5aikwku25o.fsf@kernel.org> <ZqvNekQAjs-SN-se@google.com> <yq5a5xsftna9.fsf@kernel.org>
-Message-ID: <ZrFNkSU4-0Hli7JC@google.com>
+Date: Mon, 5 Aug 2024 16:22:54 -0700
+Subject: [PATCH v12 64/84] KVM: LoongArch: Mark "struct page" pfns dirty
+ only in "slow" page fault path
+In-Reply-To: <345d89c1-4f31-6b49-2cd4-a0696210fa7c@loongson.cn>
+References: <20240726235234.228822-1-seanjc@google.com> <20240726235234.228822-65-seanjc@google.com>
+ <a039b758-d4e3-3798-806f-25bceb2f33a5@loongson.cn> <Zq00OYowF5kc9QFE@google.com>
+ <345d89c1-4f31-6b49-2cd4-a0696210fa7c@loongson.cn>
+Message-ID: <ZrFezgVbCI3DRQH3@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Aug 05, 2024, Aneesh Kumar K.V wrote:
-> Sean Christopherson <seanjc@google.com> writes:
+On Sat, Aug 03, 2024, maobibo wrote:
+> On 2024/8/3 ??3:32, Sean Christopherson wrote:
+> > On Fri, Aug 02, 2024, maobibo wrote:
+> > > On 2024/7/27 ??7:52, Sean Christopherson wrote:
+> > > > Mark pages/folios dirty only the slow page fault path, i.e. only when
+> > > > mmu_lock is held and the operation is mmu_notifier-protected, as marking a
+> > > > page/folio dirty after it has been written back can make some filesystems
+> > > > unhappy (backing KVM guests will such filesystem files is uncommon, and
+> > > > the race is minuscule, hence the lack of complaints).
+> > > > 
+> > > > See the link below for details.
+> > > > 
+> > > > Link: https://lore.kernel.org/all/cover.1683044162.git.lstoakes at gmail.com
+> > > > Signed-off-by: Sean Christopherson <seanjc@google.com>
+> > > > ---
+> > > >    arch/loongarch/kvm/mmu.c | 18 ++++++++++--------
+> > > >    1 file changed, 10 insertions(+), 8 deletions(-)
+> > > > 
+> > > > diff --git a/arch/loongarch/kvm/mmu.c b/arch/loongarch/kvm/mmu.c
+> > > > index 2634a9e8d82c..364dd35e0557 100644
+> > > > --- a/arch/loongarch/kvm/mmu.c
+> > > > +++ b/arch/loongarch/kvm/mmu.c
+> > > > @@ -608,13 +608,13 @@ static int kvm_map_page_fast(struct kvm_vcpu *vcpu, unsigned long gpa, bool writ
+> > > >    		if (kvm_pte_young(changed))
+> > > >    			kvm_set_pfn_accessed(pfn);
+> > > > -		if (kvm_pte_dirty(changed)) {
+> > > > -			mark_page_dirty(kvm, gfn);
+> > > > -			kvm_set_pfn_dirty(pfn);
+> > > > -		}
+> > > >    		if (page)
+> > > >    			put_page(page);
+> > > >    	}
+> > > > +
+> > > > +	if (kvm_pte_dirty(changed))
+> > > > +		mark_page_dirty(kvm, gfn);
+> > > > +
+> > > >    	return ret;
+> > > >    out:
+> > > >    	spin_unlock(&kvm->mmu_lock);
+> > > > @@ -915,12 +915,14 @@ static int kvm_map_page(struct kvm_vcpu *vcpu, unsigned long gpa, bool write)
+> > > >    	else
+> > > >    		++kvm->stat.pages;
+> > > >    	kvm_set_pte(ptep, new_pte);
+> > > > -	spin_unlock(&kvm->mmu_lock);
+> > > > -	if (prot_bits & _PAGE_DIRTY) {
+> > > > -		mark_page_dirty_in_slot(kvm, memslot, gfn);
+> > > > +	if (writeable)
+> > > Is it better to use write or (prot_bits & _PAGE_DIRTY) here?  writable is
+> > > pte permission from function hva_to_pfn_slow(), write is fault action.
+> > 
+> > Marking folios dirty in the slow/full path basically necessitates marking the
+> > folio dirty if KVM creates a writable SPTE, as KVM won't mark the folio dirty
+> > if/when _PAGE_DIRTY is set.
+> > 
+> > Practically speaking, I'm 99.9% certain it doesn't matter.  The folio is marked
+> > dirty by core MM when the folio is made writable, and cleaning the folio triggers
+> > an mmu_notifier invalidation.  I.e. if the page is mapped writable in KVM's
+> yes, it is. Thanks for the explanation. kvm_set_pfn_dirty() can be put only
+> in slow page fault path. I only concern with fault type, read fault type can
+> set pte entry writable however not _PAGE_DIRTY at stage-2 mmu table.
 > 
-> > On Thu, Aug 01, 2024, Aneesh Kumar K.V wrote:
-> >> Sean Christopherson <seanjc@google.com> writes:
-> >> 
-> >> > Disallow copying MTE tags to guest memory while KVM is dirty logging, as
-> >> > writing guest memory without marking the gfn as dirty in the memslot could
-> >> > result in userspace failing to migrate the updated page.  Ideally (maybe?),
-> >> > KVM would simply mark the gfn as dirty, but there is no vCPU to work with,
-> >> > and presumably the only use case for copy MTE tags _to_ the guest is when
-> >> > restoring state on the target.
-> >> >
-> >> > Fixes: f0376edb1ddc ("KVM: arm64: Add ioctl to fetch/store tags in a guest")
-> >> > Signed-off-by: Sean Christopherson <seanjc@google.com>
-> >> > ---
-> >> >  arch/arm64/kvm/guest.c | 5 +++++
-> >> >  1 file changed, 5 insertions(+)
-> >> >
-> >> > diff --git a/arch/arm64/kvm/guest.c b/arch/arm64/kvm/guest.c
-> >> > index e1f0ff08836a..962f985977c2 100644
-> >> > --- a/arch/arm64/kvm/guest.c
-> >> > +++ b/arch/arm64/kvm/guest.c
-> >> > @@ -1045,6 +1045,11 @@ int kvm_vm_ioctl_mte_copy_tags(struct kvm *kvm,
-> >> >  
-> >> >  	mutex_lock(&kvm->slots_lock);
-> >> >  
-> >> > +	if (write && atomic_read(&kvm->nr_memslots_dirty_logging)) {
-> >> > +		ret = -EBUSY;
-> >> > +		goto out;
-> >> > +	}
-> >> > +
-> >> >
-> >> 
-> >> is this equivalent to kvm_follow_pfn() with kfp->pin = 1 ?
-> >
-> > No, gfn_to_pfn_prot() == FOLL_GET, kfp->pin == FOLL_PIN.  But that's not really
-> > relevant.
+> > stage-2 PTEs, then its folio has already been marked dirty.
+> Considering one condition although I do not know whether it exists actually.
+> user mode VMM writes the folio with hva address firstly, then VCPU thread
+> *reads* the folio. With primary mmu table, pte entry is writable and
+> _PAGE_DIRTY is set, with secondary mmu table(state-2 PTE table), it is
+> pte_none since the filio is accessed at first time, so there will be slow
+> page fault path for stage-2 mmu page table filling.
 > 
-> What I meant was, should we consider mte_copy_tags_from_user() as one
-> that update the page contents (even though it is updating tags) and
-> use kvm_follow_pfn() with kfp->pin = 1 instead?
+> Since it is read fault, stage-2 PTE will be created with _PAGE_WRITE(coming
+> from function hva_to_pfn_slow()), however _PAGE_DIRTY is not set. Do we need
+> call kvm_set_pfn_dirty() at this situation?
 
-Yes, that's my understanding as well.  However, this series is already ludicruosly
-long, and I don't have the ability to test the affected code, so rather than blindly
-churn more arch code, I opted to add a FIXME in patch 76 instead.
+If KVM doesn't mark the folio dirty when the stage-2 _PAGE_DIRTY flag is set,
+i.e. as proposed in this series, then yes, KVM needs to call kvm_set_pfn_dirty()
+even though the VM hasn't (yet) written to the memory.  In practice, KVM calling
+kvm_set_pfn_dirty() is redundant the majority of the time, as the stage-1 PTE
+will have _PAGE_DIRTY set, and that will get propagated to the folio when the
+primary MMU does anything relevant with the PTE.  And for file systems that care
+about writeback, odds are very good that the folio was marked dirty even earlier,
+when MM invoked vm_operations_struct.page_mkwrite().
 
-https://lore.kernel.org/all/20240726235234.228822-76-seanjc at google.com
+The reason I am pushing to have all architectures mark pages/folios dirty in the
+slow page fault path is that a false positive (marking a folio dirty without the
+folio ever being written in _any_ context since the last pte_mkclean()) is rare,
+and at worst results an unnecessary writeback.  On the other hand, marking folios
+dirty in fast page fault handlers (or anywhere else that isn't protected by
+mmu_notifiers) is technically unsafe.
+
+In other words, the intent is to sacrifice accuracy to improve stability/robustness,
+because the vast majority of time the loss in accuracy has no effect, and the worst
+case scenario is that the kernel does I/O that wasn't necessary.
 
