@@ -1,47 +1,61 @@
-From: Marc Zyngier <maz@kernel.org>
-Date: Tue, 06 Aug 2024 09:55:22 +0100
-Subject: [PATCH v12 54/84] KVM: arm64: Mark "struct page" pfns accessed/dirty before dropping mmu_lock
-In-Reply-To: <ZrFfvjy_-Tyx4xUV@linux.dev>
-References: <20240726235234.228822-1-seanjc@google.com>
-	<20240726235234.228822-55-seanjc@google.com>
-	<ZrFfgzRbiqT-Zi2O@linux.dev>
-	<ZrFfvjy_-Tyx4xUV@linux.dev>
-Message-ID: <86ikwe2fph.wl-maz@kernel.org>
+From: Anup Patel <anup@brainfault.org>
+Date: Tue, 6 Aug 2024 20:33:59 +0530
+Subject: [PATCH v12 56/84] KVM: RISC-V: Mark "struct page" pfns dirty iff
+ a stage-2 PTE is installed
+In-Reply-To: <20240726235234.228822-57-seanjc@google.com>
+References: <20240726235234.228822-1-seanjc@google.com> <20240726235234.228822-57-seanjc@google.com>
+Message-ID: <CAAhSdy1DvkU_C2jmtA1SBNfjp1gxu_6RhFKbf-hkhSNQeTXwwA@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, 06 Aug 2024 00:26:54 +0100,
-Oliver Upton <oliver.upton@linux.dev> wrote:
-> 
-> On Mon, Aug 05, 2024 at 11:26:03PM +0000, Oliver Upton wrote:
-> > [+cc Fuad]
-> 
-> Take 2!
-> 
-> > Fuad, you mentioned in commit 9c30fc615daa ("KVM: arm64: Move setting
-> > the page as dirty out of the critical section") that restructuring
-> > around the MMU lock was helpful for reuse (presumably for pKVM), but I
-> > lack the context there.
-> > 
-> > On Fri, Jul 26, 2024 at 04:52:03PM -0700, Sean Christopherson wrote:
-> > > Mark pages/folios accessed+dirty prior to dropping mmu_lock, as marking a
-> > > page/folio dirty after it has been written back can make some filesystems
-> > > unhappy (backing KVM guests will such filesystem files is uncommon, and
-> > 
-> > typo: s/will/with/
-> > 
-> > > the race is minuscule, hence the lack of complaints).  See the link below
-> > > for details.
+On Sat, Jul 27, 2024 at 5:24?AM Sean Christopherson <seanjc@google.com> wrote:
+>
+> Don't mark pages dirty if KVM bails from the page fault handler without
+> installing a stage-2 mapping, i.e. if the page is guaranteed to not be
+> written by the guest.
+>
+> In addition to being a (very) minor fix, this paves the way for converting
+> RISC-V to use kvm_release_faultin_page().
+>
+> Signed-off-by: Sean Christopherson <seanjc@google.com>
 
-Should we consider reverting 9c30fc615daa then?
+For KVM RISC-V:
+Acked-by: Anup Patel <anup@brainfault.org>
 
-Thanks,
+Regards,
+Anup
 
-	M.
 
--- 
-Without deviation from the norm, progress is not possible.
+> ---
+>  arch/riscv/kvm/mmu.c | 4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
+>
+> diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
+> index b63650f9b966..06aa5a0d056d 100644
+> --- a/arch/riscv/kvm/mmu.c
+> +++ b/arch/riscv/kvm/mmu.c
+> @@ -669,7 +669,6 @@ int kvm_riscv_gstage_map(struct kvm_vcpu *vcpu,
+>                 goto out_unlock;
+>
+>         if (writable) {
+> -               kvm_set_pfn_dirty(hfn);
+>                 mark_page_dirty(kvm, gfn);
+>                 ret = gstage_map_page(kvm, pcache, gpa, hfn << PAGE_SHIFT,
+>                                       vma_pagesize, false, true);
+> @@ -682,6 +681,9 @@ int kvm_riscv_gstage_map(struct kvm_vcpu *vcpu,
+>                 kvm_err("Failed to map in G-stage\n");
+>
+>  out_unlock:
+> +       if ((!ret || ret == -EEXIST) && writable)
+> +               kvm_set_pfn_dirty(hfn);
+> +
+>         spin_unlock(&kvm->mmu_lock);
+>         kvm_set_pfn_accessed(hfn);
+>         kvm_release_pfn_clean(hfn);
+> --
+> 2.46.0.rc1.232.g9752f9e123-goog
+>
 
