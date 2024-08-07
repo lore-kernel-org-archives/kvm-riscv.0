@@ -1,9 +1,9 @@
 From: Andrew Jones <andrew.jones@linux.dev>
-Date: Wed, 7 Aug 2024 09:43:14 +0200
+Date: Wed, 7 Aug 2024 13:36:33 +0200
 Subject: [PATCH kvm-unit-tests] riscv: sbi: add dbcn write test
 In-Reply-To: <20240806-sbi-dbcn-write-test-v1-1-7f198bb55525@berkeley.edu>
 References: <20240806-sbi-dbcn-write-test-v1-1-7f198bb55525@berkeley.edu>
-Message-ID: <20240807-e5f14146934e63558f473337@orel>
+Message-ID: <20240807-2c3b28a78c80c6db80a80588@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -14,15 +14,7 @@ On Tue, Aug 06, 2024 at 10:51:54PM GMT, Cade Richard wrote:
 > 
 > 
 > ---
-
-not sure why this --- above is here, it'll remove the commit text from the
-commit. Also not sure where the changelog went. We want the changelog, but
-we want it under the --- below your sign-off.
-
 > Added a unit test for the RISC-V SBI debug console write() and write_byte() functions. The output of the tests must be inspected manually to verify that the correct bytes are written. For write(), the expected output is 'DBCN_WRITE_TEST_STRING'. For write_byte(), the expected output is 'a'.
-
-Need to wrap lines at 74 chars.
-
 > 
 > Signed-off-by: Cade Richard <cade.richard@berkeley.edu>
 > ---
@@ -64,9 +56,6 @@ Need to wrap lines at 74 chars.
 >  #include <asm/smp.h>
 >  #include <asm/timer.h>
 > +#include <asm/io.h>
-
-The includes are currently in alphabetic order. Let's keep them that way.
-
 > +
 > +#define DBCN_WRITE_TEST_STRING		"DBCN_WRITE_TEST_STRING\n"
 > +#define DBCN_WRITE_BYTE_TEST_BYTE	(u8)'a'
@@ -89,104 +78,41 @@ The includes are currently in alphabetic order. Let's keep them that way.
 >  	report_prefix_pop();
 >  }
 >  
-
-What happened to the comment about the read test?
-
 > +static void check_dbcn(void)
 > +{
 > +	
+
+I still see whitespace issues, like this blank line here that has spaces,
+which I pointed out before. And there are several more blank lines with
+spaces too.
+
 > +	struct sbiret ret;
 > +	unsigned long num_bytes, base_addr_lo, base_addr_hi;
 > +	int num_calls = 0;
 > +	
 > +	num_bytes = strlen(DBCN_WRITE_TEST_STRING);
 > +	phys_addr_t p = virt_to_phys((void *)&DBCN_WRITE_TEST_STRING);
-
-Put p's declaration with the rest above.
-
 > +	base_addr_lo = (unsigned long)p;
 > +	base_addr_hi = (unsigned long)(p >> __riscv_xlen);
-> +
-> +	report_prefix_push("dbcn");
-> +	
-> +	ret = __base_sbi_ecall(SBI_EXT_BASE_PROBE_EXT, SBI_EXT_DBCN);
-> +	if (!ret.value) {
-> +		report_skip("DBCN extension unavailable");
-> +		report_prefix_pop();
-> +		return;
-> +	}
 
-The report skip should be the first thing you do, i.e. the virt_to_phys
-stuff should be below it.
+This doesn't compile for 64-bit. We get
 
-> +
-> +	report_prefix_push("write");
-> +
-> +	do {
-> +		ret = __dbcn_sbi_ecall(SBI_EXT_DBCN_CONSOLE_WRITE, num_bytes, base_addr_lo, base_addr_hi);
-> +		num_bytes -= ret.value;
-> +		base_addr_lo += ret.value;
+riscv/sbi.c: In function 'check_dbcn':
+riscv/sbi.c:270:42: error: right shift count >= width of type [-Werror=shift-count-overflow]
+  270 |         base_addr_hi = (unsigned long)(p >> __riscv_xlen);
+      |                                          ^~
+riscv/sbi.c:298:50: error: right shift count >= width of type [-Werror=shift-count-overflow]
+  298 |                 base_addr_hi = (unsigned long)(p >> __riscv_xlen);
+      |                                                  ^~
+cc1: all warnings being treated as errors
+make: *** [<builtin>: riscv/sbi.o] Error 1
 
-We should increment the physical address and then split it again into lo
-and hi since lo could have been zero (only high addresses) or lo may
-have started nonzero but then wrapped since we were close the 4G boundary.
+So I guess you didn't test with 64-bit? You should at least test with
+both 32-bit and 64-bit on QEMU, and, ideally, also test both on KVM and
+also 64-bit EFI on QEMU.
 
-> +		num_calls++;
-> +	} while (num_bytes != 0 && ret.error == SBI_SUCCESS) ;
-> +	report(ret.error == SBI_SUCCESS, "write success");
-> +	report_info("%d sbi calls made", num_calls);
-> +	
-> +	/*
-> +		Bytes are read from memory and written to the console
-
-There should be a '*' on each line of a comment block. Doesn't checkpatch
-complain about that?
-
-> +	*/
-> +	if (env_or_skip("INVALID_READ_ADDR")) {
-> +		phys_addr_t p = strtoull(getenv("INVALID_READ_ADDR"), NULL, 0);
-
-Don't shadow p, you can use the same one again.
-
-> +		base_addr_lo = (unsigned long)p;
-> +		base_addr_hi = (unsigned long)(p >> __riscv_xlen);
-> +		ret = __dbcn_sbi_ecall(SBI_EXT_DBCN_CONSOLE_WRITE, 1, base_addr_lo, base_addr_hi);
-> +		report(ret.error == SBI_ERR_INVALID_PARAM, "invalid parameter: address");
-> +	};
-> +
-> +	report_prefix_pop();
-> +	
-> +	report_prefix_push("write_byte");
-> +
-> +	puts("DBCN_WRITE TEST CHAR: ");
-> +	ret = __dbcn_sbi_ecall(SBI_EXT_DBCN_CONSOLE_WRITE_BYTE, (u8)DBCN_WRITE_BYTE_TEST_BYTE, 0, 0);
-> +	puts("\n");
-> +	report(ret.error == SBI_SUCCESS, "write success");
-> +	report(ret.value == 0, "expected ret.value");
-> +
-> +	report_prefix_pop();
-> +}
-> +
->  int main(int argc, char **argv)
->  {
->  
-> @@ -259,6 +324,7 @@ int main(int argc, char **argv)
->  	report_prefix_push("sbi");
->  	check_base();
->  	check_time();
-> +	check_dbcn();
->  
->  	return report_summary();
->  }
-> 
-> ---
-> base-commit: 1878b4b663fd50b87de7ba2b1c90614e2703542f
-> change-id: 20240806-sbi-dbcn-write-test-70d305d511cf
-> 
-> Best regards,
-> -- 
-> Cade Richard <cade.richard@berkeley.edu>
->
+I just tried 32-bit KVM and see that the DBCN write test fails the
+'write success' test. That may be a KVM bug.
 
 Thanks,
 drew
