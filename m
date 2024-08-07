@@ -1,57 +1,45 @@
-From: Andrew Jones <andrew.jones@linux.dev>
-Date: Wed, 7 Aug 2024 15:37:27 +0200
-Subject: [PATCH kvm-unit-tests] riscv: sbi: add dbcn write test
-In-Reply-To: <20240807-ff37f5aa2c767c4b3b734cc0@orel>
-References: <20240806-sbi-dbcn-write-test-v1-1-7f198bb55525@berkeley.edu>
- <20240807-2c3b28a78c80c6db80a80588@orel>
- <20240807-ff37f5aa2c767c4b3b734cc0@orel>
-Message-ID: <20240807-bb9135bb41297039b3b7e135@orel>
+From: Catalin Marinas <catalin.marinas@arm.com>
+Date: Wed, 7 Aug 2024 15:15:31 +0100
+Subject: [PATCH v12 01/84] KVM: arm64: Release pfn, i.e. put page, if
+ copying MTE tags hits ZONE_DEVICE
+In-Reply-To: <20240726235234.228822-2-seanjc@google.com>
+References: <20240726235234.228822-1-seanjc@google.com>
+ <20240726235234.228822-2-seanjc@google.com>
+Message-ID: <ZrOBg70pCnv7PHyK@arm.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Aug 07, 2024 at 02:29:31PM GMT, Andrew Jones wrote:
-> On Wed, Aug 07, 2024 at 01:36:33PM GMT, Andrew Jones wrote:
-> ...
-> > I just tried 32-bit KVM and see that the DBCN write test fails the
-> > 'write success' test. That may be a KVM bug.
-> >
+On Fri, Jul 26, 2024 at 04:51:10PM -0700, Sean Christopherson wrote:
+> Put the page reference acquired by gfn_to_pfn_prot() if
+> kvm_vm_ioctl_mte_copy_tags() runs into ZONE_DEVICE memory.  KVM's less-
+> than-stellar heuristics for dealing with pfn-mapped memory means that KVM
+> can get a page reference to ZONE_DEVICE memory.
 > 
-> We can blame both KVM and kvmtool.
+> Fixes: f0376edb1ddc ("KVM: arm64: Add ioctl to fetch/store tags in a guest")
+> Signed-off-by: Sean Christopherson <seanjc@google.com>
+> ---
+>  arch/arm64/kvm/guest.c | 1 +
+>  1 file changed, 1 insertion(+)
 > 
-> KVM sets sbiret.error to a0 and sbiret.value to a1 before exiting to
-> userspace[1]. I think that comes from thinking about how a real ecall
-> would set them. However, as this isn't an ecall, they should get set
-> directly by userspace, not through registers. Also, we should initialize
-> them to some known value before calling userspace, and zero is probably
-> the best choice.
+> diff --git a/arch/arm64/kvm/guest.c b/arch/arm64/kvm/guest.c
+> index 11098eb7eb44..e1f0ff08836a 100644
+> --- a/arch/arm64/kvm/guest.c
+> +++ b/arch/arm64/kvm/guest.c
+> @@ -1059,6 +1059,7 @@ int kvm_vm_ioctl_mte_copy_tags(struct kvm *kvm,
+>  		page = pfn_to_online_page(pfn);
+>  		if (!page) {
+>  			/* Reject ZONE_DEVICE memory */
+> +			kvm_release_pfn_clean(pfn);
+>  			ret = -EFAULT;
+>  			goto out;
+>  		}
 
-Thinking about this some more and discussing it with Anup, the best
-choice for sbiret.error is to initialize it to SBI_ERR_NOT_SUPPORTED.
-Doing that won't allow the test to pass with old kvmtool, but that's
-OK. I'll send a KVM patch for that and the kvmtool patch.
+This patch makes sense irrespective of whether the above pfn is a
+ZONE_DEVICE or not. gfn_to_pfn_prot() increased the page refcount via
+GUP, so it must be released before bailing out of this loop.
 
-Thanks,
-drew
-
-> 
-> kvmtool neglects to set sbiret.error to SBI_SUCCESS on a successful write.
-> QEMU does set it, so this failure shouldn't happen with QEMU, but I
-> haven't tried it.
-> 
-> Patching both KVM and kvmtool is best, as it would allow the test to pass
-> when running new KVM with old kvmtool and when running old KVM with new
-> kvmtool.
-> 
-> [1] arch/riscv/kvm/vcpu_sbi.c:130
-> 
-> Thanks,
-> drew
-> 
-> -- 
-> kvm-riscv mailing list
-> kvm-riscv at lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/kvm-riscv
+Reviewed-by: Catalin Marinas <catalin.marinas@arm.com>
 
