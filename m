@@ -1,45 +1,36 @@
-From: Catalin Marinas <catalin.marinas@arm.com>
-Date: Wed, 7 Aug 2024 15:15:31 +0100
-Subject: [PATCH v12 01/84] KVM: arm64: Release pfn, i.e. put page, if
- copying MTE tags hits ZONE_DEVICE
-In-Reply-To: <20240726235234.228822-2-seanjc@google.com>
-References: <20240726235234.228822-1-seanjc@google.com>
- <20240726235234.228822-2-seanjc@google.com>
-Message-ID: <ZrOBg70pCnv7PHyK@arm.com>
+From: Andrew Jones <andrew.jones@linux.dev>
+Date: Wed,  7 Aug 2024 17:16:30 +0200
+Subject: [kvm-unit-tests PATCH 0/3] riscv: 32-bit should use phys_addr_t
+Message-ID: <20240807151629.144168-5-andrew.jones@linux.dev>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Jul 26, 2024 at 04:51:10PM -0700, Sean Christopherson wrote:
-> Put the page reference acquired by gfn_to_pfn_prot() if
-> kvm_vm_ioctl_mte_copy_tags() runs into ZONE_DEVICE memory.  KVM's less-
-> than-stellar heuristics for dealing with pfn-mapped memory means that KVM
-> can get a page reference to ZONE_DEVICE memory.
-> 
-> Fixes: f0376edb1ddc ("KVM: arm64: Add ioctl to fetch/store tags in a guest")
-> Signed-off-by: Sean Christopherson <seanjc@google.com>
-> ---
->  arch/arm64/kvm/guest.c | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/arch/arm64/kvm/guest.c b/arch/arm64/kvm/guest.c
-> index 11098eb7eb44..e1f0ff08836a 100644
-> --- a/arch/arm64/kvm/guest.c
-> +++ b/arch/arm64/kvm/guest.c
-> @@ -1059,6 +1059,7 @@ int kvm_vm_ioctl_mte_copy_tags(struct kvm *kvm,
->  		page = pfn_to_online_page(pfn);
->  		if (!page) {
->  			/* Reject ZONE_DEVICE memory */
-> +			kvm_release_pfn_clean(pfn);
->  			ret = -EFAULT;
->  			goto out;
->  		}
+We don't really expect to test 32-bit RISC-V with physical addresses
+larger than 32 bits (at least not any time too soon), but the spec
+says 32-bit RISC-V can have up to 34-bit wide physical addresses and the
+SBI testing wants to pretend like there's a chance the high words may be
+nonzero (since SBI calls require high words as parameters). This series
+ensures we use phys_addr_t where it makes sense to do so. The first couple
+patches are fixes for issues found while preparing the third.
 
-This patch makes sense irrespective of whether the above pfn is a
-ZONE_DEVICE or not. gfn_to_pfn_prot() increased the page refcount via
-GUP, so it must be released before bailing out of this loop.
+Thanks,
+drew
 
-Reviewed-by: Catalin Marinas <catalin.marinas@arm.com>
+Andrew Jones (3):
+  riscv: Fix virt_to_phys again
+  riscv: setup: Apply VA_BASE check to rv64
+  riscv: Support up to 34-bit physical addresses on rv32, sort of
+
+ lib/riscv/asm/io.h |  4 ++--
+ lib/riscv/mmu.c    | 32 ++++++++++++++++++++------------
+ lib/riscv/setup.c  |  2 +-
+ lib/riscv/smp.c    |  7 ++++++-
+ 4 files changed, 29 insertions(+), 16 deletions(-)
+
+-- 
+2.45.2
+
 
