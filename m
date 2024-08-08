@@ -1,62 +1,80 @@
 From: Andrew Jones <andrew.jones@linux.dev>
-Date: Thu,  8 Aug 2024 17:42:27 +0200
-Subject: [kvm-unit-tests PATCH v2 3/4] riscv: Fix out-of-tree builds
+Date: Thu,  8 Aug 2024 17:42:28 +0200
+Subject: [kvm-unit-tests PATCH v2 4/4] riscv: Extend gitlab CI
 In-Reply-To: <20240808154223.79686-6-andrew.jones@linux.dev>
 References: <20240808154223.79686-6-andrew.jones@linux.dev>
-Message-ID: <20240808154223.79686-9-andrew.jones@linux.dev>
+Message-ID: <20240808154223.79686-10-andrew.jones@linux.dev>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-My riscv compiler doesn't seem to want to create directories as other
-compilers are apparently doing. There's only a few of them, so let's
-just manually create them in configure. And riscv also needed
-'-I lib' in CFLAGS.
+Fedora's riscv64 gcc supports ilp32 so enable 32-bit RISCV testing.
+And use the out-of-tree template for the 32-bit build to get that
+covered too. Also add EFI build testing and, since Fedora has been
+updated which brings in a later QEMU, we can now use the 'max' cpu
+type.
 
 Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
 ---
- configure      | 8 ++++++--
- riscv/Makefile | 2 +-
- 2 files changed, 7 insertions(+), 3 deletions(-)
+ .gitlab-ci.yml | 36 +++++++++++++++++++++++++++++++-----
+ 1 file changed, 31 insertions(+), 5 deletions(-)
 
-diff --git a/configure b/configure
-index db15e85d6ac7..27ae9cc89657 100755
---- a/configure
-+++ b/configure
-@@ -418,12 +418,16 @@ rm -f lib/asm
- asm="asm-generic"
- if [ -d "$srcdir/lib/$arch/asm" ]; then
- 	asm="$srcdir/lib/$arch/asm"
-+	mkdir -p "lib/$arch"
-+elif [ -d "$srcdir/lib/$arch_libdir/asm" ]; then
-+	asm="$srcdir/lib/$arch_libdir/asm"
-+	mkdir -p "lib/$arch_libdir"
- elif [ -d "$srcdir/lib/$testdir/asm" ]; then
- 	asm="$srcdir/lib/$testdir/asm"
-+	mkdir -p "lib/$testdir"
- fi
--mkdir -p lib
- ln -sf "$asm" lib/asm
--
-+mkdir -p lib/generated lib/libfdt
+diff --git a/.gitlab-ci.yml b/.gitlab-ci.yml
+index e0eb85a94910..180ef6e78558 100644
+--- a/.gitlab-ci.yml
++++ b/.gitlab-ci.yml
+@@ -133,18 +133,44 @@ build-ppc64le:
+       | tee results.txt
+  - if grep -q FAIL results.txt ; then exit 1 ; fi
  
- # create the config
- cat <<EOF > config.mak
-diff --git a/riscv/Makefile b/riscv/Makefile
-index 7906cef7f199..179a373dbacf 100644
---- a/riscv/Makefile
-+++ b/riscv/Makefile
-@@ -80,7 +80,7 @@ CFLAGS += -mstrict-align
- CFLAGS += -std=gnu99
- CFLAGS += -ffreestanding
- CFLAGS += -O2
--CFLAGS += -I $(SRCDIR)/lib -I $(SRCDIR)/lib/libfdt
-+CFLAGS += -I $(SRCDIR)/lib -I $(SRCDIR)/lib/libfdt -I lib
+-# build-riscv32:
+-# Fedora doesn't package a riscv32 compiler for QEMU. Oh, well.
++build-riscv32:
++ extends: .outoftree_template
++ script:
++ - dnf install -y qemu-system-riscv gcc-riscv64-linux-gnu
++ - mkdir build
++ - cd build
++ - ../configure --arch=riscv32 --cross-prefix=riscv64-linux-gnu-
++ - make -j2
++ - printf "FOO=foo\nBAR=bar\nBAZ=baz\nMVENDORID=0\nMARCHID=0\nMIMPID=0\n" >test-env
++ - ACCEL=tcg KVM_UNIT_TESTS_ENV=test-env ./run_tests.sh
++      selftest
++      sbi
++      | tee results.txt
++ - grep -q PASS results.txt && ! grep -q FAIL results.txt
  
- asm-offsets = lib/riscv/asm-offsets.h
- include $(SRCDIR)/scripts/asm-offsets.mak
+-# Select 'rv64' with PROCESSOR_OVERRIDE in case QEMU is too old to have 'max'
+ build-riscv64:
+  extends: .intree_template
+  script:
+  - dnf install -y qemu-system-riscv gcc-riscv64-linux-gnu
+  - ./configure --arch=riscv64 --cross-prefix=riscv64-linux-gnu-
+  - make -j2
+- - printf "FOO=foo\nBAR=bar\nBAZ=baz\nMVENDORID=0\n" >test-env
+- - PROCESSOR_OVERRIDE=rv64 ACCEL=tcg KVM_UNIT_TESTS_ENV=test-env ./run_tests.sh
++ - printf "FOO=foo\nBAR=bar\nBAZ=baz\nMVENDORID=0\nMARCHID=0\nMIMPID=0\n" >test-env
++ - ACCEL=tcg KVM_UNIT_TESTS_ENV=test-env ./run_tests.sh
++      selftest
++      sbi
++      | tee results.txt
++ - grep -q PASS results.txt && ! grep -q FAIL results.txt
++
++build-riscv64-efi:
++ extends: .intree_template
++ script:
++ - dnf install -y edk2-riscv64 qemu-system-riscv gcc-riscv64-linux-gnu
++ - cp /usr/share/edk2/riscv/RISCV_VIRT_CODE.fd .
++ - truncate -s 32M RISCV_VIRT_CODE.fd
++ - ./configure --arch=riscv64 --cross-prefix=riscv64-linux-gnu- --enable-efi
++ - make -j2
++ - printf "FOO=foo\nBAR=bar\nBAZ=baz\nMVENDORID=0\nMARCHID=0\nMIMPID=0\n" >test-env
++ - ACCEL=tcg KVM_UNIT_TESTS_ENV=test-env ./run_tests.sh
+       selftest
+       sbi
+       | tee results.txt
 -- 
 2.45.2
 
