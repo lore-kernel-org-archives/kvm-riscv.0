@@ -1,81 +1,61 @@
-From: Andrew Jones <andrew.jones@linux.dev>
-Date: Thu,  8 Aug 2024 17:42:28 +0200
-Subject: [kvm-unit-tests PATCH v2 4/4] riscv: Extend gitlab CI
-In-Reply-To: <20240808154223.79686-6-andrew.jones@linux.dev>
-References: <20240808154223.79686-6-andrew.jones@linux.dev>
-Message-ID: <20240808154223.79686-10-andrew.jones@linux.dev>
+From: Alex Bennée <alex.bennee@linaro.org>
+Date: Thu, 08 Aug 2024 17:16:15 +0100
+Subject: [PATCH v12 13/84] KVM: Annotate that all paths in hva_to_pfn()
+ might sleep
+In-Reply-To: <ZrTk4sQS8k1-GBb3@google.com> (Sean Christopherson's message of
+	"Thu, 8 Aug 2024 08:31:46 -0700")
+References: <20240726235234.228822-1-seanjc@google.com>
+	<20240726235234.228822-14-seanjc@google.com>
+	<87bk23ql6n.fsf@draig.linaro.org> <ZrTFPhy0e1fFb9vA@google.com>
+	<877ccrqc06.fsf@draig.linaro.org> <ZrTk4sQS8k1-GBb3@google.com>
+Message-ID: <8734nfq9bk.fsf@draig.linaro.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Fedora's riscv64 gcc supports ilp32 so enable 32-bit RISCV testing.
-And use the out-of-tree template for the 32-bit build to get that
-covered too. Also add EFI build testing and, since Fedora has been
-updated which brings in a later QEMU, we can now use the 'max' cpu
-type.
+Sean Christopherson <seanjc@google.com> writes:
 
-Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
----
- .gitlab-ci.yml | 36 +++++++++++++++++++++++++++++++-----
- 1 file changed, 31 insertions(+), 5 deletions(-)
+> On Thu, Aug 08, 2024, Alex Benn?e wrote:
+>> Sean Christopherson <seanjc@google.com> writes:
+>> 
+>> > On Thu, Aug 08, 2024, Alex Benn?e wrote:
+>> >> Sean Christopherson <seanjc@google.com> writes:
+>> >> 
+>> >> > Now that hva_to_pfn() no longer supports being called in atomic context,
+>> >> > move the might_sleep() annotation from hva_to_pfn_slow() to
+>> >> > hva_to_pfn().
+>> >> 
+>> >> The commentary for hva_to_pfn_fast disagrees.
+>> >> 
+>> >>   /*
+>> >>    * The fast path to get the writable pfn which will be stored in @pfn,
+>> >>    * true indicates success, otherwise false is returned.  It's also the
+>> >>    * only part that runs if we can in atomic context.
+>> >>    */
+>> >>   static bool hva_to_pfn_fast(struct kvm_follow_pfn *kfp, kvm_pfn_t *pfn)
+>> >> 
+>> >> At which point did it loose the ability to run in the atomic context? I
+>> >> couldn't work it out from the commits.
+>> >
+>> > It didn't lose the ability per se (calling hva_to_pfn_fast() in atomic context
+>> > would still be functionally ok), rather the previous patch
+>> >
+>> >   KVM: Drop @atomic param from gfn=>pfn and hva=>pfn APIs
+>> >
+>> > removed support for doing so in order to simplify hva_to_pfn() as a whole.
+>> 
+>> It still sticks out given the only caller no longer enforces this. 
+>
+> Oh, sorry, I should have been more explicit.  I'll fix the comment, I simply
+> missed it.
 
-diff --git a/.gitlab-ci.yml b/.gitlab-ci.yml
-index e0eb85a94910..180ef6e78558 100644
---- a/.gitlab-ci.yml
-+++ b/.gitlab-ci.yml
-@@ -133,18 +133,44 @@ build-ppc64le:
-       | tee results.txt
-  - if grep -q FAIL results.txt ; then exit 1 ; fi
- 
--# build-riscv32:
--# Fedora doesn't package a riscv32 compiler for QEMU. Oh, well.
-+build-riscv32:
-+ extends: .outoftree_template
-+ script:
-+ - dnf install -y qemu-system-riscv gcc-riscv64-linux-gnu
-+ - mkdir build
-+ - cd build
-+ - ../configure --arch=riscv32 --cross-prefix=riscv64-linux-gnu-
-+ - make -j2
-+ - printf "FOO=foo\nBAR=bar\nBAZ=baz\nMVENDORID=0\nMARCHID=0\nMIMPID=0\n" >test-env
-+ - ACCEL=tcg KVM_UNIT_TESTS_ENV=test-env ./run_tests.sh
-+      selftest
-+      sbi
-+      | tee results.txt
-+ - grep -q PASS results.txt && ! grep -q FAIL results.txt
- 
--# Select 'rv64' with PROCESSOR_OVERRIDE in case QEMU is too old to have 'max'
- build-riscv64:
-  extends: .intree_template
-  script:
-  - dnf install -y qemu-system-riscv gcc-riscv64-linux-gnu
-  - ./configure --arch=riscv64 --cross-prefix=riscv64-linux-gnu-
-  - make -j2
-- - printf "FOO=foo\nBAR=bar\nBAZ=baz\nMVENDORID=0\n" >test-env
-- - PROCESSOR_OVERRIDE=rv64 ACCEL=tcg KVM_UNIT_TESTS_ENV=test-env ./run_tests.sh
-+ - printf "FOO=foo\nBAR=bar\nBAZ=baz\nMVENDORID=0\nMARCHID=0\nMIMPID=0\n" >test-env
-+ - ACCEL=tcg KVM_UNIT_TESTS_ENV=test-env ./run_tests.sh
-+      selftest
-+      sbi
-+      | tee results.txt
-+ - grep -q PASS results.txt && ! grep -q FAIL results.txt
-+
-+build-riscv64-efi:
-+ extends: .intree_template
-+ script:
-+ - dnf install -y edk2-riscv64 qemu-system-riscv gcc-riscv64-linux-gnu
-+ - cp /usr/share/edk2/riscv/RISCV_VIRT_CODE.fd .
-+ - truncate -s 32M RISCV_VIRT_CODE.fd
-+ - ./configure --arch=riscv64 --cross-prefix=riscv64-linux-gnu- --enable-efi
-+ - make -j2
-+ - printf "FOO=foo\nBAR=bar\nBAZ=baz\nMVENDORID=0\nMARCHID=0\nMIMPID=0\n" >test-env
-+ - ACCEL=tcg KVM_UNIT_TESTS_ENV=test-env ./run_tests.sh
-       selftest
-       sbi
-       | tee results.txt
+No worries, with the fixed comment:
+
+Reviewed-by: Alex Benn?e <alex.bennee@linaro.org>
+
 -- 
-2.45.2
-
+Alex Benn?e
+Virtualisation Tech Lead @ Linaro
 
