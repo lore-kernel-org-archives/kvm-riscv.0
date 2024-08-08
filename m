@@ -1,62 +1,76 @@
-From: Steven Price <steven.price@arm.com>
-Date: Thu, 8 Aug 2024 10:54:24 +0100
-Subject: [PATCH v12 02/84] KVM: arm64: Disallow copying MTE to guest
- memory while KVM is dirty logging
-In-Reply-To: <ZrOfB8bOdSJVcWFr@arm.com>
+From: maobibo <maobibo@loongson.cn>
+Date: Thu, 8 Aug 2024 19:38:07 +0800
+Subject: [PATCH v12 64/84] KVM: LoongArch: Mark "struct page" pfns dirty
+ only in "slow" page fault path
+In-Reply-To: <20240726235234.228822-65-seanjc@google.com>
 References: <20240726235234.228822-1-seanjc@google.com>
- <20240726235234.228822-3-seanjc@google.com> <ZrOfB8bOdSJVcWFr@arm.com>
-Message-ID: <fbcbd4da-cab5-420e-b8b6-bf04e27bf69c@arm.com>
+ <20240726235234.228822-65-seanjc@google.com>
+Message-ID: <b54357a9-6146-603b-45cd-e8ee0db4a709@loongson.cn>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 07/08/2024 17:21, Catalin Marinas wrote:
-> On Fri, Jul 26, 2024 at 04:51:11PM -0700, Sean Christopherson wrote:
->> Disallow copying MTE tags to guest memory while KVM is dirty logging, as
->> writing guest memory without marking the gfn as dirty in the memslot could
->> result in userspace failing to migrate the updated page.  Ideally (maybe?),
->> KVM would simply mark the gfn as dirty, but there is no vCPU to work with,
->> and presumably the only use case for copy MTE tags _to_ the guest is when
->> restoring state on the target.
->>
->> Fixes: f0376edb1ddc ("KVM: arm64: Add ioctl to fetch/store tags in a guest")
->> Signed-off-by: Sean Christopherson <seanjc@google.com>
->> ---
->>  arch/arm64/kvm/guest.c | 5 +++++
->>  1 file changed, 5 insertions(+)
->>
->> diff --git a/arch/arm64/kvm/guest.c b/arch/arm64/kvm/guest.c
->> index e1f0ff08836a..962f985977c2 100644
->> --- a/arch/arm64/kvm/guest.c
->> +++ b/arch/arm64/kvm/guest.c
->> @@ -1045,6 +1045,11 @@ int kvm_vm_ioctl_mte_copy_tags(struct kvm *kvm,
->>  
->>  	mutex_lock(&kvm->slots_lock);
->>  
->> +	if (write && atomic_read(&kvm->nr_memslots_dirty_logging)) {
->> +		ret = -EBUSY;
->> +		goto out;
->> +	}
+
+
+On 2024/7/27 ??7:52, Sean Christopherson wrote:
+> Mark pages/folios dirty only the slow page fault path, i.e. only when
+> mmu_lock is held and the operation is mmu_notifier-protected, as marking a
+> page/folio dirty after it has been written back can make some filesystems
+> unhappy (backing KVM guests will such filesystem files is uncommon, and
+> the race is minuscule, hence the lack of complaints).
 > 
-> There are ways to actually log the page dirtying but I don't think
-> it's worth it. AFAICT, reading the tags still works and that's what's
-> used during migration (on the VM where dirty tracking takes place).
+> See the link below for details.
 > 
-> Reviewed-by: Catalin Marinas <catalin.marinas@arm.com>
+> Link: https://lore.kernel.org/all/cover.1683044162.git.lstoakes at gmail.com
+> Signed-off-by: Sean Christopherson <seanjc@google.com>
+> ---
+>   arch/loongarch/kvm/mmu.c | 18 ++++++++++--------
+>   1 file changed, 10 insertions(+), 8 deletions(-)
 > 
+> diff --git a/arch/loongarch/kvm/mmu.c b/arch/loongarch/kvm/mmu.c
+> index 2634a9e8d82c..364dd35e0557 100644
+> --- a/arch/loongarch/kvm/mmu.c
+> +++ b/arch/loongarch/kvm/mmu.c
+> @@ -608,13 +608,13 @@ static int kvm_map_page_fast(struct kvm_vcpu *vcpu, unsigned long gpa, bool writ
+>   		if (kvm_pte_young(changed))
+>   			kvm_set_pfn_accessed(pfn);
+>   
+> -		if (kvm_pte_dirty(changed)) {
+> -			mark_page_dirty(kvm, gfn);
+> -			kvm_set_pfn_dirty(pfn);
+> -		}
+>   		if (page)
+>   			put_page(page);
+>   	}
+> +
+> +	if (kvm_pte_dirty(changed))
+> +		mark_page_dirty(kvm, gfn);
+> +
+>   	return ret;
+>   out:
+>   	spin_unlock(&kvm->mmu_lock);
+> @@ -915,12 +915,14 @@ static int kvm_map_page(struct kvm_vcpu *vcpu, unsigned long gpa, bool write)
+>   	else
+>   		++kvm->stat.pages;
+>   	kvm_set_pte(ptep, new_pte);
+> -	spin_unlock(&kvm->mmu_lock);
+>   
+> -	if (prot_bits & _PAGE_DIRTY) {
+> -		mark_page_dirty_in_slot(kvm, memslot, gfn);
+> +	if (writeable)
+>   		kvm_set_pfn_dirty(pfn);
+> -	}
+> +
+> +	spin_unlock(&kvm->mmu_lock);
+> +
+> +	if (prot_bits & _PAGE_DIRTY)
+> +		mark_page_dirty_in_slot(kvm, memslot, gfn);
+>   
+>   	kvm_release_pfn_clean(pfn);
+>   out:
+> 
+Reviewed-by: Bibo Mao <maobibo@loongson.cn>
 
-Looks sensible to me - my initial thought was "why would a VMM do
-that?". But it would make sense to actually return a failure rather than
-letting the VMM shoot itself in the foot.
-
-If there's actually a use-case then we could look at making the dirty
-tracking work, but I'm not convinced there is a good reason.
-
-Reviewed-by: Steven Price <steven.price@arm.com>
-
-Thanks,
-
-Steve
 
