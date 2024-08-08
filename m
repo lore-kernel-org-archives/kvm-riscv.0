@@ -1,48 +1,42 @@
-From: Sean Christopherson <seanjc@google.com>
-Date: Thu, 8 Aug 2024 08:31:46 -0700
-Subject: [PATCH v12 13/84] KVM: Annotate that all paths in hva_to_pfn()
- might sleep
-In-Reply-To: <877ccrqc06.fsf@draig.linaro.org>
-References: <20240726235234.228822-1-seanjc@google.com> <20240726235234.228822-14-seanjc@google.com>
- <87bk23ql6n.fsf@draig.linaro.org> <ZrTFPhy0e1fFb9vA@google.com> <877ccrqc06.fsf@draig.linaro.org>
-Message-ID: <ZrTk4sQS8k1-GBb3@google.com>
+From: Andrew Jones <andrew.jones@linux.dev>
+Date: Thu,  8 Aug 2024 17:42:24 +0200
+Subject: [kvm-unit-tests PATCH v2 0/4] riscv: Extend CI
+Message-ID: <20240808154223.79686-6-andrew.jones@linux.dev>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Aug 08, 2024, Alex Benn?e wrote:
-> Sean Christopherson <seanjc@google.com> writes:
-> 
-> > On Thu, Aug 08, 2024, Alex Benn?e wrote:
-> >> Sean Christopherson <seanjc@google.com> writes:
-> >> 
-> >> > Now that hva_to_pfn() no longer supports being called in atomic context,
-> >> > move the might_sleep() annotation from hva_to_pfn_slow() to
-> >> > hva_to_pfn().
-> >> 
-> >> The commentary for hva_to_pfn_fast disagrees.
-> >> 
-> >>   /*
-> >>    * The fast path to get the writable pfn which will be stored in @pfn,
-> >>    * true indicates success, otherwise false is returned.  It's also the
-> >>    * only part that runs if we can in atomic context.
-> >>    */
-> >>   static bool hva_to_pfn_fast(struct kvm_follow_pfn *kfp, kvm_pfn_t *pfn)
-> >> 
-> >> At which point did it loose the ability to run in the atomic context? I
-> >> couldn't work it out from the commits.
-> >
-> > It didn't lose the ability per se (calling hva_to_pfn_fast() in atomic context
-> > would still be functionally ok), rather the previous patch
-> >
-> >   KVM: Drop @atomic param from gfn=>pfn and hva=>pfn APIs
-> >
-> > removed support for doing so in order to simplify hva_to_pfn() as a whole.
-> 
-> It still sticks out given the only caller no longer enforces this. 
+So far we were only building and testing 64-bit, non-efi in the CI for
+riscv. I had mistakenly thought Fedora's riscv compiler could only build
+64-bit, but it's multilib so we just need to add some CFLAGS to get it
+to work. To preserve building with a 32-bit-only riscv compiler we need
+to introduce limits.h to our tiny libc. And, while adding 32-bit builds
+to CI we also add EFI builds so now we test 32-bit, 64-bit, and 64-bit
+EFI. And, since Fedora has been udpated, bringing in a later QEMU, we
+can now do the testing with the 'max' cpu type.
 
-Oh, sorry, I should have been more explicit.  I'll fix the comment, I simply
-missed it.
+v2:
+ - *Actually* test out-of-tree builds in the rv32 CI (I was missing
+   a few important lines, like 'cd build'...
+ - Add another patch to fix out-of-tree builds for riscv
+ - Added some indentation in the new limits.h
+
+Andrew Jones (4):
+  lib: Add limits.h
+  riscv: Build with explicit ABI
+  riscv: Fix out-of-tree builds
+  riscv: Extend gitlab CI
+
+ .gitlab-ci.yml | 36 +++++++++++++++++++++++++++++++-----
+ configure      |  8 ++++++--
+ lib/limits.h   | 43 +++++++++++++++++++++++++++++++++++++++++++
+ riscv/Makefile | 12 +++++++-----
+ 4 files changed, 87 insertions(+), 12 deletions(-)
+ create mode 100644 lib/limits.h
+
+-- 
+2.45.2
+
 
