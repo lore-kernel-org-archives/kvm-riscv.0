@@ -1,65 +1,34 @@
-From: Alex Bennée <alex.bennee@linaro.org>
-Date: Thu, 08 Aug 2024 13:00:00 +0100
-Subject: [PATCH v12 13/84] KVM: Annotate that all paths in hva_to_pfn()
- might sleep
-In-Reply-To: <20240726235234.228822-14-seanjc@google.com> (Sean
-	Christopherson's message of "Fri, 26 Jul 2024 16:51:22 -0700")
-References: <20240726235234.228822-1-seanjc@google.com>
-	<20240726235234.228822-14-seanjc@google.com>
-Message-ID: <87bk23ql6n.fsf@draig.linaro.org>
+From: Andrew Jones <andrew.jones@linux.dev>
+Date: Thu,  8 Aug 2024 15:02:30 +0200
+Subject: [kvm-unit-tests PATCH 0/3] riscv: Extend CI
+Message-ID: <20240808130229.47415-5-andrew.jones@linux.dev>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Sean Christopherson <seanjc@google.com> writes:
+So far we were only building and testing 64-bit, non-efi in the CI for
+riscv. I had mistakenly thought Fedora's riscv compiler could only build
+64-bit, but it's multilib so we just need to add some CFLAGS to get it
+to work. To preserve building with a 32-bit-only riscv compiler we need
+to introduce limits.h to our tiny libc. And, while adding 32-bit builds
+to CI we also add EFI builds so now we test 32-bit, 64-bit, and 64-bit
+EFI. And, since Fedora has been udpated, bringing in a later QEMU, we
+can now do the testing with the 'max' cpu type.
 
-> Now that hva_to_pfn() no longer supports being called in atomic context,
-> move the might_sleep() annotation from hva_to_pfn_slow() to
-> hva_to_pfn().
+Andrew Jones (3):
+  lib: Add limits.h
+  riscv: Build with explicit ABI
+  riscv: Extend gitlab CI
 
-The commentary for hva_to_pfn_fast disagrees.
-
-  /*
-   * The fast path to get the writable pfn which will be stored in @pfn,
-   * true indicates success, otherwise false is returned.  It's also the
-   * only part that runs if we can in atomic context.
-   */
-  static bool hva_to_pfn_fast(struct kvm_follow_pfn *kfp, kvm_pfn_t *pfn)
-
-At which point did it loose the ability to run in the atomic context? I
-couldn't work it out from the commits.
-
->
-> Signed-off-by: Sean Christopherson <seanjc@google.com>
-> ---
->  virt/kvm/kvm_main.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
->
-> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-> index 84c73b4fc804..03af1a0090b1 100644
-> --- a/virt/kvm/kvm_main.c
-> +++ b/virt/kvm/kvm_main.c
-> @@ -2807,8 +2807,6 @@ static int hva_to_pfn_slow(unsigned long addr, bool *async, bool write_fault,
->  	struct page *page;
->  	int npages;
->  
-> -	might_sleep();
-> -
->  	if (writable)
->  		*writable = write_fault;
->  
-> @@ -2947,6 +2945,8 @@ kvm_pfn_t hva_to_pfn(unsigned long addr, bool interruptible, bool *async,
->  	kvm_pfn_t pfn;
->  	int npages, r;
->  
-> +	might_sleep();
-> +
->  	if (hva_to_pfn_fast(addr, write_fault, writable, &pfn))
->  		return pfn;
+ .gitlab-ci.yml | 34 +++++++++++++++++++++++++++++-----
+ lib/limits.h   | 43 +++++++++++++++++++++++++++++++++++++++++++
+ riscv/Makefile | 10 ++++++----
+ 3 files changed, 78 insertions(+), 9 deletions(-)
+ create mode 100644 lib/limits.h
 
 -- 
-Alex Benn?e
-Virtualisation Tech Lead @ Linaro
+2.45.2
+
 
