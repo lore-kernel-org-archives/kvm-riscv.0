@@ -1,38 +1,51 @@
 From: Andrew Jones <andrew.jones@linux.dev>
-Date: Mon, 12 Aug 2024 15:44:54 +0200
-Subject: [kvm-unit-tests PATCH v2 2/7] riscv: setup: Apply VA_BASE check to rv64
+Date: Mon, 12 Aug 2024 15:44:53 +0200
+Subject: [kvm-unit-tests PATCH v2 1/7] riscv: Fix virt_to_phys again
 In-Reply-To: <20240812134451.112498-9-andrew.jones@linux.dev>
 References: <20240812134451.112498-9-andrew.jones@linux.dev>
-Message-ID: <20240812134451.112498-11-andrew.jones@linux.dev>
+Message-ID: <20240812134451.112498-10-andrew.jones@linux.dev>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-The VA_BASE check in setup() also applies to rv64, as is clear from
-the later VA_BASE check in mem_allocator_init(), which ensures
-freemem_start < freemem_end < VA_BASE.
+The last fix was a bit hasty since we didn't double check that
+virt_to_phys() was the right place for the fix, rather than
+virt_to_pte_phys(), and of course it was the latter... All
+architectures add on the offset in virt_to_pte_phys() and then
+simply wrap virt_to_pte_phys() with virt_to_phys(), if they
+implement virt_to_phys() at all. RISCV shouldn't be different.
 
-Fixes: 6895ce6dc618 ("riscv: Populate memregions and switch to page allocator")
+Fixes: e1dd4ea76894 ("riscv: Fix virt_to_phys")
+Fixes: 23100d972705 ("riscv: Enable vmalloc")
 Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
 ---
- lib/riscv/setup.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ lib/riscv/mmu.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/lib/riscv/setup.c b/lib/riscv/setup.c
-index e0b5f6f7daf5..2c7792a5b0bd 100644
---- a/lib/riscv/setup.c
-+++ b/lib/riscv/setup.c
-@@ -193,7 +193,7 @@ void setup(const void *fdt, phys_addr_t freemem_start)
- 	const char *bootargs;
- 	int ret;
+diff --git a/lib/riscv/mmu.c b/lib/riscv/mmu.c
+index 165a7034bc69..2c9c4f376ac9 100644
+--- a/lib/riscv/mmu.c
++++ b/lib/riscv/mmu.c
+@@ -179,7 +179,7 @@ phys_addr_t virt_to_pte_phys(pgd_t *pgtable, void *virt)
+ 	if (!pte_val(*ptep))
+ 		return 0;
  
--	assert(sizeof(long) == 8 || freemem_start < VA_BASE);
-+	assert(freemem_start < VA_BASE);
- 	freemem = __va(freemem_start);
+-	return __pa(pteval_to_ptep(pte_val(*ptep)));
++	return __pa(pteval_to_ptep(pte_val(*ptep))) | offset_in_page(virt);
+ }
  
- 	freemem_push_fdt(&freemem, fdt);
+ unsigned long virt_to_phys(volatile void *address)
+@@ -194,7 +194,7 @@ unsigned long virt_to_phys(volatile void *address)
+ 	paddr = virt_to_pte_phys(pgtable, (void *)address);
+ 	assert(sizeof(long) == 8 || !(paddr >> 32));
+ 
+-	return (unsigned long)paddr | offset_in_page(address);
++	return (unsigned long)paddr;
+ }
+ 
+ void *phys_to_virt(unsigned long address)
 -- 
 2.45.2
 
