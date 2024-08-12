@@ -1,43 +1,57 @@
 From: Andrew Jones <andrew.jones@linux.dev>
-Date: Mon, 12 Aug 2024 16:07:11 +0200
-Subject: [kvm-unit-tests PATCH v2 0/7] riscv: 32-bit should use
- phys_addr_t
-In-Reply-To: <20240812134451.112498-9-andrew.jones@linux.dev>
-References: <20240812134451.112498-9-andrew.jones@linux.dev>
-Message-ID: <20240812-7d3025fd062de8ac975912db@orel>
+Date: Mon, 12 Aug 2024 16:13:56 +0200
+Subject: [kvm-unit-tests PATCH 1/4] riscv: sbi: dbcn: Output return values
+In-Reply-To: <20240812141354.119889-6-andrew.jones@linux.dev>
+References: <20240812141354.119889-6-andrew.jones@linux.dev>
+Message-ID: <20240812141354.119889-7-andrew.jones@linux.dev>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Aug 12, 2024 at 03:44:52PM GMT, Andrew Jones wrote:
-> For v2 not only do we use phys_addr_t where we should to allow unit tests
-> to pretend like high words matter on rv32, but we actually get it to work
-> by adding a few more patches. Some new DBCN tests will make use of it.
-> 
-> Andrew Jones (7):
->   riscv: Fix virt_to_phys again
->   riscv: setup: Apply VA_BASE check to rv64
->   riscv: Support up to 34-bit physical addresses on rv32, sort of
->   riscv: Track memory above 3G
->   riscv: mmu: Sanity check input physical addresses
->   riscv: Define and use PHYS_PAGE_MASK
->   riscv: mmu: Ensure order of PTE update and sfence
-> 
->  lib/memregions.h    |  1 +
->  lib/riscv/asm/io.h  |  4 ++--
->  lib/riscv/asm/mmu.h |  3 +++
->  lib/riscv/mmu.c     | 45 +++++++++++++++++++++++++++++----------------
->  lib/riscv/setup.c   | 19 +++++++++++++------
->  lib/riscv/smp.c     |  7 ++++++-
->  6 files changed, 54 insertions(+), 25 deletions(-)
-> 
-> -- 
-> 2.45.2
->
+When a test fails its nice to be able to see exactly what error code
+it failed with in order to immediately start debug.
 
-Queued on riscv/queue, https://gitlab.com/jones-drew/kvm-unit-tests/-/commits/riscv%2Fqueue
+Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
+---
+ riscv/sbi.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-drew
+diff --git a/riscv/sbi.c b/riscv/sbi.c
+index 93a79d8095f5..2393929b965d 100644
+--- a/riscv/sbi.c
++++ b/riscv/sbi.c
+@@ -299,7 +299,7 @@ static void check_dbcn(void)
+ 		num_calls++;
+ 	} while (num_bytes != 0 && ret.error == SBI_SUCCESS);
+ 
+-	report(ret.error == SBI_SUCCESS, "write success");
++	report(ret.error == SBI_SUCCESS, "write success (error=%ld)", ret.error);
+ 	report_info("%d sbi calls made", num_calls);
+ 
+ 	/* Bytes are read from memory and written to the console */
+@@ -307,7 +307,7 @@ static void check_dbcn(void)
+ 		paddr = strtoull(getenv("INVALID_ADDR"), NULL, 0);
+ 		split_phys_addr(paddr, &base_addr_hi, &base_addr_lo);
+ 		ret = __dbcn_sbi_ecall(SBI_EXT_DBCN_CONSOLE_WRITE, 1, base_addr_lo, base_addr_hi);
+-		report(ret.error == SBI_ERR_INVALID_PARAM, "invalid parameter: address");
++		report(ret.error == SBI_ERR_INVALID_PARAM, "invalid parameter: address (error=%ld)", ret.error);
+ 	}
+ 
+ 	report_prefix_pop();
+@@ -317,8 +317,8 @@ static void check_dbcn(void)
+ 	puts("DBCN_WRITE TEST CHAR: ");
+ 	ret = __dbcn_sbi_ecall(SBI_EXT_DBCN_CONSOLE_WRITE_BYTE, (u8)DBCN_WRITE_BYTE_TEST_BYTE, 0, 0);
+ 	puts("\n");
+-	report(ret.error == SBI_SUCCESS, "write success");
+-	report(ret.value == 0, "expected ret.value");
++	report(ret.error == SBI_SUCCESS, "write success (error=%ld)", ret.error);
++	report(ret.value == 0, "expected ret.value (%ld)", ret.value);
+ 
+ 	report_prefix_pop();
+ }
+-- 
+2.45.2
+
 
