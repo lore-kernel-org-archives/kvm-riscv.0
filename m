@@ -1,34 +1,38 @@
 From: Andrew Jones <andrew.jones@linux.dev>
-Date: Mon, 12 Aug 2024 15:44:52 +0200
-Subject: [kvm-unit-tests PATCH v2 0/7] riscv: 32-bit should use phys_addr_t
-Message-ID: <20240812134451.112498-9-andrew.jones@linux.dev>
+Date: Mon, 12 Aug 2024 15:44:54 +0200
+Subject: [kvm-unit-tests PATCH v2 2/7] riscv: setup: Apply VA_BASE check to rv64
+In-Reply-To: <20240812134451.112498-9-andrew.jones@linux.dev>
+References: <20240812134451.112498-9-andrew.jones@linux.dev>
+Message-ID: <20240812134451.112498-11-andrew.jones@linux.dev>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-For v2 not only do we use phys_addr_t where we should to allow unit tests
-to pretend like high words matter on rv32, but we actually get it to work
-by adding a few more patches. Some new DBCN tests will make use of it.
+The VA_BASE check in setup() also applies to rv64, as is clear from
+the later VA_BASE check in mem_allocator_init(), which ensures
+freemem_start < freemem_end < VA_BASE.
 
-Andrew Jones (7):
-  riscv: Fix virt_to_phys again
-  riscv: setup: Apply VA_BASE check to rv64
-  riscv: Support up to 34-bit physical addresses on rv32, sort of
-  riscv: Track memory above 3G
-  riscv: mmu: Sanity check input physical addresses
-  riscv: Define and use PHYS_PAGE_MASK
-  riscv: mmu: Ensure order of PTE update and sfence
+Fixes: 6895ce6dc618 ("riscv: Populate memregions and switch to page allocator")
+Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
+---
+ lib/riscv/setup.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
- lib/memregions.h    |  1 +
- lib/riscv/asm/io.h  |  4 ++--
- lib/riscv/asm/mmu.h |  3 +++
- lib/riscv/mmu.c     | 45 +++++++++++++++++++++++++++++----------------
- lib/riscv/setup.c   | 19 +++++++++++++------
- lib/riscv/smp.c     |  7 ++++++-
- 6 files changed, 54 insertions(+), 25 deletions(-)
-
+diff --git a/lib/riscv/setup.c b/lib/riscv/setup.c
+index e0b5f6f7daf5..2c7792a5b0bd 100644
+--- a/lib/riscv/setup.c
++++ b/lib/riscv/setup.c
+@@ -193,7 +193,7 @@ void setup(const void *fdt, phys_addr_t freemem_start)
+ 	const char *bootargs;
+ 	int ret;
+ 
+-	assert(sizeof(long) == 8 || freemem_start < VA_BASE);
++	assert(freemem_start < VA_BASE);
+ 	freemem = __va(freemem_start);
+ 
+ 	freemem_push_fdt(&freemem, fdt);
 -- 
 2.45.2
 
