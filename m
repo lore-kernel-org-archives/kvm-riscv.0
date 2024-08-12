@@ -1,92 +1,77 @@
 From: Andrew Jones <andrew.jones@linux.dev>
-Date: Mon, 12 Aug 2024 16:13:57 +0200
-Subject: [kvm-unit-tests PATCH 2/4] riscv: sbi: Use strtoul to avoid overflow
+Date: Mon, 12 Aug 2024 16:13:58 +0200
+Subject: [kvm-unit-tests PATCH 3/4] riscv: sbi: Prefix several environment variables with SBI
 In-Reply-To: <20240812141354.119889-6-andrew.jones@linux.dev>
 References: <20240812141354.119889-6-andrew.jones@linux.dev>
-Message-ID: <20240812141354.119889-8-andrew.jones@linux.dev>
+Message-ID: <20240812141354.119889-9-andrew.jones@linux.dev>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-We want to compare the expected values provided by environment
-variables with signed long results, but we should parse those
-values as unsigned as they may actually represent unsigned
-numbers with the MSB set, and, if that's the case, then strtol
-will assert when detecting the signed value overflow.
+Unit tests will likely share the environ so prefix variables that
+are specific to specific tests to avoid polluting the name space.
+We don't prefix generic stuff since they could be used by any test.
 
 Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
 ---
- riscv/sbi.c | 15 ++++++++-------
- 1 file changed, 8 insertions(+), 7 deletions(-)
+ riscv/sbi.c | 18 +++++++++---------
+ 1 file changed, 9 insertions(+), 9 deletions(-)
 
 diff --git a/riscv/sbi.c b/riscv/sbi.c
-index 2393929b965d..7b63a97deda6 100644
+index 7b63a97deda6..3f7ca6a78cfc 100644
 --- a/riscv/sbi.c
 +++ b/riscv/sbi.c
-@@ -85,14 +85,14 @@ static void check_base(void)
+@@ -84,30 +84,30 @@ static void check_base(void)
+ 	}
  
  	report_prefix_push("spec_version");
- 	if (env_or_skip("SPEC_VERSION")) {
--		expected = strtol(getenv("SPEC_VERSION"), NULL, 0);
-+		expected = (long)strtoul(getenv("SPEC_VERSION"), NULL, 0);
+-	if (env_or_skip("SPEC_VERSION")) {
+-		expected = (long)strtoul(getenv("SPEC_VERSION"), NULL, 0);
++	if (env_or_skip("SBI_SPEC_VERSION")) {
++		expected = (long)strtoul(getenv("SBI_SPEC_VERSION"), NULL, 0);
  		gen_report(&ret, 0, expected);
  	}
  	report_prefix_pop();
  
  	report_prefix_push("impl_id");
- 	if (env_or_skip("IMPL_ID")) {
--		expected = strtol(getenv("IMPL_ID"), NULL, 0);
-+		expected = (long)strtoul(getenv("IMPL_ID"), NULL, 0);
+-	if (env_or_skip("IMPL_ID")) {
+-		expected = (long)strtoul(getenv("IMPL_ID"), NULL, 0);
++	if (env_or_skip("SBI_IMPL_ID")) {
++		expected = (long)strtoul(getenv("SBI_IMPL_ID"), NULL, 0);
  		ret = __base_sbi_ecall(SBI_EXT_BASE_GET_IMP_ID, 0);
  		gen_report(&ret, 0, expected);
  	}
-@@ -100,14 +100,14 @@ static void check_base(void)
+ 	report_prefix_pop();
  
  	report_prefix_push("impl_version");
- 	if (env_or_skip("IMPL_VERSION")) {
--		expected = strtol(getenv("IMPL_VERSION"), NULL, 0);
-+		expected = (long)strtoul(getenv("IMPL_VERSION"), NULL, 0);
+-	if (env_or_skip("IMPL_VERSION")) {
+-		expected = (long)strtoul(getenv("IMPL_VERSION"), NULL, 0);
++	if (env_or_skip("SBI_IMPL_VERSION")) {
++		expected = (long)strtoul(getenv("SBI_IMPL_VERSION"), NULL, 0);
  		ret = __base_sbi_ecall(SBI_EXT_BASE_GET_IMP_VERSION, 0);
  		gen_report(&ret, 0, expected);
  	}
  	report_prefix_pop();
  
  	report_prefix_push("probe_ext");
--	expected = getenv("PROBE_EXT") ? strtol(getenv("PROBE_EXT"), NULL, 0) : 1;
-+	expected = getenv("PROBE_EXT") ? (long)strtoul(getenv("PROBE_EXT"), NULL, 0) : 1;
+-	expected = getenv("PROBE_EXT") ? (long)strtoul(getenv("PROBE_EXT"), NULL, 0) : 1;
++	expected = getenv("SBI_PROBE_EXT") ? (long)strtoul(getenv("SBI_PROBE_EXT"), NULL, 0) : 1;
  	ret = __base_sbi_ecall(SBI_EXT_BASE_PROBE_EXT, SBI_EXT_BASE);
  	gen_report(&ret, 0, expected);
  	report_prefix_push("unavailable");
-@@ -118,7 +118,8 @@ static void check_base(void)
+@@ -183,8 +183,8 @@ static void timer_check_set_timer(bool mask_timer_irq)
+ 	struct sbiret ret;
+ 	unsigned long begin, end, duration;
+ 	const char *mask_test_str = mask_timer_irq ? " for mask irq test" : "";
+-	unsigned long d = getenv("TIMER_DELAY") ? strtol(getenv("TIMER_DELAY"), NULL, 0) : 200000;
+-	unsigned long margin = getenv("TIMER_MARGIN") ? strtol(getenv("TIMER_MARGIN"), NULL, 0) : 200000;
++	unsigned long d = getenv("SBI_TIMER_DELAY") ? strtol(getenv("SBI_TIMER_DELAY"), NULL, 0) : 200000;
++	unsigned long margin = getenv("SBI_TIMER_MARGIN") ? strtol(getenv("SBI_TIMER_MARGIN"), NULL, 0) : 200000;
  
- 	report_prefix_push("mvendorid");
- 	if (env_or_skip("MVENDORID")) {
--		expected = strtol(getenv("MVENDORID"), NULL, 0);
-+		expected = (long)strtoul(getenv("MVENDORID"), NULL, 0);
-+		assert(__riscv_xlen == 32 || !(expected >> 32));
- 		ret = __base_sbi_ecall(SBI_EXT_BASE_GET_MVENDORID, 0);
- 		gen_report(&ret, 0, expected);
- 	}
-@@ -126,7 +127,7 @@ static void check_base(void)
- 
- 	report_prefix_push("marchid");
- 	if (env_or_skip("MARCHID")) {
--		expected = strtol(getenv("MARCHID"), NULL, 0);
-+		expected = (long)strtoul(getenv("MARCHID"), NULL, 0);
- 		ret = __base_sbi_ecall(SBI_EXT_BASE_GET_MARCHID, 0);
- 		gen_report(&ret, 0, expected);
- 	}
-@@ -134,7 +135,7 @@ static void check_base(void)
- 
- 	report_prefix_push("mimpid");
- 	if (env_or_skip("MIMPID")) {
--		expected = strtol(getenv("MIMPID"), NULL, 0);
-+		expected = (long)strtoul(getenv("MIMPID"), NULL, 0);
- 		ret = __base_sbi_ecall(SBI_EXT_BASE_GET_MIMPID, 0);
- 		gen_report(&ret, 0, expected);
- 	}
+ 	d = usec_to_cycles(d);
+ 	margin = usec_to_cycles(margin);
 -- 
 2.45.2
 
