@@ -1,115 +1,92 @@
-From: zhouquan@iscas.ac.cn <zhouquan@iscas.ac.cn>
-Date: Tue, 13 Aug 2024 21:24:10 +0800
-Subject: [PATCH v2 2/2] riscv: KVM: add basic support for host vs guest profiling
-In-Reply-To: <cover.1723518282.git.zhouquan@iscas.ac.cn>
-References: <cover.1723518282.git.zhouquan@iscas.ac.cn>
-Message-ID: <7eb3e1a8fc9f9aa0340a6a1fb88a127b767480ea.1723518282.git.zhouquan@iscas.ac.cn>
+From: Anup Patel <apatel@ventanamicro.com>
+Date: Thu, 15 Aug 2024 22:39:07 +0530
+Subject: [PATCH] RISC-V: KVM: Don't zero-out PMU snapshot area before freeing data
+Message-ID: <20240815170907.2792229-1-apatel@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Quan Zhou <zhouquan@iscas.ac.cn>
+With the latest Linux-6.11-rc3, the below NULL pointer crash is observed
+when SBI PMU snapshot is enabled for the guest and the guest is forcefully
+powered-off.
 
-For the information collected on the host side, we need to
-identify which data originates from the guest and record
-these events separately, this can be achieved by having
-KVM register perf callbacks.
+  Unable to handle kernel NULL pointer dereference at virtual address 0000000000000508
+  Oops [#1]
+  Modules linked in: kvm
+  CPU: 0 UID: 0 PID: 61 Comm: term-poll Not tainted 6.11.0-rc3-00018-g44d7178dd77a #3
+  Hardware name: riscv-virtio,qemu (DT)
+  epc : __kvm_write_guest_page+0x94/0xa6 [kvm]
+   ra : __kvm_write_guest_page+0x54/0xa6 [kvm]
+  epc : ffffffff01590e98 ra : ffffffff01590e58 sp : ffff8f80001f39b0
+   gp : ffffffff81512a60 tp : ffffaf80024872c0 t0 : ffffaf800247e000
+   t1 : 00000000000007e0 t2 : 0000000000000000 s0 : ffff8f80001f39f0
+   s1 : 00007fff89ac4000 a0 : ffffffff015dd7e8 a1 : 0000000000000086
+   a2 : 0000000000000000 a3 : ffffaf8000000000 a4 : ffffaf80024882c0
+   a5 : 0000000000000000 a6 : ffffaf800328d780 a7 : 00000000000001cc
+   s2 : ffffaf800197bd00 s3 : 00000000000828c4 s4 : ffffaf800248c000
+   s5 : ffffaf800247d000 s6 : 0000000000001000 s7 : 0000000000001000
+   s8 : 0000000000000000 s9 : 00007fff861fd500 s10: 0000000000000001
+   s11: 0000000000800000 t3 : 00000000000004d3 t4 : 00000000000004d3
+   t5 : ffffffff814126e0 t6 : ffffffff81412700
+  status: 0000000200000120 badaddr: 0000000000000508 cause: 000000000000000d
+  [<ffffffff01590e98>] __kvm_write_guest_page+0x94/0xa6 [kvm]
+  [<ffffffff015943a6>] kvm_vcpu_write_guest+0x56/0x90 [kvm]
+  [<ffffffff015a175c>] kvm_pmu_clear_snapshot_area+0x42/0x7e [kvm]
+  [<ffffffff015a1972>] kvm_riscv_vcpu_pmu_deinit.part.0+0xe0/0x14e [kvm]
+  [<ffffffff015a2ad0>] kvm_riscv_vcpu_pmu_deinit+0x1a/0x24 [kvm]
+  [<ffffffff0159b344>] kvm_arch_vcpu_destroy+0x28/0x4c [kvm]
+  [<ffffffff0158e420>] kvm_destroy_vcpus+0x5a/0xda [kvm]
+  [<ffffffff0159930c>] kvm_arch_destroy_vm+0x14/0x28 [kvm]
+  [<ffffffff01593260>] kvm_destroy_vm+0x168/0x2a0 [kvm]
+  [<ffffffff015933d4>] kvm_put_kvm+0x3c/0x58 [kvm]
+  [<ffffffff01593412>] kvm_vm_release+0x22/0x2e [kvm]
 
-Signed-off-by: Quan Zhou <zhouquan@iscas.ac.cn>
+Clearly, the kvm_vcpu_write_guest() function is crashing because it is
+being called from kvm_pmu_clear_snapshot_area() upon guest tear down.
+
+To address the above issue, simplify the kvm_pmu_clear_snapshot_area() to
+not zero-out PMU snapshot area from kvm_pmu_clear_snapshot_area() because
+the guest is anyway being tore down.
+
+The kvm_pmu_clear_snapshot_area() is also called when guest changes
+PMU snapshot area of a VCPU but even in this case the previous PMU
+snaphsot area must not be zeroed-out because the guest might have
+reclaimed the pervious PMU snapshot area for some other purpose.
+
+Fixes: c2f41ddbcdd7 ("RISC-V: KVM: Implement SBI PMU Snapshot feature")
+Signed-off-by: Anup Patel <apatel@ventanamicro.com>
 ---
- arch/riscv/include/asm/kvm_host.h |  5 +++++
- arch/riscv/kvm/Kconfig            |  1 +
- arch/riscv/kvm/main.c             | 12 ++++++++++--
- arch/riscv/kvm/vcpu.c             |  7 +++++++
- 4 files changed, 23 insertions(+), 2 deletions(-)
+ arch/riscv/kvm/vcpu_pmu.c | 14 ++------------
+ 1 file changed, 2 insertions(+), 12 deletions(-)
 
-diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
-index 2e2254fd2a2a..d2350b08a3f4 100644
---- a/arch/riscv/include/asm/kvm_host.h
-+++ b/arch/riscv/include/asm/kvm_host.h
-@@ -286,6 +286,11 @@ struct kvm_vcpu_arch {
- 	} sta;
- };
+diff --git a/arch/riscv/kvm/vcpu_pmu.c b/arch/riscv/kvm/vcpu_pmu.c
+index bcf41d6e0df0..2707a51b082c 100644
+--- a/arch/riscv/kvm/vcpu_pmu.c
++++ b/arch/riscv/kvm/vcpu_pmu.c
+@@ -391,19 +391,9 @@ int kvm_riscv_vcpu_pmu_read_hpm(struct kvm_vcpu *vcpu, unsigned int csr_num,
+ static void kvm_pmu_clear_snapshot_area(struct kvm_vcpu *vcpu)
+ {
+ 	struct kvm_pmu *kvpmu = vcpu_to_pmu(vcpu);
+-	int snapshot_area_size = sizeof(struct riscv_pmu_snapshot_data);
  
-+static inline bool kvm_arch_pmi_in_guest(struct kvm_vcpu *vcpu)
-+{
-+	return IS_ENABLED(CONFIG_GUEST_PERF_EVENTS) && !!vcpu;
-+}
-+
- static inline void kvm_arch_sync_events(struct kvm *kvm) {}
- 
- #define KVM_RISCV_GSTAGE_TLB_MIN_ORDER		12
-diff --git a/arch/riscv/kvm/Kconfig b/arch/riscv/kvm/Kconfig
-index 26d1727f0550..0c3cbb0915ff 100644
---- a/arch/riscv/kvm/Kconfig
-+++ b/arch/riscv/kvm/Kconfig
-@@ -32,6 +32,7 @@ config KVM
- 	select KVM_XFER_TO_GUEST_WORK
- 	select KVM_GENERIC_MMU_NOTIFIER
- 	select SCHED_INFO
-+	select GUEST_PERF_EVENTS if PERF_EVENTS
- 	help
- 	  Support hosting virtualized guest machines.
- 
-diff --git a/arch/riscv/kvm/main.c b/arch/riscv/kvm/main.c
-index bab2ec34cd87..734b48d8f6dd 100644
---- a/arch/riscv/kvm/main.c
-+++ b/arch/riscv/kvm/main.c
-@@ -51,6 +51,12 @@ void kvm_arch_hardware_disable(void)
- 	csr_write(CSR_HIDELEG, 0);
+-	if (kvpmu->sdata) {
+-		if (kvpmu->snapshot_addr != INVALID_GPA) {
+-			memset(kvpmu->sdata, 0, snapshot_area_size);
+-			kvm_vcpu_write_guest(vcpu, kvpmu->snapshot_addr,
+-					     kvpmu->sdata, snapshot_area_size);
+-		} else {
+-			pr_warn("snapshot address invalid\n");
+-		}
+-		kfree(kvpmu->sdata);
+-		kvpmu->sdata = NULL;
+-	}
++	kfree(kvpmu->sdata);
++	kvpmu->sdata = NULL;
+ 	kvpmu->snapshot_addr = INVALID_GPA;
  }
  
-+static void kvm_riscv_teardown(void)
-+{
-+	kvm_riscv_aia_exit();
-+	kvm_unregister_perf_callbacks();
-+}
-+
- static int __init riscv_kvm_init(void)
- {
- 	int rc;
-@@ -105,9 +111,11 @@ static int __init riscv_kvm_init(void)
- 		kvm_info("AIA available with %d guest external interrupts\n",
- 			 kvm_riscv_aia_nr_hgei);
- 
-+	kvm_register_perf_callbacks(NULL);
-+
- 	rc = kvm_init(sizeof(struct kvm_vcpu), 0, THIS_MODULE);
- 	if (rc) {
--		kvm_riscv_aia_exit();
-+		kvm_riscv_teardown();
- 		return rc;
- 	}
- 
-@@ -117,7 +125,7 @@ module_init(riscv_kvm_init);
- 
- static void __exit riscv_kvm_exit(void)
- {
--	kvm_riscv_aia_exit();
-+	kvm_riscv_teardown();
- 
- 	kvm_exit();
- }
-diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-index 8d7d381737ee..e8ffb3456898 100644
---- a/arch/riscv/kvm/vcpu.c
-+++ b/arch/riscv/kvm/vcpu.c
-@@ -226,6 +226,13 @@ bool kvm_arch_vcpu_in_kernel(struct kvm_vcpu *vcpu)
- 	return (vcpu->arch.guest_context.sstatus & SR_SPP) ? true : false;
- }
- 
-+#ifdef CONFIG_GUEST_PERF_EVENTS
-+unsigned long kvm_arch_vcpu_get_ip(struct kvm_vcpu *vcpu)
-+{
-+	return vcpu->arch.guest_context.sepc;
-+}
-+#endif
-+
- vm_fault_t kvm_arch_vcpu_fault(struct kvm_vcpu *vcpu, struct vm_fault *vmf)
- {
- 	return VM_FAULT_SIGBUS;
 -- 
 2.34.1
 
