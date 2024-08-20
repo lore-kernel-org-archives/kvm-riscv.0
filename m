@@ -1,227 +1,104 @@
-From: Cade Richard <cade.richard@gmail.com>
-Date: Sun, 18 Aug 2024 19:01:29 -0700
-Subject: [kvm-unit-tests PATCH] riscv: sbi: Add IPI extension tests.
-Message-ID: <20240819020129.26095-1-cade.richard@berkeley.edu>
+From: Anup Patel <anup@brainfault.org>
+Date: Tue, 20 Aug 2024 11:09:57 +0530
+Subject: [PATCH] RISC-V: KVM: Don't zero-out PMU snapshot area before
+ freeing data
+In-Reply-To: <20240815170907.2792229-1-apatel@ventanamicro.com>
+References: <20240815170907.2792229-1-apatel@ventanamicro.com>
+Message-ID: <CAAhSdy0x8X8cuXe+zYKmUousr4cCHUZPb1gL=go28U_6LKK-dg@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add tests for the RISC-V OpenSBI inter-processor interrupt extension.
+On Thu, Aug 15, 2024 at 10:39?PM Anup Patel <apatel@ventanamicro.com> wrote:
+>
+> With the latest Linux-6.11-rc3, the below NULL pointer crash is observed
+> when SBI PMU snapshot is enabled for the guest and the guest is forcefully
+> powered-off.
+>
+>   Unable to handle kernel NULL pointer dereference at virtual address 0000000000000508
+>   Oops [#1]
+>   Modules linked in: kvm
+>   CPU: 0 UID: 0 PID: 61 Comm: term-poll Not tainted 6.11.0-rc3-00018-g44d7178dd77a #3
+>   Hardware name: riscv-virtio,qemu (DT)
+>   epc : __kvm_write_guest_page+0x94/0xa6 [kvm]
+>    ra : __kvm_write_guest_page+0x54/0xa6 [kvm]
+>   epc : ffffffff01590e98 ra : ffffffff01590e58 sp : ffff8f80001f39b0
+>    gp : ffffffff81512a60 tp : ffffaf80024872c0 t0 : ffffaf800247e000
+>    t1 : 00000000000007e0 t2 : 0000000000000000 s0 : ffff8f80001f39f0
+>    s1 : 00007fff89ac4000 a0 : ffffffff015dd7e8 a1 : 0000000000000086
+>    a2 : 0000000000000000 a3 : ffffaf8000000000 a4 : ffffaf80024882c0
+>    a5 : 0000000000000000 a6 : ffffaf800328d780 a7 : 00000000000001cc
+>    s2 : ffffaf800197bd00 s3 : 00000000000828c4 s4 : ffffaf800248c000
+>    s5 : ffffaf800247d000 s6 : 0000000000001000 s7 : 0000000000001000
+>    s8 : 0000000000000000 s9 : 00007fff861fd500 s10: 0000000000000001
+>    s11: 0000000000800000 t3 : 00000000000004d3 t4 : 00000000000004d3
+>    t5 : ffffffff814126e0 t6 : ffffffff81412700
+>   status: 0000000200000120 badaddr: 0000000000000508 cause: 000000000000000d
+>   [<ffffffff01590e98>] __kvm_write_guest_page+0x94/0xa6 [kvm]
+>   [<ffffffff015943a6>] kvm_vcpu_write_guest+0x56/0x90 [kvm]
+>   [<ffffffff015a175c>] kvm_pmu_clear_snapshot_area+0x42/0x7e [kvm]
+>   [<ffffffff015a1972>] kvm_riscv_vcpu_pmu_deinit.part.0+0xe0/0x14e [kvm]
+>   [<ffffffff015a2ad0>] kvm_riscv_vcpu_pmu_deinit+0x1a/0x24 [kvm]
+>   [<ffffffff0159b344>] kvm_arch_vcpu_destroy+0x28/0x4c [kvm]
+>   [<ffffffff0158e420>] kvm_destroy_vcpus+0x5a/0xda [kvm]
+>   [<ffffffff0159930c>] kvm_arch_destroy_vm+0x14/0x28 [kvm]
+>   [<ffffffff01593260>] kvm_destroy_vm+0x168/0x2a0 [kvm]
+>   [<ffffffff015933d4>] kvm_put_kvm+0x3c/0x58 [kvm]
+>   [<ffffffff01593412>] kvm_vm_release+0x22/0x2e [kvm]
+>
+> Clearly, the kvm_vcpu_write_guest() function is crashing because it is
+> being called from kvm_pmu_clear_snapshot_area() upon guest tear down.
+>
+> To address the above issue, simplify the kvm_pmu_clear_snapshot_area() to
+> not zero-out PMU snapshot area from kvm_pmu_clear_snapshot_area() because
+> the guest is anyway being tore down.
+>
+> The kvm_pmu_clear_snapshot_area() is also called when guest changes
+> PMU snapshot area of a VCPU but even in this case the previous PMU
+> snaphsot area must not be zeroed-out because the guest might have
+> reclaimed the pervious PMU snapshot area for some other purpose.
+>
+> Fixes: c2f41ddbcdd7 ("RISC-V: KVM: Implement SBI PMU Snapshot feature")
+> Signed-off-by: Anup Patel <apatel@ventanamicro.com>
 
-Signed-off-by: Cade Richard <cade.richard@berkeley.edu>
----
- lib/riscv/asm/sbi.h |   5 ++
- riscv/sbi.c         | 138 ++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 143 insertions(+)
+Queued this patch for Linux-6.11 fixes.
 
-diff --git a/lib/riscv/asm/sbi.h b/lib/riscv/asm/sbi.h
-index 47e91025..d0abeefc 100644
---- a/lib/riscv/asm/sbi.h
-+++ b/lib/riscv/asm/sbi.h
-@@ -20,6 +20,7 @@ enum sbi_ext_id {
- 	SBI_EXT_HSM = 0x48534d,
- 	SBI_EXT_SRST = 0x53525354,
- 	SBI_EXT_DBCN = 0x4442434E,
-+	SBI_EXT_IPI = 0x735049,
- };
- 
- enum sbi_ext_base_fid {
-@@ -49,6 +50,10 @@ enum sbi_ext_dbcn_fid {
- 	SBI_EXT_DBCN_CONSOLE_WRITE_BYTE,
- };
- 
-+enum sbi_ext_ipi_fid {
-+	SBI_EXT_IPI_SEND = 0,
-+};
-+
- struct sbiret {
- 	long error;
- 	long value;
-diff --git a/riscv/sbi.c b/riscv/sbi.c
-index 36ddfd48..c339b330 100644
---- a/riscv/sbi.c
-+++ b/riscv/sbi.c
-@@ -6,11 +6,14 @@
-  */
- #include <libcflat.h>
- #include <alloc_page.h>
-+#include <cpumask.h>
- #include <stdlib.h>
- #include <string.h>
- #include <limits.h>
- #include <vmalloc.h>
- #include <memregions.h>
-+#include <on-cpus.h>
-+#include <rand.h>
- #include <asm/barrier.h>
- #include <asm/csr.h>
- #include <asm/delay.h>
-@@ -23,6 +26,9 @@
- #include <asm/timer.h>
- 
- #define	HIGH_ADDR_BOUNDARY	((phys_addr_t)1 << 32)
-+static prng_state ps;
-+static bool ipi_received[__riscv_xlen];
-+static bool ipi_timeout[__riscv_xlen];
- 
- static void help(void)
- {
-@@ -45,6 +51,11 @@ static struct sbiret __dbcn_sbi_ecall(int fid, unsigned long arg0, unsigned long
- 	return sbi_ecall(SBI_EXT_DBCN, fid, arg0, arg1, arg2, 0, 0, 0);
- }
- 
-+static struct sbiret __ipi_sbi_ecall(unsigned long arg0, unsigned long arg1)
-+{
-+	return sbi_ecall(SBI_EXT_IPI, SBI_EXT_IPI_SEND, arg0, arg1, 0, 0, 0, 0);
-+}
-+
- static void split_phys_addr(phys_addr_t paddr, unsigned long *hi, unsigned long *lo)
- {
- 	*lo = (unsigned long)paddr;
-@@ -420,6 +431,132 @@ static void check_dbcn(void)
- 	report_prefix_pop();
- }
- 
-+static int rand_online_cpu(prng_state* ps) {
-+	int me = smp_processor_id();
-+	int num_iters = prng32(ps);
-+	int rand_cpu = cpumask_next(me, &cpu_online_mask);
-+
-+	for (int i = 0; i < num_iters; i++) {
-+		rand_cpu = cpumask_next(me, &cpu_online_mask);
-+	}
-+
-+	return rand_cpu;
-+}
-+
-+static void ipi_timeout_handler(struct pt_regs *regs) {
-+	int me = smp_processor_id();
-+	ipi_timeout[me] = true;
-+	report_fail("ipi timed out on hart %d", me);
-+}
-+
-+static void ipi_irq_handler(struct pt_regs *regs) {
-+	int me = smp_processor_id();
-+	ipi_received[me] = true;
-+	report_pass("ipi received on hart %d", me);
-+	
-+}
-+
-+static void ipi_hart_init(void *irq_func) {
-+	int me = smp_processor_id();
-+	printf("Installing IPI IRQ handler on hart %d", me);
-+	install_irq_handler(IRQ_S_IPI, (void *)ipi_irq_handler);
-+	install_irq_handler(IRQ_S_TIMER, (void *)ipi_timeout_handler);
-+	timer_irq_enable();
-+	while (!ipi_received[me] && !ipi_timeout[me]) {
-+		cpu_relax();
-+	}
-+}
-+
-+static int offline_cpu(void) {
-+	for (int i = 0; i < __riscv_xlen; i++) {
-+		if (!cpumask_test_cpu(i, &cpu_online_mask)) {
-+			return i;
-+		}
-+	}
-+	return -1;
-+}
-+
-+static void print_bits(size_t const size, void const * const ptr)
-+{
-+    unsigned char *b = (unsigned char*) ptr;
-+    unsigned char byte;
-+    int i, j;
-+    
-+    for (i = size-1; i >= 0; i--) {
-+        for (j = 7; j >= 0; j--) {
-+            byte = (b[i] >> j) & 1;
-+            printf("%u", byte);
-+        }
-+    }
-+    puts("");
-+}
-+
-+static void set_flags_false(bool arr[])
-+{
-+	for (int i = 0; i < __riscv_xlen; i++) {
-+		arr[i] = 0;
-+	}
-+}
-+
-+static void check_ipi(void)
-+{
-+	int cpu = smp_processor_id();
-+	unsigned long me = (unsigned long)cpu;
-+	struct sbiret ret;
-+	ps = prng_init(0xDEADBEEF);
-+
-+	report_prefix_push("ipi");
-+
-+	if (!sbi_probe(SBI_EXT_IPI)) {
-+		report_skip("ipi extension not available");
-+		report_prefix_pop();
-+		return;
-+	}
-+
-+	if (cpu_has_extension(smp_processor_id(), ISA_SSTC)) {
-+		csr_write(CSR_STIMECMP, ULONG_MAX);
-+		if (__riscv_xlen == 32)
-+			csr_write(CSR_STIMECMPH, ULONG_MAX);
-+	}
-+
-+	report_prefix_push("send to one random hart");
-+	set_flags_false(ipi_received);
-+	set_flags_false(ipi_timeout);
-+	int rand_hartid = rand_online_cpu(&ps);
-+	on_cpu(rand_hartid, (void *)ipi_hart_init, NULL);
-+	unsigned long ipi_rand_mask = 1 << rand_hartid;
-+
-+	ret = __ipi_sbi_ecall(ipi_rand_mask, me);
-+	report(ret.error == SBI_SUCCESS, "send to one randomly chosen hart");
-+	report_prefix_pop();
-+
-+	report_prefix_push("broadcast");
-+	set_flags_false(ipi_received);
-+	set_flags_false(ipi_timeout);
-+	on_cpus((void *)ipi_hart_init, NULL);
-+	unsigned long ipi_broadcast_mask = (unsigned long)(cpumask_bits(&cpu_online_mask)[me]);
-+	puts("online cpu mask: ");
-+	print_bits(CPUMASK_NR_LONGS*sizeof(long), &ipi_broadcast_mask);
-+	puts("\n");
-+
-+	ret = __ipi_sbi_ecall(ipi_broadcast_mask, me);
-+	report(ret.error == SBI_SUCCESS, "send to all available harts");
-+	report_prefix_pop();
-+
-+	report_prefix_push("invalid parameters");
-+	unsigned long invalid_hart_mask_base = offline_cpu();
-+	ret = __ipi_sbi_ecall(ipi_rand_mask, invalid_hart_mask_base);
-+	report(ret.error == SBI_ERR_INVALID_PARAM, "hart_mask_base");
-+
-+	unsigned long invalid_cpu_mask = 1 << invalid_hart_mask_base;
-+	ret = __ipi_sbi_ecall(invalid_cpu_mask, me);
-+	report(ret.error == SBI_ERR_INVALID_PARAM, "hart_mask");
-+	report_prefix_pop();
-+
-+	report_prefix_pop();
-+	report_prefix_pop();
-+}
-+
- int main(int argc, char **argv)
- {
- 	if (argc > 1 && !strcmp(argv[1], "-h")) {
-@@ -431,6 +568,7 @@ int main(int argc, char **argv)
- 	check_base();
- 	check_time();
- 	check_dbcn();
-+	check_ipi();
- 
- 	return report_summary();
- }
--- 
-2.43.0
+Regards,
+Anup
 
+> ---
+>  arch/riscv/kvm/vcpu_pmu.c | 14 ++------------
+>  1 file changed, 2 insertions(+), 12 deletions(-)
+>
+> diff --git a/arch/riscv/kvm/vcpu_pmu.c b/arch/riscv/kvm/vcpu_pmu.c
+> index bcf41d6e0df0..2707a51b082c 100644
+> --- a/arch/riscv/kvm/vcpu_pmu.c
+> +++ b/arch/riscv/kvm/vcpu_pmu.c
+> @@ -391,19 +391,9 @@ int kvm_riscv_vcpu_pmu_read_hpm(struct kvm_vcpu *vcpu, unsigned int csr_num,
+>  static void kvm_pmu_clear_snapshot_area(struct kvm_vcpu *vcpu)
+>  {
+>         struct kvm_pmu *kvpmu = vcpu_to_pmu(vcpu);
+> -       int snapshot_area_size = sizeof(struct riscv_pmu_snapshot_data);
+>
+> -       if (kvpmu->sdata) {
+> -               if (kvpmu->snapshot_addr != INVALID_GPA) {
+> -                       memset(kvpmu->sdata, 0, snapshot_area_size);
+> -                       kvm_vcpu_write_guest(vcpu, kvpmu->snapshot_addr,
+> -                                            kvpmu->sdata, snapshot_area_size);
+> -               } else {
+> -                       pr_warn("snapshot address invalid\n");
+> -               }
+> -               kfree(kvpmu->sdata);
+> -               kvpmu->sdata = NULL;
+> -       }
+> +       kfree(kvpmu->sdata);
+> +       kvpmu->sdata = NULL;
+>         kvpmu->snapshot_addr = INVALID_GPA;
+>  }
+>
+> --
+> 2.34.1
+>
 
