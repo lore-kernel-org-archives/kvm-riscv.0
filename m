@@ -1,41 +1,118 @@
-From: Anup Patel <apatel@ventanamicro.com>
-Date: Wed, 21 Aug 2024 19:56:10 +0530
-Subject: [kvmtool PATCH v3 4/4] riscv: Correct number of hart bits
-In-Reply-To: <20240821142610.3297483-1-apatel@ventanamicro.com>
-References: <20240821142610.3297483-1-apatel@ventanamicro.com>
-Message-ID: <20240821142610.3297483-5-apatel@ventanamicro.com>
+From: Anup Patel <anup@brainfault.org>
+Date: Wed, 21 Aug 2024 20:13:20 +0530
+Subject: [PATCH v8 0/5] Add Svade and Svadu Extensions Support
+In-Reply-To: <20240726084931.28924-1-yongxuan.wang@sifive.com>
+References: <20240726084931.28924-1-yongxuan.wang@sifive.com>
+Message-ID: <CAAhSdy05BXUZu6BNUoDWoEVd_YiM0Dpqg=t5WYUX7+cacnO2Hg@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Andrew Jones <ajones@ventanamicro.com>
+Hi Palmer,
 
-The number of hart bits should be obtained from the highest hart ID,
-not the number of harts. For example, if a guest has 2 harts, then
-the number of bits should be fls(1) == 1.
+On Fri, Jul 26, 2024 at 2:19?PM Yong-Xuan Wang <yongxuan.wang@sifive.com> wrote:
+>
+> Svade and Svadu extensions represent two schemes for managing the PTE A/D
+> bit. When the PTE A/D bits need to be set, Svade extension intdicates that
+> a related page fault will be raised. In contrast, the Svadu extension
+> supports hardware updating of PTE A/D bits. This series enables Svade and
+> Svadu extensions for both host and guest OS.
+>
+> Regrading the mailing thread[1], we have 4 possible combinations of
+> these extensions in the device tree, the default hardware behavior for
+> these possibilities are:
+> 1) Neither Svade nor Svadu present in DT => It is technically
+>    unknown whether the platform uses Svade or Svadu. Supervisor
+>    software should be prepared to handle either hardware updating
+>    of the PTE A/D bits or page faults when they need updated.
+> 2) Only Svade present in DT => Supervisor must assume Svade to be
+>    always enabled.
+> 3) Only Svadu present in DT => Supervisor must assume Svadu to be
+>    always enabled.
+> 4) Both Svade and Svadu present in DT => Supervisor must assume
+>    Svadu turned-off at boot time. To use Svadu, supervisor must
+>    explicitly enable it using the SBI FWFT extension.
+>
+> The Svade extension is mandatory and the Svadu extension is optional in
+> RVA23 profile. Platforms want to take the advantage of Svadu can choose
+> 3. Those are aware of the profile can choose 4, and Linux won't get the
+> benefit of svadu until the SBI FWFT extension is available.
+>
+> [1] https://lore.kernel.org/linux-kernel/20240527-e9845c06619bca5cd285098c at orel/T/#m29644eb88e241ec282df4ccd5199514e913b06ee
+>
+> ---
+> v8:
+> - fix typo in PATCH1 (Samuel)
+> - use the new extension validating API in PATCH1 (Cl?ment)
+> - update the dtbinding in PATCH2 (Samuel, Conor)
+> - add PATCH4 to fix compile error in get-reg-list test.
+>
+> v7:
+> - fix alignment in PATCH1
+> - update the dtbinding in PATCH2 (Conor, Jessica)
+>
+> v6:
+> - reflect the platform's behavior by riscv_isa_extension_available() and
+>   update the the arch_has_hw_pte_young() in PATCH1 (Conor, Andrew)
+> - update the dtbinding in PATCH2 (Alexandre, Andrew, Anup, Conor)
+> - update the henvcfg condition in PATCH3 (Andrew)
+> - check if Svade is allowed to disabled based on arch_has_hw_pte_young()
+>   in PATCH3
+>
+> v5:
+> - remove all Acked-by and Reviewed-by (Conor, Andrew)
+> - add Svade support
+> - update the arch_has_hw_pte_young() in PATCH1
+> - update the dtbinding in PATCH2 (Alexandre, Andrew)
+> - check the availibility of Svadu for Guest/VM based on
+>   arch_has_hw_pte_young() in PATCH3
+>
+> v4:
+> - fix 32bit kernel build error in PATCH1 (Conor)
+> - update the status of Svadu extension to ratified in PATCH2
+> - add the PATCH4 to suporrt SBI_FWFT_PTE_AD_HW_UPDATING for guest OS
+> - update the PATCH1 and PATCH3 to integrate with FWFT extension
+> - rebase PATCH5 on the lastest get-reg-list test (Andrew)
+>
+> v3:
+> - fix the control bit name to ADUE in PATCH1 and PATCH3
+> - update get-reg-list in PATCH4
+>
+> v2:
+> - add Co-developed-by: in PATCH1
+> - use riscv_has_extension_unlikely() to runtime patch the branch in PATCH1
+> - update dt-binding
+>
+> Yong-Xuan Wang (5):
+>   RISC-V: Add Svade and Svadu Extensions Support
+>   dt-bindings: riscv: Add Svade and Svadu Entries
+>   RISC-V: KVM: Add Svade and Svadu Extensions Support for Guest/VM
+>   KVM: riscv: selftests: Fix compile error
+>   KVM: riscv: selftests: Add Svade and Svadu Extension to get-reg-list
+>     test
+>
+>  .../devicetree/bindings/riscv/extensions.yaml | 28 +++++++++++++++++++
+>  arch/riscv/Kconfig                            |  1 +
+>  arch/riscv/include/asm/csr.h                  |  1 +
+>  arch/riscv/include/asm/hwcap.h                |  2 ++
+>  arch/riscv/include/asm/pgtable.h              | 13 ++++++++-
+>  arch/riscv/include/uapi/asm/kvm.h             |  2 ++
+>  arch/riscv/kernel/cpufeature.c                | 12 ++++++++
+>  arch/riscv/kvm/vcpu.c                         |  4 +++
+>  arch/riscv/kvm/vcpu_onereg.c                  | 15 ++++++++++
+>  .../selftests/kvm/riscv/get-reg-list.c        | 16 ++++++++---
+>  10 files changed, 89 insertions(+), 5 deletions(-)
+>
+> --
+> 2.17.1
+>
+>
 
-Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
-Signed-off-by: Anup Patel <apatel@ventanamicro.com>
----
- riscv/aia.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Let me know if this series can be taken through the KVM RISC-V tree.
+I can provide you with a shared tag as well.
 
-diff --git a/riscv/aia.c b/riscv/aia.c
-index fe9399a..21d9704 100644
---- a/riscv/aia.c
-+++ b/riscv/aia.c
-@@ -164,7 +164,7 @@ static int aia__init(struct kvm *kvm)
- 	ret = ioctl(aia_fd, KVM_SET_DEVICE_ATTR, &aia_nr_sources_attr);
- 	if (ret)
- 		return ret;
--	aia_hart_bits = fls_long(kvm->nrcpus);
-+	aia_hart_bits = fls_long(kvm->nrcpus - 1);
- 	ret = ioctl(aia_fd, KVM_SET_DEVICE_ATTR, &aia_hart_bits_attr);
- 	if (ret)
- 		return ret;
--- 
-2.34.1
-
+Regards,
+Anup
 
