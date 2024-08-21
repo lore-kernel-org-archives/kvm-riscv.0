@@ -1,80 +1,121 @@
-From: Andrew Jones <andrew.jones@linux.dev>
-Date: Tue, 20 Aug 2024 19:01:51 +0200
-Subject: [kvm-unit-tests PATCH] riscv: Make NR_CPUS configurable
-Message-ID: <20240820170150.377580-2-andrew.jones@linux.dev>
+From: Andrew Jones <ajones@ventanamicro.com>
+Date: Wed, 21 Aug 2024 14:48:10 +0200
+Subject: [PATCH v2 1/2] riscv: perf: add guest vs host distinction
+In-Reply-To: <3729354b59658535c4370d3c1c7e2f162433807b.1723518282.git.zhouquan@iscas.ac.cn>
+References: <cover.1723518282.git.zhouquan@iscas.ac.cn>
+ <3729354b59658535c4370d3c1c7e2f162433807b.1723518282.git.zhouquan@iscas.ac.cn>
+Message-ID: <20240821-f5e1d6afb0d2230c1256a75b@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Unit tests would like to go nuts with the number of harts in order
-to help shake out issues with hart number assumptions. Rather than
-set a huge number that will only be used when a platform supports
-a huge number or when QEMU is told to exceed the recommended
-number of vcpus, make the number configurable. However, we do bump
-the default from 16 to 2*xlen since we would like to always force
-kvm-unit-tests to use cpumasks with more than one word in order to
-ensure that code stays maintained.
+On Tue, Aug 13, 2024 at 09:23:54PM GMT, zhouquan at iscas.ac.cn wrote:
+> From: Quan Zhou <zhouquan@iscas.ac.cn>
+> 
+> Introduce basic guest support in perf, enabling it to distinguish
+> between PMU interrupts in the host or guest, and collect
+> fundamental information.
+> 
+> Signed-off-by: Quan Zhou <zhouquan@iscas.ac.cn>
+> ---
+>  arch/riscv/include/asm/perf_event.h |  7 ++++++
+>  arch/riscv/kernel/perf_callchain.c  | 38 +++++++++++++++++++++++++++++
+>  2 files changed, 45 insertions(+)
+> 
+> diff --git a/arch/riscv/include/asm/perf_event.h b/arch/riscv/include/asm/perf_event.h
+> index 665bbc9b2f84..c2b73c3aefe4 100644
+> --- a/arch/riscv/include/asm/perf_event.h
+> +++ b/arch/riscv/include/asm/perf_event.h
+> @@ -8,13 +8,20 @@
+>  #ifndef _ASM_RISCV_PERF_EVENT_H
+>  #define _ASM_RISCV_PERF_EVENT_H
+>  
+> +#ifdef CONFIG_PERF_EVENTS
+>  #include <linux/perf_event.h>
+>  #define perf_arch_bpf_user_pt_regs(regs) (struct user_regs_struct *)regs
+>  
+> +extern unsigned long perf_instruction_pointer(struct pt_regs *regs);
+> +extern unsigned short perf_misc_flags(struct pt_regs *regs);
+> +#define perf_misc_flags(regs) perf_misc_flags(regs)
+> +
+>  #define perf_arch_fetch_caller_regs(regs, __ip) { \
+>  	(regs)->epc = (__ip); \
+>  	(regs)->s0 = (unsigned long) __builtin_frame_address(0); \
+>  	(regs)->sp = current_stack_pointer; \
+>  	(regs)->status = SR_PP; \
+>  }
+> +#endif
+> +
+>  #endif /* _ASM_RISCV_PERF_EVENT_H */
+> diff --git a/arch/riscv/kernel/perf_callchain.c b/arch/riscv/kernel/perf_callchain.c
+> index 3348a61de7d9..7af90a3bb373 100644
+> --- a/arch/riscv/kernel/perf_callchain.c
+> +++ b/arch/riscv/kernel/perf_callchain.c
+> @@ -58,6 +58,11 @@ void perf_callchain_user(struct perf_callchain_entry_ctx *entry,
+>  {
+>  	unsigned long fp = 0;
+>  
+> +	if (perf_guest_state()) {
+> +		/* TODO: We don't support guest os callchain now */
+> +		return;
+> +	}
+> +
+>  	fp = regs->s0;
+>  	perf_callchain_store(entry, regs->epc);
+>  
+> @@ -74,5 +79,38 @@ static bool fill_callchain(void *entry, unsigned long pc)
+>  void perf_callchain_kernel(struct perf_callchain_entry_ctx *entry,
+>  			   struct pt_regs *regs)
+>  {
+> +	if (perf_guest_state()) {
+> +		/* TODO: We don't support guest os callchain now */
+> +		return;
+> +	}
+> +
+>  	walk_stackframe(NULL, regs, fill_callchain, entry);
+>  }
+> +
+> +unsigned long perf_instruction_pointer(struct pt_regs *regs)
+> +{
+> +	if (perf_guest_state())
+> +		return perf_guest_get_ip();
+> +
+> +	return instruction_pointer(regs);
+> +}
+> +
+> +unsigned short perf_misc_flags(struct pt_regs *regs)
 
-Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
----
- configure             | 8 ++++++++
- lib/riscv/asm/setup.h | 3 ++-
- 2 files changed, 10 insertions(+), 1 deletion(-)
+I see that the consumer of perf_misc_flags is only a u16, but all other
+architectures define this function as returning an unsigned long, and
+your last version did as well. My comment in the last version was that
+we should use an unsigned long for the 'misc' variable to match the
+return type of the function. I still think we should do that instead
+since the function should be consistent with the other architectures.
 
-diff --git a/configure b/configure
-index 27ae9cc89657..6a8d6239a3cb 100755
---- a/configure
-+++ b/configure
-@@ -77,6 +77,8 @@ usage() {
- 	                           Specify the page size (translation granule). PAGE_SIZE can be
- 	                           4k [default], 16k, 64k for arm64.
- 	                           4k [default], 64k for ppc64.
-+	    --max-cpus=MAX_CPUS
-+	                           Specify the maximum number of CPUs supported. (riscv64 only)
- 	    --earlycon=EARLYCON
- 	                           Specify the UART name, type and address (optional, arm and
- 	                           arm64 only). The specified address will overwrite the UART
-@@ -168,6 +170,9 @@ while [[ "$1" = -* ]]; do
- 	--page-size)
- 	    page_size="$arg"
- 	    ;;
-+	--max-cpus)
-+	    max_cpus="$arg"
-+	    ;;
- 	--earlycon)
- 	    earlycon="$arg"
- 	    ;;
-@@ -496,8 +501,11 @@ cat <<EOF >> lib/config.h
- 
- EOF
- elif [ "$arch" = "riscv32" ] || [ "$arch" = "riscv64" ]; then
-+	[ -z $max_cpus ] && max_cpus='(__riscv_xlen * 2)'
-+
- cat <<EOF >> lib/config.h
- 
-+#define CONFIG_NR_CPUS $max_cpus
- #define CONFIG_UART_EARLY_BASE 0x10000000
- 
- EOF
-diff --git a/lib/riscv/asm/setup.h b/lib/riscv/asm/setup.h
-index a13159bfe395..43b63c56d96f 100644
---- a/lib/riscv/asm/setup.h
-+++ b/lib/riscv/asm/setup.h
-@@ -2,9 +2,10 @@
- #ifndef _ASMRISCV_SETUP_H_
- #define _ASMRISCV_SETUP_H_
- #include <libcflat.h>
-+#include <config.h>
- #include <asm/processor.h>
- 
--#define NR_CPUS 16
-+#define NR_CPUS CONFIG_NR_CPUS
- extern struct thread_info cpus[NR_CPUS];
- extern int nr_cpus;
- extern uint64_t timebase_frequency;
--- 
-2.45.2
+> +{
+> +	unsigned int guest_state = perf_guest_state();
+> +	unsigned short misc = 0;
+> +
+> +	if (guest_state) {
+> +		if (guest_state & PERF_GUEST_USER)
+> +			misc |= PERF_RECORD_MISC_GUEST_USER;
+> +		else
+> +			misc |= PERF_RECORD_MISC_GUEST_KERNEL;
+> +	} else {
+> +		if (user_mode(regs))
+> +			misc |= PERF_RECORD_MISC_USER;
+> +		else
+> +			misc |= PERF_RECORD_MISC_KERNEL;
+> +	}
+> +
+> +	return misc;
+> +}
+> -- 
+> 2.34.1
+>
 
+Thanks,
+drew
 
