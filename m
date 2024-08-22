@@ -1,11 +1,12 @@
 From: Quan Zhou <zhouquan@iscas.ac.cn>
-Date: Thu, 22 Aug 2024 14:38:44 +0800
-Subject: [PATCH v2 1/2] riscv: perf: add guest vs host distinction
-In-Reply-To: <20240821-f5e1d6afb0d2230c1256a75b@orel>
+Date: Thu, 22 Aug 2024 14:42:53 +0800
+Subject: [PATCH v2 2/2] riscv: KVM: add basic support for host vs guest
+ profiling
+In-Reply-To: <20240821-5284bf727abbb08a379e1d06@orel>
 References: <cover.1723518282.git.zhouquan@iscas.ac.cn>
- <3729354b59658535c4370d3c1c7e2f162433807b.1723518282.git.zhouquan@iscas.ac.cn>
- <20240821-f5e1d6afb0d2230c1256a75b@orel>
-Message-ID: <430f3d38-b12e-4ac8-8040-33bab40380ab@iscas.ac.cn>
+ <7eb3e1a8fc9f9aa0340a6a1fb88a127b767480ea.1723518282.git.zhouquan@iscas.ac.cn>
+ <20240821-5284bf727abbb08a379e1d06@orel>
+Message-ID: <3e5e4ba4-acb6-4cea-96f8-b16886bb6285@iscas.ac.cn>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -13,124 +14,119 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 
-On 2024/8/21 20:48, Andrew Jones wrote:
-> On Tue, Aug 13, 2024 at 09:23:54PM GMT, zhouquan at iscas.ac.cn wrote:
+On 2024/8/21 20:51, Andrew Jones wrote:
+> On Tue, Aug 13, 2024 at 09:24:10PM GMT, zhouquan at iscas.ac.cn wrote:
 >> From: Quan Zhou <zhouquan@iscas.ac.cn>
 >>
->> Introduce basic guest support in perf, enabling it to distinguish
->> between PMU interrupts in the host or guest, and collect
->> fundamental information.
+>> For the information collected on the host side, we need to
+>> identify which data originates from the guest and record
+>> these events separately, this can be achieved by having
+>> KVM register perf callbacks.
 >>
 >> Signed-off-by: Quan Zhou <zhouquan@iscas.ac.cn>
 >> ---
->>   arch/riscv/include/asm/perf_event.h |  7 ++++++
->>   arch/riscv/kernel/perf_callchain.c  | 38 +++++++++++++++++++++++++++++
->>   2 files changed, 45 insertions(+)
+>>   arch/riscv/include/asm/kvm_host.h |  5 +++++
+>>   arch/riscv/kvm/Kconfig            |  1 +
+>>   arch/riscv/kvm/main.c             | 12 ++++++++++--
+>>   arch/riscv/kvm/vcpu.c             |  7 +++++++
+>>   4 files changed, 23 insertions(+), 2 deletions(-)
 >>
->> diff --git a/arch/riscv/include/asm/perf_event.h b/arch/riscv/include/asm/perf_event.h
->> index 665bbc9b2f84..c2b73c3aefe4 100644
->> --- a/arch/riscv/include/asm/perf_event.h
->> +++ b/arch/riscv/include/asm/perf_event.h
->> @@ -8,13 +8,20 @@
->>   #ifndef _ASM_RISCV_PERF_EVENT_H
->>   #define _ASM_RISCV_PERF_EVENT_H
->>   
->> +#ifdef CONFIG_PERF_EVENTS
->>   #include <linux/perf_event.h>
->>   #define perf_arch_bpf_user_pt_regs(regs) (struct user_regs_struct *)regs
->>   
->> +extern unsigned long perf_instruction_pointer(struct pt_regs *regs);
->> +extern unsigned short perf_misc_flags(struct pt_regs *regs);
->> +#define perf_misc_flags(regs) perf_misc_flags(regs)
->> +
->>   #define perf_arch_fetch_caller_regs(regs, __ip) { \
->>   	(regs)->epc = (__ip); \
->>   	(regs)->s0 = (unsigned long) __builtin_frame_address(0); \
->>   	(regs)->sp = current_stack_pointer; \
->>   	(regs)->status = SR_PP; \
->>   }
->> +#endif
->> +
->>   #endif /* _ASM_RISCV_PERF_EVENT_H */
->> diff --git a/arch/riscv/kernel/perf_callchain.c b/arch/riscv/kernel/perf_callchain.c
->> index 3348a61de7d9..7af90a3bb373 100644
->> --- a/arch/riscv/kernel/perf_callchain.c
->> +++ b/arch/riscv/kernel/perf_callchain.c
->> @@ -58,6 +58,11 @@ void perf_callchain_user(struct perf_callchain_entry_ctx *entry,
->>   {
->>   	unsigned long fp = 0;
->>   
->> +	if (perf_guest_state()) {
->> +		/* TODO: We don't support guest os callchain now */
->> +		return;
->> +	}
->> +
->>   	fp = regs->s0;
->>   	perf_callchain_store(entry, regs->epc);
->>   
->> @@ -74,5 +79,38 @@ static bool fill_callchain(void *entry, unsigned long pc)
->>   void perf_callchain_kernel(struct perf_callchain_entry_ctx *entry,
->>   			   struct pt_regs *regs)
->>   {
->> +	if (perf_guest_state()) {
->> +		/* TODO: We don't support guest os callchain now */
->> +		return;
->> +	}
->> +
->>   	walk_stackframe(NULL, regs, fill_callchain, entry);
->>   }
->> +
->> +unsigned long perf_instruction_pointer(struct pt_regs *regs)
->> +{
->> +	if (perf_guest_state())
->> +		return perf_guest_get_ip();
->> +
->> +	return instruction_pointer(regs);
->> +}
->> +
->> +unsigned short perf_misc_flags(struct pt_regs *regs)
+>> diff --git a/arch/riscv/include/asm/kvm_host.h b/arch/riscv/include/asm/kvm_host.h
+>> index 2e2254fd2a2a..d2350b08a3f4 100644
+>> --- a/arch/riscv/include/asm/kvm_host.h
+>> +++ b/arch/riscv/include/asm/kvm_host.h
+>> @@ -286,6 +286,11 @@ struct kvm_vcpu_arch {
+>>   	} sta;
+>>   };
+>>
 > 
-> I see that the consumer of perf_misc_flags is only a u16, but all other
-> architectures define this function as returning an unsigned long, and
-> your last version did as well. My comment in the last version was that
-> we should use an unsigned long for the 'misc' variable to match the
-> return type of the function. I still think we should do that instead
-> since the function should be consistent with the other architectures.
+> Let's add the same comment here that arm64 has unless you determine
+> that 'any event that arrives while a vCPU is loaded is considered to be
+> "in guest"' is not true for riscv.
 > 
 
-I agree with your point that the type of `misc` should be consistent 
-with other architectures.
+Ok, i will add this comment to clarify the point.
 
-However, one thing confuses me. The return value of perf_misc_flags
-is assigned to the `misc` field of the perf_event_header structure,
-and the field is defined as `u16`. I checked the return type of 
-`perf_misc_flags` in other architectures, and I found that for 
-x86/arm/s390, the type is `unsigned long`, while for powerpc, it is `u32`.
-These do not match `u16`, which seems to pose a risk of type truncation 
-and feels a bit unconventional. Or is there some other reasonable 
-consideration behind this?
-
-Thanks a lot!
+Thanks,
 Quan
 
+>> +static inline bool kvm_arch_pmi_in_guest(struct kvm_vcpu *vcpu)
 >> +{
->> +	unsigned int guest_state = perf_guest_state();
->> +	unsigned short misc = 0;
->> +
->> +	if (guest_state) {
->> +		if (guest_state & PERF_GUEST_USER)
->> +			misc |= PERF_RECORD_MISC_GUEST_USER;
->> +		else
->> +			misc |= PERF_RECORD_MISC_GUEST_KERNEL;
->> +	} else {
->> +		if (user_mode(regs))
->> +			misc |= PERF_RECORD_MISC_USER;
->> +		else
->> +			misc |= PERF_RECORD_MISC_KERNEL;
->> +	}
->> +
->> +	return misc;
+>> +	return IS_ENABLED(CONFIG_GUEST_PERF_EVENTS) && !!vcpu;
 >> +}
+>> +
+>>   static inline void kvm_arch_sync_events(struct kvm *kvm) {}
+>>   
+>>   #define KVM_RISCV_GSTAGE_TLB_MIN_ORDER		12
+>> diff --git a/arch/riscv/kvm/Kconfig b/arch/riscv/kvm/Kconfig
+>> index 26d1727f0550..0c3cbb0915ff 100644
+>> --- a/arch/riscv/kvm/Kconfig
+>> +++ b/arch/riscv/kvm/Kconfig
+>> @@ -32,6 +32,7 @@ config KVM
+>>   	select KVM_XFER_TO_GUEST_WORK
+>>   	select KVM_GENERIC_MMU_NOTIFIER
+>>   	select SCHED_INFO
+>> +	select GUEST_PERF_EVENTS if PERF_EVENTS
+>>   	help
+>>   	  Support hosting virtualized guest machines.
+>>   
+>> diff --git a/arch/riscv/kvm/main.c b/arch/riscv/kvm/main.c
+>> index bab2ec34cd87..734b48d8f6dd 100644
+>> --- a/arch/riscv/kvm/main.c
+>> +++ b/arch/riscv/kvm/main.c
+>> @@ -51,6 +51,12 @@ void kvm_arch_hardware_disable(void)
+>>   	csr_write(CSR_HIDELEG, 0);
+>>   }
+>>   
+>> +static void kvm_riscv_teardown(void)
+>> +{
+>> +	kvm_riscv_aia_exit();
+>> +	kvm_unregister_perf_callbacks();
+>> +}
+>> +
+>>   static int __init riscv_kvm_init(void)
+>>   {
+>>   	int rc;
+>> @@ -105,9 +111,11 @@ static int __init riscv_kvm_init(void)
+>>   		kvm_info("AIA available with %d guest external interrupts\n",
+>>   			 kvm_riscv_aia_nr_hgei);
+>>   
+>> +	kvm_register_perf_callbacks(NULL);
+>> +
+>>   	rc = kvm_init(sizeof(struct kvm_vcpu), 0, THIS_MODULE);
+>>   	if (rc) {
+>> -		kvm_riscv_aia_exit();
+>> +		kvm_riscv_teardown();
+>>   		return rc;
+>>   	}
+>>   
+>> @@ -117,7 +125,7 @@ module_init(riscv_kvm_init);
+>>   
+>>   static void __exit riscv_kvm_exit(void)
+>>   {
+>> -	kvm_riscv_aia_exit();
+>> +	kvm_riscv_teardown();
+>>   
+>>   	kvm_exit();
+>>   }
+>> diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+>> index 8d7d381737ee..e8ffb3456898 100644
+>> --- a/arch/riscv/kvm/vcpu.c
+>> +++ b/arch/riscv/kvm/vcpu.c
+>> @@ -226,6 +226,13 @@ bool kvm_arch_vcpu_in_kernel(struct kvm_vcpu *vcpu)
+>>   	return (vcpu->arch.guest_context.sstatus & SR_SPP) ? true : false;
+>>   }
+>>   
+>> +#ifdef CONFIG_GUEST_PERF_EVENTS
+>> +unsigned long kvm_arch_vcpu_get_ip(struct kvm_vcpu *vcpu)
+>> +{
+>> +	return vcpu->arch.guest_context.sepc;
+>> +}
+>> +#endif
+>> +
+>>   vm_fault_t kvm_arch_vcpu_fault(struct kvm_vcpu *vcpu, struct vm_fault *vmf)
+>>   {
+>>   	return VM_FAULT_SIGBUS;
 >> -- 
 >> 2.34.1
 >>
