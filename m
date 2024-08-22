@@ -1,118 +1,141 @@
-From: Anup Patel <anup@brainfault.org>
-Date: Wed, 21 Aug 2024 20:13:20 +0530
-Subject: [PATCH v8 0/5] Add Svade and Svadu Extensions Support
-In-Reply-To: <20240726084931.28924-1-yongxuan.wang@sifive.com>
-References: <20240726084931.28924-1-yongxuan.wang@sifive.com>
-Message-ID: <CAAhSdy05BXUZu6BNUoDWoEVd_YiM0Dpqg=t5WYUX7+cacnO2Hg@mail.gmail.com>
+From: Quan Zhou <zhouquan@iscas.ac.cn>
+Date: Thu, 22 Aug 2024 14:38:44 +0800
+Subject: [PATCH v2 1/2] riscv: perf: add guest vs host distinction
+In-Reply-To: <20240821-f5e1d6afb0d2230c1256a75b@orel>
+References: <cover.1723518282.git.zhouquan@iscas.ac.cn>
+ <3729354b59658535c4370d3c1c7e2f162433807b.1723518282.git.zhouquan@iscas.ac.cn>
+ <20240821-f5e1d6afb0d2230c1256a75b@orel>
+Message-ID: <430f3d38-b12e-4ac8-8040-33bab40380ab@iscas.ac.cn>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Palmer,
 
-On Fri, Jul 26, 2024 at 2:19?PM Yong-Xuan Wang <yongxuan.wang@sifive.com> wrote:
->
-> Svade and Svadu extensions represent two schemes for managing the PTE A/D
-> bit. When the PTE A/D bits need to be set, Svade extension intdicates that
-> a related page fault will be raised. In contrast, the Svadu extension
-> supports hardware updating of PTE A/D bits. This series enables Svade and
-> Svadu extensions for both host and guest OS.
->
-> Regrading the mailing thread[1], we have 4 possible combinations of
-> these extensions in the device tree, the default hardware behavior for
-> these possibilities are:
-> 1) Neither Svade nor Svadu present in DT => It is technically
->    unknown whether the platform uses Svade or Svadu. Supervisor
->    software should be prepared to handle either hardware updating
->    of the PTE A/D bits or page faults when they need updated.
-> 2) Only Svade present in DT => Supervisor must assume Svade to be
->    always enabled.
-> 3) Only Svadu present in DT => Supervisor must assume Svadu to be
->    always enabled.
-> 4) Both Svade and Svadu present in DT => Supervisor must assume
->    Svadu turned-off at boot time. To use Svadu, supervisor must
->    explicitly enable it using the SBI FWFT extension.
->
-> The Svade extension is mandatory and the Svadu extension is optional in
-> RVA23 profile. Platforms want to take the advantage of Svadu can choose
-> 3. Those are aware of the profile can choose 4, and Linux won't get the
-> benefit of svadu until the SBI FWFT extension is available.
->
-> [1] https://lore.kernel.org/linux-kernel/20240527-e9845c06619bca5cd285098c at orel/T/#m29644eb88e241ec282df4ccd5199514e913b06ee
->
-> ---
-> v8:
-> - fix typo in PATCH1 (Samuel)
-> - use the new extension validating API in PATCH1 (Cl?ment)
-> - update the dtbinding in PATCH2 (Samuel, Conor)
-> - add PATCH4 to fix compile error in get-reg-list test.
->
-> v7:
-> - fix alignment in PATCH1
-> - update the dtbinding in PATCH2 (Conor, Jessica)
->
-> v6:
-> - reflect the platform's behavior by riscv_isa_extension_available() and
->   update the the arch_has_hw_pte_young() in PATCH1 (Conor, Andrew)
-> - update the dtbinding in PATCH2 (Alexandre, Andrew, Anup, Conor)
-> - update the henvcfg condition in PATCH3 (Andrew)
-> - check if Svade is allowed to disabled based on arch_has_hw_pte_young()
->   in PATCH3
->
-> v5:
-> - remove all Acked-by and Reviewed-by (Conor, Andrew)
-> - add Svade support
-> - update the arch_has_hw_pte_young() in PATCH1
-> - update the dtbinding in PATCH2 (Alexandre, Andrew)
-> - check the availibility of Svadu for Guest/VM based on
->   arch_has_hw_pte_young() in PATCH3
->
-> v4:
-> - fix 32bit kernel build error in PATCH1 (Conor)
-> - update the status of Svadu extension to ratified in PATCH2
-> - add the PATCH4 to suporrt SBI_FWFT_PTE_AD_HW_UPDATING for guest OS
-> - update the PATCH1 and PATCH3 to integrate with FWFT extension
-> - rebase PATCH5 on the lastest get-reg-list test (Andrew)
->
-> v3:
-> - fix the control bit name to ADUE in PATCH1 and PATCH3
-> - update get-reg-list in PATCH4
->
-> v2:
-> - add Co-developed-by: in PATCH1
-> - use riscv_has_extension_unlikely() to runtime patch the branch in PATCH1
-> - update dt-binding
->
-> Yong-Xuan Wang (5):
->   RISC-V: Add Svade and Svadu Extensions Support
->   dt-bindings: riscv: Add Svade and Svadu Entries
->   RISC-V: KVM: Add Svade and Svadu Extensions Support for Guest/VM
->   KVM: riscv: selftests: Fix compile error
->   KVM: riscv: selftests: Add Svade and Svadu Extension to get-reg-list
->     test
->
->  .../devicetree/bindings/riscv/extensions.yaml | 28 +++++++++++++++++++
->  arch/riscv/Kconfig                            |  1 +
->  arch/riscv/include/asm/csr.h                  |  1 +
->  arch/riscv/include/asm/hwcap.h                |  2 ++
->  arch/riscv/include/asm/pgtable.h              | 13 ++++++++-
->  arch/riscv/include/uapi/asm/kvm.h             |  2 ++
->  arch/riscv/kernel/cpufeature.c                | 12 ++++++++
->  arch/riscv/kvm/vcpu.c                         |  4 +++
->  arch/riscv/kvm/vcpu_onereg.c                  | 15 ++++++++++
->  .../selftests/kvm/riscv/get-reg-list.c        | 16 ++++++++---
->  10 files changed, 89 insertions(+), 5 deletions(-)
->
-> --
-> 2.17.1
->
->
+On 2024/8/21 20:48, Andrew Jones wrote:
+> On Tue, Aug 13, 2024 at 09:23:54PM GMT, zhouquan at iscas.ac.cn wrote:
+>> From: Quan Zhou <zhouquan@iscas.ac.cn>
+>>
+>> Introduce basic guest support in perf, enabling it to distinguish
+>> between PMU interrupts in the host or guest, and collect
+>> fundamental information.
+>>
+>> Signed-off-by: Quan Zhou <zhouquan@iscas.ac.cn>
+>> ---
+>>   arch/riscv/include/asm/perf_event.h |  7 ++++++
+>>   arch/riscv/kernel/perf_callchain.c  | 38 +++++++++++++++++++++++++++++
+>>   2 files changed, 45 insertions(+)
+>>
+>> diff --git a/arch/riscv/include/asm/perf_event.h b/arch/riscv/include/asm/perf_event.h
+>> index 665bbc9b2f84..c2b73c3aefe4 100644
+>> --- a/arch/riscv/include/asm/perf_event.h
+>> +++ b/arch/riscv/include/asm/perf_event.h
+>> @@ -8,13 +8,20 @@
+>>   #ifndef _ASM_RISCV_PERF_EVENT_H
+>>   #define _ASM_RISCV_PERF_EVENT_H
+>>   
+>> +#ifdef CONFIG_PERF_EVENTS
+>>   #include <linux/perf_event.h>
+>>   #define perf_arch_bpf_user_pt_regs(regs) (struct user_regs_struct *)regs
+>>   
+>> +extern unsigned long perf_instruction_pointer(struct pt_regs *regs);
+>> +extern unsigned short perf_misc_flags(struct pt_regs *regs);
+>> +#define perf_misc_flags(regs) perf_misc_flags(regs)
+>> +
+>>   #define perf_arch_fetch_caller_regs(regs, __ip) { \
+>>   	(regs)->epc = (__ip); \
+>>   	(regs)->s0 = (unsigned long) __builtin_frame_address(0); \
+>>   	(regs)->sp = current_stack_pointer; \
+>>   	(regs)->status = SR_PP; \
+>>   }
+>> +#endif
+>> +
+>>   #endif /* _ASM_RISCV_PERF_EVENT_H */
+>> diff --git a/arch/riscv/kernel/perf_callchain.c b/arch/riscv/kernel/perf_callchain.c
+>> index 3348a61de7d9..7af90a3bb373 100644
+>> --- a/arch/riscv/kernel/perf_callchain.c
+>> +++ b/arch/riscv/kernel/perf_callchain.c
+>> @@ -58,6 +58,11 @@ void perf_callchain_user(struct perf_callchain_entry_ctx *entry,
+>>   {
+>>   	unsigned long fp = 0;
+>>   
+>> +	if (perf_guest_state()) {
+>> +		/* TODO: We don't support guest os callchain now */
+>> +		return;
+>> +	}
+>> +
+>>   	fp = regs->s0;
+>>   	perf_callchain_store(entry, regs->epc);
+>>   
+>> @@ -74,5 +79,38 @@ static bool fill_callchain(void *entry, unsigned long pc)
+>>   void perf_callchain_kernel(struct perf_callchain_entry_ctx *entry,
+>>   			   struct pt_regs *regs)
+>>   {
+>> +	if (perf_guest_state()) {
+>> +		/* TODO: We don't support guest os callchain now */
+>> +		return;
+>> +	}
+>> +
+>>   	walk_stackframe(NULL, regs, fill_callchain, entry);
+>>   }
+>> +
+>> +unsigned long perf_instruction_pointer(struct pt_regs *regs)
+>> +{
+>> +	if (perf_guest_state())
+>> +		return perf_guest_get_ip();
+>> +
+>> +	return instruction_pointer(regs);
+>> +}
+>> +
+>> +unsigned short perf_misc_flags(struct pt_regs *regs)
+> 
+> I see that the consumer of perf_misc_flags is only a u16, but all other
+> architectures define this function as returning an unsigned long, and
+> your last version did as well. My comment in the last version was that
+> we should use an unsigned long for the 'misc' variable to match the
+> return type of the function. I still think we should do that instead
+> since the function should be consistent with the other architectures.
+> 
 
-Let me know if this series can be taken through the KVM RISC-V tree.
-I can provide you with a shared tag as well.
+I agree with your point that the type of `misc` should be consistent 
+with other architectures.
 
-Regards,
-Anup
+However, one thing confuses me. The return value of perf_misc_flags
+is assigned to the `misc` field of the perf_event_header structure,
+and the field is defined as `u16`. I checked the return type of 
+`perf_misc_flags` in other architectures, and I found that for 
+x86/arm/s390, the type is `unsigned long`, while for powerpc, it is `u32`.
+These do not match `u16`, which seems to pose a risk of type truncation 
+and feels a bit unconventional. Or is there some other reasonable 
+consideration behind this?
+
+Thanks a lot!
+Quan
+
+>> +{
+>> +	unsigned int guest_state = perf_guest_state();
+>> +	unsigned short misc = 0;
+>> +
+>> +	if (guest_state) {
+>> +		if (guest_state & PERF_GUEST_USER)
+>> +			misc |= PERF_RECORD_MISC_GUEST_USER;
+>> +		else
+>> +			misc |= PERF_RECORD_MISC_GUEST_KERNEL;
+>> +	} else {
+>> +		if (user_mode(regs))
+>> +			misc |= PERF_RECORD_MISC_USER;
+>> +		else
+>> +			misc |= PERF_RECORD_MISC_KERNEL;
+>> +	}
+>> +
+>> +	return misc;
+>> +}
+>> -- 
+>> 2.34.1
+>>
+> 
+> Thanks,
+> drew
+
 
