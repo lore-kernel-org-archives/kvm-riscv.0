@@ -1,50 +1,54 @@
 From: Andrew Jones <andrew.jones@linux.dev>
-Date: Tue, 27 Aug 2024 17:14:13 +0200
-Subject: [kvm-unit-tests PATCH] Added prefix pop at bottom of DBCN test
- function.
-In-Reply-To: <20240826053309.10802-1-cade.richard@berkeley.edu>
-References: <20240826053309.10802-1-cade.richard@berkeley.edu>
-Message-ID: <20240827-b1109aec9abbba8ca66e1738@orel>
+Date: Tue, 27 Aug 2024 17:21:43 +0200
+Subject: [kvm-unit-tests PATCH] Changed cpumask_next to wrap instead of
+ terminating after nr_cpus.
+In-Reply-To: <20240826054038.11584-1-cade.richard@berkeley.edu>
+References: <20240826054038.11584-1-cade.richard@berkeley.edu>
+Message-ID: <20240827-a3f2014b839d6c39c110e15b@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sun, Aug 25, 2024 at 10:33:09PM GMT, Cade Richard wrote:
-> Added report prefix pop at bottom of DBCN test function.
-> 
-> Fixes: https://lore.kernel.org/kvm/20240812141354.119889-10-andrew.jones at linux.dev/#t
 
-This should be
+Patch summaries shouldn't have periods and they should be concise.
 
-Fixes: ce58d3a45d96 ("riscv: sbi: Add dbcn write test")
-
-and without a space before the s-o-b.
-
-I've fixed it up while queuing.
-
-Thanks,
-drew
-
+On Sun, Aug 25, 2024 at 10:40:38PM GMT, Cade Richard wrote:
+> Changed cpumask_next() to wrap instead of terminating after nr_cpus.
 > 
 > Signed-off-by: Cade Richard <cade.richard@berkeley.edu>
 > ---
->  riscv/sbi.c | 1 +
->  1 file changed, 1 insertion(+)
+>  lib/cpumask.h | 6 ++++--
+>  1 file changed, 4 insertions(+), 2 deletions(-)
 > 
-> diff --git a/riscv/sbi.c b/riscv/sbi.c
-> index 36ddfd48..01697aed 100644
-> --- a/riscv/sbi.c
-> +++ b/riscv/sbi.c
-> @@ -418,6 +418,7 @@ static void check_dbcn(void)
->  	report(ret.value == 0, "expected ret.value (%ld)", ret.value);
+> diff --git a/lib/cpumask.h b/lib/cpumask.h
+> index be191923..5105c3bd 100644
+> --- a/lib/cpumask.h
+> +++ b/lib/cpumask.h
+> @@ -109,8 +109,10 @@ static inline void cpumask_copy(cpumask_t *dst, const cpumask_t *src)
 >  
->  	report_prefix_pop();
-> +	report_prefix_pop();
+>  static inline int cpumask_next(int cpu, const cpumask_t *mask)
+>  {
+> -	while (++cpu < nr_cpus && !cpumask_test_cpu(cpu, mask))
+> -		;
+> +	do {
+> +		if (++cpu > nr_cpus)
+
+Should be ++cpu == nr_cpus, but...
+
+> +			cpu = 0;
+> +	} while (!cpumask_test_cpu(cpu, mask));
+
+...this will break everything. See for_each_cpu().
+
+Nack
+
+drew
+
+>  	return cpu;
 >  }
 >  
->  int main(int argc, char **argv)
 > -- 
 > 2.43.0
 > 
