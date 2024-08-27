@@ -1,51 +1,53 @@
-From: Alex Bennée <alex.bennee@linaro.org>
-Date: Tue, 27 Aug 2024 10:06:14 +0100
-Subject: [PATCH v12 00/84] KVM: Stop grabbing references to PFNMAP'd pages
-In-Reply-To: <20240726235234.228822-1-seanjc@google.com> (Sean
-	Christopherson's message of "Fri, 26 Jul 2024 16:51:09 -0700")
-References: <20240726235234.228822-1-seanjc@google.com>
-Message-ID: <875xrme3nd.fsf@draig.linaro.org>
+From: Anup Patel <apatel@ventanamicro.com>
+Date: Tue, 27 Aug 2024 15:16:57 +0530
+Subject: [kvmtool PATCH v3 0/4] Add RISC-V ISA extensions based on Linux-6.10
+In-Reply-To: <20240821142610.3297483-1-apatel@ventanamicro.com>
+References: <20240821142610.3297483-1-apatel@ventanamicro.com>
+Message-ID: <CAK9=C2VkPGvCikBox33xxCUXjpFnsfKU7DefuWpXtUki+X7-Hw@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Sean Christopherson <seanjc@google.com> writes:
+Hi Will,
 
-> arm64 folks, the first two patches are bug fixes, but I have very low
-> confidence that they are correct and/or desirable.  If they are more or
-> less correct, I can post them separately if that'd make life easier.  I
-> included them here to avoid conflicts, and because I'm pretty sure how
-> KVM deals with MTE tags vs. dirty logging will impact what APIs KVM needs
-> to provide to arch code.
+On Wed, Aug 21, 2024 at 7:56?PM Anup Patel <apatel@ventanamicro.com> wrote:
 >
-> On to the series...  The TL;DR is that I would like to get input on two
-> things:
+> This series adds support for new ISA extensions based on Linux-6.10 namely:
+> Sscofpmf.
 >
->  1. Marking folios dirty/accessed only on the intial stage-2 page fault
->  2. The new APIs for faulting, prefetching, and doing "lookups" on
->  pfns
+> These patches can also be found in the riscv_more_exts_round3_v3 branch
+> at: https://github.com/avpatel/kvmtool.git
+>
+> Changes since v2:
+>  - Include a fix to correct number of hart bits for AIA
+>
+> Changes since v1:
+>  - Included a fix for DBCN
+>
+> Andrew Jones (2):
+>   riscv: Set SBI_SUCCESS on successful DBCN call
+>   riscv: Correct number of hart bits
+>
+> Anup Patel (1):
+>   Sync-up headers with Linux-6.10 kernel
+>
+> Atish Patra (1):
+>   riscv: Add Sscofpmf extensiona support
+>
+>  include/linux/kvm.h                 |   4 +-
+>  include/linux/virtio_net.h          | 143 ++++++++++++++++++++++++++++
+>  riscv/aia.c                         |   2 +-
+>  riscv/fdt.c                         |   1 +
+>  riscv/include/asm/kvm.h             |   1 +
+>  riscv/include/kvm/kvm-config-arch.h |   3 +
+>  riscv/kvm-cpu.c                     |   1 +
+>  x86/include/asm/kvm.h               |  22 ++++-
+>  8 files changed, 172 insertions(+), 5 deletions(-)
 
-I've finally managed to get virtio-vulkan working on my Arm64 devbox
-with an AMD graphics card plugged into the PCI. I'm confident that the
-graphics path is using the discrete card memory (as it has been mapped
-as device memory with alignment handlers to deal with the broken Altra
-PCI). However aside from running graphics workloads in KVM guests is
-their anything else I can check to see things are behaving as expected?
+Friendly ping !
 
-The predecessor series did break launching some KVM guests on my x86
-system but with this series launching guests works fine and I haven't
-noticed any weirdness.
-
-So for those caveats you can certainly have a:
-
-Tested-by: Alex Benn?e <alex.bennee@linaro.org>
-
-However if there is anything else I can do to further stress test this
-code do let me know.
-
--- 
-Alex Benn?e
-Virtualisation Tech Lead @ Linaro
+Regards,
+Anup
 
