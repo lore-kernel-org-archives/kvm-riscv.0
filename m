@@ -1,10 +1,10 @@
 From: Andrew Jones <andrew.jones@linux.dev>
-Date: Tue, 27 Aug 2024 17:21:43 +0200
-Subject: [kvm-unit-tests PATCH] Changed cpumask_next to wrap instead of
- terminating after nr_cpus.
-In-Reply-To: <20240826054038.11584-1-cade.richard@berkeley.edu>
-References: <20240826054038.11584-1-cade.richard@berkeley.edu>
-Message-ID: <20240827-a3f2014b839d6c39c110e15b@orel>
+Date: Tue, 27 Aug 2024 17:25:44 +0200
+Subject: [kvm-unit-tests PATCH] Added prefix pop at bottom of DBCN test
+ function.
+In-Reply-To: <20240826053309.10802-1-cade.richard@berkeley.edu>
+References: <20240826053309.10802-1-cade.richard@berkeley.edu>
+Message-ID: <20240827-35ad2f4724351f0ee5512b8e@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -12,43 +12,38 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 
-Patch summaries shouldn't have periods and they should be concise.
+This patch summary has a period. I've removed it. I also rewrote the
+commit message. Just repeating the summary isn't helpful. I wrote
 
-On Sun, Aug 25, 2024 at 10:40:38PM GMT, Cade Richard wrote:
-> Changed cpumask_next() to wrap instead of terminating after nr_cpus.
+    The number of pops needs to balance the number of pushes, but
+    check_dbcn was missing a pop, resulting in a dbcn prefix being output
+    on following non-dbcn tests. Add the pop.
+
+Thanks,
+drew
+
+On Sun, Aug 25, 2024 at 10:33:09PM GMT, Cade Richard wrote:
+> Added report prefix pop at bottom of DBCN test function.
+> 
+> Fixes: https://lore.kernel.org/kvm/20240812141354.119889-10-andrew.jones at linux.dev/#t
 > 
 > Signed-off-by: Cade Richard <cade.richard@berkeley.edu>
 > ---
->  lib/cpumask.h | 6 ++++--
->  1 file changed, 4 insertions(+), 2 deletions(-)
+>  riscv/sbi.c | 1 +
+>  1 file changed, 1 insertion(+)
 > 
-> diff --git a/lib/cpumask.h b/lib/cpumask.h
-> index be191923..5105c3bd 100644
-> --- a/lib/cpumask.h
-> +++ b/lib/cpumask.h
-> @@ -109,8 +109,10 @@ static inline void cpumask_copy(cpumask_t *dst, const cpumask_t *src)
+> diff --git a/riscv/sbi.c b/riscv/sbi.c
+> index 36ddfd48..01697aed 100644
+> --- a/riscv/sbi.c
+> +++ b/riscv/sbi.c
+> @@ -418,6 +418,7 @@ static void check_dbcn(void)
+>  	report(ret.value == 0, "expected ret.value (%ld)", ret.value);
 >  
->  static inline int cpumask_next(int cpu, const cpumask_t *mask)
->  {
-> -	while (++cpu < nr_cpus && !cpumask_test_cpu(cpu, mask))
-> -		;
-> +	do {
-> +		if (++cpu > nr_cpus)
-
-Should be ++cpu == nr_cpus, but...
-
-> +			cpu = 0;
-> +	} while (!cpumask_test_cpu(cpu, mask));
-
-...this will break everything. See for_each_cpu().
-
-Nack
-
-drew
-
->  	return cpu;
+>  	report_prefix_pop();
+> +	report_prefix_pop();
 >  }
 >  
+>  int main(int argc, char **argv)
 > -- 
 > 2.43.0
 > 
