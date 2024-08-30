@@ -1,48 +1,43 @@
-From: Andrew Jones <andrew.jones@linux.dev>
-Date: Fri, 30 Aug 2024 17:53:40 +0200
-Subject: [kvm-unit-tests PATCH 2/2] sbi: dbcn: Add write-byte test with more than byte given
-In-Reply-To: <20240830155337.335534-4-andrew.jones@linux.dev>
-References: <20240830155337.335534-4-andrew.jones@linux.dev>
-Message-ID: <20240830155337.335534-6-andrew.jones@linux.dev>
+From: Will Deacon <will@kernel.org>
+Date: Fri, 30 Aug 2024 17:12:08 +0100
+Subject: [kvmtool PATCH v3 0/4] Add RISC-V ISA extensions based on Linux-6.10
+In-Reply-To: <20240821142610.3297483-1-apatel@ventanamicro.com>
+References: <20240821142610.3297483-1-apatel@ventanamicro.com>
+Message-ID: <172501224711.999016.8569782963205598241.b4-ty@kernel.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Try the write-byte function, but with a word full of characters. We
-should still get 'a' since that's in the least-significant byte.
+On Wed, 21 Aug 2024 19:56:06 +0530, Anup Patel wrote:
+> This series adds support for new ISA extensions based on Linux-6.10 namely:
+> Sscofpmf.
+> 
+> These patches can also be found in the riscv_more_exts_round3_v3 branch
+> at: https://github.com/avpatel/kvmtool.git
+> 
+> Changes since v2:
+>  - Include a fix to correct number of hart bits for AIA
+> 
+> [...]
 
-Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
----
- riscv/sbi.c | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+Applied to kvmtool (master), thanks!
 
-diff --git a/riscv/sbi.c b/riscv/sbi.c
-index 907bfbe5bb69..a1c97b93cdd0 100644
---- a/riscv/sbi.c
-+++ b/riscv/sbi.c
-@@ -407,12 +407,18 @@ static void check_dbcn(void)
- 	report_prefix_pop();
- 	report_prefix_push("write_byte");
- 
--	puts("DBCN_WRITE TEST CHAR: ");
-+	puts("DBCN_WRITE_BYTE TEST BYTE: ");
- 	ret = sbi_dbcn_write_byte(DBCN_WRITE_BYTE_TEST_BYTE);
- 	puts("\n");
- 	report(ret.error == SBI_SUCCESS, "write success (error=%ld)", ret.error);
- 	report(ret.value == 0, "expected ret.value (%ld)", ret.value);
- 
-+	puts("DBCN_WRITE_BYTE TEST WORD: "); /* still expect 'a' in the output */
-+	ret = sbi_ecall(SBI_EXT_DBCN, SBI_EXT_DBCN_CONSOLE_WRITE_BYTE, 0x64636261, 0, 0, 0, 0, 0);
-+	puts("\n");
-+	report(ret.error == SBI_SUCCESS, "write success (error=%ld)", ret.error);
-+	report(ret.value == 0, "expected ret.value (%ld)", ret.value);
-+
- 	report_prefix_pop();
- 	report_prefix_pop();
- }
+[1/4] Sync-up headers with Linux-6.10 kernel
+      https://git.kernel.org/will/kvmtool/c/01171537bcc0
+[2/4] riscv: Add Sscofpmf extensiona support
+      https://git.kernel.org/will/kvmtool/c/fa958fb68cfb
+[3/4] riscv: Set SBI_SUCCESS on successful DBCN call
+      https://git.kernel.org/will/kvmtool/c/027784f4c67e
+[4/4] riscv: Correct number of hart bits
+      https://git.kernel.org/will/kvmtool/c/100fade1ac13
+
+Cheers,
 -- 
-2.45.2
+Will
 
+https://fixes.arm64.dev
+https://next.arm64.dev
+https://will.arm64.dev
 
