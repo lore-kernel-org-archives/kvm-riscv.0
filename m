@@ -1,196 +1,267 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Thu, 29 Aug 2024 21:35:54 -0700
-Subject: [PATCH v4 04/10] KVM: Rename arch hooks related to per-CPU
- virtualization enabling
+Date: Thu, 29 Aug 2024 21:35:56 -0700
+Subject: [PATCH v4 06/10] KVM: x86: Rename virtualization {en,dis}abling APIs
+ to match common KVM
 In-Reply-To: <20240830043600.127750-1-seanjc@google.com>
 References: <20240830043600.127750-1-seanjc@google.com>
-Message-ID: <20240830043600.127750-5-seanjc@google.com>
+Message-ID: <20240830043600.127750-7-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Rename the per-CPU hooks used to enable virtualization in hardware to
-align with the KVM-wide helpers in kvm_main.c, and to better capture that
-the callbacks are invoked on every online CPU.
+Rename x86's the per-CPU vendor hooks used to enable virtualization in
+hardware to align with the recently renamed arch hooks.
 
 No functional change intended.
 
-Suggested-by: Paolo Bonzini <pbonzini@redhat.com>
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/arm64/kvm/arm.c      | 6 +++---
- arch/loongarch/kvm/main.c | 4 ++--
- arch/mips/kvm/mips.c      | 4 ++--
- arch/riscv/kvm/main.c     | 4 ++--
- arch/x86/kvm/x86.c        | 6 +++---
- include/linux/kvm_host.h  | 4 ++--
- virt/kvm/kvm_main.c       | 4 ++--
- 7 files changed, 16 insertions(+), 16 deletions(-)
+ arch/x86/include/asm/kvm-x86-ops.h |  4 ++--
+ arch/x86/include/asm/kvm_host.h    |  4 ++--
+ arch/x86/kvm/svm/svm.c             | 18 +++++++++---------
+ arch/x86/kvm/vmx/main.c            |  4 ++--
+ arch/x86/kvm/vmx/vmx.c             | 10 +++++-----
+ arch/x86/kvm/vmx/x86_ops.h         |  4 ++--
+ arch/x86/kvm/x86.c                 | 10 +++++-----
+ 7 files changed, 27 insertions(+), 27 deletions(-)
 
-diff --git a/arch/arm64/kvm/arm.c b/arch/arm64/kvm/arm.c
-index 9bef7638342e..9c8f5390ec63 100644
---- a/arch/arm64/kvm/arm.c
-+++ b/arch/arm64/kvm/arm.c
-@@ -2163,7 +2163,7 @@ static void cpu_hyp_uninit(void *discard)
+diff --git a/arch/x86/include/asm/kvm-x86-ops.h b/arch/x86/include/asm/kvm-x86-ops.h
+index 68ad4f923664..03b7e13f15bb 100644
+--- a/arch/x86/include/asm/kvm-x86-ops.h
++++ b/arch/x86/include/asm/kvm-x86-ops.h
+@@ -14,8 +14,8 @@ BUILD_BUG_ON(1)
+  * be __static_call_return0.
+  */
+ KVM_X86_OP(check_processor_compatibility)
+-KVM_X86_OP(hardware_enable)
+-KVM_X86_OP(hardware_disable)
++KVM_X86_OP(enable_virtualization_cpu)
++KVM_X86_OP(disable_virtualization_cpu)
+ KVM_X86_OP(hardware_unsetup)
+ KVM_X86_OP(has_emulated_msr)
+ KVM_X86_OP(vcpu_after_set_cpuid)
+diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
+index 94e7b5a4fafe..cb3b5f107c6e 100644
+--- a/arch/x86/include/asm/kvm_host.h
++++ b/arch/x86/include/asm/kvm_host.h
+@@ -1629,8 +1629,8 @@ struct kvm_x86_ops {
+ 
+ 	int (*check_processor_compatibility)(void);
+ 
+-	int (*hardware_enable)(void);
+-	void (*hardware_disable)(void);
++	int (*enable_virtualization_cpu)(void);
++	void (*disable_virtualization_cpu)(void);
+ 	void (*hardware_unsetup)(void);
+ 	bool (*has_emulated_msr)(struct kvm *kvm, u32 index);
+ 	void (*vcpu_after_set_cpuid)(struct kvm_vcpu *vcpu);
+diff --git a/arch/x86/kvm/svm/svm.c b/arch/x86/kvm/svm/svm.c
+index d6f252555ab3..a9adbe10c12e 100644
+--- a/arch/x86/kvm/svm/svm.c
++++ b/arch/x86/kvm/svm/svm.c
+@@ -592,14 +592,14 @@ static inline void kvm_cpu_svm_disable(void)
  	}
  }
  
--int kvm_arch_hardware_enable(void)
-+int kvm_arch_enable_virtualization_cpu(void)
+-static void svm_emergency_disable(void)
++static void svm_emergency_disable_virtualization_cpu(void)
  {
- 	/*
- 	 * Most calls to this function are made with migration
-@@ -2183,7 +2183,7 @@ int kvm_arch_hardware_enable(void)
- 	return 0;
+ 	kvm_rebooting = true;
+ 
+ 	kvm_cpu_svm_disable();
  }
  
--void kvm_arch_hardware_disable(void)
-+void kvm_arch_disable_virtualization_cpu(void)
+-static void svm_hardware_disable(void)
++static void svm_disable_virtualization_cpu(void)
  {
- 	kvm_timer_cpu_down();
- 	kvm_vgic_cpu_down();
-@@ -2379,7 +2379,7 @@ static int __init do_pkvm_init(u32 hyp_va_bits)
+ 	/* Make sure we clean up behind us */
+ 	if (tsc_scaling)
+@@ -610,7 +610,7 @@ static void svm_hardware_disable(void)
+ 	amd_pmu_disable_virt();
+ }
  
- 	/*
- 	 * The stub hypercalls are now disabled, so set our local flag to
--	 * prevent a later re-init attempt in kvm_arch_hardware_enable().
-+	 * prevent a later re-init attempt in kvm_arch_enable_virtualization_cpu().
+-static int svm_hardware_enable(void)
++static int svm_enable_virtualization_cpu(void)
+ {
+ 
+ 	struct svm_cpu_data *sd;
+@@ -1533,7 +1533,7 @@ static void svm_prepare_switch_to_guest(struct kvm_vcpu *vcpu)
+ 	 * TSC_AUX is always virtualized for SEV-ES guests when the feature is
+ 	 * available. The user return MSR support is not required in this case
+ 	 * because TSC_AUX is restored on #VMEXIT from the host save area
+-	 * (which has been initialized in svm_hardware_enable()).
++	 * (which has been initialized in svm_enable_virtualization_cpu()).
  	 */
- 	__this_cpu_write(kvm_hyp_initialized, 1);
- 	preempt_enable();
-diff --git a/arch/loongarch/kvm/main.c b/arch/loongarch/kvm/main.c
-index 844736b99d38..27e9b94c0a0b 100644
---- a/arch/loongarch/kvm/main.c
-+++ b/arch/loongarch/kvm/main.c
-@@ -261,7 +261,7 @@ long kvm_arch_dev_ioctl(struct file *filp,
- 	return -ENOIOCTLCMD;
- }
+ 	if (likely(tsc_aux_uret_slot >= 0) &&
+ 	    (!boot_cpu_has(X86_FEATURE_V_TSC_AUX) || !sev_es_guest(vcpu->kvm)))
+@@ -3132,7 +3132,7 @@ static int svm_set_msr(struct kvm_vcpu *vcpu, struct msr_data *msr)
+ 		 * feature is available. The user return MSR support is not
+ 		 * required in this case because TSC_AUX is restored on #VMEXIT
+ 		 * from the host save area (which has been initialized in
+-		 * svm_hardware_enable()).
++		 * svm_enable_virtualization_cpu()).
+ 		 */
+ 		if (boot_cpu_has(X86_FEATURE_V_TSC_AUX) && sev_es_guest(vcpu->kvm))
+ 			break;
+@@ -4980,8 +4980,8 @@ static struct kvm_x86_ops svm_x86_ops __initdata = {
+ 	.check_processor_compatibility = svm_check_processor_compat,
  
--int kvm_arch_hardware_enable(void)
-+int kvm_arch_enable_virtualization_cpu(void)
+ 	.hardware_unsetup = svm_hardware_unsetup,
+-	.hardware_enable = svm_hardware_enable,
+-	.hardware_disable = svm_hardware_disable,
++	.enable_virtualization_cpu = svm_enable_virtualization_cpu,
++	.disable_virtualization_cpu = svm_disable_virtualization_cpu,
+ 	.has_emulated_msr = svm_has_emulated_msr,
+ 
+ 	.vcpu_create = svm_vcpu_create,
+@@ -5411,7 +5411,7 @@ static void __svm_exit(void)
  {
- 	unsigned long env, gcfg = 0;
+ 	kvm_x86_vendor_exit();
  
-@@ -300,7 +300,7 @@ int kvm_arch_hardware_enable(void)
- 	return 0;
+-	cpu_emergency_unregister_virt_callback(svm_emergency_disable);
++	cpu_emergency_unregister_virt_callback(svm_emergency_disable_virtualization_cpu);
  }
  
--void kvm_arch_hardware_disable(void)
-+void kvm_arch_disable_virtualization_cpu(void)
+ static int __init svm_init(void)
+@@ -5427,7 +5427,7 @@ static int __init svm_init(void)
+ 	if (r)
+ 		return r;
+ 
+-	cpu_emergency_register_virt_callback(svm_emergency_disable);
++	cpu_emergency_register_virt_callback(svm_emergency_disable_virtualization_cpu);
+ 
+ 	/*
+ 	 * Common KVM initialization _must_ come last, after this, /dev/kvm is
+diff --git a/arch/x86/kvm/vmx/main.c b/arch/x86/kvm/vmx/main.c
+index 0bf35ebe8a1b..4a5bf92edccf 100644
+--- a/arch/x86/kvm/vmx/main.c
++++ b/arch/x86/kvm/vmx/main.c
+@@ -23,8 +23,8 @@ struct kvm_x86_ops vt_x86_ops __initdata = {
+ 
+ 	.hardware_unsetup = vmx_hardware_unsetup,
+ 
+-	.hardware_enable = vmx_hardware_enable,
+-	.hardware_disable = vmx_hardware_disable,
++	.enable_virtualization_cpu = vmx_enable_virtualization_cpu,
++	.disable_virtualization_cpu = vmx_disable_virtualization_cpu,
+ 	.has_emulated_msr = vmx_has_emulated_msr,
+ 
+ 	.vm_size = sizeof(struct kvm_vmx),
+diff --git a/arch/x86/kvm/vmx/vmx.c b/arch/x86/kvm/vmx/vmx.c
+index f18c2d8c7476..cf7d937bfd2c 100644
+--- a/arch/x86/kvm/vmx/vmx.c
++++ b/arch/x86/kvm/vmx/vmx.c
+@@ -755,7 +755,7 @@ static int kvm_cpu_vmxoff(void)
+ 	return -EIO;
+ }
+ 
+-static void vmx_emergency_disable(void)
++static void vmx_emergency_disable_virtualization_cpu(void)
  {
- 	write_csr_gcfg(0);
- 	write_csr_gstat(0);
-diff --git a/arch/mips/kvm/mips.c b/arch/mips/kvm/mips.c
-index b5de770b092e..52e1f275351e 100644
---- a/arch/mips/kvm/mips.c
-+++ b/arch/mips/kvm/mips.c
-@@ -125,12 +125,12 @@ int kvm_arch_vcpu_should_kick(struct kvm_vcpu *vcpu)
- 	return 1;
+ 	int cpu = raw_smp_processor_id();
+ 	struct loaded_vmcs *v;
+@@ -2844,7 +2844,7 @@ static int kvm_cpu_vmxon(u64 vmxon_pointer)
+ 	return -EFAULT;
  }
  
--int kvm_arch_hardware_enable(void)
-+int kvm_arch_enable_virtualization_cpu(void)
+-int vmx_hardware_enable(void)
++int vmx_enable_virtualization_cpu(void)
  {
- 	return kvm_mips_callbacks->hardware_enable();
+ 	int cpu = raw_smp_processor_id();
+ 	u64 phys_addr = __pa(per_cpu(vmxarea, cpu));
+@@ -2881,7 +2881,7 @@ static void vmclear_local_loaded_vmcss(void)
+ 		__loaded_vmcs_clear(v);
  }
  
--void kvm_arch_hardware_disable(void)
-+void kvm_arch_disable_virtualization_cpu(void)
+-void vmx_hardware_disable(void)
++void vmx_disable_virtualization_cpu(void)
  {
- 	kvm_mips_callbacks->hardware_disable();
- }
-diff --git a/arch/riscv/kvm/main.c b/arch/riscv/kvm/main.c
-index bab2ec34cd87..f3427f6de608 100644
---- a/arch/riscv/kvm/main.c
-+++ b/arch/riscv/kvm/main.c
-@@ -20,7 +20,7 @@ long kvm_arch_dev_ioctl(struct file *filp,
- 	return -EINVAL;
- }
+ 	vmclear_local_loaded_vmcss();
  
--int kvm_arch_hardware_enable(void)
-+int kvm_arch_enable_virtualization_cpu(void)
+@@ -8584,7 +8584,7 @@ static void __vmx_exit(void)
  {
- 	csr_write(CSR_HEDELEG, KVM_HEDELEG_DEFAULT);
- 	csr_write(CSR_HIDELEG, KVM_HIDELEG_DEFAULT);
-@@ -35,7 +35,7 @@ int kvm_arch_hardware_enable(void)
- 	return 0;
+ 	allow_smaller_maxphyaddr = false;
+ 
+-	cpu_emergency_unregister_virt_callback(vmx_emergency_disable);
++	cpu_emergency_unregister_virt_callback(vmx_emergency_disable_virtualization_cpu);
+ 
+ 	vmx_cleanup_l1d_flush();
  }
+@@ -8632,7 +8632,7 @@ static int __init vmx_init(void)
+ 		pi_init_cpu(cpu);
+ 	}
  
--void kvm_arch_hardware_disable(void)
-+void kvm_arch_disable_virtualization_cpu(void)
- {
- 	kvm_riscv_aia_disable();
+-	cpu_emergency_register_virt_callback(vmx_emergency_disable);
++	cpu_emergency_register_virt_callback(vmx_emergency_disable_virtualization_cpu);
  
+ 	vmx_check_vmcs12_offsets();
+ 
+diff --git a/arch/x86/kvm/vmx/x86_ops.h b/arch/x86/kvm/vmx/x86_ops.h
+index ce3221cd1d01..205692c43a8e 100644
+--- a/arch/x86/kvm/vmx/x86_ops.h
++++ b/arch/x86/kvm/vmx/x86_ops.h
+@@ -13,8 +13,8 @@ extern struct kvm_x86_init_ops vt_init_ops __initdata;
+ 
+ void vmx_hardware_unsetup(void);
+ int vmx_check_processor_compat(void);
+-int vmx_hardware_enable(void);
+-void vmx_hardware_disable(void);
++int vmx_enable_virtualization_cpu(void);
++void vmx_disable_virtualization_cpu(void);
+ int vmx_vm_init(struct kvm *kvm);
+ void vmx_vm_destroy(struct kvm *kvm);
+ int vmx_vcpu_precreate(struct kvm *kvm);
 diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 70219e406987..1182baf0d487 100644
+index 1182baf0d487..431358167fa8 100644
 --- a/arch/x86/kvm/x86.c
 +++ b/arch/x86/kvm/x86.c
-@@ -355,7 +355,7 @@ static void kvm_on_user_return(struct user_return_notifier *urn)
+@@ -9749,7 +9749,7 @@ int kvm_x86_vendor_init(struct kvm_x86_init_ops *ops)
  
- 	/*
- 	 * Disabling irqs at this point since the following code could be
--	 * interrupted and executed through kvm_arch_hardware_disable()
-+	 * interrupted and executed through kvm_arch_disable_virtualization_cpu()
- 	 */
- 	local_irq_save(flags);
- 	if (msrs->registered) {
-@@ -12512,7 +12512,7 @@ void kvm_vcpu_deliver_sipi_vector(struct kvm_vcpu *vcpu, u8 vector)
- }
- EXPORT_SYMBOL_GPL(kvm_vcpu_deliver_sipi_vector);
+ 	guard(mutex)(&vendor_module_lock);
  
--int kvm_arch_hardware_enable(void)
-+int kvm_arch_enable_virtualization_cpu(void)
- {
- 	struct kvm *kvm;
- 	struct kvm_vcpu *vcpu;
-@@ -12608,7 +12608,7 @@ int kvm_arch_hardware_enable(void)
+-	if (kvm_x86_ops.hardware_enable) {
++	if (kvm_x86_ops.enable_virtualization_cpu) {
+ 		pr_err("already loaded vendor module '%s'\n", kvm_x86_ops.name);
+ 		return -EEXIST;
+ 	}
+@@ -9876,7 +9876,7 @@ int kvm_x86_vendor_init(struct kvm_x86_init_ops *ops)
  	return 0;
- }
  
--void kvm_arch_hardware_disable(void)
-+void kvm_arch_disable_virtualization_cpu(void)
+ out_unwind_ops:
+-	kvm_x86_ops.hardware_enable = NULL;
++	kvm_x86_ops.enable_virtualization_cpu = NULL;
+ 	kvm_x86_call(hardware_unsetup)();
+ out_mmu_exit:
+ 	kvm_mmu_vendor_module_exit();
+@@ -9917,7 +9917,7 @@ void kvm_x86_vendor_exit(void)
+ 	WARN_ON(static_branch_unlikely(&kvm_xen_enabled.key));
+ #endif
+ 	mutex_lock(&vendor_module_lock);
+-	kvm_x86_ops.hardware_enable = NULL;
++	kvm_x86_ops.enable_virtualization_cpu = NULL;
+ 	mutex_unlock(&vendor_module_lock);
+ }
+ EXPORT_SYMBOL_GPL(kvm_x86_vendor_exit);
+@@ -12528,7 +12528,7 @@ int kvm_arch_enable_virtualization_cpu(void)
+ 	if (ret)
+ 		return ret;
+ 
+-	ret = kvm_x86_call(hardware_enable)();
++	ret = kvm_x86_call(enable_virtualization_cpu)();
+ 	if (ret != 0)
+ 		return ret;
+ 
+@@ -12610,7 +12610,7 @@ int kvm_arch_enable_virtualization_cpu(void)
+ 
+ void kvm_arch_disable_virtualization_cpu(void)
  {
- 	kvm_x86_call(hardware_disable)();
+-	kvm_x86_call(hardware_disable)();
++	kvm_x86_call(disable_virtualization_cpu)();
  	drop_user_return_notifiers();
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index 79a6b1a63027..63e46a5f3812 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -1514,8 +1514,8 @@ static inline void kvm_create_vcpu_debugfs(struct kvm_vcpu *vcpu) {}
- #endif
- 
- #ifdef CONFIG_KVM_GENERIC_HARDWARE_ENABLING
--int kvm_arch_hardware_enable(void);
--void kvm_arch_hardware_disable(void);
-+int kvm_arch_enable_virtualization_cpu(void);
-+void kvm_arch_disable_virtualization_cpu(void);
- #endif
- int kvm_arch_vcpu_runnable(struct kvm_vcpu *vcpu);
- bool kvm_arch_vcpu_in_kernel(struct kvm_vcpu *vcpu);
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index fbdd2e46e65b..b000f221abfb 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -5584,7 +5584,7 @@ static int kvm_enable_virtualization_cpu(void)
- 	if (__this_cpu_read(virtualization_enabled))
- 		return 0;
- 
--	if (kvm_arch_hardware_enable()) {
-+	if (kvm_arch_enable_virtualization_cpu()) {
- 		pr_info("kvm: enabling virtualization on CPU%d failed\n",
- 			raw_smp_processor_id());
- 		return -EIO;
-@@ -5609,7 +5609,7 @@ static void kvm_disable_virtualization_cpu(void *ign)
- 	if (!__this_cpu_read(virtualization_enabled))
- 		return;
- 
--	kvm_arch_hardware_disable();
-+	kvm_arch_disable_virtualization_cpu();
- 
- 	__this_cpu_write(virtualization_enabled, false);
  }
+ 
 -- 
 2.46.0.469.g59c65b2a67-goog
 
