@@ -1,41 +1,25 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Thu, 29 Aug 2024 21:35:53 -0700
-Subject: [PATCH v4 03/10] KVM: Rename symbols related to enabling
- virtualization hardware
+Date: Thu, 29 Aug 2024 21:35:58 -0700
+Subject: [PATCH v4 08/10] KVM: Add arch hooks for enabling/disabling virtualization
 In-Reply-To: <20240830043600.127750-1-seanjc@google.com>
 References: <20240830043600.127750-1-seanjc@google.com>
-Message-ID: <20240830043600.127750-4-seanjc@google.com>
+Message-ID: <20240830043600.127750-9-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Rename the various functions (and a variable) that enable virtualization
-to prepare for upcoming changes, and to clean up artifacts of KVM's
-previous behavior, which required manually juggling locks around
-kvm_usage_count.
+Add arch hooks that are invoked when KVM enables/disable virtualization.
+x86 will use the hooks to register an "emergency disable" callback, which
+is essentially an x86-specific shutdown notifier that is used when the
+kernel is doing an emergency reboot/shutdown/kexec.
 
-Drop the "nolock" qualifier from per-CPU functions now that there are no
-"nolock" implementations of the "all" variants, i.e. now that calling a
-non-nolock function from a nolock function isn't confusing (unlike this
-sentence).
-
-Drop "all" from the outer helpers as they no longer manually iterate
-over all CPUs, and because it might not be obvious what "all" refers to.
-
-In lieu of the above qualifiers, append "_cpu" to the end of the functions
-that are per-CPU helpers for the outer APIs.
-
-Opportunistically prepend "kvm" to all functions to help make it clear
-that they are KVM helpers, but mostly because there's no reason not to.
-
-Lastly, use "virtualization" instead of "hardware", because while the
-functions do enable virtualization in hardware, there are a _lot_ of
-things that KVM enables in hardware.
-
-Defer renaming the arch hooks to future patches, purely to reduce the
-amount of churn in a single commit.
+Add comments for the declarations to help arch code understand exactly
+when the callbacks are invoked.  Alternatively, the APIs themselves could
+communicate most of the same info, but kvm_arch_pre_enable_virtualization()
+and kvm_arch_post_disable_virtualization() are a bit cumbersome, and make
+it a bit less obvious that they are intended to be implemented as a pair.
 
 Reviewed-by: Chao Gao <chao.gao@intel.com>
 Reviewed-by: Kai Huang <kai.huang@intel.com>
@@ -43,165 +27,81 @@ Acked-by: Kai Huang <kai.huang@intel.com>
 Tested-by: Farrah Chen <farrah.chen@intel.com>
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- virt/kvm/kvm_main.c | 42 +++++++++++++++++++++---------------------
- 1 file changed, 21 insertions(+), 21 deletions(-)
+ include/linux/kvm_host.h | 14 ++++++++++++++
+ virt/kvm/kvm_main.c      | 14 ++++++++++++++
+ 2 files changed, 28 insertions(+)
 
+diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+index 63e46a5f3812..50ace701d468 100644
+--- a/include/linux/kvm_host.h
++++ b/include/linux/kvm_host.h
+@@ -1514,6 +1514,20 @@ static inline void kvm_create_vcpu_debugfs(struct kvm_vcpu *vcpu) {}
+ #endif
+ 
+ #ifdef CONFIG_KVM_GENERIC_HARDWARE_ENABLING
++/*
++ * kvm_arch_{enable,disable}_virtualization() are called on one CPU, under
++ * kvm_usage_lock, immediately after/before 0=>1 and 1=>0 transitions of
++ * kvm_usage_count, i.e. at the beginning of the generic hardware enabling
++ * sequence, and at the end of the generic hardware disabling sequence.
++ */
++void kvm_arch_enable_virtualization(void);
++void kvm_arch_disable_virtualization(void);
++/*
++ * kvm_arch_{enable,disable}_virtualization_cpu() are called on "every" CPU to
++ * do the actual twiddling of hardware bits.  The hooks are called on all
++ * online CPUs when KVM enables/disabled virtualization, and on a single CPU
++ * when that CPU is onlined/offlined (including for Resume/Suspend).
++ */
+ int kvm_arch_enable_virtualization_cpu(void);
+ void kvm_arch_disable_virtualization_cpu(void);
+ #endif
 diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index a5826e16a106..fbdd2e46e65b 100644
+index 55779fbb37ec..9ae4bd8a3712 100644
 --- a/virt/kvm/kvm_main.c
 +++ b/virt/kvm/kvm_main.c
-@@ -136,8 +136,8 @@ static int kvm_no_compat_open(struct inode *inode, struct file *file)
- #define KVM_COMPAT(c)	.compat_ioctl	= kvm_no_compat_ioctl,	\
- 			.open		= kvm_no_compat_open
- #endif
--static int hardware_enable_all(void);
--static void hardware_disable_all(void);
-+static int kvm_enable_virtualization(void);
-+static void kvm_disable_virtualization(void);
- 
- static void kvm_io_bus_destroy(struct kvm_io_bus *bus);
- 
-@@ -1220,7 +1220,7 @@ static struct kvm *kvm_create_vm(unsigned long type, const char *fdname)
- 	if (r)
- 		goto out_err_no_arch_destroy_vm;
- 
--	r = hardware_enable_all();
-+	r = kvm_enable_virtualization();
- 	if (r)
- 		goto out_err_no_disable;
- 
-@@ -1263,7 +1263,7 @@ static struct kvm *kvm_create_vm(unsigned long type, const char *fdname)
- 		mmu_notifier_unregister(&kvm->mmu_notifier, current->mm);
- #endif
- out_err_no_mmu_notifier:
--	hardware_disable_all();
-+	kvm_disable_virtualization();
- out_err_no_disable:
- 	kvm_arch_destroy_vm(kvm);
- out_err_no_arch_destroy_vm:
-@@ -1360,7 +1360,7 @@ static void kvm_destroy_vm(struct kvm *kvm)
- #endif
- 	kvm_arch_free_vm(kvm);
- 	preempt_notifier_dec();
--	hardware_disable_all();
-+	kvm_disable_virtualization();
- 	mmdrop(mm);
- }
- 
-@@ -5575,13 +5575,13 @@ static struct miscdevice kvm_dev = {
- __visible bool kvm_rebooting;
- EXPORT_SYMBOL_GPL(kvm_rebooting);
- 
--static DEFINE_PER_CPU(bool, hardware_enabled);
-+static DEFINE_PER_CPU(bool, virtualization_enabled);
+@@ -5582,6 +5582,16 @@ static DEFINE_PER_CPU(bool, virtualization_enabled);
  static DEFINE_MUTEX(kvm_usage_lock);
  static int kvm_usage_count;
  
--static int hardware_enable_nolock(void)
-+static int kvm_enable_virtualization_cpu(void)
++__weak void kvm_arch_enable_virtualization(void)
++{
++
++}
++
++__weak void kvm_arch_disable_virtualization(void)
++{
++
++}
++
+ static int kvm_enable_virtualization_cpu(void)
  {
--	if (__this_cpu_read(hardware_enabled))
-+	if (__this_cpu_read(virtualization_enabled))
+ 	if (__this_cpu_read(virtualization_enabled))
+@@ -5681,6 +5691,8 @@ static int kvm_enable_virtualization(void)
+ 	if (kvm_usage_count++)
  		return 0;
  
- 	if (kvm_arch_hardware_enable()) {
-@@ -5590,7 +5590,7 @@ static int hardware_enable_nolock(void)
- 		return -EIO;
- 	}
- 
--	__this_cpu_write(hardware_enabled, true);
-+	__this_cpu_write(virtualization_enabled, true);
- 	return 0;
- }
- 
-@@ -5601,22 +5601,22 @@ static int kvm_online_cpu(unsigned int cpu)
- 	 * be enabled. Otherwise running VMs would encounter unrecoverable
- 	 * errors when scheduled to this CPU.
- 	 */
--	return hardware_enable_nolock();
-+	return kvm_enable_virtualization_cpu();
- }
- 
--static void hardware_disable_nolock(void *junk)
-+static void kvm_disable_virtualization_cpu(void *ign)
- {
--	if (!__this_cpu_read(hardware_enabled))
-+	if (!__this_cpu_read(virtualization_enabled))
- 		return;
- 
- 	kvm_arch_hardware_disable();
- 
--	__this_cpu_write(hardware_enabled, false);
-+	__this_cpu_write(virtualization_enabled, false);
- }
- 
- static int kvm_offline_cpu(unsigned int cpu)
- {
--	hardware_disable_nolock(NULL);
-+	kvm_disable_virtualization_cpu(NULL);
- 	return 0;
- }
- 
-@@ -5635,7 +5635,7 @@ static void kvm_shutdown(void)
- 	 */
- 	pr_info("kvm: exiting hardware virtualization\n");
- 	kvm_rebooting = true;
--	on_each_cpu(hardware_disable_nolock, NULL, 1);
-+	on_each_cpu(kvm_disable_virtualization_cpu, NULL, 1);
- }
- 
- static int kvm_suspend(void)
-@@ -5651,7 +5651,7 @@ static int kvm_suspend(void)
- 	lockdep_assert_not_held(&kvm_usage_lock);
- 	lockdep_assert_irqs_disabled();
- 
--	hardware_disable_nolock(NULL);
-+	kvm_disable_virtualization_cpu(NULL);
- 	return 0;
- }
- 
-@@ -5660,7 +5660,7 @@ static void kvm_resume(void)
- 	lockdep_assert_not_held(&kvm_usage_lock);
- 	lockdep_assert_irqs_disabled();
- 
--	WARN_ON_ONCE(hardware_enable_nolock());
-+	WARN_ON_ONCE(kvm_enable_virtualization_cpu());
- }
- 
- static struct syscore_ops kvm_syscore_ops = {
-@@ -5669,7 +5669,7 @@ static struct syscore_ops kvm_syscore_ops = {
- 	.shutdown = kvm_shutdown,
- };
- 
--static int hardware_enable_all(void)
-+static int kvm_enable_virtualization(void)
- {
- 	int r;
- 
-@@ -5712,7 +5712,7 @@ static int hardware_enable_all(void)
++	kvm_arch_enable_virtualization();
++
+ 	r = cpuhp_setup_state(CPUHP_AP_KVM_ONLINE, "kvm/cpu:online",
+ 			      kvm_online_cpu, kvm_offline_cpu);
+ 	if (r)
+@@ -5711,6 +5723,7 @@ static int kvm_enable_virtualization(void)
+ 	unregister_syscore_ops(&kvm_syscore_ops);
+ 	cpuhp_remove_state(CPUHP_AP_KVM_ONLINE);
+ err_cpuhp:
++	kvm_arch_disable_virtualization();
+ 	--kvm_usage_count;
  	return r;
  }
+@@ -5724,6 +5737,7 @@ static void kvm_disable_virtualization(void)
  
--static void hardware_disable_all(void)
-+static void kvm_disable_virtualization(void)
- {
- 	guard(mutex)(&kvm_usage_lock);
- 
-@@ -5723,12 +5723,12 @@ static void hardware_disable_all(void)
+ 	unregister_syscore_ops(&kvm_syscore_ops);
  	cpuhp_remove_state(CPUHP_AP_KVM_ONLINE);
- }
- #else /* CONFIG_KVM_GENERIC_HARDWARE_ENABLING */
--static int hardware_enable_all(void)
-+static int kvm_enable_virtualization(void)
- {
- 	return 0;
++	kvm_arch_disable_virtualization();
  }
  
--static void hardware_disable_all(void)
-+static void kvm_disable_virtualization(void)
- {
- 
- }
+ static int kvm_init_virtualization(void)
 -- 
 2.46.0.469.g59c65b2a67-goog
 
