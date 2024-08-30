@@ -1,96 +1,108 @@
-From: Sean Christopherson <seanjc@google.com>
-Date: Thu, 29 Aug 2024 21:35:55 -0700
-Subject: [PATCH v4 05/10] KVM: MIPS: Rename virtualization {en,dis}abling APIs
- to match common KVM
-In-Reply-To: <20240830043600.127750-1-seanjc@google.com>
-References: <20240830043600.127750-1-seanjc@google.com>
-Message-ID: <20240830043600.127750-6-seanjc@google.com>
+From: Andrew Jones <andrew.jones@linux.dev>
+Date: Fri, 30 Aug 2024 12:12:24 +0200
+Subject: [kvm-unit-tests PATCH 2/3] lib/on-cpus: Introduce on_cpumask and on_cpumask_async
+In-Reply-To: <20240830101221.2202707-5-andrew.jones@linux.dev>
+References: <20240830101221.2202707-5-andrew.jones@linux.dev>
+Message-ID: <20240830101221.2202707-7-andrew.jones@linux.dev>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Rename MIPS's trampoline hooks for virtualization enabling to match the
-recently renamed arch hooks.
+Provide functions to launch tasks on a selection of cpus identified
+by a cpumask.
 
-No functional change intended.
-
-Signed-off-by: Sean Christopherson <seanjc@google.com>
+Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
 ---
- arch/mips/include/asm/kvm_host.h | 4 ++--
- arch/mips/kvm/mips.c             | 4 ++--
- arch/mips/kvm/vz.c               | 8 ++++----
- 3 files changed, 8 insertions(+), 8 deletions(-)
+ lib/on-cpus.c | 35 +++++++++++++++++++++++++++--------
+ lib/on-cpus.h |  3 +++
+ 2 files changed, 30 insertions(+), 8 deletions(-)
 
-diff --git a/arch/mips/include/asm/kvm_host.h b/arch/mips/include/asm/kvm_host.h
-index 6743a57c1ab4..f7222eb594ea 100644
---- a/arch/mips/include/asm/kvm_host.h
-+++ b/arch/mips/include/asm/kvm_host.h
-@@ -728,8 +728,8 @@ struct kvm_mips_callbacks {
- 	int (*handle_fpe)(struct kvm_vcpu *vcpu);
- 	int (*handle_msa_disabled)(struct kvm_vcpu *vcpu);
- 	int (*handle_guest_exit)(struct kvm_vcpu *vcpu);
--	int (*hardware_enable)(void);
--	void (*hardware_disable)(void);
-+	int (*enable_virtualization_cpu)(void);
-+	void (*disable_virtualization_cpu)(void);
- 	int (*check_extension)(struct kvm *kvm, long ext);
- 	int (*vcpu_init)(struct kvm_vcpu *vcpu);
- 	void (*vcpu_uninit)(struct kvm_vcpu *vcpu);
-diff --git a/arch/mips/kvm/mips.c b/arch/mips/kvm/mips.c
-index 52e1f275351e..60b43ea85c12 100644
---- a/arch/mips/kvm/mips.c
-+++ b/arch/mips/kvm/mips.c
-@@ -127,12 +127,12 @@ int kvm_arch_vcpu_should_kick(struct kvm_vcpu *vcpu)
- 
- int kvm_arch_enable_virtualization_cpu(void)
- {
--	return kvm_mips_callbacks->hardware_enable();
-+	return kvm_mips_callbacks->enable_virtualization_cpu();
+diff --git a/lib/on-cpus.c b/lib/on-cpus.c
+index aed70f7b27b2..892149338419 100644
+--- a/lib/on-cpus.c
++++ b/lib/on-cpus.c
+@@ -124,24 +124,32 @@ void on_cpu_async(int cpu, void (*func)(void *data), void *data)
+ 	smp_send_event();
  }
  
- void kvm_arch_disable_virtualization_cpu(void)
+-void on_cpu(int cpu, void (*func)(void *data), void *data)
++void on_cpumask_async(const cpumask_t *mask, void (*func)(void *data), void *data)
  {
--	kvm_mips_callbacks->hardware_disable();
-+	kvm_mips_callbacks->disable_virtualization_cpu();
+-	on_cpu_async(cpu, func, data);
+-	cpu_wait(cpu);
++	int cpu, me = smp_processor_id();
++
++	for_each_cpu(cpu, mask) {
++		if (cpu == me)
++			continue;
++		on_cpu_async(cpu, func, data);
++	}
++	if (cpumask_test_cpu(me, mask))
++		func(data);
  }
  
- int kvm_arch_init_vm(struct kvm *kvm, unsigned long type)
-diff --git a/arch/mips/kvm/vz.c b/arch/mips/kvm/vz.c
-index 99d5a71e4300..ccab4d76b126 100644
---- a/arch/mips/kvm/vz.c
-+++ b/arch/mips/kvm/vz.c
-@@ -2869,7 +2869,7 @@ static unsigned int kvm_vz_resize_guest_vtlb(unsigned int size)
- 	return ret + 1;
- }
- 
--static int kvm_vz_hardware_enable(void)
-+static int kvm_vz_enable_virtualization_cpu(void)
+-void on_cpus(void (*func)(void *data), void *data)
++void on_cpumask(const cpumask_t *mask, void (*func)(void *data), void *data)
  {
- 	unsigned int mmu_size, guest_mmu_size, ftlb_size;
- 	u64 guest_cvmctl, cvmvmconfig;
-@@ -2983,7 +2983,7 @@ static int kvm_vz_hardware_enable(void)
- 	return 0;
+ 	int cpu, me = smp_processor_id();
+ 
+-	for_each_present_cpu(cpu) {
++	for_each_cpu(cpu, mask) {
+ 		if (cpu == me)
+ 			continue;
+ 		on_cpu_async(cpu, func, data);
+ 	}
+-	func(data);
++	if (cpumask_test_cpu(me, mask))
++		func(data);
+ 
+-	for_each_present_cpu(cpu) {
++	for_each_cpu(cpu, mask) {
+ 		if (cpu == me)
+ 			continue;
+ 		cpumask_set_cpu(me, &on_cpu_info[cpu].waiters);
+@@ -149,6 +157,17 @@ void on_cpus(void (*func)(void *data), void *data)
+ 	}
+ 	while (cpumask_weight(&cpu_idle_mask) < nr_cpus - 1)
+ 		smp_wait_for_event();
+-	for_each_present_cpu(cpu)
++	for_each_cpu(cpu, mask)
+ 		cpumask_clear_cpu(me, &on_cpu_info[cpu].waiters);
  }
++
++void on_cpu(int cpu, void (*func)(void *data), void *data)
++{
++	on_cpu_async(cpu, func, data);
++	cpu_wait(cpu);
++}
++
++void on_cpus(void (*func)(void *data), void *data)
++{
++	on_cpumask(&cpu_present_mask, func, data);
++}
+diff --git a/lib/on-cpus.h b/lib/on-cpus.h
+index 41103b0245c7..4bc6236d6b58 100644
+--- a/lib/on-cpus.h
++++ b/lib/on-cpus.h
+@@ -2,6 +2,7 @@
+ #ifndef _ON_CPUS_H_
+ #define _ON_CPUS_H_
+ #include <stdbool.h>
++#include <cpumask.h>
  
--static void kvm_vz_hardware_disable(void)
-+static void kvm_vz_disable_virtualization_cpu(void)
- {
- 	u64 cvmvmconfig;
- 	unsigned int mmu_size;
-@@ -3280,8 +3280,8 @@ static struct kvm_mips_callbacks kvm_vz_callbacks = {
- 	.handle_msa_disabled = kvm_trap_vz_handle_msa_disabled,
- 	.handle_guest_exit = kvm_trap_vz_handle_guest_exit,
+ extern bool cpu0_calls_idle;
  
--	.hardware_enable = kvm_vz_hardware_enable,
--	.hardware_disable = kvm_vz_hardware_disable,
-+	.enable_virtualization_cpu = kvm_vz_enable_virtualization_cpu,
-+	.disable_virtualization_cpu = kvm_vz_disable_virtualization_cpu,
- 	.check_extension = kvm_vz_check_extension,
- 	.vcpu_init = kvm_vz_vcpu_init,
- 	.vcpu_uninit = kvm_vz_vcpu_uninit,
+@@ -10,5 +11,7 @@ void do_idle(void);
+ void on_cpu_async(int cpu, void (*func)(void *data), void *data);
+ void on_cpu(int cpu, void (*func)(void *data), void *data);
+ void on_cpus(void (*func)(void *data), void *data);
++void on_cpumask_async(const cpumask_t *mask, void (*func)(void *data), void *data);
++void on_cpumask(const cpumask_t *mask, void (*func)(void *data), void *data);
+ 
+ #endif /* _ON_CPUS_H_ */
 -- 
-2.46.0.469.g59c65b2a67-goog
+2.45.2
 
 
