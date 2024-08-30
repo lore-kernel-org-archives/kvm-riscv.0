@@ -1,103 +1,196 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Thu, 29 Aug 2024 21:35:50 -0700
-Subject: [PATCH v4 00/10] KVM: Register cpuhp/syscore callbacks when enabling virt
-Message-ID: <20240830043600.127750-1-seanjc@google.com>
+Date: Thu, 29 Aug 2024 21:35:54 -0700
+Subject: [PATCH v4 04/10] KVM: Rename arch hooks related to per-CPU
+ virtualization enabling
+In-Reply-To: <20240830043600.127750-1-seanjc@google.com>
+References: <20240830043600.127750-1-seanjc@google.com>
+Message-ID: <20240830043600.127750-5-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Register KVM's cpuhp and syscore callbacks when enabling virtualization in
-hardware, as the sole purpose of said callbacks is to disable and re-enable
-virtualization as needed.
+Rename the per-CPU hooks used to enable virtualization in hardware to
+align with the KVM-wide helpers in kvm_main.c, and to better capture that
+the callbacks are invoked on every online CPU.
 
-The primary motivation for this series is to simplify dealing with enabling
-virtualization for Intel's TDX, which needs to enable virtualization
-when kvm-intel.ko is loaded, i.e. long before the first VM is created.
+No functional change intended.
 
-That said, this is a nice cleanup on its own.  By registering the callbacks
-on-demand, the callbacks themselves don't need to check kvm_usage_count,
-because their very existence implies a non-zero count.
+Suggested-by: Paolo Bonzini <pbonzini@redhat.com>
+Signed-off-by: Sean Christopherson <seanjc@google.com>
+---
+ arch/arm64/kvm/arm.c      | 6 +++---
+ arch/loongarch/kvm/main.c | 4 ++--
+ arch/mips/kvm/mips.c      | 4 ++--
+ arch/riscv/kvm/main.c     | 4 ++--
+ arch/x86/kvm/x86.c        | 6 +++---
+ include/linux/kvm_host.h  | 4 ++--
+ virt/kvm/kvm_main.c       | 4 ++--
+ 7 files changed, 16 insertions(+), 16 deletions(-)
 
-Patch 1 (re)adds a dedicated lock for kvm_usage_count.  Hopefully it's a
-temporary lock, as we can likely fix the cpus_read_lock() vs. kvm_lock mess
-for good by switching vm_list to an (S)RCU-protected list.
-
-v4:
- - Collect more reviews.
- - Fix documentation for kvm_usage_lock. [Kai]
- - Add a blurb in locking.rst to call out that cpus_read_lock() vs kvm_lock is
-   a general problem.
- - Add a paragraph in the locking patch to suggest switching vm_list to an
-   (S)RCU-protected list, so that walkers don't need to take kvm_lock.
- - Add an example call chain for the other cpus_read_lock() vs kvm_lock issues
-   that are lurking.
- - Enable the module param by default from the get-go. [Paolo]
- - Rename even more APIs/symbols (all of 'em I could find). [Paolo]
- - Clarify that it's the 0=>1 VM creation that's problematic, not simply the
-   creation of the very first VM. [Paolo]
- - Document enable_virt_at_load, and call out the (dis)advantages of enabling
-   virtualization when KVM is loaded.
- - Drop the WARN on kvm_usage_count being elevated at the end of
-   kvm_uninit_virtualization(), as it's annoyingly difficult to keep the WARN
-   and still allow arch code (i.e. TDX) to enable virtualization during setup.
-
-v3:
- - https://lore.kernel.org/all/20240608000639.3295768-1-seanjc at google.com
- - Collect reviews/acks.
- - Switch to kvm_usage_lock in a dedicated patch, Cc'd for stable at . [Chao]
- - Enable virt at load by default. [Chao]
- - Add comments to document how kvm_arch_{en,dis}able_virtualization() fit
-   into the overall flow. [Kai]
-
-v2:
- - https://lore.kernel.org/all/20240522022827.1690416-1-seanjc at google.com
- - Use a dedicated mutex to avoid lock inversion issues between kvm_lock and
-   the cpuhp lock.
- - Register emergency disable callbacks on-demand. [Kai]
- - Drop an unintended s/junk/ign rename. [Kai]
- - Decrement kvm_usage_count on failure. [Chao]
-
-v1: https://lore.kernel.org/all/20240425233951.3344485-1-seanjc at google.com
-
-Sean Christopherson (10):
-  KVM: Use dedicated mutex to protect kvm_usage_count to avoid deadlock
-  KVM: Register cpuhp and syscore callbacks when enabling hardware
-  KVM: Rename symbols related to enabling virtualization hardware
-  KVM: Rename arch hooks related to per-CPU virtualization enabling
-  KVM: MIPS: Rename virtualization {en,dis}abling APIs to match common
-    KVM
-  KVM: x86: Rename virtualization {en,dis}abling APIs to match common
-    KVM
-  KVM: Add a module param to allow enabling virtualization when KVM is
-    loaded
-  KVM: Add arch hooks for enabling/disabling virtualization
-  x86/reboot: Unconditionally define cpu_emergency_virt_cb typedef
-  KVM: x86: Register "emergency disable" callbacks when virt is enabled
-
- .../admin-guide/kernel-parameters.txt         |  17 ++
- Documentation/virt/kvm/locking.rst            |  31 +-
- arch/arm64/kvm/arm.c                          |   6 +-
- arch/loongarch/kvm/main.c                     |   4 +-
- arch/mips/include/asm/kvm_host.h              |   4 +-
- arch/mips/kvm/mips.c                          |   8 +-
- arch/mips/kvm/vz.c                            |   8 +-
- arch/riscv/kvm/main.c                         |   4 +-
- arch/x86/include/asm/kvm-x86-ops.h            |   4 +-
- arch/x86/include/asm/kvm_host.h               |   7 +-
- arch/x86/include/asm/reboot.h                 |   2 +-
- arch/x86/kvm/svm/svm.c                        |  19 +-
- arch/x86/kvm/vmx/main.c                       |   6 +-
- arch/x86/kvm/vmx/vmx.c                        |  10 +-
- arch/x86/kvm/vmx/x86_ops.h                    |   5 +-
- arch/x86/kvm/x86.c                            |  26 +-
- include/linux/kvm_host.h                      |  18 +-
- virt/kvm/kvm_main.c                           | 270 +++++++++---------
- 18 files changed, 251 insertions(+), 198 deletions(-)
-
-
-base-commit: 15e1c3d65975524c5c792fcd59f7d89f00402261
+diff --git a/arch/arm64/kvm/arm.c b/arch/arm64/kvm/arm.c
+index 9bef7638342e..9c8f5390ec63 100644
+--- a/arch/arm64/kvm/arm.c
++++ b/arch/arm64/kvm/arm.c
+@@ -2163,7 +2163,7 @@ static void cpu_hyp_uninit(void *discard)
+ 	}
+ }
+ 
+-int kvm_arch_hardware_enable(void)
++int kvm_arch_enable_virtualization_cpu(void)
+ {
+ 	/*
+ 	 * Most calls to this function are made with migration
+@@ -2183,7 +2183,7 @@ int kvm_arch_hardware_enable(void)
+ 	return 0;
+ }
+ 
+-void kvm_arch_hardware_disable(void)
++void kvm_arch_disable_virtualization_cpu(void)
+ {
+ 	kvm_timer_cpu_down();
+ 	kvm_vgic_cpu_down();
+@@ -2379,7 +2379,7 @@ static int __init do_pkvm_init(u32 hyp_va_bits)
+ 
+ 	/*
+ 	 * The stub hypercalls are now disabled, so set our local flag to
+-	 * prevent a later re-init attempt in kvm_arch_hardware_enable().
++	 * prevent a later re-init attempt in kvm_arch_enable_virtualization_cpu().
+ 	 */
+ 	__this_cpu_write(kvm_hyp_initialized, 1);
+ 	preempt_enable();
+diff --git a/arch/loongarch/kvm/main.c b/arch/loongarch/kvm/main.c
+index 844736b99d38..27e9b94c0a0b 100644
+--- a/arch/loongarch/kvm/main.c
++++ b/arch/loongarch/kvm/main.c
+@@ -261,7 +261,7 @@ long kvm_arch_dev_ioctl(struct file *filp,
+ 	return -ENOIOCTLCMD;
+ }
+ 
+-int kvm_arch_hardware_enable(void)
++int kvm_arch_enable_virtualization_cpu(void)
+ {
+ 	unsigned long env, gcfg = 0;
+ 
+@@ -300,7 +300,7 @@ int kvm_arch_hardware_enable(void)
+ 	return 0;
+ }
+ 
+-void kvm_arch_hardware_disable(void)
++void kvm_arch_disable_virtualization_cpu(void)
+ {
+ 	write_csr_gcfg(0);
+ 	write_csr_gstat(0);
+diff --git a/arch/mips/kvm/mips.c b/arch/mips/kvm/mips.c
+index b5de770b092e..52e1f275351e 100644
+--- a/arch/mips/kvm/mips.c
++++ b/arch/mips/kvm/mips.c
+@@ -125,12 +125,12 @@ int kvm_arch_vcpu_should_kick(struct kvm_vcpu *vcpu)
+ 	return 1;
+ }
+ 
+-int kvm_arch_hardware_enable(void)
++int kvm_arch_enable_virtualization_cpu(void)
+ {
+ 	return kvm_mips_callbacks->hardware_enable();
+ }
+ 
+-void kvm_arch_hardware_disable(void)
++void kvm_arch_disable_virtualization_cpu(void)
+ {
+ 	kvm_mips_callbacks->hardware_disable();
+ }
+diff --git a/arch/riscv/kvm/main.c b/arch/riscv/kvm/main.c
+index bab2ec34cd87..f3427f6de608 100644
+--- a/arch/riscv/kvm/main.c
++++ b/arch/riscv/kvm/main.c
+@@ -20,7 +20,7 @@ long kvm_arch_dev_ioctl(struct file *filp,
+ 	return -EINVAL;
+ }
+ 
+-int kvm_arch_hardware_enable(void)
++int kvm_arch_enable_virtualization_cpu(void)
+ {
+ 	csr_write(CSR_HEDELEG, KVM_HEDELEG_DEFAULT);
+ 	csr_write(CSR_HIDELEG, KVM_HIDELEG_DEFAULT);
+@@ -35,7 +35,7 @@ int kvm_arch_hardware_enable(void)
+ 	return 0;
+ }
+ 
+-void kvm_arch_hardware_disable(void)
++void kvm_arch_disable_virtualization_cpu(void)
+ {
+ 	kvm_riscv_aia_disable();
+ 
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index 70219e406987..1182baf0d487 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -355,7 +355,7 @@ static void kvm_on_user_return(struct user_return_notifier *urn)
+ 
+ 	/*
+ 	 * Disabling irqs at this point since the following code could be
+-	 * interrupted and executed through kvm_arch_hardware_disable()
++	 * interrupted and executed through kvm_arch_disable_virtualization_cpu()
+ 	 */
+ 	local_irq_save(flags);
+ 	if (msrs->registered) {
+@@ -12512,7 +12512,7 @@ void kvm_vcpu_deliver_sipi_vector(struct kvm_vcpu *vcpu, u8 vector)
+ }
+ EXPORT_SYMBOL_GPL(kvm_vcpu_deliver_sipi_vector);
+ 
+-int kvm_arch_hardware_enable(void)
++int kvm_arch_enable_virtualization_cpu(void)
+ {
+ 	struct kvm *kvm;
+ 	struct kvm_vcpu *vcpu;
+@@ -12608,7 +12608,7 @@ int kvm_arch_hardware_enable(void)
+ 	return 0;
+ }
+ 
+-void kvm_arch_hardware_disable(void)
++void kvm_arch_disable_virtualization_cpu(void)
+ {
+ 	kvm_x86_call(hardware_disable)();
+ 	drop_user_return_notifiers();
+diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+index 79a6b1a63027..63e46a5f3812 100644
+--- a/include/linux/kvm_host.h
++++ b/include/linux/kvm_host.h
+@@ -1514,8 +1514,8 @@ static inline void kvm_create_vcpu_debugfs(struct kvm_vcpu *vcpu) {}
+ #endif
+ 
+ #ifdef CONFIG_KVM_GENERIC_HARDWARE_ENABLING
+-int kvm_arch_hardware_enable(void);
+-void kvm_arch_hardware_disable(void);
++int kvm_arch_enable_virtualization_cpu(void);
++void kvm_arch_disable_virtualization_cpu(void);
+ #endif
+ int kvm_arch_vcpu_runnable(struct kvm_vcpu *vcpu);
+ bool kvm_arch_vcpu_in_kernel(struct kvm_vcpu *vcpu);
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index fbdd2e46e65b..b000f221abfb 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -5584,7 +5584,7 @@ static int kvm_enable_virtualization_cpu(void)
+ 	if (__this_cpu_read(virtualization_enabled))
+ 		return 0;
+ 
+-	if (kvm_arch_hardware_enable()) {
++	if (kvm_arch_enable_virtualization_cpu()) {
+ 		pr_info("kvm: enabling virtualization on CPU%d failed\n",
+ 			raw_smp_processor_id());
+ 		return -EIO;
+@@ -5609,7 +5609,7 @@ static void kvm_disable_virtualization_cpu(void *ign)
+ 	if (!__this_cpu_read(virtualization_enabled))
+ 		return;
+ 
+-	kvm_arch_hardware_disable();
++	kvm_arch_disable_virtualization_cpu();
+ 
+ 	__this_cpu_write(virtualization_enabled, false);
+ }
 -- 
 2.46.0.469.g59c65b2a67-goog
 
