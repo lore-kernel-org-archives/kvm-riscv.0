@@ -1,163 +1,175 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Thu, 29 Aug 2024 21:35:57 -0700
-Subject: [PATCH v4 07/10] KVM: Add a module param to allow enabling
- virtualization when KVM is loaded
+Date: Thu, 29 Aug 2024 21:36:00 -0700
+Subject: [PATCH v4 10/10] KVM: x86: Register "emergency disable" callbacks
+ when virt is enabled
 In-Reply-To: <20240830043600.127750-1-seanjc@google.com>
 References: <20240830043600.127750-1-seanjc@google.com>
-Message-ID: <20240830043600.127750-8-seanjc@google.com>
+Message-ID: <20240830043600.127750-11-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add an on-by-default module param, enable_virt_at_load, to let userspace
-force virtualization to be enabled in hardware when KVM is initialized,
-i.e. just before /dev/kvm is exposed to userspace.  Enabling virtualization
-during KVM initialization allows userspace to avoid the additional latency
-when creating/destroying the first/last VM (or more specifically, on the
-0=>1 and 1=>0 edges of creation/destruction).
+Register the "disable virtualization in an emergency" callback just
+before KVM enables virtualization in hardware, as there is no functional
+need to keep the callbacks registered while KVM happens to be loaded, but
+is inactive, i.e. if KVM hasn't enabled virtualization.
 
-Now that KVM uses the cpuhp framework to do per-CPU enabling, the latency
-could be non-trivial as the cpuhup bringup/teardown is serialized across
-CPUs, e.g. the latency could be problematic for use case that need to spin
-up VMs quickly.
+Note, unregistering the callback every time the last VM is destroyed could
+have measurable latency due to the synchronize_rcu() needed to ensure all
+references to the callback are dropped before KVM is unloaded.  But the
+latency should be a small fraction of the total latency of disabling
+virtualization across all CPUs, and userspace can set enable_virt_at_load
+to completely eliminate the runtime overhead.
 
-Prior to commit 10474ae8945c ("KVM: Activate Virtualization On Demand"),
-KVM _unconditionally_ enabled virtualization during load, i.e. there's no
-fundamental reason KVM needs to dynamically toggle virtualization.  These
-days, the only known argument for not enabling virtualization is to allow
-KVM to be autoloaded without blocking other out-of-tree hypervisors, and
-such use cases can simply change the module param, e.g. via command line.
+Add a pointer in kvm_x86_ops to allow vendor code to provide its callback.
+There is no reason to force vendor code to do the registration, and either
+way KVM would need a new kvm_x86_ops hook.
 
-Note, the aforementioned commit also mentioned that enabling SVM (AMD's
-virtualization extensions) can result in "using invalid TLB entries".
-It's not clear whether the changelog was referring to a KVM bug, a CPU
-bug, or something else entirely.  Regardless, leaving virtualization off
-by default is not a robust "fix", as any protection provided is lost the
-instant userspace creates the first VM.
-
+Suggested-by: Kai Huang <kai.huang@intel.com>
 Reviewed-by: Chao Gao <chao.gao@intel.com>
-Acked-by: Kai Huang <kai.huang@intel.com>
 Reviewed-by: Kai Huang <kai.huang@intel.com>
+Acked-by: Kai Huang <kai.huang@intel.com>
 Tested-by: Farrah Chen <farrah.chen@intel.com>
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- .../admin-guide/kernel-parameters.txt         | 17 +++++++++
- virt/kvm/kvm_main.c                           | 35 +++++++++++++++++++
- 2 files changed, 52 insertions(+)
+ arch/x86/include/asm/kvm_host.h |  3 +++
+ arch/x86/kvm/svm/svm.c          |  5 +----
+ arch/x86/kvm/vmx/main.c         |  2 ++
+ arch/x86/kvm/vmx/vmx.c          |  6 +-----
+ arch/x86/kvm/vmx/x86_ops.h      |  1 +
+ arch/x86/kvm/x86.c              | 10 ++++++++++
+ 6 files changed, 18 insertions(+), 9 deletions(-)
 
-diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-index 09126bb8cc9f..1b52b1b7bbc4 100644
---- a/Documentation/admin-guide/kernel-parameters.txt
-+++ b/Documentation/admin-guide/kernel-parameters.txt
-@@ -2648,6 +2648,23 @@
+diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
+index cb3b5f107c6e..aa9eea61a092 100644
+--- a/arch/x86/include/asm/kvm_host.h
++++ b/arch/x86/include/asm/kvm_host.h
+@@ -36,6 +36,7 @@
+ #include <asm/kvm_page_track.h>
+ #include <asm/kvm_vcpu_regs.h>
+ #include <asm/hyperv-tlfs.h>
++#include <asm/reboot.h>
  
- 			Default is Y (on).
+ #define __KVM_HAVE_ARCH_VCPU_DEBUGFS
  
-+	kvm.enable_virt_at_load=[KVM,ARM64,LOONGARCH,MIPS,RISCV,X86]
-+			If enabled, KVM will enable virtualization in hardware
-+			when KVM is loaded, and disable virtualization when KVM
-+			is unloaded (if KVM is built as a module).
-+
-+			If disabled, KVM will dynamically enable and disable
-+			virtualization on-demand when creating and destroying
-+			VMs, i.e. on the 0=>1 and 1=>0 transitions of the
-+			number of VMs.
-+
-+			Enabling virtualization at module lode avoids potential
-+			latency for creation of the 0=>1 VM, as KVM serializes
-+			virtualization enabling across all online CPUs.  The
-+			"cost" of enabling virtualization when KVM is loaded,
-+			is that doing so may interfere with using out-of-tree
-+			hypervisors that want to "own" virtualization hardware.
-+
- 	kvm.enable_vmware_backdoor=[KVM] Support VMware backdoor PV interface.
- 				   Default is false (don't support).
+@@ -1631,6 +1632,8 @@ struct kvm_x86_ops {
  
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index b000f221abfb..55779fbb37ec 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -5572,6 +5572,9 @@ static struct miscdevice kvm_dev = {
- };
+ 	int (*enable_virtualization_cpu)(void);
+ 	void (*disable_virtualization_cpu)(void);
++	cpu_emergency_virt_cb *emergency_disable_virtualization_cpu;
++
+ 	void (*hardware_unsetup)(void);
+ 	bool (*has_emulated_msr)(struct kvm *kvm, u32 index);
+ 	void (*vcpu_after_set_cpuid)(struct kvm_vcpu *vcpu);
+diff --git a/arch/x86/kvm/svm/svm.c b/arch/x86/kvm/svm/svm.c
+index a9adbe10c12e..9a0506ef87df 100644
+--- a/arch/x86/kvm/svm/svm.c
++++ b/arch/x86/kvm/svm/svm.c
+@@ -4982,6 +4982,7 @@ static struct kvm_x86_ops svm_x86_ops __initdata = {
+ 	.hardware_unsetup = svm_hardware_unsetup,
+ 	.enable_virtualization_cpu = svm_enable_virtualization_cpu,
+ 	.disable_virtualization_cpu = svm_disable_virtualization_cpu,
++	.emergency_disable_virtualization_cpu = svm_emergency_disable_virtualization_cpu,
+ 	.has_emulated_msr = svm_has_emulated_msr,
  
- #ifdef CONFIG_KVM_GENERIC_HARDWARE_ENABLING
-+static bool enable_virt_at_load = true;
-+module_param(enable_virt_at_load, bool, 0444);
-+
- __visible bool kvm_rebooting;
- EXPORT_SYMBOL_GPL(kvm_rebooting);
- 
-@@ -5722,15 +5725,39 @@ static void kvm_disable_virtualization(void)
- 	unregister_syscore_ops(&kvm_syscore_ops);
- 	cpuhp_remove_state(CPUHP_AP_KVM_ONLINE);
- }
-+
-+static int kvm_init_virtualization(void)
-+{
-+	if (enable_virt_at_load)
-+		return kvm_enable_virtualization();
-+
-+	return 0;
-+}
-+
-+static void kvm_uninit_virtualization(void)
-+{
-+	if (enable_virt_at_load)
-+		kvm_disable_virtualization();
-+}
- #else /* CONFIG_KVM_GENERIC_HARDWARE_ENABLING */
- static int kvm_enable_virtualization(void)
+ 	.vcpu_create = svm_vcpu_create,
+@@ -5410,8 +5411,6 @@ static struct kvm_x86_init_ops svm_init_ops __initdata = {
+ static void __svm_exit(void)
  {
- 	return 0;
+ 	kvm_x86_vendor_exit();
+-
+-	cpu_emergency_unregister_virt_callback(svm_emergency_disable_virtualization_cpu);
  }
  
-+static int kvm_init_virtualization(void)
-+{
-+	return 0;
-+}
-+
- static void kvm_disable_virtualization(void)
- {
+ static int __init svm_init(void)
+@@ -5427,8 +5426,6 @@ static int __init svm_init(void)
+ 	if (r)
+ 		return r;
  
-+}
-+
-+static void kvm_uninit_virtualization(void)
-+{
-+
- }
- #endif /* CONFIG_KVM_GENERIC_HARDWARE_ENABLING */
- 
-@@ -6475,6 +6502,10 @@ int kvm_init(unsigned vcpu_size, unsigned vcpu_align, struct module *module)
- 
- 	kvm_gmem_init(module);
- 
-+	r = kvm_init_virtualization();
-+	if (r)
-+		goto err_virt;
-+
+-	cpu_emergency_register_virt_callback(svm_emergency_disable_virtualization_cpu);
+-
  	/*
- 	 * Registration _must_ be the very last thing done, as this exposes
- 	 * /dev/kvm to userspace, i.e. all infrastructure must be setup!
-@@ -6488,6 +6519,8 @@ int kvm_init(unsigned vcpu_size, unsigned vcpu_align, struct module *module)
- 	return 0;
+ 	 * Common KVM initialization _must_ come last, after this, /dev/kvm is
+ 	 * exposed to userspace!
+diff --git a/arch/x86/kvm/vmx/main.c b/arch/x86/kvm/vmx/main.c
+index 4a5bf92edccf..7e2e78a14257 100644
+--- a/arch/x86/kvm/vmx/main.c
++++ b/arch/x86/kvm/vmx/main.c
+@@ -25,6 +25,8 @@ struct kvm_x86_ops vt_x86_ops __initdata = {
  
- err_register:
-+	kvm_uninit_virtualization();
-+err_virt:
- 	kvm_vfio_ops_exit();
- err_vfio:
- 	kvm_async_pf_deinit();
-@@ -6513,6 +6546,8 @@ void kvm_exit(void)
- 	 */
- 	misc_deregister(&kvm_dev);
- 
-+	kvm_uninit_virtualization();
+ 	.enable_virtualization_cpu = vmx_enable_virtualization_cpu,
+ 	.disable_virtualization_cpu = vmx_disable_virtualization_cpu,
++	.emergency_disable_virtualization_cpu = vmx_emergency_disable_virtualization_cpu,
 +
- 	debugfs_remove_recursive(kvm_debugfs_dir);
- 	for_each_possible_cpu(cpu)
- 		free_cpumask_var(per_cpu(cpu_kick_mask, cpu));
+ 	.has_emulated_msr = vmx_has_emulated_msr,
+ 
+ 	.vm_size = sizeof(struct kvm_vmx),
+diff --git a/arch/x86/kvm/vmx/vmx.c b/arch/x86/kvm/vmx/vmx.c
+index cf7d937bfd2c..89682832dded 100644
+--- a/arch/x86/kvm/vmx/vmx.c
++++ b/arch/x86/kvm/vmx/vmx.c
+@@ -755,7 +755,7 @@ static int kvm_cpu_vmxoff(void)
+ 	return -EIO;
+ }
+ 
+-static void vmx_emergency_disable_virtualization_cpu(void)
++void vmx_emergency_disable_virtualization_cpu(void)
+ {
+ 	int cpu = raw_smp_processor_id();
+ 	struct loaded_vmcs *v;
+@@ -8584,8 +8584,6 @@ static void __vmx_exit(void)
+ {
+ 	allow_smaller_maxphyaddr = false;
+ 
+-	cpu_emergency_unregister_virt_callback(vmx_emergency_disable_virtualization_cpu);
+-
+ 	vmx_cleanup_l1d_flush();
+ }
+ 
+@@ -8632,8 +8630,6 @@ static int __init vmx_init(void)
+ 		pi_init_cpu(cpu);
+ 	}
+ 
+-	cpu_emergency_register_virt_callback(vmx_emergency_disable_virtualization_cpu);
+-
+ 	vmx_check_vmcs12_offsets();
+ 
+ 	/*
+diff --git a/arch/x86/kvm/vmx/x86_ops.h b/arch/x86/kvm/vmx/x86_ops.h
+index 205692c43a8e..b6a7cfc6ae31 100644
+--- a/arch/x86/kvm/vmx/x86_ops.h
++++ b/arch/x86/kvm/vmx/x86_ops.h
+@@ -15,6 +15,7 @@ void vmx_hardware_unsetup(void);
+ int vmx_check_processor_compat(void);
+ int vmx_enable_virtualization_cpu(void);
+ void vmx_disable_virtualization_cpu(void);
++void vmx_emergency_disable_virtualization_cpu(void);
+ int vmx_vm_init(struct kvm *kvm);
+ void vmx_vm_destroy(struct kvm *kvm);
+ int vmx_vcpu_precreate(struct kvm *kvm);
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index 431358167fa8..f72e5d89e942 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -12512,6 +12512,16 @@ void kvm_vcpu_deliver_sipi_vector(struct kvm_vcpu *vcpu, u8 vector)
+ }
+ EXPORT_SYMBOL_GPL(kvm_vcpu_deliver_sipi_vector);
+ 
++void kvm_arch_enable_virtualization(void)
++{
++	cpu_emergency_register_virt_callback(kvm_x86_ops.emergency_disable_virtualization_cpu);
++}
++
++void kvm_arch_disable_virtualization(void)
++{
++	cpu_emergency_unregister_virt_callback(kvm_x86_ops.emergency_disable_virtualization_cpu);
++}
++
+ int kvm_arch_enable_virtualization_cpu(void)
+ {
+ 	struct kvm *kvm;
 -- 
 2.46.0.469.g59c65b2a67-goog
 
