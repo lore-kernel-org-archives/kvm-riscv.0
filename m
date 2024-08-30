@@ -1,267 +1,311 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Thu, 29 Aug 2024 21:35:56 -0700
-Subject: [PATCH v4 06/10] KVM: x86: Rename virtualization {en,dis}abling APIs
- to match common KVM
+Date: Thu, 29 Aug 2024 21:35:51 -0700
+Subject: [PATCH v4 01/10] KVM: Use dedicated mutex to protect kvm_usage_count
+ to avoid deadlock
 In-Reply-To: <20240830043600.127750-1-seanjc@google.com>
 References: <20240830043600.127750-1-seanjc@google.com>
-Message-ID: <20240830043600.127750-7-seanjc@google.com>
+Message-ID: <20240830043600.127750-2-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Rename x86's the per-CPU vendor hooks used to enable virtualization in
-hardware to align with the recently renamed arch hooks.
+Use a dedicated mutex to guard kvm_usage_count to fix a potential deadlock
+on x86 due to a chain of locks and SRCU synchronizations.  Translating the
+below lockdep splat, CPU1 #6 will wait on CPU0 #1, CPU0 #8 will wait on
+CPU2 #3, and CPU2 #7 will wait on CPU1 #4 (if there's a writer, due to the
+fairness of r/w semaphores).
 
-No functional change intended.
+    CPU0                     CPU1                     CPU2
+1   lock(&kvm->slots_lock);
+2                                                     lock(&vcpu->mutex);
+3                                                     lock(&kvm->srcu);
+4                            lock(cpu_hotplug_lock);
+5                            lock(kvm_lock);
+6                            lock(&kvm->slots_lock);
+7                                                     lock(cpu_hotplug_lock);
+8   sync(&kvm->srcu);
 
+Note, there are likely more potential deadlocks in KVM x86, e.g. the same
+pattern of taking cpu_hotplug_lock outside of kvm_lock likely exists with
+__kvmclock_cpufreq_notifier():
+
+  cpuhp_cpufreq_online()
+  |
+  -> cpufreq_online()
+     |
+     -> cpufreq_gov_performance_limits()
+        |
+        -> __cpufreq_driver_target()
+           |
+           -> __target_index()
+              |
+              -> cpufreq_freq_transition_begin()
+                 |
+                 -> cpufreq_notify_transition()
+                    |
+                    -> ... __kvmclock_cpufreq_notifier()
+
+But, actually triggering such deadlocks is beyond rare due to the
+combination of dependencies and timings involved.  E.g. the cpufreq
+notifier is only used on older CPUs without a constant TSC, mucking with
+the NX hugepage mitigation while VMs are running is very uncommon, and
+doing so while also onlining/offlining a CPU (necessary to generate
+contention on cpu_hotplug_lock) would be even more unusual.
+
+The most robust solution to the general cpu_hotplug_lock issue is likely
+to switch vm_list to be an RCU-protected list, e.g. so that x86's cpufreq
+notifier doesn't to take kvm_lock.  For now, settle for fixing the most
+blatant deadlock, as switching to an RCU-protected list is a much more
+involved change, but add a comment in locking.rst to call out that care
+needs to be taken when walking holding kvm_lock and walking vm_list.
+
+  ======================================================
+  WARNING: possible circular locking dependency detected
+  6.10.0-smp--c257535a0c9d-pip #330 Tainted: G S         O
+  ------------------------------------------------------
+  tee/35048 is trying to acquire lock:
+  ff6a80eced71e0a8 (&kvm->slots_lock){+.+.}-{3:3}, at: set_nx_huge_pages+0x179/0x1e0 [kvm]
+
+  but task is already holding lock:
+  ffffffffc07abb08 (kvm_lock){+.+.}-{3:3}, at: set_nx_huge_pages+0x14a/0x1e0 [kvm]
+
+  which lock already depends on the new lock.
+
+   the existing dependency chain (in reverse order) is:
+
+  -> #3 (kvm_lock){+.+.}-{3:3}:
+         __mutex_lock+0x6a/0xb40
+         mutex_lock_nested+0x1f/0x30
+         kvm_dev_ioctl+0x4fb/0xe50 [kvm]
+         __se_sys_ioctl+0x7b/0xd0
+         __x64_sys_ioctl+0x21/0x30
+         x64_sys_call+0x15d0/0x2e60
+         do_syscall_64+0x83/0x160
+         entry_SYSCALL_64_after_hwframe+0x76/0x7e
+
+  -> #2 (cpu_hotplug_lock){++++}-{0:0}:
+         cpus_read_lock+0x2e/0xb0
+         static_key_slow_inc+0x16/0x30
+         kvm_lapic_set_base+0x6a/0x1c0 [kvm]
+         kvm_set_apic_base+0x8f/0xe0 [kvm]
+         kvm_set_msr_common+0x9ae/0xf80 [kvm]
+         vmx_set_msr+0xa54/0xbe0 [kvm_intel]
+         __kvm_set_msr+0xb6/0x1a0 [kvm]
+         kvm_arch_vcpu_ioctl+0xeca/0x10c0 [kvm]
+         kvm_vcpu_ioctl+0x485/0x5b0 [kvm]
+         __se_sys_ioctl+0x7b/0xd0
+         __x64_sys_ioctl+0x21/0x30
+         x64_sys_call+0x15d0/0x2e60
+         do_syscall_64+0x83/0x160
+         entry_SYSCALL_64_after_hwframe+0x76/0x7e
+
+  -> #1 (&kvm->srcu){.+.+}-{0:0}:
+         __synchronize_srcu+0x44/0x1a0
+         synchronize_srcu_expedited+0x21/0x30
+         kvm_swap_active_memslots+0x110/0x1c0 [kvm]
+         kvm_set_memslot+0x360/0x620 [kvm]
+         __kvm_set_memory_region+0x27b/0x300 [kvm]
+         kvm_vm_ioctl_set_memory_region+0x43/0x60 [kvm]
+         kvm_vm_ioctl+0x295/0x650 [kvm]
+         __se_sys_ioctl+0x7b/0xd0
+         __x64_sys_ioctl+0x21/0x30
+         x64_sys_call+0x15d0/0x2e60
+         do_syscall_64+0x83/0x160
+         entry_SYSCALL_64_after_hwframe+0x76/0x7e
+
+  -> #0 (&kvm->slots_lock){+.+.}-{3:3}:
+         __lock_acquire+0x15ef/0x2e30
+         lock_acquire+0xe0/0x260
+         __mutex_lock+0x6a/0xb40
+         mutex_lock_nested+0x1f/0x30
+         set_nx_huge_pages+0x179/0x1e0 [kvm]
+         param_attr_store+0x93/0x100
+         module_attr_store+0x22/0x40
+         sysfs_kf_write+0x81/0xb0
+         kernfs_fop_write_iter+0x133/0x1d0
+         vfs_write+0x28d/0x380
+         ksys_write+0x70/0xe0
+         __x64_sys_write+0x1f/0x30
+         x64_sys_call+0x281b/0x2e60
+         do_syscall_64+0x83/0x160
+         entry_SYSCALL_64_after_hwframe+0x76/0x7e
+
+Cc: Chao Gao <chao.gao@intel.com>
+Fixes: 0bf50497f03b ("KVM: Drop kvm_count_lock and instead protect kvm_usage_count with kvm_lock")
+Cc: stable at vger.kernel.org
+Reviewed-by: Kai Huang <kai.huang@intel.com>
+Acked-by: Kai Huang <kai.huang@intel.com>
+Tested-by: Farrah Chen <farrah.chen@intel.com>
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/x86/include/asm/kvm-x86-ops.h |  4 ++--
- arch/x86/include/asm/kvm_host.h    |  4 ++--
- arch/x86/kvm/svm/svm.c             | 18 +++++++++---------
- arch/x86/kvm/vmx/main.c            |  4 ++--
- arch/x86/kvm/vmx/vmx.c             | 10 +++++-----
- arch/x86/kvm/vmx/x86_ops.h         |  4 ++--
- arch/x86/kvm/x86.c                 | 10 +++++-----
- 7 files changed, 27 insertions(+), 27 deletions(-)
+ Documentation/virt/kvm/locking.rst | 32 +++++++++++++++++++++---------
+ virt/kvm/kvm_main.c                | 31 +++++++++++++++--------------
+ 2 files changed, 39 insertions(+), 24 deletions(-)
 
-diff --git a/arch/x86/include/asm/kvm-x86-ops.h b/arch/x86/include/asm/kvm-x86-ops.h
-index 68ad4f923664..03b7e13f15bb 100644
---- a/arch/x86/include/asm/kvm-x86-ops.h
-+++ b/arch/x86/include/asm/kvm-x86-ops.h
-@@ -14,8 +14,8 @@ BUILD_BUG_ON(1)
-  * be __static_call_return0.
-  */
- KVM_X86_OP(check_processor_compatibility)
--KVM_X86_OP(hardware_enable)
--KVM_X86_OP(hardware_disable)
-+KVM_X86_OP(enable_virtualization_cpu)
-+KVM_X86_OP(disable_virtualization_cpu)
- KVM_X86_OP(hardware_unsetup)
- KVM_X86_OP(has_emulated_msr)
- KVM_X86_OP(vcpu_after_set_cpuid)
-diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
-index 94e7b5a4fafe..cb3b5f107c6e 100644
---- a/arch/x86/include/asm/kvm_host.h
-+++ b/arch/x86/include/asm/kvm_host.h
-@@ -1629,8 +1629,8 @@ struct kvm_x86_ops {
+diff --git a/Documentation/virt/kvm/locking.rst b/Documentation/virt/kvm/locking.rst
+index 02880d5552d5..c0cb5ce51c1e 100644
+--- a/Documentation/virt/kvm/locking.rst
++++ b/Documentation/virt/kvm/locking.rst
+@@ -9,7 +9,7 @@ KVM Lock Overview
  
- 	int (*check_processor_compatibility)(void);
+ The acquisition orders for mutexes are as follows:
  
--	int (*hardware_enable)(void);
--	void (*hardware_disable)(void);
-+	int (*enable_virtualization_cpu)(void);
-+	void (*disable_virtualization_cpu)(void);
- 	void (*hardware_unsetup)(void);
- 	bool (*has_emulated_msr)(struct kvm *kvm, u32 index);
- 	void (*vcpu_after_set_cpuid)(struct kvm_vcpu *vcpu);
-diff --git a/arch/x86/kvm/svm/svm.c b/arch/x86/kvm/svm/svm.c
-index d6f252555ab3..a9adbe10c12e 100644
---- a/arch/x86/kvm/svm/svm.c
-+++ b/arch/x86/kvm/svm/svm.c
-@@ -592,14 +592,14 @@ static inline void kvm_cpu_svm_disable(void)
- 	}
- }
+-- cpus_read_lock() is taken outside kvm_lock
++- cpus_read_lock() is taken outside kvm_lock and kvm_usage_lock
  
--static void svm_emergency_disable(void)
-+static void svm_emergency_disable_virtualization_cpu(void)
- {
- 	kvm_rebooting = true;
+ - kvm->lock is taken outside vcpu->mutex
  
- 	kvm_cpu_svm_disable();
- }
+@@ -24,6 +24,12 @@ The acquisition orders for mutexes are as follows:
+   are taken on the waiting side when modifying memslots, so MMU notifiers
+   must not take either kvm->slots_lock or kvm->slots_arch_lock.
  
--static void svm_hardware_disable(void)
-+static void svm_disable_virtualization_cpu(void)
- {
- 	/* Make sure we clean up behind us */
- 	if (tsc_scaling)
-@@ -610,7 +610,7 @@ static void svm_hardware_disable(void)
- 	amd_pmu_disable_virt();
- }
++cpus_read_lock() vs kvm_lock:
++- Taking cpus_read_lock() outside of kvm_lock is problematic, despite that
++  being the official ordering, as it is quite easy to unknowingly trigger
++  cpus_read_lock() while holding kvm_lock.  Use caution when walking vm_list,
++  e.g. avoid complex operations when possible.
++
+ For SRCU:
  
--static int svm_hardware_enable(void)
-+static int svm_enable_virtualization_cpu(void)
- {
+ - ``synchronize_srcu(&kvm->srcu)`` is called inside critical sections
+@@ -227,10 +233,17 @@ time it will be set using the Dirty tracking mechanism described above.
+ :Type:		mutex
+ :Arch:		any
+ :Protects:	- vm_list
+-		- kvm_usage_count
++
++``kvm_usage_lock``
++^^^^^^^^^^^^^^^^^^
++
++:Type:		mutex
++:Arch:		any
++:Protects:	- kvm_usage_count
+ 		- hardware virtualization enable/disable
+-:Comment:	KVM also disables CPU hotplug via cpus_read_lock() during
+-		enable/disable.
++:Comment:	Exists because using kvm_lock leads to deadlock (see earlier comment
++		on cpus_read_lock() vs kvm_lock).  Note, KVM also disables CPU hotplug via
++		cpus_read_lock() when enabling/disabling virtualization.
  
- 	struct svm_cpu_data *sd;
-@@ -1533,7 +1533,7 @@ static void svm_prepare_switch_to_guest(struct kvm_vcpu *vcpu)
- 	 * TSC_AUX is always virtualized for SEV-ES guests when the feature is
- 	 * available. The user return MSR support is not required in this case
- 	 * because TSC_AUX is restored on #VMEXIT from the host save area
--	 * (which has been initialized in svm_hardware_enable()).
-+	 * (which has been initialized in svm_enable_virtualization_cpu()).
+ ``kvm->mn_invalidate_lock``
+ ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+@@ -290,11 +303,12 @@ time it will be set using the Dirty tracking mechanism described above.
+ 		wakeup.
+ 
+ ``vendor_module_lock``
+-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++^^^^^^^^^^^^^^^^^^^^^^
+ :Type:		mutex
+ :Arch:		x86
+ :Protects:	loading a vendor module (kvm_amd or kvm_intel)
+-:Comment:	Exists because using kvm_lock leads to deadlock.  cpu_hotplug_lock is
+-    taken outside of kvm_lock, e.g. in KVM's CPU online/offline callbacks, and
+-    many operations need to take cpu_hotplug_lock when loading a vendor module,
+-    e.g. updating static calls.
++:Comment:	Exists because using kvm_lock leads to deadlock.  kvm_lock is taken
++    in notifiers, e.g. __kvmclock_cpufreq_notifier(), that may be invoked while
++    cpu_hotplug_lock is held, e.g. from cpufreq_boost_trigger_state(), and many
++    operations need to take cpu_hotplug_lock when loading a vendor module, e.g.
++    updating static calls.
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index 92901656a0d4..b4cdb659d3e1 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -5576,6 +5576,7 @@ __visible bool kvm_rebooting;
+ EXPORT_SYMBOL_GPL(kvm_rebooting);
+ 
+ static DEFINE_PER_CPU(bool, hardware_enabled);
++static DEFINE_MUTEX(kvm_usage_lock);
+ static int kvm_usage_count;
+ 
+ static int __hardware_enable_nolock(void)
+@@ -5608,10 +5609,10 @@ static int kvm_online_cpu(unsigned int cpu)
+ 	 * be enabled. Otherwise running VMs would encounter unrecoverable
+ 	 * errors when scheduled to this CPU.
  	 */
- 	if (likely(tsc_aux_uret_slot >= 0) &&
- 	    (!boot_cpu_has(X86_FEATURE_V_TSC_AUX) || !sev_es_guest(vcpu->kvm)))
-@@ -3132,7 +3132,7 @@ static int svm_set_msr(struct kvm_vcpu *vcpu, struct msr_data *msr)
- 		 * feature is available. The user return MSR support is not
- 		 * required in this case because TSC_AUX is restored on #VMEXIT
- 		 * from the host save area (which has been initialized in
--		 * svm_hardware_enable()).
-+		 * svm_enable_virtualization_cpu()).
- 		 */
- 		if (boot_cpu_has(X86_FEATURE_V_TSC_AUX) && sev_es_guest(vcpu->kvm))
- 			break;
-@@ -4980,8 +4980,8 @@ static struct kvm_x86_ops svm_x86_ops __initdata = {
- 	.check_processor_compatibility = svm_check_processor_compat,
- 
- 	.hardware_unsetup = svm_hardware_unsetup,
--	.hardware_enable = svm_hardware_enable,
--	.hardware_disable = svm_hardware_disable,
-+	.enable_virtualization_cpu = svm_enable_virtualization_cpu,
-+	.disable_virtualization_cpu = svm_disable_virtualization_cpu,
- 	.has_emulated_msr = svm_has_emulated_msr,
- 
- 	.vcpu_create = svm_vcpu_create,
-@@ -5411,7 +5411,7 @@ static void __svm_exit(void)
- {
- 	kvm_x86_vendor_exit();
- 
--	cpu_emergency_unregister_virt_callback(svm_emergency_disable);
-+	cpu_emergency_unregister_virt_callback(svm_emergency_disable_virtualization_cpu);
+-	mutex_lock(&kvm_lock);
++	mutex_lock(&kvm_usage_lock);
+ 	if (kvm_usage_count)
+ 		ret = __hardware_enable_nolock();
+-	mutex_unlock(&kvm_lock);
++	mutex_unlock(&kvm_usage_lock);
+ 	return ret;
  }
  
- static int __init svm_init(void)
-@@ -5427,7 +5427,7 @@ static int __init svm_init(void)
- 	if (r)
- 		return r;
+@@ -5631,10 +5632,10 @@ static void hardware_disable_nolock(void *junk)
  
--	cpu_emergency_register_virt_callback(svm_emergency_disable);
-+	cpu_emergency_register_virt_callback(svm_emergency_disable_virtualization_cpu);
- 
- 	/*
- 	 * Common KVM initialization _must_ come last, after this, /dev/kvm is
-diff --git a/arch/x86/kvm/vmx/main.c b/arch/x86/kvm/vmx/main.c
-index 0bf35ebe8a1b..4a5bf92edccf 100644
---- a/arch/x86/kvm/vmx/main.c
-+++ b/arch/x86/kvm/vmx/main.c
-@@ -23,8 +23,8 @@ struct kvm_x86_ops vt_x86_ops __initdata = {
- 
- 	.hardware_unsetup = vmx_hardware_unsetup,
- 
--	.hardware_enable = vmx_hardware_enable,
--	.hardware_disable = vmx_hardware_disable,
-+	.enable_virtualization_cpu = vmx_enable_virtualization_cpu,
-+	.disable_virtualization_cpu = vmx_disable_virtualization_cpu,
- 	.has_emulated_msr = vmx_has_emulated_msr,
- 
- 	.vm_size = sizeof(struct kvm_vmx),
-diff --git a/arch/x86/kvm/vmx/vmx.c b/arch/x86/kvm/vmx/vmx.c
-index f18c2d8c7476..cf7d937bfd2c 100644
---- a/arch/x86/kvm/vmx/vmx.c
-+++ b/arch/x86/kvm/vmx/vmx.c
-@@ -755,7 +755,7 @@ static int kvm_cpu_vmxoff(void)
- 	return -EIO;
- }
- 
--static void vmx_emergency_disable(void)
-+static void vmx_emergency_disable_virtualization_cpu(void)
+ static int kvm_offline_cpu(unsigned int cpu)
  {
- 	int cpu = raw_smp_processor_id();
- 	struct loaded_vmcs *v;
-@@ -2844,7 +2844,7 @@ static int kvm_cpu_vmxon(u64 vmxon_pointer)
- 	return -EFAULT;
- }
- 
--int vmx_hardware_enable(void)
-+int vmx_enable_virtualization_cpu(void)
- {
- 	int cpu = raw_smp_processor_id();
- 	u64 phys_addr = __pa(per_cpu(vmxarea, cpu));
-@@ -2881,7 +2881,7 @@ static void vmclear_local_loaded_vmcss(void)
- 		__loaded_vmcs_clear(v);
- }
- 
--void vmx_hardware_disable(void)
-+void vmx_disable_virtualization_cpu(void)
- {
- 	vmclear_local_loaded_vmcss();
- 
-@@ -8584,7 +8584,7 @@ static void __vmx_exit(void)
- {
- 	allow_smaller_maxphyaddr = false;
- 
--	cpu_emergency_unregister_virt_callback(vmx_emergency_disable);
-+	cpu_emergency_unregister_virt_callback(vmx_emergency_disable_virtualization_cpu);
- 
- 	vmx_cleanup_l1d_flush();
- }
-@@ -8632,7 +8632,7 @@ static int __init vmx_init(void)
- 		pi_init_cpu(cpu);
- 	}
- 
--	cpu_emergency_register_virt_callback(vmx_emergency_disable);
-+	cpu_emergency_register_virt_callback(vmx_emergency_disable_virtualization_cpu);
- 
- 	vmx_check_vmcs12_offsets();
- 
-diff --git a/arch/x86/kvm/vmx/x86_ops.h b/arch/x86/kvm/vmx/x86_ops.h
-index ce3221cd1d01..205692c43a8e 100644
---- a/arch/x86/kvm/vmx/x86_ops.h
-+++ b/arch/x86/kvm/vmx/x86_ops.h
-@@ -13,8 +13,8 @@ extern struct kvm_x86_init_ops vt_init_ops __initdata;
- 
- void vmx_hardware_unsetup(void);
- int vmx_check_processor_compat(void);
--int vmx_hardware_enable(void);
--void vmx_hardware_disable(void);
-+int vmx_enable_virtualization_cpu(void);
-+void vmx_disable_virtualization_cpu(void);
- int vmx_vm_init(struct kvm *kvm);
- void vmx_vm_destroy(struct kvm *kvm);
- int vmx_vcpu_precreate(struct kvm *kvm);
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 1182baf0d487..431358167fa8 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -9749,7 +9749,7 @@ int kvm_x86_vendor_init(struct kvm_x86_init_ops *ops)
- 
- 	guard(mutex)(&vendor_module_lock);
- 
--	if (kvm_x86_ops.hardware_enable) {
-+	if (kvm_x86_ops.enable_virtualization_cpu) {
- 		pr_err("already loaded vendor module '%s'\n", kvm_x86_ops.name);
- 		return -EEXIST;
- 	}
-@@ -9876,7 +9876,7 @@ int kvm_x86_vendor_init(struct kvm_x86_init_ops *ops)
+-	mutex_lock(&kvm_lock);
++	mutex_lock(&kvm_usage_lock);
+ 	if (kvm_usage_count)
+ 		hardware_disable_nolock(NULL);
+-	mutex_unlock(&kvm_lock);
++	mutex_unlock(&kvm_usage_lock);
  	return 0;
- 
- out_unwind_ops:
--	kvm_x86_ops.hardware_enable = NULL;
-+	kvm_x86_ops.enable_virtualization_cpu = NULL;
- 	kvm_x86_call(hardware_unsetup)();
- out_mmu_exit:
- 	kvm_mmu_vendor_module_exit();
-@@ -9917,7 +9917,7 @@ void kvm_x86_vendor_exit(void)
- 	WARN_ON(static_branch_unlikely(&kvm_xen_enabled.key));
- #endif
- 	mutex_lock(&vendor_module_lock);
--	kvm_x86_ops.hardware_enable = NULL;
-+	kvm_x86_ops.enable_virtualization_cpu = NULL;
- 	mutex_unlock(&vendor_module_lock);
  }
- EXPORT_SYMBOL_GPL(kvm_x86_vendor_exit);
-@@ -12528,7 +12528,7 @@ int kvm_arch_enable_virtualization_cpu(void)
- 	if (ret)
- 		return ret;
  
--	ret = kvm_x86_call(hardware_enable)();
-+	ret = kvm_x86_call(enable_virtualization_cpu)();
- 	if (ret != 0)
- 		return ret;
- 
-@@ -12610,7 +12610,7 @@ int kvm_arch_enable_virtualization_cpu(void)
- 
- void kvm_arch_disable_virtualization_cpu(void)
+@@ -5650,9 +5651,9 @@ static void hardware_disable_all_nolock(void)
+ static void hardware_disable_all(void)
  {
--	kvm_x86_call(hardware_disable)();
-+	kvm_x86_call(disable_virtualization_cpu)();
- 	drop_user_return_notifiers();
+ 	cpus_read_lock();
+-	mutex_lock(&kvm_lock);
++	mutex_lock(&kvm_usage_lock);
+ 	hardware_disable_all_nolock();
+-	mutex_unlock(&kvm_lock);
++	mutex_unlock(&kvm_usage_lock);
+ 	cpus_read_unlock();
  }
  
+@@ -5683,7 +5684,7 @@ static int hardware_enable_all(void)
+ 	 * enable hardware multiple times.
+ 	 */
+ 	cpus_read_lock();
+-	mutex_lock(&kvm_lock);
++	mutex_lock(&kvm_usage_lock);
+ 
+ 	r = 0;
+ 
+@@ -5697,7 +5698,7 @@ static int hardware_enable_all(void)
+ 		}
+ 	}
+ 
+-	mutex_unlock(&kvm_lock);
++	mutex_unlock(&kvm_usage_lock);
+ 	cpus_read_unlock();
+ 
+ 	return r;
+@@ -5725,13 +5726,13 @@ static int kvm_suspend(void)
+ {
+ 	/*
+ 	 * Secondary CPUs and CPU hotplug are disabled across the suspend/resume
+-	 * callbacks, i.e. no need to acquire kvm_lock to ensure the usage count
+-	 * is stable.  Assert that kvm_lock is not held to ensure the system
+-	 * isn't suspended while KVM is enabling hardware.  Hardware enabling
+-	 * can be preempted, but the task cannot be frozen until it has dropped
+-	 * all locks (userspace tasks are frozen via a fake signal).
++	 * callbacks, i.e. no need to acquire kvm_usage_lock to ensure the usage
++	 * count is stable.  Assert that kvm_usage_lock is not held to ensure
++	 * the system isn't suspended while KVM is enabling hardware.  Hardware
++	 * enabling can be preempted, but the task cannot be frozen until it has
++	 * dropped all locks (userspace tasks are frozen via a fake signal).
+ 	 */
+-	lockdep_assert_not_held(&kvm_lock);
++	lockdep_assert_not_held(&kvm_usage_lock);
+ 	lockdep_assert_irqs_disabled();
+ 
+ 	if (kvm_usage_count)
+@@ -5741,7 +5742,7 @@ static int kvm_suspend(void)
+ 
+ static void kvm_resume(void)
+ {
+-	lockdep_assert_not_held(&kvm_lock);
++	lockdep_assert_not_held(&kvm_usage_lock);
+ 	lockdep_assert_irqs_disabled();
+ 
+ 	if (kvm_usage_count)
 -- 
 2.46.0.469.g59c65b2a67-goog
 
