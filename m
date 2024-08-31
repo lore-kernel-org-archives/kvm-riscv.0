@@ -1,16 +1,16 @@
 From: Anup Patel <apatel@ventanamicro.com>
-Date: Sat, 31 Aug 2024 16:57:42 +0530
-Subject: [kvmtool PATCH 7/8] riscv: Add Zcmop extension support
+Date: Sat, 31 Aug 2024 16:57:43 +0530
+Subject: [kvmtool PATCH 8/8] riscv: Add Zimop extension support
 In-Reply-To: <20240831112743.379709-1-apatel@ventanamicro.com>
 References: <20240831112743.379709-1-apatel@ventanamicro.com>
-Message-ID: <20240831112743.379709-8-apatel@ventanamicro.com>
+Message-ID: <20240831112743.379709-9-apatel@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-When the Zcmop extension is available expose it to the guest
+When the Zimop extension is available expose it to the guest
 via device tree so that guest can use it.
 
 Signed-off-by: Anup Patel Anup Patel <apatel@ventanamicro.com>
@@ -20,31 +20,31 @@ Signed-off-by: Anup Patel Anup Patel <apatel@ventanamicro.com>
  2 files changed, 4 insertions(+)
 
 diff --git a/riscv/fdt.c b/riscv/fdt.c
-index 7d8a39d..768ee1f 100644
+index 768ee1f..8189601 100644
 --- a/riscv/fdt.c
 +++ b/riscv/fdt.c
-@@ -36,6 +36,7 @@ struct isa_ext_info isa_info_arr[] = {
- 	{"zcb", KVM_RISCV_ISA_EXT_ZCB},
- 	{"zcd", KVM_RISCV_ISA_EXT_ZCD},
- 	{"zcf", KVM_RISCV_ISA_EXT_ZCF},
-+	{"zcmop", KVM_RISCV_ISA_EXT_ZCMOP},
- 	{"zfa", KVM_RISCV_ISA_EXT_ZFA},
- 	{"zfh", KVM_RISCV_ISA_EXT_ZFH},
- 	{"zfhmin", KVM_RISCV_ISA_EXT_ZFHMIN},
+@@ -49,6 +49,7 @@ struct isa_ext_info isa_info_arr[] = {
+ 	{"zihintntl", KVM_RISCV_ISA_EXT_ZIHINTNTL},
+ 	{"zihintpause", KVM_RISCV_ISA_EXT_ZIHINTPAUSE},
+ 	{"zihpm", KVM_RISCV_ISA_EXT_ZIHPM},
++	{"zimop", KVM_RISCV_ISA_EXT_ZIMOP},
+ 	{"zknd", KVM_RISCV_ISA_EXT_ZKND},
+ 	{"zkne", KVM_RISCV_ISA_EXT_ZKNE},
+ 	{"zknh", KVM_RISCV_ISA_EXT_ZKNH},
 diff --git a/riscv/include/kvm/kvm-config-arch.h b/riscv/include/kvm/kvm-config-arch.h
-index 09ab59d..5d655cf 100644
+index 5d655cf..7a9ca60 100644
 --- a/riscv/include/kvm/kvm-config-arch.h
 +++ b/riscv/include/kvm/kvm-config-arch.h
-@@ -85,6 +85,9 @@ struct kvm_config_arch {
- 	OPT_BOOLEAN('\0', "disable-zcf",				\
- 		    &(cfg)->ext_disabled[KVM_RISCV_ISA_EXT_ZCF],	\
- 		    "Disable Zcf Extension"),				\
-+	OPT_BOOLEAN('\0', "disable-zcmop",				\
-+		    &(cfg)->ext_disabled[KVM_RISCV_ISA_EXT_ZCMOP],	\
-+		    "Disable Zcmop Extension"),				\
- 	OPT_BOOLEAN('\0', "disable-zfa",				\
- 		    &(cfg)->ext_disabled[KVM_RISCV_ISA_EXT_ZFA],	\
- 		    "Disable Zfa Extension"),				\
+@@ -124,6 +124,9 @@ struct kvm_config_arch {
+ 	OPT_BOOLEAN('\0', "disable-zihpm",				\
+ 		    &(cfg)->ext_disabled[KVM_RISCV_ISA_EXT_ZIHPM],	\
+ 		    "Disable Zihpm Extension"),				\
++	OPT_BOOLEAN('\0', "disable-zimop",				\
++		    &(cfg)->ext_disabled[KVM_RISCV_ISA_EXT_ZIMOP],	\
++		    "Disable Zimop Extension"),				\
+ 	OPT_BOOLEAN('\0', "disable-zknd",				\
+ 		    &(cfg)->ext_disabled[KVM_RISCV_ISA_EXT_ZKND],	\
+ 		    "Disable Zknd Extension"),				\
 -- 
 2.43.0
 
