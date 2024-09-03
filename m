@@ -1,34 +1,30 @@
 From: Andrew Jones <andrew.jones@linux.dev>
-Date: Tue, 3 Sep 2024 15:58:22 +0200
-Subject: [kvm-unit-tests PATCH 0/2] riscv: sbi: Rename sbi ecall wrappers
-In-Reply-To: <20240830155337.335534-4-andrew.jones@linux.dev>
-References: <20240830155337.335534-4-andrew.jones@linux.dev>
-Message-ID: <20240903-335afb7445c803c23e1f1297@orel>
+Date: Tue,  3 Sep 2024 16:39:47 +0200
+Subject: [kvm-unit-tests PATCH 0/2] configure: Support CONFIG_* extension
+Message-ID: <20240903143946.834864-4-andrew.jones@linux.dev>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Aug 30, 2024 at 05:53:38PM GMT, Andrew Jones wrote:
-> Just some renaming to improve readability and also add another DBCN
-> test to ensure we only write a single byte with write-byte. Use the
-> "raw" ecall for that because sbi_dbcn_write_byte now takes a uint8_t.
-> 
-> Andrew Jones (2):
->   sbi: Rename __*_sbi_ecall to sbi_*
->   sbi: dbcn: Add write-byte test with more than byte given
-> 
->  riscv/sbi.c | 48 ++++++++++++++++++++++++++++++------------------
->  1 file changed, 30 insertions(+), 18 deletions(-)
-> 
-> -- 
-> 2.45.2
->
+riscv already wants to change NR_CPUS sometimes, so a CONFIG_NR_CPUS,
+which can be changed at compile time, would be helpful. We could just
+provide support for that with the configure command line, but other
+configurations will eventually come along (there are already two more
+in another riscv branch). Add support for extending config.h with a
+manually provided config.h-type file and also add support for using it
+for CONFIG_NR_CPUS for riscv.
 
-Adding the missing 'riscv' prefixes to the patches and queued
-https://gitlab.com/jones-drew/kvm-unit-tests/-/commits/riscv/sbi
+Andrew Jones (2):
+  configure: Introduce add-config
+  riscv: Make NR_CPUS configurable
 
-Thanks,
-drew
+ configure             | 17 ++++++++++++++++-
+ lib/riscv/asm/setup.h |  3 ++-
+ 2 files changed, 18 insertions(+), 2 deletions(-)
+
+-- 
+2.46.0
+
 
