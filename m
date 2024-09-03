@@ -1,47 +1,35 @@
 From: Andrew Jones <andrew.jones@linux.dev>
-Date: Tue, 3 Sep 2024 15:38:34 +0200
-Subject: [kvm-unit-tests PATCH 0/3] riscv: Timer support
-In-Reply-To: <20240828162200.1384696-5-andrew.jones@linux.dev>
-References: <20240828162200.1384696-5-andrew.jones@linux.dev>
-Message-ID: <20240903-078ba979dcef1f429b8c0a5c@orel>
+Date: Tue, 3 Sep 2024 15:41:12 +0200
+Subject: [kvm-unit-tests PATCH 0/3] riscv: Improve on-cpu and IPI support
+In-Reply-To: <20240830101221.2202707-5-andrew.jones@linux.dev>
+References: <20240830101221.2202707-5-andrew.jones@linux.dev>
+Message-ID: <20240903-97ba8bde2c3c7c1ca97d3bdc@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Aug 28, 2024 at 06:22:01PM GMT, Andrew Jones wrote:
-> We already have some timer / delay support but we leave a lot to
-> the unit test authors for deciding what timer to use (SBI vs. Sstc)
-> and setting it. Provide an API that prefers Sstc and falls back to
-> SBI.
-> 
-> This found a bug in QEMU's Sstc that I'll try to find time to fix.
-> If we start a timer with a long delay and then stop it before it has
-> expired, QEMU still delivers the interrupt. The only way to avoid
-> getting it on QEMU is to disable the timer irq. The BPI, which also
-> has Sstc, behaves as expected though, i.e. even with the timer irq
-> always enabled we won't get a timer irq if we stop it before it had
-> a chance to expire. Disabling Sstc on QEMU, which falls back to SBI
-> TIME, also behaves as expected.
+On Fri, Aug 30, 2024 at 12:12:22PM GMT, Andrew Jones wrote:
+> The first two patches improve general library support for cpumasks and
+> the on-cpus API. on-cpus can now take cpumasks for input. The last patch
+> improves support for sending IPIs on riscv using the SBI IPI extension
+> by supporting a nicer interface of cpuids and cpumasks.
 > 
 > Andrew Jones (3):
->   riscv: Introduce local_timer_init
->   riscv: Share sbi_time_ecall with framework
->   riscv: Provide timer_start and timer_stop
+>   lib/cpumask: Fix and simplify a few functions
+>   lib/on-cpus: Introduce on_cpumask and on_cpumask_async
+>   riscv: Introduce SBI IPI convenience functions
 > 
->  lib/riscv/asm/sbi.h   |  1 +
->  lib/riscv/asm/timer.h |  3 +++
->  lib/riscv/sbi.c       |  5 +++++
->  lib/riscv/setup.c     |  2 ++
->  lib/riscv/smp.c       |  2 ++
->  lib/riscv/timer.c     | 46 +++++++++++++++++++++++++++++++++++++++++++
->  riscv/sbi.c           | 18 ++++-------------
->  7 files changed, 63 insertions(+), 14 deletions(-)
+>  lib/cpumask.h       | 47 +++++++++++++++++----------------------------
+>  lib/on-cpus.c       | 35 +++++++++++++++++++++++++--------
+>  lib/on-cpus.h       |  3 +++
+>  lib/riscv/asm/sbi.h |  3 +++
+>  lib/riscv/sbi.c     | 43 +++++++++++++++++++++++++++++++++++++++++
+>  5 files changed, 94 insertions(+), 37 deletions(-)
 > 
 > -- 
 > 2.45.2
->
 
 Queued on riscv/sbi, https://gitlab.com/jones-drew/kvm-unit-tests/-/commits/riscv%2Fsbi
 
