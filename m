@@ -1,30 +1,37 @@
 From: Andrew Jones <andrew.jones@linux.dev>
-Date: Tue,  3 Sep 2024 18:30:47 +0200
-Subject: [kvm-unit-tests PATCH 0/3] Support cross compiling with clang
-Message-ID: <20240903163046.869262-5-andrew.jones@linux.dev>
+Date: Tue,  3 Sep 2024 18:30:48 +0200
+Subject: [kvm-unit-tests PATCH 1/3] riscv: Drop mstrict-align
+In-Reply-To: <20240903163046.869262-5-andrew.jones@linux.dev>
+References: <20240903163046.869262-5-andrew.jones@linux.dev>
+Message-ID: <20240903163046.869262-6-andrew.jones@linux.dev>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Modify configure to allow --cc=clang and a cross-prefix to be specified
-together (as well as --cflags). This allows compiling with clang, but
-using cross binutils for everything else, including the linker. So far
-tested on riscv 32- and 64-bit and aarch64 (with some hacks to the code
-to get it to compile - which is why there's no gitlab-ci patch for aarch64
-in this series). I suspect it should work for other architectures too.
+The spec says unaligned accesses are supported, so this isn't required
+and clang doesn't support it. A platform might have slow unaligned
+accesses, but kvm-unit-tests isn't about speed anyway.
 
-Andrew Jones (3):
-  riscv: Drop mstrict-align
-  configure: Support cross compiling with clang
-  riscv: gitlab-ci: Add clang build tests
+Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
+---
+ riscv/Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
- .gitlab-ci.yml | 28 ++++++++++++++++++++++++++++
- configure      | 11 ++++++++---
- riscv/Makefile |  2 +-
- 3 files changed, 37 insertions(+), 4 deletions(-)
-
+diff --git a/riscv/Makefile b/riscv/Makefile
+index 179a373dbacf..2ee7c5bb5ad8 100644
+--- a/riscv/Makefile
++++ b/riscv/Makefile
+@@ -76,7 +76,7 @@ LDFLAGS += -melf32lriscv
+ endif
+ CFLAGS += -DCONFIG_RELOC
+ CFLAGS += -mcmodel=medany
+-CFLAGS += -mstrict-align
++#CFLAGS += -mstrict-align
+ CFLAGS += -std=gnu99
+ CFLAGS += -ffreestanding
+ CFLAGS += -O2
 -- 
 2.46.0
 
