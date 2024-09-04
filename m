@@ -1,146 +1,108 @@
-From: Anup Patel <anup@brainfault.org>
-Date: Wed, 4 Sep 2024 20:15:27 +0530
-Subject: [PATCH v4 09/10] RISC-V: KVM: Allow Smnpm and Ssnpm extensions
- for guests
-In-Reply-To: <b6de8769-7e4e-4a19-b239-a39fd424e0c8@sifive.com>
-References: <20240829010151.2813377-1-samuel.holland@sifive.com>
- <20240829010151.2813377-10-samuel.holland@sifive.com> <CAK9=C2WjraWjuQCeU2Y4Jhr-gKkOcP42Sza7wVp0FgeGaD923g@mail.gmail.com>
- <b6de8769-7e4e-4a19-b239-a39fd424e0c8@sifive.com>
-Message-ID: <CAAhSdy08SoDoZCii9R--BK7_NKLnRciW7V3mo2aQRKW1dbOgNg@mail.gmail.com>
+From: Andrew Jones <andrew.jones@linux.dev>
+Date: Wed,  4 Sep 2024 16:51:08 +0200
+Subject: [kvm-unit-tests PATCH] lib/stack: Restrengthen base_address
+Message-ID: <20240904145107.2447876-2-andrew.jones@linux.dev>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Sep 4, 2024 at 8:01?PM Samuel Holland <samuel.holland@sifive.com> wrote:
->
-> Hi Anup,
->
-> On 2024-09-04 7:17 AM, Anup Patel wrote:
-> > On Thu, Aug 29, 2024 at 6:32?AM Samuel Holland
-> > <samuel.holland@sifive.com> wrote:
-> >>
-> >> The interface for controlling pointer masking in VS-mode is henvcfg.PMM,
-> >> which is part of the Ssnpm extension, even though pointer masking in
-> >> HS-mode is provided by the Smnpm extension. As a result, emulating Smnpm
-> >> in the guest requires (only) Ssnpm on the host.
-> >>
-> >> Since the guest configures Smnpm through the SBI Firmware Features
-> >> interface, the extension can be disabled by failing the SBI call. Ssnpm
-> >> cannot be disabled without intercepting writes to the senvcfg CSR.
-> >>
-> >> Signed-off-by: Samuel Holland <samuel.holland@sifive.com>
-> >> ---
-> >>
-> >> (no changes since v2)
-> >>
-> >> Changes in v2:
-> >>  - New patch for v2
-> >>
-> >>  arch/riscv/include/uapi/asm/kvm.h | 2 ++
-> >>  arch/riscv/kvm/vcpu_onereg.c      | 3 +++
-> >>  2 files changed, 5 insertions(+)
-> >>
-> >> diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
-> >> index e97db3296456..4f24201376b1 100644
-> >> --- a/arch/riscv/include/uapi/asm/kvm.h
-> >> +++ b/arch/riscv/include/uapi/asm/kvm.h
-> >> @@ -175,6 +175,8 @@ enum KVM_RISCV_ISA_EXT_ID {
-> >>         KVM_RISCV_ISA_EXT_ZCF,
-> >>         KVM_RISCV_ISA_EXT_ZCMOP,
-> >>         KVM_RISCV_ISA_EXT_ZAWRS,
-> >> +       KVM_RISCV_ISA_EXT_SMNPM,
-> >> +       KVM_RISCV_ISA_EXT_SSNPM,
-> >>         KVM_RISCV_ISA_EXT_MAX,
-> >>  };
-> >>
-> >> diff --git a/arch/riscv/kvm/vcpu_onereg.c b/arch/riscv/kvm/vcpu_onereg.c
-> >> index b319c4c13c54..6f833ec2344a 100644
-> >> --- a/arch/riscv/kvm/vcpu_onereg.c
-> >> +++ b/arch/riscv/kvm/vcpu_onereg.c
-> >> @@ -34,9 +34,11 @@ static const unsigned long kvm_isa_ext_arr[] = {
-> >>         [KVM_RISCV_ISA_EXT_M] = RISCV_ISA_EXT_m,
-> >>         [KVM_RISCV_ISA_EXT_V] = RISCV_ISA_EXT_v,
-> >>         /* Multi letter extensions (alphabetically sorted) */
-> >> +       [KVM_RISCV_ISA_EXT_SMNPM] = RISCV_ISA_EXT_SSNPM,
-> >
-> > Why not use KVM_ISA_EXT_ARR() macro here ?
->
-> Because the extension name in the host does not match the extension name in the
-> guest. Pointer masking for HS mode is provided by Smnpm. Pointer masking for VS
-> mode is provided by Ssnpm at the hardware level, but this needs to appear to the
-> guest as if Smnpm was implemented, since the guest thinks it is running on bare
-> metal.
+commit a1f2b0e1efd5 ("treewide: lib/stack: Make base_address arch
+specific") made base_address() a weak function in order to allow
+architectures to override it. Linking for EFI doesn't seem to figure
+out the right one to use though [anymore?]. It must have worked at
+one point because the commit calls outs EFI as the motivation.
+Anyway, just drop the weakness in favor of another HAVE_ define.
 
-Okay, makes sense.
+Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
+---
+ lib/riscv/asm/stack.h |  1 +
+ lib/riscv/stack.c     |  2 +-
+ lib/stack.c           | 10 ++++++----
+ lib/stack.h           |  2 +-
+ 4 files changed, 9 insertions(+), 6 deletions(-)
 
->
-> >>         KVM_ISA_EXT_ARR(SMSTATEEN),
-> >>         KVM_ISA_EXT_ARR(SSAIA),
-> >>         KVM_ISA_EXT_ARR(SSCOFPMF),
-> >> +       KVM_ISA_EXT_ARR(SSNPM),
-> >>         KVM_ISA_EXT_ARR(SSTC),
-> >>         KVM_ISA_EXT_ARR(SVINVAL),
-> >>         KVM_ISA_EXT_ARR(SVNAPOT),
-> >> @@ -129,6 +131,7 @@ static bool kvm_riscv_vcpu_isa_disable_allowed(unsigned long ext)
-> >>         case KVM_RISCV_ISA_EXT_M:
-> >>         /* There is not architectural config bit to disable sscofpmf completely */
-> >>         case KVM_RISCV_ISA_EXT_SSCOFPMF:
-> >> +       case KVM_RISCV_ISA_EXT_SSNPM:
-> >
-> > Why not add KVM_RISCV_ISA_EXT_SMNPM here ?
-> >
-> > Disabling Smnpm from KVM user space is very different from
-> > disabling Smnpm from Guest using SBI FWFT extension.
->
-> Until a successful SBI FWFT call to KVM to enable pointer masking for VS mode,
-> the existence of Smnpm has no visible effect on the guest. So failing the SBI
-> call is sufficient to pretend that the hardware does not support Smnpm.
->
-> > The KVM user space should always add Smnpm in the
-> > Guest ISA string whenever the Host ISA string has it.
->
-> I disagree. Allowing userspace to disable extensions is useful for testing and
-> to support migration to hosts which do not support those extensions. So I would
-> only add extensions to this list if there is no possible way to disable them.
+diff --git a/lib/riscv/asm/stack.h b/lib/riscv/asm/stack.h
+index f003ca37c913..708fa4215007 100644
+--- a/lib/riscv/asm/stack.h
++++ b/lib/riscv/asm/stack.h
+@@ -8,5 +8,6 @@
+ 
+ #define HAVE_ARCH_BACKTRACE_FRAME
+ #define HAVE_ARCH_BACKTRACE
++#define HAVE_ARCH_BASE_ADDRESS
+ 
+ #endif
+diff --git a/lib/riscv/stack.c b/lib/riscv/stack.c
+index 2cd7f012738b..a143c22a570a 100644
+--- a/lib/riscv/stack.c
++++ b/lib/riscv/stack.c
+@@ -5,7 +5,7 @@
+ #ifdef CONFIG_RELOC
+ extern char ImageBase, _text, _etext;
+ 
+-bool arch_base_address(const void *rebased_addr, unsigned long *addr)
++bool base_address(const void *rebased_addr, unsigned long *addr)
+ {
+ 	unsigned long ra = (unsigned long)rebased_addr;
+ 	unsigned long base = (unsigned long)&ImageBase;
+diff --git a/lib/stack.c b/lib/stack.c
+index 086fec544a81..e1c981085176 100644
+--- a/lib/stack.c
++++ b/lib/stack.c
+@@ -12,9 +12,10 @@
+ #define MAX_DEPTH 20
+ 
+ #ifdef CONFIG_RELOC
++#ifndef HAVE_ARCH_BASE_ADDRESS
+ extern char _text, _etext;
+ 
+-bool __attribute__((weak)) arch_base_address(const void *rebased_addr, unsigned long *addr)
++bool base_address(const void *rebased_addr, unsigned long *addr)
+ {
+ 	unsigned long ra = (unsigned long)rebased_addr;
+ 	unsigned long start = (unsigned long)&_text;
+@@ -26,8 +27,9 @@ bool __attribute__((weak)) arch_base_address(const void *rebased_addr, unsigned
+ 	*addr = ra - start;
+ 	return true;
+ }
++#endif
+ #else
+-bool __attribute__((weak)) arch_base_address(const void *rebased_addr, unsigned long *addr)
++bool base_address(const void *rebased_addr, unsigned long *addr)
+ {
+ 	*addr = (unsigned long)rebased_addr;
+ 	return true;
+@@ -45,13 +47,13 @@ static void print_stack(const void **return_addrs, int depth,
+ 	/* @addr indicates a non-return address, as expected by the stack
+ 	 * pretty printer script. */
+ 	if (depth > 0 && !top_is_return_address) {
+-		if (arch_base_address(return_addrs[0], &addr))
++		if (base_address(return_addrs[0], &addr))
+ 			printf(" @%lx", addr);
+ 		i++;
+ 	}
+ 
+ 	for (; i < depth; i++) {
+-		if (arch_base_address(return_addrs[i], &addr))
++		if (base_address(return_addrs[i], &addr))
+ 			printf(" %lx", addr);
+ 	}
+ 	printf("\n");
+diff --git a/lib/stack.h b/lib/stack.h
+index df076d94bf8f..c92112c1744d 100644
+--- a/lib/stack.h
++++ b/lib/stack.h
+@@ -34,6 +34,6 @@ static inline int backtrace_frame(const void *frame, const void **return_addrs,
+ }
+ #endif
+ 
+-bool __attribute__((weak)) arch_base_address(const void *rebased_addr, unsigned long *addr);
++bool base_address(const void *rebased_addr, unsigned long *addr);
+ 
+ #endif
+-- 
+2.46.0
 
-I am not saying to disallow KVM user space disabling Smnpm.
-
-The presence of Smnpm in ISA only means that it is present in HW
-but it needs to be explicitly configured/enabled using SBI FWFT.
-
-KVM user space can certainly disable extensions by not adding it to
-ISA string based on the KVMTOOL/QEMU-KVM command line option.
-Additionally, when SBI FWFT is added to KVM RISC-V. It will have its
-own way to explicitly disable firmware features from KVM user space.
-
->
-> > The Guest must explicitly use SBI FWFT to enable
-> > Smnpm only after it sees Smnpm in ISA string.
->
-> Yes, exactly, and the purpose of not including Smnpm in the switch case here is
-> so that KVM user space can control whether or not it appears in the ISA string.
->
-> Regards,
-> Samuel
->
-> >>         case KVM_RISCV_ISA_EXT_SSTC:
-> >>         case KVM_RISCV_ISA_EXT_SVINVAL:
-> >>         case KVM_RISCV_ISA_EXT_SVNAPOT:
-> >> --
-> >> 2.45.1
-> >>
-> >>
-> >> _______________________________________________
-> >> linux-riscv mailing list
-> >> linux-riscv at lists.infradead.org
-> >> http://lists.infradead.org/mailman/listinfo/linux-riscv
-> >
-> > Regards,
-> > Anup
->
-
-Regards,
-Anup
 
