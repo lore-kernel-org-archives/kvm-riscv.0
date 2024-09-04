@@ -1,11 +1,10 @@
 From: Thomas Huth <thuth@redhat.com>
-Date: Wed, 4 Sep 2024 08:12:08 +0200
-Subject: [kvm-unit-tests PATCH 3/3] riscv: gitlab-ci: Add clang build
- tests
-In-Reply-To: <20240903163046.869262-8-andrew.jones@linux.dev>
+Date: Wed, 4 Sep 2024 08:12:25 +0200
+Subject: [kvm-unit-tests PATCH 1/3] riscv: Drop mstrict-align
+In-Reply-To: <20240903163046.869262-6-andrew.jones@linux.dev>
 References: <20240903163046.869262-5-andrew.jones@linux.dev>
- <20240903163046.869262-8-andrew.jones@linux.dev>
-Message-ID: <425f68ae-5d63-412d-a677-82d91b2d9935@redhat.com>
+ <20240903163046.869262-6-andrew.jones@linux.dev>
+Message-ID: <7ef4ee12-ce0b-41e6-904a-ff43ee571be1@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -13,15 +12,29 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
 On 03/09/2024 18.30, Andrew Jones wrote:
-> Test building 32 and 64-bit with clang. Throw a test of in- and out-
-> of-tree building in too by swapping which is done to which (32-bit
-> vs. 64-bit) with respect to the gcc build tests.
+> The spec says unaligned accesses are supported, so this isn't required
+> and clang doesn't support it. A platform might have slow unaligned
+> accesses, but kvm-unit-tests isn't about speed anyway.
 > 
 > Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
 > ---
->   .gitlab-ci.yml | 28 ++++++++++++++++++++++++++++
->   1 file changed, 28 insertions(+)
+>   riscv/Makefile | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/riscv/Makefile b/riscv/Makefile
+> index 179a373dbacf..2ee7c5bb5ad8 100644
+> --- a/riscv/Makefile
+> +++ b/riscv/Makefile
+> @@ -76,7 +76,7 @@ LDFLAGS += -melf32lriscv
+>   endif
+>   CFLAGS += -DCONFIG_RELOC
+>   CFLAGS += -mcmodel=medany
+> -CFLAGS += -mstrict-align
+> +#CFLAGS += -mstrict-align
+>   CFLAGS += -std=gnu99
+>   CFLAGS += -ffreestanding
+>   CFLAGS += -O2
 
-Acked-by: Thomas Huth <thuth@redhat.com>
+Reviewed-by: Thomas Huth <thuth@redhat.com>
 
 
