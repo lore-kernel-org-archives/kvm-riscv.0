@@ -1,80 +1,43 @@
-From: Andrew Jones <andrew.jones@linux.dev>
-Date: Wed,  4 Sep 2024 12:50:25 +0200
-Subject: [kvm-unit-tests PATCH v2 4/4] riscv: gitlab-ci: Add clang build tests
-In-Reply-To: <20240904105020.1179006-6-andrew.jones@linux.dev>
+From: Thomas Huth <thuth@redhat.com>
+Date: Wed, 4 Sep 2024 12:57:15 +0200
+Subject: [kvm-unit-tests PATCH v2 2/4] Makefile: Prepare for clang EFI
+ builds
+In-Reply-To: <20240904105020.1179006-8-andrew.jones@linux.dev>
 References: <20240904105020.1179006-6-andrew.jones@linux.dev>
-Message-ID: <20240904105020.1179006-10-andrew.jones@linux.dev>
+ <20240904105020.1179006-8-andrew.jones@linux.dev>
+Message-ID: <40bc448a-420b-4dad-872c-5b10a756dd8c@redhat.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Test building 32 and 64-bit with clang. Throw a test of in- and out-
-of-tree building in too by swapping which is done to which (32-bit
-vs. 64-bit) with respect to the gcc build tests.
+On 04/09/2024 12.50, Andrew Jones wrote:
+> clang complains about GNU extensions such as variable sized types not
+> being at the end of structs unless -Wno-gnu is used. We may
+> eventually want -Wno-gnu, but for now let's just handle the warnings
+> as they come. Add -Wno-gnu-variable-sized-type-not-at-end to avoid
+> the warning issued for the initrd_dev_path struct.
+> 
+> Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
+> ---
+>   Makefile | 2 ++
+>   1 file changed, 2 insertions(+)
+> 
+> diff --git a/Makefile b/Makefile
+> index 3d51cb726120..7471f7285b78 100644
+> --- a/Makefile
+> +++ b/Makefile
+> @@ -50,6 +50,8 @@ EFI_CFLAGS += -fshort-wchar
+>   # EFI applications use PIC as they are loaded to dynamic addresses, not a fixed
+>   # starting address
+>   EFI_CFLAGS += -fPIC
+> +# Avoid error with the initrd_dev_path struct
+> +EFI_CFLAGS += -Wno-gnu-variable-sized-type-not-at-end
+>   # Create shared library
+>   EFI_LDFLAGS := -Bsymbolic -shared -nostdlib
+>   endif
 
-Acked-by: Thomas Huth <thuth@redhat.com>
-Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
----
- .gitlab-ci.yml | 43 +++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 43 insertions(+)
-
-diff --git a/.gitlab-ci.yml b/.gitlab-ci.yml
-index 67a9a15733f1..b7ad99870e5a 100644
---- a/.gitlab-ci.yml
-+++ b/.gitlab-ci.yml
-@@ -176,6 +176,49 @@ build-riscv64-efi:
-       | tee results.txt
-  - grep -q PASS results.txt && ! grep -q FAIL results.txt
- 
-+build-riscv32-clang:
-+ extends: .intree_template
-+ script:
-+ - dnf install -y qemu-system-riscv gcc-riscv64-linux-gnu clang
-+ - ./configure --arch=riscv32 --cc=clang --cflags='--target=riscv32' --cross-prefix=riscv64-linux-gnu-
-+ - make -j2
-+ - printf "FOO=foo\nBAR=bar\nBAZ=baz\nMVENDORID=0\nMARCHID=0\nMIMPID=0\n" >test-env
-+ - ACCEL=tcg KVM_UNIT_TESTS_ENV=test-env ./run_tests.sh
-+      selftest
-+      sbi
-+      | tee results.txt
-+ - grep -q PASS results.txt && ! grep -q FAIL results.txt
-+
-+build-riscv64-clang:
-+ extends: .outoftree_template
-+ script:
-+ - dnf install -y qemu-system-riscv gcc-riscv64-linux-gnu clang
-+ - mkdir build
-+ - cd build
-+ - ../configure --arch=riscv64 --cc=clang --cflags='--target=riscv64' --cross-prefix=riscv64-linux-gnu-
-+ - make -j2
-+ - printf "FOO=foo\nBAR=bar\nBAZ=baz\nMVENDORID=0\nMARCHID=0\nMIMPID=0\n" >test-env
-+ - ACCEL=tcg KVM_UNIT_TESTS_ENV=test-env ./run_tests.sh
-+      selftest
-+      sbi
-+      | tee results.txt
-+ - grep -q PASS results.txt && ! grep -q FAIL results.txt
-+
-+build-riscv64-clang-efi:
-+ extends: .intree_template
-+ script:
-+ - dnf install -y edk2-riscv64 qemu-system-riscv gcc-riscv64-linux-gnu clang
-+ - cp /usr/share/edk2/riscv/RISCV_VIRT_CODE.fd .
-+ - truncate -s 32M RISCV_VIRT_CODE.fd
-+ - ./configure --arch=riscv64 --cc=clang --cflags='--target=riscv64' --cross-prefix=riscv64-linux-gnu- --enable-efi
-+ - make -j2
-+ - printf "FOO=foo\nBAR=bar\nBAZ=baz\nMVENDORID=0\nMARCHID=0\nMIMPID=0\n" >test-env
-+ - ACCEL=tcg KVM_UNIT_TESTS_ENV=test-env ./run_tests.sh
-+      selftest
-+      sbi
-+      | tee results.txt
-+ - grep -q PASS results.txt && ! grep -q FAIL results.txt
-+
- build-s390x:
-  extends: .outoftree_template
-  script:
--- 
-2.46.0
+Reviewed-by: Thomas Huth <thuth@redhat.com>
 
 
