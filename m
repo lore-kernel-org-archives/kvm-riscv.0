@@ -1,213 +1,85 @@
-From: Anup Patel <anup@brainfault.org>
-Date: Thu, 5 Sep 2024 10:48:36 +0530
-Subject: [PATCH v4 09/10] RISC-V: KVM: Allow Smnpm and Ssnpm extensions
- for guests
-In-Reply-To: <4c010cb1-b57c-427e-a241-1dd3ab15f2ce@sifive.com>
-References: <20240829010151.2813377-1-samuel.holland@sifive.com>
- <20240829010151.2813377-10-samuel.holland@sifive.com> <CAK9=C2WjraWjuQCeU2Y4Jhr-gKkOcP42Sza7wVp0FgeGaD923g@mail.gmail.com>
- <b6de8769-7e4e-4a19-b239-a39fd424e0c8@sifive.com> <CAAhSdy08SoDoZCii9R--BK7_NKLnRciW7V3mo2aQRKW1dbOgNg@mail.gmail.com>
- <20ab0fa2-d5dd-446d-9fff-a3ef82e8db35@sifive.com> <CAAhSdy1pZcEfajg3OZUCaFf9JMYcMzpRVogCT5VL2FHx__vDdA@mail.gmail.com>
- <4c010cb1-b57c-427e-a241-1dd3ab15f2ce@sifive.com>
-Message-ID: <CAAhSdy0kYUdgX8NUKuOdQa-69ET=cscduJvyz3z31kVeB-JaNw@mail.gmail.com>
+From: WangYuli <wangyuli@uniontech.com>
+Date: Fri,  6 Sep 2024 16:22:36 +0800
+Subject: [PATCH 6.6 1/4] riscv: Use WRITE_ONCE() when setting page table entries
+Message-ID: <9606AC2974BEDC1A+20240906082254.435410-1-wangyuli@uniontech.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Sep 4, 2024 at 9:25?PM Samuel Holland <samuel.holland@sifive.com> wrote:
->
-> On 2024-09-04 10:20 AM, Anup Patel wrote:
-> > On Wed, Sep 4, 2024 at 8:27?PM Samuel Holland <samuel.holland@sifive.com> wrote:
-> >>
-> >> Hi Anup,
-> >>
-> >> On 2024-09-04 9:45 AM, Anup Patel wrote:
-> >>> On Wed, Sep 4, 2024 at 8:01?PM Samuel Holland <samuel.holland@sifive.com> wrote:
-> >>>> On 2024-09-04 7:17 AM, Anup Patel wrote:
-> >>>>> On Thu, Aug 29, 2024 at 6:32?AM Samuel Holland
-> >>>>> <samuel.holland@sifive.com> wrote:
-> >>>>>>
-> >>>>>> The interface for controlling pointer masking in VS-mode is henvcfg.PMM,
-> >>>>>> which is part of the Ssnpm extension, even though pointer masking in
-> >>>>>> HS-mode is provided by the Smnpm extension. As a result, emulating Smnpm
-> >>>>>> in the guest requires (only) Ssnpm on the host.
-> >>>>>>
-> >>>>>> Since the guest configures Smnpm through the SBI Firmware Features
-> >>>>>> interface, the extension can be disabled by failing the SBI call. Ssnpm
-> >>>>>> cannot be disabled without intercepting writes to the senvcfg CSR.
-> >>>>>>
-> >>>>>> Signed-off-by: Samuel Holland <samuel.holland@sifive.com>
-> >>>>>> ---
-> >>>>>>
-> >>>>>> (no changes since v2)
-> >>>>>>
-> >>>>>> Changes in v2:
-> >>>>>>  - New patch for v2
-> >>>>>>
-> >>>>>>  arch/riscv/include/uapi/asm/kvm.h | 2 ++
-> >>>>>>  arch/riscv/kvm/vcpu_onereg.c      | 3 +++
-> >>>>>>  2 files changed, 5 insertions(+)
-> >>>>>>
-> >>>>>> diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
-> >>>>>> index e97db3296456..4f24201376b1 100644
-> >>>>>> --- a/arch/riscv/include/uapi/asm/kvm.h
-> >>>>>> +++ b/arch/riscv/include/uapi/asm/kvm.h
-> >>>>>> @@ -175,6 +175,8 @@ enum KVM_RISCV_ISA_EXT_ID {
-> >>>>>>         KVM_RISCV_ISA_EXT_ZCF,
-> >>>>>>         KVM_RISCV_ISA_EXT_ZCMOP,
-> >>>>>>         KVM_RISCV_ISA_EXT_ZAWRS,
-> >>>>>> +       KVM_RISCV_ISA_EXT_SMNPM,
-> >>>>>> +       KVM_RISCV_ISA_EXT_SSNPM,
-> >>>>>>         KVM_RISCV_ISA_EXT_MAX,
-> >>>>>>  };
-> >>>>>>
-> >>>>>> diff --git a/arch/riscv/kvm/vcpu_onereg.c b/arch/riscv/kvm/vcpu_onereg.c
-> >>>>>> index b319c4c13c54..6f833ec2344a 100644
-> >>>>>> --- a/arch/riscv/kvm/vcpu_onereg.c
-> >>>>>> +++ b/arch/riscv/kvm/vcpu_onereg.c
-> >>>>>> @@ -34,9 +34,11 @@ static const unsigned long kvm_isa_ext_arr[] = {
-> >>>>>>         [KVM_RISCV_ISA_EXT_M] = RISCV_ISA_EXT_m,
-> >>>>>>         [KVM_RISCV_ISA_EXT_V] = RISCV_ISA_EXT_v,
-> >>>>>>         /* Multi letter extensions (alphabetically sorted) */
-> >>>>>> +       [KVM_RISCV_ISA_EXT_SMNPM] = RISCV_ISA_EXT_SSNPM,
-> >>>>>
-> >>>>> Why not use KVM_ISA_EXT_ARR() macro here ?
-> >>>>
-> >>>> Because the extension name in the host does not match the extension name in the
-> >>>> guest. Pointer masking for HS mode is provided by Smnpm. Pointer masking for VS
-> >>>> mode is provided by Ssnpm at the hardware level, but this needs to appear to the
-> >>>> guest as if Smnpm was implemented, since the guest thinks it is running on bare
-> >>>> metal.
-> >>>
-> >>> Okay, makes sense.
-> >>>
-> >>>>
-> >>>>>>         KVM_ISA_EXT_ARR(SMSTATEEN),
-> >>>>>>         KVM_ISA_EXT_ARR(SSAIA),
-> >>>>>>         KVM_ISA_EXT_ARR(SSCOFPMF),
-> >>>>>> +       KVM_ISA_EXT_ARR(SSNPM),
-> >>>>>>         KVM_ISA_EXT_ARR(SSTC),
-> >>>>>>         KVM_ISA_EXT_ARR(SVINVAL),
-> >>>>>>         KVM_ISA_EXT_ARR(SVNAPOT),
-> >>>>>> @@ -129,6 +131,7 @@ static bool kvm_riscv_vcpu_isa_disable_allowed(unsigned long ext)
-> >>>>>>         case KVM_RISCV_ISA_EXT_M:
-> >>>>>>         /* There is not architectural config bit to disable sscofpmf completely */
-> >>>>>>         case KVM_RISCV_ISA_EXT_SSCOFPMF:
-> >>>>>> +       case KVM_RISCV_ISA_EXT_SSNPM:
-> >>>>>
-> >>>>> Why not add KVM_RISCV_ISA_EXT_SMNPM here ?
-> >>>>>
-> >>>>> Disabling Smnpm from KVM user space is very different from
-> >>>>> disabling Smnpm from Guest using SBI FWFT extension.
-> >>>>
-> >>>> Until a successful SBI FWFT call to KVM to enable pointer masking for VS mode,
-> >>>> the existence of Smnpm has no visible effect on the guest. So failing the SBI
-> >>>> call is sufficient to pretend that the hardware does not support Smnpm.
-> >>>>
-> >>>>> The KVM user space should always add Smnpm in the
-> >>>>> Guest ISA string whenever the Host ISA string has it.
-> >>>>
-> >>>> I disagree. Allowing userspace to disable extensions is useful for testing and
-> >>>> to support migration to hosts which do not support those extensions. So I would
-> >>>> only add extensions to this list if there is no possible way to disable them.
-> >>>
-> >>> I am not saying to disallow KVM user space disabling Smnpm.
-> >>
-> >> Then I'm confused. This is the "return false;" switch case inside
-> >> kvm_riscv_vcpu_isa_disable_allowed(). If I add KVM_RISCV_ISA_EXT_SMNPM here,
-> >> then (unless I am misreading the code) I am disallowing KVM userspace from
-> >> disabling Smnpm in the guest (i.e. preventing KVM userspace from removing Smnpm
-> >> from the guest ISA string). If that is not desired, then why do you suggest I
-> >> add KVM_RISCV_ISA_EXT_SMNPM here?
-> >
-> > Yes, adding KVM_RISCV_ISA_EXT_SMNPM here means KVM
-> > user space can't disable it using ONE_REG interface but KVM user
-> > space can certainly not add it in the Guest ISA string.
->
-> Is there a problem with allowing KVM userspace to disable the ISA extension with
-> the ONE_REG interface?
->
-> If KVM userspace removes Smnpm from the ISA string without the host kernel's
-> knowledge, that doesn't actually prevent the guest from successfully calling
-> sbi_fwft_set(POINTER_MASKING_PMLEN, ...), so it doesn't guarantee that the VM
-> can be migrated to a host without pointer masking support. So the ONE_REG
-> interface still has value. (And that's my answer to your original question "Why
-> not add KVM_RISCV_ISA_EXT_SMNPM here ?")
+From: Alexandre Ghiti <alexghiti@rivosinc.com>
 
-Currently, disabling KVM_RISCV_ISA_EXT_SMNPM via ONE_REG
-will only clear the corresponding bit in VCPU isa bitmap. Basically, the
-KVM user space disabling KVM_RISCV_ISA_EXT_SMNPM for Guest
-changes nothing for the Guest/VM.
+[ Upstream commit c30fa83b49897e708a52e122dd10616a52a4c82b ]
 
-On other hand, disabling KVM_RISCV_ISA_EXT_SVPBMT via
-ONE_REG will not only clear it from VCPU isa bitmap but also
-disable Svpmbt from henvcfg CSR for the Guest/VM.
+To avoid any compiler "weirdness" when accessing page table entries which
+are concurrently modified by the HW, let's use WRITE_ONCE() macro
+(commit 20a004e7b017 ("arm64: mm: Use READ_ONCE/WRITE_ONCE when accessing
+page tables") gives a great explanation with more details).
 
-In other words, if disabling an ISA extension is allowed by the
-kvm_riscv_vcpu_isa_disable_allowed() then the Guest/VM must
-see a different behaviour when the ISA extension is disabled by
-KVM user space.
+Signed-off-by: Alexandre Ghiti <alexghiti@rivosinc.com>
+Link: https://lore.kernel.org/r/20231213203001.179237-2-alexghiti at rivosinc.com
+Signed-off-by: Palmer Dabbelt <palmer@rivosinc.com>
+Signed-off-by: WangYuli <wangyuli@uniontech.com>
+---
+ arch/riscv/include/asm/pgtable-64.h | 6 +++---
+ arch/riscv/include/asm/pgtable.h    | 4 ++--
+ 2 files changed, 5 insertions(+), 5 deletions(-)
 
->
-> >>> The presence of Smnpm in ISA only means that it is present in HW
-> >>> but it needs to be explicitly configured/enabled using SBI FWFT.
-> >>>
-> >>> KVM user space can certainly disable extensions by not adding it to
-> >>> ISA string based on the KVMTOOL/QEMU-KVM command line option.
-> >>> Additionally, when SBI FWFT is added to KVM RISC-V. It will have its
-> >>> own way to explicitly disable firmware features from KVM user space.
-> >>
-> >> I think we agree on this, but your explanation here appears to conflict with
-> >> your suggested code change. Apologies if I'm missing something.
-> >
-> > I think the confusion is about what does it mean when Smnpm is present
-> > in the ISA string. We have two approaches:
-> >
-> > 1) Presence of Smnpm in ISA string only means it is present in HW but
-> >     says nothing about its enable/disable state. To configure/enable
-> >     Smnpm, the supervisor must use SBI FWFT.
-> >
-> > 2) Presence of Smnpm in ISA string means it is present in HW and
-> >     enabled at boot-time. To re-configure/disable Smnpm, the supervisor
-> >     must use SBI FWFT.
-> >
-> > I am suggesting approach #1 but I am guessing you are leaning towards
-> > approach #2 ?
-> >
-> > For approach #2, additional hencfg.PMM configuration is required in
-> > this patch based on the state of KVM_RISCV_ISA_EXT_SMNPM.
->
-> No, I am definitely suggesting only approach #1. My proposal for adding pointer
-> masking to the SBI FWFT extension[1] specifies the feature as disabled by
-> default, and this would apply both inside and ouside a VM.
->
-> But I am also suggesting that the ONE_REG interface is a useful way to
-> completely hide the extension from the guest, like we do for other extensions
-> such as Svpbmt. The only difference between something like Svpbmt and Smnpm is
-> that instead of clearing a bit in henvcfg to hide the extension from the guest,
-> we reject calls to sbi_fwft_set(POINTER_MASKING_PMLEN, ...) when the ISA
-> extension is hidden from the guest.
+diff --git a/arch/riscv/include/asm/pgtable-64.h b/arch/riscv/include/asm/pgtable-64.h
+index 7a5097202e15..a65a352dcfbf 100644
+--- a/arch/riscv/include/asm/pgtable-64.h
++++ b/arch/riscv/include/asm/pgtable-64.h
+@@ -198,7 +198,7 @@ static inline int pud_user(pud_t pud)
+ 
+ static inline void set_pud(pud_t *pudp, pud_t pud)
+ {
+-	*pudp = pud;
++	WRITE_ONCE(*pudp, pud);
+ }
+ 
+ static inline void pud_clear(pud_t *pudp)
+@@ -274,7 +274,7 @@ static inline unsigned long _pmd_pfn(pmd_t pmd)
+ static inline void set_p4d(p4d_t *p4dp, p4d_t p4d)
+ {
+ 	if (pgtable_l4_enabled)
+-		*p4dp = p4d;
++		WRITE_ONCE(*p4dp, p4d);
+ 	else
+ 		set_pud((pud_t *)p4dp, (pud_t){ p4d_val(p4d) });
+ }
+@@ -347,7 +347,7 @@ static inline pud_t *pud_offset(p4d_t *p4d, unsigned long address)
+ static inline void set_pgd(pgd_t *pgdp, pgd_t pgd)
+ {
+ 	if (pgtable_l5_enabled)
+-		*pgdp = pgd;
++		WRITE_ONCE(*pgdp, pgd);
+ 	else
+ 		set_p4d((p4d_t *)pgdp, (p4d_t){ pgd_val(pgd) });
+ }
+diff --git a/arch/riscv/include/asm/pgtable.h b/arch/riscv/include/asm/pgtable.h
+index 719c3041ae1c..f8e72df4113a 100644
+--- a/arch/riscv/include/asm/pgtable.h
++++ b/arch/riscv/include/asm/pgtable.h
+@@ -248,7 +248,7 @@ static inline int pmd_leaf(pmd_t pmd)
+ 
+ static inline void set_pmd(pmd_t *pmdp, pmd_t pmd)
+ {
+-	*pmdp = pmd;
++	WRITE_ONCE(*pmdp, pmd);
+ }
+ 
+ static inline void pmd_clear(pmd_t *pmdp)
+@@ -515,7 +515,7 @@ static inline int pte_same(pte_t pte_a, pte_t pte_b)
+  */
+ static inline void set_pte(pte_t *ptep, pte_t pteval)
+ {
+-	*ptep = pteval;
++	WRITE_ONCE(*ptep, pteval);
+ }
+ 
+ void flush_icache_pte(pte_t pte);
+-- 
+2.43.4
 
-I think we are converging towards the same thing.
-
-How about this ?
-
-For this series, lets add KVM_RISCV_ISA_EXT_SMNPM to
-kvm_riscv_vcpu_isa_disable_allowed() so that for the time
-being KVM user space can't disable Smnpm.
-
-In the future, a separate series which adds SBI FWFT to
-KVM RISC-V will remove KVM_RISCV_ISA_EXT_SMNPM
-from the kvm_riscv_vcpu_isa_disable_allowed() because
-disabling Smnpm from KVM user space would mean that
-the POINTER_MASKING_PMLEN firmware feature is
-not available to the Guest/VM.
-
-This means in the future (after SBI FWFT is implemented in
-KVM RISC-V), Guest with Smnpm disabled can be migrated
-to a host without pointer masking.
-
-Regards,
-Anup
 
