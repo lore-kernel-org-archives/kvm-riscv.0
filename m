@@ -1,69 +1,58 @@
 From: Nikolas Wipper <nikwip@amazon.de>
-Date: Tue, 10 Sep 2024 15:21:55 +0000
-Subject: [PATCH 03/15] KVM: x86/mmu: Introduce exception flag for unmapped GPAs
+Date: Tue, 10 Sep 2024 15:21:56 +0000
+Subject: [PATCH 04/15] KVM: x86/mmu: Store GPA in exception if applicable
 In-Reply-To: <20240910152207.38974-1-nikwip@amazon.de>
 References: <20240910152207.38974-1-nikwip@amazon.de>
-Message-ID: <20240910152207.38974-4-nikwip@amazon.de>
+Message-ID: <20240910152207.38974-5-nikwip@amazon.de>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Introduce a flag in x86_exception which signals that a page walk failed
-because a page table GPA wasn't backed by a memslot. This only applies to
-page tables; the final physical address is not checked.
+Store the GPA where the page walk failed within the walker's exception.
+Precisely this means, the PTE's GPA, if it couldn't be resolved or it
+caused an access violation, or the fully translated GPA in case the final
+page caused an access violation.
 
-This extra flag is needed, because the normal page fault error code does
-not contain a bit to signal this kind of fault.
-
-Used in subsequent patches to give userspace information about translation
-failure.
+Returning the GPA from the page walker directly is not possible, because
+other code within KVM relies on INVALID_GPA being returned on failure.
 
 Signed-off-by: Nikolas Wipper <nikwip@amazon.de>
 ---
- arch/x86/kvm/kvm_emulate.h     | 2 ++
- arch/x86/kvm/mmu/paging_tmpl.h | 6 +++++-
- 2 files changed, 7 insertions(+), 1 deletion(-)
+ arch/x86/kvm/kvm_emulate.h     | 6 ++++++
+ arch/x86/kvm/mmu/paging_tmpl.h | 1 +
+ 2 files changed, 7 insertions(+)
 
 diff --git a/arch/x86/kvm/kvm_emulate.h b/arch/x86/kvm/kvm_emulate.h
-index 55a18e2f2dcd..afd8e86bc6af 100644
+index afd8e86bc6af..6501ce1c76fd 100644
 --- a/arch/x86/kvm/kvm_emulate.h
 +++ b/arch/x86/kvm/kvm_emulate.h
-@@ -27,6 +27,8 @@ struct x86_exception {
+@@ -25,6 +25,12 @@ struct x86_exception {
+ 	u16 error_code;
+ 	bool nested_page_fault;
  	u64 address; /* cr2 or nested page fault gpa */
++	/*
++	 * If error_code is a page fault, this will be the address of the last
++	 * visited page table, or the fully translated address if it caused the
++	 * failure. Otherwise, it will not hold a meaningful value.
++	 */
++	u64 gpa_page_fault;
  	u8 async_page_fault;
  	unsigned long exit_qualification;
-+#define KVM_X86_UNMAPPED_PTE_GPA	BIT(0)
-+	u16 flags;
- };
- 
- /*
+ #define KVM_X86_UNMAPPED_PTE_GPA	BIT(0)
 diff --git a/arch/x86/kvm/mmu/paging_tmpl.h b/arch/x86/kvm/mmu/paging_tmpl.h
-index d9c3c78b3c14..f6a78b7cfca1 100644
+index f6a78b7cfca1..74651b097fa0 100644
 --- a/arch/x86/kvm/mmu/paging_tmpl.h
 +++ b/arch/x86/kvm/mmu/paging_tmpl.h
-@@ -339,6 +339,8 @@ static int FNAME(walk_addr_generic)(struct guest_walker *walker,
- #endif
- 	walker->max_level = walker->level;
+@@ -485,6 +485,7 @@ static int FNAME(walk_addr_generic)(struct guest_walker *walker,
+ 	walker->fault.vector = PF_VECTOR;
+ 	walker->fault.error_code_valid = true;
+ 	walker->fault.error_code = errcode;
++	walker->fault.gpa_page_fault = real_gpa;
  
-+	walker->fault.flags = 0;
-+
+ #if PTTYPE == PTTYPE_EPT
  	/*
- 	 * FIXME: on Intel processors, loads of the PDPTE registers for PAE paging
- 	 * by the MOV to CR instruction are treated as reads and do not cause the
-@@ -393,8 +395,10 @@ static int FNAME(walk_addr_generic)(struct guest_walker *walker,
- 			return 0;
- 
- 		slot = kvm_vcpu_gfn_to_memslot(vcpu, gpa_to_gfn(real_gpa));
--		if (!kvm_is_visible_memslot(slot))
-+		if (!kvm_is_visible_memslot(slot)) {
-+			walker->fault.flags = KVM_X86_UNMAPPED_PTE_GPA;
- 			goto error;
-+		}
- 
- 		host_addr = gfn_to_hva_memslot_prot(slot, gpa_to_gfn(real_gpa),
- 					    &walker->pte_writable[walker->level - 1]);
 -- 
 2.40.1
 
