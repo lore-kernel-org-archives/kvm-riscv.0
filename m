@@ -1,74 +1,69 @@
 From: Nikolas Wipper <nikwip@amazon.de>
-Date: Tue, 10 Sep 2024 15:21:54 +0000
-Subject: [PATCH 02/15] KVM: x86/mmu: Abort page walk if permission checks fail
+Date: Tue, 10 Sep 2024 15:21:55 +0000
+Subject: [PATCH 03/15] KVM: x86/mmu: Introduce exception flag for unmapped GPAs
 In-Reply-To: <20240910152207.38974-1-nikwip@amazon.de>
 References: <20240910152207.38974-1-nikwip@amazon.de>
-Message-ID: <20240910152207.38974-3-nikwip@amazon.de>
+Message-ID: <20240910152207.38974-4-nikwip@amazon.de>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Abort the page walk, if permission checks fail on any page table level, by
-moving the check to within the page walker loop. Currently, the page
-walker only checks for access flags after successfully walking the entire
-paging structure. This change is needed later to enable setting accessed
-bits in each page table that was successfully visited, during a page walk
-that ultimately failed.
+Introduce a flag in x86_exception which signals that a page walk failed
+because a page table GPA wasn't backed by a memslot. This only applies to
+page tables; the final physical address is not checked.
 
-As a result, error codes returned by the page walker may observe a change
-in behaviour, specifically, the error code will be built as soon as an
-access violation is found, meaning that for example, if an access
-violation is detected on page level 4, the page walker will abort the walk
-without looking at level 3 and below. However, since the error code
-returned is built from the passed access requirements, regardless of the
-actual cause of the failure, it will only be different if there is an
-access violation in one level and a PKRU violation in a lower one.
+This extra flag is needed, because the normal page fault error code does
+not contain a bit to signal this kind of fault.
 
-Previously the error code would include this PKRU violation, whereas now
-it does not, which is still in line with the behaviour specified in
-Intel's SDM. The exact procedure to test for violations is currently not
-specified in the SDM, but aborting the page walk early seems to be a
-reasonable implementation detail. As KVM does not read the PK bit
-anywhere, this only results in a different page-fault error codes for
-guests.
+Used in subsequent patches to give userspace information about translation
+failure.
 
 Signed-off-by: Nikolas Wipper <nikwip@amazon.de>
 ---
- arch/x86/kvm/mmu/paging_tmpl.h | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ arch/x86/kvm/kvm_emulate.h     | 2 ++
+ arch/x86/kvm/mmu/paging_tmpl.h | 6 +++++-
+ 2 files changed, 7 insertions(+), 1 deletion(-)
 
+diff --git a/arch/x86/kvm/kvm_emulate.h b/arch/x86/kvm/kvm_emulate.h
+index 55a18e2f2dcd..afd8e86bc6af 100644
+--- a/arch/x86/kvm/kvm_emulate.h
++++ b/arch/x86/kvm/kvm_emulate.h
+@@ -27,6 +27,8 @@ struct x86_exception {
+ 	u64 address; /* cr2 or nested page fault gpa */
+ 	u8 async_page_fault;
+ 	unsigned long exit_qualification;
++#define KVM_X86_UNMAPPED_PTE_GPA	BIT(0)
++	u16 flags;
+ };
+ 
+ /*
 diff --git a/arch/x86/kvm/mmu/paging_tmpl.h b/arch/x86/kvm/mmu/paging_tmpl.h
-index ae7d39ff2d07..d9c3c78b3c14 100644
+index d9c3c78b3c14..f6a78b7cfca1 100644
 --- a/arch/x86/kvm/mmu/paging_tmpl.h
 +++ b/arch/x86/kvm/mmu/paging_tmpl.h
-@@ -422,6 +422,12 @@ static int FNAME(walk_addr_generic)(struct guest_walker *walker,
- 			goto error;
- 		}
+@@ -339,6 +339,8 @@ static int FNAME(walk_addr_generic)(struct guest_walker *walker,
+ #endif
+ 	walker->max_level = walker->level;
  
-+		/* Convert to ACC_*_MASK flags for struct guest_walker.  */
-+		walker->pte_access = FNAME(gpte_access)(pte_access ^ walk_nx_mask);
-+		errcode = permission_fault(vcpu, mmu, walker->pte_access, pte_pkey, access);
-+		if (unlikely(errcode))
-+			goto error;
++	walker->fault.flags = 0;
 +
- 		walker->ptes[walker->level - 1] = pte;
+ 	/*
+ 	 * FIXME: on Intel processors, loads of the PDPTE registers for PAE paging
+ 	 * by the MOV to CR instruction are treated as reads and do not cause the
+@@ -393,8 +395,10 @@ static int FNAME(walk_addr_generic)(struct guest_walker *walker,
+ 			return 0;
  
- 		/* Convert to ACC_*_MASK flags for struct guest_walker.  */
-@@ -431,12 +437,6 @@ static int FNAME(walk_addr_generic)(struct guest_walker *walker,
- 	pte_pkey = FNAME(gpte_pkeys)(vcpu, pte);
- 	accessed_dirty = have_ad ? pte_access & PT_GUEST_ACCESSED_MASK : 0;
+ 		slot = kvm_vcpu_gfn_to_memslot(vcpu, gpa_to_gfn(real_gpa));
+-		if (!kvm_is_visible_memslot(slot))
++		if (!kvm_is_visible_memslot(slot)) {
++			walker->fault.flags = KVM_X86_UNMAPPED_PTE_GPA;
+ 			goto error;
++		}
  
--	/* Convert to ACC_*_MASK flags for struct guest_walker.  */
--	walker->pte_access = FNAME(gpte_access)(pte_access ^ walk_nx_mask);
--	errcode = permission_fault(vcpu, mmu, walker->pte_access, pte_pkey, access);
--	if (unlikely(errcode))
--		goto error;
--
- 	gfn = gpte_to_gfn_lvl(pte, walker->level);
- 	gfn += (addr & PT_LVL_OFFSET_MASK(walker->level)) >> PAGE_SHIFT;
- 
+ 		host_addr = gfn_to_hva_memslot_prot(slot, gpa_to_gfn(real_gpa),
+ 					    &walker->pte_writable[walker->level - 1]);
 -- 
 2.40.1
 
