@@ -1,508 +1,106 @@
-From: James Raphael Tiovalen <jamestiotio@gmail.com>
-Date: Tue, 10 Sep 2024 23:15:36 +0800
-Subject: [kvm-unit-tests PATCH v3 2/2] riscv: sbi: Add tests for HSM extension
-In-Reply-To: <20240910151536.163830-1-jamestiotio@gmail.com>
-References: <20240910151536.163830-1-jamestiotio@gmail.com>
-Message-ID: <20240910151536.163830-3-jamestiotio@gmail.com>
+From: Nikolas Wipper <nikwip@amazon.de>
+Date: Tue, 10 Sep 2024 15:21:52 +0000
+Subject: [PATCH 00/15] KVM: x86: Introduce new ioctl KVM_TRANSLATE2
+Message-ID: <20240910152207.38974-1-nikwip@amazon.de>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add some tests for all of the HSM extension functions. These tests
-ensure that the HSM extension functions follow the behavior as described
-in the SBI specification.
+This series introduces a new ioctl KVM_TRANSLATE2, which expands on
+KVM_TRANSLATE. It is required to implement Hyper-V's
+HvTranslateVirtualAddress hyper-call as part of the ongoing effort to
+emulate HyperV's Virtual Secure Mode (VSM) within KVM and QEMU. The hyper-
+call requires several new KVM APIs, one of which is KVM_TRANSLATE2, which
+implements the core functionality of the hyper-call. The rest of the
+required functionality will be implemented in subsequent series.
 
-Signed-off-by: James Raphael Tiovalen <jamestiotio@gmail.com>
----
- riscv/Makefile  |   3 +-
- riscv/sbi.h     |  10 ++
- riscv/sbi-asm.S |  47 +++++++
- riscv/sbi.c     | 352 ++++++++++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 411 insertions(+), 1 deletion(-)
- create mode 100644 riscv/sbi.h
- create mode 100644 riscv/sbi-asm.S
+Other than translating guest virtual addresses, the ioctl allows the
+caller to control whether the access and dirty bits are set during the
+page walk. It also allows specifying an access mode instead of returning
+viable access modes, which enables setting the bits up to the level that
+caused a failure. Additionally, the ioctl provides more information about
+why the page walk failed, and which page table is responsible. This
+functionality is not available within KVM_TRANSLATE, and can't be added
+without breaking backwards compatiblity, thus a new ioctl is required.
 
-diff --git a/riscv/Makefile b/riscv/Makefile
-index 2ee7c5bb..4676d262 100644
---- a/riscv/Makefile
-+++ b/riscv/Makefile
-@@ -43,6 +43,7 @@ cflatobjs += lib/riscv/timer.o
- ifeq ($(ARCH),riscv32)
- cflatobjs += lib/ldiv32.o
- endif
-+cflatobjs += riscv/sbi-asm.o
- 
- ########################################
- 
-@@ -80,7 +81,7 @@ CFLAGS += -mcmodel=medany
- CFLAGS += -std=gnu99
- CFLAGS += -ffreestanding
- CFLAGS += -O2
--CFLAGS += -I $(SRCDIR)/lib -I $(SRCDIR)/lib/libfdt -I lib
-+CFLAGS += -I $(SRCDIR)/lib -I $(SRCDIR)/lib/libfdt -I lib -I $(SRCDIR)/riscv
- 
- asm-offsets = lib/riscv/asm-offsets.h
- include $(SRCDIR)/scripts/asm-offsets.mak
-diff --git a/riscv/sbi.h b/riscv/sbi.h
-new file mode 100644
-index 00000000..e8625cb1
---- /dev/null
-+++ b/riscv/sbi.h
-@@ -0,0 +1,10 @@
-+/* SPDX-License-Identifier: GPL-2.0-only */
-+#ifndef _RISCV_SBI_H_
-+#define _RISCV_SBI_H_
-+
-+#define SBI_HSM_TEST_DONE	(1 << 0)
-+#define SBI_HSM_TEST_SATP	(1 << 1)
-+#define SBI_HSM_TEST_SIE	(1 << 2)
-+#define SBI_HSM_TEST_HARTID_A1	(1 << 3)
-+
-+#endif /* _RISCV_SBI_H_ */
-diff --git a/riscv/sbi-asm.S b/riscv/sbi-asm.S
-new file mode 100644
-index 00000000..1b8b2fd8
---- /dev/null
-+++ b/riscv/sbi-asm.S
-@@ -0,0 +1,47 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/*
-+ * Helper assembly code routines for RISC-V SBI extension tests.
-+ *
-+ * Copyright (C) 2024, James Raphael Tiovalen <jamestiotio@gmail.com>
-+ */
-+#define __ASSEMBLY__
-+#include <config.h>
-+#include <asm/csr.h>
-+#include <sbi.h>
-+
-+.section .text
-+.balign 4
-+sbi_hsm_check:
-+	csrr	t1, CSR_SATP
-+	bnez	t1, 1f
-+	li	t0, SBI_HSM_TEST_SATP
-+1:	csrr	t1, CSR_SSTATUS
-+	andi	t1, t1, SR_SIE
-+	bnez	t1, 2f
-+	ori	t0, t0, SBI_HSM_TEST_SIE
-+2:	bne	a0, a1, 3f
-+	ori	t0, t0, SBI_HSM_TEST_HARTID_A1
-+3:	ori	t0, t0, SBI_HSM_TEST_DONE
-+	add	t1, t6, a0	/* t6 is the address of the results array */
-+	sb	t0, 0(t1)
-+	la	t0, sbi_hsm_stop_hart
-+	add	t1, t0, a0
-+4:	lb	t0, 0(t1)
-+	pause
-+	beqz	t0, 4b
-+	li	a7, 0x48534d	/* SBI_EXT_HSM */
-+	li	a6, 1		/* SBI_EXT_HSM_HART_STOP */
-+	ecall
-+	j	halt
-+
-+.balign 4
-+.global sbi_hsm_check_hart_start
-+sbi_hsm_check_hart_start:
-+	la	t6, sbi_hsm_hart_start_checks
-+	j	sbi_hsm_check
-+
-+.balign 4
-+.global sbi_hsm_check_non_retentive_suspend
-+sbi_hsm_check_non_retentive_suspend:
-+	la	t6, sbi_hsm_non_retentive_hart_suspend_checks
-+	j	sbi_hsm_check
-diff --git a/riscv/sbi.c b/riscv/sbi.c
-index c9fbd6db..bf275630 100644
---- a/riscv/sbi.c
-+++ b/riscv/sbi.c
-@@ -6,6 +6,8 @@
-  */
- #include <libcflat.h>
- #include <alloc_page.h>
-+#include <cpumask.h>
-+#include <on-cpus.h>
- #include <stdlib.h>
- #include <string.h>
- #include <limits.h>
-@@ -16,10 +18,13 @@
- #include <asm/delay.h>
- #include <asm/io.h>
- #include <asm/mmu.h>
-+#include <asm/page.h>
- #include <asm/processor.h>
- #include <asm/sbi.h>
-+#include <asm/setup.h>
- #include <asm/smp.h>
- #include <asm/timer.h>
-+#include <sbi.h>
- 
- #define	HIGH_ADDR_BOUNDARY	((phys_addr_t)1 << 32)
- 
-@@ -420,6 +425,352 @@ static void check_dbcn(void)
- 	report_prefix_popn(2);
- }
- 
-+unsigned char sbi_hsm_stop_hart[NR_CPUS];
-+unsigned char sbi_hsm_hart_start_checks[NR_CPUS];
-+unsigned char sbi_hsm_non_retentive_hart_suspend_checks[NR_CPUS];
-+cpumask_t sbi_hsm_started_hart_checks;
-+cpumask_t sbi_hsm_invalid_hartid_checks;
-+static bool hsm_timer_fired;
-+extern void sbi_hsm_check_hart_start(void);
-+extern void sbi_hsm_check_non_retentive_suspend(void);
-+
-+static void hsm_timer_irq_handler(struct pt_regs *regs)
-+{
-+	hsm_timer_fired = true;
-+	timer_stop();
-+}
-+
-+static void hsm_timer_wait(int nr_secondary_cpus)
-+{
-+	unsigned long hsm_timer_duration = getenv("SBI_HSM_TIMER_DURATION")
-+					 ? strtol(getenv("SBI_HSM_TIMER_DURATION"), NULL, 0) : 200000;
-+
-+	install_irq_handler(IRQ_S_TIMER, hsm_timer_irq_handler);
-+	local_irq_enable();
-+	timer_irq_enable();
-+	timer_start(hsm_timer_duration);
-+
-+	while (cpumask_weight(&cpu_idle_mask) != nr_secondary_cpus && !hsm_timer_fired)
-+		cpu_relax();
-+
-+	timer_irq_disable();
-+	local_irq_disable();
-+	install_irq_handler(IRQ_S_TIMER, NULL);
-+}
-+
-+static void hart_empty_fn(void *data) {}
-+
-+static void hart_execute(void *data)
-+{
-+	struct sbiret ret;
-+	unsigned long hartid = current_thread_info()->hartid;
-+	int me = smp_processor_id();
-+
-+	ret = sbi_hart_start(hartid, virt_to_phys(&hart_empty_fn), 0);
-+
-+	if (ret.error == SBI_ERR_ALREADY_AVAILABLE)
-+		cpumask_set_cpu(me, &sbi_hsm_started_hart_checks);
-+
-+	ret = sbi_hart_start(ULONG_MAX, virt_to_phys(&hart_empty_fn), 0);
-+
-+	if (ret.error == SBI_ERR_INVALID_PARAM)
-+		cpumask_set_cpu(me, &sbi_hsm_invalid_hartid_checks);
-+}
-+
-+static void hart_retentive_suspend(void *data)
-+{
-+	unsigned long hartid = current_thread_info()->hartid;
-+	struct sbiret ret = sbi_hart_suspend(SBI_EXT_HSM_HART_SUSPEND_RETENTIVE, 0, 0);
-+
-+	if (ret.error)
-+		report_fail("failed to retentive suspend hart %ld (error=%ld)", hartid, ret.error);
-+}
-+
-+static void hart_non_retentive_suspend(void *data)
-+{
-+	unsigned long hartid = current_thread_info()->hartid;
-+
-+	/* Set opaque as hartid so that we can check a0 == a1, ensuring that a0 is hartid and a1 is opaque */
-+	struct sbiret ret = sbi_hart_suspend(SBI_EXT_HSM_HART_SUSPEND_NON_RETENTIVE,
-+					     virt_to_phys(&sbi_hsm_check_non_retentive_suspend), hartid);
-+
-+	report_fail("failed to non-retentive suspend hart %ld (error=%ld)", hartid, ret.error);
-+}
-+
-+static void hart_wait_on_status(unsigned long hartid, enum sbi_ext_hsm_sid status)
-+{
-+	struct sbiret ret = sbi_hart_get_status(hartid);
-+
-+	while (!ret.error && ret.value == status) {
-+		cpu_relax();
-+		ret = sbi_hart_get_status(hartid);
-+	}
-+
-+	if (ret.error)
-+		report_fail("got %ld while waiting on status %u for hart %ld\n", ret.error, status, hartid);
-+}
-+
-+static void check_hsm(void)
-+{
-+	struct sbiret ret;
-+	unsigned long hartid;
-+	bool ipi_failed = false;
-+	int cpu, nr_secondary_cpus, me = smp_processor_id();
-+	unsigned long max_cpu = getenv("SBI_HSM_MAX_CPU") ? strtol(getenv("SBI_HSM_MAX_CPU"), NULL, 0) : NR_CPUS;
-+	cpumask_t secondary_cpus_mask;
-+
-+	cpumask_copy(&secondary_cpus_mask, &cpu_present_mask);
-+	cpumask_clear_cpu(me, &secondary_cpus_mask);
-+	for_each_cpu(cpu, &secondary_cpus_mask)
-+		if (cpu >= max_cpu)
-+			cpumask_clear_cpu(cpu, &secondary_cpus_mask);
-+
-+	nr_secondary_cpus = cpumask_weight(&secondary_cpus_mask);
-+
-+	report_prefix_push("hsm");
-+
-+	if (!sbi_probe(SBI_EXT_HSM)) {
-+		report_skip("hsm extension not available");
-+		report_prefix_pop();
-+		return;
-+	}
-+
-+	report_prefix_push("hart_get_status");
-+
-+	hartid = current_thread_info()->hartid;
-+	ret = sbi_hart_get_status(hartid);
-+
-+	if (ret.error) {
-+		report_fail("failed to get status of current hart (error=%ld)", ret.error);
-+		report_prefix_popn(2);
-+		return;
-+	} else if (ret.value != SBI_EXT_HSM_STARTED) {
-+		report_fail("current hart is not started (ret.value=%ld)", ret.value);
-+		report_prefix_popn(2);
-+		return;
-+	}
-+
-+	report_pass("status of current hart is started");
-+
-+	report_prefix_pop();
-+
-+	if (nr_cpus < 2) {
-+		report_skip("no other cpus to run the remaining hsm tests on");
-+		report_prefix_pop();
-+		return;
-+	}
-+
-+	report_prefix_push("hart_start");
-+
-+	for_each_cpu(cpu, &secondary_cpus_mask) {
-+		hartid = cpus[cpu].hartid;
-+		/* Set opaque as hartid so that we can check a0 == a1, ensuring that a0 is hartid and a1 is opaque */
-+		ret = sbi_hart_start(hartid, virt_to_phys(&sbi_hsm_check_hart_start), hartid);
-+		if (ret.error) {
-+			report_fail("failed to start test hart %ld (error=%ld)", hartid, ret.error);
-+			report_prefix_popn(2);
-+			return;
-+		}
-+	}
-+
-+	for_each_cpu(cpu, &secondary_cpus_mask) {
-+		hartid = cpus[cpu].hartid;
-+		hart_wait_on_status(hartid, SBI_EXT_HSM_STOPPED);
-+		hart_wait_on_status(hartid, SBI_EXT_HSM_START_PENDING);
-+		ret = sbi_hart_get_status(hartid);
-+		report(ret.error == SBI_SUCCESS, "hart %ld get status success (error=%ld)", hartid, ret.error);
-+		report(ret.value == SBI_EXT_HSM_STARTED,
-+		       "hart %ld start success (ret.value=%ld)", hartid, ret.value);
-+	}
-+
-+	for_each_cpu(cpu, &secondary_cpus_mask) {
-+		hartid = cpus[cpu].hartid;
-+
-+		while (!(READ_ONCE(sbi_hsm_hart_start_checks[hartid]) & SBI_HSM_TEST_DONE))
-+			cpu_relax();
-+
-+		report(READ_ONCE(sbi_hsm_hart_start_checks[hartid]) & SBI_HSM_TEST_SATP,
-+		       "satp is zero for test hart %ld", hartid);
-+		report(READ_ONCE(sbi_hsm_hart_start_checks[hartid]) & SBI_HSM_TEST_SIE,
-+		       "sstatus.SIE is zero for test hart %ld", hartid);
-+		report(READ_ONCE(sbi_hsm_hart_start_checks[hartid]) & SBI_HSM_TEST_HARTID_A1,
-+		       "a0 and a1 are hartid for test hart %ld", hartid);
-+	}
-+
-+	report_prefix_pop();
-+
-+	report_prefix_push("hart_stop");
-+
-+	for_each_cpu(cpu, &secondary_cpus_mask) {
-+		hartid = cpus[cpu].hartid;
-+		WRITE_ONCE(sbi_hsm_stop_hart[hartid], true);
-+	}
-+
-+	for_each_cpu(cpu, &secondary_cpus_mask) {
-+		hartid = cpus[cpu].hartid;
-+		hart_wait_on_status(hartid, SBI_EXT_HSM_STARTED);
-+		hart_wait_on_status(hartid, SBI_EXT_HSM_STOP_PENDING);
-+		ret = sbi_hart_get_status(hartid);
-+		report(ret.error == SBI_SUCCESS, "hart %ld get status success (error=%ld)", hartid, ret.error);
-+		report(ret.value == SBI_EXT_HSM_STOPPED,
-+		       "hart %ld stop success (ret.value=%ld)", hartid, ret.value);
-+	}
-+
-+	/* Reset the stop flags so that we can reuse them after suspension tests */
-+	for_each_cpu(cpu, &secondary_cpus_mask) {
-+		hartid = cpus[cpu].hartid;
-+		WRITE_ONCE(sbi_hsm_stop_hart[hartid], false);
-+	}
-+
-+	report_prefix_pop();
-+
-+	report_prefix_push("hart_start");
-+
-+	on_cpumask_async(&secondary_cpus_mask, hart_execute, NULL);
-+
-+	for_each_cpu(cpu, &secondary_cpus_mask) {
-+		hartid = cpus[cpu].hartid;
-+		hart_wait_on_status(hartid, SBI_EXT_HSM_STOPPED);
-+		hart_wait_on_status(hartid, SBI_EXT_HSM_START_PENDING);
-+		ret = sbi_hart_get_status(hartid);
-+		report(ret.error == SBI_SUCCESS, "hart %ld get status success (error=%ld)", hartid, ret.error);
-+		report(ret.value == SBI_EXT_HSM_STARTED,
-+		       "hart %ld start success (ret.value=%ld)", hartid, ret.value);
-+	}
-+
-+	hsm_timer_wait(nr_secondary_cpus);
-+
-+	if (hsm_timer_fired) {
-+		report_fail("hsm timer fired before all secondary harts started");
-+		report_prefix_popn(2);
-+		return;
-+	}
-+
-+	report(cpumask_weight(&cpu_idle_mask) == nr_secondary_cpus,
-+	       "all secondary harts successfully executed code after start");
-+	report(cpumask_weight(&cpu_online_mask) == nr_secondary_cpus + 1, "all secondary harts online");
-+	report(cpumask_weight(&sbi_hsm_started_hart_checks) == nr_secondary_cpus,
-+	       "all secondary harts are already started");
-+	report(cpumask_weight(&sbi_hsm_invalid_hartid_checks) == nr_secondary_cpus,
-+	       "all secondary harts refuse to start with invalid hartid");
-+
-+	report_prefix_pop();
-+
-+	report_prefix_push("hart_suspend");
-+
-+	if (!sbi_probe(SBI_EXT_IPI)) {
-+		report_skip("skipping suspension tests since ipi extension is unavailable");
-+		report_prefix_popn(2);
-+		return;
-+	}
-+
-+	on_cpumask_async(&secondary_cpus_mask, hart_retentive_suspend, NULL);
-+
-+	for_each_cpu(cpu, &secondary_cpus_mask) {
-+		hartid = cpus[cpu].hartid;
-+		hart_wait_on_status(hartid, SBI_EXT_HSM_STARTED);
-+		hart_wait_on_status(hartid, SBI_EXT_HSM_SUSPEND_PENDING);
-+		ret = sbi_hart_get_status(hartid);
-+		report(ret.error == SBI_SUCCESS, "hart %ld get status success (error=%ld)", hartid, ret.error);
-+		report(ret.value == SBI_EXT_HSM_SUSPENDED,
-+		       "hart %ld retentive suspend success (ret.value=%ld)", hartid, ret.value);
-+	}
-+
-+	sbi_send_ipi_cpumask(&secondary_cpus_mask);
-+
-+	if (!ipi_failed) {
-+		for_each_cpu(cpu, &secondary_cpus_mask) {
-+			hartid = cpus[cpu].hartid;
-+			hart_wait_on_status(hartid, SBI_EXT_HSM_SUSPENDED);
-+			hart_wait_on_status(hartid, SBI_EXT_HSM_RESUME_PENDING);
-+			ret = sbi_hart_get_status(hartid);
-+			report(ret.error == SBI_SUCCESS,
-+			       "hart %ld get status success (error=%ld)", hartid, ret.error);
-+			report(ret.value == SBI_EXT_HSM_STARTED,
-+			       "hart %ld retentive resume success (ret.value=%ld)", hartid, ret.value);
-+		}
-+
-+		hsm_timer_wait(nr_secondary_cpus);
-+
-+		if (hsm_timer_fired) {
-+			report_fail("hsm timer fired before all secondary harts retentive resumed");
-+			report_prefix_popn(2);
-+			return;
-+		}
-+
-+		report(cpumask_weight(&cpu_idle_mask) == nr_secondary_cpus,
-+		       "all secondary harts successfully executed code after retentive suspend");
-+		report(cpumask_weight(&cpu_online_mask) == nr_secondary_cpus + 1,
-+		       "all secondary harts online");
-+	}
-+
-+	/* Reset the ipi_failed flag so that we can reuse it for non-retentive suspension tests */
-+	ipi_failed = false;
-+
-+	on_cpumask_async(&secondary_cpus_mask, hart_non_retentive_suspend, NULL);
-+
-+	for_each_cpu(cpu, &secondary_cpus_mask) {
-+		hartid = cpus[cpu].hartid;
-+		hart_wait_on_status(hartid, SBI_EXT_HSM_STARTED);
-+		hart_wait_on_status(hartid, SBI_EXT_HSM_SUSPEND_PENDING);
-+		ret = sbi_hart_get_status(hartid);
-+		report(ret.error == SBI_SUCCESS, "hart %ld get status success (error=%ld)", hartid, ret.error);
-+		report(ret.value == SBI_EXT_HSM_SUSPENDED,
-+		       "hart %ld non-retentive suspend success (ret.value=%ld)", hartid, ret.value);
-+	}
-+
-+	sbi_send_ipi_cpumask(&secondary_cpus_mask);
-+
-+	if (!ipi_failed) {
-+		for_each_cpu(cpu, &secondary_cpus_mask) {
-+			hartid = cpus[cpu].hartid;
-+			hart_wait_on_status(hartid, SBI_EXT_HSM_SUSPENDED);
-+			hart_wait_on_status(hartid, SBI_EXT_HSM_RESUME_PENDING);
-+			ret = sbi_hart_get_status(hartid);
-+			report(ret.error == SBI_SUCCESS,
-+			       "hart %ld get status success (error=%ld)", hartid, ret.error);
-+			report(ret.value == SBI_EXT_HSM_STARTED,
-+			       "hart %ld non-retentive resume success (ret.value=%ld)", hartid, ret.value);
-+		}
-+
-+		for_each_cpu(cpu, &secondary_cpus_mask) {
-+			hartid = cpus[cpu].hartid;
-+
-+			while (!((READ_ONCE(sbi_hsm_non_retentive_hart_suspend_checks[hartid])) & SBI_HSM_TEST_DONE))
-+				cpu_relax();
-+
-+			report(READ_ONCE(sbi_hsm_non_retentive_hart_suspend_checks[hartid]) & SBI_HSM_TEST_SATP,
-+			       "satp is zero for test hart %ld", hartid);
-+			report(READ_ONCE(sbi_hsm_non_retentive_hart_suspend_checks[hartid]) & SBI_HSM_TEST_SIE,
-+			       "sstatus.SIE is zero for test hart %ld", hartid);
-+			report(READ_ONCE(sbi_hsm_non_retentive_hart_suspend_checks[hartid]) & SBI_HSM_TEST_HARTID_A1,
-+			       "a0 and a1 are hartid for test hart %ld", hartid);
-+		}
-+
-+		report_prefix_pop();
-+
-+		report_prefix_push("hart_stop");
-+
-+		for_each_cpu(cpu, &secondary_cpus_mask) {
-+			hartid = cpus[cpu].hartid;
-+			WRITE_ONCE(sbi_hsm_stop_hart[hartid], true);
-+		}
-+
-+		for_each_cpu(cpu, &secondary_cpus_mask) {
-+			hartid = cpus[cpu].hartid;
-+			hart_wait_on_status(hartid, SBI_EXT_HSM_STARTED);
-+			hart_wait_on_status(hartid, SBI_EXT_HSM_STOP_PENDING);
-+			ret = sbi_hart_get_status(hartid);
-+			report(ret.error == SBI_SUCCESS,
-+			       "hart %ld get status success (error=%ld)", hartid, ret.error);
-+			report(ret.value == SBI_EXT_HSM_STOPPED,
-+			       "hart %ld stop after retention success (ret.value=%ld)", hartid, ret.value);
-+		}
-+	}
-+
-+	report_prefix_popn(2);
-+}
-+
- int main(int argc, char **argv)
- {
- 	if (argc > 1 && !strcmp(argv[1], "-h")) {
-@@ -430,6 +781,7 @@ int main(int argc, char **argv)
- 	report_prefix_push("sbi");
- 	check_base();
- 	check_time();
-+	check_hsm();
- 	check_dbcn();
- 
- 	return report_summary();
+The ioctl was designed to facilitate as many other use cases as possible
+apart from VSM. The error codes were intentionally chosen to be broad
+enough to avoid exposing architecture specific details. Even though
+HvTranslateVirtualAddress only really needs one flag to set the accessed
+and dirty bits whenever possible, that was split into several flags so
+that future users can chose more gradually when these bits should be set.
+Furthermore, as much information as possible is provided to the caller.
+
+The patch series includes selftests for the ioctl, as well as fuzzy
+testing on random garbage guest page table entries. All previously passing
+KVM selftests and KVM unit tests still pass.
+
+Series overview:
+- 1: Document the new ioctl
+- 2-11: Update the page walker in preparation
+- 12-14: Implement the ioctl
+- 15: Implement testing
+
+This series, alongside the series by Nicolas Saenz Julienne [1]
+introducing the core building blocks for VSM and the accompanying QEMU
+implementation [2], is capable of booting Windows Server 2019.
+
+Both series are also available on GitHub [3].
+
+[1] https://lore.kernel.org/linux-hyperv/20240609154945.55332-1-nsaenz at amazon.com/
+[2] https://github.com/vianpl/qemu/tree/vsm/next
+[3] https://github.com/vianpl/linux/tree/vsm/next
+
+Best,
+Nikolas
+
+Nikolas Wipper (15):
+  KVM: Add API documentation for KVM_TRANSLATE2
+  KVM: x86/mmu: Abort page walk if permission checks fail
+  KVM: x86/mmu: Introduce exception flag for unmapped GPAs
+  KVM: x86/mmu: Store GPA in exception if applicable
+  KVM: x86/mmu: Introduce flags parameter to page walker
+  KVM: x86/mmu: Implement PWALK_SET_ACCESSED in page walker
+  KVM: x86/mmu: Implement PWALK_SET_DIRTY in page walker
+  KVM: x86/mmu: Implement PWALK_FORCE_SET_ACCESSED in page walker
+  KVM: x86/mmu: Introduce status parameter to page walker
+  KVM: x86/mmu: Implement PWALK_STATUS_READ_ONLY_PTE_GPA in page walker
+  KVM: x86: Introduce generic gva to gpa translation function
+  KVM: Introduce KVM_TRANSLATE2
+  KVM: Add KVM_TRANSLATE2 stub
+  KVM: x86: Implement KVM_TRANSLATE2
+  KVM: selftests: Add test for KVM_TRANSLATE2
+
+ Documentation/virt/kvm/api.rst                | 131 ++++++++
+ arch/x86/include/asm/kvm_host.h               |  18 +-
+ arch/x86/kvm/hyperv.c                         |   3 +-
+ arch/x86/kvm/kvm_emulate.h                    |   8 +
+ arch/x86/kvm/mmu.h                            |  10 +-
+ arch/x86/kvm/mmu/mmu.c                        |   7 +-
+ arch/x86/kvm/mmu/paging_tmpl.h                |  80 +++--
+ arch/x86/kvm/x86.c                            | 123 ++++++-
+ include/linux/kvm_host.h                      |   6 +
+ include/uapi/linux/kvm.h                      |  33 ++
+ tools/testing/selftests/kvm/Makefile          |   1 +
+ .../selftests/kvm/x86_64/kvm_translate2.c     | 310 ++++++++++++++++++
+ virt/kvm/kvm_main.c                           |  41 +++
+ 13 files changed, 724 insertions(+), 47 deletions(-)
+ create mode 100644 tools/testing/selftests/kvm/x86_64/kvm_translate2.c
+
 -- 
-2.43.0
+2.40.1
+
+
+
+
+Amazon Web Services Development Center Germany GmbH
+Krausenstr. 38
+10117 Berlin
+Geschaeftsfuehrung: Christian Schlaeger, Jonathan Weiss
+Eingetragen am Amtsgericht Charlottenburg unter HRB 257764 B
+Sitz: Berlin
+Ust-ID: DE 365 538 597
 
 
