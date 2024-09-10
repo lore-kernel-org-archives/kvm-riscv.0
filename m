@@ -1,80 +1,45 @@
 From: James Raphael Tiovalen <jamestiotio@gmail.com>
-Date: Tue, 10 Sep 2024 23:08:42 +0800
-Subject: [kvm-unit-tests PATCH 2/2] riscv: sbi: Tidy up report prefix pops
-In-Reply-To: <20240910150842.156949-1-jamestiotio@gmail.com>
-References: <20240910150842.156949-1-jamestiotio@gmail.com>
-Message-ID: <20240910150842.156949-3-jamestiotio@gmail.com>
+Date: Tue, 10 Sep 2024 23:15:34 +0800
+Subject: [kvm-unit-tests PATCH v3 0/2] riscv: sbi: Add support to test HSM extension
+Message-ID: <20240910151536.163830-1-jamestiotio@gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Replace multiple consecutive calls of the `report_prefix_pop` function
-with the new `report_prefix_popn` function.
+This patch series adds support for testing all 4 functions of the HSM
+extension as defined in the RISC-V SBI specification. The first patch
+adds some helper routines to prepare for the HSM test, while the
+second patch adds the actual test for the HSM extension.
 
-Signed-off-by: James Raphael Tiovalen <jamestiotio@gmail.com>
----
- riscv/sbi.c | 17 +++++------------
- 1 file changed, 5 insertions(+), 12 deletions(-)
+v3:
+- Addressed all of Andrew's comments.
+- Split the report_prefix_pop patch into its own series.
+- Added a new environment variable to specify the maximum number of
+  CPUs supported by the SBI implementation.
 
-diff --git a/riscv/sbi.c b/riscv/sbi.c
-index 093c20a0..f88bf700 100644
---- a/riscv/sbi.c
-+++ b/riscv/sbi.c
-@@ -140,8 +140,7 @@ static void check_base(void)
- 	report_prefix_push("unavailable");
- 	ret = sbi_base(SBI_EXT_BASE_PROBE_EXT, 0xb000000);
- 	gen_report(&ret, 0, 0);
--	report_prefix_pop();
--	report_prefix_pop();
-+	report_prefix_popn(2);
- 
- 	report_prefix_push("mvendorid");
- 	if (env_or_skip("MVENDORID")) {
-@@ -166,9 +165,7 @@ static void check_base(void)
- 		ret = sbi_base(SBI_EXT_BASE_GET_MIMPID, 0);
- 		gen_report(&ret, 0, expected);
- 	}
--	report_prefix_pop();
--
--	report_prefix_pop();
-+	report_prefix_popn(2);
- }
- 
- struct timer_info {
-@@ -281,8 +278,7 @@ static void check_time(void)
- 	local_irq_disable();
- 	install_irq_handler(IRQ_S_TIMER, NULL);
- 
--	report_prefix_pop();
--	report_prefix_pop();
-+	report_prefix_popn(2);
- }
- 
- #define DBCN_WRITE_TEST_STRING		"DBCN_WRITE_TEST_STRING\n"
-@@ -401,9 +397,7 @@ static void check_dbcn(void)
- 		ret = sbi_dbcn_write(1, base_addr_lo, base_addr_hi);
- 		report(ret.error == SBI_ERR_INVALID_PARAM, "address (error=%ld)", ret.error);
- 	}
--	report_prefix_pop();
--
--	report_prefix_pop();
-+	report_prefix_popn(2);
- 	report_prefix_push("write_byte");
- 
- 	puts("DBCN_WRITE_BYTE TEST BYTE: ");
-@@ -418,8 +412,7 @@ static void check_dbcn(void)
- 	report(ret.error == SBI_SUCCESS, "write success (error=%ld)", ret.error);
- 	report(ret.value == 0, "expected ret.value (%ld)", ret.value);
- 
--	report_prefix_pop();
--	report_prefix_pop();
-+	report_prefix_popn(2);
- }
- 
- int main(int argc, char **argv)
--- 
+v2:
+- Addressed all of Andrew's comments.
+- Added a new patch to add helper routines to clear multiple prefixes.
+- Reworked the approach to test the HSM extension by using cpumask and
+  on-cpus.
+
+James Raphael Tiovalen (2):
+  riscv: sbi: Add HSM extension functions
+  riscv: sbi: Add tests for HSM extension
+
+ riscv/Makefile      |   3 +-
+ lib/riscv/asm/sbi.h |  17 +++
+ lib/riscv/sbi.c     |  10 ++
+ riscv/sbi.h         |  10 ++
+ riscv/sbi-asm.S     |  47 ++++++
+ riscv/sbi.c         | 357 ++++++++++++++++++++++++++++++++++++++++++++
+ 6 files changed, 443 insertions(+), 1 deletion(-)
+ create mode 100644 riscv/sbi.h
+ create mode 100644 riscv/sbi-asm.S
+
+--
 2.43.0
 
 
