@@ -1,82 +1,92 @@
 From: Nicholas Piggin <npiggin@gmail.com>
-Date: Wed, 11 Sep 2024 10:39:03 +1000
-Subject: [kvm-unit-tests PATCH 1/2] configure: Introduce add-config
-In-Reply-To: <20240903143946.834864-5-andrew.jones@linux.dev>
-References: <20240903143946.834864-4-andrew.jones@linux.dev>
- <20240903143946.834864-5-andrew.jones@linux.dev>
-Message-ID: <D431AYECDJV3.1AVQCTIRV2J4G@gmail.com>
+Date: Wed, 11 Sep 2024 10:55:34 +1000
+Subject: [kvm-unit-tests PATCH] lib/stack: Restrengthen base_address
+In-Reply-To: <20240904145107.2447876-2-andrew.jones@linux.dev>
+References: <20240904145107.2447876-2-andrew.jones@linux.dev>
+Message-ID: <D431NLP0XYPF.F69YFSU98T2G@gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed Sep 4, 2024 at 12:39 AM AEST, Andrew Jones wrote:
-> Allow users to add additional CONFIG_* and override defaults
-> by concatenating a given file with #define's and #undef's to
-> lib/config.h
+On Thu Sep 5, 2024 at 12:51 AM AEST, Andrew Jones wrote:
+> commit a1f2b0e1efd5 ("treewide: lib/stack: Make base_address arch
+> specific") made base_address() a weak function in order to allow
+> architectures to override it. Linking for EFI doesn't seem to figure
+> out the right one to use though [anymore?]. It must have worked at
+> one point because the commit calls outs EFI as the motivation.
+> Anyway, just drop the weakness in favor of another HAVE_ define.
 
-That's a horrible config format lol, but probbaly the simplest way to
-get something working. What if you included the user config first, then
-make the generated config test ifndef before defining the default?
+I prefer HAVE_ style than weak so fine by me.
 
-Is it better to have a config file than to just add more --options to
-configure? If we had thousands of options maybe, but so far we are
-getting by with configure options. I think I prefer that for now
-unless we wholesale moved everything to a .config style.
+How is the linker not resolving it properly? Some calls still
+point to weak symbol despite non-weak symbol also existing?
 
-Thanks,
-Nick
 
 >
 > Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
 > ---
->  configure | 14 ++++++++++++++
->  1 file changed, 14 insertions(+)
+>  lib/riscv/asm/stack.h |  1 +
+>  lib/riscv/stack.c     |  2 +-
+>  lib/stack.c           | 10 ++++++----
+>  lib/stack.h           |  2 +-
+>  4 files changed, 9 insertions(+), 6 deletions(-)
 >
-> diff --git a/configure b/configure
-> index 27ae9cc89657..7a1317d0650d 100755
-> --- a/configure
-> +++ b/configure
-> @@ -64,6 +64,8 @@ usage() {
->  	                           no environ is provided by the user (enabled by default)
->  	    --erratatxt=FILE       specify a file to use instead of errata.txt. Use
->  	                           '--erratatxt=' to ensure no file is used.
-> +	    --add-config=FILE      specify a file containing configs (CONFIG_*) to add on to the
-> +	                           generated lib/config.h. Use #undef to override default configs.
->  	    --host-key-document=HOST_KEY_DOCUMENT
->  	                           Specify the machine-specific host-key document for creating
->  	                           a PVM image with 'genprotimg' (s390x only)
-> @@ -153,6 +155,10 @@ while [[ "$1" = -* ]]; do
->  	    erratatxt=
->  	    [ "$arg" ] && erratatxt=$(eval realpath "$arg")
->  	    ;;
-> +	--add-config)
-> +	    add_config=
-> +	    [ "$arg" ] && add_config=$(eval realpath "$arg")
-> +	    ;;
->  	--host-key-document)
->  	    host_key_document="$arg"
->  	    ;;
-> @@ -213,6 +219,10 @@ if [ "$erratatxt" ] && [ ! -f "$erratatxt" ]; then
->      echo "erratatxt: $erratatxt does not exist or is not a regular file"
->      exit 1
->  fi
-> +if [ "$add_config" ] && [ ! -f "$add_config" ]; then
-> +    echo "add-config: $add_config does not exist or is not a regular file"
-> +    exit 1
-> +fi
+> diff --git a/lib/riscv/asm/stack.h b/lib/riscv/asm/stack.h
+> index f003ca37c913..708fa4215007 100644
+> --- a/lib/riscv/asm/stack.h
+> +++ b/lib/riscv/asm/stack.h
+> @@ -8,5 +8,6 @@
 >  
->  arch_name=$arch
->  [ "$arch" = "aarch64" ] && arch="arm64"
-> @@ -502,4 +512,8 @@ cat <<EOF >> lib/config.h
+>  #define HAVE_ARCH_BACKTRACE_FRAME
+>  #define HAVE_ARCH_BACKTRACE
+> +#define HAVE_ARCH_BASE_ADDRESS
 >  
->  EOF
->  fi
-> +if [ "$add_config" ]; then
-> +    echo "/* Additional configs from $add_config */" >> lib/config.h
-> +    cat "$add_config" >> lib/config.h
-> +fi
->  echo "#endif" >> lib/config.h
+>  #endif
+> diff --git a/lib/riscv/stack.c b/lib/riscv/stack.c
+> index 2cd7f012738b..a143c22a570a 100644
+> --- a/lib/riscv/stack.c
+> +++ b/lib/riscv/stack.c
+> @@ -5,7 +5,7 @@
+>  #ifdef CONFIG_RELOC
+>  extern char ImageBase, _text, _etext;
+>  
+> -bool arch_base_address(const void *rebased_addr, unsigned long *addr)
+> +bool base_address(const void *rebased_addr, unsigned long *addr)
+>  {
+>  	unsigned long ra = (unsigned long)rebased_addr;
+>  	unsigned long base = (unsigned long)&ImageBase;
+> diff --git a/lib/stack.c b/lib/stack.c
+> index 086fec544a81..e1c981085176 100644
+> --- a/lib/stack.c
+> +++ b/lib/stack.c
+> @@ -12,9 +12,10 @@
+>  #define MAX_DEPTH 20
+>  
+>  #ifdef CONFIG_RELOC
+> +#ifndef HAVE_ARCH_BASE_ADDRESS
+>  extern char _text, _etext;
+>  
+> -bool __attribute__((weak)) arch_base_address(const void *rebased_addr, unsigned long *addr)
+> +bool base_address(const void *rebased_addr, unsigned long *addr)
+>  {
+>  	unsigned long ra = (unsigned long)rebased_addr;
+>  	unsigned long start = (unsigned long)&_text;
+> @@ -26,8 +27,9 @@ bool __attribute__((weak)) arch_base_address(const void *rebased_addr, unsigned
+>  	*addr = ra - start;
+>  	return true;
+>  }
+> +#endif
+>  #else
+> -bool __attribute__((weak)) arch_base_address(const void *rebased_addr, unsigned long *addr)
+> +bool base_address(const void *rebased_addr, unsigned long *addr)
+>  {
+>  	*addr = (unsigned long)rebased_addr;
+>  	return true;
 
+Shouldn't HAVE_ARCH_BASE_ADDRESS also cover this?
+
+Thanks,
+Nick
 
