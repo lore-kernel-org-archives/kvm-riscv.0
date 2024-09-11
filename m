@@ -1,46 +1,39 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Wed, 11 Sep 2024 13:41:53 -0700
-Subject: [PATCH v2 08/13] KVM: selftests: Compute number of extra pages needed
- in mmu_stress_test
+Date: Wed, 11 Sep 2024 13:41:54 -0700
+Subject: [PATCH v2 09/13] KVM: selftests: Enable mmu_stress_test on arm64
 In-Reply-To: <20240911204158.2034295-1-seanjc@google.com>
 References: <20240911204158.2034295-1-seanjc@google.com>
-Message-ID: <20240911204158.2034295-9-seanjc@google.com>
+Message-ID: <20240911204158.2034295-10-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Create mmu_stress_tests's VM with the correct number of extra pages needed
-to map all of memory in the guest.  The bug hasn't been noticed before as
-the test currently runs only on x86, which maps guest memory with 1GiB
-pages, i.e. doesn't need much memory in the guest for page tables.
+Enable the mmu_stress_test on arm64.  The intent was to enable the test
+across all architectures when it was first added, but a few goofs made it
+unrunnable on !x86.  Now that those goofs are fixed, at least for arm64,
+enable the test.
 
-Reviewed-by: James Houghton <jthoughton@google.com>
+Cc: Oliver Upton <oliver.upton@linux.dev>
+Cc: Marc Zyngier <maz@kernel.org>
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- tools/testing/selftests/kvm/mmu_stress_test.c | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+ tools/testing/selftests/kvm/Makefile | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/tools/testing/selftests/kvm/mmu_stress_test.c b/tools/testing/selftests/kvm/mmu_stress_test.c
-index 847da23ec1b1..5467b12f5903 100644
---- a/tools/testing/selftests/kvm/mmu_stress_test.c
-+++ b/tools/testing/selftests/kvm/mmu_stress_test.c
-@@ -209,7 +209,13 @@ int main(int argc, char *argv[])
- 	vcpus = malloc(nr_vcpus * sizeof(*vcpus));
- 	TEST_ASSERT(vcpus, "Failed to allocate vCPU array");
- 
--	vm = vm_create_with_vcpus(nr_vcpus, guest_code, vcpus);
-+	vm = __vm_create_with_vcpus(VM_SHAPE_DEFAULT, nr_vcpus,
-+#ifdef __x86_64__
-+				    max_mem / SZ_1G,
-+#else
-+				    max_mem / vm_guest_mode_params[VM_MODE_DEFAULT].page_size,
-+#endif
-+				    guest_code, vcpus);
- 
- 	max_gpa = vm->max_gfn << vm->page_shift;
- 	TEST_ASSERT(max_gpa > (4 * slot_size), "MAXPHYADDR <4gb ");
+diff --git a/tools/testing/selftests/kvm/Makefile b/tools/testing/selftests/kvm/Makefile
+index 93d6e2596b3e..5150fad7a8c0 100644
+--- a/tools/testing/selftests/kvm/Makefile
++++ b/tools/testing/selftests/kvm/Makefile
+@@ -174,6 +174,7 @@ TEST_GEN_PROGS_aarch64 += kvm_create_max_vcpus
+ TEST_GEN_PROGS_aarch64 += kvm_page_table_test
+ TEST_GEN_PROGS_aarch64 += memslot_modification_stress_test
+ TEST_GEN_PROGS_aarch64 += memslot_perf_test
++TEST_GEN_PROGS_aarch64 += mmu_stress_test
+ TEST_GEN_PROGS_aarch64 += rseq_test
+ TEST_GEN_PROGS_aarch64 += set_memory_region_test
+ TEST_GEN_PROGS_aarch64 += steal_time
 -- 
 2.46.0.598.g6f2099f65c-goog
 
