@@ -1,83 +1,82 @@
 From: Nicholas Piggin <npiggin@gmail.com>
-Date: Wed, 11 Sep 2024 10:26:03 +1000
-Subject: [kvm-unit-tests PATCH v2 4/4] riscv: gitlab-ci: Add clang build
- tests
-In-Reply-To: <20240904105020.1179006-10-andrew.jones@linux.dev>
-References: <20240904105020.1179006-6-andrew.jones@linux.dev>
- <20240904105020.1179006-10-andrew.jones@linux.dev>
-Message-ID: <D431108K19Z2.3EDZQCSG5RC4X@gmail.com>
+Date: Wed, 11 Sep 2024 10:39:03 +1000
+Subject: [kvm-unit-tests PATCH 1/2] configure: Introduce add-config
+In-Reply-To: <20240903143946.834864-5-andrew.jones@linux.dev>
+References: <20240903143946.834864-4-andrew.jones@linux.dev>
+ <20240903143946.834864-5-andrew.jones@linux.dev>
+Message-ID: <D431AYECDJV3.1AVQCTIRV2J4G@gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed Sep 4, 2024 at 8:50 PM AEST, Andrew Jones wrote:
-> Test building 32 and 64-bit with clang. Throw a test of in- and out-
-> of-tree building in too by swapping which is done to which (32-bit
-> vs. 64-bit) with respect to the gcc build tests.
->
-Acked-by: Nicholas Piggin <npiggin@gmail.com>
+On Wed Sep 4, 2024 at 12:39 AM AEST, Andrew Jones wrote:
+> Allow users to add additional CONFIG_* and override defaults
+> by concatenating a given file with #define's and #undef's to
+> lib/config.h
 
-> Acked-by: Thomas Huth <thuth@redhat.com>
+That's a horrible config format lol, but probbaly the simplest way to
+get something working. What if you included the user config first, then
+make the generated config test ifndef before defining the default?
+
+Is it better to have a config file than to just add more --options to
+configure? If we had thousands of options maybe, but so far we are
+getting by with configure options. I think I prefer that for now
+unless we wholesale moved everything to a .config style.
+
+Thanks,
+Nick
+
+>
 > Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
 > ---
->  .gitlab-ci.yml | 43 +++++++++++++++++++++++++++++++++++++++++++
->  1 file changed, 43 insertions(+)
+>  configure | 14 ++++++++++++++
+>  1 file changed, 14 insertions(+)
 >
-> diff --git a/.gitlab-ci.yml b/.gitlab-ci.yml
-> index 67a9a15733f1..b7ad99870e5a 100644
-> --- a/.gitlab-ci.yml
-> +++ b/.gitlab-ci.yml
-> @@ -176,6 +176,49 @@ build-riscv64-efi:
->        | tee results.txt
->   - grep -q PASS results.txt && ! grep -q FAIL results.txt
+> diff --git a/configure b/configure
+> index 27ae9cc89657..7a1317d0650d 100755
+> --- a/configure
+> +++ b/configure
+> @@ -64,6 +64,8 @@ usage() {
+>  	                           no environ is provided by the user (enabled by default)
+>  	    --erratatxt=FILE       specify a file to use instead of errata.txt. Use
+>  	                           '--erratatxt=' to ensure no file is used.
+> +	    --add-config=FILE      specify a file containing configs (CONFIG_*) to add on to the
+> +	                           generated lib/config.h. Use #undef to override default configs.
+>  	    --host-key-document=HOST_KEY_DOCUMENT
+>  	                           Specify the machine-specific host-key document for creating
+>  	                           a PVM image with 'genprotimg' (s390x only)
+> @@ -153,6 +155,10 @@ while [[ "$1" = -* ]]; do
+>  	    erratatxt=
+>  	    [ "$arg" ] && erratatxt=$(eval realpath "$arg")
+>  	    ;;
+> +	--add-config)
+> +	    add_config=
+> +	    [ "$arg" ] && add_config=$(eval realpath "$arg")
+> +	    ;;
+>  	--host-key-document)
+>  	    host_key_document="$arg"
+>  	    ;;
+> @@ -213,6 +219,10 @@ if [ "$erratatxt" ] && [ ! -f "$erratatxt" ]; then
+>      echo "erratatxt: $erratatxt does not exist or is not a regular file"
+>      exit 1
+>  fi
+> +if [ "$add_config" ] && [ ! -f "$add_config" ]; then
+> +    echo "add-config: $add_config does not exist or is not a regular file"
+> +    exit 1
+> +fi
 >  
-> +build-riscv32-clang:
-> + extends: .intree_template
-> + script:
-> + - dnf install -y qemu-system-riscv gcc-riscv64-linux-gnu clang
-> + - ./configure --arch=riscv32 --cc=clang --cflags='--target=riscv32' --cross-prefix=riscv64-linux-gnu-
-> + - make -j2
-> + - printf "FOO=foo\nBAR=bar\nBAZ=baz\nMVENDORID=0\nMARCHID=0\nMIMPID=0\n" >test-env
-> + - ACCEL=tcg KVM_UNIT_TESTS_ENV=test-env ./run_tests.sh
-> +      selftest
-> +      sbi
-> +      | tee results.txt
-> + - grep -q PASS results.txt && ! grep -q FAIL results.txt
-> +
-> +build-riscv64-clang:
-> + extends: .outoftree_template
-> + script:
-> + - dnf install -y qemu-system-riscv gcc-riscv64-linux-gnu clang
-> + - mkdir build
-> + - cd build
-> + - ../configure --arch=riscv64 --cc=clang --cflags='--target=riscv64' --cross-prefix=riscv64-linux-gnu-
-> + - make -j2
-> + - printf "FOO=foo\nBAR=bar\nBAZ=baz\nMVENDORID=0\nMARCHID=0\nMIMPID=0\n" >test-env
-> + - ACCEL=tcg KVM_UNIT_TESTS_ENV=test-env ./run_tests.sh
-> +      selftest
-> +      sbi
-> +      | tee results.txt
-> + - grep -q PASS results.txt && ! grep -q FAIL results.txt
-> +
-> +build-riscv64-clang-efi:
-> + extends: .intree_template
-> + script:
-> + - dnf install -y edk2-riscv64 qemu-system-riscv gcc-riscv64-linux-gnu clang
-> + - cp /usr/share/edk2/riscv/RISCV_VIRT_CODE.fd .
-> + - truncate -s 32M RISCV_VIRT_CODE.fd
-> + - ./configure --arch=riscv64 --cc=clang --cflags='--target=riscv64' --cross-prefix=riscv64-linux-gnu- --enable-efi
-> + - make -j2
-> + - printf "FOO=foo\nBAR=bar\nBAZ=baz\nMVENDORID=0\nMARCHID=0\nMIMPID=0\n" >test-env
-> + - ACCEL=tcg KVM_UNIT_TESTS_ENV=test-env ./run_tests.sh
-> +      selftest
-> +      sbi
-> +      | tee results.txt
-> + - grep -q PASS results.txt && ! grep -q FAIL results.txt
-> +
->  build-s390x:
->   extends: .outoftree_template
->   script:
+>  arch_name=$arch
+>  [ "$arch" = "aarch64" ] && arch="arm64"
+> @@ -502,4 +512,8 @@ cat <<EOF >> lib/config.h
+>  
+>  EOF
+>  fi
+> +if [ "$add_config" ]; then
+> +    echo "/* Additional configs from $add_config */" >> lib/config.h
+> +    cat "$add_config" >> lib/config.h
+> +fi
+>  echo "#endif" >> lib/config.h
 
 
