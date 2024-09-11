@@ -1,80 +1,56 @@
 From: Andrew Jones <andrew.jones@linux.dev>
-Date: Wed, 11 Sep 2024 11:14:11 +0200
-Subject: [kvm-unit-tests PATCH v3 4/5] riscv: gitlab-ci: Add clang build tests
+Date: Wed, 11 Sep 2024 11:14:12 +0200
+Subject: [kvm-unit-tests PATCH v3 5/5] README: Add cross and clang recipes
 In-Reply-To: <20240911091406.134240-7-andrew.jones@linux.dev>
 References: <20240911091406.134240-7-andrew.jones@linux.dev>
-Message-ID: <20240911091406.134240-11-andrew.jones@linux.dev>
+Message-ID: <20240911091406.134240-12-andrew.jones@linux.dev>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Test building 32 and 64-bit with clang. Throw a test of in- and out-
-of-tree building in too by swapping which is done to which (32-bit
-vs. 64-bit) with respect to the gcc build tests.
+Add configure command line examples for cross-compiling, for
+compiling with clang, and for cross-compiling with clang.
 
-Acked-by: Thomas Huth <thuth@redhat.com>
-Acked-by: Nicholas Piggin <npiggin@gmail.com>
 Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
 ---
- .gitlab-ci.yml | 43 +++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 43 insertions(+)
+ README.md | 22 ++++++++++++++++++++++
+ 1 file changed, 22 insertions(+)
 
-diff --git a/.gitlab-ci.yml b/.gitlab-ci.yml
-index 67a9a15733f1..b7ad99870e5a 100644
---- a/.gitlab-ci.yml
-+++ b/.gitlab-ci.yml
-@@ -176,6 +176,49 @@ build-riscv64-efi:
-       | tee results.txt
-  - grep -q PASS results.txt && ! grep -q FAIL results.txt
+diff --git a/README.md b/README.md
+index 2d6f7db5605c..be07dc28a094 100644
+--- a/README.md
++++ b/README.md
+@@ -17,6 +17,28 @@ in this directory.  Test images are created in ./ARCH/\*.flat
  
-+build-riscv32-clang:
-+ extends: .intree_template
-+ script:
-+ - dnf install -y qemu-system-riscv gcc-riscv64-linux-gnu clang
-+ - ./configure --arch=riscv32 --cc=clang --cflags='--target=riscv32' --cross-prefix=riscv64-linux-gnu-
-+ - make -j2
-+ - printf "FOO=foo\nBAR=bar\nBAZ=baz\nMVENDORID=0\nMARCHID=0\nMIMPID=0\n" >test-env
-+ - ACCEL=tcg KVM_UNIT_TESTS_ENV=test-env ./run_tests.sh
-+      selftest
-+      sbi
-+      | tee results.txt
-+ - grep -q PASS results.txt && ! grep -q FAIL results.txt
+ NOTE: GCC cross-compiler is required for [build on macOS](README.macOS.md).
+ 
++## Cross-compiling
 +
-+build-riscv64-clang:
-+ extends: .outoftree_template
-+ script:
-+ - dnf install -y qemu-system-riscv gcc-riscv64-linux-gnu clang
-+ - mkdir build
-+ - cd build
-+ - ../configure --arch=riscv64 --cc=clang --cflags='--target=riscv64' --cross-prefix=riscv64-linux-gnu-
-+ - make -j2
-+ - printf "FOO=foo\nBAR=bar\nBAZ=baz\nMVENDORID=0\nMARCHID=0\nMIMPID=0\n" >test-env
-+ - ACCEL=tcg KVM_UNIT_TESTS_ENV=test-env ./run_tests.sh
-+      selftest
-+      sbi
-+      | tee results.txt
-+ - grep -q PASS results.txt && ! grep -q FAIL results.txt
++A cross compiler may be configured by specifying a cross prefix. For example,
++for arm64
 +
-+build-riscv64-clang-efi:
-+ extends: .intree_template
-+ script:
-+ - dnf install -y edk2-riscv64 qemu-system-riscv gcc-riscv64-linux-gnu clang
-+ - cp /usr/share/edk2/riscv/RISCV_VIRT_CODE.fd .
-+ - truncate -s 32M RISCV_VIRT_CODE.fd
-+ - ./configure --arch=riscv64 --cc=clang --cflags='--target=riscv64' --cross-prefix=riscv64-linux-gnu- --enable-efi
-+ - make -j2
-+ - printf "FOO=foo\nBAR=bar\nBAZ=baz\nMVENDORID=0\nMARCHID=0\nMIMPID=0\n" >test-env
-+ - ACCEL=tcg KVM_UNIT_TESTS_ENV=test-env ./run_tests.sh
-+      selftest
-+      sbi
-+      | tee results.txt
-+ - grep -q PASS results.txt && ! grep -q FAIL results.txt
++    ./configure --arch=arm64 --cross-prefix=aarch64-linux-gnu-
++    make
 +
- build-s390x:
-  extends: .outoftree_template
-  script:
++## clang
++
++clang may be used as an alternative to gcc.
++
++    ./configure --cc=clang
++    make
++
++clang may also be used with cross binutils when cross-compiling. For example,
++for riscv64
++
++    ./configure --arch=riscv64 --cc=clang --cflags='--target=riscv64' \
++                --cross-prefix=riscv64-linux-gnu-
++    make
++
+ ## Standalone tests
+ 
+ The tests can be built as standalone.  To create and use standalone tests do:
 -- 
 2.46.0
 
