@@ -1,74 +1,111 @@
 From: Andrew Jones <andrew.jones@linux.dev>
-Date: Wed, 11 Sep 2024 13:33:41 +0200
-Subject: [kvm-unit-tests PATCH 2/2] riscv: sbi: Improve spec version test
-In-Reply-To: <20240911113338.156844-4-andrew.jones@linux.dev>
-References: <20240911113338.156844-4-andrew.jones@linux.dev>
-Message-ID: <20240911113338.156844-6-andrew.jones@linux.dev>
+Date: Wed, 11 Sep 2024 17:45:57 +0200
+Subject: [kvm-unit-tests PATCH v3 1/2] riscv: sbi: Add HSM extension
+ functions
+In-Reply-To: <20240910151536.163830-2-jamestiotio@gmail.com>
+References: <20240910151536.163830-1-jamestiotio@gmail.com>
+ <20240910151536.163830-2-jamestiotio@gmail.com>
+Message-ID: <20240911-595775a85e53a6fd92bdf707@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-SBI spec version states that bit 31 must be zero and doesn't say
-anything about bits greater than 31 (for rv64). Check that bit
-31 is zero and assume all other bits are UNKNOWN, so mask them
-off before testing.
+On Tue, Sep 10, 2024 at 11:15:35PM GMT, James Raphael Tiovalen wrote:
+> Add helper functions to perform hart-related operations to prepare for
+> the HSM tests. Also add the HSM state IDs and default suspend type
+> constants.
+> 
+> Reviewed-by: Andrew Jones <andrew.jones@linux.dev>
+> Signed-off-by: James Raphael Tiovalen <jamestiotio@gmail.com>
+> ---
+>  lib/riscv/asm/sbi.h | 17 +++++++++++++++++
+>  lib/riscv/sbi.c     | 10 ++++++++++
+>  riscv/sbi.c         |  5 +++++
+>  3 files changed, 32 insertions(+)
+> 
+> diff --git a/lib/riscv/asm/sbi.h b/lib/riscv/asm/sbi.h
+> index e032444d..1319439b 100644
+> --- a/lib/riscv/asm/sbi.h
+> +++ b/lib/riscv/asm/sbi.h
+> @@ -49,6 +49,21 @@ enum sbi_ext_ipi_fid {
+>  	SBI_EXT_IPI_SEND_IPI = 0,
+>  };
+>  
+> +enum sbi_ext_hsm_sid {
+> +	SBI_EXT_HSM_STARTED = 0,
+> +	SBI_EXT_HSM_STOPPED,
+> +	SBI_EXT_HSM_START_PENDING,
+> +	SBI_EXT_HSM_STOP_PENDING,
+> +	SBI_EXT_HSM_SUSPENDED,
+> +	SBI_EXT_HSM_SUSPEND_PENDING,
+> +	SBI_EXT_HSM_RESUME_PENDING,
+> +};
+> +
+> +enum sbi_ext_hsm_hart_suspend_type {
+> +	SBI_EXT_HSM_HART_SUSPEND_RETENTIVE = 0,
+> +	SBI_EXT_HSM_HART_SUSPEND_NON_RETENTIVE = 0x80000000,
+> +};
+> +
+>  enum sbi_ext_dbcn_fid {
+>  	SBI_EXT_DBCN_CONSOLE_WRITE = 0,
+>  	SBI_EXT_DBCN_CONSOLE_READ,
+> @@ -67,6 +82,8 @@ struct sbiret sbi_ecall(int ext, int fid, unsigned long arg0,
+>  
+>  void sbi_shutdown(void);
+>  struct sbiret sbi_hart_start(unsigned long hartid, unsigned long entry, unsigned long sp);
+> +struct sbiret sbi_hart_stop(void);
+> +struct sbiret sbi_hart_get_status(unsigned long hartid);
+>  struct sbiret sbi_send_ipi(unsigned long hart_mask, unsigned long hart_mask_base);
+>  struct sbiret sbi_send_ipi_cpu(int cpu);
+>  struct sbiret sbi_send_ipi_cpumask(const cpumask_t *mask);
+> diff --git a/lib/riscv/sbi.c b/lib/riscv/sbi.c
+> index ecc63acd..8972e765 100644
+> --- a/lib/riscv/sbi.c
+> +++ b/lib/riscv/sbi.c
+> @@ -42,6 +42,16 @@ struct sbiret sbi_hart_start(unsigned long hartid, unsigned long entry, unsigned
+>  	return sbi_ecall(SBI_EXT_HSM, SBI_EXT_HSM_HART_START, hartid, entry, sp, 0, 0, 0);
+>  }
+>  
+> +struct sbiret sbi_hart_stop(void)
+> +{
+> +	return sbi_ecall(SBI_EXT_HSM, SBI_EXT_HSM_HART_STOP, 0, 0, 0, 0, 0, 0);
+> +}
+> +
+> +struct sbiret sbi_hart_get_status(unsigned long hartid)
+> +{
+> +	return sbi_ecall(SBI_EXT_HSM, SBI_EXT_HSM_HART_STATUS, hartid, 0, 0, 0, 0, 0);
+> +}
+> +
+>  struct sbiret sbi_send_ipi(unsigned long hart_mask, unsigned long hart_mask_base)
+>  {
+>  	return sbi_ecall(SBI_EXT_IPI, SBI_EXT_IPI_SEND_IPI, hart_mask, hart_mask_base, 0, 0, 0, 0);
+> diff --git a/riscv/sbi.c b/riscv/sbi.c
+> index f88bf700..c9fbd6db 100644
+> --- a/riscv/sbi.c
+> +++ b/riscv/sbi.c
+> @@ -73,6 +73,11 @@ static phys_addr_t get_highest_addr(void)
+>  	return highest_end - 1;
+>  }
+>  
+> +static struct sbiret sbi_hart_suspend(uint32_t suspend_type, unsigned long resume_addr, unsigned long opaque)
+> +{
+> +	return sbi_ecall(SBI_EXT_HSM, SBI_EXT_HSM_HART_SUSPEND, suspend_type, resume_addr, opaque, 0, 0, 0);
+> +}
+> +
 
-Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
----
- lib/riscv/sbi.c |  2 +-
- riscv/sbi.c     | 15 +++++++++++----
- 2 files changed, 12 insertions(+), 5 deletions(-)
+This hunk needs to be moved to the next patch since the build will
+otherwise fail due to the function being unused. We want each commit
+to build in order to maintain bisectability. You may want to test
+your series with something like
 
-diff --git a/lib/riscv/sbi.c b/lib/riscv/sbi.c
-index ecc63acdebb7..f8ed873c2eee 100644
---- a/lib/riscv/sbi.c
-+++ b/lib/riscv/sbi.c
-@@ -97,7 +97,7 @@ long sbi_probe(int ext)
- 	struct sbiret ret;
- 
- 	ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_GET_SPEC_VERSION, 0, 0, 0, 0, 0, 0);
--	assert(!ret.error && ret.value >= 2);
-+	assert(!ret.error && (ret.value & 0x7ffffffful) >= 2);
- 
- 	ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_PROBE_EXT, ext, 0, 0, 0, 0, 0);
- 	assert(!ret.error);
-diff --git a/riscv/sbi.c b/riscv/sbi.c
-index 300d5ae63084..f6d62c5644ae 100644
---- a/riscv/sbi.c
-+++ b/riscv/sbi.c
-@@ -105,18 +105,25 @@ static void check_base(void)
- 	report_prefix_push("base");
- 
- 	ret = sbi_base(SBI_EXT_BASE_GET_SPEC_VERSION, 0);
--	if (ret.error || ret.value < 2) {
--		report_skip("SBI spec version 0.2 or higher required");
--		return;
--	}
-+	if (!ret.error)
-+		ret.value &= 0xfffffffful;
- 
- 	report_prefix_push("spec_version");
- 	if (env_or_skip("SBI_SPEC_VERSION")) {
- 		expected = (long)strtoul(getenv("SBI_SPEC_VERSION"), NULL, 0);
-+		assert_msg(!(expected & BIT(31)), "SBI spec version bit 31 must be zero");
-+		assert_msg(__riscv_xlen == 32 || !(expected >> 32), "SBI spec version bits greater than 31 are UNKNOWN");
- 		gen_report(&ret, 0, expected);
- 	}
- 	report_prefix_pop();
- 
-+	ret.value &= 0x7ffffffful;
-+
-+	if (ret.error || ret.value < 2) {
-+		report_skip("SBI spec version 0.2 or higher required");
-+		return;
-+	}
-+
- 	report_prefix_push("impl_id");
- 	if (env_or_skip("SBI_IMPL_ID")) {
- 		expected = (long)strtoul(getenv("SBI_IMPL_ID"), NULL, 0);
--- 
-2.46.0
+ ./configure --arch=riscv64 --cross-prefix=riscv64-linux-gnu-
+ git rebase -x 'make' <some-base-commit>
 
+Also we should put sbi_hart_suspend() directly under sbi_dbcn_write_byte()
+in order to keep all the sbi_ecall wrappers grouped together.
+
+Thanks,
+drew
 
