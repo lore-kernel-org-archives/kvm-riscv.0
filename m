@@ -1,45 +1,40 @@
 From: Andrew Jones <andrew.jones@linux.dev>
-Date: Wed, 11 Sep 2024 11:14:07 +0200
-Subject: [kvm-unit-tests PATCH v3 0/5] Support cross compiling with clang
-Message-ID: <20240911091406.134240-7-andrew.jones@linux.dev>
+Date: Wed, 11 Sep 2024 11:14:08 +0200
+Subject: [kvm-unit-tests PATCH v3 1/5] riscv: Drop mstrict-align
+In-Reply-To: <20240911091406.134240-7-andrew.jones@linux.dev>
+References: <20240911091406.134240-7-andrew.jones@linux.dev>
+Message-ID: <20240911091406.134240-8-andrew.jones@linux.dev>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Modify configure to allow --cc=clang and a cross-prefix to be specified
-together (as well as --cflags). This allows compiling with clang, but
-using cross binutils for everything else, including the linker. So far
-tested on riscv 32- and 64-bit and aarch64 (with some hacks to the code
-to get it to compile - which is why there's no gitlab-ci patch for aarch64
-in this series). I suspect it should work for other architectures too.
+The spec says unaligned accesses are supported, so this isn't required
+and clang doesn't support it. A platform might have slow unaligned
+accesses, but kvm-unit-tests isn't about speed anyway.
 
-v3:
- - Add README patch for cross-compiling, clang, and cross-clang [Nick]
- - Add comment to the commenting-out of mstrict-align [Nick]
- - Add the reason to ignore warnings vs. fix code to commit message of
-   patch2
- - Picked up Nick's tags
-v2:
- - fix building with clang and --config-efi by suppressing a warning
- - added riscv clang efi build to CI
- - picked up Thomas's tags
+Reviewed-by: Thomas Huth <thuth@redhat.com>
+Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
+---
+ riscv/Makefile | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-Andrew Jones (5):
-  riscv: Drop mstrict-align
-  Makefile: Prepare for clang EFI builds
-  configure: Support cross compiling with clang
-  riscv: gitlab-ci: Add clang build tests
-  README: Add cross and clang recipes
-
- .gitlab-ci.yml | 43 +++++++++++++++++++++++++++++++++++++++++++
- Makefile       |  2 ++
- README.md      | 22 ++++++++++++++++++++++
- configure      | 11 ++++++++---
- riscv/Makefile |  4 +++-
- 5 files changed, 78 insertions(+), 4 deletions(-)
-
+diff --git a/riscv/Makefile b/riscv/Makefile
+index 179a373dbacf..22fd273acac3 100644
+--- a/riscv/Makefile
++++ b/riscv/Makefile
+@@ -76,7 +76,9 @@ LDFLAGS += -melf32lriscv
+ endif
+ CFLAGS += -DCONFIG_RELOC
+ CFLAGS += -mcmodel=medany
+-CFLAGS += -mstrict-align
++# Unaligned accesses are allowed, but may be emulated by M-mode.
++# Enable -mstrict-align if that's troublesome (only supported by gcc).
++#CFLAGS += -mstrict-align
+ CFLAGS += -std=gnu99
+ CFLAGS += -ffreestanding
+ CFLAGS += -O2
 -- 
 2.46.0
 
