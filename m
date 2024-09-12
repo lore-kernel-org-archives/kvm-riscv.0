@@ -1,95 +1,136 @@
-From: James Houghton <jthoughton@google.com>
-Date: Wed, 11 Sep 2024 17:19:24 -0700
-Subject: [PATCH v2 13/13] KVM: selftests: Verify KVM correctly handles mprotect(PROT_READ)
-In-Reply-To: <20240911204158.2034295-14-seanjc@google.com>
-References: <20240911204158.2034295-1-seanjc@google.com> <20240911204158.2034295-14-seanjc@google.com>
-Message-ID: <CADrL8HW+hUNKPbaL7xYb0FEesB2t-AwAw07iOCDj8KHp0RwVpQ@mail.gmail.com>
+From: zhouquan@iscas.ac.cn <zhouquan@iscas.ac.cn>
+Date: Thu, 12 Sep 2024 16:00:18 +0800
+Subject: [PATCH v3 0/2] riscv: Add perf support to collect KVM guest statistics from host side
+Message-ID: <cover.1726126795.git.zhouquan@iscas.ac.cn>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Sep 11, 2024 at 1:42?PM Sean Christopherson <seanjc@google.com> wrote:
->
-> Add two phases to mmu_stress_test to verify that KVM correctly handles
-> guest memory that was writable, and then made read-only in the primary MMU,
-> and then made writable again.
->
-> Add bonus coverage for x86 and arm64 to verify that all of guest memory was
-> marked read-only.  Making forward progress (without making memory writable)
-> requires arch specific code to skip over the faulting instruction, but the
-> test can at least verify each vCPU's starting page was made read-only for
-> other architectures.
->
-> Signed-off-by: Sean Christopherson <seanjc@google.com>
-> ---
->  tools/testing/selftests/kvm/mmu_stress_test.c | 104 +++++++++++++++++-
->  1 file changed, 101 insertions(+), 3 deletions(-)
->
-> diff --git a/tools/testing/selftests/kvm/mmu_stress_test.c b/tools/testing/selftests/kvm/mmu_stress_test.c
-> index 50c3a17418c4..c07c15d7cc9a 100644
-> --- a/tools/testing/selftests/kvm/mmu_stress_test.c
-> +++ b/tools/testing/selftests/kvm/mmu_stress_test.c
-> @@ -16,6 +16,8 @@
->  #include "guest_modes.h"
->  #include "processor.h"
->
-> +static bool mprotect_ro_done;
-> +
->  static void guest_code(uint64_t start_gpa, uint64_t end_gpa, uint64_t stride)
->  {
->         uint64_t gpa;
-> @@ -31,6 +33,42 @@ static void guest_code(uint64_t start_gpa, uint64_t end_gpa, uint64_t stride)
->                 *((volatile uint64_t *)gpa);
->         GUEST_SYNC(2);
->
-> +       /*
-> +        * Write to the region while mprotect(PROT_READ) is underway.  Keep
-> +        * looping until the memory is guaranteed to be read-only, otherwise
-> +        * vCPUs may complete their writes and advance to the next stage
-> +        * prematurely.
-> +        *
-> +        * For architectures that support skipping the faulting instruction,
-> +        * generate the store via inline assembly to ensure the exact length
-> +        * of the instruction is known and stable (vcpu_arch_put_guest() on
-> +        * fixed-length architectures should work, but the cost of paranoia
-> +        * is low in this case).  For x86, hand-code the exact opcode so that
-> +        * there is no room for variability in the generated instruction.
-> +        */
-> +       do {
-> +               for (gpa = start_gpa; gpa < end_gpa; gpa += stride)
-> +#ifdef __x86_64__
-> +                       asm volatile(".byte 0x48,0x89,0x00" :: "a"(gpa) : "memory"); /* mov %rax, (%rax) */
+From: Quan Zhou <zhouquan@iscas.ac.cn>
 
-I'm curious what you think about using labels (in asm, but perhaps
-also in C) and *setting* the PC instead of incrementing the PC. Diff
-attached (tested on x86). It might even be safe/okay to always use
-vcpu_arch_put_guest(), just set the PC to a label immediately
-following it.
+Add basic guest support to RISC-V perf, enabling it to distinguish
+whether PMU interrupts occur in the host or the guest, and then
+collect some basic guest information from the host side
+(guest os callchain is not supported for now).
 
-I don't feel strongly, so feel free to ignore.
+Based on the x86/arm implementation, tested with kvm-riscv.
+test env:
+- host: qemu-9.0.0
+- guest: qemu-9.0.0 --enable-kvm (only start one guest and run top)
+
+-----------------------------------------
+1) perf kvm top
+./perf kvm --host --guest \
+  --guestkallsyms=/root/repo/shared/kallsyms \
+  --guestmodules=/root/repo/shared/modules top
+
+PerfTop:      41 irqs/sec  kernel:97.6% us: 0.0% guest kernel: 0.0% guest us: 0.0% exact:  0.0% [250Hz cycles:P],  (all, 4 CPUs)
+-------------------------------------------------------------------------------
+
+    64.57%  [kernel]        [k] default_idle_call
+     3.12%  [kernel]        [k] _raw_spin_unlock_irqrestore
+     3.03%  [guest.kernel]  [g] mem_serial_out
+     2.61%  [kernel]        [k] handle_softirqs
+     2.32%  [kernel]        [k] do_trap_ecall_u
+     1.71%  [kernel]        [k] _raw_spin_unlock_irq
+     1.26%  [guest.kernel]  [g] do_raw_spin_lock
+     1.25%  [kernel]        [k] finish_task_switch.isra.0
+     1.16%  [kernel]        [k] do_idle
+     0.77%  libc.so.6       [.] ioctl
+     0.76%  [kernel]        [k] queue_work_on
+     0.69%  [kernel]        [k] __local_bh_enable_ip
+     0.67%  [guest.kernel]  [g] __noinstr_text_start
+     0.64%  [guest.kernel]  [g] mem_serial_in
+     0.41%  libc.so.6       [.] pthread_sigmask
+     0.39%  [kernel]        [k] mem_cgroup_uncharge_skmem
+     0.39%  [kernel]        [k] __might_resched
+     0.39%  [guest.kernel]  [g] _nohz_idle_balance.isra.0
+     0.37%  [kernel]        [k] sched_balance_update_blocked_averages
+     0.34%  [kernel]        [k] sched_balance_rq
+
+2) perf kvm record
+./perf kvm --host --guest \
+  --guestkallsyms=/root/repo/shared/kallsyms \
+  --guestmodules=/root/repo/shared/modules record -a sleep 60
+
+[ perf record: Woken up 3 times to write data ]
+[ perf record: Captured and wrote 1.292 MB perf.data.kvm (17990 samples) ]
+
+3) perf kvm report (the data shown here is not complete)
+./perf kvm --host --guest \
+  --guestkallsyms=/root/repo/shared/kallsyms \
+  --guestmodules=/root/repo/shared/modules report -i perf.data.kvm
+
+# Total Lost Samples: 0
+#
+# Samples: 17K of event 'cycles:P'
+# Event count (approx.): 269968947184
+#
+# Overhead  Command          Shared Object            Symbol                                        
+# ........  ...............  .......................  ..............................................
+#
+    61.86%  swapper          [kernel.kallsyms]        [k] default_idle_call
+     2.93%  :6463            [guest.kernel.kallsyms]  [g] do_raw_spin_lock
+     2.82%  :6462            [guest.kernel.kallsyms]  [g] mem_serial_out
+     2.11%  sshd             [kernel.kallsyms]        [k] _raw_spin_unlock_irqrestore
+     1.78%  :6462            [guest.kernel.kallsyms]  [g] do_raw_spin_lock
+     1.37%  swapper          [kernel.kallsyms]        [k] handle_softirqs
+     1.36%  swapper          [kernel.kallsyms]        [k] do_idle
+     1.21%  sshd             [kernel.kallsyms]        [k] do_trap_ecall_u
+     1.21%  sshd             [kernel.kallsyms]        [k] _raw_spin_unlock_irq
+     1.11%  qemu-system-ris  [kernel.kallsyms]        [k] do_trap_ecall_u
+     0.93%  qemu-system-ris  libc.so.6                [.] ioctl
+     0.89%  sshd             [kernel.kallsyms]        [k] __local_bh_enable_ip
+     0.77%  qemu-system-ris  [kernel.kallsyms]        [k] _raw_spin_unlock_irqrestore
+     0.68%  qemu-system-ris  [kernel.kallsyms]        [k] queue_work_on
+     0.65%  sshd             [kernel.kallsyms]        [k] handle_softirqs
+     0.44%  :6462            [guest.kernel.kallsyms]  [g] mem_serial_in
+     0.42%  sshd             libc.so.6                [.] pthread_sigmask
+     0.34%  :6462            [guest.kernel.kallsyms]  [g] serial8250_tx_chars
+     0.30%  swapper          [kernel.kallsyms]        [k] finish_task_switch.isra.0
+     0.29%  swapper          [kernel.kallsyms]        [k] sched_balance_rq
+     0.29%  sshd             [kernel.kallsyms]        [k] __might_resched
+     0.26%  swapper          [kernel.kallsyms]        [k] tick_nohz_idle_exit
+     0.26%  swapper          [kernel.kallsyms]        [k] sched_balance_update_blocked_averages
+     0.26%  swapper          [kernel.kallsyms]        [k] _nohz_idle_balance.isra.0
+     0.24%  qemu-system-ris  [kernel.kallsyms]        [k] finish_task_switch.isra.0
+     0.23%  :6462            [guest.kernel.kallsyms]  [g] __noinstr_text_start
+     
+---
+Change since v2:
+- Rebased on v6.11-rc7
+- Keep the misc type consistent with other architectures
+  as `unsigned long` (Andrew)
+- Add the same comment for `kvm_arch_pmi_in_guest`
+  as in arm64. (Andrew)
+
+Change since v1:
+- Rebased on v6.11-rc3
+- Fix incorrect misc type (Andrew)
+
+---
+v1 link:
+https://lore.kernel.org/all/cover.1721271251.git.zhouquan at iscas.ac.cn/
+v2 link:
+https://lore.kernel.org/all/cover.1723518282.git.zhouquan at iscas.ac.cn/
+
+Quan Zhou (2):
+  riscv: perf: add guest vs host distinction
+  riscv: KVM: add basic support for host vs guest profiling
+
+ arch/riscv/include/asm/kvm_host.h   | 10 ++++++++
+ arch/riscv/include/asm/perf_event.h |  7 ++++++
+ arch/riscv/kernel/perf_callchain.c  | 38 +++++++++++++++++++++++++++++
+ arch/riscv/kvm/Kconfig              |  1 +
+ arch/riscv/kvm/main.c               | 12 +++++++--
+ arch/riscv/kvm/vcpu.c               |  7 ++++++
+ 6 files changed, 73 insertions(+), 2 deletions(-)
 
 
+base-commit: da3ea35007d0af457a0afc87e84fddaebc4e0b63
+-- 
+2.34.1
 
-> +#elif defined(__aarch64__)
-> +                       asm volatile("str %0, [%0]" :: "r" (gpa) : "memory");
-> +#else
-> +                       vcpu_arch_put_guest(*((volatile uint64_t *)gpa), gpa);
-> +#endif
-> +       } while (!READ_ONCE(mprotect_ro_done));
-> +
-> +       /*
-> +        * Only architectures that write the entire range can explicitly sync,
-> +        * as other architectures will be stuck on the write fault.
-> +        */
-> +#if defined(__x86_64__) || defined(__aarch64__)
-> +       GUEST_SYNC(3);
-> +#endif
--------------- next part --------------
-A non-text attachment was scrubbed...
-Name: labels.diff
-Type: application/x-patch
-Size: 2223 bytes
-Desc: not available
-URL: <http://lists.infradead.org/pipermail/kvm-riscv/attachments/20240911/1a6e620c/attachment-0001.bin>
+
