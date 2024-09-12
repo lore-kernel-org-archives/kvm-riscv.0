@@ -1,117 +1,77 @@
-From: Andrew Jones <andrew.jones@linux.dev>
-Date: Thu, 12 Sep 2024 16:06:02 +0200
-Subject: [kvm-unit-tests PATCH v3 1/2] riscv: sbi: Add HSM extension
- functions
-In-Reply-To: <20240911-595775a85e53a6fd92bdf707@orel>
-References: <20240910151536.163830-1-jamestiotio@gmail.com>
- <20240910151536.163830-2-jamestiotio@gmail.com>
- <20240911-595775a85e53a6fd92bdf707@orel>
-Message-ID: <20240912-f404e2ed36d3a09b123a4f6e@orel>
+From: Sean Christopherson <seanjc@google.com>
+Date: Thu, 12 Sep 2024 07:36:35 -0700
+Subject: [PATCH v2 13/13] KVM: selftests: Verify KVM correctly handles mprotect(PROT_READ)
+In-Reply-To: <CADrL8HW+hUNKPbaL7xYb0FEesB2t-AwAw07iOCDj8KHp0RwVpQ@mail.gmail.com>
+References: <20240911204158.2034295-1-seanjc@google.com> <20240911204158.2034295-14-seanjc@google.com>
+ <CADrL8HW+hUNKPbaL7xYb0FEesB2t-AwAw07iOCDj8KHp0RwVpQ@mail.gmail.com>
+Message-ID: <ZuL8c7SCV0I16cma@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Sep 11, 2024 at 05:45:57PM GMT, Andrew Jones wrote:
-> On Tue, Sep 10, 2024 at 11:15:35PM GMT, James Raphael Tiovalen wrote:
-> > Add helper functions to perform hart-related operations to prepare for
-> > the HSM tests. Also add the HSM state IDs and default suspend type
-> > constants.
-> > 
-> > Reviewed-by: Andrew Jones <andrew.jones@linux.dev>
-> > Signed-off-by: James Raphael Tiovalen <jamestiotio@gmail.com>
-> > ---
-> >  lib/riscv/asm/sbi.h | 17 +++++++++++++++++
-> >  lib/riscv/sbi.c     | 10 ++++++++++
-> >  riscv/sbi.c         |  5 +++++
-> >  3 files changed, 32 insertions(+)
-> > 
-> > diff --git a/lib/riscv/asm/sbi.h b/lib/riscv/asm/sbi.h
-> > index e032444d..1319439b 100644
-> > --- a/lib/riscv/asm/sbi.h
-> > +++ b/lib/riscv/asm/sbi.h
-> > @@ -49,6 +49,21 @@ enum sbi_ext_ipi_fid {
-> >  	SBI_EXT_IPI_SEND_IPI = 0,
-> >  };
-> >  
-> > +enum sbi_ext_hsm_sid {
-> > +	SBI_EXT_HSM_STARTED = 0,
-> > +	SBI_EXT_HSM_STOPPED,
-> > +	SBI_EXT_HSM_START_PENDING,
-> > +	SBI_EXT_HSM_STOP_PENDING,
-> > +	SBI_EXT_HSM_SUSPENDED,
-> > +	SBI_EXT_HSM_SUSPEND_PENDING,
-> > +	SBI_EXT_HSM_RESUME_PENDING,
-> > +};
-> > +
-> > +enum sbi_ext_hsm_hart_suspend_type {
-> > +	SBI_EXT_HSM_HART_SUSPEND_RETENTIVE = 0,
-> > +	SBI_EXT_HSM_HART_SUSPEND_NON_RETENTIVE = 0x80000000,
-> > +};
-> > +
-> >  enum sbi_ext_dbcn_fid {
-> >  	SBI_EXT_DBCN_CONSOLE_WRITE = 0,
-> >  	SBI_EXT_DBCN_CONSOLE_READ,
-> > @@ -67,6 +82,8 @@ struct sbiret sbi_ecall(int ext, int fid, unsigned long arg0,
-> >  
-> >  void sbi_shutdown(void);
-> >  struct sbiret sbi_hart_start(unsigned long hartid, unsigned long entry, unsigned long sp);
-> > +struct sbiret sbi_hart_stop(void);
-> > +struct sbiret sbi_hart_get_status(unsigned long hartid);
-> >  struct sbiret sbi_send_ipi(unsigned long hart_mask, unsigned long hart_mask_base);
-> >  struct sbiret sbi_send_ipi_cpu(int cpu);
-> >  struct sbiret sbi_send_ipi_cpumask(const cpumask_t *mask);
-> > diff --git a/lib/riscv/sbi.c b/lib/riscv/sbi.c
-> > index ecc63acd..8972e765 100644
-> > --- a/lib/riscv/sbi.c
-> > +++ b/lib/riscv/sbi.c
-> > @@ -42,6 +42,16 @@ struct sbiret sbi_hart_start(unsigned long hartid, unsigned long entry, unsigned
-> >  	return sbi_ecall(SBI_EXT_HSM, SBI_EXT_HSM_HART_START, hartid, entry, sp, 0, 0, 0);
-> >  }
-> >  
-> > +struct sbiret sbi_hart_stop(void)
-> > +{
-> > +	return sbi_ecall(SBI_EXT_HSM, SBI_EXT_HSM_HART_STOP, 0, 0, 0, 0, 0, 0);
-> > +}
-> > +
-> > +struct sbiret sbi_hart_get_status(unsigned long hartid)
-> > +{
-> > +	return sbi_ecall(SBI_EXT_HSM, SBI_EXT_HSM_HART_STATUS, hartid, 0, 0, 0, 0, 0);
-> > +}
-> > +
-> >  struct sbiret sbi_send_ipi(unsigned long hart_mask, unsigned long hart_mask_base)
-> >  {
-> >  	return sbi_ecall(SBI_EXT_IPI, SBI_EXT_IPI_SEND_IPI, hart_mask, hart_mask_base, 0, 0, 0, 0);
-> > diff --git a/riscv/sbi.c b/riscv/sbi.c
-> > index f88bf700..c9fbd6db 100644
-> > --- a/riscv/sbi.c
-> > +++ b/riscv/sbi.c
-> > @@ -73,6 +73,11 @@ static phys_addr_t get_highest_addr(void)
-> >  	return highest_end - 1;
-> >  }
-> >  
-> > +static struct sbiret sbi_hart_suspend(uint32_t suspend_type, unsigned long resume_addr, unsigned long opaque)
-> > +{
-> > +	return sbi_ecall(SBI_EXT_HSM, SBI_EXT_HSM_HART_SUSPEND, suspend_type, resume_addr, opaque, 0, 0, 0);
-> > +}
-> > +
+On Wed, Sep 11, 2024, James Houghton wrote:
+> On Wed, Sep 11, 2024 at 1:42?PM Sean Christopherson <seanjc@google.com> wrote:
+> > @@ -31,6 +33,42 @@ static void guest_code(uint64_t start_gpa, uint64_t end_gpa, uint64_t stride)
+> >                 *((volatile uint64_t *)gpa);
+> >         GUEST_SYNC(2);
+> >
+> > +       /*
+> > +        * Write to the region while mprotect(PROT_READ) is underway.  Keep
+> > +        * looping until the memory is guaranteed to be read-only, otherwise
+> > +        * vCPUs may complete their writes and advance to the next stage
+> > +        * prematurely.
+> > +        *
+> > +        * For architectures that support skipping the faulting instruction,
+> > +        * generate the store via inline assembly to ensure the exact length
+> > +        * of the instruction is known and stable (vcpu_arch_put_guest() on
+> > +        * fixed-length architectures should work, but the cost of paranoia
+> > +        * is low in this case).  For x86, hand-code the exact opcode so that
+> > +        * there is no room for variability in the generated instruction.
+> > +        */
+> > +       do {
+> > +               for (gpa = start_gpa; gpa < end_gpa; gpa += stride)
+> > +#ifdef __x86_64__
+> > +                       asm volatile(".byte 0x48,0x89,0x00" :: "a"(gpa) : "memory"); /* mov %rax, (%rax) */
 > 
-> This hunk needs to be moved to the next patch since the build will
-> otherwise fail due to the function being unused. We want each commit
-> to build in order to maintain bisectability. You may want to test
-> your series with something like
-> 
->  ./configure --arch=riscv64 --cross-prefix=riscv64-linux-gnu-
->  git rebase -x 'make' <some-base-commit>
-> 
-> Also we should put sbi_hart_suspend() directly under sbi_dbcn_write_byte()
-> in order to keep all the sbi_ecall wrappers grouped together.
->
+> I'm curious what you think about using labels (in asm, but perhaps
+> also in C) and *setting* the PC instead of incrementing the PC. 
 
-I removed the hunk and applied to riscv/sbi,
-https://gitlab.com/jones-drew/kvm-unit-tests/-/commits/riscv/sbi
+I have nothing against asm labels, but generally speaking I don't like using
+_global_ labels to skip instructions.  E.g. __KVM_ASM_SAFE() uses labels to compute
+the instruction size, but those labels are local and never directly used outside
+of the macro.
 
-Thanks,
-drew
+The biggest problem with global labels is that they don't scale.  E.g. if we
+extend this test in the future with another testcase that needs to skip a gpa,
+then we'll end up with skip_page1 and skip_page2, and the code starts to become
+even harder to follow.
+
+Don't get me wrong, skipping a fixed instruction size is awful too, but in my
+experience they are less painful to maintain over the long haul.
+
+> Diff attached (tested on x86).
+
+Nit, in the future, just copy+pase the diff for small things like this (and even
+for large diffs in many cases) so that readers don't need to open an attachment
+(depending on their mail client), and so that it's easier to comment on the
+proposed changed.
+
+`git am --scissors` (a.k.a. `git am -c`) can be used to essentially extract and
+apply such a diff from the mail.
+
+> It might even be safe/okay to always use vcpu_arch_put_guest(), just set the
+> PC to a label immediately following it.
+
+That would not be safe/feasible.  Labels in C code are scoped to the function.
+And AFAIK, labels for use with goto are also not visible symbols, they are
+statements.  The "standard" way to expose a label from a function is to use inline
+asm, at which point there are zero guarantees that nothing necessary is generated
+between vcpu_arch_put_guest() and the next asm() block.
+
+E.g. ignoring the inline asm for the moment, the compiler could generate multiple
+paths for a loop, e.g. an unrolled version for a small number of iterations, and
+an actual loop for a larger number of iterations.  Trying to define a label as a
+singular symbol for that is nonsensical.
 
