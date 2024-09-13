@@ -1,68 +1,83 @@
-From: Sean Christopherson <seanjc@google.com>
-Date: Thu, 12 Sep 2024 09:17:36 -0700
-Subject: [PATCH v2 04/13] KVM: selftests: Assert that vcpu_{g,s}et_reg()
- won't truncate
-In-Reply-To: <20240912-75f992936cd9878d0e507498@orel>
-References: <20240911204158.2034295-1-seanjc@google.com> <20240911204158.2034295-5-seanjc@google.com>
- <20240912-75f992936cd9878d0e507498@orel>
-Message-ID: <ZuMUIPIu5iRuxLCC@google.com>
+From: Samuel Holland <samuel.holland@sifive.com>
+Date: Thu, 12 Sep 2024 19:39:10 -0500
+Subject: [PATCH] RISC-V: KVM: Redirect instruction access fault trap to
+ guest
+In-Reply-To: <b5128162-278a-4284-8271-b2b91dc446e1@iscas.ac.cn>
+References: <83c2234d582b7e823ce9ac9b73a6bbcf63971a29.1724911120.git.zhouquan@iscas.ac.cn>
+ <b5128162-278a-4284-8271-b2b91dc446e1@iscas.ac.cn>
+Message-ID: <380f4da9-50e9-4632-bdc8-b1723eb19ca5@sifive.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Sep 12, 2024, Andrew Jones wrote:
-> On Wed, Sep 11, 2024 at 01:41:49PM GMT, Sean Christopherson wrote:
-> > Assert that the the register being read/written by vcpu_{g,s}et_reg() is
-> > no larger than a uint64_t, i.e. that a selftest isn't unintentionally
-> > truncating the value being read/written.
-> > 
-> > Ideally, the assert would be done at compile-time, but that would limit
-> > the checks to hardcoded accesses and/or require fancier compile-time
-> > assertion infrastructure to filter out dynamic usage.
-> > 
-> > Signed-off-by: Sean Christopherson <seanjc@google.com>
-> > ---
-> >  tools/testing/selftests/kvm/include/kvm_util.h | 4 ++++
-> >  1 file changed, 4 insertions(+)
-> > 
-> > diff --git a/tools/testing/selftests/kvm/include/kvm_util.h b/tools/testing/selftests/kvm/include/kvm_util.h
-> > index 429a7f003fe3..80230e49e35f 100644
-> > --- a/tools/testing/selftests/kvm/include/kvm_util.h
-> > +++ b/tools/testing/selftests/kvm/include/kvm_util.h
-> > @@ -683,6 +683,8 @@ static inline uint64_t vcpu_get_reg(struct kvm_vcpu *vcpu, uint64_t id)
-> >  	uint64_t val;
-> >  	struct kvm_one_reg reg = { .id = id, .addr = (uint64_t)&val };
-> >  
-> > +	TEST_ASSERT(KVM_REG_SIZE(id) <= sizeof(val), "Reg %lx too big", id);
-> > +
-> >  	vcpu_ioctl(vcpu, KVM_GET_ONE_REG, &reg);
-> >  	return val;
-> >  }
-> > @@ -690,6 +692,8 @@ static inline void vcpu_set_reg(struct kvm_vcpu *vcpu, uint64_t id, uint64_t val
-> >  {
-> >  	struct kvm_one_reg reg = { .id = id, .addr = (uint64_t)&val };
-> >  
-> > +	TEST_ASSERT(KVM_REG_SIZE(id) <= sizeof(val), "Reg %lx too big", id);
-> > +
-> >  	vcpu_ioctl(vcpu, KVM_SET_ONE_REG, &reg);
-> >  }
-> >  
-> > -- 
-> > 2.46.0.598.g6f2099f65c-goog
-> >
+On 2024-09-12 4:03 AM, Quan Zhou wrote:
 > 
-> Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+> On 2024/8/29 14:20, zhouquan at iscas.ac.cn wrote:
+>> From: Quan Zhou <zhouquan@iscas.ac.cn>
+>>
+>> The M-mode redirects an unhandled instruction access
+>> fault trap back to S-mode when not delegating it to
+>> VS-mode(hedeleg). However, KVM running in HS-mode
+>> terminates the VS-mode software when back from M-mode.
+>>
+>> The KVM should redirect the trap back to VS-mode, and
+>> let VS-mode trap handler decide the next step.
+>>
+>> Signed-off-by: Quan Zhou <zhouquan@iscas.ac.cn>
+>> ---
+>> ? arch/riscv/kvm/vcpu_exit.c | 1 +
+>> ? 1 file changed, 1 insertion(+)
+>>
+>> diff --git a/arch/riscv/kvm/vcpu_exit.c b/arch/riscv/kvm/vcpu_exit.c
+>> index fa98e5c024b2..696b62850d0b 100644
+>> --- a/arch/riscv/kvm/vcpu_exit.c
+>> +++ b/arch/riscv/kvm/vcpu_exit.c
+>> @@ -182,6 +182,7 @@ int kvm_riscv_vcpu_exit(struct kvm_vcpu *vcpu, struct
+>> kvm_run *run,
+>> ????? ret = -EFAULT;
+>> ????? run->exit_reason = KVM_EXIT_UNKNOWN;
+>> ????? switch (trap->scause) {
+>> +??? case EXC_INST_ACCESS:
 > 
-> Shouldn't patches 3 and 4 come before patch 2 in this series?
+> A gentle ping, the instruction access fault should be redirected to
+> VS-mode for handling, is my understanding correct?
 
-Ideally, yes, but for this patch, it gets weird because the output param of
-vcpu_reg_get() isn't actually restricted to a 64-bit value prior to patch 2.
-E.g. if this patch were merged without that rework, then the assert would be
-confusing and arguably flat out wrong.
+Yes, this looks correct. However, I believe it would be equivalent (and more
+efficient) to add EXC_INST_ACCESS to KVM_HEDELEG_DEFAULT in asm/kvm_host.h.
 
-As for the hack-a-fix, I deliberately ordered it after patch 2 so that it would
-be easier for others to (try to) reproduce the bug.  I have no objection to
-swapping 2 and 3 in the next version.
+I don't understand why some exceptions are delegated with hedeleg and others are
+caught and redirected here with no further processing. Maybe someone thought
+that it wasn't valid to set a bit in hedeleg if the corresponding bit was
+cleared in medeleg? But this doesn't make sense, as S-mode cannot know which
+bits are set in medeleg (maybe none are!).
+
+So the hypervisor must either:
+ 1) assume M-mode firmware checks hedeleg and redirects exceptions to VS-mode
+    regardless of medeleg, in which case all four of these exceptions can be
+    moved to KVM_HEDELEG_DEFAULT and removed from this switch statement, or
+
+ 2) assume M-mode might not check hedeleg and redirect exceptions to VS-mode,
+    and since no bits are guaranteed to be set in medeleg, any bit set in
+    hedeleg must _also_ be handled in the switch case here.
+
+Anup, Atish, thoughts?
+
+Regards,
+Samuel
+
+> 
+>> ????? case EXC_INST_ILLEGAL:
+>> ????? case EXC_LOAD_MISALIGNED:
+>> ????? case EXC_STORE_MISALIGNED:
+>>
+>> base-commit: 7c626ce4bae1ac14f60076d00eafe71af30450ba
+> 
+> 
+> _______________________________________________
+> linux-riscv mailing list
+> linux-riscv at lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-riscv
+
 
