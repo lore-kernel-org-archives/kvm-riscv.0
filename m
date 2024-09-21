@@ -1,108 +1,171 @@
 From: James Raphael Tiovalen <jamestiotio@gmail.com>
-Date: Sat, 21 Sep 2024 18:08:19 +0800
-Subject: [kvm-unit-tests PATCH v5 1/5] riscv: Rewrite hartid_to_cpu in assembly
+Date: Sat, 21 Sep 2024 18:08:20 +0800
+Subject: [kvm-unit-tests PATCH v5 2/5] riscv: sbi: Provide entry point for HSM tests
 In-Reply-To: <20240921100824.151761-1-jamestiotio@gmail.com>
 References: <20240921100824.151761-1-jamestiotio@gmail.com>
-Message-ID: <20240921100824.151761-2-jamestiotio@gmail.com>
+Message-ID: <20240921100824.151761-3-jamestiotio@gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Andrew Jones <andrew.jones@linux.dev>
+The HSM tests will need to test HSM start and resumption from HSM
+suspend. Provide an entry point written in assembly that doesn't
+use a stack for this. Results of the test are written to global
+per-hart arrays to be checked by the main SBI HSM test function. The
+started/resumed hart does its checks and then just loops until it
+gets a signal from the main SBI HSM test function to invoke HSM stop.
 
-Some SBI HSM tests run without a stack being setup so they can't
-run C code. Those tests still need to know the corresponding cpuid
-for the hartid on which they are running. Give those tests
-hartid_to_cpu() by reimplementing it in assembly.
-
-Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
 Signed-off-by: James Raphael Tiovalen <jamestiotio@gmail.com>
+Co-developed-by: Andrew Jones <andrew.jones@linux.dev>
+Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
 ---
- lib/riscv/asm-offsets.c |  5 +++++
- lib/riscv/setup.c       | 10 ----------
- riscv/cstart.S          | 24 ++++++++++++++++++++++++
- 3 files changed, 29 insertions(+), 10 deletions(-)
+ riscv/Makefile    |  3 +-
+ riscv/sbi-tests.h | 10 +++++++
+ riscv/sbi-asm.S   | 71 +++++++++++++++++++++++++++++++++++++++++++++++
+ riscv/sbi.c       |  5 ++++
+ 4 files changed, 88 insertions(+), 1 deletion(-)
+ create mode 100644 riscv/sbi-tests.h
+ create mode 100644 riscv/sbi-asm.S
 
-diff --git a/lib/riscv/asm-offsets.c b/lib/riscv/asm-offsets.c
-index a2a32438..6c511c14 100644
---- a/lib/riscv/asm-offsets.c
-+++ b/lib/riscv/asm-offsets.c
-@@ -1,6 +1,7 @@
- // SPDX-License-Identifier: GPL-2.0-only
- #include <kbuild.h>
- #include <elf.h>
-+#include <asm/processor.h>
- #include <asm/ptrace.h>
- #include <asm/smp.h>
+diff --git a/riscv/Makefile b/riscv/Makefile
+index 2ee7c5bb..4676d262 100644
+--- a/riscv/Makefile
++++ b/riscv/Makefile
+@@ -43,6 +43,7 @@ cflatobjs += lib/riscv/timer.o
+ ifeq ($(ARCH),riscv32)
+ cflatobjs += lib/ldiv32.o
+ endif
++cflatobjs += riscv/sbi-asm.o
  
-@@ -58,5 +59,9 @@ int main(void)
- 	OFFSET(SECONDARY_FUNC, secondary_data, func);
- 	DEFINE(SECONDARY_DATA_SIZE, sizeof(struct secondary_data));
+ ########################################
  
-+	OFFSET(THREAD_INFO_CPU, thread_info, cpu);
-+	OFFSET(THREAD_INFO_HARTID, thread_info, hartid);
-+	DEFINE(THREAD_INFO_SIZE, sizeof(struct thread_info));
+@@ -80,7 +81,7 @@ CFLAGS += -mcmodel=medany
+ CFLAGS += -std=gnu99
+ CFLAGS += -ffreestanding
+ CFLAGS += -O2
+-CFLAGS += -I $(SRCDIR)/lib -I $(SRCDIR)/lib/libfdt -I lib
++CFLAGS += -I $(SRCDIR)/lib -I $(SRCDIR)/lib/libfdt -I lib -I $(SRCDIR)/riscv
+ 
+ asm-offsets = lib/riscv/asm-offsets.h
+ include $(SRCDIR)/scripts/asm-offsets.mak
+diff --git a/riscv/sbi-tests.h b/riscv/sbi-tests.h
+new file mode 100644
+index 00000000..f5cc8635
+--- /dev/null
++++ b/riscv/sbi-tests.h
+@@ -0,0 +1,10 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++#ifndef _RISCV_SBI_TESTS_H_
++#define _RISCV_SBI_TESTS_H_
 +
- 	return 0;
- }
-diff --git a/lib/riscv/setup.c b/lib/riscv/setup.c
-index 495db041..f347ad63 100644
---- a/lib/riscv/setup.c
-+++ b/lib/riscv/setup.c
-@@ -43,16 +43,6 @@ uint64_t timebase_frequency;
- 
- static struct mem_region riscv_mem_regions[NR_MEM_REGIONS + 1];
- 
--int hartid_to_cpu(unsigned long hartid)
--{
--	int cpu;
--
--	for_each_present_cpu(cpu)
--		if (cpus[cpu].hartid == hartid)
--			return cpu;
--	return -1;
--}
--
- static void cpu_set_fdt(int fdtnode __unused, u64 regval, void *info __unused)
- {
- 	int cpu = nr_cpus++;
-diff --git a/riscv/cstart.S b/riscv/cstart.S
-index 8f269997..68717370 100644
---- a/riscv/cstart.S
-+++ b/riscv/cstart.S
-@@ -109,6 +109,30 @@ halt:
- 1:	wfi
- 	j	1b
- 
++#define SBI_HSM_TEST_DONE	(1 << 0)
++#define SBI_HSM_TEST_HARTID_A1	(1 << 1)
++#define SBI_HSM_TEST_SATP	(1 << 2)
++#define SBI_HSM_TEST_SIE	(1 << 3)
++
++#endif /* _RISCV_SBI_TESTS_H_ */
+diff --git a/riscv/sbi-asm.S b/riscv/sbi-asm.S
+new file mode 100644
+index 00000000..f165f9da
+--- /dev/null
++++ b/riscv/sbi-asm.S
+@@ -0,0 +1,71 @@
++/* SPDX-License-Identifier: GPL-2.0 */
 +/*
-+ * hartid_to_cpu
-+ *   a0 is a hartid on entry
-+ * Returns, in a0, the corresponding cpuid, or -1 if no
-+ * thread_info struct with 'hartid' is found.
++ * Helper assembly code routines for RISC-V SBI extension tests.
++ *
++ * Copyright (C) 2024, James Raphael Tiovalen <jamestiotio@gmail.com>
 + */
-+.balign 4
-+.global hartid_to_cpu
-+hartid_to_cpu:
-+	la	t0, cpus
-+	la	t1, nr_cpus
-+	lw	t1, 0(t1)
-+	li	t2, 0
-+1:	bne	t2, t1, 2f
-+	li	a0, -1
-+	ret
-+2:	REG_L	t3, THREAD_INFO_HARTID(t0)
-+	bne	a0, t3, 3f
-+	lw	a0, THREAD_INFO_CPU(t0)
-+	ret
-+3:	addi	t0, t0, THREAD_INFO_SIZE
-+	addi	t2, t2, 1
-+	j	1b
++#define __ASSEMBLY__
++#include <asm/csr.h>
 +
- .balign 4
- .global secondary_entry
- secondary_entry:
++#include "sbi-tests.h"
++
++.section .text
++
++/*
++ * sbi_hsm_check
++ *   a0 and a1 are set by SBI HSM start/suspend
++ *   s1 is the address of the results array
++ * Doesn't return.
++ *
++ * This function is only called from HSM start and on resumption
++ * from HSM suspend which means we can do whatever we like with
++ * all registers. So, to avoid complicated register agreements with
++ * other assembly functions called, we just always use the saved
++ * registers for anything that should be maintained across calls.
++ */
++#define RESULTS_ARRAY	s1
++#define RESULTS_MAP	s2
++#define CPU_INDEX	s3
++.balign 4
++sbi_hsm_check:
++	li	RESULTS_MAP, 0
++	bne	a0, a1, 1f
++	ori	RESULTS_MAP, RESULTS_MAP, SBI_HSM_TEST_HARTID_A1
++1:	csrr	t0, CSR_SATP
++	bnez	t0, 2f
++	ori	RESULTS_MAP, RESULTS_MAP, SBI_HSM_TEST_SATP
++2:	csrr	t0, CSR_SSTATUS
++	andi	t0, t0, SR_SIE
++	bnez	t0, 3f
++	ori	RESULTS_MAP, RESULTS_MAP, SBI_HSM_TEST_SIE
++3:	call	hartid_to_cpu
++	mv	CPU_INDEX, a0
++	li	t0, -1
++	bne	CPU_INDEX, t0, 5f
++4:	pause
++	j	4b
++5:	ori	RESULTS_MAP, RESULTS_MAP, SBI_HSM_TEST_DONE
++	add	t0, RESULTS_ARRAY, CPU_INDEX
++	sb	RESULTS_MAP, 0(t0)
++	la	t1, sbi_hsm_stop_hart
++	add	t1, t1, CPU_INDEX
++6:	lb	t0, 0(t1)
++	pause
++	beqz	t0, 6b
++	li	a7, 0x48534d	/* SBI_EXT_HSM */
++	li	a6, 1		/* SBI_EXT_HSM_HART_STOP */
++	ecall
++7:	pause
++	j	7b
++
++.balign 4
++.global sbi_hsm_check_hart_start
++sbi_hsm_check_hart_start:
++	la	RESULTS_ARRAY, sbi_hsm_hart_start_checks
++	j	sbi_hsm_check
++
++.balign 4
++.global sbi_hsm_check_non_retentive_suspend
++sbi_hsm_check_non_retentive_suspend:
++	la	RESULTS_ARRAY, sbi_hsm_non_retentive_hart_suspend_checks
++	j	sbi_hsm_check
+diff --git a/riscv/sbi.c b/riscv/sbi.c
+index a7abc08c..b5147dee 100644
+--- a/riscv/sbi.c
++++ b/riscv/sbi.c
+@@ -18,6 +18,7 @@
+ #include <asm/mmu.h>
+ #include <asm/processor.h>
+ #include <asm/sbi.h>
++#include <asm/setup.h>
+ #include <asm/smp.h>
+ #include <asm/timer.h>
+ 
+@@ -429,6 +430,10 @@ static void check_dbcn(void)
+ 	report_prefix_popn(2);
+ }
+ 
++unsigned char sbi_hsm_stop_hart[NR_CPUS];
++unsigned char sbi_hsm_hart_start_checks[NR_CPUS];
++unsigned char sbi_hsm_non_retentive_hart_suspend_checks[NR_CPUS];
++
+ int main(int argc, char **argv)
+ {
+ 	if (argc > 1 && !strcmp(argv[1], "-h")) {
 -- 
 2.43.0
 
