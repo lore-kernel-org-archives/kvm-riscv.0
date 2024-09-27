@@ -1,52 +1,46 @@
 From: Max Hsu <max.hsu@sifive.com>
-Date: Fri, 27 Sep 2024 21:41:42 +0800
-Subject: [PATCH RFC v2 0/3] riscv: add Svukte extension
-Message-ID: <20240927-dev-maxh-svukte-rebase-2-v2-0-9afe57c33aee@sifive.com>
+Date: Fri, 27 Sep 2024 21:41:43 +0800
+Subject: [PATCH RFC v2 1/3] dt-bindings: riscv: Add Svukte entry
+In-Reply-To: <20240927-dev-maxh-svukte-rebase-2-v2-0-9afe57c33aee@sifive.com>
+References: <20240927-dev-maxh-svukte-rebase-2-v2-0-9afe57c33aee@sifive.com>
+Message-ID: <20240927-dev-maxh-svukte-rebase-2-v2-1-9afe57c33aee@sifive.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-RISC-V privileged spec will be added with Svukte extension [1]
+Add an entry for the Svukte extension to the riscv,isa-extensions
+property.
 
-Svukte introduce senvcfg.UKTE and hstatus.HUKTE bitfield.
-which makes user-mode access to supervisor memory raise page faults
-in constant time, mitigating attacks that attempt to discover the
-supervisor software's address-space layout.
-
-The following patches add
-- dt-binding of Svukte ISA string
-- CSR bit definition, ISA detection, senvcfg.UKTE enablement in kernel
-- KVM ONE_REG support for Svukte extension
-
-Changes in v2:
-- rebase on riscv/for-next (riscv-for-linus-6.12-mw1)
-- modify the description of dt-binding on Svukte ISA string
-- Link to v1: https://lore.kernel.org/all/20240920-dev-maxh-svukte-rebase-v1-0-7864a88a62bd at sifive.com/
-
-Link: https://github.com/riscv/riscv-isa-manual/pull/1564 [1]
-
+Reviewed-by: Samuel Holland <samuel.holland@sifive.com>
 Signed-off-by: Max Hsu <max.hsu@sifive.com>
 ---
-Max Hsu (3):
-      dt-bindings: riscv: Add Svukte entry
-      riscv: Add Svukte extension support
-      riscv: KVM: Add Svukte extension support for Guest/VM
-
  Documentation/devicetree/bindings/riscv/extensions.yaml | 9 +++++++++
- arch/riscv/include/asm/csr.h                            | 2 ++
- arch/riscv/include/asm/hwcap.h                          | 1 +
- arch/riscv/include/uapi/asm/kvm.h                       | 1 +
- arch/riscv/kernel/cpufeature.c                          | 4 ++++
- arch/riscv/kvm/vcpu_onereg.c                            | 1 +
- 6 files changed, 18 insertions(+)
----
-base-commit: b3f835cd7339919561866252a11831ead72e7073
-change-id: 20240927-dev-maxh-svukte-rebase-2-5c4d296d1940
+ 1 file changed, 9 insertions(+)
 
-Best regards,
+diff --git a/Documentation/devicetree/bindings/riscv/extensions.yaml b/Documentation/devicetree/bindings/riscv/extensions.yaml
+index 2cf2026cff574d39793157418a4d4211df87315f..9f730e3aaae949debc18396183b989b504dcb899 100644
+--- a/Documentation/devicetree/bindings/riscv/extensions.yaml
++++ b/Documentation/devicetree/bindings/riscv/extensions.yaml
+@@ -171,6 +171,15 @@ properties:
+             memory types as ratified in the 20191213 version of the privileged
+             ISA specification.
+ 
++        - const: svukte
++          description:
++            The standard Svukte supervisor-level extensions for making user-mode
++            accesses to supervisor memory raise page faults in constant time,
++            mitigating attacks that attempt to discover the supervisor
++            software's address-space layout. Currently under review as Pull
++            Request number 1564 at commit 81dc9277 ("Svukte v0.3") of
++            riscv-isa-manual.
++
+         - const: svvptc
+           description:
+             The standard Svvptc supervisor-level extension for
+
 -- 
-Max Hsu <max.hsu@sifive.com>
+2.43.2
 
 
