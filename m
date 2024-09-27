@@ -1,69 +1,66 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Wed, 25 Sep 2024 13:06:35 +0200
-Subject: [PATCH v2 1/1] target/riscv: enable floating point unit
-In-Reply-To: <20240925061704.12440-1-heinrich.schuchardt@canonical.com>
-References: <20240925061704.12440-1-heinrich.schuchardt@canonical.com>
-Message-ID: <20240925-27610830c7f6c0235bc8b1a1@orel>
+From: Max Hsu <max.hsu@sifive.com>
+Date: Fri, 27 Sep 2024 17:23:02 +0800
+Subject: [PATCH RFC 1/3] dt-bindings: riscv: Add Svukte entry
+In-Reply-To: <20240921-shock-purge-d91482d191a1@spud>
+References: <20240920-dev-maxh-svukte-rebase-v1-0-7864a88a62bd@sifive.com>
+ <20240920-dev-maxh-svukte-rebase-v1-1-7864a88a62bd@sifive.com> <20240921-shock-purge-d91482d191a1@spud>
+Message-ID: <CAHibDyxcxe87mTLMkWZ9Ko3v7uyEbJd_BP7GSTpZFFO1nfmn0A@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Sep 25, 2024 at 08:17:04AM GMT, Heinrich Schuchardt wrote:
-> The status and mstatus CSRs contain bit field FS, which control if the
-> floating point unit of RISC-V hart is enabled.
-> 
-> There seems to be no specification prescribing the value of the field when
-> entering S-mode from M-mode. But OpenSBI, as the leading SBI M-mode
-> firmware, has set a precedent by enabling the FPU by setting the value of
-> FS to 3 (dirty).
-> 
-> In TCG mode, QEMU uses OpenSBI by default. Users can reasonably expect that
-> software running QEMU in TCG mode and in KVM mode behaves similarly.
-> 
-> When QEMU in KVM mode creates a vCPU, Linux' KVM code sets FS=1 (initial)
-> in kvm_riscv_vcpu_fp_reset(). However, QEMU internally keeps a value of
-> FS=0 (off) and then synchronizes this value into KVM. Thus VS-mode software
-> is invoked with a disabled floating point unit.
-> 
-> One example of software being impacted is EDK II with TLS enabled. It
-> crashes when hitting the first floating point instruction while running
-> QEMU with --accel kvm, and runs fine with --accel tcg.
-> 
-> With this patch the FPU will be enabled when entering S-mode in KVM mode
-> and when entering M-mode in TCG mode.
-> 
-> Signed-off-by: Heinrich Schuchardt <heinrich.schuchardt@canonical.com>
-> ---
-> v2:
-> 	Rewrite the commit message as suggested in the v1 thread
-> 	https://lore.kernel.org/qemu-riscv/20240916181633.366449-1-heinrich.schuchardt at canonical.com/
-> ---
->  target/riscv/cpu.c | 7 +++++++
->  1 file changed, 7 insertions(+)
-> 
-> diff --git a/target/riscv/cpu.c b/target/riscv/cpu.c
-> index 4bda754b01..c32e2721d4 100644
-> --- a/target/riscv/cpu.c
-> +++ b/target/riscv/cpu.c
-> @@ -923,6 +923,13 @@ static void riscv_cpu_reset_hold(Object *obj, ResetType type)
->      if (mcc->parent_phases.hold) {
->          mcc->parent_phases.hold(obj, type);
->      }
-> +    if (riscv_has_ext(env, RVF) || riscv_has_ext(env, RVD)) {
-> +        env->mstatus = set_field(env->mstatus, MSTATUS_FS, env->misa_mxl);
-> +        for (int regnr = 0; regnr < 32; ++regnr) {
-> +            env->fpr[regnr] = 0;
-> +        }
-> +        riscv_csrrw(env, CSR_FCSR, NULL, 0, -1);
-> +    }
->  #ifndef CONFIG_USER_ONLY
->      env->misa_mxl = mcc->misa_mxl_max;
->      env->priv = PRV_M;
-> -- 
-> 2.45.2
->
+Thanks, Conor,
+I will modify the format and send it as RFC v2.
 
-Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+Since the Svukte extension is still in the review stage, I will put
+the latest commit of the PR in the riscv-isa-manual as an indication,
+Once the Svukte extension is ratified, I will modify it and send it as
+a formal patch.
+
+Best,
+Max Hsu
+
+
+
+On Sun, Sep 22, 2024 at 6:05?AM Conor Dooley <conor@kernel.org> wrote:
+>
+> On Fri, Sep 20, 2024 at 03:39:03PM +0800, Max Hsu wrote:
+> > Add an entry for the Svukte extension to the riscv,isa-extensions
+> > property.
+> >
+> > Reviewed-by: Samuel Holland <samuel.holland@sifive.com>
+> > Signed-off-by: Max Hsu <max.hsu@sifive.com>
+> > ---
+> >  Documentation/devicetree/bindings/riscv/extensions.yaml | 7 +++++++
+> >  1 file changed, 7 insertions(+)
+> >
+> > diff --git a/Documentation/devicetree/bindings/riscv/extensions.yaml b/Documentation/devicetree/bindings/riscv/extensions.yaml
+> > index a06dbc6b4928958704855c8993291b036e3d1a63..df96aea5e53a70b0cb8905332464a42a264e56e6 100644
+> > --- a/Documentation/devicetree/bindings/riscv/extensions.yaml
+> > +++ b/Documentation/devicetree/bindings/riscv/extensions.yaml
+> > @@ -171,6 +171,13 @@ properties:
+> >              memory types as ratified in the 20191213 version of the privileged
+> >              ISA specification.
+> >
+> > +        - const: svukte
+> > +          description:
+> > +            The standard Svukte supervisor-level extensions for making user-mode
+> > +            accesses to supervisor memory raise page faults in constant time,
+> > +            mitigating attacks that attempt to discover the supervisor
+> > +            software's address-space layout, as PR#1564 of riscv-isa-manual.
+>
+> I'm surprised this doesn't fail dt_binding_check, with the # in it. I'd
+> like to see a commit hash here though, in the same format as the other
+> extensions using them.
+>
+> > +
+> >          - const: zacas
+> >            description: |
+> >              The Zacas extension for Atomic Compare-and-Swap (CAS) instructions
+> >
+> > --
+> > 2.43.2
+> >
 
