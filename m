@@ -1,52 +1,52 @@
-From: Max Hsu <max.hsu@sifive.com>
-Date: Fri, 27 Sep 2024 21:41:45 +0800
-Subject: [PATCH RFC v2 3/3] riscv: KVM: Add Svukte extension support for
- Guest/VM
-In-Reply-To: <20240927-dev-maxh-svukte-rebase-2-v2-0-9afe57c33aee@sifive.com>
+From: Deepak Gupta <debug@rivosinc.com>
+Date: Mon, 30 Sep 2024 10:04:49 -0700
+Subject: [PATCH RFC v2 1/3] dt-bindings: riscv: Add Svukte entry
+In-Reply-To: <20240927-dev-maxh-svukte-rebase-2-v2-1-9afe57c33aee@sifive.com>
 References: <20240927-dev-maxh-svukte-rebase-2-v2-0-9afe57c33aee@sifive.com>
-Message-ID: <20240927-dev-maxh-svukte-rebase-2-v2-3-9afe57c33aee@sifive.com>
+ <20240927-dev-maxh-svukte-rebase-2-v2-1-9afe57c33aee@sifive.com>
+Message-ID: <ZvraMdZa8Shs/yyQ@debug.ba.rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add KVM ISA extension ONE_REG interface to allow VMM tools to
-detect and enable Svukte extension for Guest/VM.
+On Fri, Sep 27, 2024 at 09:41:43PM +0800, Max Hsu wrote:
+>Add an entry for the Svukte extension to the riscv,isa-extensions
+>property.
+>
+>Reviewed-by: Samuel Holland <samuel.holland@sifive.com>
+>Signed-off-by: Max Hsu <max.hsu@sifive.com>
+>---
+> Documentation/devicetree/bindings/riscv/extensions.yaml | 9 +++++++++
+> 1 file changed, 9 insertions(+)
+>
+>diff --git a/Documentation/devicetree/bindings/riscv/extensions.yaml b/Documentation/devicetree/bindings/riscv/extensions.yaml
+>index 2cf2026cff574d39793157418a4d4211df87315f..9f730e3aaae949debc18396183b989b504dcb899 100644
+>--- a/Documentation/devicetree/bindings/riscv/extensions.yaml
+>+++ b/Documentation/devicetree/bindings/riscv/extensions.yaml
+>@@ -171,6 +171,15 @@ properties:
+>             memory types as ratified in the 20191213 version of the privileged
+>             ISA specification.
+>
+>+        - const: svukte
+>+          description:
+>+            The standard Svukte supervisor-level extensions for making user-mode
+>+            accesses to supervisor memory raise page faults in constant time,
+>+            mitigating attacks that attempt to discover the supervisor
+>+            software's address-space layout. Currently under review as Pull
+>+            Request number 1564 at commit 81dc9277 ("Svukte v0.3") of
+>+            riscv-isa-manual.
 
-Reviewed-by: Samuel Holland <samuel.holland@sifive.com>
-Signed-off-by: Max Hsu <max.hsu@sifive.com>
----
- arch/riscv/include/uapi/asm/kvm.h | 1 +
- arch/riscv/kvm/vcpu_onereg.c      | 1 +
- 2 files changed, 2 insertions(+)
+Reviewed-by: Deepak Gupta <debug@rivosinc.com>
 
-diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
-index e97db3296456e19f79ca02e4c4f70ae1b4abb48b..41b466b7ffaec421e8389d3f5b178580091a2c98 100644
---- a/arch/riscv/include/uapi/asm/kvm.h
-+++ b/arch/riscv/include/uapi/asm/kvm.h
-@@ -175,6 +175,7 @@ enum KVM_RISCV_ISA_EXT_ID {
- 	KVM_RISCV_ISA_EXT_ZCF,
- 	KVM_RISCV_ISA_EXT_ZCMOP,
- 	KVM_RISCV_ISA_EXT_ZAWRS,
-+	KVM_RISCV_ISA_EXT_SVUKTE,
- 	KVM_RISCV_ISA_EXT_MAX,
- };
- 
-diff --git a/arch/riscv/kvm/vcpu_onereg.c b/arch/riscv/kvm/vcpu_onereg.c
-index b319c4c13c54ce22d2a7552f4c9f256a0c50780e..67237d6e53882a9fcd2cf265aa1704f25cc4a701 100644
---- a/arch/riscv/kvm/vcpu_onereg.c
-+++ b/arch/riscv/kvm/vcpu_onereg.c
-@@ -41,6 +41,7 @@ static const unsigned long kvm_isa_ext_arr[] = {
- 	KVM_ISA_EXT_ARR(SVINVAL),
- 	KVM_ISA_EXT_ARR(SVNAPOT),
- 	KVM_ISA_EXT_ARR(SVPBMT),
-+	KVM_ISA_EXT_ARR(SVUKTE),
- 	KVM_ISA_EXT_ARR(ZACAS),
- 	KVM_ISA_EXT_ARR(ZAWRS),
- 	KVM_ISA_EXT_ARR(ZBA),
-
--- 
-2.43.2
-
+>+
+>         - const: svvptc
+>           description:
+>             The standard Svvptc supervisor-level extension for
+>
+>-- 
+>2.43.2
+>
+>
 
