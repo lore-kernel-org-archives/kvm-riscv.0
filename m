@@ -1,37 +1,50 @@
-From: Nikolas Wipper <nikwip@amazon.de>
-Date: Fri, 4 Oct 2024 12:44:30 +0200
-Subject: [PATCH 00/15] KVM: x86: Introduce new ioctl KVM_TRANSLATE2
-In-Reply-To: <20240910152207.38974-1-nikwip@amazon.de>
-References: <20240910152207.38974-1-nikwip@amazon.de>
-Message-ID: <3208be2b-7e9f-413b-a9dc-c36ef4e3d177@amazon.de>
+From: Yong-Xuan Wang <yongxuan.wang@sifive.com>
+Date: Fri, 4 Oct 2024 18:49:55 +0800
+Subject: [PATCH 1/1] RISC-V: KVM: Fix APLIC in_clrip and clripnum write emulation
+In-Reply-To: <20240808081439.24661-1-yongxuan.wang@sifive.com>
+References: <20240808081439.24661-1-yongxuan.wang@sifive.com>
+Message-ID: <CAMWQL2gBOma5c_A4JPnTK6uDfbyqcbcf_4qZ4Pt_S3mvBY3s0w@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-I saw this on another series[*]:
+ping
 
-> if KVM_TRANSLATE2 lands (though I'm somewhat curious as to why QEMU doesn't do
-> the page walks itself).
+On Thu, Aug 8, 2024 at 4:14?PM Yong-Xuan Wang <yongxuan.wang@sifive.com> wrote:
+>
+> In the section "4.7 Precise effects on interrupt-pending bits"
+> of the RISC-V AIA specification defines that:
+>
+> If the source mode is Level1 or Level0 and the interrupt domain
+> is configured in MSI delivery mode (domaincfg.DM = 1):
+> The pending bit is cleared whenever the rectified input value is
+> low, when the interrupt is forwarded by MSI, or by a relevant
+> write to an in_clrip register or to clripnum.
+>
+> Update the aplic_write_pending() to match the spec.
+>
+> Signed-off-by: Yong-Xuan Wang <yongxuan.wang@sifive.com>
+> Reviewed-by: Vincent Chen <vincent.chen@sifive.com>
+> ---
+>  arch/riscv/kvm/aia_aplic.c | 2 --
+>  1 file changed, 2 deletions(-)
+>
+> diff --git a/arch/riscv/kvm/aia_aplic.c b/arch/riscv/kvm/aia_aplic.c
+> index da6ff1bade0d..97c6dbcabf47 100644
+> --- a/arch/riscv/kvm/aia_aplic.c
+> +++ b/arch/riscv/kvm/aia_aplic.c
+> @@ -142,8 +142,6 @@ static void aplic_write_pending(struct aplic *aplic, u32 irq, bool pending)
+>
+>         if (sm == APLIC_SOURCECFG_SM_LEVEL_HIGH ||
+>             sm == APLIC_SOURCECFG_SM_LEVEL_LOW) {
+> -               if (!pending)
+> -                       goto skip_write_pending;
+>                 if ((irqd->state & APLIC_IRQ_STATE_INPUT) &&
+>                     sm == APLIC_SOURCECFG_SM_LEVEL_LOW)
+>                         goto skip_write_pending;
+> --
+> 2.17.1
+>
 
-The simple reason for keeping this functionality in KVM, is that it already
-has a mature, production-level page walker (which is already exposed) and
-creating something similar QEMU would take a lot longer and would be much
-harder to maintain than just creating an API that leverages the existing
-walker.
-
-[*] https://lore.kernel.org/lkml/ZvJseVoT7gN_GBG3 at google.com/T/#mb0b23a1f5023192a442db4a16629d9ca74eb6b5e
-
-ps: this is also a gentle ping for review, if this got lost in between
-conferences
-
-
-
-Amazon Web Services Development Center Germany GmbH
-Krausenstr. 38
-10117 Berlin
-Geschaeftsfuehrung: Christian Schlaeger, Jonathan Weiss
-Eingetragen am Amtsgericht Charlottenburg unter HRB 257764 B
-Sitz: Berlin
-Ust-ID: DE 365 538 597
