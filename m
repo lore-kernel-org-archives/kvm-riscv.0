@@ -1,41 +1,37 @@
-From: Richard Henderson <richard.henderson@linaro.org>
-Date: Thu, 3 Oct 2024 11:40:12 -0700
-Subject: [PATCH v2 1/1] target/riscv: enable floating point unit
-In-Reply-To: <20240925061704.12440-1-heinrich.schuchardt@canonical.com>
-References: <20240925061704.12440-1-heinrich.schuchardt@canonical.com>
-Message-ID: <ec6ed202-f67c-402a-9abc-19c31f03ec8d@linaro.org>
+From: Nikolas Wipper <nikwip@amazon.de>
+Date: Fri, 4 Oct 2024 12:44:30 +0200
+Subject: [PATCH 00/15] KVM: x86: Introduce new ioctl KVM_TRANSLATE2
+In-Reply-To: <20240910152207.38974-1-nikwip@amazon.de>
+References: <20240910152207.38974-1-nikwip@amazon.de>
+Message-ID: <3208be2b-7e9f-413b-a9dc-c36ef4e3d177@amazon.de>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 9/24/24 23:17, Heinrich Schuchardt wrote:
-> The status and mstatus CSRs contain bit field FS, which control if the
-> floating point unit of RISC-V hart is enabled.
-> 
-> There seems to be no specification prescribing the value of the field when
-> entering S-mode from M-mode. But OpenSBI, as the leading SBI M-mode
-> firmware, has set a precedent by enabling the FPU by setting the value of
-> FS to 3 (dirty).
-> 
-> In TCG mode, QEMU uses OpenSBI by default. Users can reasonably expect that
-> software running QEMU in TCG mode and in KVM mode behaves similarly.
-> 
-> When QEMU in KVM mode creates a vCPU, Linux' KVM code sets FS=1 (initial)
-> in kvm_riscv_vcpu_fp_reset(). However, QEMU internally keeps a value of
-> FS=0 (off) and then synchronizes this value into KVM. Thus VS-mode software
-> is invoked with a disabled floating point unit.
+I saw this on another series[*]:
 
-This suggests that qemu is incorrectly syncing the registers from kvm at vcpu startup.
+> if KVM_TRANSLATE2 lands (though I'm somewhat curious as to why QEMU doesn't do
+> the page walks itself).
 
-> +    if (riscv_has_ext(env, RVF) || riscv_has_ext(env, RVD)) {
-> +        env->mstatus = set_field(env->mstatus, MSTATUS_FS, env->misa_mxl);
+The simple reason for keeping this functionality in KVM, is that it already
+has a mature, production-level page walker (which is already exposed) and
+creating something similar QEMU would take a lot longer and would be much
+harder to maintain than just creating an API that leverages the existing
+walker.
 
-Storing misa_mxl here is wrong.  That's '1' for rv32 and '2' for rv64.
-You want a single constant value, either '1' (initial) or '2' (clean).
- From the kvm source, initial seems preferable.
+[*] https://lore.kernel.org/lkml/ZvJseVoT7gN_GBG3 at google.com/T/#mb0b23a1f5023192a442db4a16629d9ca74eb6b5e
+
+ps: this is also a gentle ping for review, if this got lost in between
+conferences
 
 
-r~
 
+Amazon Web Services Development Center Germany GmbH
+Krausenstr. 38
+10117 Berlin
+Geschaeftsfuehrung: Christian Schlaeger, Jonathan Weiss
+Eingetragen am Amtsgericht Charlottenburg unter HRB 257764 B
+Sitz: Berlin
+Ust-ID: DE 365 538 597
