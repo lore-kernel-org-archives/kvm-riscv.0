@@ -1,134 +1,147 @@
 From: Anup Patel <anup@brainfault.org>
-Date: Sat, 5 Oct 2024 16:31:07 +0530
-Subject: [PATCH v8 0/5] Add Svade and Svadu Extensions Support
-In-Reply-To: <mhng-1e3d83bb-a7f4-4fa7-8cfa-2550835026de@palmer-ri-x1c9>
-References: <CAAhSdy05BXUZu6BNUoDWoEVd_YiM0Dpqg=t5WYUX7+cacnO2Hg@mail.gmail.com>
- <mhng-1e3d83bb-a7f4-4fa7-8cfa-2550835026de@palmer-ri-x1c9>
-Message-ID: <CAAhSdy32s91ijfachfynzmQ1+weeBjLKaDLiCBT2gq-oTYSgDw@mail.gmail.com>
+Date: Sat, 5 Oct 2024 16:36:00 +0530
+Subject: [PATCH v3 0/2] riscv: Add perf support to collect KVM guest
+ statistics from host side
+In-Reply-To: <cover.1726126795.git.zhouquan@iscas.ac.cn>
+References: <cover.1726126795.git.zhouquan@iscas.ac.cn>
+Message-ID: <CAAhSdy0tEpgmC1VgMn_Km5SxwanOii5LzL-5oTJWbN+1vLjWug@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Palmer,
+On Thu, Sep 12, 2024 at 1:30?PM <zhouquan@iscas.ac.cn> wrote:
+>
+> From: Quan Zhou <zhouquan@iscas.ac.cn>
+>
+> Add basic guest support to RISC-V perf, enabling it to distinguish
+> whether PMU interrupts occur in the host or the guest, and then
+> collect some basic guest information from the host side
+> (guest os callchain is not supported for now).
+>
+> Based on the x86/arm implementation, tested with kvm-riscv.
+> test env:
+> - host: qemu-9.0.0
+> - guest: qemu-9.0.0 --enable-kvm (only start one guest and run top)
+>
+> -----------------------------------------
+> 1) perf kvm top
+> ./perf kvm --host --guest \
+>   --guestkallsyms=/root/repo/shared/kallsyms \
+>   --guestmodules=/root/repo/shared/modules top
+>
+> PerfTop:      41 irqs/sec  kernel:97.6% us: 0.0% guest kernel: 0.0% guest us: 0.0% exact:  0.0% [250Hz cycles:P],  (all, 4 CPUs)
+> -------------------------------------------------------------------------------
+>
+>     64.57%  [kernel]        [k] default_idle_call
+>      3.12%  [kernel]        [k] _raw_spin_unlock_irqrestore
+>      3.03%  [guest.kernel]  [g] mem_serial_out
+>      2.61%  [kernel]        [k] handle_softirqs
+>      2.32%  [kernel]        [k] do_trap_ecall_u
+>      1.71%  [kernel]        [k] _raw_spin_unlock_irq
+>      1.26%  [guest.kernel]  [g] do_raw_spin_lock
+>      1.25%  [kernel]        [k] finish_task_switch.isra.0
+>      1.16%  [kernel]        [k] do_idle
+>      0.77%  libc.so.6       [.] ioctl
+>      0.76%  [kernel]        [k] queue_work_on
+>      0.69%  [kernel]        [k] __local_bh_enable_ip
+>      0.67%  [guest.kernel]  [g] __noinstr_text_start
+>      0.64%  [guest.kernel]  [g] mem_serial_in
+>      0.41%  libc.so.6       [.] pthread_sigmask
+>      0.39%  [kernel]        [k] mem_cgroup_uncharge_skmem
+>      0.39%  [kernel]        [k] __might_resched
+>      0.39%  [guest.kernel]  [g] _nohz_idle_balance.isra.0
+>      0.37%  [kernel]        [k] sched_balance_update_blocked_averages
+>      0.34%  [kernel]        [k] sched_balance_rq
+>
+> 2) perf kvm record
+> ./perf kvm --host --guest \
+>   --guestkallsyms=/root/repo/shared/kallsyms \
+>   --guestmodules=/root/repo/shared/modules record -a sleep 60
+>
+> [ perf record: Woken up 3 times to write data ]
+> [ perf record: Captured and wrote 1.292 MB perf.data.kvm (17990 samples) ]
+>
+> 3) perf kvm report (the data shown here is not complete)
+> ./perf kvm --host --guest \
+>   --guestkallsyms=/root/repo/shared/kallsyms \
+>   --guestmodules=/root/repo/shared/modules report -i perf.data.kvm
+>
+> # Total Lost Samples: 0
+> #
+> # Samples: 17K of event 'cycles:P'
+> # Event count (approx.): 269968947184
+> #
+> # Overhead  Command          Shared Object            Symbol
+> # ........  ...............  .......................  ..............................................
+> #
+>     61.86%  swapper          [kernel.kallsyms]        [k] default_idle_call
+>      2.93%  :6463            [guest.kernel.kallsyms]  [g] do_raw_spin_lock
+>      2.82%  :6462            [guest.kernel.kallsyms]  [g] mem_serial_out
+>      2.11%  sshd             [kernel.kallsyms]        [k] _raw_spin_unlock_irqrestore
+>      1.78%  :6462            [guest.kernel.kallsyms]  [g] do_raw_spin_lock
+>      1.37%  swapper          [kernel.kallsyms]        [k] handle_softirqs
+>      1.36%  swapper          [kernel.kallsyms]        [k] do_idle
+>      1.21%  sshd             [kernel.kallsyms]        [k] do_trap_ecall_u
+>      1.21%  sshd             [kernel.kallsyms]        [k] _raw_spin_unlock_irq
+>      1.11%  qemu-system-ris  [kernel.kallsyms]        [k] do_trap_ecall_u
+>      0.93%  qemu-system-ris  libc.so.6                [.] ioctl
+>      0.89%  sshd             [kernel.kallsyms]        [k] __local_bh_enable_ip
+>      0.77%  qemu-system-ris  [kernel.kallsyms]        [k] _raw_spin_unlock_irqrestore
+>      0.68%  qemu-system-ris  [kernel.kallsyms]        [k] queue_work_on
+>      0.65%  sshd             [kernel.kallsyms]        [k] handle_softirqs
+>      0.44%  :6462            [guest.kernel.kallsyms]  [g] mem_serial_in
+>      0.42%  sshd             libc.so.6                [.] pthread_sigmask
+>      0.34%  :6462            [guest.kernel.kallsyms]  [g] serial8250_tx_chars
+>      0.30%  swapper          [kernel.kallsyms]        [k] finish_task_switch.isra.0
+>      0.29%  swapper          [kernel.kallsyms]        [k] sched_balance_rq
+>      0.29%  sshd             [kernel.kallsyms]        [k] __might_resched
+>      0.26%  swapper          [kernel.kallsyms]        [k] tick_nohz_idle_exit
+>      0.26%  swapper          [kernel.kallsyms]        [k] sched_balance_update_blocked_averages
+>      0.26%  swapper          [kernel.kallsyms]        [k] _nohz_idle_balance.isra.0
+>      0.24%  qemu-system-ris  [kernel.kallsyms]        [k] finish_task_switch.isra.0
+>      0.23%  :6462            [guest.kernel.kallsyms]  [g] __noinstr_text_start
+>
+> ---
+> Change since v2:
+> - Rebased on v6.11-rc7
+> - Keep the misc type consistent with other architectures
+>   as `unsigned long` (Andrew)
+> - Add the same comment for `kvm_arch_pmi_in_guest`
+>   as in arm64. (Andrew)
+>
+> Change since v1:
+> - Rebased on v6.11-rc3
+> - Fix incorrect misc type (Andrew)
+>
+> ---
+> v1 link:
+> https://lore.kernel.org/all/cover.1721271251.git.zhouquan at iscas.ac.cn/
+> v2 link:
+> https://lore.kernel.org/all/cover.1723518282.git.zhouquan at iscas.ac.cn/
+>
+> Quan Zhou (2):
+>   riscv: perf: add guest vs host distinction
+>   riscv: KVM: add basic support for host vs guest profiling
 
-On Fri, Sep 20, 2024 at 1:53?PM Palmer Dabbelt <palmer@rivosinc.com> wrote:
->
-> On Wed, 21 Aug 2024 07:43:20 PDT (-0700), anup at brainfault.org wrote:
-> > Hi Palmer,
-> >
-> > On Fri, Jul 26, 2024 at 2:19?PM Yong-Xuan Wang <yongxuan.wang@sifive.com> wrote:
-> >>
-> >> Svade and Svadu extensions represent two schemes for managing the PTE A/D
-> >> bit. When the PTE A/D bits need to be set, Svade extension intdicates that
-> >> a related page fault will be raised. In contrast, the Svadu extension
-> >> supports hardware updating of PTE A/D bits. This series enables Svade and
-> >> Svadu extensions for both host and guest OS.
-> >>
-> >> Regrading the mailing thread[1], we have 4 possible combinations of
-> >> these extensions in the device tree, the default hardware behavior for
-> >> these possibilities are:
-> >> 1) Neither Svade nor Svadu present in DT => It is technically
-> >>    unknown whether the platform uses Svade or Svadu. Supervisor
-> >>    software should be prepared to handle either hardware updating
-> >>    of the PTE A/D bits or page faults when they need updated.
-> >> 2) Only Svade present in DT => Supervisor must assume Svade to be
-> >>    always enabled.
-> >> 3) Only Svadu present in DT => Supervisor must assume Svadu to be
-> >>    always enabled.
-> >> 4) Both Svade and Svadu present in DT => Supervisor must assume
-> >>    Svadu turned-off at boot time. To use Svadu, supervisor must
-> >>    explicitly enable it using the SBI FWFT extension.
-> >>
-> >> The Svade extension is mandatory and the Svadu extension is optional in
-> >> RVA23 profile. Platforms want to take the advantage of Svadu can choose
-> >> 3. Those are aware of the profile can choose 4, and Linux won't get the
-> >> benefit of svadu until the SBI FWFT extension is available.
-> >>
-> >> [1] https://lore.kernel.org/linux-kernel/20240527-e9845c06619bca5cd285098c at orel/T/#m29644eb88e241ec282df4ccd5199514e913b06ee
-> >>
-> >> ---
-> >> v8:
-> >> - fix typo in PATCH1 (Samuel)
-> >> - use the new extension validating API in PATCH1 (Cl?ment)
-> >> - update the dtbinding in PATCH2 (Samuel, Conor)
-> >> - add PATCH4 to fix compile error in get-reg-list test.
-> >>
-> >> v7:
-> >> - fix alignment in PATCH1
-> >> - update the dtbinding in PATCH2 (Conor, Jessica)
-> >>
-> >> v6:
-> >> - reflect the platform's behavior by riscv_isa_extension_available() and
-> >>   update the the arch_has_hw_pte_young() in PATCH1 (Conor, Andrew)
-> >> - update the dtbinding in PATCH2 (Alexandre, Andrew, Anup, Conor)
-> >> - update the henvcfg condition in PATCH3 (Andrew)
-> >> - check if Svade is allowed to disabled based on arch_has_hw_pte_young()
-> >>   in PATCH3
-> >>
-> >> v5:
-> >> - remove all Acked-by and Reviewed-by (Conor, Andrew)
-> >> - add Svade support
-> >> - update the arch_has_hw_pte_young() in PATCH1
-> >> - update the dtbinding in PATCH2 (Alexandre, Andrew)
-> >> - check the availibility of Svadu for Guest/VM based on
-> >>   arch_has_hw_pte_young() in PATCH3
-> >>
-> >> v4:
-> >> - fix 32bit kernel build error in PATCH1 (Conor)
-> >> - update the status of Svadu extension to ratified in PATCH2
-> >> - add the PATCH4 to suporrt SBI_FWFT_PTE_AD_HW_UPDATING for guest OS
-> >> - update the PATCH1 and PATCH3 to integrate with FWFT extension
-> >> - rebase PATCH5 on the lastest get-reg-list test (Andrew)
-> >>
-> >> v3:
-> >> - fix the control bit name to ADUE in PATCH1 and PATCH3
-> >> - update get-reg-list in PATCH4
-> >>
-> >> v2:
-> >> - add Co-developed-by: in PATCH1
-> >> - use riscv_has_extension_unlikely() to runtime patch the branch in PATCH1
-> >> - update dt-binding
-> >>
-> >> Yong-Xuan Wang (5):
-> >>   RISC-V: Add Svade and Svadu Extensions Support
-> >>   dt-bindings: riscv: Add Svade and Svadu Entries
-> >>   RISC-V: KVM: Add Svade and Svadu Extensions Support for Guest/VM
-> >>   KVM: riscv: selftests: Fix compile error
-> >>   KVM: riscv: selftests: Add Svade and Svadu Extension to get-reg-list
-> >>     test
-> >>
-> >>  .../devicetree/bindings/riscv/extensions.yaml | 28 +++++++++++++++++++
-> >>  arch/riscv/Kconfig                            |  1 +
-> >>  arch/riscv/include/asm/csr.h                  |  1 +
-> >>  arch/riscv/include/asm/hwcap.h                |  2 ++
-> >>  arch/riscv/include/asm/pgtable.h              | 13 ++++++++-
-> >>  arch/riscv/include/uapi/asm/kvm.h             |  2 ++
-> >>  arch/riscv/kernel/cpufeature.c                | 12 ++++++++
-> >>  arch/riscv/kvm/vcpu.c                         |  4 +++
-> >>  arch/riscv/kvm/vcpu_onereg.c                  | 15 ++++++++++
-> >>  .../selftests/kvm/riscv/get-reg-list.c        | 16 ++++++++---
-> >>  10 files changed, 89 insertions(+), 5 deletions(-)
-> >>
-> >> --
-> >> 2.17.1
-> >>
-> >>
-> >
-> > Let me know if this series can be taken through the KVM RISC-V tree.
-> > I can provide you with a shared tag as well.
->
-> I think the patchwork bot got confused by patch 4 going to fixes?  It
-> says this was merged.
->
-> Acked-by: Palmer Dabbelt <palmer@rivosinc.com>
->
-> if you still want to take it, otherwise just LMK and I'll pick it up.
->
+Please rebase this series upon Linux-6.12-rcX and send another version.
 
-I have queued this series for Linux-6.13
-
-Thanks,
+Regards,
 Anup
+
+>
+>  arch/riscv/include/asm/kvm_host.h   | 10 ++++++++
+>  arch/riscv/include/asm/perf_event.h |  7 ++++++
+>  arch/riscv/kernel/perf_callchain.c  | 38 +++++++++++++++++++++++++++++
+>  arch/riscv/kvm/Kconfig              |  1 +
+>  arch/riscv/kvm/main.c               | 12 +++++++--
+>  arch/riscv/kvm/vcpu.c               |  7 ++++++
+>  6 files changed, 73 insertions(+), 2 deletions(-)
+>
+>
+> base-commit: da3ea35007d0af457a0afc87e84fddaebc4e0b63
+> --
+> 2.34.1
+>
 
