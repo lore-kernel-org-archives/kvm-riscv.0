@@ -1,37 +1,89 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Wed,  9 Oct 2024 08:49:50 -0700
-Subject: [PATCH v3 11/14] KVM: selftests: Use vcpu_arch_put_guest() in mmu_stress_test
+Date: Wed,  9 Oct 2024 08:49:51 -0700
+Subject: [PATCH v3 12/14] KVM: selftests: Precisely limit the number of guest
+ loops in mmu_stress_test
 In-Reply-To: <20241009154953.1073471-1-seanjc@google.com>
 References: <20241009154953.1073471-1-seanjc@google.com>
-Message-ID: <20241009154953.1073471-12-seanjc@google.com>
+Message-ID: <20241009154953.1073471-13-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Use vcpu_arch_put_guest() to write memory from the guest in
-mmu_stress_test as an easy way to provide a bit of extra coverage.
+Run the exact number of guest loops required in mmu_stress_test instead
+of looping indefinitely in anticipation of adding more stages that run
+different code (e.g. reads instead of writes).
 
 Reviewed-by: James Houghton <jthoughton@google.com>
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- tools/testing/selftests/kvm/mmu_stress_test.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ tools/testing/selftests/kvm/mmu_stress_test.c | 25 ++++++++++++++-----
+ 1 file changed, 19 insertions(+), 6 deletions(-)
 
 diff --git a/tools/testing/selftests/kvm/mmu_stress_test.c b/tools/testing/selftests/kvm/mmu_stress_test.c
-index fbb693428a82..656a837c7f49 100644
+index 656a837c7f49..c6bf18cb7c89 100644
 --- a/tools/testing/selftests/kvm/mmu_stress_test.c
 +++ b/tools/testing/selftests/kvm/mmu_stress_test.c
-@@ -23,7 +23,7 @@ static void guest_code(uint64_t start_gpa, uint64_t end_gpa, uint64_t stride)
+@@ -20,12 +20,15 @@
+ static void guest_code(uint64_t start_gpa, uint64_t end_gpa, uint64_t stride)
+ {
+ 	uint64_t gpa;
++	int i;
  
- 	for (;;) {
+-	for (;;) {
++	for (i = 0; i < 2; i++) {
  		for (gpa = start_gpa; gpa < end_gpa; gpa += stride)
--			*((volatile uint64_t *)gpa) = gpa;
-+			vcpu_arch_put_guest(*((volatile uint64_t *)gpa), gpa);
- 		GUEST_SYNC(0);
+ 			vcpu_arch_put_guest(*((volatile uint64_t *)gpa), gpa);
+-		GUEST_SYNC(0);
++		GUEST_SYNC(i);
+ 	}
++
++	GUEST_ASSERT(0);
+ }
+ 
+ struct vcpu_info {
+@@ -52,10 +55,18 @@ static void rendezvous_with_boss(void)
  	}
  }
+ 
+-static void run_vcpu(struct kvm_vcpu *vcpu)
++static void assert_sync_stage(struct kvm_vcpu *vcpu, int stage)
++{
++	struct ucall uc;
++
++	TEST_ASSERT_EQ(get_ucall(vcpu, &uc), UCALL_SYNC);
++	TEST_ASSERT_EQ(uc.args[1], stage);
++}
++
++static void run_vcpu(struct kvm_vcpu *vcpu, int stage)
+ {
+ 	vcpu_run(vcpu);
+-	TEST_ASSERT_EQ(get_ucall(vcpu, NULL), UCALL_SYNC);
++	assert_sync_stage(vcpu, stage);
+ }
+ 
+ static void *vcpu_worker(void *data)
+@@ -69,7 +80,8 @@ static void *vcpu_worker(void *data)
+ 
+ 	rendezvous_with_boss();
+ 
+-	run_vcpu(vcpu);
++	/* Stage 0, write all of guest memory. */
++	run_vcpu(vcpu, 0);
+ 	rendezvous_with_boss();
+ #ifdef __x86_64__
+ 	vcpu_sregs_get(vcpu, &sregs);
+@@ -79,7 +91,8 @@ static void *vcpu_worker(void *data)
+ #endif
+ 	rendezvous_with_boss();
+ 
+-	run_vcpu(vcpu);
++	/* Stage 1, re-write all of guest memory. */
++	run_vcpu(vcpu, 1);
+ 	rendezvous_with_boss();
+ 
+ 	return NULL;
 -- 
 2.47.0.rc0.187.ge670bccf7e-goog
 
