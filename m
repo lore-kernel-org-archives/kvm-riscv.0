@@ -1,93 +1,108 @@
-From: Alistair Francis <alistair23@gmail.com>
-Date: Tue, 8 Oct 2024 10:45:36 +1000
-Subject: [PATCH 1/1] target/riscv: enable floating point unit
-In-Reply-To: <CAFEAcA_ePVwnpVVWJSx8=-8v2h_z2imfSdyAZd62RhXaZUTojA@mail.gmail.com>
-References: <20240916181633.366449-1-heinrich.schuchardt@canonical.com>
- <20240917-f45624310204491aede04703@orel> <15c359a4-b3c1-4cb0-be2e-d5ca5537bc5b@canonical.com>
- <20240917-b13c51d41030029c70aab785@orel> <8b24728f-8b6e-4c79-91f6-7cbb79494550@canonical.com>
- <20240918-039d1e3bebf2231bd452a5ad@orel> <CAFEAcA-Yg9=5naRVVCwma0Ug0vFZfikqc6_YiRQTrfBpoz9Bjw@mail.gmail.com>
- <bab7a5ce-74b6-49ae-b610-9a0f624addc0@canonical.com> <CAFEAcA-L7sQfK6MNt1ZbZqUMk+TJor=uD3Jj-Pc6Vy9j9JHhYQ@mail.gmail.com>
- <f1e41b95-c499-4e06-91cb-006dcd9d29e6@canonical.com> <CAFEAcA_ePVwnpVVWJSx8=-8v2h_z2imfSdyAZd62RhXaZUTojA@mail.gmail.com>
-Message-ID: <CAKmqyKPoom+iQbrNn7xuebRdd9DfX3GAJQQM+8fswEqfRi3e_A@mail.gmail.com>
+From: Sean Christopherson <seanjc@google.com>
+Date: Wed,  9 Oct 2024 08:49:39 -0700
+Subject: [PATCH v3 00/14] KVM: selftests: Morph max_guest_mem to mmu_stress
+Message-ID: <20241009154953.1073471-1-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Sep 19, 2024 at 1:34?AM Peter Maydell <peter.maydell@linaro.org> wrote:
->
-> On Wed, 18 Sept 2024 at 14:49, Heinrich Schuchardt
-> <heinrich.schuchardt@canonical.com> wrote:
-> >
-> > On 18.09.24 15:12, Peter Maydell wrote:
-> > > On Wed, 18 Sept 2024 at 14:06, Heinrich Schuchardt
-> > > <heinrich.schuchardt@canonical.com> wrote:
-> > >> Thanks Peter for looking into this.
-> > >>
-> > >> QEMU's cpu_synchronize_all_post_init() and
-> > >> do_kvm_cpu_synchronize_post_reset() both end up in
-> > >> kvm_arch_put_registers() and that is long after Linux
-> > >> kvm_arch_vcpu_create() has been setting some FPU state. See the output
-> > >> below.
-> > >>
-> > >> kvm_arch_put_registers() copies the CSRs by calling
-> > >> kvm_riscv_put_regs_csr(). Here we can find:
-> > >>
-> > >>       KVM_RISCV_SET_CSR(cs, env, sstatus, env->mstatus);
-> > >>
-> > >> This call enables or disables the FPU according to the value of
-> > >> env->mstatus.
-> > >>
-> > >> So we need to set the desired state of the floating point unit in QEMU.
-> > >> And this is what the current patch does both for TCG and KVM.
-> > >
-> > > If it does this for both TCG and KVM then I don't understand
-> > > this bit from the commit message:
-> > >
-> > > # Without this patch EDK II with TLS enabled crashes when hitting the first
-> > > # floating point instruction while running QEMU with --accel kvm and runs
-> > > # fine with --accel tcg.
-> > >
-> > > Shouldn't this guest crash the same way with both KVM and TCG without
-> > > this patch, because the FPU state is the same for both?
->
-> > By default `qemu-system-riscv64 --accel tcg` runs OpenSBI as firmware
-> > which enables the FPU.
-> >
-> > If you would choose a different SBI implementation which does not enable
-> > the FPU you could experience the same crash.
->
-> Ah, so KVM vs TCG is a red herring and it's actually "some guest
-> firmware doesn't enable the FPU itself, and if you run that then it will
-> fall over, whether you do it in KVM or TCG" ? That makes more sense.
->
-> I don't have an opinion on whether you want to do that or not,
-> not knowing what the riscv architecture mandates. (On Arm this
-> would be fairly clearly "the guest software is broken and
-> should be fixed", but that's because the Arm architecture
-> says you can't assume the FPU is enabled from reset.)
+The main purpose of this series is to convert the max_guest_memory_test
+into a more generic mmu_stress_test.  The basic gist of the "conversion"
+is to have the test do mprotect() on guest memory while vCPUs are
+accessing said memory, e.g. to verify KVM and mmu_notifiers are working
+as intended.
 
-RISC-V is the same. Section "3.4 Reset" states that:
+Patches 1-4 are a somewhat unexpected side quest.  The original plan was
+that patch 3 would be a single patch, but things snowballed.
 
-"All other hart state is UNSPECIFIED." (the paragraph doesn't mention
-the FS state).
+Patch 3 reworks vcpu_get_reg() to return a value instead of using an
+out-param.  This is the entire motivation for including these patches;
+having to define a variable just to bump the program counter on arm64
+annoyed me.
 
-So it's unspecified what the value is on reset. Guest software
-shouldn't assume anything about it and it does seem like a guest
-software bug.
+Patch 4 adds hardening to vcpu_{g,s}et_reg() to detect potential
+truncation, as KVM's uAPI allows for registers greater than the 64 bits
+that are supported in the "outer" selftests APIs ((vcpu_set_reg() takes a
+u64, vcpu_get_reg() now returns a u64).
 
-In saying that, we are allowed to set it then as the spec doesn't say
-it should be 0. So setting it to 0x01 (Initial) doesn't seem like a
-bad idea, as the name kind of implies that it should be 0x01 on reset
+Patch 1 is a change to KVM's uAPI headers to move the KVM_REG_SIZE
+definition to common code so that the selftests side of things doesn't
+need #ifdefs to implement the hardening in patch 4.
 
-Alistair
+Patch 2 is the truly unexpected part.  With the vcpu_get_reg() rework,
+arm64's vpmu_counter_test fails when compiled with gcc-13, and on gcc-11
+with an added "noinline".  Long story short, selftests are being compiled
+with strict aliasing enabled, which allows the compiler to optimize away
+"u64 *" => "uint64_t *" casts as u64 (unsigned long long) and uint64_t
+(unsigned long) are technically not aliases of each other.  *sigh*
 
->
-> I do think the commit message could use clarification to
-> explain this.
->
-> thanks
-> -- PMM
->
+v3:
+ - Rebased onto v6.12-rc2.
+ - Disable strict aliasing to fix the PMCR snafu.
+ - Collect reviews. [Drew]
+ - Minor changelog fixes. [Drew]
+ - Include ucall_common.h to prep for RISC-V. [Drew]
+
+v2:
+ - Rebase onto kvm/next.
+ - Add the aforementioned vcpu_get_reg() changes/disaster.
+ - Actually add arm64 support for the fancy mprotect() testcase (I did this
+   before v1, but managed to forget to include the changes when posting).
+ - Emit "mov %rax, (%rax)" on x86. [James]
+ - Add a comment to explain the fancy mprotect() vs. vCPUs logic.
+ - Drop the KVM x86 patches (applied and/or will be handled separately).
+
+v1: https://lore.kernel.org/all/20240809194335.1726916-1-seanjc at google.com
+
+Sean Christopherson (14):
+  KVM: Move KVM_REG_SIZE() definition to common uAPI header
+  KVM: selftests: Disable strict aliasing
+  KVM: selftests: Return a value from vcpu_get_reg() instead of using an
+    out-param
+  KVM: selftests: Assert that vcpu_{g,s}et_reg() won't truncate
+  KVM: selftests: Check for a potential unhandled exception iff KVM_RUN
+    succeeded
+  KVM: selftests: Rename max_guest_memory_test to mmu_stress_test
+  KVM: selftests: Only muck with SREGS on x86 in mmu_stress_test
+  KVM: selftests: Compute number of extra pages needed in
+    mmu_stress_test
+  KVM: sefltests: Explicitly include ucall_common.h in mmu_stress_test.c
+  KVM: selftests: Enable mmu_stress_test on arm64
+  KVM: selftests: Use vcpu_arch_put_guest() in mmu_stress_test
+  KVM: selftests: Precisely limit the number of guest loops in
+    mmu_stress_test
+  KVM: selftests: Add a read-only mprotect() phase to mmu_stress_test
+  KVM: selftests: Verify KVM correctly handles mprotect(PROT_READ)
+
+ arch/arm64/include/uapi/asm/kvm.h             |   3 -
+ arch/riscv/include/uapi/asm/kvm.h             |   3 -
+ include/uapi/linux/kvm.h                      |   4 +
+ tools/testing/selftests/kvm/Makefile          |  11 +-
+ .../selftests/kvm/aarch64/aarch32_id_regs.c   |  10 +-
+ .../selftests/kvm/aarch64/debug-exceptions.c  |   4 +-
+ .../selftests/kvm/aarch64/hypercalls.c        |   6 +-
+ .../selftests/kvm/aarch64/no-vgic-v3.c        |   2 +-
+ .../testing/selftests/kvm/aarch64/psci_test.c |   6 +-
+ .../selftests/kvm/aarch64/set_id_regs.c       |  18 +-
+ .../kvm/aarch64/vpmu_counter_access.c         |  19 +-
+ .../testing/selftests/kvm/include/kvm_util.h  |  10 +-
+ .../selftests/kvm/lib/aarch64/processor.c     |   8 +-
+ tools/testing/selftests/kvm/lib/kvm_util.c    |   3 +-
+ .../selftests/kvm/lib/riscv/processor.c       |  66 +++----
+ ..._guest_memory_test.c => mmu_stress_test.c} | 162 ++++++++++++++++--
+ .../testing/selftests/kvm/riscv/arch_timer.c  |   2 +-
+ .../testing/selftests/kvm/riscv/ebreak_test.c |   2 +-
+ .../selftests/kvm/riscv/sbi_pmu_test.c        |   2 +-
+ tools/testing/selftests/kvm/s390x/resets.c    |   2 +-
+ tools/testing/selftests/kvm/steal_time.c      |   3 +-
+ 21 files changed, 241 insertions(+), 105 deletions(-)
+ rename tools/testing/selftests/kvm/{max_guest_memory_test.c => mmu_stress_test.c} (60%)
+
+
+base-commit: 8cf0b93919e13d1e8d4466eb4080a4c4d9d66d7b
+-- 
+2.47.0.rc0.187.ge670bccf7e-goog
+
 
