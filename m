@@ -1,64 +1,107 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Thu, 10 Oct 2024 11:24:02 -0700
-Subject: [PATCH v13 60/85] KVM: PPC: Use __kvm_faultin_pfn() to handle page
- faults on Book3s HV
+Date: Thu, 10 Oct 2024 11:24:04 -0700
+Subject: [PATCH v13 62/85] KVM: PPC: Drop unused @kvm_ro param from kvmppc_book3s_instantiate_page()
 In-Reply-To: <20241010182427.1434605-1-seanjc@google.com>
 References: <20241010182427.1434605-1-seanjc@google.com>
-Message-ID: <20241010182427.1434605-61-seanjc@google.com>
+Message-ID: <20241010182427.1434605-63-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Replace Book3s HV's homebrewed fault-in logic with __kvm_faultin_pfn(),
-which functionally does pretty much the exact same thing.
+Drop @kvm_ro from kvmppc_book3s_instantiate_page() as it is now only
+written, and never read.
 
-Note, when the code was written, KVM indeed didn't do fast GUP without
-"!atomic && !async", but that has long since changed (KVM tries fast GUP
-for all writable mappings).
+No functional change intended.
 
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/powerpc/kvm/book3s_64_mmu_hv.c | 25 ++++---------------------
- 1 file changed, 4 insertions(+), 21 deletions(-)
+ arch/powerpc/include/asm/kvm_book3s.h  | 2 +-
+ arch/powerpc/kvm/book3s_64_mmu_radix.c | 6 ++----
+ arch/powerpc/kvm/book3s_hv_nested.c    | 4 +---
+ 3 files changed, 4 insertions(+), 8 deletions(-)
 
-diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-index 2f1d58984b41..f305395cf26e 100644
---- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
-+++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-@@ -603,27 +603,10 @@ int kvmppc_book3s_hv_page_fault(struct kvm_vcpu *vcpu,
- 	write_ok = writing;
- 	hva = gfn_to_hva_memslot(memslot, gfn);
+diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include/asm/kvm_book3s.h
+index 10618622d7ef..3d289dbe3982 100644
+--- a/arch/powerpc/include/asm/kvm_book3s.h
++++ b/arch/powerpc/include/asm/kvm_book3s.h
+@@ -203,7 +203,7 @@ extern bool kvmppc_hv_handle_set_rc(struct kvm *kvm, bool nested,
+ extern int kvmppc_book3s_instantiate_page(struct kvm_vcpu *vcpu,
+ 				unsigned long gpa,
+ 				struct kvm_memory_slot *memslot,
+-				bool writing, bool kvm_ro,
++				bool writing,
+ 				pte_t *inserted_pte, unsigned int *levelp);
+ extern int kvmppc_init_vm_radix(struct kvm *kvm);
+ extern void kvmppc_free_radix(struct kvm *kvm);
+diff --git a/arch/powerpc/kvm/book3s_64_mmu_radix.c b/arch/powerpc/kvm/book3s_64_mmu_radix.c
+index 14891d0a3b73..b3e6e73d6a08 100644
+--- a/arch/powerpc/kvm/book3s_64_mmu_radix.c
++++ b/arch/powerpc/kvm/book3s_64_mmu_radix.c
+@@ -821,7 +821,7 @@ bool kvmppc_hv_handle_set_rc(struct kvm *kvm, bool nested, bool writing,
+ int kvmppc_book3s_instantiate_page(struct kvm_vcpu *vcpu,
+ 				   unsigned long gpa,
+ 				   struct kvm_memory_slot *memslot,
+-				   bool writing, bool kvm_ro,
++				   bool writing,
+ 				   pte_t *inserted_pte, unsigned int *levelp)
+ {
+ 	struct kvm *kvm = vcpu->kvm;
+@@ -931,7 +931,6 @@ int kvmppc_book3s_radix_page_fault(struct kvm_vcpu *vcpu,
+ 	struct kvm_memory_slot *memslot;
+ 	long ret;
+ 	bool writing = !!(dsisr & DSISR_ISSTORE);
+-	bool kvm_ro = false;
  
--	/*
--	 * Do a fast check first, since __gfn_to_pfn_memslot doesn't
--	 * do it with !atomic && !async, which is how we call it.
--	 * We always ask for write permission since the common case
--	 * is that the page is writable.
--	 */
--	if (get_user_page_fast_only(hva, FOLL_WRITE, &page)) {
--		write_ok = true;
--	} else {
--		/* Call KVM generic code to do the slow-path check */
--		pfn = __gfn_to_pfn_memslot(memslot, gfn, false, NULL,
--					   writing, &write_ok);
--		if (is_error_noslot_pfn(pfn))
--			return -EFAULT;
--		page = NULL;
--		if (pfn_valid(pfn)) {
--			page = pfn_to_page(pfn);
--			if (PageReserved(page))
--				page = NULL;
--		}
--	}
-+	pfn = __kvm_faultin_pfn(memslot, gfn, writing ? FOLL_WRITE : 0,
-+				&write_ok, &page);
-+	if (is_error_noslot_pfn(pfn))
-+		return -EFAULT;
+ 	/* Check for unusual errors */
+ 	if (dsisr & DSISR_UNSUPP_MMU) {
+@@ -984,7 +983,6 @@ int kvmppc_book3s_radix_page_fault(struct kvm_vcpu *vcpu,
+ 					ea, DSISR_ISSTORE | DSISR_PROTFAULT);
+ 			return RESUME_GUEST;
+ 		}
+-		kvm_ro = true;
+ 	}
  
- 	/*
- 	 * Read the PTE from the process' radix tree and use that
+ 	/* Failed to set the reference/change bits */
+@@ -1002,7 +1000,7 @@ int kvmppc_book3s_radix_page_fault(struct kvm_vcpu *vcpu,
+ 
+ 	/* Try to insert a pte */
+ 	ret = kvmppc_book3s_instantiate_page(vcpu, gpa, memslot, writing,
+-					     kvm_ro, NULL, NULL);
++					     NULL, NULL);
+ 
+ 	if (ret == 0 || ret == -EAGAIN)
+ 		ret = RESUME_GUEST;
+diff --git a/arch/powerpc/kvm/book3s_hv_nested.c b/arch/powerpc/kvm/book3s_hv_nested.c
+index 05f5220960c6..771173509617 100644
+--- a/arch/powerpc/kvm/book3s_hv_nested.c
++++ b/arch/powerpc/kvm/book3s_hv_nested.c
+@@ -1527,7 +1527,6 @@ static long int __kvmhv_nested_page_fault(struct kvm_vcpu *vcpu,
+ 	unsigned long n_gpa, gpa, gfn, perm = 0UL;
+ 	unsigned int shift, l1_shift, level;
+ 	bool writing = !!(dsisr & DSISR_ISSTORE);
+-	bool kvm_ro = false;
+ 	long int ret;
+ 
+ 	if (!gp->l1_gr_to_hr) {
+@@ -1607,7 +1606,6 @@ static long int __kvmhv_nested_page_fault(struct kvm_vcpu *vcpu,
+ 					ea, DSISR_ISSTORE | DSISR_PROTFAULT);
+ 			return RESUME_GUEST;
+ 		}
+-		kvm_ro = true;
+ 	}
+ 
+ 	/* 2. Find the host pte for this L1 guest real address */
+@@ -1629,7 +1627,7 @@ static long int __kvmhv_nested_page_fault(struct kvm_vcpu *vcpu,
+ 	if (!pte_present(pte) || (writing && !(pte_val(pte) & _PAGE_WRITE))) {
+ 		/* No suitable pte found -> try to insert a mapping */
+ 		ret = kvmppc_book3s_instantiate_page(vcpu, gpa, memslot,
+-					writing, kvm_ro, &pte, &level);
++					writing, &pte, &level);
+ 		if (ret == -EAGAIN)
+ 			return RESUME_GUEST;
+ 		else if (ret)
 -- 
 2.47.0.rc1.288.g06298d1525-goog
 
