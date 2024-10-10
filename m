@@ -1,68 +1,69 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Thu, 10 Oct 2024 11:23:06 -0700
-Subject: [PATCH v13 04/85] KVM: x86/mmu: Skip the "try unsync" path iff the
- old SPTE was a leaf SPTE
+Date: Thu, 10 Oct 2024 11:23:07 -0700
+Subject: [PATCH v13 05/85] KVM: x86/mmu: Don't overwrite shadow-present MMU
+ SPTEs when prefaulting
 In-Reply-To: <20241010182427.1434605-1-seanjc@google.com>
 References: <20241010182427.1434605-1-seanjc@google.com>
-Message-ID: <20241010182427.1434605-5-seanjc@google.com>
+Message-ID: <20241010182427.1434605-6-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Apply make_spte()'s optimization to skip trying to unsync shadow pages if
-and only if the old SPTE was a leaf SPTE, as non-leaf SPTEs in direct MMUs
-are always writable, i.e. could trigger a false positive and incorrectly
-lead to KVM creating a SPTE without write-protecting or marking shadow
-pages unsync.
+Treat attempts to prefetch/prefault MMU SPTEs as spurious if there's an
+existing shadow-present SPTE, as overwriting a SPTE that may have been
+create by a "real" fault is at best confusing, and at worst potentially
+harmful.  E.g. mmu_try_to_unsync_pages() doesn't unsync when prefetching,
+which creates a scenario where KVM could try to replace a Writable SPTE
+with a !Writable SPTE, as sp->unsync is checked prior to acquiring
+mmu_unsync_pages_lock.
 
-This bug only affects the TDP MMU, as the shadow MMU only overwrites a
-shadow-present SPTE when synchronizing SPTEs (and only 4KiB SPTEs can be
-unsync).  Specifically, mmu_set_spte() drops any non-leaf SPTEs *before*
-calling make_spte(), whereas the TDP MMU can do a direct replacement of a
-page table with the leaf SPTE.
+Note, this applies to three of the four flavors of "prefetch" in KVM:
 
-Opportunistically update the comment to explain why skipping the unsync
-stuff is safe, as opposed to simply saying "it's someone else's problem".
+  - KVM_PRE_FAULT_MEMORY
+  - Async #PF (host or PV)
+  - Prefetching
 
-Cc: stable at vger.kernel.org
-Tested-by: Alex Benn?e <alex.bennee@linaro.org>
+The fourth flavor, SPTE synchronization, i.e. FNAME(sync_spte), _only_
+overwrites shadow-present SPTEs when calling make_spte().  But SPTE
+synchronization specifically uses mmu_spte_update(), and so naturally
+avoids the @prefetch check in mmu_set_spte().
+
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/x86/kvm/mmu/spte.c | 18 +++++++++++++-----
- 1 file changed, 13 insertions(+), 5 deletions(-)
+ arch/x86/kvm/mmu/mmu.c     | 3 +++
+ arch/x86/kvm/mmu/tdp_mmu.c | 3 +++
+ 2 files changed, 6 insertions(+)
 
-diff --git a/arch/x86/kvm/mmu/spte.c b/arch/x86/kvm/mmu/spte.c
-index 8f7eb3ad88fc..5521608077ec 100644
---- a/arch/x86/kvm/mmu/spte.c
-+++ b/arch/x86/kvm/mmu/spte.c
-@@ -226,12 +226,20 @@ bool make_spte(struct kvm_vcpu *vcpu, struct kvm_mmu_page *sp,
- 		spte |= PT_WRITABLE_MASK | shadow_mmu_writable_mask;
+diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
+index a9a23e058555..a8c64069aa89 100644
+--- a/arch/x86/kvm/mmu/mmu.c
++++ b/arch/x86/kvm/mmu/mmu.c
+@@ -2919,6 +2919,9 @@ static int mmu_set_spte(struct kvm_vcpu *vcpu, struct kvm_memory_slot *slot,
+ 	}
  
+ 	if (is_shadow_present_pte(*sptep)) {
++		if (prefetch)
++			return RET_PF_SPURIOUS;
++
  		/*
--		 * Optimization: for pte sync, if spte was writable the hash
--		 * lookup is unnecessary (and expensive). Write protection
--		 * is responsibility of kvm_mmu_get_page / kvm_mmu_sync_roots.
--		 * Same reasoning can be applied to dirty page accounting.
-+		 * When overwriting an existing leaf SPTE, and the old SPTE was
-+		 * writable, skip trying to unsync shadow pages as any relevant
-+		 * shadow pages must already be unsync, i.e. the hash lookup is
-+		 * unnecessary (and expensive).
-+		 *
-+		 * The same reasoning applies to dirty page/folio accounting;
-+		 * KVM will mark the folio dirty using the old SPTE, thus
-+		 * there's no need to immediately mark the new SPTE as dirty.
-+		 *
-+		 * Note, both cases rely on KVM not changing PFNs without first
-+		 * zapping the old SPTE, which is guaranteed by both the shadow
-+		 * MMU and the TDP MMU.
- 		 */
--		if (is_writable_pte(old_spte))
-+		if (is_last_spte(old_spte, level) && is_writable_pte(old_spte))
- 			goto out;
+ 		 * If we overwrite a PTE page pointer with a 2MB PMD, unlink
+ 		 * the parent of the now unreachable PTE.
+diff --git a/arch/x86/kvm/mmu/tdp_mmu.c b/arch/x86/kvm/mmu/tdp_mmu.c
+index 3b996c1fdaab..3c6583468742 100644
+--- a/arch/x86/kvm/mmu/tdp_mmu.c
++++ b/arch/x86/kvm/mmu/tdp_mmu.c
+@@ -1026,6 +1026,9 @@ static int tdp_mmu_map_handle_target_level(struct kvm_vcpu *vcpu,
+ 	if (WARN_ON_ONCE(sp->role.level != fault->goal_level))
+ 		return RET_PF_RETRY;
  
- 		/*
++	if (fault->prefetch && is_shadow_present_pte(iter->old_spte))
++		return RET_PF_SPURIOUS;
++
+ 	if (unlikely(!fault->slot))
+ 		new_spte = make_mmio_spte(vcpu, iter->gfn, ACC_ALL);
+ 	else
 -- 
 2.47.0.rc1.288.g06298d1525-goog
 
