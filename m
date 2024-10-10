@@ -1,79 +1,52 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Thu, 10 Oct 2024 11:23:58 -0700
-Subject: [PATCH v13 56/85] KVM: arm64: Use __kvm_faultin_pfn() to handle
- memory aborts
+Date: Thu, 10 Oct 2024 11:23:59 -0700
+Subject: [PATCH v13 57/85] KVM: RISC-V: Mark "struct page" pfns dirty iff a
+ stage-2 PTE is installed
 In-Reply-To: <20241010182427.1434605-1-seanjc@google.com>
 References: <20241010182427.1434605-1-seanjc@google.com>
-Message-ID: <20241010182427.1434605-57-seanjc@google.com>
+Message-ID: <20241010182427.1434605-58-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Convert arm64 to use __kvm_faultin_pfn()+kvm_release_faultin_page().
-Three down, six to go.
+Don't mark pages dirty if KVM bails from the page fault handler without
+installing a stage-2 mapping, i.e. if the page is guaranteed to not be
+written by the guest.
 
-Tested-by: Alex Benn?e <alex.bennee@linaro.org>
+In addition to being a (very) minor fix, this paves the way for converting
+RISC-V to use kvm_release_faultin_page().
+
+Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+Acked-by: Anup Patel <anup@brainfault.org>
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/arm64/kvm/mmu.c | 15 ++++++---------
- 1 file changed, 6 insertions(+), 9 deletions(-)
+ arch/riscv/kvm/mmu.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm64/kvm/mmu.c b/arch/arm64/kvm/mmu.c
-index ecc6c2b56c43..4054356c9712 100644
---- a/arch/arm64/kvm/mmu.c
-+++ b/arch/arm64/kvm/mmu.c
-@@ -1439,6 +1439,7 @@ static int user_mem_abort(struct kvm_vcpu *vcpu, phys_addr_t fault_ipa,
- 	long vma_pagesize, fault_granule;
- 	enum kvm_pgtable_prot prot = KVM_PGTABLE_PROT_R;
- 	struct kvm_pgtable *pgt;
-+	struct page *page;
+diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
+index b63650f9b966..06aa5a0d056d 100644
+--- a/arch/riscv/kvm/mmu.c
++++ b/arch/riscv/kvm/mmu.c
+@@ -669,7 +669,6 @@ int kvm_riscv_gstage_map(struct kvm_vcpu *vcpu,
+ 		goto out_unlock;
  
- 	if (fault_is_perm)
- 		fault_granule = kvm_vcpu_trap_get_perm_fault_granule(vcpu);
-@@ -1560,7 +1561,7 @@ static int user_mem_abort(struct kvm_vcpu *vcpu, phys_addr_t fault_ipa,
- 
- 	/*
- 	 * Read mmu_invalidate_seq so that KVM can detect if the results of
--	 * vma_lookup() or __gfn_to_pfn_memslot() become stale prior to
-+	 * vma_lookup() or __kvm_faultin_pfn() become stale prior to
- 	 * acquiring kvm->mmu_lock.
- 	 *
- 	 * Rely on mmap_read_unlock() for an implicit smp_rmb(), which pairs
-@@ -1569,8 +1570,8 @@ static int user_mem_abort(struct kvm_vcpu *vcpu, phys_addr_t fault_ipa,
- 	mmu_seq = vcpu->kvm->mmu_invalidate_seq;
- 	mmap_read_unlock(current->mm);
- 
--	pfn = __gfn_to_pfn_memslot(memslot, gfn, false, NULL,
--				   write_fault, &writable);
-+	pfn = __kvm_faultin_pfn(memslot, gfn, write_fault ? FOLL_WRITE : 0,
-+				&writable, &page);
- 	if (pfn == KVM_PFN_ERR_HWPOISON) {
- 		kvm_send_hwpoison_signal(hva, vma_shift);
- 		return 0;
-@@ -1583,7 +1584,7 @@ static int user_mem_abort(struct kvm_vcpu *vcpu, phys_addr_t fault_ipa,
- 		 * If the page was identified as device early by looking at
- 		 * the VMA flags, vma_pagesize is already representing the
- 		 * largest quantity we can map.  If instead it was mapped
--		 * via gfn_to_pfn_prot(), vma_pagesize is set to PAGE_SIZE
-+		 * via __kvm_faultin_pfn(), vma_pagesize is set to PAGE_SIZE
- 		 * and must not be upgraded.
- 		 *
- 		 * In both cases, we don't let transparent_hugepage_adjust()
-@@ -1692,11 +1693,7 @@ static int user_mem_abort(struct kvm_vcpu *vcpu, phys_addr_t fault_ipa,
- 	}
+ 	if (writable) {
+-		kvm_set_pfn_dirty(hfn);
+ 		mark_page_dirty(kvm, gfn);
+ 		ret = gstage_map_page(kvm, pcache, gpa, hfn << PAGE_SHIFT,
+ 				      vma_pagesize, false, true);
+@@ -682,6 +681,9 @@ int kvm_riscv_gstage_map(struct kvm_vcpu *vcpu,
+ 		kvm_err("Failed to map in G-stage\n");
  
  out_unlock:
--	if (writable && !ret)
--		kvm_release_pfn_dirty(pfn);
--	else
--		kvm_release_pfn_clean(pfn);
--
-+	kvm_release_faultin_page(kvm, page, !!ret, writable);
- 	read_unlock(&kvm->mmu_lock);
- 
- 	/* Mark the page dirty only if the fault is handled successfully */
++	if ((!ret || ret == -EEXIST) && writable)
++		kvm_set_pfn_dirty(hfn);
++
+ 	spin_unlock(&kvm->mmu_lock);
+ 	kvm_set_pfn_accessed(hfn);
+ 	kvm_release_pfn_clean(hfn);
 -- 
 2.47.0.rc1.288.g06298d1525-goog
 
