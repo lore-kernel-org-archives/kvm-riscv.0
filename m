@@ -1,91 +1,75 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Thu, 10 Oct 2024 11:23:45 -0700
-Subject: [PATCH v13 43/85] KVM: Add kvm_faultin_pfn() to specifically service
- guest page faults
+Date: Thu, 10 Oct 2024 11:23:46 -0700
+Subject: [PATCH v13 44/85] KVM: x86/mmu: Convert page fault paths to kvm_faultin_pfn()
 In-Reply-To: <20241010182427.1434605-1-seanjc@google.com>
 References: <20241010182427.1434605-1-seanjc@google.com>
-Message-ID: <20241010182427.1434605-44-seanjc@google.com>
+Message-ID: <20241010182427.1434605-45-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add a new dedicated API, kvm_faultin_pfn(), for servicing guest page
-faults, i.e. for getting pages/pfns that will be mapped into the guest via
-an mmu_notifier-protected KVM MMU.  Keep struct kvm_follow_pfn buried in
-internal code, as having __kvm_faultin_pfn() take "out" params is actually
-cleaner for several architectures, e.g. it allows the caller to have its
-own "page fault" structure without having to marshal data to/from
-kvm_follow_pfn.
+Convert KVM x86 to use the recently introduced __kvm_faultin_pfn().
+Opportunstically capture the refcounted_page grabbed by KVM for use in
+future changes.
 
-Long term, common KVM would ideally provide a kvm_page_fault structure, a
-la x86's struct of the same name.  But all architectures need to be
-converted to a common API before that can happen.
+No functional change intended.
 
 Tested-by: Alex Benn?e <alex.bennee@linaro.org>
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- include/linux/kvm_host.h | 12 ++++++++++++
- virt/kvm/kvm_main.c      | 22 ++++++++++++++++++++++
- 2 files changed, 34 insertions(+)
+ arch/x86/kvm/mmu/mmu.c          | 14 ++++++++++----
+ arch/x86/kvm/mmu/mmu_internal.h |  1 +
+ 2 files changed, 11 insertions(+), 4 deletions(-)
 
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index 346bfef14e5a..3b9afb40e935 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -1231,6 +1231,18 @@ static inline void kvm_release_page_unused(struct page *page)
- void kvm_release_page_clean(struct page *page);
- void kvm_release_page_dirty(struct page *page);
- 
-+kvm_pfn_t __kvm_faultin_pfn(const struct kvm_memory_slot *slot, gfn_t gfn,
-+			    unsigned int foll, bool *writable,
-+			    struct page **refcounted_page);
-+
-+static inline kvm_pfn_t kvm_faultin_pfn(struct kvm_vcpu *vcpu, gfn_t gfn,
-+					bool write, bool *writable,
-+					struct page **refcounted_page)
-+{
-+	return __kvm_faultin_pfn(kvm_vcpu_gfn_to_memslot(vcpu, gfn), gfn,
-+				 write ? FOLL_WRITE : 0, writable, refcounted_page);
-+}
-+
- kvm_pfn_t gfn_to_pfn(struct kvm *kvm, gfn_t gfn);
- kvm_pfn_t gfn_to_pfn_prot(struct kvm *kvm, gfn_t gfn, bool write_fault,
- 		      bool *writable);
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 6dcb4f0eed3e..696d5e429b3e 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -3098,6 +3098,28 @@ kvm_pfn_t kvm_vcpu_gfn_to_pfn(struct kvm_vcpu *vcpu, gfn_t gfn)
- }
- EXPORT_SYMBOL_GPL(kvm_vcpu_gfn_to_pfn);
- 
-+kvm_pfn_t __kvm_faultin_pfn(const struct kvm_memory_slot *slot, gfn_t gfn,
-+			    unsigned int foll, bool *writable,
-+			    struct page **refcounted_page)
-+{
-+	struct kvm_follow_pfn kfp = {
-+		.slot = slot,
-+		.gfn = gfn,
-+		.flags = foll,
-+		.map_writable = writable,
-+		.refcounted_page = refcounted_page,
-+	};
-+
-+	if (WARN_ON_ONCE(!writable || !refcounted_page))
-+		return KVM_PFN_ERR_FAULT;
-+
-+	*writable = false;
-+	*refcounted_page = NULL;
-+
-+	return kvm_follow_pfn(&kfp);
-+}
-+EXPORT_SYMBOL_GPL(__kvm_faultin_pfn);
-+
- int kvm_prefetch_pages(struct kvm_memory_slot *slot, gfn_t gfn,
- 		       struct page **pages, int nr_pages)
+diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
+index f730870887dd..2e2076287aaf 100644
+--- a/arch/x86/kvm/mmu/mmu.c
++++ b/arch/x86/kvm/mmu/mmu.c
+@@ -4416,11 +4416,14 @@ static int kvm_mmu_faultin_pfn_private(struct kvm_vcpu *vcpu,
+ static int __kvm_mmu_faultin_pfn(struct kvm_vcpu *vcpu,
+ 				 struct kvm_page_fault *fault)
  {
++	unsigned int foll = fault->write ? FOLL_WRITE : 0;
++
+ 	if (fault->is_private)
+ 		return kvm_mmu_faultin_pfn_private(vcpu, fault);
+ 
+-	fault->pfn = __gfn_to_pfn_memslot(fault->slot, fault->gfn, false, true,
+-					  fault->write, &fault->map_writable);
++	foll |= FOLL_NOWAIT;
++	fault->pfn = __kvm_faultin_pfn(fault->slot, fault->gfn, foll,
++				       &fault->map_writable, &fault->refcounted_page);
+ 
+ 	/*
+ 	 * If resolving the page failed because I/O is needed to fault-in the
+@@ -4447,8 +4450,11 @@ static int __kvm_mmu_faultin_pfn(struct kvm_vcpu *vcpu,
+ 	 * to wait for IO.  Note, gup always bails if it is unable to quickly
+ 	 * get a page and a fatal signal, i.e. SIGKILL, is pending.
+ 	 */
+-	fault->pfn = __gfn_to_pfn_memslot(fault->slot, fault->gfn, true, true,
+-					  fault->write, &fault->map_writable);
++	foll |= FOLL_INTERRUPTIBLE;
++	foll &= ~FOLL_NOWAIT;
++	fault->pfn = __kvm_faultin_pfn(fault->slot, fault->gfn, foll,
++				       &fault->map_writable, &fault->refcounted_page);
++
+ 	return RET_PF_CONTINUE;
+ }
+ 
+diff --git a/arch/x86/kvm/mmu/mmu_internal.h b/arch/x86/kvm/mmu/mmu_internal.h
+index 59e600f6ff9d..fabbea504a69 100644
+--- a/arch/x86/kvm/mmu/mmu_internal.h
++++ b/arch/x86/kvm/mmu/mmu_internal.h
+@@ -238,6 +238,7 @@ struct kvm_page_fault {
+ 	/* Outputs of kvm_mmu_faultin_pfn().  */
+ 	unsigned long mmu_seq;
+ 	kvm_pfn_t pfn;
++	struct page *refcounted_page;
+ 	bool map_writable;
+ 
+ 	/*
 -- 
 2.47.0.rc1.288.g06298d1525-goog
 
