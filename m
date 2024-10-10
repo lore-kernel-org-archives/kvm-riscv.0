@@ -1,192 +1,81 @@
-From: Sean Christopherson <seanjc@google.com>
-Date: Wed,  9 Oct 2024 08:49:53 -0700
-Subject: [PATCH v3 14/14] KVM: selftests: Verify KVM correctly handles mprotect(PROT_READ)
-In-Reply-To: <20241009154953.1073471-1-seanjc@google.com>
-References: <20241009154953.1073471-1-seanjc@google.com>
-Message-ID: <20241009154953.1073471-15-seanjc@google.com>
+From: Anup Patel <anup@brainfault.org>
+Date: Thu, 10 Oct 2024 17:11:43 +0530
+Subject: [PATCH v3 01/14] KVM: Move KVM_REG_SIZE() definition to common
+ uAPI header
+In-Reply-To: <20241009154953.1073471-2-seanjc@google.com>
+References: <20241009154953.1073471-1-seanjc@google.com> <20241009154953.1073471-2-seanjc@google.com>
+Message-ID: <CAAhSdy0Z27X9KMF-ps97-s5==7xdA=6B84Mxa2b-um_t+NjWkg@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add two phases to mmu_stress_test to verify that KVM correctly handles
-guest memory that was writable, and then made read-only in the primary MMU,
-and then made writable again.
+On Wed, Oct 9, 2024 at 9:19?PM Sean Christopherson <seanjc@google.com> wrote:
+>
+> Define KVM_REG_SIZE() in the common kvm.h header, and delete the arm64 and
+> RISC-V versions.  As evidenced by the surrounding definitions, all aspects
+> of the register size encoding are generic, i.e. RISC-V should have moved
+> arm64's definition to common code instead of copy+pasting.
+>
+> Signed-off-by: Sean Christopherson <seanjc@google.com>
 
-Add bonus coverage for x86 and arm64 to verify that all of guest memory was
-marked read-only.  Making forward progress (without making memory writable)
-requires arch specific code to skip over the faulting instruction, but the
-test can at least verify each vCPU's starting page was made read-only for
-other architectures.
+For KVM RISC-V:
+Acked-by: Anup Patel <anup@brainfault.org>
 
-Signed-off-by: Sean Christopherson <seanjc@google.com>
----
- tools/testing/selftests/kvm/mmu_stress_test.c | 104 +++++++++++++++++-
- 1 file changed, 101 insertions(+), 3 deletions(-)
+Thanks,
+Anup
 
-diff --git a/tools/testing/selftests/kvm/mmu_stress_test.c b/tools/testing/selftests/kvm/mmu_stress_test.c
-index 0918fade9267..d9c76b4c0d88 100644
---- a/tools/testing/selftests/kvm/mmu_stress_test.c
-+++ b/tools/testing/selftests/kvm/mmu_stress_test.c
-@@ -17,6 +17,8 @@
- #include "processor.h"
- #include "ucall_common.h"
- 
-+static bool mprotect_ro_done;
-+
- static void guest_code(uint64_t start_gpa, uint64_t end_gpa, uint64_t stride)
- {
- 	uint64_t gpa;
-@@ -32,6 +34,42 @@ static void guest_code(uint64_t start_gpa, uint64_t end_gpa, uint64_t stride)
- 		*((volatile uint64_t *)gpa);
- 	GUEST_SYNC(2);
- 
-+	/*
-+	 * Write to the region while mprotect(PROT_READ) is underway.  Keep
-+	 * looping until the memory is guaranteed to be read-only, otherwise
-+	 * vCPUs may complete their writes and advance to the next stage
-+	 * prematurely.
-+	 *
-+	 * For architectures that support skipping the faulting instruction,
-+	 * generate the store via inline assembly to ensure the exact length
-+	 * of the instruction is known and stable (vcpu_arch_put_guest() on
-+	 * fixed-length architectures should work, but the cost of paranoia
-+	 * is low in this case).  For x86, hand-code the exact opcode so that
-+	 * there is no room for variability in the generated instruction.
-+	 */
-+	do {
-+		for (gpa = start_gpa; gpa < end_gpa; gpa += stride)
-+#ifdef __x86_64__
-+			asm volatile(".byte 0x48,0x89,0x00" :: "a"(gpa) : "memory"); /* mov %rax, (%rax) */
-+#elif defined(__aarch64__)
-+			asm volatile("str %0, [%0]" :: "r" (gpa) : "memory");
-+#else
-+			vcpu_arch_put_guest(*((volatile uint64_t *)gpa), gpa);
-+#endif
-+	} while (!READ_ONCE(mprotect_ro_done));
-+
-+	/*
-+	 * Only architectures that write the entire range can explicitly sync,
-+	 * as other architectures will be stuck on the write fault.
-+	 */
-+#if defined(__x86_64__) || defined(__aarch64__)
-+	GUEST_SYNC(3);
-+#endif
-+
-+	for (gpa = start_gpa; gpa < end_gpa; gpa += stride)
-+		vcpu_arch_put_guest(*((volatile uint64_t *)gpa), gpa);
-+	GUEST_SYNC(4);
-+
- 	GUEST_ASSERT(0);
- }
- 
-@@ -79,6 +117,7 @@ static void *vcpu_worker(void *data)
- 	struct vcpu_info *info = data;
- 	struct kvm_vcpu *vcpu = info->vcpu;
- 	struct kvm_vm *vm = vcpu->vm;
-+	int r;
- 
- 	vcpu_args_set(vcpu, 3, info->start_gpa, info->end_gpa, vm->page_size);
- 
-@@ -101,6 +140,57 @@ static void *vcpu_worker(void *data)
- 
- 	/* Stage 2, read all of guest memory, which is now read-only. */
- 	run_vcpu(vcpu, 2);
-+
-+	/*
-+	 * Stage 3, write guest memory and verify KVM returns -EFAULT for once
-+	 * the mprotect(PROT_READ) lands.  Only architectures that support
-+	 * validating *all* of guest memory sync for this stage, as vCPUs will
-+	 * be stuck on the faulting instruction for other architectures.  Go to
-+	 * stage 3 without a rendezvous
-+	 */
-+	do {
-+		r = _vcpu_run(vcpu);
-+	} while (!r);
-+	TEST_ASSERT(r == -1 && errno == EFAULT,
-+		    "Expected EFAULT on write to RO memory, got r = %d, errno = %d", r, errno);
-+
-+#if defined(__x86_64__) || defined(__aarch64__)
-+	/*
-+	 * Verify *all* writes from the guest hit EFAULT due to the VMA now
-+	 * being read-only.  x86 and arm64 only at this time as skipping the
-+	 * instruction that hits the EFAULT requires advancing the program
-+	 * counter, which is arch specific and relies on inline assembly.
-+	 */
-+#ifdef __x86_64__
-+	vcpu->run->kvm_valid_regs = KVM_SYNC_X86_REGS;
-+#endif
-+	for (;;) {
-+		r = _vcpu_run(vcpu);
-+		if (!r)
-+			break;
-+		TEST_ASSERT_EQ(errno, EFAULT);
-+#if defined(__x86_64__)
-+		WRITE_ONCE(vcpu->run->kvm_dirty_regs, KVM_SYNC_X86_REGS);
-+		vcpu->run->s.regs.regs.rip += 3;
-+#elif defined(__aarch64__)
-+		vcpu_set_reg(vcpu, ARM64_CORE_REG(regs.pc),
-+			     vcpu_get_reg(vcpu, ARM64_CORE_REG(regs.pc)) + 4);
-+#endif
-+
-+	}
-+	assert_sync_stage(vcpu, 3);
-+#endif /* __x86_64__ || __aarch64__ */
-+	rendezvous_with_boss();
-+
-+	/*
-+	 * Stage 4.  Run to completion, waiting for mprotect(PROT_WRITE) to
-+	 * make the memory writable again.
-+	 */
-+	do {
-+		r = _vcpu_run(vcpu);
-+	} while (r && errno == EFAULT);
-+	TEST_ASSERT_EQ(r, 0);
-+	assert_sync_stage(vcpu, 4);
- 	rendezvous_with_boss();
- 
- 	return NULL;
-@@ -183,7 +273,7 @@ int main(int argc, char *argv[])
- 	const uint64_t start_gpa = SZ_4G;
- 	const int first_slot = 1;
- 
--	struct timespec time_start, time_run1, time_reset, time_run2, time_ro;
-+	struct timespec time_start, time_run1, time_reset, time_run2, time_ro, time_rw;
- 	uint64_t max_gpa, gpa, slot_size, max_mem, i;
- 	int max_slots, slot, opt, fd;
- 	bool hugepages = false;
-@@ -288,19 +378,27 @@ int main(int argc, char *argv[])
- 	rendezvous_with_vcpus(&time_run2, "run 2");
- 
- 	mprotect(mem, slot_size, PROT_READ);
-+	usleep(10);
-+	mprotect_ro_done = true;
-+	sync_global_to_guest(vm, mprotect_ro_done);
-+
- 	rendezvous_with_vcpus(&time_ro, "mprotect RO");
-+	mprotect(mem, slot_size, PROT_READ | PROT_WRITE);
-+	rendezvous_with_vcpus(&time_rw, "mprotect RW");
- 
-+	time_rw    = timespec_sub(time_rw,     time_ro);
- 	time_ro    = timespec_sub(time_ro,     time_run2);
- 	time_run2  = timespec_sub(time_run2,   time_reset);
- 	time_reset = timespec_sub(time_reset,  time_run1);
- 	time_run1  = timespec_sub(time_run1,   time_start);
- 
- 	pr_info("run1 = %ld.%.9lds, reset = %ld.%.9lds, run2 = %ld.%.9lds, "
--		"ro = %ld.%.9lds\n",
-+		"ro = %ld.%.9lds, rw = %ld.%.9lds\n",
- 		time_run1.tv_sec, time_run1.tv_nsec,
- 		time_reset.tv_sec, time_reset.tv_nsec,
- 		time_run2.tv_sec, time_run2.tv_nsec,
--		time_ro.tv_sec, time_ro.tv_nsec);
-+		time_ro.tv_sec, time_ro.tv_nsec,
-+		time_rw.tv_sec, time_rw.tv_nsec);
- 
- 	/*
- 	 * Delete even numbered slots (arbitrary) and unmap the first half of
--- 
-2.47.0.rc0.187.ge670bccf7e-goog
-
+> ---
+>  arch/arm64/include/uapi/asm/kvm.h | 3 ---
+>  arch/riscv/include/uapi/asm/kvm.h | 3 ---
+>  include/uapi/linux/kvm.h          | 4 ++++
+>  3 files changed, 4 insertions(+), 6 deletions(-)
+>
+> diff --git a/arch/arm64/include/uapi/asm/kvm.h b/arch/arm64/include/uapi/asm/kvm.h
+> index 964df31da975..80b26134e59e 100644
+> --- a/arch/arm64/include/uapi/asm/kvm.h
+> +++ b/arch/arm64/include/uapi/asm/kvm.h
+> @@ -43,9 +43,6 @@
+>  #define KVM_COALESCED_MMIO_PAGE_OFFSET 1
+>  #define KVM_DIRTY_LOG_PAGE_OFFSET 64
+>
+> -#define KVM_REG_SIZE(id)                                               \
+> -       (1U << (((id) & KVM_REG_SIZE_MASK) >> KVM_REG_SIZE_SHIFT))
+> -
+>  struct kvm_regs {
+>         struct user_pt_regs regs;       /* sp = sp_el0 */
+>
+> diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
+> index e97db3296456..4f8d0c04a47b 100644
+> --- a/arch/riscv/include/uapi/asm/kvm.h
+> +++ b/arch/riscv/include/uapi/asm/kvm.h
+> @@ -207,9 +207,6 @@ struct kvm_riscv_sbi_sta {
+>  #define KVM_RISCV_TIMER_STATE_OFF      0
+>  #define KVM_RISCV_TIMER_STATE_ON       1
+>
+> -#define KVM_REG_SIZE(id)               \
+> -       (1U << (((id) & KVM_REG_SIZE_MASK) >> KVM_REG_SIZE_SHIFT))
+> -
+>  /* If you need to interpret the index values, here is the key: */
+>  #define KVM_REG_RISCV_TYPE_MASK                0x00000000FF000000
+>  #define KVM_REG_RISCV_TYPE_SHIFT       24
+> diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
+> index 637efc055145..9deeb13e3e01 100644
+> --- a/include/uapi/linux/kvm.h
+> +++ b/include/uapi/linux/kvm.h
+> @@ -1070,6 +1070,10 @@ struct kvm_dirty_tlb {
+>
+>  #define KVM_REG_SIZE_SHIFT     52
+>  #define KVM_REG_SIZE_MASK      0x00f0000000000000ULL
+> +
+> +#define KVM_REG_SIZE(id)               \
+> +       (1U << (((id) & KVM_REG_SIZE_MASK) >> KVM_REG_SIZE_SHIFT))
+> +
+>  #define KVM_REG_SIZE_U8                0x0000000000000000ULL
+>  #define KVM_REG_SIZE_U16       0x0010000000000000ULL
+>  #define KVM_REG_SIZE_U32       0x0020000000000000ULL
+> --
+> 2.47.0.rc0.187.ge670bccf7e-goog
+>
 
