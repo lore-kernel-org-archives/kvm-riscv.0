@@ -1,83 +1,79 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Thu, 10 Oct 2024 11:23:57 -0700
-Subject: [PATCH v13 55/85] KVM: arm64: Mark "struct page" pfns accessed/dirty
- before dropping mmu_lock
+Date: Thu, 10 Oct 2024 11:23:58 -0700
+Subject: [PATCH v13 56/85] KVM: arm64: Use __kvm_faultin_pfn() to handle
+ memory aborts
 In-Reply-To: <20241010182427.1434605-1-seanjc@google.com>
 References: <20241010182427.1434605-1-seanjc@google.com>
-Message-ID: <20241010182427.1434605-56-seanjc@google.com>
+Message-ID: <20241010182427.1434605-57-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Mark pages/folios accessed+dirty prior to dropping mmu_lock, as marking a
-page/folio dirty after it has been written back can make some filesystems
-unhappy (backing KVM guests will such filesystem files is uncommon, and
-the race is minuscule, hence the lack of complaints).
+Convert arm64 to use __kvm_faultin_pfn()+kvm_release_faultin_page().
+Three down, six to go.
 
-While scary sounding, practically speaking the worst case scenario is that
-KVM would trigger this WARN in filemap_unaccount_folio():
-
-        /*
-         * At this point folio must be either written or cleaned by
-         * truncate.  Dirty folio here signals a bug and loss of
-         * unwritten data - on ordinary filesystems.
-         *
-         * But it's harmless on in-memory filesystems like tmpfs; and can
-         * occur when a driver which did get_user_pages() sets page dirty
-         * before putting it, while the inode is being finally evicted.
-         *
-         * Below fixes dirty accounting after removing the folio entirely
-         * but leaves the dirty flag set: it has no effect for truncated
-         * folio and anyway will be cleared before returning folio to
-         * buddy allocator.
-         */
-        if (WARN_ON_ONCE(folio_test_dirty(folio) &&
-                         mapping_can_writeback(mapping)))
-                folio_account_cleaned(folio, inode_to_wb(mapping->host));
-
-KVM won't actually write memory because the stage-2 mappings are protected
-by the mmu_notifier, i.e. there is no risk of loss of data, even if the
-VM were backed by memory that needs writeback.
-
-See the link below for additional details.
-
-This will also allow converting arm64 to kvm_release_faultin_page(), which
-requires that mmu_lock be held (for the aforementioned reason).
-
-Link: https://lore.kernel.org/all/cover.1683044162.git.lstoakes at gmail.com
+Tested-by: Alex Benn?e <alex.bennee@linaro.org>
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/arm64/kvm/mmu.c | 10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
+ arch/arm64/kvm/mmu.c | 15 ++++++---------
+ 1 file changed, 6 insertions(+), 9 deletions(-)
 
 diff --git a/arch/arm64/kvm/mmu.c b/arch/arm64/kvm/mmu.c
-index dd221587fcca..ecc6c2b56c43 100644
+index ecc6c2b56c43..4054356c9712 100644
 --- a/arch/arm64/kvm/mmu.c
 +++ b/arch/arm64/kvm/mmu.c
-@@ -1692,15 +1692,17 @@ static int user_mem_abort(struct kvm_vcpu *vcpu, phys_addr_t fault_ipa,
+@@ -1439,6 +1439,7 @@ static int user_mem_abort(struct kvm_vcpu *vcpu, phys_addr_t fault_ipa,
+ 	long vma_pagesize, fault_granule;
+ 	enum kvm_pgtable_prot prot = KVM_PGTABLE_PROT_R;
+ 	struct kvm_pgtable *pgt;
++	struct page *page;
+ 
+ 	if (fault_is_perm)
+ 		fault_granule = kvm_vcpu_trap_get_perm_fault_granule(vcpu);
+@@ -1560,7 +1561,7 @@ static int user_mem_abort(struct kvm_vcpu *vcpu, phys_addr_t fault_ipa,
+ 
+ 	/*
+ 	 * Read mmu_invalidate_seq so that KVM can detect if the results of
+-	 * vma_lookup() or __gfn_to_pfn_memslot() become stale prior to
++	 * vma_lookup() or __kvm_faultin_pfn() become stale prior to
+ 	 * acquiring kvm->mmu_lock.
+ 	 *
+ 	 * Rely on mmap_read_unlock() for an implicit smp_rmb(), which pairs
+@@ -1569,8 +1570,8 @@ static int user_mem_abort(struct kvm_vcpu *vcpu, phys_addr_t fault_ipa,
+ 	mmu_seq = vcpu->kvm->mmu_invalidate_seq;
+ 	mmap_read_unlock(current->mm);
+ 
+-	pfn = __gfn_to_pfn_memslot(memslot, gfn, false, NULL,
+-				   write_fault, &writable);
++	pfn = __kvm_faultin_pfn(memslot, gfn, write_fault ? FOLL_WRITE : 0,
++				&writable, &page);
+ 	if (pfn == KVM_PFN_ERR_HWPOISON) {
+ 		kvm_send_hwpoison_signal(hva, vma_shift);
+ 		return 0;
+@@ -1583,7 +1584,7 @@ static int user_mem_abort(struct kvm_vcpu *vcpu, phys_addr_t fault_ipa,
+ 		 * If the page was identified as device early by looking at
+ 		 * the VMA flags, vma_pagesize is already representing the
+ 		 * largest quantity we can map.  If instead it was mapped
+-		 * via gfn_to_pfn_prot(), vma_pagesize is set to PAGE_SIZE
++		 * via __kvm_faultin_pfn(), vma_pagesize is set to PAGE_SIZE
+ 		 * and must not be upgraded.
+ 		 *
+ 		 * In both cases, we don't let transparent_hugepage_adjust()
+@@ -1692,11 +1693,7 @@ static int user_mem_abort(struct kvm_vcpu *vcpu, phys_addr_t fault_ipa,
  	}
  
  out_unlock:
-+	if (writable && !ret)
-+		kvm_release_pfn_dirty(pfn);
-+	else
-+		kvm_release_pfn_clean(pfn);
-+
+-	if (writable && !ret)
+-		kvm_release_pfn_dirty(pfn);
+-	else
+-		kvm_release_pfn_clean(pfn);
+-
++	kvm_release_faultin_page(kvm, page, !!ret, writable);
  	read_unlock(&kvm->mmu_lock);
  
  	/* Mark the page dirty only if the fault is handled successfully */
--	if (writable && !ret) {
--		kvm_set_pfn_dirty(pfn);
-+	if (writable && !ret)
- 		mark_page_dirty_in_slot(kvm, memslot, gfn);
--	}
- 
--	kvm_release_pfn_clean(pfn);
- 	return ret != -EAGAIN ? ret : 0;
- }
- 
 -- 
 2.47.0.rc1.288.g06298d1525-goog
 
