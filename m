@@ -1,146 +1,71 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Thu, 10 Oct 2024 11:23:08 -0700
-Subject: [PATCH v13 06/85] KVM: x86/mmu: Invert @can_unsync and renamed to @synchronizing
+Date: Thu, 10 Oct 2024 11:23:09 -0700
+Subject: [PATCH v13 07/85] KVM: x86/mmu: Mark new SPTE as Accessed when
+ synchronizing existing SPTE
 In-Reply-To: <20241010182427.1434605-1-seanjc@google.com>
 References: <20241010182427.1434605-1-seanjc@google.com>
-Message-ID: <20241010182427.1434605-7-seanjc@google.com>
+Message-ID: <20241010182427.1434605-8-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Invert the polarity of "can_unsync" and rename the parameter to
-"synchronizing" to allow a future change to set the Accessed bit if KVM
-is synchronizing an existing SPTE.  Querying "can_unsync" in that case is
-nonsensical, as the fact that KVM can't unsync SPTEs doesn't provide any
-justification for setting the Accessed bit.
+Set the Accessed bit when making a "new" SPTE during SPTE synchronization,
+as _clearing_ the Accessed bit is counter-productive, and even if the
+Accessed bit wasn't set in the old SPTE, odds are very good the guest will
+access the page in the near future, as the most common case where KVM
+synchronizes a shadow-present SPTE is when the guest is making the gPTE
+read-only for Copy-on-Write (CoW).
 
+Preserving the Accessed bit will allow dropping the logic that propagates
+the Accessed bit to the underlying struct page when overwriting an existing
+SPTE, without undue risk of regressing page aging.
+
+Note, KVM's current behavior is very deliberate, as SPTE synchronization
+was the only "speculative" access type as of commit 947da5383069 ("KVM:
+MMU: Set the accessed bit on non-speculative shadow ptes").
+
+But, much has changed since 2008, and more changes are on the horizon.
+Spurious clearing of the Accessed (and Dirty) was mitigated by commit
+e6722d9211b2 ("KVM: x86/mmu: Reduce the update to the spte in
+FNAME(sync_spte)"), which changed FNAME(sync_spte) to only overwrite SPTEs
+if the protections are actually changing.  I.e. KVM is already preserving
+Accessed information for SPTEs that aren't dropping protections.
+
+And with the aforementioned future change to NOT mark the page/folio as
+accessed, KVM's SPTEs will become the "source of truth" so to speak, in
+which case clearing the Accessed bit outside of page aging becomes very
+undesirable.
+
+Suggested-by: Yan Zhao <yan.y.zhao@intel.com>
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/x86/kvm/mmu/mmu.c          | 12 ++++++------
- arch/x86/kvm/mmu/mmu_internal.h |  2 +-
- arch/x86/kvm/mmu/paging_tmpl.h  |  2 +-
- arch/x86/kvm/mmu/spte.c         |  4 ++--
- arch/x86/kvm/mmu/spte.h         |  2 +-
- arch/x86/kvm/mmu/tdp_mmu.c      |  4 ++--
- 6 files changed, 13 insertions(+), 13 deletions(-)
+ arch/x86/kvm/mmu/spte.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
-index a8c64069aa89..0f21d6f76cab 100644
---- a/arch/x86/kvm/mmu/mmu.c
-+++ b/arch/x86/kvm/mmu/mmu.c
-@@ -2795,7 +2795,7 @@ static void kvm_unsync_page(struct kvm *kvm, struct kvm_mmu_page *sp)
-  * be write-protected.
-  */
- int mmu_try_to_unsync_pages(struct kvm *kvm, const struct kvm_memory_slot *slot,
--			    gfn_t gfn, bool can_unsync, bool prefetch)
-+			    gfn_t gfn, bool synchronizing, bool prefetch)
- {
- 	struct kvm_mmu_page *sp;
- 	bool locked = false;
-@@ -2810,12 +2810,12 @@ int mmu_try_to_unsync_pages(struct kvm *kvm, const struct kvm_memory_slot *slot,
- 
- 	/*
- 	 * The page is not write-tracked, mark existing shadow pages unsync
--	 * unless KVM is synchronizing an unsync SP (can_unsync = false).  In
--	 * that case, KVM must complete emulation of the guest TLB flush before
--	 * allowing shadow pages to become unsync (writable by the guest).
-+	 * unless KVM is synchronizing an unsync SP.  In that case, KVM must
-+	 * complete emulation of the guest TLB flush before allowing shadow
-+	 * pages to become unsync (writable by the guest).
- 	 */
- 	for_each_gfn_valid_sp_with_gptes(kvm, sp, gfn) {
--		if (!can_unsync)
-+		if (synchronizing)
- 			return -EPERM;
- 
- 		if (sp->unsync)
-@@ -2941,7 +2941,7 @@ static int mmu_set_spte(struct kvm_vcpu *vcpu, struct kvm_memory_slot *slot,
- 	}
- 
- 	wrprot = make_spte(vcpu, sp, slot, pte_access, gfn, pfn, *sptep, prefetch,
--			   true, host_writable, &spte);
-+			   false, host_writable, &spte);
- 
- 	if (*sptep == spte) {
- 		ret = RET_PF_SPURIOUS;
-diff --git a/arch/x86/kvm/mmu/mmu_internal.h b/arch/x86/kvm/mmu/mmu_internal.h
-index c98827840e07..4da83544c4e1 100644
---- a/arch/x86/kvm/mmu/mmu_internal.h
-+++ b/arch/x86/kvm/mmu/mmu_internal.h
-@@ -164,7 +164,7 @@ static inline gfn_t gfn_round_for_level(gfn_t gfn, int level)
- }
- 
- int mmu_try_to_unsync_pages(struct kvm *kvm, const struct kvm_memory_slot *slot,
--			    gfn_t gfn, bool can_unsync, bool prefetch);
-+			    gfn_t gfn, bool synchronizing, bool prefetch);
- 
- void kvm_mmu_gfn_disallow_lpage(const struct kvm_memory_slot *slot, gfn_t gfn);
- void kvm_mmu_gfn_allow_lpage(const struct kvm_memory_slot *slot, gfn_t gfn);
-diff --git a/arch/x86/kvm/mmu/paging_tmpl.h b/arch/x86/kvm/mmu/paging_tmpl.h
-index ae7d39ff2d07..6e7bd8921c6f 100644
---- a/arch/x86/kvm/mmu/paging_tmpl.h
-+++ b/arch/x86/kvm/mmu/paging_tmpl.h
-@@ -963,7 +963,7 @@ static int FNAME(sync_spte)(struct kvm_vcpu *vcpu, struct kvm_mmu_page *sp, int
- 	host_writable = spte & shadow_host_writable_mask;
- 	slot = kvm_vcpu_gfn_to_memslot(vcpu, gfn);
- 	make_spte(vcpu, sp, slot, pte_access, gfn,
--		  spte_to_pfn(spte), spte, true, false,
-+		  spte_to_pfn(spte), spte, true, true,
- 		  host_writable, &spte);
- 
- 	return mmu_spte_update(sptep, spte);
 diff --git a/arch/x86/kvm/mmu/spte.c b/arch/x86/kvm/mmu/spte.c
-index 5521608077ec..0e47fea1a2d9 100644
+index 0e47fea1a2d9..618059b30b8b 100644
 --- a/arch/x86/kvm/mmu/spte.c
 +++ b/arch/x86/kvm/mmu/spte.c
-@@ -157,7 +157,7 @@ bool spte_has_volatile_bits(u64 spte)
- bool make_spte(struct kvm_vcpu *vcpu, struct kvm_mmu_page *sp,
- 	       const struct kvm_memory_slot *slot,
- 	       unsigned int pte_access, gfn_t gfn, kvm_pfn_t pfn,
--	       u64 old_spte, bool prefetch, bool can_unsync,
-+	       u64 old_spte, bool prefetch, bool synchronizing,
- 	       bool host_writable, u64 *new_spte)
- {
- 	int level = sp->role.level;
-@@ -248,7 +248,7 @@ bool make_spte(struct kvm_vcpu *vcpu, struct kvm_mmu_page *sp,
- 		 * e.g. it's write-tracked (upper-level SPs) or has one or more
- 		 * shadow pages and unsync'ing pages is not allowed.
- 		 */
--		if (mmu_try_to_unsync_pages(vcpu->kvm, slot, gfn, can_unsync, prefetch)) {
-+		if (mmu_try_to_unsync_pages(vcpu->kvm, slot, gfn, synchronizing, prefetch)) {
- 			wrprot = true;
- 			pte_access &= ~ACC_WRITE_MASK;
- 			spte &= ~(PT_WRITABLE_MASK | shadow_mmu_writable_mask);
-diff --git a/arch/x86/kvm/mmu/spte.h b/arch/x86/kvm/mmu/spte.h
-index 2cb816ea2430..c81cac9358e0 100644
---- a/arch/x86/kvm/mmu/spte.h
-+++ b/arch/x86/kvm/mmu/spte.h
-@@ -499,7 +499,7 @@ bool spte_has_volatile_bits(u64 spte);
- bool make_spte(struct kvm_vcpu *vcpu, struct kvm_mmu_page *sp,
- 	       const struct kvm_memory_slot *slot,
- 	       unsigned int pte_access, gfn_t gfn, kvm_pfn_t pfn,
--	       u64 old_spte, bool prefetch, bool can_unsync,
-+	       u64 old_spte, bool prefetch, bool synchronizing,
- 	       bool host_writable, u64 *new_spte);
- u64 make_huge_page_split_spte(struct kvm *kvm, u64 huge_spte,
- 		      	      union kvm_mmu_page_role role, int index);
-diff --git a/arch/x86/kvm/mmu/tdp_mmu.c b/arch/x86/kvm/mmu/tdp_mmu.c
-index 3c6583468742..76bca7a726c1 100644
---- a/arch/x86/kvm/mmu/tdp_mmu.c
-+++ b/arch/x86/kvm/mmu/tdp_mmu.c
-@@ -1033,8 +1033,8 @@ static int tdp_mmu_map_handle_target_level(struct kvm_vcpu *vcpu,
- 		new_spte = make_mmio_spte(vcpu, iter->gfn, ACC_ALL);
- 	else
- 		wrprot = make_spte(vcpu, sp, fault->slot, ACC_ALL, iter->gfn,
--					 fault->pfn, iter->old_spte, fault->prefetch, true,
--					 fault->map_writable, &new_spte);
-+				   fault->pfn, iter->old_spte, fault->prefetch,
-+				   false, fault->map_writable, &new_spte);
+@@ -178,7 +178,7 @@ bool make_spte(struct kvm_vcpu *vcpu, struct kvm_mmu_page *sp,
+ 		spte |= SPTE_TDP_AD_WRPROT_ONLY;
  
- 	if (new_spte == iter->old_spte)
- 		ret = RET_PF_SPURIOUS;
+ 	spte |= shadow_present_mask;
+-	if (!prefetch)
++	if (!prefetch || synchronizing)
+ 		spte |= spte_shadow_accessed_mask(spte);
+ 
+ 	/*
+@@ -259,7 +259,7 @@ bool make_spte(struct kvm_vcpu *vcpu, struct kvm_mmu_page *sp,
+ 		spte |= spte_shadow_dirty_mask(spte);
+ 
+ out:
+-	if (prefetch)
++	if (prefetch && !synchronizing)
+ 		spte = mark_spte_for_access_track(spte);
+ 
+ 	WARN_ONCE(is_rsvd_spte(&vcpu->arch.mmu->shadow_zero_check, spte, level),
 -- 
 2.47.0.rc1.288.g06298d1525-goog
 
