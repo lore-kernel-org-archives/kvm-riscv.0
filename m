@@ -1,69 +1,73 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Thu, 10 Oct 2024 11:23:53 -0700
-Subject: [PATCH v13 51/85] KVM: VMX: Use __kvm_faultin_page() to get APIC
- access page/pfn
+Date: Thu, 10 Oct 2024 11:23:54 -0700
+Subject: [PATCH v13 52/85] KVM: PPC: e500: Mark "struct page" dirty in kvmppc_e500_shadow_map()
 In-Reply-To: <20241010182427.1434605-1-seanjc@google.com>
 References: <20241010182427.1434605-1-seanjc@google.com>
-Message-ID: <20241010182427.1434605-52-seanjc@google.com>
+Message-ID: <20241010182427.1434605-53-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Use __kvm_faultin_page() get the APIC access page so that KVM can
-precisely release the refcounted page, i.e. to remove yet another user
-of kvm_pfn_to_refcounted_page().  While the path isn't handling a guest
-page fault, the semantics are effectively the same; KVM just happens to
-be mapping the pfn into a VMCS field instead of a secondary MMU.
+Mark the underlying page as dirty in kvmppc_e500_ref_setup()'s sole
+caller, kvmppc_e500_shadow_map(), which will allow converting e500 to
+__kvm_faultin_pfn() + kvm_release_faultin_page() without having to do
+a weird dance between ref_setup() and shadow_map().
 
-Tested-by: Alex Benn?e <alex.bennee@linaro.org>
+Opportunistically drop the redundant kvm_set_pfn_accessed(), as
+shadow_map() puts the page via kvm_release_pfn_clean().
+
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/x86/kvm/vmx/vmx.c | 13 +++++++++----
- 1 file changed, 9 insertions(+), 4 deletions(-)
+ arch/powerpc/kvm/e500_mmu_host.c | 13 ++++++-------
+ 1 file changed, 6 insertions(+), 7 deletions(-)
 
-diff --git a/arch/x86/kvm/vmx/vmx.c b/arch/x86/kvm/vmx/vmx.c
-index 851be0820e04..44cc25dfebba 100644
---- a/arch/x86/kvm/vmx/vmx.c
-+++ b/arch/x86/kvm/vmx/vmx.c
-@@ -6790,8 +6790,10 @@ void vmx_set_apic_access_page_addr(struct kvm_vcpu *vcpu)
- 	struct kvm *kvm = vcpu->kvm;
- 	struct kvm_memslots *slots = kvm_memslots(kvm);
- 	struct kvm_memory_slot *slot;
-+	struct page *refcounted_page;
- 	unsigned long mmu_seq;
- 	kvm_pfn_t pfn;
-+	bool writable;
+diff --git a/arch/powerpc/kvm/e500_mmu_host.c b/arch/powerpc/kvm/e500_mmu_host.c
+index c664fdec75b1..5c2adfd19e12 100644
+--- a/arch/powerpc/kvm/e500_mmu_host.c
++++ b/arch/powerpc/kvm/e500_mmu_host.c
+@@ -242,7 +242,7 @@ static inline int tlbe_is_writable(struct kvm_book3e_206_tlb_entry *tlbe)
+ 	return tlbe->mas7_3 & (MAS3_SW|MAS3_UW);
+ }
  
- 	/* Defer reload until vmcs01 is the current VMCS. */
- 	if (is_guest_mode(vcpu)) {
-@@ -6827,7 +6829,7 @@ void vmx_set_apic_access_page_addr(struct kvm_vcpu *vcpu)
- 	 * controls the APIC-access page memslot, and only deletes the memslot
- 	 * if APICv is permanently inhibited, i.e. the memslot won't reappear.
- 	 */
--	pfn = gfn_to_pfn_memslot(slot, gfn);
-+	pfn = __kvm_faultin_pfn(slot, gfn, FOLL_WRITE, &writable, &refcounted_page);
- 	if (is_error_noslot_pfn(pfn))
- 		return;
+-static inline void kvmppc_e500_ref_setup(struct tlbe_ref *ref,
++static inline bool kvmppc_e500_ref_setup(struct tlbe_ref *ref,
+ 					 struct kvm_book3e_206_tlb_entry *gtlbe,
+ 					 kvm_pfn_t pfn, unsigned int wimg)
+ {
+@@ -252,11 +252,7 @@ static inline void kvmppc_e500_ref_setup(struct tlbe_ref *ref,
+ 	/* Use guest supplied MAS2_G and MAS2_E */
+ 	ref->flags |= (gtlbe->mas2 & MAS2_ATTRIB_MASK) | wimg;
  
-@@ -6838,10 +6840,13 @@ void vmx_set_apic_access_page_addr(struct kvm_vcpu *vcpu)
- 		vmcs_write64(APIC_ACCESS_ADDR, pfn_to_hpa(pfn));
+-	/* Mark the page accessed */
+-	kvm_set_pfn_accessed(pfn);
+-
+-	if (tlbe_is_writable(gtlbe))
+-		kvm_set_pfn_dirty(pfn);
++	return tlbe_is_writable(gtlbe);
+ }
  
- 	/*
--	 * Do not pin apic access page in memory, the MMU notifier
--	 * will call us again if it is migrated or swapped out.
-+	 * Do not pin the APIC access page in memory so that it can be freely
-+	 * migrated, the MMU notifier will call us again if it is migrated or
-+	 * swapped out.  KVM backs the memslot with anonymous memory, the pfn
-+	 * should always point at a refcounted page (if the pfn is valid).
- 	 */
--	kvm_release_pfn_clean(pfn);
-+	if (!WARN_ON_ONCE(!refcounted_page))
-+		kvm_release_page_clean(refcounted_page);
+ static inline void kvmppc_e500_ref_release(struct tlbe_ref *ref)
+@@ -337,6 +333,7 @@ static inline int kvmppc_e500_shadow_map(struct kvmppc_vcpu_e500 *vcpu_e500,
+ 	unsigned int wimg = 0;
+ 	pgd_t *pgdir;
+ 	unsigned long flags;
++	bool writable = false;
  
- 	/*
- 	 * No need for a manual TLB flush at this point, KVM has already done a
+ 	/* used to check for invalidations in progress */
+ 	mmu_seq = kvm->mmu_invalidate_seq;
+@@ -490,7 +487,9 @@ static inline int kvmppc_e500_shadow_map(struct kvmppc_vcpu_e500 *vcpu_e500,
+ 			goto out;
+ 		}
+ 	}
+-	kvmppc_e500_ref_setup(ref, gtlbe, pfn, wimg);
++	writable = kvmppc_e500_ref_setup(ref, gtlbe, pfn, wimg);
++	if (writable)
++		kvm_set_pfn_dirty(pfn);
+ 
+ 	kvmppc_e500_setup_stlbe(&vcpu_e500->vcpu, gtlbe, tsize,
+ 				ref, gvaddr, stlbe);
 -- 
 2.47.0.rc1.288.g06298d1525-goog
 
