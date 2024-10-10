@@ -1,100 +1,70 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Thu, 10 Oct 2024 11:23:51 -0700
-Subject: [PATCH v13 49/85] KVM: Move x86's API to release a faultin page to
- common KVM
+Date: Thu, 10 Oct 2024 11:23:52 -0700
+Subject: [PATCH v13 50/85] KVM: VMX: Hold mmu_lock until page is released when
+ updating APIC access page
 In-Reply-To: <20241010182427.1434605-1-seanjc@google.com>
 References: <20241010182427.1434605-1-seanjc@google.com>
-Message-ID: <20241010182427.1434605-50-seanjc@google.com>
+Message-ID: <20241010182427.1434605-51-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Move KVM x86's helper that "finishes" the faultin process to common KVM
-so that the logic can be shared across all architectures.  Note, not all
-architectures implement a fast page fault path, but the gist of the
-comment applies to all architectures.
+Hold mmu_lock across kvm_release_pfn_clean() when refreshing the APIC
+access page address to ensure that KVM doesn't mark a page/folio as
+accessed after it has been unmapped.  Practically speaking marking a folio
+accesses is benign in this scenario, as KVM does hold a reference (it's
+really just marking folios dirty that is problematic), but there's no
+reason not to be paranoid (moving the APIC access page isn't a hot path),
+and no reason to be different from other mmu_notifier-protected flows in
+KVM.
 
 Tested-by: Alex Benn?e <alex.bennee@linaro.org>
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/x86/kvm/mmu/mmu.c   | 24 ++----------------------
- include/linux/kvm_host.h | 26 ++++++++++++++++++++++++++
- 2 files changed, 28 insertions(+), 22 deletions(-)
+ arch/x86/kvm/vmx/vmx.c | 21 +++++++++------------
+ 1 file changed, 9 insertions(+), 12 deletions(-)
 
-diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
-index e14b84d2f55b..5acdaf3b1007 100644
---- a/arch/x86/kvm/mmu/mmu.c
-+++ b/arch/x86/kvm/mmu/mmu.c
-@@ -4370,28 +4370,8 @@ static u8 kvm_max_private_mapping_level(struct kvm *kvm, kvm_pfn_t pfn,
- static void kvm_mmu_finish_page_fault(struct kvm_vcpu *vcpu,
- 				      struct kvm_page_fault *fault, int r)
- {
--	lockdep_assert_once(lockdep_is_held(&vcpu->kvm->mmu_lock) ||
--			    r == RET_PF_RETRY);
--
--	if (!fault->refcounted_page)
--		return;
+diff --git a/arch/x86/kvm/vmx/vmx.c b/arch/x86/kvm/vmx/vmx.c
+index 1a4438358c5e..851be0820e04 100644
+--- a/arch/x86/kvm/vmx/vmx.c
++++ b/arch/x86/kvm/vmx/vmx.c
+@@ -6832,25 +6832,22 @@ void vmx_set_apic_access_page_addr(struct kvm_vcpu *vcpu)
+ 		return;
+ 
+ 	read_lock(&vcpu->kvm->mmu_lock);
+-	if (mmu_invalidate_retry_gfn(kvm, mmu_seq, gfn)) {
++	if (mmu_invalidate_retry_gfn(kvm, mmu_seq, gfn))
+ 		kvm_make_request(KVM_REQ_APIC_PAGE_RELOAD, vcpu);
+-		read_unlock(&vcpu->kvm->mmu_lock);
+-		goto out;
+-	}
++	else
++		vmcs_write64(APIC_ACCESS_ADDR, pfn_to_hpa(pfn));
+ 
+-	vmcs_write64(APIC_ACCESS_ADDR, pfn_to_hpa(pfn));
+-	read_unlock(&vcpu->kvm->mmu_lock);
 -
 -	/*
--	 * If the page that KVM got from the *primary MMU* is writable, and KVM
--	 * installed or reused a SPTE, mark the page/folio dirty.  Note, this
--	 * may mark a folio dirty even if KVM created a read-only SPTE, e.g. if
--	 * the GFN is write-protected.  Folios can't be safely marked dirty
--	 * outside of mmu_lock as doing so could race with writeback on the
--	 * folio.  As a result, KVM can't mark folios dirty in the fast page
--	 * fault handler, and so KVM must (somewhat) speculatively mark the
--	 * folio dirty if KVM could locklessly make the SPTE writable.
+-	 * No need for a manual TLB flush at this point, KVM has already done a
+-	 * flush if there were SPTEs pointing at the previous page.
 -	 */
--	if (r == RET_PF_RETRY)
--		kvm_release_page_unused(fault->refcounted_page);
--	else if (!fault->map_writable)
--		kvm_release_page_clean(fault->refcounted_page);
--	else
--		kvm_release_page_dirty(fault->refcounted_page);
-+	kvm_release_faultin_page(vcpu->kvm, fault->refcounted_page,
-+				 r == RET_PF_RETRY, fault->map_writable);
- }
- 
- static int kvm_mmu_faultin_pfn_private(struct kvm_vcpu *vcpu,
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index 504483d35197..9f7682ece4a1 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -1231,6 +1231,32 @@ static inline void kvm_release_page_unused(struct page *page)
- void kvm_release_page_clean(struct page *page);
- void kvm_release_page_dirty(struct page *page);
- 
-+static inline void kvm_release_faultin_page(struct kvm *kvm, struct page *page,
-+					    bool unused, bool dirty)
-+{
-+	lockdep_assert_once(lockdep_is_held(&kvm->mmu_lock) || unused);
-+
-+	if (!page)
-+		return;
+-out:
+ 	/*
+ 	 * Do not pin apic access page in memory, the MMU notifier
+ 	 * will call us again if it is migrated or swapped out.
+ 	 */
+ 	kvm_release_pfn_clean(pfn);
 +
 +	/*
-+	 * If the page that KVM got from the *primary MMU* is writable, and KVM
-+	 * installed or reused a SPTE, mark the page/folio dirty.  Note, this
-+	 * may mark a folio dirty even if KVM created a read-only SPTE, e.g. if
-+	 * the GFN is write-protected.  Folios can't be safely marked dirty
-+	 * outside of mmu_lock as doing so could race with writeback on the
-+	 * folio.  As a result, KVM can't mark folios dirty in the fast page
-+	 * fault handler, and so KVM must (somewhat) speculatively mark the
-+	 * folio dirty if KVM could locklessly make the SPTE writable.
++	 * No need for a manual TLB flush at this point, KVM has already done a
++	 * flush if there were SPTEs pointing at the previous page.
 +	 */
-+	if (unused)
-+		kvm_release_page_unused(page);
-+	else if (dirty)
-+		kvm_release_page_dirty(page);
-+	else
-+		kvm_release_page_clean(page);
-+}
-+
- kvm_pfn_t __kvm_faultin_pfn(const struct kvm_memory_slot *slot, gfn_t gfn,
- 			    unsigned int foll, bool *writable,
- 			    struct page **refcounted_page);
++	read_unlock(&vcpu->kvm->mmu_lock);
+ }
+ 
+ void vmx_hwapic_isr_update(int max_isr)
 -- 
 2.47.0.rc1.288.g06298d1525-goog
 
