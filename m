@@ -1,58 +1,91 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Thu, 10 Oct 2024 11:23:44 -0700
-Subject: [PATCH v13 42/85] KVM: Move declarations of memslot accessors up in kvm_host.h
+Date: Thu, 10 Oct 2024 11:23:45 -0700
+Subject: [PATCH v13 43/85] KVM: Add kvm_faultin_pfn() to specifically service
+ guest page faults
 In-Reply-To: <20241010182427.1434605-1-seanjc@google.com>
 References: <20241010182427.1434605-1-seanjc@google.com>
-Message-ID: <20241010182427.1434605-43-seanjc@google.com>
+Message-ID: <20241010182427.1434605-44-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Move the memslot lookup helpers further up in kvm_host.h so that they can
-be used by inlined "to pfn" wrappers.
+Add a new dedicated API, kvm_faultin_pfn(), for servicing guest page
+faults, i.e. for getting pages/pfns that will be mapped into the guest via
+an mmu_notifier-protected KVM MMU.  Keep struct kvm_follow_pfn buried in
+internal code, as having __kvm_faultin_pfn() take "out" params is actually
+cleaner for several architectures, e.g. it allows the caller to have its
+own "page fault" structure without having to marshal data to/from
+kvm_follow_pfn.
 
-No functional change intended.
+Long term, common KVM would ideally provide a kvm_page_fault structure, a
+la x86's struct of the same name.  But all architectures need to be
+converted to a common API before that can happen.
 
 Tested-by: Alex Benn?e <alex.bennee@linaro.org>
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- include/linux/kvm_host.h | 8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+ include/linux/kvm_host.h | 12 ++++++++++++
+ virt/kvm/kvm_main.c      | 22 ++++++++++++++++++++++
+ 2 files changed, 34 insertions(+)
 
 diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index 9263375d0362..346bfef14e5a 100644
+index 346bfef14e5a..3b9afb40e935 100644
 --- a/include/linux/kvm_host.h
 +++ b/include/linux/kvm_host.h
-@@ -1168,6 +1168,10 @@ static inline bool kvm_memslot_iter_is_valid(struct kvm_memslot_iter *iter, gfn_
- 	     kvm_memslot_iter_is_valid(iter, end);			\
- 	     kvm_memslot_iter_next(iter))
+@@ -1231,6 +1231,18 @@ static inline void kvm_release_page_unused(struct page *page)
+ void kvm_release_page_clean(struct page *page);
+ void kvm_release_page_dirty(struct page *page);
  
-+struct kvm_memory_slot *gfn_to_memslot(struct kvm *kvm, gfn_t gfn);
-+struct kvm_memslots *kvm_vcpu_memslots(struct kvm_vcpu *vcpu);
-+struct kvm_memory_slot *kvm_vcpu_gfn_to_memslot(struct kvm_vcpu *vcpu, gfn_t gfn);
++kvm_pfn_t __kvm_faultin_pfn(const struct kvm_memory_slot *slot, gfn_t gfn,
++			    unsigned int foll, bool *writable,
++			    struct page **refcounted_page);
 +
- /*
-  * KVM_SET_USER_MEMORY_REGION ioctl allows the following operations:
-  * - create a new memory slot
-@@ -1303,15 +1307,13 @@ int kvm_gfn_to_hva_cache_init(struct kvm *kvm, struct gfn_to_hva_cache *ghc,
- })
- 
- int kvm_clear_guest(struct kvm *kvm, gpa_t gpa, unsigned long len);
--struct kvm_memory_slot *gfn_to_memslot(struct kvm *kvm, gfn_t gfn);
- bool kvm_is_visible_gfn(struct kvm *kvm, gfn_t gfn);
- bool kvm_vcpu_is_visible_gfn(struct kvm_vcpu *vcpu, gfn_t gfn);
- unsigned long kvm_host_page_size(struct kvm_vcpu *vcpu, gfn_t gfn);
- void mark_page_dirty_in_slot(struct kvm *kvm, const struct kvm_memory_slot *memslot, gfn_t gfn);
- void mark_page_dirty(struct kvm *kvm, gfn_t gfn);
- 
--struct kvm_memslots *kvm_vcpu_memslots(struct kvm_vcpu *vcpu);
--struct kvm_memory_slot *kvm_vcpu_gfn_to_memslot(struct kvm_vcpu *vcpu, gfn_t gfn);
++static inline kvm_pfn_t kvm_faultin_pfn(struct kvm_vcpu *vcpu, gfn_t gfn,
++					bool write, bool *writable,
++					struct page **refcounted_page)
++{
++	return __kvm_faultin_pfn(kvm_vcpu_gfn_to_memslot(vcpu, gfn), gfn,
++				 write ? FOLL_WRITE : 0, writable, refcounted_page);
++}
 +
- kvm_pfn_t kvm_vcpu_gfn_to_pfn(struct kvm_vcpu *vcpu, gfn_t gfn);
+ kvm_pfn_t gfn_to_pfn(struct kvm *kvm, gfn_t gfn);
+ kvm_pfn_t gfn_to_pfn_prot(struct kvm *kvm, gfn_t gfn, bool write_fault,
+ 		      bool *writable);
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index 6dcb4f0eed3e..696d5e429b3e 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -3098,6 +3098,28 @@ kvm_pfn_t kvm_vcpu_gfn_to_pfn(struct kvm_vcpu *vcpu, gfn_t gfn)
+ }
+ EXPORT_SYMBOL_GPL(kvm_vcpu_gfn_to_pfn);
  
- int __kvm_vcpu_map(struct kvm_vcpu *vcpu, gpa_t gpa, struct kvm_host_map *map,
++kvm_pfn_t __kvm_faultin_pfn(const struct kvm_memory_slot *slot, gfn_t gfn,
++			    unsigned int foll, bool *writable,
++			    struct page **refcounted_page)
++{
++	struct kvm_follow_pfn kfp = {
++		.slot = slot,
++		.gfn = gfn,
++		.flags = foll,
++		.map_writable = writable,
++		.refcounted_page = refcounted_page,
++	};
++
++	if (WARN_ON_ONCE(!writable || !refcounted_page))
++		return KVM_PFN_ERR_FAULT;
++
++	*writable = false;
++	*refcounted_page = NULL;
++
++	return kvm_follow_pfn(&kfp);
++}
++EXPORT_SYMBOL_GPL(__kvm_faultin_pfn);
++
+ int kvm_prefetch_pages(struct kvm_memory_slot *slot, gfn_t gfn,
+ 		       struct page **pages, int nr_pages)
+ {
 -- 
 2.47.0.rc1.288.g06298d1525-goog
 
