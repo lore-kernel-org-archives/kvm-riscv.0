@@ -1,58 +1,122 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Thu, 10 Oct 2024 11:23:38 -0700
-Subject: [PATCH v13 36/85] KVM: x86: Don't fault-in APIC access page during
- initial allocation
+Date: Thu, 10 Oct 2024 11:23:39 -0700
+Subject: [PATCH v13 37/85] KVM: x86/mmu: Add "mmu" prefix fault-in helpers to
+ free up generic names
 In-Reply-To: <20241010182427.1434605-1-seanjc@google.com>
 References: <20241010182427.1434605-1-seanjc@google.com>
-Message-ID: <20241010182427.1434605-37-seanjc@google.com>
+Message-ID: <20241010182427.1434605-38-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Drop the gfn_to_page() lookup when installing KVM's internal memslot for
-the APIC access page, as KVM doesn't need to immediately fault-in the page
-now that the page isn't pinned.  In the extremely unlikely event the
-kernel can't allocate a 4KiB page, KVM can just as easily return -EFAULT
-on the future page fault.
+Prefix x86's faultin_pfn helpers with "mmu" so that the mmu-less names can
+be used by common KVM for similar APIs.
 
-Suggested-by: Paolo Bonzini <pbonzini@redhat.com>
+No functional change intended.
+
+Tested-by: Alex Benn?e <alex.bennee@linaro.org>
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/x86/kvm/lapic.c | 12 ------------
- 1 file changed, 12 deletions(-)
+ arch/x86/kvm/mmu/mmu.c          | 19 ++++++++++---------
+ arch/x86/kvm/mmu/mmu_internal.h |  2 +-
+ arch/x86/kvm/mmu/paging_tmpl.h  |  2 +-
+ 3 files changed, 12 insertions(+), 11 deletions(-)
 
-diff --git a/arch/x86/kvm/lapic.c b/arch/x86/kvm/lapic.c
-index 20526e4d6c62..65412640cfc7 100644
---- a/arch/x86/kvm/lapic.c
-+++ b/arch/x86/kvm/lapic.c
-@@ -2647,7 +2647,6 @@ void kvm_apic_update_apicv(struct kvm_vcpu *vcpu)
+diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
+index 28f2b842d6ca..e451e1b9a55a 100644
+--- a/arch/x86/kvm/mmu/mmu.c
++++ b/arch/x86/kvm/mmu/mmu.c
+@@ -4347,8 +4347,8 @@ static u8 kvm_max_private_mapping_level(struct kvm *kvm, kvm_pfn_t pfn,
+ 	return max_level;
+ }
  
- int kvm_alloc_apic_access_page(struct kvm *kvm)
+-static int kvm_faultin_pfn_private(struct kvm_vcpu *vcpu,
+-				   struct kvm_page_fault *fault)
++static int kvm_mmu_faultin_pfn_private(struct kvm_vcpu *vcpu,
++				       struct kvm_page_fault *fault)
  {
--	struct page *page;
- 	void __user *hva;
- 	int ret = 0;
+ 	int max_order, r;
  
-@@ -2663,17 +2662,6 @@ int kvm_alloc_apic_access_page(struct kvm *kvm)
- 		goto out;
- 	}
+@@ -4371,10 +4371,11 @@ static int kvm_faultin_pfn_private(struct kvm_vcpu *vcpu,
+ 	return RET_PF_CONTINUE;
+ }
  
--	page = gfn_to_page(kvm, APIC_DEFAULT_PHYS_BASE >> PAGE_SHIFT);
--	if (!page) {
--		ret = -EFAULT;
--		goto out;
--	}
--
--	/*
--	 * Do not pin the page in memory, so that memory hot-unplug
--	 * is able to migrate it.
--	 */
--	put_page(page);
- 	kvm->arch.apic_access_memslot_enabled = true;
- out:
- 	mutex_unlock(&kvm->slots_lock);
+-static int __kvm_faultin_pfn(struct kvm_vcpu *vcpu, struct kvm_page_fault *fault)
++static int __kvm_mmu_faultin_pfn(struct kvm_vcpu *vcpu,
++				 struct kvm_page_fault *fault)
+ {
+ 	if (fault->is_private)
+-		return kvm_faultin_pfn_private(vcpu, fault);
++		return kvm_mmu_faultin_pfn_private(vcpu, fault);
+ 
+ 	fault->pfn = __gfn_to_pfn_memslot(fault->slot, fault->gfn, false, true,
+ 					  fault->write, &fault->map_writable);
+@@ -4409,8 +4410,8 @@ static int __kvm_faultin_pfn(struct kvm_vcpu *vcpu, struct kvm_page_fault *fault
+ 	return RET_PF_CONTINUE;
+ }
+ 
+-static int kvm_faultin_pfn(struct kvm_vcpu *vcpu, struct kvm_page_fault *fault,
+-			   unsigned int access)
++static int kvm_mmu_faultin_pfn(struct kvm_vcpu *vcpu,
++			       struct kvm_page_fault *fault, unsigned int access)
+ {
+ 	struct kvm_memory_slot *slot = fault->slot;
+ 	int ret;
+@@ -4493,7 +4494,7 @@ static int kvm_faultin_pfn(struct kvm_vcpu *vcpu, struct kvm_page_fault *fault,
+ 	if (mmu_invalidate_retry_gfn_unsafe(vcpu->kvm, fault->mmu_seq, fault->gfn))
+ 		return RET_PF_RETRY;
+ 
+-	ret = __kvm_faultin_pfn(vcpu, fault);
++	ret = __kvm_mmu_faultin_pfn(vcpu, fault);
+ 	if (ret != RET_PF_CONTINUE)
+ 		return ret;
+ 
+@@ -4570,7 +4571,7 @@ static int direct_page_fault(struct kvm_vcpu *vcpu, struct kvm_page_fault *fault
+ 	if (r)
+ 		return r;
+ 
+-	r = kvm_faultin_pfn(vcpu, fault, ACC_ALL);
++	r = kvm_mmu_faultin_pfn(vcpu, fault, ACC_ALL);
+ 	if (r != RET_PF_CONTINUE)
+ 		return r;
+ 
+@@ -4661,7 +4662,7 @@ static int kvm_tdp_mmu_page_fault(struct kvm_vcpu *vcpu,
+ 	if (r)
+ 		return r;
+ 
+-	r = kvm_faultin_pfn(vcpu, fault, ACC_ALL);
++	r = kvm_mmu_faultin_pfn(vcpu, fault, ACC_ALL);
+ 	if (r != RET_PF_CONTINUE)
+ 		return r;
+ 
+diff --git a/arch/x86/kvm/mmu/mmu_internal.h b/arch/x86/kvm/mmu/mmu_internal.h
+index 633aedec3c2e..59e600f6ff9d 100644
+--- a/arch/x86/kvm/mmu/mmu_internal.h
++++ b/arch/x86/kvm/mmu/mmu_internal.h
+@@ -235,7 +235,7 @@ struct kvm_page_fault {
+ 	/* The memslot containing gfn. May be NULL. */
+ 	struct kvm_memory_slot *slot;
+ 
+-	/* Outputs of kvm_faultin_pfn.  */
++	/* Outputs of kvm_mmu_faultin_pfn().  */
+ 	unsigned long mmu_seq;
+ 	kvm_pfn_t pfn;
+ 	bool map_writable;
+diff --git a/arch/x86/kvm/mmu/paging_tmpl.h b/arch/x86/kvm/mmu/paging_tmpl.h
+index 143b7e9f26dc..9bd3d6f5db91 100644
+--- a/arch/x86/kvm/mmu/paging_tmpl.h
++++ b/arch/x86/kvm/mmu/paging_tmpl.h
+@@ -812,7 +812,7 @@ static int FNAME(page_fault)(struct kvm_vcpu *vcpu, struct kvm_page_fault *fault
+ 	if (r)
+ 		return r;
+ 
+-	r = kvm_faultin_pfn(vcpu, fault, walker.pte_access);
++	r = kvm_mmu_faultin_pfn(vcpu, fault, walker.pte_access);
+ 	if (r != RET_PF_CONTINUE)
+ 		return r;
+ 
 -- 
 2.47.0.rc1.288.g06298d1525-goog
 
