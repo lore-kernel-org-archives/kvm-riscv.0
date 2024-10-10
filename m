@@ -1,79 +1,58 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Thu, 10 Oct 2024 11:23:37 -0700
-Subject: [PATCH v13 35/85] KVM: Disallow direct access (w/o mmu_notifier) to
- unpinned pfn by default
+Date: Thu, 10 Oct 2024 11:23:38 -0700
+Subject: [PATCH v13 36/85] KVM: x86: Don't fault-in APIC access page during
+ initial allocation
 In-Reply-To: <20241010182427.1434605-1-seanjc@google.com>
 References: <20241010182427.1434605-1-seanjc@google.com>
-Message-ID: <20241010182427.1434605-36-seanjc@google.com>
+Message-ID: <20241010182427.1434605-37-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Add an off-by-default module param to control whether or not KVM is allowed
-to map memory that isn't pinned, i.e. that KVM can't guarantee won't be
-freed while it is mapped into KVM and/or the guest.  Don't remove the
-functionality entirely, as there are use cases where mapping unpinned
-memory is safe (as defined by the platform owner), e.g. when memory is
-hidden from the kernel and managed by userspace, in which case userspace
-is already fully trusted to not muck with guest memory mappings.
+Drop the gfn_to_page() lookup when installing KVM's internal memslot for
+the APIC access page, as KVM doesn't need to immediately fault-in the page
+now that the page isn't pinned.  In the extremely unlikely event the
+kernel can't allocate a 4KiB page, KVM can just as easily return -EFAULT
+on the future page fault.
 
-But for more typical setups, mapping unpinned memory is wildly unsafe, and
-unnecessary.  The APIs are used exclusively by x86's nested virtualization
-support, and there is no known (or sane) use case for mapping PFN-mapped
-memory a KVM guest _and_ letting the guest use it for virtualization
-structures.
-
-Tested-by: Alex Benn?e <alex.bennee@linaro.org>
+Suggested-by: Paolo Bonzini <pbonzini@redhat.com>
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- virt/kvm/kvm_main.c | 18 ++++++++++++++++++
- 1 file changed, 18 insertions(+)
+ arch/x86/kvm/lapic.c | 12 ------------
+ 1 file changed, 12 deletions(-)
 
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index b845e9252633..6dcb4f0eed3e 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -94,6 +94,13 @@ unsigned int halt_poll_ns_shrink = 2;
- module_param(halt_poll_ns_shrink, uint, 0644);
- EXPORT_SYMBOL_GPL(halt_poll_ns_shrink);
+diff --git a/arch/x86/kvm/lapic.c b/arch/x86/kvm/lapic.c
+index 20526e4d6c62..65412640cfc7 100644
+--- a/arch/x86/kvm/lapic.c
++++ b/arch/x86/kvm/lapic.c
+@@ -2647,7 +2647,6 @@ void kvm_apic_update_apicv(struct kvm_vcpu *vcpu)
  
-+/*
-+ * Allow direct access (from KVM or the CPU) without MMU notifier protection
-+ * to unpinned pages.
-+ */
-+static bool allow_unsafe_mappings;
-+module_param(allow_unsafe_mappings, bool, 0444);
-+
- /*
-  * Ordering of locks:
-  *
-@@ -2811,6 +2818,9 @@ static kvm_pfn_t kvm_resolve_pfn(struct kvm_follow_pfn *kfp, struct page *page,
- 	 * reference to such pages would cause KVM to prematurely free a page
- 	 * it doesn't own (KVM gets and puts the one and only reference).
- 	 * Don't allow those pages until the FIXME is resolved.
-+	 *
-+	 * Don't grab a reference for pins, callers that pin pages are required
-+	 * to check refcounted_page, i.e. must not blindly release the pfn.
- 	 */
- 	if (map) {
- 		pfn = map->pfn;
-@@ -2929,6 +2939,14 @@ static int hva_to_pfn_remapped(struct vm_area_struct *vma,
- 	bool write_fault = kfp->flags & FOLL_WRITE;
- 	int r;
+ int kvm_alloc_apic_access_page(struct kvm *kvm)
+ {
+-	struct page *page;
+ 	void __user *hva;
+ 	int ret = 0;
  
-+	/*
-+	 * Remapped memory cannot be pinned in any meaningful sense.  Bail if
-+	 * the caller wants to pin the page, i.e. access the page outside of
-+	 * MMU notifier protection, and unsafe umappings are disallowed.
-+	 */
-+	if (kfp->pin && !allow_unsafe_mappings)
-+		return -EINVAL;
-+
- 	r = follow_pfnmap_start(&args);
- 	if (r) {
- 		/*
+@@ -2663,17 +2662,6 @@ int kvm_alloc_apic_access_page(struct kvm *kvm)
+ 		goto out;
+ 	}
+ 
+-	page = gfn_to_page(kvm, APIC_DEFAULT_PHYS_BASE >> PAGE_SHIFT);
+-	if (!page) {
+-		ret = -EFAULT;
+-		goto out;
+-	}
+-
+-	/*
+-	 * Do not pin the page in memory, so that memory hot-unplug
+-	 * is able to migrate it.
+-	 */
+-	put_page(page);
+ 	kvm->arch.apic_access_memslot_enabled = true;
+ out:
+ 	mutex_unlock(&kvm->slots_lock);
 -- 
 2.47.0.rc1.288.g06298d1525-goog
 
