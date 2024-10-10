@@ -1,52 +1,51 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Thu, 10 Oct 2024 11:23:59 -0700
-Subject: [PATCH v13 57/85] KVM: RISC-V: Mark "struct page" pfns dirty iff a
- stage-2 PTE is installed
+Date: Thu, 10 Oct 2024 11:24:00 -0700
+Subject: [PATCH v13 58/85] KVM: RISC-V: Mark "struct page" pfns accessed
+ before dropping mmu_lock
 In-Reply-To: <20241010182427.1434605-1-seanjc@google.com>
 References: <20241010182427.1434605-1-seanjc@google.com>
-Message-ID: <20241010182427.1434605-58-seanjc@google.com>
+Message-ID: <20241010182427.1434605-59-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Don't mark pages dirty if KVM bails from the page fault handler without
-installing a stage-2 mapping, i.e. if the page is guaranteed to not be
-written by the guest.
+Mark pages accessed before dropping mmu_lock when faulting in guest memory
+so that RISC-V can convert to kvm_release_faultin_page() without tripping
+its lockdep assertion on mmu_lock being held.  Marking pages accessed
+outside of mmu_lock is ok (not great, but safe), but marking pages _dirty_
+outside of mmu_lock can make filesystems unhappy (see the link below).
+Do both under mmu_lock to minimize the chances of doing the wrong thing in
+the future.
 
-In addition to being a (very) minor fix, this paves the way for converting
-RISC-V to use kvm_release_faultin_page().
-
+Link: https://lore.kernel.org/all/cover.1683044162.git.lstoakes at gmail.com
 Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
 Acked-by: Anup Patel <anup@brainfault.org>
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/riscv/kvm/mmu.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ arch/riscv/kvm/mmu.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
-index b63650f9b966..06aa5a0d056d 100644
+index 06aa5a0d056d..2e9aee518142 100644
 --- a/arch/riscv/kvm/mmu.c
 +++ b/arch/riscv/kvm/mmu.c
-@@ -669,7 +669,6 @@ int kvm_riscv_gstage_map(struct kvm_vcpu *vcpu,
- 		goto out_unlock;
- 
- 	if (writable) {
--		kvm_set_pfn_dirty(hfn);
- 		mark_page_dirty(kvm, gfn);
- 		ret = gstage_map_page(kvm, pcache, gpa, hfn << PAGE_SHIFT,
- 				      vma_pagesize, false, true);
-@@ -682,6 +681,9 @@ int kvm_riscv_gstage_map(struct kvm_vcpu *vcpu,
- 		kvm_err("Failed to map in G-stage\n");
+@@ -682,11 +682,11 @@ int kvm_riscv_gstage_map(struct kvm_vcpu *vcpu,
  
  out_unlock:
-+	if ((!ret || ret == -EEXIST) && writable)
-+		kvm_set_pfn_dirty(hfn);
-+
+ 	if ((!ret || ret == -EEXIST) && writable)
+-		kvm_set_pfn_dirty(hfn);
++		kvm_release_pfn_dirty(hfn);
++	else
++		kvm_release_pfn_clean(hfn);
+ 
  	spin_unlock(&kvm->mmu_lock);
- 	kvm_set_pfn_accessed(hfn);
- 	kvm_release_pfn_clean(hfn);
+-	kvm_set_pfn_accessed(hfn);
+-	kvm_release_pfn_clean(hfn);
+ 	return ret;
+ }
+ 
 -- 
 2.47.0.rc1.288.g06298d1525-goog
 
