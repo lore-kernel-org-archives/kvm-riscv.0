@@ -1,72 +1,79 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Thu, 10 Oct 2024 11:24:01 -0700
-Subject: [PATCH v13 59/85] KVM: RISC-V: Use kvm_faultin_pfn() when mapping
- pfns into the guest
+Date: Thu, 10 Oct 2024 11:24:03 -0700
+Subject: [PATCH v13 61/85] KVM: PPC: Use __kvm_faultin_pfn() to handle page
+ faults on Book3s Radix
 In-Reply-To: <20241010182427.1434605-1-seanjc@google.com>
 References: <20241010182427.1434605-1-seanjc@google.com>
-Message-ID: <20241010182427.1434605-60-seanjc@google.com>
+Message-ID: <20241010182427.1434605-62-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Convert RISC-V to __kvm_faultin_pfn()+kvm_release_faultin_page(), which
-are new APIs to consolidate arch code and provide consistent behavior
-across all KVM architectures.
+Replace Book3s Radix's homebrewed (read: copy+pasted) fault-in logic with
+__kvm_faultin_pfn(), which functionally does pretty much the exact same
+thing.
 
-Opportunisticaly fix a s/priort/prior typo in the related comment.
+Note, when the code was written, KVM indeed didn't do fast GUP without
+"!atomic && !async", but that has long since changed (KVM tries fast GUP
+for all writable mappings).
 
-Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
-Acked-by: Anup Patel <anup@brainfault.org>
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/riscv/kvm/mmu.c | 11 ++++-------
- 1 file changed, 4 insertions(+), 7 deletions(-)
+ arch/powerpc/kvm/book3s_64_mmu_radix.c | 29 +++++---------------------
+ 1 file changed, 5 insertions(+), 24 deletions(-)
 
-diff --git a/arch/riscv/kvm/mmu.c b/arch/riscv/kvm/mmu.c
-index 2e9aee518142..e11ad1b616f3 100644
---- a/arch/riscv/kvm/mmu.c
-+++ b/arch/riscv/kvm/mmu.c
-@@ -601,6 +601,7 @@ int kvm_riscv_gstage_map(struct kvm_vcpu *vcpu,
- 	bool logging = (memslot->dirty_bitmap &&
- 			!(memslot->flags & KVM_MEM_READONLY)) ? true : false;
- 	unsigned long vma_pagesize, mmu_seq;
-+	struct page *page;
+diff --git a/arch/powerpc/kvm/book3s_64_mmu_radix.c b/arch/powerpc/kvm/book3s_64_mmu_radix.c
+index 8304b6f8fe45..14891d0a3b73 100644
+--- a/arch/powerpc/kvm/book3s_64_mmu_radix.c
++++ b/arch/powerpc/kvm/book3s_64_mmu_radix.c
+@@ -829,40 +829,21 @@ int kvmppc_book3s_instantiate_page(struct kvm_vcpu *vcpu,
+ 	unsigned long mmu_seq;
+ 	unsigned long hva, gfn = gpa >> PAGE_SHIFT;
+ 	bool upgrade_write = false;
+-	bool *upgrade_p = &upgrade_write;
+ 	pte_t pte, *ptep;
+ 	unsigned int shift, level;
+ 	int ret;
+ 	bool large_enable;
++	kvm_pfn_t pfn;
  
- 	/* We need minimum second+third level pages */
- 	ret = kvm_mmu_topup_memory_cache(pcache, gstage_pgd_levels);
-@@ -631,7 +632,7 @@ int kvm_riscv_gstage_map(struct kvm_vcpu *vcpu,
+ 	/* used to check for invalidations in progress */
+ 	mmu_seq = kvm->mmu_invalidate_seq;
+ 	smp_rmb();
+ 
+-	/*
+-	 * Do a fast check first, since __gfn_to_pfn_memslot doesn't
+-	 * do it with !atomic && !async, which is how we call it.
+-	 * We always ask for write permission since the common case
+-	 * is that the page is writable.
+-	 */
+ 	hva = gfn_to_hva_memslot(memslot, gfn);
+-	if (!kvm_ro && get_user_page_fast_only(hva, FOLL_WRITE, &page)) {
+-		upgrade_write = true;
+-	} else {
+-		unsigned long pfn;
+-
+-		/* Call KVM generic code to do the slow-path check */
+-		pfn = __gfn_to_pfn_memslot(memslot, gfn, false, NULL,
+-					   writing, upgrade_p);
+-		if (is_error_noslot_pfn(pfn))
+-			return -EFAULT;
+-		page = NULL;
+-		if (pfn_valid(pfn)) {
+-			page = pfn_to_page(pfn);
+-			if (PageReserved(page))
+-				page = NULL;
+-		}
+-	}
++	pfn = __kvm_faultin_pfn(memslot, gfn, writing ? FOLL_WRITE : 0,
++				&upgrade_write, &page);
++	if (is_error_noslot_pfn(pfn))
++		return -EFAULT;
  
  	/*
- 	 * Read mmu_invalidate_seq so that KVM can detect if the results of
--	 * vma_lookup() or gfn_to_pfn_prot() become stale priort to acquiring
-+	 * vma_lookup() or __kvm_faultin_pfn() become stale prior to acquiring
- 	 * kvm->mmu_lock.
- 	 *
- 	 * Rely on mmap_read_unlock() for an implicit smp_rmb(), which pairs
-@@ -647,7 +648,7 @@ int kvm_riscv_gstage_map(struct kvm_vcpu *vcpu,
- 		return -EFAULT;
- 	}
- 
--	hfn = gfn_to_pfn_prot(kvm, gfn, is_write, &writable);
-+	hfn = kvm_faultin_pfn(vcpu, gfn, is_write, &writable, &page);
- 	if (hfn == KVM_PFN_ERR_HWPOISON) {
- 		send_sig_mceerr(BUS_MCEERR_AR, (void __user *)hva,
- 				vma_pageshift, current);
-@@ -681,11 +682,7 @@ int kvm_riscv_gstage_map(struct kvm_vcpu *vcpu,
- 		kvm_err("Failed to map in G-stage\n");
- 
- out_unlock:
--	if ((!ret || ret == -EEXIST) && writable)
--		kvm_release_pfn_dirty(hfn);
--	else
--		kvm_release_pfn_clean(hfn);
--
-+	kvm_release_faultin_page(kvm, page, ret && ret != -EEXIST, writable);
- 	spin_unlock(&kvm->mmu_lock);
- 	return ret;
- }
+ 	 * Read the PTE from the process' radix tree and use that
 -- 
 2.47.0.rc1.288.g06298d1525-goog
 
