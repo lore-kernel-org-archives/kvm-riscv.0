@@ -1,140 +1,381 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Thu, 10 Oct 2024 11:23:20 -0700
-Subject: [PATCH v13 18/85] KVM: Drop unused "hva" pointer from __gfn_to_pfn_memslot()
+Date: Thu, 10 Oct 2024 11:23:21 -0700
+Subject: [PATCH v13 19/85] KVM: Introduce kvm_follow_pfn() to eventually
+ replace "gfn_to_pfn" APIs
 In-Reply-To: <20241010182427.1434605-1-seanjc@google.com>
 References: <20241010182427.1434605-1-seanjc@google.com>
-Message-ID: <20241010182427.1434605-19-seanjc@google.com>
+Message-ID: <20241010182427.1434605-20-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Drop @hva from __gfn_to_pfn_memslot() now that all callers pass NULL.
+From: David Stevens <stevensd@chromium.org>
 
-No functional change intended.
+Introduce kvm_follow_pfn() to eventually supplant the various "gfn_to_pfn"
+APIs, albeit by adding more wrappers.  The primary motivation of the new
+helper is to pass a structure instead of an ever changing set of parameters,
+e.g. so that tweaking the behavior, inputs, and/or outputs of the "to pfn"
+helpers doesn't require churning half of KVM.
+
+In the more distant future, the APIs exposed to arch code could also
+follow suit, e.g. by adding something akin to x86's "struct kvm_page_fault"
+when faulting in guest memory.  But for now, the goal is purely to clean
+up KVM's "internal" MMU code.
+
+As part of the conversion, replace the write_fault, interruptible, and
+no-wait boolean flags with FOLL_WRITE, FOLL_INTERRUPTIBLE, and FOLL_NOWAIT
+respectively.  Collecting the various FOLL_* flags into a single field
+will again ease the pain of passing new flags.
 
 Tested-by: Alex Benn?e <alex.bennee@linaro.org>
+Signed-off-by: David Stevens <stevensd@chromium.org>
+Co-developed-by: Sean Christopherson <seanjc@google.com>
 Signed-off-by: Sean Christopherson <seanjc@google.com>
 ---
- arch/arm64/kvm/mmu.c                   | 2 +-
- arch/powerpc/kvm/book3s_64_mmu_hv.c    | 2 +-
- arch/powerpc/kvm/book3s_64_mmu_radix.c | 2 +-
- arch/x86/kvm/mmu/mmu.c                 | 6 ++----
- include/linux/kvm_host.h               | 2 +-
- virt/kvm/kvm_main.c                    | 9 +++------
- 6 files changed, 9 insertions(+), 14 deletions(-)
+ virt/kvm/kvm_main.c | 162 +++++++++++++++++++++++---------------------
+ virt/kvm/kvm_mm.h   |  20 +++++-
+ virt/kvm/pfncache.c |   9 ++-
+ 3 files changed, 109 insertions(+), 82 deletions(-)
 
-diff --git a/arch/arm64/kvm/mmu.c b/arch/arm64/kvm/mmu.c
-index a6e62cc9015c..dd221587fcca 100644
---- a/arch/arm64/kvm/mmu.c
-+++ b/arch/arm64/kvm/mmu.c
-@@ -1570,7 +1570,7 @@ static int user_mem_abort(struct kvm_vcpu *vcpu, phys_addr_t fault_ipa,
- 	mmap_read_unlock(current->mm);
- 
- 	pfn = __gfn_to_pfn_memslot(memslot, gfn, false, NULL,
--				   write_fault, &writable, NULL);
-+				   write_fault, &writable);
- 	if (pfn == KVM_PFN_ERR_HWPOISON) {
- 		kvm_send_hwpoison_signal(hva, vma_shift);
- 		return 0;
-diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-index 8cd02ca4b1b8..2f1d58984b41 100644
---- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
-+++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-@@ -614,7 +614,7 @@ int kvmppc_book3s_hv_page_fault(struct kvm_vcpu *vcpu,
- 	} else {
- 		/* Call KVM generic code to do the slow-path check */
- 		pfn = __gfn_to_pfn_memslot(memslot, gfn, false, NULL,
--					   writing, &write_ok, NULL);
-+					   writing, &write_ok);
- 		if (is_error_noslot_pfn(pfn))
- 			return -EFAULT;
- 		page = NULL;
-diff --git a/arch/powerpc/kvm/book3s_64_mmu_radix.c b/arch/powerpc/kvm/book3s_64_mmu_radix.c
-index 26a969e935e3..8304b6f8fe45 100644
---- a/arch/powerpc/kvm/book3s_64_mmu_radix.c
-+++ b/arch/powerpc/kvm/book3s_64_mmu_radix.c
-@@ -853,7 +853,7 @@ int kvmppc_book3s_instantiate_page(struct kvm_vcpu *vcpu,
- 
- 		/* Call KVM generic code to do the slow-path check */
- 		pfn = __gfn_to_pfn_memslot(memslot, gfn, false, NULL,
--					   writing, upgrade_p, NULL);
-+					   writing, upgrade_p);
- 		if (is_error_noslot_pfn(pfn))
- 			return -EFAULT;
- 		page = NULL;
-diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
-index c67228b46bd5..28f2b842d6ca 100644
---- a/arch/x86/kvm/mmu/mmu.c
-+++ b/arch/x86/kvm/mmu/mmu.c
-@@ -4377,8 +4377,7 @@ static int __kvm_faultin_pfn(struct kvm_vcpu *vcpu, struct kvm_page_fault *fault
- 		return kvm_faultin_pfn_private(vcpu, fault);
- 
- 	fault->pfn = __gfn_to_pfn_memslot(fault->slot, fault->gfn, false, true,
--					  fault->write, &fault->map_writable,
--					  NULL);
-+					  fault->write, &fault->map_writable);
- 
- 	/*
- 	 * If resolving the page failed because I/O is needed to fault-in the
-@@ -4406,8 +4405,7 @@ static int __kvm_faultin_pfn(struct kvm_vcpu *vcpu, struct kvm_page_fault *fault
- 	 * get a page and a fatal signal, i.e. SIGKILL, is pending.
- 	 */
- 	fault->pfn = __gfn_to_pfn_memslot(fault->slot, fault->gfn, true, true,
--					  fault->write, &fault->map_writable,
--					  NULL);
-+					  fault->write, &fault->map_writable);
- 	return RET_PF_CONTINUE;
- }
- 
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index 071a0a1f1c60..cbc7b9c04c14 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -1235,7 +1235,7 @@ kvm_pfn_t gfn_to_pfn_prot(struct kvm *kvm, gfn_t gfn, bool write_fault,
- kvm_pfn_t gfn_to_pfn_memslot(const struct kvm_memory_slot *slot, gfn_t gfn);
- kvm_pfn_t __gfn_to_pfn_memslot(const struct kvm_memory_slot *slot, gfn_t gfn,
- 			       bool interruptible, bool no_wait,
--			       bool write_fault, bool *writable, hva_t *hva);
-+			       bool write_fault, bool *writable);
- 
- void kvm_release_pfn_clean(kvm_pfn_t pfn);
- void kvm_release_pfn_dirty(kvm_pfn_t pfn);
 diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index dd5839abef6c..10071f31b2ca 100644
+index 10071f31b2ca..52629ac26119 100644
 --- a/virt/kvm/kvm_main.c
 +++ b/virt/kvm/kvm_main.c
-@@ -2967,13 +2967,10 @@ kvm_pfn_t hva_to_pfn(unsigned long addr, bool interruptible, bool no_wait,
+@@ -2750,8 +2750,7 @@ unsigned long kvm_vcpu_gfn_to_hva_prot(struct kvm_vcpu *vcpu, gfn_t gfn, bool *w
+  * The fast path to get the writable pfn which will be stored in @pfn,
+  * true indicates success, otherwise false is returned.
+  */
+-static bool hva_to_pfn_fast(unsigned long addr, bool write_fault,
+-			    bool *writable, kvm_pfn_t *pfn)
++static bool hva_to_pfn_fast(struct kvm_follow_pfn *kfp, kvm_pfn_t *pfn)
+ {
+ 	struct page *page[1];
  
+@@ -2760,14 +2759,13 @@ static bool hva_to_pfn_fast(unsigned long addr, bool write_fault,
+ 	 * or the caller allows to map a writable pfn for a read fault
+ 	 * request.
+ 	 */
+-	if (!(write_fault || writable))
++	if (!((kfp->flags & FOLL_WRITE) || kfp->map_writable))
+ 		return false;
+ 
+-	if (get_user_page_fast_only(addr, FOLL_WRITE, page)) {
++	if (get_user_page_fast_only(kfp->hva, FOLL_WRITE, page)) {
+ 		*pfn = page_to_pfn(page[0]);
+-
+-		if (writable)
+-			*writable = true;
++		if (kfp->map_writable)
++			*kfp->map_writable = true;
+ 		return true;
+ 	}
+ 
+@@ -2778,8 +2776,7 @@ static bool hva_to_pfn_fast(unsigned long addr, bool write_fault,
+  * The slow path to get the pfn of the specified host virtual address,
+  * 1 indicates success, -errno is returned if error is detected.
+  */
+-static int hva_to_pfn_slow(unsigned long addr, bool no_wait, bool write_fault,
+-			   bool interruptible, bool *writable, kvm_pfn_t *pfn)
++static int hva_to_pfn_slow(struct kvm_follow_pfn *kfp, kvm_pfn_t *pfn)
+ {
+ 	/*
+ 	 * When a VCPU accesses a page that is not mapped into the secondary
+@@ -2792,34 +2789,30 @@ static int hva_to_pfn_slow(unsigned long addr, bool no_wait, bool write_fault,
+ 	 * Note that get_user_page_fast_only() and FOLL_WRITE for now
+ 	 * implicitly honor NUMA hinting faults and don't need this flag.
+ 	 */
+-	unsigned int flags = FOLL_HWPOISON | FOLL_HONOR_NUMA_FAULT;
+-	struct page *page;
++	unsigned int flags = FOLL_HWPOISON | FOLL_HONOR_NUMA_FAULT | kfp->flags;
++	struct page *page, *wpage;
+ 	int npages;
+ 
+-	if (writable)
+-		*writable = write_fault;
+-
+-	if (write_fault)
+-		flags |= FOLL_WRITE;
+-	if (no_wait)
+-		flags |= FOLL_NOWAIT;
+-	if (interruptible)
+-		flags |= FOLL_INTERRUPTIBLE;
+-
+-	npages = get_user_pages_unlocked(addr, 1, &page, flags);
++	npages = get_user_pages_unlocked(kfp->hva, 1, &page, flags);
+ 	if (npages != 1)
+ 		return npages;
+ 
++	if (!kfp->map_writable)
++		goto out;
++
++	if (kfp->flags & FOLL_WRITE) {
++		*kfp->map_writable = true;
++		goto out;
++	}
++
+ 	/* map read fault as writable if possible */
+-	if (unlikely(!write_fault) && writable) {
+-		struct page *wpage;
+-
+-		if (get_user_page_fast_only(addr, FOLL_WRITE, &wpage)) {
+-			*writable = true;
+-			put_page(page);
+-			page = wpage;
+-		}
++	if (get_user_page_fast_only(kfp->hva, FOLL_WRITE, &wpage)) {
++		*kfp->map_writable = true;
++		put_page(page);
++		page = wpage;
+ 	}
++
++out:
+ 	*pfn = page_to_pfn(page);
+ 	return npages;
+ }
+@@ -2846,10 +2839,10 @@ static int kvm_try_get_pfn(kvm_pfn_t pfn)
+ }
+ 
+ static int hva_to_pfn_remapped(struct vm_area_struct *vma,
+-			       unsigned long addr, bool write_fault,
+-			       bool *writable, kvm_pfn_t *p_pfn)
++			       struct kvm_follow_pfn *kfp, kvm_pfn_t *p_pfn)
+ {
+-	struct follow_pfnmap_args args = { .vma = vma, .address = addr };
++	struct follow_pfnmap_args args = { .vma = vma, .address = kfp->hva };
++	bool write_fault = kfp->flags & FOLL_WRITE;
+ 	kvm_pfn_t pfn;
+ 	int r;
+ 
+@@ -2860,7 +2853,7 @@ static int hva_to_pfn_remapped(struct vm_area_struct *vma,
+ 		 * not call the fault handler, so do it here.
+ 		 */
+ 		bool unlocked = false;
+-		r = fixup_user_fault(current->mm, addr,
++		r = fixup_user_fault(current->mm, kfp->hva,
+ 				     (write_fault ? FAULT_FLAG_WRITE : 0),
+ 				     &unlocked);
+ 		if (unlocked)
+@@ -2878,8 +2871,8 @@ static int hva_to_pfn_remapped(struct vm_area_struct *vma,
+ 		goto out;
+ 	}
+ 
+-	if (writable)
+-		*writable = args.writable;
++	if (kfp->map_writable)
++		*kfp->map_writable = args.writable;
+ 	pfn = args.pfn;
+ 
+ 	/*
+@@ -2908,22 +2901,7 @@ static int hva_to_pfn_remapped(struct vm_area_struct *vma,
+ 	return r;
+ }
+ 
+-/*
+- * Pin guest page in memory and return its pfn.
+- * @addr: host virtual address which maps memory to the guest
+- * @interruptible: whether the process can be interrupted by non-fatal signals
+- * @no_wait: whether or not this function need to wait IO complete if the
+- *	     host page is not in the memory
+- * @write_fault: whether we should get a writable host page
+- * @writable: whether it allows to map a writable host page for !@write_fault
+- *
+- * The function will map a writable host page for these two cases:
+- * 1): @write_fault = true
+- * 2): @write_fault = false && @writable, @writable will tell the caller
+- *     whether the mapping is writable.
+- */
+-kvm_pfn_t hva_to_pfn(unsigned long addr, bool interruptible, bool no_wait,
+-		     bool write_fault, bool *writable)
++kvm_pfn_t hva_to_pfn(struct kvm_follow_pfn *kfp)
+ {
+ 	struct vm_area_struct *vma;
+ 	kvm_pfn_t pfn;
+@@ -2931,11 +2909,10 @@ kvm_pfn_t hva_to_pfn(unsigned long addr, bool interruptible, bool no_wait,
+ 
+ 	might_sleep();
+ 
+-	if (hva_to_pfn_fast(addr, write_fault, writable, &pfn))
++	if (hva_to_pfn_fast(kfp, &pfn))
+ 		return pfn;
+ 
+-	npages = hva_to_pfn_slow(addr, no_wait, write_fault, interruptible,
+-				 writable, &pfn);
++	npages = hva_to_pfn_slow(kfp, &pfn);
+ 	if (npages == 1)
+ 		return pfn;
+ 	if (npages == -EINTR || npages == -EAGAIN)
+@@ -2945,18 +2922,19 @@ kvm_pfn_t hva_to_pfn(unsigned long addr, bool interruptible, bool no_wait,
+ 
+ 	mmap_read_lock(current->mm);
+ retry:
+-	vma = vma_lookup(current->mm, addr);
++	vma = vma_lookup(current->mm, kfp->hva);
+ 
+ 	if (vma == NULL)
+ 		pfn = KVM_PFN_ERR_FAULT;
+ 	else if (vma->vm_flags & (VM_IO | VM_PFNMAP)) {
+-		r = hva_to_pfn_remapped(vma, addr, write_fault, writable, &pfn);
++		r = hva_to_pfn_remapped(vma, kfp, &pfn);
+ 		if (r == -EAGAIN)
+ 			goto retry;
+ 		if (r < 0)
+ 			pfn = KVM_PFN_ERR_FAULT;
+ 	} else {
+-		if (no_wait && vma_is_valid(vma, write_fault))
++		if ((kfp->flags & FOLL_NOWAIT) &&
++		    vma_is_valid(vma, kfp->flags & FOLL_WRITE))
+ 			pfn = KVM_PFN_ERR_NEEDS_IO;
+ 		else
+ 			pfn = KVM_PFN_ERR_FAULT;
+@@ -2965,41 +2943,69 @@ kvm_pfn_t hva_to_pfn(unsigned long addr, bool interruptible, bool no_wait,
+ 	return pfn;
+ }
+ 
++static kvm_pfn_t kvm_follow_pfn(struct kvm_follow_pfn *kfp)
++{
++	kfp->hva = __gfn_to_hva_many(kfp->slot, kfp->gfn, NULL,
++				     kfp->flags & FOLL_WRITE);
++
++	if (kfp->hva == KVM_HVA_ERR_RO_BAD)
++		return KVM_PFN_ERR_RO_FAULT;
++
++	if (kvm_is_error_hva(kfp->hva))
++		return KVM_PFN_NOSLOT;
++
++	if (memslot_is_readonly(kfp->slot) && kfp->map_writable) {
++		*kfp->map_writable = false;
++		kfp->map_writable = NULL;
++	}
++
++	return hva_to_pfn(kfp);
++}
++
  kvm_pfn_t __gfn_to_pfn_memslot(const struct kvm_memory_slot *slot, gfn_t gfn,
  			       bool interruptible, bool no_wait,
--			       bool write_fault, bool *writable, hva_t *hva)
-+			       bool write_fault, bool *writable)
+ 			       bool write_fault, bool *writable)
  {
- 	unsigned long addr = __gfn_to_hva_many(slot, gfn, NULL, write_fault);
- 
--	if (hva)
--		*hva = addr;
+-	unsigned long addr = __gfn_to_hva_many(slot, gfn, NULL, write_fault);
 -
- 	if (kvm_is_error_hva(addr)) {
- 		if (writable)
- 			*writable = false;
-@@ -2996,13 +2993,13 @@ kvm_pfn_t gfn_to_pfn_prot(struct kvm *kvm, gfn_t gfn, bool write_fault,
+-	if (kvm_is_error_hva(addr)) {
+-		if (writable)
+-			*writable = false;
+-
+-		return addr == KVM_HVA_ERR_RO_BAD ? KVM_PFN_ERR_RO_FAULT :
+-						    KVM_PFN_NOSLOT;
+-	}
+-
+-	/* Do not map writable pfn in the readonly memslot. */
+-	if (writable && memslot_is_readonly(slot)) {
+-		*writable = false;
+-		writable = NULL;
+-	}
+-
+-	return hva_to_pfn(addr, interruptible, no_wait, write_fault, writable);
++	struct kvm_follow_pfn kfp = {
++		.slot = slot,
++		.gfn = gfn,
++		.map_writable = writable,
++	};
++
++	if (write_fault)
++		kfp.flags |= FOLL_WRITE;
++	if (no_wait)
++		kfp.flags |= FOLL_NOWAIT;
++	if (interruptible)
++		kfp.flags |= FOLL_INTERRUPTIBLE;
++
++	return kvm_follow_pfn(&kfp);
+ }
+ EXPORT_SYMBOL_GPL(__gfn_to_pfn_memslot);
+ 
+ kvm_pfn_t gfn_to_pfn_prot(struct kvm *kvm, gfn_t gfn, bool write_fault,
  		      bool *writable)
  {
- 	return __gfn_to_pfn_memslot(gfn_to_memslot(kvm, gfn), gfn, false, false,
--				    write_fault, writable, NULL);
-+				    write_fault, writable);
+-	return __gfn_to_pfn_memslot(gfn_to_memslot(kvm, gfn), gfn, false, false,
+-				    write_fault, writable);
++	struct kvm_follow_pfn kfp = {
++		.slot = gfn_to_memslot(kvm, gfn),
++		.gfn = gfn,
++		.flags = write_fault ? FOLL_WRITE : 0,
++		.map_writable = writable,
++	};
++
++	return kvm_follow_pfn(&kfp);
  }
  EXPORT_SYMBOL_GPL(gfn_to_pfn_prot);
  
  kvm_pfn_t gfn_to_pfn_memslot(const struct kvm_memory_slot *slot, gfn_t gfn)
  {
--	return __gfn_to_pfn_memslot(slot, gfn, false, false, true, NULL, NULL);
-+	return __gfn_to_pfn_memslot(slot, gfn, false, false, true, NULL);
+-	return __gfn_to_pfn_memslot(slot, gfn, false, false, true, NULL);
++	struct kvm_follow_pfn kfp = {
++		.slot = slot,
++		.gfn = gfn,
++		.flags = FOLL_WRITE,
++	};
++
++	return kvm_follow_pfn(&kfp);
  }
  EXPORT_SYMBOL_GPL(gfn_to_pfn_memslot);
+ 
+diff --git a/virt/kvm/kvm_mm.h b/virt/kvm/kvm_mm.h
+index 51f3fee4ca3f..d5a215958f06 100644
+--- a/virt/kvm/kvm_mm.h
++++ b/virt/kvm/kvm_mm.h
+@@ -20,8 +20,24 @@
+ #define KVM_MMU_UNLOCK(kvm)		spin_unlock(&(kvm)->mmu_lock)
+ #endif /* KVM_HAVE_MMU_RWLOCK */
+ 
+-kvm_pfn_t hva_to_pfn(unsigned long addr, bool interruptible, bool no_wait,
+-		     bool write_fault, bool *writable);
++
++struct kvm_follow_pfn {
++	const struct kvm_memory_slot *slot;
++	const gfn_t gfn;
++
++	unsigned long hva;
++
++	/* FOLL_* flags modifying lookup behavior, e.g. FOLL_WRITE. */
++	unsigned int flags;
++
++	/*
++	 * If non-NULL, try to get a writable mapping even for a read fault.
++	 * Set to true if a writable mapping was obtained.
++	 */
++	bool *map_writable;
++};
++
++kvm_pfn_t hva_to_pfn(struct kvm_follow_pfn *kfp);
+ 
+ #ifdef CONFIG_HAVE_KVM_PFNCACHE
+ void gfn_to_pfn_cache_invalidate_start(struct kvm *kvm,
+diff --git a/virt/kvm/pfncache.c b/virt/kvm/pfncache.c
+index 32dc61f48c81..067daf9ad6ef 100644
+--- a/virt/kvm/pfncache.c
++++ b/virt/kvm/pfncache.c
+@@ -159,6 +159,12 @@ static kvm_pfn_t hva_to_pfn_retry(struct gfn_to_pfn_cache *gpc)
+ 	kvm_pfn_t new_pfn = KVM_PFN_ERR_FAULT;
+ 	void *new_khva = NULL;
+ 	unsigned long mmu_seq;
++	struct kvm_follow_pfn kfp = {
++		.slot = gpc->memslot,
++		.gfn = gpa_to_gfn(gpc->gpa),
++		.flags = FOLL_WRITE,
++		.hva = gpc->uhva,
++	};
+ 
+ 	lockdep_assert_held(&gpc->refresh_lock);
+ 
+@@ -197,8 +203,7 @@ static kvm_pfn_t hva_to_pfn_retry(struct gfn_to_pfn_cache *gpc)
+ 			cond_resched();
+ 		}
+ 
+-		/* We always request a writable mapping */
+-		new_pfn = hva_to_pfn(gpc->uhva, false, false, true, NULL);
++		new_pfn = hva_to_pfn(&kfp);
+ 		if (is_error_noslot_pfn(new_pfn))
+ 			goto out_error;
  
 -- 
 2.47.0.rc1.288.g06298d1525-goog
