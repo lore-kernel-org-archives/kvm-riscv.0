@@ -1,152 +1,77 @@
 From: Anup Patel <anup@brainfault.org>
-Date: Tue, 15 Oct 2024 12:12:55 +0530
-Subject: [PATCH v4 0/2] riscv: Add perf support to collect KVM guest
- statistics from host side
-In-Reply-To: <cover.1728957131.git.zhouquan@iscas.ac.cn>
-References: <cover.1728957131.git.zhouquan@iscas.ac.cn>
-Message-ID: <CAAhSdy1nmpiSfi-9B0ZXS9s6CYs_R9YZfd6rrXNc-BQHucm6ww@mail.gmail.com>
+Date: Tue, 15 Oct 2024 12:15:04 +0530
+Subject: [PATCH] RISCV: KVM: use raw_spinlock for critical section in imsic
+In-Reply-To: <20240919160126.44487-1-cyan.yang@sifive.com>
+References: <20240919160126.44487-1-cyan.yang@sifive.com>
+Message-ID: <CAAhSdy3x680G2cXqam0uc1kAAg_Cd1tFhBVygOrLZ0bL9ztDBg@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Oct 15, 2024 at 8:28?AM <zhouquan@iscas.ac.cn> wrote:
+On Thu, Sep 19, 2024 at 9:32?PM Cyan Yang <cyan.yang@sifive.com> wrote:
 >
-> From: Quan Zhou <zhouquan@iscas.ac.cn>
+> For the external interrupt updating procedure in imsic, there was a
+> spinlock to protect it already. But since it should not be preempted in
+> any cases, we should turn to use raw_spinlock to prevent any preemption
+> in case PREEMPT_RT was enabled.
 >
-> Add basic guest support to RISC-V perf, enabling it to distinguish
-> whether PMU interrupts occur in the host or the guest, and then
-> collect some basic guest information from the host side
-> (guest os callchain is not supported for now).
->
-> Based on the x86/arm implementation, tested with kvm-riscv.
-> test env:
-> - host: qemu-9.0.0
-> - guest: qemu-9.0.0 --enable-kvm (only start one guest and run top)
->
-> -----------------------------------------
-> 1) perf kvm top
-> ./perf kvm --host --guest \
->   --guestkallsyms=/<path-to-kallsyms> \
->   --guestmodules=/<path-to-modules> top
->
-> PerfTop:      41 irqs/sec  kernel:97.6% us: 0.0% guest kernel: 0.0% guest us: 0.0% exact:  0.0% [250Hz cycles:P],  (all, 4 CPUs)
-> -------------------------------------------------------------------------------
->
->     64.57%  [kernel]        [k] default_idle_call
->      3.12%  [kernel]        [k] _raw_spin_unlock_irqrestore
->      3.03%  [guest.kernel]  [g] mem_serial_out
->      2.61%  [kernel]        [k] handle_softirqs
->      2.32%  [kernel]        [k] do_trap_ecall_u
->      1.71%  [kernel]        [k] _raw_spin_unlock_irq
->      1.26%  [guest.kernel]  [g] do_raw_spin_lock
->      1.25%  [kernel]        [k] finish_task_switch.isra.0
->      1.16%  [kernel]        [k] do_idle
->      0.77%  libc.so.6       [.] ioctl
->      0.76%  [kernel]        [k] queue_work_on
->      0.69%  [kernel]        [k] __local_bh_enable_ip
->      0.67%  [guest.kernel]  [g] __noinstr_text_start
->      0.64%  [guest.kernel]  [g] mem_serial_in
->      0.41%  libc.so.6       [.] pthread_sigmask
->      0.39%  [kernel]        [k] mem_cgroup_uncharge_skmem
->      0.39%  [kernel]        [k] __might_resched
->      0.39%  [guest.kernel]  [g] _nohz_idle_balance.isra.0
->      0.37%  [kernel]        [k] sched_balance_update_blocked_averages
->      0.34%  [kernel]        [k] sched_balance_rq
->
-> 2) perf kvm record
-> ./perf kvm --host --guest \
->   --guestkallsyms=/<path-to-kallsyms> \
->   --guestmodules=/<path-to-modules> record -a sleep 60
->
-> [ perf record: Woken up 3 times to write data ]
-> [ perf record: Captured and wrote 1.292 MB perf.data.kvm (17990 samples) ]
->
-> 3) perf kvm report
-> ./perf kvm --host --guest \
->   --guestkallsyms=/<path-to-kallsyms> \
->   --guestmodules=/<path-to-modules> report -i perf.data.kvm
->
-> # Total Lost Samples: 0
-> #
-> # Samples: 17K of event 'cycles:P'
-> # Event count (approx.): 269968947184
-> #
-> # Overhead  Command          Shared Object            Symbol
-> # ........  ...............  .......................  ..............................................
-> #
->     61.86%  swapper          [kernel.kallsyms]        [k] default_idle_call
->      2.93%  :6463            [guest.kernel.kallsyms]  [g] do_raw_spin_lock
->      2.82%  :6462            [guest.kernel.kallsyms]  [g] mem_serial_out
->      2.11%  sshd             [kernel.kallsyms]        [k] _raw_spin_unlock_irqrestore
->      1.78%  :6462            [guest.kernel.kallsyms]  [g] do_raw_spin_lock
->      1.37%  swapper          [kernel.kallsyms]        [k] handle_softirqs
->      1.36%  swapper          [kernel.kallsyms]        [k] do_idle
->      1.21%  sshd             [kernel.kallsyms]        [k] do_trap_ecall_u
->      1.21%  sshd             [kernel.kallsyms]        [k] _raw_spin_unlock_irq
->      1.11%  qemu-system-ris  [kernel.kallsyms]        [k] do_trap_ecall_u
->      0.93%  qemu-system-ris  libc.so.6                [.] ioctl
->      0.89%  sshd             [kernel.kallsyms]        [k] __local_bh_enable_ip
->      0.77%  qemu-system-ris  [kernel.kallsyms]        [k] _raw_spin_unlock_irqrestore
->      0.68%  qemu-system-ris  [kernel.kallsyms]        [k] queue_work_on
->      0.65%  sshd             [kernel.kallsyms]        [k] handle_softirqs
->      0.44%  :6462            [guest.kernel.kallsyms]  [g] mem_serial_in
->      0.42%  sshd             libc.so.6                [.] pthread_sigmask
->      0.34%  :6462            [guest.kernel.kallsyms]  [g] serial8250_tx_chars
->      0.30%  swapper          [kernel.kallsyms]        [k] finish_task_switch.isra.0
->      0.29%  swapper          [kernel.kallsyms]        [k] sched_balance_rq
->      0.29%  sshd             [kernel.kallsyms]        [k] __might_resched
->      0.26%  swapper          [kernel.kallsyms]        [k] tick_nohz_idle_exit
->      0.26%  swapper          [kernel.kallsyms]        [k] sched_balance_update_blocked_averages
->      0.26%  swapper          [kernel.kallsyms]        [k] _nohz_idle_balance.isra.0
->      0.24%  qemu-system-ris  [kernel.kallsyms]        [k] finish_task_switch.isra.0
->      0.23%  :6462            [guest.kernel.kallsyms]  [g] __noinstr_text_start
->
-> ---
-> Change since v3:
-> - Rebased on v6.12-rc3
->
-> Change since v2:
-> - Rebased on v6.11-rc7
-> - Keep the misc type consistent with other architectures as `unsigned long` (Andrew)
-> - Add the same comment for `kvm_arch_pmi_in_guest` as in arm64. (Andrew)
->
-> Change since v1:
-> - Rebased on v6.11-rc3
-> - Fix incorrect misc type (Andrew)
->
-> ---
-> v3 link:
-> https://lore.kernel.org/all/cover.1726126795.git.zhouquan at iscas.ac.cn/
-> v2 link:
-> https://lore.kernel.org/all/cover.1723518282.git.zhouquan at iscas.ac.cn/
-> v1 link:
-> https://lore.kernel.org/all/cover.1721271251.git.zhouquan at iscas.ac.cn/
->
-> Quan Zhou (2):
->   riscv: perf: add guest vs host distinction
->   riscv: KVM: add basic support for host vs guest profiling
->
->  arch/riscv/include/asm/kvm_host.h   | 10 ++++++++
->  arch/riscv/include/asm/perf_event.h |  6 +++++
->  arch/riscv/kernel/perf_callchain.c  | 38 +++++++++++++++++++++++++++++
->  arch/riscv/kvm/Kconfig              |  1 +
->  arch/riscv/kvm/main.c               | 12 +++++++--
->  arch/riscv/kvm/vcpu.c               |  7 ++++++
->  6 files changed, 72 insertions(+), 2 deletions(-)
+> Signed-off-by: Cyan Yang <cyan.yang@sifive.com>
+> Reviewed-by: Yong-Xuan Wang <yongxuan.wang@sifive.com>
 
-Please include Reviewed-by tags obtained on previous patch revisions.
+LGTM.
 
-Queued this series for Linux-6.13
+Reviewed-by: Anup Patel <anup@brainfault.org>
 
 Regards,
 Anup
 
+> ---
+>  arch/riscv/kvm/aia_imsic.c | 8 ++++----
+>  1 file changed, 4 insertions(+), 4 deletions(-)
 >
+> diff --git a/arch/riscv/kvm/aia_imsic.c b/arch/riscv/kvm/aia_imsic.c
+> index 0a1e85932..a8085cd82 100644
+> --- a/arch/riscv/kvm/aia_imsic.c
+> +++ b/arch/riscv/kvm/aia_imsic.c
+> @@ -55,7 +55,7 @@ struct imsic {
+>         /* IMSIC SW-file */
+>         struct imsic_mrif *swfile;
+>         phys_addr_t swfile_pa;
+> -       spinlock_t swfile_extirq_lock;
+> +       raw_spinlock_t swfile_extirq_lock;
+>  };
 >
-> base-commit: 8e929cb546ee42c9a61d24fae60605e9e3192354
+>  #define imsic_vs_csr_read(__c)                 \
+> @@ -622,7 +622,7 @@ static void imsic_swfile_extirq_update(struct kvm_vcpu *vcpu)
+>          * interruptions between reading topei and updating pending status.
+>          */
+>
+> -       spin_lock_irqsave(&imsic->swfile_extirq_lock, flags);
+> +       raw_spin_lock_irqsave(&imsic->swfile_extirq_lock, flags);
+>
+>         if (imsic_mrif_atomic_read(mrif, &mrif->eidelivery) &&
+>             imsic_mrif_topei(mrif, imsic->nr_eix, imsic->nr_msis))
+> @@ -630,7 +630,7 @@ static void imsic_swfile_extirq_update(struct kvm_vcpu *vcpu)
+>         else
+>                 kvm_riscv_vcpu_unset_interrupt(vcpu, IRQ_VS_EXT);
+>
+> -       spin_unlock_irqrestore(&imsic->swfile_extirq_lock, flags);
+> +       raw_spin_unlock_irqrestore(&imsic->swfile_extirq_lock, flags);
+>  }
+>
+>  static void imsic_swfile_read(struct kvm_vcpu *vcpu, bool clear,
+> @@ -1051,7 +1051,7 @@ int kvm_riscv_vcpu_aia_imsic_init(struct kvm_vcpu *vcpu)
+>         }
+>         imsic->swfile = page_to_virt(swfile_page);
+>         imsic->swfile_pa = page_to_phys(swfile_page);
+> -       spin_lock_init(&imsic->swfile_extirq_lock);
+> +       raw_spin_lock_init(&imsic->swfile_extirq_lock);
+>
+>         /* Setup IO device */
+>         kvm_iodevice_init(&imsic->iodev, &imsic_iodoev_ops);
 > --
-> 2.34.1
+> 2.39.5 (Apple Git-154)
 >
 
