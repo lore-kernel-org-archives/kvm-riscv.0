@@ -1,7 +1,9 @@
 From: zhouquan@iscas.ac.cn <zhouquan@iscas.ac.cn>
-Date: Tue, 15 Oct 2024 16:42:18 +0800
-Subject: [PATCH v5 0/2] riscv: Add perf support to collect KVM guest statistics from host side
-Message-ID: <cover.1728980031.git.zhouquan@iscas.ac.cn>
+Date: Tue, 15 Oct 2024 16:42:50 +0800
+Subject: [PATCH v5 1/2] riscv: perf: add guest vs host distinction
+In-Reply-To: <cover.1728980031.git.zhouquan@iscas.ac.cn>
+References: <cover.1728980031.git.zhouquan@iscas.ac.cn>
+Message-ID: <a67d527dc1b11493fe11f7f53584772fdd983744.1728980031.git.zhouquan@iscas.ac.cn>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -10,134 +12,94 @@ Content-Transfer-Encoding: 7bit
 
 From: Quan Zhou <zhouquan@iscas.ac.cn>
 
-Add basic guest support to RISC-V perf, enabling it to distinguish
-whether PMU interrupts occur in the host or the guest, and then
-collect some basic guest information from the host side
-(guest os callchain is not supported for now).
+Introduce basic guest support in perf, enabling it to distinguish
+between PMU interrupts in the host or guest, and collect
+fundamental information.
 
-Based on the x86/arm implementation, tested with kvm-riscv.
-test env:
-- host: qemu-9.0.0
-- guest: qemu-9.0.0 --enable-kvm (only start one guest and run top)
-
------------------------------------------
-1) perf kvm top
-./perf kvm --host --guest \
-  --guestkallsyms=/<path-to-kallsyms> \
-  --guestmodules=/<path-to-modules> top
-
-PerfTop:      41 irqs/sec  kernel:97.6% us: 0.0% guest kernel: 0.0% guest us: 0.0% exact:  0.0% [250Hz cycles:P],  (all, 4 CPUs)
--------------------------------------------------------------------------------
-
-    64.57%  [kernel]        [k] default_idle_call
-     3.12%  [kernel]        [k] _raw_spin_unlock_irqrestore
-     3.03%  [guest.kernel]  [g] mem_serial_out
-     2.61%  [kernel]        [k] handle_softirqs
-     2.32%  [kernel]        [k] do_trap_ecall_u
-     1.71%  [kernel]        [k] _raw_spin_unlock_irq
-     1.26%  [guest.kernel]  [g] do_raw_spin_lock
-     1.25%  [kernel]        [k] finish_task_switch.isra.0
-     1.16%  [kernel]        [k] do_idle
-     0.77%  libc.so.6       [.] ioctl
-     0.76%  [kernel]        [k] queue_work_on
-     0.69%  [kernel]        [k] __local_bh_enable_ip
-     0.67%  [guest.kernel]  [g] __noinstr_text_start
-     0.64%  [guest.kernel]  [g] mem_serial_in
-     0.41%  libc.so.6       [.] pthread_sigmask
-     0.39%  [kernel]        [k] mem_cgroup_uncharge_skmem
-     0.39%  [kernel]        [k] __might_resched
-     0.39%  [guest.kernel]  [g] _nohz_idle_balance.isra.0
-     0.37%  [kernel]        [k] sched_balance_update_blocked_averages
-     0.34%  [kernel]        [k] sched_balance_rq
-
-2) perf kvm record
-./perf kvm --host --guest \
-  --guestkallsyms=/<path-to-kallsyms> \
-  --guestmodules=/<path-to-modules> record -a sleep 60
-
-[ perf record: Woken up 3 times to write data ]
-[ perf record: Captured and wrote 1.292 MB perf.data.kvm (17990 samples) ]
-
-3) perf kvm report
-./perf kvm --host --guest \
-  --guestkallsyms=/<path-to-kallsyms> \
-  --guestmodules=/<path-to-modules> report -i perf.data.kvm
-
-# Total Lost Samples: 0
-#
-# Samples: 17K of event 'cycles:P'
-# Event count (approx.): 269968947184
-#
-# Overhead  Command          Shared Object            Symbol                                        
-# ........  ...............  .......................  ..............................................
-#
-    61.86%  swapper          [kernel.kallsyms]        [k] default_idle_call
-     2.93%  :6463            [guest.kernel.kallsyms]  [g] do_raw_spin_lock
-     2.82%  :6462            [guest.kernel.kallsyms]  [g] mem_serial_out
-     2.11%  sshd             [kernel.kallsyms]        [k] _raw_spin_unlock_irqrestore
-     1.78%  :6462            [guest.kernel.kallsyms]  [g] do_raw_spin_lock
-     1.37%  swapper          [kernel.kallsyms]        [k] handle_softirqs
-     1.36%  swapper          [kernel.kallsyms]        [k] do_idle
-     1.21%  sshd             [kernel.kallsyms]        [k] do_trap_ecall_u
-     1.21%  sshd             [kernel.kallsyms]        [k] _raw_spin_unlock_irq
-     1.11%  qemu-system-ris  [kernel.kallsyms]        [k] do_trap_ecall_u
-     0.93%  qemu-system-ris  libc.so.6                [.] ioctl
-     0.89%  sshd             [kernel.kallsyms]        [k] __local_bh_enable_ip
-     0.77%  qemu-system-ris  [kernel.kallsyms]        [k] _raw_spin_unlock_irqrestore
-     0.68%  qemu-system-ris  [kernel.kallsyms]        [k] queue_work_on
-     0.65%  sshd             [kernel.kallsyms]        [k] handle_softirqs
-     0.44%  :6462            [guest.kernel.kallsyms]  [g] mem_serial_in
-     0.42%  sshd             libc.so.6                [.] pthread_sigmask
-     0.34%  :6462            [guest.kernel.kallsyms]  [g] serial8250_tx_chars
-     0.30%  swapper          [kernel.kallsyms]        [k] finish_task_switch.isra.0
-     0.29%  swapper          [kernel.kallsyms]        [k] sched_balance_rq
-     0.29%  sshd             [kernel.kallsyms]        [k] __might_resched
-     0.26%  swapper          [kernel.kallsyms]        [k] tick_nohz_idle_exit
-     0.26%  swapper          [kernel.kallsyms]        [k] sched_balance_update_blocked_averages
-     0.26%  swapper          [kernel.kallsyms]        [k] _nohz_idle_balance.isra.0
-     0.24%  qemu-system-ris  [kernel.kallsyms]        [k] finish_task_switch.isra.0
-     0.23%  :6462            [guest.kernel.kallsyms]  [g] __noinstr_text_start
-
+Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+Signed-off-by: Quan Zhou <zhouquan@iscas.ac.cn>
 ---
-Change since v4:
-- Add Reviewed-by tags
-
-Change since v3:
-- Rebased on v6.12-rc3
-
-Change since v2:
-- Rebased on v6.11-rc7
-- Keep the misc type consistent with other architectures as `unsigned long` (Andrew)
-- Add the same comment for `kvm_arch_pmi_in_guest` as in arm64. (Andrew)
-
-Change since v1:
-- Rebased on v6.11-rc3
-- Fix incorrect misc type (Andrew)
-
----
-v4 link:
-https://lore.kernel.org/all/cover.1728957131.git.zhouquan at iscas.ac.cn/
-v3 link:
-https://lore.kernel.org/all/cover.1726126795.git.zhouquan at iscas.ac.cn/
-v2 link:
-https://lore.kernel.org/all/cover.1723518282.git.zhouquan at iscas.ac.cn/
-v1 link:
-https://lore.kernel.org/all/cover.1721271251.git.zhouquan at iscas.ac.cn/
-
-Quan Zhou (2):
-  riscv: perf: add guest vs host distinction
-  riscv: KVM: add basic support for host vs guest profiling
-
- arch/riscv/include/asm/kvm_host.h   | 10 ++++++++
  arch/riscv/include/asm/perf_event.h |  6 +++++
  arch/riscv/kernel/perf_callchain.c  | 38 +++++++++++++++++++++++++++++
- arch/riscv/kvm/Kconfig              |  1 +
- arch/riscv/kvm/main.c               | 12 +++++++--
- arch/riscv/kvm/vcpu.c               |  7 ++++++
- 6 files changed, 72 insertions(+), 2 deletions(-)
+ 2 files changed, 44 insertions(+)
 
-
-base-commit: 8e929cb546ee42c9a61d24fae60605e9e3192354
+diff --git a/arch/riscv/include/asm/perf_event.h b/arch/riscv/include/asm/perf_event.h
+index 665bbc9b2f84..38926b4a902d 100644
+--- a/arch/riscv/include/asm/perf_event.h
++++ b/arch/riscv/include/asm/perf_event.h
+@@ -8,7 +8,11 @@
+ #ifndef _ASM_RISCV_PERF_EVENT_H
+ #define _ASM_RISCV_PERF_EVENT_H
+ 
++#ifdef CONFIG_PERF_EVENTS
+ #include <linux/perf_event.h>
++extern unsigned long perf_instruction_pointer(struct pt_regs *regs);
++extern unsigned long perf_misc_flags(struct pt_regs *regs);
++#define perf_misc_flags(regs) perf_misc_flags(regs)
+ #define perf_arch_bpf_user_pt_regs(regs) (struct user_regs_struct *)regs
+ 
+ #define perf_arch_fetch_caller_regs(regs, __ip) { \
+@@ -17,4 +21,6 @@
+ 	(regs)->sp = current_stack_pointer; \
+ 	(regs)->status = SR_PP; \
+ }
++#endif
++
+ #endif /* _ASM_RISCV_PERF_EVENT_H */
+diff --git a/arch/riscv/kernel/perf_callchain.c b/arch/riscv/kernel/perf_callchain.c
+index c7468af77c66..c2c81a80f816 100644
+--- a/arch/riscv/kernel/perf_callchain.c
++++ b/arch/riscv/kernel/perf_callchain.c
+@@ -28,11 +28,49 @@ static bool fill_callchain(void *entry, unsigned long pc)
+ void perf_callchain_user(struct perf_callchain_entry_ctx *entry,
+ 			 struct pt_regs *regs)
+ {
++	if (perf_guest_state()) {
++		/* TODO: We don't support guest os callchain now */
++		return;
++	}
++
+ 	arch_stack_walk_user(fill_callchain, entry, regs);
+ }
+ 
+ void perf_callchain_kernel(struct perf_callchain_entry_ctx *entry,
+ 			   struct pt_regs *regs)
+ {
++	if (perf_guest_state()) {
++		/* TODO: We don't support guest os callchain now */
++		return;
++	}
++
+ 	walk_stackframe(NULL, regs, fill_callchain, entry);
+ }
++
++unsigned long perf_instruction_pointer(struct pt_regs *regs)
++{
++	if (perf_guest_state())
++		return perf_guest_get_ip();
++
++	return instruction_pointer(regs);
++}
++
++unsigned long perf_misc_flags(struct pt_regs *regs)
++{
++	unsigned int guest_state = perf_guest_state();
++	unsigned long misc = 0;
++
++	if (guest_state) {
++		if (guest_state & PERF_GUEST_USER)
++			misc |= PERF_RECORD_MISC_GUEST_USER;
++		else
++			misc |= PERF_RECORD_MISC_GUEST_KERNEL;
++	} else {
++		if (user_mode(regs))
++			misc |= PERF_RECORD_MISC_USER;
++		else
++			misc |= PERF_RECORD_MISC_KERNEL;
++	}
++
++	return misc;
++}
 -- 
 2.34.1
 
