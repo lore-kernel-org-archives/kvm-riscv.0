@@ -1,128 +1,134 @@
-From: Atish Patra <atishp@rivosinc.com>
-Date: Wed, 16 Oct 2024 12:27:38 -0700
-Subject: [02/13] RISC-V: KVM: Save/restore HSTATUS in C source
-In-Reply-To: <20240719160913.342027-3-apatel@ventanamicro.com>
-Message-ID: <20241016192738.646447-1-atishp@rivosinc.com>
+From: Samuel Holland <samuel.holland@sifive.com>
+Date: Wed, 16 Oct 2024 13:27:41 -0700
+Subject: [PATCH v5 00/10] riscv: Userspace pointer masking and tagged address ABI
+Message-ID: <20241016202814.4061541-1-samuel.holland@sifive.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-> We will be optimizing HSTATUS CSR access via shared memory setup
-> using the SBI nested acceleration extension. To facilitate this,
-> we first move HSTATUS save/restore in kvm_riscv_vcpu_enter_exit().
-> 
-> Signed-off-by: Anup Patel <apatel@ventanamicro.com>
-> ---
->  arch/riscv/kvm/vcpu.c        |  9 +++++++++
->  arch/riscv/kvm/vcpu_switch.S | 36 +++++++++++++-----------------------
->  2 files changed, 22 insertions(+), 23 deletions(-)
-> diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-> index 449e5bb948c2..93b1ce043482 100644
-> --- a/arch/riscv/kvm/vcpu.c
-> +++ b/arch/riscv/kvm/vcpu.c
-> @@ -720,9 +720,18 @@ static __always_inline void kvm_riscv_vcpu_swap_in_host_state(struct kvm_vcpu *v
->   */
->  static void noinstr kvm_riscv_vcpu_enter_exit(struct kvm_vcpu *vcpu)
->  {
-> +	struct kvm_cpu_context *gcntx = &vcpu->arch.guest_context;
-> +	struct kvm_cpu_context *hcntx = &vcpu->arch.host_context;
-> +
->  	kvm_riscv_vcpu_swap_in_guest_state(vcpu);
->  	guest_state_enter_irqoff();
-> +
-> +	hcntx->hstatus = csr_swap(CSR_HSTATUS, gcntx->hstatus);
-> +
->  	__kvm_riscv_switch_to(&vcpu->arch);
-> +
-> +	gcntx->hstatus = csr_swap(CSR_HSTATUS, hcntx->hstatus);
-> +
->  	vcpu->arch.last_exit_cpu = vcpu->cpu;
->  	guest_state_exit_irqoff();
->  	kvm_riscv_vcpu_swap_in_host_state(vcpu);
-> diff --git a/arch/riscv/kvm/vcpu_switch.S b/arch/riscv/kvm/vcpu_switch.S
-> index 0c26189aa01c..f83643c4fdb9 100644
-> --- a/arch/riscv/kvm/vcpu_switch.S
-> +++ b/arch/riscv/kvm/vcpu_switch.S
-> @@ -43,35 +43,30 @@ SYM_FUNC_START(__kvm_riscv_switch_to)
->  
->  	/* Load Guest CSR values */
->  	REG_L	t0, (KVM_ARCH_GUEST_SSTATUS)(a0)
-> -	REG_L	t1, (KVM_ARCH_GUEST_HSTATUS)(a0)
-> -	REG_L	t2, (KVM_ARCH_GUEST_SCOUNTEREN)(a0)
-> -	la	t4, .Lkvm_switch_return
-> -	REG_L	t5, (KVM_ARCH_GUEST_SEPC)(a0)
-> +	REG_L	t1, (KVM_ARCH_GUEST_SCOUNTEREN)(a0)
-> +	la	t3, .Lkvm_switch_return
-> +	REG_L	t4, (KVM_ARCH_GUEST_SEPC)(a0)
->  
->  	/* Save Host and Restore Guest SSTATUS */
->  	csrrw	t0, CSR_SSTATUS, t0
->  
-> -	/* Save Host and Restore Guest HSTATUS */
-> -	csrrw	t1, CSR_HSTATUS, t1
-> -
->  	/* Save Host and Restore Guest SCOUNTEREN */
-> -	csrrw	t2, CSR_SCOUNTEREN, t2
-> +	csrrw	t1, CSR_SCOUNTEREN, t1
->  
->  	/* Save Host STVEC and change it to return path */
-> -	csrrw	t4, CSR_STVEC, t4
-> +	csrrw	t3, CSR_STVEC, t3
->  
->  	/* Save Host SSCRATCH and change it to struct kvm_vcpu_arch pointer */
-> -	csrrw	t3, CSR_SSCRATCH, a0
-> +	csrrw	t2, CSR_SSCRATCH, a0
->  
->  	/* Restore Guest SEPC */
-> -	csrw	CSR_SEPC, t5
-> +	csrw	CSR_SEPC, t4
->  
->  	/* Store Host CSR values */
->  	REG_S	t0, (KVM_ARCH_HOST_SSTATUS)(a0)
-> -	REG_S	t1, (KVM_ARCH_HOST_HSTATUS)(a0)
-> -	REG_S	t2, (KVM_ARCH_HOST_SCOUNTEREN)(a0)
-> -	REG_S	t3, (KVM_ARCH_HOST_SSCRATCH)(a0)
-> -	REG_S	t4, (KVM_ARCH_HOST_STVEC)(a0)
-> +	REG_S	t1, (KVM_ARCH_HOST_SCOUNTEREN)(a0)
-> +	REG_S	t2, (KVM_ARCH_HOST_SSCRATCH)(a0)
-> +	REG_S	t3, (KVM_ARCH_HOST_STVEC)(a0)
->  
->  	/* Restore Guest GPRs (except A0) */
->  	REG_L	ra, (KVM_ARCH_GUEST_RA)(a0)
-> @@ -153,8 +148,7 @@ SYM_FUNC_START(__kvm_riscv_switch_to)
->  	REG_L	t1, (KVM_ARCH_HOST_STVEC)(a0)
->  	REG_L	t2, (KVM_ARCH_HOST_SSCRATCH)(a0)
->  	REG_L	t3, (KVM_ARCH_HOST_SCOUNTEREN)(a0)
-> -	REG_L	t4, (KVM_ARCH_HOST_HSTATUS)(a0)
-> -	REG_L	t5, (KVM_ARCH_HOST_SSTATUS)(a0)
-> +	REG_L	t4, (KVM_ARCH_HOST_SSTATUS)(a0)
->  
->  	/* Save Guest SEPC */
->  	csrr	t0, CSR_SEPC
-> @@ -168,18 +162,14 @@ SYM_FUNC_START(__kvm_riscv_switch_to)
->  	/* Save Guest and Restore Host SCOUNTEREN */
->  	csrrw	t3, CSR_SCOUNTEREN, t3
->  
-> -	/* Save Guest and Restore Host HSTATUS */
-> -	csrrw	t4, CSR_HSTATUS, t4
-> -
->  	/* Save Guest and Restore Host SSTATUS */
-> -	csrrw	t5, CSR_SSTATUS, t5
-> +	csrrw	t4, CSR_SSTATUS, t4
->  
->  	/* Store Guest CSR values */
->  	REG_S	t0, (KVM_ARCH_GUEST_SEPC)(a0)
->  	REG_S	t2, (KVM_ARCH_GUEST_A0)(a0)
->  	REG_S	t3, (KVM_ARCH_GUEST_SCOUNTEREN)(a0)
-> -	REG_S	t4, (KVM_ARCH_GUEST_HSTATUS)(a0)
-> -	REG_S	t5, (KVM_ARCH_GUEST_SSTATUS)(a0)
-> +	REG_S	t4, (KVM_ARCH_GUEST_SSTATUS)(a0)
->  
->  	/* Restore Host GPRs (except A0 and T0-T6) */
->  	REG_L	ra, (KVM_ARCH_HOST_RA)(a0)
->
+RISC-V defines three extensions for pointer masking[1]:
+ - Smmpm: configured in M-mode, affects M-mode
+ - Smnpm: configured in M-mode, affects the next lower mode (S or U-mode)
+ - Ssnpm: configured in S-mode, affects the next lower mode (VS, VU, or U-mode)
 
-Reviewed-by: Atish Patra <atishp@rivosinc.com>
+This series adds support for configuring Smnpm or Ssnpm (depending on
+which privilege mode the kernel is running in) to allow pointer masking
+in userspace (VU or U-mode), extending the PR_SET_TAGGED_ADDR_CTRL API
+from arm64. Unlike arm64 TBI, userspace pointer masking is not enabled
+by default on RISC-V. Additionally, the tag width (referred to as PMLEN)
+is variable, so userspace needs to ask the kernel for a specific tag
+width, which is interpreted as a lower bound on the number of tag bits.
+
+This series also adds support for a tagged address ABI similar to arm64
+and x86. Since accesses from the kernel to user memory use the kernel's
+pointer masking configuration, not the user's, the kernel must untag
+user pointers in software before dereferencing them. And since the tag
+width is variable, as with LAM on x86, it must be kept the same across
+all threads in a process so untagged_addr_remote() can work.
+
+[1]: https://github.com/riscv/riscv-j-extension/raw/d70011dde6c2/zjpm-spec.pdf
+---
+This series depends on the per-thread envcfg series in riscv/for-next.
+
+This series can be tested in QEMU by applying a patch set[2].
+
+KASAN_SW_TAGS using pointer masking is an independent patch series[3].
+
+[2]: https://lore.kernel.org/qemu-devel/20240511101053.1875596-1-me at deliversmonkey.space/
+[3]: https://lore.kernel.org/linux-riscv/20240814085618.968833-1-samuel.holland at sifive.com/
+
+Changes in v5:
+ - Update pointer masking spec version to 1.0 and state to ratified
+ - Document how PR_[SG]ET_TAGGED_ADDR_CTRL are used on RISC-V
+ - Document that the RISC-V tagged address ABI is the same as AArch64
+ - Rename "pm" selftests directory to "abi" to be more generic
+ - Fix -Wparentheses warnings
+ - Fix order of operations when writing via the tagged pointer
+ - Update pointer masking spec version to 1.0 in hwprobe documentation
+
+Changes in v4:
+ - Switch IS_ENABLED back to #ifdef to fix riscv32 build
+ - Combine __untagged_addr() and __untagged_addr_remote()
+
+Changes in v3:
+ - Note in the commit message that the ISA extension spec is frozen
+ - Rebase on riscv/for-next (ISA extension list conflicts)
+ - Remove RISCV_ISA_EXT_SxPM, which was not used anywhere
+ - Use shifts instead of large numbers in ENVCFG_PMM* macro definitions
+ - Rename CONFIG_RISCV_ISA_POINTER_MASKING to CONFIG_RISCV_ISA_SUPM,
+   since it only controls the userspace part of pointer masking
+ - Use IS_ENABLED instead of #ifdef when possible
+ - Use an enum for the supported PMLEN values
+ - Simplify the logic in set_tagged_addr_ctrl()
+ - Use IS_ENABLED instead of #ifdef when possible
+ - Implement mm_untag_mask()
+ - Remove pmlen from struct thread_info (now only in mm_context_t)
+
+Changes in v2:
+ - Drop patch 4 ("riscv: Define is_compat_thread()"), as an equivalent
+   patch was already applied
+ - Move patch 5 ("riscv: Split per-CPU and per-thread envcfg bits") to a
+   different series[3]
+ - Update pointer masking specification version reference
+ - Provide macros for the extension affecting the kernel and userspace
+ - Use the correct name for the hstatus.HUPMM field
+ - Rebase on riscv/linux.git for-next
+ - Add and use the envcfg_update_bits() helper function
+ - Inline flush_tagged_addr_state()
+ - Implement untagged_addr_remote()
+ - Restrict PMLEN changes once a process is multithreaded
+ - Rename "tags" directory to "pm" to avoid .gitignore rules
+ - Add .gitignore file to ignore the compiled selftest binary
+ - Write to a pipe to force dereferencing the user pointer
+ - Handle SIGSEGV in the child process to reduce dmesg noise
+ - Export Supm via hwprobe
+ - Export Smnpm and Ssnpm to KVM guests
+
+Samuel Holland (10):
+  dt-bindings: riscv: Add pointer masking ISA extensions
+  riscv: Add ISA extension parsing for pointer masking
+  riscv: Add CSR definitions for pointer masking
+  riscv: Add support for userspace pointer masking
+  riscv: Add support for the tagged address ABI
+  riscv: Allow ptrace control of the tagged address ABI
+  riscv: selftests: Add a pointer masking test
+  riscv: hwprobe: Export the Supm ISA extension
+  RISC-V: KVM: Allow Smnpm and Ssnpm extensions for guests
+  KVM: riscv: selftests: Add Smnpm and Ssnpm to get-reg-list test
+
+ Documentation/arch/riscv/hwprobe.rst          |   3 +
+ Documentation/arch/riscv/uabi.rst             |  16 +
+ .../devicetree/bindings/riscv/extensions.yaml |  18 +
+ arch/riscv/Kconfig                            |  11 +
+ arch/riscv/include/asm/csr.h                  |  16 +
+ arch/riscv/include/asm/hwcap.h                |   5 +
+ arch/riscv/include/asm/mmu.h                  |   7 +
+ arch/riscv/include/asm/mmu_context.h          |  13 +
+ arch/riscv/include/asm/processor.h            |   8 +
+ arch/riscv/include/asm/switch_to.h            |  11 +
+ arch/riscv/include/asm/uaccess.h              |  43 ++-
+ arch/riscv/include/uapi/asm/hwprobe.h         |   1 +
+ arch/riscv/include/uapi/asm/kvm.h             |   2 +
+ arch/riscv/kernel/cpufeature.c                |   3 +
+ arch/riscv/kernel/process.c                   | 154 ++++++++
+ arch/riscv/kernel/ptrace.c                    |  42 +++
+ arch/riscv/kernel/sys_hwprobe.c               |   3 +
+ arch/riscv/kvm/vcpu_onereg.c                  |   4 +
+ include/uapi/linux/elf.h                      |   1 +
+ include/uapi/linux/prctl.h                    |   5 +-
+ .../selftests/kvm/riscv/get-reg-list.c        |   8 +
+ tools/testing/selftests/riscv/Makefile        |   2 +-
+ tools/testing/selftests/riscv/abi/.gitignore  |   1 +
+ tools/testing/selftests/riscv/abi/Makefile    |  10 +
+ .../selftests/riscv/abi/pointer_masking.c     | 332 ++++++++++++++++++
+ 25 files changed, 712 insertions(+), 7 deletions(-)
+ create mode 100644 tools/testing/selftests/riscv/abi/.gitignore
+ create mode 100644 tools/testing/selftests/riscv/abi/Makefile
+ create mode 100644 tools/testing/selftests/riscv/abi/pointer_masking.c
+
+-- 
+2.45.1
+
 
