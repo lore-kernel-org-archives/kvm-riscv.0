@@ -1,28 +1,24 @@
 From: Samuel Holland <samuel.holland@sifive.com>
-Date: Wed, 16 Oct 2024 13:27:46 -0700
-Subject: [PATCH v5 05/10] riscv: Add support for the tagged address ABI
+Date: Wed, 16 Oct 2024 13:27:45 -0700
+Subject: [PATCH v5 04/10] riscv: Add support for userspace pointer masking
 In-Reply-To: <20241016202814.4061541-1-samuel.holland@sifive.com>
 References: <20241016202814.4061541-1-samuel.holland@sifive.com>
-Message-ID: <20241016202814.4061541-6-samuel.holland@sifive.com>
+Message-ID: <20241016202814.4061541-5-samuel.holland@sifive.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-When pointer masking is enabled for userspace, the kernel can accept
-tagged pointers as arguments to some system calls. Allow this by
-untagging the pointers in access_ok() and the uaccess routines. The
-uaccess routines must peform untagging in software because U-mode and
-S-mode have entirely separate pointer masking configurations. In fact,
-hardware may not even implement pointer masking for S-mode.
+RISC-V supports pointer masking with a variable number of tag bits
+(which is called "PMLEN" in the specification) and which is configured
+at the next higher privilege level.
 
-Since the number of tag bits is variable, untagged_addr_remote() needs
-to know what PMLEN to use for the remote mm. Therefore, the pointer
-masking mode must be the same for all threads sharing an mm. Enforce
-this with a lock flag in the mm context, as x86 does for LAM. The flag
-gets reset in init_new_context() during fork(), as the new mm is no
-longer multithreaded.
+Wire up the PR_SET_TAGGED_ADDR_CTRL and PR_GET_TAGGED_ADDR_CTRL prctls
+so userspace can request a lower bound on the number of tag bits and
+determine the actual number of tag bits. As with arm64's
+PR_TAGGED_ADDR_ENABLE, the pointer masking configuration is
+thread-scoped, inherited on clone() and fork() and cleared on execve().
 
 Reviewed-by: Charlie Jenkins <charlie@rivosinc.com>
 Tested-by: Charlie Jenkins <charlie@rivosinc.com>
@@ -30,320 +26,250 @@ Signed-off-by: Samuel Holland <samuel.holland@sifive.com>
 ---
 
 Changes in v5:
- - Document that the RISC-V tagged address ABI is the same as AArch64
+ - Document how PR_[SG]ET_TAGGED_ADDR_CTRL are used on RISC-V
 
 Changes in v4:
- - Combine __untagged_addr() and __untagged_addr_remote()
+ - Switch IS_ENABLED back to #ifdef to fix riscv32 build
 
 Changes in v3:
+ - Rename CONFIG_RISCV_ISA_POINTER_MASKING to CONFIG_RISCV_ISA_SUPM,
+   since it only controls the userspace part of pointer masking
  - Use IS_ENABLED instead of #ifdef when possible
- - Implement mm_untag_mask()
- - Remove pmlen from struct thread_info (now only in mm_context_t)
+ - Use an enum for the supported PMLEN values
+ - Simplify the logic in set_tagged_addr_ctrl()
 
 Changes in v2:
- - Implement untagged_addr_remote()
- - Restrict PMLEN changes once a process is multithreaded
+ - Rebase on riscv/linux.git for-next
+ - Add and use the envcfg_update_bits() helper function
+ - Inline flush_tagged_addr_state()
 
- Documentation/arch/riscv/uabi.rst    |  4 ++
- arch/riscv/include/asm/mmu.h         |  7 +++
- arch/riscv/include/asm/mmu_context.h | 13 +++++
- arch/riscv/include/asm/uaccess.h     | 43 ++++++++++++++--
- arch/riscv/kernel/process.c          | 73 ++++++++++++++++++++++++++--
- 5 files changed, 130 insertions(+), 10 deletions(-)
+ Documentation/arch/riscv/uabi.rst  | 12 ++++
+ arch/riscv/Kconfig                 | 11 ++++
+ arch/riscv/include/asm/processor.h |  8 +++
+ arch/riscv/include/asm/switch_to.h | 11 ++++
+ arch/riscv/kernel/process.c        | 91 ++++++++++++++++++++++++++++++
+ include/uapi/linux/prctl.h         |  5 +-
+ 6 files changed, 137 insertions(+), 1 deletion(-)
 
 diff --git a/Documentation/arch/riscv/uabi.rst b/Documentation/arch/riscv/uabi.rst
-index ddb8359a46ed..243e40062e34 100644
+index 2b420bab0527..ddb8359a46ed 100644
 --- a/Documentation/arch/riscv/uabi.rst
 +++ b/Documentation/arch/riscv/uabi.rst
-@@ -80,3 +80,7 @@ number of mask/tag bits needed by the application. ``PR_PMLEN`` is interpreted
- as a lower bound; if the kernel is unable to satisfy the request, the
- ``PR_SET_TAGGED_ADDR_CTRL`` operation will fail. The actual number of tag bits
- is returned in ``PR_PMLEN`` by the ``PR_GET_TAGGED_ADDR_CTRL`` operation.
+@@ -68,3 +68,15 @@ Misaligned accesses
+ Misaligned scalar accesses are supported in userspace, but they may perform
+ poorly.  Misaligned vector accesses are only supported if the Zicclsm extension
+ is supported.
 +
-+Additionally, when pointer masking is enabled (``PR_PMLEN`` is greater than 0),
-+a tagged address ABI is supported, with the same interface and behavior as
-+documented for AArch64 (Documentation/arch/arm64/tagged-address-abi.rst).
-diff --git a/arch/riscv/include/asm/mmu.h b/arch/riscv/include/asm/mmu.h
-index c9e03e9da3dc..1cc90465d75b 100644
---- a/arch/riscv/include/asm/mmu.h
-+++ b/arch/riscv/include/asm/mmu.h
-@@ -25,9 +25,16 @@ typedef struct {
- #ifdef CONFIG_BINFMT_ELF_FDPIC
- 	unsigned long exec_fdpic_loadmap;
- 	unsigned long interp_fdpic_loadmap;
-+#endif
-+	unsigned long flags;
++Pointer masking
++---------------
++
++Support for pointer masking in userspace (the Supm extension) is provided via
++the ``PR_SET_TAGGED_ADDR_CTRL`` and ``PR_GET_TAGGED_ADDR_CTRL`` ``prctl()``
++operations. Pointer masking is disabled by default. To enable it, userspace
++must call ``PR_SET_TAGGED_ADDR_CTRL`` with the ``PR_PMLEN`` field set to the
++number of mask/tag bits needed by the application. ``PR_PMLEN`` is interpreted
++as a lower bound; if the kernel is unable to satisfy the request, the
++``PR_SET_TAGGED_ADDR_CTRL`` operation will fail. The actual number of tag bits
++is returned in ``PR_PMLEN`` by the ``PR_GET_TAGGED_ADDR_CTRL`` operation.
+diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
+index 22dc5ea4196c..0ef449465378 100644
+--- a/arch/riscv/Kconfig
++++ b/arch/riscv/Kconfig
+@@ -531,6 +531,17 @@ config RISCV_ISA_C
+ 
+ 	  If you don't know what to do here, say Y.
+ 
++config RISCV_ISA_SUPM
++	bool "Supm extension for userspace pointer masking"
++	depends on 64BIT
++	default y
++	help
++	  Add support for pointer masking in userspace (Supm) when the
++	  underlying hardware extension (Smnpm or Ssnpm) is detected at boot.
++
++	  If this option is disabled, userspace will be unable to use
++	  the prctl(PR_{SET,GET}_TAGGED_ADDR_CTRL) API.
++
+ config RISCV_ISA_SVNAPOT
+ 	bool "Svnapot extension support for supervisor mode NAPOT pages"
+ 	depends on 64BIT && MMU
+diff --git a/arch/riscv/include/asm/processor.h b/arch/riscv/include/asm/processor.h
+index c1a492508835..5f56eb9d114a 100644
+--- a/arch/riscv/include/asm/processor.h
++++ b/arch/riscv/include/asm/processor.h
+@@ -178,6 +178,14 @@ extern int set_unalign_ctl(struct task_struct *tsk, unsigned int val);
+ #define RISCV_SET_ICACHE_FLUSH_CTX(arg1, arg2)	riscv_set_icache_flush_ctx(arg1, arg2)
+ extern int riscv_set_icache_flush_ctx(unsigned long ctx, unsigned long per_thread);
+ 
 +#ifdef CONFIG_RISCV_ISA_SUPM
-+	u8 pmlen;
++/* PR_{SET,GET}_TAGGED_ADDR_CTRL prctl */
++long set_tagged_addr_ctrl(struct task_struct *task, unsigned long arg);
++long get_tagged_addr_ctrl(struct task_struct *task);
++#define SET_TAGGED_ADDR_CTRL(arg)	set_tagged_addr_ctrl(current, arg)
++#define GET_TAGGED_ADDR_CTRL()		get_tagged_addr_ctrl(current)
++#endif
++
+ #endif /* __ASSEMBLY__ */
+ 
+ #endif /* _ASM_RISCV_PROCESSOR_H */
+diff --git a/arch/riscv/include/asm/switch_to.h b/arch/riscv/include/asm/switch_to.h
+index 9685cd85e57c..94e33216b2d9 100644
+--- a/arch/riscv/include/asm/switch_to.h
++++ b/arch/riscv/include/asm/switch_to.h
+@@ -70,6 +70,17 @@ static __always_inline bool has_fpu(void) { return false; }
+ #define __switch_to_fpu(__prev, __next) do { } while (0)
  #endif
- } mm_context_t;
  
-+/* Lock the pointer masking mode because this mm is multithreaded */
-+#define MM_CONTEXT_LOCK_PMLEN	0
-+
- #define cntx2asid(cntx)		((cntx) & SATP_ASID_MASK)
- #define cntx2version(cntx)	((cntx) & ~SATP_ASID_MASK)
- 
-diff --git a/arch/riscv/include/asm/mmu_context.h b/arch/riscv/include/asm/mmu_context.h
-index 7030837adc1a..8c4bc49a3a0f 100644
---- a/arch/riscv/include/asm/mmu_context.h
-+++ b/arch/riscv/include/asm/mmu_context.h
-@@ -20,6 +20,9 @@ void switch_mm(struct mm_struct *prev, struct mm_struct *next,
- static inline void activate_mm(struct mm_struct *prev,
- 			       struct mm_struct *next)
- {
-+#ifdef CONFIG_RISCV_ISA_SUPM
-+	next->context.pmlen = 0;
-+#endif
- 	switch_mm(prev, next, NULL);
- }
- 
-@@ -30,11 +33,21 @@ static inline int init_new_context(struct task_struct *tsk,
- #ifdef CONFIG_MMU
- 	atomic_long_set(&mm->context.id, 0);
- #endif
-+	if (IS_ENABLED(CONFIG_RISCV_ISA_SUPM))
-+		clear_bit(MM_CONTEXT_LOCK_PMLEN, &mm->context.flags);
- 	return 0;
- }
- 
- DECLARE_STATIC_KEY_FALSE(use_asid_allocator);
- 
-+#ifdef CONFIG_RISCV_ISA_SUPM
-+#define mm_untag_mask mm_untag_mask
-+static inline unsigned long mm_untag_mask(struct mm_struct *mm)
++static inline void envcfg_update_bits(struct task_struct *task,
++				      unsigned long mask, unsigned long val)
 +{
-+	return -1UL >> mm->context.pmlen;
-+}
-+#endif
++	unsigned long envcfg;
 +
- #include <asm-generic/mmu_context.h>
- 
- #endif /* _ASM_RISCV_MMU_CONTEXT_H */
-diff --git a/arch/riscv/include/asm/uaccess.h b/arch/riscv/include/asm/uaccess.h
-index 72ec1d9bd3f3..fee56b0c8058 100644
---- a/arch/riscv/include/asm/uaccess.h
-+++ b/arch/riscv/include/asm/uaccess.h
-@@ -9,8 +9,41 @@
- #define _ASM_RISCV_UACCESS_H
- 
- #include <asm/asm-extable.h>
-+#include <asm/cpufeature.h>
- #include <asm/pgtable.h>		/* for TASK_SIZE */
- 
-+#ifdef CONFIG_RISCV_ISA_SUPM
-+static inline unsigned long __untagged_addr_remote(struct mm_struct *mm, unsigned long addr)
-+{
-+	if (riscv_has_extension_unlikely(RISCV_ISA_EXT_SUPM)) {
-+		u8 pmlen = mm->context.pmlen;
-+
-+		/* Virtual addresses are sign-extended; physical addresses are zero-extended. */
-+		if (IS_ENABLED(CONFIG_MMU))
-+			return (long)(addr << pmlen) >> pmlen;
-+		else
-+			return (addr << pmlen) >> pmlen;
-+	}
-+
-+	return addr;
++	envcfg = (task->thread.envcfg & ~mask) | val;
++	task->thread.envcfg = envcfg;
++	if (task == current)
++		csr_write(CSR_ENVCFG, envcfg);
 +}
 +
-+#define untagged_addr(addr) ({							\
-+	unsigned long __addr = (__force unsigned long)(addr);			\
-+	(__force __typeof__(addr))__untagged_addr_remote(current->mm, __addr);	\
-+})
-+
-+#define untagged_addr_remote(mm, addr) ({					\
-+	unsigned long __addr = (__force unsigned long)(addr);			\
-+	mmap_assert_locked(mm);							\
-+	(__force __typeof__(addr))__untagged_addr_remote(mm, __addr);		\
-+})
-+
-+#define access_ok(addr, size) likely(__access_ok(untagged_addr(addr), size))
-+#else
-+#define untagged_addr(addr) (addr)
-+#endif
-+
- /*
-  * User space memory access functions
-  */
-@@ -130,7 +163,7 @@ do {								\
-  */
- #define __get_user(x, ptr)					\
- ({								\
--	const __typeof__(*(ptr)) __user *__gu_ptr = (ptr);	\
-+	const __typeof__(*(ptr)) __user *__gu_ptr = untagged_addr(ptr); \
- 	long __gu_err = 0;					\
- 								\
- 	__chk_user_ptr(__gu_ptr);				\
-@@ -246,7 +279,7 @@ do {								\
-  */
- #define __put_user(x, ptr)					\
- ({								\
--	__typeof__(*(ptr)) __user *__gu_ptr = (ptr);		\
-+	__typeof__(*(ptr)) __user *__gu_ptr = untagged_addr(ptr); \
- 	__typeof__(*__gu_ptr) __val = (x);			\
- 	long __pu_err = 0;					\
- 								\
-@@ -293,13 +326,13 @@ unsigned long __must_check __asm_copy_from_user(void *to,
- static inline unsigned long
- raw_copy_from_user(void *to, const void __user *from, unsigned long n)
+ static inline void __switch_to_envcfg(struct task_struct *next)
  {
--	return __asm_copy_from_user(to, from, n);
-+	return __asm_copy_from_user(to, untagged_addr(from), n);
- }
- 
- static inline unsigned long
- raw_copy_to_user(void __user *to, const void *from, unsigned long n)
- {
--	return __asm_copy_to_user(to, from, n);
-+	return __asm_copy_to_user(untagged_addr(to), from, n);
- }
- 
- extern long strncpy_from_user(char *dest, const char __user *src, long count);
-@@ -314,7 +347,7 @@ unsigned long __must_check clear_user(void __user *to, unsigned long n)
- {
- 	might_fault();
- 	return access_ok(to, n) ?
--		__clear_user(to, n) : n;
-+		__clear_user(untagged_addr(to), n) : n;
- }
- 
- #define __get_kernel_nofault(dst, src, type, err_label)			\
+ 	asm volatile (ALTERNATIVE("nop", "csrw " __stringify(CSR_ENVCFG) ", %0",
 diff --git a/arch/riscv/kernel/process.c b/arch/riscv/kernel/process.c
-index 200d2ed64dfe..58b6482c2bf6 100644
+index e3142d8a6e28..200d2ed64dfe 100644
 --- a/arch/riscv/kernel/process.c
 +++ b/arch/riscv/kernel/process.c
-@@ -213,6 +213,10 @@ int copy_thread(struct task_struct *p, const struct kernel_clone_args *args)
- 	unsigned long tls = args->tls;
- 	struct pt_regs *childregs = task_pt_regs(p);
+@@ -7,6 +7,7 @@
+  * Copyright (C) 2017 SiFive
+  */
  
-+	/* Ensure all threads in this mm have the same pointer masking mode. */
-+	if (IS_ENABLED(CONFIG_RISCV_ISA_SUPM) && p->mm && (clone_flags & CLONE_VM))
-+		set_bit(MM_CONTEXT_LOCK_PMLEN, &p->mm->context.flags);
-+
- 	memset(&p->thread.s, 0, sizeof(p->thread.s));
++#include <linux/bitfield.h>
+ #include <linux/cpu.h>
+ #include <linux/kernel.h>
+ #include <linux/sched.h>
+@@ -180,6 +181,10 @@ void flush_thread(void)
+ 	memset(&current->thread.vstate, 0, sizeof(struct __riscv_v_ext_state));
+ 	clear_tsk_thread_flag(current, TIF_RISCV_V_DEFER_RESTORE);
+ #endif
++#ifdef CONFIG_RISCV_ISA_SUPM
++	if (riscv_has_extension_unlikely(RISCV_ISA_EXT_SUPM))
++		envcfg_update_bits(current, ENVCFG_PMM, ENVCFG_PMM_PMLEN_0);
++#endif
+ }
  
- 	/* p->thread holds context to be restored by __switch_to() */
-@@ -258,10 +262,16 @@ enum {
- static bool have_user_pmlen_7;
- static bool have_user_pmlen_16;
- 
-+/*
-+ * Control the relaxed ABI allowing tagged user addresses into the kernel.
-+ */
-+static unsigned int tagged_addr_disabled;
-+
- long set_tagged_addr_ctrl(struct task_struct *task, unsigned long arg)
+ void arch_release_task_struct(struct task_struct *tsk)
+@@ -242,3 +247,89 @@ void __init arch_task_cache_init(void)
  {
--	unsigned long valid_mask = PR_PMLEN_MASK;
-+	unsigned long valid_mask = PR_PMLEN_MASK | PR_TAGGED_ADDR_ENABLE;
- 	struct thread_info *ti = task_thread_info(task);
-+	struct mm_struct *mm = task->mm;
- 	unsigned long pmm;
- 	u8 pmlen;
- 
-@@ -276,16 +286,41 @@ long set_tagged_addr_ctrl(struct task_struct *task, unsigned long arg)
- 	 * in case choosing a larger PMLEN has a performance impact.
- 	 */
- 	pmlen = FIELD_GET(PR_PMLEN_MASK, arg);
--	if (pmlen == PMLEN_0)
-+	if (pmlen == PMLEN_0) {
- 		pmm = ENVCFG_PMM_PMLEN_0;
--	else if (pmlen <= PMLEN_7 && have_user_pmlen_7)
-+	} else if (pmlen <= PMLEN_7 && have_user_pmlen_7) {
-+		pmlen = PMLEN_7;
- 		pmm = ENVCFG_PMM_PMLEN_7;
--	else if (pmlen <= PMLEN_16 && have_user_pmlen_16)
-+	} else if (pmlen <= PMLEN_16 && have_user_pmlen_16) {
-+		pmlen = PMLEN_16;
- 		pmm = ENVCFG_PMM_PMLEN_16;
--	else
-+	} else {
- 		return -EINVAL;
-+	}
-+
-+	/*
-+	 * Do not allow the enabling of the tagged address ABI if globally
-+	 * disabled via sysctl abi.tagged_addr_disabled, if pointer masking
-+	 * is disabled for userspace.
-+	 */
-+	if (arg & PR_TAGGED_ADDR_ENABLE && (tagged_addr_disabled || !pmlen))
-+		return -EINVAL;
-+
-+	if (!(arg & PR_TAGGED_ADDR_ENABLE))
-+		pmlen = PMLEN_0;
-+
-+	if (mmap_write_lock_killable(mm))
-+		return -EINTR;
-+
-+	if (test_bit(MM_CONTEXT_LOCK_PMLEN, &mm->context.flags) && mm->context.pmlen != pmlen) {
-+		mmap_write_unlock(mm);
-+		return -EBUSY;
-+	}
- 
- 	envcfg_update_bits(task, ENVCFG_PMM, pmm);
-+	mm->context.pmlen = pmlen;
-+
-+	mmap_write_unlock(mm);
- 
- 	return 0;
+ 	riscv_v_setup_ctx_cache();
  }
-@@ -298,6 +333,10 @@ long get_tagged_addr_ctrl(struct task_struct *task)
- 	if (is_compat_thread(ti))
- 		return -EINVAL;
- 
-+	/*
-+	 * The mm context's pmlen is set only when the tagged address ABI is
-+	 * enabled, so the effective PMLEN must be extracted from envcfg.PMM.
-+	 */
- 	switch (task->thread.envcfg & ENVCFG_PMM) {
- 	case ENVCFG_PMM_PMLEN_7:
- 		ret = FIELD_PREP(PR_PMLEN_MASK, PMLEN_7);
-@@ -307,6 +346,9 @@ long get_tagged_addr_ctrl(struct task_struct *task)
- 		break;
- 	}
- 
-+	if (task->mm->context.pmlen)
-+		ret |= PR_TAGGED_ADDR_ENABLE;
 +
- 	return ret;
- }
- 
-@@ -316,6 +358,24 @@ static bool try_to_set_pmm(unsigned long value)
- 	return (csr_read_clear(CSR_ENVCFG, ENVCFG_PMM) & ENVCFG_PMM) == value;
- }
- 
-+/*
-+ * Global sysctl to disable the tagged user addresses support. This control
-+ * only prevents the tagged address ABI enabling via prctl() and does not
-+ * disable it for tasks that already opted in to the relaxed ABI.
-+ */
-+
-+static struct ctl_table tagged_addr_sysctl_table[] = {
-+	{
-+		.procname	= "tagged_addr_disabled",
-+		.mode		= 0644,
-+		.data		= &tagged_addr_disabled,
-+		.maxlen		= sizeof(int),
-+		.proc_handler	= proc_dointvec_minmax,
-+		.extra1		= SYSCTL_ZERO,
-+		.extra2		= SYSCTL_ONE,
-+	},
++#ifdef CONFIG_RISCV_ISA_SUPM
++enum {
++	PMLEN_0 = 0,
++	PMLEN_7 = 7,
++	PMLEN_16 = 16,
 +};
 +
- static int __init tagged_addr_init(void)
- {
- 	if (!riscv_has_extension_unlikely(RISCV_ISA_EXT_SUPM))
-@@ -329,6 +389,9 @@ static int __init tagged_addr_init(void)
- 	have_user_pmlen_7 = try_to_set_pmm(ENVCFG_PMM_PMLEN_7);
- 	have_user_pmlen_16 = try_to_set_pmm(ENVCFG_PMM_PMLEN_16);
- 
-+	if (!register_sysctl("abi", tagged_addr_sysctl_table))
++static bool have_user_pmlen_7;
++static bool have_user_pmlen_16;
++
++long set_tagged_addr_ctrl(struct task_struct *task, unsigned long arg)
++{
++	unsigned long valid_mask = PR_PMLEN_MASK;
++	struct thread_info *ti = task_thread_info(task);
++	unsigned long pmm;
++	u8 pmlen;
++
++	if (is_compat_thread(ti))
 +		return -EINVAL;
 +
- 	return 0;
- }
- core_initcall(tagged_addr_init);
++	if (arg & ~valid_mask)
++		return -EINVAL;
++
++	/*
++	 * Prefer the smallest PMLEN that satisfies the user's request,
++	 * in case choosing a larger PMLEN has a performance impact.
++	 */
++	pmlen = FIELD_GET(PR_PMLEN_MASK, arg);
++	if (pmlen == PMLEN_0)
++		pmm = ENVCFG_PMM_PMLEN_0;
++	else if (pmlen <= PMLEN_7 && have_user_pmlen_7)
++		pmm = ENVCFG_PMM_PMLEN_7;
++	else if (pmlen <= PMLEN_16 && have_user_pmlen_16)
++		pmm = ENVCFG_PMM_PMLEN_16;
++	else
++		return -EINVAL;
++
++	envcfg_update_bits(task, ENVCFG_PMM, pmm);
++
++	return 0;
++}
++
++long get_tagged_addr_ctrl(struct task_struct *task)
++{
++	struct thread_info *ti = task_thread_info(task);
++	long ret = 0;
++
++	if (is_compat_thread(ti))
++		return -EINVAL;
++
++	switch (task->thread.envcfg & ENVCFG_PMM) {
++	case ENVCFG_PMM_PMLEN_7:
++		ret = FIELD_PREP(PR_PMLEN_MASK, PMLEN_7);
++		break;
++	case ENVCFG_PMM_PMLEN_16:
++		ret = FIELD_PREP(PR_PMLEN_MASK, PMLEN_16);
++		break;
++	}
++
++	return ret;
++}
++
++static bool try_to_set_pmm(unsigned long value)
++{
++	csr_set(CSR_ENVCFG, value);
++	return (csr_read_clear(CSR_ENVCFG, ENVCFG_PMM) & ENVCFG_PMM) == value;
++}
++
++static int __init tagged_addr_init(void)
++{
++	if (!riscv_has_extension_unlikely(RISCV_ISA_EXT_SUPM))
++		return 0;
++
++	/*
++	 * envcfg.PMM is a WARL field. Detect which values are supported.
++	 * Assume the supported PMLEN values are the same on all harts.
++	 */
++	csr_clear(CSR_ENVCFG, ENVCFG_PMM);
++	have_user_pmlen_7 = try_to_set_pmm(ENVCFG_PMM_PMLEN_7);
++	have_user_pmlen_16 = try_to_set_pmm(ENVCFG_PMM_PMLEN_16);
++
++	return 0;
++}
++core_initcall(tagged_addr_init);
++#endif	/* CONFIG_RISCV_ISA_SUPM */
+diff --git a/include/uapi/linux/prctl.h b/include/uapi/linux/prctl.h
+index 35791791a879..cefd656ebf43 100644
+--- a/include/uapi/linux/prctl.h
++++ b/include/uapi/linux/prctl.h
+@@ -230,7 +230,7 @@ struct prctl_mm_map {
+ # define PR_PAC_APDBKEY			(1UL << 3)
+ # define PR_PAC_APGAKEY			(1UL << 4)
+ 
+-/* Tagged user address controls for arm64 */
++/* Tagged user address controls for arm64 and RISC-V */
+ #define PR_SET_TAGGED_ADDR_CTRL		55
+ #define PR_GET_TAGGED_ADDR_CTRL		56
+ # define PR_TAGGED_ADDR_ENABLE		(1UL << 0)
+@@ -244,6 +244,9 @@ struct prctl_mm_map {
+ # define PR_MTE_TAG_MASK		(0xffffUL << PR_MTE_TAG_SHIFT)
+ /* Unused; kept only for source compatibility */
+ # define PR_MTE_TCF_SHIFT		1
++/* RISC-V pointer masking tag length */
++# define PR_PMLEN_SHIFT			24
++# define PR_PMLEN_MASK			(0x7fUL << PR_PMLEN_SHIFT)
+ 
+ /* Control reclaim behavior when allocating memory */
+ #define PR_SET_IO_FLUSHER		57
 -- 
 2.45.1
 
