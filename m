@@ -1,78 +1,79 @@
 From: Samuel Holland <samuel.holland@sifive.com>
-Date: Wed, 16 Oct 2024 13:27:49 -0700
-Subject: [PATCH v5 08/10] riscv: hwprobe: Export the Supm ISA extension
+Date: Wed, 16 Oct 2024 13:27:50 -0700
+Subject: [PATCH v5 09/10] RISC-V: KVM: Allow Smnpm and Ssnpm extensions for guests
 In-Reply-To: <20241016202814.4061541-1-samuel.holland@sifive.com>
 References: <20241016202814.4061541-1-samuel.holland@sifive.com>
-Message-ID: <20241016202814.4061541-9-samuel.holland@sifive.com>
+Message-ID: <20241016202814.4061541-10-samuel.holland@sifive.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Supm is a virtual ISA extension defined in the RISC-V Pointer Masking
-specification, which indicates that pointer masking is available in
-U-mode. It can be provided by either Smnpm or Ssnpm, depending on which
-mode the kernel runs in. Userspace should not care about this
-distinction, so export Supm instead of either underlying extension.
+The interface for controlling pointer masking in VS-mode is henvcfg.PMM,
+which is part of the Ssnpm extension, even though pointer masking in
+HS-mode is provided by the Smnpm extension. As a result, emulating Smnpm
+in the guest requires (only) Ssnpm on the host.
 
-Hide the extension if the kernel was compiled without support for the
-pointer masking prctl() interface.
+The guest configures Smnpm through the SBI Firmware Features extension,
+which KVM does not yet implement, so currently the ISA extension has no
+visible effect on the guest, and thus it cannot be disabled. Ssnpm is
+configured using the senvcfg CSR within the guest, so that extension
+cannot be hidden from the guest without intercepting writes to the CSR.
 
 Signed-off-by: Samuel Holland <samuel.holland@sifive.com>
 ---
 
 Changes in v5:
- - Update pointer masking spec version to 1.0 in hwprobe documentation
+ - Do not allow Smnpm to be disabled, as suggested by Anup
 
 Changes in v2:
  - New patch for v2
 
- Documentation/arch/riscv/hwprobe.rst  | 3 +++
- arch/riscv/include/uapi/asm/hwprobe.h | 1 +
- arch/riscv/kernel/sys_hwprobe.c       | 3 +++
- 3 files changed, 7 insertions(+)
+ arch/riscv/include/uapi/asm/kvm.h | 2 ++
+ arch/riscv/kvm/vcpu_onereg.c      | 4 ++++
+ 2 files changed, 6 insertions(+)
 
-diff --git a/Documentation/arch/riscv/hwprobe.rst b/Documentation/arch/riscv/hwprobe.rst
-index 85b709257918..b9aec2e5bbd4 100644
---- a/Documentation/arch/riscv/hwprobe.rst
-+++ b/Documentation/arch/riscv/hwprobe.rst
-@@ -239,6 +239,9 @@ The following keys are defined:
-        ratified in commit 98918c844281 ("Merge pull request #1217 from
-        riscv/zawrs") of riscv-isa-manual.
+diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
+index e97db3296456..4f24201376b1 100644
+--- a/arch/riscv/include/uapi/asm/kvm.h
++++ b/arch/riscv/include/uapi/asm/kvm.h
+@@ -175,6 +175,8 @@ enum KVM_RISCV_ISA_EXT_ID {
+ 	KVM_RISCV_ISA_EXT_ZCF,
+ 	KVM_RISCV_ISA_EXT_ZCMOP,
+ 	KVM_RISCV_ISA_EXT_ZAWRS,
++	KVM_RISCV_ISA_EXT_SMNPM,
++	KVM_RISCV_ISA_EXT_SSNPM,
+ 	KVM_RISCV_ISA_EXT_MAX,
+ };
  
-+  * :c:macro:`RISCV_HWPROBE_EXT_SUPM`: The Supm extension is supported as
-+       defined in version 1.0 of the RISC-V Pointer Masking extensions.
-+
- * :c:macro:`RISCV_HWPROBE_KEY_CPUPERF_0`: Deprecated.  Returns similar values to
-      :c:macro:`RISCV_HWPROBE_KEY_MISALIGNED_SCALAR_PERF`, but the key was
-      mistakenly classified as a bitmask rather than a value.
-diff --git a/arch/riscv/include/uapi/asm/hwprobe.h b/arch/riscv/include/uapi/asm/hwprobe.h
-index 1e153cda57db..868ff41b93d6 100644
---- a/arch/riscv/include/uapi/asm/hwprobe.h
-+++ b/arch/riscv/include/uapi/asm/hwprobe.h
-@@ -72,6 +72,7 @@ struct riscv_hwprobe {
- #define		RISCV_HWPROBE_EXT_ZCF		(1ULL << 46)
- #define		RISCV_HWPROBE_EXT_ZCMOP		(1ULL << 47)
- #define		RISCV_HWPROBE_EXT_ZAWRS		(1ULL << 48)
-+#define		RISCV_HWPROBE_EXT_SUPM		(1ULL << 49)
- #define RISCV_HWPROBE_KEY_CPUPERF_0	5
- #define		RISCV_HWPROBE_MISALIGNED_UNKNOWN	(0 << 0)
- #define		RISCV_HWPROBE_MISALIGNED_EMULATED	(1 << 0)
-diff --git a/arch/riscv/kernel/sys_hwprobe.c b/arch/riscv/kernel/sys_hwprobe.c
-index cea0ca2bf2a2..0ac78e9f7c94 100644
---- a/arch/riscv/kernel/sys_hwprobe.c
-+++ b/arch/riscv/kernel/sys_hwprobe.c
-@@ -150,6 +150,9 @@ static void hwprobe_isa_ext0(struct riscv_hwprobe *pair,
- 			EXT_KEY(ZFH);
- 			EXT_KEY(ZFHMIN);
- 		}
-+
-+		if (IS_ENABLED(CONFIG_RISCV_ISA_SUPM))
-+			EXT_KEY(SUPM);
- #undef EXT_KEY
- 	}
- 
+diff --git a/arch/riscv/kvm/vcpu_onereg.c b/arch/riscv/kvm/vcpu_onereg.c
+index b319c4c13c54..5b68490ad9b7 100644
+--- a/arch/riscv/kvm/vcpu_onereg.c
++++ b/arch/riscv/kvm/vcpu_onereg.c
+@@ -34,9 +34,11 @@ static const unsigned long kvm_isa_ext_arr[] = {
+ 	[KVM_RISCV_ISA_EXT_M] = RISCV_ISA_EXT_m,
+ 	[KVM_RISCV_ISA_EXT_V] = RISCV_ISA_EXT_v,
+ 	/* Multi letter extensions (alphabetically sorted) */
++	[KVM_RISCV_ISA_EXT_SMNPM] = RISCV_ISA_EXT_SSNPM,
+ 	KVM_ISA_EXT_ARR(SMSTATEEN),
+ 	KVM_ISA_EXT_ARR(SSAIA),
+ 	KVM_ISA_EXT_ARR(SSCOFPMF),
++	KVM_ISA_EXT_ARR(SSNPM),
+ 	KVM_ISA_EXT_ARR(SSTC),
+ 	KVM_ISA_EXT_ARR(SVINVAL),
+ 	KVM_ISA_EXT_ARR(SVNAPOT),
+@@ -127,8 +129,10 @@ static bool kvm_riscv_vcpu_isa_disable_allowed(unsigned long ext)
+ 	case KVM_RISCV_ISA_EXT_C:
+ 	case KVM_RISCV_ISA_EXT_I:
+ 	case KVM_RISCV_ISA_EXT_M:
++	case KVM_RISCV_ISA_EXT_SMNPM:
+ 	/* There is not architectural config bit to disable sscofpmf completely */
+ 	case KVM_RISCV_ISA_EXT_SSCOFPMF:
++	case KVM_RISCV_ISA_EXT_SSNPM:
+ 	case KVM_RISCV_ISA_EXT_SSTC:
+ 	case KVM_RISCV_ISA_EXT_SVINVAL:
+ 	case KVM_RISCV_ISA_EXT_SVNAPOT:
 -- 
 2.45.1
 
