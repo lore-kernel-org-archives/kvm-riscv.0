@@ -1,52 +1,170 @@
-From: Paolo Bonzini <pbonzini@redhat.com>
-Date: Thu, 17 Oct 2024 19:40:04 +0200
-Subject: [PATCH v13 00/85] KVM: Stop grabbing references to PFNMAP'd pages
-In-Reply-To: <20241010182427.1434605-1-seanjc@google.com>
-References: <20241010182427.1434605-1-seanjc@google.com>
-Message-ID: <CABgObfbQW-3vp=mNcR4giUGZ_gxhuRykvKj8gzBDY7pOg6xdBQ@mail.gmail.com>
+From: Atish Patra <atishp@atishpatra.org>
+Date: Thu, 17 Oct 2024 16:55:14 -0700
+Subject: [PATCH 07/13] RISC-V: Add defines for the SBI nested acceleration extension
+In-Reply-To: <20240719160913.342027-8-apatel@ventanamicro.com>
+References: <20240719160913.342027-1-apatel@ventanamicro.com> <20240719160913.342027-8-apatel@ventanamicro.com>
+Message-ID: <CAOnJCUJUUtRhkroxJ-Kvah7qRfsAApi_5dbrmAWsdObr-KjRfw@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Oct 10, 2024 at 8:24?PM Sean Christopherson <seanjc@google.com> wrote:
-> v13:
->  - Rebased onto v6.12-rc2
->  - Collect reviews. [Alex and others]
->  - Fix a transient bug in arm64 and RISC-V where KVM would leak a page
->    refcount. [Oliver]
->  - Fix a dangling comment. [Alex]
->  - Drop kvm_lookup_pfn(), as the x86 that "needed" it was stupid and is (was?)
->    eliminated in v6.12.
->  - Drop check_user_page_hwpoison(). [Paolo]
->  - Drop the arm64 MTE fixes that went into 6.12.
->  - Slightly redo the guest_memfd interaction to account for 6.12 changes.
+On Fri, Jul 19, 2024 at 9:09?AM Anup Patel <apatel@ventanamicro.com> wrote:
+>
+> Add defines for the new SBI nested acceleration extension which was
+> ratified as part of the SBI v2.0 specification.
+>
+> Signed-off-by: Anup Patel <apatel@ventanamicro.com>
+> ---
+>  arch/riscv/include/asm/sbi.h | 120 +++++++++++++++++++++++++++++++++++
+>  1 file changed, 120 insertions(+)
+>
+> diff --git a/arch/riscv/include/asm/sbi.h b/arch/riscv/include/asm/sbi.h
+> index 1079e214fe85..7c9ec953c519 100644
+> --- a/arch/riscv/include/asm/sbi.h
+> +++ b/arch/riscv/include/asm/sbi.h
+> @@ -33,6 +33,7 @@ enum sbi_ext_id {
+>         SBI_EXT_PMU = 0x504D55,
+>         SBI_EXT_DBCN = 0x4442434E,
+>         SBI_EXT_STA = 0x535441,
+> +       SBI_EXT_NACL = 0x4E41434C,
+>
+>         /* Experimentals extensions must lie within this range */
+>         SBI_EXT_EXPERIMENTAL_START = 0x08000000,
+> @@ -279,6 +280,125 @@ struct sbi_sta_struct {
+>
+>  #define SBI_SHMEM_DISABLE              -1
+>
+> +enum sbi_ext_nacl_fid {
+> +       SBI_EXT_NACL_PROBE_FEATURE = 0x0,
+> +       SBI_EXT_NACL_SET_SHMEM = 0x1,
+> +       SBI_EXT_NACL_SYNC_CSR = 0x2,
+> +       SBI_EXT_NACL_SYNC_HFENCE = 0x3,
+> +       SBI_EXT_NACL_SYNC_SRET = 0x4,
+> +};
+> +
+> +enum sbi_ext_nacl_feature {
+> +       SBI_NACL_FEAT_SYNC_CSR = 0x0,
+> +       SBI_NACL_FEAT_SYNC_HFENCE = 0x1,
+> +       SBI_NACL_FEAT_SYNC_SRET = 0x2,
+> +       SBI_NACL_FEAT_AUTOSWAP_CSR = 0x3,
+> +};
+> +
+> +#define SBI_NACL_SHMEM_ADDR_SHIFT      12
+> +#define SBI_NACL_SHMEM_SCRATCH_OFFSET  0x0000
+> +#define SBI_NACL_SHMEM_SCRATCH_SIZE    0x1000
+> +#define SBI_NACL_SHMEM_SRET_OFFSET     0x0000
+> +#define SBI_NACL_SHMEM_SRET_SIZE       0x0200
+> +#define SBI_NACL_SHMEM_AUTOSWAP_OFFSET (SBI_NACL_SHMEM_SRET_OFFSET + \
+> +                                        SBI_NACL_SHMEM_SRET_SIZE)
+> +#define SBI_NACL_SHMEM_AUTOSWAP_SIZE   0x0080
+> +#define SBI_NACL_SHMEM_UNUSED_OFFSET   (SBI_NACL_SHMEM_AUTOSWAP_OFFSET + \
+> +                                        SBI_NACL_SHMEM_AUTOSWAP_SIZE)
+> +#define SBI_NACL_SHMEM_UNUSED_SIZE     0x0580
+> +#define SBI_NACL_SHMEM_HFENCE_OFFSET   (SBI_NACL_SHMEM_UNUSED_OFFSET + \
+> +                                        SBI_NACL_SHMEM_UNUSED_SIZE)
+> +#define SBI_NACL_SHMEM_HFENCE_SIZE     0x0780
+> +#define SBI_NACL_SHMEM_DBITMAP_OFFSET  (SBI_NACL_SHMEM_HFENCE_OFFSET + \
+> +                                        SBI_NACL_SHMEM_HFENCE_SIZE)
+> +#define SBI_NACL_SHMEM_DBITMAP_SIZE    0x0080
+> +#define SBI_NACL_SHMEM_CSR_OFFSET      (SBI_NACL_SHMEM_DBITMAP_OFFSET + \
+> +                                        SBI_NACL_SHMEM_DBITMAP_SIZE)
+> +#define SBI_NACL_SHMEM_CSR_SIZE                ((__riscv_xlen / 8) * 1024)
+> +#define SBI_NACL_SHMEM_SIZE            (SBI_NACL_SHMEM_CSR_OFFSET + \
+> +                                        SBI_NACL_SHMEM_CSR_SIZE)
+> +
+> +#define SBI_NACL_SHMEM_CSR_INDEX(__csr_num)    \
+> +               ((((__csr_num) & 0xc00) >> 2) | ((__csr_num) & 0xff))
+> +
+> +#define SBI_NACL_SHMEM_HFENCE_ENTRY_SZ         ((__riscv_xlen / 8) * 4)
+> +#define SBI_NACL_SHMEM_HFENCE_ENTRY_MAX                \
+> +               (SBI_NACL_SHMEM_HFENCE_SIZE /   \
+> +                SBI_NACL_SHMEM_HFENCE_ENTRY_SZ)
+> +#define SBI_NACL_SHMEM_HFENCE_ENTRY(__num)     \
+> +               (SBI_NACL_SHMEM_HFENCE_OFFSET + \
+> +                (__num) * SBI_NACL_SHMEM_HFENCE_ENTRY_SZ)
+> +#define SBI_NACL_SHMEM_HFENCE_ENTRY_CONFIG(__num)      \
+> +               SBI_NACL_SHMEM_HFENCE_ENTRY(__num)
+> +#define SBI_NACL_SHMEM_HFENCE_ENTRY_PNUM(__num)\
+> +               (SBI_NACL_SHMEM_HFENCE_ENTRY(__num) + (__riscv_xlen / 8))
+> +#define SBI_NACL_SHMEM_HFENCE_ENTRY_PCOUNT(__num)\
+> +               (SBI_NACL_SHMEM_HFENCE_ENTRY(__num) + \
+> +                ((__riscv_xlen / 8) * 3))
+> +
+> +#define SBI_NACL_SHMEM_HFENCE_CONFIG_PEND_BITS 1
+> +#define SBI_NACL_SHMEM_HFENCE_CONFIG_PEND_SHIFT        \
+> +               (__riscv_xlen - SBI_NACL_SHMEM_HFENCE_CONFIG_PEND_BITS)
+> +#define SBI_NACL_SHMEM_HFENCE_CONFIG_PEND_MASK \
+> +               ((1UL << SBI_NACL_SHMEM_HFENCE_CONFIG_PEND_BITS) - 1)
+> +#define SBI_NACL_SHMEM_HFENCE_CONFIG_PEND              \
+> +               (SBI_NACL_SHMEM_HFENCE_CONFIG_PEND_MASK << \
+> +                SBI_NACL_SHMEM_HFENCE_CONFIG_PEND_SHIFT)
+> +
+> +#define SBI_NACL_SHMEM_HFENCE_CONFIG_RSVD1_BITS        3
+> +#define SBI_NACL_SHMEM_HFENCE_CONFIG_RSVD1_SHIFT \
+> +               (SBI_NACL_SHMEM_HFENCE_CONFIG_PEND_SHIFT - \
+> +                SBI_NACL_SHMEM_HFENCE_CONFIG_RSVD1_BITS)
+> +
+> +#define SBI_NACL_SHMEM_HFENCE_CONFIG_TYPE_BITS 4
+> +#define SBI_NACL_SHMEM_HFENCE_CONFIG_TYPE_SHIFT        \
+> +               (SBI_NACL_SHMEM_HFENCE_CONFIG_RSVD1_SHIFT - \
+> +                SBI_NACL_SHMEM_HFENCE_CONFIG_TYPE_BITS)
+> +#define SBI_NACL_SHMEM_HFENCE_CONFIG_TYPE_MASK \
+> +               ((1UL << SBI_NACL_SHMEM_HFENCE_CONFIG_TYPE_BITS) - 1)
+> +
+> +#define SBI_NACL_SHMEM_HFENCE_TYPE_GVMA                0x0
+> +#define SBI_NACL_SHMEM_HFENCE_TYPE_GVMA_ALL    0x1
+> +#define SBI_NACL_SHMEM_HFENCE_TYPE_GVMA_VMID   0x2
+> +#define SBI_NACL_SHMEM_HFENCE_TYPE_GVMA_VMID_ALL 0x3
+> +#define SBI_NACL_SHMEM_HFENCE_TYPE_VVMA                0x4
+> +#define SBI_NACL_SHMEM_HFENCE_TYPE_VVMA_ALL    0x5
+> +#define SBI_NACL_SHMEM_HFENCE_TYPE_VVMA_ASID   0x6
+> +#define SBI_NACL_SHMEM_HFENCE_TYPE_VVMA_ASID_ALL 0x7
+> +
+> +#define SBI_NACL_SHMEM_HFENCE_CONFIG_RSVD2_BITS        1
+> +#define SBI_NACL_SHMEM_HFENCE_CONFIG_RSVD2_SHIFT \
+> +               (SBI_NACL_SHMEM_HFENCE_CONFIG_TYPE_SHIFT - \
+> +                SBI_NACL_SHMEM_HFENCE_CONFIG_RSVD2_BITS)
+> +
+> +#define SBI_NACL_SHMEM_HFENCE_CONFIG_ORDER_BITS        7
+> +#define SBI_NACL_SHMEM_HFENCE_CONFIG_ORDER_SHIFT \
+> +               (SBI_NACL_SHMEM_HFENCE_CONFIG_RSVD2_SHIFT - \
+> +                SBI_NACL_SHMEM_HFENCE_CONFIG_ORDER_BITS)
+> +#define SBI_NACL_SHMEM_HFENCE_CONFIG_ORDER_MASK        \
+> +               ((1UL << SBI_NACL_SHMEM_HFENCE_CONFIG_ORDER_BITS) - 1)
+> +#define SBI_NACL_SHMEM_HFENCE_ORDER_BASE       12
+> +
+> +#if __riscv_xlen == 32
+> +#define SBI_NACL_SHMEM_HFENCE_CONFIG_ASID_BITS 9
+> +#define SBI_NACL_SHMEM_HFENCE_CONFIG_VMID_BITS 7
+> +#else
+> +#define SBI_NACL_SHMEM_HFENCE_CONFIG_ASID_BITS 16
+> +#define SBI_NACL_SHMEM_HFENCE_CONFIG_VMID_BITS 14
+> +#endif
+> +#define SBI_NACL_SHMEM_HFENCE_CONFIG_VMID_SHIFT        \
+> +                               SBI_NACL_SHMEM_HFENCE_CONFIG_ASID_BITS
+> +#define SBI_NACL_SHMEM_HFENCE_CONFIG_ASID_MASK \
+> +               ((1UL << SBI_NACL_SHMEM_HFENCE_CONFIG_ASID_BITS) - 1)
+> +#define SBI_NACL_SHMEM_HFENCE_CONFIG_VMID_MASK \
+> +               ((1UL << SBI_NACL_SHMEM_HFENCE_CONFIG_VMID_BITS) - 1)
+> +
+> +#define SBI_NACL_SHMEM_AUTOSWAP_FLAG_HSTATUS   BIT(0)
+> +#define SBI_NACL_SHMEM_AUTOSWAP_HSTATUS                ((__riscv_xlen / 8) * 1)
+> +
+> +#define SBI_NACL_SHMEM_SRET_X(__i)             ((__riscv_xlen / 8) * (__i))
+> +#define SBI_NACL_SHMEM_SRET_X_LAST             31
+> +
+>  /* SBI spec version fields */
+>  #define SBI_SPEC_VERSION_DEFAULT       0x1
+>  #define SBI_SPEC_VERSION_MAJOR_SHIFT   24
+> --
+> 2.34.1
+>
 
-Here is my own summary of the changes:
 
-patches removed from v12:
-01/02 - already upstream
-09 - moved to separate A/D series [1]
-34 - not needed due to new patch 36
-35 - gone after 620525739521376a65a690df899e1596d56791f8
-
-patches added or substantially changed in v13:
-05/06/07 - new, suggested by Yan Zhao
-08 - code was folded from mmu_spte_age into kvm_rmap_age_gfn_range
-14 - new, suggested by me in reply to 84/84 (yuck)
-15 - new, suggested by me in reply to 84/84
-19 - somewhat rewritten for new follow_pfnmap API
-27 - smaller changes due to new follow_pfnmap API
-36 - rewritten, suggested by me
-45 - new, cleanup
-46 - much simplified due to new patch 45
-
-Looks good to me, thanks and congratulations!! Should we merge it in
-kvm/next asap?
-
-Paolo
-
-[1] https://patchew.org/linux/20241011021051.1557902-1-seanjc at google.com/20241011021051.1557902-5-seanjc at google.com/
-
+Reviewed-by: Atish Patra <atishp@rivosinc.com>
+-- 
+Regards,
+Atish
 
