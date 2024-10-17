@@ -1,65 +1,41 @@
-From: Atish Patra <atishp@atishpatra.org>
-Date: Wed, 16 Oct 2024 14:40:20 -0700
-Subject: [PATCH 06/13] RISC-V: KVM: Don't setup SGEI for zero guest
- external interrupts
-In-Reply-To: <20240719160913.342027-7-apatel@ventanamicro.com>
-References: <20240719160913.342027-1-apatel@ventanamicro.com> <20240719160913.342027-7-apatel@ventanamicro.com>
-Message-ID: <CAOnJCUKugAua2ooQL5tJCNFr27pCrsQ53YJuKEs11UYJdVkAPw@mail.gmail.com>
+From: Andrew Jones <ajones@ventanamicro.com>
+Date: Thu, 17 Oct 2024 09:45:39 +0200
+Subject: [PATCH 0/2] RISC-V: KVM: SBI system suspend support
+Message-ID: <20241017074538.18867-4-ajones@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Jul 19, 2024 at 9:09?AM Anup Patel <apatel@ventanamicro.com> wrote:
->
-> No need to setup SGEI local interrupt when there are zero guest
-> external interrupts (i.e. zero HW IMSIC guest files).
->
-> Signed-off-by: Anup Patel <apatel@ventanamicro.com>
-> ---
->  arch/riscv/kvm/aia.c | 9 +++++++++
->  1 file changed, 9 insertions(+)
->
-> diff --git a/arch/riscv/kvm/aia.c b/arch/riscv/kvm/aia.c
-> index 17ae4a7c0e94..8ffae0330c89 100644
-> --- a/arch/riscv/kvm/aia.c
-> +++ b/arch/riscv/kvm/aia.c
-> @@ -499,6 +499,10 @@ static int aia_hgei_init(void)
->                         hgctrl->free_bitmap = 0;
->         }
->
-> +       /* Skip SGEI interrupt setup for zero guest external interrupts */
-> +       if (!kvm_riscv_aia_nr_hgei)
-> +               goto skip_sgei_interrupt;
-> +
->         /* Find INTC irq domain */
->         domain = irq_find_matching_fwnode(riscv_get_intc_hwnode(),
->                                           DOMAIN_BUS_ANY);
-> @@ -522,11 +526,16 @@ static int aia_hgei_init(void)
->                 return rc;
->         }
->
-> +skip_sgei_interrupt:
->         return 0;
->  }
->
->  static void aia_hgei_exit(void)
->  {
-> +       /* Do nothing for zero guest external interrupts */
-> +       if (!kvm_riscv_aia_nr_hgei)
-> +               return;
-> +
->         /* Free per-CPU SGEI interrupt */
->         free_percpu_irq(hgei_parent_irq, &aia_hgei);
->  }
-> --
-> 2.34.1
->
+The SBI spec provides a specification for system suspend to RAM and Linux
+already supports invoking the SBI call for suspend to RAM when
+CONFIG_SUSPEND is selected. Implement support for the SBI call in KVM
+so guests may initiate a system suspend. However, since what a "system
+suspend" means for a VM may differ between VM providers, leave it up
+to the VMM to decide what to do. KVM only needs to ensure the entry
+criteria for system suspend (per the spec) is met and prepare things for
+the resume for when the VMM triggers it.
+
+Tested with this kvmtool branch [1]
+
+[1] https://github.com/jones-drew/kvmtool/commits/riscv/sbi-sys-susp/
 
 
-Reviewed-by: Atish Patra <atishp@rivosinc.com>
+Andrew Jones (2):
+  RISC-V: KVM: Add SBI system suspend support
+  KVM: riscv: selftests: Add SBI SUSP to get-reg-list test
+
+ arch/riscv/include/asm/kvm_vcpu_sbi.h         |  1 +
+ arch/riscv/include/uapi/asm/kvm.h             |  1 +
+ arch/riscv/kvm/Makefile                       |  1 +
+ arch/riscv/kvm/vcpu_sbi.c                     |  4 +
+ arch/riscv/kvm/vcpu_sbi_system.c              | 73 +++++++++++++++++++
+ .../selftests/kvm/riscv/get-reg-list.c        |  6 +-
+ 6 files changed, 85 insertions(+), 1 deletion(-)
+ create mode 100644 arch/riscv/kvm/vcpu_sbi_system.c
+
 -- 
-Regards,
-Atish
+2.46.2
+
 
