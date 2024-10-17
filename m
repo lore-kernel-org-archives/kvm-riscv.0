@@ -1,64 +1,52 @@
-From: Andrew Jones <ajones@ventanamicro.com>
-Date: Thu, 17 Oct 2024 09:45:41 +0200
-Subject: [PATCH 2/2] KVM: riscv: selftests: Add SBI SUSP to get-reg-list test
-In-Reply-To: <20241017074538.18867-4-ajones@ventanamicro.com>
-References: <20241017074538.18867-4-ajones@ventanamicro.com>
-Message-ID: <20241017074538.18867-6-ajones@ventanamicro.com>
+From: Paolo Bonzini <pbonzini@redhat.com>
+Date: Thu, 17 Oct 2024 19:40:04 +0200
+Subject: [PATCH v13 00/85] KVM: Stop grabbing references to PFNMAP'd pages
+In-Reply-To: <20241010182427.1434605-1-seanjc@google.com>
+References: <20241010182427.1434605-1-seanjc@google.com>
+Message-ID: <CABgObfbQW-3vp=mNcR4giUGZ_gxhuRykvKj8gzBDY7pOg6xdBQ@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-KVM supports SBI SUSP, so add it to the get-reg-list test.
+On Thu, Oct 10, 2024 at 8:24?PM Sean Christopherson <seanjc@google.com> wrote:
+> v13:
+>  - Rebased onto v6.12-rc2
+>  - Collect reviews. [Alex and others]
+>  - Fix a transient bug in arm64 and RISC-V where KVM would leak a page
+>    refcount. [Oliver]
+>  - Fix a dangling comment. [Alex]
+>  - Drop kvm_lookup_pfn(), as the x86 that "needed" it was stupid and is (was?)
+>    eliminated in v6.12.
+>  - Drop check_user_page_hwpoison(). [Paolo]
+>  - Drop the arm64 MTE fixes that went into 6.12.
+>  - Slightly redo the guest_memfd interaction to account for 6.12 changes.
 
-Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
----
- tools/testing/selftests/kvm/riscv/get-reg-list.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+Here is my own summary of the changes:
 
-diff --git a/tools/testing/selftests/kvm/riscv/get-reg-list.c b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-index 8e34f7fa44e9..7c33556ed59d 100644
---- a/tools/testing/selftests/kvm/riscv/get-reg-list.c
-+++ b/tools/testing/selftests/kvm/riscv/get-reg-list.c
-@@ -108,6 +108,7 @@ bool filter_reg(__u64 reg)
- 	case KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_SINGLE | KVM_RISCV_SBI_EXT_HSM:
- 	case KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_SINGLE | KVM_RISCV_SBI_EXT_PMU:
- 	case KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_SINGLE | KVM_RISCV_SBI_EXT_DBCN:
-+	case KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_SINGLE | KVM_RISCV_SBI_EXT_SUSP:
- 	case KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_SINGLE | KVM_RISCV_SBI_EXT_STA:
- 	case KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_SINGLE | KVM_RISCV_SBI_EXT_EXPERIMENTAL:
- 	case KVM_REG_RISCV_SBI_EXT | KVM_REG_RISCV_SBI_SINGLE | KVM_RISCV_SBI_EXT_VENDOR:
-@@ -527,10 +528,11 @@ static const char *sbi_ext_single_id_to_str(__u64 reg_off)
- 		KVM_SBI_EXT_ARR(KVM_RISCV_SBI_EXT_SRST),
- 		KVM_SBI_EXT_ARR(KVM_RISCV_SBI_EXT_HSM),
- 		KVM_SBI_EXT_ARR(KVM_RISCV_SBI_EXT_PMU),
-+		KVM_SBI_EXT_ARR(KVM_RISCV_SBI_EXT_DBCN),
-+		KVM_SBI_EXT_ARR(KVM_RISCV_SBI_EXT_SUSP),
- 		KVM_SBI_EXT_ARR(KVM_RISCV_SBI_EXT_STA),
- 		KVM_SBI_EXT_ARR(KVM_RISCV_SBI_EXT_EXPERIMENTAL),
- 		KVM_SBI_EXT_ARR(KVM_RISCV_SBI_EXT_VENDOR),
--		KVM_SBI_EXT_ARR(KVM_RISCV_SBI_EXT_DBCN),
- 	};
- 
- 	if (reg_off >= ARRAY_SIZE(kvm_sbi_ext_reg_name))
-@@ -941,6 +943,7 @@ KVM_SBI_EXT_SUBLIST_CONFIG(base, BASE);
- KVM_SBI_EXT_SUBLIST_CONFIG(sta, STA);
- KVM_SBI_EXT_SIMPLE_CONFIG(pmu, PMU);
- KVM_SBI_EXT_SIMPLE_CONFIG(dbcn, DBCN);
-+KVM_SBI_EXT_SIMPLE_CONFIG(susp, SUSP);
- 
- KVM_ISA_EXT_SUBLIST_CONFIG(aia, AIA);
- KVM_ISA_EXT_SUBLIST_CONFIG(fp_f, FP_F);
-@@ -1005,6 +1008,7 @@ struct vcpu_reg_list *vcpu_configs[] = {
- 	&config_sbi_sta,
- 	&config_sbi_pmu,
- 	&config_sbi_dbcn,
-+	&config_sbi_susp,
- 	&config_aia,
- 	&config_fp_f,
- 	&config_fp_d,
--- 
-2.46.2
+patches removed from v12:
+01/02 - already upstream
+09 - moved to separate A/D series [1]
+34 - not needed due to new patch 36
+35 - gone after 620525739521376a65a690df899e1596d56791f8
+
+patches added or substantially changed in v13:
+05/06/07 - new, suggested by Yan Zhao
+08 - code was folded from mmu_spte_age into kvm_rmap_age_gfn_range
+14 - new, suggested by me in reply to 84/84 (yuck)
+15 - new, suggested by me in reply to 84/84
+19 - somewhat rewritten for new follow_pfnmap API
+27 - smaller changes due to new follow_pfnmap API
+36 - rewritten, suggested by me
+45 - new, cleanup
+46 - much simplified due to new patch 45
+
+Looks good to me, thanks and congratulations!! Should we merge it in
+kvm/next asap?
+
+Paolo
+
+[1] https://patchew.org/linux/20241011021051.1557902-1-seanjc at google.com/20241011021051.1557902-5-seanjc at google.com/
 
 
