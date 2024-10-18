@@ -1,240 +1,113 @@
-From: Atish Patra <atishp@atishpatra.org>
-Date: Fri, 18 Oct 2024 12:34:01 -0700
-Subject: [PATCH 10/13] RISC-V: KVM: Use nacl_csr_xyz() for accessing AIA CSRs
-In-Reply-To: <20240719160913.342027-11-apatel@ventanamicro.com>
-References: <20240719160913.342027-1-apatel@ventanamicro.com> <20240719160913.342027-11-apatel@ventanamicro.com>
-Message-ID: <CAOnJCUK7Bbq=X4e-z1SbVLOA_DLB+QrA7VO3dAMgdDOzEAK0jw@mail.gmail.com>
+From: Palmer Dabbelt <palmer@dabbelt.com>
+Date: Fri, 18 Oct 2024 12:55:25 -0700 (PDT)
+Subject: [PATCH v5 1/2] riscv: perf: add guest vs host distinction
+In-Reply-To: <a67d527dc1b11493fe11f7f53584772fdd983744.1728980031.git.zhouquan@iscas.ac.cn>
+Message-ID: <mhng-c9ba919e-b4a4-4bb9-bdba-f4d3295a930b@palmer-ri-x1c9a>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Jul 19, 2024 at 9:10?AM Anup Patel <apatel@ventanamicro.com> wrote:
+On Tue, 15 Oct 2024 01:42:50 PDT (-0700), zhouquan at iscas.ac.cn wrote:
+> From: Quan Zhou <zhouquan@iscas.ac.cn>
 >
-> When running under some other hypervisor, prefer nacl_csr_xyz()
-> for accessing AIA CSRs in the run-loop. This makes CSR access
-> faster whenever SBI nested acceleration is available.
+> Introduce basic guest support in perf, enabling it to distinguish
+> between PMU interrupts in the host or guest, and collect
+> fundamental information.
 >
-> Signed-off-by: Anup Patel <apatel@ventanamicro.com>
+> Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+> Signed-off-by: Quan Zhou <zhouquan@iscas.ac.cn>
 > ---
->  arch/riscv/kvm/aia.c | 97 ++++++++++++++++++++++++++++----------------
->  1 file changed, 63 insertions(+), 34 deletions(-)
+>  arch/riscv/include/asm/perf_event.h |  6 +++++
+>  arch/riscv/kernel/perf_callchain.c  | 38 +++++++++++++++++++++++++++++
+>  2 files changed, 44 insertions(+)
 >
-> diff --git a/arch/riscv/kvm/aia.c b/arch/riscv/kvm/aia.c
-> index 8ffae0330c89..dcced4db7fe8 100644
-> --- a/arch/riscv/kvm/aia.c
-> +++ b/arch/riscv/kvm/aia.c
-> @@ -16,6 +16,7 @@
->  #include <linux/percpu.h>
->  #include <linux/spinlock.h>
->  #include <asm/cpufeature.h>
-> +#include <asm/kvm_nacl.h>
+> diff --git a/arch/riscv/include/asm/perf_event.h b/arch/riscv/include/asm/perf_event.h
+> index 665bbc9b2f84..38926b4a902d 100644
+> --- a/arch/riscv/include/asm/perf_event.h
+> +++ b/arch/riscv/include/asm/perf_event.h
+> @@ -8,7 +8,11 @@
+>  #ifndef _ASM_RISCV_PERF_EVENT_H
+>  #define _ASM_RISCV_PERF_EVENT_H
 >
->  struct aia_hgei_control {
->         raw_spinlock_t lock;
-> @@ -88,7 +89,7 @@ void kvm_riscv_vcpu_aia_sync_interrupts(struct kvm_vcpu *vcpu)
->         struct kvm_vcpu_aia_csr *csr = &vcpu->arch.aia_context.guest_csr;
+> +#ifdef CONFIG_PERF_EVENTS
+>  #include <linux/perf_event.h>
+> +extern unsigned long perf_instruction_pointer(struct pt_regs *regs);
+> +extern unsigned long perf_misc_flags(struct pt_regs *regs);
+> +#define perf_misc_flags(regs) perf_misc_flags(regs)
+>  #define perf_arch_bpf_user_pt_regs(regs) (struct user_regs_struct *)regs
 >
->         if (kvm_riscv_aia_available())
-> -               csr->vsieh = csr_read(CSR_VSIEH);
-> +               csr->vsieh = ncsr_read(CSR_VSIEH);
+>  #define perf_arch_fetch_caller_regs(regs, __ip) { \
+> @@ -17,4 +21,6 @@
+>  	(regs)->sp = current_stack_pointer; \
+>  	(regs)->status = SR_PP; \
 >  }
->  #endif
->
-> @@ -115,7 +116,7 @@ bool kvm_riscv_vcpu_aia_has_interrupts(struct kvm_vcpu *vcpu, u64 mask)
->
->         hgei = aia_find_hgei(vcpu);
->         if (hgei > 0)
-> -               return !!(csr_read(CSR_HGEIP) & BIT(hgei));
-> +               return !!(ncsr_read(CSR_HGEIP) & BIT(hgei));
->
->         return false;
->  }
-> @@ -128,45 +129,73 @@ void kvm_riscv_vcpu_aia_update_hvip(struct kvm_vcpu *vcpu)
->                 return;
->
->  #ifdef CONFIG_32BIT
-> -       csr_write(CSR_HVIPH, vcpu->arch.aia_context.guest_csr.hviph);
-> +       ncsr_write(CSR_HVIPH, vcpu->arch.aia_context.guest_csr.hviph);
->  #endif
-> -       csr_write(CSR_HVICTL, aia_hvictl_value(!!(csr->hvip & BIT(IRQ_VS_EXT))));
-> +       ncsr_write(CSR_HVICTL, aia_hvictl_value(!!(csr->hvip & BIT(IRQ_VS_EXT))));
->  }
->
->  void kvm_riscv_vcpu_aia_load(struct kvm_vcpu *vcpu, int cpu)
->  {
->         struct kvm_vcpu_aia_csr *csr = &vcpu->arch.aia_context.guest_csr;
-> +       void *nsh;
->
->         if (!kvm_riscv_aia_available())
->                 return;
->
-> -       csr_write(CSR_VSISELECT, csr->vsiselect);
-> -       csr_write(CSR_HVIPRIO1, csr->hviprio1);
-> -       csr_write(CSR_HVIPRIO2, csr->hviprio2);
-> +       if (kvm_riscv_nacl_sync_csr_available()) {
-> +               nsh = nacl_shmem();
-> +               nacl_csr_write(nsh, CSR_VSISELECT, csr->vsiselect);
-> +               nacl_csr_write(nsh, CSR_HVIPRIO1, csr->hviprio1);
-> +               nacl_csr_write(nsh, CSR_HVIPRIO2, csr->hviprio2);
-> +#ifdef CONFIG_32BIT
-> +               nacl_csr_write(nsh, CSR_VSIEH, csr->vsieh);
-> +               nacl_csr_write(nsh, CSR_HVIPH, csr->hviph);
-> +               nacl_csr_write(nsh, CSR_HVIPRIO1H, csr->hviprio1h);
-> +               nacl_csr_write(nsh, CSR_HVIPRIO2H, csr->hviprio2h);
 > +#endif
-> +       } else {
-> +               csr_write(CSR_VSISELECT, csr->vsiselect);
-> +               csr_write(CSR_HVIPRIO1, csr->hviprio1);
-> +               csr_write(CSR_HVIPRIO2, csr->hviprio2);
->  #ifdef CONFIG_32BIT
-> -       csr_write(CSR_VSIEH, csr->vsieh);
-> -       csr_write(CSR_HVIPH, csr->hviph);
-> -       csr_write(CSR_HVIPRIO1H, csr->hviprio1h);
-> -       csr_write(CSR_HVIPRIO2H, csr->hviprio2h);
-> +               csr_write(CSR_VSIEH, csr->vsieh);
-> +               csr_write(CSR_HVIPH, csr->hviph);
-> +               csr_write(CSR_HVIPRIO1H, csr->hviprio1h);
-> +               csr_write(CSR_HVIPRIO2H, csr->hviprio2h);
->  #endif
-> +       }
->  }
->
->  void kvm_riscv_vcpu_aia_put(struct kvm_vcpu *vcpu)
+> +
+>  #endif /* _ASM_RISCV_PERF_EVENT_H */
+> diff --git a/arch/riscv/kernel/perf_callchain.c b/arch/riscv/kernel/perf_callchain.c
+> index c7468af77c66..c2c81a80f816 100644
+> --- a/arch/riscv/kernel/perf_callchain.c
+> +++ b/arch/riscv/kernel/perf_callchain.c
+> @@ -28,11 +28,49 @@ static bool fill_callchain(void *entry, unsigned long pc)
+>  void perf_callchain_user(struct perf_callchain_entry_ctx *entry,
+>  			 struct pt_regs *regs)
 >  {
->         struct kvm_vcpu_aia_csr *csr = &vcpu->arch.aia_context.guest_csr;
-> +       void *nsh;
->
->         if (!kvm_riscv_aia_available())
->                 return;
->
-> -       csr->vsiselect = csr_read(CSR_VSISELECT);
-> -       csr->hviprio1 = csr_read(CSR_HVIPRIO1);
-> -       csr->hviprio2 = csr_read(CSR_HVIPRIO2);
-> +       if (kvm_riscv_nacl_available()) {
-> +               nsh = nacl_shmem();
-> +               csr->vsiselect = nacl_csr_read(nsh, CSR_VSISELECT);
-> +               csr->hviprio1 = nacl_csr_read(nsh, CSR_HVIPRIO1);
-> +               csr->hviprio2 = nacl_csr_read(nsh, CSR_HVIPRIO2);
->  #ifdef CONFIG_32BIT
-> -       csr->vsieh = csr_read(CSR_VSIEH);
-> -       csr->hviph = csr_read(CSR_HVIPH);
-> -       csr->hviprio1h = csr_read(CSR_HVIPRIO1H);
-> -       csr->hviprio2h = csr_read(CSR_HVIPRIO2H);
-> +               csr->vsieh = nacl_csr_read(nsh, CSR_VSIEH);
-> +               csr->hviph = nacl_csr_read(nsh, CSR_HVIPH);
-> +               csr->hviprio1h = nacl_csr_read(nsh, CSR_HVIPRIO1H);
-> +               csr->hviprio2h = nacl_csr_read(nsh, CSR_HVIPRIO2H);
->  #endif
-> +       } else {
-> +               csr->vsiselect = csr_read(CSR_VSISELECT);
-> +               csr->hviprio1 = csr_read(CSR_HVIPRIO1);
-> +               csr->hviprio2 = csr_read(CSR_HVIPRIO2);
-> +#ifdef CONFIG_32BIT
-> +               csr->vsieh = csr_read(CSR_VSIEH);
-> +               csr->hviph = csr_read(CSR_HVIPH);
-> +               csr->hviprio1h = csr_read(CSR_HVIPRIO1H);
-> +               csr->hviprio2h = csr_read(CSR_HVIPRIO2H);
-> +#endif
-> +       }
+> +	if (perf_guest_state()) {
+> +		/* TODO: We don't support guest os callchain now */
+> +		return;
+
+That seems kind of weird, but it looks like almost exactly the same 
+thing Marc did in 75e424620a4f ("arm64: perf: add guest vs host 
+discrimination").  I think it's safe, as we'll basically just silently 
+display no backtrace and we can always just fail to backtrace.
+
+That said: I don't understand why we can't backtrace inside a guest?  If 
+we can get the registers and memory it seems like we should be able to.  
+Maybe I'm missing something?
+
+> +	}
+> +
+>  	arch_stack_walk_user(fill_callchain, entry, regs);
 >  }
 >
->  int kvm_riscv_vcpu_aia_get_csr(struct kvm_vcpu *vcpu,
-> @@ -250,20 +279,20 @@ static u8 aia_get_iprio8(struct kvm_vcpu *vcpu, unsigned int irq)
->
->         switch (bitpos / BITS_PER_LONG) {
->         case 0:
-> -               hviprio = csr_read(CSR_HVIPRIO1);
-> +               hviprio = ncsr_read(CSR_HVIPRIO1);
->                 break;
->         case 1:
->  #ifndef CONFIG_32BIT
-> -               hviprio = csr_read(CSR_HVIPRIO2);
-> +               hviprio = ncsr_read(CSR_HVIPRIO2);
->                 break;
->  #else
-> -               hviprio = csr_read(CSR_HVIPRIO1H);
-> +               hviprio = ncsr_read(CSR_HVIPRIO1H);
->                 break;
->         case 2:
-> -               hviprio = csr_read(CSR_HVIPRIO2);
-> +               hviprio = ncsr_read(CSR_HVIPRIO2);
->                 break;
->         case 3:
-> -               hviprio = csr_read(CSR_HVIPRIO2H);
-> +               hviprio = ncsr_read(CSR_HVIPRIO2H);
->                 break;
->  #endif
->         default:
-> @@ -283,20 +312,20 @@ static void aia_set_iprio8(struct kvm_vcpu *vcpu, unsigned int irq, u8 prio)
->
->         switch (bitpos / BITS_PER_LONG) {
->         case 0:
-> -               hviprio = csr_read(CSR_HVIPRIO1);
-> +               hviprio = ncsr_read(CSR_HVIPRIO1);
->                 break;
->         case 1:
->  #ifndef CONFIG_32BIT
-> -               hviprio = csr_read(CSR_HVIPRIO2);
-> +               hviprio = ncsr_read(CSR_HVIPRIO2);
->                 break;
->  #else
-> -               hviprio = csr_read(CSR_HVIPRIO1H);
-> +               hviprio = ncsr_read(CSR_HVIPRIO1H);
->                 break;
->         case 2:
-> -               hviprio = csr_read(CSR_HVIPRIO2);
-> +               hviprio = ncsr_read(CSR_HVIPRIO2);
->                 break;
->         case 3:
-> -               hviprio = csr_read(CSR_HVIPRIO2H);
-> +               hviprio = ncsr_read(CSR_HVIPRIO2H);
->                 break;
->  #endif
->         default:
-> @@ -308,20 +337,20 @@ static void aia_set_iprio8(struct kvm_vcpu *vcpu, unsigned int irq, u8 prio)
->
->         switch (bitpos / BITS_PER_LONG) {
->         case 0:
-> -               csr_write(CSR_HVIPRIO1, hviprio);
-> +               ncsr_write(CSR_HVIPRIO1, hviprio);
->                 break;
->         case 1:
->  #ifndef CONFIG_32BIT
-> -               csr_write(CSR_HVIPRIO2, hviprio);
-> +               ncsr_write(CSR_HVIPRIO2, hviprio);
->                 break;
->  #else
-> -               csr_write(CSR_HVIPRIO1H, hviprio);
-> +               ncsr_write(CSR_HVIPRIO1H, hviprio);
->                 break;
->         case 2:
-> -               csr_write(CSR_HVIPRIO2, hviprio);
-> +               ncsr_write(CSR_HVIPRIO2, hviprio);
->                 break;
->         case 3:
-> -               csr_write(CSR_HVIPRIO2H, hviprio);
-> +               ncsr_write(CSR_HVIPRIO2H, hviprio);
->                 break;
->  #endif
->         default:
-> @@ -377,7 +406,7 @@ int kvm_riscv_vcpu_aia_rmw_ireg(struct kvm_vcpu *vcpu, unsigned int csr_num,
->                 return KVM_INSN_ILLEGAL_TRAP;
->
->         /* First try to emulate in kernel space */
-> -       isel = csr_read(CSR_VSISELECT) & ISELECT_MASK;
-> +       isel = ncsr_read(CSR_VSISELECT) & ISELECT_MASK;
->         if (isel >= ISELECT_IPRIO0 && isel <= ISELECT_IPRIO15)
->                 return aia_rmw_iprio(vcpu, isel, val, new_val, wr_mask);
->         else if (isel >= IMSIC_FIRST && isel <= IMSIC_LAST &&
-> --
-> 2.34.1
->
-
-Reviewed-by: Atish Patra <atishp@rivosinc.com>
-
--- 
-Regards,
-Atish
+>  void perf_callchain_kernel(struct perf_callchain_entry_ctx *entry,
+>  			   struct pt_regs *regs)
+>  {
+> +	if (perf_guest_state()) {
+> +		/* TODO: We don't support guest os callchain now */
+> +		return;
+> +	}
+> +
+>  	walk_stackframe(NULL, regs, fill_callchain, entry);
+>  }
+> +
+> +unsigned long perf_instruction_pointer(struct pt_regs *regs)
+> +{
+> +	if (perf_guest_state())
+> +		return perf_guest_get_ip();
+> +
+> +	return instruction_pointer(regs);
+> +}
+> +
+> +unsigned long perf_misc_flags(struct pt_regs *regs)
+> +{
+> +	unsigned int guest_state = perf_guest_state();
+> +	unsigned long misc = 0;
+> +
+> +	if (guest_state) {
+> +		if (guest_state & PERF_GUEST_USER)
+> +			misc |= PERF_RECORD_MISC_GUEST_USER;
+> +		else
+> +			misc |= PERF_RECORD_MISC_GUEST_KERNEL;
+> +	} else {
+> +		if (user_mode(regs))
+> +			misc |= PERF_RECORD_MISC_USER;
+> +		else
+> +			misc |= PERF_RECORD_MISC_KERNEL;
+> +	}
+> +
+> +	return misc;
+> +}
 
