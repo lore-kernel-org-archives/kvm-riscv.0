@@ -1,113 +1,204 @@
-From: Palmer Dabbelt <palmer@dabbelt.com>
-Date: Fri, 18 Oct 2024 12:55:25 -0700 (PDT)
-Subject: [PATCH v5 1/2] riscv: perf: add guest vs host distinction
-In-Reply-To: <a67d527dc1b11493fe11f7f53584772fdd983744.1728980031.git.zhouquan@iscas.ac.cn>
-Message-ID: <mhng-c9ba919e-b4a4-4bb9-bdba-f4d3295a930b@palmer-ri-x1c9a>
+From: Atish Patra <atishp@atishpatra.org>
+Date: Fri, 18 Oct 2024 13:03:26 -0700
+Subject: [PATCH 11/13] RISC-V: KVM: Use SBI sync SRET call when available
+In-Reply-To: <20240719160913.342027-12-apatel@ventanamicro.com>
+References: <20240719160913.342027-1-apatel@ventanamicro.com> <20240719160913.342027-12-apatel@ventanamicro.com>
+Message-ID: <CAOnJCU+rORtJecgZA1inp7pzjoK8Rc_q46JNcsEcnm31M8bjJg@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, 15 Oct 2024 01:42:50 PDT (-0700), zhouquan at iscas.ac.cn wrote:
-> From: Quan Zhou <zhouquan@iscas.ac.cn>
+On Fri, Jul 19, 2024 at 9:10?AM Anup Patel <apatel@ventanamicro.com> wrote:
 >
-> Introduce basic guest support in perf, enabling it to distinguish
-> between PMU interrupts in the host or guest, and collect
-> fundamental information.
+> Implement an optimized KVM world-switch using SBI sync SRET call
+> when SBI nested acceleration extension is available. This improves
+> KVM world-switch when KVM RISC-V is running as a Guest under some
+> other hypervisor.
 >
-> Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
-> Signed-off-by: Quan Zhou <zhouquan@iscas.ac.cn>
+> Signed-off-by: Anup Patel <apatel@ventanamicro.com>
 > ---
->  arch/riscv/include/asm/perf_event.h |  6 +++++
->  arch/riscv/kernel/perf_callchain.c  | 38 +++++++++++++++++++++++++++++
->  2 files changed, 44 insertions(+)
+>  arch/riscv/include/asm/kvm_nacl.h | 32 +++++++++++++++++++++
+>  arch/riscv/kvm/vcpu.c             | 48 ++++++++++++++++++++++++++++---
+>  arch/riscv/kvm/vcpu_switch.S      | 29 +++++++++++++++++++
+>  3 files changed, 105 insertions(+), 4 deletions(-)
 >
-> diff --git a/arch/riscv/include/asm/perf_event.h b/arch/riscv/include/asm/perf_event.h
-> index 665bbc9b2f84..38926b4a902d 100644
-> --- a/arch/riscv/include/asm/perf_event.h
-> +++ b/arch/riscv/include/asm/perf_event.h
-> @@ -8,7 +8,11 @@
->  #ifndef _ASM_RISCV_PERF_EVENT_H
->  #define _ASM_RISCV_PERF_EVENT_H
+> diff --git a/arch/riscv/include/asm/kvm_nacl.h b/arch/riscv/include/asm/kvm_nacl.h
+> index a704e8000a58..5e74238ea525 100644
+> --- a/arch/riscv/include/asm/kvm_nacl.h
+> +++ b/arch/riscv/include/asm/kvm_nacl.h
+> @@ -12,6 +12,8 @@
+>  #include <asm/csr.h>
+>  #include <asm/sbi.h>
 >
-> +#ifdef CONFIG_PERF_EVENTS
->  #include <linux/perf_event.h>
-> +extern unsigned long perf_instruction_pointer(struct pt_regs *regs);
-> +extern unsigned long perf_misc_flags(struct pt_regs *regs);
-> +#define perf_misc_flags(regs) perf_misc_flags(regs)
->  #define perf_arch_bpf_user_pt_regs(regs) (struct user_regs_struct *)regs
->
->  #define perf_arch_fetch_caller_regs(regs, __ip) { \
-> @@ -17,4 +21,6 @@
->  	(regs)->sp = current_stack_pointer; \
->  	(regs)->status = SR_PP; \
->  }
-> +#endif
+> +struct kvm_vcpu_arch;
 > +
->  #endif /* _ASM_RISCV_PERF_EVENT_H */
-> diff --git a/arch/riscv/kernel/perf_callchain.c b/arch/riscv/kernel/perf_callchain.c
-> index c7468af77c66..c2c81a80f816 100644
-> --- a/arch/riscv/kernel/perf_callchain.c
-> +++ b/arch/riscv/kernel/perf_callchain.c
-> @@ -28,11 +28,49 @@ static bool fill_callchain(void *entry, unsigned long pc)
->  void perf_callchain_user(struct perf_callchain_entry_ctx *entry,
->  			 struct pt_regs *regs)
+>  DECLARE_STATIC_KEY_FALSE(kvm_riscv_nacl_available);
+>  #define kvm_riscv_nacl_available() \
+>         static_branch_unlikely(&kvm_riscv_nacl_available)
+> @@ -43,6 +45,10 @@ void __kvm_riscv_nacl_hfence(void *shmem,
+>                              unsigned long page_num,
+>                              unsigned long page_count);
+>
+> +void __kvm_riscv_nacl_switch_to(struct kvm_vcpu_arch *vcpu_arch,
+> +                               unsigned long sbi_ext_id,
+> +                               unsigned long sbi_func_id);
+> +
+>  int kvm_riscv_nacl_enable(void);
+>
+>  void kvm_riscv_nacl_disable(void);
+> @@ -64,6 +70,32 @@ int kvm_riscv_nacl_init(void);
+>  #define nacl_shmem_fast()                                              \
+>         (kvm_riscv_nacl_available() ? nacl_shmem() : NULL)
+>
+> +#define nacl_scratch_read_long(__shmem, __offset)                      \
+> +({                                                                     \
+> +       unsigned long *__p = (__shmem) +                                \
+> +                            SBI_NACL_SHMEM_SCRATCH_OFFSET +            \
+> +                            (__offset);                                \
+> +       lelong_to_cpu(*__p);                                            \
+> +})
+> +
+> +#define nacl_scratch_write_long(__shmem, __offset, __val)              \
+> +do {                                                                   \
+> +       unsigned long *__p = (__shmem) +                                \
+> +                            SBI_NACL_SHMEM_SCRATCH_OFFSET +            \
+> +                            (__offset);                                \
+> +       *__p = cpu_to_lelong(__val);                                    \
+> +} while (0)
+> +
+> +#define nacl_scratch_write_longs(__shmem, __offset, __array, __count)  \
+> +do {                                                                   \
+> +       unsigned int __i;                                               \
+> +       unsigned long *__p = (__shmem) +                                \
+> +                            SBI_NACL_SHMEM_SCRATCH_OFFSET +            \
+> +                            (__offset);                                \
+> +       for (__i = 0; __i < (__count); __i++)                           \
+> +               __p[__i] = cpu_to_lelong((__array)[__i]);               \
+> +} while (0)
+> +
+
+This should be in a separate patch along with other helpers ?
+
+>  #define nacl_sync_hfence(__e)                                          \
+>         sbi_ecall(SBI_EXT_NACL, SBI_EXT_NACL_SYNC_HFENCE,               \
+>                   (__e), 0, 0, 0, 0, 0)
+> diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
+> index 00baaf1b0136..fe849fb1aaab 100644
+> --- a/arch/riscv/kvm/vcpu.c
+> +++ b/arch/riscv/kvm/vcpu.c
+> @@ -759,19 +759,59 @@ static __always_inline void kvm_riscv_vcpu_swap_in_host_state(struct kvm_vcpu *v
+>   */
+>  static void noinstr kvm_riscv_vcpu_enter_exit(struct kvm_vcpu *vcpu)
 >  {
-> +	if (perf_guest_state()) {
-> +		/* TODO: We don't support guest os callchain now */
-> +		return;
-
-That seems kind of weird, but it looks like almost exactly the same 
-thing Marc did in 75e424620a4f ("arm64: perf: add guest vs host 
-discrimination").  I think it's safe, as we'll basically just silently 
-display no backtrace and we can always just fail to backtrace.
-
-That said: I don't understand why we can't backtrace inside a guest?  If 
-we can get the registers and memory it seems like we should be able to.  
-Maybe I'm missing something?
-
-> +	}
-> +
->  	arch_stack_walk_user(fill_callchain, entry, regs);
->  }
+> +       void *nsh;
+>         struct kvm_cpu_context *gcntx = &vcpu->arch.guest_context;
+>         struct kvm_cpu_context *hcntx = &vcpu->arch.host_context;
 >
->  void perf_callchain_kernel(struct perf_callchain_entry_ctx *entry,
->  			   struct pt_regs *regs)
->  {
-> +	if (perf_guest_state()) {
-> +		/* TODO: We don't support guest os callchain now */
-> +		return;
-> +	}
+>         kvm_riscv_vcpu_swap_in_guest_state(vcpu);
+>         guest_state_enter_irqoff();
+>
+> -       hcntx->hstatus = ncsr_swap(CSR_HSTATUS, gcntx->hstatus);
+> +       if (kvm_riscv_nacl_sync_sret_available()) {
+> +               nsh = nacl_shmem();
+>
+> -       nsync_csr(-1UL);
+> +               if (kvm_riscv_nacl_autoswap_csr_available()) {
+> +                       hcntx->hstatus =
+> +                               nacl_csr_read(nsh, CSR_HSTATUS);
+> +                       nacl_scratch_write_long(nsh,
+> +                                               SBI_NACL_SHMEM_AUTOSWAP_OFFSET +
+> +                                               SBI_NACL_SHMEM_AUTOSWAP_HSTATUS,
+> +                                               gcntx->hstatus);
+> +                       nacl_scratch_write_long(nsh,
+> +                                               SBI_NACL_SHMEM_AUTOSWAP_OFFSET,
+> +                                               SBI_NACL_SHMEM_AUTOSWAP_FLAG_HSTATUS);
+> +               } else if (kvm_riscv_nacl_sync_csr_available()) {
+> +                       hcntx->hstatus = nacl_csr_swap(nsh,
+> +                                                      CSR_HSTATUS, gcntx->hstatus);
+> +               } else {
+> +                       hcntx->hstatus = csr_swap(CSR_HSTATUS, gcntx->hstatus);
+> +               }
+>
+> -       __kvm_riscv_switch_to(&vcpu->arch);
+> +               nacl_scratch_write_longs(nsh,
+> +                                        SBI_NACL_SHMEM_SRET_OFFSET +
+> +                                        SBI_NACL_SHMEM_SRET_X(1),
+> +                                        &gcntx->ra,
+> +                                        SBI_NACL_SHMEM_SRET_X_LAST);
 > +
->  	walk_stackframe(NULL, regs, fill_callchain, entry);
->  }
+> +               __kvm_riscv_nacl_switch_to(&vcpu->arch, SBI_EXT_NACL,
+> +                                          SBI_EXT_NACL_SYNC_SRET);
 > +
-> +unsigned long perf_instruction_pointer(struct pt_regs *regs)
-> +{
-> +	if (perf_guest_state())
-> +		return perf_guest_get_ip();
+> +               if (kvm_riscv_nacl_autoswap_csr_available()) {
+> +                       nacl_scratch_write_long(nsh,
+> +                                               SBI_NACL_SHMEM_AUTOSWAP_OFFSET,
+> +                                               0);
+> +                       gcntx->hstatus = nacl_scratch_read_long(nsh,
+> +                                                               SBI_NACL_SHMEM_AUTOSWAP_OFFSET +
+> +                                                               SBI_NACL_SHMEM_AUTOSWAP_HSTATUS);
+> +               } else {
+> +                       gcntx->hstatus = csr_swap(CSR_HSTATUS, hcntx->hstatus);
+> +               }
+> +       } else {
+> +               hcntx->hstatus = csr_swap(CSR_HSTATUS, gcntx->hstatus);
+>
+> -       gcntx->hstatus = csr_swap(CSR_HSTATUS, hcntx->hstatus);
+> +               __kvm_riscv_switch_to(&vcpu->arch);
 > +
-> +	return instruction_pointer(regs);
-> +}
+> +               gcntx->hstatus = csr_swap(CSR_HSTATUS, hcntx->hstatus);
+> +       }
+>
+>         vcpu->arch.last_exit_cpu = vcpu->cpu;
+>         guest_state_exit_irqoff();
+> diff --git a/arch/riscv/kvm/vcpu_switch.S b/arch/riscv/kvm/vcpu_switch.S
+> index 9f13e5ce6a18..47686bcb21e0 100644
+> --- a/arch/riscv/kvm/vcpu_switch.S
+> +++ b/arch/riscv/kvm/vcpu_switch.S
+> @@ -218,6 +218,35 @@ SYM_FUNC_START(__kvm_riscv_switch_to)
+>         ret
+>  SYM_FUNC_END(__kvm_riscv_switch_to)
+>
+> +       /*
+> +        * Parameters:
+> +        * A0 <= Pointer to struct kvm_vcpu_arch
+> +        * A1 <= SBI extension ID
+> +        * A2 <= SBI function ID
+> +        */
+> +SYM_FUNC_START(__kvm_riscv_nacl_switch_to)
+> +       SAVE_HOST_GPRS
 > +
-> +unsigned long perf_misc_flags(struct pt_regs *regs)
-> +{
-> +	unsigned int guest_state = perf_guest_state();
-> +	unsigned long misc = 0;
+> +       SAVE_HOST_AND_RESTORE_GUEST_CSRS .Lkvm_nacl_switch_return
 > +
-> +	if (guest_state) {
-> +		if (guest_state & PERF_GUEST_USER)
-> +			misc |= PERF_RECORD_MISC_GUEST_USER;
-> +		else
-> +			misc |= PERF_RECORD_MISC_GUEST_KERNEL;
-> +	} else {
-> +		if (user_mode(regs))
-> +			misc |= PERF_RECORD_MISC_USER;
-> +		else
-> +			misc |= PERF_RECORD_MISC_KERNEL;
-> +	}
+> +       /* Resume Guest using SBI nested acceleration */
+> +       add     a6, a2, zero
+> +       add     a7, a1, zero
+> +       ecall
 > +
-> +	return misc;
-> +}
+> +       /* Back to Host */
+> +       .align 2
+> +.Lkvm_nacl_switch_return:
+> +       SAVE_GUEST_GPRS
+> +
+> +       SAVE_GUEST_AND_RESTORE_HOST_CSRS
+> +
+> +       RESTORE_HOST_GPRS
+> +
+> +       /* Return to C code */
+> +       ret
+> +SYM_FUNC_END(__kvm_riscv_nacl_switch_to)
+> +
+>  SYM_CODE_START(__kvm_riscv_unpriv_trap)
+>         /*
+>          * We assume that faulting unpriv load/store instruction is
+> --
+> 2.34.1
+>
+
+
+Reviewed-by: Atish Patra <atishp@rivosinc.com>
+-- 
+Regards,
+Atish
 
