@@ -1,110 +1,92 @@
-From: Atish Patra <atishp@atishpatra.org>
-Date: Fri, 18 Oct 2024 13:11:18 -0700
-Subject: [PATCH 12/13] RISC-V: KVM: Save trap CSRs in kvm_riscv_vcpu_enter_exit()
-In-Reply-To: <20240719160913.342027-13-apatel@ventanamicro.com>
-References: <20240719160913.342027-1-apatel@ventanamicro.com> <20240719160913.342027-13-apatel@ventanamicro.com>
-Message-ID: <CAOnJCULYc-m_Jq-MxwGMbktmCvLPsMiA_tzxE2qYuoKgeR0BEw@mail.gmail.com>
+From: Anup Patel <anup@brainfault.org>
+Date: Sun, 20 Oct 2024 21:56:58 +0530
+Subject: [PATCH v5 09/10] RISC-V: KVM: Allow Smnpm and Ssnpm extensions
+ for guests
+In-Reply-To: <20241016202814.4061541-10-samuel.holland@sifive.com>
+References: <20241016202814.4061541-1-samuel.holland@sifive.com> <20241016202814.4061541-10-samuel.holland@sifive.com>
+Message-ID: <CAAhSdy3FTjVUDBJtbsFwj6+DWjrQh3nWwvsm_1edDUO9SkXB2A@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Jul 19, 2024 at 9:10?AM Anup Patel <apatel@ventanamicro.com> wrote:
+On Thu, Oct 17, 2024 at 1:58?AM Samuel Holland
+<samuel.holland@sifive.com> wrote:
 >
-> Save trap CSRs in the kvm_riscv_vcpu_enter_exit() function instead of
-> the kvm_arch_vcpu_ioctl_run() function so that HTVAL and HTINST CSRs
-> are accessed in more optimized manner while running under some other
-> hypervisor.
+> The interface for controlling pointer masking in VS-mode is henvcfg.PMM,
+> which is part of the Ssnpm extension, even though pointer masking in
+> HS-mode is provided by the Smnpm extension. As a result, emulating Smnpm
+> in the guest requires (only) Ssnpm on the host.
 >
-> Signed-off-by: Anup Patel <apatel@ventanamicro.com>
-> ---
->  arch/riscv/kvm/vcpu.c | 34 +++++++++++++++++++++-------------
->  1 file changed, 21 insertions(+), 13 deletions(-)
+> The guest configures Smnpm through the SBI Firmware Features extension,
+> which KVM does not yet implement, so currently the ISA extension has no
+> visible effect on the guest, and thus it cannot be disabled. Ssnpm is
+> configured using the senvcfg CSR within the guest, so that extension
+> cannot be hidden from the guest without intercepting writes to the CSR.
 >
-> diff --git a/arch/riscv/kvm/vcpu.c b/arch/riscv/kvm/vcpu.c
-> index fe849fb1aaab..854d98aa165e 100644
-> --- a/arch/riscv/kvm/vcpu.c
-> +++ b/arch/riscv/kvm/vcpu.c
-> @@ -757,12 +757,21 @@ static __always_inline void kvm_riscv_vcpu_swap_in_host_state(struct kvm_vcpu *v
->   * This must be noinstr as instrumentation may make use of RCU, and this is not
->   * safe during the EQS.
->   */
-> -static void noinstr kvm_riscv_vcpu_enter_exit(struct kvm_vcpu *vcpu)
-> +static void noinstr kvm_riscv_vcpu_enter_exit(struct kvm_vcpu *vcpu,
-> +                                             struct kvm_cpu_trap *trap)
->  {
->         void *nsh;
->         struct kvm_cpu_context *gcntx = &vcpu->arch.guest_context;
->         struct kvm_cpu_context *hcntx = &vcpu->arch.host_context;
->
-> +       /*
-> +        * We save trap CSRs (such as SEPC, SCAUSE, STVAL, HTVAL, and
-> +        * HTINST) here because we do local_irq_enable() after this
-> +        * function in kvm_arch_vcpu_ioctl_run() which can result in
-> +        * an interrupt immediately after local_irq_enable() and can
-> +        * potentially change trap CSRs.
-> +        */
-> +
->         kvm_riscv_vcpu_swap_in_guest_state(vcpu);
->         guest_state_enter_irqoff();
->
-> @@ -805,14 +814,24 @@ static void noinstr kvm_riscv_vcpu_enter_exit(struct kvm_vcpu *vcpu)
->                 } else {
->                         gcntx->hstatus = csr_swap(CSR_HSTATUS, hcntx->hstatus);
->                 }
-> +
-> +               trap->htval = nacl_csr_read(nsh, CSR_HTVAL);
-> +               trap->htinst = nacl_csr_read(nsh, CSR_HTINST);
->         } else {
->                 hcntx->hstatus = csr_swap(CSR_HSTATUS, gcntx->hstatus);
->
->                 __kvm_riscv_switch_to(&vcpu->arch);
->
->                 gcntx->hstatus = csr_swap(CSR_HSTATUS, hcntx->hstatus);
-> +
-> +               trap->htval = csr_read(CSR_HTVAL);
-> +               trap->htinst = csr_read(CSR_HTINST);
->         }
->
-> +       trap->sepc = gcntx->sepc;
-> +       trap->scause = csr_read(CSR_SCAUSE);
-> +       trap->stval = csr_read(CSR_STVAL);
-> +
->         vcpu->arch.last_exit_cpu = vcpu->cpu;
->         guest_state_exit_irqoff();
->         kvm_riscv_vcpu_swap_in_host_state(vcpu);
-> @@ -929,22 +948,11 @@ int kvm_arch_vcpu_ioctl_run(struct kvm_vcpu *vcpu)
->
->                 guest_timing_enter_irqoff();
->
-> -               kvm_riscv_vcpu_enter_exit(vcpu);
-> +               kvm_riscv_vcpu_enter_exit(vcpu, &trap);
->
->                 vcpu->mode = OUTSIDE_GUEST_MODE;
->                 vcpu->stat.exits++;
->
-> -               /*
-> -                * Save SCAUSE, STVAL, HTVAL, and HTINST because we might
-> -                * get an interrupt between __kvm_riscv_switch_to() and
-> -                * local_irq_enable() which can potentially change CSRs.
-> -                */
-> -               trap.sepc = vcpu->arch.guest_context.sepc;
-> -               trap.scause = csr_read(CSR_SCAUSE);
-> -               trap.stval = csr_read(CSR_STVAL);
-> -               trap.htval = ncsr_read(CSR_HTVAL);
-> -               trap.htinst = ncsr_read(CSR_HTINST);
-> -
->                 /* Syncup interrupts state with HW */
->                 kvm_riscv_vcpu_sync_interrupts(vcpu);
->
-> --
-> 2.34.1
->
+> Signed-off-by: Samuel Holland <samuel.holland@sifive.com>
 
+LGTM.
 
-Reviewed-by: Atish Patra <atishp@rivosinc.com>
--- 
+Reviewed-by: Anup Patel <anup@brainfault.org>
+
 Regards,
-Atish
+Anup
+
+> ---
+>
+> Changes in v5:
+>  - Do not allow Smnpm to be disabled, as suggested by Anup
+>
+> Changes in v2:
+>  - New patch for v2
+>
+>  arch/riscv/include/uapi/asm/kvm.h | 2 ++
+>  arch/riscv/kvm/vcpu_onereg.c      | 4 ++++
+>  2 files changed, 6 insertions(+)
+>
+> diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
+> index e97db3296456..4f24201376b1 100644
+> --- a/arch/riscv/include/uapi/asm/kvm.h
+> +++ b/arch/riscv/include/uapi/asm/kvm.h
+> @@ -175,6 +175,8 @@ enum KVM_RISCV_ISA_EXT_ID {
+>         KVM_RISCV_ISA_EXT_ZCF,
+>         KVM_RISCV_ISA_EXT_ZCMOP,
+>         KVM_RISCV_ISA_EXT_ZAWRS,
+> +       KVM_RISCV_ISA_EXT_SMNPM,
+> +       KVM_RISCV_ISA_EXT_SSNPM,
+>         KVM_RISCV_ISA_EXT_MAX,
+>  };
+>
+> diff --git a/arch/riscv/kvm/vcpu_onereg.c b/arch/riscv/kvm/vcpu_onereg.c
+> index b319c4c13c54..5b68490ad9b7 100644
+> --- a/arch/riscv/kvm/vcpu_onereg.c
+> +++ b/arch/riscv/kvm/vcpu_onereg.c
+> @@ -34,9 +34,11 @@ static const unsigned long kvm_isa_ext_arr[] = {
+>         [KVM_RISCV_ISA_EXT_M] = RISCV_ISA_EXT_m,
+>         [KVM_RISCV_ISA_EXT_V] = RISCV_ISA_EXT_v,
+>         /* Multi letter extensions (alphabetically sorted) */
+> +       [KVM_RISCV_ISA_EXT_SMNPM] = RISCV_ISA_EXT_SSNPM,
+>         KVM_ISA_EXT_ARR(SMSTATEEN),
+>         KVM_ISA_EXT_ARR(SSAIA),
+>         KVM_ISA_EXT_ARR(SSCOFPMF),
+> +       KVM_ISA_EXT_ARR(SSNPM),
+>         KVM_ISA_EXT_ARR(SSTC),
+>         KVM_ISA_EXT_ARR(SVINVAL),
+>         KVM_ISA_EXT_ARR(SVNAPOT),
+> @@ -127,8 +129,10 @@ static bool kvm_riscv_vcpu_isa_disable_allowed(unsigned long ext)
+>         case KVM_RISCV_ISA_EXT_C:
+>         case KVM_RISCV_ISA_EXT_I:
+>         case KVM_RISCV_ISA_EXT_M:
+> +       case KVM_RISCV_ISA_EXT_SMNPM:
+>         /* There is not architectural config bit to disable sscofpmf completely */
+>         case KVM_RISCV_ISA_EXT_SSCOFPMF:
+> +       case KVM_RISCV_ISA_EXT_SSNPM:
+>         case KVM_RISCV_ISA_EXT_SSTC:
+>         case KVM_RISCV_ISA_EXT_SVINVAL:
+>         case KVM_RISCV_ISA_EXT_SVNAPOT:
+> --
+> 2.45.1
+>
 
