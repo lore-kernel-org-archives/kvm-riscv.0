@@ -1,92 +1,550 @@
 From: Anup Patel <anup@brainfault.org>
-Date: Sun, 20 Oct 2024 21:56:58 +0530
-Subject: [PATCH v5 09/10] RISC-V: KVM: Allow Smnpm and Ssnpm extensions
- for guests
-In-Reply-To: <20241016202814.4061541-10-samuel.holland@sifive.com>
-References: <20241016202814.4061541-1-samuel.holland@sifive.com> <20241016202814.4061541-10-samuel.holland@sifive.com>
-Message-ID: <CAAhSdy3FTjVUDBJtbsFwj6+DWjrQh3nWwvsm_1edDUO9SkXB2A@mail.gmail.com>
+Date: Sun, 20 Oct 2024 23:49:08 +0530
+Subject: [PATCH 08/13] RISC-V: KVM: Add common nested acceleration support
+In-Reply-To: <CAOnJCUJ6sCc5CKcHQBuLmW=Z2+j1MqBBTv309uqJeywp0s4V=A@mail.gmail.com>
+References: <20240719160913.342027-1-apatel@ventanamicro.com>
+ <20240719160913.342027-9-apatel@ventanamicro.com> <CAOnJCUJ6sCc5CKcHQBuLmW=Z2+j1MqBBTv309uqJeywp0s4V=A@mail.gmail.com>
+Message-ID: <CAAhSdy2vZ5AUuYZ7OJREvcONUeVUY7XuV3eNf=TK7PR3tv15wA@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Oct 17, 2024 at 1:58?AM Samuel Holland
-<samuel.holland@sifive.com> wrote:
+On Fri, Oct 18, 2024 at 11:49?PM Atish Patra <atishp@atishpatra.org> wrote:
 >
-> The interface for controlling pointer masking in VS-mode is henvcfg.PMM,
-> which is part of the Ssnpm extension, even though pointer masking in
-> HS-mode is provided by the Smnpm extension. As a result, emulating Smnpm
-> in the guest requires (only) Ssnpm on the host.
+> On Fri, Jul 19, 2024 at 9:09?AM Anup Patel <apatel@ventanamicro.com> wrote:
+> >
+> > Add a common nested acceleration support which will be shared by
+> > all parts of KVM RISC-V. This nested acceleration support detects
+> > and enables SBI NACL extension usage based on static keys which
+> > ensures minimum impact on the non-nested scenario.
+> >
+> > Signed-off-by: Anup Patel <apatel@ventanamicro.com>
+> > ---
+> >  arch/riscv/include/asm/kvm_nacl.h | 205 ++++++++++++++++++++++++++++++
+> >  arch/riscv/kvm/Makefile           |   1 +
+> >  arch/riscv/kvm/main.c             |  53 +++++++-
+> >  arch/riscv/kvm/nacl.c             | 152 ++++++++++++++++++++++
+> >  4 files changed, 409 insertions(+), 2 deletions(-)
+> >  create mode 100644 arch/riscv/include/asm/kvm_nacl.h
+> >  create mode 100644 arch/riscv/kvm/nacl.c
+> >
+> > diff --git a/arch/riscv/include/asm/kvm_nacl.h b/arch/riscv/include/asm/kvm_nacl.h
+> > new file mode 100644
+> > index 000000000000..a704e8000a58
+> > --- /dev/null
+> > +++ b/arch/riscv/include/asm/kvm_nacl.h
+> > @@ -0,0 +1,205 @@
+> > +/* SPDX-License-Identifier: GPL-2.0-only */
+> > +/*
+> > + * Copyright (c) 2024 Ventana Micro Systems Inc.
+> > + */
+> > +
+> > +#ifndef __KVM_NACL_H
+> > +#define __KVM_NACL_H
+> > +
+> > +#include <linux/jump_label.h>
+> > +#include <linux/percpu.h>
+> > +#include <asm/byteorder.h>
+> > +#include <asm/csr.h>
+> > +#include <asm/sbi.h>
+> > +
+> > +DECLARE_STATIC_KEY_FALSE(kvm_riscv_nacl_available);
+> > +#define kvm_riscv_nacl_available() \
+> > +       static_branch_unlikely(&kvm_riscv_nacl_available)
+> > +
+> > +DECLARE_STATIC_KEY_FALSE(kvm_riscv_nacl_sync_csr_available);
+> > +#define kvm_riscv_nacl_sync_csr_available() \
+> > +       static_branch_unlikely(&kvm_riscv_nacl_sync_csr_available)
+> > +
+> > +DECLARE_STATIC_KEY_FALSE(kvm_riscv_nacl_sync_hfence_available);
+> > +#define kvm_riscv_nacl_sync_hfence_available() \
+> > +       static_branch_unlikely(&kvm_riscv_nacl_sync_hfence_available)
+> > +
+> > +DECLARE_STATIC_KEY_FALSE(kvm_riscv_nacl_sync_sret_available);
+> > +#define kvm_riscv_nacl_sync_sret_available() \
+> > +       static_branch_unlikely(&kvm_riscv_nacl_sync_sret_available)
+> > +
+> > +DECLARE_STATIC_KEY_FALSE(kvm_riscv_nacl_autoswap_csr_available);
+> > +#define kvm_riscv_nacl_autoswap_csr_available() \
+> > +       static_branch_unlikely(&kvm_riscv_nacl_autoswap_csr_available)
+> > +
+> > +struct kvm_riscv_nacl {
+> > +       void *shmem;
+> > +       phys_addr_t shmem_phys;
+> > +};
+> > +DECLARE_PER_CPU(struct kvm_riscv_nacl, kvm_riscv_nacl);
+> > +
+> > +void __kvm_riscv_nacl_hfence(void *shmem,
+> > +                            unsigned long control,
+> > +                            unsigned long page_num,
+> > +                            unsigned long page_count);
+> > +
+> > +int kvm_riscv_nacl_enable(void);
+> > +
+> > +void kvm_riscv_nacl_disable(void);
+> > +
+> > +void kvm_riscv_nacl_exit(void);
+> > +
+> > +int kvm_riscv_nacl_init(void);
+> > +
+> > +#ifdef CONFIG_32BIT
+> > +#define lelong_to_cpu(__x)     le32_to_cpu(__x)
+> > +#define cpu_to_lelong(__x)     cpu_to_le32(__x)
+> > +#else
+> > +#define lelong_to_cpu(__x)     le64_to_cpu(__x)
+> > +#define cpu_to_lelong(__x)     cpu_to_le64(__x)
+> > +#endif
+> > +
+> > +#define nacl_shmem()                                                   \
+> > +       this_cpu_ptr(&kvm_riscv_nacl)->shmem
+> > +#define nacl_shmem_fast()                                              \
+> > +       (kvm_riscv_nacl_available() ? nacl_shmem() : NULL)
+> > +
 >
-> The guest configures Smnpm through the SBI Firmware Features extension,
-> which KVM does not yet implement, so currently the ISA extension has no
-> visible effect on the guest, and thus it cannot be disabled. Ssnpm is
-> configured using the senvcfg CSR within the guest, so that extension
-> cannot be hidden from the guest without intercepting writes to the CSR.
->
-> Signed-off-by: Samuel Holland <samuel.holland@sifive.com>
+> I don't see any usage of this one. Most of the callers of nacl_shmem
+> probably require more to do if nacl is available
+> and need the conditional block anyways. Am I missing something ?
 
-LGTM.
+Make sense, I will drop nacl_shmem_fast().
 
-Reviewed-by: Anup Patel <anup@brainfault.org>
+>
+> > +#define nacl_sync_hfence(__e)                                          \
+> > +       sbi_ecall(SBI_EXT_NACL, SBI_EXT_NACL_SYNC_HFENCE,               \
+> > +                 (__e), 0, 0, 0, 0, 0)
+> > +
+> > +#define nacl_hfence_mkconfig(__type, __order, __vmid, __asid)          \
+> > +({                                                                     \
+> > +       unsigned long __c = SBI_NACL_SHMEM_HFENCE_CONFIG_PEND;          \
+> > +       __c |= ((__type) & SBI_NACL_SHMEM_HFENCE_CONFIG_TYPE_MASK)      \
+> > +               << SBI_NACL_SHMEM_HFENCE_CONFIG_TYPE_SHIFT;             \
+> > +       __c |= (((__order) - SBI_NACL_SHMEM_HFENCE_ORDER_BASE) &        \
+> > +               SBI_NACL_SHMEM_HFENCE_CONFIG_ORDER_MASK)                \
+> > +               << SBI_NACL_SHMEM_HFENCE_CONFIG_ORDER_SHIFT;            \
+> > +       __c |= ((__vmid) & SBI_NACL_SHMEM_HFENCE_CONFIG_VMID_MASK)      \
+> > +               << SBI_NACL_SHMEM_HFENCE_CONFIG_VMID_SHIFT;             \
+> > +       __c |= ((__asid) & SBI_NACL_SHMEM_HFENCE_CONFIG_ASID_MASK);     \
+> > +       __c;                                                            \
+> > +})
+> > +
+> > +#define nacl_hfence_mkpnum(__order, __addr)                            \
+> > +       ((__addr) >> (__order))
+> > +
+> > +#define nacl_hfence_mkpcount(__order, __size)                          \
+> > +       ((__size) >> (__order))
+> > +
+> > +#define nacl_hfence_gvma(__shmem, __gpa, __gpsz, __order)              \
+> > +__kvm_riscv_nacl_hfence(__shmem,                                       \
+> > +       nacl_hfence_mkconfig(SBI_NACL_SHMEM_HFENCE_TYPE_GVMA,           \
+> > +                          __order, 0, 0),                              \
+> > +       nacl_hfence_mkpnum(__order, __gpa),                             \
+> > +       nacl_hfence_mkpcount(__order, __gpsz))
+> > +
+> > +#define nacl_hfence_gvma_all(__shmem)                                  \
+> > +__kvm_riscv_nacl_hfence(__shmem,                                       \
+> > +       nacl_hfence_mkconfig(SBI_NACL_SHMEM_HFENCE_TYPE_GVMA_ALL,       \
+> > +                          0, 0, 0), 0, 0)
+> > +
+> > +#define nacl_hfence_gvma_vmid(__shmem, __vmid, __gpa, __gpsz, __order) \
+> > +__kvm_riscv_nacl_hfence(__shmem,                                       \
+> > +       nacl_hfence_mkconfig(SBI_NACL_SHMEM_HFENCE_TYPE_GVMA_VMID,      \
+> > +                          __order, __vmid, 0),                         \
+> > +       nacl_hfence_mkpnum(__order, __gpa),                             \
+> > +       nacl_hfence_mkpcount(__order, __gpsz))
+> > +
+> > +#define nacl_hfence_gvma_vmid_all(__shmem, __vmid)                     \
+> > +__kvm_riscv_nacl_hfence(__shmem,                                       \
+> > +       nacl_hfence_mkconfig(SBI_NACL_SHMEM_HFENCE_TYPE_GVMA_VMID_ALL,  \
+> > +                          0, __vmid, 0), 0, 0)
+> > +
+> > +#define nacl_hfence_vvma(__shmem, __vmid, __gva, __gvsz, __order)      \
+> > +__kvm_riscv_nacl_hfence(__shmem,                                       \
+> > +       nacl_hfence_mkconfig(SBI_NACL_SHMEM_HFENCE_TYPE_VVMA,           \
+> > +                          __order, __vmid, 0),                         \
+> > +       nacl_hfence_mkpnum(__order, __gva),                             \
+> > +       nacl_hfence_mkpcount(__order, __gvsz))
+> > +
+> > +#define nacl_hfence_vvma_all(__shmem, __vmid)                          \
+> > +__kvm_riscv_nacl_hfence(__shmem,                                       \
+> > +       nacl_hfence_mkconfig(SBI_NACL_SHMEM_HFENCE_TYPE_VVMA_ALL,       \
+> > +                          0, __vmid, 0), 0, 0)
+> > +
+> > +#define nacl_hfence_vvma_asid(__shmem, __vmid, __asid, __gva, __gvsz, __order)\
+> > +__kvm_riscv_nacl_hfence(__shmem,                                       \
+> > +       nacl_hfence_mkconfig(SBI_NACL_SHMEM_HFENCE_TYPE_VVMA_ASID,      \
+> > +                          __order, __vmid, __asid),                    \
+> > +       nacl_hfence_mkpnum(__order, __gva),                             \
+> > +       nacl_hfence_mkpcount(__order, __gvsz))
+> > +
+> > +#define nacl_hfence_vvma_asid_all(__shmem, __vmid, __asid)             \
+> > +__kvm_riscv_nacl_hfence(__shmem,                                       \
+> > +       nacl_hfence_mkconfig(SBI_NACL_SHMEM_HFENCE_TYPE_VVMA_ASID_ALL,  \
+> > +                          0, __vmid, __asid), 0, 0)
+> > +
+> > +#define nacl_csr_read(__shmem, __csr)                                  \
+> > +({                                                                     \
+> > +       unsigned long *__a = (__shmem) + SBI_NACL_SHMEM_CSR_OFFSET;     \
+> > +       lelong_to_cpu(__a[SBI_NACL_SHMEM_CSR_INDEX(__csr)]);            \
+> > +})
+> > +
+> > +#define nacl_csr_write(__shmem, __csr, __val)                          \
+> > +do {                                                                   \
+> > +       void *__s = (__shmem);                                          \
+> > +       unsigned int __i = SBI_NACL_SHMEM_CSR_INDEX(__csr);             \
+> > +       unsigned long *__a = (__s) + SBI_NACL_SHMEM_CSR_OFFSET;         \
+> > +       u8 *__b = (__s) + SBI_NACL_SHMEM_DBITMAP_OFFSET;                \
+> > +       __a[__i] = cpu_to_lelong(__val);                                \
+> > +       __b[__i >> 3] |= 1U << (__i & 0x7);                             \
+> > +} while (0)
+> > +
+> > +#define nacl_csr_swap(__shmem, __csr, __val)                           \
+> > +({                                                                     \
+> > +       void *__s = (__shmem);                                          \
+> > +       unsigned int __i = SBI_NACL_SHMEM_CSR_INDEX(__csr);             \
+> > +       unsigned long *__a = (__s) + SBI_NACL_SHMEM_CSR_OFFSET;         \
+> > +       u8 *__b = (__s) + SBI_NACL_SHMEM_DBITMAP_OFFSET;                \
+> > +       unsigned long __r = lelong_to_cpu(__a[__i]);                    \
+> > +       __a[__i] = cpu_to_lelong(__val);                                \
+> > +       __b[__i >> 3] |= 1U << (__i & 0x7);                             \
+> > +       __r;                                                            \
+> > +})
+> > +
+> > +#define nacl_sync_csr(__csr)                                           \
+> > +       sbi_ecall(SBI_EXT_NACL, SBI_EXT_NACL_SYNC_CSR,                  \
+> > +                 (__csr), 0, 0, 0, 0, 0)
+> > +
+> > +#define ncsr_read(__csr)                                               \
+> > +({                                                                     \
+> > +       unsigned long __r;                                              \
+> > +       if (kvm_riscv_nacl_available())                                 \
+> > +               __r = nacl_csr_read(nacl_shmem(), __csr);               \
+> > +       else                                                            \
+> > +               __r = csr_read(__csr);                                  \
+> > +       __r;                                                            \
+> > +})
+> > +
+> > +#define ncsr_write(__csr, __val)                                       \
+> > +do {                                                                   \
+> > +       if (kvm_riscv_nacl_sync_csr_available())                        \
+> > +               nacl_csr_write(nacl_shmem(), __csr, __val);             \
+> > +       else                                                            \
+> > +               csr_write(__csr, __val);                                \
+> > +} while (0)
+> > +
+> > +#define ncsr_swap(__csr, __val)                                                \
+> > +({                                                                     \
+> > +       unsigned long __r;                                              \
+> > +       if (kvm_riscv_nacl_sync_csr_available())                        \
+> > +               __r = nacl_csr_swap(nacl_shmem(), __csr, __val);        \
+> > +       else                                                            \
+> > +               __r = csr_swap(__csr, __val);                           \
+> > +       __r;                                                            \
+> > +})
+> > +
+> > +#define nsync_csr(__csr)                                               \
+> > +do {                                                                   \
+> > +       if (kvm_riscv_nacl_sync_csr_available())                        \
+> > +               nacl_sync_csr(__csr);                                   \
+> > +} while (0)
+> > +
+> > +#endif
+> > diff --git a/arch/riscv/kvm/Makefile b/arch/riscv/kvm/Makefile
+> > index c1eac0d093de..0fb1840c3e0a 100644
+> > --- a/arch/riscv/kvm/Makefile
+> > +++ b/arch/riscv/kvm/Makefile
+> > @@ -16,6 +16,7 @@ kvm-y += aia_device.o
+> >  kvm-y += aia_imsic.o
+> >  kvm-y += main.o
+> >  kvm-y += mmu.o
+> > +kvm-y += nacl.o
+> >  kvm-y += tlb.o
+> >  kvm-y += vcpu.o
+> >  kvm-y += vcpu_exit.o
+> > diff --git a/arch/riscv/kvm/main.c b/arch/riscv/kvm/main.c
+> > index bab2ec34cd87..fd78f40bbb04 100644
+> > --- a/arch/riscv/kvm/main.c
+> > +++ b/arch/riscv/kvm/main.c
+> > @@ -10,8 +10,8 @@
+> >  #include <linux/err.h>
+> >  #include <linux/module.h>
+> >  #include <linux/kvm_host.h>
+> > -#include <asm/csr.h>
+> >  #include <asm/cpufeature.h>
+> > +#include <asm/kvm_nacl.h>
+> >  #include <asm/sbi.h>
+> >
+> >  long kvm_arch_dev_ioctl(struct file *filp,
+> > @@ -22,6 +22,12 @@ long kvm_arch_dev_ioctl(struct file *filp,
+> >
+> >  int kvm_arch_hardware_enable(void)
+> >  {
+> > +       int rc;
+> > +
+> > +       rc = kvm_riscv_nacl_enable();
+> > +       if (rc)
+> > +               return rc;
+> > +
+> >         csr_write(CSR_HEDELEG, KVM_HEDELEG_DEFAULT);
+> >         csr_write(CSR_HIDELEG, KVM_HIDELEG_DEFAULT);
+> >
+> > @@ -49,11 +55,14 @@ void kvm_arch_hardware_disable(void)
+> >         csr_write(CSR_HVIP, 0);
+> >         csr_write(CSR_HEDELEG, 0);
+> >         csr_write(CSR_HIDELEG, 0);
+> > +
+> > +       kvm_riscv_nacl_disable();
+> >  }
+> >
+> >  static int __init riscv_kvm_init(void)
+> >  {
+> >         int rc;
+> > +       char slist[64];
+> >         const char *str;
+> >
+> >         if (!riscv_isa_extension_available(NULL, h)) {
+> > @@ -71,16 +80,53 @@ static int __init riscv_kvm_init(void)
+> >                 return -ENODEV;
+> >         }
+> >
+> > +       rc = kvm_riscv_nacl_init();
+> > +       if (rc && rc != -ENODEV)
+> > +               return rc;
+> > +
+> >         kvm_riscv_gstage_mode_detect();
+> >
+> >         kvm_riscv_gstage_vmid_detect();
+> >
+> >         rc = kvm_riscv_aia_init();
+> > -       if (rc && rc != -ENODEV)
+> > +       if (rc && rc != -ENODEV) {
+> > +               kvm_riscv_nacl_exit();
+> >                 return rc;
+> > +       }
+> >
+> >         kvm_info("hypervisor extension available\n");
+> >
+> > +       if (kvm_riscv_nacl_available()) {
+> > +               rc = 0;
+> > +               slist[0] = '\0';
+> > +               if (kvm_riscv_nacl_sync_csr_available()) {
+> > +                       if (rc)
+> > +                               strcat(slist, ", ");
+> > +                       strcat(slist, "sync_csr");
+> > +                       rc++;
+> > +               }
+> > +               if (kvm_riscv_nacl_sync_hfence_available()) {
+> > +                       if (rc)
+> > +                               strcat(slist, ", ");
+> > +                       strcat(slist, "sync_hfence");
+> > +                       rc++;
+> > +               }
+> > +               if (kvm_riscv_nacl_sync_sret_available()) {
+> > +                       if (rc)
+> > +                               strcat(slist, ", ");
+> > +                       strcat(slist, "sync_sret");
+> > +                       rc++;
+> > +               }
+> > +               if (kvm_riscv_nacl_autoswap_csr_available()) {
+> > +                       if (rc)
+> > +                               strcat(slist, ", ");
+> > +                       strcat(slist, "autoswap_csr");
+> > +                       rc++;
+> > +               }
+> > +               kvm_info("using SBI nested acceleration with %s\n",
+> > +                        (rc) ? slist : "no features");
+> > +       }
+> > +
+> >         switch (kvm_riscv_gstage_mode()) {
+> >         case HGATP_MODE_SV32X4:
+> >                 str = "Sv32x4";
+> > @@ -108,6 +154,7 @@ static int __init riscv_kvm_init(void)
+> >         rc = kvm_init(sizeof(struct kvm_vcpu), 0, THIS_MODULE);
+> >         if (rc) {
+> >                 kvm_riscv_aia_exit();
+> > +               kvm_riscv_nacl_exit();
+> >                 return rc;
+> >         }
+> >
+> > @@ -119,6 +166,8 @@ static void __exit riscv_kvm_exit(void)
+> >  {
+> >         kvm_riscv_aia_exit();
+> >
+> > +       kvm_riscv_nacl_exit();
+> > +
+> >         kvm_exit();
+> >  }
+> >  module_exit(riscv_kvm_exit);
+> > diff --git a/arch/riscv/kvm/nacl.c b/arch/riscv/kvm/nacl.c
+> > new file mode 100644
+> > index 000000000000..08a95ad9ada2
+> > --- /dev/null
+> > +++ b/arch/riscv/kvm/nacl.c
+> > @@ -0,0 +1,152 @@
+> > +// SPDX-License-Identifier: GPL-2.0
+> > +/*
+> > + * Copyright (c) 2024 Ventana Micro Systems Inc.
+> > + */
+> > +
+> > +#include <linux/kvm_host.h>
+> > +#include <linux/vmalloc.h>
+> > +#include <asm/kvm_nacl.h>
+> > +
+> > +DEFINE_STATIC_KEY_FALSE(kvm_riscv_nacl_available);
+> > +DEFINE_STATIC_KEY_FALSE(kvm_riscv_nacl_sync_csr_available);
+> > +DEFINE_STATIC_KEY_FALSE(kvm_riscv_nacl_sync_hfence_available);
+> > +DEFINE_STATIC_KEY_FALSE(kvm_riscv_nacl_sync_sret_available);
+> > +DEFINE_STATIC_KEY_FALSE(kvm_riscv_nacl_autoswap_csr_available);
+> > +DEFINE_PER_CPU(struct kvm_riscv_nacl, kvm_riscv_nacl);
+> > +
+> > +void __kvm_riscv_nacl_hfence(void *shmem,
+> > +                            unsigned long control,
+> > +                            unsigned long page_num,
+> > +                            unsigned long page_count)
+> > +{
+> > +       int i, ent = -1, try_count = 5;
+> > +       unsigned long *entp;
+> > +
+> > +again:
+> > +       for (i = 0; i < SBI_NACL_SHMEM_HFENCE_ENTRY_MAX; i++) {
+> > +               entp = shmem + SBI_NACL_SHMEM_HFENCE_ENTRY_CONFIG(i);
+> > +               if (lelong_to_cpu(*entp) & SBI_NACL_SHMEM_HFENCE_CONFIG_PEND)
+> > +                       continue;
+> > +
+> > +               ent = i;
+> > +               break;
+> > +       }
+> > +
+> > +       if (ent < 0) {
+> > +               if (try_count) {
+> > +                       nacl_sync_hfence(-1UL);
+> > +                       goto again;
+> > +               } else {
+> > +                       pr_warn("KVM: No free entry in NACL shared memory\n");
+> > +                       return;
+> > +               }
+> > +       }
+> > +
+> > +       entp = shmem + SBI_NACL_SHMEM_HFENCE_ENTRY_CONFIG(i);
+> > +       *entp = cpu_to_lelong(control);
+> > +       entp = shmem + SBI_NACL_SHMEM_HFENCE_ENTRY_PNUM(i);
+> > +       *entp = cpu_to_lelong(page_num);
+> > +       entp = shmem + SBI_NACL_SHMEM_HFENCE_ENTRY_PCOUNT(i);
+> > +       *entp = cpu_to_lelong(page_count);
+> > +}
+> > +
+> > +int kvm_riscv_nacl_enable(void)
+> > +{
+> > +       int rc;
+> > +       struct sbiret ret;
+> > +       struct kvm_riscv_nacl *nacl;
+> > +
+> > +       if (!kvm_riscv_nacl_available())
+> > +               return 0;
+> > +       nacl = this_cpu_ptr(&kvm_riscv_nacl);
+> > +
+> > +       ret = sbi_ecall(SBI_EXT_NACL, SBI_EXT_NACL_SET_SHMEM,
+> > +                       nacl->shmem_phys, 0, 0, 0, 0, 0);
+> > +       rc = sbi_err_map_linux_errno(ret.error);
+> > +       if (rc)
+> > +               return rc;
+> > +
+> > +       return 0;
+> > +}
+> > +
+> > +void kvm_riscv_nacl_disable(void)
+> > +{
+> > +       if (!kvm_riscv_nacl_available())
+> > +               return;
+> > +
+> > +       sbi_ecall(SBI_EXT_NACL, SBI_EXT_NACL_SET_SHMEM,
+> > +                 SBI_SHMEM_DISABLE, SBI_SHMEM_DISABLE, 0, 0, 0, 0);
+> > +}
+> > +
+> > +void kvm_riscv_nacl_exit(void)
+> > +{
+> > +       int cpu;
+> > +       struct kvm_riscv_nacl *nacl;
+> > +
+> > +       if (!kvm_riscv_nacl_available())
+> > +               return;
+> > +
+> > +       /* Allocate per-CPU shared memory */
+> > +       for_each_possible_cpu(cpu) {
+> > +               nacl = per_cpu_ptr(&kvm_riscv_nacl, cpu);
+> > +               if (!nacl->shmem)
+> > +                       continue;
+> > +
+> > +               free_pages((unsigned long)nacl->shmem,
+> > +                          get_order(SBI_NACL_SHMEM_SIZE));
+> > +               nacl->shmem = NULL;
+> > +               nacl->shmem_phys = 0;
+> > +       }
+> > +}
+> > +
+> > +static long nacl_probe_feature(long feature_id)
+> > +{
+> > +       struct sbiret ret;
+> > +
+> > +       if (!kvm_riscv_nacl_available())
+> > +               return 0;
+> > +
+> > +       ret = sbi_ecall(SBI_EXT_NACL, SBI_EXT_NACL_PROBE_FEATURE,
+> > +                       feature_id, 0, 0, 0, 0, 0);
+> > +       return ret.value;
+> > +}
+> > +
+> > +int kvm_riscv_nacl_init(void)
+> > +{
+> > +       int cpu;
+> > +       struct page *shmem_page;
+> > +       struct kvm_riscv_nacl *nacl;
+> > +
+> > +       if (sbi_spec_version < sbi_mk_version(1, 0) ||
+> > +           sbi_probe_extension(SBI_EXT_NACL) <= 0)
+> > +               return -ENODEV;
+> > +
+> > +       /* Enable NACL support */
+> > +       static_branch_enable(&kvm_riscv_nacl_available);
+> > +
+> > +       /* Probe NACL features */
+> > +       if (nacl_probe_feature(SBI_NACL_FEAT_SYNC_CSR))
+> > +               static_branch_enable(&kvm_riscv_nacl_sync_csr_available);
+> > +       if (nacl_probe_feature(SBI_NACL_FEAT_SYNC_HFENCE))
+> > +               static_branch_enable(&kvm_riscv_nacl_sync_hfence_available);
+> > +       if (nacl_probe_feature(SBI_NACL_FEAT_SYNC_SRET))
+> > +               static_branch_enable(&kvm_riscv_nacl_sync_sret_available);
+> > +       if (nacl_probe_feature(SBI_NACL_FEAT_AUTOSWAP_CSR))
+> > +               static_branch_enable(&kvm_riscv_nacl_autoswap_csr_available);
+> > +
+> > +       /* Allocate per-CPU shared memory */
+> > +       for_each_possible_cpu(cpu) {
+> > +               nacl = per_cpu_ptr(&kvm_riscv_nacl, cpu);
+> > +
+> > +               shmem_page = alloc_pages(GFP_KERNEL | __GFP_ZERO,
+> > +                                        get_order(SBI_NACL_SHMEM_SIZE));
+> > +               if (!shmem_page) {
+> > +                       kvm_riscv_nacl_exit();
+> > +                       return -ENOMEM;
+> > +               }
+> > +               nacl->shmem = page_to_virt(shmem_page);
+> > +               nacl->shmem_phys = page_to_phys(shmem_page);
+> > +       }
+> > +
+> > +       return 0;
+> > +}
+> > --
+> > 2.34.1
+> >
+>
+> Otherwise, it looks good to me.
+>
+> Reviewed-by: Atish Patra <atishp@rivosinc.com>
+>
+> --
+> Regards,
+> Atish
 
 Regards,
 Anup
-
-> ---
->
-> Changes in v5:
->  - Do not allow Smnpm to be disabled, as suggested by Anup
->
-> Changes in v2:
->  - New patch for v2
->
->  arch/riscv/include/uapi/asm/kvm.h | 2 ++
->  arch/riscv/kvm/vcpu_onereg.c      | 4 ++++
->  2 files changed, 6 insertions(+)
->
-> diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
-> index e97db3296456..4f24201376b1 100644
-> --- a/arch/riscv/include/uapi/asm/kvm.h
-> +++ b/arch/riscv/include/uapi/asm/kvm.h
-> @@ -175,6 +175,8 @@ enum KVM_RISCV_ISA_EXT_ID {
->         KVM_RISCV_ISA_EXT_ZCF,
->         KVM_RISCV_ISA_EXT_ZCMOP,
->         KVM_RISCV_ISA_EXT_ZAWRS,
-> +       KVM_RISCV_ISA_EXT_SMNPM,
-> +       KVM_RISCV_ISA_EXT_SSNPM,
->         KVM_RISCV_ISA_EXT_MAX,
->  };
->
-> diff --git a/arch/riscv/kvm/vcpu_onereg.c b/arch/riscv/kvm/vcpu_onereg.c
-> index b319c4c13c54..5b68490ad9b7 100644
-> --- a/arch/riscv/kvm/vcpu_onereg.c
-> +++ b/arch/riscv/kvm/vcpu_onereg.c
-> @@ -34,9 +34,11 @@ static const unsigned long kvm_isa_ext_arr[] = {
->         [KVM_RISCV_ISA_EXT_M] = RISCV_ISA_EXT_m,
->         [KVM_RISCV_ISA_EXT_V] = RISCV_ISA_EXT_v,
->         /* Multi letter extensions (alphabetically sorted) */
-> +       [KVM_RISCV_ISA_EXT_SMNPM] = RISCV_ISA_EXT_SSNPM,
->         KVM_ISA_EXT_ARR(SMSTATEEN),
->         KVM_ISA_EXT_ARR(SSAIA),
->         KVM_ISA_EXT_ARR(SSCOFPMF),
-> +       KVM_ISA_EXT_ARR(SSNPM),
->         KVM_ISA_EXT_ARR(SSTC),
->         KVM_ISA_EXT_ARR(SVINVAL),
->         KVM_ISA_EXT_ARR(SVNAPOT),
-> @@ -127,8 +129,10 @@ static bool kvm_riscv_vcpu_isa_disable_allowed(unsigned long ext)
->         case KVM_RISCV_ISA_EXT_C:
->         case KVM_RISCV_ISA_EXT_I:
->         case KVM_RISCV_ISA_EXT_M:
-> +       case KVM_RISCV_ISA_EXT_SMNPM:
->         /* There is not architectural config bit to disable sscofpmf completely */
->         case KVM_RISCV_ISA_EXT_SSCOFPMF:
-> +       case KVM_RISCV_ISA_EXT_SSNPM:
->         case KVM_RISCV_ISA_EXT_SSTC:
->         case KVM_RISCV_ISA_EXT_SVINVAL:
->         case KVM_RISCV_ISA_EXT_SVNAPOT:
-> --
-> 2.45.1
->
 
