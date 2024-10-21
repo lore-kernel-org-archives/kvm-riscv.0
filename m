@@ -1,129 +1,46 @@
-From: Anup Patel <apatel@ventanamicro.com>
-Date: Mon, 21 Oct 2024 01:17:34 +0530
-Subject: [PATCH v2 13/13] RISC-V: KVM: Use NACL HFENCEs for KVM request based HFENCEs
-In-Reply-To: <20241020194734.58686-1-apatel@ventanamicro.com>
-References: <20241020194734.58686-1-apatel@ventanamicro.com>
-Message-ID: <20241020194734.58686-14-apatel@ventanamicro.com>
+From: Yan Zhao <yan.y.zhao@intel.com>
+Date: Mon, 21 Oct 2024 16:49:34 +0800
+Subject: [PATCH v13 19/85] KVM: Introduce kvm_follow_pfn() to eventually
+ replace "gfn_to_pfn" APIs
+In-Reply-To: <20241010182427.1434605-20-seanjc@google.com>
+References: <20241010182427.1434605-1-seanjc@google.com>
+ <20241010182427.1434605-20-seanjc@google.com>
+Message-ID: <ZxYVnsW9WF1Wp8mx@yzhao56-desk.sh.intel.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-When running under some other hypervisor, use SBI NACL based HFENCEs
-for TLB shoot-down via KVM requests. This makes HFENCEs faster whenever
-SBI nested acceleration is available.
+On Thu, Oct 10, 2024 at 11:23:21AM -0700, Sean Christopherson wrote:
+> --- a/virt/kvm/pfncache.c
+> +++ b/virt/kvm/pfncache.c
+> @@ -159,6 +159,12 @@ static kvm_pfn_t hva_to_pfn_retry(struct gfn_to_pfn_cache *gpc)
+>  	kvm_pfn_t new_pfn = KVM_PFN_ERR_FAULT;
+>  	void *new_khva = NULL;
+>  	unsigned long mmu_seq;
+> +	struct kvm_follow_pfn kfp = {
+> +		.slot = gpc->memslot,
+> +		.gfn = gpa_to_gfn(gpc->gpa),
+> +		.flags = FOLL_WRITE,
+> +		.hva = gpc->uhva,
+> +	};
+Is .map_writable uninitialized?
 
-Signed-off-by: Anup Patel <apatel@ventanamicro.com>
----
- arch/riscv/kvm/tlb.c | 57 +++++++++++++++++++++++++++++++-------------
- 1 file changed, 40 insertions(+), 17 deletions(-)
-
-diff --git a/arch/riscv/kvm/tlb.c b/arch/riscv/kvm/tlb.c
-index 23c0e82b5103..2f91ea5f8493 100644
---- a/arch/riscv/kvm/tlb.c
-+++ b/arch/riscv/kvm/tlb.c
-@@ -14,6 +14,7 @@
- #include <asm/csr.h>
- #include <asm/cpufeature.h>
- #include <asm/insn-def.h>
-+#include <asm/kvm_nacl.h>
- 
- #define has_svinval()	riscv_has_extension_unlikely(RISCV_ISA_EXT_SVINVAL)
- 
-@@ -186,18 +187,24 @@ void kvm_riscv_fence_i_process(struct kvm_vcpu *vcpu)
- 
- void kvm_riscv_hfence_gvma_vmid_all_process(struct kvm_vcpu *vcpu)
- {
--	struct kvm_vmid *vmid;
-+	struct kvm_vmid *v = &vcpu->kvm->arch.vmid;
-+	unsigned long vmid = READ_ONCE(v->vmid);
- 
--	vmid = &vcpu->kvm->arch.vmid;
--	kvm_riscv_local_hfence_gvma_vmid_all(READ_ONCE(vmid->vmid));
-+	if (kvm_riscv_nacl_available())
-+		nacl_hfence_gvma_vmid_all(nacl_shmem(), vmid);
-+	else
-+		kvm_riscv_local_hfence_gvma_vmid_all(vmid);
- }
- 
- void kvm_riscv_hfence_vvma_all_process(struct kvm_vcpu *vcpu)
- {
--	struct kvm_vmid *vmid;
-+	struct kvm_vmid *v = &vcpu->kvm->arch.vmid;
-+	unsigned long vmid = READ_ONCE(v->vmid);
- 
--	vmid = &vcpu->kvm->arch.vmid;
--	kvm_riscv_local_hfence_vvma_all(READ_ONCE(vmid->vmid));
-+	if (kvm_riscv_nacl_available())
-+		nacl_hfence_vvma_all(nacl_shmem(), vmid);
-+	else
-+		kvm_riscv_local_hfence_vvma_all(vmid);
- }
- 
- static bool vcpu_hfence_dequeue(struct kvm_vcpu *vcpu,
-@@ -251,6 +258,7 @@ static bool vcpu_hfence_enqueue(struct kvm_vcpu *vcpu,
- 
- void kvm_riscv_hfence_process(struct kvm_vcpu *vcpu)
- {
-+	unsigned long vmid;
- 	struct kvm_riscv_hfence d = { 0 };
- 	struct kvm_vmid *v = &vcpu->kvm->arch.vmid;
- 
-@@ -259,26 +267,41 @@ void kvm_riscv_hfence_process(struct kvm_vcpu *vcpu)
- 		case KVM_RISCV_HFENCE_UNKNOWN:
- 			break;
- 		case KVM_RISCV_HFENCE_GVMA_VMID_GPA:
--			kvm_riscv_local_hfence_gvma_vmid_gpa(
--						READ_ONCE(v->vmid),
--						d.addr, d.size, d.order);
-+			vmid = READ_ONCE(v->vmid);
-+			if (kvm_riscv_nacl_available())
-+				nacl_hfence_gvma_vmid(nacl_shmem(), vmid,
-+						      d.addr, d.size, d.order);
-+			else
-+				kvm_riscv_local_hfence_gvma_vmid_gpa(vmid, d.addr,
-+								     d.size, d.order);
- 			break;
- 		case KVM_RISCV_HFENCE_VVMA_ASID_GVA:
- 			kvm_riscv_vcpu_pmu_incr_fw(vcpu, SBI_PMU_FW_HFENCE_VVMA_ASID_RCVD);
--			kvm_riscv_local_hfence_vvma_asid_gva(
--						READ_ONCE(v->vmid), d.asid,
--						d.addr, d.size, d.order);
-+			vmid = READ_ONCE(v->vmid);
-+			if (kvm_riscv_nacl_available())
-+				nacl_hfence_vvma_asid(nacl_shmem(), vmid, d.asid,
-+						      d.addr, d.size, d.order);
-+			else
-+				kvm_riscv_local_hfence_vvma_asid_gva(vmid, d.asid, d.addr,
-+								     d.size, d.order);
- 			break;
- 		case KVM_RISCV_HFENCE_VVMA_ASID_ALL:
- 			kvm_riscv_vcpu_pmu_incr_fw(vcpu, SBI_PMU_FW_HFENCE_VVMA_ASID_RCVD);
--			kvm_riscv_local_hfence_vvma_asid_all(
--						READ_ONCE(v->vmid), d.asid);
-+			vmid = READ_ONCE(v->vmid);
-+			if (kvm_riscv_nacl_available())
-+				nacl_hfence_vvma_asid_all(nacl_shmem(), vmid, d.asid);
-+			else
-+				kvm_riscv_local_hfence_vvma_asid_all(vmid, d.asid);
- 			break;
- 		case KVM_RISCV_HFENCE_VVMA_GVA:
- 			kvm_riscv_vcpu_pmu_incr_fw(vcpu, SBI_PMU_FW_HFENCE_VVMA_RCVD);
--			kvm_riscv_local_hfence_vvma_gva(
--						READ_ONCE(v->vmid),
--						d.addr, d.size, d.order);
-+			vmid = READ_ONCE(v->vmid);
-+			if (kvm_riscv_nacl_available())
-+				nacl_hfence_vvma(nacl_shmem(), vmid,
-+						 d.addr, d.size, d.order);
-+			else
-+				kvm_riscv_local_hfence_vvma_gva(vmid, d.addr,
-+								d.size, d.order);
- 			break;
- 		default:
- 			break;
--- 
-2.43.0
-
+>  
+>  	lockdep_assert_held(&gpc->refresh_lock);
+>  
+> @@ -197,8 +203,7 @@ static kvm_pfn_t hva_to_pfn_retry(struct gfn_to_pfn_cache *gpc)
+>  			cond_resched();
+>  		}
+>  
+> -		/* We always request a writable mapping */
+> -		new_pfn = hva_to_pfn(gpc->uhva, false, false, true, NULL);
+> +		new_pfn = hva_to_pfn(&kfp);
+>  		if (is_error_noslot_pfn(new_pfn))
+>  			goto out_error;
+>  
+> -- 
+> 2.47.0.rc1.288.g06298d1525-goog
+> 
 
