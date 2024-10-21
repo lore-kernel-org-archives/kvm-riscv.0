@@ -1,46 +1,45 @@
 From: Yan Zhao <yan.y.zhao@intel.com>
-Date: Mon, 21 Oct 2024 16:49:34 +0800
-Subject: [PATCH v13 19/85] KVM: Introduce kvm_follow_pfn() to eventually
- replace "gfn_to_pfn" APIs
-In-Reply-To: <20241010182427.1434605-20-seanjc@google.com>
+Date: Mon, 21 Oct 2024 17:25:40 +0800
+Subject: [PATCH v13 34/85] KVM: Get writable mapping for __kvm_vcpu_map()
+ only when necessary
+In-Reply-To: <20241010182427.1434605-35-seanjc@google.com>
 References: <20241010182427.1434605-1-seanjc@google.com>
- <20241010182427.1434605-20-seanjc@google.com>
-Message-ID: <ZxYVnsW9WF1Wp8mx@yzhao56-desk.sh.intel.com>
+ <20241010182427.1434605-35-seanjc@google.com>
+Message-ID: <ZxYeFKl2KbZ3Ila1@yzhao56-desk.sh.intel.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Oct 10, 2024 at 11:23:21AM -0700, Sean Christopherson wrote:
-> --- a/virt/kvm/pfncache.c
-> +++ b/virt/kvm/pfncache.c
-> @@ -159,6 +159,12 @@ static kvm_pfn_t hva_to_pfn_retry(struct gfn_to_pfn_cache *gpc)
->  	kvm_pfn_t new_pfn = KVM_PFN_ERR_FAULT;
->  	void *new_khva = NULL;
->  	unsigned long mmu_seq;
-> +	struct kvm_follow_pfn kfp = {
-> +		.slot = gpc->memslot,
-> +		.gfn = gpa_to_gfn(gpc->gpa),
-> +		.flags = FOLL_WRITE,
-> +		.hva = gpc->uhva,
-> +	};
-Is .map_writable uninitialized?
-
->  
->  	lockdep_assert_held(&gpc->refresh_lock);
->  
-> @@ -197,8 +203,7 @@ static kvm_pfn_t hva_to_pfn_retry(struct gfn_to_pfn_cache *gpc)
->  			cond_resched();
->  		}
->  
-> -		/* We always request a writable mapping */
-> -		new_pfn = hva_to_pfn(gpc->uhva, false, false, true, NULL);
-> +		new_pfn = hva_to_pfn(&kfp);
->  		if (is_error_noslot_pfn(new_pfn))
->  			goto out_error;
->  
-> -- 
-> 2.47.0.rc1.288.g06298d1525-goog
+On Thu, Oct 10, 2024 at 11:23:36AM -0700, Sean Christopherson wrote:
+> When creating a memory map for read, don't request a writable pfn from the
+> primary MMU.  While creating read-only mappings can be theoretically slower,
+> as they don't play nice with fast GUP due to the need to break CoW before
+> mapping the underlying PFN, practically speaking, creating a mapping isn't
+> a super hot path, and getting a writable mapping for reading is weird and
+> confusing.
 > 
+> Tested-by: Alex Benn?e <alex.bennee@linaro.org>
+> Signed-off-by: Sean Christopherson <seanjc@google.com>
+> ---
+>  virt/kvm/kvm_main.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+> index 080740f65061..b845e9252633 100644
+> --- a/virt/kvm/kvm_main.c
+> +++ b/virt/kvm/kvm_main.c
+> @@ -3122,7 +3122,7 @@ int __kvm_vcpu_map(struct kvm_vcpu *vcpu, gfn_t gfn, struct kvm_host_map *map,
+>  	struct kvm_follow_pfn kfp = {
+>  		.slot = gfn_to_memslot(vcpu->kvm, gfn),
+>  		.gfn = gfn,
+> -		.flags = FOLL_WRITE,
+> +		.flags = writable ? FOLL_WRITE : 0,
+>  		.refcounted_page = &map->pinned_page,
+>  		.pin = true,
+>  	};
+When writable is false, could we set ".pin = false," ?
+
+Also not sure if ".map_writable = NULL" is missing.
 
