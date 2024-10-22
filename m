@@ -1,68 +1,52 @@
 From: Sean Christopherson <seanjc@google.com>
-Date: Mon, 21 Oct 2024 11:57:42 -0700
-Subject: [PATCH v13 51/85] KVM: VMX: Use __kvm_faultin_page() to get APIC
- access page/pfn
-In-Reply-To: <ZxYrYe/WN8XoB+fI@yzhao56-desk.sh.intel.com>
-References: <20241010182427.1434605-1-seanjc@google.com> <20241010182427.1434605-52-seanjc@google.com>
- <ZxYrYe/WN8XoB+fI@yzhao56-desk.sh.intel.com>
-Message-ID: <ZxakJr_jWkU-Y54e@google.com>
+Date: Mon, 21 Oct 2024 17:25:25 -0700
+Subject: [PATCH v13 00/85] KVM: Stop grabbing references to PFNMAP'd pages
+In-Reply-To: <CABgObfbQW-3vp=mNcR4giUGZ_gxhuRykvKj8gzBDY7pOg6xdBQ@mail.gmail.com>
+References: <20241010182427.1434605-1-seanjc@google.com> <CABgObfbQW-3vp=mNcR4giUGZ_gxhuRykvKj8gzBDY7pOg6xdBQ@mail.gmail.com>
+Message-ID: <Zxbw9XcFCHYR1Ald@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Oct 21, 2024, Yan Zhao wrote:
-> On Thu, Oct 10, 2024 at 11:23:53AM -0700, Sean Christopherson wrote:
-> > Use __kvm_faultin_page() get the APIC access page so that KVM can
-> > precisely release the refcounted page, i.e. to remove yet another user
-> > of kvm_pfn_to_refcounted_page().  While the path isn't handling a guest
-> > page fault, the semantics are effectively the same; KVM just happens to
-> > be mapping the pfn into a VMCS field instead of a secondary MMU.
-> > 
-> > Tested-by: Alex Benn?e <alex.bennee@linaro.org>
-> > Signed-off-by: Sean Christopherson <seanjc@google.com>
-> > ---
-
-...
-
-> > @@ -6838,10 +6840,13 @@ void vmx_set_apic_access_page_addr(struct kvm_vcpu *vcpu)
-> >  		vmcs_write64(APIC_ACCESS_ADDR, pfn_to_hpa(pfn));
-> >  
-> >  	/*
-> > -	 * Do not pin apic access page in memory, the MMU notifier
-> > -	 * will call us again if it is migrated or swapped out.
-> > +	 * Do not pin the APIC access page in memory so that it can be freely
-> > +	 * migrated, the MMU notifier will call us again if it is migrated or
-> > +	 * swapped out.  KVM backs the memslot with anonymous memory, the pfn
-> > +	 * should always point at a refcounted page (if the pfn is valid).
-> >  	 */
-> > -	kvm_release_pfn_clean(pfn);
-> > +	if (!WARN_ON_ONCE(!refcounted_page))
-> > +		kvm_release_page_clean(refcounted_page);
-> Why it's not
-> if (!WARN_ON_ONCE(!refcounted_page)) {
-> 	if (writable)
-> 		kvm_release_page_dirty(refcounted_page)
-> 	else
-> 		kvm_release_page_clean(refcounted_page)
-> }
+On Thu, Oct 17, 2024, Paolo Bonzini wrote:
+> On Thu, Oct 10, 2024 at 8:24?PM Sean Christopherson <seanjc@google.com> wrote:
+> > v13:
+> >  - Rebased onto v6.12-rc2
+> >  - Collect reviews. [Alex and others]
+> >  - Fix a transient bug in arm64 and RISC-V where KVM would leak a page
+> >    refcount. [Oliver]
+> >  - Fix a dangling comment. [Alex]
+> >  - Drop kvm_lookup_pfn(), as the x86 that "needed" it was stupid and is (was?)
+> >    eliminated in v6.12.
+> >  - Drop check_user_page_hwpoison(). [Paolo]
+> >  - Drop the arm64 MTE fixes that went into 6.12.
+> >  - Slightly redo the guest_memfd interaction to account for 6.12 changes.
 > 
-> or simply not pass "writable" to __kvm_faultin_pfn() as we know the slot is
-> not read-only and then set dirty ?
+> Here is my own summary of the changes:
 
-__kvm_faultin_pfn() requires a non-NULL @writable.  The intent is to help ensure
-the caller is actually checking whether a readable vs. writable mapping was
-acquired.  For cases that explicitly pass FOLL_WRITE, it's awkward, but those
-should be few and far between.
+Yep, looks right to me.
 
-> if (!WARN_ON_ONCE(!refcounted_page))
-> 	kvm_release_page_dirty(refcounted_page)
+> patches removed from v12:
+> 01/02 - already upstream
+> 09 - moved to separate A/D series [1]
+> 34 - not needed due to new patch 36
+> 35 - gone after 620525739521376a65a690df899e1596d56791f8
+> 
+> patches added or substantially changed in v13:
+> 05/06/07 - new, suggested by Yan Zhao
+> 08 - code was folded from mmu_spte_age into kvm_rmap_age_gfn_range
+> 14 - new, suggested by me in reply to 84/84 (yuck)
+> 15 - new, suggested by me in reply to 84/84
+> 19 - somewhat rewritten for new follow_pfnmap API
+> 27 - smaller changes due to new follow_pfnmap API
+> 36 - rewritten, suggested by me
+> 45 - new, cleanup
+> 46 - much simplified due to new patch 45
+> 
+> Looks good to me, thanks and congratulations!! Should we merge it in
+> kvm/next asap?
 
-Ya, this is probably more correct?  Though I would strongly prefer to make any
-change in behavior on top of this series.  The use of kvm_release_page_clean()
-was added by commit 878940b33d76 ("KVM: VMX: Retry APIC-access page reload if
-invalidation is in-progress"), and I suspect the only reason it added the
-kvm_set_page_accessed() call is because there was no "unused" variant.  I.e. there
-was no concious decision to set Accessed but not Dirty.
+That has my vote, though I'm obvious extremely biased :-)
 
