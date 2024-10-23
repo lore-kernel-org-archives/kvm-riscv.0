@@ -1,137 +1,96 @@
 From: Andrew Jones <andrew.jones@linux.dev>
-Date: Wed, 23 Oct 2024 15:21:35 +0200
-Subject: [kvm-unit-tests PATCH 4/4] riscv: Rework smp_boot_secondary
-In-Reply-To: <20241023132130.118073-6-andrew.jones@linux.dev>
-References: <20241023132130.118073-6-andrew.jones@linux.dev>
-Message-ID: <20241023132130.118073-10-andrew.jones@linux.dev>
+Date: Wed, 23 Oct 2024 16:23:10 +0200
+Subject: [kvm-unit-tests PATCH v5 0/5] riscv: sbi: Add support to test
+ HSM extension
+In-Reply-To: <20240921100824.151761-1-jamestiotio@gmail.com>
+References: <20240921100824.151761-1-jamestiotio@gmail.com>
+Message-ID: <20241023-13ecdc4f251cd2d070c9ee5e@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Use HSM status to determine when a secondary should be started.
-Also save the stack pointer so a secondary may be stopped and
-started again without leaking old stacks.
+On Sat, Sep 21, 2024 at 06:08:18PM +0800, James Raphael Tiovalen wrote:
+> This patch series adds support for testing all 4 functions of the HSM
+> extension as defined in the RISC-V SBI specification. The first 4
+> patches add some helper routines to prepare for the HSM test, while
+> the last patch adds the actual test for the HSM extension.
 
-Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
----
- lib/riscv/asm/processor.h |  1 +
- lib/riscv/smp.c           | 49 +++++++++++++++++++++++++++------------
- riscv/cstart.S            |  1 +
- 3 files changed, 36 insertions(+), 15 deletions(-)
+Hi James,
 
-diff --git a/lib/riscv/asm/processor.h b/lib/riscv/asm/processor.h
-index 4063255a3475..401042724cee 100644
---- a/lib/riscv/asm/processor.h
-+++ b/lib/riscv/asm/processor.h
-@@ -13,6 +13,7 @@ struct thread_info {
- 	int cpu;
- 	unsigned long hartid;
- 	unsigned long isa[1];
-+	unsigned long sp;
- 	exception_fn exception_handlers[EXCEPTION_CAUSE_MAX];
- 	exception_fn interrupt_handlers[INTERRUPT_CAUSE_MAX];
- };
-diff --git a/lib/riscv/smp.c b/lib/riscv/smp.c
-index eb7061abfe7f..e92f83e1310d 100644
---- a/lib/riscv/smp.c
-+++ b/lib/riscv/smp.c
-@@ -19,8 +19,6 @@ cpumask_t cpu_present_mask;
- cpumask_t cpu_online_mask;
- cpumask_t cpu_idle_mask;
- 
--static cpumask_t cpu_started;
--
- secondary_func_t secondary_cinit(struct secondary_data *data)
- {
- 	struct thread_info *info;
-@@ -37,27 +35,40 @@ secondary_func_t secondary_cinit(struct secondary_data *data)
- 
- static void __smp_boot_secondary(int cpu, secondary_func_t func)
- {
--	struct secondary_data *sp = alloc_pages(1) + SZ_8K - 16;
--	phys_addr_t sp_phys;
-+	void *sp_mem = (void *)cpus[cpu].sp;
-+	struct secondary_data *data;
- 	struct sbiret ret;
- 
--	sp -= sizeof(struct secondary_data);
--	sp->satp = csr_read(CSR_SATP);
--	sp->stvec = csr_read(CSR_STVEC);
--	sp->func = func;
-+	if (!sp_mem) {
-+		phys_addr_t sp_phys;
-+
-+		sp_mem = alloc_pages(1) + SZ_8K - 16;
-+		sp_phys = virt_to_phys(sp_mem);
-+		cpus[cpu].sp = __pa(sp_phys);
- 
--	sp_phys = virt_to_phys(sp);
--	assert(sp_phys == __pa(sp_phys));
-+		assert(sp_phys == cpus[cpu].sp);
-+	}
- 
--	ret = sbi_hart_start(cpus[cpu].hartid, (unsigned long)&secondary_entry, __pa(sp_phys));
-+	sp_mem -= sizeof(struct secondary_data);
-+	data = (struct secondary_data *)sp_mem;
-+	data->satp = csr_read(CSR_SATP);
-+	data->stvec = csr_read(CSR_STVEC);
-+	data->func = func;
-+
-+	ret = sbi_hart_start(cpus[cpu].hartid, (unsigned long)&secondary_entry, cpus[cpu].sp);
- 	assert(ret.error == SBI_SUCCESS);
- }
- 
- void smp_boot_secondary(int cpu, void (*func)(void))
- {
--	int ret = cpumask_test_and_set_cpu(cpu, &cpu_started);
-+	struct sbiret ret;
- 
--	assert_msg(!ret, "CPU%d already boot once", cpu);
-+	do {
-+		ret = sbi_hart_get_status(cpus[cpu].hartid);
-+		assert(!ret.error);
-+	} while (ret.value == SBI_EXT_HSM_STOP_PENDING);
-+
-+	assert_msg(ret.value == SBI_EXT_HSM_STOPPED, "CPU%d is not stopped", cpu);
- 	__smp_boot_secondary(cpu, func);
- 
- 	while (!cpu_online(cpu))
-@@ -66,10 +77,18 @@ void smp_boot_secondary(int cpu, void (*func)(void))
- 
- void smp_boot_secondary_nofail(int cpu, void (*func)(void))
- {
--	int ret = cpumask_test_and_set_cpu(cpu, &cpu_started);
-+	struct sbiret ret;
-+
-+	do {
-+		ret = sbi_hart_get_status(cpus[cpu].hartid);
-+		assert(!ret.error);
-+	} while (ret.value == SBI_EXT_HSM_STOP_PENDING);
- 
--	if (!ret)
-+	if (ret.value == SBI_EXT_HSM_STOPPED)
- 		__smp_boot_secondary(cpu, func);
-+	else
-+		assert_msg(ret.value == SBI_EXT_HSM_START_PENDING || ret.value == SBI_EXT_HSM_STARTED,
-+			   "CPU%d is in an unexpected state %ld", cpu, ret.value);
- 
- 	while (!cpu_online(cpu))
- 		smp_wait_for_event();
-diff --git a/riscv/cstart.S b/riscv/cstart.S
-index 687173706d83..b7ee9b9c96b3 100644
---- a/riscv/cstart.S
-+++ b/riscv/cstart.S
-@@ -149,6 +149,7 @@ secondary_entry:
- 	csrw	CSR_SSCRATCH, a0
- 	mv	sp, a1
- 	mv	fp, zero
-+	addi	sp, sp, -SECONDARY_DATA_SIZE
- 	REG_L	a0, SECONDARY_STVEC(sp)
- 	csrw	CSR_STVEC, a0
- 	mv	a0, sp
--- 
-2.47.0
+Patch1 is now merged and I've applied patch2 to riscv/sbi[1]. I've also
+applied [2] and [3] to riscv/sbi so patches 3 and 4 of this series
+should no longer be necessary. Can you please rebase patch5 on
+riscv/sbi and repost?
 
+[1] https://gitlab.com/jones-drew/kvm-unit-tests/-/commits/riscv/sbi
+[2] https://lore.kernel.org/all/20241023131718.117452-4-andrew.jones at linux.dev/
+[3] https://lore.kernel.org/all/20241023132130.118073-6-andrew.jones at linux.dev/
+
+Thanks,
+drew
+
+> 
+> v5:
+> - Addressed all of Andrew's comments.
+> - Added 2 new patches to clear on_cpu_info[cpu].func and to set the
+>   cpu_started mask, which are used to perform cleanup after running the
+>   HSM tests.
+> - Added some new tests to validate suspension on RV64 with the high
+>   bits set for suspend_type.
+> - Picked up the hartid_to_cpu rewrite patch from Andrew's branch.
+> - Moved the variables declared in riscv/sbi.c in patch 2 to group it
+>   together with the other HSM test variables declared in patch 5.
+> 
+> v4:
+> - Addressed all of Andrew's comments.
+> - Included the 2 patches from Andrew's branch that refactored some
+>   functions.
+> - Added timers to all of the waiting activities in the HSM tests.
+> 
+> v3:
+> - Addressed all of Andrew's comments.
+> - Split the report_prefix_pop patch into its own series.
+> - Added a new environment variable to specify the maximum number of
+>   CPUs supported by the SBI implementation.
+> 
+> v2:
+> - Addressed all of Andrew's comments.
+> - Added a new patch to add helper routines to clear multiple prefixes.
+> - Reworked the approach to test the HSM extension by using cpumask and
+>   on-cpus.
+> 
+> Andrew Jones (1):
+>   riscv: Rewrite hartid_to_cpu in assembly
+> 
+> James Raphael Tiovalen (4):
+>   riscv: sbi: Provide entry point for HSM tests
+>   lib/on-cpus: Add helper method to clear the function from on_cpu_info
+>   riscv: Add helper method to set cpu started mask
+>   riscv: sbi: Add tests for HSM extension
+> 
+>  riscv/Makefile          |   3 +-
+>  lib/riscv/asm/smp.h     |   2 +
+>  lib/on-cpus.h           |   1 +
+>  lib/on-cpus.c           |  11 +
+>  lib/riscv/asm-offsets.c |   5 +
+>  lib/riscv/setup.c       |  10 -
+>  lib/riscv/smp.c         |   8 +
+>  riscv/sbi-tests.h       |  10 +
+>  riscv/cstart.S          |  24 ++
+>  riscv/sbi-asm.S         |  71 +++++
+>  riscv/sbi.c             | 651 ++++++++++++++++++++++++++++++++++++++++
+>  11 files changed, 785 insertions(+), 11 deletions(-)
+>  create mode 100644 riscv/sbi-tests.h
+>  create mode 100644 riscv/sbi-asm.S
+> 
+> --
+> 2.43.0
+> 
+> 
+> -- 
+> kvm-riscv mailing list
+> kvm-riscv at lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/kvm-riscv
 
