@@ -1,105 +1,86 @@
 From: Andrew Jones <andrew.jones@linux.dev>
-Date: Wed, 23 Oct 2024 15:17:20 +0200
-Subject: [kvm-unit-tests PATCH 1/2] lib/on-cpus: Correct and simplify synchronization
+Date: Wed, 23 Oct 2024 15:17:21 +0200
+Subject: [kvm-unit-tests PATCH 2/2] lib/on-cpus: Fix on_cpumask
 In-Reply-To: <20241023131718.117452-4-andrew.jones@linux.dev>
 References: <20241023131718.117452-4-andrew.jones@linux.dev>
-Message-ID: <20241023131718.117452-5-andrew.jones@linux.dev>
+Message-ID: <20241023131718.117452-6-andrew.jones@linux.dev>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-get/put_on_cpu_info() were trying to provide per-cpu locking for
-the per-cpu on_cpu info, but they were flawed since they would
-always set the "lock" since they were treating test_and_set/clear
-as cmpxchg (which they're not). Just revert to a normal spinlock
-to correct it. Also simplify the break case for on_cpu_async() -
-we don't care if func is NULL, we only care that the cpu is idle.
-And, finally, add a missing barrier to on_cpu_async().
+on_cpumask should wait until the cpus in the mask, not including
+the calling cpu, are idle. Checking the weight against nr_cpus
+minus 1 only works when the mask is the same as the present mask.
 
-Fixes: 018550041b38 ("arm/arm64: Remove spinlocks from on_cpu_async")
+Fixes: d012cfd5d309 ("lib/on-cpus: Introduce on_cpumask and on_cpumask_async")
 Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
 ---
- lib/on-cpus.c | 36 +++++++++++-------------------------
- 1 file changed, 11 insertions(+), 25 deletions(-)
+ lib/cpumask.h | 14 ++++++++++++++
+ lib/on-cpus.c | 17 ++++++++---------
+ 2 files changed, 22 insertions(+), 9 deletions(-)
 
-diff --git a/lib/on-cpus.c b/lib/on-cpus.c
-index 892149338419..f6072117fa1b 100644
---- a/lib/on-cpus.c
-+++ b/lib/on-cpus.c
-@@ -9,6 +9,7 @@
- #include <on-cpus.h>
- #include <asm/barrier.h>
- #include <asm/smp.h>
-+#include <asm/spinlock.h>
- 
- bool cpu0_calls_idle;
- 
-@@ -18,18 +19,7 @@ struct on_cpu_info {
- 	cpumask_t waiters;
- };
- static struct on_cpu_info on_cpu_info[NR_CPUS];
--static cpumask_t on_cpu_info_lock;
--
--static bool get_on_cpu_info(int cpu)
--{
--	return !cpumask_test_and_set_cpu(cpu, &on_cpu_info_lock);
--}
--
--static void put_on_cpu_info(int cpu)
--{
--	int ret = cpumask_test_and_clear_cpu(cpu, &on_cpu_info_lock);
--	assert(ret);
--}
-+static struct spinlock lock;
- 
- static void __deadlock_check(int cpu, const cpumask_t *waiters, bool *found)
- {
-@@ -81,18 +71,14 @@ void do_idle(void)
- 	if (cpu == 0)
- 		cpu0_calls_idle = true;
- 
--	set_cpu_idle(cpu, true);
--	smp_send_event();
--
- 	for (;;) {
-+		set_cpu_idle(cpu, true);
-+		smp_send_event();
-+
- 		while (cpu_idle(cpu))
- 			smp_wait_for_event();
- 		smp_rmb();
- 		on_cpu_info[cpu].func(on_cpu_info[cpu].data);
--		on_cpu_info[cpu].func = NULL;
--		smp_wmb();
--		set_cpu_idle(cpu, true);
--		smp_send_event();
- 	}
+diff --git a/lib/cpumask.h b/lib/cpumask.h
+index e1e92aacd1f1..37d360786573 100644
+--- a/lib/cpumask.h
++++ b/lib/cpumask.h
+@@ -58,6 +58,20 @@ static inline void cpumask_clear(cpumask_t *mask)
+ 	memset(mask, 0, sizeof(*mask));
  }
  
-@@ -110,17 +96,17 @@ void on_cpu_async(int cpu, void (*func)(void *data), void *data)
++/* true if src1 is a subset of src2 */
++static inline bool cpumask_subset(const struct cpumask *src1, const struct cpumask *src2)
++{
++	unsigned long lastmask = BIT_MASK(nr_cpus) - 1;
++	int i;
++
++	for (i = 0; i < BIT_WORD(nr_cpus); ++i) {
++		if (cpumask_bits(src1)[i] & ~cpumask_bits(src2)[i])
++			return false;
++	}
++
++	return !lastmask || !((cpumask_bits(src1)[i] & ~cpumask_bits(src2)[i]) & lastmask);
++}
++
+ static inline bool cpumask_empty(const cpumask_t *mask)
+ {
+ 	unsigned long lastmask = BIT_MASK(nr_cpus) - 1;
+diff --git a/lib/on-cpus.c b/lib/on-cpus.c
+index f6072117fa1b..7ce58be0e7e9 100644
+--- a/lib/on-cpus.c
++++ b/lib/on-cpus.c
+@@ -126,24 +126,23 @@ void on_cpumask_async(const cpumask_t *mask, void (*func)(void *data), void *dat
+ void on_cpumask(const cpumask_t *mask, void (*func)(void *data), void *data)
+ {
+ 	int cpu, me = smp_processor_id();
++	cpumask_t tmp;
  
- 	for (;;) {
- 		cpu_wait(cpu);
--		if (get_on_cpu_info(cpu)) {
--			if ((volatile void *)on_cpu_info[cpu].func == NULL)
--				break;
--			put_on_cpu_info(cpu);
--		}
-+		spin_lock(&lock);
-+		if (cpu_idle(cpu))
-+			break;
-+		spin_unlock(&lock);
+-	for_each_cpu(cpu, mask) {
+-		if (cpu == me)
+-			continue;
++	cpumask_copy(&tmp, mask);
++	cpumask_clear_cpu(me, &tmp);
++
++	for_each_cpu(cpu, &tmp)
+ 		on_cpu_async(cpu, func, data);
+-	}
+ 	if (cpumask_test_cpu(me, mask))
+ 		func(data);
+ 
+-	for_each_cpu(cpu, mask) {
+-		if (cpu == me)
+-			continue;
++	for_each_cpu(cpu, &tmp) {
+ 		cpumask_set_cpu(me, &on_cpu_info[cpu].waiters);
+ 		deadlock_check(me, cpu);
  	}
- 
- 	on_cpu_info[cpu].func = func;
- 	on_cpu_info[cpu].data = data;
-+	smp_wmb();
- 	set_cpu_idle(cpu, false);
--	put_on_cpu_info(cpu);
-+	spin_unlock(&lock);
- 	smp_send_event();
+-	while (cpumask_weight(&cpu_idle_mask) < nr_cpus - 1)
++	while (!cpumask_subset(&tmp, &cpu_idle_mask))
+ 		smp_wait_for_event();
+-	for_each_cpu(cpu, mask)
++	for_each_cpu(cpu, &tmp)
+ 		cpumask_clear_cpu(me, &on_cpu_info[cpu].waiters);
  }
  
 -- 
