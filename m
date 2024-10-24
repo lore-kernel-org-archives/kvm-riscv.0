@@ -1,110 +1,97 @@
 From: Andrew Jones <andrew.jones@linux.dev>
-Date: Thu, 24 Oct 2024 14:41:03 +0200
-Subject: [kvm-unit-tests PATCH 1/3] riscv: Implement setjmp/longjmp
+Date: Thu, 24 Oct 2024 14:41:04 +0200
+Subject: [kvm-unit-tests PATCH 2/3] riscv: sbi: Clean up env checking
 In-Reply-To: <20241024124101.73405-5-andrew.jones@linux.dev>
 References: <20241024124101.73405-5-andrew.jones@linux.dev>
-Message-ID: <20241024124101.73405-6-andrew.jones@linux.dev>
+Message-ID: <20241024124101.73405-7-andrew.jones@linux.dev>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Being able to do setjmp and longjmp can be quite useful for tests.
-Implement the functions for riscv.
+Add a couple helpers to cleanup checking of test configuration
+environment variables.
 
 Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
 ---
- lib/riscv/setjmp.S | 50 ++++++++++++++++++++++++++++++++++++++++++++++
- lib/setjmp.h       |  4 ++++
- riscv/Makefile     |  1 +
- 3 files changed, 55 insertions(+)
- create mode 100644 lib/riscv/setjmp.S
+ riscv/sbi.c | 32 +++++++++++++++++++-------------
+ 1 file changed, 19 insertions(+), 13 deletions(-)
 
-diff --git a/lib/riscv/setjmp.S b/lib/riscv/setjmp.S
-new file mode 100644
-index 000000000000..38b0f1cab576
---- /dev/null
-+++ b/lib/riscv/setjmp.S
-@@ -0,0 +1,50 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+#define __ASSEMBLY__
-+#include <asm/asm.h>
-+
-+.section .text
-+
-+.balign 4
-+.global setjmp
-+setjmp:
-+	REG_S	ra, (0 * SZREG)(a0)
-+	REG_S	s0, (1 * SZREG)(a0)
-+	REG_S	s1, (2 * SZREG)(a0)
-+	REG_S	s2, (3 * SZREG)(a0)
-+	REG_S	s3, (4 * SZREG)(a0)
-+	REG_S	s4, (5 * SZREG)(a0)
-+	REG_S	s5, (6 * SZREG)(a0)
-+	REG_S	s6, (7 * SZREG)(a0)
-+	REG_S	s7, (8 * SZREG)(a0)
-+	REG_S	s8, (9 * SZREG)(a0)
-+	REG_S	s9, (10 * SZREG)(a0)
-+	REG_S	s10, (11 * SZREG)(a0)
-+	REG_S	s11, (12 * SZREG)(a0)
-+	REG_S	sp, (13 * SZREG)(a0)
-+	REG_S	gp, (14 * SZREG)(a0)
-+	REG_S	tp, (15 * SZREG)(a0)
-+	li	a0, 0
-+	ret
-+
-+.balign 4
-+.global longjmp
-+longjmp:
-+	REG_L	ra, (0 * SZREG)(a0)
-+	REG_L	s0, (1 * SZREG)(a0)
-+	REG_L	s1, (2 * SZREG)(a0)
-+	REG_L	s2, (3 * SZREG)(a0)
-+	REG_L	s3, (4 * SZREG)(a0)
-+	REG_L	s4, (5 * SZREG)(a0)
-+	REG_L	s5, (6 * SZREG)(a0)
-+	REG_L	s6, (7 * SZREG)(a0)
-+	REG_L	s7, (8 * SZREG)(a0)
-+	REG_L	s8, (9 * SZREG)(a0)
-+	REG_L	s9, (10 * SZREG)(a0)
-+	REG_L	s10, (11 * SZREG)(a0)
-+	REG_L	s11, (12 * SZREG)(a0)
-+	REG_L	sp, (13 * SZREG)(a0)
-+	REG_L	gp, (14 * SZREG)(a0)
-+	REG_L	tp, (15 * SZREG)(a0)
-+	seqz	a0, a1
-+	add	a0, a0, a1
-+	ret
-diff --git a/lib/setjmp.h b/lib/setjmp.h
-index 6afdf665681a..f878ad81c645 100644
---- a/lib/setjmp.h
-+++ b/lib/setjmp.h
-@@ -8,7 +8,11 @@
- #define _LIBCFLAT_SETJMP_H_
+diff --git a/riscv/sbi.c b/riscv/sbi.c
+index d46befa1c6c1..1e7314ec8d98 100644
+--- a/riscv/sbi.c
++++ b/riscv/sbi.c
+@@ -74,6 +74,20 @@ static phys_addr_t get_highest_addr(void)
+ 	return highest_end - 1;
+ }
  
- typedef struct jmp_buf_tag {
-+#if defined(__i386__) || defined(__x86_64__)
- 	long int regs[8];
-+#elif defined(__riscv)
-+	long int regs[16];
-+#endif
- } jmp_buf[1];
++static bool env_enabled(const char *env)
++{
++	char *s = getenv(env);
++
++	return s && (*s == '1' || *s == 'y' || *s == 'Y');
++}
++
++static bool env_disabled(const char *env)
++{
++	char *s = getenv(env);
++
++	return !(s && (*s == '0' || *s == 'n' || *s == 'N'));
++}
++
+ static bool env_or_skip(const char *env)
+ {
+ 	if (!getenv(env)) {
+@@ -348,7 +362,6 @@ static void check_dbcn(void)
+ 	bool highmem_supported = true;
+ 	phys_addr_t paddr;
+ 	struct sbiret ret;
+-	const char *tmp;
+ 	char *buf;
  
- extern int setjmp (struct jmp_buf_tag env[1]);
-diff --git a/riscv/Makefile b/riscv/Makefile
-index 734441f94dad..28b04156bfd5 100644
---- a/riscv/Makefile
-+++ b/riscv/Makefile
-@@ -36,6 +36,7 @@ cflatobjs += lib/riscv/isa.o
- cflatobjs += lib/riscv/mmu.o
- cflatobjs += lib/riscv/processor.o
- cflatobjs += lib/riscv/sbi.o
-+cflatobjs += lib/riscv/setjmp.o
- cflatobjs += lib/riscv/setup.o
- cflatobjs += lib/riscv/smp.o
- cflatobjs += lib/riscv/stack.o
+ 	report_prefix_push("dbcn");
+@@ -371,13 +384,11 @@ static void check_dbcn(void)
+ 	dbcn_write_test(&buf[PAGE_SIZE - num_bytes / 2], num_bytes, false);
+ 	report_prefix_pop();
+ 
+-	tmp = getenv("SBI_HIGHMEM_NOT_SUPPORTED");
+-	if (tmp && atol(tmp) != 0)
++	if (env_enabled("SBI_HIGHMEM_NOT_SUPPORTED"))
+ 		highmem_supported = false;
+ 
+ 	report_prefix_push("high boundary");
+-	tmp = getenv("SBI_DBCN_SKIP_HIGH_BOUNDARY");
+-	if (!tmp || atol(tmp) == 0)
++	if (env_disabled("SBI_DBCN_SKIP_HIGH_BOUNDARY"))
+ 		dbcn_high_write_test(DBCN_WRITE_TEST_STRING, num_bytes,
+ 				     HIGH_ADDR_BOUNDARY - PAGE_SIZE, PAGE_SIZE - num_bytes / 2,
+ 				     highmem_supported);
+@@ -386,12 +397,8 @@ static void check_dbcn(void)
+ 	report_prefix_pop();
+ 
+ 	report_prefix_push("high page");
+-	tmp = getenv("SBI_DBCN_SKIP_HIGH_PAGE");
+-	if (!tmp || atol(tmp) == 0) {
+-		paddr = HIGH_ADDR_BOUNDARY;
+-		tmp = getenv("HIGH_PAGE");
+-		if (tmp)
+-			paddr = strtoull(tmp, NULL, 0);
++	if (env_disabled("SBI_DBCN_SKIP_HIGH_PAGE")) {
++		paddr = getenv("HIGH_PAGE") ? strtoull(getenv("HIGH_PAGE"), NULL, 0) : HIGH_ADDR_BOUNDARY;
+ 		dbcn_high_write_test(DBCN_WRITE_TEST_STRING, num_bytes, paddr, 0, highmem_supported);
+ 	} else {
+ 		report_skip("user disabled");
+@@ -400,8 +407,7 @@ static void check_dbcn(void)
+ 
+ 	/* Bytes are read from memory and written to the console */
+ 	report_prefix_push("invalid parameter");
+-	tmp = getenv("INVALID_ADDR_AUTO");
+-	if (tmp && atol(tmp) == 1) {
++	if (env_enabled("INVALID_ADDR_AUTO")) {
+ 		paddr = get_highest_addr() + 1;
+ 		do_invalid_addr = true;
+ 	} else if (env_or_skip("INVALID_ADDR")) {
 -- 
 2.47.0
 
