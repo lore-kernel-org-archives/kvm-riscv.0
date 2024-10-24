@@ -1,57 +1,137 @@
-From: Anup Patel <anup@brainfault.org>
-Date: Fri, 25 Oct 2024 00:46:51 +0530
-Subject: [PATCH RFC v2 3/3] riscv: KVM: Add Svukte extension support for Guest/VM
-In-Reply-To: <20240927-dev-maxh-svukte-rebase-2-v2-3-9afe57c33aee@sifive.com>
-References: <20240927-dev-maxh-svukte-rebase-2-v2-0-9afe57c33aee@sifive.com> <20240927-dev-maxh-svukte-rebase-2-v2-3-9afe57c33aee@sifive.com>
-Message-ID: <CAAhSdy0ncLTAjEE1s-GWL95sscxwQFsKn1rXyA1_VVfk1bQBiw@mail.gmail.com>
+From: Atish Patra <atishp@atishpatra.org>
+Date: Thu, 24 Oct 2024 16:56:53 -0700
+Subject: [PATCH v2 13/13] RISC-V: KVM: Use NACL HFENCEs for KVM request
+ based HFENCEs
+In-Reply-To: <20241020194734.58686-14-apatel@ventanamicro.com>
+References: <20241020194734.58686-1-apatel@ventanamicro.com> <20241020194734.58686-14-apatel@ventanamicro.com>
+Message-ID: <CAOnJCU+WAUJbBjVvjvdGbWs8ELVDYkARqqzZceHdzHzgYko2ig@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Sep 27, 2024 at 7:12?PM Max Hsu <max.hsu@sifive.com> wrote:
+On Sun, Oct 20, 2024 at 12:48?PM Anup Patel <apatel@ventanamicro.com> wrote:
 >
-> Add KVM ISA extension ONE_REG interface to allow VMM tools to
-> detect and enable Svukte extension for Guest/VM.
+> When running under some other hypervisor, use SBI NACL based HFENCEs
+> for TLB shoot-down via KVM requests. This makes HFENCEs faster whenever
+> SBI nested acceleration is available.
 >
-> Reviewed-by: Samuel Holland <samuel.holland@sifive.com>
-> Signed-off-by: Max Hsu <max.hsu@sifive.com>
+> Signed-off-by: Anup Patel <apatel@ventanamicro.com>
 > ---
->  arch/riscv/include/uapi/asm/kvm.h | 1 +
->  arch/riscv/kvm/vcpu_onereg.c      | 1 +
->  2 files changed, 2 insertions(+)
+>  arch/riscv/kvm/tlb.c | 57 +++++++++++++++++++++++++++++++-------------
+>  1 file changed, 40 insertions(+), 17 deletions(-)
 >
-> diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
-> index e97db3296456e19f79ca02e4c4f70ae1b4abb48b..41b466b7ffaec421e8389d3f5b178580091a2c98 100644
-> --- a/arch/riscv/include/uapi/asm/kvm.h
-> +++ b/arch/riscv/include/uapi/asm/kvm.h
-> @@ -175,6 +175,7 @@ enum KVM_RISCV_ISA_EXT_ID {
->         KVM_RISCV_ISA_EXT_ZCF,
->         KVM_RISCV_ISA_EXT_ZCMOP,
->         KVM_RISCV_ISA_EXT_ZAWRS,
-> +       KVM_RISCV_ISA_EXT_SVUKTE,
->         KVM_RISCV_ISA_EXT_MAX,
->  };
+> diff --git a/arch/riscv/kvm/tlb.c b/arch/riscv/kvm/tlb.c
+> index 23c0e82b5103..2f91ea5f8493 100644
+> --- a/arch/riscv/kvm/tlb.c
+> +++ b/arch/riscv/kvm/tlb.c
+> @@ -14,6 +14,7 @@
+>  #include <asm/csr.h>
+>  #include <asm/cpufeature.h>
+>  #include <asm/insn-def.h>
+> +#include <asm/kvm_nacl.h>
 >
-> diff --git a/arch/riscv/kvm/vcpu_onereg.c b/arch/riscv/kvm/vcpu_onereg.c
-> index b319c4c13c54ce22d2a7552f4c9f256a0c50780e..67237d6e53882a9fcd2cf265aa1704f25cc4a701 100644
-> --- a/arch/riscv/kvm/vcpu_onereg.c
-> +++ b/arch/riscv/kvm/vcpu_onereg.c
-> @@ -41,6 +41,7 @@ static const unsigned long kvm_isa_ext_arr[] = {
->         KVM_ISA_EXT_ARR(SVINVAL),
->         KVM_ISA_EXT_ARR(SVNAPOT),
->         KVM_ISA_EXT_ARR(SVPBMT),
-> +       KVM_ISA_EXT_ARR(SVUKTE),
->         KVM_ISA_EXT_ARR(ZACAS),
->         KVM_ISA_EXT_ARR(ZAWRS),
->         KVM_ISA_EXT_ARR(ZBA),
+>  #define has_svinval()  riscv_has_extension_unlikely(RISCV_ISA_EXT_SVINVAL)
+>
+> @@ -186,18 +187,24 @@ void kvm_riscv_fence_i_process(struct kvm_vcpu *vcpu)
+>
+>  void kvm_riscv_hfence_gvma_vmid_all_process(struct kvm_vcpu *vcpu)
+>  {
+> -       struct kvm_vmid *vmid;
+> +       struct kvm_vmid *v = &vcpu->kvm->arch.vmid;
+> +       unsigned long vmid = READ_ONCE(v->vmid);
+>
+> -       vmid = &vcpu->kvm->arch.vmid;
+> -       kvm_riscv_local_hfence_gvma_vmid_all(READ_ONCE(vmid->vmid));
+> +       if (kvm_riscv_nacl_available())
+> +               nacl_hfence_gvma_vmid_all(nacl_shmem(), vmid);
+> +       else
+> +               kvm_riscv_local_hfence_gvma_vmid_all(vmid);
+>  }
+>
+>  void kvm_riscv_hfence_vvma_all_process(struct kvm_vcpu *vcpu)
+>  {
+> -       struct kvm_vmid *vmid;
+> +       struct kvm_vmid *v = &vcpu->kvm->arch.vmid;
+> +       unsigned long vmid = READ_ONCE(v->vmid);
+>
+> -       vmid = &vcpu->kvm->arch.vmid;
+> -       kvm_riscv_local_hfence_vvma_all(READ_ONCE(vmid->vmid));
+> +       if (kvm_riscv_nacl_available())
+> +               nacl_hfence_vvma_all(nacl_shmem(), vmid);
+> +       else
+> +               kvm_riscv_local_hfence_vvma_all(vmid);
+>  }
+>
+>  static bool vcpu_hfence_dequeue(struct kvm_vcpu *vcpu,
+> @@ -251,6 +258,7 @@ static bool vcpu_hfence_enqueue(struct kvm_vcpu *vcpu,
+>
+>  void kvm_riscv_hfence_process(struct kvm_vcpu *vcpu)
+>  {
+> +       unsigned long vmid;
+>         struct kvm_riscv_hfence d = { 0 };
+>         struct kvm_vmid *v = &vcpu->kvm->arch.vmid;
+>
+> @@ -259,26 +267,41 @@ void kvm_riscv_hfence_process(struct kvm_vcpu *vcpu)
+>                 case KVM_RISCV_HFENCE_UNKNOWN:
+>                         break;
+>                 case KVM_RISCV_HFENCE_GVMA_VMID_GPA:
+> -                       kvm_riscv_local_hfence_gvma_vmid_gpa(
+> -                                               READ_ONCE(v->vmid),
+> -                                               d.addr, d.size, d.order);
+> +                       vmid = READ_ONCE(v->vmid);
+> +                       if (kvm_riscv_nacl_available())
+> +                               nacl_hfence_gvma_vmid(nacl_shmem(), vmid,
+> +                                                     d.addr, d.size, d.order);
+> +                       else
+> +                               kvm_riscv_local_hfence_gvma_vmid_gpa(vmid, d.addr,
+> +                                                                    d.size, d.order);
+>                         break;
+>                 case KVM_RISCV_HFENCE_VVMA_ASID_GVA:
+>                         kvm_riscv_vcpu_pmu_incr_fw(vcpu, SBI_PMU_FW_HFENCE_VVMA_ASID_RCVD);
+> -                       kvm_riscv_local_hfence_vvma_asid_gva(
+> -                                               READ_ONCE(v->vmid), d.asid,
+> -                                               d.addr, d.size, d.order);
+> +                       vmid = READ_ONCE(v->vmid);
+> +                       if (kvm_riscv_nacl_available())
+> +                               nacl_hfence_vvma_asid(nacl_shmem(), vmid, d.asid,
+> +                                                     d.addr, d.size, d.order);
+> +                       else
+> +                               kvm_riscv_local_hfence_vvma_asid_gva(vmid, d.asid, d.addr,
+> +                                                                    d.size, d.order);
+>                         break;
+>                 case KVM_RISCV_HFENCE_VVMA_ASID_ALL:
+>                         kvm_riscv_vcpu_pmu_incr_fw(vcpu, SBI_PMU_FW_HFENCE_VVMA_ASID_RCVD);
+> -                       kvm_riscv_local_hfence_vvma_asid_all(
+> -                                               READ_ONCE(v->vmid), d.asid);
+> +                       vmid = READ_ONCE(v->vmid);
+> +                       if (kvm_riscv_nacl_available())
+> +                               nacl_hfence_vvma_asid_all(nacl_shmem(), vmid, d.asid);
+> +                       else
+> +                               kvm_riscv_local_hfence_vvma_asid_all(vmid, d.asid);
+>                         break;
+>                 case KVM_RISCV_HFENCE_VVMA_GVA:
+>                         kvm_riscv_vcpu_pmu_incr_fw(vcpu, SBI_PMU_FW_HFENCE_VVMA_RCVD);
+> -                       kvm_riscv_local_hfence_vvma_gva(
+> -                                               READ_ONCE(v->vmid),
+> -                                               d.addr, d.size, d.order);
+> +                       vmid = READ_ONCE(v->vmid);
+> +                       if (kvm_riscv_nacl_available())
+> +                               nacl_hfence_vvma(nacl_shmem(), vmid,
+> +                                                d.addr, d.size, d.order);
+> +                       else
+> +                               kvm_riscv_local_hfence_vvma_gva(vmid, d.addr,
+> +                                                               d.size, d.order);
+>                         break;
+>                 default:
+>                         break;
+> --
+> 2.43.0
+>
 
-The KVM_RISCV_ISA_EXT_SVUKTE should be added to the
-switch-case in kvm_riscv_vcpu_isa_disable_allowed() because
-hypervisor seems to have no way to disable Svukte for the Guest
-when it's available on the Host.
-
+Reviewed-by: Atish Patra <atishp@rivosinc.com>
+-- 
 Regards,
-Anup
+Atish
 
