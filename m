@@ -1,63 +1,57 @@
-From: patchwork-bot+linux-riscv@kernel.org <patchwork-bot+linux-riscv@kernel.org>
-Date: Thu, 24 Oct 2024 17:50:39 +0000
-Subject: [PATCH v5 00/10] riscv: Userspace pointer masking and tagged address
- ABI
-In-Reply-To: <20241016202814.4061541-1-samuel.holland@sifive.com>
-References: <20241016202814.4061541-1-samuel.holland@sifive.com>
-Message-ID: <172979223949.2327357.12698642185375267636.git-patchwork-notify@kernel.org>
+From: Anup Patel <anup@brainfault.org>
+Date: Fri, 25 Oct 2024 00:46:51 +0530
+Subject: [PATCH RFC v2 3/3] riscv: KVM: Add Svukte extension support for Guest/VM
+In-Reply-To: <20240927-dev-maxh-svukte-rebase-2-v2-3-9afe57c33aee@sifive.com>
+References: <20240927-dev-maxh-svukte-rebase-2-v2-0-9afe57c33aee@sifive.com> <20240927-dev-maxh-svukte-rebase-2-v2-3-9afe57c33aee@sifive.com>
+Message-ID: <CAAhSdy0ncLTAjEE1s-GWL95sscxwQFsKn1rXyA1_VVfk1bQBiw@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hello:
+On Fri, Sep 27, 2024 at 7:12?PM Max Hsu <max.hsu@sifive.com> wrote:
+>
+> Add KVM ISA extension ONE_REG interface to allow VMM tools to
+> detect and enable Svukte extension for Guest/VM.
+>
+> Reviewed-by: Samuel Holland <samuel.holland@sifive.com>
+> Signed-off-by: Max Hsu <max.hsu@sifive.com>
+> ---
+>  arch/riscv/include/uapi/asm/kvm.h | 1 +
+>  arch/riscv/kvm/vcpu_onereg.c      | 1 +
+>  2 files changed, 2 insertions(+)
+>
+> diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
+> index e97db3296456e19f79ca02e4c4f70ae1b4abb48b..41b466b7ffaec421e8389d3f5b178580091a2c98 100644
+> --- a/arch/riscv/include/uapi/asm/kvm.h
+> +++ b/arch/riscv/include/uapi/asm/kvm.h
+> @@ -175,6 +175,7 @@ enum KVM_RISCV_ISA_EXT_ID {
+>         KVM_RISCV_ISA_EXT_ZCF,
+>         KVM_RISCV_ISA_EXT_ZCMOP,
+>         KVM_RISCV_ISA_EXT_ZAWRS,
+> +       KVM_RISCV_ISA_EXT_SVUKTE,
+>         KVM_RISCV_ISA_EXT_MAX,
+>  };
+>
+> diff --git a/arch/riscv/kvm/vcpu_onereg.c b/arch/riscv/kvm/vcpu_onereg.c
+> index b319c4c13c54ce22d2a7552f4c9f256a0c50780e..67237d6e53882a9fcd2cf265aa1704f25cc4a701 100644
+> --- a/arch/riscv/kvm/vcpu_onereg.c
+> +++ b/arch/riscv/kvm/vcpu_onereg.c
+> @@ -41,6 +41,7 @@ static const unsigned long kvm_isa_ext_arr[] = {
+>         KVM_ISA_EXT_ARR(SVINVAL),
+>         KVM_ISA_EXT_ARR(SVNAPOT),
+>         KVM_ISA_EXT_ARR(SVPBMT),
+> +       KVM_ISA_EXT_ARR(SVUKTE),
+>         KVM_ISA_EXT_ARR(ZACAS),
+>         KVM_ISA_EXT_ARR(ZAWRS),
+>         KVM_ISA_EXT_ARR(ZBA),
 
-This series was applied to riscv/linux.git (for-next)
-by Palmer Dabbelt <palmer@rivosinc.com>:
+The KVM_RISCV_ISA_EXT_SVUKTE should be added to the
+switch-case in kvm_riscv_vcpu_isa_disable_allowed() because
+hypervisor seems to have no way to disable Svukte for the Guest
+when it's available on the Host.
 
-On Wed, 16 Oct 2024 13:27:41 -0700 you wrote:
-> RISC-V defines three extensions for pointer masking[1]:
->  - Smmpm: configured in M-mode, affects M-mode
->  - Smnpm: configured in M-mode, affects the next lower mode (S or U-mode)
->  - Ssnpm: configured in S-mode, affects the next lower mode (VS, VU, or U-mode)
-> 
-> This series adds support for configuring Smnpm or Ssnpm (depending on
-> which privilege mode the kernel is running in) to allow pointer masking
-> in userspace (VU or U-mode), extending the PR_SET_TAGGED_ADDR_CTRL API
-> from arm64. Unlike arm64 TBI, userspace pointer masking is not enabled
-> by default on RISC-V. Additionally, the tag width (referred to as PMLEN)
-> is variable, so userspace needs to ask the kernel for a specific tag
-> width, which is interpreted as a lower bound on the number of tag bits.
-> 
-> [...]
-
-Here is the summary with links:
-  - [v5,01/10] dt-bindings: riscv: Add pointer masking ISA extensions
-    https://git.kernel.org/riscv/c/8946ad26c0e2
-  - [v5,02/10] riscv: Add ISA extension parsing for pointer masking
-    https://git.kernel.org/riscv/c/12749546293e
-  - [v5,03/10] riscv: Add CSR definitions for pointer masking
-    https://git.kernel.org/riscv/c/1edd6226877b
-  - [v5,04/10] riscv: Add support for userspace pointer masking
-    https://git.kernel.org/riscv/c/871aba681a0d
-  - [v5,05/10] riscv: Add support for the tagged address ABI
-    https://git.kernel.org/riscv/c/c4d16116bd11
-  - [v5,06/10] riscv: Allow ptrace control of the tagged address ABI
-    https://git.kernel.org/riscv/c/cebce87fb04e
-  - [v5,07/10] riscv: selftests: Add a pointer masking test
-    https://git.kernel.org/riscv/c/5e9f1ee1c523
-  - [v5,08/10] riscv: hwprobe: Export the Supm ISA extension
-    https://git.kernel.org/riscv/c/d250050aae4f
-  - [v5,09/10] RISC-V: KVM: Allow Smnpm and Ssnpm extensions for guests
-    https://git.kernel.org/riscv/c/e27f468bcf14
-  - [v5,10/10] KVM: riscv: selftests: Add Smnpm and Ssnpm to get-reg-list test
-    https://git.kernel.org/riscv/c/814779461d84
-
-You are awesome, thank you!
--- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/patchwork/pwbot.html
-
-
+Regards,
+Anup
 
