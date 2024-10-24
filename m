@@ -1,61 +1,54 @@
-From: Dmitry Osipenko <dmitry.osipenko@collabora.com>
-Date: Thu, 24 Oct 2024 06:37:28 +0300
-Subject: [PATCH v13 00/85] KVM: Stop grabbing references to PFNMAP'd pages
-In-Reply-To: <20241010182427.1434605-1-seanjc@google.com>
-References: <20241010182427.1434605-1-seanjc@google.com>
-Message-ID: <03c316c7-5268-40cd-af1c-4c8454506ab2@collabora.com>
+From: Andrew Jones <andrew.jones@linux.dev>
+Date: Thu, 24 Oct 2024 10:38:51 +0200
+Subject: [kvm-unit-tests PATCH v3 0/5] Support cross compiling with clang
+In-Reply-To: <20240911091406.134240-7-andrew.jones@linux.dev>
+References: <20240911091406.134240-7-andrew.jones@linux.dev>
+Message-ID: <20241024-cecbb361d7e3f21c7053408b@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On 10/10/24 21:23, Sean Christopherson wrote:
-> TL;DR: Eliminate KVM's long-standing (and heinous) behavior of essentially
-> guessing which pfns are refcounted pages (see kvm_pfn_to_refcounted_page()).
+On Wed, Sep 11, 2024 at 11:14:07AM +0200, Andrew Jones wrote:
+> Modify configure to allow --cc=clang and a cross-prefix to be specified
+> together (as well as --cflags). This allows compiling with clang, but
+> using cross binutils for everything else, including the linker. So far
+> tested on riscv 32- and 64-bit and aarch64 (with some hacks to the code
+> to get it to compile - which is why there's no gitlab-ci patch for aarch64
+> in this series). I suspect it should work for other architectures too.
 > 
-> Getting there requires "fixing" arch code that isn't obviously broken.
-> Specifically, to get rid of kvm_pfn_to_refcounted_page(), KVM needs to
-> stop marking pages/folios dirty/accessed based solely on the pfn that's
-> stored in KVM's stage-2 page tables.
+> v3:
+>  - Add README patch for cross-compiling, clang, and cross-clang [Nick]
+>  - Add comment to the commenting-out of mstrict-align [Nick]
+>  - Add the reason to ignore warnings vs. fix code to commit message of
+>    patch2
+>  - Picked up Nick's tags
+> v2:
+>  - fix building with clang and --config-efi by suppressing a warning
+>  - added riscv clang efi build to CI
+>  - picked up Thomas's tags
 > 
-> Instead of tracking which SPTEs correspond to refcounted pages, simply
-> remove all of the code that operates on "struct page" based ona the pfn
-> in stage-2 PTEs.  This is the back ~40-50% of the series.
->  
-> For x86 in particular, which sets accessed/dirty status when that info
-> would be "lost", e.g. when SPTEs are zapped or KVM clears the dirty flag
-> in a SPTE, foregoing the updates provides very measurable performance
-> improvements for related operations.  E.g. when clearing dirty bits as
-> part of dirty logging, and zapping SPTEs to reconstitue huge pages when
-> disabling dirty logging.
+> Andrew Jones (5):
+>   riscv: Drop mstrict-align
+>   Makefile: Prepare for clang EFI builds
+>   configure: Support cross compiling with clang
+>   riscv: gitlab-ci: Add clang build tests
+>   README: Add cross and clang recipes
 > 
-> The front ~40% of the series is cleanups and prep work, and most of it is
-> x86 focused (purely because x86 added the most special cases, *sigh*).
-> E.g. several of the inputs to hva_to_pfn() (and it's myriad wrappers),
-> can be removed by cleaning up and deduplicating x86 code.
+>  .gitlab-ci.yml | 43 +++++++++++++++++++++++++++++++++++++++++++
+>  Makefile       |  2 ++
+>  README.md      | 22 ++++++++++++++++++++++
+>  configure      | 11 ++++++++---
+>  riscv/Makefile |  4 +++-
+>  5 files changed, 78 insertions(+), 4 deletions(-)
 > 
-> v13:
->  - Rebased onto v6.12-rc2
->  - Collect reviews. [Alex and others]
->  - Fix a transient bug in arm64 and RISC-V where KVM would leak a page
->    refcount. [Oliver]
->  - Fix a dangling comment. [Alex]
->  - Drop kvm_lookup_pfn(), as the x86 that "needed" it was stupid and is (was?)
->    eliminated in v6.12.
->  - Drop check_user_page_hwpoison(). [Paolo]
->  - Drop the arm64 MTE fixes that went into 6.12.
->  - Slightly redo the guest_memfd interaction to account for 6.12 changes.
+> -- 
+> 2.46.0
+>
 
-Thanks a lot for working on this patchset! I tested it with native
-amdgpu/intel contexts and venus/virgl with dGPU and iGPU, no problems
-spotted. Please merge sooner, this will unblock lots of new virtio-gpu
-features.
+Merged
 
-Tested-by: Dmitry Osipenko <dmitry.osipenko@collabora.com>
-
--- 
-Best regards,
-Dmitry
-
+Thanks,
+drew
 
