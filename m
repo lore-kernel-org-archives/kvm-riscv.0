@@ -1,194 +1,83 @@
-From: Alexandru Elisei <alexandru.elisei@arm.com>
-Date: Fri, 25 Oct 2024 13:19:26 +0100
-Subject: [kvm-unit-tests PATCH 1/2] lib/on-cpus: Correct and simplify
- synchronization
-In-Reply-To: <20241023131718.117452-5-andrew.jones@linux.dev>
-References: <20241023131718.117452-4-andrew.jones@linux.dev>
- <20241023131718.117452-5-andrew.jones@linux.dev>
-Message-ID: <ZxuMzrEMxE/lnwtK@arm.com>
+From: Anup Patel <apatel@ventanamicro.com>
+Date: Fri, 25 Oct 2024 22:27:54 +0530
+Subject: [PATCH v2 00/13] Accelerate KVM RISC-V when running as a guest
+In-Reply-To: <20241020194734.58686-1-apatel@ventanamicro.com>
+References: <20241020194734.58686-1-apatel@ventanamicro.com>
+Message-ID: <CAK9=C2VS6=azRSqXmkuFfp+65s4PUe+GbcTrYwLxQwfB4iB4_Q@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Drew,
+On Mon, Oct 21, 2024 at 1:17?AM Anup Patel <apatel@ventanamicro.com> wrote:
+>
+> The KVM RISC-V hypervisor might be running as a guest under some other
+> host hypervisor in which case the complete H-extension functionality will
+> be trap-n-emulated by the host hypervisor. In this case, the KVM RISC-V
+> performance can be accelerated using the SBI nested acceleration (NACL)
+> extension if the host hypervisor provides it.
+>
+> These series extends KVM RISC-V to use SBI NACL extension whenever
+> underlying SBI implementation (aka host hypervisor) provides it.
+>
+> These patches can also be found in the riscv_sbi_nested_v2 branch at:
+> https://github.com/avpatel/linux.git
+>
+> To test these patches, run KVM RISC-V as Guest under latest Xvisor
+> found at: https://github.com/xvisor/xvisor.git
+>
+> For the steps to test on Xvisor, refer the Xvisor documentation
+> <xvisor_source>/docs/riscv/riscv64-qemu.txt with two small changes:
+>
+> 1) In step#11, make sure compressed kvm.ko, guest kernel image, and
+>    kvmtool are present in the rootfs.img
+> 2) In step#14, make sure AIA is available to Xvisor by using
+>    "virt,aia=aplic-imsic" as the QEMU machine name.
+>
+> Changes since v1:
+>  - Dropped nacl_shmem_fast() macro from PATCH8
+>  - Added comments in PATCH8 about which back-to-back ncsr_xyz()
+>    macros are sub-optimal
+>  - Moved nacl_scratch_xyz() macros to PATCH8
+>
+> Anup Patel (13):
+>   RISC-V: KVM: Order the object files alphabetically
+>   RISC-V: KVM: Save/restore HSTATUS in C source
+>   RISC-V: KVM: Save/restore SCOUNTEREN in C source
+>   RISC-V: KVM: Break down the __kvm_riscv_switch_to() into macros
+>   RISC-V: KVM: Replace aia_set_hvictl() with aia_hvictl_value()
+>   RISC-V: KVM: Don't setup SGEI for zero guest external interrupts
+>   RISC-V: Add defines for the SBI nested acceleration extension
+>   RISC-V: KVM: Add common nested acceleration support
+>   RISC-V: KVM: Use nacl_csr_xyz() for accessing H-extension CSRs
+>   RISC-V: KVM: Use nacl_csr_xyz() for accessing AIA CSRs
+>   RISC-V: KVM: Use SBI sync SRET call when available
+>   RISC-V: KVM: Save trap CSRs in kvm_riscv_vcpu_enter_exit()
+>   RISC-V: KVM: Use NACL HFENCEs for KVM request based HFENCEs
 
-I've been paging in all the on_cpu* machinery, and it occurred to me that
-we have a chance to simplify the code and to remove a duplicate interface
-by not exposing smp_boot_secondary() to the tests, as the on_cpu* functions
-serve the same purpose. With this change, we can remove the entry argument
-to smp_boot_secondary(), and the assembly for secondary_entry can be made
-simpler by eliminating the branch to the entry function.
+Queued this series for Linux-6.13
 
-Do you think that would be something worth pursuing? I can have a look at
-it.
+Regards,
+Anup
 
-There are exactly two places where smp_boot_secondary() is used: in
-arm/psci.c and arm/gic.c, and from a quick glance it looks to me like those
-can be replaced with one of the on_cpu* functions.
-
-On Wed, Oct 23, 2024 at 03:17:20PM +0200, Andrew Jones wrote:
-> get/put_on_cpu_info() were trying to provide per-cpu locking for
-> the per-cpu on_cpu info, but they were flawed since they would
-> always set the "lock" since they were treating test_and_set/clear
-> as cmpxchg (which they're not). Just revert to a normal spinlock
-
-Would you mind expanding on that a bit more?
-
-From my understanding of the code, on arm64, this is the call chain that I get
-for get_on_cpu_info(cpu):
-
-  ->get_on_cpu_info(cpu):
-    ->!cpumask_test_and_set(cpu, on_cpu_info_lock)
-      ->!test_and_set_bit(cpu, on_cpu_info_lock->bits):
-         return (old & mask) != 0;
-
-'mask' always has the CPU bit set, which means that get_on_cpu_info() returns
-true if and only if 'old' has the bit clear. I think that prevents a thread
-getting the lock if it's already held, so from that point of view it does
-function as a per target cpu spinlock. Have I misunderstood something?
-
-Regardless of the above, on_cpu_async() is used like this:
-
-on_cpu_async()
-wait_for_synchronization()
-
-so it doesn't make much sense to optimize for performance for the case were
-multiple threads call on_cpu_async() concurrently, as they would need to
-have to wait for synchronization anyway.
-
-So yes, I'm totally in favour for replacing the per-cpu spinlock with a global
-spinlock, even if the only reason is simplifying the code.
-
-> to correct it. Also simplify the break case for on_cpu_async() -
-> we don't care if func is NULL, we only care that the cpu is idle.
-
-That makes sense.
-
-> And, finally, add a missing barrier to on_cpu_async().
-
-Might be worth explaining in the commit message why it was missing. Just in
-case someone is looking at the code and isn't exactly sure why it's there.
-
-> 
-> Fixes: 018550041b38 ("arm/arm64: Remove spinlocks from on_cpu_async")
-> Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
-> ---
->  lib/on-cpus.c | 36 +++++++++++-------------------------
->  1 file changed, 11 insertions(+), 25 deletions(-)
-> 
-> diff --git a/lib/on-cpus.c b/lib/on-cpus.c
-> index 892149338419..f6072117fa1b 100644
-> --- a/lib/on-cpus.c
-> +++ b/lib/on-cpus.c
-> @@ -9,6 +9,7 @@
->  #include <on-cpus.h>
->  #include <asm/barrier.h>
->  #include <asm/smp.h>
-> +#include <asm/spinlock.h>
->  
->  bool cpu0_calls_idle;
->  
-> @@ -18,18 +19,7 @@ struct on_cpu_info {
->  	cpumask_t waiters;
->  };
->  static struct on_cpu_info on_cpu_info[NR_CPUS];
-> -static cpumask_t on_cpu_info_lock;
-> -
-> -static bool get_on_cpu_info(int cpu)
-> -{
-> -	return !cpumask_test_and_set_cpu(cpu, &on_cpu_info_lock);
-> -}
-> -
-> -static void put_on_cpu_info(int cpu)
-> -{
-> -	int ret = cpumask_test_and_clear_cpu(cpu, &on_cpu_info_lock);
-> -	assert(ret);
-> -}
-> +static struct spinlock lock;
->  
->  static void __deadlock_check(int cpu, const cpumask_t *waiters, bool *found)
->  {
-> @@ -81,18 +71,14 @@ void do_idle(void)
->  	if (cpu == 0)
->  		cpu0_calls_idle = true;
->  
-> -	set_cpu_idle(cpu, true);
-> -	smp_send_event();
-> -
->  	for (;;) {
-> +		set_cpu_idle(cpu, true);
-> +		smp_send_event();
-> +
->  		while (cpu_idle(cpu))
->  			smp_wait_for_event();
->  		smp_rmb();
->  		on_cpu_info[cpu].func(on_cpu_info[cpu].data);
-> -		on_cpu_info[cpu].func = NULL;
-> -		smp_wmb();
-
-I think the barrier is still needed. The barrier orderered the now removed
-write func = NULL before the write set_cpu_idle(), but it also orderered
-whatever writes func(data) performed before set_cpu_idle(cpu, true). This
-matters for on_cpu(), where I think it's reasonable for the caller to
-expect to observe the writes made by 'func' after on_cpu() returns.
-
-If you agree that this is the correct approach, I think it's worth adding a
-comment explaining it.
-
-> -		set_cpu_idle(cpu, true);
-> -		smp_send_event();
->  	}
->  }
->  
-> @@ -110,17 +96,17 @@ void on_cpu_async(int cpu, void (*func)(void *data), void *data)
->  
->  	for (;;) {
->  		cpu_wait(cpu);
-> -		if (get_on_cpu_info(cpu)) {
-> -			if ((volatile void *)on_cpu_info[cpu].func == NULL)
-> -				break;
-> -			put_on_cpu_info(cpu);
-> -		}
-> +		spin_lock(&lock);
-> +		if (cpu_idle(cpu))
-> +			break;
-> +		spin_unlock(&lock);
->  	}
->  
->  	on_cpu_info[cpu].func = func;
->  	on_cpu_info[cpu].data = data;
-> +	smp_wmb();
-
-Without this smp_wmb(), it is possible for the target CPU to read an
-outdated on_cpu_info[cpu].data. So adding it is the right thing to do,
-since it orders the writes to on_cpu_info before set_cpu_idle().
-
->  	set_cpu_idle(cpu, false);
-> -	put_on_cpu_info(cpu);
-> +	spin_unlock(&lock);
->  	smp_send_event();
-
-I think a DSB is necessary before all the smp_send_event() calls in this
-file. The DSB ensures that the stores to cpu_idle_mask will be observed by
-the thread that is waiting on the WFE, otherwise it is theoretically
-possible to get a deadlock (in practice this will never happen, because KVM
-will be generating the events that cause WFE to complete):
-
-CPU0: on_cpu_async():		CPU1: do_idle():
-
-load CPU1_idle = true
-//do stuff
-store CPU1_idle=false
-SEV
-				1: WFE
-				   load CPU1_idle=true // old value, allowed
-				   b 1b // deadlock
-
-Also, it looks unusual to have smp_send_event() unpaired from set_cpu_idle().
-Can't really point to anything being wrong about it though.
-
-Thanks,
-Alex
+>
+>  arch/riscv/include/asm/kvm_nacl.h | 245 ++++++++++++++++++++++++++++++
+>  arch/riscv/include/asm/sbi.h      | 120 +++++++++++++++
+>  arch/riscv/kvm/Makefile           |  27 ++--
+>  arch/riscv/kvm/aia.c              | 114 +++++++++-----
+>  arch/riscv/kvm/main.c             |  51 ++++++-
+>  arch/riscv/kvm/mmu.c              |   4 +-
+>  arch/riscv/kvm/nacl.c             | 152 ++++++++++++++++++
+>  arch/riscv/kvm/tlb.c              |  57 ++++---
+>  arch/riscv/kvm/vcpu.c             | 184 ++++++++++++++++------
+>  arch/riscv/kvm/vcpu_switch.S      | 137 +++++++++++------
+>  arch/riscv/kvm/vcpu_timer.c       |  28 ++--
+>  11 files changed, 941 insertions(+), 178 deletions(-)
+>  create mode 100644 arch/riscv/include/asm/kvm_nacl.h
+>  create mode 100644 arch/riscv/kvm/nacl.c
+>
+> --
+> 2.43.0
+>
 
