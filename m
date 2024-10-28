@@ -1,9 +1,9 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Mon, 28 Oct 2024 06:50:01 -0400
-Subject: [PATCH AUTOSEL 6.11 19/32] RISCV: KVM: use raw_spinlock for critical section in imsic
-In-Reply-To: <20241028105050.3559169-1-sashal@kernel.org>
-References: <20241028105050.3559169-1-sashal@kernel.org>
-Message-ID: <20241028105050.3559169-19-sashal@kernel.org>
+Date: Mon, 28 Oct 2024 06:52:04 -0400
+Subject: [PATCH AUTOSEL 6.6 08/15] RISCV: KVM: use raw_spinlock for critical section in imsic
+In-Reply-To: <20241028105218.3559888-1-sashal@kernel.org>
+References: <20241028105218.3559888-1-sashal@kernel.org>
+Message-ID: <20241028105218.3559888-8-sashal@kernel.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -30,7 +30,7 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/arch/riscv/kvm/aia_imsic.c b/arch/riscv/kvm/aia_imsic.c
-index 0a1e859323b45..a8085cd8215e3 100644
+index e808723a85f1b..c1585444f856e 100644
 --- a/arch/riscv/kvm/aia_imsic.c
 +++ b/arch/riscv/kvm/aia_imsic.c
 @@ -55,7 +55,7 @@ struct imsic {
