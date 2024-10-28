@@ -1,75 +1,25 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Mon, 28 Oct 2024 06:52:04 -0400
-Subject: [PATCH AUTOSEL 6.6 08/15] RISCV: KVM: use raw_spinlock for critical section in imsic
-In-Reply-To: <20241028105218.3559888-1-sashal@kernel.org>
-References: <20241028105218.3559888-1-sashal@kernel.org>
-Message-ID: <20241028105218.3559888-8-sashal@kernel.org>
+From: Sean Christopherson <seanjc@google.com>
+Date: Mon, 28 Oct 2024 20:45:32 +0000
+Subject: [PATCH v3 09/14] KVM: sefltests: Explicitly include
+ ucall_common.h in mmu_stress_test.c
+In-Reply-To: <CADrL8HUEwnP8e700y2XYDgVhhUJuj1UEJmd2NLdtZ1dV845DNw@mail.gmail.com>
+References: <20241009154953.1073471-1-seanjc@google.com> <20241009154953.1073471-10-seanjc@google.com>
+ <CADrL8HUEwnP8e700y2XYDgVhhUJuj1UEJmd2NLdtZ1dV845DNw@mail.gmail.com>
+Message-ID: <Zx_37E9QY_PfBaTB@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Cyan Yang <cyan.yang@sifive.com>
++lists
 
-[ Upstream commit 3ec4350d4efb5ccb6bd0e11d9cf7f2be4f47297d ]
+Unless there is a good reason for off-list communication, please keep the Cc
+list intact when responding, even for trivialities.
 
-For the external interrupt updating procedure in imsic, there was a
-spinlock to protect it already. But since it should not be preempted in
-any cases, we should turn to use raw_spinlock to prevent any preemption
-in case PREEMPT_RT was enabled.
+On Mon, Oct 28, 2024, James Houghton wrote:
+> BTW, there is a typo in the shortlog: "sefltests". Guessing you've
+> noticed that already.
 
-Signed-off-by: Cyan Yang <cyan.yang@sifive.com>
-Reviewed-by: Yong-Xuan Wang <yongxuan.wang@sifive.com>
-Reviewed-by: Anup Patel <anup@brainfault.org>
-Message-ID: <20240919160126.44487-1-cyan.yang@sifive.com>
-Signed-off-by: Paolo Bonzini <pbonzini@redhat.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- arch/riscv/kvm/aia_imsic.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/arch/riscv/kvm/aia_imsic.c b/arch/riscv/kvm/aia_imsic.c
-index e808723a85f1b..c1585444f856e 100644
---- a/arch/riscv/kvm/aia_imsic.c
-+++ b/arch/riscv/kvm/aia_imsic.c
-@@ -55,7 +55,7 @@ struct imsic {
- 	/* IMSIC SW-file */
- 	struct imsic_mrif *swfile;
- 	phys_addr_t swfile_pa;
--	spinlock_t swfile_extirq_lock;
-+	raw_spinlock_t swfile_extirq_lock;
- };
- 
- #define imsic_vs_csr_read(__c)			\
-@@ -622,7 +622,7 @@ static void imsic_swfile_extirq_update(struct kvm_vcpu *vcpu)
- 	 * interruptions between reading topei and updating pending status.
- 	 */
- 
--	spin_lock_irqsave(&imsic->swfile_extirq_lock, flags);
-+	raw_spin_lock_irqsave(&imsic->swfile_extirq_lock, flags);
- 
- 	if (imsic_mrif_atomic_read(mrif, &mrif->eidelivery) &&
- 	    imsic_mrif_topei(mrif, imsic->nr_eix, imsic->nr_msis))
-@@ -630,7 +630,7 @@ static void imsic_swfile_extirq_update(struct kvm_vcpu *vcpu)
- 	else
- 		kvm_riscv_vcpu_unset_interrupt(vcpu, IRQ_VS_EXT);
- 
--	spin_unlock_irqrestore(&imsic->swfile_extirq_lock, flags);
-+	raw_spin_unlock_irqrestore(&imsic->swfile_extirq_lock, flags);
- }
- 
- static void imsic_swfile_read(struct kvm_vcpu *vcpu, bool clear,
-@@ -1051,7 +1051,7 @@ int kvm_riscv_vcpu_aia_imsic_init(struct kvm_vcpu *vcpu)
- 	}
- 	imsic->swfile = page_to_virt(swfile_page);
- 	imsic->swfile_pa = page_to_phys(swfile_page);
--	spin_lock_init(&imsic->swfile_extirq_lock);
-+	raw_spin_lock_init(&imsic->swfile_extirq_lock);
- 
- 	/* Setup IO device */
- 	kvm_iodevice_init(&imsic->iodev, &imsic_iodoev_ops);
--- 
-2.43.0
-
+I had not.  Thanks for the eyeballs!
 
