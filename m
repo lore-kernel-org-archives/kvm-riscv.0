@@ -1,57 +1,252 @@
-From: Yong-Xuan Wang <yongxuan.wang@sifive.com>
-Date: Tue, 29 Oct 2024 16:55:39 +0800
-Subject: [PATCH v2 1/1] RISC-V: KVM: Fix APLIC in_clrip and clripnum write emulation
-Message-ID: <20241029085542.30541-1-yongxuan.wang@sifive.com>
+From: Andrew Jones <andrew.jones@linux.dev>
+Date: Tue, 29 Oct 2024 11:56:58 +0100
+Subject: [kvm-unit-tests PATCH 1/2] lib/on-cpus: Correct and simplify
+ synchronization
+In-Reply-To: <ZxuMzrEMxE/lnwtK@arm.com>
+References: <20241023131718.117452-4-andrew.jones@linux.dev>
+ <20241023131718.117452-5-andrew.jones@linux.dev>
+ <ZxuMzrEMxE/lnwtK@arm.com>
+Message-ID: <20241029-1d35ce0dbbea4d21b56209dc@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-In the section "4.7 Precise effects on interrupt-pending bits"
-of the RISC-V AIA specification defines that:
+On Fri, Oct 25, 2024 at 01:19:26PM +0100, Alexandru Elisei wrote:
+> Hi Drew,
+> 
+> I've been paging in all the on_cpu* machinery, and it occurred to me that
+> we have a chance to simplify the code and to remove a duplicate interface
+> by not exposing smp_boot_secondary() to the tests, as the on_cpu* functions
+> serve the same purpose. With this change, we can remove the entry argument
+> to smp_boot_secondary(), and the assembly for secondary_entry can be made
+> simpler by eliminating the branch to the entry function.
 
-"If the source mode is Level1 or Level0 and the interrupt domain
-is configured in MSI delivery mode (domaincfg.DM = 1):
-The pending bit is cleared whenever the rectified input value is
-low, when the interrupt is forwarded by MSI, or by a relevant
-write to an in_clrip register or to clripnum."
+You're right that smp_boot_secondary() doesn't appear to getting use, but
+a goal for the library code is to be useful and with defaults that will
+satisfy nearly all unit tests, but to never restrict a unit test to
+having to use it. Exposing calls like smp_boot_secondary() give unit tests
+the ability to eliminate as much library code as possible from their paths
+without having to duplicate the few lines needed to "boot" a secondary.
 
-Update the aplic_write_pending() to match the spec.
+> 
+> Do you think that would be something worth pursuing? I can have a look at
+> it.
+> 
+> There are exactly two places where smp_boot_secondary() is used: in
+> arm/psci.c and arm/gic.c, and from a quick glance it looks to me like those
+> can be replaced with one of the on_cpu* functions.
+> 
+> On Wed, Oct 23, 2024 at 03:17:20PM +0200, Andrew Jones wrote:
+> > get/put_on_cpu_info() were trying to provide per-cpu locking for
+> > the per-cpu on_cpu info, but they were flawed since they would
+> > always set the "lock" since they were treating test_and_set/clear
+> > as cmpxchg (which they're not). Just revert to a normal spinlock
+> 
+> Would you mind expanding on that a bit more?
+> 
+> From my understanding of the code, on arm64, this is the call chain that I get
+> for get_on_cpu_info(cpu):
+> 
+>   ->get_on_cpu_info(cpu):
+>     ->!cpumask_test_and_set(cpu, on_cpu_info_lock)
+>       ->!test_and_set_bit(cpu, on_cpu_info_lock->bits):
+>          return (old & mask) != 0;
+> 
+> 'mask' always has the CPU bit set, which means that get_on_cpu_info() returns
+> true if and only if 'old' has the bit clear. I think that prevents a thread
+> getting the lock if it's already held, so from that point of view it does
+> function as a per target cpu spinlock. Have I misunderstood something?
 
-Fixes: d8dd9f113e16 ("RISC-V: KVM: Fix APLIC setipnum_le/be write emulation")
-Signed-off-by: Yong-Xuan Wang <yongxuan.wang@sifive.com>
-Reviewed-by: Vincent Chen <vincent.chen@sifive.com>
----
-v2;
-- add fixes tag (Anup)
-- follow the suggestion from Anup
----
- arch/riscv/kvm/aia_aplic.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+No, you're right, and thanks for reminding me of the thought process I
+used when I wrote get/put_on_cpu_info() in the first place :-) While
+trying to simplify things, I just got fed up with staring at it and
+reasoning about it, so I threw my hands up and went back to a good ol'
+lock. Now that you've convinced me [again] that the test-and-set isn't
+flawed, we could keep it, but...
 
-diff --git a/arch/riscv/kvm/aia_aplic.c b/arch/riscv/kvm/aia_aplic.c
-index da6ff1bade0d..f59d1c0c8c43 100644
---- a/arch/riscv/kvm/aia_aplic.c
-+++ b/arch/riscv/kvm/aia_aplic.c
-@@ -143,7 +143,7 @@ static void aplic_write_pending(struct aplic *aplic, u32 irq, bool pending)
- 	if (sm == APLIC_SOURCECFG_SM_LEVEL_HIGH ||
- 	    sm == APLIC_SOURCECFG_SM_LEVEL_LOW) {
- 		if (!pending)
--			goto skip_write_pending;
-+			goto noskip_write_pending;
- 		if ((irqd->state & APLIC_IRQ_STATE_INPUT) &&
- 		    sm == APLIC_SOURCECFG_SM_LEVEL_LOW)
- 			goto skip_write_pending;
-@@ -152,6 +152,7 @@ static void aplic_write_pending(struct aplic *aplic, u32 irq, bool pending)
- 			goto skip_write_pending;
- 	}
- 
-+noskip_write_pending:
- 	if (pending)
- 		irqd->state |= APLIC_IRQ_STATE_PENDING;
- 	else
--- 
-2.17.1
+> 
+> Regardless of the above, on_cpu_async() is used like this:
+> 
+> on_cpu_async()
+> wait_for_synchronization()
+> 
+> so it doesn't make much sense to optimize for performance for the case were
+> multiple threads call on_cpu_async() concurrently, as they would need to
+> have to wait for synchronization anyway.
 
+...even though on_cpu_async() has a wait part, it only waits (outside the
+lock) for the target cpu to be idle. If all targets are idle already, and
+we have more than one "launcher" cpu, then we could launch tests on all
+the targets more-or-less simultaneously with percpu locks, but...
+
+> 
+> So yes, I'm totally in favour for replacing the per-cpu spinlock with a global
+> spinlock, even if the only reason is simplifying the code.
+
+...simplifying the code is probably the better choice since the critical
+section is so small that sharing a lock really shouldn't matter much and
+even some contention test which needs to run simultaneously on several
+cpus should use looping rather than rely on a simultaneous launch.
+
+> 
+> > to correct it. Also simplify the break case for on_cpu_async() -
+> > we don't care if func is NULL, we only care that the cpu is idle.
+> 
+> That makes sense.
+> 
+> > And, finally, add a missing barrier to on_cpu_async().
+> 
+> Might be worth explaining in the commit message why it was missing. Just in
+> case someone is looking at the code and isn't exactly sure why it's there.
+
+Sure. I think the reason it's missing is because when 018550041b38 changed
+from spinlock to put_on_cpu_info(), the release was also moved below the
+clearing of idle. Prior to that, the spin_unlock() was acting as barrier.
+With the move of where the release was done a barrier should have been
+added.
+
+> 
+> > 
+> > Fixes: 018550041b38 ("arm/arm64: Remove spinlocks from on_cpu_async")
+> > Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
+> > ---
+> >  lib/on-cpus.c | 36 +++++++++++-------------------------
+> >  1 file changed, 11 insertions(+), 25 deletions(-)
+> > 
+> > diff --git a/lib/on-cpus.c b/lib/on-cpus.c
+> > index 892149338419..f6072117fa1b 100644
+> > --- a/lib/on-cpus.c
+> > +++ b/lib/on-cpus.c
+> > @@ -9,6 +9,7 @@
+> >  #include <on-cpus.h>
+> >  #include <asm/barrier.h>
+> >  #include <asm/smp.h>
+> > +#include <asm/spinlock.h>
+> >  
+> >  bool cpu0_calls_idle;
+> >  
+> > @@ -18,18 +19,7 @@ struct on_cpu_info {
+> >  	cpumask_t waiters;
+> >  };
+> >  static struct on_cpu_info on_cpu_info[NR_CPUS];
+> > -static cpumask_t on_cpu_info_lock;
+> > -
+> > -static bool get_on_cpu_info(int cpu)
+> > -{
+> > -	return !cpumask_test_and_set_cpu(cpu, &on_cpu_info_lock);
+> > -}
+> > -
+> > -static void put_on_cpu_info(int cpu)
+> > -{
+> > -	int ret = cpumask_test_and_clear_cpu(cpu, &on_cpu_info_lock);
+> > -	assert(ret);
+> > -}
+> > +static struct spinlock lock;
+> >  
+> >  static void __deadlock_check(int cpu, const cpumask_t *waiters, bool *found)
+> >  {
+> > @@ -81,18 +71,14 @@ void do_idle(void)
+> >  	if (cpu == 0)
+> >  		cpu0_calls_idle = true;
+> >  
+> > -	set_cpu_idle(cpu, true);
+> > -	smp_send_event();
+> > -
+> >  	for (;;) {
+> > +		set_cpu_idle(cpu, true);
+> > +		smp_send_event();
+> > +
+> >  		while (cpu_idle(cpu))
+> >  			smp_wait_for_event();
+> >  		smp_rmb();
+> >  		on_cpu_info[cpu].func(on_cpu_info[cpu].data);
+> > -		on_cpu_info[cpu].func = NULL;
+> > -		smp_wmb();
+> 
+> I think the barrier is still needed. The barrier orderered the now removed
+> write func = NULL before the write set_cpu_idle(), but it also orderered
+> whatever writes func(data) performed before set_cpu_idle(cpu, true). This
+> matters for on_cpu(), where I think it's reasonable for the caller to
+> expect to observe the writes made by 'func' after on_cpu() returns.
+> 
+> If you agree that this is the correct approach, I think it's worth adding a
+> comment explaining it.
+
+I think that's reasonable (along with adding smp_rmb()'s to the bottom of
+on_cpu() and on_cpumask()). So the idea is we have
+
+ cpu1                                         cpu2
+ ----                                         ----
+ func() /* store something */                 /* wait for cpu1 to be idle */
+ smp_wmb();                                   smp_rmb();
+ set_cpu_idle(smp_processor_id(), true);      /* load what func() stored */
+
+> 
+> > -		set_cpu_idle(cpu, true);
+> > -		smp_send_event();
+> >  	}
+> >  }
+> >  
+> > @@ -110,17 +96,17 @@ void on_cpu_async(int cpu, void (*func)(void *data), void *data)
+> >  
+> >  	for (;;) {
+> >  		cpu_wait(cpu);
+> > -		if (get_on_cpu_info(cpu)) {
+> > -			if ((volatile void *)on_cpu_info[cpu].func == NULL)
+> > -				break;
+> > -			put_on_cpu_info(cpu);
+> > -		}
+> > +		spin_lock(&lock);
+> > +		if (cpu_idle(cpu))
+> > +			break;
+> > +		spin_unlock(&lock);
+> >  	}
+> >  
+> >  	on_cpu_info[cpu].func = func;
+> >  	on_cpu_info[cpu].data = data;
+> > +	smp_wmb();
+> 
+> Without this smp_wmb(), it is possible for the target CPU to read an
+> outdated on_cpu_info[cpu].data. So adding it is the right thing to do,
+> since it orders the writes to on_cpu_info before set_cpu_idle().
+> 
+> >  	set_cpu_idle(cpu, false);
+> > -	put_on_cpu_info(cpu);
+> > +	spin_unlock(&lock);
+> >  	smp_send_event();
+> 
+> I think a DSB is necessary before all the smp_send_event() calls in this
+> file. The DSB ensures that the stores to cpu_idle_mask will be observed by
+> the thread that is waiting on the WFE, otherwise it is theoretically
+> possible to get a deadlock (in practice this will never happen, because KVM
+> will be generating the events that cause WFE to complete):
+> 
+> CPU0: on_cpu_async():		CPU1: do_idle():
+> 
+> load CPU1_idle = true
+> //do stuff
+> store CPU1_idle=false
+> SEV
+> 				1: WFE
+> 				   load CPU1_idle=true // old value, allowed
+> 				   b 1b // deadlock
+
+Good catch. Can you send a patch for that? The patch should be for the arm
+implementations of smp_send_event() (and smp_wait_for_event()?) in
+lib/arm/asm/smp.h.
+
+> 
+> Also, it looks unusual to have smp_send_event() unpaired from set_cpu_idle().
+> Can't really point to anything being wrong about it though.
+
+You mean due to the spin_unlock() separating the set_cpu_idle() and
+smp_send_event()? We could put the spin_unlock() above the set_cpu_idle()
+(as it was in 018550041b38, which also removes the need for the wmb), but
+I think I like it the way it is now better for better readability. I
+also can't think of why it would matter for them to be unpaired.
+
+Thanks,
+drew
 
