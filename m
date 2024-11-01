@@ -1,816 +1,271 @@
-From: Andrew Jones <andrew.jones@linux.dev>
-Date: Fri, 1 Nov 2024 17:37:37 +0100
-Subject: [kvm-unit-tests PATCH v6 1/1] riscv: sbi: Add tests for HSM
- extension
-In-Reply-To: <20241026161813.17189-2-jamestiotio@gmail.com>
-References: <20241026161813.17189-1-jamestiotio@gmail.com>
- <20241026161813.17189-2-jamestiotio@gmail.com>
-Message-ID: <20241029-a8b71c4eb1146ea01104993d@orel>
+From: Vipin Sharma <vipinsh@google.com>
+Date: Fri, 1 Nov 2024 15:13:49 -0700
+Subject: [RFC PATCH 0/1] KVM selftests runner for running more than just default
+In-Reply-To: <CAHVum0eSxCTAme8=oV9a=cVaJ9Jzu3-W-3vgbubVZ2qAWVjfJA@mail.gmail.com>
+References: <20240821223012.3757828-1-vipinsh@google.com> <CAHVum0eSxCTAme8=oV9a=cVaJ9Jzu3-W-3vgbubVZ2qAWVjfJA@mail.gmail.com>
+Message-ID: <CAHVum0fWJW7V5ijtPcXQAtPSdoQSKjzYwMJ-XCRH2_sKs=Kg7g@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Sun, Oct 27, 2024 at 12:18:13AM +0800, James Raphael Tiovalen wrote:
-> Add some tests for all of the HSM extension functions. These tests
-> ensure that the HSM extension functions follow the behavior as described
-> in the SBI specification.
-> 
-> Signed-off-by: James Raphael Tiovalen <jamestiotio@gmail.com>
-> ---
->  riscv/sbi.c | 663 ++++++++++++++++++++++++++++++++++++++++++++++++++++
->  1 file changed, 663 insertions(+)
-> 
-> diff --git a/riscv/sbi.c b/riscv/sbi.c
-> index 6f2d3e35..b09e2e45 100644
-> --- a/riscv/sbi.c
-> +++ b/riscv/sbi.c
-> @@ -21,6 +21,7 @@
->  #include <asm/delay.h>
->  #include <asm/io.h>
->  #include <asm/mmu.h>
-> +#include <asm/page.h>
->  #include <asm/processor.h>
->  #include <asm/sbi.h>
->  #include <asm/setup.h>
-> @@ -54,6 +55,11 @@ static struct sbiret sbi_dbcn_write_byte(uint8_t byte)
->  	return sbi_ecall(SBI_EXT_DBCN, SBI_EXT_DBCN_CONSOLE_WRITE_BYTE, byte, 0, 0, 0, 0, 0);
->  }
->  
-> +static struct sbiret sbi_hart_suspend(uint32_t suspend_type, unsigned long resume_addr, unsigned long opaque)
-> +{
-> +	return sbi_ecall(SBI_EXT_HSM, SBI_EXT_HSM_HART_SUSPEND, suspend_type, resume_addr, opaque, 0, 0, 0);
-> +}
-> +
->  static struct sbiret sbi_system_suspend(uint32_t sleep_type, unsigned long resume_addr, unsigned long opaque)
->  {
->  	return sbi_ecall(SBI_EXT_SUSP, 0, sleep_type, resume_addr, opaque, 0, 0, 0);
-> @@ -833,6 +839,662 @@ static void check_susp(void)
->  	report_prefix_pop();
->  }
->  
-> +unsigned char sbi_hsm_stop_hart[NR_CPUS];
-> +unsigned char sbi_hsm_hart_start_checks[NR_CPUS];
-> +unsigned char sbi_hsm_non_retentive_hart_suspend_checks[NR_CPUS];
-
-The above three are already present in the file. It's strange the compiler
-doesn't warn about the redundant definition.
-
-> +cpumask_t sbi_hsm_started_hart_checks;
-
-This one can be static.
-
-> +static bool sbi_hsm_invalid_hartid_check;
-> +static bool sbi_hsm_timer_fired;
-> +extern void sbi_hsm_check_hart_start(void);
-> +extern void sbi_hsm_check_non_retentive_suspend(void);
-> +
-> +static void hsm_timer_irq_handler(struct pt_regs *regs)
-> +{
-> +	sbi_hsm_timer_fired = true;
-> +	timer_stop();
-
-nit: timer_stop() should be first (of course it doesn't matter much
-here...)
-
-> +}
-> +
-> +static void hsm_timer_setup(void)
-> +{
-> +	install_irq_handler(IRQ_S_TIMER, hsm_timer_irq_handler);
-> +	local_irq_enable();
-> +	timer_irq_enable();
-> +}
-> +
-> +static void hsm_timer_teardown(void)
-> +{
-> +	timer_irq_disable();
-> +	local_irq_disable();
-> +	install_irq_handler(IRQ_S_TIMER, NULL);
-
-nit: since the above functions are 'timer' functions by name, then
-calling local_irq_enable/disable() is out of their scope.
-
-> +}
-> +
-> +static void hart_empty_fn(void *data) {}
-
-We have start_cpu() already in this file for a no-op function.
-
-> +
-> +static void hart_execute(void *data)
-
-rename to 'hart_check_already_started'
-
-> +{
-> +	struct sbiret ret;
-> +	unsigned long hartid = current_thread_info()->hartid;
-> +	int me = smp_processor_id();
-> +
-> +	ret = sbi_hart_start(hartid, virt_to_phys(&hart_empty_fn), 0);
-> +
-> +	if (ret.error == SBI_ERR_ALREADY_AVAILABLE)
-> +		cpumask_set_cpu(me, &sbi_hsm_started_hart_checks);
-> +}
-> +
-> +static void hart_start_invalid_hartid(void *data)
-> +{
-> +	struct sbiret ret;
-> +
-> +	ret = sbi_hart_start(ULONG_MAX, virt_to_phys(&hart_empty_fn), 0);
-
-nit: I think I prefer '-1UL' over ULONG_MAX since -1 is what is used in
-the spec to refer to invalid hartids (which I interpret from the "Hart
-list parameter" using -1 for hart_mask_base to indicate broadcast).
-
-> +
-> +	if (ret.error == SBI_ERR_INVALID_PARAM)
-> +		sbi_hsm_invalid_hartid_check = true;
-> +}
-> +
-> +static void hart_stop(void *data)
-> +{
-> +	unsigned long hartid = current_thread_info()->hartid;
-> +	struct sbiret ret = sbi_hart_stop();
-> +
-> +	report_fail("failed to stop hart %ld (error=%ld)", hartid, ret.error);
-> +}
-> +
-> +static void hart_retentive_suspend(void *data)
-> +{
-> +	unsigned long hartid = current_thread_info()->hartid;
-> +	struct sbiret ret = sbi_hart_suspend(SBI_EXT_HSM_HART_SUSPEND_RETENTIVE, 0, 0);
-> +
-> +	if (ret.error)
-> +		report_fail("failed to retentive suspend hart %ld (error=%ld)", hartid, ret.error);
-> +}
-> +
-> +static void hart_non_retentive_suspend(void *data)
-> +{
-> +	unsigned long hartid = current_thread_info()->hartid;
-> +
-> +	/* Set opaque as hartid so that we can check a0 == a1, ensuring that a0 is hartid and a1 is opaque */
-> +	struct sbiret ret = sbi_hart_suspend(SBI_EXT_HSM_HART_SUSPEND_NON_RETENTIVE,
-> +					     virt_to_phys(&sbi_hsm_check_non_retentive_suspend), hartid);
-> +
-> +	report_fail("failed to non-retentive suspend hart %ld (error=%ld)", hartid, ret.error);
-> +}
-> +
-> +static void hart_retentive_suspend_with_msb_set(void *data)
-> +{
-> +	unsigned long hartid = current_thread_info()->hartid;
-> +	unsigned long suspend_type = SBI_EXT_HSM_HART_SUSPEND_RETENTIVE | (_AC(1, UL) << (__riscv_xlen - 1));
-> +	struct sbiret ret = sbi_ecall(SBI_EXT_HSM, SBI_EXT_HSM_HART_SUSPEND, suspend_type, 0, 0, 0, 0, 0);
-> +
-> +	if (ret.error)
-> +		report_fail("failed to retentive suspend hart %ld with MSB set (error=%ld)", hartid, ret.error);
-
-This test, which I assume is to ensure the SBI implementation ignores
-upper bits set in suspend_type, will only work on rv64. On rv32, it
-will try to do a non-retentive suspend. I see below that it's only
-being run on rv64. We should put a comment here making that clear.
-
-> +}
-> +
-> +static void hart_non_retentive_suspend_with_msb_set(void *data)
-> +{
-> +	unsigned long hartid = current_thread_info()->hartid;
-> +	unsigned long suspend_type = SBI_EXT_HSM_HART_SUSPEND_NON_RETENTIVE | (_AC(1, UL) << (__riscv_xlen - 1));
-> +
-> +	/* Set opaque as hartid so that we can check a0 == a1, ensuring that a0 is hartid and a1 is opaque */
-> +	struct sbiret ret = sbi_ecall(SBI_EXT_HSM, SBI_EXT_HSM_HART_SUSPEND, suspend_type,
-> +				      virt_to_phys(&sbi_hsm_check_non_retentive_suspend), hartid, 0, 0, 0);
-> +
-> +	report_fail("failed to non-retentive suspend hart %ld with MSB set (error=%ld)", hartid, ret.error);
-
-Same comment as for hart_retentive_suspend_with_msb_set()
-
-> +}
-> +
-> +static bool hart_wait_on_status(unsigned long hartid, enum sbi_ext_hsm_sid status, unsigned long duration)
-> +{
-> +	struct sbiret ret;
-> +
-> +	sbi_hsm_timer_fired = false;
-> +	timer_start(duration);
-> +
-> +	ret = sbi_hart_get_status(hartid);
-> +
-> +	while (!ret.error && ret.value == status && !sbi_hsm_timer_fired) {
-> +		cpu_relax();
-> +		ret = sbi_hart_get_status(hartid);
-> +	}
-> +
-> +	timer_stop();
-> +
-> +	if (sbi_hsm_timer_fired)
-> +		report_info("timer fired while waiting on status %u for hart %ld", status, hartid);
-> +	else if (ret.error)
-> +		report_fail("got %ld while waiting on status %u for hart %ld\n", ret.error, status, hartid);
-> +
-> +	return sbi_hsm_timer_fired || ret.error;
-
-For boolean returning functions I prefer 'true' to mean success and
-'false' to me failure, so I would reverse this logic.
-
-> +}
-> +
-> +static void check_hsm(void)
-> +{
-> +	struct sbiret ret;
-> +	unsigned long hartid;
-> +	cpumask_t secondary_cpus_mask, hsm_start, hsm_stop, hsm_suspend, hsm_resume, hsm_check;
-> +	bool ipi_unavailable = false;
-> +	bool suspend_with_msb = false, resume_with_msb = false, check_with_msb = false, stop_with_msb = false;
-> +	int cpu, me = smp_processor_id();
-> +	int max_cpus = getenv("SBI_MAX_CPUS") ? strtol(getenv("SBI_MAX_CPUS"), NULL, 0) : nr_cpus;
-> +	unsigned long hsm_timer_duration = getenv("SBI_HSM_TIMER_DURATION")
-> +					 ? strtol(getenv("SBI_HSM_TIMER_DURATION"), NULL, 0) : 200000;
-> +
-> +	max_cpus = MIN(max_cpus, nr_cpus);
-
-We should further clamp this to cpumask_weight(&cpu_present_mask);
-
-> +
-> +	report_prefix_push("hsm");
-> +
-> +	if (!sbi_probe(SBI_EXT_HSM)) {
-> +		report_skip("hsm extension not available");
-> +		report_prefix_pop();
-> +		return;
-> +	}
-> +
-> +	report_prefix_push("hart_get_status");
-> +
-> +	hartid = current_thread_info()->hartid;
-> +	ret = sbi_hart_get_status(hartid);
-> +
-> +	if (ret.error) {
-> +		report_fail("failed to get status of current hart (error=%ld)", ret.error);
-> +		report_prefix_popn(2);
-> +		return;
-> +	} else if (ret.value != SBI_EXT_HSM_STARTED) {
-> +		report_fail("current hart is not started (ret.value=%ld)", ret.value);
-> +		report_prefix_popn(2);
-> +		return;
-> +	}
-> +
-> +	report_pass("status of current hart is started");
-> +
-> +	for_each_present_cpu(cpu) {
-> +		if (sbi_hart_get_status(cpus[cpu].hartid).error == SBI_ERR_INVALID_PARAM)
-> +			set_cpu_present(cpu, false);
-> +	}
-
-We do this now in setup since commit b9e849027e0d ("riscv: Filter unmanaged
-harts from present mask") which is merged into riscv/sbi.
-
-> +
-> +	report(cpumask_weight(&cpu_present_mask) == nr_cpus, "all present harts have valid hartids");
-
-The above test should be dropped. It wouldn't be testing SBI it would be
-testing the DT.
-
-> +
-> +	report_prefix_pop();
-> +
-> +	if (max_cpus < 2) {
-> +		report_skip("no other cpus to run the remaining hsm tests on");
-> +		report_prefix_pop();
-> +		return;
-> +	}
-> +
-> +	report_prefix_push("hart_stop");
-> +
-> +	cpumask_copy(&secondary_cpus_mask, &cpu_present_mask);
-> +	cpumask_clear_cpu(me, &secondary_cpus_mask);
-> +	hsm_timer_setup();
-> +
-> +	/* Assume that previous tests have not cleaned up and stopped the secondary harts */
-> +	on_cpumask_async(&secondary_cpus_mask, hart_stop, NULL);
-> +
-> +	cpumask_clear(&hsm_stop);
-> +
-> +	for_each_cpu(cpu, &secondary_cpus_mask) {
-> +		hartid = cpus[cpu].hartid;
-> +		if (hart_wait_on_status(hartid, SBI_EXT_HSM_STARTED, hsm_timer_duration))
-> +			continue;
-> +		if (hart_wait_on_status(hartid, SBI_EXT_HSM_STOP_PENDING, hsm_timer_duration))
-> +			continue;
-> +
-> +		ret = sbi_hart_get_status(hartid);
-> +		if (ret.error)
-> +			report_info("hart %ld get status failed (error=%ld)", hartid, ret.error);
-> +		else if (ret.value != SBI_EXT_HSM_STOPPED)
-> +			report_info("hart %ld status is not 'stopped' (ret.value=%ld)", hartid, ret.value);
-> +		else
-> +			cpumask_set_cpu(cpu, &hsm_stop);
-> +	}
-> +
-> +	report(cpumask_weight(&hsm_stop) == max_cpus - 1, "all secondary harts stopped");
-
-It looks like we just need a counter and not a cpumask for this test since
-we only care about the weight of the mask.
-
-> +
-> +	report_prefix_pop();
-> +
-> +	report_prefix_push("hart_start");
-> +
-> +	cpumask_clear(&hsm_start);
-> +	cpumask_clear(&hsm_check);
-> +
-> +	for_each_cpu(cpu, &secondary_cpus_mask) {
-> +		hartid = cpus[cpu].hartid;
-> +		/* Set opaque as hartid so that we can check a0 == a1, ensuring that a0 is hartid and a1 is opaque */
-
-The only problem with this trick is that the SBI implementation could have
-a bug that sets a0 to opaque and a1 to hartid and we won't catch it. It
-would be better to embed hartid in some structure or array (and not at
-offset 0) and then set opaque to the pointer of that structure. That's how
-the SUSP test does it. Also SUSP puts a magic number at offset zero so
-opaque can be tested by that alone. To change it we'll need to also write
-a fixup patch for "riscv: sbi: Provide entry point for HSM tests".
-
-> +		ret = sbi_hart_start(hartid, virt_to_phys(&sbi_hsm_check_hart_start), hartid);
-> +		if (ret.error) {
-> +			report_fail("failed to start test hart %ld (error=%ld)", hartid, ret.error);
-> +			continue;
-> +		}
-> +
-
-From here...
-
-> +		if (hart_wait_on_status(hartid, SBI_EXT_HSM_STOPPED, hsm_timer_duration))
-> +			continue;
-> +		if (hart_wait_on_status(hartid, SBI_EXT_HSM_START_PENDING, hsm_timer_duration))
-> +			continue;
-> +
-> +		ret = sbi_hart_get_status(hartid);
-> +		if (ret.error) {
-> +			report_info("hart %ld get status failed (error=%ld)", hartid, ret.error);
-> +			continue;
-> +		} else if (ret.value != SBI_EXT_HSM_STARTED) {
-> +			report_info("hart %ld status is not 'started' (ret.value=%ld)", hartid, ret.value);
-> +			continue;
-> +		} else {
-> +			cpumask_set_cpu(cpu, &hsm_start);
-
-...to here can be factored into a function that returns the count and
-shared with the hsm_stop test since hsm_start doesn't need to be a cpumask
-either. The function just needs to take the three states as parameters.
-
-> +		}
-> +
-> +		sbi_hsm_timer_fired = false;
-> +		timer_start(hsm_timer_duration);
-> +
-> +		while (!(READ_ONCE(sbi_hsm_hart_start_checks[cpu]) & SBI_HSM_TEST_DONE) && !sbi_hsm_timer_fired)
-> +			cpu_relax();
-> +
-> +		timer_stop();
-> +
-> +		if (sbi_hsm_timer_fired) {
-> +			report_info("hsm timer fired before hart %ld is done with start checks", hartid);
-> +			continue;
-> +		}
-> +
-> +		if (!(sbi_hsm_hart_start_checks[cpu] & SBI_HSM_TEST_SATP))
-> +			report_info("satp is not zero for test hart %ld", hartid);
-> +		else if (!(sbi_hsm_hart_start_checks[cpu] & SBI_HSM_TEST_SIE))
-> +			report_info("sstatus.SIE is not zero for test hart %ld", hartid);
-> +		else if (!(sbi_hsm_hart_start_checks[cpu] & SBI_HSM_TEST_HARTID_A1))
-> +			report_info("either a0 or a1 is not hartid for test hart %ld", hartid);
-> +		else
-> +			cpumask_set_cpu(cpu, &hsm_check);
-> +	}
-> +
-> +	report(cpumask_weight(&hsm_start) == max_cpus - 1, "all secondary harts started");
-> +	report(cpumask_weight(&hsm_check) == max_cpus - 1,
-> +	       "all secondary harts have expected register values after hart start");
-
-hsm_check can also just be a counter.
-
-> +
-> +	report_prefix_pop();
-> +
-> +	report_prefix_push("hart_stop");
-> +
-> +	memset(sbi_hsm_stop_hart, 1, sizeof(sbi_hsm_stop_hart));
-> +
-> +	cpumask_clear(&hsm_stop);
-> +
-> +	for_each_cpu(cpu, &secondary_cpus_mask) {
-> +		hartid = cpus[cpu].hartid;
-> +		if (hart_wait_on_status(hartid, SBI_EXT_HSM_STARTED, hsm_timer_duration))
-> +			continue;
-> +		if (hart_wait_on_status(hartid, SBI_EXT_HSM_STOP_PENDING, hsm_timer_duration))
-> +			continue;
-> +
-> +		ret = sbi_hart_get_status(hartid);
-> +		if (ret.error)
-> +			report_info("hart %ld get status failed (error=%ld)", hartid, ret.error);
-> +		else if (ret.value != SBI_EXT_HSM_STOPPED)
-> +			report_info("hart %ld status is not 'stopped' (ret.value=%ld)", hartid, ret.value);
-> +		else
-> +			cpumask_set_cpu(cpu, &hsm_stop);
-> +	}
-> +
-> +	report(cpumask_weight(&hsm_stop) == max_cpus - 1, "all secondary harts stopped");
-> +
-> +	/* Reset the stop flags so that we can reuse them after suspension tests */
-> +	memset(sbi_hsm_stop_hart, 0, sizeof(sbi_hsm_stop_hart));
-> +
-> +	report_prefix_pop();
-> +
-> +	report_prefix_push("hart_start");
-> +
-> +	/* Select just one secondary cpu to run the invalid hartid test */
-> +	on_cpu(cpumask_next(-1, &secondary_cpus_mask), hart_start_invalid_hartid, NULL);
-> +
-> +	report(sbi_hsm_invalid_hartid_check, "secondary hart refuse to start with invalid hartid");
-> +
-> +	on_cpumask_async(&secondary_cpus_mask, hart_execute, NULL);
-> +
-> +	cpumask_clear(&hsm_start);
-> +
-> +	for_each_cpu(cpu, &secondary_cpus_mask) {
-> +		hartid = cpus[cpu].hartid;
-> +		if (hart_wait_on_status(hartid, SBI_EXT_HSM_STOPPED, hsm_timer_duration))
-> +			continue;
-> +		if (hart_wait_on_status(hartid, SBI_EXT_HSM_START_PENDING, hsm_timer_duration))
-> +			continue;
-> +
-> +		ret = sbi_hart_get_status(hartid);
-> +		if (ret.error)
-> +			report_info("hart %ld get status failed (error=%ld)", hartid, ret.error);
-> +		else if (ret.value != SBI_EXT_HSM_STARTED)
-> +			report_info("hart %ld status is not 'started' (ret.value=%ld)", hartid, ret.value);
-> +		else
-> +			cpumask_set_cpu(cpu, &hsm_start);
-> +	}
-> +
-> +	report(cpumask_weight(&hsm_start) == max_cpus - 1, "all secondary harts started");
-> +
-
-Can factor from here...
-
-> +	sbi_hsm_timer_fired = false;
-> +	timer_start(hsm_timer_duration);
-> +
-> +	while (cpumask_weight(&cpu_idle_mask) != max_cpus - 1 && !sbi_hsm_timer_fired)
-> +		cpu_relax();
-> +
-> +	timer_stop();
-> +
-> +	if (sbi_hsm_timer_fired)
-> +		report_info("hsm timer fired before all secondary harts started");
-
-...to here into a helper function.
-
-> +
-> +	report(cpumask_weight(&cpu_idle_mask) == max_cpus - 1,
-> +	       "all secondary harts successfully executed code after start");
-> +	report(cpumask_weight(&cpu_online_mask) == max_cpus, "all secondary harts online");
-> +	report(cpumask_weight(&sbi_hsm_started_hart_checks) == max_cpus - 1,
-> +	       "all secondary harts are already started");
-> +
-> +	report_prefix_pop();
-> +
-> +	report_prefix_push("hart_suspend");
-> +
-> +	if (!sbi_probe(SBI_EXT_IPI)) {
-> +		report_skip("skipping suspension tests since ipi extension is unavailable");
-> +		report_prefix_pop();
-> +		ipi_unavailable = true;
-> +		goto sbi_hsm_hart_stop_tests;
-> +	}
-> +
-> +	on_cpumask_async(&secondary_cpus_mask, hart_retentive_suspend, NULL);
-> +
-> +	cpumask_clear(&hsm_suspend);
-> +
-> +	for_each_cpu(cpu, &secondary_cpus_mask) {
-> +		hartid = cpus[cpu].hartid;
-> +		if (hart_wait_on_status(hartid, SBI_EXT_HSM_STARTED, hsm_timer_duration))
-> +			continue;
-> +		if (hart_wait_on_status(hartid, SBI_EXT_HSM_SUSPEND_PENDING, hsm_timer_duration))
-> +			continue;
-> +
-> +		ret = sbi_hart_get_status(hartid);
-> +		if (ret.error)
-> +			report_info("hart %ld get status failed (error=%ld)", hartid, ret.error);
-> +		else if (ret.value != SBI_EXT_HSM_SUSPENDED)
-> +			report_info("hart %ld status is not 'suspended' (ret.value=%ld)", hartid, ret.value);
-> +		else
-> +			cpumask_set_cpu(cpu, &hsm_suspend);
-> +	}
-> +
-> +	report(cpumask_weight(&hsm_suspend) == max_cpus - 1, "all secondary harts retentive suspended");
-
-hsm_suspend can be a counter.
-
-> +
-> +	/* Ignore the return value since we check the status of each hart anyway */
-> +	sbi_send_ipi_cpumask(&secondary_cpus_mask);
-> +
-> +	cpumask_clear(&hsm_resume);
-> +
-> +	for_each_cpu(cpu, &secondary_cpus_mask) {
-> +		hartid = cpus[cpu].hartid;
-> +		if (hart_wait_on_status(hartid, SBI_EXT_HSM_SUSPENDED, hsm_timer_duration))
-> +			continue;
-> +		if (hart_wait_on_status(hartid, SBI_EXT_HSM_RESUME_PENDING, hsm_timer_duration))
-> +			continue;
-> +
-> +		ret = sbi_hart_get_status(hartid);
-> +		if (ret.error)
-> +			report_info("hart %ld get status failed (error=%ld)", hartid, ret.error);
-> +		else if (ret.value != SBI_EXT_HSM_STARTED)
-> +			report_info("hart %ld status is not 'started' (ret.value=%ld)", hartid, ret.value);
-> +		else
-> +			cpumask_set_cpu(cpu, &hsm_resume);
-> +	}
-> +
-> +	report(cpumask_weight(&hsm_resume) == max_cpus - 1, "all secondary harts retentive resumed");
-
-hsm_resume can be a counter.
-
-> +
-> +	sbi_hsm_timer_fired = false;
-> +	timer_start(hsm_timer_duration);
-> +
-> +	while (cpumask_weight(&cpu_idle_mask) != max_cpus - 1 && !sbi_hsm_timer_fired)
-> +		cpu_relax();
-> +
-> +	timer_stop();
-> +
-> +	if (sbi_hsm_timer_fired)
-> +		report_info("hsm timer fired before all secondary harts retentive resumed");
-> +
-> +	report(cpumask_weight(&cpu_idle_mask) == max_cpus - 1,
-> +	       "all secondary harts successfully executed code after retentive suspend");
-> +	report(cpumask_weight(&cpu_online_mask) == max_cpus,
-> +	       "all secondary harts online");
-> +
-> +	on_cpumask_async(&secondary_cpus_mask, hart_non_retentive_suspend, NULL);
-> +
-> +	cpumask_clear(&hsm_suspend);
-> +
-> +	for_each_cpu(cpu, &secondary_cpus_mask) {
-> +		hartid = cpus[cpu].hartid;
-> +		if (hart_wait_on_status(hartid, SBI_EXT_HSM_STARTED, hsm_timer_duration))
-> +			continue;
-> +		if (hart_wait_on_status(hartid, SBI_EXT_HSM_SUSPEND_PENDING, hsm_timer_duration))
-> +			continue;
-> +
-> +		ret = sbi_hart_get_status(hartid);
-> +		if (ret.error)
-> +			report_info("hart %ld get status failed (error=%ld)", hartid, ret.error);
-> +		else if (ret.value != SBI_EXT_HSM_SUSPENDED)
-> +			report_info("hart %ld status is not 'suspended' (ret.value=%ld)", hartid, ret.value);
-> +		else
-> +			cpumask_set_cpu(cpu, &hsm_suspend);
-> +	}
-> +
-> +	report(cpumask_weight(&hsm_suspend) == max_cpus - 1, "all secondary harts non-retentive suspended");
-> +
-> +	/* Ignore the return value since we check the status of each hart anyway */
-> +	sbi_send_ipi_cpumask(&secondary_cpus_mask);
-> +
-> +	cpumask_clear(&hsm_resume);
-> +	cpumask_clear(&hsm_check);
-> +
-> +	for_each_cpu(cpu, &secondary_cpus_mask) {
-> +		hartid = cpus[cpu].hartid;
-> +		if (hart_wait_on_status(hartid, SBI_EXT_HSM_SUSPENDED, hsm_timer_duration))
-> +			continue;
-> +		if (hart_wait_on_status(hartid, SBI_EXT_HSM_RESUME_PENDING, hsm_timer_duration))
-> +			continue;
-> +
-> +		ret = sbi_hart_get_status(hartid);
-> +		if (ret.error) {
-> +			report_info("hart %ld get status failed (error=%ld)", hartid, ret.error);
-> +			continue;
-> +		} else if (ret.value != SBI_EXT_HSM_STARTED) {
-> +			report_info("hart %ld status is not 'started' (ret.value=%ld)", hartid, ret.value);
-> +			continue;
-> +		} else {
-> +			cpumask_set_cpu(cpu, &hsm_resume);
-> +		}
-> +
-> +		sbi_hsm_timer_fired = false;
-> +		timer_start(hsm_timer_duration);
-> +
-> +		while (!((READ_ONCE(sbi_hsm_non_retentive_hart_suspend_checks[cpu])) & SBI_HSM_TEST_DONE)
-> +			&& !sbi_hsm_timer_fired)
-> +			cpu_relax();
-> +
-> +		timer_stop();
-> +
-> +		if (sbi_hsm_timer_fired) {
-> +			report_info("hsm timer fired before hart %ld is done with non-retentive resume checks",
-> +				    hartid);
-> +			continue;
-> +		}
-> +
-> +		if (!(sbi_hsm_non_retentive_hart_suspend_checks[cpu] & SBI_HSM_TEST_SATP))
-> +			report_info("satp is not zero for test hart %ld", hartid);
-> +		else if (!(sbi_hsm_non_retentive_hart_suspend_checks[cpu] & SBI_HSM_TEST_SIE))
-> +			report_info("sstatus.SIE is not zero for test hart %ld", hartid);
-> +		else if (!(sbi_hsm_non_retentive_hart_suspend_checks[cpu] & SBI_HSM_TEST_HARTID_A1))
-> +			report_info("either a0 or a1 is not hartid for test hart %ld", hartid);
-> +		else
-> +			cpumask_set_cpu(cpu, &hsm_check);
-> +	}
-> +
-> +	report(cpumask_weight(&hsm_resume) == max_cpus - 1, "all secondary harts non-retentive resumed");
-> +	report(cpumask_weight(&hsm_check) == max_cpus - 1,
-> +	       "all secondary harts have expected register values after non-retentive resume");
-> +
-> +	report_prefix_pop();
-> +
-> +sbi_hsm_hart_stop_tests:
-> +	report_prefix_push("hart_stop");
-> +
-> +	if (ipi_unavailable)
-> +		on_cpumask_async(&secondary_cpus_mask, hart_stop, NULL);
-> +	else
-> +		memset(sbi_hsm_stop_hart, 1, sizeof(sbi_hsm_stop_hart));
-> +
-> +	cpumask_clear(&hsm_stop);
-> +
-> +	for_each_cpu(cpu, &secondary_cpus_mask) {
-> +		hartid = cpus[cpu].hartid;
-> +		if (hart_wait_on_status(hartid, SBI_EXT_HSM_STARTED, hsm_timer_duration))
-> +			continue;
-> +		if (hart_wait_on_status(hartid, SBI_EXT_HSM_STOP_PENDING, hsm_timer_duration))
-> +			continue;
-> +
-> +		ret = sbi_hart_get_status(hartid);
-> +		if (ret.error)
-> +			report_info("hart %ld get status failed (error=%ld)", hartid, ret.error);
-> +		else if (ret.value != SBI_EXT_HSM_STOPPED)
-> +			report_info("hart %ld status is not 'stopped' (ret.value=%ld)", hartid, ret.value);
-> +		else
-> +			cpumask_set_cpu(cpu, &hsm_stop);
-> +	}
-> +
-> +	report(cpumask_weight(&hsm_stop) == max_cpus - 1, "all secondary harts stopped");
-> +
-> +	if (__riscv_xlen == 32 || ipi_unavailable) {
-> +		hsm_timer_teardown();
-> +		report_prefix_popn(2);
-> +		return;
-> +	}
-> +
-> +	report_prefix_pop();
-
-This pop should go above the if 32-bit check and the pop inside that if's
-body should be changed to a single pop.
-
-> +
-> +	report_prefix_push("hart_suspend");
-> +
-> +	/* Select just one secondary cpu to run suspension tests with MSB of suspend type being set */
-> +	cpu = cpumask_next(-1, &secondary_cpus_mask);
-> +	hartid = cpus[cpu].hartid;
-> +
-> +	/* Boot up the secondary cpu and let it proceed to the idle loop */
-> +	on_cpu(cpu, hart_empty_fn, NULL);
-> +
-> +	on_cpu_async(cpu, hart_retentive_suspend_with_msb_set, NULL);
-> +
-> +	if (!hart_wait_on_status(hartid, SBI_EXT_HSM_STARTED, hsm_timer_duration) &&
-> +	    !hart_wait_on_status(hartid, SBI_EXT_HSM_SUSPEND_PENDING, hsm_timer_duration)) {
-> +		ret = sbi_hart_get_status(hartid);
-> +		if (ret.error)
-> +			report_info("hart %ld get status failed (error=%ld)", hartid, ret.error);
-> +		else if (ret.value != SBI_EXT_HSM_SUSPENDED)
-> +			report_info("hart %ld status is not 'suspended' (ret.value=%ld)", hartid, ret.value);
-> +		else
-> +			suspend_with_msb = true;
-> +	}
-> +
-> +	report(suspend_with_msb, "secondary hart retentive suspended with MSB set");
-> +
-> +	/* Ignore the return value since we manually validate the status of the hart anyway */
-> +	sbi_send_ipi_cpu(cpu);
-> +
-> +	if (!hart_wait_on_status(hartid, SBI_EXT_HSM_SUSPENDED, hsm_timer_duration) &&
-> +	    !hart_wait_on_status(hartid, SBI_EXT_HSM_RESUME_PENDING, hsm_timer_duration)) {
-> +		ret = sbi_hart_get_status(hartid);
-> +		if (ret.error)
-> +			report_info("hart %ld get status failed (error=%ld)", hartid, ret.error);
-> +		else if (ret.value != SBI_EXT_HSM_STARTED)
-> +			report_info("hart %ld status is not 'started' (ret.value=%ld)", hartid, ret.value);
-> +		else
-> +			resume_with_msb = true;
-> +	}
-> +
-> +	report(resume_with_msb, "secondary hart retentive resumed with MSB set");
-> +
-> +	/* Reset these flags so that we can reuse them for the non-retentive suspension test */
-> +	suspend_with_msb = false;
-> +	resume_with_msb = false;
-> +	sbi_hsm_stop_hart[cpu] = 0;
-> +	sbi_hsm_non_retentive_hart_suspend_checks[cpu] = 0;
-> +
-> +	on_cpu_async(cpu, hart_non_retentive_suspend_with_msb_set, NULL);
-> +
-> +	if (!hart_wait_on_status(hartid, SBI_EXT_HSM_STARTED, hsm_timer_duration) &&
-> +	    !hart_wait_on_status(hartid, SBI_EXT_HSM_SUSPEND_PENDING, hsm_timer_duration)) {
-> +		ret = sbi_hart_get_status(hartid);
-> +		if (ret.error)
-> +			report_info("hart %ld get status failed (error=%ld)", hartid, ret.error);
-> +		else if (ret.value != SBI_EXT_HSM_SUSPENDED)
-> +			report_info("hart %ld status is not 'suspended' (ret.value=%ld)", hartid, ret.value);
-> +		else
-> +			suspend_with_msb = true;
-> +	}
-> +
-> +	report(suspend_with_msb, "secondary hart non-retentive suspended with MSB set");
-> +
-> +	/* Ignore the return value since we manually validate the status of the hart anyway */
-> +	sbi_send_ipi_cpu(cpu);
-> +
-> +	if (!hart_wait_on_status(hartid, SBI_EXT_HSM_SUSPENDED, hsm_timer_duration) &&
-> +	    !hart_wait_on_status(hartid, SBI_EXT_HSM_RESUME_PENDING, hsm_timer_duration)) {
-> +		ret = sbi_hart_get_status(hartid);
-> +		if (ret.error)
-> +			report_info("hart %ld get status failed (error=%ld)", hartid, ret.error);
-> +		else if (ret.value != SBI_EXT_HSM_STARTED)
-> +			report_info("hart %ld status is not 'started' (ret.value=%ld)", hartid, ret.value);
-> +		else
-> +			resume_with_msb = true;
-> +
-> +		sbi_hsm_timer_fired = false;
-> +		timer_start(hsm_timer_duration);
-> +
-> +		while (!((READ_ONCE(sbi_hsm_non_retentive_hart_suspend_checks[cpu])) & SBI_HSM_TEST_DONE)
-> +			&& !sbi_hsm_timer_fired)
-> +			cpu_relax();
-> +
-> +		timer_stop();
-> +
-> +		if (sbi_hsm_timer_fired) {
-> +			report_info("hsm timer fired before hart %ld is done with non-retentive resume checks",
-> +				    hartid);
-> +		} else {
-> +			if (!(sbi_hsm_non_retentive_hart_suspend_checks[cpu] & SBI_HSM_TEST_SATP))
-> +				report_info("satp is not zero for test hart %ld", hartid);
-> +			else if (!(sbi_hsm_non_retentive_hart_suspend_checks[cpu] & SBI_HSM_TEST_SIE))
-> +				report_info("sstatus.SIE is not zero for test hart %ld", hartid);
-> +			else if (!(sbi_hsm_non_retentive_hart_suspend_checks[cpu] & SBI_HSM_TEST_HARTID_A1))
-> +				report_info("either a0 or a1 is not hartid for test hart %ld", hartid);
-> +			else
-> +				check_with_msb = true;
-> +		}
-> +	}
-> +
-> +	report(resume_with_msb, "secondary hart non-retentive resumed with MSB set");
-> +	report(check_with_msb,
-> +	       "secondary hart has expected register values after non-retentive resume with MSB set");
-> +
-> +	report_prefix_pop();
-> +
-> +	report_prefix_push("hart_stop");
-> +
-> +	sbi_hsm_stop_hart[cpu] = 1;
-> +
-> +	if (!hart_wait_on_status(hartid, SBI_EXT_HSM_STARTED, hsm_timer_duration) &&
-> +	    !hart_wait_on_status(hartid, SBI_EXT_HSM_STOP_PENDING, hsm_timer_duration)) {
-> +		ret = sbi_hart_get_status(hartid);
-> +		if (ret.error)
-> +			report_info("hart %ld get status failed (error=%ld)", hartid, ret.error);
-> +		else if (ret.value != SBI_EXT_HSM_STOPPED)
-> +			report_info("hart %ld status is not 'stopped' (ret.value=%ld)", hartid, ret.value);
-> +		else
-> +			stop_with_msb = true;
-> +	}
-> +
-> +	report(stop_with_msb, "secondary hart stopped after suspension tests with MSB set");
-> +
-> +	hsm_timer_teardown();
-> +	report_prefix_popn(2);
-> +}
-> +
->  int main(int argc, char **argv)
->  {
->  	if (argc > 1 && !strcmp(argv[1], "-h")) {
-> @@ -844,6 +1506,7 @@ int main(int argc, char **argv)
->  	check_base();
->  	check_time();
->  	check_ipi();
-> +	check_hsm();
->  	check_dbcn();
->  	check_susp();
->  
-> -- 
-> 2.43.0
+On Thu, Aug 22, 2024 at 1:55?PM Vipin Sharma <vipinsh@google.com> wrote:
 >
+> Oops! Adding archs mailing list and maintainers which have arch folder
+> in tool/testing/selftests/kvm
+>
+> On Wed, Aug 21, 2024 at 3:30?PM Vipin Sharma <vipinsh@google.com> wrote:
+> >
+> > This series is introducing a KVM selftests runner to make it easier to
+> > run selftests with some interesting configurations and provide some
+> > enhancement over existing kselftests runner.
+> >
+> > I would like to get an early feedback from the community and see if this
+> > is something which can be useful for improving KVM selftests coverage
+> > and worthwhile investing time in it. Some specific questions:
+> >
+> > 1. Should this be done?
+> > 2. What features are must?
+> > 3. Any other way to write test configuration compared to what is done here?
+> >
+> > Note, python code written for runner is not optimized but shows how this
+> > runner can be useful.
+> >
+> > What are the goals?
+> > - Run tests with more than just the default settings of KVM module
+> >   parameters and test itself.
+> > - Capture issues which only show when certain combination of module
+> >   parameter and tests options are used.
+> > - Provide minimum testing which can be standardised for KVM patches.
+> > - Run tests parallely.
+> > - Dump output in a hierarchical folder structure for easier tracking of
+> >   failures/success output
+> > - Feel free to add yours :)
+> >
+> > Why not use/extend kselftests?
+> > - Other submodules goal might not align and its gonna be difficult to
+> >   capture broader set of requirements.
+> > - Instead of test configuration we will need separate shell scripts
+> >   which will act as tests for each test arg and module parameter
+> >   combination. This will easily pollute the KVM selftests directory.
+> > - Easier to enhance features using Python packages than shell scripts.
+> >
+> > What this runner do?
+> > - Reads a test configuration file (tests.json in patch 1).
+> >   Configuration in json are written in hierarchy where multiple suites
+> >   exist and each suite contains multiple tests.
+> > - Provides a way to execute tests inside a suite parallelly.
+> > - Provides a way to dump output to a folder in a hierarchical manner.
+> > - Allows to run selected suites, or tests in a specific suite.
+> > - Allows to do some setup and teardown for test suites and tests.
+> > - Timeout can be provided to limit test execution duration.
+> > - Allows to run test suites or tests on specific architecture only.
+> >
+> > Runner is written in python and goal is to only use standard library
+> > constructs. This runner will work on Python 3.6 and up
+> >
+> > What does a test configuration file looks like?
+> > Test configuration are written in json as it is easier to read and has
+> > inbuilt package support in Python. Root level is a json array denoting
+> > suites and each suite can multiple tests in it using json array.
+> >
+> > [
+> >   {
+> >     "suite": "dirty_log_perf_tests",
+> >     "timeout_s": 300,
+> >     "arch": "x86_64",
+> >     "setup": "echo Setting up suite",
+> >     "teardown": "echo tearing down suite",
+> >     "tests": [
+> >       {
+> >         "name": "dirty_log_perf_test_max_vcpu_no_manual_protect",
+> >         "command": "./dirty_log_perf_test -v $(grep -c ^processor /proc/cpuinfo) -g",
+> >         "arch": "x86_64",
+> >         "setup": "echo Setting up test",
+> >         "teardown": "echo tearing down test",
+> >         "timeout_s": 5
+> >       }
+> >     ]
+> >   }
+> > ]
+> >
+> > Usage:
+> > Runner "runner.py" and test configuration "tests.json" lives in
+> > tool/testing/selftests/kvm directory.
+> >
+> > To run serially:
+> > ./runner.py tests.json
+> >
+> > To run specific test suites:
+> > ./runner.py tests.json dirty_log_perf_tests x86_sanity_tests
+> >
+> > To run specific test in a suite:
+> > ./runner.py tests.json x86_sanity_tests/vmx_msrs_test
+> >
+> > To run everything parallely (runs tests inside a suite parallely):
+> > ./runner.py -j 10 tests.json
+> >
+> > To dump output to disk:
+> > ./runner.py -j 10 tests.json -o sample_run
+> >
+> > Sample output (after removing timestamp, process ID, and logging
+> > level columns):
+> >
+> >   ./runner.py tests.json  -j 10 -o sample_run
+> >   PASSED: dirty_log_perf_tests/dirty_log_perf_test_max_vcpu_no_manual_protect
+> >   PASSED: dirty_log_perf_tests/dirty_log_perf_test_max_vcpu_manual_protect
+> >   PASSED: dirty_log_perf_tests/dirty_log_perf_test_max_vcpu_manual_protect_random_access
+> >   PASSED: dirty_log_perf_tests/dirty_log_perf_test_max_10_vcpu_hugetlb
+> >   PASSED: x86_sanity_tests/vmx_msrs_test
+> >   SKIPPED: x86_sanity_tests/private_mem_conversions_test
+> >   FAILED: x86_sanity_tests/apic_bus_clock_test
+> >   PASSED: x86_sanity_tests/dirty_log_page_splitting_test
+> >   --------------------------------------------------------------------------
+> >   Test runner result:
+> >   1) dirty_log_perf_tests:
+> >      1) PASSED: dirty_log_perf_test_max_vcpu_no_manual_protect
+> >      2) PASSED: dirty_log_perf_test_max_vcpu_manual_protect
+> >      3) PASSED: dirty_log_perf_test_max_vcpu_manual_protect_random_access
+> >      4) PASSED: dirty_log_perf_test_max_10_vcpu_hugetlb
+> >   2) x86_sanity_tests:
+> >      1) PASSED: vmx_msrs_test
+> >      2) SKIPPED: private_mem_conversions_test
+> >      3) FAILED: apic_bus_clock_test
+> >      4) PASSED: dirty_log_page_splitting_test
+> >   --------------------------------------------------------------------------
+> >
+> > Directory structure created:
+> >
+> > sample_run/
+> > |-- dirty_log_perf_tests
+> > |   |-- dirty_log_perf_test_max_10_vcpu_hugetlb
+> > |   |   |-- command.stderr
+> > |   |   |-- command.stdout
+> > |   |   |-- setup.stderr
+> > |   |   |-- setup.stdout
+> > |   |   |-- teardown.stderr
+> > |   |   `-- teardown.stdout
+> > |   |-- dirty_log_perf_test_max_vcpu_manual_protect
+> > |   |   |-- command.stderr
+> > |   |   `-- command.stdout
+> > |   |-- dirty_log_perf_test_max_vcpu_manual_protect_random_access
+> > |   |   |-- command.stderr
+> > |   |   `-- command.stdout
+> > |   `-- dirty_log_perf_test_max_vcpu_no_manual_protect
+> > |       |-- command.stderr
+> > |       `-- command.stdout
+> > `-- x86_sanity_tests
+> >     |-- apic_bus_clock_test
+> >     |   |-- command.stderr
+> >     |   `-- command.stdout
+> >     |-- dirty_log_page_splitting_test
+> >     |   |-- command.stderr
+> >     |   |-- command.stdout
+> >     |   |-- setup.stderr
+> >     |   |-- setup.stdout
+> >     |   |-- teardown.stderr
+> >     |   `-- teardown.stdout
+> >     |-- private_mem_conversions_test
+> >     |   |-- command.stderr
+> >     |   `-- command.stdout
+> >     `-- vmx_msrs_test
+> >         |-- command.stderr
+> >         `-- command.stdout
+> >
+> >
+> > Some other features for future:
+> > - Provide "precheck" command option in json, which can filter/skip tests if
+> >   certain conditions are not met.
+> > - Iteration option in the runner. This will allow the same test suites to
+> >   run again.
+> >
+> > Vipin Sharma (1):
+> >   KVM: selftestsi: Create KVM selftests runnner to run interesting tests
+> >
+> >  tools/testing/selftests/kvm/runner.py  | 282 +++++++++++++++++++++++++
+> >  tools/testing/selftests/kvm/tests.json |  60 ++++++
+> >  2 files changed, 342 insertions(+)
+> >  create mode 100755 tools/testing/selftests/kvm/runner.py
+> >  create mode 100644 tools/testing/selftests/kvm/tests.json
+> >
+> >
+> > base-commit: de9c2c66ad8e787abec7c9d7eff4f8c3cdd28aed
+> > --
+> > 2.46.0.184.g6999bdac58-goog
+> >
+
+Had an offline discussion with Sean, providing a summary on what we
+discussed (Sean, correct me if something is not aligned from our
+discussion):
+
+We need to have a roadmap for the runner in terms of features we support.
+
+
+Phase 1: Having a basic selftest runner is useful which can:
+
+- Run tests parallely
+- Provide a summary of what passed and failed, or only in case of failure.
+- Dump output which can be easily accessed and parsed.
+- Allow to run with different command line parameters.
+
+Current patch does more than this and can be simplified.
+
+
+Phase 2: Environment setup via runner
+
+Current patch, allows to write "setup" commands at test suite and test
+level in the json config file to setup the environment needed by a
+test to run. This might not be ideal as some settings are exposed
+differently on different platforms.
+
+For example,
+To enable TDP:
+- Intel needs npt=Y
+- AMD needs ept=Y
+- ARM always on.
+
+To enable APIC virtualization
+- Intel needs enable_apicv=Y
+- AMD needs avic=Y
+
+To enable/disable nested, they both have the same file name "nested"
+in their module params directory which should be changed.
+
+These kinds of settings become more verbose and unnecessary on other
+platforms. Instead, runners should have some programming constructs
+(API, command line options, default) to enable these options in a
+generic way. For example, enable/disable nested can be exposed as a
+command line --enable_nested, then based on the platform, runner can
+update corresponding module param or ignore.
+
+This will easily extend to providing sane configuration on the
+corresponding platforms without lots of hardcoding in JSON. These
+individual constructs will provide a generic view/option to run a KVM
+feature, and under the hood will do things differently based on the
+platform it is running on like arm, x86-intel, x86-amd, s390, etc.
+
+
+Phase 3: Provide collection of interesting configurations
+
+Specific individual constructs can be combined in a meaningful way to
+provide interesting configurations to run on a platform. For example,
+user doesn't need to specify each individual configuration instead,
+some prebuilt configurations can be exposed like
+--stress_test_shadow_mmu, --test_basic_nested
+
+Tests need to handle the environment in which they are running
+gracefully, which many tests already do but not exhaustively. If some
+setting is not provided or set up properly for their execution then
+they should fail/skip accordingly.
+
+Runner will not be responsible to precheck things on tests behalf.
+
+
+Next steps:
+1. Consensus on above phases and features.
+2. Start development.
 
 Thanks,
-drew
+Vipin
 
