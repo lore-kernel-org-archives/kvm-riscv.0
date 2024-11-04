@@ -1,7 +1,7 @@
 From: Björn Töpel <bjorn@kernel.org>
-Date: Mon,  4 Nov 2024 20:15:01 +0100
-Subject: [PATCH] riscv: kvm: Fix out-of-bounds array access
-Message-ID: <20241104191503.74725-1-bjorn@kernel.org>
+Date: Mon,  4 Nov 2024 20:21:19 +0100
+Subject: [PATCH kvmtool] riscv: Pass correct size to snprintf()
+Message-ID: <20241104192120.75841-1-bjorn@kernel.org>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -10,58 +10,34 @@ Content-Transfer-Encoding: 7bit
 
 From: Bj?rn T?pel <bjorn@rivosinc.com>
 
-In kvm_riscv_vcpu_sbi_init() the entry->ext_idx can contain an
-out-of-bound index. This is used as a special marker for the base
-extensions, that cannot be disabled. However, when traversing the
-extensions, that special marker is not checked prior indexing the
-array.
+The snprintf() function does not get the correct size argument passed,
+when the FDT ISA string is built. Instead of adjusting the size for
+each extension, the full size is passed for every iteration. Doing so
+will make __snprinf_chk() bail out on glibc.
 
-Add an out-of-bounds check to the function.
+Adjust size for each iteration.
 
-Fixes: 56d8a385b605 ("RISC-V: KVM: Allow some SBI extensions to be disabled by default")
+Fixes: 8aff29e1dafe ("riscv: Append ISA extensions to the device tree")
 Signed-off-by: Bj?rn T?pel <bjorn@rivosinc.com>
 ---
-Don't know if it matters, but I hit this when trying kvmtool.
+ riscv/fdt.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-
-Bj?rn
----
-arch/riscv/kvm/vcpu_sbi.c | 11 +++++++----
- 1 file changed, 7 insertions(+), 4 deletions(-)
-
-diff --git a/arch/riscv/kvm/vcpu_sbi.c b/arch/riscv/kvm/vcpu_sbi.c
-index 7de128be8db9..6e704ed86a83 100644
---- a/arch/riscv/kvm/vcpu_sbi.c
-+++ b/arch/riscv/kvm/vcpu_sbi.c
-@@ -486,19 +486,22 @@ void kvm_riscv_vcpu_sbi_init(struct kvm_vcpu *vcpu)
- 	struct kvm_vcpu_sbi_context *scontext = &vcpu->arch.sbi_context;
- 	const struct kvm_riscv_sbi_extension_entry *entry;
- 	const struct kvm_vcpu_sbi_extension *ext;
--	int i;
-+	int idx, i;
- 
- 	for (i = 0; i < ARRAY_SIZE(sbi_ext); i++) {
- 		entry = &sbi_ext[i];
- 		ext = entry->ext_ptr;
-+		idx = entry->ext_idx;
-+
-+		if (idx < 0 || idx >= ARRAY_SIZE(scontext->ext_status))
-+			continue;
- 
- 		if (ext->probe && !ext->probe(vcpu)) {
--			scontext->ext_status[entry->ext_idx] =
--				KVM_RISCV_SBI_EXT_STATUS_UNAVAILABLE;
-+			scontext->ext_status[idx] = KVM_RISCV_SBI_EXT_STATUS_UNAVAILABLE;
- 			continue;
+diff --git a/riscv/fdt.c b/riscv/fdt.c
+index 8189601f46de..85c8f95604f6 100644
+--- a/riscv/fdt.c
++++ b/riscv/fdt.c
+@@ -157,7 +157,7 @@ static void generate_cpu_nodes(void *fdt, struct kvm *kvm)
+ 					   isa_info_arr[i].name);
+ 				break;
+ 			}
+-			pos += snprintf(cpu_isa + pos, CPU_ISA_MAX_LEN, "_%s",
++			pos += snprintf(cpu_isa + pos, CPU_ISA_MAX_LEN - pos, "_%s",
+ 					isa_info_arr[i].name);
  		}
- 
--		scontext->ext_status[entry->ext_idx] = ext->default_disabled ?
-+		scontext->ext_status[idx] = ext->default_disabled ?
- 					KVM_RISCV_SBI_EXT_STATUS_DISABLED :
- 					KVM_RISCV_SBI_EXT_STATUS_ENABLED;
- 	}
+ 		cpu_isa[pos] = '\0';
 
-base-commit: 59b723cd2adbac2a34fc8e12c74ae26ae45bf230
+base-commit: 3040b298156e4e2a82b27ac8db5bd63a72b3785b
 -- 
 2.43.0
 
