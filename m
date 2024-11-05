@@ -1,71 +1,68 @@
-From: Anup Patel <anup@brainfault.org>
-Date: Tue, 5 Nov 2024 10:41:41 +0530
-Subject: [PATCH v2 1/1] RISC-V: KVM: Fix APLIC in_clrip and clripnum write emulation
-In-Reply-To: <20241029085542.30541-1-yongxuan.wang@sifive.com>
-References: <20241029085542.30541-1-yongxuan.wang@sifive.com>
-Message-ID: <CAAhSdy022PTmMZ90OxRxSOiR9nKept+tKVj8XrqbekkM209eYQ@mail.gmail.com>
+From: Sean Christopherson <seanjc@google.com>
+Date: Mon, 4 Nov 2024 21:53:48 -0800
+Subject: [PATCH v3 00/14] KVM: selftests: Morph max_guest_mem to mmu_stress
+In-Reply-To: <173039503553.1508387.3074658713815866060.b4-ty@google.com>
+References: <20241009154953.1073471-1-seanjc@google.com> <173039503553.1508387.3074658713815866060.b4-ty@google.com>
+Message-ID: <Zymy7M5dHs6dWUmu@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Oct 29, 2024 at 2:25?PM Yong-Xuan Wang <yongxuan.wang@sifive.com> wrote:
->
-> In the section "4.7 Precise effects on interrupt-pending bits"
-> of the RISC-V AIA specification defines that:
->
-> "If the source mode is Level1 or Level0 and the interrupt domain
-> is configured in MSI delivery mode (domaincfg.DM = 1):
-> The pending bit is cleared whenever the rectified input value is
-> low, when the interrupt is forwarded by MSI, or by a relevant
-> write to an in_clrip register or to clripnum."
->
-> Update the aplic_write_pending() to match the spec.
->
-> Fixes: d8dd9f113e16 ("RISC-V: KVM: Fix APLIC setipnum_le/be write emulation")
-> Signed-off-by: Yong-Xuan Wang <yongxuan.wang@sifive.com>
-> Reviewed-by: Vincent Chen <vincent.chen@sifive.com>
+On Thu, Oct 31, 2024, Sean Christopherson wrote:
+> On Wed, 09 Oct 2024 08:49:39 -0700, Sean Christopherson wrote:
+> > The main purpose of this series is to convert the max_guest_memory_test
+> > into a more generic mmu_stress_test.  The basic gist of the "conversion"
+> > is to have the test do mprotect() on guest memory while vCPUs are
+> > accessing said memory, e.g. to verify KVM and mmu_notifiers are working
+> > as intended.
+> > 
+> > Patches 1-4 are a somewhat unexpected side quest.  The original plan was
+> > that patch 3 would be a single patch, but things snowballed.
+> > 
+> > [...]
+> 
+> Applied to kvm-x86 selftests, with the typo fixup pointed out by James.  Thanks!
+> 
+> [01/14] KVM: Move KVM_REG_SIZE() definition to common uAPI header
+>         https://github.com/kvm-x86/linux/commit/5e07fd0bf516
+> [02/14] KVM: selftests: Disable strict aliasing
+>         https://github.com/kvm-x86/linux/commit/d1ce2bcd8d2e
+> [03/14] KVM: selftests: Return a value from vcpu_get_reg() instead of using an out-param
+>         https://github.com/kvm-x86/linux/commit/5c6c7b71a45c
+> [04/14] KVM: selftests: Assert that vcpu_{g,s}et_reg() won't truncate
+>         https://github.com/kvm-x86/linux/commit/6aa2df3eb90b
+> [05/14] KVM: selftests: Check for a potential unhandled exception iff KVM_RUN succeeded
+>         https://github.com/kvm-x86/linux/commit/be9f2746d20b
+> [06/14] KVM: selftests: Rename max_guest_memory_test to mmu_stress_test
+>         https://github.com/kvm-x86/linux/commit/06694f27cfcc
+> [07/14] KVM: selftests: Only muck with SREGS on x86 in mmu_stress_test
+>         https://github.com/kvm-x86/linux/commit/8556ce365a07
+> [08/14] KVM: selftests: Compute number of extra pages needed in mmu_stress_test
+>         https://github.com/kvm-x86/linux/commit/c7b7876ac5d4
+> [09/14] KVM: sefltests: Explicitly include ucall_common.h in mmu_stress_test.c
+>         https://github.com/kvm-x86/linux/commit/a657856469e1
+> [10/14] KVM: selftests: Enable mmu_stress_test on arm64
+>         https://github.com/kvm-x86/linux/commit/1e53cde06102
+> [11/14] KVM: selftests: Use vcpu_arch_put_guest() in mmu_stress_test
+>         https://github.com/kvm-x86/linux/commit/8630563012b9
+> [12/14] KVM: selftests: Precisely limit the number of guest loops in mmu_stress_test
+>         https://github.com/kvm-x86/linux/commit/3d4585c220dc
+> [13/14] KVM: selftests: Add a read-only mprotect() phase to mmu_stress_test
+>         https://github.com/kvm-x86/linux/commit/eaafeebca75a
+> [14/14] KVM: selftests: Verify KVM correctly handles mprotect(PROT_READ)
+>         https://github.com/kvm-x86/linux/commit/a3cd5c187742
 
-Looks good to me.
+As mentioned later in the thread[*], I dropped this series from the 6.13 queue
+and will instead target 6.14.
 
-Reviewed-by: Anup Patel <anup@brainfault.org>
+I did however grab the no-strict-aliasing fix for 6.12, and tagged it for stable.
+There's no reason to wait to land that commit, and I definitely have no desire to
+ever debug that mess again.
 
-Queued this patch for Linux-6.13.
+[02/14] KVM: selftests: Disable strict aliasing
+      https://github.com/kvm-x86/linux/commit/5b188cc4866a
 
-Thanks,
-Anup
-
-> ---
-> v2;
-> - add fixes tag (Anup)
-> - follow the suggestion from Anup
-> ---
->  arch/riscv/kvm/aia_aplic.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
->
-> diff --git a/arch/riscv/kvm/aia_aplic.c b/arch/riscv/kvm/aia_aplic.c
-> index da6ff1bade0d..f59d1c0c8c43 100644
-> --- a/arch/riscv/kvm/aia_aplic.c
-> +++ b/arch/riscv/kvm/aia_aplic.c
-> @@ -143,7 +143,7 @@ static void aplic_write_pending(struct aplic *aplic, u32 irq, bool pending)
->         if (sm == APLIC_SOURCECFG_SM_LEVEL_HIGH ||
->             sm == APLIC_SOURCECFG_SM_LEVEL_LOW) {
->                 if (!pending)
-> -                       goto skip_write_pending;
-> +                       goto noskip_write_pending;
->                 if ((irqd->state & APLIC_IRQ_STATE_INPUT) &&
->                     sm == APLIC_SOURCECFG_SM_LEVEL_LOW)
->                         goto skip_write_pending;
-> @@ -152,6 +152,7 @@ static void aplic_write_pending(struct aplic *aplic, u32 irq, bool pending)
->                         goto skip_write_pending;
->         }
->
-> +noskip_write_pending:
->         if (pending)
->                 irqd->state |= APLIC_IRQ_STATE_PENDING;
->         else
-> --
-> 2.17.1
->
+[*] https://lore.kernel.org/all/ZyT61FF0-g8gKZfc at google.com
 
