@@ -1,44 +1,71 @@
-From: Björn Töpel <bjorn@kernel.org>
-Date: Mon,  4 Nov 2024 20:21:19 +0100
-Subject: [PATCH kvmtool] riscv: Pass correct size to snprintf()
-Message-ID: <20241104192120.75841-1-bjorn@kernel.org>
+From: Anup Patel <anup@brainfault.org>
+Date: Tue, 5 Nov 2024 10:41:41 +0530
+Subject: [PATCH v2 1/1] RISC-V: KVM: Fix APLIC in_clrip and clripnum write emulation
+In-Reply-To: <20241029085542.30541-1-yongxuan.wang@sifive.com>
+References: <20241029085542.30541-1-yongxuan.wang@sifive.com>
+Message-ID: <CAAhSdy022PTmMZ90OxRxSOiR9nKept+tKVj8XrqbekkM209eYQ@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-From: Bj?rn T?pel <bjorn@rivosinc.com>
+On Tue, Oct 29, 2024 at 2:25?PM Yong-Xuan Wang <yongxuan.wang@sifive.com> wrote:
+>
+> In the section "4.7 Precise effects on interrupt-pending bits"
+> of the RISC-V AIA specification defines that:
+>
+> "If the source mode is Level1 or Level0 and the interrupt domain
+> is configured in MSI delivery mode (domaincfg.DM = 1):
+> The pending bit is cleared whenever the rectified input value is
+> low, when the interrupt is forwarded by MSI, or by a relevant
+> write to an in_clrip register or to clripnum."
+>
+> Update the aplic_write_pending() to match the spec.
+>
+> Fixes: d8dd9f113e16 ("RISC-V: KVM: Fix APLIC setipnum_le/be write emulation")
+> Signed-off-by: Yong-Xuan Wang <yongxuan.wang@sifive.com>
+> Reviewed-by: Vincent Chen <vincent.chen@sifive.com>
 
-The snprintf() function does not get the correct size argument passed,
-when the FDT ISA string is built. Instead of adjusting the size for
-each extension, the full size is passed for every iteration. Doing so
-will make __snprinf_chk() bail out on glibc.
+Looks good to me.
 
-Adjust size for each iteration.
+Reviewed-by: Anup Patel <anup@brainfault.org>
 
-Fixes: 8aff29e1dafe ("riscv: Append ISA extensions to the device tree")
-Signed-off-by: Bj?rn T?pel <bjorn@rivosinc.com>
----
- riscv/fdt.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Queued this patch for Linux-6.13.
 
-diff --git a/riscv/fdt.c b/riscv/fdt.c
-index 8189601f46de..85c8f95604f6 100644
---- a/riscv/fdt.c
-+++ b/riscv/fdt.c
-@@ -157,7 +157,7 @@ static void generate_cpu_nodes(void *fdt, struct kvm *kvm)
- 					   isa_info_arr[i].name);
- 				break;
- 			}
--			pos += snprintf(cpu_isa + pos, CPU_ISA_MAX_LEN, "_%s",
-+			pos += snprintf(cpu_isa + pos, CPU_ISA_MAX_LEN - pos, "_%s",
- 					isa_info_arr[i].name);
- 		}
- 		cpu_isa[pos] = '\0';
+Thanks,
+Anup
 
-base-commit: 3040b298156e4e2a82b27ac8db5bd63a72b3785b
--- 
-2.43.0
-
+> ---
+> v2;
+> - add fixes tag (Anup)
+> - follow the suggestion from Anup
+> ---
+>  arch/riscv/kvm/aia_aplic.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+>
+> diff --git a/arch/riscv/kvm/aia_aplic.c b/arch/riscv/kvm/aia_aplic.c
+> index da6ff1bade0d..f59d1c0c8c43 100644
+> --- a/arch/riscv/kvm/aia_aplic.c
+> +++ b/arch/riscv/kvm/aia_aplic.c
+> @@ -143,7 +143,7 @@ static void aplic_write_pending(struct aplic *aplic, u32 irq, bool pending)
+>         if (sm == APLIC_SOURCECFG_SM_LEVEL_HIGH ||
+>             sm == APLIC_SOURCECFG_SM_LEVEL_LOW) {
+>                 if (!pending)
+> -                       goto skip_write_pending;
+> +                       goto noskip_write_pending;
+>                 if ((irqd->state & APLIC_IRQ_STATE_INPUT) &&
+>                     sm == APLIC_SOURCECFG_SM_LEVEL_LOW)
+>                         goto skip_write_pending;
+> @@ -152,6 +152,7 @@ static void aplic_write_pending(struct aplic *aplic, u32 irq, bool pending)
+>                         goto skip_write_pending;
+>         }
+>
+> +noskip_write_pending:
+>         if (pending)
+>                 irqd->state |= APLIC_IRQ_STATE_PENDING;
+>         else
+> --
+> 2.17.1
+>
 
