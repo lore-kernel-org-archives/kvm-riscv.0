@@ -1,68 +1,82 @@
-From: Sean Christopherson <seanjc@google.com>
-Date: Mon, 4 Nov 2024 21:53:48 -0800
-Subject: [PATCH v3 00/14] KVM: selftests: Morph max_guest_mem to mmu_stress
-In-Reply-To: <173039503553.1508387.3074658713815866060.b4-ty@google.com>
-References: <20241009154953.1073471-1-seanjc@google.com> <173039503553.1508387.3074658713815866060.b4-ty@google.com>
-Message-ID: <Zymy7M5dHs6dWUmu@google.com>
+From: Anup Patel <anup@brainfault.org>
+Date: Tue, 5 Nov 2024 11:58:51 +0530
+Subject: [PATCH] riscv: kvm: Fix out-of-bounds array access
+In-Reply-To: <20241104191503.74725-1-bjorn@kernel.org>
+References: <20241104191503.74725-1-bjorn@kernel.org>
+Message-ID: <CAAhSdy1Z93TyYrFCYw+qOHh05q0FaEPRJ=ZHf4UztUEKXuphYg@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Oct 31, 2024, Sean Christopherson wrote:
-> On Wed, 09 Oct 2024 08:49:39 -0700, Sean Christopherson wrote:
-> > The main purpose of this series is to convert the max_guest_memory_test
-> > into a more generic mmu_stress_test.  The basic gist of the "conversion"
-> > is to have the test do mprotect() on guest memory while vCPUs are
-> > accessing said memory, e.g. to verify KVM and mmu_notifiers are working
-> > as intended.
-> > 
-> > Patches 1-4 are a somewhat unexpected side quest.  The original plan was
-> > that patch 3 would be a single patch, but things snowballed.
-> > 
-> > [...]
-> 
-> Applied to kvm-x86 selftests, with the typo fixup pointed out by James.  Thanks!
-> 
-> [01/14] KVM: Move KVM_REG_SIZE() definition to common uAPI header
->         https://github.com/kvm-x86/linux/commit/5e07fd0bf516
-> [02/14] KVM: selftests: Disable strict aliasing
->         https://github.com/kvm-x86/linux/commit/d1ce2bcd8d2e
-> [03/14] KVM: selftests: Return a value from vcpu_get_reg() instead of using an out-param
->         https://github.com/kvm-x86/linux/commit/5c6c7b71a45c
-> [04/14] KVM: selftests: Assert that vcpu_{g,s}et_reg() won't truncate
->         https://github.com/kvm-x86/linux/commit/6aa2df3eb90b
-> [05/14] KVM: selftests: Check for a potential unhandled exception iff KVM_RUN succeeded
->         https://github.com/kvm-x86/linux/commit/be9f2746d20b
-> [06/14] KVM: selftests: Rename max_guest_memory_test to mmu_stress_test
->         https://github.com/kvm-x86/linux/commit/06694f27cfcc
-> [07/14] KVM: selftests: Only muck with SREGS on x86 in mmu_stress_test
->         https://github.com/kvm-x86/linux/commit/8556ce365a07
-> [08/14] KVM: selftests: Compute number of extra pages needed in mmu_stress_test
->         https://github.com/kvm-x86/linux/commit/c7b7876ac5d4
-> [09/14] KVM: sefltests: Explicitly include ucall_common.h in mmu_stress_test.c
->         https://github.com/kvm-x86/linux/commit/a657856469e1
-> [10/14] KVM: selftests: Enable mmu_stress_test on arm64
->         https://github.com/kvm-x86/linux/commit/1e53cde06102
-> [11/14] KVM: selftests: Use vcpu_arch_put_guest() in mmu_stress_test
->         https://github.com/kvm-x86/linux/commit/8630563012b9
-> [12/14] KVM: selftests: Precisely limit the number of guest loops in mmu_stress_test
->         https://github.com/kvm-x86/linux/commit/3d4585c220dc
-> [13/14] KVM: selftests: Add a read-only mprotect() phase to mmu_stress_test
->         https://github.com/kvm-x86/linux/commit/eaafeebca75a
-> [14/14] KVM: selftests: Verify KVM correctly handles mprotect(PROT_READ)
->         https://github.com/kvm-x86/linux/commit/a3cd5c187742
+On Tue, Nov 5, 2024 at 12:45?AM Bj?rn T?pel <bjorn@kernel.org> wrote:
+>
+> From: Bj?rn T?pel <bjorn@rivosinc.com>
+>
+> In kvm_riscv_vcpu_sbi_init() the entry->ext_idx can contain an
+> out-of-bound index. This is used as a special marker for the base
+> extensions, that cannot be disabled. However, when traversing the
+> extensions, that special marker is not checked prior indexing the
+> array.
+>
+> Add an out-of-bounds check to the function.
+>
+> Fixes: 56d8a385b605 ("RISC-V: KVM: Allow some SBI extensions to be disabled by default")
+> Signed-off-by: Bj?rn T?pel <bjorn@rivosinc.com>
+> ---
+> Don't know if it matters, but I hit this when trying kvmtool.
 
-As mentioned later in the thread[*], I dropped this series from the 6.13 queue
-and will instead target 6.14.
+Looks like this went unnoticed. Thanks for catching.
 
-I did however grab the no-strict-aliasing fix for 6.12, and tagged it for stable.
-There's no reason to wait to land that commit, and I definitely have no desire to
-ever debug that mess again.
+Reviewed-by: Anup Patel <anup@brainfault.org>
 
-[02/14] KVM: selftests: Disable strict aliasing
-      https://github.com/kvm-x86/linux/commit/5b188cc4866a
+Queued this patch for Linux-6.13.
 
-[*] https://lore.kernel.org/all/ZyT61FF0-g8gKZfc at google.com
+Thanks,
+Anup
+
+>
+>
+> Bj?rn
+> ---
+> arch/riscv/kvm/vcpu_sbi.c | 11 +++++++----
+>  1 file changed, 7 insertions(+), 4 deletions(-)
+>
+> diff --git a/arch/riscv/kvm/vcpu_sbi.c b/arch/riscv/kvm/vcpu_sbi.c
+> index 7de128be8db9..6e704ed86a83 100644
+> --- a/arch/riscv/kvm/vcpu_sbi.c
+> +++ b/arch/riscv/kvm/vcpu_sbi.c
+> @@ -486,19 +486,22 @@ void kvm_riscv_vcpu_sbi_init(struct kvm_vcpu *vcpu)
+>         struct kvm_vcpu_sbi_context *scontext = &vcpu->arch.sbi_context;
+>         const struct kvm_riscv_sbi_extension_entry *entry;
+>         const struct kvm_vcpu_sbi_extension *ext;
+> -       int i;
+> +       int idx, i;
+>
+>         for (i = 0; i < ARRAY_SIZE(sbi_ext); i++) {
+>                 entry = &sbi_ext[i];
+>                 ext = entry->ext_ptr;
+> +               idx = entry->ext_idx;
+> +
+> +               if (idx < 0 || idx >= ARRAY_SIZE(scontext->ext_status))
+> +                       continue;
+>
+>                 if (ext->probe && !ext->probe(vcpu)) {
+> -                       scontext->ext_status[entry->ext_idx] =
+> -                               KVM_RISCV_SBI_EXT_STATUS_UNAVAILABLE;
+> +                       scontext->ext_status[idx] = KVM_RISCV_SBI_EXT_STATUS_UNAVAILABLE;
+>                         continue;
+>                 }
+>
+> -               scontext->ext_status[entry->ext_idx] = ext->default_disabled ?
+> +               scontext->ext_status[idx] = ext->default_disabled ?
+>                                         KVM_RISCV_SBI_EXT_STATUS_DISABLED :
+>                                         KVM_RISCV_SBI_EXT_STATUS_ENABLED;
+>         }
+>
+> base-commit: 59b723cd2adbac2a34fc8e12c74ae26ae45bf230
+> --
+> 2.43.0
+>
 
