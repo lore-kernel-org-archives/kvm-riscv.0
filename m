@@ -1,75 +1,25 @@
 From: Andrew Jones <andrew.jones@linux.dev>
-Date: Wed, 6 Nov 2024 09:15:35 +0100
-Subject: [kvm-unit-tests PATCH v2 2/3] lib/on-cpus: Add barrier after
- func call
-In-Reply-To: <20241031123948.320652-7-andrew.jones@linux.dev>
-References: <20241031123948.320652-5-andrew.jones@linux.dev>
- <20241031123948.320652-7-andrew.jones@linux.dev>
-Message-ID: <20241106-9611aa66dfd52197b3b00e96@orel>
+Date: Wed, 6 Nov 2024 09:34:40 +0100
+Subject: [kvm-unit-tests PATCH 2/2] riscv: sbi: Improve spec version test
+In-Reply-To: <20240911113338.156844-6-andrew.jones@linux.dev>
+References: <20240911113338.156844-4-andrew.jones@linux.dev>
+ <20240911113338.156844-6-andrew.jones@linux.dev>
+Message-ID: <20241106-279caf8ceef5bb9e4005d1d5@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Oct 31, 2024 at 01:39:51PM +0100, Andrew Jones wrote:
-> It's reasonable for users of on_cpu() and on_cpumask() to assume
-> they can read data that 'func' has written when the call completes.
-> Ensure the caller doesn't observe a completion (target cpus are again
-> idle) without also being able to observe any writes which were made
-> by func(). Do so by adding barriers to implement the following
-> 
->  target-cpu                                   calling-cpu
->  ----------                                   -----------
->  func() /* store something */                 /* wait for target to be idle */
->  smp_wmb();                                   smp_rmb();
->  set_cpu_idle(smp_processor_id(), true);      /* load what func() stored */
-> 
-> Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
+On Wed, Sep 11, 2024 at 01:33:41PM +0200, Andrew Jones wrote:
+> SBI spec version states that bit 31 must be zero and doesn't say
+> anything about bits greater than 31 (for rv64). Check that bit
+> 31 is zero and assume all other bits are UNKNOWN, so mask them
+> off before testing.
 
-I added a
+The spec has changed for the 3.0 release to also require bits 32 and up to
+be zero for rv64. I'll send another version of this patch.
 
-Suggested-by: Alexandru Elisei <alexandru.elisei@arm.com>
-
-to this patch.
-
-> ---
->  lib/on-cpus.c | 3 +++
->  1 file changed, 3 insertions(+)
-> 
-> diff --git a/lib/on-cpus.c b/lib/on-cpus.c
-> index f6072117fa1b..356f284be61b 100644
-> --- a/lib/on-cpus.c
-> +++ b/lib/on-cpus.c
-> @@ -79,6 +79,7 @@ void do_idle(void)
->  			smp_wait_for_event();
->  		smp_rmb();
->  		on_cpu_info[cpu].func(on_cpu_info[cpu].data);
-> +		smp_wmb(); /* pairs with the smp_rmb() in on_cpu() and on_cpumask() */
->  	}
->  }
->  
-> @@ -145,12 +146,14 @@ void on_cpumask(const cpumask_t *mask, void (*func)(void *data), void *data)
->  		smp_wait_for_event();
->  	for_each_cpu(cpu, mask)
->  		cpumask_clear_cpu(me, &on_cpu_info[cpu].waiters);
-> +	smp_rmb(); /* pairs with the smp_wmb() in do_idle() */
->  }
->  
->  void on_cpu(int cpu, void (*func)(void *data), void *data)
->  {
->  	on_cpu_async(cpu, func, data);
->  	cpu_wait(cpu);
-> +	smp_rmb(); /* pairs with the smp_wmb() in do_idle() */
->  }
->  
->  void on_cpus(void (*func)(void *data), void *data)
-> -- 
-> 2.47.0
-> 
-> 
-> -- 
-> kvm-riscv mailing list
-> kvm-riscv at lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/kvm-riscv
+Thanks,
+drew
 
