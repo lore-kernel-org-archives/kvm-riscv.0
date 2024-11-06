@@ -1,70 +1,111 @@
 From: Andrew Jones <andrew.jones@linux.dev>
-Date: Wed,  6 Nov 2024 09:39:27 +0100
-Subject: [kvm-unit-tests PATCH v2] riscv: sbi: Improve spec version test
-Message-ID: <20241106083926.14595-2-andrew.jones@linux.dev>
+Date: Wed, 6 Nov 2024 09:44:40 +0100
+Subject: [kvm-unit-tests PATCH v5 0/5] riscv: sbi: Add support to test
+ HSM extension
+In-Reply-To: <20241023-13ecdc4f251cd2d070c9ee5e@orel>
+References: <20240921100824.151761-1-jamestiotio@gmail.com>
+ <20241023-13ecdc4f251cd2d070c9ee5e@orel>
+Message-ID: <20241106-6fa6bde06f75e3911f83c349@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-SBI spec version states that bit 31 must be zero and, when xlen
-is greater than 32, that bit 32 and higher must be zero. Check
-these bits are zero in the expected value to ensure we test
-appropriately.
+On Wed, Oct 23, 2024 at 04:23:10PM +0200, Andrew Jones wrote:
+> On Sat, Sep 21, 2024 at 06:08:18PM +0800, James Raphael Tiovalen wrote:
+> > This patch series adds support for testing all 4 functions of the HSM
+> > extension as defined in the RISC-V SBI specification. The first 4
+> > patches add some helper routines to prepare for the HSM test, while
+> > the last patch adds the actual test for the HSM extension.
+> 
+> Hi James,
+> 
+> Patch1 is now merged and I've applied patch2 to riscv/sbi[1]. I've also
 
-Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
----
- lib/riscv/sbi.c |  2 +-
- riscv/sbi.c     | 13 +++++++++----
- 2 files changed, 10 insertions(+), 5 deletions(-)
+I've had some second thoughts on patch2, as pointed out in the review of
+v6. I need some bits of that patch, though, for other tests. I'll post a
+patch with just those bits, retaining your authorship.
 
-diff --git a/lib/riscv/sbi.c b/lib/riscv/sbi.c
-index 8972e765fea2..f25bde169490 100644
---- a/lib/riscv/sbi.c
-+++ b/lib/riscv/sbi.c
-@@ -107,7 +107,7 @@ long sbi_probe(int ext)
- 	struct sbiret ret;
- 
- 	ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_GET_SPEC_VERSION, 0, 0, 0, 0, 0, 0);
--	assert(!ret.error && ret.value >= 2);
-+	assert(!ret.error && (ret.value & 0x7ffffffful) >= 2);
- 
- 	ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_PROBE_EXT, ext, 0, 0, 0, 0, 0);
- 	assert(!ret.error);
-diff --git a/riscv/sbi.c b/riscv/sbi.c
-index 52434e0ca86f..c081953c877c 100644
---- a/riscv/sbi.c
-+++ b/riscv/sbi.c
-@@ -105,18 +105,23 @@ static void check_base(void)
- 	report_prefix_push("base");
- 
- 	ret = sbi_base(SBI_EXT_BASE_GET_SPEC_VERSION, 0);
--	if (ret.error || ret.value < 2) {
--		report_skip("SBI spec version 0.2 or higher required");
--		return;
--	}
- 
- 	report_prefix_push("spec_version");
- 	if (env_or_skip("SBI_SPEC_VERSION")) {
- 		expected = (long)strtoul(getenv("SBI_SPEC_VERSION"), NULL, 0);
-+		assert_msg(!(expected & BIT(31)), "SBI spec version bit 31 must be zero");
-+		assert_msg(__riscv_xlen == 32 || !(expected >> 32), "SBI spec version bits greater than 31 must be zero");
- 		gen_report(&ret, 0, expected);
- 	}
- 	report_prefix_pop();
- 
-+	ret.value &= 0x7ffffffful;
-+
-+	if (ret.error || ret.value < 2) {
-+		report_skip("SBI spec version 0.2 or higher required");
-+		return;
-+	}
-+
- 	report_prefix_push("impl_id");
- 	if (env_or_skip("SBI_IMPL_ID")) {
- 		expected = (long)strtoul(getenv("SBI_IMPL_ID"), NULL, 0);
--- 
-2.47.0
+Thanks,
+drew
 
+> applied [2] and [3] to riscv/sbi so patches 3 and 4 of this series
+> should no longer be necessary. Can you please rebase patch5 on
+> riscv/sbi and repost?
+> 
+> [1] https://gitlab.com/jones-drew/kvm-unit-tests/-/commits/riscv/sbi
+> [2] https://lore.kernel.org/all/20241023131718.117452-4-andrew.jones at linux.dev/
+> [3] https://lore.kernel.org/all/20241023132130.118073-6-andrew.jones at linux.dev/
+> 
+> Thanks,
+> drew
+> 
+> > 
+> > v5:
+> > - Addressed all of Andrew's comments.
+> > - Added 2 new patches to clear on_cpu_info[cpu].func and to set the
+> >   cpu_started mask, which are used to perform cleanup after running the
+> >   HSM tests.
+> > - Added some new tests to validate suspension on RV64 with the high
+> >   bits set for suspend_type.
+> > - Picked up the hartid_to_cpu rewrite patch from Andrew's branch.
+> > - Moved the variables declared in riscv/sbi.c in patch 2 to group it
+> >   together with the other HSM test variables declared in patch 5.
+> > 
+> > v4:
+> > - Addressed all of Andrew's comments.
+> > - Included the 2 patches from Andrew's branch that refactored some
+> >   functions.
+> > - Added timers to all of the waiting activities in the HSM tests.
+> > 
+> > v3:
+> > - Addressed all of Andrew's comments.
+> > - Split the report_prefix_pop patch into its own series.
+> > - Added a new environment variable to specify the maximum number of
+> >   CPUs supported by the SBI implementation.
+> > 
+> > v2:
+> > - Addressed all of Andrew's comments.
+> > - Added a new patch to add helper routines to clear multiple prefixes.
+> > - Reworked the approach to test the HSM extension by using cpumask and
+> >   on-cpus.
+> > 
+> > Andrew Jones (1):
+> >   riscv: Rewrite hartid_to_cpu in assembly
+> > 
+> > James Raphael Tiovalen (4):
+> >   riscv: sbi: Provide entry point for HSM tests
+> >   lib/on-cpus: Add helper method to clear the function from on_cpu_info
+> >   riscv: Add helper method to set cpu started mask
+> >   riscv: sbi: Add tests for HSM extension
+> > 
+> >  riscv/Makefile          |   3 +-
+> >  lib/riscv/asm/smp.h     |   2 +
+> >  lib/on-cpus.h           |   1 +
+> >  lib/on-cpus.c           |  11 +
+> >  lib/riscv/asm-offsets.c |   5 +
+> >  lib/riscv/setup.c       |  10 -
+> >  lib/riscv/smp.c         |   8 +
+> >  riscv/sbi-tests.h       |  10 +
+> >  riscv/cstart.S          |  24 ++
+> >  riscv/sbi-asm.S         |  71 +++++
+> >  riscv/sbi.c             | 651 ++++++++++++++++++++++++++++++++++++++++
+> >  11 files changed, 785 insertions(+), 11 deletions(-)
+> >  create mode 100644 riscv/sbi-tests.h
+> >  create mode 100644 riscv/sbi-asm.S
+> > 
+> > --
+> > 2.43.0
+> > 
+> > 
+> > -- 
+> > kvm-riscv mailing list
+> > kvm-riscv at lists.infradead.org
+> > http://lists.infradead.org/mailman/listinfo/kvm-riscv
+> 
+> -- 
+> kvm-riscv mailing list
+> kvm-riscv at lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/kvm-riscv
 
