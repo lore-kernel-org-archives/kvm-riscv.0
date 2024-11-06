@@ -1,96 +1,108 @@
 From: Andrew Jones <andrew.jones@linux.dev>
-Date: Wed, 6 Nov 2024 13:22:31 +0100
-Subject: [kvm-unit-tests PATCH v2 3/3] riscv: sbi: Add two in hart_mask
- IPI test
-In-Reply-To: <20241106113814.42992-8-andrew.jones@linux.dev>
-References: <20241106113814.42992-5-andrew.jones@linux.dev>
- <20241106113814.42992-8-andrew.jones@linux.dev>
-Message-ID: <20241106-7a94a002553733a6983389a0@orel>
+Date: Wed, 6 Nov 2024 13:23:19 +0100
+Subject: [kvm-unit-tests PATCH 2/3] riscv: sbi: Clean up env checking
+In-Reply-To: <20241024124101.73405-7-andrew.jones@linux.dev>
+References: <20241024124101.73405-5-andrew.jones@linux.dev>
+ <20241024124101.73405-7-andrew.jones@linux.dev>
+Message-ID: <20241106-91c3a0bb34b7a6611fa7fd27@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Nov 06, 2024 at 12:38:18PM +0100, Andrew Jones wrote:
-> We should ensure that when hart_mask has more than one hartid
-> that both harts get IPIs with a single call of the IPI function.
+On Thu, Oct 24, 2024 at 02:41:04PM +0200, Andrew Jones wrote:
+> Add a couple helpers to cleanup checking of test configuration
+> environment variables.
 > 
 > Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
 > ---
->  riscv/sbi.c | 39 ++++++++++++++++++++++++++++++++++++++-
->  1 file changed, 38 insertions(+), 1 deletion(-)
+>  riscv/sbi.c | 32 +++++++++++++++++++-------------
+>  1 file changed, 19 insertions(+), 13 deletions(-)
 > 
 > diff --git a/riscv/sbi.c b/riscv/sbi.c
-> index cdf8d13cc9cf..8ccdf42f902a 100644
+> index d46befa1c6c1..1e7314ec8d98 100644
 > --- a/riscv/sbi.c
 > +++ b/riscv/sbi.c
-> @@ -364,10 +364,11 @@ static void check_ipi(void)
->  	int nr_cpus_present = cpumask_weight(&cpu_present_mask);
->  	int me = smp_processor_id();
->  	unsigned long max_hartid = 0;
-> +	unsigned long hartid1, hartid2;
->  	cpumask_t ipi_receivers;
->  	static prng_state ps;
+> @@ -74,6 +74,20 @@ static phys_addr_t get_highest_addr(void)
+>  	return highest_end - 1;
+>  }
+>  
+> +static bool env_enabled(const char *env)
+> +{
+> +	char *s = getenv(env);
+> +
+> +	return s && (*s == '1' || *s == 'y' || *s == 'Y');
+> +}
+> +
+> +static bool env_disabled(const char *env)
+> +{
+> +	char *s = getenv(env);
+> +
+> +	return !(s && (*s == '0' || *s == 'n' || *s == 'N'));
+> +}
+
+I've dropped env_disabled() since what I really want is !env_enabled()
+
+> +
+>  static bool env_or_skip(const char *env)
+>  {
+>  	if (!getenv(env)) {
+> @@ -348,7 +362,6 @@ static void check_dbcn(void)
+>  	bool highmem_supported = true;
+>  	phys_addr_t paddr;
 >  	struct sbiret ret;
-> -	int cpu;
-> +	int cpu, cpu2;
+> -	const char *tmp;
+>  	char *buf;
 >  
->  	ps = prng_init(0xDEADBEEF);
->  
-> @@ -398,6 +399,42 @@ static void check_ipi(void)
->  	ipi_hart_check(&ipi_receivers);
+>  	report_prefix_push("dbcn");
+> @@ -371,13 +384,11 @@ static void check_dbcn(void)
+>  	dbcn_write_test(&buf[PAGE_SIZE - num_bytes / 2], num_bytes, false);
 >  	report_prefix_pop();
 >  
-> +	report_prefix_push("two in hart_mask");
-> +
-> +	if (nr_cpus_present < 3) {
-> +		report_skip("3 cpus required");
-> +		goto end_two;
-> +	}
-> +
-> +	cpu = rand_online_cpu(&ps);
-> +	hartid1 = cpus[cpu].hartid;
-> +	hartid2 = 0;
-> +	for_each_present_cpu(cpu2) {
-> +		if (cpu2 == cpu || cpu2 == me)
-> +			continue;
-> +		hartid2 = cpus[cpu2].hartid;
-> +		if (__builtin_labs(hartid2 - hartid1) < BITS_PER_LONG)
-
-clang is complaining about these __builtin_labs calls not taking signed
-input. I'll add this wrapper
-
- static long __labs(long a)
- {
-    return __builtin_labs@;
- }
-
-> +			break;
-> +	}
-> +	if (cpu2 == nr_cpus) {
-> +		report_skip("hartids are too sparse");
-> +		goto end_two;
-> +	}
-> +
-> +	cpumask_clear(&ipi_done);
-> +	cpumask_clear(&ipi_receivers);
-> +	cpumask_set_cpu(cpu, &ipi_receivers);
-> +	cpumask_set_cpu(cpu2, &ipi_receivers);
-> +	on_cpu_async(cpu, ipi_hart_wait, (void *)d);
-> +	on_cpu_async(cpu2, ipi_hart_wait, (void *)d);
-> +	ret = sbi_send_ipi((1UL << __builtin_labs(hartid2 - hartid1)) | 1UL, hartid1 < hartid2 ? hartid1 : hartid2);
-> +	report(ret.error == SBI_SUCCESS, "ipi returned success");
-> +	while (!cpumask_equal(&ipi_done, &ipi_receivers))
-> +		cpu_relax();
-> +	ipi_hart_check(&ipi_receivers);
-> +end_two:
-> +	report_prefix_pop();
-> +
->  	report_prefix_push("broadcast");
->  	cpumask_clear(&ipi_done);
->  	cpumask_copy(&ipi_receivers, &cpu_present_mask);
+> -	tmp = getenv("SBI_HIGHMEM_NOT_SUPPORTED");
+> -	if (tmp && atol(tmp) != 0)
+> +	if (env_enabled("SBI_HIGHMEM_NOT_SUPPORTED"))
+>  		highmem_supported = false;
+>  
+>  	report_prefix_push("high boundary");
+> -	tmp = getenv("SBI_DBCN_SKIP_HIGH_BOUNDARY");
+> -	if (!tmp || atol(tmp) == 0)
+> +	if (env_disabled("SBI_DBCN_SKIP_HIGH_BOUNDARY"))
+>  		dbcn_high_write_test(DBCN_WRITE_TEST_STRING, num_bytes,
+>  				     HIGH_ADDR_BOUNDARY - PAGE_SIZE, PAGE_SIZE - num_bytes / 2,
+>  				     highmem_supported);
+> @@ -386,12 +397,8 @@ static void check_dbcn(void)
+>  	report_prefix_pop();
+>  
+>  	report_prefix_push("high page");
+> -	tmp = getenv("SBI_DBCN_SKIP_HIGH_PAGE");
+> -	if (!tmp || atol(tmp) == 0) {
+> -		paddr = HIGH_ADDR_BOUNDARY;
+> -		tmp = getenv("HIGH_PAGE");
+> -		if (tmp)
+> -			paddr = strtoull(tmp, NULL, 0);
+> +	if (env_disabled("SBI_DBCN_SKIP_HIGH_PAGE")) {
+> +		paddr = getenv("HIGH_PAGE") ? strtoull(getenv("HIGH_PAGE"), NULL, 0) : HIGH_ADDR_BOUNDARY;
+>  		dbcn_high_write_test(DBCN_WRITE_TEST_STRING, num_bytes, paddr, 0, highmem_supported);
+>  	} else {
+>  		report_skip("user disabled");
+> @@ -400,8 +407,7 @@ static void check_dbcn(void)
+>  
+>  	/* Bytes are read from memory and written to the console */
+>  	report_prefix_push("invalid parameter");
+> -	tmp = getenv("INVALID_ADDR_AUTO");
+> -	if (tmp && atol(tmp) == 1) {
+> +	if (env_enabled("INVALID_ADDR_AUTO")) {
+>  		paddr = get_highest_addr() + 1;
+>  		do_invalid_addr = true;
+>  	} else if (env_or_skip("INVALID_ADDR")) {
 > -- 
 > 2.47.0
 > 
+> 
+> -- 
+> kvm-riscv mailing list
+> kvm-riscv at lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/kvm-riscv
 
