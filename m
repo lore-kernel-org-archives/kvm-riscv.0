@@ -1,97 +1,234 @@
-From: Eric Auger <eric.auger@redhat.com>
-Date: Thu, 7 Nov 2024 18:55:59 +0100
-Subject: [kvm-unit-tests PATCH v2 3/3] lib/on-cpus: Fix on_cpumask
-In-Reply-To: <20241031123948.320652-8-andrew.jones@linux.dev>
-References: <20241031123948.320652-5-andrew.jones@linux.dev>
- <20241031123948.320652-8-andrew.jones@linux.dev>
-Message-ID: <69196410-be02-4957-a871-a599dafe32d6@redhat.com>
+From: Andrew Jones <ajones@ventanamicro.com>
+Date: Fri, 8 Nov 2024 12:05:32 +0100
+Subject: [RFC PATCH 0/1] KVM selftests runner for running more than just
+ default
+In-Reply-To: <ZyuiH_CVQqJUoSB-@google.com>
+References: <20240821223012.3757828-1-vipinsh@google.com>
+ <CAHVum0eSxCTAme8=oV9a=cVaJ9Jzu3-W-3vgbubVZ2qAWVjfJA@mail.gmail.com>
+ <CAHVum0fWJW7V5ijtPcXQAtPSdoQSKjzYwMJ-XCRH2_sKs=Kg7g@mail.gmail.com>
+ <ZyuiH_CVQqJUoSB-@google.com>
+Message-ID: <20241108-eaacad12f1eef31481cf0c6c@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Drew,
+On Wed, Nov 06, 2024 at 09:06:39AM -0800, Sean Christopherson wrote:
+> On Fri, Nov 01, 2024, Vipin Sharma wrote:
+> > Had an offline discussion with Sean, providing a summary on what we
+> > discussed (Sean, correct me if something is not aligned from our
+> > discussion):
+> > 
+> > We need to have a roadmap for the runner in terms of features we support.
+> > 
+> > Phase 1: Having a basic selftest runner is useful which can:
+> > 
+> > - Run tests parallely
+> 
+> Maybe with a (very conversative) per test timeout?  Selftests generally don't have
+> the same problems as KVM-Unit-Tests (KUT), as selftests are a little better at
+> guarding against waiting indefinitely, i.e. I don't think we need a configurable
+> timeout.  But a 120 second timeout or so would be helpful.
+> 
+> E.g. I recently was testing a patch (of mine) that had a "minor" bug where it
+> caused KVM to do a remote TLB flush on *every* SPTE update in the shadow MMU,
+> which manifested as hilariously long runtimes for max_guest_memory_test.  I was
+> _this_ close to not catching the bug (which would have been quite embarrasing),
+> because my hack-a-scripts don't use timeouts (I only noticed because a completely
+> unrelated bug was causing failures).
+> 
+> > - Provide a summary of what passed and failed, or only in case of failure.
+> 
+> I think a summary is always warranted.  And for failures, it would be helpful to
+> spit out _what_ test failed, versus the annoying KUT runner's behavior of stating
+> only the number of passes/failures, which forces the user to go spelunking just
+> to find out what (sub)test failed.
+> 
+> I also think the runner should have a "heartbeat" mechanism, i.e. something that
+> communicates to the user that forward progress is being made.  And IMO, that
+> mechanism should also spit out skips and failures (this could be optional though).
+> One of the flaws with the KUT runner is that it's either super noisy and super
+> quiet.
+> 
+> E.g. my mess of bash outputs this when running selftests in parallel (trimmed for
+> brevity):
+> 
+>         Running selftests with npt_disabled
+>         Waiting for 'access_tracking_perf_test', PID '92317'
+>         Waiting for 'amx_test', PID '92318'
+>         SKIPPED amx_test
+>         Waiting for 'apic_bus_clock_test', PID '92319'
+>         Waiting for 'coalesced_io_test', PID '92321'
+>         Waiting for 'cpuid_test', PID '92324'
+>         
+>         ...
+>         
+>         Waiting for 'hyperv_svm_test', PID '92552'
+>         SKIPPED hyperv_svm_test
+>         Waiting for 'hyperv_tlb_flush', PID '92563'
+>         FAILED hyperv_tlb_flush : ret ='254'
+>         Random seed: 0x6b8b4567
+>         ==== Test Assertion Failure ====
+>           x86_64/hyperv_tlb_flush.c:117: val == expected
+>           pid=92731 tid=93548 errno=4 - Interrupted system call
+>              1	0x0000000000411566: assert_on_unhandled_exception at processor.c:627
+>              2	0x000000000040889a: _vcpu_run at kvm_util.c:1649
+>              3	 (inlined by) vcpu_run at kvm_util.c:1660
+>              4	0x00000000004041a1: vcpu_thread at hyperv_tlb_flush.c:548
+>              5	0x000000000043a305: start_thread at pthread_create.o:?
+>              6	0x000000000045f857: __clone3 at ??:?
+>           val == expected
+>         Waiting for 'kvm_binary_stats_test', PID '92579'
+>         
+>         ...
+>         
+>         SKIPPED vmx_preemption_timer_test
+>         Waiting for 'vmx_set_nested_state_test', PID '93316'
+>         SKIPPED vmx_set_nested_state_test
+>         Waiting for 'vmx_tsc_adjust_test', PID '93329'
+>         SKIPPED vmx_tsc_adjust_test
+>         Waiting for 'xapic_ipi_test', PID '93350'
+>         Waiting for 'xapic_state_test', PID '93360'
+>         Waiting for 'xcr0_cpuid_test', PID '93374'
+>         Waiting for 'xen_shinfo_test', PID '93391'
+>         Waiting for 'xen_vmcall_test', PID '93405'
+>         Waiting for 'xss_msr_test', PID '93420'
+> 
+> It's far from perfect, e.g. just waits in alphabetical order, but it gives me
+> easy to read feedback, and signal that tests are indeed running and completing.
+>         
+> > - Dump output which can be easily accessed and parsed.
+> 
+> And persist the output/logs somewhere, e.g. so that the user can triage failures
+> after the fact.
+> 
+> > - Allow to run with different command line parameters.
+> 
+> Command line parameters for tests?  If so, I would put this in phase 3.  I.e. make
+> the goal of Phase 1 purely about running tests in parallel.
+> 
+> > Current patch does more than this and can be simplified.
+> > 
+> > Phase 2: Environment setup via runner
+> > 
+> > Current patch, allows to write "setup" commands at test suite and test
+> > level in the json config file to setup the environment needed by a
+> > test to run. This might not be ideal as some settings are exposed
+> > differently on different platforms.
+> > 
+> > For example,
+> > To enable TDP:
+> > - Intel needs npt=Y
+> > - AMD needs ept=Y
+> > - ARM always on.
+> > 
+> > To enable APIC virtualization
+> > - Intel needs enable_apicv=Y
+> > - AMD needs avic=Y
+> > 
+> > To enable/disable nested, they both have the same file name "nested"
+> > in their module params directory which should be changed.
+> > 
+> > These kinds of settings become more verbose and unnecessary on other
+> > platforms. Instead, runners should have some programming constructs
+> > (API, command line options, default) to enable these options in a
+> > generic way. For example, enable/disable nested can be exposed as a
+> > command line --enable_nested, then based on the platform, runner can
+> > update corresponding module param or ignore.
+> > 
+> > This will easily extend to providing sane configuration on the
+> > corresponding platforms without lots of hardcoding in JSON. These
+> > individual constructs will provide a generic view/option to run a KVM
+> > feature, and under the hood will do things differently based on the
+> > platform it is running on like arm, x86-intel, x86-amd, s390, etc.
+> 
+> My main input on this front is that the runner needs to configure module params
+> (and other environment settings) _on behalf of the user_, i.e. in response to a
+> command line option (to the runner), not in response to per-test configurations.
+> 
+> One of my complaints with our internal infrastructure is that the testcases
+> themselves can dictate environment settings.  There are certainly benefits to
+> that approach, but it really only makes sense at scale where there are many
+> machines available, i.e. where the runner can achieve parallelism by running
+> tests on multiple machines, and where the complexity of managing the environment
+> on a per-test basis is worth the payout.
+> 
+> For the upstream runner, I want to cater to developers, i.e. to people that are
+> running tests on one or two machines.  And I want the runner to rip through tests
+> as fast as possible, i.e. I don't want tests to get serialized because each one
+> insists on being a special snowflake and doesn't play nice with other children.
+> Organizations that the have a fleet of systems can pony up the resources to develop
+> their own support (on top?).
+> 
+> Selftests can and do check for module params, and should and do use TEST_REQUIRE()
+> to skip when a module param isn't set as needed.  Extending that to arbitrary
+> sysfs knobs should be trivial.  I.e. if we get _failures_ because of an incompatible
+> environment, then it's a test bug.
+> 
+> > Phase 3: Provide collection of interesting configurations
+> > 
+> > Specific individual constructs can be combined in a meaningful way to
+> > provide interesting configurations to run on a platform. For example,
+> > user doesn't need to specify each individual configuration instead,
+> > some prebuilt configurations can be exposed like
+> > --stress_test_shadow_mmu, --test_basic_nested
+> 
+> IMO, this shouldn't be baked into the runner, i.e. should not surface as dedicated
+> command line options.  Users shouldn't need to modify the runner just to bring
+> their own configuration.  I also think configurations should be discoverable,
+> e.g. not hardcoded like KUT's unittest.cfg.  A very real problem with KUT's
+> approach is that testing different combinations is frustratingly difficult,
+> because running a testcase with different configuration requires modifying a file
+> that is tracked by git.
 
-On 10/31/24 13:39, Andrew Jones wrote:
-> on_cpumask should wait until the cpus in the mask, not including
-> the calling cpu, are idle. Checking the weight against nr_cpus
-> minus 1 only works when the mask is the same as the present mask.
->
-> Fixes: d012cfd5d309 ("lib/on-cpus: Introduce on_cpumask and on_cpumask_async")
-> Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
+We have support in KUT for environment variables (which are stored in an
+initrd). The feature hasn't been used too much, but x86 applies it to
+configuration parameters needed to execute tests from grub, arm uses it
+for an errata framework allowing tests to run on kernels which may not
+include fixes to host-crashing bugs, and riscv is using them quite a bit
+for providing test parameters and test expected results in order to allow
+SBI tests to be run on a variety of SBI implementations. The environment
+variables are provided in a text file which is not tracked by git. kvm
+selftests can obviously also use environment variables by simply sourcing
+them first in wrapper scripts for the tests.
 
-looks good to me as well
+> 
+> There are underlying issues with KUT that essentially necessitate that approach,
+> e.g. x86 has several testcases that fail if run without the exact right config.
+> But that's just another reason to NOT follow KUT's pattern, e.g. to force us to
+> write robust tests.
+> 
+> E.g. instead of per-config command line options, let the user specify a file,
+> and/or a directory (using a well known filename pattern to detect configs).
 
-Reviewed-by: Eric Auger <eric.auger@redhat.com>
+Could also use an environment variable to specify a file which contains
+a config in a test-specific format if parsing environment variables is
+insufficient or awkward for configuring a test.
 
-Eric
-> ---
->  lib/cpumask.h | 14 ++++++++++++++
->  lib/on-cpus.c | 17 ++++++++---------
->  2 files changed, 22 insertions(+), 9 deletions(-)
->
-> diff --git a/lib/cpumask.h b/lib/cpumask.h
-> index e1e92aacd1f1..37d360786573 100644
-> --- a/lib/cpumask.h
-> +++ b/lib/cpumask.h
-> @@ -58,6 +58,20 @@ static inline void cpumask_clear(cpumask_t *mask)
->  	memset(mask, 0, sizeof(*mask));
->  }
->  
-> +/* true if src1 is a subset of src2 */
-> +static inline bool cpumask_subset(const struct cpumask *src1, const struct cpumask *src2)
-> +{
-> +	unsigned long lastmask = BIT_MASK(nr_cpus) - 1;
-> +	int i;
-> +
-> +	for (i = 0; i < BIT_WORD(nr_cpus); ++i) {
-> +		if (cpumask_bits(src1)[i] & ~cpumask_bits(src2)[i])
-> +			return false;
-> +	}
-> +
-> +	return !lastmask || !((cpumask_bits(src1)[i] & ~cpumask_bits(src2)[i]) & lastmask);
-> +}
-> +
->  static inline bool cpumask_empty(const cpumask_t *mask)
->  {
->  	unsigned long lastmask = BIT_MASK(nr_cpus) - 1;
-> diff --git a/lib/on-cpus.c b/lib/on-cpus.c
-> index 356f284be61b..889b6bc8a186 100644
-> --- a/lib/on-cpus.c
-> +++ b/lib/on-cpus.c
-> @@ -127,24 +127,23 @@ void on_cpumask_async(const cpumask_t *mask, void (*func)(void *data), void *dat
->  void on_cpumask(const cpumask_t *mask, void (*func)(void *data), void *data)
->  {
->  	int cpu, me = smp_processor_id();
-> +	cpumask_t tmp;
->  
-> -	for_each_cpu(cpu, mask) {
-> -		if (cpu == me)
-> -			continue;
-> +	cpumask_copy(&tmp, mask);
-> +	cpumask_clear_cpu(me, &tmp);
-> +
-> +	for_each_cpu(cpu, &tmp)
->  		on_cpu_async(cpu, func, data);
-> -	}
->  	if (cpumask_test_cpu(me, mask))
->  		func(data);
->  
-> -	for_each_cpu(cpu, mask) {
-> -		if (cpu == me)
-> -			continue;
-> +	for_each_cpu(cpu, &tmp) {
->  		cpumask_set_cpu(me, &on_cpu_info[cpu].waiters);
->  		deadlock_check(me, cpu);
->  	}
-> -	while (cpumask_weight(&cpu_idle_mask) < nr_cpus - 1)
-> +	while (!cpumask_subset(&tmp, &cpu_idle_mask))
->  		smp_wait_for_event();
-> -	for_each_cpu(cpu, mask)
-> +	for_each_cpu(cpu, &tmp)
->  		cpumask_clear_cpu(me, &on_cpu_info[cpu].waiters);
->  	smp_rmb(); /* pairs with the smp_wmb() in do_idle() */
->  }
+Thanks,
+drew
 
+> 
+> > Tests need to handle the environment in which they are running
+> > gracefully, which many tests already do but not exhaustively. If some
+> > setting is not provided or set up properly for their execution then
+> > they should fail/skip accordingly.
+> 
+> This belongs in phase 2.
+> 
+> > Runner will not be responsible to precheck things on tests behalf.
+> > 
+> > 
+> > Next steps:
+> > 1. Consensus on above phases and features.
+> > 2. Start development.
+> > 
+> > Thanks,
+> > Vipin
+> 
+> -- 
+> kvm-riscv mailing list
+> kvm-riscv at lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/kvm-riscv
 
