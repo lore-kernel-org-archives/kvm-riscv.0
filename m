@@ -1,68 +1,123 @@
 From: James Raphael Tiovalen <jamestiotio@gmail.com>
-Date: Mon, 11 Nov 2024 01:16:31 +0800
-Subject: [kvm-unit-tests PATCH v7 0/2] riscv: sbi: Add support to test HSM extension
-Message-ID: <20241110171633.113515-1-jamestiotio@gmail.com>
+Date: Mon, 11 Nov 2024 01:16:32 +0800
+Subject: [kvm-unit-tests PATCH v7 1/2] riscv: sbi: Fix entry point of HSM tests
+In-Reply-To: <20241110171633.113515-1-jamestiotio@gmail.com>
+References: <20241110171633.113515-1-jamestiotio@gmail.com>
+Message-ID: <20241110171633.113515-2-jamestiotio@gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This patch series adds support for testing all 4 functions of the HSM
-extension as defined in the RISC-V SBI specification. The first patch
-in version 7 of this series fixes the entry point of the HSM tests,
-while the second patch adds the actual test for the HSM extension.
+With the current trick of setting opaque as hartid, the HSM tests would
+not be able to catch a bug where a0 is set to opaque and a1 is set to
+hartid. Fix this issue by setting a1 to an array with some magic number
+as the first element and hartid as the second element, following the
+behavior of the SUSP tests.
 
-Based-on: https://gitlab.com/jones-drew/kvm-unit-tests/-/commits/riscv/sbi
+Signed-off-by: James Raphael Tiovalen <jamestiotio@gmail.com>
+---
+ riscv/sbi-tests.h | 13 ++++++++++---
+ riscv/sbi-asm.S   | 33 +++++++++++++++++++--------------
+ riscv/sbi.c       |  1 +
+ 3 files changed, 30 insertions(+), 17 deletions(-)
 
-v7:
-- Addressed all of Andrew's comments.
-- Fixed the entry point of the HSM tests to follow the SUSP tests.
-
-v6:
-- Rebased on top of the latest commit of the riscv/sbi branch.
-- Removed unnecessary cleanup code in the HSM tests after improvements
-  to the on-cpus API were made by Andrew.
-
-v5:
-- Addressed all of Andrew's comments.
-- Added 2 new patches to clear on_cpu_info[cpu].func and to set the
-  cpu_started mask, which are used to perform cleanup after running the
-  HSM tests.
-- Added some new tests to validate suspension on RV64 with the high
-  bits set for suspend_type.
-- Picked up the hartid_to_cpu rewrite patch from Andrew's branch.
-- Moved the variables declared in riscv/sbi.c in patch 2 to group it
-  together with the other HSM test variables declared in patch 5.
-
-v4:
-- Addressed all of Andrew's comments.
-- Included the 2 patches from Andrew's branch that refactored some
-  functions.
-- Added timers to all of the waiting activities in the HSM tests.
-
-v3:
-- Addressed all of Andrew's comments.
-- Split the report_prefix_pop patch into its own series.
-- Added a new environment variable to specify the maximum number of
-  CPUs supported by the SBI implementation.
-
-v2:
-- Addressed all of Andrew's comments.
-- Added a new patch to add helper routines to clear multiple prefixes.
-- Reworked the approach to test the HSM extension by using cpumask and
-  on-cpus.
-
-James Raphael Tiovalen (2):
-  riscv: sbi: Fix entry point of HSM tests
-  riscv: sbi: Add tests for HSM extension
-
- riscv/sbi-tests.h |  13 +-
- riscv/sbi-asm.S   |  33 +--
- riscv/sbi.c       | 613 ++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 642 insertions(+), 17 deletions(-)
-
---
+diff --git a/riscv/sbi-tests.h b/riscv/sbi-tests.h
+index d0a7561a..162f0d53 100644
+--- a/riscv/sbi-tests.h
++++ b/riscv/sbi-tests.h
+@@ -9,9 +9,16 @@
+ #define SBI_CSR_SATP_IDX	4
+ 
+ #define SBI_HSM_TEST_DONE	(1 << 0)
+-#define SBI_HSM_TEST_HARTID_A1	(1 << 1)
+-#define SBI_HSM_TEST_SATP	(1 << 2)
+-#define SBI_HSM_TEST_SIE	(1 << 3)
++#define SBI_HSM_TEST_MAGIC_A1	(1 << 1)
++#define SBI_HSM_TEST_HARTID_A1	(1 << 2)
++#define SBI_HSM_TEST_SATP	(1 << 3)
++#define SBI_HSM_TEST_SIE	(1 << 4)
++
++#define SBI_HSM_MAGIC		0x453
++
++#define SBI_HSM_MAGIC_IDX	0
++#define SBI_HSM_HARTID_IDX	1
++#define SBI_HSM_NUM_OF_PARAMS	2
+ 
+ #define SBI_SUSP_TEST_SATP	(1 << 0)
+ #define SBI_SUSP_TEST_SIE	(1 << 1)
+diff --git a/riscv/sbi-asm.S b/riscv/sbi-asm.S
+index e871ea50..9ac77c5c 100644
+--- a/riscv/sbi-asm.S
++++ b/riscv/sbi-asm.S
+@@ -30,34 +30,39 @@
+ .balign 4
+ sbi_hsm_check:
+ 	li	HSM_RESULTS_MAP, 0
+-	bne	a0, a1, 1f
++	REG_L	t0, ASMARR(a1, SBI_HSM_MAGIC_IDX)
++	li	t1, SBI_HSM_MAGIC
++	bne	t0, t1, 1f
++	ori	HSM_RESULTS_MAP, HSM_RESULTS_MAP, SBI_HSM_TEST_MAGIC_A1
++1:	REG_L	t0, ASMARR(a1, SBI_HSM_HARTID_IDX)
++	bne	a0, t0, 2f
+ 	ori	HSM_RESULTS_MAP, HSM_RESULTS_MAP, SBI_HSM_TEST_HARTID_A1
+-1:	csrr	t0, CSR_SATP
+-	bnez	t0, 2f
++2:	csrr	t0, CSR_SATP
++	bnez	t0, 3f
+ 	ori	HSM_RESULTS_MAP, HSM_RESULTS_MAP, SBI_HSM_TEST_SATP
+-2:	csrr	t0, CSR_SSTATUS
++3:	csrr	t0, CSR_SSTATUS
+ 	andi	t0, t0, SR_SIE
+-	bnez	t0, 3f
++	bnez	t0, 4f
+ 	ori	HSM_RESULTS_MAP, HSM_RESULTS_MAP, SBI_HSM_TEST_SIE
+-3:	call	hartid_to_cpu
++4:	call	hartid_to_cpu
+ 	mv	HSM_CPU_INDEX, a0
+ 	li	t0, -1
+-	bne	HSM_CPU_INDEX, t0, 5f
+-4:	pause
+-	j	4b
+-5:	ori	HSM_RESULTS_MAP, HSM_RESULTS_MAP, SBI_HSM_TEST_DONE
++	bne	HSM_CPU_INDEX, t0, 6f
++5:	pause
++	j	5b
++6:	ori	HSM_RESULTS_MAP, HSM_RESULTS_MAP, SBI_HSM_TEST_DONE
+ 	add	t0, HSM_RESULTS_ARRAY, HSM_CPU_INDEX
+ 	sb	HSM_RESULTS_MAP, 0(t0)
+ 	la	t1, sbi_hsm_stop_hart
+ 	add	t1, t1, HSM_CPU_INDEX
+-6:	lb	t0, 0(t1)
++7:	lb	t0, 0(t1)
+ 	pause
+-	beqz	t0, 6b
++	beqz	t0, 7b
+ 	li	a7, 0x48534d	/* SBI_EXT_HSM */
+ 	li	a6, 1		/* SBI_EXT_HSM_HART_STOP */
+ 	ecall
+-7:	pause
+-	j	7b
++8:	pause
++	j	8b
+ 
+ .balign 4
+ .global sbi_hsm_check_hart_start
+diff --git a/riscv/sbi.c b/riscv/sbi.c
+index 6f2d3e35..300e5cc9 100644
+--- a/riscv/sbi.c
++++ b/riscv/sbi.c
+@@ -483,6 +483,7 @@ static void check_ipi(void)
+ unsigned char sbi_hsm_stop_hart[NR_CPUS];
+ unsigned char sbi_hsm_hart_start_checks[NR_CPUS];
+ unsigned char sbi_hsm_non_retentive_hart_suspend_checks[NR_CPUS];
++unsigned long sbi_hsm_hart_start_params[NR_CPUS * SBI_HSM_NUM_OF_PARAMS];
+ 
+ #define DBCN_WRITE_TEST_STRING		"DBCN_WRITE_TEST_STRING\n"
+ #define DBCN_WRITE_BYTE_TEST_BYTE	((u8)'a')
+-- 
 2.43.0
 
 
