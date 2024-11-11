@@ -1,72 +1,84 @@
 From: Andrew Jones <andrew.jones@linux.dev>
-Date: Mon, 11 Nov 2024 16:06:08 +0100
-Subject: [kvm-unit-tests PATCH v2] riscv: sbi: Improve spec version test
-In-Reply-To: <20241106083926.14595-2-andrew.jones@linux.dev>
-References: <20241106083926.14595-2-andrew.jones@linux.dev>
-Message-ID: <20241111-19b1aafdbe04f0674b6d36ce@orel>
+Date: Mon, 11 Nov 2024 16:06:26 +0100
+Subject: [kvm-unit-tests PATCH] riscv: sbi: Prepare for assembly entry
+ points
+In-Reply-To: <20241106094015.21204-2-andrew.jones@linux.dev>
+References: <20241106094015.21204-2-andrew.jones@linux.dev>
+Message-ID: <20241111-fb7b1486cc4c49ceebd93964@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Nov 06, 2024 at 09:39:27AM +0100, Andrew Jones wrote:
-> SBI spec version states that bit 31 must be zero and, when xlen
-> is greater than 32, that bit 32 and higher must be zero. Check
-> these bits are zero in the expected value to ensure we test
-> appropriately.
+On Wed, Nov 06, 2024 at 10:40:16AM +0100, Andrew Jones wrote:
+> From: James Raphael Tiovalen <jamestiotio@gmail.com>
 > 
+> The HSM tests will need to test HSM start and resumption from HSM
+> suspend. Prepare for these tests, as well other tests, such as the
+> SUSP resume tests, by providing an assembly file for SBI tests.
+> 
+> Signed-off-by: James Raphael Tiovalen <jamestiotio@gmail.com>
 > Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
 > ---
->  lib/riscv/sbi.c |  2 +-
->  riscv/sbi.c     | 13 +++++++++----
->  2 files changed, 10 insertions(+), 5 deletions(-)
+>  riscv/Makefile    |  3 ++-
+>  riscv/sbi-asm.S   | 12 ++++++++++++
+>  riscv/sbi-tests.h |  6 ++++++
+>  3 files changed, 20 insertions(+), 1 deletion(-)
+>  create mode 100644 riscv/sbi-asm.S
+>  create mode 100644 riscv/sbi-tests.h
 > 
-> diff --git a/lib/riscv/sbi.c b/lib/riscv/sbi.c
-> index 8972e765fea2..f25bde169490 100644
-> --- a/lib/riscv/sbi.c
-> +++ b/lib/riscv/sbi.c
-> @@ -107,7 +107,7 @@ long sbi_probe(int ext)
->  	struct sbiret ret;
+> diff --git a/riscv/Makefile b/riscv/Makefile
+> index 22fd273acac3..734441f94dad 100644
+> --- a/riscv/Makefile
+> +++ b/riscv/Makefile
+> @@ -43,6 +43,7 @@ cflatobjs += lib/riscv/timer.o
+>  ifeq ($(ARCH),riscv32)
+>  cflatobjs += lib/ldiv32.o
+>  endif
+> +cflatobjs += riscv/sbi-asm.o
 >  
->  	ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_GET_SPEC_VERSION, 0, 0, 0, 0, 0, 0);
-> -	assert(!ret.error && ret.value >= 2);
-> +	assert(!ret.error && (ret.value & 0x7ffffffful) >= 2);
+>  ########################################
 >  
->  	ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_PROBE_EXT, ext, 0, 0, 0, 0, 0);
->  	assert(!ret.error);
-> diff --git a/riscv/sbi.c b/riscv/sbi.c
-> index 52434e0ca86f..c081953c877c 100644
-> --- a/riscv/sbi.c
-> +++ b/riscv/sbi.c
-> @@ -105,18 +105,23 @@ static void check_base(void)
->  	report_prefix_push("base");
+> @@ -82,7 +83,7 @@ CFLAGS += -mcmodel=medany
+>  CFLAGS += -std=gnu99
+>  CFLAGS += -ffreestanding
+>  CFLAGS += -O2
+> -CFLAGS += -I $(SRCDIR)/lib -I $(SRCDIR)/lib/libfdt -I lib
+> +CFLAGS += -I $(SRCDIR)/lib -I $(SRCDIR)/lib/libfdt -I lib -I $(SRCDIR)/riscv
 >  
->  	ret = sbi_base(SBI_EXT_BASE_GET_SPEC_VERSION, 0);
-> -	if (ret.error || ret.value < 2) {
-> -		report_skip("SBI spec version 0.2 or higher required");
-> -		return;
-> -	}
->  
->  	report_prefix_push("spec_version");
->  	if (env_or_skip("SBI_SPEC_VERSION")) {
->  		expected = (long)strtoul(getenv("SBI_SPEC_VERSION"), NULL, 0);
-> +		assert_msg(!(expected & BIT(31)), "SBI spec version bit 31 must be zero");
-> +		assert_msg(__riscv_xlen == 32 || !(expected >> 32), "SBI spec version bits greater than 31 must be zero");
->  		gen_report(&ret, 0, expected);
->  	}
->  	report_prefix_pop();
->  
-> +	ret.value &= 0x7ffffffful;
+>  asm-offsets = lib/riscv/asm-offsets.h
+>  include $(SRCDIR)/scripts/asm-offsets.mak
+> diff --git a/riscv/sbi-asm.S b/riscv/sbi-asm.S
+> new file mode 100644
+> index 000000000000..fbf97cab39c8
+> --- /dev/null
+> +++ b/riscv/sbi-asm.S
+> @@ -0,0 +1,12 @@
+> +/* SPDX-License-Identifier: GPL-2.0 */
+> +/*
+> + * Helper assembly code routines for RISC-V SBI extension tests.
+> + *
+> + * Copyright (C) 2024, James Raphael Tiovalen <jamestiotio@gmail.com>
+> + */
+> +#define __ASSEMBLY__
 > +
-> +	if (ret.error || ret.value < 2) {
-> +		report_skip("SBI spec version 0.2 or higher required");
-> +		return;
-> +	}
+> +#include "sbi-tests.h"
 > +
->  	report_prefix_push("impl_id");
->  	if (env_or_skip("SBI_IMPL_ID")) {
->  		expected = (long)strtoul(getenv("SBI_IMPL_ID"), NULL, 0);
+> +.section .text
+> +
+> diff --git a/riscv/sbi-tests.h b/riscv/sbi-tests.h
+> new file mode 100644
+> index 000000000000..c28046f7cfbd
+> --- /dev/null
+> +++ b/riscv/sbi-tests.h
+> @@ -0,0 +1,6 @@
+> +/* SPDX-License-Identifier: GPL-2.0-only */
+> +#ifndef _RISCV_SBI_TESTS_H_
+> +#define _RISCV_SBI_TESTS_H_
+> +
+> +
+> +#endif /* _RISCV_SBI_TESTS_H_ */
 > -- 
 > 2.47.0
 >
