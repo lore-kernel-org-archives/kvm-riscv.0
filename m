@@ -1,49 +1,77 @@
 From: Andrew Jones <andrew.jones@linux.dev>
-Date: Mon, 11 Nov 2024 15:37:09 +0100
-Subject: [kvm-unit-tests PATCH 0/4] riscv: A few SMP fixes
-In-Reply-To: <20241023132130.118073-6-andrew.jones@linux.dev>
-References: <20241023132130.118073-6-andrew.jones@linux.dev>
-Message-ID: <20241111-11e36ccba55a58ab6328c12f@orel>
+Date: Mon, 11 Nov 2024 16:06:08 +0100
+Subject: [kvm-unit-tests PATCH v2] riscv: sbi: Improve spec version test
+In-Reply-To: <20241106083926.14595-2-andrew.jones@linux.dev>
+References: <20241106083926.14595-2-andrew.jones@linux.dev>
+Message-ID: <20241111-19b1aafdbe04f0674b6d36ce@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Oct 23, 2024 at 03:21:31PM +0200, Andrew Jones wrote:
-> tl;dr - these patches are improvement to the riscv framework to better
-> support the SBI HSM tests.
+On Wed, Nov 06, 2024 at 09:39:27AM +0100, Andrew Jones wrote:
+> SBI spec version states that bit 31 must be zero and, when xlen
+> is greater than 32, that bit 32 and higher must be zero. Check
+> these bits are zero in the expected value to ensure we test
+> appropriately.
 > 
-> The first patch is a simpler alternative to [1] and [2] which doesn't
-> require us to decide how best to make the number configurable. The
-> second patch just adds sanity checking to make sure we can expect the
-> SBI implementation to accept all hartids mapped from the present mask.
-> The third patch was already posted once before[3] with a slightly
-> different summary. It and the last patch improve smp_boot_secondary()
-> since the SBI HSM tests were attempting to make workarounds for odd
-> behaviors.
+> Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
+> ---
+>  lib/riscv/sbi.c |  2 +-
+>  riscv/sbi.c     | 13 +++++++++----
+>  2 files changed, 10 insertions(+), 5 deletions(-)
 > 
-> [1] https://lore.kernel.org/all/20240820170150.377580-2-andrew.jones at linux.dev/
-> [2] https://lore.kernel.org/all/20240903143946.834864-6-andrew.jones at linux.dev/
-> [3] https://lore.kernel.org/all/20240904120812.1798715-2-andrew.jones at linux.dev/
-> 
-> Andrew Jones (4):
->   riscv: Bump NR_CPUS to 256
->   riscv: Filter unmanaged harts from present mask
->   riscv: Fix secondary_entry
->   riscv: Rework smp_boot_secondary
-> 
->  lib/riscv/asm/processor.h |  1 +
->  lib/riscv/asm/setup.h     |  2 +-
->  lib/riscv/setup.c         | 11 ++++++---
->  lib/riscv/smp.c           | 49 +++++++++++++++++++++++++++------------
->  riscv/cstart.S            |  7 +++---
->  5 files changed, 48 insertions(+), 22 deletions(-)
-> 
+> diff --git a/lib/riscv/sbi.c b/lib/riscv/sbi.c
+> index 8972e765fea2..f25bde169490 100644
+> --- a/lib/riscv/sbi.c
+> +++ b/lib/riscv/sbi.c
+> @@ -107,7 +107,7 @@ long sbi_probe(int ext)
+>  	struct sbiret ret;
+>  
+>  	ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_GET_SPEC_VERSION, 0, 0, 0, 0, 0, 0);
+> -	assert(!ret.error && ret.value >= 2);
+> +	assert(!ret.error && (ret.value & 0x7ffffffful) >= 2);
+>  
+>  	ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_PROBE_EXT, ext, 0, 0, 0, 0, 0);
+>  	assert(!ret.error);
+> diff --git a/riscv/sbi.c b/riscv/sbi.c
+> index 52434e0ca86f..c081953c877c 100644
+> --- a/riscv/sbi.c
+> +++ b/riscv/sbi.c
+> @@ -105,18 +105,23 @@ static void check_base(void)
+>  	report_prefix_push("base");
+>  
+>  	ret = sbi_base(SBI_EXT_BASE_GET_SPEC_VERSION, 0);
+> -	if (ret.error || ret.value < 2) {
+> -		report_skip("SBI spec version 0.2 or higher required");
+> -		return;
+> -	}
+>  
+>  	report_prefix_push("spec_version");
+>  	if (env_or_skip("SBI_SPEC_VERSION")) {
+>  		expected = (long)strtoul(getenv("SBI_SPEC_VERSION"), NULL, 0);
+> +		assert_msg(!(expected & BIT(31)), "SBI spec version bit 31 must be zero");
+> +		assert_msg(__riscv_xlen == 32 || !(expected >> 32), "SBI spec version bits greater than 31 must be zero");
+>  		gen_report(&ret, 0, expected);
+>  	}
+>  	report_prefix_pop();
+>  
+> +	ret.value &= 0x7ffffffful;
+> +
+> +	if (ret.error || ret.value < 2) {
+> +		report_skip("SBI spec version 0.2 or higher required");
+> +		return;
+> +	}
+> +
+>  	report_prefix_push("impl_id");
+>  	if (env_or_skip("SBI_IMPL_ID")) {
+>  		expected = (long)strtoul(getenv("SBI_IMPL_ID"), NULL, 0);
 > -- 
 > 2.47.0
+>
 
-Merged to master through riscv/queue.
+Merged through riscv/sbi.
 
 Thanks,
 drew
