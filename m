@@ -1,11 +1,11 @@
 From: Andrew Jones <andrew.jones@linux.dev>
-Date: Mon, 11 Nov 2024 10:17:56 +0100
+Date: Mon, 11 Nov 2024 13:17:20 +0100
 Subject: [kvm-unit-tests PATCH v7 1/2] riscv: sbi: Fix entry point of HSM
  tests
 In-Reply-To: <20241110171633.113515-2-jamestiotio@gmail.com>
 References: <20241110171633.113515-1-jamestiotio@gmail.com>
  <20241110171633.113515-2-jamestiotio@gmail.com>
-Message-ID: <20241111-a92e91173a670b48b3620222@orel>
+Message-ID: <20241111-96decb7aba5f6ec9ececc531@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -25,13 +25,6 @@ On Mon, Nov 11, 2024 at 01:16:32AM +0800, James Raphael Tiovalen wrote:
 >  riscv/sbi-asm.S   | 33 +++++++++++++++++++--------------
 >  riscv/sbi.c       |  1 +
 >  3 files changed, 30 insertions(+), 17 deletions(-)
-
-This doesn't apply to the latest riscv/sbi branch, but I'll try to sort it
-out.
-
-Thanks,
-drew
-
 > 
 > diff --git a/riscv/sbi-tests.h b/riscv/sbi-tests.h
 > index d0a7561a..162f0d53 100644
@@ -46,6 +39,9 @@ drew
 > -#define SBI_HSM_TEST_SIE	(1 << 3)
 > +#define SBI_HSM_TEST_MAGIC_A1	(1 << 1)
 > +#define SBI_HSM_TEST_HARTID_A1	(1 << 2)
+
+This should renamed to SBI_HSM_TEST_HARTID_A0
+
 > +#define SBI_HSM_TEST_SATP	(1 << 3)
 > +#define SBI_HSM_TEST_SIE	(1 << 4)
 > +
@@ -124,15 +120,16 @@ drew
 >  unsigned char sbi_hsm_hart_start_checks[NR_CPUS];
 >  unsigned char sbi_hsm_non_retentive_hart_suspend_checks[NR_CPUS];
 > +unsigned long sbi_hsm_hart_start_params[NR_CPUS * SBI_HSM_NUM_OF_PARAMS];
+
+This isn't shared with sbi-asm.S so it doesn't need to be global.
+
 >  
 >  #define DBCN_WRITE_TEST_STRING		"DBCN_WRITE_TEST_STRING\n"
 >  #define DBCN_WRITE_BYTE_TEST_BYTE	((u8)'a')
 > -- 
 > 2.43.0
-> 
-> 
-> -- 
-> kvm-riscv mailing list
-> kvm-riscv at lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/kvm-riscv
+>
+
+Thanks,
+drew
 
