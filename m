@@ -1,43 +1,56 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Thu, 14 Nov 2024 17:18:48 +0100
-Subject: [RFC PATCH 03/15] irqchip/riscv-imsic: Add support for DOMAIN_BUS_MSI_REMAP
+Date: Thu, 14 Nov 2024 17:18:49 +0100
+Subject: [RFC PATCH 04/15] iommu/riscv: report iommu capabilities
 In-Reply-To: <20241114161845.502027-17-ajones@ventanamicro.com>
 References: <20241114161845.502027-17-ajones@ventanamicro.com>
-Message-ID: <20241114161845.502027-20-ajones@ventanamicro.com>
+Message-ID: <20241114161845.502027-21-ajones@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Unlike a child of an MSI NEXUS domain, a child of an MSI_REMAP domain
-will not invoke init_dev_msi_info() with 'domain' equal to
-'msi_parent_domain'. This is because the MSI_REMAP domain implements
-init_dev_msi_info() with msi_parent_init_dev_msi_info(), which makes
-'domain' point to the NEXUS (IMSIC) domain, while keeping
-'msi_parent_domain' pointing to itself. The rest of the IMSIC
-init_dev_msi_info() implementation works for MSI_REMAP domains,
-though, so there's nothing to do to add support except accept the
-token.
+From: Tomasz Jeznach <tjeznach@rivosinc.com>
 
+Report RISC-V IOMMU capabilities required by VFIO subsystem
+to enable PCIe device assignment.
+
+Signed-off-by: Tomasz Jeznach <tjeznach@rivosinc.com>
 Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
 ---
- drivers/irqchip/irq-riscv-imsic-platform.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/iommu/riscv/iommu.c | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
-diff --git a/drivers/irqchip/irq-riscv-imsic-platform.c b/drivers/irqchip/irq-riscv-imsic-platform.c
-index 5d7c30ad8855..6a7d7fefda6a 100644
---- a/drivers/irqchip/irq-riscv-imsic-platform.c
-+++ b/drivers/irqchip/irq-riscv-imsic-platform.c
-@@ -246,6 +246,8 @@ static bool imsic_init_dev_msi_info(struct device *dev,
- 	case DOMAIN_BUS_NEXUS:
- 		if (WARN_ON_ONCE(domain != real_parent))
- 			return false;
-+		fallthrough;
-+	case DOMAIN_BUS_MSI_REMAP:
- #ifdef CONFIG_SMP
- 		info->chip->irq_set_affinity = irq_chip_set_affinity_parent;
- #endif
+diff --git a/drivers/iommu/riscv/iommu.c b/drivers/iommu/riscv/iommu.c
+index 8a05def774bd..3fe4ceba8dd3 100644
+--- a/drivers/iommu/riscv/iommu.c
++++ b/drivers/iommu/riscv/iommu.c
+@@ -1462,6 +1462,17 @@ static struct iommu_group *riscv_iommu_device_group(struct device *dev)
+ 	return generic_device_group(dev);
+ }
+ 
++static bool riscv_iommu_capable(struct device *dev, enum iommu_cap cap)
++{
++	switch (cap) {
++	case IOMMU_CAP_CACHE_COHERENCY:
++	case IOMMU_CAP_DEFERRED_FLUSH:
++		return true;
++	default:
++		return false;
++	}
++}
++
+ static int riscv_iommu_of_xlate(struct device *dev, const struct of_phandle_args *args)
+ {
+ 	return iommu_fwspec_add_ids(dev, args->args, 1);
+@@ -1526,6 +1537,7 @@ static void riscv_iommu_release_device(struct device *dev)
+ static const struct iommu_ops riscv_iommu_ops = {
+ 	.pgsize_bitmap = SZ_4K,
+ 	.of_xlate = riscv_iommu_of_xlate,
++	.capable = riscv_iommu_capable,
+ 	.identity_domain = &riscv_iommu_identity_domain,
+ 	.blocked_domain = &riscv_iommu_blocking_domain,
+ 	.release_domain = &riscv_iommu_blocking_domain,
 -- 
 2.47.0
 
