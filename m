@@ -1,60 +1,80 @@
-From: Alexandre Ghiti <alex@ghiti.fr>
-Date: Wed, 13 Nov 2024 17:15:20 +0100
-Subject: [PATCH RFC 1/3] dt-bindings: riscv: Add Svukte entry
-In-Reply-To: <20240920-dev-maxh-svukte-rebase-v1-1-7864a88a62bd@sifive.com>
-References: <20240920-dev-maxh-svukte-rebase-v1-0-7864a88a62bd@sifive.com>
- <20240920-dev-maxh-svukte-rebase-v1-1-7864a88a62bd@sifive.com>
-Message-ID: <eb8f399b-fa09-47fd-8102-9b65b0839dd5@ghiti.fr>
+From: Andrew Jones <ajones@ventanamicro.com>
+Date: Thu, 14 Nov 2024 17:18:45 +0100
+Subject: [RFC PATCH 00/15] iommu/riscv: Add irqbypass support
+Message-ID: <20241114161845.502027-17-ajones@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Max,
+Platforms with implementations of the RISC-V IOMMU and AIA support
+directly delivering MSIs of devices assigned to guests to the VCPUs.
+VFIO and KVM have a framework to enable such support, which is called
+irqbypass. This series enables irqbypass for devices assigned to KVM
+guests when all VCPUs are allocated guest interrupt files. The RISC-V
+IOMMU and AIA also support MRIFs (memory-resident interrupt files),
+but support for those will be posted as a follow-on to this series.
 
-On 20/09/2024 09:39, Max Hsu wrote:
-> Add an entry for the Svukte extension to the riscv,isa-extensions
-> property.
->
-> Reviewed-by: Samuel Holland <samuel.holland@sifive.com>
-> Signed-off-by: Max Hsu <max.hsu@sifive.com>
-> ---
->   Documentation/devicetree/bindings/riscv/extensions.yaml | 7 +++++++
->   1 file changed, 7 insertions(+)
->
-> diff --git a/Documentation/devicetree/bindings/riscv/extensions.yaml b/Documentation/devicetree/bindings/riscv/extensions.yaml
-> index a06dbc6b4928958704855c8993291b036e3d1a63..df96aea5e53a70b0cb8905332464a42a264e56e6 100644
-> --- a/Documentation/devicetree/bindings/riscv/extensions.yaml
-> +++ b/Documentation/devicetree/bindings/riscv/extensions.yaml
-> @@ -171,6 +171,13 @@ properties:
->               memory types as ratified in the 20191213 version of the privileged
->               ISA specification.
->   
-> +        - const: svukte
-> +          description:
-> +            The standard Svukte supervisor-level extensions for making user-mode
+The patches are organized as follows:
+  1-3:  Prepare to create an MSI remapping irqdomain parented by the IMSIC
+  4-6:  Prepare the IOMMU driver for VFIO domains which will use a single
+        stage of translation, but G-stage instead of the first stage
+  7-8:  Add support to the IOMMU driver for creating irqdomains
+  9-10: Prepare KVM to enable irqbypass
+ 11-13: Add irqbypass support to the IOMMU driver and KVM
+ 14-15: Enable VFIO by default
 
+This series is also available here [1] and may be tested with QEMU recent
+enough to have the IOMMU model.
 
-s/extensions/extension
+Based on linux-next commit 28955f4fa282 ("Add linux-next specific files for 20241112")
 
-
-> +            accesses to supervisor memory raise page faults in constant time,
-> +            mitigating attacks that attempt to discover the supervisor
-> +            software's address-space layout, as PR#1564 of riscv-isa-manual.
-> +
->           - const: zacas
->             description: |
->               The Zacas extension for Atomic Compare-and-Swap (CAS) instructions
->
-
-You'll need a new version for the proper commit sha1 once it gets 
-ratified anyway, so with the typo fixed, you can add:
-
-Reviewed-by: Alexandre Ghiti <alexghiti@rivosinc.com>
+[1] https://github.com/jones-drew/linux/commits/riscv/iommu-irqbypass-rfc-v1/
 
 Thanks,
+drew
 
-Alex
+
+Andrew Jones (10):
+  irqchip/riscv-imsic: Use hierarchy to reach irq_set_affinity
+  genirq/msi: Provide DOMAIN_BUS_MSI_REMAP
+  irqchip/riscv-imsic: Add support for DOMAIN_BUS_MSI_REMAP
+  iommu/riscv: Move definitions to iommu.h
+  iommu/riscv: Add IRQ domain for interrupt remapping
+  RISC-V: KVM: Add irqbypass skeleton
+  RISC-V: Define irqbypass vcpu_info
+  iommu/riscv: Add guest file irqbypass support
+  RISC-V: KVM: Add guest file irqbypass support
+  RISC-V: defconfig: Add VFIO modules
+
+Tomasz Jeznach (3):
+  iommu/riscv: report iommu capabilities
+  RISC-V: KVM: Enable KVM_VFIO interfaces on RISC-V arch
+  vfio: enable IOMMU_TYPE1 for RISC-V
+
+Zong Li (2):
+  iommu/riscv: use data structure instead of individual values
+  iommu/riscv: support GSCID and GVMA invalidation command
+
+ arch/riscv/configs/defconfig               |   2 +
+ arch/riscv/include/asm/irq.h               |   9 +
+ arch/riscv/include/asm/kvm_host.h          |   3 +
+ arch/riscv/kvm/Kconfig                     |   3 +
+ arch/riscv/kvm/aia_imsic.c                 | 136 +++++++-
+ arch/riscv/kvm/vm.c                        |  60 ++++
+ drivers/iommu/riscv/Makefile               |   2 +-
+ drivers/iommu/riscv/iommu-bits.h           |  11 +
+ drivers/iommu/riscv/iommu-ir.c             | 360 +++++++++++++++++++++
+ drivers/iommu/riscv/iommu.c                | 183 ++++++-----
+ drivers/iommu/riscv/iommu.h                |  78 +++++
+ drivers/irqchip/irq-riscv-imsic-platform.c |  18 +-
+ drivers/vfio/Kconfig                       |   2 +-
+ include/linux/irqdomain_defs.h             |   1 +
+ 14 files changed, 776 insertions(+), 92 deletions(-)
+ create mode 100644 drivers/iommu/riscv/iommu-ir.c
+
+-- 
+2.47.0
 
 
