@@ -1,257 +1,406 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Thu, 14 Nov 2024 17:18:52 +0100
-Subject: [RFC PATCH 07/15] iommu/riscv: Move definitions to iommu.h
+Date: Thu, 14 Nov 2024 17:18:53 +0100
+Subject: [RFC PATCH 08/15] iommu/riscv: Add IRQ domain for interrupt remapping
 In-Reply-To: <20241114161845.502027-17-ajones@ventanamicro.com>
 References: <20241114161845.502027-17-ajones@ventanamicro.com>
-Message-ID: <20241114161845.502027-24-ajones@ventanamicro.com>
+Message-ID: <20241114161845.502027-25-ajones@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-In order to add the interrupt remapping support in a separate file,
-share definitions through the header, as well as making some
-functions public.
+This is just a skeleton. Until irq_set_vcpu_affinity() is
+implemented the IRQ domain doesn't serve any purpose.
 
 Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
 ---
- drivers/iommu/riscv/iommu-bits.h |  4 ++
- drivers/iommu/riscv/iommu.c      | 71 ++++----------------------------
- drivers/iommu/riscv/iommu.h      | 54 ++++++++++++++++++++++++
- 3 files changed, 67 insertions(+), 62 deletions(-)
+ drivers/iommu/riscv/Makefile   |   2 +-
+ drivers/iommu/riscv/iommu-ir.c | 209 +++++++++++++++++++++++++++++++++
+ drivers/iommu/riscv/iommu.c    |  43 ++++++-
+ drivers/iommu/riscv/iommu.h    |  21 ++++
+ 4 files changed, 270 insertions(+), 5 deletions(-)
+ create mode 100644 drivers/iommu/riscv/iommu-ir.c
 
-diff --git a/drivers/iommu/riscv/iommu-bits.h b/drivers/iommu/riscv/iommu-bits.h
-index d72b982cf9bf..d3d98dbed709 100644
---- a/drivers/iommu/riscv/iommu-bits.h
-+++ b/drivers/iommu/riscv/iommu-bits.h
-@@ -36,6 +36,10 @@
- #define RISCV_IOMMU_ATP_PPN_FIELD	GENMASK_ULL(43, 0)
- #define RISCV_IOMMU_ATP_MODE_FIELD	GENMASK_ULL(63, 60)
- 
-+/* RISC-V IOMMU PPN <> PHYS address conversions, PHYS <=> PPN[53:10] */
-+#define riscv_iommu_phys_to_ppn(pa)	(((pa) >> 2) & (((1ULL << 44) - 1) << 10))
-+#define riscv_iommu_ppn_to_phys(pn)	(((pn) << 2) & (((1ULL << 44) - 1) << 12))
+diff --git a/drivers/iommu/riscv/Makefile b/drivers/iommu/riscv/Makefile
+index f54c9ed17d41..8420dd1776cb 100644
+--- a/drivers/iommu/riscv/Makefile
++++ b/drivers/iommu/riscv/Makefile
+@@ -1,3 +1,3 @@
+ # SPDX-License-Identifier: GPL-2.0-only
+-obj-$(CONFIG_RISCV_IOMMU) += iommu.o iommu-platform.o
++obj-$(CONFIG_RISCV_IOMMU) += iommu.o iommu-ir.o iommu-platform.o
+ obj-$(CONFIG_RISCV_IOMMU_PCI) += iommu-pci.o
+diff --git a/drivers/iommu/riscv/iommu-ir.c b/drivers/iommu/riscv/iommu-ir.c
+new file mode 100644
+index 000000000000..c177e064b205
+--- /dev/null
++++ b/drivers/iommu/riscv/iommu-ir.c
+@@ -0,0 +1,209 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * IOMMU Interrupt Remapping
++ *
++ * Copyright ? 2024 Ventana Micro Systems Inc.
++ */
++#include <linux/irqdomain.h>
++#include <linux/msi.h>
 +
- /* 5.3 IOMMU Capabilities (64bits) */
- #define RISCV_IOMMU_REG_CAPABILITIES		0x0000
- #define RISCV_IOMMU_CAPABILITIES_VERSION	GENMASK_ULL(7, 0)
++#include "../iommu-pages.h"
++#include "iommu.h"
++
++static size_t riscv_iommu_ir_get_msipte_idx(struct riscv_iommu_domain *domain,
++					    phys_addr_t msi_pa)
++{
++	phys_addr_t addr = msi_pa >> 12;
++	size_t idx;
++
++	if (domain->group_index_bits) {
++		phys_addr_t group_mask = BIT(domain->group_index_bits) - 1;
++		phys_addr_t group_shift = domain->group_index_shift - 12;
++		phys_addr_t group = (addr >> group_shift) & group_mask;
++		phys_addr_t mask = domain->msiptp.msi_addr_mask & ~(group_mask << group_shift);
++
++		idx = addr & mask;
++		idx |= group << fls64(mask);
++	} else {
++		idx = addr & domain->msiptp.msi_addr_mask;
++	}
++
++	return idx;
++}
++
++static struct riscv_iommu_msipte *riscv_iommu_ir_get_msipte(struct riscv_iommu_domain *domain,
++							    phys_addr_t msi_pa)
++{
++	size_t idx;
++
++	if (((msi_pa >> 12) & ~domain->msiptp.msi_addr_mask) != domain->msiptp.msi_addr_pattern)
++		return NULL;
++
++	idx = riscv_iommu_ir_get_msipte_idx(domain, msi_pa);
++	return &domain->msi_root[idx];
++}
++
++static size_t riscv_iommu_ir_nr_msiptes(struct riscv_iommu_domain *domain)
++{
++	phys_addr_t base = domain->msiptp.msi_addr_pattern << 12;
++	phys_addr_t max_addr = base | (domain->msiptp.msi_addr_mask << 12);
++	size_t max_idx = riscv_iommu_ir_get_msipte_idx(domain, max_addr);
++
++	return max_idx + 1;
++}
++
++static struct irq_chip riscv_iommu_irq_chip = {
++	.name			= "IOMMU-IR",
++	.irq_mask		= irq_chip_mask_parent,
++	.irq_unmask		= irq_chip_unmask_parent,
++};
++
++static int riscv_iommu_irq_domain_alloc_irqs(struct irq_domain *irqdomain,
++					     unsigned int irq_base, unsigned int nr_irqs,
++					     void *arg)
++{
++	struct irq_data *data;
++	int i, ret;
++
++	ret = irq_domain_alloc_irqs_parent(irqdomain, irq_base, nr_irqs, arg);
++	if (ret)
++		return ret;
++
++	for (i = 0; i < nr_irqs; i++) {
++		data = irq_domain_get_irq_data(irqdomain, irq_base + i);
++		data->chip = &riscv_iommu_irq_chip;
++	}
++
++	return 0;
++}
++
++static const struct irq_domain_ops riscv_iommu_irq_domain_ops = {
++	.alloc = riscv_iommu_irq_domain_alloc_irqs,
++	.free = irq_domain_free_irqs_parent,
++};
++
++static const struct msi_parent_ops riscv_iommu_msi_parent_ops = {
++	.prefix			= "IR-",
++	.supported_flags	= MSI_GENERIC_FLAGS_MASK |
++				  MSI_FLAG_PCI_MSIX,
++	.required_flags		= MSI_FLAG_USE_DEF_DOM_OPS |
++				  MSI_FLAG_USE_DEF_CHIP_OPS,
++	.init_dev_msi_info	= msi_parent_init_dev_msi_info,
++};
++
++int riscv_iommu_irq_domain_create(struct riscv_iommu_domain *domain,
++				  struct device *dev)
++{
++	struct riscv_iommu_device *iommu = dev_to_iommu(dev);
++	struct fwnode_handle *fn;
++	char *fwname;
++
++	if (domain->irqdomain) {
++		dev_set_msi_domain(dev, domain->irqdomain);
++		return 0;
++	}
++
++	if (!(iommu->caps & RISCV_IOMMU_CAPABILITIES_MSI_FLAT)) {
++		dev_warn(iommu->dev, "Cannot enable interrupt remapping\n");
++		return 0;
++	}
++
++	spin_lock_init(&domain->msi_lock);
++	/*
++	 * TODO: The hypervisor should be in control of this size. For now
++	 * we just allocate enough space for 512 VCPUs.
++	 */
++	domain->msi_order = 1;
++	domain->msi_root = iommu_alloc_pages_node(domain->numa_node,
++						  GFP_KERNEL_ACCOUNT, domain->msi_order);
++	if (!domain->msi_root)
++		return -ENOMEM;
++
++	fwname = kasprintf(GFP_KERNEL, "IOMMU-IR-%s", dev_name(dev));
++	if (!fwname) {
++		iommu_free_pages(domain->msi_root, domain->msi_order);
++		return -ENOMEM;
++	}
++
++	fn = irq_domain_alloc_named_fwnode(fwname);
++	kfree(fwname);
++	if (!fn) {
++		dev_err(iommu->dev, "Couldn't allocate fwnode\n");
++		iommu_free_pages(domain->msi_root, domain->msi_order);
++		return -ENOMEM;
++	}
++
++	domain->irqdomain = irq_domain_create_hierarchy(dev_get_msi_domain(dev),
++							0, 0, fn,
++							&riscv_iommu_irq_domain_ops,
++							domain);
++	if (!domain->irqdomain) {
++		dev_err(iommu->dev, "Failed to create IOMMU irq domain\n");
++		iommu_free_pages(domain->msi_root, domain->msi_order);
++		irq_domain_free_fwnode(fn);
++		return -ENOMEM;
++	}
++
++	domain->irqdomain->flags |= IRQ_DOMAIN_FLAG_MSI_PARENT |
++				    IRQ_DOMAIN_FLAG_ISOLATED_MSI;
++	domain->irqdomain->msi_parent_ops = &riscv_iommu_msi_parent_ops;
++	irq_domain_update_bus_token(domain->irqdomain, DOMAIN_BUS_MSI_REMAP);
++	dev_set_msi_domain(dev, domain->irqdomain);
++
++	return 0;
++}
++
++void riscv_iommu_ir_get_resv_regions(struct device *dev, struct list_head *head)
++{
++	struct riscv_iommu_info *info = dev_iommu_priv_get(dev);
++	struct riscv_iommu_domain *domain = info->domain;
++	struct iommu_resv_region *reg;
++	phys_addr_t base, addr;
++	size_t nr_pages, i;
++
++	if (!domain || !domain->msiptp.msiptp)
++		return;
++
++	base = domain->msiptp.msi_addr_pattern << 12;
++
++	if (domain->group_index_bits) {
++		phys_addr_t group_mask = BIT(domain->group_index_bits) - 1;
++		phys_addr_t group_shift = domain->group_index_shift - 12;
++		phys_addr_t mask = domain->msiptp.msi_addr_mask & ~(group_mask << group_shift);
++
++		nr_pages = mask + 1;
++	} else {
++		nr_pages = domain->msiptp.msi_addr_mask + 1;
++	}
++
++	for (i = 0; i < BIT(domain->group_index_bits); i++) {
++		addr = base | (i << domain->group_index_shift);
++		reg = iommu_alloc_resv_region(addr, nr_pages * 4096,
++					      0, IOMMU_RESV_MSI, GFP_KERNEL);
++		if (reg)
++			list_add_tail(&reg->list, head);
++	}
++}
++
++void riscv_iommu_irq_domain_remove(struct riscv_iommu_domain *domain)
++{
++	struct fwnode_handle *fn;
++
++	if (!domain->irqdomain)
++		return;
++
++	iommu_free_pages(domain->msi_root, domain->msi_order);
++
++	fn = domain->irqdomain->fwnode;
++	irq_domain_remove(domain->irqdomain);
++	irq_domain_free_fwnode(fn);
++}
++
++void riscv_iommu_irq_domain_unlink(struct riscv_iommu_domain *domain,
++				   struct device *dev)
++{
++	if (!domain || !domain->irqdomain)
++		return;
++
++	dev_set_msi_domain(dev, domain->irqdomain->parent);
++}
 diff --git a/drivers/iommu/riscv/iommu.c b/drivers/iommu/riscv/iommu.c
-index ef38a1bb3eca..6e8ea3d22ff5 100644
+index 6e8ea3d22ff5..c4a47b21c58f 100644
 --- a/drivers/iommu/riscv/iommu.c
 +++ b/drivers/iommu/riscv/iommu.c
-@@ -24,23 +24,10 @@
- #include "iommu-bits.h"
- #include "iommu.h"
- 
--/* Timeouts in [us] */
--#define RISCV_IOMMU_QCSR_TIMEOUT	150000
--#define RISCV_IOMMU_QUEUE_TIMEOUT	150000
--#define RISCV_IOMMU_DDTP_TIMEOUT	10000000
--#define RISCV_IOMMU_IOTINVAL_TIMEOUT	90000000
--
- /* Number of entries per CMD/FLT queue, should be <= INT_MAX */
- #define RISCV_IOMMU_DEF_CQ_COUNT	8192
- #define RISCV_IOMMU_DEF_FQ_COUNT	4096
- 
--/* RISC-V IOMMU PPN <> PHYS address conversions, PHYS <=> PPN[53:10] */
--#define phys_to_ppn(pa)  (((pa) >> 2) & (((1ULL << 44) - 1) << 10))
--#define ppn_to_phys(pn)	 (((pn) << 2) & (((1ULL << 44) - 1) << 12))
--
--#define dev_to_iommu(dev) \
--	iommu_get_iommu_dev(dev, struct riscv_iommu_device, iommu)
--
- /* IOMMU PSCID allocation namespace. */
- static DEFINE_IDA(riscv_iommu_pscids);
- #define RISCV_IOMMU_MAX_PSCID		(BIT(20) - 1)
-@@ -177,7 +164,7 @@ static int riscv_iommu_queue_alloc(struct riscv_iommu_device *iommu,
- 	if (!queue->base)
- 		return -ENOMEM;
- 
--	qb = phys_to_ppn(queue->phys) |
-+	qb = riscv_iommu_phys_to_ppn(queue->phys) |
- 	     FIELD_PREP(RISCV_IOMMU_QUEUE_LOG2SZ_FIELD, logsz);
- 
- 	/* Update base register and read back to verify hw accepted our write */
-@@ -480,15 +467,15 @@ static irqreturn_t riscv_iommu_cmdq_process(int irq, void *data)
+@@ -943,7 +943,8 @@ static void riscv_iommu_iotlb_inval(struct riscv_iommu_domain *domain,
+ 	rcu_read_unlock();
  }
  
- /* Send command to the IOMMU command queue */
--static void riscv_iommu_cmd_send(struct riscv_iommu_device *iommu,
--				 struct riscv_iommu_command *cmd)
-+void riscv_iommu_cmd_send(struct riscv_iommu_device *iommu,
-+			  struct riscv_iommu_command *cmd)
- {
- 	riscv_iommu_queue_send(&iommu->cmdq, cmd, sizeof(*cmd));
- }
+-#define RISCV_IOMMU_FSC_BARE 0
++#define RISCV_IOMMU_FSC_BARE		0
++#define RISCV_IOMMU_IOHGATP_BARE	0
  
- /* Send IOFENCE.C command and wait for all scheduled commands to complete. */
--static void riscv_iommu_cmd_sync(struct riscv_iommu_device *iommu,
--				 unsigned int timeout_us)
-+void riscv_iommu_cmd_sync(struct riscv_iommu_device *iommu,
-+			  unsigned int timeout_us)
- {
- 	struct riscv_iommu_command cmd;
- 	unsigned int prod;
-@@ -614,7 +601,7 @@ static struct riscv_iommu_dc *riscv_iommu_get_dc(struct riscv_iommu_device *iomm
- 		do {
- 			ddt = READ_ONCE(*(unsigned long *)ddtp);
- 			if (ddt & RISCV_IOMMU_DDTE_V) {
--				ddtp = __va(ppn_to_phys(ddt));
-+				ddtp = __va(riscv_iommu_ppn_to_phys(ddt));
- 				break;
- 			}
+ /*
+  * Update IODIR for the device.
+@@ -1245,6 +1246,8 @@ static void riscv_iommu_free_paging_domain(struct iommu_domain *iommu_domain)
  
-@@ -622,7 +609,7 @@ static struct riscv_iommu_dc *riscv_iommu_get_dc(struct riscv_iommu_device *iomm
- 			if (!ptr)
- 				return NULL;
+ 	WARN_ON(!list_empty(&domain->bonds));
  
--			new = phys_to_ppn(__pa(ptr)) | RISCV_IOMMU_DDTE_V;
-+			new = riscv_iommu_phys_to_ppn(__pa(ptr)) | RISCV_IOMMU_DDTE_V;
- 			old = cmpxchg_relaxed((unsigned long *)ddtp, ddt, new);
++	riscv_iommu_irq_domain_remove(domain);
++
+ 	if (domain->pscid > 0)
+ 		ida_free(&riscv_iommu_pscids, domain->pscid);
+ 	if (domain->gscid > 0)
+@@ -1276,10 +1279,30 @@ static int riscv_iommu_attach_paging_domain(struct iommu_domain *iommu_domain,
+ 	struct riscv_iommu_device *iommu = dev_to_iommu(dev);
+ 	struct riscv_iommu_info *info = dev_iommu_priv_get(dev);
+ 	struct riscv_iommu_dc dc = {0};
++	int ret;
  
- 			if (old == ddt) {
-@@ -687,7 +674,7 @@ static int riscv_iommu_iodir_alloc(struct riscv_iommu_device *iommu)
- 		if (ddtp & RISCV_IOMMU_DDTP_BUSY)
- 			return -EBUSY;
+ 	if (!riscv_iommu_pt_supported(iommu, domain->pgd_mode))
+ 		return -ENODEV;
  
--		iommu->ddt_phys = ppn_to_phys(ddtp);
-+		iommu->ddt_phys = riscv_iommu_ppn_to_phys(ddtp);
- 		if (iommu->ddt_phys)
- 			iommu->ddt_root = devm_ioremap(iommu->dev,
- 						       iommu->ddt_phys, PAGE_SIZE);
-@@ -734,7 +721,7 @@ static int riscv_iommu_iodir_set_mode(struct riscv_iommu_device *iommu,
- 	do {
- 		rq_ddtp = FIELD_PREP(RISCV_IOMMU_DDTP_IOMMU_MODE, rq_mode);
- 		if (rq_mode > RISCV_IOMMU_DDTP_IOMMU_MODE_BARE)
--			rq_ddtp |= phys_to_ppn(iommu->ddt_phys);
-+			rq_ddtp |= riscv_iommu_phys_to_ppn(iommu->ddt_phys);
++	if (riscv_iommu_bond_link(domain, dev))
++		return -ENOMEM;
++
++	if (iommu_domain->type == IOMMU_DOMAIN_UNMANAGED) {
++		domain->gscid = ida_alloc_range(&riscv_iommu_gscids, 1,
++						RISCV_IOMMU_MAX_GSCID, GFP_KERNEL);
++		if (domain->gscid < 0) {
++			riscv_iommu_bond_unlink(domain, dev);
++			return -ENOMEM;
++		}
++
++		ret = riscv_iommu_irq_domain_create(domain, dev);
++		if (ret) {
++			riscv_iommu_bond_unlink(domain, dev);
++			ida_free(&riscv_iommu_gscids, domain->gscid);
++			return ret;
++		}
++	}
++
+ 	if (domain->gscid) {
+ 		dc.iohgatp = FIELD_PREP(RISCV_IOMMU_DC_IOHGATP_MODE, domain->pgd_mode) |
+ 			     FIELD_PREP(RISCV_IOMMU_DC_IOHGATP_GSCID, domain->gscid) |
+@@ -1292,10 +1315,9 @@ static int riscv_iommu_attach_paging_domain(struct iommu_domain *iommu_domain,
+ 	dc.ta = FIELD_PREP(RISCV_IOMMU_PC_TA_PSCID, domain->pscid) |
+ 			   RISCV_IOMMU_PC_TA_V;
  
- 		riscv_iommu_writeq(iommu, RISCV_IOMMU_REG_DDTP, rq_ddtp);
- 		ddtp = riscv_iommu_read_ddtp(iommu);
-@@ -799,49 +786,9 @@ static int riscv_iommu_iodir_set_mode(struct riscv_iommu_device *iommu,
+-	if (riscv_iommu_bond_link(domain, dev))
+-		return -ENOMEM;
+-
+ 	riscv_iommu_iodir_update(iommu, dev, &dc);
++
++	riscv_iommu_irq_domain_unlink(info->domain, dev);
+ 	riscv_iommu_bond_unlink(info->domain, dev);
+ 	info->domain = domain;
+ 
+@@ -1389,9 +1411,12 @@ static int riscv_iommu_attach_blocking_domain(struct iommu_domain *iommu_domain,
+ 	struct riscv_iommu_dc dc = {0};
+ 
+ 	dc.fsc = RISCV_IOMMU_FSC_BARE;
++	dc.iohgatp = RISCV_IOMMU_IOHGATP_BARE;
+ 
+ 	/* Make device context invalid, translation requests will fault w/ #258 */
+ 	riscv_iommu_iodir_update(iommu, dev, &dc);
++
++	riscv_iommu_irq_domain_unlink(info->domain, dev);
+ 	riscv_iommu_bond_unlink(info->domain, dev);
+ 	info->domain = NULL;
+ 
+@@ -1413,15 +1438,24 @@ static int riscv_iommu_attach_identity_domain(struct iommu_domain *iommu_domain,
+ 	struct riscv_iommu_dc dc = {0};
+ 
+ 	dc.fsc = RISCV_IOMMU_FSC_BARE;
++	dc.iohgatp = RISCV_IOMMU_IOHGATP_BARE;
+ 	dc.ta = RISCV_IOMMU_PC_TA_V;
+ 
+ 	riscv_iommu_iodir_update(iommu, dev, &dc);
++
++	riscv_iommu_irq_domain_unlink(info->domain, dev);
+ 	riscv_iommu_bond_unlink(info->domain, dev);
+ 	info->domain = NULL;
+ 
  	return 0;
  }
  
--/* This struct contains protection domain specific IOMMU driver data. */
--struct riscv_iommu_domain {
--	struct iommu_domain domain;
--	struct list_head bonds;
--	spinlock_t lock;		/* protect bonds list updates. */
--	int pscid;
--	int gscid;
--	bool amo_enabled;
--	int numa_node;
--	unsigned int pgd_mode;
--	unsigned long *pgd_root;
--};
--
- #define iommu_domain_to_riscv(iommu_domain) \
- 	container_of(iommu_domain, struct riscv_iommu_domain, domain)
- 
--/* Private IOMMU data for managed devices, dev_iommu_priv_* */
--struct riscv_iommu_info {
--	struct riscv_iommu_domain *domain;
--};
--
--/*
-- * Linkage between an iommu_domain and attached devices.
-- *
-- * Protection domain requiring IOATC and DevATC translation cache invalidations,
-- * should be linked to attached devices using a riscv_iommu_bond structure.
-- * Devices should be linked to the domain before first use and unlinked after
-- * the translations from the referenced protection domain can no longer be used.
-- * Blocking and identity domains are not tracked here, as the IOMMU hardware
-- * does not cache negative and/or identity (BARE mode) translations, and DevATC
-- * is disabled for those protection domains.
-- *
-- * The device pointer and IOMMU data remain stable in the bond struct after
-- * _probe_device() where it's attached to the managed IOMMU, up to the
-- * completion of the _release_device() call. The release of the bond structure
-- * is synchronized with the device release.
-- */
--struct riscv_iommu_bond {
--	struct list_head list;
--	struct rcu_head rcu;
--	struct device *dev;
--};
--
- static int riscv_iommu_bond_link(struct riscv_iommu_domain *domain,
- 				 struct device *dev)
- {
++static void riscv_iommu_get_resv_regions(struct device *dev,
++					 struct list_head *head)
++{
++	riscv_iommu_ir_get_resv_regions(dev, head);
++}
++
+ static struct iommu_domain riscv_iommu_identity_domain = {
+ 	.type = IOMMU_DOMAIN_IDENTITY,
+ 	.ops = &(const struct iommu_domain_ops) {
+@@ -1516,6 +1550,7 @@ static const struct iommu_ops riscv_iommu_ops = {
+ 	.blocked_domain = &riscv_iommu_blocking_domain,
+ 	.release_domain = &riscv_iommu_blocking_domain,
+ 	.domain_alloc_paging = riscv_iommu_alloc_paging_domain,
++	.get_resv_regions = riscv_iommu_get_resv_regions,
+ 	.device_group = riscv_iommu_device_group,
+ 	.probe_device = riscv_iommu_probe_device,
+ 	.release_device	= riscv_iommu_release_device,
 diff --git a/drivers/iommu/riscv/iommu.h b/drivers/iommu/riscv/iommu.h
-index b1c4664542b4..dd538b19fbb7 100644
+index dd538b19fbb7..6ce71095781c 100644
 --- a/drivers/iommu/riscv/iommu.h
 +++ b/drivers/iommu/riscv/iommu.h
-@@ -17,8 +17,35 @@
+@@ -23,6 +23,12 @@
+ #define RISCV_IOMMU_DDTP_TIMEOUT	10000000
+ #define RISCV_IOMMU_IOTINVAL_TIMEOUT	90000000
  
- #include "iommu-bits.h"
- 
-+/* Timeouts in [us] */
-+#define RISCV_IOMMU_QCSR_TIMEOUT	150000
-+#define RISCV_IOMMU_QUEUE_TIMEOUT	150000
-+#define RISCV_IOMMU_DDTP_TIMEOUT	10000000
-+#define RISCV_IOMMU_IOTINVAL_TIMEOUT	90000000
-+
-+/* This struct contains protection domain specific IOMMU driver data. */
-+struct riscv_iommu_domain {
-+	struct iommu_domain domain;
-+	struct list_head bonds;
-+	spinlock_t lock;			/* protect bonds list updates. */
-+	int pscid;
-+	int gscid;
-+	int amo_enabled;
-+	int numa_node;
-+	unsigned int pgd_mode;
-+	unsigned long *pgd_root;
++struct riscv_iommu_msiptp_state {
++	u64 msiptp;
++	u64 msi_addr_mask;
++	u64 msi_addr_pattern;
 +};
 +
-+/* Private IOMMU data for managed devices, dev_iommu_priv_* */
-+struct riscv_iommu_info {
-+	struct riscv_iommu_domain *domain;
-+};
-+
- struct riscv_iommu_device;
- 
-+#define dev_to_iommu(dev) \
-+	iommu_get_iommu_dev(dev, struct riscv_iommu_device, iommu)
-+
- struct riscv_iommu_queue {
- 	atomic_t prod;				/* unbounded producer allocation index */
- 	atomic_t head;				/* unbounded shadow ring buffer consumer index */
-@@ -62,9 +89,36 @@ struct riscv_iommu_device {
- 	u64 *ddt_root;
+ /* This struct contains protection domain specific IOMMU driver data. */
+ struct riscv_iommu_domain {
+ 	struct iommu_domain domain;
+@@ -34,6 +40,13 @@ struct riscv_iommu_domain {
+ 	int numa_node;
+ 	unsigned int pgd_mode;
+ 	unsigned long *pgd_root;
++	u32 group_index_bits;
++	u32 group_index_shift;
++	int msi_order;
++	struct riscv_iommu_msipte *msi_root;
++	spinlock_t msi_lock;
++	struct riscv_iommu_msiptp_state msiptp;
++	struct irq_domain *irqdomain;
  };
  
-+/*
-+ * Linkage between an iommu_domain and attached devices.
-+ *
-+ * Protection domain requiring IOATC and DevATC translation cache invalidations,
-+ * should be linked to attached devices using a riscv_iommu_bond structure.
-+ * Devices should be linked to the domain before first use and unlinked after
-+ * the translations from the referenced protection domain can no longer be used.
-+ * Blocking and identity domains are not tracked here, as the IOMMU hardware
-+ * does not cache negative and/or identity (BARE mode) translations, and DevATC
-+ * is disabled for those protection domains.
-+ *
-+ * The device pointer and IOMMU data remain stable in the bond struct after
-+ * _probe_device() where it's attached to the managed IOMMU, up to the
-+ * completion of the _release_device() call. The release of the bond structure
-+ * is synchronized with the device release.
-+ */
-+struct riscv_iommu_bond {
-+	struct list_head list;
-+	struct rcu_head rcu;
-+	struct device *dev;
-+};
-+
- int riscv_iommu_init(struct riscv_iommu_device *iommu);
- void riscv_iommu_remove(struct riscv_iommu_device *iommu);
+ /* Private IOMMU data for managed devices, dev_iommu_priv_* */
+@@ -119,6 +132,14 @@ void riscv_iommu_cmd_send(struct riscv_iommu_device *iommu,
+ void riscv_iommu_cmd_sync(struct riscv_iommu_device *iommu,
+ 			  unsigned int timeout_us);
  
-+void riscv_iommu_cmd_send(struct riscv_iommu_device *iommu,
-+			  struct riscv_iommu_command *cmd);
-+void riscv_iommu_cmd_sync(struct riscv_iommu_device *iommu,
-+			  unsigned int timeout_us);
++int riscv_iommu_irq_domain_create(struct riscv_iommu_domain *domain,
++				  struct device *dev);
++void riscv_iommu_irq_domain_remove(struct riscv_iommu_domain *domain);
++void riscv_iommu_irq_domain_unlink(struct riscv_iommu_domain *domain,
++				   struct device *dev);
++void riscv_iommu_ir_get_resv_regions(struct device *dev,
++				     struct list_head *head);
 +
  #define riscv_iommu_readl(iommu, addr) \
  	readl_relaxed((iommu)->reg + (addr))
