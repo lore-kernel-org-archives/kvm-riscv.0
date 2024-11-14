@@ -1,9 +1,9 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Thu, 14 Nov 2024 17:18:50 +0100
-Subject: [RFC PATCH 05/15] iommu/riscv: use data structure instead of individual values
+Date: Thu, 14 Nov 2024 17:18:51 +0100
+Subject: [RFC PATCH 06/15] iommu/riscv: support GSCID and GVMA invalidation command
 In-Reply-To: <20241114161845.502027-17-ajones@ventanamicro.com>
 References: <20241114161845.502027-17-ajones@ventanamicro.com>
-Message-ID: <20241114161845.502027-22-ajones@ventanamicro.com>
+Message-ID: <20241114161845.502027-23-ajones@ventanamicro.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -12,97 +12,124 @@ Content-Transfer-Encoding: 7bit
 
 From: Zong Li <zong.li@sifive.com>
 
-The parameter will be increased when we need to set up more
-bit fields in the device context. Use a data structure to
-wrap them up.
+This patch adds a ID Allocator for GSCID and a wrap for setting up
+GSCID in IOTLB invalidation command.
+
+Set up iohgatp to enable second stage table and flush stage-2 table if
+the GSCID is set.
+
+The GSCID of domain should be freed when release domain. GSCID will be
+allocated for parent domain in nested IOMMU process.
 
 Signed-off-by: Zong Li <zong.li@sifive.com>
 Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
 ---
- drivers/iommu/riscv/iommu.c | 31 +++++++++++++++++++------------
- 1 file changed, 19 insertions(+), 12 deletions(-)
+ drivers/iommu/riscv/iommu-bits.h |  7 +++++++
+ drivers/iommu/riscv/iommu.c      | 32 ++++++++++++++++++++++++++------
+ 2 files changed, 33 insertions(+), 6 deletions(-)
 
+diff --git a/drivers/iommu/riscv/iommu-bits.h b/drivers/iommu/riscv/iommu-bits.h
+index 98daf0e1a306..d72b982cf9bf 100644
+--- a/drivers/iommu/riscv/iommu-bits.h
++++ b/drivers/iommu/riscv/iommu-bits.h
+@@ -715,6 +715,13 @@ static inline void riscv_iommu_cmd_inval_vma(struct riscv_iommu_command *cmd)
+ 	cmd->dword1 = 0;
+ }
+ 
++static inline void riscv_iommu_cmd_inval_gvma(struct riscv_iommu_command *cmd)
++{
++	cmd->dword0 = FIELD_PREP(RISCV_IOMMU_CMD_OPCODE, RISCV_IOMMU_CMD_IOTINVAL_OPCODE) |
++		      FIELD_PREP(RISCV_IOMMU_CMD_FUNC, RISCV_IOMMU_CMD_IOTINVAL_FUNC_GVMA);
++	cmd->dword1 = 0;
++}
++
+ static inline void riscv_iommu_cmd_inval_set_addr(struct riscv_iommu_command *cmd,
+ 						  u64 addr)
+ {
 diff --git a/drivers/iommu/riscv/iommu.c b/drivers/iommu/riscv/iommu.c
-index 3fe4ceba8dd3..9d7945dc3c24 100644
+index 9d7945dc3c24..ef38a1bb3eca 100644
 --- a/drivers/iommu/riscv/iommu.c
 +++ b/drivers/iommu/riscv/iommu.c
-@@ -1001,7 +1001,7 @@ static void riscv_iommu_iotlb_inval(struct riscv_iommu_domain *domain,
-  * interim translation faults.
-  */
- static void riscv_iommu_iodir_update(struct riscv_iommu_device *iommu,
--				     struct device *dev, u64 fsc, u64 ta)
-+				     struct device *dev, struct riscv_iommu_dc *new_dc)
- {
- 	struct iommu_fwspec *fwspec = dev_iommu_fwspec_get(dev);
- 	struct riscv_iommu_dc *dc;
-@@ -1035,10 +1035,10 @@ static void riscv_iommu_iodir_update(struct riscv_iommu_device *iommu,
- 	for (i = 0; i < fwspec->num_ids; i++) {
- 		dc = riscv_iommu_get_dc(iommu, fwspec->ids[i]);
- 		tc = READ_ONCE(dc->tc);
--		tc |= ta & RISCV_IOMMU_DC_TC_V;
-+		tc |= new_dc->ta & RISCV_IOMMU_DC_TC_V;
+@@ -45,6 +45,10 @@
+ static DEFINE_IDA(riscv_iommu_pscids);
+ #define RISCV_IOMMU_MAX_PSCID		(BIT(20) - 1)
  
--		WRITE_ONCE(dc->fsc, fsc);
--		WRITE_ONCE(dc->ta, ta & RISCV_IOMMU_PC_TA_PSCID);
-+		WRITE_ONCE(dc->fsc, new_dc->fsc);
-+		WRITE_ONCE(dc->ta, new_dc->ta & RISCV_IOMMU_PC_TA_PSCID);
++/* IOMMU GSCID allocation namespace. */
++static DEFINE_IDA(riscv_iommu_gscids);
++#define RISCV_IOMMU_MAX_GSCID		(BIT(16) - 1)
++
+ /* Device resource-managed allocations */
+ struct riscv_iommu_devres {
+ 	void *addr;
+@@ -801,6 +805,7 @@ struct riscv_iommu_domain {
+ 	struct list_head bonds;
+ 	spinlock_t lock;		/* protect bonds list updates. */
+ 	int pscid;
++	int gscid;
+ 	bool amo_enabled;
+ 	int numa_node;
+ 	unsigned int pgd_mode;
+@@ -954,15 +959,20 @@ static void riscv_iommu_iotlb_inval(struct riscv_iommu_domain *domain,
+ 
+ 		/*
+ 		 * IOTLB invalidation request can be safely omitted if already sent
+-		 * to the IOMMU for the same PSCID, and with domain->bonds list
++		 * to the IOMMU for the same PSCID/GSCID, and with domain->bonds list
+ 		 * arranged based on the device's IOMMU, it's sufficient to check
+ 		 * last device the invalidation was sent to.
+ 		 */
+ 		if (iommu == prev)
+ 			continue;
+ 
+-		riscv_iommu_cmd_inval_vma(&cmd);
+-		riscv_iommu_cmd_inval_set_pscid(&cmd, domain->pscid);
++		if (domain->gscid) {
++			riscv_iommu_cmd_inval_gvma(&cmd);
++			riscv_iommu_cmd_inval_set_gscid(&cmd, domain->gscid);
++		} else {
++			riscv_iommu_cmd_inval_vma(&cmd);
++			riscv_iommu_cmd_inval_set_pscid(&cmd, domain->pscid);
++		}
+ 		if (len && len < RISCV_IOMMU_IOTLB_INVAL_LIMIT) {
+ 			for (iova = start; iova < end; iova += PAGE_SIZE) {
+ 				riscv_iommu_cmd_inval_set_addr(&cmd, iova);
+@@ -1039,6 +1049,7 @@ static void riscv_iommu_iodir_update(struct riscv_iommu_device *iommu,
+ 
+ 		WRITE_ONCE(dc->fsc, new_dc->fsc);
+ 		WRITE_ONCE(dc->ta, new_dc->ta & RISCV_IOMMU_PC_TA_PSCID);
++		WRITE_ONCE(dc->iohgatp, new_dc->iohgatp);
  		/* Update device context, write TC.V as the last step. */
  		dma_wmb();
  		WRITE_ONCE(dc->tc, tc);
-@@ -1315,20 +1315,20 @@ static int riscv_iommu_attach_paging_domain(struct iommu_domain *iommu_domain,
- 	struct riscv_iommu_domain *domain = iommu_domain_to_riscv(iommu_domain);
- 	struct riscv_iommu_device *iommu = dev_to_iommu(dev);
- 	struct riscv_iommu_info *info = dev_iommu_priv_get(dev);
--	u64 fsc, ta;
-+	struct riscv_iommu_dc dc = {0};
+@@ -1287,8 +1298,10 @@ static void riscv_iommu_free_paging_domain(struct iommu_domain *iommu_domain)
  
+ 	WARN_ON(!list_empty(&domain->bonds));
+ 
+-	if ((int)domain->pscid > 0)
++	if (domain->pscid > 0)
+ 		ida_free(&riscv_iommu_pscids, domain->pscid);
++	if (domain->gscid > 0)
++		ida_free(&riscv_iommu_gscids, domain->gscid);
+ 
+ 	riscv_iommu_pte_free(domain, _io_pte_entry(pfn, _PAGE_TABLE), NULL);
+ 	kfree(domain);
+@@ -1320,8 +1333,15 @@ static int riscv_iommu_attach_paging_domain(struct iommu_domain *iommu_domain,
  	if (!riscv_iommu_pt_supported(iommu, domain->pgd_mode))
  		return -ENODEV;
  
--	fsc = FIELD_PREP(RISCV_IOMMU_PC_FSC_MODE, domain->pgd_mode) |
--	      FIELD_PREP(RISCV_IOMMU_PC_FSC_PPN, virt_to_pfn(domain->pgd_root));
--	ta = FIELD_PREP(RISCV_IOMMU_PC_TA_PSCID, domain->pscid) |
--	     RISCV_IOMMU_PC_TA_V;
-+	dc.fsc = FIELD_PREP(RISCV_IOMMU_PC_FSC_MODE, domain->pgd_mode) |
-+		 FIELD_PREP(RISCV_IOMMU_PC_FSC_PPN, virt_to_pfn(domain->pgd_root));
-+	dc.ta = FIELD_PREP(RISCV_IOMMU_PC_TA_PSCID, domain->pscid) |
-+			   RISCV_IOMMU_PC_TA_V;
- 
- 	if (riscv_iommu_bond_link(domain, dev))
- 		return -ENOMEM;
- 
--	riscv_iommu_iodir_update(iommu, dev, fsc, ta);
-+	riscv_iommu_iodir_update(iommu, dev, &dc);
- 	riscv_iommu_bond_unlink(info->domain, dev);
- 	info->domain = domain;
- 
-@@ -1419,9 +1419,12 @@ static int riscv_iommu_attach_blocking_domain(struct iommu_domain *iommu_domain,
- {
- 	struct riscv_iommu_device *iommu = dev_to_iommu(dev);
- 	struct riscv_iommu_info *info = dev_iommu_priv_get(dev);
-+	struct riscv_iommu_dc dc = {0};
+-	dc.fsc = FIELD_PREP(RISCV_IOMMU_PC_FSC_MODE, domain->pgd_mode) |
+-		 FIELD_PREP(RISCV_IOMMU_PC_FSC_PPN, virt_to_pfn(domain->pgd_root));
++	if (domain->gscid) {
++		dc.iohgatp = FIELD_PREP(RISCV_IOMMU_DC_IOHGATP_MODE, domain->pgd_mode) |
++			     FIELD_PREP(RISCV_IOMMU_DC_IOHGATP_GSCID, domain->gscid) |
++			     FIELD_PREP(RISCV_IOMMU_DC_IOHGATP_PPN, virt_to_pfn(domain->pgd_root));
++	} else {
++		dc.fsc = FIELD_PREP(RISCV_IOMMU_PC_FSC_MODE, domain->pgd_mode) |
++			 FIELD_PREP(RISCV_IOMMU_PC_FSC_PPN, virt_to_pfn(domain->pgd_root));
++	}
 +
-+	dc.fsc = RISCV_IOMMU_FSC_BARE;
- 
- 	/* Make device context invalid, translation requests will fault w/ #258 */
--	riscv_iommu_iodir_update(iommu, dev, RISCV_IOMMU_FSC_BARE, 0);
-+	riscv_iommu_iodir_update(iommu, dev, &dc);
- 	riscv_iommu_bond_unlink(info->domain, dev);
- 	info->domain = NULL;
- 
-@@ -1440,8 +1443,12 @@ static int riscv_iommu_attach_identity_domain(struct iommu_domain *iommu_domain,
- {
- 	struct riscv_iommu_device *iommu = dev_to_iommu(dev);
- 	struct riscv_iommu_info *info = dev_iommu_priv_get(dev);
-+	struct riscv_iommu_dc dc = {0};
-+
-+	dc.fsc = RISCV_IOMMU_FSC_BARE;
-+	dc.ta = RISCV_IOMMU_PC_TA_V;
- 
--	riscv_iommu_iodir_update(iommu, dev, RISCV_IOMMU_FSC_BARE, RISCV_IOMMU_PC_TA_V);
-+	riscv_iommu_iodir_update(iommu, dev, &dc);
- 	riscv_iommu_bond_unlink(info->domain, dev);
- 	info->domain = NULL;
+ 	dc.ta = FIELD_PREP(RISCV_IOMMU_PC_TA_PSCID, domain->pscid) |
+ 			   RISCV_IOMMU_PC_TA_V;
  
 -- 
 2.47.0
