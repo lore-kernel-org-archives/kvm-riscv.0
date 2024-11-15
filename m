@@ -1,79 +1,69 @@
-From: Sean Christopherson <seanjc@google.com>
-Date: Thu, 14 Nov 2024 09:42:32 -0800
-Subject: [RFC PATCH 0/1] KVM selftests runner for running more than just default
-In-Reply-To: <20241108-eaacad12f1eef31481cf0c6c@orel>
-References: <20240821223012.3757828-1-vipinsh@google.com> <CAHVum0eSxCTAme8=oV9a=cVaJ9Jzu3-W-3vgbubVZ2qAWVjfJA@mail.gmail.com>
- <CAHVum0fWJW7V5ijtPcXQAtPSdoQSKjzYwMJ-XCRH2_sKs=Kg7g@mail.gmail.com>
- <ZyuiH_CVQqJUoSB-@google.com> <20241108-eaacad12f1eef31481cf0c6c@orel>
-Message-ID: <ZzY2iAqNfeiiIGys@google.com>
+From: Robin Murphy <robin.murphy@arm.com>
+Date: Fri, 15 Nov 2024 15:20:36 +0000
+Subject: [RFC PATCH 04/15] iommu/riscv: report iommu capabilities
+In-Reply-To: <20241114161845.502027-21-ajones@ventanamicro.com>
+References: <20241114161845.502027-17-ajones@ventanamicro.com>
+ <20241114161845.502027-21-ajones@ventanamicro.com>
+Message-ID: <ddd40bc3-7f2a-43c2-8918-a10c63bd05ba@arm.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Nov 08, 2024, Andrew Jones wrote:
-> On Wed, Nov 06, 2024 at 09:06:39AM -0800, Sean Christopherson wrote:
-> > On Fri, Nov 01, 2024, Vipin Sharma wrote:
-> > > Phase 3: Provide collection of interesting configurations
-> > > 
-> > > Specific individual constructs can be combined in a meaningful way to
-> > > provide interesting configurations to run on a platform. For example,
-> > > user doesn't need to specify each individual configuration instead,
-> > > some prebuilt configurations can be exposed like
-> > > --stress_test_shadow_mmu, --test_basic_nested
-> > 
-> > IMO, this shouldn't be baked into the runner, i.e. should not surface as dedicated
-> > command line options.  Users shouldn't need to modify the runner just to bring
-> > their own configuration.  I also think configurations should be discoverable,
-> > e.g. not hardcoded like KUT's unittest.cfg.  A very real problem with KUT's
-> > approach is that testing different combinations is frustratingly difficult,
-> > because running a testcase with different configuration requires modifying a file
-> > that is tracked by git.
+On 14/11/2024 4:18 pm, Andrew Jones wrote:
+> From: Tomasz Jeznach <tjeznach@rivosinc.com>
 > 
-> We have support in KUT for environment variables (which are stored in an
-> initrd). The feature hasn't been used too much, but x86 applies it to
-> configuration parameters needed to execute tests from grub, arm uses it
-> for an errata framework allowing tests to run on kernels which may not
-> include fixes to host-crashing bugs, and riscv is using them quite a bit
-> for providing test parameters and test expected results in order to allow
-> SBI tests to be run on a variety of SBI implementations. The environment
-> variables are provided in a text file which is not tracked by git. kvm
-> selftests can obviously also use environment variables by simply sourcing
-> them first in wrapper scripts for the tests.
+> Report RISC-V IOMMU capabilities required by VFIO subsystem
+> to enable PCIe device assignment.
 
-Oh hell no! :-)
+IOMMU_CAP_DEFERRED_FLUSH has nothing at all to do with VFIO. As far as I 
+can tell from what's queued, riscv_iommu_unmap_pages() isn't really 
+implementing the full optimisation to get the most out of it either.
 
-For reproducibility, transparency, determinism, environment variables are pure
-evil.  I don't want to discover that I wasn't actually testing what I thought I
-was testing because I forgot to set/purge an environment variable.  Ditto for
-trying to reproduce a failure reported by someone.
+I guess IOMMU_CAP_CACHE_COHERENCY falls out of the assumption of a 
+coherent IOMMU and lack of PBMT support making everything implicitly 
+IOMMU_CACHE all the time whether you want it or not, but clarifying that 
+might be nice (especially since there's some chance that something will 
+eventually come along to break it...)
 
-KUT's usage to adjust to the *system* environment is somewhat understandable
-But for KVM selftests, there should be absolutely zero reason to need to fall
-back to environment variables.  Unlike KUT, which can run in a fairly large variety
-of environments, e.g. bare metal vs. virtual, different VMMs, different firmware,
-etc., KVM selftests effectively support exactly one environment.
+Thanks,
+Robin.
 
-And unlike KUT, KVM selftests are tightly coupled to the kernel.  Yes, it's very
-possible to run selftests against different kernels, but I don't think we should
-go out of our way to support such usage.  And if an environment needs to skip a
-test, it should be super easy to do so if we decouple the test configuration
-inputs from the test runner.
-
-> > There are underlying issues with KUT that essentially necessitate that approach,
-> > e.g. x86 has several testcases that fail if run without the exact right config.
-> > But that's just another reason to NOT follow KUT's pattern, e.g. to force us to
-> > write robust tests.
-> > 
-> > E.g. instead of per-config command line options, let the user specify a file,
-> > and/or a directory (using a well known filename pattern to detect configs).
+> Signed-off-by: Tomasz Jeznach <tjeznach@rivosinc.com>
+> Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
+> ---
+>   drivers/iommu/riscv/iommu.c | 12 ++++++++++++
+>   1 file changed, 12 insertions(+)
 > 
-> Could also use an environment variable to specify a file which contains
-> a config in a test-specific format if parsing environment variables is
-> insufficient or awkward for configuring a test.
-
-There's no reason to use a environment variable for this.  If we want to support
-"advanced" setup via a test configuration, then that can simply go in configuration
-file that's passed to the runner.
+> diff --git a/drivers/iommu/riscv/iommu.c b/drivers/iommu/riscv/iommu.c
+> index 8a05def774bd..3fe4ceba8dd3 100644
+> --- a/drivers/iommu/riscv/iommu.c
+> +++ b/drivers/iommu/riscv/iommu.c
+> @@ -1462,6 +1462,17 @@ static struct iommu_group *riscv_iommu_device_group(struct device *dev)
+>   	return generic_device_group(dev);
+>   }
+>   
+> +static bool riscv_iommu_capable(struct device *dev, enum iommu_cap cap)
+> +{
+> +	switch (cap) {
+> +	case IOMMU_CAP_CACHE_COHERENCY:
+> +	case IOMMU_CAP_DEFERRED_FLUSH:
+> +		return true;
+> +	default:
+> +		return false;
+> +	}
+> +}
+> +
+>   static int riscv_iommu_of_xlate(struct device *dev, const struct of_phandle_args *args)
+>   {
+>   	return iommu_fwspec_add_ids(dev, args->args, 1);
+> @@ -1526,6 +1537,7 @@ static void riscv_iommu_release_device(struct device *dev)
+>   static const struct iommu_ops riscv_iommu_ops = {
+>   	.pgsize_bitmap = SZ_4K,
+>   	.of_xlate = riscv_iommu_of_xlate,
+> +	.capable = riscv_iommu_capable,
+>   	.identity_domain = &riscv_iommu_identity_domain,
+>   	.blocked_domain = &riscv_iommu_blocking_domain,
+>   	.release_domain = &riscv_iommu_blocking_domain,
 
