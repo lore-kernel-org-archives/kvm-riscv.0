@@ -1,118 +1,48 @@
-From: Jason Gunthorpe <jgg@ziepe.ca>
-Date: Tue, 19 Nov 2024 11:36:22 -0400
-Subject: [RFC PATCH 08/15] iommu/riscv: Add IRQ domain for interrupt
- remapping
-In-Reply-To: <DE13E1DF-7C68-461D-ADCD-8141B1ACEA5E@ventanamicro.com>
-References: <20241114161845.502027-17-ajones@ventanamicro.com>
- <20241114161845.502027-25-ajones@ventanamicro.com>
- <20241118184336.GB559636@ziepe.ca>
- <20241119-62ff49fc1eedba051838dba2@orel>
- <20241119140047.GC559636@ziepe.ca>
- <DE13E1DF-7C68-461D-ADCD-8141B1ACEA5E@ventanamicro.com>
-Message-ID: <20241119153622.GD559636@ziepe.ca>
+From: Atish Patra <atishp@rivosinc.com>
+Date: Tue, 19 Nov 2024 12:29:49 -0800
+Subject: [PATCH 1/8] drivers/perf: riscv: Add SBI v3.0 flag
+In-Reply-To: <20241119-pmu_event_info-v1-0-a4f9691421f8@rivosinc.com>
+References: <20241119-pmu_event_info-v1-0-a4f9691421f8@rivosinc.com>
+Message-ID: <20241119-pmu_event_info-v1-1-a4f9691421f8@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Tue, Nov 19, 2024 at 04:03:05PM +0100, Andrew Jones wrote:
+There are new PMU related features introduced in SBI v3.0.
+1. Raw Event v2 which allows mhpmeventX value to be 56 bit wide.
+2. Get Event info function to do a bulk query at one shot.
 
-> >This is the wrong thinking entirely. There is no such thing as a "VFIO
-> >domain".
-> >
-> >Default VFIO created domains should act excatly the same as a DMA API
-> >domain.
-> >
-> >If you want your system to have irq remapping, then it should be on by
-> >default and DMA API gets remapping too. There would need to be a very
-> >strong reason not to do that in order to make something special for
-> >riscv. If so you'd need to add some kind of flag to select it.
-> >
-> >Until you reach nested translation there is no "need" for VFIO to use
-> >any particular stage. The design is that default VFIO uses the same
-> >stage as the DMA API because it is doing the same basic default
-> >translation function.
-> 
-> The RISC-V IOMMU needs to use g-stage for device assignment, if we
-> also want to enable irqbypass, because the IOMMU is specified to
-> only look at the MSI table when g-stage is in use. This is actually
-> another reason the irq domain only makes sense for device
-> assignment.
+Signed-off-by: Atish Patra <atishp@rivosinc.com>
+---
+ drivers/perf/riscv_pmu_sbi.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-Most HW has enablable interrupt remapping and typically Linux just
-turns it always on.
+diff --git a/drivers/perf/riscv_pmu_sbi.c b/drivers/perf/riscv_pmu_sbi.c
+index 391ca1422cae..cb98efa9b106 100644
+--- a/drivers/perf/riscv_pmu_sbi.c
++++ b/drivers/perf/riscv_pmu_sbi.c
+@@ -63,6 +63,7 @@ PMU_FORMAT_ATTR(event, "config:0-47");
+ PMU_FORMAT_ATTR(firmware, "config:62-63");
+ 
+ static bool sbi_v2_available;
++static bool sbi_v3_available;
+ static DEFINE_STATIC_KEY_FALSE(sbi_pmu_snapshot_available);
+ #define sbi_pmu_snapshot_available() \
+ 	static_branch_unlikely(&sbi_pmu_snapshot_available)
+@@ -1450,6 +1451,9 @@ static int __init pmu_sbi_devinit(void)
+ 	if (sbi_spec_version >= sbi_mk_version(2, 0))
+ 		sbi_v2_available = true;
+ 
++	if (sbi_spec_version >= sbi_mk_version(3, 0))
++		sbi_v3_available = true;
++
+ 	ret = cpuhp_setup_state_multi(CPUHP_AP_PERF_RISCV_STARTING,
+ 				      "perf/riscv/pmu:starting",
+ 				      pmu_sbi_starting_cpu, pmu_sbi_dying_cpu);
 
-Is there a reason the DMA API shouldn't use this translation mode too?
-That seems to be the main issue here, you are trying to avoid
-interrupt remapping for DMA API and use it only for VFIO, and haven't
-explained why we need such complexity. Just use it always?
+-- 
+2.34.1
 
-> >Nested translation has a control to select the stage, and you can
-> >then force the g-stage for VFIO users at that point.
-> 
-> We could force riscv device assignment to always be nested, and when
-> not providing an iommu to the guest, it will still be single-stage,
-> but g-stage, but I don't think that's currently possible with VFIO,
-> is it?
-
-That isn't what I mean, I mean you should not be forcing the kind of
-domain being created until you get to special cases like nested.
-
-Default VFIO should work the same as the DMA API.
-
-> >> The IRQ domain will only be useful for device assignment, as that's when
-> >> an MSI translation will be needed. I can't think of any problems that
-> >> could arise from only creating the IRQ domain when probing assigned
-> >> devices, but I could certainly be missing something. Do you have some
-> >> potential problems in mind?
-> >
-> >I'm not an expert in the interrupt subsystem, but my understanding was
-> >we expect the interrupt domains/etc to be static once a device driver
-> >is probed. Changing things during iommu domain attach is after drivers
-> >are probed. I don't really expect it to work correctly in all corner
-> >cases.
-> 
-> With VFIO the iommu domain attach comes after an unbind/bind, so the
-> new driver is probed.
-
-That's the opposite of what I mean. The irq domain should be setup
-*before* VFIO binds to the driver.
-
-Changing the active irq_domain while VFIO is already probed to the
-device is highly unlikely to work right in all cases.
-
-> I think that's a safe time. However, if there
-> could be cases where the attach does not follow an unbind/bind, then
-> I agree that wouldn't be safe.
-
-These cases exist.
-
-> I'll consider always creating an IRQ
-> domain, even if it won't provide any additional functionality unless
-> the device is assigned.
-
-That isn't ideal, the translation under the IRQs shouldn't really be
-changing as the translation under the IOMMU changes.
-
-Further, VFIO assumes iommu_group_has_isolated_msi(), ie
-IRQ_DOMAIN_FLAG_ISOLATED_MSI, is fixed while it is is bound. Will that
-be true if the iommu is flapping all about? What will you do when VFIO
-has it attached to a blocked domain?
-
-It just doesn't make sense to change something so fundamental as the
-interrupt path on an iommu domain attachement. :\
-
-> >VFIO is allowed to change the translation as it operates and we expect
-> >that interrupts are not disturbed.
-> 
-> The IRQ domain stays the same during operation, the only changes are
-> the mappings from what the guest believes are its s-mode interrupt
-> files to the hypervisor selected guest interrupt files, and these
-> changes are made possible by the IRQ domain's vcpu-affinity support.
-
-That is only the case when talking about kvm, this all still has to
-work fully for non-kvm VFIO uses cases too.
-
-Jason
 
