@@ -1,75 +1,82 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Tue, 19 Nov 2024 08:49:37 +0100
-Subject: [RFC PATCH 08/15] iommu/riscv: Add IRQ domain for interrupt
- remapping
-In-Reply-To: <20241118184336.GB559636@ziepe.ca>
+Date: Tue, 19 Nov 2024 09:28:46 +0100
+Subject: [RFC PATCH 04/15] iommu/riscv: report iommu capabilities
+In-Reply-To: <ddd40bc3-7f2a-43c2-8918-a10c63bd05ba@arm.com>
 References: <20241114161845.502027-17-ajones@ventanamicro.com>
- <20241114161845.502027-25-ajones@ventanamicro.com>
- <20241118184336.GB559636@ziepe.ca>
-Message-ID: <20241119-62ff49fc1eedba051838dba2@orel>
+ <20241114161845.502027-21-ajones@ventanamicro.com>
+ <ddd40bc3-7f2a-43c2-8918-a10c63bd05ba@arm.com>
+Message-ID: <20241119-76c9ff71b8834ef886b3ca86@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Mon, Nov 18, 2024 at 02:43:36PM -0400, Jason Gunthorpe wrote:
-> On Thu, Nov 14, 2024 at 05:18:53PM +0100, Andrew Jones wrote:
-> > @@ -1276,10 +1279,30 @@ static int riscv_iommu_attach_paging_domain(struct iommu_domain *iommu_domain,
-> >  	struct riscv_iommu_device *iommu = dev_to_iommu(dev);
-> >  	struct riscv_iommu_info *info = dev_iommu_priv_get(dev);
-> >  	struct riscv_iommu_dc dc = {0};
-> > +	int ret;
-> >  
-> >  	if (!riscv_iommu_pt_supported(iommu, domain->pgd_mode))
-> >  		return -ENODEV;
-> >  
-> > +	if (riscv_iommu_bond_link(domain, dev))
-> > +		return -ENOMEM;
-> > +
-> > +	if (iommu_domain->type == IOMMU_DOMAIN_UNMANAGED) {
+On Fri, Nov 15, 2024 at 03:20:36PM +0000, Robin Murphy wrote:
+> On 14/11/2024 4:18 pm, Andrew Jones wrote:
+> > From: Tomasz Jeznach <tjeznach@rivosinc.com>
+> > 
+> > Report RISC-V IOMMU capabilities required by VFIO subsystem
+> > to enable PCIe device assignment.
 > 
-> Drivers should not be making tests like this.
-> 
-> > +		domain->gscid = ida_alloc_range(&riscv_iommu_gscids, 1,
-> > +						RISCV_IOMMU_MAX_GSCID, GFP_KERNEL);
-> > +		if (domain->gscid < 0) {
-> > +			riscv_iommu_bond_unlink(domain, dev);
-> > +			return -ENOMEM;
-> > +		}
-> > +
-> > +		ret = riscv_iommu_irq_domain_create(domain, dev);
-> > +		if (ret) {
-> > +			riscv_iommu_bond_unlink(domain, dev);
-> > +			ida_free(&riscv_iommu_gscids, domain->gscid);
-> > +			return ret;
-> > +		}
-> > +	}
-> 
-> What are you trying to do? Make something behave different for VFIO?
-> That isn't OK, we are trying to remove all the hacky VFIO special
-> cases in drivers.
-> 
-> What is the HW issue here? It is very very strange (and probably not
-> going to work right) that the irq domains change when domain
-> attachment changes.
-> 
-> The IRQ setup should really be fixed before any device drivers probe
-> onto the device.
+> IOMMU_CAP_DEFERRED_FLUSH has nothing at all to do with VFIO. As far as I can
+> tell from what's queued, riscv_iommu_unmap_pages() isn't really implementing
+> the full optimisation to get the most out of it either.
 
-I can't disagree with the statement that this looks hacky, but considering
-a VFIO domain needs to use the g-stage for its single-stage translation
-and a paging domain for the host would use s-stage, then it seems we need
-to identify the VFIO domains for their special treatment. Is there an
-example of converting VFIO special casing in other drivers to something
-cleaner that you can point me at?
+Thanks, Robin. I'll drop this cap for the next version.
 
-The IRQ domain will only be useful for device assignment, as that's when
-an MSI translation will be needed. I can't think of any problems that
-could arise from only creating the IRQ domain when probing assigned
-devices, but I could certainly be missing something. Do you have some
-potential problems in mind?
+> 
+> I guess IOMMU_CAP_CACHE_COHERENCY falls out of the assumption of a coherent
+> IOMMU and lack of PBMT support making everything implicitly IOMMU_CACHE all
+> the time whether you want it or not, but clarifying that might be nice
+> (especially since there's some chance that something will eventually come
+> along to break it...)
+
+Yes, riscv selects ARCH_DMA_DEFAULT_COHERENT and the riscv IOMMU hardware
+descriptions don't provide any way to say otherwise. I can put a comment
+above the IOMMU_CAP_CACHE_COHERENCY case which states "The RISC-V IOMMU is
+always DMA cache coherent", or did you have something else in mind?
 
 Thanks,
 drew
+
+> 
+> Thanks,
+> Robin.
+> 
+> > Signed-off-by: Tomasz Jeznach <tjeznach@rivosinc.com>
+> > Signed-off-by: Andrew Jones <ajones@ventanamicro.com>
+> > ---
+> >   drivers/iommu/riscv/iommu.c | 12 ++++++++++++
+> >   1 file changed, 12 insertions(+)
+> > 
+> > diff --git a/drivers/iommu/riscv/iommu.c b/drivers/iommu/riscv/iommu.c
+> > index 8a05def774bd..3fe4ceba8dd3 100644
+> > --- a/drivers/iommu/riscv/iommu.c
+> > +++ b/drivers/iommu/riscv/iommu.c
+> > @@ -1462,6 +1462,17 @@ static struct iommu_group *riscv_iommu_device_group(struct device *dev)
+> >   	return generic_device_group(dev);
+> >   }
+> > +static bool riscv_iommu_capable(struct device *dev, enum iommu_cap cap)
+> > +{
+> > +	switch (cap) {
+> > +	case IOMMU_CAP_CACHE_COHERENCY:
+> > +	case IOMMU_CAP_DEFERRED_FLUSH:
+> > +		return true;
+> > +	default:
+> > +		return false;
+> > +	}
+> > +}
+> > +
+> >   static int riscv_iommu_of_xlate(struct device *dev, const struct of_phandle_args *args)
+> >   {
+> >   	return iommu_fwspec_add_ids(dev, args->args, 1);
+> > @@ -1526,6 +1537,7 @@ static void riscv_iommu_release_device(struct device *dev)
+> >   static const struct iommu_ops riscv_iommu_ops = {
+> >   	.pgsize_bitmap = SZ_4K,
+> >   	.of_xlate = riscv_iommu_of_xlate,
+> > +	.capable = riscv_iommu_capable,
+> >   	.identity_domain = &riscv_iommu_identity_domain,
+> >   	.blocked_domain = &riscv_iommu_blocking_domain,
+> >   	.release_domain = &riscv_iommu_blocking_domain,
 
