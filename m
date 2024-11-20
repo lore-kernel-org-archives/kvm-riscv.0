@@ -1,70 +1,73 @@
 From: Max Hsu <max.hsu@sifive.com>
-Date: Wed, 20 Nov 2024 21:55:18 +0800
-Subject: [PATCH RFC 1/3] dt-bindings: riscv: Add Svukte entry
-In-Reply-To: <eb8f399b-fa09-47fd-8102-9b65b0839dd5@ghiti.fr>
-References: <20240920-dev-maxh-svukte-rebase-v1-0-7864a88a62bd@sifive.com>
- <20240920-dev-maxh-svukte-rebase-v1-1-7864a88a62bd@sifive.com> <eb8f399b-fa09-47fd-8102-9b65b0839dd5@ghiti.fr>
-Message-ID: <CAHibDyzOWrKwEZ_7K2f2MY9DFn4sD5QjDEQ42u8DTaftN6Fuvw@mail.gmail.com>
+Date: Wed, 20 Nov 2024 22:09:31 +0800
+Subject: [PATCH RFC v3 0/3] riscv: add Svukte extension
+Message-ID: <20241120-dev-maxh-svukte-v3-v3-0-1e533d41ae15@sifive.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Alexandre,
+RISC-V privileged spec will be added with Svukte extension [1]
 
-Thanks for the suggestion.
-I will send a typo fix in the RFC v3 patches
+Svukte introduce senvcfg.UKTE and hstatus.HUKTE bitfield.
+which makes user-mode access to supervisor memory raise page faults
+in constant time, mitigating attacks that attempt to discover the
+supervisor software's address-space layout.
+
+In the Linux kernel, since the hstatus.HU bit is not enabled,
+the following patches only enable the use of senvcfg.UKTE.
+
+For Guest environments, because a Guest OS (not limited to Linux)
+may hold mappings from GVA to GPA, the Guest OS should decide
+whether to enable the protection provided by the Svukte extension.
+Therefore, the functions kvm_riscv_vcpu_isa_(enable|disable)_allowed
+can use default case (which will return true) in the switch-case.
+
+If the Guest environment wants to change senvcfg.UKTE, KVM already
+provides the senvcfg CSR swap support via
+kvm_riscv_vcpu_swap_in_(host|guest)_state.
+Thus, there is no concern about the Guest OS affecting the Host OS.
+
+The following patches add
+- dt-binding of Svukte ISA string
+- CSR bit definition, ISA detection, senvcfg.UKTE enablement in kernel
+- KVM ISA support for Svukte extension
+
+Changes in v3:
+- rebase on riscv/for-next
+- fixed typo in the dt-binding for the Svukte ISA string
+- updated the commit message for KVM support for the Svukte extension
+- Link to v2: https://lore.kernel.org/all/20240927-dev-maxh-svukte-rebase-2-v2-0-9afe57c33aee at sifive.com/
+
+Changes in v2:
+- rebase on riscv/for-next (riscv-for-linus-6.12-mw1)
+- modify the description of dt-binding on Svukte ISA string
+- Link to v1: https://lore.kernel.org/all/20240920-dev-maxh-svukte-rebase-v1-0-7864a88a62bd at sifive.com/
+
+Link: https://github.com/riscv/riscv-isa-manual/pull/1564 [1]
+
+Signed-off-by: Max Hsu <max.hsu@sifive.com>
+
+---
+Max Hsu (3):
+      dt-bindings: riscv: Add Svukte entry
+      riscv: Add Svukte extension support
+      riscv: KVM: Add Svukte extension support for Guest/VM
+
+ Documentation/devicetree/bindings/riscv/extensions.yaml | 9 +++++++++
+ arch/riscv/include/asm/csr.h                            | 2 ++
+ arch/riscv/include/asm/hwcap.h                          | 1 +
+ arch/riscv/include/uapi/asm/kvm.h                       | 1 +
+ arch/riscv/kernel/cpufeature.c                          | 5 +++++
+ arch/riscv/kvm/vcpu_onereg.c                            | 1 +
+ 6 files changed, 19 insertions(+)
+---
+base-commit: 0eb512779d642b21ced83778287a0f7a3ca8f2a1
+change-id: 20241115-dev-maxh-svukte-v3-af46d650ac0b
 
 Best regards,
-Max Hsu
+-- 
+Max Hsu <max.hsu@sifive.com>
 
-On Thu, Nov 14, 2024 at 12:15?AM Alexandre Ghiti <alex@ghiti.fr> wrote:
->
-> Hi Max,
->
-> On 20/09/2024 09:39, Max Hsu wrote:
-> > Add an entry for the Svukte extension to the riscv,isa-extensions
-> > property.
-> >
-> > Reviewed-by: Samuel Holland <samuel.holland@sifive.com>
-> > Signed-off-by: Max Hsu <max.hsu@sifive.com>
-> > ---
-> >   Documentation/devicetree/bindings/riscv/extensions.yaml | 7 +++++++
-> >   1 file changed, 7 insertions(+)
-> >
-> > diff --git a/Documentation/devicetree/bindings/riscv/extensions.yaml b/Documentation/devicetree/bindings/riscv/extensions.yaml
-> > index a06dbc6b4928958704855c8993291b036e3d1a63..df96aea5e53a70b0cb8905332464a42a264e56e6 100644
-> > --- a/Documentation/devicetree/bindings/riscv/extensions.yaml
-> > +++ b/Documentation/devicetree/bindings/riscv/extensions.yaml
-> > @@ -171,6 +171,13 @@ properties:
-> >               memory types as ratified in the 20191213 version of the privileged
-> >               ISA specification.
-> >
-> > +        - const: svukte
-> > +          description:
-> > +            The standard Svukte supervisor-level extensions for making user-mode
->
->
-> s/extensions/extension
->
->
-> > +            accesses to supervisor memory raise page faults in constant time,
-> > +            mitigating attacks that attempt to discover the supervisor
-> > +            software's address-space layout, as PR#1564 of riscv-isa-manual.
-> > +
-> >           - const: zacas
-> >             description: |
-> >               The Zacas extension for Atomic Compare-and-Swap (CAS) instructions
-> >
->
-> You'll need a new version for the proper commit sha1 once it gets
-> ratified anyway, so with the typo fixed, you can add:
->
-> Reviewed-by: Alexandre Ghiti <alexghiti@rivosinc.com>
->
-> Thanks,
->
-> Alex
->
 
