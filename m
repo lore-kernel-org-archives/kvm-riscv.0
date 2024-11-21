@@ -1,143 +1,61 @@
-From: Sean Christopherson <seanjc@google.com>
-Date: Wed, 20 Nov 2024 16:29:16 -0800
-Subject: [RFC PATCH 0/1] KVM selftests runner for running more than just default
-In-Reply-To: <20241115211523.GB599524.vipinsh@google.com>
-References: <20240821223012.3757828-1-vipinsh@google.com> <CAHVum0eSxCTAme8=oV9a=cVaJ9Jzu3-W-3vgbubVZ2qAWVjfJA@mail.gmail.com>
- <CAHVum0fWJW7V5ijtPcXQAtPSdoQSKjzYwMJ-XCRH2_sKs=Kg7g@mail.gmail.com>
- <ZyuiH_CVQqJUoSB-@google.com> <20241108-eaacad12f1eef31481cf0c6c@orel>
- <ZzY2iAqNfeiiIGys@google.com> <20241115211523.GB599524.vipinsh@google.com>
-Message-ID: <Zz5-3A36cckhYu9K@google.com>
+From: Anup Patel <anup@brainfault.org>
+Date: Thu, 21 Nov 2024 18:25:38 +0530
+Subject: [GIT PULL] KVM/riscv changes for 6.13, part #2
+Message-ID: <CAAhSdy2mLBzE63wpQrOaHtOV0rwqkaxTUMBA9oMZsk68o0EHMg@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Nov 15, 2024, Vipin Sharma wrote:
-> On 2024-11-14 09:42:32, Sean Christopherson wrote:
-> > On Fri, Nov 08, 2024, Andrew Jones wrote:
-> > > On Wed, Nov 06, 2024 at 09:06:39AM -0800, Sean Christopherson wrote:
-> > > > On Fri, Nov 01, 2024, Vipin Sharma wrote:
-> > > > > Phase 3: Provide collection of interesting configurations
-> > > > > 
-> > > > > Specific individual constructs can be combined in a meaningful way to
-> > > > > provide interesting configurations to run on a platform. For example,
-> > > > > user doesn't need to specify each individual configuration instead,
-> > > > > some prebuilt configurations can be exposed like
-> > > > > --stress_test_shadow_mmu, --test_basic_nested
-> > > > 
-> > > > IMO, this shouldn't be baked into the runner, i.e. should not surface as dedicated
-> > > > command line options.  Users shouldn't need to modify the runner just to bring
-> > > > their own configuration.  I also think configurations should be discoverable,
-> > > > e.g. not hardcoded like KUT's unittest.cfg.  A very real problem with KUT's
-> > > > approach is that testing different combinations is frustratingly difficult,
-> > > > because running a testcase with different configuration requires modifying a file
-> > > > that is tracked by git.
-> 
-> I was thinking of folks who send upstream patches, they might not have
-> interesting configurations to run to test. If we don't provide an option
-> then they might not be able to test different scenarios.
+Hi Paolo,
 
-Yeah, I'm not saying upstream can't provide testcases, just that the existence of
-testcases shouldn't be hardcoded into the runner.
+As mentioned in the last PR, here are the remaining KVM RISC-V
+changes for 6.13 which mainly consists of Svade/Svadu extension
+support for Host and Guest/VM.
 
-> I do agree command line option might not be a great choice here, we
-> should keep them granular.
-> 
-> What if there is a shell script which has some runner commands with
-> different combinations? There should be a default configuration provided
-> to ease testing of patches for folks who might not be aware of the
-> configurations which maintainers generally use.
-> 
-> End goal is to provide good confidence to the patch submitter that they have
-> done good testing.
+Please note that Palmer has not yet sent the RISC-V PR for 6.13
+so these patches will conflict with the RISC-V tree.
 
-As discussed off-list, I think having one testcase per file is the way to go.
+Please pull.
 
-  - Very discoverable (literally files)
-  - The user (or a shell script) can use regexes, globbing, etc., to select which
-    tests to run
-  - Creating "suites" is similarly easy, e.g. by having a list of files/testscase,
-    or maybe by directory layout
+Regards,
+Anup
 
-Keeping track of testcases (and their content), e.g. to avoid duplicates, might
-be an issue, but I think we can mitigate that by establishing and following
-guidelines for naming, e.g. so that the name of a testcase gives the user a
-decent idea of what it does.
+The following changes since commit 332fa4a802b16ccb727199da685294f85f9880cb:
 
-> > > Could also use an environment variable to specify a file which contains
-> > > a config in a test-specific format if parsing environment variables is
-> > > insufficient or awkward for configuring a test.
-> > 
-> > There's no reason to use a environment variable for this.  If we want to support
-> > "advanced" setup via a test configuration, then that can simply go in configuration
-> > file that's passed to the runner.
-> 
-> Can you guys specify What does this test configuration file/directory
-> will look like? Also, is it gonna be a one file for one test? This might
-> become ugly soon.
+  riscv: kvm: Fix out-of-bounds array access (2024-11-05 13:27:32 +0530)
 
-As above, I like the idea of one file per testcase.  I'm not anticipating thousands
-of tests.  Regardless of how we organize things, mentally keeping track of that
-many tests would be extremely difficult.  E.g. testcases would likely bitrot and/or
-we'd end up with a lot of overlap.  And if we do get anywhere near that number of
-testcases, they'll need to be organzied in some way.
+are available in the Git repository at:
 
-One idea would be create a directory per KVM selftest, and then put testcases for
-that test in said directory.  We could even do something clever like fail the
-build if a test doesn't have a corresponding directory (and a default testcase?).
+  https://github.com/kvm-riscv/linux.git tags/kvm-riscv-6.13-2
 
-E.g. tools/testing/selftests/kvm/testcases, with sub-directories following the
-tests themsleves and separated by architecture as appropriate.
+for you to fetch changes up to c74bfe4ffe8c1ca94e3d60ec7af06cf679e23583:
 
-That us decent organization.  If each test has a testcase directory, it's easy to
-get a list of testcases.  At that point, the name of the testcase can be used to
-organize and describe, e.g. by tying the name to the (most interesting) parameters.
+  KVM: riscv: selftests: Add Svade and Svadu Extension to get-reg-list
+test (2024-11-21 17:40:16 +0530)
 
-Hmm, and for collections of multiple testscases, what if we added a separate
-"testsuites" directory, with different syntax?  E.g. one file per testuite, which
-is basically a list of testcases.  Maybe with some magic to allow testsuites to
-"include" arch specific info?
+----------------------------------------------------------------
+KVM/riscv changes for 6.13 part #2
 
-E.g. something like this
+- Svade and Svadu extension support for Host and Guest/VM
 
-$ tree test*
-testcases
-??? max_guest_memory_test
-    ??? 128gib.allvcpus.test
-testsuites
-??? mmu.suite
+----------------------------------------------------------------
+Yong-Xuan Wang (4):
+      RISC-V: Add Svade and Svadu Extensions Support
+      dt-bindings: riscv: Add Svade and Svadu Entries
+      RISC-V: KVM: Add Svade and Svadu Extensions Support for Guest/VM
+      KVM: riscv: selftests: Add Svade and Svadu Extension to get-reg-list test
 
-3 directories, 2 files
-$ cat testsuites/mmu.suite 
-$ARCH/mmu.suite
-max_guest_memory_test/128gib.allvcpus.test
-
-> This brings the question on how to handle the test execution when we are using
-> different command line parameters for individual tests which need some
-> specific environmnet?
-> 
-> Some parameters will need a very specific module or sysfs setting which
-> might conflict with other tests. This is why I had "test_suite" in my
-> json, which can provide some module, sysfs, or other host settings. But
-> this also added cost of duplicating tests for each/few suites.
-
-IMO, this should be handled by user, or their CI environment, not by the upstream
-runner.  Reconfiguring module params or sysfs knobs is inherently environment
-specific.  E.g. not all KVM module params are writable post-load, and so changing
-a param might require stopping all VMs on the system, or even a full kernel reboot
-if KVM is built-in.  There may also be knobs that require root access, that are
-dependent on hardware and/or kernel config, etc.
-
-I really don't want to build all that into the upstream test runner, certainly not
-in the first few phases.  I 100% think the runner should be constructed in such a
-way that people/organizations/CI pipeines can build infrastructure on top, I just
-don't think it's a big need or a good fit for upstream.
-
-> I guess the shell script I talked about few paragraphs above, can have
-> some specific runner invocations which will set specific requirements of
-> the test and execute that specific test (RFC runner has the capabilty to execute
-> specific test).
-> 
-> Open to suggestions on a better approach.
+ .../devicetree/bindings/riscv/extensions.yaml      | 28 ++++++++++++++++++++++
+ arch/riscv/Kconfig                                 |  1 +
+ arch/riscv/include/asm/csr.h                       |  1 +
+ arch/riscv/include/asm/hwcap.h                     |  2 ++
+ arch/riscv/include/asm/pgtable.h                   | 13 +++++++++-
+ arch/riscv/include/uapi/asm/kvm.h                  |  2 ++
+ arch/riscv/kernel/cpufeature.c                     | 12 ++++++++++
+ arch/riscv/kvm/vcpu.c                              |  4 ++++
+ arch/riscv/kvm/vcpu_onereg.c                       | 15 ++++++++++++
+ tools/testing/selftests/kvm/riscv/get-reg-list.c   |  8 +++++++
+ 10 files changed, 85 insertions(+), 1 deletion(-)
 
