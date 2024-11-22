@@ -1,90 +1,170 @@
-From: Jason Gunthorpe <jgg@ziepe.ca>
-Date: Fri, 22 Nov 2024 11:33:40 -0400
-Subject: [RFC PATCH 08/15] iommu/riscv: Add IRQ domain for interrupt
- remapping
-In-Reply-To: <20241121-4e637c492d554280dec3b077@orel>
-References: <20241114161845.502027-17-ajones@ventanamicro.com>
- <20241114161845.502027-25-ajones@ventanamicro.com>
- <20241118184336.GB559636@ziepe.ca>
- <20241119-62ff49fc1eedba051838dba2@orel>
- <20241119140047.GC559636@ziepe.ca>
- <DE13E1DF-7C68-461D-ADCD-8141B1ACEA5E@ventanamicro.com>
- <20241119153622.GD559636@ziepe.ca>
- <20241121-4e637c492d554280dec3b077@orel>
-Message-ID: <20241122153340.GC773835@ziepe.ca>
+From: Andrew Jones <andrew.jones@linux.dev>
+Date: Fri, 22 Nov 2024 17:05:59 +0100
+Subject: [kvm-unit-tests PATCH v2 1/3] riscv: lib: Add SBI SSE extension
+ definitions
+In-Reply-To: <20241122140459.566306-2-cleger@rivosinc.com>
+References: <20241122140459.566306-1-cleger@rivosinc.com>
+ <20241122140459.566306-2-cleger@rivosinc.com>
+Message-ID: <20241122-1e45023d7cf30ca9885f7872@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Nov 22, 2024 at 04:11:36PM +0100, Andrew Jones wrote:
-
-> The reason is that the RISC-V IOMMU only checks the MSI table, i.e.
-> enables its support for MSI remapping, when the g-stage (second-stage)
-> page table is in use. However, the expected virtual memory scheme for an
-> OS to use for DMA would be to have s-stage (first-stage) in use and the
-> g-stage set to 'Bare' (not in use). 
-
-That isn't really a technical reason.
-
-> OIOW, it doesn't appear the spec authors expected MSI remapping to
-> be enabled for the host DMA use case.  That does make some sense,
-> since it's actually not necessary. For the host DMA use case,
-> providing mappings for each s-mode interrupt file which the device
-> is allowed to write to in the s-stage page table sufficiently
-> enables MSIs to be delivered.
-
-Well, that seems to be the main problem here. You are grappling with a
-spec design that doesn't match the SW expecations. Since it has
-deviated from what everyone else has done you now have extra
-challenges to resolve in some way.
-
-Just always using interrupt remapping if the HW is capable of
-interrupt remapping and ignoring the spec "expectation" is a nice a
-simple way to make things work with existing Linux.
-
-> If "default VFIO" means VFIO without irqbypass, then it would work the
-> same as the DMA API, assuming all mappings for all necessary s-mode
-> interrupt files are created (something the DMA API needs as well).
-> However, VFIO would also need 'vfio_iommu_type1.allow_unsafe_interrupts=1'
-> to be set for this no-irqbypass configuration.
-
-Which isn't what anyone wants, you need to make the DMA API domain be
-fully functional so that VFIO works.
-
-> > That isn't ideal, the translation under the IRQs shouldn't really be
-> > changing as the translation under the IOMMU changes.
+On Fri, Nov 22, 2024 at 03:04:55PM +0100, Cl?ment L?ger wrote:
+> Add SBI SSE extension definitions in sbi.h
 > 
-> Unless the device is assigned to a guest, then the IRQ domain wouldn't
-> do anything at all (it'd just sit between the device and the device's
-> old MSI parent domain), but it also wouldn't come and go, risking issues
-> with anything sensitive to changes in the IRQ domain hierarchy.
-
-VFIO isn't restricted to such a simple use model. You have to support
-all the generality, which includes fully supporting changing the iommu
-translation on the fly.
-
-> > Further, VFIO assumes iommu_group_has_isolated_msi(), ie
-> > IRQ_DOMAIN_FLAG_ISOLATED_MSI, is fixed while it is is bound. Will that
-> > be true if the iommu is flapping all about? What will you do when VFIO
-> > has it attached to a blocked domain?
-> > 
-> > It just doesn't make sense to change something so fundamental as the
-> > interrupt path on an iommu domain attachement. :\
+> Signed-off-by: Cl?ment L?ger <cleger@rivosinc.com>
+> ---
+>  lib/riscv/asm/sbi.h | 76 +++++++++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 76 insertions(+)
 > 
-> Yes, it does appear I should be doing this at iommu device probe time
-> instead. It won't provide any additional functionality to use cases which
-> aren't assigning devices to guests, but it also won't hurt, and it should
-> avoid the risks you point out.
+> diff --git a/lib/riscv/asm/sbi.h b/lib/riscv/asm/sbi.h
+> index 98a9b097..96100bc2 100644
+> --- a/lib/riscv/asm/sbi.h
+> +++ b/lib/riscv/asm/sbi.h
+> @@ -11,6 +11,9 @@
+>  #define SBI_ERR_ALREADY_AVAILABLE	-6
+>  #define SBI_ERR_ALREADY_STARTED		-7
+>  #define SBI_ERR_ALREADY_STOPPED		-8
+> +#define SBI_ERR_NO_SHMEM		-9
+> +#define SBI_ERR_INVALID_STATE		-10
+> +#define SBI_ERR_BAD_RANGE		-11
 
-Even if you statically create the domain you can't change the value of
-IRQ_DOMAIN_FLAG_ISOLATED_MSI depending on what is currently attached
-to the IOMMU.
+Might as well add SBI_ERR_TIMEOUT and SBI_ERR_IO now too.
 
-What you are trying to do is not supported by the software stack right
-now. You need to make much bigger, more intrusive changes, if you
-really want to make interrupt remapping dynamic.
+>  
+>  #ifndef __ASSEMBLY__
+>  #include <cpumask.h>
+> @@ -23,6 +26,7 @@ enum sbi_ext_id {
+>  	SBI_EXT_SRST = 0x53525354,
+>  	SBI_EXT_DBCN = 0x4442434E,
+>  	SBI_EXT_SUSP = 0x53555350,
+> +	SBI_EXT_SSE = 0x535345,
+>  };
+>  
+>  enum sbi_ext_base_fid {
+> @@ -71,6 +75,78 @@ enum sbi_ext_dbcn_fid {
+>  	SBI_EXT_DBCN_CONSOLE_WRITE_BYTE,
+>  };
+>  
+> +/* SBI Function IDs for SSE extension */
+> +#define SBI_EXT_SSE_READ_ATTR		0x00000000
+> +#define SBI_EXT_SSE_WRITE_ATTR		0x00000001
 
-Jason
+These are named with an 'S' on the end in the spec, e.g.
+sbi_sse_read_attrs. Let's add the S here to to be consistent.
+
+> +#define SBI_EXT_SSE_REGISTER		0x00000002
+> +#define SBI_EXT_SSE_UNREGISTER		0x00000003
+> +#define SBI_EXT_SSE_ENABLE		0x00000004
+> +#define SBI_EXT_SSE_DISABLE		0x00000005
+> +#define SBI_EXT_SSE_COMPLETE		0x00000006
+> +#define SBI_EXT_SSE_INJECT		0x00000007
+
+What about sbi_sse_hart_unmask and sbi_sse_hart_mask?
+
+The function IDs can be enums like the other extensions define them,
+unless they need to be used in assembly. But, if they need to be used
+in assembly then they should be outside the '#ifndef __ASSEMBLY__'
+
+> +
+> +/* SBI SSE Event Attributes. */
+> +enum sbi_sse_attr_id {
+> +	SBI_SSE_ATTR_STATUS		= 0x00000000,
+> +	SBI_SSE_ATTR_PRIO		= 0x00000001,
+
+SBI_SSE_ATTR_PRIORITY
+
+> +	SBI_SSE_ATTR_CONFIG		= 0x00000002,
+> +	SBI_SSE_ATTR_PREFERRED_HART	= 0x00000003,
+> +	SBI_SSE_ATTR_ENTRY_PC		= 0x00000004,
+> +	SBI_SSE_ATTR_ENTRY_ARG		= 0x00000005,
+> +	SBI_SSE_ATTR_INTERRUPTED_SEPC	= 0x00000006,
+> +	SBI_SSE_ATTR_INTERRUPTED_FLAGS	= 0x00000007,
+> +	SBI_SSE_ATTR_INTERRUPTED_A6	= 0x00000008,
+> +	SBI_SSE_ATTR_INTERRUPTED_A7	= 0x00000009,
+> +};
+> +
+> +#define SBI_SSE_ATTR_STATUS_STATE_OFFSET	0
+> +#define SBI_SSE_ATTR_STATUS_STATE_MASK		0x3
+> +#define SBI_SSE_ATTR_STATUS_PENDING_OFFSET	2
+> +#define SBI_SSE_ATTR_STATUS_INJECT_OFFSET	3
+> +
+> +#define SBI_SSE_ATTR_CONFIG_ONESHOT	(1 << 0)
+> +
+> +#define SBI_SSE_ATTR_INTERRUPTED_FLAGS_STATUS_SPP	BIT(0)
+> +#define SBI_SSE_ATTR_INTERRUPTED_FLAGS_STATUS_SPIE	BIT(1)
+
+s/STATUS/SSTATUS/
+
+> +#define SBI_SSE_ATTR_INTERRUPTED_FLAGS_HSTATUS_SPV	BIT(2)
+> +#define SBI_SSE_ATTR_INTERRUPTED_FLAGS_HSTATUS_SPVP	BIT(3)
+> +
+> +enum sbi_sse_state {
+> +	SBI_SSE_STATE_UNUSED     = 0,
+> +	SBI_SSE_STATE_REGISTERED = 1,
+> +	SBI_SSE_STATE_ENABLED    = 2,
+> +	SBI_SSE_STATE_RUNNING    = 3,
+
+Searching for tabs I see an unexpected lack of them above between
+the enums and the ='s and also...
+
+> +};
+> +
+> +/* SBI SSE Event IDs. */
+> +#define SBI_SSE_EVENT_LOCAL_RAS			0x00000000
+
+Missing LOCAL_DOUBLE_TRAP
+
+> +#define	SBI_SSE_EVENT_LOCAL_PLAT_0_START	0x00004000
+> +#define SBI_SSE_EVENT_LOCAL_PLAT_0_END		0x00007fff
+> +#define SBI_SSE_EVENT_GLOBAL_RAS		0x00008000
+> +#define	SBI_SSE_EVENT_GLOBAL_PLAT_0_START	0x00004000
+> +#define SBI_SSE_EVENT_GLOBAL_PLAT_0_END		0x00007fff
+
+copy+paste error, global platform specific events are 0xc000 - 0xffff
+
+> +
+> +#define SBI_SSE_EVENT_LOCAL_PMU			0x00010000
+> +#define	SBI_SSE_EVENT_LOCAL_PLAT_1_START	0x00014000
+> +#define SBI_SSE_EVENT_LOCAL_PLAT_1_END		0x00017fff
+> +#define	SBI_SSE_EVENT_GLOBAL_PLAT_1_START	0x0001c000
+> +#define SBI_SSE_EVENT_GLOBAL_PLAT_1_END		0x0001ffff
+> +
+> +#define	SBI_SSE_EVENT_LOCAL_PLAT_2_START	0x00024000
+> +#define SBI_SSE_EVENT_LOCAL_PLAT_2_END		0x00027fff
+> +#define	SBI_SSE_EVENT_GLOBAL_PLAT_2_START	0x0002c000
+> +#define SBI_SSE_EVENT_GLOBAL_PLAT_2_END		0x0002ffff
+> +
+> +#define SBI_SSE_EVENT_LOCAL_SOFTWARE		0xffff0000
+> +#define	SBI_SSE_EVENT_LOCAL_PLAT_3_START	0xffff4000
+> +#define SBI_SSE_EVENT_LOCAL_PLAT_3_END		0xffff7fff
+> +#define SBI_SSE_EVENT_GLOBAL_SOFTWARE		0xffff8000
+> +#define	SBI_SSE_EVENT_GLOBAL_PLAT_3_START	0xffffc000
+> +#define SBI_SSE_EVENT_GLOBAL_PLAT_3_END		0xffffffff
+
+...unexpected tabs between the #define and the symbol name in
+several of the above definitions.
+
+> +
+> +#define SBI_SSE_EVENT_GLOBAL_BIT		(1 << 15)
+> +#define SBI_SSE_EVENT_PLATFORM_BIT		(1 << 14)
+
+Let's put these in numeric order like the spec has them, i.e.
+
+  #define SBI_SSE_EVENT_PLATFORM_BIT		(1 << 14)
+  #define SBI_SSE_EVENT_GLOBAL_BIT		(1 << 15)
+
+> +
+>  struct sbiret {
+>  	long error;
+>  	long value;
+> -- 
+> 2.45.2
+>
+
+Thanks,
+drew
 
