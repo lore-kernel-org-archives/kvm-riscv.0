@@ -1,50 +1,62 @@
-From: Jason Gunthorpe <jgg@ziepe.ca>
-Date: Mon, 25 Nov 2024 11:07:27 -0400
-Subject: [RFC PATCH 08/15] iommu/riscv: Add IRQ domain for interrupt
- remapping
-In-Reply-To: <20241122-8c00551e2383787346c5249f@orel>
-References: <20241114161845.502027-17-ajones@ventanamicro.com>
- <20241114161845.502027-25-ajones@ventanamicro.com>
- <20241118184336.GB559636@ziepe.ca>
- <20241119-62ff49fc1eedba051838dba2@orel>
- <20241119140047.GC559636@ziepe.ca>
- <DE13E1DF-7C68-461D-ADCD-8141B1ACEA5E@ventanamicro.com>
- <20241119153622.GD559636@ziepe.ca>
- <20241121-4e637c492d554280dec3b077@orel>
- <20241122153340.GC773835@ziepe.ca>
- <20241122-8c00551e2383787346c5249f@orel>
-Message-ID: <20241125150727.GD773835@ziepe.ca>
+From: Clément Léger <cleger@rivosinc.com>
+Date: Mon, 25 Nov 2024 17:21:49 +0100
+Subject: [kvm-unit-tests PATCH v4 0/5] riscv: add SBI SSE extension tests
+Message-ID: <20241125162200.1630845-1-cleger@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Fri, Nov 22, 2024 at 06:07:59PM +0100, Andrew Jones wrote:
+This series adds an individual test for SBI SSE extension as well as
+needed infrastructure for SSE support. It also adds test specific
+asm-offsets generation to use custom OFFSET and DEFINE from the test
+directory.
 
-> > What you are trying to do is not supported by the software stack right
-> > now. You need to make much bigger, more intrusive changes, if you
-> > really want to make interrupt remapping dynamic.
-> >
-> 
-> Let the fun begin. I'll look into this more. It also looks like I need to
-> collect some test cases to ensure I can support all use cases with
-> whatever I propose next. Pointers for those would be welcome.
+---
 
-Sorry, I don't really have anything.. But iommufd allows changing the
-translation at will and we expect this to happen in normal VMM
-scenarios. So blocking, paging, nesting are all expected to be
-dynamically selectable and non-disruptive to interrupts.
+V4:
+ - Fix typo sbi_ext_ss_fid -> sbi_ext_sse_fid
+ - Add proper asm-offset generation for tests
+ - Move SSE specific file from lib/riscv to riscv/
 
-So, you can't decide if remapping is enabled or not for a device based
-only on the domain attachment.
+V3:
+ - Add -deps variable for test specific dependencies
+ - Fix formatting errors/typo in sbi.h
+ - Add missing double trap event
+ - Alphabetize sbi-sse.c includes
+ - Fix a6 content after unmasking event
+ - Add SSE HART_MASK/UNMASK test
+ - Use mv instead of move
+ - move sbi_check_sse() definition in sbi.c
+ - Remove sbi_sse test from unitests.cfg
 
-I think you'd need to create a way for VFIO to request dynamic
-interrupt remapping be enabled for the device very, very early in it's
-process and that would remain fixed while VFIO is using the device.
+V2:
+ - Rebased on origin/master and integrate it into sbi.c tests
 
-The dynamic state of interrupt remapping would constrain what iommu
-attachment configurations are permitted.
+Cl?ment L?ger (5):
+  kbuild: allow multiple asm-offsets file to be generated
+  riscv: use asm-offsets to generate SBI_EXT_HSM values
+  riscv: Add "-deps" handling for tests
+  riscv: lib: Add SBI SSE extension definitions
+  riscv: sbi: Add SSE extension tests
 
-Jason
+ scripts/asm-offsets.mak  |   22 +-
+ riscv/Makefile           |   10 +-
+ lib/riscv/asm/csr.h      |    2 +
+ lib/riscv/asm/sbi.h      |   83 +++
+ riscv/sbi-tests.h        |   12 +
+ riscv/sbi-asm.S          |   96 +++-
+ riscv/asm-offsets-test.c |   19 +
+ riscv/sbi-sse.c          | 1043 ++++++++++++++++++++++++++++++++++++++
+ riscv/sbi.c              |    3 +
+ riscv/.gitignore         |    1 +
+ 10 files changed, 1278 insertions(+), 13 deletions(-)
+ create mode 100644 riscv/asm-offsets-test.c
+ create mode 100644 riscv/sbi-sse.c
+ create mode 100644 riscv/.gitignore
+
+-- 
+2.45.2
+
 
