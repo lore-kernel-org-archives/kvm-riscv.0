@@ -1,11 +1,12 @@
 From: Clément Léger <cleger@rivosinc.com>
-Date: Mon, 25 Nov 2024 15:09:26 +0100
-Subject: [kvm-unit-tests PATCH v3 4/4] riscv: sbi: Add SSE extension tests
-In-Reply-To: <20241125-01fae59d27bb81fff71e794e@orel>
+Date: Mon, 25 Nov 2024 15:13:01 +0100
+Subject: [kvm-unit-tests PATCH v3 3/4] riscv: lib: Add SSE assembly entry
+ handling
+In-Reply-To: <20241125-46efbc121d5164de961a804e@orel>
 References: <20241125115452.1255745-1-cleger@rivosinc.com>
- <20241125115452.1255745-5-cleger@rivosinc.com>
- <20241125-01fae59d27bb81fff71e794e@orel>
-Message-ID: <54ac149d-65ac-4b2a-ad52-70bca87e8862@rivosinc.com>
+ <20241125115452.1255745-4-cleger@rivosinc.com>
+ <20241125-46efbc121d5164de961a804e@orel>
+Message-ID: <5853b922-da5a-409e-875b-084da78999bd@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -14,28 +15,553 @@ Content-Transfer-Encoding: 7bit
 
 
 
-On 25/11/2024 14:53, Andrew Jones wrote:
-> On Mon, Nov 25, 2024 at 12:54:48PM +0100, Cl?ment L?ger wrote:
->> Add SBI SSE extension tests for the following features:
->> - Test attributes errors (invalid values, RO, etc)
->> - Registration errors
->> - Simple events (register, enable, inject)
->> - Events with different priorities
->> - Global events dispatch on different harts
->> - Local events on all harts
+On 25/11/2024 14:50, Andrew Jones wrote:
+> On Mon, Nov 25, 2024 at 12:54:47PM +0100, Cl?ment L?ger wrote:
+>> Add a SSE entry assembly code to handle SSE events. Events should be
+>> registered with a struct sse_handler_arg containing a correct stack and
+>> handler function.
+>>
+>> Signed-off-by: Cl?ment L?ger <cleger@rivosinc.com>
+>> ---
+>>  riscv/Makefile          |   1 +
+>>  lib/riscv/asm/sse.h     |  16 +++++++
+>>  lib/riscv/sse-entry.S   | 100 ++++++++++++++++++++++++++++++++++++++++
+>>  lib/riscv/asm-offsets.c |   9 ++++
+>>  4 files changed, 126 insertions(+)
+>>  create mode 100644 lib/riscv/asm/sse.h
+>>  create mode 100644 lib/riscv/sse-entry.S
+>>
+>> diff --git a/riscv/Makefile b/riscv/Makefile
+>> index 5b5e157c..c278ec5c 100644
+>> --- a/riscv/Makefile
+>> +++ b/riscv/Makefile
+>> @@ -41,6 +41,7 @@ cflatobjs += lib/riscv/sbi.o
+>>  cflatobjs += lib/riscv/setjmp.o
+>>  cflatobjs += lib/riscv/setup.o
+>>  cflatobjs += lib/riscv/smp.o
+>> +cflatobjs += lib/riscv/sse-entry.o
+>>  cflatobjs += lib/riscv/stack.o
+>>  cflatobjs += lib/riscv/timer.o
+>>  ifeq ($(ARCH),riscv32)
+>> diff --git a/lib/riscv/asm/sse.h b/lib/riscv/asm/sse.h
+>> new file mode 100644
+>> index 00000000..557f6680
+>> --- /dev/null
+>> +++ b/lib/riscv/asm/sse.h
+>> @@ -0,0 +1,16 @@
+>> +/* SPDX-License-Identifier: GPL-2.0-only */
+>> +#ifndef _ASMRISCV_SSE_H_
+>> +#define _ASMRISCV_SSE_H_
+>> +
+>> +typedef void (*sse_handler_fn)(void *data, struct pt_regs *regs, unsigned int hartid);
+>> +
+>> +struct sse_handler_arg {
+>> +	unsigned long reg_tmp;
+>> +	sse_handler_fn handler;
+>> +	void *handler_data;
+>> +	void *stack;
+>> +};
 > 
-> And now also double trap and mask/unmask.
-
-Hi drew,
-
-It does not really tests double trap though, only the double trap SSE
-event (similar to the RAS one or whatever SSE local event). I'll update
-it with mask/unmask at least.
-
-Cl?ment
-
+> It still feels wrong to put a test-specific struct definition in lib. It's
+> test-specific, because the SSE register function doesn't define it
+> (otherwise we'd put the definition in lib/riscv/asm/sbi.h with the rest of
+> the defines that come straight from the spec). Now, if we foresee using
+> sse_event_register() outside of SBI SSE testing, then it would make sense
+> to come up with a common struct, but it doesn't look like we have plans
+> for that now, and sse_event_register() isn't in lib/riscv/sbi.c yet.
+> 
+>> +
+>> +extern void sse_entry(void);
+>> +
+>> +#endif /* _ASMRISCV_SSE_H_ */
+>> diff --git a/lib/riscv/sse-entry.S b/lib/riscv/sse-entry.S
+>> new file mode 100644
+>> index 00000000..f1244e17
+>> --- /dev/null
+>> +++ b/lib/riscv/sse-entry.S
+>> @@ -0,0 +1,100 @@
+>> +/* SPDX-License-Identifier: GPL-2.0-only */
+>> +/*
+>> + * SBI SSE entry code
+>> + *
+>> + * Copyright (C) 2024, Rivos Inc., Cl?ment L?ger <cleger@rivosinc.com>
+>> + */
+>> +#include <asm/asm.h>
+>> +#include <asm/asm-offsets.h>
+>> +#include <asm/csr.h>
+>> +
+>> +.global sse_entry
+>> +sse_entry:
+> 
+> sse_entry is also test-specific unless we export sse_event_register().
+> 
+>> +	/* Save stack temporarily */
+>> +	REG_S sp, SSE_REG_TMP(a7)
+>> +	/* Set entry stack */
+>> +	REG_L sp, SSE_HANDLER_STACK(a7)
+>> +
+>> +	addi sp, sp, -(PT_SIZE)
+>> +	REG_S ra, PT_RA(sp)
+>> +	REG_S s0, PT_S0(sp)
+>> +	REG_S s1, PT_S1(sp)
+>> +	REG_S s2, PT_S2(sp)
+>> +	REG_S s3, PT_S3(sp)
+>> +	REG_S s4, PT_S4(sp)
+>> +	REG_S s5, PT_S5(sp)
+>> +	REG_S s6, PT_S6(sp)
+>> +	REG_S s7, PT_S7(sp)
+>> +	REG_S s8, PT_S8(sp)
+>> +	REG_S s9, PT_S9(sp)
+>> +	REG_S s10, PT_S10(sp)
+>> +	REG_S s11, PT_S11(sp)
+>> +	REG_S tp, PT_TP(sp)
+>> +	REG_S t0, PT_T0(sp)
+>> +	REG_S t1, PT_T1(sp)
+>> +	REG_S t2, PT_T2(sp)
+>> +	REG_S t3, PT_T3(sp)
+>> +	REG_S t4, PT_T4(sp)
+>> +	REG_S t5, PT_T5(sp)
+>> +	REG_S t6, PT_T6(sp)
+>> +	REG_S gp, PT_GP(sp)
+>> +	REG_S a0, PT_A0(sp)
+>> +	REG_S a1, PT_A1(sp)
+>> +	REG_S a2, PT_A2(sp)
+>> +	REG_S a3, PT_A3(sp)
+>> +	REG_S a4, PT_A4(sp)
+>> +	REG_S a5, PT_A5(sp)
+>> +	csrr a1, CSR_SEPC
+>> +	REG_S a1, PT_EPC(sp)
+>> +	csrr a2, CSR_SSTATUS
+>> +	REG_S a2, PT_STATUS(sp)
+>> +
+>> +	REG_L a0, SSE_REG_TMP(a7)
+>> +	REG_S a0, PT_SP(sp)
+>> +
+>> +	REG_L t0, SSE_HANDLER(a7)
+>> +	REG_L a0, SSE_HANDLER_DATA(a7)
+>> +	mv a1, sp
+>> +	mv a2, a6
+>> +	jalr t0
+>> +
+>> +
+>> +	REG_L a1, PT_EPC(sp)
+>> +	REG_L a2, PT_STATUS(sp)
+>> +	csrw CSR_SEPC, a1
+>> +	csrw CSR_SSTATUS, a2
+>> +
+>> +	REG_L ra, PT_RA(sp)
+>> +	REG_L s0, PT_S0(sp)
+>> +	REG_L s1, PT_S1(sp)
+>> +	REG_L s2, PT_S2(sp)
+>> +	REG_L s3, PT_S3(sp)
+>> +	REG_L s4, PT_S4(sp)
+>> +	REG_L s5, PT_S5(sp)
+>> +	REG_L s6, PT_S6(sp)
+>> +	REG_L s7, PT_S7(sp)
+>> +	REG_L s8, PT_S8(sp)
+>> +	REG_L s9, PT_S9(sp)
+>> +	REG_L s10, PT_S10(sp)
+>> +	REG_L s11, PT_S11(sp)
+>> +	REG_L tp, PT_TP(sp)
+>> +	REG_L t0, PT_T0(sp)
+>> +	REG_L t1, PT_T1(sp)
+>> +	REG_L t2, PT_T2(sp)
+>> +	REG_L t3, PT_T3(sp)
+>> +	REG_L t4, PT_T4(sp)
+>> +	REG_L t5, PT_T5(sp)
+>> +	REG_L t6, PT_T6(sp)
+>> +	REG_L gp, PT_GP(sp)
+>> +	REG_L a0, PT_A0(sp)
+>> +	REG_L a1, PT_A1(sp)
+>> +	REG_L a2, PT_A2(sp)
+>> +	REG_L a3, PT_A3(sp)
+>> +	REG_L a4, PT_A4(sp)
+>> +	REG_L a5, PT_A5(sp)
+>> +
+>> +	REG_L sp, PT_SP(sp)
+>> +
+>> +	li a7, ASM_SBI_EXT_SSE
+>> +	li a6, ASM_SBI_EXT_SSE_COMPLETE
+>> +	ecall
+>> diff --git a/lib/riscv/asm-offsets.c b/lib/riscv/asm-offsets.c
+>> index 6c511c14..b3465eeb 100644
+>> --- a/lib/riscv/asm-offsets.c
+>> +++ b/lib/riscv/asm-offsets.c
+>> @@ -3,7 +3,9 @@
+>>  #include <elf.h>
+>>  #include <asm/processor.h>
+>>  #include <asm/ptrace.h>
+>> +#include <asm/sbi.h>
+>>  #include <asm/smp.h>
+>> +#include <asm/sse.h>
+>>  
+>>  int main(void)
+>>  {
+>> @@ -63,5 +65,12 @@ int main(void)
+>>  	OFFSET(THREAD_INFO_HARTID, thread_info, hartid);
+>>  	DEFINE(THREAD_INFO_SIZE, sizeof(struct thread_info));
+>>  
+>> +	OFFSET(SSE_REG_TMP, sse_handler_arg, reg_tmp);
+>> +	OFFSET(SSE_HANDLER, sse_handler_arg, handler);
+>> +	OFFSET(SSE_HANDLER_DATA, sse_handler_arg, handler_data);
+>> +	OFFSET(SSE_HANDLER_STACK, sse_handler_arg, stack);
+> 
+> I think I prefer just hard coding the offsets in defines and then using
+> static asserts to ensure they stay as expected. Below is a diff I applied
+> which moves some stuff around. Let me know what you think.
 > 
 > Thanks,
 > drew
+> 
+>> +	DEFINE(ASM_SBI_EXT_SSE, SBI_EXT_SSE);
+>> +	DEFINE(ASM_SBI_EXT_SSE_COMPLETE, SBI_EXT_SSE_COMPLETE);
+>> +
+>>  	return 0;
+>>  }
+>> -- 
+>> 2.45.2
+>>
+> 
+> diff --git a/lib/riscv/asm-offsets.c b/lib/riscv/asm-offsets.c
+> index b3465eebbaa2..402eb4d90a8e 100644
+> --- a/lib/riscv/asm-offsets.c
+> +++ b/lib/riscv/asm-offsets.c
+> @@ -5,7 +5,6 @@
+>  #include <asm/ptrace.h>
+>  #include <asm/sbi.h>
+>  #include <asm/smp.h>
+> -#include <asm/sse.h>
+>  
+>  int main(void)
+>  {
+> @@ -65,10 +64,8 @@ int main(void)
+>  	OFFSET(THREAD_INFO_HARTID, thread_info, hartid);
+>  	DEFINE(THREAD_INFO_SIZE, sizeof(struct thread_info));
+>  
+> -	OFFSET(SSE_REG_TMP, sse_handler_arg, reg_tmp);
+> -	OFFSET(SSE_HANDLER, sse_handler_arg, handler);
+> -	OFFSET(SSE_HANDLER_DATA, sse_handler_arg, handler_data);
+> -	OFFSET(SSE_HANDLER_STACK, sse_handler_arg, stack);
+> +	DEFINE(ASM_SBI_EXT_HSM, SBI_EXT_HSM);
+> +	DEFINE(ASM_SBI_EXT_HSM_HART_STOP, SBI_EXT_HSM_HART_STOP);
+>  	DEFINE(ASM_SBI_EXT_SSE, SBI_EXT_SSE);
+>  	DEFINE(ASM_SBI_EXT_SSE_COMPLETE, SBI_EXT_SSE_COMPLETE);
+>  
+> diff --git a/lib/riscv/asm/sse.h b/lib/riscv/asm/sse.h
+> deleted file mode 100644
+> index 557f6680e90c..000000000000
+> --- a/lib/riscv/asm/sse.h
+> +++ /dev/null
+> @@ -1,16 +0,0 @@
+> -/* SPDX-License-Identifier: GPL-2.0-only */
+> -#ifndef _ASMRISCV_SSE_H_
+> -#define _ASMRISCV_SSE_H_
+> -
+> -typedef void (*sse_handler_fn)(void *data, struct pt_regs *regs, unsigned int hartid);
+> -
+> -struct sse_handler_arg {
+> -	unsigned long reg_tmp;
+> -	sse_handler_fn handler;
+> -	void *handler_data;
+> -	void *stack;
+> -};
+> -
+> -extern void sse_entry(void);
+> -
+> -#endif /* _ASMRISCV_SSE_H_ */
+> diff --git a/lib/riscv/sse-entry.S b/lib/riscv/sse-entry.S
+> deleted file mode 100644
+> index f1244e17fe08..000000000000
+> --- a/lib/riscv/sse-entry.S
+> +++ /dev/null
+> @@ -1,100 +0,0 @@
+> -/* SPDX-License-Identifier: GPL-2.0-only */
+> -/*
+> - * SBI SSE entry code
+> - *
+> - * Copyright (C) 2024, Rivos Inc., Cl?ment L?ger <cleger@rivosinc.com>
+> - */
+> -#include <asm/asm.h>
+> -#include <asm/asm-offsets.h>
+> -#include <asm/csr.h>
+> -
+> -.global sse_entry
+> -sse_entry:
+> -	/* Save stack temporarily */
+> -	REG_S sp, SSE_REG_TMP(a7)
+> -	/* Set entry stack */
+> -	REG_L sp, SSE_HANDLER_STACK(a7)
+> -
+> -	addi sp, sp, -(PT_SIZE)
+> -	REG_S ra, PT_RA(sp)
+> -	REG_S s0, PT_S0(sp)
+> -	REG_S s1, PT_S1(sp)
+> -	REG_S s2, PT_S2(sp)
+> -	REG_S s3, PT_S3(sp)
+> -	REG_S s4, PT_S4(sp)
+> -	REG_S s5, PT_S5(sp)
+> -	REG_S s6, PT_S6(sp)
+> -	REG_S s7, PT_S7(sp)
+> -	REG_S s8, PT_S8(sp)
+> -	REG_S s9, PT_S9(sp)
+> -	REG_S s10, PT_S10(sp)
+> -	REG_S s11, PT_S11(sp)
+> -	REG_S tp, PT_TP(sp)
+> -	REG_S t0, PT_T0(sp)
+> -	REG_S t1, PT_T1(sp)
+> -	REG_S t2, PT_T2(sp)
+> -	REG_S t3, PT_T3(sp)
+> -	REG_S t4, PT_T4(sp)
+> -	REG_S t5, PT_T5(sp)
+> -	REG_S t6, PT_T6(sp)
+> -	REG_S gp, PT_GP(sp)
+> -	REG_S a0, PT_A0(sp)
+> -	REG_S a1, PT_A1(sp)
+> -	REG_S a2, PT_A2(sp)
+> -	REG_S a3, PT_A3(sp)
+> -	REG_S a4, PT_A4(sp)
+> -	REG_S a5, PT_A5(sp)
+> -	csrr a1, CSR_SEPC
+> -	REG_S a1, PT_EPC(sp)
+> -	csrr a2, CSR_SSTATUS
+> -	REG_S a2, PT_STATUS(sp)
+> -
+> -	REG_L a0, SSE_REG_TMP(a7)
+> -	REG_S a0, PT_SP(sp)
+> -
+> -	REG_L t0, SSE_HANDLER(a7)
+> -	REG_L a0, SSE_HANDLER_DATA(a7)
+> -	mv a1, sp
+> -	mv a2, a6
+> -	jalr t0
+> -
+> -
+> -	REG_L a1, PT_EPC(sp)
+> -	REG_L a2, PT_STATUS(sp)
+> -	csrw CSR_SEPC, a1
+> -	csrw CSR_SSTATUS, a2
+> -
+> -	REG_L ra, PT_RA(sp)
+> -	REG_L s0, PT_S0(sp)
+> -	REG_L s1, PT_S1(sp)
+> -	REG_L s2, PT_S2(sp)
+> -	REG_L s3, PT_S3(sp)
+> -	REG_L s4, PT_S4(sp)
+> -	REG_L s5, PT_S5(sp)
+> -	REG_L s6, PT_S6(sp)
+> -	REG_L s7, PT_S7(sp)
+> -	REG_L s8, PT_S8(sp)
+> -	REG_L s9, PT_S9(sp)
+> -	REG_L s10, PT_S10(sp)
+> -	REG_L s11, PT_S11(sp)
+> -	REG_L tp, PT_TP(sp)
+> -	REG_L t0, PT_T0(sp)
+> -	REG_L t1, PT_T1(sp)
+> -	REG_L t2, PT_T2(sp)
+> -	REG_L t3, PT_T3(sp)
+> -	REG_L t4, PT_T4(sp)
+> -	REG_L t5, PT_T5(sp)
+> -	REG_L t6, PT_T6(sp)
+> -	REG_L gp, PT_GP(sp)
+> -	REG_L a0, PT_A0(sp)
+> -	REG_L a1, PT_A1(sp)
+> -	REG_L a2, PT_A2(sp)
+> -	REG_L a3, PT_A3(sp)
+> -	REG_L a4, PT_A4(sp)
+> -	REG_L a5, PT_A5(sp)
+> -
+> -	REG_L sp, PT_SP(sp)
+> -
+> -	li a7, ASM_SBI_EXT_SSE
+> -	li a6, ASM_SBI_EXT_SSE_COMPLETE
+> -	ecall
+> diff --git a/riscv/Makefile b/riscv/Makefile
+> index 81b75ad52411..62a2efc18492 100644
+> --- a/riscv/Makefile
+> +++ b/riscv/Makefile
+> @@ -41,7 +41,6 @@ cflatobjs += lib/riscv/sbi.o
+>  cflatobjs += lib/riscv/setjmp.o
+>  cflatobjs += lib/riscv/setup.o
+>  cflatobjs += lib/riscv/smp.o
+> -cflatobjs += lib/riscv/sse-entry.o
+>  cflatobjs += lib/riscv/stack.o
+>  cflatobjs += lib/riscv/timer.o
+>  ifeq ($(ARCH),riscv32)
+> diff --git a/riscv/sbi-asm.S b/riscv/sbi-asm.S
+> index 923c2ceca5db..5c50606e9940 100644
+> --- a/riscv/sbi-asm.S
+> +++ b/riscv/sbi-asm.S
+> @@ -6,6 +6,7 @@
+>   */
+>  #define __ASSEMBLY__
+>  #include <asm/asm.h>
+> +#include <asm/asm-offsets.h>
+>  #include <asm/csr.h>
+>  
+>  #include "sbi-tests.h"
+> @@ -58,8 +59,8 @@ sbi_hsm_check:
+>  7:	lb	t0, 0(t1)
+>  	pause
+>  	beqz	t0, 7b
+> -	li	a7, 0x48534d	/* SBI_EXT_HSM */
+> -	li	a6, 1		/* SBI_EXT_HSM_HART_STOP */
+> +	li	a7, ASM_SBI_EXT_HSM
+> +	li	a6, ASM_SBI_EXT_HSM_HART_STOP
+>  	ecall
+>  8:	pause
+>  	j	8b
+> @@ -129,3 +130,94 @@ sbi_susp_resume:
+>  	call	longjmp
+>  6:	pause	/* unreachable */
+>  	j	6b
+> +
+> +.global sse_entry
+> +sse_entry:
+> +	/* Save stack temporarily */
+> +	REG_S sp, SBI_SSE_REG_TMP(a7)
+> +	/* Set entry stack */
+> +	REG_L sp, SBI_SSE_HANDLER_STACK(a7)
+> +
+> +	addi sp, sp, -(PT_SIZE)
+> +	REG_S ra, PT_RA(sp)
+> +	REG_S s0, PT_S0(sp)
+> +	REG_S s1, PT_S1(sp)
+> +	REG_S s2, PT_S2(sp)
+> +	REG_S s3, PT_S3(sp)
+> +	REG_S s4, PT_S4(sp)
+> +	REG_S s5, PT_S5(sp)
+> +	REG_S s6, PT_S6(sp)
+> +	REG_S s7, PT_S7(sp)
+> +	REG_S s8, PT_S8(sp)
+> +	REG_S s9, PT_S9(sp)
+> +	REG_S s10, PT_S10(sp)
+> +	REG_S s11, PT_S11(sp)
+> +	REG_S tp, PT_TP(sp)
+> +	REG_S t0, PT_T0(sp)
+> +	REG_S t1, PT_T1(sp)
+> +	REG_S t2, PT_T2(sp)
+> +	REG_S t3, PT_T3(sp)
+> +	REG_S t4, PT_T4(sp)
+> +	REG_S t5, PT_T5(sp)
+> +	REG_S t6, PT_T6(sp)
+> +	REG_S gp, PT_GP(sp)
+> +	REG_S a0, PT_A0(sp)
+> +	REG_S a1, PT_A1(sp)
+> +	REG_S a2, PT_A2(sp)
+> +	REG_S a3, PT_A3(sp)
+> +	REG_S a4, PT_A4(sp)
+> +	REG_S a5, PT_A5(sp)
+> +	csrr a1, CSR_SEPC
+> +	REG_S a1, PT_EPC(sp)
+> +	csrr a2, CSR_SSTATUS
+> +	REG_S a2, PT_STATUS(sp)
+> +
+> +	REG_L a0, SBI_SSE_REG_TMP(a7)
+> +	REG_S a0, PT_SP(sp)
+> +
+> +	REG_L t0, SBI_SSE_HANDLER(a7)
+> +	REG_L a0, SBI_SSE_HANDLER_DATA(a7)
+> +	mv a1, sp
+> +	mv a2, a6
+> +	jalr t0
+> +
+> +
+> +	REG_L a1, PT_EPC(sp)
+> +	REG_L a2, PT_STATUS(sp)
+> +	csrw CSR_SEPC, a1
+> +	csrw CSR_SSTATUS, a2
+> +
+> +	REG_L ra, PT_RA(sp)
+> +	REG_L s0, PT_S0(sp)
+> +	REG_L s1, PT_S1(sp)
+> +	REG_L s2, PT_S2(sp)
+> +	REG_L s3, PT_S3(sp)
+> +	REG_L s4, PT_S4(sp)
+> +	REG_L s5, PT_S5(sp)
+> +	REG_L s6, PT_S6(sp)
+> +	REG_L s7, PT_S7(sp)
+> +	REG_L s8, PT_S8(sp)
+> +	REG_L s9, PT_S9(sp)
+> +	REG_L s10, PT_S10(sp)
+> +	REG_L s11, PT_S11(sp)
+> +	REG_L tp, PT_TP(sp)
+> +	REG_L t0, PT_T0(sp)
+> +	REG_L t1, PT_T1(sp)
+> +	REG_L t2, PT_T2(sp)
+> +	REG_L t3, PT_T3(sp)
+> +	REG_L t4, PT_T4(sp)
+> +	REG_L t5, PT_T5(sp)
+> +	REG_L t6, PT_T6(sp)
+> +	REG_L gp, PT_GP(sp)
+> +	REG_L a0, PT_A0(sp)
+> +	REG_L a1, PT_A1(sp)
+> +	REG_L a2, PT_A2(sp)
+> +	REG_L a3, PT_A3(sp)
+> +	REG_L a4, PT_A4(sp)
+> +	REG_L a5, PT_A5(sp)
+> +
+> +	REG_L sp, PT_SP(sp)
+> +
+> +	li a7, ASM_SBI_EXT_SSE
+> +	li a6, ASM_SBI_EXT_SSE_COMPLETE
+> +	ecall
+> diff --git a/riscv/sbi-sse.c b/riscv/sbi-sse.c
+> index a230c600a5a2..85521546838c 100644
+> --- a/riscv/sbi-sse.c
+> +++ b/riscv/sbi-sse.c
+> @@ -16,12 +16,12 @@
+>  #include <asm/processor.h>
+>  #include <asm/sbi.h>
+>  #include <asm/setup.h>
+> -#include <asm/sse.h>
+>  
+>  #include "sbi-tests.h"
+>  
+>  #define SSE_STACK_SIZE	PAGE_SIZE
+>  
+> +void sse_entry(void);
+>  void check_sse(void);
+>  
+>  struct sse_event_info {
+> diff --git a/riscv/sbi-tests.h b/riscv/sbi-tests.h
+> index ce129968fe99..163751ba9ca6 100644
+> --- a/riscv/sbi-tests.h
+> +++ b/riscv/sbi-tests.h
+> @@ -33,4 +33,25 @@
+>  #define SBI_SUSP_TEST_HARTID	(1 << 2)
+>  #define SBI_SUSP_TEST_MASK	7
+>  
+> +#define SBI_SSE_REG_TMP		0
+> +#define SBI_SSE_HANDLER		8
+> +#define SBI_SSE_HANDLER_DATA	16
+> +#define SBI_SSE_HANDLER_STACK	24
+> +
+> +#ifndef __ASSEMBLY__
+> +
+> +typedef void (*sse_handler_fn)(void *data, struct pt_regs *regs, unsigned int hartid);
+> +
+> +struct sse_handler_arg {
+> +	unsigned long reg_tmp;
+> +	sse_handler_fn handler;
+> +	void *handler_data;
+> +	void *stack;
+> +};
+> +_Static_assert(offsetof(struct sse_handler_arg, reg_tmp) == SBI_SSE_REG_TMP);
+> +_Static_assert(offsetof(struct sse_handler_arg, handler) == SBI_SSE_HANDLER);
+> +_Static_assert(offsetof(struct sse_handler_arg, handler_data) == SBI_SSE_HANDLER_DATA);
+> +_Static_assert(offsetof(struct sse_handler_arg, stack) == SBI_SSE_HANDLER_STACK);
+> +
+
+I'm not a huge fan but in the end, the result is the same and it suits
+you ;) Let's go for it, I'll integrate that in the series (minus the HSM
+stuff).
+
+Thanks !
+
+Cl?ment
+
+
+> +#endif /* !__ASSEMBLY__ */
+>  #endif /* _RISCV_SBI_TESTS_H_ */
 
 
