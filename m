@@ -1,68 +1,91 @@
 From: Clément Léger <cleger@rivosinc.com>
-Date: Mon, 25 Nov 2024 17:21:50 +0100
-Subject: [kvm-unit-tests PATCH v4 1/5] kbuild: allow multiple asm-offsets file to be generated
+Date: Mon, 25 Nov 2024 17:21:51 +0100
+Subject: [kvm-unit-tests PATCH v4 2/5] riscv: use asm-offsets to generate SBI_EXT_HSM values
 In-Reply-To: <20241125162200.1630845-1-cleger@rivosinc.com>
 References: <20241125162200.1630845-1-cleger@rivosinc.com>
-Message-ID: <20241125162200.1630845-2-cleger@rivosinc.com>
+Message-ID: <20241125162200.1630845-3-cleger@rivosinc.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-In order to allow multiple asm-offsets files to generated the include
-guard need to be different between these file. Add a asm_offset_name
-makefile macro to obtain an uppercase name matching the original asm
-offsets file.
+Replace hardcoded values with generated ones using asm-offset. This
+allows to directly use ASM_SBI_EXT_HSM and ASM_SBI_EXT_HSM_START in
+assembly.
 
 Signed-off-by: Cl?ment L?ger <cleger@rivosinc.com>
 ---
- scripts/asm-offsets.mak | 22 +++++++++++++++-------
- 1 file changed, 15 insertions(+), 7 deletions(-)
+ riscv/Makefile           |  2 +-
+ riscv/sbi-asm.S          |  6 ++++--
+ riscv/asm-offsets-test.c | 12 ++++++++++++
+ riscv/.gitignore         |  1 +
+ 4 files changed, 18 insertions(+), 3 deletions(-)
+ create mode 100644 riscv/asm-offsets-test.c
+ create mode 100644 riscv/.gitignore
 
-diff --git a/scripts/asm-offsets.mak b/scripts/asm-offsets.mak
-index 7b64162d..a5fdbf5d 100644
---- a/scripts/asm-offsets.mak
-+++ b/scripts/asm-offsets.mak
-@@ -15,10 +15,14 @@ define sed-y
- 	s:->::; p;}'
- endef
+diff --git a/riscv/Makefile b/riscv/Makefile
+index 28b04156..a01ff8a3 100644
+--- a/riscv/Makefile
++++ b/riscv/Makefile
+@@ -86,7 +86,7 @@ CFLAGS += -ffreestanding
+ CFLAGS += -O2
+ CFLAGS += -I $(SRCDIR)/lib -I $(SRCDIR)/lib/libfdt -I lib -I $(SRCDIR)/riscv
  
-+define asm_offset_name
-+	$(shell echo $(notdir $(1)) | tr [:lower:]- [:upper:]_)
-+endef
+-asm-offsets = lib/riscv/asm-offsets.h
++asm-offsets = lib/riscv/asm-offsets.h riscv/asm-offsets-test.h
+ include $(SRCDIR)/scripts/asm-offsets.mak
+ 
+ %.aux.o: $(SRCDIR)/lib/auxinfo.c
+diff --git a/riscv/sbi-asm.S b/riscv/sbi-asm.S
+index 923c2cec..193d9606 100644
+--- a/riscv/sbi-asm.S
++++ b/riscv/sbi-asm.S
+@@ -7,6 +7,8 @@
+ #define __ASSEMBLY__
+ #include <asm/asm.h>
+ #include <asm/csr.h>
++#include <asm/asm-offsets.h>
++#include <generated/asm-offsets-test.h>
+ 
+ #include "sbi-tests.h"
+ 
+@@ -58,8 +60,8 @@ sbi_hsm_check:
+ 7:	lb	t0, 0(t1)
+ 	pause
+ 	beqz	t0, 7b
+-	li	a7, 0x48534d	/* SBI_EXT_HSM */
+-	li	a6, 1		/* SBI_EXT_HSM_HART_STOP */
++	li	a7, ASM_SBI_EXT_HSM
++	li	a6, ASM_SBI_EXT_HSM_HART_STOP
+ 	ecall
+ 8:	pause
+ 	j	8b
+diff --git a/riscv/asm-offsets-test.c b/riscv/asm-offsets-test.c
+new file mode 100644
+index 00000000..116fe497
+--- /dev/null
++++ b/riscv/asm-offsets-test.c
+@@ -0,0 +1,12 @@
++// SPDX-License-Identifier: GPL-2.0-only
++#include <kbuild.h>
++#include <asm/sbi.h>
++#include "sbi-tests.h"
 +
- define make_asm_offsets
- 	(set -e; \
--	 echo "#ifndef __ASM_OFFSETS_H__"; \
--	 echo "#define __ASM_OFFSETS_H__"; \
-+	 echo "#ifndef __$(strip $(asm_offset_name))_H__"; \
-+	 echo "#define __$(strip $(asm_offset_name))_H__"; \
- 	 echo "/*"; \
- 	 echo " * Generated file. DO NOT MODIFY."; \
- 	 echo " *"; \
-@@ -29,12 +33,16 @@ define make_asm_offsets
- 	 echo "#endif" ) > $@
- endef
- 
--$(asm-offsets:.h=.s): $(asm-offsets:.h=.c)
--	$(CC) $(CFLAGS) -fverbose-asm -S -o $@ $<
-+define gen_asm_offsets_rules
-+$(1).s: $(1).c
-+	$(CC) $(CFLAGS) -fverbose-asm -S -o $$@ $$<
++int main(void)
++{
++	DEFINE(ASM_SBI_EXT_HSM, SBI_EXT_HSM);
++	DEFINE(ASM_SBI_EXT_HSM_HART_STOP, SBI_EXT_HSM_HART_STOP);
 +
-+$(1).h: $(1).s
-+	$$(call make_asm_offsets,$(1))
-+	cp -f $$@ lib/generated/
-+endef
- 
--$(asm-offsets): $(asm-offsets:.h=.s)
--	$(call make_asm_offsets)
--	cp -f $(asm-offsets) lib/generated/
-+$(foreach o,$(asm-offsets),$(eval $(call gen_asm_offsets_rules, $(o:.h=))))
- 
- OBJDIRS += lib/generated
- 
++	return 0;
++}
+diff --git a/riscv/.gitignore b/riscv/.gitignore
+new file mode 100644
+index 00000000..91713581
+--- /dev/null
++++ b/riscv/.gitignore
+@@ -0,0 +1 @@
++/asm-offsets-test.[hs]
 -- 
 2.45.2
 
