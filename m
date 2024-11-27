@@ -1,43 +1,75 @@
-From: Michael Neuling <michaelneuling@tenstorrent.com>
-Date: Wed, 27 Nov 2024 04:18:40 +0000
-Subject: [PATCH v2] RISC-V: KVM: Fix csr_write -> csr_set for HVIEN PMU overflow bit
-Message-ID: <20241127041840.419940-1-michaelneuling@tenstorrent.com>
+From: Paolo Bonzini <pbonzini@redhat.com>
+Date: Wed, 27 Nov 2024 17:38:01 +0100
+Subject: [GIT PULL] KVM/riscv changes for 6.13, part #2
+In-Reply-To: <CAAhSdy2mLBzE63wpQrOaHtOV0rwqkaxTUMBA9oMZsk68o0EHMg@mail.gmail.com>
+References: <CAAhSdy2mLBzE63wpQrOaHtOV0rwqkaxTUMBA9oMZsk68o0EHMg@mail.gmail.com>
+Message-ID: <CABgObfacuB-8KN1+Czt5DaXQbaiw9=jP5zYGatw6CGooLnz9Sg@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-This doesn't cause a problem currently as HVIEN isn't used elsewhere
-yet. Found by inspection.
+On Thu, Nov 21, 2024 at 1:55?PM Anup Patel <anup@brainfault.org> wrote:
+>
+> Hi Paolo,
+>
+> As mentioned in the last PR, here are the remaining KVM RISC-V
+> changes for 6.13 which mainly consists of Svade/Svadu extension
+> support for Host and Guest/VM.
+>
+> Please note that Palmer has not yet sent the RISC-V PR for 6.13
+> so these patches will conflict with the RISC-V tree.
 
-Signed-off-by: Michael Neuling <michaelneuling@tenstorrent.com>
-Fixes: 16b0bde9a37c ("RISC-V: KVM: Add perf sampling support for guests")
-Reviewed-by: Atish Patra <atishp@rivosinc.com>
-Reviewed-by: Anup Patel <anup@brainfault.org>
----
-v2:
-  Added Fixes tag
-  Added Reviews
-  No code change
----
- arch/riscv/kvm/aia.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+The RISC-V PR has not been merged yet (has it been sent?) and I am not
+sure what's happening here. If these are merged first, presumably
+Linus will bump the arch/riscv/include/asm/hwcap.h constants --
+leaving SVADE/SVADU at 87 and 88 and adjusting the others. Should I do
+that or is it delayed to 6.14 at this point?
 
-diff --git a/arch/riscv/kvm/aia.c b/arch/riscv/kvm/aia.c
-index 2967d305c4..9f3b527596 100644
---- a/arch/riscv/kvm/aia.c
-+++ b/arch/riscv/kvm/aia.c
-@@ -552,7 +552,7 @@ void kvm_riscv_aia_enable(void)
- 	csr_set(CSR_HIE, BIT(IRQ_S_GEXT));
- 	/* Enable IRQ filtering for overflow interrupt only if sscofpmf is present */
- 	if (__riscv_isa_extension_available(NULL, RISCV_ISA_EXT_SSCOFPMF))
--		csr_write(CSR_HVIEN, BIT(IRQ_PMU_OVF));
-+		csr_set(CSR_HVIEN, BIT(IRQ_PMU_OVF));
- }
- 
- void kvm_riscv_aia_disable(void)
--- 
-2.34.1
+Paolo
+
+> Please pull.
+>
+> Regards,
+> Anup
+>
+> The following changes since commit 332fa4a802b16ccb727199da685294f85f9880cb:
+>
+>   riscv: kvm: Fix out-of-bounds array access (2024-11-05 13:27:32 +0530)
+>
+> are available in the Git repository at:
+>
+>   https://github.com/kvm-riscv/linux.git tags/kvm-riscv-6.13-2
+>
+> for you to fetch changes up to c74bfe4ffe8c1ca94e3d60ec7af06cf679e23583:
+>
+>   KVM: riscv: selftests: Add Svade and Svadu Extension to get-reg-list
+> test (2024-11-21 17:40:16 +0530)
+>
+> ----------------------------------------------------------------
+> KVM/riscv changes for 6.13 part #2
+>
+> - Svade and Svadu extension support for Host and Guest/VM
+>
+> ----------------------------------------------------------------
+> Yong-Xuan Wang (4):
+>       RISC-V: Add Svade and Svadu Extensions Support
+>       dt-bindings: riscv: Add Svade and Svadu Entries
+>       RISC-V: KVM: Add Svade and Svadu Extensions Support for Guest/VM
+>       KVM: riscv: selftests: Add Svade and Svadu Extension to get-reg-list test
+>
+>  .../devicetree/bindings/riscv/extensions.yaml      | 28 ++++++++++++++++++++++
+>  arch/riscv/Kconfig                                 |  1 +
+>  arch/riscv/include/asm/csr.h                       |  1 +
+>  arch/riscv/include/asm/hwcap.h                     |  2 ++
+>  arch/riscv/include/asm/pgtable.h                   | 13 +++++++++-
+>  arch/riscv/include/uapi/asm/kvm.h                  |  2 ++
+>  arch/riscv/kernel/cpufeature.c                     | 12 ++++++++++
+>  arch/riscv/kvm/vcpu.c                              |  4 ++++
+>  arch/riscv/kvm/vcpu_onereg.c                       | 15 ++++++++++++
+>  tools/testing/selftests/kvm/riscv/get-reg-list.c   |  8 +++++++
+>  10 files changed, 85 insertions(+), 1 deletion(-)
+>
 
 
