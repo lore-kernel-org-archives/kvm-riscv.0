@@ -1,37 +1,33 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Thu, 28 Nov 2024 09:42:41 +0100
-Subject: [PATCH v4 14/16] KVM: selftests: Provide empty 'all' and 'clean'
- targets for unsupported ARCHs
-In-Reply-To: <20241128005547.4077116-15-seanjc@google.com>
+Date: Thu, 28 Nov 2024 09:43:06 +0100
+Subject: [PATCH v4 15/16] KVM: selftests: Use canonical $(ARCH) paths for
+ KVM selftests directories
+In-Reply-To: <20241128005547.4077116-16-seanjc@google.com>
 References: <20241128005547.4077116-1-seanjc@google.com>
- <20241128005547.4077116-15-seanjc@google.com>
-Message-ID: <20241128-24a975e227dd4b86393f21ed@orel>
+ <20241128005547.4077116-16-seanjc@google.com>
+Message-ID: <20241128-d7a5061ce8160000cd5260bd@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Nov 27, 2024 at 04:55:45PM -0800, Sean Christopherson wrote:
-> Provide empty targets for KVM selftests if the target architecture is
-> unsupported to make it obvious which architectures are supported, and so
-> that various side effects don't fail and/or do weird things, e.g. as is,
-> "mkdir -p $(sort $(dir $(TEST_GEN_PROGS)))" fails due to a missing operand,
-> and conversely, "$(shell mkdir -p $(sort $(OUTPUT)/$(ARCH_DIR) ..." will
-> create an empty, useless directory for the unsupported architecture.
+On Wed, Nov 27, 2024 at 04:55:46PM -0800, Sean Christopherson wrote:
+> Use the kernel's canonical $(ARCH) paths instead of the raw target triple
+> for KVM selftests directories.  KVM selftests are quite nearly the only
+> place in the entire kernel that using the target triple for directories,
+> tools/testing/selftests/drivers/s390x being the lone holdout.
 > 
-> Move the guts of the Makefile to Makefile.kvm so that it's easier to see
-> that the if-statement effectively guards all of KVM selftests.
+> Using the kernel's preferred nomenclature eliminates the minor, but
+> annoying, friction of having to translate to KVM's selftests directories,
+> e.g. for pattern matching, opening files, running selftests, etc.
 > 
-> Reported-by: Muhammad Usama Anjum <usama.anjum@collabora.com>
+> Opportunsitically delete file comments that reference the full path of the
+> file, as they are obviously prone to becoming stale, and serve no known
+> purpose.
+> 
 > Signed-off-by: Sean Christopherson <seanjc@google.com>
 > ---
->  tools/testing/selftests/kvm/.gitignore   |   1 +
->  tools/testing/selftests/kvm/Makefile     | 336 +----------------------
->  tools/testing/selftests/kvm/Makefile.kvm | 334 ++++++++++++++++++++++
->  3 files changed, 340 insertions(+), 331 deletions(-)
->  create mode 100644 tools/testing/selftests/kvm/Makefile.kvm
->
 
 Acked-by: Andrew Jones <ajones@ventanamicro.com>
 
