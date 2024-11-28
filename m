@@ -1,44 +1,73 @@
-From: Paolo Bonzini <pbonzini@redhat.com>
-Date: Wed, 27 Nov 2024 17:59:52 +0100
-Subject: [GIT PULL] KVM/riscv changes for 6.13, part #2
-In-Reply-To: <CAAhSdy1QCeg82kQsPHJx1+Oc=L7BoOUTpeLUNoeApao8rZDE+Q@mail.gmail.com>
-References: <CAAhSdy2mLBzE63wpQrOaHtOV0rwqkaxTUMBA9oMZsk68o0EHMg@mail.gmail.com>
- <CABgObfacuB-8KN1+Czt5DaXQbaiw9=jP5zYGatw6CGooLnz9Sg@mail.gmail.com>
- <CAAhSdy1eYZc__ynDrF8sQCk8Rj+CRj+LBBbGnV+Hc4qHfYiEOA@mail.gmail.com>
- <CABgObfbKYc0Dqcq36dHsV=uopV+TAGu9-SuZF+QP=u6x0uMiHg@mail.gmail.com> <CAAhSdy1QCeg82kQsPHJx1+Oc=L7BoOUTpeLUNoeApao8rZDE+Q@mail.gmail.com>
-Message-ID: <CABgObfZ1iqNGqb+MW84_tgZEnSoAjMqzXFcoq0s58iTZDPMKgg@mail.gmail.com>
+From: Sean Christopherson <seanjc@google.com>
+Date: Wed, 27 Nov 2024 16:55:32 -0800
+Subject: [PATCH v4 01/16] KVM: Move KVM_REG_SIZE() definition to common uAPI header
+In-Reply-To: <20241128005547.4077116-1-seanjc@google.com>
+References: <20241128005547.4077116-1-seanjc@google.com>
+Message-ID: <20241128005547.4077116-2-seanjc@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Nov 27, 2024 at 5:51?PM Anup Patel <anup@brainfault.org> wrote:
-> > Ok, will do. But I'd like to understand if KVM patches needed the bare
-> > metal support. If not, and the only reason to skip it in 6.12 was the
-> > hwcap.h constants, then there was no reason to delay it. Just send the
-> > hwcap.h update as a pull request to both me and Palmer, and we'll
-> > merge it from the same commit into our trees.
->
-> It was skipped in 6.12 due to confusion between myself and Palmer
-> about which tree these patches will go through and we did not resolve
-> this in time.
+Define KVM_REG_SIZE() in the common kvm.h header, and delete the arm64 and
+RISC-V versions.  As evidenced by the surrounding definitions, all aspects
+of the register size encoding are generic, i.e. RISC-V should have moved
+arm64's definition to common code instead of copy+pasting.
 
-I still don't understand if KVM patches need any bare metal code though. :)
+Acked-by: Anup Patel <anup@brainfault.org>
+Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+Signed-off-by: Sean Christopherson <seanjc@google.com>
+---
+ arch/arm64/include/uapi/asm/kvm.h | 3 ---
+ arch/riscv/include/uapi/asm/kvm.h | 3 ---
+ include/uapi/linux/kvm.h          | 4 ++++
+ 3 files changed, 4 insertions(+), 6 deletions(-)
 
-It's also unclear to me why "RISC-V: KVM: Allow Smnpm and Ssnpm
-extensions for guests" came through the RISC-V tree, thus causing
-conflicts in the KVM_RISCV_ISA_EXT_ID enum.  It doesn't seem to need
-bare metal support, so it should have come through your tree.
-
-This split between patches that you send to me and those that others
-send to someone else is not your fault but it's a mess, and the RISC-V
-maintainers should not have gone for the least-work option. If
-anything has a bare metal and a KVM part it's totally okay that you
-send it to me as a separate pull request, but the right way to do it
-is to *include a topic branch from the RISC-V tree* and base the KVM
-changes on top. Not to let Linus and myself sort out the conflicts.
-
-Paolo
+diff --git a/arch/arm64/include/uapi/asm/kvm.h b/arch/arm64/include/uapi/asm/kvm.h
+index 66736ff04011..568bf858f319 100644
+--- a/arch/arm64/include/uapi/asm/kvm.h
++++ b/arch/arm64/include/uapi/asm/kvm.h
+@@ -43,9 +43,6 @@
+ #define KVM_COALESCED_MMIO_PAGE_OFFSET 1
+ #define KVM_DIRTY_LOG_PAGE_OFFSET 64
+ 
+-#define KVM_REG_SIZE(id)						\
+-	(1U << (((id) & KVM_REG_SIZE_MASK) >> KVM_REG_SIZE_SHIFT))
+-
+ struct kvm_regs {
+ 	struct user_pt_regs regs;	/* sp = sp_el0 */
+ 
+diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
+index 3482c9a73d1b..9f60d6185077 100644
+--- a/arch/riscv/include/uapi/asm/kvm.h
++++ b/arch/riscv/include/uapi/asm/kvm.h
+@@ -211,9 +211,6 @@ struct kvm_riscv_sbi_sta {
+ #define KVM_RISCV_TIMER_STATE_OFF	0
+ #define KVM_RISCV_TIMER_STATE_ON	1
+ 
+-#define KVM_REG_SIZE(id)		\
+-	(1U << (((id) & KVM_REG_SIZE_MASK) >> KVM_REG_SIZE_SHIFT))
+-
+ /* If you need to interpret the index values, here is the key: */
+ #define KVM_REG_RISCV_TYPE_MASK		0x00000000FF000000
+ #define KVM_REG_RISCV_TYPE_SHIFT	24
+diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
+index 502ea63b5d2e..343de0a51797 100644
+--- a/include/uapi/linux/kvm.h
++++ b/include/uapi/linux/kvm.h
+@@ -1070,6 +1070,10 @@ struct kvm_dirty_tlb {
+ 
+ #define KVM_REG_SIZE_SHIFT	52
+ #define KVM_REG_SIZE_MASK	0x00f0000000000000ULL
++
++#define KVM_REG_SIZE(id)		\
++	(1U << (((id) & KVM_REG_SIZE_MASK) >> KVM_REG_SIZE_SHIFT))
++
+ #define KVM_REG_SIZE_U8		0x0000000000000000ULL
+ #define KVM_REG_SIZE_U16	0x0010000000000000ULL
+ #define KVM_REG_SIZE_U32	0x0020000000000000ULL
+-- 
+2.47.0.338.g60cca15819-goog
 
 
