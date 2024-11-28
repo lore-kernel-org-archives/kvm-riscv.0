@@ -1,33 +1,74 @@
 From: Andrew Jones <ajones@ventanamicro.com>
-Date: Thu, 28 Nov 2024 09:43:06 +0100
-Subject: [PATCH v4 15/16] KVM: selftests: Use canonical $(ARCH) paths for
- KVM selftests directories
-In-Reply-To: <20241128005547.4077116-16-seanjc@google.com>
-References: <20241128005547.4077116-1-seanjc@google.com>
- <20241128005547.4077116-16-seanjc@google.com>
-Message-ID: <20241128-d7a5061ce8160000cd5260bd@orel>
+Date: Thu, 28 Nov 2024 09:50:29 +0100
+Subject: [PATCH 1/4] RISC-V: KVM: Allow Svvptc extension for Guest/VM
+In-Reply-To: <35d9c91a69ebcb81b40dc4f7f51e290c3d94b2d9.1732762121.git.zhouquan@iscas.ac.cn>
+References: <cover.1732762121.git.zhouquan@iscas.ac.cn>
+ <35d9c91a69ebcb81b40dc4f7f51e290c3d94b2d9.1732762121.git.zhouquan@iscas.ac.cn>
+Message-ID: <20241128-1e20d2226e4be72c121df6fc@orel>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Wed, Nov 27, 2024 at 04:55:46PM -0800, Sean Christopherson wrote:
-> Use the kernel's canonical $(ARCH) paths instead of the raw target triple
-> for KVM selftests directories.  KVM selftests are quite nearly the only
-> place in the entire kernel that using the target triple for directories,
-> tools/testing/selftests/drivers/s390x being the lone holdout.
+On Thu, Nov 28, 2024 at 11:21:15AM +0800, zhouquan at iscas.ac.cn wrote:
+> From: Quan Zhou <zhouquan@iscas.ac.cn>
 > 
-> Using the kernel's preferred nomenclature eliminates the minor, but
-> annoying, friction of having to translate to KVM's selftests directories,
-> e.g. for pattern matching, opening files, running selftests, etc.
+> Extend the KVM ISA extension ONE_REG interface to allow KVM user space
+> to detect and enable Svvptc extension for Guest/VM.
 > 
-> Opportunsitically delete file comments that reference the full path of the
-> file, as they are obviously prone to becoming stale, and serve no known
-> purpose.
-> 
-> Signed-off-by: Sean Christopherson <seanjc@google.com>
+> Signed-off-by: Quan Zhou <zhouquan@iscas.ac.cn>
 > ---
+>  arch/riscv/include/uapi/asm/kvm.h | 1 +
+>  arch/riscv/kvm/vcpu_onereg.c      | 2 ++
+>  2 files changed, 3 insertions(+)
+> 
+> diff --git a/arch/riscv/include/uapi/asm/kvm.h b/arch/riscv/include/uapi/asm/kvm.h
+> index 4f24201376b1..9db33f52f56e 100644
+> --- a/arch/riscv/include/uapi/asm/kvm.h
+> +++ b/arch/riscv/include/uapi/asm/kvm.h
+> @@ -177,6 +177,7 @@ enum KVM_RISCV_ISA_EXT_ID {
+>  	KVM_RISCV_ISA_EXT_ZAWRS,
+>  	KVM_RISCV_ISA_EXT_SMNPM,
+>  	KVM_RISCV_ISA_EXT_SSNPM,
+> +	KVM_RISCV_ISA_EXT_SVVPTC,
+>  	KVM_RISCV_ISA_EXT_MAX,
+>  };
+>  
+> diff --git a/arch/riscv/kvm/vcpu_onereg.c b/arch/riscv/kvm/vcpu_onereg.c
+> index 5b68490ad9b7..67965feb5b74 100644
+> --- a/arch/riscv/kvm/vcpu_onereg.c
+> +++ b/arch/riscv/kvm/vcpu_onereg.c
+> @@ -41,6 +41,7 @@ static const unsigned long kvm_isa_ext_arr[] = {
+>  	KVM_ISA_EXT_ARR(SSNPM),
+>  	KVM_ISA_EXT_ARR(SSTC),
+>  	KVM_ISA_EXT_ARR(SVINVAL),
+> +	KVM_ISA_EXT_ARR(SVVPTC),
 
-Acked-by: Andrew Jones <ajones@ventanamicro.com>
+Alphabetic order, please.
+
+>  	KVM_ISA_EXT_ARR(SVNAPOT),
+>  	KVM_ISA_EXT_ARR(SVPBMT),
+>  	KVM_ISA_EXT_ARR(ZACAS),
+> @@ -135,6 +136,7 @@ static bool kvm_riscv_vcpu_isa_disable_allowed(unsigned long ext)
+>  	case KVM_RISCV_ISA_EXT_SSNPM:
+>  	case KVM_RISCV_ISA_EXT_SSTC:
+>  	case KVM_RISCV_ISA_EXT_SVINVAL:
+> +	case KVM_RISCV_ISA_EXT_SVVPTC:
+
+Same comment as above.
+
+>  	case KVM_RISCV_ISA_EXT_SVNAPOT:
+>  	case KVM_RISCV_ISA_EXT_ZACAS:
+>  	case KVM_RISCV_ISA_EXT_ZAWRS:
+> -- 
+> 2.34.1
+> 
+
+Otherwise,
+
+Reviewed-by: Andrew Jones <ajones@ventanamicro.com>
+
+Thanks,
+drew
 
