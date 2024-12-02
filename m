@@ -1,110 +1,40 @@
-From: Atish Kumar Patra <atishp@rivosinc.com>
-Date: Mon, 2 Dec 2024 10:26:13 -0800
-Subject: [PATCH 2/8] drivers/perf: riscv: Fix Platform firmware event data
-In-Reply-To: <77b7b44f-e05a-4845-8d45-0e0d831bb8e7@ghiti.fr>
-References: <20241119-pmu_event_info-v1-0-a4f9691421f8@rivosinc.com>
- <20241119-pmu_event_info-v1-2-a4f9691421f8@rivosinc.com> <77b7b44f-e05a-4845-8d45-0e0d831bb8e7@ghiti.fr>
-Message-ID: <CAHBxVyHZvLrKNCAPJfHxYYn30Mm++J=mff+tVU9GZ_8rt3WnEg@mail.gmail.com>
+From: Sean Christopherson <seanjc@google.com>
+Date: Mon, 2 Dec 2024 10:47:48 -0800
+Subject: [PATCH v4 15/16] KVM: selftests: Use canonical $(ARCH) paths for
+ KVM selftests directories
+In-Reply-To: <20241128092546.7a5b3f30@p-imbrenda>
+References: <20241128005547.4077116-1-seanjc@google.com> <20241128005547.4077116-16-seanjc@google.com>
+ <20241128092546.7a5b3f30@p-imbrenda>
+Message-ID: <Z04A1Oh0LCKtCN4p@google.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-On Thu, Nov 28, 2024 at 5:10?AM Alexandre Ghiti <alex@ghiti.fr> wrote:
->
-> Hi Atish,
->
-> On 19/11/2024 21:29, Atish Patra wrote:
-> > Platform firmware event data field is allowed to be 62 bits for
-> > Linux as uppper most two bits are reserved to indicate SBI fw or
-> > platform specific firmware events.
-> > However, the event data field is masked as per the hardware raw
-> > event mask which is not correct.
-> >
-> > Fix the platform firmware event data field with proper mask.
-> >
-> > Fixes: f0c9363db2dd ("perf/riscv-sbi: Add platform specific firmware event handling")
-> >
-> > Signed-off-by: Atish Patra <atishp@rivosinc.com>
-> > ---
-> >   arch/riscv/include/asm/sbi.h |  1 +
-> >   drivers/perf/riscv_pmu_sbi.c | 12 +++++-------
-> >   2 files changed, 6 insertions(+), 7 deletions(-)
-> >
-> > diff --git a/arch/riscv/include/asm/sbi.h b/arch/riscv/include/asm/sbi.h
-> > index 98f631b051db..9be38b05f4ad 100644
-> > --- a/arch/riscv/include/asm/sbi.h
-> > +++ b/arch/riscv/include/asm/sbi.h
-> > @@ -158,6 +158,7 @@ struct riscv_pmu_snapshot_data {
-> >   };
-> >
-> >   #define RISCV_PMU_RAW_EVENT_MASK GENMASK_ULL(47, 0)
-> > +#define RISCV_PMU_PLAT_FW_EVENT_MASK GENMASK_ULL(61, 0)
-> >   #define RISCV_PMU_RAW_EVENT_IDX 0x20000
-> >   #define RISCV_PLAT_FW_EVENT 0xFFFF
-> >
-> > diff --git a/drivers/perf/riscv_pmu_sbi.c b/drivers/perf/riscv_pmu_sbi.c
-> > index cb98efa9b106..50cbdbf66bb7 100644
-> > --- a/drivers/perf/riscv_pmu_sbi.c
-> > +++ b/drivers/perf/riscv_pmu_sbi.c
-> > @@ -508,7 +508,6 @@ static int pmu_sbi_event_map(struct perf_event *event, u64 *econfig)
-> >   {
-> >       u32 type = event->attr.type;
-> >       u64 config = event->attr.config;
-> > -     u64 raw_config_val;
-> >       int ret;
-> >
-> >       /*
-> > @@ -529,21 +528,20 @@ static int pmu_sbi_event_map(struct perf_event *event, u64 *econfig)
-> >       case PERF_TYPE_RAW:
-> >               /*
-> >                * As per SBI specification, the upper 16 bits must be unused
-> > -              * for a raw event.
-> > +              * for a hardware raw event.
-> >                * Bits 63:62 are used to distinguish between raw events
-> >                * 00 - Hardware raw event
-> >                * 10 - SBI firmware events
-> >                * 11 - Risc-V platform specific firmware event
-> >                */
-> > -             raw_config_val = config & RISCV_PMU_RAW_EVENT_MASK;
-> > +
-> >               switch (config >> 62) {
-> >               case 0:
-> >                       ret = RISCV_PMU_RAW_EVENT_IDX;
-> > -                     *econfig = raw_config_val;
-> > +                     *econfig = config & RISCV_PMU_RAW_EVENT_MASK;
-> >                       break;
-> >               case 2:
-> > -                     ret = (raw_config_val & 0xFFFF) |
-> > -                             (SBI_PMU_EVENT_TYPE_FW << 16);
-> > +                     ret = (config & 0xFFFF) | (SBI_PMU_EVENT_TYPE_FW << 16);
-> >                       break;
-> >               case 3:
-> >                       /*
-> > @@ -552,7 +550,7 @@ static int pmu_sbi_event_map(struct perf_event *event, u64 *econfig)
-> >                        * Event data - raw event encoding
-> >                        */
-> >                       ret = SBI_PMU_EVENT_TYPE_FW << 16 | RISCV_PLAT_FW_EVENT;
-> > -                     *econfig = raw_config_val;
-> > +                     *econfig = config & RISCV_PMU_PLAT_FW_EVENT_MASK;
-> >                       break;
-> >               }
-> >               break;
-> >
->
-> It seems independent from the other patches, so I guess we should take
-> it for 6.13 rcX.
->
+On Thu, Nov 28, 2024, Claudio Imbrenda wrote:
+> On Wed, 27 Nov 2024 16:55:46 -0800
+> > diff --git a/tools/testing/selftests/kvm/include/x86_64/svm_util.h b/tools/testing/selftests/kvm/include/x86/svm_util.h
+> > similarity index 94%
+> > rename from tools/testing/selftests/kvm/include/x86_64/svm_util.h
+> > rename to tools/testing/selftests/kvm/include/x86/svm_util.h
+> > index 044f0f872ba9..b74c6dcddcbd 100644
+> > --- a/tools/testing/selftests/kvm/include/x86_64/svm_util.h
+> > +++ b/tools/testing/selftests/kvm/include/x86/svm_util.h
+> > @@ -1,8 +1,5 @@
+> >  /* SPDX-License-Identifier: GPL-2.0-only */
+> >  /*
+> > - * tools/testing/selftests/kvm/include/x86_64/svm_utils.h
+> 
+> this line clearly has to go ^
+> 
+> > - * Header for nested SVM testing
+> 
+> but I think this one can stay? ^
 
-Yes. This patch doesn't have any SBI v3.0 dependencies. I will send
-this patch separately
-so that it can be applied for 6.13 rcX
+It should go too, the header contains declarations for helpers that having nothing
+to do with nested SVM.
 
-> Let me know if that's not the case.
->
-> Thanks,
->
-> Alex
->
+On a somewhat related topic, the file should probably be "svm.h", but that's a
+future cleanup.
 
