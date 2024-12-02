@@ -1,11 +1,10 @@
 From: Samuel Holland <samuel.holland@sifive.com>
-Date: Mon, 2 Dec 2024 16:49:09 -0600
-Subject: [PATCH 5/8] drivers/perf: riscv: Implement PMU event info
- function
-In-Reply-To: <20241119-pmu_event_info-v1-5-a4f9691421f8@rivosinc.com>
+Date: Mon, 2 Dec 2024 17:02:39 -0600
+Subject: [PATCH 7/8] RISC-V: KVM: Implement get event info function
+In-Reply-To: <20241119-pmu_event_info-v1-7-a4f9691421f8@rivosinc.com>
 References: <20241119-pmu_event_info-v1-0-a4f9691421f8@rivosinc.com>
- <20241119-pmu_event_info-v1-5-a4f9691421f8@rivosinc.com>
-Message-ID: <0a4a569e-dfab-4aed-90df-2fe9719a3803@sifive.com>
+ <20241119-pmu_event_info-v1-7-a4f9691421f8@rivosinc.com>
+Message-ID: <8dc7e94c-4bf2-4367-8561-166bec6ec315@sifive.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
@@ -15,163 +14,137 @@ Content-Transfer-Encoding: 7bit
 Hi Atish,
 
 On 2024-11-19 2:29 PM, Atish Patra wrote:
-> With the new SBI PMU event info function, we can query the availability
-> of the all standard SBI PMU events at boot time with a single ecall.
-> This improves the bootime by avoiding making an SBI call for each
-> standard PMU event. Since this function is defined only in SBI v3.0,
-> invoke this only if the underlying SBI implementation is v3.0 or higher.
+> The new get_event_info funciton allows the guest to query the presence
+> of multiple events with single SBI call. Currently, the perf driver
+> in linux guest invokes it for all the standard SBI PMU events. Support
+> the SBI function implementation in KVM as well.
 > 
 > Signed-off-by: Atish Patra <atishp@rivosinc.com>
 > ---
->  arch/riscv/include/asm/sbi.h |  7 +++++
->  drivers/perf/riscv_pmu_sbi.c | 71 ++++++++++++++++++++++++++++++++++++++++++++
->  2 files changed, 78 insertions(+)
+>  arch/riscv/include/asm/kvm_vcpu_pmu.h |  3 ++
+>  arch/riscv/kvm/vcpu_pmu.c             | 67 +++++++++++++++++++++++++++++++++++
+>  arch/riscv/kvm/vcpu_sbi_pmu.c         |  3 ++
+>  3 files changed, 73 insertions(+)
 > 
-> diff --git a/arch/riscv/include/asm/sbi.h b/arch/riscv/include/asm/sbi.h
-> index 3ee9bfa5e77c..c04f64fbc01d 100644
-> --- a/arch/riscv/include/asm/sbi.h
-> +++ b/arch/riscv/include/asm/sbi.h
-> @@ -134,6 +134,7 @@ enum sbi_ext_pmu_fid {
->  	SBI_EXT_PMU_COUNTER_FW_READ,
->  	SBI_EXT_PMU_COUNTER_FW_READ_HI,
->  	SBI_EXT_PMU_SNAPSHOT_SET_SHMEM,
-> +	SBI_EXT_PMU_EVENT_GET_INFO,
->  };
+> diff --git a/arch/riscv/include/asm/kvm_vcpu_pmu.h b/arch/riscv/include/asm/kvm_vcpu_pmu.h
+> index 1d85b6617508..9a930afc8f57 100644
+> --- a/arch/riscv/include/asm/kvm_vcpu_pmu.h
+> +++ b/arch/riscv/include/asm/kvm_vcpu_pmu.h
+> @@ -98,6 +98,9 @@ void kvm_riscv_vcpu_pmu_init(struct kvm_vcpu *vcpu);
+>  int kvm_riscv_vcpu_pmu_snapshot_set_shmem(struct kvm_vcpu *vcpu, unsigned long saddr_low,
+>  				      unsigned long saddr_high, unsigned long flags,
+>  				      struct kvm_vcpu_sbi_return *retdata);
+> +int kvm_riscv_vcpu_pmu_event_info(struct kvm_vcpu *vcpu, unsigned long saddr_low,
+> +				  unsigned long saddr_high, unsigned long num_events,
+> +				  unsigned long flags, struct kvm_vcpu_sbi_return *retdata);
+>  void kvm_riscv_vcpu_pmu_deinit(struct kvm_vcpu *vcpu);
+>  void kvm_riscv_vcpu_pmu_reset(struct kvm_vcpu *vcpu);
 >  
->  union sbi_pmu_ctr_info {
-> @@ -157,6 +158,12 @@ struct riscv_pmu_snapshot_data {
->  	u64 reserved[447];
->  };
+> diff --git a/arch/riscv/kvm/vcpu_pmu.c b/arch/riscv/kvm/vcpu_pmu.c
+> index efd66835c2b8..a30f7ec31479 100644
+> --- a/arch/riscv/kvm/vcpu_pmu.c
+> +++ b/arch/riscv/kvm/vcpu_pmu.c
+> @@ -456,6 +456,73 @@ int kvm_riscv_vcpu_pmu_snapshot_set_shmem(struct kvm_vcpu *vcpu, unsigned long s
+>  	return 0;
+>  }
 >  
-> +struct riscv_pmu_event_info {
-> +	u32 event_idx;
-> +	u32 output;
-> +	u64 event_data;
-> +};
-> +
->  #define RISCV_PMU_RAW_EVENT_MASK GENMASK_ULL(47, 0)
->  #define RISCV_PMU_PLAT_FW_EVENT_MASK GENMASK_ULL(61, 0)
->  /* SBI v3.0 allows extended hpmeventX width value */
-> diff --git a/drivers/perf/riscv_pmu_sbi.c b/drivers/perf/riscv_pmu_sbi.c
-> index f0e845ff6b79..2a6527cc9d97 100644
-> --- a/drivers/perf/riscv_pmu_sbi.c
-> +++ b/drivers/perf/riscv_pmu_sbi.c
-> @@ -100,6 +100,7 @@ static unsigned int riscv_pmu_irq;
->  /* Cache the available counters in a bitmask */
->  static unsigned long cmask;
->  
-> +static int pmu_event_find_cache(u64 config);
-
-This new declaration does not appear to be used.
-
->  struct sbi_pmu_event_data {
->  	union {
->  		union {
-> @@ -299,6 +300,68 @@ static struct sbi_pmu_event_data pmu_cache_event_map[PERF_COUNT_HW_CACHE_MAX]
->  	},
->  };
->  
-> +static int pmu_sbi_check_event_info(void)
+> +int kvm_riscv_vcpu_pmu_event_info(struct kvm_vcpu *vcpu, unsigned long saddr_low,
+> +				  unsigned long saddr_high, unsigned long num_events,
+> +				  unsigned long flags, struct kvm_vcpu_sbi_return *retdata)
 > +{
-> +	int num_events = ARRAY_SIZE(pmu_hw_event_map) + PERF_COUNT_HW_CACHE_MAX *
-> +			 PERF_COUNT_HW_CACHE_OP_MAX * PERF_COUNT_HW_CACHE_RESULT_MAX;
-> +	struct riscv_pmu_event_info *event_info_shmem;
-> +	phys_addr_t base_addr;
-> +	int i, j, k, result = 0, count = 0;
-> +	struct sbiret ret;
+> +	unsigned long hva;
+> +	struct riscv_pmu_event_info *einfo;
+> +	int shmem_size = num_events * sizeof(*einfo);
+> +	bool writable;
+> +	gpa_t shmem;
+> +	u32 eidx, etype;
+> +	u64 econfig;
+> +	int ret;
 > +
-> +	event_info_shmem = (struct riscv_pmu_event_info *)
-> +			   kcalloc(num_events, sizeof(*event_info_shmem), GFP_KERNEL);
-
-Please drop the unnecessary cast.
-
-> +	if (!event_info_shmem) {
-> +		pr_err("Can not allocate memory for event info query\n");
-
-Usually there's no need to print an error for allocation failure, since the
-allocator already warns. And this isn't really an error, since we can (and do)
-fall back to the existing way of checking for events.
-
-> +		return -ENOMEM;
+> +	if (flags != 0 || (saddr_low & (SZ_16 - 1))) {
+> +		ret = SBI_ERR_INVALID_PARAM;
+> +		goto out;
 > +	}
 > +
-> +	for (i = 0; i < ARRAY_SIZE(pmu_hw_event_map); i++)
-> +		event_info_shmem[count++].event_idx = pmu_hw_event_map[i].event_idx;
-> +
-> +	for (i = 0; i < ARRAY_SIZE(pmu_cache_event_map); i++) {
-> +		for (int j = 0; j < ARRAY_SIZE(pmu_cache_event_map[i]); j++) {
-> +			for (int k = 0; k < ARRAY_SIZE(pmu_cache_event_map[i][j]); k++)
-> +				event_info_shmem[count++].event_idx =
-> +							pmu_cache_event_map[i][j][k].event_idx;
+> +	shmem = saddr_low;
+> +	if (saddr_high != 0) {
+> +		if (IS_ENABLED(CONFIG_32BIT)) {
+> +			shmem |= ((gpa_t)saddr_high << 32);
+> +		} else {
+> +			ret = SBI_ERR_INVALID_ADDRESS;
+> +			goto out;
 > +		}
 > +	}
 > +
-> +	base_addr = __pa(event_info_shmem);
-> +	if (IS_ENABLED(CONFIG_32BIT))
-> +		ret = sbi_ecall(SBI_EXT_PMU, SBI_EXT_PMU_EVENT_GET_INFO, lower_32_bits(base_addr),
-> +				upper_32_bits(base_addr), count, 0, 0, 0);
-> +	else
-> +		ret = sbi_ecall(SBI_EXT_PMU, SBI_EXT_PMU_EVENT_GET_INFO, base_addr, 0,
-> +				count, 0, 0, 0);
-> +	if (ret.error) {
-> +		result = -EOPNOTSUPP;
+> +	hva = kvm_vcpu_gfn_to_hva_prot(vcpu, shmem >> PAGE_SHIFT, &writable);
+> +	if (kvm_is_error_hva(hva) || !writable) {
+> +		ret = SBI_ERR_INVALID_ADDRESS;
+
+This only checks the first page if the address crosses a page boundary. Maybe
+that is okay since kvm_vcpu_read_guest()/kvm_vcpu_write_guest() will fail if a
+later page is inaccessible?
+
+> +		goto out;
+> +	}
+> +
+> +	einfo = kzalloc(shmem_size, GFP_KERNEL);
+> +	if (!einfo)
+> +		return -ENOMEM;
+> +
+> +	ret = kvm_vcpu_read_guest(vcpu, shmem, einfo, shmem_size);
+> +	if (ret) {
+> +		ret = SBI_ERR_FAILURE;
 > +		goto free_mem;
 > +	}
-> +	/* Do we need some barriers here or priv mode transition will ensure that */
-
-No barrier is needed -- the SBI implementation is running on the same hart, so
-coherency isn't even a consideration.
-
-> +	for (i = 0; i < ARRAY_SIZE(pmu_hw_event_map); i++) {
-> +		if (!(event_info_shmem[i].output & 0x01))
-
-This bit mask should probably use a macro.
-
-> +			pmu_hw_event_map[i].event_idx = -ENOENT;
-> +	}
 > +
-> +	count = ARRAY_SIZE(pmu_hw_event_map);
-> +
-> +	for (i = 0; i < ARRAY_SIZE(pmu_cache_event_map); i++) {
-> +		for (j = 0; j < ARRAY_SIZE(pmu_cache_event_map[i]); j++) {
-> +			for (k = 0; k < ARRAY_SIZE(pmu_cache_event_map[i][j]); k++) {
-> +				if (!(event_info_shmem[count].output & 0x01))
+> +	for (int i = 0; i < num_events; i++) {
+> +		eidx = einfo[i].event_idx;
+> +		etype = kvm_pmu_get_perf_event_type(eidx);
+> +		econfig = kvm_pmu_get_perf_event_config(eidx, einfo[i].event_data);
+> +		ret = riscv_pmu_get_event_info(etype, econfig, NULL);
+> +		if (ret > 0)
+> +			einfo[i].output = 1;
 
-Same comment applies here.
+This also needs to write `output` in the else case to indicate that the event is
+not supported; the spec does not require the caller to initialize bit 0 of
+output to zero.
 
 Regards,
 Samuel
 
-> +					pmu_cache_event_map[i][j][k].event_idx = -ENOENT;
-> +				count++;
-> +			}
-> +		}
+> +	}
+> +
+> +	kvm_vcpu_write_guest(vcpu, shmem, einfo, shmem_size);
+> +	if (ret) {
+> +		ret = SBI_ERR_FAILURE;
+> +		goto free_mem;
 > +	}
 > +
 > +free_mem:
-> +	kfree(event_info_shmem);
+> +	kfree(einfo);
+> +out:
+> +	retdata->err_val = ret;
 > +
-> +	return result;
+> +	return 0;
 > +}
 > +
->  static void pmu_sbi_check_event(struct sbi_pmu_event_data *edata)
+>  int kvm_riscv_vcpu_pmu_num_ctrs(struct kvm_vcpu *vcpu,
+>  				struct kvm_vcpu_sbi_return *retdata)
 >  {
->  	struct sbiret ret;
-> @@ -316,6 +379,14 @@ static void pmu_sbi_check_event(struct sbi_pmu_event_data *edata)
->  
->  static void pmu_sbi_check_std_events(struct work_struct *work)
->  {
-> +	int ret;
-> +
-> +	if (sbi_v3_available) {
-> +		ret = pmu_sbi_check_event_info();
-> +		if (!ret)
-> +			return;
-> +	}
-> +
->  	for (int i = 0; i < ARRAY_SIZE(pmu_hw_event_map); i++)
->  		pmu_sbi_check_event(&pmu_hw_event_map[i]);
->  
+> diff --git a/arch/riscv/kvm/vcpu_sbi_pmu.c b/arch/riscv/kvm/vcpu_sbi_pmu.c
+> index e4be34e03e83..a020d979d179 100644
+> --- a/arch/riscv/kvm/vcpu_sbi_pmu.c
+> +++ b/arch/riscv/kvm/vcpu_sbi_pmu.c
+> @@ -73,6 +73,9 @@ static int kvm_sbi_ext_pmu_handler(struct kvm_vcpu *vcpu, struct kvm_run *run,
+>  	case SBI_EXT_PMU_SNAPSHOT_SET_SHMEM:
+>  		ret = kvm_riscv_vcpu_pmu_snapshot_set_shmem(vcpu, cp->a0, cp->a1, cp->a2, retdata);
+>  		break;
+> +	case SBI_EXT_PMU_EVENT_GET_INFO:
+> +		ret = kvm_riscv_vcpu_pmu_event_info(vcpu, cp->a0, cp->a1, cp->a2, cp->a3, retdata);
+> +		break;
+>  	default:
+>  		retdata->err_val = SBI_ERR_NOT_SUPPORTED;
+>  	}
 > 
 
 
