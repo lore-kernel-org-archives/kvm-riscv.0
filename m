@@ -1,150 +1,113 @@
-From: Samuel Holland <samuel.holland@sifive.com>
-Date: Mon, 2 Dec 2024 17:02:39 -0600
-Subject: [PATCH 7/8] RISC-V: KVM: Implement get event info function
-In-Reply-To: <20241119-pmu_event_info-v1-7-a4f9691421f8@rivosinc.com>
+From: Atish Kumar Patra <atishp@rivosinc.com>
+Date: Mon, 2 Dec 2024 16:15:23 -0800
+Subject: [PATCH 3/8] drivers/perf: riscv: Add raw event v2 support
+In-Reply-To: <e124c532-7a08-4788-843d-345827e35f5f@sifive.com>
 References: <20241119-pmu_event_info-v1-0-a4f9691421f8@rivosinc.com>
- <20241119-pmu_event_info-v1-7-a4f9691421f8@rivosinc.com>
-Message-ID: <8dc7e94c-4bf2-4367-8561-166bec6ec315@sifive.com>
+ <20241119-pmu_event_info-v1-3-a4f9691421f8@rivosinc.com> <e124c532-7a08-4788-843d-345827e35f5f@sifive.com>
+Message-ID: <CAHBxVyEwkPUcut0L7K9eewcmhOOidU16WnGRiPiP3D7-OS7HvQ@mail.gmail.com>
 List-Id: <kvm-riscv.lists.infradead.org>
 To: kvm-riscv@lists.infradead.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 
-Hi Atish,
+On Mon, Dec 2, 2024 at 2:37?PM Samuel Holland <samuel.holland@sifive.com> wrote:
+>
+> Hi Atish,
+>
+> On 2024-11-19 2:29 PM, Atish Patra wrote:
+> > SBI v3.0 introduced a new raw event type that allows wider
+> > mhpmeventX width to be programmed via CFG_MATCH.
+> >
+> > Use the raw event v2 if SBI v3.0 is available.
+> >
+> > Signed-off-by: Atish Patra <atishp@rivosinc.com>
+> > ---
+> >  arch/riscv/include/asm/sbi.h |  4 ++++
+> >  drivers/perf/riscv_pmu_sbi.c | 18 ++++++++++++------
+> >  2 files changed, 16 insertions(+), 6 deletions(-)
+> >
+> > diff --git a/arch/riscv/include/asm/sbi.h b/arch/riscv/include/asm/sbi.h
+> > index 9be38b05f4ad..3ee9bfa5e77c 100644
+> > --- a/arch/riscv/include/asm/sbi.h
+> > +++ b/arch/riscv/include/asm/sbi.h
+> > @@ -159,7 +159,10 @@ struct riscv_pmu_snapshot_data {
+> >
+> >  #define RISCV_PMU_RAW_EVENT_MASK GENMASK_ULL(47, 0)
+> >  #define RISCV_PMU_PLAT_FW_EVENT_MASK GENMASK_ULL(61, 0)
+> > +/* SBI v3.0 allows extended hpmeventX width value */
+> > +#define RISCV_PMU_RAW_EVENT_V2_MASK GENMASK_ULL(55, 0)
+> >  #define RISCV_PMU_RAW_EVENT_IDX 0x20000
+> > +#define RISCV_PMU_RAW_EVENT_V2_IDX 0x30000
+> >  #define RISCV_PLAT_FW_EVENT  0xFFFF
+> >
+> >  /** General pmu event codes specified in SBI PMU extension */
+> > @@ -217,6 +220,7 @@ enum sbi_pmu_event_type {
+> >       SBI_PMU_EVENT_TYPE_HW = 0x0,
+> >       SBI_PMU_EVENT_TYPE_CACHE = 0x1,
+> >       SBI_PMU_EVENT_TYPE_RAW = 0x2,
+> > +     SBI_PMU_EVENT_TYPE_RAW_V2 = 0x3,
+> >       SBI_PMU_EVENT_TYPE_FW = 0xf,
+> >  };
+> >
+> > diff --git a/drivers/perf/riscv_pmu_sbi.c b/drivers/perf/riscv_pmu_sbi.c
+> > index 50cbdbf66bb7..f0e845ff6b79 100644
+> > --- a/drivers/perf/riscv_pmu_sbi.c
+> > +++ b/drivers/perf/riscv_pmu_sbi.c
+> > @@ -59,7 +59,7 @@ asm volatile(ALTERNATIVE(                                           \
+> >  #define PERF_EVENT_FLAG_USER_ACCESS  BIT(SYSCTL_USER_ACCESS)
+> >  #define PERF_EVENT_FLAG_LEGACY               BIT(SYSCTL_LEGACY)
+> >
+> > -PMU_FORMAT_ATTR(event, "config:0-47");
+> > +PMU_FORMAT_ATTR(event, "config:0-55");
+> >  PMU_FORMAT_ATTR(firmware, "config:62-63");
+> >
+> >  static bool sbi_v2_available;
+> > @@ -527,18 +527,24 @@ static int pmu_sbi_event_map(struct perf_event *event, u64 *econfig)
+> >               break;
+> >       case PERF_TYPE_RAW:
+> >               /*
+> > -              * As per SBI specification, the upper 16 bits must be unused
+> > -              * for a hardware raw event.
+> > +              * As per SBI v0.3 specification,
+> > +              *  -- the upper 16 bits must be unused for a hardware raw event.
+> > +              * As per SBI v3.0 specification,
+> > +              *  -- the upper 8 bits must be unused for a hardware raw event.
+> >                * Bits 63:62 are used to distinguish between raw events
+> >                * 00 - Hardware raw event
+> >                * 10 - SBI firmware events
+> >                * 11 - Risc-V platform specific firmware event
+> >                */
+> > -
+> >               switch (config >> 62) {
+> >               case 0:
+> > -                     ret = RISCV_PMU_RAW_EVENT_IDX;
+> > -                     *econfig = config & RISCV_PMU_RAW_EVENT_MASK;
+> > +                     if (sbi_v3_available) {
+> > +                             *econfig = config & RISCV_PMU_RAW_EVENT_V2_MASK;
+> > +                             ret = RISCV_PMU_RAW_EVENT_V2_IDX;
+> > +                     } else {
+> > +                             *econfig = config & RISCV_PMU_RAW_EVENT_MASK;
+> > +                             ret = RISCV_PMU_RAW_EVENT_IDX;
+>
+> Shouldn't we check to see if any of bits 48-55 are set and return an error,
+> instead of silently requesting the wrong event?
+>
 
-On 2024-11-19 2:29 PM, Atish Patra wrote:
-> The new get_event_info funciton allows the guest to query the presence
-> of multiple events with single SBI call. Currently, the perf driver
-> in linux guest invokes it for all the standard SBI PMU events. Support
-> the SBI function implementation in KVM as well.
-> 
-> Signed-off-by: Atish Patra <atishp@rivosinc.com>
-> ---
->  arch/riscv/include/asm/kvm_vcpu_pmu.h |  3 ++
->  arch/riscv/kvm/vcpu_pmu.c             | 67 +++++++++++++++++++++++++++++++++++
->  arch/riscv/kvm/vcpu_sbi_pmu.c         |  3 ++
->  3 files changed, 73 insertions(+)
-> 
-> diff --git a/arch/riscv/include/asm/kvm_vcpu_pmu.h b/arch/riscv/include/asm/kvm_vcpu_pmu.h
-> index 1d85b6617508..9a930afc8f57 100644
-> --- a/arch/riscv/include/asm/kvm_vcpu_pmu.h
-> +++ b/arch/riscv/include/asm/kvm_vcpu_pmu.h
-> @@ -98,6 +98,9 @@ void kvm_riscv_vcpu_pmu_init(struct kvm_vcpu *vcpu);
->  int kvm_riscv_vcpu_pmu_snapshot_set_shmem(struct kvm_vcpu *vcpu, unsigned long saddr_low,
->  				      unsigned long saddr_high, unsigned long flags,
->  				      struct kvm_vcpu_sbi_return *retdata);
-> +int kvm_riscv_vcpu_pmu_event_info(struct kvm_vcpu *vcpu, unsigned long saddr_low,
-> +				  unsigned long saddr_high, unsigned long num_events,
-> +				  unsigned long flags, struct kvm_vcpu_sbi_return *retdata);
->  void kvm_riscv_vcpu_pmu_deinit(struct kvm_vcpu *vcpu);
->  void kvm_riscv_vcpu_pmu_reset(struct kvm_vcpu *vcpu);
->  
-> diff --git a/arch/riscv/kvm/vcpu_pmu.c b/arch/riscv/kvm/vcpu_pmu.c
-> index efd66835c2b8..a30f7ec31479 100644
-> --- a/arch/riscv/kvm/vcpu_pmu.c
-> +++ b/arch/riscv/kvm/vcpu_pmu.c
-> @@ -456,6 +456,73 @@ int kvm_riscv_vcpu_pmu_snapshot_set_shmem(struct kvm_vcpu *vcpu, unsigned long s
->  	return 0;
->  }
->  
-> +int kvm_riscv_vcpu_pmu_event_info(struct kvm_vcpu *vcpu, unsigned long saddr_low,
-> +				  unsigned long saddr_high, unsigned long num_events,
-> +				  unsigned long flags, struct kvm_vcpu_sbi_return *retdata)
-> +{
-> +	unsigned long hva;
-> +	struct riscv_pmu_event_info *einfo;
-> +	int shmem_size = num_events * sizeof(*einfo);
-> +	bool writable;
-> +	gpa_t shmem;
-> +	u32 eidx, etype;
-> +	u64 econfig;
-> +	int ret;
-> +
-> +	if (flags != 0 || (saddr_low & (SZ_16 - 1))) {
-> +		ret = SBI_ERR_INVALID_PARAM;
-> +		goto out;
-> +	}
-> +
-> +	shmem = saddr_low;
-> +	if (saddr_high != 0) {
-> +		if (IS_ENABLED(CONFIG_32BIT)) {
-> +			shmem |= ((gpa_t)saddr_high << 32);
-> +		} else {
-> +			ret = SBI_ERR_INVALID_ADDRESS;
-> +			goto out;
-> +		}
-> +	}
-> +
-> +	hva = kvm_vcpu_gfn_to_hva_prot(vcpu, shmem >> PAGE_SHIFT, &writable);
-> +	if (kvm_is_error_hva(hva) || !writable) {
-> +		ret = SBI_ERR_INVALID_ADDRESS;
+We can. I did not add it originally as we can't do much validation for
+the raw events for anyways.
+If the encoding is not supported the user will get the error anyways
+as it can't find a counter.
+We will just save 1 SBI call if the kernel doesn't allow requesting an
+event if bits 48-55 are set.
 
-This only checks the first page if the address crosses a page boundary. Maybe
-that is okay since kvm_vcpu_read_guest()/kvm_vcpu_write_guest() will fail if a
-later page is inaccessible?
-
-> +		goto out;
-> +	}
-> +
-> +	einfo = kzalloc(shmem_size, GFP_KERNEL);
-> +	if (!einfo)
-> +		return -ENOMEM;
-> +
-> +	ret = kvm_vcpu_read_guest(vcpu, shmem, einfo, shmem_size);
-> +	if (ret) {
-> +		ret = SBI_ERR_FAILURE;
-> +		goto free_mem;
-> +	}
-> +
-> +	for (int i = 0; i < num_events; i++) {
-> +		eidx = einfo[i].event_idx;
-> +		etype = kvm_pmu_get_perf_event_type(eidx);
-> +		econfig = kvm_pmu_get_perf_event_config(eidx, einfo[i].event_data);
-> +		ret = riscv_pmu_get_event_info(etype, econfig, NULL);
-> +		if (ret > 0)
-> +			einfo[i].output = 1;
-
-This also needs to write `output` in the else case to indicate that the event is
-not supported; the spec does not require the caller to initialize bit 0 of
-output to zero.
-
-Regards,
-Samuel
-
-> +	}
-> +
-> +	kvm_vcpu_write_guest(vcpu, shmem, einfo, shmem_size);
-> +	if (ret) {
-> +		ret = SBI_ERR_FAILURE;
-> +		goto free_mem;
-> +	}
-> +
-> +free_mem:
-> +	kfree(einfo);
-> +out:
-> +	retdata->err_val = ret;
-> +
-> +	return 0;
-> +}
-> +
->  int kvm_riscv_vcpu_pmu_num_ctrs(struct kvm_vcpu *vcpu,
->  				struct kvm_vcpu_sbi_return *retdata)
->  {
-> diff --git a/arch/riscv/kvm/vcpu_sbi_pmu.c b/arch/riscv/kvm/vcpu_sbi_pmu.c
-> index e4be34e03e83..a020d979d179 100644
-> --- a/arch/riscv/kvm/vcpu_sbi_pmu.c
-> +++ b/arch/riscv/kvm/vcpu_sbi_pmu.c
-> @@ -73,6 +73,9 @@ static int kvm_sbi_ext_pmu_handler(struct kvm_vcpu *vcpu, struct kvm_run *run,
->  	case SBI_EXT_PMU_SNAPSHOT_SET_SHMEM:
->  		ret = kvm_riscv_vcpu_pmu_snapshot_set_shmem(vcpu, cp->a0, cp->a1, cp->a2, retdata);
->  		break;
-> +	case SBI_EXT_PMU_EVENT_GET_INFO:
-> +		ret = kvm_riscv_vcpu_pmu_event_info(vcpu, cp->a0, cp->a1, cp->a2, cp->a3, retdata);
-> +		break;
->  	default:
->  		retdata->err_val = SBI_ERR_NOT_SUPPORTED;
->  	}
-> 
-
+> Regards,
+> Samuel
+>
+> > +                     }
+> >                       break;
+> >               case 2:
+> >                       ret = (config & 0xFFFF) | (SBI_PMU_EVENT_TYPE_FW << 16);
+> >
+>
 
