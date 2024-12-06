@@ -4,92 +4,79 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 23863E7716D
-	for <kvm-riscv@archiver.kernel.org>; Thu,  5 Dec 2024 16:12:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 27CEBE77173
+	for <kvm-riscv@archiver.kernel.org>; Fri,  6 Dec 2024 16:49:44 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
-	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
+	List-Archive:List-Unsubscribe:List-Id:Cc:To:Subject:Message-ID:Date:From:
+	In-Reply-To:References:MIME-Version:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=C1NXHDCfD942P4OnRAqwz1kkajfIQ+XXZqM3zW1iEQU=; b=GPsTMc74dLj9Mm
-	Hk0XZGzM7ZWw0a731FuBlZpbe+ZhFBvT+GXrV9rl/JgCjX9TE4pAoAG2/17hMIuHagCEb1e7xF7aK
-	gLgya5CUYxIptFQtq/JxmZ9c5uAnp9A3oqC7dTTvoBfddu4rdaDYDE4TRsTCwlJ5De+F6JJ8kER4v
-	SZRDRHfhektUkvE6uUuppR5z6arf8Z8DN4Wmc1Qp7MzfLKKjRU00hY8VeO7IvDzEsYevacG9sakua
-	MW23+hG1pUGz2lcSzzOoZJF97wr5ywC/hPOaSaCE7s8ZPtTyVaSriix58ZWMCKV7kEiyDdJL6R7QK
-	O9OsCUPHurHx8bIysIcA==;
+	List-Owner; bh=rRfQiiDj1mkLesjonWumn4/Ta3UZwtLqVZ6GngdMM/8=; b=L0118HbfDeEo2C
+	vKyNeIkzTkdEXUg1+ILH8IRMrPsge2WRnD8aQr4ZRpfrO/zVIZrijh+HjVbBeBQaZkhLDTvUntQ8B
+	73Zqs4FD/3MKu+l3RQ8Fz80VqdgBekWRxV8PsIetmXjR5rpFbVSjAZnCyOEiRR4Syzf4/EN1CY3iv
+	GwoGjxVS6ZPPI8OB4ZY5eYhbN9UgDZk2j7GTx+1OHbXQcebFPffNSEE7L39vLJeKSH0hxyBLj+6fh
+	TqJmcDxTk57/jWz584XI8/tisZx5MB+fvBZa79WyGodwHNbo8mykOs7D/YDd8iZ0Lun4/eO1QwtwC
+	44Zx8lDYERR7D4HWeCbw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98 #2 (Red Hat Linux))
-	id 1tJESj-0000000GhtW-3fFL;
-	Thu, 05 Dec 2024 16:12:21 +0000
-Received: from mail-wm1-x332.google.com ([2a00:1450:4864:20::332])
+	id 1tJbWR-00000002EgT-3D4V;
+	Fri, 06 Dec 2024 16:49:43 +0000
+Received: from mail-io1-xd36.google.com ([2607:f8b0:4864:20::d36])
 	by bombadil.infradead.org with esmtps (Exim 4.98 #2 (Red Hat Linux))
-	id 1tJESh-0000000Ghsj-2eTv
+	id 1tJbWO-00000002Ef6-2CM0
 	for kvm-riscv@lists.infradead.org;
-	Thu, 05 Dec 2024 16:12:20 +0000
-Received: by mail-wm1-x332.google.com with SMTP id 5b1f17b1804b1-434a1639637so11813085e9.1
-        for <kvm-riscv@lists.infradead.org>; Thu, 05 Dec 2024 08:12:19 -0800 (PST)
+	Fri, 06 Dec 2024 16:49:41 +0000
+Received: by mail-io1-xd36.google.com with SMTP id ca18e2360f4ac-84197b4e61aso149425939f.3
+        for <kvm-riscv@lists.infradead.org>; Fri, 06 Dec 2024 08:49:39 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ventanamicro.com; s=google; t=1733415138; x=1734019938; darn=lists.infradead.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=Y+3xHwvrZFGkgILsc+8sbeeDFiAlqkrIqdKcR5hFeMk=;
-        b=M+MM8nKr5eIw6mHCCtleC5dIKbTQUivmuNpWvpQaVjxSn4HDHMfA83FUEX2sszbCO2
-         EWeE3A34aKHsxz2B+0rBNvmutQgjjgHko7scMQuJpKc+jIuZcvV8enBjyewjIX0oarOa
-         aSf9b8M9qRG71aDLRL7uZ8ay61rStmZ81K+n9o1F493khjsAppCTcGLAVyYe17ErVAZN
-         j4kEjiC91EtlhUc9ibEAj31fXOF8JpckD9YYWbhxvK2A73yUOjwPVkf5W1UVXWIKOfAm
-         8rpKEvo6pSshAa0xakgdcGHGXYksnSjUdh7+C5DUz1iCI+l7JU8jpVesFT0V6v21MsCV
-         eQyQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1733415138; x=1734019938;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+        d=brainfault-org.20230601.gappssmtp.com; s=20230601; t=1733503779; x=1734108579; darn=lists.infradead.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=Y+3xHwvrZFGkgILsc+8sbeeDFiAlqkrIqdKcR5hFeMk=;
-        b=P/uwiz7F0oX0XtOOaZm1O17PZ8yUHgUXuwLyYh0IGuIuche29F5wOQ35TCAdYLW9jq
-         P2JTTGJIdu3Ue87fMrb274I3mr1CpkLUbJVmMpieCzCK1QLBfoxzLxAXVVRxlOEgDs7M
-         iMGGbm+nWwgWz/QKdjltZfucVLI73KH59+sLFhkcFewi4RUDc+oCQNkl2KzozQuaJvc/
-         Zuva5TRYOxJAeRZnceI9T5hZJgZZy6xqdH1VnCx9CQxOsyLu/k+aIjbM9KrzvsMlwuvZ
-         IE8NQ2KsKnbigqlYV3vOM72QT/7S0XOz6n5rB3/WkwShnwD9dxA9YgeaRIXUxfcHJ7G0
-         IQLw==
-X-Forwarded-Encrypted: i=1; AJvYcCV+8OFTz95bmWmbN2WlklIHLyRqZcFPTjVeHaCJmd1bkg6IrMsEA59IVV/6Az4o4RCU39oKpZJA2xQ=@lists.infradead.org
-X-Gm-Message-State: AOJu0Yy1cNdGVC2VqS9yZ2jdlRtjEgqdVA9fmOGupZQJJE59zXxrs3rT
-	ANgBU93/Y1OW6bx0+C+8E4w/5mVr1uIypikvxt4fS0EKt7EVzswRBCwT/dukMuk=
-X-Gm-Gg: ASbGncuBv8/y/LQne21IMNgPUJNHyTG6IpijJXD1xwKtbbVQ9XJx99J7OrKEqB62rt/
-	UVYbedWTgLkkbw9W+xCJUvucFGNB11BChFYTf0tvd2yfuPR71ASxIbjBnji2XL0mc67/vjJpawk
-	He4nFwNfCglIR41xSCU9ur4kFzqkSuT5GCfnWnChuyjL+ZB7G/6/DH/cRMZYMsjESVHTzUG8XDg
-	c6LOordyND06lZXO0YkmZQEuRgcDb7iIIvm3qCqs0/qMhoV6X66n4QChZG8AdflsEzUWDhQva4x
-	y+hEQrFFirYc3scWsT2yJnhD7cYDAQ7+aAs=
-X-Google-Smtp-Source: AGHT+IHa5lee9Sxqmls08SUxS6uuiGe/lvzblZfbVXScCZEse7mEYCbZITkpv0Vj+gpxQag2jSxbIw==
-X-Received: by 2002:a05:6000:18ab:b0:385:e8ce:7483 with SMTP id ffacd0b85a97d-385fd3ccbbfmr9165309f8f.4.1733415137730;
-        Thu, 05 Dec 2024 08:12:17 -0800 (PST)
-Received: from localhost (2001-1ae9-1c2-4c00-20f-c6b4-1e57-7965.ip6.tmcz.cz. [2001:1ae9:1c2:4c00:20f:c6b4:1e57:7965])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-3861f4a874dsm2290643f8f.24.2024.12.05.08.12.16
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 05 Dec 2024 08:12:17 -0800 (PST)
-Date: Thu, 5 Dec 2024 17:12:16 +0100
-From: Andrew Jones <ajones@ventanamicro.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: iommu@lists.linux.dev, kvm-riscv@lists.infradead.org, 
-	kvm@vger.kernel.org, linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org, 
-	tjeznach@rivosinc.com, zong.li@sifive.com, joro@8bytes.org, will@kernel.org, 
-	robin.murphy@arm.com, anup@brainfault.org, atishp@atishpatra.org, 
-	alex.williamson@redhat.com, paul.walmsley@sifive.com, palmer@dabbelt.com, 
-	aou@eecs.berkeley.edu
-Subject: Re: [RFC PATCH 01/15] irqchip/riscv-imsic: Use hierarchy to reach
- irq_set_affinity
-Message-ID: <20241205-2ed14db745f00a0ee9be444b@orel>
-References: <20241114161845.502027-17-ajones@ventanamicro.com>
- <20241114161845.502027-18-ajones@ventanamicro.com>
- <87mshcub2u.ffs@tglx>
- <20241203-1cadc72be6883bc2d77a8050@orel>
- <87a5dcu2wq.ffs@tglx>
+        bh=0whfwYAjXy7+XSzVEU4KqWN95vXE9XVqm2dCOOqkrKo=;
+        b=J/4IwfBMBGIPyzD4k0GKc0uz7/WnfFq2/EM8gHo82Z7a7kpPfug/X3jOKKfhGhe2a3
+         PvjyZVFqn9kRfRmBibVbO8N7m1DZUTexaEFM6tz91iObMeFa++Dq4jji+s8dwst9JVOB
+         ftAX2hNV4IJpBMC0ErHu9ehtmZ1IPNQiBhNNdO2GYpyx7wwrwCbKn9hczF8xeN684wqA
+         Bn8wprtV55VEOPGQRzsSEoCTtcco1371lQ0koIMaphM0j1smNlksPXNCyq1nObCDnyCM
+         qGvlNYI8lsjsmcmr99ijswCI1WYjc7zpPdK1APKFIMB0lsfgxvqacznEtkHqoFwN3ko1
+         LfpA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1733503779; x=1734108579;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=0whfwYAjXy7+XSzVEU4KqWN95vXE9XVqm2dCOOqkrKo=;
+        b=uk726ShmQzYOtcFZBcADNft12XX/TqHnsIlkZVI3AFSCGFSTnfv3FLf9Odmq3Dzefn
+         wg4yh4UORbJa3VwfXPBo2YlLpDYKX7d2VBp22d5AEbvrnxTQirUjQ5rPjPTzDG6cluFU
+         DCP8FYLWQFxiqYbbrhcxhFLIptXFgZfwkA8AiKrfXWiFEFC0QUAynPGLEKYqLbzspmnl
+         qgbXM+oWXkbfYolXvGSfpwW9rxLqI8SyOG5X3yZMsaL3xX51BwMDV3pfxeuQxCkaFbkc
+         pqLGfaafL1NuR/La8LKFgyoMd3Jp4PQaMmf7SIUVKtaa7r49AKoR9Ij4V1NDgJnBcR93
+         U/oA==
+X-Forwarded-Encrypted: i=1; AJvYcCUNbLZeQiRfSRb2ZbypYCV99PPqp+5hsZFi3CnG89yqCMSLCprg6v1lKSV+oRkEk+r0TJistKwu8eI=@lists.infradead.org
+X-Gm-Message-State: AOJu0YwV+q3mt8i0B1FOYm17jzGGsiM/GAYOXy5yLM+3OoccvLL6S+kX
+	WcPZkoLYWJqnOzyOB8kN2gorU6h8vnxNc7znooQ9KSvScroYo3ngOUrvrJv8UOgwDqcswE3e6gP
+	3zzOOQsyJY3jdT69R2WEKABMCxJKqj+tL8CvQjw==
+X-Gm-Gg: ASbGncv9FD7IEw8oJh7SHby1JDwphfFlaa+4G0a0uQOqEY6duzpKAasqmwBiYxvbOzc
+	IIZTfUicBSW3H0Io5CE4Ow789AxTMpKkoAA==
+X-Google-Smtp-Source: AGHT+IFictbKsSbt5zxu6TMdxKpWJ7OEgN4bWq0xyn6ACDGGevBPbhVQcoL5/hHQE8JqD9YBvLYTDq/LyRqS/ACQ6QU=
+X-Received: by 2002:a05:6602:2c92:b0:841:984b:47d2 with SMTP id
+ ca18e2360f4ac-8447e34907cmr474724839f.14.1733503779122; Fri, 06 Dec 2024
+ 08:49:39 -0800 (PST)
 MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <87a5dcu2wq.ffs@tglx>
+References: <20241127041840.419940-1-michaelneuling@tenstorrent.com>
+In-Reply-To: <20241127041840.419940-1-michaelneuling@tenstorrent.com>
+From: Anup Patel <anup@brainfault.org>
+Date: Fri, 6 Dec 2024 22:19:28 +0530
+Message-ID: <CAAhSdy19qxSeTH4oZz-nggszew81bFz-Ey=HxcxtfxFw=4otAA@mail.gmail.com>
+Subject: Re: [PATCH v2] RISC-V: KVM: Fix csr_write -> csr_set for HVIEN PMU
+ overflow bit
+To: Michael Neuling <michaelneuling@tenstorrent.com>
+Cc: linux-riscv@lists.infradead.org, kvm-riscv@lists.infradead.org, 
+	palmer@dabbelt.com, mikey@neuling.org, atishp@rivosinc.com
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20241205_081219_669460_EBF615F6 
-X-CRM114-Status: GOOD (  28.37  )
+X-CRM114-CacheID: sfid-20241206_084940_811048_BEA0B1E7 
+X-CRM114-Status: GOOD (  14.73  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -101,88 +88,32 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Tue, Dec 03, 2024 at 05:50:13PM +0100, Thomas Gleixner wrote:
-> On Tue, Dec 03 2024 at 17:27, Andrew Jones wrote:
-> > On Tue, Dec 03, 2024 at 02:53:45PM +0100, Thomas Gleixner wrote:
-> >> On Thu, Nov 14 2024 at 17:18, Andrew Jones wrote:
-> >> The whole IMSIC MSI support can be moved over to MSI LIB which makes all
-> >> of this indirection go away and your intermediate domain will just fit
-> >> in.
-> >> 
-> >> Uncompiled patch below. If that works, it needs to be split up properly.
-> >
-> > Thanks Thomas. I gave your patch below a go, but we now fail to have an
-> > msi domain set up when probing devices which go through aplic_msi_setup(),
-> > resulting in an immediate NULL deference in
-> > msi_create_device_irq_domain(). I'll look closer tomorrow.
-> 
-> Duh! I forgot to update the .select callback. I don't know how you fixed that
-> compile fail up. Delta patch below.
-> 
-> Thanks,
-> 
->         tglx
-> ---
-> --- a/drivers/irqchip/irq-riscv-imsic-platform.c
-> +++ b/drivers/irqchip/irq-riscv-imsic-platform.c
-> @@ -180,7 +180,7 @@ static void imsic_irq_debug_show(struct
->  static const struct irq_domain_ops imsic_base_domain_ops = {
->  	.alloc		= imsic_irq_domain_alloc,
->  	.free		= imsic_irq_domain_free,
-> -	.select		= imsic_irq_domain_select,
-> +	.select		= msi_lib_irq_domain_select,
->  #ifdef CONFIG_GENERIC_IRQ_DEBUGFS
->  	.debug_show	= imsic_irq_debug_show,
->  #endif
-
-Hi Thomas,
-
-With this select fix and replacing patch 03/15 of this series with the
-following diff, this irqbypass PoC still works.
-
-Based on what Anup said, I kept imsic_msi_update_msg(), which means I
-kept this entire patch (01/15) as is. Anup is working on a series to fix
-the non-atomic MSI message writes to the device and will likely pick this
-patch up along with your changes to convert IMSIC to msi-lib.
-
-I'd like to know your opinion on patch 02/15 of this series and the diff
-below. afaict, x86 does something similar with the DOMAIN_BUS_DMAR and
-DOMAIN_BUS_AMDVI tokens in x86_init_dev_msi_info().
-
-Thanks,
-drew
-
-diff --git a/drivers/irqchip/irq-msi-lib.c b/drivers/irqchip/irq-msi-lib.c
-index 51464c6257f3..cc18516a4e82 100644
---- a/drivers/irqchip/irq-msi-lib.c
-+++ b/drivers/irqchip/irq-msi-lib.c
-@@ -36,14 +36,14 @@ bool msi_lib_init_dev_msi_info(struct device *dev, struct irq_domain *domain,
-                return false;
- 
-        /*
--        * MSI parent domain specific settings. For now there is only the
--        * root parent domain, e.g. NEXUS, acting as a MSI parent, but it is
--        * possible to stack MSI parents. See x86 vector -> irq remapping
-+        * MSI parent domain specific settings. There may be only the root
-+        * parent domain, e.g. NEXUS, acting as a MSI parent, or there may
-+        * be stacked MSI parents, typically used for remapping.
-         */
-        if (domain->bus_token == pops->bus_select_token) {
-                if (WARN_ON_ONCE(domain != real_parent))
-                        return false;
--       } else {
-+       } else if (real_parent->bus_token != DOMAIN_BUS_MSI_REMAP) {
-                WARN_ON_ONCE(1);
-                return false;
-        }
-
-
--- 
-kvm-riscv mailing list
-kvm-riscv@lists.infradead.org
-http://lists.infradead.org/mailman/listinfo/kvm-riscv
+T24gV2VkLCBOb3YgMjcsIDIwMjQgYXQgOTo0OeKAr0FNIE1pY2hhZWwgTmV1bGluZwo8bWljaGFl
+bG5ldWxpbmdAdGVuc3RvcnJlbnQuY29tPiB3cm90ZToKPgo+IFRoaXMgZG9lc24ndCBjYXVzZSBh
+IHByb2JsZW0gY3VycmVudGx5IGFzIEhWSUVOIGlzbid0IHVzZWQgZWxzZXdoZXJlCj4geWV0LiBG
+b3VuZCBieSBpbnNwZWN0aW9uLgo+Cj4gU2lnbmVkLW9mZi1ieTogTWljaGFlbCBOZXVsaW5nIDxt
+aWNoYWVsbmV1bGluZ0B0ZW5zdG9ycmVudC5jb20+Cj4gRml4ZXM6IDE2YjBiZGU5YTM3YyAoIlJJ
+U0MtVjogS1ZNOiBBZGQgcGVyZiBzYW1wbGluZyBzdXBwb3J0IGZvciBndWVzdHMiKQo+IFJldmll
+d2VkLWJ5OiBBdGlzaCBQYXRyYSA8YXRpc2hwQHJpdm9zaW5jLmNvbT4KPiBSZXZpZXdlZC1ieTog
+QW51cCBQYXRlbCA8YW51cEBicmFpbmZhdWx0Lm9yZz4KClF1ZXVlZCBmb3IgNi4xMy1yY1ggZml4
+ZXMKClJlZ2FyZHMsCkFudXAKCj4gLS0tCj4gdjI6Cj4gICBBZGRlZCBGaXhlcyB0YWcKPiAgIEFk
+ZGVkIFJldmlld3MKPiAgIE5vIGNvZGUgY2hhbmdlCj4gLS0tCj4gIGFyY2gvcmlzY3Yva3ZtL2Fp
+YS5jIHwgMiArLQo+ICAxIGZpbGUgY2hhbmdlZCwgMSBpbnNlcnRpb24oKyksIDEgZGVsZXRpb24o
+LSkKPgo+IGRpZmYgLS1naXQgYS9hcmNoL3Jpc2N2L2t2bS9haWEuYyBiL2FyY2gvcmlzY3Yva3Zt
+L2FpYS5jCj4gaW5kZXggMjk2N2QzMDVjNC4uOWYzYjUyNzU5NiAxMDA2NDQKPiAtLS0gYS9hcmNo
+L3Jpc2N2L2t2bS9haWEuYwo+ICsrKyBiL2FyY2gvcmlzY3Yva3ZtL2FpYS5jCj4gQEAgLTU1Miw3
+ICs1NTIsNyBAQCB2b2lkIGt2bV9yaXNjdl9haWFfZW5hYmxlKHZvaWQpCj4gICAgICAgICBjc3Jf
+c2V0KENTUl9ISUUsIEJJVChJUlFfU19HRVhUKSk7Cj4gICAgICAgICAvKiBFbmFibGUgSVJRIGZp
+bHRlcmluZyBmb3Igb3ZlcmZsb3cgaW50ZXJydXB0IG9ubHkgaWYgc3Njb2ZwbWYgaXMgcHJlc2Vu
+dCAqLwo+ICAgICAgICAgaWYgKF9fcmlzY3ZfaXNhX2V4dGVuc2lvbl9hdmFpbGFibGUoTlVMTCwg
+UklTQ1ZfSVNBX0VYVF9TU0NPRlBNRikpCj4gLSAgICAgICAgICAgICAgIGNzcl93cml0ZShDU1Jf
+SFZJRU4sIEJJVChJUlFfUE1VX09WRikpOwo+ICsgICAgICAgICAgICAgICBjc3Jfc2V0KENTUl9I
+VklFTiwgQklUKElSUV9QTVVfT1ZGKSk7Cj4gIH0KPgo+ICB2b2lkIGt2bV9yaXNjdl9haWFfZGlz
+YWJsZSh2b2lkKQo+IC0tCj4gMi4zNC4xCj4KCi0tIAprdm0tcmlzY3YgbWFpbGluZyBsaXN0Cmt2
+bS1yaXNjdkBsaXN0cy5pbmZyYWRlYWQub3JnCmh0dHA6Ly9saXN0cy5pbmZyYWRlYWQub3JnL21h
+aWxtYW4vbGlzdGluZm8va3ZtLXJpc2N2Cg==
