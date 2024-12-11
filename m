@@ -4,83 +4,61 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8D974E7717D
-	for <kvm-riscv@archiver.kernel.org>; Wed, 11 Dec 2024 22:06:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EA022E77182
+	for <kvm-riscv@archiver.kernel.org>; Wed, 11 Dec 2024 22:32:19 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:Cc:To:From:Subject:Message-ID:
-	References:Mime-Version:In-Reply-To:Date:Reply-To:Content-ID:
-	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
-	:Resent-Message-ID:List-Owner;
-	bh=K9z8bQhqfA0YVDYgN3yyqAiOvLJISeVhnwLo4o8rd3c=; b=im3wiViQ7JiVjXbKqYE+l/rNaE
-	gG7ruH9u6wTqpOK/b2SehEEivI7f9SfGEa6BEc8dMjy+fcHPasTAJCVWsHJhBx4rvIJztgdHbTN+8
-	zoVlZ62SYVXGr9x5D0sDBggcRYg2oa8FJoG8wL1wzX8N/xtsbskormrKzmTiuVfsVqQAyHrhKwx/T
-	n03wgP1d9n81bDRRXOaXsImreD307qBCOJx4nngQbYExG45N0JsPFtRuIpw56bXyng1U88tzgYJKn
-	wkRn60A8rNVvxAJ3hby60wxSaGT9FtcFxAAq66A8eIvx2YjxiFKqp4x8ZZeLUqUSfbW8uEq+OqVpM
-	+MT4olbQ==;
+	List-Archive:List-Unsubscribe:List-Id:Cc:To:In-Reply-To:References:Date:
+	Message-Id:From:Subject:MIME-Version:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=eIeluSeVJcTzPykY4eJtexZNsKY5ZAx0fwgDa1ObEL4=; b=WwgM0BdeBTpDMj
+	cshtZF+BNKCi/4uKPdKvCq90Dq7tTfBLA2Fb+J9V+ofXtt1NV1DS28FFk1qgB41kY7fT4IJRVdsGF
+	5AnZ5LHGS2dt/wyFbT1dHlXcO5e1KjU3RR41AR9MSYi+v28lRF3XNmCURIKKiswe6lHxfhwKBUNrj
+	BhZtQHFnpJ/IZS8Wdb8YShhUBTTCQJGX2clkeRLIGcAG/0NagOyyFGMhAhlSlQOHz2yOpDxjtdYZP
+	QkXthayLvxBttHoxxTIoStYshuuOFlumd7ArQizkCRmPG4aDAQpkYGhLS4xU3Pf4UdRd/MI3WdZTo
+	/QfWGXbwseM1AGUVA/Bg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98 #2 (Red Hat Linux))
-	id 1tLUqY-0000000GGpD-1NjT;
-	Wed, 11 Dec 2024 22:06:18 +0000
-Received: from mail-pl1-x649.google.com ([2607:f8b0:4864:20::649])
+	id 1tLVFj-0000000GKMl-2IAd;
+	Wed, 11 Dec 2024 22:32:19 +0000
+Received: from nyc.source.kernel.org ([147.75.193.91])
 	by bombadil.infradead.org with esmtps (Exim 4.98 #2 (Red Hat Linux))
-	id 1tLUqW-0000000GGog-1kro
-	for kvm-riscv@lists.infradead.org;
-	Wed, 11 Dec 2024 22:06:17 +0000
-Received: by mail-pl1-x649.google.com with SMTP id d9443c01a7336-2161d185f04so41513255ad.3
-        for <kvm-riscv@lists.infradead.org>; Wed, 11 Dec 2024 14:06:15 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1733954774; x=1734559574; darn=lists.infradead.org;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=uTDUEy5ndzyMUOmAANu+2Q5dKv5CytQeXy0bYdZM4AE=;
-        b=M3Bru2PMItz8Wrb0HTDjhRXHVYAn3fdohKpOzG7w6AaYNo8fNyFcmvkZGEO9dflZN0
-         5rXU4ersi/gkulxG9ojafWKJ5TWnlJxeF4kTTfnM4ZKgeObq+0o/V/zPP8SWW3LXnEhy
-         fSx6ttdiRPvl0fAvFzrsr0Ww4jusgtLdVf5+Y7E9q/QAnEHi3Xb93TFK0RoHdsw/Zr+k
-         uy6urti6vHUpPafFA14slgvqUxe5TNvhqu9lIJ+9wIROU3no7MSLlLm/1LcD58/R3dsC
-         KpXSKClOQQGFAcGhR+NPX3kjGWSo4+kE/t0C9j1o2zIxFgWu/UBeT7FJGXY6QL9dOXtm
-         8bUg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1733954774; x=1734559574;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=uTDUEy5ndzyMUOmAANu+2Q5dKv5CytQeXy0bYdZM4AE=;
-        b=AI8eL3adxLQgqBRF7CSQrWTAZAdrc8MFcVz4Yqd6BuyJUGS+T3K2XWfHsPN+lFfUOx
-         Hslelijp0pMMmegYtcXiJmh9+7GEipQsuqOshB6YUtRQFKKyJxYi6CbZ0QKnIGN2+gy0
-         PBf5M2zZdqC/3VM0EgUwCOq96AmHkytmATcq1RbOY1hiTAhkXzHBna3WhQJD05WnSrug
-         adNtUwzD5NP9MbIoFRDzXTxU1AvIRcwJaoVnrO8jcDK5eB51gP2u+jPMYtpCYbqFi61d
-         qMvX/nKSIl6vk7kVGRxnVPiy5qUCSFm+uo1RydS/XAn1Rd4OnBe/9qUyC+V7Vb1BOaS7
-         Hkug==
-X-Forwarded-Encrypted: i=1; AJvYcCWNaZKgC4WOCzjA8Hz2Osz99AZn94z7RiD41gqtSv6FBn15JmWecroQcxUsXGBrzjgKqqrJpXY/jLc=@lists.infradead.org
-X-Gm-Message-State: AOJu0YzjpqprCKNNEJmR9b05XcSOJuBD49+A0T6ND60SUdAe7onCmopd
-	+jL7VcB19vWruZAM56FlwT7y9KLVtderx4J/HNLFWNpV2DVwX7Zv3cB2U/Vyaczc8KcRiEvj94r
-	T3w==
-X-Google-Smtp-Source: AGHT+IHFSnyjPEDTcWJnAvaiGma2JfY/srzHSvKplMJ9OueXQOEiKTtjMmaF+b36NOyPghd7X0ZdCPZjbkA=
-X-Received: from plgn1.prod.google.com ([2002:a17:902:f601:b0:216:499e:dadb])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:902:db04:b0:215:44fe:163e
- with SMTP id d9443c01a7336-21778397514mr77377935ad.1.1733954774653; Wed, 11
- Dec 2024 14:06:14 -0800 (PST)
-Date: Wed, 11 Dec 2024 14:06:12 -0800
-In-Reply-To: <20240910152207.38974-15-nikwip@amazon.de>
-Mime-Version: 1.0
-References: <20240910152207.38974-1-nikwip@amazon.de> <20240910152207.38974-15-nikwip@amazon.de>
-Message-ID: <Z1oM1HQqXrIr1tij@google.com>
-Subject: Re: [PATCH 14/15] KVM: x86: Implement KVM_TRANSLATE2
-From: Sean Christopherson <seanjc@google.com>
-To: Nikolas Wipper <nikwip@amazon.de>
-Cc: Paolo Bonzini <pbonzini@redhat.com>, Vitaly Kuznetsov <vkuznets@redhat.com>, 
-	Nicolas Saenz Julienne <nsaenz@amazon.com>, Alexander Graf <graf@amazon.de>, James Gowans <jgowans@amazon.com>, 
-	nh-open-source@amazon.com, Thomas Gleixner <tglx@linutronix.de>, 
-	Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
-	Dave Hansen <dave.hansen@linux.intel.com>, linux-kernel@vger.kernel.org, 
-	kvm@vger.kernel.org, x86@kernel.org, linux-doc@vger.kernel.org, 
-	linux-kselftest@vger.kernel.org, kvmarm@lists.linux.dev, 
-	kvm-riscv@lists.infradead.org
+	id 1tLVFg-0000000GKJU-3QJu;
+	Wed, 11 Dec 2024 22:32:18 +0000
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by nyc.source.kernel.org (Postfix) with ESMTP id BDB65A41D76;
+	Wed, 11 Dec 2024 22:30:24 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E0BF6C4CED2;
+	Wed, 11 Dec 2024 22:32:15 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1733956335;
+	bh=awhd+qYBZdWAIqJRcAxRI8ocm3yOwTpT8RsZsQR3PAk=;
+	h=Subject:From:Date:References:In-Reply-To:To:Cc:From;
+	b=RDlVokYh0l4AVx9EUxhtB7Pl4dZihyS9aPE4663P+x5ykYHBIc9Ir1CrrdeDXtzsp
+	 iwQwrJx/XOQMKP3c7yqhem1/iuE6FN0OUfXvl0ipFE42Hhea+t+EqAkvqFCjYqNGyR
+	 KCZnki4f6Pqba1ciquWr69X8whEgMReywX3iFv3/dpNSOczT8LePmK+pmflbCq86BK
+	 nCkOguK4Mf3Xb9+0/gJTuirhA9N+uawZaztOziKAnOUhyHKobudckD0JSnzr7HFzyD
+	 vvd0EPNUT6ie9EfVyom9Ue5ajs3C2ICsPvYKbY2faMDnnksBMPkcVWSVZTbwLPQ4Os
+	 N4V4Z9+pQUc0g==
+Received: from [10.30.226.235] (localhost [IPv6:::1])
+	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id 34141380A965;
+	Wed, 11 Dec 2024 22:32:33 +0000 (UTC)
+MIME-Version: 1.0
+Subject: Re: [PATCH v8 0/5] Add Svade and Svadu Extensions Support
+From: patchwork-bot+linux-riscv@kernel.org
+Message-Id: <173395635176.1729195.3092998721998204770.git-patchwork-notify@kernel.org>
+Date: Wed, 11 Dec 2024 22:32:31 +0000
+References: <20240726084931.28924-1-yongxuan.wang@sifive.com>
+In-Reply-To: <20240726084931.28924-1-yongxuan.wang@sifive.com>
+To: Yong-Xuan Wang <yongxuan.wang@sifive.com>
+Cc: linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org,
+ kvm-riscv@lists.infradead.org, kvm@vger.kernel.org, greentime.hu@sifive.com,
+ vincent.chen@sifive.com, paul.walmsley@sifive.com, palmer@dabbelt.com,
+ aou@eecs.berkeley.edu
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20241211_140616_453482_0653E9BD 
-X-CRM114-Status: UNSURE (   7.67  )
-X-CRM114-Notice: Please train this message.
+X-CRM114-CacheID: sfid-20241211_143216_925465_79264644 
+X-CRM114-Status: GOOD (  11.92  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -97,31 +75,53 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Tue, Sep 10, 2024, Nikolas Wipper wrote:
-> +int kvm_arch_vcpu_ioctl_translate2(struct kvm_vcpu *vcpu,
-> +				    struct kvm_translation2 *tr)
-> +{
-> +	int idx, set_bit_mode = 0, access = 0;
-> +	struct x86_exception exception = { };
-> +	gva_t vaddr = tr->linear_address;
-> +	u16 status = 0;
-> +	gpa_t gpa;
-> +
-> +	if (tr->flags & KVM_TRANSLATE_FLAGS_SET_ACCESSED)
-> +		set_bit_mode |= PWALK_SET_ACCESSED;
-> +	if (tr->flags & KVM_TRANSLATE_FLAGS_SET_DIRTY)
-> +		set_bit_mode |= PWALK_SET_DIRTY;
-> +	if (tr->flags & KVM_TRANSLATE_FLAGS_FORCE_SET_ACCESSED)
-> +		set_bit_mode |= PWALK_FORCE_SET_ACCESSED;
-> +
-> +	if (tr->access & KVM_TRANSLATE_ACCESS_WRITE)
-> +		access |= PFERR_WRITE_MASK;
-> +	if (tr->access & KVM_TRANSLATE_ACCESS_USER)
-> +		access |= PFERR_USER_MASK;
-> +	if (tr->access & KVM_TRANSLATE_ACCESS_EXEC)
-> +		access |= PFERR_FETCH_MASK;
+Hello:
 
-WRITE and FETCH accesses need to be mutually exclusive.
+This series was applied to riscv/linux.git (fixes)
+by Anup Patel <anup@brainfault.org>:
+
+On Fri, 26 Jul 2024 16:49:25 +0800 you wrote:
+> Svade and Svadu extensions represent two schemes for managing the PTE A/D
+> bit. When the PTE A/D bits need to be set, Svade extension intdicates that
+> a related page fault will be raised. In contrast, the Svadu extension
+> supports hardware updating of PTE A/D bits. This series enables Svade and
+> Svadu extensions for both host and guest OS.
+> 
+> Regrading the mailing thread[1], we have 4 possible combinations of
+> these extensions in the device tree, the default hardware behavior for
+> these possibilities are:
+> 1) Neither Svade nor Svadu present in DT => It is technically
+>    unknown whether the platform uses Svade or Svadu. Supervisor
+>    software should be prepared to handle either hardware updating
+>    of the PTE A/D bits or page faults when they need updated.
+> 2) Only Svade present in DT => Supervisor must assume Svade to be
+>    always enabled.
+> 3) Only Svadu present in DT => Supervisor must assume Svadu to be
+>    always enabled.
+> 4) Both Svade and Svadu present in DT => Supervisor must assume
+>    Svadu turned-off at boot time. To use Svadu, supervisor must
+>    explicitly enable it using the SBI FWFT extension.
+> 
+> [...]
+
+Here is the summary with links:
+  - [v8,1/5] RISC-V: Add Svade and Svadu Extensions Support
+    https://git.kernel.org/riscv/c/94a7734d0967
+  - [v8,2/5] dt-bindings: riscv: Add Svade and Svadu Entries
+    https://git.kernel.org/riscv/c/b8d481671703
+  - [v8,3/5] RISC-V: KVM: Add Svade and Svadu Extensions Support for Guest/VM
+    https://git.kernel.org/riscv/c/97eccf7db4f2
+  - [v8,4/5] KVM: riscv: selftests: Fix compile error
+    (no matching commit)
+  - [v8,5/5] KVM: riscv: selftests: Add Svade and Svadu Extension to get-reg-list test
+    https://git.kernel.org/riscv/c/c74bfe4ffe8c
+
+You are awesome, thank you!
+-- 
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/patchwork/pwbot.html
+
+
 
 -- 
 kvm-riscv mailing list
