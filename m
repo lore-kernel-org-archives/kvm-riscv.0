@@ -4,8 +4,8 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 69B65E7717D
-	for <kvm-riscv@archiver.kernel.org>; Wed, 11 Dec 2024 22:05:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8D974E7717D
+	for <kvm-riscv@archiver.kernel.org>; Wed, 11 Dec 2024 22:06:18 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
@@ -13,60 +13,60 @@ DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	References:Mime-Version:In-Reply-To:Date:Reply-To:Content-ID:
 	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
 	:Resent-Message-ID:List-Owner;
-	bh=mRm6xQ9JFl9FE1mTiOE1Z7T7s/V6sGWWzlqHii8OOsY=; b=jcvaITfKjVKzAOoTeuxNwCQwvb
-	tIayRiGIFyaDz4mQN3DUlvC0Z69abQiZo/V37JfHRG4NNsj9vV63omwLaFvyTXdefTr82LlTi0jgF
-	LmDPPx4n2vulVVnZBG7a1KzyLguCF/CzSc73txut6jwGwCaptoQ1HRb/xiAWB9B1pJEtRhBSGPEhF
-	Tfrf3r4GhCpb8K6ARqW8Kq4ytLyS1L/JYdJgCkbJLgxwoTX+bdhjKqDJUt0/pHybRs4rdL1IM+3hK
-	bl3qN6NESazSBUMy9WhLL5M+ytDAGzmJh3dQCVtsVv8XPYTRyTum0XrWGz8Zj2oSGTcIKnvaF+S8V
-	WvLWxtXA==;
+	bh=K9z8bQhqfA0YVDYgN3yyqAiOvLJISeVhnwLo4o8rd3c=; b=im3wiViQ7JiVjXbKqYE+l/rNaE
+	gG7ruH9u6wTqpOK/b2SehEEivI7f9SfGEa6BEc8dMjy+fcHPasTAJCVWsHJhBx4rvIJztgdHbTN+8
+	zoVlZ62SYVXGr9x5D0sDBggcRYg2oa8FJoG8wL1wzX8N/xtsbskormrKzmTiuVfsVqQAyHrhKwx/T
+	n03wgP1d9n81bDRRXOaXsImreD307qBCOJx4nngQbYExG45N0JsPFtRuIpw56bXyng1U88tzgYJKn
+	wkRn60A8rNVvxAJ3hby60wxSaGT9FtcFxAAq66A8eIvx2YjxiFKqp4x8ZZeLUqUSfbW8uEq+OqVpM
+	+MT4olbQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98 #2 (Red Hat Linux))
-	id 1tLUpM-0000000GGYD-3zaD;
-	Wed, 11 Dec 2024 22:05:04 +0000
-Received: from mail-pj1-x104a.google.com ([2607:f8b0:4864:20::104a])
+	id 1tLUqY-0000000GGpD-1NjT;
+	Wed, 11 Dec 2024 22:06:18 +0000
+Received: from mail-pl1-x649.google.com ([2607:f8b0:4864:20::649])
 	by bombadil.infradead.org with esmtps (Exim 4.98 #2 (Red Hat Linux))
-	id 1tLUpL-0000000GGXg-0dZg
+	id 1tLUqW-0000000GGog-1kro
 	for kvm-riscv@lists.infradead.org;
-	Wed, 11 Dec 2024 22:05:04 +0000
-Received: by mail-pj1-x104a.google.com with SMTP id 98e67ed59e1d1-2ef6ef9ba3fso5612609a91.2
-        for <kvm-riscv@lists.infradead.org>; Wed, 11 Dec 2024 14:05:02 -0800 (PST)
+	Wed, 11 Dec 2024 22:06:17 +0000
+Received: by mail-pl1-x649.google.com with SMTP id d9443c01a7336-2161d185f04so41513255ad.3
+        for <kvm-riscv@lists.infradead.org>; Wed, 11 Dec 2024 14:06:15 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1733954701; x=1734559501; darn=lists.infradead.org;
+        d=google.com; s=20230601; t=1733954774; x=1734559574; darn=lists.infradead.org;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=eUq2+HHfD0MZnKG6S4yv713N9r4cWKPzp2/GucLxJ8U=;
-        b=Y+qlezQD7aKSZnFRcoVztTNcMa78SlGX0bGS/zZwqMAOlOP+Ny8iGN2xtMXDeNxW6V
-         1b6X4GGpNYj6stpp+olZyspqhcg7Vu/2oK0cMEwuzIfIrwmhlMXuwaK1bcUl4b5MJTAS
-         JGI7PAIBgkHrgKZJLMvhDl0SO6Xdn+WcpJT6Qi3PuX0pQBmRjz8PbIUYOJ+CwAjzpJhJ
-         e8w7d/gPWsh5/Y30X0yvouqVRDuEKsHENL04vv0XpZqOpRe/YalivwH5jy3s1Xh2/s4t
-         5i6pYovMq5IJ8OT/m05AtrXzpxgNIQcz7CrF9Z6gWmhqg5tq/oxwYbe/7DNd1Gs5yJZj
-         tqrw==
+        bh=uTDUEy5ndzyMUOmAANu+2Q5dKv5CytQeXy0bYdZM4AE=;
+        b=M3Bru2PMItz8Wrb0HTDjhRXHVYAn3fdohKpOzG7w6AaYNo8fNyFcmvkZGEO9dflZN0
+         5rXU4ersi/gkulxG9ojafWKJ5TWnlJxeF4kTTfnM4ZKgeObq+0o/V/zPP8SWW3LXnEhy
+         fSx6ttdiRPvl0fAvFzrsr0Ww4jusgtLdVf5+Y7E9q/QAnEHi3Xb93TFK0RoHdsw/Zr+k
+         uy6urti6vHUpPafFA14slgvqUxe5TNvhqu9lIJ+9wIROU3no7MSLlLm/1LcD58/R3dsC
+         KpXSKClOQQGFAcGhR+NPX3kjGWSo4+kE/t0C9j1o2zIxFgWu/UBeT7FJGXY6QL9dOXtm
+         8bUg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1733954701; x=1734559501;
+        d=1e100.net; s=20230601; t=1733954774; x=1734559574;
         h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
          :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=eUq2+HHfD0MZnKG6S4yv713N9r4cWKPzp2/GucLxJ8U=;
-        b=XymQ/Oiu9Rvmmfr9tkP0HB7+ScRwgCqUSCUjRRgfsXYkkJYHv7+UrIvTokPsr935wH
-         avAQVFDuem7cDYeFwQfj9tJqZZI2oKTAbIK1jU1acPWpoHZ4MVL2NfYJIncl23KUUnoL
-         RU1BsoT755Vig/Z2BHP6UPiqgTgGrTsPHOI7OGQphzTBNr+0EvnrGwb5QUF7tBsuipQ0
-         zwIpAz33K4er1/pL/9mH817aY+AsHh1mTuV7zsV7ga6I8dpFud3l6gJ2q93GKCa+OAFo
-         9PNYG9J3AQNxZ1mtGFKp1Yj6jYXdGrlA6qHh8urT16UcvmlrYj+NLiw43Tc1sYwodMkL
-         xQTQ==
-X-Forwarded-Encrypted: i=1; AJvYcCVOxqqYUofi6urV/+s6miqERGcHLMThAQqA30hnltUDZEdspUM1+qy8piXNtvzJCRzsSuRtyoHnwiA=@lists.infradead.org
-X-Gm-Message-State: AOJu0YzeNQEAq/co7uLx9zpxJ0ZDDdSXEeb/BJCRTHo5IyBYoyYFntgY
-	GeuU06eEqriSimKBcqY90UtvI7udtdyLNvw1IdyYQtJ/N4AO/AzHOXaUr5dW9V6Y4OYnjsEBNb+
-	lGw==
-X-Google-Smtp-Source: AGHT+IEyb50yMKacPTznxoijQx7BN35QC5SQoHLR54g34UBhOfC2yU2PDiXYsV/JHqrTw/B7nLThww6z3/A=
-X-Received: from pjbnb8.prod.google.com ([2002:a17:90b:35c8:b0:2ee:4f3a:d07d])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90b:2e46:b0:2ee:8439:dc8
- with SMTP id 98e67ed59e1d1-2f1280e2a8amr6417546a91.34.1733954701643; Wed, 11
- Dec 2024 14:05:01 -0800 (PST)
-Date: Wed, 11 Dec 2024 14:05:00 -0800
-In-Reply-To: <20240910152207.38974-1-nikwip@amazon.de>
+        bh=uTDUEy5ndzyMUOmAANu+2Q5dKv5CytQeXy0bYdZM4AE=;
+        b=AI8eL3adxLQgqBRF7CSQrWTAZAdrc8MFcVz4Yqd6BuyJUGS+T3K2XWfHsPN+lFfUOx
+         Hslelijp0pMMmegYtcXiJmh9+7GEipQsuqOshB6YUtRQFKKyJxYi6CbZ0QKnIGN2+gy0
+         PBf5M2zZdqC/3VM0EgUwCOq96AmHkytmATcq1RbOY1hiTAhkXzHBna3WhQJD05WnSrug
+         adNtUwzD5NP9MbIoFRDzXTxU1AvIRcwJaoVnrO8jcDK5eB51gP2u+jPMYtpCYbqFi61d
+         qMvX/nKSIl6vk7kVGRxnVPiy5qUCSFm+uo1RydS/XAn1Rd4OnBe/9qUyC+V7Vb1BOaS7
+         Hkug==
+X-Forwarded-Encrypted: i=1; AJvYcCWNaZKgC4WOCzjA8Hz2Osz99AZn94z7RiD41gqtSv6FBn15JmWecroQcxUsXGBrzjgKqqrJpXY/jLc=@lists.infradead.org
+X-Gm-Message-State: AOJu0YzjpqprCKNNEJmR9b05XcSOJuBD49+A0T6ND60SUdAe7onCmopd
+	+jL7VcB19vWruZAM56FlwT7y9KLVtderx4J/HNLFWNpV2DVwX7Zv3cB2U/Vyaczc8KcRiEvj94r
+	T3w==
+X-Google-Smtp-Source: AGHT+IHFSnyjPEDTcWJnAvaiGma2JfY/srzHSvKplMJ9OueXQOEiKTtjMmaF+b36NOyPghd7X0ZdCPZjbkA=
+X-Received: from plgn1.prod.google.com ([2002:a17:902:f601:b0:216:499e:dadb])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:902:db04:b0:215:44fe:163e
+ with SMTP id d9443c01a7336-21778397514mr77377935ad.1.1733954774653; Wed, 11
+ Dec 2024 14:06:14 -0800 (PST)
+Date: Wed, 11 Dec 2024 14:06:12 -0800
+In-Reply-To: <20240910152207.38974-15-nikwip@amazon.de>
 Mime-Version: 1.0
-References: <20240910152207.38974-1-nikwip@amazon.de>
-Message-ID: <Z1oMjKa3gExDxsCN@google.com>
-Subject: Re: [PATCH 00/15] KVM: x86: Introduce new ioctl KVM_TRANSLATE2
+References: <20240910152207.38974-1-nikwip@amazon.de> <20240910152207.38974-15-nikwip@amazon.de>
+Message-ID: <Z1oM1HQqXrIr1tij@google.com>
+Subject: Re: [PATCH 14/15] KVM: x86: Implement KVM_TRANSLATE2
 From: Sean Christopherson <seanjc@google.com>
 To: Nikolas Wipper <nikwip@amazon.de>
 Cc: Paolo Bonzini <pbonzini@redhat.com>, Vitaly Kuznetsov <vkuznets@redhat.com>, 
@@ -78,8 +78,9 @@ Cc: Paolo Bonzini <pbonzini@redhat.com>, Vitaly Kuznetsov <vkuznets@redhat.com>,
 	linux-kselftest@vger.kernel.org, kvmarm@lists.linux.dev, 
 	kvm-riscv@lists.infradead.org
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20241211_140503_212485_44E2D1B5 
-X-CRM114-Status: GOOD (  25.09  )
+X-CRM114-CacheID: sfid-20241211_140616_453482_0653E9BD 
+X-CRM114-Status: UNSURE (   7.67  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -97,77 +98,30 @@ Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
 On Tue, Sep 10, 2024, Nikolas Wipper wrote:
-> This series introduces a new ioctl KVM_TRANSLATE2, which expands on
-> KVM_TRANSLATE. It is required to implement Hyper-V's
-> HvTranslateVirtualAddress hyper-call as part of the ongoing effort to
-> emulate HyperV's Virtual Secure Mode (VSM) within KVM and QEMU. The hyper-
-> call requires several new KVM APIs, one of which is KVM_TRANSLATE2, which
-> implements the core functionality of the hyper-call. The rest of the
-> required functionality will be implemented in subsequent series.
-> 
-> Other than translating guest virtual addresses, the ioctl allows the
-> caller to control whether the access and dirty bits are set during the
-> page walk. It also allows specifying an access mode instead of returning
-> viable access modes, which enables setting the bits up to the level that
-> caused a failure. Additionally, the ioctl provides more information about
-> why the page walk failed, and which page table is responsible. This
-> functionality is not available within KVM_TRANSLATE, and can't be added
-> without breaking backwards compatiblity, thus a new ioctl is required.
+> +int kvm_arch_vcpu_ioctl_translate2(struct kvm_vcpu *vcpu,
+> +				    struct kvm_translation2 *tr)
+> +{
+> +	int idx, set_bit_mode = 0, access = 0;
+> +	struct x86_exception exception = { };
+> +	gva_t vaddr = tr->linear_address;
+> +	u16 status = 0;
+> +	gpa_t gpa;
+> +
+> +	if (tr->flags & KVM_TRANSLATE_FLAGS_SET_ACCESSED)
+> +		set_bit_mode |= PWALK_SET_ACCESSED;
+> +	if (tr->flags & KVM_TRANSLATE_FLAGS_SET_DIRTY)
+> +		set_bit_mode |= PWALK_SET_DIRTY;
+> +	if (tr->flags & KVM_TRANSLATE_FLAGS_FORCE_SET_ACCESSED)
+> +		set_bit_mode |= PWALK_FORCE_SET_ACCESSED;
+> +
+> +	if (tr->access & KVM_TRANSLATE_ACCESS_WRITE)
+> +		access |= PFERR_WRITE_MASK;
+> +	if (tr->access & KVM_TRANSLATE_ACCESS_USER)
+> +		access |= PFERR_USER_MASK;
+> +	if (tr->access & KVM_TRANSLATE_ACCESS_EXEC)
+> +		access |= PFERR_FETCH_MASK;
 
-...
-
->  Documentation/virt/kvm/api.rst                | 131 ++++++++
->  arch/x86/include/asm/kvm_host.h               |  18 +-
->  arch/x86/kvm/hyperv.c                         |   3 +-
->  arch/x86/kvm/kvm_emulate.h                    |   8 +
->  arch/x86/kvm/mmu.h                            |  10 +-
->  arch/x86/kvm/mmu/mmu.c                        |   7 +-
->  arch/x86/kvm/mmu/paging_tmpl.h                |  80 +++--
->  arch/x86/kvm/x86.c                            | 123 ++++++-
->  include/linux/kvm_host.h                      |   6 +
->  include/uapi/linux/kvm.h                      |  33 ++
->  tools/testing/selftests/kvm/Makefile          |   1 +
->  .../selftests/kvm/x86_64/kvm_translate2.c     | 310 ++++++++++++++++++
->  virt/kvm/kvm_main.c                           |  41 +++
->  13 files changed, 724 insertions(+), 47 deletions(-)
->  create mode 100644 tools/testing/selftests/kvm/x86_64/kvm_translate2.c
-
-...
-
-> The simple reason for keeping this functionality in KVM, is that it already
-> has a mature, production-level page walker (which is already exposed) and
-> creating something similar QEMU would take a lot longer and would be much
-> harder to maintain than just creating an API that leverages the existing
-> walker.
-
-I'm not convinced that implementing targeted support in QEMU (or any other VMM)
-would be at all challenging or a burden to maintain.  I do think duplicating
-functionality across multiple VMMs is undesirable, but that's an argument for
-creating modular userspace libraries for such functionality.  E.g. I/O APIC
-emulation is another one I'd love to move to a common library.
-
-Traversing page tables isn't difficult.  Checking permission bits isn't complex.
-Tedious, perhaps.  But not complex.  KVM's rather insane code comes from KVM's
-desire to make the checks as performant as possible, because eking out every little
-bit of performance matters for legacy shadow paging.  I doubt VSM needs _that_
-level of performance.
-
-I say "targeted", because I assume the only use case for VSM is 64-bit non-nested
-guests.  QEMU already has a rudimentary supporting for walking guest page tables,
-and that code is all of 40 LoC.  Granted, it's heinous and lacks permission checks
-and A/D updates, but I would expect a clean implementation with permission checks
-and A/D support would clock in around 200 LoC.  Maybe 300.
-
-And ignoring docs and selftests, that's roughly what's being added in this series.
-Much of the code being added is quite simple, but there are non-trivial changes
-here as well.  E.g. the different ways of setting A/D bits.
-
-My biggest concern is taking on ABI that restricts what KVM can do in its walker.
-E.g. I *really* don't like the PKU change.  Yeah, Intel doesn't explicitly define
-architectural behavior, but diverging from hardware behavior is rarely a good idea.
-
-Similarly, the behavior of FNAME(protect_clean_gpte)() probably isn't desirable
-for the VSM use case.
+WRITE and FETCH accesses need to be mutually exclusive.
 
 -- 
 kvm-riscv mailing list
