@@ -4,64 +4,62 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4525AE77182
-	for <kvm-riscv@archiver.kernel.org>; Wed, 11 Dec 2024 22:33:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 70ED6E7717D
+	for <kvm-riscv@archiver.kernel.org>; Wed, 11 Dec 2024 22:33:29 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:Cc:To:In-Reply-To:References:Date:
 	Message-Id:From:Subject:MIME-Version:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=zmgZEvMZavGd5oJ6iX8utKdyaXLVgaGxM29f4gQfcW0=; b=dandPXf0jkqXl5
-	mN9GdK4Roa9XvHV1msahwoi4WwmnnjtUXATdOg2uG3Uo7moYk17Iae94SVZmvg+PPI+8a/tmTZX6M
-	qbeAhjezMXIixJU5dosssNdi+Ter+pW2mAkb1PmS2e5eYd+7rFZ9zRhIWDENU+2rq7BH++HjTSUWD
-	kREy7OECTi5EmJvkXScg//lIZx98+yaFfTqAsJdQRR5ghOStA/hfa2vO8j2HvY1VWg7P8jSWQ2rm7
-	DlHoTRg48YqmXJ+P569o3unnJZWhNaVxkAi3TZ4gRRl1O/8JecBHb6OEEoNf7GiskG6Qxm3nMNpo6
-	xqNKMWOn7swjbwa8AM+g==;
+	List-Owner; bh=bqaY2d4lGF71/Y/E4E59hIg1E8a/ZJuaPWqlahfKjJc=; b=xXHaaxqOjV4tN9
+	hYYDb+sOZiNJ2GTdd64lRsVAo8tSk0OB972CJ4+T+NDuegSLo3wDvjyvhGveaiiKwjqc5U95DkHBE
+	x9nVTSkfFUVBgdU9ZWQ5ekqQqZ9N5yoXh4sBIB1Z146aFm8u3oZaO70olCFheuYSDDX+3HdtBoiF/
+	h7NTw2jCGGpyYyo/7C0S1NqZYNphYcX2csXgyMnakpS+YeM6mntTClXLeOHqGH+he2COOfFiyXm3/
+	ioXmRGIrl6OY3ZlyJZchhebMC2OlRqLFNO7aIzPflBRhMnGu73lNaZoddD3vvvaE3IR31jrmz3xRH
+	2vxkkwboxbKPwSFwy3ZA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98 #2 (Red Hat Linux))
-	id 1tLVGp-0000000GLBA-3ysT;
-	Wed, 11 Dec 2024 22:33:27 +0000
-Received: from dfw.source.kernel.org ([139.178.84.217])
+	id 1tLVGr-0000000GLCr-0IZl;
+	Wed, 11 Dec 2024 22:33:29 +0000
+Received: from nyc.source.kernel.org ([2604:1380:45d1:ec00::3])
 	by bombadil.infradead.org with esmtps (Exim 4.98 #2 (Red Hat Linux))
-	id 1tLVFj-0000000GKMQ-23Jl;
-	Wed, 11 Dec 2024 22:32:20 +0000
+	id 1tLVFl-0000000GKNm-1Ck5;
+	Wed, 11 Dec 2024 22:32:22 +0000
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 8FEDD5C67E6;
-	Wed, 11 Dec 2024 22:31:36 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A5D44C4CED3;
-	Wed, 11 Dec 2024 22:32:18 +0000 (UTC)
+	by nyc.source.kernel.org (Postfix) with ESMTP id 0A699A41D67;
+	Wed, 11 Dec 2024 22:30:29 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2D0CDC4CEDF;
+	Wed, 11 Dec 2024 22:32:20 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1733956338;
-	bh=FYl5IF1xeB37ngsUbCx+/Kpy7r9qTtKr20+KIGXrOb8=;
+	s=k20201202; t=1733956340;
+	bh=SL+9+Q0zX1tM74INOwLbIbE4XWzgTiWIBxGgYOOTQlo=;
 	h=Subject:From:Date:References:In-Reply-To:To:Cc:From;
-	b=tydqQ+z9Dkc3NAH6mMGRBaGgg2CIMNMA6zMwA9v6e5VQxCkCIRdDWcFgMpFs8tKII
-	 Q3FpbdUZjalVezQB87ujOUgolmwubdSTmeMMcArB+wG690Xhx5siiFL2KpW99gJmwm
-	 jnsJ4/0h9UG7BQ8OdZjqQ/aKG695kePySm0vDOiirdVfMc7R1f5YY/knKgkeNjNRxb
-	 mQIJYBGAnFM1BJqfq4C3G/kJ1ZG+xAZ9f4uECEsIe+8GMClTfadTHN4O2r1xOtpcmO
-	 pGF4KVaSvOlXriKtHyqpY75VBlWBBRs1vuCKvOpldJGV1uIgM5wmRP6PAjk9DlBorq
-	 qFQHrufWJR6SA==
+	b=TZTzYvxN3lAr1c8GNo20ftFB1GrsFS6HFevwYdyB3ZdD18BUJaddBMvh9vgJ0V1pk
+	 LX0zaiKMTZ/gElqmc0M1mW1FBq0kxQWpSHOlhm+i6Sv0hewEmgnfSabuhT3oj5+qeX
+	 1iQ3igxD+o3M6k61DvkNf8Ry4ZZWvtp4GEBtjGJDWHBrbknZNNVM1ct6o3VAHMz+v/
+	 6MBOQ+/7ooQzOl2B9pDpDYluTWxfCevgVnSyIN8qY18UWcalk654rM7/+3Gy7rylPi
+	 9/crC0u+6mbfAznZR3RejbGEZo3d940T8IpkqUQ5pcyFA9jarjp9yqET3++bAlkPna
+	 dXfF37wgf0iJA==
 Received: from [10.30.226.235] (localhost [IPv6:::1])
-	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id EC12D380A965;
-	Wed, 11 Dec 2024 22:32:35 +0000 (UTC)
+	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id 70E18380A965;
+	Wed, 11 Dec 2024 22:32:37 +0000 (UTC)
 MIME-Version: 1.0
-Subject: Re: [PATCH v5 0/2] riscv: Add perf support to collect KVM guest
- statistics from host side
+Subject: Re: [PATCH v2 1/1] RISC-V: KVM: Fix APLIC in_clrip and clripnum write
+ emulation
 From: patchwork-bot+linux-riscv@kernel.org
-Message-Id: <173395635475.1729195.2011997217327179366.git-patchwork-notify@kernel.org>
-Date: Wed, 11 Dec 2024 22:32:34 +0000
-References: <cover.1728980031.git.zhouquan@iscas.ac.cn>
-In-Reply-To: <cover.1728980031.git.zhouquan@iscas.ac.cn>
-To: Quan Zhou <zhouquan@iscas.ac.cn>
-Cc: linux-riscv@lists.infradead.org, anup@brainfault.org,
- ajones@ventanamicro.com, atishp@atishpatra.org, paul.walmsley@sifive.com,
- palmer@dabbelt.com, aou@eecs.berkeley.edu, mark.rutland@arm.com,
- alexander.shishkin@linux.intel.com, jolsa@kernel.org,
- linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
- kvm-riscv@lists.infradead.org, linux-perf-users@vger.kernel.org
+Message-Id: <173395635599.1729195.3021974708700896861.git-patchwork-notify@kernel.org>
+Date: Wed, 11 Dec 2024 22:32:35 +0000
+References: <20241029085542.30541-1-yongxuan.wang@sifive.com>
+In-Reply-To: <20241029085542.30541-1-yongxuan.wang@sifive.com>
+To: Yong-Xuan Wang <yongxuan.wang@sifive.com>
+Cc: linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org,
+ kvm-riscv@lists.infradead.org, kvm@vger.kernel.org, greentime.hu@sifive.com,
+ vincent.chen@sifive.com, anup@brainfault.org, atishp@atishpatra.org,
+ paul.walmsley@sifive.com, palmer@dabbelt.com, aou@eecs.berkeley.edu
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20241211_143219_582150_69CDDC75 
-X-CRM114-Status: UNSURE (   9.31  )
+X-CRM114-CacheID: sfid-20241211_143221_389829_4B2840AC 
+X-CRM114-Status: UNSURE (   9.57  )
 X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
@@ -81,24 +79,24 @@ Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
 Hello:
 
-This series was applied to riscv/linux.git (fixes)
+This patch was applied to riscv/linux.git (fixes)
 by Anup Patel <anup@brainfault.org>:
 
-On Tue, 15 Oct 2024 16:42:18 +0800 you wrote:
-> From: Quan Zhou <zhouquan@iscas.ac.cn>
+On Tue, 29 Oct 2024 16:55:39 +0800 you wrote:
+> In the section "4.7 Precise effects on interrupt-pending bits"
+> of the RISC-V AIA specification defines that:
 > 
-> Add basic guest support to RISC-V perf, enabling it to distinguish
-> whether PMU interrupts occur in the host or the guest, and then
-> collect some basic guest information from the host side
-> (guest os callchain is not supported for now).
+> "If the source mode is Level1 or Level0 and the interrupt domain
+> is configured in MSI delivery mode (domaincfg.DM = 1):
+> The pending bit is cleared whenever the rectified input value is
+> low, when the interrupt is forwarded by MSI, or by a relevant
+> write to an in_clrip register or to clripnum."
 > 
 > [...]
 
 Here is the summary with links:
-  - [v5,1/2] riscv: perf: add guest vs host distinction
-    https://git.kernel.org/riscv/c/5bb5ccb3e8d8
-  - [v5,2/2] riscv: KVM: add basic support for host vs guest profiling
-    https://git.kernel.org/riscv/c/eded6754f398
+  - [v2,1/1] RISC-V: KVM: Fix APLIC in_clrip and clripnum write emulation
+    https://git.kernel.org/riscv/c/60821fb4dd73
 
 You are awesome, thank you!
 -- 
