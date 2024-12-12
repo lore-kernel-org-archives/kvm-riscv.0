@@ -4,77 +4,148 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 96F45E7718B
-	for <kvm-riscv@archiver.kernel.org>; Mon, 23 Dec 2024 04:45:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CD9A8E77190
+	for <kvm-riscv@archiver.kernel.org>; Mon, 23 Dec 2024 04:45:37 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
-	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:From:References:To:Subject:
-	Cc:MIME-Version:Date:Message-ID:Reply-To:Content-ID:Content-Description:
+	d=lists.infradead.org; s=bombadil.20210309; h=Sender:Content-Type:
+	Content-Transfer-Encoding:List-Subscribe:List-Help:List-Post:List-Archive:
+	List-Unsubscribe:List-Id:In-Reply-To:From:References:Cc:To:Subject:
+	MIME-Version:Date:Message-ID:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=2lLMRJPdTA4h4YgtiPDqSV9z6CFF7DfdmNf1+dEkGc4=; b=0Z8RUjhJZJFtEM
-	KyvOH+SKbitToFWlUqq4/KdHxDYxLibqv7wS3P9ReCGO+EL0R5T27HTAZsUbVtLauDhdCzq3afQrW
-	xnO15ebpcoOSHD0As8DcaSUY+GxRgx2my/95ahq0rOH80qAhFPI2I6FCH0pYuiSLZ1V2tUUkZB56A
-	eQMyAIfCwf7Um3DmYc0CA6EX4/lEIe1Tt7DrKLy7UtwbuG/NThyxxghCITQRaTZwxB6je4fe8vJFT
-	qNLB7BgQEZ7xla633luLSHibcKt6TKDGUmnmFRxwPeFo52pkGrWjmHV65zL+iYjMnLcpQ2/UCq3CZ
-	uX0NfqtZWy/No8KUGscg==;
+	List-Owner; bh=+YhbvRRBuLEErmdYkpRF2m/EXXx6YhNF7kqpoNbU83s=; b=XdsyWROkcKU6eT
+	dHPp75iEAwg2j/8wqLh7XaQ65S13sJdz/x5/G0fqNPirWpRVXNmA7uF7BRkPeDPYhkuirqwkzPmg7
+	uEdWJMKCKL54Ji5NKdjSV3+0STpM1K8Ga9pKM05UBm+47q9uzXRhUR6o7ZxeaV1h8x4DDeEx1TpKT
+	/m9YnPLWIviiSXOn+iOfnLiDCAby0jEOYNWOM899+ioz/d6PxQelzUxf/5IV2T3y/QNVcuCMIn5z7
+	Go2YbVAa2epJ6B6AOtU099ADWsfeg1kXmip3i09xWXN3X9NYnCQJrj4ax6ZwrUf1t4RmS4ELJ3rv8
+	DwfxBqqnM7XphwCiThww==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98 #2 (Red Hat Linux))
-	id 1tPaK0-00000009JzS-0Jha;
-	Mon, 23 Dec 2024 04:45:36 +0000
-Received: from sender4-op-o12.zoho.com ([136.143.188.12])
+	id 1tPaK1-00000009K0b-2IMJ;
+	Mon, 23 Dec 2024 04:45:37 +0000
+Received: from us-smtp-delivery-124.mimecast.com ([170.10.133.124])
 	by bombadil.infradead.org with esmtps (Exim 4.98 #2 (Red Hat Linux))
-	id 1tGZlN-0000000EyW8-3azd;
-	Thu, 28 Nov 2024 08:20:40 +0000
-ARC-Seal: i=1; a=rsa-sha256; t=1732782030; cv=none; 
-	d=zohomail.com; s=zohoarc; 
-	b=K7Zn9wGg9EloO2HKvT98BU+TDLXUwoev3j42S3m0oJoU4Qxht3s/Ual5R3wa175LCp/mn8aO0QTAZflus6mRe82m1Ap7Wh0gGVP+1mnzUmobPEyiS9aso03Lzdxd5wRDLkXk16tErv0YpArGOZzKVBA38H4u/7zIpqqZ9VBmwwI=
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1732782030; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=2IiuEkvsLVrpCnLMLoWPz7s8DT/ecCzaRpa1wVTu1lI=; 
-	b=ZRp3iz4pmkrhAM3ZEKEaVFtFNL8B0xW9SVBvMAMfgeLBtpEDkYPrPhvHy9KD4lfI5TmbYVkfjFR/mFw2NKZ68cIFtq3DjgMyYkvMUEnpy48sJo80LoSfq3nI1AYfijGETmqAQxGt1zS/G6zNabarGAas+H48T0L3N3y2Kd2oeVU=
-ARC-Authentication-Results: i=1; mx.zohomail.com;
-	dkim=pass  header.i=collabora.com;
-	spf=pass  smtp.mailfrom=Usama.Anjum@collabora.com;
-	dmarc=pass header.from=<Usama.Anjum@collabora.com>
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1732782030;
-	s=zohomail; d=collabora.com; i=Usama.Anjum@collabora.com;
-	h=Message-ID:Date:Date:MIME-Version:Cc:Cc:Subject:Subject:To:To:References:From:From:In-Reply-To:Content-Type:Content-Transfer-Encoding:Message-Id:Reply-To;
-	bh=2IiuEkvsLVrpCnLMLoWPz7s8DT/ecCzaRpa1wVTu1lI=;
-	b=gs3DB50W7zvGr7079GbhYvKRa1ua1UGzL8ci7cUsZoarJ6R/ymD6Eav2Y/8VRGm/
-	4d3sZSzDbH2OUQaCfpf8j97/Mr1yER4SuvyaeVc+MflFmX1sExAxUwUQP53k3vhGl+e
-	94XYqo087n3/tIElMt+gf9bhcg9MPT8/vMEEUg+A=
-Received: by mx.zohomail.com with SMTPS id 1732782029607123.96941669433295;
-	Thu, 28 Nov 2024 00:20:29 -0800 (PST)
-Message-ID: <5ee15da3-fb65-49be-9b96-9839aa0975ff@collabora.com>
-Date: Thu, 28 Nov 2024 13:20:26 +0500
+	id 1tLm2d-00000000yU4-04n0
+	for kvm-riscv@lists.infradead.org;
+	Thu, 12 Dec 2024 16:27:57 +0000
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1734020873;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=EF34zrJwE7uLixL7lLboy0Y/OUAzLkkLvLFlnmK+s/o=;
+	b=VYNi3UsAO+m8D2tymF6BNhXpCfsCWgFhILi9D+auGXrEIWZKN8shLKB4s2T2tAmR8D/rNd
+	ztKUAzDWVNYHV19rH99pz1wbdAeAHk/0STK9afOtBShLu8crLvmedjH1JW7GhsUc0PMZCY
+	NGznCqemmXzAvwpo/vcUOmoNF+vtgMo=
+Received: from mail-wr1-f72.google.com (mail-wr1-f72.google.com
+ [209.85.221.72]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-192-wXqJTpSwMUWVPNiOrjpqlA-1; Thu, 12 Dec 2024 11:27:51 -0500
+X-MC-Unique: wXqJTpSwMUWVPNiOrjpqlA-1
+X-Mimecast-MFC-AGG-ID: wXqJTpSwMUWVPNiOrjpqlA
+Received: by mail-wr1-f72.google.com with SMTP id ffacd0b85a97d-38634103b0dso458221f8f.2
+        for <kvm-riscv@lists.infradead.org>; Thu, 12 Dec 2024 08:27:51 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1734020867; x=1734625667;
+        h=content-transfer-encoding:in-reply-to:autocrypt:content-language
+         :from:references:cc:to:subject:user-agent:mime-version:date
+         :message-id:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=EF34zrJwE7uLixL7lLboy0Y/OUAzLkkLvLFlnmK+s/o=;
+        b=l6ZzmtQgxW5cs4PPV9xgyd3xw0OVSN5Y8sp87sw6B/hcjxM43IN4jNntOSVsaYDT4F
+         Pc9REfCN7sgrPXbL+PCYGO/wTOv8bK8FskbFRgpDQZl7aoBFnXBqelRiGGSzmqEMMM+a
+         r4xMNrJz4n+8dS1gAeEkPV9a1ELSP6jbwouPFOZKuw7MQStla1OrMD31uwl5jRi+USeo
+         XE7v9KGtU/871xubLOhsYYKrrdgJzE1S6R48BKvm6RAzA8ve26pdF6lCvC5IBKABog6r
+         LYFBnimJ++83t9+nNxz2tqYkRtzx/1/nYREMXGL/WmyZ5y4aGLhGyFWPSlrrSUxdAE5j
+         3+Dw==
+X-Forwarded-Encrypted: i=1; AJvYcCVzBPWqAMuDP1T75POTscn7VSVlAogaiGcGnY8U2KfTJ9AIt0tV+8qFIRCCiz0JB5YEQKTFXgb6SiA=@lists.infradead.org
+X-Gm-Message-State: AOJu0Yy5753G56wSW8gIPx6PtMj01gUvA7QNd9cMa8uonDjWH+TJIl0p
+	MTrGW08Yx1/AT8KSEPbznBm1nA9PwSGO28mUOrgN8nrCMmsfNvNQqqHS+lhq/LAM+A95s+wMsMu
+	hEK99BCUlg/sO8ARxJKpUYUs7jT7tACS1DAQiXQDauwHrZtH0xir9aPxhVqrmT3w=
+X-Gm-Gg: ASbGnctDvdgwYfNB+Rr2olq+73+vy8vFBOfqdS3iYSqLNIY5jifOyk7iowrk4X+Ohtw
+	+T6as+H1inrKnL0UY7IxV6XTYBTxY22t/bYsPWGzoZp4Mzpoo+CKJTtKIkhn7N2SEcPmCkuPDlO
+	QlCIDSicQjP+ULHbXJAV4NqCpISlGSAukguHTVrODck5/2F2t/r35BIlnkYDN0+3Co3nTXsxq4i
+	1KDRZ+fwmJLFz0SDNDt97hezbo22VCtDbm0QydUYL0wCGUfMNwW5VECEuSs
+X-Received: by 2002:a05:6000:787:b0:385:f07b:93da with SMTP id ffacd0b85a97d-387877c9796mr2888820f8f.47.1734020866182;
+        Thu, 12 Dec 2024 08:27:46 -0800 (PST)
+X-Google-Smtp-Source: AGHT+IH0ECEyam/l+h40ABx6lPrDarLzkiHD5+hM1TY84oNc8ggQADSgxcWdxSLlkkApeDkexoCeOw==
+X-Received: by 2002:a05:6000:787:b0:385:f07b:93da with SMTP id ffacd0b85a97d-387877c9796mr2888755f8f.47.1734020864917;
+        Thu, 12 Dec 2024 08:27:44 -0800 (PST)
+Received: from [192.168.10.27] ([151.81.118.45])
+        by smtp.googlemail.com with ESMTPSA id ffacd0b85a97d-387824a4a51sm4395674f8f.29.2024.12.12.08.27.41
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 12 Dec 2024 08:27:44 -0800 (PST)
+Message-ID: <6bc05f3c-f473-480d-b9a2-c8cd3c80a66c@redhat.com>
+Date: Thu, 12 Dec 2024 17:27:34 +0100
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Cc: Usama.Anjum@collabora.com, linux-arm-kernel@lists.infradead.org,
- kvmarm@lists.linux.dev, kvm@vger.kernel.org, kvm-riscv@lists.infradead.org,
- linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org,
- Andrew Jones <ajones@ventanamicro.com>,
- James Houghton <jthoughton@google.com>
-Subject: Re: [PATCH v4 15/16] KVM: selftests: Use canonical $(ARCH) paths for
- KVM selftests directories
-To: Sean Christopherson <seanjc@google.com>, Marc Zyngier <maz@kernel.org>,
- Oliver Upton <oliver.upton@linux.dev>, Anup Patel <anup@brainfault.org>,
+Subject: Re: [RFC 5/5] x86: kvm drop 32-bit host support
+To: Arnd Bergmann <arnd@kernel.org>, kvm@vger.kernel.org
+Cc: Arnd Bergmann <arnd@arndb.de>,
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+ Huacai Chen <chenhuacai@kernel.org>, Jiaxun Yang <jiaxun.yang@flygoat.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Naveen N Rao <naveen@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Alexander Graf <graf@amazon.com>, Crystal Wood <crwood@redhat.com>,
+ Anup Patel <anup@brainfault.org>, Atish Patra <atishp@atishpatra.org>,
  Paul Walmsley <paul.walmsley@sifive.com>, Palmer Dabbelt
  <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
- Paolo Bonzini <pbonzini@redhat.com>,
- Christian Borntraeger <borntraeger@linux.ibm.com>,
- Janosch Frank <frankja@linux.ibm.com>,
- Claudio Imbrenda <imbrenda@linux.ibm.com>
-References: <20241128005547.4077116-1-seanjc@google.com>
- <20241128005547.4077116-16-seanjc@google.com>
+ Sean Christopherson <seanjc@google.com>, Thomas Gleixner
+ <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>,
+ x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+ Vitaly Kuznetsov <vkuznets@redhat.com>, David Woodhouse
+ <dwmw2@infradead.org>, Paul Durrant <paul@xen.org>,
+ Marc Zyngier <maz@kernel.org>, linux-kernel@vger.kernel.org,
+ linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org
+References: <20241212125516.467123-1-arnd@kernel.org>
+ <20241212125516.467123-6-arnd@kernel.org>
+From: Paolo Bonzini <pbonzini@redhat.com>
+Autocrypt: addr=pbonzini@redhat.com; keydata=
+ xsEhBFRCcBIBDqDGsz4K0zZun3jh+U6Z9wNGLKQ0kSFyjN38gMqU1SfP+TUNQepFHb/Gc0E2
+ CxXPkIBTvYY+ZPkoTh5xF9oS1jqI8iRLzouzF8yXs3QjQIZ2SfuCxSVwlV65jotcjD2FTN04
+ hVopm9llFijNZpVIOGUTqzM4U55sdsCcZUluWM6x4HSOdw5F5Utxfp1wOjD/v92Lrax0hjiX
+ DResHSt48q+8FrZzY+AUbkUS+Jm34qjswdrgsC5uxeVcLkBgWLmov2kMaMROT0YmFY6A3m1S
+ P/kXmHDXxhe23gKb3dgwxUTpENDBGcfEzrzilWueOeUWiOcWuFOed/C3SyijBx3Av/lbCsHU
+ Vx6pMycNTdzU1BuAroB+Y3mNEuW56Yd44jlInzG2UOwt9XjjdKkJZ1g0P9dwptwLEgTEd3Fo
+ UdhAQyRXGYO8oROiuh+RZ1lXp6AQ4ZjoyH8WLfTLf5g1EKCTc4C1sy1vQSdzIRu3rBIjAvnC
+ tGZADei1IExLqB3uzXKzZ1BZ+Z8hnt2og9hb7H0y8diYfEk2w3R7wEr+Ehk5NQsT2MPI2QBd
+ wEv1/Aj1DgUHZAHzG1QN9S8wNWQ6K9DqHZTBnI1hUlkp22zCSHK/6FwUCuYp1zcAEQEAAc0j
+ UGFvbG8gQm9uemluaSA8cGJvbnppbmlAcmVkaGF0LmNvbT7CwU0EEwECACMFAlRCcBICGwMH
+ CwkIBwMCAQYVCAIJCgsEFgIDAQIeAQIXgAAKCRB+FRAMzTZpsbceDp9IIN6BIA0Ol7MoB15E
+ 11kRz/ewzryFY54tQlMnd4xxfH8MTQ/mm9I482YoSwPMdcWFAKnUX6Yo30tbLiNB8hzaHeRj
+ jx12K+ptqYbg+cevgOtbLAlL9kNgLLcsGqC2829jBCUTVeMSZDrzS97ole/YEez2qFpPnTV0
+ VrRWClWVfYh+JfzpXmgyhbkuwUxNFk421s4Ajp3d8nPPFUGgBG5HOxzkAm7xb1cjAuJ+oi/K
+ CHfkuN+fLZl/u3E/fw7vvOESApLU5o0icVXeakfSz0LsygEnekDbxPnE5af/9FEkXJD5EoYG
+ SEahaEtgNrR4qsyxyAGYgZlS70vkSSYJ+iT2rrwEiDlo31MzRo6Ba2FfHBSJ7lcYdPT7bbk9
+ AO3hlNMhNdUhoQv7M5HsnqZ6unvSHOKmReNaS9egAGdRN0/GPDWr9wroyJ65ZNQsHl9nXBqE
+ AukZNr5oJO5vxrYiAuuTSd6UI/xFkjtkzltG3mw5ao2bBpk/V/YuePrJsnPFHG7NhizrxttB
+ nTuOSCMo45pfHQ+XYd5K1+Cv/NzZFNWscm5htJ0HznY+oOsZvHTyGz3v91pn51dkRYN0otqr
+ bQ4tlFFuVjArBZcapSIe6NV8C4cEiSTOwE0EVEJx7gEIAMeHcVzuv2bp9HlWDp6+RkZe+vtl
+ KwAHplb/WH59j2wyG8V6i33+6MlSSJMOFnYUCCL77bucx9uImI5nX24PIlqT+zasVEEVGSRF
+ m8dgkcJDB7Tps0IkNrUi4yof3B3shR+vMY3i3Ip0e41zKx0CvlAhMOo6otaHmcxr35sWq1Jk
+ tLkbn3wG+fPQCVudJJECvVQ//UAthSSEklA50QtD2sBkmQ14ZryEyTHQ+E42K3j2IUmOLriF
+ dNr9NvE1QGmGyIcbw2NIVEBOK/GWxkS5+dmxM2iD4Jdaf2nSn3jlHjEXoPwpMs0KZsgdU0pP
+ JQzMUMwmB1wM8JxovFlPYrhNT9MAEQEAAcLBMwQYAQIACQUCVEJx7gIbDAAKCRB+FRAMzTZp
+ sadRDqCctLmYICZu4GSnie4lKXl+HqlLanpVMOoFNnWs9oRP47MbE2wv8OaYh5pNR9VVgyhD
+ OG0AU7oidG36OeUlrFDTfnPYYSF/mPCxHttosyt8O5kabxnIPv2URuAxDByz+iVbL+RjKaGM
+ GDph56ZTswlx75nZVtIukqzLAQ5fa8OALSGum0cFi4ptZUOhDNz1onz61klD6z3MODi0sBZN
+ Aj6guB2L/+2ZwElZEeRBERRd/uommlYuToAXfNRdUwrwl9gRMiA0WSyTb190zneRRDfpSK5d
+ usXnM/O+kr3Dm+Ui+UioPf6wgbn3T0o6I5BhVhs4h4hWmIW7iNhPjX1iybXfmb1gAFfjtHfL
+ xRUr64svXpyfJMScIQtBAm0ihWPltXkyITA92ngCmPdHa6M1hMh4RDX+Jf1fiWubzp1voAg0
+ JBrdmNZSQDz0iKmSrx8xkoXYfA3bgtFN8WJH2xgFL28XnqY4M6dLhJwV3z08tPSRqYFm4NMP
+ dRsn0/7oymhneL8RthIvjDDQ5ktUjMe8LtHr70OZE/TT88qvEdhiIVUogHdo4qBrk41+gGQh
+ b906Dudw5YhTJFU3nC6bbF2nrLlB4C/XSiH76ZvqzV0Z/cAMBo5NF/w=
+In-Reply-To: <20241212125516.467123-6-arnd@kernel.org>
+X-Mimecast-Spam-Score: 0
+X-Mimecast-MFC-PROC-ID: 0GV_dUf8kwdjIMd7ln0Cp1BWgfRDtVasG8cp3oZVXYI_1734020870
+X-Mimecast-Originator: redhat.com
 Content-Language: en-US
-From: Muhammad Usama Anjum <Usama.Anjum@collabora.com>
-In-Reply-To: <20241128005547.4077116-16-seanjc@google.com>
-X-ZohoMailClient: External
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20241128_002038_059139_BEFF6F80 
-X-CRM114-Status: UNSURE (   9.79  )
-X-CRM114-Notice: Please train this message.
+X-CRM114-CacheID: sfid-20241212_082755_316320_0B0397DB 
+X-CRM114-Status: GOOD (  26.42  )
 X-Mailman-Approved-At: Sun, 22 Dec 2024 20:45:32 -0800
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
@@ -87,1505 +158,2622 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On 11/28/24 5:55 AM, Sean Christopherson wrote:
-> Use the kernel's canonical $(ARCH) paths instead of the raw target triple
-> for KVM selftests directories.  KVM selftests are quite nearly the only
-> place in the entire kernel that using the target triple for directories,
-> tools/testing/selftests/drivers/s390x being the lone holdout.
+On 12/12/24 13:55, Arnd Bergmann wrote:
+> From: Arnd Bergmann <arnd@arndb.de>
 > 
-> Using the kernel's preferred nomenclature eliminates the minor, but
-> annoying, friction of having to translate to KVM's selftests directories,
-> e.g. for pattern matching, opening files, running selftests, etc.
-> 
-> Opportunsitically delete file comments that reference the full path of the
-> file, as they are obviously prone to becoming stale, and serve no known
-> purpose.
-> 
-> Signed-off-by: Sean Christopherson <seanjc@google.com>
-Reviewed-by: Muhammad Usama Anjum <usama.anjum@collabora.com>
+> There are very few 32-bit machines that support KVM, the main exceptions
+> are the "Yonah" Generation Xeon-LV and Core Duo from 2006 and the Atom
+> Z5xx "Silverthorne" from 2008 that were all released just before their
+> 64-bit counterparts.
 
+Unlike other architectures where you can't run a "short bitness" kernel 
+at all, or 32-bit systems require hardware enablement that simply does 
+not exist, the x86 situation is a bit different: 32-bit KVM would not be 
+used on 32-bit processors, but on 64-bit kernels running 32-bit kernels; 
+presumably on a machine with 4 or 8 GB of memory, above which you're 
+hurting yourself even more, and for smaller guests where the limitations 
+in userspace address space size don't matter.
+
+Apart from a bunch of CONFIG_X86_64 conditionals, the main issue that 
+KVM has with 32-bit x86 is that they cannot read/write a PTE atomically 
+(i.e. without tearing) and therefore they can't use the newer and more 
+scalable page table management code.  So no objections from me for 
+removing this support, but the justification should be the truth, i.e. 
+developers don't care enough.
+
+Paolo
+
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 > ---
->  MAINTAINERS                                   |  12 +-
->  tools/testing/selftests/kvm/Makefile          |  10 +-
->  tools/testing/selftests/kvm/Makefile.kvm      | 320 +++++++++---------
->  .../kvm/{aarch64 => arm64}/aarch32_id_regs.c  |   0
->  .../kvm/{aarch64 => arm64}/arch_timer.c       |   0
->  .../arch_timer_edge_cases.c                   |   0
->  .../kvm/{aarch64 => arm64}/debug-exceptions.c |   0
->  .../kvm/{aarch64 => arm64}/get-reg-list.c     |   0
->  .../kvm/{aarch64 => arm64}/hypercalls.c       |   0
->  .../kvm/{aarch64 => arm64}/mmio_abort.c       |   0
->  .../kvm/{aarch64 => arm64}/no-vgic-v3.c       |   0
->  .../kvm/{aarch64 => arm64}/page_fault_test.c  |   0
->  .../kvm/{aarch64 => arm64}/psci_test.c        |   0
->  .../kvm/{aarch64 => arm64}/set_id_regs.c      |   0
->  .../kvm/{aarch64 => arm64}/smccc_filter.c     |   0
->  .../{aarch64 => arm64}/vcpu_width_config.c    |   0
->  .../kvm/{aarch64 => arm64}/vgic_init.c        |   0
->  .../kvm/{aarch64 => arm64}/vgic_irq.c         |   0
->  .../kvm/{aarch64 => arm64}/vgic_lpi_stress.c  |   0
->  .../{aarch64 => arm64}/vpmu_counter_access.c  |   0
->  .../selftests/kvm/dirty_log_perf_test.c       |   2 +-
->  .../include/{aarch64 => arm64}/arch_timer.h   |   0
->  .../kvm/include/{aarch64 => arm64}/delay.h    |   0
->  .../kvm/include/{aarch64 => arm64}/gic.h      |   0
->  .../kvm/include/{aarch64 => arm64}/gic_v3.h   |   0
->  .../include/{aarch64 => arm64}/gic_v3_its.h   |   0
->  .../{aarch64 => arm64}/kvm_util_arch.h        |   0
->  .../include/{aarch64 => arm64}/processor.h    |   0
->  .../kvm/include/{aarch64 => arm64}/spinlock.h |   0
->  .../kvm/include/{aarch64 => arm64}/ucall.h    |   0
->  .../kvm/include/{aarch64 => arm64}/vgic.h     |   0
->  .../kvm/include/{s390x => s390}/debug_print.h |   0
->  .../{s390x => s390}/diag318_test_handler.h    |   0
->  .../kvm/include/{s390x => s390}/facility.h    |   0
->  .../include/{s390x => s390}/kvm_util_arch.h   |   0
->  .../kvm/include/{s390x => s390}/processor.h   |   0
->  .../kvm/include/{s390x => s390}/sie.h         |   0
->  .../kvm/include/{s390x => s390}/ucall.h       |   0
->  .../kvm/include/{x86_64 => x86}/apic.h        |   2 -
->  .../kvm/include/{x86_64 => x86}/evmcs.h       |   3 -
->  .../kvm/include/{x86_64 => x86}/hyperv.h      |   3 -
->  .../include/{x86_64 => x86}/kvm_util_arch.h   |   0
->  .../kvm/include/{x86_64 => x86}/mce.h         |   2 -
->  .../kvm/include/{x86_64 => x86}/pmu.h         |   0
->  .../kvm/include/{x86_64 => x86}/processor.h   |   2 -
->  .../kvm/include/{x86_64 => x86}/sev.h         |   0
->  .../kvm/include/{x86_64 => x86}/svm.h         |   6 -
->  .../kvm/include/{x86_64 => x86}/svm_util.h    |   3 -
->  .../kvm/include/{x86_64 => x86}/ucall.h       |   0
->  .../kvm/include/{x86_64 => x86}/vmx.h         |   2 -
->  .../kvm/lib/{aarch64 => arm64}/gic.c          |   0
->  .../kvm/lib/{aarch64 => arm64}/gic_private.h  |   0
->  .../kvm/lib/{aarch64 => arm64}/gic_v3.c       |   0
->  .../kvm/lib/{aarch64 => arm64}/gic_v3_its.c   |   0
->  .../kvm/lib/{aarch64 => arm64}/handlers.S     |   0
->  .../kvm/lib/{aarch64 => arm64}/processor.c    |   0
->  .../kvm/lib/{aarch64 => arm64}/spinlock.c     |   0
->  .../kvm/lib/{aarch64 => arm64}/ucall.c        |   0
->  .../kvm/lib/{aarch64 => arm64}/vgic.c         |   0
->  .../{s390x => s390}/diag318_test_handler.c    |   0
->  .../kvm/lib/{s390x => s390}/facility.c        |   0
->  .../kvm/lib/{s390x => s390}/processor.c       |   0
->  .../selftests/kvm/lib/{s390x => s390}/ucall.c |   0
->  .../selftests/kvm/lib/{x86_64 => x86}/apic.c  |   0
->  .../kvm/lib/{x86_64 => x86}/handlers.S        |   0
->  .../kvm/lib/{x86_64 => x86}/hyperv.c          |   0
->  .../kvm/lib/{x86_64 => x86}/memstress.c       |   2 +-
->  .../selftests/kvm/lib/{x86_64 => x86}/pmu.c   |   0
->  .../kvm/lib/{x86_64 => x86}/processor.c       |   2 -
->  .../selftests/kvm/lib/{x86_64 => x86}/sev.c   |   0
->  .../selftests/kvm/lib/{x86_64 => x86}/svm.c   |   1 -
->  .../selftests/kvm/lib/{x86_64 => x86}/ucall.c |   0
->  .../selftests/kvm/lib/{x86_64 => x86}/vmx.c   |   2 -
->  .../selftests/kvm/{s390x => s390}/cmma_test.c |   0
->  .../selftests/kvm/{s390x => s390}/config      |   0
->  .../{s390x => s390}/cpumodel_subfuncs_test.c  |   0
->  .../kvm/{s390x => s390}/debug_test.c          |   0
->  .../selftests/kvm/{s390x => s390}/memop.c     |   0
->  .../selftests/kvm/{s390x => s390}/resets.c    |   0
->  .../{s390x => s390}/shared_zeropage_test.c    |   0
->  .../kvm/{s390x => s390}/sync_regs_test.c      |   0
->  .../selftests/kvm/{s390x => s390}/tprot.c     |   0
->  .../kvm/{s390x => s390}/ucontrol_test.c       |   0
->  .../selftests/kvm/set_memory_region_test.c    |   6 +-
->  .../selftests/kvm/{x86_64 => x86}/amx_test.c  |   0
->  .../kvm/{x86_64 => x86}/apic_bus_clock_test.c |   0
->  .../kvm/{x86_64 => x86}/cpuid_test.c          |   0
->  .../kvm/{x86_64 => x86}/cr4_cpuid_sync_test.c |   0
->  .../kvm/{x86_64 => x86}/debug_regs.c          |   0
->  .../dirty_log_page_splitting_test.c           |   0
->  .../exit_on_emulation_failure_test.c          |   0
->  .../kvm/{x86_64 => x86}/feature_msrs_test.c   |   0
->  .../kvm/{x86_64 => x86}/fix_hypercall_test.c  |   0
->  .../kvm/{x86_64 => x86}/flds_emulation.h      |   0
->  .../kvm/{x86_64 => x86}/hwcr_msr_test.c       |   0
->  .../kvm/{x86_64 => x86}/hyperv_clock.c        |   0
->  .../kvm/{x86_64 => x86}/hyperv_cpuid.c        |   0
->  .../kvm/{x86_64 => x86}/hyperv_evmcs.c        |   0
->  .../hyperv_extended_hypercalls.c              |   0
->  .../kvm/{x86_64 => x86}/hyperv_features.c     |   0
->  .../kvm/{x86_64 => x86}/hyperv_ipi.c          |   0
->  .../kvm/{x86_64 => x86}/hyperv_svm_test.c     |   0
->  .../kvm/{x86_64 => x86}/hyperv_tlb_flush.c    |   0
->  .../kvm/{x86_64 => x86}/kvm_clock_test.c      |   0
->  .../kvm/{x86_64 => x86}/kvm_pv_test.c         |   0
->  .../kvm/{x86_64 => x86}/max_vcpuid_cap_test.c |   0
->  .../kvm/{x86_64 => x86}/monitor_mwait_test.c  |   0
->  .../{x86_64 => x86}/nested_exceptions_test.c  |   0
->  .../kvm/{x86_64 => x86}/nx_huge_pages_test.c  |   0
->  .../kvm/{x86_64 => x86}/nx_huge_pages_test.sh |   0
->  .../kvm/{x86_64 => x86}/platform_info_test.c  |   0
->  .../kvm/{x86_64 => x86}/pmu_counters_test.c   |   0
->  .../{x86_64 => x86}/pmu_event_filter_test.c   |   0
->  .../private_mem_conversions_test.c            |   0
->  .../private_mem_kvm_exits_test.c              |   0
->  .../{x86_64 => x86}/recalc_apic_map_test.c    |   0
->  .../kvm/{x86_64 => x86}/set_boot_cpu_id.c     |   0
->  .../kvm/{x86_64 => x86}/set_sregs_test.c      |   0
->  .../kvm/{x86_64 => x86}/sev_init2_tests.c     |   0
->  .../kvm/{x86_64 => x86}/sev_migrate_tests.c   |   0
->  .../kvm/{x86_64 => x86}/sev_smoke_test.c      |   0
->  .../smaller_maxphyaddr_emulation_test.c       |   0
->  .../selftests/kvm/{x86_64 => x86}/smm_test.c  |   0
->  .../kvm/{x86_64 => x86}/state_test.c          |   0
->  .../kvm/{x86_64 => x86}/svm_int_ctl_test.c    |   0
->  .../svm_nested_shutdown_test.c                |   0
->  .../svm_nested_soft_inject_test.c             |   0
->  .../kvm/{x86_64 => x86}/svm_vmcall_test.c     |   0
->  .../kvm/{x86_64 => x86}/sync_regs_test.c      |   0
->  .../{x86_64 => x86}/triple_fault_event_test.c |   0
->  .../kvm/{x86_64 => x86}/tsc_msrs_test.c       |   0
->  .../kvm/{x86_64 => x86}/tsc_scaling_sync.c    |   0
->  .../kvm/{x86_64 => x86}/ucna_injection_test.c |   0
->  .../kvm/{x86_64 => x86}/userspace_io_test.c   |   0
->  .../{x86_64 => x86}/userspace_msr_exit_test.c |   0
->  .../{x86_64 => x86}/vmx_apic_access_test.c    |   0
->  .../vmx_close_while_nested_test.c             |   0
->  .../kvm/{x86_64 => x86}/vmx_dirty_log_test.c  |   0
->  .../vmx_exception_with_invalid_guest_state.c  |   0
->  .../vmx_invalid_nested_guest_state.c          |   0
->  .../kvm/{x86_64 => x86}/vmx_msrs_test.c       |   0
->  .../vmx_nested_tsc_scaling_test.c             |   0
->  .../kvm/{x86_64 => x86}/vmx_pmu_caps_test.c   |   0
->  .../vmx_preemption_timer_test.c               |   0
->  .../vmx_set_nested_state_test.c               |   0
->  .../kvm/{x86_64 => x86}/vmx_tsc_adjust_test.c |   0
->  .../kvm/{x86_64 => x86}/xapic_ipi_test.c      |   0
->  .../kvm/{x86_64 => x86}/xapic_state_test.c    |   0
->  .../kvm/{x86_64 => x86}/xcr0_cpuid_test.c     |   0
->  .../kvm/{x86_64 => x86}/xen_shinfo_test.c     |   0
->  .../kvm/{x86_64 => x86}/xen_vmcall_test.c     |   0
->  .../kvm/{x86_64 => x86}/xss_msr_test.c        |   0
->  152 files changed, 172 insertions(+), 208 deletions(-)
->  rename tools/testing/selftests/kvm/{aarch64 => arm64}/aarch32_id_regs.c (100%)
->  rename tools/testing/selftests/kvm/{aarch64 => arm64}/arch_timer.c (100%)
->  rename tools/testing/selftests/kvm/{aarch64 => arm64}/arch_timer_edge_cases.c (100%)
->  rename tools/testing/selftests/kvm/{aarch64 => arm64}/debug-exceptions.c (100%)
->  rename tools/testing/selftests/kvm/{aarch64 => arm64}/get-reg-list.c (100%)
->  rename tools/testing/selftests/kvm/{aarch64 => arm64}/hypercalls.c (100%)
->  rename tools/testing/selftests/kvm/{aarch64 => arm64}/mmio_abort.c (100%)
->  rename tools/testing/selftests/kvm/{aarch64 => arm64}/no-vgic-v3.c (100%)
->  rename tools/testing/selftests/kvm/{aarch64 => arm64}/page_fault_test.c (100%)
->  rename tools/testing/selftests/kvm/{aarch64 => arm64}/psci_test.c (100%)
->  rename tools/testing/selftests/kvm/{aarch64 => arm64}/set_id_regs.c (100%)
->  rename tools/testing/selftests/kvm/{aarch64 => arm64}/smccc_filter.c (100%)
->  rename tools/testing/selftests/kvm/{aarch64 => arm64}/vcpu_width_config.c (100%)
->  rename tools/testing/selftests/kvm/{aarch64 => arm64}/vgic_init.c (100%)
->  rename tools/testing/selftests/kvm/{aarch64 => arm64}/vgic_irq.c (100%)
->  rename tools/testing/selftests/kvm/{aarch64 => arm64}/vgic_lpi_stress.c (100%)
->  rename tools/testing/selftests/kvm/{aarch64 => arm64}/vpmu_counter_access.c (100%)
->  rename tools/testing/selftests/kvm/include/{aarch64 => arm64}/arch_timer.h (100%)
->  rename tools/testing/selftests/kvm/include/{aarch64 => arm64}/delay.h (100%)
->  rename tools/testing/selftests/kvm/include/{aarch64 => arm64}/gic.h (100%)
->  rename tools/testing/selftests/kvm/include/{aarch64 => arm64}/gic_v3.h (100%)
->  rename tools/testing/selftests/kvm/include/{aarch64 => arm64}/gic_v3_its.h (100%)
->  rename tools/testing/selftests/kvm/include/{aarch64 => arm64}/kvm_util_arch.h (100%)
->  rename tools/testing/selftests/kvm/include/{aarch64 => arm64}/processor.h (100%)
->  rename tools/testing/selftests/kvm/include/{aarch64 => arm64}/spinlock.h (100%)
->  rename tools/testing/selftests/kvm/include/{aarch64 => arm64}/ucall.h (100%)
->  rename tools/testing/selftests/kvm/include/{aarch64 => arm64}/vgic.h (100%)
->  rename tools/testing/selftests/kvm/include/{s390x => s390}/debug_print.h (100%)
->  rename tools/testing/selftests/kvm/include/{s390x => s390}/diag318_test_handler.h (100%)
->  rename tools/testing/selftests/kvm/include/{s390x => s390}/facility.h (100%)
->  rename tools/testing/selftests/kvm/include/{s390x => s390}/kvm_util_arch.h (100%)
->  rename tools/testing/selftests/kvm/include/{s390x => s390}/processor.h (100%)
->  rename tools/testing/selftests/kvm/include/{s390x => s390}/sie.h (100%)
->  rename tools/testing/selftests/kvm/include/{s390x => s390}/ucall.h (100%)
->  rename tools/testing/selftests/kvm/include/{x86_64 => x86}/apic.h (98%)
->  rename tools/testing/selftests/kvm/include/{x86_64 => x86}/evmcs.h (99%)
->  rename tools/testing/selftests/kvm/include/{x86_64 => x86}/hyperv.h (99%)
->  rename tools/testing/selftests/kvm/include/{x86_64 => x86}/kvm_util_arch.h (100%)
->  rename tools/testing/selftests/kvm/include/{x86_64 => x86}/mce.h (94%)
->  rename tools/testing/selftests/kvm/include/{x86_64 => x86}/pmu.h (100%)
->  rename tools/testing/selftests/kvm/include/{x86_64 => x86}/processor.h (99%)
->  rename tools/testing/selftests/kvm/include/{x86_64 => x86}/sev.h (100%)
->  rename tools/testing/selftests/kvm/include/{x86_64 => x86}/svm.h (98%)
->  rename tools/testing/selftests/kvm/include/{x86_64 => x86}/svm_util.h (94%)
->  rename tools/testing/selftests/kvm/include/{x86_64 => x86}/ucall.h (100%)
->  rename tools/testing/selftests/kvm/include/{x86_64 => x86}/vmx.h (99%)
->  rename tools/testing/selftests/kvm/lib/{aarch64 => arm64}/gic.c (100%)
->  rename tools/testing/selftests/kvm/lib/{aarch64 => arm64}/gic_private.h (100%)
->  rename tools/testing/selftests/kvm/lib/{aarch64 => arm64}/gic_v3.c (100%)
->  rename tools/testing/selftests/kvm/lib/{aarch64 => arm64}/gic_v3_its.c (100%)
->  rename tools/testing/selftests/kvm/lib/{aarch64 => arm64}/handlers.S (100%)
->  rename tools/testing/selftests/kvm/lib/{aarch64 => arm64}/processor.c (100%)
->  rename tools/testing/selftests/kvm/lib/{aarch64 => arm64}/spinlock.c (100%)
->  rename tools/testing/selftests/kvm/lib/{aarch64 => arm64}/ucall.c (100%)
->  rename tools/testing/selftests/kvm/lib/{aarch64 => arm64}/vgic.c (100%)
->  rename tools/testing/selftests/kvm/lib/{s390x => s390}/diag318_test_handler.c (100%)
->  rename tools/testing/selftests/kvm/lib/{s390x => s390}/facility.c (100%)
->  rename tools/testing/selftests/kvm/lib/{s390x => s390}/processor.c (100%)
->  rename tools/testing/selftests/kvm/lib/{s390x => s390}/ucall.c (100%)
->  rename tools/testing/selftests/kvm/lib/{x86_64 => x86}/apic.c (100%)
->  rename tools/testing/selftests/kvm/lib/{x86_64 => x86}/handlers.S (100%)
->  rename tools/testing/selftests/kvm/lib/{x86_64 => x86}/hyperv.c (100%)
->  rename tools/testing/selftests/kvm/lib/{x86_64 => x86}/memstress.c (98%)
->  rename tools/testing/selftests/kvm/lib/{x86_64 => x86}/pmu.c (100%)
->  rename tools/testing/selftests/kvm/lib/{x86_64 => x86}/processor.c (99%)
->  rename tools/testing/selftests/kvm/lib/{x86_64 => x86}/sev.c (100%)
->  rename tools/testing/selftests/kvm/lib/{x86_64 => x86}/svm.c (99%)
->  rename tools/testing/selftests/kvm/lib/{x86_64 => x86}/ucall.c (100%)
->  rename tools/testing/selftests/kvm/lib/{x86_64 => x86}/vmx.c (99%)
->  rename tools/testing/selftests/kvm/{s390x => s390}/cmma_test.c (100%)
->  rename tools/testing/selftests/kvm/{s390x => s390}/config (100%)
->  rename tools/testing/selftests/kvm/{s390x => s390}/cpumodel_subfuncs_test.c (100%)
->  rename tools/testing/selftests/kvm/{s390x => s390}/debug_test.c (100%)
->  rename tools/testing/selftests/kvm/{s390x => s390}/memop.c (100%)
->  rename tools/testing/selftests/kvm/{s390x => s390}/resets.c (100%)
->  rename tools/testing/selftests/kvm/{s390x => s390}/shared_zeropage_test.c (100%)
->  rename tools/testing/selftests/kvm/{s390x => s390}/sync_regs_test.c (100%)
->  rename tools/testing/selftests/kvm/{s390x => s390}/tprot.c (100%)
->  rename tools/testing/selftests/kvm/{s390x => s390}/ucontrol_test.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/amx_test.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/apic_bus_clock_test.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/cpuid_test.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/cr4_cpuid_sync_test.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/debug_regs.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/dirty_log_page_splitting_test.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/exit_on_emulation_failure_test.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/feature_msrs_test.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/fix_hypercall_test.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/flds_emulation.h (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/hwcr_msr_test.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/hyperv_clock.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/hyperv_cpuid.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/hyperv_evmcs.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/hyperv_extended_hypercalls.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/hyperv_features.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/hyperv_ipi.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/hyperv_svm_test.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/hyperv_tlb_flush.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/kvm_clock_test.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/kvm_pv_test.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/max_vcpuid_cap_test.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/monitor_mwait_test.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/nested_exceptions_test.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/nx_huge_pages_test.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/nx_huge_pages_test.sh (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/platform_info_test.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/pmu_counters_test.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/pmu_event_filter_test.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/private_mem_conversions_test.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/private_mem_kvm_exits_test.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/recalc_apic_map_test.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/set_boot_cpu_id.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/set_sregs_test.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/sev_init2_tests.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/sev_migrate_tests.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/sev_smoke_test.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/smaller_maxphyaddr_emulation_test.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/smm_test.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/state_test.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/svm_int_ctl_test.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/svm_nested_shutdown_test.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/svm_nested_soft_inject_test.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/svm_vmcall_test.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/sync_regs_test.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/triple_fault_event_test.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/tsc_msrs_test.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/tsc_scaling_sync.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/ucna_injection_test.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/userspace_io_test.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/userspace_msr_exit_test.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/vmx_apic_access_test.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/vmx_close_while_nested_test.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/vmx_dirty_log_test.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/vmx_exception_with_invalid_guest_state.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/vmx_invalid_nested_guest_state.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/vmx_msrs_test.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/vmx_nested_tsc_scaling_test.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/vmx_pmu_caps_test.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/vmx_preemption_timer_test.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/vmx_set_nested_state_test.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/vmx_tsc_adjust_test.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/xapic_ipi_test.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/xapic_state_test.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/xcr0_cpuid_test.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/xen_shinfo_test.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/xen_vmcall_test.c (100%)
->  rename tools/testing/selftests/kvm/{x86_64 => x86}/xss_msr_test.c (100%)
+>   arch/x86/kvm/Kconfig            |   6 +-
+>   arch/x86/kvm/Makefile           |   4 +-
+>   arch/x86/kvm/cpuid.c            |   9 +--
+>   arch/x86/kvm/emulate.c          |  34 ++------
+>   arch/x86/kvm/fpu.h              |   4 -
+>   arch/x86/kvm/hyperv.c           |   5 +-
+>   arch/x86/kvm/i8254.c            |   4 -
+>   arch/x86/kvm/kvm_cache_regs.h   |   2 -
+>   arch/x86/kvm/kvm_emulate.h      |   8 --
+>   arch/x86/kvm/lapic.c            |   4 -
+>   arch/x86/kvm/mmu.h              |   4 -
+>   arch/x86/kvm/mmu/mmu.c          | 134 --------------------------------
+>   arch/x86/kvm/mmu/mmu_internal.h |   9 ---
+>   arch/x86/kvm/mmu/paging_tmpl.h  |   9 ---
+>   arch/x86/kvm/mmu/spte.h         |   5 --
+>   arch/x86/kvm/mmu/tdp_mmu.h      |   4 -
+>   arch/x86/kvm/smm.c              |  19 -----
+>   arch/x86/kvm/svm/sev.c          |   2 -
+>   arch/x86/kvm/svm/svm.c          |  23 +-----
+>   arch/x86/kvm/svm/vmenter.S      |  20 -----
+>   arch/x86/kvm/trace.h            |   4 -
+>   arch/x86/kvm/vmx/main.c         |   2 -
+>   arch/x86/kvm/vmx/nested.c       |  24 +-----
+>   arch/x86/kvm/vmx/vmcs.h         |   2 -
+>   arch/x86/kvm/vmx/vmenter.S      |  25 +-----
+>   arch/x86/kvm/vmx/vmx.c          | 117 +---------------------------
+>   arch/x86/kvm/vmx/vmx.h          |  23 +-----
+>   arch/x86/kvm/vmx/vmx_ops.h      |   7 --
+>   arch/x86/kvm/vmx/x86_ops.h      |   2 -
+>   arch/x86/kvm/x86.c              |  74 ++----------------
+>   arch/x86/kvm/x86.h              |   4 -
+>   arch/x86/kvm/xen.c              |  61 ++++++---------
+>   32 files changed, 54 insertions(+), 600 deletions(-)
 > 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 21fdaa19229a..c2939c8f7ce4 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -12461,8 +12461,8 @@ F:	arch/arm64/include/asm/kvm*
->  F:	arch/arm64/include/uapi/asm/kvm*
->  F:	arch/arm64/kvm/
->  F:	include/kvm/arm_*
-> -F:	tools/testing/selftests/kvm/*/aarch64/
-> -F:	tools/testing/selftests/kvm/aarch64/
-> +F:	tools/testing/selftests/kvm/*/arm64/
-> +F:	tools/testing/selftests/kvm/arm64/
->  
->  KERNEL VIRTUAL MACHINE FOR LOONGARCH (KVM/LoongArch)
->  M:	Tianrui Zhao <zhaotianrui@loongson.cn>
-> @@ -12533,8 +12533,8 @@ F:	arch/s390/kvm/
->  F:	arch/s390/mm/gmap.c
->  F:	drivers/s390/char/uvdevice.c
->  F:	tools/testing/selftests/drivers/s390x/uvdevice/
-> -F:	tools/testing/selftests/kvm/*/s390x/
-> -F:	tools/testing/selftests/kvm/s390x/
-> +F:	tools/testing/selftests/kvm/*/s390/
-> +F:	tools/testing/selftests/kvm/s390/
->  
->  KERNEL VIRTUAL MACHINE FOR X86 (KVM/x86)
->  M:	Sean Christopherson <seanjc@google.com>
-> @@ -12551,8 +12551,8 @@ F:	arch/x86/include/uapi/asm/svm.h
->  F:	arch/x86/include/uapi/asm/vmx.h
->  F:	arch/x86/kvm/
->  F:	arch/x86/kvm/*/
-> -F:	tools/testing/selftests/kvm/*/x86_64/
-> -F:	tools/testing/selftests/kvm/x86_64/
-> +F:	tools/testing/selftests/kvm/*/x86/
-> +F:	tools/testing/selftests/kvm/x86/
->  
->  KERNFS
->  M:	Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> diff --git a/tools/testing/selftests/kvm/Makefile b/tools/testing/selftests/kvm/Makefile
-> index 7b33464bf8cc..9bc2eba1af1c 100644
-> --- a/tools/testing/selftests/kvm/Makefile
-> +++ b/tools/testing/selftests/kvm/Makefile
-> @@ -4,16 +4,12 @@ include $(top_srcdir)/scripts/subarch.include
->  ARCH            ?= $(SUBARCH)
->  
->  ifeq ($(ARCH),$(filter $(ARCH),arm64 s390 riscv x86 x86_64))
-> -ifeq ($(ARCH),x86)
-> -	ARCH_DIR := x86_64
-> -else ifeq ($(ARCH),arm64)
-> -	ARCH_DIR := aarch64
-> -else ifeq ($(ARCH),s390)
-> -	ARCH_DIR := s390x
-> +# Top-level selftests allows ARCH=x86_64 :-(
-> +ifeq ($(ARCH),x86_64)
-> +	ARCH_DIR := x86
->  else
->  	ARCH_DIR := $(ARCH)
->  endif
+> diff --git a/arch/x86/kvm/Kconfig b/arch/x86/kvm/Kconfig
+> index ea2c4f21c1ca..7bdc7639aa8d 100644
+> --- a/arch/x86/kvm/Kconfig
+> +++ b/arch/x86/kvm/Kconfig
+> @@ -7,6 +7,7 @@ source "virt/kvm/Kconfig"
+>   
+>   menuconfig VIRTUALIZATION
+>   	bool "Virtualization"
+> +	depends on X86_64
+>   	default y
+>   	help
+>   	  Say Y here to get to see options for using your Linux host to run other
+> @@ -50,7 +51,6 @@ config KVM_X86
+>   
+>   config KVM
+>   	tristate "Kernel-based Virtual Machine (KVM) support"
+> -	depends on X86_LOCAL_APIC
+>   	help
+>   	  Support hosting fully virtualized guest machines using hardware
+>   	  virtualization extensions.  You will need a fairly recent
+> @@ -82,7 +82,7 @@ config KVM_WERROR
+>   config KVM_SW_PROTECTED_VM
+>   	bool "Enable support for KVM software-protected VMs"
+>   	depends on EXPERT
+> -	depends on KVM && X86_64
+> +	depends on KVM
+>   	help
+>   	  Enable support for KVM software-protected VMs.  Currently, software-
+>   	  protected VMs are purely a development and testing vehicle for
+> @@ -141,7 +141,7 @@ config KVM_AMD
+>   config KVM_AMD_SEV
+>   	bool "AMD Secure Encrypted Virtualization (SEV) support"
+>   	default y
+> -	depends on KVM_AMD && X86_64
+> +	depends on KVM_AMD
+>   	depends on CRYPTO_DEV_SP_PSP && !(KVM_AMD=y && CRYPTO_DEV_CCP_DD=m)
+>   	select ARCH_HAS_CC_PLATFORM
+>   	select KVM_GENERIC_PRIVATE_MEM
+> diff --git a/arch/x86/kvm/Makefile b/arch/x86/kvm/Makefile
+> index f9dddb8cb466..46654dc0428f 100644
+> --- a/arch/x86/kvm/Makefile
+> +++ b/arch/x86/kvm/Makefile
+> @@ -8,9 +8,7 @@ include $(srctree)/virt/kvm/Makefile.kvm
+>   kvm-y			+= x86.o emulate.o i8259.o irq.o lapic.o \
+>   			   i8254.o ioapic.o irq_comm.o cpuid.o pmu.o mtrr.o \
+>   			   debugfs.o mmu/mmu.o mmu/page_track.o \
+> -			   mmu/spte.o
 > -
->  include Makefile.kvm
->  else
->  # Empty targets for unsupported architectures
-> diff --git a/tools/testing/selftests/kvm/Makefile.kvm b/tools/testing/selftests/kvm/Makefile.kvm
-> index e988a72f8c20..9888dd6bb483 100644
-> --- a/tools/testing/selftests/kvm/Makefile.kvm
-> +++ b/tools/testing/selftests/kvm/Makefile.kvm
-> @@ -18,177 +18,177 @@ LIBKVM += lib/userfaultfd_util.c
->  
->  LIBKVM_STRING += lib/string_override.c
->  
-> -LIBKVM_x86_64 += lib/x86_64/apic.c
-> -LIBKVM_x86_64 += lib/x86_64/handlers.S
-> -LIBKVM_x86_64 += lib/x86_64/hyperv.c
-> -LIBKVM_x86_64 += lib/x86_64/memstress.c
-> -LIBKVM_x86_64 += lib/x86_64/pmu.c
-> -LIBKVM_x86_64 += lib/x86_64/processor.c
-> -LIBKVM_x86_64 += lib/x86_64/sev.c
-> -LIBKVM_x86_64 += lib/x86_64/svm.c
-> -LIBKVM_x86_64 += lib/x86_64/ucall.c
-> -LIBKVM_x86_64 += lib/x86_64/vmx.c
-> +LIBKVM_x86 += lib/x86/apic.c
-> +LIBKVM_x86 += lib/x86/handlers.S
-> +LIBKVM_x86 += lib/x86/hyperv.c
-> +LIBKVM_x86 += lib/x86/memstress.c
-> +LIBKVM_x86 += lib/x86/pmu.c
-> +LIBKVM_x86 += lib/x86/processor.c
-> +LIBKVM_x86 += lib/x86/sev.c
-> +LIBKVM_x86 += lib/x86/svm.c
-> +LIBKVM_x86 += lib/x86/ucall.c
-> +LIBKVM_x86 += lib/x86/vmx.c
->  
-> -LIBKVM_aarch64 += lib/aarch64/gic.c
-> -LIBKVM_aarch64 += lib/aarch64/gic_v3.c
-> -LIBKVM_aarch64 += lib/aarch64/gic_v3_its.c
-> -LIBKVM_aarch64 += lib/aarch64/handlers.S
-> -LIBKVM_aarch64 += lib/aarch64/processor.c
-> -LIBKVM_aarch64 += lib/aarch64/spinlock.c
-> -LIBKVM_aarch64 += lib/aarch64/ucall.c
-> -LIBKVM_aarch64 += lib/aarch64/vgic.c
-> +LIBKVM_arm64 += lib/arm64/gic.c
-> +LIBKVM_arm64 += lib/arm64/gic_v3.c
-> +LIBKVM_arm64 += lib/arm64/gic_v3_its.c
-> +LIBKVM_arm64 += lib/arm64/handlers.S
-> +LIBKVM_arm64 += lib/arm64/processor.c
-> +LIBKVM_arm64 += lib/arm64/spinlock.c
-> +LIBKVM_arm64 += lib/arm64/ucall.c
-> +LIBKVM_arm64 += lib/arm64/vgic.c
->  
-> -LIBKVM_s390x += lib/s390x/diag318_test_handler.c
-> -LIBKVM_s390x += lib/s390x/processor.c
-> -LIBKVM_s390x += lib/s390x/ucall.c
-> -LIBKVM_s390x += lib/s390x/facility.c
-> +LIBKVM_s390 += lib/s390/diag318_test_handler.c
-> +LIBKVM_s390 += lib/s390/processor.c
-> +LIBKVM_s390 += lib/s390/ucall.c
-> +LIBKVM_s390 += lib/s390/facility.c
->  
->  LIBKVM_riscv += lib/riscv/handlers.S
->  LIBKVM_riscv += lib/riscv/processor.c
->  LIBKVM_riscv += lib/riscv/ucall.c
->  
->  # Non-compiled test targets
-> -TEST_PROGS_x86_64 += x86_64/nx_huge_pages_test.sh
-> +TEST_PROGS_x86 += x86/nx_huge_pages_test.sh
->  
->  # Compiled test targets
-> -TEST_GEN_PROGS_x86_64 = x86_64/cpuid_test
-> -TEST_GEN_PROGS_x86_64 += x86_64/cr4_cpuid_sync_test
-> -TEST_GEN_PROGS_x86_64 += x86_64/dirty_log_page_splitting_test
-> -TEST_GEN_PROGS_x86_64 += x86_64/feature_msrs_test
-> -TEST_GEN_PROGS_x86_64 += x86_64/exit_on_emulation_failure_test
-> -TEST_GEN_PROGS_x86_64 += x86_64/fix_hypercall_test
-> -TEST_GEN_PROGS_x86_64 += x86_64/hwcr_msr_test
-> -TEST_GEN_PROGS_x86_64 += x86_64/hyperv_clock
-> -TEST_GEN_PROGS_x86_64 += x86_64/hyperv_cpuid
-> -TEST_GEN_PROGS_x86_64 += x86_64/hyperv_evmcs
-> -TEST_GEN_PROGS_x86_64 += x86_64/hyperv_extended_hypercalls
-> -TEST_GEN_PROGS_x86_64 += x86_64/hyperv_features
-> -TEST_GEN_PROGS_x86_64 += x86_64/hyperv_ipi
-> -TEST_GEN_PROGS_x86_64 += x86_64/hyperv_svm_test
-> -TEST_GEN_PROGS_x86_64 += x86_64/hyperv_tlb_flush
-> -TEST_GEN_PROGS_x86_64 += x86_64/kvm_clock_test
-> -TEST_GEN_PROGS_x86_64 += x86_64/kvm_pv_test
-> -TEST_GEN_PROGS_x86_64 += x86_64/monitor_mwait_test
-> -TEST_GEN_PROGS_x86_64 += x86_64/nested_exceptions_test
-> -TEST_GEN_PROGS_x86_64 += x86_64/platform_info_test
-> -TEST_GEN_PROGS_x86_64 += x86_64/pmu_counters_test
-> -TEST_GEN_PROGS_x86_64 += x86_64/pmu_event_filter_test
-> -TEST_GEN_PROGS_x86_64 += x86_64/private_mem_conversions_test
-> -TEST_GEN_PROGS_x86_64 += x86_64/private_mem_kvm_exits_test
-> -TEST_GEN_PROGS_x86_64 += x86_64/set_boot_cpu_id
-> -TEST_GEN_PROGS_x86_64 += x86_64/set_sregs_test
-> -TEST_GEN_PROGS_x86_64 += x86_64/smaller_maxphyaddr_emulation_test
-> -TEST_GEN_PROGS_x86_64 += x86_64/smm_test
-> -TEST_GEN_PROGS_x86_64 += x86_64/state_test
-> -TEST_GEN_PROGS_x86_64 += x86_64/vmx_preemption_timer_test
-> -TEST_GEN_PROGS_x86_64 += x86_64/svm_vmcall_test
-> -TEST_GEN_PROGS_x86_64 += x86_64/svm_int_ctl_test
-> -TEST_GEN_PROGS_x86_64 += x86_64/svm_nested_shutdown_test
-> -TEST_GEN_PROGS_x86_64 += x86_64/svm_nested_soft_inject_test
-> -TEST_GEN_PROGS_x86_64 += x86_64/tsc_scaling_sync
-> -TEST_GEN_PROGS_x86_64 += x86_64/sync_regs_test
-> -TEST_GEN_PROGS_x86_64 += x86_64/ucna_injection_test
-> -TEST_GEN_PROGS_x86_64 += x86_64/userspace_io_test
-> -TEST_GEN_PROGS_x86_64 += x86_64/userspace_msr_exit_test
-> -TEST_GEN_PROGS_x86_64 += x86_64/vmx_apic_access_test
-> -TEST_GEN_PROGS_x86_64 += x86_64/vmx_close_while_nested_test
-> -TEST_GEN_PROGS_x86_64 += x86_64/vmx_dirty_log_test
-> -TEST_GEN_PROGS_x86_64 += x86_64/vmx_exception_with_invalid_guest_state
-> -TEST_GEN_PROGS_x86_64 += x86_64/vmx_msrs_test
-> -TEST_GEN_PROGS_x86_64 += x86_64/vmx_invalid_nested_guest_state
-> -TEST_GEN_PROGS_x86_64 += x86_64/vmx_set_nested_state_test
-> -TEST_GEN_PROGS_x86_64 += x86_64/vmx_tsc_adjust_test
-> -TEST_GEN_PROGS_x86_64 += x86_64/vmx_nested_tsc_scaling_test
-> -TEST_GEN_PROGS_x86_64 += x86_64/apic_bus_clock_test
-> -TEST_GEN_PROGS_x86_64 += x86_64/xapic_ipi_test
-> -TEST_GEN_PROGS_x86_64 += x86_64/xapic_state_test
-> -TEST_GEN_PROGS_x86_64 += x86_64/xcr0_cpuid_test
-> -TEST_GEN_PROGS_x86_64 += x86_64/xss_msr_test
-> -TEST_GEN_PROGS_x86_64 += x86_64/debug_regs
-> -TEST_GEN_PROGS_x86_64 += x86_64/tsc_msrs_test
-> -TEST_GEN_PROGS_x86_64 += x86_64/vmx_pmu_caps_test
-> -TEST_GEN_PROGS_x86_64 += x86_64/xen_shinfo_test
-> -TEST_GEN_PROGS_x86_64 += x86_64/xen_vmcall_test
-> -TEST_GEN_PROGS_x86_64 += x86_64/sev_init2_tests
-> -TEST_GEN_PROGS_x86_64 += x86_64/sev_migrate_tests
-> -TEST_GEN_PROGS_x86_64 += x86_64/sev_smoke_test
-> -TEST_GEN_PROGS_x86_64 += x86_64/amx_test
-> -TEST_GEN_PROGS_x86_64 += x86_64/max_vcpuid_cap_test
-> -TEST_GEN_PROGS_x86_64 += x86_64/triple_fault_event_test
-> -TEST_GEN_PROGS_x86_64 += x86_64/recalc_apic_map_test
-> -TEST_GEN_PROGS_x86_64 += access_tracking_perf_test
-> -TEST_GEN_PROGS_x86_64 += coalesced_io_test
-> -TEST_GEN_PROGS_x86_64 += demand_paging_test
-> -TEST_GEN_PROGS_x86_64 += dirty_log_test
-> -TEST_GEN_PROGS_x86_64 += dirty_log_perf_test
-> -TEST_GEN_PROGS_x86_64 += guest_memfd_test
-> -TEST_GEN_PROGS_x86_64 += guest_print_test
-> -TEST_GEN_PROGS_x86_64 += hardware_disable_test
-> -TEST_GEN_PROGS_x86_64 += kvm_create_max_vcpus
-> -TEST_GEN_PROGS_x86_64 += kvm_page_table_test
-> -TEST_GEN_PROGS_x86_64 += mmu_stress_test
-> -TEST_GEN_PROGS_x86_64 += memslot_modification_stress_test
-> -TEST_GEN_PROGS_x86_64 += memslot_perf_test
-> -TEST_GEN_PROGS_x86_64 += rseq_test
-> -TEST_GEN_PROGS_x86_64 += set_memory_region_test
-> -TEST_GEN_PROGS_x86_64 += steal_time
-> -TEST_GEN_PROGS_x86_64 += kvm_binary_stats_test
-> -TEST_GEN_PROGS_x86_64 += system_counter_offset_test
-> -TEST_GEN_PROGS_x86_64 += pre_fault_memory_test
-> +TEST_GEN_PROGS_x86 = x86/cpuid_test
-> +TEST_GEN_PROGS_x86 += x86/cr4_cpuid_sync_test
-> +TEST_GEN_PROGS_x86 += x86/dirty_log_page_splitting_test
-> +TEST_GEN_PROGS_x86 += x86/feature_msrs_test
-> +TEST_GEN_PROGS_x86 += x86/exit_on_emulation_failure_test
-> +TEST_GEN_PROGS_x86 += x86/fix_hypercall_test
-> +TEST_GEN_PROGS_x86 += x86/hwcr_msr_test
-> +TEST_GEN_PROGS_x86 += x86/hyperv_clock
-> +TEST_GEN_PROGS_x86 += x86/hyperv_cpuid
-> +TEST_GEN_PROGS_x86 += x86/hyperv_evmcs
-> +TEST_GEN_PROGS_x86 += x86/hyperv_extended_hypercalls
-> +TEST_GEN_PROGS_x86 += x86/hyperv_features
-> +TEST_GEN_PROGS_x86 += x86/hyperv_ipi
-> +TEST_GEN_PROGS_x86 += x86/hyperv_svm_test
-> +TEST_GEN_PROGS_x86 += x86/hyperv_tlb_flush
-> +TEST_GEN_PROGS_x86 += x86/kvm_clock_test
-> +TEST_GEN_PROGS_x86 += x86/kvm_pv_test
-> +TEST_GEN_PROGS_x86 += x86/monitor_mwait_test
-> +TEST_GEN_PROGS_x86 += x86/nested_exceptions_test
-> +TEST_GEN_PROGS_x86 += x86/platform_info_test
-> +TEST_GEN_PROGS_x86 += x86/pmu_counters_test
-> +TEST_GEN_PROGS_x86 += x86/pmu_event_filter_test
-> +TEST_GEN_PROGS_x86 += x86/private_mem_conversions_test
-> +TEST_GEN_PROGS_x86 += x86/private_mem_kvm_exits_test
-> +TEST_GEN_PROGS_x86 += x86/set_boot_cpu_id
-> +TEST_GEN_PROGS_x86 += x86/set_sregs_test
-> +TEST_GEN_PROGS_x86 += x86/smaller_maxphyaddr_emulation_test
-> +TEST_GEN_PROGS_x86 += x86/smm_test
-> +TEST_GEN_PROGS_x86 += x86/state_test
-> +TEST_GEN_PROGS_x86 += x86/vmx_preemption_timer_test
-> +TEST_GEN_PROGS_x86 += x86/svm_vmcall_test
-> +TEST_GEN_PROGS_x86 += x86/svm_int_ctl_test
-> +TEST_GEN_PROGS_x86 += x86/svm_nested_shutdown_test
-> +TEST_GEN_PROGS_x86 += x86/svm_nested_soft_inject_test
-> +TEST_GEN_PROGS_x86 += x86/tsc_scaling_sync
-> +TEST_GEN_PROGS_x86 += x86/sync_regs_test
-> +TEST_GEN_PROGS_x86 += x86/ucna_injection_test
-> +TEST_GEN_PROGS_x86 += x86/userspace_io_test
-> +TEST_GEN_PROGS_x86 += x86/userspace_msr_exit_test
-> +TEST_GEN_PROGS_x86 += x86/vmx_apic_access_test
-> +TEST_GEN_PROGS_x86 += x86/vmx_close_while_nested_test
-> +TEST_GEN_PROGS_x86 += x86/vmx_dirty_log_test
-> +TEST_GEN_PROGS_x86 += x86/vmx_exception_with_invalid_guest_state
-> +TEST_GEN_PROGS_x86 += x86/vmx_msrs_test
-> +TEST_GEN_PROGS_x86 += x86/vmx_invalid_nested_guest_state
-> +TEST_GEN_PROGS_x86 += x86/vmx_set_nested_state_test
-> +TEST_GEN_PROGS_x86 += x86/vmx_tsc_adjust_test
-> +TEST_GEN_PROGS_x86 += x86/vmx_nested_tsc_scaling_test
-> +TEST_GEN_PROGS_x86 += x86/apic_bus_clock_test
-> +TEST_GEN_PROGS_x86 += x86/xapic_ipi_test
-> +TEST_GEN_PROGS_x86 += x86/xapic_state_test
-> +TEST_GEN_PROGS_x86 += x86/xcr0_cpuid_test
-> +TEST_GEN_PROGS_x86 += x86/xss_msr_test
-> +TEST_GEN_PROGS_x86 += x86/debug_regs
-> +TEST_GEN_PROGS_x86 += x86/tsc_msrs_test
-> +TEST_GEN_PROGS_x86 += x86/vmx_pmu_caps_test
-> +TEST_GEN_PROGS_x86 += x86/xen_shinfo_test
-> +TEST_GEN_PROGS_x86 += x86/xen_vmcall_test
-> +TEST_GEN_PROGS_x86 += x86/sev_init2_tests
-> +TEST_GEN_PROGS_x86 += x86/sev_migrate_tests
-> +TEST_GEN_PROGS_x86 += x86/sev_smoke_test
-> +TEST_GEN_PROGS_x86 += x86/amx_test
-> +TEST_GEN_PROGS_x86 += x86/max_vcpuid_cap_test
-> +TEST_GEN_PROGS_x86 += x86/triple_fault_event_test
-> +TEST_GEN_PROGS_x86 += x86/recalc_apic_map_test
-> +TEST_GEN_PROGS_x86 += access_tracking_perf_test
-> +TEST_GEN_PROGS_x86 += coalesced_io_test
-> +TEST_GEN_PROGS_x86 += demand_paging_test
-> +TEST_GEN_PROGS_x86 += dirty_log_test
-> +TEST_GEN_PROGS_x86 += dirty_log_perf_test
-> +TEST_GEN_PROGS_x86 += guest_memfd_test
-> +TEST_GEN_PROGS_x86 += guest_print_test
-> +TEST_GEN_PROGS_x86 += hardware_disable_test
-> +TEST_GEN_PROGS_x86 += kvm_create_max_vcpus
-> +TEST_GEN_PROGS_x86 += kvm_page_table_test
-> +TEST_GEN_PROGS_x86 += memslot_modification_stress_test
-> +TEST_GEN_PROGS_x86 += memslot_perf_test
-> +TEST_GEN_PROGS_x86 += mmu_stress_test
-> +TEST_GEN_PROGS_x86 += rseq_test
-> +TEST_GEN_PROGS_x86 += set_memory_region_test
-> +TEST_GEN_PROGS_x86 += steal_time
-> +TEST_GEN_PROGS_x86 += kvm_binary_stats_test
-> +TEST_GEN_PROGS_x86 += system_counter_offset_test
-> +TEST_GEN_PROGS_x86 += pre_fault_memory_test
->  
->  # Compiled outputs used by test targets
-> -TEST_GEN_PROGS_EXTENDED_x86_64 += x86_64/nx_huge_pages_test
-> +TEST_GEN_PROGS_EXTENDED_x86 += x86/nx_huge_pages_test
->  
-> -TEST_GEN_PROGS_aarch64 += aarch64/aarch32_id_regs
-> -TEST_GEN_PROGS_aarch64 += aarch64/arch_timer_edge_cases
-> -TEST_GEN_PROGS_aarch64 += aarch64/debug-exceptions
-> -TEST_GEN_PROGS_aarch64 += aarch64/hypercalls
-> -TEST_GEN_PROGS_aarch64 += aarch64/mmio_abort
-> -TEST_GEN_PROGS_aarch64 += aarch64/page_fault_test
-> -TEST_GEN_PROGS_aarch64 += aarch64/psci_test
-> -TEST_GEN_PROGS_aarch64 += aarch64/set_id_regs
-> -TEST_GEN_PROGS_aarch64 += aarch64/smccc_filter
-> -TEST_GEN_PROGS_aarch64 += aarch64/vcpu_width_config
-> -TEST_GEN_PROGS_aarch64 += aarch64/vgic_init
-> -TEST_GEN_PROGS_aarch64 += aarch64/vgic_irq
-> -TEST_GEN_PROGS_aarch64 += aarch64/vgic_lpi_stress
-> -TEST_GEN_PROGS_aarch64 += aarch64/vpmu_counter_access
-> -TEST_GEN_PROGS_aarch64 += aarch64/no-vgic-v3
-> -TEST_GEN_PROGS_aarch64 += access_tracking_perf_test
-> -TEST_GEN_PROGS_aarch64 += arch_timer
-> -TEST_GEN_PROGS_aarch64 += coalesced_io_test
-> -TEST_GEN_PROGS_aarch64 += demand_paging_test
-> -TEST_GEN_PROGS_aarch64 += dirty_log_test
-> -TEST_GEN_PROGS_aarch64 += dirty_log_perf_test
-> -TEST_GEN_PROGS_aarch64 += guest_print_test
-> -TEST_GEN_PROGS_aarch64 += get-reg-list
-> -TEST_GEN_PROGS_aarch64 += kvm_create_max_vcpus
-> -TEST_GEN_PROGS_aarch64 += kvm_page_table_test
-> -TEST_GEN_PROGS_aarch64 += memslot_modification_stress_test
-> -TEST_GEN_PROGS_aarch64 += memslot_perf_test
-> -TEST_GEN_PROGS_aarch64 += mmu_stress_test
-> -TEST_GEN_PROGS_aarch64 += rseq_test
-> -TEST_GEN_PROGS_aarch64 += set_memory_region_test
-> -TEST_GEN_PROGS_aarch64 += steal_time
-> -TEST_GEN_PROGS_aarch64 += kvm_binary_stats_test
-> +TEST_GEN_PROGS_arm64 += arm64/aarch32_id_regs
-> +TEST_GEN_PROGS_arm64 += arm64/arch_timer_edge_cases
-> +TEST_GEN_PROGS_arm64 += arm64/debug-exceptions
-> +TEST_GEN_PROGS_arm64 += arm64/hypercalls
-> +TEST_GEN_PROGS_arm64 += arm64/mmio_abort
-> +TEST_GEN_PROGS_arm64 += arm64/page_fault_test
-> +TEST_GEN_PROGS_arm64 += arm64/psci_test
-> +TEST_GEN_PROGS_arm64 += arm64/set_id_regs
-> +TEST_GEN_PROGS_arm64 += arm64/smccc_filter
-> +TEST_GEN_PROGS_arm64 += arm64/vcpu_width_config
-> +TEST_GEN_PROGS_arm64 += arm64/vgic_init
-> +TEST_GEN_PROGS_arm64 += arm64/vgic_irq
-> +TEST_GEN_PROGS_arm64 += arm64/vgic_lpi_stress
-> +TEST_GEN_PROGS_arm64 += arm64/vpmu_counter_access
-> +TEST_GEN_PROGS_arm64 += arm64/no-vgic-v3
-> +TEST_GEN_PROGS_arm64 += access_tracking_perf_test
-> +TEST_GEN_PROGS_arm64 += arch_timer
-> +TEST_GEN_PROGS_arm64 += coalesced_io_test
-> +TEST_GEN_PROGS_arm64 += demand_paging_test
-> +TEST_GEN_PROGS_arm64 += dirty_log_test
-> +TEST_GEN_PROGS_arm64 += dirty_log_perf_test
-> +TEST_GEN_PROGS_arm64 += guest_print_test
-> +TEST_GEN_PROGS_arm64 += get-reg-list
-> +TEST_GEN_PROGS_arm64 += kvm_create_max_vcpus
-> +TEST_GEN_PROGS_arm64 += kvm_page_table_test
-> +TEST_GEN_PROGS_arm64 += memslot_modification_stress_test
-> +TEST_GEN_PROGS_arm64 += memslot_perf_test
-> +TEST_GEN_PROGS_arm64 += mmu_stress_test
-> +TEST_GEN_PROGS_arm64 += rseq_test
-> +TEST_GEN_PROGS_arm64 += set_memory_region_test
-> +TEST_GEN_PROGS_arm64 += steal_time
-> +TEST_GEN_PROGS_arm64 += kvm_binary_stats_test
->  
-> -TEST_GEN_PROGS_s390x = s390x/memop
-> -TEST_GEN_PROGS_s390x += s390x/resets
-> -TEST_GEN_PROGS_s390x += s390x/sync_regs_test
-> -TEST_GEN_PROGS_s390x += s390x/tprot
-> -TEST_GEN_PROGS_s390x += s390x/cmma_test
-> -TEST_GEN_PROGS_s390x += s390x/debug_test
-> -TEST_GEN_PROGS_s390x += s390x/cpumodel_subfuncs_test
-> -TEST_GEN_PROGS_s390x += s390x/shared_zeropage_test
-> -TEST_GEN_PROGS_s390x += s390x/ucontrol_test
-> -TEST_GEN_PROGS_s390x += demand_paging_test
-> -TEST_GEN_PROGS_s390x += dirty_log_test
-> -TEST_GEN_PROGS_s390x += guest_print_test
-> -TEST_GEN_PROGS_s390x += kvm_create_max_vcpus
-> -TEST_GEN_PROGS_s390x += kvm_page_table_test
-> -TEST_GEN_PROGS_s390x += rseq_test
-> -TEST_GEN_PROGS_s390x += set_memory_region_test
-> -TEST_GEN_PROGS_s390x += kvm_binary_stats_test
-> +TEST_GEN_PROGS_s390 = s390/memop
-> +TEST_GEN_PROGS_s390 += s390/resets
-> +TEST_GEN_PROGS_s390 += s390/sync_regs_test
-> +TEST_GEN_PROGS_s390 += s390/tprot
-> +TEST_GEN_PROGS_s390 += s390/cmma_test
-> +TEST_GEN_PROGS_s390 += s390/debug_test
-> +TEST_GEN_PROGS_s390 += s390/cpumodel_subfuncs_test
-> +TEST_GEN_PROGS_s390 += s390/shared_zeropage_test
-> +TEST_GEN_PROGS_s390 += s390/ucontrol_test
-> +TEST_GEN_PROGS_s390 += demand_paging_test
-> +TEST_GEN_PROGS_s390 += dirty_log_test
-> +TEST_GEN_PROGS_s390 += guest_print_test
-> +TEST_GEN_PROGS_s390 += kvm_create_max_vcpus
-> +TEST_GEN_PROGS_s390 += kvm_page_table_test
-> +TEST_GEN_PROGS_s390 += rseq_test
-> +TEST_GEN_PROGS_s390 += set_memory_region_test
-> +TEST_GEN_PROGS_s390 += kvm_binary_stats_test
->  
->  TEST_GEN_PROGS_riscv += riscv/sbi_pmu_test
->  TEST_GEN_PROGS_riscv += riscv/ebreak_test
-> @@ -222,11 +222,7 @@ include ../lib.mk
->  INSTALL_HDR_PATH = $(top_srcdir)/usr
->  LINUX_HDR_PATH = $(INSTALL_HDR_PATH)/include/
->  LINUX_TOOL_INCLUDE = $(top_srcdir)/tools/include
-> -ifeq ($(ARCH),x86_64)
-> -LINUX_TOOL_ARCH_INCLUDE = $(top_srcdir)/tools/arch/x86/include
-> -else
-> -LINUX_TOOL_ARCH_INCLUDE = $(top_srcdir)/tools/arch/$(ARCH)/include
-> -endif
-> +LINUX_TOOL_ARCH_INCLUDE = $(top_srcdir)/tools/arch/$(ARCH_DIR)/include
->  CFLAGS += -Wall -Wstrict-prototypes -Wuninitialized -O2 -g -std=gnu99 \
->  	-Wno-gnu-variable-sized-type-not-at-end -MD -MP -DCONFIG_64BIT \
->  	-fno-builtin-memcmp -fno-builtin-memcpy \
-> diff --git a/tools/testing/selftests/kvm/aarch64/aarch32_id_regs.c b/tools/testing/selftests/kvm/arm64/aarch32_id_regs.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/aarch64/aarch32_id_regs.c
-> rename to tools/testing/selftests/kvm/arm64/aarch32_id_regs.c
-> diff --git a/tools/testing/selftests/kvm/aarch64/arch_timer.c b/tools/testing/selftests/kvm/arm64/arch_timer.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/aarch64/arch_timer.c
-> rename to tools/testing/selftests/kvm/arm64/arch_timer.c
-> diff --git a/tools/testing/selftests/kvm/aarch64/arch_timer_edge_cases.c b/tools/testing/selftests/kvm/arm64/arch_timer_edge_cases.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/aarch64/arch_timer_edge_cases.c
-> rename to tools/testing/selftests/kvm/arm64/arch_timer_edge_cases.c
-> diff --git a/tools/testing/selftests/kvm/aarch64/debug-exceptions.c b/tools/testing/selftests/kvm/arm64/debug-exceptions.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/aarch64/debug-exceptions.c
-> rename to tools/testing/selftests/kvm/arm64/debug-exceptions.c
-> diff --git a/tools/testing/selftests/kvm/aarch64/get-reg-list.c b/tools/testing/selftests/kvm/arm64/get-reg-list.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/aarch64/get-reg-list.c
-> rename to tools/testing/selftests/kvm/arm64/get-reg-list.c
-> diff --git a/tools/testing/selftests/kvm/aarch64/hypercalls.c b/tools/testing/selftests/kvm/arm64/hypercalls.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/aarch64/hypercalls.c
-> rename to tools/testing/selftests/kvm/arm64/hypercalls.c
-> diff --git a/tools/testing/selftests/kvm/aarch64/mmio_abort.c b/tools/testing/selftests/kvm/arm64/mmio_abort.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/aarch64/mmio_abort.c
-> rename to tools/testing/selftests/kvm/arm64/mmio_abort.c
-> diff --git a/tools/testing/selftests/kvm/aarch64/no-vgic-v3.c b/tools/testing/selftests/kvm/arm64/no-vgic-v3.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/aarch64/no-vgic-v3.c
-> rename to tools/testing/selftests/kvm/arm64/no-vgic-v3.c
-> diff --git a/tools/testing/selftests/kvm/aarch64/page_fault_test.c b/tools/testing/selftests/kvm/arm64/page_fault_test.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/aarch64/page_fault_test.c
-> rename to tools/testing/selftests/kvm/arm64/page_fault_test.c
-> diff --git a/tools/testing/selftests/kvm/aarch64/psci_test.c b/tools/testing/selftests/kvm/arm64/psci_test.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/aarch64/psci_test.c
-> rename to tools/testing/selftests/kvm/arm64/psci_test.c
-> diff --git a/tools/testing/selftests/kvm/aarch64/set_id_regs.c b/tools/testing/selftests/kvm/arm64/set_id_regs.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/aarch64/set_id_regs.c
-> rename to tools/testing/selftests/kvm/arm64/set_id_regs.c
-> diff --git a/tools/testing/selftests/kvm/aarch64/smccc_filter.c b/tools/testing/selftests/kvm/arm64/smccc_filter.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/aarch64/smccc_filter.c
-> rename to tools/testing/selftests/kvm/arm64/smccc_filter.c
-> diff --git a/tools/testing/selftests/kvm/aarch64/vcpu_width_config.c b/tools/testing/selftests/kvm/arm64/vcpu_width_config.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/aarch64/vcpu_width_config.c
-> rename to tools/testing/selftests/kvm/arm64/vcpu_width_config.c
-> diff --git a/tools/testing/selftests/kvm/aarch64/vgic_init.c b/tools/testing/selftests/kvm/arm64/vgic_init.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/aarch64/vgic_init.c
-> rename to tools/testing/selftests/kvm/arm64/vgic_init.c
-> diff --git a/tools/testing/selftests/kvm/aarch64/vgic_irq.c b/tools/testing/selftests/kvm/arm64/vgic_irq.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/aarch64/vgic_irq.c
-> rename to tools/testing/selftests/kvm/arm64/vgic_irq.c
-> diff --git a/tools/testing/selftests/kvm/aarch64/vgic_lpi_stress.c b/tools/testing/selftests/kvm/arm64/vgic_lpi_stress.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/aarch64/vgic_lpi_stress.c
-> rename to tools/testing/selftests/kvm/arm64/vgic_lpi_stress.c
-> diff --git a/tools/testing/selftests/kvm/aarch64/vpmu_counter_access.c b/tools/testing/selftests/kvm/arm64/vpmu_counter_access.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/aarch64/vpmu_counter_access.c
-> rename to tools/testing/selftests/kvm/arm64/vpmu_counter_access.c
-> diff --git a/tools/testing/selftests/kvm/dirty_log_perf_test.c b/tools/testing/selftests/kvm/dirty_log_perf_test.c
-> index 9f24303acb8c..e79817bd0e29 100644
-> --- a/tools/testing/selftests/kvm/dirty_log_perf_test.c
-> +++ b/tools/testing/selftests/kvm/dirty_log_perf_test.c
-> @@ -21,7 +21,7 @@
->  #include "ucall_common.h"
->  
->  #ifdef __aarch64__
-> -#include "aarch64/vgic.h"
-> +#include "arm64/vgic.h"
->  
->  static int gic_fd;
->  
-> diff --git a/tools/testing/selftests/kvm/include/aarch64/arch_timer.h b/tools/testing/selftests/kvm/include/arm64/arch_timer.h
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/include/aarch64/arch_timer.h
-> rename to tools/testing/selftests/kvm/include/arm64/arch_timer.h
-> diff --git a/tools/testing/selftests/kvm/include/aarch64/delay.h b/tools/testing/selftests/kvm/include/arm64/delay.h
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/include/aarch64/delay.h
-> rename to tools/testing/selftests/kvm/include/arm64/delay.h
-> diff --git a/tools/testing/selftests/kvm/include/aarch64/gic.h b/tools/testing/selftests/kvm/include/arm64/gic.h
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/include/aarch64/gic.h
-> rename to tools/testing/selftests/kvm/include/arm64/gic.h
-> diff --git a/tools/testing/selftests/kvm/include/aarch64/gic_v3.h b/tools/testing/selftests/kvm/include/arm64/gic_v3.h
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/include/aarch64/gic_v3.h
-> rename to tools/testing/selftests/kvm/include/arm64/gic_v3.h
-> diff --git a/tools/testing/selftests/kvm/include/aarch64/gic_v3_its.h b/tools/testing/selftests/kvm/include/arm64/gic_v3_its.h
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/include/aarch64/gic_v3_its.h
-> rename to tools/testing/selftests/kvm/include/arm64/gic_v3_its.h
-> diff --git a/tools/testing/selftests/kvm/include/aarch64/kvm_util_arch.h b/tools/testing/selftests/kvm/include/arm64/kvm_util_arch.h
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/include/aarch64/kvm_util_arch.h
-> rename to tools/testing/selftests/kvm/include/arm64/kvm_util_arch.h
-> diff --git a/tools/testing/selftests/kvm/include/aarch64/processor.h b/tools/testing/selftests/kvm/include/arm64/processor.h
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/include/aarch64/processor.h
-> rename to tools/testing/selftests/kvm/include/arm64/processor.h
-> diff --git a/tools/testing/selftests/kvm/include/aarch64/spinlock.h b/tools/testing/selftests/kvm/include/arm64/spinlock.h
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/include/aarch64/spinlock.h
-> rename to tools/testing/selftests/kvm/include/arm64/spinlock.h
-> diff --git a/tools/testing/selftests/kvm/include/aarch64/ucall.h b/tools/testing/selftests/kvm/include/arm64/ucall.h
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/include/aarch64/ucall.h
-> rename to tools/testing/selftests/kvm/include/arm64/ucall.h
-> diff --git a/tools/testing/selftests/kvm/include/aarch64/vgic.h b/tools/testing/selftests/kvm/include/arm64/vgic.h
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/include/aarch64/vgic.h
-> rename to tools/testing/selftests/kvm/include/arm64/vgic.h
-> diff --git a/tools/testing/selftests/kvm/include/s390x/debug_print.h b/tools/testing/selftests/kvm/include/s390/debug_print.h
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/include/s390x/debug_print.h
-> rename to tools/testing/selftests/kvm/include/s390/debug_print.h
-> diff --git a/tools/testing/selftests/kvm/include/s390x/diag318_test_handler.h b/tools/testing/selftests/kvm/include/s390/diag318_test_handler.h
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/include/s390x/diag318_test_handler.h
-> rename to tools/testing/selftests/kvm/include/s390/diag318_test_handler.h
-> diff --git a/tools/testing/selftests/kvm/include/s390x/facility.h b/tools/testing/selftests/kvm/include/s390/facility.h
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/include/s390x/facility.h
-> rename to tools/testing/selftests/kvm/include/s390/facility.h
-> diff --git a/tools/testing/selftests/kvm/include/s390x/kvm_util_arch.h b/tools/testing/selftests/kvm/include/s390/kvm_util_arch.h
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/include/s390x/kvm_util_arch.h
-> rename to tools/testing/selftests/kvm/include/s390/kvm_util_arch.h
-> diff --git a/tools/testing/selftests/kvm/include/s390x/processor.h b/tools/testing/selftests/kvm/include/s390/processor.h
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/include/s390x/processor.h
-> rename to tools/testing/selftests/kvm/include/s390/processor.h
-> diff --git a/tools/testing/selftests/kvm/include/s390x/sie.h b/tools/testing/selftests/kvm/include/s390/sie.h
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/include/s390x/sie.h
-> rename to tools/testing/selftests/kvm/include/s390/sie.h
-> diff --git a/tools/testing/selftests/kvm/include/s390x/ucall.h b/tools/testing/selftests/kvm/include/s390/ucall.h
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/include/s390x/ucall.h
-> rename to tools/testing/selftests/kvm/include/s390/ucall.h
-> diff --git a/tools/testing/selftests/kvm/include/x86_64/apic.h b/tools/testing/selftests/kvm/include/x86/apic.h
-> similarity index 98%
-> rename from tools/testing/selftests/kvm/include/x86_64/apic.h
-> rename to tools/testing/selftests/kvm/include/x86/apic.h
-> index 51990094effd..80fe9f69b38d 100644
-> --- a/tools/testing/selftests/kvm/include/x86_64/apic.h
-> +++ b/tools/testing/selftests/kvm/include/x86/apic.h
-> @@ -1,7 +1,5 @@
->  /* SPDX-License-Identifier: GPL-2.0-only */
->  /*
-> - * tools/testing/selftests/kvm/include/x86_64/apic.h
-> - *
->   * Copyright (C) 2021, Google LLC.
->   */
->  
-> diff --git a/tools/testing/selftests/kvm/include/x86_64/evmcs.h b/tools/testing/selftests/kvm/include/x86/evmcs.h
-> similarity index 99%
-> rename from tools/testing/selftests/kvm/include/x86_64/evmcs.h
-> rename to tools/testing/selftests/kvm/include/x86/evmcs.h
-> index 901caf0e0939..5a74bb30e2f8 100644
-> --- a/tools/testing/selftests/kvm/include/x86_64/evmcs.h
-> +++ b/tools/testing/selftests/kvm/include/x86/evmcs.h
-> @@ -1,9 +1,6 @@
->  /* SPDX-License-Identifier: GPL-2.0 */
->  /*
-> - * tools/testing/selftests/kvm/include/x86_64/evmcs.h
-> - *
->   * Copyright (C) 2018, Red Hat, Inc.
-> - *
->   */
->  
->  #ifndef SELFTEST_KVM_EVMCS_H
-> diff --git a/tools/testing/selftests/kvm/include/x86_64/hyperv.h b/tools/testing/selftests/kvm/include/x86/hyperv.h
-> similarity index 99%
-> rename from tools/testing/selftests/kvm/include/x86_64/hyperv.h
-> rename to tools/testing/selftests/kvm/include/x86/hyperv.h
-> index 6849e2552f1b..f13e532be240 100644
-> --- a/tools/testing/selftests/kvm/include/x86_64/hyperv.h
-> +++ b/tools/testing/selftests/kvm/include/x86/hyperv.h
-> @@ -1,9 +1,6 @@
->  /* SPDX-License-Identifier: GPL-2.0 */
->  /*
-> - * tools/testing/selftests/kvm/include/x86_64/hyperv.h
-> - *
->   * Copyright (C) 2021, Red Hat, Inc.
-> - *
->   */
->  
->  #ifndef SELFTEST_KVM_HYPERV_H
-> diff --git a/tools/testing/selftests/kvm/include/x86_64/kvm_util_arch.h b/tools/testing/selftests/kvm/include/x86/kvm_util_arch.h
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/include/x86_64/kvm_util_arch.h
-> rename to tools/testing/selftests/kvm/include/x86/kvm_util_arch.h
-> diff --git a/tools/testing/selftests/kvm/include/x86_64/mce.h b/tools/testing/selftests/kvm/include/x86/mce.h
-> similarity index 94%
-> rename from tools/testing/selftests/kvm/include/x86_64/mce.h
-> rename to tools/testing/selftests/kvm/include/x86/mce.h
-> index 6119321f3f5d..295f2d554754 100644
-> --- a/tools/testing/selftests/kvm/include/x86_64/mce.h
-> +++ b/tools/testing/selftests/kvm/include/x86/mce.h
-> @@ -1,7 +1,5 @@
->  /* SPDX-License-Identifier: GPL-2.0-only */
->  /*
-> - * tools/testing/selftests/kvm/include/x86_64/mce.h
-> - *
->   * Copyright (C) 2022, Google LLC.
->   */
->  
-> diff --git a/tools/testing/selftests/kvm/include/x86_64/pmu.h b/tools/testing/selftests/kvm/include/x86/pmu.h
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/include/x86_64/pmu.h
-> rename to tools/testing/selftests/kvm/include/x86/pmu.h
-> diff --git a/tools/testing/selftests/kvm/include/x86_64/processor.h b/tools/testing/selftests/kvm/include/x86/processor.h
-> similarity index 99%
-> rename from tools/testing/selftests/kvm/include/x86_64/processor.h
-> rename to tools/testing/selftests/kvm/include/x86/processor.h
-> index 645200e95f89..9ec984cf8674 100644
-> --- a/tools/testing/selftests/kvm/include/x86_64/processor.h
-> +++ b/tools/testing/selftests/kvm/include/x86/processor.h
-> @@ -1,7 +1,5 @@
->  /* SPDX-License-Identifier: GPL-2.0-only */
->  /*
-> - * tools/testing/selftests/kvm/include/x86_64/processor.h
-> - *
->   * Copyright (C) 2018, Google LLC.
->   */
->  
-> diff --git a/tools/testing/selftests/kvm/include/x86_64/sev.h b/tools/testing/selftests/kvm/include/x86/sev.h
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/include/x86_64/sev.h
-> rename to tools/testing/selftests/kvm/include/x86/sev.h
-> diff --git a/tools/testing/selftests/kvm/include/x86_64/svm.h b/tools/testing/selftests/kvm/include/x86/svm.h
-> similarity index 98%
-> rename from tools/testing/selftests/kvm/include/x86_64/svm.h
-> rename to tools/testing/selftests/kvm/include/x86/svm.h
-> index 4803e1056055..29cffd0a9181 100644
-> --- a/tools/testing/selftests/kvm/include/x86_64/svm.h
-> +++ b/tools/testing/selftests/kvm/include/x86/svm.h
-> @@ -1,10 +1,4 @@
->  /* SPDX-License-Identifier: GPL-2.0 */
+> -kvm-$(CONFIG_X86_64) += mmu/tdp_iter.o mmu/tdp_mmu.o
+> +			   mmu/spte.o mmu/tdp_iter.o mmu/tdp_mmu.o
+>   kvm-$(CONFIG_KVM_HYPERV) += hyperv.o
+>   kvm-$(CONFIG_KVM_XEN)	+= xen.o
+>   kvm-$(CONFIG_KVM_SMM)	+= smm.o
+> diff --git a/arch/x86/kvm/cpuid.c b/arch/x86/kvm/cpuid.c
+> index 097bdc022d0f..d34b6e276ba1 100644
+> --- a/arch/x86/kvm/cpuid.c
+> +++ b/arch/x86/kvm/cpuid.c
+> @@ -606,15 +606,10 @@ static __always_inline void kvm_cpu_cap_mask(enum cpuid_leafs leaf, u32 mask)
+>   
+>   void kvm_set_cpu_caps(void)
+>   {
+> -#ifdef CONFIG_X86_64
+>   	unsigned int f_gbpages = F(GBPAGES);
+>   	unsigned int f_lm = F(LM);
+>   	unsigned int f_xfd = F(XFD);
+> -#else
+> -	unsigned int f_gbpages = 0;
+> -	unsigned int f_lm = 0;
+> -	unsigned int f_xfd = 0;
+> -#endif
+> +
+>   	memset(kvm_cpu_caps, 0, sizeof(kvm_cpu_caps));
+>   
+>   	BUILD_BUG_ON(sizeof(kvm_cpu_caps) - (NKVMCAPINTS * sizeof(*kvm_cpu_caps)) >
+> @@ -746,7 +741,7 @@ void kvm_set_cpu_caps(void)
+>   		0 /* Reserved */ | f_lm | F(3DNOWEXT) | F(3DNOW)
+>   	);
+>   
+> -	if (!tdp_enabled && IS_ENABLED(CONFIG_X86_64))
+> +	if (!tdp_enabled)
+>   		kvm_cpu_cap_set(X86_FEATURE_GBPAGES);
+>   
+>   	kvm_cpu_cap_init_kvm_defined(CPUID_8000_0007_EDX,
+> diff --git a/arch/x86/kvm/emulate.c b/arch/x86/kvm/emulate.c
+> index 60986f67c35a..ebac76a10fbd 100644
+> --- a/arch/x86/kvm/emulate.c
+> +++ b/arch/x86/kvm/emulate.c
+> @@ -265,12 +265,6 @@ static void invalidate_registers(struct x86_emulate_ctxt *ctxt)
+>   #define EFLAGS_MASK (X86_EFLAGS_OF|X86_EFLAGS_SF|X86_EFLAGS_ZF|X86_EFLAGS_AF|\
+>   		     X86_EFLAGS_PF|X86_EFLAGS_CF)
+>   
+> -#ifdef CONFIG_X86_64
+> -#define ON64(x) x
+> -#else
+> -#define ON64(x)
+> -#endif
+> -
+>   /*
+>    * fastop functions have a special calling convention:
+>    *
+> @@ -341,7 +335,7 @@ static int fastop(struct x86_emulate_ctxt *ctxt, fastop_t fop);
+>   	FOP1E(op##b, al) \
+>   	FOP1E(op##w, ax) \
+>   	FOP1E(op##l, eax) \
+> -	ON64(FOP1E(op##q, rax))	\
+> +	FOP1E(op##q, rax) \
+>   	FOP_END
+>   
+>   /* 1-operand, using src2 (for MUL/DIV r/m) */
+> @@ -350,7 +344,7 @@ static int fastop(struct x86_emulate_ctxt *ctxt, fastop_t fop);
+>   	FOP1E(op, cl) \
+>   	FOP1E(op, cx) \
+>   	FOP1E(op, ecx) \
+> -	ON64(FOP1E(op, rcx)) \
+> +	FOP1E(op, rcx) \
+>   	FOP_END
+>   
+>   /* 1-operand, using src2 (for MUL/DIV r/m), with exceptions */
+> @@ -359,7 +353,7 @@ static int fastop(struct x86_emulate_ctxt *ctxt, fastop_t fop);
+>   	FOP1EEX(op, cl) \
+>   	FOP1EEX(op, cx) \
+>   	FOP1EEX(op, ecx) \
+> -	ON64(FOP1EEX(op, rcx)) \
+> +	FOP1EEX(op, rcx) \
+>   	FOP_END
+>   
+>   #define FOP2E(op,  dst, src)	   \
+> @@ -372,7 +366,7 @@ static int fastop(struct x86_emulate_ctxt *ctxt, fastop_t fop);
+>   	FOP2E(op##b, al, dl) \
+>   	FOP2E(op##w, ax, dx) \
+>   	FOP2E(op##l, eax, edx) \
+> -	ON64(FOP2E(op##q, rax, rdx)) \
+> +	FOP2E(op##q, rax, rdx) \
+>   	FOP_END
+>   
+>   /* 2 operand, word only */
+> @@ -381,7 +375,7 @@ static int fastop(struct x86_emulate_ctxt *ctxt, fastop_t fop);
+>   	FOPNOP() \
+>   	FOP2E(op##w, ax, dx) \
+>   	FOP2E(op##l, eax, edx) \
+> -	ON64(FOP2E(op##q, rax, rdx)) \
+> +	FOP2E(op##q, rax, rdx) \
+>   	FOP_END
+>   
+>   /* 2 operand, src is CL */
+> @@ -390,7 +384,7 @@ static int fastop(struct x86_emulate_ctxt *ctxt, fastop_t fop);
+>   	FOP2E(op##b, al, cl) \
+>   	FOP2E(op##w, ax, cl) \
+>   	FOP2E(op##l, eax, cl) \
+> -	ON64(FOP2E(op##q, rax, cl)) \
+> +	FOP2E(op##q, rax, cl) \
+>   	FOP_END
+>   
+>   /* 2 operand, src and dest are reversed */
+> @@ -399,7 +393,7 @@ static int fastop(struct x86_emulate_ctxt *ctxt, fastop_t fop);
+>   	FOP2E(op##b, dl, al) \
+>   	FOP2E(op##w, dx, ax) \
+>   	FOP2E(op##l, edx, eax) \
+> -	ON64(FOP2E(op##q, rdx, rax)) \
+> +	FOP2E(op##q, rdx, rax) \
+>   	FOP_END
+>   
+>   #define FOP3E(op,  dst, src, src2) \
+> @@ -413,7 +407,7 @@ static int fastop(struct x86_emulate_ctxt *ctxt, fastop_t fop);
+>   	FOPNOP() \
+>   	FOP3E(op##w, ax, dx, cl) \
+>   	FOP3E(op##l, eax, edx, cl) \
+> -	ON64(FOP3E(op##q, rax, rdx, cl)) \
+> +	FOP3E(op##q, rax, rdx, cl) \
+>   	FOP_END
+>   
+>   /* Special case for SETcc - 1 instruction per cc */
+> @@ -1508,7 +1502,6 @@ static int get_descriptor_ptr(struct x86_emulate_ctxt *ctxt,
+>   
+>   	addr = dt.address + index * 8;
+>   
+> -#ifdef CONFIG_X86_64
+>   	if (addr >> 32 != 0) {
+>   		u64 efer = 0;
+>   
+> @@ -1516,7 +1509,6 @@ static int get_descriptor_ptr(struct x86_emulate_ctxt *ctxt,
+>   		if (!(efer & EFER_LMA))
+>   			addr &= (u32)-1;
+>   	}
+> -#endif
+>   
+>   	*desc_addr_p = addr;
+>   	return X86EMUL_CONTINUE;
+> @@ -2399,7 +2391,6 @@ static int em_syscall(struct x86_emulate_ctxt *ctxt)
+>   
+>   	*reg_write(ctxt, VCPU_REGS_RCX) = ctxt->_eip;
+>   	if (efer & EFER_LMA) {
+> -#ifdef CONFIG_X86_64
+>   		*reg_write(ctxt, VCPU_REGS_R11) = ctxt->eflags;
+>   
+>   		ops->get_msr(ctxt,
+> @@ -2410,7 +2401,6 @@ static int em_syscall(struct x86_emulate_ctxt *ctxt)
+>   		ops->get_msr(ctxt, MSR_SYSCALL_MASK, &msr_data);
+>   		ctxt->eflags &= ~msr_data;
+>   		ctxt->eflags |= X86_EFLAGS_FIXED;
+> -#endif
+>   	} else {
+>   		/* legacy mode */
+>   		ops->get_msr(ctxt, MSR_STAR, &msr_data);
+> @@ -2575,9 +2565,7 @@ static bool emulator_io_port_access_allowed(struct x86_emulate_ctxt *ctxt,
+>   	if (desc_limit_scaled(&tr_seg) < 103)
+>   		return false;
+>   	base = get_desc_base(&tr_seg);
+> -#ifdef CONFIG_X86_64
+>   	base |= ((u64)base3) << 32;
+> -#endif
+>   	r = ops->read_std(ctxt, base + 102, &io_bitmap_ptr, 2, NULL, true);
+>   	if (r != X86EMUL_CONTINUE)
+>   		return false;
+> @@ -2612,7 +2600,6 @@ static void string_registers_quirk(struct x86_emulate_ctxt *ctxt)
+>   	 * Intel CPUs mask the counter and pointers in quite strange
+>   	 * manner when ECX is zero due to REP-string optimizations.
+>   	 */
+> -#ifdef CONFIG_X86_64
+>   	u32 eax, ebx, ecx, edx;
+>   
+>   	if (ctxt->ad_bytes != 4)
+> @@ -2634,7 +2621,6 @@ static void string_registers_quirk(struct x86_emulate_ctxt *ctxt)
+>   	case 0xab:	/* stosd/w */
+>   		*reg_rmw(ctxt, VCPU_REGS_RDI) &= (u32)-1;
+>   	}
+> -#endif
+>   }
+>   
+>   static void save_state_to_tss16(struct x86_emulate_ctxt *ctxt,
+> @@ -3641,11 +3627,9 @@ static int em_lahf(struct x86_emulate_ctxt *ctxt)
+>   static int em_bswap(struct x86_emulate_ctxt *ctxt)
+>   {
+>   	switch (ctxt->op_bytes) {
+> -#ifdef CONFIG_X86_64
+>   	case 8:
+>   		asm("bswap %0" : "+r"(ctxt->dst.val));
+>   		break;
+> -#endif
+>   	default:
+>   		asm("bswap %0" : "+r"(*(u32 *)&ctxt->dst.val));
+>   		break;
+> @@ -4767,12 +4751,10 @@ int x86_decode_insn(struct x86_emulate_ctxt *ctxt, void *insn, int insn_len, int
+>   	case X86EMUL_MODE_PROT32:
+>   		def_op_bytes = def_ad_bytes = 4;
+>   		break;
+> -#ifdef CONFIG_X86_64
+>   	case X86EMUL_MODE_PROT64:
+>   		def_op_bytes = 4;
+>   		def_ad_bytes = 8;
+>   		break;
+> -#endif
+>   	default:
+>   		return EMULATION_FAILED;
+>   	}
+> diff --git a/arch/x86/kvm/fpu.h b/arch/x86/kvm/fpu.h
+> index 3ba12888bf66..56a402dbf24a 100644
+> --- a/arch/x86/kvm/fpu.h
+> +++ b/arch/x86/kvm/fpu.h
+> @@ -26,7 +26,6 @@ static inline void _kvm_read_sse_reg(int reg, sse128_t *data)
+>   	case 5: asm("movdqa %%xmm5, %0" : "=m"(*data)); break;
+>   	case 6: asm("movdqa %%xmm6, %0" : "=m"(*data)); break;
+>   	case 7: asm("movdqa %%xmm7, %0" : "=m"(*data)); break;
+> -#ifdef CONFIG_X86_64
+>   	case 8: asm("movdqa %%xmm8, %0" : "=m"(*data)); break;
+>   	case 9: asm("movdqa %%xmm9, %0" : "=m"(*data)); break;
+>   	case 10: asm("movdqa %%xmm10, %0" : "=m"(*data)); break;
+> @@ -35,7 +34,6 @@ static inline void _kvm_read_sse_reg(int reg, sse128_t *data)
+>   	case 13: asm("movdqa %%xmm13, %0" : "=m"(*data)); break;
+>   	case 14: asm("movdqa %%xmm14, %0" : "=m"(*data)); break;
+>   	case 15: asm("movdqa %%xmm15, %0" : "=m"(*data)); break;
+> -#endif
+>   	default: BUG();
+>   	}
+>   }
+> @@ -51,7 +49,6 @@ static inline void _kvm_write_sse_reg(int reg, const sse128_t *data)
+>   	case 5: asm("movdqa %0, %%xmm5" : : "m"(*data)); break;
+>   	case 6: asm("movdqa %0, %%xmm6" : : "m"(*data)); break;
+>   	case 7: asm("movdqa %0, %%xmm7" : : "m"(*data)); break;
+> -#ifdef CONFIG_X86_64
+>   	case 8: asm("movdqa %0, %%xmm8" : : "m"(*data)); break;
+>   	case 9: asm("movdqa %0, %%xmm9" : : "m"(*data)); break;
+>   	case 10: asm("movdqa %0, %%xmm10" : : "m"(*data)); break;
+> @@ -60,7 +57,6 @@ static inline void _kvm_write_sse_reg(int reg, const sse128_t *data)
+>   	case 13: asm("movdqa %0, %%xmm13" : : "m"(*data)); break;
+>   	case 14: asm("movdqa %0, %%xmm14" : : "m"(*data)); break;
+>   	case 15: asm("movdqa %0, %%xmm15" : : "m"(*data)); break;
+> -#endif
+>   	default: BUG();
+>   	}
+>   }
+> diff --git a/arch/x86/kvm/hyperv.c b/arch/x86/kvm/hyperv.c
+> index 4f0a94346d00..8fb9f45c7465 100644
+> --- a/arch/x86/kvm/hyperv.c
+> +++ b/arch/x86/kvm/hyperv.c
+> @@ -2532,14 +2532,11 @@ int kvm_hv_hypercall(struct kvm_vcpu *vcpu)
+>   		return 1;
+>   	}
+>   
+> -#ifdef CONFIG_X86_64
+>   	if (is_64_bit_hypercall(vcpu)) {
+>   		hc.param = kvm_rcx_read(vcpu);
+>   		hc.ingpa = kvm_rdx_read(vcpu);
+>   		hc.outgpa = kvm_r8_read(vcpu);
+> -	} else
+> -#endif
+> -	{
+> +	} else {
+>   		hc.param = ((u64)kvm_rdx_read(vcpu) << 32) |
+>   			    (kvm_rax_read(vcpu) & 0xffffffff);
+>   		hc.ingpa = ((u64)kvm_rbx_read(vcpu) << 32) |
+> diff --git a/arch/x86/kvm/i8254.c b/arch/x86/kvm/i8254.c
+> index cd57a517d04a..b2b63a835797 100644
+> --- a/arch/x86/kvm/i8254.c
+> +++ b/arch/x86/kvm/i8254.c
+> @@ -40,11 +40,7 @@
+>   #include "i8254.h"
+>   #include "x86.h"
+>   
+> -#ifndef CONFIG_X86_64
+> -#define mod_64(x, y) ((x) - (y) * div64_u64(x, y))
+> -#else
+>   #define mod_64(x, y) ((x) % (y))
+> -#endif
+>   
+>   #define RW_STATE_LSB 1
+>   #define RW_STATE_MSB 2
+> diff --git a/arch/x86/kvm/kvm_cache_regs.h b/arch/x86/kvm/kvm_cache_regs.h
+> index 36a8786db291..66d12dc5b243 100644
+> --- a/arch/x86/kvm/kvm_cache_regs.h
+> +++ b/arch/x86/kvm/kvm_cache_regs.h
+> @@ -32,7 +32,6 @@ BUILD_KVM_GPR_ACCESSORS(rdx, RDX)
+>   BUILD_KVM_GPR_ACCESSORS(rbp, RBP)
+>   BUILD_KVM_GPR_ACCESSORS(rsi, RSI)
+>   BUILD_KVM_GPR_ACCESSORS(rdi, RDI)
+> -#ifdef CONFIG_X86_64
+>   BUILD_KVM_GPR_ACCESSORS(r8,  R8)
+>   BUILD_KVM_GPR_ACCESSORS(r9,  R9)
+>   BUILD_KVM_GPR_ACCESSORS(r10, R10)
+> @@ -41,7 +40,6 @@ BUILD_KVM_GPR_ACCESSORS(r12, R12)
+>   BUILD_KVM_GPR_ACCESSORS(r13, R13)
+>   BUILD_KVM_GPR_ACCESSORS(r14, R14)
+>   BUILD_KVM_GPR_ACCESSORS(r15, R15)
+> -#endif
+>   
+>   /*
+>    * Using the register cache from interrupt context is generally not allowed, as
+> diff --git a/arch/x86/kvm/kvm_emulate.h b/arch/x86/kvm/kvm_emulate.h
+> index 10495fffb890..970761100e26 100644
+> --- a/arch/x86/kvm/kvm_emulate.h
+> +++ b/arch/x86/kvm/kvm_emulate.h
+> @@ -305,11 +305,7 @@ typedef void (*fastop_t)(struct fastop *);
+>    * also uses _eip, RIP cannot be a register operand nor can it be an operand in
+>    * a ModRM or SIB byte.
+>    */
+> -#ifdef CONFIG_X86_64
+>   #define NR_EMULATOR_GPRS	16
+> -#else
+> -#define NR_EMULATOR_GPRS	8
+> -#endif
+>   
+>   struct x86_emulate_ctxt {
+>   	void *vcpu;
+> @@ -501,11 +497,7 @@ enum x86_intercept {
+>   };
+>   
+>   /* Host execution mode. */
+> -#if defined(CONFIG_X86_32)
+> -#define X86EMUL_MODE_HOST X86EMUL_MODE_PROT32
+> -#elif defined(CONFIG_X86_64)
+>   #define X86EMUL_MODE_HOST X86EMUL_MODE_PROT64
+> -#endif
+>   
+>   int x86_decode_insn(struct x86_emulate_ctxt *ctxt, void *insn, int insn_len, int emulation_type);
+>   bool x86_page_table_writing_insn(struct x86_emulate_ctxt *ctxt);
+> diff --git a/arch/x86/kvm/lapic.c b/arch/x86/kvm/lapic.c
+> index 3c83951c619e..53a10a0ca03b 100644
+> --- a/arch/x86/kvm/lapic.c
+> +++ b/arch/x86/kvm/lapic.c
+> @@ -46,11 +46,7 @@
+>   #include "hyperv.h"
+>   #include "smm.h"
+>   
+> -#ifndef CONFIG_X86_64
+> -#define mod_64(x, y) ((x) - (y) * div64_u64(x, y))
+> -#else
+>   #define mod_64(x, y) ((x) % (y))
+> -#endif
+>   
+>   /* 14 is the version for Xeon and Pentium 8.4.8*/
+>   #define APIC_VERSION			0x14UL
+> diff --git a/arch/x86/kvm/mmu.h b/arch/x86/kvm/mmu.h
+> index e9322358678b..91e0969d23d7 100644
+> --- a/arch/x86/kvm/mmu.h
+> +++ b/arch/x86/kvm/mmu.h
+> @@ -238,11 +238,7 @@ static inline bool kvm_shadow_root_allocated(struct kvm *kvm)
+>   	return smp_load_acquire(&kvm->arch.shadow_root_allocated);
+>   }
+>   
+> -#ifdef CONFIG_X86_64
+>   extern bool tdp_mmu_enabled;
+> -#else
+> -#define tdp_mmu_enabled false
+> -#endif
+>   
+>   static inline bool kvm_memslots_have_rmaps(struct kvm *kvm)
+>   {
+> diff --git a/arch/x86/kvm/mmu/mmu.c b/arch/x86/kvm/mmu/mmu.c
+> index 22e7ad235123..23d5074edbc5 100644
+> --- a/arch/x86/kvm/mmu/mmu.c
+> +++ b/arch/x86/kvm/mmu/mmu.c
+> @@ -107,10 +107,8 @@ bool tdp_enabled = false;
+>   
+>   static bool __ro_after_init tdp_mmu_allowed;
+>   
+> -#ifdef CONFIG_X86_64
+>   bool __read_mostly tdp_mmu_enabled = true;
+>   module_param_named(tdp_mmu, tdp_mmu_enabled, bool, 0444);
+> -#endif
+>   
+>   static int max_huge_page_level __read_mostly;
+>   static int tdp_root_level __read_mostly;
+> @@ -332,7 +330,6 @@ static int is_cpuid_PSE36(void)
+>   	return 1;
+>   }
+>   
+> -#ifdef CONFIG_X86_64
+>   static void __set_spte(u64 *sptep, u64 spte)
+>   {
+>   	KVM_MMU_WARN_ON(is_ept_ve_possible(spte));
+> @@ -355,122 +352,6 @@ static u64 __get_spte_lockless(u64 *sptep)
+>   {
+>   	return READ_ONCE(*sptep);
+>   }
+> -#else
+> -union split_spte {
+> -	struct {
+> -		u32 spte_low;
+> -		u32 spte_high;
+> -	};
+> -	u64 spte;
+> -};
+> -
+> -static void count_spte_clear(u64 *sptep, u64 spte)
+> -{
+> -	struct kvm_mmu_page *sp =  sptep_to_sp(sptep);
+> -
+> -	if (is_shadow_present_pte(spte))
+> -		return;
+> -
+> -	/* Ensure the spte is completely set before we increase the count */
+> -	smp_wmb();
+> -	sp->clear_spte_count++;
+> -}
+> -
+> -static void __set_spte(u64 *sptep, u64 spte)
+> -{
+> -	union split_spte *ssptep, sspte;
+> -
+> -	ssptep = (union split_spte *)sptep;
+> -	sspte = (union split_spte)spte;
+> -
+> -	ssptep->spte_high = sspte.spte_high;
+> -
+> -	/*
+> -	 * If we map the spte from nonpresent to present, We should store
+> -	 * the high bits firstly, then set present bit, so cpu can not
+> -	 * fetch this spte while we are setting the spte.
+> -	 */
+> -	smp_wmb();
+> -
+> -	WRITE_ONCE(ssptep->spte_low, sspte.spte_low);
+> -}
+> -
+> -static void __update_clear_spte_fast(u64 *sptep, u64 spte)
+> -{
+> -	union split_spte *ssptep, sspte;
+> -
+> -	ssptep = (union split_spte *)sptep;
+> -	sspte = (union split_spte)spte;
+> -
+> -	WRITE_ONCE(ssptep->spte_low, sspte.spte_low);
+> -
+> -	/*
+> -	 * If we map the spte from present to nonpresent, we should clear
+> -	 * present bit firstly to avoid vcpu fetch the old high bits.
+> -	 */
+> -	smp_wmb();
+> -
+> -	ssptep->spte_high = sspte.spte_high;
+> -	count_spte_clear(sptep, spte);
+> -}
+> -
+> -static u64 __update_clear_spte_slow(u64 *sptep, u64 spte)
+> -{
+> -	union split_spte *ssptep, sspte, orig;
+> -
+> -	ssptep = (union split_spte *)sptep;
+> -	sspte = (union split_spte)spte;
+> -
+> -	/* xchg acts as a barrier before the setting of the high bits */
+> -	orig.spte_low = xchg(&ssptep->spte_low, sspte.spte_low);
+> -	orig.spte_high = ssptep->spte_high;
+> -	ssptep->spte_high = sspte.spte_high;
+> -	count_spte_clear(sptep, spte);
+> -
+> -	return orig.spte;
+> -}
+> -
 > -/*
-> - * tools/testing/selftests/kvm/include/x86_64/svm.h
-> - * This is a copy of arch/x86/include/asm/svm.h
+> - * The idea using the light way get the spte on x86_32 guest is from
+> - * gup_get_pte (mm/gup.c).
 > - *
+> - * An spte tlb flush may be pending, because they are coalesced and
+> - * we are running out of the MMU lock.  Therefore
+> - * we need to protect against in-progress updates of the spte.
+> - *
+> - * Reading the spte while an update is in progress may get the old value
+> - * for the high part of the spte.  The race is fine for a present->non-present
+> - * change (because the high part of the spte is ignored for non-present spte),
+> - * but for a present->present change we must reread the spte.
+> - *
+> - * All such changes are done in two steps (present->non-present and
+> - * non-present->present), hence it is enough to count the number of
+> - * present->non-present updates: if it changed while reading the spte,
+> - * we might have hit the race.  This is done using clear_spte_count.
 > - */
+> -static u64 __get_spte_lockless(u64 *sptep)
+> -{
+> -	struct kvm_mmu_page *sp =  sptep_to_sp(sptep);
+> -	union split_spte spte, *orig = (union split_spte *)sptep;
+> -	int count;
 > -
->  #ifndef SELFTEST_KVM_SVM_H
->  #define SELFTEST_KVM_SVM_H
->  
-> diff --git a/tools/testing/selftests/kvm/include/x86_64/svm_util.h b/tools/testing/selftests/kvm/include/x86/svm_util.h
-> similarity index 94%
-> rename from tools/testing/selftests/kvm/include/x86_64/svm_util.h
-> rename to tools/testing/selftests/kvm/include/x86/svm_util.h
-> index 044f0f872ba9..b74c6dcddcbd 100644
-> --- a/tools/testing/selftests/kvm/include/x86_64/svm_util.h
-> +++ b/tools/testing/selftests/kvm/include/x86/svm_util.h
-> @@ -1,8 +1,5 @@
->  /* SPDX-License-Identifier: GPL-2.0-only */
->  /*
-> - * tools/testing/selftests/kvm/include/x86_64/svm_utils.h
-> - * Header for nested SVM testing
-> - *
->   * Copyright (C) 2020, Red Hat, Inc.
->   */
->  
-> diff --git a/tools/testing/selftests/kvm/include/x86_64/ucall.h b/tools/testing/selftests/kvm/include/x86/ucall.h
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/include/x86_64/ucall.h
-> rename to tools/testing/selftests/kvm/include/x86/ucall.h
-> diff --git a/tools/testing/selftests/kvm/include/x86_64/vmx.h b/tools/testing/selftests/kvm/include/x86/vmx.h
-> similarity index 99%
-> rename from tools/testing/selftests/kvm/include/x86_64/vmx.h
-> rename to tools/testing/selftests/kvm/include/x86/vmx.h
-> index 5f0c0a29c556..edb3c391b982 100644
-> --- a/tools/testing/selftests/kvm/include/x86_64/vmx.h
-> +++ b/tools/testing/selftests/kvm/include/x86/vmx.h
-> @@ -1,7 +1,5 @@
->  /* SPDX-License-Identifier: GPL-2.0-only */
->  /*
-> - * tools/testing/selftests/kvm/include/x86_64/vmx.h
-> - *
->   * Copyright (C) 2018, Google LLC.
->   */
->  
-> diff --git a/tools/testing/selftests/kvm/lib/aarch64/gic.c b/tools/testing/selftests/kvm/lib/arm64/gic.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/lib/aarch64/gic.c
-> rename to tools/testing/selftests/kvm/lib/arm64/gic.c
-> diff --git a/tools/testing/selftests/kvm/lib/aarch64/gic_private.h b/tools/testing/selftests/kvm/lib/arm64/gic_private.h
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/lib/aarch64/gic_private.h
-> rename to tools/testing/selftests/kvm/lib/arm64/gic_private.h
-> diff --git a/tools/testing/selftests/kvm/lib/aarch64/gic_v3.c b/tools/testing/selftests/kvm/lib/arm64/gic_v3.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/lib/aarch64/gic_v3.c
-> rename to tools/testing/selftests/kvm/lib/arm64/gic_v3.c
-> diff --git a/tools/testing/selftests/kvm/lib/aarch64/gic_v3_its.c b/tools/testing/selftests/kvm/lib/arm64/gic_v3_its.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/lib/aarch64/gic_v3_its.c
-> rename to tools/testing/selftests/kvm/lib/arm64/gic_v3_its.c
-> diff --git a/tools/testing/selftests/kvm/lib/aarch64/handlers.S b/tools/testing/selftests/kvm/lib/arm64/handlers.S
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/lib/aarch64/handlers.S
-> rename to tools/testing/selftests/kvm/lib/arm64/handlers.S
-> diff --git a/tools/testing/selftests/kvm/lib/aarch64/processor.c b/tools/testing/selftests/kvm/lib/arm64/processor.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/lib/aarch64/processor.c
-> rename to tools/testing/selftests/kvm/lib/arm64/processor.c
-> diff --git a/tools/testing/selftests/kvm/lib/aarch64/spinlock.c b/tools/testing/selftests/kvm/lib/arm64/spinlock.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/lib/aarch64/spinlock.c
-> rename to tools/testing/selftests/kvm/lib/arm64/spinlock.c
-> diff --git a/tools/testing/selftests/kvm/lib/aarch64/ucall.c b/tools/testing/selftests/kvm/lib/arm64/ucall.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/lib/aarch64/ucall.c
-> rename to tools/testing/selftests/kvm/lib/arm64/ucall.c
-> diff --git a/tools/testing/selftests/kvm/lib/aarch64/vgic.c b/tools/testing/selftests/kvm/lib/arm64/vgic.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/lib/aarch64/vgic.c
-> rename to tools/testing/selftests/kvm/lib/arm64/vgic.c
-> diff --git a/tools/testing/selftests/kvm/lib/s390x/diag318_test_handler.c b/tools/testing/selftests/kvm/lib/s390/diag318_test_handler.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/lib/s390x/diag318_test_handler.c
-> rename to tools/testing/selftests/kvm/lib/s390/diag318_test_handler.c
-> diff --git a/tools/testing/selftests/kvm/lib/s390x/facility.c b/tools/testing/selftests/kvm/lib/s390/facility.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/lib/s390x/facility.c
-> rename to tools/testing/selftests/kvm/lib/s390/facility.c
-> diff --git a/tools/testing/selftests/kvm/lib/s390x/processor.c b/tools/testing/selftests/kvm/lib/s390/processor.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/lib/s390x/processor.c
-> rename to tools/testing/selftests/kvm/lib/s390/processor.c
-> diff --git a/tools/testing/selftests/kvm/lib/s390x/ucall.c b/tools/testing/selftests/kvm/lib/s390/ucall.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/lib/s390x/ucall.c
-> rename to tools/testing/selftests/kvm/lib/s390/ucall.c
-> diff --git a/tools/testing/selftests/kvm/lib/x86_64/apic.c b/tools/testing/selftests/kvm/lib/x86/apic.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/lib/x86_64/apic.c
-> rename to tools/testing/selftests/kvm/lib/x86/apic.c
-> diff --git a/tools/testing/selftests/kvm/lib/x86_64/handlers.S b/tools/testing/selftests/kvm/lib/x86/handlers.S
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/lib/x86_64/handlers.S
-> rename to tools/testing/selftests/kvm/lib/x86/handlers.S
-> diff --git a/tools/testing/selftests/kvm/lib/x86_64/hyperv.c b/tools/testing/selftests/kvm/lib/x86/hyperv.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/lib/x86_64/hyperv.c
-> rename to tools/testing/selftests/kvm/lib/x86/hyperv.c
-> diff --git a/tools/testing/selftests/kvm/lib/x86_64/memstress.c b/tools/testing/selftests/kvm/lib/x86/memstress.c
-> similarity index 98%
-> rename from tools/testing/selftests/kvm/lib/x86_64/memstress.c
-> rename to tools/testing/selftests/kvm/lib/x86/memstress.c
-> index d61e623afc8c..7f5d62a65c68 100644
-> --- a/tools/testing/selftests/kvm/lib/x86_64/memstress.c
-> +++ b/tools/testing/selftests/kvm/lib/x86/memstress.c
-> @@ -1,6 +1,6 @@
->  // SPDX-License-Identifier: GPL-2.0
->  /*
-> - * x86_64-specific extensions to memstress.c.
-> + * x86-specific extensions to memstress.c.
->   *
->   * Copyright (C) 2022, Google, Inc.
->   */
-> diff --git a/tools/testing/selftests/kvm/lib/x86_64/pmu.c b/tools/testing/selftests/kvm/lib/x86/pmu.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/lib/x86_64/pmu.c
-> rename to tools/testing/selftests/kvm/lib/x86/pmu.c
-> diff --git a/tools/testing/selftests/kvm/lib/x86_64/processor.c b/tools/testing/selftests/kvm/lib/x86/processor.c
-> similarity index 99%
-> rename from tools/testing/selftests/kvm/lib/x86_64/processor.c
-> rename to tools/testing/selftests/kvm/lib/x86/processor.c
-> index 636b29ba8985..bd5a802fa7a5 100644
-> --- a/tools/testing/selftests/kvm/lib/x86_64/processor.c
-> +++ b/tools/testing/selftests/kvm/lib/x86/processor.c
-> @@ -1,7 +1,5 @@
->  // SPDX-License-Identifier: GPL-2.0-only
->  /*
-> - * tools/testing/selftests/kvm/lib/x86_64/processor.c
-> - *
->   * Copyright (C) 2018, Google LLC.
->   */
->  
-> diff --git a/tools/testing/selftests/kvm/lib/x86_64/sev.c b/tools/testing/selftests/kvm/lib/x86/sev.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/lib/x86_64/sev.c
-> rename to tools/testing/selftests/kvm/lib/x86/sev.c
-> diff --git a/tools/testing/selftests/kvm/lib/x86_64/svm.c b/tools/testing/selftests/kvm/lib/x86/svm.c
-> similarity index 99%
-> rename from tools/testing/selftests/kvm/lib/x86_64/svm.c
-> rename to tools/testing/selftests/kvm/lib/x86/svm.c
-> index 5495a92dfd5a..d239c2097391 100644
-> --- a/tools/testing/selftests/kvm/lib/x86_64/svm.c
-> +++ b/tools/testing/selftests/kvm/lib/x86/svm.c
-> @@ -1,6 +1,5 @@
->  // SPDX-License-Identifier: GPL-2.0-only
->  /*
-> - * tools/testing/selftests/kvm/lib/x86_64/svm.c
->   * Helpers used for nested SVM testing
->   * Largely inspired from KVM unit test svm.c
->   *
-> diff --git a/tools/testing/selftests/kvm/lib/x86_64/ucall.c b/tools/testing/selftests/kvm/lib/x86/ucall.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/lib/x86_64/ucall.c
-> rename to tools/testing/selftests/kvm/lib/x86/ucall.c
-> diff --git a/tools/testing/selftests/kvm/lib/x86_64/vmx.c b/tools/testing/selftests/kvm/lib/x86/vmx.c
-> similarity index 99%
-> rename from tools/testing/selftests/kvm/lib/x86_64/vmx.c
-> rename to tools/testing/selftests/kvm/lib/x86/vmx.c
-> index d7ac122820bf..d4d1208dd023 100644
-> --- a/tools/testing/selftests/kvm/lib/x86_64/vmx.c
-> +++ b/tools/testing/selftests/kvm/lib/x86/vmx.c
-> @@ -1,7 +1,5 @@
->  // SPDX-License-Identifier: GPL-2.0-only
->  /*
-> - * tools/testing/selftests/kvm/lib/x86_64/vmx.c
-> - *
->   * Copyright (C) 2018, Google LLC.
->   */
->  
-> diff --git a/tools/testing/selftests/kvm/s390x/cmma_test.c b/tools/testing/selftests/kvm/s390/cmma_test.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/s390x/cmma_test.c
-> rename to tools/testing/selftests/kvm/s390/cmma_test.c
-> diff --git a/tools/testing/selftests/kvm/s390x/config b/tools/testing/selftests/kvm/s390/config
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/s390x/config
-> rename to tools/testing/selftests/kvm/s390/config
-> diff --git a/tools/testing/selftests/kvm/s390x/cpumodel_subfuncs_test.c b/tools/testing/selftests/kvm/s390/cpumodel_subfuncs_test.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/s390x/cpumodel_subfuncs_test.c
-> rename to tools/testing/selftests/kvm/s390/cpumodel_subfuncs_test.c
-> diff --git a/tools/testing/selftests/kvm/s390x/debug_test.c b/tools/testing/selftests/kvm/s390/debug_test.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/s390x/debug_test.c
-> rename to tools/testing/selftests/kvm/s390/debug_test.c
-> diff --git a/tools/testing/selftests/kvm/s390x/memop.c b/tools/testing/selftests/kvm/s390/memop.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/s390x/memop.c
-> rename to tools/testing/selftests/kvm/s390/memop.c
-> diff --git a/tools/testing/selftests/kvm/s390x/resets.c b/tools/testing/selftests/kvm/s390/resets.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/s390x/resets.c
-> rename to tools/testing/selftests/kvm/s390/resets.c
-> diff --git a/tools/testing/selftests/kvm/s390x/shared_zeropage_test.c b/tools/testing/selftests/kvm/s390/shared_zeropage_test.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/s390x/shared_zeropage_test.c
-> rename to tools/testing/selftests/kvm/s390/shared_zeropage_test.c
-> diff --git a/tools/testing/selftests/kvm/s390x/sync_regs_test.c b/tools/testing/selftests/kvm/s390/sync_regs_test.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/s390x/sync_regs_test.c
-> rename to tools/testing/selftests/kvm/s390/sync_regs_test.c
-> diff --git a/tools/testing/selftests/kvm/s390x/tprot.c b/tools/testing/selftests/kvm/s390/tprot.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/s390x/tprot.c
-> rename to tools/testing/selftests/kvm/s390/tprot.c
-> diff --git a/tools/testing/selftests/kvm/s390x/ucontrol_test.c b/tools/testing/selftests/kvm/s390/ucontrol_test.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/s390x/ucontrol_test.c
-> rename to tools/testing/selftests/kvm/s390/ucontrol_test.c
-> diff --git a/tools/testing/selftests/kvm/set_memory_region_test.c b/tools/testing/selftests/kvm/set_memory_region_test.c
-> index a8267628e9ed..86ee3385e860 100644
-> --- a/tools/testing/selftests/kvm/set_memory_region_test.c
-> +++ b/tools/testing/selftests/kvm/set_memory_region_test.c
-> @@ -17,9 +17,9 @@
->  #include <processor.h>
->  
->  /*
-> - * s390x needs at least 1MB alignment, and the x86_64 MOVE/DELETE tests need a
-> - * 2MB sized and aligned region so that the initial region corresponds to
-> - * exactly one large page.
-> + * s390 needs at least 1MB alignment, and the x86 MOVE/DELETE tests need a 2MB
-> + * sized and aligned region so that the initial region corresponds to exactly
-> + * one large page.
->   */
->  #define MEM_REGION_SIZE		0x200000
->  
-> diff --git a/tools/testing/selftests/kvm/x86_64/amx_test.c b/tools/testing/selftests/kvm/x86/amx_test.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/amx_test.c
-> rename to tools/testing/selftests/kvm/x86/amx_test.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/apic_bus_clock_test.c b/tools/testing/selftests/kvm/x86/apic_bus_clock_test.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/apic_bus_clock_test.c
-> rename to tools/testing/selftests/kvm/x86/apic_bus_clock_test.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/cpuid_test.c b/tools/testing/selftests/kvm/x86/cpuid_test.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/cpuid_test.c
-> rename to tools/testing/selftests/kvm/x86/cpuid_test.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/cr4_cpuid_sync_test.c b/tools/testing/selftests/kvm/x86/cr4_cpuid_sync_test.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/cr4_cpuid_sync_test.c
-> rename to tools/testing/selftests/kvm/x86/cr4_cpuid_sync_test.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/debug_regs.c b/tools/testing/selftests/kvm/x86/debug_regs.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/debug_regs.c
-> rename to tools/testing/selftests/kvm/x86/debug_regs.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/dirty_log_page_splitting_test.c b/tools/testing/selftests/kvm/x86/dirty_log_page_splitting_test.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/dirty_log_page_splitting_test.c
-> rename to tools/testing/selftests/kvm/x86/dirty_log_page_splitting_test.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/exit_on_emulation_failure_test.c b/tools/testing/selftests/kvm/x86/exit_on_emulation_failure_test.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/exit_on_emulation_failure_test.c
-> rename to tools/testing/selftests/kvm/x86/exit_on_emulation_failure_test.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/feature_msrs_test.c b/tools/testing/selftests/kvm/x86/feature_msrs_test.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/feature_msrs_test.c
-> rename to tools/testing/selftests/kvm/x86/feature_msrs_test.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/fix_hypercall_test.c b/tools/testing/selftests/kvm/x86/fix_hypercall_test.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/fix_hypercall_test.c
-> rename to tools/testing/selftests/kvm/x86/fix_hypercall_test.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/flds_emulation.h b/tools/testing/selftests/kvm/x86/flds_emulation.h
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/flds_emulation.h
-> rename to tools/testing/selftests/kvm/x86/flds_emulation.h
-> diff --git a/tools/testing/selftests/kvm/x86_64/hwcr_msr_test.c b/tools/testing/selftests/kvm/x86/hwcr_msr_test.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/hwcr_msr_test.c
-> rename to tools/testing/selftests/kvm/x86/hwcr_msr_test.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/hyperv_clock.c b/tools/testing/selftests/kvm/x86/hyperv_clock.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/hyperv_clock.c
-> rename to tools/testing/selftests/kvm/x86/hyperv_clock.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/hyperv_cpuid.c b/tools/testing/selftests/kvm/x86/hyperv_cpuid.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/hyperv_cpuid.c
-> rename to tools/testing/selftests/kvm/x86/hyperv_cpuid.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/hyperv_evmcs.c b/tools/testing/selftests/kvm/x86/hyperv_evmcs.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/hyperv_evmcs.c
-> rename to tools/testing/selftests/kvm/x86/hyperv_evmcs.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/hyperv_extended_hypercalls.c b/tools/testing/selftests/kvm/x86/hyperv_extended_hypercalls.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/hyperv_extended_hypercalls.c
-> rename to tools/testing/selftests/kvm/x86/hyperv_extended_hypercalls.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/hyperv_features.c b/tools/testing/selftests/kvm/x86/hyperv_features.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/hyperv_features.c
-> rename to tools/testing/selftests/kvm/x86/hyperv_features.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/hyperv_ipi.c b/tools/testing/selftests/kvm/x86/hyperv_ipi.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/hyperv_ipi.c
-> rename to tools/testing/selftests/kvm/x86/hyperv_ipi.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/hyperv_svm_test.c b/tools/testing/selftests/kvm/x86/hyperv_svm_test.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/hyperv_svm_test.c
-> rename to tools/testing/selftests/kvm/x86/hyperv_svm_test.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/hyperv_tlb_flush.c b/tools/testing/selftests/kvm/x86/hyperv_tlb_flush.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/hyperv_tlb_flush.c
-> rename to tools/testing/selftests/kvm/x86/hyperv_tlb_flush.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/kvm_clock_test.c b/tools/testing/selftests/kvm/x86/kvm_clock_test.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/kvm_clock_test.c
-> rename to tools/testing/selftests/kvm/x86/kvm_clock_test.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/kvm_pv_test.c b/tools/testing/selftests/kvm/x86/kvm_pv_test.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/kvm_pv_test.c
-> rename to tools/testing/selftests/kvm/x86/kvm_pv_test.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/max_vcpuid_cap_test.c b/tools/testing/selftests/kvm/x86/max_vcpuid_cap_test.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/max_vcpuid_cap_test.c
-> rename to tools/testing/selftests/kvm/x86/max_vcpuid_cap_test.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/monitor_mwait_test.c b/tools/testing/selftests/kvm/x86/monitor_mwait_test.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/monitor_mwait_test.c
-> rename to tools/testing/selftests/kvm/x86/monitor_mwait_test.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/nested_exceptions_test.c b/tools/testing/selftests/kvm/x86/nested_exceptions_test.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/nested_exceptions_test.c
-> rename to tools/testing/selftests/kvm/x86/nested_exceptions_test.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/nx_huge_pages_test.c b/tools/testing/selftests/kvm/x86/nx_huge_pages_test.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/nx_huge_pages_test.c
-> rename to tools/testing/selftests/kvm/x86/nx_huge_pages_test.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/nx_huge_pages_test.sh b/tools/testing/selftests/kvm/x86/nx_huge_pages_test.sh
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/nx_huge_pages_test.sh
-> rename to tools/testing/selftests/kvm/x86/nx_huge_pages_test.sh
-> diff --git a/tools/testing/selftests/kvm/x86_64/platform_info_test.c b/tools/testing/selftests/kvm/x86/platform_info_test.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/platform_info_test.c
-> rename to tools/testing/selftests/kvm/x86/platform_info_test.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/pmu_counters_test.c b/tools/testing/selftests/kvm/x86/pmu_counters_test.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/pmu_counters_test.c
-> rename to tools/testing/selftests/kvm/x86/pmu_counters_test.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/pmu_event_filter_test.c b/tools/testing/selftests/kvm/x86/pmu_event_filter_test.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/pmu_event_filter_test.c
-> rename to tools/testing/selftests/kvm/x86/pmu_event_filter_test.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/private_mem_conversions_test.c b/tools/testing/selftests/kvm/x86/private_mem_conversions_test.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/private_mem_conversions_test.c
-> rename to tools/testing/selftests/kvm/x86/private_mem_conversions_test.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/private_mem_kvm_exits_test.c b/tools/testing/selftests/kvm/x86/private_mem_kvm_exits_test.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/private_mem_kvm_exits_test.c
-> rename to tools/testing/selftests/kvm/x86/private_mem_kvm_exits_test.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/recalc_apic_map_test.c b/tools/testing/selftests/kvm/x86/recalc_apic_map_test.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/recalc_apic_map_test.c
-> rename to tools/testing/selftests/kvm/x86/recalc_apic_map_test.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/set_boot_cpu_id.c b/tools/testing/selftests/kvm/x86/set_boot_cpu_id.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/set_boot_cpu_id.c
-> rename to tools/testing/selftests/kvm/x86/set_boot_cpu_id.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/set_sregs_test.c b/tools/testing/selftests/kvm/x86/set_sregs_test.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/set_sregs_test.c
-> rename to tools/testing/selftests/kvm/x86/set_sregs_test.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/sev_init2_tests.c b/tools/testing/selftests/kvm/x86/sev_init2_tests.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/sev_init2_tests.c
-> rename to tools/testing/selftests/kvm/x86/sev_init2_tests.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/sev_migrate_tests.c b/tools/testing/selftests/kvm/x86/sev_migrate_tests.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/sev_migrate_tests.c
-> rename to tools/testing/selftests/kvm/x86/sev_migrate_tests.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/sev_smoke_test.c b/tools/testing/selftests/kvm/x86/sev_smoke_test.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/sev_smoke_test.c
-> rename to tools/testing/selftests/kvm/x86/sev_smoke_test.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/smaller_maxphyaddr_emulation_test.c b/tools/testing/selftests/kvm/x86/smaller_maxphyaddr_emulation_test.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/smaller_maxphyaddr_emulation_test.c
-> rename to tools/testing/selftests/kvm/x86/smaller_maxphyaddr_emulation_test.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/smm_test.c b/tools/testing/selftests/kvm/x86/smm_test.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/smm_test.c
-> rename to tools/testing/selftests/kvm/x86/smm_test.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/state_test.c b/tools/testing/selftests/kvm/x86/state_test.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/state_test.c
-> rename to tools/testing/selftests/kvm/x86/state_test.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/svm_int_ctl_test.c b/tools/testing/selftests/kvm/x86/svm_int_ctl_test.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/svm_int_ctl_test.c
-> rename to tools/testing/selftests/kvm/x86/svm_int_ctl_test.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/svm_nested_shutdown_test.c b/tools/testing/selftests/kvm/x86/svm_nested_shutdown_test.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/svm_nested_shutdown_test.c
-> rename to tools/testing/selftests/kvm/x86/svm_nested_shutdown_test.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/svm_nested_soft_inject_test.c b/tools/testing/selftests/kvm/x86/svm_nested_soft_inject_test.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/svm_nested_soft_inject_test.c
-> rename to tools/testing/selftests/kvm/x86/svm_nested_soft_inject_test.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/svm_vmcall_test.c b/tools/testing/selftests/kvm/x86/svm_vmcall_test.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/svm_vmcall_test.c
-> rename to tools/testing/selftests/kvm/x86/svm_vmcall_test.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/sync_regs_test.c b/tools/testing/selftests/kvm/x86/sync_regs_test.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/sync_regs_test.c
-> rename to tools/testing/selftests/kvm/x86/sync_regs_test.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/triple_fault_event_test.c b/tools/testing/selftests/kvm/x86/triple_fault_event_test.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/triple_fault_event_test.c
-> rename to tools/testing/selftests/kvm/x86/triple_fault_event_test.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/tsc_msrs_test.c b/tools/testing/selftests/kvm/x86/tsc_msrs_test.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/tsc_msrs_test.c
-> rename to tools/testing/selftests/kvm/x86/tsc_msrs_test.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/tsc_scaling_sync.c b/tools/testing/selftests/kvm/x86/tsc_scaling_sync.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/tsc_scaling_sync.c
-> rename to tools/testing/selftests/kvm/x86/tsc_scaling_sync.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/ucna_injection_test.c b/tools/testing/selftests/kvm/x86/ucna_injection_test.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/ucna_injection_test.c
-> rename to tools/testing/selftests/kvm/x86/ucna_injection_test.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/userspace_io_test.c b/tools/testing/selftests/kvm/x86/userspace_io_test.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/userspace_io_test.c
-> rename to tools/testing/selftests/kvm/x86/userspace_io_test.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/userspace_msr_exit_test.c b/tools/testing/selftests/kvm/x86/userspace_msr_exit_test.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/userspace_msr_exit_test.c
-> rename to tools/testing/selftests/kvm/x86/userspace_msr_exit_test.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/vmx_apic_access_test.c b/tools/testing/selftests/kvm/x86/vmx_apic_access_test.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/vmx_apic_access_test.c
-> rename to tools/testing/selftests/kvm/x86/vmx_apic_access_test.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/vmx_close_while_nested_test.c b/tools/testing/selftests/kvm/x86/vmx_close_while_nested_test.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/vmx_close_while_nested_test.c
-> rename to tools/testing/selftests/kvm/x86/vmx_close_while_nested_test.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/vmx_dirty_log_test.c b/tools/testing/selftests/kvm/x86/vmx_dirty_log_test.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/vmx_dirty_log_test.c
-> rename to tools/testing/selftests/kvm/x86/vmx_dirty_log_test.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/vmx_exception_with_invalid_guest_state.c b/tools/testing/selftests/kvm/x86/vmx_exception_with_invalid_guest_state.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/vmx_exception_with_invalid_guest_state.c
-> rename to tools/testing/selftests/kvm/x86/vmx_exception_with_invalid_guest_state.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/vmx_invalid_nested_guest_state.c b/tools/testing/selftests/kvm/x86/vmx_invalid_nested_guest_state.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/vmx_invalid_nested_guest_state.c
-> rename to tools/testing/selftests/kvm/x86/vmx_invalid_nested_guest_state.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/vmx_msrs_test.c b/tools/testing/selftests/kvm/x86/vmx_msrs_test.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/vmx_msrs_test.c
-> rename to tools/testing/selftests/kvm/x86/vmx_msrs_test.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/vmx_nested_tsc_scaling_test.c b/tools/testing/selftests/kvm/x86/vmx_nested_tsc_scaling_test.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/vmx_nested_tsc_scaling_test.c
-> rename to tools/testing/selftests/kvm/x86/vmx_nested_tsc_scaling_test.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/vmx_pmu_caps_test.c b/tools/testing/selftests/kvm/x86/vmx_pmu_caps_test.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/vmx_pmu_caps_test.c
-> rename to tools/testing/selftests/kvm/x86/vmx_pmu_caps_test.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/vmx_preemption_timer_test.c b/tools/testing/selftests/kvm/x86/vmx_preemption_timer_test.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/vmx_preemption_timer_test.c
-> rename to tools/testing/selftests/kvm/x86/vmx_preemption_timer_test.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/vmx_set_nested_state_test.c b/tools/testing/selftests/kvm/x86/vmx_set_nested_state_test.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/vmx_set_nested_state_test.c
-> rename to tools/testing/selftests/kvm/x86/vmx_set_nested_state_test.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/vmx_tsc_adjust_test.c b/tools/testing/selftests/kvm/x86/vmx_tsc_adjust_test.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/vmx_tsc_adjust_test.c
-> rename to tools/testing/selftests/kvm/x86/vmx_tsc_adjust_test.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/xapic_ipi_test.c b/tools/testing/selftests/kvm/x86/xapic_ipi_test.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/xapic_ipi_test.c
-> rename to tools/testing/selftests/kvm/x86/xapic_ipi_test.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/xapic_state_test.c b/tools/testing/selftests/kvm/x86/xapic_state_test.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/xapic_state_test.c
-> rename to tools/testing/selftests/kvm/x86/xapic_state_test.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/xcr0_cpuid_test.c b/tools/testing/selftests/kvm/x86/xcr0_cpuid_test.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/xcr0_cpuid_test.c
-> rename to tools/testing/selftests/kvm/x86/xcr0_cpuid_test.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/xen_shinfo_test.c b/tools/testing/selftests/kvm/x86/xen_shinfo_test.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/xen_shinfo_test.c
-> rename to tools/testing/selftests/kvm/x86/xen_shinfo_test.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/xen_vmcall_test.c b/tools/testing/selftests/kvm/x86/xen_vmcall_test.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/xen_vmcall_test.c
-> rename to tools/testing/selftests/kvm/x86/xen_vmcall_test.c
-> diff --git a/tools/testing/selftests/kvm/x86_64/xss_msr_test.c b/tools/testing/selftests/kvm/x86/xss_msr_test.c
-> similarity index 100%
-> rename from tools/testing/selftests/kvm/x86_64/xss_msr_test.c
-> rename to tools/testing/selftests/kvm/x86/xss_msr_test.c
+> -retry:
+> -	count = sp->clear_spte_count;
+> -	smp_rmb();
+> -
+> -	spte.spte_low = orig->spte_low;
+> -	smp_rmb();
+> -
+> -	spte.spte_high = orig->spte_high;
+> -	smp_rmb();
+> -
+> -	if (unlikely(spte.spte_low != orig->spte_low ||
+> -	      count != sp->clear_spte_count))
+> -		goto retry;
+> -
+> -	return spte.spte;
+> -}
+> -#endif
+>   
+>   /* Rules for using mmu_spte_set:
+>    * Set the sptep from nonpresent to present.
+> @@ -3931,7 +3812,6 @@ static int mmu_alloc_special_roots(struct kvm_vcpu *vcpu)
+>   	if (!pae_root)
+>   		return -ENOMEM;
+>   
+> -#ifdef CONFIG_X86_64
+>   	pml4_root = (void *)get_zeroed_page(GFP_KERNEL_ACCOUNT);
+>   	if (!pml4_root)
+>   		goto err_pml4;
+> @@ -3941,7 +3821,6 @@ static int mmu_alloc_special_roots(struct kvm_vcpu *vcpu)
+>   		if (!pml5_root)
+>   			goto err_pml5;
+>   	}
+> -#endif
+>   
+>   	mmu->pae_root = pae_root;
+>   	mmu->pml4_root = pml4_root;
+> @@ -3949,13 +3828,11 @@ static int mmu_alloc_special_roots(struct kvm_vcpu *vcpu)
+>   
+>   	return 0;
+>   
+> -#ifdef CONFIG_X86_64
+>   err_pml5:
+>   	free_page((unsigned long)pml4_root);
+>   err_pml4:
+>   	free_page((unsigned long)pae_root);
+>   	return -ENOMEM;
+> -#endif
+>   }
+>   
+>   static bool is_unsync_root(hpa_t root)
+> @@ -4584,11 +4461,6 @@ int kvm_handle_page_fault(struct kvm_vcpu *vcpu, u64 error_code,
+>   	int r = 1;
+>   	u32 flags = vcpu->arch.apf.host_apf_flags;
+>   
+> -#ifndef CONFIG_X86_64
+> -	/* A 64-bit CR2 should be impossible on 32-bit KVM. */
+> -	if (WARN_ON_ONCE(fault_address >> 32))
+> -		return -EFAULT;
+> -#endif
+>   	/*
+>   	 * Legacy #PF exception only have a 32-bit error code.  Simply drop the
+>   	 * upper bits as KVM doesn't use them for #PF (because they are never
+> @@ -4622,7 +4494,6 @@ int kvm_handle_page_fault(struct kvm_vcpu *vcpu, u64 error_code,
+>   }
+>   EXPORT_SYMBOL_GPL(kvm_handle_page_fault);
+>   
+> -#ifdef CONFIG_X86_64
+>   static int kvm_tdp_mmu_page_fault(struct kvm_vcpu *vcpu,
+>   				  struct kvm_page_fault *fault)
+>   {
+> @@ -4656,7 +4527,6 @@ static int kvm_tdp_mmu_page_fault(struct kvm_vcpu *vcpu,
+>   	read_unlock(&vcpu->kvm->mmu_lock);
+>   	return r;
+>   }
+> -#endif
+>   
+>   bool kvm_mmu_may_ignore_guest_pat(void)
+>   {
+> @@ -4673,10 +4543,8 @@ bool kvm_mmu_may_ignore_guest_pat(void)
+>   
+>   int kvm_tdp_page_fault(struct kvm_vcpu *vcpu, struct kvm_page_fault *fault)
+>   {
+> -#ifdef CONFIG_X86_64
+>   	if (tdp_mmu_enabled)
+>   		return kvm_tdp_mmu_page_fault(vcpu, fault);
+> -#endif
+>   
+>   	return direct_page_fault(vcpu, fault);
+>   }
+> @@ -6249,9 +6117,7 @@ void kvm_configure_mmu(bool enable_tdp, int tdp_forced_root_level,
+>   	tdp_root_level = tdp_forced_root_level;
+>   	max_tdp_level = tdp_max_root_level;
+>   
+> -#ifdef CONFIG_X86_64
+>   	tdp_mmu_enabled = tdp_mmu_allowed && tdp_enabled;
+> -#endif
+>   	/*
+>   	 * max_huge_page_level reflects KVM's MMU capabilities irrespective
+>   	 * of kernel support, e.g. KVM may be capable of using 1GB pages when
+> diff --git a/arch/x86/kvm/mmu/mmu_internal.h b/arch/x86/kvm/mmu/mmu_internal.h
+> index b00abbe3f6cf..34cfffc32476 100644
+> --- a/arch/x86/kvm/mmu/mmu_internal.h
+> +++ b/arch/x86/kvm/mmu/mmu_internal.h
+> @@ -116,21 +116,12 @@ struct kvm_mmu_page {
+>   	 * isn't properly aligned, etc...
+>   	 */
+>   	struct list_head possible_nx_huge_page_link;
+> -#ifdef CONFIG_X86_32
+> -	/*
+> -	 * Used out of the mmu-lock to avoid reading spte values while an
+> -	 * update is in progress; see the comments in __get_spte_lockless().
+> -	 */
+> -	int clear_spte_count;
+> -#endif
+>   
+>   	/* Number of writes since the last time traversal visited this page.  */
+>   	atomic_t write_flooding_count;
+>   
+> -#ifdef CONFIG_X86_64
+>   	/* Used for freeing the page asynchronously if it is a TDP MMU page. */
+>   	struct rcu_head rcu_head;
+> -#endif
+>   };
+>   
+>   extern struct kmem_cache *mmu_page_header_cache;
+> diff --git a/arch/x86/kvm/mmu/paging_tmpl.h b/arch/x86/kvm/mmu/paging_tmpl.h
+> index f4711674c47b..fa6493641429 100644
+> --- a/arch/x86/kvm/mmu/paging_tmpl.h
+> +++ b/arch/x86/kvm/mmu/paging_tmpl.h
+> @@ -29,11 +29,7 @@
+>   	#define PT_GUEST_DIRTY_SHIFT PT_DIRTY_SHIFT
+>   	#define PT_GUEST_ACCESSED_SHIFT PT_ACCESSED_SHIFT
+>   	#define PT_HAVE_ACCESSED_DIRTY(mmu) true
+> -	#ifdef CONFIG_X86_64
+>   	#define PT_MAX_FULL_LEVELS PT64_ROOT_MAX_LEVEL
+> -	#else
+> -	#define PT_MAX_FULL_LEVELS 2
+> -	#endif
+>   #elif PTTYPE == 32
+>   	#define pt_element_t u32
+>   	#define guest_walker guest_walker32
+> @@ -862,11 +858,6 @@ static gpa_t FNAME(gva_to_gpa)(struct kvm_vcpu *vcpu, struct kvm_mmu *mmu,
+>   	gpa_t gpa = INVALID_GPA;
+>   	int r;
+>   
+> -#ifndef CONFIG_X86_64
+> -	/* A 64-bit GVA should be impossible on 32-bit KVM. */
+> -	WARN_ON_ONCE((addr >> 32) && mmu == vcpu->arch.walk_mmu);
+> -#endif
+> -
+>   	r = FNAME(walk_addr_generic)(&walker, vcpu, mmu, addr, access);
+>   
+>   	if (r) {
+> diff --git a/arch/x86/kvm/mmu/spte.h b/arch/x86/kvm/mmu/spte.h
+> index f332b33bc817..fd776ab25cc3 100644
+> --- a/arch/x86/kvm/mmu/spte.h
+> +++ b/arch/x86/kvm/mmu/spte.h
+> @@ -160,13 +160,8 @@ static_assert(MMIO_SPTE_GEN_LOW_BITS == 8 && MMIO_SPTE_GEN_HIGH_BITS == 11);
+>    * For VMX EPT, bit 63 is ignored if #VE is disabled. (EPT_VIOLATION_VE=0)
+>    *              bit 63 is #VE suppress if #VE is enabled. (EPT_VIOLATION_VE=1)
+>    */
+> -#ifdef CONFIG_X86_64
+>   #define SHADOW_NONPRESENT_VALUE	BIT_ULL(63)
+>   static_assert(!(SHADOW_NONPRESENT_VALUE & SPTE_MMU_PRESENT_MASK));
+> -#else
+> -#define SHADOW_NONPRESENT_VALUE	0ULL
+> -#endif
+> -
+>   
+>   /*
+>    * True if A/D bits are supported in hardware and are enabled by KVM.  When
+> diff --git a/arch/x86/kvm/mmu/tdp_mmu.h b/arch/x86/kvm/mmu/tdp_mmu.h
+> index f03ca0dd13d9..c137fdd6b347 100644
+> --- a/arch/x86/kvm/mmu/tdp_mmu.h
+> +++ b/arch/x86/kvm/mmu/tdp_mmu.h
+> @@ -67,10 +67,6 @@ int kvm_tdp_mmu_get_walk(struct kvm_vcpu *vcpu, u64 addr, u64 *sptes,
+>   u64 *kvm_tdp_mmu_fast_pf_get_last_sptep(struct kvm_vcpu *vcpu, gfn_t gfn,
+>   					u64 *spte);
+>   
+> -#ifdef CONFIG_X86_64
+>   static inline bool is_tdp_mmu_page(struct kvm_mmu_page *sp) { return sp->tdp_mmu_page; }
+> -#else
+> -static inline bool is_tdp_mmu_page(struct kvm_mmu_page *sp) { return false; }
+> -#endif
+>   
+>   #endif /* __KVM_X86_MMU_TDP_MMU_H */
+> diff --git a/arch/x86/kvm/smm.c b/arch/x86/kvm/smm.c
+> index 85241c0c7f56..ad764adac3de 100644
+> --- a/arch/x86/kvm/smm.c
+> +++ b/arch/x86/kvm/smm.c
+> @@ -165,7 +165,6 @@ static void enter_smm_save_seg_32(struct kvm_vcpu *vcpu,
+>   	state->flags = enter_smm_get_segment_flags(&seg);
+>   }
+>   
+> -#ifdef CONFIG_X86_64
+>   static void enter_smm_save_seg_64(struct kvm_vcpu *vcpu,
+>   				  struct kvm_smm_seg_state_64 *state,
+>   				  int n)
+> @@ -178,7 +177,6 @@ static void enter_smm_save_seg_64(struct kvm_vcpu *vcpu,
+>   	state->limit = seg.limit;
+>   	state->base = seg.base;
+>   }
+> -#endif
+>   
+>   static void enter_smm_save_state_32(struct kvm_vcpu *vcpu,
+>   				    struct kvm_smram_state_32 *smram)
+> @@ -223,7 +221,6 @@ static void enter_smm_save_state_32(struct kvm_vcpu *vcpu,
+>   	smram->int_shadow = kvm_x86_call(get_interrupt_shadow)(vcpu);
+>   }
+>   
+> -#ifdef CONFIG_X86_64
+>   static void enter_smm_save_state_64(struct kvm_vcpu *vcpu,
+>   				    struct kvm_smram_state_64 *smram)
+>   {
+> @@ -269,7 +266,6 @@ static void enter_smm_save_state_64(struct kvm_vcpu *vcpu,
+>   
+>   	smram->int_shadow = kvm_x86_call(get_interrupt_shadow)(vcpu);
+>   }
+> -#endif
+>   
+>   void enter_smm(struct kvm_vcpu *vcpu)
+>   {
+> @@ -282,11 +278,9 @@ void enter_smm(struct kvm_vcpu *vcpu)
+>   
+>   	memset(smram.bytes, 0, sizeof(smram.bytes));
+>   
+> -#ifdef CONFIG_X86_64
+>   	if (guest_cpuid_has(vcpu, X86_FEATURE_LM))
+>   		enter_smm_save_state_64(vcpu, &smram.smram64);
+>   	else
+> -#endif
+>   		enter_smm_save_state_32(vcpu, &smram.smram32);
+>   
+>   	/*
+> @@ -352,11 +346,9 @@ void enter_smm(struct kvm_vcpu *vcpu)
+>   	kvm_set_segment(vcpu, &ds, VCPU_SREG_GS);
+>   	kvm_set_segment(vcpu, &ds, VCPU_SREG_SS);
+>   
+> -#ifdef CONFIG_X86_64
+>   	if (guest_cpuid_has(vcpu, X86_FEATURE_LM))
+>   		if (kvm_x86_call(set_efer)(vcpu, 0))
+>   			goto error;
+> -#endif
+>   
+>   	kvm_update_cpuid_runtime(vcpu);
+>   	kvm_mmu_reset_context(vcpu);
+> @@ -394,8 +386,6 @@ static int rsm_load_seg_32(struct kvm_vcpu *vcpu,
+>   	return X86EMUL_CONTINUE;
+>   }
+>   
+> -#ifdef CONFIG_X86_64
+> -
+>   static int rsm_load_seg_64(struct kvm_vcpu *vcpu,
+>   			   const struct kvm_smm_seg_state_64 *state,
+>   			   int n)
+> @@ -409,7 +399,6 @@ static int rsm_load_seg_64(struct kvm_vcpu *vcpu,
+>   	kvm_set_segment(vcpu, &desc, n);
+>   	return X86EMUL_CONTINUE;
+>   }
+> -#endif
+>   
+>   static int rsm_enter_protected_mode(struct kvm_vcpu *vcpu,
+>   				    u64 cr0, u64 cr3, u64 cr4)
+> @@ -507,7 +496,6 @@ static int rsm_load_state_32(struct x86_emulate_ctxt *ctxt,
+>   	return r;
+>   }
+>   
+> -#ifdef CONFIG_X86_64
+>   static int rsm_load_state_64(struct x86_emulate_ctxt *ctxt,
+>   			     const struct kvm_smram_state_64 *smstate)
+>   {
+> @@ -559,7 +547,6 @@ static int rsm_load_state_64(struct x86_emulate_ctxt *ctxt,
+>   
+>   	return X86EMUL_CONTINUE;
+>   }
+> -#endif
+>   
+>   int emulator_leave_smm(struct x86_emulate_ctxt *ctxt)
+>   {
+> @@ -585,7 +572,6 @@ int emulator_leave_smm(struct x86_emulate_ctxt *ctxt)
+>   	 * CR0/CR3/CR4/EFER.  It's all a bit more complicated if the vCPU
+>   	 * supports long mode.
+>   	 */
+> -#ifdef CONFIG_X86_64
+>   	if (guest_cpuid_has(vcpu, X86_FEATURE_LM)) {
+>   		struct kvm_segment cs_desc;
+>   		unsigned long cr4;
+> @@ -601,14 +587,12 @@ int emulator_leave_smm(struct x86_emulate_ctxt *ctxt)
+>   		cs_desc.s = cs_desc.g = cs_desc.present = 1;
+>   		kvm_set_segment(vcpu, &cs_desc, VCPU_SREG_CS);
+>   	}
+> -#endif
+>   
+>   	/* For the 64-bit case, this will clear EFER.LMA.  */
+>   	cr0 = kvm_read_cr0(vcpu);
+>   	if (cr0 & X86_CR0_PE)
+>   		kvm_set_cr0(vcpu, cr0 & ~(X86_CR0_PG | X86_CR0_PE));
+>   
+> -#ifdef CONFIG_X86_64
+>   	if (guest_cpuid_has(vcpu, X86_FEATURE_LM)) {
+>   		unsigned long cr4, efer;
+>   
+> @@ -621,7 +605,6 @@ int emulator_leave_smm(struct x86_emulate_ctxt *ctxt)
+>   		efer = 0;
+>   		kvm_set_msr(vcpu, MSR_EFER, efer);
+>   	}
+> -#endif
+>   
+>   	/*
+>   	 * FIXME: When resuming L2 (a.k.a. guest mode), the transition to guest
+> @@ -633,11 +616,9 @@ int emulator_leave_smm(struct x86_emulate_ctxt *ctxt)
+>   	if (kvm_x86_call(leave_smm)(vcpu, &smram))
+>   		return X86EMUL_UNHANDLEABLE;
+>   
+> -#ifdef CONFIG_X86_64
+>   	if (guest_cpuid_has(vcpu, X86_FEATURE_LM))
+>   		ret = rsm_load_state_64(ctxt, &smram.smram64);
+>   	else
+> -#endif
+>   		ret = rsm_load_state_32(ctxt, &smram.smram32);
+>   
+>   	/*
+> diff --git a/arch/x86/kvm/svm/sev.c b/arch/x86/kvm/svm/sev.c
+> index 943bd074a5d3..a78cdb1a9314 100644
+> --- a/arch/x86/kvm/svm/sev.c
+> +++ b/arch/x86/kvm/svm/sev.c
+> @@ -830,7 +830,6 @@ static int sev_es_sync_vmsa(struct vcpu_svm *svm)
+>   	save->rbp = svm->vcpu.arch.regs[VCPU_REGS_RBP];
+>   	save->rsi = svm->vcpu.arch.regs[VCPU_REGS_RSI];
+>   	save->rdi = svm->vcpu.arch.regs[VCPU_REGS_RDI];
+> -#ifdef CONFIG_X86_64
+>   	save->r8  = svm->vcpu.arch.regs[VCPU_REGS_R8];
+>   	save->r9  = svm->vcpu.arch.regs[VCPU_REGS_R9];
+>   	save->r10 = svm->vcpu.arch.regs[VCPU_REGS_R10];
+> @@ -839,7 +838,6 @@ static int sev_es_sync_vmsa(struct vcpu_svm *svm)
+>   	save->r13 = svm->vcpu.arch.regs[VCPU_REGS_R13];
+>   	save->r14 = svm->vcpu.arch.regs[VCPU_REGS_R14];
+>   	save->r15 = svm->vcpu.arch.regs[VCPU_REGS_R15];
+> -#endif
+>   	save->rip = svm->vcpu.arch.regs[VCPU_REGS_RIP];
+>   
+>   	/* Sync some non-GPR registers before encrypting */
+> diff --git a/arch/x86/kvm/svm/svm.c b/arch/x86/kvm/svm/svm.c
+> index dd15cc635655..aeb24495cf64 100644
+> --- a/arch/x86/kvm/svm/svm.c
+> +++ b/arch/x86/kvm/svm/svm.c
+> @@ -89,14 +89,12 @@ static const struct svm_direct_access_msrs {
+>   	{ .index = MSR_IA32_SYSENTER_CS,		.always = true  },
+>   	{ .index = MSR_IA32_SYSENTER_EIP,		.always = false },
+>   	{ .index = MSR_IA32_SYSENTER_ESP,		.always = false },
+> -#ifdef CONFIG_X86_64
+>   	{ .index = MSR_GS_BASE,				.always = true  },
+>   	{ .index = MSR_FS_BASE,				.always = true  },
+>   	{ .index = MSR_KERNEL_GS_BASE,			.always = true  },
+>   	{ .index = MSR_LSTAR,				.always = true  },
+>   	{ .index = MSR_CSTAR,				.always = true  },
+>   	{ .index = MSR_SYSCALL_MASK,			.always = true  },
+> -#endif
+>   	{ .index = MSR_IA32_SPEC_CTRL,			.always = false },
+>   	{ .index = MSR_IA32_PRED_CMD,			.always = false },
+>   	{ .index = MSR_IA32_FLUSH_CMD,			.always = false },
+> @@ -288,11 +286,7 @@ static void svm_flush_tlb_current(struct kvm_vcpu *vcpu);
+>   
+>   static int get_npt_level(void)
+>   {
+> -#ifdef CONFIG_X86_64
+>   	return pgtable_l5_enabled() ? PT64_ROOT_5LEVEL : PT64_ROOT_4LEVEL;
+> -#else
+> -	return PT32E_ROOT_LEVEL;
+> -#endif
+>   }
+>   
+>   int svm_set_efer(struct kvm_vcpu *vcpu, u64 efer)
+> @@ -1860,7 +1854,6 @@ void svm_set_cr0(struct kvm_vcpu *vcpu, unsigned long cr0)
+>   	u64 hcr0 = cr0;
+>   	bool old_paging = is_paging(vcpu);
+>   
+> -#ifdef CONFIG_X86_64
+>   	if (vcpu->arch.efer & EFER_LME) {
+>   		if (!is_paging(vcpu) && (cr0 & X86_CR0_PG)) {
+>   			vcpu->arch.efer |= EFER_LMA;
+> @@ -1874,7 +1867,6 @@ void svm_set_cr0(struct kvm_vcpu *vcpu, unsigned long cr0)
+>   				svm->vmcb->save.efer &= ~(EFER_LMA | EFER_LME);
+>   		}
+>   	}
+> -#endif
+>   	vcpu->arch.cr0 = cr0;
+>   
+>   	if (!npt_enabled) {
+> @@ -2871,7 +2863,6 @@ static int svm_get_msr(struct kvm_vcpu *vcpu, struct msr_data *msr_info)
+>   	case MSR_STAR:
+>   		msr_info->data = svm->vmcb01.ptr->save.star;
+>   		break;
+> -#ifdef CONFIG_X86_64
+>   	case MSR_LSTAR:
+>   		msr_info->data = svm->vmcb01.ptr->save.lstar;
+>   		break;
+> @@ -2890,7 +2881,6 @@ static int svm_get_msr(struct kvm_vcpu *vcpu, struct msr_data *msr_info)
+>   	case MSR_SYSCALL_MASK:
+>   		msr_info->data = svm->vmcb01.ptr->save.sfmask;
+>   		break;
+> -#endif
+>   	case MSR_IA32_SYSENTER_CS:
+>   		msr_info->data = svm->vmcb01.ptr->save.sysenter_cs;
+>   		break;
+> @@ -3102,7 +3092,6 @@ static int svm_set_msr(struct kvm_vcpu *vcpu, struct msr_data *msr)
+>   	case MSR_STAR:
+>   		svm->vmcb01.ptr->save.star = data;
+>   		break;
+> -#ifdef CONFIG_X86_64
+>   	case MSR_LSTAR:
+>   		svm->vmcb01.ptr->save.lstar = data;
+>   		break;
+> @@ -3121,7 +3110,6 @@ static int svm_set_msr(struct kvm_vcpu *vcpu, struct msr_data *msr)
+>   	case MSR_SYSCALL_MASK:
+>   		svm->vmcb01.ptr->save.sfmask = data;
+>   		break;
+> -#endif
+>   	case MSR_IA32_SYSENTER_CS:
+>   		svm->vmcb01.ptr->save.sysenter_cs = data;
+>   		break;
+> @@ -5323,14 +5311,6 @@ static __init int svm_hardware_setup(void)
+>   		kvm_enable_efer_bits(EFER_SVME | EFER_LMSLE);
+>   	}
+>   
+> -	/*
+> -	 * KVM's MMU doesn't support using 2-level paging for itself, and thus
+> -	 * NPT isn't supported if the host is using 2-level paging since host
+> -	 * CR4 is unchanged on VMRUN.
+> -	 */
+> -	if (!IS_ENABLED(CONFIG_X86_64) && !IS_ENABLED(CONFIG_X86_PAE))
+> -		npt_enabled = false;
+> -
+>   	if (!boot_cpu_has(X86_FEATURE_NPT))
+>   		npt_enabled = false;
+>   
+> @@ -5378,8 +5358,7 @@ static __init int svm_hardware_setup(void)
+>   
+>   	if (vls) {
+>   		if (!npt_enabled ||
+> -		    !boot_cpu_has(X86_FEATURE_V_VMSAVE_VMLOAD) ||
+> -		    !IS_ENABLED(CONFIG_X86_64)) {
+> +		    !boot_cpu_has(X86_FEATURE_V_VMSAVE_VMLOAD)) {
+>   			vls = false;
+>   		} else {
+>   			pr_info("Virtual VMLOAD VMSAVE supported\n");
+> diff --git a/arch/x86/kvm/svm/vmenter.S b/arch/x86/kvm/svm/vmenter.S
+> index 2ed80aea3bb1..2e8c0f5a238a 100644
+> --- a/arch/x86/kvm/svm/vmenter.S
+> +++ b/arch/x86/kvm/svm/vmenter.S
+> @@ -19,7 +19,6 @@
+>   #define VCPU_RSI	(SVM_vcpu_arch_regs + __VCPU_REGS_RSI * WORD_SIZE)
+>   #define VCPU_RDI	(SVM_vcpu_arch_regs + __VCPU_REGS_RDI * WORD_SIZE)
+>   
+> -#ifdef CONFIG_X86_64
+>   #define VCPU_R8		(SVM_vcpu_arch_regs + __VCPU_REGS_R8  * WORD_SIZE)
+>   #define VCPU_R9		(SVM_vcpu_arch_regs + __VCPU_REGS_R9  * WORD_SIZE)
+>   #define VCPU_R10	(SVM_vcpu_arch_regs + __VCPU_REGS_R10 * WORD_SIZE)
+> @@ -28,7 +27,6 @@
+>   #define VCPU_R13	(SVM_vcpu_arch_regs + __VCPU_REGS_R13 * WORD_SIZE)
+>   #define VCPU_R14	(SVM_vcpu_arch_regs + __VCPU_REGS_R14 * WORD_SIZE)
+>   #define VCPU_R15	(SVM_vcpu_arch_regs + __VCPU_REGS_R15 * WORD_SIZE)
+> -#endif
+>   
+>   #define SVM_vmcb01_pa	(SVM_vmcb01 + KVM_VMCB_pa)
+>   
+> @@ -101,15 +99,10 @@
+>   SYM_FUNC_START(__svm_vcpu_run)
+>   	push %_ASM_BP
+>   	mov  %_ASM_SP, %_ASM_BP
+> -#ifdef CONFIG_X86_64
+>   	push %r15
+>   	push %r14
+>   	push %r13
+>   	push %r12
+> -#else
+> -	push %edi
+> -	push %esi
+> -#endif
+>   	push %_ASM_BX
+>   
+>   	/*
+> @@ -157,7 +150,6 @@ SYM_FUNC_START(__svm_vcpu_run)
+>   	mov VCPU_RBX(%_ASM_DI), %_ASM_BX
+>   	mov VCPU_RBP(%_ASM_DI), %_ASM_BP
+>   	mov VCPU_RSI(%_ASM_DI), %_ASM_SI
+> -#ifdef CONFIG_X86_64
+>   	mov VCPU_R8 (%_ASM_DI),  %r8
+>   	mov VCPU_R9 (%_ASM_DI),  %r9
+>   	mov VCPU_R10(%_ASM_DI), %r10
+> @@ -166,7 +158,6 @@ SYM_FUNC_START(__svm_vcpu_run)
+>   	mov VCPU_R13(%_ASM_DI), %r13
+>   	mov VCPU_R14(%_ASM_DI), %r14
+>   	mov VCPU_R15(%_ASM_DI), %r15
+> -#endif
+>   	mov VCPU_RDI(%_ASM_DI), %_ASM_DI
+>   
+>   	/* Enter guest mode */
+> @@ -186,7 +177,6 @@ SYM_FUNC_START(__svm_vcpu_run)
+>   	mov %_ASM_BP,   VCPU_RBP(%_ASM_AX)
+>   	mov %_ASM_SI,   VCPU_RSI(%_ASM_AX)
+>   	mov %_ASM_DI,   VCPU_RDI(%_ASM_AX)
+> -#ifdef CONFIG_X86_64
+>   	mov %r8,  VCPU_R8 (%_ASM_AX)
+>   	mov %r9,  VCPU_R9 (%_ASM_AX)
+>   	mov %r10, VCPU_R10(%_ASM_AX)
+> @@ -195,7 +185,6 @@ SYM_FUNC_START(__svm_vcpu_run)
+>   	mov %r13, VCPU_R13(%_ASM_AX)
+>   	mov %r14, VCPU_R14(%_ASM_AX)
+>   	mov %r15, VCPU_R15(%_ASM_AX)
+> -#endif
+>   
+>   	/* @svm can stay in RDI from now on.  */
+>   	mov %_ASM_AX, %_ASM_DI
+> @@ -239,7 +228,6 @@ SYM_FUNC_START(__svm_vcpu_run)
+>   	xor %ebp, %ebp
+>   	xor %esi, %esi
+>   	xor %edi, %edi
+> -#ifdef CONFIG_X86_64
+>   	xor %r8d,  %r8d
+>   	xor %r9d,  %r9d
+>   	xor %r10d, %r10d
+> @@ -248,22 +236,16 @@ SYM_FUNC_START(__svm_vcpu_run)
+>   	xor %r13d, %r13d
+>   	xor %r14d, %r14d
+>   	xor %r15d, %r15d
+> -#endif
+>   
+>   	/* "Pop" @spec_ctrl_intercepted.  */
+>   	pop %_ASM_BX
+>   
+>   	pop %_ASM_BX
+>   
+> -#ifdef CONFIG_X86_64
+>   	pop %r12
+>   	pop %r13
+>   	pop %r14
+>   	pop %r15
+> -#else
+> -	pop %esi
+> -	pop %edi
+> -#endif
+>   	pop %_ASM_BP
+>   	RET
+>   
+> @@ -293,7 +275,6 @@ SYM_FUNC_END(__svm_vcpu_run)
+>   #ifdef CONFIG_KVM_AMD_SEV
+>   
+>   
+> -#ifdef CONFIG_X86_64
+>   #define SEV_ES_GPRS_BASE 0x300
+>   #define SEV_ES_RBX	(SEV_ES_GPRS_BASE + __VCPU_REGS_RBX * WORD_SIZE)
+>   #define SEV_ES_RBP	(SEV_ES_GPRS_BASE + __VCPU_REGS_RBP * WORD_SIZE)
+> @@ -303,7 +284,6 @@ SYM_FUNC_END(__svm_vcpu_run)
+>   #define SEV_ES_R13	(SEV_ES_GPRS_BASE + __VCPU_REGS_R13 * WORD_SIZE)
+>   #define SEV_ES_R14	(SEV_ES_GPRS_BASE + __VCPU_REGS_R14 * WORD_SIZE)
+>   #define SEV_ES_R15	(SEV_ES_GPRS_BASE + __VCPU_REGS_R15 * WORD_SIZE)
+> -#endif
+>   
+>   /**
+>    * __svm_sev_es_vcpu_run - Run a SEV-ES vCPU via a transition to SVM guest mode
+> diff --git a/arch/x86/kvm/trace.h b/arch/x86/kvm/trace.h
+> index d3aeffd6ae75..0bceb33e1d2c 100644
+> --- a/arch/x86/kvm/trace.h
+> +++ b/arch/x86/kvm/trace.h
+> @@ -897,8 +897,6 @@ TRACE_EVENT(kvm_write_tsc_offset,
+>   		  __entry->previous_tsc_offset, __entry->next_tsc_offset)
+>   );
+>   
+> -#ifdef CONFIG_X86_64
+> -
+>   #define host_clocks					\
+>   	{VDSO_CLOCKMODE_NONE, "none"},			\
+>   	{VDSO_CLOCKMODE_TSC,  "tsc"}			\
+> @@ -955,8 +953,6 @@ TRACE_EVENT(kvm_track_tsc,
+>   		  __print_symbolic(__entry->host_clock, host_clocks))
+>   );
+>   
+> -#endif /* CONFIG_X86_64 */
+> -
+>   /*
+>    * Tracepoint for PML full VMEXIT.
+>    */
+> diff --git a/arch/x86/kvm/vmx/main.c b/arch/x86/kvm/vmx/main.c
+> index 92d35cc6cd15..32a8dc508cd7 100644
+> --- a/arch/x86/kvm/vmx/main.c
+> +++ b/arch/x86/kvm/vmx/main.c
+> @@ -134,10 +134,8 @@ struct kvm_x86_ops vt_x86_ops __initdata = {
+>   	.pi_update_irte = vmx_pi_update_irte,
+>   	.pi_start_assignment = vmx_pi_start_assignment,
+>   
+> -#ifdef CONFIG_X86_64
+>   	.set_hv_timer = vmx_set_hv_timer,
+>   	.cancel_hv_timer = vmx_cancel_hv_timer,
+> -#endif
+>   
+>   	.setup_mce = vmx_setup_mce,
+>   
+> diff --git a/arch/x86/kvm/vmx/nested.c b/arch/x86/kvm/vmx/nested.c
+> index aa78b6f38dfe..3e7f004d1788 100644
+> --- a/arch/x86/kvm/vmx/nested.c
+> +++ b/arch/x86/kvm/vmx/nested.c
+> @@ -86,11 +86,7 @@ static void init_vmcs_shadow_fields(void)
+>   
+>   		clear_bit(field, vmx_vmread_bitmap);
+>   		if (field & 1)
+> -#ifdef CONFIG_X86_64
+>   			continue;
+> -#else
+> -			entry.offset += sizeof(u32);
+> -#endif
+>   		shadow_read_only_fields[j++] = entry;
+>   	}
+>   	max_shadow_read_only_fields = j;
+> @@ -134,11 +130,7 @@ static void init_vmcs_shadow_fields(void)
+>   		clear_bit(field, vmx_vmwrite_bitmap);
+>   		clear_bit(field, vmx_vmread_bitmap);
+>   		if (field & 1)
+> -#ifdef CONFIG_X86_64
+>   			continue;
+> -#else
+> -			entry.offset += sizeof(u32);
+> -#endif
+>   		shadow_read_write_fields[j++] = entry;
+>   	}
+>   	max_shadow_read_write_fields = j;
+> @@ -283,10 +275,8 @@ static void vmx_sync_vmcs_host_state(struct vcpu_vmx *vmx,
+>   
+>   	vmx_set_host_fs_gs(dest, src->fs_sel, src->gs_sel, src->fs_base, src->gs_base);
+>   	dest->ldt_sel = src->ldt_sel;
+> -#ifdef CONFIG_X86_64
+>   	dest->ds_sel = src->ds_sel;
+>   	dest->es_sel = src->es_sel;
+> -#endif
+>   }
+>   
+>   static void vmx_switch_vmcs(struct kvm_vcpu *vcpu, struct loaded_vmcs *vmcs)
+> @@ -695,7 +685,6 @@ static inline bool nested_vmx_prepare_msr_bitmap(struct kvm_vcpu *vcpu,
+>   	 * Always check vmcs01's bitmap to honor userspace MSR filters and any
+>   	 * other runtime changes to vmcs01's bitmap, e.g. dynamic pass-through.
+>   	 */
+> -#ifdef CONFIG_X86_64
+>   	nested_vmx_set_intercept_for_msr(vmx, msr_bitmap_l1, msr_bitmap_l0,
+>   					 MSR_FS_BASE, MSR_TYPE_RW);
+>   
+> @@ -704,7 +693,7 @@ static inline bool nested_vmx_prepare_msr_bitmap(struct kvm_vcpu *vcpu,
+>   
+>   	nested_vmx_set_intercept_for_msr(vmx, msr_bitmap_l1, msr_bitmap_l0,
+>   					 MSR_KERNEL_GS_BASE, MSR_TYPE_RW);
+> -#endif
+> +
+>   	nested_vmx_set_intercept_for_msr(vmx, msr_bitmap_l1, msr_bitmap_l0,
+>   					 MSR_IA32_SPEC_CTRL, MSR_TYPE_RW);
+>   
+> @@ -2375,11 +2364,9 @@ static void prepare_vmcs02_early(struct vcpu_vmx *vmx, struct loaded_vmcs *vmcs0
+>   	vmx->nested.l1_tpr_threshold = -1;
+>   	if (exec_control & CPU_BASED_TPR_SHADOW)
+>   		vmcs_write32(TPR_THRESHOLD, vmcs12->tpr_threshold);
+> -#ifdef CONFIG_X86_64
+>   	else
+>   		exec_control |= CPU_BASED_CR8_LOAD_EXITING |
+>   				CPU_BASED_CR8_STORE_EXITING;
+> -#endif
+>   
+>   	/*
+>   	 * A vmexit (to either L1 hypervisor or L0 userspace) is always needed
+> @@ -3002,11 +2989,10 @@ static int nested_vmx_check_controls(struct kvm_vcpu *vcpu,
+>   static int nested_vmx_check_address_space_size(struct kvm_vcpu *vcpu,
+>   				       struct vmcs12 *vmcs12)
+>   {
+> -#ifdef CONFIG_X86_64
+>   	if (CC(!!(vmcs12->vm_exit_controls & VM_EXIT_HOST_ADDR_SPACE_SIZE) !=
+>   		!!(vcpu->arch.efer & EFER_LMA)))
+>   		return -EINVAL;
+> -#endif
+> +
+>   	return 0;
+>   }
+>   
+> @@ -6979,9 +6965,7 @@ static void nested_vmx_setup_exit_ctls(struct vmcs_config *vmcs_conf,
+>   
+>   	msrs->exit_ctls_high = vmcs_conf->vmexit_ctrl;
+>   	msrs->exit_ctls_high &=
+> -#ifdef CONFIG_X86_64
+>   		VM_EXIT_HOST_ADDR_SPACE_SIZE |
+> -#endif
+>   		VM_EXIT_LOAD_IA32_PAT | VM_EXIT_SAVE_IA32_PAT |
+>   		VM_EXIT_CLEAR_BNDCFGS;
+>   	msrs->exit_ctls_high |=
+> @@ -7002,9 +6986,7 @@ static void nested_vmx_setup_entry_ctls(struct vmcs_config *vmcs_conf,
+>   
+>   	msrs->entry_ctls_high = vmcs_conf->vmentry_ctrl;
+>   	msrs->entry_ctls_high &=
+> -#ifdef CONFIG_X86_64
+>   		VM_ENTRY_IA32E_MODE |
+> -#endif
+>   		VM_ENTRY_LOAD_IA32_PAT | VM_ENTRY_LOAD_BNDCFGS;
+>   	msrs->entry_ctls_high |=
+>   		(VM_ENTRY_ALWAYSON_WITHOUT_TRUE_MSR | VM_ENTRY_LOAD_IA32_EFER |
+> @@ -7027,9 +7009,7 @@ static void nested_vmx_setup_cpubased_ctls(struct vmcs_config *vmcs_conf,
+>   		CPU_BASED_HLT_EXITING | CPU_BASED_INVLPG_EXITING |
+>   		CPU_BASED_MWAIT_EXITING | CPU_BASED_CR3_LOAD_EXITING |
+>   		CPU_BASED_CR3_STORE_EXITING |
+> -#ifdef CONFIG_X86_64
+>   		CPU_BASED_CR8_LOAD_EXITING | CPU_BASED_CR8_STORE_EXITING |
+> -#endif
+>   		CPU_BASED_MOV_DR_EXITING | CPU_BASED_UNCOND_IO_EXITING |
+>   		CPU_BASED_USE_IO_BITMAPS | CPU_BASED_MONITOR_TRAP_FLAG |
+>   		CPU_BASED_MONITOR_EXITING | CPU_BASED_RDPMC_EXITING |
+> diff --git a/arch/x86/kvm/vmx/vmcs.h b/arch/x86/kvm/vmx/vmcs.h
+> index b25625314658..487137da7860 100644
+> --- a/arch/x86/kvm/vmx/vmcs.h
+> +++ b/arch/x86/kvm/vmx/vmcs.h
+> @@ -39,9 +39,7 @@ struct vmcs_host_state {
+>   	unsigned long rsp;
+>   
+>   	u16           fs_sel, gs_sel, ldt_sel;
+> -#ifdef CONFIG_X86_64
+>   	u16           ds_sel, es_sel;
+> -#endif
+>   };
+>   
+>   struct vmcs_controls_shadow {
+> diff --git a/arch/x86/kvm/vmx/vmenter.S b/arch/x86/kvm/vmx/vmenter.S
+> index f6986dee6f8c..5a548724ca1f 100644
+> --- a/arch/x86/kvm/vmx/vmenter.S
+> +++ b/arch/x86/kvm/vmx/vmenter.S
+> @@ -20,7 +20,6 @@
+>   #define VCPU_RSI	__VCPU_REGS_RSI * WORD_SIZE
+>   #define VCPU_RDI	__VCPU_REGS_RDI * WORD_SIZE
+>   
+> -#ifdef CONFIG_X86_64
+>   #define VCPU_R8		__VCPU_REGS_R8  * WORD_SIZE
+>   #define VCPU_R9		__VCPU_REGS_R9  * WORD_SIZE
+>   #define VCPU_R10	__VCPU_REGS_R10 * WORD_SIZE
+> @@ -29,7 +28,6 @@
+>   #define VCPU_R13	__VCPU_REGS_R13 * WORD_SIZE
+>   #define VCPU_R14	__VCPU_REGS_R14 * WORD_SIZE
+>   #define VCPU_R15	__VCPU_REGS_R15 * WORD_SIZE
+> -#endif
+>   
+>   .macro VMX_DO_EVENT_IRQOFF call_insn call_target
+>   	/*
+> @@ -40,7 +38,6 @@
+>   	push %_ASM_BP
+>   	mov %_ASM_SP, %_ASM_BP
+>   
+> -#ifdef CONFIG_X86_64
+>   	/*
+>   	 * Align RSP to a 16-byte boundary (to emulate CPU behavior) before
+>   	 * creating the synthetic interrupt stack frame for the IRQ/NMI.
+> @@ -48,7 +45,6 @@
+>   	and  $-16, %rsp
+>   	push $__KERNEL_DS
+>   	push %rbp
+> -#endif
+>   	pushf
+>   	push $__KERNEL_CS
+>   	\call_insn \call_target
+> @@ -79,15 +75,10 @@
+>   SYM_FUNC_START(__vmx_vcpu_run)
+>   	push %_ASM_BP
+>   	mov  %_ASM_SP, %_ASM_BP
+> -#ifdef CONFIG_X86_64
+>   	push %r15
+>   	push %r14
+>   	push %r13
+>   	push %r12
+> -#else
+> -	push %edi
+> -	push %esi
+> -#endif
+>   	push %_ASM_BX
+>   
+>   	/* Save @vmx for SPEC_CTRL handling */
+> @@ -148,7 +139,6 @@ SYM_FUNC_START(__vmx_vcpu_run)
+>   	mov VCPU_RBP(%_ASM_AX), %_ASM_BP
+>   	mov VCPU_RSI(%_ASM_AX), %_ASM_SI
+>   	mov VCPU_RDI(%_ASM_AX), %_ASM_DI
+> -#ifdef CONFIG_X86_64
+>   	mov VCPU_R8 (%_ASM_AX),  %r8
+>   	mov VCPU_R9 (%_ASM_AX),  %r9
+>   	mov VCPU_R10(%_ASM_AX), %r10
+> @@ -157,7 +147,7 @@ SYM_FUNC_START(__vmx_vcpu_run)
+>   	mov VCPU_R13(%_ASM_AX), %r13
+>   	mov VCPU_R14(%_ASM_AX), %r14
+>   	mov VCPU_R15(%_ASM_AX), %r15
+> -#endif
+> +
+>   	/* Load guest RAX.  This kills the @regs pointer! */
+>   	mov VCPU_RAX(%_ASM_AX), %_ASM_AX
+>   
+> @@ -210,7 +200,6 @@ SYM_INNER_LABEL_ALIGN(vmx_vmexit, SYM_L_GLOBAL)
+>   	mov %_ASM_BP, VCPU_RBP(%_ASM_AX)
+>   	mov %_ASM_SI, VCPU_RSI(%_ASM_AX)
+>   	mov %_ASM_DI, VCPU_RDI(%_ASM_AX)
+> -#ifdef CONFIG_X86_64
+>   	mov %r8,  VCPU_R8 (%_ASM_AX)
+>   	mov %r9,  VCPU_R9 (%_ASM_AX)
+>   	mov %r10, VCPU_R10(%_ASM_AX)
+> @@ -219,7 +208,6 @@ SYM_INNER_LABEL_ALIGN(vmx_vmexit, SYM_L_GLOBAL)
+>   	mov %r13, VCPU_R13(%_ASM_AX)
+>   	mov %r14, VCPU_R14(%_ASM_AX)
+>   	mov %r15, VCPU_R15(%_ASM_AX)
+> -#endif
+>   
+>   	/* Clear return value to indicate VM-Exit (as opposed to VM-Fail). */
+>   	xor %ebx, %ebx
+> @@ -244,7 +232,6 @@ SYM_INNER_LABEL_ALIGN(vmx_vmexit, SYM_L_GLOBAL)
+>   	xor %ebp, %ebp
+>   	xor %esi, %esi
+>   	xor %edi, %edi
+> -#ifdef CONFIG_X86_64
+>   	xor %r8d,  %r8d
+>   	xor %r9d,  %r9d
+>   	xor %r10d, %r10d
+> @@ -253,7 +240,6 @@ SYM_INNER_LABEL_ALIGN(vmx_vmexit, SYM_L_GLOBAL)
+>   	xor %r13d, %r13d
+>   	xor %r14d, %r14d
+>   	xor %r15d, %r15d
+> -#endif
+>   
+>   	/*
+>   	 * IMPORTANT: RSB filling and SPEC_CTRL handling must be done before
+> @@ -281,15 +267,10 @@ SYM_INNER_LABEL_ALIGN(vmx_vmexit, SYM_L_GLOBAL)
+>   	mov %_ASM_BX, %_ASM_AX
+>   
+>   	pop %_ASM_BX
+> -#ifdef CONFIG_X86_64
+>   	pop %r12
+>   	pop %r13
+>   	pop %r14
+>   	pop %r15
+> -#else
+> -	pop %esi
+> -	pop %edi
+> -#endif
+>   	pop %_ASM_BP
+>   	RET
+>   
+> @@ -325,14 +306,12 @@ SYM_FUNC_START(vmread_error_trampoline)
+>   	push %_ASM_AX
+>   	push %_ASM_CX
+>   	push %_ASM_DX
+> -#ifdef CONFIG_X86_64
+>   	push %rdi
+>   	push %rsi
+>   	push %r8
+>   	push %r9
+>   	push %r10
+>   	push %r11
+> -#endif
+>   
+>   	/* Load @field and @fault to arg1 and arg2 respectively. */
+>   	mov 3*WORD_SIZE(%_ASM_BP), %_ASM_ARG2
+> @@ -343,14 +322,12 @@ SYM_FUNC_START(vmread_error_trampoline)
+>   	/* Zero out @fault, which will be popped into the result register. */
+>   	_ASM_MOV $0, 3*WORD_SIZE(%_ASM_BP)
+>   
+> -#ifdef CONFIG_X86_64
+>   	pop %r11
+>   	pop %r10
+>   	pop %r9
+>   	pop %r8
+>   	pop %rsi
+>   	pop %rdi
+> -#endif
+>   	pop %_ASM_DX
+>   	pop %_ASM_CX
+>   	pop %_ASM_AX
+> diff --git a/arch/x86/kvm/vmx/vmx.c b/arch/x86/kvm/vmx/vmx.c
+> index 893366e53732..de47bc57afe4 100644
+> --- a/arch/x86/kvm/vmx/vmx.c
+> +++ b/arch/x86/kvm/vmx/vmx.c
+> @@ -140,9 +140,7 @@ module_param(dump_invalid_vmcs, bool, 0644);
+>   /* Guest_tsc -> host_tsc conversion requires 64-bit division.  */
+>   static int __read_mostly cpu_preemption_timer_multi;
+>   static bool __read_mostly enable_preemption_timer = 1;
+> -#ifdef CONFIG_X86_64
+>   module_param_named(preemption_timer, enable_preemption_timer, bool, S_IRUGO);
+> -#endif
+>   
+>   extern bool __read_mostly allow_smaller_maxphyaddr;
+>   module_param(allow_smaller_maxphyaddr, bool, S_IRUGO);
+> @@ -172,13 +170,11 @@ static u32 vmx_possible_passthrough_msrs[MAX_POSSIBLE_PASSTHROUGH_MSRS] = {
+>   	MSR_IA32_PRED_CMD,
+>   	MSR_IA32_FLUSH_CMD,
+>   	MSR_IA32_TSC,
+> -#ifdef CONFIG_X86_64
+>   	MSR_FS_BASE,
+>   	MSR_GS_BASE,
+>   	MSR_KERNEL_GS_BASE,
+>   	MSR_IA32_XFD,
+>   	MSR_IA32_XFD_ERR,
+> -#endif
+>   	MSR_IA32_SYSENTER_CS,
+>   	MSR_IA32_SYSENTER_ESP,
+>   	MSR_IA32_SYSENTER_EIP,
+> @@ -1108,12 +1104,10 @@ static bool update_transition_efer(struct vcpu_vmx *vmx)
+>   	 * LMA and LME handled by hardware; SCE meaningless outside long mode.
+>   	 */
+>   	ignore_bits |= EFER_SCE;
+> -#ifdef CONFIG_X86_64
+>   	ignore_bits |= EFER_LMA | EFER_LME;
+>   	/* SCE is meaningful only in long mode on Intel */
+>   	if (guest_efer & EFER_LMA)
+>   		ignore_bits &= ~(u64)EFER_SCE;
+> -#endif
+>   
+>   	/*
+>   	 * On EPT, we can't emulate NX, so we must switch EFER atomically.
+> @@ -1147,35 +1141,6 @@ static bool update_transition_efer(struct vcpu_vmx *vmx)
+>   	return true;
+>   }
+>   
+> -#ifdef CONFIG_X86_32
+> -/*
+> - * On 32-bit kernels, VM exits still load the FS and GS bases from the
+> - * VMCS rather than the segment table.  KVM uses this helper to figure
+> - * out the current bases to poke them into the VMCS before entry.
+> - */
+> -static unsigned long segment_base(u16 selector)
+> -{
+> -	struct desc_struct *table;
+> -	unsigned long v;
+> -
+> -	if (!(selector & ~SEGMENT_RPL_MASK))
+> -		return 0;
+> -
+> -	table = get_current_gdt_ro();
+> -
+> -	if ((selector & SEGMENT_TI_MASK) == SEGMENT_LDT) {
+> -		u16 ldt_selector = kvm_read_ldt();
+> -
+> -		if (!(ldt_selector & ~SEGMENT_RPL_MASK))
+> -			return 0;
+> -
+> -		table = (struct desc_struct *)segment_base(ldt_selector);
+> -	}
+> -	v = get_desc_base(&table[selector >> 3]);
+> -	return v;
+> -}
+> -#endif
+> -
+>   static inline bool pt_can_write_msr(struct vcpu_vmx *vmx)
+>   {
+>   	return vmx_pt_mode_is_host_guest() &&
+> @@ -1282,9 +1247,7 @@ void vmx_prepare_switch_to_guest(struct kvm_vcpu *vcpu)
+>   {
+>   	struct vcpu_vmx *vmx = to_vmx(vcpu);
+>   	struct vmcs_host_state *host_state;
+> -#ifdef CONFIG_X86_64
+>   	int cpu = raw_smp_processor_id();
+> -#endif
+>   	unsigned long fs_base, gs_base;
+>   	u16 fs_sel, gs_sel;
+>   	int i;
+> @@ -1320,7 +1283,6 @@ void vmx_prepare_switch_to_guest(struct kvm_vcpu *vcpu)
+>   	 */
+>   	host_state->ldt_sel = kvm_read_ldt();
+>   
+> -#ifdef CONFIG_X86_64
+>   	savesegment(ds, host_state->ds_sel);
+>   	savesegment(es, host_state->es_sel);
+>   
+> @@ -1339,12 +1301,6 @@ void vmx_prepare_switch_to_guest(struct kvm_vcpu *vcpu)
+>   	}
+>   
+>   	wrmsrl(MSR_KERNEL_GS_BASE, vmx->msr_guest_kernel_gs_base);
+> -#else
+> -	savesegment(fs, fs_sel);
+> -	savesegment(gs, gs_sel);
+> -	fs_base = segment_base(fs_sel);
+> -	gs_base = segment_base(gs_sel);
+> -#endif
+>   
+>   	vmx_set_host_fs_gs(host_state, fs_sel, gs_sel, fs_base, gs_base);
+>   	vmx->guest_state_loaded = true;
+> @@ -1361,35 +1317,24 @@ static void vmx_prepare_switch_to_host(struct vcpu_vmx *vmx)
+>   
+>   	++vmx->vcpu.stat.host_state_reload;
+>   
+> -#ifdef CONFIG_X86_64
+>   	rdmsrl(MSR_KERNEL_GS_BASE, vmx->msr_guest_kernel_gs_base);
+> -#endif
+>   	if (host_state->ldt_sel || (host_state->gs_sel & 7)) {
+>   		kvm_load_ldt(host_state->ldt_sel);
+> -#ifdef CONFIG_X86_64
+>   		load_gs_index(host_state->gs_sel);
+> -#else
+> -		loadsegment(gs, host_state->gs_sel);
+> -#endif
+>   	}
+>   	if (host_state->fs_sel & 7)
+>   		loadsegment(fs, host_state->fs_sel);
+> -#ifdef CONFIG_X86_64
+>   	if (unlikely(host_state->ds_sel | host_state->es_sel)) {
+>   		loadsegment(ds, host_state->ds_sel);
+>   		loadsegment(es, host_state->es_sel);
+>   	}
+> -#endif
+>   	invalidate_tss_limit();
+> -#ifdef CONFIG_X86_64
+>   	wrmsrl(MSR_KERNEL_GS_BASE, vmx->msr_host_kernel_gs_base);
+> -#endif
+>   	load_fixmap_gdt(raw_smp_processor_id());
+>   	vmx->guest_state_loaded = false;
+>   	vmx->guest_uret_msrs_loaded = false;
+>   }
+>   
+> -#ifdef CONFIG_X86_64
+>   static u64 vmx_read_guest_kernel_gs_base(struct vcpu_vmx *vmx)
+>   {
+>   	preempt_disable();
+> @@ -1407,7 +1352,6 @@ static void vmx_write_guest_kernel_gs_base(struct vcpu_vmx *vmx, u64 data)
+>   	preempt_enable();
+>   	vmx->msr_guest_kernel_gs_base = data;
+>   }
+> -#endif
+>   
+>   static void grow_ple_window(struct kvm_vcpu *vcpu)
+>   {
+> @@ -1498,7 +1442,7 @@ void vmx_vcpu_load_vmcs(struct kvm_vcpu *vcpu, int cpu,
+>   			    (unsigned long)&get_cpu_entry_area(cpu)->tss.x86_tss);
+>   		vmcs_writel(HOST_GDTR_BASE, (unsigned long)gdt);   /* 22.2.4 */
+>   
+> -		if (IS_ENABLED(CONFIG_IA32_EMULATION) || IS_ENABLED(CONFIG_X86_32)) {
+> +		if (IS_ENABLED(CONFIG_IA32_EMULATION)) {
+>   			/* 22.2.3 */
+>   			vmcs_writel(HOST_IA32_SYSENTER_ESP,
+>   				    (unsigned long)(cpu_entry_stack(cpu) + 1));
+> @@ -1750,7 +1694,6 @@ static int skip_emulated_instruction(struct kvm_vcpu *vcpu)
+>   
+>   		orig_rip = kvm_rip_read(vcpu);
+>   		rip = orig_rip + instr_len;
+> -#ifdef CONFIG_X86_64
+>   		/*
+>   		 * We need to mask out the high 32 bits of RIP if not in 64-bit
+>   		 * mode, but just finding out that we are in 64-bit mode is
+> @@ -1758,7 +1701,7 @@ static int skip_emulated_instruction(struct kvm_vcpu *vcpu)
+>   		 */
+>   		if (unlikely(((rip ^ orig_rip) >> 31) == 3) && !is_64_bit_mode(vcpu))
+>   			rip = (u32)rip;
+> -#endif
+> +
+>   		kvm_rip_write(vcpu, rip);
+>   	} else {
+>   		if (!kvm_emulate_instruction(vcpu, EMULTYPE_SKIP))
+> @@ -1891,7 +1834,6 @@ static void vmx_setup_uret_msr(struct vcpu_vmx *vmx, unsigned int msr,
+>    */
+>   static void vmx_setup_uret_msrs(struct vcpu_vmx *vmx)
+>   {
+> -#ifdef CONFIG_X86_64
+>   	bool load_syscall_msrs;
+>   
+>   	/*
+> @@ -1904,7 +1846,6 @@ static void vmx_setup_uret_msrs(struct vcpu_vmx *vmx)
+>   	vmx_setup_uret_msr(vmx, MSR_STAR, load_syscall_msrs);
+>   	vmx_setup_uret_msr(vmx, MSR_LSTAR, load_syscall_msrs);
+>   	vmx_setup_uret_msr(vmx, MSR_SYSCALL_MASK, load_syscall_msrs);
+> -#endif
+>   	vmx_setup_uret_msr(vmx, MSR_EFER, update_transition_efer(vmx));
+>   
+>   	vmx_setup_uret_msr(vmx, MSR_TSC_AUX,
+> @@ -2019,7 +1960,6 @@ int vmx_get_msr(struct kvm_vcpu *vcpu, struct msr_data *msr_info)
+>   	u32 index;
+>   
+>   	switch (msr_info->index) {
+> -#ifdef CONFIG_X86_64
+>   	case MSR_FS_BASE:
+>   		msr_info->data = vmcs_readl(GUEST_FS_BASE);
+>   		break;
+> @@ -2029,7 +1969,6 @@ int vmx_get_msr(struct kvm_vcpu *vcpu, struct msr_data *msr_info)
+>   	case MSR_KERNEL_GS_BASE:
+>   		msr_info->data = vmx_read_guest_kernel_gs_base(vmx);
+>   		break;
+> -#endif
+>   	case MSR_EFER:
+>   		return kvm_get_msr_common(vcpu, msr_info);
+>   	case MSR_IA32_TSX_CTRL:
+> @@ -2166,10 +2105,8 @@ int vmx_get_msr(struct kvm_vcpu *vcpu, struct msr_data *msr_info)
+>   static u64 nested_vmx_truncate_sysenter_addr(struct kvm_vcpu *vcpu,
+>   						    u64 data)
+>   {
+> -#ifdef CONFIG_X86_64
+>   	if (!guest_cpuid_has(vcpu, X86_FEATURE_LM))
+>   		return (u32)data;
+> -#endif
+>   	return (unsigned long)data;
+>   }
+>   
+> @@ -2206,7 +2143,6 @@ int vmx_set_msr(struct kvm_vcpu *vcpu, struct msr_data *msr_info)
+>   	case MSR_EFER:
+>   		ret = kvm_set_msr_common(vcpu, msr_info);
+>   		break;
+> -#ifdef CONFIG_X86_64
+>   	case MSR_FS_BASE:
+>   		vmx_segment_cache_clear(vmx);
+>   		vmcs_writel(GUEST_FS_BASE, data);
+> @@ -2236,7 +2172,6 @@ int vmx_set_msr(struct kvm_vcpu *vcpu, struct msr_data *msr_info)
+>   			vmx_update_exception_bitmap(vcpu);
+>   		}
+>   		break;
+> -#endif
+>   	case MSR_IA32_SYSENTER_CS:
+>   		if (is_guest_mode(vcpu))
+>   			get_vmcs12(vcpu)->guest_sysenter_cs = data;
+> @@ -2621,12 +2556,6 @@ static int setup_vmcs_config(struct vmcs_config *vmcs_conf,
+>   	if (!IS_ENABLED(CONFIG_KVM_INTEL_PROVE_VE))
+>   		_cpu_based_2nd_exec_control &= ~SECONDARY_EXEC_EPT_VIOLATION_VE;
+>   
+> -#ifndef CONFIG_X86_64
+> -	if (!(_cpu_based_2nd_exec_control &
+> -				SECONDARY_EXEC_VIRTUALIZE_APIC_ACCESSES))
+> -		_cpu_based_exec_control &= ~CPU_BASED_TPR_SHADOW;
+> -#endif
+> -
+>   	if (!(_cpu_based_exec_control & CPU_BASED_TPR_SHADOW))
+>   		_cpu_based_2nd_exec_control &= ~(
+>   				SECONDARY_EXEC_APIC_REGISTER_VIRT |
+> @@ -2734,7 +2663,6 @@ static int setup_vmcs_config(struct vmcs_config *vmcs_conf,
+>   	if (vmx_basic_vmcs_size(basic_msr) > PAGE_SIZE)
+>   		return -EIO;
+>   
+> -#ifdef CONFIG_X86_64
+>   	/*
+>   	 * KVM expects to be able to shove all legal physical addresses into
+>   	 * VMCS fields for 64-bit kernels, and per the SDM, "This bit is always
+> @@ -2742,7 +2670,6 @@ static int setup_vmcs_config(struct vmcs_config *vmcs_conf,
+>   	 */
+>   	if (basic_msr & VMX_BASIC_32BIT_PHYS_ADDR_ONLY)
+>   		return -EIO;
+> -#endif
+>   
+>   	/* Require Write-Back (WB) memory type for VMCS accesses. */
+>   	if (vmx_basic_vmcs_mem_type(basic_msr) != X86_MEMTYPE_WB)
+> @@ -3149,22 +3076,15 @@ int vmx_set_efer(struct kvm_vcpu *vcpu, u64 efer)
+>   		return 0;
+>   
+>   	vcpu->arch.efer = efer;
+> -#ifdef CONFIG_X86_64
+>   	if (efer & EFER_LMA)
+>   		vm_entry_controls_setbit(vmx, VM_ENTRY_IA32E_MODE);
+>   	else
+>   		vm_entry_controls_clearbit(vmx, VM_ENTRY_IA32E_MODE);
+> -#else
+> -	if (KVM_BUG_ON(efer & EFER_LMA, vcpu->kvm))
+> -		return 1;
+> -#endif
+>   
+>   	vmx_setup_uret_msrs(vmx);
+>   	return 0;
+>   }
+>   
+> -#ifdef CONFIG_X86_64
+> -
+>   static void enter_lmode(struct kvm_vcpu *vcpu)
+>   {
+>   	u32 guest_tr_ar;
+> @@ -3187,8 +3107,6 @@ static void exit_lmode(struct kvm_vcpu *vcpu)
+>   	vmx_set_efer(vcpu, vcpu->arch.efer & ~EFER_LMA);
+>   }
+>   
+> -#endif
+> -
+>   void vmx_flush_tlb_all(struct kvm_vcpu *vcpu)
+>   {
+>   	struct vcpu_vmx *vmx = to_vmx(vcpu);
+> @@ -3328,14 +3246,12 @@ void vmx_set_cr0(struct kvm_vcpu *vcpu, unsigned long cr0)
+>   	vcpu->arch.cr0 = cr0;
+>   	kvm_register_mark_available(vcpu, VCPU_EXREG_CR0);
+>   
+> -#ifdef CONFIG_X86_64
+>   	if (vcpu->arch.efer & EFER_LME) {
+>   		if (!old_cr0_pg && (cr0 & X86_CR0_PG))
+>   			enter_lmode(vcpu);
+>   		else if (old_cr0_pg && !(cr0 & X86_CR0_PG))
+>   			exit_lmode(vcpu);
+>   	}
+> -#endif
+>   
+>   	if (enable_ept && !enable_unrestricted_guest) {
+>   		/*
+> @@ -4342,7 +4258,6 @@ void vmx_set_constant_host_state(struct vcpu_vmx *vmx)
+>   	vmx->loaded_vmcs->host_state.cr4 = cr4;
+>   
+>   	vmcs_write16(HOST_CS_SELECTOR, __KERNEL_CS);  /* 22.2.4 */
+> -#ifdef CONFIG_X86_64
+>   	/*
+>   	 * Load null selectors, so we can avoid reloading them in
+>   	 * vmx_prepare_switch_to_host(), in case userspace uses
+> @@ -4350,10 +4265,6 @@ void vmx_set_constant_host_state(struct vcpu_vmx *vmx)
+>   	 */
+>   	vmcs_write16(HOST_DS_SELECTOR, 0);
+>   	vmcs_write16(HOST_ES_SELECTOR, 0);
+> -#else
+> -	vmcs_write16(HOST_DS_SELECTOR, __KERNEL_DS);  /* 22.2.4 */
+> -	vmcs_write16(HOST_ES_SELECTOR, __KERNEL_DS);  /* 22.2.4 */
+> -#endif
+>   	vmcs_write16(HOST_SS_SELECTOR, __KERNEL_DS);  /* 22.2.4 */
+>   	vmcs_write16(HOST_TR_SELECTOR, GDT_ENTRY_TSS*8);  /* 22.2.4 */
+>   
+> @@ -4370,7 +4281,7 @@ void vmx_set_constant_host_state(struct vcpu_vmx *vmx)
+>   	 * vmx_vcpu_load_vmcs loads it with the per-CPU entry stack (and may
+>   	 * have already done so!).
+>   	 */
+> -	if (!IS_ENABLED(CONFIG_IA32_EMULATION) && !IS_ENABLED(CONFIG_X86_32))
+> +	if (!IS_ENABLED(CONFIG_IA32_EMULATION))
+>   		vmcs_writel(HOST_IA32_SYSENTER_ESP, 0);
+>   
+>   	rdmsrl(MSR_IA32_SYSENTER_EIP, tmpl);
+> @@ -4504,14 +4415,13 @@ static u32 vmx_exec_control(struct vcpu_vmx *vmx)
+>   	if (!cpu_need_tpr_shadow(&vmx->vcpu))
+>   		exec_control &= ~CPU_BASED_TPR_SHADOW;
+>   
+> -#ifdef CONFIG_X86_64
+>   	if (exec_control & CPU_BASED_TPR_SHADOW)
+>   		exec_control &= ~(CPU_BASED_CR8_LOAD_EXITING |
+>   				  CPU_BASED_CR8_STORE_EXITING);
+>   	else
+>   		exec_control |= CPU_BASED_CR8_STORE_EXITING |
+>   				CPU_BASED_CR8_LOAD_EXITING;
+> -#endif
+> +
+>   	/* No need to intercept CR3 access or INVPLG when using EPT. */
+>   	if (enable_ept)
+>   		exec_control &= ~(CPU_BASED_CR3_LOAD_EXITING |
+> @@ -7449,19 +7359,6 @@ fastpath_t vmx_vcpu_run(struct kvm_vcpu *vcpu, bool force_immediate_exit)
+>   	if (vmx->host_debugctlmsr)
+>   		update_debugctlmsr(vmx->host_debugctlmsr);
+>   
+> -#ifndef CONFIG_X86_64
+> -	/*
+> -	 * The sysexit path does not restore ds/es, so we must set them to
+> -	 * a reasonable value ourselves.
+> -	 *
+> -	 * We can't defer this to vmx_prepare_switch_to_host() since that
+> -	 * function may be executed in interrupt context, which saves and
+> -	 * restore segments around it, nullifying its effect.
+> -	 */
+> -	loadsegment(ds, __USER_DS);
+> -	loadsegment(es, __USER_DS);
+> -#endif
+> -
+>   	pt_guest_exit(vmx);
+>   
+>   	kvm_load_host_xsave_state(vcpu);
+> @@ -7571,11 +7468,9 @@ int vmx_vcpu_create(struct kvm_vcpu *vcpu)
+>   	bitmap_fill(vmx->shadow_msr_intercept.write, MAX_POSSIBLE_PASSTHROUGH_MSRS);
+>   
+>   	vmx_disable_intercept_for_msr(vcpu, MSR_IA32_TSC, MSR_TYPE_R);
+> -#ifdef CONFIG_X86_64
+>   	vmx_disable_intercept_for_msr(vcpu, MSR_FS_BASE, MSR_TYPE_RW);
+>   	vmx_disable_intercept_for_msr(vcpu, MSR_GS_BASE, MSR_TYPE_RW);
+>   	vmx_disable_intercept_for_msr(vcpu, MSR_KERNEL_GS_BASE, MSR_TYPE_RW);
+> -#endif
+>   	vmx_disable_intercept_for_msr(vcpu, MSR_IA32_SYSENTER_CS, MSR_TYPE_RW);
+>   	vmx_disable_intercept_for_msr(vcpu, MSR_IA32_SYSENTER_ESP, MSR_TYPE_RW);
+>   	vmx_disable_intercept_for_msr(vcpu, MSR_IA32_SYSENTER_EIP, MSR_TYPE_RW);
+> @@ -8099,7 +7994,6 @@ int vmx_check_intercept(struct kvm_vcpu *vcpu,
+>   	return X86EMUL_UNHANDLEABLE;
+>   }
+>   
+> -#ifdef CONFIG_X86_64
+>   /* (a << shift) / divisor, return 1 if overflow otherwise 0 */
+>   static inline int u64_shl_div_u64(u64 a, unsigned int shift,
+>   				  u64 divisor, u64 *result)
+> @@ -8162,7 +8056,6 @@ void vmx_cancel_hv_timer(struct kvm_vcpu *vcpu)
+>   {
+>   	to_vmx(vcpu)->hv_deadline_tsc = -1;
+>   }
+> -#endif
+>   
+>   void vmx_update_cpu_dirty_logging(struct kvm_vcpu *vcpu)
+>   {
+> @@ -8356,9 +8249,7 @@ static __init void vmx_setup_user_return_msrs(void)
+>   	 * into hardware and is here purely for emulation purposes.
+>   	 */
+>   	const u32 vmx_uret_msrs_list[] = {
+> -	#ifdef CONFIG_X86_64
+>   		MSR_SYSCALL_MASK, MSR_LSTAR, MSR_CSTAR,
+> -	#endif
+>   		MSR_EFER, MSR_TSC_AUX, MSR_STAR,
+>   		MSR_IA32_TSX_CTRL,
+>   	};
+> diff --git a/arch/x86/kvm/vmx/vmx.h b/arch/x86/kvm/vmx/vmx.h
+> index 43f573f6ca46..ba9428728f99 100644
+> --- a/arch/x86/kvm/vmx/vmx.h
+> +++ b/arch/x86/kvm/vmx/vmx.h
+> @@ -19,11 +19,7 @@
+>   
+>   #define X2APIC_MSR(r) (APIC_BASE_MSR + ((r) >> 4))
+>   
+> -#ifdef CONFIG_X86_64
+>   #define MAX_NR_USER_RETURN_MSRS	7
+> -#else
+> -#define MAX_NR_USER_RETURN_MSRS	4
+> -#endif
+>   
+>   #define MAX_NR_LOADSTORE_MSRS	8
+>   
+> @@ -272,10 +268,8 @@ struct vcpu_vmx {
+>   	 */
+>   	struct vmx_uret_msr   guest_uret_msrs[MAX_NR_USER_RETURN_MSRS];
+>   	bool                  guest_uret_msrs_loaded;
+> -#ifdef CONFIG_X86_64
+>   	u64		      msr_host_kernel_gs_base;
+>   	u64		      msr_guest_kernel_gs_base;
+> -#endif
+>   
+>   	u64		      spec_ctrl;
+>   	u32		      msr_ia32_umwait_control;
+> @@ -470,14 +464,10 @@ static inline u8 vmx_get_rvi(void)
+>   
+>   #define __KVM_REQUIRED_VMX_VM_ENTRY_CONTROLS				\
+>   	(VM_ENTRY_LOAD_DEBUG_CONTROLS)
+> -#ifdef CONFIG_X86_64
+>   	#define KVM_REQUIRED_VMX_VM_ENTRY_CONTROLS			\
+>   		(__KVM_REQUIRED_VMX_VM_ENTRY_CONTROLS |			\
+>   		 VM_ENTRY_IA32E_MODE)
+> -#else
+> -	#define KVM_REQUIRED_VMX_VM_ENTRY_CONTROLS			\
+> -		__KVM_REQUIRED_VMX_VM_ENTRY_CONTROLS
+> -#endif
+> +
+>   #define KVM_OPTIONAL_VMX_VM_ENTRY_CONTROLS				\
+>   	(VM_ENTRY_LOAD_IA32_PERF_GLOBAL_CTRL |				\
+>   	 VM_ENTRY_LOAD_IA32_PAT |					\
+> @@ -489,14 +479,10 @@ static inline u8 vmx_get_rvi(void)
+>   #define __KVM_REQUIRED_VMX_VM_EXIT_CONTROLS				\
+>   	(VM_EXIT_SAVE_DEBUG_CONTROLS |					\
+>   	 VM_EXIT_ACK_INTR_ON_EXIT)
+> -#ifdef CONFIG_X86_64
+>   	#define KVM_REQUIRED_VMX_VM_EXIT_CONTROLS			\
+>   		(__KVM_REQUIRED_VMX_VM_EXIT_CONTROLS |			\
+>   		 VM_EXIT_HOST_ADDR_SPACE_SIZE)
+> -#else
+> -	#define KVM_REQUIRED_VMX_VM_EXIT_CONTROLS			\
+> -		__KVM_REQUIRED_VMX_VM_EXIT_CONTROLS
+> -#endif
+> +
+>   #define KVM_OPTIONAL_VMX_VM_EXIT_CONTROLS				\
+>   	      (VM_EXIT_LOAD_IA32_PERF_GLOBAL_CTRL |			\
+>   	       VM_EXIT_SAVE_IA32_PAT |					\
+> @@ -529,15 +515,10 @@ static inline u8 vmx_get_rvi(void)
+>   	 CPU_BASED_RDPMC_EXITING |					\
+>   	 CPU_BASED_INTR_WINDOW_EXITING)
+>   
+> -#ifdef CONFIG_X86_64
+>   	#define KVM_REQUIRED_VMX_CPU_BASED_VM_EXEC_CONTROL		\
+>   		(__KVM_REQUIRED_VMX_CPU_BASED_VM_EXEC_CONTROL |		\
+>   		 CPU_BASED_CR8_LOAD_EXITING |				\
+>   		 CPU_BASED_CR8_STORE_EXITING)
+> -#else
+> -	#define KVM_REQUIRED_VMX_CPU_BASED_VM_EXEC_CONTROL		\
+> -		__KVM_REQUIRED_VMX_CPU_BASED_VM_EXEC_CONTROL
+> -#endif
+>   
+>   #define KVM_OPTIONAL_VMX_CPU_BASED_VM_EXEC_CONTROL			\
+>   	(CPU_BASED_RDTSC_EXITING |					\
+> diff --git a/arch/x86/kvm/vmx/vmx_ops.h b/arch/x86/kvm/vmx/vmx_ops.h
+> index 633c87e2fd92..72031b669925 100644
+> --- a/arch/x86/kvm/vmx/vmx_ops.h
+> +++ b/arch/x86/kvm/vmx/vmx_ops.h
+> @@ -171,11 +171,7 @@ static __always_inline u64 vmcs_read64(unsigned long field)
+>   	vmcs_check64(field);
+>   	if (kvm_is_using_evmcs())
+>   		return evmcs_read64(field);
+> -#ifdef CONFIG_X86_64
+>   	return __vmcs_readl(field);
+> -#else
+> -	return __vmcs_readl(field) | ((u64)__vmcs_readl(field+1) << 32);
+> -#endif
+>   }
+>   
+>   static __always_inline unsigned long vmcs_readl(unsigned long field)
+> @@ -250,9 +246,6 @@ static __always_inline void vmcs_write64(unsigned long field, u64 value)
+>   		return evmcs_write64(field, value);
+>   
+>   	__vmcs_writel(field, value);
+> -#ifndef CONFIG_X86_64
+> -	__vmcs_writel(field+1, value >> 32);
+> -#endif
+>   }
+>   
+>   static __always_inline void vmcs_writel(unsigned long field, unsigned long value)
+> diff --git a/arch/x86/kvm/vmx/x86_ops.h b/arch/x86/kvm/vmx/x86_ops.h
+> index a55981c5216e..8573f1e401be 100644
+> --- a/arch/x86/kvm/vmx/x86_ops.h
+> +++ b/arch/x86/kvm/vmx/x86_ops.h
+> @@ -111,11 +111,9 @@ u64 vmx_get_l2_tsc_multiplier(struct kvm_vcpu *vcpu);
+>   void vmx_write_tsc_offset(struct kvm_vcpu *vcpu);
+>   void vmx_write_tsc_multiplier(struct kvm_vcpu *vcpu);
+>   void vmx_update_cpu_dirty_logging(struct kvm_vcpu *vcpu);
+> -#ifdef CONFIG_X86_64
+>   int vmx_set_hv_timer(struct kvm_vcpu *vcpu, u64 guest_deadline_tsc,
+>   		     bool *expired);
+>   void vmx_cancel_hv_timer(struct kvm_vcpu *vcpu);
+> -#endif
+>   void vmx_setup_mce(struct kvm_vcpu *vcpu);
+>   
+>   #endif /* __KVM_X86_VMX_X86_OPS_H */
+> diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+> index 2e713480933a..b776e697c0d9 100644
+> --- a/arch/x86/kvm/x86.c
+> +++ b/arch/x86/kvm/x86.c
+> @@ -112,12 +112,8 @@ EXPORT_SYMBOL_GPL(kvm_host);
+>    * - enable syscall per default because its emulated by KVM
+>    * - enable LME and LMA per default on 64 bit KVM
+>    */
+> -#ifdef CONFIG_X86_64
+>   static
+>   u64 __read_mostly efer_reserved_bits = ~((u64)(EFER_SCE | EFER_LME | EFER_LMA));
+> -#else
+> -static u64 __read_mostly efer_reserved_bits = ~((u64)EFER_SCE);
+> -#endif
+>   
+>   static u64 __read_mostly cr4_reserved_bits = CR4_RESERVED_BITS;
+>   
+> @@ -318,9 +314,7 @@ static struct kmem_cache *x86_emulator_cache;
+>   static const u32 msrs_to_save_base[] = {
+>   	MSR_IA32_SYSENTER_CS, MSR_IA32_SYSENTER_ESP, MSR_IA32_SYSENTER_EIP,
+>   	MSR_STAR,
+> -#ifdef CONFIG_X86_64
+>   	MSR_CSTAR, MSR_KERNEL_GS_BASE, MSR_SYSCALL_MASK, MSR_LSTAR,
+> -#endif
+>   	MSR_IA32_TSC, MSR_IA32_CR_PAT, MSR_VM_HSAVE_PA,
+>   	MSR_IA32_FEAT_CTL, MSR_IA32_BNDCFGS, MSR_TSC_AUX,
+>   	MSR_IA32_SPEC_CTRL, MSR_IA32_TSX_CTRL,
+> @@ -1071,10 +1065,8 @@ EXPORT_SYMBOL_GPL(load_pdptrs);
+>   
+>   static bool kvm_is_valid_cr0(struct kvm_vcpu *vcpu, unsigned long cr0)
+>   {
+> -#ifdef CONFIG_X86_64
+>   	if (cr0 & 0xffffffff00000000UL)
+>   		return false;
+> -#endif
+>   
+>   	if ((cr0 & X86_CR0_NW) && !(cr0 & X86_CR0_CD))
+>   		return false;
+> @@ -1134,7 +1126,6 @@ int kvm_set_cr0(struct kvm_vcpu *vcpu, unsigned long cr0)
+>   	/* Write to CR0 reserved bits are ignored, even on Intel. */
+>   	cr0 &= ~CR0_RESERVED_BITS;
+>   
+> -#ifdef CONFIG_X86_64
+>   	if ((vcpu->arch.efer & EFER_LME) && !is_paging(vcpu) &&
+>   	    (cr0 & X86_CR0_PG)) {
+>   		int cs_db, cs_l;
+> @@ -1145,7 +1136,7 @@ int kvm_set_cr0(struct kvm_vcpu *vcpu, unsigned long cr0)
+>   		if (cs_l)
+>   			return 1;
+>   	}
+> -#endif
+> +
+>   	if (!(vcpu->arch.efer & EFER_LME) && (cr0 & X86_CR0_PG) &&
+>   	    is_pae(vcpu) && ((cr0 ^ old_cr0) & X86_CR0_PDPTR_BITS) &&
+>   	    !load_pdptrs(vcpu, kvm_read_cr3(vcpu)))
+> @@ -1218,12 +1209,10 @@ void kvm_load_host_xsave_state(struct kvm_vcpu *vcpu)
+>   }
+>   EXPORT_SYMBOL_GPL(kvm_load_host_xsave_state);
+>   
+> -#ifdef CONFIG_X86_64
+>   static inline u64 kvm_guest_supported_xfd(struct kvm_vcpu *vcpu)
+>   {
+>   	return vcpu->arch.guest_supported_xcr0 & XFEATURE_MASK_USER_DYNAMIC;
+>   }
+> -#endif
+>   
+>   static int __kvm_set_xcr(struct kvm_vcpu *vcpu, u32 index, u64 xcr)
+>   {
+> @@ -1421,13 +1410,12 @@ int kvm_set_cr3(struct kvm_vcpu *vcpu, unsigned long cr3)
+>   {
+>   	bool skip_tlb_flush = false;
+>   	unsigned long pcid = 0;
+> -#ifdef CONFIG_X86_64
+> +
+>   	if (kvm_is_cr4_bit_set(vcpu, X86_CR4_PCIDE)) {
+>   		skip_tlb_flush = cr3 & X86_CR3_PCID_NOFLUSH;
+>   		cr3 &= ~X86_CR3_PCID_NOFLUSH;
+>   		pcid = cr3 & X86_CR3_PCID_MASK;
+>   	}
+> -#endif
+>   
+>   	/* PDPTRs are always reloaded for PAE paging. */
+>   	if (cr3 == kvm_read_cr3(vcpu) && !is_pae_paging(vcpu))
+> @@ -2216,7 +2204,6 @@ static int do_set_msr(struct kvm_vcpu *vcpu, unsigned index, u64 *data)
+>   	return kvm_set_msr_ignored_check(vcpu, index, *data, true);
+>   }
+>   
+> -#ifdef CONFIG_X86_64
+>   struct pvclock_clock {
+>   	int vclock_mode;
+>   	u64 cycle_last;
+> @@ -2274,13 +2261,6 @@ static s64 get_kvmclock_base_ns(void)
+>   	/* Count up from boot time, but with the frequency of the raw clock.  */
+>   	return ktime_to_ns(ktime_add(ktime_get_raw(), pvclock_gtod_data.offs_boot));
+>   }
+> -#else
+> -static s64 get_kvmclock_base_ns(void)
+> -{
+> -	/* Master clock not used, so we can just use CLOCK_BOOTTIME.  */
+> -	return ktime_get_boottime_ns();
+> -}
+> -#endif
+>   
+>   static void kvm_write_wall_clock(struct kvm *kvm, gpa_t wall_clock, int sec_hi_ofs)
+>   {
+> @@ -2382,9 +2362,7 @@ static void kvm_get_time_scale(uint64_t scaled_hz, uint64_t base_hz,
+>   	*pmultiplier = div_frac(scaled64, tps32);
+>   }
+>   
+> -#ifdef CONFIG_X86_64
+>   static atomic_t kvm_guest_has_master_clock = ATOMIC_INIT(0);
+> -#endif
+>   
+>   static DEFINE_PER_CPU(unsigned long, cpu_tsc_khz);
+>   static unsigned long max_tsc_khz;
+> @@ -2477,16 +2455,13 @@ static u64 compute_guest_tsc(struct kvm_vcpu *vcpu, s64 kernel_ns)
+>   	return tsc;
+>   }
+>   
+> -#ifdef CONFIG_X86_64
+>   static inline bool gtod_is_based_on_tsc(int mode)
+>   {
+>   	return mode == VDSO_CLOCKMODE_TSC || mode == VDSO_CLOCKMODE_HVCLOCK;
+>   }
+> -#endif
+>   
+>   static void kvm_track_tsc_matching(struct kvm_vcpu *vcpu, bool new_generation)
+>   {
+> -#ifdef CONFIG_X86_64
+>   	struct kvm_arch *ka = &vcpu->kvm->arch;
+>   	struct pvclock_gtod_data *gtod = &pvclock_gtod_data;
+>   
+> @@ -2512,7 +2487,6 @@ static void kvm_track_tsc_matching(struct kvm_vcpu *vcpu, bool new_generation)
+>   	trace_kvm_track_tsc(vcpu->vcpu_id, ka->nr_vcpus_matched_tsc,
+>   			    atomic_read(&vcpu->kvm->online_vcpus),
+>   		            ka->use_master_clock, gtod->clock.vclock_mode);
+> -#endif
+>   }
+>   
+>   /*
+> @@ -2623,14 +2597,13 @@ static void kvm_vcpu_write_tsc_multiplier(struct kvm_vcpu *vcpu, u64 l1_multipli
+>   
+>   static inline bool kvm_check_tsc_unstable(void)
+>   {
+> -#ifdef CONFIG_X86_64
+>   	/*
+>   	 * TSC is marked unstable when we're running on Hyper-V,
+>   	 * 'TSC page' clocksource is good.
+>   	 */
+>   	if (pvclock_gtod_data.clock.vclock_mode == VDSO_CLOCKMODE_HVCLOCK)
+>   		return false;
+> -#endif
+> +
+>   	return check_tsc_unstable();
+>   }
+>   
+> @@ -2772,8 +2745,6 @@ static inline void adjust_tsc_offset_host(struct kvm_vcpu *vcpu, s64 adjustment)
+>   	adjust_tsc_offset_guest(vcpu, adjustment);
+>   }
+>   
+> -#ifdef CONFIG_X86_64
+> -
+>   static u64 read_tsc(void)
+>   {
+>   	u64 ret = (u64)rdtsc_ordered();
+> @@ -2941,7 +2912,6 @@ static bool kvm_get_walltime_and_clockread(struct timespec64 *ts,
+>   
+>   	return gtod_is_based_on_tsc(do_realtime(ts, tsc_timestamp));
+>   }
+> -#endif
+>   
+>   /*
+>    *
+> @@ -2986,7 +2956,6 @@ static bool kvm_get_walltime_and_clockread(struct timespec64 *ts,
+>   
+>   static void pvclock_update_vm_gtod_copy(struct kvm *kvm)
+>   {
+> -#ifdef CONFIG_X86_64
+>   	struct kvm_arch *ka = &kvm->arch;
+>   	int vclock_mode;
+>   	bool host_tsc_clocksource, vcpus_matched;
+> @@ -3013,7 +2982,6 @@ static void pvclock_update_vm_gtod_copy(struct kvm *kvm)
+>   	vclock_mode = pvclock_gtod_data.clock.vclock_mode;
+>   	trace_kvm_update_master_clock(ka->use_master_clock, vclock_mode,
+>   					vcpus_matched);
+> -#endif
+>   }
+>   
+>   static void kvm_make_mclock_inprogress_request(struct kvm *kvm)
+> @@ -3087,15 +3055,13 @@ static void __get_kvmclock(struct kvm *kvm, struct kvm_clock_data *data)
+>   	data->flags = 0;
+>   	if (ka->use_master_clock &&
+>   	    (static_cpu_has(X86_FEATURE_CONSTANT_TSC) || __this_cpu_read(cpu_tsc_khz))) {
+> -#ifdef CONFIG_X86_64
+>   		struct timespec64 ts;
+>   
+>   		if (kvm_get_walltime_and_clockread(&ts, &data->host_tsc)) {
+>   			data->realtime = ts.tv_nsec + NSEC_PER_SEC * ts.tv_sec;
+>   			data->flags |= KVM_CLOCK_REALTIME | KVM_CLOCK_HOST_TSC;
+>   		} else
+> -#endif
+> -		data->host_tsc = rdtsc();
+> +			data->host_tsc = rdtsc();
+>   
+>   		data->flags |= KVM_CLOCK_TSC_STABLE;
+>   		hv_clock.tsc_timestamp = ka->master_cycle_now;
+> @@ -3317,7 +3283,6 @@ static int kvm_guest_time_update(struct kvm_vcpu *v)
+>    */
+>   uint64_t kvm_get_wall_clock_epoch(struct kvm *kvm)
+>   {
+> -#ifdef CONFIG_X86_64
+>   	struct pvclock_vcpu_time_info hv_clock;
+>   	struct kvm_arch *ka = &kvm->arch;
+>   	unsigned long seq, local_tsc_khz;
+> @@ -3368,7 +3333,6 @@ uint64_t kvm_get_wall_clock_epoch(struct kvm *kvm)
+>   		return ts.tv_nsec + NSEC_PER_SEC * ts.tv_sec -
+>   			__pvclock_read_cycles(&hv_clock, host_tsc);
+>   	}
+> -#endif
+>   	return ktime_get_real_ns() - get_kvmclock_ns(kvm);
+>   }
+>   
+> @@ -4098,7 +4062,6 @@ int kvm_set_msr_common(struct kvm_vcpu *vcpu, struct msr_data *msr_info)
+>   			return 1;
+>   		vcpu->arch.msr_misc_features_enables = data;
+>   		break;
+> -#ifdef CONFIG_X86_64
+>   	case MSR_IA32_XFD:
+>   		if (!msr_info->host_initiated &&
+>   		    !guest_cpuid_has(vcpu, X86_FEATURE_XFD))
+> @@ -4119,7 +4082,6 @@ int kvm_set_msr_common(struct kvm_vcpu *vcpu, struct msr_data *msr_info)
+>   
+>   		vcpu->arch.guest_fpu.xfd_err = data;
+>   		break;
+> -#endif
+>   	default:
+>   		if (kvm_pmu_is_valid_msr(vcpu, msr))
+>   			return kvm_pmu_set_msr(vcpu, msr_info);
+> @@ -4453,7 +4415,6 @@ int kvm_get_msr_common(struct kvm_vcpu *vcpu, struct msr_data *msr_info)
+>   	case MSR_K7_HWCR:
+>   		msr_info->data = vcpu->arch.msr_hwcr;
+>   		break;
+> -#ifdef CONFIG_X86_64
+>   	case MSR_IA32_XFD:
+>   		if (!msr_info->host_initiated &&
+>   		    !guest_cpuid_has(vcpu, X86_FEATURE_XFD))
+> @@ -4468,7 +4429,6 @@ int kvm_get_msr_common(struct kvm_vcpu *vcpu, struct msr_data *msr_info)
+>   
+>   		msr_info->data = vcpu->arch.guest_fpu.xfd_err;
+>   		break;
+> -#endif
+>   	default:
+>   		if (kvm_pmu_is_valid_msr(vcpu, msr_info->index))
+>   			return kvm_pmu_get_msr(vcpu, msr_info);
+> @@ -8380,10 +8340,8 @@ static bool emulator_get_segment(struct x86_emulate_ctxt *ctxt, u16 *selector,
+>   		var.limit >>= 12;
+>   	set_desc_limit(desc, var.limit);
+>   	set_desc_base(desc, (unsigned long)var.base);
+> -#ifdef CONFIG_X86_64
+>   	if (base3)
+>   		*base3 = var.base >> 32;
+> -#endif
+>   	desc->type = var.type;
+>   	desc->s = var.s;
+>   	desc->dpl = var.dpl;
+> @@ -8405,9 +8363,7 @@ static void emulator_set_segment(struct x86_emulate_ctxt *ctxt, u16 selector,
+>   
+>   	var.selector = selector;
+>   	var.base = get_desc_base(desc);
+> -#ifdef CONFIG_X86_64
+>   	var.base |= ((u64)base3) << 32;
+> -#endif
+>   	var.limit = get_desc_limit(desc);
+>   	if (desc->g)
+>   		var.limit = (var.limit << 12) | 0xfff;
+> @@ -9400,7 +9356,6 @@ static void tsc_khz_changed(void *data)
+>   	__this_cpu_write(cpu_tsc_khz, khz);
+>   }
+>   
+> -#ifdef CONFIG_X86_64
+>   static void kvm_hyperv_tsc_notifier(void)
+>   {
+>   	struct kvm *kvm;
+> @@ -9428,7 +9383,6 @@ static void kvm_hyperv_tsc_notifier(void)
+>   
+>   	mutex_unlock(&kvm_lock);
+>   }
+> -#endif
+>   
+>   static void __kvmclock_cpufreq_notifier(struct cpufreq_freqs *freq, int cpu)
+>   {
+> @@ -9560,7 +9514,6 @@ static void kvm_timer_init(void)
+>   	}
+>   }
+>   
+> -#ifdef CONFIG_X86_64
+>   static void pvclock_gtod_update_fn(struct work_struct *work)
+>   {
+>   	struct kvm *kvm;
+> @@ -9614,7 +9567,6 @@ static int pvclock_gtod_notify(struct notifier_block *nb, unsigned long unused,
+>   static struct notifier_block pvclock_gtod_notifier = {
+>   	.notifier_call = pvclock_gtod_notify,
+>   };
+> -#endif
+>   
+>   static inline void kvm_ops_update(struct kvm_x86_init_ops *ops)
+>   {
+> @@ -9758,12 +9710,10 @@ int kvm_x86_vendor_init(struct kvm_x86_init_ops *ops)
+>   
+>   	if (pi_inject_timer == -1)
+>   		pi_inject_timer = housekeeping_enabled(HK_TYPE_TIMER);
+> -#ifdef CONFIG_X86_64
+>   	pvclock_gtod_register_notifier(&pvclock_gtod_notifier);
+>   
+>   	if (hypervisor_is_type(X86_HYPER_MS_HYPERV))
+>   		set_hv_tscchange_cb(kvm_hyperv_tsc_notifier);
+> -#endif
+>   
+>   	kvm_register_perf_callbacks(ops->handle_intel_pt_intr);
+>   
+> @@ -9809,10 +9759,9 @@ void kvm_x86_vendor_exit(void)
+>   {
+>   	kvm_unregister_perf_callbacks();
+>   
+> -#ifdef CONFIG_X86_64
+>   	if (hypervisor_is_type(X86_HYPER_MS_HYPERV))
+>   		clear_hv_tscchange_cb();
+> -#endif
+> +
+>   	kvm_lapic_exit();
+>   
+>   	if (!boot_cpu_has(X86_FEATURE_CONSTANT_TSC)) {
+> @@ -9820,11 +9769,10 @@ void kvm_x86_vendor_exit(void)
+>   					    CPUFREQ_TRANSITION_NOTIFIER);
+>   		cpuhp_remove_state_nocalls(CPUHP_AP_X86_KVM_CLK_ONLINE);
+>   	}
+> -#ifdef CONFIG_X86_64
+> +
+>   	pvclock_gtod_unregister_notifier(&pvclock_gtod_notifier);
+>   	irq_work_sync(&pvclock_irq_work);
+>   	cancel_work_sync(&pvclock_gtod_work);
+> -#endif
+>   	kvm_x86_call(hardware_unsetup)();
+>   	kvm_mmu_vendor_module_exit();
+>   	free_percpu(user_return_msrs);
+> @@ -9839,7 +9787,6 @@ void kvm_x86_vendor_exit(void)
+>   }
+>   EXPORT_SYMBOL_GPL(kvm_x86_vendor_exit);
+>   
+> -#ifdef CONFIG_X86_64
+>   static int kvm_pv_clock_pairing(struct kvm_vcpu *vcpu, gpa_t paddr,
+>   			        unsigned long clock_type)
+>   {
+> @@ -9874,7 +9821,6 @@ static int kvm_pv_clock_pairing(struct kvm_vcpu *vcpu, gpa_t paddr,
+>   
+>   	return ret;
+>   }
+> -#endif
+>   
+>   /*
+>    * kvm_pv_kick_cpu_op:  Kick a vcpu.
+> @@ -10019,11 +9965,9 @@ unsigned long __kvm_emulate_hypercall(struct kvm_vcpu *vcpu, unsigned long nr,
+>   		kvm_sched_yield(vcpu, a1);
+>   		ret = 0;
+>   		break;
+> -#ifdef CONFIG_X86_64
+>   	case KVM_HC_CLOCK_PAIRING:
+>   		ret = kvm_pv_clock_pairing(vcpu, a0, a1);
+>   		break;
+> -#endif
+>   	case KVM_HC_SEND_IPI:
+>   		if (!guest_pv_has(vcpu, KVM_FEATURE_PV_SEND_IPI))
+>   			break;
+> @@ -11592,7 +11536,6 @@ static void __get_regs(struct kvm_vcpu *vcpu, struct kvm_regs *regs)
+>   	regs->rdi = kvm_rdi_read(vcpu);
+>   	regs->rsp = kvm_rsp_read(vcpu);
+>   	regs->rbp = kvm_rbp_read(vcpu);
+> -#ifdef CONFIG_X86_64
+>   	regs->r8 = kvm_r8_read(vcpu);
+>   	regs->r9 = kvm_r9_read(vcpu);
+>   	regs->r10 = kvm_r10_read(vcpu);
+> @@ -11601,8 +11544,6 @@ static void __get_regs(struct kvm_vcpu *vcpu, struct kvm_regs *regs)
+>   	regs->r13 = kvm_r13_read(vcpu);
+>   	regs->r14 = kvm_r14_read(vcpu);
+>   	regs->r15 = kvm_r15_read(vcpu);
+> -#endif
+> -
+>   	regs->rip = kvm_rip_read(vcpu);
+>   	regs->rflags = kvm_get_rflags(vcpu);
+>   }
+> @@ -11632,7 +11573,6 @@ static void __set_regs(struct kvm_vcpu *vcpu, struct kvm_regs *regs)
+>   	kvm_rdi_write(vcpu, regs->rdi);
+>   	kvm_rsp_write(vcpu, regs->rsp);
+>   	kvm_rbp_write(vcpu, regs->rbp);
+> -#ifdef CONFIG_X86_64
+>   	kvm_r8_write(vcpu, regs->r8);
+>   	kvm_r9_write(vcpu, regs->r9);
+>   	kvm_r10_write(vcpu, regs->r10);
+> @@ -11641,8 +11581,6 @@ static void __set_regs(struct kvm_vcpu *vcpu, struct kvm_regs *regs)
+>   	kvm_r13_write(vcpu, regs->r13);
+>   	kvm_r14_write(vcpu, regs->r14);
+>   	kvm_r15_write(vcpu, regs->r15);
+> -#endif
+> -
+>   	kvm_rip_write(vcpu, regs->rip);
+>   	kvm_set_rflags(vcpu, regs->rflags | X86_EFLAGS_FIXED);
+>   
+> diff --git a/arch/x86/kvm/x86.h b/arch/x86/kvm/x86.h
+> index ec623d23d13d..0b2e03f083a7 100644
+> --- a/arch/x86/kvm/x86.h
+> +++ b/arch/x86/kvm/x86.h
+> @@ -166,11 +166,7 @@ static inline bool is_protmode(struct kvm_vcpu *vcpu)
+>   
+>   static inline bool is_long_mode(struct kvm_vcpu *vcpu)
+>   {
+> -#ifdef CONFIG_X86_64
+>   	return !!(vcpu->arch.efer & EFER_LMA);
+> -#else
+> -	return false;
+> -#endif
+>   }
+>   
+>   static inline bool is_64_bit_mode(struct kvm_vcpu *vcpu)
+> diff --git a/arch/x86/kvm/xen.c b/arch/x86/kvm/xen.c
+> index a909b817b9c0..9f6115da02ea 100644
+> --- a/arch/x86/kvm/xen.c
+> +++ b/arch/x86/kvm/xen.c
+> @@ -67,19 +67,16 @@ static int kvm_xen_shared_info_init(struct kvm *kvm)
+>   	BUILD_BUG_ON(offsetof(struct compat_shared_info, arch.wc_sec_hi) != 0x924);
+>   	BUILD_BUG_ON(offsetof(struct pvclock_vcpu_time_info, version) != 0);
+>   
+> -#ifdef CONFIG_X86_64
+>   	/* Paranoia checks on the 64-bit struct layout */
+>   	BUILD_BUG_ON(offsetof(struct shared_info, wc) != 0xc00);
+>   	BUILD_BUG_ON(offsetof(struct shared_info, wc_sec_hi) != 0xc0c);
+>   
+> -	if (IS_ENABLED(CONFIG_64BIT) && kvm->arch.xen.long_mode) {
+> +	if (kvm->arch.xen.long_mode) {
+>   		struct shared_info *shinfo = gpc->khva;
+>   
+>   		wc_sec_hi = &shinfo->wc_sec_hi;
+>   		wc = &shinfo->wc;
+> -	} else
+> -#endif
+> -	{
+> +	} else {
+>   		struct compat_shared_info *shinfo = gpc->khva;
+>   
+>   		wc_sec_hi = &shinfo->arch.wc_sec_hi;
+> @@ -177,8 +174,7 @@ static void kvm_xen_start_timer(struct kvm_vcpu *vcpu, u64 guest_abs,
+>   	    static_cpu_has(X86_FEATURE_CONSTANT_TSC)) {
+>   		uint64_t host_tsc, guest_tsc;
+>   
+> -		if (!IS_ENABLED(CONFIG_64BIT) ||
+> -		    !kvm_get_monotonic_and_clockread(&kernel_now, &host_tsc)) {
+> +		if (!kvm_get_monotonic_and_clockread(&kernel_now, &host_tsc)) {
+>   			/*
+>   			 * Don't fall back to get_kvmclock_ns() because it's
+>   			 * broken; it has a systemic error in its results
+> @@ -288,7 +284,6 @@ static void kvm_xen_update_runstate_guest(struct kvm_vcpu *v, bool atomic)
+>   	BUILD_BUG_ON(offsetof(struct vcpu_runstate_info, state) != 0);
+>   	BUILD_BUG_ON(offsetof(struct compat_vcpu_runstate_info, state) != 0);
+>   	BUILD_BUG_ON(sizeof(struct compat_vcpu_runstate_info) != 0x2c);
+> -#ifdef CONFIG_X86_64
+>   	/*
+>   	 * The 64-bit structure has 4 bytes of padding before 'state_entry_time'
+>   	 * so each subsequent field is shifted by 4, and it's 4 bytes longer.
+> @@ -298,7 +293,6 @@ static void kvm_xen_update_runstate_guest(struct kvm_vcpu *v, bool atomic)
+>   	BUILD_BUG_ON(offsetof(struct vcpu_runstate_info, time) !=
+>   		     offsetof(struct compat_vcpu_runstate_info, time) + 4);
+>   	BUILD_BUG_ON(sizeof(struct vcpu_runstate_info) != 0x2c + 4);
+> -#endif
+>   	/*
+>   	 * The state field is in the same place at the start of both structs,
+>   	 * and is the same size (int) as vx->current_runstate.
+> @@ -335,7 +329,7 @@ static void kvm_xen_update_runstate_guest(struct kvm_vcpu *v, bool atomic)
+>   	BUILD_BUG_ON(sizeof_field(struct vcpu_runstate_info, time) !=
+>   		     sizeof(vx->runstate_times));
+>   
+> -	if (IS_ENABLED(CONFIG_64BIT) && v->kvm->arch.xen.long_mode) {
+> +	if (v->kvm->arch.xen.long_mode) {
+>   		user_len = sizeof(struct vcpu_runstate_info);
+>   		times_ofs = offsetof(struct vcpu_runstate_info,
+>   				     state_entry_time);
+> @@ -472,13 +466,11 @@ static void kvm_xen_update_runstate_guest(struct kvm_vcpu *v, bool atomic)
+>   					sizeof(uint64_t) - 1 - user_len1;
+>   		}
+>   
+> -#ifdef CONFIG_X86_64
+>   		/*
+>   		 * Don't leak kernel memory through the padding in the 64-bit
+>   		 * version of the struct.
+>   		 */
+>   		memset(&rs, 0, offsetof(struct vcpu_runstate_info, state_entry_time));
+> -#endif
+>   	}
+>   
+>   	/*
+> @@ -606,7 +598,7 @@ void kvm_xen_inject_pending_events(struct kvm_vcpu *v)
+>   	}
+>   
+>   	/* Now gpc->khva is a valid kernel address for the vcpu_info */
+> -	if (IS_ENABLED(CONFIG_64BIT) && v->kvm->arch.xen.long_mode) {
+> +	if (v->kvm->arch.xen.long_mode) {
+>   		struct vcpu_info *vi = gpc->khva;
+>   
+>   		asm volatile(LOCK_PREFIX "orq %0, %1\n"
+> @@ -695,22 +687,18 @@ int kvm_xen_hvm_set_attr(struct kvm *kvm, struct kvm_xen_hvm_attr *data)
+>   
+>   	switch (data->type) {
+>   	case KVM_XEN_ATTR_TYPE_LONG_MODE:
+> -		if (!IS_ENABLED(CONFIG_64BIT) && data->u.long_mode) {
+> -			r = -EINVAL;
+> -		} else {
+> -			mutex_lock(&kvm->arch.xen.xen_lock);
+> -			kvm->arch.xen.long_mode = !!data->u.long_mode;
+> +		mutex_lock(&kvm->arch.xen.xen_lock);
+> +		kvm->arch.xen.long_mode = !!data->u.long_mode;
+>   
+> -			/*
+> -			 * Re-initialize shared_info to put the wallclock in the
+> -			 * correct place. Whilst it's not necessary to do this
+> -			 * unless the mode is actually changed, it does no harm
+> -			 * to make the call anyway.
+> -			 */
+> -			r = kvm->arch.xen.shinfo_cache.active ?
+> -				kvm_xen_shared_info_init(kvm) : 0;
+> -			mutex_unlock(&kvm->arch.xen.xen_lock);
+> -		}
+> +		/*
+> +		 * Re-initialize shared_info to put the wallclock in the
+> +		 * correct place. Whilst it's not necessary to do this
+> +		 * unless the mode is actually changed, it does no harm
+> +		 * to make the call anyway.
+> +		 */
+> +		r = kvm->arch.xen.shinfo_cache.active ?
+> +			kvm_xen_shared_info_init(kvm) : 0;
+> +		mutex_unlock(&kvm->arch.xen.xen_lock);
+>   		break;
+>   
+>   	case KVM_XEN_ATTR_TYPE_SHARED_INFO:
+> @@ -923,7 +911,7 @@ int kvm_xen_vcpu_set_attr(struct kvm_vcpu *vcpu, struct kvm_xen_vcpu_attr *data)
+>   		 * address, that's actually OK. kvm_xen_update_runstate_guest()
+>   		 * will cope.
+>   		 */
+> -		if (IS_ENABLED(CONFIG_64BIT) && vcpu->kvm->arch.xen.long_mode)
+> +		if (vcpu->kvm->arch.xen.long_mode)
+>   			sz = sizeof(struct vcpu_runstate_info);
+>   		else
+>   			sz = sizeof(struct compat_vcpu_runstate_info);
+> @@ -1360,7 +1348,7 @@ static int kvm_xen_hypercall_complete_userspace(struct kvm_vcpu *vcpu)
+>   
+>   static inline int max_evtchn_port(struct kvm *kvm)
+>   {
+> -	if (IS_ENABLED(CONFIG_64BIT) && kvm->arch.xen.long_mode)
+> +	if (kvm->arch.xen.long_mode)
+>   		return EVTCHN_2L_NR_CHANNELS;
+>   	else
+>   		return COMPAT_EVTCHN_2L_NR_CHANNELS;
+> @@ -1382,7 +1370,7 @@ static bool wait_pending_event(struct kvm_vcpu *vcpu, int nr_ports,
+>   		goto out_rcu;
+>   
+>   	ret = false;
+> -	if (IS_ENABLED(CONFIG_64BIT) && kvm->arch.xen.long_mode) {
+> +	if (kvm->arch.xen.long_mode) {
+>   		struct shared_info *shinfo = gpc->khva;
+>   		pending_bits = (unsigned long *)&shinfo->evtchn_pending;
+>   	} else {
+> @@ -1416,7 +1404,7 @@ static bool kvm_xen_schedop_poll(struct kvm_vcpu *vcpu, bool longmode,
+>   	    !(vcpu->kvm->arch.xen_hvm_config.flags & KVM_XEN_HVM_CONFIG_EVTCHN_SEND))
+>   		return false;
+>   
+> -	if (IS_ENABLED(CONFIG_64BIT) && !longmode) {
+> +	if (!longmode) {
+>   		struct compat_sched_poll sp32;
+>   
+>   		/* Sanity check that the compat struct definition is correct */
+> @@ -1629,9 +1617,7 @@ int kvm_xen_hypercall(struct kvm_vcpu *vcpu)
+>   		params[3] = (u32)kvm_rsi_read(vcpu);
+>   		params[4] = (u32)kvm_rdi_read(vcpu);
+>   		params[5] = (u32)kvm_rbp_read(vcpu);
+> -	}
+> -#ifdef CONFIG_X86_64
+> -	else {
+> +	} else {
+>   		params[0] = (u64)kvm_rdi_read(vcpu);
+>   		params[1] = (u64)kvm_rsi_read(vcpu);
+>   		params[2] = (u64)kvm_rdx_read(vcpu);
+> @@ -1639,7 +1625,6 @@ int kvm_xen_hypercall(struct kvm_vcpu *vcpu)
+>   		params[4] = (u64)kvm_r8_read(vcpu);
+>   		params[5] = (u64)kvm_r9_read(vcpu);
+>   	}
+> -#endif
+>   	cpl = kvm_x86_call(get_cpl)(vcpu);
+>   	trace_kvm_xen_hypercall(cpl, input, params[0], params[1], params[2],
+>   				params[3], params[4], params[5]);
+> @@ -1756,7 +1741,7 @@ int kvm_xen_set_evtchn_fast(struct kvm_xen_evtchn *xe, struct kvm *kvm)
+>   	if (!kvm_gpc_check(gpc, PAGE_SIZE))
+>   		goto out_rcu;
+>   
+> -	if (IS_ENABLED(CONFIG_64BIT) && kvm->arch.xen.long_mode) {
+> +	if (kvm->arch.xen.long_mode) {
+>   		struct shared_info *shinfo = gpc->khva;
+>   		pending_bits = (unsigned long *)&shinfo->evtchn_pending;
+>   		mask_bits = (unsigned long *)&shinfo->evtchn_mask;
+> @@ -1797,7 +1782,7 @@ int kvm_xen_set_evtchn_fast(struct kvm_xen_evtchn *xe, struct kvm *kvm)
+>   			goto out_rcu;
+>   		}
+>   
+> -		if (IS_ENABLED(CONFIG_64BIT) && kvm->arch.xen.long_mode) {
+> +		if (kvm->arch.xen.long_mode) {
+>   			struct vcpu_info *vcpu_info = gpc->khva;
+>   			if (!test_and_set_bit(port_word_bit, &vcpu_info->evtchn_pending_sel)) {
+>   				WRITE_ONCE(vcpu_info->evtchn_upcall_pending, 1);
 
-
--- 
-BR,
-Muhammad Usama Anjum
 
 -- 
 kvm-riscv mailing list
