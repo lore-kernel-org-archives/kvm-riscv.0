@@ -4,83 +4,105 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8B8FCE7717F
-	for <kvm-riscv@archiver.kernel.org>; Fri, 13 Dec 2024 11:30:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3E069E7717F
+	for <kvm-riscv@archiver.kernel.org>; Fri, 13 Dec 2024 11:33:19 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=lists.infradead.org; s=bombadil.20210309; h=Sender:Content-Type:
-	Content-Transfer-Encoding:List-Subscribe:List-Help:List-Post:List-Archive:
-	List-Unsubscribe:List-Id:In-Reply-To:From:References:Cc:To:Subject:
-	MIME-Version:Date:Message-ID:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=eaT8FNnmqhZPztl9I27O+e23HNefWNntjXxh0H7olK4=; b=z2f/EI7KMxeE2u
-	wLGU+CIo0jIWky/DTAAkBtMRYKwccNhRJsyDreR1wlzZScTQVJE8A7Y2a0KH6JSGF+8mZpDGTaLoh
-	nkubnC90sUiCWtbTr/R0gsbFlOhBl9MHxQtDCOtXABr43LO99hYFu4X8NWJrqiMFt/jnV/vBbO+j4
-	FW7tAcuILfdXhGPABYfk51Xa2EmaHulsCjCnIjeXRs7vvEa6QMXg2w5l+6OXjR6oqKfKMRbpiNoL1
-	kDBfnUgCVZ7o5tF3LBu1GYf/jwFsrZs7qtPoEUR5gQ567oVF/l1z1s6zptAcpGIIeBDkN3+V9tWZU
-	JDhlquFrLxp+dX3Fttmg==;
+	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
+	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
+	List-Archive:List-Unsubscribe:List-Id:Cc:To:MIME-Version:Message-Id:Date:
+	Subject:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
+	List-Owner; bh=Br4OvCPxGHD7HJJ9d6ZGjL2OJNiGOt2tGSPgIHe/RBM=; b=AcwEf04Eto6wqV
+	2qVmvKzlB0FeZABF343EDJydyTGfH+2zevVfHp9V7fIjvItmAZAGsszvsaXsH5CnoJufOHmVy7ZBm
+	BqR1PvdS873atAKCDz88yH+E0eSfq65C33+LcnOcMNpU2k7bKHAy0+T0Ln1uxnzT0GFS243JOc/U0
+	WB0pWqsSsuIL6I/kzjM8HBhA7EjFzLhw6tV8BxnS/nUF5TH+kMTxZT8SF2A42zf9q/6bZweu8Oqf4
+	OfKlQ7tXH+oWeauTQg+KcVFTkl5VijyhUliMj39p7PkC5s+Mxesp9dLeNhEhR6KF3jK7U8bNWromb
+	qxwFxySa8yEC9WAI4Yrg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98 #2 (Red Hat Linux))
-	id 1tM3sa-00000003Z8n-1CnS;
-	Fri, 13 Dec 2024 11:30:44 +0000
-Received: from pegase2.c-s.fr ([93.17.235.10])
+	id 1tM3v5-00000003Ztn-01yd;
+	Fri, 13 Dec 2024 11:33:19 +0000
+Received: from mail-pl1-x643.google.com ([2607:f8b0:4864:20::643])
 	by bombadil.infradead.org with esmtps (Exim 4.98 #2 (Red Hat Linux))
-	id 1tM2tW-00000003PvP-3TvT;
-	Fri, 13 Dec 2024 10:27:40 +0000
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4Y8ls307LNz9sSd;
-	Fri, 13 Dec 2024 11:27:35 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id w4LjWUMC-i0O; Fri, 13 Dec 2024 11:27:34 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4Y8ls26Grzz9sSH;
-	Fri, 13 Dec 2024 11:27:34 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id C07B88B773;
-	Fri, 13 Dec 2024 11:27:34 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id SmQbPCkQpRec; Fri, 13 Dec 2024 11:27:34 +0100 (CET)
-Received: from [192.168.232.97] (unknown [192.168.232.97])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 679968B763;
-	Fri, 13 Dec 2024 11:27:33 +0100 (CET)
-Message-ID: <3a2fadc3-f594-492f-805a-148043436995@csgroup.eu>
-Date: Fri, 13 Dec 2024 11:27:32 +0100
+	id 1tM3v2-00000003Zrt-3Gqe
+	for kvm-riscv@lists.infradead.org;
+	Fri, 13 Dec 2024 11:33:18 +0000
+Received: by mail-pl1-x643.google.com with SMTP id d9443c01a7336-21649a7bcdcso15972155ad.1
+        for <kvm-riscv@lists.infradead.org>; Fri, 13 Dec 2024 03:33:15 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=sifive.com; s=google; t=1734089595; x=1734694395; darn=lists.infradead.org;
+        h=cc:to:content-transfer-encoding:mime-version:message-id:date
+         :subject:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=26MbCcxBXRObwdyBKZjlPQXxYB9MTH5C48d0Ryy4x64=;
+        b=FV4V6lrKHHlfzgOS6T/4NXUtd8EVf14N6a88DCaU6NsieK28KeiV0pmVREzwPcpK2Z
+         KpLdRkwFOEJVXc4LEO4gxveP9k4g3xsq6mcsjFCHynDZwDHIKqYT05nITG3WV6U/MayZ
+         IaF6FwYWJjvB3E2nm2hmj4ACP+Znpk6cpslaAvUVNzPAoFZx5X1pdnAJy1R2fvJnPKaY
+         W3ESJb+3x1gdMT0DUX9jrndtsgVvpVgxTqC1OnC4s46rVao2Qt0Y7xvpqX4MEcSMq+Rj
+         DKX58EEZT3xQCW0BBdYD3CNvfsTo0fQ6oddSfGEteGQu5DNh6FI9K/aDUyci09ILeRgi
+         l2Ww==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1734089595; x=1734694395;
+        h=cc:to:content-transfer-encoding:mime-version:message-id:date
+         :subject:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=26MbCcxBXRObwdyBKZjlPQXxYB9MTH5C48d0Ryy4x64=;
+        b=w7hB5BfgHUO0MbN3Ro9fSSpvS9ooLJxJ4nQ1ohr9sbAk7G5Bgh7C/m9vv0N2JnjyFh
+         /K4umAZh+cxsyBZ+YARVoVQ31ARqvNVC8RiZUrrSlh7kuyuoVERgDC9DVbLZHmZ/DL5S
+         8VPDT/Nz07ZIhs270s7Z9RQOIX/sQHfVKuthKWLY//q0Lcq/RY4I4N7DcCIo5BJNEZAw
+         PZNDTkgOnUFpHSEiasvEwopQQbtszYelQRaDd63gNTqH5WZc2SwIxH4Uot9lGBx+I2sR
+         V8H4E0vkEPO54a+JMbRWnz0AGWygXtkORC8NwGXQ5tFCr14Nsfm6OZRa9exxFJ4g3OOP
+         UHlw==
+X-Forwarded-Encrypted: i=1; AJvYcCVd7A6gxBauGXLEe1YKTsZKxR/7V9OKBel/Q73c9jdVK++bFzkc/ktPBZfmbzlxImU6iruA0dqvv3k=@lists.infradead.org
+X-Gm-Message-State: AOJu0YzncxJ9F1WsI+RgtJ7D5r11oSQ4n/VZ6e42ui/HbwlepsYIHLSy
+	vbPK1kmvga57Cf03mWKPlrzm9j3FCC9rxQQDPJjwoqo5cweq1CnToxobPvp0uDM=
+X-Gm-Gg: ASbGncsshbmTdI0w/m4Au6W1sCHQINSa45IN33s/+1mLpa8hpimZvXEB3lheiOvSYk7
+	+IeD26ixX3TtT92K5t4L3GSnoMtsZzen6QuOIzRPnmNoojZ/ulj1XsoJCvbGwzHNWbKjz5z/c11
+	CFSwKXwK91kEDqOT/FQxjFdcIbxvb3t/a/yjbSgpORRleBc4JvYr3fVp91jFkWQeH+BR0qKAGX4
+	yECxR4mZ+NcjSlcYhPcTnwD+YEAT3pF+HHCOeamwsosJ1osWQ9jncM=
+X-Google-Smtp-Source: AGHT+IE2aHmaFHTR9iBiCUjqMgt+u4ssTP/m0KwR0xBzwYlNhga7euk988OdWGvjpY5KeC8o/0oqRQ==
+X-Received: by 2002:a17:902:d50c:b0:215:bc30:c952 with SMTP id d9443c01a7336-2189298a144mr36097955ad.6.1734089595266;
+        Fri, 13 Dec 2024 03:33:15 -0800 (PST)
+Received: from [127.0.1.1] ([210.176.154.34])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-21631bd2c2dsm103327125ad.263.2024.12.13.03.33.11
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 13 Dec 2024 03:33:14 -0800 (PST)
+From: Max Hsu <max.hsu@sifive.com>
+Subject: [PATCH RFC v4 0/3] riscv: add Svukte extension
+Date: Fri, 13 Dec 2024 19:33:06 +0800
+Message-Id: <20241213-dev-maxh-svukte-v4-v4-0-92762c67f743@sifive.com>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [RFC 3/5] powerpc: kvm: drop 32-bit book3s
-To: Arnd Bergmann <arnd@arndb.de>, Arnd Bergmann <arnd@kernel.org>,
- kvm@vger.kernel.org
-Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- Huacai Chen <chenhuacai@kernel.org>, Jiaxun Yang <jiaxun.yang@flygoat.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- Naveen N Rao <naveen@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>,
- Alexander Graf <graf@amazon.com>, Crystal Wood <crwood@redhat.com>,
- Anup Patel <anup@brainfault.org>, Atish Patra <atishp@atishpatra.org>,
- Paul Walmsley <paul.walmsley@sifive.com>, Palmer Dabbelt
- <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
- Sean Christopherson <seanjc@google.com>, Paolo Bonzini
- <pbonzini@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
- Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
- "H. Peter Anvin" <hpa@zytor.com>, Vitaly Kuznetsov <vkuznets@redhat.com>,
- David Woodhouse <dwmw2@infradead.org>, Paul Durrant <paul@xen.org>,
- Marc Zyngier <maz@kernel.org>, linux-kernel@vger.kernel.org,
- linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org
-References: <20241212125516.467123-1-arnd@kernel.org>
- <20241212125516.467123-4-arnd@kernel.org>
- <2809dcce-3405-430e-b43d-d75f35bdb7d5@csgroup.eu>
- <3380464f-5db4-487d-936f-1b5503905793@app.fastmail.com>
-Content-Language: fr-FR
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <3380464f-5db4-487d-936f-1b5503905793@app.fastmail.com>
+X-B4-Tracking: v=1; b=H4sIAHIbXGcC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyTHQUlJIzE
+ vPSU3UzU4B8JSMDIxNDI0Nj3ZTUMt3cxIoM3eKy0uySVN0yE11jE0MDw9RkSxPTVEsloMaCotS
+ 0zAqwodFKQW7OSrG1tQCcvFY+aQAAAA==
+X-Change-ID: 20241213-dev-maxh-svukte-v4-34101ec945e9
+To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, 
+ Paul Walmsley <paul.walmsley@sifive.com>, 
+ Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
+ Anup Patel <anup@brainfault.org>, Atish Patra <atishp@atishpatra.org>
+Cc: Palmer Dabbelt <palmer@sifive.com>, Conor Dooley <conor@kernel.org>, 
+ devicetree@vger.kernel.org, linux-riscv@lists.infradead.org, 
+ linux-kernel@vger.kernel.org, kvm@vger.kernel.org, 
+ kvm-riscv@lists.infradead.org, Max Hsu <max.hsu@sifive.com>, 
+ Samuel Holland <samuel.holland@sifive.com>, 
+ Deepak Gupta <debug@rivosinc.com>, Alexandre Ghiti <alexghiti@rivosinc.com>
+X-Mailer: b4 0.14.2
+X-Developer-Signature: v=1; a=openpgp-sha256; l=3076; i=max.hsu@sifive.com;
+ h=from:subject:message-id; bh=tbP+jC6o0WUbBs5wzvPexsjiCSh2sPVpbTXynXjrfGk=;
+ b=owEB7QES/pANAwAKAdID/Z0HeUC9AcsmYgBnXBt3nDotuBhQJRSQUC7kSPKHLLlxqASJuOrQK
+ U5Px7fhMk6JAbMEAAEKAB0WIQTqXmcbOhS2KZE9X2jSA/2dB3lAvQUCZ1wbdwAKCRDSA/2dB3lA
+ vcR4C/4irx2RT/e5bqfqAIm563+xO9z5R4UvXSir/eIK9aVaHYeMVqEdWbPauFsH5lGk+WLVpEh
+ B9p8z3ebch6wZM/EHolPkw5wCN6bU7kouNEK4mTX9ciVvsgk2viGkFg2kuwQvxkDyPPTI0lG8py
+ 1O3tqm3kG9nv6YuBgJE/jFYHQK7AWqyGq+Z97fxy1+je3mdJ360SkwAJwLJruDet2/B39bd0wud
+ Ye+9EUv44RY8nUGvq1E2teWhCcDGwysMSPwo1euaAG98AGzu82QpJMNE6CVjTcjryau0iu9eXBi
+ XYoOpu/POI0s/hE8t+RQpofxtx7Zxn0jbtV98fsNKJGCkHm2jPIwTetFCcRnxQ6+qY1Rv0FSUr3
+ rFMddvmyn+KHaBt0yccQpl8GOFWWUtn2G75N80wP5IUUW0H/6i/bCh45IGKSEVIMM/elBip6kNJ
+ 6sczUcrwCMH7g+b/5nuLrefqZXCg3p8Fk8/PBw0e9gXgz5aFBEX3c4jf/BR6ynSkuAHds=
+X-Developer-Key: i=max.hsu@sifive.com; a=openpgp;
+ fpr=EA5E671B3A14B629913D5F68D203FD9D077940BD
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20241213_022739_018296_3DC3D3CF 
-X-CRM114-Status: UNSURE (   6.35  )
-X-CRM114-Notice: Please train this message.
+X-CRM114-CacheID: sfid-20241213_033316_810838_45A0E2B4 
+X-CRM114-Status: GOOD (  12.09  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -92,23 +114,86 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Transfer-Encoding: base64
-Content-Type: text/plain; charset="utf-8"; Format="flowed"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-CgpMZSAxMy8xMi8yMDI0IMOgIDExOjA0LCBBcm5kIEJlcmdtYW5uIGEgw6ljcml0wqA6Cj4gZGlm
-ZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9rZXJuZWwvaGVhZF8zMi5oIGIvYXJjaC9wb3dlcnBjL2tl
-cm5lbC9oZWFkXzMyLmgKPiBpbmRleCA5Y2JhN2RiZjU4ZGQuLjI0ZTg5ZGFkYzc0ZCAxMDA2NDQK
-PiAtLS0gYS9hcmNoL3Bvd2VycGMva2VybmVsL2hlYWRfMzIuaAo+ICsrKyBiL2FyY2gvcG93ZXJw
-Yy9rZXJuZWwvaGVhZF8zMi5oCj4gQEAgLTE3Miw3ICsxNzIsNiBAQCBfQVNNX05PS1BST0JFX1NZ
-TUJPTChcbmFtZVwoKV92aXJ0KQo+ICAgI2RlZmluZQlTVEFSVF9FWENFUFRJT04obiwgbGFiZWwp
-CQlcCj4gICAJX19IRUFEOwkJCQkJXAo+ICAgCS4gPSBuOwkJCQkJXAo+IC0JRE9fS1ZNIG47CQkJ
-CVwKPiAgIGxhYmVsOgo+ICAgCj4gICAjZWxzZQoKVGhlbiB0aGUgY29tcGxldGUgbWFjcm8gc2hv
-dWxkIGdvIGF3YXkgYmVjYXVzZSBib3RoIHZlcnNpb25zIGFyZSBub3cgCmlkZW50aWNhbDoKCi0j
-aWZkZWYgQ09ORklHX1BQQ19CT09LM1MKLSNkZWZpbmUJU1RBUlRfRVhDRVBUSU9OKG4sIGxhYmVs
-KQkJXAotCV9fSEVBRDsJCQkJCVwKLQkuID0gbjsJCQkJCVwKLWxhYmVsOgotCi0jZWxzZQogICNk
-ZWZpbmUJU1RBUlRfRVhDRVBUSU9OKG4sIGxhYmVsKQkJXAogIAlfX0hFQUQ7CQkJCQlcCiAgCS4g
-PSBuOwkJCQkJXAogIGxhYmVsOgoKLSNlbmRpZgoKCgotLSAKa3ZtLXJpc2N2IG1haWxpbmcgbGlz
-dAprdm0tcmlzY3ZAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9y
-Zy9tYWlsbWFuL2xpc3RpbmZvL2t2bS1yaXNjdgo=
+RISC-V privileged spec will be added with Svukte extension [1] 
+
+Svukte introduce senvcfg.UKTE and hstatus.HUKTE bitfield.
+which makes user-mode access to supervisor memory raise page faults
+in constant time, mitigating attacks that attempt to discover the 
+supervisor software's address-space layout.
+
+In the Linux kernel, since the hstatus.HU bit is not enabled,
+the following patches only enable the use of senvcfg.UKTE.
+
+For Guest environments, because a Guest OS (not limited to Linux)
+may hold mappings from GVA to GPA, the Guest OS should decide
+whether to enable the protection provided by the Svukte extension.
+
+Since the Guest OS may utilize the Svukte extension simply by setting
+the senvcfg.UKTE without any trap to host. In the view of VMM, the
+Svukte extension should be always presented. Therefore adding an
+extra entry in kvm_riscv_vcpu_isa_disable_allowed().
+
+If the Guest environment wants to change senvcfg.UKTE, KVM already
+provides the senvcfg CSR swap support via 
+kvm_riscv_vcpu_swap_in_(host|guest)_state.
+Thus, there is no concern about the Guest OS affecting the Host OS. 
+
+The following patches add 
+- dt-binding of Svukte ISA string
+- CSR bit definition, ISA detection, senvcfg.UKTE enablement in kernel
+- KVM ISA support for Svukte extension
+
+Changes in v4:
+- rebase on riscv/for-next
+- add kvm_riscv_vcpu_isa_disable_allowed() entry addressed by Anup
+  and Andrew from v2/v3 patches.
+  - update the cover letter for the detailed reason
+- update the commit message on dt-binding for the Svukte ISA string
+- Link to v3: https://lore.kernel.org/all/20241120-dev-maxh-svukte-v3-v3-0-1e533d41ae15@sifive.com/
+
+Changes in v3: 
+- rebase on riscv/for-next
+- fixed typo in the dt-binding for the Svukte ISA string
+- updated the commit message for KVM support for the Svukte extension
+- Link to v2: https://lore.kernel.org/all/20240927-dev-maxh-svukte-rebase-2-v2-0-9afe57c33aee@sifive.com/
+
+Changes in v2: 
+- rebase on riscv/for-next (riscv-for-linus-6.12-mw1)
+- modify the description of dt-binding on Svukte ISA string
+- Link to v1: https://lore.kernel.org/all/20240920-dev-maxh-svukte-rebase-v1-0-7864a88a62bd@sifive.com/
+
+Link: https://github.com/riscv/riscv-isa-manual/pull/1564 [1] 
+
+Signed-off-by: Max Hsu <max.hsu@sifive.com>
+
+---
+Max Hsu (3):
+      dt-bindings: riscv: Add Svukte entry
+      riscv: Add Svukte extension support
+      riscv: KVM: Add Svukte extension support for Guest/VM
+
+ Documentation/devicetree/bindings/riscv/extensions.yaml | 9 +++++++++
+ arch/riscv/include/asm/csr.h                            | 2 ++
+ arch/riscv/include/asm/hwcap.h                          | 1 +
+ arch/riscv/include/uapi/asm/kvm.h                       | 1 +
+ arch/riscv/kernel/cpufeature.c                          | 5 +++++
+ arch/riscv/kvm/vcpu_onereg.c                            | 2 ++
+ 6 files changed, 20 insertions(+)
+---
+base-commit: fac04efc5c793dccbd07e2d59af9f90b7fc0dca4
+change-id: 20241213-dev-maxh-svukte-v4-34101ec945e9
+
+Best regards,
+-- 
+Max Hsu <max.hsu@sifive.com>
+
+
+-- 
+kvm-riscv mailing list
+kvm-riscv@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/kvm-riscv
