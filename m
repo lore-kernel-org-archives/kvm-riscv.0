@@ -4,85 +4,87 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 760E0E7718A
-	for <kvm-riscv@archiver.kernel.org>; Fri, 20 Dec 2024 02:55:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3A672E7718E
+	for <kvm-riscv@archiver.kernel.org>; Sat, 21 Dec 2024 21:49:07 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
-	Content-Transfer-Encoding:Content-Type:Reply-To:List-Subscribe:List-Help:
-	List-Post:List-Archive:List-Unsubscribe:List-Id:Cc:To:From:Subject:Message-ID
-	:References:Mime-Version:In-Reply-To:Date:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=gQSWrT8DOtdRG7iPNCL/5RXUM9WdPSvIn/+MUmhOiEw=; b=UMukRCdP/htLFF
-	PMOUxZvZomPKSw7ILeZQL8MX73JKvYmb1I/KTtHMkHP9uKk7g8QFrzyIgr4QOnN3JAeKTm78T54Vh
-	i+uHnxkNfPp0jj83XIodvabIv2QbBy3Sd4KebTM+qelp8TZdkbeeYvMZ0/Zi99ws/O16EScLeHhlt
-	9fUInzYHRp+3FFQVoniyWKnbR26qLFQ8KstfmYyYJZs8yhAyM++5PPdzhkweR7gmYKBjCvcxt9i/M
-	SL7pSk7ybYNJf1KVTRhZ/9fzYIxbe9DK2ofWhdudh1vZH7lh5mgCQY4vDtACwmf3+yrEWKCzOXh4u
-	88OJjvxzkbnAseWrZHQA==;
+	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-Id:Date:Subject:Cc
+	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
+	List-Owner; bh=4+lbDAGnR2bsPaJL+P3y/qbSx/jRxZlvty6kwAzaDQ4=; b=PZ/qOXjLAd9zf4
+	zpm4KCB/EceEJ/sy0ulm6SJ5SbWsM+d3KzOLPUJiKP6xRDkI5n4pJWxzv3YNXoXC3vUZNh5mv+Uvj
+	jpwGmJE1DWH6hXwiiNO77PNMBcSTphRAB+1qsmHXvvEeM+4FKcFikiiTp+CK/AG2QaHIV6i7pqu8G
+	YVsWfY9NX+DAvAhAvYJgzLn+qRvI7HFfcGDGoBOeug8Z2hRru63+FpFRCs1BtG+llffasyC6FC5Id
+	jIWWpOJF5S/IN4q2VhX/Ew2iRu25y+UpsTr7WwusIwU+85Z7Yj2CDuxwH9WEYbhLUgoL3g440OqQ3
+	NTr/sO93tjjWgNtDOlww==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98 #2 (Red Hat Linux))
-	id 1tOTAj-00000003kxl-0NHA;
-	Fri, 20 Dec 2024 02:55:25 +0000
-Received: from mail-pg1-x549.google.com ([2607:f8b0:4864:20::549])
+	id 1tP7LO-00000007SUj-2s8O;
+	Sat, 21 Dec 2024 21:49:06 +0000
+Received: from nyc.source.kernel.org ([2604:1380:45d1:ec00::3])
 	by bombadil.infradead.org with esmtps (Exim 4.98 #2 (Red Hat Linux))
-	id 1tORz9-00000003d4f-4BRn
-	for kvm-riscv@lists.infradead.org;
-	Fri, 20 Dec 2024 01:39:25 +0000
-Received: by mail-pg1-x549.google.com with SMTP id 41be03b00d2f7-801d5add29eso935720a12.3
-        for <kvm-riscv@lists.infradead.org>; Thu, 19 Dec 2024 17:39:23 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1734658763; x=1735263563; darn=lists.infradead.org;
-        h=content-transfer-encoding:cc:to:from:subject:message-id:references
-         :mime-version:in-reply-to:date:reply-to:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=Dg8fmjMM2o4ZdUzcCM3IsD7JuuynFC9AcsVyNRsKeBU=;
-        b=VQW/HJbM8Mz3bqURjdEqVzHJuOW1beKe8KMUVYYgBUpoEbekOp/Ttp7z2fryLQc+LG
-         4in6vEvTHVW2VYA4cfIbEhCY3fV4/GZUb3Gj68yUr0dWYkJKo2IMitVgjAnVie9Hkb/K
-         Y0m/87mwKYYfISMAzBHEaBa9eneVxh7oVFXOhPOft93KBKvk/amOgS95AMV8sa4jPRmU
-         W0JLxmP0mCnsLsAR1ju51a68sh2No9hzfFw/NlfACNiFK3FDQk5LSWIiTuB00iayF+Uy
-         0dcGj3kZen7vV57o7Ls0brJ2o3QEcfgTUC8mO86uvgxOzre2kNGseopFJFfBSEOTddpj
-         sf/A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1734658763; x=1735263563;
-        h=content-transfer-encoding:cc:to:from:subject:message-id:references
-         :mime-version:in-reply-to:date:reply-to:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=Dg8fmjMM2o4ZdUzcCM3IsD7JuuynFC9AcsVyNRsKeBU=;
-        b=vc/WxgApUo0gOadZ4lZ+NVE6cEzSEYN5ozzXeopIvuB9FklE2borMdGCLWBWbRx6Yt
-         SpV3eIQIvhbwobY9DJILOrpsbGkX8sNeDvnQANi5vloHxRgu4XnR4nV02bowMMq0ZCCK
-         5PiNHytAZmq/w5UqJ/eKPdaYZEg0fpjMO1ouhjHFZ7sZuiCS7mjGvuzXJRabVu8v2K6D
-         PQDq7Wg+sNJCjMNcMZXkzZ0vl1eVM6wINcZnoV/HpG9O5Z0OfTQsX9hWqfZ4v4hET1KV
-         hz6weV/KhmK+cuJXGagDveRayJCkD+quHJtl73z5sqBHtCkMevpabbqXfqCi7BecG8kn
-         FLyg==
-X-Forwarded-Encrypted: i=1; AJvYcCW4Q/d+plWK5HhU4pNHAHGJk0t4xw9eZaa9T9cLVUx6MPW2Cy+4UkxrSXD4TUqOAI7IgYficuYupI4=@lists.infradead.org
-X-Gm-Message-State: AOJu0Yxf1cGcKKWFjgQXOJ39nqiNeTMZVU+aDkxSyx7ukLXoFezpRQW7
-	uJY7Wkunmv9XnLAPsfeE7cTudhsaRKCURebaKxOzNNOrUzyq75NrRtO9SP+vRipZUxxMGhbCjdJ
-	RFg==
-X-Google-Smtp-Source: AGHT+IE6EA1Soh2HbsBhs8mA4Cxp5/kcHpg0QYYkszskXT1G6lUfvmxNE+q8q9njljny5qS/JMm3vKiIjQ4=
-X-Received: from pgbbw29.prod.google.com ([2002:a05:6a02:49d:b0:801:d768:c174])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6300:6681:b0:1e0:c6c0:1e1f
- with SMTP id adf61e73a8af0-1e5e07f8a98mr2122068637.36.1734658762701; Thu, 19
- Dec 2024 17:39:22 -0800 (PST)
-Date: Thu, 19 Dec 2024 17:39:06 -0800
-In-Reply-To: <20241220013906.3518334-1-seanjc@google.com>
-Mime-Version: 1.0
-References: <20241220013906.3518334-1-seanjc@google.com>
-X-Mailer: git-send-email 2.47.1.613.gc27f4b7a9f-goog
-Message-ID: <20241220013906.3518334-9-seanjc@google.com>
-Subject: [PATCH 8/8] KVM: selftests: Add compile-time assertions to guard
- against stats typos
-From: Sean Christopherson <seanjc@google.com>
-To: Marc Zyngier <maz@kernel.org>, Oliver Upton <oliver.upton@linux.dev>, 
-	Anup Patel <anup@brainfault.org>, Paul Walmsley <paul.walmsley@sifive.com>, 
-	Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
-	Christian Borntraeger <borntraeger@linux.ibm.com>, Janosch Frank <frankja@linux.ibm.com>, 
-	Claudio Imbrenda <imbrenda@linux.ibm.com>, Sean Christopherson <seanjc@google.com>, 
-	Paolo Bonzini <pbonzini@redhat.com>
-Cc: linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev, 
-	kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, 
-	linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org
+	id 1tP7LL-00000007STc-25QD;
+	Sat, 21 Dec 2024 21:49:04 +0000
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by nyc.source.kernel.org (Postfix) with ESMTP id 147E5A403F5;
+	Sat, 21 Dec 2024 21:47:09 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DDA08C4CECE;
+	Sat, 21 Dec 2024 21:48:52 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1734817739;
+	bh=liSnJKHt137nDINsiNS8bBle3Cakfhe3aWwZ4NxRgcA=;
+	h=From:To:Cc:Subject:Date:From;
+	b=f9y2FsCZXSDafB5TbgOF65PJ7LnEv+LO6b/B2wnLgowdZ6Rzly5Ph9Gnu5IvLiwLr
+	 Cytt5GW/+3ZIlLFHNp2Ne6ZsmfOYsIPAX5hMhGJbIIK97SehoSLQaoiM/R2ZCUQ3cm
+	 XELo0Bt0XTaJR0dDn/VelQXxX4uf2TkbBZBGLg/qbnYRNSXsIgW9KHdTX6KpOeIIgY
+	 2AnjB8pwrt0wr97UXs0ymdOIft+CgjBpbx5hfXbdjsgzA3Hm7yufnoAB1ROPWOwMZh
+	 j2a+QU4yvoLiaM3vOHQ6x8sMcVdQM00CK2/aDqbJEs+QNpcTNHoLfoWMr9gI/Vdjqx
+	 PkqvYDjziUKwQ==
+From: Arnd Bergmann <arnd@kernel.org>
+To: kvm@vger.kernel.org
+Cc: Arnd Bergmann <arnd@arndb.de>,
+	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+	Huacai Chen <chenhuacai@kernel.org>,
+	Jiaxun Yang <jiaxun.yang@flygoat.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Naveen N Rao <naveen@kernel.org>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Alexander Graf <graf@amazon.com>,
+	Crystal Wood <crwood@redhat.com>,
+	Anup Patel <anup@brainfault.org>,
+	Atish Patra <atishp@atishpatra.org>,
+	Paul Walmsley <paul.walmsley@sifive.com>,
+	Palmer Dabbelt <palmer@dabbelt.com>,
+	Albert Ou <aou@eecs.berkeley.edu>,
+	Sean Christopherson <seanjc@google.com>,
+	Paolo Bonzini <pbonzini@redhat.com>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Ingo Molnar <mingo@redhat.com>,
+	Borislav Petkov <bp@alien8.de>,
+	Dave Hansen <dave.hansen@linux.intel.com>,
+	x86@kernel.org,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	Vitaly Kuznetsov <vkuznets@redhat.com>,
+	David Woodhouse <dwmw2@infradead.org>,
+	Paul Durrant <paul@xen.org>,
+	Marc Zyngier <maz@kernel.org>,
+	"A. Wilcox" <AWilcox@Wilcox-Tech.com>,
+	linux-kernel@vger.kernel.org,
+	linux-mips@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	kvm-riscv@lists.infradead.org,
+	linux-riscv@lists.infradead.org
+Subject: [PATCH v2 0/5] KVM: drop 32-bit host support on all architectures
+Date: Sat, 21 Dec 2024 22:42:18 +0100
+Message-Id: <20241221214223.3046298-1-arnd@kernel.org>
+X-Mailer: git-send-email 2.39.5
+MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20241219_173924_067143_A9B28478 
-X-CRM114-Status: GOOD (  13.14  )
+X-CRM114-CacheID: sfid-20241221_134903_671884_97BD39F2 
+X-CRM114-Status: GOOD (  18.24  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -94,216 +96,179 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Reply-To: Sean Christopherson <seanjc@google.com>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-QWRkIGNvbXBpbGUtdGltZSBhc3NlcnRpb25zIHRvIHRoZSBtYWluIGJpbmFyeSBzdGF0cyBhY2Nl
-c3NvciB0byB2ZXJpZnkKdGhlIHN0YXQgaXMgYSBrbm93biBLVk0gc3RhdCBvZiB0aGUgYXBwcm9w
-cmlhdGUgc2NvcGUsIGFuZCAiYWRkIiBhbGwKa25vd24gc3RhdHMgZm9yIGFsbCBhcmNoaXRlY3R1
-cmVzLgoKVG8gYnVpbGQgdGhlIHNldCBvZiBrbm93biBzdGF0cywgZGVmaW5lIGVudW1zIGZvciBl
-YWNoIHN0YXQsIHdpdGggYQpjb21wbGV0ZWx5IGFyYml0cmFyeSBtYWdpYyB2YWx1ZSB0byBzcGVj
-aWZ5IHRoZSBzY29wZSBvZiB0aGUgc3RhdC4gIFdpdGgKdGhlIGFzc2VydCBpbiBwbGFjZSwgbWlz
-dXNlIG9mIHN0YXQgKG9yIHVzYWdlIG9mIGEgbmV3IHN0YXQpIGdlbmVyYXRlcwplcnJvciBsaWtl
-IHNvOgoKICBJbiBmaWxlIGluY2x1ZGVkIGZyb20gaW5jbHVkZS94ODYva3ZtX3V0aWxfYXJjaC5o
-OjgsCiAgICAgICAgICAgICAgICAgICBmcm9tIGluY2x1ZGUva3ZtX3V0aWwuaDoyMywKICAgICAg
-ICAgICAgICAgICAgIGZyb20geDg2L2RpcnR5X2xvZ19wYWdlX3NwbGl0dGluZ190ZXN0LmM6MTY6
-CiAgIHg4Ni9kaXJ0eV9sb2dfcGFnZV9zcGxpdHRpbmdfdGVzdC5jOiBJbiBmdW5jdGlvbiDigJhn
-ZXRfcGFnZV9zdGF0c+KAmToKICBpbmNsdWRlL2t2bV91dGlsLmg6NTYzOjQyOiBlcnJvcjog4oCY
-Vk1fU1RBVF9wYWdlc180beKAmSB1bmRlY2xhcmVkCiAgICAoZmlyc3QgdXNlIGluIHRoaXMgZnVu
-Y3Rpb24pOyBkaWQgeW91IG1lYW4g4oCYVk1fU1RBVF9wYWdlc18ybeKAmT8KICAgIDU2MyB8ICNk
-ZWZpbmUgdm1fZ2V0X3N0YXQodm0sIHN0YXQpIF9fZ2V0X3N0YXQoVk0sICYodm0pLT5zdGF0cywg
-c3RhdCkKICAgICAgICB8ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-Xn4KCiAgLi4uCiAgeDg2L2RpcnR5X2xvZ19wYWdlX3NwbGl0dGluZ190ZXN0LmM6NDU6Mjc6IG5v
-dGU6IGluIGV4cGFuc2lvbiBvZiBtYWNybyDigJh2bV9nZXRfc3RhdOKAmQogICAgIDQ1IHwgICAg
-ICAgICBzdGF0cy0+cGFnZXNfMm0gPSB2bV9nZXRfc3RhdCh2bSwgcGFnZXNfNG0pOwogICAgICAg
-IHwgICAgICAgICAgICAgICAgICAgICAgICAgICBefn5+fn5+fn5+fgoKVXNpbmcgcHJlLWRlZmlu
-ZWQgbGlzdHMgb2Ygc3RhdHMgZG9lc24ndCBjb21wbGV0ZWx5IGVsaW1pbmF0ZSBodW1hbiBlcnJv
-ciwKZS5nLiBpdCdzIG9idmlvdXNseSBwb3NzaWJsZSB0byBtYWtlIGEgdHlwbyB3aGVuIGFkZGlu
-ZyBhIHN0YXRlLiAgQW5kCndoaWxlIHRoZXJlIGlzIGFsc28gYSBub24temVybyBjb3N0IHRvIG1h
-aW50YWluaW5nIHRoZSBzZXQgb2Ygc3RhdHMsCmFkZGluZyBzdGF0cyBpbiBLVk0gaXMgcmVsYXRp
-dmVseSB1bmNvbW1vbiwgYW5kIHJlbW92aW5nIHN0YXRzIGlzIGV4dHJlbWVseQpyYXJlLiAgT24g
-dGhlIGZsaXAgc2lkZSwgcHJvdmlkaW5nIGEgbGlzdCBvZiBrbm93biBzdGF0cyBzaG91bGQgbWFr
-ZSBpdAplYXNpZXIgdG8gdXNlIHN0YXRzIGluIHRlc3QsIGF0IHdoaWNoIHBvaW50IGRldGVjdGlu
-ZyBnb29mcyBhdCBjb21waWxlLXRpbWUKd2lsbCBhbHNvIGJlIG1vcmUgdmFsdWFibGUuCgpTaWdu
-ZWQtb2ZmLWJ5OiBTZWFuIENocmlzdG9waGVyc29uIDxzZWFuamNAZ29vZ2xlLmNvbT4KLS0tCiAu
-Li4va3ZtL2luY2x1ZGUvYXJtNjQva3ZtX3V0aWxfYXJjaC5oICAgICAgICAgfCAgMTIgKysKIC4u
-Li90ZXN0aW5nL3NlbGZ0ZXN0cy9rdm0vaW5jbHVkZS9rdm1fdXRpbC5oICB8ICAyNCArKystCiAu
-Li4vc2VsZnRlc3RzL2t2bS9pbmNsdWRlL2t2bV91dGlsX3R5cGVzLmggICAgfCAgIDYgKwogLi4u
-L2t2bS9pbmNsdWRlL3Jpc2N2L2t2bV91dGlsX2FyY2guaCAgICAgICAgIHwgIDE0ICsrKwogLi4u
-L2t2bS9pbmNsdWRlL3MzOTAva3ZtX3V0aWxfYXJjaC5oICAgICAgICAgIHwgMTEzICsrKysrKysr
-KysrKysrKysrKwogLi4uL3NlbGZ0ZXN0cy9rdm0vaW5jbHVkZS94ODYva3ZtX3V0aWxfYXJjaC5o
-IHwgIDUyICsrKysrKysrCiA2IGZpbGVzIGNoYW5nZWQsIDIxOCBpbnNlcnRpb25zKCspLCAzIGRl
-bGV0aW9ucygtKQoKZGlmZiAtLWdpdCBhL3Rvb2xzL3Rlc3Rpbmcvc2VsZnRlc3RzL2t2bS9pbmNs
-dWRlL2FybTY0L2t2bV91dGlsX2FyY2guaCBiL3Rvb2xzL3Rlc3Rpbmcvc2VsZnRlc3RzL2t2bS9p
-bmNsdWRlL2FybTY0L2t2bV91dGlsX2FyY2guaAppbmRleCBlNDNhNTdkOTliNTYuLjEyMDk3MjYy
-ZjU4NSAxMDA2NDQKLS0tIGEvdG9vbHMvdGVzdGluZy9zZWxmdGVzdHMva3ZtL2luY2x1ZGUvYXJt
-NjQva3ZtX3V0aWxfYXJjaC5oCisrKyBiL3Rvb2xzL3Rlc3Rpbmcvc2VsZnRlc3RzL2t2bS9pbmNs
-dWRlL2FybTY0L2t2bV91dGlsX2FyY2guaApAQCAtMiw2ICsyLDE4IEBACiAjaWZuZGVmIFNFTEZU
-RVNUX0tWTV9VVElMX0FSQ0hfSAogI2RlZmluZSBTRUxGVEVTVF9LVk1fVVRJTF9BUkNIX0gKIAor
-I2luY2x1ZGUgImt2bV91dGlsX3R5cGVzLmgiCisKIHN0cnVjdCBrdm1fdm1fYXJjaCB7fTsKIAor
-ZW51bSBrdm1fYXJtNjRfc3RhdHMgeworCVZDUFVfU1RBVChodmNfZXhpdF9zdGF0KSwKKwlWQ1BV
-X1NUQVQod2ZlX2V4aXRfc3RhdCksCisJVkNQVV9TVEFUKHdmaV9leGl0X3N0YXQpLAorCVZDUFVf
-U1RBVChtbWlvX2V4aXRfdXNlciksCisJVkNQVV9TVEFUKG1taW9fZXhpdF9rZXJuZWwpLAorCVZD
-UFVfU1RBVChzaWduYWxfZXhpdHMpLAorCVZDUFVfU1RBVChleGl0cyksCit9OworCiAjZW5kaWYg
-IC8vIFNFTEZURVNUX0tWTV9VVElMX0FSQ0hfSApkaWZmIC0tZ2l0IGEvdG9vbHMvdGVzdGluZy9z
-ZWxmdGVzdHMva3ZtL2luY2x1ZGUva3ZtX3V0aWwuaCBiL3Rvb2xzL3Rlc3Rpbmcvc2VsZnRlc3Rz
-L2t2bS9pbmNsdWRlL2t2bV91dGlsLmgKaW5kZXggZTBkMjM4NzMxNThlLi5mNGYwZTI3Y2VhMjcg
-MTAwNjQ0Ci0tLSBhL3Rvb2xzL3Rlc3Rpbmcvc2VsZnRlc3RzL2t2bS9pbmNsdWRlL2t2bV91dGls
-LmgKKysrIGIvdG9vbHMvdGVzdGluZy9zZWxmdGVzdHMva3ZtL2luY2x1ZGUva3ZtX3V0aWwuaApA
-QCAtNTM1LDE5ICs1MzUsMzcgQEAgdm9pZCByZWFkX3N0YXRfZGF0YShpbnQgc3RhdHNfZmQsIHN0
-cnVjdCBrdm1fc3RhdHNfaGVhZGVyICpoZWFkZXIsCiAJCSAgICBzdHJ1Y3Qga3ZtX3N0YXRzX2Rl
-c2MgKmRlc2MsIHVpbnQ2NF90ICpkYXRhLAogCQkgICAgc2l6ZV90IG1heF9lbGVtZW50cyk7CiAK
-K2VudW0ga3ZtX2NvbW1vbl9zdGF0cyB7CisJVk1fU1RBVChyZW1vdGVfdGxiX2ZsdXNoKSwKKwlW
-TV9TVEFUKHJlbW90ZV90bGJfZmx1c2hfcmVxdWVzdHMpLAorCisJVkNQVV9TVEFUKGhhbHRfc3Vj
-Y2Vzc2Z1bGxfcG9sbCksCisJVkNQVV9TVEFUKGhhbHRfYXR0ZW1wdGVkX3BvbGwpLAorCVZDUFVf
-U1RBVChoYWx0X3BvbGxfaW52YWxpZCksCisJVkNQVV9TVEFUKGhhbHRfd2FrZXVwKSwKKwlWQ1BV
-X1NUQVQoaGFsdF9wb2xsX3N1Y2Nlc3NfbnMpLAorCVZDUFVfU1RBVChoYWx0X3BvbGxfZmFpbF9u
-cyksCisJVkNQVV9TVEFUKGhhbHRfd2FpdF9ucyksCisJVkNQVV9TVEFUKGhhbHRfcG9sbF9zdWNj
-ZXNzX2hpc3QpLAorCVZDUFVfU1RBVChoYWx0X3BvbGxfZmFpbF9oaXN0KSwKKwlWQ1BVX1NUQVQo
-aGFsdF93YWl0X2hpc3QpLAorCVZDUFVfU1RBVChibG9ja2luZyksCit9OworCiB2b2lkIGt2bV9n
-ZXRfc3RhdChzdHJ1Y3Qga3ZtX2JpbmFyeV9zdGF0cyAqc3RhdHMsIGNvbnN0IGNoYXIgKm5hbWUs
-CiAJCSAgdWludDY0X3QgKmRhdGEsIHNpemVfdCBtYXhfZWxlbWVudHMpOwogCi0jZGVmaW5lIF9f
-Z2V0X3N0YXQoc3RhdHMsIHN0YXQpCQkJCQkJCVwKKyNkZWZpbmUgX19nZXRfc3RhdCh0eXBlLCBz
-dGF0cywgc3RhdCkJCQkJCQlcCiAoewkJCQkJCQkJCQlcCiAJdWludDY0X3QgZGF0YTsJCQkJCQkJ
-CVwKIAkJCQkJCQkJCQlcCisJa3ZtX3N0YXRpY19hc3NlcnQodHlwZSMjX1NUQVRfIyNzdGF0ID09
-IHR5cGUjI19TVEFUX01BR0lDX05VTUJFUik7CVwKIAlrdm1fZ2V0X3N0YXQoc3RhdHMsICNzdGF0
-LCAmZGF0YSwgMSk7CQkJCQlcCiAJZGF0YTsJCQkJCQkJCQlcCiB9KQogCi0jZGVmaW5lIHZtX2dl
-dF9zdGF0KHZtLCBzdGF0KSBfX2dldF9zdGF0KCYodm0pLT5zdGF0cywgc3RhdCkKLSNkZWZpbmUg
-dmNwdV9nZXRfc3RhdCh2Y3B1LCBzdGF0KSBfX2dldF9zdGF0KCYodmNwdSktPnN0YXRzLCBzdGF0
-KQorI2RlZmluZSB2bV9nZXRfc3RhdCh2bSwgc3RhdCkgX19nZXRfc3RhdChWTSwgJih2bSktPnN0
-YXRzLCBzdGF0KQorI2RlZmluZSB2Y3B1X2dldF9zdGF0KHZjcHUsIHN0YXQpIF9fZ2V0X3N0YXQo
-VkNQVSwgJih2Y3B1KS0+c3RhdHMsIHN0YXQpCiAKIHZvaWQgdm1fY3JlYXRlX2lycWNoaXAoc3Ry
-dWN0IGt2bV92bSAqdm0pOwogCmRpZmYgLS1naXQgYS90b29scy90ZXN0aW5nL3NlbGZ0ZXN0cy9r
-dm0vaW5jbHVkZS9rdm1fdXRpbF90eXBlcy5oIGIvdG9vbHMvdGVzdGluZy9zZWxmdGVzdHMva3Zt
-L2luY2x1ZGUva3ZtX3V0aWxfdHlwZXMuaAppbmRleCBlYzc4N2I5N2NmMTguLjIwZTY3MTdhMGQy
-NCAxMDA2NDQKLS0tIGEvdG9vbHMvdGVzdGluZy9zZWxmdGVzdHMva3ZtL2luY2x1ZGUva3ZtX3V0
-aWxfdHlwZXMuaAorKysgYi90b29scy90ZXN0aW5nL3NlbGZ0ZXN0cy9rdm0vaW5jbHVkZS9rdm1f
-dXRpbF90eXBlcy5oCkBAIC0xNyw0ICsxNywxMCBAQAogdHlwZWRlZiB1aW50NjRfdCB2bV9wYWRk
-cl90OyAvKiBWaXJ0dWFsIE1hY2hpbmUgKEd1ZXN0KSBwaHlzaWNhbCBhZGRyZXNzICovCiB0eXBl
-ZGVmIHVpbnQ2NF90IHZtX3ZhZGRyX3Q7IC8qIFZpcnR1YWwgTWFjaGluZSAoR3Vlc3QpIHZpcnR1
-YWwgYWRkcmVzcyAqLwogCisjZGVmaW5lIFZNX1NUQVRfTUFHSUNfTlVNQkVSICAgMQorI2RlZmlu
-ZSBWTV9TVEFUKHN0YXQpICBWTV9TVEFUXyMjc3RhdCA9IFZNX1NUQVRfTUFHSUNfTlVNQkVSCisK
-KyNkZWZpbmUgVkNQVV9TVEFUX01BR0lDX05VTUJFUiAgIDIKKyNkZWZpbmUgVkNQVV9TVEFUKHN0
-YXQpIFZDUFVfU1RBVF8jI3N0YXQgPSBWQ1BVX1NUQVRfTUFHSUNfTlVNQkVSCisKICNlbmRpZiAv
-KiBTRUxGVEVTVF9LVk1fVVRJTF9UWVBFU19IICovCmRpZmYgLS1naXQgYS90b29scy90ZXN0aW5n
-L3NlbGZ0ZXN0cy9rdm0vaW5jbHVkZS9yaXNjdi9rdm1fdXRpbF9hcmNoLmggYi90b29scy90ZXN0
-aW5nL3NlbGZ0ZXN0cy9rdm0vaW5jbHVkZS9yaXNjdi9rdm1fdXRpbF9hcmNoLmgKaW5kZXggZTQz
-YTU3ZDk5YjU2Li5lYTUzZDZhZWI2OTMgMTAwNjQ0Ci0tLSBhL3Rvb2xzL3Rlc3Rpbmcvc2VsZnRl
-c3RzL2t2bS9pbmNsdWRlL3Jpc2N2L2t2bV91dGlsX2FyY2guaAorKysgYi90b29scy90ZXN0aW5n
-L3NlbGZ0ZXN0cy9rdm0vaW5jbHVkZS9yaXNjdi9rdm1fdXRpbF9hcmNoLmgKQEAgLTIsNiArMiwy
-MCBAQAogI2lmbmRlZiBTRUxGVEVTVF9LVk1fVVRJTF9BUkNIX0gKICNkZWZpbmUgU0VMRlRFU1Rf
-S1ZNX1VUSUxfQVJDSF9ICiAKKyNpbmNsdWRlICJrdm1fdXRpbF90eXBlcy5oIgorCiBzdHJ1Y3Qg
-a3ZtX3ZtX2FyY2gge307CiAKK2VudW0ga3ZtX3Jpc2N2X3N0YXRzIHsKKwlWQ1BVX1NUQVQoZWNh
-bGxfZXhpdF9zdGF0KSwKKwlWQ1BVX1NUQVQod2ZpX2V4aXRfc3RhdCksCisJVkNQVV9TVEFUKHdy
-c19leGl0X3N0YXQpLAorCVZDUFVfU1RBVChtbWlvX2V4aXRfdXNlciksCisJVkNQVV9TVEFUKG1t
-aW9fZXhpdF9rZXJuZWwpLAorCVZDUFVfU1RBVChjc3JfZXhpdF91c2VyKSwKKwlWQ1BVX1NUQVQo
-Y3NyX2V4aXRfa2VybmVsKSwKKwlWQ1BVX1NUQVQoc2lnbmFsX2V4aXRzKSwKKwlWQ1BVX1NUQVQo
-ZXhpdHMpLAorfTsKKwogI2VuZGlmICAvLyBTRUxGVEVTVF9LVk1fVVRJTF9BUkNIX0gKZGlmZiAt
-LWdpdCBhL3Rvb2xzL3Rlc3Rpbmcvc2VsZnRlc3RzL2t2bS9pbmNsdWRlL3MzOTAva3ZtX3V0aWxf
-YXJjaC5oIGIvdG9vbHMvdGVzdGluZy9zZWxmdGVzdHMva3ZtL2luY2x1ZGUvczM5MC9rdm1fdXRp
-bF9hcmNoLmgKaW5kZXggZTQzYTU3ZDk5YjU2Li42NGQ0ZGUzMzNlMDkgMTAwNjQ0Ci0tLSBhL3Rv
-b2xzL3Rlc3Rpbmcvc2VsZnRlc3RzL2t2bS9pbmNsdWRlL3MzOTAva3ZtX3V0aWxfYXJjaC5oCisr
-KyBiL3Rvb2xzL3Rlc3Rpbmcvc2VsZnRlc3RzL2t2bS9pbmNsdWRlL3MzOTAva3ZtX3V0aWxfYXJj
-aC5oCkBAIC0yLDYgKzIsMTE5IEBACiAjaWZuZGVmIFNFTEZURVNUX0tWTV9VVElMX0FSQ0hfSAog
-I2RlZmluZSBTRUxGVEVTVF9LVk1fVVRJTF9BUkNIX0gKIAorI2luY2x1ZGUgImt2bV91dGlsX3R5
-cGVzLmgiCisKIHN0cnVjdCBrdm1fdm1fYXJjaCB7fTsKIAorZW51bSBrdm1fczM5MF9zdGF0cyB7
-CisJVk1fU1RBVChpbmplY3RfaW8pLAorCVZNX1NUQVQoaW5qZWN0X2Zsb2F0X21jaGspLAorCVZN
-X1NUQVQoaW5qZWN0X3BmYXVsdF9kb25lKSwKKwlWTV9TVEFUKGluamVjdF9zZXJ2aWNlX3NpZ25h
-bCksCisJVk1fU1RBVChpbmplY3RfdmlydGlvKSwKKwlWTV9TVEFUKGFlbl9mb3J3YXJkKSwKKwlW
-TV9TVEFUKGdtYXBfc2hhZG93X3JldXNlKSwKKwlWTV9TVEFUKGdtYXBfc2hhZG93X2NyZWF0ZSks
-CisJVk1fU1RBVChnbWFwX3NoYWRvd19yMV9lbnRyeSksCisJVk1fU1RBVChnbWFwX3NoYWRvd19y
-Ml9lbnRyeSksCisJVk1fU1RBVChnbWFwX3NoYWRvd19yM19lbnRyeSksCisJVk1fU1RBVChnbWFw
-X3NoYWRvd19zZ19lbnRyeSksCisJVk1fU1RBVChnbWFwX3NoYWRvd19wZ19lbnRyeSksCisKKwlW
-Q1BVX1NUQVQoZXhpdF91c2Vyc3BhY2UpLAorCVZDUFVfU1RBVChleGl0X251bGwpLAorCVZDUFVf
-U1RBVChleGl0X2V4dGVybmFsX3JlcXVlc3QpLAorCVZDUFVfU1RBVChleGl0X2lvX3JlcXVlc3Qp
-LAorCVZDUFVfU1RBVChleGl0X2V4dGVybmFsX2ludGVycnVwdCksCisJVkNQVV9TVEFUKGV4aXRf
-c3RvcF9yZXF1ZXN0KSwKKwlWQ1BVX1NUQVQoZXhpdF92YWxpZGl0eSksCisJVkNQVV9TVEFUKGV4
-aXRfaW5zdHJ1Y3Rpb24pLAorCVZDUFVfU1RBVChleGl0X3BlaSksCisJVkNQVV9TVEFUKGhhbHRf
-bm9fcG9sbF9zdGVhbCksCisJVkNQVV9TVEFUKGluc3RydWN0aW9uX2xjdGwpLAorCVZDUFVfU1RB
-VChpbnN0cnVjdGlvbl9sY3RsZyksCisJVkNQVV9TVEFUKGluc3RydWN0aW9uX3N0Y3RsKSwKKwlW
-Q1BVX1NUQVQoaW5zdHJ1Y3Rpb25fc3RjdGcpLAorCVZDUFVfU1RBVChleGl0X3Byb2dyYW1faW50
-ZXJydXB0aW9uKSwKKwlWQ1BVX1NUQVQoZXhpdF9pbnN0cl9hbmRfcHJvZ3JhbSksCisJVkNQVV9T
-VEFUKGV4aXRfb3BlcmF0aW9uX2V4Y2VwdGlvbiksCisJVkNQVV9TVEFUKGRlbGl2ZXJfY2tjKSwK
-KwlWQ1BVX1NUQVQoZGVsaXZlcl9jcHV0bSksCisJVkNQVV9TVEFUKGRlbGl2ZXJfZXh0ZXJuYWxf
-Y2FsbCksCisJVkNQVV9TVEFUKGRlbGl2ZXJfZW1lcmdlbmN5X3NpZ25hbCksCisJVkNQVV9TVEFU
-KGRlbGl2ZXJfc2VydmljZV9zaWduYWwpLAorCVZDUFVfU1RBVChkZWxpdmVyX3ZpcnRpbyksCisJ
-VkNQVV9TVEFUKGRlbGl2ZXJfc3RvcF9zaWduYWwpLAorCVZDUFVfU1RBVChkZWxpdmVyX3ByZWZp
-eF9zaWduYWwpLAorCVZDUFVfU1RBVChkZWxpdmVyX3Jlc3RhcnRfc2lnbmFsKSwKKwlWQ1BVX1NU
-QVQoZGVsaXZlcl9wcm9ncmFtKSwKKwlWQ1BVX1NUQVQoZGVsaXZlcl9pbyksCisJVkNQVV9TVEFU
-KGRlbGl2ZXJfbWFjaGluZV9jaGVjayksCisJVkNQVV9TVEFUKGV4aXRfd2FpdF9zdGF0ZSksCisJ
-VkNQVV9TVEFUKGluamVjdF9ja2MpLAorCVZDUFVfU1RBVChpbmplY3RfY3B1dG0pLAorCVZDUFVf
-U1RBVChpbmplY3RfZXh0ZXJuYWxfY2FsbCksCisJVkNQVV9TVEFUKGluamVjdF9lbWVyZ2VuY3lf
-c2lnbmFsKSwKKwlWQ1BVX1NUQVQoaW5qZWN0X21jaGspLAorCVZDUFVfU1RBVChpbmplY3RfcGZh
-dWx0X2luaXQpLAorCVZDUFVfU1RBVChpbmplY3RfcHJvZ3JhbSksCisJVkNQVV9TVEFUKGluamVj
-dF9yZXN0YXJ0KSwKKwlWQ1BVX1NUQVQoaW5qZWN0X3NldF9wcmVmaXgpLAorCVZDUFVfU1RBVChp
-bmplY3Rfc3RvcF9zaWduYWwpLAorCVZDUFVfU1RBVChpbnN0cnVjdGlvbl9lcHN3KSwKKwlWQ1BV
-X1NUQVQoaW5zdHJ1Y3Rpb25fZ3MpLAorCVZDUFVfU1RBVChpbnN0cnVjdGlvbl9pb19vdGhlciks
-CisJVkNQVV9TVEFUKGluc3RydWN0aW9uX2xwc3cpLAorCVZDUFVfU1RBVChpbnN0cnVjdGlvbl9s
-cHN3ZSksCisJVkNQVV9TVEFUKGluc3RydWN0aW9uX2xwc3dleSksCisJVkNQVV9TVEFUKGluc3Ry
-dWN0aW9uX3BmbWYpLAorCVZDUFVfU1RBVChpbnN0cnVjdGlvbl9wdGZmKSwKKwlWQ1BVX1NUQVQo
-aW5zdHJ1Y3Rpb25fc2NrKSwKKwlWQ1BVX1NUQVQoaW5zdHJ1Y3Rpb25fc2NrcGYpLAorCVZDUFVf
-U1RBVChpbnN0cnVjdGlvbl9zdGlkcCksCisJVkNQVV9TVEFUKGluc3RydWN0aW9uX3NweCksCisJ
-VkNQVV9TVEFUKGluc3RydWN0aW9uX3N0cHgpLAorCVZDUFVfU1RBVChpbnN0cnVjdGlvbl9zdGFw
-KSwKKwlWQ1BVX1NUQVQoaW5zdHJ1Y3Rpb25faXNrZSksCisJVkNQVV9TVEFUKGluc3RydWN0aW9u
-X3JpKSwKKwlWQ1BVX1NUQVQoaW5zdHJ1Y3Rpb25fcnJiZSksCisJVkNQVV9TVEFUKGluc3RydWN0
-aW9uX3Nza2UpLAorCVZDUFVfU1RBVChpbnN0cnVjdGlvbl9pcHRlX2ludGVybG9jayksCisJVkNQ
-VV9TVEFUKGluc3RydWN0aW9uX3N0c2kpLAorCVZDUFVfU1RBVChpbnN0cnVjdGlvbl9zdGZsKSwK
-KwlWQ1BVX1NUQVQoaW5zdHJ1Y3Rpb25fdGIpLAorCVZDUFVfU1RBVChpbnN0cnVjdGlvbl90cGkp
-LAorCVZDUFVfU1RBVChpbnN0cnVjdGlvbl90cHJvdCksCisJVkNQVV9TVEFUKGluc3RydWN0aW9u
-X3RzY2gpLAorCVZDUFVfU1RBVChpbnN0cnVjdGlvbl9zaWUpLAorCVZDUFVfU1RBVChpbnN0cnVj
-dGlvbl9lc3NhKSwKKwlWQ1BVX1NUQVQoaW5zdHJ1Y3Rpb25fc3RoeWkpLAorCVZDUFVfU1RBVChp
-bnN0cnVjdGlvbl9zaWdwX3NlbnNlKSwKKwlWQ1BVX1NUQVQoaW5zdHJ1Y3Rpb25fc2lncF9zZW5z
-ZV9ydW5uaW5nKSwKKwlWQ1BVX1NUQVQoaW5zdHJ1Y3Rpb25fc2lncF9leHRlcm5hbF9jYWxsKSwK
-KwlWQ1BVX1NUQVQoaW5zdHJ1Y3Rpb25fc2lncF9lbWVyZ2VuY3kpLAorCVZDUFVfU1RBVChpbnN0
-cnVjdGlvbl9zaWdwX2NvbmRfZW1lcmdlbmN5KSwKKwlWQ1BVX1NUQVQoaW5zdHJ1Y3Rpb25fc2ln
-cF9zdGFydCksCisJVkNQVV9TVEFUKGluc3RydWN0aW9uX3NpZ3Bfc3RvcCksCisJVkNQVV9TVEFU
-KGluc3RydWN0aW9uX3NpZ3Bfc3RvcF9zdG9yZV9zdGF0dXMpLAorCVZDUFVfU1RBVChpbnN0cnVj
-dGlvbl9zaWdwX3N0b3JlX3N0YXR1cyksCisJVkNQVV9TVEFUKGluc3RydWN0aW9uX3NpZ3Bfc3Rv
-cmVfYWR0bF9zdGF0dXMpLAorCVZDUFVfU1RBVChpbnN0cnVjdGlvbl9zaWdwX2FyY2gpLAorCVZD
-UFVfU1RBVChpbnN0cnVjdGlvbl9zaWdwX3ByZWZpeCksCisJVkNQVV9TVEFUKGluc3RydWN0aW9u
-X3NpZ3BfcmVzdGFydCksCisJVkNQVV9TVEFUKGluc3RydWN0aW9uX3NpZ3BfaW5pdF9jcHVfcmVz
-ZXQpLAorCVZDUFVfU1RBVChpbnN0cnVjdGlvbl9zaWdwX2NwdV9yZXNldCksCisJVkNQVV9TVEFU
-KGluc3RydWN0aW9uX3NpZ3BfdW5rbm93biksCisJVkNQVV9TVEFUKGluc3RydWN0aW9uX2RpYWdu
-b3NlXzEwKSwKKwlWQ1BVX1NUQVQoaW5zdHJ1Y3Rpb25fZGlhZ25vc2VfNDQpLAorCVZDUFVfU1RB
-VChpbnN0cnVjdGlvbl9kaWFnbm9zZV85YyksCisJVkNQVV9TVEFUKGRpYWdfOWNfaWdub3JlZCks
-CisJVkNQVV9TVEFUKGRpYWdfOWNfZm9yd2FyZCksCisJVkNQVV9TVEFUKGluc3RydWN0aW9uX2Rp
-YWdub3NlXzI1OCksCisJVkNQVV9TVEFUKGluc3RydWN0aW9uX2RpYWdub3NlXzMwOCksCisJVkNQ
-VV9TVEFUKGluc3RydWN0aW9uX2RpYWdub3NlXzUwMCksCisJVkNQVV9TVEFUKGluc3RydWN0aW9u
-X2RpYWdub3NlX290aGVyKSwKKwlWQ1BVX1NUQVQocGZhdWx0X3N5bmMpLAorfTsKKwogI2VuZGlm
-ICAvLyBTRUxGVEVTVF9LVk1fVVRJTF9BUkNIX0gKZGlmZiAtLWdpdCBhL3Rvb2xzL3Rlc3Rpbmcv
-c2VsZnRlc3RzL2t2bS9pbmNsdWRlL3g4Ni9rdm1fdXRpbF9hcmNoLmggYi90b29scy90ZXN0aW5n
-L3NlbGZ0ZXN0cy9rdm0vaW5jbHVkZS94ODYva3ZtX3V0aWxfYXJjaC5oCmluZGV4IDk3MmJiMWM0
-YWI0Yy4uZjljNGFlZGRkYmQwIDEwMDY0NAotLS0gYS90b29scy90ZXN0aW5nL3NlbGZ0ZXN0cy9r
-dm0vaW5jbHVkZS94ODYva3ZtX3V0aWxfYXJjaC5oCisrKyBiL3Rvb2xzL3Rlc3Rpbmcvc2VsZnRl
-c3RzL2t2bS9pbmNsdWRlL3g4Ni9rdm1fdXRpbF9hcmNoLmgKQEAgLTQ4LDQgKzQ4LDU2IEBAIGRv
-IHsJCQkJCQkJCQkJCVwKIAl9CQkJCQkJCQkJCVwKIH0gd2hpbGUgKDApCiAKK2VudW0ga3ZtX3g4
-Nl9zdGF0cyB7CisJVk1fU1RBVChtbXVfc2hhZG93X3phcHBlZCksCisJVk1fU1RBVChtbXVfcHRl
-X3dyaXRlKSwKKwlWTV9TVEFUKG1tdV9wZGVfemFwcGVkKSwKKwlWTV9TVEFUKG1tdV9mbG9vZGVk
-KSwKKwlWTV9TVEFUKG1tdV9yZWN5Y2xlZCksCisJVk1fU1RBVChtbXVfY2FjaGVfbWlzcyksCisJ
-Vk1fU1RBVChtbXVfdW5zeW5jKSwKKwlWTV9TVEFUKHBhZ2VzXzRrKSwKKwlWTV9TVEFUKHBhZ2Vz
-XzJtKSwKKwlWTV9TVEFUKHBhZ2VzXzFnKSwKKwlWTV9TVEFUKHBhZ2VzKSwKKwlWTV9TVEFUKG54
-X2xwYWdlX3NwbGl0cyksCisJVk1fU1RBVChtYXhfbW11X3BhZ2VfaGFzaF9jb2xsaXNpb25zKSwK
-KwlWTV9TVEFUKG1heF9tbXVfcm1hcF9zaXplKSwKKworCVZDUFVfU1RBVChwZl90YWtlbiksCisJ
-VkNQVV9TVEFUKHBmX2ZpeGVkKSwKKwlWQ1BVX1NUQVQocGZfZW11bGF0ZSksCisJVkNQVV9TVEFU
-KHBmX3NwdXJpb3VzKSwKKwlWQ1BVX1NUQVQocGZfZmFzdCksCisJVkNQVV9TVEFUKHBmX21taW9f
-c3B0ZV9jcmVhdGVkKSwKKwlWQ1BVX1NUQVQocGZfZ3Vlc3QpLAorCVZDUFVfU1RBVCh0bGJfZmx1
-c2gpLAorCVZDUFVfU1RBVChpbnZscGcpLAorCVZDUFVfU1RBVChleGl0cyksCisJVkNQVV9TVEFU
-KGlvX2V4aXRzKSwKKwlWQ1BVX1NUQVQobW1pb19leGl0cyksCisJVkNQVV9TVEFUKHNpZ25hbF9l
-eGl0cyksCisJVkNQVV9TVEFUKGlycV93aW5kb3dfZXhpdHMpLAorCVZDUFVfU1RBVChubWlfd2lu
-ZG93X2V4aXRzKSwKKwlWQ1BVX1NUQVQobDFkX2ZsdXNoKSwKKwlWQ1BVX1NUQVQoaGFsdF9leGl0
-cyksCisJVkNQVV9TVEFUKHJlcXVlc3RfaXJxX2V4aXRzKSwKKwlWQ1BVX1NUQVQoaXJxX2V4aXRz
-KSwKKwlWQ1BVX1NUQVQoaG9zdF9zdGF0ZV9yZWxvYWQpLAorCVZDUFVfU1RBVChmcHVfcmVsb2Fk
-KSwKKwlWQ1BVX1NUQVQoaW5zbl9lbXVsYXRpb24pLAorCVZDUFVfU1RBVChpbnNuX2VtdWxhdGlv
-bl9mYWlsKSwKKwlWQ1BVX1NUQVQoaHlwZXJjYWxscyksCisJVkNQVV9TVEFUKGlycV9pbmplY3Rp
-b25zKSwKKwlWQ1BVX1NUQVQobm1pX2luamVjdGlvbnMpLAorCVZDUFVfU1RBVChyZXFfZXZlbnQp
-LAorCVZDUFVfU1RBVChuZXN0ZWRfcnVuKSwKKwlWQ1BVX1NUQVQoZGlyZWN0ZWRfeWllbGRfYXR0
-ZW1wdGVkKSwKKwlWQ1BVX1NUQVQoZGlyZWN0ZWRfeWllbGRfc3VjY2Vzc2Z1bCksCisJVkNQVV9T
-VEFUKHByZWVtcHRpb25fcmVwb3J0ZWQpLAorCVZDUFVfU1RBVChwcmVlbXB0aW9uX290aGVyKSwK
-KwlWQ1BVX1NUQVQoZ3Vlc3RfbW9kZSksCisJVkNQVV9TVEFUKG5vdGlmeV93aW5kb3dfZXhpdHMp
-LAorfTsKKwogI2VuZGlmICAvLyBTRUxGVEVTVF9LVk1fVVRJTF9BUkNIX0gKLS0gCjIuNDcuMS42
-MTMuZ2MyN2Y0YjdhOWYtZ29vZwoKCi0tIAprdm0tcmlzY3YgbWFpbGluZyBsaXN0Cmt2bS1yaXNj
-dkBsaXN0cy5pbmZyYWRlYWQub3JnCmh0dHA6Ly9saXN0cy5pbmZyYWRlYWQub3JnL21haWxtYW4v
-bGlzdGluZm8va3ZtLXJpc2N2Cg==
+From: Arnd Bergmann <arnd@arndb.de>
+
+I've updated my RFC patches based on the feedback, changing mainly
+the powerpc code. 
+
+I submitted a patch to remove KVM support for x86-32 hosts earlier
+this month, but there were still concerns that this might be useful for
+testing 32-bit host in general, as that remains supported on three other
+architectures. I have gone through those three now and prepared similar
+patches, as all of them seem to be equally obsolete.
+
+Support for 32-bit KVM host on Arm hardware was dropped back in 2020
+because of lack of users, despite Cortex-A7/A15/A17 based SoCs being
+much more widely deployed than the other virtualization capable 32-bit
+CPUs (Intel Core Duo/Silverthorne, PowerPC e300/e500/e600, MIPS P5600)
+combined.
+
+I hope this can get merged through the KVM tree as a whole series.
+
+      Arnd
+
+---
+v2 changes:
+ - rebase to kvm #next branch
+ - improve changelog text for x86
+ - many updates for powerpc, thanks to Christophe Leroy for suggestions
+
+Link: https://lore.kernel.org/lkml/Z1B1phcpbiYWLgCD@google.com/
+Link: https://lore.kernel.org/lkml/20241212125516.467123-1-arnd@kernel.org/
+
+Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+Cc: Huacai Chen <chenhuacai@kernel.org>
+Cc: Jiaxun Yang <jiaxun.yang@flygoat.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
+Cc: Naveen N Rao <naveen@kernel.org>
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: Alexander Graf <graf@amazon.com>
+Cc: Crystal Wood <crwood@redhat.com>
+Cc: Anup Patel <anup@brainfault.org>
+Cc: Atish Patra <atishp@atishpatra.org>
+Cc: Paul Walmsley <paul.walmsley@sifive.com>
+Cc: Palmer Dabbelt <palmer@dabbelt.com>
+Cc: Albert Ou <aou@eecs.berkeley.edu>
+Cc: Sean Christopherson <seanjc@google.com>
+Cc: Paolo Bonzini <pbonzini@redhat.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Borislav Petkov <bp@alien8.de>
+Cc: Dave Hansen <dave.hansen@linux.intel.com>
+Cc: x86@kernel.org
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Vitaly Kuznetsov <vkuznets@redhat.com>
+Cc: David Woodhouse <dwmw2@infradead.org>
+Cc: Paul Durrant <paul@xen.org>
+Cc: Marc Zyngier <maz@kernel.org>
+Cc: "A. Wilcox" <AWilcox@Wilcox-Tech.com>
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-mips@vger.kernel.org
+Cc: kvm@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: kvm-riscv@lists.infradead.org
+Cc: linux-riscv@lists.infradead.org
+
+Arnd Bergmann (5):
+  mips: kvm: drop support for 32-bit hosts
+  riscv: kvm: drop 32-bit host support
+  powerpc: kvm: drop 32-bit booke
+  powerpc: kvm: drop 32-bit book3s
+  x86: kvm drop 32-bit host support
+
+ MAINTAINERS                                 |   2 +-
+ arch/mips/Kconfig                           |   3 -
+ arch/mips/include/asm/kvm_host.h            |   4 -
+ arch/mips/kvm/Kconfig                       |   1 +
+ arch/mips/kvm/emulate.c                     |   8 -
+ arch/mips/kvm/msa.S                         |  12 -
+ arch/mips/kvm/vz.c                          |  22 -
+ arch/powerpc/include/asm/kvm_book3s.h       |  17 -
+ arch/powerpc/include/asm/kvm_book3s_32.h    |  36 --
+ arch/powerpc/include/asm/kvm_book3s_asm.h   |  10 -
+ arch/powerpc/include/asm/kvm_booke.h        |   4 -
+ arch/powerpc/include/asm/kvm_booke_hv_asm.h |   2 -
+ arch/powerpc/include/asm/kvm_host.h         |   2 +-
+ arch/powerpc/include/asm/kvm_ppc.h          |   2 +-
+ arch/powerpc/include/asm/processor.h        |   3 -
+ arch/powerpc/kernel/asm-offsets.c           |  21 +-
+ arch/powerpc/kernel/head_32.h               |  10 -
+ arch/powerpc/kernel/head_85xx.S             |  14 -
+ arch/powerpc/kernel/head_book3s_32.S        |   5 -
+ arch/powerpc/kernel/head_booke.h            |  39 --
+ arch/powerpc/kvm/Kconfig                    |  44 +-
+ arch/powerpc/kvm/Makefile                   |  30 --
+ arch/powerpc/kvm/book3s.c                   |  18 -
+ arch/powerpc/kvm/book3s_32_mmu_host.c       | 396 --------------
+ arch/powerpc/kvm/book3s_emulate.c           |  37 --
+ arch/powerpc/kvm/book3s_interrupts.S        |  11 -
+ arch/powerpc/kvm/book3s_mmu_hpte.c          |  12 -
+ arch/powerpc/kvm/book3s_pr.c                | 122 +----
+ arch/powerpc/kvm/book3s_rmhandlers.S        | 110 ----
+ arch/powerpc/kvm/book3s_segment.S           |  30 +-
+ arch/powerpc/kvm/booke.c                    | 268 ----------
+ arch/powerpc/kvm/booke.h                    |   8 -
+ arch/powerpc/kvm/booke_emulate.c            |  44 --
+ arch/powerpc/kvm/booke_interrupts.S         | 535 -------------------
+ arch/powerpc/kvm/bookehv_interrupts.S       | 102 ----
+ arch/powerpc/kvm/e500.c                     | 553 --------------------
+ arch/powerpc/kvm/e500.h                     |  40 --
+ arch/powerpc/kvm/e500_emulate.c             | 100 ----
+ arch/powerpc/kvm/e500_mmu_host.c            |  54 --
+ arch/powerpc/kvm/e500mc.c                   |   5 +-
+ arch/powerpc/kvm/emulate.c                  |   2 -
+ arch/powerpc/kvm/powerpc.c                  |   2 -
+ arch/powerpc/kvm/trace_booke.h              |  14 -
+ arch/riscv/kvm/Kconfig                      |   2 +-
+ arch/riscv/kvm/aia.c                        | 105 ----
+ arch/riscv/kvm/aia_imsic.c                  |  34 --
+ arch/riscv/kvm/mmu.c                        |   8 -
+ arch/riscv/kvm/vcpu_exit.c                  |   4 -
+ arch/riscv/kvm/vcpu_insn.c                  |  12 -
+ arch/riscv/kvm/vcpu_sbi_pmu.c               |   8 -
+ arch/riscv/kvm/vcpu_sbi_replace.c           |   4 -
+ arch/riscv/kvm/vcpu_sbi_v01.c               |   4 -
+ arch/riscv/kvm/vcpu_timer.c                 |  20 -
+ arch/x86/kvm/Kconfig                        |   6 +-
+ arch/x86/kvm/Makefile                       |   4 +-
+ arch/x86/kvm/cpuid.c                        |   2 +-
+ arch/x86/kvm/emulate.c                      |  34 +-
+ arch/x86/kvm/fpu.h                          |   4 -
+ arch/x86/kvm/hyperv.c                       |   5 +-
+ arch/x86/kvm/i8254.c                        |   4 -
+ arch/x86/kvm/kvm_cache_regs.h               |   2 -
+ arch/x86/kvm/kvm_emulate.h                  |   8 -
+ arch/x86/kvm/lapic.c                        |   4 -
+ arch/x86/kvm/mmu.h                          |   4 -
+ arch/x86/kvm/mmu/mmu.c                      | 134 -----
+ arch/x86/kvm/mmu/mmu_internal.h             |   9 -
+ arch/x86/kvm/mmu/paging_tmpl.h              |   9 -
+ arch/x86/kvm/mmu/spte.h                     |   5 -
+ arch/x86/kvm/mmu/tdp_mmu.h                  |   4 -
+ arch/x86/kvm/smm.c                          |  19 -
+ arch/x86/kvm/svm/sev.c                      |   2 -
+ arch/x86/kvm/svm/svm.c                      |  23 +-
+ arch/x86/kvm/svm/vmenter.S                  |  20 -
+ arch/x86/kvm/trace.h                        |   4 -
+ arch/x86/kvm/vmx/main.c                     |   2 -
+ arch/x86/kvm/vmx/nested.c                   |  24 +-
+ arch/x86/kvm/vmx/vmcs.h                     |   2 -
+ arch/x86/kvm/vmx/vmenter.S                  |  25 +-
+ arch/x86/kvm/vmx/vmx.c                      | 117 +----
+ arch/x86/kvm/vmx/vmx.h                      |  23 +-
+ arch/x86/kvm/vmx/vmx_ops.h                  |   7 -
+ arch/x86/kvm/vmx/x86_ops.h                  |   2 -
+ arch/x86/kvm/x86.c                          |  74 +--
+ arch/x86/kvm/x86.h                          |   4 -
+ arch/x86/kvm/xen.c                          |  61 +--
+ 85 files changed, 66 insertions(+), 3536 deletions(-)
+ delete mode 100644 arch/powerpc/include/asm/kvm_book3s_32.h
+ delete mode 100644 arch/powerpc/kvm/book3s_32_mmu_host.c
+ delete mode 100644 arch/powerpc/kvm/booke_interrupts.S
+ delete mode 100644 arch/powerpc/kvm/e500.c
+
+-- 
+2.39.5
+
+
+-- 
+kvm-riscv mailing list
+kvm-riscv@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/kvm-riscv
