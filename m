@@ -4,77 +4,78 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B93A9E77188
-	for <kvm-riscv@archiver.kernel.org>; Tue, 24 Dec 2024 21:05:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4E26AE7718E
+	for <kvm-riscv@archiver.kernel.org>; Tue, 24 Dec 2024 21:05:04 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:Cc:To:MIME-Version:Message-Id:Date:
-	Subject:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
-	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
-	List-Owner; bh=5lXpACB9aqQ1qg763ls0mcgXDHB+kemoc6J0SD6K3og=; b=bxNvfsbGj0Xogd
-	fzPgjLizv2k9qL+ybbF+G4Imewc2mA6YW3bLBXF7CMowRHuSt4Su8x8o+jBDJFZGXDxKSgXFNcB7d
-	+NxQRmINKe+9rPcurknNRBlwwqhtxsFDcdiNGGCKyokKRHB8rJx7E7cw4GmlogTOAwgUJ9Ps6jTYm
-	DUpo4GTCOeUb/SUgHOXuBNqmyaeJeQsQ7ZLxZNQIksuXUx+3odQT29AjN0ixZtzM7qcCezR01gxGw
-	6y8xCLZcJ3wzA8VhsXKG5Gm+tXpnJCpkXBeK/2IRmVKrxqXOknM2v+HHtcrFYUglK5Pg276yO6wFH
-	kztByxqck3KFeNHeUcHQ==;
+	List-Archive:List-Unsubscribe:List-Id:Cc:To:In-Reply-To:References:Message-Id
+	:MIME-Version:Subject:Date:From:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=WjxaqrRYBFLI8WyV8rpI8Fp+v+uD3gxoErfT5zPsFrA=; b=lbm/39bLT+FIJw
+	kRCD8FFKBHzprZ4tqQwXl/YDcHypGFI9NphGGNahykI75OPeO5NNMlms9rR4kLRLG8tTMbeyEyAso
+	gLYZzKHPkgwbviSB8043AG5lieubhLo+LA05GeznNL7feJwB5c3lA2qY4XwKBo4i2r8jX6aa2k1bm
+	X4dxYwA1DRp4kBOS1N4IBCb/si746qhG4KaN8KNNWUGnq+P5COvG+DO+NL+irJ5OqfRwc2rQc2L7L
+	GY1MHp0WaOeFaWnGB7+5IiLABDMERfiQYgH4CPHq8qz3KVVw4/IiQO/6ZT6XoPszO1miP0k4lXatu
+	827Hkfw6eFdnZ+76nrIA==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98 #2 (Red Hat Linux))
-	id 1tQC5P-0000000CnTi-0O0B;
-	Tue, 24 Dec 2024 21:05:03 +0000
-Received: from mail-pl1-x635.google.com ([2607:f8b0:4864:20::635])
+	id 1tQC5Q-0000000CnU8-0BaK;
+	Tue, 24 Dec 2024 21:05:04 +0000
+Received: from mail-pl1-x629.google.com ([2607:f8b0:4864:20::629])
 	by bombadil.infradead.org with esmtps (Exim 4.98 #2 (Red Hat Linux))
-	id 1tQC5L-0000000CnQn-1Nkm
+	id 1tQC5M-0000000CnRA-0NSF
 	for kvm-riscv@lists.infradead.org;
-	Tue, 24 Dec 2024 21:05:00 +0000
-Received: by mail-pl1-x635.google.com with SMTP id d9443c01a7336-21644aca3a0so66421335ad.3
-        for <kvm-riscv@lists.infradead.org>; Tue, 24 Dec 2024 13:04:58 -0800 (PST)
+	Tue, 24 Dec 2024 21:05:02 +0000
+Received: by mail-pl1-x629.google.com with SMTP id d9443c01a7336-2161eb95317so59176275ad.1
+        for <kvm-riscv@lists.infradead.org>; Tue, 24 Dec 2024 13:04:59 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=rivosinc-com.20230601.gappssmtp.com; s=20230601; t=1735074298; x=1735679098; darn=lists.infradead.org;
-        h=cc:to:content-transfer-encoding:mime-version:message-id:date
-         :subject:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=sI1JaJkunk7xEX9+Xf01iHnjfpujHUUVPbR0FhepJuw=;
-        b=sZmb5OoBkH8v++bXB7Hxwmnct6ugvQjJtVxETsoztDSPtjVsIIJFtq248q5uUbTKEx
-         U2v0WQWHapaQGvd2ldsTxUFiyivyNgO1/OWSs6tYLLCBep0/t/HvBuuJ7fnee3iG7/Cl
-         2a4GYv1b+REhcvl74Zm8mc/XEb21bLZjy0kRXi3fIrEw2VzKG6NYjvb5S9ntOnvWMkY1
-         CWUyjGi/NK+m4r0cpdH2u/jP1WcCqr2VxfUchrWNvcxk5JV2crnHk/03xRRfwsutGh0d
-         ci0DEH+mBv0CO2CoK6R56612ZO1kJ5Jvfi/jku2Aveeh6C+1FQhA0Tp/n462kfp6Dxqn
-         G5qg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1735074298; x=1735679098;
-        h=cc:to:content-transfer-encoding:mime-version:message-id:date
-         :subject:from:x-gm-message-state:from:to:cc:subject:date:message-id
+        d=rivosinc-com.20230601.gappssmtp.com; s=20230601; t=1735074299; x=1735679099; darn=lists.infradead.org;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=sI1JaJkunk7xEX9+Xf01iHnjfpujHUUVPbR0FhepJuw=;
-        b=aMnoiLeZmlBQYk9e2o+MJw4p8XeCeOfyNQzWBx/AYdmUcnGPj2epZpy0/gTJKT9Aic
-         OA2VecXFkqHbejoJPx2fa/EMsZ3ZUYC7KgcJ6OKLor896mbENwRXZ4RZ664c8RaHUHoh
-         +2nWCyWRA0zx9JdKJVbdWJREuEO028a6H6VVOSCsz0Lv2TgWMoQo0xLPlMLhf1CaWF5P
-         0euMW0jl9s5LLDa89D22nx+CHUDtRRDggJkqovLM1meVEyDYizhTY65Pj32AJcJhaacp
-         rt/b38jKmJmbsljtYQuzLmcNQGKtJSFOCh0jCXnaVkcoAjvOcXnuudTuyudOOk3v6dRG
-         uMKA==
-X-Forwarded-Encrypted: i=1; AJvYcCW8ieHRsbfv8fVXhZKpE3MG0l+xHfQkbapdhm4YOkZUSbtQoN/I4acgkIY3wv9nZGxAnHuQuRwchmY=@lists.infradead.org
-X-Gm-Message-State: AOJu0YykWxD4cae9M5D/Fem2l+LAA/l7iItswakwnE87t1+J+64aZ0Au
-	aDYLgXItW4Ug2ExWda7k/3+Y0rx3wlMH6XoUYW5a2Ps84ODAZLE9vXkzkcDmxac=
-X-Gm-Gg: ASbGncsTr9f/xEziE76JQJ5thANiuqbCSy5p+Go8q28VrdQJWgc4g72QDWpq6rPP1KP
-	yYgiUuasMChSHyoVXBVNrbRYcSMrVZCQEXItoQ4WI00/HgyCEkb86KUN/CivmuTLo7aUNmST6R2
-	RffTE1ZqgzYYiEAMHqVucEnnMy/rm9s+eNIZep0hGthZpWO4rGOebEEvUQ37wGOTqDBMdJnjdCd
-	dOE8A+RYmUWUbLnbk88VbNEVemBRpjn3MOuiTLNE0dPSqB1M96jQov4bYHpThZxjYHpTw==
-X-Google-Smtp-Source: AGHT+IFPEALDBCpfdEtIoSSL0284tS67mJTa+n5sXWkYGZrMoWfeQCLlRAzW2Jd/Ci42z7TCaOpkTw==
-X-Received: by 2002:a05:6a21:680d:b0:1e1:ac4f:d322 with SMTP id adf61e73a8af0-1e5e0484559mr28688385637.14.1735074298296;
-        Tue, 24 Dec 2024 13:04:58 -0800 (PST)
+        bh=K7Pb5Vxtmu1FY9/J9EKk+mhOADazj56h0vKNA3c2QKo=;
+        b=zLQqCeTA8kG12fOAPvFCvR1bGqL9AI8qTX9ic4wb7/Np/2oc30/PeLMcQfszohurNu
+         uq1Xc1xt33vT3Q4Rx1GBJdg3SSXzdh0ecz47LH9L626nMI0rE8rBAFLtgYrNh90dL6Vd
+         aSf+lCZBStZ1czE/x6qr36tSWdzIaZzacEspT99bkFXj/V7Jeo/t3Q3XcbsVKxuHFVww
+         Iah/dHPrj+cEIGetq+XLvcn6jRh3djep7jOqWstxJ916/TiR8OQ9W2YedtvBBd8YzTeG
+         I4Ihd5lmdaUljIc5IME0T1ZiA9TwbMkGgnLMqTdfrBUIV4vc8USfiGR7dzMc53WCk8jB
+         +E0g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1735074299; x=1735679099;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=K7Pb5Vxtmu1FY9/J9EKk+mhOADazj56h0vKNA3c2QKo=;
+        b=g9TCmG4EXDZwijQok3/2h4lgSWjNh708QUzWD+GdYzfrMcEz0IdQuyok7jn/A3BvZX
+         kkGAcHNGdByOHe51yLE0BLLQHImSkI0LWtRKlPWmf/lj9AU+Z/PNGDBBFISuFTC6SfAl
+         etb6LUNCTfiZIotsYhcGmvA0RK2sA2coqEWcvmIwK7ucVPdlHvGV3YISDOxGhvTyqN8s
+         h/4MksGw1PywfkJZLGu+bETId/YP2zxz0Sa86AyeVblvOfwcbRtBp4hZG9foENa64Xf9
+         ImezJBxqaacj7yYjkuY+7c1eK8gF1+Y70wM1nY/mYTl3JpJ5KeNzY/O4OylNanay7QEa
+         xpfQ==
+X-Forwarded-Encrypted: i=1; AJvYcCXgkjYkzFP57wGmx9b3zglq7HqxiHPrKfRYohsLanr0seYz8JxP/NlVGJzxhATLfHjaepdWJcY8gzM=@lists.infradead.org
+X-Gm-Message-State: AOJu0YwuN5UJ738wq8oX23H7bee3SsrT/FFEx3T0gnL+hd8hR0vPS/su
+	HezyC28ggkdxMbxAzX8zE1Bwd0oVg0drFBZN20bLzY8A9u4Gl0gh90enXwSGxP1d9BEH5sz2jRb
+	A
+X-Gm-Gg: ASbGncufN1gdP5yTnEDzDT6cL5ZuOBieUx+sdkBrkmjVuWa+ulyXSg91YHuKktfOf7k
+	P242web6PnX9GK4sItmq7HZxbnBRfFtBSZYNJqjK6Q0dg0nicf3nWfTleJUW1m10f44i7NmPhNS
+	p1YoXfNmlGl+3NDlPi3XfWPw86ALBHCYoy4OI2oilFWNDCD/6+8rjXnW93tjJk9oVe80J7pYbIK
+	K8sP6XeXyzHe27PIQxInIrgZxvpMK8N4XFw+C7T1MSo0c39JWa9acNnAQZ0gtJgvozFVw==
+X-Google-Smtp-Source: AGHT+IEINBS2wMAKPXcEeiQvMr4mHt6N/s5a4KNXcdkRoepKl+xENIOeQWFga5Ts/3lf9tV+pKQhqg==
+X-Received: by 2002:a05:6a00:3905:b0:725:e73c:c415 with SMTP id d2e1a72fcca58-72abde8fd6fmr24905523b3a.18.1735074299238;
+        Tue, 24 Dec 2024 13:04:59 -0800 (PST)
 Received: from atishp.ba.rivosinc.com ([64.71.180.162])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-72aad90c344sm10445925b3a.186.2024.12.24.13.04.57
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-72aad90c344sm10445925b3a.186.2024.12.24.13.04.58
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 24 Dec 2024 13:04:57 -0800 (PST)
+        Tue, 24 Dec 2024 13:04:58 -0800 (PST)
 From: Atish Patra <atishp@rivosinc.com>
-Subject: [PATCH v2 0/3] Collect guest/host statistics during the redirected
- traps
-Date: Tue, 24 Dec 2024 13:04:52 -0800
-Message-Id: <20241224-kvm_guest_stat-v2-0-08a77ac36b02@rivosinc.com>
+Date: Tue, 24 Dec 2024 13:04:53 -0800
+Subject: [PATCH v2 1/3] RISC-V: KVM: Redirect instruction access fault trap
+ to guest
 MIME-Version: 1.0
-X-B4-Tracking: v=1; b=H4sIAPQha2cC/3XM0QrCIBTG8VcZ5zpDxUl11XvEGE5tO8Q0PCbF8
- N2z3Xf5/+D7bUA+oSe4dBskX5Awhhby0IFdTJg9Q9caJJdKSCHZo6zj/PKUR8oms8kqfda6n5T
- g0E7P5O/43sHb0HpByjF9dr+I3/qXKoJx5oTRjtuTlq6/JiyRMNijjSsMtdYvpm/dGa8AAAA=
+Message-Id: <20241224-kvm_guest_stat-v2-1-08a77ac36b02@rivosinc.com>
+References: <20241224-kvm_guest_stat-v2-0-08a77ac36b02@rivosinc.com>
+In-Reply-To: <20241224-kvm_guest_stat-v2-0-08a77ac36b02@rivosinc.com>
 To: Anup Patel <anup@brainfault.org>, Atish Patra <atishp@atishpatra.org>, 
  Paul Walmsley <paul.walmsley@sifive.com>, 
  Palmer Dabbelt <palmer@dabbelt.com>
@@ -83,8 +84,8 @@ Cc: kvm@vger.kernel.org, kvm-riscv@lists.infradead.org,
  Atish Patra <atishp@rivosinc.com>, Quan Zhou <zhouquan@iscas.ac.cn>
 X-Mailer: b4 0.15-dev-13183
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20241224_130459_585175_5D421F33 
-X-CRM114-Status: UNSURE (   7.91  )
+X-CRM114-CacheID: sfid-20241224_130500_138451_AA9580C9 
+X-CRM114-Status: UNSURE (   8.84  )
 X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
@@ -102,39 +103,38 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-As discussed in the patch[1], this series adds the host statistics for
-traps that are redirected to the guest. Since there are 1-1 mapping for
-firmware counters as well, this series enables those so that the guest
-can collect information about these exits via perf if required.
+From: Quan Zhou <zhouquan@iscas.ac.cn>
 
-I have included the patch[1] as well in this series as it has not been
-applied and there will be likely conflicts while merging both.
+The M-mode redirects an unhandled instruction access
+fault trap back to S-mode when not delegating it to
+VS-mode(hedeleg). However, KVM running in HS-mode
+terminates the VS-mode software when back from M-mode.
 
+The KVM should redirect the trap back to VS-mode, and
+let VS-mode trap handler decide the next step.
+
+Signed-off-by: Quan Zhou <zhouquan@iscas.ac.cn>
+Reviewed-by: Anup Patel <anup@brainfault.org>
 Signed-off-by: Atish Patra <atishp@rivosinc.com>
 ---
-Changes in v2:
-- Improved commit messages in PATCH3. 
-- Added RB tags.
-- Link to v1: https://lore.kernel.org/r/20241212-kvm_guest_stat-v1-0-d1a6d0c862d5@rivosinc.com
+ arch/riscv/kvm/vcpu_exit.c | 1 +
+ 1 file changed, 1 insertion(+)
 
----
-Atish Patra (2):
-      RISC-V: KVM: Update firmware counters for various events
-      RISC-V: KVM: Add new exit statstics for redirected traps
+diff --git a/arch/riscv/kvm/vcpu_exit.c b/arch/riscv/kvm/vcpu_exit.c
+index fa98e5c024b2..c9f8b2094554 100644
+--- a/arch/riscv/kvm/vcpu_exit.c
++++ b/arch/riscv/kvm/vcpu_exit.c
+@@ -187,6 +187,7 @@ int kvm_riscv_vcpu_exit(struct kvm_vcpu *vcpu, struct kvm_run *run,
+ 	case EXC_STORE_MISALIGNED:
+ 	case EXC_LOAD_ACCESS:
+ 	case EXC_STORE_ACCESS:
++	case EXC_INST_ACCESS:
+ 		if (vcpu->arch.guest_context.hstatus & HSTATUS_SPV) {
+ 			kvm_riscv_vcpu_trap_redirect(vcpu, trap);
+ 			ret = 1;
 
-Quan Zhou (1):
-      RISC-V: KVM: Redirect instruction access fault trap to guest
-
- arch/riscv/include/asm/kvm_host.h |  5 +++++
- arch/riscv/kvm/vcpu.c             |  7 ++++++-
- arch/riscv/kvm/vcpu_exit.c        | 37 +++++++++++++++++++++++++++++++++----
- 3 files changed, 44 insertions(+), 5 deletions(-)
----
-base-commit: fac04efc5c793dccbd07e2d59af9f90b7fc0dca4
-change-id: 20241212-kvm_guest_stat-bc469665b410
---
-Regards,
-Atish patra
+-- 
+2.34.1
 
 
 -- 
