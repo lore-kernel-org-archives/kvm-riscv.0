@@ -4,58 +4,62 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8FA14E77188
-	for <kvm-riscv@archiver.kernel.org>; Wed,  8 Jan 2025 13:20:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4B29BE77188
+	for <kvm-riscv@archiver.kernel.org>; Wed,  8 Jan 2025 18:20:49 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
-	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
+	List-Archive:List-Unsubscribe:List-Id:Cc:To:In-Reply-To:References:Date:
+	Message-Id:From:Subject:MIME-Version:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=oIluXXFIX+wepCK1TiKSi94EIyeUTQ8PENdhjSGactY=; b=Ss3+16ZcZHunuj
-	pJfLqHWQs4JnJyYBtLkJoXTkXmVR7fHQFQn90srJ76DzRsU8lUeZNFPTV0ozi9rC0WVAicOo/bNM2
-	M8gzijL7CygtJTXsN11GK/wn8dj8APSZK5wt/e2YC1mBoj9k/+OGFgxOzaDRxSfmnvP48KyAXV1n0
-	DGPmXML0PA9rxQCAFYVls74Z8s6TeZBHmYuOO02M5RL18Kq3sFI/XzsAQusnKHvlUocphmy5npQ2Y
-	+pFQzkciBtzyrl8Ma6WjW9TxvEFnk+5aq7IDTguTkVJsP5wV2vF2lPKDwxIWsNEun87JPyhXtXpuc
-	G2Au1/cWqWj3299jLEZg==;
+	List-Owner; bh=6vxtvmEVr9VYtUokaxXiLDvxbTaygxKX3zrF3qCRr6Q=; b=gibCxFb07C0u9P
+	X/oSHaJwgNSG8fbf9QhXgy7gNatq/KifQn+FXmh6I/6PEpzXx0LpqOfWeFyftklOcTEmUhyczZgUm
+	/bwhHjhxK3i3ZJ2JaDUS1tQmqhLzkoxGEh3nL/11CIbli+68yA7SctvNkAWGEs6vd4+pdf5ArUqCV
+	wBYEWJV1ulote6K+aebzdS5WolBgCcHK6nfUsUwt6m2seY8kh9Z2w0n9h0yRJyIzovDae35LCnDTc
+	Cf6y4+PZjfzmYqLa4KjmKySYq3czx7J1GwI7YfcVeso8a2aJWEyh7fpLxUDE81t9WQaWiGZj6/WkN
+	1KVAFM7wQ/ZSieiO10rQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98 #2 (Red Hat Linux))
-	id 1tVVzQ-00000008apr-2kQF;
-	Wed, 08 Jan 2025 13:20:52 +0000
-Received: from out-189.mta1.migadu.com ([2001:41d0:203:375::bd])
+	id 1tVafg-00000009VLs-3JEQ;
+	Wed, 08 Jan 2025 18:20:48 +0000
+Received: from nyc.source.kernel.org ([2604:1380:45d1:ec00::3])
 	by bombadil.infradead.org with esmtps (Exim 4.98 #2 (Red Hat Linux))
-	id 1tVVic-00000008XGa-0SgD
-	for kvm-riscv@lists.infradead.org;
-	Wed, 08 Jan 2025 13:03:31 +0000
-Date: Wed, 8 Jan 2025 14:03:14 +0100
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1736341407;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=O/uqjgTJv39fxY5Kjsx2QGRWfI206q33hQLFzQUJTbc=;
-	b=wDRxyQh1XPzEL8dPJ83p/8jCs4uAr3IiYRAfeDTY7Z24KQoIrYbK+NoWqBjW69LEvcN9kz
-	XKJgcvyPOf+uynNUNwIMLrbkXlHpDuaJToD/o4lotF+zi93XliV1OZoDFUzELGrQBzuVhp
-	rabbskhD6g9fy/Y+3Bo69FJlCR0b1a8=
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-From: Andrew Jones <andrew.jones@linux.dev>
-To: =?utf-8?B?Q2zDqW1lbnQgTMOpZ2Vy?= <cleger@rivosinc.com>
-Cc: kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, 
-	Andrew Jones <ajones@ventanamicro.com>, Anup Patel <apatel@ventanamicro.com>, 
-	Atish Patra <atishp@rivosinc.com>
-Subject: Re: [kvm-unit-tests PATCH v4 4/5] riscv: lib: Add SBI SSE extension
- definitions
-Message-ID: <20250108-522f238cc21ce59e16134c79@orel>
-References: <20241125162200.1630845-1-cleger@rivosinc.com>
- <20241125162200.1630845-5-cleger@rivosinc.com>
+	id 1tVafe-00000009VL5-1Qlj;
+	Wed, 08 Jan 2025 18:20:47 +0000
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by nyc.source.kernel.org (Postfix) with ESMTP id 57B3CA4149E;
+	Wed,  8 Jan 2025 18:18:56 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A14DCC4CED3;
+	Wed,  8 Jan 2025 18:20:44 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1736360444;
+	bh=6u171gNXjLB4/TNq3luEE/w0znQKDgGkK6H1upLrNfA=;
+	h=Subject:From:Date:References:In-Reply-To:To:Cc:From;
+	b=EC0jNKZdPmCJf+xRRnFnY9utSY1l+fhJp8p5E3glRxISiS7V4W7zbTmHVyOI7mBkI
+	 pixY+rwqUS5Vjr2Kjb7wRdzg+fcdBmJtDJ8+rLstqivNOcsAuj6XdAKrwSasNzpTbL
+	 4RnVZprq52pjkYRhXpsVENCQRk9HR9cJaY+GIwCPI8Cf+98NUaXnv6ujx9qIuiFEJj
+	 +gyzhWAFY6MsRIFZ5F6qtbTmI0CA+VQxZCUOmVbqh8xcsaFJoL68eaw+ip3pmb48I+
+	 hNcJWjnb21Rs/eVTzsYM2VKq5ZOZhiJUruDnAjoGSxuCcuqzsIEkHvKCCh8zuZ9S8m
+	 LwQj5foh+iBvA==
+Received: from [10.30.226.235] (localhost [IPv6:::1])
+	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id 70DE3380A965;
+	Wed,  8 Jan 2025 18:21:07 +0000 (UTC)
 MIME-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <20241125162200.1630845-5-cleger@rivosinc.com>
-X-Migadu-Flow: FLOW_OUT
+Subject: Re: [PATCH v2] RISC-V: KVM: Fix csr_write -> csr_set for HVIEN PMU
+ overflow bit
+From: patchwork-bot+linux-riscv@kernel.org
+Message-Id: <173636046626.736486.6164615548118337611.git-patchwork-notify@kernel.org>
+Date: Wed, 08 Jan 2025 18:21:06 +0000
+References: <20241127041840.419940-1-michaelneuling@tenstorrent.com>
+In-Reply-To: <20241127041840.419940-1-michaelneuling@tenstorrent.com>
+To: Michael Neuling <michaelneuling@tenstorrent.com>
+Cc: linux-riscv@lists.infradead.org, anup@brainfault.org,
+ kvm-riscv@lists.infradead.org, palmer@dabbelt.com, mikey@neuling.org,
+ atishp@rivosinc.com
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250108_050330_435667_3D3214AB 
-X-CRM114-Status: GOOD (  13.19  )
+X-CRM114-CacheID: sfid-20250108_102046_443609_39FAF7B3 
+X-CRM114-Status: UNSURE (   7.88  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -67,155 +71,39 @@ List-Post: <mailto:kvm-riscv@lists.infradead.org>
 List-Help: <mailto:kvm-riscv-request@lists.infradead.org?subject=help>
 List-Subscribe: <http://lists.infradead.org/mailman/listinfo/kvm-riscv>,
  <mailto:kvm-riscv-request@lists.infradead.org?subject=subscribe>
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Mon, Nov 25, 2024 at 05:21:53PM +0100, Cl=E9ment L=E9ger wrote:
-> Add SBI SSE extension definitions in sbi.h
-> =
+Hello:
 
-> Signed-off-by: Cl=E9ment L=E9ger <cleger@rivosinc.com>
-> ---
->  lib/riscv/asm/sbi.h | 83 +++++++++++++++++++++++++++++++++++++++++++++
->  1 file changed, 83 insertions(+)
-> =
+This patch was applied to riscv/linux.git (fixes)
+by Anup Patel <anup@brainfault.org>:
 
-> diff --git a/lib/riscv/asm/sbi.h b/lib/riscv/asm/sbi.h
-> index 98a9b097..a751d0c3 100644
-> --- a/lib/riscv/asm/sbi.h
-> +++ b/lib/riscv/asm/sbi.h
-> @@ -11,6 +11,11 @@
->  #define SBI_ERR_ALREADY_AVAILABLE	-6
->  #define SBI_ERR_ALREADY_STARTED		-7
->  #define SBI_ERR_ALREADY_STOPPED		-8
-> +#define SBI_ERR_NO_SHMEM		-9
-> +#define SBI_ERR_INVALID_STATE		-10
-> +#define SBI_ERR_BAD_RANGE		-11
-> +#define SBI_ERR_TIMEOUT			-12
-> +#define SBI_ERR_IO			-13
->  =
+On Wed, 27 Nov 2024 04:18:40 +0000 you wrote:
+> This doesn't cause a problem currently as HVIEN isn't used elsewhere
+> yet. Found by inspection.
+> 
+> Signed-off-by: Michael Neuling <michaelneuling@tenstorrent.com>
+> Fixes: 16b0bde9a37c ("RISC-V: KVM: Add perf sampling support for guests")
+> Reviewed-by: Atish Patra <atishp@rivosinc.com>
+> Reviewed-by: Anup Patel <anup@brainfault.org>
+> 
+> [...]
 
->  #ifndef __ASSEMBLY__
->  #include <cpumask.h>
-> @@ -23,6 +28,7 @@ enum sbi_ext_id {
->  	SBI_EXT_SRST =3D 0x53525354,
->  	SBI_EXT_DBCN =3D 0x4442434E,
->  	SBI_EXT_SUSP =3D 0x53555350,
-> +	SBI_EXT_SSE =3D 0x535345,
->  };
->  =
+Here is the summary with links:
+  - [v2] RISC-V: KVM: Fix csr_write -> csr_set for HVIEN PMU overflow bit
+    https://git.kernel.org/riscv/c/ea6398a5af81
 
->  enum sbi_ext_base_fid {
-> @@ -71,6 +77,83 @@ enum sbi_ext_dbcn_fid {
->  	SBI_EXT_DBCN_CONSOLE_WRITE_BYTE,
->  };
->  =
+You are awesome, thank you!
+-- 
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/patchwork/pwbot.html
 
-> +enum sbi_ext_sse_fid {
-> +	SBI_EXT_SSE_READ_ATTRS =3D 0,
-> +	SBI_EXT_SSE_WRITE_ATTRS,
-> +	SBI_EXT_SSE_REGISTER,
-> +	SBI_EXT_SSE_UNREGISTER,
-> +	SBI_EXT_SSE_ENABLE,
-> +	SBI_EXT_SSE_DISABLE,
-> +	SBI_EXT_SSE_COMPLETE,
-> +	SBI_EXT_SSE_INJECT,
-> +	SBI_EXT_SSE_HART_UNMASK,
-> +	SBI_EXT_SSE_HART_MASK,
-> +};
-> +
-> +/* SBI SSE Event Attributes. */
-> +enum sbi_sse_attr_id {
-> +	SBI_SSE_ATTR_STATUS		=3D 0x00000000,
-> +	SBI_SSE_ATTR_PRIORITY		=3D 0x00000001,
-> +	SBI_SSE_ATTR_CONFIG		=3D 0x00000002,
-> +	SBI_SSE_ATTR_PREFERRED_HART	=3D 0x00000003,
-> +	SBI_SSE_ATTR_ENTRY_PC		=3D 0x00000004,
-> +	SBI_SSE_ATTR_ENTRY_ARG		=3D 0x00000005,
-> +	SBI_SSE_ATTR_INTERRUPTED_SEPC	=3D 0x00000006,
-> +	SBI_SSE_ATTR_INTERRUPTED_FLAGS	=3D 0x00000007,
-> +	SBI_SSE_ATTR_INTERRUPTED_A6	=3D 0x00000008,
-> +	SBI_SSE_ATTR_INTERRUPTED_A7	=3D 0x00000009,
-> +};
-> +
-> +#define SBI_SSE_ATTR_STATUS_STATE_OFFSET	0
-> +#define SBI_SSE_ATTR_STATUS_STATE_MASK		0x3
-> +#define SBI_SSE_ATTR_STATUS_PENDING_OFFSET	2
-> +#define SBI_SSE_ATTR_STATUS_INJECT_OFFSET	3
-> +
-> +#define SBI_SSE_ATTR_CONFIG_ONESHOT	(1 << 0)
 
-BIT(0)
 
-> +
-> +#define SBI_SSE_ATTR_INTERRUPTED_FLAGS_SSTATUS_SPP	BIT(0)
-> +#define SBI_SSE_ATTR_INTERRUPTED_FLAGS_SSTATUS_SPIE	BIT(1)
-> +#define SBI_SSE_ATTR_INTERRUPTED_FLAGS_HSTATUS_SPV	BIT(2)
-> +#define SBI_SSE_ATTR_INTERRUPTED_FLAGS_HSTATUS_SPVP	BIT(3)
-> +
-> +enum sbi_sse_state {
-> +	SBI_SSE_STATE_UNUSED		=3D 0,
-> +	SBI_SSE_STATE_REGISTERED	=3D 1,
-> +	SBI_SSE_STATE_ENABLED		=3D 2,
-> +	SBI_SSE_STATE_RUNNING		=3D 3,
-> +};
-> +
-> +/* SBI SSE Event IDs. */
-> +#define SBI_SSE_EVENT_LOCAL_RAS			0x00000000
-> +#define SBI_SSE_EVENT_LOCAL_DOUBLE_TRAP		0x00000001
-> +#define SBI_SSE_EVENT_LOCAL_PLAT_0_START	0x00004000
-> +#define SBI_SSE_EVENT_LOCAL_PLAT_0_END		0x00007fff
-> +
-> +#define SBI_SSE_EVENT_GLOBAL_RAS		0x00008000
-> +#define SBI_SSE_EVENT_GLOBAL_PLAT_0_START	0x0000c000
-> +#define SBI_SSE_EVENT_GLOBAL_PLAT_0_END		0x0000ffff
-> +
-> +#define SBI_SSE_EVENT_LOCAL_PMU			0x00010000
-> +#define SBI_SSE_EVENT_LOCAL_PLAT_1_START	0x00014000
-> +#define SBI_SSE_EVENT_LOCAL_PLAT_1_END		0x00017fff
-> +#define SBI_SSE_EVENT_GLOBAL_PLAT_1_START	0x0001c000
-> +#define SBI_SSE_EVENT_GLOBAL_PLAT_1_END		0x0001ffff
-> +
-> +#define SBI_SSE_EVENT_LOCAL_PLAT_2_START	0x00024000
-> +#define SBI_SSE_EVENT_LOCAL_PLAT_2_END		0x00027fff
-> +#define SBI_SSE_EVENT_GLOBAL_PLAT_2_START	0x0002c000
-> +#define SBI_SSE_EVENT_GLOBAL_PLAT_2_END		0x0002ffff
-
-The above four don't appear to be in the spec anymore.
-
-> +
-> +#define SBI_SSE_EVENT_LOCAL_SOFTWARE		0xffff0000
-> +#define SBI_SSE_EVENT_LOCAL_PLAT_3_START	0xffff4000
-> +#define SBI_SSE_EVENT_LOCAL_PLAT_3_END		0xffff7fff
-> +#define SBI_SSE_EVENT_GLOBAL_SOFTWARE		0xffff8000
-> +#define SBI_SSE_EVENT_GLOBAL_PLAT_3_START	0xffffc000
-> +#define SBI_SSE_EVENT_GLOBAL_PLAT_3_END		0xffffffff
-> +
-> +#define SBI_SSE_EVENT_PLATFORM_BIT		(1 << 14)
-> +#define SBI_SSE_EVENT_GLOBAL_BIT		(1 << 15)
-
-BIT(14)
-BIT(15)
-
-I think other changes are coming to these event IDs from a series Atish
-recently posted too.
-
-> +
->  struct sbiret {
->  	long error;
->  	long value;
-> -- =
-
-> 2.45.2
->
-
-Thanks,
-drew
-
--- =
-
+-- 
 kvm-riscv mailing list
 kvm-riscv@lists.infradead.org
 http://lists.infradead.org/mailman/listinfo/kvm-riscv
