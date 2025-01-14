@@ -4,39 +4,54 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6CE72E77188
-	for <kvm-riscv@archiver.kernel.org>; Tue, 14 Jan 2025 18:40:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4928BE77188
+	for <kvm-riscv@archiver.kernel.org>; Tue, 14 Jan 2025 18:52:33 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
 	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=6K/wy2U45opQ4B1LfeSRcoySeJkZuMXMFtbzcbWDiZc=; b=3ycITjTQVP4Hfj
-	XX9uWcETtPC3daekZ2mG8feDTvEq75LrdO29RglErPn5yLpEY2jsR82Iu4UM7UKfG3Et4yui+q7Tf
-	d80SwuzUUoP6iCb7VnWkQbaJ81pece8r1mwDz4TcqPgDqMiakuxsJ0fFuJCmPwoMywwNsYbYK44uT
-	+UqfIJoyFqo9Vf3RU8cDJlG+jEoF8JXZN3BBe5HzVa/dLIbIKgup7zPtFiYffwkYsJtjm6QvBEpD3
-	Txl9F6t/QGm0QRjVaJ/wAU9BpFLd8wcbMzthP7TumWUh7yobx+j+bqKWnxi3QctvILpS3yuGIHiMw
-	juGDS3VC+E4xI2a8T91w==;
+	List-Owner; bh=fB1akjebW+GHXxnkMEppUyHcRCTVK2HlgPktSw/YWww=; b=0Ycb/p8W7DL/Sb
+	Zusp9IhvisKDMumoUtd68CwJShsNCuJts5eCT/CCDZFnWvogq0HkXNzHy3/plJGw8RrPap+EHJxub
+	qzfNgpZhf4YlI6jxnTt0VIOiF6H7gdlEPnEdam5NzI33LVXOcACVSg2JvG9urRJtw6R5xE7yYRLU1
+	zMtdkmkJRC/erNKxV3gQk12OXuUBaBjBXXhnV2wpb2SHjTfn7aNH0iMdPFfXGi+L/G7ysT71bloAv
+	zl5JydN2MIeE4Mazi1whKfTtEMboIRz/B3Yi19riJmYivAz/pAyczg4GcvlQUzImPd0LnumMWuVMj
+	yeo+Ey6jJPt/yjPz9Z4A==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98 #2 (Red Hat Linux))
-	id 1tXlpa-00000009RyH-0J7B;
-	Tue, 14 Jan 2025 18:40:02 +0000
-Received: from out-175.mta1.migadu.com ([95.215.58.175])
+	id 1tXm1g-00000009T3M-3eM7;
+	Tue, 14 Jan 2025 18:52:32 +0000
+Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
 	by bombadil.infradead.org with esmtps (Exim 4.98 #2 (Red Hat Linux))
-	id 1tXlpY-00000009Rwu-0LJ6
+	id 1tXm0d-00000009Swa-2VoL
+	for kvm-riscv@bombadil.infradead.org;
+	Tue, 14 Jan 2025 18:51:27 +0000
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=desiato.20200630; h=In-Reply-To:Content-Type:MIME-Version:
+	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+	Content-Transfer-Encoding:Content-ID:Content-Description;
+	bh=2eozFwwdtkEYzJ2hyZvHDykhTKQHMj/tbtFgxiV9nmk=; b=HV/2Lg63juuM0uluBIc2g+wJLs
+	ItaXQGSuguGXhjnnbJglBjSDkvcdNOlpyks4FoUc2xkOk1mrvA8PCZJoBT29XeJrKowVim+3srRIq
+	/2hrkVD0uQlTbuq1f3AZkm2x4TUOFgKnBQ0gn/csuN4Bz792qihuw95lhLcGyYIahMPmplyVE+MLa
+	wTb+7bBwVOFz3aCWqXpQ/h03IWSmXA4917hrPt1qppngMv3eublvFoCHfV9QYYiJr0TArGGLxc9On
+	vcLZqGrf3FM1JFTfdI5bMLdUOKviJxugC3/nk3gShIP9UYP3LxWhSLcoJifyZITYd6yOjNTKKFoLy
+	pP2OGOug==;
+Received: from out-173.mta0.migadu.com ([2001:41d0:1004:224b::ad])
+	by desiato.infradead.org with esmtps (Exim 4.98 #2 (Red Hat Linux))
+	id 1tXm0Z-0000000AYiO-3GC8
 	for kvm-riscv@lists.infradead.org;
-	Tue, 14 Jan 2025 18:40:01 +0000
-Date: Tue, 14 Jan 2025 19:39:49 +0100
+	Tue, 14 Jan 2025 18:51:25 +0000
+Date: Tue, 14 Jan 2025 19:51:04 +0100
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1736879995;
+	t=1736880667;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references;
-	bh=97WDxuRYiWyXD8yAfu0zZqcacG47H/1aDD9ac4aHZlM=;
-	b=LuUcJe8N3NNsLgNnpBIEndO1e8RFDX3UzQ60SV9T974sgFU7FKx6PrAoiVi+cMOHyqjTX3
-	+O7D88uR48oFxr5fTzbpYw0WUbRmzLezjmsAJthOY9lo5+6xPs/UhdtRlFWndrGVmWDiEj
-	JrN7xiQADyTXP/lFRwjSge76XevVY7U=
+	bh=2eozFwwdtkEYzJ2hyZvHDykhTKQHMj/tbtFgxiV9nmk=;
+	b=bDwVpiqwthykPiL4DaZF3p8XdHuWrRCxyc+t3QoVxlq9WllkrRjz253Cd2sapgSU4PpTuG
+	DBtaCXDW1u7il2zRd6EYwHlzoZ1xsuWES603N8XxALx+eGQSDb769jEfu92II30o+alkaZ
+	mznHVpGOOinL8YdOWHkCwYRK3h0Supg=
 X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
 From: Andrew Jones <andrew.jones@linux.dev>
 To: Alexandru Elisei <alexandru.elisei@arm.com>
@@ -44,21 +59,20 @@ Cc: eric.auger@redhat.com, lvivier@redhat.com, thuth@redhat.com,
 	frankja@linux.ibm.com, imbrenda@linux.ibm.com, nrb@linux.ibm.com, david@redhat.com, 
 	pbonzini@redhat.com, kvmarm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, 
 	kvm-riscv@lists.infradead.org, linux-s390@vger.kernel.org, vladimir.murzin@arm.com
-Subject: Re: [kvm-unit-tests PATCH v1 1/5] configure: Document that the
- architecture name 'aarch64' is also supported
-Message-ID: <20250114-10fb4c9302167ef202e98713@orel>
+Subject: Re: [kvm-unit-tests PATCH v1 2/5] configure: Display the default
+ processor for arm and arm64
+Message-ID: <20250114-a36510d222fc3410b9b7654e@orel>
 References: <20250110135848.35465-1-alexandru.elisei@arm.com>
- <20250110135848.35465-2-alexandru.elisei@arm.com>
- <20250113-0fe04c6089726d1d06a254ec@orel>
- <Z4aY2AKSaxKDY5Hq@arm.com>
+ <20250110135848.35465-3-alexandru.elisei@arm.com>
+ <20250113-45b57478be2241a35ffa1b67@orel>
+ <Z4acKHEn/dE0yLM2@arm.com>
 MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <Z4aY2AKSaxKDY5Hq@arm.com>
+In-Reply-To: <Z4acKHEn/dE0yLM2@arm.com>
 X-Migadu-Flow: FLOW_OUT
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250114_104000_265036_03C13E1D 
-X-CRM114-Status: UNSURE (   6.99  )
-X-CRM114-Notice: Please train this message.
+X-CRM114-CacheID: sfid-20250114_185123_966692_2BAA0F8C 
+X-CRM114-Status: GOOD (  21.32  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -75,29 +89,62 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Tue, Jan 14, 2025 at 05:03:20PM +0000, Alexandru Elisei wrote:
+On Tue, Jan 14, 2025 at 05:17:28PM +0000, Alexandru Elisei wrote:
 ...
-> diff --git a/configure b/configure
-> index 86cf1da36467..1362b68dd68b 100755
-> --- a/configure
-> +++ b/configure
-> @@ -15,8 +15,8 @@ objdump=objdump
->  readelf=readelf
->  ar=ar
->  addr2line=addr2line
-> -arch=$(uname -m | sed -e 's/i.86/i386/;s/arm64/aarch64/;s/arm.*/arm/;s/ppc64.*/ppc64/')
-> -host=$arch
-> +host=$(uname -m | sed -e 's/i.86/i386/;s/arm64/aarch64/;s/arm.*/arm/;s/ppc64.*/ppc64/')
-> +arch=$(echo $host | sed -e 's/aarch64/arm64/')
+> > > +# $arch will have changed when cross-compiling.
+> > > +[ -z "$processor" ] && processor=$(get_default_processor $arch)
+> > 
+> > The fact that $arch and $processor are wrong until they've had a chance to
+> 
+> $processor is never wrong. $processor is unset until either the user sets it
+> with --processor, or until this line. This patch introduces $default_processor
+> only for the purpose of having an accurate help text, it doesn't change when and
+> how $processor is assigned.
 
-Sure, or avoid the second sed and just do
+I should have said "The fact that $arch and $default_processor are wrong..."
 
-host=$(...)
-arch=$host
-[ "$arch" = "aarch64" ] && arch="arm64"
+> 
+> > be converted might be another reason for the $do_help idea. But it'll
+> > always be fragile since another change that does some sort of conversion
+> > could end up getting added after the '[ $do_help ] && usage' someday.
+> 
+> configure needs to distinguish between:
+> 
+> 1. The user not having specified --processor when doing ./configure.
+> 2. The user having set --processor.
+> 
+> If 1, then kvm-unit-tests can use the default $processor value for $arch,
+> which could have also been specified by the user.
+> 
+> If 2, then kvm-unit-tests should not touch $processor because that's what the
+> user wants.
+> 
+> Do you see something wrong with that reasoning?
+
+If we output $default_processor in usage() before it's had a chance to be
+set correctly based on a given cross arch, then it won't display the
+correct name.
+
+> 
+> Also, I don't understand why you say it's fragile, since configure doesn't
+
+I wrote "it'll always be fragile" where 'it' refers to the most recent
+object of my paragraph ("the $do_help idea"). But, TBH, I'm not sure
+how important it is to get the help text accurate, so we can just not
+care if we call usage() with the wrong strings sometimes.
 
 Thanks,
 drew
+
+> touch $processor until this point (and unless the user sets it, of course).
+> 
+> Thanks,
+> Alex
+> 
+> -- 
+> kvm-riscv mailing list
+> kvm-riscv@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/kvm-riscv
 
 -- 
 kvm-riscv mailing list
