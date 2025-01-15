@@ -4,97 +4,72 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6F37AC02185
-	for <kvm-riscv@archiver.kernel.org>; Wed, 15 Jan 2025 00:32:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7A3D5E77188
+	for <kvm-riscv@archiver.kernel.org>; Wed, 15 Jan 2025 00:58:52 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
-	List-Archive:List-Unsubscribe:List-Id:Cc:To:In-Reply-To:References:Message-Id
-	:MIME-Version:Subject:Date:From:Reply-To:Content-ID:Content-Description:
-	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=fQo4mkwRHYRrAGVO+ZNpVPHMb7mPY1ThH3IkG5A0D8w=; b=RJKrj+FCVgkyFr
-	TispE10tyBioB9vifr+sVQvml07Ot+aXuyTvDgoaSFfznMdLxuXrKwOTjXx4s8Kewh3yDHwo2s83/
-	pqgP9blYl/gfWG46zRIR/+MIs8ni4uQETxebgaPJ+E6k4f/qdJh5iyXbuqITTh233uIUtetsNHW7v
-	bZTHD873EBO8hSaKG3LAtSL/5TQGKq/S/u3ulKc4jddY/sjVRwvIO0Homz05RQP5dFCnw5vVpCbrs
-	EI5vrnvnYHiAqSBUqX3+AN7fLkEaZQXe9IAqiUPUWis6aihBFb7DOcg5hSL4Em4HtgY5Cdp9SSstq
-	NDm3p5s9KAWrzBJ1if/g==;
+	List-Archive:List-Unsubscribe:List-Id:Subject:Message-Id:References:
+	In-Reply-To:To:Cc:From:MIME-Version:Date:Reply-To:Content-ID:
+	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
+	:Resent-Message-ID:List-Owner;
+	bh=Ji6T15LPSh1RsXaBeBEv/nC8W4/fSeUUzVHYiYR6GQE=; b=VtpsCnyfGGg1Byq6/l6l2NRz6z
+	vi8POV9R2ZvHexmOxizYr/Kd2LdFDTx874clE/aH1LTyin5TEUeVi5SUgukukHAeIVuNoN3gXsQqK
+	qWArUg2A3G0XM9ZzizW3i7ytq2YsaNTAE0fjklV3kysFF2uQetPEoNAMYc9aYDm3PBUrn7GkUUrvJ
+	OpLvcy1HMc+tSyv3waIOi57Z4gMd+n6xAdhoSVSKa803i+CXgS2RgbfojVJyQnH/LBWHbc1wlGCQi
+	Qqbb5o32FRf0PWIg/ao+qZuIpmMlp/mrUXxWSmRthNc0wc79eXRyBj6njqk+WvsE2z4Az0/KPm/BF
+	wE9Gwr3w==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98 #2 (Red Hat Linux))
-	id 1tXrKi-0000000ACwd-0lJL;
-	Wed, 15 Jan 2025 00:32:32 +0000
-Received: from mail-pl1-x635.google.com ([2607:f8b0:4864:20::635])
+	id 1tXrkC-0000000AFX5-0M3c;
+	Wed, 15 Jan 2025 00:58:52 +0000
+Received: from dfw.source.kernel.org ([139.178.84.217])
 	by bombadil.infradead.org with esmtps (Exim 4.98 #2 (Red Hat Linux))
-	id 1tXps4-0000000A0Ct-1666
-	for kvm-riscv@lists.infradead.org;
-	Tue, 14 Jan 2025 22:58:53 +0000
-Received: by mail-pl1-x635.google.com with SMTP id d9443c01a7336-2167141dfa1so4673295ad.1
-        for <kvm-riscv@lists.infradead.org>; Tue, 14 Jan 2025 14:58:52 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=rivosinc-com.20230601.gappssmtp.com; s=20230601; t=1736895532; x=1737500332; darn=lists.infradead.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=/NGMQ1cPPzFcGB6lbht2UloHcbpdvl9Eg+C6+XEyyV4=;
-        b=JtdP3EMSxjdgE830+2na1pqRDrQutHtS2lztPd8QitmuJ0Kubn5dIdzFuoA8/h5L7F
-         7aGQRsCVm+CzlXI8A6ubWSD1vJdltGy8+hU2OEm5gtYlra5qEwwE3GjSEqsCoI/xfwzK
-         GrvG7rIi13mzs5T4YAGZ2ABM7/Rjtv+/7A+NgSTXEEe2FTRtbbtP7IXLmx/pWTDnfHG5
-         q7nWHdNE/yUVH4goGGHYg8qcgKu2WRZPiQuLmHJXOgnvkjXpEZZT+0xLgqUs2BDVH0lJ
-         8WVcUPMcsLG3jGWmlO1uK6qjbC3LOXSAC9xBeADdL22styzCrY5LoIii2KwsV3IHuyZT
-         MW/g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1736895532; x=1737500332;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=/NGMQ1cPPzFcGB6lbht2UloHcbpdvl9Eg+C6+XEyyV4=;
-        b=YIJM35V501IBINEi8Y1aT361a7VfTWqZ6fDg3sRNymT/PyWKi/LYELZEFo9zUcNCmj
-         XMVlZ85Nnhm2J+HQNo3DsuX8WeueuW5N3w0muPQh54DJBxurX5cv/BQ8J3ZbvkoPeXLg
-         GVk5v4hDsQVw8s0REJE4g3ILcdu7NRaIqbOq9BMiO2fi6jZnmxWmZGzakBWc0wRFrvYT
-         IiSULAZfIEZXzsPpU2Og/LEU/19Nu47Dbw2ohSidqh8U98QY00/Yb6JUoWsZVsE1kvic
-         G1NW7dMhPYFxZIPI2A2jLiGmlcyFk0Fg2f7X2defvslZHhKCY6L8QtDKxdD6iU/4Q8TA
-         Cipg==
-X-Forwarded-Encrypted: i=1; AJvYcCU/srThFpD8qvAbCstAPZa6xtrTy81UEYcuJGV6HOasdbexvQAB417STRjfIuUmB4qgvTgRbSkOE4Y=@lists.infradead.org
-X-Gm-Message-State: AOJu0YzKA5plmW7zobWG64yf1wQSOawHlvchZt8+a0Ev0lqERHAbuwlK
-	MUOhVtsWSMlPDWBUsxvmb1QQf7hlc0yFdu2uyepVWt03+jm44cyj3bg9AAh2w6I=
-X-Gm-Gg: ASbGncsNJUTlj5fGpz1Kz5kQ1vBBIwVA2O0upbV74Wu4SsuOxJX5qwse0FVLq3EEyJT
-	uReZ4I9mPVvpp+QimMtk6ZFEKWFNKkw9I69fJ1bL0P4k4A2BjjGxVEg3c0duRiu4RKAGI8VPPbV
-	19QpzydRESAj5cwSzAFOxzaH11kvWviwig3SQ2VCGYXpllRNy0bda6pIL+sX/ICefA97K1t+N1r
-	AD0mHN4RPPKsK3qCUIzxKTiJ3W+I93pynbd4wU22CkqGKjtZBgdZyzKNJKYbulEXoErTg==
-X-Google-Smtp-Source: AGHT+IGY7+84arGT8AswRpB+pqwECCjX/DmctkDVIPDIQHV61usZj0/p7BRGYknWv9dWJ1AzycUGOg==
-X-Received: by 2002:a17:902:e892:b0:215:6c5f:d142 with SMTP id d9443c01a7336-21bf0d16349mr10455835ad.20.1736895531696;
-        Tue, 14 Jan 2025 14:58:51 -0800 (PST)
-Received: from atishp.ba.rivosinc.com ([64.71.180.162])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-21a9f10df7asm71746105ad.47.2025.01.14.14.58.50
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 14 Jan 2025 14:58:51 -0800 (PST)
-From: Atish Patra <atishp@rivosinc.com>
-Date: Tue, 14 Jan 2025 14:57:44 -0800
-Subject: [PATCH v2 19/21] tools/perf: Support event code for arch standard
- events
+	id 1tXriw-0000000AFEM-2cRx;
+	Wed, 15 Jan 2025 00:57:35 +0000
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id 18C675C5705;
+	Wed, 15 Jan 2025 00:56:53 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 64D69C4CEDD;
+	Wed, 15 Jan 2025 00:57:33 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1736902653;
+	bh=E5F1TruT3qFWIpE0gZRapnmjQqlLtDzwzVIONB+NJTE=;
+	h=Date:From:Cc:To:In-Reply-To:References:Subject:From;
+	b=E8ZC0HYh+oK/S/g901Rmeb7kofhXSeYcTgsyYLyVs01V883b8eg+oCadnzsZvyeHp
+	 BBbx2G2QIX9txI1ZtB+hGYcFwvr/WDeGaNyPWrvJyOOo/YH2pRBGt43opN+oZ8yq1U
+	 qwx2J0scKU3mRlexxp5YzcFLMdMW5EtJKiVAc1ZM8kXrKNOeFmm7A4uGUgIobo4SZX
+	 ikraH3oUGbksFIpGx2qcBZ8cX59cEqLtYtIR2r/FABlpSbkEp1WBX0B/MjAEi6snUx
+	 YJv4kW7KwjO99j2P0HfBeK9q6LRNZU0Y/NJRo/nc2CXdPxEFtRIYEVHwcSTQoQUFHx
+	 fWa8rEKKXtaog==
+Date: Tue, 14 Jan 2025 18:57:32 -0600
 MIME-Version: 1.0
-Message-Id: <20250114-counter_delegation-v2-19-8ba74cdb851b@rivosinc.com>
-References: <20250114-counter_delegation-v2-0-8ba74cdb851b@rivosinc.com>
-In-Reply-To: <20250114-counter_delegation-v2-0-8ba74cdb851b@rivosinc.com>
-To: Paul Walmsley <paul.walmsley@sifive.com>, 
- Palmer Dabbelt <palmer@dabbelt.com>, Rob Herring <robh@kernel.org>, 
+From: "Rob Herring (Arm)" <robh@kernel.org>
+Cc: Palmer Dabbelt <palmer@sifive.com>, 
  Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Anup Patel <anup@brainfault.org>, 
- Atish Patra <atishp@atishpatra.org>, Will Deacon <will@kernel.org>, 
- Mark Rutland <mark.rutland@arm.com>, Peter Zijlstra <peterz@infradead.org>, 
- Ingo Molnar <mingo@redhat.com>, Arnaldo Carvalho de Melo <acme@kernel.org>, 
- Namhyung Kim <namhyung@kernel.org>, 
+ Peter Zijlstra <peterz@infradead.org>, Will Deacon <will@kernel.org>, 
  Alexander Shishkin <alexander.shishkin@linux.intel.com>, 
- Jiri Olsa <jolsa@kernel.org>, Ian Rogers <irogers@google.com>, 
- Adrian Hunter <adrian.hunter@intel.com>, weilin.wang@intel.com
-Cc: linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org, 
- Palmer Dabbelt <palmer@sifive.com>, Conor Dooley <conor@kernel.org>, 
- devicetree@vger.kernel.org, kvm@vger.kernel.org, 
- kvm-riscv@lists.infradead.org, linux-arm-kernel@lists.infradead.org, 
- linux-perf-users@vger.kernel.org, Atish Patra <atishp@rivosinc.com>
-X-Mailer: b4 0.15-dev-13183
+ Namhyung Kim <namhyung@kernel.org>, Ian Rogers <irogers@google.com>, 
+ linux-riscv@lists.infradead.org, Atish Patra <atishp@atishpatra.org>, 
+ Paul Walmsley <paul.walmsley@sifive.com>, Anup Patel <anup@brainfault.org>, 
+ Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, 
+ Ingo Molnar <mingo@redhat.com>, kvm-riscv@lists.infradead.org, 
+ linux-perf-users@vger.kernel.org, weilin.wang@intel.com, 
+ Conor Dooley <conor@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
+ Arnaldo Carvalho de Melo <acme@kernel.org>, kvm@vger.kernel.org, 
+ linux-arm-kernel@lists.infradead.org, Palmer Dabbelt <palmer@dabbelt.com>, 
+ Jiri Olsa <jolsa@kernel.org>, Adrian Hunter <adrian.hunter@intel.com>, 
+ linux-kernel@vger.kernel.org
+To: Atish Patra <atishp@rivosinc.com>
+In-Reply-To: <20250114-counter_delegation-v2-8-8ba74cdb851b@rivosinc.com>
+References: <20250114-counter_delegation-v2-0-8ba74cdb851b@rivosinc.com>
+ <20250114-counter_delegation-v2-8-8ba74cdb851b@rivosinc.com>
+Message-Id: <173690251211.2066548.13200770896119335906.robh@kernel.org>
+Subject: Re: [PATCH v2 08/21] dt-bindings: riscv: add Ssccfg ISA extension
+ description
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250114_145852_312738_F7F9B003 
-X-CRM114-Status: GOOD (  16.12  )
+X-CRM114-CacheID: sfid-20250114_165734_705484_E4AA1EC5 
+X-CRM114-Status: GOOD (  10.91  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -111,51 +86,41 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-RISC-V relies on the event encoding from the json file. That includes
-arch standard events. If event code is present, event is already updated
-with correct encoding. No need to update it again which results in losing
-the event encoding.
 
-Signed-off-by: Atish Patra <atishp@rivosinc.com>
----
- tools/perf/pmu-events/arch/riscv/arch-standard.json | 10 ++++++++++
- tools/perf/pmu-events/jevents.py                    |  4 +++-
- 2 files changed, 13 insertions(+), 1 deletion(-)
+On Tue, 14 Jan 2025 14:57:33 -0800, Atish Patra wrote:
+> Add description for the Ssccfg extension.
+> 
+> Signed-off-by: Atish Patra <atishp@rivosinc.com>
+> ---
+>  Documentation/devicetree/bindings/riscv/extensions.yaml | 13 +++++++++++++
+>  1 file changed, 13 insertions(+)
+> 
 
-diff --git a/tools/perf/pmu-events/arch/riscv/arch-standard.json b/tools/perf/pmu-events/arch/riscv/arch-standard.json
-new file mode 100644
-index 000000000000..96e21f088558
---- /dev/null
-+++ b/tools/perf/pmu-events/arch/riscv/arch-standard.json
-@@ -0,0 +1,10 @@
-+[
-+  {
-+    "EventName": "cycles",
-+    "BriefDescription": "cycle executed"
-+  },
-+  {
-+    "EventName": "instructions",
-+    "BriefDescription": "instruction retired"
-+  }
-+]
-diff --git a/tools/perf/pmu-events/jevents.py b/tools/perf/pmu-events/jevents.py
-index 5fd906ac6642..28acd598dd7c 100755
---- a/tools/perf/pmu-events/jevents.py
-+++ b/tools/perf/pmu-events/jevents.py
-@@ -417,7 +417,9 @@ class JsonEvent:
-       self.long_desc += extra_desc
-     if arch_std:
-       if arch_std.lower() in _arch_std_events:
--        event = _arch_std_events[arch_std.lower()].event
-+        # No need to replace as evencode would have updated the event before
-+        if not eventcode:
-+          event = _arch_std_events[arch_std.lower()].event
-         # Copy from the architecture standard event to self for undefined fields.
-         for attr, value in _arch_std_events[arch_std.lower()].__dict__.items():
-           if hasattr(self, attr) and not getattr(self, attr):
+My bot found errors running 'make dt_binding_check' on your patch:
 
--- 
-2.34.1
+yamllint warnings/errors:
+./Documentation/devicetree/bindings/riscv/extensions.yaml:131:1: [error] syntax error: found character '\t' that cannot start any token (syntax)
+
+dtschema/dtc warnings/errors:
+./Documentation/devicetree/bindings/riscv/extensions.yaml:131:1: found character '\t' that cannot start any token
+Documentation/devicetree/bindings/riscv/extensions.yaml:131:1: found character '\t' that cannot start any token
+
+doc reference errors (make refcheckdocs):
+
+See https://patchwork.ozlabs.org/project/devicetree-bindings/patch/20250114-counter_delegation-v2-8-8ba74cdb851b@rivosinc.com
+
+The base for the series is generally the latest rc1. A different dependency
+should be noted in *this* patch.
+
+If you already ran 'make dt_binding_check' and didn't see the above
+error(s), then make sure 'yamllint' is installed and dt-schema is up to
+date:
+
+pip3 install dtschema --upgrade
+
+Please check and re-submit after running the above command yourself. Note
+that DT_SCHEMA_FILES can be set to your schema file to speed up checking
+your schema. However, it must be unset to test all examples with your schema.
 
 
 -- 
