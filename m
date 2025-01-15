@@ -4,58 +4,58 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B09B3C02180
-	for <kvm-riscv@archiver.kernel.org>; Wed, 15 Jan 2025 11:54:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 713DEC02180
+	for <kvm-riscv@archiver.kernel.org>; Wed, 15 Jan 2025 12:07:05 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
 	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=zCQg9BnI/AC0x7QcDTn5ikKPDK1MKks1vDUeJENElXU=; b=do+OeGCFWsQLEX
-	2cRZXd0O97qUMKgvYkd/Px8I7hUhlkzXJICWSTHnerGduwttEfwZ2Fo5Bivcqbyu+9DGuv6GPgk49
-	p8FVRjJo9uuukN2d3Rk3KQB+iymUVe7nNl8aHvywODRODU3eGBLApLtFyRpL3GbuI/wLQ23v3fT3D
-	mCBMoOaSdMoVG09GWwoNeWN/+7jj6kD1jLXfZjlE16JMCPXnG5mLw3vbSqKF5MVkF251lCy2dnZLg
-	jleOM6+LF6yUMDDDHAIVmmMVN+J6LJFQC779mTvbDkVYbkz0s5fPVcalv+ln9ptsYO/S7keNqGr0T
-	jU6x8/DKbN7vmE/PZNLw==;
+	List-Owner; bh=dBzW0C3w4YWLCsqjcWBgAvc5SsXAqGtqi5qxbMeFt1w=; b=aqNIIyzR5cFTm/
+	sB8qZAZhfPb3mVeXoILCx9xNX9ojPgr+yjxEsEbDnlPNcLA05zUFy2+K10I5xkRvZKX9cKiPW6AJm
+	zMWDLzFt7e1IsF036pvJTQSaazMWR6/xurN1Ur0W5Tin+U76P+nlHMqz2PTaB8wJOomIuOmtzvzC7
+	qxQ/TDqfdL7tenG3Q8/XI2GgjcLumM7nIJ7lAjVMQbZOmgFa8mpsK1Ig9ju1vKKiXSjyFh5tUnzRD
+	5SDvsJmG0C/Y97fsUP/z3Z46naTPQ62guhVKoevd4wQoHSNWN6FGn7vcobDFBeQFdOMO0uD3ZZkcA
+	k/eweLr6HcEdrDfD4BLQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98 #2 (Red Hat Linux))
-	id 1tY1yu-0000000BleL-1mZI;
-	Wed, 15 Jan 2025 11:54:44 +0000
-Received: from out-171.mta1.migadu.com ([2001:41d0:203:375::ab])
+	id 1tY2Ar-0000000BnbM-0iPB;
+	Wed, 15 Jan 2025 12:07:05 +0000
+Received: from out-187.mta0.migadu.com ([2001:41d0:1004:224b::bb])
 	by bombadil.infradead.org with esmtps (Exim 4.98 #2 (Red Hat Linux))
-	id 1tY1y0-0000000Bl9p-47Ri
+	id 1tY2Ao-0000000BnaH-0Lck
 	for kvm-riscv@lists.infradead.org;
-	Wed, 15 Jan 2025 11:53:50 +0000
-Date: Wed, 15 Jan 2025 12:53:42 +0100
+	Wed, 15 Jan 2025 12:07:03 +0000
+Date: Wed, 15 Jan 2025 13:06:56 +0100
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1736942026;
+	t=1736942819;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=1sco8ktW39kqonSXUGt7UzTB7sldMgmov4ALg1LT3J8=;
-	b=jIxEzcRqQj2BGFcCwQxk1BAbzZUh1p7LSk5gJqBlcJ3ONXm6x4pP3wtBL66rgthNwqpfsr
-	FhjtPaouQc3AGVwcdh6wCj9aXAL0j6hpEN0J3KcuDGts5bsGzcitrXZvbI+tUkgFp+g40E
-	6zNVinfkYrCBB56fWq16FUQL45EbeEs=
+	bh=YgbdkOgeyzusvyB+fsODM0Lt17XNh/jVvw1SWNs3Ews=;
+	b=Cm03brpPU/LBmoQmOIqyEP6Vq6uSpPAh79322F1zgs82gwppERqu5mp858ZQhwHrsspdwj
+	7FVoX2tYKDh/6ixmcg/6dfesVeumHSIl3TwaduIXNSDBi4dUuTzEWyhEkiuK6dqOL2VghI
+	kWxH6fZ7w1CqhKToOOGjbLlUyLOOr0c=
 X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
 From: Andrew Jones <andrew.jones@linux.dev>
 To: =?utf-8?B?Q2zDqW1lbnQgTMOpZ2Vy?= <cleger@rivosinc.com>
 Cc: kvm@vger.kernel.org, kvm-riscv@lists.infradead.org, 
 	Andrew Jones <ajones@ventanamicro.com>, Anup Patel <apatel@ventanamicro.com>, 
 	Atish Patra <atishp@rivosinc.com>
-Subject: Re: [kvm-unit-tests PATCH v6 2/5] riscv: use asm-offsets to generate
- SBI_EXT_HSM values
-Message-ID: <20250115-b08dfc4dd3d73ce95bece07c@orel>
+Subject: Re: [kvm-unit-tests PATCH v6 4/5] riscv: lib: Add SBI SSE extension
+ definitions
+Message-ID: <20250115-ce8e8a312ade5e6c362d514d@orel>
 References: <20250110111247.2963146-1-cleger@rivosinc.com>
- <20250110111247.2963146-3-cleger@rivosinc.com>
+ <20250110111247.2963146-5-cleger@rivosinc.com>
 MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <20250110111247.2963146-3-cleger@rivosinc.com>
+In-Reply-To: <20250110111247.2963146-5-cleger@rivosinc.com>
 X-Migadu-Flow: FLOW_OUT
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250115_035349_166125_694A4341 
-X-CRM114-Status: GOOD (  15.26  )
+X-CRM114-CacheID: sfid-20250115_040702_617187_BA446A1F 
+X-CRM114-Status: GOOD (  11.81  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -72,99 +72,141 @@ Content-Transfer-Encoding: quoted-printable
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Fri, Jan 10, 2025 at 12:12:41PM +0100, Cl=E9ment L=E9ger wrote:
-> Replace hardcoded values with generated ones using sbi-asm-offset. This
-> allows to directly use ASM_SBI_EXT_HSM and ASM_SBI_EXT_HSM_STOP in
-> assembly.
+On Fri, Jan 10, 2025 at 12:12:43PM +0100, Cl=E9ment L=E9ger wrote:
+> Add SBI SSE extension definitions in sbi.h
 > =
 
 > Signed-off-by: Cl=E9ment L=E9ger <cleger@rivosinc.com>
 > ---
->  riscv/Makefile          |  2 +-
->  riscv/sbi-asm.S         |  6 ++++--
->  riscv/sbi-asm-offsets.c | 12 ++++++++++++
->  riscv/.gitignore        |  1 +
->  4 files changed, 18 insertions(+), 3 deletions(-)
->  create mode 100644 riscv/sbi-asm-offsets.c
->  create mode 100644 riscv/.gitignore
+>  lib/riscv/asm/sbi.h | 89 +++++++++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 89 insertions(+)
 > =
 
-> diff --git a/riscv/Makefile b/riscv/Makefile
-> index 28b04156..af5ee495 100644
-> --- a/riscv/Makefile
-> +++ b/riscv/Makefile
-> @@ -86,7 +86,7 @@ CFLAGS +=3D -ffreestanding
->  CFLAGS +=3D -O2
->  CFLAGS +=3D -I $(SRCDIR)/lib -I $(SRCDIR)/lib/libfdt -I lib -I $(SRCDIR)=
-/riscv
+> diff --git a/lib/riscv/asm/sbi.h b/lib/riscv/asm/sbi.h
+> index 98a9b097..83bdfb82 100644
+> --- a/lib/riscv/asm/sbi.h
+> +++ b/lib/riscv/asm/sbi.h
+> @@ -11,6 +11,11 @@
+>  #define SBI_ERR_ALREADY_AVAILABLE	-6
+>  #define SBI_ERR_ALREADY_STARTED		-7
+>  #define SBI_ERR_ALREADY_STOPPED		-8
+> +#define SBI_ERR_NO_SHMEM		-9
+> +#define SBI_ERR_INVALID_STATE		-10
+> +#define SBI_ERR_BAD_RANGE		-11
+> +#define SBI_ERR_TIMEOUT			-12
+> +#define SBI_ERR_IO			-13
+
+We need SBI_ERR_DENIED_LOCKED too, but I guess that can be added with the
+FWFT extension.
+
 >  =
 
-> -asm-offsets =3D lib/riscv/asm-offsets.h
-> +asm-offsets =3D lib/riscv/asm-offsets.h riscv/sbi-asm-offsets.h
->  include $(SRCDIR)/scripts/asm-offsets.mak
+>  #ifndef __ASSEMBLY__
+>  #include <cpumask.h>
+> @@ -23,6 +28,7 @@ enum sbi_ext_id {
+>  	SBI_EXT_SRST =3D 0x53525354,
+>  	SBI_EXT_DBCN =3D 0x4442434E,
+>  	SBI_EXT_SUSP =3D 0x53555350,
+> +	SBI_EXT_SSE =3D 0x535345,
+>  };
 >  =
 
->  %.aux.o: $(SRCDIR)/lib/auxinfo.c
-> diff --git a/riscv/sbi-asm.S b/riscv/sbi-asm.S
-> index 923c2cec..b9c2696f 100644
-> --- a/riscv/sbi-asm.S
-> +++ b/riscv/sbi-asm.S
-> @@ -7,6 +7,8 @@
->  #define __ASSEMBLY__
->  #include <asm/asm.h>
->  #include <asm/csr.h>
-> +#include <asm/asm-offsets.h>
-> +#include <generated/sbi-asm-offsets.h>
+>  enum sbi_ext_base_fid {
+> @@ -71,6 +77,89 @@ enum sbi_ext_dbcn_fid {
+>  	SBI_EXT_DBCN_CONSOLE_WRITE_BYTE,
+>  };
 >  =
 
->  #include "sbi-tests.h"
->  =
-
-> @@ -58,8 +60,8 @@ sbi_hsm_check:
->  7:	lb	t0, 0(t1)
->  	pause
->  	beqz	t0, 7b
-> -	li	a7, 0x48534d	/* SBI_EXT_HSM */
-> -	li	a6, 1		/* SBI_EXT_HSM_HART_STOP */
-> +	li	a7, ASM_SBI_EXT_HSM
-> +	li	a6, ASM_SBI_EXT_HSM_HART_STOP
->  	ecall
->  8:	pause
->  	j	8b
-> diff --git a/riscv/sbi-asm-offsets.c b/riscv/sbi-asm-offsets.c
-> new file mode 100644
-> index 00000000..116fe497
-> --- /dev/null
-> +++ b/riscv/sbi-asm-offsets.c
-> @@ -0,0 +1,12 @@
-> +// SPDX-License-Identifier: GPL-2.0-only
-> +#include <kbuild.h>
-> +#include <asm/sbi.h>
-> +#include "sbi-tests.h"
-
-Don't need to include sbi-tests.h
-
+> +enum sbi_ext_sse_fid {
+> +	SBI_EXT_SSE_READ_ATTRS =3D 0,
+> +	SBI_EXT_SSE_WRITE_ATTRS,
+> +	SBI_EXT_SSE_REGISTER,
+> +	SBI_EXT_SSE_UNREGISTER,
+> +	SBI_EXT_SSE_ENABLE,
+> +	SBI_EXT_SSE_DISABLE,
+> +	SBI_EXT_SSE_COMPLETE,
+> +	SBI_EXT_SSE_INJECT,
+> +	SBI_EXT_SSE_HART_UNMASK,
+> +	SBI_EXT_SSE_HART_MASK,
+> +};
 > +
-> +int main(void)
-> +{
-> +	DEFINE(ASM_SBI_EXT_HSM, SBI_EXT_HSM);
-> +	DEFINE(ASM_SBI_EXT_HSM_HART_STOP, SBI_EXT_HSM_HART_STOP);
+> +/* SBI SSE Event Attributes. */
+> +enum sbi_sse_attr_id {
+> +	SBI_SSE_ATTR_STATUS		=3D 0x00000000,
+> +	SBI_SSE_ATTR_PRIORITY		=3D 0x00000001,
+> +	SBI_SSE_ATTR_CONFIG		=3D 0x00000002,
+> +	SBI_SSE_ATTR_PREFERRED_HART	=3D 0x00000003,
+> +	SBI_SSE_ATTR_ENTRY_PC		=3D 0x00000004,
+> +	SBI_SSE_ATTR_ENTRY_ARG		=3D 0x00000005,
+> +	SBI_SSE_ATTR_INTERRUPTED_SEPC	=3D 0x00000006,
+> +	SBI_SSE_ATTR_INTERRUPTED_FLAGS	=3D 0x00000007,
+> +	SBI_SSE_ATTR_INTERRUPTED_A6	=3D 0x00000008,
+> +	SBI_SSE_ATTR_INTERRUPTED_A7	=3D 0x00000009,
+> +};
 > +
-> +	return 0;
-> +}
-> diff --git a/riscv/.gitignore b/riscv/.gitignore
-> new file mode 100644
-> index 00000000..0a8c5a36
-> --- /dev/null
-> +++ b/riscv/.gitignore
-> @@ -0,0 +1 @@
-> +/*-asm-offsets.[hs]
+> +#define SBI_SSE_ATTR_STATUS_STATE_OFFSET	0
+> +#define SBI_SSE_ATTR_STATUS_STATE_MASK		0x3
+> +#define SBI_SSE_ATTR_STATUS_PENDING_OFFSET	2
+> +#define SBI_SSE_ATTR_STATUS_INJECT_OFFSET	3
+> +
+> +#define SBI_SSE_ATTR_CONFIG_ONESHOT		BIT(0)
+> +
+> +#define SBI_SSE_ATTR_INTERRUPTED_FLAGS_SSTATUS_SPP	BIT(0)
+> +#define SBI_SSE_ATTR_INTERRUPTED_FLAGS_SSTATUS_SPIE	BIT(1)
+> +#define SBI_SSE_ATTR_INTERRUPTED_FLAGS_HSTATUS_SPV	BIT(2)
+> +#define SBI_SSE_ATTR_INTERRUPTED_FLAGS_HSTATUS_SPVP	BIT(3)
+> +
+> +enum sbi_sse_state {
+> +	SBI_SSE_STATE_UNUSED		=3D 0,
+> +	SBI_SSE_STATE_REGISTERED	=3D 1,
+> +	SBI_SSE_STATE_ENABLED		=3D 2,
+> +	SBI_SSE_STATE_RUNNING		=3D 3,
+> +};
+> +
+> +/* SBI SSE Event IDs. */
+> +/* Range 0x00000000 - 0x0000ffff */
+> +#define SBI_SSE_EVENT_LOCAL_HIGH_PRIO_RAS	0x00000000
+> +#define SBI_SSE_EVENT_LOCAL_DOUBLE_TRAP		0x00000001
+> +#define SBI_SSE_EVENT_LOCAL_PLAT_0_START	0x00004000
+> +#define SBI_SSE_EVENT_LOCAL_PLAT_0_END		0x00007fff
+> +
+> +#define SBI_SSE_EVENT_GLOBAL_HIGH_PRIO_RAS	0x00008000
+> +#define SBI_SSE_EVENT_GLOBAL_PLAT_0_START	0x0000c000
+> +#define SBI_SSE_EVENT_GLOBAL_PLAT_0_END		0x0000ffff
+> +
+> +/* Range 0x00010000 - 0x0001ffff */
+> +#define SBI_SSE_EVENT_LOCAL_PMU_OVERFLOW	0x00010000
+> +#define SBI_SSE_EVENT_LOCAL_PLAT_1_START	0x00014000
+> +#define SBI_SSE_EVENT_LOCAL_PLAT_1_END		0x00017fff
+> +#define SBI_SSE_EVENT_GLOBAL_PLAT_1_START	0x0001c000
+> +#define SBI_SSE_EVENT_GLOBAL_PLAT_1_END		0x0001ffff
+> +
+> +/* Range 0x00100000 - 0x0010ffff */
+> +#define SBI_SSE_EVENT_LOCAL_LOW_PRIO_RAS	0x00100000
+> +#define SBI_SSE_EVENT_LOCAL_PLAT_2_START	0x00104000
+> +#define SBI_SSE_EVENT_LOCAL_PLAT_2_END		0x00107fff
+> +#define SBI_SSE_EVENT_GLOBAL_LOW_PRIO_RAS	0x00108000
+> +#define SBI_SSE_EVENT_GLOBAL_PLAT_2_START	0x0010c000
+> +#define SBI_SSE_EVENT_GLOBAL_PLAT_2_END		0x0010ffff
+> +
+> +/* Range 0xffff0000 - 0xffffffff */
+> +#define SBI_SSE_EVENT_LOCAL_SOFTWARE		0xffff0000
+> +#define SBI_SSE_EVENT_LOCAL_PLAT_3_START	0xffff4000
+> +#define SBI_SSE_EVENT_LOCAL_PLAT_3_END		0xffff7fff
+> +#define SBI_SSE_EVENT_GLOBAL_SOFTWARE		0xffff8000
+> +#define SBI_SSE_EVENT_GLOBAL_PLAT_3_START	0xffffc000
+> +#define SBI_SSE_EVENT_GLOBAL_PLAT_3_END		0xffffffff
+> +
+> +#define SBI_SSE_EVENT_PLATFORM_BIT		BIT(14)
+> +#define SBI_SSE_EVENT_GLOBAL_BIT		BIT(15)
+> +
+>  struct sbiret {
+>  	long error;
+>  	long value;
 > -- =
 
 > 2.47.1
 >
-
-Otherwise,
 
 Reviewed-by: Andrew Jones <andrew.jones@linux.dev>
 
