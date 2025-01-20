@@ -4,35 +4,35 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0E231C0218B
-	for <kvm-riscv@archiver.kernel.org>; Mon, 20 Jan 2025 16:43:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9224CC02181
+	for <kvm-riscv@archiver.kernel.org>; Mon, 20 Jan 2025 16:43:57 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=OG7pGQq5V+PQJe6l0S8U/yHlviavTr4IfXQ+9Y3YWhY=; b=LRCggDBhNLZV9R
-	NDZEc9W0GaV+zW5Tqo82YfoYdGdbH6QvrJAk3YyLT6vBmCQZnbfbY9y8n9nLAxQfylHy1OA8ZMv1v
-	Zt2yr/ONqsl+rtMCfNmWlOvOBEg0TeQit1VEwy3LvYJCa0AEi8yVX2LDqMEwqaoMddgrAhisLyiok
-	6QQoTS/gUri4BfpnnSmlatTOLr+qXPbbPInkuRibZAdxQ1dEmejn48nC5koJlj+Z3yhQSsjl9fTJU
-	GcnEV8zbgFoBbCvbhc+3BksUWhhvwfMAArmFvc0qIcoji5DmrqzKl3JfR0Fdx1I2vyb6vGrm11rz/
-	38ajDhpTF86KmDUB8Pfg==;
+	List-Owner; bh=qeH+5ktzWkg33iP6x5glxJAPQ0mhdacptFmbZa24Heg=; b=piMM3MWxRoyGDV
+	iwrr7+cDnIx9nxohIkmLUk++h/fZ0pPdx4e5bumn5bT52qmHhaD7Su7xQc5ucMDVoUqZHgajIyIAW
+	4oBHmXhRLMnKSssGLQsLFtLAZ9R7tBQ2S7KM5BzgeXdmud5l1v1g/rQwjB9wUGmCB9GNEmTu+3uIc
+	vy4CTrVY6/7bAtYoIxEZECtbmEU1SXBUwClFoj70h8wzYN39o6kFCwDuINZRCmKkKGG62OA/S/hiK
+	Nqx+XNLwMDJVORHxXf9jtTQ+9Ow905JYwlEqQhNrz00VDDdKr6v7lRe2x/9ZbAD50/wF+npPJYex8
+	yHV7moigFr8iYsYqxjfg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98 #2 (Red Hat Linux))
-	id 1tZusR-000000061na-3Pcv;
-	Mon, 20 Jan 2025 16:43:51 +0000
+	id 1tZusX-000000061r7-1V3x;
+	Mon, 20 Jan 2025 16:43:57 +0000
 Received: from foss.arm.com ([217.140.110.172])
 	by bombadil.infradead.org with esmtp (Exim 4.98 #2 (Red Hat Linux))
-	id 1tZusQ-000000061lq-0zCH
+	id 1tZusV-000000061pd-0kGl
 	for kvm-riscv@lists.infradead.org;
-	Mon, 20 Jan 2025 16:43:51 +0000
+	Mon, 20 Jan 2025 16:43:56 +0000
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 500531C0A;
-	Mon, 20 Jan 2025 08:44:18 -0800 (PST)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id C18EE1CC4;
+	Mon, 20 Jan 2025 08:44:21 -0800 (PST)
 Received: from localhost.localdomain (usa-sjc-mx-foss1.foss.arm.com [172.31.20.19])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 8C4353F5A1;
-	Mon, 20 Jan 2025 08:43:46 -0800 (PST)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 2A9F03F5A1;
+	Mon, 20 Jan 2025 08:43:50 -0800 (PST)
 From: Alexandru Elisei <alexandru.elisei@arm.com>
 To: andrew.jones@linux.dev,
 	eric.auger@redhat.com,
@@ -55,18 +55,18 @@ Cc: kvm@vger.kernel.org,
 	suzuki.poulose@arm.com,
 	yuzenghui@huawei.com,
 	joey.gouly@arm.com,
-	andre.przywara@arm.com,
-	Alexandru Elisei <alexandru.elisei@gmail.com>
-Subject: [kvm-unit-tests PATCH v2 05/18] scripts: Rename run_qemu_status -> run_test_status
-Date: Mon, 20 Jan 2025 16:43:03 +0000
-Message-ID: <20250120164316.31473-6-alexandru.elisei@arm.com>
+	andre.przywara@arm.com
+Subject: [kvm-unit-tests PATCH v2 06/18] scripts: Merge the qemu parameter -smp into $qemu_opts
+Date: Mon, 20 Jan 2025 16:43:04 +0000
+Message-ID: <20250120164316.31473-7-alexandru.elisei@arm.com>
 X-Mailer: git-send-email 2.48.1
 In-Reply-To: <20250120164316.31473-1-alexandru.elisei@arm.com>
 References: <20250120164316.31473-1-alexandru.elisei@arm.com>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250120_084350_371632_1DE8DD4B 
-X-CRM114-Status: GOOD (  10.81  )
+X-CRM114-CacheID: sfid-20250120_084355_259303_C60A960B 
+X-CRM114-Status: UNSURE (   9.47  )
+X-CRM114-Notice: Please train this message.
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -83,85 +83,43 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-From: Alexandru Elisei <alexandru.elisei@gmail.com>
+kvmtool has a different command line parameter to specify the number of
+VCPUs (-c/--cpus). To make it easier to accommodate it, merge the qemu
+specific parameter -smp into $qemu_opts when passing it to the
+$RUNTIME_arch_run script.
 
-For the arm/arm64 architectures, kvm-unit-tests can also be run using the
-kvmtool virtual machine manager. Rename run_qemu_status to run_test_status
-to make it more generic, in preparation to add support for kvmtool.
+This is safe to do because the $RUNTIME_arch_run script, on all
+architectures, passes the parameters right back to run_qemu() et co, and
+do not treat individual parameters separately.
 
 Signed-off-by: Alexandru Elisei <alexandru.elisei@arm.com>
 ---
- arm/run               | 4 ++--
- powerpc/run           | 2 +-
- riscv/run             | 4 ++--
- s390x/run             | 2 +-
- scripts/arch-run.bash | 2 +-
- 5 files changed, 7 insertions(+), 7 deletions(-)
+ scripts/runtime.bash | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-diff --git a/arm/run b/arm/run
-index 6db32cf09c88..9b11feafffdd 100755
---- a/arm/run
-+++ b/arm/run
-@@ -85,9 +85,9 @@ command+=" -display none -serial stdio"
- command="$(migration_cmd) $(timeout_cmd) $command"
- 
- if [ "$UEFI_SHELL_RUN" = "y" ]; then
--	ENVIRON_DEFAULT=n run_qemu_status $command "$@"
-+	ENVIRON_DEFAULT=n run_test_status $command "$@"
- elif [ "$EFI_USE_ACPI" = "y" ]; then
--	run_qemu_status $command -kernel "$@"
-+	run_test_status $command -kernel "$@"
- else
- 	run_qemu $command -kernel "$@"
- fi
-diff --git a/powerpc/run b/powerpc/run
-index 27abf1ef6a4d..9b5fbc1197ed 100755
---- a/powerpc/run
-+++ b/powerpc/run
-@@ -63,4 +63,4 @@ command="$(migration_cmd) $(timeout_cmd) $command"
- # to fixup the fixup below by parsing the true exit code from the output.
- # The second fixup is also a FIXME, because once we add chr-testdev
- # support for powerpc, we won't need the second fixup.
--run_qemu_status $command "$@"
-+run_test_status $command "$@"
-diff --git a/riscv/run b/riscv/run
-index 73f2bf54dc32..2a846d361a4d 100755
---- a/riscv/run
-+++ b/riscv/run
-@@ -34,8 +34,8 @@ command+=" $mach $acc $firmware -cpu $processor "
- command="$(migration_cmd) $(timeout_cmd) $command"
- 
- if [ "$UEFI_SHELL_RUN" = "y" ]; then
--	ENVIRON_DEFAULT=n run_qemu_status $command "$@"
-+	ENVIRON_DEFAULT=n run_test_status $command "$@"
- else
- 	# We return the exit code via stdout, not via the QEMU return code
--	run_qemu_status $command -kernel "$@"
-+	run_test_status $command -kernel "$@"
- fi
-diff --git a/s390x/run b/s390x/run
-index 34552c2747d4..9ecfaf983a3d 100755
---- a/s390x/run
-+++ b/s390x/run
-@@ -47,4 +47,4 @@ command+=" -kernel"
- command="$(panic_cmd) $(migration_cmd) $(timeout_cmd) $command"
- 
- # We return the exit code via stdout, not via the QEMU return code
--run_qemu_status $command "$@"
-+run_test_status $command "$@"
-diff --git a/scripts/arch-run.bash b/scripts/arch-run.bash
-index 8643bab3b252..d6eaf0ee5f09 100644
---- a/scripts/arch-run.bash
-+++ b/scripts/arch-run.bash
-@@ -75,7 +75,7 @@ run_qemu ()
- 	return $ret
+diff --git a/scripts/runtime.bash b/scripts/runtime.bash
+index e5d661684ceb..a89f2d10ab78 100644
+--- a/scripts/runtime.bash
++++ b/scripts/runtime.bash
+@@ -34,7 +34,8 @@ premature_failure()
+ get_cmdline()
+ {
+     local kernel=$1
+-    echo "TESTNAME=$testname TIMEOUT=$timeout MACHINE=$machine ACCEL=$accel $RUNTIME_arch_run $kernel -smp $smp $qemu_opts"
++
++    echo "TESTNAME=$testname TIMEOUT=$timeout MACHINE=$machine ACCEL=$accel $RUNTIME_arch_run $kernel $qemu_opts"
  }
  
--run_qemu_status ()
-+run_test_status ()
- {
- 	local stdout ret
+ skip_nodefault()
+@@ -87,6 +88,8 @@ function run()
+     local accel="$9"
+     local timeout="${10:-$TIMEOUT}" # unittests.cfg overrides the default
  
++    qemu_opts="-smp $smp $qemu_opts"
++
+     if [ "${CONFIG_EFI}" == "y" ]; then
+         kernel=${kernel/%.flat/.efi}
+     fi
 -- 
 2.47.1
 
