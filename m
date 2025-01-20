@@ -4,35 +4,35 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 47CF9C02185
-	for <kvm-riscv@archiver.kernel.org>; Mon, 20 Jan 2025 16:44:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9783CC02182
+	for <kvm-riscv@archiver.kernel.org>; Mon, 20 Jan 2025 16:44:19 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=HJOO9+NjfbLesTcGyQOQQ/fTnZ4hSw4Z6CzS17qeiZM=; b=hmRv7gGNilIzA4
-	b2yHNWjREyBWJz3hatt1IJvRaWEN5lDv3Nthh4Cjo0gRmyWkPZBlzncwgm8sJXLKwIt+3JPW/GItp
-	CU8a6SnqZAqvA0oHy/egZccMM85AzVh61x5GbbBoj/j/XWDi+Cij/pPwXIrJfdNAnxkbvvaP9qOmp
-	8hVH48UVPUoWTCI0GR19i+OIGUF6dwJj8B/29/aw6EB4Wr9dx7dOOfGwwBZBgRNjSW4/ddmKQPv9w
-	piDc6yMCtRDFk/JXZziZbJtWTlF/DEln9fpP688yvL/Y0yX72V6x1hkoJYl6lSJu+gy7CiB6TeDNy
-	xlgm2aHwQnXjjcE06jyA==;
+	List-Owner; bh=msMWgJ7FCDt7FGr+UJh+gGnCXP1lt9egIfzSM3TkIsE=; b=4dPVfvyhIaiL+z
+	zF6wJvcufOUh34ULAId43QlNlu2f0rV27Wtc91dGj4XQcvn8aZ4XDLSTe3XNacSVRBUa153uu5+mI
+	MRc02+Lccn5SKj1BCNKswucvZTsgyvbedVqYlEFL5QB2RKDN4IUdyS8ueA/RQ+Lj2ivsLFu+5k/sz
+	4J2m5DFg3mtvQgjr6Q5rHJWls0D99b8+RuMNlsCTO9T9FzHqyVt0lGy0DspAp/ic94LPomdEtU7od
+	l4p6qLHF8MoOOGI//dZvc1YPITJN6MopAfud+lIxh19BpDgMjtu1xIoUuV7yhjJrgEeqqrH0uDTsg
+	8Vur0x8/AdCIYpDCxrjw==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98 #2 (Red Hat Linux))
-	id 1tZuso-000000061zq-0En7;
-	Mon, 20 Jan 2025 16:44:14 +0000
+	id 1tZust-0000000624A-1Qiv;
+	Mon, 20 Jan 2025 16:44:19 +0000
 Received: from foss.arm.com ([217.140.110.172])
 	by bombadil.infradead.org with esmtp (Exim 4.98 #2 (Red Hat Linux))
-	id 1tZusl-000000061yl-43Xh
+	id 1tZusq-0000000621U-0Di9
 	for kvm-riscv@lists.infradead.org;
-	Mon, 20 Jan 2025 16:44:13 +0000
+	Mon, 20 Jan 2025 16:44:18 +0000
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 9854F1D14;
-	Mon, 20 Jan 2025 08:44:35 -0800 (PST)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 8FDAE1063;
+	Mon, 20 Jan 2025 08:44:42 -0800 (PST)
 Received: from localhost.localdomain (usa-sjc-mx-foss1.foss.arm.com [172.31.20.19])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 0131C3F5A1;
-	Mon, 20 Jan 2025 08:44:03 -0800 (PST)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id E59EC3F5A1;
+	Mon, 20 Jan 2025 08:44:10 -0800 (PST)
 From: Alexandru Elisei <alexandru.elisei@arm.com>
 To: andrew.jones@linux.dev,
 	eric.auger@redhat.com,
@@ -56,16 +56,16 @@ Cc: kvm@vger.kernel.org,
 	yuzenghui@huawei.com,
 	joey.gouly@arm.com,
 	andre.przywara@arm.com
-Subject: [kvm-unit-tests PATCH v2 10/18] scripts/arch-run: Add support for kvmtool
-Date: Mon, 20 Jan 2025 16:43:08 +0000
-Message-ID: <20250120164316.31473-11-alexandru.elisei@arm.com>
+Subject: [kvm-unit-tests PATCH v2 12/18] scripts/runtime: Add default arguments for kvmtool
+Date: Mon, 20 Jan 2025 16:43:10 +0000
+Message-ID: <20250120164316.31473-13-alexandru.elisei@arm.com>
 X-Mailer: git-send-email 2.48.1
 In-Reply-To: <20250120164316.31473-1-alexandru.elisei@arm.com>
 References: <20250120164316.31473-1-alexandru.elisei@arm.com>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250120_084412_091915_88683C8F 
-X-CRM114-Status: GOOD (  14.07  )
+X-CRM114-CacheID: sfid-20250120_084416_181411_0A5B188B 
+X-CRM114-Status: GOOD (  14.15  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -82,158 +82,93 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-Add two new functions, search_kvmtool_binary(), which, like the name
-suggests, searches for the location of the kvmtool binary, and
-run_kvmtool(), which runs a test with kvmtool as the VMM.
+kvmtool, unless told otherwise, will do its best to make sure that a kernel
+successfully boots in a virtual machine. Among things like automatically
+creating a rootfs, it also adds extra parameters to the kernel command
+line. This is actively harmful to kvm-unit-tests, because some tests parse
+the kernel command line and they will fail if they encounter the options
+added by kvmtool.
 
-initrd_create() has also been modified to use the kvmtool syntax for
-supplying an initrd, which is --initrd (two dashes instead of the single
-dash that qemu uses).
+Fortunately for us, kvmtool commit 5613ae26b998 ("Add --nodefaults command
+line argument") addded the --nodefaults kvmtool parameter which disables
+all the implicit virtual machine configuration that cannot be disabled by
+using other parameters, like modifying the kernel command line. Always use
+--nodefaults to allow a test to run.
 
-arm/run does not know how to use these functions yet, but this will be
-added in a subsequent patch.
+kvmtool can be too verbose when running a virtual machine, and this is
+controlled with parameters. Add those to the default kvmtool command line
+to reduce this verbosity to a minimum.
+
+Before:
+
+$ vm run arm/selftest.flat --cpus 2 --mem 256 --params "setup smp=2 mem=256"
+  Info: # lkvm run -k arm/selftest.flat -m 256 -c 2 --name guest-5035
+Unknown subtest
+
+EXIT: STATUS=127
+  Warning: KVM compatibility warning.
+	virtio-9p device was not detected.
+	While you have requested a virtio-9p device, the guest kernel did not initialize it.
+	Please make sure that the guest kernel was compiled with CONFIG_NET_9P_VIRTIO=y enabled in .config.
+  Warning: KVM compatibility warning.
+	virtio-net device was not detected.
+	While you have requested a virtio-net device, the guest kernel did not initialize it.
+	Please make sure that the guest kernel was compiled with CONFIG_VIRTIO_NET=y enabled in .config.
+  Info: KVM session ended normally.
+
+After:
+
+$ vm run arm/selftest.flat --nodefaults --network mode=none --loglevel=warning --cpus 2 --mem 256 --params "setup smp=2 mem=256"
+PASS: selftest: setup: smp: number of CPUs matches expectation
+INFO: selftest: setup: smp: found 2 CPUs
+PASS: selftest: setup: mem: memory size matches expectation
+INFO: selftest: setup: mem: found 256 MB
+SUMMARY: 2 tests
+
+EXIT: STATUS=1
+
+Note that KVMTOOL_DEFAULT_OPTS can be overwritten by an environment
+variable with the same name, but it's not documented in the help string for
+run_tests.sh. This has been done on purpose, since overwritting
+KVMTOOL_DEFAULT_OPTS should only be necessary for debugging or development
+purposes.
 
 Signed-off-by: Alexandru Elisei <alexandru.elisei@arm.com>
 ---
- scripts/arch-run.bash | 94 +++++++++++++++++++++++++++++++++++++------
- 1 file changed, 81 insertions(+), 13 deletions(-)
+ scripts/runtime.bash | 13 ++++++++++++-
+ 1 file changed, 12 insertions(+), 1 deletion(-)
 
-diff --git a/scripts/arch-run.bash b/scripts/arch-run.bash
-index d6eaf0ee5f09..34f633cade01 100644
---- a/scripts/arch-run.bash
-+++ b/scripts/arch-run.bash
-@@ -75,16 +75,47 @@ run_qemu ()
- 	return $ret
- }
+diff --git a/scripts/runtime.bash b/scripts/runtime.bash
+index 55d58eef9c7c..abfd1e67b2ef 100644
+--- a/scripts/runtime.bash
++++ b/scripts/runtime.bash
+@@ -2,6 +2,17 @@
+ : "${MAX_SMP:=$(getconf _NPROCESSORS_ONLN)}"
+ : "${TIMEOUT:=90s}"
  
-+run_kvmtool ()
-+{
-+	local stdout errors ret sig
++# The following parameters are enabled by default when running a test with
++# kvmtool:
++# --nodefaults: suppress VM configuration that cannot be disabled otherwise
++#               (like modifying the supplied kernel command line). Tests that
++#               use the command line will fail without this parameter.
++# --network mode=none: do not create a network device. kvmtool tries to help the
++#                user by automatically create one, and then prints a warning
++#                when the VM terminates if the device hasn't been initialized.
++# --loglevel=warning: reduce verbosity
++: "${KVMTOOL_DEFAULT_OPTS:="--nodefaults --network mode=none --loglevel=warning"}"
 +
-+	initrd_create || return $?
-+
-+	echo -n "$@"
-+	[ "$ENVIRON_DEFAULT" = "yes" ] && echo -n " #"
-+	echo " $INITRD"
-+
-+	# stdout to {stdout}, stderr to $errors and stderr
-+	exec {stdout}>&1
-+	"${@}" $INITRD </dev/null 2> >(tee /dev/stderr) > /dev/fd/$stdout
-+	ret=$?
-+	exec {stdout}>&-
-+
-+	return $ret
-+}
-+
- run_test_status ()
- {
--	local stdout ret
-+	local stdout ret ret_success
+ PASS() { echo -ne "\e[32mPASS\e[0m"; }
+ SKIP() { echo -ne "\e[33mSKIP\e[0m"; }
+ FAIL() { echo -ne "\e[31mFAIL\e[0m"; }
+@@ -103,7 +114,7 @@ function run()
+         opts="-smp $smp $qemu_opts"
+         ;;
+     kvmtool)
+-        opts="--cpus $smp $kvmtool_opts"
++        opts="$KVMTOOL_DEFAULT_OPTS --cpus $smp $kvmtool_opts"
+         ;;
+     esac
  
- 	exec {stdout}>&1
--	lines=$(run_qemu "$@" > >(tee /dev/fd/$stdout))
-+
-+	# For qemu, an exit status of 1 means that the test completed. For kvmtool,
-+	# 0 means the same thing.
-+	case "$TARGET" in
-+	qemu)
-+		ret_success=1
-+		lines=$(run_qemu "$@" > >(tee /dev/fd/$stdout))
-+		;;
-+	kvmtool)
-+		ret_success=0
-+		lines=$(run_kvmtool "$@" > >(tee /dev/fd/$stdout))
-+		;;
-+	esac
- 	ret=$?
- 	exec {stdout}>&-
- 
--	if [ $ret -eq 1 ]; then
-+	if [ $ret -eq $ret_success ]; then
- 		testret=$(grep '^EXIT: ' <<<"$lines" | head -n1 | sed 's/.*STATUS=\([0-9][0-9]*\).*/\1/')
- 		if [ "$testret" ]; then
- 			if [ $testret -eq 1 ]; then
-@@ -422,6 +453,25 @@ search_qemu_binary ()
- 	export PATH=$save_path
- }
- 
-+search_kvmtool_binary ()
-+{
-+	local kvmtoolcmd kvmtool
-+
-+	for kvmtoolcmd in lkvm vm lkvm-static; do
-+		if $kvmtoolcmd --help 2>/dev/null| grep -q 'The most commonly used'; then
-+			kvmtool="$kvmtoolcmd"
-+			break
-+		fi
-+	done
-+
-+	if [ -z "$kvmtool" ]; then
-+		echo "A kvmtool binary was not found." >&2
-+		return 2
-+	fi
-+
-+	command -v $kvmtool
-+}
-+
- initrd_cleanup ()
- {
- 	rm -f $KVM_UNIT_TESTS_ENV
-@@ -447,7 +497,18 @@ initrd_create ()
- 	fi
- 
- 	unset INITRD
--	[ -f "$KVM_UNIT_TESTS_ENV" ] && INITRD="-initrd $KVM_UNIT_TESTS_ENV"
-+	if [ ! -f "$KVM_UNIT_TESTS_ENV" ]; then
-+		return 0
-+	fi
-+
-+	case "$TARGET" in
-+		qemu)
-+			INITRD="-initrd $KVM_UNIT_TESTS_ENV"
-+			;;
-+		kvmtool)
-+			INITRD="--initrd $KVM_UNIT_TESTS_ENV"
-+			;;
-+	esac
- 
- 	return 0
- }
-@@ -471,18 +532,25 @@ env_params ()
- 	local qemu have_qemu
- 	local _ rest
- 
--	qemu=$(search_qemu_binary) && have_qemu=1
-+	env_add_params TARGET
-+
-+	# kvmtool's versioning has been broken since it was split from the kernel
-+	# source.
-+	if [ "$TARGET" = "qemu" ]; then
-+		qemu=$(search_qemu_binary) && have_qemu=1
- 
--	if [ "$have_qemu" ]; then
--		if [ -n "$ACCEL" ] || [ -n "$QEMU_ACCEL" ]; then
--			[ -n "$ACCEL" ] && QEMU_ACCEL=$ACCEL
-+		if [ "$have_qemu" ]; then
-+			if [ -n "$ACCEL" ] || [ -n "$QEMU_ACCEL" ]; then
-+				[ -n "$ACCEL" ] && QEMU_ACCEL=$ACCEL
-+			fi
-+			QEMU_VERSION_STRING="$($qemu -h | head -1)"
-+			# Shellcheck does not see QEMU_MAJOR|MINOR|MICRO are used
-+			# shellcheck disable=SC2034
-+			IFS='[ .]' read -r _ _ _ QEMU_MAJOR QEMU_MINOR QEMU_MICRO rest <<<"$QEMU_VERSION_STRING"
- 		fi
--		QEMU_VERSION_STRING="$($qemu -h | head -1)"
--		# Shellcheck does not see QEMU_MAJOR|MINOR|MICRO are used
--		# shellcheck disable=SC2034
--		IFS='[ .]' read -r _ _ _ QEMU_MAJOR QEMU_MINOR QEMU_MICRO rest <<<"$QEMU_VERSION_STRING"
-+
-+		env_add_params QEMU_ACCEL QEMU_VERSION_STRING QEMU_MAJOR QEMU_MINOR QEMU_MICRO
- 	fi
--	env_add_params QEMU_ACCEL QEMU_VERSION_STRING QEMU_MAJOR QEMU_MINOR QEMU_MICRO
- 
- 	KERNEL_VERSION_STRING=$(uname -r)
- 	IFS=. read -r KERNEL_VERSION KERNEL_PATCHLEVEL rest <<<"$KERNEL_VERSION_STRING"
 -- 
 2.47.1
 
