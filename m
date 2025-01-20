@@ -4,35 +4,35 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 73CA7C02182
-	for <kvm-riscv@archiver.kernel.org>; Mon, 20 Jan 2025 16:44:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BDAEBC02181
+	for <kvm-riscv@archiver.kernel.org>; Mon, 20 Jan 2025 16:44:13 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:MIME-Version:References:In-Reply-To:
 	Message-ID:Date:Subject:Cc:To:From:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=/9pVP12mr6EARR5Sq5gTsQ59X/NVQs7jqSyQXDu24gE=; b=jesdBARaA+TeCy
-	39fS6xMKsvrCaP+8RX7ykceKZER/nKKGAgngDWBxnUOdv10jFkLkdROLm6JhEQ3sFgv9DeJolYuoe
-	komsiuILezHw0yczbEZGPbyjcpKbyU4BikRd11jr4V/cr+vhT/VGrNteCu+r1Bz4ngOHYQ9Hh5AFv
-	Zu0/h5h5VqhzifgZFKN7abYUu77Oo7uo9AKCQZZ01HT5bfosOuizj2zssDCmZw8iXFFb959aqGMrX
-	SVAsGofrbmLq0wyhOwu9djSXI8u+TQmr5hQLS6ehksH1byvcnl+APJbFGztVY8vCrSFS0AG+MEat9
-	dmHxixOubk849X0AASpw==;
+	List-Owner; bh=9BCCilHLc6iV/8vtqNBURX0sBqOkPhsdRydbNNNXO/g=; b=n8hfM3vpYCCSDe
+	sjvKG8IG2HZ3EqiicGELVHlpo7BFBx+/MKgB1yroXxddpOviyGwGddIVV4AlQzJYR8rRQMZBbGo1h
+	Mbf6/ASmRaZLR2IEwyKr4nLatSGx0eE3fSXjsTGWhE+xq4p+4CP03dgObxdpn/9nlzUYENyX6sGdE
+	kbz1Rf9rnClVno0NTjNpxnQpCZhHi7VB7eYCBidxyLSd3bRGKuGE8wzPXJgNnvwpQVH2ShdlMuss/
+	sWG5jGHCYZ5WrwfTgBQ7OeH+mCNTDJvoG1Aw2uguD3WkkWS2tOI+6MCjtJuWN4BCwC0kI5Dx7/Nta
+	Bb2kfoaRouFaVDsd7Khg==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98 #2 (Red Hat Linux))
-	id 1tZusg-000000061wA-0wwv;
-	Mon, 20 Jan 2025 16:44:06 +0000
+	id 1tZusn-000000061zS-2Eg8;
+	Mon, 20 Jan 2025 16:44:13 +0000
 Received: from foss.arm.com ([217.140.110.172])
 	by bombadil.infradead.org with esmtp (Exim 4.98 #2 (Red Hat Linux))
-	id 1tZuse-000000061uU-0kJ5
+	id 1tZusl-000000061yH-05bc
 	for kvm-riscv@lists.infradead.org;
-	Mon, 20 Jan 2025 16:44:05 +0000
+	Mon, 20 Jan 2025 16:44:12 +0000
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 272631D13;
-	Mon, 20 Jan 2025 08:44:32 -0800 (PST)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 18899FEC;
+	Mon, 20 Jan 2025 08:44:39 -0800 (PST)
 Received: from localhost.localdomain (usa-sjc-mx-foss1.foss.arm.com [172.31.20.19])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 837D33F5A1;
-	Mon, 20 Jan 2025 08:44:00 -0800 (PST)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 7170E3F5A1;
+	Mon, 20 Jan 2025 08:44:07 -0800 (PST)
 From: Alexandru Elisei <alexandru.elisei@arm.com>
 To: andrew.jones@linux.dev,
 	eric.auger@redhat.com,
@@ -56,17 +56,16 @@ Cc: kvm@vger.kernel.org,
 	yuzenghui@huawei.com,
 	joey.gouly@arm.com,
 	andre.przywara@arm.com
-Subject: [kvm-unit-tests PATCH v2 09/18] scripts/runtime: Skip test when kvmtool and $accel is not KVM
-Date: Mon, 20 Jan 2025 16:43:07 +0000
-Message-ID: <20250120164316.31473-10-alexandru.elisei@arm.com>
+Subject: [kvm-unit-tests PATCH v2 11/18] arm/run: Add support for kvmtool
+Date: Mon, 20 Jan 2025 16:43:09 +0000
+Message-ID: <20250120164316.31473-12-alexandru.elisei@arm.com>
 X-Mailer: git-send-email 2.48.1
 In-Reply-To: <20250120164316.31473-1-alexandru.elisei@arm.com>
 References: <20250120164316.31473-1-alexandru.elisei@arm.com>
 MIME-Version: 1.0
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250120_084404_256998_C0BF4427 
-X-CRM114-Status: UNSURE (   9.02  )
-X-CRM114-Notice: Please train this message.
+X-CRM114-CacheID: sfid-20250120_084411_148649_9810F3E7 
+X-CRM114-Status: GOOD (  10.22  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -83,30 +82,210 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-kvmtool, unlike qemu, cannot emulate a different architecture than the
-host's, and as a result the only $accel parameter it can support is 'kvm'.
+Teach the arm runner to use kvmtool when kvm-unit-tests has been configured
+appropriately.
+
+The test is ran using run_test_status() because kvmtool does not have a
+testdev device to return the test exit code, so kvm-unit-tests must always
+parse the "EXIT: STATUS" line for the exit code.
 
 Signed-off-by: Alexandru Elisei <alexandru.elisei@arm.com>
 ---
- scripts/runtime.bash | 5 +++++
- 1 file changed, 5 insertions(+)
+ arm/run | 183 ++++++++++++++++++++++++++++++++++----------------------
+ 1 file changed, 110 insertions(+), 73 deletions(-)
 
-diff --git a/scripts/runtime.bash b/scripts/runtime.bash
-index ee8a188b22ce..55d58eef9c7c 100644
---- a/scripts/runtime.bash
-+++ b/scripts/runtime.bash
-@@ -153,6 +153,11 @@ function run()
-         accel="$ACCEL"
-     fi
+diff --git a/arm/run b/arm/run
+index 9b11feafffdd..880d5afae86d 100755
+--- a/arm/run
++++ b/arm/run
+@@ -17,77 +17,114 @@ qemu)
+    exit 3
+ esac
  
-+    if [[ "$TARGET" = kvmtool ]] && [[ -n "$accel" ]] && [[ "$accel" != "kvm" ]]; then
-+        print_result "SKIP" $testname "" "kvmtool does not support $accel"
-+        return 2
+-processor="$PROCESSOR"
++arch_run_qemu()
++{
++    processor="$PROCESSOR"
++
++    if [ "$QEMU" ] && [ -z "$ACCEL" ] &&
++       [ "$HOST" = "aarch64" ] && [ "$ARCH" = "arm" ] &&
++       [ "$(basename $QEMU)" = "qemu-system-arm" ]; then
++        ACCEL="tcg"
 +    fi
 +
-     # check a file for a particular value before running a test
-     # the check line can contain multiple files to check separated by a space
-     # but each check parameter needs to be of the form <path>=<value>
++    set_qemu_accelerator || exit $?
++    if [ "$ACCEL" = "kvm" ]; then
++        QEMU_ARCH=$HOST
++    fi
++
++    qemu=$(search_qemu_binary) ||
++        exit $?
++
++    if ! $qemu -machine '?' | grep -q 'ARM Virtual Machine'; then
++        echo "$qemu doesn't support mach-virt ('-machine virt'). Exiting."
++        exit 2
++    fi
++
++    M='-machine virt'
++
++    if [ "$ACCEL" = "kvm" ]; then
++        if $qemu $M,\? | grep -q gic-version; then
++            M+=',gic-version=host'
++        fi
++    fi
++
++    if [ "$ACCEL" = "kvm" ] || [ "$ACCEL" = "hvf" ]; then
++        if [ "$HOST" = "aarch64" ] || [ "$HOST" = "arm" ]; then
++            processor="host"
++            if [ "$ARCH" = "arm" ] && [ "$HOST" = "aarch64" ]; then
++                processor+=",aarch64=off"
++            fi
++        fi
++    fi
++
++    if [ "$ARCH" = "arm" ]; then
++        M+=",highmem=off"
++    fi
++
++    if ! $qemu $M -device '?' | grep -q virtconsole; then
++        echo "$qemu doesn't support virtio-console for chr-testdev. Exiting."
++        exit 2
++    fi
++
++    if ! $qemu $M -chardev '?' | grep -q testdev; then
++        echo "$qemu doesn't support chr-testdev. Exiting."
++        exit 2
++    fi
++
++    if [ "$UEFI_SHELL_RUN" != "y" ] && [ "$EFI_USE_ACPI" != "y" ]; then
++        chr_testdev='-device virtio-serial-device'
++        chr_testdev+=' -device virtconsole,chardev=ctd -chardev testdev,id=ctd'
++    fi
++
++    pci_testdev=
++    if $qemu $M -device '?' | grep -q pci-testdev; then
++        pci_testdev="-device pci-testdev"
++    fi
++
++    A="-accel $ACCEL$ACCEL_PROPS"
++    command="$qemu -nodefaults $M $A -cpu $processor $chr_testdev $pci_testdev"
++    command+=" -display none -serial stdio"
++    command="$(migration_cmd) $(timeout_cmd) $command"
++
++    if [ "$UEFI_SHELL_RUN" = "y" ]; then
++        ENVIRON_DEFAULT=n run_test_status $command "$@"
++    elif [ "$EFI_USE_ACPI" = "y" ]; then
++        run_test_status $command -kernel "$@"
++    else
++        run_qemu $command -kernel "$@"
++    fi
++}
++
++arch_run_kvmtool()
++{
++    local command
++
++    kvmtool=$(search_kvmtool_binary) ||
++        exit $?
++
++    if [ "$ACCEL" ] && [ "$ACCEL" != "kvm" ]; then
++        echo "kvmtool does not support $ACCEL" >&2
++        exit 2
++    fi
++
++    if ! kvm_available; then
++        echo "KVM required by kvmtool but not available on the host" >&2
++        exit 2
++    fi
++
++    command="$(timeout_cmd) $kvmtool run"
++    if [ "$HOST" = "aarch64" ] && [ "$ARCH" = "arm" ]; then
++	    run_test_status $command --kernel "$@" --aarch32
++    else
++	    run_test_status $command --kernel "$@"
++    fi
++}
+ 
+-if [ "$QEMU" ] && [ -z "$ACCEL" ] &&
+-   [ "$HOST" = "aarch64" ] && [ "$ARCH" = "arm" ] &&
+-   [ "$(basename $QEMU)" = "qemu-system-arm" ]; then
+-	ACCEL="tcg"
+-fi
+-
+-set_qemu_accelerator || exit $?
+-if [ "$ACCEL" = "kvm" ]; then
+-	QEMU_ARCH=$HOST
+-fi
+-
+-qemu=$(search_qemu_binary) ||
+-	exit $?
+-
+-if ! $qemu -machine '?' | grep -q 'ARM Virtual Machine'; then
+-	echo "$qemu doesn't support mach-virt ('-machine virt'). Exiting."
+-	exit 2
+-fi
+-
+-M='-machine virt'
+-
+-if [ "$ACCEL" = "kvm" ]; then
+-	if $qemu $M,\? | grep -q gic-version; then
+-		M+=',gic-version=host'
+-	fi
+-fi
+-
+-if [ "$ACCEL" = "kvm" ] || [ "$ACCEL" = "hvf" ]; then
+-	if [ "$HOST" = "aarch64" ] || [ "$HOST" = "arm" ]; then
+-		processor="host"
+-		if [ "$ARCH" = "arm" ] && [ "$HOST" = "aarch64" ]; then
+-			processor+=",aarch64=off"
+-		fi
+-	fi
+-fi
+-
+-if [ "$ARCH" = "arm" ]; then
+-	M+=",highmem=off"
+-fi
+-
+-if ! $qemu $M -device '?' | grep -q virtconsole; then
+-	echo "$qemu doesn't support virtio-console for chr-testdev. Exiting."
+-	exit 2
+-fi
+-
+-if ! $qemu $M -chardev '?' | grep -q testdev; then
+-	echo "$qemu doesn't support chr-testdev. Exiting."
+-	exit 2
+-fi
+-
+-if [ "$UEFI_SHELL_RUN" != "y" ] && [ "$EFI_USE_ACPI" != "y" ]; then
+-	chr_testdev='-device virtio-serial-device'
+-	chr_testdev+=' -device virtconsole,chardev=ctd -chardev testdev,id=ctd'
+-fi
+-
+-pci_testdev=
+-if $qemu $M -device '?' | grep -q pci-testdev; then
+-	pci_testdev="-device pci-testdev"
+-fi
+-
+-A="-accel $ACCEL$ACCEL_PROPS"
+-command="$qemu -nodefaults $M $A -cpu $processor $chr_testdev $pci_testdev"
+-command+=" -display none -serial stdio"
+-command="$(migration_cmd) $(timeout_cmd) $command"
+-
+-if [ "$UEFI_SHELL_RUN" = "y" ]; then
+-	ENVIRON_DEFAULT=n run_test_status $command "$@"
+-elif [ "$EFI_USE_ACPI" = "y" ]; then
+-	run_test_status $command -kernel "$@"
+-else
+-	run_qemu $command -kernel "$@"
+-fi
++case "$TARGET" in
++qemu)
++    arch_run_qemu "$@"
++    ;;
++kvmtool)
++    arch_run_kvmtool "$@"
++    ;;
++esac
 -- 
 2.47.1
 
