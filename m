@@ -4,39 +4,39 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 49CEDC02182
-	for <kvm-riscv@archiver.kernel.org>; Tue, 21 Jan 2025 16:24:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CE81CC02182
+	for <kvm-riscv@archiver.kernel.org>; Tue, 21 Jan 2025 16:29:13 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
 	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=4tj4QUQGckBiOzSMZw9wJdS4qM58w2Wx7uiG+phfsog=; b=1F2JzbCVk/k6JG
-	Cl5k8i0wJ7ehA/mbI/NRDWAHU9o2HBa7KcL0PUPxC8aAguEUw2QFHU/PDdgB3anFAnzyAhbMB2NNO
-	DN4A4LqTGjF6uCIgQFCYldVqgNixtrxUigjijnLfmNjnjJytDT4wnIghdQ3AMpH9fMkhoJVbHcvhn
-	kKmg5HNSN9sMkExlwPYqjksPaePhfa7FgV7Qg3fF1RApx7+SsgTnct1z/eqv1roxTj0wEevWm0WK5
-	M5qnUpB2Sdc4d/DNGjESzpbXsgpUu1rD7LiqehOlkiP384SbHZuHIduSQS1G67Wg8ANzBb0FSa7ca
-	7kUECWNwI4iZA698vjCA==;
+	List-Owner; bh=4YnErKgbICqidbXITUteAfIeabAGO/J0zTxml4/jd2o=; b=Xulr3B4wvSTw5K
+	qwbfTKpvJYW3SFT4De6EE//HrW5o61UIXgTYQn0FfEx6yY72DI//HRcra0vER0bX2FjAgbodvCMCT
+	YtUZoKGv4ehXIpjygRPchFkAqwJ32ycGu0KfPJfeCEnBAvHYeqyvoS/giQXDFeLmgYBwal3QhjNHp
+	G+8V1+3339gr9RQEAT95qDZ34CLooQOjmmxLrMuNwW1XruT/nZW/9EyqNXCpTRlXTFPXtx5xtMv0G
+	szHKU8uL5prhNv5+3zh4OMvjmugQ82XAqyAeH1wZVfDnjhyc7jflvi+GkMdGKKbtqlhSP4FrM2OTt
+	GAGEU4wqynYYBzsN/j+g==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98 #2 (Red Hat Linux))
-	id 1taH3J-00000008LqP-4Bew;
-	Tue, 21 Jan 2025 16:24:34 +0000
-Received: from out-172.mta1.migadu.com ([2001:41d0:203:375::ac])
+	id 1taH7p-00000008MHd-2V5R;
+	Tue, 21 Jan 2025 16:29:13 +0000
+Received: from out-188.mta1.migadu.com ([95.215.58.188])
 	by bombadil.infradead.org with esmtps (Exim 4.98 #2 (Red Hat Linux))
-	id 1taH3H-00000008Lpm-0iwN
+	id 1taH7m-00000008MHE-22yJ
 	for kvm-riscv@lists.infradead.org;
-	Tue, 21 Jan 2025 16:24:33 +0000
-Date: Tue, 21 Jan 2025 17:24:23 +0100
+	Tue, 21 Jan 2025 16:29:11 +0000
+Date: Tue, 21 Jan 2025 17:29:04 +0100
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1737476668;
+	t=1737476948;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references;
-	bh=H6pzkPiNgYGUEzo0pWRd1g0zmrJRFWgoHspDsCsXeo0=;
-	b=MRTrxH9cLSMxf51WTQhkuQO65jTuw3qwoo1tjBxJihfQOf2x5FOyehb8UWzv4SKKAzuQB5
-	rD44pG5X2+C1NjVUsr6PuOMEbUBG2/znpG7wMaPh1mM8cfAAAKGU2jRnsPvWkdT0tjU6Ya
-	UDXoiEOzDjdymvmiH/k00tiHzEWuDh8=
+	bh=JHE1Ks4sha2VPulKTfL3JK8VfRv3tuso1k0l1+BbscY=;
+	b=ThyApVdiP12DgYTi+kjvBSrSt+RXWw1HLWvA8u4utOlNQmE4yb5C1jYj6Orkv1Dp2iJeY6
+	rXmAwK6G9lbo4TBQOEmzkgkXQ6luL3C4+iz9Dxnj3EwunsaPkUpMGfXE7oNug+SLD5DSrN
+	ZWyxbw6bSnfEJir2ggCFGEDT9G1saMQ=
 X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
 From: Andrew Jones <andrew.jones@linux.dev>
 To: Alexandru Elisei <alexandru.elisei@arm.com>
@@ -47,17 +47,18 @@ Cc: eric.auger@redhat.com, lvivier@redhat.com, thuth@redhat.com,
 	will@kernel.org, julien.thierry.kdev@gmail.com, maz@kernel.org, 
 	oliver.upton@linux.dev, suzuki.poulose@arm.com, yuzenghui@huawei.com, joey.gouly@arm.com, 
 	andre.przywara@arm.com
-Subject: Re: [kvm-unit-tests PATCH v2 07/18] scripts: Introduce kvmtool_opts
-Message-ID: <20250121-9bef2681da529d9d41f524d3@orel>
+Subject: Re: [kvm-unit-tests PATCH v2 08/18] scripts/runtime: Detect kvmtool
+ failure in premature_failure()
+Message-ID: <20250121-ec03a2683ab979d2313e09ee@orel>
 References: <20250120164316.31473-1-alexandru.elisei@arm.com>
- <20250120164316.31473-8-alexandru.elisei@arm.com>
+ <20250120164316.31473-9-alexandru.elisei@arm.com>
 MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <20250120164316.31473-8-alexandru.elisei@arm.com>
+In-Reply-To: <20250120164316.31473-9-alexandru.elisei@arm.com>
 X-Migadu-Flow: FLOW_OUT
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250121_082431_649409_1B039674 
-X-CRM114-Status: GOOD (  18.97  )
+X-CRM114-CacheID: sfid-20250121_082910_668081_2AB9B0DF 
+X-CRM114-Status: GOOD (  20.58  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -74,103 +75,70 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Mon, Jan 20, 2025 at 04:43:05PM +0000, Alexandru Elisei wrote:
-> In preparation for supporting kvmtool, create and pass the variable
-> 'kvmtool_opts' to the arch run script $RUNTIME_arch_run.
+On Mon, Jan 20, 2025 at 04:43:06PM +0000, Alexandru Elisei wrote:
+> kvm-unit-tests assumes that if the VMM is able to get to where it tries to
+> load the kernel, then the VMM and the configuration parameters will also
+> work for running the test. All of this is done in premature_failure().
+> 
+> Teach premature_failure() about the kvmtool's error message when it fails
+> to load the dummy kernel.
 > 
 > Signed-off-by: Alexandru Elisei <alexandru.elisei@arm.com>
 > ---
->  scripts/common.bash  |  6 ++++--
->  scripts/runtime.bash | 14 +++++++++++---
->  2 files changed, 15 insertions(+), 5 deletions(-)
+>  scripts/runtime.bash | 21 +++++++++++++++------
+>  1 file changed, 15 insertions(+), 6 deletions(-)
 > 
-> diff --git a/scripts/common.bash b/scripts/common.bash
-> index a40c28121b6a..1b5e0d667841 100644
-> --- a/scripts/common.bash
-> +++ b/scripts/common.bash
-> @@ -37,6 +37,7 @@ function for_each_unittest()
->  	local check
->  	local accel
->  	local timeout
-> +	local kvmtool_opts
->  	local rematch
->  
->  	exec {fd}<"$unittests"
-> @@ -45,7 +46,7 @@ function for_each_unittest()
->  		if [[ "$line" =~ ^\[(.*)\]$ ]]; then
->  			rematch=${BASH_REMATCH[1]}
->  			if [ -n "${testname}" ]; then
-> -				$(arch_cmd) "$cmd" "$testname" "$groups" "$smp" "$kernel" "$qemu_opts" "$arch" "$machine" "$check" "$accel" "$timeout"
-> +				$(arch_cmd) "$cmd" "$testname" "$groups" "$smp" "$kernel" "$qemu_opts" "$arch" "$machine" "$check" "$accel" "$timeout" "$kvmtool_opts"
-
-It looks odd to have both qemu_opts and kvmtool_opts at the same time.
-
->  			fi
->  			testname=$rematch
->  			smp=1
-> @@ -57,6 +58,7 @@ function for_each_unittest()
->  			check=""
->  			accel=""
->  			timeout=""
-> +			kvmtool_opts=""
->  		elif [[ $line =~ ^file\ *=\ *(.*)$ ]]; then
->  			kernel=$TEST_DIR/${BASH_REMATCH[1]}
->  		elif [[ $line =~ ^smp\ *=\ *(.*)$ ]]; then
-> @@ -80,7 +82,7 @@ function for_each_unittest()
->  		fi
->  	done
->  	if [ -n "${testname}" ]; then
-> -		$(arch_cmd) "$cmd" "$testname" "$groups" "$smp" "$kernel" "$qemu_opts" "$arch" "$machine" "$check" "$accel" "$timeout"
-> +		$(arch_cmd) "$cmd" "$testname" "$groups" "$smp" "$kernel" "$qemu_opts" "$arch" "$machine" "$check" "$accel" "$timeout" "$kvmtool_opts"
->  	fi
->  	exec {fd}<&-
->  }
 > diff --git a/scripts/runtime.bash b/scripts/runtime.bash
-> index a89f2d10ab78..451b5585f010 100644
+> index 451b5585f010..ee8a188b22ce 100644
 > --- a/scripts/runtime.bash
 > +++ b/scripts/runtime.bash
-> @@ -35,7 +35,7 @@ get_cmdline()
->  {
->      local kernel=$1
->  
-> -    echo "TESTNAME=$testname TIMEOUT=$timeout MACHINE=$machine ACCEL=$accel $RUNTIME_arch_run $kernel $qemu_opts"
-> +    echo "TESTNAME=$testname TIMEOUT=$timeout MACHINE=$machine ACCEL=$accel $RUNTIME_arch_run $kernel $opts"
+> @@ -12,18 +12,27 @@ extract_summary()
+>      tail -5 | grep '^SUMMARY: ' | sed 's/^SUMMARY: /(/;s/'"$cr"'\{0,1\}$/)/'
 >  }
 >  
->  skip_nodefault()
-> @@ -87,8 +87,16 @@ function run()
->      local check="${CHECK:-$8}"
->      local accel="$9"
->      local timeout="${10:-$TIMEOUT}" # unittests.cfg overrides the default
-> -
-> -    qemu_opts="-smp $smp $qemu_opts"
-> +    local kvmtool_opts="${11}"
-> +
+> -# We assume that QEMU is going to work if it tried to load the kernel
+> +# We assume that the VMM is going to work if it tried to load the kernel
+>  premature_failure()
+>  {
+>      local log
+>  
+>      log="$(eval "$(get_cmdline _NO_FILE_4Uhere_)" 2>&1)"
+>  
+> -    echo "$log" | grep "_NO_FILE_4Uhere_" |
+> -        grep -q -e "[Cc]ould not \(load\|open\) kernel" \
+> -                -e "error loading" \
+> -                -e "failed to load" &&
+> -        return 1
 > +    case "$TARGET" in
 > +    qemu)
-> +        opts="-smp $smp $qemu_opts"
+> +
+
+extra blank line here
+
+> +        echo "$log" | grep "_NO_FILE_4Uhere_" |
+> +            grep -q -e "[Cc]ould not \(load\|open\) kernel" \
+> +                    -e "error loading" \
+> +                    -e "failed to load" &&
+> +            return 1
 > +        ;;
 > +    kvmtool)
-> +        opts="--cpus $smp $kvmtool_opts"
+> +        echo "$log" | grep "Fatal: Unable to open kernel _NO_FILE_4Uhere_" &&
+> +            return 1
 > +        ;;
 > +    esac
 
-This is similar to what I was proposing with the associative array, but
-we'll only need to set a $vmm variable once with the array. If parsing
-command lines is different between the vmms then we can even add
-functions to the table
+This looks good, but could possibly become
 
-vmm_opts[qemu,func]=qemu_func
-vmm_opts[kvmtool,func]=kvmtool_func
+ eval echo "$log" | ${vmm_opts[$TARGET,premature_failure]} && return 1
 
-eval ${vmm_opts[$vmm,func]} ...
+if we got the vmm_opts route.
 
 Thanks,
 drew
 
 >  
->      if [ "${CONFIG_EFI}" == "y" ]; then
->          kernel=${kernel/%.flat/.efi}
+>      RUNTIME_log_stderr <<< "$log"
+>  
 > -- 
 > 2.47.1
 > 
