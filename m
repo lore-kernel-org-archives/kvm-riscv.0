@@ -4,39 +4,39 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 Received: from bombadil.infradead.org (bombadil.infradead.org [198.137.202.133])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B43D7C02182
-	for <kvm-riscv@archiver.kernel.org>; Tue, 21 Jan 2025 16:13:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0361EC02182
+	for <kvm-riscv@archiver.kernel.org>; Tue, 21 Jan 2025 16:18:39 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
 	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
 	List-Archive:List-Unsubscribe:List-Id:In-Reply-To:MIME-Version:References:
 	Message-ID:Subject:Cc:To:From:Date:Reply-To:Content-ID:Content-Description:
 	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
-	List-Owner; bh=6dZDHyIKxV5fxZz14mipF4Ff4LrFzL65tPscz6qmS3c=; b=rykYVaNmgnpD8p
-	4tls9rkcc1sRryQb96lMUgnKV4oILubW61pQ3hCQBsjyGn21U4p6JTJlFAIey8Q782QEcm85PMB8l
-	vWaxT98ZgJl8WSwuMfGdhtIs8bxSQyIzRDqjdGV3GQOGHvCj/kq4NnzsiewTyH9nFD77OJokl0ac9
-	FPvscIYJnZ/jCigOiJD4ymuooLptvnCXldfX5ZrZoHltT8N4STXqgDwG8h8X8E3fRMr/xoeHri1gc
-	jcOIsf+nblhn7gwixt1Gm6DmgA222LtP2wPhQTpfvex844Gryxm9uyjyRO7eGlp/msAK+6kAFwoOq
-	YnD9jFElSdzMAa7jOxHg==;
+	List-Owner; bh=ZAABF3NAgpNICeJb5wAt02+98PuNsN4HIovOcCl7dbk=; b=4v39JZvqLESDkU
+	Sz8hhedZ5IkHeDUGDRkE70K4Hkp83OB40B4Dd4pBeozPd0K5EqUtKf8Iha9CK/YlaJf6xoXHj9tE9
+	9Ae8jDwRO/kBB7/8TLV4xcGQa5SpyJrDRsnHEIiXeWAJoEQc3/F371/BNJYilaR1RU44bs1317NpM
+	+eCUycUtw5KkMyfF7nk/GPvGdsvH3ImWgNBh2fZQK+3huf6U9uvv4JPAVlCnXrSB8v5ELnFAwCAzT
+	lhmF6wV7okylrh9rwzMQ8r99od3jgzgmm9pQn7RNcVmBgpKT7kePPOqA38BXfdU+IrTWBmVzoYqzo
+	bWNe2d8Qvr2tT2HDbrBQ==;
 Received: from localhost ([::1] helo=bombadil.infradead.org)
 	by bombadil.infradead.org with esmtp (Exim 4.98 #2 (Red Hat Linux))
-	id 1taGsA-00000008KTl-1pXP;
-	Tue, 21 Jan 2025 16:13:02 +0000
-Received: from out-188.mta1.migadu.com ([95.215.58.188])
+	id 1taGxa-00000008LDV-2zNn;
+	Tue, 21 Jan 2025 16:18:38 +0000
+Received: from out-182.mta1.migadu.com ([95.215.58.182])
 	by bombadil.infradead.org with esmtps (Exim 4.98 #2 (Red Hat Linux))
-	id 1taGs8-00000008KSX-0St3
+	id 1taGwR-00000008KyR-3Bz7
 	for kvm-riscv@lists.infradead.org;
-	Tue, 21 Jan 2025 16:13:01 +0000
-Date: Tue, 21 Jan 2025 17:12:47 +0100
+	Tue, 21 Jan 2025 16:17:29 +0000
+Date: Tue, 21 Jan 2025 17:17:22 +0100
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1737475977;
+	t=1737476245;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 in-reply-to:in-reply-to:references:references;
-	bh=cyMTmEzB2/U6qcXH179gcIg8qFA+t5ge+uEkmTrIDFY=;
-	b=Byr2VvxiU4c4qpp4KsGIfvIfoTPSZ94lhRmH+7449u1XN5es1s1AwV/ecHaLHam3bHowaF
-	4hz5gb9XUH9F00XF8neP4/tNH54hlIET6NQYR94xWksNJuvAn8CNEebEkY4KDt+x/21bjR
-	tbIQjxaL4tDARm9tN25cSgoF3rfVa+Q=
+	bh=7WwSMRATO0QjUqb11IwaPpIM7wS7YIxBQxz1gbtNgig=;
+	b=uIyKdIUQNmCtu7Q0IcIVXtHI6XK6xj7PVO6GVegFWD6wgh2mr8arrR6cZhBwT6O4r/GQRY
+	PGdz0lyr4Q5bxBPOjt3FmyZAyyEs3+aDLQ9S+6/Z5cC5t0DN2SwlomAxxkrnle8K2K9rLR
+	GN90A4eGae+VZ+Mggm60xlRxe2A7J/0=
 X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
 From: Andrew Jones <andrew.jones@linux.dev>
 To: Alexandru Elisei <alexandru.elisei@arm.com>
@@ -47,18 +47,20 @@ Cc: eric.auger@redhat.com, lvivier@redhat.com, thuth@redhat.com,
 	will@kernel.org, julien.thierry.kdev@gmail.com, maz@kernel.org, 
 	oliver.upton@linux.dev, suzuki.poulose@arm.com, yuzenghui@huawei.com, joey.gouly@arm.com, 
 	andre.przywara@arm.com
-Subject: Re: [kvm-unit-tests PATCH v2 06/18] scripts: Merge the qemu
- parameter -smp into $qemu_opts
-Message-ID: <20250121-293c6d322b91d5ff51291ad6@orel>
+Subject: Re: [kvm-unit-tests PATCH v2 03/18] scripts: Refuse to run the tests
+ if not configured for qemu
+Message-ID: <20250121-c7f5ba2a25ccbfe793da07f6@orel>
 References: <20250120164316.31473-1-alexandru.elisei@arm.com>
- <20250120164316.31473-7-alexandru.elisei@arm.com>
+ <20250120164316.31473-4-alexandru.elisei@arm.com>
+ <20250121-45faf6a9a9681c7c9ece5f44@orel>
+ <Z4_DKTMeDQqsqV_6@raptor>
 MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <20250120164316.31473-7-alexandru.elisei@arm.com>
+In-Reply-To: <Z4_DKTMeDQqsqV_6@raptor>
 X-Migadu-Flow: FLOW_OUT
 X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
-X-CRM114-CacheID: sfid-20250121_081300_421346_057E5798 
-X-CRM114-Status: GOOD (  18.35  )
+X-CRM114-CacheID: sfid-20250121_081727_955293_0C135697 
+X-CRM114-Status: GOOD (  35.01  )
 X-BeenThere: kvm-riscv@lists.infradead.org
 X-Mailman-Version: 2.1.34
 Precedence: list
@@ -75,63 +77,95 @@ Content-Transfer-Encoding: 7bit
 Sender: "kvm-riscv" <kvm-riscv-bounces@lists.infradead.org>
 Errors-To: kvm-riscv-bounces+kvm-riscv=archiver.kernel.org@lists.infradead.org
 
-On Mon, Jan 20, 2025 at 04:43:04PM +0000, Alexandru Elisei wrote:
-> kvmtool has a different command line parameter to specify the number of
-> VCPUs (-c/--cpus). To make it easier to accommodate it, merge the qemu
-> specific parameter -smp into $qemu_opts when passing it to the
-> $RUNTIME_arch_run script.
+On Tue, Jan 21, 2025 at 03:54:17PM +0000, Alexandru Elisei wrote:
+> Hi Drew,
 > 
-> This is safe to do because the $RUNTIME_arch_run script, on all
-> architectures, passes the parameters right back to run_qemu() et co, and
-> do not treat individual parameters separately.
+> On Tue, Jan 21, 2025 at 03:48:55PM +0100, Andrew Jones wrote:
+> > On Mon, Jan 20, 2025 at 04:43:01PM +0000, Alexandru Elisei wrote:
+> > > Arm and arm64 support running the tests under kvmtool. Unsurprisingly,
+> > > kvmtool and qemu have a different command line syntax for configuring and
+> > > running a virtual machine.
+> > > 
+> > > On top of that, when kvm-unit-tests has been configured to run under
+> > > kvmtool (via ./configure --target=kvmtool), the early UART address changes,
+> > > and if then the tests are run with qemu, this warning is displayed:
+> > > 
+> > > WARNING: early print support may not work. Found uart at 0x9000000, but early base is 0x1000000.
+> > > 
+> > > At the moment, the only way to run a test under kvmtool is manually, as no
+> > > script has any knowledge of how to invoke kvmtool. Also, unless one looks
+> > > at the logs, it's not obvious that the test runner is using qemu to run the
+> > > tests, and not kvmtool.
+> > > 
+> > > To avoid any confusion for unsuspecting users, refuse to run a test via the
+> > > testing scripts when kvm-unit-tests has been configured for kvmtool.
+> > > 
+> > > There are four different ways to run a test using the test infrastructure:
+> > > with run_tests.sh, by invoking arm/run or arm/efi/run with the correct
+> > > parameters (only the arm directory is mentioned here because the tests can
+> > > be configured for kvmtool only on arm and arm64), and by creating
+> > > standalone tests. Add a check in each of these locations for the supported
+> > > virtual machine manager.
+> > > 
+> > > Signed-off-by: Alexandru Elisei <alexandru.elisei@arm.com>
+> > > ---
+> > >  arm/efi/run             | 8 ++++++++
+> > >  arm/run                 | 9 +++++++++
+> > >  run_tests.sh            | 8 ++++++++
+> > >  scripts/mkstandalone.sh | 8 ++++++++
+> > >  4 files changed, 33 insertions(+)
+> > > 
+> > > diff --git a/arm/efi/run b/arm/efi/run
+> > > index 8f41fc02df31..916f4c4deef6 100755
+> > > --- a/arm/efi/run
+> > > +++ b/arm/efi/run
+> > > @@ -12,6 +12,14 @@ fi
+> > >  source config.mak
+> > >  source scripts/arch-run.bash
+> > >  
+> > > +case "$TARGET" in
+> > > +qemu)
+> > > +    ;;
+> > > +*)
+> > > +    echo "$0 does not support '$TARGET'"
+> > > +    exit 2
+> > > +esac
+> > > +
+> > >  if [ -f /usr/share/qemu-efi-aarch64/QEMU_EFI.fd ]; then
+> > >  	DEFAULT_UEFI=/usr/share/qemu-efi-aarch64/QEMU_EFI.fd
+> > >  elif [ -f /usr/share/edk2/aarch64/QEMU_EFI.silent.fd ]; then
+> > > diff --git a/arm/run b/arm/run
+> > > index efdd44ce86a7..6db32cf09c88 100755
+> > > --- a/arm/run
+> > > +++ b/arm/run
+> > > @@ -8,6 +8,15 @@ if [ -z "$KUT_STANDALONE" ]; then
+> > >  	source config.mak
+> > >  	source scripts/arch-run.bash
+> > >  fi
+> > > +
+> > > +case "$TARGET" in
+> > > +qemu)
+> > > +    ;;
+> > > +*)
+> > > +   echo "'$TARGET' not supported"
+> > > +   exit 3
+> > 
+> > I think we want exit code 2 here.
 > 
-> Signed-off-by: Alexandru Elisei <alexandru.elisei@arm.com>
-> ---
->  scripts/runtime.bash | 5 ++++-
->  1 file changed, 4 insertions(+), 1 deletion(-)
+> Exit code 2 is already in use in arm/run. Now that I'm looking more closely
+> at it, exit code 2 is already in use in run_tests.sh, same for
+> mkstandalone.sh and arm/efi/run.
 > 
-> diff --git a/scripts/runtime.bash b/scripts/runtime.bash
-> index e5d661684ceb..a89f2d10ab78 100644
-> --- a/scripts/runtime.bash
-> +++ b/scripts/runtime.bash
-> @@ -34,7 +34,8 @@ premature_failure()
->  get_cmdline()
->  {
->      local kernel=$1
-> -    echo "TESTNAME=$testname TIMEOUT=$timeout MACHINE=$machine ACCEL=$accel $RUNTIME_arch_run $kernel -smp $smp $qemu_opts"
-> +
-> +    echo "TESTNAME=$testname TIMEOUT=$timeout MACHINE=$machine ACCEL=$accel $RUNTIME_arch_run $kernel $qemu_opts"
->  }
->  
->  skip_nodefault()
-> @@ -87,6 +88,8 @@ function run()
->      local accel="$9"
->      local timeout="${10:-$TIMEOUT}" # unittests.cfg overrides the default
->  
-> +    qemu_opts="-smp $smp $qemu_opts"
-> +
->      if [ "${CONFIG_EFI}" == "y" ]; then
->          kernel=${kernel/%.flat/.efi}
->      fi
-> -- 
-> 2.47.1
+> How about using 3 everywhere as the exit code?
 >
 
-This seems fine, but I still think we want qemu_opts to be opts and we can
-parameterize the option names. So we could have a table of option names
-that we use in places like this
-
-declare -A vmm_opts
-
-vmm_opts[qemu,nr_cpus]='-smp'
-vmm_opts[qemu,another_option]='foo'
-
-vmm_opts[kvmtool,nr_cpus]='-c'
-vmm_opts[kvmtool,another_option]='bar'
-
-# $vmm gets set to whatever vmm we're using, e.g. vmm=qemu
-
-opts="${vmm_opts[$vmm,nr_cpus]} $smp $opts"
+In kvm-unit-tests, exit code 2 is what we use for "most likely a run
+script failed" (see the comment above run_qemu() in
+scripts/arch-run.bash). We don't try to create a new error code for each
+type of error, but we do have the error message as well. So if there's a
+higher level runner, which runs this runner, it only needs to learn that
+2 is likely a script failure and that an error message will hopefully
+point the way to the problem.
 
 Thanks,
 drew
